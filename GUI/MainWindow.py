@@ -110,12 +110,6 @@ class MainWindow(wx.Frame):
         self.splitter=wx.SplitterWindow(self,-1)
         self.nodes_to_be_added=[]
         self.app=app
-
-
-        if os.sys.platform=='linux2':
-            self.lastpath="/home/kalpaha/Sovellusprojekti/Data"
-        else:
-            self.lastpath=r"H:\Data"
         
         # Icon for the window
         ico=reduce(os.path.join,["Icons","Selli.ico"])
@@ -284,7 +278,8 @@ class MainWindow(wx.Frame):
         print "Setting dataunit"
         self.renderWindow.setDataUnit(dataunit)
         print "SHowing..."
-        self.renderWindow.ShowModal()
+        #self.renderWindow.ShowModal()
+        self.renderWindow.startWizard()
 
 
     def menuOpen(self,evt):
@@ -294,17 +289,11 @@ class MainWindow(wx.Frame):
         Description: Callback function for menu item "Open VTK File"
         """
         asklist=[]
-        print "lastpath now=",self.lastpath
         wc="LSM Files (*.lsm)|*.lsm|Dataset Series (*.du)|*.du|VTK Image Data (*.vti)|*.vti"
-        dlg=wx.FileDialog(self,"Open dataset series or LSM File",self.lastpath,wildcard=wc,style=wx.OPEN|wx.MULTIPLE)
-        if dlg.ShowModal()==wx.ID_OK:
-            asklist=dlg.GetPaths()
-        dlg.Destroy()
+        asklist=Dialogs.askOpenFileName(self,"Open dataset series or LSM File",wc)
         
         for askfile in asklist:
             sep=askfile.split(".")[-1]
-            self.lastpath=os.path.split(askfile)[:-1][0]
-            print "lastpath=",self.lastpath
             fname=os.path.split(askfile)[-1]
             self.SetStatusText("Loading "+fname+"...")
             self.createDataUnit(fname,askfile)
