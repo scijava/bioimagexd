@@ -32,6 +32,8 @@ from Logging import *
 import DataUnit
 import PreviewFrame
 import DataUnitProcessing
+import ColorMerging
+
 
 
 smX="<font size=\"-1\">x</font>"
@@ -64,6 +66,7 @@ class InfoWidget(wx.Panel):
         wx.Panel.__init__(self,master,-1,**kws)
         self.mainsizer=wx.GridBagSizer(5,5)
 
+        
         self.preview=PreviewFrame.IntegratedPreview(self,
         previewsize=(384,384),pixelvalue=False,renderingpreview=False,
         zoom=False,timeslider=False,scrollbars=False,zoom_factor=PreviewFrame.ZOOM_TO_FIT)
@@ -77,7 +80,16 @@ class InfoWidget(wx.Panel):
         self.SetAutoLayout(True)
         self.SetSizer(self.mainsizer)
         self.mainsizer.Fit(self)
-        self.mainsizer.SetSizeHints(self)        
+        self.mainsizer.SetSizeHints(self) 
+ 
+    def setTree(self,tree):
+        """
+        Method: setTree(tree)
+        Created: 3.04.2005
+        Creator: KP
+        Description: Sets the tree widget
+        """
+        self.tree=tree
         
     def showInfo(self,dataunit):
         """
@@ -96,12 +108,24 @@ class InfoWidget(wx.Panel):
             dims=dataunit.getDimensions()
             spacing=dataunit.getSpacing()
             voxelsize=dataunit.getVoxelSize()
-            unit=DataUnit.CorrectedSourceDataUnit("preview")
             #settings=DataUnit.SingleUnitProcessingSettings()
             #settings.initialize(dataunit,1,1)
             #unit.setSettings(settings)
-            unit.addSourceDataUnit(dataunit)
-            unit.setModule(DataUnitProcessing.DataUnitProcessing())
+            
+            list=self.tree.getSelectedDataUnits()
+            if len(list)>1:
+                self.preview.setPreviewType("ColorMerging")
+                unit=DataUnit.ColorMergingDataUnit()
+                for i in list:
+                    #setting=DataUnit.ColorMergingSettings()
+                    #setting.initialize(unit,len(list),1)
+                    #i.setSettings(setting)
+                    unit.addSourceDataUnit(i)
+                unit.setModule(ColorMerging.ColorMerging())                                    
+            else:
+                unit=DataUnit.CorrectedSourceDataUnit("preview")
+                unit.addSourceDataUnit(dataunit)
+                unit.setModule(DataUnitProcessing.DataUnitProcessing())
             self.dataUnit=unit
             self.preview.setDataUnit(self.dataUnit)
             tps=dataunit.getLength()
