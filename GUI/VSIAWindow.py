@@ -7,7 +7,7 @@
  Creator: JV
  Description:
 
- A Tkinter Toplevel window that is used to process a single dataset series with
+ A wxPython Toplevel window that is used to process a single dataset series with
  VSIA.
  (write this)
  Modified from SingleUnitProcessingWindow
@@ -22,7 +22,6 @@
  JV - Jukka Varsaluoma,varsa@st.jyu.fi
 
  Copyright (c) 2004 Selli Project.
- --------------------------------------------------------------
 """
 __author__ = "Selli Project <http://sovellusprojektit.it.jyu.fi/selli/>"
 __version__ = "$Revision: 1.23 $"
@@ -41,42 +40,21 @@ import time
 
 import TaskWindow
 
-def showVSIAWindow(sourceUnit,mainwin):
-    """
-    --------------------------------------------------------------
-    Function: showVSIAWindow(sourceUnit,mainwin)
-    Created: 25.11.2004
-    Creator: JV
-    Description: A function that displays the VSIA window and
-                 waits for the user to process the dataset. After
-                 the deed is done or cancel is pressed, the results
-                 are returned to the caller
-    -------------------------------------------------------------
-    """
-
-    result=TaskWindow.showTaskWindow(VSIAWindow,sourceUnit,mainwin)
-    return result
-
 
 class VSIAWindow(TaskWindow.TaskWindow):
     """
-    --------------------------------------------------------------
     Class: VSIAWindow
-    Created: 25.11.2004
-    Creator: JV
+    Created: 25.11.2004, JV
     Description: A window for processing a single dataunit
-    -------------------------------------------------------------
     """
     def __init__(self,root):
         """
-        --------------------------------------------------------------
         Method: __init__(root)
-        Created: 25.11.2004
+        Created: 25.11.2004, JV
         Creator: JV
         Description: Initialization
         Parameters:
                 root    Is the parent widget of this window
-        -------------------------------------------------------------
         """
         self.frames={}
         self.oldFilter=None
@@ -91,34 +69,25 @@ class VSIAWindow(TaskWindow.TaskWindow):
         self.listbox.unbind('<ButtonRelease-1>')
 
 
-
-########################## WIDGET CREATION CODE ################################
-
     def createButtonBox(self):
         """
-        --------------------------------------------------------------
         Method: createButtonBox()
-        Created: 25.11.2004
-        Creator: JV
+        Created: 25.11.2004, JV
         Description: Creates a button box containing the buttons Render,
                      Preview and Close
-        -------------------------------------------------------------
         """
         # change button text
-    	self.buttonbox=ButtonBox(self,ok="Do Visualization",cancel="Close",
+        self.buttonbox=ButtonBox(self,ok="Do Visualization",cancel="Close",
         apply="Preview",cancel_command=self.closeWindowCallback,
-	ok_command=self.doVSIACallback,apply_command=self.doPreviewCallback)
-    	self.buttonbox.grid(row=4,column=0,columnspan=2,sticky=W+E)
+        ok_command=self.doVSIACallback,apply_command=self.doPreviewCallback)
+        self.buttonbox.grid(row=4,column=0,columnspan=2,sticky=W+E)
 
     def createOptionsFrame(self):
         """
-        --------------------------------------------------------------
         Method: createOptionsFrame()
-        Created: 25.11.2004
-        Creator: JV
+        Created: 25.11.2004, JV
         Description: Creates a frame that contains the various widgets
                      used to control the VSIA settings
-        -------------------------------------------------------------
         """
         TaskWindow.TaskWindow.createOptionsFrame(self)
         self.taskNameLbl.config(text="Processed dataset name:")
@@ -224,17 +193,12 @@ class VSIAWindow(TaskWindow.TaskWindow):
 
 
 
-
-########################## CALLBACK CODE ######################################
     def setSurfaceCount(self,event=None):
         """
-        --------------------------------------------------------------
         Method: setSurfaceCount()
-        Created: 15.12.2004
-        Creator: KP
+        Created: 15.12.2004, KP
         Description: A callback for setting the surface count slider to reflect
                      the surface count
-        -------------------------------------------------------------
         """
         try:
             count=int(self.surfaceCount.get())
@@ -245,13 +209,10 @@ class VSIAWindow(TaskWindow.TaskWindow):
 
     def updateSelectedFilter(self,event=None):
         """
-        --------------------------------------------------------------
         Method: updateSelectedFilter()
-        Created: 16.12.2004
-        Creator: KP
+        Created: 16.12.2004, KP
         Description: A callback for selecting which class to use to convert
                      the data back to imagedata
-        -------------------------------------------------------------
         """
         filterClass=self.filterVar.get()
         # We might get called before we have a dataunit, then just update the GUi
@@ -273,27 +234,21 @@ class VSIAWindow(TaskWindow.TaskWindow):
 
     def timePointChanged(self,timePoint):
         """
-        --------------------------------------------------------------
         Method: timePointChanged(timepoint)
-        Created: 24.11.2004
-        Creator: KP
+        Created: 24.11.2004, KP
         Description: A callback that is called when the previewed
                      timepoint changes.
         Parameters:
                 timePoint   The timepoint we're previewing now
-        -------------------------------------------------------------
         """
         print "Now configuring timepoint %d"%(timePoint)
         self.timePoint=timePoint
 
     def updateSettings(self):
         """
-        --------------------------------------------------------------
         Method: updateSettings()
-        Created: 03.11.2004
-        Creator: KP
+        Created: 03.11.2004, KP
         Description: A method used to set the GUI widgets to their proper values
-        -------------------------------------------------------------
         """
         print "self.dataUnit",self.dataUnit
         if self.dataUnit:
@@ -329,13 +284,10 @@ class VSIAWindow(TaskWindow.TaskWindow):
 
     def closeWindowCallback(self):
         """
-        --------------------------------------------------------------
         Method: closeWindow()
-        Created: 03.11.2004
-        Creator: KP
+        Created: 03.11.2004, KP
         Description: A method that withdraws (i.e. hides) the window,
                      but does not destory it.
-        -------------------------------------------------------------
         """
         self.cancelled=1
         del self.preview
@@ -343,15 +295,10 @@ class VSIAWindow(TaskWindow.TaskWindow):
 
     def doVSIACallback(self):
         """
-        --------------------------------------------------------------
         Method: doVSIACallback()
-        Created: 25.11.2004
-        Creator: JV
+        Created: 25.11.2004, JV
         Description: A callback for the button "Do VSIA"
-        -------------------------------------------------------------
         """
-        pass
-
         name=self.nameVar.get()
         self.dataUnit.setName(name)
         initFile="%s.du"%(name)
@@ -385,12 +332,9 @@ class VSIAWindow(TaskWindow.TaskWindow):
 
     def updateFilterData(self):
         """
-        --------------------------------------------------------------
         Method: updateFilterData()
-        Created: 15.12.2004
-        Creator: KP
+        Created: 15.12.2004, KP
         Description: A callback to update the module's parameters from the gui
-        -------------------------------------------------------------
         """
         lowerLimit=0
         upperLimit=0
@@ -416,30 +360,24 @@ class VSIAWindow(TaskWindow.TaskWindow):
 
     def doPreviewCallback(self,event=None):
         """
-        --------------------------------------------------------------
         Method: doPreviewCallback()
-        Created: 25.11.2004
-        Creator: JV
+        Created: 25.11.2004, JV
         Description: A callback for the button "Preview" and other events
-	             that wish to update the preview
-        -------------------------------------------------------------
+                     that wish to update the preview
         """
         self.updateFilterData()
         TaskWindow.TaskWindow.doPreviewCallback(self,event)
 
     def setCombinedDataUnit(self,dataUnit):
         """
-        --------------------------------------------------------------
         Method: setCombinedDataUnit(dataUnit)
-        Created: 23.11.2004
-        Creator: KP
+        Created: 23.11.2004, KP
         Description: Sets the processed dataunit that is to be processed.
                      It is then used to get the names of all the source data
                      units and they are added to the listbox.
                      This is overwritten from taskwindow since we
                      only process one dataunit here, not multiple
                      source data units
-        -------------------------------------------------------------
         """
         self.dataUnit=dataUnit
         name=dataUnit.getName()
@@ -455,7 +393,3 @@ class VSIAWindow(TaskWindow.TaskWindow):
         # We do it here because the timePointChanged() code requires the dataunit
         self.preview.setTimePointCallback(self.timePointChanged)
         self.updateSettings()
-
-
-
-
