@@ -95,8 +95,11 @@ class PaintPanel(wx.Panel):
         x22=x2+self.xoffset
 
         arr=None
-        self.dc.DrawLine(x12/self.scale,y12/self.scale,
-        x22/self.scale,y22/self.scale)
+        try:
+            self.dc.DrawLine(x12/self.scale,y12/self.scale,
+            x22/self.scale,y22/self.scale)
+        except:
+            print "Failed to draw line from %f/%f,%f/%f to %f/%f,%f/%f"%(x12,self.scale,y12,self.scale,x22,self.scale,y22,self.scale)
         if kws.has_key("arrow"):
             if kws["arrow"]=="HORIZONTAL":
                 lst=[(x22/self.scale-3,y22/self.scale-3),(x22/self.scale,y22/self.scale),(x22/self.scale-3,y22/self.scale+3)]            
@@ -147,7 +150,7 @@ class PaintPanel(wx.Panel):
         Created: 30.10.2004, KP
         Description: Paints the graph of the function specified by the six points
         """
-        print "Painting..."
+        #print "Painting..."
 
         #dc = wx.BufferedDC(None,self.buffer)
 
@@ -170,12 +173,12 @@ class PaintPanel(wx.Panel):
             self.createLine(0,i,255,i,'GREY',wx.LIGHT_GREY_BRUSH)
 
         for x1 in range(0,256):
-            # y1=TF[x1]
             y1 = iTF.GetValue(x1)
             # We cheat a bit here to get the line from point 
             # (maxthreshold,maxvalue) to (maxthreshold+1,0) to be straight
-            if y1==0:
-                x1-=1
+            if min(y0,y1)==0 and max(y0,y1)>0:
+                if x1>0:
+                    x1-=1
             l=self.createLine(x0,y0,x1,y1,'#00ff00')
             x0,y0=x1,y1
 
@@ -183,7 +186,7 @@ class PaintPanel(wx.Panel):
         self.createOval(x,y,2)
         
         gammaPoints=[iTF.GetGammaStart(),iTF.GetGammaEnd()]
-        if 1 and gammaPoints:
+        if 1 and gammaPoints and gammaPoints[0]>-1:
             [x0,y0],[x1,y1]=gammaPoints
             self.createOval(x0,y0,2,"GREEN")
             self.createOval(x1,y1,2,"GREEN")
@@ -209,8 +212,7 @@ class IntensityTransferEditor(wx.Panel):
     def __init__(self,parent,**kws):
         """
         Method: __init__
-        Created: 30.10.2004
-        Creator: KP
+        Created: 30.10.2004, KP
         Description: Initialization
         """
         self.parent=parent
@@ -233,12 +235,10 @@ class IntensityTransferEditor(wx.Panel):
         self.brightnessBox=wx.BoxSizer(wx.HORIZONTAL)
 
         print "Creating sliders..."
-        #self.contrastLbl=wx.StaticText(self,wx.NewId(),"%.3f"%1)
-        #self.contrastSlider=wx.Slider(self,value=0,minValue=-255,maxValue=255,size=(-1,290),
-        #style=wx.SL_VERTICAL|wx.SL_LABELS)#|wx.SL_LABELS)
-        self.contrastSlider = RangedSlider(self,value=0,size=(-1,280),style=wx.SL_VERTICAL)
-        self.contrastSlider.setRange(0,50,0.0001,1.0,5000)
-        self.contrastSlider.setRange(51,100,1.0,20.0,5000)
+        self.contrastSlider = RangedSlider(self,-1,10000,size=(-1,280),style=wx.SL_VERTICAL)
+        self.contrastSlider.setSnapPoint(1.0,0.1)
+        self.contrastSlider.setRange(0,50,0.0001,1.0)
+        self.contrastSlider.setRange(50.01,100,1.0,20.0)
         self.contrastSlider.setScaledValue(1.0)
 
         self.Bind(wx.EVT_COMMAND_SCROLL,self.setContrast,self.contrastSlider)
@@ -248,26 +248,27 @@ class IntensityTransferEditor(wx.Panel):
         self.canvasBox.Add(self.canvas,1,wx.ALL|wx.EXPAND,10)
         self.canvasBox.Add(self.contrastBox)
 
-        self.contrastEdit=wx.TextCtrl(self,-1,size=(40,-1))
+        self.contrastEdit=wx.TextCtrl(self,-1,"1.00",size=(50,-1))
         self.contrastBox.Add(self.contrastEdit)
-        #self.contrastBox.Add(self.contrastLbl)
         self.contrastBox.Add(self.contrastSlider,1,wx.TOP|wx.BOTTOM,0)
         print "Done"
 
 
-        self.brightnessEdit=wx.TextCtrl(self,-1,size=(50,-1),style=wx.TE_PROCESS_ENTER)
-        self.gammaEdit=wx.TextCtrl(self,-1,size=(50,-1),style=wx.TE_PROCESS_ENTER)
+        self.brightnessEdit=wx.TextCtrl(self,-1,"0.00",size=(70,-1),style=wx.TE_PROCESS_ENTER)
+        self.gammaEdit=wx.TextCtrl(self,-1,"1.00",size=(70,-1),style=wx.TE_PROCESS_ENTER)
 
-        self.brightnessSlider = RangedSlider(self,size=(260,-1),style=wx.SL_HORIZONTAL)
-        self.brightnessSlider.setRange(0,100,-255,255,2000)
+        self.brightnessSlider = RangedSlider(self,-1,5000,size=(260,-1),style=wx.SL_HORIZONTAL)
+        self.brightnessSlider.setRange(0,100,-255,255)
+        self.brightnessSlider.setSnapPoint(0.0,0.1)        
         self.brightnessSlider.setScaledValue(0.1)
         self.Bind(wx.EVT_COMMAND_SCROLL,self.setBrightness,self.brightnessSlider)
 
 
-        self.gammaSlider = RangedSlider(self,size=(260,-1),style=wx.SL_HORIZONTAL)
-        self.gammaSlider.setRange(0,50,0.0001,1.0,5000)
-        self.gammaSlider.setRange(51,100,1.0,15.0,5000)
+        self.gammaSlider = RangedSlider(self,-1,10000,size=(260,-1),style=wx.SL_HORIZONTAL)
+        self.gammaSlider.setRange(0,50,0.0001,1.0)
+        self.gammaSlider.setRange(50.01,100,1.0,15.0)
         self.gammaSlider.setScaledValue(1.0)
+        self.gammaSlider.setSnapPoint(1.0,0.1)        
         self.Bind(wx.EVT_COMMAND_SCROLL,self.setGamma,self.gammaSlider)
 
         self.gammaBox.Add(self.gammaSlider)
@@ -395,7 +396,7 @@ class IntensityTransferEditor(wx.Panel):
         """
         gamma=event.GetPosition()
         gammaEx = self.gammaSlider.getScaledValue()
-
+        #print "gammaEx=",gammaEx
         self.iTF.SetGamma(gammaEx)
         self.updateGraph()
         self.updateGUI()
@@ -601,9 +602,9 @@ class IntensityTransferEditor(wx.Panel):
             self.brightnessSlider.setScaledValue(brightness)
             self.gammaSlider.setScaledValue(gamma)
 
-        self.gammaEdit.SetValue("%.3f"%gamma)
-        self.brightnessEdit.SetValue("%.3f"%brightness)
-        self.contrastEdit.SetValue("%.3f"%contrast)
+        self.gammaEdit.SetValue("%.2f"%gamma)
+        self.brightnessEdit.SetValue("%.2f"%brightness)
+        self.contrastEdit.SetValue("%.2f"%contrast)
         self.guiupdate=0
 
     def updateGraph(self):

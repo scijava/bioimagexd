@@ -129,7 +129,7 @@ public:
   vtkGetMacro(Brightness,double);
   // Description:
   // Set / Get the gamma
-  vtkSetClampMacro(Gamma,double,0.0,255.00);
+  vtkSetClampMacro(Gamma,double,0.0,255.0);
   vtkGetMacro(Gamma,double);      
   // Description:
   // Get the table representing this function
