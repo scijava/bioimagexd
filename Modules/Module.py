@@ -53,11 +53,20 @@ class Module:
         self.x,self.y,self.z=0,0,0
         self.extent=None
         self.zoomFactor=1
+        self.settings=None
+    
+    def setSettings(self,settings):
+        """
+        Method: setSettings(settings)
+        Created: 27.03.2005, KP
+        Description: Sets the settings object of this module
+        """
+        self.settings=settings
         
     def setZoomFactor(self,factor):
         """
         Method: setZoomFactor(factor)
-        Created: 23.02.2004, KP
+        Created: 23.02.2005, KP
         Description: Sets the zoom factor for the produced dataset.
                      This means that the preview dataset will be zoomed with
                      the specified zoom factor
@@ -70,9 +79,8 @@ class Module:
         Created: 23.02.2004, KP
         Description: Returns the dataset zoomed with the zoom factor
         """
-        print "zooming dataset with zoom factor ",self.zoomFactor
         if self.zoomFactor != 1:
-            return ImageOperations.zoomImage(dataset,self.zoomFactor)
+            return ImageOperations.vtkZoomImage(dataset,self.zoomFactor)
         return dataset
             
     def getZoomFactor(self,factor):
@@ -93,9 +101,9 @@ class Module:
          self.extent=None
          self.x,self.y,self.z=0,0,0
 
-    def addInput(self,imageData,**kws):
+    def addInput(self,imageData):
         """
-         Method: addInput(imageData,**keywords)
+         Method: addInput(imageData)
          Created: 03.11.2004, KP
          Description: Adds an input vtkImageData dataset for the module.
         """
@@ -115,31 +123,6 @@ class Module:
         else:
             self.extent=extent
         self.images.append(imageData)
-
-    def allocateImageData(self,x,y,z):
-        """
-        Method: allocateImageData(x,y,z)
-        Created: 03.11.2004, KP
-        Description: Allocates a vtkImageData object with the given
-                     dimensions. If the resulting image should be RGB, the
-                     number of components in the object is set to 4.
-        Parameters:  x,y,z     The dimensions for the new vtkImageDataObject
-        """
-        new=vtk.vtkImageData()
-        if not self.extent:
-            raise "ERROR: No extent defined, use addInput() first"
-        new.SetExtent(self.extent)
-        if not self.x:
-            raise "ERROR: No dimensions defined, use addInput() first"
-        new.SetDimensions(self.x+1,self.y+1,self.z+1)
-        new.SetScalarTypeToUnsignedChar()
-        if self.doRGB:
-            # When we do rgb rendering, we use 4 components
-            print "Set number of scalar components to 3"
-            new.SetNumberOfScalarComponents(3)
-        new.AllocateScalars()
-        return new
-
 
     def getPreview(self,z):
         """

@@ -2,17 +2,15 @@
 """
  Unit: ColorMerging.py
  Project: Selli
- Created: 24.11.2004
- Creator: JV
+ Created: 24.11.2004, JV
  Description:
 
- Merges two (or more) 8-bit datasets to one 24-bit using the Numeric Python 
- library. Modified from ColocalizationNumpy
+ Merges two (or more) 8-bit datasets to one 24-bit using classes in the VTK
+ library.
 
  Modified:
         03.12.2004 JV - Changed ColorMergingNumpy to ColorMerging
         10.12.2004 JV - Does not do intensity mapping if function is identical
-        10.01.2005 JV -
 
  Selli includes the following persons:
  JH - Juha Hyytiäinen, juhyytia@st.jyu.fi
@@ -31,27 +29,20 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 import vtk
 import time
 from Module import *
-from Numeric import *
 
 class ColorMerging(Module):
     """
-    Class: ColorMergingNumpy
-    Created: 24.11.2004
-    Creator: JV
+    Class: ColorMerging
+    Created: 24.11.2004, JV
     Description: Merges two or more datasets to one
     """
-
-
     def __init__(self,**kws):
         """
         Method: __init__(**keywords)
-        Created: 24.11.2004
-        Creator: JV
+        Created: 24.11.2004, JV
         Description: Initialization
         """
         Module.__init__(self,**kws)
-
-        self.doRGB=True
         self.doAlpha=1
         self.extent=[]
         self.thresholds=[]
@@ -62,89 +53,63 @@ class ColorMerging(Module):
     def reset(self):
         """
         Method: reset()
-        Created: 24.11.2004
-        Creator: JV
+        Created: 24.11.2004, JV
         Description: Resets the module to initial state. This method is
                      used mainly when doing previews, when the parameters
                      that control the colocalization are changed and the
                      preview data becomes invalid.
         """
         Module.reset(self)
-        self.processedZSlices=[]
         self.preview=None
-        self.numpyarrays=[]
-        self.arrays=[]
+
         self.infos=[]
         self.intensityTransferFunctions = []
         self.rgbs=[]
+        self.alphaMode=[0,0]
+        self.n=-1
+        
 
-
-    def addInput(self,data,**kws):
+    def addInput(self,data):
         """
         Method: addInput(data,**keywords)
-        Created: 24.11.2004
-        Creator: JV
+        Created: 24.11.2004, JV
         Description: Adds an input for the color merging filter
-        Keywords:   rgb                    (red,green,blue) each in [0-255]
-                    intensityTransferList  256 values, each in [0-255]
         """
+        self.n+=1
         # ugly
+        dims=data.GetDimensions()
+        if dims[0]>512 and dims[1]>512:
+            print "Turning release data flag on"
+            data.GlobalReleaseDataFlagOn()
+            
+        rgb=self.settings.getCounted("Color",self.n)
+        self.rgbs.append(rgb)
+        self.alphaTF=self.settings.get("AlphaTransferFunction")
+        self.alphaMode=self.settings.get("AlphaMode")
+        itf=self.settings.getCounted("IntensityTransferFunction",self.n)
+        print "Got iTF=",itf
+        self.intensityTransferFunctions.append(itf)
 
-        neenedkwds = ["rgb","intensityTransferFunction","alphaTransferFunction"]
-        for neededkwd in neenedkwds:
-            if not kws.has_key(neededkwd):
-                raise "No "+neededkwd+" for color merging specified!"
-
-        self.rgbs.append(kws["rgb"])
-        self.alphaTF=kws["alphaTransferFunction"]
-        print "Got iTF=",kws["intensityTransferFunction"]
-        self.intensityTransferFunctions.append(kws["intensityTransferFunction"])
-
-        Module.addInput(self,data,**kws)
+        Module.addInput(self,data)
 
     def getPreview(self,z):
         """
         Method: getPreview(z)
-        Created: 24.11.2004
-        Creator: JV
+        Created: 24.11.2004, JV
         Description: Does a preview calculation for the x-y plane at depth z
         """
-        self.doAlpha=1
+        self.doAlpha=0
         if not self.preview:
             self.preview=self.doOperation()
         self.doAlpha=1
         return self.zoomDataset(self.preview)
 
-
     def doOperation(self):
         """
         Method: doOperation
-        Created: 24.11.2004
-        Creator: JV
+        Created: 24.11.2004, JV
         Description: Does color merging for the whole dataset
                      using doColorMergingXBit() where X is user defined
-        """
-        #if not self.arrays:
-        #    for i in self.images:
-        #        array,info=self.VTKtoNumpy(i)
-        #        print "Got array with shape ",array.shape
-        #        self.arrays.append(array)
-        #        self.infos.append(info)
-
-        if self.doRGB:
-            print "Doing 24-bit color merging"
-            return self.doColorCombination24Bit()
-        else:
-            print "Doing 8-bit color merging"
-            return self.doColorCombination8Bit()
-
-    def doColorCombination24Bit(self):
-        """
-        Method: doColorCombination8Bit()
-        Created: 24.11.2004
-        Creator: JV
-        Description: Does 8-bit color combination for the whole dataset
-                     using numeric python
         """
         t1=time.time()
         datasets=[]
@@ -152,11 +117,8 @@ class ColorMerging(Module):
 
         # Map scalars with intensity transfer list
 
-        print "We are processing %d arrays"%len(self.images)
-
         processed=[]
         imagelen=len(self.images)
-        print "Mapping through intensities"
         for i in range(0,imagelen):
             mapIntensities=vtk.vtkImageMapToIntensities()
             mapIntensities.SetIntensityTransferFunction(self.intensityTransferFunctions[i])
@@ -164,27 +126,35 @@ class ColorMerging(Module):
             mapIntensities.Update()
             data=mapIntensities.GetOutput()
             processed.append(data)
-        print "Got %d mapped datasets"%len(processed)
 
+        luminance=0
         if self.doAlpha:
             print "Creating alpha..."
             createalpha=vtk.vtkImageAlphaFilter()
-            for i in processed:
-                createalpha.AddInput(i)
-            print "Added inputs"
-            createalpha.Update()
-            alpha=createalpha.GetOutput()
-            #print "alpha=",alpha
-            print "Created alpha with dims and datatype:",alpha.GetDimensions(),alpha.GetScalarTypeAsString()
+            if self.alphaMode[0]==0:
+                print "Maximum mode"
+                createalpha.MaximumModeOn()
+            elif self.alphaMode[0]==1:
+                print "Average mode, threshold=",self.alphaMode[1]
+                createalpha.AverageModeOn()
+                createalpha.SetAverageThreshold(self.alphaMode[1])
+            else:
+                luminance=1
             
-        # Color the datasets to 24-bit datasets using VTK classes
+            if not luminance:
+                for i in processed:
+                    createalpha.AddInput(i)
+                createalpha.Update()
+                alpha=createalpha.GetOutput()
+                #print "alpha=",alpha
+                print "Created alpha with dims and datatype:",alpha.GetDimensions(),alpha.GetScalarTypeAsString()
             
+        # Color the datasets to 24-bit datasets using VTK classes            
         
         colored=[]
         for i in range(0,imagelen):
             mapToColors=vtk.vtkImageMapToColors()
             mapToColors.SetOutputFormatToRGB()
-            print "Coloring channel %d"%i
             ct=vtk.vtkColorTransferFunction()            
             r,g,b=self.rgbs[i]
             r/=255.0
@@ -204,9 +174,15 @@ class ColorMerging(Module):
             merge.AddInput(i)
         merge.Update()
         data=merge.GetOutput()
-        print "Result with dims and type",data.GetDimensions(),data.GetScalarTypeAsString()
-        print "Num of Comps:",data.GetNumberOfScalarComponents()
+        print "Result with dims and type",data.GetDimensions(),data.GetScalarTypeAsString(),"components:",data.GetNumberOfScalarComponents()
 
+        if luminance:
+            print "Using vtkImageLuminance"
+            lum=vtk.vtkImageLuminance()
+            lum.SetInput(data)
+            lum.Update()
+            alpha=lum.GetOutput()
+        
         if self.doAlpha:
             appendcomp=vtk.vtkImageAppendComponents()
             appendcomp.AddInput(data)
@@ -215,16 +191,8 @@ class ColorMerging(Module):
             data=appendcomp.GetOutput()
             print "After appending alpha, num of Comps:",data.GetNumberOfScalarComponents()
 
-        # slower again, handles overflow
-#            red   = minimum(add( red,   multiply( datasets[i], rgb[0] ) ),255)
-#            green = minimum(add( green, multiply( datasets[i], rgb[1] ) ),255)
-#            blue  = minimum(add( blue,  multiply( datasets[i], rgb[2] ) ),255)
-
-        print "Done"
         t3=time.time()
         print "Calculations took %f seconds"%(t3-t1)
         t2=time.time()
         return data
-
-
 

@@ -34,9 +34,6 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 import vtk
 import time
 from Module import *
-from Numeric import *
-
-
 
 class DataUnitProcessing(Module):
     """
@@ -48,26 +45,24 @@ class DataUnitProcessing(Module):
     def __init__(self,**kws):
         """
         Method: __init__(**keywords)
-        Created: 25.11.2004
-        Creator: KP
+        Created: 25.11.2004, KP
         Description: Initialization
         """
         Module.__init__(self,**kws)
 
         # TODO: remove attributes that already exist in base class!
-    	self.images=[]
-    	self.x,self.y,self.z=0,0,0
-    	self.extent=None
-    	self.running=0
-    	self.depth=8
+        self.images=[]
+        self.x,self.y,self.z=0,0,0
+        self.extent=None
+        self.running=0
+        self.depth=8
 
         self.reset()
 
     def reset(self):
         """
         Method: reset()
-        Created: 25.11.2004
-        Creator: KP
+        Created: 25.11.2004, KP
         Description: Resets the module to initial state. This method is
                      used mainly when doing previews, when the parameters
                      that control the colocalization are changed and the
@@ -83,37 +78,37 @@ class DataUnitProcessing(Module):
         self.solitaryY=0
         self.solitaryThreshold=0
         self.extent=None
+        self.n=-1
 
-
-    def addInput(self,data,**kws):
+    def addInput(self,data):
         """
-        Method: addInput(data,**keywords)
-        Created: 1.12.2004
-        Creator: KP,JV
+        Method: addInput(data)
+        Created: 1.12.2004, KP, JV
         Description: Adds an input for the single dataunit processing filter
         """
-        if not kws.has_key("intensityTransferFunction"):
+        Module.addInput(self,data)
+        self.n+=1
+        settings=self.settings
+        tf=settings.getCounted("IntensityTransferFunctions",self.n)
+        if not tf:            
             raise ("No Intensity Transfer Function given for Single DataUnit "
             "to be processed")
-        self.intensityTransferFunctions.append(kws["intensityTransferFunction"])
+        self.intensityTransferFunctions.append(tf)
 
-        if kws.has_key("medianNeighborhood"):
+        if settings.get("MedianFiltering"):
             self.doMedian=True
-            self.medianNeighborhood=(kws["medianNeighborhood"])
+            self.medianNeighborhood=settings.get("MedianNeighborhood")
 
-        if kws.has_key("solitaryThresholds"):
+        if settings.get("SolitaryFiltering"):
             self.doSolitary=True
-            self.solitaryX, self.solitaryY, self.solitaryThreshold = \
-            (kws["solitaryThresholds"])
-
-        Module.addInput(self,data,**kws)
-
+            self.solitaryX=settings.get("SolitaryHorizontalThreshold")
+            self.solitaryY=settings.get("SolitaryVerticalThreshold")
+            self.solitaryThreshold=settings.get("SolitaryProcessingThreshold")
 
     def getPreview(self,z):
         """
         Method: getPreview(z)
-        Created: 1.12.2004
-        Creator: KP
+        Created: 1.12.2004, KP
         Description: Does a preview calculation for the x-y plane at depth z
         """
         if not self.preview:
@@ -127,8 +122,7 @@ class DataUnitProcessing(Module):
     def doOperation(self):
         """
         Method: doOperation
-        Created: 1.12.2004
-        Creator: KP,JV
+        Created: 1.12.2004, KP, JV
         Description: Processes the dataset in specified ways
         """
         t1=time.time()
@@ -183,5 +177,4 @@ class DataUnitProcessing(Module):
         t2=time.time()
         print "Processing took %f seconds"%(t2-t1)
 
-        #data=self.NumpyToVTK(retdataset,self.infos[0])
         return data
