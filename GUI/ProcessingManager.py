@@ -27,6 +27,7 @@ import wx
 from TimepointSelection import *
 import time
 import GuiGeneration
+from Logging import *
 
 class ProcessingManager(TimepointSelection):
     """
