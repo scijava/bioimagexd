@@ -128,7 +128,7 @@ class ColocalizationPreview(PreviewFrame):
         except GUIError, ex:
             ex.show()
             return
-        if self.modeCheckbox.GetValue():
+        if self.renderingPreviewEnabled()==True:
             return self.previewInMayavi(preview,self.getColorTransferFunction(),
             renew)
 

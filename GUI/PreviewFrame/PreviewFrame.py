@@ -46,7 +46,7 @@ import RenderingInterface
 import ImageOperations
 import Slicer
 import wx
-
+import time
 from Logging import *
 from vtk.wx.wxVTKRenderWindowInteractor import *
 #from wxrenwin.wxVTKRenderWindowInteractor import *
@@ -57,22 +57,24 @@ import wx.lib.scrolledpanel as scrolled
 class PreviewFrame(wx.Panel):
     """
     Class: PreviewFrame
-    Created: 03.11.2004
-    Creator: KP
+    Created: 03.11.2004, KP
     Description: A widget that uses the wxVTKRenderWidget to display a preview
                  of operations done by a subclass of Module
     """
     def __init__(self,parent,parentwin=None,**kws):
         """
         Method: __init__(parent)
-        Created: 03.11.2004
-        Creator: KP
+        Created: 03.11.2004, KP
         Description: Initialization
         Parameters:
                master  The widget containing this preview
         """
+        wx.Panel.__init__(self,parent,-1)
         self.parent=parent
         self.zoomed=0
+        self.depthT=0
+        self.timeT=0
+        self.updateFactor = 0.001
         size=(512,512)
         self.show={}
         self.show["PIXELS"]=1
@@ -94,7 +96,7 @@ class PreviewFrame(wx.Panel):
             self.show["ZOOM"]=kws["zoom"]
         if kws.has_key("timeslider"):
             self.show["TIMESLIDER"]=kws["timeslider"]
-        wx.Panel.__init__(self,parent,-1)
+            
         
         self.dataUnit=None
         self.rgbMode=0
@@ -193,63 +195,46 @@ class PreviewFrame(wx.Panel):
         self.sizer.SetSizeHints(self)
         
     def zoomIn(self,evt):
-        pass
-    def zoomOut(self,evt):
-        pass
-        
+        """
+        Method: zoomIn()
+        Created: 21.02.2005, KP
+        Description: Sets the zoom factor to fit the image into the preview window
+        """
+        pass        
         
               
     def zoomToFit(self,evt):
-        reslice=vtk.vtkImageReslice()
-        reslice.SetInput(self.currentImage)
-        #xf=self.maxX/self.xdim
-        #yf=self.maxY/self.ydim
-        #f=min(xf,yf)
-        xf=float(self.xdim)/self.maxX
-        yf=float(self.ydim)/self.maxY
-        f=max(xf,yf)
-        transform=vtk.vtkTransform()
-        transform.Scale(f,f,1)
+        """
+        Method: zoomToFit()
+        Created: 21.02.2005, KP
+        Description: Sets the zoom factor to fit the image into the preview window
+        """
+        pass
         
-        spacing=self.currentImage.GetSpacing()
-        extent=self.currentImage.GetExtent()
-        origin=self.currentImage.GetOrigin()
-        extent=(extent[0],extent[1]/f,extent[2],extent[3]/f,extent[4],extent[5])
+    def zoomTo100(self,evt):
+        """
+        Method: zoomTo100
+        Created: 21.02.2005, KP
+        Description: Sets the zoom factor to 1
+        """
+        pass
         
         
-        spacing=(spacing[0]*f,spacing[1]*f,spacing[2])
-        reslice.SetOutputSpacing(spacing)
-        reslice.SetOutputExtent(extent)
-        
-        origin = list(origin)
-        #origin[0]=origin[0]+0
-        #origin[1]=f*origin[1]#(self.maxX-self.xdim)
-        
-        reslice.SetOutputOrigin(origin)
-        if f>1:
-            reslice.InterpolateOff()
-        else:
-            reslice.SetInterpolationModeToCubic()
-            reslice.InterpolateOn()
-        reslice.Update()
-        self.zoomed=reslice.GetOutput()
-        print "zoomed.dims=",self.zoomed.GetDimensions()
-        self.updatePreview()
-        
-    def showRenderingPreview(self):
+    def renderingPreviewEnabled(self):
+        """
+        Method: renderingPreviewEnabled()
+        Created: 21.02.2005, KP
+        Description: Returns true if the rendering preview is enabled
+        """
         if self.modeCheckbox:
             return self.modeCheckbox.GetValue()
         return 0
         
-    def zoomTo100(self,evt):
-        self.zoomed=None
-        pass
         
     def scrollRenderWidget(self,event):
         """
         Method: scrollRenderWidget(self,event)
-        Created: 24.11.2004
-        Creator: KP
+        Created: 24.11.2004, KP
         Description: Scrolls the preview according to the mouse events received
         Parameters:  event   Tkinter's Event object 
         """
@@ -340,6 +325,9 @@ class PreviewFrame(wx.Panel):
         Creator: KP
         Description: Sets the preview to display the selected z slice
         """
+        t=time.time()
+        if abs(self.depthT-t) < self.updateFactor: return
+        self.depthT=time.time()
         newz=self.zslider.GetValue()
         if self.z!=newz:
             self.z=newz
@@ -365,6 +353,10 @@ class PreviewFrame(wx.Panel):
         Creator: KP
         Description: Sets the time point displayed in the preview
         """
+        t=time.time()
+        if abs(self.timeT-t) < self.updateFactor: return
+        self.timeT=time.time()
+
         timePoint=self.timeslider.GetValue()
 #        print "Use time point %d"%timePoint
         if self.timePoint!=timePoint:

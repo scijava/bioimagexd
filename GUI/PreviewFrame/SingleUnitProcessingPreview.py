@@ -99,8 +99,7 @@ class SingleUnitProcessingPreview(PreviewFrame):
     def updateColor(self):
         """
         Method: updateColor()
-        Created: 20.11.2004
-        Creator: KP
+        Created: 20.11.2004, KP
         Description: Update the preview to use the selected color transfer 
                      function
         Parameters:
@@ -112,8 +111,7 @@ class SingleUnitProcessingPreview(PreviewFrame):
     def updatePreview(self,renew=1):
         """
         Method: updatePreview(renew=1)
-        Created: 03.11.2004
-        Creator: KP
+        Created: 03.11.2004, KP
         Description: Update the preview
         Parameters:
         renew    Whether the method should recalculate the images
@@ -134,7 +132,7 @@ class SingleUnitProcessingPreview(PreviewFrame):
             preview=self.zoomed
             print preview
         self.currentImage=preview
-        if self.showRenderingPreview():
+        if self.renderingPreviewEnabled()==True:
             return self.previewInMayavi(preview,self.getColorTransferFunction(),
             renew)
         

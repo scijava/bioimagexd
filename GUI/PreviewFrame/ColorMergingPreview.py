@@ -102,22 +102,21 @@ class ColorMergingPreview(PreviewFrame):
     def updatePreview(self,renew=1):
         """
         Method: updatePreview(renew=1)
-        Created: 03.11.2004
-        Creator: KP
+        Created: 03.11.2004, KP
         Description: Update the preview
         Parameters:
         renew    Whether the method should recalculate the images
         """
 
-    	if not self.running:
-    	    renew=1
-    	    self.running=1
+        if not self.running:
+            renew=1
+            self.running=1
         try:
             preview=self.dataUnit.doPreview(self.z,renew,self.timePoint)
         except GUIError, ex:
             ex.show()
             return
-        if self.modeCheckbox.GetValue():
+        if self.renderingPreviewEnabled()==True:
             return self.previewInMayavi(preview,None,renew)
 
     	self.mapper.SetZSlice(self.z)
