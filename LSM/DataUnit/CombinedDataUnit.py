@@ -397,6 +397,11 @@ class ColocalizationDataUnit(CombinedDataUnit):
         """
         return ColocalizationSettings
 
-        
-    
-        
+class ResliceDataUnit(CombinedDataUnit):
+    def getSettingClass(self):
+        """
+        Method: getSettingClass()
+        Created: 04.04.2005, KP
+        Description: Return the class that represents settings for this dataunit
+        """
+        return ResliceSettings

@@ -457,3 +457,24 @@ class SingleUnitProcessingSettings(DataUnitSettings):
             tf=vtk.vtkIntensityTransferFunction()
             self.setCounted("IntensityTransferFunctions",i,tf,0)
  
+class ResliceSettings(DataUnitSettings):
+    """
+    Class: ResliceSettings
+    Created: 04.04.2005, KP
+    Description: Stores settings related to reslice
+    """
+    def __init__(self,n=-1):
+        """
+        Method: __init__
+        Created: 04.04.2005, KP
+        Description: Constructor
+        """
+        DataUnitSettings.__init__(self,n)
+        self.register("ResliceXAngle")        
+        self.register("ResliceYAngle")        
+        self.register("ResliceZAngle") 
+        self.set("ResliceXAngle",0.0)
+        self.set("ResliceYAngle",0.0)
+        self.set("ResliceZAngle",90.0)
+        self.register("Color")   
+        

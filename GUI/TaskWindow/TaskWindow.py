@@ -205,6 +205,13 @@ class TaskWindow(wx.Frame):
         Description: A callback function called when the zslice is changed
         """
         pass
+    def updateTimepoint(self,event):
+        """
+        Method: updateTimepoint(event)
+        Created: 04.04.2005, KP
+        Description: A callback function called when the timepoint is changed
+        """
+        pass
         
     def getResult(self):
         """

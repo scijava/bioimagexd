@@ -3,3 +3,4 @@ import ColorMergingWindow
 import SingleUnitProcessingWindow
 import VSIAWindow
 import TaskWindow
+import ResliceWindow

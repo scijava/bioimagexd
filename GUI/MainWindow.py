@@ -58,6 +58,7 @@ import InfoWidget
 import Dialogs
 import AboutDialog
 
+import Reslice
 
 from DataUnit import *
 from DataSource import *
@@ -84,6 +85,7 @@ ID_IMPORT_IMAGES=10100
 ID_HELP=10101
 ID_SETTINGS=10110
 ID_PREFERENCES=10111
+ID_RESLICE=11000
 
 class MainWindow(wx.Frame):
     """
@@ -169,6 +171,11 @@ class MainWindow(wx.Frame):
         wx.Image(os.path.join(iconpath,"ReEdit.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Re-edit dataset series","Re-edit a dataset series")
         wx.EVT_TOOL(self,ID_REEDIT,self.menuEditDataSet)
 
+        tb.AddSimpleTool(ID_RESLICE,
+        wx.Image(os.path.join(iconpath,"Reslice.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Re-edit dataset series","Re-edit a dataset series")
+        wx.EVT_TOOL(self,ID_RESLICE,self.menuReslice)
+
+        
         tb.AddSimpleTool(ID_RENDER,
         wx.Image(os.path.join(iconpath,"Render.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Render","Render a dataset series")
         wx.EVT_TOOL(self,ID_RENDER,self.menuRender)
@@ -410,7 +417,8 @@ class MainWindow(wx.Frame):
 
         moduleToClass={DataUnitProcessing.DataUnitProcessing:CorrectedSourceDataUnit,
         Colocalization.Colocalization:ColocalizationDataUnit,
-        ColorMerging.ColorMerging:ColorMergingDataUnit}    
+        ColorMerging.ColorMerging:ColorMergingDataUnit,
+        Reslice.Reslice:ResliceDataUnit}    
 
         
         unit = moduleToClass[moduletype](name)
@@ -440,6 +448,16 @@ class MainWindow(wx.Frame):
         Colocalization.Colocalization,
         ColocalizationWindow.ColocalizationWindow,2,-1)
         
+    def menuReslice(self,evt):
+        """
+        Method: menuReslice()
+        Created: 03.11.2004, KP
+        Description: Callback function for menu item "Reslice"
+        """
+        return self.showTaskWindow("Reslice",
+        Reslice.Reslice,
+        ResliceWindow.ResliceWindow,1,1)        
+        
     def menuMergeChannels(self,evt):
         """
         Method: menuMergeChannels()
@@ -448,7 +466,7 @@ class MainWindow(wx.Frame):
         """
         return self.showTaskWindow("Color Merging",
         ColorMerging.ColorMerging,
-        ColorMergingWindow.ColorMergingWindow,2,-1)
+        ColorMergingWindow.ColorMergingWindow,1,1)
 
     def menuProcessDataUnit(self,evt):
         """
