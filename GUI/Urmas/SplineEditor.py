@@ -11,6 +11,10 @@
 
  Changes:
             10.02.2005 KP - Started integration with wxPython and Selli
+            20.03.2005 KP - Integrated the classes SplineWidget3D and SplineEditor
+                            into one. Unnecessary repetition together with minimal
+                            effort required to convert the new SplineEditor to any
+                            other GUI library give this move justification.
  
  Bugs:
       Lots of them.
@@ -50,19 +54,58 @@ import PreviewFrame
 
 
 math = vtk.vtkMath()
-
-
-class SplineWidget3D:
+            
+class SplineEditor(wx.Panel):
     """
-    This class just wraps the vtkSplineWidget.
-    """
-    
-    def __init__(self,wxrenwin):
+    Class: SplineEditor
+    Created: Heikki Uuksulainen
+    Description: A class for editing a spline
+    """           
+
+    def __init__(self, parent, width=400,height=400):
+        """
+        Method: __init__
+        Created: Heikki Uuksulainen
+        Description: Initialization
+        """           
+        wx.Panel.__init__(self,parent,size=(width,height))
+        self.sizer=wx.GridBagSizer(5,5)
+       
+        self.cameraHandles={}
+       
+        self.parent=parent
+        self.data = None
+
+        self.wxrenwin=wxVTKRenderWindowInteractor(self,-1,size=(width,height))
+
+        self.initializeVTK()
+        
+        self.sizer.Add(self.wxrenwin,(0,0),flag=wx.EXPAND|wx.ALL)
+            
+        self.SetSizer(self.sizer)
+        self.SetAutoLayout(True)
+        self.sizer.Fit(self)
+
+    def initializeVTK(self):
+        """
+        Method: initializeVTK()
+        Created: 20.03.2005, HU, KP
+        Description: Code to initialize VTK portions of this widget
+        """           
+        self.renderer = ren = vtk.vtkRenderer ()
+        self.renWin = self.wxrenwin.GetRenderWindow()
+        self.renWin.GetInteractor().SetInteractorStyle(vtk.vtkInteractorStyleTrackballCamera())
+        self.renWin.AddRenderer(ren)
+        self.renWin.Render()
+        ren.SetBackground(1.0,1.0,1.0)
+
         self.dataExtensionX = 50
         self.dataExtensionY = 50
         self.dataExtensionZ = 50
         
         self.data = None
+        self.interactionCallback=None
+        
         self.outline = vtk.vtkOutlineFilter ()
         self.outlinemapper = vtk.vtkPolyDataMapper ()
         self.outlineactor = vtk.vtkActor ()  
@@ -70,49 +113,172 @@ class SplineWidget3D:
         self.spline = False
 
         self.spline = spline = vtk.vtkSplineWidget()
+        self.spline.SetResolution(1000)
         
-        
-        self.wxrenwin = wxrenwin
-       
-        
-        self.renWin = renWin = self.wxrenwin.GetRenderWindow()
-
+        self.spline.AddObserver("EndInteractionEvent",self.endInteraction)
+                
         self.renderer=vtk.vtkRenderer()
         self.renWin.AddRenderer(self.renderer)
         ren = self.renderer
 
         if not ren:
             raise "No renderer in SplineEditor!"
-
-        self.iren = iren = renWin.GetInteractor()
+        self.iren = iren = self.renWin.GetInteractor()
         print "Initializing camera"
-        self.init_camera()
+        self.initCamera()
+    
+    def findControlPoint(self,pt):
+        """
+        Method: findControlPoint(point)
+        Created: 20.03.2005, KP
+        Description: This method returns the point that contains the given
+                     spline handle
+        """           
+        pps=self.getControlPoints()
+        return pps[pt]
         
+    def addCameraHandle(self,sp):
+        """
+        Method: addCameraHandle(sp)
+        Created: 20.03.2005, KP
+        Description: Adds a handle that can be used to control the camera
+                     position on a particular spline point
+        """           
+        if sp in self.cameraHandles:
+            return
+        cone=vtk.vtkConeSource()
         
-    def init_spline(self,points=5):
-        self.spline.SetInteractor(self.iren)        
-        self.spline.GetLineProperty().SetColor(1,0,0)
-        self.spline.SetNumberOfHandles(points)
-        for i in range(self.spline.GetNumberOfHandles()):
-            self.spline.SetHandlePosition(i,math.Random(-self.dataExtensionX,self.data_width()+self.dataExtensionX),
-                                     math.Random(-self.dataExtensionY,self.data_height()+self.dataExtensionY),
-                                     math.Random(-self.dataExtensionZ,self.data_depth()+self.dataExtensionZ))
-        self.spline.On()
+        cone.SetHeight(30.0)
+        cone.SetRadius(10.0)
+        cone.SetResolution(10)
+        
+        mapper=vtk.vtkPolyDataMapper()
+        
+        mapper.SetInput(cone.GetOutput())
+        actor = vtk.vtkActor()
+        actor.SetMapper(mapper)
+        actor.VisibilityOn()
+        box=vtk.vtkBoxWidget()
+        box.SetInteractor(self.iren)
+        box.SetPlaceFactor(1.25)
+        
+        self.renderer.AddActor(actor)
         self.render()
+        t=vtk.vtkTransform()
+        p=self.findControlPoint(sp)
+        p1=[1.1*a for a in p]
+        print "Positioning handle in ",p1,"near",p
+        t.Translate(p1)
+        #actor.SetUserTransform(t)
+        
+        box.SetTransform(t)
+        box.SetProp3D(actor)
+        box.PlaceWidget()
+        
+        text=vtk.vtkVectorText()
+        text.SetText("Camera %d"%sp)
+        textmapper=vtk.vtkPolyDataMapper()
+        textmapper.SetInput(text.GetOutput())
+        textactor=vtk.vtkFollower()
+        textactor.SetMapper(textmapper)
+        textactor.SetScale(0.1,0.1,0.1)
+        textactor.AddPosition(0,-0.1,0)
+        textactor.SetUserTransform(t)
+        
+        self.renderer.AddActor(textactor)
+        
+        lst=[actor,mapper,box,t,textmapper,textactor,text]
+        box.AddObserver("InteractionEvent",self.transformCameraHandle)
+        box.On()
+        box.OutlineFaceWiresOff()
+        box.HandlesOff()
+        box.OutlineCursorWiresOff()
+        #box.ScalingEnabledOff()
+        op = box.GetOutlineProperty()
+        op.SetRepresentationToWireframe()
+        op.SetLineWidth(0)
+        self.cameraHandles[sp]=lst
+        self.text=textactor
+        
+    def transformCameraHandle(self,obj,event):
+        print "Transform camera handle"
+        t=vtk.vtkTransform()
+        obj.GetTransform(t)
+        obj.GetProp3D().SetUserTransform(t)
+        self.text.SetUserTransform(t)
+        
+    def setInteractionCallback(self,cb):
+        """
+        Method: setInteractionCallback
+        Created: 19.03.2005, KP
+        Description: Method to set a callback that is called when an interaction
+                     with the spline ends
+        """           
+        self.interactionCallback=cb
+        
+    def getSplineLength(self,ip0=0,ip1=0):
+        """
+        Method: getSplineLength(point1,point2)
+        Created: 19.03.2005, KP
+        Description: Method that returns the length of the spline between
+                     the given two points. If no points are given, the total
+                     length of the spline is returned.
+        """        
+        if not (ip0 or ip1):
+            return self.spline.GetSummedLength()
+        
+        points = self.getPoints()
+        n=points.GetNumberOfPoints()
+        pps=self.getControlPoints()
 
-    def update_data(self,data):
+        p0,p1=pps[ip0],pps[ip1]
+        pp0,pp1=-1,-1
+        d0,d1=2**64,2**64
+        
+        for i in range(n):
+            p=points.GetPoint(i)
+            d=vtk.vtkMath.Distance2BetweenPoints(p,p0)
+            if d<d0:
+                d0,pp0=d,i
+            d=vtk.vtkMath.Distance2BetweenPoints(p,p1)
+            if d<d1:                
+                d1,pp1=d,i
+        d=0
+        if pp0<0 or pp1<0:
+            raise "Did not find point"
+            
+        p0=points.GetPoint(pp0)
+        p1=points.GetPoint(pp1)
+        sd=vtk.vtkMath.Distance2BetweenPoints(p0,p1)
+        #print "Calculating distance from ",pp0,"to",pp1
+        for x in range(pp0+1,pp1+1):
+            p1=points.GetPoint(x)
+            d+=vtk.vtkMath.Distance2BetweenPoints(p0,p1)
+            p0=p1
+        #print "Distance",d,", straight distance",sd
+        return d
+        
+    def updateData(self,data):
+        """
+        Method: updateData(data)
+        Created: Heikki Uuksulainen
+        Description: Method that initializes the VTK rendering based
+                     on a dataset
+        """        
+    
         print "Updating data..."
         if self.data:
             del self.data
 
         self.data = data
+        
         self.outline.SetInput(self.data)
         self.outlinemapper.SetInput (self.outline.GetOutput ())
         self.outlineactor.SetMapper (self.outlinemapper)
-        #self.outlineactor.GetProperty ().SetColor (*Common.config.fg_color)
         self.outlineactor.GetProperty().SetColor((255,255,255))
+        
         self.renderer.AddActor(self.outlineactor)
-
+        
         txt = ("X", "Y", "Z")
         for t in txt:
                 eval ("self.axes.%sAxisVisibilityOn ()"%t)
@@ -120,7 +286,6 @@ class SplineWidget3D:
                 #eval ("self.axes.Get%sAxisActor2D().SetPoint1(0.0,0.0)"%(txt[i]))
                 eval ("self.axes.Get%sAxisActor2D().SetLabelFactor(0.5)"%t)
 
-        #self.axes.GetProperty ().SetColor (*Common.config.fg_color)
         self.axes.GetProperty ().SetColor ((255,255,255))
         self.axes.SetNumberOfLabels (2)
         self.axes.SetFontFactor (1.0)
@@ -135,176 +300,193 @@ class SplineWidget3D:
         #    self.axes.GetAxisLabelTextProperty().ShadowOff()
         #else:
         #    self.axes.ShadowOff ()
+        
         self.renderer.AddActor (self.axes)
         self.axes.SetInput (self.outline.GetOutput ())
+        
         #print "Axes actor inertia: %d"%(self.axes.GetInertia())
 
-        #self.init_camera()
-
-        #self.init_spline()
-
-        #self.rendererder()
-
-        #iren.Initialize()
-        #renWin.Render()
-        #iren.Start()
-
-    def render(self):
         self.renderer.Render()
 
-    def get_number_of_points(self):
-        data = vtk.vtkPolyData()
-        self.spline.GetPolyData(data)
-        return data.GetNumberPoints()        
+    def getCamera(self):
+        """
+        Method: getCamera()
+        Created: Heikki Uuksulainen
+        Description: If there's a currently active camera, returns it
+        """        
+        cam = None
+        if self.renderer:
+            cam = self.renderer.GetActiveCamera()
+        return cam
 
-    def get_points(self):
+    def getPoints(self):
+        """
+        Method: getPoints()
+        Created: Heikki Uuksulainen
+        Description: Returns the points of the polygon forming the spline
+        """        
         data = vtk.vtkPolyData()
         self.spline.GetPolyData(data)
         return data
 
-    def get_control_points(self):
+    def initSpline(self,points):
+        """
+        Method: initSpline(number_of_points)
+        Created: Heikki Uuksulainen
+        Description: Creates a random spline with given amount of points
+        """        
+        self.spline.SetInteractor(self.iren)        
+        self.spline.GetLineProperty().SetColor(1,0,0)
+        self.spline.SetNumberOfHandles(points)
+        for i in range(self.spline.GetNumberOfHandles()):
+            self.spline.SetHandlePosition(i,math.Random(-self.dataExtensionX,self.dataWidth()+self.dataExtensionX),
+                                     math.Random(-self.dataExtensionY,self.dataHeight()+self.dataExtensionY),
+                                     math.Random(-self.dataExtensionZ,self.dataDepth()+self.dataExtensionZ))
+        self.spline.On()
+        
+        self.renderer.Render()
+
+    def initCamera(self):
+        """
+        Method: initCamera()
+        Created: Heikki Uuksulainen
+        Description: Initializes the camera
+        """        
+        cam = self.getCamera()
+        if cam:
+            focal = self.getCameraFocalPointCenter()
+            cam.SetFocalPoint(focal)
+            cam.SetPosition(self.getInitialCameraPosition())
+            cam.ComputeViewPlaneNormal()
+        else:
+            print "No camera in SplineEditor"
+
+    def getInitialCameraPosition(self):
+        """
+        Method: getInitialCameraPosition()
+        Created: Heikki Uuksulainen
+        Description: Returns an initial position for the camera
+        """        
+        if not self.data:
+            return [0,0,0]
+        dims = self.data.GetDimensions()
+        return 1.5*dims[0],0.5*dims[1],100.0*dims[2]
+        
+    def getCameraFocalPointCenter(self):
+        """
+        Method: getCameraFocalPointCenter()
+        Created: Heikki Uuksulainen
+        Description: Returns the center of the current dataset
+        """        
+    
+        if not self.data:
+            return [0,0,0]
+        return self.data.GetCenter()
+            
+            
+    def getControlPoints(self):
+        """
+        Method: getControlPoints
+        Created: Heikki Uuksulainen
+        Description: Returns the points for the handles of the widget
+        """        
         points = []
         for i in range(self.spline.GetNumberOfHandles()):
             points.append(self.spline.GetHandlePosition(i))
             
         return points
 
-    def is_active(self):
+    def isActive(self):
+        """
+        Method: isActive()
+        Created: Heikki Uuksulainen
+        Description: A method that tells whether the spline is enabled or not
+        """            
         return self.spline.GetEnabled()
 
-    def get_camera(self):
-        cam = None
-        if self.renderer:
-            cam = self.renderer.GetActiveCamera()
-        return cam
-
-    def init_camera(self):
-        cam = self.get_camera()
-        if cam:
-            focal = self.get_camera_focal_point_center()
-            cam.SetFocalPoint(focal)
-            cam.SetPosition(self.get_initial_camera_position())
-            cam.ComputeViewPlaneNormal()
-        else:
-            print "No camera in SplineWidget3D"
-
-
-    def get_initial_camera_position(self):
-        if not self.data:
-            return [0,0,0]
-        dims = self.data.GetDimensions()
-        return 1.5*dims[0],0.5*dims[1],100.0*dims[2]
-        
-    def get_camera_focal_point_center(self):
-        if not self.data:
-            return [0,0,0]
-        return self.data.GetCenter()
-
-    def data_width(self):
+    def dataWidth(self):
+        """
+        Method: dataWidth()
+        Created: Heikki Uuksulainen
+        Description: Returns the width of the data
+        """       
         if not self.data:
             return 0
         return (self.data.GetDimensions())[0]
 
-    def data_height(self):
+    def dataHeight(self):
+        """
+        Method: dataHeight
+        Created: Heikki Uuksulainen
+        Description: Returns the height of the data
+        """       
         if not self.data:
             return 0
         return (self.data.GetDimensions())[1]
 
-    def data_depth(self):
+    def dataDepth(self):
+        """
+        Method: dataDepth
+        Created: Heikki Uuksulainen
+        Description: Returns the depth of the data
+        """           
         if not self.data:
             return 0
         return (self.data.GetDimensions())[2]
     
-    def data_dimensions(self):
+    def dataDimensions(self):
+        """
+        Method: dataDimensions()
+        Created: Heikki Uuksulainen
+        Description: Returns the dimensions of the data
+        """           
         return self.data.GetDimensions()
 
-    def __del__(self):
-        print "In SplineWidget3D.__del__()"        
-        del self.renWin
-
-
-class SplineEditor(wx.Panel):
-    """
-    Creates the window for spline.
-    """
-
-    def __init__(self, parent, width=400,height=400):
-        wx.Panel.__init__(self,parent,size=(width,height))
-        self.sizer=wx.GridBagSizer(5,5)
-       
-        self.parent=parent
-        self.data = None
-
-
-        #self.wxrenwin=wxVTKRenderWindowInteractor(self,-1,size=(width,height))
-        self.wxrenwin=wxVTKRenderWindowInteractor(self,-1,size=(width,height))
-        self.renderer = ren = vtk.vtkRenderer ()
-        self.renWin = self.wxrenwin.GetRenderWindow()
-        self.renWin.GetInteractor().SetInteractorStyle(vtk.vtkInteractorStyleTrackballCamera())
-        self.renWin.AddRenderer(ren)
-        self.renWin.Render()
-        self.sizer.Add(self.wxrenwin,(0,0),flag=wx.EXPAND|wx.ALL)
-
-        ren.SetBackground(1.0,1.0,1.0)
-
-        self.splinew = SplineWidget3D(self.wxrenwin)
-        
-        self.SetSizer(self.sizer)
-        self.SetAutoLayout(True)
-        self.sizer.Fit(self)
-
-
-    def __del__(self):
-        print "SplineEditor.__del__()"
-        
-    def  update_data(self,data):
-        if self.data:
-            del self.data
-        self.data = data
-        self.splinew.update_data(self.data)
-
-    def render(self):
-        self.splinew.render()
-
-    def get_camera(self):
-        return self.splinew.get_camera()
-
-    def get_points(self):
-        return self.splinew.get_points()
-
-
-    def init_spline(self,num_of_points):
-        self.splinew.init_spline(num_of_points)
-
-    def init_camera(self):
-        self.splinew.init_camera()
-
-    def get_control_points(self):
-        return self.splinew.get_control_points()
-
-
-    def is_active(self):
-        return self.splinew.is_active()
-
-    def data_width(self):
-        if not self.data:
-            return 0
-        return (self.data.GetDimensions())[0]
-
-    def data_height(self):
-        if not self.data:
-            return 0
-        return (self.data.GetDimensions())[1]
-
-    def data_depth(self):
-        if not self.data:
-            return 0
-        return (self.data.GetDimensions())[2]
+    def getNumberOfPoints(self):
+        """
+        Method: getNumberOfPoints
+        Created: Heikki Uuksulainen
+        Description: Returns the number of points in the polygon that forms
+                     the spline
+        """           
+        data = vtk.vtkPolyData()
+        self.spline.GetPolyData(data)
+        return data.GetNumberPoints()        
 
     def quit(self):
-        print "In SplineEditor.quit()"
+        """
+        Method: quit
+        Created: Heikki Uuksulainen
+        Description: Destructs necessary objects upon quitting
+        """           
+        pass
         #del self.renWin
         #del self.renderer
         #self.tkwidget.destroy()
         #del self.tkwidget
         
+    def endInteraction(self,event=-1,e2=-1):
+        """
+        Method: endInteraction()
+        Created: 19.03.2005, KP
+        Description: Method called when user manipulates the spline and then 
+                     lets the mouse button up. Used to call a callback.
+        """               
+        if self.interactionCallback:
+            self.interactionCallback()
+
+    def __del__(self):     
+        """
+        Method: __del__()
+        Created: Heikki Uuksulainen
+        Description: Destructs renderwindow
+        """           
+        del self.renWin
+
+    def render(self):
+        """
+        Method: render()
+        Created: Heikki Uuksulainen
+        Description: Render the widget
+        """           
+        self.renderer.Render()

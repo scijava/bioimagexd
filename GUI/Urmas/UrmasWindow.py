@@ -76,7 +76,10 @@ class UrmasWindow(wx.wizard.Wizard):
         self.videogeneration=VideoGeneration.VideoGeneration(self)
         
         makeChain(self.timepointSelection,self.timelinePanel,self.videogeneration)
+        self.timepointSelection.SetSize(self.timelinePanel.GetSize())
         self.FitToPage(self.timelinePanel)
+        self.timelinePanel.Show(0)
+        #self.FitToPage(self.timepointSelection)
     
     def startWizard(self):
         """

@@ -36,6 +36,7 @@ import wx.lib.masked as masked
 import wx.wizard
 
 from Track import *
+from TimeScale import *
 
 import PreviewFrame
 import Animator
@@ -48,15 +49,19 @@ import operator
 class Timeline(scrolled.ScrolledPanel):
     """
     Class: Timeline
-    Created: 04.02.2005
-    Creator: KP
+    Created: 04.02.2005, KP
     Description: Class representing the timeline with different "tracks"
     """    
     def __init__(self,parent,control,**kws):
-        height=200
+        """
+        Method: __init__
+        Created: 04.02.2005, KP
+        Description: Initialize
+        """
+        height=250
         width=640
-        if kws.has_key("width"):
-            width=kws["width"]
+        #if kws.has_key("width"):
+        #    width=kws["width"]
         scrolled.ScrolledPanel.__init__(self,parent,-1,size=(width,height))
         self.control = control
         control.setTimeline(self)
@@ -67,8 +72,10 @@ class Timeline(scrolled.ScrolledPanel):
         self.timeScale.setDisabled(1)
         self.splinepoints=None
         self.sizer.Add(self.timeScale,(0,0))
+        self.Unbind(wx.EVT_CHILD_FOCUS)
 
-        self.timepoints=Track("Time Points",self,number=1,timescale=self.timeScale)
+        self.timepoints=Track("Time Points",
+        self,number=1,timescale=self.timeScale,control=self.control)
         
         self.timeScale.setOffset(self.timepoints.getLabelWidth())
         
@@ -84,148 +91,100 @@ class Timeline(scrolled.ScrolledPanel):
         self.SetSizer(self.sizer)
         self.SetAutoLayout(1)
         self.SetupScrolling()
+        #self.SetVirtualSize((w,h))
+        #self.SetScrollbars(20,0,500,0)
         self.sizer.Fit(self)
         self.timepoints.setItemAmount(1)
 
     def setDisabled(self,flag):
+        """
+        Method: setDisabled(mode)
+        Created: 04.02.2005, KP
+        Description: Disables / Enables this timeline
+        """
         self.timeScale.setDisabled(flag)
-        
+
     def setAnimationMode(self,flag):
+        """
+        Method: setAnimationMode(mode)
+        Created: 04.02.2005, KP
+        Description: Sets animation mode on or off. This affects the spline points
+                     track.
+        """
         if flag:
-            self.splinepoints=Track("Spline Points",self,number=1,timescale=self.timeScale)
+            self.splinepoints=Track("Spline Points",
+                self,number=1,height=50,timescale=self.timeScale,item=SplinePoint,
+                control=self.control)
+            self.control.setSplineInteractionCallback(self.splinepoints.updateLabels)
             self.splinepoints.setColor((248,196,56))
-            self.setSplinePoints(7)
+            #self.setSplinePoints(7)
             self.sizer.Add(self.splinepoints,(3,0),flag=wx.EXPAND|wx.ALL)
         else:
             if self.splinepoints:
                 self.sizer.Show(self.splinepoints,0)
                 self.sizer.Detach(self.splinepoints)
+                self.control.setSplineInteractionCallback(None)
                 del self.splinepoints
                 self.splinepoints=None
         self.Layout()
-        self.sizer.Fit(self)
+        self.sizer.Fit(self)#self.SetScrollbars(20,0,tx/20,0)
 
     def setSplinePoints(self,n):
+        """
+        Method: setSplinePoints(n)
+        Created: 04.02.2005, KP
+        Description: Set the amount of spline points
+        """    
         self.splinepoints.setItemAmount(n)
         
     def setDataUnit(self,dataUnit):
+        """
+        Method: setDataUnit(dataunit)
+        Created: 04.02.2005, KP
+        Description: Sets the dataunit on this timeline
+        """
         self.dataUnit=dataUnit
         self.timepoints.setDataUnit(dataUnit)
         self.timepoints.showThumbnail(True)
         self.timepoints.setItemAmount(self.dataUnit.getLength())
 
         
+    def reconfigureTimeline(self):
+        """
+        Method: reconfigureTimeline()
+        Created: 19.03.2005, KP
+        Description: Method to reconfigure items on timeline with
+                     the same duration and frame amount
+        """    
+        self.configureTimeline(self.seconds,self.frames)
+        
+    def getDuration(self):
+        """
+        Method: getDuration()
+        Created: 20.03.2005, KP
+        Description: Returns the duration of this timeline
+        """
+        return self.seconds
+    
+        
     def configureTimeline(self,seconds,frames):
+        """
+        Method: configureTimeline(seconds,frames)
+        Created: 04.02.2005, KP
+        Description: Method that sets the duration of the timeline to
+                     given amount of seconds, and the frame amount to
+                     given amount of frames
+        """
+    
+        self.seconds = seconds
+        self.frames = frames
         print "Configuring frame amount to ",frames
         frameWidth=(seconds*self.timeScale.getPixelsPerSecond())/float(frames)
         print "frame width=",frameWidth
         self.timeScale.setDuration(seconds)
+        tx,ty=self.timeScale.GetSize()
+        self.Layout()
         for i in [self.timepoints,self.splinepoints]:
             if i:
                 i.setDuration(seconds,frames)
         
-class TimeScale(wx.Panel):
-    """
-    Class: TimeScale
-    Created: 04.02.2005
-    Creator: KP
-    Description: Shows a time scale of specified length
-    """
-    def __init__(self,parent):
-        wx.Panel.__init__(self,parent,-1,style=wx.RAISED_BORDER)
-        self.Bind(wx.EVT_PAINT,self.onPaint)
-        self.bgcolor=(255,255,255)
-        self.fgcolor=(0,0,0)
-        
-        self.perSecond=24
-        self.xOffset=15
-        self.yOffset=6
-        
-    def setDisabled(self,flag):
-        if not flag:
-            self.Enable(True)
-            self.fgcolor=(0,0,0)
-            self.bgcolor=(255,255,255)
-        else:
-            self.Enable(False)
-#            col=self.GetForegroundColour()
-#            r,g,b=col.Red(),col.Green(),col.Blue()
-#            self.fgcolor=(r,g,b)
-            self.fgcolor=(127,127,127)
-            col=self.GetBackgroundColour()
-            r,g,b=col.Red(),col.Green(),col.Blue()
-            self.bgcolor=(r,g,b)
-        self.setDuration(self.seconds)
-            
-    def setOffset(self,x):
-        self.xOffset=x
-        self.paintScale()
-        
-    def setPixelsPerSecond(self,x):
-        self.perSecond=x
-        print "pixels per second=",x
-        
-    def getPixelsPerSecond(self):
-        return self.perSecond
-    
-    def setDuration(self,seconds):
-        self.seconds=seconds
-        self.width=self.perSecond*seconds+2*self.xOffset
-        self.height=20+self.yOffset
-        self.SetSize((self.width+10,self.height))
-        print "Set Size to %d,%d"%(self.width+10,self.height+10)
-        self.buffer=wx.EmptyBitmap(self.width,self.height)
-        dc = wx.BufferedDC(None,self.buffer)
-        #col=self.GetBackgroundColour()
-        r,g,b=self.bgcolor
-        col=wx.Colour(r,g,b)
-        dc.SetBackground(wx.Brush(col))
-        dc.Clear()
-        self.dc=dc
-        self.paintScale()
-    
-    def paintScale(self):
-        self.dc.Clear()
-        self.dc.BeginDrawing()
-
-        # draw the horizontal line
-        #self.dc.DrawLine(self.xOffset,0,self.xOffset+self.seconds*self.perSecond,0)
-        #self.dc.DrawLine(self.xOffset,self.height-1,self.xOffset+self.seconds*self.perSecond,self.height-1)
-
-        #self.dc.SetTextForeground(color)        
-        self.dc.SetFont(wx.Font(8,wx.SWISS,wx.NORMAL,wx.NORMAL))
-        # and the tick marks and times
-        self.dc.DrawLine(self.xOffset,0,self.width,0)
-        r,g,b=self.fgcolor
-        self.dc.SetPen(wx.Pen((r,g,b)))
-        for i in range(0,self.seconds+1):
-            x=i*self.perSecond+self.xOffset
-            y=10+self.yOffset
-            if not i%10:
-                h=int(i/3600)
-                m=int(i/60)
-                s=int(i%60)
-                timeString=""
-                if 1 or h:
-                    timeString="%.2d:"%h
-                timeString+="%.2d:%.2d"%(m,s)
-                tw,th=self.dc.GetTextExtent(timeString)
-                self.dc.SetTextForeground((r,g,b))
-
-                self.dc.DrawText(timeString,x-(tw/2),self.height/4)    
-            if not i%30:
-                d=4
-            elif not i%10:
-                d=4
-            else:
-                d=2
-            if d:
-                self.dc.DrawLine(x,-1,x,d)
-                self.dc.DrawLine(x,self.height-d-4,x,self.height)
-        self.dc.EndDrawing()
-      
-    
-    def onPaint(self,event):
-        dc=wx.BufferedPaintDC(self,self.buffer)     
-        
-   

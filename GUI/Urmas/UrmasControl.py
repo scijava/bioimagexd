@@ -45,6 +45,23 @@ class UrmasControl:
     """
     def __init__(self,window):
         self.window = window
+        self.splineEditor = None
+        
+    def getDuration(self):
+        """
+        Method: getDuration()
+        Created: 20.03.2005, KP
+        Description: Return the duration of the timeline
+        """    
+        return self.timeline.getDuration()
+        
+    def getPixelsPerSecond(self):
+        """
+        Method: getPixelsPerSecond()
+        Created: 20.03.2005, KP
+        Description: Return how many pixels there are per second on the timescale
+        """    
+        return self.timeline.timeScale.getPixelsPerSecond()
 
     def setAnimator(self,animator):
         self.animator = animator
@@ -68,8 +85,21 @@ class UrmasControl:
         self.timelinePanel.Layout()
         self.window.Layout()
         
+    def setSplinePoints(self,n):
+        self.timeline.setSplinePoints(n)
+        self.splineEditor.init_spline(n+1)
+        
     def setAnimationMode(self,mode):
-        self.window.showAnimator(mode)
+        """
+        Method: setAnimationMode()
+        Created: 12.03.2005, KP
+        Description: Method used to either show or hide the animator
+        """        
+        #self.window.showAnimator(mode)
+        self.timeline.setAnimationMode(mode)
+        if mode:
+            self.timeline.setSplinePoints(self.timelineConfig.getSplinePoints())
+            self.timeline.reconfigureTimeline()
         self.updateLayouts()
         
     def setTimeline(self,timeline):
@@ -78,7 +108,34 @@ class UrmasControl:
     def setTimelineConfig(self,config):
         self.timelineConfig=config
         
+    def setSplineInteractionCallback(self,cb):
+        """
+        Method: setSplineInteractionCallback
+        Created: 19.03.2005, KP
+        Description: Method to set a callback that is called when interaction
+                     with the spline editor ends
+        """        
+        self.splineEditor.setInteractionCallback(cb)
+    
+        
     def configureTimeline(self,seconds,frames):
         print "Calling timeline.configureTimeline(",seconds,",",frames,")"
         self.timeline.configureTimeline(seconds,frames)
         self.updateLayouts()
+
+    def setSplineEditor(self,spe):
+        """
+        Method: setSplineEditor
+        Created: 19.03.2005, KP
+        Description: Method used to set the spline editor
+        """        
+        self.splineEditor = spe
+    
+        
+    def getSplineLength(self,point):
+        """
+        Method: setAnimationMode()
+        Created: 19.03.2005, KP
+        Description: Method that returns the total length of the spline
+        """        
+        return self.splineEditor.getSplineLength(point,point+1)

@@ -74,6 +74,7 @@ class AnimatorPanel(wx.Panel):
         
         self.splineEditor=SplineEditor.SplineEditor(self)
         self.animator=MayaViAnimator(self,self.splineEditor)        
+        self.control.setSplineEditor(self.splineEditor)
         
         self.sizer.Add(self.splineEditor,(0,0))
         
@@ -104,15 +105,6 @@ class MayaViAnimator:
         self.controlPoints=7
         self.type="png"
         
-        
-    def show_message(self,msg):
-        """
-        Method: __init__
-        Created: 10.2.2005, KP
-        Description: Show a message using the BioImageXD dialogs
-        """                
-        Dialogs.showmessage(self,msg,"MayaVi Animator Message")
-
     def make_animation(self):
         """
         Method: make_animation()
@@ -131,11 +123,7 @@ class MayaViAnimator:
         if self.renderingInterface.isMayaViModuleLoaded() == False:
             Dialogs.showwarning(self,"You must specify some module to MayaVi first!","Oops!")
             return
-
- #       if self.gui.get_frames_per_timepoint() == 0:
- #           Dialogs.showwarning(self,"Frames per time point must be posivive integer!","Oops!")
- #           return
-                
+            
         if not ren:
             Dialogs.showwarning(self,"No renderer in main render window!! This should not be possible!","Oops!")
             return
@@ -146,7 +134,7 @@ class MayaViAnimator:
         
                 
         self.setRenderingStatus("Starting rendering")
-        points = self.splineEditor.get_points() # vtkPolyData
+        points = self.splineEditor.getPoints() # vtkPolyData
         cam = ren.GetActiveCamera()
         step_size = points.GetNumberOfPoints()/numFrames
         t=0
@@ -165,7 +153,7 @@ class MayaViAnimator:
     def setCameraParams(self,ren,cam,i,points,step_size):
         """
         Method: setCameraParams(renderer, camera, frameNumber, numberOfPoints, stepSize)
-        Created: n/a, HU
+        Created: Heikki Uuksulainen
         Description:  Camera location must be set for each rendered frame. If the
                       spline curve in the spline editor is active, then the
                       position will be calculated related to the step
@@ -182,8 +170,8 @@ class MayaViAnimator:
         focal = self.renderingInterace.getCenter()
         cam.SetFocalPoint(focal)
         position = points.GetPoint(i*step_size)
-        if not self.splineEditor.is_active():
-            position = self.splineEditor.get_camera().GetPosition()
+        if not self.splineEditor.isActive():
+            position = self.splineEditor.getCamera().GetPosition()
         cam.SetPosition(position)
         #cam.SetViewUp(self.splineEditor.get_camera().GetViewUp())
         cam.SetViewUp((0,0,1))
@@ -201,23 +189,13 @@ class MayaViAnimator:
         self.renderingInterface.render()         
         
     def initData(self):          
-        self.splineEditor.update_data(self.renderingInterface.getCurrentData())
-        self.splineEditor.init_spline(self.controlPoints)
-        #self.init_spline_camera()
-        self.splineEditor.init_camera()
+        self.splineEditor.updateData(self.renderingInterface.getCurrentData())
+        self.splineEditor.initSpline(self.controlPoints)
+        self.splineEditor.initCamera()
             
         self.splineEditor.render()
 
     def __del__(self):
-        debug ("In Animator::__del__ ()")
-        print "Animator.__del__()"
-        self.quit()
-        
-    def quit (self, event=None):
-        print "Animator.guit()"
-        debug ("In Animator::quit ()")
         del self.splineEditor
-        #self.splineEditor = None
-        #self.splineEditor.quit()
 
 

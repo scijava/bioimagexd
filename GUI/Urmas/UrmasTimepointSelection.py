@@ -42,7 +42,15 @@ class UrmasTimepointSelection(wx.wizard.PyWizardPage):
     """     
     def __init__(self,parent):
         wx.wizard.PyWizardPage.__init__(self,parent)
+        self.sizer=wx.GridBagSizer()
+        
         self.timepointSelection=TimepointSelection.TimepointSelectionPanel(self)
+        
+        self.sizer.Add(self.timepointSelection,(0,0))
+        
+        self.SetSizer(self.sizer)
+        self.SetAutoLayout(1)
+        self.sizer.Fit(self)
         
     def GetNext(self):
         """

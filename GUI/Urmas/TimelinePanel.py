@@ -137,7 +137,14 @@ class TimelineConfig(wx.Panel):
         self.useSettings()
         
     def updateControlPoints(self,event):
-        pass
+        self.control.setSplinePoints(self.getSplinePoints())
+            
+    def getSplinePoints(self):
+        try:
+            n=int(self.controlPoints.GetValue())
+            return n
+        except:
+            return 0
         
     def updateAnimation(self,event):
         flag = self.animateCheckbox.GetValue()
@@ -204,8 +211,7 @@ class TimelineConfig(wx.Panel):
 class TimelinePanel(wx.wizard.PyWizardPage):
     """
     Class: TimelinePanel
-    Created: 04.02.2005
-    Creator: KP
+    Created: 04.02.2005, KP
     Description: Contains the timescale and the different "tracks"
     """    
     def __init__(self,parent,control):
