@@ -49,7 +49,7 @@ import wx
 import time
 from Logging import *
 from vtk.wx.wxVTKRenderWindowInteractor import *
-#from wxrenwin.wxVTKRenderWindowInteractor import *
+
 import vtk
 import wx.lib.scrolledpanel as scrolled
 
@@ -71,7 +71,6 @@ class PreviewFrame(wx.Panel):
         """
         wx.Panel.__init__(self,parent,-1)
         self.parent=parent
-        self.zoomed=0
         self.depthT=0
         self.timeT=0
         self.updateFactor = 0.001
@@ -200,8 +199,9 @@ class PreviewFrame(wx.Panel):
         Created: 21.02.2005, KP
         Description: Sets the zoom factor to fit the image into the preview window
         """
-        pass        
-        
+        self.dataUnit.setZoomFactor(1.2*self.dataUnit.getZoomFactor())
+        print "Set zoom factor ",self.dataUnit.getZoomFactor()
+        self.updatePreview(1)
               
     def zoomToFit(self,evt):
         """
@@ -209,7 +209,13 @@ class PreviewFrame(wx.Panel):
         Created: 21.02.2005, KP
         Description: Sets the zoom factor to fit the image into the preview window
         """
-        pass
+        w,h=self.wxrenwin.GetSize()
+        print "w,h=",w,h
+        print "maxx,maxy=",self.maxX,self.maxY
+        zf=ImageOperations.getZoomFactor(self.maxX,self.maxY,w,h)
+        print "Setting zoom factor",zf
+        self.dataUnit.setZoomFactor(zf)
+        self.updatePreview(1)
         
     def zoomTo100(self,evt):
         """
@@ -217,7 +223,8 @@ class PreviewFrame(wx.Panel):
         Created: 21.02.2005, KP
         Description: Sets the zoom factor to 1
         """
-        pass
+        self.dataUnit.setZoomFactor(1.0)
+        self.updatePreview(1)
         
         
     def renderingPreviewEnabled(self):

@@ -127,10 +127,6 @@ class SingleUnitProcessingPreview(PreviewFrame):
             return
         if not preview:
             raise "Did not get a preview"
-        if self.zoomed:
-            print "Using zoomed"
-            preview=self.zoomed
-            print preview
         self.currentImage=preview
         if self.renderingPreviewEnabled()==True:
             return self.previewInMayavi(preview,self.getColorTransferFunction(),
@@ -146,9 +142,8 @@ class SingleUnitProcessingPreview(PreviewFrame):
         colorImage.SetUpdateExtent(preview.GetExtent())
         x,y,z=preview.GetDimensions()
         if x!=self.xdim or y!=self.ydim:
-            print "Resizing renderwindow to ",(x,y)
+            print "Resizing renderwindow to fit zoomed",(x,y)
             self.renwin.SetSize((x,y))
-            #self.wxrenwin.SetSize((x,y))
             
         self.mapToColors.Update()
         print "Done"
