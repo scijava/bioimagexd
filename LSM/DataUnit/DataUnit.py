@@ -42,10 +42,6 @@ __author__ = "Selli Project <http://sovellusprojektit.it.jyu.fi/selli/>"
 __version__ = "$Revision: 1.93 $"
 __date__ = "$Date: 2005/01/13 14:09:15 $"
 
-import Interpolation
-
-
-import DataUnitProcessing
 import Logging
 
 class DataUnit:
@@ -95,6 +91,7 @@ class DataUnit:
         Created: 27.03.2005, KP
         Description: Sets the settings object of this dataunit
         """
+        print "Setting settings to ",repr(settings)
         self.settings = settings
         self.updateSettings()
     

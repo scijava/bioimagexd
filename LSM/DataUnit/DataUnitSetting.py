@@ -54,6 +54,9 @@ class DataUnitSettings:
         self.counted={}
         self.registered={}
         self.type=None
+        self.dataunit = None
+        self.channels = 0
+        self.timepoints = 0
         if kws.has_key("type"):
             self.setType(kws["type"])
         self.n=n
@@ -66,6 +69,18 @@ class DataUnitSettings:
         self.register("Dimensions")
         self.register("Type")
         self.register("Name")
+        
+    def asType(self,type):
+        """
+        Method: asType(type)
+        Created: 3.04.2005
+        Description: Return this setting as given type
+        """
+        newclass=eval(type)
+       
+        settings=newclass(self.n)
+        settings.initialize(self.dataunit,self.channels,self.timepoints)
+        return settings
         
     def setType(self,type):
         """
@@ -292,6 +307,16 @@ class DataUnitSettings:
         """
         return "DataUnitSettings( %s )"%str(self.settings)
 
+    def initialize(self,dataunit,channels, timepoints):
+        """
+        Method: initialize(dataunit,channels, timepoints)
+        Created: 03.04.2005
+        Description: Set initial values for settings based on 
+                     number of channels and timepoints
+        """
+        self.channels = channels
+        self.timepoints = timepoints
+        self.dataunit = dataunit
     
         
 class ColocalizationSettings(DataUnitSettings):
@@ -341,6 +366,7 @@ class ColocalizationSettings(DataUnitSettings):
         Description: Set initial values for settings based on 
                      number of channels and timepoints
         """
+        DataUnitSettings.initialize(self,dataunit,channels,timepoints)
         print "Initializing colocaliztion for %d channels"%channels
         for i in range(channels):
             self.setCounted("ColocalizationLowerThreshold",i,128,0)
@@ -377,6 +403,7 @@ class ColorMergingSettings(DataUnitSettings):
         Description: Set initial values for settings based on 
                      number of channels and timepoints
         """
+        DataUnitSettings.initialize(self,dataunit,channels,timepoints)
         print "Initializing for %d channels"%channels
         for i in range(channels):
             self.setCounted("Color",i,(255,255,255),0)
@@ -422,6 +449,7 @@ class SingleUnitProcessingSettings(DataUnitSettings):
         Description: Set initial values for settings based on 
                      number of channels and timepoints
         """
+        DataUnitSettings.initialize(self,dataunit,channels,timepoints)
         print "Initializing to color",dataunit.getColor()
         self.set("Color",dataunit.getColor(),0)
         print "Initializing %d timepoints"%timepoints
