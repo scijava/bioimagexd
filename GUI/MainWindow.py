@@ -89,15 +89,13 @@ ID_PREFERENCES=10111
 class MainWindow(wx.Frame):
     """
     Class: MainWindow
-    Created: 03.11.2004
-    Creator: KP
+    Created: 03.11.2004, KP
     Description: The main window for the LSM module
     """
     def __init__(self,parent,id,app):
         """
         Method: __init__(parent,id,app)
-        Created: 03.11.2004
-        Creator: KP
+        Created: 03.11.2004, KP
         Description: Initialization
         Parameters:
             parent    
@@ -144,8 +142,7 @@ class MainWindow(wx.Frame):
     def createToolBar(self):
         """
         Method: createToolBar()
-        Created: 03.11.2004
-        Creator: KP
+        Created: 03.11.2004, KP
         Description: Creates a tool bar for the window
         """
         iconpath=reduce(os.path.join,["Icons"])
@@ -181,8 +178,7 @@ class MainWindow(wx.Frame):
     def createMenu(self):
         """
         Method: createMenu()
-        Created: 03.11.2004
-        Creator: KP
+        Created: 03.11.2004, KP
         Description: Creates a menu for the window
         """
         # This is the menubar object that holds all the menus
@@ -244,8 +240,7 @@ class MainWindow(wx.Frame):
     def menuPreferences(self,evt):
         """
         Method: menuPreferences()
-        Created: 09.02.2005
-        Creator: KP
+        Created: 09.02.2005, KP
         Description: Callback function for menu item "Preferences"
         """
         self.settingswindow=SettingsWindow.SettingsWindow(self)
@@ -254,8 +249,7 @@ class MainWindow(wx.Frame):
     def menuRender(self,evt):
         """
         Method: menuRender()
-        Created: 03.11.2004
-        Creator: KP
+        Created: 03.11.2004, KP
         Description: Callback function for menu item "Render"
         """
         # Check if one dataset (node) is selected from the tree
@@ -276,6 +270,8 @@ class MainWindow(wx.Frame):
         self.renderWindow=Urmas.UrmasWindow(self)
         
         dataunit=selectedFiles[0]
+        #correctedUnit=CorrectedSourceDataUnit("Rendered dataunit")
+        #correctedUnit.addSourceDataUnit(dataunit)
         print "Setting dataunit"
         self.renderWindow.setDataUnit(dataunit)
         print "SHowing..."
@@ -285,8 +281,7 @@ class MainWindow(wx.Frame):
     def menuOpen(self,evt):
         """
         Method: menuOpen()
-        Created: 03.11.2004
-        Creator: KP
+        Created: 03.11.2004, KP
         Description: Callback function for menu item "Open VTK File"
         """
         asklist=[]
