@@ -2,7 +2,7 @@
 
 """
  Unit: Track
- Project: Selli 2
+ Project: BioImageXD
  Created: 05.02.2005
  Creator: KP
  Description:
@@ -17,18 +17,18 @@
 
  Modified: 04.02.2005 KP - Created the module
  
- Selli 2 includes the following persons:
+ BioImageXD includes the following persons:
  
+ DW - Dan White, dan@chalkie.org.uk
  KP - Kalle Pahajoki, kalpaha@st.jyu.fi
+ PK - Pasi Kankaanp‰‰, ppkank@bytl.jyu.fi
  
- Copyright (c) 2005 Selli 2 Project.
- --------------------------------------------------------------
+ Copyright (c) 2005 BioImageXD Project.
 """
-__author__ = "Selli 2 Project <http://sovellusprojektit.it.jyu.fi/selli/>"
+__author__ = "BioImageXD Project"
 __version__ = "$Revision: 1.22 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
-from wxPython.wx import *
 import  wx.lib.scrolledpanel as scrolled
 import wx
 
@@ -39,10 +39,10 @@ import math
 import ImageOperations
 
         
-class TrackItem(wxPanel):
+class TrackItem(wx.Panel):
         
     def __init__(self,parent,text,size,**kws):
-        wxPanel.__init__(self,parent,-1)#,style=wxSIMPLE_BORDER)
+        wx.Panel.__init__(self,parent,-1)#,style=wx.SIMPLE_BORDER)
         self.text=text
         self.editable=1
         self.parent=parent
@@ -67,15 +67,15 @@ class TrackItem(wxPanel):
         self.setWidth(self.width)
                         
         if self.editable:
-            self.Bind(EVT_LEFT_DOWN,self.onDown)
-            self.Bind(EVT_MOTION,self.onDrag)
-            self.Bind(EVT_LEFT_UP,self.onUp)
+            self.Bind(wx.EVT_LEFT_DOWN,self.onDown)
+            self.Bind(wx.EVT_MOTION,self.onDrag)
+            self.Bind(wx.EVT_LEFT_UP,self.onUp)
                               
         self.beginX=0
         self.ok=0
 
     def setColor(self,col,headercolor):
-        #self.textPanel.SetBackgroundColour(wxColour(col[0],col[1],col[2]))
+        #self.textPanel.SetBackgroundColour(wx.Colour(col[0],col[1],col[2]))
         self.color=col
         self.headercolor=headercolor
         self.drawItem()
@@ -87,30 +87,30 @@ class TrackItem(wxPanel):
     def drawItem(self):
         self.dc.Clear()
         self.dc.BeginDrawing()
-        self.dc.SetPen(wxPen((0,0,0)))
+        self.dc.SetPen(wx.Pen((0,0,0)))
         
         # Set the color to header color
         r,g,b=self.headercolor
-        col=wxColour(r,g,b)
+        col=wx.Colour(r,g,b)
         
         # And draw the header block
-        self.dc.SetBrush(wxBrush(col))
-        self.dc.SetPen(wxPen((0,0,0)))
-        self.dc.SetBackground(wxBrush(col))
+        self.dc.SetBrush(wx.Brush(col))
+        self.dc.SetPen(wx.Pen((0,0,0)))
+        self.dc.SetBackground(wx.Brush(col))
         self.dc.DrawRectangle(0,0,self.width,15)
 
         # Draw the text inside the header
         if self.text!="":
             self.dc.SetTextForeground((0,0,0))
-            self.dc.SetFont(wx.Font(8,wxSWISS,wxNORMAL,wxNORMAL))
+            self.dc.SetFont(wx.Font(8,wx.SWISS,wx.NORMAL,wx.NORMAL))
             self.dc.DrawText(self.text,5,2)
             
         # draw the body
         r,g,b=self.color
-        col=wxColour(r,g,b)
-        self.dc.SetBrush(wxBrush(col))
-        self.dc.SetBackground(wxBrush(col))
-        self.dc.SetPen(wxPen((0,0,0)))
+        col=wx.Colour(r,g,b)
+        self.dc.SetBrush(wx.Brush(col))
+        self.dc.SetBackground(wx.Brush(col))
+        self.dc.SetPen(wx.Pen((0,0,0)))
         self.dc.DrawRectangle(0,15,self.width,self.height)
         
         if self.thumbtimepoint>=0:
@@ -133,12 +133,12 @@ class TrackItem(wxPanel):
         self.SetSize((w,self.height))
         del self.buffer
 #        print "New bitmap with size=",self.width,self.height
-        self.buffer=wxEmptyBitmap(self.width,self.height)
+        self.buffer=wx.EmptyBitmap(self.width,self.height)
         del self.dc
-        self.dc = wxBufferedDC(None,self.buffer)
+        self.dc = wx.BufferedDC(None,self.buffer)
         #col=self.GetBackgroundColour()
-#        col=wxColour(255,255,255)
-#        self.dc.SetBackground(wxBrush(col))
+#        col=wx.Colour(255,255,255)
+#        self.dc.SetBackground(wx.Brush(col))
         self.drawItem()
         
     def onDown(self,event):
@@ -180,9 +180,9 @@ class TrackItem(wxPanel):
         self.beginX=x
 
         
-class Track(wxPanel):
+class Track(wx.Panel):
     def __init__(self,name,parent,**kws):
-        wxPanel.__init__(self,parent,-1,style=wxSIMPLE_BORDER)
+        wx.Panel.__init__(self,parent,-1,style=wx.SIMPLE_BORDER)
         self.number=0
         self.duration=0
         self.frames=0
@@ -193,14 +193,14 @@ class Track(wxPanel):
         if kws.has_key("number"):
             self.number=kws["number"]
 
-        self.sizer=wxGridBagSizer()
-        self.itemBox=wxBoxSizer(wxHORIZONTAL)
+        self.sizer=wx.GridBagSizer()
+        self.itemBox=wx.BoxSizer(wx.HORIZONTAL)
         self.color=None
         self.parent=parent
 
-        self.namePanel=wxPanel(self,-1)
-        self.namePanel.SetBackgroundColour(wxColour(127,127,127))
-        self.nameLbl=wxStaticText(self.namePanel,-1,name,size=(100,80))
+        self.namePanel=wx.Panel(self,-1)
+        self.namePanel.SetBackgroundColour(wx.Colour(127,127,127))
+        self.nameLbl=wx.StaticText(self.namePanel,-1,name,size=(100,80))
         self.namePanel.SetSize((200,80))
         self.sizer.Add(self.namePanel,(0,0))
 
@@ -247,7 +247,7 @@ class Track(wxPanel):
             self.items.remove(i)
             i.Destroy()
         self.itemBox.Destroy()
-        self.itemBox=wxBoxSizer(wxHORIZONTAL)
+        self.itemBox=wx.BoxSizer(wx.HORIZONTAL)
         self.sizer.Add(self.itemBox,(0,1))
         
         self.updateLayout()
@@ -283,7 +283,7 @@ class Track(wxPanel):
         if diff>1:
             print "diff=",diff
             last.setWidth(w+diff)
-
+        print "Updating layout"
         self.updateLayout()
         
     def getLabelWidth(self):

@@ -1,7 +1,7 @@
 # -*- coding: iso-8859-1 -*-
 """
  Unit: SplineEditor
- Project: Selli 2
+ Project: BioImageXD
  Created: n/a
  Creator: Heikki Uuksulainen
  Description:
@@ -20,7 +20,7 @@
  LICENSE.txt for details.
 
  Copyright (c) 2004, Heikki Uuksulainen.
- Modified 2005 for Selli 2 Project: Kalle Pahajoki
+ Modified 2005 for BioImageXD Project: Kalle Pahajoki
 """
 
 __author__ = "Heikki Uuksulainen and Prabhu Ramachandran"
@@ -29,15 +29,13 @@ __date__ = "$Date: 2004/01/20 22:41:28 $"
 
 import types, os
 import string
-import vtkpython,vtkRenderWidget
+#import vtk,vtkRenderWidget
 import vtk
-import Common
+from mayavi import Common
 from vtk.util.colors import tomato, banana
 
 import wx
-
-#from vtk.tk.vtkTkRenderWindowInteractor import vtkTkRenderWindowInteractor
-#from vtk.tk.vtkTkRenderWidget import vtkTkRenderWidget
+import wx.lib.scrolledpanel as scrolled
 from vtk.wx.wxVTKRenderWindowInteractor import *
 
 math = vtk.vtkMath()
@@ -49,31 +47,36 @@ class SplineWidget3D:
     """
     
     def __init__(self,wxrenwin):
-        
         self.dataExtensionX = 50
         self.dataExtensionY = 50
         self.dataExtensionZ = 50
-
-        self.wxrenwin=wxrenwin
         
         self.data = None
-        self.outline = vtkpython.vtkOutlineFilter ()
-        self.outlinemapper = vtkpython.vtkPolyDataMapper ()
-        self.outlineactor = vtkpython.vtkActor ()  
-        self.axes = vtkpython.vtkCubeAxesActor2D ()
+        self.outline = vtk.vtkOutlineFilter ()
+        self.outlinemapper = vtk.vtkPolyDataMapper ()
+        self.outlineactor = vtk.vtkActor ()  
+        self.axes = vtk.vtkCubeAxesActor2D ()
         self.spline = False
 
         self.spline = spline = vtk.vtkSplineWidget()
-        self.wxrenwin = wxVTKRenderWindowInteractor(self,-1)
+        
+        
+        self.wxrenwin = wxrenwin
+       
+        
         self.renWin = renWin = self.wxrenwin.GetRenderWindow()
-        self.ren = ren = renWin.GetRenderers().GetItemAsObject(0)
+
+        self.renderer=vtk.vtkRenderer()
+        self.renWin.AddRenderer(self.renderer)
+        ren = self.renderer
 
         if not ren:
             raise "No renderer in SplineEditor!"
 
-        self.iren = iren = renWin.GetInteractor()
-
+        #self.iren = iren = renWin.GetInteractor()
+        print "Initializing camera"
         self.init_camera()
+        
         
     def init_spline(self,points=5):
         self.spline.SetInteractor(self.iren)        
@@ -84,9 +87,10 @@ class SplineWidget3D:
                                      math.Random(-self.dataExtensionY,self.data_height()+self.dataExtensionY),
                                      math.Random(-self.dataExtensionZ,self.data_depth()+self.dataExtensionZ))
         self.spline.On()
-        self.render()
+        self.rendererder()
 
     def update_data(self,data):
+        print "Updating data..."
         if self.data:
             del self.data
 
@@ -96,7 +100,7 @@ class SplineWidget3D:
         self.outlineactor.SetMapper (self.outlinemapper)
         #self.outlineactor.GetProperty ().SetColor (*Common.config.fg_color)
         self.outlineactor.GetProperty().SetColor((255,255,255))
-        self.ren.AddActor(self.outlineactor)
+        self.renderer.AddActor(self.outlineactor)
 
         txt = ("X", "Y", "Z")
         for t in txt:
@@ -114,13 +118,13 @@ class SplineWidget3D:
         self.axes.SetCornerOffset (0.0)
         #self.axes.SetInertia(10)
         self.axes.ScalingOff ()
-        self.axes.SetCamera (self.ren.GetActiveCamera ())
+        self.axes.SetCamera (self.renderer.GetActiveCamera ())
         #if hasattr(self.axes, "GetAxisTitleTextProperty"):
         #    self.axes.GetAxisTitleTextProperty().ShadowOff()
         #    self.axes.GetAxisLabelTextProperty().ShadowOff()
         #else:
         #    self.axes.ShadowOff ()
-        self.ren.AddActor (self.axes)
+        self.renderer.AddActor (self.axes)
         self.axes.SetInput (self.outline.GetOutput ())
         #print "Axes actor inertia: %d"%(self.axes.GetInertia())
 
@@ -128,14 +132,14 @@ class SplineWidget3D:
 
         #self.init_spline()
 
-        #self.render()
+        #self.rendererder()
 
         #iren.Initialize()
         #renWin.Render()
         #iren.Start()
 
     def render(self):
-        self.ren.Render()
+        self.renderer.Render()
 
     def get_number_of_points(self):
         data = vtk.vtkPolyData()
@@ -159,8 +163,8 @@ class SplineWidget3D:
 
     def get_camera(self):
         cam = None
-        if self.ren:
-            cam = self.ren.GetActiveCamera()
+        if self.renderer:
+            cam = self.renderer.GetActiveCamera()
         return cam
 
     def init_camera(self):
@@ -205,7 +209,7 @@ class SplineWidget3D:
 
     def __del__(self):
         print "In SplineWidget3D.__del__()"        
-        #del self.renWin
+        del self.renWin
 
 
 class SplineEditor(wxPanel):
@@ -221,16 +225,14 @@ class SplineEditor(wxPanel):
         self.data = None
 
 
-        self.ren = ren = vtk.vtkRenderer ()
+        self.renderer = ren = vtk.vtkRenderer ()
         #self.renWin = renWin = vtk.vtkRenderWindow()
         #self.iren = vtk.vtkRenderWindowInteractor()
         #self.iren.SetInteractorStyle(vtk.vtkInteractorStyleTrackballCamera())
         #self.renWin.SetInteractor(self.iren)
         #renWin.AddRenderer(ren)
-
-        #tkw = vtkTkRenderWindowInteractor (master,rw=renWin)
-        #tkw = vtkTkRenderWidget(master)
-        self.wxrenwin=wxVTKRenderWindowInteractor(self,-1)
+        
+        self.wxrenwin=wxVTKRenderWindowInteractor(self,-1,size=(400,400))
 
         self.renWin = self.wxrenwin.GetRenderWindow()
         self.renWin.GetInteractor().SetInteractorStyle(vtk.vtkInteractorStyleTrackballCamera())
@@ -249,8 +251,7 @@ class SplineEditor(wxPanel):
 
     def __del__(self):
         print "SplineEditor.__del__()"
-        self.quit()
-
+        
     def  update_data(self,data):
         if self.data:
             del self.data
@@ -298,7 +299,7 @@ class SplineEditor(wxPanel):
     def quit(self):
         print "In SplineEditor.quit()"
         #del self.renWin
-        #del self.ren
+        #del self.renderer
         #self.tkwidget.destroy()
         #del self.tkwidget
         

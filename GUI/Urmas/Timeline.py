@@ -3,7 +3,7 @@
 
 """
  Unit: Timeline
- Project: Selli 2
+ Project: BioImageXD
  Created: 04.02.2005
  Creator: KP
  Description:
@@ -22,8 +22,7 @@
  
  KP - Kalle Pahajoki, kalpaha@st.jyu.fi
  
- Copyright (c) 2005 Selli 2 Project.
- --------------------------------------------------------------
+ Copyright (c) 2005 BioImageXD Project.
 """
 __author__ = "Selli 2 Project <http://sovellusprojektit.it.jyu.fi/selli/>"
 __version__ = "$Revision: 1.22 $"
@@ -34,6 +33,7 @@ import wx
 import wx.lib.masked as masked
 
 from Track import *
+import Animator
 
 import os.path
 import sys
@@ -43,20 +43,6 @@ if __name__=='__main__':
     import sys
     sys.path.append(os.path.normpath(os.path.join(os.getcwd(),"..")))
 
-def gcd2(a, b):
-    """Greatest common divisor using Euclid's algorithm."""
-    while a:
-        a, b = b%a, a
-    return b
-    
-def lcm2(a,b):
-    return float(a*b)/gcd2(a,b)
-    
-def gcd(numbers):
-    return reduce(gcd2,numbers)
-    
-def lcm(numbers):
-    return reduce(lcm2,numbers)  
 
     
 class TimelineConfig(wx.Panel):
@@ -67,6 +53,7 @@ class TimelineConfig(wx.Panel):
     Description: Contains configuration options for the timeline
     """    
     def __init__(self,parent):
+        print  "TimeLineConfig"
         wx.Panel.__init__(self,parent,-1)#,style=wx.SUNKEN_BORDER)
         self.sizer=wx.GridBagSizer(5,5)
         self.parent=parent
@@ -84,8 +71,8 @@ class TimelineConfig(wx.Panel):
         self.animateCheckbox=wx.CheckBox(self,-1,"Use animator")
         self.controlPointsLabel=wx.StaticText(self,-1,"Number of control points")
         self.controlPoints=wx.TextCtrl(self,-1,"5")
-        self.controlPoints.Bind(EVT_TEXT,self.updateControlPoints)
-        self.animateCheckbox.Bind(EVT_CHECKBOX,self.updateAnimation)
+        self.controlPoints.Bind(wx.EVT_TEXT,self.updateControlPoints)
+        self.animateCheckbox.Bind(wx.EVT_CHECKBOX,self.updateAnimation)
         
         self.animationsizer.Add(self.animateCheckbox,(0,0))
         self.animationsizer.Add(self.controlPointsLabel,(1,0))
@@ -93,7 +80,7 @@ class TimelineConfig(wx.Panel):
         
         self.formatLabel=wx.StaticText(self,-1,"Result")
         self.formatMenu=wx.Choice(self,-1,choices=["Images","Video"])
-        self.formatMenu.Bind(EVT_CHOICE,self.updateFormat)
+        self.formatMenu.Bind(wx.EVT_CHOICE,self.updateFormat)
         
         self.totalFramesLabel=wx.StaticText(self,-1,"Frames:")
         self.durationLabel=wx.StaticText(self,-1,"Duration:")
@@ -102,8 +89,8 @@ class TimelineConfig(wx.Panel):
         self.totalFrames=wx.TextCtrl(self,-1,"30",size=(50,-1),style=wx.TE_PROCESS_ENTER)
         self.duration=masked.TextCtrl(self,-1,"00:00:60",autoformat="24HRTIMEHHMMSS",size=(50,-1),style=wx.TE_PROCESS_ENTER)
 
-        self.totalFrames.Bind(EVT_TEXT_ENTER,self.updateFrameCount)
-        self.duration.Bind(EVT_TEXT,self.updateDuration)
+        self.totalFrames.Bind(wx.EVT_TEXT_ENTER,self.updateFrameCount)
+        self.duration.Bind(wx.EVT_TEXT,self.updateDuration)
         
         
         self.outputsizer.Add(self.formatLabel,(0,0))
@@ -116,12 +103,12 @@ class TimelineConfig(wx.Panel):
         self.outputsizer.Add(self.totalFrames,(2,1))
                 
         self.outputsizer.Add(self.fpsLabel,(3,0))
-        
+                
         self.sizer.Add(self.outputstaticbox,(0,0))
         self.sizer.Add(self.animationstaticbox,(0,1))
 
 #        self.useButton=wx.Button(self,-1,"Use settings")
-#        self.useButton.Bind(EVT_BUTTON,self.reportToParent)
+#        self.useButton.Bind(wx.EVT_BUTTON,self.reportToParent)
         
 #        self.sline=wx.StaticLine(self)
 #        self.sizer.Add(self.sline,(4,0),flag=wx.EXPAND|wx.RIGHT|wx.LEFT)
@@ -212,12 +199,22 @@ class TimelinePanel(wx.Panel):
     def __init__(self,parent):
         wx.Panel.__init__(self,parent,-1,style=wx.RAISED_BORDER)
         self.sizer=wx.GridBagSizer()
-        self.timeline=Timeline(self)
-        self.timelineConfig=TimelineConfig(self)
-        self.sizer.Add(self.timelineConfig,(0,0),flag=wx.EXPAND|wx.ALL,border=10)
+        
+        self.animator=Animator.AnimatorPanel(self)
+        self.sizer.Add(self.animator,(0,0),flag=wx.EXPAND|wx.ALL)
+        
+        
         sline=wx.StaticLine(self)
         self.sizer.Add(sline,(1,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
+        
+        self.timeline=Timeline(self)
         self.sizer.Add(self.timeline,(2,0),flag=wx.EXPAND|wx.ALL)
+        
+        sline=wx.StaticLine(self)
+        self.sizer.Add(sline,(3,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
+        
+        self.timelineConfig=TimelineConfig(self)
+        self.sizer.Add(self.timelineConfig,(4,0),flag=wx.EXPAND|wx.ALL,border=10)
         
         self.SetSizer(self.sizer)
         self.SetAutoLayout(1)

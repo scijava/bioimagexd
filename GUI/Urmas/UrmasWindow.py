@@ -35,21 +35,20 @@ import TimepointSelection
 class UrmasWindow(wx.Dialog):
     """
     Class: UrmasWindow
-    Created: 10.02.2005
-    Creator: KP
+    Created: 10.02.2005, KP
     Description: A window for controlling the rendering/animation/movie generation.
                  The window has a notebook with different pages for rendering and
                  animation modes, and a page for configuring the movie generation.
     """
     def __init__(self,parent):
+        print "Creating UrmasWindow()"
         wx.Dialog.__init__(self,parent,-1,"Rendering Manager / Animator",size=(640,480))
-                
         self.status=wx.ID_OK
         ico=reduce(os.path.join,["..","Icons","Selli.ico"])
         self.icon = wx.Icon(ico,wx.BITMAP_TYPE_ICO)
         self.SetIcon(self.icon)
         
-        self.Bind(EVT_CLOSE,self.closeWindowCallback)
+        self.Bind(wx.EVT_CLOSE,self.closeWindowCallback)
         self.mainsizer=wx.GridBagSizer(5,5)
     
 #        self.buttonSizer=wx.BoxSizer(wxHORIZONTAL)
@@ -61,8 +60,9 @@ class UrmasWindow(wx.Dialog):
         self.notebook.AddPage(self.timepointSelection,"Select Time Points")
 
         self.timelinePanel=TimelinePanel(self.notebook)
+        print "Adding timeline panel to notebook"
         self.notebook.AddPage(self.timelinePanel,"Rendering")
-        
+        print "done"
         self.mainsizer.Add(self.notebook,(0,0),flag=wx.EXPAND|wx.ALL)
 
 
@@ -77,8 +77,7 @@ class UrmasWindow(wx.Dialog):
     def closeWindowCallback(self,event):
         """
         Method: closeWindowCallback
-        Created: 10.2.2005
-        Creator: KP
+        Created: 10.2.2005, KP
         Description: A callback that is used to close this window
         """
         self.EndModal(self.status)
