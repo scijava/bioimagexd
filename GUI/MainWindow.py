@@ -53,6 +53,7 @@ import ColorMergingWindow
 import SingleUnitProcessingWindow
 import VSIAWindow
 import SettingsWindow
+import ImportDialog
 
 import InfoWidget
 
@@ -212,7 +213,8 @@ class MainWindow(wx.Frame):
         self.exportMenu=wx.Menu()
         self.exportMenu.Append(ID_EXPORT_VTIFILES,"&VTK Dataset Series")
         self.exportMenu.Append(ID_EXPORT_IMAGES,"&Stack of Images")
-        
+        EVT_MENU(self,ID_IMPORT_VTIFILES,self.menuImport)
+        EVT_MENU(self,ID_IMPORT_IMAGES,self.menuImport)
     
         
         self.fileMenu.Append(ID_OPEN,"&Open...\tCtrl-O","Open a Data Set")
@@ -239,7 +241,17 @@ class MainWindow(wx.Frame):
         self.helpMenu.AppendSeparator()
         self.helpMenu.Append(ID_HELP,"&Help\tCtrl-H","Online Help")
         EVT_MENU(self,ID_ABOUT,self.menuAbout)
-
+    
+    def menuImport(self,evt):
+        """
+        Method: menuImport()
+        Created: 16.03.2005, KP
+        Description: Callback function for menu item "Import"
+        """
+        self.importdlg=ImportDialog.ImportDialog(self)
+        self.importdlg.ShowModal()
+        
+    
     def menuPreferences(self,evt):
         """
         Method: menuPreferences()
