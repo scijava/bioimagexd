@@ -24,7 +24,7 @@
                            menuMergeChannels
            04.01.2005 JV - Fixed: bug in MenuVSIA
            11.01.2005 JV - Added comments
-           20.01.2005 KP - Now using wxPython
+           20.01.2005 KP - Now using wx.Python
 
  Selli includes the following persons:
  JH - Juha Hyytiäinen, juhyytia@st.jyu.fi
@@ -41,7 +41,6 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 import os.path,os
 import wx
 
-from wxPython.wx import *
 
 import vtk
 
@@ -55,7 +54,10 @@ import SingleUnitProcessingWindow
 import VSIAWindow
 import SettingsWindow
 
+import InfoWidget
+
 import Dialogs
+import AboutDialog
 
 
 from DataUnit import *
@@ -84,7 +86,7 @@ ID_HELP=10101
 ID_SETTINGS=10110
 ID_PREFERENCES=10111
 
-class MainWindow(wxFrame):
+class MainWindow(wx.Frame):
     """
     Class: MainWindow
     Created: 03.11.2004
@@ -103,9 +105,9 @@ class MainWindow(wxFrame):
             app     LSMApplication object
         """
         #Toplevel.__init__(self,root)
-        wxFrame.__init__(self,parent,wxID_ANY,"Selli",size=(800,600),
-            style=wxDEFAULT_FRAME_STYLE|wxNO_FULL_REPAINT_ON_RESIZE)
-        self.splitter=wxSplitterWindow(self,-1)
+        wx.Frame.__init__(self,parent,wx.ID_ANY,"BioImageXD",size=(1100,800),
+            style=wx.DEFAULT_FRAME_STYLE|wx.NO_FULL_REPAINT_ON_RESIZE)
+        self.splitter=wx.SplitterWindow(self,-1)
         self.nodes_to_be_added=[]
         self.app=app
 
@@ -116,11 +118,9 @@ class MainWindow(wxFrame):
         
         # Icon for the window
         ico=reduce(os.path.join,["Icons","Selli.ico"])
-        self.icon = wxIcon(ico,wxBITMAP_TYPE_ICO)
+        self.icon = wx.Icon(ico,wx.BITMAP_TYPE_ICO)
         self.SetIcon(self.icon)
-
-        self.renderWindow=None
-
+        
         self.CreateStatusBar()
         self.SetStatusText("Starting up...")
 
@@ -132,82 +132,69 @@ class MainWindow(wxFrame):
         self.paths={}
 
         self.SetStatusText("Done.")
-        self.tree=TreeWidget(self.splitter)        
-        #self.infowidget=wxPanel(self.splitter,-1)
-        frame = wxPanel(self.splitter, -1,size=wxSize(400,400))# , "wxRenderWindow", size=wxSize(400,400))
-        #renWin = wxVTKRenderWindow(frame,-1)
-    
-        #ren = vtkRenderer()
-        #renWin.GetRenderWindow().AddRenderer(ren)
-        #cone = vtkConeSource()
-        #cone.SetResolution(8)
-        #coneMapper = vtkPolyDataMapper()
-        #coneMapper.SetInput(cone.GetOutput())
-        #coneActor = vtkActor()
-        #coneActor.SetMapper(coneMapper)
-        #ren.AddActor(coneActor)        
-        self.splitter.SplitVertically(self.tree,frame,200)
+        self.infowidget=InfoWidget.InfoWidget(self.splitter,size=(400,400))
+        self.tree=TreeWidget(self.splitter,self.infowidget.showInfo)        
+        
+        self.splitter.SplitVertically(self.tree,self.infowidget,200)
         self.Show(true)
+        
+        
         
         
     def createToolBar(self):
         """
-        --------------------------------------------------------------
         Method: createToolBar()
         Created: 03.11.2004
         Creator: KP
         Description: Creates a tool bar for the window
-        -------------------------------------------------------------
         """
         iconpath=reduce(os.path.join,["Icons"])
         self.CreateToolBar()
         tb=self.GetToolBar()
-        tb.AddSimpleTool(ID_OPEN,wxImage(os.path.join(iconpath,"OpenLSM.gif"),wxBITMAP_TYPE_GIF).ConvertToBitmap(),"Open","Open dataset series")
+        tb.AddSimpleTool(ID_OPEN,wx.Image(os.path.join(iconpath,"OpenLSM.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Open","Open dataset series")
         EVT_TOOL(self,ID_OPEN,self.menuOpen)       
 
         tb.AddSimpleTool(ID_COLORMERGING,
-        wxImage(os.path.join(iconpath,"ColorCombination.gif"),wxBITMAP_TYPE_GIF).ConvertToBitmap(),"Merge Channels","Merge dataset series")
+        wx.Image(os.path.join(iconpath,"ColorCombination.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Merge Channels","Merge dataset series")
         EVT_TOOL(self,ID_COLORMERGING,self.menuMergeChannels)       
     
         tb.AddSimpleTool(ID_COLOCALIZATION,
-        wxImage(os.path.join(iconpath,"Colocalization.gif"),wxBITMAP_TYPE_GIF).ConvertToBitmap(),"Colocalization","Create colocalization map")
+        wx.Image(os.path.join(iconpath,"Colocalization.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Colocalization","Create colocalization map")
         EVT_TOOL(self,ID_COLOCALIZATION,self.menuColocalization)       
 
         tb.AddSimpleTool(ID_VSIA,
-        wxImage(os.path.join(iconpath,"HIV.gif"),wxBITMAP_TYPE_GIF).ConvertToBitmap(),"Visualization of sparse intensity aggregations","Visualization of sparse intensity aggregations")
+        wx.Image(os.path.join(iconpath,"HIV.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Visualization of sparse intensity aggregations","Visualization of sparse intensity aggregations")
         EVT_TOOL(self,ID_VSIA,self.menuVSIA)
         
         tb.AddSimpleTool(ID_SINGLE,
-        wxImage(os.path.join(iconpath,"DataSetSettings2.gif"),wxBITMAP_TYPE_GIF).ConvertToBitmap(),"Process dataset series","Process a single dataset series")
+        wx.Image(os.path.join(iconpath,"DataSetSettings2.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Process dataset series","Process a single dataset series")
         EVT_TOOL(self,ID_SINGLE,self.menuProcessDataUnit)
 
         tb.AddSimpleTool(ID_REEDIT,
-        wxImage(os.path.join(iconpath,"ReEdit.gif"),wxBITMAP_TYPE_GIF).ConvertToBitmap(),"Re-edit dataset series","Re-edit a dataset series")
+        wx.Image(os.path.join(iconpath,"ReEdit.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Re-edit dataset series","Re-edit a dataset series")
         EVT_TOOL(self,ID_REEDIT,self.menuEditDataSet)
 
         tb.AddSimpleTool(ID_RENDER,
-        wxImage(os.path.join(iconpath,"Render.gif"),wxBITMAP_TYPE_GIF).ConvertToBitmap(),"Render","Render a dataset series")
+        wx.Image(os.path.join(iconpath,"Render.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Render","Render a dataset series")
         EVT_TOOL(self,ID_RENDER,self.menuRender)
 
     def createMenu(self):
         """
-        -------------------------------------------------------------
         Method: createMenu()
         Created: 03.11.2004
         Creator: KP
         Description: Creates a menu for the window
-        -------------------------------------------------------------
         """
         # This is the menubar object that holds all the menus
-        self.menu = wxMenuBar()
+        self.menu = wx.MenuBar()
         self.SetMenuBar(self.menu)
         
         # We create the menu objects
-        self.fileMenu=wxMenu()
-        self.taskMenu=wxMenu()
-        self.helpMenu=wxMenu()
+        self.fileMenu=wx.Menu()
+        self.taskMenu=wx.Menu()
+        self.helpMenu=wx.Menu()
         
-        self.settingsMenu=wxMenu()
+        self.settingsMenu=wx.Menu()
 
          # and add them as sub menus to the menubar
         self.menu.Append(self.fileMenu,"&File")
@@ -219,11 +206,11 @@ class MainWindow(wxFrame):
         self.settingsMenu.Append(ID_PREFERENCES,"&Preferences...")
         EVT_MENU(self,ID_PREFERENCES,self.menuPreferences)
     
-        self.importMenu=wxMenu()
+        self.importMenu=wx.Menu()
         self.importMenu.Append(ID_IMPORT_VTIFILES,"&VTK Dataset Series")
         self.importMenu.Append(ID_IMPORT_IMAGES,"&Stack of Images")
    
-        self.exportMenu=wxMenu()
+        self.exportMenu=wx.Menu()
         self.exportMenu.Append(ID_EXPORT_VTIFILES,"&VTK Dataset Series")
         self.exportMenu.Append(ID_EXPORT_IMAGES,"&Stack of Images")
         
@@ -249,7 +236,7 @@ class MainWindow(wxFrame):
         EVT_MENU(self,ID_SINGLE,self.menuProcessDataUnit)
         EVT_MENU(self,ID_RENDER,self.menuRender)
 
-        self.helpMenu.Append(ID_ABOUT,"&About Selli","About this application")
+        self.helpMenu.Append(ID_ABOUT,"&About BioImageXD","About BioImageXD")
         self.helpMenu.AppendSeparator()
         self.helpMenu.Append(ID_HELP,"&Help\tCtrl-H","Online Help")
         EVT_MENU(self,ID_ABOUT,self.menuAbout)
@@ -285,27 +272,28 @@ class MainWindow(wxFrame):
             "select a dataset series and try again.\n","No dataset selected")
             return
         #self.renderWindow=RenderingManager(self)
+        print "Creating urmas window"
         self.renderWindow=Urmas.UrmasWindow(self)
         
         dataunit=selectedFiles[0]
+        print "Setting dataunit"
         self.renderWindow.setDataUnit(dataunit)
+        print "SHowing..."
         self.renderWindow.ShowModal()
 
 
     def menuOpen(self,evt):
         """
-        --------------------------------------------------------------
         Method: menuOpen()
         Created: 03.11.2004
         Creator: KP
         Description: Callback function for menu item "Open VTK File"
-        -------------------------------------------------------------
         """
         asklist=[]
         print "lastpath now=",self.lastpath
         wc="LSM Files (*.lsm)|*.lsm|Dataset Series (*.du)|*.du|VTK Image Data (*.vti)|*.vti"
-        dlg=wxFileDialog(self,"Open dataset series or LSM File",self.lastpath,wildcard=wc,style=wxOPEN|wxMULTIPLE)
-        if dlg.ShowModal()==wxID_OK:
+        dlg=wx.FileDialog(self,"Open dataset series or LSM File",self.lastpath,wildcard=wc,style=wx.OPEN|wx.MULTIPLE)
+        if dlg.ShowModal()==wx.ID_OK:
             asklist=dlg.GetPaths()
         dlg.Destroy()
         
@@ -320,7 +308,6 @@ class MainWindow(wxFrame):
 
     def createDataUnit(self,name,path):
         """
-        --------------------------------------------------------------
         Method: createDataUnit(name,path)
         Created: 03.11.2004
         Creator: KP
@@ -328,7 +315,6 @@ class MainWindow(wxFrame):
         Parameters:
             name    Name used to identify this dataunit
             path    Path to the file this dataunit points to
-        -------------------------------------------------------------
         """
         ext=path.split(".")[-1]
         dataunit=None
@@ -373,12 +359,10 @@ class MainWindow(wxFrame):
 
     def menuEditDataSet(self,evt):
         """
-        --------------------------------------------------------------
         Method: menuEditDataSet
         Created: 11.1.2005
         Creator: KP
         Description: Callback function for menu item "Re-Edit data set"
-        -------------------------------------------------------------
         """
         
         # for future use
@@ -478,26 +462,20 @@ class MainWindow(wxFrame):
     def menuAbout(self,evt):
         """
         Method: menuAbout()
-        Created: 03.11.2004
-        Creator: KP
+        Created: 03.11.2004, KP
         Description: Callback function for menu item "About"
         """
-        s="Selli - LSCM Data "\
-        "Post-Processing Software\nCopyright (c) 2004 Juha Hyytiainen, "\
-        "Jaakko Mantymaa, Kalle Pahajoki, Jukka Varsaluoma"
-        d=wxMessageDialog(self,s,"About Selli",wxOK)
-        d.ShowModal()
-        d.Destroy()
+        about=AboutDialog.AboutDialog(self)
+        about.ShowModal()
+        about.Destroy()
         
 
     def quitApp(self,evt):
         """
-        --------------------------------------------------------------
         Method: quitApp()
         Created: 03.11.2004
         Creator: KP
         Description: Quits the application
-        -------------------------------------------------------------
         """
         self.Close(true)
         
