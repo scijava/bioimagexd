@@ -29,7 +29,6 @@
             28.01.2005 KP - Changed the class over to wxPython
             02.02.2005 KP - Converted the class to use a notebook
 
-
  Selli includes the following persons:
  JH - Juha Hyytiäinen, juhyytia@st.jyu.fi
  JM - Jaakko Mäntymaa, jahemant@cc.jyu.fi
@@ -57,34 +56,18 @@ from ColorSelectionDialog import *
 import time
 import vtk
 
-def showColorMergingWindow(colorUnit,mainwin):
-    """
-    Function: showColorMergingWindow(colorUnitUnit,mainwin)
-    Created: 23.11.2004
-    Creator: KP
-    Description: A function that displays the color merging window and
-                 waits for the user to create the merged dataset series. After
-                 the task is done or cancel is pressed, the results
-                 are returned to the caller
-    """
-
-    result=TaskWindow.showTaskWindow(ColorMergingWindow,colorUnit,mainwin)
-    return result
-
 
 class ColorMergingWindow(TaskWindow.TaskWindow):
     """
     Class: ColorMergingWindow
-    Created: 10.11.2004
-    Creator: JV
+    Created: 10.11.2004, JV
     Description: A window for controlling the settings of the color
                  combination module
     """
     def __init__(self,parent):
         """
         Method: __init__(parent)
-        Created: 10.11.2004
-        Creator: JV
+        Created: 10.11.2004, JV
         Description: Initialization
         Parameters:
                 parent    Is the parent widget of this window
@@ -108,8 +91,7 @@ class ColorMergingWindow(TaskWindow.TaskWindow):
     def createButtonBox(self):
         """
         Method: createButtonBox()
-        Created: 10.11.2004
-        Creator: JV
+        Created: 10.11.2004, JV
         Description: Creates a button box containing the buttons Render,
                      Preview and Close
         """
@@ -120,8 +102,7 @@ class ColorMergingWindow(TaskWindow.TaskWindow):
     def createOptionsFrame(self):
         """
         Method: createOptionsFrame()
-        Created: 10.11.2004
-        Creator: JV
+        Created: 10.11.2004, JV
         Description: Creates a frame that contains the various widgets
                      used to control the colocalization settings
         """
@@ -168,9 +149,39 @@ class ColorMergingWindow(TaskWindow.TaskWindow):
         self.alphaEditor.setIntensityTransferFunction(self.alphaTF)
         self.alphaEditor.setAlphaMode(1)
         self.editAlphaSizer.Add(self.alphaEditor,(0,0),span=(1,2))        
+        
+        self.alphaModeBox=wx.RadioBox(self.editAlphaPanel,-1,"Alpha mode",
+        choices=["Maximum Mode","Average Mode","Image Luminance"],majorDimension=2,style=wx.RA_SPECIFY_COLS)
+        
+        self.editAlphaSizer.Add(self.alphaModeBox,(1,0))
+        self.alphaModeBox.Bind(wx.EVT_RADIOBOX,self.modeSelect)
+        
+        self.averageLbl=wx.StaticText(self.editAlphaPanel,-1,"Average Threshold:")
+        self.averageEdit=wx.TextCtrl(self.editAlphaPanel,-1,"",size=(150,-1))
+        self.averageEdit.Enable(0)
+        
+        box=wx.BoxSizer(wx.HORIZONTAL)
+        box.Add(self.averageLbl)
+        box.Add(self.averageEdit)
+        self.editAlphaSizer.Add(box,(2,0))
+        self.editAlphaPanel.SetSizer(self.editAlphaSizer)
+        self.editAlphaSizer.Fit(self.editAlphaPanel)
+        
         self.settingsNotebook.AddPage(self.editAlphaPanel,"Alpha Channel")
         
 #        self.optionssizer.Add(self.intensityTransferEditor,(3,0))
+
+    def modeSelect(self,event):
+        """
+        Method: modeSelect(event)
+        Created: 21.03.2005, KP
+        Description: A method that is called when the selection of alpha mode is chan ged
+        """
+        mode = event.GetInt()
+        if mode == 1:
+            self.averageEdit.Enable(1)
+        else:
+            self.averageEdit.Enable(0)
 
     def resetTransferFunctions(self,event=None):
         """
@@ -191,54 +202,35 @@ class ColorMergingWindow(TaskWindow.TaskWindow):
         """
         # We might get called before any channel has been selected. 
         # In that case, do nothing
-        if self.configSetting:
-    	    oldrgb=self.configSetting.getColor()
-    	    #newrgb=(r,g,b)
-	    if oldrgb != (r,g,b):
-    		self.configSetting.setColor(r,g,b)
-    		self.updateSettings()
-    		self.doPreviewCallback()
+        if not self.settings:return
 
-    def updateIntensities(self,event):
-        """
-        Method: updateIntensities(event)
-        Created: 10.11.2004
-        Creator: JV
-        Description: A callback function called when the intensities transfer 
-                     functions are changed
-        """
-        # We might get called before any channel has been selected. 
-        # In that case, do nothing
-        if self.configSetting:
-            oldIntensityTransfer=self.configSetting.getIntensityTransfer()
-            #typecast missing
-            newIntensityTransfer=self.intensityTransfer.get()
-        #remove this and update preview every time?
-        if oldIntensityTransfer != newIntensityTransfer:
-            #typecast missing
-            self.configSetting.setIntensityTransfer(self.intensityTransfer.get())
+        oldrgb=self.settings.get("Color")
+            #newrgb=(r,g,b)
+        if oldrgb != (r,g,b):
+            self.settings.set("Color",(r,g,b))
+            self.updateSettings()
             self.doPreviewCallback()
 
     def updateSettings(self):
         """
         Method: updateSettings()
-        Created: 10.11.2004
-        Creator: JV
+        Created: 10.11.2004, JV
         Description: A method used to set the GUI widgets to their proper values
                      based on the selected channel, the settings of which are 
                      stored in the instance variable self.configSetting
         """
-        if self.dataUnit:
-            r,g,b=self.configSetting.getColor()            
-            self.colorChooser.SetValue(wxColour(r,g,b))
-            self.intensityTransferEditor.setIntensityTransferFunction(
-            self.configSetting.getIntensityTransferFunction())
+        if self.dataUnit and self.settings:
+            r,g,b=self.settings.get("Color")
+            if self.colorChooser:
+                self.colorChooser.SetValue(wx.Colour(r,g,b))
+
+            tf = self.settings.get("IntensityTransferFunction")
+            self.intensityTransferEditor.setIntensityTransferFunction(tf)
 
     def doPreviewCallback(self,event=None):
         """
         Method: doPreviewCallback()
-        Created: 23.11.2004
-        Creator: JV
+        Created: 23.11.2004, JV
         Description: A callback for the button "Preview" and other events
                      that wish to update the preview
         """
@@ -247,10 +239,18 @@ class ColorMergingWindow(TaskWindow.TaskWindow):
     def doColorMergingCallback(self,event):
         """
         Method: doColorMergingCallback()
-        Created: 10.11.2004
-        Creator: JV
+        Created: 10.11.2004, JV
         Description: A callback for the button "Do color combination"
         """
+        method=self.alphaModeBox.GetSelection()
+        val=0
+        if method == 1:
+            val=int(self.averageEdit.GetValue())
+        lst=[method,val]
+        print "Setting alpha mode to",lst
+        #self.dataUnit.setAlphaMode(lst)
+        self.settings.set("AlphaMode",lst)
+
         TaskWindow.TaskWindow.doOperation(self)
 
     def setCombinedDataUnit(self,dataUnit):
@@ -265,4 +265,5 @@ class ColorMergingWindow(TaskWindow.TaskWindow):
         TaskWindow.TaskWindow.setCombinedDataUnit(self,dataUnit)
         # We add entry "Alpha Channel" to the list of channels to allow
         # the user to edit the alpha channel for the 24-bit color merging
-        self.dataUnit.setOpacityTransfer(self.alphaTF)
+        #self.dataUnit.setOpacityTransfer(self.alphaTF)
+        self.settings.set("AlphaTransferFunction",self.alphaTF)

@@ -43,6 +43,8 @@ import os.path
 from PreviewFrame import *
 from ColorSelectionDialog import *
 from Logging import *
+import Scattergram
+import ImageOperations
 import sys
 import Colocalization
 import time
@@ -82,10 +84,13 @@ class ColocalizationWindow(TaskWindow.TaskWindow):
         Parameters:
                 root    Is the parent widget of this window
         """
+        self.scatterGram=None
         TaskWindow.TaskWindow.__init__(self,root)
         self.operationName="Colocalization"
         # Preview has to be generated here
         self.preview=ColocalizationPreview(self.panel,self)
+        self.Bind(EVT_ZSLICE_CHANGED,self.updateZSlice,id=self.preview.GetId())
+        self.Bind(EVT_TIMEPOINT_CHANGED,self.updateTimepoint,id=self.preview.GetId())
         #self.preview = ColorMergingPreview(self)
         self.previewSizer.Add(self.preview,(0,0),flag=wx.EXPAND|wx.ALL)
         self.previewSizer.Fit(self.preview)
@@ -137,12 +142,19 @@ class ColocalizationWindow(TaskWindow.TaskWindow):
         self.colocalizationSizer.Add(self.thresholdLbl,(2,0))
         self.colocalizationSizer.Add(self.threshold,(3,0))
 
+        self.scatterGram=Scattergram.Scattergram(self.colocalizationPanel,size=(256,256))
+        self.colocalizationSizer.Add(self.scatterGram,(4,0))
+        
         self.colocalizationPanel.SetSizer(self.colocalizationSizer)
         self.colocalizationPanel.SetAutoLayout(1)
         
         self.settingsNotebook.AddPage(self.colocalizationPanel,"Colocalization")
 
+        
 
+        #self.settingsNotebook.AddPage(self.scatterPanel,"Scatter Plot")
+        #self.settingsNotebook.Refresh()
+        
     def setColor(self,r,g,b):
         """
         Method: setColor(r,g,b)
@@ -155,7 +167,29 @@ class ColocalizationWindow(TaskWindow.TaskWindow):
             self.preview.updateColor()
 #        self.colorBtn.SetBackgroundColour((r,g,b))
         self.doPreviewCallback()
+        
+    def updateZSlice(self,event):
+        """
+        Method: updateZSlice(event)
+        Created: 25.03.2005, KP
+        Description: A callback function called when the zslice is changed
+        """
+        print "updateZSlice"
+        if self.scatterGram:
+            self.scatterGram.setZSlice(event.getValue())
+            self.scatterGram.update()
 
+    def updateTimepoint(self,event):
+        """
+        Method: updateTimepoint(event)
+        Created: 25.03.2005, KP
+        Description: A callback function called when the zslice is changed
+        """
+        print "UpdateTimepoint"
+        if self.scatterGram:
+            self.scatterGram.setTimepoint(event.getValue())            
+            self.scatterGram.update()
+            
     def updateThreshold(self,event):
         """
         Method: updateThreshold(event)
@@ -217,3 +251,17 @@ class ColocalizationWindow(TaskWindow.TaskWindow):
         """
         self.updateBitDepth()
         TaskWindow.TaskWindow.doPreviewCallback(self,event)
+        if self.scatterGram:
+            self.scatterGram.setZSlice(self.preview.z)
+            self.scatterGram.setTimepoint(self.preview.timePoint)
+            self.scatterGram.update()
+            
+    def setCombinedDataUnit(self,dataUnit):
+        """
+        Method: setCombinedDataUnit(dataUnit)
+        Created: 25.03.2005, KP
+        Description: Set the dataunit used by scattergram
+        """
+        TaskWindow.TaskWindow.setCombinedDataUnit(self,dataUnit)
+        self.scatterGram.setDataunit(dataUnit)
+ 

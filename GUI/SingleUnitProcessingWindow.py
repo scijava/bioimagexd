@@ -3,8 +3,7 @@
 """
  Unit: SingleUnitProcessingWindow.py
  Project: Selli
- Created: 24.11.2004
- Creator: KP
+ Created: 24.11.2004, KP
  Description:
 
  A wxPython Dialog window that is used to process a single dataset series in 
@@ -53,34 +52,17 @@ import time
 
 import TaskWindow
 
-def showSingleUnitProcessingWindow(sourceUnit,mainwin):
-    """
-    Function: showSingleUnitProcessingWindow(sourceUnit,mainwin)
-    Created: 24.11.2004
-    Creator: KP
-    Description: A function that displays the single unit processing window and
-                 waits for the user to process the dataset. After
-                 the deed is done or cancel is pressed, the results
-                 are returned to the caller
-    """
-
-    result=TaskWindow.showTaskWindow(SingleUnitProcessingWindow,
-                                     sourceUnit,mainwin)
-    return result
-
 
 class SingleUnitProcessingWindow(TaskWindow.TaskWindow):
     """
     Class: SingleUnitProcessingWindow
-    Created: 03.11.2004
-    Creator: KP
+    Created: 03.11.2004, KP
     Description: A window for processing a single dataunit
     """
     def __init__(self,parent):
         """
         Method: __init__(parent)
-        Created: 03.11.2004
-        Creator: KP
+        Created: 03.11.2004, KP
         Description: Initialization
         Parameters:
                 root    Is the parent widget of this window
@@ -88,12 +70,13 @@ class SingleUnitProcessingWindow(TaskWindow.TaskWindow):
         self.lbls=[]
         self.btns=[]
         self.entries=[]
+        self.timePoint = 0
         self.operationName="Single Dataset Series Processing"
         TaskWindow.TaskWindow.__init__(self,parent)
         # Preview has to be generated here
         self.colorChooser=None
         self.createIntensityTransferPage()
-
+        
         self.Show()
         self.preview=SingleUnitProcessingPreview(self.panel,self)
         self.previewSizer.Add(self.preview,(0,0))
@@ -166,9 +149,8 @@ class SingleUnitProcessingWindow(TaskWindow.TaskWindow):
 
     def createIntensityTransferPage(self):
         """
-        Method: createInterpolationPanel()
-        Created: 09.12.2004
-        Creator: KP
+        Method: createIntensityInterpolationPanel()
+        Created: 09.12.2004, KP
         Description: Creates a frame holding the entries for configuring 
                      interpolation
         """
@@ -194,7 +176,6 @@ class SingleUnitProcessingWindow(TaskWindow.TaskWindow):
         self.copyiTFBtn.Bind(EVT_BUTTON,self.copyTransferFunctionToAll)
         self.box.Add(self.copyiTFBtn)
 
-        
         self.editIntensityPanel.SetSizer(self.editIntensitySizer)
         self.editIntensityPanel.SetAutoLayout(1)
         self.settingsNotebook.InsertPage(1,self.editIntensityPanel,"Transfer Function")
@@ -219,7 +200,8 @@ class SingleUnitProcessingWindow(TaskWindow.TaskWindow):
                 # For entries that have no value, add -1 as a place holder
                 lst.append(-1)
         print "Setting lst=",lst
-        self.dataUnit.setInterpolationTimePoints(lst)
+        #self.dataUnit.setInterpolationTimePoints(lst)
+        self.settings.set("InterpolationTimepoints",lst)
 
 
     def gotoInterpolationTimePoint(self,entrynum):
@@ -327,22 +309,23 @@ class SingleUnitProcessingWindow(TaskWindow.TaskWindow):
         
         self.filtersPanel.SetSizer(self.filtersSizer)
         self.filtersPanel.SetAutoLayout(1)
-        #self.filtersPanel.SetBackgroundColour(self.panel.GetBackgroundColour())
 
 
 ########################## CALLBACK CODE #############################
-    def timePointChanged(self,timePoint):
+    def timePointChanged(self,event):
         """
         Method: timePointChanged(timepoint)
         Created: 24.11.2004, KP
         Description: A callback that is called when the previewed timepoint
                      changes.
         Parameters:
-                timePoint   The timepoint we're previewing now
+                event   Event object who'se getValue() returns the timepoint
         """
+        timePoint=event.getValue()
         print "Now configuring timepoint %d"%(timePoint)
         self.iTFEditor.setIntensityTransferFunction(
-        self.dataUnit.getIntensityTransferFunction(timePoint))
+        self.settings.getCounted("IntensityTransferFunctions",timePoint)
+        )
         self.timePoint=timePoint
  
     def copyTransferFunctionToAll(self,event=None):
@@ -360,7 +343,6 @@ class SingleUnitProcessingWindow(TaskWindow.TaskWindow):
         Description: A method to reset all the intensity transfer functions
         """
         pass
-
 
     def startInterpolation(self):
         """
@@ -413,14 +395,9 @@ class SingleUnitProcessingWindow(TaskWindow.TaskWindow):
 
         """
         if self.dataUnit:
-            self.dataUnit.setColor(r,g,b)
+            self.settings.set("Color",(r,g,b))
             self.preview.updateColor()
             self.doPreviewCallback()
-
-            #self.colorBtn.SetBackgroundColour((r,g,b))
-#        if self.colorChooser:
-#            self.colorChooser.SetValue(wx.Colour(r,g,b))
-
 
     def updateSettings(self):
         """
@@ -431,9 +408,11 @@ class SingleUnitProcessingWindow(TaskWindow.TaskWindow):
 
         if self.dataUnit:
             self.iTFEditor.setIntensityTransferFunction(
-            self.dataUnit.getIntensityTransferFunction(self.timePoint))
-            tps=self.dataUnit.getInterpolationTimePoints()
-	    
+            self.settings.getCounted("IntensityTransferFunctions",self.timePoint)
+            )
+            tps=self.settings.get("InterpolationTimepoints")
+            
+            
             for i in range(len(tps)):
                 n=tps[i]
                 # If there was nothing in the entry at this position, the 
@@ -442,20 +421,24 @@ class SingleUnitProcessingWindow(TaskWindow.TaskWindow):
                     self.entries[i].SetValue(str(n))
 
             # median filtering
-            self.doMedianCheckbutton.SetValue(self.dataUnit.getDoMedianFiltering())
-            neighborhood=self.dataUnit.getNeighborhood()
+            median=self.settings.get("MedianFiltering")
+            self.doMedianCheckbutton.SetValue(median)
+            #neighborhood=self.dataUnit.getNeighborhood()
+            neighborhood=self.settings.get("MedianNeighborhood")
             self.neighborhoodX.SetValue(str(neighborhood[0]))
             self.neighborhoodY.SetValue(str(neighborhood[1]))
             self.neighborhoodZ.SetValue(str(neighborhood[2]))
 
             # solitary filtering
-            self.doSolitaryCheckbutton.SetValue(self.dataUnit.getRemoveSolitary())
-            self.solitaryX.SetValue(str(
-            self.dataUnit.getHorizontalSolitaryThreshold()))
-            self.solitaryY.SetValue(str(
-            self.dataUnit.getVerticalSolitaryThreshold()))
-            self.solitaryThreshold.SetValue(str(
-            self.dataUnit.getProcessingSolitaryThreshold()))
+            #solitary=self.dataUnit.getRemoveSolitary()
+            solitary=self.settings.get("SolitaryFiltering")
+            solitaryX=self.settings.get("SolitaryHorizontalThreshold")
+            solitaryY=self.settings.get("SolitaryVerticalThreshold")
+            solitaryThreshold=self.settings.get("SolitaryProcessingThreshold")
+            self.doSolitaryCheckbutton.SetValue(solitary)
+            self.solitaryX.SetValue(str(solitaryX))
+            self.solitaryY.SetValue(str(solitaryY))
+            self.solitaryThreshold.SetValue(str(solitaryThreshold))
 
             self.doFilterCheckCallback()
 
@@ -467,18 +450,32 @@ class SingleUnitProcessingWindow(TaskWindow.TaskWindow):
                      from filter GUI widgets
         """
 
-        self.dataUnit.setDoMedianFiltering(self.doMedianCheckbutton.GetValue())
-        self.dataUnit.setRemoveSolitary(self.doSolitaryCheckbutton.GetValue())
+        self.settings.set("MedianFiltering",self.doMedianCheckbutton.GetValue())
+        self.settings.set("SolitaryFiltering",self.doSolitaryCheckbutton.GetValue())
+        #self.dataUnit.setDoMedianFiltering(self.doMedianCheckbutton.GetValue())
+        #self.dataUnit.setRemoveSolitary(self.doSolitaryCheckbutton.GetValue())
 
-        self.dataUnit.setNeighborhood(self.neighborhoodX.GetValue(),
-                                      self.neighborhoodY.GetValue(),
-                                      self.neighborhoodZ.GetValue())
+        #self.dataUnit.setNeighborhood(self.neighborhoodX.GetValue(),
+        #                              self.neighborhoodY.GetValue(),
+        #                              self.neighborhoodZ.GetValue())
+        nbh=(self.neighborhoodX.GetValue(),
+            self.neighborhoodY.GetValue(),
+            self.neighborhoodZ.GetValue())
+        nbh=map(int,nbh)
+        self.settings.set("MedianNeighborhood",nbh)
 
-        self.dataUnit.setHorizontalSolitaryThreshold(self.solitaryX.GetValue())
-        self.dataUnit.setVerticalSolitaryThreshold(self.solitaryY.GetValue())
-        self.dataUnit.setProcessingSolitaryThreshold(
-        self.solitaryThreshold.GetValue())
-
+        sx,sy,st=0,0,0
+        
+        try:sx=int(self.solitaryX.GetValue())
+        except:pass
+        try:sy=int(self.solitaryY.GetValue())
+        except:pass
+        try:st=int(self.solitaryThreshold.GetValue())
+        except:pass
+        
+        self.settings.set("SolitaryHorizontalThreshold",sx)
+        self.settings.set("SolitaryVerticalThreshold",sy)
+        self.settings.set("SolitaryProcessingThreshold",st)
 
     def doProcessingCallback(self,event=None):
         """
@@ -516,6 +513,7 @@ class SingleUnitProcessingWindow(TaskWindow.TaskWindow):
                      one dataunit here, not multiple source data units
         """
         self.dataUnit=dataUnit
+        self.settings = self.dataUnit.getSettings()
         name=dataUnit.getName()
         print "Name of dataUnit=%s"%name
         self.taskName.SetValue(name)
@@ -529,18 +527,16 @@ class SingleUnitProcessingWindow(TaskWindow.TaskWindow):
         self.itemMenu.SetSelection(0)
         
         #set the color of the colorBtn to the current color
-        #self.colorBtn.SetBackgroundColour(self.dataUnit.getColor())
-        r,g,b=self.dataUnit.getColor()
+        r,g,b=self.settings.get("Color")
         if self.colorChooser:
             self.colorChooser.SetValue(wx.Colour(r,g,b))
-        self.configSetting=self.dataUnit
 
         # We register a callback to be notified when the timepoint changes
         # We do it here because the timePointChanged() code requires the dataunit
-        self.preview.setTimePointCallback(self.timePointChanged)
+        self.Bind(EVT_TIMEPOINT_CHANGED,self.timePointChanged,id=self.preview.GetId())
 
-        self.iTFEditor.setIntensityTransferFunction(
-        self.configSetting.getIntensityTransferFunction(self.timePoint))
+        tf=self.settings.getCounted("IntensityTransferFunctions",self.timePoint)
+        self.iTFEditor.setIntensityTransferFunction(tf)
         self.iTFEditor.updateCallback=self.doPreviewCallback
 
         self.updateSettings()

@@ -65,16 +65,14 @@ def showTaskWindow(windowclass,combinedUnit,mainwin):
 class TaskWindow(wx.Frame):
     """
     Class: TaskWindow
-    Created: 23.11.2004
-    Creator: KP
+    Created: 23.11.2004, KP
     Description: A baseclass for a window for controlling the settings of the 
                  various task module
     """
     def __init__(self,root):
         """
         Method: __init__(root,title)
-        Created: 03.11.2004
-        Creator: KP
+        Created: 03.11.2004, KP
         Description: Initialization
         Parameters:
                 root    Is the parent widget of this window
@@ -115,7 +113,7 @@ class TaskWindow(wx.Frame):
         
         self.filePath=None
         self.dataUnit=None
-        self.configSetting=None
+        self.settings = None
         self.cancelled=0
 
 
@@ -271,24 +269,6 @@ class TaskWindow(wx.Frame):
         self.settingsSizer.Add(self.settingsNotebook,(1,0))#,flag=wx.EXPAND|wx.ALL)
 
 
-    def setColorCallback(self):
-        """
-        Method: setColorCallback(self)
-        Created: 03.11.2004
-        Creator: KP
-        Description: A callback function called when the button to configure
-                     the channel color is pressed
-        """
-        defaultColor = (0,0,0)
-        if self.dataUnit:
-            defaultColor = self.dataUnit.getColor()
-        color=Dialogs.askcolor(title="Select color for the channel",
-                                      initialcolor=defaultColor)
-
-        if color[0]:
-            r,g,b=color[0]
-            self.setColor(r,g,b)        
-
     def selectItem(self,event,index=-1):
         """
         Method: selectItem(event)
@@ -300,10 +280,9 @@ class TaskWindow(wx.Frame):
             index=self.itemMenu.GetSelection()
         name=self.itemMenu.GetString(index)
         print "Now configuring item",name
-        self.configSetting=self.dataUnit.getSetting(name)
+        self.settings = self.dataUnit.getSourceUnit(name).getSettings()
+        print "Got settings = ",self.settings
         self.updateSettings()
-
-
 
     def updateSettings(self):
         """
@@ -311,7 +290,7 @@ class TaskWindow(wx.Frame):
         Created: 03.11.2004, KP
         Description: A method used to set the GUI widgets to their proper values
                      based on the selected channel, the settings of which are
-                     stored in the instance variable self.configSetting
+                     stored in the instance variable self.settings
         """
         raise "Abstract method updateSetting() called from base class"
 
@@ -344,8 +323,6 @@ class TaskWindow(wx.Frame):
                      window, but does not destory it.
         """
         print "Closing..."
-        if self.preview:
-            self.preview.closePreview()
         self.cancelled=1
         # These calls are necessary to have proper functioning in windows
         self.preview.Show(0)
@@ -383,7 +360,7 @@ class TaskWindow(wx.Frame):
         if self.preview:
             self.preview.updatePreview()
 
-    def loadSettingsCallback(self):
+    def loadSettingsCallback(self,event):
         """
         Method: loadSettingsCallback()
         Created: 30.11.2004, KP
@@ -403,7 +380,7 @@ class TaskWindow(wx.Frame):
         self.updateSettings()
 
 
-    def saveSettingsCallback(self):
+    def saveSettingsCallback(self,event):
         """
         Method: saveSettingsCallback()
         Created: 30.11.2004, KP
