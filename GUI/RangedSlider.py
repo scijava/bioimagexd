@@ -44,10 +44,13 @@ class RangedSlider(wx.Slider):
         self.totalValues += n
         self.SetRange(0, self.totalValues)
         self.ranges.append((startPercent,endPercent,rangeStart,rangeEnd,n))
+    
+    def setScaledValue(self,val):
+        self.SetValue(self.getRealValue(val))
 
     def getRealValue(self,val):
         currRange=None
-        mytot = 0
+        mytot=0
         for r in self.ranges:
             if val >=  r[2] and val <= r[3]:
                 currRange=r
@@ -55,11 +58,14 @@ class RangedSlider(wx.Slider):
             else:
                 currRange=self.ranges[-1]
             mytot+=r[4]
-        percent = float(val) / currRange[3]
-#        print "percent = ",percent,"mytot=",mytot
+
+        distance =  (abs(currRange[3])+abs(currRange[2]))
+        val+=abs(currRange[2])
+        percent = float(val) / distance
+#        print "percent = ",percent,"mytot=",mytot,"distance=",distance
         #diff = currRange[3]-currRange[2]
         #return 100*(diff * percent)
-        return mytot+ percent * currRange[4]
+        return mytot + percent * (abs(currRange[4]))
 
 
     def getScaledValue(self,val=None):
@@ -87,6 +93,12 @@ class RangedSlider(wx.Slider):
 
 
 if __name__=='__main__':
+   d=RangedSlider(0,0,0)
+   d.setRange(0,100,-255,255,2000)
+   for i in range(-255,265,10):
+       print "Real value for %d is %f"%(i,d.getRealValue(i))
+
+if __name__=='__main__2':
     d=RangedSlider(0,0,0)
     d.setRange(0,50,0,1.0,100)
     d.setRange(51,100,1.0,20.0,100)
