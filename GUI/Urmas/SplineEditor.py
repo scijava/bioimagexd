@@ -230,7 +230,7 @@ class SplineEditor(wx.Panel):
 
     def __init__(self, parent, width=400,height=400):
         wx.Panel.__init__(self,parent,size=(width,height))
-        self.sizer=wxGridBagSizer(5,5)
+        self.sizer=wx.GridBagSizer(5,5)
        
         self.parent=parent
         self.data = None

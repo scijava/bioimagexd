@@ -100,7 +100,7 @@ class TimepointSelectionPanel(wx.Panel):
 
         self.nthEntry=wx.TextCtrl(self.configFrame,-1,"1",size=(50,-1))
         box.Add(self.nthEntry)
-        self.nthEntry.Bind(EVT_TEXT,self.updateSelection)
+        self.nthEntry.Bind(wx.EVT_TEXT,self.updateSelection)
         
         self.nthLbl2=wx.StaticText(self.configFrame,-1,"Nth timepoints")
         box.Add(self.nthLbl2)
@@ -153,7 +153,7 @@ class TimepointSelectionPanel(wx.Panel):
                 ncol=0
             btn=buttons.GenButton(self.buttonFrame,-1,"%d"%i,size=(24,24))
             btn.SetFont(wx.Font(7,wx.SWISS,wx.NORMAL,wx.NORMAL))
-            btn.Bind(EVT_BUTTON,lambda e,btn=btn,i=i: self.buttonClickedCallback(btn,i))
+            btn.Bind(wx.EVT_BUTTON,lambda e,btn=btn,i=i: self.buttonClickedCallback(btn,i))
             btn.origColor=btn.GetBackgroundColour()
             btn.origFgColor=btn.GetForegroundColour()
             self.buttonList.append(btn)
@@ -233,7 +233,7 @@ class TimepointSelection(wx.Dialog):
         """
         wx.Dialog.__init__(self,parent,-1,"Timepoint selection",style=wx.CAPTION|wx.STAY_ON_TOP|wx.CLOSE_BOX|wx.MAXIMIZE_BOX|wx.MINIMIZE_BOX|wx.RESIZE_BORDER,size=(640,480))
         self.parent=parent
-        self.Bind(EVT_CLOSE,self.closeWindowCallback)
+        self.Bind(wx.EVT_CLOSE,self.closeWindowCallback)
         self.mainsizer=wx.GridBagSizer(10,10)
 
         self.rendering=0
@@ -270,11 +270,11 @@ class TimepointSelection(wx.Dialog):
         self.buttonsSizer1=wx.BoxSizer(wx.HORIZONTAL)
         
         self.actionBtn=wx.Button(self,-1,"Ok")
-        #self.actionBtn.Bind(EVT_BUTTON,self.doRendering)
+        #self.actionBtn.Bind(wx.EVT_BUTTON,self.doRendering)
         self.buttonsSizer1.Add(self.actionBtn,flag=wx.ALIGN_LEFT)
 
         self.closeBtn=wx.Button(self,-1,"Close")
-        self.closeBtn.Bind(EVT_BUTTON,self.closeWindowCallback)
+        self.closeBtn.Bind(wx.EVT_BUTTON,self.closeWindowCallback)
         self.buttonsSizer1.Add(self.closeBtn,flag=wx.ALIGN_LEFT)
         self.buttonsSizer1.AddSizer((100,-1))
         self.buttonsSizer.Add(self.buttonsSizer1,flag=wx.ALIGN_LEFT)
