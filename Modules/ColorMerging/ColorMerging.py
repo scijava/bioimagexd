@@ -70,11 +70,11 @@ class ColorMerging(NumericModule):
                      preview data becomes invalid.
         """
         Module.reset(self)
-    	self.processedZSlices=[]
-    	self.preview=None
-    	self.numpyarrays=[]
-    	self.arrays=[]
-    	self.infos=[]
+        self.processedZSlices=[]
+        self.preview=None
+        self.numpyarrays=[]
+        self.arrays=[]
+        self.infos=[]
         self.intensityTransferFunctions = []
         self.rgbs=[]
 
@@ -97,6 +97,7 @@ class ColorMerging(NumericModule):
 
         self.rgbs.append(kws["rgb"])
         self.alphaTF=kws["alphaTransferFunction"]
+        print "Got iTF=",kws["intensityTransferFunction"]
         self.intensityTransferFunctions.append(kws["intensityTransferFunction"])
 
         Module.addInput(self,data,**kws)
@@ -108,7 +109,7 @@ class ColorMerging(NumericModule):
         Creator: JV
         Description: Does a preview calculation for the x-y plane at depth z
         """
-        self.doAlpha=0
+        self.doAlpha=1
         if not self.preview:
             self.preview=self.doOperation()
         self.doAlpha=1
@@ -151,10 +152,11 @@ class ColorMerging(NumericModule):
 
         # Map scalars with intensity transfer list
 
-        print "We are processing %d arrays"%len(self.arrays)
+        print "We are processing %d arrays"%len(self.images)
 
         processed=[]
         imagelen=len(self.images)
+        print "Mapping through intensities"
         for i in range(0,imagelen):
             mapIntensities=vtk.vtkImageMapToIntensities()
             mapIntensities.SetIntensityTransferFunction(self.intensityTransferFunctions[i])
@@ -162,35 +164,66 @@ class ColorMerging(NumericModule):
             mapIntensities.Update()
             data=mapIntensities.GetOutput()
             processed.append(data)
-        # Color and combine 8-bit datasets to an 24-bit dataset
-
-        # result rgb
+        print "Got %d mapped datasets"%len(processed)
 
         if self.doAlpha:
+            print "Creating alpha..."
             createalpha=vtk.vtkImageAlphaFilter()
             for i in processed:
                 createalpha.AddInput(i)
+            print "Added inputs"
             createalpha.Update()
             alpha=createalpha.GetOutput()
+            #print "alpha=",alpha
+            print "Created alpha with dims and datatype:",alpha.GetDimensions(),alpha.GetScalarTypeAsString()
+            
+        # Color the datasets to 24-bit datasets using VTK classes
+            
+        
+        colored=[]
+        for i in range(0,imagelen):
+            mapToColors=vtk.vtkImageMapToColors()
+            mapToColors.SetOutputFormatToRGB()
+            print "Coloring channel %d"%i
+            ct=vtk.vtkColorTransferFunction()            
+            r,g,b=self.rgbs[i]
+            r/=255.0
+            g/=255.0
+            b/=255.0
+            ct.AddRGBPoint(0,0,0,0)
+            print "Coloring %d to %f,%f,%f"%(i,r,g,b)
+            ct.AddRGBPoint(255,r,g,b)
+            mapToColors.SetLookupTable(ct)
+            mapToColors.SetInput(processed[i])
+            mapToColors.Update()
+            colored.append(mapToColors.GetOutput())
+        # result rgb
 
         merge=vtk.vtkImageMerge()
-        if self.doAlpha:
-            merge.SetAlphaChannel(alpha)
-        for i in processed:
+        for i in colored:
             merge.AddInput(i)
-        merge.SetColor(rgb)
         merge.Update()
         data=merge.GetOutput()
-            # slower again, handles overflow
+        print "Result with dims and type",data.GetDimensions(),data.GetScalarTypeAsString()
+        print "Num of Comps:",data.GetNumberOfScalarComponents()
+
+        if self.doAlpha:
+            appendcomp=vtk.vtkImageAppendComponents()
+            appendcomp.AddInput(data)
+            appendcomp.AddInput(alpha)
+            appendcomp.Update()
+            data=appendcomp.GetOutput()
+            print "After appending alpha, num of Comps:",data.GetNumberOfScalarComponents()
+
+        # slower again, handles overflow
 #            red   = minimum(add( red,   multiply( datasets[i], rgb[0] ) ),255)
 #            green = minimum(add( green, multiply( datasets[i], rgb[1] ) ),255)
 #            blue  = minimum(add( blue,  multiply( datasets[i], rgb[2] ) ),255)
 
-        print result.shape
+        print "Done"
         t3=time.time()
         print "Calculations took %f seconds"%(t3-t1)
         t2=time.time()
-        print "Doing color merging took %f seconds"%(t2-t1)
         return data
 
 

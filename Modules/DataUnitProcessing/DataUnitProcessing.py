@@ -24,7 +24,6 @@
  JV - Jukka Varsaluoma,varsa@st.jyu.fi
 
  Copyright (c) 2004 Selli Project.
- --------------------------------------------------------------
 """
 
 __author__ = "Selli Project <http://sovellusprojektit.it.jyu.fi/selli/>"
@@ -41,25 +40,21 @@ from Numeric import *
 
 class DataUnitProcessing(NumericModule):
     """
-    --------------------------------------------------------------
     Class: DataUnitProcessing
     Created: 25.11.2004
     Creator: KP
     Description: Processes a single dataunit in specified ways
-    -------------------------------------------------------------
     """
 
 
     def __init__(self,**kws):
         """
-        --------------------------------------------------------------
         Method: __init__(**keywords)
         Created: 25.11.2004
         Creator: KP
         Description: Initialization
-        -------------------------------------------------------------
         """
-    	NumericModule.__init__(self,**kws)
+        NumericModule.__init__(self,**kws)
 
         # TODO: remove attributes that already exist in base class!
     	self.images=[]
@@ -72,7 +67,6 @@ class DataUnitProcessing(NumericModule):
 
     def reset(self):
         """
-        --------------------------------------------------------------
         Method: reset()
         Created: 25.11.2004
         Creator: KP
@@ -80,7 +74,6 @@ class DataUnitProcessing(NumericModule):
                      used mainly when doing previews, when the parameters
                      that control the colocalization are changed and the
                      preview data becomes invalid.
-        -------------------------------------------------------------
         """
         Module.reset(self)
     	self.preview=None
@@ -94,16 +87,15 @@ class DataUnitProcessing(NumericModule):
         self.solitaryX=0
         self.solitaryY=0
         self.solitaryThreshold=0
+        self.extent=None
 
 
     def addInput(self,data,**kws):
         """
-        --------------------------------------------------------------
         Method: addInput(data,**keywords)
         Created: 1.12.2004
         Creator: KP,JV
         Description: Adds an input for the single dataunit processing filter
-        -------------------------------------------------------------
         """
 
         if not kws.has_key("intensityTransferFunction"):
@@ -125,26 +117,25 @@ class DataUnitProcessing(NumericModule):
 
     def getPreview(self,z):
         """
-        --------------------------------------------------------------
         Method: getPreview(z)
         Created: 1.12.2004
         Creator: KP
         Description: Does a preview calculation for the x-y plane at depth z
-        -------------------------------------------------------------
         """
         if not self.preview:
+            dims=self.images[0].GetDimensions()
+            self.extent=(0,dims[0]-1,0,dims[1]-1,z,z)
             self.preview=self.doOperation()
+            self.extent=None
         return self.preview
 
 
     def doOperation(self):
         """
-        --------------------------------------------------------------
         Method: doOperation
         Created: 1.12.2004
         Creator: KP,JV
         Description: Processes the dataset in specified ways
-        -------------------------------------------------------------
         """
         t1=time.time()
 
@@ -158,8 +149,13 @@ class DataUnitProcessing(NumericModule):
         mapIntensities=vtk.vtkImageMapToIntensities()
         mapIntensities.SetIntensityTransferFunction(self.intensityTransferFunctions[0])
         mapIntensities.SetInput(mapdata)
-        mapIntensities.Update()
+        
         data=mapIntensities.GetOutput()
+        if self.extent:
+            print "Update extent=",self.extent
+            #mapdata.SetUpdateExtent(self.extent)
+            data.SetUpdateExtent(self.extent)
+        mapIntensities.Update()
         
         if self.doSolitary:
             print "Doing New Solitary Filtering"
