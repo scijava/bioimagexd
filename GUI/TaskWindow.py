@@ -27,7 +27,6 @@ __author__ = "Selli Project <http://sovellusprojektit.it.jyu.fi/selli/>"
 __version__ = "$Revision: 1.21 $"
 __date__ = "$Date: 2005/01/13 14:36:20 $"
 
-from wxPython.wx import *
 import wx
 
 import os.path
@@ -65,7 +64,7 @@ def showTaskWindow(windowclass,combinedUnit,mainwin):
 
 
 
-class TaskWindow(wxDialog):
+class TaskWindow(wx.Dialog):
     """
     Class: TaskWindow
     Created: 23.11.2004
@@ -83,36 +82,36 @@ class TaskWindow(wxDialog):
                 root    Is the parent widget of this window
                 title   Is the title for this window
         """
-        wxDialog.__init__(self,root,-1,"Task Window",
-        style=wxCAPTION|wxSTAY_ON_TOP|wxCLOSE_BOX|wxMAXIMIZE_BOX|wxMINIMIZE_BOX|wxRESIZE_BORDER|wxDIALOG_EX_CONTEXTHELP,
+        wx.Dialog.__init__(self,root,-1,"Task Window",
+        style=wx.CAPTION|wx.STAY_ON_TOP|wx.CLOSE_BOX|wx.MAXIMIZE_BOX|wx.MINIMIZE_BOX|wx.RESIZE_BORDER|wx.DIALOG_EX_CONTEXTHELP,
         size=(640,480))
         self.root=root
         self.preview=None
         # Associate this window with the parent window (root)
         ico=reduce(os.path.join,["Icons","Selli.ico"])
-        self.icon = wxIcon(ico,wxBITMAP_TYPE_ICO)
+        self.icon = wx.Icon(ico,wx.BITMAP_TYPE_ICO)
         self.SetIcon(self.icon)
 
         self.Bind(EVT_CLOSE,self.closeWindowCallback)
-        self.mainsizer=wxGridBagSizer(5,5)
+        self.mainsizer=wx.GridBagSizer(5,5)
 
-        self.previewSizer=wxGridBagSizer()
-        self.mainsizer.Add(self.previewSizer,(0,0),flag=wxEXPAND|wxALL)
+        self.previewSizer=wx.GridBagSizer()
+        self.mainsizer.Add(self.previewSizer,(0,0),flag=wx.EXPAND|wx.ALL)
         
                 
-        self.settingsSizer=wxGridBagSizer()
-        self.mainsizer.Add(self.settingsSizer,(0,1),span=(1,1),flag=wxEXPAND|wxALL)
+        self.settingsSizer=wx.GridBagSizer()
+        self.mainsizer.Add(self.settingsSizer,(0,1),span=(1,1),flag=wx.EXPAND|wx.ALL)
         
-        self.settingsNotebook=wxNotebook(self,-1,size=(200,200))        
+        self.settingsNotebook=wx.Notebook(self,-1,size=(200,200))        
         
-#        self.infoSizer=wxGridBagSizer()
-#        self.mainsizer.Add(self.infoSizer,(1,0),flag=wxEXPAND|wxALL)
+#        self.infoSizer=wx.GridBagSizer()
+#        self.mainsizer.Add(self.infoSizer,(1,0),flag=wx.EXPAND|wx.ALL)
   
-        self.staticLine=wxStaticLine(self)
-        self.mainsizer.Add(self.staticLine,(3,0),span=(1,2),flag=wxEXPAND|wxLEFT|wxRIGHT)
+        self.staticLine=wx.StaticLine(self)
+        self.mainsizer.Add(self.staticLine,(3,0),span=(1,2),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
 
-        self.buttonSizer=wxBoxSizer(wxHORIZONTAL)
-        self.mainsizer.Add(self.buttonSizer,(4,0),span=(1,2),flag=wxEXPAND|wxLEFT|wxRIGHT)
+        self.buttonSizer=wx.BoxSizer(wx.HORIZONTAL)
+        self.mainsizer.Add(self.buttonSizer,(4,0),span=(1,2),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
         
         self.filePath=None
         self.dataUnit=None
@@ -149,30 +148,30 @@ class TaskWindow(wxDialog):
 
     def createButtonBox(self):
         
-        self.buttonsSizer1=wxBoxSizer(wxHORIZONTAL)
+        self.buttonsSizer1=wx.BoxSizer(wx.HORIZONTAL)
         
-        self.savesettings=wxButton(self,wxNewId(),"Save settings")
+        self.savesettings=wx.Button(self,wx.NewId(),"Save settings")
         self.savesettings.Bind(EVT_BUTTON,self.saveSettingsCallback)
-        self.buttonsSizer1.Add(self.savesettings,flag=wxALIGN_LEFT)
+        self.buttonsSizer1.Add(self.savesettings,flag=wx.ALIGN_LEFT)
 
-        self.loadsettings=wxButton(self,wxNewId(),"Load settings")
+        self.loadsettings=wx.Button(self,wx.NewId(),"Load settings")
         self.loadsettings.Bind(EVT_BUTTON,self.loadSettingsCallback)
-        self.buttonsSizer1.Add(self.loadsettings,flag=wxALIGN_LEFT)
+        self.buttonsSizer1.Add(self.loadsettings,flag=wx.ALIGN_LEFT)
         self.buttonsSizer1.AddSizer((100,-1))
         self.buttonSizer.Add(self.buttonsSizer1)
         
-        self.buttonsSizer2=wxBoxSizer(wxHORIZONTAL)
+        self.buttonsSizer2=wx.BoxSizer(wx.HORIZONTAL)
         
-        self.processButton=wxButton(self,-1,"Process dataset series")
+        self.processButton=wx.Button(self,-1,"Process dataset series")
         #self.processDatasetButton.Bind(EVT_BUTTON,self.doProcessingCallback)
         self.buttonsSizer2.Add(self.processButton)
 
-        self.previewButton=wxButton(self,-1,"Preview")
+        self.previewButton=wx.Button(self,-1,"Preview")
         self.previewButton.Bind(EVT_BUTTON,self.doPreviewCallback)
         self.buttonsSizer2.Add(self.previewButton)        
 
         
-        self.closeButton=wxButton(self,-1,"Close")
+        self.closeButton=wx.Button(self,-1,"Close")
         self.closeButton.Bind(EVT_BUTTON,self.closeWindowCallback)
         self.buttonsSizer2.Add(self.closeButton)
         
@@ -186,9 +185,9 @@ class TaskWindow(wxDialog):
         Description: Creates a listbox that displays the names of the processed
                      channels
         """
-        self.listboxsizer=wxBoxSizer(wxVERTICAL)
-        self.channelsLbl=wxStaticText(self,wxNewId(),"Items:")
-        self.listbox=wxListBox(self,wxNewId(),size=(250,50))
+        self.listboxsizer=wx.BoxSizer(wx.VERTICAL)
+        self.channelsLbl=wx.StaticText(self,wx.NewId(),"Items:")
+        self.listbox=wx.ListBox(self,wx.NewId(),size=(250,50))
         self.listbox.Bind(EVT_LISTBOX,self.selectItem)
         
         self.listboxsizer.Add(self.channelsLbl)
@@ -205,15 +204,15 @@ class TaskWindow(wxDialog):
         Description: Creates a frame that contains the various widgets
                      used to control the colocalization settings
         """
-        self.settingsNotebook=wxNotebook(self,-1)
-        self.commonSettingsPanel=wxPanel(self.settingsNotebook,-1)
-        self.commonSettingsSizer=wxGridBagSizer()
+        self.settingsNotebook=wx.Notebook(self,-1)
+        self.commonSettingsPanel=wx.Panel(self.settingsNotebook,-1)
+        self.commonSettingsSizer=wx.GridBagSizer()
         
-        self.namesizer=wxBoxSizer(wxVERTICAL)
+        self.namesizer=wx.BoxSizer(wx.VERTICAL)
         self.commonSettingsSizer.Add(self.namesizer,(0,0))
         
-        self.taskNameLbl=wxStaticText(self.commonSettingsPanel,-1,"Dataunit Name:")
-        self.taskName=wxTextCtrl(self.commonSettingsPanel,-1,size=(250,-1))
+        self.taskNameLbl=wx.StaticText(self.commonSettingsPanel,-1,"Dataunit Name:")
+        self.taskName=wx.TextCtrl(self.commonSettingsPanel,-1,size=(250,-1))
         self.namesizer.Add(self.taskNameLbl)
         self.namesizer.Add(self.taskName)
 
@@ -221,7 +220,7 @@ class TaskWindow(wxDialog):
         self.commonSettingsPanel.SetAutoLayout(1)
 
         self.settingsNotebook.AddPage(self.commonSettingsPanel,"General")
-        self.settingsSizer.Add(self.settingsNotebook,(2,0),flag=wxEXPAND|wxALL)
+        self.settingsSizer.Add(self.settingsNotebook,(2,0),flag=wx.EXPAND|wx.ALL)
         
         
     def setColorCallback(self):
@@ -285,7 +284,7 @@ class TaskWindow(wxDialog):
         mgr.setDataUnit(self.dataUnit)
         self.grayOut()
 
-        if mgr.ShowModal() == wxID_OK:
+        if mgr.ShowModal() == wx.ID_OK:
             self.Close()
             return
         self.grayOut(1)
@@ -301,7 +300,7 @@ class TaskWindow(wxDialog):
         """
         print "Closing..."
         self.cancelled=1
-        self.EndModal(wxID_OK)
+        self.EndModal(wx.ID_OK)
 
         
     def grayOut(self,enable=0):
@@ -353,9 +352,9 @@ class TaskWindow(wxDialog):
                      du file
         """
         wc="Dataset Settings(*.du)|*.du"
-        dlg=wxFileDialog(self,"Load dataset settings from file",wildcard=wc,style=wxOPEN)
+        dlg=wx.FileDialog(self,"Load dataset settings from file",wildcard=wc,style=wx.OPEN)
         filename=None
-        if dlg.ShowModal()==wxID_OK:
+        if dlg.ShowModal()==wx.ID_OK:
             filename=dlg.GetPath()
         
         dlg.Destroy()
@@ -374,9 +373,9 @@ class TaskWindow(wxDialog):
                      du file
         """
         wc="Dataset Settings(*.du)|*.du"
-        dlg=wxFileDialog(self,"Save dataset settings to file",wildcard=wc,style=wxSAVE)
+        dlg=wx.FileDialog(self,"Save dataset settings to file",wildcard=wc,style=wx.SAVE)
         filename=None
-        if dlg.ShowModal()==wxID_OK:
+        if dlg.ShowModal()==wx.ID_OK:
             filename=dlg.GetPath()
         
         dlg.Destroy()

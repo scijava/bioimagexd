@@ -153,7 +153,7 @@ class RenderingManager(TimepointSelection):
         """
         self.renderint.setDataUnit(self.dataUnit)
         self.renderint.setTimePoints([0])
-        self.renderint.setPath(self.rendir.GetValue())
+        self.renderint.setOutputPath(self.rendir.GetValue())
         
         initFile="settings.mv"
         wc="Mayavi Settings File (*.mv)|*.du"
@@ -224,7 +224,7 @@ class RenderingManager(TimepointSelection):
             return
         self.renderint.setDataUnit(self.dataUnit)
         self.renderint.setTimePoints(timepoints)
-        self.renderint.setPath(self.rendir.GetValue())
+        self.renderint.setOutputPath(self.rendir.GetValue())
         try:
             if self.renderint.isMayaviRunning():
                 Logging.info("Using existing mayavi instance")

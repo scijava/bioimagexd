@@ -7,7 +7,7 @@
  Creator: KP
  Description:
 
- A wxPython wxDialog window that is used to control the settings for the
+ A wx.Python wx.Dialog window that is used to control the settings for the
  colocalization module. Expects to be handed a ColocalizationDataUnit() 
  containing the datasets from which the colocalization map is generated.
  Uses the PreviewFrame for previewing.
@@ -24,7 +24,7 @@
                            Fixed: Color selection now shows the current color 
                            as default
            14.12.2004 JM - Colocalization depth is now saved and loaded properly
-           03.02.2005 KP - Window converted to wxPython and made to use a notebook
+           03.02.2005 KP - Window converted to wx.Python and made to use a notebook
 
  Selli includes the following persons:
  JH - Juha Hyytiäinen, juhyytia@st.jyu.fi
@@ -87,7 +87,7 @@ class ColocalizationWindow(TaskWindow.TaskWindow):
         self.operationName="Colocalization"
         # Preview has to be generated here
         self.preview=ColocalizationPreview(self)
-        self.previewSizer.Add(self.preview,(0,0),flag=wxEXPAND|wxALL)
+        self.previewSizer.Add(self.preview,(0,0),flag=wx.EXPAND|wx.ALL)
         self.SetTitle("Colocalization")
         self.mainsizer.Layout()
         self.mainsizer.Fit(self)
@@ -120,20 +120,20 @@ class ColocalizationWindow(TaskWindow.TaskWindow):
         self.colorChooser=ColorSelectionDialog(self.commonSettingsPanel,self.setColor)
         self.commonSettingsSizer.Add(self.colorChooser,(1,0))
 
-        self.colocalizationPanel=wxPanel(self.settingsNotebook,-1)
-        self.colocalizationSizer=wxGridBagSizer()
+        self.colocalizationPanel=wx.Panel(self.settingsNotebook,-1)
+        self.colocalizationSizer=wx.GridBagSizer()
         
-        self.depthLbl=wxStaticText(self.colocalizationPanel,-1,"Colocalization Depth:")
+        self.depthLbl=wx.StaticText(self.colocalizationPanel,-1,"Colocalization Depth:")
         self.colocalizationSizer.Add(self.depthLbl,(0,0))
    
-        self.depthMenu=wxChoice(self.colocalizationPanel,-1,choices=["1-bit","8-bit"])
+        self.depthMenu=wx.Choice(self.colocalizationPanel,-1,choices=["1-bit","8-bit"])
         self.colocalizationSizer.Add(self.depthMenu,(1,0))
         self.depthMenu.Bind(EVT_CHOICE,self.updateBitDepth)
 
-        self.thresholdLbl=wxStaticText(self.colocalizationPanel,-1,"Channel threshold:")
+        self.thresholdLbl=wx.StaticText(self.colocalizationPanel,-1,"Channel threshold:")
         
-        self.threshold=wxSlider(self.colocalizationPanel,value=128,minValue=1,maxValue=255,size=(300,-1),
-        style=wxSL_HORIZONTAL|wxSL_AUTOTICKS|wxSL_LABELS)
+        self.threshold=wx.Slider(self.colocalizationPanel,value=128,minValue=1,maxValue=255,size=(300,-1),
+        style=wx.SL_HORIZONTAL|wx.SL_AUTOTICKS|wx.SL_LABELS)
         self.threshold.Bind(EVT_SCROLL,self.updateThreshold)
         
         self.colocalizationSizer.Add(self.thresholdLbl,(2,0))
@@ -191,7 +191,7 @@ class ColocalizationWindow(TaskWindow.TaskWindow):
         self.threshold.SetValue(self.configSetting.getThreshold())
         if self.dataUnit:
             r,g,b=self.dataUnit.getColor()
-            self.colorChooser.SetValue(wxColour(r,g,b))
+            self.colorChooser.SetValue(wx.Colour(r,g,b))
 
     def doColocalizationCallback(self,event):
         """

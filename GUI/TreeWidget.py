@@ -19,7 +19,6 @@
  JV - Jukka Varsaluoma,varsa@st.jyu.fi
 
  Copyright (c) 2004 Selli Project.
- --------------------------------------------------------------
 """
 __author__ = "Selli Project <http://sovellusprojektit.it.jyu.fi/selli/>"
 __version__ = "$Revision: 1.14 $"
@@ -29,11 +28,11 @@ from wxPython.wx import *
 import wx
 
 class TreeWidget(wxPanel):
-    def __init__(self,parent):
+    def __init__(self,parent,callback=None):
         wxPanel.__init__(self,parent,-1)
         self.Bind(wx.EVT_SIZE,self.onSize)
         self.treeId=wxNewId()
-        self.tree = LSMTree(self,self.treeId)
+        self.tree = LSMTree(self,self.treeId,callback)
     
         self.items={}
     
@@ -107,12 +106,14 @@ class TreeWidget(wxPanel):
         return objs
 
 class LSMTree(wxTreeCtrl):
-    def __init__(self,parent,id):
+    def __init__(self,parent,id,callback=None):
         wxTreeCtrl.__init__(self,parent,id,wx.DefaultPosition,wx.DefaultSize,
         wx.TR_HAS_BUTTONS|wx.TR_MULTIPLE)
         self.Bind(wx.EVT_TREE_SEL_CHANGED,self.onSelectionChanged,id=self.GetId())
+        self.callback=callback
         
     def onSelectionChanged(self,event):
         item=event.GetItem()
-        
-    
+        obj=self.GetPyData(item)
+        if obj:
+            self.callback(obj)
