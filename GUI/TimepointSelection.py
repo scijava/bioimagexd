@@ -238,7 +238,7 @@ class TimepointSelection(wx.Dialog):
 
         self.rendering=0
         self.SetTitle("Timepoint Selection")
-        ico=reduce(os.path.join,["..","Icons","Selli.ico"])
+        ico=reduce(os.path.join,["Icons","Selli.ico"])
         self.icon = wx.Icon(ico,wx.BITMAP_TYPE_ICO)
         self.SetIcon(self.icon)
 

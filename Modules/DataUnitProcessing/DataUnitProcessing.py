@@ -146,72 +146,40 @@ class DataUnitProcessing(NumericModule):
         Description: Processes the dataset in specified ways
         -------------------------------------------------------------
         """
-        if not self.arrays:
-            for i in self.images:
-                numpyarray,info=self.VTKtoNumpy(i)
-                print "Got array with shape ",numpyarray.shape
-                self.arrays.append(numpyarray)
-                self.infos.append(info)
-
-        self.array=self.arrays[0]
-        retdataset=None
         t1=time.time()
 
         # Map scalars with intensity transfer list
 
-        print "We are processing %d arrays"%len(self.arrays)
-        if len(self.arrays)>1:
+        print "We are processing %d arrays"%len(self.images)
+        if len(self.images)>1:
             raise "More than one source dataset for Single DataUnit Processing"
 
-        dataset=zeros(self.array.shape,UnsignedInt8)
-
-        # No mapping if intensity transfer function is identical
-        if self.intensityTransferFunctions[0].isIdentical():
-            print "Indentical function"
-            if self.array.typecode()!=UnsignedInt8:
-                retdataset=self.array.astype(UnsignedInt8)
-            else:
-                retdataset=self.array
-        else:
-            table=self.intensityTransferFunctions[0].getAsList()
-            table=array(table,UnsignedInt8)
-            dataset.flat[:] = take(array(table), self.array.flat)
-            retdataset=dataset.astype(UnsignedInt8)
-
-        # Solitary filtering
+        mapdata=self.images[0]
+        mapIntensities=vtk.vtkImageMapToIntensities()
+        mapIntensities.SetIntensityTransferFunction(self.intensityTransferFunctions[0])
+        mapIntensities.SetInput(mapdata)
+        mapIntensities.Update()
+        data=mapIntensities.GetOutput()
+        
         if self.doSolitary:
-            print "Doing Solitary Filtering"
-
-            # slow as hell
-            # todo: convert C or Numeric
-
-            d=retdataset
-            for x in range(0,self.x):
-                for y in range(0,self.y):
-                    for z in range(0,self.z):
-                        # why z,x,y?!
-                        v=d[z][x][y]
-                        if v > self.solitaryThreshold:
-                            newValue=0
-                            if self.solitaryX and x > 0:
-                                if d[z][x-1][y] >= self.solitaryX:
-                                    newValue = v
-                            if self.solitaryX and  x < (self.x-1):
-                                if d[z][x+1][y] >= self.solitaryX:
-                                    newValue = v
-                            if self.solitaryY and  y > 0:
-                                if d[z][x][y-1] >= self.solitaryY:
-                                    newValue = v
-                            if  self.solitaryY and y < (self.y-1):
-                                if d[z][x][y+1] >= self.solitaryY:
-                                    newValue = v
-                            d[z][x][y]=newValue
-
-
+            print "Doing New Solitary Filtering"
+            t3=time.time()
+            #data=self.NumpyToVTK(retdataset,self.infos[0])
+            # Using VTK´s vtkImageMEdian3D-filter
+            solitary = vtk.vtkImageSolitaryFilter()
+            solitary.SetInput(data)
+            solitary.SetFilteringThreshold(self.solitaryThreshold)
+            solitary.SetHorizontalThreshold(self.solitaryX)
+            solitary.SetVerticalThreshold(self.solitaryY)
+            solitary.Update()
+            t4=time.time()
+            print "New Solitary filtering took ",(t4-t3),"seconds"
+            data=solitary.GetOutput()
+            print "data type=",data.GetScalarTypeAsString()
+            print "data dimensions=",data.GetDimensions()
         # Median filtering
         if self.doMedian:
             print "Doing Median Filtering"
-            data=self.NumpyToVTK(retdataset,self.infos[0])
             # Using VTK´s vtkImageMEdian3D-filter
             median = vtk.vtkImageMedian3D()
             median.SetInput(data)
@@ -220,10 +188,10 @@ class DataUnitProcessing(NumericModule):
                                  self.medianNeighborhood[2])
             #median.ReleaseDataFlagOff()
             median.Update()
-            return median.GetOutput()
+            data=median.GetOutput()
 
         t2=time.time()
         print "Processing took %f seconds"%(t2-t1)
 
-        data=self.NumpyToVTK(retdataset,self.infos[0])
+        #data=self.NumpyToVTK(retdataset,self.infos[0])
         return data

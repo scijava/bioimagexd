@@ -115,7 +115,7 @@ class MainWindow(wxFrame):
             self.lastpath=r"H:\Data"
         
         # Icon for the window
-        ico=reduce(os.path.join,["..","Icons","Selli.ico"])
+        ico=reduce(os.path.join,["Icons","Selli.ico"])
         self.icon = wxIcon(ico,wxBITMAP_TYPE_ICO)
         self.SetIcon(self.icon)
 
@@ -159,7 +159,7 @@ class MainWindow(wxFrame):
         Description: Creates a tool bar for the window
         -------------------------------------------------------------
         """
-        iconpath=reduce(os.path.join,["..","Icons"])
+        iconpath=reduce(os.path.join,["Icons"])
         self.CreateToolBar()
         tb=self.GetToolBar()
         tb.AddSimpleTool(ID_OPEN,wxImage(os.path.join(iconpath,"OpenLSM.gif"),wxBITMAP_TYPE_GIF).ConvertToBitmap(),"Open","Open dataset series")

@@ -44,7 +44,7 @@ import Dialogs
 
 from PreviewFrame import *
 from IntensityTransferEditor import *
-from IntensityTransferFunction import *
+#from IntensityTransferFunction import *
 from Logging import *
 from ColorSelectionDialog import *
 
@@ -394,9 +394,9 @@ class SingleUnitProcessingWindow(TaskWindow.TaskWindow):
                      the preview and Set color-button accordingly
 
         """
-    	if self.dataUnit:
-    	    self.dataUnit.setColor(r,g,b)
-    	    self.preview.updateColor()
+        if self.dataUnit:
+            self.dataUnit.setColor(r,g,b)
+            self.preview.updateColor()
             self.doPreviewCallback()
 
             #self.colorBtn.SetBackgroundColour((r,g,b))
@@ -487,6 +487,7 @@ class SingleUnitProcessingWindow(TaskWindow.TaskWindow):
         #print "doMedianVar in window: "
         #print self.doMedianVar.get()
         self.updateFilterData()
+        print "Update preview"
 
         TaskWindow.TaskWindow.doPreviewCallback(self,event)
 
@@ -528,5 +529,6 @@ class SingleUnitProcessingWindow(TaskWindow.TaskWindow):
 
         self.iTFEditor.setIntensityTransferFunction(
         self.configSetting.getIntensityTransferFunction(self.timePoint))
-
+        self.iTFEditor.updateCallback=self.doPreviewCallback
+        
         self.updateSettings()

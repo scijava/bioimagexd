@@ -89,7 +89,7 @@ class TaskWindow(wxDialog):
         self.root=root
         self.preview=None
         # Associate this window with the parent window (root)
-        ico=reduce(os.path.join,["..","Icons","Selli.ico"])
+        ico=reduce(os.path.join,["Icons","Selli.ico"])
         self.icon = wxIcon(ico,wxBITMAP_TYPE_ICO)
         self.SetIcon(self.icon)
 

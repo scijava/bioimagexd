@@ -50,7 +50,7 @@ class SettingsWindow(wxDialog):
         
         self.imagelist=wxImageList(32,32)
         self.listbook.AssignImageList(self.imagelist)
-        imgpath=reduce(os.path.join,["..","Icons"])
+        imgpath=reduce(os.path.join,["Icons"])
         for i in ["General.gif","Paths.gif","Video.gif"]:
             icon=os.path.join(imgpath,i)
             bmp=wxBitmap(icon,wxBITMAP_TYPE_GIF)

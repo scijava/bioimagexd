@@ -298,14 +298,7 @@ class IntensityTransferFunction:
 
         x,y=self.refpoint
 
-    	# minx and maxx are points where the slope starts at the
-    	# minimum threshold or ends at the maximum threshold
-        minx=self.getReferenceXByPoint(self.minimumThreshold,self.minimumValue)
-    	maxx=self.getReferenceXByPoint(self.maximumThreshold,self.maximumValue)
 
-      	# we position the reference point between these thresholds
-    	# using the brightness as a coefficient
-#    	x=minx+int((maxx-minx)*brightness)
         x = 128 + self.brightness
 
     	print "Brightness %f equals refpoint (%d,%d)"%(brightness,x,y)
@@ -618,7 +611,6 @@ class IntensityTransferFunction:
                 y=self.minimumValue
 
             self.intensityTransferList[x]=y
-            lasty=y
 
 
     def getAsList(self):
@@ -668,33 +660,6 @@ class IntensityTransferFunction:
         self.update=1
         self.createList()
 
-    def getReferenceXByPoint(self,startx,starty):
-        """
-        --------------------------------------------------------------
-        Method: getReferenceXByPoint(startx,starty)
-        Created: 30.10.2004
-        Creator: KP
-        Description: Calculates the x coordinate of the reference point
-                     of the slope based on the starting point of the slope
-        -------------------------------------------------------------
-        """
-    	# we know one point in line
-    	# (startx,starty)
-    	# we know the coefficient m = self.coeff
-    	# let's determine the b in equation
-    	# y = mx+b
-    	# b = y-mx
-    	b=starty-self.coeff*startx
-
-    	# next we need to determine the x corresponding to
-    	# reference y when we have the start point and b
-    	# we get the equation
-    	# y = mx+b
-        # x = (y-b)/m
-    	refy=self.refpoint[1]
-        x = (refy-b)/self.coeff
-        return x
-
     def slopeStartPoint(self):
         """
         --------------------------------------------------------------
@@ -725,14 +690,12 @@ class IntensityTransferFunction:
 
     def getGammaPoints(self):
         """
-        --------------------------------------------------------------
         Method: getGammaPoints()
         Created: 09.12.2004
         Creator: KP
         Description: Returns the starting and ending point for gamma,
                      that are on the line from (x0,y0) to (x1,y1) but inside the
                      displayed area
-        -------------------------------------------------------------
         """
         # y = mx+b
         # x = (y-b)/m

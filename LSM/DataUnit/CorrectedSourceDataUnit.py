@@ -47,9 +47,10 @@ __version__ = "$Revision: 1.93 $"
 __date__ = "$Date: 2005/01/13 14:09:15 $"
 
 import Interpolation
-from IntensityTransferFunction import *
+#from IntensityTransferFunction import *
 from Color24bit import *
 
+import vtk
 
 import DataUnitProcessing
 import Logging
@@ -99,8 +100,8 @@ class CorrectedSourceDataUnit(ProcessedSourceDataUnit):
 
         # Create the IntensityTransferFunction instances for each time point
         for i in range(self.length):
-            self.intensityTransferFunctions.append(IntensityTransferFunction())
-
+            iTF=vtk.vtkIntensityTransferFunction()
+            self.intensityTransferFunctions.append(iTF)
 
 #    def doPreview(self, depth,renew,timePoint=0):
 #        print "Returning orignal"
