@@ -48,10 +48,8 @@ from ConfigParser import *
 from TreeWidget import *
 from Logging import *
 
-import ColocalizationWindow
-import ColorMergingWindow
-import SingleUnitProcessingWindow
-import VSIAWindow
+from TaskWindow import *
+
 import SettingsWindow
 import ImportDialog
 
@@ -134,9 +132,6 @@ class MainWindow(wx.Frame):
         self.splitter.SplitVertically(self.tree,self.infowidget,200)
 
         self.Show(true)
-        
-        
-
 
     def createToolBar(self):
         """
@@ -325,23 +320,24 @@ class MainWindow(wx.Frame):
         dataunit=None
         if self.tree.hasItem(path):
             return
-        # We check that the file is not merely a settings file
-        try:
-            self.parser = SafeConfigParser()
-            self.parser.read([path])
-            # We read the Key SettingsOnly, and check it's value.
-            settingsOnly = self.parser.get("DataUnit", "SettingsOnly")
-            if settingsOnly.lower()=="true":
-                # If this file contains only settings, then we report an 
-                # error and do not load it
-                Dialogs.showerror(self,
-                "The file that you selected, %s, contains only settings "
-                "and cannot be loaded.\n"
-                "Use 'Load settings' button from an operation window "
-                "to load it."%name,"Trying to load settings file")
-                return
-        except:
-            pass
+        if ext.lower()=='du':
+            # We check that the file is not merely a settings file
+            try:
+                self.parser = SafeConfigParser()
+                self.parser.read([path])
+                # We read the Key SettingsOnly, and check it's value.
+                settingsOnly = self.parser.get("Settings", "SettingsOnly")
+                if settingsOnly.lower()=="true":
+                    # If this file contains only settings, then we report an 
+                    # error and do not load it
+                    Dialogs.showerror(self,
+                    "The file that you selected, %s, contains only settings "
+                    "and cannot be loaded.\n"
+                    "Use 'Load settings' button from an operation window "
+                    "to load it."%name,"Trying to load settings file")
+                    return
+            except:
+                pass
 
         # We try to load the actual data
         try:
@@ -359,19 +355,16 @@ class MainWindow(wx.Frame):
             raise "Failed to read dataunit %s"%path
 
         # If we got data, add corresponding nodes to tree
-        #XXX: Add the dataunit to the tree
         self.tree.addToTree(name,path,ext,dataunits)
 
     def menuEditDataSet(self,evt):
         """
         Method: menuEditDataSet
-        Created: 11.1.2005
-        Creator: KP
+        Created: 11.1.2005, KP
         Description: Callback function for menu item "Re-Edit data set"
         """
         
         # for future use
-
         selectedFiles=self.tree.getSelectedDataUnits()
         if len(selectedFiles)<1:
             Dialogs.showerror(self,
@@ -394,7 +387,15 @@ class MainWindow(wx.Frame):
         if not dataunit:
             return                
 
-    def menuAction(self,action,unittype,showmethod,filesAtLeast,filesAtMost):
+    def showTaskWindow(self,action,moduletype,windowtype,filesAtLeast,filesAtMost):
+        """
+        Method: showTaskWindow
+        Created: 11.1.2005, KP
+        Description: A method that shows a taskwindow of given type
+        """
+        moduleToSetting={DataUnitProcessing.DataUnitProcessing:SingleUnitProcessingSettings,
+        Colocalization.Colocalization:ColocalizationSettings,
+        ColorMerging.ColorMerging:ColorMergingSettings}
         selectedFiles=self.tree.getSelectedDataUnits()
         if filesAtLeast!=-1 and len(selectedFiles)<filesAtLeast:
             Dialogs.showerror(self,
@@ -409,12 +410,17 @@ class MainWindow(wx.Frame):
         # Sets name for new dataset series
         name="%s (%s)"%(action,", ".join(names))
         
-        unit=unittype(name)
+        unit = CombinedDataUnit(name)
         for dataunit in selectedFiles:
             unit.addSourceDataUnit(dataunit)
 
+        settingclass=moduleToSetting[moduletype]
+        module=moduletype()
+        setting=settingclass()
+        unit.setModule(module)
+        unit.setSettings(setting)
         
-        dataunit,filepath=showmethod(unit,self)
+        dataunit,filepath=TaskWindow.showTaskWindow(windowtype,unit,self)
 
         # If user cancelled operation, we do not get a new dataset -> return
         if not dataunit:
@@ -426,43 +432,42 @@ class MainWindow(wx.Frame):
     def menuColocalization(self,evt):
         """
         Method: menuColocalization()
-        Created: 03.11.2004
-        Creator: KP
+        Created: 03.11.2004, KP
         Description: Callback function for menu item "Colocalization"
         """
-        return self.menuAction("Colocalization",ColocalizationDataUnit,
-        ColocalizationWindow.showColocalizationWindow,2,-1)
+        return self.showTaskWindow("Colocalization",
+        Colocalization.Colocalization,
+        ColocalizationWindow.ColocalizationWindow,2,-1)
         
     def menuMergeChannels(self,evt):
         """
         Method: menuMergeChannels()
-        Created: 03.11.2004
-        Creator: KP
+        Created: 03.11.2004, KP
         Description: Callback function for menu item Merge Channels
         """
-        return self.menuAction("Color Merging",ColorMergingDataUnit,
-        ColorMergingWindow.showColorMergingWindow,2,-1)
+        return self.showTaskWindow("Color Merging",
+        ColorMerging.ColorMerging,
+        ColorMergingWindow.ColorMergingWindow,2,-1)
 
     def menuProcessDataUnit(self,evt):
         """
         Method: menuProcessDataUnit()
-        Created: 03.11.2004
-        Creator: KP
+        Created: 03.11.2004, KP
         Description:
         """
-        return self.menuAction("Processing",CorrectedSourceDataUnit,
-        SingleUnitProcessingWindow.showSingleUnitProcessingWindow,1,1)
+        return self.showTaskWindow("Processing",
+        DataUnitProcessing.DataUnitProcessing,
+        SingleUnitProcessingWindow.SingleUnitProcessingWindow,1,1)
 
     def menuVSIA(self,evt):
         """
         Method: menuVSIA()
-        Created: 25.11.2004
-        Creator: JV
+        Created: 25.11.2004, JV
         Description:
         """
-        return self.menuAction("Visualization of Sparse Intensity Aggregations",
-        DataUnit.VSIASourceDataUnit,
-        VSIAWindow.showVSIAWindow,1,1)
+        return self.showTaskWindow("Visualization of Sparse Intensity Aggregations",
+        VSIA.VSIA,
+        VSIAWindow.VSIAWindow,1,1)
 
     def menuAbout(self,evt):
         """
@@ -478,8 +483,7 @@ class MainWindow(wx.Frame):
     def quitApp(self,evt):
         """
         Method: quitApp()
-        Created: 03.11.2004
-        Creator: KP
+        Created: 03.11.2004, KP
         Description: Quits the application
         """
         self.Close(true)
