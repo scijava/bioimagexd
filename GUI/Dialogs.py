@@ -126,6 +126,7 @@ def askOpenFileName(parent,title,wc):
     dlg=wx.FileDialog(parent,title,lastpath,wildcard=wc,style=wx.OPEN|wx.MULTIPLE)
     if dlg.ShowModal()==wx.ID_OK:
         asklist=dlg.GetPaths()
+        if not asklist:return asklist
         if remember:
             filepath=os.path.dirname(asklist[0])
             conf.setConfigItem("LastPath","Paths",filepath)
@@ -140,6 +141,7 @@ def askSaveAsFileName(parent,operation,name):
     Description: A method to show a save as dialog
     """    
     initFile="%s.du"%(name)
+    initialDir=None
     conf=Configuration.getConfiguration()
     remember=conf.getConfigItem("RememberPath","Paths")
     if not initialDir:
