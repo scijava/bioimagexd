@@ -2,7 +2,7 @@
 # -*- coding: iso-8859-1 -*-
 """
  Unit: ColourDialog.py
- Project: Selli 2
+ Project: BioImageXD
  Created: 2.2.2005
  Creator: KP
  Description:
@@ -14,12 +14,14 @@
  Modified:  
             02.02.2005 KP - Created the class
 
- Selli 2 includes the following persons:
+ BioImageXD includes the following persons:
+ DW - Dan White, dan@chalkie.org.uk
  KP - Kalle Pahajoki, kalpaha@st.jyu.fi
+ PK - Pasi Kankaanpää, ppkank@bytl.jyu.fi
  
- Copyright (c) 2004 Selli 2 Project.
+ Copyright (c) 2005 BioImageXD Project.
 """
-__author__ = "Selli 2 Project <http://sovellusprojektit.it.jyu.fi/selli/>"
+__author__ = "BioImageXD Project"
 __version__ = "$Revision: 1.28 $"
 __date__ = "$Date: 2005/01/13 14:52:39 $"
 
@@ -29,8 +31,7 @@ import wx.lib.colourchooser as cc
 class ColorSelectionDialog(cc.PyColourChooser):
     """
     Class: ColorSelectionDialog
-    Created: 03.11.2004
-    Creator: KP
+    Created: 03.11.2004, KP
     Description: A widget for selecting a color. Validates the color
                  and notifies parent via callback of the choice
     """

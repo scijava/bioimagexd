@@ -116,7 +116,6 @@ class InfoWidget(wx.Panel):
         "fe":"</font>","nf":"<font size=\"normal\">"}
         
         self.htmlpage.SetPage(infoString%dict)
-        print "code=",infoString%dict
         
     def setDimensions(self,dims):
         x,y,z=dims

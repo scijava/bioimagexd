@@ -26,7 +26,14 @@ import os.path
 from wxPython.wx import *
 
 class GeneralSettings(wxPanel):
-    pass
+    """
+    Class: GeneralSettings
+    Created: 09.02.2005, KP
+    Description: A window for controlling the general settings of the application
+    """ 
+    def __init__(self,parent):
+        pass
+        
 class PathSettings(wxPanel):
     pass
 class MovieSettings(wxPanel):
@@ -37,8 +44,7 @@ class MovieSettings(wxPanel):
 class SettingsWindow(wxDialog):
     """
     Class: SettingsWindow
-    Created: 09.02.2005
-    Creator: KP
+    Created: 09.02.2005, KP
     Description: A window for controlling the settings of the application
     """ 
     def __init__(self,parent):
@@ -61,7 +67,7 @@ class SettingsWindow(wxDialog):
         
         self.listbook.AddPage(self.generalPanel,"General",imageId=0)
         self.listbook.AddPage(self.pathsPanel,"Paths",imageId=1)
-        self.listbook.AddPage(self.moviePanel,"Movie Generation",imageId=2)
+        self.listbook.AddPage(self.moviePanel,"Video Output",imageId=2)
 
         self.sizer.Add(self.listbook,flag=wxEXPAND|wxALL)
         
