@@ -147,8 +147,8 @@ class DataUnitProcessing(Module):
         data=mapIntensities.GetOutput()
         if self.extent:
             print "Update extent=",self.extent
-            #mapdata.SetUpdateExtent(self.extent)
-            #data.SetUpdateExtent(self.extent)
+            mapdata.SetUpdateExtent(self.extent)
+            data.SetUpdateExtent(self.extent)
         mapIntensities.Update()
         
         if self.doSolitary:
