@@ -63,6 +63,7 @@ class SingleUnitProcessingPreview(PreviewFrame):
     def __init__(self,master,parentwin=None,**kws):
         PreviewFrame.__init__(self,master,parentwin,**kws)
         self.mapper=vtk.vtkImageMapper()
+        self.renderpanel.setMapper(self.mapper)
         self.mapper.SetZSlice(self.z)
         self.actor=vtk.vtkActor2D()
         self.actor.SetMapper(self.mapper)
@@ -139,10 +140,23 @@ class SingleUnitProcessingPreview(PreviewFrame):
         colorImage=self.mapToColors.GetOutput()
         
         colorImage.SetUpdateExtent(preview.GetExtent())
+        
         x,y,z=preview.GetDimensions()
-        if x!=self.xdim or y!=self.ydim:
+        #renx,reny=self.renwin.GetSize()
+        if x!=self.oldx or y!=self.oldy:
+            self.renderpanel.resetScroll()
+            self.renderpanel.setScrollbars(x,y)
+            self.oldx=x
+            self.oldy=y
+            if x>self.maxX:
+                print "Using maxX"
+                x=self.maxX
+            if y>self.maxY:
+                print "Using maxY"
+                y=self.maxY
             print "Resizing renderwindow to fit zoomed",(x,y)
             self.renwin.SetSize((x,y))
+            
 
         self.mapToColors.Update()
         print "Done"
