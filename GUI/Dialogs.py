@@ -1,7 +1,7 @@
 # -*- coding: iso-8859-1 -*-
 """
  Unit: Dialogs.py
- Project: Selli 2
+ Project: BioImageXD
  Created: 28.01.2005
  Creator: KP
  Description:
