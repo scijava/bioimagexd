@@ -24,7 +24,7 @@ vtkStandardNewMacro(vtkImageAlphaFilter);
 //----------------------------------------------------------------------------
 vtkImageAlphaFilter::vtkImageAlphaFilter()
 {
-    this->AverageMode = 1;
+    this->AverageMode = 0;
     this->MaximumMode = 0;
     this->AverageThreshold = 10;
 }
@@ -58,9 +58,10 @@ void vtkImageAlphaFilterExecute(vtkImageAlphaFilter *self, int id,int NumberOfIn
     int maxX,maxY,maxZ;
     int idxX,idxY,idxZ;
     int AvgThreshold = self->GetAverageThreshold();
+    int MaxMode = self->GetMaximumMode();					
     int AvgMode = self->GetAverageMode();
-    printf("Using average mode=%d\n",AvgMode);
-    int MaxMode = self->GetMaximumMode();
+    if(!MaxMode&&!AvgMode)AvgMode=1;
+    printf("Using average mode=%d, maxMode=%d, threshold=%d\n",AvgMode,MaxMode,AvgThreshold);
     T** inPtrs;
     T* outPtr;
     inPtrs=new T*[NumberOfInputs];
@@ -80,12 +81,14 @@ void vtkImageAlphaFilterExecute(vtkImageAlphaFilter *self, int id,int NumberOfIn
     T scalar = 0, currScalar = 0, alphaScalar = 0;
     int maxval = 0, n = 0;
     maxval=int(pow(2,8*sizeof(T)))-1;
+    printf("maxval=%d\n",maxval);
     T val;
     
     for(idxZ = 0; idxZ <= maxZ; idxZ++ ) {
         for(idxY = 0; idxY <= maxY; idxY++ ) {
           for(idxX = 0; idxX <= maxX; idxX++ ) {
             scalar = currScalar = n = 0;
+	    alphaScalar = 0;
             for(i=0; i < NumberOfInputs; i++ ) {
                 currScalar = *inPtrs[i];                            
                     if(MaxMode) {
@@ -103,9 +106,10 @@ void vtkImageAlphaFilterExecute(vtkImageAlphaFilter *self, int id,int NumberOfIn
                     }
                 inPtrs[i]++;
             }
-            if(AvgMode && n) alphaScalar /= n;
+
+	    if(AvgMode && n>0) alphaScalar /= n;
             if(alphaScalar > maxval)alphaScalar=maxval;
-            *outPtr = alphaScalar;
+	    *outPtr = alphaScalar;
             outPtr++;
           }
           for(i=0; i < NumberOfInputs; i++ ) {

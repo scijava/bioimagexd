@@ -55,6 +55,7 @@ void vtkCastRay_RGB_NN_Unshaded( T *data_ptr, vtkVolumeRayCastDynamicInfo
   float           accum_blue_intensity;
   float           remaining_opacity;
   float           opacity=0.0;
+  int             scalar_opacity=0;
   float           gradient_opacity;
   int             loop;
   int             xinc, yinc, zinc;
@@ -82,7 +83,7 @@ void vtkCastRay_RGB_NN_Unshaded( T *data_ptr, vtkVolumeRayCastDynamicInfo
   SOTF =  staticInfo->Volume->GetCorrectedScalarOpacityArray();
 //  CTF  =  staticInfo->Volume->GetRGBArray();
 //  GTF  =  staticInfo->Volume->GetGrayArray();
-//  GOTF =  staticInfo->Volume->GetGradientOpacityArray();
+  GOTF =  staticInfo->Volume->GetGradientOpacityArray();
 
   // Get the gradient opacity constant. If this number is greater than
   // or equal to 0.0, then the gradient opacity transfer function is
@@ -144,39 +145,18 @@ void vtkCastRay_RGB_NN_Unshaded( T *data_ptr, vtkVolumeRayCastDynamicInfo
         redc=*(data_ptr+offset);
         greenc=*(data_ptr+offset+1);
         bluec=*(data_ptr+offset+2);
-        opacity=*(data_ptr+offset+3);
-	    
+        scalar_opacity=*(data_ptr+offset+3);
+
+	//scalar_opacity = greenc;	    
         redc/=255.0;
         greenc/=255.0;
         bluec/=255.0;
 
 	//printf("%f maps to %f\n",opacity,SOTF[int(opacity)]);
-	opacity = SOTF[int(opacity)];
-
+	opacity = SOTF[scalar_opacity];
+	//opacity = scalar_opacity;
         //opacity/=255.0;
-	    
-	//opacity = greenc;
-	//if(redc<0.1 && greenc < 0.1 && redc < 0.1)opacity=0;
-/*	    
-        opacity=0.01;
-
-
-        if(redc>10) {
-            opacity+=redc;
-            n++;
-        }
-        if(greenc>10) {
-            opacity+=greenc;
-            n++;
-        }
-        if(bluec>10) {
-            opacity+=bluec;
-            n++;
-        }
-        if(n)
-            opacity/=n;
- */
-        //opacity*=0.2;
+        //opacity=0.2*(scalar_opacity/255.0);
 
 
         if ( opacity )
