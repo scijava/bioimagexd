@@ -80,7 +80,9 @@ class CombinedDataUnit(DataUnit.DataUnit):
         """
         DataUnit.DataUnit.__init__(self, name)
         self.sourceunits=[]
-        self.settings = None
+        settingclass=self.getSettingClass()
+        print "settingclass=",settingclass
+        self.settings = settingclass()
         self.byName={}
         self.module = None
     
@@ -92,7 +94,6 @@ class CombinedDataUnit(DataUnit.DataUnit):
                      this dataunit
         """
         self.module = module
-    
 
     def getSettings(self):
         """
@@ -173,10 +174,6 @@ class CombinedDataUnit(DataUnit.DataUnit):
                 "Failed to read dataunit %s of type %s"%\
                 (sourceUnitList[1],sourceUnitList[0]))
 
-            setting=DataUnitSetting.DataUnitSettings(i)
-            print "Length of source unit=",sourceUnit.getLength()
-            setting.initialize(sourceUnit,sourceCount,sourceUnit.getLength())
-            sourceUnit.setSettings(setting)
             # Finally, if everything worked out, add SourceDataUnits and
             # settings to the dictionary
             self.addSourceDataUnit(sourceUnit)
@@ -301,7 +298,8 @@ class CombinedDataUnit(DataUnit.DataUnit):
         # new SourceDataUnit has the same length as the previously added one(s):
         print dataUnit
         if (self.length != 0) and (self.length != dataUnit.length):
-            raise "Given dataunit had wrong length (%d != %d)"%\
+            # XXX: Raise
+            print "Given dataunit had wrong length (%d != %d)"%\
             (self.length,dataUnit.length)
 
         # The DataUnit to be added must have a different name than the
@@ -311,14 +309,24 @@ class CombinedDataUnit(DataUnit.DataUnit):
             raise "Dataunit %s already exists"%name
         
         count = len(self.sourceunits)
-        count+=1
+        #count+=1
         self.byName[name]=count
         self.sourceunits.append(dataUnit)
-        
+
+        # Create a settings object of correct type for dataunit
+        # using the count as the index
+        setting=self.getSettingClass()(count)
+        dataUnit.setSettings(setting)
+        # Fetch correct settings for the dataunit from the datasource
+        dataUnit.updateSettings()
         # If we just added the first SourceDataUnit, this sets the correct length
         # for the entire CombinedDataUnit. If not, it doesn't change anything.
         self.length = dataUnit.length
-
+        
+        for unit in self.sourceunits:
+            unit.getSettings().initialize(unit,count+1,unit.getLength())        
+        self.settings.initialize(self,count,self.sourceunits[0].getLength())
+            
     def doPreview(self, depth,renew,timePoint=0):
         """
         Method: doPreview
@@ -362,4 +370,33 @@ class CombinedDataUnit(DataUnit.DataUnit):
         if not len(self.sourceunits):
             return (0,0,0)
         return self.sourceunits[0].getColor()
+        
+    def getSettingClass(self):
+        """
+        Method: getSettingClass()
+        Created: 02.04.2005, KP
+        Description: Return the class that represents settings for this dataunit
+        """
+        return DataUnitSettings
+        
+class ColorMergingDataUnit(CombinedDataUnit):
+    def getSettingClass(self):
+        """
+        Method: getSettingClass()
+        Created: 02.04.2005, KP
+        Description: Return the class that represents settings for this dataunit
+        """
+        return ColorMergingSettings
+
+class ColocalizationDataUnit(CombinedDataUnit):
+    def getSettingClass(self):
+        """
+        Method: getSettingClass()
+        Created: 02.04.2005, KP
+        Description: Return the class that represents settings for this dataunit
+        """
+        return ColocalizationSettings
+
+        
+    
         

@@ -41,7 +41,7 @@ class DataUnitSettings:
     # and using the counted keys
     settings={}
     
-    def __init__(self,n=-1):
+    def __init__(self,n=-1,**kws):
         """
         Method: __init__
         Created: 26.03.2005
@@ -54,6 +54,8 @@ class DataUnitSettings:
         self.counted={}
         self.registered={}
         self.type=None
+        if kws.has_key("type"):
+            self.setType(kws["type"])
         self.n=n
         self.serialized={}
         self.register("SourceCount")
@@ -62,7 +64,25 @@ class DataUnitSettings:
         self.register("Spacing")
         #self.register("Origin")
         self.register("Dimensions")
+        self.register("Type")
+        self.register("Name")
         
+    def setType(self,type):
+        """
+        Method: setType(type)
+        Created: 2.04.2005
+        Description: Set the type of this dataunit
+        """
+        self.type=type
+        self.set("Type",type)
+        
+    def getType(self):
+        """
+        Method: getType()
+        Created: 2.04.2005
+        Description: Set the type of this dataunit
+        """
+        return self.type
         
     def register(self,name,serialize=0):
         """
@@ -97,13 +117,14 @@ class DataUnitSettings:
         Created: 26.03.2005
         Description: Attempt to read all registered keys from a parser
         """    
-        if not self.type:
+        if not self.get("Type"):
             type=parser.get("Type","Type")
             obj=eval(type)(self.n)
+            obj.setType(type)
             return obj.readFrom(parser)
         
-        for key in register.keys():
-            if key in counted:
+        for key in self.registered.keys():
+            if key in self.counted:
                 ser=self.serialized[key]
                 try:
                     n=parser.get("Count",key)
@@ -116,7 +137,7 @@ class DataUnitSettings:
                 for i in range(n):
                     ckey="%s[%d]"%(key,i)
                     try:
-                        value=parser.get("Settings",ckey)
+                        value=parser.get(key,ckey)
                         if ser:
                             value=self.deserialize(okey,value)
                         self.set(ckey,value)
@@ -125,7 +146,7 @@ class DataUnitSettings:
                         pass
             else:
                 try:
-                    value=parser.get("Settings",key)
+                    value=parser.get(key,key)
                     if ser:
                         value=self.deserialize(key,value)
                     self.set(key,value)
@@ -148,7 +169,9 @@ class DataUnitSettings:
         value=self.settings[key]
         if self.serialized[okey]:
             value=self.serialize(okey,value)
-        parser.set("Settings",key,value)
+        if not parser.has_section(okey):
+            parser.add_section(okey)
+        parser.set(okey,key,value)
         
                 
     def writeTo(self,parser):
@@ -167,11 +190,7 @@ class DataUnitSettings:
                     self.writeKey(key,parser,i)
             else:
                 self.writeKey(key,parser)                
-        
-        if not parser.has_section("Type"):
-            parser.add_section("Type")
-        
-        parser.set("Type","Type",self.type)
+               
         if len(self.counted.keys()):
             if not parser.has_section("Count"):
                 parser.add_section("Count")
@@ -179,19 +198,22 @@ class DataUnitSettings:
             value=self.counted[key]
             parser.set("Count",key,value)
             
-    def set(self,name,value):
+    def set(self,name,value,overwrite=1):
         """
         Method: set(name,value)
         Created: 26.03.2005
         Description: Sets the value of a key
         """
-        if self.n != -1:
-            return self.setCounted(name,self.n,value)
+        if not overwrite and self.settings.has_key(name):
+            #print "Will not overwrite %s"%name
+            return
+        if self.n != -1 and name in self.counted:
+            return self.setCounted(name,self.n,value,overwrite)
         if name not in self.registered:
             raise "No key %s registered"%name
         self.settings[name]=value
         
-    def setCounted(self,name,count,value):
+    def setCounted(self,name,count,value,overwrite=1):
         """
         Method: setCounted(name,count,value)
         Created: 26.03.2005
@@ -202,7 +224,11 @@ class DataUnitSettings:
         """
         if not name in self.registered:
             raise "No key %s registered"%name
-        self.settings["%s[%d]"%(name,count)]=value
+        keyval="%s[%d]"%(name,count)
+        if keyval in self.settings:
+            #print "Will not overwrite %s"%keyval
+            return
+        self.settings[keyval]=value
         if self.counted[name]<count:
             self.counted[name]=count
         
@@ -212,7 +238,7 @@ class DataUnitSettings:
         Created: 26.03.2005
         Description: Return the value of a key
         """
-        if self.n != -1:
+        if self.n != -1 and name in self.counted:
             name="%s[%d]"%(name,self.n)
         if name in self.settings:
             return self.settings[name]
@@ -224,6 +250,7 @@ class DataUnitSettings:
         Created: 26.03.2005
         Description: Return the value of a key
         """
+        print "in self.settings: %s"%self.settings.has_key("%s[%d]"%(name,count))
         if self.n != -1:
             return self.get(name)
         key="%s[%d]"%(name,count)
@@ -255,6 +282,14 @@ class DataUnitSettings:
         lst=eval(value)
         ImageOperations.setFromParameterList(tf,lst)
         return tf
+        
+    def __str__(self):
+        """
+        Method: __str__
+        Created: 30.03.2005
+        Description: Returns the string representation of this class
+        """
+        return "DataUnitSettings( %s )"%str(self.settings)
 
     
         
@@ -264,16 +299,37 @@ class ColocalizationSettings(DataUnitSettings):
     Created: 26.03.2005, KP
     Description: Registers keys related to colocalization in a dataunitsetting
     """
-    def __init__(self):
+    def __init__(self,n=-1):
         """
         Method: __init__
         Created: 26.03.2005, KP
         Description: Constructor
         """
-        DataUnitSettings.__init__(self)
-        self.registerCounted("ColocalizationThreshold")
+        DataUnitSettings.__init__(self,n)
+        self.registerCounted("Color")       
+        
+        self.set("Type","ColocalizationSettings")
+        self.registerCounted("ColocalizationLowerThreshold")
+        self.registerCounted("ColocalizationUpperThreshold")
+
+        self.registerCounted("PearsonsCorrelation")
+        self.registerCounted("OverlapCoefficient")
+        self.registerCounted("OverlapCoefficientK1")
+        self.registerCounted("OverlapCoefficientK2")
+        self.registerCounted("ColocalizationCoefficientM1")
+        self.registerCounted("ColocalizationCoefficientM2")
+        
+        self.set("PearsonsCorrelation",0)
+        self.set("OverlapCoefficient",0)
+        self.set("OverlapCoefficientK1",0)
+        self.set("OverlapCoefficientK2",0)
+        self.set("ColocalizationCoefficientM1",0)
+        self.set("ColocalizationCoefficientM2",0)        
+        
         self.register("ColocalizationColor")
-        self.set("ColocalizationColor",(255,255,0))
+        self.set("ColocalizationColor",(255,255,255))
+        self.register("ColocalizationDepth")
+        self.set("ColocalizationDepth",8)
         self.register("ColocalizationAmount")
         self.register("ColocalizationLeastVoxelsOverThreshold")
 
@@ -284,8 +340,10 @@ class ColocalizationSettings(DataUnitSettings):
         Description: Set initial values for settings based on 
                      number of channels and timepoints
         """
+        print "Initializing colocaliztion for %d channels"%channels
         for i in range(channels):
-            self.setCounted("ColocalizationThreshold",i,128)
+            self.setCounted("ColocalizationLowerThreshold",i,128,0)
+            self.setCounted("ColocalizationUpperThreshold",i,255,0)
 
         
 class ColorMergingSettings(DataUnitSettings):
@@ -294,14 +352,15 @@ class ColorMergingSettings(DataUnitSettings):
     Created: 27.03.2005, KP
     Description: Stores color merging related settings
     """
-    def __init__(self):
+    def __init__(self,n=-1):
         """
         Method: __init__
         Created: 27.03.2005, KP
         Description: Constructor
         """
-        DataUnitSettings.__init__(self)
-        self.registerCounted("Color")        
+        DataUnitSettings.__init__(self,n)
+        self.registerCounted("Color")       
+        self.set("Type","ColorMergingSettings") 
         self.registerCounted("IntensityTransferFunction",1)
         self.register("AlphaTransferFunction",1)
         self.register("AlphaMode")
@@ -317,10 +376,11 @@ class ColorMergingSettings(DataUnitSettings):
         Description: Set initial values for settings based on 
                      number of channels and timepoints
         """
+        print "Initializing for %d channels"%channels
         for i in range(channels):
-            self.setCounted("Color",i,(255,255,255))
+            self.setCounted("Color",i,(255,255,255),0)
             tf=vtk.vtkIntensityTransferFunction()
-            self.setCounted("IntensityTransferFunction",i,tf)
+            self.setCounted("IntensityTransferFunction",i,tf,0)
         
 class SingleUnitProcessingSettings(DataUnitSettings):
     """
@@ -328,13 +388,13 @@ class SingleUnitProcessingSettings(DataUnitSettings):
     Created: 27.03.2005, KP
     Description: Stores settings related to single unit processing
     """
-    def __init__(self):
+    def __init__(self,n=-1):
         """
         Method: __init__
         Created: 27.03.2005, KP
         Description: Constructor
         """
-        DataUnitSettings.__init__(self)
+        DataUnitSettings.__init__(self,n)
         self.register("Color")        
         self.registerCounted("IntensityTransferFunctions",1)
         self.register("MedianFiltering")
@@ -344,7 +404,7 @@ class SingleUnitProcessingSettings(DataUnitSettings):
         self.register("SolitaryVerticalThreshold")
         self.register("SolitaryProcessingThreshold")
         self.register("InterpolationTimepoints")
-        
+        self.set("Type","SingleUnitProcessingSettings")
         self.set("Color",(123,123,123))
         self.set("InterpolationTimepoints",[])
         self.set("MedianFiltering",0)
@@ -362,9 +422,9 @@ class SingleUnitProcessingSettings(DataUnitSettings):
                      number of channels and timepoints
         """
         print "Initializing to color",dataunit.getColor()
-        self.set("Color",dataunit.getColor())
+        self.set("Color",dataunit.getColor(),0)
         print "Initializing %d timepoints"%timepoints
         for i in range(timepoints):
             tf=vtk.vtkIntensityTransferFunction()
-            self.setCounted("IntensityTransferFunctions",i,tf)
+            self.setCounted("IntensityTransferFunctions",i,tf,0)
  

@@ -155,3 +155,12 @@ class CorrectedSourceDataUnit(CombinedDataUnit):
         for tf in self.intensityTransferFunctions:
             tf.setFromParameterList(iTF.getAsParameterList())
     
+    def getSettingClass(self):
+        """
+        Method: getSettingClass()
+        Created: 02.04.2005, KP
+        Description: Return the class that represents settings for this dataunit
+        """
+        return SingleUnitProcessingSettings
+
+        

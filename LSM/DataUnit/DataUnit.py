@@ -78,6 +78,7 @@ class DataUnit:
             return (010,101,010)
         if not self.color:
             self.color=self.dataSource.getColor()
+            print "Got color from datasource:",self.color
         return self.color
         
     def setColor(self,color):
@@ -139,6 +140,8 @@ class DataUnit:
         Description: Sets the name of this dataunit
         """
         self.name=name
+        if self.settings:
+            self.settings.set("Name",name)
  
     def getTimePoint(self,n):
         """
@@ -179,7 +182,7 @@ class DataUnit:
         self.getSpacing = dataSource.getSpacing
         self.getVoxelSize = dataSource.getVoxelSize
         print "Got datasource..."
-        self.updateSettings()
+        #self.updateSettings()
         
     def __str__(self):
         """
