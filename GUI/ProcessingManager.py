@@ -26,6 +26,7 @@ __date__ = "$Date: 2005/01/13 14:52:39 $"
 import wx
 from TimepointSelection import *
 import time
+import GuiGeneration
 
 class ProcessingManager(TimepointSelection):
     """
@@ -46,6 +47,49 @@ class ProcessingManager(TimepointSelection):
         
         #self.timepointLbl.SetLabel("Select Time Points to be Processed")
         self.SetTitle("Processing - %s"%operation)
+        
+        #self.configBox=wx.StaticBox(self,-1,"Output Settings")
+        #self.configBoxSizer=wx.StaticBoxSizer(self.configBox,wx.VERTICAL)
+        self.selectBox=wx.StaticBox(self,-1,"Select slices to the output")
+        self.selectBoxSizer=wx.StaticBoxSizer(self.selectBox,wx.VERTICAL)
+        self.selectSlice=GuiGeneration.getSliceSelection(self)
+        self.selectBoxSizer.Add(self.selectSlice)
+        
+        self.outputBox=wx.StaticBox(self,-1,"Output Settings")
+        self.outputBoxSizer=wx.StaticBoxSizer(self.outputBox,wx.VERTICAL)
+        self.checkBox=wx.CheckBox(self,-1,"Output slices as images")
+        self.checkBox.Bind(wx.EVT_CHECKBOX,self.updateOutputFormat)
+        
+    
+        self.outputBoxSizer.Add(self.checkBox)
+        self.outputFormat=GuiGeneration.getImageFormatMenu(self)
+        self.outputFormat.menu.Enable(0)        
+        self.outputBoxSizer.Add(self.outputFormat)
+        
+        self.formatLbl=wx.StaticText(self,-1,"Filename format:")
+        self.formatEdit=wx.TextCtrl(self,-1,"%d_%d")
+        self.outputBoxSizer.Add(self.formatLbl)
+        self.outputBoxSizer.Add(self.formatEdit)
+        
+        #self.radioBox=wx.RadioBox(self,-1,"Filename Formatting",choices=["Use single numbering","Use double numbering"],majorDimension=1,style=wx.RA_SPECIFY_COLS)
+        #self.outputBoxSizer.Add(self.radioBox)
+
+        
+        box=wx.BoxSizer(wx.VERTICAL)
+        box.Add(self.selectBoxSizer,1,wx.EXPAND)
+        box.Add(self.outputBoxSizer,1,wx.EXPAND)
+        self.mainsizer.Add(box,(2,0),flag=wx.EXPAND|wx.ALL)
+        self.Layout()
+        self.mainsizer.Fit(self)
+
+    def updateOutputFormat(self,event):
+        """
+        Method: updateOutputFormat
+        Created: 16.03.2005, KP
+        Description: A method to enable/disable the image format drop down menu
+        """
+        self.outputFormat.menu.Enable(self.checkBox.GetValue())
+    
         
     def createButtonBox(self):
         """
