@@ -97,7 +97,7 @@ def vtkImageDataToPreviewBitmap(imageData,color,width=0,height=0):
     exporter.SetExportVoidPointer(ss)
     exporter.Export()
 
-    print "Original image size=(%d,%d)"%(x,y)
+    #print "Original image size=(%d,%d)"%(x,y)
     image=wx.EmptyImage(x,y)
     image.SetData(ss)
     if not width and height:
@@ -108,7 +108,7 @@ def vtkImageDataToPreviewBitmap(imageData,color,width=0,height=0):
         height=aspect*width
     if not width and not height:
         width=height=64
-    print "Scaling to %d,%d"%(width,height)
+    #print "Scaling to %d,%d"%(width,height)
     image.Rescale(width,height)
     bitmap=image.ConvertToBitmap()
     return bitmap
@@ -144,3 +144,21 @@ def zoomImage(image,f):
         reslice.InterpolateOn()
     reslice.Update()
     return reslice.GetOutput()
+    
+def saveImageAs(imagedata,zslice,filename):
+    ext=filename.split(".")[-1]        
+    extMap={"tiff":"TIFF","tif":"TIFF","jpg":"JPEG","jpeg":"JPEG","png":"PNG"}
+    if not extMap.has_key(ext):
+        Dialogs.showerror(None,"Extension not recognized: %s"%ext,"Extension not recognized")
+        return
+    voi=vtk.vtkExtractVOI()
+    voi.SetInput(imagedata)
+    x,y,z=imagedata.GetDimensions()
+    voi.SetVOI(0,x-1,0,y-1,zslice,zslice)
+    vtkclass="vtk.vtk%sWriter()"%extMap[ext]
+    writer=eval(vtkclass)
+    voi.Update()
+    writer.SetInput(voi.GetOutput())
+    writer.SetFileName(filename)
+    writer.Write()
+    
