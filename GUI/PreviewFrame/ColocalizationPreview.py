@@ -65,8 +65,8 @@ class ColocalizationPreview(PreviewFrame):
 
         self.running=0
 
-        self.colocpercentLbl=wx.StaticText(self,-1,"0 of 0 (0%) possible voxels colocalizing")
-        self.sizer.Add(self.colocpercentLbl,(4,0))
+        #self.colocpercentLbl=wx.StaticText(self,-1,"0 of 0 (0%) possible voxels colocalizing")
+        #self.sizer.Add(self.colocpercentLbl,(4,0))
         self.Layout()
 
     def updateColor(self):
@@ -77,7 +77,7 @@ class ColocalizationPreview(PreviewFrame):
                      function
         Parameters:
         """
-        self.rgb=self.dataUnit.getColor()
+        self.rgb=self.settings.get("ColocalizationColor")
         self.currentCt=ImageOperations.getColorTransferFunction(self.rgb)
         self.mapToColors.SetLookupTable(self.currentCt)
 
@@ -125,8 +125,3 @@ class ColocalizationPreview(PreviewFrame):
         self.renderpanel.setImage(self.currentImage)
         self.renderpanel.updatePreview()        
         
-        coloc,least=self.dataUnit.getColocalizationInfo()
-        percent=float(coloc)/least
-
-        self.colocpercentLbl.SetLabel("%d of %d (%.2f%%) possible voxels colocalizing"%\
-        (coloc,least,100*percent))
