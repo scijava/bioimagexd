@@ -340,6 +340,7 @@ class MainWindow(wx.Frame):
                 pass
 
         # We try to load the actual data
+        print "ext=",ext
         try:
             if ext=='du':
                 datasource=VtiDataSource()
@@ -393,9 +394,6 @@ class MainWindow(wx.Frame):
         Created: 11.1.2005, KP
         Description: A method that shows a taskwindow of given type
         """
-        moduleToSetting={DataUnitProcessing.DataUnitProcessing:SingleUnitProcessingSettings,
-        Colocalization.Colocalization:ColocalizationSettings,
-        ColorMerging.ColorMerging:ColorMergingSettings}
         selectedFiles=self.tree.getSelectedDataUnits()
         if filesAtLeast!=-1 and len(selectedFiles)<filesAtLeast:
             Dialogs.showerror(self,
@@ -409,16 +407,19 @@ class MainWindow(wx.Frame):
         names=[i.getName() for i in selectedFiles]
         # Sets name for new dataset series
         name="%s (%s)"%(action,", ".join(names))
+
+        moduleToClass={DataUnitProcessing.DataUnitProcessing:CorrectedSourceDataUnit,
+        Colocalization.Colocalization:ColocalizationDataUnit,
+        ColorMerging.ColorMerging:ColorMergingDataUnit}    
+
         
-        unit = CombinedDataUnit(name)
+        unit = moduleToClass[moduletype](name)
+        print "unit=",unit
         for dataunit in selectedFiles:
             unit.addSourceDataUnit(dataunit)
 
-        settingclass=moduleToSetting[moduletype]
         module=moduletype()
-        setting=settingclass()
         unit.setModule(module)
-        unit.setSettings(setting)
         
         dataunit,filepath=TaskWindow.showTaskWindow(windowtype,unit,self)
 
