@@ -109,7 +109,7 @@ void vtkImageMapToIntensities::ExecuteData(vtkDataObject *)
 
 void vtkImageMapToIntensities::ComputeInputUpdateExtent(int inExt[6], int outExt[6]) {
 
-    printf("required extent for (%d,%d,%d,%d,%d,%d)\n",outExt[0],outExt[1],outExt[2],outExt[3],outExt[4],outExt[5]);    
+//    printf("required extent for (%d,%d,%d,%d,%d,%d)\n",outExt[0],outExt[1],outExt[2],outExt[3],outExt[4],outExt[5]);    
     memcpy(inExt,outExt,6*sizeof(int));
 }
 
