@@ -414,13 +414,17 @@ class Volume (Base.Objects.Module):
         self.rc_func = rc_func
         if self.map_type == 0:
             self.ray_cast_func = self.get_ray_cast_function()
+	    if isinstance(self.ray_cast_func,vtkpython.vtkVolumeRayCastRGBCompositeFunction):
+		self.transfer_fxn.set_alpha_mode(1)
+	    else:
+		self.transfer_fxn.set_alpha_mode(0)	    
             self.map.SetVolumeRayCastFunction (self.ray_cast_func)
         self.renwin.Render()
         Common.state.idle()
             
     def change_ray_cast_func_gui(self, event=None):
         val = self.rc_func_var.get()
-        if val != self.rc_func:
+        if val != self.rc_func:	    
             self.set_ray_cast_function(val)
             self.make_rcf_gui()
         

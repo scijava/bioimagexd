@@ -345,6 +345,7 @@ class TransferFunctionEditor(Tkinter.Frame):
         otf = vp.GetScalarOpacity()
         self.xLast = -1
         self.yLast = -1
+	self.alpha_mode=0
         self.min_x, self.max_x = ctf.GetRange()
         self.ds = (self.max_x - self.min_x)/100.0
 
@@ -392,6 +393,10 @@ class TransferFunctionEditor(Tkinter.Frame):
         l2 = Tkinter.Label(self, text='Weight:')
         l2.pack(side="right")
 
+    def set_alpha_mode(self, mode):
+	print "set_alpha_mode(%s)"%mode
+	self.alpha_mode = mode
+	
     def reset_ctfs(self, volume_property):
         """Updates the CTF's given a vtkVolumeProperty object."""
         vp = volume_property
@@ -477,6 +482,8 @@ class TransferFunctionEditor(Tkinter.Frame):
         
     def redraw(self, event=None):
         self.alphaFxn.redraw_fxn()
+	if self.alpha_mode:
+	    return
         self.redFxn.redraw_fxn()
         self.greenFxn.redraw_fxn()
         self.blueFxn.redraw_fxn()
