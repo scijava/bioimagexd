@@ -192,6 +192,32 @@ class SourceDataUnit(DataUnit):
         """
         return self.dataSource.getDimensions()
 
+    def getOrigin(self):
+        """
+        Method: getOrigin()
+        Created: 21.02.2005
+        Creator: KP
+        Description: Returns the origin of the dataset
+        """
+        return self.dataSource.getOrigin()
+        
+    def getSpacing(self):
+        """
+        Method: getSpacing()
+        Created: 21.02.2005
+        Creator: KP
+        Description: Returns the spacing of the dataset
+        """
+        return self.dataSource.getSpacing()
+        
+    def getVoxelSize(self):
+        """
+        Method: getVoxelSize()
+        Created: 21.02.2005
+        Creator: KP
+        Description: Returns the size of the voxel
+        """    
+        return self.dataSource.getVoxelSize()
 
     def setColor(self, red, green, blue):
         """

@@ -29,7 +29,6 @@
  JV - Jukka Varsaluoma, varsa@st.jyu.fi
 
  Copyright (c) 2004 Selli Project.
- --------------------------------------------------------------
 """
 
 __author__ = "Selli Project <http://sovellusprojektit.it.jyu.fi/selli/>"
@@ -44,6 +43,7 @@ import os.path
 
 import Logging
 import DataUnit
+import time
 
 class LsmDataSource(DataSource):
     """
@@ -73,7 +73,9 @@ class LsmDataSource(DataSource):
         # TODO: what is this?
         self.count=0
         self.dimensions=None
-
+        self.spacing=None
+        self.origin=None
+        self.voxelsize=None
         # vtkLSMReader is used to do the actual reading:
         self.reader=vtk.vtkLSMReader()
 
@@ -91,6 +93,7 @@ class LsmDataSource(DataSource):
                 return
             self.reader.SetFileName(self.filename)
             self.reader.Update()
+            
 
     def getDataSetCount(self):
         """
@@ -102,6 +105,7 @@ class LsmDataSource(DataSource):
         """
         if not self.dimensions:
             self.dimensions=self.reader.GetDimensions()
+            
         return self.dimensions[3]
 
     def getDimensions(self):
@@ -116,6 +120,19 @@ class LsmDataSource(DataSource):
             self.dimensions=self.reader.GetDimensions()
         return self.dimensions[0:3]
 
+    def getSpacing(self):
+        if not self.spacing:
+            a,b,c=self.reader.GetVoxelSizes()
+            self.spacing=[1,b/a,c/a]
+        return self.spacing
+        
+    def getVoxelSize(self):
+        if not self.voxelsize:
+            self.voxelsize=self.reader.GetVoxelSizes()
+        return self.voxelsize
+        
+    
+        
     def getDataSet(self, i):
         """
         Method: getDataSet
@@ -131,12 +148,15 @@ class LsmDataSource(DataSource):
             "LSM Data Source got a request for dataset from timepoint "
             "%d, but no channel number has been specified"%(i))
             return None
+        t1=time.time()
         print "Returning dataset %d from channel %d"%(i,self.channelNum)
         self.reader.SetUpdateTimePoint(i)
         self.reader.SetUpdateChannel(self.channelNum)
         self.reader.Update()
-        return self.reader.GetOutput()
-#        return self.reader.GetTimePointOutput(i,self.channelNum)
+        data=self.reader.GetOutput()
+        t2=time.time()
+        print "Reading dataset took %f seconds"%(t2-t1)
+        return data
 
     def loadFromLsmFile(self,filename):
         """
@@ -147,6 +167,7 @@ class LsmDataSource(DataSource):
                      instances and returns them as a list.
         Parameters:   filename  The .lsm-file to be loaded
         """
+        t1=time.time()
         self.filename=filename
         self.path=os.path.dirname(filename)
         self.reader.SetFileName(filename)
@@ -168,6 +189,9 @@ class LsmDataSource(DataSource):
             dataunit=DataUnit.SourceDataUnit()
             dataunit.setDataSource(datasource)
             dataunits.append(dataunit)
+            
+        t2=time.time()
+        print "Reading all dataunits took %f seconds"%(t2-t1)
         return dataunits
 
 
