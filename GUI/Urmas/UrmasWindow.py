@@ -31,53 +31,24 @@ __version__ = "$Revision: 1.22 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 import wx
+import wx.wizard
 from Timeline import *
-import TimepointSelection
+import TimelinePanel
+import UrmasTimepointSelection
 import RenderingInterface
+import UrmasControl
+import VideoGeneration
 
-class UrmasControl:
-    def __init__(self,window):
-        self.window = window
-
-    def setAnimator(self,animator):
-        self.animator = animator
-
-    def setTimelinePanel(self,timelinepanel):
-        self.timelinePanel = timelinepanel
-
-    def setDataUnit(self,dataunit):
-        RenderingInterface.getRenderingInterface().setDataUnit(dataunit)
-        self.dataUnit = dataunit
-        self.timelinePanel.setDataUnit(dataunit)
-        n=10*self.dataUnit.getLength()
-        self.timelineConfig.setFrames(n)
-        self.timelineConfig.setDuration(n/2)
-        self.updateLayouts()
-        self.animator.animator.initData()
+def makeChain(*args):
+    lst=args
+    lst[0].prev=None
+    for i in range(1,len(lst)):
+        lst[i].prev=lst[i-1]
+        lst[i-1].next=lst[i]
+    lst[-1].next=None
+    return lst
         
-    def updateLayouts(self):
-        self.timeline.Layout()
-        self.timelineConfig.Layout()
-        self.timelinePanel.Layout()
-        self.window.Layout()
-        
-    def setAnimationMode(self,mode):
-        self.window.showAnimator(mode)
-        self.updateLayouts()
-        
-    def setTimeline(self,timeline):
-        self.timeline=timeline
-        
-    def setTimelineConfig(self,config):
-        self.timelineConfig=config
-        
-    def configureTimeline(self,seconds,frames):
-        print "Calling timeline.configureTimeline(",seconds,",",frames,")"
-        self.timeline.configureTimeline(seconds,frames)
-        self.updateLayouts()
-        
-        
-class UrmasWindow(wx.Dialog):
+class UrmasWindow(wx.wizard.Wizard):
     """
     Class: UrmasWindow
     Created: 10.02.2005, KP
@@ -86,44 +57,43 @@ class UrmasWindow(wx.Dialog):
                  animation modes, and a page for configuring the movie generation.
     """
     def __init__(self,parent):
-        print "Creating UrmasWindow()"
-        wx.Dialog.__init__(self,parent,-1,"Rendering Manager / Animator",size=(800,400),
+        wx.wizard.Wizard.__init__(self,parent,-1,"Rendering Manager / Animator",
         style=wx.RESIZE_BORDER|wx.CAPTION|wx.MAXIMIZE_BOX|wx.MINIMIZE_BOX|wx.CLOSE_BOX|wx.SYSTEM_MENU)
         self.status=wx.ID_OK
         ico=reduce(os.path.join,["..","Icons","Selli.ico"])
         self.icon = wx.Icon(ico,wx.BITMAP_TYPE_ICO)
         self.SetIcon(self.icon)
-        self.control = UrmasControl(self)
-        #self.Bind(wx.EVT_SIZE,self.onSize)
+        self.control = UrmasControl.UrmasControl(self)
+
         self.Bind(wx.EVT_CLOSE,self.closeWindowCallback)
-
-        self.splitter=wx.SplitterWindow(self,-1)
-        self.animator = Animator.AnimatorPanel(self.splitter,self.control)
-        self.animator.Show(0)
-        self.animatorOn=0
-        self.control.setAnimator(self.animator)
         
-        self.notebook=wx.Notebook(self.splitter,-1)
-        self.splitter.Initialize(self.notebook)
+        self.timepointSelection=UrmasTimepointSelection.UrmasTimepointSelection(self)
         
-        self.timepointSelection=TimepointSelection.TimepointSelectionPanel(self.notebook)
 
-        self.notebook.AddPage(self.timepointSelection,"Select Time Points")
-
-        self.timelinePanel=TimelinePanel(self.notebook,self.control)
+        self.timelinePanel=TimelinePanel.TimelinePanel(self,self.control)
         self.control.setTimelinePanel(self.timelinePanel)
-        print "Adding timeline panel to notebook"
-        self.notebook.AddPage(self.timelinePanel,"Rendering")
-        print "done"
-        #self.mainsizer.Add(self.notebook,(0,0),flag=wx.EXPAND|wx.ALL)
-        #self.mainsizer.Add(self.splitter,(0,0),flag=wx.EXPAND|wx.ALL)
-        #self.SetSizer(self.mainsizer)
-        #self.SetAutoLayout(True)
-        #self.mainsizer.Fit(self)        
+        
+        self.videogeneration=VideoGeneration.VideoGeneration(self)
+        
+        makeChain(self.timepointSelection,self.timelinePanel,self.videogeneration)
+        self.FitToPage(self.timelinePanel)
+    
+    def startWizard(self):
+        """
+        Method: startWizard()
+        Created: 14.03.2005, KP
+        Description: Start this wizard
+        """              
+        self.RunWizard(self.timepointSelection)
     
     def onSize(self,evt):
+        """
+        Method: onSize()
+        Created: 22.2.2005, KP
+        Description: Event handler used to resize the window
+        """        
         x,y=evt.GetSize()
-        if self.animatorOn == False:
+        if 1 or self.animatorOn == False:
             self.notebook.SetSize((x,y))
         else:
             self.notebook.SetSize((x/2,y))
@@ -131,6 +101,11 @@ class UrmasWindow(wx.Dialog):
         
     
     def showAnimator(self,flag):
+        """
+        Method: showAnimator(flag)
+        Created: 22.2.2005, KP
+        Description: Method used to either show or hide the animator
+        """    
         if flag == True:
             self.animator.Show(1)
             self.animatorOn=1
@@ -147,6 +122,11 @@ class UrmasWindow(wx.Dialog):
             
 
     def setDataUnit(self,dataUnit):
+        """
+        Method: setDataUnit(dataUnit)
+        Created: 10.2.2005, KP
+        Description: Method used to set the dataunit we're processing
+        """
         self.timepointSelection.setDataUnit(dataUnit)
         #self.timelinePanel.setDataUnit(dataUnit)
         self.control.setDataUnit(dataUnit)
