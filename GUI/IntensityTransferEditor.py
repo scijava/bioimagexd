@@ -219,7 +219,7 @@ class IntensityTransferEditor(wx.Panel):
         wx.Panel.__init__(self,parent,-1)
         self.updateCallback=0
         self.doyield=1
-        self.updatetime=0
+        self.calling=0
         self.guiupdate=0
         if kws.has_key("update"):
             print "Got update callback"
@@ -607,6 +607,16 @@ class IntensityTransferEditor(wx.Panel):
         self.contrastEdit.SetValue("%.2f"%contrast)
         self.guiupdate=0
 
+    def callUpdateCallback(self):
+        """
+        Method: callUpdateCallback()
+        Created: 19.03.2005, KP
+        Description: Calls the update callback and clears a flag
+        """
+        self.calling=0
+        print "Calling updateCallback"
+        self.updateCallback()        
+            
     def updateGraph(self):
         """
         Method: updateGraph()
@@ -619,13 +629,11 @@ class IntensityTransferEditor(wx.Panel):
            self.doyield=0
            wx.Yield()
            self.doyield=1
-
-        if abs(time.time()-self.updatetime) < 0.1:
-           return
+            
         if self.updateCallback:
-            print "Calling updateCallback"
-            self.updateCallback()
-            self.updatetime=time.time()
+            if not self.calling:
+                self.calling=1
+                wx.FutureCall(250,self.callUpdateCallback)
 
 
     def getIntensityTransferFunction(self):
