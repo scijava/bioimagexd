@@ -64,7 +64,7 @@ class InfoWidget(wx.Panel):
         wx.Panel.__init__(self,master,-1,**kws)
         self.mainsizer=wx.GridBagSizer(5,5)
 
-        self.preview=PreviewFrame.SingleUnitProcessingPreview(self,
+        self.preview=PreviewFrame.IntegratedPreview(self,
         previewsize=(384,384),pixelvalue=False,renderingpreview=False,
         zoom=False,timeslider=False,scrollbars=False,zoom_factor=PreviewFrame.ZOOM_TO_FIT)
         self.mainsizer.Add(self.preview,(0,0),flag=wx.EXPAND|wx.ALL)
@@ -97,9 +97,9 @@ class InfoWidget(wx.Panel):
             spacing=dataunit.getSpacing()
             voxelsize=dataunit.getVoxelSize()
             unit=DataUnit.CorrectedSourceDataUnit("preview")
-            settings=DataUnit.SingleUnitProcessingSettings()
-            settings.initialize(dataunit,1,1)
-            unit.setSettings(settings)
+            #settings=DataUnit.SingleUnitProcessingSettings()
+            #settings.initialize(dataunit,1,1)
+            #unit.setSettings(settings)
             unit.addSourceDataUnit(dataunit)
             unit.setModule(DataUnitProcessing.DataUnitProcessing())
             self.dataUnit=unit
@@ -108,9 +108,6 @@ class InfoWidget(wx.Panel):
             bitdepth="8"
             # TODO: Have this data available in dataunit
             #bitdepth=dataunit.getScalarSize()*dataunit.getComponentAmount()
-        #self.setSpacing(spacing)
-        #self.setDimensions(dims)
-        #self.setVoxelSize(voxelsize)
         xdim,ydim,zdim=dims
         voxelX,voxelY,voxelZ=voxelsize
         voxelX*=1000000
@@ -128,48 +125,6 @@ class InfoWidget(wx.Panel):
         "tps":tps,"bitdepth":bitdepth}
         
         self.htmlpage.SetPage(infoString%dict)
-        
-    def setDimensions(self,dims):
-        x,y,z=dims
-        w,h,l=size=self.dataUnit.getVoxelSize()
-        w*=1000000
-        h*=1000000
-        l*=1000000        
-        sizeLbl=u"%d x %d x %d"%(x,y,z)
-        sizeLbl2=u"%.2f\u03bcm x %.2f\u03bcm x %.2f\u03bcm"%(x*w,y*h,z*l)
-        self.channelSize.SetLabel(sizeLbl)
-        self.channelSize2.SetLabel(sizeLbl2)
-        
-    def setVoxelSize(self,size):
-        
-        x,y,z=size
-        x*=1000000
-        y*=1000000
-        z*=1000000
-        spacingLbl=u"%.2f\u03bcm  x %.2f\u03bcm  x %.2f\u03bcm "%(x,y,z)
-        self.channelVoxelSize.SetLabel(spacingLbl)
-
-    def setSpacing(self,spacing):
-        x,y,z=spacing
-        spacingLbl=u"%d x %d x %d"%(x,y,z)
-        self.channelSpacing.SetLabel(spacingLbl)
-        
-    #def setOrigin(self,orig):
-    #    x,y,z=orig
-    #    originLbl=u"(%d\u03bcm, %d\u03bcm, %d\u03bcm)"%(x,y,z)
-    #    self.channelOrigin.SetLabel(originLbl)        
-        
-    def makeField(self,name,parent,text,value,size,sizer,row):
-        #sizer=wx.BoxSizer(wx.HORIZONTAL)
-        lbl=wxStaticText(parent,-1,text)
-        sizer.Add(lbl,(row,0),flag=wx.ALIGN_LEFT)
-        self.__dict__[name+"Lbl"]=lbl
-        val=wxStaticText(parent,-1,value,size=size)
-        self.__dict__[name]=val
-        sizer.Add(val,(row,1),flag=wx.ALIGN_LEFT)
-        #sizer.Add(lbl)
-        #sizer.Add(val)
-        #self.__dict__[name+"Sizer"]=sizer
     
     def createInfoNotebook(self):
         """
@@ -181,22 +136,6 @@ class InfoWidget(wx.Panel):
         """
         self.infoPanel=wx.Panel(self.infoNotebook,-1)
         self.infoSizer=wx.GridBagSizer(5,5)
-        
-        
-        #self.makeField("channelName",self.infoPanel,"Name:","n/a",(250,-1),self.infoSizer,0)
-        #self.infoSizer.Add(self.channelNameSizer,(0,0))
-        #sizeLbl=""
-        #self.makeField("channelSize",self.infoPanel,"Size:",sizeLbl,(250,-1),self.infoSizer,1)
-        #self.infoSizer.Add(self.channelSizeSizer,(1,0))
-        #self.makeField("channelSize2",self.infoPanel,u"in \u03bcm:","",(250,-1),self.infoSizer,2)
-        #spacingLbl=""
-        #self.makeField("channelSpacing",self.infoPanel,"Spacing:",spacingLbl,(250,-1),self.infoSizer,3)
-        
-        #self.makeField("channelVoxelSize",self.infoPanel,"Voxel size:","",(250,-1),self.infoSizer,4)
-        
-        #originLbl=""
-        #self.makeField("channelOrigin",self.infoPanel,"Origin:",originLbl,(250,-1),self.infoSizer,3)
-        #self.infoSizer.Add(self.channelOriginSizer,(3,0))
         self.htmlpage=wx.html.HtmlWindow(self.infoPanel,-1,size=(350,400))
         if "gtk2" in wx.PlatformInfo:
             self.htmlpage.SetStandardFonts()
