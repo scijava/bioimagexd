@@ -51,6 +51,7 @@ class TrackItem(wx.Panel):
         self.buffer=0
         self.lastdiff=0
         self.thumbnailbmp=0
+        self.labelheight=15
         self.thumbtimepoint=-1
         if kws.has_key("editable"):
             self.editable=kws["editable"]
@@ -58,7 +59,6 @@ class TrackItem(wx.Panel):
             self.dataUnit=kws["dataunit"]
         if kws.has_key("thumbnail"):
             self.thumbtimepoint=kws["thumbnail"]
-            print "Thumbnail timepoint is ",self.thumbtimepoint
         self.color=(255,255,255)
         self.headercolor=(127,127,127)
         self.Bind(wx.EVT_PAINT,self.onPaint)
@@ -88,6 +88,13 @@ class TrackItem(wx.Panel):
         self.dc.Clear()
         self.dc.BeginDrawing()
         self.dc.SetPen(wx.Pen((0,0,0)))
+
+        # draw the body
+        r,g,b=self.color
+        col=wx.Colour(r,g,b)
+        self.dc.SetBrush(wx.Brush(wx.BLACK))
+        self.dc.SetBackground(wx.Brush(wx.BLACK))
+        self.dc.DrawRectangle(0,0,self.width,self.height)        
         
         # Set the color to header color
         r,g,b=self.headercolor
@@ -97,7 +104,7 @@ class TrackItem(wx.Panel):
         self.dc.SetBrush(wx.Brush(col))
         self.dc.SetPen(wx.Pen((0,0,0)))
         self.dc.SetBackground(wx.Brush(col))
-        self.dc.DrawRectangle(0,0,self.width,15)
+        self.dc.DrawRectangle(0,0,self.width,self.labelheight)
 
         # Draw the text inside the header
         if self.text!="":
@@ -105,25 +112,27 @@ class TrackItem(wx.Panel):
             self.dc.SetFont(wx.Font(8,wx.SWISS,wx.NORMAL,wx.NORMAL))
             self.dc.DrawText(self.text,5,2)
             
-        # draw the body
-        r,g,b=self.color
-        col=wx.Colour(r,g,b)
-        self.dc.SetBrush(wx.Brush(col))
-        self.dc.SetBackground(wx.Brush(col))
-        self.dc.SetPen(wx.Pen((0,0,0)))
-        self.dc.DrawRectangle(0,15,self.width,self.height)
+
         
         if self.thumbtimepoint>=0:
-            self.drawThumbnail(0,15)
+            self.drawThumbnail()
+        r,g,b=self.headercolor
+        self.dc.SetPen(wx.Pen(wx.Colour(r,g,b),2))
+        self.dc.DrawLine(self.width-1,0,self.width-1,self.height)
+
         
         self.dc.EndDrawing()
 
-    def drawThumbnail(self,x,y):
+    def drawThumbnail(self):
         if not self.thumbnailbmp:
             volume=self.dataUnit.getTimePoint(self.thumbtimepoint)
             vx,vy,vz=volume.GetDimensions()
-            self.thumbnailbmp=ImageOperations.vtkImageDataToPreviewBitmap(volume,self.dataUnit.getColor(),0,self.height-y)
-        self.dc.DrawBitmap(self.thumbnailbmp,x,y)
+            self.thumbnailbmp=ImageOperations.vtkImageDataToPreviewBitmap(volume,self.dataUnit.getColor(),0,self.height-self.labelheight)
+        iw,ih=self.thumbnailbmp.GetSize()
+        #print "image size=",iw,ih
+        wdiff=(self.width-iw)/2
+        if wdiff<0:wdiff=0
+        self.dc.DrawBitmap(self.thumbnailbmp,wdiff,self.labelheight)
         
     def setMinimumWidth(self,w):
         self.minSize=w
@@ -216,7 +225,6 @@ class Track(wx.Panel):
         self.dataUnit=dataUnit
     
     def showThumbnail(self,flag):
-        print "Showing thumbnail: ",str(flag==1)
         self.thumbnail=flag
         
     def getLength(self):
@@ -257,7 +265,7 @@ class Track(wx.Panel):
             lbl=""
             if self.number:
                 lbl="%d"%i
-            print "addItem(%s)"%lbl
+
             self.addItem(lbl)
         self.updateLayout()
         
@@ -297,17 +305,13 @@ class Track(wx.Panel):
             item.Layout()
             
     def updateLayout(self):
-        
         self.Layout()
         self.sizer.Fit(self)
         self.parent.Layout()
         self.parent.sizer.Fit(self.parent)
-        
-        
     
     def addItem(self,item):
         h=self.namePanel.GetSize()[1]
-        print "self.thumbnail=",self.thumbnail
         if self.thumbnail:
             item=TrackItem(self,item,(20,h),editable=self.editable,dataunit=self.dataUnit,thumbnail=int(item))
         else:

@@ -37,14 +37,8 @@ import PreviewFrame
 import Animator
 
 import os.path
-import sys
+import sys,types
 import operator
-
-if __name__=='__main__':
-    import sys
-    sys.path.append(os.path.normpath(os.path.join(os.getcwd(),"..")))
-
-
     
 class TimelineConfig(wx.Panel):
     """
@@ -53,9 +47,11 @@ class TimelineConfig(wx.Panel):
     Creator: KP
     Description: Contains configuration options for the timeline
     """    
-    def __init__(self,parent):
+    def __init__(self,parent,control):
+        self.control=control
         print  "TimeLineConfig"
         wx.Panel.__init__(self,parent,-1)#,style=wx.SUNKEN_BORDER)
+        self.control.setTimelineConfig(self)
         self.sizer=wx.GridBagSizer(5,5)
         self.parent=parent
         
@@ -105,8 +101,8 @@ class TimelineConfig(wx.Panel):
                 
         self.outputsizer.Add(self.fpsLabel,(3,0))
                 
-        self.sizer.Add(self.outputstaticbox,(0,0))
-        self.sizer.Add(self.animationstaticbox,(0,1))
+        self.sizer.Add(self.outputstaticbox,(0,0),flag=wx.EXPAND|wx.ALL)
+        self.sizer.Add(self.animationstaticbox,(0,1),flag=wx.EXPAND|wx.ALL)
 
 #        self.useButton=wx.Button(self,-1,"Use settings")
 #        self.useButton.Bind(wx.EVT_BUTTON,self.reportToParent)
@@ -119,19 +115,28 @@ class TimelineConfig(wx.Panel):
         self.SetAutoLayout(1)
         self.sizer.Fit(self)
         self.updateFormat()
-        self.reportToParent()
+        self.useSettings()
 
+    def setFrames(self,n):
+        self.totalFrames.SetValue(str(n))
+        self.useSettings()
+        
+    def setDuration(self,t):
+        if type(t) != types.StringType:
+            h=t/3600
+            m=t/60
+            s=t%60
+            t="%.2d:%.2d:%.2d"%(h,m,s)
+        self.duration.SetValue(t)
+        self.useSettings()
+        
     def updateControlPoints(self,event):
         pass
         
     def updateAnimation(self,event):
-        if not self.animateCheckbox.GetValue():
-            self.controlPoints.Enable(0)
-            self.parent.timeline.setAnimationMode(0)
-        else:
-            self.controlPoints.Enable(1)        
-            self.parent.useTimeline(1)
-            self.parent.timeline.setAnimationMode(1)
+        flag = self.animateCheckbox.GetValue()
+        self.controlPoints.Enable(flag)
+        self.control.setAnimationMode(flag)
         
     def updateFormat(self,event=None):
         format=self.formatMenu.GetString(self.formatMenu.GetSelection())
@@ -145,7 +150,7 @@ class TimelineConfig(wx.Panel):
             self.parent.useTimeline(1)
             
     
-    def reportToParent(self,event=None):
+    def useSettings(self,event=None):
         print "Trying to report..."
         try:
             duration=self.duration.GetValue()
@@ -159,7 +164,7 @@ class TimelineConfig(wx.Panel):
             frameCount=int(frameCount)
             print "Got frameCount=",frameCount
             print "Reporting to parent"
-            self.parent.configureTimeline(secs,frameCount)
+            self.control.configureTimeline(secs,frameCount)
         except:
             pass
         self.parent.sizer.Fit(self.parent)
@@ -197,40 +202,37 @@ class TimelinePanel(wx.Panel):
     Creator: KP
     Description: Contains the timescale and the different "tracks"
     """    
-    def __init__(self,parent):
+    def __init__(self,parent,control):
         wx.Panel.__init__(self,parent,-1,style=wx.RAISED_BORDER)
+        self.parent=parent
+        self.control=control
         self.sizer=wx.GridBagSizer()
-        
-        self.animator=Animator.AnimatorPanel(self)
-        self.sizer.Add(self.animator,(0,0),flag=wx.EXPAND|wx.ALL)
-        
+        self.Bind(wx.EVT_SIZE,self.onSize)
+        self.timeline=Timeline(self,self.control)
+        self.sizer.Add(self.timeline,(0,0),flag=wx.EXPAND|wx.ALL)
         
         sline=wx.StaticLine(self)
         self.sizer.Add(sline,(1,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
         
-        self.timeline=Timeline(self)
-        self.sizer.Add(self.timeline,(2,0),flag=wx.EXPAND|wx.ALL)
-        
-        sline=wx.StaticLine(self)
-        self.sizer.Add(sline,(3,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
-        
-        self.timelineConfig=TimelineConfig(self)
-        self.sizer.Add(self.timelineConfig,(4,0),flag=wx.EXPAND|wx.ALL,border=10)
+        self.timelineConfig=TimelineConfig(self,control)
+        self.sizer.Add(self.timelineConfig,(2,0),flag=wx.EXPAND|wx.ALL,border=10)
         
         self.SetSizer(self.sizer)
         self.SetAutoLayout(1)
         self.sizer.Fit(self)
         
+    def onSize(self,evt):
+        x,y=evt.GetSize()
+        tx,ty=self.timeline.GetSize()
+        self.timeline.SetSize((x,ty))
+        self.timeline.Layout()
+        self.Layout()
+        
     def useTimeline(self,flag):
         if not flag:
-            self.timeline.setAnimationMode(0)
             self.timeline.setDisabled(1)
         else:
             self.timeline.setDisabled(0)
-
-    def configureTimeline(self,seconds,frames):
-        print "Calling timeline.configureTimeline(",seconds,",",frames,")"
-        self.timeline.configureTimeline(seconds,frames)
         
     def setDataUnit(self,dataUnit):
         self.dataUnit=dataUnit
@@ -243,8 +245,10 @@ class Timeline(scrolled.ScrolledPanel):
     Creator: KP
     Description: Class representing the timeline with different "tracks"
     """    
-    def __init__(self,parent):
+    def __init__(self,parent,control):
         scrolled.ScrolledPanel.__init__(self,parent,-1,size=(640,200))
+        self.control = control
+        control.setTimeline(self)
         self.sizer=wx.GridBagSizer(5,1)
         self.timeScale=TimeScale(self)
         # Set duration to 2 hours, let's stress test the thing
@@ -307,8 +311,6 @@ class Timeline(scrolled.ScrolledPanel):
         for i in [self.timepoints,self.splinepoints]:
             if i:
                 i.setDuration(seconds,frames)
-            
-        
         
 class TimeScale(wx.Panel):
     """
@@ -415,17 +417,3 @@ class TimeScale(wx.Panel):
         dc=wx.BufferedPaintDC(self,self.buffer)     
         
    
-if __name__=='__main__':
-    class MyApp(wx.App):
-        def OnInit(self):
-            frame=wx.Frame(None,size=(640,480))
-            self.panel=TimelinePanel(frame)
-            
-            #self.panel=TimeScale(frame)
-            #self.panel.setDuration(60)
-            self.SetTopWindow(frame)
-            frame.Show(True)
-            return True
-    app=MyApp()
-    app.MainLoop()
- 

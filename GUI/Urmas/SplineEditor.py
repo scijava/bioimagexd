@@ -21,6 +21,13 @@
 
  Copyright (c) 2004, Heikki Uuksulainen.
  Modified 2005 for BioImageXD Project: Kalle Pahajoki
+ 
+ BioImageXD includes the following persons:
+ 
+ DW - Dan White, dan@chalkie.org.uk
+ KP - Kalle Pahajoki, kalpaha@st.jyu.fi
+ PK - Pasi Kankaanp‰‰, ppkank@bytl.jyu.fi
+ 
 """
 
 __author__ = "Heikki Uuksulainen and Prabhu Ramachandran"
@@ -77,7 +84,7 @@ class SplineWidget3D:
         if not ren:
             raise "No renderer in SplineEditor!"
 
-        #self.iren = iren = renWin.GetInteractor()
+        self.iren = iren = renWin.GetInteractor()
         print "Initializing camera"
         self.init_camera()
         
@@ -91,7 +98,7 @@ class SplineWidget3D:
                                      math.Random(-self.dataExtensionY,self.data_height()+self.dataExtensionY),
                                      math.Random(-self.dataExtensionZ,self.data_depth()+self.dataExtensionZ))
         self.spline.On()
-        self.rendererder()
+        self.render()
 
     def update_data(self,data):
         print "Updating data..."
@@ -221,7 +228,7 @@ class SplineEditor(wx.Panel):
     Creates the window for spline.
     """
 
-    def __init__(self, parent, width=400, height=400):
+    def __init__(self, parent, width=400,height=400):
         wx.Panel.__init__(self,parent,size=(width,height))
         self.sizer=wxGridBagSizer(5,5)
        
@@ -238,9 +245,9 @@ class SplineEditor(wx.Panel):
         self.renWin.Render()
         self.sizer.Add(self.wxrenwin,(0,0),flag=wx.EXPAND|wx.ALL)
 
-        #ren.SetBackground(1.0,1.0,1.0)
+        ren.SetBackground(1.0,1.0,1.0)
 
-        #self.splinew = SplineWidget3D(self.wxrenwin)
+        self.splinew = SplineWidget3D(self.wxrenwin)
         
         self.SetSizer(self.sizer)
         self.SetAutoLayout(True)

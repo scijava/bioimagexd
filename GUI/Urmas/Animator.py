@@ -58,7 +58,7 @@ class AnimatorPanel(wx.Panel):
     Description: A class that contains the spline editor and configuration
                  controls related to it.
     """
-    def __init__(self,parent):
+    def __init__(self,parent,control):
         """
         Method: __init__
         Created: 10.2.2005, KP
@@ -66,13 +66,14 @@ class AnimatorPanel(wx.Panel):
         """        
         wx.Panel.__init__(self,parent)
         self.splineEditor=None
-
+        self.control = control
+        
         print "AnimatorPanel(...)"
         self.sizer=wx.GridBagSizer()
 
         
         self.splineEditor=SplineEditor.SplineEditor(self)
-        #self.animator=MayaViAnimator(self,self.splineEditor)        
+        self.animator=MayaViAnimator(self,self.splineEditor)        
         
         self.sizer.Add(self.splineEditor,(0,0))
         
@@ -100,6 +101,7 @@ class MayaViAnimator:
         self.renderingInterface = RenderingInterface.getRenderingInterface()
         self.splineEditor = splineEditor
         # XXX: this should be configurable
+        self.controlPoints=7
         self.type="png"
         
         
@@ -123,7 +125,7 @@ class MayaViAnimator:
         if not self.splineEditor:
             return 
         self.renderingInterface.setCurrentTimepoint(0)
-        self.animator.initData()
+        
         renwin = self.renderingInterface.getRenderWindow() 
         ren = renwin.get_renderer()
         if self.renderingInterface.isMayaViModuleLoaded() == False:
@@ -200,8 +202,8 @@ class MayaViAnimator:
         
     def initData(self):          
         self.splineEditor.update_data(self.renderingInterface.getCurrentData())
-        self.splineEditor.init_spline(control_points)
-        self.init_spline_camera()
+        self.splineEditor.init_spline(self.controlPoints)
+        #self.init_spline_camera()
         self.splineEditor.init_camera()
             
         self.splineEditor.render()
