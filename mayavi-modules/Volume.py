@@ -118,7 +118,7 @@ class Volume (Base.Objects.Module):
         ctf = default_color_transfer_function(dr[0], dr[1])
         otf = default_opacity_transfer_function(dr[0], dr[1])
 
-        self.map_type = 0 # 0 - Ray cast, 1 - TextureMapper
+        self.map_type = 0 # 0 - Ray cast, 1 - TextureMapper, 2 - TextureMapper3D
         self.rc_func = 0 # 0 - composite, 1 - MIP, 2 - Isosurface
         if self.map_type == 0:
             self.map = vtkpython.vtkVolumeRayCastMapper ()
@@ -126,6 +126,8 @@ class Volume (Base.Objects.Module):
             self.map.SetVolumeRayCastFunction (self.ray_cast_func)
         elif self.map_type == 1:
             self.map = vtkpython.vtkVolumeTextureMapper2D ()
+	elif self.map_type == 2:
+	    self.map = vtkpython.vtkVolumeTextureMapper3D ()
             
         self.map.SetInput (self.mod_m.GetOutput ())
         
@@ -268,6 +270,11 @@ class Volume (Base.Objects.Module):
                                 command=self.change_map_type_gui)
         b.grid (row=rw, column=0, columnspan=2, sticky='w')
         rw = rw + 1
+        b = Tkinter.Radiobutton(f, text="Use TextureMapper3D",
+                                variable=self.map_type_var, value=2,
+                                command=self.change_map_type_gui)
+        b.grid (row=rw, column=0, columnspan=2, sticky='w')
+        rw = rw + 1	
         
         # Create GUI for the Mapper
         self.map_gui_frame = Tkinter.Frame(f)
@@ -385,8 +392,12 @@ class Volume (Base.Objects.Module):
         if map_type == 0:
             self.map = vtkpython.vtkVolumeRayCastMapper ()
             self.map.SetVolumeRayCastFunction (self.ray_cast_func)
-        else:
+        elif map_type == 1:
             self.map = vtkpython.vtkVolumeTextureMapper2D()
+	elif map_type == 2:
+	    self.map = vtkpython.vtkVolumeTextureMapper3D()
+	else:
+	    raise "Unrecognized mapper type"
         self.map_type = map_type
         self.map.SetInput (self.mod_m.GetOutput ())
         self.act.SetMapper (self.map)
