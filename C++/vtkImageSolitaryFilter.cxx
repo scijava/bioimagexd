@@ -51,7 +51,7 @@ void vtkImageSolitaryFilter::ComputeInputUpdateExtent(int inExt[6],
         outExt[2*i+1]=k;
         printf("%d, ",k);
     }
-    printf(")\n");
+    printf(")\n");   
 }
 
 //-----------------------------------------------------------------------------
