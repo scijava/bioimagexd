@@ -16,6 +16,7 @@
 
 #include "vtkImageData.h"
 #include "vtkObjectFactory.h"
+#include "vtkImageProgressIterator.h"
 
 vtkCxxRevisionMacro(vtkImageAlphaFilter, "$Revision: 1.25 $");
 vtkStandardNewMacro(vtkImageAlphaFilter);
@@ -23,6 +24,9 @@ vtkStandardNewMacro(vtkImageAlphaFilter);
 //----------------------------------------------------------------------------
 vtkImageAlphaFilter::vtkImageAlphaFilter()
 {
+    this->AverageMode = 1;
+    this->MaximumMode = 0;
+    this->AverageThreshold = 10;
 }
 
 //----------------------------------------------------------------------------
@@ -36,24 +40,7 @@ void vtkImageAlphaFilter::ExecuteInformation(vtkImageData **inputs,
                                         vtkImageData *output)
 {
   vtkImageMultipleInputFilter::ExecuteInformation(inputs,output);
-}
-
-
-//----------------------------------------------------------------------------
-void vtkImageAlphaFilter::ComputeInputUpdateExtent(int inExt[6],
-                                              int outExt[6], int whichInput)
-{
-  int min, max, shift, tmp, idx;
-  int *extent;
-
-  if (this->GetInput() == NULL)
-    {
-    vtkErrorMacro("No input");
-    return;
-    }
-  
-  // default input extent will be that of output extent
-  memcpy(inExt,outExt,sizeof(int)*6);
+ 
 }
 
 
@@ -61,59 +48,76 @@ void vtkImageAlphaFilter::ComputeInputUpdateExtent(int inExt[6],
 //----------------------------------------------------------------------------
 // This templated function executes the filter for any type of data.
 template <class T>
-void vtkImageAlphaFilterExecute(vtkImageAlphaFilter *self, int id, 
-                           int inExt[6], vtkImageData *inData, T *inPtr,
-                           int outExt[6], vtkImageData *outData, T *outPtr)
+void vtkImageAlphaFilterExecute(vtkImageAlphaFilter *self, int id,int NumberOfInputs, 
+                           vtkImageData **inData,vtkImageData*outData,int outExt[6],
+                            T*)
 {
-  int idxR, idxY, idxZ;
-  int maxY, maxZ;
-  int inIncX, inIncY, inIncZ;
-  int outIncX, outIncY, outIncZ;
-  int rowLength;
-  unsigned long count = 0;
-  unsigned long target;
-  int oldVal = 0, currVal = 0;
-
-  // Get increments to march through data 
-  inData->GetContinuousIncrements(inExt, inIncX, inIncY, inIncZ);
-  outData->GetContinuousIncrements(outExt, outIncX, outIncY, outIncZ);
-
-  // find the region to loop over
-  rowLength = inExt[1] - inExt[0]
-  maxY = inExt[3] - inExt[2]; 
-  maxZ = inExt[5] - inExt[4];
-  target = (unsigned long)((maxZ+1)*(maxY+1)/50.0);
-  target++;
-  
-
-  // Loop through input pixels
-  for (idxZ = 0; idxZ <= maxZ; idxZ++)
-    {
-    for (idxY = 0; !self->AbortExecute && idxY <= maxY; idxY++)
-      {
-      if (!id) 
-        {
-        if (!(count%target))
-          {
-          self->UpdateProgress(count/(50.0*target));
-          }
-        count++;
-        }
-      for (idxR = 0; idxR < rowLength; idxR++)
-        {
-        // Pixel operation
-        oldVal = *outPtr;
-        currVal = *inPtr;
-        if( oldVal < currVal ) *outPtr = currVal;
-        outPtr++;
-        inPtr++;
-        }
-      outPtr += outIncY;
-      inPtr += inIncY;
-      }
-    outPtr += outIncZ;
-    inPtr += inIncZ;
+    int i;
+    int inIncX,inIncY,inIncZ;
+    int outIncX,outIncY,outIncZ;
+    int maxX,maxY,maxZ;
+    int idxX,idxY,idxZ;
+    int AvgThreshold = self->GetAverageThreshold();
+    int AvgMode = self->GetAverageMode();
+    int MaxMode = self->GetMaximumMode();
+    T** inPtrs;
+    T* outPtr;
+    inPtrs=new T*[NumberOfInputs];
+    printf("outext=[%d,%d,%d,%d,%d,%d]\n",outExt[0],outExt[1],outExt[2],outExt[3],outExt[4],outExt[5]);
+    for(i=0; i < NumberOfInputs; i++) {
+        inPtrs[i]=(T*)inData[i]->GetScalarPointerForExtent(outExt);
     }
+    outPtr=(T*)outData->GetScalarPointerForExtent(outExt);
+    
+    
+    inData[0]->GetContinuousIncrements(outExt,inIncX, inIncY, inIncZ);
+    outData->GetContinuousIncrements(outExt,outIncX, outIncY, outIncZ);
+    maxX = outExt[1] - outExt[0];
+    maxY = outExt[3] - outExt[2];
+    maxZ = outExt[5] - outExt[4];
+    
+    T scalar = 0, currScalar = 0, alphaScalar = 0;
+    int maxval = 0, n = 0;
+    maxval=int(pow(2,8*sizeof(T)));
+    T val;
+    
+    for(idxZ = 0; idxZ <= maxZ; idxZ++ ) {
+        for(idxY = 0; idxY <= maxY; idxY++ ) {
+          for(idxX = 0; idxX <= maxX; idxX++ ) {
+            scalar = currScalar = n = 0;
+            for(i=0; i < NumberOfInputs; i++ ) {
+                currScalar = *inPtrs[i];                            
+                if(MaxMode) {
+                    if(alphaScalar < currScalar) {
+                        alphaScalar = currScalar;
+                    }
+                    // If the alpha channel should be in "average mode"
+                    // then we take an average of all the scalars in the
+                    // current voxel that are above the AverageThreshold
+                    } else if(AvgMode) {
+                        if(currScalar > AvgThreshold) {
+                            n++;
+                            alphaScalar += currScalar;
+                        }
+                    }
+                inPtrs[i]++;
+            }
+            if(AvgMode && n) alphaScalar /= n;
+            if(alphaScalar > maxval)alphaScalar=maxval;
+            *outPtr = alphaScalar;
+            outPtr++;
+          }
+          for(i=0; i < NumberOfInputs; i++ ) {
+              inPtrs[i]+=inIncY;
+          }
+          outPtr += outIncY;
+        }  
+        for(i=0; i < NumberOfInputs; i++ ) {
+          inPtrs[i]+=inIncZ;
+        }
+        outPtr += outIncZ;      
+    }
+    delete[] inPtrs;
 }
 
 //----------------------------------------------------------------------------
@@ -127,56 +131,17 @@ void vtkImageAlphaFilter::ThreadedExecute(vtkImageData **inData,
 {
   int idx1;
   int inExt[6], cOutExt[6];
-  void *inPtr;
-  void *outPtr;
 
-  if(this->MaximumMode) {
+  switch (inData[0]->GetScalarType())
+  {
+  vtkTemplateMacro7(vtkImageAlphaFilterExecute, this, id, 
+                    this->NumberOfInputs,inData, 
+                    outData, outExt,static_cast<VTK_TT *>(0));
+  default:
+    vtkErrorMacro(<< "Execute: Unknown ScalarType");
+  return;
+  }    
     
-      for (idx1 = 0; idx1 < this->NumberOfInputs; ++idx1)
-        {
-        if (inData[idx1] != NULL)
-          {
-          // Get the input extent and output extent
-          // the real out extent for this input may be clipped.
-          memcpy(inExt, outExt, 6*sizeof(int));
-          this->ComputeInputUpdateExtent(inExt, outExt, idx1);
-          memcpy(cOutExt, inExt, 6*sizeof(int));
-          
-          // doo a quick check to see if the input is used at all.
-          if (inExt[this->AlphaFilterAxis*2] <= inExt[this->AlphaFilterAxis*2 + 1])
-            {
-            inPtr = inData[idx1]->GetScalarPointerForExtent(inExt);
-            outPtr = outData->GetScalarPointerForExtent(cOutExt);
-    
-            if (inData[idx1]->GetNumberOfScalarComponents() !=
-                outData->GetNumberOfScalarComponents())
-              {
-              vtkErrorMacro("Components of the inputs do not match");
-              return;
-              }
-            
-            // this filter expects that input is the same type as output.
-            if (inData[idx1]->GetScalarType() != outData->GetScalarType())
-              {
-              vtkErrorMacro(<< "Execute: input" << idx1 << " ScalarType (" << 
-                  inData[idx1]->GetScalarType() << 
-                  "), must match output ScalarType (" << outData->GetScalarType() 
-                  << ")");
-              return;
-              }
-                switch (inData[idx1]->GetScalarType())
-                  {
-                  vtkTemplateMacro8(vtkImageAlphaFilterExecute, this, id, 
-                                    inExt, inData[idx1], (VTK_TT *)(inPtr),
-                                    cOutExt, outData, (VTK_TT *)(outPtr));
-                  default:
-                    vtkErrorMacro(<< "Execute: Unknown ScalarType");
-                  return;
-                  }
-            }
-          }
-        }
-    }
 }
 
 

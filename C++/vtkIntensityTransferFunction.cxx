@@ -46,6 +46,7 @@ void vtkIntensityTransferFunction::Reset(void) {
     this->ProcessingThreshold = 0;
     this->SetReferencePoint( (this->MaximumThreshold - this->MinimumThreshold) / 2,
                              (this->MaximumValue - this->MinimumValue) / 2);  
+    this->Modified();
 }
 
 // Destruct a vtkIntensityTransferFunction
@@ -521,9 +522,10 @@ void vtkIntensityTransferFunction::PrintSelf(ostream& os, vtkIndent indent)
     os << indent << "Gamma End Point: (" << this->GammaEnd[0] <<", "<< this->GammaEnd[1] << ")\n";      
   }
   os << indent << "Function Points: " << this->GetSize() << "\n";
+  
   for( i = 0; i < this->ArraySize; i++ )
     {
-    os << indent << indent << i << ": " 
-       << i << ", " << this->Function[i] << "\n";
+    os << indent << indent
+       << i << ": " << this->GetValue(i) << "\n";
     }
 }

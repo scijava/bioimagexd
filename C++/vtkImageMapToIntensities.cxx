@@ -29,19 +29,6 @@ vtkImageMapToIntensities::vtkImageMapToIntensities()
     this->IntensityTransferFunction = 0;
 }
 
-//-----------------------------------------------------------------------------
-// Get ALL of the input.
-void vtkImageMapToIntensities::ComputeInputUpdateExtent(int inExt[6], 
-                                             int *)
-{
-  // request all of the VOI
-  int *wholeExtent;
-  int i;
-  
-  wholeExtent = this->GetInput()->GetWholeExtent();
-  memcpy(inExt, wholeExtent, 6*sizeof(int));
-
-}
 
 //-----------------------------------------------------------------------------
 void 
@@ -65,7 +52,6 @@ void vtkImageMapToIntensities::ExecuteData(vtkDataObject *)
 
   unsigned char scalar,newScalar,cmpScalar;
 
-  //output->GetUpdateExtent(uExtent);
   output->GetUpdateExtent(uExtent);
   output->SetExtent(uExtent);
   if(!this->IntensityTransferFunction) {
@@ -92,10 +78,11 @@ void vtkImageMapToIntensities::ExecuteData(vtkDataObject *)
   }
   input->GetContinuousIncrements(uExtent,inIncX, inIncY, inIncZ);
   output->GetContinuousIncrements(uExtent,outIncX, outIncY, outIncZ);
+  printf("uExtent=(%d,%d,%d,%d,%d,%d)\n",uExtent[0],uExtent[1],uExtent[2],uExtent[3],uExtent[4],uExtent[5]);
   maxX = uExtent[1] - uExtent[0];
   maxY = uExtent[3] - uExtent[2];
   maxZ = uExtent[5] - uExtent[4];
-  
+  printf("maxX=%d,maxY=%d,maxZ=%d\n",maxX,maxY,maxZ);
   //inIncX *= input->GetScalarSize();
   //inIncY *= input->GetScalarSize();
   //inIncZ *= input->GetScalarSize();
@@ -118,6 +105,12 @@ void vtkImageMapToIntensities::ExecuteData(vtkDataObject *)
     outPtr += outIncZ;      
   }
   
+}
+
+void vtkImageMapToIntensities::ComputeInputUpdateExtent(int inExt[6], int outExt[6]) {
+
+    printf("required extent for (%d,%d,%d,%d,%d,%d)\n",outExt[0],outExt[1],outExt[2],outExt[3],outExt[4],outExt[5]);    
+    memcpy(inExt,outExt,6*sizeof(int));
 }
 
 

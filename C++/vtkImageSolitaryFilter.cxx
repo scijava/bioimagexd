@@ -33,17 +33,25 @@ vtkImageSolitaryFilter::vtkImageSolitaryFilter()
 }
 
 //-----------------------------------------------------------------------------
-// Get ALL of the input.
-void vtkImageSolitaryFilter::ComputeInputUpdateExtent(int inExt[6], 
-                                             int *)
-{
-  // request all of the VOI
-  int *wholeExtent;
-  int i;
-  
-  wholeExtent = this->GetInput()->GetWholeExtent();
-  memcpy(inExt, wholeExtent, 6*sizeof(int));
 
+void vtkImageSolitaryFilter::ComputeInputUpdateExtent(int inExt[6], 
+                                             int outExt[6])
+{
+    int i = 0, k = 0;
+    int wholeExt[3];
+    this->GetInput()->GetWholeExtent(wholeExt);
+    printf("Required ext for solitary = (");
+    for(int i=0;i<3;i++) {
+        k=outExt[2*i];
+        if(k > 0) k--;
+        printf("%d, ",k);
+        inExt[2*i]=k;
+        k=inExt[2*i+1];
+        if(k < wholeExt[2*i+1]-1)k++;
+        outExt[2*i+1]=k;
+        printf("%d, ",k);
+    }
+    printf(")\n");
 }
 
 //-----------------------------------------------------------------------------

@@ -45,13 +45,14 @@ public:
       this->IntensityTransferFunction = itf;
       this->Modified();
   }
+  virtual void ComputeInputUpdateExtent(int inExt[6], int outExt[6]);
+
 
 
 protected:
   vtkImageMapToIntensities();
   ~vtkImageMapToIntensities() {};
 
-  virtual void ComputeInputUpdateExtent(int inExt[6], int outExt[6]);
   void ExecuteInformation(vtkImageData *input, vtkImageData *output);
   void ExecuteInformation(){this->vtkImageToImageFilter::ExecuteInformation();};
   virtual void ExecuteData(vtkDataObject *);

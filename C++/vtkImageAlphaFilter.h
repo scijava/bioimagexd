@@ -14,7 +14,7 @@
 =========================================================================*/
 // .NAME vtkImageAlphaFilter - Collects data from multiple inputs into one image.
 // .SECTION Description
-// vtkImageAlphaFilter takes the components from multiple inputs and merges
+// vtkImageAlphaFilter takes the components from multiple inputs and AlphaFilters
 // them into one output. The output images are AlphaFilter along the "AlphaFilterAxis".
 // Except for the AlphaFilter axis, all inputs must have the same extent.  
 // All inputs must have the same number of scalar components.  
@@ -36,17 +36,22 @@ public:
   static vtkImageAlphaFilter *New();
   vtkTypeRevisionMacro(vtkImageAlphaFilter,vtkImageMultipleInputFilter);
   void PrintSelf(ostream& os, vtkIndent indent);
-  
-  
+
   // Description:
   // In the maximum mode, the alpha channel value will be the 
   // largest scalar value in a particular voxel
   vtkBooleanMacro(MaximumMode,int);
+  vtkSetMacro(MaximumMode,int);
+  vtkGetMacro(MaximumMode,int);
   // Description:
   // In the average mode, the alpha channel value will be the
   // average of all scalar values that are larger than AverageThreshold
   vtkBooleanMacro(AverageMode,int);
+  vtkSetMacro(AverageMode,int);
+  vtkGetMacro(AverageMode,int);
+
   vtkSetMacro(AverageThreshold,int);
+  vtkGetMacro(AverageThreshold,int);
 
 protected:
   vtkImageAlphaFilter();
@@ -54,16 +59,20 @@ protected:
 
 
   void ExecuteInformation(vtkImageData **inputs, vtkImageData *output);
-  void ComputeInputUpdateExtent(int inExt[6], int outExt[6], int whichInput);
-  void ExecuteInformation(){this->vtkImageMultipleInputFilter::ExecuteInformation();};
+  void ComputeInputUpdateExtent(int inExt[6], int outExt[6]);
   
   void ThreadedExecute(vtkImageData **inDatas, vtkImageData *outData,
                        int extent[6], int id);
+  
 
   void InitOutput(int outExt[6], vtkImageData *outData);
 private:
   vtkImageAlphaFilter(const vtkImageAlphaFilter&);  // Not implemented.
   void operator=(const vtkImageAlphaFilter&);  // Not implemented.
+
+  int AverageMode;
+  int AverageThreshold;
+  int MaximumMode;
 };
 
 #endif

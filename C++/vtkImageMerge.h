@@ -1,7 +1,7 @@
 /*=========================================================================
 
   Program:   Visualization Toolkit
-  Module:    $RCSfile: vtkImageAlphaFilter.h,v $
+  Module:    $RCSfile: vtkImageMerge.h,v $
 
   Copyright (c) Ken Martin, Will Schroeder, Bill Lorensen
   All rights reserved.
@@ -12,11 +12,11 @@
      PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
-// .NAME vtkImageAlphaFilter - Collects data from multiple inputs into one image.
+// .NAME vtkImageMerge - Collects data from multiple inputs into one image.
 // .SECTION Description
-// vtkImageAlphaFilter takes the components from multiple inputs and merges
-// them into one output. The output images are AlphaFilter along the "AlphaFilterAxis".
-// Except for the AlphaFilter axis, all inputs must have the same extent.  
+// vtkImageMerge takes the components from multiple inputs and merges
+// them into one output. The output images are Merge along the "MergeAxis".
+// Except for the Merge axis, all inputs must have the same extent.  
 // All inputs must have the same number of scalar components.  
 // A future extension might be to pad or clip inputs to have the same extent.
 // The output has the same origin and spacing as the first input.
@@ -24,37 +24,26 @@
 // must have the same scalar type.
 
 
-#ifndef __vtkImageAlphaFilter_h
-#define __vtkImageAlphaFilter_h
+#ifndef __vtkImageMerge_h
+#define __vtkImageMerge_h
 
 
 #include "vtkImageMultipleInputFilter.h"
 
-class VTK_IMAGING_EXPORT vtkImageAlphaFilter : public vtkImageMultipleInputFilter
+class VTK_IMAGING_EXPORT vtkImageMerge : public vtkImageMultipleInputFilter
 {
 public:
-  static vtkImageAlphaFilter *New();
-  vtkTypeRevisionMacro(vtkImageAlphaFilter,vtkImageMultipleInputFilter);
-  void PrintSelf(ostream& os, vtkIndent indent);
-  
-  
-  // Description:
-  // In the maximum mode, the alpha channel value will be the 
-  // largest scalar value in a particular voxel
-  vtkBooleanMacro(MaximumMode,int);
-  // Description:
-  // In the average mode, the alpha channel value will be the
-  // average of all scalar values that are larger than AverageThreshold
-  vtkBooleanMacro(AverageMode,int);
-  vtkSetMacro(AverageThreshold,int);
+  static vtkImageMerge *New();
+  vtkTypeRevisionMacro(vtkImageMerge,vtkImageMultipleInputFilter);
+  void PrintSelf(ostream& os, vtkIndent indent);  
 
-protected:
-  vtkImageAlphaFilter();
-  ~vtkImageAlphaFilter();
+ protected:
+  vtkImageMerge();
+  ~vtkImageMerge();
 
 
   void ExecuteInformation(vtkImageData **inputs, vtkImageData *output);
-  void ComputeInputUpdateExtent(int inExt[6], int outExt[6], int whichInput);
+  void ComputeInputUpdateExtent(int inExt[6], int outExt[6]);
   void ExecuteInformation(){this->vtkImageMultipleInputFilter::ExecuteInformation();};
   
   void ThreadedExecute(vtkImageData **inDatas, vtkImageData *outData,
@@ -62,8 +51,9 @@ protected:
 
   void InitOutput(int outExt[6], vtkImageData *outData);
 private:
-  vtkImageAlphaFilter(const vtkImageAlphaFilter&);  // Not implemented.
-  void operator=(const vtkImageAlphaFilter&);  // Not implemented.
+  vtkImageMerge(const vtkImageMerge&);  // Not implemented.
+  void operator=(const vtkImageMerge&);  // Not implemented.
+
 };
 
 #endif
