@@ -86,8 +86,10 @@ class ColorMerging(Module):
         self.rgbs.append(rgb)
         self.alphaTF=self.settings.get("AlphaTransferFunction")
         self.alphaMode=self.settings.get("AlphaMode")
+        #print "n=",self.n,"self.settings=",self.settings
         itf=self.settings.getCounted("IntensityTransferFunction",self.n)
-        print "Got iTF=",itf
+        if not itf:
+            print "Didn't get itf"
         self.intensityTransferFunctions.append(itf)
 
         Module.addInput(self,data)
