@@ -90,16 +90,14 @@ class ColocalizationWindow(TaskWindow.TaskWindow):
         self.previewSizer.Add(self.preview,(0,0),flag=wx.EXPAND|wx.ALL)
         self.previewSizer.Fit(self.preview)
         self.SetTitle("Colocalization")
+        self.createToolBar()        
         self.mainsizer.Layout()
         self.mainsizer.Fit(self.panel)
-
-########################## WIDGET CREATION CODE ##############################
 
     def createButtonBox(self):
         """
         Method: createButtonBox()
-        Created: 03.11.2004
-        Creator: KP
+        Created: 03.11.2004, KP
         Description: Creates a button box containing the buttons Render, 
                      Preview and Close
         """
@@ -110,8 +108,7 @@ class ColocalizationWindow(TaskWindow.TaskWindow):
     def createOptionsFrame(self):
         """
         Method: createOptionsFrame()
-        Created: 03.11.2004
-        Creator: KP
+        Created: 03.11.2004, KP
         Description: Creates a frame that contains the various widgets
                      used to control the colocalization settings
         """
@@ -149,8 +146,7 @@ class ColocalizationWindow(TaskWindow.TaskWindow):
     def setColor(self,r,g,b):
         """
         Method: setColor(r,g,b)
-        Created: 03.11.2004
-        Creator: KP
+        Created: 03.11.2004,  KP
         Description: A method that sets the color of the dataUnit and 
                      updates the preview and Set color-button accordingly
         """
@@ -163,8 +159,7 @@ class ColocalizationWindow(TaskWindow.TaskWindow):
     def updateThreshold(self,event):
         """
         Method: updateThreshold(event)
-        Created: 03.11.2004
-        Creator: KP
+        Created: 03.11.2004, KP
         Description: A callback function called when the threshold is 
         configured via the slider
         """
@@ -180,8 +175,7 @@ class ColocalizationWindow(TaskWindow.TaskWindow):
     def updateSettings(self):
         """
         Method: updateSettings()
-        Created: 03.11.2004
-        Creator: KP
+        Created: 03.11.2004, KP
         Description: A method used to set the GUI widgets to their proper values
                      based on the selected channel, the settings of which are 
                      stored in the instance variable self.configSetting
@@ -207,8 +201,7 @@ class ColocalizationWindow(TaskWindow.TaskWindow):
     def updateBitDepth(self,event=None):
         """
         Method: updateBitDepth(event)
-        Created: 17.11.2004
-        Creator: KP
+        Created: 17.11.2004, KP
         Description: Updates the preview to be done at the selected depth
         """
         if self.dataUnit:
@@ -218,10 +211,9 @@ class ColocalizationWindow(TaskWindow.TaskWindow):
     def doPreviewCallback(self,event=None):
         """
         Method: doPreviewCallback()
-        Created: 03.11.2004
-        Creator: KP
+        Created: 03.11.2004, KP
         Description: A callback for the button "Preview" and other events
-	             that wish to update the preview
+                     that wish to update the preview
         """
         self.updateBitDepth()
         TaskWindow.TaskWindow.doPreviewCallback(self,event)
