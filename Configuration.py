@@ -46,18 +46,23 @@ class Configuration:
         self.installPath=os.getcwd()
         self.parser=ConfigParser.ConfigParser()
         cfgfile=self.getPath(configFile)
+        self.configFile=cfgfile
         self.parser.read([cfgfile])
     
         # Set the initial values
         vtkpath=self.getPath(["Libraries","VTK"])
         #vtkpath=self.getPath(["C:\\VTK"])
         mayavipath=self.getPath(["Libraries","mayavi"])
-        self.setConfigItem("RemoveOldVTK","VTK",0);
+        self.setConfigItem("RemoveOldVTK","VTK",1);
         self.setConfigItem("VTKPath","VTK",vtkpath)
         self.setConfigItem("UseSystemMayavi","Mayavi",0)
         self.setConfigItem("MayaviPath","Mayavi",mayavipath)
         
         self.setConfigItem("ImageFormat","Output","png")
+        
+        self.setConfigItem("DataPath","Paths","/home/kalpaha/BioImageXD/Data/")
+        self.setConfigItem("LastPath","Paths","/home/kalpaha/BioImageXD/Data/")
+        self.setConfigItem("RememberPath","Paths",1)
         
         # Then read the settings file
         self.readPathSettings()
@@ -66,6 +71,15 @@ class Configuration:
         self.processPathSettings()
         print sys.path
         
+    def writeSettings(self):
+        """
+        Method: writeSettings()
+        Created: 12.03.2005, KP
+        Description: A method to write out the settings
+        """ 
+        fp=open(self.configFile,"w")
+        self.parser.write(fp)
+        fp.close()
         
     def insertModuleDirectories(self):
         self.insertPath(self.getPath("LSM"))
@@ -88,6 +102,7 @@ class Configuration:
         if self.parser.has_section(section) == False:
             self.parser.add_section(section)
         self.parser.set(section,configItem,value)
+        self.writeSettings()
         
     def readConfigItem(self,configItem,section):
         try:
@@ -106,7 +121,8 @@ class Configuration:
         self.readConfigItem("RemoveOldVTK","VTK")
         self.readConfigItem("VTKPath","VTK")
         self.readConfigItem("UseSystemMayavi","Mayavi")
-        self.readConfigItem("MayaviPath","Mayavi")        
+        self.readConfigItem("MayaviPath","Mayavi")   
+        self.readConfigItem("DataPath","Paths")
             
     def setCurrentDir(self,path):
         self.installPath=path
