@@ -148,14 +148,11 @@ class LsmDataSource(DataSource):
             "LSM Data Source got a request for dataset from timepoint "
             "%d, but no channel number has been specified"%(i))
             return None
-        t1=time.time()
-        print "Returning dataset %d from channel %d"%(i,self.channelNum)
         self.reader.SetUpdateTimePoint(i)
         self.reader.SetUpdateChannel(self.channelNum)
         self.reader.Update()
         data=self.reader.GetOutput()
-        t2=time.time()
-        print "Reading dataset took %f seconds"%(t2-t1)
+
         return data
 
     def loadFromLsmFile(self,filename):
