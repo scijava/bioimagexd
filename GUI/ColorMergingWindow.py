@@ -96,6 +96,7 @@ class ColorMergingWindow(TaskWindow.TaskWindow):
 
         # Preview has to be generated here
         self.preview=ColorMergingPreview(self)
+        #self.preview = SingleUnitProcessingPreview(self)
         self.previewSizer.Add(self.preview,(0,0),flag=wxEXPAND|wxALL)
         self.previewSizer.Fit(self.preview)
         

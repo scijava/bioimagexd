@@ -48,7 +48,7 @@ from PreviewFrame import *
 import wx
 
 from Logging import *
-from vtk.wx.wxVTKRenderWindowInteractor import *
+from vtk.wx.wxVTKRenderWindowInteractor import wxVTKRenderWindowInteractor
 import vtk
 import wx.lib.scrolledpanel as scrolled
 
@@ -65,6 +65,7 @@ class SingleUnitProcessingPreview(PreviewFrame):
         self.mapper=vtk.vtkImageMapper()
         self.mapper.SetZSlice(self.z)
         self.actor=vtk.vtkActor2D()
+        print "self.mapper=",self.mapper
         self.actor.SetMapper(self.mapper)
         self.renderer.AddActor(self.actor)
         self.running=0
@@ -143,10 +144,10 @@ class SingleUnitProcessingPreview(PreviewFrame):
         if x!=self.xdim or y!=self.ydim:
             print "Resizing renderwindow to fit zoomed",(x,y)
             self.renwin.SetSize((x,y))
-            
+
         self.mapToColors.Update()
         print "Done"
-        
+
         self.mapper.SetZSlice(self.z)
         self.mapper.SetInput(colorImage)
  

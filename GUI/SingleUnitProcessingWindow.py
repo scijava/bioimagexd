@@ -90,20 +90,22 @@ class SingleUnitProcessingWindow(TaskWindow.TaskWindow):
         self.entries=[]
         self.operationName="Single Dataset Series Processing"
         TaskWindow.TaskWindow.__init__(self,parent)
-        self.settingsSizer.Show(self.listboxsizer,0)
-        self.Layout()
+        #self.settingsSizer.Show(self.listboxsizer,0)
+        #self.Layout()
         # Preview has to be generated here
         self.colorChooser=None
         self.createIntensityTransferPage()
 
+        self.Show()
         self.preview=SingleUnitProcessingPreview(self,self)
         self.previewSizer.Add(self.preview,(0,0))
         self.previewSizer.Fit(self.preview)
 
-        self.SetTitle("Single Dataset Series Processing")        
-        
+        self.SetTitle("Single Dataset Series Processing")
+
         self.mainsizer.Layout()
         self.mainsizer.Fit(self)
+
 
     def createIntensityTransferPage(self):
         """
@@ -187,9 +189,8 @@ class SingleUnitProcessingWindow(TaskWindow.TaskWindow):
     def setInterpolationTimePoints(self,event):
         """
         Method: setInterpolationTimePoints()
-        Created: 13.12.2004
-        Creator: KP
-        Description: A callback that is called when a timepoint entry for 
+        Created: 13.12.2004, KP
+        Description: A callback that is called when a timepoint entry for
                      intensity interpolation changes. Updates the list of 
                      timepoints between which the interpolation is carried out
                      by the dataunit
@@ -210,9 +211,8 @@ class SingleUnitProcessingWindow(TaskWindow.TaskWindow):
     def gotoInterpolationTimePoint(self,entrynum):
         """
         Method: gotoInterpolationTimePoint(entrynum)
-        Created: 09.12.2004
-        Creator: KP
-        Description: The previewed timepoint is set to timepoint specified in 
+        Created: 09.12.2004, KP
+        Description: The previewed timepoint is set to timepoint specified in
                      self.entries[entrynum]
         """
         try:
@@ -227,16 +227,15 @@ class SingleUnitProcessingWindow(TaskWindow.TaskWindow):
     def createButtonBox(self):
         """
         Method: createButtonBox()
-        Created: 03.11.2004
-        Creator: KP
-        Description: Creates a button box containing the buttons Render, 
+        Created: 03.11.2004, KP
+        Description: Creates a button box containing the buttons Render,
                      Preview and Close
         """
         TaskWindow.TaskWindow.createButtonBox(self)
         
         self.processButton.SetLabel("Process Dataset Series")
         self.processButton.Bind(EVT_BUTTON,self.doProcessingCallback)
-                
+
     def createOptionsFrame(self):
         """
         Method: createOptionsFrame()
@@ -319,9 +318,8 @@ class SingleUnitProcessingWindow(TaskWindow.TaskWindow):
     def timePointChanged(self,timePoint):
         """
         Method: timePointChanged(timepoint)
-        Created: 24.11.2004
-        Creator: KP
-        Description: A callback that is called when the previewed timepoint 
+        Created: 24.11.2004, KP
+        Description: A callback that is called when the previewed timepoint
                      changes.
         Parameters:
                 timePoint   The timepoint we're previewing now
@@ -334,8 +332,7 @@ class SingleUnitProcessingWindow(TaskWindow.TaskWindow):
     def resetTransferFunctions(self,event=None):
         """
         Method: resetTransferFunctions()
-        Created: 30.11.2004
-        Creator: KP
+        Created: 30.11.2004, KP
         Description: A method to reset all the intensity transfer functions
         """
         pass
@@ -344,9 +341,8 @@ class SingleUnitProcessingWindow(TaskWindow.TaskWindow):
     def startInterpolation(self):
         """
         Method: startInterpolation()
-        Created: 24.11.2004
-        Creator: KP
-        Description: A callback to interpolate intensity transfer functions 
+        Created: 24.11.2004, KP
+        Description: A callback to interpolate intensity transfer functions
                      between the specified timepoints
         """
         self.dataUnit.interpolateIntensities()
@@ -356,8 +352,7 @@ class SingleUnitProcessingWindow(TaskWindow.TaskWindow):
     def doFilterCheckCallback(self,event=None):
         """
         Method: doFilterCheckCallback(self)
-        Created: 14.12.2004
-        Creator: JV
+        Created: 14.12.2004, JV
         Description: A callback function called when the neither of the
                      filtering checkbox changes state
         """
@@ -388,8 +383,7 @@ class SingleUnitProcessingWindow(TaskWindow.TaskWindow):
     def setColor(self,r,g,b):
         """
         Method: setColor(r,g,b)
-        Created: 03.11.2004
-        Creator: KP
+        Created: 03.11.2004, KP
         Description: A method that sets the color of the dataUnit and updates
                      the preview and Set color-button accordingly
 
@@ -407,8 +401,7 @@ class SingleUnitProcessingWindow(TaskWindow.TaskWindow):
     def updateSettings(self):
         """
         Method: updateSettings()
-        Created: 03.11.2004
-        Creator: KP
+        Created: 03.11.2004, KP
         Description: A method used to set the GUI widgets to their proper values
         """
 
@@ -445,8 +438,7 @@ class SingleUnitProcessingWindow(TaskWindow.TaskWindow):
     def updateFilterData(self):
         """
         Method: updateFilterData()
-        Created: 13.12.2004
-        Creator: JV
+        Created: 13.12.2004, JV
         Description: A method used to set the right values in dataset
                      from filter GUI widgets
         """
@@ -467,8 +459,7 @@ class SingleUnitProcessingWindow(TaskWindow.TaskWindow):
     def doProcessingCallback(self):
         """
         Method: doProcessingCallback()
-        Created: 03.11.2004
-        Creator: KP
+        Created: 03.11.2004, KP
         Description: A callback for the button "Process Dataset Series"
         """
         self.updateFilterData()
@@ -477,8 +468,7 @@ class SingleUnitProcessingWindow(TaskWindow.TaskWindow):
     def doPreviewCallback(self,event=None):
         """
         Method: doPreviewCallback()
-        Created: 03.11.2004
-        Creator: KP
+        Created: 03.11.2004, KP
         Description: A callback for the button "Preview" and other events
                      that wish to update the preview
         """
@@ -494,10 +484,9 @@ class SingleUnitProcessingWindow(TaskWindow.TaskWindow):
     def setCombinedDataUnit(self,dataUnit):
         """
         Method: setCombinedDataUnit(dataUnit)
-        Created: 23.11.2004
-        Creator: KP
+        Created: 23.11.2004, KP
         Description: Sets the processed dataunit that is to be processed.
-                     It is then used to get the names of all the source data 
+                     It is then used to get the names of all the source data
                      units and they are added to the listbox.
                      This is overwritten from taskwindow since we only process 
                      one dataunit here, not multiple source data units

@@ -42,8 +42,8 @@ if __name__=='__main__':
     sys.path.insert(0,os.path.normpath(os.path.join(os.getcwd(),"../Libraries/VTK/bin")))
     sys.path.insert(0,os.path.normpath(os.path.join(os.getcwd(),"../Libraries/VTK/Wrapping/Python")))
 
-import vtk    
-    
+import vtk
+
 
 class PaintPanel(wx.Panel):
     def __init__(self,parent):
@@ -55,21 +55,20 @@ class PaintPanel(wx.Panel):
         w=self.xoffset+self.maxx/self.scale
         h=self.yoffset+self.maxy/self.scale
         wx.Panel.__init__(self,parent,-1,size=(w+15,h+15))
-        self.buffer=wx.EmptyBitmap(w+15,h+15)
-        dc = wx.BufferedDC(None,self.buffer)
-        dc.SetBackground(wx.Brush("BLACK"))
-        dc.Clear()
-        self.dc=dc
+        self.buffer = wx.EmptyBitmap(w+15,h+15,-1)        
+        self.w=w+15
+        self.h=h+15
+        self.dc = None
         self.Bind(wx.EVT_PAINT,self.onPaint)
-      
+
     def onPaint(self,event):
-        dc=wx.BufferedPaintDC(self,self.buffer)                
-        
+        dc=wx.BufferedPaintDC(self,self.buffer)#,self.buffer)
+        #dc.SelectObject(self.buffer)
+
     def createLine(self,x1,y1,x2,y2,color="WHITE",brush=None,**kws):
         """
         Method: createLine(x1,y1,x2,y2)
-        Created: 30.10.2004
-        Creator: KP
+        Created: 30.10.2004, KP
         Description: Draws a line from (x1,y1) to (x2,y2). The method
                      takes into account the scale factor
         """
@@ -100,8 +99,7 @@ class PaintPanel(wx.Panel):
     def createOval(self,x,y,r,color="GREY"):
         """
         Method: createOval(x,y,radius)
-        Created: 30.10.2004
-        Creator: KP
+        Created: 30.10.2004, KP
         Description: Draws an oval at point (x,y) with given radius
         """
         self.dc.SetBrush(wx.Brush(color,wx.SOLID))
@@ -114,8 +112,7 @@ class PaintPanel(wx.Panel):
     def createText(self,x,y,text,color="WHITE",**kws):
         """
         Method: createText(x,y,text,font="Arial 6")
-        Created: 30.10.2004
-        Creator: KP
+        Created: 30.10.2004, KP
         Description: Draws a text at point (x,y) using the given font
         """
         self.dc.SetTextForeground(color)
@@ -137,17 +134,23 @@ class PaintPanel(wx.Panel):
     def paintTransferFunction(self,iTF):
         """
         Method: paintTransferFunction()
-        Created: 30.10.2004
-        Creator: KP
+        Created: 30.10.2004, KP
         Description: Paints the graph of the function specified by the six points
         """
         print "Painting..."
+
+        #dc = wx.BufferedDC(None,self.buffer)
+
+        #dc = wx.MemoryDC()
+        self.dc = wx.BufferedDC(None,self.buffer)
+
+        self.dc.SetBackground(wx.Brush("BLACK"))
         self.dc.Clear()
         self.dc.BeginDrawing()
         # get the slope start and end points
         # TF=iTF.GetAsList()
         x0,y0=0,0
-        
+
         self.createLine(0,0,0,260,arrow="VERTICAL")
         self.createLine(0,0,260,0,arrow="HORIZONTAL")
 
@@ -183,7 +186,9 @@ class PaintPanel(wx.Panel):
         self.createText(-10,127,"127",textcol)
         self.createText(-10,255,"255",textcol)
         self.dc.EndDrawing()
-        
+        self.dc = None
+        self.Refresh()
+
         
 
 class IntensityTransferEditor(wx.Panel):
@@ -219,7 +224,7 @@ class IntensityTransferEditor(wx.Panel):
         print "Creating sliders..."
         self.contrastLbl=wx.StaticText(self,wx.NewId(),"%.3f"%1)
         self.contrastSlider=wx.Slider(self,value=0,minValue=-255,maxValue=255,size=(-1,290),
-        style=wx.SL_VERTICAL|wx.SL_AUTOTICKS)#|wx.SL_LABELS)
+        style=wx.SL_VERTICAL|wx.SL_LABELS)#|wx.SL_LABELS)
         self.Bind(wx.EVT_SCROLL,self.setContrast,self.contrastSlider)
 
         print "Creating paint panel"
@@ -239,11 +244,11 @@ class IntensityTransferEditor(wx.Panel):
         self.gammaEdit=wx.TextCtrl(self,ID_GAMMAEDIT,size=(50,-1),style=wx.TE_PROCESS_ENTER)
 
         self.brightnessSlider=wx.Slider(self,value=0,minValue=-255,maxValue=255,size=(260,-1),
-        style=wx.SL_HORIZONTAL|wx.SL_AUTOTICKS|wx.SL_LABELS)
+        style=wx.SL_HORIZONTAL)
         self.Bind(wx.EVT_SCROLL,self.setBrightness,self.brightnessSlider)
 
         self.gammaSlider=wx.Slider(self,value=0,minValue=-100,maxValue=100,size=(260,-1),
-        style=wx.SL_HORIZONTAL|wx.SL_AUTOTICKS)#|wx.SL_LABELS)
+        style=wx.SL_HORIZONTAL)
         self.Bind(wx.EVT_SCROLL,self.setGamma,self.gammaSlider)
 
     
@@ -340,14 +345,13 @@ class IntensityTransferEditor(wx.Panel):
         self.SetSizer(self.mainsizer)
         self.mainsizer.SetSizeHints(self)
         
-        self.updateAll()
+        self.updateGraph()
 
 
     def restoreDefaults(self,event):
         """
         Method: restoreDefaults()
-        Created: 8.12.2004
-        Creator: KP
+        Created: 8.12.2004, KP
         Description: Restores the default settings for this widget
         """
         print "Restoring..."
@@ -357,8 +361,7 @@ class IntensityTransferEditor(wx.Panel):
     def setAlphaMode(self,mode):
         """
         Method: setAlphaMode(mode)
-        Created: 7.12.2004
-        Creator: KP
+        Created: 7.12.2004, KP
         Description: Sets the widget to/from alpha editing mode
         """
         wstate="disabled"
@@ -376,8 +379,7 @@ class IntensityTransferEditor(wx.Panel):
     def setGamma(self,event):
         """
         Method: setGamma(event)
-        Created: 30.10.2004
-        Creator: KP
+        Created: 30.10.2004, KP
         Description: Updates the gamma part of the function according to the
                      gamma slider in the GUI
         """
@@ -395,47 +397,44 @@ class IntensityTransferEditor(wx.Panel):
             gammaEx=1
         
         self.iTF.SetGamma(gammaEx)
-        self.updateAll()
+        self.updateGraph()
         self.updateGUI()
         event.Skip()
         
     def setContrast(self,event):
         """
         Method: setContrast(event)
-        Created: 30.10.2004
-        Creator: KP
+        Created: 30.10.2004, KP
         Description: Updates the coefficient for the line according to the
                      contrast slider in the GUI
         """
         contrast=event.GetPosition()
+        print "Contrast position = ",contrast
         if abs(contrast) > 10:
             coeff=contrast/10.0;
-        elif contrast!=0:
-            coeff=1
-            
         if contrast<0:
             coeff=1.0/abs(contrast)
         elif contrast==0:
             coeff=1
-        
+
         print "Value of slider",contrast
+        print "coeff = ",coeff
         self.iTF.SetContrast(coeff)
-        self.updateAll()
+        self.updateGraph()
         self.updateGUI()
         self.contrastLbl.SetLabel("%.3f"%coeff)
         event.Skip()
-        
+
     def setBrightness(self,event):
         """
         Method: setBrightness(event)
-        Created: 30.10.2004
-        Creator: KP
+        Created: 30.10.2004, KP
         Description: Updates the reference point for the line according to the
                      brightness slider in the GUI
         """
         val=event.GetPosition()
         self.iTF.SetBrightness(val)
-        self.updateAll()
+        self.updateGraph()
         self.updateGUI()
         event.Skip()
         
@@ -444,9 +443,8 @@ class IntensityTransferEditor(wx.Panel):
     def setProcessingThreshold(self,x):
         """
         Method: setProcessingThreshold(x)
-        Created: 1.12.2004
-        Creator: KP
-        Description: Sets the minimum processing threshold and updates 
+        Created: 1.12.2004, KP
+        Description: Sets the minimum processing threshold and updates
                      the GUI accordingly
         """
         self.iTF.SetProcessingThreshold(x)
@@ -455,8 +453,7 @@ class IntensityTransferEditor(wx.Panel):
     def setMinimumThreshold(self,x):
         """
         Method: setMinimumThreshold(x)
-        Created: 30.10.2004
-        Creator: KP
+        Created: 30.10.2004, KP
         Description: Sets the minimum threshold and updates the GUI accordingly
         """
         self.iTF.SetMinimumThreshold(x)
@@ -465,8 +462,7 @@ class IntensityTransferEditor(wx.Panel):
     def setMaximumThreshold(self,x):
         """
         Method: setMaximumThreshold(x)
-        Created: 30.10.2004
-        Creator: KP
+        Created: 30.10.2004, KP
         Description: Sets the maximum threshold and updates the GUI accordingly
         """
         self.maxthreshold.SetValue("%d"%x)
@@ -475,8 +471,7 @@ class IntensityTransferEditor(wx.Panel):
     def setMinimumValue(self,x):
         """
         Method: setMinimumValue(x)
-        Created: 30.10.2004
-        Creator: KP
+        Created: 30.10.2004, KP
         Description: Sets the minimum value and updates the GUI accordingly
         """
         self.minValue.SetValue("%d"%x)
@@ -485,8 +480,7 @@ class IntensityTransferEditor(wx.Panel):
     def setMaximumValue(self,x):
         """
         Method: setMaximumValue(x)
-        Created: 30.10.2004
-        Creator: KP
+        Created: 30.10.2004, KP
         Description: Sets the maximum value and updates the GUI accordingly
         """
         self.maxValue.SetValue("%d"%x)
@@ -495,112 +489,103 @@ class IntensityTransferEditor(wx.Panel):
     def updateMinimumThreshold(self,event):
         """
         Method: updateMinimumThreshold(x)
-        Created: 30.10.2004
-        Creator: KP
+        Created: 30.10.2004, KP
         Description: A callback used to update the minimum threshold
                      to reflect the GUI settings
         """
         self.setMinimumThreshold(int(self.minthreshold.GetValue()))
-        self.updateAll()
+        self.updateGraph()
         event.Skip()
 
     def updateProcessingThreshold(self,event):
         """
         Method: updateProcessingThreshold(x)
-        Created: 1.12.2004
-        Creator: KP
+        Created: 1.12.2004, KP
         Description: A callback used to update the minimum processing threshold
                      to reflect the GUI settings
         """
         self.setProcessingThreshold(int(self.minProcess.GetValue()))
-        self.updateAll()
+        self.updateGraph()
         event.Skip()
 
 
     def updateMaximumThreshold(self,event):
         """
         Method: updateMaximumThreshold(x)
-        Created: 30.10.2004
-        Creator: KP
+        Created: 30.10.2004, KP
         Description: A callback used to update the maximum threshold
                      to reflect the GUI settings
         """
         self.setMaximumThreshold(int(self.maxthreshold.GetValue()))
-        self.updateAll()
+        self.updateGraph()
         event.Skip()
 
     def updateMinimumValue(self,event):
         """
         Method: updateMinimumValue(x)
-        Created: 30.10.2004
-        Creator: KP
+        Created: 30.10.2004, KP
         Description: A callback used to update the minimum value
                      to reflect the GUI settings
         """
         self.setMinimumValue(int(self.minValue.GetValue()))
-        self.updateAll()
+        self.updateGraph()
         event.Skip()
 
     def updateGamma(self,event):
         """
         Method: updateGamma(x)
-        Created: 09.12.2004
-        Creator: KP
+        Created: 09.12.2004, KP
         Description: A callback used to update the gamma
                      to reflect the entry value
         """
         gamma=float(self.gammaEdit.GetValue())
         self.iTF.SetGamma(gamma)
-        self.updateAll()
+        self.updateGraph()
         self.updateGUI()
         event.Skip()
 
     def updateContrast(self,event):
         """
         Method: updateContrast(x)
-        Created: 09.12.2004
-        Creator: KP
+        Created: 09.12.2004, KP
         Description: A callback used to update the contrast
                      to reflect the entry value
         """
         cont=float(self.contrastEdit.GetValue())
         self.iTF.SetContrast(cont)
-        self.updateAll()
+        self.updateGraph()
         self.updateGUI()
         event.Skip()
 
     def updateBrightness(self,event):
         """
         Method: updateBrightness(x)
-        Created: 09.12.2004
-        Creator: KP
+        Created: 09.12.2004, KP
         Description: A callback used to update the brightness
                      to reflect the entry value
         """
         br=float(self.brightnessEdit.GetValue())
         self.iTF.SetBrightness(br)
-        self.updateAll()
+        self.updateGraph()
         self.updateGUI()
         event.Skip()
 
     def updateMaximumValue(self,event):
         """
         Method: updateMaximumThreshold(x)
-        Created: 30.10.2004
-        Creator: KP
+        Created: 30.10.2004, KP
         Description: A callback used to update the maximum threshold
                      to reflect the GUI settings
         """
         self.setMaximumValue(int(self.maxValue.GetValue()))
-        self.updateAll()
+        self.updateGraph()
         event.Skip()
 
     def updateGUI(self):
         """
         Method: updateGUI()
-        Created: 07.12.2004
-        Creator: KP
-        Description: Updates the GUI settings to correspond to those of 
+        Created: 07.12.2004, KP
+        Description: Updates the GUI settings to correspond to those of
                      the transfer function
         """
         self.minValue.SetValue("%d"%self.iTF.GetMinimumValue())
@@ -615,32 +600,30 @@ class IntensityTransferEditor(wx.Panel):
             contrast=-1.0/contrast
         if gamma<1:
             gamma=-1.0/gamma
-        self.contrastSlider.SetValue(contrast)
+        #self.contrastSlider.SetValue(contrast)
         self.brightnessSlider.SetValue(self.iTF.GetBrightness())
-        self.gammaSlider.SetValue(gamma)
+        #self.gammaSlider.SetValue(gamma)
 
         self.gammaEdit.SetValue("%.3f"%self.iTF.GetGamma())
         self.brightnessEdit.SetValue("%.3f"%self.iTF.GetBrightness())
         #self.contrastEdit.SetValue("%.3f"%self.iTF.getLineCoeff())
 
-    def updateAll(self):
+    def updateGraph(self):
         """
-        Method: updateAll()
-        Created: 30.10.2004
-        Creator: KP
+        Method: updateGraph()
+        Created: 30.10.2004, KP
         Description: Clears the canvas and repaints the function
         """
         self.canvas.paintTransferFunction(self.iTF)
-        self.canvas.onPaint(None)
+        #self.canvas.onPaint(None)
         if self.updateCallback:
             print "Calling updateCallback"
             self.updateCallback()
-        
+
     def getIntensityTransferFunction(self):
         """
         Method: getIntensityTransferFunction()
-        Created: 11.11.2004
-        Creator: JV
+        Created: 11.11.2004, JV
         Description: Returns the intensity transfer function
         """
         return self.iTF
@@ -648,14 +631,13 @@ class IntensityTransferEditor(wx.Panel):
     def setIntensityTransferFunction(self,TF):
         """
         Method: setIntensityTransferFunction(TF)
-        Created: 24.11.2004
-        Creator: KP
+        Created: 24.11.2004, KP
         Description: Sets the intensity transfer function that is configured
                      by this widget
         """
         self.iTF=TF
         self.updateGUI()
-        self.updateAll()
+        self.updateGraph()
 
 
 if __name__=='__main__':

@@ -1,5 +1,4 @@
 # -*- coding: iso-8859-1 -*-
-
 """
  Unit: PreviewFrame.py
  Project: Selli
@@ -36,18 +35,18 @@
  JV - Jukka Varsaluoma,varsa@st.jyu.fi
 
  Copyright (c) 2004 Selli Project.
- ""
+"""
 __author__ = "Selli Project <http://sovellusprojektit.it.jyu.fi/selli/>"
 __version__ = "$Revision: 1.63 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
-"""
+
 import os.path
 import RenderingInterface
 from PreviewFrame import *
 import wx
 
 from Logging import *
-from vtk.wx.wxVTKRenderWindowInteractor import *
+from vtk.wx.wxVTKRenderWindowInteractor import wxVTKRenderWindowInteractor
 #from vtk import *
 import vtk
 import wx.lib.scrolledpanel as scrolled
@@ -55,28 +54,31 @@ import wx.lib.scrolledpanel as scrolled
 class ColocalizationPreview(PreviewFrame):
     """
     Class: ColocalizationPreview
-    Created: 03.11.2004
-    Creator: KP
+    Created: 03.11.2004, KP
     Description: A widget inherited from PreviewFrame that displays a preview of
                  colocalization.
     """
-    def __init__(self,master,**kws):
-        PreviewFrame.__init__(self,master,**kws)
+    def __init__(self,master,parentwin=None,**kws):
+        PreviewFrame.__init__(self,master,parentwin,**kws)
         self.mapper=vtk.vtkImageMapper()
         self.mapper.SetZSlice(self.z)
+        self.mapper.SetColorWindow(255.0);
+        self.mapper.SetColorLevel(127.5);
+
         self.actor=vtk.vtkActor2D()
         self.actor.SetMapper(self.mapper)
         self.renderer.AddActor(self.actor)
-        self.running=0
+
         self.mapToColors=vtk.vtkImageMapToColors()
         self.mapToColors.SetLookupTable(self.getColorTransferFunction())
         self.mapToColors.SetOutputFormatToRGB()
-        self.mapper.SetColorWindow(255.0);
-        self.mapper.SetColorLevel(127.5);
+
+        self.running=0
+
         self.colocpercentLbl=wx.StaticText(self,-1,"0 of 0 (0%) possible voxels colocalizing")
-        self.sizer.Add(self.colocpercentLbl,(3,0))
+        self.sizer.Add(self.colocpercentLbl,(4,0))
         self.Layout()
-        
+
     def getColorTransferFunction(self):
         if self.dataUnit:
             self.rgb=self.dataUnit.getColor()
@@ -99,9 +101,8 @@ class ColocalizationPreview(PreviewFrame):
     def updateColor(self):
         """
         Method: updateColor()
-        Created: 20.11.2004
-        Creator: KP
-        Description: Update the preview to use the selected color transfer 
+        Created: 20.11.2004, KP
+        Description: Update the preview to use the selected color transfer
                      function
         Parameters:
         """
@@ -112,8 +113,7 @@ class ColocalizationPreview(PreviewFrame):
     def updatePreview(self,renew=1):
         """
         Method: updatePreview(renew=1)
-        Created: 03.11.2004
-        Creator: KP
+        Created: 03.11.2004, KP
         Description: Update the preview
         Parameters:
                 renew    Whether the method should recalculate the images
@@ -131,13 +131,15 @@ class ColocalizationPreview(PreviewFrame):
             return self.previewInMayavi(preview,self.getColorTransferFunction(),
             renew)
 
-    	self.mapper.SetZSlice(self.z)
     	if not preview:
     	    raise "Did not get a preview"
     	# Update the lookup table if colors have changed
-    	self.mapToColors.SetInput(preview)
+
+        self.mapToColors.SetInput(preview)
     	self.mapToColors.Update()
     	self.currentImage=self.mapToColors.GetOutput()
+
+        self.mapper.SetZSlice(self.z)
         self.mapper.SetInput(self.currentImage)
         self.renwin.Render()
 

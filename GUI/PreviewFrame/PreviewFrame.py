@@ -41,12 +41,13 @@ __author__ = "Selli Project <http://sovellusprojektit.it.jyu.fi/selli/>"
 __version__ = "$Revision: 1.63 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 """
-import os.path
+import os.path,sys
 import RenderingInterface
 import ImageOperations
 import time
 from Logging import *
-from vtk.wx.wxVTKRenderWindowInteractor import wxVTKRenderWindowInteractor
+from vtk.wx.wxVTKRenderWindowInteractor import *
+from vtk.wx.wxVTKRenderWindow import *
 
 import vtk
 import wx
@@ -109,9 +110,8 @@ class PreviewFrame(wx.Panel):
         self.renderpanel = scrolled.ScrolledPanel(self, -1,style=wx.SUNKEN_BORDER,size=size)
         #self.renderpanel = wx.ScrolledWindow(self,-1,style=wx.SUNKEN_BORDER,size=(512,512))
         
-        self.wxrenwin = wxVTKRenderWindowInteractor(self.renderpanel,-1,size=size)
-#        self.wxrenwin.Initialize()
-#        self.wxrenwin.Start()
+        self.wxrenwin = wxVTKRenderWindow(self.renderpanel,-1,size=size)
+
 
         self.previewsizer.Add(self.wxrenwin)
 
@@ -191,7 +191,10 @@ class PreviewFrame(wx.Panel):
         self.SetSizer(self.sizer)
         self.sizer.Fit(self)
         self.sizer.SetSizeHints(self)
-        
+
+    def closePreview(self):
+        self.renderer.GetProps().RemoveAllItems()
+
     def zoomIn(self,evt):
         """
         Method: zoomIn()
@@ -397,10 +400,8 @@ class PreviewFrame(wx.Panel):
             ny=512
         print "Setting size to %d,%d"%(nx,ny)
         self.wxrenwin.SetSize((x,y))
-        self.renderpanel.SetBackgroundColour(wxColour(0,0,0))
-#        self.timeslider.SetSize((x,-1))
-#        self.zslider.SetSize((-1,y))
-        
+        self.renderpanel.SetBackgroundColour(wx.Colour(0,0,0))
+
         if self.show["ZSLIDER"]:
             print "zslider goes to %d"%(z-1)
             self.zslider.SetRange(0,z-1)
@@ -417,7 +418,7 @@ class PreviewFrame(wx.Panel):
         print "Setting renderpanel to %d,%d"%(x,y)
         self.renderpanel.SetSize((x,y))
         self.renwin.SetSize((x,y))
-        if x>self.maxX or y>self.maxY:       
+        if x>self.maxX or y>self.maxY:
             self.renderpanel.SetupScrolling()
         self.renderpanel.Layout()
         #self.wxrenwin.SetSize((x,y))
@@ -425,11 +426,11 @@ class PreviewFrame(wx.Panel):
         #self.renderpanel.Layout()
         #self.previewsizer.Fit(self.renderpanel)
         #self.previewsizer.SetSizeHints(self.renderpanel)
-        
+
         self.Layout()
         self.sizer.Fit(self)
         self.sizer.SetSizeHints(self)
-        
+
         self.Layout()
         self.parentwin.mainsizer.Fit(self.parentwin)
         self.parentwin.Layout()
@@ -462,4 +463,4 @@ class PreviewFrame(wx.Panel):
         """
         raise "updatePreview() called from the base class"
 
-    
+

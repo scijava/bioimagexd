@@ -69,9 +69,8 @@ def showColocalizationWindow(colocalizationUnit,mainwin):
 class ColocalizationWindow(TaskWindow.TaskWindow):
     """
     Class: ColocalizationWindow
-    Created: 03.11.2004
-    Creator: KP
-    Description: A window for controlling the settings of the 
+    Created: 03.11.2004, KP
+    Description: A window for controlling the settings of the
                  colocalization module
     """
     def __init__(self,root):
@@ -87,7 +86,9 @@ class ColocalizationWindow(TaskWindow.TaskWindow):
         self.operationName="Colocalization"
         # Preview has to be generated here
         self.preview=ColocalizationPreview(self)
+        #self.preview = ColorMergingPreview(self)
         self.previewSizer.Add(self.preview,(0,0),flag=wx.EXPAND|wx.ALL)
+        self.previewSizer.Fit(self.preview)
         self.SetTitle("Colocalization")
         self.mainsizer.Layout()
         self.mainsizer.Fit(self)

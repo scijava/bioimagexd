@@ -58,13 +58,14 @@ def showTaskWindow(windowclass,combinedUnit,mainwin):
 #    mainwin.withdraw()
     window=windowclass(mainwin)
     window.setCombinedDataUnit(combinedUnit)
-    window.ShowModal()
+    window.Show()
+    #window.ShowModal()
     res=window.getResult()
     return res
 
 
 
-class TaskWindow(wx.Dialog):
+class TaskWindow(wx.Frame):
     """
     Class: TaskWindow
     Created: 23.11.2004
@@ -82,8 +83,9 @@ class TaskWindow(wx.Dialog):
                 root    Is the parent widget of this window
                 title   Is the title for this window
         """
-        wx.Dialog.__init__(self,root,-1,"Task Window",
-        style=wx.CAPTION|wx.STAY_ON_TOP|wx.CLOSE_BOX|wx.MAXIMIZE_BOX|wx.MINIMIZE_BOX|wx.RESIZE_BORDER|wx.DIALOG_EX_CONTEXTHELP,
+        #wx.Dialog.__init__(self,root,-1,"Task Window",
+        #style=wx.CAPTION|wx.STAY_ON_TOP|wx.CLOSE_BOX|wx.MAXIMIZE_BOX|wx.MINIMIZE_BOX|wx.RESIZE_BORDER|wx.DIALOG_EX_CONTEXTHELP,
+        wx.Frame.__init__(self,root,-1,"Task Window",style=wx.DEFAULT_FRAME_STYLE|wx.NO_FULL_REPAINT_ON_RESIZE,
         size=(640,480))
         self.root=root
         self.preview=None
@@ -93,26 +95,26 @@ class TaskWindow(wx.Dialog):
         self.SetIcon(self.icon)
 
         self.Bind(EVT_CLOSE,self.closeWindowCallback)
-        self.mainsizer=wx.GridBagSizer(5,5)
+        self.mainsizer=wx.GridBagSizer()
 
         self.previewSizer=wx.GridBagSizer()
         self.mainsizer.Add(self.previewSizer,(0,0),flag=wx.EXPAND|wx.ALL)
-        
-                
+
+
         self.settingsSizer=wx.GridBagSizer()
         self.mainsizer.Add(self.settingsSizer,(0,1),span=(1,1),flag=wx.EXPAND|wx.ALL)
-        
-        self.settingsNotebook=wx.Notebook(self,-1,size=(200,200))        
-        
+
+        self.settingsNotebook=wx.Notebook(self,-1,size=(200,200))
+
 #        self.infoSizer=wx.GridBagSizer()
 #        self.mainsizer.Add(self.infoSizer,(1,0),flag=wx.EXPAND|wx.ALL)
-  
+
         self.staticLine=wx.StaticLine(self)
         self.mainsizer.Add(self.staticLine,(3,0),span=(1,2),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
 
         self.buttonSizer=wx.BoxSizer(wx.HORIZONTAL)
         self.mainsizer.Add(self.buttonSizer,(4,0),span=(1,2),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
-        
+
         self.filePath=None
         self.dataUnit=None
         self.configSetting=None
@@ -120,7 +122,7 @@ class TaskWindow(wx.Dialog):
 
 
 
-        # Make the column containing the settings widgets at least 200 pixels 
+        # Make the column containing the settings widgets at least 200 pixels
         # wide
 
         self.createChannelListBox()
@@ -180,8 +182,7 @@ class TaskWindow(wx.Dialog):
     def createChannelListBox(self):
         """
         Method: createChannelListBox()
-        Created: 03.11.2004
-        Creator: KP
+        Created: 03.11.2004, KP
         Description: Creates a listbox that displays the names of the processed
                      channels
         """
@@ -189,10 +190,10 @@ class TaskWindow(wx.Dialog):
         self.channelsLbl=wx.StaticText(self,wx.NewId(),"Items:")
         self.listbox=wx.ListBox(self,wx.NewId(),size=(250,50))
         self.listbox.Bind(EVT_LISTBOX,self.selectItem)
-        
+
         self.listboxsizer.Add(self.channelsLbl)
         self.listboxsizer.Add(self.listbox)
-        
+
         self.settingsSizer.Add(self.listboxsizer,(1,0))
 
 
@@ -299,8 +300,14 @@ class TaskWindow(wx.Dialog):
                      window, but does not destory it.
         """
         print "Closing..."
+        if self.preview:
+            self.preview.closePreview()
         self.cancelled=1
-        self.EndModal(wx.ID_OK)
+        # These calls are necessary to have proper functioning in windows
+        self.preview.Show(0)
+        self.preview.Destroy()
+        self.Destroy()
+        #self.EndModal(wx.ID_OK)
 
         
     def grayOut(self,enable=0):

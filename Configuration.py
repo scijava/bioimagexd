@@ -34,6 +34,11 @@ def getConfiguration():
     return conf
 
 class Configuration:
+    """
+    Class: Configuration
+    Created: 23.02.2005, KP
+    Description: A module that handles the configuration file 
+    """
     def __init__(self,configFile):
         global conf
         conf=self

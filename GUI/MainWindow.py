@@ -105,9 +105,12 @@ class MainWindow(wx.Frame):
         #Toplevel.__init__(self,root)
         wx.Frame.__init__(self,parent,wx.ID_ANY,"BioImageXD",size=(1100,800),
             style=wx.DEFAULT_FRAME_STYLE|wx.NO_FULL_REPAINT_ON_RESIZE)
+        
+
         self.splitter=wx.SplitterWindow(self,-1)
         self.nodes_to_be_added=[]
         self.app=app
+
 
         if os.sys.platform=='linux2':
             self.lastpath="/home/kalpaha/Sovellusprojekti/Data"
@@ -118,14 +121,14 @@ class MainWindow(wx.Frame):
         ico=reduce(os.path.join,["Icons","Selli.ico"])
         self.icon = wx.Icon(ico,wx.BITMAP_TYPE_ICO)
         self.SetIcon(self.icon)
-        
+
         self.CreateStatusBar()
         self.SetStatusText("Starting up...")
 
         # Create Menu, ToolBar and Tree
         self.createMenu()
         self.createToolBar()
-        
+
         self.dataunits={}
         self.paths={}
 
@@ -134,11 +137,12 @@ class MainWindow(wx.Frame):
         self.tree=TreeWidget(self.splitter,self.infowidget.showInfo)        
         
         self.splitter.SplitVertically(self.tree,self.infowidget,200)
+
         self.Show(true)
         
         
-        
-        
+
+
     def createToolBar(self):
         """
         Method: createToolBar()
@@ -147,9 +151,13 @@ class MainWindow(wx.Frame):
         """
         iconpath=reduce(os.path.join,["Icons"])
         self.CreateToolBar()
-        tb=self.GetToolBar()
+        tb=self.GetToolBar()            
+        tb.SetToolBitmapSize((32,32))
+
+        print "adding tool"
         tb.AddSimpleTool(ID_OPEN,wx.Image(os.path.join(iconpath,"OpenLSM.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Open","Open dataset series")
-        EVT_TOOL(self,ID_OPEN,self.menuOpen)       
+        EVT_TOOL(self,ID_OPEN,self.menuOpen)
+
 
         tb.AddSimpleTool(ID_COLORMERGING,
         wx.Image(os.path.join(iconpath,"ColorCombination.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Merge Channels","Merge dataset series")
@@ -175,6 +183,7 @@ class MainWindow(wx.Frame):
         wx.Image(os.path.join(iconpath,"Render.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Render","Render a dataset series")
         EVT_TOOL(self,ID_RENDER,self.menuRender)
 
+        tb.Realize()
     def createMenu(self):
         """
         Method: createMenu()

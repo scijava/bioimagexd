@@ -48,8 +48,8 @@ from PreviewFrame import *
 import wx
 
 from Logging import *
-from vtk.wx.wxVTKRenderWindowInteractor import *
-#from vtk import *
+from vtk.wx.wxVTKRenderWindowInteractor import wxVTKRenderWindowInteractor
+
 import vtk
 import wx.lib.scrolledpanel as scrolled
 
@@ -57,8 +57,7 @@ import wx.lib.scrolledpanel as scrolled
 class ColorMergingPreview(PreviewFrame):
     """
     Class: ColorCombinationPreview
-    Created: 10.11.2004
-    Creator: JV
+    Created: 10.11.2004, JV
     Description: A widget inherited from PreviewFrame that displays a preview of
                  color combination. Made after ColocalizationPreview.
     """
