@@ -198,6 +198,14 @@ class TaskWindow(wx.Frame):
         self.Layout()
         self.buttonPanel.Layout()
 
+    def updateZSlice(self,event):
+        """
+        Method: updateZSlice(event)
+        Created: 03.04.2005, KP
+        Description: A callback function called when the zslice is changed
+        """
+        pass
+        
     def getResult(self):
         """
         Method: getResult()
