@@ -64,8 +64,8 @@ class ColorMergingPreview(PreviewFrame):
     Description: A widget inherited from PreviewFrame that displays a preview of
                  color combination. Made after ColocalizationPreview.
     """
-    def __init__(self,master):
-        PreviewFrame.__init__(self,master)
+    def __init__(self,master,parentwin=None,**kws):
+        PreviewFrame.__init__(self,master,parentwin,**kws)
         self.mapper=vtk.vtkImageMapper()
         self.mapper.SetZSlice(self.z)
         self.mapper.SetColorWindow(255.0);

@@ -61,8 +61,8 @@ class SingleUnitProcessingPreview(PreviewFrame):
     Description: A widget inherited from PreviewFrame that displays a preview of
                  a single processed dataunit.
     """
-    def __init__(self,master,parentwin=None):
-        PreviewFrame.__init__(self,master,parentwin)
+    def __init__(self,master,parentwin=None,**kws):
+        PreviewFrame.__init__(self,master,parentwin,**kws)
         self.mapper=vtk.vtkImageMapper()
         self.mapper.SetZSlice(self.z)
         self.actor=vtk.vtkActor2D()
@@ -70,10 +70,12 @@ class SingleUnitProcessingPreview(PreviewFrame):
         self.renderer.AddActor(self.actor)
         self.running=0
         self.mapToColors=vtk.vtkImageMapToColors()
-#        self.mapToColors.SetLookupTable(self.getColorTransferFunction())
-#    	self.mapToColors.SetOutputFormatToRGB()
+        self.mapToColors.SetLookupTable(self.getColorTransferFunction())
+        self.mapToColors.SetOutputFormatToRGB()
+        
         self.mapper.SetColorWindow(255.0);
         self.mapper.SetColorLevel(127.5);
+        
 
     def getColorTransferFunction(self):
         if self.dataUnit:
@@ -125,21 +127,35 @@ class SingleUnitProcessingPreview(PreviewFrame):
         except GUIError, ex:
             ex.show()
             return
-
-    	self.currentImage=preview
-        if self.modeCheckbox.GetValue():
+        if not preview:
+            raise "Did not get a preview"
+        if self.zoomed:
+            print "Using zoomed"
+            preview=self.zoomed
+            print preview
+        self.currentImage=preview
+        if self.showRenderingPreview():
             return self.previewInMayavi(preview,self.getColorTransferFunction(),
             renew)
-
-    	self.mapper.SetZSlice(self.z)
-    	if not preview:
-    	    raise "Did not get a preview"
-
-    	# Update the lookup table if colors have changed
-    	self.mapToColors.SetInput(preview)
+        
+        print "Mapping through colors"
+        #print preview
+        
+        self.mapToColors.RemoveAllInputs()
+        self.mapToColors.SetInput(preview)
+        colorImage=self.mapToColors.GetOutput()
+        
+        colorImage.SetUpdateExtent(preview.GetExtent())
+        x,y,z=preview.GetDimensions()
+        if x!=self.xdim or y!=self.ydim:
+            print "Resizing renderwindow to ",(x,y)
+            self.renwin.SetSize((x,y))
+            #self.wxrenwin.SetSize((x,y))
+            
         self.mapToColors.Update()
-
-    	colorImage=self.mapToColors.GetOutput()
-
-    	self.mapper.SetInput(colorImage)
+        print "Done"
+        
+        self.mapper.SetZSlice(self.z)
+        self.mapper.SetInput(colorImage)
+ 
         self.renwin.Render()

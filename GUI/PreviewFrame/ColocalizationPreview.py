@@ -61,8 +61,8 @@ class ColocalizationPreview(PreviewFrame):
     Description: A widget inherited from PreviewFrame that displays a preview of
                  colocalization.
     """
-    def __init__(self,master):
-        PreviewFrame.__init__(self,master)
+    def __init__(self,master,**kws):
+        PreviewFrame.__init__(self,master,**kws)
         self.mapper=vtk.vtkImageMapper()
         self.mapper.SetZSlice(self.z)
         self.actor=vtk.vtkActor2D()
@@ -137,7 +137,6 @@ class ColocalizationPreview(PreviewFrame):
     	    raise "Did not get a preview"
     	# Update the lookup table if colors have changed
     	self.mapToColors.SetInput(preview)
-        self.mapToColors.Set
     	self.mapToColors.Update()
     	self.currentImage=self.mapToColors.GetOutput()
         self.mapper.SetInput(self.currentImage)

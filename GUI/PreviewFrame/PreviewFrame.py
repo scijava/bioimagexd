@@ -43,12 +43,13 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 """
 import os.path
 import RenderingInterface
-
-#from wx.Python.wx. import *
+import ImageOperations
+import Slicer
 import wx
 
 from Logging import *
 from vtk.wx.wxVTKRenderWindowInteractor import *
+#from wxrenwin.wxVTKRenderWindowInteractor import *
 import vtk
 import wx.lib.scrolledpanel as scrolled
 
@@ -58,10 +59,10 @@ class PreviewFrame(wx.Panel):
     Class: PreviewFrame
     Created: 03.11.2004
     Creator: KP
-    Description: A widget that uses the wx.VTKRenderWidget to display a preview
+    Description: A widget that uses the wxVTKRenderWidget to display a preview
                  of operations done by a subclass of Module
     """
-    def __init__(self,parent,parentwin=None):
+    def __init__(self,parent,parentwin=None,**kws):
         """
         Method: __init__(parent)
         Created: 03.11.2004
@@ -71,10 +72,28 @@ class PreviewFrame(wx.Panel):
                master  The widget containing this preview
         """
         self.parent=parent
+        self.zoomed=0
+        size=(512,512)
+        self.show={}
+        self.show["PIXELS"]=1
+        self.show["RENDERING"]=1
+        self.show["ZOOM"]=1
+        self.show["TIMESLIDER"]=1
+        self.show["ZSLIDER"]=1
+        self.modeCheckbox = None
         if not parentwin:
             parentwin=parent
         self.parentwin=parentwin
-        
+        if kws.has_key("previewsize"):
+            size=kws["previewsize"]
+        if kws.has_key("pixelvalue"):
+            self.show["PIXELS"]=kws["pixelvalue"]
+        if kws.has_key("renderingpreview"):
+            self.show["RENDERING"]=kws["renderingpreview"]
+        if kws.has_key("zoom"):
+            self.show["ZOOM"]=kws["zoom"]
+        if kws.has_key("timeslider"):
+            self.show["TIMESLIDER"]=kws["timeslider"]
         wx.Panel.__init__(self,parent,-1)
         
         self.dataUnit=None
@@ -87,24 +106,27 @@ class PreviewFrame(wx.Panel):
     	self.currentImage=None
     	self.currentCt=None
 
-        self.renderpanel = scrolled.ScrolledPanel(self, -1,style=wx.SUNKEN_BORDER,size=(512,512))
+        self.renderpanel = scrolled.ScrolledPanel(self, -1,style=wx.SUNKEN_BORDER,size=size)
         #self.renderpanel = wx.ScrolledWindow(self,-1,style=wx.SUNKEN_BORDER,size=(512,512))
         
-        self.wxrenwin = wxVTKRenderWindowInteractor(self.renderpanel,-1)
+        self.wxrenwin = wxVTKRenderWindowInteractor(self.renderpanel,-1,size=size)
+        self.wxrenwin.Initialize()
+        self.wxrenwin.Start()
+
         self.previewsizer.Add(self.wxrenwin)
 
         self.renderpanel.SetSizer(self.previewsizer)
         self.renderpanel.SetAutoLayout(1)
-        self.renderpanel.SetupScrolling()
+        #self.renderpanel.SetupScrolling()
         
         self.sizer.Add(self.renderpanel,(0,0))
 
         self.renwin=self.wxrenwin.GetRenderWindow()
+        #self.renwin.SetSize(size)
         self.renderer=vtk.vtkRenderer()
         self.renwin.AddRenderer(self.renderer)
         # The preview can be no larger than these
-        self.maxX=512
-        self.maxY=512
+        self.maxX,self.maxY=size
         # Variables for scrolling the render window
         self.offset=0
         self.xdim,self.ydim,self.zdim=0,0,0
@@ -120,26 +142,40 @@ class PreviewFrame(wx.Panel):
         # This is set here because if inherited widgets define mapper, 
         # the scrollRenderWindow uses that for the scrolling
         self.mapper=None
+        if self.show["PIXELS"]:
+            self.wxrenwin.Bind(EVT_LEFT_DOWN,self.getPixelValue)
+        if self.show["TIMESLIDER"]:
+            self.timeslider=wx.Slider(self,value=0,minValue=0,maxValue=1,size=(300,-1),
+            style=wx.SL_HORIZONTAL|wx.SL_AUTOTICKS|wx.SL_LABELS)
+            self.sizer.Add(self.timeslider,(1,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
+            self.timeslider.Bind(EVT_SCROLL,self.updateTimePoint)
+        if self.show["ZSLIDER"]:
+            self.zslider=wx.Slider(self,value=0,minValue=0,maxValue=100,size=(-1,300),
+            style=wx.SL_VERTICAL|wx.SL_AUTOTICKS|wx.SL_LABELS)
+            self.zslider.Bind(EVT_SCROLL,self.updateDepth)
+            self.sizer.Add(self.zslider,(0,1),flag=wx.EXPAND|wx.TOP|wx.BOTTOM)
 
-        self.wxrenwin.Bind(EVT_LEFT_DOWN,self.getPixelValue)
-        
-        self.timeslider=wx.Slider(self,value=0,minValue=0,maxValue=1,size=(300,-1),
-        style=wx.SL_HORIZONTAL|wx.SL_AUTOTICKS|wx.SL_LABELS)
-        self.sizer.Add(self.timeslider,(1,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
-        self.timeslider.Bind(EVT_SCROLL,self.updateTimePoint)
+        if self.show["PIXELS"]:
+            self.pixelPanel=wx.Panel(self,-1)
+            self.pixelLbl=wx.StaticText(self.pixelPanel,-1,"Scalar 0 at (0,0,0) maps to (0,0,0)")
+            self.sizer.Add(self.pixelPanel,(3,0),flag=wx.EXPAND|wx.RIGHT)
 
-        self.zslider=wx.Slider(self,value=0,minValue=0,maxValue=100,size=(-1,300),
-        style=wx.SL_VERTICAL|wx.SL_AUTOTICKS|wx.SL_LABELS)
-        self.zslider.Bind(EVT_SCROLL,self.updateDepth)
-        self.sizer.Add(self.zslider,(0,1),flag=wx.EXPAND|wx.TOP|wx.BOTTOM)
-
-        self.pixelPanel=wx.Panel(self,-1)
-        self.pixelLbl=wx.StaticText(self.pixelPanel,-1,"Scalar 0 at (0,0,0) maps to (0,0,0)")
-        self.sizer.Add(self.pixelPanel,(2,0),flag=wx.EXPAND|wx.RIGHT)
-
-        self.modeCheckbox=wx.CheckBox(self,-1,"Preview rendering")
-        self.sizer.Add(self.modeCheckbox,(4,0))
+        if self.show["RENDERING"]:
+            self.modeCheckbox=wx.CheckBox(self,-1,"Preview rendering")
+            self.sizer.Add(self.modeCheckbox,(5,0))
                 
+        if self.show["ZOOM"]:
+            self.zoombox=wx.BoxSizer(wx.HORIZONTAL)
+            ids=[wx.ID_ZOOM_100,wx.ID_ZOOM_FIT,wx.ID_ZOOM_IN]#,wx.ID_ZOOM_OUT]
+            for id in ids:
+                btn=wx.Button(self,id)
+                self.zoombox.Add(btn)
+            EVT_BUTTON(self,wx.ID_ZOOM_100,self.zoomTo100)
+            EVT_BUTTON(self,wx.ID_ZOOM_FIT,self.zoomToFit)
+            EVT_BUTTON(self,wx.ID_ZOOM_IN,self.zoomIn)
+            #EVT_BUTTON(self,wx.ID_ZOOM_OUT,self.zoomOut)   
+            
+            self.sizer.Add(self.zoombox,(2,0))
         self.timePointChangeCallback=None
 
         self.renderingInterface=RenderingInterface.getRenderingInterface()
@@ -155,6 +191,59 @@ class PreviewFrame(wx.Panel):
         self.SetSizer(self.sizer)
         self.sizer.Fit(self)
         self.sizer.SetSizeHints(self)
+        
+    def zoomIn(self,evt):
+        pass
+    def zoomOut(self,evt):
+        pass
+        
+        
+              
+    def zoomToFit(self,evt):
+        reslice=vtk.vtkImageReslice()
+        reslice.SetInput(self.currentImage)
+        #xf=self.maxX/self.xdim
+        #yf=self.maxY/self.ydim
+        #f=min(xf,yf)
+        xf=float(self.xdim)/self.maxX
+        yf=float(self.ydim)/self.maxY
+        f=max(xf,yf)
+        transform=vtk.vtkTransform()
+        transform.Scale(f,f,1)
+        
+        spacing=self.currentImage.GetSpacing()
+        extent=self.currentImage.GetExtent()
+        origin=self.currentImage.GetOrigin()
+        extent=(extent[0],extent[1]/f,extent[2],extent[3]/f,extent[4],extent[5])
+        
+        
+        spacing=(spacing[0]*f,spacing[1]*f,spacing[2])
+        reslice.SetOutputSpacing(spacing)
+        reslice.SetOutputExtent(extent)
+        
+        origin = list(origin)
+        #origin[0]=origin[0]+0
+        #origin[1]=f*origin[1]#(self.maxX-self.xdim)
+        
+        reslice.SetOutputOrigin(origin)
+        if f>1:
+            reslice.InterpolateOff()
+        else:
+            reslice.SetInterpolationModeToCubic()
+            reslice.InterpolateOn()
+        reslice.Update()
+        self.zoomed=reslice.GetOutput()
+        print "zoomed.dims=",self.zoomed.GetDimensions()
+        self.updatePreview()
+        
+    def showRenderingPreview(self):
+        if self.modeCheckbox:
+            return self.modeCheckbox.GetValue()
+        return 0
+        
+    def zoomTo100(self,evt):
+        self.zoomed=None
+        pass
         
     def scrollRenderWidget(self,event):
         """
@@ -314,21 +403,24 @@ class PreviewFrame(wx.Panel):
 #        self.timeslider.SetSize((x,-1))
 #        self.zslider.SetSize((-1,y))
         
-        
-        print "zslider goes to %d"%(z-1)
-        self.zslider.SetRange(0,z-1)
+        if self.show["ZSLIDER"]:
+            print "zslider goes to %d"%(z-1)
+            self.zslider.SetRange(0,z-1)
         if x>self.maxX:
             x=self.maxX
         if y>self.maxY:
             y=self.maxY
         self.width=x
         self.height=y
-        self.timeslider.SetRange(0,count-1)
+        if self.show["TIMESLIDER"]:
+            self.timeslider.SetRange(0,count-1)
         self.renderingInterface.setDataUnit(dataUnit)
 
         print "Setting renderpanel to %d,%d"%(x,y)
         self.renderpanel.SetSize((x,y))
-        self.renderpanel.SetupScrolling()
+        self.renwin.SetSize((x,y))
+        if x>self.maxX or y>self.maxY:       
+            self.renderpanel.SetupScrolling()
         self.renderpanel.Layout()
         #self.wxrenwin.SetSize((x,y))
         #self.renderpanel.SetupScrolling()
