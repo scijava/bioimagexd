@@ -1,13 +1,13 @@
 /*=========================================================================
 
   Program:   Visualization Toolkit
-  Module:    $RCSfile: vtkTIFFReader.cxx,v $
+  Module:    $RCSfile: vtkLSMReader.cxx,v $
   Language:  C++
   Date:      $Date: 2003/08/22 14:46:02 $
   Version:   $Revision: 1.39 $
 
 
-Copyright (c) 1993-2001 Ken Martin, Will Schroeder, Bill Lorensen 
+Copyright (c) 2004, 2005 Heikki Uuksulainen
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without

@@ -1,13 +1,13 @@
 /*=========================================================================
 
   Program:   Visualization Toolkit
-  Module:    $RCSfile: vtkTIFFReader.h,v $
+  Module:    $RCSfile: vtkLSMReader.h,v $
   Language:  C++
   Date:      $Date: 2003/11/04 21:26:04 $
   Version:   $Revision: 1.28 $
 
 
-Copyright (c) 1993-2001 Ken Martin, Will Schroeder, Bill Lorensen 
+Copyright (c) 2004, 2005 Heikki Uuksulainen
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -44,8 +44,15 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // vtkLSMReader is a source object that reads LSM files.
 // It should be able to read most any LSM file
 //
-// .SECTION See Also
-// vtkLSMWriter
+// .SECTION Thanks
+// This class was developed as a part of the BioImageXD Project.
+// The BioImageXD project includes the following people:
+// 
+// Dan White <dan@chalkie.org.uk>
+// Kalle Pahajoki <kalpaha@st.jyu.fi>
+// Pasi Kankaanp‰‰ <ppkank@bytl.jyu.fi>
+// 
+
 
 #ifndef __vtkLSMReader_h
 #define __vtkLSMReader_h
