@@ -13,6 +13,8 @@
  and another 50% (from 50 to 100) map to range 1.0 - 25.0
 
  Modified: 06.03.2005 KP - Created the module
+           10.03.2005 KP - Added support for ranges that start < 0
+           11.03.2005 KP - Added support for "snap points"
 
  BioImageXD includes the following persons:
 
@@ -35,20 +37,53 @@ class RangedSlider(wx.Slider):
     Created: 06.03.2005, KP
     Description: A slider that can map values of a certain range to certain values
     """
-    def __init__(self, parent, id = -1, value = 0, minValue = 0, maxValue = 100, **kws):
-        wx.Slider.__init__(self,parent,id,value,minValue, maxValue, **kws)
+    def __init__(self, parent, id , numberOfPoints , **kws):
+        """
+        Method: __init__
+        Created: 06.03.2005, KP
+        Description: Initialization
+        Parameters:
+            numberOfPoints  The number of points the slider will in reality have
+        """    
+        wx.Slider.__init__(self,parent,id,0,0,0, **kws)
         self.ranges=[]
-        self.totalValues = 0
-
-    def setRange(self, startPercent, endPercent, rangeStart, rangeEnd, n):
-        self.totalValues += n
-        self.SetRange(0, self.totalValues)
-        self.ranges.append((startPercent,endPercent,rangeStart,rangeEnd,n))
+        self.totalValues = numberOfPoints
+        self.SetRange(0, self.totalValues)        
+        self.snapPoints=[]
+        
+    def setRange(self, startPercent, endPercent, rangeStart, rangeEnd):
+        """
+        Method: setRange(startPercent, endPercent, rangeStart,rangeEnd)
+        Created: 06.03.2005, KP
+        Description: Initialization
+        """        
+        self.ranges.append((startPercent,endPercent,rangeStart,rangeEnd))
     
     def setScaledValue(self,val):
+        """
+        Method: setScaledValue(value)
+        Created: 06.03.2005, KP
+        Description: Set the value of the slider to the given value
+        """            
         self.SetValue(self.getRealValue(val))
+        
+    def setSnapPoint(self, snapValue, snapRange):
+        """
+        Method: setSnapPoint(snapValue, snapRange)
+        Created: 06.03.2005, KP
+        Description: Add a snap point, i.e. a point to which all values
+                     that are on the snapRange will be mapped. I.e.
+                     snapValue of 1.0 and snapRange of 0.1 will map values
+                     0.95 - 1.05 to 1.0
+        """            
+        self.snapPoints.append( (snapValue-snapRange/2,snapValue,snapValue+snapRange/2))
 
     def getRealValue(self,val):
+        """
+        Method: getRealValue(value)
+        Created: 06.03.2005, KP
+        Description: For a given scaled value, return the real slider position
+        """            
         currRange=None
         mytot=0
         for r in self.ranges:
@@ -63,18 +98,22 @@ class RangedSlider(wx.Slider):
         val+=abs(currRange[2])
         percent = float(val) / distance
 #        print "percent = ",percent,"mytot=",mytot,"distance=",distance
-        #diff = currRange[3]-currRange[2]
-        #return 100*(diff * percent)
-        return mytot + percent * (abs(currRange[4]))
+        n = self.totalValues / len(self.ranges)
+        return mytot + percent * n
 
 
     def getScaledValue(self,val=None):
+        """
+        Method: getScaledValue()
+        Created: 06.03.2005, KP
+        Description: Return the scaled value of this slider
+        """            
         if val == None:
             val = self.GetValue()
         percent = float(val) / self.totalValues
         currRange=None
         percent*=100
-#       print "percent = ",percent
+        #print "percent = ",percent
 
         for r in self.ranges:
             # If we found the right range
@@ -88,7 +127,12 @@ class RangedSlider(wx.Slider):
         # This tells us how far in percent we are along the current range
         percentOfRange = (percent-currRange[0])/(currRange[1]-currRange[0])
 #        print "distance = ",distance," percentsOfRange=",percentOfRange
-        return currRange[2]+distance * percentOfRange
+        ret=currRange[2]+distance * percentOfRange
+        #print "ret=",ret,"percent=",percent
+        for i in self.snapPoints:
+            if ret>= i[0] and ret<=i[2]:
+                return i[1]
+        return ret
 
 
 
