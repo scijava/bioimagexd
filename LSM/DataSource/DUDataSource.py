@@ -38,6 +38,7 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 from ConfigParser import *
 from DataSource import *
+import DataUnit
 import vtk
 import os.path
 
@@ -74,7 +75,9 @@ class VtiDataSource(DataSource):
         # TODO: what is this?
         self.dataUnitSettings={}
         self.dimensions=None
-
+        self.spacing = None
+        self.voxelsizes=None
+        
     def getParser(self):
         """
         Method: getParser()
@@ -112,6 +115,28 @@ class VtiDataSource(DataSource):
             data=self.getDataSet(0)
             self.dimensions=data.GetDimensions()
         return self.dimensions
+        
+    def getSpacing(self):
+        """
+        Method: getSpacing()
+        Created: 31.03.2005, KP
+        Description: Returns the spacing of the datasets this 
+                     dataunit contains
+        """
+        if not self.spacing:
+            data=self.getDataSet(0)
+            self.spacing=data.GetSpacing()
+        return self.spacing
+        
+    def getVoxelSize(self):
+        """
+        Method: getVoxelSize()
+        Created: 31.03.2005, KP
+        Description: Returns the spacing of the datasets this 
+                     dataunit contains
+        """
+        return (0,0,0)
+    
 
     def loadVti(self, filename):
         """
@@ -121,14 +146,14 @@ class VtiDataSource(DataSource):
                      it as vtkImageData
         Parameters:   filename  The file where Dataset is loaded from
         """
-        reader=vtk.vtkXMLImageDataReader()
+        self.reader=vtk.vtkXMLImageDataReader()
         filepath=os.path.join(self.path,filename)
-        if not reader.CanReadFile(filepath):
+        if not self.reader.CanReadFile(filepath):
             Logging.error("Cannot read file",
             "Cannot read XML Image Data File %s"%filename)
-        reader.SetFileName(filepath)
-        reader.Update()
-        return reader.GetOutput()
+        self.reader.SetFileName(filepath)
+        self.reader.Update()
+        return self.reader.GetOutput()
 
     def loadDuFile(self, filename):
         """
@@ -147,10 +172,10 @@ class VtiDataSource(DataSource):
             self.parser = SafeConfigParser()
             self.parser.read([filename])
             # First, the DataUnit format is checked
-            DataUnitFormat = self.parser.get("DataUnit", "format")
-        except Exception,ex:
+            DataUnitFormat = self.parser.get("Type", "Type")
+        except:
             Logging.error("Failed to open file for reading",
-            "VTIDataSource failed to open %s for reading."%(filename),ex)
+            "VTIDataSource failed to open %s for reading."%(filename))
             return [None]
         return DataUnitFormat
 
@@ -173,15 +198,15 @@ class VtiDataSource(DataSource):
 
         # Then, the number of datasets/timepoints that belong to this dataset
         # series
-        count = self.parser.get("VTIFiles", "numberOfFiles")
+        count = self.parser.get("ImageData", "numberOfFiles")
         print DataUnitFormat,count
 
 
         # Then read the .vti-filenames and store them in the dataSets-list:
         filedir=os.path.dirname(filename)
         for i in range(int(count)):
-            currentFile = "file" + str(i)
-            filename=self.parser.get("VTIFiles",currentFile)
+            currentFile = "file_" + str(i)
+            filename=self.parser.get("ImageData",currentFile)
             reader=vtk.vtkXMLImageDataReader()
             filepath=os.path.join(filedir,filename)
             if not reader.CanReadFile(filepath):
@@ -192,13 +217,17 @@ class VtiDataSource(DataSource):
             self.dataSets.append(filename)
             Logging.info("dataset[%d]=%s"%(i,self.dataSets[i]))
 
-        dataunitclass=CombinedDataUnit
+        dataunitclass=DataUnit.DataUnit.DataUnit
 
         # If everything went well, we create a new DataUnit-instance of the
         # correct subclass, so that the DataUnit-instace can take over and
-        # resume data rocessing. First, we return the DataUnit to the caller,
+        # resume data processing. First, we return the DataUnit to the caller,
         # so it can set a reference to it:
         dataunit=dataunitclass()
+        settings = DataUnit.DataUnitSettings()
+        settings = settings.readFrom(self.parser)
+        self.settings = settings
+        dataunit.setSettings(settings)
         dataunit.setDataSource(self)
         return [dataunit]
 
@@ -209,7 +238,7 @@ class VtiDataSource(DataSource):
         Description: Returns the name of the dataset series which this datasource
                      operates on
         """
-        return self.getSetting("DataUnit","name")
+        return self.settings.get("Name")
 
     def getColor(self):
         """
@@ -218,4 +247,4 @@ class VtiDataSource(DataSource):
         Description: Returns the color of the dataset series which this datasource
                      operates on
         """
-        return (255,255,255)
+        return eval(self.parser.get("Color","Color"))
