@@ -101,6 +101,7 @@ class ColorMergingWindow(TaskWindow.TaskWindow):
         self.previewSizer.Fit(self.preview)
         
         self.oldBg=self.GetBackgroundColour()
+        self.createToolBar()                
         self.mainsizer.Layout()
         self.mainsizer.Fit(self.panel)
 
