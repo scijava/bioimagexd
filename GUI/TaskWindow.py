@@ -42,8 +42,6 @@ import Colocalization
 import ColorMerging
 
 
-
-
 def showTaskWindow(windowclass,combinedUnit,mainwin):
     """
     Function: showTaskWindow(combinedUnit,mainwin)
@@ -106,22 +104,19 @@ class TaskWindow(wx.Frame):
 
         self.settingsNotebook=wx.Notebook(self.panel,-1)
 
-#        self.infoSizer=wx.GridBagSizer()
-#        self.mainsizer.Add(self.infoSizer,(1,0),flag=wx.EXPAND|wx.ALL)
-
-#        self.staticLine=wx.StaticLine(self.panel)
-#        self.mainsizer.Add(self.staticLine,(2,0),span=(1,2),flag=wx.EXPAND)
+        self.staticLine=wx.StaticLine(self.panel)
+        self.mainsizer.Add(self.staticLine,(2,0),span=(1,2),flag=wx.EXPAND)
 
         self.buttonSizer=wx.BoxSizer(wx.HORIZONTAL)
         self.buttonPanel.SetSizer(self.buttonSizer)
         self.buttonPanel.SetAutoLayout(1)
-        self.mainsizer.Add(self.buttonPanel,(2,0),span=(1,2),flag=wx.EXPAND)
+        self.mainsizer.Add(self.buttonPanel,(3,0),span=(1,2),flag=wx.EXPAND)
 
+        
         self.filePath=None
         self.dataUnit=None
         self.configSetting=None
         self.cancelled=0
-
 
 
         # Make the column containing the settings widgets at least 200 pixels
@@ -138,21 +133,55 @@ class TaskWindow(wx.Frame):
 
         self.Bind(wx.EVT_SIZE,self.OnSize)
 
+    def createToolBar(self):
+        """
+        Method: createToolBar()
+        Created: 19.03.2005, KP
+        Description: Method to create a toolbar for the window
+        """                
+        self.tb = self.CreateToolBar(wx.TB_HORIZONTAL)#|wx.NO_BORDER|wx.TB_FLAT|wx.TB_TEXT)
+        ID_CAPTURE=wx.NewId()
+        ID_ZOOM_OUT=wx.NewId()
+        ID_ZOOM_IN=wx.NewId()
+        ID_ZOOM_TO_FIT=wx.NewId()
+        ID_ZOOM_OBJECT=wx.NewId()
+        self.tb.AddSimpleTool(ID_CAPTURE,wx.Image(os.path.join("Icons","camera.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Capture slice","Capture the current optical slice")
+        self.tb.AddSimpleTool(ID_ZOOM_OUT,wx.Image(os.path.join("Icons","zoom-out.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Zoom out","Zoom out on the optical slice")
+        #EVT_TOOL(self,ID_OPEN,self.menuOpen)
+        
+        self.zoomCombo=wx.ComboBox(self.tb,-1,"100%",choices=["12.5%","25%","33.33%","50%","66.67%","75%","100%","125%","150%","200%","300%","400%","600%","800%"],size=(100,-1),style=wx.CB_DROPDOWN)
+        self.zoomCombo.SetSelection(6)
+        self.tb.AddControl(self.zoomCombo)
+        self.preview.setZoomCombobox(self.zoomCombo)
+        self.tb.AddSimpleTool(ID_ZOOM_IN,wx.Image(os.path.join("Icons","zoom-in.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Zoom in","Zoom in on the slice")
+        self.tb.AddSimpleTool(ID_ZOOM_TO_FIT,wx.Image(os.path.join("Icons","zoom-to-fit.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Zoom to Fit","Zoom the slice so that it fits in the window")
+        self.tb.AddSimpleTool(ID_ZOOM_OBJECT,wx.Image(os.path.join("Icons","zoom-object.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Zoom object","Zoom user selected portion of the slice")
+
+        EVT_TOOL(self,ID_CAPTURE,self.preview.captureSlice)
+        EVT_TOOL(self,ID_ZOOM_IN,self.preview.zoomIn)
+        EVT_TOOL(self,ID_ZOOM_OUT,self.preview.zoomOut)
+        EVT_TOOL(self,ID_ZOOM_TO_FIT,self.preview.zoomToFit)
+        EVT_TOOL(self,ID_ZOOM_OBJECT,self.preview.zoomObject)
+        self.zoomCombo.Bind(wx.EVT_COMBOBOX,self.preview.zoomToComboSelection)
+        
+        
     def OnSize(self,event):
+        """
+        Method: OnSize(event)
+        Created: n/a, KP
+        Description: Method called when the window size changes
+        """        
         self.SetSize(event.GetSize())
         self.panel.SetSize(event.GetSize())
         self.panel.Layout()
         self.Layout()
         self.buttonPanel.Layout()
 
-
-
     def getResult(self):
         """
         Method: getResult()
-        Created: 15.11.2004
-        Creator: KP
-        Description: Method to get the results of this colocalization window.
+        Created: 15.11.2004, KP
+        Description: Method to get the results of this task window.
                      If cancel was pressed, returns None, otherwise returns the
                      new dataunit
         """
@@ -180,7 +209,7 @@ class TaskWindow(wx.Frame):
         #self.processDatasetButton.Bind(EVT_BUTTON,self.doProcessingCallback)
         self.buttonsSizer2.Add(self.processButton)
 
-        self.previewButton=wx.Button(self.panel,-1,"Preview")
+        self.previewButton=wx.Button(self.buttonPanel,-1,"Preview")
         self.previewButton.Bind(EVT_BUTTON,self.doPreviewCallback)
         self.buttonsSizer2.Add(self.previewButton)        
 
@@ -256,7 +285,7 @@ class TaskWindow(wx.Frame):
         color=Dialogs.askcolor(title="Select color for the channel",
                                       initialcolor=defaultColor)
 
-    	if color[0]:
+        if color[0]:
             r,g,b=color[0]
             self.setColor(r,g,b)        
 
@@ -347,8 +376,7 @@ class TaskWindow(wx.Frame):
     def doPreviewCallback(self,event=None):
         """
         Method: doPreviewCallback()
-        Created: 03.11.2004
-        Creator: KP
+        Created: 03.11.2004, KP
         Description: A callback for the button "Preview" and other events
                      that wish to update the preview
         """
@@ -358,8 +386,7 @@ class TaskWindow(wx.Frame):
     def loadSettingsCallback(self):
         """
         Method: loadSettingsCallback()
-        Created: 30.11.2004
-        Creator: KP
+        Created: 30.11.2004, KP
         Description: A callback to load the settings for this operation from a
                      du file
         """
@@ -379,8 +406,7 @@ class TaskWindow(wx.Frame):
     def saveSettingsCallback(self):
         """
         Method: saveSettingsCallback()
-        Created: 30.11.2004
-        Creator: KP
+        Created: 30.11.2004, KP
         Description: A callback to save the settings for this operation to a 
                      du file
         """
@@ -417,6 +443,7 @@ class TaskWindow(wx.Frame):
         try:
             self.preview.setDataUnit(dataUnit)
             units=self.dataUnit.getSourceDataUnits()
+            
         except GUIError, ex:
             ex.show()
         names=[i.getName() for i in units]
