@@ -2,9 +2,8 @@
 # -*- coding: iso-8859-1 -*-
 """
  Unit: ProcessingManager
- Project: Selli 2
- Created: 2.2.2005
- Creator: KP
+ Project: BioImageXD
+ Created: 2.2.2005, KP
  Description:
  
  This is a dialog used to control the execution of all operations. The dialog
@@ -13,12 +12,14 @@
  Modified:  
             03.02.2005 KP - Created the class
 
- Selli 2 includes the following persons:
+ BioImageXD includes the following persons:
+ DW - Dan White, dan@chalkie.org.uk
  KP - Kalle Pahajoki, kalpaha@st.jyu.fi
+ PK - Pasi Kankaanpää, ppkank@bytl.jyu.fi
  
- Copyright (c) 2004 Selli 2 Project.
+ Copyright (c) 2005 BioImageXD Project.
 """
-__author__ = "Selli 2 Project <http://sovellusprojektit.it.jyu.fi/selli/>"
+__author__ = "BioImageXD Project"
 __version__ = "$Revision: 1.28 $"
 __date__ = "$Date: 2005/01/13 14:52:39 $"
 
@@ -29,8 +30,7 @@ import time
 class ProcessingManager(TimepointSelection):
     """
     Class: ProcessingManager
-    Created: 03.11.2004
-    Creator: KP
+    Created: 03.11.2004, KP
     Description: A dialog for selecting timepoints for processing
     """
     def __init__(self,parent,operation):
@@ -44,26 +44,24 @@ class ProcessingManager(TimepointSelection):
         self.progressDialog=None
         self.operationName=operation
         
-        self.timepointLbl.SetLabel("Select Time Points to be Processed")
+        #self.timepointLbl.SetLabel("Select Time Points to be Processed")
         self.SetTitle("Processing - %s"%operation)
         
     def createButtonBox(self):
         """
         Method: createButtonBox()
-        Created: 03.2.2005
-        Creator: KP
+        Created: 03.2.2005, KP
         Description: Creates the standard control buttons
         """
         TimepointSelection.createButtonBox(self)
 
         self.actionBtn.SetLabel("Process Time Points")
-        self.actionBtn.Bind(EVT_BUTTON,self.doProcessing)
+        self.actionBtn.Bind(wx.EVT_BUTTON,self.doProcessing)
     
     def updateProgressMeter(self,tp,nth,total):
         """
         Method: updateProgressMeter(tp,nth,total)
-        Created: 15.11.2004
-        Creator: KP
+        Created: 15.11.2004, KP
         Description: A callback for the dataunit to give info on the
                      progress of the task
         Parameters:
@@ -89,8 +87,7 @@ class ProcessingManager(TimepointSelection):
     def doProcessing(self,event):
         """
         Method: doProcessing()
-        Created: 09.02.2005
-        Creator: KP
+        Created: 09.02.2005, KP
         Description: A method that tells the dataunit to process the selected timepoints
         """    
         self.status=wx.ID_CANCEL

@@ -145,21 +145,15 @@ void vtkCastRay_RGB_NN_Unshaded( T *data_ptr, vtkVolumeRayCastDynamicInfo
         greenc=*(data_ptr+offset+1);
         bluec=*(data_ptr+offset+2);
         opacity=*(data_ptr+offset+3);
-
-//        if(!redc&&!greenc&&!bluec) {
-//            opacity=255;
-//            redc=bluec=greenc=255;
-//        }
-
-//        if(redc+greenc+bluec>100) {
-//            printf("at %d,%d,%d red=%f,green=%f,blue=%f,opacity=%f",
-//          voxel[0],voxel[1],voxel[2],redc,greenc,bluec,opacity);
-//        }
+	    
         redc/=255.0;
         greenc/=255.0;
         bluec/=255.0;
 
-        opacity/=255.0;
+        //opacity/=255.0;
+	opacity = greenc;
+	if(redc<0.1 && greenc < 0.1 && redc < 0.1)opacity=0;
+/*	    
         opacity=0.01;
 
 
@@ -177,6 +171,7 @@ void vtkCastRay_RGB_NN_Unshaded( T *data_ptr, vtkVolumeRayCastDynamicInfo
         }
         if(n)
             opacity/=n;
+ */
         opacity*=0.2;
 
 

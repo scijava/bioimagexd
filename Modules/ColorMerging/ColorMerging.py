@@ -109,7 +109,7 @@ class ColorMerging(Module):
         Creator: JV
         Description: Does a preview calculation for the x-y plane at depth z
         """
-        self.doAlpha=0
+        self.doAlpha=1
         if not self.preview:
             self.preview=self.doOperation()
         self.doAlpha=1

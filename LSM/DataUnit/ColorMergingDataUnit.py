@@ -2,8 +2,7 @@
 """
  Unit: ColorMergingDataUnit
  Project: Selli
- Created: 02.02.2005
- Creator: KP
+ Created: 02.02.2005, KP
  Description: A class for managing combined 4D color merged dataset series.
 
  Modified:  02.02.2004 KP - Migrated Color Merging Specific parts from
@@ -48,6 +47,7 @@ class ColorMergingDataUnit(CombinedDataUnit):
                      (Made after ColocalizationDataUnit)
         """
         CombinedDataUnit.__init__(self,name)
+        self.dataSource = None
         self.module=ColorMerging.ColorMerging()
         self.opacityTransfer=vtk.vtkIntensityTransferFunction()
 

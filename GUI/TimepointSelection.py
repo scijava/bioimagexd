@@ -2,7 +2,7 @@
 
 """
  Unit: TimepointSelection.py
- Project: Selli 2
+ Project: BioImageXD
  Created: 03.02.2005
  Creator: KP
  Description:
@@ -13,13 +13,14 @@
  
  Modified: 03.02.2005 KP - Created the class from RenderingManager
 
- Selli 2 includes the following persons:
+ BioImageXD includes the following persons:
+ DW - Dan White, dan@chalkie.org.uk
  KP - Kalle Pahajoki, kalpaha@st.jyu.fi
+ PK - Pasi Kankaanp‰‰, ppkank@bytl.jyu.fi
  
- Copyright (c) 2005 Selli 2 Project.
+ Copyright (c) 2005 BioImageXD Project.
 """
-
-__author__ = "Selli 2 Project <http://sovellusprojektit.it.jyu.fi/selli/>"
+__author__ = "BioImageXD Project"
 __version__ = "$Revision: 1.21 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
@@ -201,8 +202,7 @@ class TimepointSelectionPanel(wx.Panel):
     def setDataUnit(self,dataUnit):
         """
         Method: setDataUnit(dataUnit)
-        Created: 10.11.2004
-        Creator: KP
+        Created: 10.11.2004, KP
         Description: A method to set the data unit we use to do the
                      actual rendering
         Paremeters:
@@ -211,7 +211,7 @@ class TimepointSelectionPanel(wx.Panel):
         self.dataUnit=dataUnit
         self.createButtons()
         self.updateSelection()
-        data=self.dataUnit.getTimePoint(0)
+        #data=self.dataUnit.getTimePoint(0)
         self.mainsizer.Fit(self)
         
         
@@ -261,8 +261,7 @@ class TimepointSelection(wx.Dialog):
     def createButtonBox(self):
         """
         Method: createButtonBox()
-        Created: 31.1.2005
-        Creator: KP
+        Created: 31.1.2005, KP
         Description: Creates the standard control buttons
         """
         self.buttonsSizer=wx.BoxSizer(wx.HORIZONTAL)
@@ -289,8 +288,7 @@ class TimepointSelection(wx.Dialog):
     def closeWindowCallback(self,event):
         """
         Method: closeWindowCallback
-        Created: 10.11.2004
-        Creator: KP
+        Created: 10.11.2004, KP
         Description: A callback that is used to close this window
         """
         self.EndModal(self.status)
@@ -300,11 +298,11 @@ class TimepointSelection(wx.Dialog):
     def setDataUnit(self,dataUnit):
         """
         Method: setDataUnit(dataUnit)
-        Created: 10.11.2004
-        Creator: KP
+        Created: 10.11.2004, KP
         Description: A method to set the data unit we use to do the
                      actual rendering
         Paremeters:
             dataUnit    The data unit we use
         """
         self.panel.setDataUnit(dataUnit)
+        self.dataUnit = dataUnit

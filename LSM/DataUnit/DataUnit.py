@@ -120,8 +120,7 @@ class DataUnit:
     def getTimePoint(self,n):
         """
         Method: getTimePoint(n)
-        Created: 17.11.2004
-        Creator: KP
+        Created: 17.11.2004, KP
         Description: Returns the requested time point
         Parameters:
                 n       The timepoint we need to return

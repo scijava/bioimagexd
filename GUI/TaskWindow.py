@@ -245,8 +245,7 @@ class TaskWindow(wx.Frame):
     def selectItem(self,event,index=-1):
         """
         Method: selectItem(event)
-        Created: 03.11.2004
-        Creator: KP
+        Created: 03.11.2004, KP
         Description: A callback function called when a channel is selected in
                      the listbox
         """
@@ -273,8 +272,7 @@ class TaskWindow(wx.Frame):
     def doOperation(self):
         """
         Method: doOperation()
-        Created: 03.2.2005
-        Creator: KP
+        Created: 03.2.2005, KP
         Description: A method that executes the operation on the selected
                      dataset
         """
