@@ -2,7 +2,7 @@
 
 """
  Unit: ImageOperations
- Project: Selli 2
+ Project: BioImageXD
  Created: 10.02.2005
  Creator: KP
  Description:
@@ -12,19 +12,37 @@
  
  Modified: 10.02.2005 KP - Created the class
 
- Selli 2 includes the following persons:
+ BioImageXD includes the following persons:
+ DW - Dan White, dan@chalkie.org.uk
  KP - Kalle Pahajoki, kalpaha@st.jyu.fi
+ PK - Pasi Kankaanp‰‰, ppkank@bytl.jyu.fi
  
- Copyright (c) 2005 Selli 2 Project.
+ Copyright (c) 2005 BioImageXD Project
 """
 
-__author__ = "Selli 2 Project <http://sovellusprojektit.it.jyu.fi/selli/>"
+__author__ = "BioImageXD Project"
 __version__ = "$Revision: 1.21 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 import vtk
 import wx
 import struct
+
+def gcd2(a, b):
+    """Greatest common divisor using Euclid's algorithm."""
+    while a:
+        a, b = b%a, a
+    return b
+    
+def lcm2(a,b):
+    return float(a*b)/gcd2(a,b)
+    
+def gcd(numbers):
+    return reduce(gcd2,numbers)
+    
+def lcm(numbers):
+    return reduce(lcm2,numbers)  
+
 
 def getAsParameterList(iTF):
     lst=[]
@@ -49,11 +67,8 @@ def setFromParameterList(iTF,list):
     
     iTF.SetBrightness(int(br))
 
-def vtkImageDataToBitmap(imageData,slice,color,width=0,height=0):
-    extract=vtk.vtkExtractVOI()
-    extract.SetInput(imageData)
+def vtkImageDataToPreviewBitmap(imageData,color,width=0,height=0):
     x,y,z=imageData.GetDimensions()
-    z=slice
     
     ctf=vtk.vtkColorTransferFunction()
     ctf.AddRGBPoint(0.0,0,0,0)
@@ -63,9 +78,14 @@ def vtkImageDataToBitmap(imageData,slice,color,width=0,height=0):
     b/=255
     ctf.AddRGBPoint(255.0,r,g,b)
     
-    extract.SetVOI(0,x,0,y,z,z)
+    # We do a simple mip that sets each pixel (x,y) of the image to have the
+    # value of the brightest voxel (x,y,0) - (x,y,z)
+    mip=vtk.vtkImageSimpleMIP()
+    mip.SetInput(imageData)
+#    mip.Update()
+#    output=mip.GetOutput()
     maptocolor=vtk.vtkImageMapToColors()
-    maptocolor.SetInput(extract.GetOutput())
+    maptocolor.SetInput(mip.GetOutput())
     maptocolor.SetLookupTable(ctf)
     maptocolor.SetOutputFormatToRGB()
     maptocolor.Update()
@@ -92,3 +112,35 @@ def vtkImageDataToBitmap(imageData,slice,color,width=0,height=0):
     image.Rescale(width,height)
     bitmap=image.ConvertToBitmap()
     return bitmap
+    
+def zoomImageToSize(image,x,y):
+    xf=float(self.xdim)/self.maxX
+    yf=float(self.ydim)/self.maxY
+    f=max(xf,yf)
+    return self.zoomImage(image,f)
+    
+def zoomImage(image,factor):
+    reslice=vtk.vtkImageReslice()
+    reslice.SetInput(image)
+    
+    spacing=image.GetSpacing()
+    extent=image.GetExtent()
+    origin=image.GetOrigin()
+    extent=(extent[0],extent[1]/f,extent[2],extent[3]/f,extent[4],extent[5])
+    
+    spacing=(spacing[0]*f,spacing[1]*f,spacing[2])
+    reslice.SetOutputSpacing(spacing)
+    reslice.SetOutputExtent(extent)
+    reslice.SetOutputOrigin(origin)
+
+    # These interpolation settings were found to have the
+    # best effect:
+    # If we zoom out, no interpolation
+    if f>1:
+        reslice.InterpolateOff()
+    else:
+    # If we zoom in, use cubic interpolation
+        reslice.SetInterpolationModeToCubic()
+        reslice.InterpolateOn()
+    reslice.Update()
+    return reslice.GetOutput()
