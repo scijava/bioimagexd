@@ -31,7 +31,7 @@ from Logging import *
 
 import DataUnit
 import PreviewFrame
-
+import DataUnitProcessing
 
 
 smX="<font size=\"-1\">x</font>"
@@ -67,7 +67,6 @@ class InfoWidget(wx.Panel):
         self.preview=PreviewFrame.SingleUnitProcessingPreview(self,
         previewsize=(384,384),pixelvalue=False,renderingpreview=False,
         zoom=False,timeslider=False,scrollbars=False,zoom_factor=PreviewFrame.ZOOM_TO_FIT)
-        
         self.mainsizer.Add(self.preview,(0,0),flag=wx.EXPAND|wx.ALL)
         
         self.infoNotebook=wx.Notebook(self,-1,size=(300,300))        
@@ -98,7 +97,11 @@ class InfoWidget(wx.Panel):
             spacing=dataunit.getSpacing()
             voxelsize=dataunit.getVoxelSize()
             unit=DataUnit.CorrectedSourceDataUnit("preview")
+            settings=DataUnit.SingleUnitProcessingSettings()
+            settings.initialize(dataunit,1,1)
+            unit.setSettings(settings)
             unit.addSourceDataUnit(dataunit)
+            unit.setModule(DataUnitProcessing.DataUnitProcessing())
             self.dataUnit=unit
             self.preview.setDataUnit(self.dataUnit)
             tps=dataunit.getLength()
