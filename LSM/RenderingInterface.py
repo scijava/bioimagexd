@@ -108,7 +108,7 @@ class RenderingInterface:
         if self.mayavi:
             self.mayavi.root.update()
         if not self.stop:
-            wx.wxFutureCall(100, self.runTkinterGUI)
+            wx.FutureCall(100, self.runTkinterGUI)
 
 
     def setDataUnit(self,dataUnit):
@@ -273,7 +273,7 @@ class RenderingInterface:
 
     def setOutputPath(self,path):
         """
-        Method: setPath(path)
+        Method: setOutputPath(path)
         Created: 17.11.2004, KP
         Description: Sets the path where the rendered frames are stored.
         """
