@@ -128,7 +128,7 @@ class MainWindow(wx.Frame):
         self.SetStatusText("Done.")
         self.infowidget=InfoWidget.InfoWidget(self.splitter,size=(400,400))
         self.tree=TreeWidget(self.splitter,self.infowidget.showInfo)        
-        
+        self.infowidget.setTree(self.tree)
         self.splitter.SplitVertically(self.tree,self.infowidget,200)
 
         self.Show(True)
