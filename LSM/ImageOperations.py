@@ -113,13 +113,13 @@ def vtkImageDataToPreviewBitmap(imageData,color,width=0,height=0):
     bitmap=image.ConvertToBitmap()
     return bitmap
     
-def zoomImageToSize(image,x,y):
-    xf=float(self.xdim)/self.maxX
-    yf=float(self.ydim)/self.maxY
-    f=max(xf,yf)
-    return self.zoomImage(image,f)
+def getZoomFactor(x1,y1,x2,y2):
+    xf=float(x1)/x2
+    yf=float(y1)/y2
+    return max(xf,yf)
     
-def zoomImage(image,factor):
+def zoomImage(image,f):
+    f=1.0/f
     reslice=vtk.vtkImageReslice()
     reslice.SetInput(image)
     
