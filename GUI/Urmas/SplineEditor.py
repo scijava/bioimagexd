@@ -27,9 +27,10 @@ __author__ = "Heikki Uuksulainen and Prabhu Ramachandran"
 __version__ = "$Revision: 0.1 $"
 __date__ = "$Date: 2004/01/20 22:41:28 $"
 
+
 import types, os
 import string
-#import vtk,vtkRenderWidget
+
 import vtk
 from mayavi import Common
 from vtk.util.colors import tomato, banana
@@ -37,6 +38,9 @@ from vtk.util.colors import tomato, banana
 import wx
 import wx.lib.scrolledpanel as scrolled
 from vtk.wx.wxVTKRenderWindowInteractor import *
+from vtk.wx.wxVTKRenderWindow import *
+
+import PreviewFrame
 
 math = vtk.vtkMath()
 
@@ -212,12 +216,12 @@ class SplineWidget3D:
         del self.renWin
 
 
-class SplineEditor(wxPanel):
+class SplineEditor(wx.Panel):
     """
     Creates the window for spline.
     """
 
-    def __init__(self, parent, width=250, height=100):
+    def __init__(self, parent, width=400, height=400):
         wx.Panel.__init__(self,parent,size=(width,height))
         self.sizer=wxGridBagSizer(5,5)
        
@@ -225,25 +229,19 @@ class SplineEditor(wxPanel):
         self.data = None
 
 
+        #self.wxrenwin=wxVTKRenderWindowInteractor(self,-1,size=(width,height))
+        self.wxrenwin=wxVTKRenderWindowInteractor(self,-1,size=(width,height))
         self.renderer = ren = vtk.vtkRenderer ()
-        #self.renWin = renWin = vtk.vtkRenderWindow()
-        #self.iren = vtk.vtkRenderWindowInteractor()
-        #self.iren.SetInteractorStyle(vtk.vtkInteractorStyleTrackballCamera())
-        #self.renWin.SetInteractor(self.iren)
-        #renWin.AddRenderer(ren)
-        
-        self.wxrenwin=wxVTKRenderWindowInteractor(self,-1,size=(400,400))
-
         self.renWin = self.wxrenwin.GetRenderWindow()
         self.renWin.GetInteractor().SetInteractorStyle(vtk.vtkInteractorStyleTrackballCamera())
         self.renWin.AddRenderer(ren)
-      
+        self.renWin.Render()
         self.sizer.Add(self.wxrenwin,(0,0),flag=wx.EXPAND|wx.ALL)
 
-        ren.SetBackground(1.0,1.0,1.0)
+        #ren.SetBackground(1.0,1.0,1.0)
 
-        self.splinew = SplineWidget3D(self.wxrenwin)
-
+        #self.splinew = SplineWidget3D(self.wxrenwin)
+        
         self.SetSizer(self.sizer)
         self.SetAutoLayout(True)
         self.sizer.Fit(self)

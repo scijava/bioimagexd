@@ -2,7 +2,7 @@
 # -*- coding: iso-8859-1 -*-
 
 """
- Unit: UrmasWindow
+ Unit: VideoGeneration
  Project: BioImageXD
  Created: 10.02.2005
  Creator: KP
@@ -10,11 +10,8 @@
 
  URM/AS - The Unified Rendering Manager / Animator for Selli
  
- This is a timeline based GUI for controlling the rendering of datasets. The GUI allows users
- to specify a path for the camera to follow (using Heikki Uuksulainen's MayaVi animator code)
- and also allows them to produce videos of the rendering using ffmpeg.
- 
- This is the wx.Dialog based window that contains the Urmas.
+ This module contains a panel that can be used to control the creation of a movie
+ out of a set of rendered images.
  
  Modified: 10.02.2005 KP - Created the module
  

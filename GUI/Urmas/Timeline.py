@@ -33,6 +33,7 @@ import wx
 import wx.lib.masked as masked
 
 from Track import *
+import PreviewFrame
 import Animator
 
 import os.path
@@ -419,6 +420,7 @@ if __name__=='__main__':
         def OnInit(self):
             frame=wx.Frame(None,size=(640,480))
             self.panel=TimelinePanel(frame)
+            
             #self.panel=TimeScale(frame)
             #self.panel.setDuration(60)
             self.SetTopWindow(frame)

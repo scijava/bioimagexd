@@ -122,7 +122,7 @@ class TrackItem(wx.Panel):
         if not self.thumbnailbmp:
             volume=self.dataUnit.getTimePoint(self.thumbtimepoint)
             vx,vy,vz=volume.GetDimensions()
-            self.thumbnailbmp=ImageOperations.vtkImageDataToBitmap(volume,vz/2,self.dataUnit.getColor(),0,self.height-y)
+            self.thumbnailbmp=ImageOperations.vtkImageDataToPreviewBitmap(volume,self.dataUnit.getColor(),0,self.height-y)
         self.dc.DrawBitmap(self.thumbnailbmp,x,y)
         
     def setMinimumWidth(self,w):

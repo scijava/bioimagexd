@@ -37,6 +37,7 @@ import vtkpython
 
 from vtk.wx.wxVTKRenderWindowInteractor import *
 
+import PreviewFrame
 import SplineEditor
 import vtk
 import os
@@ -64,10 +65,14 @@ class AnimatorPanel(wx.Panel):
         Description: Initialize the config panel
         """        
         wx.Panel.__init__(self,parent)
+        self.splineEditor=None
+
         print "AnimatorPanel(...)"
         self.sizer=wx.GridBagSizer()
+
+        
         self.splineEditor=SplineEditor.SplineEditor(self)
-        self.animator=MayaViAnimator(self,self.splineEditor)        
+        #self.animator=MayaViAnimator(self,self.splineEditor)        
         
         self.sizer.Add(self.splineEditor,(0,0))
         
