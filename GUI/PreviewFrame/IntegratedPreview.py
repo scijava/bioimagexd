@@ -28,6 +28,10 @@ import RenderingInterface
 from PreviewFrame import *
 import wx
 
+import ColorMerging
+import Colocalization
+import DataUnitProcessing
+
 from Logging import *
 import vtk
 import wx.lib.scrolledpanel as scrolled
@@ -52,7 +56,12 @@ class IntegratedPreview(PreviewFrame):
         self.ID_COLOC=wx.NewId()
         self.ID_SINGLE=wx.NewId()
         
-        self.colortype=""
+        self.previewtype=""
+        self.modules={}
+        self.modules[""]=DataUnitProcessing.DataUnitProcessing()
+        self.modules["Colocalization"]=Colocalization.Colocalization()
+        self.modules["ColorMerging"]=ColorMerging.ColorMerging()
+        
         self.menu=wx.Menu()
         self.typemenu=wx.Menu()        
         
@@ -66,8 +75,6 @@ class IntegratedPreview(PreviewFrame):
         self.Bind(wx.EVT_MENU,self.setPreviewType,id=self.ID_SINGLE)
         self.typemenu.AppendItem(item)
         self.menu.AppendMenu(-1,"&Preview type",self.typemenu)
-        
-        
         
     def onRightClick(self,event):
         """
@@ -85,13 +92,33 @@ class IntegratedPreview(PreviewFrame):
         Description: Method to set the proper previewtype
         """      
         if type(event)==type(""):
-            self.colortype=event
+            self.previewtype=event
             return
         eid=event.GetId()
         if eid==self.ID_COLOC:
-            self.colortype="Colocalization"
+            self.previewtype="Colocalization"
+        elif eid==self.ID_MERGE:
+            self.previewtype="ColorMerging"
         else:
-            self.colortype=""
+            self.previewtype=""
+        m=self.modules[self.previewtype]
+        print "Module that corresponds to %s: %s"%(self.previewtype,m)
+        self.dataUnit.setModule(m)
+        sourceunits=self.dataUnit.getSourceDataUnits()
+        t=self.previewtype
+        if not t:t="SingleUnitProcessing"
+        for unit in sourceunits:
+            settingstype="%sSettings"%t
+            settings = unit.getSettings()
+            if settings:
+                print "Converting settings of %s to %s"%(unit,settingstype)
+                settings = settings.asType(settingstype)
+            else:
+                raise "Got no settings from dataunit",unit
+            unit.setSettings(settings)
+            print "Type of settings now:",
+            print unit.getSettings().get("Type")
+        self.updatePreview(1)
             
         
     def updateColor(self):
@@ -102,8 +129,10 @@ class IntegratedPreview(PreviewFrame):
                      function
         Parameters:
         """
+        if self.previewtype=="ColorMerging":
+            return
         if self.dataUnit:
-            self.rgb = self.settings.get("%sColor"%self.colortype)
+            self.rgb = self.settings.get("%sColor"%self.previewtype)
             print "Got color ",self.rgb            
         self.currentCt=ImageOperations.getColorTransferFunction(self.rgb)
         self.mapToColors.SetLookupTable(self.currentCt)
@@ -175,3 +204,5 @@ class IntegratedPreview(PreviewFrame):
         self.renderpanel.updatePreview()
     
         self.finalImage=colorImage
+
+    
