@@ -78,7 +78,7 @@ void vtkImageAlphaFilterExecute(vtkImageAlphaFilter *self, int id,int NumberOfIn
     
     T scalar = 0, currScalar = 0, alphaScalar = 0;
     int maxval = 0, n = 0;
-    maxval=int(pow(2,8*sizeof(T)));
+    maxval=int(pow(2,8*sizeof(T)))-1;
     T val;
     
     for(idxZ = 0; idxZ <= maxZ; idxZ++ ) {

@@ -106,7 +106,8 @@ void vtkImageColocalizationFilterExecute(vtkImageColocalizationFilter *self, int
     T currScalar = 0, ColocalizationScalar = 0;
     int maxval = 0, n = 0;
     char colocFlag = 0;
-    maxval=int(pow(2,8*sizeof(T)));
+    maxval=int(pow(2,8*sizeof(T)))-1;
+    printf("Colocalization depth = %d, maxval=%d\n",BitDepth,maxval);
     
     for(idxZ = 0; idxZ <= maxZ; idxZ++ ) {
         for(idxY = 0; idxY <= maxY; idxY++ ) {
