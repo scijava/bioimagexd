@@ -43,7 +43,6 @@ import Dialogs
 
 from PreviewFrame import *
 from IntensityTransferEditor import *
-#from IntensityTransferFunction import *
 from Logging import *
 from ColorSelectionDialog import *
 
@@ -78,9 +77,6 @@ class SingleUnitProcessingWindow(TaskWindow.TaskWindow):
         self.createIntensityTransferPage()
         
         self.Show()
-        self.preview=SingleUnitProcessingPreview(self.panel,self)
-        self.previewSizer.Add(self.preview,(0,0))
-        self.previewSizer.Fit(self.preview)
 
         self.SetTitle("Single Dataset Series Processing")
 
@@ -311,7 +307,6 @@ class SingleUnitProcessingWindow(TaskWindow.TaskWindow):
         self.filtersPanel.SetAutoLayout(1)
 
 
-########################## CALLBACK CODE #############################
     def timePointChanged(self,event):
         """
         Method: timePointChanged(timepoint)
@@ -411,7 +406,9 @@ class SingleUnitProcessingWindow(TaskWindow.TaskWindow):
             self.settings.getCounted("IntensityTransferFunctions",self.timePoint)
             )
             tps=self.settings.get("InterpolationTimepoints")
-            
+            print "tps=",tps
+            if not tps:
+                tps=[]
             
             for i in range(len(tps)):
                 n=tps[i]
@@ -421,7 +418,9 @@ class SingleUnitProcessingWindow(TaskWindow.TaskWindow):
                     self.entries[i].SetValue(str(n))
 
             # median filtering
+            print self.settings
             median=self.settings.get("MedianFiltering")
+            print "median=",median
             self.doMedianCheckbutton.SetValue(median)
             #neighborhood=self.dataUnit.getNeighborhood()
             neighborhood=self.settings.get("MedianNeighborhood")
@@ -512,19 +511,20 @@ class SingleUnitProcessingWindow(TaskWindow.TaskWindow):
                      This is overwritten from taskwindow since we only process
                      one dataunit here, not multiple source data units
         """
-        self.dataUnit=dataUnit
-        self.settings = self.dataUnit.getSettings()
-        name=dataUnit.getName()
-        print "Name of dataUnit=%s"%name
-        self.taskName.SetValue(name)
-        try:
-            self.preview.setDataUnit(dataUnit)
-        except GUIError, ex:
-            ex.show()
-        self.itemMenu.Unbind(wx.EVT_CHOICE)
-
-        self.itemMenu.Append(dataUnit.getName())
-        self.itemMenu.SetSelection(0)
+        TaskWindow.TaskWindow.setCombinedDataUnit(self,dataUnit)
+##        self.dataUnit=dataUnit
+##        self.settings = self.dataUnit.getSettings()
+##        name=dataUnit.getName()
+##        print "Name of dataUnit=%s"%name
+##        self.taskName.SetValue(name)
+##        try:
+##            self.preview.setDataUnit(dataUnit)
+##        except GUIError, ex:
+##            ex.show()
+##        self.itemMenu.Unbind(wx.EVT_CHOICE)
+##
+##        self.itemMenu.Append(dataUnit.getName())
+##        self.itemMenu.SetSelection(0)
         
         #set the color of the colorBtn to the current color
         r,g,b=self.settings.get("Color")

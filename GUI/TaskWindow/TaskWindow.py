@@ -40,7 +40,7 @@ import Dialogs
 import sys
 import Colocalization
 import ColorMerging
-
+import ImageOperations
 
 def showTaskWindow(windowclass,combinedUnit,mainwin):
     """
@@ -94,8 +94,6 @@ class TaskWindow(wx.Frame):
         self.Bind(EVT_CLOSE,self.closeWindowCallback)
         self.mainsizer=wx.GridBagSizer()
 
-        self.previewSizer=wx.GridBagSizer()
-        self.mainsizer.Add(self.previewSizer,(0,0),flag=wx.EXPAND|wx.ALL)
 
         self.settingsSizer=wx.GridBagSizer()
         self.mainsizer.Add(self.settingsSizer,(0,1),flag=wx.EXPAND|wx.ALL)
@@ -110,7 +108,17 @@ class TaskWindow(wx.Frame):
         self.buttonPanel.SetAutoLayout(1)
         self.mainsizer.Add(self.buttonPanel,(3,0),span=(1,2),flag=wx.EXPAND)
 
-        
+        self.previewSizer=wx.GridBagSizer()
+        self.mainsizer.Add(self.previewSizer,(0,0),flag=wx.EXPAND|wx.ALL)
+
+        # Preview has to be generated here
+        self.preview=IntegratedPreview(self.panel,self)
+        self.Bind(EVT_ZSLICE_CHANGED,self.updateZSlice,id=self.preview.GetId())
+        self.Bind(EVT_TIMEPOINT_CHANGED,self.updateTimepoint,id=self.preview.GetId())
+        #self.preview = ColorMergingPreview(self)
+        self.previewSizer.Add(self.preview,(0,0),flag=wx.EXPAND|wx.ALL)
+    
+    
         self.filePath=None
         self.dataUnit=None
         self.settings = None
@@ -161,7 +169,22 @@ class TaskWindow(wx.Frame):
         EVT_TOOL(self,ID_ZOOM_TO_FIT,self.preview.zoomToFit)
         EVT_TOOL(self,ID_ZOOM_OBJECT,self.preview.zoomObject)
         self.zoomCombo.Bind(wx.EVT_COMBOBOX,self.preview.zoomToComboSelection)
-        
+
+    def createItemToolbar(self):
+        """
+        Method: createItemToolbar()
+        Created: 31.03.2005, KP
+        Description: Method to create a toolbar for the window that allows use to select processed channel
+        """      
+        #self.tb2 = self.CreateToolBar(wx.TB_HORIZONTAL)
+        print "Creating item toolbar"
+        self.tb.AddSeparator()
+        col=self.GetBackgroundColour()
+        for dataunit in self.dataUnit.getSourceDataUnits():
+            color = dataunit.getColor()
+            name = dataunit.getName()
+            bmp=ImageOperations.vtkImageDataToPreviewBitmap(dataunit.getTimePoint(0),color,32,32)
+            self.tb.AddCheckTool(-1,bmp,shortHelp=name)
         
     def OnSize(self,event):
         """
@@ -280,8 +303,9 @@ class TaskWindow(wx.Frame):
             index=self.itemMenu.GetSelection()
         name=self.itemMenu.GetString(index)
         print "Now configuring item",name
+        #print "self.Dataunit.getSetting()=",self.dataUnit.getSettings()
         self.settings = self.dataUnit.getSourceUnit(name).getSettings()
-        print "Got settings = ",self.settings
+        #print "Got settings = ",self.settings
         self.updateSettings()
 
     def updateSettings(self):
@@ -428,3 +452,4 @@ class TaskWindow(wx.Frame):
                 self.itemMenu.Append(name)
         self.selectItem(None,0)
         self.itemMenu.SetSelection(0)
+        self.createItemToolbar()

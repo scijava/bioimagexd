@@ -20,11 +20,11 @@
 
             23.11.2004 JV - Updated to match colocalizationwindow
             03.12.2004 JV - Transferwidget updates when dataset is selected
-       	    07.12.2004 JM - Fixed: Clicking cancel on color selection no longer 
+            07.12.2004 JM - Fixed: Clicking cancel on color selection no longer 
                                    causes exception
-	                    Fixed: Color selection now shows the current color 
+                            Fixed: Color selection now shows the current color 
                                    as default
-	                    Fixed: The default color is now shown in the color 
+                            Fixed: The default color is now shown in the color 
                                    selection button
             28.01.2005 KP - Changed the class over to wxPython
             02.02.2005 KP - Converted the class to use a notebook
@@ -77,11 +77,6 @@ class ColorMergingWindow(TaskWindow.TaskWindow):
         TaskWindow.TaskWindow.__init__(self,parent)
         self.SetTitle("Color Merging")
 
-        # Preview has to be generated here
-        self.preview=ColorMergingPreview(self.panel,self)
-        #self.preview = SingleUnitProcessingPreview(self)
-        self.previewSizer.Add(self.preview,(0,0),flag=wxEXPAND|wxALL)
-        self.previewSizer.Fit(self.preview)
         
         self.oldBg=self.GetBackgroundColour()
         self.createToolBar()                

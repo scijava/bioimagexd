@@ -67,6 +67,19 @@ def showColocalizationWindow(colocalizationUnit,mainwin):
 
     return result
 
+infoString="""<html><body bgcolor=%(bgcolor)s">
+<table>
+<tr><td>Colocalization amount:</td><td>%(amount)d voxels</td></tr>
+<tr><td>Least voxels over the thresholds:</td><td>%(least)d voxels</td></tr>
+<tr><td>Pearson's Correlation:</td><td>%(pearson).3f</td></tr>
+<tr><td>Overlap Coefficient:</td><td>%(overlap).3f</td></tr>
+<tr><td>Overlap coefficient k1:</td><td>%(k1).3f</td></tr>
+<tr><td>Overlap coefficient k2:</td><td>%(k2).3f</td></tr>
+<tr><td>Colocalization coefficient m1:</td><td>%(m1).3f</td></tr>
+<tr><td>Colocalization coefficient m2:</td><td>%(m2).3f</td></tr>
+</table>
+</body></html>
+"""    
 
 class ColocalizationWindow(TaskWindow.TaskWindow):
     """
@@ -85,19 +98,46 @@ class ColocalizationWindow(TaskWindow.TaskWindow):
                 root    Is the parent widget of this window
         """
         self.scatterGram=None
+        self.htmlpage=None
         TaskWindow.TaskWindow.__init__(self,root)
         self.operationName="Colocalization"
-        # Preview has to be generated here
-        self.preview=ColocalizationPreview(self.panel,self)
-        self.Bind(EVT_ZSLICE_CHANGED,self.updateZSlice,id=self.preview.GetId())
-        self.Bind(EVT_TIMEPOINT_CHANGED,self.updateTimepoint,id=self.preview.GetId())
-        #self.preview = ColorMergingPreview(self)
-        self.previewSizer.Add(self.preview,(0,0),flag=wx.EXPAND|wx.ALL)
-        self.previewSizer.Fit(self.preview)
+        
         self.SetTitle("Colocalization")
         self.createToolBar()        
         self.mainsizer.Layout()
         self.mainsizer.Fit(self.panel)
+        
+    def updateHtmlPage(self):
+        """
+        Method: updateHtmlPage()
+        Created: 31.03.2005, KP
+        Description: Updates the html page
+        """
+        if not self.htmlpage:
+            return
+        if not self.settings:
+            print "No settings present"
+            amnt,pearson,overlap,k1,k2,m1,m2,least=0,0,0,0,0,0,0,0
+        else:
+            amnt=self.settings.get("ColocalizationAmount")
+            pearson=self.settings.get("PearsonsCorrelation")
+            overlap=self.settings.get("OverlapCoefficient")
+            k1=self.settings.get("OverlapCoefficientK1")
+            k2=self.settings.get("OverlapCoefficientK2")
+            m1=self.settings.get("ColocalizationCoefficientM1")
+            m2=self.settings.get("ColocalizationCoefficientM2")
+            least=self.settings.get("ColocalizationLeastVoxelsOverThreshold")
+        col=self.GetBackgroundColour()
+        bgcol="#%2x%2x%2x"%(col.Red(),col.Green(),col.Blue())
+        variables={"amount":amnt,"pearson":pearson,"overlap":overlap,"k1":k1,"k2":k2,"m1":m1,"m2":m2,"bgcolor":bgcol,
+        "least":least}
+ 
+        print variables
+        infostr=infoString%variables
+        self.htmlpage.SetPage(infostr)
+        
+
+    
 
     def createButtonBox(self):
         """
@@ -118,6 +158,7 @@ class ColocalizationWindow(TaskWindow.TaskWindow):
                      used to control the colocalization settings
         """
         TaskWindow.TaskWindow.createOptionsFrame(self)
+
         self.taskNameLbl.SetLabel("Colocalization name:")
 
         self.colorChooser=ColorSelectionDialog(self.commonSettingsPanel,self.setColor)
@@ -143,7 +184,14 @@ class ColocalizationWindow(TaskWindow.TaskWindow):
         self.colocalizationSizer.Add(self.threshold,(3,0))
 
         self.scatterGram=Scattergram.Scattergram(self.colocalizationPanel,size=(256,256))
+        self.scatterGram.setTimepoint(0)
         self.colocalizationSizer.Add(self.scatterGram,(4,0))
+
+        self.htmlpage=wx.html.HtmlWindow(self.colocalizationPanel,-1,size=(400,200))
+        if "gtk2" in wx.PlatformInfo:
+            self.htmlpage.SetStandardFonts()        
+        self.colocalizationSizer.Add(self.htmlpage,(4,1))
+        self.updateHtmlPage()
         
         self.colocalizationPanel.SetSizer(self.colocalizationSizer)
         self.colocalizationPanel.SetAutoLayout(1)
@@ -163,7 +211,7 @@ class ColocalizationWindow(TaskWindow.TaskWindow):
                      updates the preview and Set color-button accordingly
         """
         if self.dataUnit:
-            self.dataUnit.setColor(r,g,b)
+            self.settings.set("ColocalizationColor",(r,g,b))
             self.preview.updateColor()
 #        self.colorBtn.SetBackgroundColour((r,g,b))
         self.doPreviewCallback()
@@ -178,6 +226,7 @@ class ColocalizationWindow(TaskWindow.TaskWindow):
         if self.scatterGram:
             self.scatterGram.setZSlice(event.getValue())
             self.scatterGram.update()
+            self.updateHtmlPage()
 
     def updateTimepoint(self,event):
         """
@@ -199,12 +248,12 @@ class ColocalizationWindow(TaskWindow.TaskWindow):
         """
         # We might get called before any channel has been selected. 
         # In that case, do nothing
-        if self.configSetting:
-            oldthreshold=self.configSetting.getThreshold()
+        if self.settings:
+            oldthreshold=self.settings.get("ColocalizationLowerThreshold")
             newthreshold=int(self.threshold.GetValue())
-        if oldthreshold != newthreshold:
-            self.configSetting.setThreshold(int(self.threshold.GetValue()))
-            self.doPreviewCallback()
+            if oldthreshold != newthreshold:
+                self.settings.set("ColocalizationLowerThreshold",newthreshold)
+                self.doPreviewCallback()
 
     def updateSettings(self):
         """
@@ -212,15 +261,19 @@ class ColocalizationWindow(TaskWindow.TaskWindow):
         Created: 03.11.2004, KP
         Description: A method used to set the GUI widgets to their proper values
                      based on the selected channel, the settings of which are 
-                     stored in the instance variable self.configSetting
+                     stored in the instance variable self.settings
         """
-#                self.dataUnit.setFormat(self.depthVar.get())
         print "UPDATESETTINGS"
-        self.depthMenu.SetStringSelection(self.dataUnit.getFormat())
-        self.threshold.SetValue(self.configSetting.getThreshold())
-        if self.dataUnit:
-            r,g,b=self.dataUnit.getColor()
-            self.colorChooser.SetValue(wx.Colour(r,g,b))
+        if self.settings:
+            format = self.settings.get("ColocalizationDepth")
+            formattable={1:0,8:1,32:2}
+            format=formattable[format]
+            self.depthMenu.SetSelection(format)
+            th=self.settings.get("ColocalizationLowerThreshold")
+            self.threshold.SetValue(th)
+            if self.dataUnit:
+                r,g,b=self.settings.get("ColocalizationColor")
+                self.colorChooser.SetValue(wx.Colour(r,g,b))
 
     def doColocalizationCallback(self,event):
         """
@@ -238,9 +291,10 @@ class ColocalizationWindow(TaskWindow.TaskWindow):
         Created: 17.11.2004, KP
         Description: Updates the preview to be done at the selected depth
         """
-        if self.dataUnit:
-            self.dataUnit.setFormat(self.depthMenu.GetString(self.depthMenu.GetSelection()))
-
+        if self.settings:
+            depth=self.depthMenu.GetSelection()
+            table=[1,8,32]
+            self.settings.set("ColocalizationDepth",table[depth])
 
     def doPreviewCallback(self,event=None):
         """
@@ -253,9 +307,9 @@ class ColocalizationWindow(TaskWindow.TaskWindow):
         TaskWindow.TaskWindow.doPreviewCallback(self,event)
         if self.scatterGram:
             self.scatterGram.setZSlice(self.preview.z)
-            self.scatterGram.setTimepoint(self.preview.timePoint)
+            #self.scatterGram.setTimepoint(self.preview.timePoint)
             self.scatterGram.update()
-            
+        self.updateHtmlPage()
     def setCombinedDataUnit(self,dataUnit):
         """
         Method: setCombinedDataUnit(dataUnit)
@@ -264,4 +318,17 @@ class ColocalizationWindow(TaskWindow.TaskWindow):
         """
         TaskWindow.TaskWindow.setCombinedDataUnit(self,dataUnit)
         self.scatterGram.setDataunit(dataUnit)
- 
+        self.Bind(EVT_TIMEPOINT_CHANGED,self.timePointChanged,id=self.preview.GetId())
+        self.settings = self.dataUnit.getSettings()
+
+    def timePointChanged(self,event):
+        """
+        Method: timePointChanged(timepoint)
+        Created: 30.03.2005, KP
+        Description: A callback that is called when the previewed timepoint
+                     changes.
+        Parameters:
+                event   Event object who'se getValue() returns the timepoint
+        """
+        tp=event.getValue()
+        self.scatterGram.setTimepoint(tp)
