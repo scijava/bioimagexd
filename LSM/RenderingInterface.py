@@ -56,6 +56,7 @@ class RenderingInterface:
         Description: Initialization
         """
         self.dataUnit=dataUnit
+        self.currentData=None
         self.timePoints=timePoints
         Logging.info("Init setting mayavi to None")
         self.mayavi=None
@@ -71,7 +72,7 @@ class RenderingInterface:
         if not self.currentData:
             n=self.currentTimePoint
             if n<0:n=0
-            self.setCurrentTimePoint(n)
+            self.setCurrentTimepoint(n)
         return self.currentData
         
     def setCurrentTimepoint(self,n):
@@ -82,8 +83,8 @@ class RenderingInterface:
                      This will also update relevant information about the dataset
         """        
         self.currentTimePoint = n
-        self.currentData = self.dataUnit.getTimePoint(timepoint)
-        self.dimensions = currentData.GetDimensions()
+        self.currentData = self.dataUnit.getTimePoint(n)
+        self.dimensions = self.currentData.GetDimensions()
         
     def getRenderWindow(self):
         """
@@ -262,7 +263,7 @@ class RenderingInterface:
             # Render every selected timepoint
             for timepoint in self.timePoints:
                 # Set the current dataset to be timepoint 
-                self.setCurrentTimePoint(timepoint)
+                self.setCurrentTimepoint(timepoint)
                 self.renderData(self.currentData,timepoint)
 
         else:
