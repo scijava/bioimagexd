@@ -37,7 +37,7 @@ __author__ = "Selli Project <http://sovellusprojektit.it.jyu.fi/selli/>"
 __version__ = "$Revision: 1.42 $"
 __date__ = "$Date: 2005/01/13 14:52:39 $"
 
-from wxPython.wx import *
+import wx
 
 import os.path
 import Dialogs
@@ -113,28 +113,28 @@ class SingleUnitProcessingWindow(TaskWindow.TaskWindow):
         Description: Creates a frame holding the entries for configuring 
                      interpolation
         """
-        self.editIntensityPanel=wxPanel(self.settingsNotebook,-1)
-        self.editIntensitySizer=wxGridBagSizer()
+        self.editIntensityPanel=wx.Panel(self.settingsNotebook,-1)
+        self.editIntensitySizer=wx.GridBagSizer()
         
         self.iTFEditor=IntensityTransferEditor(self.editIntensityPanel)
         self.editIntensitySizer.Add(self.iTFEditor,(0,0),span=(1,2))        
 
-        self.box=wxBoxSizer(wxHORIZONTAL)
+        self.box=wx.BoxSizer(wx.HORIZONTAL)
         self.editIntensitySizer.Add(self.box,(3,0))
         
-        self.restoreBtn=wxButton(self.editIntensityPanel,-1,"Reset defaults")
+        self.restoreBtn=wx.Button(self.editIntensityPanel,-1,"Reset defaults")
         self.restoreBtn.Bind(EVT_BUTTON,self.iTFEditor.restoreDefaults)
         self.box.Add(self.restoreBtn)
         
-        self.resetBtn=wxButton(self.editIntensityPanel,-1,"Reset all timepoints")
+        self.resetBtn=wx.Button(self.editIntensityPanel,-1,"Reset all timepoints")
         self.resetBtn.Bind(EVT_BUTTON,self.resetTransferFunctions)
         self.box.Add(self.resetBtn)
 
-        self.copyiTFBtn=wxButton(self.editIntensityPanel,-1,"Copy to all timepoints")
+        self.copyiTFBtn=wx.Button(self.editIntensityPanel,-1,"Copy to all timepoints")
         #self.copyiTFBtn.Bind(EVT_BUTTON,self.copyTransferFunctionToAll)
         self.box.Add(self.copyiTFBtn)
 
-        self.interpolateBtn=wxButton(self.editIntensityPanel,-1,"Interpolate")
+        self.interpolateBtn=wx.Button(self.editIntensityPanel,-1,"Interpolate")
         self.interpolateBtn.Bind(EVT_BUTTON,self.startInterpolation)
         self.box.Add(self.interpolateBtn)
         
@@ -143,27 +143,27 @@ class SingleUnitProcessingWindow(TaskWindow.TaskWindow):
         self.editIntensityPanel.SetAutoLayout(1)
         self.settingsNotebook.InsertPage(1,self.editIntensityPanel,"Intensity Transfer Function")
         
-        self.interpolationPanel=wxPanel(self.editIntensityPanel)
-        self.interpolationSizer=wxGridBagSizer()
+        self.interpolationPanel=wx.Panel(self.editIntensityPanel)
+        self.interpolationSizer=wx.GridBagSizer()
         
         #self.infoSizer.Add(self.interpolationSizer,(0,0))
 
-        lbl=wxStaticText(self.interpolationPanel,-1,"Interpolate intensities:")
+        lbl=wx.StaticText(self.interpolationPanel,-1,"Interpolate intensities:")
         self.interpolationSizer.Add(lbl,(1,0))
 
-        lbl=wxStaticText(self.interpolationPanel,-1,"from timepoint")
+        lbl=wx.StaticText(self.interpolationPanel,-1,"from timepoint")
         self.lbls.append(lbl)
         self.numOfPoints=5
         for i in range(self.numOfPoints-2):
-            lbl=wxStaticText(self.interpolationPanel,-1,"thru")
+            lbl=wx.StaticText(self.interpolationPanel,-1,"thru")
             self.lbls.append(lbl)
-        lbl=wxStaticText(self.interpolationPanel,-1,"to timepoint")
+        lbl=wx.StaticText(self.interpolationPanel,-1,"to timepoint")
         self.lbls.append(lbl)
 
         for i in range(self.numOfPoints):
-            btn=wxButton(self.interpolationPanel,-1,"goto")
+            btn=wx.Button(self.interpolationPanel,-1,"goto")
             btn.Bind(EVT_BUTTON,lambda event,x=i: self.gotoInterpolationTimePoint(x))
-            entry=wxTextCtrl(self.interpolationPanel,size=(50,-1))
+            entry=wx.TextCtrl(self.interpolationPanel,size=(50,-1))
             self.btns.append(btn)
             self.entries.append(entry)
 
@@ -253,24 +253,24 @@ class SingleUnitProcessingWindow(TaskWindow.TaskWindow):
 
         #controls for filtering
 
-        self.filtersPanel=wxPanel(self.settingsNotebook,-1)
-        self.filtersSizer=wxGridBagSizer()
+        self.filtersPanel=wx.Panel(self.settingsNotebook,-1)
+        self.filtersSizer=wx.GridBagSizer()
         
         #Median Filtering
-        self.doMedianCheckbutton = wxCheckBox(self.filtersPanel,
+        self.doMedianCheckbutton = wx.CheckBox(self.filtersPanel,
         -1,"Median Filtering")
         self.doMedianCheckbutton.Bind(EVT_CHECKBOX,self.doFilterCheckCallback)
 
-        self.neighborhoodX=wxTextCtrl(self.filtersPanel,-1,"1")
-        self.neighborhoodY=wxTextCtrl(self.filtersPanel,-1,"1")
-        self.neighborhoodZ=wxTextCtrl(self.filtersPanel,-1,"1")
+        self.neighborhoodX=wx.TextCtrl(self.filtersPanel,-1,"1")
+        self.neighborhoodY=wx.TextCtrl(self.filtersPanel,-1,"1")
+        self.neighborhoodZ=wx.TextCtrl(self.filtersPanel,-1,"1")
 
 
-        self.neighborhoodLbl=wxStaticText(self.filtersPanel,-1,
+        self.neighborhoodLbl=wx.StaticText(self.filtersPanel,-1,
         "Neighborhood:")
-        self.neighborhoodXLbl=wxStaticText(self.filtersPanel,-1,"X:")
-        self.neighborhoodYLbl=wxStaticText(self.filtersPanel,-1,"Y:")
-        self.neighborhoodZLbl=wxStaticText(self.filtersPanel,-1,"Z:")
+        self.neighborhoodXLbl=wx.StaticText(self.filtersPanel,-1,"X:")
+        self.neighborhoodYLbl=wx.StaticText(self.filtersPanel,-1,"Y:")
+        self.neighborhoodZLbl=wx.StaticText(self.filtersPanel,-1,"Z:")
 
         
         self.filtersSizer.Add(self.doMedianCheckbutton,(1,0))
@@ -285,19 +285,19 @@ class SingleUnitProcessingWindow(TaskWindow.TaskWindow):
 
         #Solitary Filtering
 
-        self.doSolitaryCheckbutton = wxCheckBox(self.filtersPanel,
+        self.doSolitaryCheckbutton = wx.CheckBox(self.filtersPanel,
         -1,"Solitary Filtering")
         self.doSolitaryCheckbutton.Bind(EVT_CHECKBOX,self.doFilterCheckCallback)
 
-        self.solitaryX=wxTextCtrl(self.filtersPanel,-1,"1")
-        self.solitaryY=wxTextCtrl(self.filtersPanel,-1,"1")
-        self.solitaryThreshold=wxTextCtrl(self.filtersPanel,
+        self.solitaryX=wx.TextCtrl(self.filtersPanel,-1,"1")
+        self.solitaryY=wx.TextCtrl(self.filtersPanel,-1,"1")
+        self.solitaryThreshold=wx.TextCtrl(self.filtersPanel,
         -1,"0")
 
-        self.solitaryLbl=wxStaticText(self.filtersPanel,-1,"Thresholds:")
-        self.solitaryXLbl=wxStaticText(self.filtersPanel,-1,"X:")
-        self.solitaryYLbl=wxStaticText(self.filtersPanel,-1,"Y:")
-        self.solitaryThresholdLbl=wxStaticText(self.filtersPanel,-1,
+        self.solitaryLbl=wx.StaticText(self.filtersPanel,-1,"Thresholds:")
+        self.solitaryXLbl=wx.StaticText(self.filtersPanel,-1,"X:")
+        self.solitaryYLbl=wx.StaticText(self.filtersPanel,-1,"Y:")
+        self.solitaryThresholdLbl=wx.StaticText(self.filtersPanel,-1,
         "Processing threshold:")
 
         self.filtersSizer.Add(self.doSolitaryCheckbutton,(6,0))
@@ -401,7 +401,7 @@ class SingleUnitProcessingWindow(TaskWindow.TaskWindow):
 
             #self.colorBtn.SetBackgroundColour((r,g,b))
 #        if self.colorChooser:
-#            self.colorChooser.SetValue(wxColour(r,g,b))
+#            self.colorChooser.SetValue(wx.Colour(r,g,b))
 
 
     def updateSettings(self):
@@ -520,7 +520,7 @@ class SingleUnitProcessingWindow(TaskWindow.TaskWindow):
         #self.colorBtn.SetBackgroundColour(self.dataUnit.getColor())
         r,g,b=self.dataUnit.getColor()
         if self.colorChooser:
-            self.colorChooser.SetValue(wxColour(r,g,b))
+            self.colorChooser.SetValue(wx.Colour(r,g,b))
         self.configSetting=self.dataUnit
 
         # We register a callback to be notified when the timepoint changes

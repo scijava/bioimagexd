@@ -35,7 +35,7 @@ from mayavi.Base import Objects, ModuleManager, DataVizManager
 from mayavi.Sources import VtkDataReader, PLOT3DReader, VRMLImporter, VtkXMLDataReader
 import vtkpython
 
-from vtk.wx.wxVTKRenderWindowInteractor import *
+from vtk.wx.wxVTKRenderWindowInteractor import wxVTKRenderWindowInteractor
 
 import PreviewFrame
 import SplineEditor

@@ -33,7 +33,7 @@ import math
 import os.path
 import Logging
 
-import wxPython.wx
+import wx
 
 rendint=None
 
@@ -108,7 +108,7 @@ class RenderingInterface:
         if self.mayavi:
             self.mayavi.root.update()
         if not self.stop:
-            wxPython.wx.wxFutureCall(100, self.runTkinterGUI)
+            wx.wxFutureCall(100, self.runTkinterGUI)
 
 
     def setDataUnit(self,dataUnit):

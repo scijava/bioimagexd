@@ -25,7 +25,7 @@ __author__ = "BioImageXD Project"
 __version__ = "$Revision: 1.28 $"
 __date__ = "$Date: 2005/01/13 14:52:39 $"
 
-from wxPython.wx import *
+import wx
 import wx.lib.colourchooser as cc
 
 class ColorSelectionDialog(cc.PyColourChooser):
@@ -49,7 +49,7 @@ class ColorSelectionDialog(cc.PyColourChooser):
             coeff=255.0/mval
             ncolor=[int(x*coeff) for x in colorlst]
             print "new color,",ncolor
-            col=wxColour(ncolor[0],ncolor[1],ncolor[2])
+            col=wx.Colour(ncolor[0],ncolor[1],ncolor[2])
             return self.SetValue(col)
         else:
             if self.callback:

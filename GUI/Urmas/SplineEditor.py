@@ -44,10 +44,10 @@ from vtk.util.colors import tomato, banana
 
 import wx
 import wx.lib.scrolledpanel as scrolled
-from vtk.wx.wxVTKRenderWindowInteractor import *
-from vtk.wx.wxVTKRenderWindow import *
+from vtk.wx.wxVTKRenderWindowInteractor import wxVTKRenderWindowInteractor
 
 import PreviewFrame
+
 
 math = vtk.vtkMath()
 

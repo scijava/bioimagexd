@@ -21,24 +21,25 @@ __version__ = "$Revision: 1.71 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 import math
-from wxPython.wx import *
+import wx
 
-def showmessage(parent,message,title,flags=wxOK):
-    dlg=wxMessageDialog(parent,message,title,flags)
+
+def showmessage(parent,message,title,flags=wx.OK):
+    dlg=wx.MessageDialog(parent,message,title,flags)
     dlg.ShowModal()
     dlg.Destroy()
 
-def showwarning(parent,message,title,flags=wxOK|wxICON_WARNING):
+def showwarning(parent,message,title,flags=wx.OK|wx.ICON_WARNING):
     showmessage(parent,message,title,flags)
     
-def showerror(parent,message,title,flags=wxOK|wxICON_ERROR):
+def showerror(parent,message,title,flags=wx.OK|wx.ICON_ERROR):
     showmessage(parent,message,title,flags)
 
     
 def askcolor(**kws):
     dlg = wx.ColourDialog(self)
     dlg.GetColourData().SetChooseFull(True)
-    if dlg.ShowModal()==wxID_OK:
+    if dlg.ShowModal()==wx.ID_OK:
         gcolor=dlg.GetColourData()
     else:
         return None
@@ -49,13 +50,13 @@ def askcolor(**kws):
         coeff=255.0/mval
         ncolor=[int(x*coeff) for x in color]
         print "ncolor=",ncolor
-        dlg=wxMessageDialog(self,
+        dlg=wx.MessageDialog(self,
             "The color you selected: %d,%d,%d is incorrect."
             "At least one of the R, G or B components\n"
             "of the color must be 255. Therefore, "
             "I have modified the color a bit. "
             "It is now %d,%d,%d. Have a nice day."%(color[0],
-            color[1],color[2],ncolor[0],ncolor[1],ncolor[2]),"Selected color is incorrect",wxOK|wxICON_WARNING)
+            color[1],color[2],ncolor[0],ncolor[1],ncolor[2]),"Selected color is incorrect",wx.OK|wx.ICON_WARNING)
         dlg.ShowModal()
         dlg.Destroy()
         gcolor=ncolor
@@ -64,9 +65,9 @@ def askcolor(**kws):
 
 def askDirectory(parent,title,initialDir="."):
     filepath=""
-    dlg = wxDirDialog(parent, title,initialDir,
-                      style=wxDD_DEFAULT_STYLE|wxDD_NEW_DIR_BUTTON)
-    if dlg.ShowModal() == wxID_OK:
+    dlg = wx.DirDialog(parent, title,initialDir,
+                      style=wx.DD_DEFAULT_STYLE|wx.DD_NEW_DIR_BUTTON)
+    if dlg.ShowModal() == wx.ID_OK:
         filepath=dlg.GetPath()
     dlg.Destroy()
     return filepath
@@ -77,9 +78,9 @@ def askSaveAsFileName(parent,operation,name):
     
     wc="%s Dataunit (*.du)|*.du"%operation
     filename=""
-    dlg=wxFileDialog(parent,"Write %s Data Unit to file"%operation,defaultFile=initFile,wildcard=wc,style=wxSAVE)
+    dlg=wx.FileDialog(parent,"Write %s Data Unit to file"%operation,defaultFile=initFile,wildcard=wc,style=wx.SAVE)
     filename=None
-    if dlg.ShowModal()==wxID_OK:
+    if dlg.ShowModal()==wx.ID_OK:
         filename=dlg.GetPath()
     dlg.Destroy()
     if filename:

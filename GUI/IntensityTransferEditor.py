@@ -30,7 +30,6 @@ __author__ = "Selli Project <http://sovellusprojektit.it.jyu.fi/selli/>"
 __version__ = "$Revision: 1.36 $"
 __date__ = "$Date: 2005/01/13 14:52:39 $"
 
-from wxPython.wx import *
 import wx
 import os.path
 import sys
@@ -46,7 +45,7 @@ if __name__=='__main__':
 import vtk    
     
 
-class PaintPanel(wxPanel):
+class PaintPanel(wx.Panel):
     def __init__(self,parent):
         self.maxx=255
         self.maxy=255
@@ -55,10 +54,10 @@ class PaintPanel(wxPanel):
         self.yoffset=22
         w=self.xoffset+self.maxx/self.scale
         h=self.yoffset+self.maxy/self.scale
-        wxPanel.__init__(self,parent,-1,size=(w+15,h+15))
-        self.buffer=wxEmptyBitmap(w+15,h+15)
-        dc = wxBufferedDC(None,self.buffer)
-        dc.SetBackground(wxBrush("BLACK"))
+        wx.Panel.__init__(self,parent,-1,size=(w+15,h+15))
+        self.buffer=wx.EmptyBitmap(w+15,h+15)
+        dc = wx.BufferedDC(None,self.buffer)
+        dc.SetBackground(wx.Brush("BLACK"))
         dc.Clear()
         self.dc=dc
         self.Bind(wx.EVT_PAINT,self.onPaint)
@@ -77,7 +76,7 @@ class PaintPanel(wxPanel):
         if brush:
             self.dc.SetBrush(brush)
         
-        self.dc.SetPen(wxPen(color))
+        self.dc.SetPen(wx.Pen(color))
         # (x1,y1) and (x2,y2) are in coordinates where
         # origo is the lower left corner
 
@@ -105,8 +104,8 @@ class PaintPanel(wxPanel):
         Creator: KP
         Description: Draws an oval at point (x,y) with given radius
         """
-        self.dc.SetBrush(wxBrush(color,wxSOLID))
-        self.dc.SetPen(wxPen(color))        
+        self.dc.SetBrush(wx.Brush(color,wx.SOLID))
+        self.dc.SetPen(wx.Pen(color))        
         y=self.maxy-y+self.yoffset
         ox=x/self.scale
         ox+=self.xoffset
@@ -120,7 +119,7 @@ class PaintPanel(wxPanel):
         Description: Draws a text at point (x,y) using the given font
         """
         self.dc.SetTextForeground(color)
-        self.dc.SetFont(wx.Font(8,wxSWISS,wxNORMAL,wxNORMAL))
+        self.dc.SetFont(wx.Font(8,wx.SWISS,wx.NORMAL,wx.NORMAL))
         
         useoffset=1
         if kws.has_key("use_offset"):
@@ -154,8 +153,8 @@ class PaintPanel(wxPanel):
 
         for i in range(32,255,32):
             # Color gray and stipple with gray50
-            self.createLine(i,0,i,255,'GREY',wxLIGHT_GREY_BRUSH)
-            self.createLine(0,i,255,i,'GREY',wxLIGHT_GREY_BRUSH)
+            self.createLine(i,0,i,255,'GREY',wx.LIGHT_GREY_BRUSH)
+            self.createLine(0,i,255,i,'GREY',wx.LIGHT_GREY_BRUSH)
 
         for x1 in range(0,256):
             # y1=TF[x1]
@@ -187,7 +186,7 @@ class PaintPanel(wxPanel):
         
         
 
-class IntensityTransferEditor(wxPanel):
+class IntensityTransferEditor(wx.Panel):
     """
     Class: TransferWidget
     Created: 30.10.2004
@@ -202,7 +201,7 @@ class IntensityTransferEditor(wxPanel):
         Description: Initialization
         """
         self.parent=parent
-        wxPanel.__init__(self,parent,-1)
+        wx.Panel.__init__(self,parent,-1)
         self.updateCallback=0
         if kws.has_key("update"):
             print "Got update callback"
@@ -210,87 +209,87 @@ class IntensityTransferEditor(wxPanel):
 
         self.iTF=vtk.vtkIntensityTransferFunction()
         
-        self.mainsizer=wxBoxSizer(wxVERTICAL)
+        self.mainsizer=wx.BoxSizer(wx.VERTICAL)
 
-        self.canvasBox=wxBoxSizer(wxHORIZONTAL)
-        self.contrastBox=wxBoxSizer(wxVERTICAL)
-        self.gammaBox=wxBoxSizer(wxHORIZONTAL)
-        self.brightnessBox=wxBoxSizer(wxHORIZONTAL)
+        self.canvasBox=wx.BoxSizer(wx.HORIZONTAL)
+        self.contrastBox=wx.BoxSizer(wx.VERTICAL)
+        self.gammaBox=wx.BoxSizer(wx.HORIZONTAL)
+        self.brightnessBox=wx.BoxSizer(wx.HORIZONTAL)
 
         print "Creating sliders..."
-        self.contrastLbl=wxStaticText(self,wxNewId(),"%.3f"%1)
-        self.contrastSlider=wxSlider(self,value=0,minValue=-255,maxValue=255,size=(-1,290),
-        style=wxSL_VERTICAL|wxSL_AUTOTICKS)#|wxSL_LABELS)
+        self.contrastLbl=wx.StaticText(self,wx.NewId(),"%.3f"%1)
+        self.contrastSlider=wx.Slider(self,value=0,minValue=-255,maxValue=255,size=(-1,290),
+        style=wx.SL_VERTICAL|wx.SL_AUTOTICKS)#|wx.SL_LABELS)
         self.Bind(wx.EVT_SCROLL,self.setContrast,self.contrastSlider)
 
         print "Creating paint panel"
         self.canvas=PaintPanel(self)
-        self.canvasBox.Add(self.canvas,1,wxALL|wxEXPAND,10)
+        self.canvasBox.Add(self.canvas,1,wx.ALL|wx.EXPAND,10)
         self.canvasBox.Add(self.contrastBox)
         self.contrastBox.Add(self.contrastLbl)
-        self.contrastBox.Add(self.contrastSlider,1,wxTOP|wxBOTTOM,10)
+        self.contrastBox.Add(self.contrastSlider,1,wx.TOP|wx.BOTTOM,10)
         print "Done"
-        ID_CONTRASTEDIT=wxNewId()
-#        self.contrastEdit=wxTextCtrl(self,ID_CONTRASTEDIT)
+        ID_CONTRASTEDIT=wx.NewId()
+#        self.contrastEdit=wx.TextCtrl(self,ID_CONTRASTEDIT)
 #        self.contrastBox.Add(self.contrastEdit)
 
-        ID_BRIGHTNESSEDIT=wxNewId()
-        self.brightnessEdit=wxTextCtrl(self,ID_BRIGHTNESSEDIT,size=(50,-1),style=wxTE_PROCESS_ENTER)
-        ID_GAMMAEDIT=wxNewId()
-        self.gammaEdit=wxTextCtrl(self,ID_GAMMAEDIT,size=(50,-1),style=wxTE_PROCESS_ENTER)
+        ID_BRIGHTNESSEDIT=wx.NewId()
+        self.brightnessEdit=wx.TextCtrl(self,ID_BRIGHTNESSEDIT,size=(50,-1),style=wx.TE_PROCESS_ENTER)
+        ID_GAMMAEDIT=wx.NewId()
+        self.gammaEdit=wx.TextCtrl(self,ID_GAMMAEDIT,size=(50,-1),style=wx.TE_PROCESS_ENTER)
 
-        self.brightnessSlider=wxSlider(self,value=0,minValue=-255,maxValue=255,size=(260,-1),
-        style=wxSL_HORIZONTAL|wxSL_AUTOTICKS|wxSL_LABELS)
+        self.brightnessSlider=wx.Slider(self,value=0,minValue=-255,maxValue=255,size=(260,-1),
+        style=wx.SL_HORIZONTAL|wx.SL_AUTOTICKS|wx.SL_LABELS)
         self.Bind(wx.EVT_SCROLL,self.setBrightness,self.brightnessSlider)
 
-        self.gammaSlider=wxSlider(self,value=0,minValue=-100,maxValue=100,size=(260,-1),
-        style=wxSL_HORIZONTAL|wxSL_AUTOTICKS)#|wxSL_LABELS)
+        self.gammaSlider=wx.Slider(self,value=0,minValue=-100,maxValue=100,size=(260,-1),
+        style=wx.SL_HORIZONTAL|wx.SL_AUTOTICKS)#|wx.SL_LABELS)
         self.Bind(wx.EVT_SCROLL,self.setGamma,self.gammaSlider)
 
     
         self.gammaBox.Add(self.gammaSlider)
-        self.gammaBox.Add(self.gammaEdit,0,wxALIGN_CENTER_VERTICAL|wxALL)
+        self.gammaBox.Add(self.gammaEdit,0,wx.ALIGN_CENTER_VERTICAL|wx.ALL)
 
         self.brightnessBox.Add(self.brightnessSlider)
-        self.brightnessBox.Add(self.brightnessEdit,0,wxALIGN_CENTER_VERTICAL|wxALL)
+        self.brightnessBox.Add(self.brightnessEdit,0,wx.ALIGN_CENTER_VERTICAL|wx.ALL)
     
-#        ID_RESTORE_DEFAULTS=wxNewId()
-#        self.defaultBtn=wxButton(self,ID_RESTORE_DEFAULTS,"Restore Defaults")
+#        ID_RESTORE_DEFAULTS=wx.NewId()
+#        self.defaultBtn=wx.Button(self,ID_RESTORE_DEFAULTS,"Restore Defaults")
 #        EVT_BUTTON(self,ID_RESTORE_DEFAULTS,self.restoreDefaults)
 
-        self.minValueLbl=wxStaticText(self,wxNewId(),"Minimum value:")
-        self.maxValueLbl=wxStaticText(self,wxNewId(),"Maximum value:")
+        self.minValueLbl=wx.StaticText(self,wx.NewId(),"Minimum value:")
+        self.maxValueLbl=wx.StaticText(self,wx.NewId(),"Maximum value:")
 
-        ID_MINVALUE=wxNewId()
-        ID_MAXVALUE=wxNewId()
-        self.minValue=wxTextCtrl(self,ID_MINVALUE,style=wxTE_PROCESS_ENTER)
-        self.maxValue=wxTextCtrl(self,ID_MAXVALUE,style=wxTE_PROCESS_ENTER)
+        ID_MINVALUE=wx.NewId()
+        ID_MAXVALUE=wx.NewId()
+        self.minValue=wx.TextCtrl(self,ID_MINVALUE,style=wx.TE_PROCESS_ENTER)
+        self.maxValue=wx.TextCtrl(self,ID_MAXVALUE,style=wx.TE_PROCESS_ENTER)
         
-        fieldsizer=wxGridBagSizer(0,5)
+        fieldsizer=wx.GridBagSizer(0,5)
         
 
-        valuesizer=wxBoxSizer(wxHORIZONTAL)
+        valuesizer=wx.BoxSizer(wx.HORIZONTAL)
         fieldsizer.Add(self.minValueLbl,(0,0))
         fieldsizer.Add(self.minValue,(0,1))
         fieldsizer.Add(self.maxValueLbl,(0,2))
         fieldsizer.Add(self.maxValue,(0,3))
         
-        self.minthresholdLbl=wxStaticText(self,wxNewId(),"Minimum threshold:")
-        self.maxthresholdLbl=wxStaticText(self,wxNewId(),"Maximum threshold:")
+        self.minthresholdLbl=wx.StaticText(self,wx.NewId(),"Minimum threshold:")
+        self.maxthresholdLbl=wx.StaticText(self,wx.NewId(),"Maximum threshold:")
 
-        ID_MINTHRESHOLD=wxNewId()
-        ID_MAXTHRESHOLD=wxNewId()
-        self.minthreshold=wxTextCtrl(self,ID_MINTHRESHOLD,style=wxTE_PROCESS_ENTER)
-        self.maxthreshold=wxTextCtrl(self,ID_MAXTHRESHOLD,style=wxTE_PROCESS_ENTER)
+        ID_MINTHRESHOLD=wx.NewId()
+        ID_MAXTHRESHOLD=wx.NewId()
+        self.minthreshold=wx.TextCtrl(self,ID_MINTHRESHOLD,style=wx.TE_PROCESS_ENTER)
+        self.maxthreshold=wx.TextCtrl(self,ID_MAXTHRESHOLD,style=wx.TE_PROCESS_ENTER)
         
         fieldsizer.Add(self.minthresholdLbl,(1,0))
         fieldsizer.Add(self.minthreshold,(1,1))
         fieldsizer.Add(self.maxthresholdLbl,(1,2))
         fieldsizer.Add(self.maxthreshold,(1,3))
 
-        ID_DONTPROCESS=wxNewId()
-        self.minProcessLbl=wxStaticText(self,wxNewId(),"Processing threshold:")
-        self.minProcess=wxTextCtrl(self,ID_DONTPROCESS,style=wxTE_PROCESS_ENTER)
+        ID_DONTPROCESS=wx.NewId()
+        self.minProcessLbl=wx.StaticText(self,wx.NewId(),"Processing threshold:")
+        self.minProcess=wx.TextCtrl(self,ID_DONTPROCESS,style=wx.TE_PROCESS_ENTER)
 
         fieldsizer.Add(self.minProcessLbl,(2,0))
         fieldsizer.Add(self.minProcess,(2,1))
@@ -326,8 +325,8 @@ class IntensityTransferEditor(wxPanel):
         print "Adding sizers..."
         self.mainsizer.Add(self.canvasBox)
 
-        self.gammaLbl=wxStaticText(self,-1,"Gamma")
-        self.brightnessLbl=wxStaticText(self,-1,"Brightness")
+        self.gammaLbl=wx.StaticText(self,-1,"Gamma")
+        self.brightnessLbl=wx.StaticText(self,-1,"Brightness")
 
         self.mainsizer.Add(self.brightnessLbl)
         self.mainsizer.Add(self.brightnessBox)
@@ -660,9 +659,9 @@ class IntensityTransferEditor(wxPanel):
 
 
 if __name__=='__main__':
-    class MyApp(wxApp):
+    class MyApp(wx.App):
         def OnInit(self):
-            frame=wxFrame(None,size=(640,480))
+            frame=wx.Frame(None,size=(640,480))
             self.panel=IntensityTransferEditor(frame)
             self.SetTopWindow(frame)
             frame.Show(True)

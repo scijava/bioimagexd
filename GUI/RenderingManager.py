@@ -33,7 +33,6 @@ __author__ = "Selli Project <http://sovellusprojektit.it.jyu.fi/selli/>"
 __version__ = "$Revision: 1.21 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
-from wxPython.wx import *
 import wx
 import os.path
 
@@ -92,9 +91,9 @@ class RenderingManager(TimepointSelection):
         """
         TimepointSelection.createButtonBox(self)
 
-        self.createSettingsBtn=wxButton(self,-1,"Create MayaVi settings")
+        self.createSettingsBtn=wx.Button(self,-1,"Create MayaVi settings")
         self.createSettingsBtn.Bind(EVT_BUTTON,self.createVisualization)
-        self.buttonsSizer1.Add(self.createSettingsBtn,flag=wxALIGN_LEFT)
+        self.buttonsSizer1.Add(self.createSettingsBtn,flag=wx.ALIGN_LEFT)
         self.actionBtn.SetLabel("Render")
         self.actionBtn.Bind(EVT_BUTTON,self.doRendering)
         
@@ -106,28 +105,28 @@ class RenderingManager(TimepointSelection):
         Creator: KP
         Description: A callback that is used to close this window
         """             
-        self.configSizer=wxGridBagSizer()
-        self.rendir=wxTextCtrl(self,size=(350,-1))
-        self.rendirLbl=wxStaticText(self,
+        self.configSizer=wx.GridBagSizer()
+        self.rendir=wx.TextCtrl(self,size=(350,-1))
+        self.rendirLbl=wx.StaticText(self,
         -1,"Directory for rendered frames:")
         
-        self.dirBtn=wxButton(self,-1,"...")
+        self.dirBtn=wx.Button(self,-1,"...")
         self.dirBtn.Bind(EVT_BUTTON,self.selectDirectory)
 
         self.configSizer.Add(self.rendirLbl,(1,0))
         self.configSizer.Add(self.rendir,(2,0))
         self.configSizer.Add(self.dirBtn,(2,1))
         
-        self.mvfile=wxTextCtrl(self,size=(350,-1))
-        self.mvfileLbl=wxStaticText(self,-1,"MayaVi Settings file:")
-        self.mvfileBtn=wxButton(self,-1,"...")
+        self.mvfile=wx.TextCtrl(self,size=(350,-1))
+        self.mvfileLbl=wx.StaticText(self,-1,"MayaVi Settings file:")
+        self.mvfileBtn=wx.Button(self,-1,"...")
         self.mvfileBtn.Bind(EVT_BUTTON,self.loadVisualization)
         
         self.configSizer.Add(self.mvfileLbl,(3,0))
         self.configSizer.Add(self.mvfile,(4,0))
         self.configSizer.Add(self.mvfileBtn,(4,1))
         
-        self.mainsizer.Add(self.configSizer,(1,0),flag=wxEXPAND|wxALL)
+        self.mainsizer.Add(self.configSizer,(1,0),flag=wx.EXPAND|wx.ALL)
         print "Added some stuff"
         
 
@@ -158,9 +157,9 @@ class RenderingManager(TimepointSelection):
         initFile="settings.mv"
         wc="Mayavi Settings File (*.mv)|*.du"
         filename=""
-        dlg=wxFileDialog(self,"Create Mayavi Settings file",defaultFile=initFile,wildcard=wc,style=wxSAVE)
+        dlg=wx.FileDialog(self,"Create Mayavi Settings file",defaultFile=initFile,wildcard=wc,style=wx.SAVE)
         filename=None
-        if dlg.ShowModal()==wxID_OK:
+        if dlg.ShowModal()==wx.ID_OK:
             filename=dlg.GetPath()
         dlg.Destroy()
         if filename:
@@ -187,8 +186,8 @@ class RenderingManager(TimepointSelection):
         initFile="settings.mv"
         wc="Mayavi Settings File (*.mv)|*.du"
         filename=""
-        dlg=wxFileDialog(self,"Create Mayavi Settings file",defaultFile=initFile,wildcard=wc,style=wxOPEN)
-        if dlg.ShowModal()==wxID_OK:
+        dlg=wx.FileDialog(self,"Create Mayavi Settings file",defaultFile=initFile,wildcard=wc,style=wx.OPEN)
+        if dlg.ShowModal()==wx.ID_OK:
             filename=dlg.GetPath()
         dlg.Destroy()
 

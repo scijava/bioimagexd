@@ -45,8 +45,6 @@ import os.path
 import RenderingInterface
 from PreviewFrame import *
 
-
-from wxPython.wx import *
 import wx
 
 from Logging import *

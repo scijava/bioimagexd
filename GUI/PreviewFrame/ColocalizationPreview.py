@@ -44,7 +44,6 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 import os.path
 import RenderingInterface
 from PreviewFrame import *
-from wxPython.wx import *
 import wx
 
 from Logging import *
@@ -74,7 +73,7 @@ class ColocalizationPreview(PreviewFrame):
         self.mapToColors.SetOutputFormatToRGB()
         self.mapper.SetColorWindow(255.0);
         self.mapper.SetColorLevel(127.5);
-        self.colocpercentLbl=wxStaticText(self,-1,"0 of 0 (0%) possible voxels colocalizing")
+        self.colocpercentLbl=wx.StaticText(self,-1,"0 of 0 (0%) possible voxels colocalizing")
         self.sizer.Add(self.colocpercentLbl,(3,0))
         self.Layout()
         

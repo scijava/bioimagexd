@@ -22,7 +22,7 @@ __author__ = "Selli 2 Project <http://sovellusprojektit.it.jyu.fi/selli/>"
 __version__ = "$Revision: 1.28 $"
 __date__ = "$Date: 2005/01/13 14:52:39 $"
 
-from wxPython.wx import *
+import wx
 from TimepointSelection import *
 import time
 
@@ -72,8 +72,8 @@ class ProcessingManager(TimepointSelection):
                 total   There are a total of this many timepoints to be processed
         """
         if not self.progressDialog:
-            self.progressDialog=wxProgressDialog("Processing data","Timepoint   (  /  ) (0%) ETA:   mins   seconds",
-            maximum=total,parent=self,style=wxPD_CAN_ABORT|wxPD_APP_MODAL)
+            self.progressDialog=wx.ProgressDialog("Processing data","Timepoint   (  /  ) (0%) ETA:   mins   seconds",
+            maximum=total,parent=self,style=wx.PD_CAN_ABORT|wx.PD_APP_MODAL)
             
         t2=time.time()
         diff=t2-self.t1
@@ -93,13 +93,13 @@ class ProcessingManager(TimepointSelection):
         Creator: KP
         Description: A method that tells the dataunit to process the selected timepoints
         """    
-        self.status=wxID_CANCEL
+        self.status=wx.ID_CANCEL
                 
         filename=Dialogs.askSaveAsFileName(self,self.operationName,self.dataUnit.getName())
 
         if not filename:
             return
-        self.status=wxID_OK
+        self.status=wx.ID_OK
         # Set file path for returning to the mainwindow
         self.filePath=filename
         self.t1=time.time()

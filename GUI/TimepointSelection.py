@@ -23,21 +23,21 @@ __author__ = "Selli 2 Project <http://sovellusprojektit.it.jyu.fi/selli/>"
 __version__ = "$Revision: 1.21 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
-#from wx.Python.wx. import *
+
 import wx
 import os.path
 
-from PreviewFrame import *
 import sys
 import RenderingInterface
 import Logging
 import Dialogs
 
+
 import wx.lib.scrolledpanel as scrolled
 import wx.lib.buttons as buttons
 import vtk
 
-
+print wx,wx.__file__
 
 class TimepointSelectionPanel(wx.Panel):
     """

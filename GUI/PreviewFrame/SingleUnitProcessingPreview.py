@@ -44,7 +44,6 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 import os.path
 import RenderingInterface
 
-from wxPython.wx import *
 from PreviewFrame import *
 import wx
 

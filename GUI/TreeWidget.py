@@ -24,14 +24,13 @@ __author__ = "Selli Project <http://sovellusprojektit.it.jyu.fi/selli/>"
 __version__ = "$Revision: 1.14 $"
 __date__ = "$Date: 2005/01/13 14:52:39 $"
 
-from wxPython.wx import *
 import wx
 
-class TreeWidget(wxPanel):
+class TreeWidget(wx.Panel):
     def __init__(self,parent,callback=None):
-        wxPanel.__init__(self,parent,-1)
+        wx.Panel.__init__(self,parent,-1)
         self.Bind(wx.EVT_SIZE,self.onSize)
-        self.treeId=wxNewId()
+        self.treeId=wx.NewId()
         self.tree = LSMTree(self,self.treeId,callback)
     
         self.items={}
@@ -47,24 +46,24 @@ class TreeWidget(wxPanel):
     
         self.root=self.tree.AddRoot("Data Sets")
         self.tree.SetPyData(self.root,None)
-        self.tree.SetItemImage(self.root,fldridx,which=wxTreeItemIcon_Normal)
-        self.tree.SetItemImage(self.root,fldropenidx,which=wxTreeItemIcon_Expanded)
+        self.tree.SetItemImage(self.root,fldridx,which=wx.TreeItemIcon_Normal)
+        self.tree.SetItemImage(self.root,fldropenidx,which=wx.TreeItemIcon_Expanded)
 
        
         self.lsmfiles=self.tree.AppendItem(self.root,"LSM Files")
         self.tree.SetPyData(self.lsmfiles,None)
-        self.tree.SetItemImage(self.lsmfiles,fldridx,which=wxTreeItemIcon_Normal)
-        self.tree.SetItemImage(self.lsmfiles,fldropenidx,which=wxTreeItemIcon_Expanded)
+        self.tree.SetItemImage(self.lsmfiles,fldridx,which=wx.TreeItemIcon_Normal)
+        self.tree.SetItemImage(self.lsmfiles,fldropenidx,which=wx.TreeItemIcon_Expanded)
 
         self.vtifiles=self.tree.AppendItem(self.root,"Single Data Sets")
         self.tree.SetPyData(self.vtifiles,None)        
-        self.tree.SetItemImage(self.vtifiles,fldridx,which=wxTreeItemIcon_Normal)
-        self.tree.SetItemImage(self.vtifiles,fldropenidx,which=wxTreeItemIcon_Expanded)
+        self.tree.SetItemImage(self.vtifiles,fldridx,which=wx.TreeItemIcon_Normal)
+        self.tree.SetItemImage(self.vtifiles,fldropenidx,which=wx.TreeItemIcon_Expanded)
         
         self.dufiles=self.tree.AppendItem(self.root,"Dataset series")
         self.tree.SetPyData(self.dufiles,None)        
-        self.tree.SetItemImage(self.dufiles,fldridx,which=wxTreeItemIcon_Normal)
-        self.tree.SetItemImage(self.dufiles,fldropenidx,which=wxTreeItemIcon_Expanded)
+        self.tree.SetItemImage(self.dufiles,fldridx,which=wx.TreeItemIcon_Normal)
+        self.tree.SetItemImage(self.dufiles,fldropenidx,which=wx.TreeItemIcon_Expanded)
 
         self.tree.Expand(self.root)
         
@@ -88,7 +87,7 @@ class TreeWidget(wxPanel):
             item=self.lsmfiles
             item=self.tree.AppendItem(item,name)
             self.tree.SetPyData(item,None)        
-            self.tree.SetItemImage(item,fldropenidx,which=wxTreeItemIcon_Expanded)
+            self.tree.SetItemImage(item,fldropenidx,which=wx.TreeItemIcon_Expanded)
         elif objtype=="du":
             item=self.dufiles
         else:
@@ -96,8 +95,8 @@ class TreeWidget(wxPanel):
         for obj in objs:
             added=self.tree.AppendItem(item,obj.getName())
             self.tree.SetPyData(added,obj)        
-            self.tree.SetItemImage(added,fileidx,which=wxTreeItemIcon_Normal)
-            #self.tree.SetItemImage(added,fldropenidx,which=wxTreeItemIcon_Expanded)
+            self.tree.SetItemImage(added,fileidx,which=wx.TreeItemIcon_Normal)
+            #self.tree.SetItemImage(added,fldropenidx,which=wx.TreeItemIcon_Expanded)
 
     def getSelectedDataUnits(self):
         items=self.tree.GetSelections()
@@ -105,9 +104,9 @@ class TreeWidget(wxPanel):
         print "Selected items=",objs
         return objs
 
-class LSMTree(wxTreeCtrl):
+class LSMTree(wx.TreeCtrl):
     def __init__(self,parent,id,callback=None):
-        wxTreeCtrl.__init__(self,parent,id,wx.DefaultPosition,wx.DefaultSize,
+        wx.TreeCtrl.__init__(self,parent,id,wx.DefaultPosition,wx.DefaultSize,
         wx.TR_HAS_BUTTONS|wx.TR_MULTIPLE)
         self.Bind(wx.EVT_TREE_SEL_CHANGED,self.onSelectionChanged,id=self.GetId())
         self.callback=callback

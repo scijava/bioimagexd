@@ -44,7 +44,7 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 import os.path
 import RenderingInterface
 
-from wxPython.wx import *
+
 from PreviewFrame import *
 import wx
 
@@ -77,8 +77,8 @@ class VSIAPreview(PreviewFrame):
         self.mapper.SetColorLevel(127.5);
 
         
-        self.surfslider=wxSlider(self,value=0,minValue=0,maxValue=0,size=(300,-1),
-        style=wxSL_HORIZONTAL|wxSL_AUTOTICKS|wxSL_LABELS)
+        self.surfslider=wx.Slider(self,value=0,minValue=0,maxValue=0,size=(300,-1),
+        style=wx.SL_HORIZONTAL|wx.SL_AUTOTICKS|wx.SL_LABELS)
         self.sizer.Add(self.surflider,(2,0))
         self.surfslider.Bind(EVT_SCROLL,self.updatePreviewedSurface)
 

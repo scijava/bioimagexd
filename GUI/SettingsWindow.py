@@ -23,9 +23,9 @@ __date__ = "$Date: 2005/01/13 14:52:39 $"
 
 import os.path
 
-from wxPython.wx import *
+import wx
 
-class GeneralSettings(wxPanel):
+class GeneralSettings(wx.Panel):
     """
     Class: GeneralSettings
     Created: 09.02.2005, KP
@@ -34,32 +34,32 @@ class GeneralSettings(wxPanel):
     def __init__(self,parent):
         pass
         
-class PathSettings(wxPanel):
+class PathSettings(wx.Panel):
     pass
-class MovieSettings(wxPanel):
+class MovieSettings(wx.Panel):
     pass
     
 
 
-class SettingsWindow(wxDialog):
+class SettingsWindow(wx.Dialog):
     """
     Class: SettingsWindow
     Created: 09.02.2005, KP
     Description: A window for controlling the settings of the application
     """ 
     def __init__(self,parent):
-        wxDialog.__init__(self,parent,-1,"Settings for Selli",style=wxCAPTION|wxSTAY_ON_TOP|wxCLOSE_BOX|wxMAXIMIZE_BOX|wxMINIMIZE_BOX|wxRESIZE_BORDER|wxDIALOG_EX_CONTEXTHELP,
+        wx.Dialog.__init__(self,parent,-1,"Settings for Selli",style=wx.CAPTION|wx.STAY_ON_TOP|wx.CLOSE_BOX|wx.MAXIMIZE_BOX|wx.MINIMIZE_BOX|wx.RESIZE_BORDER|wx.DIALOG_EX_CONTEXTHELP,
         size=(640,480))
-        self.listbook=wxListbook(self,-1,style=wxLB_LEFT)
+        self.listbook=wx.Listbook(self,-1,style=wx.LB_LEFT)
         self.listbook.SetSize((640,480))
-        self.sizer=wxBoxSizer(wxVERTICAL)
+        self.sizer=wx.BoxSizer(wx.VERTICAL)
         
-        self.imagelist=wxImageList(32,32)
+        self.imagelist=wx.ImageList(32,32)
         self.listbook.AssignImageList(self.imagelist)
         imgpath=reduce(os.path.join,["Icons"])
         for i in ["General.gif","Paths.gif","Video.gif"]:
             icon=os.path.join(imgpath,i)
-            bmp=wxBitmap(icon,wxBITMAP_TYPE_GIF)
+            bmp=wx.Bitmap(icon,wx.BITMAP_TYPE_GIF)
             self.imagelist.Add(bmp)
         self.generalPanel=GeneralSettings(self)
         self.pathsPanel=PathSettings(self)
@@ -69,7 +69,7 @@ class SettingsWindow(wxDialog):
         self.listbook.AddPage(self.pathsPanel,"Paths",imageId=1)
         self.listbook.AddPage(self.moviePanel,"Video Output",imageId=2)
 
-        self.sizer.Add(self.listbook,flag=wxEXPAND|wxALL)
+        self.sizer.Add(self.listbook,flag=wx.EXPAND|wx.ALL)
         
         self.SetSizer(self.sizer)
         self.SetAutoLayout(1)

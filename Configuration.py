@@ -44,9 +44,10 @@ class Configuration:
         self.parser.read([cfgfile])
     
         # Set the initial values
-        vtkpath=self.getPath(["Libraries","VTK"])
+        #vtkpath=self.getPath(["Libraries","VTK"])
+        vtkpath=self.getPath(["C:\\VTK"])
         mayavipath=self.getPath(["Libraries","mayavi"])
-        self.setConfigItem("RemoveOldVTK","VTK",1);
+        self.setConfigItem("RemoveOldVTK","VTK",0);
         self.setConfigItem("VTKPath","VTK",vtkpath)
         self.setConfigItem("UseSystemMayavi","Mayavi",0)
         self.setConfigItem("MayaviPath","Mayavi",mayavipath)
@@ -71,10 +72,10 @@ class Configuration:
         vtkdir=self.getConfigItem("VTKPath","VTK")
         if self.getConfigItem("RemoveOldVTK","VTK") and os.path.isdir(vtkdir):
             self.removeWithName(["vtk","VTK","vtk_python"])
-            bin=self.getPath([vtkdir,"bin"])
-            wrapping=self.getPath([vtkdir,"Wrapping","Python"])
-            self.insertPath(bin)
-            self.insertPath(wrapping)
+        bin=self.getPath([vtkdir,"bin"])
+        wrapping=self.getPath([vtkdir,"Wrapping","Python"])
+        self.insertPath(bin)
+        self.insertPath(wrapping)
         self.insertPath(self.getConfigItem("MayaviPath","Mayavi"))
         
     def setConfigItem(self,configItem, section,value):
@@ -118,7 +119,11 @@ class Configuration:
                     removethese.append(i)
         print "Removing following path entries: ",", ".join(removethese)
         for i in removethese:
-            sys.path.remove(i)        
+            try:
+                sys.path.remove(i)
+            except:
+                print "Failed to remove ",i
+
             
     def insertPath(self,path,n=0):
         sys.path.insert(n,path)

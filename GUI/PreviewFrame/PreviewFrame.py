@@ -44,13 +44,12 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 import os.path
 import RenderingInterface
 import ImageOperations
-import Slicer
-import wx
 import time
 from Logging import *
-from vtk.wx.wxVTKRenderWindowInteractor import *
+from vtk.wx.wxVTKRenderWindowInteractor import wxVTKRenderWindowInteractor
 
 import vtk
+import wx
 import wx.lib.scrolledpanel as scrolled
 
 
@@ -111,8 +110,8 @@ class PreviewFrame(wx.Panel):
         #self.renderpanel = wx.ScrolledWindow(self,-1,style=wx.SUNKEN_BORDER,size=(512,512))
         
         self.wxrenwin = wxVTKRenderWindowInteractor(self.renderpanel,-1,size=size)
-        self.wxrenwin.Initialize()
-        self.wxrenwin.Start()
+#        self.wxrenwin.Initialize()
+#        self.wxrenwin.Start()
 
         self.previewsizer.Add(self.wxrenwin)
 
@@ -144,16 +143,16 @@ class PreviewFrame(wx.Panel):
         # the scrollRenderWindow uses that for the scrolling
         self.mapper=None
         if self.show["PIXELS"]:
-            self.wxrenwin.Bind(EVT_LEFT_DOWN,self.getPixelValue)
+            self.wxrenwin.Bind(wx.EVT_LEFT_DOWN,self.getPixelValue)
         if self.show["TIMESLIDER"]:
             self.timeslider=wx.Slider(self,value=0,minValue=0,maxValue=1,size=(300,-1),
             style=wx.SL_HORIZONTAL|wx.SL_AUTOTICKS|wx.SL_LABELS)
             self.sizer.Add(self.timeslider,(1,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
-            self.timeslider.Bind(EVT_SCROLL,self.updateTimePoint)
+            self.timeslider.Bind(wx.EVT_SCROLL,self.updateTimePoint)
         if self.show["ZSLIDER"]:
             self.zslider=wx.Slider(self,value=0,minValue=0,maxValue=100,size=(-1,300),
             style=wx.SL_VERTICAL|wx.SL_AUTOTICKS|wx.SL_LABELS)
-            self.zslider.Bind(EVT_SCROLL,self.updateDepth)
+            self.zslider.Bind(wx.EVT_SCROLL,self.updateDepth)
             self.sizer.Add(self.zslider,(0,1),flag=wx.EXPAND|wx.TOP|wx.BOTTOM)
 
         if self.show["PIXELS"]:
@@ -171,10 +170,10 @@ class PreviewFrame(wx.Panel):
             for id in ids:
                 btn=wx.Button(self,id)
                 self.zoombox.Add(btn)
-            EVT_BUTTON(self,wx.ID_ZOOM_100,self.zoomTo100)
-            EVT_BUTTON(self,wx.ID_ZOOM_FIT,self.zoomToFit)
-            EVT_BUTTON(self,wx.ID_ZOOM_IN,self.zoomIn)
-            #EVT_BUTTON(self,wx.ID_ZOOM_OUT,self.zoomOut)   
+            wx.EVT_BUTTON(self,wx.ID_ZOOM_100,self.zoomTo100)
+            wx.EVT_BUTTON(self,wx.ID_ZOOM_FIT,self.zoomToFit)
+            wx.EVT_BUTTON(self,wx.ID_ZOOM_IN,self.zoomIn)
+            #wx.EVT_BUTTON(self,wx.ID_ZOOM_OUT,self.zoomOut)
             
             self.sizer.Add(self.zoombox,(2,0))
         self.timePointChangeCallback=None
