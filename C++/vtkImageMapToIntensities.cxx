@@ -1,7 +1,7 @@
 /*=========================================================================
 
   Program:   Visualization Toolkit
-  Module:    $RCSfile: vtkImageSolitaryFilter.cxx,v $
+  Module:    $RCSfile: vtkImageMapToIntensities.cxx,v $
 
   Copyright (c) Ken Martin, Will Schroeder, Bill Lorensen
   All rights reserved.
@@ -12,29 +12,26 @@
      PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
-#include "vtkImageSolitaryFilter.h"
+#include "vtkImageMapToIntensities.h"
 
 #include "vtkCellData.h"
 #include "vtkImageData.h"
 #include "vtkObjectFactory.h"
 #include "vtkPointData.h"
 
-vtkCxxRevisionMacro(vtkImageSolitaryFilter, "$Revision: 1.36 $");
-vtkStandardNewMacro(vtkImageSolitaryFilter);
+vtkCxxRevisionMacro(vtkImageMapToIntensities, "$Revision: 1.36 $");
+vtkStandardNewMacro(vtkImageMapToIntensities);
 
 //-----------------------------------------------------------------------------
 // Construct object to extract all of the input data.
-vtkImageSolitaryFilter::vtkImageSolitaryFilter()
+vtkImageMapToIntensities::vtkImageMapToIntensities()
 {
-  this->FilteringThreshold = 0;
-  this->HorizontalThreshold = 0;
-  this->VerticalThreshold = 0;
-
+    this->IntensityTransferFunction = 0;
 }
 
 //-----------------------------------------------------------------------------
 // Get ALL of the input.
-void vtkImageSolitaryFilter::ComputeInputUpdateExtent(int inExt[6], 
+void vtkImageMapToIntensities::ComputeInputUpdateExtent(int inExt[6], 
                                              int *)
 {
   // request all of the VOI
@@ -48,13 +45,13 @@ void vtkImageSolitaryFilter::ComputeInputUpdateExtent(int inExt[6],
 
 //-----------------------------------------------------------------------------
 void 
-vtkImageSolitaryFilter::ExecuteInformation(vtkImageData *input, vtkImageData *output)
+vtkImageMapToIntensities::ExecuteInformation(vtkImageData *input, vtkImageData *output)
 {
   this->vtkImageToImageFilter::ExecuteInformation( input, output );
 }
 
 //-----------------------------------------------------------------------------
-void vtkImageSolitaryFilter::ExecuteData(vtkDataObject *)
+void vtkImageMapToIntensities::ExecuteData(vtkDataObject *)
 {
   int uExtent[6];
   vtkImageData* output = this->GetOutput();
@@ -64,13 +61,17 @@ void vtkImageSolitaryFilter::ExecuteData(vtkDataObject *)
   int maxX,maxY,maxZ;
   int idxX,idxY,idxZ;
   char *inPtr1;
+  int* table;
 
   unsigned char scalar,newScalar,cmpScalar;
 
   //output->GetUpdateExtent(uExtent);
   output->GetUpdateExtent(uExtent);
   output->SetExtent(uExtent);
-  printf("Exent=(%d,%d,%d,%d,%d,%d)\n",uExtent[0],uExtent[1],uExtent[2],uExtent[3],uExtent[4],uExtent[5]);
+  if(!this->IntensityTransferFunction) {
+      vtkErrorMacro("No IntensityTransferFunction specified");
+  }
+  table = this->IntensityTransferFunction->GetDataPointer();
   char *inPtr = (char *) input->GetScalarPointerForExtent(uExtent);
   char *outPtr = (char *) output->GetScalarPointerForExtent(uExtent);
     
@@ -84,10 +85,13 @@ void vtkImageSolitaryFilter::ExecuteData(vtkDataObject *)
   }
 //  output->SetExtent(output->GetWholeExtent());
   output->AllocateScalars();
-  input->GetIncrements(inIncX, inIncY, inIncZ);
+  if (this->IntensityTransferFunction->IsIdentical()) {
+      printf("Identical function!\n");
+      output->DeepCopy(input);
+      return;
+  }
+  input->GetContinuousIncrements(uExtent,inIncX, inIncY, inIncZ);
   output->GetContinuousIncrements(uExtent,outIncX, outIncY, outIncZ);
-  printf("inIncX=%d,inIncY=%d,inIncZ=%d\n",inIncX,inIncY,inIncZ);
-  printf("outIncX=%d,outIncY=%d,outIncZ=%d\n",outIncX,outIncY,outIncZ);
   maxX = uExtent[1] - uExtent[0];
   maxY = uExtent[3] - uExtent[2];
   maxZ = uExtent[5] - uExtent[4];
@@ -99,48 +103,18 @@ void vtkImageSolitaryFilter::ExecuteData(vtkDataObject *)
   
   #define GET_AT(x,y,z,ptr) *(ptr+(z)*inIncZ+(y)*inIncY+(x)*inIncX)
   
-  printf("maxX=%d,maxY=%d,maxZ=%d\n",maxX,maxY,maxZ);
-  printf("Filtering Threshold=%d,Horizontal=%d, Vertical=%d\n",this->FilteringThreshold,this->HorizontalThreshold,this->VerticalThreshold);
   for(idxZ = 0; idxZ <= maxZ; idxZ++ ) {
     
     for(idxY = 0; idxY <= maxY; idxY++ ) {
       for(idxX = 0; idxX <= maxX; idxX++ ) {
-          
-        scalar = GET_AT(idxX,idxY,idxZ,inPtr);          
-        if( scalar > this->FilteringThreshold ) {
-          newScalar=0;
-          // Compare voxel to the left
-          if (this->HorizontalThreshold && idxX > 0) {
-            cmpScalar=GET_AT(idxX-1,idxY,idxZ,inPtr);
-            if( cmpScalar >= this->HorizontalThreshold ) {
-                newScalar=scalar;
-            }
-        
-          }
-          // Compare voxel to the right
-          if (this->HorizontalThreshold && idxX < maxX-1) {
-            cmpScalar=GET_AT(idxX+1,idxY,idxZ,inPtr);
-            if( cmpScalar >= this->HorizontalThreshold ) newScalar=scalar;
-        
-          }
-          // Compare voxel above
-          if (this->VerticalThreshold && idxY > 0) {
-            cmpScalar=GET_AT(idxX,idxY-1,idxZ,inPtr);
-            if( cmpScalar >= this->VerticalThreshold ) newScalar=scalar;
-        
-          }
-          // Compare voxel below
-          if (this->VerticalThreshold && idxY < maxY-1) {
-            cmpScalar=GET_AT(idxX,idxY+1,idxZ,inPtr);
-            if( cmpScalar >= this->VerticalThreshold ) newScalar=scalar;
-        
-          }
-          *outPtr=newScalar; 
-        }
-        outPtr++;
+          scalar = *inPtr++;
+          newScalar=table[scalar];
+          *outPtr++=newScalar;
       }
+      inPtr += inIncY;
       outPtr += outIncY;
     }  
+    inPtr += inIncZ;
     outPtr += outIncZ;      
   }
   
@@ -148,13 +122,11 @@ void vtkImageSolitaryFilter::ExecuteData(vtkDataObject *)
 
 
 //-----------------------------------------------------------------------------
-void vtkImageSolitaryFilter::PrintSelf(ostream& os, vtkIndent indent)
+void vtkImageMapToIntensities::PrintSelf(ostream& os, vtkIndent indent)
 {
   this->Superclass::PrintSelf(os,indent);
 
-  os << indent << "Filtering Threshold: "<< this->FilteringThreshold << "\n";
-  os << indent << "Horizontal Threshold: "<< this->HorizontalThreshold << "\n";
-  os << indent << "Vertical Threshold: "<< this->VerticalThreshold << "\n";    
+  os << indent << "IntensityTransferFunction "<< this->IntensityTransferFunction << "\n";
 
 }
 

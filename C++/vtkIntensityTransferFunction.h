@@ -24,11 +24,12 @@
 #define __vtkIntensityTransferFunction_h
 
 #include "vtkDataObject.h"
+#include "vtkPiecewiseFunction.h"
 
 class VTK_FILTERING_EXPORT vtkIntensityTransferFunction : public vtkPiecewiseFunction
 {
 public:
-  static vtkPiecewiseFunction *New();
+  static vtkIntensityTransferFunction *New();
   vtkTypeRevisionMacro(vtkIntensityTransferFunction,vtkPiecewiseFunction);
   void PrintSelf(ostream& os, vtkIndent indent);
 
@@ -56,15 +57,27 @@ public:
   int GetValue( int x );
 
   // Description:
+  // Calculates the function table based on the Minimum / Maximum Value and Threshold
+  // and the Brightness, Constrast and Gamma and the Processing Threshold
+  void ComputeFunction(void);
+  
+  // Description:
+  // Returns true if this is an identical function, i.e.
+  // y = x
+  bool IsIdentical(void);
+  
+  // Description:
   // Returns a pointer to the data stored in the table.
   // Fills from a pointer to data stored in a similar table.
-  int *GetDataPointer() {return this->Function;};
-  void FillFromDataPointer(int, int*);
-
+  int *GetDataPointer() { 
+    if(this->LastMTime < this->GetMTime()) this->ComputeFunction();
+    LastMTime=this->GetMTime();
+    return this->Function;
+  }
+  
   // Description:
   // Returns the min and max point locations of the function.
   int *GetRange();
-
 
   // Description:
   // Return the type of function:
@@ -87,29 +100,77 @@ public:
 
   // Description:
   // Set / Get the minimum value of the function
-  vtkSetMacro(MinimumValue,int);
+  vtkSetClampMacro(MinimumValue,int,0,255);
+  vtkGetMacro(MinimumValue,int);
   // Description:
   // Set / Get the maximum value of the function
-  vtkSetMacro(MaximumValue,int);
+  vtkSetClampMacro(MaximumValue,int,0,255);
+  vtkGetMacro(MaximumValue,int);
   // Description:
   // Set / Get the minimum threshold of the function
-  vtkSetMacro(MinimumThreshold,int);
+  vtkSetClampMacro(MinimumThreshold,int,0,255);
+  vtkGetMacro(MinimumThreshold,int);
+  
   // Description:
   // Set / Get the maximum threshold of the function
-  vtkSetMacro(MaximumThreshold,int);     
+  vtkSetClampMacro(MaximumThreshold,int,0,255);     
+  vtkGetMacro(MaximumThreshold,int);
   // Description:
   // Set / Get the processing threshold of the function, under which the function is identical
-  vtkSetMacro(ProcessingThreshold,int);          
+  vtkSetClampMacro(ProcessingThreshold,int,0,255);          
+  vtkGetMacro(ProcessingThreshold,int);
   // Description:
   // Set / Get the contrast
-  vtkSetMacro(Contrast,int);     
+  vtkSetClampMacro(Contrast,double,0.0,255.0);     
+  vtkGetMacro(Contrast,double);
   // Description:
   // Set / Get the brightness
-  vtkSetMacro(Brightness,int);          
+  vtkSetClampMacro(Brightness,int,-255,255);          
+  vtkGetMacro(Brightness,double);
   // Description:
   // Set / Get the gamma
-  vtkSetMacro(Gamma,double);
-     
+  vtkSetClampMacro(Gamma,double,0.0,255.00);
+  vtkGetMacro(Gamma,double);      
+  // Description:
+  // Get the table representing this function
+  //vtkGetVectorMacro(Function,int,255);
+  
+  // Description:
+  // Get the point where the gamma curve starts
+  vtkGetVector2Macro(GammaStart,int);
+  // Description:
+  // Get the point where the gamma curve ends
+  vtkGetVector2Macro(GammaEnd,int);
+                     
+  // Description:
+  // A method that returns the y from the following formula:
+  //                       (y2-y1)
+  //               y =   ---------- * (x-x1)^g +y1
+  //                      (x2-x1)^g
+  //
+  //                I.e the y coord of the gamma curve at point x, when the gamma
+  //                curve starts at (x0,y0) and ends at (x1,y1) and the gamma 
+  //                value is g
+  //
+  //      Parameters:
+  //              x0,y0   The starting point of the gamma curve
+  //              x1,y1   The end point of the gamma curve
+  //              x       The point from which we want the gamma curves y coord
+  //              g       The gamma value
+  int GammaValue(int x0,int y0, int x1,int y1, int x, double gamma);
+  // Description:
+  // Returns the value of the function at slope point x
+  // The function is of format:
+  // y = contrast * x + b
+  int LineValue(int x);
+ 
+  // Description:
+  // Get the reference point of the function
+  // That is, the point around which the contrast rotates the slope
+  vtkGetVector2Macro(ReferencePoint,int);
+
+  
+  void Reset(void);
 protected:
   vtkIntensityTransferFunction();
   ~vtkIntensityTransferFunction();
@@ -127,16 +188,32 @@ protected:
   // when the array limit has been reached.
   void IncreaseArraySize();
 
+  // Description:
+  // Returns the starting point of the slope 
+  void GetSlopeStart(int*x,int*y);
+  // Description:
+  // Returns the end point of the slope
+  void GetSlopeEnd(int*x,int*y);
+
+  // Description:
+  // Returns the starting and ending point of the gamma curve
+  void GetGammaPoints(int *gx0, int *gy0, int *gx1, int *gy1);
+
   int MinimumValue;
   int MaximumValue;
   int MinimumThreshold;
   int MaximumThreshold;
   int ProcessingThreshold;
-  int Contrast;
   int Brightness;
+  int LastMTime;
   double Gamma;
-   
-     
+  double Contrast;
+  int GammaStart[2];
+  int GammaEnd[2];
+  void CalculateReferencePoint(void);
+  vtkSetVector2Macro(ReferencePoint,int);
+  int ReferencePoint[2];
+  
 private:
   vtkIntensityTransferFunction(const vtkIntensityTransferFunction&);  // Not implemented.
   void operator=(const vtkIntensityTransferFunction&);  // Not implemented.
