@@ -247,10 +247,12 @@ class RenderingInterface:
 
         # If there is no mayavi instance to do the rendering
         # create one
-        if self.isMayaviRunning() == False:
+        print "is mayavi running?",self.isMayaviRunning()
+        if not self.isMayaviRunning():
+            print "Creating mayavi"
             self.createMayaVi()
             
-        Logging.info("Mayavi exists:",self.mayavi.root.winfo_exists(), "it's state:",self.mayvia.root.state())
+        Logging.info("Mayavi exists:",self.mayavi.root.winfo_exists(), "it's state:",self.mayavi.root.state())
 
         # If this is not preview, we disable the control panel
         if not self.showControlPanel:
@@ -293,6 +295,7 @@ class RenderingInterface:
             Logging.info("Loading data: self.mayavi.open_vtk_data(...)")
             # If this is the first run and there is no visualization file
             # Load the data
+            print "Loading ",data
             self.mayavi.open_vtk_data(data)
             Logging.info("done")
             # Set the first-run flag to 0
@@ -409,7 +412,7 @@ class RenderingInterface:
         if len(dvms)> 1:
             Logging.info("There is more than one datavizmgr")
         for i in dvms:
-            self.mm = i.get_current_module_mgr()
+            self.mm = self.mayavi.mayavi.data_viz_mgr[i].get_current_module_mgr()
             Logging.info("Substituting data to dvm %s"%i)
             dvm=self.mayavi.mayavi.data_viz_mgr[i]
             ds=dvm.get_data_source()
