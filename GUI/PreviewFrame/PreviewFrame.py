@@ -44,7 +44,7 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 import os.path
 import RenderingInterface
 
-from wxPython.wx import *
+#from wx.Python.wx. import *
 import wx
 
 from Logging import *
@@ -53,12 +53,12 @@ import vtk
 import wx.lib.scrolledpanel as scrolled
 
 
-class PreviewFrame(wxPanel):
+class PreviewFrame(wx.Panel):
     """
     Class: PreviewFrame
     Created: 03.11.2004
     Creator: KP
-    Description: A widget that uses the wxVTKRenderWidget to display a preview
+    Description: A widget that uses the wx.VTKRenderWidget to display a preview
                  of operations done by a subclass of Module
     """
     def __init__(self,parent,parentwin=None):
@@ -75,25 +75,27 @@ class PreviewFrame(wxPanel):
             parentwin=parent
         self.parentwin=parentwin
         
-        wxPanel.__init__(self,parent,-1)
+        wx.Panel.__init__(self,parent,-1)
         
         self.dataUnit=None
         self.rgbMode=0
         
-        self.sizer=wxGridBagSizer()
-        self.previewsizer=wxBoxSizer(wxVERTICAL)
+        self.sizer=wx.GridBagSizer()
+        self.previewsizer=wx.BoxSizer(wx.VERTICAL)
     	# These are the current image and color transfer function
     	# They are used when getting the value of a pixel
     	self.currentImage=None
     	self.currentCt=None
 
-        self.renderpanel = scrolled.ScrolledPanel(self, -1,style=wxSUNKEN_BORDER)
-        self.renderpanel.SetSizer(self.previewsizer)
-        self.renderpanel.SetAutoLayout(1)
-        self.renderpanel.SetupScrolling()
+        self.renderpanel = scrolled.ScrolledPanel(self, -1,style=wx.SUNKEN_BORDER,size=(512,512))
+        #self.renderpanel = wx.ScrolledWindow(self,-1,style=wx.SUNKEN_BORDER,size=(512,512))
         
         self.wxrenwin = wxVTKRenderWindowInteractor(self.renderpanel,-1)
         self.previewsizer.Add(self.wxrenwin)
+
+        self.renderpanel.SetSizer(self.previewsizer)
+        self.renderpanel.SetAutoLayout(1)
+        self.renderpanel.SetupScrolling()
         
         self.sizer.Add(self.renderpanel,(0,0))
 
@@ -121,21 +123,21 @@ class PreviewFrame(wxPanel):
 
         self.wxrenwin.Bind(EVT_LEFT_DOWN,self.getPixelValue)
         
-        self.timeslider=wxSlider(self,value=0,minValue=0,maxValue=1,size=(300,-1),
-        style=wxSL_HORIZONTAL|wxSL_AUTOTICKS|wxSL_LABELS)
-        self.sizer.Add(self.timeslider,(1,0),flag=wxEXPAND|wxLEFT|wxRIGHT)
+        self.timeslider=wx.Slider(self,value=0,minValue=0,maxValue=1,size=(300,-1),
+        style=wx.SL_HORIZONTAL|wx.SL_AUTOTICKS|wx.SL_LABELS)
+        self.sizer.Add(self.timeslider,(1,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
         self.timeslider.Bind(EVT_SCROLL,self.updateTimePoint)
 
-        self.zslider=wxSlider(self,value=0,minValue=0,maxValue=100,size=(-1,300),
-        style=wxSL_VERTICAL|wxSL_AUTOTICKS|wxSL_LABELS)
+        self.zslider=wx.Slider(self,value=0,minValue=0,maxValue=100,size=(-1,300),
+        style=wx.SL_VERTICAL|wx.SL_AUTOTICKS|wx.SL_LABELS)
         self.zslider.Bind(EVT_SCROLL,self.updateDepth)
-        self.sizer.Add(self.zslider,(0,1),flag=wxEXPAND|wxTOP|wxBOTTOM)
+        self.sizer.Add(self.zslider,(0,1),flag=wx.EXPAND|wx.TOP|wx.BOTTOM)
 
-        self.pixelPanel=wxPanel(self,-1)
-        self.pixelLbl=wxStaticText(self.pixelPanel,-1,"Scalar 0 at (0,0,0) maps to (0,0,0)")
-        self.sizer.Add(self.pixelPanel,(2,0),flag=wxEXPAND|wxRIGHT)
+        self.pixelPanel=wx.Panel(self,-1)
+        self.pixelLbl=wx.StaticText(self.pixelPanel,-1,"Scalar 0 at (0,0,0) maps to (0,0,0)")
+        self.sizer.Add(self.pixelPanel,(2,0),flag=wx.EXPAND|wx.RIGHT)
 
-        self.modeCheckbox=wxCheckBox(self,-1,"Preview rendering")
+        self.modeCheckbox=wx.CheckBox(self,-1,"Preview rendering")
         self.sizer.Add(self.modeCheckbox,(4,0))
                 
         self.timePointChangeCallback=None
@@ -206,7 +208,7 @@ class PreviewFrame(wxPanel):
         Created: 10.11.2004
         Creator: KP
         Description: Shows the RGB and scalar value of a clicked pixel
-        Parameters:  event   wxPython's Event object
+        Parameters:  event   wx.Python's Event object
         """
         if not self.currentImage:
             return
@@ -300,16 +302,22 @@ class PreviewFrame(wxPanel):
             return
         self.xdim,self.ydim,self.zdim=x,y,z
         
-        print "Setting size to %d,%d"%(x,y)
+        nx,ny=x,y
+        dx,dy=0,0
+        if x<512:
+            nx=512
+        if y<512:
+            ny=512
+        print "Setting size to %d,%d"%(nx,ny)
         self.wxrenwin.SetSize((x,y))
-
+        self.renderpanel.SetBackgroundColour(wxColour(0,0,0))
 #        self.timeslider.SetSize((x,-1))
 #        self.zslider.SetSize((-1,y))
         
         
         print "zslider goes to %d"%(z-1)
         self.zslider.SetRange(0,z-1)
-        if x>self.maxY:
+        if x>self.maxX:
             x=self.maxX
         if y>self.maxY:
             y=self.maxY
@@ -318,10 +326,15 @@ class PreviewFrame(wxPanel):
         self.timeslider.SetRange(0,count-1)
         self.renderingInterface.setDataUnit(dataUnit)
 
+        print "Setting renderpanel to %d,%d"%(x,y)
         self.renderpanel.SetSize((x,y))
+        self.renderpanel.SetupScrolling()
         self.renderpanel.Layout()
-        self.previewsizer.Fit(self.wxrenwin)
-        self.previewsizer.SetSizeHints(self.renderpanel)
+        #self.wxrenwin.SetSize((x,y))
+        #self.renderpanel.SetupScrolling()
+        #self.renderpanel.Layout()
+        #self.previewsizer.Fit(self.renderpanel)
+        #self.previewsizer.SetSizeHints(self.renderpanel)
         
         self.Layout()
         self.sizer.Fit(self)

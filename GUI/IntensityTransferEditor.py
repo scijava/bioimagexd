@@ -42,9 +42,9 @@ if __name__=='__main__':
     sys.path.append(os.path.normpath(os.path.join(os.getcwd(),"../LSM")))
     sys.path.insert(0,os.path.normpath(os.path.join(os.getcwd(),"../Libraries/VTK/bin")))
     sys.path.insert(0,os.path.normpath(os.path.join(os.getcwd(),"../Libraries/VTK/Wrapping/Python")))
+
 import vtk    
     
-from IntensityTransferFunction import *
 
 class PaintPanel(wxPanel):
     def __init__(self,parent):

@@ -51,11 +51,11 @@ from Logging import *
 import TaskWindow
 import sys
 import ColorMerging
-import IntensityTransferFunction
+
 import Dialogs
 from ColorSelectionDialog import *
 import time
-
+import vtk
 
 def showColorMergingWindow(colorUnit,mainwin):
     """
@@ -89,7 +89,7 @@ class ColorMergingWindow(TaskWindow.TaskWindow):
         Parameters:
                 parent    Is the parent widget of this window
         """
-        self.alphaTF=IntensityTransferFunction.IntensityTransferFunction()
+        self.alphaTF=vtk.vtkIntensityTransferFunction()
         self.operationName="Color Merging"
         TaskWindow.TaskWindow.__init__(self,parent)
         self.SetTitle("Color Merging")
