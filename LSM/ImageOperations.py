@@ -26,6 +26,28 @@ import vtk
 import wx
 import struct
 
+def getAsParameterList(iTF):
+    lst=[]
+    lst.append(iTF.GetBrightness())
+    lst.append(iTF.GetContrast())
+    lst.append(iTF.GetGamma())
+    lst.append(iTF.GetMinimumThreshold())
+    lst.append(iTF.GetMinimumValue())
+    lst.append(iTF.GetMaximumThreshold())
+    lst.append(iTF.GetMaximumValue())
+    lst.append(iTF.GetProcessingThreshold())
+    return lst
+    
+def setFromParameterList(iTF,list):
+    iTF.SetContrast(float(cr))
+    iTF.SetGamma(float(g))
+    iTF.SetMinimumThreshold(int(mt))
+    iTF.SetMinimumValue(int(mv))
+    iTF.SetMaximumThreshold(int(mat))
+    iTF.SetMaximumValue(int(mav))
+    iTF.SetProcessingThreshold(int(mpt))
+    
+    iTF.SetBrightness(int(br))
 
 def vtkImageDataToBitmap(imageData,slice,color,width=0,height=0):
     extract=vtk.vtkExtractVOI()

@@ -40,7 +40,6 @@
  JV - Jukka Varsaluoma, varsa@st.jyu.fi
 
  Copyright (c) 2004 Selli Project.
- --------------------------------------------------------------
 """
 
 __author__ = "Selli Project <http://sovellusprojektit.it.jyu.fi/selli/>"
@@ -48,7 +47,6 @@ __version__ = "$Revision: 1.93 $"
 __date__ = "$Date: 2005/01/13 14:09:15 $"
 
 import Interpolation
-from IntensityTransferFunction import *
 from Color24bit import *
 
 
@@ -61,59 +59,49 @@ import Logging
 
 class DataUnit:
     """
-    --------------------------------------------------------------
     Class: DataUnit
     Created: 03.11.2004
     Creator: JM
     Description: Base class for a 4D DataUnit
-    --------------------------------------------------------------
     """
 
     def __init__(self, name=""):
         """
-        --------------------------------------------------------------
         Method: __init__
         Created: 03.11.2004
         Creator: JM
         Description: Constructor
         Parameters: name    Name for the DataUnit, default to ""
-        -------------------------------------------------------------
         """
         self.name = name
         self.length = 0
 
     def getName(self):
         """
-        --------------------------------------------------------------
         Method: getName
         Created: 03.11.2004
         Creator: JM
         Description: Returns the name of this DataUnit
-        -------------------------------------------------------------
         """
         return self.name
 
     def setName(self,name):
         """
-        --------------------------------------------------------------
         Method: setName(name)
         Created: 8.12.2004
         Creator: JM
         Description: Sets the name of this dataunit
-        -------------------------------------------------------------
         """
         self.name=name
 
 
     def setDataSource(self,dataSource):
         """
-        --------------------------------------------------------------
         Method: setDataSource()
         Created: 15.11.2004
         Creator: KP
         Description: Sets the datasource for this dataunit. Also reads the name 
                      and length of the dataunit from the datasource.
-        -------------------------------------------------------------
         """
         self.dataSource = dataSource
         self.name = dataSource.getName()
@@ -124,14 +112,12 @@ class DataUnit:
 
     def getTimePoint(self,n):
         """
-        --------------------------------------------------------------
         Method: getTimePoint(n)
         Created: 17.11.2004
         Creator: KP
         Description: Returns the requested time point
         Parameters:
                 n       The timepoint we need to return
-        -------------------------------------------------------------
         """
         if not self.dataSource:
             Logging.error("No datasource specified",
@@ -142,45 +128,37 @@ class DataUnit:
 
     def getLength(self):
         """
-        --------------------------------------------------------------
         Method: getLength
         Created: 10.11.2004
         Creator: JM
         Description: Returns the length of this DataUnit
-        -------------------------------------------------------------
         """
         return self.length
 
     def __str__(self):
         """
-        --------------------------------------------------------------
         Method: __str__
         Created: 03.11.2004
         Creator: JM
         Description: Returns the basic information of this instance as a string
                      (mainly for testing purposes)
-        -------------------------------------------------------------
         """
         return str(self.dataSource)
 
 class SourceDataUnit(DataUnit):
     """
-    --------------------------------------------------------------
     Class: SourceDataUnit
     Created: 03.11.2004
     Creator: JM
     Description: Base class for a single-channel 4D DataUnit
-    --------------------------------------------------------------
     """
 
     def __init__(self,name=""):
         """
-        --------------------------------------------------------------
         Method: __init__
         Created: 03.11.2004
         Creator: JM
         Description: Constructor
-        -------------------------------------------------------------
         """
         DataUnit.__init__(self,name)
         self.dataSource=None
@@ -188,14 +166,12 @@ class SourceDataUnit(DataUnit):
 
     def setDataSource(self, dataSource):
         """
-        --------------------------------------------------------------
         Method: setDataSource
         Created: 09.11.2004
         Creator: JM
         Description: Sets a DataSource for this SourceDataUnit
         Parameters: dataSource  A DataSource to manage actual
                                 image data located on disk
-        -------------------------------------------------------------
         """
         # Call the base class to read the basic information from the file
         DataUnit.setDataSource(self,dataSource)
@@ -208,20 +184,17 @@ class SourceDataUnit(DataUnit):
 
     def getDimensions(self):
         """
-        --------------------------------------------------------------
         Method: getDimensions()
         Created: 14.12.2004
         Creator: KP
         Description: Returns the (x,y,z) dimensions of the datasets this 
                      dataunit contains
-        -------------------------------------------------------------
         """
         return self.dataSource.getDimensions()
 
 
     def setColor(self, red, green, blue):
         """
-        --------------------------------------------------------------
         Method: setColor
         Created: 03.11.2004
         Creator: JM
@@ -229,18 +202,15 @@ class SourceDataUnit(DataUnit):
         Parameters: red     The value of red component
                     green   The value of green component
                     blue    The value of blue component
-        -------------------------------------------------------------
         """
         self.color.setValues(red, green, blue)
 
     def getColor(self):
         """
-        --------------------------------------------------------------
         Method: getColor
         Created: 24.11.2004
         Creator: JM
         Description: returns the color of this dataunit
-        -------------------------------------------------------------
         """
         return self.color.getColor()
 

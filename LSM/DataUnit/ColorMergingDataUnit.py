@@ -56,7 +56,7 @@ class ColorMergingDataUnit(CombinedDataUnit):
         """
         CombinedDataUnit.__init__(self,name)
         self.module=ColorMerging.ColorMerging()
-        self.opacityTransfer=IntensityTransferFunction()
+        self.opacityTransfer=vtk.vtkIntensityTransferFunction()
 
     def setDataSource(self, dataSource):
         """

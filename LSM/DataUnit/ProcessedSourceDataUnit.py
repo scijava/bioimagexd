@@ -47,7 +47,6 @@ __version__ = "$Revision: 1.93 $"
 __date__ = "$Date: 2005/01/13 14:09:15 $"
 
 import Interpolation
-from IntensityTransferFunction import *
 from Color24bit import *
 
 
