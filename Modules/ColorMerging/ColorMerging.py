@@ -33,7 +33,7 @@ import time
 from Module import *
 from Numeric import *
 
-class ColorMerging(NumericModule):
+class ColorMerging(Module):
     """
     Class: ColorMergingNumpy
     Created: 24.11.2004
@@ -49,13 +49,13 @@ class ColorMerging(NumericModule):
         Creator: JV
         Description: Initialization
         """
-    	NumericModule.__init__(self,**kws)
+        Module.__init__(self,**kws)
 
-    	self.doRGB=True
+        self.doRGB=True
         self.doAlpha=1
-    	self.extent=[]
-    	self.thresholds=[]
-    	self.running=False
+        self.extent=[]
+        self.thresholds=[]
+        self.running=False
 
     	self.reset()
 

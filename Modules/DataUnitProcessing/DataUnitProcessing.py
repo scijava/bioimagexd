@@ -38,14 +38,12 @@ from Numeric import *
 
 
 
-class DataUnitProcessing(NumericModule):
+class DataUnitProcessing(Module):
     """
     Class: DataUnitProcessing
-    Created: 25.11.2004
-    Creator: KP
+    Created: 25.11.2004, KP
     Description: Processes a single dataunit in specified ways
     """
-
 
     def __init__(self,**kws):
         """
@@ -54,7 +52,7 @@ class DataUnitProcessing(NumericModule):
         Creator: KP
         Description: Initialization
         """
-        NumericModule.__init__(self,**kws)
+        Module.__init__(self,**kws)
 
         # TODO: remove attributes that already exist in base class!
     	self.images=[]
@@ -154,7 +152,7 @@ class DataUnitProcessing(NumericModule):
         if self.extent:
             print "Update extent=",self.extent
             #mapdata.SetUpdateExtent(self.extent)
-            data.SetUpdateExtent(self.extent)
+            #data.SetUpdateExtent(self.extent)
         mapIntensities.Update()
         
         if self.doSolitary:

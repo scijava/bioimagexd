@@ -19,7 +19,6 @@
  JV - Jukka Varsaluoma,varsa@st.jyu.fi
 
  Copyright (c) 2004 Selli Project.
- --------------------------------------------------------------
 """
 
 __author__ = "Selli Project <http://sovellusprojektit.it.jyu.fi/selli/>"
@@ -32,27 +31,22 @@ import time
 from Module import *
 from Numeric import *
 
-class VSIA(NumericModule):
+class VSIA(Module):
     """
-    --------------------------------------------------------------
     Class: VSIA
     Created: 25.11.2004
     Creator: JV
     Description:
-    -------------------------------------------------------------
     """
 
 
     def __init__(self,**kws):
         """
-        --------------------------------------------------------------
         Method: __init__(**keywords)
-        Created: 25.11.2004
-        Creator: JV
+        Created: 25.11.2004, JV
         Description: Initialization
-        -------------------------------------------------------------
         """
-    	NumericModule.__init__(self,**kws)
+        Module.__init__(self,**kws)
 
      	self.images=[]
      	self.doRGB=0
@@ -66,27 +60,25 @@ class VSIA(NumericModule):
 
     def reset(self):
         """
-        --------------------------------------------------------------
         Method: reset()
-        Created: 04.11.2004
+        Created: 04.11.2004, KP
         Creator: KP
         Description: Resets the module to initial state. This method is
                      used mainly when doing previews, when the parameters
                      that control the colocalization are changed and the
                      preview data becomes invalid.
-        -------------------------------------------------------------
         """
         Module.reset(self)
 
-     	self.preview=None
-     	self.numpyarrays=[]
-     	self.arrays=[]
-     	self.infos=[]
-     	self.lowerLimit=0
-     	self.upperLimit=0
-     	self.exactValues=0
-     	self.surfaceCount=0
-     	self.surface=0
+        self.preview=None
+        self.numpyarrays=[]
+        self.arrays=[]
+        self.infos=[]
+        self.lowerLimit=0
+        self.upperLimit=0
+        self.exactValues=0
+        self.surfaceCount=0
+        self.surface=0
         self.filterSettings=[]
         self.gaussianRadius=0
 
@@ -94,7 +86,6 @@ class VSIA(NumericModule):
     def setSurfaceGeneration(self,filterClass,filterSettings,lower,upper,count,
         exact):
         """
-        --------------------------------------------------------------
         Method: setSurfaceGeneration(filterClass,lower,upper,count,exact)
         Created: 15.12.2004
         Creator: KP
@@ -106,7 +97,6 @@ class VSIA(NumericModule):
                 count   How many surfaces to genrate, integer
                 exact   Flag indicating whether to select only exact values,
                         or ranges
-        -------------------------------------------------------------
         """
         print "upper=",upper
         self.lowerLimit=lower
@@ -118,12 +108,10 @@ class VSIA(NumericModule):
 
     def setSelectedSurface(self,surface):
         """
-        --------------------------------------------------------------
         Method: setSelectedSurface(surface)
         Created: 15.12.2004
         Creator: KP
         Description: Sets the surface to be generated
-        -------------------------------------------------------------
         """
         self.surface=surface
 
@@ -131,13 +119,11 @@ class VSIA(NumericModule):
 
     def addInput(self,data,**kws):
         """
-        --------------------------------------------------------------
         Method: addInput(data,**keywords)
         Created: 03.11.2004
         Creator: KP
         Description: Adds an input for the VSIA filter
         Keywords:
-        -------------------------------------------------------------
         """
 
         #note: the settings come through setSurfaceGeneration
@@ -156,12 +142,10 @@ class VSIA(NumericModule):
 
     def getPreview(self,z):
         """
-        --------------------------------------------------------------
         Method: getPreview(z)
         Created: 03.11.2004
         Creator: KP
         Description: Does a preview calculation for the x-y plane at depth z
-        -------------------------------------------------------------
         """
         if not self.preview:
             print "Previewing in rendering mode: %d"%self.renderingMode
@@ -170,27 +154,23 @@ class VSIA(NumericModule):
 
     def setRenderingMode(self,status):
         """
-        --------------------------------------------------------------
         Method: setRenderingMode(status)
         Created: 12.1.2005
         Creator: KP
         Description: Sets the rendering mode on/off. If the rendering mode is on
                      then the previewed data will be also processed with the 
                      selected processing module.
-        -------------------------------------------------------------
         """
         self.renderingMode=status
 
 
     def selectPoints(self,preview=1):
         """
-        --------------------------------------------------------------
         Method: selectPoints()
         Created: 15.12.2004
         Creator: KP
         Description: Selects the points defined by upper and lower limit, 
                      surface count and the exact values flag
-        -------------------------------------------------------------
         """
         print "We got %d images"%len(self.images)
         if not self.arrays:
@@ -241,13 +221,11 @@ class VSIA(NumericModule):
 
     def doOperation(self,preview=0):
         """
-        --------------------------------------------------------------
         Method: doOperation
         Created: 10.11.2004
         Creator: KP,JV
         Description: Does visualization of sparse intensity aggregations
                      for the whole dataset
-        -------------------------------------------------------------
         """
         imagedata=self.selectPoints(preview)
         if preview:
@@ -270,7 +248,6 @@ class VSIA(NumericModule):
 
     def doGaussianSplat(self,imagedata,geom):
         """
-        --------------------------------------------------------------
         Method: doGaussianSplat
         Created: 16.12.2004
         Creator: KP
@@ -278,7 +255,6 @@ class VSIA(NumericModule):
         Parameters:
             imagedata   The original imagedata
             geom        Filter that will produce polydata of the imagedata
-        -------------------------------------------------------------
         """
         print "Splatting with radius %f..."%self.gaussianRadius
         splatter=vtk.vtkGaussianSplatter()
@@ -292,7 +268,6 @@ class VSIA(NumericModule):
 
     def doShepardMethod(self,imagedata,geom):
         """
-        --------------------------------------------------------------
         Method: doShepardMethod
         Created: 16.12.2004
         Creator: KP
@@ -300,14 +275,12 @@ class VSIA(NumericModule):
         Parameters:
             imagedata   The original imagedata
             geom        Filter that will produce polydata of the imagedata
-        -------------------------------------------------------------
         """
         pass
 
 
     def doSurfaceReconstruction(self,imagedata,geom):
         """
-        --------------------------------------------------------------
         Method: doSurfaceReconstruction
         Created: 16.12.2004
         Creator: KP
@@ -316,13 +289,11 @@ class VSIA(NumericModule):
         Parameters:
             imagedata   The original imagedata
             geom        Filter that will produce polydata of the imagedata
-        -------------------------------------------------------------
         """
         pass
 
     def doDelaunay3D(self,imagedata,geom):
         """
-        --------------------------------------------------------------
         Method: doDelaunay3D
         Created: 16.12.2004
         Creator: KP
@@ -330,7 +301,6 @@ class VSIA(NumericModule):
         Parameters:
             imagedata   The original imagedata
             geom        Filter that will produce polydata of the imagedata
-        -------------------------------------------------------------
         """
         pass
 
