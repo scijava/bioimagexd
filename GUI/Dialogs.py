@@ -6,37 +6,61 @@
  Creator: KP
  Description:
 
- Shortcut methods for displaying most of the normal dialogs.
- 
+ Shortcut methods for displaying most of the normal dialogs. 
 
  Modified: 28.01.2005 KP - Created the modules
+           12.03.2005 KP - Made file dialogs save the last openend path
 
- Selli 2 includes the following persons:
+ BioImageXD includes the following persons:
+ 
+ DW - Dan White, dan@chalkie.org.uk
  KP - Kalle Pahajoki, kalpaha@st.jyu.fi
-
- Copyright (c) 2004 Selli 2 Project.
+ PK - Pasi Kankaanp‰‰, ppkank@bytl.jyu.fi
+ 
+ Copyright (c) 2005 BioImageXD Project.
 """
-__author__ = "Selli 2 Project <http://sovellusprojektit.it.jyu.fi/selli/>"
-__version__ = "$Revision: 1.71 $"
+__author__ = "BioImageXD Project"
+__version__ = "$Revision: 1.22 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
-import math
+import Configuration
 import wx
+import os.path
 
 
 def showmessage(parent,message,title,flags=wx.OK):
+    """
+    Method: showMessage(parent,message,title)
+    Created: 28.01.2005, KP
+    Description: A method to show a message
+    """
     dlg=wx.MessageDialog(parent,message,title,flags)
     dlg.ShowModal()
     dlg.Destroy()
 
 def showwarning(parent,message,title,flags=wx.OK|wx.ICON_WARNING):
+    """
+    Method: showwarning(parent,message,title)
+    Created: 28.01.2005, KP
+    Description: A method to show a warning
+    """    
     showmessage(parent,message,title,flags)
     
 def showerror(parent,message,title,flags=wx.OK|wx.ICON_ERROR):
+    """
+    Method: showerror(parent,message,title)
+    Created: 28.01.2005, KP
+    Description: A method to show an error message
+    """    
     showmessage(parent,message,title,flags)
 
     
 def askcolor(**kws):
+    """
+    Method: askcolor()
+    Created: 28.01.2005, KP
+    Description: A method to input a color from user
+    """    
     dlg = wx.ColourDialog(self)
     dlg.GetColourData().SetChooseFull(True)
     if dlg.ShowModal()==wx.ID_OK:
@@ -63,25 +87,77 @@ def askcolor(**kws):
     return (gcolor,"#%2x%2x%2x"%(gcolor[0],gcolor[1],gcolor[2]))
 
 
-def askDirectory(parent,title,initialDir="."):
+def askDirectory(parent,title,initialDir=None):
+    """
+    Method: askDirectory(parent, title, initialDir)
+    Created: 28.01.2005, KP
+    Description: A method for showing a directory selection dialog
+    """    
     filepath=""
+    conf=Configuration.getConfiguration()
+    remember=conf.getConfigItem("RememberPath","Paths")
+    if not initialDir:
+        if remember:
+            initialDir = conf.getConfigItem("LastPath","Paths")
+        else:
+            initialDir = conf.getConfigItem("DataPath","Paths")
     dlg = wx.DirDialog(parent, title,initialDir,
                       style=wx.DD_DEFAULT_STYLE|wx.DD_NEW_DIR_BUTTON)
     if dlg.ShowModal() == wx.ID_OK:
         filepath=dlg.GetPath()
+        
+    if remember:
+        conf.setConfigItem("LastPath","Paths",filepath)
     dlg.Destroy()
     return filepath
 
+def askOpenFileName(parent,title,wc):
+    """
+    Method: menuOpen()
+    Created: 12.03.2005, KP
+    Description: A method to show a open file dialog that supports multiple files
+    """
+    asklist=[]
+    conf=Configuration.getConfiguration()
+    remember=conf.getConfigItem("RememberPath","Paths")
+    lastpath=""
+    if remember:
+        lastpath=conf.getConfigItem("LastPath","Paths")
+    dlg=wx.FileDialog(parent,title,lastpath,wildcard=wc,style=wx.OPEN|wx.MULTIPLE)
+    if dlg.ShowModal()==wx.ID_OK:
+        asklist=dlg.GetPaths()
+        if remember:
+            filepath=os.path.dirname(asklist[0])
+            conf.setConfigItem("LastPath","Paths",filepath)
+        
+    dlg.Destroy()
+    return asklist
     
 def askSaveAsFileName(parent,operation,name):
+    """
+    Method: askSaveAsFileName(parent,operation,name)
+    Created: 28.01.2005, KP
+    Description: A method to show a save as dialog
+    """    
     initFile="%s.du"%(name)
+    conf=Configuration.getConfiguration()
+    remember=conf.getConfigItem("RememberPath","Paths")
+    if not initialDir:
+        if remember:
+            initialDir = conf.getConfigItem("LastPath","Paths")
+        else:
+            initialDir = conf.getConfigItem("DataPath","Paths")
     
     wc="%s Dataunit (*.du)|*.du"%operation
     filename=""
-    dlg=wx.FileDialog(parent,"Write %s Data Unit to file"%operation,defaultFile=initFile,wildcard=wc,style=wx.SAVE)
+    dlg=wx.FileDialog(parent,"Write %s Data Unit to file"%operation,defaultFile=initFile,defaultDir=initialDir,wildcard=wc,style=wx.SAVE)
     filename=None
     if dlg.ShowModal()==wx.ID_OK:
         filename=dlg.GetPath()
+    if remember:
+        filepath=os.path.dirname(filename)
+        conf.setConfigItem("LastPath","Paths",filepath)
+                    
     dlg.Destroy()
     if filename:
         if filename[-3:].lower()!=".du":
