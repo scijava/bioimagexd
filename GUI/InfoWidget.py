@@ -38,8 +38,10 @@ smX="<font size=\"-1\">x</font>"
 infoString="""<html><body bgcolor=%(bgcolor)s">
 <table>
 <tr><td>Dimensions:</td><td>%(xdim)d %(smX)s %(ydim)d %(smX)s %(zdim)d (%(nf)s%(xdimm).2f%(fe)s&mu;m %(smX)s %(nf)s%(ydimm).2f%(fe)s&mu;m %(smX)s %(nf)s%(zdimm).2f%(fe)s&mu;m)</td></tr>
+<tr><td>Time Points:</td><td>%(tps)d</td></tr>
 <tr><td>Voxel Size:</td><td>%(nf)s%(voxelX).2f%(fe)s&mu;m %(smX)s %(nf)s%(voxelY).2f%(fe)s&mu;m %(smX)s %(nf)s%(voxelZ).2f%(fe)s&mu;m</td></tr>
 <tr><td>Spacing:</td><td>%(spX).2f %(smX)s %(spY).2f %(smX)s %(spZ).2f</td></tr>
+<tr><td>Data type:</td><td>%(bitdepth)s bit</td></tr>
 </table>
 </body></html>
 """
@@ -64,7 +66,7 @@ class InfoWidget(wx.Panel):
 
         self.preview=PreviewFrame.SingleUnitProcessingPreview(self,
         previewsize=(384,384),pixelvalue=False,renderingpreview=False,
-        zoom=True,timeslider=False)
+        zoom=False,timeslider=False,scrollbars=False,zoom_factor=PreviewFrame.ZOOM_TO_FIT)
         
         self.mainsizer.Add(self.preview,(0,0),flag=wx.EXPAND|wx.ALL)
         
@@ -89,7 +91,8 @@ class InfoWidget(wx.Panel):
             dims=(0,0,0)
             spacing=(0,0,0)
             voxelsize=(0,0,0)
-            
+            bitdepth=8
+            tps=0
         else:
             dims=dataunit.getDimensions()
             spacing=dataunit.getSpacing()
@@ -98,6 +101,10 @@ class InfoWidget(wx.Panel):
             unit.addSourceDataUnit(dataunit)
             self.dataUnit=unit
             self.preview.setDataUnit(self.dataUnit)
+            tps=dataunit.getLength()
+            bitdepth="8"
+            # TODO: Have this data available in dataunit
+            #bitdepth=dataunit.getScalarSize()*dataunit.getComponentAmount()
         #self.setSpacing(spacing)
         #self.setDimensions(dims)
         #self.setVoxelSize(voxelsize)
@@ -107,13 +114,15 @@ class InfoWidget(wx.Panel):
         voxelY*=1000000
         voxelZ*=1000000
         spX,spY,spZ=spacing
+        
         col=self.GetBackgroundColour()
         bgcol="#%2x%2x%2x"%(col.Red(),col.Green(),col.Blue())
         dict={"smX":smX,"xdim":xdim,"ydim":ydim,"zdim":zdim,
         "voxelX":voxelX,"voxelY":voxelY,"voxelZ":voxelZ,
         "spX":spX,"spY":spY,"spZ":spZ,"xdimm":xdim*voxelX,
         "ydimm":ydim*voxelY,"zdimm":zdim*voxelZ,"bgcolor":bgcol,
-        "fe":"</font>","nf":"<font size=\"normal\">"}
+        "fe":"</font>","nf":"<font size=\"normal\">",
+        "tps":tps,"bitdepth":bitdepth}
         
         self.htmlpage.SetPage(infoString%dict)
         
