@@ -12,6 +12,7 @@
 
  Modified: 03.11.2004 KP - Added the LSMApplication class to encapsulate Tk root
                            creation
+	   10.1.2005 KP - Changed class to use wxPython classes
 
  Selli includes the following persons:
  JH - Juha Hyytiäinen, juhyytia@st.jyu.fi
@@ -20,7 +21,6 @@
  JV - Jukka Varsaluoma,varsa@st.jyu.fi
 
  Copyright (c) 2004 Selli Project.
- --------------------------------------------------------------
 """
 __author__ = "Selli Project <http://sovellusprojektit.it.jyu.fi/selli/>"
 __version__ = "$Revision: 1.22 $"
@@ -63,7 +63,6 @@ def fixpaths():
     print sys.path
 
 fixpaths()
-#from wx.Python.wx. import *
 import wx
 
 import GUI
@@ -71,12 +70,9 @@ import GUI
 
 class LSMApplication(wx.App):
     """
-    --------------------------------------------------------------
     Class: LSMApplication
-    Created: 03.11.2004
-    Creator: KP
-    Description: Encapsulates the wx.Python initialization and mainwindow creation
-    -------------------------------------------------------------
+    Created: 03.11.2004, KP
+    Description: Encapsulates the wxPython initialization and mainwindow creation
     """
 
         
@@ -89,12 +85,9 @@ class LSMApplication(wx.App):
 
     def run(self):
         """
-        --------------------------------------------------------------
         Method: run
-        Created: 03.11.2004
-        Creator: KP
-        Description: Run the Tk main loop
-        -------------------------------------------------------------
+        Created: 03.11.2004, KP
+        Description: Run the wxPython main loop
         """
         self.MainLoop()
 
