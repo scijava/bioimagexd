@@ -48,6 +48,8 @@ class Scattergram(wx.Panel):
         self.size=size
         self.slice=None
         self.z = 0
+        self.countVoxels = 0
+        self.wholeVolume = 0
         self.dataUnit=0
         self.scatter=None
         self.Bind(wx.EVT_PAINT,self.OnPaint)
@@ -55,7 +57,44 @@ class Scattergram(wx.Panel):
         self.Bind(wx.EVT_LEFT_DOWN,self.markRubberband)
         self.Bind(wx.EVT_MOTION,self.updateRubberband)
         self.Bind(wx.EVT_LEFT_UP,self.setThresholdToRubberband)
+        self.Bind(wx.EVT_RIGHT_DOWN,self.onRightClick)
+        self.ID_COUNTVOXELS=wx.NewId()
+        self.ID_WHOLEVOLUME=wx.NewId()
+        self.menu=wx.Menu()
+        item = wx.MenuItem(self.menu,self.ID_COUNTVOXELS,"Show frequency",kind=wx.ITEM_CHECK)
+        self.Bind(wx.EVT_MENU,self.setVoxelCount,id=self.ID_COUNTVOXELS)
+        self.menu.AppendItem(item)
+        item = wx.MenuItem(self.menu,self.ID_WHOLEVOLUME,"Show scattergram of whole volume",kind=wx.ITEM_CHECK)
+        self.Bind(wx.EVT_MENU,self.setWholeVolume,id=self.ID_WHOLEVOLUME)
+        self.menu.AppendItem(item)
         
+    def onRightClick(self,event):
+        """
+        Method: onRightClick
+        Created: 02.04.2005, KP
+        Description: Method that is called when the right mouse button is
+                     pressed down on this item
+        """      
+        self.PopupMenu(self.menu,event.GetPosition())
+        #menu.Destroy()
+        
+    def setVoxelCount(self,event):
+        """
+        Method: setVoxelCount()
+        Created: 02.04.2005, KP
+        Description: Method to set on / off the voxel counting mode of scattergram
+        """       
+        self.countVoxels = event.Checked()
+        
+            
+    def setWholeVolume(self,event):
+        """
+        Method: setWholeVolume()
+        Created: 02.04.2005, KP
+        Description: Method to set on / off the construction of scattergram from 
+                     the whole volume
+        """       
+        self.wholeVolume = event.Checked()
         
 
     def markRubberband(self,event):
@@ -86,6 +125,9 @@ class Scattergram(wx.Panel):
         x1,y1=self.rubberstart
         x2,y2=self.rubberend
         print "Using %d-%d as green and %d-%d as red range"%(x1,x2,y1,y2)
+        self.rubberstart = None
+        self.rubberend = None
+        self.Refresh()
 
     def setZSlice(self,z):
         """
@@ -132,7 +174,7 @@ class Scattergram(wx.Panel):
             reddata=red.getTimePoint(tp)
             greendata=green.getTimePoint(tp)
             #print "Using z=",self.z,reddata,greendata
-            scatter=ImageOperations.scatterPlot(reddata,greendata,self.z)
+            scatter=ImageOperations.scatterPlot(reddata,greendata,self.z, self.countVoxels, self.wholeVolume)
             self.scatter=scatter.Mirror(0)
         
         self.Refresh()
