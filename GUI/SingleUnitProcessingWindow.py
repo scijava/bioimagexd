@@ -101,11 +101,14 @@ class SingleUnitProcessingWindow(TaskWindow.TaskWindow):
 
         self.SetTitle("Single Dataset Series Processing")
 
+        self.createToolBar()
+        
         self.mainsizer.Layout()
         self.mainsizer.Fit(self.panel)
 
     def createIntensityInterpolationPanel(self):
-        self.interpolationPanel=wx.Panel(self.editIntensityPanel)
+        self.interpolationPanel=wx.Panel(self.settingsNotebook)
+        #self.interpolationPanel=wx.Panel(self.iTFEditor)
         self.interpolationSizer=wx.GridBagSizer()
         lbl=wx.StaticText(self.interpolationPanel,-1,"Interpolate intensities:")
         self.interpolationSizer.Add(lbl,(0,0))
@@ -129,22 +132,36 @@ class SingleUnitProcessingWindow(TaskWindow.TaskWindow):
         for entry in self.entries:
             entry.Bind(EVT_TEXT,self.setInterpolationTimePoints)
 
+        last=0
         for i in range(self.numOfPoints):
             lbl,entry,btn=self.lbls[i],self.entries[i],self.btns[i]
             self.interpolationSizer.Add(lbl,(i+1,0))
             self.interpolationSizer.Add(entry,(i+1,1))
             self.interpolationSizer.Add(btn,(i+1,2))
+            last=i+1
 
-        self.editIntensitySizer.Add(self.interpolationPanel,(1,0))
+        #self.editIntensitySizer.Add(self.interpolationPanel,(0,1))
         self.interpolationPanel.SetSizer(self.interpolationSizer)
         self.interpolationPanel.SetAutoLayout(1)
         self.interpolationSizer.SetSizeHints(self.interpolationPanel)
 
+        self.settingsNotebook.InsertPage(1,self.interpolationPanel,"Interpolation")
+        
+        self.interpolationBox=wx.BoxSizer(wx.HORIZONTAL)
 
+        self.reset2Btn=wx.Button(self.interpolationPanel,-1,"Reset all timepoints")
+        self.reset2Btn.Bind(EVT_BUTTON,self.resetTransferFunctions)
+        self.interpolationBox.Add(self.reset2Btn)
+
+        self.interpolateBtn=wx.Button(self.interpolationPanel,-1,"Interpolate")
+        self.interpolateBtn.Bind(EVT_BUTTON,self.startInterpolation)
+        self.interpolationBox.Add(self.interpolateBtn)
+        self.interpolationSizer.Add(self.interpolationBox,(last+1,0))
+        
+        
         #self.mainsizer.Add(self.interpolationPanel,(1,0))
-        self.panel.Layout()
-        self.mainsizer.Fit(self.panel)
-        self.SetSize(self.GetSize())
+        #self.panel.Layout()
+        #self.mainsizer.Fit(self.panel)
 
 
     def createIntensityTransferPage(self):
@@ -177,13 +194,10 @@ class SingleUnitProcessingWindow(TaskWindow.TaskWindow):
         self.copyiTFBtn.Bind(EVT_BUTTON,self.copyTransferFunctionToAll)
         self.box.Add(self.copyiTFBtn)
 
-        self.interpolateBtn=wx.Button(self.editIntensityPanel,-1,"Interpolate")
-        self.interpolateBtn.Bind(EVT_BUTTON,self.startInterpolation)
-        self.box.Add(self.interpolateBtn)
-
+        
         self.editIntensityPanel.SetSizer(self.editIntensitySizer)
         self.editIntensityPanel.SetAutoLayout(1)
-        self.settingsNotebook.InsertPage(1,self.editIntensityPanel,"Intensity Transfer Function")
+        self.settingsNotebook.InsertPage(1,self.editIntensityPanel,"Transfer Function")
         
 
     def setInterpolationTimePoints(self,event):
@@ -466,7 +480,7 @@ class SingleUnitProcessingWindow(TaskWindow.TaskWindow):
         self.solitaryThreshold.GetValue())
 
 
-    def doProcessingCallback(self):
+    def doProcessingCallback(self,event=None):
         """
         Method: doProcessingCallback()
         Created: 03.11.2004, KP
