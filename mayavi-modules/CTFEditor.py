@@ -196,47 +196,54 @@ class PiecewiseFunction:
         return (event.y>=0)&(event.y<=self.height ())
     
     def resetXYLast(self, event):
-        self.xLast = -1
+	self.xLast = -1
         self.yLast = -1
-                
+
+	
     def setXYLast(self, event):
+	if self.xLast < 0:
+	    self.sxFirst = event.x
+	    self.syFirst = event.y
         self.xLast = event.x
-        y = event.y
+        y = event.y	
         if(y<0):
             y = 0
         elif(y>self.height ()):
             y = self.height ()
         self.yLast = y
-
-    def onLineFxn(self,event):
-        if( self.withinXBounds(event) ):
-            y = event.y
-            if(y<0):
-                y = 0
-            elif(y>self.height ()):
-                y = self.height ()
-
-            x = float(event.x)
-            y = float(event.y)
+        self.sxLast = self.xLast
+	self.syLast = self.yLast
             
-            if(self.xLast<0):
-                t, f = self.global2parametric (x, y)
+    def straighten(self):
+	print "Line from %d,%d to %d,%d"%(self.sxFirst,self.syFirst,self.sxLast,self.syLast)
+	ft,ff = self.global2parametric(self.sxFirst,self.syFirst)
+	lt,lf = self.global2parametric(self.sxLast,self.syLast)
+	self.Fxn.RemovePoint(ft)
+	self.Fxn.AddPoint(ft,ff)
+	
+	self.Fxn.RemovePoint(lt)
+	self.Fxn.AddPoint(lt,lf)
 
-                if self.line0:
-                    for i in range(t,self.line0[0]):
-                        self.Fxn.RemovePoint(i)
-                    self.Fxn.AddPoint(self.line0[0],self.line0[1])
-                    self.Fxn.AddPoint(t,f)
-                    self.Fxn.Compute()
-                    self.redraw_fxn ()
-                    self.line0=None
-                else:
-                    self.line0=(t,f)
-            self.setXYLast(event)
-        else:
-            self.resetXYLast(event)
-            
+	cnt = abs(self.sxLast-self.sxFirst)
+	if (self.sxFirst < self.sxLast):
+	    x0=self.sxFirst
+	    y0=self.syFirst
+	    x1=self.sxLast
+	    dy=(self.syLast - self.syFirst)/float(cnt)
+	else:
+	    x0=self.sxLast
+	    y0=self.syLast
+	    x1=self.syFirst
+	    dy=(self.syFirst - self.syLast)/float(cnt)
+	print "dy=",dy,"cnt=",cnt
+	for i in range(cnt):
+	    t, f = self.global2parametric (x0+i+1, y0+dy*(i+1))
+	    self.Fxn.RemovePoint (t)
+	    self.Fxn.AddPoint (t, f)
+		    
     def onModifyFxn(self, event):
+	# Store a variable noting that we're the last modified function
+	self.canv.lastFunction = self
         if( self.withinXBounds(event) ):
             y = event.y
             if(y<0):
@@ -352,13 +359,14 @@ class TransferFunctionEditor(Tkinter.Frame):
         self.blueFxn = PiecewiseFunction(self.canv, 'blue', ctf, 'blue')
         self.alphaFxn = PiecewiseFunction(self.canv, 'white', otf)
 
-        canv.bind('<Shift-Button-1>',self.redFxn.onLineFxn)
       
         canv.bind('<Shift-B1-Motion>',self.alphaFxn.onModifyFxn)
         canv.bind('<B1-Motion>',self.redFxn.onModifyFxn)
         canv.bind('<B2-Motion>',self.greenFxn.onModifyFxn)
         canv.bind('<Control-B1-Motion>',self.greenFxn.onModifyFxn)
-        canv.bind('<B3-Motion>',self.blueFxn.onModifyFxn)
+
+	canv.bind('<Double-Button-1>',self.straightenLine)
+	
         canv.bind('<Control-B2-Motion>',self.greenFxn.onModifyFxn)
         canv.bind('<Leave>',self.resetXYLast)
         canv.bind('<ButtonRelease>',self.resetXYLast)
@@ -453,7 +461,13 @@ class TransferFunctionEditor(Tkinter.Frame):
                 
     def withinCanvas(self, event):
         return (event.x>=0)&(event.x<=self.width ())&(event.y>=0)&(event.y<=self.height ())
-     
+    
+    def straightenLine(self,event):
+	print "straightenLine()"
+	print "lastFunction.straighten()"
+	self.canv.lastFunction.straighten()
+        self.redraw()
+ 
     def resetXYLast(self, event):
         self.alphaFxn.resetXYLast(event)
         self.redFxn.resetXYLast(event)
