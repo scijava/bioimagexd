@@ -1,33 +1,39 @@
 # -*- coding: cp1252 -*-
 """
- Unit: TreeWidget.py
- Project: Selli
- Created: 03.11.2004
+ Unit: TreeWidget
+ Project: BioImageXD
+ Created: 10.01.2005
  Creator: KP
  Description:
 
  A widget for displaying a hierarchical tree of items.
 
- Modified: 03.11.2004 KP - Added methods for getting filenames of selected items
-           08.11.2004 KP - Tree now selects dataset series instead of single 
-                           datasets
+ Modified: 10.01.2005 - Re-wrote old module with wxPython
 
- Selli includes the following persons:
- JH - Juha Hyytiäinen, juhyytia@st.jyu.fi
- JM - Jaakko Mäntymaa, jahemant@cc.jyu.fi
+ BioImageXD includes the following persons:
+ DW - Dan White, dan@chalkie.org.uk
  KP - Kalle Pahajoki, kalpaha@st.jyu.fi
- JV - Jukka Varsaluoma,varsa@st.jyu.fi
-
- Copyright (c) 2004 Selli Project.
+ PK - Pasi Kankaanpää, ppkank@bytl.jyu.fi
+ 
+ Copyright (c) 2005 BioImageXD Project.
 """
-__author__ = "Selli Project <http://sovellusprojektit.it.jyu.fi/selli/>"
-__version__ = "$Revision: 1.14 $"
-__date__ = "$Date: 2005/01/13 14:52:39 $"
-
+__author__ = "BioImageXD Project"
+__version__ = "$Revision: 1.21 $"
+__date__ = "$Date: 2005/01/13 13:42:03 $"
 import wx
 
 class TreeWidget(wx.Panel):
+    """
+    Class: TreeWidget
+    Created: 10.01.2005, KP
+    Description: A panel containing thre tree
+    """
     def __init__(self,parent,callback=None):
+        """
+        Method: __init__
+        Created: 10.01.2005, KP
+        Description: Initialization
+        """        
         wx.Panel.__init__(self,parent,-1)
         self.Bind(wx.EVT_SIZE,self.onSize)
         self.treeId=wx.NewId()
@@ -68,13 +74,34 @@ class TreeWidget(wx.Panel):
         self.tree.Expand(self.root)
         
     def onSize(self, event):
+        """
+        Method: onSize()
+        Created: 10.01.2005, KP
+        Description: Callback that modifies the tree size according to
+                     own changes in size
+        """                
         w,h = self.GetClientSizeTuple()
         self.tree.SetDimensions(0,0,w,h)
     
     def hasItem(self,path):
+        """
+        Method: hasItem(path)
+        Created: 10.01.2005, KP
+        Description: Returns whether the tree has a specified item
+        """            
         return path in self.items
     
     def addToTree(self,name,path,objtype,objs):
+        """
+        Method: addToTree(name, path, objectype, objs)
+        Created: 10.01.2005, KP
+        Description: Add item to the tree
+        Parameters:
+            name        Name of the item
+            path        Path of the item
+            objtype     Type of the object (lsm, du)
+            objs        objects to add
+        """            
         item=None
         isz = (16,16)
         il = wx.ImageList(isz[0], isz[1])
@@ -99,19 +126,39 @@ class TreeWidget(wx.Panel):
             #self.tree.SetItemImage(added,fldropenidx,which=wx.TreeItemIcon_Expanded)
 
     def getSelectedDataUnits(self):
+        """
+        Method: getSelectedDataUnits()
+        Created: 10.01.2005, KP
+        Description: Returns the selected dataunits
+        """            
         items=self.tree.GetSelections()
         objs=[self.tree.GetPyData(x) for x in items]
         print "Selected items=",objs
         return objs
 
 class LSMTree(wx.TreeCtrl):
+    """
+    Class: LSMTree
+    Created: 10.01.2005, KP
+    Description: A tree inherited from wx.TreeCtrl
+    """            
     def __init__(self,parent,id,callback=None):
+        """
+        Method: __init__
+        Created: 10.01.2005, KP
+        Description: Initialization
+        """                
         wx.TreeCtrl.__init__(self,parent,id,wx.DefaultPosition,wx.DefaultSize,
         wx.TR_HAS_BUTTONS|wx.TR_MULTIPLE)
         self.Bind(wx.EVT_TREE_SEL_CHANGED,self.onSelectionChanged,id=self.GetId())
         self.callback=callback
         
     def onSelectionChanged(self,event):
+        """
+        Method: onSelectionChanged
+        Created: 10.01.2005, KP
+        Description: A event handler called when user selects and item.
+        """        
         item=event.GetItem()
         obj=self.GetPyData(item)
         if obj:
