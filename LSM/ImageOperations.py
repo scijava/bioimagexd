@@ -69,17 +69,27 @@ def setFromParameterList(iTF,list):
 
 def vtkImageDataToWxImage(data,slice=-1,startpos=None,endpos=None):
     if slice>=0:
+        #print "Getting slice=",slice
         data=getSlice(data,slice,startpos,endpos)
     exporter=vtk.vtkImageExport()
+    data.SetUpdateExtent(data.GetWholeExtent())
+    data.Update()
+    
     exporter.SetInput(data)
 
     siz=exporter.GetDataMemorySize()
+    #print "siz=",siz
     fs="%ds"%siz
+    #print "size=",siz
     ss=struct.pack(fs,"")
+    #print "len(ss)=",len(ss)
     exporter.SetExportVoidPointer(ss)
+    #print "Exporting..."
     exporter.Export()
+    
 
     x,y,z=data.GetDimensions()
+    #print "Dimensions=",x,y,z
     #print "Original image size=(%d,%d)"%(x,y)
     image=wx.EmptyImage(x,y)
     #image.SetData(exporter.GetPointerToData())
@@ -87,11 +97,14 @@ def vtkImageDataToWxImage(data,slice=-1,startpos=None,endpos=None):
     return image
 
     
-def vtkImageDataToPreviewBitmap(imageData,color,width=0,height=0):
+def vtkImageDataToPreviewBitmap(imageData,color,width=0,height=0,bgcolor=(0,0,0)):
+    mip=vtk.vtkImageSimpleMIP()
+    mip.SetInput(imageData)
     x,y,z=imageData.GetDimensions()
     
     ctf=vtk.vtkColorTransferFunction()
-    ctf.AddRGBPoint(0.0,0,0,0)
+    r,g,b=(0,0,0)
+    ctf.AddRGBPoint(0.0,r,g,b)
     r,g,b=color
     r/=255
     g/=255
@@ -100,9 +113,9 @@ def vtkImageDataToPreviewBitmap(imageData,color,width=0,height=0):
     
     # We do a simple mip that sets each pixel (x,y) of the image to have the
     # value of the brightest voxel (x,y,0) - (x,y,z)
-    mip=vtk.vtkImageSimpleMIP()
-    mip.SetInput(imageData)
-#    mip.Update()
+    #imageData.SetUpdateExtent(imageData.GetWholeExtent())
+    #print "doing mip of ",imageData
+    #mip.Update()
 #    output=mip.GetOutput()
     maptocolor=vtk.vtkImageMapToColors()
     maptocolor.SetInput(mip.GetOutput())
@@ -110,7 +123,8 @@ def vtkImageDataToPreviewBitmap(imageData,color,width=0,height=0):
     maptocolor.SetOutputFormatToRGB()
     maptocolor.Update()
 
-    image = vtkImageDataToWxImage(maptocolor.GetOutput())
+    imagedata=maptocolor.GetOutput()
+    image = vtkImageDataToWxImage(imagedata)
 
     if not width and height:
         aspect=float(x)/y
@@ -125,13 +139,38 @@ def vtkImageDataToPreviewBitmap(imageData,color,width=0,height=0):
     bitmap=image.ConvertToBitmap()
     return bitmap
 
-def scatterPlot(imagedata1,imagedata2,z):
+def scatterPlot(imagedata1,imagedata2,z,countVoxels, wholeVolume):
+    """
+    Method: scatterPlot(imageData,imageData2,z,countVoxels,wholeVolume)
+    Created: 25.03.2005, KP
+    Description: Create scatterplot
+    """       
+
     scatter=vtk.vtkImageScatterPlot()
-    scatter.SetZSlice(z)
+    if not wholeVolume:
+        scatter.SetZSlice(z)
+    if countVoxels:
+        scatter.CountVoxelsOn()
     scatter.AddInput(imagedata1)
     scatter.AddInput(imagedata2)
     scatter.Update()
-    image=vtkImageDataToWxImage(scatter.GetOutput())
+    data=scatter.GetOutput()
+    if countVoxels:
+        ctf=vtk.vtkColorTransferFunction()
+        n = scatter.GetNumberOfPairs()
+        ctf.AddRGBPoint(0,0.0, 0.0, 0.0)
+        ctf.AddRGBPoint(10,0.0,0.0,1.0)
+        ctf.AddRGBPoint(n/2,1.0,1.0,0.0)
+        ctf.AddRGBPoint(n,1.0, 0.0, 0.0)
+        maptocolor=vtk.vtkImageMapToColors()
+        maptocolor.SetInput(scatter.GetOutput())
+        maptocolor.SetLookupTable(ctf)
+        maptocolor.SetOutputFormatToRGB()
+        maptocolor.Update()
+        data=maptocolor.GetOutput()
+    
+        
+    image=vtkImageDataToWxImage(data)
     return image
     
 def getZoomFactor(x1,y1,x2,y2):
