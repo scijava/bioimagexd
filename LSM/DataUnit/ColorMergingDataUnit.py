@@ -16,7 +16,6 @@
  JV - Jukka Varsaluoma,varsa@st.jyu.fi
 
  Copyright (c) 2004 Selli Project.
- --------------------------------------------------------------
 """
 
 __author__ = "Selli Project <http://sovellusprojektit.it.jyu.fi/selli/>"
@@ -33,26 +32,20 @@ import vtk
 
 class ColorMergingDataUnit(CombinedDataUnit):
     """
-    --------------------------------------------------------------
     Class: ColorMergingDataUnit
-    Created: 03.11.2004
-    Creator: JM
+    Created: 03.11.2004, JM
     Description: Combined DataUnit that forms rgb-data from the
     assigned SourceDataUnits
-    --------------------------------------------------------------
     """
 
     def __init__(self,name=""):
         """
-        --------------------------------------------------------------
         Method: __init__(name)
-        Created: 08.11.2004
-        Creator: JV
+        Created: 08.11.2004, JV
         Description: Initializes the data unit and creates color merging
                      module for use in generating preview and actual
                      merged data.
                      (Made after ColocalizationDataUnit)
-        -------------------------------------------------------------
         """
         CombinedDataUnit.__init__(self,name)
         self.module=ColorMerging.ColorMerging()
@@ -60,26 +53,20 @@ class ColorMergingDataUnit(CombinedDataUnit):
 
     def setDataSource(self, dataSource):
         """
-        --------------------------------------------------------------
         Method: setDataSource
-        Created: 23.11.2004
-        Creator: JV
+        Created: 23.11.2004, JV
         Description: Sets a DataSource for this SourceDataUnit
         Parameters: dataSource  A DataSource to manage actual
                                 image data located on disk
-        -------------------------------------------------------------
         """
         CombinedDataUnit.setDataSource(self,dataSource)
         
     def loadCommonSettings(self, dataSource):
         """
-        --------------------------------------------------------------
         Method: loadCommonSettings
-        Created: 16.12.2004
-        Creator: JM
+        Created: 16.12.2004, JM
         Description: Loads the settings common to whole ColorCombinationDataUnit
         Parameters: dataSource  A DataSource that reads the actual data
-        -------------------------------------------------------------
         """
 #         #Then load the settings specific to ColocalizationDataUnit
 #         color=dataSource.getSetting("ColocalizationDataUnit","color")
@@ -93,44 +80,35 @@ class ColorMergingDataUnit(CombinedDataUnit):
 
     def setOpacityTransfer(self, opacityTransfer):
         """
-        --------------------------------------------------------------
         Method: setOpacityTransfer
-        Created: 04.11.2004
-        Creator: JM
+        Created: 04.11.2004, JM
         Description: Sets the Intensity transfer function used to produce the
                      alpha channel
         Parameters: opacityTransfer  The intensity transfer function
-        -------------------------------------------------------------
         """
         self.opacityTransfer = opacityTransfer
 
     def getOpacityTransfer(self):
         """
-        --------------------------------------------------------------
         Method: getOpacityTransfer
-        Created: 04.11.2004
-        Creator: JM
+        Created: 04.11.2004, JM
         Description: Returns the current intensity transfer function used to
                      produce the alpha channel
-        -------------------------------------------------------------
         """
         return self.opacityTransfer
 
     def doPreview(self,z,renew,timePoint=0):
         """
-        --------------------------------------------------------------
         Method: doPreview
-        Created: 08.11.2004
-        Creator: JM,JV
+        Created: 08.11.2004, JM, JV
         Description: Makes a two-dimensional preview of the color
                      combination using current settings
         Parameters:  depth       The preview depth
-	                 renew       Flag indicating, whether the preview should be
+                     renew       Flag indicating, whether the preview should be
                                  regenerated or if a stored image can be reused
-		             timePoint   The timepoint from which to generate the preview
+                     timePoint   The timepoint from which to generate the preview
                                  Defaults to 0
 
-        -------------------------------------------------------------
         """
 
         # If the given timepoint > number of timepoints,
@@ -156,14 +134,11 @@ class ColorMergingDataUnit(CombinedDataUnit):
 
     def newSetting(self, settingString="", rgb=(255,255,255)):
         """
-        --------------------------------------------------------------
         Method: newSetting
-        Created: 17.11.2004
-        Creator: JM
+        Created: 17.11.2004, JM
         Description: returns a new ColorCombinationDataUnitSetting
         Parameters:  settingString  If specified, the new setting is parsed
                                     from this string
-        -------------------------------------------------------------
         """
         #if (settingString == ""):
         #    return ColorCombinationDataUnitSetting()
@@ -171,22 +146,17 @@ class ColorMergingDataUnit(CombinedDataUnit):
 
     def initializeModule(self):
         """
-        --------------------------------------------------------------
         Method: initializeModule()
-        Created: 1.12.2004
-        Creator: JM,KP
+        Created: 1.12.2004, JM, KP
         Description: Code to initialize the module when it has been reset
         """
-        #self.module.setBitDepth(self.format)
-        pass
+        self.module.setZoomFactor(self.zoomFactor)
 
 
     def addInputToModule(self,dataunit,image):
         """
-        --------------------------------------------------------------
         Method: addInputToModule(dataunit,image)
-        Created: 1.12.2004
-        Creator: JM,KP,JV
+        Created: 1.12.2004, JM, KP, JV
         Description: A method to add a dataunit as an input to the module
                      This is a method of its own because adding input data to
                      the module requires the parameters associated with the
@@ -195,7 +165,6 @@ class ColorMergingDataUnit(CombinedDataUnit):
         Parameters:
                 dataunit    The dataunit that is the source of the image data
                 image       The imagedata to be added as input to the module
-        -------------------------------------------------------------
         """
         # get the settings for this timepoint from the settings
         setting=self.dataUnitsAndSettings[dataunit.getName()][1]
@@ -206,12 +175,9 @@ class ColorMergingDataUnit(CombinedDataUnit):
 
     def createDuFile(self):
         """
-        --------------------------------------------------------------
         Method: createDuFile
-        Created: 1.12.2004
-        Creator: KP,JM,JV
+        Created: 1.12.2004, KP, JM, JV
         Description: Writes a du file to disk
-        -------------------------------------------------------------
         """
         CombinedDataUnit.createDuFile(self)
 
@@ -223,14 +189,10 @@ class ColorMergingDataUnit(CombinedDataUnit):
 
     def loadCommonSettings(self, dataSource):
         """
-        --------------------------------------------------------------
         Method: loadCommonSettings
-        Created: 15.12.2004
-        Creator: JM, JV
+        Created: 15.12.2004, JM, JV
         Description: Loads the settings common to whole ColocalizationDataUnit
         Parameters: dataSource  A DataSource that reads the actual data
-        -------------------------------------------------------------
         """
         pass
 
-import DataSource

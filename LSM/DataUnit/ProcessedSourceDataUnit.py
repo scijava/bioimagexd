@@ -198,8 +198,8 @@ class ProcessedSourceDataUnit(SourceDataUnit):
         Description: Code to initialize the module when it has been reset
         """
         # Will not raise anything because empty initialization method is ok
-        pass
-
+        self.module.setZoomFactor(self.zoomFactor)
+        
 
     def doPreview(self, depth,renew,timePoint=0):
         """

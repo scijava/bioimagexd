@@ -75,6 +75,13 @@ class DataUnit:
         """
         self.name = name
         self.length = 0
+        self.zoomFactor=1
+        
+    def getZoomFactor(self):
+        return self.zoomFactor
+        
+    def setZoomFactor(self,zf):
+        self.zoomFactor=zf
 
     def getName(self):
         """
