@@ -40,8 +40,6 @@ class Colocalization(Module):
     Created: 03.11.2004, KP
     Description: Creates a colocalization map
     """
-
-
     def __init__(self,**kws):
         """
         Method: __init__(**keywords)
@@ -57,25 +55,7 @@ class Colocalization(Module):
         self.extent=None
         self.running=0
         self.depth=8
-        self.leastVoxels=0
-        self.colocAmount=0
         self.reset()
-
-    def setBitDepth(self,depth):
-        """
-        Method: setBitDepth(depth)
-        Created: 17.11.2004, KP
-        Description: Sets the bit depth of the genrated colocalization map
-        """
-        if depth=="1-bit":
-            self.depth=1
-        elif depth=="8-bit":
-            self.depth=8
-        elif depth=="24-bit":
-            self.depth=24
-        else:
-            print "Depth %s not recognized"%depth
-            self.depth=8
 
     def reset(self):
         """
@@ -90,22 +70,19 @@ class Colocalization(Module):
         self.colocFilter=vtk.vtkImageColocalizationFilter()
         self.thresholds=[]
         self.preview=None
+        self.n=-1
     
-    def addInput(self,data,**kws):
+    def addInput(self,data):
         """
-        Method: addInput(data,**keywords)
+        Method: addInput(data)
         Created: 03.11.2004, KP
         Description: Adds an input for the colocalization filter
-        Keywords:
-          threshold=0-255    An integer ranging from 0-255. If voxel (x,y,z)
-                             in all input datasets has a higher intensity than 
-                             the given threshold then the voxel is considered to
-                             be colocalizing
         """
-        if not kws.has_key("threshold"):
-           raise "No colocalization threshold specified!"
-        self.thresholds.append(kws["threshold"])
-        Module.addInput(self,data,**kws)
+        self.n+=1
+        th0=self.settings.getCounted("ColocalizationLowerThreshold",self.n)
+        th1=self.settings.getCounted("ColocalizationUpperThreshold",self.n)
+        self.thresholds.append((th0,th1))
+        Module.addInput(self,data)
  
     def getPreview(self,z):
         """
@@ -125,33 +102,27 @@ class Colocalization(Module):
         Description: Does colocalization for the whole dataset
                      using doColocalizationXBit() where X is user defined
         """        
-        print "Doing %d-bit colocalization"%self.depth
+        
+        self.depth = self.settings.get("ColocalizationDepth")
+        print "Doing ",self.depth,"-bit colocalization"
         t1=time.time()
         self.colocFilter.SetOutputDepth(self.depth)
         for i in range(len(self.images)):
+            print self.thresholds,self.settings
             self.colocFilter.AddInput(self.images[i])
-            self.colocFilter.SetColocalizationThreshold(i,self.thresholds[i])
+            print "Using %d as lower and %d as upper threshold"%self.thresholds[i]
+            self.colocFilter.SetColocalizationLowerThreshold(i,self.thresholds[i][0])
+            self.colocFilter.SetColocalizationUpperThreshold(i,self.thresholds[i][1])
         self.colocFilter.Update()
-        self.leastVoxels = self.colocFilter.GetLeastVoxelsOverThreshold()
-        self.colocAmount = self.colocFilter.GetColocalizationAmount()
+        
+        for i in ["ColocalizationAmount","PearsonsCorrelation","OverlapCoefficient",
+        "OverlapCoefficientK1","OverlapCoefficientK2",
+        "ColocalizationCoefficientM1","ColocalizationCoefficientM2"]:
+            method="self.colocFilter.Get%s()"%i
+            #print "%s = "%i,eval(method)
+            self.settings.set(i,eval(method))
+        least=self.colocFilter.GetLeastVoxelsOverThreshold()
+        self.settings.set("ColocalizationLeastVoxelsOverThreshold",least)
         t2=time.time()
         print "Doing colocalization took %f seconds"%(t2-t1)
         return self.colocFilter.GetOutput()
-
-        
-    def getColocalizationAmount(self):
-        """
-        Method: getColocalizationAmount
-        Created: 1.12.2004, KP
-        Description: Returns the number of colocalizing voxels
-        """
-        return self.colocAmount
-
-    def getLeastVoxelsOverTheThreshold(self):
-        """
-        Method: getLeastVoxelsOverTheThreshold()
-        Created: 1.12.2004, KP
-        Description: Returns the number of voxels over the threshold from the
-                dataset that has the least number of voxels over the threshold.
-        """
-        return self.leastVoxels
