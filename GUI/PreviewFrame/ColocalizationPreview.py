@@ -46,7 +46,6 @@ from PreviewFrame import *
 import wx
 
 from Logging import *
-from vtk.wx.wxVTKRenderWindowInteractor import wxVTKRenderWindowInteractor
 #from vtk import *
 import vtk
 import wx.lib.scrolledpanel as scrolled
@@ -60,17 +59,8 @@ class ColocalizationPreview(PreviewFrame):
     """
     def __init__(self,master,parentwin=None,**kws):
         PreviewFrame.__init__(self,master,parentwin,**kws)
-        self.mapper=vtk.vtkImageMapper()
-        self.mapper.SetZSlice(self.z)
-        self.mapper.SetColorWindow(255.0);
-        self.mapper.SetColorLevel(127.5);
-
-        self.actor=vtk.vtkActor2D()
-        self.actor.SetMapper(self.mapper)
-        self.renderer.AddActor(self.actor)
 
         self.mapToColors=vtk.vtkImageMapToColors()
-        self.mapToColors.SetLookupTable(self.getColorTransferFunction())
         self.mapToColors.SetOutputFormatToRGB()
 
         self.running=0
@@ -78,25 +68,6 @@ class ColocalizationPreview(PreviewFrame):
         self.colocpercentLbl=wx.StaticText(self,-1,"0 of 0 (0%) possible voxels colocalizing")
         self.sizer.Add(self.colocpercentLbl,(4,0))
         self.Layout()
-
-    def getColorTransferFunction(self):
-        if self.dataUnit:
-            self.rgb=self.dataUnit.getColor()
-        ct=vtk.vtkColorTransferFunction()
-        br,bg,bb=self.bgColor
-        r2,g2,b2=self.rgb
-        r2/=255.0
-        g2/=255.0
-        b2/=255.0
-
-        ct.AddRGBPoint(0,0,0,0)
-        r,g,b=self.rgb
-        r/=255.0
-        g/=255.0
-        b/=255.0
-        ct.AddRGBPoint(255,r,g,b)
-        self.currentCt=ct
-        return ct
 
     def updateColor(self):
         """
@@ -106,9 +77,9 @@ class ColocalizationPreview(PreviewFrame):
                      function
         Parameters:
         """
-        ct=self.getColorTransferFunction()
-        self.mapToColors.SetLookupTable(ct)
-        self.mapToColors.SetOutputFormatToRGB()
+        self.rgb=self.dataUnit.getColor()
+        self.currentCt=ImageOperations.getColorTransferFunction(self.rgb)
+        self.mapToColors.SetLookupTable(self.currentCt)
 
     def updatePreview(self,renew=1):
         """
@@ -136,17 +107,26 @@ class ColocalizationPreview(PreviewFrame):
     	# Update the lookup table if colors have changed
 
         self.mapToColors.SetInput(preview)
-    	self.mapToColors.Update()
-    	self.currentImage=self.mapToColors.GetOutput()
-
-        self.mapper.SetZSlice(self.z)
-        self.mapper.SetInput(self.currentImage)
-        self.renwin.Render()
-
+        colorImage=self.mapToColors.GetOutput()        
+        colorImage.SetUpdateExtent(preview.GetExtent())        
+        self.mapToColors.Update()
+        
+        self.currentImage=self.mapToColors.GetOutput()
+        x,y,z=preview.GetDimensions()
+        if x!=self.oldx or y!=self.oldy:
+            self.renderpanel.resetScroll()
+            self.renderpanel.setScrollbars(x,y)
+            self.oldx=x
+            self.oldy=y
+        
+        self.renderpanel.setZSlice(self.z)
+        
+        self.finalImage=self.currentImage
+        self.renderpanel.setImage(self.currentImage)
+        self.renderpanel.updatePreview()        
+        
         coloc,least=self.dataUnit.getColocalizationInfo()
         percent=float(coloc)/least
 
         self.colocpercentLbl.SetLabel("%d of %d (%.2f%%) possible voxels colocalizing"%\
         (coloc,least,100*percent))
-
-

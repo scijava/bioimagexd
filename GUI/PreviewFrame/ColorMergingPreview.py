@@ -48,7 +48,6 @@ from PreviewFrame import *
 import wx
 
 from Logging import *
-from vtk.wx.wxVTKRenderWindowInteractor import wxVTKRenderWindowInteractor
 
 import vtk
 import wx.lib.scrolledpanel as scrolled
@@ -63,37 +62,9 @@ class ColorMergingPreview(PreviewFrame):
     """
     def __init__(self,master,parentwin=None,**kws):
         PreviewFrame.__init__(self,master,parentwin,**kws)
-        self.mapper=vtk.vtkImageMapper()
-        self.mapper.SetZSlice(self.z)
-        self.mapper.SetColorWindow(255.0);
-        self.mapper.SetColorLevel(127.5);
-
-        self.actor=vtk.vtkActor2D()
-        self.actor.SetMapper(self.mapper)
-        self.renderer.AddActor(self.actor)
-        self.mapToColors=vtk.vtkImageMapToColors()
-        self.mapToColors.SetLookupTable(self.getColorTransferFunction())
-        self.mapToColors.SetOutputFormatToRGB()
-
         self.running=0
         self.rgbMode=1
 
-    def getColorTransferFunction(self):
-    	ct=vtk.vtkColorTransferFunction()
-    	br,bg,bb=self.bgColor
-        r2,g2,b2=self.rgb
-        r2/=255.0
-        g2/=255.0
-        b2/=255.0
-
-        ct.AddRGBPoint(0,0,0,0)
-        r,g,b=255,0,0
-        r/=255.0
-        g/=255.0
-        b/=255.0
-        ct.AddRGBPoint(255,r,g,b)
-        self.currentCt=ct
-        return ct
 
 
     def updatePreview(self,renew=1):
@@ -116,13 +87,21 @@ class ColorMergingPreview(PreviewFrame):
         if self.renderingPreviewEnabled()==True:
             return self.previewInMayavi(preview,None,renew)
 
-    	self.mapper.SetZSlice(self.z)
+    	self.renderpanel.setZSlice(self.z)
     	if not preview:
     	    raise "Did not get a preview"
-    	# Update the lookup table if colors have changed
-#    	self.mapToColors.SetInput(preview)
-#    	self.mapToColors.Update()
-#    	self.currentImage=self.mapToColors.GetOutput()
+    
+        x,y,z=preview.GetDimensions()
+        #renx,reny=self.renwin.GetSize()
+        if x!=self.oldx or y!=self.oldy:
+            self.renderpanel.resetScroll()
+            self.renderpanel.setScrollbars(x,y)
+            self.oldx=x
+            self.oldy=y
+            
+        # Update the lookup table if colors have changed
         self.currentImage=preview
-        self.mapper.SetInput(self.currentImage)
-        self.renwin.Render()
+        self.finalImage=self.currentImage
+
+        self.renderpanel.setImage(self.currentImage)
+        self.renderpanel.updatePreview()

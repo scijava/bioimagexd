@@ -36,15 +36,17 @@
  JV - Jukka Varsaluoma,varsa@st.jyu.fi
 
  Copyright (c) 2004 Selli Project.
- ""
+"""
+
 __author__ = "Selli Project <http://sovellusprojektit.it.jyu.fi/selli/>"
 __version__ = "$Revision: 1.63 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
-"""
+
 import os.path,sys
 import RenderingInterface
 import ImageOperations
 import VTKScrollPanel
+import WxPreviewPanel
 import time
 
 from Logging import *
@@ -53,6 +55,26 @@ import vtk
 import wx
 
 ZOOM_TO_FIT=-1
+
+myEVT_TIMEPOINT_CHANGED=wx.NewEventType()
+EVT_TIMEPOINT_CHANGED=wx.PyEventBinder(myEVT_TIMEPOINT_CHANGED,1)
+
+myEVT_ZSLICE_CHANGED=wx.NewEventType()
+EVT_ZSLICE_CHANGED=wx.PyEventBinder(myEVT_ZSLICE_CHANGED,1)
+
+class ChangeEvent(wx.PyCommandEvent):
+    """
+    Class: ChangeEvent
+    Created: 25.03.2005, KP
+    Description: An event type that represents value of zslider or timepoint slider
+    """
+    def __init__(self,evtType,id):
+        wx.PyCommandEvent.__init__(self,evtType,id)
+        self.changeTo=0
+    def getValue(self):
+        return self.changeTo
+    def setValue(self,val):
+        self.changeTo=val
 
 class PreviewFrame(wx.Panel):
     """
@@ -73,6 +95,7 @@ class PreviewFrame(wx.Panel):
         self.parent=parent
         self.depthT=0
         self.timeT=0
+        self.finalImage=None
         self.xdiff,self.ydiff=0,0
         self.updateFactor = 0.001
         self.zoomFactor=1
@@ -84,7 +107,6 @@ class PreviewFrame(wx.Panel):
         self.show["TIMESLIDER"]=1
         self.show["ZSLIDER"]=1
         self.show["SCROLL"]=1
-        #self.modeCheckbox = None
         self.modeChoice = None
         if not parentwin:
             parentwin=parent
@@ -112,32 +134,15 @@ class PreviewFrame(wx.Panel):
         self.currentImage=None
         self.currentCt=None
 
-        self.renderpanel=VTKScrollPanel.VTKScrollPanel(self,-1,size,style=wx.SUNKEN_BORDER,
-        scroll=self.show["SCROLL"])
-        
+        self.renderpanel = WxPreviewPanel.WxPreviewPanel(self,size=size,scroll=self.show["SCROLL"])
         self.sizer.Add(self.renderpanel,(0,0))
 
-        # Grab handles to some of the renderpanel's items
-        self.renwin=self.renderpanel.GetRenderWindow()
-        self.wxrenwin=self.renderpanel.getwxVTKRenderWindow()
-        
-        self.renderer=vtk.vtkRenderer()
-        self.renwin.AddRenderer(self.renderer)
         # The preview can be no larger than these
         self.maxX,self.maxY=size
         self.xdim,self.ydim,self.zdim=0,0,0
-        
-        self.bgColor=(0,0,0)
-        r,g,b=self.bgColor
-        self.renderer.SetBackground(r,g,b)
-        ren=self.renderer              
-        
-        # This is set here because if inherited widgets define mapper, 
-        # the scrollRenderWindow uses that for the scrolling
-        self.mapper=None
-        
+                       
         if self.show["PIXELS"]:
-            self.wxrenwin.Bind(wx.EVT_LEFT_DOWN,self.getPixelValue)
+            self.renderpanel.Bind(wx.EVT_LEFT_DOWN,self.getPixelValue)
         if self.show["TIMESLIDER"]:
             self.timeslider=wx.Slider(self,value=0,minValue=0,maxValue=1,size=(300,-1),
             style=wx.SL_HORIZONTAL|wx.SL_AUTOTICKS|wx.SL_LABELS)
@@ -155,7 +160,6 @@ class PreviewFrame(wx.Panel):
             self.sizer.Add(self.pixelPanel,(3,0),flag=wx.EXPAND|wx.RIGHT)
 
         if self.show["RENDERING"]:
-            #self.modeCheckbox=wx.CheckBox(self,-1,"Preview rendering")
             self.modeBox=wx.BoxSizer(wx.VERTICAL)
             self.modeLbl=wx.StaticText(self,-1,"Select preview method:")
             self.modes=["2D Slice","Volume Rendering","Surface Rendering","24-bit Volume Rendering","Maximum Intensity Projection"]
@@ -163,8 +167,6 @@ class PreviewFrame(wx.Panel):
             self.modeBox.Add(self.modeLbl)
             self.modeBox.Add(self.modeChoice)
             self.sizer.Add(self.modeBox,(4,0))
-    
-        self.timePointChangeCallback=None
 
         self.renderingInterface=RenderingInterface.getRenderingInterface()
 
@@ -180,16 +182,13 @@ class PreviewFrame(wx.Panel):
         self.sizer.Fit(self)
         self.sizer.SetSizeHints(self)
 
-    def closePreview(self):
-        self.renderer.GetProps().RemoveAllItems()
-
     def zoomObject(self,evt):
         """
         Method: zoomObject()
         Created: 19.03.2005, KP
         Description: Lets the user select the part of the object that is zoomed
         """
-        pass
+        self.renderpanel.startZoom()
         
     def zoomOut(self,evt):
         """
@@ -225,7 +224,7 @@ class PreviewFrame(wx.Panel):
         s=self.zoomCombo.GetString(pos)
         factor = float(s[:-1])/100.0
         self.zoomCombo.SetSelection(pos)
-        self.dataUnit.setZoomFactor(factor)
+        self.renderpanel.setZoomFactor(factor)
         print "Set zoom factor to ",s,"=",factor
         self.updatePreview(1)
         
@@ -244,17 +243,7 @@ class PreviewFrame(wx.Panel):
         Created: 21.02.2005, KP
         Description: Sets the zoom factor to fit the image into the preview window
         """
-        w,h=self.wxrenwin.GetSize()
-        print "w,h=",w,h        
-        maxx,maxy=self.maxX,self.maxY
-        if self.xdim>maxx:
-            maxx=self.xdim
-        if self.ydim>maxy:
-            maxy=self.ydim
-        print "maxx,maxy=",maxx,maxy
-        zf=ImageOperations.getZoomFactor(w,h,maxx,maxy)
-        print "Setting zoom factor",zf
-        self.dataUnit.setZoomFactor(zf)
+        self.renderpanel.zoomToFit()
         self.updatePreview(1)
         
     def zoomTo100(self,evt):
@@ -263,7 +252,7 @@ class PreviewFrame(wx.Panel):
         Created: 21.02.2005, KP
         Description: Sets the zoom factor to 1
         """
-        self.dataUnit.setZoomFactor(1.0)
+        self.renderpanel.setZoomFactor(1.0)
         self.updatePreview(1)
                 
     def renderingPreviewEnabled(self):
@@ -276,34 +265,20 @@ class PreviewFrame(wx.Panel):
             return self.modeChoice.GetSelection()!=0
         return 0
         
-    def setTimePointCallback(self,f):
-        """
-        Method: setTimePointCallback(f)
-        Created: 24.11.2004
-        Creator: KP
-        Description: Registers a callback function for notification when the 
-                     previewed timepoint is changed
-        """
-        self.timePointChangeCallback=f
-        f(self.timePoint)
-
+    
     def getPixelValue(self,event):
         """
         Method: getPixelValue(event)
         Created: 10.11.2004, KP
         Description: Shows the RGB and scalar value of a clicked pixel
-        Parameters:  event   wx.Python's Event object
         """
         if not self.currentImage:
             return
         x,y=event.GetPosition()
         x,y=self.renderpanel.getScrolledXY(x,y)
-        #y=self.ydim-y
-        #print "Getting pixel value from %d,%d"%(x,y)
         
         if self.rgbMode==0:
             scalar=self.currentImage.GetScalarComponentAsDouble(x,y,self.z,0)
-            #print "scalar=",scalar
             r,g,b=self.currentCt.GetColor(scalar)
             r*=255
             g*=255
@@ -329,7 +304,8 @@ class PreviewFrame(wx.Panel):
             if alpha!=-1:
                 txt=txt+" with alpha %d"%alpha
             self.pixelLbl.SetLabel(txt)
-
+        event.Skip()
+            
     def setPreviewedSlicer(self,event):
         """
         Method: setPreviewedSlicer()
@@ -342,6 +318,10 @@ class PreviewFrame(wx.Panel):
         newz=self.zslider.GetValue()
         if self.z!=newz:
             self.z=newz
+            evt=ChangeEvent(myEVT_ZSLICE_CHANGED,self.GetId())
+            evt.setValue(newz)
+            self.GetEventHandler().ProcessEvent(evt)
+            
             # was updatePreview(1)
             self.updatePreview(0)
 
@@ -371,8 +351,9 @@ class PreviewFrame(wx.Panel):
         if self.timePoint!=timePoint:
             self.timePoint=timePoint
             self.updatePreview(1)
-            if self.timePointChangeCallback:
-                self.timePointChangeCallback(timePoint)
+            evt=ChangeEvent(myEVT_TIMEPOINT_CHANGED,self.GetId())
+            evt.setValue(timePoint)
+            self.GetEventHandler().ProcessEvent(evt)
                 
     def setZoomCombobox(self,combo):
         """
@@ -391,6 +372,8 @@ class PreviewFrame(wx.Panel):
                      as ImageData
         """
         self.dataUnit=dataUnit
+        self.settings = dataUnit.getSettings()
+        print "Settings = ",self.settings
         try:
             count=dataUnit.getLength()
             x,y,z=dataUnit.getDimensions()
@@ -413,9 +396,7 @@ class PreviewFrame(wx.Panel):
         self.renderingInterface.setDataUnit(dataUnit)
 
         print "Setting renderpanel to %d,%d"%(x,y)
-        self.wxrenwin.SetSize((x,y))
         self.renderpanel.SetSize((x,y))
-        self.renwin.SetSize((x,y))
         self.renderpanel.Layout()
 
         if self.zoomFactor:
@@ -425,17 +406,12 @@ class PreviewFrame(wx.Panel):
                 self.zoomToFit(None)
             else:
                 print "Factor = ",self.zoomFactor
-                self.dataUnit.setZoomFactor(self.zoomFactor)
+                self.renderpanel.setZoomFactor(self.zoomFactor)
                 self.updatePreview(1)
         
         self.Layout()
         self.sizer.Fit(self)
         self.sizer.SetSizeHints(self)
-
-        #self.Layout()
-        #self.parentwin.mainsizer.Fit(self.parentwin.panel)
-        #self.parentwin.Layout()
-
         
     def previewInMayavi(self,imagedata,ctf=None,renew=1):
         """
@@ -462,16 +438,16 @@ class PreviewFrame(wx.Panel):
             renew    Whether the method should recalculate the images
         """
         raise "updatePreview() called from the base class"
-
+       
     def captureSlice(self,event):
         """
         Method: captureSlice(event)
         Created: 19.03.2005, KP
         Description: Method to capture the currently displayed optical slice
         """        
-        if not self.mapper:
-            raise "No mapper specified yet"
-        data=self.mapper.GetInput()
+        data=self.finalImage
+        if not data:
+            raise "No data"
         wc="PNG file|*.png|JPEG file|*.jpeg|TIFF file|*.tiff|BMP file|*.bmp"
         initFile="%s_%d.png"%(self.dataUnit.getName(),self.z)
         dlg=wx.FileDialog(self.parent,"Save optical slice to file",defaultFile=initFile,wildcard=wc,style=wx.SAVE)

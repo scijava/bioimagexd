@@ -62,40 +62,12 @@ class SingleUnitProcessingPreview(PreviewFrame):
     """
     def __init__(self,master,parentwin=None,**kws):
         PreviewFrame.__init__(self,master,parentwin,**kws)
-        self.mapper=vtk.vtkImageMapper()
-        self.renderpanel.setMapper(self.mapper)
-        self.mapper.SetZSlice(self.z)
-        self.actor=vtk.vtkActor2D()
-        self.actor.SetMapper(self.mapper)
-        self.renderer.AddActor(self.actor)
         self.running=0
         self.mapToColors=vtk.vtkImageMapToColors()
-        self.mapToColors.SetLookupTable(self.getColorTransferFunction())
+        self.mapToColors.SetLookupTable(self.currentCt)
         self.mapToColors.SetOutputFormatToRGB()
         
-        self.mapper.SetColorWindow(255.0);
-        self.mapper.SetColorLevel(127.5);
         
-
-    def getColorTransferFunction(self):
-        if self.dataUnit:
-            self.rgb=self.dataUnit.getColor()
-        ct=vtk.vtkColorTransferFunction()
-        br,bg,bb=self.bgColor
-        r2,g2,b2=self.rgb
-        r2/=255.0
-        g2/=255.0
-        b2/=255.0
-
-        ct.AddRGBPoint(0,0,0,0)
-        r,g,b=self.rgb
-        r/=255.0
-        g/=255.0
-        b/=255.0
-        ct.AddRGBPoint(255,r,g,b)
-        self.currentCt=ct
-        return ct
-
     def updateColor(self):
         """
         Method: updateColor()
@@ -104,8 +76,11 @@ class SingleUnitProcessingPreview(PreviewFrame):
                      function
         Parameters:
         """
-        ct=self.getColorTransferFunction()
-        self.mapToColors.SetLookupTable(ct)
+        if self.dataUnit:
+            self.rgb = self.settings.get("Color")
+            print "Got color ",self.rgb            
+        self.currentCt=ImageOperations.getColorTransferFunction(self.rgb)
+        self.mapToColors.SetLookupTable(self.currentCt)
         self.mapToColors.SetOutputFormatToRGB()
 
     def updatePreview(self,renew=1):
@@ -116,6 +91,8 @@ class SingleUnitProcessingPreview(PreviewFrame):
         Parameters:
         renew    Whether the method should recalculate the images
         """
+        if not self.dataUnit:
+            return
         self.updateColor()
         if not self.running:
             renew=1
@@ -129,12 +106,11 @@ class SingleUnitProcessingPreview(PreviewFrame):
             raise "Did not get a preview"
         self.currentImage=preview
         if self.renderingPreviewEnabled()==True:
-            return self.previewInMayavi(preview,self.getColorTransferFunction(),
+            self.updateColor()
+            return self.previewInMayavi(preview,self.currentCt,
             renew)
         
-        print "Mapping through colors"
-        #print preview
-        
+
         self.mapToColors.RemoveAllInputs()
         self.mapToColors.SetInput(preview)
         colorImage=self.mapToColors.GetOutput()
@@ -142,26 +118,17 @@ class SingleUnitProcessingPreview(PreviewFrame):
         colorImage.SetUpdateExtent(preview.GetExtent())
         
         x,y,z=preview.GetDimensions()
-        #renx,reny=self.renwin.GetSize()
+    
         if x!=self.oldx or y!=self.oldy:
             self.renderpanel.resetScroll()
             self.renderpanel.setScrollbars(x,y)
             self.oldx=x
             self.oldy=y
-            if x>self.maxX:
-                print "Using maxX"
-                x=self.maxX
-            if y>self.maxY:
-                print "Using maxY"
-                y=self.maxY
-            print "Resizing renderwindow to fit zoomed",(x,y)
-            self.renwin.SetSize((x,y))
             
-
         self.mapToColors.Update()
-        print "Done"
 
-        self.mapper.SetZSlice(self.z)
-        self.mapper.SetInput(colorImage)
- 
-        self.renwin.Render()
+        self.renderpanel.setZSlice(self.z)
+        self.renderpanel.setImage(colorImage)
+        self.renderpanel.updatePreview()
+    
+        self.finalImage=colorImage
