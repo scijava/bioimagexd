@@ -79,7 +79,7 @@ void vtkCastRay_RGB_NN_Unshaded( T *data_ptr, vtkVolumeRayCastDynamicInfo
   ray_start = dynamicInfo->TransformedStart;
   ray_increment = dynamicInfo->TransformedIncrement;
  
-//  SOTF =  staticInfo->Volume->GetCorrectedScalarOpacityArray();
+  SOTF =  staticInfo->Volume->GetCorrectedScalarOpacityArray();
 //  CTF  =  staticInfo->Volume->GetRGBArray();
 //  GTF  =  staticInfo->Volume->GetGrayArray();
 //  GOTF =  staticInfo->Volume->GetGradientOpacityArray();
@@ -150,9 +150,13 @@ void vtkCastRay_RGB_NN_Unshaded( T *data_ptr, vtkVolumeRayCastDynamicInfo
         greenc/=255.0;
         bluec/=255.0;
 
+	//printf("%f maps to %f\n",opacity,SOTF[int(opacity)]);
+	opacity = SOTF[int(opacity)];
+
         //opacity/=255.0;
-	opacity = greenc;
-	if(redc<0.1 && greenc < 0.1 && redc < 0.1)opacity=0;
+	    
+	//opacity = greenc;
+	//if(redc<0.1 && greenc < 0.1 && redc < 0.1)opacity=0;
 /*	    
         opacity=0.01;
 
@@ -172,7 +176,7 @@ void vtkCastRay_RGB_NN_Unshaded( T *data_ptr, vtkVolumeRayCastDynamicInfo
         if(n)
             opacity/=n;
  */
-        opacity*=0.2;
+        //opacity*=0.2;
 
 
         if ( opacity )

@@ -59,6 +59,7 @@ void vtkImageAlphaFilterExecute(vtkImageAlphaFilter *self, int id,int NumberOfIn
     int idxX,idxY,idxZ;
     int AvgThreshold = self->GetAverageThreshold();
     int AvgMode = self->GetAverageMode();
+    printf("Using average mode=%d\n",AvgMode);
     int MaxMode = self->GetMaximumMode();
     T** inPtrs;
     T* outPtr;
@@ -87,10 +88,10 @@ void vtkImageAlphaFilterExecute(vtkImageAlphaFilter *self, int id,int NumberOfIn
             scalar = currScalar = n = 0;
             for(i=0; i < NumberOfInputs; i++ ) {
                 currScalar = *inPtrs[i];                            
-                if(MaxMode) {
-                    if(alphaScalar < currScalar) {
-                        alphaScalar = currScalar;
-                    }
+                    if(MaxMode) {
+                        if(alphaScalar < currScalar) {
+                            alphaScalar = currScalar;
+                        }
                     // If the alpha channel should be in "average mode"
                     // then we take an average of all the scalars in the
                     // current voxel that are above the AverageThreshold
