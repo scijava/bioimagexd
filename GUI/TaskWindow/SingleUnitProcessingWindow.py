@@ -103,13 +103,13 @@ class SingleUnitProcessingWindow(TaskWindow.TaskWindow):
 
         for i in range(self.numOfPoints):
             btn=wx.Button(self.interpolationPanel,-1,"goto")
-            btn.Bind(EVT_BUTTON,lambda event,x=i: self.gotoInterpolationTimePoint(x))
+            btn.Bind(wx.EVT_BUTTON,lambda event,x=i: self.gotoInterpolationTimePoint(x))
             entry=wx.TextCtrl(self.interpolationPanel,size=(50,-1))
             self.btns.append(btn)
             self.entries.append(entry)
 
         for entry in self.entries:
-            entry.Bind(EVT_TEXT,self.setInterpolationTimePoints)
+            entry.Bind(wx.EVT_TEXT,self.setInterpolationTimePoints)
 
         last=0
         for i in range(self.numOfPoints):
@@ -129,11 +129,11 @@ class SingleUnitProcessingWindow(TaskWindow.TaskWindow):
         self.interpolationBox=wx.BoxSizer(wx.HORIZONTAL)
 
         self.reset2Btn=wx.Button(self.interpolationPanel,-1,"Reset all timepoints")
-        self.reset2Btn.Bind(EVT_BUTTON,self.resetTransferFunctions)
+        self.reset2Btn.Bind(wx.EVT_BUTTON,self.resetTransferFunctions)
         self.interpolationBox.Add(self.reset2Btn)
 
         self.interpolateBtn=wx.Button(self.interpolationPanel,-1,"Interpolate")
-        self.interpolateBtn.Bind(EVT_BUTTON,self.startInterpolation)
+        self.interpolateBtn.Bind(wx.EVT_BUTTON,self.startInterpolation)
         self.interpolationBox.Add(self.interpolateBtn)
         self.interpolationSizer.Add(self.interpolationBox,(last+1,0))
         
@@ -161,15 +161,15 @@ class SingleUnitProcessingWindow(TaskWindow.TaskWindow):
         self.createIntensityInterpolationPanel()
 
         self.restoreBtn=wx.Button(self.editIntensityPanel,-1,"Reset defaults")
-        self.restoreBtn.Bind(EVT_BUTTON,self.iTFEditor.restoreDefaults)
+        self.restoreBtn.Bind(wx.EVT_BUTTON,self.iTFEditor.restoreDefaults)
         self.box.Add(self.restoreBtn)
 
         self.resetBtn=wx.Button(self.editIntensityPanel,-1,"Reset all timepoints")
-        self.resetBtn.Bind(EVT_BUTTON,self.resetTransferFunctions)
+        self.resetBtn.Bind(wx.EVT_BUTTON,self.resetTransferFunctions)
         self.box.Add(self.resetBtn)
 
         self.copyiTFBtn=wx.Button(self.editIntensityPanel,-1,"Copy to all timepoints")
-        self.copyiTFBtn.Bind(EVT_BUTTON,self.copyTransferFunctionToAll)
+        self.copyiTFBtn.Bind(wx.EVT_BUTTON,self.copyTransferFunctionToAll)
         self.box.Add(self.copyiTFBtn)
 
         self.editIntensityPanel.SetSizer(self.editIntensitySizer)
@@ -226,7 +226,7 @@ class SingleUnitProcessingWindow(TaskWindow.TaskWindow):
         TaskWindow.TaskWindow.createButtonBox(self)
         
         self.processButton.SetLabel("Process Dataset Series")
-        self.processButton.Bind(EVT_BUTTON,self.doProcessingCallback)
+        self.processButton.Bind(wx.EVT_BUTTON,self.doProcessingCallback)
 
     def createOptionsFrame(self):
         """
@@ -252,7 +252,7 @@ class SingleUnitProcessingWindow(TaskWindow.TaskWindow):
         #Median Filtering
         self.doMedianCheckbutton = wx.CheckBox(self.filtersPanel,
         -1,"Median Filtering")
-        self.doMedianCheckbutton.Bind(EVT_CHECKBOX,self.doFilterCheckCallback)
+        self.doMedianCheckbutton.Bind(wx.EVT_CHECKBOX,self.doFilterCheckCallback)
 
         self.neighborhoodX=wx.TextCtrl(self.filtersPanel,-1,"1")
         self.neighborhoodY=wx.TextCtrl(self.filtersPanel,-1,"1")
@@ -280,7 +280,7 @@ class SingleUnitProcessingWindow(TaskWindow.TaskWindow):
 
         self.doSolitaryCheckbutton = wx.CheckBox(self.filtersPanel,
         -1,"Solitary Filtering")
-        self.doSolitaryCheckbutton.Bind(EVT_CHECKBOX,self.doFilterCheckCallback)
+        self.doSolitaryCheckbutton.Bind(wx.EVT_CHECKBOX,self.doFilterCheckCallback)
 
         self.solitaryX=wx.TextCtrl(self.filtersPanel,-1,"1")
         self.solitaryY=wx.TextCtrl(self.filtersPanel,-1,"1")
@@ -512,19 +512,6 @@ class SingleUnitProcessingWindow(TaskWindow.TaskWindow):
                      one dataunit here, not multiple source data units
         """
         TaskWindow.TaskWindow.setCombinedDataUnit(self,dataUnit)
-##        self.dataUnit=dataUnit
-##        self.settings = self.dataUnit.getSettings()
-##        name=dataUnit.getName()
-##        print "Name of dataUnit=%s"%name
-##        self.taskName.SetValue(name)
-##        try:
-##            self.preview.setDataUnit(dataUnit)
-##        except GUIError, ex:
-##            ex.show()
-##        self.itemMenu.Unbind(wx.EVT_CHOICE)
-##
-##        self.itemMenu.Append(dataUnit.getName())
-##        self.itemMenu.SetSelection(0)
         
         #set the color of the colorBtn to the current color
         r,g,b=self.settings.get("Color")

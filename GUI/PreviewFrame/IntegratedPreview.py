@@ -46,7 +46,53 @@ class IntegratedPreview(PreviewFrame):
         self.mapToColors=vtk.vtkImageMapToColors()
         self.mapToColors.SetLookupTable(self.currentCt)
         self.mapToColors.SetOutputFormatToRGB()
+        self.renderpanel.Bind(wx.EVT_RIGHT_DOWN,self.onRightClick)
         
+        self.ID_MERGE=wx.NewId()
+        self.ID_COLOC=wx.NewId()
+        self.ID_SINGLE=wx.NewId()
+        
+        self.colortype=""
+        self.menu=wx.Menu()
+        self.typemenu=wx.Menu()        
+        
+        item = wx.MenuItem(self.typemenu,self.ID_MERGE,"Merged channels")
+        self.Bind(wx.EVT_MENU,self.setPreviewType,id=self.ID_MERGE)
+        self.typemenu.AppendItem(item)
+        item = wx.MenuItem(self.typemenu,self.ID_COLOC,"Colocalization")
+        self.Bind(wx.EVT_MENU,self.setPreviewType,id=self.ID_COLOC)
+        self.typemenu.AppendItem(item)
+        item = wx.MenuItem(self.typemenu,self.ID_SINGLE,"Single channel")
+        self.Bind(wx.EVT_MENU,self.setPreviewType,id=self.ID_SINGLE)
+        self.typemenu.AppendItem(item)
+        self.menu.AppendMenu(-1,"&Preview type",self.typemenu)
+        
+        
+        
+    def onRightClick(self,event):
+        """
+        Method: onRightClick
+        Created: 03.04.2005, KP
+        Description: Method that is called when the right mouse button is
+                     pressed down on this item
+        """      
+        self.PopupMenu(self.menu,event.GetPosition())
+        
+    def setPreviewType(self,event):
+        """
+        Method: setPreviewType
+        Created: 03.04.2005, KP
+        Description: Method to set the proper previewtype
+        """      
+        if type(event)==type(""):
+            self.colortype=event
+            return
+        eid=event.GetId()
+        if eid==self.ID_COLOC:
+            self.colortype="Colocalization"
+        else:
+            self.colortype=""
+            
         
     def updateColor(self):
         """
@@ -57,7 +103,7 @@ class IntegratedPreview(PreviewFrame):
         Parameters:
         """
         if self.dataUnit:
-            self.rgb = self.settings.get("Color")
+            self.rgb = self.settings.get("%sColor"%self.colortype)
             print "Got color ",self.rgb            
         self.currentCt=ImageOperations.getColorTransferFunction(self.rgb)
         self.mapToColors.SetLookupTable(self.currentCt)
@@ -70,15 +116,16 @@ class IntegratedPreview(PreviewFrame):
         Created: 03.04.2005, KP
         Description: Process the data before it's send to the preview
         """
-        ncomps = data.GetNumberOfComponents()
+        ncomps = data.GetNumberOfScalarComponents()
         if ncomps == 1:
-            self.updateColor()
             self.mapToColors.RemoveAllInputs()
             self.mapToColors.SetInput(data)
+            self.updateColor()
+            #print "Coloring with ",self.currentCt
             colorImage=self.mapToColors.GetOutput()
-            colorImage.SetUpdateExtent(preview.GetExtent())
+            #colorImage.SetUpdateExtent(data.GetExtent())
             self.mapToColors.Update()
-            
+            data=self.mapToColors.GetOutput()
 
         return data
         

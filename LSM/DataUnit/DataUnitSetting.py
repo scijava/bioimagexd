@@ -208,6 +208,7 @@ class DataUnitSettings:
             #print "Will not overwrite %s"%name
             return
         if self.n != -1 and name in self.counted:
+            print "Setting counted %d,%s,%s"%(self.n,name,value)
             return self.setCounted(name,self.n,value,overwrite)
         if name not in self.registered:
             raise "No key %s registered"%name
@@ -225,8 +226,8 @@ class DataUnitSettings:
         if not name in self.registered:
             raise "No key %s registered"%name
         keyval="%s[%d]"%(name,count)
-        if keyval in self.settings:
-            #print "Will not overwrite %s"%keyval
+        if not overwrite and (keyval in self.settings):
+            print "Will not overwrite %s"%keyval
             return
         self.settings[keyval]=value
         if self.counted[name]<count:
@@ -312,12 +313,12 @@ class ColocalizationSettings(DataUnitSettings):
         self.registerCounted("ColocalizationLowerThreshold")
         self.registerCounted("ColocalizationUpperThreshold")
 
-        self.registerCounted("PearsonsCorrelation")
-        self.registerCounted("OverlapCoefficient")
-        self.registerCounted("OverlapCoefficientK1")
-        self.registerCounted("OverlapCoefficientK2")
-        self.registerCounted("ColocalizationCoefficientM1")
-        self.registerCounted("ColocalizationCoefficientM2")
+        self.register("PearsonsCorrelation")
+        self.register("OverlapCoefficient")
+        self.register("OverlapCoefficientK1")
+        self.register("OverlapCoefficientK2")
+        self.register("ColocalizationCoefficientM1")
+        self.register("ColocalizationCoefficientM2")
         
         self.set("PearsonsCorrelation",0)
         self.set("OverlapCoefficient",0)

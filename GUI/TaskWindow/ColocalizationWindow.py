@@ -71,6 +71,7 @@ infoString="""<html><body bgcolor=%(bgcolor)s">
 <table>
 <tr><td>Colocalization amount:</td><td>%(amount)d voxels</td></tr>
 <tr><td>Least voxels over the thresholds:</td><td>%(least)d voxels</td></tr>
+<tr><td>Colocalization percent:</td><td>%(percent).3f</td></tr>
 <tr><td>Pearson's Correlation:</td><td>%(pearson).3f</td></tr>
 <tr><td>Overlap Coefficient:</td><td>%(overlap).3f</td></tr>
 <tr><td>Overlap coefficient k1:</td><td>%(k1).3f</td></tr>
@@ -100,6 +101,7 @@ class ColocalizationWindow(TaskWindow.TaskWindow):
         self.scatterGram=None
         self.htmlpage=None
         TaskWindow.TaskWindow.__init__(self,root)
+        self.preview.setPreviewType("Colocalization")
         self.operationName="Colocalization"
         
         self.SetTitle("Colocalization")
@@ -117,7 +119,8 @@ class ColocalizationWindow(TaskWindow.TaskWindow):
             return
         if not self.settings:
             print "No settings present"
-            amnt,pearson,overlap,k1,k2,m1,m2,least=0,0,0,0,0,0,0,0
+            percent,amnt,pearson,overlap,k1,k2,m1,m2,least=0,0,0,0,0,0,0,0,0
+            
         else:
             amnt=self.settings.get("ColocalizationAmount")
             pearson=self.settings.get("PearsonsCorrelation")
@@ -127,12 +130,12 @@ class ColocalizationWindow(TaskWindow.TaskWindow):
             m1=self.settings.get("ColocalizationCoefficientM1")
             m2=self.settings.get("ColocalizationCoefficientM2")
             least=self.settings.get("ColocalizationLeastVoxelsOverThreshold")
+            percent=(float(amnt) / float(least))*100.0
         col=self.GetBackgroundColour()
         bgcol="#%2x%2x%2x"%(col.Red(),col.Green(),col.Blue())
         variables={"amount":amnt,"pearson":pearson,"overlap":overlap,"k1":k1,"k2":k2,"m1":m1,"m2":m2,"bgcolor":bgcol,
-        "least":least}
+        "least":least,"percent":percent}
  
-        print variables
         infostr=infoString%variables
         self.htmlpage.SetPage(infostr)
         
@@ -148,7 +151,7 @@ class ColocalizationWindow(TaskWindow.TaskWindow):
         """
         TaskWindow.TaskWindow.createButtonBox(self)
         self.processButton.SetLabel("Do Colocalization")
-        self.processButton.Bind(EVT_BUTTON,self.doColocalizationCallback)
+        self.processButton.Bind(wx.EVT_BUTTON,self.doColocalizationCallback)
 
     def createOptionsFrame(self):
         """
@@ -172,36 +175,38 @@ class ColocalizationWindow(TaskWindow.TaskWindow):
    
         self.depthMenu=wx.Choice(self.colocalizationPanel,-1,choices=["1-bit","8-bit"])
         self.colocalizationSizer.Add(self.depthMenu,(1,0))
-        self.depthMenu.Bind(EVT_CHOICE,self.updateBitDepth)
+        self.depthMenu.Bind(wx.EVT_CHOICE,self.updateBitDepth)
 
-        self.thresholdLbl=wx.StaticText(self.colocalizationPanel,-1,"Channel threshold:")
+        self.lowerThresholdLbl=wx.StaticText(self.colocalizationPanel,-1,"Lower threshold:")
+        self.upperThresholdLbl=wx.StaticText(self.colocalizationPanel,-1,"Upper threshold:")
         
-        self.threshold=wx.Slider(self.colocalizationPanel,value=128,minValue=1,maxValue=255,size=(300,-1),
+        self.lowerthreshold=wx.Slider(self.colocalizationPanel,value=128,minValue=1,maxValue=255,size=(300,-1),
         style=wx.SL_HORIZONTAL|wx.SL_AUTOTICKS|wx.SL_LABELS)
-        self.threshold.Bind(EVT_SCROLL,self.updateThreshold)
+        self.lowerthreshold.Bind(wx.EVT_SCROLL,self.updateThreshold)
+        self.upperthreshold=wx.Slider(self.colocalizationPanel,value=128,minValue=1,maxValue=255,size=(300,-1),
+        style=wx.SL_HORIZONTAL|wx.SL_AUTOTICKS|wx.SL_LABELS)
+        self.upperthreshold.Bind(wx.EVT_SCROLL,self.updateThreshold)
         
-        self.colocalizationSizer.Add(self.thresholdLbl,(2,0))
-        self.colocalizationSizer.Add(self.threshold,(3,0))
+        self.colocalizationSizer.Add(self.lowerThresholdLbl,(2,0))
+        self.colocalizationSizer.Add(self.lowerthreshold,(3,0))
+        self.colocalizationSizer.Add(self.upperThresholdLbl,(4,0))
+        self.colocalizationSizer.Add(self.upperthreshold,(5,0))
 
         self.scatterGram=Scattergram.Scattergram(self.colocalizationPanel,size=(256,256))
         self.scatterGram.setTimepoint(0)
-        self.colocalizationSizer.Add(self.scatterGram,(4,0))
+        self.Bind(Scattergram.EVT_THRESHOLD_CHANGED,self.updateSettings,id=self.scatterGram.GetId())
+        self.colocalizationSizer.Add(self.scatterGram,(6,0))
 
         self.htmlpage=wx.html.HtmlWindow(self.colocalizationPanel,-1,size=(400,200))
         if "gtk2" in wx.PlatformInfo:
             self.htmlpage.SetStandardFonts()        
-        self.colocalizationSizer.Add(self.htmlpage,(4,1))
+        self.colocalizationSizer.Add(self.htmlpage,(7,0))
         self.updateHtmlPage()
         
         self.colocalizationPanel.SetSizer(self.colocalizationSizer)
         self.colocalizationPanel.SetAutoLayout(1)
         
         self.settingsNotebook.AddPage(self.colocalizationPanel,"Colocalization")
-
-        
-
-        #self.settingsNotebook.AddPage(self.scatterPanel,"Scatter Plot")
-        #self.settingsNotebook.Refresh()
         
     def setColor(self,r,g,b):
         """
@@ -215,6 +220,7 @@ class ColocalizationWindow(TaskWindow.TaskWindow):
             self.preview.updateColor()
 #        self.colorBtn.SetBackgroundColour((r,g,b))
         self.doPreviewCallback()
+        
         
     def updateZSlice(self,event):
         """
@@ -238,6 +244,8 @@ class ColocalizationWindow(TaskWindow.TaskWindow):
         if self.scatterGram:
             self.scatterGram.setTimepoint(event.getValue())            
             self.scatterGram.update()
+
+
             
     def updateThreshold(self,event):
         """
@@ -249,13 +257,16 @@ class ColocalizationWindow(TaskWindow.TaskWindow):
         # We might get called before any channel has been selected. 
         # In that case, do nothing
         if self.settings:
-            oldthreshold=self.settings.get("ColocalizationLowerThreshold")
-            newthreshold=int(self.threshold.GetValue())
-            if oldthreshold != newthreshold:
-                self.settings.set("ColocalizationLowerThreshold",newthreshold)
+            oldlthreshold=self.settings.get("ColocalizationLowerThreshold")
+            olduthreshold=self.settings.get("ColocalizationUpperThreshold")
+            newlthreshold=int(self.lowerthreshold.GetValue())
+            newuthreshold=int(self.upperthreshold.GetValue())
+            self.settings.set("ColocalizationLowerThreshold",newlthreshold)
+            self.settings.set("ColocalizationUpperThreshold",newuthreshold)            
+            if (oldlthreshold != newlthreshold) or (olduthreshold != newuthreshold):
                 self.doPreviewCallback()
 
-    def updateSettings(self):
+    def updateSettings(self,event=None):
         """
         Method: updateSettings()
         Created: 03.11.2004, KP
@@ -269,8 +280,16 @@ class ColocalizationWindow(TaskWindow.TaskWindow):
             formattable={1:0,8:1,32:2}
             format=formattable[format]
             self.depthMenu.SetSelection(format)
+            print "Settings.n=",self.settings.n
+            for key in self.settings.settings.keys():
+                if "Threshold" in key:
+                    print key,self.settings.settings[key]
+            
             th=self.settings.get("ColocalizationLowerThreshold")
-            self.threshold.SetValue(th)
+            self.lowerthreshold.SetValue(th)
+            th=self.settings.get("ColocalizationUpperThreshold")
+            self.upperthreshold.SetValue(th)
+            
             if self.dataUnit:
                 r,g,b=self.settings.get("ColocalizationColor")
                 self.colorChooser.SetValue(wx.Colour(r,g,b))
@@ -310,6 +329,7 @@ class ColocalizationWindow(TaskWindow.TaskWindow):
             #self.scatterGram.setTimepoint(self.preview.timePoint)
             self.scatterGram.update()
         self.updateHtmlPage()
+        
     def setCombinedDataUnit(self,dataUnit):
         """
         Method: setCombinedDataUnit(dataUnit)
@@ -319,7 +339,6 @@ class ColocalizationWindow(TaskWindow.TaskWindow):
         TaskWindow.TaskWindow.setCombinedDataUnit(self,dataUnit)
         self.scatterGram.setDataunit(dataUnit)
         self.Bind(EVT_TIMEPOINT_CHANGED,self.timePointChanged,id=self.preview.GetId())
-        self.settings = self.dataUnit.getSettings()
 
     def timePointChanged(self,event):
         """

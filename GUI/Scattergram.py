@@ -30,6 +30,31 @@ import ImageOperations
 import sys
 import wx
 
+myEVT_THRESHOLD_CHANGED=wx.NewEventType()
+EVT_THRESHOLD_CHANGED=wx.PyEventBinder(myEVT_THRESHOLD_CHANGED,1)
+
+class ThresholdEvent(wx.PyCommandEvent):
+    """
+    Class: ThresholdEvent
+    Created: 03.04.2005, KP
+    Description: An event type that represents a lower and upper threshold change
+    """
+    def __init__(self,evtType,id):
+        wx.PyCommandEvent.__init__(self,evtType,id)
+        self.greenthreshold=(127,127)
+        self.redthreshold=(127,127)
+    def getGreenThreshold(self):
+        return self.greenthreshold
+        
+    def getRedThreshold(self):
+        return self.redthreshold
+        
+    def setGreenThreshold(self,lower,upper):
+        self.greenthreshold = (lower,upper)
+        
+    def setRedThreshold(self,lower,upper):
+        self.redthreshold = (lower,upper)
+
 class Scattergram(wx.Panel):
     """
     Class: Scattergram
@@ -57,9 +82,11 @@ class Scattergram(wx.Panel):
         self.Bind(wx.EVT_LEFT_DOWN,self.markRubberband)
         self.Bind(wx.EVT_MOTION,self.updateRubberband)
         self.Bind(wx.EVT_LEFT_UP,self.setThresholdToRubberband)
+
         self.Bind(wx.EVT_RIGHT_DOWN,self.onRightClick)
         self.ID_COUNTVOXELS=wx.NewId()
         self.ID_WHOLEVOLUME=wx.NewId()
+
         self.menu=wx.Menu()
         item = wx.MenuItem(self.menu,self.ID_COUNTVOXELS,"Show frequency",kind=wx.ITEM_CHECK)
         self.Bind(wx.EVT_MENU,self.setVoxelCount,id=self.ID_COUNTVOXELS)
@@ -125,9 +152,32 @@ class Scattergram(wx.Panel):
         x1,y1=self.rubberstart
         x2,y2=self.rubberend
         print "Using %d-%d as green and %d-%d as red range"%(x1,x2,y1,y2)
+        reds=self.red.getSettings()
+        greens=self.green.getSettings()
+        print "reds.n=",reds.n,"greens.n=",greens.n
+        greens.set("ColocalizationLowerThreshold",x1)
+        greens.set("ColocalizationUpperThreshold",x2)
+        reds.set("ColocalizationLowerThreshold",y1)
+        reds.set("ColocalizationUpperThreshold",y2)
+        
+        print "In red:"
+        for key in reds.settings.keys():
+            if "Threshold" in key:
+                print key,reds.settings[key]
+        print "In green:"
+        for key in greens.settings.keys():
+            if "Threshold" in key:
+                print key,greens.settings[key]
+        evt=ThresholdEvent(myEVT_THRESHOLD_CHANGED,self.GetId())
+        evt.setRedThreshold(y1,y2)
+        evt.setGreenThreshold(x1,x2)
+        self.GetEventHandler().ProcessEvent(evt)
+
+        
         self.rubberstart = None
         self.rubberend = None
         self.Refresh()
+        
 
     def setZSlice(self,z):
         """
@@ -167,12 +217,12 @@ class Scattergram(wx.Panel):
             green=None
             for i in dataunits:
                 if i.getColor()==(255,0,0):
-                    red=i
+                    self.red=i
                 elif i.getColor()==(0,255,0):
-                    green=i
+                    self.green=i
             tp=self.timepoint
-            reddata=red.getTimePoint(tp)
-            greendata=green.getTimePoint(tp)
+            reddata=self.red.getTimePoint(tp)
+            greendata=self.green.getTimePoint(tp)
             #print "Using z=",self.z,reddata,greendata
             scatter=ImageOperations.scatterPlot(reddata,greendata,self.z, self.countVoxels, self.wholeVolume)
             self.scatter=scatter.Mirror(0)

@@ -131,7 +131,7 @@ class MainWindow(wx.Frame):
         
         self.splitter.SplitVertically(self.tree,self.infowidget,200)
 
-        self.Show(true)
+        self.Show(True)
 
     def createToolBar(self):
         """
@@ -146,32 +146,32 @@ class MainWindow(wx.Frame):
 
         print "adding tool"
         tb.AddSimpleTool(ID_OPEN,wx.Image(os.path.join(iconpath,"OpenLSM.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Open","Open dataset series")
-        EVT_TOOL(self,ID_OPEN,self.menuOpen)
+        wx.EVT_TOOL(self,ID_OPEN,self.menuOpen)
 
 
         tb.AddSimpleTool(ID_COLORMERGING,
         wx.Image(os.path.join(iconpath,"ColorCombination.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Merge Channels","Merge dataset series")
-        EVT_TOOL(self,ID_COLORMERGING,self.menuMergeChannels)       
+        wx.EVT_TOOL(self,ID_COLORMERGING,self.menuMergeChannels)       
     
         tb.AddSimpleTool(ID_COLOCALIZATION,
         wx.Image(os.path.join(iconpath,"Colocalization.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Colocalization","Create colocalization map")
-        EVT_TOOL(self,ID_COLOCALIZATION,self.menuColocalization)       
+        wx.EVT_TOOL(self,ID_COLOCALIZATION,self.menuColocalization)       
 
         tb.AddSimpleTool(ID_VSIA,
         wx.Image(os.path.join(iconpath,"HIV.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Visualization of sparse intensity aggregations","Visualization of sparse intensity aggregations")
-        EVT_TOOL(self,ID_VSIA,self.menuVSIA)
+        wx.EVT_TOOL(self,ID_VSIA,self.menuVSIA)
         
         tb.AddSimpleTool(ID_SINGLE,
         wx.Image(os.path.join(iconpath,"DataSetSettings2.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Process dataset series","Process a single dataset series")
-        EVT_TOOL(self,ID_SINGLE,self.menuProcessDataUnit)
+        wx.EVT_TOOL(self,ID_SINGLE,self.menuProcessDataUnit)
 
         tb.AddSimpleTool(ID_REEDIT,
         wx.Image(os.path.join(iconpath,"ReEdit.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Re-edit dataset series","Re-edit a dataset series")
-        EVT_TOOL(self,ID_REEDIT,self.menuEditDataSet)
+        wx.EVT_TOOL(self,ID_REEDIT,self.menuEditDataSet)
 
         tb.AddSimpleTool(ID_RENDER,
         wx.Image(os.path.join(iconpath,"Render.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Render","Render a dataset series")
-        EVT_TOOL(self,ID_RENDER,self.menuRender)
+        wx.EVT_TOOL(self,ID_RENDER,self.menuRender)
 
         tb.Realize()
     def createMenu(self):
@@ -199,7 +199,7 @@ class MainWindow(wx.Frame):
       
 
         self.settingsMenu.Append(ID_PREFERENCES,"&Preferences...")
-        EVT_MENU(self,ID_PREFERENCES,self.menuPreferences)
+        wx.EVT_MENU(self,ID_PREFERENCES,self.menuPreferences)
     
         self.importMenu=wx.Menu()
         self.importMenu.Append(ID_IMPORT_VTIFILES,"&VTK Dataset Series")
@@ -208,34 +208,34 @@ class MainWindow(wx.Frame):
         self.exportMenu=wx.Menu()
         self.exportMenu.Append(ID_EXPORT_VTIFILES,"&VTK Dataset Series")
         self.exportMenu.Append(ID_EXPORT_IMAGES,"&Stack of Images")
-        EVT_MENU(self,ID_IMPORT_VTIFILES,self.menuImport)
-        EVT_MENU(self,ID_IMPORT_IMAGES,self.menuImport)
+        wx.EVT_MENU(self,ID_IMPORT_VTIFILES,self.menuImport)
+        wx.EVT_MENU(self,ID_IMPORT_IMAGES,self.menuImport)
     
         
         self.fileMenu.Append(ID_OPEN,"&Open...\tCtrl-O","Open a Data Set")
-        EVT_MENU(self,ID_OPEN,self.menuOpen)
+        wx.EVT_MENU(self,ID_OPEN,self.menuOpen)
         self.fileMenu.AppendSeparator()
         self.fileMenu.AppendMenu(ID_IMPORT,"&Import",self.importMenu)
         self.fileMenu.AppendMenu(ID_EXPORT,"&Export",self.exportMenu)
         self.fileMenu.AppendSeparator()
         self.fileMenu.Append(ID_QUIT,"&Quit\tCtrl-Q","Quit the application")
-        EVT_MENU(self,ID_QUIT,self.quitApp)
+        wx.EVT_MENU(self,ID_QUIT,self.quitApp)
 
         self.taskMenu.Append(ID_COLOCALIZATION,"&Colocalization...","Create a colocalization map")
         self.taskMenu.Append(ID_COLORMERGING,"Color &Merging...","Merge dataset series")
         self.taskMenu.Append(ID_VSIA,"&Visualize Sparse Intensity Aggregations...","Visualize Sparse Intensity Aggregations with smooth surface")
         self.taskMenu.Append(ID_SINGLE,"&Process Single Dataset Series...","Process Single Dataset Series")
         self.taskMenu.Append(ID_RENDER,"&Render Dataset Series...","Render a dataset series")
-        EVT_MENU(self,ID_COLOCALIZATION,self.menuColocalization)
-        EVT_MENU(self,ID_COLORMERGING,self.menuMergeChannels)
-        EVT_MENU(self,ID_VSIA,self.menuVSIA)
-        EVT_MENU(self,ID_SINGLE,self.menuProcessDataUnit)
-        EVT_MENU(self,ID_RENDER,self.menuRender)
+        wx.EVT_MENU(self,ID_COLOCALIZATION,self.menuColocalization)
+        wx.EVT_MENU(self,ID_COLORMERGING,self.menuMergeChannels)
+        wx.EVT_MENU(self,ID_VSIA,self.menuVSIA)
+        wx.EVT_MENU(self,ID_SINGLE,self.menuProcessDataUnit)
+        wx.EVT_MENU(self,ID_RENDER,self.menuRender)
 
         self.helpMenu.Append(ID_ABOUT,"&About BioImageXD","About BioImageXD")
         self.helpMenu.AppendSeparator()
         self.helpMenu.Append(ID_HELP,"&Help\tCtrl-H","Online Help")
-        EVT_MENU(self,ID_ABOUT,self.menuAbout)
+        wx.EVT_MENU(self,ID_ABOUT,self.menuAbout)
     
     def menuImport(self,evt):
         """
@@ -487,5 +487,5 @@ class MainWindow(wx.Frame):
         Created: 03.11.2004, KP
         Description: Quits the application
         """
-        self.Close(true)
+        self.Close(True)
         

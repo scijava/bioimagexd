@@ -91,7 +91,7 @@ class TaskWindow(wx.Frame):
         self.icon = wx.Icon(ico,wx.BITMAP_TYPE_ICO)
         self.SetIcon(self.icon)
 
-        self.Bind(EVT_CLOSE,self.closeWindowCallback)
+        self.Bind(wx.EVT_CLOSE,self.closeWindowCallback)
         self.mainsizer=wx.GridBagSizer()
 
 
@@ -163,11 +163,11 @@ class TaskWindow(wx.Frame):
         self.tb.AddSimpleTool(ID_ZOOM_TO_FIT,wx.Image(os.path.join("Icons","zoom-to-fit.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Zoom to Fit","Zoom the slice so that it fits in the window")
         self.tb.AddSimpleTool(ID_ZOOM_OBJECT,wx.Image(os.path.join("Icons","zoom-object.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Zoom object","Zoom user selected portion of the slice")
 
-        EVT_TOOL(self,ID_CAPTURE,self.preview.captureSlice)
-        EVT_TOOL(self,ID_ZOOM_IN,self.preview.zoomIn)
-        EVT_TOOL(self,ID_ZOOM_OUT,self.preview.zoomOut)
-        EVT_TOOL(self,ID_ZOOM_TO_FIT,self.preview.zoomToFit)
-        EVT_TOOL(self,ID_ZOOM_OBJECT,self.preview.zoomObject)
+        wx.EVT_TOOL(self,ID_CAPTURE,self.preview.captureSlice)
+        wx.EVT_TOOL(self,ID_ZOOM_IN,self.preview.zoomIn)
+        wx.EVT_TOOL(self,ID_ZOOM_OUT,self.preview.zoomOut)
+        wx.EVT_TOOL(self,ID_ZOOM_TO_FIT,self.preview.zoomToFit)
+        wx.EVT_TOOL(self,ID_ZOOM_OBJECT,self.preview.zoomObject)
         self.zoomCombo.Bind(wx.EVT_COMBOBOX,self.preview.zoomToComboSelection)
 
     def createItemToolbar(self):
@@ -215,11 +215,11 @@ class TaskWindow(wx.Frame):
         self.buttonsSizer1=wx.BoxSizer(wx.HORIZONTAL)
         
         self.savesettings=wx.Button(self.buttonPanel,-1,"Save settings")
-        self.savesettings.Bind(EVT_BUTTON,self.saveSettingsCallback)
+        self.savesettings.Bind(wx.EVT_BUTTON,self.saveSettingsCallback)
         self.buttonsSizer1.Add(self.savesettings,flag=wx.ALIGN_LEFT)
 
         self.loadsettings=wx.Button(self.buttonPanel,-1,"Load settings")
-        self.loadsettings.Bind(EVT_BUTTON,self.loadSettingsCallback)
+        self.loadsettings.Bind(wx.EVT_BUTTON,self.loadSettingsCallback)
         self.buttonsSizer1.Add(self.loadsettings,flag=wx.ALIGN_LEFT)
         self.buttonsSizer1.AddSizer((100,-1))
         self.buttonSizer.Add(self.buttonsSizer1)
@@ -231,12 +231,12 @@ class TaskWindow(wx.Frame):
         self.buttonsSizer2.Add(self.processButton)
 
         self.previewButton=wx.Button(self.buttonPanel,-1,"Preview")
-        self.previewButton.Bind(EVT_BUTTON,self.doPreviewCallback)
+        self.previewButton.Bind(wx.EVT_BUTTON,self.doPreviewCallback)
         self.buttonsSizer2.Add(self.previewButton)        
 
         
         self.closeButton=wx.Button(self.buttonPanel,-1,"Close")
-        self.closeButton.Bind(EVT_BUTTON,self.closeWindowCallback)
+        self.closeButton.Bind(wx.EVT_BUTTON,self.closeWindowCallback)
         self.buttonsSizer2.Add(self.closeButton)
         
         self.buttonSizer.Add(self.buttonsSizer2)    
