@@ -50,20 +50,27 @@ class TimepointSelectionPanel(wx.Panel):
                  so that this can be also embedded in any other dialog.
     """
     def __init__(self,parent):
-        wx.Panel.__init__(self,parent)
+        wx.Panel.__init__(self,parent,size=(640,480))
         self.mainsizer=wx.GridBagSizer(10,10)
         self.configFrame=None
 
+        self.Bind(wx.EVT_SIZE,self.onSize)
         self.timepointButtonSizer=wx.GridBagSizer()
-        self.buttonFrame = scrolled.ScrolledPanel(self, -1,style=wx.RAISED_BORDER,size=(640,100))
+        #,style=wx.RAISED_BORDER
+        self.buttonFrame = scrolled.ScrolledPanel(self, -1,size=(640,50))
         self.buttonFrame.SetSizer(self.timepointButtonSizer)
         self.buttonFrame.SetAutoLayout(True)
         self.buttonFrame.SetupScrolling()
-        self.timepointLbl=wx.StaticText(self,-1,"Select timepoints")
+        #self.timepointLbl=wx.StaticText(self,-1,"Select timepoints")
         
-        self.mainsizer.Add(self.timepointLbl,(0,0))        
-        self.mainsizer.Add(self.buttonFrame,(1,0),span=(1,2),flag=wx.EXPAND|wx.ALL)
+        #self.mainsizer.Add(self.timepointLbl,(0,0))        
         
+        self.selectbox=wx.StaticBox(self,-1,"Select Timepoints")
+        self.selectboxsizer=wx.StaticBoxSizer(self.selectbox,wx.VERTICAL)
+        self.selectboxsizer.Add(self.buttonFrame)
+        
+        #self.mainsizer.Add(self.buttonFrame,(1,0),span=(1,2),flag=wx.EXPAND|wx.ALL)
+        self.mainsizer.Add(self.selectboxsizer,(0,0),span=(1,2),flag=wx.EXPAND|wx.ALL)
         
         self.buttonList=[]
         self.selectedFrames={}
@@ -73,6 +80,18 @@ class TimepointSelectionPanel(wx.Panel):
         self.SetSizer(self.mainsizer)
         self.mainsizer.Fit(self)
         self.mainsizer.SetSizeHints(self)
+        
+    def onSize(self,event):
+        """
+        Method: onSize(event)
+        Created: 16.03.2005, KP
+        Description: Method that is called when the window resizes
+        """          
+        w,h=self.buttonFrame.GetSize()
+        w,h2=event.GetSize()
+        self.buttonFrame.SetSize((w,h))
+        self.Layout()
+        self.buttonFrame.Layout()
         
     def getSelectedTimepoints(self):
         timepoints=[]
@@ -90,22 +109,19 @@ class TimepointSelectionPanel(wx.Panel):
         Description: A callback that is used to close this window
         """
         self.configFrame=wx.Panel(self)
-        self.mainsizer.Add(self.configFrame,(2,0),span=(1,2),flag=wx.EXPAND|wx.ALL)
+        self.selectboxsizer.Add(self.configFrame)
+        #self.mainsizer.Add(self.configFrame,(2,0),span=(1,2),flag=wx.EXPAND|wx.ALL)
         
         self.configSizer=wx.GridBagSizer()
 
         box=wx.BoxSizer(wx.HORIZONTAL)
-        self.nthLbl=wx.StaticText(self.configFrame,-1,"Select every")
+        self.nthLbl=wx.StaticText(self.configFrame,-1,"Select every nth timepoint:")
         box.Add(self.nthLbl)
         self.configSizer.Add(box,(0,0))
 
         self.nthEntry=wx.TextCtrl(self.configFrame,-1,"1",size=(50,-1))
         box.Add(self.nthEntry)
         self.nthEntry.Bind(wx.EVT_TEXT,self.updateSelection)
-        
-        self.nthLbl2=wx.StaticText(self.configFrame,-1,"Nth timepoints")
-        box.Add(self.nthLbl2)
-
                 
         self.configFrame.SetSizer(self.configSizer)
         self.configFrame.SetAutoLayout(True)            
