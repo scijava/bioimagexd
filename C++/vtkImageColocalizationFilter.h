@@ -46,14 +46,56 @@ public:
   void SetOutputDepthTo1Bit() { this->SetOutputDepth(1); }
   
   // Description:
-  // Voxels in the specified dataset that have a scalar value over 
-  // this threshold are considered to be colocalizing
-  void SetColocalizationThreshold(int dataset, int threshold);
-  int GetColocalizationThreshold(int dataset) { 
-      if (dataset < this->NumberOfDatasets) return ColocalizationThresholds[dataset];
+  // Get the value for Pearson's correlation of the datasets
+  vtkGetMacro(PearsonsCorrelation,double);
+  vtkSetMacro(PearsonsCorrelation,double);
+
+  // Description:
+  // Get the value for overlap coefficient
+  vtkGetMacro(OverlapCoefficient,double);
+  vtkSetMacro(OverlapCoefficient,double);    
+
+  // Description:
+  // Get the value for overlap coefficients k1 and k2
+  vtkGetMacro(OverlapCoefficientK1,double);
+  vtkGetMacro(OverlapCoefficientK2,double);  
+  vtkSetMacro(OverlapCoefficientK1,double);
+  vtkSetMacro(OverlapCoefficientK2,double);
+
+  // Description:
+  // Get the value for colocalization coefficients m1 and m2
+  vtkGetMacro(ColocalizationCoefficientM1,double);
+  vtkGetMacro(ColocalizationCoefficientM2,double);    
+  vtkSetMacro(ColocalizationCoefficientM1,double);
+  vtkSetMacro(ColocalizationCoefficientM2,double);    
+  
+  // Description:
+  // Get the value for colocalization coefficients m1 and m2
+  // calculated based on only the AOI
+  vtkGetMacro(AOIColocalizationCoefficientM1,double);
+  vtkGetMacro(AOIColocalizationCoefficientM2,double);    
+  vtkSetMacro(AOIColocalizationCoefficientM1,double);
+  vtkSetMacro(AOIColocalizationCoefficientM2,double);    
+
+  
+  // Description:
+  // Voxels in the specified dataset that have a scalar value above
+  // this threshold and below the upper threshold are considered to be colocalizing
+  void SetColocalizationLowerThreshold(int dataset, int threshold);
+  int GetColocalizationLowerThreshold(int dataset) { 
+      if (dataset < this->NumberOfDatasets) return ColocalizationLowerThresholds[dataset];
       return 0;
   }
-  int* GetColocalizationThresholds() { return this->ColocalizationThresholds; }
+  // Description:
+  // Voxels in the specified dataset that have a scalar value below 
+  // this threshold and above the lower threshold are considered to be colocalizing
+  void SetColocalizationUpperThreshold(int dataset, int threshold);
+  int GetColocalizationUpperThreshold(int dataset) { 
+      if (dataset < this->NumberOfDatasets) return ColocalizationUpperThresholds[dataset];
+      return 0;
+  }
+  int* GetColocalizationLowerThresholds() { return this->ColocalizationLowerThresholds; }
+  int* GetColocalizationUpperThresholds() { return this->ColocalizationUpperThresholds; }
   
   // Description:
   // Get the amount of colocalization in the image
@@ -83,11 +125,21 @@ private:
   void operator=(const vtkImageColocalizationFilter&);  // Not implemented.
 
   int OutputDepth;
-  int *ColocalizationThresholds;
+  int *ColocalizationLowerThresholds;
+  int *ColocalizationUpperThresholds;
   int ColocalizationAmount;
   int LeastVoxelsOverThreshold;
   int NumberOfDatasets;
 
+  double PearsonsCorrelation;
+  double OverlapCoefficient;
+  double OverlapCoefficientK1;
+  double OverlapCoefficientK2;
+  double ColocalizationCoefficientM1;
+  double ColocalizationCoefficientM2;
+  double AOIColocalizationCoefficientM1;
+  double AOIColocalizationCoefficientM2;
+  
 };
 
 #endif
