@@ -1,0 +1,142 @@
+#! /usr/bin/env python
+# -*- coding: iso-8859-1 -*-
+
+"""
+ Unit: TimeScale
+ Project: BioImageXD
+ Created: 04.02.2005
+ Creator: KP
+ Description:
+
+ URM/AS - The Unified Rendering Manager / Animator for Selli
+ 
+ This is a timeline based GUI for controlling the rendering of datasets. The GUI allows users
+ to specify a path for the camera to follow (using Heikki Uuksulainen's MayaVi animator code)
+ and also allows them to produce videos of the rendering using ffmpeg.
+ 
+ The timescale widget is implemented in this module.
+
+ Modified: 04.02.2005 KP - Created the module
+ 
+ BioImageXD includes the following persons:
+ 
+ DW - Dan White, dan@chalkie.org.uk
+ KP - Kalle Pahajoki, kalpaha@st.jyu.fi
+ PK - Pasi Kankaanp‰‰, ppkank@bytl.jyu.fi
+ 
+ Copyright (c) 2005 BioImageXD Project.
+"""
+__author__ = "BioImageXD Project"
+__version__ = "$Revision: 1.22 $"
+__date__ = "$Date: 2005/01/13 13:42:03 $"
+
+import wx
+
+class TimeScale(wx.Panel):
+    """
+    Class: TimeScale
+    Created: 04.02.2005, KP
+    Description: Shows a time scale of specified length
+    """
+    def __init__(self,parent):
+        wx.Panel.__init__(self,parent,-1,style=wx.RAISED_BORDER)
+        self.Bind(wx.EVT_PAINT,self.onPaint)
+        self.bgcolor=(255,255,255)
+        self.fgcolor=(0,0,0)
+        
+        self.perSecond=24
+        self.xOffset=15
+        self.yOffset=6
+        
+    def setDisabled(self,flag):
+        """
+        Method: setDisabled(flag)
+        Created: 04.02.2005, KP
+        Description: Grays out / enables this 
+        """
+        if not flag:
+            self.Enable(True)
+            self.fgcolor=(0,0,0)
+            self.bgcolor=(255,255,255)
+        else:
+            self.Enable(False)
+#            col=self.GetForegroundColour()
+#            r,g,b=col.Red(),col.Green(),col.Blue()
+#            self.fgcolor=(r,g,b)
+            self.fgcolor=(127,127,127)
+            col=self.GetBackgroundColour()
+            r,g,b=col.Red(),col.Green(),col.Blue()
+            self.bgcolor=(r,g,b)
+            
+    def setOffset(self,x):
+        self.xOffset=x
+        self.paintScale()
+        
+    def setPixelsPerSecond(self,x):
+        self.perSecond=x
+        print "pixels per second=",x
+        
+    def getPixelsPerSecond(self):
+        return self.perSecond
+    
+    def setDuration(self,seconds):
+        self.seconds=seconds
+        self.width=self.perSecond*seconds+2*self.xOffset
+        self.height=20+self.yOffset
+        self.SetSize((self.width+10,self.height))
+        print "Set Size to %d,%d"%(self.width+10,self.height+10)
+        self.buffer=wx.EmptyBitmap(self.width,self.height)
+        dc = wx.BufferedDC(None,self.buffer)
+        #col=self.GetBackgroundColour()
+        r,g,b=self.bgcolor
+        col=wx.Colour(r,g,b)
+        dc.SetBackground(wx.Brush(col))
+        dc.Clear()
+        self.dc=dc
+        self.paintScale()
+    
+    def paintScale(self):
+        self.dc.Clear()
+        self.dc.BeginDrawing()
+
+        # draw the horizontal line
+        #self.dc.DrawLine(self.xOffset,0,self.xOffset+self.seconds*self.perSecond,0)
+        #self.dc.DrawLine(self.xOffset,self.height-1,self.xOffset+self.seconds*self.perSecond,self.height-1)
+
+        #self.dc.SetTextForeground(color)        
+        self.dc.SetFont(wx.Font(8,wx.SWISS,wx.NORMAL,wx.NORMAL))
+        # and the tick marks and times
+        self.dc.DrawLine(self.xOffset,0,self.width,0)
+        r,g,b=self.fgcolor
+        self.dc.SetPen(wx.Pen((r,g,b)))
+        for i in range(0,self.seconds+1):
+            x=i*self.perSecond+self.xOffset
+            y=10+self.yOffset
+            if not i%10:
+                h=int(i/3600)
+                m=int(i/60)
+                s=int(i%60)
+                timeString=""
+                if 1 or h:
+                    timeString="%.2d:"%h
+                timeString+="%.2d:%.2d"%(m,s)
+                tw,th=self.dc.GetTextExtent(timeString)
+                self.dc.SetTextForeground((r,g,b))
+
+                self.dc.DrawText(timeString,x-(tw/2),self.height/4)    
+            if not i%30:
+                d=4
+            elif not i%10:
+                d=4
+            else:
+                d=2
+            if d:
+                self.dc.DrawLine(x,-1,x,d)
+                self.dc.DrawLine(x,self.height-d-4,x,self.height)
+        self.dc.EndDrawing()
+      
+    
+    def onPaint(self,event):
+        dc=wx.BufferedPaintDC(self,self.buffer)     
+        
+   
