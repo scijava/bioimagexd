@@ -310,6 +310,7 @@ class PreviewFrame(wx.Panel):
             frgb=(255-r,255-g,255-b)
             self.pixelLbl.SetForegroundColour(frgb)
             self.pixelPanel.SetBackgroundColour((r,g,b))
+            self.pixelLbl.SetBackgroundColour((r,g,b))
             self.pixelLbl.SetLabel("Scalar %d at (%d,%d,%d) maps to (%d,%d,%d)"%\
             (scalar,x,y,self.z,r,g,b))
         else:
@@ -321,7 +322,8 @@ class PreviewFrame(wx.Panel):
                 alpha=self.currentImage.GetScalarComponentAsDouble(x,y,self.z,3)
             frgb=(255-r,255-g,255-b)
             self.pixelLbl.SetForegroundColour(frgb)
-            self.pixelPanel.SetBackgroundColour((r,g,b))            
+            self.pixelPanel.SetBackgroundColour((r,g,b))
+            self.pixelLbl.SetBackgroundColour((r,g,b))
             txt="Color at (%d,%d,%d) is (%d,%d,%d)"%(x,y,self.z,r,g,b)
             if alpha!=-1:
                 txt=txt+" with alpha %d"%alpha
@@ -432,7 +434,7 @@ class PreviewFrame(wx.Panel):
         self.sizer.SetSizeHints(self)
 
         self.Layout()
-        self.parentwin.mainsizer.Fit(self.parentwin)
+        self.parentwin.mainsizer.Fit(self.parentwin.panel)
         self.parentwin.Layout()
 
     def previewInMayavi(self,imagedata,ctf=None,renew=1):

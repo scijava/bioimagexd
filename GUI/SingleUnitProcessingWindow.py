@@ -23,7 +23,7 @@
            14.12.2004 JV - Added: Disabling of filter settings
            17.12.2004 JV - Fixed: get right filter settings when changing 
                            timepoint
-           02.02.2005 KP - Conversion to wxPython complete, using Notebook 
+           02.02.2005 KP - Conversion to wxPython complete, using Notebook
                            
  Selli includes the following persons:
  JH - Juha Hyytiäinen, juhyytia@st.jyu.fi
@@ -97,61 +97,20 @@ class SingleUnitProcessingWindow(TaskWindow.TaskWindow):
         self.createIntensityTransferPage()
 
         self.Show()
-        self.preview=SingleUnitProcessingPreview(self,self)
+        self.preview=SingleUnitProcessingPreview(self.panel,self)
         self.previewSizer.Add(self.preview,(0,0))
         self.previewSizer.Fit(self.preview)
 
         self.SetTitle("Single Dataset Series Processing")
 
         self.mainsizer.Layout()
-        self.mainsizer.Fit(self)
+        self.mainsizer.Fit(self.panel)
 
-
-    def createIntensityTransferPage(self):
-        """
-        Method: createInterpolationPanel()
-        Created: 09.12.2004
-        Creator: KP
-        Description: Creates a frame holding the entries for configuring 
-                     interpolation
-        """
-        self.editIntensityPanel=wx.Panel(self.settingsNotebook,-1)
-        self.editIntensitySizer=wx.GridBagSizer()
-        
-        self.iTFEditor=IntensityTransferEditor(self.editIntensityPanel)
-        self.editIntensitySizer.Add(self.iTFEditor,(0,0),span=(1,2))        
-
-        self.box=wx.BoxSizer(wx.HORIZONTAL)
-        self.editIntensitySizer.Add(self.box,(3,0))
-        
-        self.restoreBtn=wx.Button(self.editIntensityPanel,-1,"Reset defaults")
-        self.restoreBtn.Bind(EVT_BUTTON,self.iTFEditor.restoreDefaults)
-        self.box.Add(self.restoreBtn)
-        
-        self.resetBtn=wx.Button(self.editIntensityPanel,-1,"Reset all timepoints")
-        self.resetBtn.Bind(EVT_BUTTON,self.resetTransferFunctions)
-        self.box.Add(self.resetBtn)
-
-        self.copyiTFBtn=wx.Button(self.editIntensityPanel,-1,"Copy to all timepoints")
-        #self.copyiTFBtn.Bind(EVT_BUTTON,self.copyTransferFunctionToAll)
-        self.box.Add(self.copyiTFBtn)
-
-        self.interpolateBtn=wx.Button(self.editIntensityPanel,-1,"Interpolate")
-        self.interpolateBtn.Bind(EVT_BUTTON,self.startInterpolation)
-        self.box.Add(self.interpolateBtn)
-        
-        
-        self.editIntensityPanel.SetSizer(self.editIntensitySizer)
-        self.editIntensityPanel.SetAutoLayout(1)
-        self.settingsNotebook.InsertPage(1,self.editIntensityPanel,"Intensity Transfer Function")
-        
+    def createIntensityInterpolationPanel(self):
         self.interpolationPanel=wx.Panel(self.editIntensityPanel)
         self.interpolationSizer=wx.GridBagSizer()
-        
-        #self.infoSizer.Add(self.interpolationSizer,(0,0))
-
         lbl=wx.StaticText(self.interpolationPanel,-1,"Interpolate intensities:")
-        self.interpolationSizer.Add(lbl,(1,0))
+        self.interpolationSizer.Add(lbl,(0,0))
 
         lbl=wx.StaticText(self.interpolationPanel,-1,"from timepoint")
         self.lbls.append(lbl)
@@ -174,17 +133,60 @@ class SingleUnitProcessingWindow(TaskWindow.TaskWindow):
 
         for i in range(self.numOfPoints):
             lbl,entry,btn=self.lbls[i],self.entries[i],self.btns[i]
-            self.interpolationSizer.Add(lbl,(i+2,0))
-            self.interpolationSizer.Add(entry,(i+2,1))
-            self.interpolationSizer.Add(btn,(i+2,2))
+            self.interpolationSizer.Add(lbl,(i+1,0))
+            self.interpolationSizer.Add(entry,(i+1,1))
+            self.interpolationSizer.Add(btn,(i+1,2))
 
-        self.editIntensitySizer.Add(self.interpolationPanel,(2,0))
+        self.editIntensitySizer.Add(self.interpolationPanel,(1,0))
         self.interpolationPanel.SetSizer(self.interpolationSizer)
         self.interpolationPanel.SetAutoLayout(1)
         self.interpolationSizer.SetSizeHints(self.interpolationPanel)
 
-        self.editIntensityPanel.Layout()
-        self.editIntensitySizer.Fit(self.editIntensityPanel)
+
+        #self.mainsizer.Add(self.interpolationPanel,(1,0))
+        self.panel.Layout()
+        self.mainsizer.Fit(self.panel)
+        self.SetSize(self.GetSize())
+
+
+    def createIntensityTransferPage(self):
+        """
+        Method: createInterpolationPanel()
+        Created: 09.12.2004
+        Creator: KP
+        Description: Creates a frame holding the entries for configuring 
+                     interpolation
+        """
+        self.editIntensityPanel=wx.Panel(self.settingsNotebook,-1)
+        self.editIntensitySizer=wx.GridBagSizer()
+
+        self.iTFEditor=IntensityTransferEditor(self.editIntensityPanel)
+        self.editIntensitySizer.Add(self.iTFEditor,(0,0))#,span=(1,2))
+
+        self.box=wx.BoxSizer(wx.HORIZONTAL)
+        self.editIntensitySizer.Add(self.box,(2,0))
+        self.createIntensityInterpolationPanel()
+
+        self.restoreBtn=wx.Button(self.editIntensityPanel,-1,"Reset defaults")
+        self.restoreBtn.Bind(EVT_BUTTON,self.iTFEditor.restoreDefaults)
+        self.box.Add(self.restoreBtn)
+
+        self.resetBtn=wx.Button(self.editIntensityPanel,-1,"Reset all timepoints")
+        self.resetBtn.Bind(EVT_BUTTON,self.resetTransferFunctions)
+        self.box.Add(self.resetBtn)
+
+        self.copyiTFBtn=wx.Button(self.editIntensityPanel,-1,"Copy to all timepoints")
+        self.copyiTFBtn.Bind(EVT_BUTTON,self.copyTransferFunctionToAll)
+        self.box.Add(self.copyiTFBtn)
+
+        self.interpolateBtn=wx.Button(self.editIntensityPanel,-1,"Interpolate")
+        self.interpolateBtn.Bind(EVT_BUTTON,self.startInterpolation)
+        self.box.Add(self.interpolateBtn)
+
+        self.editIntensityPanel.SetSizer(self.editIntensitySizer)
+        self.editIntensityPanel.SetAutoLayout(1)
+        self.settingsNotebook.InsertPage(1,self.editIntensityPanel,"Intensity Transfer Function")
+        
 
     def setInterpolationTimePoints(self,event):
         """
@@ -253,6 +255,8 @@ class SingleUnitProcessingWindow(TaskWindow.TaskWindow):
         #controls for filtering
 
         self.filtersPanel=wx.Panel(self.settingsNotebook,-1)
+        self.settingsNotebook.AddPage(self.filtersPanel,"Filtering")
+        
         self.filtersSizer=wx.GridBagSizer()
         
         #Median Filtering
@@ -311,7 +315,7 @@ class SingleUnitProcessingWindow(TaskWindow.TaskWindow):
         
         self.filtersPanel.SetSizer(self.filtersSizer)
         self.filtersPanel.SetAutoLayout(1)
-        self.settingsNotebook.AddPage(self.filtersPanel,"Filtering")
+        #self.filtersPanel.SetBackgroundColour(self.panel.GetBackgroundColour())
 
 
 ########################## CALLBACK CODE #############################
@@ -328,6 +332,14 @@ class SingleUnitProcessingWindow(TaskWindow.TaskWindow):
         self.iTFEditor.setIntensityTransferFunction(
         self.dataUnit.getIntensityTransferFunction(timePoint))
         self.timePoint=timePoint
+ 
+    def copyTransferFunctionToAll(self,event=None):
+        """
+        Method: copyTransferFunctionToAll
+        Created: 10.03.2005, KP
+        Description: A method to copy this transfer function to all timepooints
+        """
+        pass
 
     def resetTransferFunctions(self,event=None):
         """
@@ -488,7 +500,7 @@ class SingleUnitProcessingWindow(TaskWindow.TaskWindow):
         Description: Sets the processed dataunit that is to be processed.
                      It is then used to get the names of all the source data
                      units and they are added to the listbox.
-                     This is overwritten from taskwindow since we only process 
+                     This is overwritten from taskwindow since we only process
                      one dataunit here, not multiple source data units
         """
         self.dataUnit=dataUnit
@@ -499,11 +511,11 @@ class SingleUnitProcessingWindow(TaskWindow.TaskWindow):
             self.preview.setDataUnit(dataUnit)
         except GUIError, ex:
             ex.show()
-        self.listbox.Unbind(EVT_LISTBOX)            
-        names=[dataUnit.getName()]
-        self.listbox.InsertItems(names,0)
+        self.listbox.Unbind(wx.EVT_CHOICE)
+
+        self.listbox.Append(dataUnit.getName())
         self.listbox.SetSelection(0)
-        self.listbox.SetSize((40,120))
+        # self.listbox.SetSize((40,120))
         
         #set the color of the colorBtn to the current color
         #self.colorBtn.SetBackgroundColour(self.dataUnit.getColor())
@@ -519,5 +531,5 @@ class SingleUnitProcessingWindow(TaskWindow.TaskWindow):
         self.iTFEditor.setIntensityTransferFunction(
         self.configSetting.getIntensityTransferFunction(self.timePoint))
         self.iTFEditor.updateCallback=self.doPreviewCallback
-        
+
         self.updateSettings()

@@ -95,14 +95,14 @@ class ColorMergingWindow(TaskWindow.TaskWindow):
         self.SetTitle("Color Merging")
 
         # Preview has to be generated here
-        self.preview=ColorMergingPreview(self)
+        self.preview=ColorMergingPreview(self.panel,self)
         #self.preview = SingleUnitProcessingPreview(self)
         self.previewSizer.Add(self.preview,(0,0),flag=wxEXPAND|wxALL)
         self.previewSizer.Fit(self.preview)
         
         self.oldBg=self.GetBackgroundColour()
         self.mainsizer.Layout()
-        self.mainsizer.Fit(self)
+        self.mainsizer.Fit(self.panel)
 
     def createButtonBox(self):
         """

@@ -8,7 +8,7 @@
  Description:
 
  A wx.Python wx.Dialog window that is used to control the settings for the
- colocalization module. Expects to be handed a ColocalizationDataUnit() 
+ colocalization module. Expects to be handed a ColocalizationDataUnit()
  containing the datasets from which the colocalization map is generated.
  Uses the PreviewFrame for previewing.
 
@@ -85,13 +85,13 @@ class ColocalizationWindow(TaskWindow.TaskWindow):
         TaskWindow.TaskWindow.__init__(self,root)
         self.operationName="Colocalization"
         # Preview has to be generated here
-        self.preview=ColocalizationPreview(self)
+        self.preview=ColocalizationPreview(self.panel,self)
         #self.preview = ColorMergingPreview(self)
         self.previewSizer.Add(self.preview,(0,0),flag=wx.EXPAND|wx.ALL)
         self.previewSizer.Fit(self.preview)
         self.SetTitle("Colocalization")
         self.mainsizer.Layout()
-        self.mainsizer.Fit(self)
+        self.mainsizer.Fit(self.panel)
 
 ########################## WIDGET CREATION CODE ##############################
 

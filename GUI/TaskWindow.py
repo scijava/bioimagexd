@@ -47,8 +47,7 @@ import ColorMerging
 def showTaskWindow(windowclass,combinedUnit,mainwin):
     """
     Function: showTaskWindow(combinedUnit,mainwin)
-    Created: 15.11.2004
-    Creator: KP
+    Created: 15.11.2004, KP
     Description: A function that displays the window and
                  waits for the user to do what he wishes. After
                  the user presses ok or cancel , the results
@@ -85,8 +84,10 @@ class TaskWindow(wx.Frame):
         """
         #wx.Dialog.__init__(self,root,-1,"Task Window",
         #style=wx.CAPTION|wx.STAY_ON_TOP|wx.CLOSE_BOX|wx.MAXIMIZE_BOX|wx.MINIMIZE_BOX|wx.RESIZE_BORDER|wx.DIALOG_EX_CONTEXTHELP,
-        wx.Frame.__init__(self,root,-1,"Task Window",style=wx.DEFAULT_FRAME_STYLE|wx.NO_FULL_REPAINT_ON_RESIZE,
-        size=(640,480))
+        wx.Frame.__init__(self,root,-1,"Task Window",style=wx.DEFAULT_FRAME_STYLE, #|wx.NO_FULL_REPAINT_ON_RESIZE,
+        size=(1024,768))
+        self.panel=wx.Panel(self,-1)
+        self.buttonPanel = wx.Panel(self.panel,-1)
         self.root=root
         self.preview=None
         # Associate this window with the parent window (root)
@@ -100,20 +101,21 @@ class TaskWindow(wx.Frame):
         self.previewSizer=wx.GridBagSizer()
         self.mainsizer.Add(self.previewSizer,(0,0),flag=wx.EXPAND|wx.ALL)
 
-
         self.settingsSizer=wx.GridBagSizer()
-        self.mainsizer.Add(self.settingsSizer,(0,1),span=(1,1),flag=wx.EXPAND|wx.ALL)
+        self.mainsizer.Add(self.settingsSizer,(0,1),flag=wx.EXPAND|wx.ALL)
 
-        self.settingsNotebook=wx.Notebook(self,-1,size=(200,200))
+        self.settingsNotebook=wx.Notebook(self.panel,-1)
 
 #        self.infoSizer=wx.GridBagSizer()
 #        self.mainsizer.Add(self.infoSizer,(1,0),flag=wx.EXPAND|wx.ALL)
 
-        self.staticLine=wx.StaticLine(self)
-        self.mainsizer.Add(self.staticLine,(3,0),span=(1,2),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
+#        self.staticLine=wx.StaticLine(self.panel)
+#        self.mainsizer.Add(self.staticLine,(2,0),span=(1,2),flag=wx.EXPAND)
 
         self.buttonSizer=wx.BoxSizer(wx.HORIZONTAL)
-        self.mainsizer.Add(self.buttonSizer,(4,0),span=(1,2),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
+        self.buttonPanel.SetSizer(self.buttonSizer)
+        self.buttonPanel.SetAutoLayout(1)
+        self.mainsizer.Add(self.buttonPanel,(2,0),span=(1,2),flag=wx.EXPAND)
 
         self.filePath=None
         self.dataUnit=None
@@ -129,12 +131,20 @@ class TaskWindow(wx.Frame):
         self.createButtonBox()
         self.createOptionsFrame()
 
-        self.SetAutoLayout(True)
-        self.SetSizer(self.mainsizer)
-        self.mainsizer.Fit(self)
-        self.mainsizer.SetSizeHints(self)
-        
-        
+        self.panel.SetSizer(self.mainsizer)
+        self.panel.SetAutoLayout(True)
+        self.mainsizer.Fit(self.panel)
+        self.mainsizer.SetSizeHints(self.panel)
+
+        self.Bind(wx.EVT_SIZE,self.OnSize)
+
+    def OnSize(self,event):
+        self.panel.SetSize(event.GetSize())
+        self.panel.Layout()
+        self.buttonPanel.Layout()
+
+
+
     def getResult(self):
         """
         Method: getResult()
@@ -152,11 +162,11 @@ class TaskWindow(wx.Frame):
         
         self.buttonsSizer1=wx.BoxSizer(wx.HORIZONTAL)
         
-        self.savesettings=wx.Button(self,wx.NewId(),"Save settings")
+        self.savesettings=wx.Button(self.buttonPanel,-1,"Save settings")
         self.savesettings.Bind(EVT_BUTTON,self.saveSettingsCallback)
         self.buttonsSizer1.Add(self.savesettings,flag=wx.ALIGN_LEFT)
 
-        self.loadsettings=wx.Button(self,wx.NewId(),"Load settings")
+        self.loadsettings=wx.Button(self.buttonPanel,-1,"Load settings")
         self.loadsettings.Bind(EVT_BUTTON,self.loadSettingsCallback)
         self.buttonsSizer1.Add(self.loadsettings,flag=wx.ALIGN_LEFT)
         self.buttonsSizer1.AddSizer((100,-1))
@@ -164,16 +174,16 @@ class TaskWindow(wx.Frame):
         
         self.buttonsSizer2=wx.BoxSizer(wx.HORIZONTAL)
         
-        self.processButton=wx.Button(self,-1,"Process dataset series")
+        self.processButton=wx.Button(self.buttonPanel,-1,"Process dataset series")
         #self.processDatasetButton.Bind(EVT_BUTTON,self.doProcessingCallback)
         self.buttonsSizer2.Add(self.processButton)
 
-        self.previewButton=wx.Button(self,-1,"Preview")
+        self.previewButton=wx.Button(self.panel,-1,"Preview")
         self.previewButton.Bind(EVT_BUTTON,self.doPreviewCallback)
         self.buttonsSizer2.Add(self.previewButton)        
 
         
-        self.closeButton=wx.Button(self,-1,"Close")
+        self.closeButton=wx.Button(self.buttonPanel,-1,"Close")
         self.closeButton.Bind(EVT_BUTTON,self.closeWindowCallback)
         self.buttonsSizer2.Add(self.closeButton)
         
@@ -186,32 +196,41 @@ class TaskWindow(wx.Frame):
         Description: Creates a listbox that displays the names of the processed
                      channels
         """
+        self.choicePanel=wx.Panel(self.panel,-1)
         self.listboxsizer=wx.BoxSizer(wx.VERTICAL)
-        self.channelsLbl=wx.StaticText(self,wx.NewId(),"Items:")
-        self.listbox=wx.ListBox(self,wx.NewId(),size=(250,50))
-        self.listbox.Bind(EVT_LISTBOX,self.selectItem)
+        self.channelsLbl=wx.StaticText(self.choicePanel,-1,"Items:")
+        #self.listbox=wx.ListBox(self,-1,size=(250,50))
+        #self.listbox.Bind(EVT_LISTBOX,self.selectItem)
+        self.listbox = wx.Choice(self.choicePanel,-1)
+        self.listbox.Bind(wx.EVT_CHOICE,self.selectItem)
 
         self.listboxsizer.Add(self.channelsLbl)
         self.listboxsizer.Add(self.listbox)
 
-        self.settingsSizer.Add(self.listboxsizer,(1,0))
+        self.choicePanel.SetSizer(self.listboxsizer)
+        self.choicePanel.SetAutoLayout(1)
+        self.listboxsizer.Fit(self.choicePanel)
+        self.settingsSizer.Add(self.choicePanel,(0,0),flag=wx.EXPAND)
+#        self.settingsSizer.Add(self.listboxsizer,(1,0))
+
 
 
     def createOptionsFrame(self):
         """
         Method: createOptionsFrame()
-        Created: 03.11.2004
-        Creator: KP
+        Created: 03.11.2004, KP
         Description: Creates a frame that contains the various widgets
                      used to control the colocalization settings
         """
-        self.settingsNotebook=wx.Notebook(self,-1)
+
         self.commonSettingsPanel=wx.Panel(self.settingsNotebook,-1)
+        self.settingsNotebook.AddPage(self.commonSettingsPanel,"General")
+#        self.commonSettingsPanel.SetBackgroundColour(wx.Colour(255,0,0))
         self.commonSettingsSizer=wx.GridBagSizer()
-        
+
         self.namesizer=wx.BoxSizer(wx.VERTICAL)
         self.commonSettingsSizer.Add(self.namesizer,(0,0))
-        
+
         self.taskNameLbl=wx.StaticText(self.commonSettingsPanel,-1,"Dataunit Name:")
         self.taskName=wx.TextCtrl(self.commonSettingsPanel,-1,size=(250,-1))
         self.namesizer.Add(self.taskNameLbl)
@@ -220,16 +239,18 @@ class TaskWindow(wx.Frame):
         self.commonSettingsPanel.SetSizer(self.commonSettingsSizer)
         self.commonSettingsPanel.SetAutoLayout(1)
 
-        self.settingsNotebook.AddPage(self.commonSettingsPanel,"General")
-        self.settingsSizer.Add(self.settingsNotebook,(2,0),flag=wx.EXPAND|wx.ALL)
-        
-        
+
+#        self.commonSettingsPanel.SetBackgroundColour(self.panel.GetBackgroundColour())
+#        self.taskNameLbl.SetBackgroundColour(self.panel.GetBackgroundColour())
+        self.settingsSizer.Add(self.settingsNotebook,(1,0))#,flag=wx.EXPAND|wx.ALL)
+
+
     def setColorCallback(self):
         """
         Method: setColorCallback(self)
         Created: 03.11.2004
         Creator: KP
-        Description: A callback function called when the button to configure 
+        Description: A callback function called when the button to configure
                      the channel color is pressed
         """
         defaultColor = (0,0,0)
@@ -264,7 +285,7 @@ class TaskWindow(wx.Frame):
         Created: 03.11.2004
         Creator: KP
         Description: A method used to set the GUI widgets to their proper values
-                     based on the selected channel, the settings of which are 
+                     based on the selected channel, the settings of which are
                      stored in the instance variable self.configSetting
         """
         raise "Abstract method updateSetting() called from base class"
@@ -413,8 +434,9 @@ class TaskWindow(wx.Frame):
             units=self.dataUnit.getSourceDataUnits()
         except GUIError, ex:
             ex.show()
-        self.listbox.SetSize((70,120))
+        #self.listbox.SetSize((70,120))
         names=[i.getName() for i in units]
-        self.listbox.InsertItems(names,0)
+        for name in names:
+                self.listbox.Append(name)
         self.selectItem(None,0)
         self.listbox.SetSelection(0)

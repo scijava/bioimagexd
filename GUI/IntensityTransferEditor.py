@@ -33,7 +33,7 @@ __date__ = "$Date: 2005/01/13 14:52:39 $"
 import wx
 import os.path
 import sys
-
+import time
 
 
 if __name__=='__main__':
@@ -56,18 +56,22 @@ class PaintPanel(wx.Panel):
         self.maxx=255
         self.maxy=255
         self.scale=1
+
         self.xoffset=16
         self.yoffset=22
         w=self.xoffset+self.maxx/self.scale
         h=self.yoffset+self.maxy/self.scale
         wx.Panel.__init__(self,parent,-1,size=(w+15,h+15))
-        self.buffer = wx.EmptyBitmap(w+15,h+15,-1)        
+        self.buffer = wx.EmptyBitmap(w+15,h+15,-1)
         self.w=w+15
         self.h=h+15
         self.dc = None
         self.Bind(wx.EVT_PAINT,self.onPaint)
 
     def onPaint(self,event):
+        print "onPaint"
+        #dc = wxPaintDC(self)
+        #dc.DrawBitmap(self.buffer,0,0)
         dc=wx.BufferedPaintDC(self,self.buffer)#,self.buffer)
         #dc.SelectObject(self.buffer)
 
@@ -123,7 +127,7 @@ class PaintPanel(wx.Panel):
         """
         self.dc.SetTextForeground(color)
         self.dc.SetFont(wx.Font(8,wx.SWISS,wx.NORMAL,wx.NORMAL))
-        
+
         useoffset=1
         if kws.has_key("use_offset"):
             useoffset=kws["use_offset"]
@@ -148,7 +152,7 @@ class PaintPanel(wx.Panel):
         #dc = wx.BufferedDC(None,self.buffer)
 
         #dc = wx.MemoryDC()
-        self.dc = wx.BufferedDC(None,self.buffer)
+        self.dc = wx.BufferedDC(wx.ClientDC(self),self.buffer)
 
         self.dc.SetBackground(wx.Brush("BLACK"))
         self.dc.Clear()
@@ -193,7 +197,6 @@ class PaintPanel(wx.Panel):
         self.createText(-10,255,"255",textcol)
         self.dc.EndDrawing()
         self.dc = None
-        self.Refresh()
 
         
 
@@ -213,6 +216,9 @@ class IntensityTransferEditor(wx.Panel):
         self.parent=parent
         wx.Panel.__init__(self,parent,-1)
         self.updateCallback=0
+        self.doyield=1
+        self.updatetime=0
+        self.guiupdate=0
         if kws.has_key("update"):
             print "Got update callback"
             self.updateCallback=kws["update"]
@@ -227,60 +233,58 @@ class IntensityTransferEditor(wx.Panel):
         self.brightnessBox=wx.BoxSizer(wx.HORIZONTAL)
 
         print "Creating sliders..."
-        self.contrastLbl=wx.StaticText(self,wx.NewId(),"%.3f"%1)
+        #self.contrastLbl=wx.StaticText(self,wx.NewId(),"%.3f"%1)
         #self.contrastSlider=wx.Slider(self,value=0,minValue=-255,maxValue=255,size=(-1,290),
         #style=wx.SL_VERTICAL|wx.SL_LABELS)#|wx.SL_LABELS)
-        self.contrastSlider = RangedSlider(self,value=0,size=(-1,290),style=wx.SL_VERTICAL)
-        self.contrastSlider.setRange(0,50,0.0,1.0,100)
-        self.contrastSlider.setRange(51,100,1.0,20.0,100)
+        self.contrastSlider = RangedSlider(self,value=0,size=(-1,280),style=wx.SL_VERTICAL)
+        self.contrastSlider.setRange(0,50,0.0001,1.0,5000)
+        self.contrastSlider.setRange(51,100,1.0,20.0,5000)
+        self.contrastSlider.setScaledValue(1.0)
 
-        self.Bind(wx.EVT_SCROLL,self.setContrast,self.contrastSlider)
+        self.Bind(wx.EVT_COMMAND_SCROLL,self.setContrast,self.contrastSlider)
 
         print "Creating paint panel"
         self.canvas=PaintPanel(self)
         self.canvasBox.Add(self.canvas,1,wx.ALL|wx.EXPAND,10)
         self.canvasBox.Add(self.contrastBox)
-        self.contrastBox.Add(self.contrastLbl)
-        self.contrastBox.Add(self.contrastSlider,1,wx.TOP|wx.BOTTOM,10)
+
+        self.contrastEdit=wx.TextCtrl(self,-1,size=(40,-1))
+        self.contrastBox.Add(self.contrastEdit)
+        #self.contrastBox.Add(self.contrastLbl)
+        self.contrastBox.Add(self.contrastSlider,1,wx.TOP|wx.BOTTOM,0)
         print "Done"
-        ID_CONTRASTEDIT=wx.NewId()
-#        self.contrastEdit=wx.TextCtrl(self,ID_CONTRASTEDIT)
-#        self.contrastBox.Add(self.contrastEdit)
 
-        ID_BRIGHTNESSEDIT=wx.NewId()
-        self.brightnessEdit=wx.TextCtrl(self,ID_BRIGHTNESSEDIT,size=(50,-1),style=wx.TE_PROCESS_ENTER)
-        ID_GAMMAEDIT=wx.NewId()
-        self.gammaEdit=wx.TextCtrl(self,ID_GAMMAEDIT,size=(50,-1),style=wx.TE_PROCESS_ENTER)
 
-        self.brightnessSlider=wx.Slider(self,value=0,minValue=-255,maxValue=255,size=(260,-1),
-        style=wx.SL_HORIZONTAL)
-        self.Bind(wx.EVT_SCROLL,self.setBrightness,self.brightnessSlider)
+        self.brightnessEdit=wx.TextCtrl(self,-1,size=(50,-1),style=wx.TE_PROCESS_ENTER)
+        self.gammaEdit=wx.TextCtrl(self,-1,size=(50,-1),style=wx.TE_PROCESS_ENTER)
 
-        self.gammaSlider=wx.Slider(self,value=0,minValue=-100,maxValue=100,size=(260,-1),
-        style=wx.SL_HORIZONTAL)
-        self.Bind(wx.EVT_SCROLL,self.setGamma,self.gammaSlider)
+        self.brightnessSlider = RangedSlider(self,size=(260,-1),style=wx.SL_HORIZONTAL)
+        self.brightnessSlider.setRange(0,100,-255,255,2000)
+        self.brightnessSlider.setScaledValue(0.1)
+        self.Bind(wx.EVT_COMMAND_SCROLL,self.setBrightness,self.brightnessSlider)
 
-    
+
+        self.gammaSlider = RangedSlider(self,size=(260,-1),style=wx.SL_HORIZONTAL)
+        self.gammaSlider.setRange(0,50,0.0001,1.0,5000)
+        self.gammaSlider.setRange(51,100,1.0,15.0,5000)
+        self.gammaSlider.setScaledValue(1.0)
+        self.Bind(wx.EVT_COMMAND_SCROLL,self.setGamma,self.gammaSlider)
+
         self.gammaBox.Add(self.gammaSlider)
         self.gammaBox.Add(self.gammaEdit,0,wx.ALIGN_CENTER_VERTICAL|wx.ALL)
 
         self.brightnessBox.Add(self.brightnessSlider)
         self.brightnessBox.Add(self.brightnessEdit,0,wx.ALIGN_CENTER_VERTICAL|wx.ALL)
-    
-#        ID_RESTORE_DEFAULTS=wx.NewId()
-#        self.defaultBtn=wx.Button(self,ID_RESTORE_DEFAULTS,"Restore Defaults")
-#        EVT_BUTTON(self,ID_RESTORE_DEFAULTS,self.restoreDefaults)
+
 
         self.minValueLbl=wx.StaticText(self,wx.NewId(),"Minimum value:")
         self.maxValueLbl=wx.StaticText(self,wx.NewId(),"Maximum value:")
 
-        ID_MINVALUE=wx.NewId()
-        ID_MAXVALUE=wx.NewId()
-        self.minValue=wx.TextCtrl(self,ID_MINVALUE,style=wx.TE_PROCESS_ENTER)
-        self.maxValue=wx.TextCtrl(self,ID_MAXVALUE,style=wx.TE_PROCESS_ENTER)
-        
+        self.minValue=wx.TextCtrl(self,-1,style=wx.TE_PROCESS_ENTER)
+        self.maxValue=wx.TextCtrl(self,-1,style=wx.TE_PROCESS_ENTER)
+
         fieldsizer=wx.GridBagSizer(0,5)
-        
+
 
         valuesizer=wx.BoxSizer(wx.HORIZONTAL)
         fieldsizer.Add(self.minValueLbl,(0,0))
@@ -291,27 +295,24 @@ class IntensityTransferEditor(wx.Panel):
         self.minthresholdLbl=wx.StaticText(self,wx.NewId(),"Minimum threshold:")
         self.maxthresholdLbl=wx.StaticText(self,wx.NewId(),"Maximum threshold:")
 
-        ID_MINTHRESHOLD=wx.NewId()
-        ID_MAXTHRESHOLD=wx.NewId()
-        self.minthreshold=wx.TextCtrl(self,ID_MINTHRESHOLD,style=wx.TE_PROCESS_ENTER)
-        self.maxthreshold=wx.TextCtrl(self,ID_MAXTHRESHOLD,style=wx.TE_PROCESS_ENTER)
-        
+        self.minthreshold=wx.TextCtrl(self,-1,style=wx.TE_PROCESS_ENTER)
+        self.maxthreshold=wx.TextCtrl(self,-1,style=wx.TE_PROCESS_ENTER)
+
         fieldsizer.Add(self.minthresholdLbl,(1,0))
         fieldsizer.Add(self.minthreshold,(1,1))
         fieldsizer.Add(self.maxthresholdLbl,(1,2))
         fieldsizer.Add(self.maxthreshold,(1,3))
 
-        ID_DONTPROCESS=wx.NewId()
-        self.minProcessLbl=wx.StaticText(self,wx.NewId(),"Processing threshold:")
-        self.minProcess=wx.TextCtrl(self,ID_DONTPROCESS,style=wx.TE_PROCESS_ENTER)
+        self.minProcessLbl=wx.StaticText(self,-1,"Processing threshold:")
+        self.minProcess=wx.TextCtrl(self,-1,style=wx.TE_PROCESS_ENTER)
 
         fieldsizer.Add(self.minProcessLbl,(2,0))
         fieldsizer.Add(self.minProcess,(2,1))
-        
+
         self.gammaEdit.Bind(wx.EVT_KILL_FOCUS,self.updateGamma)
         self.gammaEdit.Bind(wx.EVT_TEXT_ENTER,self.updateGamma)
-#        self.contrastEdit.Bind(wx.EVT_KILL_FOCUS,self.updateContrast)
-#        self.contrastEdit.Bind(wx.EVT_TEXT_ENTER,self.updateContrast)
+        self.contrastEdit.Bind(wx.EVT_KILL_FOCUS,self.updateContrast)
+        self.contrastEdit.Bind(wx.EVT_TEXT_ENTER,self.updateContrast)
         self.brightnessEdit.Bind(wx.EVT_KILL_FOCUS,self.updateBrightness)
         self.brightnessEdit.Bind(wx.EVT_TEXT_ENTER,self.updateBrightness)
 
@@ -344,7 +345,7 @@ class IntensityTransferEditor(wx.Panel):
 
         self.mainsizer.Add(self.brightnessLbl)
         self.mainsizer.Add(self.brightnessBox)
-        
+
         self.mainsizer.Add(self.gammaLbl)
         self.mainsizer.Add(self.gammaBox)
         self.mainsizer.Add(fieldsizer)
@@ -353,7 +354,7 @@ class IntensityTransferEditor(wx.Panel):
         self.SetAutoLayout(True)
         self.SetSizer(self.mainsizer)
         self.mainsizer.SetSizeHints(self)
-        
+
         self.updateGraph()
 
 
@@ -393,23 +394,13 @@ class IntensityTransferEditor(wx.Panel):
                      gamma slider in the GUI
         """
         gamma=event.GetPosition()
-        gammaEx=0;
-        print "Setting gamma to %d"%gamma
-        if abs(gamma)>10:
-            gammaEx=gamma/10.0
-        elif gamma!=0:
-            gammaEx=1
+        gammaEx = self.gammaSlider.getScaledValue()
 
-        if gamma<0:
-            gammaEx=1.0/abs(gamma)
-        elif gamma==0:
-            gammaEx=1
-        
         self.iTF.SetGamma(gammaEx)
         self.updateGraph()
         self.updateGUI()
         event.Skip()
-        
+
     def setContrast(self,event):
         """
         Method: setContrast(event)
@@ -419,20 +410,10 @@ class IntensityTransferEditor(wx.Panel):
         """
         contrast=event.GetPosition()
         coeff = self.contrastSlider.getScaledValue()
-        #print "Contrast position = ",contrast
-        #if abs(contrast) > 10:
-        #    coeff=contrast/10.0;
-        #if contrast<0:
-        #    coeff=1.0/abs(contrast)
-        #elif contrast==0:
-        #    coeff=1
 
-        print "Value of slider",contrast
-        print "coeff = ",coeff
         self.iTF.SetContrast(coeff)
         self.updateGraph()
         self.updateGUI()
-        self.contrastLbl.SetLabel("%.3f"%coeff)
         event.Skip()
 
     def setBrightness(self,event):
@@ -442,13 +423,11 @@ class IntensityTransferEditor(wx.Panel):
         Description: Updates the reference point for the line according to the
                      brightness slider in the GUI
         """
-        val=event.GetPosition()
+        val = self.brightnessSlider.getScaledValue()
         self.iTF.SetBrightness(val)
         self.updateGraph()
         self.updateGUI()
         event.Skip()
-        
-
 
     def setProcessingThreshold(self,x):
         """
@@ -484,6 +463,7 @@ class IntensityTransferEditor(wx.Panel):
         Created: 30.10.2004, KP
         Description: Sets the minimum value and updates the GUI accordingly
         """
+        if self.guiupdate:return
         self.minValue.SetValue("%d"%x)
         self.iTF.SetMinimumValue(x)
 
@@ -503,6 +483,7 @@ class IntensityTransferEditor(wx.Panel):
         Description: A callback used to update the minimum threshold
                      to reflect the GUI settings
         """
+        if self.guiupdate:return
         self.setMinimumThreshold(int(self.minthreshold.GetValue()))
         self.updateGraph()
         event.Skip()
@@ -514,6 +495,7 @@ class IntensityTransferEditor(wx.Panel):
         Description: A callback used to update the minimum processing threshold
                      to reflect the GUI settings
         """
+        if self.guiupdate:return
         self.setProcessingThreshold(int(self.minProcess.GetValue()))
         self.updateGraph()
         event.Skip()
@@ -526,6 +508,7 @@ class IntensityTransferEditor(wx.Panel):
         Description: A callback used to update the maximum threshold
                      to reflect the GUI settings
         """
+        if self.guiupdate:return
         self.setMaximumThreshold(int(self.maxthreshold.GetValue()))
         self.updateGraph()
         event.Skip()
@@ -537,6 +520,7 @@ class IntensityTransferEditor(wx.Panel):
         Description: A callback used to update the minimum value
                      to reflect the GUI settings
         """
+        if self.guiupdate:return
         self.setMinimumValue(int(self.minValue.GetValue()))
         self.updateGraph()
         event.Skip()
@@ -548,10 +532,11 @@ class IntensityTransferEditor(wx.Panel):
         Description: A callback used to update the gamma
                      to reflect the entry value
         """
+        if self.guiupdate:return
         gamma=float(self.gammaEdit.GetValue())
         self.iTF.SetGamma(gamma)
         self.updateGraph()
-        self.updateGUI()
+        self.updateGUI(1)
         event.Skip()
 
     def updateContrast(self,event):
@@ -561,10 +546,11 @@ class IntensityTransferEditor(wx.Panel):
         Description: A callback used to update the contrast
                      to reflect the entry value
         """
+        if self.guiupdate:return
         cont=float(self.contrastEdit.GetValue())
         self.iTF.SetContrast(cont)
         self.updateGraph()
-        self.updateGUI()
+        self.updateGUI(1)
         event.Skip()
 
     def updateBrightness(self,event):
@@ -574,10 +560,11 @@ class IntensityTransferEditor(wx.Panel):
         Description: A callback used to update the brightness
                      to reflect the entry value
         """
+        if self.guiupdate:return
         br=float(self.brightnessEdit.GetValue())
         self.iTF.SetBrightness(br)
         self.updateGraph()
-        self.updateGUI()
+        self.updateGUI(1)
         event.Skip()
 
     def updateMaximumValue(self,event):
@@ -587,17 +574,19 @@ class IntensityTransferEditor(wx.Panel):
         Description: A callback used to update the maximum threshold
                      to reflect the GUI settings
         """
+        if self.guiupdate:return
         self.setMaximumValue(int(self.maxValue.GetValue()))
         self.updateGraph()
         event.Skip()
 
-    def updateGUI(self):
+    def updateGUI(self,sliders=0):
         """
         Method: updateGUI()
         Created: 07.12.2004, KP
         Description: Updates the GUI settings to correspond to those of
                      the transfer function
         """
+        self.guiupdate=1
         self.minValue.SetValue("%d"%self.iTF.GetMinimumValue())
         self.maxValue.SetValue("%d"%self.iTF.GetMaximumValue())
         self.minthreshold.SetValue("%d"%self.iTF.GetMinimumThreshold())
@@ -606,17 +595,16 @@ class IntensityTransferEditor(wx.Panel):
 
         contrast=self.iTF.GetContrast()
         gamma=self.iTF.GetGamma()
-        if contrast<1:
-            contrast=-1.0/contrast
-        if gamma<1:
-            gamma=-1.0/gamma
-        #self.contrastSlider.SetValue(contrast)
-        self.brightnessSlider.SetValue(self.iTF.GetBrightness())
-        #self.gammaSlider.SetValue(gamma)
+        brightness = self.iTF.GetBrightness()
+        if sliders:
+            self.contrastSlider.setScaledValue(contrast)
+            self.brightnessSlider.setScaledValue(brightness)
+            self.gammaSlider.setScaledValue(gamma)
 
-        self.gammaEdit.SetValue("%.3f"%self.iTF.GetGamma())
-        self.brightnessEdit.SetValue("%.3f"%self.iTF.GetBrightness())
-        #self.contrastEdit.SetValue("%.3f"%self.iTF.getLineCoeff())
+        self.gammaEdit.SetValue("%.3f"%gamma)
+        self.brightnessEdit.SetValue("%.3f"%brightness)
+        self.contrastEdit.SetValue("%.3f"%contrast)
+        self.guiupdate=0
 
     def updateGraph(self):
         """
@@ -625,10 +613,19 @@ class IntensityTransferEditor(wx.Panel):
         Description: Clears the canvas and repaints the function
         """
         self.canvas.paintTransferFunction(self.iTF)
-        #self.canvas.onPaint(None)
+
+        if self.doyield:
+           self.doyield=0
+           wx.Yield()
+           self.doyield=1
+
+        if abs(time.time()-self.updatetime) < 0.1:
+           return
         if self.updateCallback:
             print "Calling updateCallback"
             self.updateCallback()
+            self.updatetime=time.time()
+
 
     def getIntensityTransferFunction(self):
         """
