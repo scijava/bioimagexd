@@ -74,10 +74,7 @@ class DataUnitProcessing(Module):
                      preview data becomes invalid.
         """
         Module.reset(self)
-    	self.preview=None
-    	self.numpyarrays=[]
-    	self.arrays=[]
-    	self.infos=[]
+        self.preview=None
         self.intensityTransferFunctions = []
         self.doMedian=False
         self.medianNeighborhood=(1,1,1)
@@ -95,7 +92,6 @@ class DataUnitProcessing(Module):
         Creator: KP,JV
         Description: Adds an input for the single dataunit processing filter
         """
-
         if not kws.has_key("intensityTransferFunction"):
             raise ("No Intensity Transfer Function given for Single DataUnit "
             "to be processed")
@@ -125,7 +121,7 @@ class DataUnitProcessing(Module):
             self.extent=(0,dims[0]-1,0,dims[1]-1,z,z)
             self.preview=self.doOperation()
             self.extent=None
-        return self.preview
+        return self.zoomDataset(self.preview)
 
 
     def doOperation(self):

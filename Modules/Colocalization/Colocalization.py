@@ -115,7 +115,7 @@ class Colocalization(Module):
         """
         if not self.preview:
             self.preview=self.doOperation()
-        return self.preview
+        return self.zoomDataset(self.preview)
 
 
     def doOperation(self):

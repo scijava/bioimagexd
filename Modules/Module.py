@@ -32,7 +32,7 @@ __version__ = "$Revision: 1.19 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 import vtk
-from Numeric import *
+import ImageOperations
 
 
 
@@ -52,6 +52,36 @@ class Module:
         self.doRGB=0
         self.x,self.y,self.z=0,0,0
         self.extent=None
+        self.zoomFactor=1
+        
+    def setZoomFactor(self,factor):
+        """
+        Method: setZoomFactor(factor)
+        Created: 23.02.2004, KP
+        Description: Sets the zoom factor for the produced dataset.
+                     This means that the preview dataset will be zoomed with
+                     the specified zoom factor
+        """
+        self.zoomFactor=factor
+            
+    def zoomDataset(self,dataset):
+        """
+        Method: setZoomFactor(factor)
+        Created: 23.02.2004, KP
+        Description: Returns the dataset zoomed with the zoom factor
+        """
+        print "zooming dataset with zoom factor ",self.zoomFactor
+        if self.zoomFactor != 1:
+            return ImageOperations.zoomImage(dataset,self.zoomFactor)
+        return dataset
+            
+    def getZoomFactor(self,factor):
+        """
+        Method: setZoomFactor(factor)
+        Created: 23.02.2004, KP
+        Description: Returns the zoom factor
+        """
+        return self.zoomFactor
 
     def reset(self):
          """
