@@ -67,6 +67,26 @@ def setFromParameterList(iTF,list):
     
     iTF.SetBrightness(int(br))
 
+def vtkImageDataToWxImage(data,slice=-1,startpos=None,endpos=None):
+    if slice>=0:
+        data=getSlice(data,slice,startpos,endpos)
+    exporter=vtk.vtkImageExport()
+    exporter.SetInput(data)
+
+    siz=exporter.GetDataMemorySize()
+    fs="%ds"%siz
+    ss=struct.pack(fs,"")
+    exporter.SetExportVoidPointer(ss)
+    exporter.Export()
+
+    x,y,z=data.GetDimensions()
+    #print "Original image size=(%d,%d)"%(x,y)
+    image=wx.EmptyImage(x,y)
+    #image.SetData(exporter.GetPointerToData())
+    image.SetData(ss)
+    return image
+
+    
 def vtkImageDataToPreviewBitmap(imageData,color,width=0,height=0):
     x,y,z=imageData.GetDimensions()
     
@@ -89,17 +109,9 @@ def vtkImageDataToPreviewBitmap(imageData,color,width=0,height=0):
     maptocolor.SetLookupTable(ctf)
     maptocolor.SetOutputFormatToRGB()
     maptocolor.Update()
-    exporter=vtk.vtkImageExport()
-    exporter.SetInput(maptocolor.GetOutput())
-    siz=exporter.GetDataMemorySize()
-    fs="%ds"%siz
-    ss=struct.pack(fs,"")
-    exporter.SetExportVoidPointer(ss)
-    exporter.Export()
 
-    #print "Original image size=(%d,%d)"%(x,y)
-    image=wx.EmptyImage(x,y)
-    image.SetData(ss)
+    image = vtkImageDataToWxImage(maptocolor.GetOutput())
+
     if not width and height:
         aspect=float(x)/y
         width=aspect*height
@@ -112,13 +124,22 @@ def vtkImageDataToPreviewBitmap(imageData,color,width=0,height=0):
     image.Rescale(width,height)
     bitmap=image.ConvertToBitmap()
     return bitmap
+
+def scatterPlot(imagedata1,imagedata2,z):
+    scatter=vtk.vtkImageScatterPlot()
+    scatter.SetZSlice(z)
+    scatter.AddInput(imagedata1)
+    scatter.AddInput(imagedata2)
+    scatter.Update()
+    image=vtkImageDataToWxImage(scatter.GetOutput())
+    return image
     
 def getZoomFactor(x1,y1,x2,y2):
-    xf=float(x1)/x2
-    yf=float(y1)/y2
-    return max(xf,yf)
+    xf=float(x2)/x1
+    yf=float(y2)/y1
+    return min(xf,yf)
     
-def zoomImage(image,f):
+def vtkZoomImage(image,f):
     f=1.0/f
     reslice=vtk.vtkImageReslice()
     reslice.SetInput(image)
@@ -145,20 +166,47 @@ def zoomImage(image,f):
     reslice.Update()
     return reslice.GetOutput()
     
+def zoomImageToSize(image,x,y):
+    return image.Scale(x,y)
+    
+def zoomImageByFactor(image,f):
+    x,y=image.GetWidth(),image.GetHeight()
+    x,y=int(f*x),int(f*y)
+    return zoomImageToSize(image,x,y)
+
+def getSlice(volume,zslice,startpos=None,endpos=None):
+    voi=vtk.vtkExtractVOI()
+    voi.SetInput(volume)
+    x,y,z=volume.GetDimensions()
+    x0,y0=0,0
+    if startpos:
+        x0,y0=startpos
+        x,y=endpos
+    voi.SetVOI(x0,x-1,y0,y-1,zslice,zslice)
+    voi.Update()
+    return voi.GetOutput()
+    
 def saveImageAs(imagedata,zslice,filename):
     ext=filename.split(".")[-1]        
     extMap={"tiff":"TIFF","tif":"TIFF","jpg":"JPEG","jpeg":"JPEG","png":"PNG"}
     if not extMap.has_key(ext):
         Dialogs.showerror(None,"Extension not recognized: %s"%ext,"Extension not recognized")
         return
-    voi=vtk.vtkExtractVOI()
-    voi.SetInput(imagedata)
-    x,y,z=imagedata.GetDimensions()
-    voi.SetVOI(0,x-1,0,y-1,zslice,zslice)
     vtkclass="vtk.vtk%sWriter()"%extMap[ext]
     writer=eval(vtkclass)
-    voi.Update()
-    writer.SetInput(voi.GetOutput())
+    img=getSlice(imagedata,zslice)
+    writer.SetInput(img)
     writer.SetFileName(filename)
     writer.Write()
     
+def getColorTransferFunction(fg):
+    ct=vtk.vtkColorTransferFunction()
+
+    ct.AddRGBPoint(0,0,0,0)
+    r,g,b=fg
+    r/=255.0
+    g/=255.0
+    b/=255.0
+    ct.AddRGBPoint(255,r,g,b)
+    return ct    
+
