@@ -98,21 +98,18 @@ class LsmDataSource(DataSource):
     def getDataSetCount(self):
         """
         Method: getDataSetCount
-        Created: 03.11.2004
-        Creator: JM
+        Created: 03.11.2004, JM
         Description: Returns the number of individual DataSets (=time points)
         managed by this DataSource
         """
         if not self.dimensions:
-            self.dimensions=self.reader.GetDimensions()
-            
+            self.getDimensions()
         return self.dimensions[3]
 
     def getDimensions(self):
         """
         Method: getDimensions()
-        Created: 14.12.2004
-        Creator: KP
+        Created: 14.12.2004, KP
         Description: Returns the (x,y,z) dimensions of the datasets this 
                      dataunit contains
         """
@@ -130,8 +127,7 @@ class LsmDataSource(DataSource):
         if not self.voxelsize:
             self.voxelsize=self.reader.GetVoxelSizes()
         return self.voxelsize
-        
-    
+            
         
     def getDataSet(self, i):
         """
@@ -183,7 +179,7 @@ class LsmDataSource(DataSource):
             # We create a datasource with specific channel number that
             #  we can associate with the dataunit
             datasource=LsmDataSource(filename,i)
-            dataunit=DataUnit.SourceDataUnit()
+            dataunit=DataUnit.DataUnit.DataUnit()
             dataunit.setDataSource(datasource)
             dataunits.append(dataunit)
             
@@ -239,33 +235,23 @@ class LsmDataSource(DataSource):
             self.dataUnitSettings[section]=[]
         self.dataUnitSettings[section].append(settingDict)
 
-
-    def getSetting(self, section, setting):
+            
+    def getColor(self):
         """
-        Method: getSetting
-        Created: 18.11.2004
-        Creator: KP
-        Description: Returns the specified setting from the loaded
-                     .lsm-file or "failure" if something goes wrong.
-
-        Parameters:   section  The section, where the setting should be
-                      setting  The setting to be returned
+        Method: getName()
+        Created: 27.03.2005, KP
+        Description: Returns the color of the dataset series which this datasource
+                     operates on
         """
-
-        if section=="SourceDataUnit" and setting=="color":
-            r=self.reader.GetChannelColorComponent(self.channelNum,0)
-            g=self.reader.GetChannelColorComponent(self.channelNum,1)
-            b=self.reader.GetChannelColorComponent(self.channelNum,2)
-            print "Returning color %d,%d,%d from LSM file"%(r,g,b)
-            return "%d,%d,%d"%(r,g,b)
-        else:
-            return "failure"
+        r=self.reader.GetChannelColorComponent(self.channelNum,0)
+        g=self.reader.GetChannelColorComponent(self.channelNum,1)
+        b=self.reader.GetChannelColorComponent(self.channelNum,2)
+        return (r,g,b)
 
     def getName(self):
         """
         Method: getName()
-        Created: 18.11.2004
-        Creator: KP
+        Created: 18.11.2004, KP
         Description: Returns the name of the dataset series which this datasource
                      operates on
         """
@@ -275,7 +261,6 @@ class LsmDataSource(DataSource):
             "but no channel number has been specified")
             return ""
         return self.reader.GetChannelName(self.channelNum)
-
 
     def __str__(self):
         """

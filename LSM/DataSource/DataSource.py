@@ -43,35 +43,72 @@ import os.path
 import Logging
 import DataUnit
 
+class DataWriter:
+    """
+    Class: DataWriter
+    Created: 26.03.2005
+    Description: A base class for different kinds of DataWriters
+    """
+    def __init__(self):
+        """
+        Method: __init__
+        Created: 26.03.2005
+        Description: Constructor
+        """    
+        pass
+        
+    def sync(self):
+        """
+        Method: sync()
+        Created: 26.03.2005
+        Description: Write pending imagedata to disk
+        """    
+        raise "Abstract method sync() called"
+    
+    def write(self):
+        """
+        Method: write()
+        Created: 26.03.2005
+        Description: Write the data to disk
+        """    
+        raise "Abstract method write() called"    
+        
+    def addImageData(self,imageData):
+        """
+        Method: addImageData(imageData)
+        Created: 26.03.2005,KP
+        Description: Add a vtkImageData object to be written to the disk.
+        """    
+        raise "Abstract method addImageData"
+        
+
+    def addImageDataObjects(self,imageDataList):        
+        """
+        Method: addImageDataObjects(imageDataList)
+        Created: 26.03.2005, KP
+        Description: Adds a list of vtkImageData objects to be written to the
+                      disk. Uses addVtiObject to do all the dirty work
+        """
+        raise "Abstract method addImageDataObjects called"
+        
 class DataSource:
     """
     Class: DataSource
-    Created: 03.11.2004
-    Creator: JM
+    Created: 03.11.2004, JM
     Description: A base class for different kinds of DataSources
     """
-
 
     def __init__(self):
         """
         Method: __init__()
-        Created: 17.11.2004
-        Creator: KP
+        Created: 17.11.2004, KP
         Description: Initialization
         """
-        # DataSource has to know what kind of DataUnits it is able to load,
-        # so they are listed here:
-        self.classByName={"SourceDataUnit": DataUnit.SourceDataUnit,
-        "ColocalizationDataUnit": DataUnit.ColocalizationDataUnit,
-        "ColorCombinationDataUnit":DataUnit.ColorMergingDataUnit,
-        "CorrectedSourceDataUnit":DataUnit.CorrectedSourceDataUnit,
-        "VSIASourceDataUnit":DataUnit.VSIASourceDataUnit}
 
     def getDataSetCount(self):
         """
         Method: getDataSetCount
-        Created: 03.11.2004
-        Creator: JM
+        Created: 03.11.2004, JM
         Description: Returns the number of individual DataSets (=time points)
         managed by this DataSource
         NOT IMPLEMENTED HERE
@@ -81,29 +118,26 @@ class DataSource:
     def getDataSet(self, i):
         """
         Method: getDataSet
-        Created: 03.11.2004
-        Creator: JM
+        Created: 03.11.2004, JM
         Description: Returns the DataSet at the specified index
         Parameters:   i       The index
-        NOT IMPLEMENTED HERE
+        NOT IMPLEMENTED HERECreator: KP
         """
         raise "Abstract method getDataSet() in DataSource called"
 
     def getName(self):
         """
         Method: getName()
-        Created: 18.11.2004
-        Creator: KP
+        Created: 18.11.2004, KP
         Description: Returns the name of the dataset series which this datasource
                      operates on
         """
         raise "Abstract method getName() in DataSource called"
-
+        
     def getDimensions(self):
         """
         Method: getDimensions()
-        Created: 14.12.2004
-        Creator: KP
+        Created: 14.12.2004, KP
         Description: Returns the (x,y,z) dimensions of the datasets this 
                      dataunit contains
         """
