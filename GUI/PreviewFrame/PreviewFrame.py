@@ -81,7 +81,8 @@ class PreviewFrame(wx.Panel):
         self.show["ZOOM"]=1
         self.show["TIMESLIDER"]=1
         self.show["ZSLIDER"]=1
-        self.modeCheckbox = None
+        #self.modeCheckbox = None
+        self.modeChoice = None
         if not parentwin:
             parentwin=parent
         self.parentwin=parentwin
@@ -102,10 +103,10 @@ class PreviewFrame(wx.Panel):
         
         self.sizer=wx.GridBagSizer()
         self.previewsizer=wx.BoxSizer(wx.VERTICAL)
-    	# These are the current image and color transfer function
-    	# They are used when getting the value of a pixel
-    	self.currentImage=None
-    	self.currentCt=None
+        # These are the current image and color transfer function
+        # They are used when getting the value of a pixel
+        self.currentImage=None
+        self.currentCt=None
 
         self.renderpanel = scrolled.ScrolledPanel(self, -1,style=wx.SUNKEN_BORDER,size=size)
         #self.renderpanel = wx.ScrolledWindow(self,-1,style=wx.SUNKEN_BORDER,size=(512,512))
@@ -161,8 +162,15 @@ class PreviewFrame(wx.Panel):
             self.sizer.Add(self.pixelPanel,(3,0),flag=wx.EXPAND|wx.RIGHT)
 
         if self.show["RENDERING"]:
-            self.modeCheckbox=wx.CheckBox(self,-1,"Preview rendering")
-            self.sizer.Add(self.modeCheckbox,(5,0))
+            #self.modeCheckbox=wx.CheckBox(self,-1,"Preview rendering")
+            self.modeBox=wx.BoxSizer(wx.VERTICAL)
+            self.modeLbl=wx.StaticText(self,-1,"Select preview method:")
+            self.modes=["2D Slice","Volume Rendering","Surface Rendering","24-bit Volume Rendering","Maximum Intensity Projection"]
+            self.modeChoice=wx.Choice(self,-1,choices=self.modes)
+            self.modeBox.Add(self.modeLbl)
+            self.modeBox.Add(self.modeChoice)
+            self.sizer.Add(self.modeBox,(5,0))
+    
                 
         if self.show["ZOOM"]:
             self.zoombox=wx.BoxSizer(wx.HORIZONTAL)
@@ -235,8 +243,8 @@ class PreviewFrame(wx.Panel):
         Created: 21.02.2005, KP
         Description: Returns true if the rendering preview is enabled
         """
-        if self.modeCheckbox:
-            return self.modeCheckbox.GetValue()
+        if self.modeChoice:
+            return self.modeChoice.GetSelection()!=0
         return 0
         
         
@@ -433,9 +441,9 @@ class PreviewFrame(wx.Panel):
         self.sizer.Fit(self)
         self.sizer.SetSizeHints(self)
 
-        self.Layout()
-        self.parentwin.mainsizer.Fit(self.parentwin.panel)
-        self.parentwin.Layout()
+        #self.Layout()
+        #self.parentwin.mainsizer.Fit(self.parentwin.panel)
+        #self.parentwin.Layout()
 
     def previewInMayavi(self,imagedata,ctf=None,renew=1):
         """
@@ -449,7 +457,7 @@ class PreviewFrame(wx.Panel):
         """
         if not renew:
             return
-        self.renderingInterface.setPath(".")
+        self.renderingInterface.setOutputPath(".")
         self.renderingInterface.setTimePoints([self.timePoint])
         self.renderingInterface.doRendering(preview=imagedata,ctf=ctf)
 

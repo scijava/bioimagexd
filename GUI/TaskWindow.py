@@ -127,7 +127,7 @@ class TaskWindow(wx.Frame):
         # Make the column containing the settings widgets at least 200 pixels
         # wide
 
-        self.createChannelListBox()
+        self.createChannelMenu()
         self.createButtonBox()
         self.createOptionsFrame()
 
@@ -139,8 +139,10 @@ class TaskWindow(wx.Frame):
         self.Bind(wx.EVT_SIZE,self.OnSize)
 
     def OnSize(self,event):
+        self.SetSize(event.GetSize())
         self.panel.SetSize(event.GetSize())
         self.panel.Layout()
+        self.Layout()
         self.buttonPanel.Layout()
 
 
@@ -189,31 +191,26 @@ class TaskWindow(wx.Frame):
         
         self.buttonSizer.Add(self.buttonsSizer2)    
 
-    def createChannelListBox(self):
+    def createChannelMenu(self):
         """
-        Method: createChannelListBox()
+        Method: createChannelMenu()
         Created: 03.11.2004, KP
-        Description: Creates a listbox that displays the names of the processed
+        Description: Creates a menu that displays the names of the processed
                      channels
         """
         self.choicePanel=wx.Panel(self.panel,-1)
-        self.listboxsizer=wx.BoxSizer(wx.VERTICAL)
+        self.menusizer=wx.BoxSizer(wx.VERTICAL)
         self.channelsLbl=wx.StaticText(self.choicePanel,-1,"Items:")
-        #self.listbox=wx.ListBox(self,-1,size=(250,50))
-        #self.listbox.Bind(EVT_LISTBOX,self.selectItem)
-        self.listbox = wx.Choice(self.choicePanel,-1)
-        self.listbox.Bind(wx.EVT_CHOICE,self.selectItem)
+        self.itemMenu = wx.Choice(self.choicePanel,-1)
+        self.itemMenu.Bind(wx.EVT_CHOICE,self.selectItem)
 
-        self.listboxsizer.Add(self.channelsLbl)
-        self.listboxsizer.Add(self.listbox)
+        self.menusizer.Add(self.channelsLbl)
+        self.menusizer.Add(self.itemMenu)
 
-        self.choicePanel.SetSizer(self.listboxsizer)
+        self.choicePanel.SetSizer(self.menusizer)
         self.choicePanel.SetAutoLayout(1)
-        self.listboxsizer.Fit(self.choicePanel)
-        self.settingsSizer.Add(self.choicePanel,(0,0),flag=wx.EXPAND)
-#        self.settingsSizer.Add(self.listboxsizer,(1,0))
-
-
+        self.menusizer.Fit(self.choicePanel)
+        self.settingsSizer.Add(self.choicePanel,(0,0),span=(1,2),flag=wx.EXPAND|wx.ALL)
 
     def createOptionsFrame(self):
         """
@@ -268,11 +265,11 @@ class TaskWindow(wx.Frame):
         Method: selectItem(event)
         Created: 03.11.2004, KP
         Description: A callback function called when a channel is selected in
-                     the listbox
+                     the menu
         """
         if index==-1:
-            index=self.listbox.GetSelections()[0]
-        name=self.listbox.GetString(index)
+            index=self.itemMenu.GetSelection()
+        name=self.itemMenu.GetString(index)
         print "Now configuring item",name
         self.configSetting=self.dataUnit.getSetting(name)
         self.updateSettings()
@@ -282,8 +279,7 @@ class TaskWindow(wx.Frame):
     def updateSettings(self):
         """
         Method: updateSettings()
-        Created: 03.11.2004
-        Creator: KP
+        Created: 03.11.2004, KP
         Description: A method used to set the GUI widgets to their proper values
                      based on the selected channel, the settings of which are
                      stored in the instance variable self.configSetting
@@ -347,16 +343,6 @@ class TaskWindow(wx.Frame):
     
         else:
             self.Enable(0)
-##        frames=[self.nameFrame,self.optionFrame,self.settingsframe,
-##        self.buttonbox,self.listboxframe]
-##        for frame in frames:
-##            for widget in frame.grid_slaves():
-##                if "state" in widget.keys():
-##                    widget.config(state=wstate)
-##            for widget in frame.pack_slaves():
-##                if "state" in widget.keys():
-##                    widget.config(state=wstate)        
-
 
     def doPreviewCallback(self,event=None):
         """
@@ -419,11 +405,10 @@ class TaskWindow(wx.Frame):
     def setCombinedDataUnit(self,dataUnit):
         """
         Method: setCombinedDataUnit(dataUnit)
-        Created: 23.11.2004
-        Creator: KP
+        Created: 23.11.2004, KP
         Description: Sets the combined dataunit that is to be processed.
                      It is then used to get the names of all the source data
-                     units and they are added to the listbox.
+                     units and they are added to the menu.
         """
         self.dataUnit=dataUnit
         name=dataUnit.getName()
@@ -434,9 +419,8 @@ class TaskWindow(wx.Frame):
             units=self.dataUnit.getSourceDataUnits()
         except GUIError, ex:
             ex.show()
-        #self.listbox.SetSize((70,120))
         names=[i.getName() for i in units]
         for name in names:
-                self.listbox.Append(name)
+                self.itemMenu.Append(name)
         self.selectItem(None,0)
-        self.listbox.SetSelection(0)
+        self.itemMenu.SetSelection(0)

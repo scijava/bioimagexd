@@ -259,10 +259,9 @@ class ColorMergingWindow(TaskWindow.TaskWindow):
         Creator: KP
         Description: Sets the combined dataunit that is to be processed.
                      It is then used to get the names of all the source 
-                     data units and they are added to the listbox.
+                     data units and they are added to the menu.
         """
         TaskWindow.TaskWindow.setCombinedDataUnit(self,dataUnit)
         # We add entry "Alpha Channel" to the list of channels to allow
         # the user to edit the alpha channel for the 24-bit color merging
- #       self.listbox.Append(self.alphaChannelName)
         self.dataUnit.setOpacityTransfer(self.alphaTF)

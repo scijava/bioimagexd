@@ -65,7 +65,6 @@ class SingleUnitProcessingPreview(PreviewFrame):
         self.mapper=vtk.vtkImageMapper()
         self.mapper.SetZSlice(self.z)
         self.actor=vtk.vtkActor2D()
-        print "self.mapper=",self.mapper
         self.actor.SetMapper(self.mapper)
         self.renderer.AddActor(self.actor)
         self.running=0

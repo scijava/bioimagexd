@@ -90,8 +90,6 @@ class SingleUnitProcessingWindow(TaskWindow.TaskWindow):
         self.entries=[]
         self.operationName="Single Dataset Series Processing"
         TaskWindow.TaskWindow.__init__(self,parent)
-        #self.settingsSizer.Show(self.listboxsizer,0)
-        #self.Layout()
         # Preview has to be generated here
         self.colorChooser=None
         self.createIntensityTransferPage()
@@ -499,7 +497,7 @@ class SingleUnitProcessingWindow(TaskWindow.TaskWindow):
         Created: 23.11.2004, KP
         Description: Sets the processed dataunit that is to be processed.
                      It is then used to get the names of all the source data
-                     units and they are added to the listbox.
+                     units and they are added to the menu.
                      This is overwritten from taskwindow since we only process
                      one dataunit here, not multiple source data units
         """
@@ -511,11 +509,10 @@ class SingleUnitProcessingWindow(TaskWindow.TaskWindow):
             self.preview.setDataUnit(dataUnit)
         except GUIError, ex:
             ex.show()
-        self.listbox.Unbind(wx.EVT_CHOICE)
+        self.itemMenu.Unbind(wx.EVT_CHOICE)
 
-        self.listbox.Append(dataUnit.getName())
-        self.listbox.SetSelection(0)
-        # self.listbox.SetSize((40,120))
+        self.itemMenu.Append(dataUnit.getName())
+        self.itemMenu.SetSelection(0)
         
         #set the color of the colorBtn to the current color
         #self.colorBtn.SetBackgroundColour(self.dataUnit.getColor())
