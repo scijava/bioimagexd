@@ -43,9 +43,15 @@ if __name__=='__main__':
     sys.path.insert(0,os.path.normpath(os.path.join(os.getcwd(),"../Libraries/VTK/Wrapping/Python")))
 
 import vtk
+from RangedSlider import *
 
 
 class PaintPanel(wx.Panel):
+    """
+    Class: PaintPanel
+    Created: 10.01.2005, KP
+    Description: A widget onto which the transfer function is painted
+    """
     def __init__(self,parent):
         self.maxx=255
         self.maxy=255
@@ -194,8 +200,7 @@ class PaintPanel(wx.Panel):
 class IntensityTransferEditor(wx.Panel):
     """
     Class: TransferWidget
-    Created: 30.10.2004
-    Creator: KP
+    Created: 30.10.2004, KP
     Description: A widget used to view and modify an intensity transfer function
     """
     def __init__(self,parent,**kws):
@@ -223,8 +228,12 @@ class IntensityTransferEditor(wx.Panel):
 
         print "Creating sliders..."
         self.contrastLbl=wx.StaticText(self,wx.NewId(),"%.3f"%1)
-        self.contrastSlider=wx.Slider(self,value=0,minValue=-255,maxValue=255,size=(-1,290),
-        style=wx.SL_VERTICAL|wx.SL_LABELS)#|wx.SL_LABELS)
+        #self.contrastSlider=wx.Slider(self,value=0,minValue=-255,maxValue=255,size=(-1,290),
+        #style=wx.SL_VERTICAL|wx.SL_LABELS)#|wx.SL_LABELS)
+        self.contrastSlider = RangedSlider(self,value=0,size=(-1,290),style=wx.SL_VERTICAL)
+        self.contrastSlider.setRange(0,50,0.0,1.0,100)
+        self.contrastSlider.setRange(51,100,1.0,20.0,100)
+
         self.Bind(wx.EVT_SCROLL,self.setContrast,self.contrastSlider)
 
         print "Creating paint panel"
@@ -409,13 +418,14 @@ class IntensityTransferEditor(wx.Panel):
                      contrast slider in the GUI
         """
         contrast=event.GetPosition()
-        print "Contrast position = ",contrast
-        if abs(contrast) > 10:
-            coeff=contrast/10.0;
-        if contrast<0:
-            coeff=1.0/abs(contrast)
-        elif contrast==0:
-            coeff=1
+        coeff = self.contrastSlider.getScaledValue()
+        #print "Contrast position = ",contrast
+        #if abs(contrast) > 10:
+        #    coeff=contrast/10.0;
+        #if contrast<0:
+        #    coeff=1.0/abs(contrast)
+        #elif contrast==0:
+        #    coeff=1
 
         print "Value of slider",contrast
         print "coeff = ",coeff
