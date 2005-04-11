@@ -108,7 +108,7 @@ class Colocalization(Module):
         t1=time.time()
         self.colocFilter.SetOutputDepth(self.depth)
         for i in range(len(self.images)):
-            print self.thresholds,self.settings
+            #print self.thresholds,self.settings
             self.colocFilter.AddInput(self.images[i])
             print "Using %d as lower and %d as upper threshold"%self.thresholds[i]
             self.colocFilter.SetColocalizationLowerThreshold(i,self.thresholds[i][0])
