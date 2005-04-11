@@ -74,6 +74,7 @@ class Scattergram(wx.Panel):
         self.slice=None
         self.z = 0
         self.countVoxels = 0
+        self.renew=1
         self.wholeVolume = 0
         self.dataUnit=0
         self.scatter=None
@@ -176,6 +177,8 @@ class Scattergram(wx.Panel):
         
         self.rubberstart = None
         self.rubberend = None
+        self.renew=1
+
         self.Refresh()
         
 
@@ -186,7 +189,8 @@ class Scattergram(wx.Panel):
         Description: Sets the optical slice to preview
         """    
         self.z=z
-
+        self.renew=1
+        
     def setTimepoint(self,tp):
         """
         Method: setTimepoint(tp)
@@ -194,6 +198,7 @@ class Scattergram(wx.Panel):
         Description: Sets the timepoint to preview
         """    
         self.timepoint=tp
+        self.renew=1
         
         
     def setDataunit(self,dataunit):
@@ -210,8 +215,8 @@ class Scattergram(wx.Panel):
         Method: update()
         Created: 25.03.2005, KP
         Description: A method that draws the scattergram
-        """
-        if self.dataUnit:
+        """          
+        if self.renew and self.dataUnit:
             dataunits=self.dataUnit.getSourceDataUnits()
             red=None
             green=None
@@ -226,6 +231,7 @@ class Scattergram(wx.Panel):
             #print "Using z=",self.z,reddata,greendata
             scatter=ImageOperations.scatterPlot(reddata,greendata,self.z, self.countVoxels, self.wholeVolume)
             self.scatter=scatter.Mirror(0)
+            self.renew=0
         
         self.Refresh()
 

@@ -130,7 +130,10 @@ class ColocalizationWindow(TaskWindow.TaskWindow):
             m1=self.settings.get("ColocalizationCoefficientM1")
             m2=self.settings.get("ColocalizationCoefficientM2")
             least=self.settings.get("ColocalizationLeastVoxelsOverThreshold")
-            percent=(float(amnt) / float(least))*100.0
+            if least==0:
+                percent = 0
+            else:
+                percent=(float(amnt) / float(least))*100.0
         col=self.GetBackgroundColour()
         bgcol="#%2x%2x%2x"%(col.Red(),col.Green(),col.Blue())
         variables={"amount":amnt,"pearson":pearson,"overlap":overlap,"k1":k1,"k2":k2,"m1":m1,"m2":m2,"bgcolor":bgcol,
@@ -216,10 +219,11 @@ class ColocalizationWindow(TaskWindow.TaskWindow):
                      updates the preview and Set color-button accordingly
         """
         if self.dataUnit:
-            self.settings.set("ColocalizationColor",(r,g,b))
-            self.preview.updateColor()
+            if self.settings.get("Type")=="ColocalizationSettings":
+                self.settings.set("ColocalizationColor",(r,g,b))
+                self.preview.updateColor()
 #        self.colorBtn.SetBackgroundColour((r,g,b))
-        self.doPreviewCallback()
+            self.doPreviewCallback()
         
         
     def updateZSlice(self,event):
@@ -281,14 +285,16 @@ class ColocalizationWindow(TaskWindow.TaskWindow):
             format=formattable[format]
             self.depthMenu.SetSelection(format)
             print "Settings.n=",self.settings.n
-            for key in self.settings.settings.keys():
-                if "Threshold" in key:
-                    print key,self.settings.settings[key]
+            #for key in self.settings.settings.keys():
+            #    if "Threshold" in key:
+            #        print key,self.settings.settings[key]
             
             th=self.settings.get("ColocalizationLowerThreshold")
-            self.lowerthreshold.SetValue(th)
+            if th != None:
+                self.lowerthreshold.SetValue(th)
             th=self.settings.get("ColocalizationUpperThreshold")
-            self.upperthreshold.SetValue(th)
+            if th != None:
+                self.upperthreshold.SetValue(th)
             
             if self.dataUnit:
                 r,g,b=self.settings.get("ColocalizationColor")
@@ -310,7 +316,7 @@ class ColocalizationWindow(TaskWindow.TaskWindow):
         Created: 17.11.2004, KP
         Description: Updates the preview to be done at the selected depth
         """
-        if self.settings:
+        if self.settings and self.settings.get("Type")=="ColocalizationSettings":
             depth=self.depthMenu.GetSelection()
             table=[1,8,32]
             self.settings.set("ColocalizationDepth",table[depth])
