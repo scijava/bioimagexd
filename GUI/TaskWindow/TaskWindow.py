@@ -128,7 +128,6 @@ class TaskWindow(wx.Frame):
         # Make the column containing the settings widgets at least 200 pixels
         # wide
 
-        self.createChannelMenu()
         self.createButtonBox()
         self.createOptionsFrame()
 
@@ -178,13 +177,31 @@ class TaskWindow(wx.Frame):
         """      
         #self.tb2 = self.CreateToolBar(wx.TB_HORIZONTAL)
         print "Creating item toolbar"
-        self.tb.AddSeparator()
-        col=self.GetBackgroundColour()
+        self.tb2 = wx.ToolBar(self,-1,style=wx.TB_VERTICAL|wx.TB_TEXT)
+        self.tb2.SetToolBitmapSize((64,64))# this required for non-standard size buttons on MSW
+        n=0
         for dataunit in self.dataUnit.getSourceDataUnits():
             color = dataunit.getColor()
             name = dataunit.getName()
-            bmp=ImageOperations.vtkImageDataToPreviewBitmap(dataunit.getTimePoint(0),color,32,32)
-            self.tb.AddCheckTool(-1,bmp,shortHelp=name)
+            dc= wx.MemoryDC()
+            bmp=ImageOperations.vtkImageDataToPreviewBitmap(dataunit.getTimePoint(0),color,64,64)
+            dc.SelectObject(bmp)
+            dc.BeginDrawing()
+            dc.SetFont(wx.Font(9,wx.SWISS,wx.NORMAL,wx.BOLD))
+            dc.SetTextForeground(wx.Colour(255,255,255))
+            w,h=dc.GetTextExtent(name)
+            d=(64-w)/2.0
+            dy=(62-h)
+            if d<0:d=0
+            dc.DrawText(name,d,dy)
+            dc.EndDrawing()
+            dc.SelectObject(wx.EmptyBitmap(0,0))
+            toolid=wx.NewId()
+            self.tb2.AddRadioTool(toolid,bmp,shortHelp=name)
+            self.Bind(wx.EVT_TOOL,lambda e,x=n,s=self:s.selectItem(e,x),id=toolid)
+            n=n+1
+        self.tb2.Realize()
+        self.mainsizer.Add(self.tb2,(0,3))
         
     def OnSize(self,event):
         """
@@ -256,27 +273,7 @@ class TaskWindow(wx.Frame):
         
         self.buttonSizer.Add(self.buttonsSizer2)    
 
-    def createChannelMenu(self):
-        """
-        Method: createChannelMenu()
-        Created: 03.11.2004, KP
-        Description: Creates a menu that displays the names of the processed
-                     channels
-        """
-        self.choicePanel=wx.Panel(self.panel,-1)
-        self.menusizer=wx.BoxSizer(wx.VERTICAL)
-        self.channelsLbl=wx.StaticText(self.choicePanel,-1,"Items:")
-        self.itemMenu = wx.Choice(self.choicePanel,-1)
-        self.itemMenu.Bind(wx.EVT_CHOICE,self.selectItem)
-
-        self.menusizer.Add(self.channelsLbl)
-        self.menusizer.Add(self.itemMenu)
-
-        self.choicePanel.SetSizer(self.menusizer)
-        self.choicePanel.SetAutoLayout(1)
-        self.menusizer.Fit(self.choicePanel)
-        self.settingsSizer.Add(self.choicePanel,(0,0),span=(1,2),flag=wx.EXPAND|wx.ALL)
-
+        
     def createOptionsFrame(self):
         """
         Method: createOptionsFrame()
@@ -304,7 +301,7 @@ class TaskWindow(wx.Frame):
 
 #        self.commonSettingsPanel.SetBackgroundColour(self.panel.GetBackgroundColour())
 #        self.taskNameLbl.SetBackgroundColour(self.panel.GetBackgroundColour())
-        self.settingsSizer.Add(self.settingsNotebook,(1,0))#,flag=wx.EXPAND|wx.ALL)
+        self.settingsSizer.Add(self.settingsNotebook,(0,0))#,flag=wx.EXPAND|wx.ALL)
 
 
     def selectItem(self,event,index=-1):
@@ -315,11 +312,14 @@ class TaskWindow(wx.Frame):
                      the menu
         """
         if index==-1:
+            raise "No index given"
             index=self.itemMenu.GetSelection()
-        name=self.itemMenu.GetString(index)
-        print "Now configuring item",name
+        print "Selecting item %d"%index
+        #name=self.itemMenu.GetString(index)
+        #print "Now configuring item",name
         #print "self.Dataunit.getSetting()=",self.dataUnit.getSettings()
-        self.settings = self.dataUnit.getSourceUnit(name).getSettings()
+        self.settings = self.dataUnit.getSourceDataUnits()[index].getSettings()
+        self.preview.setSelectedItem(index)
         #print "Got settings = ",self.settings
         self.updateSettings()
 
@@ -462,9 +462,9 @@ class TaskWindow(wx.Frame):
             
         except GUIError, ex:
             ex.show()
-        names=[i.getName() for i in units]
-        for name in names:
-                self.itemMenu.Append(name)
+        #names=[i.getName() for i in units]
+        #for name in names:
+        #        self.itemMenu.Append(name)
         self.selectItem(None,0)
-        self.itemMenu.SetSelection(0)
+        #self.itemMenu.SetSelection(0)
         self.createItemToolbar()
