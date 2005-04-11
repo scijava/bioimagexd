@@ -137,6 +137,8 @@ class SplineEditor(wx.Panel):
         pps=self.getControlPoints()
         return pps[pt]
         
+        
+        
     def addCameraHandle(self,sp):
         """
         Method: addCameraHandle(sp)
@@ -258,6 +260,39 @@ class SplineEditor(wx.Panel):
         #print "Distance",d,", straight distance",sd
         return d
         
+    def getCameraPosition(self,p0,p1,percentage):
+        """
+        Method: getCameraPosition(p0,p1,percentage)
+        Created: KP, 05.04.2005
+        Description: Method that returns the camera position when it is located a given percentage
+                     of the way from point p0 to p1
+        """        
+        points = self.getPoints()
+        n=points.GetNumberOfPoints()
+        pps=self.getControlPoints()
+        if p1[0]==-1:
+            print "Using last point as p1"
+            p1=points.GetPoint(points.GetNumberOfPoints()-1)
+        pp0,pp1=-1,-1
+        d0,d1=2**64,2**64
+        for i in range(n):
+            p=points.GetPoint(i)
+            d=vtk.vtkMath.Distance2BetweenPoints(p,p0)
+            if d<d0:
+                d0,pp0=d,i
+            d=vtk.vtkMath.Distance2BetweenPoints(p,p1)
+            if d<d1:                
+                d1,pp1=d,i
+        d=0
+        if pp0<0 or pp1<0:
+            raise "Did not find point"
+        p0=points.GetPoint(pp0)
+        p1=points.GetPoint(pp1)
+        p=int((pp1-pp0)*percentage)
+        return (p,points.GetPoint(p))
+         
+    
+        
     def updateData(self,data):
         """
         Method: updateData(data)
@@ -318,7 +353,7 @@ class SplineEditor(wx.Panel):
         if self.renderer:
             cam = self.renderer.GetActiveCamera()
         return cam
-
+        
     def getPoints(self):
         """
         Method: getPoints()
@@ -335,17 +370,37 @@ class SplineEditor(wx.Panel):
         Created: Heikki Uuksulainen
         Description: Creates a random spline with given amount of points
         """        
+        lst=[]
+        for i in range(points):
+            pt=(math.Random(-self.dataExtensionX,self.dataWidth()+self.dataExtensionX),
+                math.Random(-self.dataExtensionY,self.dataHeight()+self.dataExtensionY),
+                math.Random(-self.dataExtensionZ,self.dataDepth()+self.dataExtensionZ))
+            lst.append(pt)
+        self.setSplinePoints(lst)
+            
+    def setSplinePoints(self,pointlist):
+        """
+        Method: setSplinePoints(pointlist)
+        Created: KP, 06.04.2005
+        Description: Sets the handles of the spline widget to the given point list
+        """        
         self.spline.SetInteractor(self.iren)        
         self.spline.GetLineProperty().SetColor(1,0,0)
-        self.spline.SetNumberOfHandles(points)
+        self.spline.SetNumberOfHandles(len(pointlist))
         for i in range(self.spline.GetNumberOfHandles()):
-            self.spline.SetHandlePosition(i,math.Random(-self.dataExtensionX,self.dataWidth()+self.dataExtensionX),
-                                     math.Random(-self.dataExtensionY,self.dataHeight()+self.dataExtensionY),
-                                     math.Random(-self.dataExtensionZ,self.dataDepth()+self.dataExtensionZ))
+            self.spline.SetHandlePosition(i,pointlist[i])
         self.spline.On()
-        
         self.renderer.Render()
 
+    def setSplinePoint(self,pos,point):
+        """
+        Method: setSplinePoint(pos,point)
+        Created: KP, 11.04.2005
+        Description: Sets the a handle of the spline widget to a given point
+        """        
+        self.spline.SetHandlePosition(pos,point)
+    
+        
     def initCamera(self):
         """
         Method: initCamera()

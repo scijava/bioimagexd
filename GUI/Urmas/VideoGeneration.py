@@ -40,6 +40,7 @@ class VideoGeneration(wx.wizard.PyWizardPage):
         wx.wizard.PyWizardPage.__init__(self,parent)
         self.mainsizer=wx.GridBagSizer()
 
+        
         self.SetSizer(self.mainsizer)
         self.SetAutoLayout(True)
         self.mainsizer.Fit(self)

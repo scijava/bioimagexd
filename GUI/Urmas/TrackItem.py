@@ -38,7 +38,7 @@ import math,random
 import threading
 
 import ImageOperations
-
+import UrmasControl
 
         
 class TrackItem(wx.Panel):
@@ -55,15 +55,20 @@ class TrackItem(wx.Panel):
         self.parent=parent
         self.minSize=5
         self.getting=0
+        self.position=(0,0)
         self.dc=0
         self.buffer=0
+        self.destroyed=0
         self.lastdiff=0
         self.thumbnailbmp=0
         self.labelheight=15
         self.thumbtimepoint=-1
         self.itemnum=0
+        self.timepoint = -1
         if "itemnum" in kws:
             self.itemnum=kws["itemnum"]
+        if "timepoint" in kws:
+            self.timepoint = kws["timepoint"]
         if kws.has_key("editable"):
             self.editable=kws["editable"]
         if kws.has_key("dataunit"):
@@ -84,7 +89,40 @@ class TrackItem(wx.Panel):
                         
         self.beginX=0
         self.ok=0
-
+        
+    def setThumbnailDataunit(self,dataunit):
+        """
+        Method: setThumbnail
+        Created: 06.05.2005, KP
+        Description: Sets the setting for thumbnail generation
+        """       
+        self.dataUnit=dataunit
+        self.thumbtimepoint=self.timepoint
+        
+    def refresh(self):
+        """
+        Method: refresh()
+        Created: 11.04.2005, KP
+        Description: Update the item
+        """       
+        start,end=self.position
+        
+        start=self.parent.getPixels(start)
+        end=self.parent.getPixels(end)
+        start+=self.parent.getLabelWidth()
+        end+=self.parent.getLabelWidth()
+        x,y=self.GetPosition()
+        self.SetPosition((start,y))
+        print "Setting position to ",start,y
+        w,h=self.GetSize()
+        w=(end-start)
+        print "Start=",start,"end=",end
+        self.setWidth(w)
+        self.drawItem()
+        self.parent.Refresh()
+        self.Refresh()
+        self.parent.Layout()
+        
     def setColor(self,col,headercolor):
         """
         Method: setColor(color, headercolor)
@@ -126,8 +164,6 @@ class TrackItem(wx.Panel):
             self.dc.SetFont(wx.Font(8,wx.SWISS,wx.NORMAL,wx.NORMAL))
             self.dc.DrawText(self.text,5,2)            
         
-    
-        
     def drawItem(self):
         """
         Method: drawItem()
@@ -161,8 +197,28 @@ class TrackItem(wx.Panel):
         Method: getThumbnail()
         Created: 19.03.2005, KP
         Description: A method that creates a thumbnail for a timepoint
+        """ 
+        # This may bail if the item gets deleted while the thread
+        # is still running
+        try:
+            self.volume=self.dataUnit.getTimePoint(self.thumbtimepoint)
+        except:
+            pass
+    def updateAfterThumbnail(self):
+        """
+        Method: updateAfterThumbnail()
+        Created: 11.04.2005, KP
+        Description: A method that refereshes this item, when a thumbnail has been generated
         """   
-        self.volume=self.dataUnit.getTimePoint(self.thumbtimepoint)
+        try:
+            self.drawItem()
+        except:
+            return
+        self.parent.Refresh()
+        self.Refresh()
+        self.parent.Layout()
+        wx.Yield()
+                
         
     def drawThumbnail(self):
         """
@@ -178,12 +234,7 @@ class TrackItem(wx.Panel):
                 n=(1+self.thumbtimepoint)*750
                 t=threading.Thread(None,self.getThumbnail)
                 wx.FutureCall(n,lambda t=t:t.start())
-                wx.FutureCall(n+100,self.drawItem)
-                
-                wx.FutureCall(n+300,self.parent.Refresh)
-                wx.FutureCall(n+200,self.Refresh)
-                wx.FutureCall(n+400,lambda p=self.parent:p.Layout())
-                wx.FutureCall(n+500,wx.Yield)
+                wx.FutureCall(n+300,self.updateAfterThumbnail)
                 
                 
             elif self.volume:
@@ -230,7 +281,7 @@ class TrackItem(wx.Panel):
                      dragging.
         """       
         x,y=event.GetPosition()
-        print "onDow()",x,y
+        #print "onDow()",x,y
         self.ok=0
         w,h=self.GetSize()
         posx,posy=self.GetPosition()
@@ -245,11 +296,32 @@ class TrackItem(wx.Panel):
         Created: 10.02.2005, KP
         Description: Event handler for when mouse is released over this item.
                      Will store the position in order to enable dragging.
-        """       
-    
+        """    
         x,y=event.GetPosition()
+        self.beginX=x
+        self.updateItem()
+
+    def updateItem(self):
+        """
+        Method: updateItem()
+        Created: 06.04.2005, KP
+        Description: A method called when the item has been resized
+        """       
         posx,posy=self.GetPosition()
-        self.beginX=x 
+        posx-=self.parent.getLabelWidth()
+        start=self.parent.getDuration(posx)
+        w,h=self.GetSize()
+        end=self.parent.getDuration(posx+w)
+        self.position=(start,end)
+        
+    def getPosition(self):
+        """
+        Method: getPosition()
+        Created: 11.04.2005, KP
+        Description: Return the starting and ending position of this item
+        """       
+        return self.position
+
         
     def onDrag(self,event):
         """
@@ -278,6 +350,35 @@ class TrackItem(wx.Panel):
         self.setWidth(self.width+diff)
         self.parent.updateLayout()
         self.beginX=x
+        
+        
+    def __getstate__(self):
+        """
+        Method: __getstate__
+        Created: 11.04.2005, KP
+        Description: Return the dict that is to be pickled to disk
+        """      
+        odict={}
+        keys=[""]
+        for key in ["position"]:
+            odict[key]=self.__dict__[key]
+        if self.timepoint != -1:
+            odict["timepoint"]=self.timepoint
+        return odict    
+
+    def __str__(self):
+        """
+        Method: __str__
+        Created: 05.04.2005, KP
+        Description: Return string representation of self
+        """  
+        if self.timepoint != -1:
+            desc="T%d"%self.timepoint
+        else:
+            desc="I"
+        start,end=self.position
+        return "[%s %ds:%ds]"%(desc,start,end)
+        
 
 class SplinePoint(TrackItem):
     """
@@ -292,6 +393,7 @@ class SplinePoint(TrackItem):
         Description: Initialize the method
         """       
         TrackItem.__init__(self,parent,text,size,**kws)
+        self.point = (0,0,0)
         self.Bind(wx.EVT_RIGHT_DOWN,self.onRightClick)
         self.ID_CAMERA=wx.NewId()
         
@@ -318,7 +420,6 @@ class SplinePoint(TrackItem):
         """       
         print "Adding camera handle for ",self.itemnum
         self.parent.control.splineEditor.addCameraHandle(self.itemnum)
-    
         
     def drawItem(self):
         """
@@ -347,10 +448,50 @@ class SplinePoint(TrackItem):
         self.dc.SetTextForeground((0,0,0))
         self.dc.SetFont(wx.Font(8,wx.SWISS,wx.NORMAL,wx.NORMAL))
         l=self.parent.getSplineLength(self.itemnum)
-        s=self.parent.getSplineDuration(self.GetSize()[0])
+        s=self.parent.getDuration(self.GetSize()[0])
         text=u"Length:\t%.2f\u03bcm\nDuration:\t%.2fs"%(l,s)
         self.dc.DrawText(text,5,self.labelheight+5)            
 
         
         self.dc.EndDrawing()
     
+    def updateItem(self):
+        """
+        Method: updateItem()
+        Created: 06.04.2005, KP
+        Description: A method called when the item has been resized
+        """     
+        TrackItem.updateItem(self)  
+        pos=self.parent.getSplinePoint(self.itemnum)
+        self.point = pos
+        
+    def refresh(self):
+        """
+        Method: refresh()
+        Created: 11.04.2005, KP
+        Description: Update the item
+        """       
+        TrackItem.refresh(self)
+        print "Setting spline point ",self.itemnum,"to ",self.point
+        self.parent.setSplinePoint(self.itemnum,self.point)
+        
+    def __getstate__(self):
+        """
+        Method: __getstate__
+        Created: 11.04.2005, KP
+        Description: Return the dict that is to be pickled to disk
+        """     
+        odict=TrackItem.__getstate__(self)
+        for key in ["point","itemnum"]:
+            odict[key]=self.__dict__[key]
+        return odict        
+        
+    def __str__(self):
+        """
+        Method: __str__
+        Created: 05.04.2005, KP
+        Description: Return string representation of self
+        """  
+        start,end=self.position
+        desc="SP%d(%d,%d,%d)"%(self.itemnum,self.point[0],self.point[1],self.point[2])
+        return "[%s %ds:%ds]"%(desc,start,end)      

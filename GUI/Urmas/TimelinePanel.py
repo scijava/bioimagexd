@@ -208,15 +208,15 @@ class TimelineConfig(wx.Panel):
         newfps=frameCount/secs
         self.fpsLabel.SetLabel("FPS: %.2f"%newfps)
         
-class TimelinePanel(wx.wizard.PyWizardPage):
+class TimelinePanel(wx.Panel):
     """
     Class: TimelinePanel
     Created: 04.02.2005, KP
     Description: Contains the timescale and the different "tracks"
     """    
     def __init__(self,parent,control):
-        #wx.Panel.__init__(self,parent,-1,style=wx.RAISED_BORDER)
-        wx.wizard.PyWizardPage.__init__(self,parent)
+        wx.Panel.__init__(self,parent,-1,style=wx.RAISED_BORDER)
+        #wx.wizard.PyWizardPage.__init__(self,parent)
         self.parent=parent
         self.control=control
         self.sizer=wx.GridBagSizer()

@@ -59,6 +59,10 @@ class Track(wx.Panel):
             self.itemClass=TrackItem
             
         self.control = kws["control"]
+        
+        self.label = name
+        self.timepointTrack=kws.has_key("timepoint")
+        
         if kws.has_key("height"):
             height=kws["height"]
         if kws.has_key("editable"):
@@ -85,7 +89,20 @@ class Track(wx.Panel):
         self.sizer.Fit(self)
         self.items=[]
         self.thumbnail=0
+        self.itemAmount = 0
         #self.setItemAmount(1)
+        self.initTrack()
+        
+        
+    def refresh(self):
+        """
+        Method: refresh()
+        Created: 11.04.2005, KP
+        Description: Method called by UrmasPersist to allow the object
+                     to refresh before it's items are created
+        """    
+        self.setItemAmount(self.itemAmount,0)
+        self.nameLbl.SetLabel(self.label)
         
     def updateLabels(self):
         """
@@ -100,6 +117,22 @@ class Track(wx.Panel):
         self.Refresh()
         self.Layout()
         
+    def remove(self):
+        """
+        Method: remove()
+        Created: 06.04.2005, KP
+        Description: Remove all items from self
+        """               
+        if self.itemBox:
+            print "Removing ",len(self.items)," items"    
+            self.sizer.Show(self.itemBox,0)
+            self.sizer.Detach(self.itemBox)
+            for i in self.items:
+                self.itemBox.Show(i,0)
+                self.itemBox.Detach(i)
+                self.items.remove(i)
+                i.Destroy()
+            self.itemBox.Destroy()    
         
     def setDataUnit(self,dataUnit):
         """
@@ -117,6 +150,9 @@ class Track(wx.Panel):
                      thumbnail on the items in this track
         """           
         self.thumbnail=flag
+        for item in self.items:
+            #print "Setting thumbnail on",item
+            item.setThumbnailDataunit(self.dataUnit)
         
     def getLength(self):
         """
@@ -135,9 +171,9 @@ class Track(wx.Panel):
                      from the specified size to a new size
         """               
         diff=toWidth-fromWidth
-        print "Trying to resize ",diff
+        #print "Trying to resize ",diff
         w,h=self.itemBox.GetSize()
-        print "current size=",w
+        #print "current size=",w
         w+=diff
         
         #print "w=",w,">self.duration*pps",self.duration,self.timescale.getPixelsPerSecond()
@@ -145,34 +181,36 @@ class Track(wx.Panel):
             return 0
         return 1
         
-    def setItemAmount(self,n):
+    def initTrack(self):
         """
-        Method: setItemAmount
-        Created: 04.02.2005, KP
-        Description: A method to set the amount of items in this track
+        Method: initTrack
+        Created: 11.04.2005, KP
+        Description: Initialize the GUI portion of this track
         """               
-        if self.itemBox:
-            print "Removing ",len(self.items)," items"    
-            self.sizer.Show(self.itemBox,0)
-            self.sizer.Detach(self.itemBox)
-            for i in self.items:
-                self.itemBox.Show(i,0)
-                self.itemBox.Detach(i)
-                self.items.remove(i)
-                i.Destroy()
-            self.itemBox.Destroy()
         self.itemBox=wx.BoxSizer(wx.HORIZONTAL)
         self.sizer.Add(self.itemBox,(0,1))
         
         self.updateLayout()
         self.items=[]
+
+        
+    def setItemAmount(self,n,update=1):
+        """
+        Method: setItemAmount
+        Created: 04.02.2005, KP
+        Description: A method to set the amount of items in this track
+        """               
+        self.remove()
+        self.initTrack()
         print "Adding ",n,"items"
         for i in range(n):
             lbl=""
             if self.number:
                 lbl="%d"%i
-            self.addItem(lbl)
-        self.updateLayout()
+            self.addItem(i,lbl,update)
+        if update:
+            self.updateLayout()
+   
         
     def setDuration(self,seconds,frames,**kws):
         """
@@ -184,7 +222,7 @@ class Track(wx.Panel):
         n=len(self.items)
         
         w=float(seconds)/float(n)
-        print "New size=",w
+        #print "New size=",w
         self.duration=seconds
         self.frames=frames
         w*=self.timescale.getPixelsPerSecond()
@@ -200,9 +238,9 @@ class Track(wx.Panel):
         
         diff=seconds*self.timescale.getPixelsPerSecond()-tot
         if diff>1:
-            print "diff=",diff
+            #print "diff=",diff
             last.setWidth(w+diff)
-        print "Updating layout"
+        #print "Updating layout"
         self.updateLayout()
         
     def getLabelWidth(self):
@@ -231,27 +269,37 @@ class Track(wx.Panel):
         Created: 04.02.2005, KP
         Description: A method that updates the layout of this track
         """               
-        print "updateLayout()"
+        #print "updateLayout()"
         self.Layout()
         self.parent.Layout()
+        for item in self.items:
+            item.updateItem()
+        #print "Control structure now:"
+        #print self.control
         
-    def addItem(self,item):
+        
+    def addItem(self,n,item,update=1):
         """
         Method: addItem
         Created: 04.02.2005, KP
         Description: A method to add a new item to this track
-        """               
+        """              
         h=self.namePanel.GetSize()[1]
+        kws={"itemnum":n,"editable":self.editable}
         if self.thumbnail:
-            item=self.itemClass(self,item,(20,h),itemnum=int(item),editable=self.editable,dataunit=self.dataUnit,thumbnail=int(item))
-        else:
-            item=self.itemClass(self,item,(20,h),itemnum=int(item),editable=self.editable)
+            kws["dataunit"]=self.dataUnit
+            kws["thumbnail"]=int(item)
+        if self.timepointTrack:
+            kws["timepoint"]=int(item)
+        item=self.itemClass(self,item,(20,h),**kws)
         if self.color:
             item.setColor(self.color,self.headercolor)
         self.items.append(item)
         self.itemBox.Add(item)
-        self.Layout()
-        self.sizer.Fit(self)
+        if update:
+            self.Layout()
+            self.sizer.Fit(self)
+        item.updateItem()
 
     def getSplineLength(self,splinepoint):
         """
@@ -264,12 +312,64 @@ class Track(wx.Panel):
             return 0
         return self.control.getSplineLength(splinepoint)
         
-        
-    def getSplineDuration(self,pixels):
+    def getSplinePoint(self,point):
         """
-        Method: getSplineDuration
+        Method: getSplinePoint
+        Created: 06.04.2005, KP
+        Description: A method that returns the physical position of a spline
+                     control point
+        """ 
+        return self.control.findControlPoint(point)
+
+    def setSplinePoint(self,pointnum,point):
+        """
+        Method: setSplinePoint
+        Created: 11.04.2005, KP
+        Description: A method that sets the physical position of a spline
+                     control point
+        """ 
+        return self.control.setSplinePoint(pointnum,point)
+        
+        
+    def getDuration(self,pixels):
+        """
+        Method: getDuration
         Created: 20.03.2005, KP
         Description: A method that returns the time the camera takes to travel
                      given part of the spline
         """ 
         return float(pixels) / self.control.getPixelsPerSecond()
+        
+    def getPixels(self,duration):
+        """
+        Method: getPixels
+        Created: 11.04.2005, KP
+        Description: A method that returns the amount of pixels a given
+                     number of seconds streches on the timeline
+        """ 
+        return float(duration) * self.control.getPixelsPerSecond()
+        
+    def __str__(self):
+        """
+        Method: __str__
+        Created: 05.04.2005, KP
+        Description: Return string representation of self
+        """        
+        s="%s [\n"%self.label
+        s+=", ".join(map(str,self.items))
+        s+="]\n"
+        return s
+        
+    def __getstate__(self):
+        """
+        Method: __getstate__
+        Created: 11.04.2005, KP
+        Description: Return the dict that is to be pickled to disk
+        """      
+        odict={}
+        keys=[""]
+        self.itemAmount = len(self.items)
+        for key in ["label","items","color","number","itemAmount"]:
+            odict[key]=self.__dict__[key]
+        return odict        
+ 

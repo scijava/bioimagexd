@@ -50,7 +50,7 @@ class Timeline(scrolled.ScrolledPanel):
     """
     Class: Timeline
     Created: 04.02.2005, KP
-    Description: Class representing the timeline with different "tracks"
+    Description: Class representing the timeline with different tracks
     """    
     def __init__(self,parent,control,**kws):
         """
@@ -60,6 +60,7 @@ class Timeline(scrolled.ScrolledPanel):
         """
         height=250
         width=640
+        self.n=1
         #if kws.has_key("width"):
         #    width=kws["width"]
         scrolled.ScrolledPanel.__init__(self,parent,-1,size=(width,height))
@@ -67,22 +68,17 @@ class Timeline(scrolled.ScrolledPanel):
         control.setTimeline(self)
         self.sizer=wx.GridBagSizer(5,1)
         self.timeScale=TimeScale(self)
-        # Set duration to 2 hours, let's stress test the thing
-        self.timeScale.setDuration(5)
+        self.timeScale.setDuration(self.control.getDuration())
         self.timeScale.setDisabled(1)
-        self.splinepoints=None
         self.sizer.Add(self.timeScale,(0,0))
         self.Unbind(wx.EVT_CHILD_FOCUS)
 
-        self.timepoints=Track("Time Points",
-        self,number=1,timescale=self.timeScale,control=self.control)
+   
+        self.timepointTracks=[]
+        self.splinepointTracks=[]
+        self.timepointTrackAmnt=0
+        self.splinepointTrackAmnt=0
         
-        self.timeScale.setOffset(self.timepoints.getLabelWidth())
-        
-        self.sizer.Add(self.timepoints,(2,0),flag=wx.EXPAND|wx.ALL)
-
-        self.timepoints.setColor((56,196,248))
-
         w,h=self.GetSize()
         w2,h=self.timeScale.GetSize()
         self.timeScale.SetSize((w,h))
@@ -91,11 +87,58 @@ class Timeline(scrolled.ScrolledPanel):
         self.SetSizer(self.sizer)
         self.SetAutoLayout(1)
         self.SetupScrolling()
-        #self.SetVirtualSize((w,h))
-        #self.SetScrollbars(20,0,500,0)
         self.sizer.Fit(self)
-        self.timepoints.setItemAmount(1)
 
+    def refresh(self):
+        """
+        Method: refresh()
+        Created: 11.04.2005, KP
+        Description: Method called by UrmasPersist to allow the object
+                     to refresh before it's items are created
+        """ 
+        for n in range(self.timepointTrackAmnt-len(self.timepointTracks)):
+            self.addTrack("TmpTrack%d"%n,n)
+        for n in range(self.splinepointTrackAmnt-len(self.splinepointTracks)):
+            self.addSplinepointTrack("TmpSpline%d"%n)
+            
+    def addTrack(self,label,n):
+        """
+        Method: addTrack(label,itemamount)
+        Created: 06.04.2005, KP
+        Description: Adds a track to the timeline
+        """    
+        tr=Track(label,
+        self,number=self.n,timescale=self.timeScale,control=self.control,
+        timepoint=1)
+        self.timeScale.setOffset(tr.getLabelWidth())
+        self.sizer.Add(tr,(self.n+1,0),flag=wx.EXPAND|wx.ALL)
+        self.n=self.n+1
+        tr.setColor((56,196,248))
+        tr.setItemAmount(n)
+        
+        self.timepointTracks.append(tr)
+        
+        if self.dataUnit:
+            print "Setting dataunit & Enabling thumbnail"
+            tr.setDataUnit(self.dataUnit)
+            tr.showThumbnail(True)
+            
+    def addSplinepointTrack(self,label):
+        """
+        Method: addSplinepointTrack(label)
+        Created: 11.04.2005, KP
+        Description:
+        """
+        tr=Track(label,
+            self,number=1,height=50,timescale=self.timeScale,item=SplinePoint,
+            control=self.control)
+        self.control.setSplineInteractionCallback(tr.updateLabels)
+        tr.setColor((248,196,56))
+        #self.setSplinePoints(7)
+        self.sizer.Add(tr,(self.n+1,0),flag=wx.EXPAND|wx.ALL)
+        self.n=self.n+1
+        self.splinepointTracks.append(tr)            
+            
     def setDisabled(self,flag):
         """
         Method: setDisabled(mode)
@@ -112,30 +155,50 @@ class Timeline(scrolled.ScrolledPanel):
                      track.
         """
         if flag:
-            self.splinepoints=Track("Spline Points",
-                self,number=1,height=50,timescale=self.timeScale,item=SplinePoint,
-                control=self.control)
-            self.control.setSplineInteractionCallback(self.splinepoints.updateLabels)
-            self.splinepoints.setColor((248,196,56))
-            #self.setSplinePoints(7)
-            self.sizer.Add(self.splinepoints,(3,0),flag=wx.EXPAND|wx.ALL)
+            if not len(self.splinepointTracks):
+                self.addSplinepointTrack("Spline Points")
         else:
-            if self.splinepoints:
-                self.sizer.Show(self.splinepoints,0)
-                self.sizer.Detach(self.splinepoints)
-                self.control.setSplineInteractionCallback(None)
-                del self.splinepoints
-                self.splinepoints=None
+            if len(self.splinepointTracks):
+                for track in self.splinepointTracks:
+                    self.removeTrack(track)
+                    self.control.setSplineInteractionCallback(None)
+                    self.splinepointTracks.remove(track)
         self.Layout()
         self.sizer.Fit(self)#self.SetScrollbars(20,0,tx/20,0)
+    
+    def clearTracks(self):
+        """
+        Method: clearTracks()
+        Created: 06.04.2005, KP
+        Description: Remove all tracks
+        """    
+        self.control.setSplineInteractionCallback(None)
+        for track in self.timepointTracks:
+            self.removeTrack(track)
+        for track in self.splinepointTracks:
+            self.removeTrack(track)
+        self.splinepointTracks=[]
+        self.timepointTracks=[]
+        
+    def removeTrack(self,track):
+        """
+        Method: removeTrack(track)
+        Created: 06.04.2005, KP
+        Description: Remove a track from the GUI
+        """    
+        self.sizer.Show(track,0)
+        self.sizer.Detach(track)
+        track.remove()
 
+        
     def setSplinePoints(self,n):
         """
         Method: setSplinePoints(n)
         Created: 04.02.2005, KP
         Description: Set the amount of spline points
         """    
-        self.splinepoints.setItemAmount(n)
+        for track in self.splinepointTracks:
+            track.setItemAmount(n)
         
     def setDataUnit(self,dataUnit):
         """
@@ -144,10 +207,9 @@ class Timeline(scrolled.ScrolledPanel):
         Description: Sets the dataunit on this timeline
         """
         self.dataUnit=dataUnit
-        self.timepoints.setDataUnit(dataUnit)
-        self.timepoints.showThumbnail(True)
-        self.timepoints.setItemAmount(self.dataUnit.getLength())
-
+        for track in self.timepointTracks:
+            track.setDataUnit(dataUnit)
+            track.showThumbnail(True)
         
     def reconfigureTimeline(self):
         """
@@ -156,15 +218,7 @@ class Timeline(scrolled.ScrolledPanel):
         Description: Method to reconfigure items on timeline with
                      the same duration and frame amount
         """    
-        self.configureTimeline(self.seconds,self.frames)
-        
-    def getDuration(self):
-        """
-        Method: getDuration()
-        Created: 20.03.2005, KP
-        Description: Returns the duration of this timeline
-        """
-        return self.seconds
+        self.configureTimeline(self.control.getDuration(),self.control.getFrames())
     
         
     def configureTimeline(self,seconds,frames):
@@ -184,7 +238,38 @@ class Timeline(scrolled.ScrolledPanel):
         self.timeScale.setDuration(seconds)
         tx,ty=self.timeScale.GetSize()
         self.Layout()
-        for i in [self.timepoints,self.splinepoints]:
+        for i in self.timepointTracks:
+            if i:
+                i.setDuration(seconds,frames)
+        for i in self.splinepointTracks:
             if i:
                 i.setDuration(seconds,frames)
         
+    def __str__(self):
+        """
+        Method: __str__
+        Created: 05.04.2005, KP
+        Description: Return string representation of self
+        """        
+        s="Timepoint tracks: {"
+        s+=", ".join(map(str,self.timepointTracks))
+        s+="}\n"
+        s+="Splinepoint tracks: {"
+        s+=", ".join(map(str,self.splinepointTracks))
+        s+="}\n"
+        return s
+    
+    def __getstate__(self):
+        """
+        Method: __getstate__
+        Created: 11.04.2005, KP
+        Description: Return the dict that is to be pickled to disk
+        """      
+        odict={}
+        keys=[""]
+        self.timepointTrackAmnt = len(self.timepointTracks)
+        self.splinepointTrackAmnt = len(self.splinepointTracks)
+        for key in ["timepointTracks","splinepointTracks","n","splinepointTrackAmnt","timepointTrackAmnt"]:
+            odict[key]=self.__dict__[key]
+        return odict        
+ 

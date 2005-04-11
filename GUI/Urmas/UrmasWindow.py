@@ -39,16 +39,10 @@ import RenderingInterface
 import UrmasControl
 import VideoGeneration
 
-def makeChain(*args):
-    lst=args
-    lst[0].prev=None
-    for i in range(1,len(lst)):
-        lst[i].prev=lst[i-1]
-        lst[i-1].next=lst[i]
-    lst[-1].next=None
-    return lst
+import Dialogs
+
         
-class UrmasWindow(wx.wizard.Wizard):
+class UrmasWindow(wx.Frame):
     """
     Class: UrmasWindow
     Created: 10.02.2005, KP
@@ -57,37 +51,108 @@ class UrmasWindow(wx.wizard.Wizard):
                  animation modes, and a page for configuring the movie generation.
     """
     def __init__(self,parent):
-        wx.wizard.Wizard.__init__(self,parent,-1,"Rendering Manager / Animator",
-        style=wx.RESIZE_BORDER|wx.CAPTION|wx.MAXIMIZE_BOX|wx.MINIMIZE_BOX|wx.CLOSE_BOX|wx.SYSTEM_MENU)
+        #wx.wizard.Wizard.__init__(self,parent,-1,"Rendering Manager / Animator",
+        #style=wx.RESIZE_BORDER|wx.CAPTION|wx.MAXIMIZE_BOX|wx.MINIMIZE_BOX|wx.CLOSE_BOX|wx.SYSTEM_MENU)
+        wx.Frame.__init__(self,parent,-1,"Rendering Manager / Animator",size=(1024,768))
         self.status=wx.ID_OK
         ico=reduce(os.path.join,["..","Icons","Selli.ico"])
         self.icon = wx.Icon(ico,wx.BITMAP_TYPE_ICO)
         self.SetIcon(self.icon)
+        self.createMenu()
         self.control = UrmasControl.UrmasControl(self)
 
         self.Bind(wx.EVT_CLOSE,self.closeWindowCallback)
         
-        self.timepointSelection=UrmasTimepointSelection.UrmasTimepointSelection(self)
-        
+        #self.timepointSelection=UrmasTimepointSelection.UrmasTimepointSelection(self)
+
 
         self.timelinePanel=TimelinePanel.TimelinePanel(self,self.control)
         self.control.setTimelinePanel(self.timelinePanel)
         
-        self.videogeneration=VideoGeneration.VideoGeneration(self)
+        #self.videogeneration=VideoGeneration.VideoGeneration(self)
         
-        makeChain(self.timepointSelection,self.timelinePanel,self.videogeneration)
-        self.timepointSelection.SetSize(self.timelinePanel.GetSize())
-        self.FitToPage(self.timelinePanel)
-        self.timelinePanel.Show(0)
+        #makeChain(self.timepointSelection,self.timelinePanel,self.videogeneration)
+        #self.timepointSelection.SetSize(self.timelinePanel.GetSize())
+        
+        #self.FitToPage(self.timelinePanel)
+        #self.timelinePanel.Show(0)
+        
+    def createMenu(self):
+        """
+        Method: createMenu()
+        Created: 06.04.2005, KP
+        Description: Creates a menu for the window
+        """
+        # This is the menubar object that holds all the menus
+        self.menu = wx.MenuBar()
+        self.SetMenuBar(self.menu)
+        
+        # We create the menu objects
+        self.fileMenu=wx.Menu()
+        self.helpMenu=wx.Menu()
+        
+        self.settingsMenu=wx.Menu()
+
+         # and add them as sub menus to the menubar
+        self.menu.Append(self.fileMenu,"&File")
+        self.menu.Append(self.settingsMenu,"&Settings")
+        self.menu.Append(self.helpMenu,"&Help")
+      
+        self.ID_PREFERENCES = wx.NewId()
+        self.settingsMenu.Append(self.ID_PREFERENCES,"&Preferences...")
+        wx.EVT_MENU(self,self.ID_PREFERENCES,self.menuPreferences)
+        
+        self.ID_OPEN=wx.NewId()
+        self.ID_SAVE=wx.NewId()
+        self.fileMenu.Append(self.ID_OPEN,"Open project...")
+        self.fileMenu.Append(self.ID_SAVE,"Save project as...")
+        wx.EVT_MENU(self,self.ID_OPEN,self.menuOpenProject)
+        wx.EVT_MENU(self,self.ID_SAVE,self.menuSaveProject)
+        
+
         #self.FitToPage(self.timepointSelection)
-    
+
+    def menuPreferences(self,evt):
+        """
+        Method: menuPreferences()
+        Created: 09.02.2005, KP
+        Description: Callback function for menu item "Preferences"
+        """
+        self.settingswindow=SettingsWindow.SettingsWindow(self)
+        self.settingswindow.ShowModal()
+
+    def menuOpenProject(self,event):
+        """
+        Method: menuOpenProject(self,event)
+        Created: 06.04.2005, KP
+        Description: Callback function for opening a project
+        """
+        wc="Rendering Project (*.rxd)|*.rxd"
+        name=Dialogs.askOpenFileName(self,"Open Rendering Project",wc)
+        if name:
+            self.control.readFromDisk(name[0])
+        
+    def menuSaveProject(self,event):
+        """
+        Method: menuSaveProject(self,event)
+        Created: 06.04.2005, KP
+        Description: Callback function for saving a project
+        """
+        wc="Rendering Project (*.rxd)|*.rxd"
+        dlg=wx.FileDialog(self,"Save Rendering Project as...",defaultFile="project.rxd",wildcard=wc,style=wx.SAVE)
+        if dlg.ShowModal()==wx.ID_OK:
+            name=dlg.GetPath()
+        if name:
+            self.control.writeToDisk(name)
+        
     def startWizard(self):
         """
         Method: startWizard()
         Created: 14.03.2005, KP
         Description: Start this wizard
         """              
-        self.RunWizard(self.timepointSelection)
+        #self.RunWizard(self.timepointSelection)
+        
     
     def onSize(self,evt):
         """
@@ -130,7 +195,7 @@ class UrmasWindow(wx.wizard.Wizard):
         Created: 10.2.2005, KP
         Description: Method used to set the dataunit we're processing
         """
-        self.timepointSelection.setDataUnit(dataUnit)
+        #self.timepointSelection.setDataUnit(dataUnit)
         #self.timelinePanel.setDataUnit(dataUnit)
         self.control.setDataUnit(dataUnit)
         
@@ -140,4 +205,5 @@ class UrmasWindow(wx.wizard.Wizard):
         Created: 10.2.2005, KP
         Description: A callback that is used to close this window
         """
-        self.EndModal(self.status)
+        #self.EndModal(self.status)
+        self.Destroy()
