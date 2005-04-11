@@ -61,6 +61,8 @@ class DataUnitSettings:
             self.setType(kws["type"])
         self.n=n
         self.serialized={}
+        self.register("PreviewedDataset")
+        self.set("PreviewedDataset",-1)
         self.register("SourceCount")
         self.registerCounted("Source")
         self.register("VoxelSize")
@@ -267,8 +269,8 @@ class DataUnitSettings:
         Description: Return the value of a key
         """
         print "in self.settings: %s"%self.settings.has_key("%s[%d]"%(name,count))
-        if self.n != -1:
-            return self.get(name)
+        #if self.n != -1:
+        #    return self.get(name)
         key="%s[%d]"%(name,count)
         return self.get(key)
         

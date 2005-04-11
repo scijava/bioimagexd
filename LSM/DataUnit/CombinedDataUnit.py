@@ -350,7 +350,7 @@ class CombinedDataUnit(DataUnit.DataUnit):
             # We then tell the color merging module to reset itself and
             # initialize it again
             self.module.reset()
-            print "Setting settings=",self.settings
+            #print "Setting settings=",self.settings
             # Go through all the source datasets for the color merging
             self.module.setSettings(self.settings)
             for dataunit in self.sourceunits:

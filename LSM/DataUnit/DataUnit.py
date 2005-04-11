@@ -91,7 +91,7 @@ class DataUnit:
         Created: 27.03.2005, KP
         Description: Sets the settings object of this dataunit
         """
-        print "Setting settings to ",repr(settings)
+        #print "Setting settings to ",repr(settings)
         self.settings = settings
         self.updateSettings()
     
