@@ -99,6 +99,7 @@ class PreviewFrame(wx.Panel):
         self.xdiff,self.ydiff=0,0
         self.updateFactor = 0.001
         self.zoomFactor=1
+        self.selectedItem=0
         size=(512,512)
         self.oldx,self.oldy=0,0
         self.show={}
@@ -181,7 +182,19 @@ class PreviewFrame(wx.Panel):
         self.SetSizer(self.sizer)
         self.sizer.Fit(self)
         self.sizer.SetSizeHints(self)
-
+        
+    def setSelectedItem(self,item):
+        """
+        Method: setSelectedItem(n)
+        Created: 05.04.2005, KP
+        Description: Set the item selected for configuration
+        """
+        print "Selected item = ",item
+        self.selectedItem = item
+        self.settings = self.dataUnit.getSourceDataUnits()[item].getSettings()
+        self.settings.set("PreviewedDataset",item)
+        self.updatePreview(1)
+        
     def zoomObject(self,evt):
         """
         Method: zoomObject()

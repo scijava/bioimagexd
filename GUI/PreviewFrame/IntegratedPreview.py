@@ -55,7 +55,10 @@ class IntegratedPreview(PreviewFrame):
         self.ID_MERGE=wx.NewId()
         self.ID_COLOC=wx.NewId()
         self.ID_SINGLE=wx.NewId()
+        self.ID_MIP=wx.NewId()
         
+        
+        self.mip = 0
         self.previewtype=""
         self.modules={}
         self.modules[""]=DataUnitProcessing.DataUnitProcessing()
@@ -71,9 +74,14 @@ class IntegratedPreview(PreviewFrame):
         item = wx.MenuItem(self.typemenu,self.ID_COLOC,"Colocalization")
         self.Bind(wx.EVT_MENU,self.setPreviewType,id=self.ID_COLOC)
         self.typemenu.AppendItem(item)
+        
         item = wx.MenuItem(self.typemenu,self.ID_SINGLE,"Single channel")
         self.Bind(wx.EVT_MENU,self.setPreviewType,id=self.ID_SINGLE)
         self.typemenu.AppendItem(item)
+        item = wx.MenuItem(self.typemenu,self.ID_MIP,"Maximum Intensity Projection")
+        self.Bind(wx.EVT_MENU,self.setPreviewType,id=self.ID_MIP)
+        self.typemenu.AppendItem(item)
+
         self.menu.AppendMenu(-1,"&Preview type",self.typemenu)
         
     def onRightClick(self,event):
@@ -94,11 +102,17 @@ class IntegratedPreview(PreviewFrame):
         if type(event)==type(""):
             self.previewtype=event
             return
+        self.mip = 0
+        self.renderpanel.setSingleSliceMode(0)            
         eid=event.GetId()
         if eid==self.ID_COLOC:
             self.previewtype="Colocalization"
         elif eid==self.ID_MERGE:
             self.previewtype="ColorMerging"
+        elif eid==self.ID_MIP:
+            self.previewtype=""
+            self.mip =1 
+
         else:
             self.previewtype=""
         m=self.modules[self.previewtype]
@@ -132,7 +146,15 @@ class IntegratedPreview(PreviewFrame):
         if self.previewtype=="ColorMerging":
             return
         if self.dataUnit:
+            print "Using color ",self.previewtype,"Settings =",self.settings
             self.rgb = self.settings.get("%sColor"%self.previewtype)
+
+            if self.selectedItem != -1:
+                rgb = self.settings.getCounted("%sColor"%self.previewtype,self.selectedItem)
+                if rgb:
+                    print "Using counted %d instead (%s)"%(self.selectedItem,str(rgb))
+                    self.rgb = rgb
+            
             print "Got color ",self.rgb            
         self.currentCt=ImageOperations.getColorTransferFunction(self.rgb)
         self.mapToColors.SetLookupTable(self.currentCt)
@@ -147,15 +169,25 @@ class IntegratedPreview(PreviewFrame):
         """
         ncomps = data.GetNumberOfScalarComponents()
         if ncomps == 1:
+            if self.mip:
+                data.SetUpdateExtent(data.GetWholeExtent())
+                mip=vtk.vtkImageSimpleMIP()
+                mip.SetInput(data)
+                mip.Update()
+                data=mip.GetOutput()
+                data.SetUpdateExtent(data.GetWholeExtent())
+                #print "data=",data
+                print "Mip done"
             self.mapToColors.RemoveAllInputs()
             self.mapToColors.SetInput(data)
+            print "Updating color"
             self.updateColor()
             #print "Coloring with ",self.currentCt
             colorImage=self.mapToColors.GetOutput()
-            #colorImage.SetUpdateExtent(data.GetExtent())
+            colorImage.SetUpdateExtent(data.GetExtent())
             self.mapToColors.Update()
             data=self.mapToColors.GetOutput()
-
+        print "Returning..."
         return data
         
     def updatePreview(self,renew=1):
