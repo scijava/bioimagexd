@@ -128,14 +128,17 @@ class DataUnitProcessing(Module):
         t1=time.time()
 
         # Map scalars with intensity transfer list
-
-        print "We are processing %d arrays"%len(self.images)
+        n=0
         if len(self.images)>1:
-            raise "More than one source dataset for Single DataUnit Processing"
+            n=self.settings.get("PreviewedDataset")
+            print "More than one source dataset for Single DataUnit Processing, using %d"%n
+            
+            
 
-        mapdata=self.images[0]
+        
+        mapdata=self.images[n]
         mapIntensities=vtk.vtkImageMapToIntensities()
-        mapIntensities.SetIntensityTransferFunction(self.intensityTransferFunctions[0])
+        mapIntensities.SetIntensityTransferFunction(self.intensityTransferFunctions[n])
         mapIntensities.SetInput(mapdata)
         
         data=mapIntensities.GetOutput()
