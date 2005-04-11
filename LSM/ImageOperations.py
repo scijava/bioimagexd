@@ -145,7 +145,6 @@ def scatterPlot(imagedata1,imagedata2,z,countVoxels, wholeVolume):
     Created: 25.03.2005, KP
     Description: Create scatterplot
     """       
-
     scatter=vtk.vtkImageScatterPlot()
     if not wholeVolume:
         scatter.SetZSlice(z)
@@ -156,19 +155,25 @@ def scatterPlot(imagedata1,imagedata2,z,countVoxels, wholeVolume):
     scatter.Update()
     data=scatter.GetOutput()
     if countVoxels:
+        #print "Got data=",data
         ctf=vtk.vtkColorTransferFunction()
         n = scatter.GetNumberOfPairs()
-        ctf.AddRGBPoint(0,0.0, 0.0, 0.0)
-        ctf.AddRGBPoint(10,0.0,0.0,1.0)
-        ctf.AddRGBPoint(n/2,1.0,1.0,0.0)
-        ctf.AddRGBPoint(n,1.0, 0.0, 0.0)
+        print "Number of pairs=",n
+        p=0.75/n
+        ctf.AddHSVPoint(0,0,0.0,0.0)
+        for i in xrange(1,n,255):
+            #print "AddHSVPoint(%d,%f,%f,%f)"%(i,i*p,1.0,1.0)
+            ctf.AddHSVPoint(i, 0.75*(i/float(p)), 1.0, 1.0)
+
+        ctf.SetColorSpaceToHSV()
+        print "Using ctf=",ctf
         maptocolor=vtk.vtkImageMapToColors()
-        maptocolor.SetInput(scatter.GetOutput())
+        maptocolor.SetInput(data)
         maptocolor.SetLookupTable(ctf)
         maptocolor.SetOutputFormatToRGB()
         maptocolor.Update()
         data=maptocolor.GetOutput()
-    
+        #print "data=",data
         
     image=vtkImageDataToWxImage(data)
     return image
