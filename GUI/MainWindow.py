@@ -181,6 +181,7 @@ class MainWindow(wx.Frame):
         wx.EVT_TOOL(self,ID_RENDER,self.menuRender)
 
         tb.Realize()
+        
     def createMenu(self):
         """
         Method: createMenu()
@@ -292,8 +293,8 @@ class MainWindow(wx.Frame):
         print "Setting dataunit"
         self.renderWindow.setDataUnit(dataunit)
         print "SHowing..."
-        #self.renderWindow.ShowModal()
-        self.renderWindow.startWizard()
+        self.renderWindow.Show()
+        #self.renderWindow.startWizard()
 
 
     def menuOpen(self,evt):
