@@ -41,6 +41,7 @@ import VideoGeneration
 
 import Dialogs
 
+import UrmasPalette
         
 class UrmasWindow(wx.Frame):
     """
@@ -51,8 +52,6 @@ class UrmasWindow(wx.Frame):
                  animation modes, and a page for configuring the movie generation.
     """
     def __init__(self,parent):
-        #wx.wizard.Wizard.__init__(self,parent,-1,"Rendering Manager / Animator",
-        #style=wx.RESIZE_BORDER|wx.CAPTION|wx.MAXIMIZE_BOX|wx.MINIMIZE_BOX|wx.CLOSE_BOX|wx.SYSTEM_MENU)
         wx.Frame.__init__(self,parent,-1,"Rendering Manager / Animator",size=(1024,768))
         self.status=wx.ID_OK
         ico=reduce(os.path.join,["..","Icons","Selli.ico"])
@@ -62,20 +61,24 @@ class UrmasWindow(wx.Frame):
         self.control = UrmasControl.UrmasControl(self)
 
         self.Bind(wx.EVT_CLOSE,self.closeWindowCallback)
-        
-        #self.timepointSelection=UrmasTimepointSelection.UrmasTimepointSelection(self)
 
+        self.sizer=wx.BoxSizer(wx.VERTICAL)
+        self.palette = UrmasPalette.UrmasPalette(self)
+        self.sizer.Add(self.palette,1)
 
         self.timelinePanel=TimelinePanel.TimelinePanel(self,self.control)
         self.control.setTimelinePanel(self.timelinePanel)
         
-        #self.videogeneration=VideoGeneration.VideoGeneration(self)
+        self.sizer.Add(self.timelinePanel)
+
         
-        #makeChain(self.timepointSelection,self.timelinePanel,self.videogeneration)
-        #self.timepointSelection.SetSize(self.timelinePanel.GetSize())
         
-        #self.FitToPage(self.timelinePanel)
-        #self.timelinePanel.Show(0)
+        self.SetSizer(self.sizer)
+        self.SetAutoLayout(1)
+        self.sizer.Fit(self)
+
+
+
         
     def createMenu(self):
         """

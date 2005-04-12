@@ -90,6 +90,26 @@ class TrackItem(wx.Panel):
         self.beginX=0
         self.ok=0
         
+    def OnDragOver(self,x,y):
+        """
+        Method: OnDragOver(x,y)
+        Created: 12.04.2005, KP
+        Description: A method called when something is being dragged over this item
+        """       
+        w,h=self.GetSize()
+        ix,iy=self.GetPosition()
+        d=abs(ix-x)
+        if d>w/2:
+            hilight=w-1
+        else:
+            hilight=2
+        self.drawItem(hilight)
+        self.Refresh()
+        self.parent.Refresh()
+        #self.parent.Layout()
+            
+    
+        
     def setThumbnailDataunit(self,dataunit):
         """
         Method: setThumbnail
@@ -164,7 +184,7 @@ class TrackItem(wx.Panel):
             self.dc.SetFont(wx.Font(8,wx.SWISS,wx.NORMAL,wx.NORMAL))
             self.dc.DrawText(self.text,5,2)            
         
-    def drawItem(self):
+    def drawItem(self,hilight=-1):
         """
         Method: drawItem()
         Created: 10.02.2005, KP
@@ -182,16 +202,27 @@ class TrackItem(wx.Panel):
         self.dc.DrawRectangle(0,0,self.width,self.height)        
 
         self.drawHeader()
-        
+        if hilight != -1:
+            self.hilight(hilight)
         if self.thumbtimepoint>=0:
             self.drawThumbnail()
         r,g,b=self.headercolor
         self.dc.SetPen(wx.Pen(wx.Colour(r,g,b),2))
         self.dc.DrawLine(self.width-1,0,self.width-1,self.height)
 
+    
         
         self.dc.EndDrawing()
 
+    def hilight(self,h):
+        """
+        Method: hilight
+        Created: 12.04.2005, KP
+        Description: A method to highlight the spot where a drop would occur
+        """ 
+        self.dc.SetPen(wx.Pen(wx.Colour(0,0,0),2))
+        self.dc.DrawLine(h,0,h,self.height)
+ 
     def getThumbnail(self):
         """
         Method: getThumbnail()
@@ -421,7 +452,7 @@ class SplinePoint(TrackItem):
         print "Adding camera handle for ",self.itemnum
         self.parent.control.splineEditor.addCameraHandle(self.itemnum)
         
-    def drawItem(self):
+    def drawItem(self,hilight=-1):
         """
         Method: drawItem()
         Created: 19.03.2005, KP
@@ -451,7 +482,10 @@ class SplinePoint(TrackItem):
         s=self.parent.getDuration(self.GetSize()[0])
         text=u"Length:\t%.2f\u03bcm\nDuration:\t%.2fs"%(l,s)
         self.dc.DrawText(text,5,self.labelheight+5)            
-
+ 
+        if hilight != -1:
+            self.hilight(hilight)
+ 
         
         self.dc.EndDrawing()
     

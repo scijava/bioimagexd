@@ -37,6 +37,7 @@ import math,random
 import threading
 
 from TrackItem import *
+import UrmasPalette
 import ImageOperations
 
         
@@ -62,7 +63,13 @@ class Track(wx.Panel):
         
         self.label = name
         self.timepointTrack=kws.has_key("timepoint")
-        
+        if self.timepointTrack:
+            dt = UrmasPalette.UrmasDropTarget(self,"Timepoint")
+        else:
+            dt = UrmasPalette.UrmasDropTarget(self,"Spline")
+        self.SetDropTarget(dt)
+
+        self.previtem = None
         if kws.has_key("height"):
             height=kws["height"]
         if kws.has_key("editable"):
@@ -92,6 +99,34 @@ class Track(wx.Panel):
         self.itemAmount = 0
         #self.setItemAmount(1)
         self.initTrack()
+        
+    def OnDragOver(self,x,y,d):
+        """
+        Method: OnDragOver
+        Created: 12.04.2005, KP
+        Description: Method called to indicate that a user is dragging
+                     something to this track
+        """ 
+        #print "OnDragOver(%d,%d,%s)"%(x,y,d)
+        
+        curritem=None
+        for item in self.items:
+            ix,iy=item.GetPosition()
+            #print "ix,iy=",ix,iy
+            if ix<= x:
+                #print "Found item",item
+                curritem=item
+                
+        if curritem:
+            if self.previtem and self.previtem != curritem:
+                self.previtem.drawItem()
+                self.previtem.Refresh()
+            curritem.OnDragOver(x,y)
+            self.previtem = curritem
+        else:
+            print "No item found at %d,%d"%(x,y)
+        
+        
         
         
     def refresh(self):
