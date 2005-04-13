@@ -92,7 +92,7 @@ class ColorMergingWindow(TaskWindow.TaskWindow):
         """
         TaskWindow.TaskWindow.createButtonBox(self)
         self.processButton.SetLabel("Do Color Merging")
-        self.processButton.Bind(EVT_BUTTON,self.doColorMergingCallback)
+        self.processButton.Bind(wx.EVT_BUTTON,self.doColorMergingCallback)
         
     def createOptionsFrame(self):
         """
@@ -107,25 +107,25 @@ class ColorMergingWindow(TaskWindow.TaskWindow):
         self.colorChooser=ColorSelectionDialog(self.commonSettingsPanel,self.setColor)
         self.commonSettingsSizer.Add(self.colorChooser,(1,0))
 
-        self.editIntensityPanel=wxPanel(self.settingsNotebook,-1)
-        self.editIntensitySizer=wxGridBagSizer()
+        self.editIntensityPanel=wx.Panel(self.settingsNotebook,-1)
+        self.editIntensitySizer=wx.GridBagSizer()
         
         self.intensityTransferEditor=IntensityTransferEditor(self.editIntensityPanel)
         self.editIntensitySizer.Add(self.intensityTransferEditor,(0,0),span=(1,2))        
 
-        self.box=wxBoxSizer(wxHORIZONTAL)
+        self.box=wx.BoxSizer(wx.HORIZONTAL)
         self.editIntensitySizer.Add(self.box,(3,0))
         
-        self.restoreBtn=wxButton(self.editIntensityPanel,-1,"Reset defaults")
-        self.restoreBtn.Bind(EVT_BUTTON,self.intensityTransferEditor.restoreDefaults)
+        self.restoreBtn=wx.Button(self.editIntensityPanel,-1,"Reset defaults")
+        self.restoreBtn.Bind(wx.EVT_BUTTON,self.intensityTransferEditor.restoreDefaults)
         self.box.Add(self.restoreBtn)
         
-        self.resetBtn=wxButton(self.editIntensityPanel,-1,"Reset all timepoints")
-        self.resetBtn.Bind(EVT_BUTTON,self.resetTransferFunctions)
+        self.resetBtn=wx.Button(self.editIntensityPanel,-1,"Reset all timepoints")
+        self.resetBtn.Bind(wx.EVT_BUTTON,self.resetTransferFunctions)
         self.box.Add(self.resetBtn)
 
-        self.copyiTFBtn=wxButton(self.editIntensityPanel,-1,"Copy to all timepoints")
-        #self.copyiTFBtn.Bind(EVT_BUTTON,self.copyTransferFunctionToAll)
+        self.copyiTFBtn=wx.Button(self.editIntensityPanel,-1,"Copy to all timepoints")
+        #self.copyiTFBtn.Bind(wx.EVT_BUTTON,self.copyTransferFunctionToAll)
         self.box.Add(self.copyiTFBtn)        
         
         
@@ -137,8 +137,8 @@ class ColorMergingWindow(TaskWindow.TaskWindow):
         self.editIntensityPanel.Layout()
         self.editIntensitySizer.Fit(self.editIntensityPanel)
 
-        self.editAlphaPanel=wxPanel(self.settingsNotebook,-1)
-        self.editAlphaSizer=wxGridBagSizer()
+        self.editAlphaPanel=wx.Panel(self.settingsNotebook,-1)
+        self.editAlphaSizer=wx.GridBagSizer()
         
         self.alphaEditor=IntensityTransferEditor(self.editAlphaPanel)
         self.alphaEditor.setIntensityTransferFunction(self.alphaTF)

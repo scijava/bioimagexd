@@ -35,6 +35,7 @@ void
 vtkImageMapToIntensities::ExecuteInformation(vtkImageData *input, vtkImageData *output)
 {
   this->vtkImageToImageFilter::ExecuteInformation( input, output );
+  output->SetNumberOfScalarComponents(input->GetNumberOfScalarComponents());
 }
 
 //-----------------------------------------------------------------------------
@@ -45,8 +46,8 @@ void vtkImageMapToIntensities::ExecuteData(vtkDataObject *)
   vtkImageData* input = this->GetInput();
   int inIncX,inIncY,inIncZ;
   int outIncX,outIncY,outIncZ;
-  int maxX,maxY,maxZ;
-  int idxX,idxY,idxZ;
+  int maxX,maxY,maxZ,maxC;
+  int idxX,idxY,idxZ,idxC;
   char *inPtr1;
   int* table;
 
@@ -82,7 +83,8 @@ void vtkImageMapToIntensities::ExecuteData(vtkDataObject *)
   maxX = uExtent[1] - uExtent[0];
   maxY = uExtent[3] - uExtent[2];
   maxZ = uExtent[5] - uExtent[4];
-  printf("maxX=%d,maxY=%d,maxZ=%d\n",maxX,maxY,maxZ);
+  maxC = input->GetNumberOfScalarComponents();
+  printf("maxX=%d,maxY=%d,maxZ=%d, maxC=%d\n",maxX,maxY,maxZ,maxC);
   //inIncX *= input->GetScalarSize();
   //inIncY *= input->GetScalarSize();
   //inIncZ *= input->GetScalarSize();
@@ -91,12 +93,13 @@ void vtkImageMapToIntensities::ExecuteData(vtkDataObject *)
   #define GET_AT(x,y,z,ptr) *(ptr+(z)*inIncZ+(y)*inIncY+(x)*inIncX)
   
   for(idxZ = 0; idxZ <= maxZ; idxZ++ ) {
-    
     for(idxY = 0; idxY <= maxY; idxY++ ) {
       for(idxX = 0; idxX <= maxX; idxX++ ) {
-          scalar = *inPtr++;
-          newScalar=table[scalar];
-          *outPtr++=newScalar;
+          for(idxC = 0; idxC <= maxC; idxC++ ) {
+            scalar = *inPtr++;
+            newScalar=table[scalar];
+            *outPtr++=newScalar;
+          }
       }
       inPtr += inIncY;
       outPtr += outIncY;

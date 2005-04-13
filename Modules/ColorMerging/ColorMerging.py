@@ -78,9 +78,9 @@ class ColorMerging(Module):
         self.n+=1
         # ugly
         dims=data.GetDimensions()
-        if dims[0]>512 and dims[1]>512:
-            print "Turning release data flag on"
-            data.GlobalReleaseDataFlagOn()
+        #if dims[0]>512 and dims[1]>512:
+            #print "Turning release data flag on"
+            #data.GlobalReleaseDataFlagOn()
             
         rgb=self.settings.getCounted("Color",self.n)
         self.rgbs.append(rgb)
@@ -155,20 +155,24 @@ class ColorMerging(Module):
         
         colored=[]
         for i in range(0,imagelen):
-            mapToColors=vtk.vtkImageMapToColors()
-            mapToColors.SetOutputFormatToRGB()
-            ct=vtk.vtkColorTransferFunction()            
-            r,g,b=self.rgbs[i]
-            r/=255.0
-            g/=255.0
-            b/=255.0
-            ct.AddRGBPoint(0,0,0,0)
-            print "Coloring %d to %f,%f,%f"%(i,r,g,b)
-            ct.AddRGBPoint(255,r,g,b)
-            mapToColors.SetLookupTable(ct)
-            mapToColors.SetInput(processed[i])
-            mapToColors.Update()
-            colored.append(mapToColors.GetOutput())
+            if processed[i].GetNumberOfScalarComponents()==1:
+                mapToColors=vtk.vtkImageMapToColors()
+                mapToColors.SetOutputFormatToRGB()
+                ct=vtk.vtkColorTransferFunction()            
+                r,g,b=self.rgbs[i]
+                r/=255.0
+                g/=255.0
+                b/=255.0
+                ct.AddRGBPoint(0,0,0,0)
+                print "Coloring %d to %f,%f,%f"%(i,r,g,b)
+                ct.AddRGBPoint(255,r,g,b)
+                mapToColors.SetLookupTable(ct)
+                mapToColors.SetInput(processed[i])
+                mapToColors.Update()
+                colored.append(mapToColors.GetOutput())
+            else:
+                print "Dataset %d is RGB Data, will not map through ctf"%i
+                colored.append(processed[i])
         # result rgb
 
         merge=vtk.vtkImageMerge()

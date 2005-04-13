@@ -151,8 +151,7 @@ class DataUnitProcessing(Module):
         if self.doSolitary:
             print "Doing New Solitary Filtering"
             t3=time.time()
-            #data=self.NumpyToVTK(retdataset,self.infos[0])
-            # Using VTK´s vtkImageMEdian3D-filter
+            # Using VTK´s vtkImageMedian3D-filter
             solitary = vtk.vtkImageSolitaryFilter()
             solitary.SetInput(data)
             solitary.SetFilteringThreshold(self.solitaryThreshold)

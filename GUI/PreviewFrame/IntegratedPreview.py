@@ -146,7 +146,7 @@ class IntegratedPreview(PreviewFrame):
         if self.previewtype=="ColorMerging":
             return
         if self.dataUnit:
-            print "Using color ",self.previewtype,"Settings =",self.settings
+            #print "Using color ",self.previewtype,"Settings =",self.settings
             self.rgb = self.settings.get("%sColor"%self.previewtype)
 
             if self.selectedItem != -1:
@@ -180,14 +180,16 @@ class IntegratedPreview(PreviewFrame):
                 print "Mip done"
             self.mapToColors.RemoveAllInputs()
             self.mapToColors.SetInput(data)
-            print "Updating color"
+            #print "Updating color"
             self.updateColor()
             #print "Coloring with ",self.currentCt
             colorImage=self.mapToColors.GetOutput()
             colorImage.SetUpdateExtent(data.GetExtent())
             self.mapToColors.Update()
             data=self.mapToColors.GetOutput()
-        print "Returning..."
+        else:
+            print "Image got %d components already"%ncomps
+                
         return data
         
     def updatePreview(self,renew=1):
