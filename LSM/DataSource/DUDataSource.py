@@ -135,7 +135,7 @@ class VtiDataSource(DataSource):
         Description: Returns the spacing of the datasets this 
                      dataunit contains
         """
-        return (0,0,0)
+        return self.parser.get("VoxelSize","VoxelSize")
     
 
     def loadVti(self, filename):
@@ -179,9 +179,9 @@ class VtiDataSource(DataSource):
             return [None]
         return DataUnitFormat
 
-    def loadFromDuFile(self, filename):
+    def loadFromFile(self, filename):
         """
-        Method: loadFromDuFile
+        Method: loadFromFile
         Created: 09.11.2004, JM
         Description: Loads the specified .du-file and imports data from it.
                      Also returns a DataUnit of the type stored in the loaded

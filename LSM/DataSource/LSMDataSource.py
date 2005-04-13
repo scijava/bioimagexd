@@ -151,7 +151,7 @@ class LsmDataSource(DataSource):
 
         return data
 
-    def loadFromLsmFile(self,filename):
+    def loadFromFile(self,filename):
         """
         Method: loadFromLsmFile(filename)
         Created: 18.11.2004
@@ -160,7 +160,6 @@ class LsmDataSource(DataSource):
                      instances and returns them as a list.
         Parameters:   filename  The .lsm-file to be loaded
         """
-        t1=time.time()
         self.filename=filename
         self.path=os.path.dirname(filename)
         self.reader.SetFileName(filename)
@@ -183,8 +182,6 @@ class LsmDataSource(DataSource):
             dataunit.setDataSource(datasource)
             dataunits.append(dataunit)
             
-        t2=time.time()
-        print "Reading all dataunits took %f seconds"%(t2-t1)
         return dataunits
 
 

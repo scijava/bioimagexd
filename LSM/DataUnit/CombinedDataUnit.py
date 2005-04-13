@@ -344,7 +344,6 @@ class CombinedDataUnit(DataUnit.DataUnit):
         # it is scaled to be in the range 0-getDataUnitCount()-1
         # with the modulo operator
         timePoint=timePoint%self.getLength()
-        print "doPreview"
         # If the renew flag is true, we need to regenerate the preview
         if renew:
             # We then tell the color merging module to reset itself and

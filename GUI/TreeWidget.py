@@ -1,4 +1,4 @@
-# -*- coding: cp1252 -*-
+# -*- coding: iso-8859-1 -*-
 """
  Unit: TreeWidget
  Project: BioImageXD
@@ -61,6 +61,11 @@ class TreeWidget(wx.Panel):
         self.tree.SetItemImage(self.lsmfiles,fldridx,which=wx.TreeItemIcon_Normal)
         self.tree.SetItemImage(self.lsmfiles,fldropenidx,which=wx.TreeItemIcon_Expanded)
 
+        self.leicafiles=self.tree.AppendItem(self.root,"Leica Files")
+        self.tree.SetPyData(self.leicafiles,None)
+        self.tree.SetItemImage(self.leicafiles,fldridx,which=wx.TreeItemIcon_Normal)
+        self.tree.SetItemImage(self.leicafiles,fldropenidx,which=wx.TreeItemIcon_Expanded)        
+        
         self.vtifiles=self.tree.AppendItem(self.root,"Single Data Sets")
         self.tree.SetPyData(self.vtifiles,None)        
         self.tree.SetItemImage(self.vtifiles,fldridx,which=wx.TreeItemIcon_Normal)
@@ -114,6 +119,11 @@ class TreeWidget(wx.Panel):
             item=self.lsmfiles
             item=self.tree.AppendItem(item,name)
             self.tree.SetPyData(item,None)        
+            self.tree.SetItemImage(item,fldropenidx,which=wx.TreeItemIcon_Expanded)
+        elif objtype=="txt":
+            item=self.leicafiles
+            item=self.tree.AppendItem(item,name)
+            self.tree.SetPyData(item,None)
             self.tree.SetItemImage(item,fldropenidx,which=wx.TreeItemIcon_Expanded)
         elif objtype=="du":
             item=self.dufiles

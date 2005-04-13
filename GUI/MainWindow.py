@@ -38,7 +38,7 @@
 __author__ = "Selli Project <http://sovellusprojektit.it.jyu.fi/selli/>"
 __version__ = "$Revision: 1.71 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
-import os.path,os
+import os.path,os,types
 import wx
 
 
@@ -304,7 +304,7 @@ class MainWindow(wx.Frame):
         Description: Callback function for menu item "Open VTK File"
         """
         asklist=[]
-        wc="LSM Files (*.lsm)|*.lsm|Dataset Series (*.du)|*.du|VTK Image Data (*.vti)|*.vti"
+        wc="LSM Files (*.lsm)|*.lsm|Leica TCS-NT Files (*.txt)|*.txt|Dataset Series (*.du)|*.du|VTK Image Data (*.vti)|*.vti"
         asklist=Dialogs.askOpenFileName(self,"Open dataset series or LSM File",wc)
         
         for askfile in asklist:
@@ -349,22 +349,29 @@ class MainWindow(wx.Frame):
 
         # We try to load the actual data
         print "ext=",ext
+        extToSource={"du":VtiDataSource,"lsm":LsmDataSource,"txt":LeicaDataSource}
         try:
-            if ext=='du':
-                datasource=VtiDataSource()
-                dataunits = datasource.loadFromDuFile(path)
-            elif ext=='lsm':
-                datasource=LsmDataSource()
-                dataunits=datasource.loadFromLsmFile(path)
+            datasource=extToSource[ext]()
+            dataunits = datasource.loadFromFile(path)
         except GUIError,ex:
             ex.show()
             return
 
         if not dataunits:
             raise "Failed to read dataunit %s"%path
-
-        # If we got data, add corresponding nodes to tree
-        self.tree.addToTree(name,path,ext,dataunits)
+        
+        # We might get tuples from leica
+        d={}
+        if type(dataunits[0])==types.TupleType:
+            for (name,unit) in dataunits:
+                if d.has_key(name):d[name].append(unit)
+                else:d[name]=[unit]
+            for key in d.keys():
+                print "Adding %s %s %s"%(key,path,ext)
+                self.tree.addToTree(key,path,ext,d[key])
+        else:
+            # If we got data, add corresponding nodes to tree
+            self.tree.addToTree(name,path,ext,dataunits)
 
     def menuEditDataSet(self,evt):
         """
@@ -467,7 +474,7 @@ class MainWindow(wx.Frame):
         """
         return self.showTaskWindow("Color Merging",
         ColorMerging.ColorMerging,
-        ColorMergingWindow.ColorMergingWindow,1,1)
+        ColorMergingWindow.ColorMergingWindow,2,-1)
 
     def menuProcessDataUnit(self,evt):
         """
