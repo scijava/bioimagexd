@@ -39,6 +39,7 @@ import threading
 from TrackItem import *
 import UrmasPalette
 import ImageOperations
+import TimepointSelection
 
         
 class Track(wx.Panel):
@@ -54,21 +55,10 @@ class Track(wx.Panel):
         self.frames=0
         height=80
         self.editable=1
-        if "item" in kws:
-            self.itemClass=kws["item"]
-        else:
-            self.itemClass=TrackItem
             
         self.control = kws["control"]
         
         self.label = name
-        self.timepointTrack=kws.has_key("timepoint")
-        if self.timepointTrack:
-            dt = UrmasPalette.UrmasDropTarget(self,"Timepoint")
-        else:
-            dt = UrmasPalette.UrmasDropTarget(self,"Spline")
-        self.SetDropTarget(dt)
-
         self.previtem = None
         if kws.has_key("height"):
             height=kws["height"]
@@ -90,14 +80,15 @@ class Track(wx.Panel):
         self.sizer.Add(self.namePanel,(0,0))
 
         #self.sizer.Add(self.itemBox,(0,1))
+        
+        self.dragEndPosition=0
                 
         self.SetSizer(self.sizer)
         self.SetAutoLayout(1)
         self.sizer.Fit(self)
         self.items=[]
-        self.thumbnail=0
         self.itemAmount = 0
-        #self.setItemAmount(1)
+    
         self.initTrack()
         
     def OnDragOver(self,x,y,d):
@@ -108,7 +99,9 @@ class Track(wx.Panel):
                      something to this track
         """ 
         #print "OnDragOver(%d,%d,%s)"%(x,y,d)
-        
+        self.namePanel.SetBackgroundColour((64,64,64))
+        self.nameLbl.SetForegroundColour((255,255,255))
+        self.namePanel.Refresh()
         curritem=None
         for item in self.items:
             ix,iy=item.GetPosition()
@@ -116,7 +109,7 @@ class Track(wx.Panel):
             if ix<= x:
                 #print "Found item",item
                 curritem=item
-                
+                self.dragEndPosition = self.items.index(item)
         if curritem:
             if self.previtem and self.previtem != curritem:
                 self.previtem.drawItem()
@@ -124,11 +117,19 @@ class Track(wx.Panel):
             curritem.OnDragOver(x,y)
             self.previtem = curritem
         else:
-            print "No item found at %d,%d"%(x,y)
+            self.dragEndPosition = 0
         
-        
-        
-        
+    def OnDragLeave(self):
+        """
+        Method: OnDragLeave
+        Created: 12.04.2005, KP
+        Description: Method called to indicate that a user is no longer dragging
+                     something to this track
+        """     
+        self.namePanel.SetBackgroundColour((127,127,127))
+        self.nameLbl.SetForegroundColour((0,0,0))
+        self.namePanel.Refresh()
+
     def refresh(self):
         """
         Method: refresh()
@@ -177,17 +178,6 @@ class Track(wx.Panel):
         """           
         self.dataUnit=dataUnit
     
-    def showThumbnail(self,flag):
-        """
-        Method: showThumbnail
-        Created: 04.02.2005, KP
-        Description: A method to set a flag indicating, whether to show a
-                     thumbnail on the items in this track
-        """           
-        self.thumbnail=flag
-        for item in self.items:
-            #print "Setting thumbnail on",item
-            item.setThumbnailDataunit(self.dataUnit)
         
     def getLength(self):
         """
@@ -321,11 +311,7 @@ class Track(wx.Panel):
         """              
         h=self.namePanel.GetSize()[1]
         kws={"itemnum":n,"editable":self.editable}
-        if self.thumbnail:
-            kws["dataunit"]=self.dataUnit
-            kws["thumbnail"]=int(item)
-        if self.timepointTrack:
-            kws["timepoint"]=int(item)
+
         item=self.itemClass(self,item,(20,h),**kws)
         if self.color:
             item.setColor(self.color,self.headercolor)
@@ -408,3 +394,104 @@ class Track(wx.Panel):
             odict[key]=self.__dict__[key]
         return odict        
  
+class SplineTrack(Track):
+    """
+    Class: SplineTrack
+    Created: 13.04.2005, KP
+    Description: A class representing a spline track in the timeline
+    """       
+    def __init__(self,name,parent,**kws):
+        Track.__init__(self,name,parent,**kws)        
+        if "item" in kws:
+            self.itemClass=kws["item"]
+        else:
+            self.itemClass=SplinePoint
+        dt = UrmasPalette.UrmasDropTarget(self,"Spline")
+        self.SetDropTarget(dt)
+
+    def AcceptDrop(self,x,y,type,data):
+        """
+        Method: AcceptDrop
+        Created: 12.04.2005, KP
+        Description: Method called to indicate that a user is no longer dragging
+                     something to this track
+        """     
+        pass        
+        
+class TimepointTrack(Track):
+    """
+    Class: TimepointTrack
+    Created: 13.04.2005, KP
+    Description: A class representing a timepoint track in the timeline
+    """       
+    def __init__(self,name,parent,**kws):
+        Track.__init__(self,name,parent,**kws)        
+        if "item" in kws:
+            self.itemClass=kws["item"]
+        else:
+            self.itemClass=TrackItem
+        dt = UrmasPalette.UrmasDropTarget(self,"Timepoint")
+        self.SetDropTarget(dt)
+        self.thumbnail=1
+    
+    def AcceptDrop(self,x,y,type,data):
+        """
+        Method: AcceptDrop
+        Created: 12.04.2005, KP
+        Description: Method called to indicate that a user is no longer dragging
+                     something to this track
+        """     
+        timepoints=TimepointSelection.TimepointSelection(self.parent)
+        timepoints.setDataUnit(self.control.getDataUnit())
+        if timepoints.ShowModal()==wx.ID_OK:
+            tps=timepoints.getSelectedTimepoints()
+            self.insertTimepoints(tps)
+            
+    def showThumbnail(self,flag):
+        """
+        Method: showThumbnail
+        Created: 04.02.2005, KP
+        Description: A method to set a flag indicating, whether to show a
+                     thumbnail on the items in this track
+        """           
+        self.thumbnail=flag
+        for item in self.items:
+            #print "Setting thumbnail on",item
+            item.setThumbnailDataunit(self.dataUnit)
+    
+    def insertTimepoints(self,timepoints):
+        """
+        Method: insertTimepoints(tps)
+        Created: 13.04.2005, KP
+        Description: Insert the given timepoints to the track
+        """              
+        pos=self.dragEndPosition
+        for tp in timepoints:
+            self.addTimepoint(pos,tp,0)
+            pos+=1
+        self.Layout()
+        self.sizer.Fit(self)
+            
+
+    def addTimepoint(self,position,timepoint,update=1):
+        """
+        Method: addTimepoint
+        Created: 04.02.2005, KP
+        Description: A method to add a new item to this track
+        """              
+        h=self.namePanel.GetSize()[1]
+        kws={"itemnum":timepoint,"editable":self.editable}
+        kws["dataunit"]=self.dataUnit
+        kws["thumbnail"]=timepoint
+        kws["timepoint"]=timepoint
+        text="%d"%timepoint
+        item=self.itemClass(self,text,(20,h),**kws)
+        if self.color:
+            item.setColor(self.color,self.headercolor)
+        self.items.insert(position,item)
+        self.itemBox.Insert(position,item)
+        if update:
+            self.Layout()
+            self.sizer.Fit(self)
+        item.updateItem()
+            

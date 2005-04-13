@@ -89,9 +89,9 @@ class UrmasControl:
 #        self.timeline.__dict__.update(ctrl.timeline.__dict__)
 #        del ctrl.timeline
 #        self.__dict__.update(ctrl.__dict__)
-        print "\nUnpersisted ",self,"\n"
+        print "\nDepersisted ",self,"\n"
         #self.updateGUI()
-
+        
     def clearGUI(self):
         """
         Method: clearGUI()
@@ -162,6 +162,14 @@ class UrmasControl:
         """    
         self.timelinePanel = timelinepanel
 
+    def getDataUnit(self):
+        """
+        Method: getDataUnit()
+        Created: 20.03.2005, KP
+        Description: Returns the dataunit
+        """            
+        return self.dataUnit
+        
     def setDataUnit(self,dataunit):
         """
         Method: setDataUnit(dataunit)
@@ -175,7 +183,7 @@ class UrmasControl:
         #self.timelineConfig.setFrames(n)
         #self.timelineConfig.setDuration(n/2)
         
-        self.timeline.addTrack("Timepoint",self.dataUnit.getLength())
+        #self.timeline.addTrack("Timepoint",self.dataUnit.getLength())
         self.updateGUI()
         self.updateLayouts()
         self.animator.animator.initData()

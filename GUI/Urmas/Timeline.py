@@ -60,7 +60,6 @@ class Timeline(scrolled.ScrolledPanel):
         """
         height=250
         width=640
-        self.n=1
         #if kws.has_key("width"):
         #    width=kws["width"]
         scrolled.ScrolledPanel.__init__(self,parent,-1,size=(width,height))
@@ -78,6 +77,7 @@ class Timeline(scrolled.ScrolledPanel):
         self.splinepointTracks=[]
         self.timepointTrackAmnt=0
         self.splinepointTrackAmnt=0
+        self.trackOffset = 1
         
         w,h=self.GetSize()
         w2,h=self.timeScale.GetSize()
@@ -96,26 +96,65 @@ class Timeline(scrolled.ScrolledPanel):
         Description: Method called by UrmasPersist to allow the object
                      to refresh before it's items are created
         """ 
+        # We add these tracks so that when the tracks are depersisted, they will simply overwrite these
+        # since URPO doesn't know how to create the tracks, just how to load the contents
         for n in range(self.timepointTrackAmnt-len(self.timepointTracks)):
             self.addTrack("TmpTrack%d"%n,n)
         for n in range(self.splinepointTrackAmnt-len(self.splinepointTracks)):
             self.addSplinepointTrack("TmpSpline%d"%n)
             
-    def addTrack(self,label,n):
+            
+    def moveTracks(self,moveFrom,moveTo,howMany):
+        """
+        Method: moveTracks
+        Created: 13.04.2005, KP
+        Description: Moves the tracks placed on a sizer
+        Parameters:
+            moveFrom    Start moving the tracks from here
+            moveTo      Move them here
+            howMany     How many tracks there are to move
+        """ 
+        replace=[]
+        for i in range(howMany):
+            item=self.sizer.FindItemAtPosition((self.trackOffset+moveFrom+i,0))
+            item=item.GetWindow()
+            print "Got item =",item
+            print "Detaching %d at (%d,0)"%(i,self.trackOffset+moveFrom+i)
+            self.sizer.Show(item,0)
+            self.sizer.Detach(item)
+            replace.append(item)
+        
+        for i in range(0,len(replace)):
+            item=replace[i]
+            print "Placing %d to (%d,0)"%(i,self.trackOffset+moveTo+i)
+            self.sizer.Add(item,(self.trackOffset+moveTo+i,0),flag=wx.EXPAND|wx.ALL)
+            self.sizer.Show(item,1)
+            
+    def addTrack(self,label,n=0):
         """
         Method: addTrack(label,itemamount)
         Created: 06.04.2005, KP
         Description: Adds a track to the timeline
         """    
-        tr=Track(label,
-        self,number=self.n,timescale=self.timeScale,control=self.control,
-        timepoint=1)
-        self.timeScale.setOffset(tr.getLabelWidth())
-        self.sizer.Add(tr,(self.n+1,0),flag=wx.EXPAND|wx.ALL)
-        self.n=self.n+1
-        tr.setColor((56,196,248))
-        tr.setItemAmount(n)
+        if label=="":
+            label="Timepoints %d"%len(self.timepointTracks)
         
+        tr=TimepointTrack(label,self,number=1,timescale=self.timeScale,control=self.control,height=60)
+        
+        self.timeScale.setOffset(tr.getLabelWidth())
+        self.splinepointTrackAmnt = len(self.splinepointTracks)
+        self.timepointTrackAmnt = len(self.timepointTracks)
+        # Move the splinepoints down by one step
+        if self.splinepointTrackAmnt:
+            self.moveTracks(self.timepointTrackAmnt,self.timepointTrackAmnt+1,self.splinepointTrackAmnt)
+        self.Layout()
+        self.sizer.Add(tr,(self.trackOffset+self.timepointTrackAmnt,0),flag=wx.EXPAND|wx.ALL)
+        tr.setColor((56,196,248))
+        if n:
+            tr.setItemAmount(n)
+        
+        self.Layout()
+        self.SetupScrolling()
         self.timepointTracks.append(tr)
         
         if self.dataUnit:
@@ -129,14 +168,18 @@ class Timeline(scrolled.ScrolledPanel):
         Created: 11.04.2005, KP
         Description:
         """
-        tr=Track(label,
-            self,number=1,height=50,timescale=self.timeScale,item=SplinePoint,
-            control=self.control)
+        if label=="":
+            label="Camera Path %d"%len(self.splinepointTracks)
+        tr=SplineTrack(label,self,number=1,height=50,timescale=self.timeScale,control=self.control)
         self.control.setSplineInteractionCallback(tr.updateLabels)
         tr.setColor((248,196,56))
         #self.setSplinePoints(7)
-        self.sizer.Add(tr,(self.n+1,0),flag=wx.EXPAND|wx.ALL)
-        self.n=self.n+1
+        self.splinepointTrackAmnt = len(self.splinepointTracks)
+        self.timepointTrackAmnt = len(self.timepointTracks)
+        
+        self.sizer.Add(tr,(self.trackOffset+self.timepointTrackAmnt+self.splinepointTrackAmnt,0),flag=wx.EXPAND|wx.ALL)
+        self.Layout()
+        self.SetupScrolling()
         self.splinepointTracks.append(tr)            
             
     def setDisabled(self,flag):
@@ -155,8 +198,9 @@ class Timeline(scrolled.ScrolledPanel):
                      track.
         """
         if flag:
-            if not len(self.splinepointTracks):
-                self.addSplinepointTrack("Spline Points")
+            #if not len(self.splinepointTracks):
+            #    self.addSplinepointTrack("Spline Points")
+            pass
         else:
             if len(self.splinepointTracks):
                 for track in self.splinepointTracks:

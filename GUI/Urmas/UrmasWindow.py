@@ -68,8 +68,8 @@ class UrmasWindow(wx.Frame):
         self.Bind(wx.EVT_CLOSE,self.closeWindowCallback)
 
         self.sizer=wx.BoxSizer(wx.VERTICAL)
-        self.palette = UrmasPalette.UrmasPalette(self)
-        self.sizer.Add(self.palette,1)
+        self.palette = UrmasPalette.UrmasPalette(self,self.control)
+        self.sizer.Add(self.palette,1,flag=wx.EXPAND)
 
         self.timelinePanel=TimelinePanel.TimelinePanel(self,self.control)
         self.control.setTimelinePanel(self.timelinePanel)
@@ -110,39 +110,58 @@ class UrmasWindow(wx.Frame):
       
         self.ID_PREFERENCES = wx.NewId()
         self.settingsMenu.Append(self.ID_PREFERENCES,"&Preferences...")
-        wx.EVT_MENU(self,self.ID_PREFERENCES,self.menuPreferences)
+        wx.EVT_MENU(self,self.ID_PREFERENCES,self.onMenuPreferences)
         
         self.ID_OPEN=wx.NewId()
         self.ID_SAVE=wx.NewId()
         self.fileMenu.Append(self.ID_OPEN,"Open project...")
         self.fileMenu.Append(self.ID_SAVE,"Save project as...")
-        wx.EVT_MENU(self,self.ID_OPEN,self.menuOpenProject)
-        wx.EVT_MENU(self,self.ID_SAVE,self.menuSaveProject)
+        wx.EVT_MENU(self,self.ID_OPEN,self.onMenuOpenProject)
+        wx.EVT_MENU(self,self.ID_SAVE,self.onMenuSaveProject)
         
         self.ID_ADD_SPLINE=wx.NewId()
         self.ID_ADD_TIMEPOINT=wx.NewId()
         self.addTrackMenu=wx.Menu()
         self.addTrackMenu.Append(self.ID_ADD_SPLINE,"Camera Path Track")
         self.addTrackMenu.Append(self.ID_ADD_TIMEPOINT,"Timepoint Track")
+        wx.EVT_MENU(self,self.ID_ADD_SPLINE,self.onMenuAddSplineTrack)
+        wx.EVT_MENU(self,self.ID_ADD_TIMEPOINT,self.onMenuAddTimepointTrack)
+        
         self.ID_ADD_TRACK=wx.NewId()
         self.renderingMenu.AppendMenu(self.ID_ADD_TRACK,"&Add Track",self.addTrackMenu)
         self.renderingMenu.AppendSeparator()
         self.ID_RENDER=wx.NewId()
         self.renderingMenu.Append(self.ID_RENDER,"&Render project")
-            
 
-    def menuPreferences(self,evt):
+    def onMenuAddSplineTrack(self,evt):
         """
-        Method: menuPreferences()
+        Method: onMenuAddSplineTrack
+        Created: 13.04.2005, KP
+        Description: Callback function for adding camera path track
+        """
+        self.control.timeline.addSplinepointTrack("")
+        
+    def onMenuAddTimepointTrack(self,evt):
+        """
+        Method: onMenuAddTimepointTrack
+        Created: 13.04.2005, KP
+        Description: Callback function for adding timepoint track
+        """
+        self.control.timeline.addTrack("")
+        
+
+    def onMenuPreferences(self,evt):
+        """
+        Method: onMenuPreferences()
         Created: 09.02.2005, KP
         Description: Callback function for menu item "Preferences"
         """
         self.settingswindow=SettingsWindow.SettingsWindow(self)
         self.settingswindow.ShowModal()
 
-    def menuOpenProject(self,event):
+    def onMenuOpenProject(self,event):
         """
-        Method: menuOpenProject(self,event)
+        Method: onMenuOpenProject(self,event)
         Created: 06.04.2005, KP
         Description: Callback function for opening a project
         """
@@ -151,9 +170,9 @@ class UrmasWindow(wx.Frame):
         if name:
             self.control.readFromDisk(name[0])
         
-    def menuSaveProject(self,event):
+    def onMenuSaveProject(self,event):
         """
-        Method: menuSaveProject(self,event)
+        Method: onMenuSaveProject(self,event)
         Created: 06.04.2005, KP
         Description: Callback function for saving a project
         """

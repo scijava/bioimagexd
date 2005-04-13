@@ -96,7 +96,7 @@ class TimepointSelectionPanel(wx.Panel):
     def getSelectedTimepoints(self):
         timepoints=[]
         for i in self.selectedFrames.keys():
-            print "%d selected: %s"%(i,(self.selectedFrames[i]==1))
+            #print "%d selected: %s"%(i,(self.selectedFrames[i]==1))
             if self.selectedFrames[i]:
                 timepoints.append(i)
         return timepoints
@@ -264,7 +264,7 @@ class TimepointSelection(wx.Dialog):
         
         self.createButtonBox()
         
-        self.status=wx.ID_OK
+        self.status=wx.ID_CANCEL
 
         self.SetAutoLayout(True)
         self.SetSizer(self.mainsizer)
@@ -285,7 +285,7 @@ class TimepointSelection(wx.Dialog):
         self.buttonsSizer1=wx.BoxSizer(wx.HORIZONTAL)
         
         self.actionBtn=wx.Button(self,-1,"Ok")
-        #self.actionBtn.Bind(wx.EVT_BUTTON,self.doRendering)
+        self.actionBtn.Bind(wx.EVT_BUTTON,self.onButtonOk)
         self.buttonsSizer1.Add(self.actionBtn,flag=wx.ALIGN_LEFT)
 
         self.closeBtn=wx.Button(self,-1,"Close")
@@ -299,7 +299,15 @@ class TimepointSelection(wx.Dialog):
 
     def getSelectedTimepoints(self):
         return self.panel.getSelectedTimepoints()
-
+        
+    def onButtonOk(self,event):
+        """
+        Method: onButtonOk
+        Created: 13.04.2005, KP
+        Description: A callback that sets the status of this dialog
+        """
+        self.status=wx.ID_OK
+        self.Close()
 
     def closeWindowCallback(self,event):
         """

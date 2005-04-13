@@ -16,12 +16,12 @@
 
            10.11.2004 JV - Added ColorCombination-window
 
-           23.11.2004 JV - Updated menuMergeChannels
+           23.11.2004 JV - Updated onMenuMergeChannels
 
            25.11.2004 JV - Added VSIAWindow
            29.11.2004 JV - Added icon
            10.12.2004 JV - Fixed: name setting for colorCombinationDataUnit in 
-                           menuMergeChannels
+                           onMenuMergeChannels
            04.01.2005 JV - Fixed: bug in MenuVSIA
            11.01.2005 JV - Added comments
            20.01.2005 KP - Now using wx.Python
@@ -148,16 +148,16 @@ class MainWindow(wx.Frame):
 
         print "adding tool"
         tb.AddSimpleTool(ID_OPEN,wx.Image(os.path.join(iconpath,"OpenLSM.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Open","Open dataset series")
-        wx.EVT_TOOL(self,ID_OPEN,self.menuOpen)
+        wx.EVT_TOOL(self,ID_OPEN,self.onMenuOpen)
 
 
         tb.AddSimpleTool(ID_COLORMERGING,
         wx.Image(os.path.join(iconpath,"ColorCombination.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Merge Channels","Merge dataset series")
-        wx.EVT_TOOL(self,ID_COLORMERGING,self.menuMergeChannels)       
+        wx.EVT_TOOL(self,ID_COLORMERGING,self.onMenuMergeChannels)       
     
         tb.AddSimpleTool(ID_COLOCALIZATION,
         wx.Image(os.path.join(iconpath,"Colocalization.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Colocalization","Create colocalization map")
-        wx.EVT_TOOL(self,ID_COLOCALIZATION,self.menuColocalization)       
+        wx.EVT_TOOL(self,ID_COLOCALIZATION,self.onMenuColocalization)       
 
         tb.AddSimpleTool(ID_VSIA,
         wx.Image(os.path.join(iconpath,"HIV.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Visualization of sparse intensity aggregations","Visualization of sparse intensity aggregations")
@@ -165,20 +165,20 @@ class MainWindow(wx.Frame):
         
         tb.AddSimpleTool(ID_SINGLE,
         wx.Image(os.path.join(iconpath,"DataSetSettings2.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Process dataset series","Process a single dataset series")
-        wx.EVT_TOOL(self,ID_SINGLE,self.menuProcessDataUnit)
+        wx.EVT_TOOL(self,ID_SINGLE,self.onMenuProcessDataUnit)
 
         tb.AddSimpleTool(ID_REEDIT,
         wx.Image(os.path.join(iconpath,"ReEdit.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Re-edit dataset series","Re-edit a dataset series")
-        wx.EVT_TOOL(self,ID_REEDIT,self.menuEditDataSet)
+        wx.EVT_TOOL(self,ID_REEDIT,self.onMenuEditDataSet)
 
         tb.AddSimpleTool(ID_RESLICE,
         wx.Image(os.path.join(iconpath,"Reslice.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Re-edit dataset series","Re-edit a dataset series")
-        wx.EVT_TOOL(self,ID_RESLICE,self.menuReslice)
+        wx.EVT_TOOL(self,ID_RESLICE,self.onMenuReslice)
 
         
         tb.AddSimpleTool(ID_RENDER,
         wx.Image(os.path.join(iconpath,"Render.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Render","Render a dataset series")
-        wx.EVT_TOOL(self,ID_RENDER,self.menuRender)
+        wx.EVT_TOOL(self,ID_RENDER,self.onMenuRender)
 
         tb.Realize()
         
@@ -221,7 +221,7 @@ class MainWindow(wx.Frame):
     
         
         self.fileMenu.Append(ID_OPEN,"&Open...\tCtrl-O","Open a Data Set")
-        wx.EVT_MENU(self,ID_OPEN,self.menuOpen)
+        wx.EVT_MENU(self,ID_OPEN,self.onMenuOpen)
         self.fileMenu.AppendSeparator()
         self.fileMenu.AppendMenu(ID_IMPORT,"&Import",self.importMenu)
         self.fileMenu.AppendMenu(ID_EXPORT,"&Export",self.exportMenu)
@@ -234,16 +234,16 @@ class MainWindow(wx.Frame):
         self.taskMenu.Append(ID_VSIA,"&Visualize Sparse Intensity Aggregations...","Visualize Sparse Intensity Aggregations with smooth surface")
         self.taskMenu.Append(ID_SINGLE,"&Process Single Dataset Series...","Process Single Dataset Series")
         self.taskMenu.Append(ID_RENDER,"&Render Dataset Series...","Render a dataset series")
-        wx.EVT_MENU(self,ID_COLOCALIZATION,self.menuColocalization)
-        wx.EVT_MENU(self,ID_COLORMERGING,self.menuMergeChannels)
+        wx.EVT_MENU(self,ID_COLOCALIZATION,self.onMenuColocalization)
+        wx.EVT_MENU(self,ID_COLORMERGING,self.onMenuMergeChannels)
         wx.EVT_MENU(self,ID_VSIA,self.menuVSIA)
-        wx.EVT_MENU(self,ID_SINGLE,self.menuProcessDataUnit)
-        wx.EVT_MENU(self,ID_RENDER,self.menuRender)
+        wx.EVT_MENU(self,ID_SINGLE,self.onMenuProcessDataUnit)
+        wx.EVT_MENU(self,ID_RENDER,self.onMenuRender)
 
         self.helpMenu.Append(ID_ABOUT,"&About BioImageXD","About BioImageXD")
         self.helpMenu.AppendSeparator()
         self.helpMenu.Append(ID_HELP,"&Help\tCtrl-H","Online Help")
-        wx.EVT_MENU(self,ID_ABOUT,self.menuAbout)
+        wx.EVT_MENU(self,ID_ABOUT,self.onMenuAbout)
     
     def menuImport(self,evt):
         """
@@ -264,9 +264,9 @@ class MainWindow(wx.Frame):
         self.settingswindow=SettingsWindow.SettingsWindow(self)
         self.settingswindow.ShowModal()
 
-    def menuRender(self,evt):
+    def onMenuRender(self,evt):
         """
-        Method: menuRender()
+        Method: onMenuRender()
         Created: 03.11.2004, KP
         Description: Callback function for menu item "Render"
         """
@@ -297,9 +297,9 @@ class MainWindow(wx.Frame):
         #self.renderWindow.startWizard()
 
 
-    def menuOpen(self,evt):
+    def onMenuOpen(self,evt):
         """
-        Method: menuOpen()
+        Method: onMenuOpen()
         Created: 03.11.2004, KP
         Description: Callback function for menu item "Open VTK File"
         """
@@ -373,9 +373,9 @@ class MainWindow(wx.Frame):
             # If we got data, add corresponding nodes to tree
             self.tree.addToTree(name,path,ext,dataunits)
 
-    def menuEditDataSet(self,evt):
+    def onMenuEditDataSet(self,evt):
         """
-        Method: menuEditDataSet
+        Method: onMenuEditDataSet
         Created: 11.1.2005, KP
         Description: Callback function for menu item "Re-Edit data set"
         """
@@ -446,9 +446,9 @@ class MainWindow(wx.Frame):
         # Add the dataset (node) into tree
         self.tree.addToTree(dataunit.getName(),filepath,'du',[dataunit])        
         
-    def menuColocalization(self,evt):
+    def onMenuColocalization(self,evt):
         """
-        Method: menuColocalization()
+        Method: onMenuColocalization()
         Created: 03.11.2004, KP
         Description: Callback function for menu item "Colocalization"
         """
@@ -456,9 +456,9 @@ class MainWindow(wx.Frame):
         Colocalization.Colocalization,
         ColocalizationWindow.ColocalizationWindow,2,-1)
         
-    def menuReslice(self,evt):
+    def onMenuReslice(self,evt):
         """
-        Method: menuReslice()
+        Method: onMenuReslice()
         Created: 03.11.2004, KP
         Description: Callback function for menu item "Reslice"
         """
@@ -466,9 +466,9 @@ class MainWindow(wx.Frame):
         Reslice.Reslice,
         ResliceWindow.ResliceWindow,1,1)        
         
-    def menuMergeChannels(self,evt):
+    def onMenuMergeChannels(self,evt):
         """
-        Method: menuMergeChannels()
+        Method: onMenuMergeChannels()
         Created: 03.11.2004, KP
         Description: Callback function for menu item Merge Channels
         """
@@ -476,9 +476,9 @@ class MainWindow(wx.Frame):
         ColorMerging.ColorMerging,
         ColorMergingWindow.ColorMergingWindow,2,-1)
 
-    def menuProcessDataUnit(self,evt):
+    def onMenuProcessDataUnit(self,evt):
         """
-        Method: menuProcessDataUnit()
+        Method: onMenuProcessDataUnit()
         Created: 03.11.2004, KP
         Description:
         """
@@ -496,9 +496,9 @@ class MainWindow(wx.Frame):
         VSIA.VSIA,
         VSIAWindow.VSIAWindow,1,1)
 
-    def menuAbout(self,evt):
+    def onMenuAbout(self,evt):
         """
-        Method: menuAbout()
+        Method: onMenuAbout()
         Created: 03.11.2004, KP
         Description: Callback function for menu item "About"
         """

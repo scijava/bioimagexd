@@ -110,9 +110,9 @@ class SplineEditor(wx.Panel):
         self.outlinemapper = vtk.vtkPolyDataMapper ()
         self.outlineactor = vtk.vtkActor ()  
         self.axes = vtk.vtkCubeAxesActor2D ()
-        self.spline = False
-
+        
         self.spline = spline = vtk.vtkSplineWidget()
+        self.spline.ClosedOn()
         self.spline.SetResolution(1000)
         
         self.spline.AddObserver("EndInteractionEvent",self.endInteraction)
@@ -306,6 +306,7 @@ class SplineEditor(wx.Panel):
             del self.data
 
         self.data = data
+        print "Got data=",data
         
         self.outline.SetInput(self.data)
         self.outlinemapper.SetInput (self.outline.GetOutput ())
@@ -314,6 +315,37 @@ class SplineEditor(wx.Panel):
         
         self.renderer.AddActor(self.outlineactor)
         
+        # Create transfer mapping scalar value to opacity
+        opacityTransferFunction = vtk.vtkPiecewiseFunction()
+        opacityTransferFunction.AddPoint(50, 0.0)
+        opacityTransferFunction.AddPoint(255, 0.15)
+        
+        # Create transfer mapping scalar value to color
+        colorTransferFunction = vtk.vtkColorTransferFunction()
+        colorTransferFunction.AddRGBPoint(0.0, 0.0, 0.0, 0.0)
+        #colorTransferFunction.AddRGBPoint(50.0, 0.0, 0.0, 0.0)
+        colorTransferFunction.AddRGBPoint(255.0, 0.0, 1.0, 0.0)
+        
+        volumeProperty = vtk.vtkVolumeProperty()
+        volumeProperty.SetColor(colorTransferFunction)
+        volumeProperty.SetScalarOpacity(opacityTransferFunction)
+        #volumeProperty.ShadeOn()
+        #volumeProperty.SetInterpolationTypeToLinear()
+
+        
+        volumeMapper = vtk.vtkVolumeTextureMapper2D()
+        volumeMapper.SetMaximumNumberOfPlanes(18)
+        data.Update()
+        volumeMapper.SetInput(data)
+        
+        volume = vtk.vtkVolume()
+        volume.SetMapper(volumeMapper)
+        volume.SetProperty(volumeProperty)
+        
+
+        
+        
+
         txt = ("X", "Y", "Z")
         for t in txt:
                 eval ("self.axes.%sAxisVisibilityOn ()"%t)
@@ -336,6 +368,7 @@ class SplineEditor(wx.Panel):
         #else:
         #    self.axes.ShadowOff ()
         
+        self.renderer.AddVolume(volume)
         self.renderer.AddActor (self.axes)
         self.axes.SetInput (self.outline.GetOutput ())
         
@@ -515,10 +548,6 @@ class SplineEditor(wx.Panel):
         Description: Destructs necessary objects upon quitting
         """           
         pass
-        #del self.renWin
-        #del self.renderer
-        #self.tkwidget.destroy()
-        #del self.tkwidget
         
     def endInteraction(self,event=-1,e2=-1):
         """
