@@ -57,7 +57,12 @@ class UrmasWindow(wx.Frame):
         ico=reduce(os.path.join,["..","Icons","Selli.ico"])
         self.icon = wx.Icon(ico,wx.BITMAP_TYPE_ICO)
         self.SetIcon(self.icon)
+
+        self.CreateStatusBar()
+        self.SetStatusText("Initializing project...")
+
         self.createMenu()
+        
         self.control = UrmasControl.UrmasControl(self)
 
         self.Bind(wx.EVT_CLOSE,self.closeWindowCallback)
@@ -95,9 +100,11 @@ class UrmasWindow(wx.Frame):
         self.helpMenu=wx.Menu()
         
         self.settingsMenu=wx.Menu()
-
+        self.renderingMenu = wx.Menu()
+        
          # and add them as sub menus to the menubar
         self.menu.Append(self.fileMenu,"&File")
+        self.menu.Append(self.renderingMenu,"&Rendering")
         self.menu.Append(self.settingsMenu,"&Settings")
         self.menu.Append(self.helpMenu,"&Help")
       
@@ -112,8 +119,17 @@ class UrmasWindow(wx.Frame):
         wx.EVT_MENU(self,self.ID_OPEN,self.menuOpenProject)
         wx.EVT_MENU(self,self.ID_SAVE,self.menuSaveProject)
         
-
-        #self.FitToPage(self.timepointSelection)
+        self.ID_ADD_SPLINE=wx.NewId()
+        self.ID_ADD_TIMEPOINT=wx.NewId()
+        self.addTrackMenu=wx.Menu()
+        self.addTrackMenu.Append(self.ID_ADD_SPLINE,"Camera Path Track")
+        self.addTrackMenu.Append(self.ID_ADD_TIMEPOINT,"Timepoint Track")
+        self.ID_ADD_TRACK=wx.NewId()
+        self.renderingMenu.AppendMenu(self.ID_ADD_TRACK,"&Add Track",self.addTrackMenu)
+        self.renderingMenu.AppendSeparator()
+        self.ID_RENDER=wx.NewId()
+        self.renderingMenu.Append(self.ID_RENDER,"&Render project")
+            
 
     def menuPreferences(self,evt):
         """
