@@ -112,7 +112,6 @@ class SplineEditor(wx.Panel):
         self.axes = vtk.vtkCubeAxesActor2D ()
         
         self.spline = spline = vtk.vtkSplineWidget()
-        self.spline.ClosedOn()
         self.spline.SetResolution(1000)
         
         self.spline.AddObserver("EndInteractionEvent",self.endInteraction)
@@ -126,6 +125,18 @@ class SplineEditor(wx.Panel):
         self.iren = iren = self.renWin.GetInteractor()
         print "Initializing camera"
         self.initCamera()
+        
+    def setClosed(self,flag):
+        """
+        Method: setClosed(flag)
+        Created: 14.04.2005, KP
+        Description: Sets the spline closed or open
+        """           
+        if flag:
+            self.spline.ClosedOn()
+        else:
+            self.spline.ClosedOff()
+        
     
     def findControlPoint(self,pt):
         """
@@ -228,7 +239,6 @@ class SplineEditor(wx.Panel):
         """        
         if not (ip0 or ip1):
             return self.spline.GetSummedLength()
-        
         points = self.getPoints()
         n=points.GetNumberOfPoints()
         pps=self.getControlPoints()
@@ -396,6 +406,17 @@ class SplineEditor(wx.Panel):
         data = vtk.vtkPolyData()
         self.spline.GetPolyData(data)
         return data
+        
+    def getRandomPoint(self):
+        """
+        Method: getRandomPoint()
+        Created: 14.04.2005, KP
+        Description: Return a random point for the spline
+        """        
+        pt=(math.Random(-self.dataExtensionX,self.dataWidth()+self.dataExtensionX),
+                math.Random(-self.dataExtensionY,self.dataHeight()+self.dataExtensionY),
+                math.Random(-self.dataExtensionZ,self.dataDepth()+self.dataExtensionZ))
+        return pt
 
     def initSpline(self,points):
         """
@@ -405,9 +426,7 @@ class SplineEditor(wx.Panel):
         """        
         lst=[]
         for i in range(points):
-            pt=(math.Random(-self.dataExtensionX,self.dataWidth()+self.dataExtensionX),
-                math.Random(-self.dataExtensionY,self.dataHeight()+self.dataExtensionY),
-                math.Random(-self.dataExtensionZ,self.dataDepth()+self.dataExtensionZ))
+            pt = self.getRandomPoint()
             lst.append(pt)
         self.setSplinePoints(lst)
             

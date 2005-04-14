@@ -64,6 +64,7 @@ class Timeline(scrolled.ScrolledPanel):
         #    width=kws["width"]
         scrolled.ScrolledPanel.__init__(self,parent,-1,size=(width,height))
         self.control = control
+        self.selectedTrack = None
         control.setTimeline(self)
         self.sizer=wx.GridBagSizer(5,1)
         self.timeScale=TimeScale(self)
@@ -89,6 +90,25 @@ class Timeline(scrolled.ScrolledPanel):
         self.SetupScrolling()
         self.sizer.Fit(self)
 
+        
+    def getSelectedTrack(self):
+        """
+        Method: getSelectedTrack
+        Created: 14.04.2005, KP
+        Description: Return the track that is currently selected
+        """ 
+        return self.selectedTrack
+        
+    def setSelectedTrack(self,track):
+        """
+        Method: setSelectedTrack
+        Created: 14.04.2005, KP
+        Description: Set the track that is currently selected
+        """ 
+        if self.selectedTrack and track != self.selectedTrack:
+            self.selectedTrack.setSelected(None)
+        self.selectedTrack=track
+        
     def refresh(self):
         """
         Method: refresh()
@@ -139,7 +159,7 @@ class Timeline(scrolled.ScrolledPanel):
         if label=="":
             label="Timepoints %d"%len(self.timepointTracks)
         
-        tr=TimepointTrack(label,self,number=1,timescale=self.timeScale,control=self.control,height=60)
+        tr=TimepointTrack(label,self,number=1,timescale=self.timeScale,control=self.control)
         
         self.timeScale.setOffset(tr.getLabelWidth())
         self.splinepointTrackAmnt = len(self.splinepointTracks)
@@ -170,10 +190,9 @@ class Timeline(scrolled.ScrolledPanel):
         """
         if label=="":
             label="Camera Path %d"%len(self.splinepointTracks)
-        tr=SplineTrack(label,self,number=1,height=50,timescale=self.timeScale,control=self.control)
+        tr=SplineTrack(label,self,number=1,timescale=self.timeScale,control=self.control)
         self.control.setSplineInteractionCallback(tr.updateLabels)
         tr.setColor((248,196,56))
-        #self.setSplinePoints(7)
         self.splinepointTrackAmnt = len(self.splinepointTracks)
         self.timepointTrackAmnt = len(self.timepointTracks)
         
@@ -197,18 +216,13 @@ class Timeline(scrolled.ScrolledPanel):
         Description: Sets animation mode on or off. This affects the spline points
                      track.
         """
-        if flag:
-            #if not len(self.splinepointTracks):
-            #    self.addSplinepointTrack("Spline Points")
-            pass
-        else:
-            if len(self.splinepointTracks):
-                for track in self.splinepointTracks:
-                    self.removeTrack(track)
-                    self.control.setSplineInteractionCallback(None)
-                    self.splinepointTracks.remove(track)
-        self.Layout()
-        self.sizer.Fit(self)#self.SetScrollbars(20,0,tx/20,0)
+        if len(self.splinepointTracks):
+            for track in self.splinepointTracks:
+                track.setEnabled(flag)
+         
+        self.Refresh()
+        #self.Layout()
+        #self.sizer.Fit(self)#self.SetScrollbars(20,0,tx/20,0)
     
     def clearTracks(self):
         """
@@ -234,16 +248,6 @@ class Timeline(scrolled.ScrolledPanel):
         self.sizer.Detach(track)
         track.remove()
 
-        
-    def setSplinePoints(self,n):
-        """
-        Method: setSplinePoints(n)
-        Created: 04.02.2005, KP
-        Description: Set the amount of spline points
-        """    
-        for track in self.splinepointTracks:
-            track.setItemAmount(n)
-        
     def setDataUnit(self,dataUnit):
         """
         Method: setDataUnit(dataunit)

@@ -100,12 +100,15 @@ class UrmasWindow(wx.Frame):
         self.helpMenu=wx.Menu()
         
         self.settingsMenu=wx.Menu()
-        self.renderingMenu = wx.Menu()
-        
+        self.trackMenu = wx.Menu()
+        self.renderMenu=wx.Menu()
+        self.cameraMenu = wx.Menu()
          # and add them as sub menus to the menubar
         self.menu.Append(self.fileMenu,"&File")
-        self.menu.Append(self.renderingMenu,"&Rendering")
         self.menu.Append(self.settingsMenu,"&Settings")
+        self.menu.Append(self.trackMenu,"&Track")
+        self.menu.Append(self.renderMenu,"&Rendering")
+        self.menu.Append(self.cameraMenu,"&Camera")
         self.menu.Append(self.helpMenu,"&Help")
       
         self.ID_PREFERENCES = wx.NewId()
@@ -114,24 +117,62 @@ class UrmasWindow(wx.Frame):
         
         self.ID_OPEN=wx.NewId()
         self.ID_SAVE=wx.NewId()
-        self.fileMenu.Append(self.ID_OPEN,"Open project...")
-        self.fileMenu.Append(self.ID_SAVE,"Save project as...")
+        self.fileMenu.Append(self.ID_OPEN,"Open project...","Open a BioImageXD Rendering Project")
+        self.fileMenu.Append(self.ID_SAVE,"Save project as...","Save current BioImageXD Rendering Project")
         wx.EVT_MENU(self,self.ID_OPEN,self.onMenuOpenProject)
         wx.EVT_MENU(self,self.ID_SAVE,self.onMenuSaveProject)
         
         self.ID_ADD_SPLINE=wx.NewId()
         self.ID_ADD_TIMEPOINT=wx.NewId()
         self.addTrackMenu=wx.Menu()
-        self.addTrackMenu.Append(self.ID_ADD_SPLINE,"Camera Path Track")
-        self.addTrackMenu.Append(self.ID_ADD_TIMEPOINT,"Timepoint Track")
+        self.addTrackMenu.Append(self.ID_ADD_TIMEPOINT,"Timepoint Track","Add a timepoint track to the timeline")
+        self.addTrackMenu.Append(self.ID_ADD_SPLINE,"Camera Path Track","Add a camera path track to the timeline")
+        self.addTrackMenu.Enable(self.ID_ADD_SPLINE,0)
         wx.EVT_MENU(self,self.ID_ADD_SPLINE,self.onMenuAddSplineTrack)
         wx.EVT_MENU(self,self.ID_ADD_TIMEPOINT,self.onMenuAddTimepointTrack)
-        
         self.ID_ADD_TRACK=wx.NewId()
-        self.renderingMenu.AppendMenu(self.ID_ADD_TRACK,"&Add Track",self.addTrackMenu)
-        self.renderingMenu.AppendSeparator()
+        self.trackMenu.AppendMenu(self.ID_ADD_TRACK,"&Add Track",self.addTrackMenu)
+        self.trackMenu.AppendSeparator()
+        
+        self.ID_FIT_TRACK = wx.NewId()
+        self.ID_MIN_TRACK = wx.NewId()
+        self.trackMenu.Append(self.ID_FIT_TRACK,"Grow to maximum","Grow the track to encompass the whole timeline")
+        self.trackMenu.Append(self.ID_MIN_TRACK,"Shrink to minimum","Shrink the track to as small as possible")
+        
+        
+        self.ID_ANIMATE = wx.NewId()
+        self.renderMenu.AppendCheckItem(self.ID_ANIMATE,"&Animated rendering","Select whether to produce animation or still images")
+        wx.EVT_MENU(self,self.ID_ANIMATE,self.onMenuAnimate)
+        
+        self.renderMenu.AppendSeparator()
+        
         self.ID_RENDER=wx.NewId()
-        self.renderingMenu.Append(self.ID_RENDER,"&Render project")
+        self.renderMenu.Append(self.ID_RENDER,"&Render project","Render this project")
+        
+        self.ID_SPLINE_CLOSED = wx.NewId()
+        self.cameraMenu.AppendCheckItem(self.ID_SPLINE_CLOSED,"&Closed Path","Set the camera path to open / closed.")
+        wx.EVT_MENU(self,self.ID_SPLINE_CLOSED,self.onMenuClosedSpline)
+        
+    def onMenuClosedSpline(self,evt):
+        """
+        Method: onMenuClosedSpline
+        Created: 14.04.2005, KP
+        Description: Callback function for menu item camera path is closed
+        """
+        track=self.control.getSelectedTrack()
+        if "setClosed" in dir(track):
+            track.setClosed(evt.IsChecked())
+        
+    def onMenuAnimate(self,evt):
+        """
+        Method: onMenuAnimate
+        Created: 14.04.2005, KP
+        Description: Callback function for menu item animated rendering
+        """
+        flag=evt.IsChecked()
+        self.control.setAnimationMode(flag)
+        self.addTrackMenu.Enable(self.ID_ADD_SPLINE,flag)
+        
 
     def onMenuAddSplineTrack(self,evt):
         """

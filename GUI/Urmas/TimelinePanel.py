@@ -66,20 +66,20 @@ class TimelineConfig(wx.Panel):
         self.outputstaticbox=wx.StaticBoxSizer(box,wx.HORIZONTAL)
         self.outputstaticbox.Add(self.outputsizer)
 
-        self.animationsizer=wx.GridBagSizer(5,5)
-        box=wx.StaticBox(self,wx.HORIZONTAL,"Animation")
-        self.animationstaticbox=wx.StaticBoxSizer(box,wx.HORIZONTAL)
-        self.animationstaticbox.Add(self.animationsizer)
+        #self.animationsizer=wx.GridBagSizer(5,5)
+        #box=wx.StaticBox(self,wx.HORIZONTAL,"Animation")
+        #self.animationstaticbox=wx.StaticBoxSizer(box,wx.HORIZONTAL)
+        #self.animationstaticbox.Add(self.animationsizer)
 
-        self.animateCheckbox=wx.CheckBox(self,-1,"Use animator")
-        self.controlPointsLabel=wx.StaticText(self,-1,"Number of control points")
-        self.controlPoints=wx.TextCtrl(self,-1,"5",style=wx.TE_PROCESS_ENTER)
-        self.controlPoints.Bind(wx.EVT_TEXT,self.updateControlPoints)
-        self.animateCheckbox.Bind(wx.EVT_CHECKBOX,self.updateAnimation)
+        #self.animateCheckbox=wx.CheckBox(self,-1,"Use animator")
+        #self.controlPointsLabel=wx.StaticText(self,-1,"Number of control points")
+        #self.controlPoints=wx.TextCtrl(self,-1,"5",style=wx.TE_PROCESS_ENTER)
+        #self.controlPoints.Bind(wx.EVT_TEXT,self.updateControlPoints)
+        #self.animateCheckbox.Bind(wx.EVT_CHECKBOX,self.updateAnimation)
         
-        self.animationsizer.Add(self.animateCheckbox,(0,0))
-        self.animationsizer.Add(self.controlPointsLabel,(1,0))
-        self.animationsizer.Add(self.controlPoints,(2,0))
+        #self.animationsizer.Add(self.animateCheckbox,(0,0))
+        #self.animationsizer.Add(self.controlPointsLabel,(1,0))
+        #self.animationsizer.Add(self.controlPoints,(2,0))
         
         self.formatLabel=wx.StaticText(self,-1,"Output Format")
         self.formatMenu=wx.Choice(self,-1,choices=["Images","Video"])
@@ -108,7 +108,7 @@ class TimelineConfig(wx.Panel):
         self.outputsizer.Add(self.fpsLabel,(3,0))
                 
         self.sizer.Add(self.outputstaticbox,(0,0),flag=wx.EXPAND|wx.ALL)
-        self.sizer.Add(self.animationstaticbox,(0,1),flag=wx.EXPAND|wx.ALL)
+        #self.sizer.Add(self.animationstaticbox,(0,1),flag=wx.EXPAND|wx.ALL)
 
 #        self.useButton=wx.Button(self,-1,"Use settings")
 #        self.useButton.Bind(wx.EVT_BUTTON,self.reportToParent)

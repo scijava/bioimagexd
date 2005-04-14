@@ -55,8 +55,9 @@ class Track(wx.Panel):
         self.frames=0
         height=80
         self.editable=1
-            
+        self.SetBackgroundColour((255,255,255))
         self.control = kws["control"]
+        self.splineEditor = self.control.getSplineEditor()
         
         self.label = name
         self.previtem = None
@@ -72,9 +73,10 @@ class Track(wx.Panel):
         self.itemBox=None
         self.color=None
         self.parent=parent
-
+    
+        self.enabled = 1
+    
         self.namePanel=wx.Panel(self,-1)
-        self.namePanel.SetBackgroundColour(wx.Colour(127,127,127))
         self.nameLbl=wx.StaticText(self.namePanel,-1,name,size=(100,height))
         self.namePanel.SetSize((200,height))
         self.sizer.Add(self.namePanel,(0,0))
@@ -88,8 +90,52 @@ class Track(wx.Panel):
         self.sizer.Fit(self)
         self.items=[]
         self.itemAmount = 0
+        self.oldNamePanelColor = 0
     
         self.initTrack()
+        
+        self.namePanel.Bind(wx.EVT_LEFT_UP,self.setSelected)
+        self.nameLbl.Bind(wx.EVT_LEFT_UP,self.setSelected)
+        #self.Bind(wx.EVT_LEFT_UP,self.setSelected)
+        
+    def setSelected(self,event):
+        """
+        Method: setSelected(event)
+        Created: 14.04.2005, KP
+        Description: Selects this track
+        """ 
+        print "setSelected(",event,")"
+        if event:
+            font=self.nameLbl.GetFont()
+            font.SetWeight(wx.BOLD)
+            self.nameLbl.SetFont(font)
+            self.parent.setSelectedTrack(self)
+        else:
+            self.SetWindowStyle(wx.SIMPLE_BORDER)
+            font=self.nameLbl.GetFont()
+            font.SetWeight(wx.NORMAL)
+            self.nameLbl.SetFont(font)
+        
+            
+    def setEnabled(self,flag):
+        """
+        Method: setEnabled(flag)
+        Created: 14.04.2005, KP
+        Description: Enables / disables this track
+        """ 
+        self.enabled = flag
+        if not flag:
+            col=self.namePanel.GetBackgroundColour()
+            self.nameLbl.SetForegroundColour((128,128,128))
+            r,g,b=col.Red(),col.Green(),col.Blue()
+            self.oldNamePanelColor=col
+            r=g=b=200
+            print "Setting background to ",r,g,b
+            self.namePanel.SetBackgroundColour((r,g,b))
+        else:
+            self.namePanel.SetBackgroundColour(self.nameColor)
+            self.nameLbl.SetForegroundColour((0,0,0))
+        
         
     def OnDragOver(self,x,y,d):
         """
@@ -99,8 +145,15 @@ class Track(wx.Panel):
                      something to this track
         """ 
         #print "OnDragOver(%d,%d,%s)"%(x,y,d)
-        self.namePanel.SetBackgroundColour((64,64,64))
-        self.nameLbl.SetForegroundColour((255,255,255))
+        if not self.oldNamePanelColor:
+            col=self.namePanel.GetBackgroundColour()
+            r,g,b=col.Red(),col.Green(),col.Blue()
+            self.oldNamePanelColor=col
+            r=int(r*0.8)
+            g=int(g*0.8)
+            b=int(b*0.8)
+            self.namePanel.SetBackgroundColour((r,g,b))
+            self.nameLbl.SetForegroundColour((255,255,255))
         self.namePanel.Refresh()
         curritem=None
         for item in self.items:
@@ -109,7 +162,7 @@ class Track(wx.Panel):
             if ix<= x:
                 #print "Found item",item
                 curritem=item
-                self.dragEndPosition = self.items.index(item)
+                self.dragEndPosition = self.items.index(item)+1
         if curritem:
             if self.previtem and self.previtem != curritem:
                 self.previtem.drawItem()
@@ -126,7 +179,8 @@ class Track(wx.Panel):
         Description: Method called to indicate that a user is no longer dragging
                      something to this track
         """     
-        self.namePanel.SetBackgroundColour((127,127,127))
+        self.namePanel.SetBackgroundColour(self.nameColor)
+        self.oldNamePanelColor = None
         self.nameLbl.SetForegroundColour((0,0,0))
         self.namePanel.Refresh()
 
@@ -163,12 +217,22 @@ class Track(wx.Panel):
             print "Removing ",len(self.items)," items"    
             self.sizer.Show(self.itemBox,0)
             self.sizer.Detach(self.itemBox)
-            for i in self.items:
-                self.itemBox.Show(i,0)
-                self.itemBox.Detach(i)
-                self.items.remove(i)
-                i.Destroy()
+            for i in range(len(self.items)):
+                self.removeItem(i)
             self.itemBox.Destroy()    
+
+    def removeItem(self,position):
+        """
+        Method: removeItem(position)
+        Created: 14.04.2005, KP
+        Description: Remove an item from this track
+        """              
+        item=self.items[position]
+        self.itemBox.Show(item,0)
+        self.itemBox.Detach(item)
+        self.items.remove(item)
+        item.Destroy()
+        
         
     def setDataUnit(self,dataUnit):
         """
@@ -196,12 +260,9 @@ class Track(wx.Panel):
                      from the specified size to a new size
         """               
         diff=toWidth-fromWidth
-        #print "Trying to resize ",diff
         w,h=self.itemBox.GetSize()
-        #print "current size=",w
         w+=diff
         
-        #print "w=",w,">self.duration*pps",self.duration,self.timescale.getPixelsPerSecond()
         if w>self.duration*self.timescale.getPixelsPerSecond():
             return 0
         return 1
@@ -243,9 +304,10 @@ class Track(wx.Panel):
         Created: 04.02.2005, KP
         Description: A method to set the length of this track, affecting
                      size of its items
-        """                   
+        """              
         n=len(self.items)
-        
+        if not n:
+            return
         w=float(seconds)/float(n)
         #print "New size=",w
         self.duration=seconds
@@ -294,63 +356,11 @@ class Track(wx.Panel):
         Created: 04.02.2005, KP
         Description: A method that updates the layout of this track
         """               
-        #print "updateLayout()"
         self.Layout()
         self.parent.Layout()
         for item in self.items:
             item.updateItem()
-        #print "Control structure now:"
-        #print self.control
-        
-        
-    def addItem(self,n,item,update=1):
-        """
-        Method: addItem
-        Created: 04.02.2005, KP
-        Description: A method to add a new item to this track
-        """              
-        h=self.namePanel.GetSize()[1]
-        kws={"itemnum":n,"editable":self.editable}
-
-        item=self.itemClass(self,item,(20,h),**kws)
-        if self.color:
-            item.setColor(self.color,self.headercolor)
-        self.items.append(item)
-        self.itemBox.Add(item)
-        if update:
-            self.Layout()
-            self.sizer.Fit(self)
-        item.updateItem()
-
-    def getSplineLength(self,splinepoint):
-        """
-        Method: getSplineLength
-        Created: 19.03.2005, KP
-        Description: A method that returns the physical length of a spline
-                     range given the spline points width
-        """ 
-        if not self.duration:
-            return 0
-        return self.control.getSplineLength(splinepoint)
-        
-    def getSplinePoint(self,point):
-        """
-        Method: getSplinePoint
-        Created: 06.04.2005, KP
-        Description: A method that returns the physical position of a spline
-                     control point
-        """ 
-        return self.control.findControlPoint(point)
-
-    def setSplinePoint(self,pointnum,point):
-        """
-        Method: setSplinePoint
-        Created: 11.04.2005, KP
-        Description: A method that sets the physical position of a spline
-                     control point
-        """ 
-        return self.control.setSplinePoint(pointnum,point)
-        
+         
         
     def getDuration(self,pixels):
         """
@@ -390,9 +400,11 @@ class Track(wx.Panel):
         odict={}
         keys=[""]
         self.itemAmount = len(self.items)
-        for key in ["label","items","color","number","itemAmount"]:
+        for key in ["label","items","color","nameColor","number","itemAmount"]:
             odict[key]=self.__dict__[key]
         return odict        
+    
+    
  
 class SplineTrack(Track):
     """
@@ -401,13 +413,41 @@ class SplineTrack(Track):
     Description: A class representing a spline track in the timeline
     """       
     def __init__(self,name,parent,**kws):
-        Track.__init__(self,name,parent,**kws)        
+        kws["height"]=40
+        Track.__init__(self,name,parent,**kws)   
+        self.closed = 0
+        self.nameColor = (0,148,213)
+        self.namePanel.SetBackgroundColour(wx.Colour(*self.nameColor))
         if "item" in kws:
             self.itemClass=kws["item"]
         else:
             self.itemClass=SplinePoint
+        if "closed" in kws:
+            self.closed = kws["closed"]
         dt = UrmasPalette.UrmasDropTarget(self,"Spline")
         self.SetDropTarget(dt)
+        
+    def getClosed(self):
+        """
+        Method: getClosed()
+        Created: 14.04.2005, KP
+        Description: Is this spline closed or not
+        """     
+        return self.closed
+        
+    def setClosed(self,flag):
+        """
+        Method: setClosed
+        Created: 14.04.2005, KP
+        Description: Sets the spline represented by this flag to be closed
+        """     
+        print "setClosed(",flag,")"
+        self.closed = flag
+        self.splineEditor.setClosed(flag)
+        if flag:
+            self.addSplinePoint(len(self.items))
+        else:
+            self.removeItem(len(self.items))
 
     def AcceptDrop(self,x,y,type,data):
         """
@@ -416,7 +456,118 @@ class SplineTrack(Track):
         Description: Method called to indicate that a user is no longer dragging
                      something to this track
         """     
-        pass        
+        dlg = wx.TextEntryDialog(self,"How many control points should the camera path have:","Configure Camera path")
+        dlg.SetValue("5")
+        if dlg.ShowModal()==wx.ID_OK:
+            try:
+                val=int(dlg.GetValue())
+            except:
+                return
+            print "Adding %d spline points"%val
+            pos=self.dragEndPosition
+            for i in range(val):
+                self.addSplinePoint(pos)
+                pos=pos+1
+            
+            self.Refresh()
+            self.Layout()
+            
+    def getSplineLength(self,splinepoint):
+        """
+        Method: getSplineLength
+        Created: 19.03.2005, KP
+        Description: A method that returns the physical length of a spline
+                     range given the spline points width
+        """ 
+        if not self.duration:
+            return 0
+        return self.splineEditor.getSplineLength(splinepoint,splinepoint+1)
+        
+    def getSplinePoint(self,point):
+        """
+        Method: getSplinePoint
+        Created: 06.04.2005, KP
+        Description: A method that returns the physical position of a spline
+                     control point
+        """ 
+        return self.splineEditor.findControlPoint(point)
+
+    def setSplinePoint(self,pointnum,point):
+        """
+        Method: setSplinePoint
+        Created: 11.04.2005, KP
+        Description: A method that sets the physical position of a spline
+                     control point
+        """ 
+        return self.splineEditor.setSplinePoint(pointnum,point)   
+
+    def removeItem(self,position):
+        """
+        Method: removeItem(position)
+        Created: 14.04.2005, KP
+        Description: Remove an item from this track
+        """
+        self.removeItem(position)
+        pts=[]
+        for i in len(self.items):
+            item=self.items[i]
+            item.setItemNumber(i)
+            pts.append(item.getPoint())
+        self.splineEditor.setSplinePoints(pts)
+        self.Layout()
+        self.sizer.Fit(self)        
+
+        
+        
+    def addSplinePoint(self,position,update=1,**kws):
+        """
+        Method: addItem
+        Created: 04.02.2005, KP
+        Description: A method to add a new item to this track
+        """              
+        h=self.namePanel.GetSize()[1]
+        itemkws={"itemnum":position,"editable":self.editable}
+        if kws.has_key("point"):
+            point = kws["point"]
+        else:
+            point = self.splineEditor.getRandomPoint()
+        pts=[]
+        for item in self.items:
+            pts.append(item.getPoint())
+        pts.insert(position,point)
+        if len(pts)>=2:
+            self.splineEditor.setSplinePoints(pts)
+        
+        item=self.itemClass(self,"%d"%position,(20,h),**itemkws)
+        if self.color:
+            item.setColor(self.color,self.headercolor)
+        self.items.insert(position,item)
+        self.itemBox.Insert(position,item)
+
+        for i in range(len(self.items)):
+            self.items[i].setItemNumber(i)
+            self.items[i].setText("%d"%i)
+            if update:
+                self.items[i].updateItem()
+                self.items[i].drawItem()
+        
+        if update:
+            self.Layout()
+            self.sizer.Fit(self)
+            
+
+        
+    def __getstate__(self):
+        """
+        Method: __getstate__
+        Created: 14.04.2005, KP
+        Description: Return the dict that is to be pickled to disk
+        """      
+        odict = Track.__getstate__(self)
+        for key in ["closed"]:
+            odict[key]=self.__dict__[key]
+        return odict        
+
         
 class TimepointTrack(Track):
     """
@@ -425,7 +576,10 @@ class TimepointTrack(Track):
     Description: A class representing a timepoint track in the timeline
     """       
     def __init__(self,name,parent,**kws):
-        Track.__init__(self,name,parent,**kws)        
+        kws["height"]=40
+        Track.__init__(self,name,parent,**kws)   
+        self.nameColor = (128,195,155)
+        self.namePanel.SetBackgroundColour(wx.Colour(*self.nameColor))
         if "item" in kws:
             self.itemClass=kws["item"]
         else:

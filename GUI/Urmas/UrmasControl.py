@@ -108,7 +108,7 @@ class UrmasControl:
         """    
         #print "updateGUI frames=%d duration=%d"%(self.frames,self.duration)
         self.refresh()
-        self.setSplinePoints(self.splinePointAmount)
+        #self.setSplinePoints(self.splinePointAmount)
         self.updateLayouts()
         
     def refresh(self):
@@ -199,26 +199,14 @@ class UrmasControl:
         self.timelineConfig.Layout()
         self.timelinePanel.Layout()
         self.window.Layout()
-
         
-    def setSplinePoints(self,n):
+    def getSplineEditor(self):
         """
-        Method: setSplinePoints(points)
-        Created: 20.03.2005, KP
-        Description: Sets the number of spline points in the camera path
-        Parameters:
-            points      If points is an integer, it is used as a number of handles
-                        for a random spline. Otherwise it is used as a list of
-                        points for the spline
-        """    
-        if type(n)==type(0):
-            self.splinePointsAmount=n
-            self.timeline.setSplinePoints(n)
-            self.splineEditor.initSpline(n+1)
-        else:
-            self.splinePointsAmount=len(n)
-            self.timeline.setSplinePoints(len(n))
-            self.splineEditor.setSplinePoints(n)
+        Method: getSplineEditor
+        Created: 14.04.2005, KP
+        Description: Return the spline editor instance
+        """        
+        return self.splineEditor
         
     def setAnimationMode(self,mode):
         """
@@ -227,11 +215,10 @@ class UrmasControl:
         Description: Method used to either show or hide the animator
         """        
         self.animationMode = mode
-        #self.window.showAnimator(mode)
         self.timeline.setAnimationMode(mode)
-        if mode:
-            self.timeline.setSplinePoints(self.timelineConfig.getSplinePoints())
-            self.timeline.reconfigureTimeline()
+        #if mode:
+        #    self.timeline.setSplinePoints(self.timelineConfig.getSplinePoints())
+        self.timeline.reconfigureTimeline()
         self.updateLayouts()
         
     def setTimeline(self,timeline):
@@ -241,6 +228,7 @@ class UrmasControl:
         Description: Sets the timeline controlled by this
         """    
         self.timeline=timeline
+        self.getSelectedTrack = timeline.getSelectedTrack
         
     def setTimelineConfig(self,config):
         """
@@ -280,32 +268,6 @@ class UrmasControl:
         Description: Method used to set the spline editor
         """        
         self.splineEditor = spe
-    
-        
-    def getSplineLength(self,point):
-        """
-        Method: setAnimationMode()
-        Created: 19.03.2005, KP
-        Description: Method that returns the total length of the spline
-        """        
-        return self.splineEditor.getSplineLength(point,point+1)
-
-    def findControlPoint(self,point):
-        """
-        Method: findControlPoint(point)
-        Created: 06.04.2005, KP
-        Description: Method that returns a control point of the spline
-        """        
-        return self.splineEditor.findControlPoint(point)
-        
-    def setSplinePoint(self,pointnum,point):
-        """
-        Method: setSplinePoint
-        Created: 11.04.2005, KP
-        Description: A method that sets the physical position of a spline
-                     control point
-        """ 
-        return self.splineEditor.setSplinePoint(pointnum,point)
         
     def __str__(self):
         """

@@ -90,6 +90,30 @@ class TrackItem(wx.Panel):
         self.beginX=0
         self.ok=0
         
+    def getItemNumber(self):
+        """
+        Method: getItemNumber()
+        Created: 14.04.2005, KP
+        Description: Return the item number of this item
+        """       
+        return self.itemnum
+        
+    def setItemNumber(self,n):
+        """
+        Method: setItemNumber(m)
+        Created: 14.04.2005, KP
+        Description: Set the item number of this item
+        """       
+        self.itemnum = n
+        
+    def setText(self,s):
+        """
+        Method: setText
+        Created: 14.04.2005, KP
+        Description: Set the text number of this item
+        """       
+        self.text=s
+
     def OnDragOver(self,x,y):
         """
         Method: OnDragOver(x,y)
@@ -424,9 +448,30 @@ class SplinePoint(TrackItem):
         Description: Initialize the method
         """       
         TrackItem.__init__(self,parent,text,size,**kws)
-        self.point = (0,0,0)
+        if kws.has_key("point"):
+            self.setPoint(kws["point"])
+        else:
+            self.setPoint((0,0,0))
         self.Bind(wx.EVT_RIGHT_DOWN,self.onRightClick)
         self.ID_CAMERA=wx.NewId()
+
+            
+        
+    def getPoint(self):
+        """
+        Method: getPoint(self)
+        Created: 14.04.2005, KP
+        Description: Return the point this spline point represents
+        """      
+        return self.point
+        
+    def setPoint(self,pt):
+        """
+        Method: setPoint(self)
+        Created: 14.04.2005, KP
+        Description: Return the point this spline point represents
+        """      
+        self.point = pt
         
     def onRightClick(self,event):
         """
@@ -529,3 +574,66 @@ class SplinePoint(TrackItem):
         start,end=self.position
         desc="SP%d(%d,%d,%d)"%(self.itemnum,self.point[0],self.point[1],self.point[2])
         return "[%s %ds:%ds]"%(desc,start,end)      
+
+class TransitionItem(TrackItem):
+    """
+    Class: TransitionItem
+    Created: 13.04.2005, KP
+    Description: A class representing a transition from one track to another
+    """       
+    def __init__(self,parent,size,**kws):
+        """
+        Method: __init__
+        Created: 13.04.2005, KP
+        Description: Initialize
+        """       
+        TrackItem.__init__(self,parent,"",size,**kws)
+        if not "linked" in kws:
+            raise "No linked item given for TransitionItem"
+        self.linked = kws["linked"]
+        
+    def drawItem(self,hilight=-1):
+        """
+        Method: drawItem()
+        Created: 13.04.2005, KP
+        Description: A method that draws the item.
+        """
+        self.dc.Clear()
+        self.dc.BeginDrawing()
+        col=self.GetBackgroundColour()
+        r,g,b=col.Red(),col.Green(),col.Blue()
+        col=wx.Colour(r,g,b)
+        self.dc.SetBrush(wx.Brush(col))
+        self.dc.DrawRectangle(0,0,self.width,self.height)        
+        self.dc.EndDrawing()
+    
+    def updateItem(self):
+        """
+        Method: updateItem()
+        Created: 13.04.2005, KP
+        Description: A method called when the item has been resized
+        """     
+        TrackItem.updateItem(self) 
+        w,h=self.GetSize()
+        w,y=self.linked.GetPosition()
+        self.setWidth(w)
+         
+        
+    def refresh(self):
+        """
+        Method: refresh()
+        Created: 13.04.2005, KP
+        Description: Update the item
+        """       
+        TrackItem.refresh(self)
+        
+    def __str__(self):
+        """
+        Method: __str__
+        Created: 13.04.2005, KP
+        Description: Return string representation of self
+        """  
+        start,end=self.position
+        desc="TRANS"
+        return "[%s %ds:%ds]"%(desc,start,end)      
+        
