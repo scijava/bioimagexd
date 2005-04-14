@@ -79,7 +79,7 @@ class LeicaDataSource(DataSource):
         """
         if not self.dimensions:
             self.dimensions=self.reader.GetDimensions(self.experiment)
-            print "Got dimensions=",self.dimensions
+            #print "Got dimensions=",self.dimensions
         return self.dimensions
         
     def getSpacing(self):
@@ -90,8 +90,10 @@ class LeicaDataSource(DataSource):
                      dataunit contains
         """
         if not self.spacing:
-            # TODO: Is this ok
-            self.spacing = self.getVoxelSize()
+            a,b,c = self.getVoxelSize()
+            self.spacing=[1,b/a,c/a]
+        return self.spacing
+
             #data=self.getDataSet(0)
             #self.spacing=data.GetSpacing()
         return self.spacing
@@ -105,7 +107,7 @@ class LeicaDataSource(DataSource):
         """
         if not self.voxelsize:
             self.voxelsize = self.reader.GetVoxelSize(self.experiment)
-            print "Got voxel size=",self.voxelsize
+            #print "Got voxel size=",self.voxelsize
         return self.voxelsize
     
     def loadFromFile(self, filename):
@@ -130,7 +132,7 @@ class LeicaDataSource(DataSource):
         experiments = self.reader.GetExperiments()
         for experiment in experiments:
             channelNum=self.reader.GetNumberOfChannels(experiment)
-            print "There are %d channels in %s"%(channelNum,filename)
+            #print "There are %d channels in %s"%(channelNum,filename)
             for i in range(channelNum):
                 # We create a datasource with specific channel number that
                 #  we can associate with the dataunit
@@ -212,7 +214,7 @@ class LeicaExperiment:
         Created: 12.04.2005, KP
         Description: Return the number of channels an experiment contains
         """
-        print self.SeriesDict.keys()
+        #print self.SeriesDict.keys()
         return self.SeriesDict[experiment]["Num_T"]
         
     def GetDimensions(self,experiment):
@@ -491,6 +493,7 @@ class LeicaExperiment:
             for Channel in TimePoint:
                 ImageReader=vtk.vtkImageReader()
                 TIFFReader=vtk.vtkTIFFReader()
+                TIFFReader.RawModeOn()
                 #First read the images for a particular channel
                 ImageName=Channel[0] #Take the first tif name
                 #RE_zsplit=re.compile(r'.+_z000.+',re.I)  #split the filename at the z position, exising the z-pos variable
@@ -518,6 +521,7 @@ class LeicaExperiment:
                 #print ImageReader
                 #ImageReader.SetDataByteOrderToLittleEndian()
                 ImageReader.FileLowerLeftOff()
+                TIFFReader.FileLowerLeftOff()
                 ImageReader.SetDataOrigin(0.0,0.0,0.0)
                 ImageReader.SetNumberOfScalarComponents(1)
                 TIFFReader.SetNumberOfScalarComponents(1)
@@ -526,17 +530,13 @@ class LeicaExperiment:
                 TIFFReader.SetDataExtent(0,XYDim,0,XYDim,0,NumSect)
                 ImageReader.SetDataSpacing(XSpace,YSpace,ZSpace)
                 TIFFReader.SetDataSpacing(XSpace,YSpace,ZSpace)
+                
                 TIFFReader.Update()
                 ImageReader.Update()
                 
                 
-                hsiz=TIFFReader.GetHeaderSize()
-                if hsiz>0:
-                    ImageReader.SetHeaderSize(hsiz)
-                ImageReader.Update() #necessary--used when incremental changes are made to ImageReader properties
-                #print "Output=",TIFFReader.GetOutput()
-                #print "Output=",ImageReader.GetOutput()
-                ChnlVolDataLst.append(ImageReader)#now we have a list with the imported volume data for each channel
+                #ImageReader.Update() #necessary--used when incremental changes are made to ImageReader properties
+                ChnlVolDataLst.append(TIFFReader)#now we have a list with the imported volume data for each channel
             self.TP_CH_VolDataList.append(ChnlVolDataLst)	
             
         #used for testing image reader behavior on different platforms
