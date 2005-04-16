@@ -169,9 +169,33 @@ class LeicaDataSource(DataSource):
 class LeicaExperiment:
     def __init__ (self, ExpPathTxt):
         self.SeriesDict={}
+        # Store snapshots in a dict of it's own, so we can give them separately 
+        # if requested
+        self.SnapshotDict={}
         self.path=""
+
+        self.RE_ScanMode=re.compile(r'ScanMode.*',re.I)
+        self.RE_X=re.compile(r'Format-Width.+\d+',re.I)
+        self.RE_Y=re.compile(r'Format-Height.+\d+',re.I)
+        self.RE_NumChan=re.compile(r'Dimension_2.*',re.I)
+        self.RE_LogicalSize=re.compile(r'Logical\sSize.+\d+',re.I)
+        self.RE_NumSect=re.compile(r'Dimension_3.*',re.I)
+        self.RE_T=re.compile(r'Dimension_4.*',re.I)
+        self.RE_SeriesName=re.compile(r'Series\sName:.*',re.I)
+        self.RE_Width=re.compile(r'Size-Width.+\d+',re.I)
+        self.RE_Height=re.compile(r'Size-Height.+\d+',re.I)
+        self.RE_Depth=re.compile(r'Size-Depth.+\d+',re.I)
+        self.RE_VoxelWidth=re.compile(r'Voxel-Width.+\d+',re.I)
+        self.RE_VoxelHeight=re.compile(r'Voxel-Height.+\d+',re.I)
+        self.RE_VoxelDepth=re.compile(r'Voxel-Depth.+\d+',re.I)
+        self.RE_Bit_Depth=re.compile(r'Resolution.+\d+',re.I)
+        self.RE_NonWhitespace=re.compile(r'\w+',re.I)
+        
+        
         self.setFileName(ExpPathTxt)
         self.TP_CH_VolDataList=[]
+        
+
         
     def setFileName(self,filename):
         """
@@ -294,140 +318,248 @@ class LeicaExperiment:
             PreExpName=ExpPathPair[1]
             PreExpNameLst=string.split(PreExpName,'.')
             self.ExpName=PreExpNameLst[0] #this gets rid of the file extension
+            
+    def GetScanMode(self,Series_Data):
+        """
+        Method: GetScanMode(data)
+        Created: 15.04.2005, KP, based on Karl Garsha's code
+        Description: Return the scan mode from given data
+        """        
+        SeriesScanModeLine=self.RE_ScanMode.search(Series_Data)
+        if not SeriesScanModeLine:
+            return None
+        SeriesScanModeSplit=SeriesScanModeLine.group(0).split()
+        SeriesScanMode=SeriesScanModeSplit[1].strip()
+        return SeriesScanMode
 
+    def GetSeriesName(self,Series_Data):
+        """
+        Method: GetSeriesName(data)
+        Created: 15.04.2005, KP, based on Karl Garsha's code
+        Description: Return the series name from given data
+        """               
+        SeriesNameString=self.RE_SeriesName.search(Series_Data)
+        SeriesNameLine=SeriesNameString.group(0)
+        SeriesNameSplit=SeriesNameLine.split()
+        SeriesNameSplit.reverse()
+        SeriesNameTxtString=self.RE_NonWhitespace.search(SeriesNameSplit[0].strip())#this is intended to get the alpha-num. char values and drop the newlines
+        SeriesName=SeriesNameTxtString.group(0)# should return the series name w/o newline
+        return SeriesName#It works! Holy toledo-what a pain in butt.
+        
+    def GetNumChan(self,Series_Data):
+        """
+        Method: GetNumChan(data)
+        Created: 15.04.2005, KP, based on Karl Garsha's code
+        Description: Return the number of channels from given data
+        """              
+        SeriesDataSplit=self.RE_NumChan.split(Series_Data)
+        NumChan_String=SeriesDataSplit[1]
+        NumChanMatch=self.RE_LogicalSize.search(NumChan_String)
+        NumChanLine=NumChanMatch.group(0)
+        WordsNumChan=NumChanLine.split()
+        WordsNumChan.reverse()
+        NumChan=int(WordsNumChan[0].strip())
+        return NumChan        
+        
+    def GetZDimension(self,Series_Data):
+        """
+        Method: GetZDimension(data)
+        Created: 15.04.2005, KP, based on Karl Garsha's code
+        Description: Return the z dimension from given data
+        """              
+        #Get the z-dimension value
+        SeriesDataSplit=self.RE_NumSect.split(Series_Data)
+        NumSect_String=SeriesDataSplit[1]
+        NumSectMatch=self.RE_LogicalSize.search(NumSect_String)
+        NumSectLine=NumSectMatch.group(0)
+        WordsZ_Res=NumSectLine.split()
+        WordsZ_Res.reverse()
+        Z_Res=int(WordsZ_Res[0].strip())
+        return Z_Res
+        
+    def GetTimeDimension(self,Series_Data):
+        """
+        Method: GetTimeDimension(data)
+        Created: 15.04.2005, KP, based on Karl Garsha's code
+        Description: Return the time dimension from given data
+        """          
+        SeriesDataSplit=self.RE_T.split(Series_Data)
+        T_String=SeriesDataSplit[1]
+        T_Match=self.RE_LogicalSize.search(NumSect_String)
+        T_Line=T_Match.group(0)
+        WordsNumT=T_Line.split()
+        WordsNumT.reverse()
+        NumT=int(WordsNumT[0].strip())
+        return NumT
+        
+    def GetWidth(self,Series_Data):
+        """
+        Method: GetWidth(data)
+        Created: 15.04.2005, KP, based on Karl Garsha's code
+        Description: Return the width from given data
+        """                  
+        SeriesWidthString=self.RE_Width.search(Series_Data)
+        SeriesWidthLine=SeriesWidthString.group(0)
+        SeriesWidthSplit=SeriesWidthLine.split()
+        SeriesWidthSplit.reverse()
+        SeriesWidth=float(SeriesWidthSplit[0])
+        return SeriesWidth
+        
+    def GetHeight(self,Series_Data):
+        """
+        Method: GetHeight(data)
+        Created: 15.04.2005, KP, based on Karl Garsha's code
+        Description: Return the height from given data
+        """                   
+        SeriesHeightString=self.RE_Height.search(Series_Data)
+        SeriesHeightLine=SeriesHeightString.group(0)
+        SeriesHeightSplit=SeriesHeightLine.split()
+        SeriesHeightSplit.reverse()
+        SeriesHeight=float(SeriesHeightSplit[0].strip())
+        return SeriesHeight
+        
+    def GetDepth(self,Series_Data):
+        """
+        Method: GetDepth(data)
+        Created: 15.04.2005, KP, based on Karl Garsha's code
+        Description: Return the depth from given data
+        """ 
+        SeriesDepthString=self.RE_Depth.search(Series_Data)
+        SeriesDepthLine=SeriesDepthString.group(0)
+        SeriesDepthSplit=SeriesDepthLine.split()
+        SeriesDepthSplit.reverse()
+        SeriesDepth=float(SeriesDepthSplit[0].strip())
+        return SeriesDepth
+        
+    def GetVoxelWidth(self,Series_Data):
+        """
+        Method: GetVoxelWidth(data)
+        Created: 15.04.2005, KP, based on Karl Garsha's code
+        Description: Return the voxel width from given data
+        """ 
+        SeriesVoxelWidthString=self.RE_VoxelWidth.search(Series_Data)
+        SeriesVoxelWidthLine=SeriesVoxelWidthString.group(0)
+        SeriesVoxelWidthSplit=SeriesVoxelWidthLine.split()
+        SeriesVoxelWidthSplit.reverse()
+        SeriesVoxelWidth=float(SeriesVoxelWidthSplit[0].strip())
+        return SeriesVoxelWidth
+        
+    def GetVoxelHeight(self,Series_Data):
+        """
+        Method: GetVoxelHeight(data)
+        Created: 15.04.2005, KP, based on Karl Garsha's code
+        Description: Return the voxel height from given data
+        """             
+        SeriesVoxelHeightString=self.RE_VoxelHeight.search(Series_Data)
+        SeriesVoxelHeightLine=SeriesVoxelHeightString.group(0)
+        SeriesVoxelHeightSplit=SeriesVoxelHeightLine.split()
+        SeriesVoxelHeightSplit.reverse()
+        SeriesVoxelHeight=float(SeriesVoxelHeightSplit[0].strip())
+        return SeriesVoxelHeight
+        
+    def GetVoxelDepth(self,Series_Data):
+        """
+        Method: GetVoxelDepth(data)
+        Created: 15.04.2005, KP, based on Karl Garsha's code
+        Description: Return the voxel depth from given data
+        """                
+        SeriesVoxelDepthString=self.RE_VoxelDepth.search(Series_Data)
+        SeriesVoxelDepthLine=SeriesVoxelDepthString.group(0)
+        SeriesVoxelDepthSplit=SeriesVoxelDepthLine.split()
+        SeriesVoxelDepthSplit.reverse()
+        SeriesVoxelDepth=float(SeriesVoxelDepthSplit[0].strip())
+        return SeriesVoxelDepth
+        
+    def GetBitDepth(self,Series_Data):
+        """
+        Method: GetBitDepth(data)
+        Created: 15.04.2005, KP, based on Karl Garsha's code
+        Description: Return the bit depth from given data
+        """             
+        SeriesBitDepthString=self.RE_Bit_Depth.search(Series_Data)
+        SeriesBitDepthLine=SeriesBitDepthString.group(0)
+        SeriesBitDepthSplit=SeriesBitDepthLine.split()
+        SeriesBitDepthSplit.reverse()
+        SeriesBitDepth=float(SeriesBitDepthSplit[0].strip())
+        return SeriesBitDepth
+                        
+    def GetResolutionX(self,Series_Data):
+        """
+        Method: GetResolutionX(data)
+        Created: 15.04.2005, KP, based on Karl Garsha's code
+        Description: Return the x resolution from given data
+        """                                    
+        SeriesResXString=self.RE_X.search(Series_Data)
+        SeriesResXLine=SeriesResXString.group(0)
+        SeriesResXSplit=SeriesResXLine.split()
+        SeriesResXSplit.reverse()
+        SeriesResX=int(SeriesResXSplit[0].strip())
+        return SeriesResX
+                
+    def GetResolutionY(self,Series_Data):
+        """
+        Method: GetResolutionY(data)
+        Created: 15.04.2005, KP, based on Karl Garsha's code
+        Description: Return the x resolution from given data
+        """                                            
+        SeriesResYString=self.RE_Y.search(Series_Data)
+        SeriesResYLine=SeriesResYString.group(0)
+        SeriesResYSplit=SeriesResYLine.split()
+        SeriesResYSplit.reverse()
+        SeriesResY=int(SeriesResYSplit[0].strip())
+        return SeriesResY
+                        
+                        
     def Extract_Series_Info(self):
         self.SeriesDict={}
-        RE_ScanMode=re.compile(r'ScanMode.*',re.I)
-        RE_X=re.compile(r'Format-Width.+\d+',re.I)
-        RE_Y=re.compile(r'Format-Height.+\d+',re.I)
-        RE_NumChan=re.compile(r'Dimension_2.*',re.I)
-        RE_LogicalSize=re.compile(r'Logical\sSize.+\d+',re.I)
-        RE_NumSect=re.compile(r'Dimension_3.*',re.I)
-        RE_T=re.compile(r'Dimension_4.*',re.I)
-        RE_SeriesName=re.compile(r'Series\sName:.*',re.I)
-        RE_Width=re.compile(r'Size-Width.+\d+',re.I)
-        RE_Height=re.compile(r'Size-Height.+\d+',re.I)
-        RE_Depth=re.compile(r'Size-Depth.+\d+',re.I)
-        RE_VoxelWidth=re.compile(r'Voxel-Width.+\d+',re.I)
-        RE_VoxelHeight=re.compile(r'Voxel-Height.+\d+',re.I)
-        RE_VoxelDepth=re.compile(r'Voxel-Depth.+\d+',re.I)
-        RE_Bit_Depth=re.compile(r'Resolution.+\d+',re.I)
-        RE_NonWhitespace=re.compile(r'\w+',re.I)
         
+        print "Series_Data_List=",self.Series_Data_List
         for string in self.Series_Data_List:
             Series_Data=string
             Series_Info={}
-            #Now we get the scan mode (eg. xyz)
-            SeriesScanModeLine=RE_ScanMode.search(Series_Data)
-            SeriesScanModeSplit=SeriesScanModeLine.group(0).split()
-            SeriesScanMode=SeriesScanModeSplit[1].strip()
-            Series_Info['Scan_Mode']=SeriesScanMode
+ 
+            seriesname = self.GetSeriesName(Series_Data)
+            SeriesScanMode=self.GetScanMode(Series_Data)
+            
+            Series_Info['Series_Name'] = seriesname
+            if not SeriesScanMode:
+                if "snapshot" in seriesname.lower():
+                    # TODO: This is a snapshot, handle it as such
+                    print "Do not know how to handle snapshot %s, continuing"%seriesname
+                    continue
+                else:
+                    print "Unrecognized entity without scanmode:",seriesname
+            else:
+                Series_Info['Scan_Mode']=SeriesScanMode
+            
             if SeriesScanMode=='xyz' or SeriesScanMode=='xyzt':
-                #Get the numchan-dimension value
-                SeriesDataSplit=RE_NumChan.split(Series_Data)
-                NumChan_String=SeriesDataSplit[1]
-                NumChanMatch=RE_LogicalSize.search(NumChan_String)
-                NumChanLine=NumChanMatch.group(0)
-                WordsNumChan=NumChanLine.split()
-                WordsNumChan.reverse()
-                NumChan=int(WordsNumChan[0].strip())
-                Series_Info['NumChan']=NumChan
+                Series_Info['NumChan']=self.GetNumChan(Series_Data)
+                
+                SeriesDataSplit=self.RE_NumChan.split(Series_Data)
                 Series_Data=SeriesDataSplit[1] #Breaks data text into progressively smaller pieces
-                #Get the z-dimension value
-                SeriesDataSplit=RE_NumSect.split(Series_Data)
-                NumSect_String=SeriesDataSplit[1]
-                NumSectMatch=RE_LogicalSize.search(NumSect_String)
-                NumSectLine=NumSectMatch.group(0)
-                WordsZ_Res=NumSectLine.split()
-                WordsZ_Res.reverse()
-                Z_Res=int(WordsZ_Res[0].strip())
-                Series_Info['Number_Sections']=Z_Res
+          
+                Series_Info['Number_Sections']=self.GetZDimension(Series_Data)
+                
+                SeriesDataSplit=self.RE_NumSect.split(Series_Data)
                 Series_Data=SeriesDataSplit[1] #Breaks data text into progressively smaller pieces
+                
                 #Check for Time dimension--if so, get time data
-                if RE_T.match(Series_Data):
-                    SeriesDataSplit=RE_T.split(Series_Data)
-                    T_String=SeriesDataSplit[1]
-                    T_Match=RE_LogicalSize.search(NumSect_String)
-                    T_Line=T_Match.group(0)
-                    WordsNumT=T_Line.split()
-                    WordsNumT.reverse()
-                    NumT=int(WordsNumT[0].strip())
-                    Series_Info['Num_T']=NumT
+                if self.RE_T.match(Series_Data):
+                    Series_Info['Num_T']=self.GetTimeDimension(Series_Data)
+                    SeriesDataSplit=self.RE_T.split(Series_Data)
                     Series_Data=SeriesDataSplit[1]
                 else:
                     Series_Info['Num_T']=1
-                #Now we get the series name
-                SeriesNameString=RE_SeriesName.search(Series_Data)
-                SeriesNameLine=SeriesNameString.group(0)
-                SeriesNameSplit=SeriesNameLine.split()
-                SeriesNameSplit.reverse()
-                SeriesNameTxtString=RE_NonWhitespace.search(SeriesNameSplit[0].strip())#this is intended to get the alpha-num. char values and drop the newlines
-                SeriesName=SeriesNameTxtString.group(0)# should return the series name w/o newline
-                Series_Info['Series_Name']=SeriesName #It works! Holy toledo-what a pain in butt.
+                Series_Info['Width_X']=self.GetWidth(Series_Data)
+                Series_Info['Height_Y']=self.GetHeight(Series_Data)
+                Series_Info['Depth_Z']=self.GetDepth(Series_Data)
+                Series_Info['Voxel_Width_X']=self.GetVoxelWidth(Series_Data)
+                Series_Info['Voxel_Height_Y']=self.GetVoxelHeight(Series_Data)
+                Series_Info['Voxel_Depth_Z']=self.GetVoxelDepth(Series_Data)
                 
-                #Now we get the series width_x
-                SeriesWidthString=RE_Width.search(Series_Data)
-                SeriesWidthLine=SeriesWidthString.group(0)
-                SeriesWidthSplit=SeriesWidthLine.split()
-                SeriesWidthSplit.reverse()
-                SeriesWidth=float(SeriesWidthSplit[0])
-                Series_Info['Width_X']=SeriesWidth
-                #Now we get the series height_y
-                SeriesHeightString=RE_Height.search(Series_Data)
-                SeriesHeightLine=SeriesHeightString.group(0)
-                SeriesHeightSplit=SeriesHeightLine.split()
-                SeriesHeightSplit.reverse()
-                SeriesHeight=float(SeriesHeightSplit[0].strip())
-                Series_Info['Height_Y']=SeriesHeight
-                #Now we get the series depth_z
-                SeriesDepthString=RE_Depth.search(Series_Data)
-                SeriesDepthLine=SeriesDepthString.group(0)
-                SeriesDepthSplit=SeriesDepthLine.split()
-                SeriesDepthSplit.reverse()
-                SeriesDepth=float(SeriesDepthSplit[0].strip())
-                Series_Info['Depth_Z']=SeriesDepth
-                #Now we get the series voxel_width
-                SeriesVoxelWidthString=RE_VoxelWidth.search(Series_Data)
-                SeriesVoxelWidthLine=SeriesVoxelWidthString.group(0)
-                SeriesVoxelWidthSplit=SeriesVoxelWidthLine.split()
-                SeriesVoxelWidthSplit.reverse()
-                SeriesVoxelWidth=float(SeriesVoxelWidthSplit[0].strip())
-                Series_Info['Voxel_Width_X']=SeriesVoxelWidth
-                #Now we get the series voxel_height
-                SeriesVoxelHeightString=RE_VoxelHeight.search(Series_Data)
-                SeriesVoxelHeightLine=SeriesVoxelHeightString.group(0)
-                SeriesVoxelHeightSplit=SeriesVoxelHeightLine.split()
-                SeriesVoxelHeightSplit.reverse()
-                SeriesVoxelHeight=float(SeriesVoxelHeightSplit[0].strip())
-                Series_Info['Voxel_Height_Y']=SeriesVoxelHeight
-                #Now we get the series voxel_depth
-                SeriesVoxelDepthString=RE_VoxelDepth.search(Series_Data)
-                SeriesVoxelDepthLine=SeriesVoxelDepthString.group(0)
-                SeriesVoxelDepthSplit=SeriesVoxelDepthLine.split()
-                SeriesVoxelDepthSplit.reverse()
-                SeriesVoxelDepth=float(SeriesVoxelDepthSplit[0].strip())
-                Series_Info['Voxel_Depth_Z']=SeriesVoxelDepth
-                #Now we get the series bit_depth
-                SeriesBitDepthString=RE_Bit_Depth.search(Series_Data)
-                SeriesBitDepthLine=SeriesBitDepthString.group(0)
-                SeriesBitDepthSplit=SeriesBitDepthLine.split()
-                SeriesBitDepthSplit.reverse()
-                SeriesBitDepth=float(SeriesBitDepthSplit[0].strip())
-                Series_Info['Bit_Depth']=SeriesBitDepth	
-                #Now we get the series res_x
-                SeriesResXString=RE_X.search(Series_Data)
-                SeriesResXLine=SeriesResXString.group(0)
-                SeriesResXSplit=SeriesResXLine.split()
-                SeriesResXSplit.reverse()
-                SeriesResX=int(SeriesResXSplit[0].strip())
-                Series_Info['Resolution_X']=SeriesResX
-                #Now we get the series res_y
-                SeriesResYString=RE_Y.search(Series_Data)
-                SeriesResYLine=SeriesResYString.group(0)
-                SeriesResYSplit=SeriesResYLine.split()
-                SeriesResYSplit.reverse()
-                SeriesResY=int(SeriesResYSplit[0].strip())
-                Series_Info['Resolution_Y']=SeriesResY
+                Series_Info['Bit_Depth']=self.GetBitDepth(Series_Data)
+                Series_Info['Resolution_X']=self.GetResolutionX(Series_Data)
+                Series_Info['Resolution_Y']=self.GetResolutionY(Series_Data)
                 
                 #make a dictionary containing each series info dictionary (dictionary of dictionaries)
                 SeriesName=Series_Info['Series_Name']
@@ -463,19 +595,6 @@ class LeicaExperiment:
         self.Sep_Series(ExpPathTxt)
         self.Extract_Series_Info()
         self.Create_Tiff_Lists()
-
-    #this is a work in progress and hasn't been tested
-    def ExportVTKVol_VTK(self,Series_Name):
-        VTK_Writer=vtk.vtkStructuredPointsWriter()
-        if len(self.TP_CH_VolDataList) == 0:
-            self.ReadLeicaVolData(Series_Name)
-        for TimePoint in self.TP_CH_VolDataList:
-            for Channel in Timepoint:
-                VTK_Writer.SetInput(Channel.GetOutput())
-                VTK_Writer.SetFileName(Series_Name +'_t_'+str(self.TP_CH_VolDataList.index(TimePoint)%100//10)+str(self.TP_CH_VolDataList.index(TimePoint)%10//1)+'_ch_'+str(TimePoint.index(Channel)%100//10)+str(TimePoint.index(Channel)%10//1))
-                VTK_Writer.SetFileTypeToBinary()
-                VTK_Writer.Update()
-                VTK_Writer.Write()
             
     def ReadLeicaVolData(self,Series_Name):
         #os.chdir(self.ExpPath)#needed for Tkinter file select
