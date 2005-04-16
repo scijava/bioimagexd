@@ -88,7 +88,7 @@ class TrackItem(wx.Panel):
             self.Bind(wx.EVT_LEFT_UP,self.onUp)
                         
         self.beginX=0
-        self.ok=0
+        self.dragMode=0
         
     def getItemNumber(self):
         """
@@ -337,11 +337,13 @@ class TrackItem(wx.Panel):
         """       
         x,y=event.GetPosition()
         #print "onDow()",x,y
-        self.ok=0
+        self.dragMode=0
         w,h=self.GetSize()
         posx,posy=self.GetPosition()
+        if self.itemnum == 0 and x<8:
+            self.dragMode=2
         if abs(x-w)<8:
-            self.ok=1
+            self.dragMode=1
             self.beginX=x
         return
             
@@ -388,8 +390,17 @@ class TrackItem(wx.Panel):
     
         if not event.Dragging():
             return
-        if not self.ok:
+        if not self.dragMode:
             print "Click closer to the edge"
+            return
+        if self.dragMode == 2:
+            x,y=event.GetPosition()
+            x2,y2=self.GetPosition()
+            x+=x2
+            x-=self.parent.getLabelWidth()
+            print "Setting empty space to ",x
+            self.parent.setEmptySpace(x)
+            #self.parent.updateLayout()
             return
         x,y=event.GetPosition()
         posx,posy=self.GetPosition()
@@ -636,4 +647,43 @@ class TransitionItem(TrackItem):
         start,end=self.position
         desc="TRANS"
         return "[%s %ds:%ds]"%(desc,start,end)      
+        
+
+class EmptyItem(TrackItem):
+    """
+    Class: EmptyItem
+    Created: 16.04.2005, KP
+    Description: An item representing empty space
+    """       
+    def __init__(self,parent,size,**kws):
+        """
+        Method: __init__
+        Created: 16.04.2005, KP
+        Description: Initialize
+        """       
+        TrackItem.__init__(self,parent,"",size,**kws)
+        
+    def drawItem(self,hilight=-1):
+        """
+        Method: drawItem()
+        Created: 13.04.2005, KP
+        Description: A method that draws the item.
+        """
+        self.dc.Clear()
+        self.dc.BeginDrawing()
+        col=self.GetBackgroundColour()
+        r,g,b=col.Red(),col.Green(),col.Blue()
+        col=wx.Colour(r,g,b)
+        self.dc.SetBrush(wx.Brush(col))
+        self.dc.DrawRectangle(0,0,self.width,self.height)        
+        self.dc.EndDrawing()
+        
+    def __str__(self):
+        """
+        Method: __str__
+        Created: 13.04.2005, KP
+        Description: Return string representation of self
+        """  
+        start,end=self.position
+        return "[E %ds:%ds]"%(start,end)      
         

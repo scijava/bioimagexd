@@ -184,6 +184,7 @@ class UrmasControl:
         #self.timelineConfig.setDuration(n/2)
         
         #self.timeline.addTrack("Timepoint",self.dataUnit.getLength())
+        self.configureTimeline(self.duration,self.frames)
         self.updateGUI()
         self.updateLayouts()
         self.animator.animator.initData()

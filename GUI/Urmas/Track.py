@@ -58,7 +58,6 @@ class Track(wx.Panel):
         self.SetBackgroundColour((255,255,255))
         self.control = kws["control"]
         self.splineEditor = self.control.getSplineEditor()
-        
         self.label = name
         self.previtem = None
         if kws.has_key("height"):
@@ -97,6 +96,7 @@ class Track(wx.Panel):
         self.namePanel.Bind(wx.EVT_LEFT_UP,self.setSelected)
         self.nameLbl.Bind(wx.EVT_LEFT_UP,self.setSelected)
         #self.Bind(wx.EVT_LEFT_UP,self.setSelected)
+        self.setDuration(self.control.getDuration(),self.control.getFrames())
         
     def setSelected(self,event):
         """
@@ -215,10 +215,15 @@ class Track(wx.Panel):
         """               
         if self.itemBox:
             print "Removing ",len(self.items)," items"    
+            
             self.sizer.Show(self.itemBox,0)
             self.sizer.Detach(self.itemBox)
             for i in range(len(self.items)):
                 self.removeItem(i)
+            self.itemBox.Show(self.positionItem,0)
+            self.itemBox.Detach(self.positionItem)
+            self.positionItem.Destroy()
+            self.positionItem = None
             self.itemBox.Destroy()    
 
     def removeItem(self,position):
@@ -230,6 +235,7 @@ class Track(wx.Panel):
         item=self.items[position]
         self.itemBox.Show(item,0)
         self.itemBox.Detach(item)
+        self.positionItem = None
         self.items.remove(item)
         item.Destroy()
         
@@ -275,6 +281,10 @@ class Track(wx.Panel):
         """               
         self.itemBox=wx.BoxSizer(wx.HORIZONTAL)
         self.sizer.Add(self.itemBox,(0,1))
+        self.positionItem = wx.Panel(self,-1)#EmptyItem(self,(0,1))
+        self.positionItem.SetBackgroundColour(self.GetBackgroundColour())
+        self.positionItem.SetSize((0,-1))
+        self.itemBox.Insert(0,self.positionItem)
         
         self.updateLayout()
         self.items=[]
@@ -329,6 +339,27 @@ class Track(wx.Panel):
             last.setWidth(w+diff)
         #print "Updating layout"
         self.updateLayout()
+        
+    def setEmptySpace(self,space):
+        """
+        Method: setEmptySpace(self,space)
+        Created: 15.04.2005, KP
+        Description: Sets the empty space at the beginning of a track
+        """        
+        maxempty = self.parent.getLargestTrackLength(self)
+        print "maxempty=",maxempty
+        if space<0:
+            space=0
+        if space>maxempty:
+            print "Won't grow beyond %d"%maxempty
+            space=maxempty
+        #self.positionItem.setWidth(space)
+        self.positionItem.SetSize((space,-1))
+        #self.Layout()
+        self.parent.Layout()
+        #self.updateLayout()
+        print "setting positionItem size",self.positionItem.GetSize()
+        
         
     def getLabelWidth(self):
         """
@@ -542,7 +573,8 @@ class SplineTrack(Track):
         if self.color:
             item.setColor(self.color,self.headercolor)
         self.items.insert(position,item)
-        self.itemBox.Insert(position,item)
+        # +1 accounts for the empty item
+        self.itemBox.Insert(position+1,item)
 
         for i in range(len(self.items)):
             self.items[i].setItemNumber(i)
@@ -634,7 +666,7 @@ class TimepointTrack(Track):
         Description: A method to add a new item to this track
         """              
         h=self.namePanel.GetSize()[1]
-        kws={"itemnum":timepoint,"editable":self.editable}
+        kws={"editable":self.editable}
         kws["dataunit"]=self.dataUnit
         kws["thumbnail"]=timepoint
         kws["timepoint"]=timepoint
@@ -643,7 +675,12 @@ class TimepointTrack(Track):
         if self.color:
             item.setColor(self.color,self.headercolor)
         self.items.insert(position,item)
-        self.itemBox.Insert(position,item)
+        # +1 accounts for the empty item
+        self.itemBox.Insert(position+1,item)
+        
+        for i,item in enumerate(self.items):
+            item.setItemNumber(i)
+            
         if update:
             self.Layout()
             self.sizer.Fit(self)

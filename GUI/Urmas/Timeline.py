@@ -199,7 +199,30 @@ class Timeline(scrolled.ScrolledPanel):
         self.sizer.Add(tr,(self.trackOffset+self.timepointTrackAmnt+self.splinepointTrackAmnt,0),flag=wx.EXPAND|wx.ALL)
         self.Layout()
         self.SetupScrolling()
-        self.splinepointTracks.append(tr)            
+        self.splinepointTracks.append(tr)    
+
+    def getLargestTrackLength(self,cmptrack):
+        """
+        Method: getLargestTrackLength
+        Created: 16.02.2005, KP
+        Description: Return the length of the largest track that is the
+                     same type as the argument, but not the same
+        """
+        tracks=[]
+        tracks.extend(self.timepointTracks)
+        tracks.extend(self.splinepointTracks)
+        ret=0
+        for track in tracks:
+            if track != cmptrack and track.__class__ == cmptrack.__class__:
+                item=track.items[-1]
+                x,y=item.GetPosition()
+                w,h=item.GetSize()
+                curr=x+w-track.getLabelWidth()
+                if ret<curr:
+                    ret=curr
+        return ret
+        
+            
             
     def setDisabled(self,flag):
         """
