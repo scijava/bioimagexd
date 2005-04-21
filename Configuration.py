@@ -69,7 +69,7 @@ class Configuration:
         
         self.insertModuleDirectories()
         self.processPathSettings()
-        print sys.path
+        #print sys.path
         
     def writeSettings(self):
         """
@@ -114,7 +114,10 @@ class Configuration:
         
     def getConfigItem(self,configItem,section):
         if not configItem in self.configItems:
-            self.readConfigItem(section,configItem)
+            self.readConfigItem(configItem,section)
+            
+        if not configItem in self.configItems:
+            return None
         return self.configItems[configItem]
         
     def readPathSettings(self):
