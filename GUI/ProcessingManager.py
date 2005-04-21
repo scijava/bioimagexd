@@ -137,7 +137,8 @@ class ProcessingManager(TimepointSelection):
         """    
         self.status=wx.ID_CANCEL
                 
-        filename=Dialogs.askSaveAsFileName(self,self.operationName,self.dataUnit.getName())
+        name=self.dataUnit.getName()
+        filename=Dialogs.askSaveAsFileName(self,"Save %s dataset as"%self.operationName,"%s.du"%name,"%s Dataunit (*.du)|*.du"%name)
 
         if not filename:
             return
