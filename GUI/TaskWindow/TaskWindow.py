@@ -41,6 +41,7 @@ import sys
 import Colocalization
 import ColorMerging
 import ImageOperations
+import ColorTransferEditor
 
 def showTaskWindow(windowclass,combinedUnit,mainwin):
     """
@@ -180,9 +181,11 @@ class TaskWindow(wx.Frame):
         self.tb2 = wx.ToolBar(self,-1,style=wx.TB_VERTICAL|wx.TB_TEXT)
         self.tb2.SetToolBitmapSize((64,64))# this required for non-standard size buttons on MSW
         n=0
+        print "FOOoo\n\n\n\n\n"
         for dataunit in self.dataUnit.getSourceDataUnits():
             color = dataunit.getColor()
             name = dataunit.getName()
+            print "Adding item ",name
             dc= wx.MemoryDC()
             bmp=ImageOperations.vtkImageDataToPreviewBitmap(dataunit.getTimePoint(0),color,64,64)
             dc.SelectObject(bmp)
@@ -201,7 +204,7 @@ class TaskWindow(wx.Frame):
             self.Bind(wx.EVT_TOOL,lambda e,x=n,s=self:s.selectItem(e,x),id=toolid)
             n=n+1
         self.tb2.Realize()
-        self.mainsizer.Add(self.tb2,(0,3))
+        self.mainsizer.Add(self.tb2,(0,4))
         
     def OnSize(self,event):
         """

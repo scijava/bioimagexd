@@ -10,7 +10,7 @@
  A wxPython Dialog window that is used to control the settings for the
  colocalization module. Expects to be handed a ColorCombinationDataUnit() 
  containing the datasets from which the color combination is generated.
- Uses the PreviewFrame for previewing.
+ Uses the PreviewFrame for previewingge.
 
  Modified from ColocalizationWindow.py.
 
@@ -52,7 +52,6 @@ import sys
 import ColorMerging
 
 import Dialogs
-from ColorSelectionDialog import *
 import time
 import vtk
 
@@ -104,8 +103,12 @@ class ColorMergingWindow(TaskWindow.TaskWindow):
         TaskWindow.TaskWindow.createOptionsFrame(self)
         self.taskNameLbl.SetLabel("Merged dataset name:")
 
-        self.colorChooser=ColorSelectionDialog(self.commonSettingsPanel,self.setColor)
-        self.commonSettingsSizer.Add(self.colorChooser,(1,0))
+        #self.colorChooser=ColorSelectionDialog(self.commonSettingsPanel,self.setColor)
+        #self.commonSettingsSizer.Add(self.colorChooser,(1,0))
+        self.paletteLbl = wx.StaticText(self.commonSettingsPanel,-1,"Channel palette:")
+        self.commonSettingsSizer.Add(self.paletteLbl,(1,0))
+        self.colorBtn = ColorTransferEditor.CTFButton(self.commonSettingsPanel)
+        self.commonSettingsSizer.Add(self.colorBtn,(2,0))
 
         self.editIntensityPanel=wx.Panel(self.settingsNotebook,-1)
         self.editIntensitySizer=wx.GridBagSizer()
@@ -181,30 +184,15 @@ class ColorMergingWindow(TaskWindow.TaskWindow):
     def resetTransferFunctions(self,event=None):
         """
         Method: resetTransferFunctions()
-        Created: 30.11.2004
-        Creator: KP
+        Created: 30.11.2004, KP
         Description: A method to reset all the intensity transfer functions
         """
-        pass
+        dataunits = self.dataUnit.getSourceDataUnits()
+        for unit in dataunits:
+            setting=unit.getSettings()
+            itf = vtk.vtkIntensityTransferFunction()
+            setting.set("IntensityTransferFunction",itf)
 
-    def setColor(self,r,g,b):
-        """
-        Method: setColor(r,g,b)
-        Created: 10.11.2004
-        Creator: JV
-        Description: A method that sets the color of the selected dataUnit and 
-                     updates the preview and Set color-button accordingly
-        """
-        # We might get called before any channel has been selected. 
-        # In that case, do nothing
-        if not self.settings:return
-
-        oldrgb=self.settings.get("Color")
-            #newrgb=(r,g,b)
-        if oldrgb != (r,g,b):
-            self.settings.set("Color",(r,g,b))
-            self.updateSettings()
-            self.doPreviewCallback()
 
     def updateSettings(self):
         """
@@ -215,9 +203,10 @@ class ColorMergingWindow(TaskWindow.TaskWindow):
                      stored in the instance variable self.configSetting
         """
         if self.dataUnit and self.settings:
-            r,g,b=self.settings.get("Color")
-            if self.colorChooser:
-                self.colorChooser.SetValue(wx.Colour(r,g,b))
+            ctf = self.settings.get("ColorTransferFunction")
+            if ctf and self.colorBtn:
+                print "Setting colorBtn.ctf"
+                self.colorBtn.setColorTransferFunction(ctf)
 
             tf = self.settings.get("IntensityTransferFunction")
             self.intensityTransferEditor.setIntensityTransferFunction(tf)
@@ -262,3 +251,9 @@ class ColorMergingWindow(TaskWindow.TaskWindow):
         # the user to edit the alpha channel for the 24-bit color merging
         #self.dataUnit.setOpacityTransfer(self.alphaTF)
         self.settings.set("AlphaTransferFunction",self.alphaTF)
+        ctf = self.settings.get("ColorTransferFunction")
+        if self.colorBtn:
+            print "Setting ctf"
+            self.colorBtn.setColorTransferFunction(ctf)
+        else:
+            print "Won't set ctf!"        

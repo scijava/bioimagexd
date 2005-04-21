@@ -167,8 +167,12 @@ class ColocalizationWindow(TaskWindow.TaskWindow):
 
         self.taskNameLbl.SetLabel("Colocalization name:")
 
-        self.colorChooser=ColorSelectionDialog(self.commonSettingsPanel,self.setColor)
-        self.commonSettingsSizer.Add(self.colorChooser,(1,0))
+        #self.colorChooser=ColorSelectionDialog(self.commonSettingsPanel,self.setColor)
+        #self.commonSettingsSizer.Add(self.colorChooser,(1,0))
+        self.paletteLbl = wx.StaticText(self.commonSettingsPanel,-1,"Channel palette:")
+        self.commonSettingsSizer.Add(self.paletteLbl,(1,0))
+        self.colorBtn = ColorTransferEditor.CTFButton(self.commonSettingsPanel)
+        self.commonSettingsSizer.Add(self.colorBtn,(2,0))
 
         self.colocalizationPanel=wx.Panel(self.settingsNotebook,-1)
         self.colocalizationSizer=wx.GridBagSizer()
@@ -210,21 +214,6 @@ class ColocalizationWindow(TaskWindow.TaskWindow):
         self.colocalizationPanel.SetAutoLayout(1)
         
         self.settingsNotebook.AddPage(self.colocalizationPanel,"Colocalization")
-        
-    def setColor(self,r,g,b):
-        """
-        Method: setColor(r,g,b)
-        Created: 03.11.2004,  KP
-        Description: A method that sets the color of the dataUnit and 
-                     updates the preview and Set color-button accordingly
-        """
-        if self.dataUnit:
-            if self.settings.get("Type")=="ColocalizationSettings":
-                self.settings.set("ColocalizationColor",(r,g,b))
-                self.preview.updateColor()
-#        self.colorBtn.SetBackgroundColour((r,g,b))
-            self.doPreviewCallback()
-        
         
     def updateZSlice(self,event):
         """
@@ -296,9 +285,11 @@ class ColocalizationWindow(TaskWindow.TaskWindow):
             if th != None:
                 self.upperthreshold.SetValue(th)
             
-            if self.dataUnit:
-                r,g,b=self.settings.get("ColocalizationColor")
-                self.colorChooser.SetValue(wx.Colour(r,g,b))
+        if self.dataUnit and self.settings:
+            ctf = self.settings.get("ColocalizationColorTransferFunction")
+            if ctf and self.colorBtn:
+                print "Setting colorBtn.ctf"
+                self.colorBtn.setColorTransferFunction(ctf)
 
     def doColocalizationCallback(self,event):
         """
@@ -345,6 +336,9 @@ class ColocalizationWindow(TaskWindow.TaskWindow):
         TaskWindow.TaskWindow.setCombinedDataUnit(self,dataUnit)
         self.scatterGram.setDataunit(dataUnit)
         self.Bind(EVT_TIMEPOINT_CHANGED,self.timePointChanged,id=self.preview.GetId())
+        ctf = self.settings.get("ColocalizationColorTransferFunction")
+        if self.colorBtn:
+            self.colorBtn.setColorTransferFunction(ctf)
 
     def timePointChanged(self,event):
         """

@@ -44,13 +44,13 @@ import Dialogs
 from PreviewFrame import *
 from IntensityTransferEditor import *
 from Logging import *
-from ColorSelectionDialog import *
+#from ColorSelectionDialog import *
 
 import sys
 import time
 
 import TaskWindow
-
+import ColorTransferEditor
 
 class SingleUnitProcessingWindow(TaskWindow.TaskWindow):
     """
@@ -73,7 +73,7 @@ class SingleUnitProcessingWindow(TaskWindow.TaskWindow):
         self.operationName="Single Dataset Series Processing"
         TaskWindow.TaskWindow.__init__(self,parent)
         # Preview has to be generated here
-        self.colorChooser=None
+        # self.colorChooser=None
         self.createIntensityTransferPage()
         
         self.Show()
@@ -176,7 +176,9 @@ class SingleUnitProcessingWindow(TaskWindow.TaskWindow):
         self.editIntensityPanel.SetAutoLayout(1)
         self.settingsNotebook.InsertPage(1,self.editIntensityPanel,"Transfer Function")
         
-
+        print "Updating settings!"
+        self.updateSettings()
+        
     def setInterpolationTimePoints(self,event):
         """
         Method: setInterpolationTimePoints()
@@ -195,7 +197,7 @@ class SingleUnitProcessingWindow(TaskWindow.TaskWindow):
             except:
                 # For entries that have no value, add -1 as a place holder
                 lst.append(-1)
-        print "Setting lst=",lst
+        #print "Setting lst=",lst
         #self.dataUnit.setInterpolationTimePoints(lst)
         self.settings.set("InterpolationTimepoints",lst)
 
@@ -239,9 +241,11 @@ class SingleUnitProcessingWindow(TaskWindow.TaskWindow):
         TaskWindow.TaskWindow.createOptionsFrame(self)
         self.taskNameLbl.SetLabel("Processed dataset series name:")
             
-        self.colorChooser=ColorSelectionDialog(self.commonSettingsPanel,self.setColor)
-        self.commonSettingsSizer.Add(self.colorChooser,(1,0))
-
+        self.paletteLbl = wx.StaticText(self.commonSettingsPanel,-1,"Channel palette:")
+        self.commonSettingsSizer.Add(self.paletteLbl,(1,0))
+        self.colorBtn = ColorTransferEditor.CTFButton(self.commonSettingsPanel)
+        self.commonSettingsSizer.Add(self.colorBtn,(2,0))
+        
         #controls for filtering
 
         self.filtersPanel=wx.Panel(self.settingsNotebook,-1)
@@ -379,21 +383,6 @@ class SingleUnitProcessingWindow(TaskWindow.TaskWindow):
         self.updateFilterData()
         #self.doPreviewCallback()
 
-
-
-    def setColor(self,r,g,b):
-        """
-        Method: setColor(r,g,b)
-        Created: 03.11.2004, KP
-        Description: A method that sets the color of the dataUnit and updates
-                     the preview and Set color-button accordingly
-
-        """
-        if self.dataUnit:
-            self.settings.set("Color",(r,g,b))
-            self.preview.updateColor()
-            self.doPreviewCallback()
-
     def updateSettings(self):
         """
         Method: updateSettings()
@@ -406,7 +395,7 @@ class SingleUnitProcessingWindow(TaskWindow.TaskWindow):
             self.settings.getCounted("IntensityTransferFunctions",self.timePoint)
             )
             tps=self.settings.get("InterpolationTimepoints")
-            print "tps=",tps
+            #print "tps=",tps
             if not tps:
                 tps=[]
             
@@ -417,10 +406,14 @@ class SingleUnitProcessingWindow(TaskWindow.TaskWindow):
                 if n!=-1:
                     self.entries[i].SetValue(str(n))
 
+            ctf = self.settings.get("ColorTransferFunction")
+            if ctf and self.colorBtn:
+                print "Setting colorBtn.ctf"
+                self.colorBtn.setColorTransferFunction(ctf)
             # median filtering
-            print self.settings
+            #print self.settings
             median=self.settings.get("MedianFiltering")
-            print "median=",median
+            
             self.doMedianCheckbutton.SetValue(median)
             #neighborhood=self.dataUnit.getNeighborhood()
             neighborhood=self.settings.get("MedianNeighborhood")
@@ -514,10 +507,16 @@ class SingleUnitProcessingWindow(TaskWindow.TaskWindow):
         TaskWindow.TaskWindow.setCombinedDataUnit(self,dataUnit)
         
         #set the color of the colorBtn to the current color
-        r,g,b=self.settings.get("Color")
-        if self.colorChooser:
-            self.colorChooser.SetValue(wx.Colour(r,g,b))
-
+        #r,g,b=self.settings.get("Color")
+        #if self.colorChooser:
+        #    self.colorChooser.SetValue(wx.Colour(r,g,b))
+        ctf = self.settings.get("ColorTransferFunction")
+        if self.colorBtn:
+            print "Setting ctf"
+            self.colorBtn.setColorTransferFunction(ctf)
+        else:
+            print "Won't set ctf!"
+        
         # We register a callback to be notified when the timepoint changes
         # We do it here because the timePointChanged() code requires the dataunit
         self.Bind(EVT_TIMEPOINT_CHANGED,self.timePointChanged,id=self.preview.GetId())
