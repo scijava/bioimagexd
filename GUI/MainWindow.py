@@ -1,4 +1,5 @@
 #! /usr/bin/env python
+#! /usr/bin/env python
 # -*- coding: iso-8859-1 -*-
 """
  Unit: MainWindow.py
@@ -27,8 +28,8 @@
            20.01.2005 KP - Now using wx.Python
 
  Selli includes the following persons:
- JH - Juha Hyytiäinen, juhyytia@st.jyu.fi
- JM - Jaakko Mäntymaa, jahemant@cc.jyu.fi
+ JH - Juha HyytiÃ¤inen, juhyytia@st.jyu.fi
+ JM - Jaakko MÃ¤ntymaa, jahemant@cc.jyu.fi
  KP - Kalle Pahajoki, kalpaha@st.jyu.fi
  JV - Jukka Varsaluoma,varsa@st.jyu.fi
 
@@ -52,6 +53,7 @@ from TaskWindow import *
 
 import SettingsWindow
 import ImportDialog
+import ExportDialog
 
 import InfoWidget
 
@@ -216,9 +218,11 @@ class MainWindow(wx.Frame):
         self.exportMenu=wx.Menu()
         self.exportMenu.Append(ID_EXPORT_VTIFILES,"&VTK Dataset Series")
         self.exportMenu.Append(ID_EXPORT_IMAGES,"&Stack of Images")
-        wx.EVT_MENU(self,ID_IMPORT_VTIFILES,self.menuImport)
-        wx.EVT_MENU(self,ID_IMPORT_IMAGES,self.menuImport)
-    
+        wx.EVT_MENU(self,ID_IMPORT_VTIFILES,self.onMenuImport)
+        wx.EVT_MENU(self,ID_IMPORT_IMAGES,self.onMenuImport)
+        
+        wx.EVT_MENU(self,ID_EXPORT_IMAGES,self.onMenuExport)
+        wx.EVT_MENU(self,ID_EXPORT_VTIFILES,self.onMenuExport)
         
         self.fileMenu.Append(ID_OPEN,"&Open...\tCtrl-O","Open a Data Set")
         wx.EVT_MENU(self,ID_OPEN,self.onMenuOpen)
@@ -245,13 +249,34 @@ class MainWindow(wx.Frame):
         self.helpMenu.Append(ID_HELP,"&Help\tCtrl-H","Online Help")
         wx.EVT_MENU(self,ID_ABOUT,self.onMenuAbout)
     
-    def menuImport(self,evt):
+    def onMenuImport(self,evt):
         """
-        Method: menuImport()
+        Method: onMenuImport()
         Created: 16.03.2005, KP
         Description: Callback function for menu item "Import"
         """
         self.importdlg=ImportDialog.ImportDialog(self)
+        self.importdlg.ShowModal()
+        
+    def onMenuExport(self,evt):
+        """
+        Method: onMenuExport()
+        Created: 20.04.2005, KP
+        Description: Callback function for menu item "Export"
+        """
+        selectedFiles=self.tree.getSelectedDataUnits()
+        if len(selectedFiles)>1:
+            Dialogs.showerror(self,"You can only export one dataunit at a time","Cannot export multiple datasets")
+            return
+        elif len(selectedFiles)<1:
+            Dialogs.showerror(self,"You need to select a dataunit to be exported.","Select dataunit to be exported")
+            return
+        eid = evt.GetId()
+        imageMode = 0
+        if eid == ID_EXPORT_IMAGES:
+            imageMode = 1
+        self.importdlg=ExportDialog.ExportDialog(self,selectedFiles[0],imageMode)
+        
         self.importdlg.ShowModal()
         
     
@@ -432,6 +457,7 @@ class MainWindow(wx.Frame):
         unit = moduleToClass[moduletype](name)
         print "unit=",unit
         for dataunit in selectedFiles:
+            print "unit.ctf=",dataunit.getSettings().get("ColorTransferFunction")
             unit.addSourceDataUnit(dataunit)
 
         module=moduletype()
