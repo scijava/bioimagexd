@@ -42,7 +42,134 @@ def gcd(numbers):
     
 def lcm(numbers):
     return reduce(lcm2,numbers)  
+    
+    
+def paintCTFValues(ctf,height=32):
+    """
+    Method: paintCTFValues(ctf)
+    Created: 18.04.2005, KP
+    Description: Paint a bar representing a ctf
+    """    
+    bmp = wx.EmptyBitmap(256,height,-1)
+    dc = wx.MemoryDC()
+    dc.SelectObject(bmp)
+    dc.BeginDrawing()
+        
+    for x1 in range(0,256):
+        r,g,b = ctf.GetColor(x1)      
+        r*=255
+        g*=255
+        b*=255
+        r=int(r)
+        g=int(g)
+        b=int(b)
+        #print x1,"=",(r,g,b)
+        dc.SetPen(wx.Pen((r,g,b)))
+        dc.DrawLine(x1,0,x1,height)
+                    
+    dc.EndDrawing()
+    dc.SelectObject(wx.NullBitmap)
+    dc = None    
+    return bmp
+    
+    
+def loadNIHLut(data):
+    """
+    Method: loadNIHLut(data)
+    Created: 17.04.2005, KP
+    Description: Load an NIH Image LUT and return it as CTF
+    """    
+    n=256
+    d=len(data)-32
+    header,version,ncolors,start,end,fill1,fill2,filler,lut = struct.unpack("4s2s2s2s2s8s8si%ds"%d,data)
+    if header!="ICOL":
+        raise "Did not get NIH header!"
+    ncolors=ord(ncolors[0])*(2**8)+ord(ncolors[1])
+    start=ord(start[0])*(2**8)+ord(start[1])
+    end=ord(end[0])*(2**8)+ord(end[1])
+    #print "start=",start,"end=",end,"ncolors=",ncolors
+    #print "ranges=[",0,":",ncolors,"],[",ncolors,":",(2*ncolors),"],[",(2*ncolors),":",(3*ncolors),"]"
+    
+    reds=lut[:ncolors]
+    greens=lut[ncolors:(2*ncolors)]
+    blues=lut[(2*ncolors):(3*ncolors)]
+    return reds,greens,blues
 
+    
+def loadLUT(filename,ctf=None):
+    """
+    Method: loadLUT(filename)
+    Created: 17.04.2005, KP
+    Description: Load an ImageJ binary LUT and return it as CTF. If a ctf
+                 is passed as parameter, it is modified in place
+    """    
+    if ctf:
+        ctf.RemoveAllPoints()
+    else:
+        ctf=vtk.vtkColorTransferFunction()    
+    f=open(filename)
+    lut=f.read()
+    f.close()
+    loadLUTFromString(lut,ctf)
+    return ctf
+    
+def loadLUTFromString(lut,ctf):
+    """
+    Method: loadLUTFromString(string)
+    Created: 18.04.2005, KP
+    Description: Load an ImageJ binary LUT from string
+    """        
+    if len(lut)!=768:
+        reds,greens,blues=loadNIHLut(lut)
+    else:
+        reds=lut[0:256]
+        greens=lut[256:512]
+        blues=lut[512:768]
+    n=len(reds)
+    #print "n=",n
+    for i in range(0,n):
+        r=ord(reds[i])
+        g=ord(greens[i])
+        b=ord(blues[i])
+        r/=255.0
+        g/=255.0
+        b/=255.0
+        ctf.AddRGBPoint(i,r,g,b)
+    
+    
+def saveLUT(ctf,filename):
+    """
+    Method: saveLUT(ctf,filename)
+    Created: 17.04.2005, KP
+    Description: Save a CTF as ImageJ binary LUT
+    """    
+    f=open(filename,"wb")
+    f.write(lutToString(ctf))
+    f.close()
+    
+def lutToString(ctf):
+    """
+    Method: lutToString()
+    Created: 18.04.2005, KP
+    Description: Write a lut to a string
+    """    
+    s=""
+    for col in range(0,3):
+        for i in range(0,256):
+            r,g,b = ctf.GetColor(i)      
+            r*=255
+            g*=255
+            b*=255
+            r=int(r)
+            g=int(g)
+            b=int(b)
+            color=[r,g,b]
+            s+=chr(color[col])
+    return s
+        
+                    
+    
+    
 
 def getAsParameterList(iTF):
     lst=[]
@@ -102,14 +229,18 @@ def vtkImageDataToPreviewBitmap(imageData,color,width=0,height=0,bgcolor=(0,0,0)
     mip.SetInput(imageData)
     x,y,z=imageData.GetDimensions()
     
-    ctf=vtk.vtkColorTransferFunction()
-    r,g,b=(0,0,0)
-    ctf.AddRGBPoint(0.0,r,g,b)
-    r,g,b=color
-    r/=255
-    g/=255
-    b/=255
-    ctf.AddRGBPoint(255.0,r,g,b)
+    if type(color)==type( (0,0,0)) :
+        ctf=vtk.vtkColorTransferFunction()
+        r,g,b=(0,0,0)
+        ctf.AddRGBPoint(0.0,r,g,b)
+        
+        r,g,b=color
+        r/=255
+        g/=255
+        b/=255
+        ctf.AddRGBPoint(255.0,r,g,b)
+    else:
+        ctf=color
     
     # We do a simple mip that sets each pixel (x,y) of the image to have the
     # value of the brightest voxel (x,y,0) - (x,y,z)
