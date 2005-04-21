@@ -76,6 +76,7 @@ class ImportDialog(wx.Dialog):
         self.sourcelbl=wx.StaticText(self.imagePanel,-1,"Stack consists of:")
         self.choice= wx.Choice(self.imagePanel,-1,choices=["All images in same directory","Files following pattern"],size=(200,-1))
         self.choice.Bind(wx.EVT_CHOICE,self.setInputType)
+        
         self.patternEdit=wx.TextCtrl(self.imagePanel,-1,"",style=wx.TE_PROCESS_ENTER)
         self.patternEdit.Bind(wx.EVT_TEXT_ENTER,self.loadListOfImages)
         self.patternEdit.Enable(0)
