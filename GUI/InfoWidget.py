@@ -34,6 +34,8 @@ import PreviewFrame
 import DataUnitProcessing
 import ColorMerging
 
+import ColorTransferEditor
+
 
 
 smX="<font size=\"-1\">x</font>"
@@ -123,9 +125,16 @@ class InfoWidget(wx.Panel):
                     unit.addSourceDataUnit(i)
                 unit.setModule(ColorMerging.ColorMerging())                                    
             else:
+                self.preview.setPreviewType("")
                 unit=DataUnit.CorrectedSourceDataUnit("preview")
                 unit.addSourceDataUnit(dataunit)
                 unit.setModule(DataUnitProcessing.DataUnitProcessing())
+                settings = dataunit.getSettings()
+                #print settings
+                ctf=settings.get("ColorTransferFunction")
+                #print "Setting ctf=",ctf
+                self.colorBtn.setColorTransferFunction(ctf)
+            
             self.dataUnit=unit
             self.preview.setDataUnit(self.dataUnit)
             tps=dataunit.getLength()
@@ -183,6 +192,12 @@ class InfoWidget(wx.Panel):
         self.namesizer.Add(self.taskNameLbl)
         self.namesizer.Add(self.taskName)
 
+        self.paletteLbl = wx.StaticText(self.commonSettingsPanel,-1,"Channel palette:")
+        self.commonSettingsSizer.Add(self.paletteLbl,(1,0))
+        
+        self.colorBtn = ColorTransferEditor.CTFButton(self.commonSettingsPanel)
+        self.commonSettingsSizer.Add(self.colorBtn,(2,0))
+        
         self.commonSettingsPanel.SetSizer(self.commonSettingsSizer)
         self.commonSettingsPanel.SetAutoLayout(1)
 
