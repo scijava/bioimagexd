@@ -32,8 +32,9 @@ import mayavi
 import math
 import os.path
 import Logging
-
+import Configuration
 import wx
+
 
 rendint=None
 
@@ -58,7 +59,6 @@ class RenderingInterface:
         self.dataUnit=dataUnit
         self.currentData=None
         self.timePoints=timePoints
-        Logging.info("Init setting mayavi to None")
         self.mayavi=None
         self.visualizationFile=None
         self.surfcolor=None
@@ -66,9 +66,24 @@ class RenderingInterface:
         self.stop=0
         self.currentTimePoint=-1
         # XXX: Make this configurable
-        self.type="png"
+        self.type=Configuration.getConfiguration().getConfigItem("Output","ImageFormat")
+
+    def getColorTransferFunction(self):
+        """
+        Method: getColorTransferFunction()
+        Created: 18.04.2005, KP
+        Description: Return the current ctf
+        """
+        return self.ctf
+
         
     def getCurrentData(self):
+        """
+        Method: getCurrentData()
+        Created: n/a
+        Description: Return the current timepoint
+        """
+    
         if not self.currentData:
             n=self.currentTimePoint
             if n<0:n=0
@@ -107,9 +122,21 @@ class RenderingInterface:
         """ 
         if self.mayavi:
             self.mayavi.root.update()
-        if not self.stop:
+        if not self.stop:            
             wx.FutureCall(100, self.runTkinterGUI)
+            wx.FutureCall(5000,self.stopIfWindowClosed)
+        else:
+            print "Won't update mayavi any longer"
 
+    def stopIfWindowClosed(self):
+        """
+        Method: stopIfWindowClosed
+        Created: 20.04.2005, KP
+        Description: Stop tkinter event loop if mayavi is closed
+        """
+        if not self.isMayaviRunning():
+            self.stop=1
+        
 
     def setDataUnit(self,dataUnit):
         """
@@ -123,7 +150,8 @@ class RenderingInterface:
         ndigits=1+int(math.log(self.dataUnit.getLength(),10))
         # Format, the format will be /path/to/data/image_001.png
         self.format="%%s%s%%s_%%.%dd.png"%(os.path.sep,ndigits)
-        Logging.info("File name format=",self.format)
+        #Logging.info("File name format=",self.format)
+        self.ctf = dataUnit.getSettings().get("ColorTransferFunction")
 
     def setTimePoints(self,timepoints):
         """
@@ -160,10 +188,10 @@ class RenderingInterface:
         Description: A method that returns true if a mayavi window exists that 
                      can be used for rendering
         """
-        Logging.info("Is mayavi running: self.mayavi=",self.mayavi)
-        if self.mayavi:
-            Logging.info("self.mayavi.root_winfo_exists()=",\
-                self.mayavi.root.winfo_exists())
+        #Logging.info("Is mayavi running: self.mayavi=",self.mayavi)
+        #if self.mayavi:
+        #    Logging.info("self.mayavi.root_winfo_exists()=",\
+        #        self.mayavi.root.winfo_exists())
         return (self.mayavi and self.mayavi.root.winfo_exists())
 
     def getModuleManager(self):
@@ -271,7 +299,7 @@ class RenderingInterface:
         else:
             Logging.info("Previewing data")
             self.renderData(self.showPreview,0)
-        self.stop=1
+#        self.stop=1
 
     def setOutputPath(self,path):
         """
@@ -291,11 +319,12 @@ class RenderingInterface:
                 n                  The timepoint
         """
 #        self.mayavi.close_all()
+ 
         if not self.visualizationFile and self.not_loaded:
             Logging.info("Loading data: self.mayavi.open_vtk_data(...)")
             # If this is the first run and there is no visualization file
             # Load the data
-            print "Loading ",data
+            #print "Loading ",data
             self.mayavi.open_vtk_data(data)
             Logging.info("done")
             # Set the first-run flag to 0
@@ -353,6 +382,7 @@ class RenderingInterface:
             filename=self.getFilename(n)
             print "Rendering timepoint %d with filename %s"%(n,filename)
             self.saveFrame(filename)
+        print "done!"
             
     def saveFrame(self,filename):
         """
@@ -401,6 +431,14 @@ class RenderingInterface:
             return self.dimensions
         else:
             return self.dataUnit.getTimePoint(tp).GetDimensions()
+            
+    def updateDataset(self):
+        """
+        Method: updateDataset()
+        Created: 20.04.2005, KP
+        Description: Updates the dataset to the current timepoint
+        """
+        self.setDataSet(self.getCurrentData())
             
     def setDataSet(self,dataset):
         """
