@@ -99,6 +99,7 @@ def askDirectory(parent,title,initialDir=None):
     if not initialDir:
         if remember:
             initialDir = conf.getConfigItem("LastPath","Paths")
+            if not initialDir:initialDir="."
         else:
             initialDir = conf.getConfigItem("DataPath","Paths")
     dlg = wx.DirDialog(parent, title,initialDir,
@@ -111,54 +112,61 @@ def askDirectory(parent,title,initialDir=None):
     dlg.Destroy()
     return filepath
 
-def askOpenFileName(parent,title,wc):
+def askOpenFileName(parent,title,wc,remember=-1):
     """
     Method: menuOpen()
     Created: 12.03.2005, KP
     Description: A method to show a open file dialog that supports multiple files
     """
     asklist=[]
-    conf=Configuration.getConfiguration()
-    remember=conf.getConfigItem("RememberPath","Paths")
+    if remember == -1:
+        conf=Configuration.getConfiguration()
+        remember=conf.getConfigItem("RememberPath","Paths")
     lastpath=""
+    type=wc.split("|")[1]
+    type=type.split(".")[1]
+    print "type=",type
     if remember:
-        lastpath=conf.getConfigItem("LastPath","Paths")
+        lastpath=conf.getConfigItem("LastPath_%s"%type,"Paths")
+        if not lastpath:lastpath="."
     dlg=wx.FileDialog(parent,title,lastpath,wildcard=wc,style=wx.OPEN|wx.MULTIPLE)
     if dlg.ShowModal()==wx.ID_OK:
         asklist=dlg.GetPaths()
         if not asklist:return asklist
         if remember:
             filepath=os.path.dirname(asklist[0])
-            conf.setConfigItem("LastPath","Paths",filepath)
+            conf.setConfigItem("LastPath_%s"%type,"Paths",filepath)
         
     dlg.Destroy()
     return asklist
     
-def askSaveAsFileName(parent,operation,name):
+def askSaveAsFileName(parent,title,initFile,wc):
     """
     Method: askSaveAsFileName(parent,operation,name)
     Created: 28.01.2005, KP
     Description: A method to show a save as dialog
     """    
-    initFile="%s.du"%(name)
     initialDir=None
     conf=Configuration.getConfiguration()
     remember=conf.getConfigItem("RememberPath","Paths")
+    type=wc.split("|")[1]
+    type=type.split(".")[1]
+
     if not initialDir:
         if remember:
-            initialDir = conf.getConfigItem("LastPath","Paths")
+            initialDir = conf.getConfigItem("LastPath_%s"%type,"Paths")
+            if not initialDir:initialDir="."
         else:
             initialDir = conf.getConfigItem("DataPath","Paths")
     
-    wc="%s Dataunit (*.du)|*.du"%operation
     filename=""
-    dlg=wx.FileDialog(parent,"Write %s Data Unit to file"%operation,defaultFile=initFile,defaultDir=initialDir,wildcard=wc,style=wx.SAVE)
+    dlg=wx.FileDialog(parent,title,defaultFile=initFile,defaultDir=initialDir,wildcard=wc,style=wx.SAVE)
     filename=None
     if dlg.ShowModal()==wx.ID_OK:
         filename=dlg.GetPath()
     if remember:
         filepath=os.path.dirname(filename)
-        conf.setConfigItem("LastPath","Paths",filepath)
+        conf.setConfigItem("LastPath_%s"%type,"Paths",filepath)
                     
     dlg.Destroy()
     if filename:
