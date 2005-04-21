@@ -79,12 +79,12 @@ void vtkImageMapToIntensities::ExecuteData(vtkDataObject *)
   }
   input->GetContinuousIncrements(uExtent,inIncX, inIncY, inIncZ);
   output->GetContinuousIncrements(uExtent,outIncX, outIncY, outIncZ);
-  printf("uExtent=(%d,%d,%d,%d,%d,%d)\n",uExtent[0],uExtent[1],uExtent[2],uExtent[3],uExtent[4],uExtent[5]);
+  //printf("uExtent=(%d,%d,%d,%d,%d,%d)\n",uExtent[0],uExtent[1],uExtent[2],uExtent[3],uExtent[4],uExtent[5]);
   maxX = uExtent[1] - uExtent[0];
   maxY = uExtent[3] - uExtent[2];
   maxZ = uExtent[5] - uExtent[4];
   maxC = input->GetNumberOfScalarComponents();
-  printf("maxX=%d,maxY=%d,maxZ=%d, maxC=%d\n",maxX,maxY,maxZ,maxC);
+  //printf("maxX=%d,maxY=%d,maxZ=%d, maxC=%d\n",maxX,maxY,maxZ,maxC);
   //inIncX *= input->GetScalarSize();
   //inIncY *= input->GetScalarSize();
   //inIncZ *= input->GetScalarSize();
@@ -95,11 +95,11 @@ void vtkImageMapToIntensities::ExecuteData(vtkDataObject *)
   for(idxZ = 0; idxZ <= maxZ; idxZ++ ) {
     for(idxY = 0; idxY <= maxY; idxY++ ) {
       for(idxX = 0; idxX <= maxX; idxX++ ) {
-          for(idxC = 0; idxC <= maxC; idxC++ ) {
+          //for(idxC = 0; idxC <= maxC; idxC++ ) {
             scalar = *inPtr++;
             newScalar=table[scalar];
             *outPtr++=newScalar;
-          }
+          //}
       }
       inPtr += inIncY;
       outPtr += outIncY;
