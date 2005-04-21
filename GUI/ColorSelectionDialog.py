@@ -15,6 +15,7 @@
             02.02.2005 KP - Created the class
 
  BioImageXD includes the following persons:
+ 
  DW - Dan White, dan@chalkie.org.uk
  KP - Kalle Pahajoki, kalpaha@st.jyu.fi
  PK - Pasi Kankaanp‰‰, ppkank@bytl.jyu.fi
