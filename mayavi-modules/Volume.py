@@ -564,8 +564,12 @@ class VolumeLegend:
         t_m = ['BoldOn', 'ItalicOn', 'ShadowOn', 'VisibilityOn']
         gs_m = ['LabelFormat', 'MaximumNumberOfColors',
                 'NumberOfLabels', 'Title']
-        s_m = [['SetFontFamilyToArial', 'SetFontFamilyToCourier',
-                'SetFontFamilyToTimes']]
+        old_ver = hasattr(self.sc_bar, 'GetFontFamily')
+	if old_ver:
+	    s_m = [['SetFontFamilyToArial', 'SetFontFamilyToCourier',
+	    'SetFontFamilyToTimes']]
+	else:
+	    s_m = []
         gui.configure(self.sc_bar, get=[], toggle=t_m, state=s_m,
                       get_set=gs_m, one_frame=1, auto_update=1)
         gui.grid(row=rw, column=0, sticky="ew")
@@ -576,6 +580,17 @@ class VolumeLegend:
         b.grid(row=rw, column=0, sticky="ew")
         rw += 1 
 
+	if not old_ver:
+	    b = Tkinter.Button(f, text="Config Title Text Property",
+			       command=self.config_title_text_prop_gui)
+	    b.grid(row=rw, column=0, sticky="ew")
+	    rw += 1
+	    b = Tkinter.Button(f, text="Config Label Text Property",
+			       command=self.config_label_text_prop_gui)
+	    b.grid(row=rw, column=0, sticky="ew")
+	    rw += 1
+	    
+	
         f1 = Tkinter.Frame(self.root)
         f1.pack()
         b = Tkinter.Button(f1, text="Close", underline=0,
@@ -622,6 +637,16 @@ class VolumeLegend:
         conf = vtkPipeline.ConfigVtkObj.ConfigVtkObj (self.renwin)
         conf.configure (self.root, self.sc_bar)
 
+    def config_title_text_prop_gui(self, event=None):
+	conf = vtkPipeline.ConfigVtkObj.ConfigVtkObj (self.renwin)
+	conf.configure (self.root, self.sc_bar.GetTitleTextProperty())
+    
+    def config_label_text_prop_gui(self, event=None):
+	conf = vtkPipeline.ConfigVtkObj.ConfigVtkObj (self.renwin)
+	conf.configure (self.root, self.sc_bar.GetLabelTextProperty())
+	
+	
+	
     def save_lut_to_file(self, filename):
         write_lut_to_file(filename, self.lut)
 
