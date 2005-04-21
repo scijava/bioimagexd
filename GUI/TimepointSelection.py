@@ -38,7 +38,6 @@ import wx.lib.scrolledpanel as scrolled
 import wx.lib.buttons as buttons
 import vtk
 
-print wx,wx.__file__
 
 class TimepointSelectionPanel(wx.Panel):
     """
