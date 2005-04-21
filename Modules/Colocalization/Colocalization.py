@@ -72,17 +72,20 @@ class Colocalization(Module):
         self.preview=None
         self.n=-1
     
-    def addInput(self,data):
+    def addInput(self,dataunit,data):
         """
         Method: addInput(data)
         Created: 03.11.2004, KP
         Description: Adds an input for the colocalization filter
         """
-        self.n+=1
-        th0=self.settings.getCounted("ColocalizationLowerThreshold",self.n)
-        th1=self.settings.getCounted("ColocalizationUpperThreshold",self.n)
+        
+        Module.addInput(self,dataunit,data)
+        settings = dataunit.getSettings()
+        th0=settings.get("ColocalizationLowerThreshold")
+        th1=settings.get("ColocalizationUpperThreshold")
         self.thresholds.append((th0,th1))
-        Module.addInput(self,data)
+        self.depth = self.settings.get("ColocalizationDepth")
+        
  
     def getPreview(self,z):
         """
@@ -103,7 +106,6 @@ class Colocalization(Module):
                      using doColocalizationXBit() where X is user defined
         """        
         
-        self.depth = self.settings.get("ColocalizationDepth")
         print "Doing ",self.depth,"-bit colocalization"
         t1=time.time()
         self.colocFilter.SetOutputDepth(self.depth)
@@ -115,14 +117,15 @@ class Colocalization(Module):
             self.colocFilter.SetColocalizationUpperThreshold(i,self.thresholds[i][1])
         self.colocFilter.Update()
         
+        settings = self.dataunits[0].getSettings()
         for i in ["ColocalizationAmount","PearsonsCorrelation","OverlapCoefficient",
         "OverlapCoefficientK1","OverlapCoefficientK2",
         "ColocalizationCoefficientM1","ColocalizationCoefficientM2"]:
             method="self.colocFilter.Get%s()"%i
             #print "%s = "%i,eval(method)
-            self.settings.set(i,eval(method))
+            settings.set(i,eval(method))
         least=self.colocFilter.GetLeastVoxelsOverThreshold()
-        self.settings.set("ColocalizationLeastVoxelsOverThreshold",least)
+        settings.set("ColocalizationLeastVoxelsOverThreshold",least)
         t2=time.time()
-        print "Doing colocalization took %f seconds"%(t2-t1)
+        #print "Doing colocalization took %f seconds"%(t2-t1)
         return self.colocFilter.GetOutput()

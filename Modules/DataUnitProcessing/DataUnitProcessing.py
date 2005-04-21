@@ -80,16 +80,18 @@ class DataUnitProcessing(Module):
         self.extent=None
         self.n=-1
 
-    def addInput(self,data):
+    def addInput(self,dataunit,data):
         """
         Method: addInput(data)
         Created: 1.12.2004, KP, JV
         Description: Adds an input for the single dataunit processing filter
         """
-        Module.addInput(self,data)
-        self.n+=1
-        settings=self.settings
-        tf=settings.getCounted("IntensityTransferFunctions",self.n)
+        Module.addInput(self,dataunit,data)
+        settings = dataunit.getSettings()
+        #self.n+=1
+        #settings=self.settings
+        #tf=settings.getCounted("IntensityTransferFunctions",self.n)
+        tf = settings.get("IntensityTransferFunctions")
         if not tf:            
             raise ("No Intensity Transfer Function given for Single DataUnit "
             "to be processed")
@@ -130,7 +132,8 @@ class DataUnitProcessing(Module):
         # Map scalars with intensity transfer list
         n=0
         if len(self.images)>1:
-            n=self.settings.get("PreviewedDataset")
+            settings = self.dataunits[0].getSettings()
+            n=settings.get("PreviewedDataset")
             print "More than one source dataset for Single DataUnit Processing, using %d"%n
             
             

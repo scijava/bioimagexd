@@ -49,6 +49,7 @@ class Module:
         Description: Initialization
         """
         self.images=[]
+        self.dataunits=[]
         self.doRGB=0
         self.x,self.y,self.z=0,0,0
         self.extent=None
@@ -101,7 +102,7 @@ class Module:
          self.extent=None
          self.x,self.y,self.z=0,0,0
 
-    def addInput(self,imageData):
+    def addInput(self,dataunit,imageData):
         """
          Method: addInput(imageData)
          Created: 03.11.2004, KP
@@ -123,6 +124,7 @@ class Module:
         else:
             self.extent=extent
         self.images.append(imageData)
+        self.dataunits.append(dataunit)
 
     def getPreview(self,z):
         """

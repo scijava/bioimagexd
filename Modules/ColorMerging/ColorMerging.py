@@ -64,35 +64,35 @@ class ColorMerging(Module):
 
         self.infos=[]
         self.intensityTransferFunctions = []
-        self.rgbs=[]
+        self.ctfs=[]
         self.alphaMode=[0,0]
         self.n=-1
         
 
-    def addInput(self,data):
+    def addInput(self,dataunit,data):
         """
-        Method: addInput(data,**keywords)
+        Method: addInput(dataunit,data)
         Created: 24.11.2004, JV
         Description: Adds an input for the color merging filter
         """
+        Module.addInput(self,dataunit,data)
+
         self.n+=1
         # ugly
         dims=data.GetDimensions()
-        #if dims[0]>512 and dims[1]>512:
-            #print "Turning release data flag on"
-            #data.GlobalReleaseDataFlagOn()
-            
-        rgb=self.settings.getCounted("Color",self.n)
-        self.rgbs.append(rgb)
-        self.alphaTF=self.settings.get("AlphaTransferFunction")
-        self.alphaMode=self.settings.get("AlphaMode")
+        settings = dataunit.getSettings()
+        #rgb=self.settings.getCounted("Color",self.n)
+        ctf = settings.get("ColorTransferFunction")
+        self.ctfs.append(ctf)
+        self.alphaTF=settings.get("AlphaTransferFunction")
+        self.alphaMode=settings.get("AlphaMode")
         #print "n=",self.n,"self.settings=",self.settings
-        itf=self.settings.getCounted("IntensityTransferFunction",self.n)
+        #itf=self.settings.getCounted("IntensityTransferFunction",self.n)
+        itf=settings.get("IntensityTransferFunction")
         if not itf:
             print "Didn't get itf"
         self.intensityTransferFunctions.append(itf)
 
-        Module.addInput(self,data)
 
     def getPreview(self,z):
         """
@@ -121,6 +121,7 @@ class ColorMerging(Module):
 
         processed=[]
         imagelen=len(self.images)
+        print "Mapping through intensities..."
         for i in range(0,imagelen):
             mapIntensities=vtk.vtkImageMapToIntensities()
             mapIntensities.SetIntensityTransferFunction(self.intensityTransferFunctions[i])
@@ -156,16 +157,10 @@ class ColorMerging(Module):
         colored=[]
         for i in range(0,imagelen):
             if processed[i].GetNumberOfScalarComponents()==1:
+                print "Mapping through..."
                 mapToColors=vtk.vtkImageMapToColors()
                 mapToColors.SetOutputFormatToRGB()
-                ct=vtk.vtkColorTransferFunction()            
-                r,g,b=self.rgbs[i]
-                r/=255.0
-                g/=255.0
-                b/=255.0
-                ct.AddRGBPoint(0,0,0,0)
-                print "Coloring %d to %f,%f,%f"%(i,r,g,b)
-                ct.AddRGBPoint(255,r,g,b)
+                ct=self.ctfs[i]
                 mapToColors.SetLookupTable(ct)
                 mapToColors.SetInput(processed[i])
                 mapToColors.Update()
@@ -175,6 +170,7 @@ class ColorMerging(Module):
                 colored.append(processed[i])
         # result rgb
 
+        print "Merging..."
         merge=vtk.vtkImageMerge()
         for i in colored:
             merge.AddInput(i)
