@@ -246,10 +246,10 @@ class CombinedDataUnit(DataUnit.DataUnit):
                 self.module.reset()
                 # We get the processed timepoint from each of the source data 
                 # units
-                self.module.setSettings(self.settings)
+                #self.module.setSettings(self.settings)
                 for dataunit in self.sourceunits:
                     image=dataunit.getTimePoint(timePoint)
-                    self.module.addInput(image)
+                    self.module.addInput(dataunit,image)
                 # Get the vtkImageData containing the results of the operation 
                 # for this time point
                 # TODO: Change this to a wxpython event
@@ -354,7 +354,7 @@ class CombinedDataUnit(DataUnit.DataUnit):
             self.module.setSettings(self.settings)
             for dataunit in self.sourceunits:
                 image=dataunit.getTimePoint(timePoint)
-                self.module.addInput(image)
+                self.module.addInput(dataunit,image)
 
         # module.getPreview() returns a vtkImageData object
         return self.module.getPreview(depth)

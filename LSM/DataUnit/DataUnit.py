@@ -43,6 +43,7 @@ __version__ = "$Revision: 1.93 $"
 __date__ = "$Date: 2005/01/13 14:09:15 $"
 
 import Logging
+import vtk
 
 class DataUnit:
     """
@@ -62,6 +63,7 @@ class DataUnit:
         self.length = 0
         self.dataSource=None
         self.color= None
+        self.ctf = None
         self.settings = None
     
     def getColor(self):
@@ -74,7 +76,7 @@ class DataUnit:
             return (010,101,010)
         if not self.color:
             self.color=self.dataSource.getColor()
-            print "Got color from datasource:",self.color
+            # "Got color from datasource:",self.color
         return self.color
         
     def setColor(self,color):
@@ -105,9 +107,24 @@ class DataUnit:
             return
         color=self.getColor()
         print "My color is ",color
-        if color:
-            print "Setting color to ",color
-            self.settings.set("Color",color)
+        # Watch out not to overwrite the palette
+        self.ctf = self.settings.get("ColorTransferFunction")
+        if color and not self.ctf:
+            #print "Setting color to ",color
+            #self.settings.set("Color",color)
+            ctf = vtk.vtkColorTransferFunction()
+            r,g,b=color
+            r/=255.0
+            g/=255.0
+            b/=255.0
+            r,g,b=int(r),int(g),int(b)
+            ctf.AddRGBPoint(0,0,0,0)
+            ctf.AddRGBPoint(255, r,g,b)
+            #print "CTF=",ctf
+            self.settings.set("ColorTransferFunction",ctf)
+            print "Initializing  ",ctf
+            self.ctf = ctf
+
         if self.dataSource:
             self.settings.set("VoxelSize",self.dataSource.getVoxelSize())
             self.settings.set("Spacing",self.dataSource.getSpacing())

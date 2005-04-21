@@ -29,6 +29,7 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 import vtk
 import ImageOperations
+import pickle
 
 class DataUnitSettings:
     """
@@ -222,10 +223,10 @@ class DataUnitSettings:
         Description: Sets the value of a key
         """
         if not overwrite and self.settings.has_key(name):
-            #print "Will not overwrite %s"%name
+            print "Will not overwrite %s"%name
             return
         if self.n != -1 and name in self.counted:
-            print "Setting counted %d,%s,%s"%(self.n,name,value)
+            #print "Setting counted %d,%s,%s"%(self.n,name,value)
             return self.setCounted(name,self.n,value,overwrite)
         if name not in self.registered:
             raise "No key %s registered"%name
@@ -244,7 +245,7 @@ class DataUnitSettings:
             raise "No key %s registered"%name
         keyval="%s[%d]"%(name,count)
         if not overwrite and (keyval in self.settings):
-            print "Will not overwrite %s"%keyval
+            #print "Will not overwrite %s"%keyval
             return
         self.settings[keyval]=value
         if self.counted[name]<count:
@@ -268,7 +269,7 @@ class DataUnitSettings:
         Created: 26.03.2005
         Description: Return the value of a key
         """
-        print "in self.settings: %s"%self.settings.has_key("%s[%d]"%(name,count))
+        #print "in self.settings: %s"%self.settings.has_key("%s[%d]"%(name,count))
         #if self.n != -1:
         #    return self.get(name)
         key="%s[%d]"%(name,count)
@@ -283,8 +284,15 @@ class DataUnitSettings:
                      that can be written to disk.
         """
         print "serializing name=",name
+        if "ColorTransferFunction" in name:
+            s=ImageOperations.lutToString(value)
+            return pickle.dumps(s)
+
         if name not in ["IntensityTransferFunction","IntensityTransferFunctions","AlphaTransferFunction"]:
             return str(value)
+            
+            
+            
         val=ImageOperations.getAsParameterList(value)
         return str(val)
         
@@ -294,6 +302,11 @@ class DataUnitSettings:
         Created: 27.03.2005
         Description: Returns the value of a given key
         """
+        if "ColorTransferFunction" in name:
+            data=pickle.loads(value)
+            ctf=vtk.vtkColorTransferFunction()
+            return ImageOperations.loadLUTFromString(data,ctf)
+            return ctf
         if name not in ["IntensityTransferFunction","IntensityTransferFunctions","AlphaTransferFunction"]:
             return eval(value)
         tf=vtk.vtkIntensityTransferFunction()
@@ -354,8 +367,11 @@ class ColocalizationSettings(DataUnitSettings):
         self.set("ColocalizationCoefficientM1",0)
         self.set("ColocalizationCoefficientM2",0)        
         
-        self.register("ColocalizationColor")
-        self.set("ColocalizationColor",(255,255,255))
+        self.register("ColocalizationColorTransferFunction")
+        ctf = vtk.vtkColorTransferFunction()
+        ctf.AddRGBPoint(0,0,0,0)
+        ctf.AddRGBPoint(255, 1.0, 1.0, 1.0)
+        self.set("ColocalizationColorTransferFunction",ctf)
         self.register("ColocalizationDepth")
         self.set("ColocalizationDepth",8)
         self.register("ColocalizationAmount")
@@ -388,7 +404,7 @@ class ColorMergingSettings(DataUnitSettings):
         Description: Constructor
         """
         DataUnitSettings.__init__(self,n)
-        self.registerCounted("Color")       
+        self.registerCounted("ColorTransferFunction")       
         self.set("Type","ColorMergingSettings") 
         self.registerCounted("IntensityTransferFunction",1)
         self.register("AlphaTransferFunction",1)
@@ -408,7 +424,10 @@ class ColorMergingSettings(DataUnitSettings):
         DataUnitSettings.initialize(self,dataunit,channels,timepoints)
         print "Initializing for %d channels"%channels
         for i in range(channels):
-            self.setCounted("Color",i,(255,255,255),0)
+            ctf = vtk.vtkColorTransferFunction()
+            ctf.AddRGBPoint(0,0,0,0)
+            ctf.AddRGBPoint(255, 1.0, 1.0, 1.0)
+            self.setCounted("ColorTransferFunction",i,ctf,0)
             tf=vtk.vtkIntensityTransferFunction()
             self.setCounted("IntensityTransferFunction",i,tf,0)
         
@@ -425,7 +444,7 @@ class SingleUnitProcessingSettings(DataUnitSettings):
         Description: Constructor
         """
         DataUnitSettings.__init__(self,n)
-        self.register("Color")        
+        self.register("ColorTransferFunction")        
         self.registerCounted("IntensityTransferFunctions",1)
         self.register("MedianFiltering")
         self.register("MedianNeighborhood")
@@ -435,7 +454,11 @@ class SingleUnitProcessingSettings(DataUnitSettings):
         self.register("SolitaryProcessingThreshold")
         self.register("InterpolationTimepoints")
         self.set("Type","SingleUnitProcessingSettings")
-        self.set("Color",(123,123,123))
+        #ctf = vtk.vtkColorTransferFunction()
+        #ctf.AddRGBPoint(0,0,0,0)
+        #ctf.AddRGBPoint(255, 0.7, 0.7, 0.7)
+ 
+        #self.set("ColorTransferFunction",ctf,0)
         self.set("InterpolationTimepoints",[])
         self.set("MedianFiltering",0)
         self.set("MedianNeighborhood",[0,0,0])
@@ -453,7 +476,16 @@ class SingleUnitProcessingSettings(DataUnitSettings):
         """
         DataUnitSettings.initialize(self,dataunit,channels,timepoints)
         print "Initializing to color",dataunit.getColor()
-        self.set("Color",dataunit.getColor(),0)
+        ctf = vtk.vtkColorTransferFunction()
+        r,g,b=dataunit.getColor()
+        r/=255.0
+        g/=255.0
+        b/=255.0
+        r,g,b=int(r),int(g),int(b)
+        ctf.AddRGBPoint(0,0,0,0)
+        ctf.AddRGBPoint(255, r,g,b)
+        self.set("ColorTransferFunction",ctf)
+        
         print "Initializing %d timepoints"%timepoints
         for i in range(timepoints):
             tf=vtk.vtkIntensityTransferFunction()
