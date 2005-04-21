@@ -69,11 +69,7 @@ class PaintPanel(wx.Panel):
         self.Bind(wx.EVT_PAINT,self.onPaint)
 
     def onPaint(self,event):
-        print "onPaint"
-        #dc = wxPaintDC(self)
-        #dc.DrawBitmap(self.buffer,0,0)
         dc=wx.BufferedPaintDC(self,self.buffer)#,self.buffer)
-        #dc.SelectObject(self.buffer)
 
     def createLine(self,x1,y1,x2,y2,color="WHITE",brush=None,**kws):
         """
