@@ -31,6 +31,7 @@ import wx
 import ColorMerging
 import Colocalization
 import DataUnitProcessing
+import ColorTransferEditor
 
 from Logging import *
 import vtk
@@ -102,19 +103,21 @@ class IntegratedPreview(PreviewFrame):
         if type(event)==type(""):
             self.previewtype=event
             return
+        else:
+            eid=event.GetId()
+            if eid==self.ID_COLOC:
+                self.previewtype="Colocalization"
+            elif eid==self.ID_MERGE:
+                self.previewtype="ColorMerging"
+            elif eid==self.ID_MIP:
+                self.previewtype=""
+                self.mip =1 
+    
+            else:
+                self.previewtype=""
+    
         self.mip = 0
         self.renderpanel.setSingleSliceMode(0)            
-        eid=event.GetId()
-        if eid==self.ID_COLOC:
-            self.previewtype="Colocalization"
-        elif eid==self.ID_MERGE:
-            self.previewtype="ColorMerging"
-        elif eid==self.ID_MIP:
-            self.previewtype=""
-            self.mip =1 
-
-        else:
-            self.previewtype=""
         m=self.modules[self.previewtype]
         print "Module that corresponds to %s: %s"%(self.previewtype,m)
         self.dataUnit.setModule(m)
@@ -146,17 +149,25 @@ class IntegratedPreview(PreviewFrame):
         if self.previewtype=="ColorMerging":
             return
         if self.dataUnit:
+            #print "Getting ctf from dataunit"
             #print "Using color ",self.previewtype,"Settings =",self.settings
-            self.rgb = self.settings.get("%sColor"%self.previewtype)
-
+            #self.rgb = self.settings.get("%sColor"%self.previewtype)
+            #print "Getting %sColorTransferFunction"%self.previewtype
+            ct = self.settings.get("%sColorTransferFunction"%self.previewtype)
             if self.selectedItem != -1:
-                rgb = self.settings.getCounted("%sColor"%self.previewtype,self.selectedItem)
-                if rgb:
-                    print "Using counted %d instead (%s)"%(self.selectedItem,str(rgb))
-                    self.rgb = rgb
+                ctc = self.settings.getCounted("%sColorTransferFunction"%self.previewtype,self.selectedItem)            
+                if ctc:
+                    print "Using counted %d instead"%self.selectedItem
+                    ct=ctc
+                #rgb = self.settings.getCounted("%sColor"%self.previewtype,self.selectedItem)
+                #if rgb:
+                #    print "Using counted %d instead (%s)"%(self.selectedItem,str(rgb))
+                #    self.rgb = rgb
             
-            print "Got color ",self.rgb            
-        self.currentCt=ImageOperations.getColorTransferFunction(self.rgb)
+        #print "Got ctf",ct
+        self.currentCt = ct
+        #self.currentCt=ImageOperations.getColorTransferFunction(self.rgb)
+        
         self.mapToColors.SetLookupTable(self.currentCt)
         self.mapToColors.SetOutputFormatToRGB()
 
@@ -202,7 +213,7 @@ class IntegratedPreview(PreviewFrame):
         """
         if not self.dataUnit:
             return
-        
+        self.updateColor()
         if not self.running:
             renew=1
             self.running=1
@@ -216,7 +227,7 @@ class IntegratedPreview(PreviewFrame):
         self.currentImage=preview
         
         if self.renderingPreviewEnabled()==True:
-            self.updateColor()
+            
             return self.previewInMayavi(preview,self.currentCt,
             renew)
         

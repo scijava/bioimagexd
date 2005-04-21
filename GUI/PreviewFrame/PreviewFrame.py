@@ -99,7 +99,7 @@ class PreviewFrame(wx.Panel):
         self.xdiff,self.ydiff=0,0
         self.updateFactor = 0.001
         self.zoomFactor=1
-        self.selectedItem=0
+        self.selectedItem=-1
         size=(512,512)
         self.oldx,self.oldy=0,0
         self.show={}
@@ -386,7 +386,6 @@ class PreviewFrame(wx.Panel):
         """
         self.dataUnit=dataUnit
         self.settings = dataUnit.getSettings()
-        print "Settings = ",self.settings
         try:
             count=dataUnit.getLength()
             x,y,z=dataUnit.getDimensions()
