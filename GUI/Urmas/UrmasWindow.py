@@ -136,9 +136,14 @@ class UrmasWindow(wx.Frame):
         
         self.ID_FIT_TRACK = wx.NewId()
         self.ID_MIN_TRACK = wx.NewId()
-        self.trackMenu.Append(self.ID_FIT_TRACK,"Grow to maximum","Grow the track to encompass the whole timeline")
+        self.ID_SET_TRACK = wx.NewId()
+        self.trackMenu.Append(self.ID_FIT_TRACK,"Expand to maximum","Expand the track to encompass the whole timeline")
         self.trackMenu.Append(self.ID_MIN_TRACK,"Shrink to minimum","Shrink the track to as small as possible")
+        self.trackMenu.Append(self.ID_SET_TRACK,"Set item size","Set each item on this track to be of given size")
         
+        wx.EVT_MENU(self,self.ID_FIT_TRACK,self.onMaxTrack)
+        wx.EVT_MENU(self,self.ID_MIN_TRACK,self.onMinTrack)
+        wx.EVT_MENU(self,self.ID_SET_TRACK,self.onSetTrack)
         
         self.ID_ANIMATE = wx.NewId()
         self.renderMenu.AppendCheckItem(self.ID_ANIMATE,"&Animated rendering","Select whether to produce animation or still images")
@@ -146,12 +151,120 @@ class UrmasWindow(wx.Frame):
         
         self.renderMenu.AppendSeparator()
         
+        self.ID_RENDER_PREVIEW=wx.NewId()
+        self.renderMenu.Append(self.ID_RENDER_PREVIEW,"Rendering &Preview","Preview rendering")
+        wx.EVT_MENU(self,self.ID_RENDER_PREVIEW,self.onMenuRender)
+
+        self.ID_MAYAVI=wx.NewId()
+        self.renderMenu.Append(self.ID_MAYAVI,"&Start Renderer Program","Start Mayavi for rendering")
+        wx.EVT_MENU(self,self.ID_MAYAVI,self.onMenuMayavi)
+
         self.ID_RENDER=wx.NewId()
         self.renderMenu.Append(self.ID_RENDER,"&Render project","Render this project")
-        
+        wx.EVT_MENU(self,self.ID_RENDER,self.onMenuRender)
+    
+        self.renderMenu.Enable(self.ID_RENDER,0)
+
         self.ID_SPLINE_CLOSED = wx.NewId()
         self.cameraMenu.AppendCheckItem(self.ID_SPLINE_CLOSED,"&Closed Path","Set the camera path to open / closed.")
         wx.EVT_MENU(self,self.ID_SPLINE_CLOSED,self.onMenuClosedSpline)
+
+        self.ID_SPLINE_SET_BEGIN = wx.NewId()
+        self.cameraMenu.Append(self.ID_SPLINE_SET_BEGIN,"&Begin at the end of previous path","Set this camera path to begin where the previous path ends")
+        wx.EVT_MENU(self,self.ID_SPLINE_SET_BEGIN,self.onMenuSetBegin)
+        
+        self.ID_SPLINE_SET_END = wx.NewId()
+        self.cameraMenu.Append(self.ID_SPLINE_SET_END,"&End at the beginning of next path","Set this camera path to end where the next path starts")
+        wx.EVT_MENU(self,self.ID_SPLINE_SET_END,self.onMenuSetEnd)
+            
+        self.cameraMenu.Enable(self.ID_SPLINE_SET_BEGIN,0)
+        self.cameraMenu.Enable(self.ID_SPLINE_SET_END,0)
+
+    def updateMenus(self):
+        """
+        Method: updateMenus()
+        Created: 18.04.2005, KP
+        Description: A method to update the state of menu items
+        """
+        spltracks=len(self.control.timeline.getSplineTracks())
+        flag=(spltracks>=2)
+        print "updateMenus()",spltracks
+        self.cameraMenu.Enable(self.ID_SPLINE_SET_BEGIN,flag)
+        self.cameraMenu.Enable(self.ID_SPLINE_SET_END,flag)
+        
+    def onMenuMayavi(self,event):
+        """
+        Method: onMenuMayavi
+        Created: 20.04.2005, KP
+        Description: Start mayavi for rendering
+        """
+        self.renderMenu.Enable(self.ID_RENDER,1)
+        self.control.startMayavi()
+
+    def onMenuRender(self,event):
+        """
+        Method: onMenuRender()
+        Created: 19.04.2005, KP
+        Description: Render this project
+        """
+        if event.GetId() == self.ID_RENDER:
+            self.control.renderProject(0)
+        else:
+            self.control.renderProject(1)
+        
+    def onMinTrack(self,evt):
+        """
+        Method: onMinTrack
+        Created: 19.04.2005, KP
+        Description: Callback function for menu item minimize track
+        """
+        active = self.control.getSelectedTrack()
+        active.setToSize()
+
+    def onSetTrack(self,evt):
+        """
+        Method: onMinTrack
+        Created: 19.04.2005, KP
+        Description: Callback function for menu item minimize track
+        """
+        dlg = wx.TextEntryDialog(self,"Set duration of each item (seconds):","Set item duration")
+        dlg.SetValue("5")
+        if dlg.ShowModal()==wx.ID_OK:
+            try:
+                val=int(dlg.GetValue())
+            except:
+                return
+        size=val*self.control.getPixelsPerSecond()
+        print "Setting to size ",size,"(",val,"seconds)"
+        active = self.control.getSelectedTrack()
+        active.setToSize(size)
+
+    def onMaxTrack(self,evt):
+        """
+        Method: onMinTrack
+        Created: 19.04.2005, KP
+        Description: Callback function for menu item minimize track
+        """
+        active = self.control.getSelectedTrack()
+        active.expandToMax()
+
+    def onMenuSetBegin(self,evt):
+        """
+        Method: onMenuSetBegin
+        Created: 18.04.2005, KP
+        Description: Callback function for menu item begin at end of previous
+        """
+        active = self.control.getSelectedTrack()
+        self.control.timeline.setBeginningToPrevious(active)
+        
+    def onMenuSetEnd(self,evt):
+        """
+        Method: onMenuSetEnd
+        Created: 18.04.2005, KP
+        Description: Callback function for menu item end at beginning of next
+        """
+        active = self.control.getSelectedTrack()
+        self.control.timeline.setEndToNext(active)
         
     def onMenuClosedSpline(self,evt):
         """
@@ -207,7 +320,7 @@ class UrmasWindow(wx.Frame):
         Description: Callback function for opening a project
         """
         wc="Rendering Project (*.rxd)|*.rxd"
-        name=Dialogs.askOpenFileName(self,"Open Rendering Project",wc)
+        name=Dialogs.askOpenFileName(self,"Open Rendering Project",wc,0)
         if name:
             self.control.readFromDisk(name[0])
         

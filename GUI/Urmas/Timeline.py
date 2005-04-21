@@ -89,7 +89,23 @@ class Timeline(scrolled.ScrolledPanel):
         self.SetAutoLayout(1)
         self.SetupScrolling()
         self.sizer.Fit(self)
-
+        
+    def getSplineTracks(self):
+        """
+        Method: getSplineTracks
+        Created: 18.04.2005, KP
+        Description: Return the camera path tracks
+        """ 
+        return self.splinepointTracks
+        
+    def getTimepointTracks(self):
+        """
+        Method: getTimepointTracks
+        Created: 19.04.2005, KP
+        Description: Return the camera path tracks
+        """ 
+        return self.timepointTracks
+        
         
     def getSelectedTrack(self):
         """
@@ -109,6 +125,42 @@ class Timeline(scrolled.ScrolledPanel):
             self.selectedTrack.setSelected(None)
         self.selectedTrack=track
         
+        
+    def setBeginningToPrevious(self,track):
+        """
+        Method: setBeginningToPrevious
+        Created: 18.04.2005, KP
+        Description: Set the given track to start at the position where
+                     the previous track ends
+        """ 
+        i=self.splinepointTracks.index(track)
+        if i<1:
+            Dialogs.showwarning(self,"First track has no preceeding tracks","Cannot set beginning of track")
+            return
+        p=self.splinepointTracks[i-1].items[-1].getPoint()
+        self.splinepointTracks[i].items[0].setPoint(p)
+        print "Setting track %d to begin at %s"%(i,str(p))
+        self.splinepointTracks[i].showSpline()
+        
+    def setEndToNext(self,track):
+        """
+        Method: setEndToNext
+        Created: 18.04.2005, KP
+        Description: Set the given track to end at the position where
+                     the next track begins
+        """ 
+        i=self.splinepointTracks.index(track)
+        
+        if i==len(self.splinepointTracks)-1:
+            Dialogs.showwarning(self,"Last track has no following tracks","Cannot set end of track")
+            return
+        p=self.splinepointTracks[i+1].items[0].getPoint()
+        self.splinepointTracks[i].items[-1].setPoint(p)
+        print "Setting track %d to end at %s"%(i,str(p))
+        self.splinepointTracks[i].showSpline()
+        
+            
+        
     def refresh(self):
         """
         Method: refresh()
@@ -118,11 +170,18 @@ class Timeline(scrolled.ScrolledPanel):
         """ 
         # We add these tracks so that when the tracks are depersisted, they will simply overwrite these
         # since URPO doesn't know how to create the tracks, just how to load the contents
-        for n in range(self.timepointTrackAmnt-len(self.timepointTracks)):
+        spamnt = self.splinepointTrackAmnt
+        tpamnt = self.timepointTrackAmnt
+#        print "self.splinepointTrackAmnt=",self.splinepointTrackAmnt
+#        print "self.timepointTrackAmnt=",self.timepointTrackAmnt
+        
+        for n in range(tpamnt-len(self.timepointTracks)):
+            print "Adding timepoint track"
             self.addTrack("TmpTrack%d"%n,n)
-        for n in range(self.splinepointTrackAmnt-len(self.splinepointTracks)):
+        for n in range(spamnt-len(self.splinepointTracks)):
+            print "Adding splinepoint track"
             self.addSplinepointTrack("TmpSpline%d"%n)
-            
+        print "splinepointtracks now=",self.splinepointTracks
             
     def moveTracks(self,moveFrom,moveTo,howMany):
         """
@@ -176,7 +235,7 @@ class Timeline(scrolled.ScrolledPanel):
         self.Layout()
         self.SetupScrolling()
         self.timepointTracks.append(tr)
-        
+        self.control.window.updateMenus()
         if self.dataUnit:
             print "Setting dataunit & Enabling thumbnail"
             tr.setDataUnit(self.dataUnit)
@@ -191,7 +250,6 @@ class Timeline(scrolled.ScrolledPanel):
         if label=="":
             label="Camera Path %d"%len(self.splinepointTracks)
         tr=SplineTrack(label,self,number=1,timescale=self.timeScale,control=self.control)
-        self.control.setSplineInteractionCallback(tr.updateLabels)
         tr.setColor((248,196,56))
         self.splinepointTrackAmnt = len(self.splinepointTracks)
         self.timepointTrackAmnt = len(self.timepointTracks)
@@ -200,6 +258,7 @@ class Timeline(scrolled.ScrolledPanel):
         self.Layout()
         self.SetupScrolling()
         self.splinepointTracks.append(tr)    
+        self.control.window.updateMenus()
 
     def getLargestTrackLength(self,cmptrack):
         """
@@ -340,7 +399,7 @@ class Timeline(scrolled.ScrolledPanel):
         keys=[""]
         self.timepointTrackAmnt = len(self.timepointTracks)
         self.splinepointTrackAmnt = len(self.splinepointTracks)
-        for key in ["timepointTracks","splinepointTracks","n","splinepointTrackAmnt","timepointTrackAmnt"]:
+        for key in ["timepointTracks","splinepointTracks","splinepointTrackAmnt","timepointTrackAmnt"]:
             odict[key]=self.__dict__[key]
         return odict        
  

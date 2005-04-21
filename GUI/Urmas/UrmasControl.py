@@ -43,6 +43,7 @@ import TrackItem
 
 #import pickle
 import UrmasPersist
+import UrmasRenderer
 
 
 class UrmasControl:
@@ -58,6 +59,7 @@ class UrmasControl:
         self.duration = 60 # seconds
         self.frames = 120 # frames
         self.animationMode= 0
+        self.renderer=UrmasRenderer.UrmasRenderer()
         
     def writeToDisk(self,filename):
         """
@@ -108,7 +110,6 @@ class UrmasControl:
         """    
         #print "updateGUI frames=%d duration=%d"%(self.frames,self.duration)
         self.refresh()
-        #self.setSplinePoints(self.splinePointAmount)
         self.updateLayouts()
         
     def refresh(self):
@@ -162,6 +163,22 @@ class UrmasControl:
         """    
         self.timelinePanel = timelinepanel
 
+    def startMayavi(self):
+        """
+        Method: startMayavi()
+        Created: 20.04.2005, KP
+        Description: Start mayavi
+        """            
+        self.renderer.startMayavi(self)
+
+    def renderProject(self,preview):
+        """
+        Method: renderProject(preview)
+        Created: 19.04.2005, KP
+        Description: Render this project
+        """            
+        self.renderer.render(self,preview)
+        
     def getDataUnit(self):
         """
         Method: getDataUnit()
@@ -217,8 +234,6 @@ class UrmasControl:
         """        
         self.animationMode = mode
         self.timeline.setAnimationMode(mode)
-        #if mode:
-        #    self.timeline.setSplinePoints(self.timelineConfig.getSplinePoints())
         self.timeline.reconfigureTimeline()
         self.updateLayouts()
         

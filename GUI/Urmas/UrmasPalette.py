@@ -124,14 +124,49 @@ class UrmasPalette(wx.Panel):
         bmp=wx.Image(os.path.join(iconpath,"timepoint.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap()
         self.newtimepoint=wx.StaticBitmap(p,self.ID_NEWTIMEPOINT,bmp,style=wx.RAISED_BORDER)
         self.newtimepoint.Bind(wx.EVT_MOTION,self.onToolNewTimepoint)
-        #self.newtimepoint.Bind(wx.EVT_BUTTON,self.onToolNewTimepoint)
-        #self.newtimepoint.Bind(wx.EVT_BUTTON,self.onToolSelectTimepoints)
+        self.sizer.Add(p,flag=wx.RIGHT,border=5)
+       
+        p=wx.Panel(self,-1,size=(64,64))#,style=wx.RAISED_BORDER)
+        self.ID_NEWCIRCULAR=wx.NewId()
+        bmp=wx.Image(os.path.join(iconpath,"circular.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap()
+        self.newcircular=wx.StaticBitmap(p,self.ID_NEWCIRCULAR,bmp,style=wx.RAISED_BORDER)
+        self.newcircular.Bind(wx.EVT_MOTION,self.onToolNewCircular)
+        
+        self.sizer.Add(p,flag=wx.RIGHT,border=5)
+        
+        p=wx.Panel(self,-1,size=(64,64))#,style=wx.RAISED_BORDER)
+        self.ID_NEWPERPENDICULAR=wx.NewId()
+        bmp=wx.Image(os.path.join(iconpath,"perpendicular.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap()
+        self.newperpendicular=wx.StaticBitmap(p,self.ID_NEWPERPENDICULAR,bmp,style=wx.RAISED_BORDER)
+        self.newperpendicular.Bind(wx.EVT_MOTION,self.onToolNewPerpendicular)
+        
         self.sizer.Add(p,flag=wx.RIGHT,border=5)
 
         
         self.SetSizer(self.sizer)
         self.SetAutoLayout(1)
         self.sizer.Fit(self)
+
+    def onToolNewPerpendicular(self,event):
+        """
+        Method: onToolNewPerpendicular
+        Created: 20.04.2005, KP
+        Description: A method for dragging a spline from palette
+        """
+        
+        if event.Dragging():
+            self.dropItem("Spline","Perpendicular")
+
+
+    def onToolNewCircular(self,event):
+        """
+        Method: onToolNewCircular
+        Created: 06.04.2005, KP
+        Description: A method for dragging a spline from palette
+        """
+        
+        if event.Dragging():
+            self.dropItem("Spline","Circular")
         
     def onToolNewSpline(self,event):
         """

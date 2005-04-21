@@ -123,6 +123,7 @@ class UrmasPersist:
             
             print code
             codeobj=compile(code,"Depersist","single")
+            print "code=",code
             eval(codeobj,globals(),locals())
             #eval(code,globals(),locals())
         obj=eval("self.%s"%s)

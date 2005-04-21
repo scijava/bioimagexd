@@ -102,7 +102,7 @@ class MayaViAnimator:
         self.renderingInterface = RenderingInterface.getRenderingInterface()
         self.splineEditor = splineEditor
         # XXX: this should be configurable
-        self.controlPoints=7
+        self.controlPoints=0
         self.type="png"
         
     def make_animation(self):
@@ -189,8 +189,8 @@ class MayaViAnimator:
         self.renderingInterface.render()         
         
     def initData(self):          
-        self.splineEditor.updateData(self.renderingInterface.getCurrentData())
-        self.splineEditor.initSpline(self.controlPoints)
+        self.splineEditor.updateData(self.renderingInterface.getCurrentData(),self.renderingInterface.getColorTransferFunction())
+        #self.splineEditor.initSpline(self.controlPoints)
         self.splineEditor.initCamera()
             
         self.splineEditor.render()

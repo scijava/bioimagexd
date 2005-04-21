@@ -31,7 +31,11 @@ __author__ = "BioImageXD Project"
 __version__ = "$Revision: 1.22 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
+import RenderingInterface
 from UrmasControl import *
+import time
+import Dialogs
+import wx
 
 class UrmasRenderer:
     """
@@ -46,20 +50,65 @@ class UrmasRenderer:
         Created: 04.04.2005, KP
         Description: Initialization
         """    
-        pass
+        self.renderingInterface = RenderingInterface.getRenderingInterface()
+        self.oldTimepoint=-1
+
+    def startMayavi(self,control):
+        """
+        Class: startMayavi
+        Created: 20.04.2005, KP
+        Description: Start mayavi for rendering
+        """    
+        self.control = control
+        self.dataUnit = control.getDataUnit()
+        data = self.dataUnit.getTimePoint(0)
+        print "Setting dataunit to",self.dataUnit
+        self.renderingInterface.setDataUnit(self.dataUnit)
+        self.renderingInterface.setCurrentTimepoint(0)
+        self.renderingInterface.setTimePoints([0])
+        settings = self.dataUnit.getSettings()
+        ctf= settings.get("ColorTransferFunction")
+        self.renderingInterface.doRendering(preview=data,ctf = ctf)
+
         
-    def Render(self,control):
+    def render(self,control,preview=0):
         """
         Class: Render(control)
         Created: 04.04.2005, KP
         Description: Render the timeline
         """    
         self.control = control
-        duration = control.getDuration()
-        frames = control.getFrames()
+        self.dataUnit = control.getDataUnit()
+        self.duration = duration = control.getDuration()
+        self.frames = frames = control.getFrames()
+        if not preview and not self.renderingInterface.isMayaviRunning():
+            Dialogs.showerror(self.control.window,"Cannot render project: mayavi is not running","Mayavi is not running")
+            return
+
+        if not preview:
+            self.renderingInterface.setCurrentTimepoint(0)
+            
+            self.renwin = self.renderingInterface.getRenderWindow() 
+            self.ren = self.renwin.get_renderer()
+            if self.renderingInterface.isMayaViModuleLoaded() == False:
+                Dialogs.showwarning(self,"You must specify some module to MayaVi first!","Oops!")
+                return
+                
+            if not self.ren:
+                Dialogs.showwarning(self,"No renderer in main render window!! This should not be possible!","Oops!")
+                return
+            self.dlg = wx.ProgressDialog("Rendering","Rendering at %.2fs / %.2fs (frame %d / %d)"%(0,0,0,0),maximum = frames, parent = self.control.window)
+                
+
+        self.splineEditor = control.getSplineEditor()
         spf = duration / float(frames)
         for n in range(frames):
-            self.renderFrame(n,(n+1)*spf,spf)
+            if preview:
+                self.renderPreviewFrame(n,(n+1)*spf,spf)
+            else:
+                self.renderFrame(n,(n+1)*spf,spf)
+        if not preview:
+            self.dlg.Destroy()
             
     def getTimepointAt(self,time):
         """
@@ -69,7 +118,7 @@ class UrmasRenderer:
         Parameters:
         time    The current time in the timeline
         """            
-        tracks = self.control.getTimepointTracks()
+        tracks = self.control.timeline.getTimepointTracks()
         timepoint = 0
         for track in tracks:
             for item in track.getItems():
@@ -86,19 +135,17 @@ class UrmasRenderer:
         Parameters:
         time    The current time in the timeline
         """            
-        tracks = self.control.getSplineTracks()
+        tracks = self.control.timeline.getSplineTracks()
         points=[]
         for track in tracks:
             for item in track.getItems():
                 start,end=item.getPosition()
                 if time >= start and time <= end:
-                    points.append(item)
-                if len(points)==2:
-                    break
+                    return item
                 
-        return points       
+        return None
         
-    def renderFrame(self,frame,time,spf):
+    def renderFrame(self,frame,timepos,spf):
         """
         Method: renderFrame(frame,time)
         Created: 04.04.2005, KP
@@ -108,20 +155,98 @@ class UrmasRenderer:
         time    The current time in the timeline
         spf     Seconds per one frame
         """            
-        timepoint = self.getTimepointAt(time)
-        splinepoints = self.getSplinepointsAt(time)
-        p0=splinepoints[0]
-        if len(splinepoints)==1:
-            p1=(-1,-1,-1)
-        else:
-            p1=splinepoints[1]
-        print "Rendering frame %d using timepoint %d, time is %f"%(frame,timepoint,time)
         
-        p,point = self.control.splineEditor.getCameraPosition(p0,p1)
-        print "Camera position is %d,%d,%d"%point
+        timepoint = self.getTimepointAt(timepos)
+        if timepoint != self.oldTimepoint:
+            # Set the timepoint to be used
+            self.renderingInterace.setCurrentTimepoint(timepoint)
+            # and update the renderer to use the timepoint
+            self.renderingInterface.updateData()
+            self.oldTimepoint = timepoint
+        point = self.getSplinepointsAt(timepos)
+        if not point:
+            print "No camera position"
+#            Dialogs.showerror(self.control.window,"Camera path ended prematurely","Cannot determine camera position")
+            return -1
+         
+        p0=point.getPoint()
+        self.dlg.Update("Rendering at %.2fs / %.2fs (frame %d / %d)"%(timepos,self.duration,frame,self.frames))
+        print "Rendering frame %d using timepoint %d, time is %f"%(frame,timepoint,timepos)
+        start,end=point.getPosition()
+        # how far along this part of spline we are
+        d=timepos-start
+        # how long is it in total
+        n = end-start
+        # gives us a percent of the length we've traveled
+        percentage = d/float(n)
+        #print "time %.2f is %.3f%% between %.2f and %.2f"%(timepos,percentage,start,end)
+        n=point.getItemNumber()
+        #print "p0=",p0,"item=",n
         
+        p,point = self.control.splineEditor.getCameraPosition(n,p0,percentage)
+        x,y,z=point
+        print "Camera position is point %d = %.2f,%.2f,%.2f"%(p,x,y,z)
+        
+        cam = self.ren.GetActiveCamera()
+        focal = self.splineEditor.getCameraFocalPointCenter()
+        cam.SetFocalPoint(focal)
+
+        cam.SetPosition(point)
+        #cam.SetViewUp(self.splineEditor.get_camera().GetViewUp())
+        cam.SetViewUp((0,0,1))
+        cam.ComputeViewPlaneNormal()
+        cam.OrthogonalizeViewUp()
+        # With this we can be sure that all of the props will be visible.
+        self.ren.ResetCameraClippingRange()
+        curr_file_name = self.renderingInterface.getFilename(frame)
+
+        self.renderingInterface.render()     
+        self.renderingInterface.saveFrame(curr_file_name)
         
                     
-                
+    def renderPreviewFrame(self,frame,timepos,spf):
+        """
+        Method: renderFrame(frame,time)
+        Created: 04.04.2005, KP
+        Description: This renders a given frame
+        Parameters:
+        frame   The frame we're rendering
+        time    The current time in the timeline
+        spf     Seconds per one frame
+        """            
+
+        timepoint = self.getTimepointAt(timepos)
+        point = self.getSplinepointsAt(timepos)
+        if not point:
+            print "No camera position"
+#            Dialogs.showerror(self.control.window,"Camera path ended prematurely","Cannot determine camera position")
+            return -1
+        p0=point.getPoint()
+        print "Rendering frame %d using timepoint %d, time is %f"%(frame,timepoint,timepos)
+        start,end=point.getPosition()
+        # how far along this part of spline we are
+        d=timepos-start
+        # how long is it in total
+        n = end-start
+        # gives us a percent of the length we've traveled
+        percentage = d/float(n)
+        #print "time %.2f is %.3f%% between %.2f and %.2f"%(timepos,percentage,start,end)
+        n=point.getItemNumber()
+        #print "p0=",p0,"item=",n
         
+        p,point = self.control.splineEditor.getCameraPosition(n,p0,percentage)
+        x,y,z=point
+        print "Camera position is point %d = %.2f,%.2f,%.2f"%(p,x,y,z)
         
+        cam = self.splineEditor.getCamera()
+        focal = self.splineEditor.getCameraFocalPointCenter()
+        cam.SetFocalPoint(focal)
+        cam.SetPosition(point)
+        #cam.SetViewUp(self.splineEditor.get_camera().GetViewUp())
+        cam.SetViewUp((0,0,1))
+        cam.ComputeViewPlaneNormal()
+        cam.OrthogonalizeViewUp()
+        # With this we can be sure that all of the props will be visible.
+        self.splineEditor.renderer.ResetCameraClippingRange()
+        self.splineEditor.render()
+        time.sleep(0.1)

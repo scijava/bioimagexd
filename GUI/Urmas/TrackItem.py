@@ -98,6 +98,14 @@ class TrackItem(wx.Panel):
         """       
         return self.itemnum
         
+    def getTimepoint(self):
+        """
+        Method: getTimepoint()
+        Created: 19.04.2005, KP
+        Description: Return the timepoint of this item
+        """       
+        return self.timepoint
+        
     def setItemNumber(self,n):
         """
         Method: setItemNumber(m)
@@ -294,7 +302,8 @@ class TrackItem(wx.Panel):
                 
             elif self.volume:
                 vx,vy,vz=self.volume.GetDimensions()
-                self.thumbnailbmp=ImageOperations.vtkImageDataToPreviewBitmap(self.volume,self.dataUnit.getColor(),0,self.height-self.labelheight)                            
+                ctf=self.dataUnit.getSettings().get("ColorTransferFunction")
+                self.thumbnailbmp=ImageOperations.vtkImageDataToPreviewBitmap(self.volume,ctf,0,self.height-self.labelheight)
             if not self.thumbnailbmp:
                 return
         iw,ih=self.thumbnailbmp.GetSize()
@@ -457,16 +466,14 @@ class SplinePoint(TrackItem):
         Method: __init__
         Created: 20.03.2005, KP
         Description: Initialize the method
-        """       
+        """ 
+        self.point=(0,0,0)
         TrackItem.__init__(self,parent,text,size,**kws)
         if kws.has_key("point"):
+            print "Got point",kws["point"]
             self.setPoint(kws["point"])
-        else:
-            self.setPoint((0,0,0))
         self.Bind(wx.EVT_RIGHT_DOWN,self.onRightClick)
         self.ID_CAMERA=wx.NewId()
-
-            
         
     def getPoint(self):
         """
@@ -536,7 +543,8 @@ class SplinePoint(TrackItem):
         self.dc.SetFont(wx.Font(8,wx.SWISS,wx.NORMAL,wx.NORMAL))
         l=self.parent.getSplineLength(self.itemnum)
         s=self.parent.getDuration(self.GetSize()[0])
-        text=u"Length:\t%.2f\u03bcm\nDuration:\t%.2fs"%(l,s)
+        x,y,z=self.point
+        text=u"Control point:\t%.2f,%.2f,%.2f\nLength:\t%.2f\u03bcm\nDuration:\t%.2fs"%(x,y,z,l,s)
         self.dc.DrawText(text,5,self.labelheight+5)            
  
         if hilight != -1:
@@ -565,6 +573,7 @@ class SplinePoint(TrackItem):
         print "Setting spline point ",self.itemnum,"to ",self.point
         self.parent.setSplinePoint(self.itemnum,self.point)
         
+        
     def __getstate__(self):
         """
         Method: __getstate__
@@ -586,68 +595,6 @@ class SplinePoint(TrackItem):
         desc="SP%d(%d,%d,%d)"%(self.itemnum,self.point[0],self.point[1],self.point[2])
         return "[%s %ds:%ds]"%(desc,start,end)      
 
-class TransitionItem(TrackItem):
-    """
-    Class: TransitionItem
-    Created: 13.04.2005, KP
-    Description: A class representing a transition from one track to another
-    """       
-    def __init__(self,parent,size,**kws):
-        """
-        Method: __init__
-        Created: 13.04.2005, KP
-        Description: Initialize
-        """       
-        TrackItem.__init__(self,parent,"",size,**kws)
-        if not "linked" in kws:
-            raise "No linked item given for TransitionItem"
-        self.linked = kws["linked"]
-        
-    def drawItem(self,hilight=-1):
-        """
-        Method: drawItem()
-        Created: 13.04.2005, KP
-        Description: A method that draws the item.
-        """
-        self.dc.Clear()
-        self.dc.BeginDrawing()
-        col=self.GetBackgroundColour()
-        r,g,b=col.Red(),col.Green(),col.Blue()
-        col=wx.Colour(r,g,b)
-        self.dc.SetBrush(wx.Brush(col))
-        self.dc.DrawRectangle(0,0,self.width,self.height)        
-        self.dc.EndDrawing()
-    
-    def updateItem(self):
-        """
-        Method: updateItem()
-        Created: 13.04.2005, KP
-        Description: A method called when the item has been resized
-        """     
-        TrackItem.updateItem(self) 
-        w,h=self.GetSize()
-        w,y=self.linked.GetPosition()
-        self.setWidth(w)
-         
-        
-    def refresh(self):
-        """
-        Method: refresh()
-        Created: 13.04.2005, KP
-        Description: Update the item
-        """       
-        TrackItem.refresh(self)
-        
-    def __str__(self):
-        """
-        Method: __str__
-        Created: 13.04.2005, KP
-        Description: Return string representation of self
-        """  
-        start,end=self.position
-        desc="TRANS"
-        return "[%s %ds:%ds]"%(desc,start,end)      
-        
 
 class EmptyItem(TrackItem):
     """

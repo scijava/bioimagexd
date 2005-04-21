@@ -114,7 +114,8 @@ class SplineEditor(wx.Panel):
         self.spline = spline = vtk.vtkSplineWidget()
         self.spline.SetResolution(1000)
         
-        self.spline.AddObserver("EndInteractionEvent",self.endInteraction)
+        #self.spline.AddObserver("EndInteractionEvent",self.endInteraction)
+        self.spline.AddObserver("InteractionEvent",self.endInteraction)
                 
         self.renderer=vtk.vtkRenderer()
         self.renWin.AddRenderer(self.renderer)
@@ -125,6 +126,7 @@ class SplineEditor(wx.Panel):
         self.iren = iren = self.renWin.GetInteractor()
         print "Initializing camera"
         self.initCamera()
+        self.spline.SetInteractor(self.iren)        
         
     def setClosed(self,flag):
         """
@@ -136,6 +138,29 @@ class SplineEditor(wx.Panel):
             self.spline.ClosedOn()
         else:
             self.spline.ClosedOff()
+        self.render()
+        
+    def getBounds(self):
+        """
+        Method: getBounds(self)
+        Created: 18.04.2005, KP
+        Description: Returns the bounds of the dataset
+        Order of bounds returned:
+        """           
+        xmin,xmax,ymin,ymax,zmin,zmax = self.data.GetBounds()
+        #print xmin,xmax,ymin,ymax,zmin,zmax
+        p1 = (xmin,ymin,zmin)
+        p2 = (xmax,ymin,zmin)
+        p3 = (xmax,ymax,zmin)
+        p4 = (xmin,ymax,zmin)
+        
+        p5 = (xmin,ymin,zmax)
+        p6 = (xmax,ymin,zmax)
+        p7 = (xmax,ymax,zmax)
+        p8 = (xmin,ymax,zmax)
+        return [p1,p2,p3,p4,p5,p6,p7,p8]
+        
+        
         
     
     def findControlPoint(self,pt):
@@ -243,7 +268,14 @@ class SplineEditor(wx.Panel):
         n=points.GetNumberOfPoints()
         pps=self.getControlPoints()
 
-        p0,p1=pps[ip0],pps[ip1]
+        # If the second point goes beyond the control points, then use the 
+        # last point in the spline
+        if ip1>=len(pps):
+            p1=points.GetPoint(n-1)
+        else:
+            p1=pps[ip1]
+        p0=pps[ip0]
+        
         pp0,pp1=-1,-1
         d0,d1=2**64,2**64
         
@@ -270,40 +302,73 @@ class SplineEditor(wx.Panel):
         #print "Distance",d,", straight distance",sd
         return d
         
-    def getCameraPosition(self,p0,p1,percentage):
+    def getCameraPosition(self,n,p0,percentage):
         """
-        Method: getCameraPosition(p0,p1,percentage)
+        Method: getCameraPosition(n,p0,percentage)
         Created: KP, 05.04.2005
         Description: Method that returns the camera position when it is located a given percentage
-                     of the way from point p0 to p1
+                     of the way from point p0 (the nth control point) to next spline point
         """        
-        points = self.getPoints()
-        n=points.GetNumberOfPoints()
-        pps=self.getControlPoints()
-        if p1[0]==-1:
-            print "Using last point as p1"
-            p1=points.GetPoint(points.GetNumberOfPoints()-1)
-        pp0,pp1=-1,-1
-        d0,d1=2**64,2**64
+        pps = self.getControlPoints()
+        cp0 = pps[n]
+        nskip=0
         for i in range(n):
-            p=points.GetPoint(i)
-            d=vtk.vtkMath.Distance2BetweenPoints(p,p0)
+            if pps[i]==cp0:
+                nskip+=1
+        
+        points = self.getPoints()
+        npts = points.GetNumberOfPoints()
+        d0 = 2**64
+        pointindex =  -1
+        pointindex2 = -1
+        closest = -1
+        d0 = 2**64
+        for i in range(npts):
+            p = points.GetPoint(i)
+            d = vtk.vtkMath.Distance2BetweenPoints(p,cp0)
+            if d < 1:
+                if nskip:nskip-=1
+                else:pointindex = i
+                break
             if d<d0:
-                d0,pp0=d,i
-            d=vtk.vtkMath.Distance2BetweenPoints(p,p1)
-            if d<d1:                
-                d1,pp1=d,i
-        d=0
-        if pp0<0 or pp1<0:
-            raise "Did not find point"
-        p0=points.GetPoint(pp0)
-        p1=points.GetPoint(pp1)
-        p=int((pp1-pp0)*percentage)
-        return (p,points.GetPoint(p))
-         
+                closest = i
+                d0 = d
+        
+        if pointindex != closest:
+            if pointindex < 0 or abs(closest - pointindex) <5:
+                #print "Using closest %d instead of the one we found %d"%(closest,pointindex)
+                pointindex = closest
+            else:
+                raise "Didn't get closest!"
+        if n == len(pps)-1:
+            #print "Using last point"
+            pointindex2 = npts-1
+        else:
+            cp1 = pps[n+1]
+            closest = -1
+            d0 = 2**64
+            for i in range(pointindex,npts):
+                p = points.GetPoint(i)
+                d = vtk.vtkMath.Distance2BetweenPoints(p,cp1)
+                if d < 1:
+                    pointindex2 = i
+                    break
+                if d<d0:
+                    closest = i
+                    d0 = d
+            if pointindex2 != closest:
+                if pointindex2 < 0 or abs(closest - pointindex2) <5:
+                    #print "Using closest %d instead of the one we found %d"%(closest,pointindex2)
+                    pointindex2 = closest
+                else:
+                    raise "Didn't get closest!"                    
+        #print "Pointindex = ",pointindex," to ",pointindex2,"percent=",percentage
+        n = pointindex+(pointindex2-pointindex)*percentage
+        return (n,points.GetPoint(n))
+                    
     
         
-    def updateData(self,data):
+    def updateData(self,data,ctf=None):
         """
         Method: updateData(data)
         Created: Heikki Uuksulainen
@@ -316,7 +381,7 @@ class SplineEditor(wx.Panel):
             del self.data
 
         self.data = data
-        print "Got data=",data
+        #print "Got data=",data
         
         self.outline.SetInput(self.data)
         self.outlinemapper.SetInput (self.outline.GetOutput ())
@@ -330,11 +395,13 @@ class SplineEditor(wx.Panel):
         opacityTransferFunction.AddPoint(50, 0.0)
         opacityTransferFunction.AddPoint(255, 0.15)
         
-        # Create transfer mapping scalar value to color
-        colorTransferFunction = vtk.vtkColorTransferFunction()
-        colorTransferFunction.AddRGBPoint(0.0, 0.0, 0.0, 0.0)
-        #colorTransferFunction.AddRGBPoint(50.0, 0.0, 0.0, 0.0)
-        colorTransferFunction.AddRGBPoint(255.0, 0.0, 1.0, 0.0)
+        colorTransferFunction = ctf
+        if not colorTransferFunction:
+            print "DIDN'T GET CTF!!"
+            # Create transfer mapping scalar value to color
+            colorTransferFunction = vtk.vtkColorTransferFunction()
+            colorTransferFunction.AddRGBPoint(0.0, 0.0, 0.0, 0.0)
+            colorTransferFunction.AddRGBPoint(255.0, 0.0, 1.0, 0.0)
         
         volumeProperty = vtk.vtkVolumeProperty()
         volumeProperty.SetColor(colorTransferFunction)
@@ -352,15 +419,9 @@ class SplineEditor(wx.Panel):
         volume.SetMapper(volumeMapper)
         volume.SetProperty(volumeProperty)
         
-
-        
-        
-
         txt = ("X", "Y", "Z")
         for t in txt:
                 eval ("self.axes.%sAxisVisibilityOn ()"%t)
-                #eval ("self.axes.Get%sAxisActor2D().LabelVisibilityOff()"%(txt[i]))
-                #eval ("self.axes.Get%sAxisActor2D().SetPoint1(0.0,0.0)"%(txt[i]))
                 eval ("self.axes.Get%sAxisActor2D().SetLabelFactor(0.5)"%t)
 
         self.axes.GetProperty ().SetColor ((255,255,255))
@@ -436,10 +497,11 @@ class SplineEditor(wx.Panel):
         Created: KP, 06.04.2005
         Description: Sets the handles of the spline widget to the given point list
         """        
-        self.spline.SetInteractor(self.iren)        
+        #print "Setting spline points to",pointlist
         self.spline.GetLineProperty().SetColor(1,0,0)
-        self.spline.SetNumberOfHandles(len(pointlist))
-        for i in range(self.spline.GetNumberOfHandles()):
+        n = len(pointlist)
+        self.spline.SetNumberOfHandles(n)
+        for i in range(n):
             self.spline.SetHandlePosition(i,pointlist[i])
         self.spline.On()
         self.renderer.Render()
@@ -467,6 +529,8 @@ class SplineEditor(wx.Panel):
             cam.ComputeViewPlaneNormal()
         else:
             print "No camera in SplineEditor"
+
+
 
     def getInitialCameraPosition(self):
         """
@@ -592,4 +656,5 @@ class SplineEditor(wx.Panel):
         Created: Heikki Uuksulainen
         Description: Render the widget
         """           
-        self.renderer.Render()
+        #self.renderer.Render()
+        self.renWin.Render()
