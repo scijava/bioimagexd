@@ -164,7 +164,7 @@ def askSaveAsFileName(parent,title,initFile,wc):
     filename=None
     if dlg.ShowModal()==wx.ID_OK:
         filename=dlg.GetPath()
-    if remember:
+    if remember and filename:
         filepath=os.path.dirname(filename)
         conf.setConfigItem("LastPath_%s"%type,"Paths",filepath)
                     

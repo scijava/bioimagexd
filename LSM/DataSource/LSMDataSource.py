@@ -120,6 +120,7 @@ class LsmDataSource(DataSource):
     def getSpacing(self):
         if not self.spacing:
             a,b,c=self.reader.GetVoxelSizes()
+	    print "Voxel sizes = ",a,b,c
             self.spacing=[1,b/a,c/a]
         return self.spacing
         
