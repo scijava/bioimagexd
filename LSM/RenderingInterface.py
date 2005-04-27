@@ -34,7 +34,8 @@ import os.path
 import Logging
 import Configuration
 import wx
-
+import time
+import sys
 
 rendint=None
 
@@ -63,11 +64,14 @@ class RenderingInterface:
         self.visualizationFile=None
         self.surfcolor=None
         self.settings_mode=0
+        self.frameName=""
+        self.thread = None
         self.stop=0
         self.currentTimePoint=-1
         # XXX: Make this configurable
         self.type=Configuration.getConfiguration().getConfigItem("Output","ImageFormat")
-
+        if not self.type:
+            self.type="png"
     def getColorTransferFunction(self):
         """
         Method: getColorTransferFunction()
@@ -101,6 +105,22 @@ class RenderingInterface:
         self.currentData = self.dataUnit.getTimePoint(n)
         self.dimensions = self.currentData.GetDimensions()
         
+    def setRenderWindowSize(self,size):
+        """
+        Method: setRenderWindowSize()
+        Created: 27.04.2005, KP
+        Description: Sets the mayavi render window size
+        """        
+        x,y=size
+        x+=150
+        y+=100
+        if self.mayavi:
+            self.mayavi.root.minsize(x,y)
+            renwin=self.mayavi.get_render_window()
+            x,y=size
+            #renwin.configure(width=x+10,height=y+10)
+            renwin.renwin.SetSize(x,y)
+        
     def getRenderWindow(self):
         """
         Method: getRenderWindow()
@@ -110,9 +130,22 @@ class RenderingInterface:
         return self.mayavi.get_render_window()
         
     def render(self):
-        return self.mayavi.Render()
+        self.mayavi.root.lift()
+        #return self.mayavi.Render()
         
-    def runTkinterGUI(self,run=1):
+    def runTk(self):
+        """
+        Method: runTk
+        Created: 27.04.2005, KP
+        Description: Executes a Tkinter event loop in a thread
+        """ 
+        #if not self.thread:
+        #    self.thread=threading.Thread(None,self.runTkinterGUI)
+        #    self.thread.start()
+        self.calling = 0
+        self.runTkinterGUI()
+        
+    def runTkinterGUI(self):
         """
         Method: runTkinterGUI()
         Created: 15.01.2005, KP
@@ -120,11 +153,14 @@ class RenderingInterface:
                      that run every 100 ms. Will cease to execute when the flag
                      self.stop is set
         """ 
+        
         if self.mayavi:
             self.mayavi.root.update()
         if not self.stop:            
-            wx.FutureCall(100, self.runTkinterGUI)
-            wx.FutureCall(5000,self.stopIfWindowClosed)
+            wx.FutureCall(50, self.runTkinterGUI)
+            if not self.calling:
+                wx.FutureCall(5000,self.stopIfWindowClosed)
+                self.calling=1
         else:
             print "Won't update mayavi any longer"
 
@@ -134,6 +170,7 @@ class RenderingInterface:
         Created: 20.04.2005, KP
         Description: Stop tkinter event loop if mayavi is closed
         """
+        self.calling=0
         if not self.isMayaviRunning():
             self.stop=1
         
@@ -152,6 +189,7 @@ class RenderingInterface:
         self.format="%%s%s%%s_%%.%dd.png"%(os.path.sep,ndigits)
         #Logging.info("File name format=",self.format)
         self.ctf = dataUnit.getSettings().get("ColorTransferFunction")
+        self.frameName=self.dataUnit.getName()
 
     def setTimePoints(self,timepoints):
         """
@@ -169,7 +207,7 @@ class RenderingInterface:
                      purpose of creating a .mv file to use in rendering.
         """
         self.stop=0
-        self.runTkinterGUI()
+        self.runTk()#interGUI()
         data=self.dataUnit.getTimePoint(0)
         self.settings_mode=1
         self.doRendering(preview=data)
@@ -231,7 +269,8 @@ class RenderingInterface:
         Description: A method that creates an instance of mayavi
         """    
         Logging.info("Creating new mayavi instance")
-        del self.mayavi
+        #del self.mayavi
+        self.mayavi = None
         self.mayavi=mayavi.mayavi()
         # set flag indicating this is the first run
         self.not_loaded=1
@@ -247,7 +286,7 @@ class RenderingInterface:
         """
         self.showPreview=None
         self.stop=0
-        self.runTkinterGUI()
+        self.runTk()#interGUI()
 
         self.visualizationFile=None
         self.ctf=None
@@ -286,7 +325,6 @@ class RenderingInterface:
         if not self.showControlPanel:
             self.mayavi.show_ctrl_panel(0)
 
-        self.frameName=self.dataUnit.getName()
 
         # If this is not preview
         if not self.showPreview:
@@ -354,11 +392,7 @@ class RenderingInterface:
 
         # substitute just the data
         self.setDataSet(data)
-        Logging.info("lifting the window")
 
-        self.mayavi.root.lift()
-        self.mayavi.root.focus_force()
-        self.mayavi.root.update()
 
         if not self.isMayaviRunning():
             if self.settings_mode:
@@ -370,12 +404,17 @@ class RenderingInterface:
             "All selected timepoints have not been rendered, "
             "because Mayavi appears to\n"
             "have been shut down before the rendering was finished.")
+            return
+        self.mayavi.root.lift()
+        #self.mayavi.root.focus_force()
+        self.mayavi.root.update()
 
-        self.mayavi.Render()
+        # Don't need to call Render since lift will already do it
+        #self.mayavi.Render()
 
         if self.isMayaviRunning():
-            self.mayavi.root.update()
-            self.mayavi.root.lift()
+            #self.mayavi.root.update()
+            #self.mayavi.root.lift()
             self.mayavi.root.focus_force()
 
         if not self.showPreview:
@@ -392,9 +431,25 @@ class RenderingInterface:
         """
         renwin=self.getRenderWindow()
         type=self.type
-        comm = "renwin.save_%s(file)"
+        comm = "renwin.save_%s(filename)"
         eval(eval("comm%type"))      
         
+            
+    def getFilenamePattern(self):
+        """
+        Method: getFilenamePattern()
+        Created: 27.04.2005, KP
+        Description: Returns output filename pattern
+        """
+        return self.format
+        
+    def getFrameName(self):
+        """
+        Method: getFrameName
+        Created: 27.04.2005, KP
+        Description: Returns name used to construct the filenames
+        """
+        return self.frameName
             
     def getFilename(self,frameNum):
         """
