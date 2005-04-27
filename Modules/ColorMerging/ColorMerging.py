@@ -82,7 +82,7 @@ class ColorMerging(Module):
         dims=data.GetDimensions()
         settings = dataunit.getSettings()
         #rgb=self.settings.getCounted("Color",self.n)
-        ctf = settings.get("ColorTransferFunction")
+        ctf = settings.get("MergingColorTransferFunction")
         self.ctfs.append(ctf)
         self.alphaTF=settings.get("AlphaTransferFunction")
         self.alphaMode=settings.get("AlphaMode")
