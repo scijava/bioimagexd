@@ -30,6 +30,7 @@ import os.path
 import sys
 import Configuration
 
+#sys.path.insert(0,"C:\\Mingw\\lib")
 # This will fix the VTK paths using either values from the
 # configuration file, or sensible defaults
 cfg=Configuration.Configuration("BioImageXD.ini")

@@ -51,36 +51,36 @@ math = vtk.vtkMath()
 debug = Common.debug
 print_err = Common.print_err
 
-class AnimatorPanel(wx.Panel):
+class AnimatorPanel:
     """
     Class: AnimatorPanel
     Created: 10.2.2005, KP
     Description: A class that contains the spline editor and configuration
                  controls related to it.
     """
-    def __init__(self,parent,control):
+    def __init__(self,parent,control,renwin):
         """
         Method: __init__
         Created: 10.2.2005, KP
         Description: Initialize the config panel
         """        
-        wx.Panel.__init__(self,parent)
+        #wx.Panel.__init__(self,parent)
         self.splineEditor=None
         self.control = control
         
         print "AnimatorPanel(...)"
-        self.sizer=wx.GridBagSizer()
+        #self.sizer=wx.GridBagSizer()
 
-        
-        self.splineEditor=SplineEditor.SplineEditor(self)
-        self.animator=MayaViAnimator(self,self.splineEditor)        
+
+        self.splineEditor=SplineEditor.SplineEditor(parent,renwin)
+        self.animator=MayaViAnimator(self,self.splineEditor)
         self.control.setSplineEditor(self.splineEditor)
-        
-        self.sizer.Add(self.splineEditor,(0,0))
-        
-        self.SetSizer(self.sizer)
-        self.SetAutoLayout(True)
-        self.sizer.Fit(self)
+
+        #self.sizer.Add(self.splineEditor,(0,0))
+
+        #self.SetSizer(self.sizer)
+        #self.SetAutoLayout(True)
+        #self.sizer.Fit(self)
         
 
 
@@ -188,7 +188,7 @@ class MayaViAnimator:
         ren.SetActiveCamera(cam)
         self.renderingInterface.render()         
         
-    def initData(self):          
+    def initData(self):
         self.splineEditor.updateData(self.renderingInterface.getCurrentData(),self.renderingInterface.getColorTransferFunction())
         #self.splineEditor.initSpline(self.controlPoints)
         self.splineEditor.initCamera()

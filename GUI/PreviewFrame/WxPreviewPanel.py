@@ -45,6 +45,9 @@ class WxPreviewPanel(wx.ScrolledWindow):
         self.scroll=scroll
         print "size=",size
         self.rubberstart=None
+        self.yielding=0
+        x,y=size
+        self.buffer = wx.EmptyBitmap(x,y)
         self.rubberend=None
         wx.ScrolledWindow.__init__(self,parent,-1,size=size,**kws)
         if kws.has_key("scrollbars"):
@@ -62,7 +65,7 @@ class WxPreviewPanel(wx.ScrolledWindow):
         self.Bind(wx.EVT_LEFT_DOWN,self.markRubberband)
         self.Bind(wx.EVT_MOTION,self.updateRubberband)
         self.Bind(wx.EVT_LEFT_UP,self.zoomToRubberband)
-        
+
     def setSingleSliceMode(self,mode):
         """
         Method: setSingleSliceMode()
@@ -198,8 +201,8 @@ class WxPreviewPanel(wx.ScrolledWindow):
             self.setZoomFactor(ImageOperations.getZoomFactor(x,y,w,h))
         else:
             self.fitLater=1
-        
-        
+
+
     def setScrollbars(self,xdim,ydim):
         """
         Method: setScrollbars(x,y)
@@ -207,10 +210,11 @@ class WxPreviewPanel(wx.ScrolledWindow):
         Description: Configures scroll bar behavior depending on the
                      size of the dataset, which is given as parameters.
         """
+        self.buffer = wx.EmptyBitmap(xdim,ydim)
         if self.scroll:
             self.SetVirtualSize((xdim,ydim))
             self.SetScrollRate(self.scrollsize,self.scrollsize)
-        
+
     def startZoom(self):
         """
         Method: startZoomObject()
@@ -220,11 +224,11 @@ class WxPreviewPanel(wx.ScrolledWindow):
         """
         print "Zooming..."
         self.zooming=1
-        
-        
+
+
     def updatePreview(self):
         """
-        MethopdatePreview()d: updatePreview()
+        Method: updatePreview()
         Created: 24.03.2005, KP
         Description: Updates the viewed image
         """
@@ -233,10 +237,15 @@ class WxPreviewPanel(wx.ScrolledWindow):
             print "Using z = 0"
             z=0
         self.slice=ImageOperations.vtkImageDataToWxImage(self.imagedata,z)
-        self.Refresh()
-        wx.Yield()
-        self.updateScrolling()
-#        wx.FutureCall(50,self.updateScrolling)
+        self.paintPreview()
+        #self.Refresh()
+        #if not self.yielding:
+        #    self.yielding+=1
+        #    wx.SafeYield()
+        #self.yielding-=1
+
+        #self.updateScrolling()
+        wx.FutureCall(50,self.updateScrolling)
     
     def updateScrolling(self,event=None):
         """
@@ -255,15 +264,26 @@ class WxPreviewPanel(wx.ScrolledWindow):
             #sy=y/self.scrollsize
             self.Scroll(sx,sy)
             self.scrollTo=None
-       
+
     def OnPaint(self,event):
         """
-        Method: OnPaint()
-        Created: 24.03.2005, KP
+        Method: paintPreview()
+        Created: 28.04.2005, KP
         Description: Does the actual blitting of the bitmap
         """
-        dc = wx.PaintDC(self)
-        self.DoPrepareDC(dc)
+        dc=wx.BufferedPaintDC(self,self.buffer)#,self.buffer)
+
+
+    def paintPreview(self):
+        """
+        Method: paintPreview()
+        Created: 24.03.2005, KP
+        Description: Paints the image to a DC
+        """
+        dc = self.dc = wx.BufferedDC(wx.ClientDC(self),self.buffer)
+        dc.BeginDrawing()
+#        dc = wx.PaintDC(self)
+#        self.DoPrepareDC(dc)
         #x,y=self.mysize
         #dc.SetClippingRegion(0,0,x,y)
         if not self.slice:
@@ -273,14 +293,14 @@ class WxPreviewPanel(wx.ScrolledWindow):
             dc.DrawRectangle(0,0,self.size[0],self.size[1])
             return
         bmp=self.slice.ConvertToBitmap()
-       
+
         if self.zoomFactor!=1:
             bmp=ImageOperations.zoomImageByFactor(self.slice,self.zoomFactor).ConvertToBitmap()
             #print "New size=",bmp.GetWidth(),bmp.GetHeight()
-            
-        dc.DrawBitmap(bmp,0,0,True)            
+
+        dc.DrawBitmap(bmp,0,0,True)
         self.bmp=bmp
-        
+
         if self.rubberstart and self.rubberend:
             x1,y1=self.rubberstart
             x2,y2=self.rubberend
@@ -297,3 +317,5 @@ class WxPreviewPanel(wx.ScrolledWindow):
             dc.SetBrush(wx.TRANSPARENT_BRUSH)
             dc.DrawRectangle(x1,y1,d1,d2)
         
+        dc.EndDrawing()
+        self.dc = None

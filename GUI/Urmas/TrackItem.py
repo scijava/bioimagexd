@@ -12,7 +12,7 @@
  Urmas is a timeline based GUI for controlling the rendering of datasets. The GUI allows users
  to specify a path for the camera to follow (using Heikki Uuksulainen's MayaVi animator code)
  and also allows them to produce videos of the rendering using ffmpeg.
- 
+
  Theitems placed on the track are implemented in this module
 
  Modified: 04.02.2005 KP - Original code created
@@ -191,7 +191,7 @@ class TrackItem(wx.Panel):
         Method: onPaint
         Created: 10.02.2005, KP
         Description: A method that will blit the buffer to screen
-        """       
+        """
         dc=wx.BufferedPaintDC(self,self.buffer)
 
     def drawHeader(self):
@@ -221,7 +221,8 @@ class TrackItem(wx.Panel):
         Method: drawItem()
         Created: 10.02.2005, KP
         Description: A method that draws this track item
-        """       
+        """
+        self.dc = wx.BufferedDC(wx.ClientDC(self),self.buffer)
         self.dc.Clear()
         self.dc.BeginDrawing()
         self.dc.SetPen(wx.Pen((0,0,0)))
@@ -245,6 +246,7 @@ class TrackItem(wx.Panel):
     
         
         self.dc.EndDrawing()
+        self.dc = None
 
     def hilight(self,h):
         """
@@ -260,7 +262,7 @@ class TrackItem(wx.Panel):
         Method: getThumbnail()
         Created: 19.03.2005, KP
         Description: A method that creates a thumbnail for a timepoint
-        """ 
+        """
         # This may bail if the item gets deleted while the thread
         # is still running
         try:
@@ -280,7 +282,7 @@ class TrackItem(wx.Panel):
         self.parent.Refresh()
         self.Refresh()
         self.parent.Layout()
-        wx.Yield()
+        #wx.SafeYield()
                 
         
     def drawThumbnail(self):
@@ -333,7 +335,6 @@ class TrackItem(wx.Panel):
         del self.buffer
         self.buffer=wx.EmptyBitmap(self.width,self.height)
         del self.dc
-        self.dc = wx.BufferedDC(None,self.buffer)
         self.drawItem()
         
     def onDown(self,event):
@@ -521,6 +522,7 @@ class SplinePoint(TrackItem):
         Created: 19.03.2005, KP
         Description: A method that draws the item.
         """       
+        self.dc = wx.BufferedDC(wx.ClientDC(self),self.buffer)
         self.dc.Clear()
         self.dc.BeginDrawing()
         self.dc.SetPen(wx.Pen((0,0,0)))
@@ -538,20 +540,26 @@ class SplinePoint(TrackItem):
         self.dc.SetPen(wx.Pen(wx.Colour(r,g,b),2))
         self.dc.DrawLine(self.width-1,0,self.width-1,self.height)
 
-        
+
         self.dc.SetTextForeground((0,0,0))
         self.dc.SetFont(wx.Font(8,wx.SWISS,wx.NORMAL,wx.NORMAL))
         l=self.parent.getSplineLength(self.itemnum)
         s=self.parent.getDuration(self.GetSize()[0])
         x,y,z=self.point
-        text=u"Control point:\t%.2f,%.2f,%.2f\nLength:\t%.2f\u03bcm\nDuration:\t%.2fs"%(x,y,z,l,s)
-        self.dc.DrawText(text,5,self.labelheight+5)            
- 
+        text= u"Control point: %.2f,%.2f,%.2f"%(x,y,z)
+        text2=u"Length:        %.2f\u03bcm"%l
+        text3=u"Duration:      %.2fs"%(s)
+        n=0
+        for text in [text,text2,text3]:
+            self.dc.DrawText(text,5,n+self.labelheight+5)
+            n+=10
+
         if hilight != -1:
             self.hilight(hilight)
  
         
         self.dc.EndDrawing()
+        self.dc = None
     
     def updateItem(self):
         """
@@ -616,6 +624,7 @@ class EmptyItem(TrackItem):
         Created: 13.04.2005, KP
         Description: A method that draws the item.
         """
+        self.dc = wx.BufferedDC(wx.ClientDC(self),self.buffer)
         self.dc.Clear()
         self.dc.BeginDrawing()
         col=self.GetBackgroundColour()

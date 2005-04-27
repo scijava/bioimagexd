@@ -54,7 +54,7 @@ class UrmasWindow(wx.Frame):
     def __init__(self,parent):
         wx.Frame.__init__(self,parent,-1,"Rendering Manager / Animator",size=(1024,768))
         self.status=wx.ID_OK
-        ico=reduce(os.path.join,["..","Icons","Selli.ico"])
+        ico=reduce(os.path.join,["Icons","Selli.ico"])
         self.icon = wx.Icon(ico,wx.BITMAP_TYPE_ICO)
         self.SetIcon(self.icon)
 

@@ -290,6 +290,7 @@ class ColocalizationWindow(TaskWindow.TaskWindow):
             if ctf and self.colorBtn:
                 print "Setting colorBtn.ctf"
                 self.colorBtn.setColorTransferFunction(ctf)
+                self.colorBtn.Refresh()
 
     def doColocalizationCallback(self,event):
         """

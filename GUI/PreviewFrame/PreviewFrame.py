@@ -165,6 +165,7 @@ class PreviewFrame(wx.Panel):
             self.modeLbl=wx.StaticText(self,-1,"Select preview method:")
             self.modes=["2D Slice","Volume Rendering","Surface Rendering","24-bit Volume Rendering","Maximum Intensity Projection"]
             self.modeChoice=wx.Choice(self,-1,choices=self.modes)
+            self.modeChoice.SetSelection(0)
             self.modeBox.Add(self.modeLbl)
             self.modeBox.Add(self.modeChoice)
             self.sizer.Add(self.modeBox,(4,0))

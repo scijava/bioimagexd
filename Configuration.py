@@ -50,8 +50,8 @@ class Configuration:
         self.parser.read([cfgfile])
     
         # Set the initial values
-        vtkpath=self.getPath(["Libraries","VTK"])
-        #vtkpath=self.getPath(["C:\\VTK"])
+        #vtkpath=self.getPath(["Libraries","VTK"])
+        vtkpath=self.getPath(["C:\\VTK"])
         mayavipath=self.getPath(["Libraries","mayavi"])
         self.setConfigItem("RemoveOldVTK","VTK",1);
         self.setConfigItem("VTKPath","VTK",vtkpath)

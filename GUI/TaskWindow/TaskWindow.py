@@ -144,7 +144,7 @@ class TaskWindow(wx.Frame):
         Method: createToolBar()
         Created: 19.03.2005, KP
         Description: Method to create a toolbar for the window
-        """                
+        """
         self.tb = self.CreateToolBar(wx.TB_HORIZONTAL)#|wx.NO_BORDER|wx.TB_FLAT|wx.TB_TEXT)
         ID_CAPTURE=wx.NewId()
         ID_ZOOM_OUT=wx.NewId()
@@ -154,7 +154,7 @@ class TaskWindow(wx.Frame):
         self.tb.AddSimpleTool(ID_CAPTURE,wx.Image(os.path.join("Icons","camera.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Capture slice","Capture the current optical slice")
         self.tb.AddSimpleTool(ID_ZOOM_OUT,wx.Image(os.path.join("Icons","zoom-out.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Zoom out","Zoom out on the optical slice")
         #EVT_TOOL(self,ID_OPEN,self.menuOpen)
-        
+
         self.zoomCombo=wx.ComboBox(self.tb,-1,"100%",choices=["12.5%","25%","33.33%","50%","66.67%","75%","100%","125%","150%","200%","300%","400%","600%","800%"],size=(100,-1),style=wx.CB_DROPDOWN)
         self.zoomCombo.SetSelection(6)
         self.tb.AddControl(self.zoomCombo)
@@ -169,7 +169,8 @@ class TaskWindow(wx.Frame):
         wx.EVT_TOOL(self,ID_ZOOM_TO_FIT,self.preview.zoomToFit)
         wx.EVT_TOOL(self,ID_ZOOM_OBJECT,self.preview.zoomObject)
         self.zoomCombo.Bind(wx.EVT_COMBOBOX,self.preview.zoomToComboSelection)
-
+        self.tb.Realize()
+        
     def createItemToolbar(self):
         """
         Method: createItemToolbar()
@@ -178,7 +179,7 @@ class TaskWindow(wx.Frame):
         """      
         #self.tb2 = self.CreateToolBar(wx.TB_HORIZONTAL)
         print "Creating item toolbar"
-        self.tb2 = wx.ToolBar(self,-1,style=wx.TB_VERTICAL|wx.TB_TEXT)
+        self.tb2 = wx.ToolBar(self.panel,-1,style=wx.TB_VERTICAL|wx.TB_TEXT)
         self.tb2.SetToolBitmapSize((64,64))# this required for non-standard size buttons on MSW
         n=0
         print "FOOoo\n\n\n\n\n"
@@ -202,12 +203,17 @@ class TaskWindow(wx.Frame):
             dc.SelectObject(wx.EmptyBitmap(0,0))
             toolid=wx.NewId()
             self.tb2.AddRadioTool(toolid,bmp,shortHelp=name)
+            #self.tb2.AddTool(toolid,bmp)#,shortHelp=name)
+            #self.Bind(wx.EVT_TOOL,self.onTool)
             self.Bind(wx.EVT_TOOL,lambda e,x=n,s=self:s.selectItem(e,x),id=toolid)
             n=n+1
-        self.tb2.Realize()
+
         #self.mainsizer.Add(self.tb2,(0,4))
         self.previewSizer.Add(self.tb2,(0,0))
+        self.tb2.Realize()
         
+    def onTool(self,event):
+        print "ONTOOL"
     def OnSize(self,event):
         """
         Method: OnSize(event)

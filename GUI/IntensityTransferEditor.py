@@ -623,7 +623,7 @@ class IntensityTransferEditor(wx.Panel):
 
         if self.doyield:
            self.doyield=0
-           wx.Yield()
+           #wx.Yield()
            self.doyield=1
             
         if self.updateCallback:

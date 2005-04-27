@@ -142,10 +142,12 @@ class Track(wx.Panel):
             r=g=b=200
             print "Setting background to ",r,g,b
             self.namePanel.SetBackgroundColour((r,g,b))
+            self.nameLbl.SetBackgroundColour((r,g,b))
         else:
             self.namePanel.SetBackgroundColour(self.nameColor)
+            self.nameLbl.SetBackgroundColour(self.nameColor)
             self.nameLbl.SetForegroundColour((0,0,0))
-        
+
         
     def OnDragOver(self,x,y,d):
         """
@@ -163,6 +165,7 @@ class Track(wx.Panel):
             g=int(g*0.8)
             b=int(b*0.8)
             self.namePanel.SetBackgroundColour((r,g,b))
+            self.nameLbl.SetBackgroundColour((r,g,b))
             self.nameLbl.SetForegroundColour((255,255,255))
         self.namePanel.Refresh()
         curritem=None
@@ -191,6 +194,7 @@ class Track(wx.Panel):
         """     
         self.namePanel.SetBackgroundColour(self.nameColor)
         self.oldNamePanelColor = None
+        self.nameLbl.SetBackgroundColour(self.nameColor)
         self.nameLbl.SetForegroundColour((0,0,0))
         self.namePanel.Refresh()
 
@@ -466,6 +470,7 @@ class SplineTrack(Track):
         self.closed = 0
         self.nameColor = (0,148,213)
         self.namePanel.SetBackgroundColour(wx.Colour(*self.nameColor))
+        self.nameLbl.SetBackgroundColour(wx.Colour(*self.nameColor))        
         if "item" in kws:
             self.itemClass=kws["item"]
         else:
@@ -701,6 +706,7 @@ class TimepointTrack(Track):
         Track.__init__(self,name,parent,**kws)   
         self.nameColor = (128,195,155)
         self.namePanel.SetBackgroundColour(wx.Colour(*self.nameColor))
+        self.nameLbl.SetBackgroundColour(wx.Colour(*self.nameColor))        
         if "item" in kws:
             self.itemClass=kws["item"]
         else:

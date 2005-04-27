@@ -40,14 +40,17 @@ class TimeScale(wx.Panel):
     """
     def __init__(self,parent):
         wx.Panel.__init__(self,parent,-1,style=wx.RAISED_BORDER)
-        self.Bind(wx.EVT_PAINT,self.onPaint)
-        self.bgcolor=(255,255,255)
-        self.fgcolor=(0,0,0)
-        
         self.perSecond=24
         self.xOffset=15
         self.yOffset=6
-        
+        self.bgcolor=(255,255,255)
+        self.fgcolor=(0,0,0)
+
+        #self.setDuration(60)
+        self.Bind(wx.EVT_PAINT,self.onPaint)
+
+
+
     def setDisabled(self,flag):
         """
         Method: setDisabled(flag)
@@ -67,18 +70,18 @@ class TimeScale(wx.Panel):
             col=self.GetBackgroundColour()
             r,g,b=col.Red(),col.Green(),col.Blue()
             self.bgcolor=(r,g,b)
-            
+
     def setOffset(self,x):
         self.xOffset=x
         self.paintScale()
-        
+
     def setPixelsPerSecond(self,x):
         self.perSecond=x
         print "pixels per second=",x
-        
+
     def getPixelsPerSecond(self):
         return self.perSecond
-    
+
     def setDuration(self,seconds):
         self.seconds=seconds
         self.width=self.perSecond*seconds+2*self.xOffset
@@ -86,18 +89,18 @@ class TimeScale(wx.Panel):
         self.SetSize((self.width+10,self.height))
         print "Set Size to %d,%d"%(self.width+10,self.height+10)
         self.buffer=wx.EmptyBitmap(self.width,self.height)
-        dc = wx.BufferedDC(None,self.buffer)
+        self.paintScale()
+        self.Refresh()
+
+    def paintScale(self):
+        dc = wx.BufferedDC(wx.ClientDC(self),self.buffer)
         #col=self.GetBackgroundColour()
         r,g,b=self.bgcolor
         col=wx.Colour(r,g,b)
+        self.dc=dc
+        self.dc.BeginDrawing()
         dc.SetBackground(wx.Brush(col))
         dc.Clear()
-        self.dc=dc
-        self.paintScale()
-    
-    def paintScale(self):
-        self.dc.Clear()
-        self.dc.BeginDrawing()
 
         # draw the horizontal line
         #self.dc.DrawLine(self.xOffset,0,self.xOffset+self.seconds*self.perSecond,0)
@@ -134,9 +137,8 @@ class TimeScale(wx.Panel):
                 self.dc.DrawLine(x,-1,x,d)
                 self.dc.DrawLine(x,self.height-d-4,x,self.height)
         self.dc.EndDrawing()
-      
+        self.dc = None
     
     def onPaint(self,event):
-        dc=wx.BufferedPaintDC(self,self.buffer)     
-        
-   
+        print "Painting ",self.buffer
+        dc=wx.BufferedPaintDC(self,self.buffer)

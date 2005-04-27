@@ -410,6 +410,7 @@ class SingleUnitProcessingWindow(TaskWindow.TaskWindow):
             if ctf and self.colorBtn:
                 print "Setting colorBtn.ctf"
                 self.colorBtn.setColorTransferFunction(ctf)
+                self.colorBtn.Refresh()
             # median filtering
             #print self.settings
             median=self.settings.get("MedianFiltering")

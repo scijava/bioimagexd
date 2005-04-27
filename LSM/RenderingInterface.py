@@ -188,7 +188,8 @@ class RenderingInterface:
         # Format, the format will be /path/to/data/image_001.png
         self.format="%%s%s%%s_%%.%dd.png"%(os.path.sep,ndigits)
         #Logging.info("File name format=",self.format)
-        self.ctf = dataUnit.getSettings().get("ColorTransferFunction")
+        self.ctf=dataUnit.getColorTransferFunction()
+        #self.ctf = dataUnit.getSettings().get("ColorTransferFunction")
         self.frameName=self.dataUnit.getName()
 
     def setTimePoints(self,timepoints):

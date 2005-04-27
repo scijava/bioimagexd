@@ -49,42 +49,42 @@ from vtk.util.colors import tomato, banana
 import wx
 import wx.lib.scrolledpanel as scrolled
 from vtk.wx.wxVTKRenderWindowInteractor import wxVTKRenderWindowInteractor
-
+from vtk.wx.wxVTKRenderWindow import wxVTKRenderWindow
 import PreviewFrame
 
 
 math = vtk.vtkMath()
             
-class SplineEditor(wx.Panel):
+class SplineEditor:
     """
     Class: SplineEditor
     Created: Heikki Uuksulainen
     Description: A class for editing a spline
     """           
 
-    def __init__(self, parent, width=600,height=400):
+    def __init__(self, parent, renwin, width=600,height=400):
         """
         Method: __init__
         Created: Heikki Uuksulainen
         Description: Initialization
         """           
-        wx.Panel.__init__(self,parent,size=(width,height))
-        self.sizer=wx.GridBagSizer(5,5)
+        #wx.Panel.__init__(self,parent,size=(width,height))
+        #self.sizer=wx.GridBagSizer(5,5)
        
         self.cameraHandles={}
        
         self.parent=parent
         self.data = None
-
-        self.wxrenwin=wxVTKRenderWindowInteractor(self,-1,size=(width,height))
-
+        self.wxrenwin=renwin
         self.initializeVTK()
-        
-        self.sizer.Add(self.wxrenwin,(0,0),flag=wx.EXPAND|wx.ALL)
-            
-        self.SetSizer(self.sizer)
-        self.SetAutoLayout(True)
-        self.sizer.Fit(self)
+        #self.wxrenwin=wxVTKRenderWindowInteractor(self,-1,size=(width,height))
+
+
+        #self.sizer.Add(self.wxrenwin,(0,0),flag=wx.EXPAND|wx.ALL)
+
+        #self.SetSizer(self.sizer)
+        #self.SetAutoLayout(True)
+        #self.sizer.Fit(self)
 
     def initializeVTK(self):
         """
@@ -92,74 +92,75 @@ class SplineEditor(wx.Panel):
         Created: 20.03.2005, HU, KP
         Description: Code to initialize VTK portions of this widget
         """           
-        self.renderer = ren = vtk.vtkRenderer ()
+
         self.renWin = self.wxrenwin.GetRenderWindow()
-        self.renWin.GetInteractor().SetInteractorStyle(vtk.vtkInteractorStyleTrackballCamera())
+        self.renderer = ren = vtk.vtkRenderer ()
         self.renWin.AddRenderer(ren)
-        self.renWin.Render()
-        ren.SetBackground(1.0,1.0,1.0)
+#        ren.SetBackground(1.0,1.0,1.0)
+        self.wxrenwin.Render()
+
+        self.iren = iren = self.renWin.GetInteractor()
+        self.iren.SetInteractorStyle(vtk.vtkInteractorStyleTrackballCamera())
 
         self.dataExtensionX = 50
         self.dataExtensionY = 50
         self.dataExtensionZ = 50
-        
+
         self.data = None
         self.interactionCallback=None
-        
+
+
         self.outline = vtk.vtkOutlineFilter ()
         self.outlinemapper = vtk.vtkPolyDataMapper ()
-        self.outlineactor = vtk.vtkActor ()  
+        self.outlineactor = vtk.vtkActor ()
         self.axes = vtk.vtkCubeAxesActor2D ()
-        
+
         self.spline = spline = vtk.vtkSplineWidget()
         self.spline.SetResolution(1000)
-        
-        #self.spline.AddObserver("EndInteractionEvent",self.endInteraction)
+
+        self.spline.AddObserver("EndInteractionEvent",self.endInteraction)
         self.spline.AddObserver("InteractionEvent",self.endInteraction)
-                
-        self.renderer=vtk.vtkRenderer()
-        self.renWin.AddRenderer(self.renderer)
-        ren = self.renderer
 
         if not ren:
             raise "No renderer in SplineEditor!"
-        self.iren = iren = self.renWin.GetInteractor()
         print "Initializing camera"
         self.initCamera()
-        self.spline.SetInteractor(self.iren)        
-        
+        self.spline.SetInteractor(self.iren)
+
+        self.wxrenwin.Render()
+
     def setClosed(self,flag):
         """
         Method: setClosed(flag)
         Created: 14.04.2005, KP
         Description: Sets the spline closed or open
-        """           
+        """
         if flag:
             self.spline.ClosedOn()
         else:
             self.spline.ClosedOff()
         self.render()
-        
+
     def getBounds(self):
         """
         Method: getBounds(self)
         Created: 18.04.2005, KP
         Description: Returns the bounds of the dataset
         Order of bounds returned:
-        """           
+        """
         xmin,xmax,ymin,ymax,zmin,zmax = self.data.GetBounds()
         #print xmin,xmax,ymin,ymax,zmin,zmax
         p1 = (xmin,ymin,zmin)
         p2 = (xmax,ymin,zmin)
         p3 = (xmax,ymax,zmin)
         p4 = (xmin,ymax,zmin)
-        
+
         p5 = (xmin,ymin,zmax)
         p6 = (xmax,ymin,zmax)
         p7 = (xmax,ymax,zmax)
         p8 = (xmin,ymax,zmax)
         return [p1,p2,p3,p4,p5,p6,p7,p8]
-        
+
         
         
     
@@ -191,7 +192,7 @@ class SplineEditor(wx.Panel):
         cone.SetResolution(10)
         
         mapper=vtk.vtkPolyDataMapper()
-        
+
         mapper.SetInput(cone.GetOutput())
         actor = vtk.vtkActor()
         actor.SetMapper(mapper)
@@ -655,6 +656,6 @@ class SplineEditor(wx.Panel):
         Method: render()
         Created: Heikki Uuksulainen
         Description: Render the widget
-        """           
+        """
         #self.renderer.Render()
-        self.renWin.Render()
+        self.wxrenwin.Render()

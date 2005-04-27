@@ -207,6 +207,7 @@ class ColorMergingWindow(TaskWindow.TaskWindow):
             if ctf and self.colorBtn:
                 print "Setting colorBtn.ctf"
                 self.colorBtn.setColorTransferFunction(ctf)
+                self.colorBtn.Refresh()
 
             tf = self.settings.get("IntensityTransferFunction")
             self.intensityTransferEditor.setIntensityTransferFunction(tf)

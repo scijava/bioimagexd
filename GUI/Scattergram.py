@@ -78,6 +78,7 @@ class Scattergram(wx.Panel):
         self.wholeVolume = 0
         self.dataUnit=0
         self.scatter=None
+        self.buffer = wx.EmptyBitmap(256,256)
         self.Bind(wx.EVT_PAINT,self.OnPaint)
 
         self.Bind(wx.EVT_LEFT_DOWN,self.markRubberband)
@@ -220,7 +221,7 @@ class Scattergram(wx.Panel):
             dataunits=self.dataUnit.getSourceDataUnits()
             red=None
             green=None
-            
+
             for i in dataunits:
                 col=i.getColorTransferFunction().GetColor(255)
                 if col[0]>col[1]:
@@ -234,8 +235,8 @@ class Scattergram(wx.Panel):
             scatter=ImageOperations.scatterPlot(reddata,greendata,self.z, self.countVoxels, self.wholeVolume)
             self.scatter=scatter.Mirror(0)
             self.renew=0
-        
-        self.Refresh()
+            self.paintScattergram()
+            self.Refresh()
 
     def OnPaint(self,event):
         """
@@ -243,9 +244,19 @@ class Scattergram(wx.Panel):
         Created: 25.03.2005, KP
         Description: Does the actual blitting of the bitmap
         """
-        dc = wx.PaintDC(self)
+        dc=wx.BufferedPaintDC(self,self.buffer)#,self.buffer)
+
+    def paintScattergram(self):
+        """
+        Method: paintScattergram
+        Created: 25.03.2005, KP
+        Description: Paints the scattergram
+        """
+#        dc = wx.PaintDC(self)
         #self.DoPrepareDC(dc)
-        
+        dc = wx.BufferedDC(wx.ClientDC(self),self.buffer)
+        dc.BeginDrawing()
+
         if not self.scatter:
             dc.SetBackground(wx.Brush(wx.Colour(0,0,0)))
             dc.SetPen(wx.Pen(wx.Colour(0,0,0),0))
@@ -253,8 +264,8 @@ class Scattergram(wx.Panel):
             dc.DrawRectangle(0,0,self.size[0],self.size[1])
             return
         bmp=self.scatter.ConvertToBitmap()
-       
-        dc.DrawBitmap(bmp,0,0,True)            
+
+        dc.DrawBitmap(bmp,0,0,True)
         self.bmp=bmp
         
         if self.rubberstart and self.rubberend:
@@ -267,3 +278,5 @@ class Scattergram(wx.Panel):
             dc.SetPen(wx.Pen(wx.Colour(255,0,0),2))
             dc.SetBrush(wx.TRANSPARENT_BRUSH)
             dc.DrawRectangle(x1,y1,d1,d2)
+        dc.EndDrawing()
+        dc = None

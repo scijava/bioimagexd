@@ -34,6 +34,7 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 import  wx.lib.scrolledpanel as scrolled
 import wx
 import wx.lib.masked as masked
+from vtk.wx.wxVTKRenderWindowInteractor import wxVTKRenderWindowInteractor
 
 from Track import *
 from Timeline import *
@@ -191,10 +192,17 @@ class TimelinePanel(wx.Panel):
         self.sizer.Add(self.timelineConfig,(2,0),flag=wx.EXPAND|wx.ALL)
         self.animBox=wx.StaticBox(self,-1,"Animation Control Pane")
         self.animBoxSizer=wx.StaticBoxSizer(self.animBox,wx.VERTICAL)
-        self.animator = Animator.AnimatorPanel(self,self.control)
+#        self.animBoxSizer.Add(self.animator)
+        #self.animBoxSizer.Add(self.animator.splineEditor)
+        #self.animator.splineEditor.wxrenwin.Initialize()
+        #self.animator.splineEditor.wxrenwin.Start()
+
+        self.wxrenwin=wxVTKRenderWindowInteractor(self,-1,size=(400,300))
+        self.animator = Animator.AnimatorPanel(self,self.control,self.wxrenwin)
         self.control.setAnimator(self.animator)
-        self.animBoxSizer.Add(self.animator)
+        self.animBoxSizer.Add(self.wxrenwin)
         self.sizer.Add(self.animBoxSizer,(2,1),flag=wx.EXPAND|wx.ALL)
+
         
         self.SetSizer(self.sizer)
         self.SetAutoLayout(1)

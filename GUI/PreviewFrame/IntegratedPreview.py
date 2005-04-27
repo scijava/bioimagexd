@@ -67,7 +67,7 @@ class IntegratedPreview(PreviewFrame):
         
         self.menu=wx.Menu()
         self.typemenu=wx.Menu()        
-        
+
         item = wx.MenuItem(self.typemenu,self.ID_MERGE,"Merged channels")
         self.Bind(wx.EVT_MENU,self.setPreviewType,id=self.ID_MERGE)
         self.typemenu.AppendItem(item)
@@ -167,7 +167,7 @@ class IntegratedPreview(PreviewFrame):
                 #    self.rgb = rgb
             
         #print "Got ctf",ct
-        print "Using ctf ",ct,"to color preview"
+#        print "Using ctf ",ct,"to color preview"
         self.currentCt = ct
         #self.currentCt=ImageOperations.getColorTransferFunction(self.rgb)
         
@@ -230,7 +230,7 @@ class IntegratedPreview(PreviewFrame):
         self.currentImage=preview
         
         if self.renderingPreviewEnabled()==True:
-            
+
             return self.previewInMayavi(preview,self.currentCt,
             renew)
         
@@ -246,11 +246,11 @@ class IntegratedPreview(PreviewFrame):
             self.oldx=x
             self.oldy=y
             
- 
+
         self.renderpanel.setZSlice(self.z)
         self.renderpanel.setImage(colorImage)
         self.renderpanel.updatePreview()
     
         self.finalImage=colorImage
 
-    
+
