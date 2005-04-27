@@ -73,17 +73,25 @@ class DUDataWriter(DataWriter):
         return self.parser
         
 
-    def sync(self):
+    def sync(self,n=-1):
         """
         Method: sync
         Created: 26.03.2005, KP
         Description: Writes all datasets pending a write to disk
         """
-        for imagedata,path in self.imagesToWrite:
+        ret=0
+        toremove=[]
+        for item in self.imagesToWrite:
+            imagedata,path=item
+            print "path=",path
+            if n==0:break
             self.writeImageData(imagedata,path)
-            self.imagesToWrite.remove((imagedata,path))
-        
-        
+            toremove.append(item)
+            n=n-1
+            ret+=1
+        for item in toremove:
+            self.imagesToWrite.remove(item)
+        return ret
     def write(self):
         """
         Method: write
@@ -128,6 +136,7 @@ class DUDataWriter(DataWriter):
         i=duFileName.rfind(".")
         imageDataName=duFileName[:i]
         fileName="%s_%d.vti"%(imageDataName,self.counter)
+        print "adding with filename",fileName
         self.counter+=1
         # Add the file name to our internal list of datasets
         self.dataSets.append(fileName)

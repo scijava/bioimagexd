@@ -66,26 +66,44 @@ class DataUnit:
         self.ctf = None
         self.settings = None
     
-    def getColor(self):
+##    def getColor(self):
+##        """
+##        Method: getColor()
+##        Created: 27.03.2005, KP
+##        Description: Returns the color of this object
+##        """
+##        if not self.dataSource:
+##            return (010,101,010)
+##        if not self.color:
+##            self.color=self.dataSource.getColor()
+##            # "Got color from datasource:",self.color
+##        return self.color
+##        
+##    def setColor(self,color):
+##        """
+##        Method: getColor()
+##        Created: 28.03.2005, KP
+##        Description: Sets the color of this object
+##        """       
+##        self.color=color
+
+    def getColorTransferFunction(self):
         """
-        Method: getColor()
-        Created: 27.03.2005, KP
-        Description: Returns the color of this object
+        Method: getColorTransferFunction()
+        Created: 26.04.2005, KP
+        Description: Returns the ctf of this object
         """
-        if not self.dataSource:
-            return (010,101,010)
-        if not self.color:
-            self.color=self.dataSource.getColor()
-            # "Got color from datasource:",self.color
-        return self.color
-        
-    def setColor(self,color):
-        """
-        Method: getColor()
-        Created: 28.03.2005, KP
-        Description: Sets the color of this object
-        """       
-        self.color=color
+        if not self.dataSource and not self.ctf:
+            print "No datasource, using ctf 0"
+            ctf = vtk.vtkColorTransferFunction()
+            ctf.AddRGBPoint(255,0,0,0)
+            #self.ctf = ctf
+            return ctf
+        if not self.ctf:
+            self.ctf=self.dataSource.getColorTransferFunction()
+            print "Got color from datasource:",self.ctf
+        return self.ctf
+    
     
     def setSettings(self,settings):
         """
@@ -105,25 +123,15 @@ class DataUnit:
         """
         if not self.settings:
             return
-        color=self.getColor()
-        print "My color is ",color
+        ctf = self.getColorTransferFunction()
+        print "My ctf is ",ctf
         # Watch out not to overwrite the palette
-        self.ctf = self.settings.get("ColorTransferFunction")
-        if color and not self.ctf:
-            #print "Setting color to ",color
-            #self.settings.set("Color",color)
-            ctf = vtk.vtkColorTransferFunction()
-            r,g,b=color
-            r/=255.0
-            g/=255.0
-            b/=255.0
-            r,g,b=int(r),int(g),int(b)
-            ctf.AddRGBPoint(0,0,0,0)
-            ctf.AddRGBPoint(255, r,g,b)
-            #print "CTF=",ctf
-            self.settings.set("ColorTransferFunction",ctf)
-            print "Initializing  ",ctf
-            self.ctf = ctf
+        #self.ctf = self.settings.get("ColorTransferFunction")
+        #ctf = self.ctf
+        self.settings.set("ColorTransferFunction",ctf)
+        if self.settings.get("Type")=="ColorMergingSettings":
+            self.settings.set("MergingColorTransferFunction",ctf)
+                
 
         if self.dataSource:
             self.settings.set("VoxelSize",self.dataSource.getVoxelSize())
@@ -196,6 +204,7 @@ class DataUnit:
         self.getSpacing = dataSource.getSpacing
         self.getVoxelSize = dataSource.getVoxelSize
         print "Got datasource..."
+        
         #self.updateSettings()
         
     def __str__(self):

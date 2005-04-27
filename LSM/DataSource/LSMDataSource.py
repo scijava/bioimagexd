@@ -72,6 +72,7 @@ class LsmDataSource(DataSource):
         self.dataUnitSettings={}
         # TODO: what is this?
         self.count=0
+
         self.dimensions=None
         self.spacing=None
         self.origin=None
@@ -241,11 +242,32 @@ class LsmDataSource(DataSource):
         Description: Returns the color of the dataset series which this datasource
                      operates on
         """
+        raise "DON'T CALL GETCOLOR!!!"
         r=self.reader.GetChannelColorComponent(self.channelNum,0)
         g=self.reader.GetChannelColorComponent(self.channelNum,1)
         b=self.reader.GetChannelColorComponent(self.channelNum,2)
         return (r,g,b)
-
+    def getColorTransferFunction(self):
+        """
+        Method: getColorTransferFunction()
+        Created: 26.04.2005, KP
+        Description: Returns the ctf of the dataset series which this datasource
+                     operates on
+        """
+        if not self.ctf:
+            print "Using ctf based on LSM Color"
+            ctf = vtk.vtkColorTransferFunction()
+            r=self.reader.GetChannelColorComponent(self.channelNum,0)
+            g=self.reader.GetChannelColorComponent(self.channelNum,1)
+            b=self.reader.GetChannelColorComponent(self.channelNum,2)
+            r/=255.0
+            g/=255.0
+            b/=255.0
+            ctf.AddRGBPoint(0,0,0,0)
+            ctf.AddRGBPoint(255,r,g,b)
+            self.ctf = ctf
+        return self.ctf
+        
     def getName(self):
         """
         Method: getName()

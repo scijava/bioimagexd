@@ -104,6 +104,7 @@ class DataSource:
         Created: 17.11.2004, KP
         Description: Initialization
         """
+        self.ctf = None
 
     def getDataSetCount(self):
         """

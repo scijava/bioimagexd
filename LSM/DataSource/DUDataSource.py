@@ -135,7 +135,10 @@ class VtiDataSource(DataSource):
         Description: Returns the spacing of the datasets this 
                      dataunit contains
         """
-        return self.parser.get("VoxelSize","VoxelSize")
+        vsiz=self.parser.get("VoxelSize","VoxelSize")
+        if type(vsiz)==type(""):
+            return eval(vsiz)
+        return vsiz
     
 
     def loadVti(self, filename):
@@ -169,7 +172,7 @@ class VtiDataSource(DataSource):
         print "Trying to open %s"%filename
         try:
             # A SafeConfigParser is used to parse the .du-file
-            self.parser = SafeConfigParser()
+            self.parser = RawConfigParser()
             self.parser.read([filename])
             # First, the DataUnit format is checked
             DataUnitFormat = self.parser.get("Type", "Type")
@@ -247,4 +250,32 @@ class VtiDataSource(DataSource):
         Description: Returns the color of the dataset series which this datasource
                      operates on
         """
+        raise "NEVER EVER CALL GETCOLOR AGAIN!!!"
+        
+        if not self.parser.has_section("Color"):
+            return None
         return eval(self.parser.get("Color","Color"))
+        
+    def getColorTransferFunction(self):
+        """
+        Method: getColorTransferFunction()
+        Created: 26.04.2005, KP
+        Description: Returns the ctf of the dataset series which this datasource
+                     operates on
+        """
+        if not self.ctf:
+            ctf=self.parser.get("ColorTransferFunction")
+            if not ctf:
+                print "Using ctf based on Color"
+                col = eval(self.parser.get("Color","Color"))
+                ctf = vtk.vtkColorTransferFunction()
+                r,g,b=col
+                r/=255.0
+                g/=255.0
+                b/=255.0
+                ctf.AddRGBPoint(0,0,0,0)
+                ctf.AddRGBPoint(255,r,g,b)
+            else:
+                print "Using CTF read from dataset"
+            self.ctf = ctf
+        return self.ctf

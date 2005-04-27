@@ -54,6 +54,8 @@ class DataUnitSettings:
         """
         self.counted={}
         self.registered={}
+        self.private={}
+        self.isPrivate={}
         self.type=None
         self.dataunit = None
         self.channels = 0
@@ -62,6 +64,7 @@ class DataUnitSettings:
             self.setType(kws["type"])
         self.n=n
         self.serialized={}
+        self.registerPrivate("ColorTransferFunction",1)        
         self.register("PreviewedDataset")
         self.set("PreviewedDataset",-1)
         self.register("SourceCount")
@@ -102,6 +105,8 @@ class DataUnitSettings:
         """
         return self.type
         
+        
+        
     def register(self,name,serialize=0):
         """
         Method: register
@@ -113,6 +118,19 @@ class DataUnitSettings:
         """    
         
         self.registered[name]=1
+        self.serialized[name]=serialize
+
+    def registerPrivate(self,name,serialize=0):
+        """
+        Method: register
+        Created: 26.03.2005
+        Description: Register a name as valid key. 
+        Parameters:
+            serialize   The value will be written out/read through
+                        the serialize/deserialize methods
+        """    
+        self.registered[name]=1
+        self.isPrivate[name]=1
         self.serialized[name]=serialize
         
     def registerCounted(self,name,serialize=0):
@@ -142,8 +160,9 @@ class DataUnitSettings:
             return obj.readFrom(parser)
         
         for key in self.registered.keys():
+            ser=self.serialized[key]
+            if ser:print "is %s serialized: %s"%(key,ser)
             if key in self.counted:
-                ser=self.serialized[key]
                 try:
                     n=parser.get("Count",key)
                 except:
@@ -163,8 +182,13 @@ class DataUnitSettings:
                     except:
                         pass
             else:
+                #value=parser.get("ColorTransferFunction","ColorTransferFunction")
                 try:
+                    #print "Trying to read %s"%key
+                    #print "has section:%s"%parser.has_section(key)
                     value=parser.get(key,key)
+                    #print "Got ",value
+                    
                     if ser:
                         value=self.deserialize(key,value)
                     self.set(key,value)
@@ -184,7 +208,10 @@ class DataUnitSettings:
         okey=key
         if n!=-1:
             key=nkey
-        value=self.settings[key]
+        if self.isPrivate[okey]:
+            value=self.private[okey]
+        else:
+            value=self.settings[key]
         if self.serialized[okey]:
             value=self.serialize(okey,value)
         if not parser.has_section(okey):
@@ -230,7 +257,11 @@ class DataUnitSettings:
             return self.setCounted(name,self.n,value,overwrite)
         if name not in self.registered:
             raise "No key %s registered"%name
-        self.settings[name]=value
+        if name in self.isPrivate:
+            print "Setting private %s"%name
+            self.private[name]=value
+        else:
+            self.settings[name]=value
         
     def setCounted(self,name,count,value,overwrite=1):
         """
@@ -259,6 +290,8 @@ class DataUnitSettings:
         """
         if self.n != -1 and name in self.counted:
             name="%s[%d]"%(name,self.n)
+        if name in self.private:
+            return self.private[name]
         if name in self.settings:
             return self.settings[name]
         return None
@@ -286,7 +319,10 @@ class DataUnitSettings:
         print "serializing name=",name
         if "ColorTransferFunction" in name:
             s=ImageOperations.lutToString(value)
-            return pickle.dumps(s)
+            s2=""
+            for i in s:
+                s2+=repr(i)
+            return s2
 
         if name not in ["IntensityTransferFunction","IntensityTransferFunctions","AlphaTransferFunction"]:
             return str(value)
@@ -302,10 +338,13 @@ class DataUnitSettings:
         Created: 27.03.2005
         Description: Returns the value of a given key
         """
+        #print "deserialize(%s,...)"%name    
         if "ColorTransferFunction" in name:
-            data=pickle.loads(value)
+            data=eval(value)   
+            
             ctf=vtk.vtkColorTransferFunction()
-            return ImageOperations.loadLUTFromString(data,ctf)
+            ImageOperations.loadLUTFromString(data,ctf)
+            #print "\n*** Loaded ctf with 255=",ctf.GetColor(255),"***"
             return ctf
         if name not in ["IntensityTransferFunction","IntensityTransferFunctions","AlphaTransferFunction"]:
             return eval(value)
@@ -367,7 +406,7 @@ class ColocalizationSettings(DataUnitSettings):
         self.set("ColocalizationCoefficientM1",0)
         self.set("ColocalizationCoefficientM2",0)        
         
-        self.register("ColocalizationColorTransferFunction")
+        self.register("ColocalizationColorTransferFunction",1)
         ctf = vtk.vtkColorTransferFunction()
         ctf.AddRGBPoint(0,0,0,0)
         ctf.AddRGBPoint(255, 1.0, 1.0, 1.0)
@@ -404,7 +443,7 @@ class ColorMergingSettings(DataUnitSettings):
         Description: Constructor
         """
         DataUnitSettings.__init__(self,n)
-        self.registerCounted("ColorTransferFunction")       
+        self.registerCounted("MergingColorTransferFunction",1)       
         self.set("Type","ColorMergingSettings") 
         self.registerCounted("IntensityTransferFunction",1)
         self.register("AlphaTransferFunction",1)
@@ -424,13 +463,13 @@ class ColorMergingSettings(DataUnitSettings):
         DataUnitSettings.initialize(self,dataunit,channels,timepoints)
         print "Initializing for %d channels"%channels
         for i in range(channels):
-            ctf = vtk.vtkColorTransferFunction()
-            ctf.AddRGBPoint(0,0,0,0)
-            ctf.AddRGBPoint(255, 1.0, 1.0, 1.0)
-            self.setCounted("ColorTransferFunction",i,ctf,0)
+            #ctf = vtk.vtkColorTransferFunction()
+            #ctf.AddRGBPoint(0,0,0,0)
+            #ctf.AddRGBPoint(255, 1.0, 1.0, 1.0)
+            #self.setCounted("MergingColorTransferFunction",i,ctf,0)
             tf=vtk.vtkIntensityTransferFunction()
             self.setCounted("IntensityTransferFunction",i,tf,0)
-        
+            
 class SingleUnitProcessingSettings(DataUnitSettings):
     """
     Class: SingleUnitProcessingSettings
@@ -444,7 +483,7 @@ class SingleUnitProcessingSettings(DataUnitSettings):
         Description: Constructor
         """
         DataUnitSettings.__init__(self,n)
-        self.register("ColorTransferFunction")        
+#        self.register("ColorTransferFunction")        
         self.registerCounted("IntensityTransferFunctions",1)
         self.register("MedianFiltering")
         self.register("MedianNeighborhood")
@@ -466,6 +505,8 @@ class SingleUnitProcessingSettings(DataUnitSettings):
         self.set("SolitaryHorizontalThreshold",0)
         self.set("SolitaryVerticalThreshold",0)
         self.set("SolitaryProcessingThreshold",0)
+
+            
         
     def initialize(self,dataunit,channels, timepoints):
         """
@@ -475,16 +516,18 @@ class SingleUnitProcessingSettings(DataUnitSettings):
                      number of channels and timepoints
         """
         DataUnitSettings.initialize(self,dataunit,channels,timepoints)
-        print "Initializing to color",dataunit.getColor()
-        ctf = vtk.vtkColorTransferFunction()
-        r,g,b=dataunit.getColor()
-        r/=255.0
-        g/=255.0
-        b/=255.0
-        r,g,b=int(r),int(g),int(b)
-        ctf.AddRGBPoint(0,0,0,0)
-        ctf.AddRGBPoint(255, r,g,b)
-        self.set("ColorTransferFunction",ctf)
+        ctf = self.get("ColorTransferFunction")
+        if 0 and not ctf:
+            print "Initializing to color",dataunit.getColor()
+            ctf = vtk.vtkColorTransferFunction()
+            r,g,b=dataunit.getColor()
+            r/=255.0
+            g/=255.0
+            b/=255.0
+            r,g,b=int(r),int(g),int(b)
+            ctf.AddRGBPoint(0,0,0,0)
+            ctf.AddRGBPoint(255, r,g,b)
+            self.set("ColorTransferFunction",ctf)
         
         print "Initializing %d timepoints"%timepoints
         for i in range(timepoints):

@@ -161,9 +161,29 @@ class LeicaDataSource(DataSource):
         Description: Returns the color of the dataset series which this datasource
                      operates on
         """
+        raise "DO NOT CALL GETCOLOR!"
         if not self.color:
             self.color=self.reader.GetColor(self.experiment,self.channel)
         return self.color
+        
+    def getColorTransferFunction(self):
+        """
+        Method: getColorTransferFunction()
+        Created: 26.04.2005, KP
+        Description: Returns the ctf of the dataset series which this datasource
+                     operates on
+        """
+        if not self.ctf:
+            print "Using ctf based on LSM Color"
+            ctf = vtk.vtkColorTransferFunction()
+            r,g,b=self.reader.GetColor(self.experiment,self.channel)
+            r/=255.0
+            g/=255.0
+            b/=255.0
+            ctf.AddRGBPoint(0,0,0,0)
+            ctf.AddRGBPoint(255,r,g,b)
+            self.ctf = ctf
+        return self.ctf        
 
         
 class LeicaExperiment:
