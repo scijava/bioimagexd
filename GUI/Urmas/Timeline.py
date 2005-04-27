@@ -58,11 +58,11 @@ class Timeline(scrolled.ScrolledPanel):
         Created: 04.02.2005, KP
         Description: Initialize
         """
-        height=250
-        width=640
-        #if kws.has_key("width"):
-        #    width=kws["width"]
-        scrolled.ScrolledPanel.__init__(self,parent,-1,size=(width,height))
+        size=(800,300)
+        
+        if kws.has_key("size"):
+            size=kws["size"]
+        scrolled.ScrolledPanel.__init__(self,parent,-1,size=size)
         self.control = control
         self.selectedTrack = None
         control.setTimeline(self)
@@ -298,6 +298,7 @@ class Timeline(scrolled.ScrolledPanel):
         Description: Sets animation mode on or off. This affects the spline points
                      track.
         """
+        self.setDisabled(not flag)
         if len(self.splinepointTracks):
             for track in self.splinepointTracks:
                 track.setEnabled(flag)

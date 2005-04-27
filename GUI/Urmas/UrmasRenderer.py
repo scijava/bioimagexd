@@ -71,21 +71,25 @@ class UrmasRenderer:
         self.renderingInterface.doRendering(preview=data,ctf = ctf)
 
         
-    def render(self,control,preview=0):
+    def render(self,control,preview=0,**kws):
         """
         Class: Render(control)
         Created: 04.04.2005, KP
         Description: Render the timeline
         """    
+        renderpath="."
         self.control = control
         self.dataUnit = control.getDataUnit()
         self.duration = duration = control.getDuration()
         self.frames = frames = control.getFrames()
         if not preview and not self.renderingInterface.isMayaviRunning():
             Dialogs.showerror(self.control.window,"Cannot render project: mayavi is not running","Mayavi is not running")
-            return
-
+            return -1
+        if kws.has_key("size"):
+            self.renderingInterface.setRenderWindowSize(kws["size"])
+        if kws.has_key("renderpath"):renderpath=kws["renderpath"]
         if not preview:
+            self.renderingInterface.setOutputPath(renderpath)
             self.renderingInterface.setCurrentTimepoint(0)
             
             self.renwin = self.renderingInterface.getRenderWindow() 
@@ -159,9 +163,9 @@ class UrmasRenderer:
         timepoint = self.getTimepointAt(timepos)
         if timepoint != self.oldTimepoint:
             # Set the timepoint to be used
-            self.renderingInterace.setCurrentTimepoint(timepoint)
+            self.renderingInterface.setCurrentTimepoint(timepoint)
             # and update the renderer to use the timepoint
-            self.renderingInterface.updateData()
+            self.renderingInterface.updateDataset()
             self.oldTimepoint = timepoint
         point = self.getSplinepointsAt(timepos)
         if not point:
@@ -170,7 +174,7 @@ class UrmasRenderer:
             return -1
          
         p0=point.getPoint()
-        self.dlg.Update("Rendering at %.2fs / %.2fs (frame %d / %d)"%(timepos,self.duration,frame,self.frames))
+        self.dlg.Update(frame,"Rendering at %.2fs / %.2fs (frame %d / %d)"%(timepos,self.duration,frame,self.frames))
         print "Rendering frame %d using timepoint %d, time is %f"%(frame,timepoint,timepos)
         start,end=point.getPosition()
         # how far along this part of spline we are
@@ -199,7 +203,7 @@ class UrmasRenderer:
         # With this we can be sure that all of the props will be visible.
         self.ren.ResetCameraClippingRange()
         curr_file_name = self.renderingInterface.getFilename(frame)
-
+        print "Saving with name",curr_file_name
         self.renderingInterface.render()     
         self.renderingInterface.saveFrame(curr_file_name)
         

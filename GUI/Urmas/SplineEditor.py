@@ -62,7 +62,7 @@ class SplineEditor(wx.Panel):
     Description: A class for editing a spline
     """           
 
-    def __init__(self, parent, width=400,height=400):
+    def __init__(self, parent, width=600,height=400):
         """
         Method: __init__
         Created: Heikki Uuksulainen

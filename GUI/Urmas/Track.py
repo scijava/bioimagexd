@@ -76,9 +76,9 @@ class Track(wx.Panel):
     
         self.enabled = 1
     
-        self.namePanel=wx.Panel(self,-1)
-        self.nameLbl=wx.StaticText(self.namePanel,-1,name,size=(100,height))
-        self.namePanel.SetSize((200,height))
+        self.namePanel=wx.Panel(self,-1,size=(140,height))
+        self.nameLbl=wx.StaticText(self.namePanel,-1,name,size=(140,height))
+        self.namePanel.SetSize((125,height))
         self.sizer.Add(self.namePanel,(0,0))
 
         #self.sizer.Add(self.itemBox,(0,1))
@@ -592,7 +592,7 @@ class SplineTrack(Track):
         self.removeItem(position)
         self.showSpline()
         self.Layout()
-        self.sizer.Fit(self)        
+        #self.sizer.Fit(self)        
 
         
         
@@ -639,7 +639,7 @@ class SplineTrack(Track):
         
         if update:
             self.Layout()
-            self.sizer.Fit(self)
+            #self.sizer.Fit(self)
             
 
         
@@ -745,7 +745,7 @@ class TimepointTrack(Track):
             self.addTimepoint(pos,tp,0)
             pos+=1
         self.Layout()
-        self.sizer.Fit(self)
+        #self.sizer.Fit(self)
             
 
     def addTimepoint(self,position,timepoint,update=1):

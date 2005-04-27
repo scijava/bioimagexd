@@ -34,7 +34,6 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 import  wx.lib.scrolledpanel as scrolled
 import wx
 import wx.lib.masked as masked
-import wx.wizard
 
 from Track import *
 from Timeline import *
@@ -65,25 +64,6 @@ class TimelineConfig(wx.Panel):
         box=wx.StaticBox(self,wx.HORIZONTAL,"Rendering")
         self.outputstaticbox=wx.StaticBoxSizer(box,wx.HORIZONTAL)
         self.outputstaticbox.Add(self.outputsizer)
-
-        #self.animationsizer=wx.GridBagSizer(5,5)
-        #box=wx.StaticBox(self,wx.HORIZONTAL,"Animation")
-        #self.animationstaticbox=wx.StaticBoxSizer(box,wx.HORIZONTAL)
-        #self.animationstaticbox.Add(self.animationsizer)
-
-        #self.animateCheckbox=wx.CheckBox(self,-1,"Use animator")
-        #self.controlPointsLabel=wx.StaticText(self,-1,"Number of control points")
-        #self.controlPoints=wx.TextCtrl(self,-1,"5",style=wx.TE_PROCESS_ENTER)
-        #self.controlPoints.Bind(wx.EVT_TEXT,self.updateControlPoints)
-        #self.animateCheckbox.Bind(wx.EVT_CHECKBOX,self.updateAnimation)
-        
-        #self.animationsizer.Add(self.animateCheckbox,(0,0))
-        #self.animationsizer.Add(self.controlPointsLabel,(1,0))
-        #self.animationsizer.Add(self.controlPoints,(2,0))
-        
-        self.formatLabel=wx.StaticText(self,-1,"Output Format")
-        self.formatMenu=wx.Choice(self,-1,choices=["Images","Video"])
-        self.formatMenu.Bind(wx.EVT_CHOICE,self.updateFormat)
         
         self.totalFramesLabel=wx.StaticText(self,-1,"Frames:")
         self.durationLabel=wx.StaticText(self,-1,"Duration:")
@@ -92,35 +72,34 @@ class TimelineConfig(wx.Panel):
         self.totalFrames=wx.TextCtrl(self,-1,"30",size=(50,-1),style=wx.TE_PROCESS_ENTER)
         self.duration=masked.TextCtrl(self,-1,"00:00:60",autoformat="24HRTIMEHHMMSS",size=(50,-1),style=wx.TE_PROCESS_ENTER)
 
-        self.totalFrames.Bind(wx.EVT_TEXT_ENTER,self.updateFrameCount)
+        self.totalFrames.Bind(wx.EVT_TEXT,self.updateFrameCount)
         self.duration.Bind(wx.EVT_TEXT,self.updateDuration)
         
         
-        self.outputsizer.Add(self.formatLabel,(0,0))
-        self.outputsizer.Add(self.formatMenu,(0,1))
-
-        self.outputsizer.Add(self.durationLabel,(1,0))
-        self.outputsizer.Add(self.duration,(1,1))        
         
-        self.outputsizer.Add(self.totalFramesLabel,(2,0))
-        self.outputsizer.Add(self.totalFrames,(2,1))
+        self.outputsizer.Add(self.durationLabel,(0,0))
+        self.outputsizer.Add(self.duration,(0,1))        
+        
+        self.outputsizer.Add(self.totalFramesLabel,(1,0))
+        self.outputsizer.Add(self.totalFrames,(1,1))
                 
-        self.outputsizer.Add(self.fpsLabel,(3,0))
+        self.outputsizer.Add(self.fpsLabel,(2,0))
                 
         self.sizer.Add(self.outputstaticbox,(0,0),flag=wx.EXPAND|wx.ALL)
         #self.sizer.Add(self.animationstaticbox,(0,1),flag=wx.EXPAND|wx.ALL)
 
-#        self.useButton=wx.Button(self,-1,"Use settings")
-#        self.useButton.Bind(wx.EVT_BUTTON,self.reportToParent)
+        self.useButton=wx.Button(self,-1,"Use settings")
+        self.useButton.Bind(wx.EVT_BUTTON,self.useSettings)
+        self.outputsizer.Add(self.useButton,(3,0))
         
-#        self.sline=wx.StaticLine(self)
-#        self.sizer.Add(self.sline,(4,0),flag=wx.EXPAND|wx.RIGHT|wx.LEFT)
-#        self.sizer.Add(self.useButton,(5,0))
+        #self.sline=wx.StaticLine(self)
+        #self.sizer.Add(self.sline,(4,0),flag=wx.EXPAND|wx.RIGHT|wx.LEFT)
+        #self.sizer.Add(self.useButton,(5,0))
         
         self.SetSizer(self.sizer)
         self.SetAutoLayout(1)
         self.sizer.Fit(self)
-        self.updateFormat()
+        #self.updateFormat()
         self.useSettings()
 
     def setFrames(self,n):
@@ -135,33 +114,6 @@ class TimelineConfig(wx.Panel):
             t="%.2d:%.2d:%.2d"%(h,m,s)
         self.duration.SetValue(t)
         self.useSettings()
-        
-    def updateControlPoints(self,event):
-        self.control.setSplinePoints(self.getSplinePoints())
-            
-    def getSplinePoints(self):
-        try:
-            n=int(self.controlPoints.GetValue())
-            return n
-        except:
-            return 0
-        
-    def updateAnimation(self,event):
-        flag = self.animateCheckbox.GetValue()
-        self.controlPoints.Enable(flag)
-        self.control.setAnimationMode(flag)
-        
-    def updateFormat(self,event=None):
-        format=self.formatMenu.GetString(self.formatMenu.GetSelection())
-        if format!="Video":
-            self.duration.Enable(0)
-            self.totalFrames.Enable(0)
-            self.parent.useTimeline(0)
-        else:
-            self.duration.Enable(1)
-            self.totalFrames.Enable(1)
-            self.parent.useTimeline(1)
-            
     
     def useSettings(self,event=None):
         print "Trying to report..."
@@ -214,14 +166,16 @@ class TimelinePanel(wx.Panel):
     Created: 04.02.2005, KP
     Description: Contains the timescale and the different "tracks"
     """    
-    def __init__(self,parent,control):
-        wx.Panel.__init__(self,parent,-1,style=wx.RAISED_BORDER)
+    def __init__(self,parent,control,size=(800,300)):
+        wx.Panel.__init__(self,parent,-1,style=wx.RAISED_BORDER,size=size)
         #wx.wizard.PyWizardPage.__init__(self,parent)
         self.parent=parent
         self.control=control
         self.sizer=wx.GridBagSizer()
         #self.Bind(wx.EVT_SIZE,self.onSize)
-        self.timeline=Timeline(self,self.control,width=800)
+        w=size[0]
+        print "size=",size
+        self.timeline=Timeline(self,self.control,size=(w,300))
         self.sizer.Add(self.timeline,(0,0),span=(1,2),flag=wx.EXPAND|wx.ALL)
         
         sline=wx.StaticLine(self)
@@ -229,12 +183,12 @@ class TimelinePanel(wx.Panel):
         
         self.timelineConfig=TimelineConfig(self,control)
         
-        self.confBox=wx.StaticBox(self,-1,"Animation Configuration")
-        self.confBoxSizer=wx.StaticBoxSizer(self.confBox,wx.VERTICAL)
-        self.confBoxSizer.Add(self.timelineConfig)
+        #self.confBox=wx.StaticBox(self,-1,"Animation Configuration")
+        #self.confBoxSizer=wx.StaticBoxSizer(self.confBox,wx.VERTICAL)
+        #self.confBoxSizer.Add(self.timelineConfig)
         
-        self.sizer.Add(self.confBoxSizer,(2,0),flag=wx.EXPAND|wx.ALL)
-        
+        #self.sizer.Add(self.confBoxSizer,(2,0),flag=wx.EXPAND|wx.ALL)
+        self.sizer.Add(self.timelineConfig,(2,0),flag=wx.EXPAND|wx.ALL)
         self.animBox=wx.StaticBox(self,-1,"Animation Control Pane")
         self.animBoxSizer=wx.StaticBoxSizer(self.animBox,wx.VERTICAL)
         self.animator = Animator.AnimatorPanel(self,self.control)
@@ -246,22 +200,7 @@ class TimelinePanel(wx.Panel):
         self.SetAutoLayout(1)
         self.sizer.Fit(self)
         
-    def GetNext(self):
-        """
-        Method: GetNext()
-        Created: 14.03.2005, KP
-        Description: Returns the page that comes after this one
-        """          
-        return self.next
-        
-    def GetPrev(self):
-        """
-        Method: GetPrev()
-        Created: 14.03.2005, KP
-        Description: Returns the page that comes before this one
-        """              
-        return self.prev        
-        
+
     def onSize(self,evt):
         x,y=evt.GetSize()
         tx,ty=self.timeline.GetSize()

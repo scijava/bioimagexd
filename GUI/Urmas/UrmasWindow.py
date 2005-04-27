@@ -71,7 +71,7 @@ class UrmasWindow(wx.Frame):
         self.palette = UrmasPalette.UrmasPalette(self,self.control)
         self.sizer.Add(self.palette,1,flag=wx.EXPAND)
 
-        self.timelinePanel=TimelinePanel.TimelinePanel(self,self.control)
+        self.timelinePanel=TimelinePanel.TimelinePanel(self,self.control,size=(1024,500))
         self.control.setTimelinePanel(self.timelinePanel)
         
         self.sizer.Add(self.timelinePanel)
@@ -163,7 +163,7 @@ class UrmasWindow(wx.Frame):
         self.renderMenu.Append(self.ID_RENDER,"&Render project","Render this project")
         wx.EVT_MENU(self,self.ID_RENDER,self.onMenuRender)
     
-        self.renderMenu.Enable(self.ID_RENDER,0)
+        #self.renderMenu.Enable(self.ID_RENDER,0)
 
         self.ID_SPLINE_CLOSED = wx.NewId()
         self.cameraMenu.AppendCheckItem(self.ID_SPLINE_CLOSED,"&Closed Path","Set the camera path to open / closed.")
@@ -208,7 +208,10 @@ class UrmasWindow(wx.Frame):
         Description: Render this project
         """
         if event.GetId() == self.ID_RENDER:
-            self.control.renderProject(0)
+            video=VideoGeneration.VideoGeneration(self,self.control)
+            video.ShowModal()
+            
+            #self.control.renderProject(0)
         else:
             self.control.renderProject(1)
         

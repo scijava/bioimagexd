@@ -171,13 +171,13 @@ class UrmasControl:
         """            
         self.renderer.startMayavi(self)
 
-    def renderProject(self,preview):
+    def renderProject(self,preview,**kws):
         """
         Method: renderProject(preview)
         Created: 19.04.2005, KP
         Description: Render this project
         """            
-        self.renderer.render(self,preview)
+        return self.renderer.render(self,preview,**kws)
         
     def getDataUnit(self):
         """
