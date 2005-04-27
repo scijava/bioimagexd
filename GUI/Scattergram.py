@@ -220,10 +220,12 @@ class Scattergram(wx.Panel):
             dataunits=self.dataUnit.getSourceDataUnits()
             red=None
             green=None
+            
             for i in dataunits:
-                if i.getColor()==(255,0,0):
+                col=i.getColorTransferFunction().GetColor(255)
+                if col[0]>col[1]:
                     self.red=i
-                elif i.getColor()==(0,255,0):
+                elif col[1]>col[0]:
                     self.green=i
             tp=self.timepoint
             reddata=self.red.getTimePoint(tp)

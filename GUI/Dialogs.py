@@ -170,7 +170,9 @@ def askSaveAsFileName(parent,title,initFile,wc):
                     
     dlg.Destroy()
     if filename:
-        if filename[-3:].lower()!=".du":
-            filename+=".du"            
+        ext=wc.split(".")[-1]
+        d=len(ext)
+        if filename[-d:].lower()!=ext.lower():
+            filename+=".%s"%ext 
 
     return filename

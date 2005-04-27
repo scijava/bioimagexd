@@ -110,9 +110,6 @@ class InfoWidget(wx.Panel):
             dims=dataunit.getDimensions()
             spacing=dataunit.getSpacing()
             voxelsize=dataunit.getVoxelSize()
-            #settings=DataUnit.SingleUnitProcessingSettings()
-            #settings.initialize(dataunit,1,1)
-            #unit.setSettings(settings)
             
             list=self.tree.getSelectedDataUnits()
             if len(list)>1:
@@ -126,18 +123,21 @@ class InfoWidget(wx.Panel):
                 unit.setModule(ColorMerging.ColorMerging())                                    
             else:
                 self.preview.setPreviewType("")
+                
                 unit=DataUnit.CorrectedSourceDataUnit("preview")
                 unit.addSourceDataUnit(dataunit)
                 unit.setModule(DataUnitProcessing.DataUnitProcessing())
-                settings = dataunit.getSettings()
-                #print settings
-                ctf=settings.get("ColorTransferFunction")
-                #print "Setting ctf=",ctf
+                ctf = dataunit.getColorTransferFunction()
+                print "Setting ctf=",ctf
                 self.colorBtn.setColorTransferFunction(ctf)
-            
+            print "datasource=",dataunit.dataSource
+            print "ctf is",dataunit.getSettings().get("ColorTransferFunction")
             self.dataUnit=unit
-            self.preview.setDataUnit(self.dataUnit)
+            self.taskName.SetValue(dataunit.getName())
+            # The 0 tells preview to view source dataunit 0
+            self.preview.setDataUnit(self.dataUnit,0)
             tps=dataunit.getLength()
+            
             bitdepth="8"
             # TODO: Have this data available in dataunit
             #bitdepth=dataunit.getScalarSize()*dataunit.getComponentAmount()

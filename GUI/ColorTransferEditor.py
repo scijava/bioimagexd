@@ -270,6 +270,13 @@ class CTFButton(wx.BitmapButton):
         self.bmp = ImageOperations.paintCTFValues(self.ctf)
         self.SetBitmapLabel(self.bmp)
         
+    def getColorTransferFunction(self):
+        """
+        Method: getColorTransferFunction
+        Created: 25.04.2005, KP
+        Description: Return the color transfer function that is edited
+        """        
+        return self.ctf
         
     def onModifyCTF(self,event):
         """

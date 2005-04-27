@@ -57,8 +57,7 @@ class IntegratedPreview(PreviewFrame):
         self.ID_COLOC=wx.NewId()
         self.ID_SINGLE=wx.NewId()
         self.ID_MIP=wx.NewId()
-        
-        
+               
         self.mip = 0
         self.previewtype=""
         self.modules={}
@@ -99,7 +98,7 @@ class IntegratedPreview(PreviewFrame):
         Method: setPreviewType
         Created: 03.04.2005, KP
         Description: Method to set the proper previewtype
-        """      
+        """     
         if type(event)==type(""):
             self.previewtype=event
             return
@@ -135,6 +134,8 @@ class IntegratedPreview(PreviewFrame):
             unit.setSettings(settings)
             print "Type of settings now:",
             print unit.getSettings().get("Type")
+        self.setSelectedItem(0)
+        
         self.updatePreview(1)
             
         
@@ -150,10 +151,11 @@ class IntegratedPreview(PreviewFrame):
             return
         if self.dataUnit:
             #print "Getting ctf from dataunit"
-            #print "Using color ",self.previewtype,"Settings =",self.settings
+            #print "Using tf ",self.previewtype+"ColorTransferFunction"
             #self.rgb = self.settings.get("%sColor"%self.previewtype)
             #print "Getting %sColorTransferFunction"%self.previewtype
             ct = self.settings.get("%sColorTransferFunction"%self.previewtype)
+            #print "Got ",ct
             if self.selectedItem != -1:
                 ctc = self.settings.getCounted("%sColorTransferFunction"%self.previewtype,self.selectedItem)            
                 if ctc:
@@ -165,6 +167,7 @@ class IntegratedPreview(PreviewFrame):
                 #    self.rgb = rgb
             
         #print "Got ctf",ct
+        print "Using ctf ",ct,"to color preview"
         self.currentCt = ct
         #self.currentCt=ImageOperations.getColorTransferFunction(self.rgb)
         

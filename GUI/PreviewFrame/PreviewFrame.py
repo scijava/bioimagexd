@@ -228,17 +228,17 @@ class PreviewFrame(wx.Panel):
         pos=self.zoomCombo.GetSelection()
         s=self.zoomCombo.GetString(pos)
         if dir>0 and pos >= self.zoomCombo.GetCount():
-            print "Zoom at max: ",s
+            #print "Zoom at max: ",s
             return
         if dir<0 and pos==0:
-            print "Zoom at min: ",s
+            #print "Zoom at min: ",s
             return
         pos+=dir
         s=self.zoomCombo.GetString(pos)
         factor = float(s[:-1])/100.0
         self.zoomCombo.SetSelection(pos)
         self.renderpanel.setZoomFactor(factor)
-        print "Set zoom factor to ",s,"=",factor
+        #print "Set zoom factor to ",s,"=",factor
         self.updatePreview(1)
         
         
@@ -376,7 +376,7 @@ class PreviewFrame(wx.Panel):
         """        
         self.zoomCombo = combo
 
-    def setDataUnit(self,dataUnit):
+    def setDataUnit(self,dataUnit,selectedItem=-1):
         """
         Method: setDataUnit(dataUnit)
         Created: 04.11.2004, KP
@@ -395,7 +395,7 @@ class PreviewFrame(wx.Panel):
         self.xdim,self.ydim,self.zdim=x,y,z
         
         if self.show["ZSLIDER"]:
-            print "zslider goes to %d"%(z-1)
+            #print "zslider goes to %d"%(z-1)
             self.zslider.SetRange(0,z-1)
         if x>self.maxX or y>self.maxY:
             self.renderpanel.setScrollbars(x,y)
@@ -407,17 +407,20 @@ class PreviewFrame(wx.Panel):
             self.timeslider.SetRange(0,count-1)
         self.renderingInterface.setDataUnit(dataUnit)
 
-        print "Setting renderpanel to %d,%d"%(x,y)
+        #print "Setting renderpanel to %d,%d"%(x,y)
         self.renderpanel.SetSize((x,y))
         self.renderpanel.Layout()
 
+        if selectedItem!=-1:
+            self.setSelectedItem(selectedItem)
+
         if self.zoomFactor:
-            print "Got zoom factor",
+            #print "Got zoom factor",
             if self.zoomFactor == ZOOM_TO_FIT:
-                print "Factor = zoom to fit"
+                #print "Factor = zoom to fit"
                 self.zoomToFit(None)
             else:
-                print "Factor = ",self.zoomFactor
+                #print "Factor = ",self.zoomFactor
                 self.renderpanel.setZoomFactor(self.zoomFactor)
                 self.updatePreview(1)
         

@@ -117,7 +117,7 @@ class TaskWindow(wx.Frame):
         self.Bind(EVT_ZSLICE_CHANGED,self.updateZSlice,id=self.preview.GetId())
         self.Bind(EVT_TIMEPOINT_CHANGED,self.updateTimepoint,id=self.preview.GetId())
         #self.preview = ColorMergingPreview(self)
-        self.previewSizer.Add(self.preview,(0,0),flag=wx.EXPAND|wx.ALL)
+        self.previewSizer.Add(self.preview,(0,1),flag=wx.EXPAND|wx.ALL)
     
     
         self.filePath=None
@@ -183,11 +183,12 @@ class TaskWindow(wx.Frame):
         n=0
         print "FOOoo\n\n\n\n\n"
         for dataunit in self.dataUnit.getSourceDataUnits():
-            color = dataunit.getColor()
+            #color = dataunit.getColor()
+            ctf = dataunit.getColorTransferFunction()
             name = dataunit.getName()
             print "Adding item ",name
             dc= wx.MemoryDC()
-            bmp=ImageOperations.vtkImageDataToPreviewBitmap(dataunit.getTimePoint(0),color,64,64)
+            bmp=ImageOperations.vtkImageDataToPreviewBitmap(dataunit.getTimePoint(0),ctf,64,64)
             dc.SelectObject(bmp)
             dc.BeginDrawing()
             dc.SetFont(wx.Font(9,wx.SWISS,wx.NORMAL,wx.BOLD))
@@ -204,7 +205,8 @@ class TaskWindow(wx.Frame):
             self.Bind(wx.EVT_TOOL,lambda e,x=n,s=self:s.selectItem(e,x),id=toolid)
             n=n+1
         self.tb2.Realize()
-        self.mainsizer.Add(self.tb2,(0,4))
+        #self.mainsizer.Add(self.tb2,(0,4))
+        self.previewSizer.Add(self.tb2,(0,0))
         
     def OnSize(self,event):
         """

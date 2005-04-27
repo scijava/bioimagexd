@@ -29,7 +29,8 @@ import Dialogs
 import ColorTransferEditor
 import  wx.lib.masked as  masked
 
-
+import DataUnit
+import DataSource
 
 class ImportDialog(wx.Dialog):
     """
@@ -101,20 +102,30 @@ class ImportDialog(wx.Dialog):
         dir=os.path.dirname(files[0])
         self.z=int(self.depthEdit.GetValue())
         ext=files[0].split(".")[-1].lower()
-        rdr = "vtk.vtk%sReader()"%(self.extMapping[ext])
-        rdr = eval(rdr)
-        rdr.SetDataExtent(0,self.x-1,0,self.y-1,0,self.z-1)
+        self.rdrstr = "vtk.vtk%sReader()"%(self.extMapping[ext])
         dim = self.dimMapping[ext]
+        self.readers=[]
+        
+        self.writer = DataSource.DUDataWriter(outname)
+        
         if dim==3:
-            for i,file in enumerate(files):                
+            self.tot = len(files)
+            self.dlg = wx.ProgressDialog("Importing","Reading dataset %d / %d"%(0,0),maximum = 2*self.tot, parent = self)        
+            for i,file in enumerate(files):   
+                rdr = eval(self.rdrstr)
+                rdr.SetDataExtent(0,self.x-1,0,self.y-1,0,self.z-1)
+                rdr.SetDataSpacing(self.spacing)
+                rdr.SetDataOrigin(0,0,0)                
                 print "Reading ",file
                 rdr.SetFileName(file)
                 rdr.Update()
-                data=rdr.GetOutput()
-                self.writeData(outname,data,i,len(files))
+                self.readers.append(rdr)
+                self.dlg.Update(i,"Reading dataset %d / %d"%(i+1,self.tot))
+#                self.writeData(outname,data,i,len(files))
         else:
+            self.tot = len(files) / self.z
+            self.dlg = wx.ProgressDialog("Importing","Reading dataset %d / %d"%(0,0),maximum = 2*self.tot, parent = self)        
             #rdr.SetFileDimensionality(dim)
-            rdr.SetFilePrefix(dir+os.path.sep)
             pattern = self.patternEdit.GetValue()
             n=pattern.count("%")
             print "n=",n
@@ -124,36 +135,95 @@ class ImportDialog(wx.Dialog):
                 return
             elif n==1:
                 j=0
+                print "self.z=",self.z
                 for i in range(0,imgAmnt,self.z):
-                    print "Setting offset to ",i
-                    rdr.SetFileNameSliceOffset(i)
+                    rdr = eval(self.rdrstr)
+                    rdr.SetDataExtent(0,self.x-1,0,self.y-1,0,self.z-1)
+                    rdr.SetDataSpacing(self.spacing)
+                    rdr.SetDataOrigin(0,0,0)
+                    
+                    if i:
+                        print "Setting offset to ",i
+                        rdr.SetFileNameSliceOffset(i)
                     rdr.SetFilePrefix(dir+os.path.sep)
                     rdr.SetFilePattern("%s"+pattern)
+                    rdr.Update()
+                    print "reader=",rdr
+                    self.dlg.Update(j,"Reading dataset %d / %d"%(j+1,self.tot))
+                    self.readers.append(rdr)
+                    #self.writeData(outname,data,j,len(files))
+                    j=j+1
+            elif n==2:
+                tps = imgAmnt / self.z
+                for i in range(tps):
+                    rdr = eval(self.rdrstr)
+                    rdr.SetDataExtent(0,self.x-1,0,self.y-1,0,self.z-1)
+                    rdr.SetDataSpacing(self.spacing)
+                    rdr.SetDataOrigin(0,0,0)
+                    
+                    pos=pattern.rfind("%")
+                    begin=pattern[:pos-1]
+                    end=pattern[pos-1:]
+                    currpat=begin%i+end
+                    print "Pattern for timepoint %d is "%i,currpat
+                                     
+                    rdr.SetFilePrefix(dir+os.path.sep)
+                    rdr.SetFilePattern("%s"+currpat)
                     print "reader=",rdr
                     rdr.Update()
-                    data = rdr.GetOutput()
-                    self.writeData(outname,data,j,len(files))
-                    j=j+1
-
+                    #data = rdr.GetOutput()
+                    #self.writeData(outname,data,i,len(files))
+                    self.readers.append(rdr)
+                    self.dlg.Update(i,"Reading dataset %d / %d"%(i+1,self.tot))
+        
+        self.writeDataUnitFile()
+        self.dlg.Destroy()
+        
+    def writeDataUnitFile(self):
+        """
+        Method: writeDataUnitFile
+        Created: 25.04.2005, KP
+        Description: Writes a .du file
+        """ 
+        settings = DataUnit.DataUnitSettings()
+        settings.set("Type","DataUnitSettings")
+        print "self.spacing=",self.spacing
+        settings.set("Spacing",self.spacing)
+        x,y,z =self.voxelSize
+        x/=1000000.0
+        y/=1000000.0
+        z/=1000000.0
+        print "Writing voxel size as ",(x,y,z)
+        settings.set("VoxelSize",(x,y,z))
+        print "Writing dimensions as ",self.x,self.y,self.z
+        settings.set("Dimensions",(self.x,self.y,self.z))
+        name=self.nameEdit.GetValue()
+        settings.set("Name",name)
+        
+        ctf = self.colorBtn.getColorTransferFunction()
+        settings.set("ColorTransferFunction",ctf)
+        
+        parser = self.writer.getParser()
+        settings.writeTo(parser)
+        i=0
+        print "readers (%d)="%len(self.readers),self.readers
+        for rdr in self.readers:
+            rdr.Update()
+            self.writer.addImageData(rdr.GetOutput())
+            self.writer.sync()
+            self.dlg.Update(self.tot+i,"Writing dataset %d / %d"%(i+1,self.tot))
+            i=i+1
+        self.writer.write()
+            
+    
     def writeData(self,outname,data,n,total):
         """
         Method: writeData
         Created: 21.04.2005, KP
         Description: Writes a data out
         """            
-        d="%d"%(total/self.z)
-        s="_%%.%dd.vti"%len(d)
-        outdir=os.path.dirname(outname)
-        outfile=os.path.basename(outname)
-        outfile="".join(outfile.split(".")[:-1])
-
-        writer=vtk.vtkXMLImageDataWriter()
-        name=os.path.join(outdir,outfile+s%n)
-        print "Writing ",name
-        writer.SetInput(data)
-        writer.SetFileName(name)
-        writer.Write()
-        
+        print "Adding dataset %d"%n,data
+        self.writer.addImageData(data)
         
     def createImageImport(self):
         """
@@ -226,7 +296,7 @@ class ImportDialog(wx.Dialog):
         self.tpLbl=wx.StaticText(self.imagePanel,-1,"Number of Timepoints:")
         self.timepointLbl=wx.StaticText(self.imagePanel,-1,"0")
         
-        self.voxelSizeLbl=wx.StaticText(self.imagePanel,-1,u"Dataset dimensions")
+        self.voxelSizeLbl=wx.StaticText(self.imagePanel,-1,u"Voxel size")
         #self.voxelSizeEdit=wx.TextCtrl(self.imagePanel,-1,"0, 0, 0")
         #self.voxelSizeEdit = masked.TextCtrl(self,-1,u"",
         #mask = u"#{3}.#{4} \u03BCm x #{3}.#{4}\u03BCm x #{3}.#{4}\u03BCm",
@@ -303,7 +373,8 @@ class ImportDialog(wx.Dialog):
         except:
             return
         print "voxel sizes=",vx,vy,vz
-        self.spacing=[1.0,vy/vx,vz/vx]
+        self.voxelSize = (vx,vy,vz)
+        self.spacing=(1.0,vy/vx,vz/vx)
         print "Setting spacing to ",self.spacing
         sx,sy,sz=self.spacing
         self.spacingLbl.SetLabel("%.2f x %.2f x %.2f"%(sx,sy,sz))

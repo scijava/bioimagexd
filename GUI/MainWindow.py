@@ -54,6 +54,7 @@ from TaskWindow import *
 import SettingsWindow
 import ImportDialog
 import ExportDialog
+import RenderingInterface
 
 import InfoWidget
 
@@ -88,6 +89,7 @@ ID_HELP=10101
 ID_SETTINGS=10110
 ID_PREFERENCES=10111
 ID_RESLICE=11000
+ID_MAYAVI=11001
 
 class MainWindow(wx.Frame):
     """
@@ -198,13 +200,14 @@ class MainWindow(wx.Frame):
         self.fileMenu=wx.Menu()
         self.taskMenu=wx.Menu()
         self.helpMenu=wx.Menu()
-        
+        self.renderMenu=wx.Menu()
         self.settingsMenu=wx.Menu()
 
          # and add them as sub menus to the menubar
         self.menu.Append(self.fileMenu,"&File")
         self.menu.Append(self.settingsMenu,"&Settings")
-        self.menu.Append(self.taskMenu,"&Tasks")
+        self.menu.Append(self.taskMenu,"&Processing")
+        self.menu.Append(self.renderMenu,"&Rendering")
         self.menu.Append(self.helpMenu,"&Help")
       
 
@@ -237,12 +240,15 @@ class MainWindow(wx.Frame):
         self.taskMenu.Append(ID_COLORMERGING,"Color &Merging...","Merge dataset series")
         self.taskMenu.Append(ID_VSIA,"&Visualize Sparse Intensity Aggregations...","Visualize Sparse Intensity Aggregations with smooth surface")
         self.taskMenu.Append(ID_SINGLE,"&Process Single Dataset Series...","Process Single Dataset Series")
-        self.taskMenu.Append(ID_RENDER,"&Render Dataset Series...","Render a dataset series")
+        
+        self.renderMenu.Append(ID_RENDER,"&Render Dataset Series...","Render a dataset series")
+        self.renderMenu.Append(ID_MAYAVI,"&Visualize Dataset","Visualize dataset in Mayavi")
         wx.EVT_MENU(self,ID_COLOCALIZATION,self.onMenuColocalization)
         wx.EVT_MENU(self,ID_COLORMERGING,self.onMenuMergeChannels)
         wx.EVT_MENU(self,ID_VSIA,self.menuVSIA)
         wx.EVT_MENU(self,ID_SINGLE,self.onMenuProcessDataUnit)
         wx.EVT_MENU(self,ID_RENDER,self.onMenuRender)
+        wx.EVT_MENU(self,ID_MAYAVI,self.onMenuMayavi)
 
         self.helpMenu.Append(ID_ABOUT,"&About BioImageXD","About BioImageXD")
         self.helpMenu.AppendSeparator()
@@ -288,6 +294,34 @@ class MainWindow(wx.Frame):
         """
         self.settingswindow=SettingsWindow.SettingsWindow(self)
         self.settingswindow.ShowModal()
+        
+    def onMenuMayavi(self,evt):
+        """
+        Method: onMenuMayavi()
+        Created: 26.04.2005, KP
+        Description: Callback function for launching mayavi
+        """
+        selectedFiles=self.tree.getSelectedDataUnits()
+        if len(selectedFiles)>1:
+            Dialogs.showerror(self,
+            "You have selected the following datasets: %s.\n"
+            "More than one dataset cannot be opened in mayavi concurrently.\nPlease "
+            "select only one dataset and try again."%(", ".join(selectedFiles)),"Multiple datasets selected")
+            return
+        if len(selectedFiles)<1:
+            Dialogs.showerror(self,
+            "You have not selected a dataset series to be loaded to mayavi.\nPlease "
+            "select a dataset series and try again.\n","No dataset selected")
+            return
+        dataunit = selectedFiles[0]
+        renderingInterface=RenderingInterface.getRenderingInterface()
+        renderingInterface.setOutputPath(".")
+        renderingInterface.setTimePoints([0])
+        ctf = dataunit.getColorTransferFunction()
+        imagedata = dataunit.getTimePoint(0)
+        renderingInterface.doRendering(preview=imagedata,ctf=ctf)
+
+        
 
     def onMenuRender(self,evt):
         """

@@ -203,7 +203,7 @@ class ColorMergingWindow(TaskWindow.TaskWindow):
                      stored in the instance variable self.configSetting
         """
         if self.dataUnit and self.settings:
-            ctf = self.settings.get("ColorTransferFunction")
+            ctf = self.settings.get("MergingColorTransferFunction")
             if ctf and self.colorBtn:
                 print "Setting colorBtn.ctf"
                 self.colorBtn.setColorTransferFunction(ctf)
@@ -251,7 +251,7 @@ class ColorMergingWindow(TaskWindow.TaskWindow):
         # the user to edit the alpha channel for the 24-bit color merging
         #self.dataUnit.setOpacityTransfer(self.alphaTF)
         self.settings.set("AlphaTransferFunction",self.alphaTF)
-        ctf = self.settings.get("ColorTransferFunction")
+        ctf = self.settings.get("MergingColorTransferFunction")
         if self.colorBtn:
             print "Setting ctf"
             self.colorBtn.setColorTransferFunction(ctf)
