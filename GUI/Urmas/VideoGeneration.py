@@ -125,14 +125,14 @@ class VideoGeneration(wx.Dialog):
         codec=self.outputFormat.GetSelection()
         vcodec = self.outputCodecs[codec]
         x,y=size
-        ffmpegs={"linux":"ffmpeg","win":"bin/ffmpeg.exe","darwin":"bin/ffmpeg.osx"}
+        ffmpegs={"linux":"ffmpeg","win":"bin\\ffmpeg.exe","darwin":"bin/ffmpeg.osx"}
         ffmpeg="ffmpeg"
         for i in ffmpegs.keys():
             if i in sys.platform:
                 ffmpeg=ffmpegs[i]
                 break
         print "Using ffmpeg %s"%ffmpeg
-        commandLine="%s -r %d -s %dx%d -i %s -vcodec %s %s"%(ffmpeg,frameRate,x,y,pattern,vcodec,file)
+        commandLine="%s -r %d -s %dx%d -i \"%s\" -vcodec %s %s"%(ffmpeg,frameRate,x,y,pattern,vcodec,file)
         print "Command line for ffmpeg=",commandLine
         os.system(commandLine)
         if os.path.exists(file):

@@ -88,7 +88,7 @@ class RenderingInterface:
         # XXX: Make this configurable
         self.type=Configuration.getConfiguration().getConfigItem("Output","ImageFormat")
         if not self.type:
-            self.type="png"
+            self.type="jpeg"
     def getColorTransferFunction(self):
         """
         Method: getColorTransferFunction()

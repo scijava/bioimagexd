@@ -113,7 +113,7 @@ class UrmasRenderer:
                 Dialogs.showwarning(self,"No renderer in main render window!! This should not be possible!","Oops!")
                 return
             self.dlg = wx.ProgressDialog("Rendering","Rendering at %.2fs / %.2fs (frame %d / %d)"%(0,0,0,0),maximum = frames, parent = self.control.window)
-                
+            self.dlg.Show()
 
         self.splineEditor = control.getSplineEditor()
         spf = duration / float(frames)

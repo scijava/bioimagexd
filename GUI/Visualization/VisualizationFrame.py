@@ -59,6 +59,7 @@ class ConfigurationPanel(wx.Panel):
         
         self.moduleLbl = wx.StaticText(self,-1,"Rendering module:")
         self.moduleChoice = wx.Choice(self,-1,choices=["Volume Rendering"])
+        self.moduleChoice.SetSelection(0)
         self.moduleLoad = wx.Button(self,-1,"Load")
         self.moduleLoad.Bind(wx.EVT_BUTTON,self.onLoadModule)
         self.lightsBtn = wx.Button(self,-1,"Lights")
@@ -95,7 +96,7 @@ class ConfigurationPanel(wx.Panel):
         lm = LightManager(self, self.parent.wxrenwin, ren, mode='raymond')
         lm.config()
         
-        
+
     def onLoadModule(self,event):
         """
         Method: onLoadModule
@@ -123,18 +124,18 @@ class VisualizationFrame2(wx.Frame):
         Method: __init__(parent)
         Created: 28.04.2005, KP
         Description: Initialization
-        """    
+        """
         self.renderer=None
         self.closed=0
         wx.Frame.__init__(self,parent,-1,"BioImageXD Visualization",**kws)
         self.sizer=wx.GridBagSizer()
-        
+
         self.frame=VisualizationPanel(self)
         self.Bind(wx.EVT_CLOSE,self.onClose)
         self.setDataUnit=self.frame.setDataUnit
-    
+
         self.sizer.Add(self.frame,(0,0))
-    
+
         self.SetSizer(self.sizer)
         self.SetAutoLayout(1)
         self.sizer.Fit(self)
@@ -178,15 +179,29 @@ class VisualizationFrame(wx.Frame):
         self.SetSizer(self.sizer)
         self.SetAutoLayout(1)
         self.sizer.Fit(self)
-        
+
+
+    def initializeVTK(self):
+        """
+        Method: initializeVTK
+        Created: 29.04.2005, KP
+        Description: initialize the vtk renderer
+        """
+        self.renderer = vtk.vtkRenderer()
+        self.renwin.AddRenderer(self.renderer)
+
+        self.iren = iren = self.renwin.GetInteractor()
+        self.iren.SetInteractorStyle(vtk.vtkInteractorStyleTrackballCamera())
+
+
     def getRenderer(self):
         """
         Method: getRenderer
         Created: 28.04.2005, KP
         Description: Return the renderer
-        """            
+        """
         return self.renderer
-        
+
     def onClose(self,event):
         """
         Method: onClose()
@@ -200,9 +215,9 @@ class VisualizationFrame(wx.Frame):
         Method: isClosed()
         Created: 28.04.2005, KP
         Description: Returns flag indicating the closure of this window
-        """            
+        """
         return self.closed
-        
+
 
     def save_png(self,filename):
         """
@@ -244,7 +259,7 @@ class VisualizationFrame(wx.Frame):
         Method: setDataUnit(self)
         Created: 28.04.2005, KP
         Description: Sets the dataunit this module uses for visualization
-        """            
+        """
         self.dataUnit = dataunit
         count=dataunit.getLength()
         self.timeslider.SetRange(0,count-1)
@@ -264,7 +279,8 @@ class VisualizationFrame(wx.Frame):
         Created: 28.04.2005, KP
         Description: Render the scene
         """  
-        self.wxrenwin.Render()
+        self.renwin.Render()
+        #self.wxrenwin.Render()
     
     def configureModule(self,name):
         """
@@ -280,10 +296,9 @@ class VisualizationFrame(wx.Frame):
         Method: loadModule(name)
         Created: 28.04.2005, KP
         Description: Load a visualization module
-        """  
-        self.renderer = vtk.vtkRenderer()
-        self.renwin.AddRenderer(self.renderer)
-        
+        """
+        self.initializeVTK()
+
         if not self.dataUnit:
             Dialogs.showerror(self,"No dataset has been loaded for visualization","Cannot load visualization module")
             return

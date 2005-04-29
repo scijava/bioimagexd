@@ -37,6 +37,10 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 import os.path
 import sys
+from distutils.core import setup
+import glob
+import py2exe
+
 import Configuration
 
 #sys.path.insert(0,"C:\\Mingw\\lib")
@@ -75,9 +79,15 @@ class LSMApplication(wx.App):
         self.MainLoop()
 
 if __name__=='__main__':
-    app=LSMApplication(False)
 
-    app.run()
+    if "py2exe" in sys.argv:
+       setup(console=["Main.py"],
+       data_files=[("Icons",glob.glob("Icons\\*.*")),("Binaries",glob.glob("bin\\*.*"))],
+       options = {"py2exe": { "excludes": ['MayaViUserReader', 'PyShell', 'dl', 'dotblas', 'hexdump', 'libvtkCommonPython', 'libvtkFilteringPython', 'libvtkGraphicsPython', 'libvtkHybridPython', 'libvtkIOPython', 'libvtkImagingPython', 'libvtkParallelPython', 'libvtkPatentedPython', 'libvtkRenderingPython', 'mx', 'win32com.gen_py'],
+       "packages": ["encodings"]}})
+    else:
+        app=LSMApplication(False)
+        app.run()
 
 
 

@@ -101,8 +101,11 @@ class LightRenderingInterface(RenderingInterface.RenderingInterface):
         return self.visualizer.GetRenderWindow()
         
     def render(self):
+        self.visualizer.Raise()
+        self.visualizer.Refresh()
         self.visualizer.render()
-        
+
+
     def getRenderer(self):
         """
         Method: getRenderer
@@ -110,7 +113,7 @@ class LightRenderingInterface(RenderingInterface.RenderingInterface):
         Description: Returns the renderer
         """        
         return self.visualizer.getRenderer()
-        
+
     def createVisualizerWindow(self):
         """
         Method: createVisualizerWindow()
@@ -128,7 +131,7 @@ class LightRenderingInterface(RenderingInterface.RenderingInterface):
         """
         Method: isVisualizationSoftwareRunning()
         Created: 11.1.2005, KP
-        Description: A method that returns true if a mayavi window exists that 
+        Description: A method that returns true if a mayavi window exists that
                      can be used for rendering
         """
         return (self.visualizer and not self.visualizer.isClosed())
@@ -179,4 +182,4 @@ class LightRenderingInterface(RenderingInterface.RenderingInterface):
         visualizer=self.visualizer
         type=self.type
         comm = "visualizer.save_%s(filename)"
-        eval(eval("comm%type"))      
+        eval(eval("comm%type"))
