@@ -33,6 +33,7 @@ import wx.lib.colourselect as csel
 
 if __name__=='__main__':
     import sys
+        
     sys.path.append(os.path.normpath(os.path.join(os.getcwd(),"LSM")))
     sys.path.append(os.path.normpath(os.path.join(os.getcwd(),"../LSM")))
     sys.path.insert(0,os.path.normpath(os.path.join(os.getcwd(),"../Libraries/VTK/bin")))
@@ -159,7 +160,7 @@ class CTFPaintPanel(wx.Panel):
         self.dc.DrawText(text,ox,y/self.scale)
         
 
-    def paintTransferFunction(self,ctf,pointlist):
+    def paintTransferFunction(self,ctf,pointlist,otf=None):
         """
         Method: paintTransferFunction()
         Created: 30.10.2004, KP
@@ -172,6 +173,7 @@ class CTFPaintPanel(wx.Panel):
         self.dc.BeginDrawing()
         x0=0
         r0,g0,b0=0,0,0
+        a0=0
         for point in pointlist:
             x,y=point
             self.createOval(x,y,2)
@@ -189,6 +191,12 @@ class CTFPaintPanel(wx.Panel):
             r*=255
             g*=255
             b*=255
+            if otf:
+                a=otf.GetValue(x1)
+                a*=255
+                a=int(a)
+                self.createLine(x0,a0,x1,a,'#ffffff')
+                a0=a
             r=int(r)
             g=int(g)
             b=int(b)
@@ -246,19 +254,29 @@ class CTFButton(wx.BitmapButton):
     Description: A button that shows a ctf as a palette and lets the user modify it
                  by clicking on the button
     """    
-    def __init__(self,parent):
+    def __init__(self,parent,alpha=0):
         """
         Method: __init__
         Created: 18.04.2005, KP
         Description: Initialization
         """    
         wx.BitmapButton.__init__(self,parent,-1)
+        self.changed=0
+        self.alpha=alpha
         self.ctf = vtk.vtkColorTransferFunction()
         self.ctf.AddRGBPoint(0,0,0,0)
         self.ctf.AddRGBPoint(255,1,1,1)
         self.bmp = ImageOperations.paintCTFValues(self.ctf)
         self.SetBitmapLabel(self.bmp)
         self.Bind(wx.EVT_BUTTON,self.onModifyCTF)
+        
+    def isChanged(self):
+        """
+        Method: isChanged
+        Created: 28.04.2005, KP
+        Description: Was the ctf or otf changed
+        """        
+        return self.changed
         
     def setColorTransferFunction(self,ctf):
         """
@@ -286,16 +304,25 @@ class CTFButton(wx.BitmapButton):
         """        
         dlg = wx.Dialog(self,-1,"Edit color transfer function")
         sizer = wx.BoxSizer(wx.VERTICAL)
-        panel = ColorTransferEditor(dlg)
+        panel = ColorTransferEditor(dlg,alpha=self.alpha)
         panel.setColorTransferFunction(self.ctf)
+        self.panel = panel
         sizer.Add(panel)
         dlg.SetSizer(sizer)
         dlg.SetAutoLayout(1)
+        self.changed=1
         sizer.Fit(dlg)
         dlg.ShowModal()
         self.bmp = ImageOperations.paintCTFValues(self.ctf)
         self.SetBitmapLabel(self.bmp)
         
+    def getOpacityTransferFunction(self):
+        """
+        Method: getOpacityTransferFunction()
+        Created: 28.04.2005, KP
+        Description: Returns the opacity function
+        """
+        return self.panel.getOpacityTransferFunction()
         
         
         
@@ -314,6 +341,8 @@ class ColorTransferEditor(wx.Panel):
         """
         self.parent=parent
         wx.Panel.__init__(self,parent,-1)
+        if kws.has_key("alpha"):
+            self.alpha=kws["alpha"]
         self.updateCallback=0
         self.ctf = vtk.vtkColorTransferFunction()
         self.doyield=1
@@ -322,6 +351,7 @@ class ColorTransferEditor(wx.Panel):
         self.freeMode = 0
         self.selectThreshold=5.0
         self.color = 0
+        self.otf = vtk.vtkPiecewiseFunction()
         self.restoreDefaults(None)
         self.mainsizer=wx.BoxSizer(wx.VERTICAL)
 
@@ -344,6 +374,9 @@ class ColorTransferEditor(wx.Panel):
         self.blueBtn=wx.ToggleButton(self,-1,"",size=(32,32))
         self.blueBtn.SetBackgroundColour((0,0,255))
         
+        if self.alpha:
+            self.alphaBtn=wx.ToggleButton(self,-1,"",size=(32,32))
+            self.alphaBtn.Bind(wx.EVT_TOGGLEBUTTON,self.onEditAlpha)
         #self.freeBtn = wx.ToggleButton(self,-1,)
         iconpath=reduce(os.path.join,["Icons"])        
         self.freeBtn = buttons.GenBitmapToggleButton(self, -1, None)
@@ -360,6 +393,8 @@ class ColorTransferEditor(wx.Panel):
         self.itemBox.Add(self.redBtn)
         self.itemBox.Add(self.greenBtn)
         self.itemBox.Add(self.blueBtn)
+        if self.alpha:
+            self.itemBox.Add(self.alphaBtn)
         
         self.itemBox.Add(self.freeBtn)
         self.itemBox.Add(self.colorBtn)
@@ -369,6 +404,7 @@ class ColorTransferEditor(wx.Panel):
         self.redBtn.Bind(wx.EVT_TOGGLEBUTTON,self.onEditRed)
         self.greenBtn.Bind(wx.EVT_TOGGLEBUTTON,self.onEditGreen)
         self.blueBtn.Bind(wx.EVT_TOGGLEBUTTON,self.onEditBlue)
+        
         self.freeBtn.Bind(wx.EVT_BUTTON,self.onFreeMode)
         
         self.openBtn.Bind(wx.EVT_BUTTON,self.onOpenLut)
@@ -444,7 +480,8 @@ class ColorTransferEditor(wx.Panel):
         self.redpoints=[(0,0),(255,r)]
         self.greenpoints=[(0,0),(255,g)]
         self.bluepoints=[(0,0),(255,b)]
-        self.points=[self.redpoints,self.greenpoints,self.bluepoints]
+        #self.alphapoints=[(0,0),(255,51)]
+        self.points=[self.redpoints,self.greenpoints,self.bluepoints,self.alphapoints]
         self.freeMode = 0
         self.updateGraph()
         
@@ -550,10 +587,16 @@ class ColorTransferEditor(wx.Panel):
         """
         was=0
         if self.freeMode:was=1
+        if not was and event.GetIsDown():
+            self.updateGraph()
+            self.setFromColorTransferFunction(self.ctf)
         self.freeMode = event.GetIsDown()
+        print "Points before=",self.points
         if not self.freeMode and was:
             print "Analyzing free mode for points"
             self.getPointsFromFree()
+        print "Points now=",self.points
+        self.updateGraph()
                 
     def onEditRed(self,event):
         """
@@ -563,7 +606,20 @@ class ColorTransferEditor(wx.Panel):
         """
         self.blueBtn.SetValue(0)
         self.greenBtn.SetValue(0)
+        if self.alpha:self.alphaBtn.SetValue(0)
         self.color = 0
+        self.updateGraph()
+
+    def onEditAlpha(self,event):
+        """
+        Method: onEditAlpha
+        Created: 28.04.2005, KP
+        Description: Edit the alpha channel
+        """
+        self.blueBtn.SetValue(0)
+        self.greenBtn.SetValue(0)
+        self.redBtn.SetValue(0)
+        self.color = 3
         self.updateGraph()
         
     def onEditGreen(self,event):
@@ -574,6 +630,7 @@ class ColorTransferEditor(wx.Panel):
         """
         self.blueBtn.SetValue(0)
         self.redBtn.SetValue(0)
+        if self.alpha:self.alphaBtn.SetValue(0)
         self.color = 1
         self.updateGraph()
 
@@ -585,6 +642,7 @@ class ColorTransferEditor(wx.Panel):
         """
         self.redBtn.SetValue(0)
         self.greenBtn.SetValue(0)
+        if self.alpha:self.alphaBtn.SetValue(0)
         self.color = 2
         self.updateGraph()
 
@@ -598,17 +656,19 @@ class ColorTransferEditor(wx.Panel):
         self.redfunc=[0]*256
         self.greenfunc=[0]*256
         self.bluefunc=[0]*256
-        self.funcs=[self.redfunc,self.greenfunc,self.bluefunc]
+        self.alphafunc=[0]*256
+        self.funcs=[self.redfunc,self.greenfunc,self.bluefunc,self.alphafunc]
         
         self.redpoints=[(0,0),(255,255)]
         self.greenpoints=[(0,0),(255,255)]
         self.bluepoints=[(0,0),(255,255)]
-        
-        self.points=[self.redpoints,self.greenpoints,self.bluepoints]
+        self.alphapoints=[(0,0),(255,51)]
+        self.points=[self.redpoints,self.greenpoints,self.bluepoints,self.alphapoints]
         for i in xrange(256):
             self.redfunc[i]=i
             self.greenfunc[i]=i
             self.bluefunc[i]=i
+            self.alphafunc[i]=int(i*0.2)
         self.ctf.RemoveAllPoints()
         
             
@@ -626,9 +686,13 @@ class ColorTransferEditor(wx.Panel):
                 g/=255.0
                 b/=255.0
                 self.ctf.AddRGBPoint(i,r,g,b)
+                if self.alpha:
+                    a=self.alphafunc[i]
+                    a/=255.0
+                    self.otf.AddPoint(i,a)
         else:
             func=[]
-            for i in range(256):func.append([0,0,0])
+            for i in range(256):func.append([0,0,0,0])
             for col,pointlist in enumerate(self.points):
                 pointlist.sort()
                 for i in xrange(1,len(pointlist)):
@@ -651,11 +715,14 @@ class ColorTransferEditor(wx.Panel):
                         
                         
             for i in xrange(256):
-                r,g,b=func[i]
+                r,g,b,a=func[i]
                 r/=255.0
                 g/=255.0
                 b/=255.0
+                a/=255.0
                 self.ctf.AddRGBPoint(i,r,g,b)
+                if self.alpha:
+                    self.otf.AddPoint(i,a)
                                             
         #print "Painting ",self.ctf
         pts=[]
@@ -663,7 +730,13 @@ class ColorTransferEditor(wx.Panel):
             pts.extend(self.redpoints)
             pts.extend(self.greenpoints)
             pts.extend(self.bluepoints)
-        self.canvas.paintTransferFunction(self.ctf,pts)
+            pts.extend(self.alphapoints)
+        otf=None
+        if self.alpha:
+            otf=self.otf
+            #print "Painting otf=",otf
+        
+        self.canvas.paintTransferFunction(self.ctf,pts,otf)
         self.value.paintTransferFunction(self.ctf)
 
 
@@ -704,35 +777,60 @@ class ColorTransferEditor(wx.Panel):
         dr,dg,db=0,0,0
         dr2,dg2,db2=0,0,0
         r2,g2,b2=0,0,0
+        da=0
+        da2=0
+        a2=0
         self.redpoints=[]
         self.greenpoints=[]
         self.bluepoints=[]
+        self.alphapoints=[]
         for x in range(256):
+            if self.alpha:
+                a=self.otf.GetValue(x)
+                a*=255
+                a=int(a)
+                da = a-a2
+                
             r,g,b=self.ctf.GetColor(x)
+            
             r*=255
             g*=255
             b*=255
+            
             r=int(r)
             g=int(g)
             b=int(b)
             dr = r-r2
             dg = g-g2
             db = b-b2
+            
             if x in [0,255]:
                 self.redpoints.append((x,r))
                 self.greenpoints.append((x,g))
                 self.bluepoints.append((x,b))
+                if self.alpha:
+                    self.alphapoints.append((x,a))
             else:
                 if dr != dr2:
                     #print "for %d = %d-%d, dr=%d,dr2=%d"%(x,r,r2,dr,dr2)
+                    #print "adding red %d,%d"%(x,r)
                     self.redpoints.append((x,r))
                 if dg != dg2:
+                    #print "adding green %d,%d"%(x,g)
                     self.greenpoints.append((x,g))
                 if db != db2:
+                    #print "adding blue %d,%d"%(x,b)
                     self.bluepoints.append((x,b))
+                if self.alpha:
+                    if da != da2:
+                        #print "adding alpha %d,%d"%(x,a)
+                        self.alphapoints.append((x,a))
+                    da2=da
+                    a2=a
             dr2,dg2,db2=dr,dg,db
+            
             r2,g2,b2=r,g,b
-        self.points=[self.redpoints,self.greenpoints,self.bluepoints]
+        self.points=[self.redpoints,self.greenpoints,self.bluepoints,self.alphapoints]
         
         self.updateGraph()
             
@@ -744,16 +842,33 @@ class ColorTransferEditor(wx.Panel):
                      by this widget
         """
         self.ctf=TF
+        print "Points before=",self.points
         self.getPointsFromFree()
-        print "slf.points = ",self.points
+        print "Got points = ",self.points
+        print "self.redpoints=",self.redpoints
+        print "self.greenpoints=",self.greenpoints
+        print "self.bluepoints=",self.bluepoints
+        self.alphapoints=[(0,0),(255,51)]
+        self.points=[self.redpoints,self.greenpoints,self.bluepoints,self.alphapoints]
+        
         self.updateGraph()
 
+    def getOpacityTransferFunction(self):
+        """
+        Method: getOpacityTransferFunction()
+        Created: 28.04.2005, KP
+        Description: Returns the opacity function
+        """
+        return self.otf
 
 if __name__=='__main__':
+ 
     class MyApp(wx.App):
         def OnInit(self):
             frame=wx.Frame(None,size=(400,400))
-            self.panel=ColorTransferEditor(frame)
+            alpha=("alpha" in sys.argv)
+            self.panel=ColorTransferEditor(frame,alpha=alpha)
+            
             self.SetTopWindow(frame)
             frame.Show(True)
             return True
