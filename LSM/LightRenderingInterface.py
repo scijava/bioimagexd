@@ -1,0 +1,172 @@
+# -*- coding: iso-8859-1 -*-
+"""
+ Unit: LightRenderingInterface.py
+ Project: BioImageXD
+ Created: 28.04.2005,KP
+ Description:
+
+ The module used to render selected timepoints in a dataunit. Uses the BioImageXD
+ visualization framework
+
+ Modified: 28.04.2005 KP - Derived the class from original rendering interface
+           
+ BioImageXD includes the following persons:
+ 
+ DW - Dan White, dan@chalkie.org.uk
+ KP - Kalle Pahajoki, kalpaha@st.jyu.fi
+ PK - Pasi Kankaanp‰‰, ppkank@bytl.jyu.fi
+ 
+ Copyright (c) 2005 BioImageXD Project.
+"""
+__author__ = "BioImageXD Project"
+__version__ = "$Revision: 1.28 $"
+__date__ = "$Date: 2005/01/13 14:52:39 $"
+
+import vtk
+import math
+import os.path
+import Logging
+import Configuration
+import wx
+import time
+import sys
+
+import RenderingInterface
+
+import Visualization
+
+class LightRenderingInterface(RenderingInterface.RenderingInterface):
+    """
+    Class: LightRenderingInterface
+    Created: 28.04.2005, KP
+    Description: The interface between LSM and BioImageXD Visualization for rendering
+    """
+    def __init__(self,dataUnit=None,timePoints=[],**kws):
+        """
+        Method: __init__
+        Created: 17.11.2004, KP
+        Description: Initialization
+        """
+        RenderingInterface.RenderingInterface.__init__(self,dataUnit,timePoints,**kws)
+        self.visualizer=None
+        
+    
+    def runTk(self):pass
+    def runTkinterGUI(self):pass
+        
+            
+    def updateDataset(self):
+        """
+        Method: updateDataset()
+        Created: 28.04.2005, KP
+        Description: Updates the dataset to the current timepoint
+        """
+        if self.visualizer:
+            self.visualizer.setTimepoint(self.currentTimePoint)
+        
+    def setRenderWindowSize(self,size):
+        """
+        Method: setRenderWindowSize()
+        Created: 27.04.2005, KP
+        Description: Sets the mayavi render window size
+        """        
+        x,y=size
+        if self.visualizer:
+            self.visualizer.setRenderWindowSize((x,y))
+            
+    def setParent(self,parent):
+        """
+        Method: setParent(parent)
+        Created: 28.04.2005, KP
+        Description: Set the parent of this window
+        """        
+        self.parent=parent
+        
+    def getRenderWindow(self):
+        """
+        Method: getRenderWindow()
+        Created: 22.02.2005, KP
+        Description: Returns the mayavi's render window. Added for Animator compatibility
+        """        
+        return self.visualizer.GetRenderWindow()
+        
+    def render(self):
+        self.visualizer.render()
+        
+    def getRenderer(self):
+        """
+        Method: getRenderer
+        Created: 28.04.2005, KP
+        Description: Returns the renderer
+        """        
+        return self.visualizer.getRenderer()
+        
+    def createVisualizerWindow(self):
+        """
+        Method: createVisualizerWindow()
+        Created: 22.02.2005, KP
+        Description: A method that creates an instance of mayavi
+        """    
+        vis=Visualization.VisualizationFrame(self.parent)
+        if not self.dataUnit:
+            raise "No dataunit given but attempt to create visualization window"
+        vis.setDataUnit(self.dataUnit)
+        self.visualizer=vis
+        vis.Show()
+        
+    def isVisualizationSoftwareRunning(self):
+        """
+        Method: isVisualizationSoftwareRunning()
+        Created: 11.1.2005, KP
+        Description: A method that returns true if a mayavi window exists that 
+                     can be used for rendering
+        """
+        return (self.visualizer and not self.visualizer.isClosed())
+        
+        
+    def isVisualizationModuleLoaded(self):
+        """
+        Method: isVisualizationModuleLoaded()
+        Created: 22.02.2005, KP
+        Description: A method that returns true if a mayavi has a visualization module loaded.
+        """
+        return len(self.visualizer.getModules())
+
+        
+    def doRendering(self,**kws):
+        """
+        Method: doRendering()
+        Created: 17.11.2004, KP
+        Description: Sends each timepoint one at a time to be rendered in mayavi
+        Parameters:
+            preview     If this flag is true, the results are not rendered out
+        """
+        if kws.has_key("preview"):
+            self.showPreview=kws["preview"]
+        if kws.has_key("ctf"):
+            self.ctf=kws["ctf"]
+        
+        if not self.showPreview:
+            raise "Cannot handle non-previews"
+
+        if not self.dataUnit or not self.timePoints:
+            raise "No dataunit or timepoints defined"
+
+        # If there is no mayavi instance to do the rendering
+        # create one
+        if not self.isVisualizationSoftwareRunning():
+            print "Creating visualizer"
+            self.createVisualizerWindow()
+        self.visualizer.setTimepoint(self.currentTimePoint)
+        self.visualizer.Raise()
+             
+    def saveFrame(self,filename):
+        """
+        Method: saveFrame(filename)
+        Created: 22.02.2005, KP
+        Description: Saves a frame with a given name
+        """
+        visualizer=self.visualizer
+        type=self.type
+        comm = "visualizer.save_%s(filename)"
+        eval(eval("comm%type"))      
