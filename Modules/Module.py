@@ -2,8 +2,7 @@
 """
  Unit: Module.py
  Project: Selli
- Created: 03.11.2004
- Creator: KP
+ Created: 03.11.2004, KP
  Description:
 
  A Base Class for all data processing modules. Inherits Thread for
@@ -18,14 +17,24 @@
            03.12.2004 KP - Modified NumpyToVTK to support 3-component data based
                            on Numeric Array shape, removed
                            NumpyToVTK24bit
+                           
+ Copyright (C) 2005  BioImageXD Project
+ See CREDITS.txt for details
 
- Selli includes the following persons:
- JH - Juha Hyytiäinen, juhyytia@st.jyu.fi
- JM - Jaakko Mäntymaa, jahemant@cc.jyu.fi
- KP - Kalle Pahajoki, kalpaha@st.jyu.fi
- JV - Jukka Varsaluoma,varsa@st.jyu.fi
+ This program is free software; you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation; either version 2 of the License, or
+ (at your option) any later version.
 
- Copyright (c) 2004 Selli Project.
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with this program; if not, write to the Free Software
+ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
 """
 __author__ = "Selli Project <http://sovellusprojektit.it.jyu.fi/selli/>"
 __version__ = "$Revision: 1.19 $"

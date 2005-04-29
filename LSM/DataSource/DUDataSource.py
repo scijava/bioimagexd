@@ -2,8 +2,7 @@
 """
  Unit: DataSource.py
  Project: Selli
- Created: 03.11.2004
- Creator: JM
+ Created: 03.11.2004, JM
  Description: Classes for managing 4D data located on disk
 
  Modified:  04.11.2004 JM - Fixed a few bugs and implemented a few methods
@@ -22,13 +21,23 @@
             26.11.2004 JM - More comments added
             11.01.2005 JV - Added comments
 
- Selli includes the following persons:
- JH - Juha Hyytiäinen, juhyytia@st.jyu.fi
- JM - Jaakko Mäntymaa, jahemant@cc.jyu.fi
- KP - Kalle Pahajoki, kalpaha@st.jyu.fi
- JV - Jukka Varsaluoma, varsa@st.jyu.fi
+ Copyright (C) 2005  BioImageXD Project
+ See CREDITS.txt for details
 
- Copyright (c) 2004 Selli Project.
+ This program is free software; you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation; either version 2 of the License, or
+ (at your option) any later version.
+
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with this program; if not, write to the Free Software
+ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
 """
 
 __author__ = "Selli Project <http://sovellusprojektit.it.jyu.fi/selli/>"

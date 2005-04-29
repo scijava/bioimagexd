@@ -39,19 +39,23 @@
 
             27.03.2005 KP - Started merging / refactoring classes
                             
- Selli includes the following persons:
- JH - Juha Hyyti‰inen, juhyytia@st.jyu.fi
- JM - Jaakko M‰ntymaa, jahemant@cc.jyu.fi
- KP - Kalle Pahajoki, kalpaha@st.jyu.fi
- JV - Jukka Varsaluoma,varsa@st.jyu.fi
+ Copyright (C) 2005  BioImageXD Project
+ See CREDITS.txt for details
 
- BioImageXD includes the following persons:
+ This program is free software; you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation; either version 2 of the License, or
+ (at your option) any later version.
 
- DW - Dan White, dan@chalkie.org.uk
- KP - Kalle Pahajoki, kalpaha@st.jyu.fi
- PK - Pasi Kankaanp‰‰, ppkank@bytl.jyu.fi
- 
- Copyright (c) 2004 Selli Project, 2005 BioImageXD Project
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with this program; if not, write to the Free Software
+ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
 """
 
 __author__ = "Selli Project <http://sovellusprojektit.it.jyu.fi/selli/>"

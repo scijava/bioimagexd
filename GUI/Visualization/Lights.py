@@ -1,9 +1,8 @@
 """
 
-A VTK light manipulation tool for Tkinter.  This is sufficiently
-general that it can be used by non-MayaVi applications.  It basically
-creates 8 different lights which can be configured using a GUI.  The
-lights can be saved and reloaded as with any other MayaVi module.
+A VTK light manipulation tool for wxPython.  This is sufficiently
+general that it can be used by non-BioImageXD applications.  It basically
+creates 8 different lights which can be configured using a GUI. 
 
 This module was entirely written by Raymond Maple.  It was later
 modified by Prabhu and made suitable for inclusion in MayaVi. Later
@@ -14,7 +13,7 @@ This code is distributed under the conditions of the BSD license.  See
 LICENSE.txt for details.
 
 Copyright (c) 2002, Raymond C. Maple and Prabhu Ramachandran.
-Copyright (c) 2005, Kalle Pahajoki
+Copyright (c) 2005, Kalle Pahajoki. Modified for wxPython
 """
 
 __author__ = "Raymond C. Maple <mapler@erinet.com>"

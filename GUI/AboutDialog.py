@@ -11,11 +11,23 @@
 
  Modified: 22.02.2005 KP - Created the module
  
- BioImageXD includes the following persons:
- 
- DW - Dan White, dan@chalkie.org.uk
- KP - Kalle Pahajoki, kalpaha@st.jyu.fi
- PK - Pasi Kankaanp‰‰, ppkank@bytl.jyu.fi
+ Copyright (C) 2005  BioImageXD Project
+ See CREDITS.txt for details
+
+ This program is free software; you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation; either version 2 of the License, or
+ (at your option) any later version.
+
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with this program; if not, write to the Free Software
+ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
  """
 __author__ = "BioImageXD Project"
 __version__ = "$Revision: 1.40 $"
@@ -109,18 +121,32 @@ aboutText = u"""
 <p><b>BioImageXD</b> is a program for post-processing and visualizing
 data produced by a confocal laser scanning microscope.</p>
 
-<p>The following people have contributed to BioImageXD project:</p>
-<p>
-<table>
-<!--<tr><td><b>Dan White</b></td><td><a href="mailto:dan@chalkie.org.uk">&lt;dan@chalkie.org.uk&gt;</a></td></tr>
-<tr><td><b>Kalle Pahajoki</b></td><td><a href="mailto:kalpaha@st.jyu.fi">&lt;kalpaha@st.jyu.fi&gt;</a></td></tr>
-<tr><td><b>Pasi Kankaanp‰‰</b></td><td><a href="mailto:ppkank@bytl.jyu.fi">&lt;ppkank@bytl.jyu.fi&gt;</a></td></tr>-->
-</table>
+<h2>The BioImageXD Project</h2>
+<p><b>The main development team</b></p><p>
+Pasi Kankaanp‰‰<br>
+Kalle Pahajoki<br>
+Varpu Marjom‰ki<br>
+Jyrki Heino<br>
+Daniel White<br>
 </p>
-<p><b>BioImageXD</b> is based on the work of 
-<a href="http://sovellusprojekit.it.jyu.fi/selli/">Selli project</a> and the work of Heikki Uuksulainen on
-Mayavi Animator.
-</center>
+<p>
+<b>Former member of the main development team (and the developer of the Zeiss LSM file format reader and the rendering animator):</b>
+</p><p>
+Heikki Uuksulainen
+</p>
+<p>
+<b>BioImageXD is largely based on the work of the Selli project, which included the following people:</b></p><p>
+Juha Hyyti‰inen<br>
+Jaakko M‰ntymaa<br>
+Kalle Pahajoki<br>
+Jukka Varsaluoma<br>
+</p><p>
+<b>The following people have significantly contributed to the development of BioImageXD:</b></p><p>
+Jorma Virtanen<br>
+</p><p>
+<b>The following companies have supported the development of BioImageXD:</b></p><p>
+N / A
+</p>
 </body>
 </html>
 """
@@ -130,7 +156,17 @@ gplText = u"""
 <body bgcolor="%(bgcolor)s">
 <center><h2>BioImageXD License</h2></center>
 
-<p><b>BioImageXD</b> is licensed under the General Public License.</p>
+<!--<p><b>BioImageXD</b> is licensed under the General Public License.</p>-->
+<p>
+BioImageXD will be licensed under the General Public License.
+This version, however, is NOT yet a public release as specified by that license. 
+This version is incomplete and intended for private testing purposes only. 
+You must NOT modify or distribute this program, the source code or parts of it to anyone. 
+You are also expected to keep detailed information of this software confidential, and give 
+feedback only to the developers whose contact information you have been given. Use of this version 
+for scientific work is not recommended, because some features and functions have not yet been confirmed to 
+perform properly and correctly.
+</p>
 <hr>
 <p><h2>GNU GENERAL PUBLIC LICENSE</h2>
 </p><p>

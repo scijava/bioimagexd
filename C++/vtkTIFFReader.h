@@ -8,6 +8,7 @@
 
 
 Copyright (c) 1993-2001 Ken Martin, Will Schroeder, Bill Lorensen 
+Copyright (c) 2005 Kalle Pahajoki. Modifications for raw mode support
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without

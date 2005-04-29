@@ -1,45 +1,28 @@
 # -*- coding: iso-8859-1 -*-
 """
- Unit: DataUnit.py
- Project: Selli
- Created: 03.11.2004
- Creator: JM
+ Unit: CorrectedSourceDataUnit.py
+ Project: BioImageXD
+ Created: 01.01.2004, KP
  Description: Classes for 4D DataUnits
 
- Modified: 09.11.2004 JM
-    - modified: SourceDataUnit.__init__()
-    - added: SourceDataUnit.setDataSource()
-           09.11.2004 KP - getTimePoint() uses DataSource for reading timepoints
-                           from disk
+ Modified: 01.01.2005 KP - Split the class from DataUnit.py to a module of it's own
 
-           10.11.2004 JM - numerous bug fixes made and compliance with class 
-                           diagrams checked
+ Copyright (C) 2005  BioImageXD Project
+ See CREDITS.txt for details
 
-           24.11.2004 JM - Added validity checks to set-methods,
-                           class ProcessedSourceDataUnit added
+ This program is free software; you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation; either version 2 of the License, or
+ (at your option) any later version.
 
-           25.11.2004 JV - Added VSIA
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
 
-           26.11.2004 JM - more comments added
-           09.12.2004 KP - Added method for intepolating intensity transfer 
-                           functions
-           10.12.2004 JV - set/getNeighborhood, 
-                           set/getProcessingSolitaryThreshold,
-                           passes settings to DataUnitProcessing
-           11.12.2004 JV - Added: doProcessing, does not work
-           13.12.2004 JV - Processing and saving works
-           14.12.2004 JM - More validity checks added
-           14.12.2004 JV,JM - Loading of settings in ProcessedSourceDataUnit
-           17.12.2004 JV - Handles the settings to module
-           04.01.2005 JV - VSIASourceDataUnit saves and loads settings
-
- Selli includes the following persons:
- JH - Juha Hyytiäinen, juhyytia@st.jyu.fi
- JM - Jaakko Mäntymaa, jahemant@cc.jyu.fi
- KP - Kalle Pahajoki, kalpaha@st.jyu.fi
- JV - Jukka Varsaluoma, varsa@st.jyu.fi
-
- Copyright (c) 2004 Selli Project.
+ You should have received a copy of the GNU General Public License
+ along with this program; if not, write to the Free Software
+ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
 __author__ = "Selli Project <http://sovellusprojektit.it.jyu.fi/selli/>"

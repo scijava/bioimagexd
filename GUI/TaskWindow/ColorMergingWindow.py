@@ -3,8 +3,7 @@
 """
  Unit: ColorCombinationWindow.py
  Project: Selli
- Created: 10.11.2004
- Creator: JV
+ Created: 10.11.2004, JV
  Description:
 
  A wxPython Dialog window that is used to control the settings for the
@@ -29,13 +28,22 @@
             28.01.2005 KP - Changed the class over to wxPython
             02.02.2005 KP - Converted the class to use a notebook
 
- Selli includes the following persons:
- JH - Juha Hyytiäinen, juhyytia@st.jyu.fi
- JM - Jaakko Mäntymaa, jahemant@cc.jyu.fi
- KP - Kalle Pahajoki, kalpaha@st.jyu.fi
- JV - Jukka Varsaluoma,varsa@st.jyu.fi
+ Copyright (C) 2005  BioImageXD Project
+ See CREDITS.txt for details
 
- Copyright (c) 2004 Selli Project.
+ This program is free software; you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation; either version 2 of the License, or
+ (at your option) any later version.
+
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with this program; if not, write to the Free Software
+ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 __author__ = "Selli Project <http://sovellusprojektit.it.jyu.fi/selli/>"
 __version__ = "$Revision: 1.28 $"
