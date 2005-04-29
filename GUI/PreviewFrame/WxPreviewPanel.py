@@ -3,8 +3,7 @@
 """
  Unit: WxPreviewPanel.py
  Project: BioImageXD
- Created: 24.03.2005
- Creator: KP
+ Created: 24.03.2005, KP
  Description:
 
  A panel that can display previews of optical slices of volume data independent
@@ -60,6 +59,7 @@ class WxPreviewPanel(wx.ScrolledWindow):
         self.zoomFactor=1
         self.singleslice=0
         self.scrollTo=None
+        self.paintPreview()
         self.Bind(wx.EVT_PAINT,self.OnPaint)
 
         self.Bind(wx.EVT_LEFT_DOWN,self.markRubberband)
@@ -126,7 +126,6 @@ class WxPreviewPanel(wx.ScrolledWindow):
         self.setZoomFactor(ImageOperations.getZoomFactor((x2-x1),(y2-y1),w,h))
         
         self.scrollTo=(self.zoomFactor*x1,self.zoomFactor*y1)
-        
         
         self.updatePreview()
         
@@ -238,12 +237,7 @@ class WxPreviewPanel(wx.ScrolledWindow):
             z=0
         self.slice=ImageOperations.vtkImageDataToWxImage(self.imagedata,z)
         self.paintPreview()
-        #self.Refresh()
-        #if not self.yielding:
-        #    self.yielding+=1
-        #    wx.SafeYield()
-        #self.yielding-=1
-
+        #wx.SafeYield()
         #self.updateScrolling()
         wx.FutureCall(50,self.updateScrolling)
     
@@ -282,15 +276,15 @@ class WxPreviewPanel(wx.ScrolledWindow):
         """
         dc = self.dc = wx.BufferedDC(wx.ClientDC(self),self.buffer)
         dc.BeginDrawing()
-#        dc = wx.PaintDC(self)
-#        self.DoPrepareDC(dc)
-        #x,y=self.mysize
-        #dc.SetClippingRegion(0,0,x,y)
+
         if not self.slice:
+            print "Drawing black"
             dc.SetBackground(wx.Brush(wx.Colour(0,0,0)))
             dc.SetPen(wx.Pen(wx.Colour(0,0,0),0))
             dc.SetBrush(wx.Brush(wx.Color(0,0,0)))
             dc.DrawRectangle(0,0,self.size[0],self.size[1])
+            dc.EndDrawing()
+            self.dc = None
             return
         bmp=self.slice.ConvertToBitmap()
 

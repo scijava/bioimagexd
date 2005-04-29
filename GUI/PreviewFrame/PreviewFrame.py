@@ -56,25 +56,7 @@ import wx
 
 ZOOM_TO_FIT=-1
 
-myEVT_TIMEPOINT_CHANGED=wx.NewEventType()
-EVT_TIMEPOINT_CHANGED=wx.PyEventBinder(myEVT_TIMEPOINT_CHANGED,1)
-
-myEVT_ZSLICE_CHANGED=wx.NewEventType()
-EVT_ZSLICE_CHANGED=wx.PyEventBinder(myEVT_ZSLICE_CHANGED,1)
-
-class ChangeEvent(wx.PyCommandEvent):
-    """
-    Class: ChangeEvent
-    Created: 25.03.2005, KP
-    Description: An event type that represents value of zslider or timepoint slider
-    """
-    def __init__(self,evtType,id):
-        wx.PyCommandEvent.__init__(self,evtType,id)
-        self.changeTo=0
-    def getValue(self):
-        return self.changeTo
-    def setValue(self,val):
-        self.changeTo=val
+from Events import *
 
 class PreviewFrame(wx.Panel):
     """

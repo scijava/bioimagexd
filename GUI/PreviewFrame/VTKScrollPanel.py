@@ -3,8 +3,7 @@
 """
  Unit: VTKScrollPanel.py
  Project: BioImageXD
- Created: 19.03.2005
- Creator: KP
+ Created: 19.03.2005, KP
  Description:
 
  A panel that has a wxVTKRenderWindow and depending on a defined maximum
@@ -25,8 +24,8 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 import wx
 
-from vtk.wx.wxVTKRenderWindowInteractor import *
-from vtk.wx.wxVTKRenderWindow import *
+from vtk.wx.wxVTKRenderWindowInteractor import wxVTKRenderWindowInteractor
+from vtk.wx.wxVTKRenderWindow import wxVTKRenderWindow
 
 class VTKScrollPanel(wx.Panel):
     """
