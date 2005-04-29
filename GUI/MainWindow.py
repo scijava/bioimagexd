@@ -56,6 +56,8 @@ import ImportDialog
 import ExportDialog
 import RenderingInterface
 
+import Visualization
+
 import InfoWidget
 
 import Dialogs
@@ -314,13 +316,16 @@ class MainWindow(wx.Frame):
             "select a dataset series and try again.\n","No dataset selected")
             return
         dataunit = selectedFiles[0]
-        renderingInterface=RenderingInterface.getRenderingInterface()
-        renderingInterface.setOutputPath(".")
-        renderingInterface.setTimePoints([0])
-        ctf = dataunit.getColorTransferFunction()
-        imagedata = dataunit.getTimePoint(0)
-        renderingInterface.doRendering(preview=imagedata,ctf=ctf)
+##        renderingInterface=RenderingInterface.getRenderingInterface()
+##        renderingInterface.setOutputPath(".")
+##        renderingInterface.setTimePoints([0])
+##        ctf = dataunit.getColorTransferFunction()
+##        imagedata = dataunit.getTimePoint(0)
+##        renderingInterface.doRendering(preview=imagedata,ctf=ctf)
 
+        vis=Visualization.VisualizationFrame(self)
+        vis.setDataUnit(dataunit)
+        vis.Show()
         
 
     def onMenuRender(self,evt):
