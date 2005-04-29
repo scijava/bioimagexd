@@ -55,13 +55,13 @@ def showerror(parent,message,title,flags=wx.OK|wx.ICON_ERROR):
     showmessage(parent,message,title,flags)
 
     
-def askcolor(**kws):
+def askcolor(*args,**kws):
     """
     Method: askcolor()
     Created: 28.01.2005, KP
     Description: A method to input a color from user
     """    
-    dlg = wx.ColourDialog(self)
+    dlg = wx.ColourDialog(None)
     dlg.GetColourData().SetChooseFull(True)
     if dlg.ShowModal()==wx.ID_OK:
         gcolor=dlg.GetColourData()
