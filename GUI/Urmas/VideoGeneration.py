@@ -40,6 +40,9 @@ class VideoGeneration(wx.Dialog):
     """
     def __init__(self,parent,control):
         wx.Dialog.__init__(self,parent,-1,"Rendering %s"%control.getDataUnit().getName())
+        self.renderingInterface = RenderingInterface.getRenderingInterface(1)
+        self.renderingInterface.setParent(parent)
+
         self.control = control
         self.frames = self.control.getFrames()
         self.fps = self.control.getFrames() / float(self.control.getDuration())
@@ -60,7 +63,7 @@ class VideoGeneration(wx.Dialog):
         self.mainsizer.Add(self.btnsizer,(5,0),flag=wx.EXPAND|wx.RIGHT|wx.LEFT)
         
         wx.EVT_BUTTON(self,wx.ID_OK,self.onOkButton)
-
+        
         self.SetSizer(self.mainsizer)
         self.SetAutoLayout(True)
         self.mainsizer.Fit(self)

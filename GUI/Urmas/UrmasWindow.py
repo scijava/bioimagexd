@@ -209,7 +209,7 @@ class UrmasWindow(wx.Frame):
         """
         if event.GetId() == self.ID_RENDER:
             video=VideoGeneration.VideoGeneration(self,self.control)
-            video.ShowModal()
+            video.Show()
             
             #self.control.renderProject(0)
         else:

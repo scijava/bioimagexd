@@ -50,7 +50,7 @@ class UrmasRenderer:
         Created: 04.04.2005, KP
         Description: Initialization
         """    
-        self.renderingInterface = RenderingInterface.getRenderingInterface()
+        self.renderingInterface = RenderingInterface.getRenderingInterface(1)
         self.oldTimepoint=-1
 
     def startMayavi(self,control):
@@ -82,8 +82,8 @@ class UrmasRenderer:
         self.dataUnit = control.getDataUnit()
         self.duration = duration = control.getDuration()
         self.frames = frames = control.getFrames()
-        if not preview and not self.renderingInterface.isMayaviRunning():
-            Dialogs.showerror(self.control.window,"Cannot render project: mayavi is not running","Mayavi is not running")
+        if not preview and not self.renderingInterface.isVisualizationSoftwareRunning():
+            Dialogs.showerror(self.control.window,"Cannot render project: visualization software is not running","Visualizer is not running")
             return -1
         if kws.has_key("size"):
             self.renderingInterface.setRenderWindowSize(kws["size"])
@@ -93,8 +93,9 @@ class UrmasRenderer:
             self.renderingInterface.setCurrentTimepoint(0)
             
             self.renwin = self.renderingInterface.getRenderWindow() 
-            self.ren = self.renwin.get_renderer()
-            if self.renderingInterface.isMayaViModuleLoaded() == False:
+            print "self.renwin=",self.renwin
+            self.ren = self.renderingInterface.getRenderer()
+            if self.renderingInterface.isVisualizationModuleLoaded() == False:
                 Dialogs.showwarning(self,"You must specify some module to MayaVi first!","Oops!")
                 return
                 
