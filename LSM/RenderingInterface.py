@@ -37,10 +37,18 @@ import wx
 import time
 import sys
 
-rendint=None
 
-def getRenderingInterface():
-    global rendint
+rendint=None
+nonmayavi=None
+
+
+
+def getRenderingInterface(mayavi=0):
+    global rendint,nonmayavi
+    if mayavi:
+        if not nonmayavi:
+            nonmayavi=LightRenderingInterface.LightRenderingInterface()
+        return nonmayavi
     if not rendint:
         rendint=RenderingInterface()
     return rendint
@@ -129,6 +137,14 @@ class RenderingInterface:
         """        
         return self.mayavi.get_render_window()
         
+    def getRenderer(self):
+        """
+        Method: getRenderer
+        Created: 28.04.2005, KP
+        Description: Returns the renderer
+        """        
+        return self.mayavi.get_render_window().GetRenderer()
+        
     def render(self):
         self.mayavi.root.lift()
         #return self.mayavi.Render()
@@ -171,7 +187,7 @@ class RenderingInterface:
         Description: Stop tkinter event loop if mayavi is closed
         """
         self.calling=0
-        if not self.isMayaviRunning():
+        if not self.isVisualizationSoftwareRunning():
             self.stop=1
         
 
@@ -220,9 +236,9 @@ class RenderingInterface:
         self.settings_mode=0
         self.stop=1
 
-    def isMayaviRunning(self):
+    def isVisualizationSoftwareRunning(self):
         """
-        Method: isMayaviRunning()
+        Method: isVisualizationSoftwareRunning()
         Created: 11.1.2005, KP
         Description: A method that returns true if a mayavi window exists that 
                      can be used for rendering
@@ -252,9 +268,9 @@ class RenderingInterface:
         return self.mm
 
         
-    def isMayaViModuleLoaded(self):
+    def isVisualizationModuleLoaded(self):
         """
-        Method: isMayaviModuleLoaded()
+        Method: isVisualizationModuleLoaded()
         Created: 22.02.2005, KP
         Description: A method that returns true if a mayavi has a visualization module loaded.
         """
@@ -263,9 +279,9 @@ class RenderingInterface:
             return 0
         return 1
         
-    def createMayaVi(self):
+    def createVisualizerWindow(self):
         """
-        Method: createMayaVi()
+        Method: createVisualizerWindow()
         Created: 22.02.2005, KP
         Description: A method that creates an instance of mayavi
         """    
@@ -315,10 +331,10 @@ class RenderingInterface:
 
         # If there is no mayavi instance to do the rendering
         # create one
-        print "is mayavi running?",self.isMayaviRunning()
-        if not self.isMayaviRunning():
+        print "is mayavi running?",self.isVisualizationSoftwareRunning()
+        if not self.isVisualizationSoftwareRunning():
             print "Creating mayavi"
-            self.createMayaVi()
+            self.createVisualizerWindow()
             
         Logging.info("Mayavi exists:",self.mayavi.root.winfo_exists(), "it's state:",self.mayavi.root.state())
 
@@ -395,7 +411,7 @@ class RenderingInterface:
         self.setDataSet(data)
 
 
-        if not self.isMayaviRunning():
+        if not self.isVisualizationSoftwareRunning():
             if self.settings_mode:
                 Logging.error("Failed to create settings file",
                 "The settings file could not be written, because "
@@ -413,7 +429,7 @@ class RenderingInterface:
         # Don't need to call Render since lift will already do it
         #self.mayavi.Render()
 
-        if self.isMayaviRunning():
+        if self.isVisualizationSoftwareRunning():
             #self.mayavi.root.update()
             #self.mayavi.root.lift()
             self.mayavi.root.focus_force()
@@ -515,3 +531,4 @@ class RenderingInterface:
             Logging.info("Updating datasource")
             ds.Update()
             ds.update_references()
+import LightRenderingInterface
