@@ -89,6 +89,14 @@ class VisualizationModule:
         self.timepoint = value
         self.data = self.dataUnit.getTimePoint(value)
         self.updateRendering()
+        
+    def disableRendering(self):
+        """
+        Method: disableRendering()
+        Created: 30.04.2005, KP
+        Description: Disable the rendering of this module
+        """          
+        self.mapper.RemoveActor(self.actor)
 
 class VolumeModule(VisualizationModule):
     """
@@ -173,11 +181,15 @@ class VolumeModule(VisualizationModule):
         self.method=method
         #Ray Casting, RGBA Ray Casting, Texture Mapping, MIP
         composites = [vtk.vtkVolumeRayCastCompositeFunction,
-                      vtk.vtkVolumeRayCastRGBCompositeFunction,None,
-                      vtk.vtkVolumeRayCastMIPFunction]
-        if method in [0,1,3]:
+                      vtk.vtkVolumeRayCastRGBCompositeFunction,
+                      None,
+                      vtk.vtkVolumeRayCastMIPFunction,
+                      vtk.vtkVolumeRayCastIsosurfaceFunction
+                      ]
+        if method in [0,1,3,4]:
             self.mapper = vtk.vtkVolumeRayCastMapper()
-            self.mapper.SetVolumeRayCastFunction(composites[method]())
+            self.function = composites[method]()
+            self.mapper.SetVolumeRayCastFunction(self.function)
         else: # texture mapping
             self.mapper = vtk.vtkVolumeTextureMapper2D()
         
@@ -191,151 +203,140 @@ class VolumeModule(VisualizationModule):
         """             
         self.mapper.SetInput(self.data)
         self.wxrenwin.Render()
+        
+    def disableRendering(self):
+        """
+        Method: disableRendering()
+        Created: 30.04.2005, KP
+        Description: Disable the rendering of this module
+        """          
+        self.mapper.RemoveVolume(self.volume)
+        
     
-
-
-class ModuleConfiguration(wx.MiniFrame):
+class SurfaceModule(VisualizationModule):
     """
-    Class: ModuleConfiguration
+    Class: SurfaceModule
     Created: 28.04.2005, KP
-    Description: A base class for module configuration dialogs
+    Description: A surface rendering module
     """    
-    def __init__(self,parent,name):
-        """
-        Method: __init__(parent)
-        Created: 28.04.2005, KP
-        Description: Initialization
-        """     
-        wx.MiniFrame.__init__(self,parent,-1,"Configure: %s"%name)
-        self.sizer = wx.GridBagSizer()
-        self.parent = parent
-        self.name = name
-        
-        self.buttonBox = wx.BoxSizer(wx.HORIZONTAL)
-        self.okButton = wx.Button(self,-1,"Ok")
-        self.applyButton = wx.Button(self,-1,"Apply")
-        self.cancelButton = wx.Button(self,-1,"Cancel")
-        
-        self.okButton.Bind(wx.EVT_BUTTON,self.onOk)
-        self.applyButton.Bind(wx.EVT_BUTTON,self.onApply)
-        self.cancelButton.Bind(wx.EVT_BUTTON,self.onCancel)
-        
-        
-        self.buttonBox.Add(self.okButton)
-        self.buttonBox.Add(self.applyButton)
-        self.buttonBox.Add(self.cancelButton)
-        
-        self.contentSizer = wx.GridBagSizer()
-        self.sizer.Add(self.contentSizer,(0,0))
-        
-        self.line = wx.StaticLine(self,-1)
-        self.sizer.Add(self.line,(1,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
-        self.sizer.Add(self.buttonBox,(2,0))
-        
-        self.initializeGUI()
-        
-        self.SetSizer(self.sizer)
-        self.SetAutoLayout(1)
-        self.sizer.Fit(self)
-        
-        self.findModule()
-        
-    def onCancel(self,event):
-        """
-        Method: onCancel()
-        Created: 28.04.2005, KP
-        Description: Close this dialog
-        """     
-        self.Close()
-        
-    def onOk(self,event):
-        """
-        Method: onApply()
-        Created: 28.04.2005, KP
-        Description: Apply changes and close
-        """ 
-        self.onApply(None)
-        self.Close()
-        
-    def findModule(self):
-        """
-        Method: findModule()
-        Created: 28.04.2005, KP
-        Description: Refresh the modules affected by this configuration
-        """     
-        modules = self.parent.getModules()
-        for module in modules:
-            if module.getName() == self.name:
-                self.setModule(module)
-                print "Configuring module",module
-                return
-
-class VolumeConfiguration(ModuleConfiguration):
     def __init__(self,parent):
         """
         Method: __init__(parent)
         Created: 28.04.2005, KP
         Description: Initialization
         """     
-        ModuleConfiguration.__init__(self,parent,"Volume Rendering")
-        self.method=0
-    
-    def initializeGUI(self):
+        VisualizationModule.__init__(self,parent)   
+        self.name = "Surface Rendering"
+        self.normals = vtk.vtkPolyDataNormals()
+        self.generateNormals = 0
+        self.volumeModule = None
+        self.isoValue = 128
+        self.contourRange = (-1,-1,-1)
+        
+        #self.normals.SetFeatureAngle(45)
+        self.setMethod(1)
+        self.init=0
+        self.mapper = vtk.vtkPolyDataMapper()
+        
+        self.actor = self.lodActor = vtk.vtkLODActor()
+        self.lodActor.SetMapper(self.mapper)
+        self.lodActor.SetNumberOfCloudPoints(1000)
+        
+        self.parent.getRenderer().AddActor(self.lodActor)
+        print "adding actor"
+        #self.updateRendering()
+        
+    def setDataUnit(self,dataunit):
         """
-        Method: initializeGUI()
+        Method: setDataUnit(self)
         Created: 28.04.2005, KP
-        Description: Initialization
+        Description: Sets the dataunit this module uses for visualization
+        """       
+        VisualizationModule.setDataUnit(self,dataunit)
+        print "got dataunit",dataunit
+            
+    def setIsoValue(self,isovalue):
+        """
+        Method: setIsoValue(isovalue)
+        Created: 30.04.2005, KP
+        Description: Set the isovalue to be shown
         """  
-        self.colorLbl = wx.StaticText(self,-1,"Dataset palette:")
-        #self.colorBtn = ColorTransferEditor.CTFButton(self,alpha=1)
-        self.colorPanel = ColorTransferEditor.ColorTransferEditor(self,alpha=1)
-        #self.colorPanel.setColorTransferFunction(self.ctf)
+        self.contourRange = (-1,-1,-1)
+        self.isoValue = isovalue
+        print "Iso value=",self.isoValue
+        
+    def setContourRange(self,start,end,contours):
+        """
+        Method: setContourRange(start,end,contours)
+        Created: 30.04.2005, KP
+        Description: Set the range and number of contours to be generated
+        """             
+        self.isoValue = -1
+        self.contourRange = (start,end,contours)
+        print "contour range=",start,end,contours
 
-        self.contentSizer.Add(self.colorLbl,(0,0))
-        self.contentSizer.Add(self.colorPanel,(1,0))
-        
-        self.methodLbl = wx.StaticText(self,-1,"Volume rendering method:")
-        self.moduleChoice = wx.Choice(self,-1,choices=["Ray Casting","Ray Casting for RGBA datasets","Texture Mapping","Maximum Intensity Projection"])
-        self.moduleChoice.Bind(wx.EVT_CHOICE,self.onSelectMethod)
-      
-        self.contentSizer.Add(self.methodLbl,(2,0))
-        self.contentSizer.Add(self.moduleChoice,(3,0))
-        
-        self.qualityLbl = wx.StaticText(self,-1,"Rendering quality:")
-        self.qualitySlider = wx.Slider(self,value=0, minValue=0,maxValue = 10,
-        style=wx.HORIZONTAL|wx.SL_AUTOTICKS|wx.SL_LABELS,size=(250,-1))
-        self.contentSizer.Add(self.qualityLbl,(4,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
-        self.contentSizer.Add(self.qualitySlider,(5,0))
-        
-    def onSelectMethod(self,event):
+    def setGenerateNormals(self,angle):
         """
-        Method: onSelectMethod
-        Created: 28.04.2005, KP
-        Description: Select the volume rendering method
-        """  
-        self.method = self.moduleChoice.GetSelection()
-        #self.module.setMethod(method)
-      
-    def setModule(self,module):
-        """
-        Method: setModule(module)
-        Created: 28.04.2005, KP
-        Description: Set the module to be configured
-        """  
-        print "Module is",module
-        self.module = module
-        ctf= module.getDataUnit().getColorTransferFunction()
-        self.colorPanel.setColorTransferFunction(ctf)
+        Method: setGenerateNormals(self,angle)
+        Created: 30.04.2005, KP
+        Description: Set the feature angle at which normals are generated
+        """             
+        self.generateNormals = 1
+        self.normals.SetFeatureAngle(angle)
         
-    def onApply(self,event):
+
+    def setMethod(self,method):
         """
-        Method: onApply()
+        Method: setMethod(self,method)
         Created: 28.04.2005, KP
-        Description: Apply the changes
-        """     
-        #if self.colorPanel.isChanged():
-        otf = self.colorPanel.getOpacityTransferFunction()
-        self.module.setOpacityTransferFunction(otf)
-        self.module.setMethod(self.method)
-        self.module.setQuality(self.qualitySlider.GetValue())
-        self.module.updateRendering()
+        Description: Set the rendering method used
+        """             
+        self.method=method
+        if method<2:
+            #Ray Casting, RGBA Ray Casting, Texture Mapping, MIP
+            filters = [vtk.vtkContourFilter,vtk.vtkMarchingCubes]
+            self.contour = filters[method]()
+            if self.volumeModule:
+                self.volumeModule.disableRendering()
+                self.volumeModule = None
+        else:
+            self.disableRendering()
+            self.volumeModule = VolumeModule(self.parent)
+            self.volumeModule.setMethod(4)
+            self.volumeModule.setDataUnit(self.dataUnit)
+            self.volumeModule.showTimepoint(self.timepoint)
+            
+                    
+    def updateRendering(self):
+        """
+        Method: updateRendering()
+        Created: 28.04.2005, KP
+        Description: Update the rendering of this module
+        """             
+        if self.volumeModule:
+            self.volumeModule.function.SetIsoValue(self.isovalue)
+            self.volumeModule.showTimepoint(self.timepoint)
+            return
+        if not self.init:
+            self.init=1
+            self.mapper.ColorByArrayComponent(0,0)
+        self.contour.SetInput(self.data)
+        
+        self.mapper.SetLookupTable(self.dataUnit.getColorTransferFunction())
+        self.mapper.ScalarVisibilityOn()
+        self.mapper.SetScalarRange(0,255)
+        self.mapper.SetColorModeToMapScalars()
+    
+        if self.isoValue != -1:
+            self.contour.SetValue(0,self.isoValue)
+        else:
+            begin,end,n=self.contourRange
+            self.contour.GenerateValues(n,begin,end)
+        if self.generateNormals:
+            self.normals.SetInput(self.contour.GetOutput())
+            self.mapper.SetInput(self.normals.GetOutput())
+        else:
+            self.mapper.SetInput(self.contour.GetOutput())
+        self.wxrenwin.Render()    
+
+

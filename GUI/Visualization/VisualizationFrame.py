@@ -39,6 +39,7 @@ from vtk.wx.wxVTKRenderWindowInteractor import wxVTKRenderWindowInteractor
 from Events import *
 import Dialogs
 from VisualizationModules import *
+from ModuleConfiguration import *
 from Lights import *
 
 class ConfigurationPanel(wx.Panel):
@@ -58,7 +59,7 @@ class ConfigurationPanel(wx.Panel):
         self.parent = parent
         
         self.moduleLbl = wx.StaticText(self,-1,"Rendering module:")
-        self.moduleChoice = wx.Choice(self,-1,choices=["Volume Rendering"])
+        self.moduleChoice = wx.Choice(self,-1,choices=["Volume Rendering","Surface Rendering"])
         self.moduleChoice.SetSelection(0)
         self.moduleLoad = wx.Button(self,-1,"Load")
         self.moduleLoad.Bind(wx.EVT_BUTTON,self.onLoadModule)
@@ -156,7 +157,8 @@ class VisualizationFrame(wx.Frame):
         self.closed =0
         self.renderer=None
         self.timepoint = -1
-        self.mapping= {"Volume Rendering":(VolumeModule,VolumeConfiguration)}#,"Maximum Intensity Projection":MIPModule}
+        self.mapping= {"Volume Rendering":(VolumeModule,VolumeConfiguration),
+                      "Surface Rendering":(SurfaceModule,SurfaceConfiguration)}#,"Maximum Intensity Projection":MIPModule}
         self.modules = []
         wx.Frame.__init__(self,parent,-1,"BioImageXD Visualization",**kws)
 #        wx.Panel.__init__(self,parent,-1)
