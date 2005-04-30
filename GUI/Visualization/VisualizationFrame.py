@@ -33,6 +33,7 @@ __version__ = "$Revision: 1.9 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 import wx
+import time
 
 import vtk
 from vtk.wx.wxVTKRenderWindowInteractor import wxVTKRenderWindowInteractor
@@ -196,8 +197,29 @@ class VisualizationFrame(wx.Frame):
         self.renwin.AddRenderer(self.renderer)
         print "self.renwin=",self.renwin
         print "self.renderer=",self.renderer
+        self.renderer.AddObserver("StartEvent",self.onRenderBegin)
+        self.renderer.AddObserver("EndEvent",self.onRenderEnd)
         self.iren = iren = self.renwin.GetInteractor()
         self.iren.SetInteractorStyle(vtk.vtkInteractorStyleTrackballCamera())
+
+    def onRenderBegin(self,event=None,e2=None):
+        """
+        Method: onRenderBegin
+        Created: 30.04.2005, KP
+        Description: Called when rendering begins
+        """
+        self.rendering=1
+        print "Rendering..."
+        
+    def onRenderEnd(self,event=None,e2=None):
+        """
+        Method: onRenderEnd
+        Created: 30.04.2005, KP
+        Description: Called when rendering begins
+        """
+        print "Rendering done"
+        self.rendering=0
+    
 
     def getRenderer(self):
         """
@@ -253,6 +275,8 @@ class VisualizationFrame(wx.Frame):
         Created: 28.04.2005, KP
         Description: Writes the screen to disk
         """            
+        while self.rendering:
+            time.sleep(0.1)
         writer.SetFileName(filename)
         filter = vtk.vtkWindowToImageFilter()
         filter.SetInput(self.renwin)
