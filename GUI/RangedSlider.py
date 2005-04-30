@@ -67,7 +67,9 @@ class RangedSlider(wx.Slider):
         Created: 06.03.2005, KP
         Description: Initialization
         """        
-        self.ranges.append((startPercent,endPercent,rangeStart,rangeEnd))
+        per=(endPercent-startPercent)/100.0
+        n=self.totalValues*per
+        self.ranges.append((startPercent,endPercent,rangeStart,rangeEnd,n))
     
     def setScaledValue(self,val):
         """
@@ -97,7 +99,9 @@ class RangedSlider(wx.Slider):
         currRange=None
         mytot=0
         for r in self.ranges:
-            if val >=  r[2] and val <= r[3]:
+            smaller=min(r[2],r[3])
+            larger=max(r[2],r[3])
+            if val >=  smaller and val <= larger:
                 currRange=r
                 break
             else:
@@ -105,11 +109,21 @@ class RangedSlider(wx.Slider):
             mytot+=r[4]
 
         distance =  (abs(currRange[3])+abs(currRange[2]))
-        val+=abs(currRange[2])
+        if currRange[3]<currRange[2]:
+            val+=abs(currRange[3])
+        else:
+            val+=abs(currRange[2])
         percent = float(val) / distance
-#        print "percent = ",percent,"mytot=",mytot,"distance=",distance
+        #print "percent = ",percent,"mytot=",mytot,"distance=",distance
         n = self.totalValues / len(self.ranges)
-        return mytot + percent * n
+        #print "Returning %d + %f * %d = "%(mytot,percent,n),mytot+percent*n
+        if currRange[3]<currRange[2]:
+            offset=self.totalValues
+            op=-1
+        else:
+            offset=0
+            op=1
+        return offset+op*(mytot + percent * n)
 
 
     def getScaledValue(self,val=None):
@@ -133,11 +147,17 @@ class RangedSlider(wx.Slider):
             else:
                currRange=self.ranges[-1]
 
-        distance=(currRange[3]-currRange[2])
+        maxi,mini=3,2
+        maxi2,mini2=1,0
+        if currRange[3]<currRange[2]:
+            maxi,mini=mini,maxi
+            maxi2,mini2=mini2,maxi2
+        distance=max(currRange[3],currRange[2])-min(currRange[3],currRange[2])
+        #distance=(currRange[3]-currRange[2])
         # This tells us how far in percent we are along the current range
-        percentOfRange = (percent-currRange[0])/(currRange[1]-currRange[0])
+        percentOfRange = (percent-currRange[mini2])/(currRange[maxi2]-currRange[mini2])
 #        print "distance = ",distance," percentsOfRange=",percentOfRange
-        ret=currRange[2]+distance * percentOfRange
+        ret=currRange[mini]+distance * percentOfRange
         #print "ret=",ret,"percent=",percent
         for i in self.snapPoints:
             if ret>= i[0] and ret<=i[2]:
