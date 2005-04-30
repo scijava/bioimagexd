@@ -164,7 +164,7 @@ class VisualizationFrame(wx.Frame):
 #        wx.Panel.__init__(self,parent,-1)
         self.sizer = wx.GridBagSizer()
         self.wxrenwin = wxVTKRenderWindowInteractor(self,-1,size=(512,512))
-        self.renwin=self.wxrenwin.GetRenderWindow()        
+        
         self.GetRenderWindow=self.wxrenwin.GetRenderWindow
                 
         self.GetRenderer=self.getRenderer
@@ -181,6 +181,8 @@ class VisualizationFrame(wx.Frame):
         self.SetSizer(self.sizer)
         self.SetAutoLayout(1)
         self.sizer.Fit(self)
+        wx.FutureCall(500,self.initializeVTK)
+#        self.initializeVTK()
 
 
     def initializeVTK(self):
@@ -189,12 +191,13 @@ class VisualizationFrame(wx.Frame):
         Created: 29.04.2005, KP
         Description: initialize the vtk renderer
         """
+        self.renwin=self.wxrenwin.GetRenderWindow()        
         self.renderer = vtk.vtkRenderer()
         self.renwin.AddRenderer(self.renderer)
-
+        print "self.renwin=",self.renwin
+        print "self.renderer=",self.renderer
         self.iren = iren = self.renwin.GetInteractor()
         self.iren.SetInteractorStyle(vtk.vtkInteractorStyleTrackballCamera())
-
 
     def getRenderer(self):
         """
@@ -265,6 +268,7 @@ class VisualizationFrame(wx.Frame):
         self.dataUnit = dataunit
         count=dataunit.getLength()
         self.timeslider.SetRange(0,count-1)
+        
 
         
     def getModules(self):
@@ -299,8 +303,7 @@ class VisualizationFrame(wx.Frame):
         Created: 28.04.2005, KP
         Description: Load a visualization module
         """
-        self.initializeVTK()
-
+        #self.initializeVTK()
         if not self.dataUnit:
             Dialogs.showerror(self,"No dataset has been loaded for visualization","Cannot load visualization module")
             return
@@ -308,6 +311,7 @@ class VisualizationFrame(wx.Frame):
         self.modules.append(module)
         module.setDataUnit(self.dataUnit)
         module.showTimepoint(self.timepoint)
+        self.render()
         
     def onChangeTimepoint(self,event):
         """

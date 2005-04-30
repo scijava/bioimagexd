@@ -28,28 +28,15 @@ inclusion in MayaVi."""
 #from vtkRenderWidget import vtkTkRenderWidget
 import wx
 from vtk.wx.wxVTKRenderWindowInteractor import wxVTKRenderWindowInteractor
-#from tkColorChooser import askcolor
 from math import pi, sin, cos, atan2, sqrt
 import vtkpython
-#import vtkPipeline.vtkMethodParser
 import string
 import sys
 import Dialogs
+from RangedSlider import *
 
-def colorBitmap(bmp,color):
-    img=bmp.ConvertToImage()
-    w,h=bmp.GetSize()
-    bmp2=wx.EmptyBitmap(w,h)
-    dc = wx.MemoryDC()
-    dc.SelectObject(bmp2)
-    dc.BeginDrawing()
-    dc.SetBackground(wx.Brush(color))
-    dc.DrawRectangle(0,0,w,h)
-    dc.DrawBitmap(bmp,0,0)
-    dc.EndDrawing()
-    dc.SelectObject(wx.NullBitmap)
-    dc = None    
-    return bmp2
+
+import  wx.lib.colourselect as  csel
 
 
 class Light:
@@ -58,6 +45,7 @@ class Light:
         self.glyph = LightGlyph()
         self.el = 0
         self.az = 0
+        self.saved=[]
 
     def switchon(self):
         self.source.SwitchOn()
@@ -136,11 +124,13 @@ class Light:
         self.saved.insert(3, self.source.GetIntensity())
 
     def restore(self):
-        self.source.SetSwitch(self.saved[0])
-        self.source.SetPosition(self.saved[1])
-        self.source.SetColor(self.saved[2])
-        self.source.SetIntensity(self.saved[3])
-        del(self.saved)
+        if len(self.saved):
+            self.source.SetSwitch(self.saved[0])
+            self.source.SetPosition(self.saved[1])
+            self.source.SetColor(self.saved[2])
+            self.source.SetIntensity(self.saved[3])
+            del(self.saved)
+            self.saved=[]
 
     def update(self):
         self.sync()
@@ -224,16 +214,16 @@ class LightGlyph:
         self.capActor.VisibilityOff()
 
 
-def ArcActor(from_, to, rad=1.0, axis='z', n=20):
-    from_ = from_*pi/180
+def ArcActor(fromValue, to, rad=1.0, axis='z', n=20):
+    fromValue = fromValue*pi/180
     to = to*pi/180
-    angle = to - from_
+    angle = to - fromValue
     
     ppnts = vtkpython.vtkPoints()
     ppnts.SetNumberOfPoints(n)
     
     for i in range(0, n):
-        theta = from_+i*angle/(n-1)
+        theta = fromValue+i*angle/(n-1)
         if axis == 'x':
             ppnts.InsertPoint(i,0.0, cos(theta), sin(theta))
         elif axis == 'y':
@@ -259,40 +249,14 @@ def ArcActor(from_, to, rad=1.0, axis='z', n=20):
     actor.GetProperty().SetColor(1,0,0)
     return actor
 
-
-class LightSwitch(wx.Panel):
-    led_data = "\
-    #define small_led_width 9\
-    #define small_led_height 5\
-    static unsigned char small_led_bits[] = {\
-    0x00, 0x00, 0x7c, 0x00, 0x7c, 0x00, 0x7c, 0x00, 0x00, 0x00 };"
-
+        
+class LightSwitch(wx.CheckBox):
     def __init__(self, master, id, command=None):
-        wx.Panel.__init__(self,master,-1)
-        self.sizer=wx.GridBagSizer()
-        #Tkinter.Frame.__init__(self, master, borderwidth=2, relief='groove')
+        wx.CheckBox.__init__(self,master,-1)
         self.id = id
+        self.Bind(wx.EVT_CHECKBOX,self.flip)
         self.command = command
         self.light = None
-        #self.button = Tkinter.Button(self, borderwidth=2)
-        
-        #self.led = Tkinter.BitmapImage(data=self.led_data)
-        self.led = wx.Bitmap(self.led_data)
-        self.button = wx.BitmapButton(self,-1,self.led)
-        #self.led = wx.Image()
-        #self.pad = Tkinter.Frame(self, height=5)
-        self.pad = wx.Panel(self,-1,size=(-1,5))
-
-        #self.button.configure(image=self.led, command=self.flip)
-        #self.button.configure(padx=0, pady=0)
-        #self.pad.grid(row=0)
-        #self.button.grid(row=1)
-        #self.disable()
-        self.sizer.Add(self.pad,(0,0))
-        self.sizer.Add(self.button,(1,0))
-        self.SetSizer(self.sizer)
-        self.SetAutoLayout(1)
-        self.sizer.Fit(self)
         self.Enable(0)
 
     def attach(self, light):
@@ -300,7 +264,7 @@ class LightSwitch(wx.Panel):
         self.setposition(light.getstate())
         self.enable()
 
-    def flip(self):
+    def flip(self,event=None):
         if self.light.getstate() == 'off':
             self.setposition('on')
             self.light.switchon()
@@ -313,116 +277,69 @@ class LightSwitch(wx.Panel):
                 self.command(self.id,'off')
 
     def setposition(self, pos):
-        self.sizer.Detach(self.button)
-        self.sizer.Detach(self.pad)
         if pos == 'on' :
             self.sw_state = 1
-            self.sizer.Add(self.button,(0,0))
-            self.sizer.Add(self.pad,(1,0))
-            #self.button.grid(row=0)
-            #self.pad.grid(row=1)
+            self.SetValue(1)
         else:
             self.sw_state = 0
-            self.sizer.Add(self.button,(1,0))
-            self.sizer.Add(self.pad,(0,0))
-            #self.pad.grid(row=0)
-            #self.button.grid(row=1)
+            self.SetValue(0)
 
     def ledon(self):
         print "ledon"
-        self.led = colorBitmap(self.led,(255,0,0))
-        self.button.SetBitmapLabel(self.led)
-        #self.led.configure(foreground='red')
-
+        pass
     def ledoff(self):
         print "ledoff"
-        self.led = colorBitmap(self.led,(0,0,0))
-        self.button.SetBitmapLabel(self.led)
-        #self.led.configure(foreground='black')
 
     def enable(self):
-        self.button.Enable(1)
-#        self.button.configure(state='normal')
+        self.Enable(1)
 
     def disable(self):
-        self.button.Enable(0)
-        #self.button.configure(state='disabled')
+        self.Enable(0)
 
     def update(self):
         self.setposition(self.light.getstate())
 
 
-class ScrollScale(wx.ScrollBar):
-    def __init__(self, master, from_=0.0, to=1.0, size=0.1, command=None,
+class ScrollScale(RangedSlider):
+    def __init__(self, master, fromValue=0.0, to=1.0, command=None,
                   **kw):
-        #Tkinter.Scrollbar.__init__(self, master, kw)
-        #Tkinter.Scrollbar.configure(self, command=self.handle, repeatinterval=20)
-        #wx.ScrollBar.__init__(self,master,-1,minValue = from_, maxValue = to)
-        wx.ScrollBar.__init__(self,master,-1)
-        self.SetScrollbar(from_,1,to,1,1)
+        if kw.has_key("orient"):
+            if kw["orient"]=="vertical":
+                stl=wx.SB_VERTICAL
+            else:
+                stl=wx.SB_HORIZONTAL
+        RangedSlider.__init__(self,master,-1,1024,style=stl)
+        self.setRange(0,100,fromValue,to)
         self.Bind(wx.EVT_SCROLL,self.handle)
-        self.from_ = from_
-        self.to = to
-        self.size = size
-        self.rendercmd=None
-        self.hsize = size/2
-        if to > from_:
-            self.unit = 1.0
-            self.page = 15.0
-        else:
-            self.unit = -1.0
-            self.page = -15.0
-        self.val = 0.5*(from_+to)
+        self.oldval=-0xdeadbeef
+        self.set((fromValue+to)*0.5)
         self.command = command
         #self.event_add("<<Update>>","<ButtonRelease>")
         self.redraw()
 
-    def mapv(self, val):
-        val = (val - self.from_)/(self.to - self.from_)
-        return (val*(1.0-self.size) + self.hsize)
-
-    def imapv(self, val):
-        val = (val-self.hsize)/(1.0-self.size)
-        return (val*(self.to-self.from_)+self.from_)
 
     def set(self, val):
-        changed = 0
-        if val < min(self.from_, self.to):
-            val = min(self.from_, self.to)
-        elif val > max(self.from_, self.to):
-            val = max(self.from_, self.to)
-        if val != self.val:
+        changed=0
+        if val != self.oldval:
             changed = 1
-            self.val = val
+            self.setScaledValue(val)
             self.redraw()
+            self.oldval=val
         return changed
 
     def handle(self, event):
-        b=self.GetThumbPosition()
-        print "Handle, b=",b
-        newval = self.imapv(float(b)+self.hsize)
-##        if a == "moveto":
-##            newval = self.imapv(float(b)+self.hsize)
-##        elif c == "units":
-##            newval = self.val+float(b)*self.unit
-##            self.event_generate("<<Update>>")
-##        else:
-##            newval = self.val+float(b)*self.page
-##            self.event_generate("<<Update>>")
+        newval=self.getScaledValue()
+        #print "Handle, newval=",newval
         if self.command != None and self.set(newval) == 1:
-            self.command(self.val)
+            self.command(newval)
+        self.update_event()
 
     def redraw(self):
-        val = self.mapv(self.val)
-        #Tkinter.Scrollbar.set(self, val-self.hsize, val+self.hsize)
-        #self.SetValue(val)
-        self.SetThumbPosition(val)
-        if self.rendercmd:
-            self.rendercmd('world')    
-
+        pass
+        
 class ElTool(ScrollScale):
     def __init__(self, master, ren, rendercmd):
-        ScrollScale.__init__(self, master, size=.1, from_=90, to=-90,
+        ScrollScale.__init__(self, master, fromValue=90 , to=-90,
                             orient='vertical', width=12,
                             command = self.apply)
         self.rendercmd = rendercmd
@@ -432,6 +349,8 @@ class ElTool(ScrollScale):
         ren.AddActor(self.axis)
         #self.bind("<<Update>>", lambda e, s=self, w='world': s.rendercmd(w))
         
+    def update_event(self):
+        self.rendercmd('world')
 
     def apply(self, el, norender=0):
         offset = sin(el/180.0*pi)
@@ -457,7 +376,7 @@ class ElTool(ScrollScale):
 
 class AzTool(ScrollScale):
     def __init__(self, master, ren, rendercmd):
-        ScrollScale.__init__(self, master, size=.1, from_=-180, to=180,
+        ScrollScale.__init__(self, master, fromValue=-180, to=180,
                             orient='horizontal', width=12,
                             command = self.apply)
         self.rendercmd = rendercmd
@@ -466,6 +385,9 @@ class AzTool(ScrollScale):
         self.axis.GetProperty().SetColor(1.0,0.0,0.0)
         ren.AddActor(self.axis)
         #self.bind("<<Update>>", lambda e, s=self, w='world': s.rendercmd(w))
+
+    def update_event(self):
+        self.rendercmd('world')
 
     def apply(self, az, norender=0):
         self.axis.SetOrientation(0.0, az,0.0)
@@ -486,107 +408,61 @@ class AzTool(ScrollScale):
         self.setaz(self.light.getazmuth())
         
 
-class IntensityTool(wx.Slider):
+class IntensityTool(RangedSlider):
     def __init__(self, master, rendercmd):
-        #Tkinter.Scale.__init__(self, master, orient='vertical',
-        #                       width=10, showvalue=0,
-        #                       sliderlength=15, from_=1.0, to=0.0,
-        #                       resolution=.01, sliderrelief='ridge')
-        #self.bind("<ButtonRelease>", self.handler)
-        wx.Slider.__init__(self,master,-1,size=(10,-1),minValue=0,maxValue=15,style=wx.SL_VERTICAL)
+        RangedSlider.__init__(self,master,-1,200,size=(300,-1))
+        self.setRange(0,100,0.0,2.0)
         self.Bind(wx.EVT_SCROLL,self.handler)
         light =  None
         self.rendercmd = rendercmd
 
     def handler(self, event):
-        
-        val=self.GetValue()
-        print "handler! val=",val,val/15.0
-        val/=15.0
+        val=self.getScaledValue()
+        print "val=",val
         if self.light != None:
             self.light.setintensity(val)
             self.rendercmd('world')
 
     def attach(self, light):
         self.light = light
-        self.SetValue(light.getintensity()*15.0)
+        self.setScaledValue(light.getintensity())
 
     def update(self):
-        val=self.light.getintensity()*15.0
-        self.SetValue(val)
+        val=self.light.getintensity()
+        self.setScaledValue(val)
 
 
-class ColorTool(wx.BitmapButton):
-    swatch_data = '#define solid_width 14\
-    #define solid_height 14\
-    static unsigned char solid_bits[] = {\
-    0xff, 0x3f, 0xff, 0x3f, 0xff, 0x3f, 0xff, 0x3f, 0xff, 0x3f, 0xff, 0x3f,\
-    0xff, 0x3f, 0xff, 0x3f, 0xff, 0x3f, 0xff, 0x3f, 0xff, 0x3f, 0xff, 0x3f,\
-    0xff, 0x3f, 0xff, 0x3f };'
+class ColorTool(csel.ColourSelect):
 
     def __init__(self, master, rendercmd):
-        #self.swatch = Tkinter.BitmapImage(data=self.swatch_data)
-        self.swatch = wx.Bitmap(self.swatch_data)
-#        Tkinter.Button.__init__(self, master, image=self.swatch,
-#                                relief='raised',
-#                                command=self.handler, width=12, height=12)
-        wx.BitmapButton.__init__(self,master,-1,self.swatch,size=(32,32))
-        self.Bind(wx.EVT_BUTTON,self.handler)
+        #wx.BitmapButton.__init__(self,master,-1,self.swatch,size=(32,32))
+        csel.ColourSelect.__init__(self,master,-1,"",size=(32,32))
+        #self.Bind(wx.EVT_COLOURSELECT,self.handler)
 
         self.light=None
         self.rendercmd = rendercmd
         #self.configure(state='disabled')
         self.Enable(0)
     
-    def handler(self,event):
-        r, g, b = self.light.getcolor()
-        color = Dialogs.askcolor((r, g, b))
-        if color != (None, None) :
-            self.swatch = colorBitmap(self.swatch,color[0])
-            self.SetBitmapLabel(self.swatch)
-            #self.swatch.configure(foreground="#%02x%02x%02x" % color[0])
-            self.light.setcolor(color[0])
-            self.rendercmd('world')
+    def OnChange(self):
+        color=self.GetValue()
+        r,g,b=color.Red(),color.Green(),color.Blue()
+        print "Setting light color to ",(r,g,b)
+        self.light.setcolor((r,g,b))
+        self.rendercmd('world')
             
     def attach(self, light):
         self.light = light
         self.Enable(1)
-        #self.configure(state='normal')
         r, g, b = self.light.getcolor()
-        self.swatch = colorBitmap(self.swatch,(r,g,b))
-        self.SetBitmapLabel(self.swatch)
-        #self.swatch.configure(foreground="#%02x%02x%02x" % (r, g, b))
+        self.SetColour((r,g,b))
 
     def update(self):
         r, g, b = self.light.getcolor()
-        self.swatch = colorBitmap(self.swatch,(r,g,b))
-        self.SetBitmapLabel(self.swatch)
-        #self.swatch.configure(foreground="#%02x%02x%02x" % (r, g, b))
+        self.SetColour((r,g,b))
 
 
 class LightTool(wx.Frame):
-    left_data = "\
-    #define small_left_width 11\
-    #define small_left_height 11\
-    static unsigned char small_left_bits[] = {\
-    0x00, 0x00, 0x00, 0x00, 0x40, 0x00, 0x60, 0x00, 0x70, 0x00, 0x78, 0x00,\
-    0x70, 0x00, 0x60, 0x00, 0x40, 0x00, 0x00, 0x00, 0x00, 0x00 };"
-
-    right_data = "\
-    #define small_right_width 11\
-    #define small_right_height 11\
-    static unsigned char small_right_bits[] = {\
-    0x00, 0x00, 0x00, 0x00, 0x10, 0x00, 0x30, 0x00, 0x70, 0x00, 0xf0, 0x00,\
-    0x70, 0x00, 0x30, 0x00, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00 };"
-
-    headlight_data = "\
-    #define headlight_width 10\
-    #define headlight_height 10\
-    static unsigned char headlight_bits[] = {\
-    0x00, 0x00, 0x3e, 0x00, 0x1e, 0x00, 0x2e, 0x00, 0x36, 0x00, 0x5a, 0x00,\
-    0x60, 0x00, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00 };"
-
-
     def __init__(self, master, lights, renwidget ):
         #Tkinter.Toplevel.__init__(self, master)
         print "master=",master
@@ -598,6 +474,7 @@ class LightTool(wx.Frame):
 
         for l in lights:
             l.sync()
+            print "Saving light ",l
             l.save()
         self.sizer = wx.GridBagSizer()
         
@@ -607,11 +484,7 @@ class LightTool(wx.Frame):
         self.switchbank = wx.Panel(self,-1,style=wx.RAISED_BORDER)
         self.switchsizer=wx.GridBagSizer()
         
-        self.leftarrow = wx.Bitmap(self.left_data)
         
-        self.bprev = wx.BitmapButton(self.switchbank,-1,self.leftarrow)
-        self.bprev.Bind(wx.EVT_BUTTON,lambda s=self,w='prev':s.connect(w))
-        self.switchsizer.Add(self.bprev,(0,0))
         self.sw=[]
         for i in range(0, 8):
             self.sw.insert(i, LightSwitch(self.switchbank, i,
@@ -627,11 +500,6 @@ class LightTool(wx.Frame):
                 if lights[i].getstate() == 'on':
                     self.sw[i].disable()
        
-        self.rightarrow = wx.Bitmap(self.right_data)
-        self.bnext = wx.BitmapButton(self.switchbank,-1,self.rightarrow)
-        self.bnext.Bind(wx.EVT_BUTTON,lambda s=self,w='next':s.connect(w))
-        self.switchsizer.Add(self.bnext,(0,9))
-
         self.switchbank.SetSizer(self.switchsizer)
         self.switchbank.SetAutoLayout(1)
         self.switchsizer.Fit(self.switchbank)
@@ -639,35 +507,19 @@ class LightTool(wx.Frame):
 
         self.azbar = AzTool(self, self.ren, self.redraw)
         self.elbar = ElTool(self, self.ren, self.redraw)
-        self.headlight = wx.Bitmap(self.headlight_data)
 
-        self.resetelaz = wx.BitmapButton(self,-1,self.headlight,size=(32,32))
-        self.resetelaz.Bind(wx.EVT_BUTTON,self.elazreset_handler)
 
-        self.intscale = IntensityTool(self, self.redraw)
-        self.colorbtn = ColorTool(self, self.redraw)
-
-        #self.f1 = Tkinter.Frame(self, relief='ridge', bd=2)
-        self.f1 = wx.Panel(self,-1,style=wx.RAISED_BORDER)
+        
+        self.f1 = wx.Panel(self,-1)#,style=wx.RAISED_BORDER)
         self.f1sizer=wx.GridBagSizer()
         
-        #l = Tkinter.Label(self.f1, text="Default lighting:")
-        #l.grid(row=0, column=0, sticky='w')              
         l = wx.StaticText(self.f1,-1,"Default lighting:")
         self.f1sizer.Add(l,(0,0))
         
-        #b = Tkinter.Button(self.f1, text="VTK", width=6, 
-        #                   command=lambda e=None: self.reset_handler('vtk'))        
         b = wx.Button(self.f1,-1,"VTK")
         b.Bind(wx.EVT_BUTTON,lambda e=None:self.reset_handler('vtk'))
-            
-        #b.grid(row=0, column=1, sticky='e')
         self.f1sizer.Add(b,(0,1))
         
-        #b = Tkinter.Button(self.f1, text="Raymond", 
-        #                   command=lambda e=None:
-        #                   self.reset_handler('raymond'))
-        #b.grid(row=0, column=2, sticky='w', padx=5)
         b = wx.Button(self.f1,-1,"Raymond")
         b.Bind(wx.EVT_BUTTON,lambda e=None:self.reset_handler('raymond'))
         self.f1sizer.Add(b,(0,2))
@@ -675,21 +527,38 @@ class LightTool(wx.Frame):
         self.f1.SetSizer(self.f1sizer)
         self.f1.SetAutoLayout(1)
         self.f1sizer.Fit(self.f1)
+
+        self.btnPanel=wx.Panel(self,-1)
+        self.btnsizer=wx.GridBagSizer()
         
+        self.resetelaz = wx.Button(self.btnPanel,-1,"Set to headlight")
+        self.resetelaz.Bind(wx.EVT_BUTTON,self.elazreset_handler)
+        self.colorbtn = ColorTool(self.btnPanel, self.redraw)
+        self.intensityLbl=wx.StaticText(self.btnPanel,-1,"Intensity:")
+        self.intscale = IntensityTool(self.btnPanel, self.redraw)
+
+        self.btnsizer.Add(self.resetelaz,(0,0))
+        self.btnsizer.Add(self.colorbtn,(0,1))
+        self.btnsizer.Add(self.intensityLbl,(1,0))
+        self.btnsizer.Add(self.intscale,(2,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
+        
+        self.btnPanel.SetSizer(self.btnsizer)
+        self.btnPanel.SetAutoLayout(1)
+        
+        self.btnsizer.Fit(self.btnPanel)
+
         self.f2 = wx.Panel(self)
         self.f2sizer=wx.GridBagSizer()
-        #b = Tkinter.Button(self.f2, text="OK", underline=0, width=6,
-        #                   command=self.ok_handler)
-        #b.grid(row=0, column=0, sticky='e', padx=5)
         
         b = wx.Button(self.f2,-1,"OK")
         b.Bind(wx.EVT_BUTTON,self.ok_handler)
         self.f2sizer.Add(b,(0,0))
-                
-#        Tkinter.Frame(self.f2, width=30).grid(row=0, column=1)
-        #b = Tkinter.Button(self.f2, text="Cancel", underline=0,
-        #                   command=self.cancel_handler)
-        #b.grid(row=0, column=2, sticky='w', padx=5)
+
+        b = wx.Button(self.f2,-1,"Apply")
+        b.Bind(wx.EVT_BUTTON,self.apply_handler)
+        self.f2sizer.Add(b,(0,1))
+
+
         b = wx.Button(self.f2,-1,"Cancel")
         b.Bind(wx.EVT_BUTTON,self.cancel_handler)
         self.f2sizer.Add(b,(0,2))
@@ -697,34 +566,26 @@ class LightTool(wx.Frame):
         self.f2.SetSizer(self.f2sizer)
         self.f2.SetAutoLayout(1)
         self.f2sizer.Fit(self.f2)
-        #self.bind('<KeyPress-c>', self.cancel_handler)
-        #self.bind('<KeyPress-C>', self.cancel_handler)
 
-        #self.gfxwin.grid(row=0, column=0)
         self.sizer.Add(self.gfxwin,(0,0))
-        #self.elbar.grid(row=0, column=1, sticky='ns', padx=2)
-        #self.azbar.grid(row=1, column=0, sticky='ew', pady=2)
         self.sizer.Add(self.elbar,(0,1),flag=wx.EXPAND|wx.TOP|wx.BOTTOM)
         self.sizer.Add(self.azbar,(1,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
-
-        #self.resetelaz.grid(row=1, column=1)
-        #self.switchbank.grid(row=2, column=0, sticky='ew')
-        self.sizer.Add(self.resetelaz,(1,1))
+#        self.sizer.Add(self.resetelaz,(1,1))
+        
         self.sizer.Add(self.switchbank,(2,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
         
-        #self.intscale.grid(row=0, column=2, padx=5, sticky='ns')
-        #self.colorbtn.grid(row=1, column=2, padx=2, pady=2)
-        self.sizer.Add(self.intscale,(0,2),flag=wx.EXPAND|wx.TOP|wx.BOTTOM)
-        self.sizer.Add(self.colorbtn,(1,2))
+        #self.sizer.Add(self.intscale,(0,2),flag=wx.EXPAND|wx.TOP|wx.BOTTOM)
+ #       self.sizer.Add(self.colorbtn,(1,2))
         
-        #self.f1.grid(row=3, column=0, columnspan=3, sticky='ew', pady=3)
-        #self.f2.grid(row=4, column=0, columnspan=3, sticky='ew', pady=3)
         self.sizer.Add(self.f1,(3,0),span=(1,3),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
-        self.sizer.Add(self.f2,(4,0),span=(1,3),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
+        self.sizer.Add(self.btnPanel,(4,0),span=(1,3),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
+        self.sizer.Add(self.f2,(5,0),span=(1,3),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
         
         self.gfxwin.Bind(wx.EVT_LEFT_UP,lambda e,s=self,w='picked':s.connect(w,event=e))
         self.gfxwin.Bind(wx.EVT_LEFT_DOWN,lambda e:None)
         self.gfxwin.Bind(wx.EVT_MOTION,lambda e:None)
+
+        self.gfxwin.Bind(wx.EVT_LEFT_UP,lambda e,s=self,w='picked':s.connect(w,event=e))
         #self.gfxwin.bind("<ButtonRelease>",
         #                 lambda e, s=self, w='picked': s.connect(w, event=e))
         #self.gfxwin.bind("<ButtonPress>", lambda e:None)
@@ -771,20 +632,19 @@ class LightTool(wx.Frame):
         self.elbar.setel(0.0, norender=1)
         self.azbar.setaz(0.0, norender=1)
         self.redraw('all')
+
+    def apply_handler(self, event=None):
+        self.redraw('all')
     
     def ok_handler(self, event=None):
         self.redraw('world')
-        #self.destroy()
-        self.Close()
-        #self.quit()
+        self.Destroy()
 
     def cancel_handler(self, event=None):
         for l in self.lights:
             l.restore()
         self.redraw('world')
-        #self.destroy()
-        #self.quit()
-        self.Close()
+        self.Destroy()
 
     def reset_handler(self, mode):
         init_lights(self.lights, mode)
@@ -839,7 +699,8 @@ class LightTool(wx.Frame):
         if what == 'lights':
             self.gfxwin.GetRenderWindow().Render()
         elif what == 'world':
-            self.renwidget.Render()
+            #self.renwidget.Render()
+            self.gfxwin.GetRenderWindow().Render()
         elif what == 'all':
             self.gfxwin.GetRenderWindow().Render()
             self.renwidget.Render()
@@ -926,68 +787,3 @@ class LightManager:
             self.cfg_widget = LightTool(self.master, self.lights,
                                         self.renwin)
             self.cfg_widget.Show()
-            #self.cfg_widget.focus_set()
-            #self.cfg_widget.transient(self.master)
-            #self.cfg_widget.mainloop()
-        #elif (self.cfg_widget and self.cfg_widget.winfo_exists()):
-        #    self.cfg_widget.deiconify()
-        #    self.cfg_widget.lift()
-        #    self.cfg_widget.focus_set()
-
-
-def main():
-    
-    """A simple example illustrating the use of the Light manipulation
-    code in a simple VTK application."""
-    
-    root = Tkinter.Tk()
-    renwidget = vtkTkRenderWidget(root,width=300,height=300)
-    renwidget.pack()
-    renWin = renwidget.GetRenderWindow()
-    ren1 = vtkpython.vtkRenderer()
-    renWin.AddRenderer( ren1 )
-
-    def halt(event=None):
-        event.widget.winfo_toplevel().destroy()
-
-    # Call to define the lights and initialize them in the "raymond"
-    # configuration.  This is all you need to do to use the light
-    # manipulator!    
-    ################################################
-    lm = LightManager(root, renwidget, ren1, mode='raymond')
-    renwidget.bind("<l>", lm.config)
-    ################################################
-
-    renwidget.bind("<e>", halt)
-    root.protocol("WM_DELETE_WINDOW", halt)
-
-    sphere = vtkpython.vtkSphereSource()
-    sphereMapper = vtkpython.vtkPolyDataMapper()
-    sphereMapper.SetInput( sphere.GetOutput() )
-    sphereActor = vtkpython.vtkLODActor()
-    sphereActor.SetMapper( sphereMapper )
-
-    cone = vtkpython.vtkConeSource()
-    glyph = vtkpython.vtkGlyph3D()
-    glyph.SetInput( sphere.GetOutput() )
-    glyph.SetSource(cone.GetOutput())
-    glyph.SetVectorModeToUseNormal()
-    glyph.SetScaleModeToScaleByVector()
-    glyph.SetScaleFactor( 0.25 )
-    glyph.ReleaseDataFlagOn()
-
-    spikeMapper = vtkpython.vtkPolyDataMapper()
-    spikeMapper.SetInput( glyph.GetOutput() )
-    spikeActor = vtkpython.vtkLODActor()
-    spikeActor.SetMapper( spikeMapper )
-
-    ren1.AddActor( sphereActor )
-    ren1.AddActor( spikeActor )
-    ren1.SetBackground( 0.1, 0.2, 0.4 )
-    renWin.SetSize( 300, 300 )
-    del renWin
-
-    root.mainloop()
-
-if __name__ == "__main__":
-    main()

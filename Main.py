@@ -37,10 +37,13 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 import os.path
 import sys
-from distutils.core import setup
-import glob
-import py2exe
 
+import glob
+try:
+    import py2exe
+    from distutils.core import setup
+except:
+    pass
 import Configuration
 
 #sys.path.insert(0,"C:\\Mingw\\lib")
