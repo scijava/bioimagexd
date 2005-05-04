@@ -181,5 +181,5 @@ class LightRenderingInterface(RenderingInterface.RenderingInterface):
         """
         visualizer=self.visualizer
         type=self.type
-        comm = "visualizer.save_%s(filename)"
+        comm = "visualizer.wxrenwin.save_%s(filename)"
         eval(eval("comm%type"))

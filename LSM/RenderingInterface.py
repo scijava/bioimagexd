@@ -210,8 +210,8 @@ class RenderingInterface:
         # Calculate how many digits there will be in the rendered output
         # file names, with a running counter
         ndigits=1+int(math.log(self.dataUnit.getLength(),10))
-        # Format, the format will be /path/to/data/image_001.png
-        self.format="%%s%s%%s_%%.%dd.png"%(os.path.sep,ndigits)
+        # Format, the format will be /path/to/data/image_001.png        
+        self.format="%%s%s%%s_%%.%dd.%s"%(os.path.sep,ndigits,self.type)
         #Logging.info("File name format=",self.format)
         self.ctf=dataUnit.getColorTransferFunction()
         #self.ctf = dataUnit.getSettings().get("ColorTransferFunction")
