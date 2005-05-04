@@ -313,3 +313,84 @@ class SurfaceConfiguration(ModuleConfiguration):
         self.isoRangeBegin.Enable(flag)
         self.isoRangeEnd.Enable(flag)
         self.isoRangeSurfaces.Enable(flag)
+        
+class ImagePlaneConfiguration(ModuleConfiguration):
+    def __init__(self,parent):
+        """
+        Method: __init__(parent)
+        Created: 04.05.2005, KP
+        Description: Initialization
+        """     
+        ModuleConfiguration.__init__(self,parent,"Orthogonal Slices")
+    
+    def initializeGUI(self):
+        """
+        Method: initializeGUI()
+        Created: 28.04.2005, KP
+        Description: Initialization
+        """  
+        
+        self.xLbl = wx.StaticText(self,-1,"X Slice:")
+        self.xSlider = wx.Slider(self,value=0, minValue=0,maxValue = 10,
+        style=wx.HORIZONTAL|wx.SL_AUTOTICKS|wx.SL_LABELS,size=(250,-1))
+        
+        self.yLbl = wx.StaticText(self,-1,"Y Slice:")
+        self.ySlider = wx.Slider(self,value=0, minValue=0,maxValue = 10,
+        style=wx.HORIZONTAL|wx.SL_AUTOTICKS|wx.SL_LABELS,size=(250,-1))
+        
+        self.zLbl = wx.StaticText(self,-1,"Z Slice:")
+        self.zSlider = wx.Slider(self,value=0, minValue=0,maxValue = 10,
+        style=wx.HORIZONTAL|wx.SL_AUTOTICKS|wx.SL_LABELS,size=(250,-1))
+        
+        self.contentSizer.Add(self.xLbl,(0,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
+        self.contentSizer.Add(self.xSlider,(1,0))
+
+        self.contentSizer.Add(self.yLbl,(2,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
+        self.contentSizer.Add(self.ySlider,(3,0))
+
+        self.contentSizer.Add(self.zLbl,(4,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
+        self.contentSizer.Add(self.zSlider,(5,0))
+            
+        self.xSlider.Bind(wx.EVT_SCROLL,self.onUpdateSlice)
+        self.ySlider.Bind(wx.EVT_SCROLL,self.onUpdateSlice)
+        self.zSlider.Bind(wx.EVT_SCROLL,self.onUpdateSlice)
+        
+    def setModule(self,module):
+        """
+        Method: setModule(module)
+        Created: 28.04.2005, KP
+        Description: Set the module to be configured
+        """  
+        ModuleConfiguration.setModule(self,module)
+        ext=module.getDataUnit().getTimePoint(0).GetWholeExtent()
+        x,y,z=ext[1],ext[3],ext[5]
+        print "x=%d, y=%d, z=%d"%(x,y,z)
+        self.xSlider.SetRange(0,x)
+        self.xSlider.SetValue(x/2)
+        
+        self.ySlider.SetRange(0,y)
+        self.ySlider.SetValue(y/2)
+        
+        self.zSlider.SetRange(0,z)
+        self.zSlider.SetValue(z/2)
+        
+    def onUpdateSlice(self,event):
+        """
+        Method: onUpdateSlice(self,event):
+        Created: 04.05.2005, KP
+        Description: Update the slice to be displayed
+        """  
+        x=self.xSlider.GetValue()
+        y=self.ySlider.GetValue()
+        z=self.zSlider.GetValue()
+        self.module.setDisplaySlice(x,y,z)
+        self.module.updateRendering()
+    
+        
+    def onApply(self,event):
+        """
+        Method: onApply()
+        Created: 28.04.2005, KP
+        Description: Apply the changes
+        """     
+        self.module.updateRendering()

@@ -60,10 +60,14 @@ class ConfigurationPanel(wx.Panel):
         self.parent = parent
         
         self.moduleLbl = wx.StaticText(self,-1,"Rendering module:")
-        self.moduleChoice = wx.Choice(self,-1,choices=["Volume Rendering","Surface Rendering"])
+        self.moduleChoice = wx.Choice(self,-1,choices=["Volume Rendering","Surface Rendering","Orthogonal Slices","Arbitrary Slices"])
         self.moduleChoice.SetSelection(0)
         self.moduleLoad = wx.Button(self,-1,"Load")
         self.moduleLoad.Bind(wx.EVT_BUTTON,self.onLoadModule)
+        
+        self.moduleRemove = wx.Button(self,-1,"Remove")
+        self.moduleRemove.Bind(wx.EVT_BUTTON,self.onRemoveModule)
+        
         self.lightsBtn = wx.Button(self,-1,"Lights")
         self.lightsBtn.Bind(wx.EVT_BUTTON,self.onConfigureLights)
         
@@ -77,9 +81,12 @@ class ConfigurationPanel(wx.Panel):
         self.configureBtn.Bind(wx.EVT_BUTTON,self.onConfigureModule)
   
         box.Add(self.moduleLoad)
-        box.Add(self.configureBtn)
+        box.Add(self.moduleRemove)
         self.sizer.Add(box,(2,0))
-        self.sizer.Add(self.lightsBtn,(3,0))
+        box2=wx.BoxSizer(wx.HORIZONTAL)
+        box2.Add(self.configureBtn)
+        box2.Add(self.lightsBtn)
+        self.sizer.Add(box2,(3,0))
         
         #self.sizer.Add(self.configureBtn,(3,0))
         
@@ -107,6 +114,14 @@ class ConfigurationPanel(wx.Panel):
         """            
         self.parent.loadModule(self.moduleChoice.GetStringSelection())
         
+    def onRemoveModule(self,event):
+        """
+        Method: onRemoveModule
+        Created: 03.05.2005, KP
+        Description: Remove the selected module
+        """            
+        self.parent.removeModule(self.moduleChoice.GetStringSelection())        
+        
     def onConfigureModule(self,event):
         """
         Method: onConfigureModule
@@ -115,92 +130,33 @@ class ConfigurationPanel(wx.Panel):
         """            
         self.parent.configureModule(self.moduleChoice.GetStringSelection())        
 
-class VisualizationFrame2(wx.Frame):
+
+class VisualizationWindow(wxVTKRenderWindowInteractor):
     """
-    Class: VisualizationFrame
-    Created: 28.04.2005, KP
+    Class: VisualizationWindow
+    Created: 3.5.2005, KP
     Description: A window for showing 3D visualizations
     """
     def __init__(self,parent,**kws):
         """
         Method: __init__(parent)
-        Created: 28.04.2005, KP
-        Description: Initialization
-        """
-        self.renderer=None
-        self.closed=0
-        wx.Frame.__init__(self,parent,-1,"BioImageXD Visualization",**kws)
-        self.sizer=wx.GridBagSizer()
-
-        self.frame=VisualizationPanel(self)
-        self.Bind(wx.EVT_CLOSE,self.onClose)
-        self.setDataUnit=self.frame.setDataUnit
-
-        self.sizer.Add(self.frame,(0,0))
-
-        self.SetSizer(self.sizer)
-        self.SetAutoLayout(1)
-        self.sizer.Fit(self)
-
-
-class VisualizationFrame(wx.Frame):
-    """
-    Class: VisualizationFrame
-    Created: 28.04.2005, KP
-    Description: A window for showing 3D visualizations
-    """
-    def __init__(self,parent,**kws):
-        """
-        Method: __init__(parent)
-        Created: 28.04.2005, KP
+        Created: 3.05.2005, KP
         Description: Initialization
         """    
-        self.closed =0
+        wxVTKRenderWindowInteractor.__init__(self,parent,-1,**kws)
         self.renderer=None
-        self.timepoint = -1
-        self.mapping= {"Volume Rendering":(VolumeModule,VolumeConfiguration),
-                      "Surface Rendering":(SurfaceModule,SurfaceConfiguration)}#,"Maximum Intensity Projection":MIPModule}
-        self.modules = []
-        wx.Frame.__init__(self,parent,-1,"BioImageXD Visualization",**kws)
-#        wx.Panel.__init__(self,parent,-1)
-        self.sizer = wx.GridBagSizer()
-        self.wxrenwin = wxVTKRenderWindowInteractor(self,-1,size=(512,512))
         
-        self.GetRenderWindow=self.wxrenwin.GetRenderWindow
-                
-        self.GetRenderer=self.getRenderer
-
-        self.configPanel = ConfigurationPanel(self)
-        self.sizer.Add(self.configPanel,(0,0),flag=wx.EXPAND|wx.TOP|wx.BOTTOM)
-        
-        self.sizer.Add(self.wxrenwin,(0,1),flag=wx.EXPAND|wx.ALL)
-        self.timeslider=wx.Slider(self,value=0,minValue=0,maxValue=1,
-        style=wx.SL_HORIZONTAL|wx.SL_AUTOTICKS|wx.SL_LABELS)
-        self.sizer.Add(self.timeslider,(1,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT,span=(1,2))        
-        self.timeslider.Bind(wx.EVT_SCROLL,self.onChangeTimepoint)
-
-        self.SetSizer(self.sizer)
-        self.SetAutoLayout(1)
-        self.sizer.Fit(self)
-        wx.FutureCall(500,self.initializeVTK)
-#        self.initializeVTK()
-
-
     def initializeVTK(self):
         """
         Method: initializeVTK
         Created: 29.04.2005, KP
         Description: initialize the vtk renderer
         """
-        self.renwin=self.wxrenwin.GetRenderWindow()        
-        self.renderer = vtk.vtkRenderer()
-        self.renwin.AddRenderer(self.renderer)
-        print "self.renwin=",self.renwin
-        print "self.renderer=",self.renderer
+        self.iren = iren = self.GetRenderWindow().GetInteractor()
+        self.iren.SetInteractorStyle(vtk.vtkInteractorStyleTrackballCamera())
+        self.getRenderer()
         self.renderer.AddObserver("StartEvent",self.onRenderBegin)
         self.renderer.AddObserver("EndEvent",self.onRenderEnd)
-        self.iren = iren = self.renwin.GetInteractor()
-        self.iren.SetInteractorStyle(vtk.vtkInteractorStyleTrackballCamera())
 
     def onRenderBegin(self,event=None,e2=None):
         """
@@ -209,7 +165,6 @@ class VisualizationFrame(wx.Frame):
         Description: Called when rendering begins
         """
         self.rendering=1
-        print "Rendering..."
         
     def onRenderEnd(self,event=None,e2=None):
         """
@@ -217,35 +172,8 @@ class VisualizationFrame(wx.Frame):
         Created: 30.04.2005, KP
         Description: Called when rendering begins
         """
-        print "Rendering done"
         self.rendering=0
     
-
-    def getRenderer(self):
-        """
-        Method: getRenderer
-        Created: 28.04.2005, KP
-        Description: Return the renderer
-        """
-        return self.renderer
-
-    def onClose(self,event):
-        """
-        Method: onClose()
-        Created: 28.04.2005, KP
-        Description: Called when this window is closed
-        """            
-        self.closed = 1
-        
-    def isClosed(self):
-        """
-        Method: isClosed()
-        Created: 28.04.2005, KP
-        Description: Returns flag indicating the closure of this window
-        """
-        return self.closed
-
-
     def save_png(self,filename):
         """
         Method: save_png(self,filename)
@@ -279,9 +207,95 @@ class VisualizationFrame(wx.Frame):
             time.sleep(0.1)
         writer.SetFileName(filename)
         filter = vtk.vtkWindowToImageFilter()
-        filter.SetInput(self.renwin)
+        filter.SetInput(self.GetRenderWindow())
         writer.SetInput(filter.GetOutput())
         writer.Write()
+    
+    def getRenderer(self):
+        """
+        Method: getRenderer
+        Created: 28.04.2005, KP
+        Description: Return the renderer
+        """
+        if not self.renderer:
+            collection=self.GetRenderWindow().GetRenderers()
+            if collection.GetNumberOfItems()==0:
+                print "Adding renderer"
+                self.renderer = vtk.vtkRenderer()
+                self.GetRenderWindow().AddRenderer(self.renderer)
+            else:
+                print "Using existing rendererer"
+                self.renderer=collection.GetItemAsObject(0)
+        return self.renderer
+    
+
+class VisualizationFrame(wx.Frame):
+    """
+    Class: VisualizationFrame
+    Created: 28.04.2005, KP
+    Description: A window for showing 3D visualizations
+    """
+    def __init__(self,parent,**kws):
+        """
+        Method: __init__(parent)
+        Created: 28.04.2005, KP
+        Description: Initialization
+        """    
+        self.closed = 0
+        self.initialized = 0
+        self.renderer=None
+        self.timepoint = -1
+        self.mapping= {"Volume Rendering":(VolumeModule,VolumeConfiguration),
+                       "Surface Rendering":(SurfaceModule,SurfaceConfiguration),
+                       "Orthogonal Slices":(ImagePlaneModule,ImagePlaneConfiguration),
+                       "Arbitrary Slices":(ArbitrarySliceModule,ImagePlaneConfiguration)
+                           
+                       }
+        self.modules = []
+        wx.Frame.__init__(self,parent,-1,"BioImageXD Visualization",**kws)
+#        wx.Panel.__init__(self,parent,-1)
+        self.sizer = wx.GridBagSizer()
+        self.wxrenwin = VisualizationWindow(self,size=(512,512))
+        self.wxrenwin.Render()
+        
+        wx.FutureCall(500,self.wxrenwin.initializeVTK)
+        
+        self.GetRenderWindow=self.wxrenwin.GetRenderWindow
+        self.renwin=self.wxrenwin.GetRenderWindow()       
+        
+        self.wxrenwin.Render()
+
+        self.getRenderer=self.GetRenderer=self.wxrenwin.getRenderer
+
+        self.configPanel = ConfigurationPanel(self)
+        self.sizer.Add(self.configPanel,(0,0),flag=wx.EXPAND|wx.TOP|wx.BOTTOM)
+        
+        self.sizer.Add(self.wxrenwin,(0,1),flag=wx.EXPAND|wx.ALL)
+        self.timeslider=wx.Slider(self,value=0,minValue=0,maxValue=1,
+        style=wx.SL_HORIZONTAL|wx.SL_AUTOTICKS|wx.SL_LABELS)
+        self.sizer.Add(self.timeslider,(1,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT,span=(1,2))        
+        self.timeslider.Bind(wx.EVT_SCROLL,self.onChangeTimepoint)
+
+        self.SetSizer(self.sizer)
+        self.SetAutoLayout(1)
+        self.sizer.Fit(self)
+        
+
+    def onClose(self,event):
+        """
+        Method: onClose()
+        Created: 28.04.2005, KP
+        Description: Called when this window is closed
+        """            
+        self.closed = 1
+        
+    def isClosed(self):
+        """
+        Method: isClosed()
+        Created: 28.04.2005, KP
+        Description: Returns flag indicating the closure of this window
+        """
+        return self.closed
         
     def setDataUnit(self,dataunit):
         """
@@ -292,8 +306,6 @@ class VisualizationFrame(wx.Frame):
         self.dataUnit = dataunit
         count=dataunit.getLength()
         self.timeslider.SetRange(0,count-1)
-        
-
         
     def getModules(self):
         """
@@ -309,8 +321,9 @@ class VisualizationFrame(wx.Frame):
         Created: 28.04.2005, KP
         Description: Render the scene
         """  
-        self.renwin.Render()
-        #self.wxrenwin.Render()
+        #self.renwin.Render()
+        self.wxrenwin.Render()
+        #self.wxrenwin.Refresh()
     
     def configureModule(self,name):
         """
@@ -321,13 +334,22 @@ class VisualizationFrame(wx.Frame):
         conf = self.mapping[name][1](self)
         conf.Show()
 
+    def removeModule(self,name):
+        to_be_removed=[]
+        for module in self.modules:
+            if module.getName()==name:
+                module.disableRendering()
+                to_be_removed.append(module)
+        for module in to_be_removed:
+            self.modules.remove(module)
+                
+
     def loadModule(self,name):
         """
         Method: loadModule(name)
         Created: 28.04.2005, KP
         Description: Load a visualization module
         """
-        #self.initializeVTK()
         if not self.dataUnit:
             Dialogs.showerror(self,"No dataset has been loaded for visualization","Cannot load visualization module")
             return
@@ -335,7 +357,6 @@ class VisualizationFrame(wx.Frame):
         self.modules.append(module)
         module.setDataUnit(self.dataUnit)
         module.showTimepoint(self.timepoint)
-        self.render()
         
     def onChangeTimepoint(self,event):
         """
