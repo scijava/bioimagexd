@@ -113,6 +113,8 @@ class SplineEditor:
         self.axes = vtk.vtkCubeAxesActor2D ()
 
         self.spline = spline = vtk.vtkSplineWidget()
+        self.spline.GetLineProperty().SetColor(1,0,0)
+        self.spline.GetHandleProperty().SetColor(0,1,0)
         print "Setting current renderer to",self.renderer
 
         self.spline.SetResolution(1000)
@@ -155,7 +157,7 @@ class SplineEditor:
         p3 = (xmax,ymax,zmin)
         p4 = (xmin,ymax,zmin)
 
-        p5 = (xmin,ymin,zax)
+        p5 = (xmin,ymin,zmax)
         p6 = (xmax,ymin,zmax)
         p7 = (xmax,ymax,zmax)
         p8 = (xmin,ymax,zmax)
@@ -305,9 +307,7 @@ class SplineEditor:
         Created: Heikki Uuksulainen
         Description: Method that initializes the VTK rendering based
                      on a dataset
-        """        
-    
-        print "Updating data..."
+        """            
         if self.data:
             del self.data
 
@@ -428,20 +428,17 @@ class SplineEditor:
         Method: setSplinePoints(pointlist)
         Created: KP, 06.04.2005
         Description: Sets the handles of the spline widget to the given point list
-        """        
-        if not pointlist:
-            print "Removeing spline"
+        """
         #print "Setting spline points to",pointlist
-        self.spline.GetLineProperty().SetColor(1,0,0)
+
         n = len(pointlist)
         self.spline.SetNumberOfHandles(n)
         for i in range(n):
             self.spline.SetHandlePosition(i,pointlist[i])
             #self.spline.SetHandleSize(100)
         #
-        self.spline.GetHandleProperty().SetColor(0,0,1)
+        #self.spline.GetHandleProperty().SetColor(0,0,1)
         self.spline.SetEnabled(1)
-        self.renderer.ResetCameraClippingRange()
 
         self.renderer.Render()
 

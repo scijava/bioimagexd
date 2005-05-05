@@ -52,6 +52,78 @@ import ImageOperations
 import Dialogs
 import TimepointSelection
 
+class NamePanel(wx.Panel):
+    """
+    Class: NamePanel
+    Created: 05.05.2005, KP
+    Description: A panel that paints a string it's given
+    """
+    def __init__(self,parent,label,color,**kws):
+        size=kws["size"]
+        wx.Panel.__init__(self,parent,-1,size=size)
+        self.label=label
+        self.size=size
+        self.bold=0
+        w,h=self.size
+        self.buffer = wx.EmptyBitmap(w,h,-1)
+        self.setColor((0,0,0),color)
+        self.dc = None
+        self.Bind(wx.EVT_PAINT,self.onPaint)
+                         
+    def setWeight(self,bold):
+        """
+        Method: setWeight(self,bold)
+        Created: 05.05.2005, KP
+        Description: Set the weight of the font
+        """
+        self.bold=bold
+        self.paintLabel()
+
+    def setLabel(self,label):
+        """
+        Method: setLabel(self,label)
+        Created: 05.05.2005, KP
+        Description: Set the label
+        """
+        self.label=label
+        self.paintLabel()
+
+
+    def setColor(self,fg,bg):
+        """
+        Method: setColor
+        Created: 05.05.2005, KP
+        Description: Set the color to use
+        """
+
+        self.fg=fg
+        self.bg=bg
+        self.paintLabel()
+
+    def onPaint(self,event):
+        dc=wx.BufferedPaintDC(self,self.buffer)#,self.buffer)
+
+    def paintLabel(self,bold=None):
+        """
+        Method: paintLabel
+        Created: 05.05.2005, KP
+        Description: Paints the label
+        """
+        self.dc = wx.BufferedDC(wx.ClientDC(self),self.buffer)
+
+        self.dc.SetBackground(wx.Brush(self.bg))
+        self.dc.Clear()
+        self.dc.BeginDrawing()
+        self.dc.SetTextForeground(self.fg)
+        weight=wx.NORMAL
+        if self.bold:
+           weight=wx.BOLD
+        self.dc.SetFont(wx.Font(9,wx.SWISS,wx.NORMAL,weight))
+        self.dc.DrawText(self.label,0,0)
+
+        self.dc.EndDrawing()
+        self.dc = None
+
         
 class Track(wx.Panel):
     """
@@ -83,12 +155,10 @@ class Track(wx.Panel):
         self.itemBox=None
         self.color=None
         self.parent=parent
-    
+
         self.enabled = 1
     
-        self.namePanel=wx.Panel(self,-1,size=(140,height))
-        self.nameLbl=wx.StaticText(self.namePanel,-1,name,size=(140,height))
-        self.namePanel.SetSize((125,height))
+        self.namePanel=NamePanel(self,name,(255,255,255),size=(125,height))
         self.sizer.Add(self.namePanel,(0,0))
 
         #self.sizer.Add(self.itemBox,(0,1))
@@ -105,8 +175,6 @@ class Track(wx.Panel):
         self.initTrack()
         
         self.namePanel.Bind(wx.EVT_LEFT_UP,self.setSelected)
-        self.nameLbl.Bind(wx.EVT_LEFT_UP,self.setSelected)
-        #self.Bind(wx.EVT_LEFT_UP,self.setSelected)
         d,s=self.control.getDuration(),self.control.getFrames()
         print "duration=",d,"frames=",s
         self.setDuration(d,s)
@@ -127,15 +195,11 @@ class Track(wx.Panel):
         """ 
         print "setSelected(",event,")"
         if event:
-            font=self.nameLbl.GetFont()
-            font.SetWeight(wx.BOLD)
-            self.nameLbl.SetFont(font)
+            self.namePanel.setWeight(1)
             self.parent.setSelectedTrack(self)
         else:
             self.SetWindowStyle(wx.SIMPLE_BORDER)
-            font=self.nameLbl.GetFont()
-            font.SetWeight(wx.NORMAL)
-            self.nameLbl.SetFont(font)
+            self.namePanel.setWeight(0)
             
     def setEnabled(self,flag):
         """
@@ -145,18 +209,12 @@ class Track(wx.Panel):
         """ 
         self.enabled = flag
         if not flag:
-            col=self.namePanel.GetBackgroundColour()
-            self.nameLbl.SetForegroundColour((128,128,128))
-            r,g,b=col.Red(),col.Green(),col.Blue()
             self.oldNamePanelColor=col
             r=g=b=200
             print "Setting background to ",r,g,b
-            self.namePanel.SetBackgroundColour((r,g,b))
-            self.nameLbl.SetBackgroundColour((r,g,b))
+            self.namePanel.setColor((128,128,128),(r,g,b))
         else:
-            self.namePanel.SetBackgroundColour(self.nameColor)
-            self.nameLbl.SetBackgroundColour(self.nameColor)
-            self.nameLbl.SetForegroundColour((0,0,0))
+            self.namePanel.setColor((0,0,0),self.nameColor)
 
         
     def OnDragOver(self,x,y,d):
@@ -168,15 +226,15 @@ class Track(wx.Panel):
         """ 
         #print "OnDragOver(%d,%d,%s)"%(x,y,d)
         if not self.oldNamePanelColor:
-            col=self.namePanel.GetBackgroundColour()
-            r,g,b=col.Red(),col.Green(),col.Blue()
+            #col=self.namePanel.GetBackgroundColour()
+            col=self.namePanel.bg
+            #r,g,b=col.Red(),col.Green(),col.Blue()
+            r,g,b=col
             self.oldNamePanelColor=col
             r=int(r*0.8)
             g=int(g*0.8)
             b=int(b*0.8)
-            self.namePanel.SetBackgroundColour((r,g,b))
-            self.nameLbl.SetBackgroundColour((r,g,b))
-            self.nameLbl.SetForegroundColour((255,255,255))
+            self.namePanel.setColor((255,255,255),(r,g,b))
         self.namePanel.Refresh()
         curritem=None
         for item in self.items:
@@ -202,10 +260,8 @@ class Track(wx.Panel):
         Description: Method called to indicate that a user is no longer dragging
                      something to this track
         """     
-        self.namePanel.SetBackgroundColour(self.nameColor)
         self.oldNamePanelColor = None
-        self.nameLbl.SetBackgroundColour(self.nameColor)
-        self.nameLbl.SetForegroundColour((0,0,0))
+        self.namePanel.setColor((0,0,0),self.nameColor)
         self.namePanel.Refresh()
 
     def refresh(self):
@@ -216,8 +272,8 @@ class Track(wx.Panel):
                      to refresh before it's items are created
         """    
         self.setItemAmount(self.itemAmount)
-        self.nameLbl.SetLabel(self.label)
-        
+        self.namePanel.setLabel(self.label)
+
     def updateLabels(self):
         """
         Method: updateLabels
@@ -479,8 +535,7 @@ class SplineTrack(Track):
         Track.__init__(self,name,parent,**kws)   
         self.closed = 0
         self.nameColor = (0,148,213)
-        self.namePanel.SetBackgroundColour(wx.Colour(*self.nameColor))
-        self.nameLbl.SetBackgroundColour(wx.Colour(*self.nameColor))        
+        self.namePanel.setColor((0,0,0),self.nameColor)
         if "item" in kws:
             self.itemClass=kws["item"]
         else:
@@ -715,8 +770,7 @@ class TimepointTrack(Track):
         kws["height"]=40
         Track.__init__(self,name,parent,**kws)   
         self.nameColor = (128,195,155)
-        self.namePanel.SetBackgroundColour(wx.Colour(*self.nameColor))
-        self.nameLbl.SetBackgroundColour(wx.Colour(*self.nameColor))        
+        self.namePanel.setColor((0,0,0),self.nameColor)
         if "item" in kws:
             self.itemClass=kws["item"]
         else:

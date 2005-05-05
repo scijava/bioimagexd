@@ -588,9 +588,8 @@ class SplinePoint(TrackItem):
         Description: Update the item
         """       
         TrackItem.refresh(self)
-        print "Setting spline point ",self.itemnum,"to ",self.point
         self.parent.setSplinePoint(self.itemnum,self.point)
-        
+
         
     def __getstate__(self):
         """
