@@ -344,6 +344,7 @@ class UrmasWindow(wx.Frame):
         Description: Callback function for saving a project
         """
         wc="Rendering Project (*.rxd)|*.rxd"
+        name=None
         dlg=wx.FileDialog(self,"Save Rendering Project as...",defaultFile="project.rxd",wildcard=wc,style=wx.SAVE)
         if dlg.ShowModal()==wx.ID_OK:
             name=dlg.GetPath()

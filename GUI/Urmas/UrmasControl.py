@@ -203,7 +203,8 @@ class UrmasControl:
         Created: 20.03.2005, KP
         Description: Sets the dataunit used as a source of data
         """    
-        RenderingInterface.getRenderingInterface().setDataUnit(dataunit)
+        self.renderingInterface=RenderingInterface.getRenderingInterface()
+        self.renderingInterface.setDataUnit(dataunit)
         self.dataUnit = dataunit
         self.timelinePanel.setDataUnit(dataunit)
         #n=10*self.dataUnit.getLength()
@@ -214,8 +215,16 @@ class UrmasControl:
         self.configureTimeline(self.duration,self.frames)
         self.updateGUI()
         self.updateLayouts()
-        self.animator.animator.initData()
-        
+        #self.animator.animator.initData()
+        data =self.renderingInterface.getCurrentData()
+        print "updating spline editor with ",data
+        ctf=self.renderingInterface.getColorTransferFunction()
+#        print "ctf=",ctf
+        self.splineEditor.updateData(data,ctf)
+        self.splineEditor.initCamera()
+
+        self.splineEditor.render()
+
         
     def updateLayouts(self):
         """

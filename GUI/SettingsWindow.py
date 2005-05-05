@@ -40,6 +40,7 @@ import wx
 #import GuiGeneration
 import  wx.lib.filebrowsebutton as filebrowse
 import Configuration
+import GuiGeneration
 
 class GeneralSettings(wx.Panel):
     """
@@ -49,6 +50,40 @@ class GeneralSettings(wx.Panel):
     """ 
     def __init__(self,parent):
         wx.Panel.__init__(self,parent,-1)
+        self.sizer = wx.GridBagSizer(5,5)
+        conf = Configuration.getConfiguration()
+        format = conf.getConfigItem("ImageFormat","Output")
+        
+        self.imageBox=wx.StaticBox(self,-1,"Image Format",size=(600,150))
+        self.imageBoxSizer=wx.StaticBoxSizer(self.imageBox,wx.VERTICAL)
+        self.imageBoxSizer.SetMinSize(self.imageBox.GetSize())
+        
+        self.lbl=wx.StaticText(self,-1,"Default format for Images:")
+        self.choice=wx.Choice(self,-1,choices=["PNG","BMP","JPEG","TIFF"])
+        
+        self.choice.SetStringSelection(format.upper())
+
+        self.imageBoxSizer.Add(self.lbl)
+        self.imageBoxSizer.Add(self.choice)
+        
+        self.sizer.Add(self.imageBoxSizer,(0,0))
+        
+        
+        
+        self.SetSizer(self.sizer)
+        self.SetAutoLayout(1)
+        self.sizer.Fit(self)
+        
+    def writeSettings(self,conf):
+        """
+        Method: writeSettings(config)
+        Created: 05.04.2005, KP
+        Description: A method that writes out the settings that have been modified
+                     in this window.
+        """     
+        format=self.choice.GetStringSelection()
+        print "Setting format to ",format.lower()
+        conf.setConfigItem("ImageFormat","Output",format.lower())
         
 class PathSettings(wx.Panel):
     """
@@ -172,9 +207,9 @@ class SettingsWindow(wx.Dialog):
             print "icon=",icon
             bmp=wx.Bitmap(icon,wx.BITMAP_TYPE_GIF)
             self.imagelist.Add(bmp)
-        self.generalPanel=GeneralSettings(self)
-        self.pathsPanel=PathSettings(self)
-        self.moviePanel=MovieSettings(self)
+        self.generalPanel=GeneralSettings(self.listbook)
+        self.pathsPanel=PathSettings(self.listbook)
+        self.moviePanel=MovieSettings(self.listbook)
         
         self.listbook.AddPage(self.generalPanel,"General",imageId=0)
         self.listbook.AddPage(self.pathsPanel,"Paths",imageId=1)
@@ -196,6 +231,7 @@ class SettingsWindow(wx.Dialog):
     def writeSettings(self,evt):
         conf=Configuration.getConfiguration()
         self.pathsPanel.writeSettings(conf)
+        self.generalPanel.writeSettings(conf)
         conf.writeSettings()
         self.Close()
         

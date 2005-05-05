@@ -49,7 +49,8 @@ from vtk.wx.wxVTKRenderWindowInteractor import wxVTKRenderWindowInteractor
 from Track import *
 from Timeline import *
 import PreviewFrame
-import Animator
+#import Animator
+import SplineEditor
 
 import os.path
 import sys,types
@@ -194,22 +195,20 @@ class TimelinePanel(wx.Panel):
         
         self.timelineConfig=TimelineConfig(self,control)
         
-        #self.confBox=wx.StaticBox(self,-1,"Animation Configuration")
-        #self.confBoxSizer=wx.StaticBoxSizer(self.confBox,wx.VERTICAL)
-        #self.confBoxSizer.Add(self.timelineConfig)
-        
-        #self.sizer.Add(self.confBoxSizer,(2,0),flag=wx.EXPAND|wx.ALL)
         self.sizer.Add(self.timelineConfig,(2,0),flag=wx.EXPAND|wx.ALL)
         self.animBox=wx.StaticBox(self,-1,"Animation Control Pane")
         self.animBoxSizer=wx.StaticBoxSizer(self.animBox,wx.VERTICAL)
-#        self.animBoxSizer.Add(self.animator)
-        #self.animBoxSizer.Add(self.animator.splineEditor)
-        #self.animator.splineEditor.wxrenwin.Initialize()
-        #self.animator.splineEditor.wxrenwin.Start()
-
+#       
         self.wxrenwin=wxVTKRenderWindowInteractor(self,-1,size=(400,300))
-        self.animator = Animator.AnimatorPanel(self,self.control,self.wxrenwin)
-        self.control.setAnimator(self.animator)
+        self.wxrenwin.Initialize()
+        self.wxrenwin.Start()
+        #self.animator = Animator.AnimatorPanel(self,self.control,self.wxrenwin)
+        #self.control.setAnimator(self.animator)
+        
+        self.splineEditor=SplineEditor.SplineEditor(self,self.wxrenwin)
+        self.control.setSplineEditor(self.splineEditor)
+
+        self.wxrenwin.GetRenderWindow().Render()
         self.animBoxSizer.Add(self.wxrenwin)
         self.sizer.Add(self.animBoxSizer,(2,1),flag=wx.EXPAND|wx.ALL)
 

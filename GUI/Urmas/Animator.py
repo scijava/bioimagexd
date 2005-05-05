@@ -84,10 +84,7 @@ class AnimatorPanel:
         print "AnimatorPanel(...)"
         #self.sizer=wx.GridBagSizer()
 
-
-        self.splineEditor=SplineEditor.SplineEditor(parent,renwin)
-        self.animator=MayaViAnimator(self,self.splineEditor)
-        self.control.setSplineEditor(self.splineEditor)
+        #self.animator=MayaViAnimator(self,self.splineEditor)
 
         #self.sizer.Add(self.splineEditor,(0,0))
 
