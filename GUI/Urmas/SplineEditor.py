@@ -96,6 +96,7 @@ class SplineEditor:
         self.wxrenwin.Render()
 
         self.iren = iren = self.renWin.GetInteractor()
+        self.iren.SetSize(self.renWin.GetSize())
         self.iren.SetInteractorStyle(vtk.vtkInteractorStyleTrackballCamera())
 
         self.dataExtensionX = 50

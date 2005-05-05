@@ -145,7 +145,8 @@ class VisualizationWindow(wxVTKRenderWindowInteractor):
         """    
         wxVTKRenderWindowInteractor.__init__(self,parent,-1,**kws)
         self.renderer=None
-        
+
+
     def initializeVTK(self):
         """
         Method: initializeVTK
@@ -155,6 +156,8 @@ class VisualizationWindow(wxVTKRenderWindowInteractor):
         self.iren = iren = self.GetRenderWindow().GetInteractor()
         self.iren.SetInteractorStyle(vtk.vtkInteractorStyleTrackballCamera())
         self.getRenderer()
+        self.renderer.SetBackground(0,0,0.3)
+        self.iren.SetSize(self.GetRenderWindow().GetSize())
         self.renderer.AddObserver("StartEvent",self.onRenderBegin)
         self.renderer.AddObserver("EndEvent",self.onRenderEnd)
 
@@ -165,7 +168,7 @@ class VisualizationWindow(wxVTKRenderWindowInteractor):
         Description: Called when rendering begins
         """
         self.rendering=1
-        
+
     def onRenderEnd(self,event=None,e2=None):
         """
         Method: onRenderEnd
@@ -279,7 +282,7 @@ class VisualizationFrame(wx.Frame):
         self.SetSizer(self.sizer)
         self.SetAutoLayout(1)
         self.sizer.Fit(self)
-        
+
 
     def onClose(self,event):
         """

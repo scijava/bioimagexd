@@ -52,6 +52,8 @@ import Configuration
 cfg=Configuration.Configuration("BioImageXD.ini")
 
 import wx
+import vtk.wx.wxVTKRenderWindowInteractor
+print vtk.wx.wxVTKRenderWindowInteractor
 import GUI
 
 
