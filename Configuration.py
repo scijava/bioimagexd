@@ -62,24 +62,25 @@ class Configuration:
         #vtkpath=self.getPath(["Libraries","VTK"])
         vtkpath=self.getPath(["C:\\VTK"])
         mayavipath=self.getPath(["Libraries","mayavi"])
-        self.setConfigItem("RemoveOldVTK","VTK",1);
-        self.setConfigItem("VTKPath","VTK",vtkpath)
-        self.setConfigItem("UseSystemMayavi","Mayavi",0)
-        self.setConfigItem("MayaviPath","Mayavi",mayavipath)
-        
-        self.setConfigItem("ImageFormat","Output","png")
-        
-        self.setConfigItem("DataPath","Paths","/home/kalpaha/BioImageXD/Data/")
-        self.setConfigItem("LastPath","Paths","/home/kalpaha/BioImageXD/Data/")
+        self.setConfigItem("RemoveOldVTK","VTK",1,0);
+        self.setConfigItem("VTKPath","VTK",vtkpath,0)
+        self.setConfigItem("UseSystemMayavi","Mayavi",0,0)
+        self.setConfigItem("MayaviPath","Mayavi",mayavipath,0)
+
+        self.setConfigItem("ImageFormat","Output","png",0)
+
+        self.setConfigItem("DataPath","Paths","/home/kalpaha/BioImageXD/Data/",0)
+        self.setConfigItem("LastPath","Paths","/home/kalpaha/BioImageXD/Data/",0)
         self.setConfigItem("RememberPath","Paths",1)
-        
+
         # Then read the settings file
         self.readPathSettings()
-        
+#        print "Format now=",self.configItems["ImageFormat"]
+
         self.insertModuleDirectories()
         self.processPathSettings()
         #print sys.path
-        
+
     def writeSettings(self):
         """
         Method: writeSettings()
@@ -106,16 +107,18 @@ class Configuration:
         self.insertPath(wrapping)
         self.insertPath(self.getConfigItem("MayaviPath","Mayavi"))
         
-    def setConfigItem(self,configItem, section,value):
+    def setConfigItem(self,configItem, section,value,write=1):
         self.configItems[configItem]=value
-        if self.parser.has_section(section) == False:
-            self.parser.add_section(section)
-        self.parser.set(section,configItem,value)
-        self.writeSettings()
-        
+        if write:
+            if self.parser.has_section(section) == False:
+                self.parser.add_section(section)
+            self.parser.set(section,configItem,value)
+            self.writeSettings()
+
     def readConfigItem(self,configItem,section):
         try:
             configItemvalue=self.parser.get(section,configItem)
+ #           print "Got value %s for %s: %s"%(configItemvalue,section,configItem)
             self.configItems[configItem]=configItemvalue
         except:
             return None
@@ -135,10 +138,11 @@ class Configuration:
         self.readConfigItem("UseSystemMayavi","Mayavi")
         self.readConfigItem("MayaviPath","Mayavi")   
         self.readConfigItem("DataPath","Paths")
+        self.readConfigItem("ImageFormat","Output")
             
     def setCurrentDir(self,path):
         self.installPath=path
-    
+
     def getPath(self,path):
         if type(path)==types.StringType:
             path=[path]
