@@ -334,7 +334,8 @@ class MainWindow(wx.Frame):
 ##        renderingInterface.doRendering(preview=imagedata,ctf=ctf)
 
         vis=Visualization.VisualizationFrame(self)
-        vis.setDataUnit(dataunit)
+        visualizer=Visualization.Visualizer(vis)
+        visualizer.setDataUnit(dataunit)
         vis.Show()
         
 

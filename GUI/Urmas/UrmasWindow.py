@@ -69,7 +69,7 @@ class UrmasWindow(wx.Frame):
         self.SetIcon(self.icon)
 
         self.CreateStatusBar()
-        self.SetStatusText("Initializing project...")
+        self.SetStatusText("Initializing rendering manager...")
 
         self.createMenu()
         
@@ -91,6 +91,7 @@ class UrmasWindow(wx.Frame):
         self.SetSizer(self.sizer)
         self.SetAutoLayout(1)
         self.sizer.Fit(self)
+        self.SetStatusText("Done.")
 
 
 
@@ -127,8 +128,11 @@ class UrmasWindow(wx.Frame):
         
         self.ID_OPEN=wx.NewId()
         self.ID_SAVE=wx.NewId()
+        self.ID_CLOSE=wx.NewId()
         self.fileMenu.Append(self.ID_OPEN,"Open project...","Open a BioImageXD Rendering Project")
         self.fileMenu.Append(self.ID_SAVE,"Save project as...","Save current BioImageXD Rendering Project")
+        self.fileMenu.AppendSeparator()
+        self.fileMenu.Append(self.ID_CLOSE,"Close","Close BioImageXD Renderer")
         wx.EVT_MENU(self,self.ID_OPEN,self.onMenuOpenProject)
         wx.EVT_MENU(self,self.ID_SAVE,self.onMenuSaveProject)
         
@@ -219,8 +223,9 @@ class UrmasWindow(wx.Frame):
         """
         if event.GetId() == self.ID_RENDER:
             video=VideoGeneration.VideoGeneration(self,self.control)
-            video.Show()
-            
+            video.RunWizard(video.videopage)
+            video.Destroy()
+
             #self.control.renderProject(0)
         else:
             self.control.renderProject(1)

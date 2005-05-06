@@ -101,8 +101,8 @@ class LightRenderingInterface(RenderingInterface.RenderingInterface):
         return self.visualizer.GetRenderWindow()
         
     def render(self):
-        self.visualizer.Raise()
-        self.visualizer.Refresh()
+#        self.visualizer.Raise()
+#        self.visualizer.Refresh()
         self.visualizer.render()
 
 
@@ -126,7 +126,7 @@ class LightRenderingInterface(RenderingInterface.RenderingInterface):
         vis.setDataUnit(self.dataUnit)
         self.visualizer=vis
         vis.Show()
-        
+
     def isVisualizationSoftwareRunning(self):
         """
         Method: isVisualizationSoftwareRunning()
@@ -134,9 +134,15 @@ class LightRenderingInterface(RenderingInterface.RenderingInterface):
         Description: A method that returns true if a mayavi window exists that
                      can be used for rendering
         """
+        # Attempt to get a running instance of visualizer
+        if not self.visualizer:
+           self.visualizer=Visualization.getVisualizer()
+           self.visualizer.setDataUnit(self.dataUnit)
+           if self.visualizer:
+              print "Found running instance of visualizer"
         return (self.visualizer and not self.visualizer.isClosed())
-        
-        
+
+
     def isVisualizationModuleLoaded(self):
         """
         Method: isVisualizationModuleLoaded()
@@ -158,21 +164,20 @@ class LightRenderingInterface(RenderingInterface.RenderingInterface):
             self.showPreview=kws["preview"]
         if kws.has_key("ctf"):
             self.ctf=kws["ctf"]
-        
+
         if not self.showPreview:
             raise "Cannot handle non-previews"
 
         if not self.dataUnit or not self.timePoints:
             raise "No dataunit or timepoints defined"
 
-        # If there is no mayavi instance to do the rendering
+        # If there is no visualizer instance to do the rendering
         # create one
         if not self.isVisualizationSoftwareRunning():
             print "Creating visualizer"
             self.createVisualizerWindow()
         self.visualizer.setTimepoint(self.currentTimePoint)
-        self.visualizer.Raise()
-             
+
     def saveFrame(self,filename):
         """
         Method: saveFrame(filename)

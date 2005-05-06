@@ -59,7 +59,7 @@ class GeneralSettings(wx.Panel):
         self.imageBoxSizer.SetMinSize(self.imageBox.GetSize())
         
         self.lbl=wx.StaticText(self,-1,"Default format for Images:")
-        self.choice=wx.Choice(self,-1,choices=["PNG","BMP","JPEG","TIFF"])
+        self.choice=wx.Choice(self,-1,choices=["PNG","PNM","BMP","JPEG","TIFF"])
         
         self.choice.SetStringSelection(format.upper())
 
@@ -114,6 +114,7 @@ class PathSettings(wx.Panel):
         
         self.vtkBoxSizer.Add(self.vtkbrowse,0,wx.EXPAND)
         self.removeVTKCheckbox = wx.CheckBox(self,-1,"Remove old VTK from path")
+        removevtk=int(removevtk)
         self.removeVTKCheckbox.SetValue(removevtk)
         self.vtkBoxSizer.Add(self.removeVTKCheckbox)
         
@@ -127,6 +128,7 @@ class PathSettings(wx.Panel):
         self.mayavibrowse.SetValue(mayavipath)
         self.mayaviBoxSizer.Add(self.mayavibrowse,0,wx.EXPAND)
         self.removeMayaviCheckbox = wx.CheckBox(self,-1,"Use system version of MayaVi")
+        systemmayavi=int(systemmayavi)
         self.removeMayaviCheckbox.SetValue(systemmayavi)
         self.mayaviBoxSizer.Add(self.removeMayaviCheckbox)
         
@@ -141,6 +143,7 @@ class PathSettings(wx.Panel):
         
         self.dataBoxSizer.Add(self.databrowse,0,wx.EXPAND)
         self.useLastCheckbox = wx.CheckBox(self,-1,"Use last opened directory as default directory")
+        remember=int(remember)
         self.useLastCheckbox.SetValue(remember)
         self.dataBoxSizer.Add(self.useLastCheckbox)        
         

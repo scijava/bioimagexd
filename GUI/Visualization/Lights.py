@@ -479,6 +479,8 @@ class LightTool(wx.Frame):
         self.sizer = wx.GridBagSizer()
         
         self.gfxwin = wxVTKRenderWindowInteractor(self,-1,size=(220,200))
+#        self.gfxwin.Initialize()
+#        self.gfxwin.Start()
         self.ren = vtkpython.vtkRenderer()
 
         self.switchbank = wx.Panel(self,-1,style=wx.RAISED_BORDER)
@@ -597,6 +599,7 @@ class LightTool(wx.Frame):
         self.Bind(wx.EVT_CLOSE,self.cancel_handler)
 
         self.gfxwin.GetRenderWindow().AddRenderer(self.ren)
+        self.gfxwin.Render()
         self.ren.SetBackground(0.0,0.0,0.0)
         self.picker = vtkpython.vtkCellPicker()
         self.picker.SetTolerance(0.0005)
@@ -606,7 +609,7 @@ class LightTool(wx.Frame):
 
         self.ren.GetActiveCamera().Zoom(1.6)
         self.connect('first')
-        
+
         self.SetSizer(self.sizer)
         self.SetAutoLayout(1)
         self.sizer.Fit(self)
@@ -638,12 +641,14 @@ class LightTool(wx.Frame):
     
     def ok_handler(self, event=None):
         self.redraw('world')
+        self.gfxwin.Destroy()
         self.Destroy()
 
     def cancel_handler(self, event=None):
         for l in self.lights:
             l.restore()
         self.redraw('world')
+        self.gfxwin.Destroy()
         self.Destroy()
 
     def reset_handler(self, mode):

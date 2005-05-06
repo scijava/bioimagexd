@@ -115,7 +115,7 @@ class SplineEditor:
         self.spline = spline = vtk.vtkSplineWidget()
         self.spline.GetLineProperty().SetColor(1,0,0)
         self.spline.GetHandleProperty().SetColor(0,1,0)
-        print "Setting current renderer to",self.renderer
+#        print "Setting current renderer to",self.renderer
 
         self.spline.SetResolution(1000)
 

@@ -217,7 +217,7 @@ class UrmasControl:
         self.updateLayouts()
         #self.animator.animator.initData()
         data =self.renderingInterface.getCurrentData()
-        print "updating spline editor with ",data
+#        print "updating spline editor with ",data
         ctf=self.renderingInterface.getColorTransferFunction()
 #        print "ctf=",ctf
         self.splineEditor.updateData(data,ctf)

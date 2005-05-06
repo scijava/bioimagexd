@@ -40,19 +40,76 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 import wx
 import Dialogs
 import RenderingInterface
+import Visualization
 import os,sys
+import  wx.wizard as wiz
 
-class VideoGeneration(wx.Dialog):
-    """
-    Class: VideoGeneration
-    Created: 23.02.2005, KP
-    Description: A panel for controlling the movie generation.        
-    """
-    def __init__(self,parent,control):
-        wx.Dialog.__init__(self,parent,-1,"Rendering %s"%control.getDataUnit().getName())
-        self.renderingInterface = RenderingInterface.getRenderingInterface(1)
-        self.renderingInterface.setParent(parent)
+class DummyPage(wiz.WizardPageSimple):
+      pass
 
+class RenderingPage(wiz.WizardPageSimple):
+    """
+    Class: RenderingPage
+    Created: 05.05.2005, KP
+    Description: A wizard page for rendering
+    """
+    def __init__(self,parent,title,control,videogen):
+        """
+        Method: __init__
+        Created: 05.05.2005, KP
+        Description: Initialization
+        """
+        wiz.WizardPageSimple.__init__(self,parent)
+        self.control = control
+        self.videogen=videogen
+        self.visualizer=Visualization.Visualizer(self)
+#        wx.FutureCall(500,self.control.startMayavi)
+#
+        self.visualizer.setDataUnit(control.getDataUnit())
+        self.Bind(wiz.EVT_WIZARD_PAGE_CHANGED, self.onWizPageChanged)
+        self.Bind(wiz.EVT_WIZARD_PAGE_CHANGING,self.onWizPageChanging)
+
+    def onWizPageChanging(self, evt):
+        """
+        Method: onWizPageChanging
+        Created: 05.05.2005, KP
+        Description: Event launched when a page is changing
+        """
+        page = evt.GetPage()
+
+        if page==self and evt.GetDirection():
+           print "From here to forward"
+           self.videogen.onWizardDone(evt)
+           evt.Veto()
+
+
+
+    def onWizPageChanged(self, evt):
+        """
+        Method: onWizPageChanged
+        Created: 05.05.2005, KP
+        Description: Event launched when a page is changed
+        """
+        page = evt.GetPage()
+        if page == self:
+           self.control.startMayavi()
+
+
+class VideoGenerationPage(wiz.WizardPageSimple):
+    """
+    Class: VideoGenerationPage
+    Created: 05.05.2005, KP
+    Description: A wizard page for controlling the movie generation.
+    """
+    def __init__(self,parent,title,control):
+        """
+        Method: __init__
+        Created: 05.05.2005, KP
+        Description: Initialization
+        """
+        wiz.WizardPageSimple.__init__(self,parent)
+
+        self.parent = parent
         self.control = control
         self.frames = self.control.getFrames()
         self.fps = self.control.getFrames() / float(self.control.getDuration())
@@ -65,31 +122,42 @@ class VideoGeneration(wx.Dialog):
         self.needpad=1
         self.mainsizer=wx.GridBagSizer()
         self.generateGUI()
-        self.btnsizer=self.CreateButtonSizer(wx.OK|wx.CANCEL)
-        self.launchBtn=wx.Button(self,-1,"Launch Mayavi")
-        self.btnsizer.Add(self.launchBtn)
-        self.launchBtn.Bind(wx.EVT_BUTTON,self.onLaunchMayavi)
-        
-        self.mainsizer.Add(self.btnsizer,(5,0),flag=wx.EXPAND|wx.RIGHT|wx.LEFT)
-        
-        wx.EVT_BUTTON(self,wx.ID_OK,self.onOkButton)
-        
+        #self.btnsizer=self.CreateButtonSizer(wx.OK|wx.CANCEL)
+        #self.launchBtn=wx.Button(self,-1,"Launch Mayavi")
+        #self.btnsizer.Add(self.launchBtn)
+        #self.launchBtn.Bind(wx.EVT_BUTTON,self.onLaunchMayavi)
+
+        #self.mainsizer.Add(self.btnsizer,(5,0),flag=wx.EXPAND|wx.RIGHT|wx.LEFT)
+
+        #wx.EVT_BUTTON(self,wx.ID_OK,self.onOkButton)
+
+        #self.parent.Bind(wiz.EVT_WIZARD_FINISHED,self.onWizardDone)
+        self.parent.Bind(wiz.EVT_WIZARD_CANCEL,self.onWizardCancel)
         self.SetSizer(self.mainsizer)
         self.SetAutoLayout(True)
         self.mainsizer.Fit(self)
 
-    def onOkButton(self,event):
+    def onWizardCancel(self,event):
         """
-        Method: onButtonOk()
+        Method: onWizardCancel
+        Created: 26.04.2005, KP
+        Description: Cancel the whole damn thing
+        """
+        print "Cancelled!"
+        self.Destroy()
+        self.parent.Destroy()
+
+    def onWizardDone(self,event):
+        """
+        Method: onWizardDone()
         Created: 26.04.2005, KP
         Description: Render the whole damn thing
-        """ 
-        
+        """
         path=self.rendir.GetValue()
         file=self.videofile.GetValue()
         print "Setting duration to ",self.dur,"and frames to",self.frames
         self.control.configureTimeline(self.dur,self.frames)
-        
+
         print "Will produce %s, rendered frames go to %s"%(file,path)
         size=self.frameSize.GetStringSelection()
         x,y=size.split("x")
@@ -103,8 +171,10 @@ class VideoGeneration(wx.Dialog):
         if self.formatMenu.GetSelection()==1:
             print "Will produce video"
             self.encodeVideo(size,path,file)
-        self.Close()
-        
+        event.Veto()
+
+#        self.Close()
+
     def encodeVideo(self,size,path,file):
         """
         Method: encodeVideo()
@@ -145,9 +215,9 @@ class VideoGeneration(wx.Dialog):
         Method: onLaunchMayavi()
         Created: 26.04.2005, KP
         Description: Launch mayavi
-        """ 
+        """
         self.control.startMayavi()
-        
+
     def onUpdateFormat(self,event):
         """
         Method: onUpdateFormat
@@ -179,7 +249,7 @@ class VideoGeneration(wx.Dialog):
             self.needpad=self.padding[codec]
             self.padFrames.Enable(self.needpad)
             self.onPadFrames(None)
-            
+
     def generateGUI(self):
         """
         Method: generateGUI
@@ -190,9 +260,10 @@ class VideoGeneration(wx.Dialog):
         box=wx.StaticBox(self,wx.HORIZONTAL,"Rendering")
         self.outputstaticbox=wx.StaticBoxSizer(box,wx.HORIZONTAL)
         self.outputstaticbox.Add(self.outputsizer)
-        
+
         self.formatLabel=wx.StaticText(self,-1,"Output Format")
         self.formatMenu=wx.Choice(self,-1,choices=["Images","Video"])
+        self.formatMenu.SetSelection(1)
         self.formatMenu.Bind(wx.EVT_CHOICE,self.onUpdateFormat)
         
         
@@ -210,11 +281,11 @@ class VideoGeneration(wx.Dialog):
         s=t%60
         t="%.2d:%.2d:%.2d"%(h,m,s)
         self.duration=wx.StaticText(self,-1,t,size=(100,-1))
-        
+
         self.outputFormatLbl = wx.StaticText(self,-1,"Video codec:")
         self.outputFormat = wx.Choice(self,-1,choices = self.outputFormats[1])
         self.outputFormat.Bind(wx.EVT_CHOICE,self.onUpdateCodec)
-        self.formatMenu.SetSelection(1)
+        self.outputFormat.SetSelection(2)
         
         self.frameSizeLbl = wx.StaticText(self,-1,"Frame size:")
         self.frameSize = wx.Choice(self,-1,choices=["320 x 240","640 x 480"])
@@ -252,7 +323,7 @@ class VideoGeneration(wx.Dialog):
         
         self.mainsizer.Add(self.outputstaticbox,(0,0))
         
-        self.rendir=wx.TextCtrl(self,size=(350,-1))
+        self.rendir=wx.TextCtrl(self,-1,"C:\\",size=(350,-1))
         self.rendirLbl=wx.StaticText(self,
         -1,"Directory for rendered frames:")
         
@@ -268,7 +339,7 @@ class VideoGeneration(wx.Dialog):
         self.renderingsizer.Add(self.rendir,(1,0))
         self.renderingsizer.Add(self.dirBtn,(1,1))
         
-        self.videofile=wx.TextCtrl(self,size=(350,-1))
+        self.videofile=wx.TextCtrl(self,-1,"C:\\video.avi",size=(350,-1))
         self.videofileLbl=wx.StaticText(self,-1,"Output file name:")
         self.videofileBtn=wx.Button(self,-1,"...")
         self.videofileBtn.Bind(wx.EVT_BUTTON,self.onSelectOutputFile)
@@ -342,3 +413,34 @@ class VideoGeneration(wx.Dialog):
             self.padfpsLabel.SetLabel("Padding frames: %.3f / second"%pad)
         else:
             self.padfpsLabel.SetLabel("Padding frames: 0 / second")
+
+
+class VideoGeneration(wiz.Wizard):
+    """
+    Class: VideoGeneration
+    Created: 23.02.2005, KP
+    Description: A wizard for controlling the movie generation.
+    """
+    def __init__(self,parent,control):
+#        wx.Dialog.__init__(self,parent,-1,"Rendering %s"%control.getDataUnit().getName())
+        wiz.Wizard.__init__(self,parent,-1,"Rendering %s"%control.getDataUnit().getName())
+        self.parent=parent
+        self.renderingInterface = RenderingInterface.getRenderingInterface(1)
+        self.renderingInterface.setParent(parent)
+        self.videopage = VideoGenerationPage(self,"Video settings",control)
+        self.videopage.renderingInterface = self.renderingInterface
+
+        self.renderingPage = RenderingPage(self,"Visualizer: Rendering",control,self.videopage)
+        self.renderingPage.Show(0)
+        
+        self.dummy = DummyPage(self)
+        self.dummy.Show(0)
+
+        wiz.WizardPageSimple_Chain(self.videopage,self.renderingPage)
+        wiz.WizardPageSimple_Chain(self.renderingPage,self.dummy)
+
+        self.FitToPage(self.renderingPage)
+
+
+
+

@@ -86,9 +86,10 @@ class RenderingInterface:
         self.stop=0
         self.currentTimePoint=-1
         # XXX: Make this configurable
-        self.type=Configuration.getConfiguration().getConfigItem("Output","ImageFormat")
+        self.type=Configuration.getConfiguration().getConfigItem("ImageFormat","Output")
+        print "Got type ",self.type,"from configuration"
         if not self.type:
-            self.type="jpeg"
+            self.type="pnm"
     def getColorTransferFunction(self):
         """
         Method: getColorTransferFunction()

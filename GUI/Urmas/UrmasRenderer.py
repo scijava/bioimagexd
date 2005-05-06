@@ -68,7 +68,7 @@ class UrmasRenderer:
         Class: startMayavi
         Created: 20.04.2005, KP
         Description: Start mayavi for rendering
-        """    
+        """
         self.control = control
         self.dataUnit = control.getDataUnit()
         data = self.dataUnit.getTimePoint(0)
@@ -103,17 +103,17 @@ class UrmasRenderer:
             self.renderingInterface.setCurrentTimepoint(0)
             
             self.renwin = self.renderingInterface.getRenderWindow() 
-            print "self.renwin=",self.renwin
+#            print "self.renwin=",self.renwin
             self.ren = self.renderingInterface.getRenderer()
             if self.renderingInterface.isVisualizationModuleLoaded() == False:
-                Dialogs.showwarning(self,"You must specify some module to MayaVi first!","Oops!")
+                Dialogs.showwarning(self.control.window,"You must specify some module to MayaVi first!","Oops!")
                 return
-                
+
             if not self.ren:
-                Dialogs.showwarning(self,"No renderer in main render window!! This should not be possible!","Oops!")
+                Dialogs.showwarning(self.control.window,"No renderer in main render window!! This should not be possible!","Oops!")
                 return
-            self.dlg = wx.ProgressDialog("Rendering","Rendering at %.2fs / %.2fs (frame %d / %d)"%(0,0,0,0),maximum = frames, parent = self.control.window)
-            self.dlg.Show()
+#            self.dlg = wx.ProgressDialog("Rendering","Rendering at %.2fs / %.2fs (frame %d / %d)"%(0,0,0,0),maximum = frames, parent = self.control.window)
+#            self.dlg.Show()
 
         self.splineEditor = control.getSplineEditor()
         spf = duration / float(frames)
@@ -123,7 +123,8 @@ class UrmasRenderer:
             else:
                 self.renderFrame(n,(n+1)*spf,spf)
         if not preview:
-            self.dlg.Destroy()
+            pass
+#            self.dlg.Destroy()
             
     def getTimepointAt(self,time):
         """
@@ -170,7 +171,7 @@ class UrmasRenderer:
         time    The current time in the timeline
         spf     Seconds per one frame
         """            
-        
+
         timepoint = self.getTimepointAt(timepos)
         if timepoint != self.oldTimepoint:
             # Set the timepoint to be used
@@ -185,7 +186,7 @@ class UrmasRenderer:
             return -1
          
         p0=point.getPoint()
-        self.dlg.Update(frame,"Rendering at %.2fs / %.2fs (frame %d / %d)"%(timepos,self.duration,frame,self.frames))
+        #self.dlg.Update(frame,"Rendering at %.2fs / %.2fs (frame %d / %d)"%(timepos,self.duration,frame,self.frames))
         print "Rendering frame %d using timepoint %d, time is %f"%(frame,timepoint,timepos)
         start,end=point.getPosition()
         # how far along this part of spline we are
