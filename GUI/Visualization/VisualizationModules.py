@@ -172,7 +172,7 @@ class VolumeModule(VisualizationModule):
             else:
                 self.mapper.SetMaximumNumberOfPlanes(25-quality)
                 print "Maximum planes=",self.mapper.GetMaximumNumberOfPlanes()
-            
+
 
     def setMethod(self,method):
         """
@@ -385,9 +385,9 @@ class ImagePlaneModule(VisualizationModule):
         self.planeWidgetX.SetKeyPressActivationValue("x")
         #self.planeWidgetX.UserControlledLookupTableOn()
         self.prop1 = self.planeWidgetX.GetPlaneProperty()
-        self.prop1.SetColor(1, 0, 0)
+#        self.prop1.SetColor(1, 0, 0)
         self.planeWidgetX.SetResliceInterpolateToCubic()
-        
+
         self.planeWidgetY = vtk.vtkImagePlaneWidget()
         self.planeWidgetY.DisplayTextOn()
         self.planeWidgetY.SetPlaneOrientationToYAxes()
@@ -396,8 +396,8 @@ class ImagePlaneModule(VisualizationModule):
         self.prop2 = self.planeWidgetY.GetPlaneProperty()
         self.planeWidgetY.SetResliceInterpolateToCubic()
         #self.planeWidgetY.UserControlledLookupTableOn()
-        self.prop2.SetColor(1, 1, 0)
-        
+#        self.prop2.SetColor(1, 1, 0)
+
 
         # for the z-slice, turn off texture interpolation:
         # interpolation is now nearest neighbour, to demonstrate
@@ -408,7 +408,7 @@ class ImagePlaneModule(VisualizationModule):
         self.planeWidgetZ.SetPicker(self.picker)
         self.planeWidgetZ.SetKeyPressActivationValue("z")
         self.prop3 = self.planeWidgetZ.GetPlaneProperty()
-        self.prop3.SetColor(0, 0, 1)
+#        self.prop3.SetColor(0, 0, 1)
         #self.planeWidgetZ.UserControlledLookupTableOn()
         self.planeWidgetZ.SetResliceInterpolateToCubic()
         self.parent.getRenderer().AddActor(self.outlineActor)

@@ -65,6 +65,7 @@ class NamePanel(wx.Panel):
         self.size=size
         self.bold=0
         w,h=self.size
+        print "Height of track=",h
         self.buffer = wx.EmptyBitmap(w,h,-1)
         self.setColor((0,0,0),color)
         self.dc = None
@@ -124,13 +125,13 @@ class NamePanel(wx.Panel):
         self.dc.EndDrawing()
         self.dc = None
 
-        
+
 class Track(wx.Panel):
     """
     Class: Track
     Created: 04.02.2005, KP
     Description: A class representing a track in the timeline
-    """       
+    """
     def __init__(self,name,parent,**kws):
         wx.Panel.__init__(self,parent,-1,style=wx.SIMPLE_BORDER)
         self.number=0
@@ -143,21 +144,24 @@ class Track(wx.Panel):
         self.splineEditor = self.control.getSplineEditor()
         self.label = name
         self.previtem = None
+        print "Height = ",height
         if kws.has_key("height"):
-            height=kws["height"]
+           print "Setting height to ",kws["height"]
+           height=kws["height"]
         if kws.has_key("editable"):
             self.editable=kws["editable"]
         self.timescale=kws["timescale"]
         if kws.has_key("number"):
             self.number=kws["number"]
-
+        print "Height now=",height
         self.sizer=wx.GridBagSizer()
         self.itemBox=None
         self.color=None
         self.parent=parent
 
         self.enabled = 1
-    
+
+
         self.namePanel=NamePanel(self,name,(255,255,255),size=(125,height))
         self.sizer.Add(self.namePanel,(0,0))
 
@@ -531,7 +535,6 @@ class SplineTrack(Track):
     Description: A class representing a spline track in the timeline
     """       
     def __init__(self,name,parent,**kws):
-        kws["height"]=40
         Track.__init__(self,name,parent,**kws)   
         self.closed = 0
         self.nameColor = (0,148,213)
@@ -671,7 +674,7 @@ class SplineTrack(Track):
         Method: addItem
         Created: 04.02.2005, KP
         Description: A method to add a new item to this track
-        """              
+        """
         h=self.namePanel.GetSize()[1]
         itemkws={"itemnum":position,"editable":self.editable}
         if kws.has_key("point"):
@@ -681,18 +684,18 @@ class SplineTrack(Track):
         itemkws["point"]=point
         print "Setting point to ",point
         pts=[]
-        
+
         for item in self.items:
             print "item=",item
             pts.append(item.getPoint())
         print "current=",pts
         pts.insert(position,point)
-        
+
         if len(pts)>=2:
             self.splineEditor.setClosed(self.closed)
             self.splineEditor.setSplinePoints(pts)
-            self.control.setSplineInteractionCallback(self.updateLabels)        
-            
+            self.control.setSplineInteractionCallback(self.updateLabels)
+
         item=self.itemClass(self,"%d"%position,(20,h),**itemkws)
         if self.color:
             item.setColor(self.color,self.headercolor)
@@ -767,8 +770,7 @@ class TimepointTrack(Track):
     Description: A class representing a timepoint track in the timeline
     """       
     def __init__(self,name,parent,**kws):
-        kws["height"]=40
-        Track.__init__(self,name,parent,**kws)   
+        Track.__init__(self,name,parent,**kws)
         self.nameColor = (128,195,155)
         self.namePanel.setColor((0,0,0),self.nameColor)
         if "item" in kws:

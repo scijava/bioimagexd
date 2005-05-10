@@ -406,7 +406,7 @@ class Visualizer:
         Method: onChangeTimepoint
         Created: 28.04.2005, KP
         Description: Set the timepoint to be shown
-        """  
+        """
         tp=self.timeslider.GetValue()
         if self.timepoint != tp:
             self.setTimepoint(tp)

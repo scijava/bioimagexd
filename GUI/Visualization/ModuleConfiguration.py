@@ -54,7 +54,7 @@ class ModuleConfiguration(wx.MiniFrame):
         Created: 28.04.2005, KP
         Description: Initialization
         """     
-        wx.MiniFrame.__init__(self,parent,-1,"Configure: %s"%name)
+        wx.MiniFrame.__init__(self,parent.parent,-1,"Configure: %s"%name)
         self.sizer = wx.GridBagSizer()
         self.parent = parent
         self.name = name

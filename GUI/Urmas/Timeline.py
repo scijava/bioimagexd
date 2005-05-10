@@ -187,10 +187,10 @@ class Timeline(scrolled.ScrolledPanel):
         
         for n in range(tpamnt-len(self.timepointTracks)):
             print "Adding timepoint track"
-            self.addTrack("TmpTrack%d"%n,n)
+            self.addTrack("Timepoints %d"%n,n)
         for n in range(spamnt-len(self.splinepointTracks)):
             print "Adding splinepoint track"
-            self.addSplinepointTrack("TmpSpline%d"%n)
+            self.addSplinepointTrack("Camera Path %d"%n)
         print "splinepointtracks now=",self.splinepointTracks
             
     def moveTracks(self,moveFrom,moveTo,howMany):
@@ -228,7 +228,7 @@ class Timeline(scrolled.ScrolledPanel):
         if label=="":
             label="Timepoints %d"%len(self.timepointTracks)
         
-        tr=TimepointTrack(label,self,number=1,timescale=self.timeScale,control=self.control)
+        tr=TimepointTrack(label,self,number=1,timescale=self.timeScale,control=self.control,height=55)
         
         self.timeScale.setOffset(tr.getLabelWidth())
         self.splinepointTrackAmnt = len(self.splinepointTracks)
@@ -259,7 +259,7 @@ class Timeline(scrolled.ScrolledPanel):
         """
         if label=="":
             label="Camera Path %d"%len(self.splinepointTracks)
-        tr=SplineTrack(label,self,number=1,timescale=self.timeScale,control=self.control)
+        tr=SplineTrack(label,self,number=1,timescale=self.timeScale,control=self.control,height=55)
         tr.setColor((248,196,56))
         self.splinepointTrackAmnt = len(self.splinepointTracks)
         self.timepointTrackAmnt = len(self.timepointTracks)
