@@ -175,25 +175,25 @@ class MainWindow(wx.Frame):
         wx.Image(os.path.join(iconpath,"Colocalization.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Colocalization","Create colocalization map")
         wx.EVT_TOOL(self,ID_COLOCALIZATION,self.onMenuColocalization)       
 
-        tb.AddSimpleTool(ID_VSIA,
-        wx.Image(os.path.join(iconpath,"HIV.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Visualization of sparse intensity aggregations","Visualization of sparse intensity aggregations")
-        wx.EVT_TOOL(self,ID_VSIA,self.menuVSIA)
+        #tb.AddSimpleTool(ID_VSIA,
+        #wx.Image(os.path.join(iconpath,"HIV.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Visualization of sparse intensity aggregations","Visualization of sparse intensity aggregations")
+        #wx.EVT_TOOL(self,ID_VSIA,self.menuVSIA)
         
         tb.AddSimpleTool(ID_SINGLE,
         wx.Image(os.path.join(iconpath,"DataSetSettings2.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Process dataset series","Process a single dataset series")
         wx.EVT_TOOL(self,ID_SINGLE,self.onMenuProcessDataUnit)
 
-        tb.AddSimpleTool(ID_REEDIT,
-        wx.Image(os.path.join(iconpath,"ReEdit.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Re-edit dataset series","Re-edit a dataset series")
-        wx.EVT_TOOL(self,ID_REEDIT,self.onMenuEditDataSet)
+        #tb.AddSimpleTool(ID_REEDIT,
+        #wx.Image(os.path.join(iconpath,"ReEdit.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Re-edit dataset series","Re-edit a dataset series")
+        #wx.EVT_TOOL(self,ID_REEDIT,self.onMenuEditDataSet)
 
-        tb.AddSimpleTool(ID_RESLICE,
-        wx.Image(os.path.join(iconpath,"Reslice.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Re-edit dataset series","Re-edit a dataset series")
-        wx.EVT_TOOL(self,ID_RESLICE,self.onMenuReslice)
+        #tb.AddSimpleTool(ID_RESLICE,
+        #wx.Image(os.path.join(iconpath,"Reslice.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Re-edit dataset series","Re-edit a dataset series")
+        #wx.EVT_TOOL(self,ID_RESLICE,self.onMenuReslice)
 
         
         tb.AddSimpleTool(ID_RENDER,
-        wx.Image(os.path.join(iconpath,"Render.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Render","Render a dataset series")
+        wx.Image(os.path.join(iconpath,"Render.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Animator","Render a video in Animator")
         wx.EVT_TOOL(self,ID_RENDER,self.onMenuRender)
 
         tb.Realize()
@@ -250,11 +250,11 @@ class MainWindow(wx.Frame):
 
         self.taskMenu.Append(ID_COLOCALIZATION,"&Colocalization...","Create a colocalization map")
         self.taskMenu.Append(ID_COLORMERGING,"Color &Merging...","Merge dataset series")
-        self.taskMenu.Append(ID_VSIA,"&Visualize Sparse Intensity Aggregations...","Visualize Sparse Intensity Aggregations with smooth surface")
+        #self.taskMenu.Append(ID_VSIA,"&Visualize Sparse Intensity Aggregations...","Visualize Sparse Intensity Aggregations with smooth surface")
         self.taskMenu.Append(ID_SINGLE,"&Process Single Dataset Series...","Process Single Dataset Series")
         
-        self.renderMenu.Append(ID_RENDER,"&Render Dataset Series...","Render a dataset series")
-        self.renderMenu.Append(ID_MAYAVI,"&Visualize Dataset","Visualize dataset in Mayavi")
+        self.renderMenu.Append(ID_RENDER,"&Animator","Render a vidoe using the Animator")
+        self.renderMenu.Append(ID_MAYAVI,"&Visualizer","Visualize the dataset in Visualizer")
         wx.EVT_MENU(self,ID_COLOCALIZATION,self.onMenuColocalization)
         wx.EVT_MENU(self,ID_COLORMERGING,self.onMenuMergeChannels)
         wx.EVT_MENU(self,ID_VSIA,self.menuVSIA)
