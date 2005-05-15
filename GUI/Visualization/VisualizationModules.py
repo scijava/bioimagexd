@@ -6,7 +6,7 @@
  Created: 28.04.2005, KP
  Description:
 
- A module containing the various rendering modules for the visualization
+ A module containing the various Rendering modules for the visualization
  
  Modified 28.04.2005 KP - Created the class
           
@@ -96,15 +96,26 @@ class VisualizationModule:
         """
         Method: disableRendering()
         Created: 30.04.2005, KP
-        Description: Disable the rendering of this module
+        Description: Disable the Rendering of this module
         """          
         self.renderer.RemoveActor(self.actor)
+
+        self.wxrenwin.Render()
+        
+    def enableRendering(self):
+        """
+        Method: enableRendering()
+        Created: 15.05.2005, KP
+        Description: Enable the Rendering of this module
+        """          
+        self.renderer.AddActor(self.actor)
+        self.wxrenwin.Render()
 
 class VolumeModule(VisualizationModule):
     """
     Class: VolumeModule
     Created: 28.04.2005, KP
-    Description: A volume rendering module
+    Description: A volume Rendering module
     """    
     def __init__(self,parent):
         """
@@ -114,8 +125,8 @@ class VolumeModule(VisualizationModule):
         """     
         VisualizationModule.__init__(self,parent)   
         self.name = "Volume Rendering"
-        self.quality = 0
-        self.method=0
+        self.quality = 10
+        self.method=2
         self.opacityTransferFunction = vtk.vtkPiecewiseFunction()
         self.opacityTransferFunction.AddPoint(0, 0.0)
         self.opacityTransferFunction.AddPoint(255, 0.2)
@@ -124,10 +135,10 @@ class VolumeModule(VisualizationModule):
 
         self.volumeProperty =  vtk.vtkVolumeProperty()
         self.volumeProperty.SetScalarOpacity(self.opacityTransferFunction)
-        self.setQuality(0)
+        self.setQuality(10)
         self.volume = vtk.vtkVolume()
         self.volume.SetProperty(self.volumeProperty)
-        self.setMethod(0)
+        self.setMethod(2)
         self.parent.getRenderer().AddVolume(self.volume)
         #self.updateRendering()
         
@@ -150,37 +161,66 @@ class VolumeModule(VisualizationModule):
         self.opacityTransferFunction = otf
         self.volumeProperty.SetScalarOpacity(self.opacityTransferFunction)
         
+    def setVolumeProAcceleration(self,acc):
+        """
+        Method: setVolumeProAcceleration(acceleration)
+        Created: 15.05.2005, KP
+        Description: Set volume pro acceleration
+        """ 
+        self.method=-1
+        self.mapper = vtk.vtkVolumeProMapper()
+        cmd="self.mapper.SetBlendModeTo%s()"%acc
+        print "Setting blending mode to ",acc
+        eval(cmd)
+        print "Setting parallel projection"
+        self.renderer.GetActiveCamera().ParallelProjectionOn()
         
-    def setQuality(self,quality):
+    def setQuality(self,quality,raw=0):
         """
         Method: setQuality(self,quality)
         Created: 28.04.2005, KP
-        Description: Set the quality of rendering
+        Description: Set the quality of Rendering
         """ 
-        print "Setting quality to ",quality
-        if quality==0:
+        if self.method<0:return 0
+        if raw:
+            print "Setting quality setting to raw",quality
+            if self.method == 2:
+                print "Setting maximum number of planes to ",quality
+                self.mapper.SetMaximumNumberOfPlanes(quality)
+            else:
+                print "Setting sample distance to ",quality
+                self.mapper.SetSampleDistance(quality)
+            return quality
+            
+        else:
+            print "Setting quality to ",quality
+        if quality==10:
             self.volumeProperty.ShadeOn()
             self.volumeProperty.SetInterpolationTypeToLinear()
             
-        elif quality==1:
+        elif quality==9:
             self.volumeProperty.ShadeOff()
             self.volumeProperty.SetInterpolationTypeToNearest()
-        elif quality>1:
-            if self.method == 0:
-                self.mapper.SetImageSampleDistance(quality)
-                print "Image Sample distance=",self.mapper.GetImageSampleDistance()
+        elif quality<9:
+            quality=10-quality
+            if self.method != 2:
+                self.mapper.SetSampleDistance(quality)
+                return quality
+                print "Image Sample distance=",self.mapper.GetSampleDistance()
             else:
                 self.mapper.SetMaximumNumberOfPlanes(25-quality)
                 print "Maximum planes=",self.mapper.GetMaximumNumberOfPlanes()
-
+                return 25-quality
+        return 0
 
     def setMethod(self,method):
         """
         Method: setMethod(self,method)
         Created: 28.04.2005, KP
-        Description: Set the rendering method used
+        Description: Set the Rendering method used
         """             
         self.method=method
+        print "Setting volume rendering method to ",method
         #Ray Casting, RGBA Ray Casting, Texture Mapping, MIP
         composites = [vtk.vtkVolumeRayCastCompositeFunction,
                       vtk.vtkVolumeRayCastRGBCompositeFunction,
@@ -192,38 +232,51 @@ class VolumeModule(VisualizationModule):
             self.mapper = vtk.vtkVolumeRayCastMapper()
             self.function = composites[method]()
             self.mapper.SetVolumeRayCastFunction(self.function)
-        else: # texture mapping
+        elif method==2: # texture mapping
             self.mapper = vtk.vtkVolumeTextureMapper2D()
         
         self.volume.SetMapper(self.mapper)    
+        
+#        self.renderer.GetActiveCamera().ParallelProjectionOff()
 
     def updateRendering(self,input = None):
         """
         Method: updateRendering()
         Created: 28.04.2005, KP
-        Description: Update the rendering of this module
+        Description: Update the Rendering of this module
         """             
         if not input:
             input=self.data
         print "Rendering!"
         self.mapper.SetInput(input)
+        print "self.mapper=",self.mapper
         self.mapper.Update()
-        self.parent.render()
+        self.parent.Render()
         
     def disableRendering(self):
         """
         Method: disableRendering()
         Created: 30.04.2005, KP
-        Description: Disable the rendering of this module
+        Description: Disable the Rendering of this module
         """          
         self.renderer.RemoveVolume(self.volume)
+        self.wxrenwin.Render()
+        
+    def enableRendering(self):
+        """
+        Method: enableRendering()
+        Created: 15.05.2005, KP
+        Description: Enable the Rendering of this module
+        """          
+        self.renderer.AddVolume(self.volume)
+        self.wxrenwin.Render()        
         
     
 class SurfaceModule(VisualizationModule):
     """
     Class: SurfaceModule
     Created: 28.04.2005, KP
-    Description: A surface rendering module
+    Description: A surface Rendering module
     """    
     def __init__(self,parent):
         """
@@ -295,7 +348,7 @@ class SurfaceModule(VisualizationModule):
         """
         Method: setMethod(self,method)
         Created: 28.04.2005, KP
-        Description: Set the rendering method used
+        Description: Set the Rendering method used
         """             
         self.method=method
         if method<2:
@@ -307,10 +360,10 @@ class SurfaceModule(VisualizationModule):
                 self.volumeModule.disableRendering()
                 self.volumeModule = None
         else:
-            print "Using volume rendering for isosurfacing"
+            print "Using volume Rendering for isosurfacing"
             self.disableRendering()
             self.volumeModule = VolumeModule(self.parent)
-            self.volumeModule.setMethod(4)
+            self.volumeModule.setMethod(5)
             self.volumeModule.setDataUnit(self.dataUnit)
             self.volumeModule.showTimepoint(self.timepoint)
             
@@ -319,7 +372,7 @@ class SurfaceModule(VisualizationModule):
         """
         Method: updateRendering()
         Created: 28.04.2005, KP
-        Description: Update the rendering of this module
+        Description: Update the Rendering of this module
         """             
         if self.volumeModule:
             self.volumeModule.function.SetIsoValue(self.isoValue)
@@ -348,7 +401,7 @@ class SurfaceModule(VisualizationModule):
         else:
             self.mapper.SetInput(self.contour.GetOutput())
         self.mapper.Update()
-        self.parent.render()    
+        self.parent.Render()    
 
 
 class ImagePlaneModule(VisualizationModule):
@@ -411,7 +464,8 @@ class ImagePlaneModule(VisualizationModule):
 #        self.prop3.SetColor(0, 0, 1)
         #self.planeWidgetZ.UserControlledLookupTableOn()
         self.planeWidgetZ.SetResliceInterpolateToCubic()
-        self.parent.getRenderer().AddActor(self.outlineActor)
+        self.renderer = self.parent.getRenderer()
+        self.renderer.AddActor(self.outlineActor)
         
         iactor = self.wxrenwin.GetRenderWindow().GetInteractor()
         self.planeWidgetX.SetInteractor(iactor)
@@ -436,13 +490,17 @@ class ImagePlaneModule(VisualizationModule):
         x=self.extent[1]/2
         y=self.extent[3]/2
         z=self.extent[5]/2
-        self.x,self.y,self.z=x,y,z
+        self.setDisplaySlice(x,y,z)
 
         ctf = self.dataUnit.getColorTransferFunction()
         self.planeWidgetX.GetColorMap().SetLookupTable(ctf)
+        self.planeWidgetX.maxDim = x
+        
         self.planeWidgetY.GetColorMap().SetLookupTable(ctf)
+        self.planeWidgetY.maxDim = y
+        
         self.planeWidgetZ.GetColorMap().SetLookupTable(ctf)
-    
+        self.planeWidgetZ.maxDim = z
     
     def setDisplaySlice(self,x,y,z):
         """
@@ -451,9 +509,6 @@ class ImagePlaneModule(VisualizationModule):
         Description: Set the slices to display
         """           
         self.x,self.y,self.z=x,y,z
-        self.planeWidgetX.SetSliceIndex(self.x)
-        self.planeWidgetY.SetSliceIndex(self.y)
-        self.planeWidgetZ.SetSliceIndex(self.z)
         #self.parent.getRenderer().ResetCameraClippingRange()
         #self.wxrenwin.GetRenderWindow().Render()
         print "Showing slices ",self.x,self.y,self.z
@@ -467,11 +522,61 @@ class ImagePlaneModule(VisualizationModule):
         self.renew=1
         VisualizationModule.showTimepoint(self,value)
         
+    def alignCamera(self,widget):
+        """
+        Method: alignCamera(widget)
+        Created: 15.05.2005, KP
+        Description: Align the camera so that it shows a given widget
+        """          
+        xMin,xMax,yMin,yMax,zMin,zMax=self.extent
+        sx,sy,sz=self.spacing
+        ox,oy,oz=self.origin
+        slice_number = widget.maxDim / 2
+        cx = ox+(0.5*(xMax-xMin))*sx
+        cy = oy+(0.5*(yMax-yMin))*sy
+        cz = oy+(0.5*(zMax-zMin))*sz
+        vx, vy, vz = 0, 0, 0
+        nx, ny, nz = 0, 0, 0
+        iaxis = widget.GetPlaneOrientation()
+        if iaxis == 0:
+            vz = 1
+            nx = ox + xMax*sx
+            cx = ox + slice_number*sx
+          
+        elif iaxis == 1:
+            vz = 1
+            ny = oy+yMax*sy
+            cy = oy+slice_number*sy
+          
+        else:
+            vy = 1
+            nz = oz+zMax*sz
+            cz = oz+slice_number*sz
+          
+    
+        
+        px = cx+nx*2
+        py = cy+ny*2
+        d=float(xMax)/zMax
+        if d<1:d=1
+        print "d=",d
+        pz = cz+nz*(3.0+d)
+    
+        camera = self.renderer.GetActiveCamera()
+        camera.SetViewUp(vx, vy, vz)
+        camera.SetFocalPoint(cx, cy, cz)
+        camera.SetPosition(px, py, pz)
+            
+        camera.OrthogonalizeViewUp()
+        self.renderer.ResetCameraClippingRange()
+        self.wxrenwin.Render()
+
+        
     def updateRendering(self):
         """
         Method: updateRendering()
         Created: 03.05.2005, KP
-        Description: Update the rendering of this module
+        Description: Update the Rendering of this module
         """             
         self.outline.SetInput(self.data)
         self.outlineMapper.SetInput(self.outline.GetOutput())
@@ -484,6 +589,9 @@ class ImagePlaneModule(VisualizationModule):
             self.planeWidgetZ.SetInput(self.data)
             self.planeWidgetY.SetInput(self.data)
             self.renew=0
+        self.planeWidgetX.SetSliceIndex(self.x)
+        self.planeWidgetY.SetSliceIndex(self.y)
+        self.planeWidgetZ.SetSliceIndex(self.z)
         
         if not self.on:
             self.planeWidgetX.On()
@@ -492,7 +600,31 @@ class ImagePlaneModule(VisualizationModule):
             self.on = 1
         
         #self.mapper.Update()
-        self.parent.render()    
+        self.parent.Render()    
+
+    def disableRendering(self):
+        """
+        Method: disableRendering()
+        Created: 15.05.2005, KP
+        Description: Disable the Rendering of this module
+        """          
+        self.renderer.RemoveActor(self.outlineActor)
+        self.planeWidgetX.Off()
+        self.planeWidgetY.Off()
+        self.planeWidgetZ.Off()
+        self.wxrenwin.Render()
+        
+    def enableRendering(self):
+        """
+        Method: enableRendering()
+        Created: 15.05.2005, KP
+        Description: Enable the Rendering of this module
+        """          
+        self.renderer.AddActor(self.outlineActor)
+        self.planeWidgetX.On()
+        self.planeWidgetY.On()
+        self.planeWidgetZ.On()
+        self.wxrenwin.Render()
 
 
 class ArbitrarySliceModule(VisualizationModule):
@@ -602,7 +734,7 @@ class ArbitrarySliceModule(VisualizationModule):
         """
         Method: updateRendering()
         Created: 03.05.2005, KP
-        Description: Update the rendering of this module
+        Description: Update the Rendering of this module
         """             
         self.planeWidget.SetInput(self.data)
         self.probe.SetInput(self.plane)
@@ -626,5 +758,5 @@ class ArbitrarySliceModule(VisualizationModule):
             self.on = 1
         
         #self.mapper.Update()
-        self.parent.render()    
+        self.parent.Render()    
         
