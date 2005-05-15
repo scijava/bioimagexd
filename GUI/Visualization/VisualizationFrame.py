@@ -41,6 +41,7 @@ from Events import *
 import Dialogs
 from VisualizationModules import *
 from ModuleConfiguration import *
+from VisualizerWindow import *
 from Lights import *
 
 visualizerInstance=None
@@ -69,6 +70,11 @@ class ConfigurationPanel(wx.Panel):
         self.moduleLbl = wx.StaticText(self,-1,"Rendering module:")
         self.moduleChoice = wx.Choice(self,-1,choices=["Volume Rendering","Surface Rendering","Orthogonal Slices","Arbitrary Slices"])
         self.moduleChoice.SetSelection(0)
+        
+        self.moduleListbox = wx.CheckListBox(self,-1)
+        self.moduleListbox.Bind(wx.EVT_CHECKLISTBOX,self.onCheckItem)
+        self.moduleListbox.Bind(wx.EVT_LISTBOX,self.onSelectItem)
+        
         self.moduleLoad = wx.Button(self,-1,"Load")
         self.moduleLoad.Bind(wx.EVT_BUTTON,self.onLoadModule)
         
@@ -81,6 +87,7 @@ class ConfigurationPanel(wx.Panel):
 
         self.sizer.Add(self.moduleLbl,(0,0))
         self.sizer.Add(self.moduleChoice,(1,0))
+        self.sizer.Add(self.moduleListbox,(2,0))
         
         
         box=wx.BoxSizer(wx.HORIZONTAL)
@@ -89,11 +96,12 @@ class ConfigurationPanel(wx.Panel):
   
         box.Add(self.moduleLoad)
         box.Add(self.moduleRemove)
-        self.sizer.Add(box,(2,0))
+        self.sizer.Add(box,(3,0))
         box2=wx.BoxSizer(wx.HORIZONTAL)
         box2.Add(self.configureBtn)
         box2.Add(self.lightsBtn)
-        self.sizer.Add(box2,(3,0))
+        self.sizer.Add(box2,(4,0))
+        self.selected = -1
         
         #self.sizer.Add(self.configureBtn,(3,0))
         
@@ -101,6 +109,27 @@ class ConfigurationPanel(wx.Panel):
         self.SetSizer(self.sizer)
         self.SetAutoLayout(1)
         self.sizer.Fit(self)
+        
+    def onSelectItem(self,event):
+        """
+        Method: onSelectItem
+        Created: 15.05.2005, KP
+        Description: Select a module
+        """
+        self.selected = event.GetSelection()
+        
+        
+    def onCheckItem(self,event):
+        """
+        Method: onCheckItem
+        Created: 15.05.2005, KP
+        Description: Enable / Disable a module
+        """
+        index = event.GetSelection()
+        lbl = self.moduleListbox.GetString(index)
+        status=self.moduleListbox.IsChecked(index)
+        print "Setting rendering of %s to %s"%(lbl,status)
+        self.visualizer.setRenderingStatus(lbl,status)
 
     def onConfigureLights(self,event):
         """
@@ -119,7 +148,11 @@ class ConfigurationPanel(wx.Panel):
         Created: 28.04.2005, KP
         Description: Load the selected module
         """
-        self.visualizer.loadModule(self.moduleChoice.GetStringSelection())
+        lbl = self.moduleChoice.GetStringSelection()
+        self.visualizer.loadModule(lbl)
+        n=self.moduleListbox.GetCount()
+        self.moduleListbox.InsertItems([lbl],n)
+        self.moduleListbox.Check(n)
 
     def onRemoveModule(self,event):
         """
@@ -127,7 +160,14 @@ class ConfigurationPanel(wx.Panel):
         Created: 03.05.2005, KP
         Description: Remove the selected module
         """
-        self.visualizer.removeModule(self.moduleChoice.GetStringSelection())
+        if self.selected == -1:
+            Dialogs.showerror(self,"You have to select a module to be removed","No module selected")
+            return
+        lbl=self.moduleListbox.GetString(self.selected)
+        self.visualizer.removeModule(lbl)
+        self.moduleListBox.Delete(self.selected)
+        self.selected=-1
+
 
     def onConfigureModule(self,event):
         """
@@ -135,120 +175,13 @@ class ConfigurationPanel(wx.Panel):
         Created: 28.04.2005, KP
         Description: Load the selected module
         """            
-        self.visualizer.configureModule(self.moduleChoice.GetStringSelection())        
+        if self.selected ==-1:
+            Dialogs.showerror(self,"You have to select a module to be configured","No module selected")
+            return
+        lbl =self.moduleListbox.GetString(self.selected)
+        self.visualizer.configureModule(lbl)        
 
 
-class VisualizationWindow(wxVTKRenderWindowInteractor):
-    """
-    Class: VisualizationWindow
-    Created: 3.5.2005, KP
-    Description: A window for showing 3D visualizations
-    """
-    def __init__(self,parent,**kws):
-        """
-        Method: __init__(parent)
-        Created: 3.05.2005, KP
-        Description: Initialization
-        """    
-        wxVTKRenderWindowInteractor.__init__(self,parent,-1,**kws)
-        self.renderer=None
-        self.doSave=0
-
-
-    def initializeVTK(self):
-        """
-        Method: initializeVTK
-        Created: 29.04.2005, KP
-        Description: initialize the vtk renderer
-        """
-        self.iren = iren = self.GetRenderWindow().GetInteractor()
-        self.iren.SetInteractorStyle(vtk.vtkInteractorStyleTrackballCamera())
-        self.getRenderer()
-        self.renderer.SetBackground(0,0,0.3)
-        self.iren.SetSize(self.GetRenderWindow().GetSize())
-        self.renderer.AddObserver("StartEvent",self.onRenderBegin)
-        self.renderer.AddObserver("EndEvent",self.onRenderEnd)
-
-
-    def onRenderBegin(self,event=None,e2=None):
-        """
-        Method: onRenderBegin
-        Created: 30.04.2005, KP
-        Description: Called when rendering begins
-        """
-        self.rendering=1
-
-    def onRenderEnd(self,event=None,e2=None):
-        """
-        Method: onRenderEnd
-        Created: 30.04.2005, KP
-        Description: Called when rendering begins
-        """
-        self.rendering=0
-
-    def save_png(self,filename):
-        """
-        Method: save_png(self,filename)
-        Created: 28.04.2005, KP
-        Description: Save the rendered screen as png
-        """            
-        self.saveScreen(vtk.vtkPNGWriter(),filename)
-
-    def save_pnm(self,filename):
-        """
-        Method: save_pnm(self,filename)
-        Created: 28.04.2005, KP
-        Description: Save the rendered screen as png
-        """
-        self.saveScreen(vtk.vtkPNMWriter(),filename)
-
-    def save_jpeg(self,filename):
-        """
-        Method: save_jpeg(self,filename)
-        Created: 28.04.2005, KP
-        Description: Save the rendered screen as jpeg
-        """            
-        self.saveScreen(vtk.vtkJPEGWriter(),filename)
-    def save_tiff(self,filename):
-        """
-        Method: save_tiff(self,filename)
-        Created: 28.04.2005, KP
-        Description: Save the rendered screen as jpeg
-        """
-        self.saveScreen(vtk.vtkTIFFWriter(),filename)
-        
-    def saveScreen(self,writer,filename):
-        """
-        Method: saveScreen(writer,filename)
-        Created: 28.04.2005, KP
-        Description: Writes the screen to disk
-        """
-
-        while self.rendering:
-            time.sleep(0.01)
-        writer.SetFileName(filename)
-        _filter = vtk.vtkWindowToImageFilter()
-        _filter.SetInput(self.GetRenderWindow())
-        writer.SetInput(_filter.GetOutput())
-        writer.Write()
-
-    def getRenderer(self):
-        """
-        Method: getRenderer
-        Created: 28.04.2005, KP
-        Description: Return the renderer
-        """
-        if not self.renderer:
-            collection=self.GetRenderWindow().GetRenderers()
-            if collection.GetNumberOfItems()==0:
-                print "Adding renderer"
-                self.renderer = vtk.vtkRenderer()
-                self.GetRenderWindow().AddRenderer(self.renderer)
-            else:
-                print "Using existing rendererer"
-                self.renderer=collection.GetItemAsObject(0)
-        return self.renderer
-    
 
 class VisualizationFrame(wx.Frame):
     """
@@ -292,11 +225,9 @@ class Visualizer:
 
                        }
         self.modules = []
-#        wx.Panel.__init__(self,parent,-1)
         self.sizer = wx.GridBagSizer()
-        self.wxrenwin = VisualizationWindow(self.parent,size=(512,512))
+        self.wxrenwin = VisualizerWindow(self.parent,size=(512,512))
         self.wxrenwin.Render()
-
 
         self.GetRenderWindow=self.wxrenwin.GetRenderWindow
         self.renwin=self.wxrenwin.GetRenderWindow()
@@ -357,9 +288,9 @@ class Visualizer:
         """  
         return self.modules
         
-    def render(self):
+    def Render(self):
         """
-        Method: render()
+        Method: Render()
         Created: 28.04.2005, KP
         Description: Render the scene
         """
@@ -377,14 +308,34 @@ class Visualizer:
         conf.Show()
 
     def removeModule(self,name):
+        """
+        Method: removeModule(name)
+        Created: 28.04.2005, KP
+        Description: Remove a visualization module
+        """
+        
         to_be_removed=[]
         for module in self.modules:
             if module.getName()==name:
-                module.disableRendering()
                 to_be_removed.append(module)
         for module in to_be_removed:
+            print "Removing module ",module
+            module.disableRendering()
             self.modules.remove(module)
-
+            del module
+            
+    def setRenderingStatus(self,name,status):
+        """
+        Method: setRenderingStatus(name,status)
+        Created: 15.05.2005, KP
+        Description: Enable / disable rendering of a module
+        """
+        for module in self.modules:
+            if module.getName()==name:
+                if not status:
+                    module.disableRendering()
+                else:
+                    module.enableRendering()
 
     def loadModule(self,name):
         """
@@ -421,7 +372,7 @@ class Visualizer:
         self.renwin.SetSize((size))
         self.parent.Layout()
         self.parent.Refresh()
-        self.render()
+        self.Render()
         
     def setTimepoint(self,timepoint):
         """
