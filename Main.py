@@ -90,6 +90,12 @@ if __name__=='__main__':
        options = {"py2exe": { "excludes": ['MayaViUserReader', 'PyShell', 'dl', 'dotblas', 'hexdump', 'libvtkCommonPython', 'libvtkFilteringPython', 'libvtkGraphicsPython', 'libvtkHybridPython', 'libvtkIOPython', 'libvtkImagingPython', 'libvtkParallelPython', 'libvtkPatentedPython', 'libvtkRenderingPython', 'mx', 'win32com.gen_py'],
        "packages": ["encodings"]}})
     else:
+        # Import Psyco if available
+        try:
+            import psyco
+            psyco.full()
+        except ImportError:
+            pass        
         app=LSMApplication(False)
         app.run()
 
