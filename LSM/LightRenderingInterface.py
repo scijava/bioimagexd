@@ -103,7 +103,7 @@ class LightRenderingInterface(RenderingInterface.RenderingInterface):
     def render(self):
 #        self.visualizer.Raise()
 #        self.visualizer.Refresh()
-        self.visualizer.render()
+        self.visualizer.Render()
 
 
     def getRenderer(self):
