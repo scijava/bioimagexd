@@ -134,8 +134,9 @@ class VolumeConfiguration(ModuleConfiguration):
         Created: 28.04.2005, KP
         Description: Initialization
         """     
+        self.method=2
         ModuleConfiguration.__init__(self,parent,"Volume Rendering")
-        self.method=0
+        self.editFlag=0
     
     def initializeGUI(self):
         """
@@ -148,21 +149,81 @@ class VolumeConfiguration(ModuleConfiguration):
         self.colorPanel = ColorTransferEditor.ColorTransferEditor(self,alpha=1)
         #self.colorPanel.setColorTransferFunction(self.ctf)
 
-        self.contentSizer.Add(self.colorLbl,(0,0))
-        self.contentSizer.Add(self.colorPanel,(1,0))
+        n=0
+        self.contentSizer.Add(self.colorLbl,(n,0))
+        n+=1
+        self.contentSizer.Add(self.colorPanel,(n,0))
+        n+=1
+        
+        modes = ["Ray Casting","Ray Casting for RGBA datasets","Texture Mapping","Maximum Intensity Projection"]
+        volpro=vtk.vtkVolumeProMapper()
+        self.haveVolpro=1
+        if volpro.GetNumberOfBoards():
+            self.haveVolpro=1
+        if self.haveVolpro:
+            modes.append("Minimum Intensity Projection")
         
         self.methodLbl = wx.StaticText(self,-1,"Volume rendering method:")
-        self.moduleChoice = wx.Choice(self,-1,choices=["Ray Casting","Ray Casting for RGBA datasets","Texture Mapping","Maximum Intensity Projection"])
+        self.moduleChoice = wx.Choice(self,-1,choices = modes)
+    
         self.moduleChoice.Bind(wx.EVT_CHOICE,self.onSelectMethod)
-      
-        self.contentSizer.Add(self.methodLbl,(2,0))
-        self.contentSizer.Add(self.moduleChoice,(3,0))
+        self.moduleChoice.SetSelection(self.method)
         
+      
+        self.contentSizer.Add(self.methodLbl,(n,0))
+        n+=1
+        self.contentSizer.Add(self.moduleChoice,(n,0))
+        n+=1
+            
+        if self.haveVolpro:
+            self.volpro=wx.CheckBox(self,-1,"Use VolumePro acceleration")
+            self.volpro.Enable(0)
+            self.contentSizer.Add(self.volpro,(n,0))
+            n+=1
         self.qualityLbl = wx.StaticText(self,-1,"Rendering quality:")
-        self.qualitySlider = wx.Slider(self,value=0, minValue=0,maxValue = 10,
+        self.qualitySlider = wx.Slider(self,value=10, minValue=0,maxValue = 10,
         style=wx.HORIZONTAL|wx.SL_AUTOTICKS|wx.SL_LABELS,size=(250,-1))
-        self.contentSizer.Add(self.qualityLbl,(4,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
-        self.contentSizer.Add(self.qualitySlider,(5,0))
+        self.qualitySlider.Bind(wx.EVT_SCROLL,self.onSetQuality)
+        
+        self.contentSizer.Add(self.qualityLbl,(n,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
+        n+=1
+        self.contentSizer.Add(self.qualitySlider,(n,0))
+        n+=1
+        
+        self.settingLbl=wx.StaticText(self,-1,"Maximum number of planes:")
+        self.settingEdit = wx.TextCtrl(self,-1,"")
+        self.settingEdit.Bind(wx.EVT_TEXT,self.onEditQuality)
+        self.contentSizer.Add(self.settingLbl,(n,0))
+        n+=1
+        self.contentSizer.Add(self.settingEdit,(n,0))
+        n+=1
+
+    def onEditQuality(self,event):
+        """
+        Method: onEditQuality
+        Created: 15.05.2005, KP
+        Description: Set the quality
+        """  
+        self.editFlag=1
+        
+    def onSetQuality(self,event):
+        """
+        Method: onSetQuality
+        Created: 15.05.2005, KP
+        Description: Set the quality
+        """  
+        if event:
+            self.editFlag=0
+        if not self.editFlag:
+            q=self.qualitySlider.GetValue()
+        else:
+            q=int(self.settingEdit.GetValue())
+        setting = self.module.setQuality(q,self.editFlag)
+        if setting:
+            val="%d"%setting
+        else:val=""
+        self.settingEdit.SetValue(val)
+        
         
     def onSelectMethod(self,event):
         """
@@ -171,6 +232,9 @@ class VolumeConfiguration(ModuleConfiguration):
         Description: Select the volume rendering method
         """  
         self.method = self.moduleChoice.GetSelection()
+        if self.haveVolpro:
+            flag=(self.method in [0,3,4])
+            self.volpro.Enable(flag)
             
       
     def setModule(self,module):
@@ -190,10 +254,28 @@ class VolumeConfiguration(ModuleConfiguration):
         Description: Apply the changes
         """     
         #if self.colorPanel.isChanged():
+        
+        
         otf = self.colorPanel.getOpacityTransferFunction()
         self.module.setOpacityTransferFunction(otf)
-        self.module.setMethod(self.method)
-        self.module.setQuality(self.qualitySlider.GetValue())
+        if self.haveVolpro and self.method in [0,3,4] and self.volpro.GetValue():
+            # use volumepro accelerated rendering
+            modes=["Composite",None,None,"MaximumIntensity","MinimumIntensity"]
+            self.module.setVolumeProAcceleration(modes[self.method])
+            self.settingEdit.Enable(0)
+            self.qualitySlider.Enable(0)
+        else:
+            self.settingEdit.Enable(1)
+            self.qualitySlider.Enable(1)
+            self.module.setMethod(self.method)
+            if self.method==2:
+                self.settingLbl.SetLabel("Maximum number of planes:")
+            else:
+                self.settingLbl.SetLabel("Sample Distance:")
+            self.Layout()
+
+        self.onSetQuality(None)
+
         self.module.updateRendering()
 
 class SurfaceConfiguration(ModuleConfiguration):
@@ -351,9 +433,42 @@ class ImagePlaneConfiguration(ModuleConfiguration):
         self.contentSizer.Add(self.zLbl,(4,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
         self.contentSizer.Add(self.zSlider,(5,0))
             
+        box=wx.BoxSizer(wx.HORIZONTAL)
+        self.ID_X=wx.NewId()
+        self.ID_Y=wx.NewId()
+        self.ID_Z=wx.NewId()
+        self.xBtn = wx.Button(self,self.ID_X,"X")
+        self.yBtn = wx.Button(self,self.ID_Y,"Y")
+        self.zBtn = wx.Button(self,self.ID_Z,"Z")
+        self.xBtn.Bind(wx.EVT_BUTTON,self.alignCamera)
+        self.yBtn.Bind(wx.EVT_BUTTON,self.alignCamera)
+        self.zBtn.Bind(wx.EVT_BUTTON,self.alignCamera)
+        
+        box.Add(self.xBtn,1)
+        box.Add(self.yBtn,1)
+        box.Add(self.zBtn,1)
+        self.contentSizer.Add(box,(6,0))
+        
+            
         self.xSlider.Bind(wx.EVT_SCROLL,self.onUpdateSlice)
         self.ySlider.Bind(wx.EVT_SCROLL,self.onUpdateSlice)
         self.zSlider.Bind(wx.EVT_SCROLL,self.onUpdateSlice)
+        
+    def alignCamera(self,event):
+        """
+        Method: alignCamera
+        Created: 15.05.2005, KP
+        Description: Align the camera to face a certain plane
+        """  
+        if event.GetId()==self.ID_X:
+            print "aliging to X"
+            self.module.alignCamera(self.module.planeWidgetX)
+        elif event.GetId()==self.ID_Y:
+            print "aliging to Y"
+            self.module.alignCamera(self.module.planeWidgetY)
+        else:
+            print "aliging to Z"
+            self.module.alignCamera(self.module.planeWidgetZ)
         
     def setModule(self,module):
         """
@@ -373,6 +488,7 @@ class ImagePlaneConfiguration(ModuleConfiguration):
         
         self.zSlider.SetRange(0,z)
         self.zSlider.SetValue(z/2)
+        self.onUpdateSlice(None)
         
     def onUpdateSlice(self,event):
         """
