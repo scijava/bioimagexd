@@ -200,6 +200,7 @@ class TimelinePanel(wx.Panel):
         self.animBoxSizer=wx.StaticBoxSizer(self.animBox,wx.VERTICAL)
 #       
         self.wxrenwin=wxVTKRenderWindowInteractor(self,-1,size=(400,300))
+        
         self.wxrenwin.Initialize()
         self.wxrenwin.Start()
         #self.animator = Animator.AnimatorPanel(self,self.control,self.wxrenwin)
@@ -207,8 +208,9 @@ class TimelinePanel(wx.Panel):
         
         self.splineEditor=SplineEditor.SplineEditor(self,self.wxrenwin)
         self.control.setSplineEditor(self.splineEditor)
-
-        self.wxrenwin.GetRenderWindow().Render()
+        
+        self.wxrenwin.Render()
+        
         self.animBoxSizer.Add(self.wxrenwin)
         self.sizer.Add(self.animBoxSizer,(2,1),flag=wx.EXPAND|wx.ALL)
 
@@ -216,7 +218,15 @@ class TimelinePanel(wx.Panel):
         self.SetSizer(self.sizer)
         self.SetAutoLayout(1)
         self.sizer.Fit(self)
+        self.wxrenwin.RightButtonPressEvent()
+        self.wxrenwin.SetEventInformationFlipY(0,0,0,0,chr(0),0,None)
+        self.wxrenwin.MouseMoveEvent()
         
+        self.wxrenwin.RightButtonReleaseEvent()
+
+        self.wxrenwin.Render()
+        self.wxrenwin.Refresh()
+        self.Refresh()
 
     def onSize(self,evt):
         x,y=evt.GetSize()
@@ -226,11 +236,13 @@ class TimelinePanel(wx.Panel):
         self.Layout()
         
     def useTimeline(self,flag):
+        print "useTimeline called!"
         if not flag:
             self.timeline.setDisabled(1)
         else:
             self.timeline.setDisabled(0)
         
     def setDataUnit(self,dataUnit):
+        print "setDataUnit called!"
         self.dataUnit=dataUnit
         self.timeline.setDataUnit(dataUnit)

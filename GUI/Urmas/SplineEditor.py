@@ -92,7 +92,7 @@ class SplineEditor:
         self.renWin = self.wxrenwin.GetRenderWindow()
         self.renderer = ren = vtk.vtkRenderer ()
         self.renWin.AddRenderer(ren)
-        ren.SetBackground(0,0,0.3)
+        ren.SetBackground(0,0,0)
         self.wxrenwin.Render()
 
         self.iren = iren = self.renWin.GetInteractor()
@@ -377,6 +377,7 @@ class SplineEditor:
         #print "Axes actor inertia: %d"%(self.axes.GetInertia())
 
         self.renderer.Render()
+        self.wxrenwin.Render()
 
     def getCamera(self):
         """
