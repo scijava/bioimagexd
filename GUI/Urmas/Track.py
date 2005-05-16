@@ -196,7 +196,7 @@ class Track(wx.Panel):
         Method: setSelected(event)
         Created: 14.04.2005, KP
         Description: Selects this track
-        """ 
+        """
         print "setSelected(",event,")"
         if event:
             self.namePanel.setWeight(1)
@@ -526,7 +526,7 @@ class Track(wx.Panel):
             odict[key]=self.__dict__[key]
         return odict        
     
-    
+
  
 class SplineTrack(Track):
     """
@@ -570,7 +570,7 @@ class SplineTrack(Track):
         elif add:
             self.removeItem(len(self.items))
 
-    def AcceptDrop(self,x,y,type,data):
+    def AcceptDrop(self,x,y,data):
         """
         Method: AcceptDrop
         Created: 12.04.2005, KP
@@ -781,7 +781,7 @@ class TimepointTrack(Track):
         self.SetDropTarget(dt)
         self.thumbnail=1
     
-    def AcceptDrop(self,x,y,type,data):
+    def AcceptDrop(self,x,y,data):
         """
         Method: AcceptDrop
         Created: 12.04.2005, KP

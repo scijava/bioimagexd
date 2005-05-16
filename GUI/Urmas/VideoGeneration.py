@@ -164,11 +164,16 @@ class VideoGenerationPage(wiz.WizardPageSimple):
         x=int(x)
         y=int(y)
         size=(x,y)
+#        self.parent.FitToPage(self.parent.renderingPage)
         print "Will set render window to ",size
+        self.parent.renderingPage.visualizer.setRenderWindowSize((x,y))
+        self.parent.renderingPage.visualizer.sizer.Fit(self.parent.renderingPage)
+        self.parent.GetPageAreaSizer().Fit(self.parent.renderingPage)
         flag=self.control.renderProject(0,renderpath=path,size=size)
         if flag==-1:
             return
         if self.formatMenu.GetSelection()==1:
+
             print "Will produce video"
             self.encodeVideo(size,path,file)
         event.Veto()
@@ -290,7 +295,7 @@ class VideoGenerationPage(wiz.WizardPageSimple):
         self.frameSizeLbl = wx.StaticText(self,-1,"Frame size:")
         self.frameSize = wx.Choice(self,-1,choices=["320 x 240","640 x 480"])
         self.frameSize.SetSelection(1)
-        
+
         self.frameRateLbl=wx.StaticText(self,-1,"Frame rate:")
         self.frameRate = wx.TextCtrl(self,-1,"24")
         self.padFrames = wx.CheckBox(self,-1,"Duplicate frames to achieve framerate")
@@ -322,7 +327,7 @@ class VideoGenerationPage(wiz.WizardPageSimple):
         self.outputsizer.Add(self.padfpsLabel,(n,0))
         
         self.mainsizer.Add(self.outputstaticbox,(0,0))
-        
+
         self.rendir=wx.TextCtrl(self,-1,"C:\\",size=(350,-1))
         self.rendirLbl=wx.StaticText(self,
         -1,"Directory for rendered frames:")

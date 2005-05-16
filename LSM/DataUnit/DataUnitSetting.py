@@ -87,26 +87,26 @@ class DataUnitSettings:
         self.register("Type")
         self.register("Name")
         
-    def asType(self,type):
+    def asType(self,newtype):
         """
         Method: asType(type)
         Created: 3.04.2005
         Description: Return this setting as given type
         """
-        newclass=eval(type)
-       
+        newclass=eval(newtype)
+
         settings=newclass(self.n)
         settings.initialize(self.dataunit,self.channels,self.timepoints)
         return settings
         
-    def setType(self,type):
+    def setType(self,newtype):
         """
         Method: setType(type)
         Created: 2.04.2005
         Description: Set the type of this dataunit
         """
-        self.type=type
-        self.set("Type",type)
+        self.type=newtype
+        self.set("Type",newtype)
         
     def getType(self):
         """

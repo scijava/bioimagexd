@@ -218,11 +218,11 @@ class TimelinePanel(wx.Panel):
         self.SetSizer(self.sizer)
         self.SetAutoLayout(1)
         self.sizer.Fit(self)
-        self.wxrenwin.RightButtonPressEvent()
-        self.wxrenwin.SetEventInformationFlipY(0,0,0,0,chr(0),0,None)
-        self.wxrenwin.MouseMoveEvent()
-        
-        self.wxrenwin.RightButtonReleaseEvent()
+#        self.wxrenwin.RightButtonPressEvent()
+#        self.wxrenwin.SetEventInformationFlipY(0,0,0,0,chr(0),0,None)
+#        self.wxrenwin.MouseMoveEvent()
+
+#        self.wxrenwin.RightButtonReleaseEvent()
 
         self.wxrenwin.Render()
         self.wxrenwin.Refresh()
@@ -234,7 +234,7 @@ class TimelinePanel(wx.Panel):
         self.timeline.SetSize((x,ty))
         self.timeline.Layout()
         self.Layout()
-        
+
     def useTimeline(self,flag):
         print "useTimeline called!"
         if not flag:

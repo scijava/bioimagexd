@@ -133,11 +133,11 @@ def askOpenFileName(parent,title,wc,remember=-1):
         conf=Configuration.getConfiguration()
         remember=conf.getConfigItem("RememberPath","Paths")
     lastpath=""
-    type=wc.split("|")[1]
-    type=type.split(".")[1]
-    print "type=",type
+    filetype=wc.split("|")[1]
+    filetype=filetype.split(".")[1]
+    print "type=",filetype
     if remember:
-        lastpath=conf.getConfigItem("LastPath_%s"%type,"Paths")
+        lastpath=conf.getConfigItem("LastPath_%s"%filetype,"Paths")
         if not lastpath:lastpath="."
     dlg=wx.FileDialog(parent,title,lastpath,wildcard=wc,style=wx.OPEN|wx.MULTIPLE)
     if dlg.ShowModal()==wx.ID_OK:
@@ -145,7 +145,7 @@ def askOpenFileName(parent,title,wc,remember=-1):
         if not asklist:return asklist
         if remember:
             filepath=os.path.dirname(asklist[0])
-            conf.setConfigItem("LastPath_%s"%type,"Paths",filepath)
+            conf.setConfigItem("LastPath_%s"%filetype,"Paths",filepath)
         
     dlg.Destroy()
     return asklist

@@ -49,7 +49,7 @@ class UrmasDropTarget(wx.PyDropTarget):
     Created: 12.04.2005, KP
     Description: A drop target for dragging from the palette to timeline
     """
-    def __init__(self,tgt,type):
+    def __init__(self,tgt,datatype):
         """
         Method: __init__
         Created: 12.04.2005, KP
@@ -57,7 +57,7 @@ class UrmasDropTarget(wx.PyDropTarget):
         """
         wx.PyDropTarget.__init__(self)
         self.target=tgt
-        self.dataformat = wx.CustomDataFormat(type)
+        self.dataformat = wx.CustomDataFormat(datatype)
         self.data = wx.CustomDataObject(self.dataformat)
         self.SetDataObject(self.data)
 
@@ -98,10 +98,10 @@ class UrmasDropTarget(wx.PyDropTarget):
         if self.GetData():
             data=self.data.GetData()
             print "Got at %d,%d: %s"%(x,y,data)
-            self.target.AcceptDrop(x,y,type,data)
-        
+            self.target.AcceptDrop(x,y,data)
+
         return d
-        
+
 class UrmasPalette(wx.Panel):
     """
     Class: UrmasPalette
@@ -199,13 +199,14 @@ class UrmasPalette(wx.Panel):
                 
             
         
-    def dropItem(self,type,indata="Hello, World!"):
+    def dropItem(self,datatype,indata="Hello, World!"):
         """
         Method: dropItem
         Created: 06.04.2005, KP
         Description: A method that creates a DnD of specified type
         """
-        data = wx.CustomDataObject(wx.CustomDataFormat(type))
+        print "Dropping data of type %s:%s"%(datatype,indata)
+        data = wx.CustomDataObject(wx.CustomDataFormat(datatype))
         data.SetData(indata)
         dropsource = wx.DropSource(self)
         dropsource.SetData(data)

@@ -91,11 +91,11 @@ if __name__=='__main__':
        "packages": ["encodings"]}})
     else:
         # Import Psyco if available
-        try:
-            import psyco
-            psyco.full()
-        except ImportError:
-            pass        
+        #try:
+        #    import psyco
+        #    psyco.full()
+        #except ImportError:
+        #    pass
         app=LSMApplication(False)
         app.run()
 

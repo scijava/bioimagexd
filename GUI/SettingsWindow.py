@@ -103,7 +103,7 @@ class PathSettings(wx.Panel):
         systemmayavi = conf.getConfigItem("UseSystemMayavi","Mayavi")
         removevtk = conf.getConfigItem("RemoveOldVTK","VTK")
         remember =conf.getConfigItem("RememberPath","Paths")
-        
+
         self.vtkBox=wx.StaticBox(self,-1,"VTK Path",size=(600,150))
         self.vtkBoxSizer=wx.StaticBoxSizer(self.vtkBox,wx.VERTICAL)
         self.vtkBoxSizer.SetMinSize(self.vtkBox.GetSize())
@@ -111,28 +111,30 @@ class PathSettings(wx.Panel):
         toolTip="Set the location of the version of VTK you want to use",
         startDirectory=vtkpath)
         self.vtkbrowse.SetValue(vtkpath)
-        
+
         self.vtkBoxSizer.Add(self.vtkbrowse,0,wx.EXPAND)
         self.removeVTKCheckbox = wx.CheckBox(self,-1,"Remove old VTK from path")
-        removevtk=int(removevtk)
+        if type(removevtk)==type(""):
+            removevtk=eval(removevtk)
         self.removeVTKCheckbox.SetValue(removevtk)
         self.vtkBoxSizer.Add(self.removeVTKCheckbox)
-        
-        
+
+
         self.mayaviBox=wx.StaticBox(self,-1,"MayaVi Path",size=(600,150))
         self.mayaviBoxSizer=wx.StaticBoxSizer(self.mayaviBox,wx.VERTICAL)
-        self.mayaviBoxSizer.SetMinSize(self.mayaviBox.GetSize())        
+        self.mayaviBoxSizer.SetMinSize(self.mayaviBox.GetSize())
         self.mayavibrowse=filebrowse.DirBrowseButton(self,-1,labelText="Location of MayaVi",
         toolTip="Set the location of the version of Mayavi you want to use",
         startDirectory=mayavipath)
         self.mayavibrowse.SetValue(mayavipath)
         self.mayaviBoxSizer.Add(self.mayavibrowse,0,wx.EXPAND)
         self.removeMayaviCheckbox = wx.CheckBox(self,-1,"Use system version of MayaVi")
-        systemmayavi=int(systemmayavi)
+        if type(systemmayavi)==type(""):
+            systemmayavi=eval(systemmayavi)
         self.removeMayaviCheckbox.SetValue(systemmayavi)
         self.mayaviBoxSizer.Add(self.removeMayaviCheckbox)
-        
-        
+
+
         self.dataBox=wx.StaticBox(self,-1,"Data Files Directory",size=(600,150))
         self.dataBoxSizer=wx.StaticBoxSizer(self.dataBox,wx.VERTICAL)
         self.dataBoxSizer.SetMinSize(self.dataBox.GetSize())
@@ -140,10 +142,11 @@ class PathSettings(wx.Panel):
         toolTip="Set the default directory for data files",
         startDirectory=datapath)
         self.databrowse.SetValue(datapath)
-        
+
         self.dataBoxSizer.Add(self.databrowse,0,wx.EXPAND)
         self.useLastCheckbox = wx.CheckBox(self,-1,"Use last opened directory as default directory")
-        remember=int(remember)
+        if type(remember)==type(""):
+            remember=eval(remember)
         self.useLastCheckbox.SetValue(remember)
         self.dataBoxSizer.Add(self.useLastCheckbox)        
         
