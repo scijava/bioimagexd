@@ -379,7 +379,7 @@ class MainWindow(wx.Frame):
         Description: Callback function for menu item "Open VTK File"
         """
         asklist=[]
-        wc="LSM Files (*.lsm)|*.lsm|Leica TCS-NT Files (*.txt)|*.txt|Dataset Series (*.du)|*.du|VTK Image Data (*.vti)|*.vti"
+        wc="LSM Files (*.lsm)|*.lsm;*.LSM|Leica TCS-NT Files (*.txt)|*.txt;*.TXT|Dataset Series (*.du)|*.du;*.DU|VTK Image Data (*.vti)|*.vti;*.VTI"
         asklist=Dialogs.askOpenFileName(self,"Open dataset series or LSM File",wc)
         
         for askfile in asklist:
@@ -403,7 +403,8 @@ class MainWindow(wx.Frame):
         dataunit=None
         if self.tree.hasItem(path):
             return
-        if ext.lower()=='du':
+        ext=ext.lower()
+        if ext=='du':
             # We check that the file is not merely a settings file
             try:
                 self.parser = SafeConfigParser()
@@ -427,10 +428,15 @@ class MainWindow(wx.Frame):
         extToSource={"du":VtiDataSource,"lsm":LsmDataSource,"txt":LeicaDataSource}
         try:
             datasource=extToSource[ext]()
-            dataunits = datasource.loadFromFile(path)
-        except GUIError,ex:
-            ex.show()
+        except KeyError,ex:
+            Dialogs.showerror(self,"Failed to load file %s: Unrecognized extension %s"%(name,ext),"Unrecognized extension")
             return
+        try:
+            dataunits = datasource.loadFromFile(path)
+        except:
+            Dialogs.showerror(self,"Failed to load file %s."%(name),"Failed to load file")
+            return
+
 
         if not dataunits:
             raise "Failed to read dataunit %s"%path
