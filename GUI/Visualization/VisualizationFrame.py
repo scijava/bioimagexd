@@ -97,6 +97,7 @@ class RendererConfiguration(wx.MiniFrame):
         self.SetAutoLayout(1)
         self.sizer.Fit(self)
         
+        
     def initializeGUI(self):
         """
         Method: initializeGUI()
@@ -107,6 +108,9 @@ class RendererConfiguration(wx.MiniFrame):
         self.colorBtn=csel.ColourSelect(self,-1)
         self.Bind(csel.EVT_COLOURSELECT,self.onSelectColor,id=self.colorBtn.GetId())
 
+        self.sizeLbl=wx.StaticText(self,-1,"Window size:")
+        self.sizeEdit=wx.TextCtrl(self,-1,"512x512")
+
         self.stereoLbl=wx.StaticText(self,-1,"Stereo rendering:")
         self.modes=[None,"RedBlue","CrystalEyes","Dresden","Interlaced","Left","Right"]
         stereomodes=["No stereo","Red-Blue","Crystal Eyes","Dresden","Interlaced","Left","Right"]
@@ -116,8 +120,10 @@ class RendererConfiguration(wx.MiniFrame):
         
         self.contentSizer.Add(self.colorLbl,(0,0))
         self.contentSizer.Add(self.colorBtn,(0,1))
-        self.contentSizer.Add(self.stereoLbl,(1,0))
-        self.contentSizer.Add(self.stereoChoice,(1,1))
+        self.contentSizer.Add(self.sizeLbl,(1,0))
+        self.contentSizer.Add(self.sizeEdit,(1,1))
+        self.contentSizer.Add(self.stereoLbl,(2,0))
+        self.contentSizer.Add(self.stereoChoice,(2,1))
         self.color=None
         self.stereoMode=None
         
@@ -133,6 +139,12 @@ class RendererConfiguration(wx.MiniFrame):
             self.visualizer.setBackground(r,g,b)
         print "Setting stero mode to",self.stereoMode
         self.visualizer.setStereoMode(self.stereoMode)
+        try:
+            x,y=map(int,self.sizeEdit.GetValue().split("x"))
+            print "Setting render window size to ",x,y
+            self.visualizer.setRenderWindowSize((x,y))
+        except:
+            pass
         self.visualizer.Render()
 
         
@@ -287,8 +299,16 @@ class ConfigurationPanel(wx.Panel):
         """
         lbl = self.moduleChoice.GetStringSelection()
         self.visualizer.loadModule(lbl)
+        self.appendModuleToList(lbl)
+        
+    def appendModuleToList(self,module):
+        """
+        Method: appendModuleToList
+        Created: 16.05.2005, KP
+        Description: Append a module to the list
+        """
         n=self.moduleListbox.GetCount()
-        self.moduleListbox.InsertItems([lbl],n)
+        self.moduleListbox.InsertItems([module],n)
         self.moduleListbox.Check(n)
 
     def onRemoveModule(self,event):
@@ -361,6 +381,7 @@ class Visualizer:
                        "Arbitrary Slices":(ArbitrarySliceModule,ArbitrarySliceConfiguration)
 
                        }
+        self.defaultModule = "Volume Rendering"
         self.modules = []
         self.sizer = wx.GridBagSizer()
         self.wxrenwin = VisualizerWindow(self.parent,size=(512,512))
@@ -385,7 +406,7 @@ class Visualizer:
         self.parent.SetSizer(self.sizer)
         self.parent.SetAutoLayout(1)
         self.sizer.Fit(self.parent)
-
+        
     def __del__(self):
         global visualizerInstance
         visualizerInstance=None
@@ -441,6 +462,8 @@ class Visualizer:
         count=dataunit.getLength()
         print "Setting range to",count
         self.timeslider.SetRange(0,count-1)
+        self.loadModule(self.defaultModule)
+        self.configPanel.appendModuleToList(self.defaultModule)
         
     def getModules(self):
         """
@@ -506,7 +529,7 @@ class Visualizer:
         Description: Load a visualization module
         """
         if not self.dataUnit:
-            Dialogs.showerror(self,"No dataset has been loaded for visualization","Cannot load visualization module")
+            Dialogs.showerror(self.parent,"No dataset has been loaded for visualization","Cannot load visualization module")
             return
         self.wxrenwin.initializeVTK()
         module = self.mapping[name][0](self)
@@ -532,6 +555,7 @@ class Visualizer:
         """  
         self.wxrenwin.SetSize((size))
         self.renwin.SetSize((size))
+        self.sizer.Fit(self.parent)
         self.parent.Layout()
         self.parent.Refresh()
         self.Render()
