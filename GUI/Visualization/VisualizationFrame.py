@@ -39,6 +39,9 @@ import vtk
 from vtk.wx.wxVTKRenderWindowInteractor import wxVTKRenderWindowInteractor
 from Events import *
 import Dialogs
+import  wx.lib.colourselect as  csel
+
+
 from VisualizationModules import *
 from ModuleConfiguration import *
 from VisualizerWindow import *
@@ -49,6 +52,127 @@ visualizerInstance=None
 def getVisualizer():
     global visualizerInstance
     return visualizerInstance
+    
+class RendererConfiguration(wx.MiniFrame):
+    """
+    Class: RendererConfiguration
+    Created: 16.05.2005, KP
+    Description: A frame for configuring the renderer
+    """    
+    def __init__(self,parent,visualizer):
+        """
+        Method: __init__(parent)
+        Created: 28.04.2005, KP
+        Description: Initialization
+        """     
+        wx.MiniFrame.__init__(self,parent,-1,"Configure Render Window")
+        self.sizer = wx.GridBagSizer()
+        self.parent = parent
+        self.visualizer=visualizer
+        
+        self.buttonBox = wx.BoxSizer(wx.HORIZONTAL)
+        self.okButton = wx.Button(self,-1,"Ok")
+        self.applyButton = wx.Button(self,-1,"Apply")
+        self.cancelButton = wx.Button(self,-1,"Cancel")
+        
+        self.okButton.Bind(wx.EVT_BUTTON,self.onOk)
+        self.applyButton.Bind(wx.EVT_BUTTON,self.onApply)
+        self.cancelButton.Bind(wx.EVT_BUTTON,self.onCancel)
+        
+        
+        self.buttonBox.Add(self.okButton)
+        self.buttonBox.Add(self.applyButton)
+        self.buttonBox.Add(self.cancelButton)
+        
+        self.contentSizer = wx.GridBagSizer()
+        self.sizer.Add(self.contentSizer,(0,0))
+        
+        self.line = wx.StaticLine(self,-1)
+        self.sizer.Add(self.line,(2,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
+        self.sizer.Add(self.buttonBox,(3,0))
+        
+        self.initializeGUI()
+        
+        self.SetSizer(self.sizer)
+        self.SetAutoLayout(1)
+        self.sizer.Fit(self)
+        
+    def initializeGUI(self):
+        """
+        Method: initializeGUI()
+        Created: 16.05.2005, KP
+        Description: Build up the configuration GUI
+        """             
+        self.colorLbl=wx.StaticText(self,-1,"Background color:")
+        self.colorBtn=csel.ColourSelect(self,-1)
+        self.Bind(csel.EVT_COLOURSELECT,self.onSelectColor,id=self.colorBtn.GetId())
+
+        self.stereoLbl=wx.StaticText(self,-1,"Stereo rendering:")
+        self.modes=[None,"RedBlue","CrystalEyes","Dresden","Interlaced","Left","Right"]
+        stereomodes=["No stereo","Red-Blue","Crystal Eyes","Dresden","Interlaced","Left","Right"]
+        self.stereoChoice=wx.Choice(self,-1,choices=stereomodes)
+        
+        self.stereoChoice.Bind(wx.EVT_CHOICE,self.onSetStereoMode)
+        
+        self.contentSizer.Add(self.colorLbl,(0,0))
+        self.contentSizer.Add(self.colorBtn,(0,1))
+        self.contentSizer.Add(self.stereoLbl,(1,0))
+        self.contentSizer.Add(self.stereoChoice,(1,1))
+        self.color=None
+        self.stereoMode=None
+        
+    def onApply(self,event):
+        """
+        Method: onApply
+        Created: 16.05.2005, KP
+        Description: Apply the changes
+        """           
+        if self.color:
+            r,g,b=self.color
+            print "Setting renderwindow background to ",r,g,b
+            self.visualizer.setBackground(r,g,b)
+        print "Setting stero mode to",self.stereoMode
+        self.visualizer.setStereoMode(self.stereoMode)
+        self.visualizer.Render()
+
+        
+    def onCancel(self,event):
+        """
+        Method: onCancel()
+        Created: 28.04.2005, KP
+        Description: Close this dialog
+        """     
+        self.Close()
+        
+    def onOk(self,event):
+        """
+        Method: onApply()
+        Created: 28.04.2005, KP
+        Description: Apply changes and close
+        """ 
+        self.onApply(None)
+        self.Close()
+        
+    def onSelectColor(self,event):
+        """
+        Method: onSelectColor
+        Created: 16.05.2005, KP
+        Description: Select the background color for render window
+        """             
+        color=event.GetValue()
+        self.color=(color.Red(),color.Green(),color.Blue())
+        
+    def onSetStereoMode(self,event):
+        """
+        Method: onSetStereoMode
+        Created: 16.05.2005, KP
+        Description: Set the stereo mode
+        """             
+        index=event.GetSelection()
+        mode=self.modes[index]
+        self.stereoMode=mode
+            
+    
 
 class ConfigurationPanel(wx.Panel):
     """
@@ -84,6 +208,8 @@ class ConfigurationPanel(wx.Panel):
         self.lightsBtn = wx.Button(self,-1,"Lights")
         self.lightsBtn.Bind(wx.EVT_BUTTON,self.onConfigureLights)
         
+        self.settingsBtn = wx.Button(self,-1,"Configure Window")
+        self.settingsBtn.Bind(wx.EVT_BUTTON,self.onConfigureRenderwindow)
 
         self.sizer.Add(self.moduleLbl,(0,0))
         self.sizer.Add(self.moduleChoice,(1,0))
@@ -101,6 +227,7 @@ class ConfigurationPanel(wx.Panel):
         box2.Add(self.configureBtn)
         box2.Add(self.lightsBtn)
         self.sizer.Add(box2,(4,0))
+        self.sizer.Add(self.settingsBtn,(5,0))
         self.selected = -1
         
         #self.sizer.Add(self.configureBtn,(3,0))
@@ -109,6 +236,16 @@ class ConfigurationPanel(wx.Panel):
         self.SetSizer(self.sizer)
         self.SetAutoLayout(1)
         self.sizer.Fit(self)
+        
+    def onConfigureRenderwindow(self,event):
+        """
+        Method: onConfigureRenderwindow
+        Created: 15.05.2005, KP
+        Description: Configure the render window
+        """
+        conf=RendererConfiguration(self,self.visualizer)
+        conf.Show()
+        
         
     def onSelectItem(self,event):
         """
@@ -165,7 +302,7 @@ class ConfigurationPanel(wx.Panel):
             return
         lbl=self.moduleListbox.GetString(self.selected)
         self.visualizer.removeModule(lbl)
-        self.moduleListBox.Delete(self.selected)
+        self.moduleListbox.Delete(self.selected)
         self.selected=-1
 
 
@@ -221,7 +358,7 @@ class Visualizer:
         self.mapping= {"Volume Rendering":(VolumeModule,VolumeConfiguration),
                        "Surface Rendering":(SurfaceModule,SurfaceConfiguration),
                        "Orthogonal Slices":(ImagePlaneModule,ImagePlaneConfiguration),
-                       "Arbitrary Slices":(ArbitrarySliceModule,ImagePlaneConfiguration)
+                       "Arbitrary Slices":(ArbitrarySliceModule,ArbitrarySliceConfiguration)
 
                        }
         self.modules = []
@@ -252,6 +389,31 @@ class Visualizer:
     def __del__(self):
         global visualizerInstance
         visualizerInstance=None
+
+    def setStereoMode(self,mode):
+        """
+        Method: setStereoMode()
+        Created: 16.05.2005, KP
+        Description: Set the stereo rendering mode
+        """
+        if mode:
+            self.renwin.StereoRenderOn()
+            cmd="self.renwin.SetStereoTypeTo%s"%mode
+            eval(cmd)
+        else:
+            self.renwin.StereoRenderOff()
+
+    def setBackground(self,r,g,b):
+        """
+        Method: setBackground(r,g,b)
+        Created: 16.05.2005, KP
+        Description: Set the background color
+        """
+        ren=self.wxrenwin.getRenderer()
+        r/=255.0
+        g/=255.0
+        b/=255.0
+        ren.SetBackground(r,g,b)
 
     def onClose(self,event):
         """

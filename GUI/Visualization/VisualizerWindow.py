@@ -70,7 +70,7 @@ class VisualizerWindow(wxVTKRenderWindowInteractor):
         self.iren = iren = self.GetRenderWindow().GetInteractor()
         self.iren.SetInteractorStyle(vtk.vtkInteractorStyleTrackballCamera())
         self.getRenderer()
-        self.renderer.SetBackground(0,0,0.3)
+        self.renderer.SetBackground(0,0,0)
         self.iren.SetSize(self.GetRenderWindow().GetSize())
         self.renderer.AddObserver("StartEvent",self.onRenderBegin)
         self.renderer.AddObserver("EndEvent",self.onRenderEnd)
