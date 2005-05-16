@@ -76,9 +76,30 @@ class ModuleConfiguration(wx.MiniFrame):
         self.contentSizer = wx.GridBagSizer()
         self.sizer.Add(self.contentSizer,(0,0))
         
+        self.lightSizer=wx.GridBagSizer()
+        self.ambientLbl=wx.StaticText(self,-1,"Ambient lighting:")
+        self.diffuseLbl=wx.StaticText(self,-1,"Diffuse lighting:")
+        self.specularLbl=wx.StaticText(self,-1,"Specular lighting:")
+        self.specularPowerLbl=wx.StaticText(self,-1,"Specular power:")
+            
+        self.ambientEdit=wx.TextCtrl(self,-1,"0.1")
+        self.diffuseEdit=wx.TextCtrl(self,-1,"0.7")
+        self.specularEdit=wx.TextCtrl(self,-1,"0.2")
+        self.specularPowerEdit=wx.TextCtrl(self,-1,"10.0")
+        
+        self.lightSizer.Add(self.ambientLbl,(0,0))
+        self.lightSizer.Add(self.ambientEdit,(0,1))
+        self.lightSizer.Add(self.diffuseLbl,(1,0))
+        self.lightSizer.Add(self.diffuseEdit,(1,1))
+        self.lightSizer.Add(self.specularLbl,(2,0))
+        self.lightSizer.Add(self.specularEdit,(2,1))
+        self.lightSizer.Add(self.specularPowerLbl,(3,0))
+        self.lightSizer.Add(self.specularPowerEdit,(3,1))
+        
+        self.sizer.Add(self.lightSizer,(1,0))
         self.line = wx.StaticLine(self,-1)
-        self.sizer.Add(self.line,(1,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
-        self.sizer.Add(self.buttonBox,(2,0))
+        self.sizer.Add(self.line,(2,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
+        self.sizer.Add(self.buttonBox,(3,0))
         
         self.initializeGUI()
         
@@ -104,6 +125,22 @@ class ModuleConfiguration(wx.MiniFrame):
         """ 
         self.onApply(None)
         self.Close()
+        
+    def onApply(self,event):
+        """
+        Method: onApply()
+        Created: 16.05.2005, KP
+        Description: Apply the changes
+        """     
+        try:
+            ambient=float(self.ambientEdit.GetValue())
+            diffuse=float(self.diffuseEdit.GetValue())
+            specular=float(self.specularEdit.GetValue())
+            specularpwr=float(self.specularPowerEdit.GetValue())
+        except:
+            return
+        self.module.setProperties(ambient,diffuse,specular,specularpwr)
+        
         
     def findModule(self):
         """
@@ -197,6 +234,22 @@ class VolumeConfiguration(ModuleConfiguration):
         n+=1
         self.contentSizer.Add(self.settingEdit,(n,0))
         n+=1
+        
+        self.shadingBtn=wx.CheckBox(self,-1,"Use shading")
+        self.shadingBtn.SetValue(1)
+        self.shading=1
+        self.shadingBtn.Bind(wx.EVT_CHECKBOX,self.onCheckShading)
+        
+        self.lightSizer.Add(self.shadingBtn,(4,0))
+        
+    def onCheckShading(self,event):
+        """
+        Method: onCheckShading
+        Created: 16.05.2005, KP
+        Description: Toggle use of shading
+        """  
+        self.shading=event.IsChecked()
+            
 
     def onEditQuality(self,event):
         """
@@ -217,7 +270,10 @@ class VolumeConfiguration(ModuleConfiguration):
         if not self.editFlag:
             q=self.qualitySlider.GetValue()
         else:
-            q=int(self.settingEdit.GetValue())
+            try:
+                q=int(self.settingEdit.GetValue())
+            except:
+                q=self.qualitySlider.GetValue()
         setting = self.module.setQuality(q,self.editFlag)
         if setting:
             val="%d"%setting
@@ -235,6 +291,8 @@ class VolumeConfiguration(ModuleConfiguration):
         if self.haveVolpro:
             flag=(self.method in [0,3,4])
             self.volpro.Enable(flag)
+        if self.method==4:
+            self.volpro.SetValue(1)
             
       
     def setModule(self,module):
@@ -253,7 +311,9 @@ class VolumeConfiguration(ModuleConfiguration):
         Created: 28.04.2005, KP
         Description: Apply the changes
         """     
+        ModuleConfiguration.onApply(self,event)
         #if self.colorPanel.isChanged():
+        self.module.setShading(self.shading)
         
         
         otf = self.colorPanel.getOpacityTransferFunction()
@@ -369,6 +429,7 @@ class SurfaceConfiguration(ModuleConfiguration):
         Created: 30.04.2005, KP
         Description: Apply the changes
         """     
+        ModuleConfiguration.onApply(self,event)
         self.module.setMethod(self.method)
         if self.normalsBox.GetValue():
             angle=float(self.featureAngle.GetValue())
@@ -454,6 +515,14 @@ class ImagePlaneConfiguration(ModuleConfiguration):
         self.ySlider.Bind(wx.EVT_SCROLL,self.onUpdateSlice)
         self.zSlider.Bind(wx.EVT_SCROLL,self.onUpdateSlice)
         
+        self.shadingBtn=wx.CheckBox(self,-1,"Use shading")
+        self.shadingBtn.SetValue(1)
+        self.shading=1
+        self.shadingBtn.Bind(wx.EVT_CHECKBOX,self.onCheckShading)
+        
+        self.lightSizer.Add(self.shadingBtn,(4,0))
+        
+        
     def alignCamera(self,event):
         """
         Method: alignCamera
@@ -509,4 +578,60 @@ class ImagePlaneConfiguration(ModuleConfiguration):
         Created: 28.04.2005, KP
         Description: Apply the changes
         """     
+        ModuleConfiguration.onApply(self,event)
         self.module.updateRendering()
+
+class ArbitrarySliceConfiguration(ModuleConfiguration):
+    def __init__(self,parent):
+        """
+        Method: __init__(parent)
+        Created: 04.05.2005, KP
+        Description: Initialization
+        """     
+        ModuleConfiguration.__init__(self,parent,"Arbitrary Slices")
+    
+    def initializeGUI(self):
+        """
+        Method: initializeGUI()
+        Created: 28.04.2005, KP
+        Description: Initialization
+        """  
+        self.addButton=wx.Button(self,-1,"Add plane")
+        self.addButton.Bind(wx.EVT_BUTTON,self.onAddPlane)
+        self.contentSizer.Add(self.addButton,(0,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
+        
+        
+        
+        self.shadingBtn=wx.CheckBox(self,-1,"Use shading")
+        self.shadingBtn.SetValue(1)
+        self.shading=1
+        self.shadingBtn.Bind(wx.EVT_CHECKBOX,self.onCheckShading)
+        
+        self.lightSizer.Add(self.shadingBtn,(4,0))
+  
+    def onAddPlane(self,event):
+        """
+        Method: onAddPLane
+        Created: 16.05.2005, KP
+        Description: Add a plane
+        """  
+        print "self.module=",self.module
+        self.module.addPlane()
+        self.module.updateRendering()
+        
+    def onCheckShading(self,event):
+        """
+        Method: onCheckShading
+        Created: 16.05.2005, KP
+        Description: Toggle use of shading
+        """  
+        self.shading=event.IsChecked()
+
+    def setModule(self,module):
+        """
+        Method: setModule(module)
+        Created: 28.04.2005, KP
+        Description: Set the module to be configured
+        """  
+        ModuleConfiguration.setModule(self,module)
+        print "Setting module to ",module

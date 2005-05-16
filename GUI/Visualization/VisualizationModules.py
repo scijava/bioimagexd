@@ -110,6 +110,30 @@ class VisualizationModule:
         """          
         self.renderer.AddActor(self.actor)
         self.wxrenwin.Render()
+        
+    def setProperties(self, ambient,diffuse,specular,specularpower):
+        """
+        Method: setProperties(ambient,diffuse,specular,specularpower)
+        Created: 16.05.2005, KP
+        Description: Set the ambient, diffuse and specular lighting of this module
+        """          
+        property=self.actor.GetProperty()
+        property.SetAmbient(ambient)
+        property.SetDiffuse(diffuse)
+        property.SetSpecular(specular)
+        property.SetSpecularPower(specularpower)
+        
+    def setShading(self,shading):
+        """
+        Method: setShading(shading)
+        Created: 16.05.2005, KP
+        Description: Set shading on / off
+        """          
+        property=self.actor.GetProperty()
+        if shading:
+            property.ShadeOn()
+        else:
+            property.ShadeOff()
 
 class VolumeModule(VisualizationModule):
     """
@@ -137,6 +161,7 @@ class VolumeModule(VisualizationModule):
         self.volumeProperty.SetScalarOpacity(self.opacityTransferFunction)
         self.setQuality(10)
         self.volume = vtk.vtkVolume()
+        self.actor = self.volume
         self.volume.SetProperty(self.volumeProperty)
         self.setMethod(2)
         self.parent.getRenderer().AddVolume(self.volume)
@@ -195,11 +220,8 @@ class VolumeModule(VisualizationModule):
         else:
             print "Setting quality to ",quality
         if quality==10:
-            self.volumeProperty.ShadeOn()
-            self.volumeProperty.SetInterpolationTypeToLinear()
-            
+            self.volumeProperty.SetInterpolationTypeToLinear()            
         elif quality==9:
-            self.volumeProperty.ShadeOff()
             self.volumeProperty.SetInterpolationTypeToNearest()
         elif quality<9:
             quality=10-quality
@@ -552,8 +574,6 @@ class ImagePlaneModule(VisualizationModule):
             vy = 1
             nz = oz+zMax*sz
             cz = oz+slice_number*sz
-          
-    
         
         px = cx+nx*2
         py = cy+ny*2
@@ -625,13 +645,39 @@ class ImagePlaneModule(VisualizationModule):
         self.planeWidgetY.On()
         self.planeWidgetZ.On()
         self.wxrenwin.Render()
+        
+    def setProperties(self,ambient,diffuse,specular,specularpower):
+        """
+        Method: setProperties(ambient,diffuse,specular,specularpower)
+        Created: 16.05.2005, KP
+        Description: Set the ambient, diffuse and specular lighting of this module
+        """         
+        for widget in [self.planeWidgetX,self.planeWidgetY,self.planeWidgetZ]:
+            property=widget.GetTexturePlaneProperty()
+            property.SetAmbient(ambient)
+            property.SetDiffuse(diffuse)
+            property.SetSpecular(specular)
+            property.SetSpecularPower(specularpower)
+        
+    def setShading(self,shading):
+        """
+        Method: setShading(shading)
+        Created: 16.05.2005, KP
+        Description: Set shading on / off
+        """          
+        for widget in [self.planeWidgetX,self.planeWidgetY,self.planeWidgetZ]:
+            property=widget.GetTexturePlaneProperty()
+            if shading:
+                property.ShadeOn()
+            else:
+                property.ShadeOff()        
 
 
 class ArbitrarySliceModule(VisualizationModule):
     """
     Class: ArbitrarySliceModule
-    Created: 04.05.2005, KP
-    Description: A module for slicing the dataset in arbitrary ways
+    Created: 03.05.2005, KP
+    Description: A module for slicing the dataset
     """    
     def __init__(self,parent):
         """
@@ -644,49 +690,51 @@ class ArbitrarySliceModule(VisualizationModule):
         self.name = "Arbitrary Slices"
         self.on = 0
         self.renew = 1
+        self.mapper = vtk.vtkPolyDataMapper()
         
         self.outline = vtk.vtkOutlineFilter()
         self.outlineMapper = vtk.vtkPolyDataMapper()
         self.outlineActor = vtk.vtkActor()
         self.outlineActor.SetMapper(self.outlineMapper)
         
-        self.parent.getRenderer().AddActor(self.outlineActor)
-        
-        self.planeWidget = vtk.vtkPlaneWidget()
-        
-        self.planeWidget.NormalToXAxisOn()
-        self.planeWidget.SetResolution(20)
-        self.planeWidget.SetRepresentationToOutline()
-        
-        self.plane = vtk.vtkPolyData()
-        self.planeWidget.GetPolyData(self.plane)
-
-        iactor = self.wxrenwin.GetRenderWindow().GetInteractor()
-        self.planeWidget.SetInteractor(iactor)
-        
-        self.probe = vtk.vtkProbeFilter()
-        
-        self.planeWidget.AddObserver("EnableEvent", self.BeginInteraction)
-        self.planeWidget.AddObserver("StartInteractionEvent", self.BeginInteraction)
-        self.planeWidget.AddObserver("InteractionEvent", self.ProbeData)
-
+        self.picker = vtk.vtkCellPicker()
+        self.picker.SetTolerance(0.5)
         
         self.planes=[]
+        self.renderer = self.parent.getRenderer()
+        self.renderer.AddActor(self.outlineActor)
         
-        print "adding actor"
+        self.ctf=None
+        
+        
         #self.updateRendering()
         
-    def BeginInteraction(self,obj,event):
-        obj.GetPolyData(self.plane)
-    
-    def ProbeData(self,obj,event):
-        obj.GetPolyData(self.plane)
+    def addPlane(self):
+        """
+        Method: addPlane()
+        Created: 16.05.2005, KP
+        Description: Add a plane
+        """       
+        print "Adding plane"
+        plw = vtk.vtkImagePlaneWidget()
+        #self.planeWidget.DisplayTextOn()
         
+        plw.SetPicker(self.picker)
+        
+        plw.SetResliceInterpolateToCubic()
+        
+        iactor = self.wxrenwin.GetRenderWindow().GetInteractor()
+        plw.SetInteractor(iactor)
+        self.planes.append(plw)
+        if self.ctf:
+            plw.GetColorMap().SetLookupTable(self.ctf)
+        self.renew=1
+
         
     def setDataUnit(self,dataunit):
         """
         Method: setDataUnit(self)
-        Created: 04.05.2005, KP
+        Created: 28.04.2005, KP
         Description: Sets the dataunit this module uses for visualization
         """       
         VisualizationModule.setDataUnit(self,dataunit)
@@ -699,11 +747,13 @@ class ArbitrarySliceModule(VisualizationModule):
         x=self.extent[1]/2
         y=self.extent[3]/2
         z=self.extent[5]/2
-        self.x,self.y,self.z=x,y,z
-        self.volumeModule = VolumeModule(self.parent)
-        self.volumeModule.setMethod(0)
-        self.volumeModule.setDataUnit(self.dataUnit)
+        self.setDisplaySlice(x,y,z)
 
+        ctf = self.dataUnit.getColorTransferFunction()
+        self.ctf=ctf
+        for planeWidget in self.planes:
+            planeWidget.GetColorMap().SetLookupTable(ctf)
+#        self.planeWidget.maxDim = x
         
     
     def setDisplaySlice(self,x,y,z):
@@ -713,9 +763,6 @@ class ArbitrarySliceModule(VisualizationModule):
         Description: Set the slices to display
         """           
         self.x,self.y,self.z=x,y,z
-        self.planeWidgetX.SetSliceIndex(self.x)
-        self.planeWidgetY.SetSliceIndex(self.y)
-        self.planeWidgetZ.SetSliceIndex(self.z)
         #self.parent.getRenderer().ResetCameraClippingRange()
         #self.wxrenwin.GetRenderWindow().Render()
         print "Showing slices ",self.x,self.y,self.z
@@ -728,7 +775,7 @@ class ArbitrarySliceModule(VisualizationModule):
         """          
         self.renew=1
         VisualizationModule.showTimepoint(self,value)
-
+        
         
     def updateRendering(self):
         """
@@ -736,27 +783,69 @@ class ArbitrarySliceModule(VisualizationModule):
         Created: 03.05.2005, KP
         Description: Update the Rendering of this module
         """             
-        self.planeWidget.SetInput(self.data)
-        self.probe.SetInput(self.plane)
-        self.probe.SetSource(self.data)
-        self.planeWidget.PlaceWidget()
-        data=self.probe.GetOutput()
-        print "data=",data
-        self.volumeModule.updateRendering(data)
-
         self.outline.SetInput(self.data)
         self.outlineMapper.SetInput(self.outline.GetOutput())
         
         self.outlineMapper.Update()
 
         if self.renew:
-            self.planeWidget.SetInput(self.data)
+            for planeWidget in self.planes:
+                planeWidget.SetInput(self.data)
             self.renew=0
+        #self.planeWidget.SetSliceIndex(self.x)
         
         if not self.on:
-            self.planeWidget.On()
+            for planeWidget in self.planes:
+                planeWidget.On()
             self.on = 1
         
-        #self.mapper.Update()
+        self.mapper.Update()
         self.parent.Render()    
+
+    def disableRendering(self):
+        """
+        Method: disableRendering()
+        Created: 15.05.2005, KP
+        Description: Disable the Rendering of this module
+        """          
+        self.renderer.RemoveActor(self.outlineActor)
+        for planeWidget in self.planes:
+            planeWidget.Off()
+        self.wxrenwin.Render()
         
+    def enableRendering(self):
+        """
+        Method: enableRendering()
+        Created: 15.05.2005, KP
+        Description: Enable the Rendering of this module
+        """          
+        self.renderer.AddActor(self.outlineActor)
+        for planeWidget in self.planes:
+            planeWidget.On()
+        self.wxrenwin.Render()
+        
+    def setProperties(self,ambient,diffuse,specular,specularpower):
+        """
+        Method: setProperties(ambient,diffuse,specular,specularpower)
+        Created: 16.05.2005, KP
+        Description: Set the ambient, diffuse and specular lighting of this module
+        """         
+        for widget in self.planes:
+            property=widget.GetTexturePlaneProperty()
+            property.SetAmbient(ambient)
+            property.SetDiffuse(diffuse)
+            property.SetSpecular(specular)
+            property.SetSpecularPower(specularpower)
+        
+    def setShading(self,shading):
+        """
+        Method: setShading(shading)
+        Created: 16.05.2005, KP
+        Description: Set shading on / off
+        """          
+        for widget in self.planes:
+            property=widget.GetTexturePlaneProperty()
+            if shading:
+                property.ShadeOn()
+            else:
+                property.ShadeOff()        
