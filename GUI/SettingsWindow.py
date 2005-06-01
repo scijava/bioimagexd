@@ -37,10 +37,8 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 import os.path
 
 import wx
-#import GuiGeneration
 import  wx.lib.filebrowsebutton as filebrowse
 import Configuration
-import GuiGeneration
 
 class GeneralSettings(wx.Panel):
     """
