@@ -235,7 +235,8 @@ class Scattergram(wx.Panel):
             green=None
 
             for i in dataunits:
-                col=i.getColorTransferFunction().GetColor(255)
+		col=[0,0,0]
+                i.getColorTransferFunction().GetColor(255,col)
                 if col[0]>col[1]:
                     self.red=i
                 elif col[1]>col[0]:
