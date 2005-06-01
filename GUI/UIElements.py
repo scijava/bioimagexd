@@ -6,7 +6,7 @@
  Created: 09.02.2005, KP
  Description:
 
- GuiGeneration is a module with functions for generating various pieces
+ UIElements is a module with functions for generating various pieces
  of GUI that would otherwise require lots of repetitive code, like 
  label-field pairs or path field - browse button pairs
  
