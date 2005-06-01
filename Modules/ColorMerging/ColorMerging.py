@@ -31,7 +31,7 @@
 
 """
 
-__author__ = "Selli Project <http://sovellusprojektit.it.jyu.fi/selli/>"
+__author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.18 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
@@ -58,7 +58,7 @@ class ColorMerging(Module):
         self.thresholds=[]
         self.running=False
 
-    	self.reset()
+        self.reset()
 
     def reset(self):
         """
@@ -110,11 +110,15 @@ class ColorMerging(Module):
         Created: 24.11.2004, JV
         Description: Does a preview calculation for the x-y plane at depth z
         """
-        self.doAlpha=0
+        if z!=-1:
+            self.doAlpha=0
+        else: # If the whole volume is requested, then we will also do alpha
+            print "Will do alpha as whole volume was requested"
+            self.doAlpha=1
         if not self.preview:
             self.preview=self.doOperation()
         self.doAlpha=1
-        return self.zoomDataset(self.preview)
+        return self.preview
 
     def doOperation(self):
         """
@@ -133,17 +137,20 @@ class ColorMerging(Module):
         imagelen=len(self.images)
         print "Mapping through intensities..."
         for i in range(0,imagelen):
+            #self.images[i].GlobalReleaseDataFlagOn()
             mapIntensities=vtk.vtkImageMapToIntensities()
             mapIntensities.SetIntensityTransferFunction(self.intensityTransferFunctions[i])
             mapIntensities.SetInput(self.images[i])
             mapIntensities.Update()
             data=mapIntensities.GetOutput()
             processed.append(data)
-
+        print "Mapped %d datasets"%len(processed)
+        
         luminance=0
         if self.doAlpha:
             print "Creating alpha..."
             createalpha=vtk.vtkImageAlphaFilter()
+            print "self.alpaMode=",self.alphaMode
             if self.alphaMode[0]==0:
                 print "Maximum mode"
                 createalpha.MaximumModeOn()
@@ -161,7 +168,7 @@ class ColorMerging(Module):
                 alpha=createalpha.GetOutput()
                 #print "alpha=",alpha
                 print "Created alpha with dims and datatype:",alpha.GetDimensions(),alpha.GetScalarTypeAsString()
-            
+        
         # Color the datasets to 24-bit datasets using VTK classes            
         
         colored=[]
@@ -179,13 +186,14 @@ class ColorMerging(Module):
                 print "Dataset %d is RGB Data, will not map through ctf"%i
                 colored.append(processed[i])
         # result rgb
-
+        print "Mappend %d datasets"%len(colored)
         print "Merging..."
         merge=vtk.vtkImageMerge()
         for i in colored:
             merge.AddInput(i)
         merge.Update()
         data=merge.GetOutput()
+        
         print "Result with dims and type",data.GetDimensions(),data.GetScalarTypeAsString(),"components:",data.GetNumberOfScalarComponents()
 
         if luminance:
@@ -196,6 +204,7 @@ class ColorMerging(Module):
             alpha=lum.GetOutput()
         
         if self.doAlpha:
+            print "appending alpha..."
             appendcomp=vtk.vtkImageAppendComponents()
             appendcomp.AddInput(data)
             appendcomp.AddInput(alpha)
@@ -205,6 +214,7 @@ class ColorMerging(Module):
 
         t3=time.time()
         print "Calculations took %f seconds"%(t3-t1)
-        t2=time.time()
+        
+        #data.GlobalReleaseDataFlagOn()
         return data
 

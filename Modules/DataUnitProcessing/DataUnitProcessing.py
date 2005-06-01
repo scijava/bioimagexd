@@ -125,7 +125,10 @@ class DataUnitProcessing(Module):
         """
         if not self.preview:
             dims=self.images[0].GetDimensions()
-            self.extent=(0,dims[0]-1,0,dims[1]-1,z,z)
+            if z!=-1:
+                self.extent=(0,dims[0]-1,0,dims[1]-1,z,z)
+            else:
+                self.extent=None
             self.preview=self.doOperation()
             self.extent=None
         return self.zoomDataset(self.preview)
@@ -146,9 +149,6 @@ class DataUnitProcessing(Module):
             n=settings.get("PreviewedDataset")
             print "More than one source dataset for Single DataUnit Processing, using %d"%n
             
-            
-
-        
         mapdata=self.images[n]
         mapIntensities=vtk.vtkImageMapToIntensities()
         mapIntensities.SetIntensityTransferFunction(self.intensityTransferFunctions[n])

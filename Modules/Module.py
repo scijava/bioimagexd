@@ -108,6 +108,8 @@ class Module:
          Description: Resets the module to initial state
          """
          self.images=[]
+         for i in self.images:
+             del i
          self.extent=None
          self.x,self.y,self.z=0,0,0
 
