@@ -56,7 +56,7 @@ infoString="""<html><body bgcolor=%(bgcolor)s">
 <tr><td>Time Points:</td><td>%(tps)d</td></tr>
 <tr><td>Voxel Size:</td><td>%(nf)s%(voxelX).2f%(fe)s&mu;m %(smX)s %(nf)s%(voxelY).2f%(fe)s&mu;m %(smX)s %(nf)s%(voxelZ).2f%(fe)s&mu;m</td></tr>
 <tr><td>Spacing:</td><td>%(spX).2f %(smX)s %(spY).2f %(smX)s %(spZ).2f</td></tr>
-<tr><td>Data type:</td><td>%(bitdepth)s bit</td></tr>
+<tr><td>Data type:</td><td>%(bitdepth)d bit</td></tr>
 </table>
 </body></html>
 """
@@ -82,8 +82,9 @@ class InfoWidget(wx.Panel):
         
         self.preview=PreviewFrame.IntegratedPreview(self,
         previewsize=(384,384),pixelvalue=False,renderingpreview=False,
-        zoom=False,timeslider=False,scrollbars=False,zoom_factor=PreviewFrame.ZOOM_TO_FIT)
+        zoom=False,zslider=False,timeslider=False,scrollbars=False,zoom_factor=PreviewFrame.ZOOM_TO_FIT)
         self.mainsizer.Add(self.preview,(0,0),flag=wx.EXPAND|wx.ALL)
+                
         
         self.infoNotebook=wx.Notebook(self,-1,size=(300,300))        
         self.mainsizer.Add(self.infoNotebook,(0,1),flag=wx.EXPAND|wx.ALL)
@@ -121,35 +122,43 @@ class InfoWidget(wx.Panel):
             dims=dataunit.getDimensions()
             spacing=dataunit.getSpacing()
             voxelsize=dataunit.getVoxelSize()
+            bitdepth=dataunit.getBitDepth()
+            print "Got bitdepth=",bitdepth
             
             list=self.tree.getSelectedDataUnits()
-            if len(list)>1:
-                self.preview.setPreviewType("ColorMerging")
-                unit=DataUnit.ColorMergingDataUnit()
-                for i in list:
-                    #setting=DataUnit.ColorMergingSettings()
-                    #setting.initialize(unit,len(list),1)
-                    #i.setSettings(setting)
-                    unit.addSourceDataUnit(i)
-                unit.setModule(ColorMerging.ColorMerging())                                    
+            if 0 and len(list)>1:
+                print "Cannot show more than one"
+                unit=list[0]
+                #self.preview.setPreviewType("ColorMerging")
+                #unit=DataUnit.ColorMergingDataUnit()
+                #for i in list:
+                #    #setting=DataUnit.ColorMergingSettings()
+                #    #setting.initialize(unit,len(list),1)
+                #    #i.setSettings(setting)
+                #    unit.addSourceDataUnit(i)
+                #unit.setModule(ColorMerging.ColorMerging())                                    
             else:
-                self.preview.setPreviewType("")
+                self.preview.setPreviewType("MIP")
+                
                 
                 unit=DataUnit.CorrectedSourceDataUnit("preview")
                 unit.addSourceDataUnit(dataunit)
                 unit.setModule(DataUnitProcessing.DataUnitProcessing())
                 ctf = dataunit.getColorTransferFunction()
-                print "Setting ctf=",ctf
-                self.colorBtn.setColorTransferFunction(ctf)
+                print "dataunit.getBitDepth()=",dataunit.getBitDepth()
+                if dataunit.getBitDepth()==32:
+                    self.colorBtn.Enable(0)
+                else:
+                    print "Setting ctf=",ctf
+                    self.colorBtn.setColorTransferFunction(ctf)
             print "datasource=",dataunit.dataSource
-            print "ctf is",dataunit.getSettings().get("ColorTransferFunction")
+            #print "ctf is",dataunit.getSettings().get("ColorTransferFunction")
             self.dataUnit=unit
             self.taskName.SetValue(dataunit.getName())
             # The 0 tells preview to view source dataunit 0
             self.preview.setDataUnit(self.dataUnit,0)
             tps=dataunit.getLength()
             
-            bitdepth="8"
             # TODO: Have this data available in dataunit
             #bitdepth=dataunit.getScalarSize()*dataunit.getComponentAmount()
         xdim,ydim,zdim=dims
@@ -180,39 +189,42 @@ class InfoWidget(wx.Panel):
         """
         self.infoPanel=wx.Panel(self.infoNotebook,-1)
         self.infoSizer=wx.GridBagSizer(5,5)
-        self.htmlpage=wx.html.HtmlWindow(self.infoPanel,-1,size=(350,400))
-        if "gtk2" in wx.PlatformInfo:
-            self.htmlpage.SetStandardFonts()
- 
-        self.infoSizer.Add(self.htmlpage,(0,0),flag=wx.EXPAND|wx.ALL)
-        self.showInfo(None)
-        
-        self.infoPanel.SetSizer(self.infoSizer)
-        self.infoPanel.SetAutoLayout(1)
 
         self.infoNotebook.AddPage(self.infoPanel,"Channel info")
         
-        self.commonSettingsPanel=wx.Panel(self.infoNotebook,-1)
-        self.commonSettingsSizer=wx.GridBagSizer()
+        #self.commonSettingsPanel=wx.Panel(self.infoNotebook,-1)
+        #self.commonSettingsSizer=wx.GridBagSizer()
         
+        n=0
         self.namesizer=wx.BoxSizer(wx.VERTICAL)
-        self.commonSettingsSizer.Add(self.namesizer,(0,0))
-        
-        self.taskNameLbl=wx.StaticText(self.commonSettingsPanel,-1,"Dataunit Name:")
-        self.taskName=wx.TextCtrl(self.commonSettingsPanel,-1,size=(250,-1))
+        self.infoSizer.Add(self.namesizer,(n,0))
+        n+=1
+        self.taskNameLbl=wx.StaticText(self.infoPanel,-1,"Dataunit Name:")
+        self.taskName=wx.TextCtrl(self.infoPanel,-1,size=(250,-1))
         self.namesizer.Add(self.taskNameLbl)
         self.namesizer.Add(self.taskName)
 
-        self.paletteLbl = wx.StaticText(self.commonSettingsPanel,-1,"Channel palette:")
-        self.commonSettingsSizer.Add(self.paletteLbl,(1,0))
-        
-        self.colorBtn = ColorTransferEditor.CTFButton(self.commonSettingsPanel)
-        self.commonSettingsSizer.Add(self.colorBtn,(2,0))
-        
-        self.commonSettingsPanel.SetSizer(self.commonSettingsSizer)
-        self.commonSettingsPanel.SetAutoLayout(1)
+        #self.commonSettingsPanel.SetSizer(self.commonSettingsSizer)
+        #self.commonSettingsPanel.SetAutoLayout(1)
 
-        self.infoNotebook.AddPage(self.commonSettingsPanel,"Data Unit")
+        #self.infoNotebook.AddPage(self.commonSettingsPanel,"Data Unit")
         
         
+        self.htmlpage=wx.html.HtmlWindow(self.infoPanel,-1,size=(350,200))
+        if "gtk2" in wx.PlatformInfo:
+            self.htmlpage.SetStandardFonts()
+ 
+        self.infoSizer.Add(self.htmlpage,(n,0),flag=wx.EXPAND|wx.ALL)
+        self.showInfo(None)
+        n+=1
+        self.paletteLbl = wx.StaticText(self.infoPanel,-1,"Channel palette:")
+        self.infoSizer.Add(self.paletteLbl,(n,0))
+        n+=1
+        
+        self.colorBtn = ColorTransferEditor.CTFButton(self.infoPanel)
+        self.infoSizer.Add(self.colorBtn,(n,0))
+        n+=1
+        
+        self.infoPanel.SetSizer(self.infoSizer)
+        self.infoPanel.SetAutoLayout(1)
         
