@@ -37,7 +37,7 @@ import os.path,glob
 import re
 import wx
 import  wx.lib.filebrowsebutton as filebrowse
-import GuiGeneration
+import UIElements
 import vtk
 
 class ExportDialog(wx.Dialog):
@@ -209,7 +209,7 @@ class ExportDialog(wx.Dialog):
         self.patternBox.Add(self.patternEdit,1,wx.EXPAND|wx.LEFT|wx.RIGHT)
         self.sourcesizer.Add(self.patternBox)        
         
-        self.outputFormat=GuiGeneration.getImageFormatMenu(self.imagePanel)
+        self.outputFormat=UIElements.getImageFormatMenu(self.imagePanel)
         self.outputFormat.menu.Bind(wx.EVT_CHOICE,self.updateListOfImages)
         self.sourcesizer.Add(self.outputFormat)
         
