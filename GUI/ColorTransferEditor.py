@@ -64,7 +64,6 @@ class CTFPaintPanel(wx.Panel):
         self.maxy=255
         self.scale=1
         
-        
         self.xoffset=16
         self.yoffset=22
         if kws.has_key("width"):
@@ -83,6 +82,7 @@ class CTFPaintPanel(wx.Panel):
         self.h=h
         self.dc = None
         self.Bind(wx.EVT_PAINT,self.onPaint)
+        
 
         
     def toGraphCoords(self,x,y):
@@ -170,7 +170,7 @@ class CTFPaintPanel(wx.Panel):
         self.dc.DrawText(text,ox,y/self.scale)
         
 
-    def paintTransferFunction(self,ctf,pointlist,otf=None):
+    def paintTransferFunction(self,ctf,pointlist,otf=None,alphaMode=None):
         """
         Method: paintTransferFunction()
         Created: 30.10.2004, KP
@@ -197,7 +197,9 @@ class CTFPaintPanel(wx.Panel):
             self.createLine(0,i,255,i,'GREY',wx.LIGHT_GREY_BRUSH)
     
         for x1 in range(0,256):
-            r,g,b = ctf.GetColor(x1)      
+            val=[0,0,0]
+            ctf.GetColor(x1,val)
+            r,g,b = val
             r*=255
             g*=255
             b*=255
@@ -210,9 +212,10 @@ class CTFPaintPanel(wx.Panel):
             r=int(r)
             g=int(g)
             b=int(b)
-            self.createLine(x0,r0,x1,r,'#ff0000')
-            self.createLine(x0,g0,x1,g,'#00ff00')
-            self.createLine(x0,b0,x1,b,'#0000ff')
+            if not alphaMode:
+                self.createLine(x0,r0,x1,r,'#ff0000')
+                self.createLine(x0,g0,x1,g,'#00ff00')
+                self.createLine(x0,b0,x1,b,'#0000ff')
             x0=x1
             r0,g0,b0=r,g,b
 
@@ -376,17 +379,21 @@ class ColorTransferEditor(wx.Panel):
         self.mainsizer.Add(self.canvasBox)
         
         self.itemBox=wx.BoxSizer(wx.HORIZONTAL)
-        self.redBtn=wx.ToggleButton(self,-1,"",size=(32,32))
+        
+        self.alphaMode=0
+        
+        self.redBtn=buttons.GenToggleButton(self,-1,"",size=(32,32))
         self.redBtn.SetValue(1)
         self.redBtn.SetBackgroundColour((255,0,0))
-        self.greenBtn=wx.ToggleButton(self,-1,"",size=(32,32))
+        self.greenBtn=buttons.GenToggleButton(self,-1,"",size=(32,32))
         self.greenBtn.SetBackgroundColour((0,255,0))
-        self.blueBtn=wx.ToggleButton(self,-1,"",size=(32,32))
+        self.blueBtn=buttons.GenToggleButton(self,-1,"",size=(32,32))
         self.blueBtn.SetBackgroundColour((0,0,255))
         
         if self.alpha:
-            self.alphaBtn=wx.ToggleButton(self,-1,"",size=(32,32))
+            self.alphaBtn=buttons.GenToggleButton(self,-1,"",size=(32,32))
             self.alphaBtn.Bind(wx.EVT_TOGGLEBUTTON,self.onEditAlpha)
+            self.alphaBtn.SetBackgroundColour((255,255,255))
         #self.freeBtn = wx.ToggleButton(self,-1,)
         iconpath=reduce(os.path.join,["Icons"])        
         self.freeBtn = buttons.GenBitmapToggleButton(self, -1, None)
@@ -411,9 +418,9 @@ class ColorTransferEditor(wx.Panel):
         self.itemBox.Add(self.openBtn)
         self.itemBox.Add(self.saveBtn)
         
-        self.redBtn.Bind(wx.EVT_TOGGLEBUTTON,self.onEditRed)
-        self.greenBtn.Bind(wx.EVT_TOGGLEBUTTON,self.onEditGreen)
-        self.blueBtn.Bind(wx.EVT_TOGGLEBUTTON,self.onEditBlue)
+        self.redBtn.Bind(wx.EVT_BUTTON,self.onEditRed)
+        self.greenBtn.Bind(wx.EVT_BUTTON,self.onEditGreen)
+        self.blueBtn.Bind(wx.EVT_BUTTON,self.onEditBlue)
         
         self.freeBtn.Bind(wx.EVT_BUTTON,self.onFreeMode)
         
@@ -433,6 +440,20 @@ class ColorTransferEditor(wx.Panel):
         self.updateGraph()
         self.pos = (0,0)
         self.selectedPoint = None
+        
+    def setAlphaMode(self,flag):
+        """
+        Method: setAlphaMode
+        Created: 29.05.2005, KP
+        Description: Show only alpha channel
+        """
+        self.alphaMode=flag
+        
+        self.colorBtn.Show(flag)
+        self.redBtn.Show(flag)
+        self.greenBtn.Show(flag)
+        self.blueBtn.Show(flag)
+        self.updateGraph()
         
     def onSaveLut(self,event):
         """
@@ -601,11 +622,11 @@ class ColorTransferEditor(wx.Panel):
             self.updateGraph()
             self.setFromColorTransferFunction(self.ctf)
         self.freeMode = event.GetIsDown()
-        print "Points before=",self.points
+#        print "Points before=",self.points
         if not self.freeMode and was:
             print "Analyzing free mode for points"
             self.getPointsFromFree()
-        print "Points now=",self.points
+#        print "Points now=",self.points
         self.updateGraph()
                 
     def onEditRed(self,event):
@@ -737,16 +758,17 @@ class ColorTransferEditor(wx.Panel):
         #print "Painting ",self.ctf
         pts=[]
         if not self.freeMode:
-            pts.extend(self.redpoints)
-            pts.extend(self.greenpoints)
-            pts.extend(self.bluepoints)
+            if not self.alphaMode:
+                pts.extend(self.redpoints)
+                pts.extend(self.greenpoints)
+                pts.extend(self.bluepoints)
             pts.extend(self.alphapoints)
         otf=None
         if self.alpha:
             otf=self.otf
             #print "Painting otf=",otf
         
-        self.canvas.paintTransferFunction(self.ctf,pts,otf)
+        self.canvas.paintTransferFunction(self.ctf,pts,otf,self.alphaMode)
         self.value.paintTransferFunction(self.ctf)
 
 
@@ -765,7 +787,9 @@ class ColorTransferEditor(wx.Panel):
         Description: Sets the colors of this graph
         """
         for i in range(256):
-            r,g,b=TF.GetColor(i)
+	    val = [0,0,0]
+            TF.GetColor(i,val)
+	    r,g,b = val
             r*=255
             g*=255
             b*=255
@@ -801,7 +825,9 @@ class ColorTransferEditor(wx.Panel):
                 a=int(a)
                 da = a-a2
                 
-            r,g,b=self.ctf.GetColor(x)
+	    val = [0,0,0]
+            self.ctf.GetColor(x,val)
+	    r,g,b=val
             
             r*=255
             g*=255
@@ -852,12 +878,12 @@ class ColorTransferEditor(wx.Panel):
                      by this widget
         """
         self.ctf=TF
-        print "Points before=",self.points
+#        print "Points before=",self.points
         self.getPointsFromFree()
-        print "Got points = ",self.points
-        print "self.redpoints=",self.redpoints
-        print "self.greenpoints=",self.greenpoints
-        print "self.bluepoints=",self.bluepoints
+#        print "Got points = ",self.points
+#        print "self.redpoints=",self.redpoints
+#        print "self.greenpoints=",self.greenpoints
+#        print "self.bluepoints=",self.bluepoints
         self.alphapoints=[(0,0),(255,51)]
         self.points=[self.redpoints,self.greenpoints,self.bluepoints,self.alphapoints]
         
