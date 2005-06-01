@@ -1,6 +1,9 @@
 The BioImageXD Project:
 
-The main development team:
+BioImageXD Copyright (C) 2004, 2005 The development team
+
+The development team:
+
 Pasi Kankaanpää
 Kalle Pahajoki
 Varpu Marjomäki
