@@ -86,6 +86,8 @@ class DataUnitSettings:
         self.register("Dimensions")
         self.register("Type")
         self.register("Name")
+        self.register("BitDepth")
+        
         
     def asType(self,newtype):
         """
@@ -130,6 +132,7 @@ class DataUnitSettings:
         
         self.registered[name]=1
         self.serialized[name]=serialize
+        self.isPrivate[name]=0
 
     def registerPrivate(self,name,serialize=0):
         """
@@ -156,6 +159,7 @@ class DataUnitSettings:
         self.registered[name]=1
         self.counted[name]=1
         self.serialized[name]=serialize
+        self.isPrivate[name]=0
     
         
     def readFrom(self,parser):
@@ -242,7 +246,7 @@ class DataUnitSettings:
         for key in self.registered.keys():
             if key in self.counted:
                 print "Writing key %s with count %d"%(key,self.counted[key])
-                for i in range(self.counted[key]):
+                for i in range(self.counted[key]+1):
                     self.writeKey(key,parser,i)
             else:
                 self.writeKey(key,parser)                
@@ -268,7 +272,7 @@ class DataUnitSettings:
             return self.setCounted(name,self.n,value,overwrite)
         if name not in self.registered:
             raise "No key %s registered"%name
-        if name in self.isPrivate:
+        if self.isPrivate[name]:
             print "Setting private %s"%name
             self.private[name]=value
         else:
@@ -355,7 +359,6 @@ class DataUnitSettings:
             
             ctf=vtk.vtkColorTransferFunction()
             ImageOperations.loadLUTFromString(data,ctf)
-            #print "\n*** Loaded ctf with 255=",ctf.GetColor(255),"***"
             return ctf
         if name not in ["IntensityTransferFunction","IntensityTransferFunctions","AlphaTransferFunction"]:
             return eval(value)

@@ -362,7 +362,16 @@ class CombinedDataUnit(DataUnit.DataUnit):
 
         # module.getPreview() returns a vtkImageData object
         return self.module.getPreview(depth)
-        
+
+    def getBitDepth(self):
+        """
+        Method: getBitDepth()
+        Created: 30.05.2005, KP
+        Description: Return the bit depth of the combined dataunit
+        """
+        return 8
+
+
     def getColor(self):
         """
         Method: getColor()
@@ -390,6 +399,14 @@ class ColorMergingDataUnit(CombinedDataUnit):
         Description: Return the class that represents settings for this dataunit
         """
         return ColorMergingSettings
+        
+    def getBitDepth(self):
+        """
+        Method: getBitDepth()
+        Created: 30.05.2005, KP
+        Description: Return the bit depth of the combined dataunit
+        """
+        return 32
 
 class ColocalizationDataUnit(CombinedDataUnit):
     def getSettingClass(self):

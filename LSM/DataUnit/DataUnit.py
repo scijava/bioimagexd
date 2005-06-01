@@ -75,26 +75,6 @@ class DataUnit:
         self.ctf = None
         self.settings = None
     
-##    def getColor(self):
-##        """
-##        Method: getColor()
-##        Created: 27.03.2005, KP
-##        Description: Returns the color of this object
-##        """
-##        if not self.dataSource:
-##            return (010,101,010)
-##        if not self.color:
-##            self.color=self.dataSource.getColor()
-##            # "Got color from datasource:",self.color
-##        return self.color
-##        
-##    def setColor(self,color):
-##        """
-##        Method: getColor()
-##        Created: 28.03.2005, KP
-##        Description: Sets the color of this object
-##        """       
-##        self.color=color
 
     def getColorTransferFunction(self):
         """
@@ -103,7 +83,9 @@ class DataUnit:
         Description: Returns the ctf of this object
         """
         if not self.dataSource and not self.ctf:
-            print "No datasource, using ctf 0"
+            print "Using no CTF"
+            return None
+            #print "No datasource, using ctf 0"
             ctf = vtk.vtkColorTransferFunction()
             ctf.AddRGBPoint(255,0,0,0)
             #self.ctf = ctf
@@ -133,12 +115,13 @@ class DataUnit:
         if not self.settings:
             return
         ctf = self.getColorTransferFunction()
-        print "My ctf is ",ctf
+        print "My ctf is -->",ctf
         # Watch out not to overwrite the palette
         #self.ctf = self.settings.get("ColorTransferFunction")
         #ctf = self.ctf
+        
         self.settings.set("ColorTransferFunction",ctf)
-        if self.settings.get("Type")=="ColorMergingSettings":
+        if ctf and self.settings.get("Type")=="ColorMergingSettings":
             self.settings.set("MergingColorTransferFunction",ctf)
                 
 
@@ -146,7 +129,8 @@ class DataUnit:
             self.settings.set("VoxelSize",self.dataSource.getVoxelSize())
             self.settings.set("Spacing",self.dataSource.getSpacing())
             self.settings.set("Dimensions",self.dataSource.getDimensions())
-
+            self.settings.set("BitDepth",self.dataSource.getBitDepth())
+            
     def getSettings(self):
         """
         Method: getSettings
@@ -183,6 +167,7 @@ class DataUnit:
                 n       The timepoint we need to return
         """
         if not self.dataSource:
+            raise "No datasource specified"
             Logging.error("No datasource specified",
             "No datasource specified for DataUnit, unable to get timepoint!")
             return None
@@ -212,6 +197,7 @@ class DataUnit:
         self.getDimensions = dataSource.getDimensions
         self.getSpacing = dataSource.getSpacing
         self.getVoxelSize = dataSource.getVoxelSize
+        self.getBitDepth = dataSource.getBitDepth
         print "Got datasource..."
         
         #self.updateSettings()
