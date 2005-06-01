@@ -63,7 +63,7 @@ class GUIError:
         Creator: KP
         Description: Displays the error message in a tkMessageBox.
         """
-        dlg=wx.MessageDialog(self,self.msg,self.title,wx.OK|wx.ICON_ERROR)
+        dlg=wx.MessageDialog(None,self.msg,self.title,wx.OK|wx.ICON_ERROR)
         dlg.ShowModal()
         dlg.Destroy()
 
