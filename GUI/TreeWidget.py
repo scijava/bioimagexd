@@ -66,28 +66,9 @@ class TreeWidget(wx.Panel):
         self.tree.SetItemImage(self.root,fldridx,which=wx.TreeItemIcon_Normal)
         self.tree.SetItemImage(self.root,fldropenidx,which=wx.TreeItemIcon_Expanded)
 
-       
-        self.lsmfiles=self.tree.AppendItem(self.root,"LSM Files")
-        self.tree.SetPyData(self.lsmfiles,None)
-        self.tree.SetItemImage(self.lsmfiles,fldridx,which=wx.TreeItemIcon_Normal)
-        self.tree.SetItemImage(self.lsmfiles,fldropenidx,which=wx.TreeItemIcon_Expanded)
-
-        self.leicafiles=self.tree.AppendItem(self.root,"Leica Files")
-        self.tree.SetPyData(self.leicafiles,None)
-        self.tree.SetItemImage(self.leicafiles,fldridx,which=wx.TreeItemIcon_Normal)
-        self.tree.SetItemImage(self.leicafiles,fldropenidx,which=wx.TreeItemIcon_Expanded)        
-        
-        self.vtifiles=self.tree.AppendItem(self.root,"Single Data Sets")
-        self.tree.SetPyData(self.vtifiles,None)        
-        self.tree.SetItemImage(self.vtifiles,fldridx,which=wx.TreeItemIcon_Normal)
-        self.tree.SetItemImage(self.vtifiles,fldropenidx,which=wx.TreeItemIcon_Expanded)
-        
-        self.dufiles=self.tree.AppendItem(self.root,"Dataset series")
-        self.tree.SetPyData(self.dufiles,None)        
-        self.tree.SetItemImage(self.dufiles,fldridx,which=wx.TreeItemIcon_Normal)
-        self.tree.SetItemImage(self.dufiles,fldropenidx,which=wx.TreeItemIcon_Expanded)
-
-        self.tree.Expand(self.root)
+        self.lsmfiles=None
+        self.leicafiles=None
+        self.dufiles=None
         
     def onSize(self, event):
         """
@@ -126,25 +107,43 @@ class TreeWidget(wx.Panel):
         fileidx     = il.Add(wx.ArtProvider_GetBitmap(wx.ART_REPORT_VIEW, wx.ART_OTHER, isz))
 
         self.items[path]=1
+        
         if objtype=="lsm":
+            if not self.lsmfiles:
+                self.lsmfiles=self.tree.AppendItem(self.root,"LSM Files")
+                self.tree.SetPyData(self.lsmfiles,None)
+                self.tree.SetItemImage(self.lsmfiles,fldridx,which=wx.TreeItemIcon_Normal)
+                self.tree.SetItemImage(self.lsmfiles,fldropenidx,which=wx.TreeItemIcon_Expanded)
             item=self.lsmfiles
             item=self.tree.AppendItem(item,name)
             self.tree.SetPyData(item,None)        
             self.tree.SetItemImage(item,fldropenidx,which=wx.TreeItemIcon_Expanded)
         elif objtype=="txt":
+            if not self.leicafiles:
+                self.leicafiles=self.tree.AppendItem(self.root,"Leica Files")
+                self.tree.SetPyData(self.leicafiles,None)
+                self.tree.SetItemImage(self.leicafiles,fldridx,which=wx.TreeItemIcon_Normal)
+                self.tree.SetItemImage(self.leicafiles,fldropenidx,which=wx.TreeItemIcon_Expanded)        
+
             item=self.leicafiles
             item=self.tree.AppendItem(item,name)
             self.tree.SetPyData(item,None)
             self.tree.SetItemImage(item,fldropenidx,which=wx.TreeItemIcon_Expanded)
         elif objtype=="du":
+            if not self.dufiles:
+                self.dufiles=self.tree.AppendItem(self.root,"Dataset series")
+                self.tree.SetPyData(self.dufiles,None)        
+                self.tree.SetItemImage(self.dufiles,fldridx,which=wx.TreeItemIcon_Normal)
+                self.tree.SetItemImage(self.dufiles,fldropenidx,which=wx.TreeItemIcon_Expanded)
+
             item=self.dufiles
-        else:
-            item=self.vtifiles
+
         for obj in objs:
             added=self.tree.AppendItem(item,obj.getName())
             self.tree.SetPyData(added,obj)        
             self.tree.SetItemImage(added,fileidx,which=wx.TreeItemIcon_Normal)
             #self.tree.SetItemImage(added,fldropenidx,which=wx.TreeItemIcon_Expanded)
+        self.tree.Expand(self.root)
 
     def getSelectedDataUnits(self):
         """
