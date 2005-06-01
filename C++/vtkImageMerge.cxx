@@ -105,6 +105,7 @@ void vtkImageMergeExecute(vtkImageMerge *self, int id,int NumberOfInputs,
           inPtrs[i]+=inIncZ;
         }
         outPtr += outIncZ;      
+//	printf("Processed slice %d\n",idxZ);
     }
   
     delete[] inPtrs;
