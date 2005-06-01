@@ -1,4 +1,7 @@
-from VisualizationFrame import *
 from VisualizationModules import *
 from ModuleConfiguration import *
-from VisualizerWindow import *
+
+import VisualizerWindow
+import VisualizationFrame
+import Lights
+from Visualizer import *

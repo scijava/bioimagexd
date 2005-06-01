@@ -43,6 +43,8 @@ from VisualizationModules import *
 from ModuleConfiguration import *
 from Lights import *
 
+        
+
 
 class VisualizerWindow(wxVTKRenderWindowInteractor):
     """

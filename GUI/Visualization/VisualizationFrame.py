@@ -40,18 +40,81 @@ from vtk.wx.wxVTKRenderWindowInteractor import wxVTKRenderWindowInteractor
 from Events import *
 import Dialogs
 import  wx.lib.colourselect as  csel
+import wx.lib.scrolledpanel as scrolled
 
 
 from VisualizationModules import *
 from ModuleConfiguration import *
 from VisualizerWindow import *
-from Lights import *
 
-visualizerInstance=None
 
-def getVisualizer():
-    global visualizerInstance
-    return visualizerInstance
+from UIElements import NamePanel
+
+class TitledPanel(wx.Panel):
+    """
+    Class: TitledPanel
+    Created: 26.05.2005, KP
+    Description: A frame that has a title and can be collapsed
+    """    
+    def __init__(self,parent,title,expand):
+        """
+        Method: __init__(parent)
+        Created: 26.05.2005, KP
+        Description: Initialization
+        """     
+        wx.Panel.__init__(self,parent,-1)
+        self.parent=parent
+        self.sizer = wx.GridBagSizer()
+        if expand:            
+            self.namePanel = NamePanel(self,title,(0,0,0),
+            size=(200,25),
+            xoffset=5,yoffset=1)
+        else:
+            self.namePanel = NamePanel(self,title,(0,0,0),
+            size=(200,25),
+            xoffset=5,yoffset=1)
+        
+        self.namePanel.setColor((255,255,255),(0,0,0))
+        
+        self.sizer.Add(self.namePanel,(0,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
+        self.value=1
+        self.SetSizer(self.sizer)
+        self.SetAutoLayout(1)
+        self.sizer.Fit(self)
+        
+    def setLabel(self,label):
+        """
+        Method: setLabel(label)
+        Created: 26.05.2005, KP
+        Description: Set label
+        """             
+        self.namePanel.setLabel(label)
+    
+    def expand(self,value):
+        """
+        Method: expand(value)
+        Created: 26.05.2005, KP
+        Description: Expand / collapse managed widget
+        """             
+        if value and not self.value:
+            self.widget.Show()
+            self.sizer.Show(self.widget)
+        elif (not value) and self.value:
+            self.widget.Show(0)
+            self.sizer.Show(self.widget,0)
+        self.parent.SetupScrolling()
+        self.value=value
+            
+    
+    def add(self,widget):
+        """
+        Method: add(widget)
+        Created: 26.05.2005, KP
+        Description: Add a widget managed by this panel
+        """             
+        self.widget = widget
+        self.sizer.Add(self.widget,(1,0),flag=wx.EXPAND|wx.ALL)
+    
     
 class RendererConfiguration(wx.MiniFrame):
     """
@@ -138,7 +201,7 @@ class RendererConfiguration(wx.MiniFrame):
             print "Setting renderwindow background to ",r,g,b
             self.visualizer.setBackground(r,g,b)
         print "Setting stero mode to",self.stereoMode
-        self.visualizer.setStereoMode(self.stereoMode)
+        self.mode.setStereoMode(self.stereoMode)
         try:
             x,y=map(int,self.sizeEdit.GetValue().split("x"))
             print "Setting render window size to ",x,y
@@ -186,25 +249,41 @@ class RendererConfiguration(wx.MiniFrame):
             
     
 
-class ConfigurationPanel(wx.Panel):
+class ConfigurationPanel(scrolled.ScrolledPanel):
     """
     Class: ConfigurationPanel
     Created: 28.04.2005, KP
     Description: A panel that can be used to configure the rendering
     """
-    def __init__(self,parent,visualizer,**kws):
+    def __init__(self,parent,visualizer,mode,**kws):
         """
         Method: __init__(parent)
         Created: 28.04.2005, KP
         Description: Initialization
         """
-        wx.Panel.__init__(self,parent,-1)
-        self.sizer = wx.GridBagSizer()
+        #wx.Panel.__init__(self,parent,-1,style=wx.RAISED_BORDER)
+        #wx.ScrolledWindow.__init__(self,parent,-1)
+        scrolled.ScrolledPanel.__init__(self,parent,-1,size=(200,-1))
+        
+        self.sizer = wx.GridBagSizer() 
+        # Unbind to not get annoying behaviour of scrolling
+        # when clicking on the panel
+        self.Unbind(wx.EVT_CHILD_FOCUS)
+
         self.parent = parent
         self.visualizer = visualizer
-
+        self.mode=mode
+        self.currentConf=None
+        self.currentConfMode=""
+        #self.titlePanel = TitledPanel(self,"Visualizer",1)
+        self.namePanel = NamePanel(self,"Visualizer",(0,0,0),
+            size=(200,25),
+            xoffset=5,yoffset=1)
+        self.namePanel.setColor((255,255,255),(0,0,0))
+                
         self.moduleLbl = wx.StaticText(self,-1,"Rendering module:")
-        self.moduleChoice = wx.Choice(self,-1,choices=["Volume Rendering","Surface Rendering","Orthogonal Slices","Arbitrary Slices"])
+        modules=self.mode.mapping.keys()
+        self.moduleChoice = wx.Choice(self,-1,choices=modules)
         self.moduleChoice.SetSelection(0)
         
         self.moduleListbox = wx.CheckListBox(self,-1)
@@ -216,38 +295,27 @@ class ConfigurationPanel(wx.Panel):
         
         self.moduleRemove = wx.Button(self,-1,"Remove")
         self.moduleRemove.Bind(wx.EVT_BUTTON,self.onRemoveModule)
-        
-        self.lightsBtn = wx.Button(self,-1,"Lights")
-        self.lightsBtn.Bind(wx.EVT_BUTTON,self.onConfigureLights)
-        
-        self.settingsBtn = wx.Button(self,-1,"Configure Window")
-        self.settingsBtn.Bind(wx.EVT_BUTTON,self.onConfigureRenderwindow)
 
-        self.sizer.Add(self.moduleLbl,(0,0))
-        self.sizer.Add(self.moduleChoice,(1,0))
-        self.sizer.Add(self.moduleListbox,(2,0))
-        
-        
+        n=0
+        self.sizer.Add(self.namePanel,(n,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
+        n+=1
+        self.sizer.Add(self.moduleLbl,(n,0))
+        n+=1
+        self.sizer.Add(self.moduleChoice,(n,0))
+        n+=1
+        self.sizer.Add(self.moduleListbox,(n,0))
+        n+=1
+     
         box=wx.BoxSizer(wx.HORIZONTAL)
-        self.configureBtn = wx.Button(self,-1,"Configure")
-        self.configureBtn.Bind(wx.EVT_BUTTON,self.onConfigureModule)
-  
         box.Add(self.moduleLoad)
         box.Add(self.moduleRemove)
-        self.sizer.Add(box,(3,0))
-        box2=wx.BoxSizer(wx.HORIZONTAL)
-        box2.Add(self.configureBtn)
-        box2.Add(self.lightsBtn)
-        self.sizer.Add(box2,(4,0))
-        self.sizer.Add(self.settingsBtn,(5,0))
+        self.sizer.Add(box,(n,0))
         self.selected = -1
-        
-        #self.sizer.Add(self.configureBtn,(3,0))
-        
+        self.confPanel = None
         
         self.SetSizer(self.sizer)
         self.SetAutoLayout(1)
-        self.sizer.Fit(self)
+        self.SetupScrolling()
         
     def onConfigureRenderwindow(self,event):
         """
@@ -266,8 +334,39 @@ class ConfigurationPanel(wx.Panel):
         Description: Select a module
         """
         self.selected = event.GetSelection()
+        self.showConfiguration(self.selected)
         
+    def showConfiguration(self,n):
+        """
+        Method: showConfiguration
+        Created: 23.05.2005, KP
+        Description: showConfiguration
+        """
+        if self.currentConf:
+            self.sizer.Detach(self.currentConf)
+            #del self.currentConf
+            self.currentConf.Show(0)
+        lbl = self.moduleListbox.GetString(n)
+        self.currentConfLbl = lbl
+        panel=self.mode.getConfigurationPanel(lbl)
         
+        w,h=self.moduleListbox.GetSize()
+        
+        if not self.confPanel:
+            self.confPanel = NamePanel(self,"Configure %s"%lbl,(0,0,0),size=(200,25))
+            self.sizer.Add(self.confPanel,(5,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
+        self.confPanel.setLabel("Configure %s"%lbl)
+        self.confPanel.setColor((255,255,255),(0,0,0))
+        
+        self.currentConf=panel(self,self.visualizer,mode=self.mode)
+     
+        self.sizer.Add(self.currentConf,(6,0))
+        #self.currentConf.Layout()
+        #self.Layout()
+        #self.parent.Layout()
+        
+        self.SetupScrolling()
+                
     def onCheckItem(self,event):
         """
         Method: onCheckItem
@@ -278,7 +377,7 @@ class ConfigurationPanel(wx.Panel):
         lbl = self.moduleListbox.GetString(index)
         status=self.moduleListbox.IsChecked(index)
         print "Setting rendering of %s to %s"%(lbl,status)
-        self.visualizer.setRenderingStatus(lbl,status)
+        self.mode.setRenderingStatus(lbl,status)
 
     def onConfigureLights(self,event):
         """
@@ -286,8 +385,7 @@ class ConfigurationPanel(wx.Panel):
         Created: 29.04.2005, KP
         Description: Configure the lights
         """
-        ren=self.visualizer.getRenderer()
-        lm = LightManager(self, self.visualizer.wxrenwin, ren, mode='raymond')
+        lm=self.mode.lightsManager
         lm.config()
 
 
@@ -298,7 +396,7 @@ class ConfigurationPanel(wx.Panel):
         Description: Load the selected module
         """
         lbl = self.moduleChoice.GetStringSelection()
-        self.visualizer.loadModule(lbl)
+        self.mode.loadModule(lbl)
         self.appendModuleToList(lbl)
         
     def appendModuleToList(self,module):
@@ -318,26 +416,21 @@ class ConfigurationPanel(wx.Panel):
         Description: Remove the selected module
         """
         if self.selected == -1:
+            if self.moduleListbox.GetCount()==1:
+                self.selected=0
+        if self.selected == -1:
             Dialogs.showerror(self,"You have to select a module to be removed","No module selected")
             return
         lbl=self.moduleListbox.GetString(self.selected)
-        self.visualizer.removeModule(lbl)
+        self.mode.removeModule(lbl)
         self.moduleListbox.Delete(self.selected)
         self.selected=-1
-
-
-    def onConfigureModule(self,event):
-        """
-        Method: onConfigureModule
-        Created: 28.04.2005, KP
-        Description: Load the selected module
-        """            
-        if self.selected ==-1:
-            Dialogs.showerror(self,"You have to select a module to be configured","No module selected")
-            return
-        lbl =self.moduleListbox.GetString(self.selected)
-        self.visualizer.configureModule(lbl)        
-
+        
+        if self.currentConf and self.currentConfLbl == lbl:
+            self.sizer.Detach(self.currentConf)
+            self.currentConf.Show(0)
+            del self.currentConf
+            self.SetupScrolling()
 
 
 class VisualizationFrame(wx.Frame):
@@ -354,220 +447,3 @@ class VisualizationFrame(wx.Frame):
         """
         wx.Frame.__init__(self,parent,-1,"BioImageXD Visualization",**kws)
 
-class Visualizer:
-    """
-    Class: Visualizer
-    Created: 05.04.2005, KP
-    Description: A class that is the controller for the visualization
-    """
-    def __init__(self,parent,**kws):
-        """
-        Method: __init__(parent)
-        Created: 28.04.2005, KP
-        Description: Initialization
-        """
-        global visualizerInstance
-        visualizerInstance=self
-
-        self.parent = parent
-        self.closed = 0
-        self.initialized = 0
-        self.renderer=None
-        self.dataUnit = None
-        self.timepoint = -1
-        self.mapping= {"Volume Rendering":(VolumeModule,VolumeConfiguration),
-                       "Surface Rendering":(SurfaceModule,SurfaceConfiguration),
-                       "Orthogonal Slices":(ImagePlaneModule,ImagePlaneConfiguration),
-                       "Arbitrary Slices":(ArbitrarySliceModule,ArbitrarySliceConfiguration)
-
-                       }
-        self.defaultModule = "Volume Rendering"
-        self.modules = []
-        self.sizer = wx.GridBagSizer()
-        self.wxrenwin = VisualizerWindow(self.parent,size=(512,512))
-        self.wxrenwin.Render()
-
-        self.GetRenderWindow=self.wxrenwin.GetRenderWindow
-        self.renwin=self.wxrenwin.GetRenderWindow()
-
-        self.wxrenwin.Render()
-
-        self.getRenderer=self.GetRenderer=self.wxrenwin.getRenderer
-
-        self.configPanel = ConfigurationPanel(self.parent,self)
-        self.sizer.Add(self.configPanel,(0,0),flag=wx.EXPAND|wx.TOP|wx.BOTTOM)
-
-        self.sizer.Add(self.wxrenwin,(0,1),flag=wx.EXPAND|wx.ALL)
-        self.timeslider=wx.Slider(self.parent,value=0,minValue=0,maxValue=1,
-        style=wx.SL_HORIZONTAL|wx.SL_AUTOTICKS|wx.SL_LABELS)
-        self.sizer.Add(self.timeslider,(1,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT,span=(1,2))
-        self.timeslider.Bind(wx.EVT_SCROLL,self.onChangeTimepoint)
-
-        self.parent.SetSizer(self.sizer)
-        self.parent.SetAutoLayout(1)
-        self.sizer.Fit(self.parent)
-        
-    def __del__(self):
-        global visualizerInstance
-        visualizerInstance=None
-
-    def setStereoMode(self,mode):
-        """
-        Method: setStereoMode()
-        Created: 16.05.2005, KP
-        Description: Set the stereo rendering mode
-        """
-        if mode:
-            self.renwin.StereoRenderOn()
-            cmd="self.renwin.SetStereoTypeTo%s"%mode
-            eval(cmd)
-        else:
-            self.renwin.StereoRenderOff()
-
-    def setBackground(self,r,g,b):
-        """
-        Method: setBackground(r,g,b)
-        Created: 16.05.2005, KP
-        Description: Set the background color
-        """
-        ren=self.wxrenwin.getRenderer()
-        r/=255.0
-        g/=255.0
-        b/=255.0
-        ren.SetBackground(r,g,b)
-
-    def onClose(self,event):
-        """
-        Method: onClose()
-        Created: 28.04.2005, KP
-        Description: Called when this window is closed
-        """
-        self.closed = 1
-
-    def isClosed(self):
-        """
-        Method: isClosed()
-        Created: 28.04.2005, KP
-        Description: Returns flag indicating the closure of this window
-        """
-        return self.closed
-        
-    def setDataUnit(self,dataunit):
-        """
-        Method: setDataUnit(self)
-        Created: 28.04.2005, KP
-        Description: Sets the dataunit this module uses for visualization
-        """
-        self.dataUnit = dataunit
-        count=dataunit.getLength()
-        print "Setting range to",count
-        self.timeslider.SetRange(0,count-1)
-        self.loadModule(self.defaultModule)
-        self.configPanel.appendModuleToList(self.defaultModule)
-        
-    def getModules(self):
-        """
-        Method: getModules()
-        Created: 28.04.2005, KP
-        Description: Return the modules
-        """  
-        return self.modules
-        
-    def Render(self):
-        """
-        Method: Render()
-        Created: 28.04.2005, KP
-        Description: Render the scene
-        """
-        #self.renwin.Render()
-        self.wxrenwin.Render()
-        #self.wxrenwin.Refresh()
-
-    def configureModule(self,name):
-        """
-        Method: configureModule(name)
-        Created: 28.04.2005, KP
-        Description: Configure a visualization module
-        """
-        conf = self.mapping[name][1](self)
-        conf.Show()
-
-    def removeModule(self,name):
-        """
-        Method: removeModule(name)
-        Created: 28.04.2005, KP
-        Description: Remove a visualization module
-        """
-        
-        to_be_removed=[]
-        for module in self.modules:
-            if module.getName()==name:
-                to_be_removed.append(module)
-        for module in to_be_removed:
-            print "Removing module ",module
-            module.disableRendering()
-            self.modules.remove(module)
-            del module
-            
-    def setRenderingStatus(self,name,status):
-        """
-        Method: setRenderingStatus(name,status)
-        Created: 15.05.2005, KP
-        Description: Enable / disable rendering of a module
-        """
-        for module in self.modules:
-            if module.getName()==name:
-                if not status:
-                    module.disableRendering()
-                else:
-                    module.enableRendering()
-
-    def loadModule(self,name):
-        """
-        Method: loadModule(name)
-        Created: 28.04.2005, KP
-        Description: Load a visualization module
-        """
-        if not self.dataUnit:
-            Dialogs.showerror(self.parent,"No dataset has been loaded for visualization","Cannot load visualization module")
-            return
-        self.wxrenwin.initializeVTK()
-        module = self.mapping[name][0](self)
-        self.modules.append(module)
-        module.setDataUnit(self.dataUnit)
-        module.showTimepoint(self.timepoint)
-        
-    def onChangeTimepoint(self,event):
-        """
-        Method: onChangeTimepoint
-        Created: 28.04.2005, KP
-        Description: Set the timepoint to be shown
-        """
-        tp=self.timeslider.GetValue()
-        if self.timepoint != tp:
-            self.setTimepoint(tp)
-
-    def setRenderWindowSize(self,size):
-        """
-        Method: setRenderWindowSize(size)
-        Created: 28.04.2005, KP
-        Description: Set the render window size
-        """  
-        self.wxrenwin.SetSize((size))
-        self.renwin.SetSize((size))
-        self.sizer.Fit(self.parent)
-        self.parent.Layout()
-        self.parent.Refresh()
-        self.Render()
-        
-    def setTimepoint(self,timepoint):
-        """
-        Method: setTimepoint(timepoint)
-        Created: 28.04.2005, KP
-        Description: Set the timepoint to be shown
-        """  
-        if self.timeslider.GetValue()!=timepoint:
-            self.timeslider.SetValue(timepoint)
-        self.timepoint = timepoint
-        for module in self.modules:
-            module.showTimepoint(self.timepoint)
