@@ -103,6 +103,7 @@ class DUDataWriter(DataWriter):
         for item in toremove:
             self.imagesToWrite.remove(item)
         return ret
+        
     def write(self):
         """
         Method: write

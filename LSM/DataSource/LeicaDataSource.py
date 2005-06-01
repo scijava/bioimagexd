@@ -61,6 +61,7 @@ class LeicaDataSource(DataSource):
         self.voxelsize = None
         self.spacing = None
         self.color = None
+        self.ctf = None
         
     def getDataSetCount(self):
         """
@@ -91,6 +92,15 @@ class LeicaDataSource(DataSource):
             self.dimensions=self.reader.GetDimensions(self.experiment)
             #print "Got dimensions=",self.dimensions
         return self.dimensions
+        
+    def getBitDepth(self):
+        """
+        Method: getBitDepth()
+        Created: 12.04.2005, KP
+        Description: Returns the bit depth of this dataset
+        """
+        return 8
+    
         
     def getSpacing(self):
         """

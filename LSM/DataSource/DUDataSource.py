@@ -113,6 +113,16 @@ class VtiDataSource(DataSource):
         """
         return self.loadVti(self.dataSets[i])
 
+    def readInfo(self,data):
+        """
+        Method: readInfo
+        Created: 28.5.2005, KP
+        Description: Read various bits of info from the dataset
+        """
+        self.dimensions=data.GetDimensions()
+        self.spacing=data.GetSpacing()
+        self.bitdepth=8*data.GetNumberOfScalarComponents()
+
     def getDimensions(self):
         """
         Method: getDimensions()
@@ -122,7 +132,8 @@ class VtiDataSource(DataSource):
         """
         if not self.dimensions:
             data=self.getDataSet(0)
-            self.dimensions=data.GetDimensions()
+            self.readInfo(data)
+
         return self.dimensions
         
     def getSpacing(self):
@@ -134,7 +145,8 @@ class VtiDataSource(DataSource):
         """
         if not self.spacing:
             data=self.getDataSet(0)
-            self.spacing=data.GetSpacing()
+            self.readInfo(data)
+
         return self.spacing
         
     def getVoxelSize(self):
@@ -149,6 +161,17 @@ class VtiDataSource(DataSource):
             return eval(vsiz)
         return vsiz
     
+    def getBitDepth(self):
+        """
+        Method: getBitDepth
+        Created: 28.05.2005, KP
+        Description: Returns the bit depth of the datasets this 
+                     dataunit contains
+        """
+        if not self.bitdepth:
+            data=self.getDataSet(0)
+            self.readInfo(data)
+        return self.bitdepth
 
     def loadVti(self, filename):
         """
@@ -184,12 +207,12 @@ class VtiDataSource(DataSource):
             self.parser = RawConfigParser()
             self.parser.read([filename])
             # First, the DataUnit format is checked
-            DataUnitFormat = self.parser.get("Type", "Type")
+            dataUnitFormat = self.parser.get("Type", "Type")
         except:
             Logging.error("Failed to open file for reading",
-            "VTIDataSource failed to open %s for reading."%(filename))
+            "DUDataSource failed to open %s for reading."%(filename))
             return [None]
-        return DataUnitFormat
+        return dataUnitFormat
 
     def loadFromFile(self, filename):
         """
@@ -203,15 +226,16 @@ class VtiDataSource(DataSource):
 
         Parameters:   filename  The .du-file to be loaded
         """
-        DataUnitFormat = self.loadDuFile(filename)
+        dataUnitFormat = self.loadDuFile(filename)
+        print "format of unit=",dataUnitFormat
 
-        if (not DataUnitFormat) or (not self.parser):
+        if (not dataUnitFormat) or (not self.parser):
             return None
 
         # Then, the number of datasets/timepoints that belong to this dataset
         # series
         count = self.parser.get("ImageData", "numberOfFiles")
-        print DataUnitFormat,count
+        print dataUnitFormat,count
 
 
         # Then read the .vti-filenames and store them in the dataSets-list:
@@ -273,7 +297,10 @@ class VtiDataSource(DataSource):
                      operates on
         """
         if not self.ctf:
-            ctf=self.parser.get("ColorTransferFunction")
+            try:
+                ctf=self.parser.get("ColorTransferFunction","ColorTransferFunction")
+            except:
+                return None
             if not ctf:
                 print "Using ctf based on Color"
                 col = eval(self.parser.get("Color","Color"))

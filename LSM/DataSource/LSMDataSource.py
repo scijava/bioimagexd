@@ -129,9 +129,17 @@ class LsmDataSource(DataSource):
     def getSpacing(self):
         if not self.spacing:
             a,b,c=self.reader.GetVoxelSizes()
-	    print "Voxel sizes = ",a,b,c
+            print "Voxel sizes = ",a,b,c
             self.spacing=[1,b/a,c/a]
         return self.spacing
+        
+    def getBitDepth(self):
+        """
+        Method: getBitDepth
+        Created: 28.05.2005, KP
+        Description: Return the bit depth of data
+        """
+        return 8
         
     def getVoxelSize(self):
         if not self.voxelsize:
