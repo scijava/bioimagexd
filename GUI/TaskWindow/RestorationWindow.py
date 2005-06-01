@@ -1,28 +1,15 @@
 #! /usr/bin/env python
 # -*- coding: iso-8859-1 -*-
 """
- Unit: SingleUnitProcessingWindow.py
- Project: Selli
- Created: 24.11.2004, KP
+ Unit: ProcessingWindow.py
+ Project: BioImageXD
+ Created: 31.05.2005, KP
  Description:
 
- A wxPython Dialog window that is used to process a single dataset series in 
- various ways,
- including but not limited to: Correction of bleaching, mapping intensities 
- through intensity transfer
- function and noise removal.
-
- Modified: 24.11.2004 KP - Created the module
-           26.11.2004 JV - Added gui controls for filtering, no functionality
-            07.12.2004 JM - Fixed: Clicking cancel on color selection no longer 
-                            causes exception
-                            Fixed: Color selection now shows the current color 
-                            as default
-           10.12.2004 JV - Added: Passes settings to dataset in preview
-           14.12.2004 JV - Added: Disabling of filter settings
-           17.12.2004 JV - Fixed: get right filter settings when changing 
-                           timepoint
-           02.02.2005 KP - Conversion to wxPython complete, using Notebook
+ A task window for restoring a dataset. This includes any filtering,
+ deblurring, deconvolution etc. 
+ 
+ Modified: 31.05.2005 KP - Split the module from dataunitprocessing
                            
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
@@ -42,7 +29,7 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 """
-__author__ = "Selli Project <http://sovellusprojektit.it.jyu.fi/selli/>"
+__author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.42 $"
 __date__ = "$Date: 2005/01/13 14:52:39 $"
 
@@ -52,23 +39,20 @@ import os.path
 import Dialogs
 
 from PreviewFrame import *
-from IntensityTransferEditor import *
 from Logging import *
-#from ColorSelectionDialog import *
 
 import sys
 import time
 
 import TaskWindow
-import ColorTransferEditor
 
-class SingleUnitProcessingWindow(TaskWindow.TaskWindow):
+class RestorationWindow(TaskWindow.TaskWindow):
     """
-    Class: SingleUnitProcessingWindow
+    Class: RestorationWindow
     Created: 03.11.2004, KP
-    Description: A window for processing a single dataunit
+    Description: A window for restoring a single dataunit
     """
-    def __init__(self,parent):
+    def __init__(self,parent,tb):
         """
         Method: __init__(parent)
         Created: 03.11.2004, KP
@@ -76,156 +60,16 @@ class SingleUnitProcessingWindow(TaskWindow.TaskWindow):
         Parameters:
                 root    Is the parent widget of this window
         """
-        self.lbls=[]
-        self.btns=[]
-        self.entries=[]
         self.timePoint = 0
-        self.operationName="Single Dataset Series Processing"
-        TaskWindow.TaskWindow.__init__(self,parent)
+        TaskWindow.TaskWindow.__init__(self,parent,tb)
         # Preview has to be generated here
         # self.colorChooser=None
-        self.createIntensityTransferPage()
         
         self.Show()
-
-        self.SetTitle("Single Dataset Series Processing")
-
-        self.createToolBar()
-        
+      
         self.mainsizer.Layout()
-        self.mainsizer.Fit(self.panel)
+        self.mainsizer.Fit(self)
 
-    def createIntensityInterpolationPanel(self):
-        self.interpolationPanel=wx.Panel(self.settingsNotebook)
-        #self.interpolationPanel=wx.Panel(self.iTFEditor)
-        self.interpolationSizer=wx.GridBagSizer()
-        lbl=wx.StaticText(self.interpolationPanel,-1,"Interpolate intensities:")
-        self.interpolationSizer.Add(lbl,(0,0))
-
-        lbl=wx.StaticText(self.interpolationPanel,-1,"from timepoint")
-        self.lbls.append(lbl)
-        self.numOfPoints=5
-        for i in range(self.numOfPoints-2):
-            lbl=wx.StaticText(self.interpolationPanel,-1,"thru")
-            self.lbls.append(lbl)
-        lbl=wx.StaticText(self.interpolationPanel,-1,"to timepoint")
-        self.lbls.append(lbl)
-
-        for i in range(self.numOfPoints):
-            btn=wx.Button(self.interpolationPanel,-1,"goto")
-            btn.Bind(wx.EVT_BUTTON,lambda event,x=i: self.gotoInterpolationTimePoint(x))
-            entry=wx.TextCtrl(self.interpolationPanel,size=(50,-1))
-            self.btns.append(btn)
-            self.entries.append(entry)
-
-        for entry in self.entries:
-            entry.Bind(wx.EVT_TEXT,self.setInterpolationTimePoints)
-
-        last=0
-        for i in range(self.numOfPoints):
-            lbl,entry,btn=self.lbls[i],self.entries[i],self.btns[i]
-            self.interpolationSizer.Add(lbl,(i+1,0))
-            self.interpolationSizer.Add(entry,(i+1,1))
-            self.interpolationSizer.Add(btn,(i+1,2))
-            last=i+1
-
-        #self.editIntensitySizer.Add(self.interpolationPanel,(0,1))
-        self.interpolationPanel.SetSizer(self.interpolationSizer)
-        self.interpolationPanel.SetAutoLayout(1)
-        self.interpolationSizer.SetSizeHints(self.interpolationPanel)
-
-        self.settingsNotebook.InsertPage(1,self.interpolationPanel,"Interpolation")
-        
-        self.interpolationBox=wx.BoxSizer(wx.HORIZONTAL)
-
-        self.reset2Btn=wx.Button(self.interpolationPanel,-1,"Reset all timepoints")
-        self.reset2Btn.Bind(wx.EVT_BUTTON,self.resetTransferFunctions)
-        self.interpolationBox.Add(self.reset2Btn)
-
-        self.interpolateBtn=wx.Button(self.interpolationPanel,-1,"Interpolate")
-        self.interpolateBtn.Bind(wx.EVT_BUTTON,self.startInterpolation)
-        self.interpolationBox.Add(self.interpolateBtn)
-        self.interpolationSizer.Add(self.interpolationBox,(last+1,0))
-        
-        
-        #self.mainsizer.Add(self.interpolationPanel,(1,0))
-        #self.panel.Layout()
-        #self.mainsizer.Fit(self.panel)
-
-
-    def createIntensityTransferPage(self):
-        """
-        Method: createIntensityInterpolationPanel()
-        Created: 09.12.2004, KP
-        Description: Creates a frame holding the entries for configuring 
-                     interpolation
-        """
-        self.editIntensityPanel=wx.Panel(self.settingsNotebook,-1)
-        self.editIntensitySizer=wx.GridBagSizer()
-
-        self.iTFEditor=IntensityTransferEditor(self.editIntensityPanel)
-        self.editIntensitySizer.Add(self.iTFEditor,(0,0))#,span=(1,2))
-
-        self.box=wx.BoxSizer(wx.HORIZONTAL)
-        self.editIntensitySizer.Add(self.box,(2,0))
-        self.createIntensityInterpolationPanel()
-
-        self.restoreBtn=wx.Button(self.editIntensityPanel,-1,"Reset defaults")
-        self.restoreBtn.Bind(wx.EVT_BUTTON,self.iTFEditor.restoreDefaults)
-        self.box.Add(self.restoreBtn)
-
-        self.resetBtn=wx.Button(self.editIntensityPanel,-1,"Reset all timepoints")
-        self.resetBtn.Bind(wx.EVT_BUTTON,self.resetTransferFunctions)
-        self.box.Add(self.resetBtn)
-
-        self.copyiTFBtn=wx.Button(self.editIntensityPanel,-1,"Copy to all timepoints")
-        self.copyiTFBtn.Bind(wx.EVT_BUTTON,self.copyTransferFunctionToAll)
-        self.box.Add(self.copyiTFBtn)
-
-        self.editIntensityPanel.SetSizer(self.editIntensitySizer)
-        self.editIntensityPanel.SetAutoLayout(1)
-        self.settingsNotebook.InsertPage(1,self.editIntensityPanel,"Transfer Function")
-        
-        print "Updating settings!"
-        self.updateSettings()
-        
-    def setInterpolationTimePoints(self,event):
-        """
-        Method: setInterpolationTimePoints()
-        Created: 13.12.2004, KP
-        Description: A callback that is called when a timepoint entry for
-                     intensity interpolation changes. Updates the list of 
-                     timepoints between which the interpolation is carried out
-                     by the dataunit
-        """
-        lst=[]
-        for i in self.entries:
-            val=i.GetValue()
-            try:
-                n=int(val)
-                lst.append(n)
-            except:
-                # For entries that have no value, add -1 as a place holder
-                lst.append(-1)
-        #print "Setting lst=",lst
-        #self.dataUnit.setInterpolationTimePoints(lst)
-        self.settings.set("InterpolationTimepoints",lst)
-
-
-    def gotoInterpolationTimePoint(self,entrynum):
-        """
-        Method: gotoInterpolationTimePoint(entrynum)
-        Created: 09.12.2004, KP
-        Description: The previewed timepoint is set to timepoint specified in
-                     self.entries[entrynum]
-        """
-        try:
-            tp=int(self.entries[entrynum].GetValue())
-        except:
-            pass
-        else:
-            print "Previewing tp=",tp
-            self.preview.gotoTimePoint(tp)
 
 
     def createButtonBox(self):
@@ -237,7 +81,7 @@ class SingleUnitProcessingWindow(TaskWindow.TaskWindow):
         """
         TaskWindow.TaskWindow.createButtonBox(self)
         
-        self.processButton.SetLabel("Process Dataset Series")
+        #self.processButton.SetLabel("Process Dataset Series")
         self.processButton.Bind(wx.EVT_BUTTON,self.doProcessingCallback)
 
     def createOptionsFrame(self):
@@ -249,7 +93,7 @@ class SingleUnitProcessingWindow(TaskWindow.TaskWindow):
                      used to control the colocalization settings
         """
         TaskWindow.TaskWindow.createOptionsFrame(self)
-        self.taskNameLbl.SetLabel("Processed dataset series name:")
+        self.taskNameLbl.SetLabel("Restored dataset series name:")
             
         self.paletteLbl = wx.StaticText(self.commonSettingsPanel,-1,"Channel palette:")
         self.commonSettingsSizer.Add(self.paletteLbl,(1,0))
@@ -320,49 +164,15 @@ class SingleUnitProcessingWindow(TaskWindow.TaskWindow):
         self.filtersPanel.SetSizer(self.filtersSizer)
         self.filtersPanel.SetAutoLayout(1)
 
-
-    def timePointChanged(self,event):
+    def updateTimepoint(self,event):
         """
-        Method: timePointChanged(timepoint)
-        Created: 24.11.2004, KP
-        Description: A callback that is called when the previewed timepoint
-                     changes.
-        Parameters:
-                event   Event object who'se getValue() returns the timepoint
+        Method: updateTimepoint(event)
+        Created: 04.04.2005, KP
+        Description: A callback function called when the timepoint is changed
         """
         timePoint=event.getValue()
-        print "Now configuring timepoint %d"%(timePoint)
-        self.iTFEditor.setIntensityTransferFunction(
-        self.settings.getCounted("IntensityTransferFunctions",timePoint)
-        )
         self.timePoint=timePoint
  
-    def copyTransferFunctionToAll(self,event=None):
-        """
-        Method: copyTransferFunctionToAll
-        Created: 10.03.2005, KP
-        Description: A method to copy this transfer function to all timepooints
-        """
-        pass
-
-    def resetTransferFunctions(self,event=None):
-        """
-        Method: resetTransferFunctions()
-        Created: 30.11.2004, KP
-        Description: A method to reset all the intensity transfer functions
-        """
-        pass
-
-    def startInterpolation(self):
-        """
-        Method: startInterpolation()
-        Created: 24.11.2004, KP
-        Description: A callback to interpolate intensity transfer functions
-                     between the specified timepoints
-        """
-        self.dataUnit.interpolateIntensities()
-#        self.doPreviewCallback()
-
 
     def doFilterCheckCallback(self,event=None):
         """
@@ -401,20 +211,6 @@ class SingleUnitProcessingWindow(TaskWindow.TaskWindow):
         """
 
         if self.dataUnit:
-            self.iTFEditor.setIntensityTransferFunction(
-            self.settings.getCounted("IntensityTransferFunctions",self.timePoint)
-            )
-            tps=self.settings.get("InterpolationTimepoints")
-            #print "tps=",tps
-            if not tps:
-                tps=[]
-            
-            for i in range(len(tps)):
-                n=tps[i]
-                # If there was nothing in the entry at this position, the 
-                # value is -1 in that case, we leave the entry empty
-                if n!=-1:
-                    self.entries[i].SetValue(str(n))
 
             ctf = self.settings.get("ColorTransferFunction")
             if ctf and self.colorBtn:
@@ -455,12 +251,6 @@ class SingleUnitProcessingWindow(TaskWindow.TaskWindow):
 
         self.settings.set("MedianFiltering",self.doMedianCheckbutton.GetValue())
         self.settings.set("SolitaryFiltering",self.doSolitaryCheckbutton.GetValue())
-        #self.dataUnit.setDoMedianFiltering(self.doMedianCheckbutton.GetValue())
-        #self.dataUnit.setRemoveSolitary(self.doSolitaryCheckbutton.GetValue())
-
-        #self.dataUnit.setNeighborhood(self.neighborhoodX.GetValue(),
-        #                              self.neighborhoodY.GetValue(),
-        #                              self.neighborhoodZ.GetValue())
         nbh=(self.neighborhoodX.GetValue(),
             self.neighborhoodY.GetValue(),
             self.neighborhoodZ.GetValue())
@@ -517,10 +307,6 @@ class SingleUnitProcessingWindow(TaskWindow.TaskWindow):
         """
         TaskWindow.TaskWindow.setCombinedDataUnit(self,dataUnit)
         
-        #set the color of the colorBtn to the current color
-        #r,g,b=self.settings.get("Color")
-        #if self.colorChooser:
-        #    self.colorChooser.SetValue(wx.Colour(r,g,b))
         ctf = self.settings.get("ColorTransferFunction")
         if self.colorBtn:
             print "Setting ctf"
@@ -530,10 +316,8 @@ class SingleUnitProcessingWindow(TaskWindow.TaskWindow):
         
         # We register a callback to be notified when the timepoint changes
         # We do it here because the timePointChanged() code requires the dataunit
-        self.Bind(EVT_TIMEPOINT_CHANGED,self.timePointChanged,id=self.preview.GetId())
+        #self.Bind(EVT_TIMEPOINT_CHANGED,self.timePointChanged,id=ID_TIMEPOINT)
 
         tf=self.settings.getCounted("IntensityTransferFunctions",self.timePoint)
-        self.iTFEditor.setIntensityTransferFunction(tf)
-        self.iTFEditor.updateCallback=self.doPreviewCallback
 
         self.updateSettings()

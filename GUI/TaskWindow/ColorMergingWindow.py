@@ -1,8 +1,8 @@
 #! /usr/bin/env python
 # -*- coding: iso-8859-1 -*-
 """
- Unit: ColorCombinationWindow.py
- Project: Selli
+ Unit: ColorMergingWindow
+ Project: BioImageXD
  Created: 10.11.2004, JV
  Description:
 
@@ -13,19 +13,7 @@
 
  Modified from ColocalizationWindow.py.
 
- Modified:  11.11.2004 JV - Updated: setColor(), setIntensityCallback(), 
-                            updateSettings()
-                            Added the TransferWidget
-
-            23.11.2004 JV - Updated to match colocalizationwindow
-            03.12.2004 JV - Transferwidget updates when dataset is selected
-            07.12.2004 JM - Fixed: Clicking cancel on color selection no longer 
-                                   causes exception
-                            Fixed: Color selection now shows the current color 
-                                   as default
-                            Fixed: The default color is now shown in the color 
-                                   selection button
-            28.01.2005 KP - Changed the class over to wxPython
+ Modified:  28.01.2005 KP - Changed the class over to wxPython
             02.02.2005 KP - Converted the class to use a notebook
 
  Copyright (C) 2005  BioImageXD Project
@@ -45,7 +33,7 @@
  along with this program; if not, write to the Free Software
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
-__author__ = "Selli Project <http://sovellusprojektit.it.jyu.fi/selli/>"
+__author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.28 $"
 __date__ = "$Date: 2005/01/13 14:52:39 $"
 
@@ -71,7 +59,7 @@ class ColorMergingWindow(TaskWindow.TaskWindow):
     Description: A window for controlling the settings of the color
                  combination module
     """
-    def __init__(self,parent):
+    def __init__(self,parent,tb):
         """
         Method: __init__(parent)
         Created: 10.11.2004, JV
@@ -81,14 +69,14 @@ class ColorMergingWindow(TaskWindow.TaskWindow):
         """
         self.alphaTF=vtk.vtkIntensityTransferFunction()
         self.operationName="Color Merging"
-        TaskWindow.TaskWindow.__init__(self,parent)
+        TaskWindow.TaskWindow.__init__(self,parent,tb)
         self.SetTitle("Color Merging")
 
         
         self.oldBg=self.GetBackgroundColour()
-        self.createToolBar()                
+        
         self.mainsizer.Layout()
-        self.mainsizer.Fit(self.panel)
+        self.mainsizer.Fit(self)
 
     def createButtonBox(self):
         """
@@ -98,7 +86,7 @@ class ColorMergingWindow(TaskWindow.TaskWindow):
                      Preview and Close
         """
         TaskWindow.TaskWindow.createButtonBox(self)
-        self.processButton.SetLabel("Do Color Merging")
+        #self.processButton.SetLabel("Do Color Merging")
         self.processButton.Bind(wx.EVT_BUTTON,self.doColorMergingCallback)
         
     def createOptionsFrame(self):
@@ -111,11 +99,9 @@ class ColorMergingWindow(TaskWindow.TaskWindow):
         TaskWindow.TaskWindow.createOptionsFrame(self)
         self.taskNameLbl.SetLabel("Merged dataset name:")
 
-        #self.colorChooser=ColorSelectionDialog(self.commonSettingsPanel,self.setColor)
-        #self.commonSettingsSizer.Add(self.colorChooser,(1,0))
-        self.paletteLbl = wx.StaticText(self.commonSettingsPanel,-1,"Channel palette:")
+        self.paletteLbl = wx.StaticText(self,-1,"Channel palette:")
         self.commonSettingsSizer.Add(self.paletteLbl,(1,0))
-        self.colorBtn = ColorTransferEditor.CTFButton(self.commonSettingsPanel)
+        self.colorBtn = ColorTransferEditor.CTFButton(self)
         self.commonSettingsSizer.Add(self.colorBtn,(2,0))
 
         self.editIntensityPanel=wx.Panel(self.settingsNotebook,-1)

@@ -98,7 +98,7 @@ class ColocalizationWindow(TaskWindow.TaskWindow):
     Description: A window for controlling the settings of the
                  colocalization module
     """
-    def __init__(self,root):
+    def __init__(self,root,tb):
         """
         Method: __init__(root)
         Created: 03.11.2004
@@ -109,14 +109,14 @@ class ColocalizationWindow(TaskWindow.TaskWindow):
         """
         self.scatterGram=None
         self.htmlpage=None
-        TaskWindow.TaskWindow.__init__(self,root)
+        TaskWindow.TaskWindow.__init__(self,root,tb)
         self.preview.setPreviewType("Colocalization")
         self.operationName="Colocalization"
         
         self.SetTitle("Colocalization")
-        self.createToolBar()        
+    
         self.mainsizer.Layout()
-        self.mainsizer.Fit(self.panel)
+        self.mainsizer.Fit(self)
         
     def updateHtmlPage(self):
         """
