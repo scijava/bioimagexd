@@ -34,11 +34,20 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 import wx
 
+ID_TIMEPOINT=wx.NewId()
+
 myEVT_TIMEPOINT_CHANGED=wx.NewEventType()
 EVT_TIMEPOINT_CHANGED=wx.PyEventBinder(myEVT_TIMEPOINT_CHANGED,1)
 
 myEVT_ZSLICE_CHANGED=wx.NewEventType()
 EVT_ZSLICE_CHANGED=wx.PyEventBinder(myEVT_ZSLICE_CHANGED,1)
+
+myEVT_VOXEL=wx.NewEventType()
+EVT_VOXEL=wx.PyEventBinder(myEVT_VOXEL,1)
+
+myEVT_DATA_UPDATE=wx.NewEventType()
+EVT_DATA_UPDATE=wx.PyEventBinder(myEVT_DATA_UPDATE,1)
+
 
 class ChangeEvent(wx.PyCommandEvent):
     """
@@ -53,3 +62,42 @@ class ChangeEvent(wx.PyCommandEvent):
         return self.changeTo
     def setValue(self,val):
         self.changeTo=val
+        
+class VoxelEvent(wx.PyCommandEvent):
+    """
+    Class: VoxelEvent
+    Created: 23.05.2005, KP
+    Description: An event type that represents a value of voxel (x,y,z)
+    """    
+    def __init__(self,evtType,id):
+        wx.PyCommandEvent.__init__(self,evtType,id)
+        self.x,self.y,self.z=0,0,0
+        
+    def setCoord(self,x,y,z):
+        self.x,self.y,self.z=x,y,z
+    def getCoord(self):
+        return self.x,self.y,self.z
+        
+        
+class DataUpdateEvent(wx.PyCommandEvent):
+    """
+    Class: DataUpdateEvent
+    Created: 25.05.2005, KP
+    Description: An event type that is used to signal an update to a data
+                 that needs to be reflected in the rendering of the data
+    """    
+    def __init__(self,evtType,id,**kws):
+        wx.PyCommandEvent.__init__(self,evtType,id)
+        if kws.has_key("delay"):
+            self.delay=kws["delay"]
+    
+    def getDelay(self):
+        """
+        Method: getDelay
+        Created: 25.05.2005, KP
+        Description: Returns the delay flag. If delay is set, then the
+                     change should not be immediately reflected in rendering
+                     but rather after a small delay. This is because there
+                     might be more changes coming soon.
+        """    
+        return self.delay
