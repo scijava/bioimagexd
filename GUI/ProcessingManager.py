@@ -37,7 +37,7 @@ __date__ = "$Date: 2005/01/13 14:52:39 $"
 import wx
 from TimepointSelection import *
 import time
-import GuiGeneration
+import UIElements
 from Logging import *
 
 class ProcessingManager(TimepointSelection):
@@ -64,7 +64,7 @@ class ProcessingManager(TimepointSelection):
         #self.configBoxSizer=wx.StaticBoxSizer(self.configBox,wx.VERTICAL)
         self.selectBox=wx.StaticBox(self,-1,"Select slices to the output")
         self.selectBoxSizer=wx.StaticBoxSizer(self.selectBox,wx.VERTICAL)
-        self.selectSlice=GuiGeneration.getSliceSelection(self)
+        self.selectSlice=UIElements.getSliceSelection(self)
         self.selectBoxSizer.Add(self.selectSlice)
         
         self.outputBox=wx.StaticBox(self,-1,"Output Settings")
@@ -74,7 +74,7 @@ class ProcessingManager(TimepointSelection):
         
     
         self.outputBoxSizer.Add(self.checkBox)
-        self.outputFormat=GuiGeneration.getImageFormatMenu(self)
+        self.outputFormat=UIElements.getImageFormatMenu(self)
         self.outputFormat.menu.Enable(0)        
         self.outputBoxSizer.Add(self.outputFormat)
         
