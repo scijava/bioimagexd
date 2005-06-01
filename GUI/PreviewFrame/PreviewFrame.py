@@ -22,8 +22,8 @@
                           with vtkImageMapper's SetZSlice()-method
           09.11.2004 KP - Added the ability to display a pixels value
           10.11.2004 JV - Added class ColorCombinationPreview (made after 
-                          ColocalizationPreview)
-          11.11.2004 JV - Changed setPreviewedSlicer so that it works with color merging
+                          ColpocalizationPreview)
+          11.11.2004 JV - Changed setPreviewedSlice so that it works with color merging
                           preview
           16.11.2004 KP - Refactoring code from ColocalizationPreview back to the 
                           base class PreviewFrame
@@ -52,12 +52,13 @@ __version__ = "$Revision: 1.63 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 import os.path,sys
-import RenderingInterface
+
 import ImageOperations
 import VTKScrollPanel
 import WxPreviewPanel
 import time
 
+from Events import *
 from Logging import *
 
 import vtk
@@ -95,26 +96,48 @@ class PreviewFrame(wx.Panel):
         self.oldx,self.oldy=0,0
         self.show={}
         self.show["PIXELS"]=1
-        self.show["RENDERING"]=1
         self.show["TIMESLIDER"]=1
         self.show["ZSLIDER"]=1
         self.show["SCROLL"]=1
         self.modeChoice = None
+        self.zoomx,self.zoomy=1,1
         if not parentwin:
             parentwin=parent
         self.parentwin=parentwin
+        if kws.has_key("zslider"):
+            self.show["ZSLIDER"]=kws["zslider"]
         if kws.has_key("previewsize"):
             size=kws["previewsize"]
         if kws.has_key("pixelvalue"):
             self.show["PIXELS"]=kws["pixelvalue"]
-        if kws.has_key("renderingpreview"):
-            self.show["RENDERING"]=kws["renderingpreview"]
         if kws.has_key("timeslider"):
             self.show["TIMESLIDER"]=kws["timeslider"]
         if kws.has_key("zoom_factor"):
             self.zoomFactor=kws["zoom_factor"]
+        if kws.has_key("zoomx"):
+            self.zoomx=kws["zoomx"]
+        if kws.has_key("zoomy"):
+            self.zoomy=kws["zoomy"]
         if kws.has_key("scrollbars"):
             self.show["SCROLL"]=kws["scrollbars"]
+            
+        self.permute=None
+        if kws.has_key("plane"):
+            plane=kws["plane"]
+            
+            if plane=="xz":
+                self.permute=(0,2,1)
+                self.unpermute=(0,2,1)
+            elif plane=="yz":
+                self.permute=(1,2,0)
+                self.unpermute=(2,0,1)
+            elif plane=="zy":
+                self.permute=(2,1,0)
+                self.unpermute=(2,1,0)
+            elif plane=="zx":
+                self.permute=(2,0,1)
+                self.unpermute=(1,2,0)
+                
         
         self.dataUnit=None
         self.rgbMode=0
@@ -126,7 +149,7 @@ class PreviewFrame(wx.Panel):
         self.currentImage=None
         self.currentCt=None
 
-        self.renderpanel = WxPreviewPanel.WxPreviewPanel(self,size=size,scroll=self.show["SCROLL"])
+        self.renderpanel = WxPreviewPanel.WxPreviewPanel(self,size=size,scroll=self.show["SCROLL"],zoomx=self.zoomx,zoomy=self.zoomy)
         self.sizer.Add(self.renderpanel,(0,0))
 
         # The preview can be no larger than these
@@ -135,6 +158,9 @@ class PreviewFrame(wx.Panel):
                        
         if self.show["PIXELS"]:
             self.renderpanel.Bind(wx.EVT_LEFT_DOWN,self.getPixelValue)
+        
+        self.renderpanel.Bind(wx.EVT_LEFT_UP,self.getVoxelValue)
+        
         if self.show["TIMESLIDER"]:
             self.timeslider=wx.Slider(self,value=0,minValue=0,maxValue=1,size=(300,-1),
             style=wx.SL_HORIZONTAL|wx.SL_AUTOTICKS|wx.SL_LABELS)
@@ -143,7 +169,7 @@ class PreviewFrame(wx.Panel):
         if self.show["ZSLIDER"]:
             self.zslider=wx.Slider(self,value=0,minValue=0,maxValue=100,size=(-1,300),
             style=wx.SL_VERTICAL|wx.SL_AUTOTICKS|wx.SL_LABELS)
-            self.zslider.Bind(wx.EVT_SCROLL,self.setPreviewedSlicer)
+            self.zslider.Bind(wx.EVT_SCROLL,self.setPreviewedSlice)
             self.sizer.Add(self.zslider,(0,1),flag=wx.EXPAND|wx.TOP|wx.BOTTOM)
 
         if self.show["PIXELS"]:
@@ -151,21 +177,9 @@ class PreviewFrame(wx.Panel):
             self.pixelLbl=wx.StaticText(self.pixelPanel,-1,"Scalar 0 at (0,0,0) maps to (0,0,0)")
             self.sizer.Add(self.pixelPanel,(3,0),flag=wx.EXPAND|wx.RIGHT)
 
-        if self.show["RENDERING"]:
-            self.modeBox=wx.BoxSizer(wx.VERTICAL)
-            self.modeLbl=wx.StaticText(self,-1,"Select preview method:")
-            self.modes=["2D Slice","Volume Rendering","Surface Rendering","24-bit Volume Rendering","Maximum Intensity Projection"]
-            self.modeChoice=wx.Choice(self,-1,choices=self.modes)
-            self.modeChoice.SetSelection(0)
-            self.modeBox.Add(self.modeLbl)
-            self.modeBox.Add(self.modeChoice)
-            self.sizer.Add(self.modeBox,(4,0))
-
-        self.renderingInterface=RenderingInterface.getRenderingInterface()
-
         self.running=0
 
-    	self.rgb=(255,255,0)
+        self.rgb=(255,255,0)
 
         self.z=0
         self.timePoint=0
@@ -260,16 +274,32 @@ class PreviewFrame(wx.Panel):
         self.renderpanel.setZoomFactor(1.0)
         self.updatePreview(1)
                 
-    def renderingPreviewEnabled(self):
-        """
-        Method: renderingPreviewEnabled()
-        Created: 21.02.2005, KP
-        Description: Returns true if the rendering preview is enabled
-        """
-        if self.modeChoice:
-            return self.modeChoice.GetSelection()!=0
-        return 0
         
+    def getVoxelValue(self,event):
+        """
+        Method: getVoxelValue(event)
+        Created: 23.05.2005, KP
+        Description: Send an event containing the current voxel position
+        """
+        if not self.currentImage:
+            return
+        x,y=event.GetPosition()
+        x,y=self.renderpanel.getScrolledXY(x,y)
+        
+        evt=VoxelEvent(myEVT_VOXEL,self.GetId())
+        z=self.z
+        dims=[x,y,z]
+        rx,ry,rz=dims
+        if self.permute:
+            
+            rx=dims[self.unpermute[0]]
+            ry=dims[self.unpermute[1]]
+            rz=dims[self.unpermute[2]]
+            print "Returning permuted ",rx,ry,rz,"(unpermuted ",x,y,z,")"
+        else:
+            print "Returning x,y,z=",rx,ry,rz
+        evt.setCoord(rx,ry,rz)
+        self.GetEventHandler().ProcessEvent(evt)
     
     def getPixelValue(self,event):
         """
@@ -282,9 +312,12 @@ class PreviewFrame(wx.Panel):
         x,y=event.GetPosition()
         x,y=self.renderpanel.getScrolledXY(x,y)
         
+        
         if self.rgbMode==0:
             scalar=self.currentImage.GetScalarComponentAsDouble(x,y,self.z,0)
-            r,g,b=self.currentCt.GetColor(scalar)
+	    val=[0,0,0]
+            self.currentCt.GetColor(scalar,val)
+	    r,g,b=val
             r*=255
             g*=255
             b*=255
@@ -311,16 +344,19 @@ class PreviewFrame(wx.Panel):
             self.pixelLbl.SetLabel(txt)
         event.Skip()
             
-    def setPreviewedSlicer(self,event):
+    def setPreviewedSlice(self,event,val=-1):
         """
-        Method: setPreviewedSlicer()
+        Method: setPreviewedSlice()
         Created: 4.11.2004, KP
         Description: Sets the preview to display the selected z slice
         """
         t=time.time()
         if abs(self.depthT-t) < self.updateFactor: return
         self.depthT=time.time()
-        newz=self.zslider.GetValue()
+        if event:
+            newz=self.zslider.GetValue()
+        else:
+            newz=val
         if self.z!=newz:
             self.z=newz
             evt=ChangeEvent(myEVT_ZSLICE_CHANGED,self.GetId())
@@ -330,18 +366,20 @@ class PreviewFrame(wx.Panel):
             # was updatePreview(1)
             self.updatePreview(0)
 
-    def gotoTimePoint(self,tp):
+    def setTimepoint(self,tp):
         """
-        Method: gotoTimePoint(tp)
+        Method: setTimepoint(tp)
         Created: 09.12.2004, KP
         Description: The previewed timepoint is set to the given timepoint
         Parameters:
                 tp      The timepoint to show
         """
-        self.timeslider.SetValue(tp)
-        self.updateTimePoint(None)
+        if self.show["TIMESLIDER"]:
+            self.timeslider.SetValue(tp)
+        
+        self.updateTimePoint(None,tp)
 
-    def updateTimePoint(self,event):
+    def updateTimePoint(self,event,tp=-1):
         """
         Method: updateTimePoint()
         Created: 04.11.2004, KP
@@ -351,7 +389,10 @@ class PreviewFrame(wx.Panel):
         if abs(self.timeT-t) < self.updateFactor: return
         self.timeT=time.time()
 
-        timePoint=self.timeslider.GetValue()
+        if self.show["TIMESLIDER"]:
+            timePoint=self.timeslider.GetValue()
+        else:
+            timePoint=tp
 #        print "Use time point %d"%timePoint
         if self.timePoint!=timePoint:
             self.timePoint=timePoint
@@ -384,6 +425,13 @@ class PreviewFrame(wx.Panel):
         except GUIError, ex:
             ex.show()
             return
+            
+        dims=[x,y,z]
+        if self.permute:
+            x=dims[self.permute[0]]
+            y=dims[self.permute[1]]
+            z=dims[self.permute[2]]
+            print "Permuted z goes to ",z
         self.xdim,self.ydim,self.zdim=x,y,z
         
         if self.show["ZSLIDER"]:
@@ -397,9 +445,10 @@ class PreviewFrame(wx.Panel):
         
         if self.show["TIMESLIDER"]:
             self.timeslider.SetRange(0,count-1)
-        self.renderingInterface.setDataUnit(dataUnit)
 
-        #print "Setting renderpanel to %d,%d"%(x,y)
+        x*=self.zoomx
+        y*=self.zoomy
+        print "Setting renderpanel to %d,%d"%(x,y)
         self.renderpanel.SetSize((x,y))
         self.renderpanel.Layout()
 
@@ -419,22 +468,6 @@ class PreviewFrame(wx.Panel):
         self.Layout()
         self.sizer.Fit(self)
         self.sizer.SetSizeHints(self)
-        
-    def previewInMayavi(self,imagedata,ctf=None,renew=1):
-        """
-        Method: previewInMayavi(imagedata,ctf,renew)
-        Created: 13.12.2004,KP
-        Description:
-        Parameters:
-                imagedata    Data to preview
-                ctf          Color transfer function for the data
-        """
-        if not renew:
-            return
-        self.renderingInterface.setOutputPath(".")
-        self.renderingInterface.setTimePoints([self.timePoint])
-        self.renderingInterface.doRendering(preview=imagedata,ctf=ctf)
-
 
     def updatePreview(self,renew=1):
         """

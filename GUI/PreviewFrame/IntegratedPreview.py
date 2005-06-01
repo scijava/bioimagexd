@@ -34,7 +34,7 @@ __author__ = "BioImageXD Project"
 __version__ = "$Revision: 1.40 $"
 __date__ = "$Date: 2005/01/13 14:52:39 $"
 import os.path
-import RenderingInterface
+
 
 from PreviewFrame import *
 import wx
@@ -51,8 +51,7 @@ import wx.lib.scrolledpanel as scrolled
 class IntegratedPreview(PreviewFrame):
     """
     Class: IntegratedPreview
-    Created: 03.04.2005
-    Creator: KP
+    Created: 03.04.2005, KP
     Description: A widget that previews data output by wide variety
                  of processing modules
     """
@@ -110,9 +109,15 @@ class IntegratedPreview(PreviewFrame):
         Created: 03.04.2005, KP
         Description: Method to set the proper previewtype
         """     
+        
         if type(event)==type(""):
-            self.previewtype=event
-            return
+            if event=="MIP":
+                self.previewtype=""
+                self.mip=1
+                return
+            else:
+                self.previewtype=event
+                return
         else:
             eid=event.GetId()
             if eid==self.ID_COLOC:
@@ -122,7 +127,7 @@ class IntegratedPreview(PreviewFrame):
             elif eid==self.ID_MIP:
                 self.previewtype=""
                 self.mip =1 
-    
+                return
             else:
                 self.previewtype=""
     
@@ -161,10 +166,6 @@ class IntegratedPreview(PreviewFrame):
         if self.previewtype=="ColorMerging":
             return
         if self.dataUnit:
-            #print "Getting ctf from dataunit"
-            #print "Using tf ",self.previewtype+"ColorTransferFunction"
-            #self.rgb = self.settings.get("%sColor"%self.previewtype)
-            #print "Getting %sColorTransferFunction"%self.previewtype
             ct = self.settings.get("%sColorTransferFunction"%self.previewtype)
             #print "Got ",ct
             if self.selectedItem != -1:
@@ -192,6 +193,15 @@ class IntegratedPreview(PreviewFrame):
         Created: 03.04.2005, KP
         Description: Process the data before it's send to the preview
         """
+        if self.permute:
+            permute=vtk.vtkImagePermute()
+            print "Setting permuted axes to",self.permute
+            permute.SetFilteredAxes(*self.permute)
+            permute.SetInput(data)
+            permute.Update()
+            data=permute.GetOutput()
+            
+        
         ncomps = data.GetNumberOfScalarComponents()
         if ncomps == 1:
             if self.mip:
@@ -239,17 +249,14 @@ class IntegratedPreview(PreviewFrame):
         if not preview:
             raise "Did not get a preview"
         self.currentImage=preview
-        
-        if self.renderingPreviewEnabled()==True:
-
-            return self.previewInMayavi(preview,self.currentCt,
-            renew)
-        
+             
 
         colorImage = self.processOutputData(preview)
         
-       
-        x,y,z=preview.GetDimensions()
+        if self.permute:
+            x,y,z=colorImage.GetDimensions()
+        else:
+            x,y,z=preview.GetDimensions()
     
         if x!=self.oldx or y!=self.oldy:
             self.renderpanel.resetScroll()
@@ -258,6 +265,7 @@ class IntegratedPreview(PreviewFrame):
             self.oldy=y
             
 
+        print "Showing slice ",self.z
         self.renderpanel.setZSlice(self.z)
         self.renderpanel.setImage(colorImage)
         self.renderpanel.updatePreview()
