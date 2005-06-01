@@ -67,7 +67,9 @@ def paintCTFValues(ctf,height=32):
     dc.BeginDrawing()
         
     for x1 in range(0,256):
-        r,g,b = ctf.GetColor(x1)      
+	val=[0,0,0]
+        ctf.GetColor(x1,val)
+	r,g,b = val
         r*=255
         g*=255
         b*=255
@@ -167,7 +169,9 @@ def lutToString(ctf):
     s=""
     for col in range(0,3):
         for i in range(0,256):
-            r,g,b = ctf.GetColor(i)      
+	    val=[0,0,0]
+            ctf.GetColor(i,val)
+	    r,g,b = val
             r*=255
             g*=255
             b*=255
@@ -209,6 +213,7 @@ def vtkImageDataToWxImage(data,slice=-1,startpos=None,endpos=None):
     if slice>=0:
         #print "Getting slice=",slice
         data=getSlice(data,slice,startpos,endpos)
+        
     exporter=vtk.vtkImageExport()
     data.SetUpdateExtent(data.GetWholeExtent())
     data.Update()
