@@ -239,7 +239,6 @@ class IntensityTransferEditor(wx.Panel):
         self.gammaBox=wx.BoxSizer(wx.HORIZONTAL)
         self.brightnessBox=wx.BoxSizer(wx.HORIZONTAL)
 
-        print "Creating sliders..."
         self.contrastSlider = RangedSlider(self,-1,10000,size=(-1,280),style=wx.SL_VERTICAL)
         self.contrastSlider.setSnapPoint(1.0,0.1)
         self.contrastSlider.setRange(0,50,0.0001,1.0)
@@ -248,7 +247,6 @@ class IntensityTransferEditor(wx.Panel):
 
         self.Bind(wx.EVT_COMMAND_SCROLL,self.setContrast,self.contrastSlider)
 
-        print "Creating paint panel"
         self.canvas=PaintPanel(self)
         self.canvasBox.Add(self.canvas,1,wx.ALL|wx.EXPAND,10)
         self.canvasBox.Add(self.contrastBox)
@@ -256,7 +254,6 @@ class IntensityTransferEditor(wx.Panel):
         self.contrastEdit=wx.TextCtrl(self,-1,"1.00",size=(50,-1))
         self.contrastBox.Add(self.contrastEdit)
         self.contrastBox.Add(self.contrastSlider,1,wx.TOP|wx.BOTTOM,0)
-        print "Done"
 
 
         self.brightnessEdit=wx.TextCtrl(self,-1,"0.00",size=(70,-1),style=wx.TE_PROCESS_ENTER)
@@ -343,7 +340,6 @@ class IntensityTransferEditor(wx.Panel):
         self.setMaximumValue(255)
 
         
-        print "Adding sizers..."
         self.mainsizer.Add(self.canvasBox)
 
         self.gammaLbl=wx.StaticText(self,-1,"Gamma")

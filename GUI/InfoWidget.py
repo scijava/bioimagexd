@@ -149,7 +149,7 @@ class InfoWidget(wx.Panel):
                 if dataunit.getBitDepth()==32:
                     self.colorBtn.Enable(0)
                 else:
-                    print "Setting ctf=",ctf
+                    #print "Setting ctf=",ctf
                     self.colorBtn.setColorTransferFunction(ctf)
             print "datasource=",dataunit.dataSource
             #print "ctf is",dataunit.getSettings().get("ColorTransferFunction")

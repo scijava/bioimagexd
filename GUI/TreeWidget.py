@@ -153,7 +153,7 @@ class TreeWidget(wx.Panel):
         """            
         items=self.tree.GetSelections()
         objs=[self.tree.GetPyData(x) for x in items]
-        print "Selected items=",objs
+#        print "Selected items=",objs
         return objs
 
 class LSMTree(wx.TreeCtrl):
