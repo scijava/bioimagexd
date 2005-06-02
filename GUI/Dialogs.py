@@ -77,13 +77,11 @@ def askcolor(*args,**kws):
         gcolor=dlg.GetColourData()
     else:
         return None
-    print "got color",gcolor
     color=gcolor[0]
     if 255 not in color:
         mval=max(color)
         coeff=255.0/mval
         ncolor=[int(x*coeff) for x in color]
-        print "ncolor=",ncolor
         dlg=wx.MessageDialog(self,
             "The color you selected: %d,%d,%d is incorrect."
             "At least one of the R, G or B components\n"
@@ -135,7 +133,6 @@ def askOpenFileName(parent,title,wc,remember=-1):
     lastpath=""
     filetype=wc.split("|")[1]
     filetype=filetype.split(".")[1]
-    print "type=",filetype
     if remember:
         lastpath=conf.getConfigItem("LastPath_%s"%filetype,"Paths")
         if not lastpath:lastpath="."
