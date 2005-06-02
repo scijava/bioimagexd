@@ -55,6 +55,7 @@ class SectionsMode:
         self.parent=parent
         self.timepoint=0
         self.visualizer=visualizer
+        self.dataUnit=None
         self.sectionsPanel=None
         
     def setBackground(self,r,g,b):
@@ -95,7 +96,7 @@ class SectionsMode:
         Description: Set the mode of visualization
         """
         if not self.sectionsPanel:
-            x,y=self.visualizer.wxrenwin.GetSize()
+            x,y=self.visualizer.visWin.GetSize()
             self.sectionsPanel=PreviewFrame.SectionsPanel(self.parent,size=(x,y))
         return self.sectionsPanel
         
@@ -120,6 +121,7 @@ class SectionsMode:
         unit.setModule(DataUnitProcessing.DataUnitProcessing())
         
         self.sectionsPanel.setDataUnit(unit)
+        self.dataUnit=unit
         
     def setTimepoint(self,tp):
         """

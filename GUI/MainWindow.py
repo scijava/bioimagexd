@@ -94,6 +94,7 @@ class MainWindow(wx.Frame):
 
         self.menuManager=MenuManager.MenuManager(self)
         
+        print MenuManager.ID_TREE_WIN
         self.treeWin=wx.SashLayoutWindow(self,MenuManager.ID_TREE_WIN,style=wx.RAISED_BORDER|wx.SW_3D)
         self.treeWin.SetOrientation(wx.LAYOUT_VERTICAL)
         self.treeWin.SetAlignment(wx.LAYOUT_LEFT)
@@ -205,8 +206,8 @@ class MainWindow(wx.Frame):
             window.Show()
             
         wx.LayoutAlgorithm().LayoutWindow(self, self.visWin)
-#        self.visWin.Refresh()
-            
+        self.visWin.Refresh()
+
 
     def createToolBar(self):
         """
@@ -334,7 +335,7 @@ class MainWindow(wx.Frame):
         self.exportMenu=wx.Menu()
         mgr.addMenuItem(self.exportMenu,MenuManager.ID_EXPORT_VTIFILES,"&VTK Dataset Series",self.onMenuExport)
         mgr.addMenuItem(self.exportMenu,MenuManager.ID_EXPORT_IMAGES,"&Stack of Images",self.onMenuExport)
-        
+
         mgr.addMenuItem(self.fileMenu,MenuManager.ID_OPEN,"&Open...\tCtrl-O",self.onMenuOpen)
         
         mgr.addMenuItem(self.fileMenu,MenuManager.ID_OPEN_SETTINGS,"&Load settings")
@@ -470,15 +471,15 @@ class MainWindow(wx.Frame):
             
         self.onMenuShowTree(None)
 
-        self.visualizer.enable(0)
         # If a visualizer is already running, just switch the mode
         if self.visualizer:
+            self.visualizer.enable(0)
             self.visualizer.setVisualizationMode(mode)
             self.showVisualization(self.visPanel)
             self.visualizer.enable(1)
             #self.showVisualization(self.visWin)
             return
-            
+
         selectedFiles=self.tree.getSelectedDataUnits()
         if len(selectedFiles)>1:
             lst=[]
@@ -516,9 +517,9 @@ class MainWindow(wx.Frame):
             self.visualizer=Visualization.Visualizer(self.visPanel,self.menuManager)
             self.menuManager.setVisualizer(self.visualizer)
             self.visualizer.setProcessedMode(processed)
-            self.visualizer.enable(0)
-            
+
             self.renderMenu.Enable(MenuManager.ID_RELOAD,1)
+        self.visualizer.enable(0)
 
         self.visualizer.setDataUnit(dataunit)
         

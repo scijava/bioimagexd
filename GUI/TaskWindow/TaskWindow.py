@@ -100,7 +100,7 @@ class TaskWindow(scrolled.ScrolledPanel):
         self.settingsNotebook=wx.Notebook(self,-1,style=wx.NB_MULTILINE)
         
         font=self.settingsNotebook.GetFont()
-        font.SetPointSize(font.GetPointSize()-2)
+        font.SetPointSize(font.GetPointSize()-1)
         self.settingsNotebook.SetFont(font)
 
         #self.staticLine=wx.StaticLine(self)

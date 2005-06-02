@@ -34,44 +34,44 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 import wx
     
-ID_OPEN             =101
-ID_QUIT             =110
-ID_ABOUT            =111
-ID_COLOCALIZATION   =1000
-ID_COLORMERGING     =1001
-ID_VSIA             =1010
-ID_ADJUST           =1011
-ID_RENDER           =1100
-ID_REEDIT           =1101
-ID_TREE             =1110
-ID_IMPORT           =1111
-ID_EXPORT           =10000
-ID_EXPORT_VTIFILES  =10001
-ID_EXPORT_IMAGES    =10010
-ID_IMPORT_VTIFILES  =10011
-ID_IMPORT_IMAGES    =10100
-ID_HELP             =10101
-ID_SETTINGS         =10110
-ID_PREFERENCES      =10111
-ID_RESLICE          =11000
-ID_MAYAVI           =11001
-ID_VIS_SECTIONS     =11010
-ID_VIS_SLICES       =11011
-ID_VIS_3D           =11100
-ID_INFO             =11101
-ID_SHOW_TREE        =11110
-ID_VIS_GALLERY      =11111
-ID_LIGHTS           =100000
-ID_RENDERWIN        =100001
-ID_RELOAD           =100010
+ID_OPEN             =100
+ID_QUIT             =101
+ID_ABOUT            =102
+ID_COLOCALIZATION   =103
+ID_COLORMERGING     =104
+ID_VSIA             =105
+ID_ADJUST           =106
+ID_RENDER           =107
+ID_REEDIT           =108
+ID_TREE             =109
+ID_IMPORT           =110
+ID_EXPORT           =111
+ID_EXPORT_VTIFILES  =112
+ID_EXPORT_IMAGES    =113
+ID_IMPORT_VTIFILES  =114
+ID_IMPORT_IMAGES    =115
+ID_HELP             =116
+ID_SETTINGS         =117
+ID_PREFERENCES      =118
+ID_RESLICE          =119
+ID_MAYAVI           =120
+ID_VIS_SECTIONS     =121
+ID_VIS_SLICES       =122
+ID_VIS_3D           =123
+ID_INFO             =124
+ID_SHOW_TREE        =125
+ID_VIS_GALLERY      =126
+ID_LIGHTS           =127
+ID_RENDERWIN        =128
+ID_RELOAD           =129
 
-ID_TREE_WIN         =100011
-ID_VIS_WIN          =100100
-ID_TASK_WIN         =100101
-ID_OPEN_SETTINGS    =100110
-ID_SAVE_SETTINGS    =100111
+ID_TREE_WIN         =130
+ID_VIS_WIN          =131
+ID_TASK_WIN         =132
+ID_OPEN_SETTINGS    =133
+ID_SAVE_SETTINGS    =134
 
-ID_RESTORE          =101000
+ID_RESTORE          =135
 
 class MenuManager:
     """
@@ -124,6 +124,7 @@ class MenuManager:
         self.toolIds.append(toolid)
         if not self.itemBar:
             self.itemBar = wx.ToolBar(self.visualizer.itemWin,-1,style=wx.TB_HORIZONTAL|wx.TB_TEXT)
+            self.itemBar.SetToolBitmapSize((32,32))
 
         self.visualizer.itemWin.Bind(wx.EVT_TOOL,func,id=toolid)
 

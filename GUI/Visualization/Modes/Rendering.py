@@ -176,7 +176,7 @@ class RenderingMode:
         if not self.visualizer.enabled:
             print "Visualizer not enabled, won't render!"
             return
-        for module in self.visualizer.modules:
+        for module in self.modules:
             module.showTimepoint(self.timepoint)
             module.updateRendering()
         self.wxrenwin.Render()

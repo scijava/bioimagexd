@@ -48,22 +48,35 @@ import DataUnitProcessing
 from Lights import *
 from GUI import Events
 import PreviewFrame
+import os.path
+import sys
 
 visualizerInstance=None
 
 def getVisualizer():
     global visualizerInstance
     return visualizerInstance
-    
+
 def getModes():
-    modules=glob.glob("GUI/Visualization/Modes/*.py")
+    path=reduce(os.path.join,["GUI","Visualization","Modes","*.py"])
+    spath=reduce(os.path.join,[os.getcwd(),"GUI","Visualization","Modes"])
+    print "adding ",spath
+    sys.path=sys.path+[spath]
+    print "path=",path
+    modules=glob.glob(path)
     moddict={}
     for file in modules:
         mod=file.split(".")[0:-1]
         mod=".".join(mod)
-        mod.replace("/",".")
-        print "Importing mode ",mod
-        module = __import__(mod)
+        print "mod=",mod
+        mod=mod.replace("/",".")
+        mod=mod.replace("\\",".")
+        frompath=mod.split(".")[:-1]
+        frompath=".".join(frompath)
+        mod=mod.split(".")[-1]
+        print "importing %s from %s"%(mod,frompath)
+        module = __import__(mod,globals(),locals(),mod)
+        print "module=",module
         name=module.getName()
         modclass=module.getClass()
         moddict[name]=(None,modclass,module)

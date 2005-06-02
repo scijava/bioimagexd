@@ -40,16 +40,26 @@ import ColorTransferEditor
 import Dialogs
 
 import glob
+import os,sys
 
 def getModules():
-    modules=glob.glob("GUI/Visualization/Modules/*.py")
+    path=reduce(os.path.join,["GUI","Visualization","Modules","*.py"])
+    spath=reduce(os.path.join,[os.getcwd(),"GUI","Visualization","Modules"])
+
+    sys.path=sys.path+[spath]
+
+    modules=glob.glob(path)
     moddict={}
     for file in modules:
         mod=file.split(".")[0:-1]
         mod=".".join(mod)
-        mod.replace("/",".")
-        print "Importing ",mod
-        module = __import__(mod)
+        mod=mod.replace("/",".")
+        mod=mod.replace("\\",".")
+        frompath=mod
+        mod=mod.split(".")[-1]
+        print "importing %s from %s"%(mod,frompath)
+        module = __import__(mod,globals(),locals(),mod)
+        print "module=",module
         name=module.getName()
         modclass=module.getClass()
         settingclass=module.getConfig()

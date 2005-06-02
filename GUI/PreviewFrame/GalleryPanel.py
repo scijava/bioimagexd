@@ -10,7 +10,7 @@
  volume data independent of a VTK render window,using the tools provided by wxPython.
  
  Modified 23.05.2005 KP - Created the class
-          
+
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
 
@@ -205,12 +205,24 @@ class GalleryPanel(wx.ScrolledWindow):
         self.SetVirtualSize((xdim,ydim))
         self.SetScrollRate(self.scrollsize,self.scrollsize)
 
+    def enable(self,flag):
+        """
+        Method: enable(flag)
+        Created: 02.06.2005, KP
+        Description: Enable/Disable updates
+        """
+        self.enabled=flag
+        if flag:self.updatePreview()
+
     def updatePreview(self):
         """
         Method: updatePreview()
         Created: 24.03.2005, KP
         Description: Updates the viewed image
         """
+        if not self.enabled:
+           print "Won't draw gallery cause not enabled"
+           return
         if not self.slices:
             self.setTimepoint(self.timepoint)
         self.paintPreview()

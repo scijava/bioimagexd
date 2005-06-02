@@ -1,5 +1,4 @@
 # -*- coding: iso-8859-1 -*-
-
 """
  Unit: SlicesMode
  Project: BioImageXD
@@ -53,6 +52,7 @@ class GalleryMode:
         self.visualizer=visualizer
         self.galleryPanel=None
         self.timepoint=0
+        self.dataUnit=None
         
     def showSideBar(self):
         """
@@ -127,6 +127,7 @@ class GalleryMode:
         Description: Set the dataunit to be visualized
         """
         self.galleryPanel.setDataUnit(dataUnit)
+        self.dataUnit=dataUnit
         
     def setTimepoint(self,tp):
         """

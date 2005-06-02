@@ -76,9 +76,9 @@ class SectionsPanel(wx.Panel):
         self.sizer.Add(self.xzpreview,(0,1),flag=wx.EXPAND|wx.ALL,border=5)
         self.sizer.Add(self.yzpreview,(1,0),flag=wx.EXPAND|wx.ALL,border=5)
 
-        self.xypreview.Bind(EVT_VOXEL,self.onSetVoxel,id=self.xypreview.GetId())
-        self.xzpreview.Bind(EVT_VOXEL,self.onSetVoxel,id=self.xzpreview.GetId())
-        self.yzpreview.Bind(EVT_VOXEL,self.onSetVoxel,id=self.yzpreview.GetId())
+        self.xypreview.Bind(Events.EVT_VOXEL,self.onSetVoxel,id=self.xypreview.GetId())
+        self.xzpreview.Bind(Events.EVT_VOXEL,self.onSetVoxel,id=self.xzpreview.GetId())
+        self.yzpreview.Bind(Events.EVT_VOXEL,self.onSetVoxel,id=self.yzpreview.GetId())
         
         self.SetSizer(self.sizer)
         self.SetAutoLayout(1)
@@ -104,7 +104,13 @@ class SectionsPanel(wx.Panel):
             self.xypreview.setPreviewedSlice(None,z)
             print "Setting z to",z
             
-            
+    def enable(self,flag):
+        """
+        Method: enable(flag)
+        Created: 02.06.2005, KP
+        Description: Enable/Disable updates
+        """
+        pass            
         
     def setDataUnit(self,dataUnit,selectedItem=-1):
         """
