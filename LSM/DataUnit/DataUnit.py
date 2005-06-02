@@ -92,7 +92,7 @@ class DataUnit:
             return ctf
         if not self.ctf:
             self.ctf=self.dataSource.getColorTransferFunction()
-            print "Got color from datasource:",self.ctf
+#            print "Got color from datasource:",self.ctf
         return self.ctf
     
     
@@ -115,7 +115,6 @@ class DataUnit:
         if not self.settings:
             return
         ctf = self.getColorTransferFunction()
-        print "My ctf is -->",ctf
         # Watch out not to overwrite the palette
         #self.ctf = self.settings.get("ColorTransferFunction")
         #ctf = self.ctf

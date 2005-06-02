@@ -4,40 +4,6 @@
  Project: BioImageXD
  Created: 03.11.2004, JM
  Description: Classes for managing combined 4D data.
-
- Modified:  04.11.2004 JM - added methods
-
-            04.11.2004 JM - added and modified methods
-            08.11.2004 JM - removed and added methods
-            09.11.2004 KP - doPreview() uses the data source to read the source 
-                            data files
-            09.11.2004 JV - implemented ColorCombinationDataUnit.doPreview()
-            10.11.2004 KP - getSettingsManager() modified into getSetting(name)
-                            for cleaner interface
-            10.11.2004 JM - numerous bug fixes made and compliance with class
-                            diagrams checked
-            10.11.2004 JV - updated ColorCombinationDataUnit.doPreview()
-            15.11.2004 KP - Addedd a callback to give progress info back to the
-                            GUI
-            16.11.2004 JM - DataUnitManager is no more. DataUnitManager has 
-                            deceised. This is an ex-class.
-                            (Seriously, DataUnitManager was replaced by simple 
-                            dictionaries and lists)
-            17.11.2004 JM - tidied up the class hierarchy, moved common 
-                            functionalities to the base class
-            24.11.2004 JM - Added validity checks to set-methods
-            24.11.2004 JV - updated colorcombination
-            26.11.2004 JM - more comments added
-            03.12.2004 JV - Color combination gets right colors from datasource
-                            and creates the .vti-files and .du-file
-            04.12.2004 JV - Intensity transfer function is stored in .du 
-                            (colors not!)            
-            14.12.2004 JM - Previously entered Colocalization Depth is now 
-                            loaded properly
-            03.02.2005 KP - Renamed doCombine to doProcessing for compatibility
-                            between combined and processed dataunits
-
-            27.03.2005 KP - Started merging / refactoring classes
                             
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
@@ -407,6 +373,13 @@ class ColorMergingDataUnit(CombinedDataUnit):
         Description: Return the bit depth of the combined dataunit
         """
         return 32
+    def __str__(self):
+        """
+        Method: __str__
+        Created: 02.06.2005, KP
+        Description: Return string representation of self
+        """
+	return str(self.__class__)
 
 class ColocalizationDataUnit(CombinedDataUnit):
     def getSettingClass(self):

@@ -273,7 +273,7 @@ class DataUnitSettings:
         if name not in self.registered:
             raise "No key %s registered"%name
         if self.isPrivate[name]:
-            print "Setting private %s"%name
+#            print "Setting private %s"%name
             self.private[name]=value
         else:
             self.settings[name]=value
@@ -475,7 +475,7 @@ class ColorMergingSettings(DataUnitSettings):
                      number of channels and timepoints
         """
         DataUnitSettings.initialize(self,dataunit,channels,timepoints)
-        print "Initializing for %d channels"%channels
+#        print "Initializing for %d channels"%channels
         for i in range(channels):
             #ctf = vtk.vtkColorTransferFunction()
             #ctf.AddRGBPoint(0,0,0,0)
@@ -532,7 +532,7 @@ class SingleUnitProcessingSettings(DataUnitSettings):
         DataUnitSettings.initialize(self,dataunit,channels,timepoints)
         ctf = self.get("ColorTransferFunction")
         if 0 and not ctf:
-            print "Initializing to color",dataunit.getColor()
+#            print "Initializing to color",dataunit.getColor()
             ctf = vtk.vtkColorTransferFunction()
             r,g,b=dataunit.getColor()
             r/=255.0
@@ -543,7 +543,7 @@ class SingleUnitProcessingSettings(DataUnitSettings):
             ctf.AddRGBPoint(255, r,g,b)
             self.set("ColorTransferFunction",ctf)
         
-        print "Initializing %d timepoints"%timepoints
+#        print "Initializing %d timepoints"%timepoints
         for i in range(timepoints):
             tf=vtk.vtkIntensityTransferFunction()
             self.setCounted("IntensityTransferFunctions",i,tf,0)
