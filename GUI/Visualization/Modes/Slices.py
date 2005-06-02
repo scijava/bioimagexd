@@ -54,6 +54,8 @@ class SlicesMode:
         self.parent=parent
         self.visualizer=visualizer
         self.preview=None
+        self.init=1
+        self.dataUnit=None
         
     def showSideBar(self):
         """
@@ -104,10 +106,10 @@ class SlicesMode:
         Description: Set the mode of visualization
         """
         if not self.preview:
+            print "Generating preview"
             self.preview=PreviewFrame.IntegratedPreview(self.parent,
             previewsize=(512,512),pixelvalue=False,renderingpreview=False,
             zoom=False,zslider=True,timeslider=False,scrollbars=False)
-            self.preview.setPreviewType("")
         return self.preview
             
         
@@ -118,13 +120,21 @@ class SlicesMode:
         Created: 25.05.2005, KP
         Description: Set the dataunit to be visualized
         """
+        print "setDataUnit(",dataUnit,")"
+        if dataUnit == self.dataUnit:
+            print "\n\n\nGot same dataunit\n\n\n"
+            return
+        if self.init:
+            print "Setting preview type"
+            self.preview.setPreviewType("")
+            self.init=0
         if not self.visualizer.getProcessedMode():
             print "Using corrected source data unit"
             unit=DataUnit.CorrectedSourceDataUnit("preview")
             unit.addSourceDataUnit(dataUnit)
             unit.setModule(DataUnitProcessing.DataUnitProcessing())
         else:
-            print "Using dataunit"
+            print "Using dataunit",dataUnit
             unit=dataUnit
         self.preview.setDataUnit(unit,0)
         
@@ -134,4 +144,5 @@ class SlicesMode:
         Created: 25.05.2005, KP
         Description: Set the timepoint to be visualized
         """
+        print "Setting previewed timepoint"
         self.preview.setTimepoint(tp)

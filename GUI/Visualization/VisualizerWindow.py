@@ -37,7 +37,8 @@ import time
 
 import vtk
 from vtk.wx.wxVTKRenderWindowInteractor import wxVTKRenderWindowInteractor
-from Events import *
+
+from GUI import Events
 import Dialogs
 from VisualizationModules import *
 from ModuleConfiguration import *
@@ -62,6 +63,13 @@ class VisualizerWindow(wxVTKRenderWindowInteractor):
         self.renderer=None
         self.doSave=0
 
+    def enable(self,flag):
+        """
+        Method: enable(flag)
+        Created: 02.06.2005, KP
+        Description: Enable/Disable updates
+        """
+        pass
 
     def initializeVTK(self):
         """

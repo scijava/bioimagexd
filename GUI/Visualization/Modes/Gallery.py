@@ -79,12 +79,23 @@ class GalleryMode:
         """      
         pass        
         
+    def enable(self,flag):
+        """
+        Method: enable(flag)
+        Created: 02.06.2005, KP
+        Description: Enable/Disable updates
+        """
+        self.enabled=flag        
+        
     def updateRendering(self):
         """
         Method: updateRendering
         Created: 26.05.2005, KP
         Description: Update the rendering
         """      
+        if not self.enabled:
+            print "NOT ENABLED WONT UPDATE GALLERY"
+            return
         print "Updating gallery..."
         self.galleryPanel.setTimepoint(self.timepoint)
         self.galleryPanel.updatePreview()
@@ -97,7 +108,7 @@ class GalleryMode:
         Description: Set the mode of visualization
         """
         if not self.galleryPanel:
-            x,y=self.visualizer.wxrenwin.GetSize()
+            x,y=self.visualizer.visWin.GetSize()
             self.galleryPanel=PreviewFrame.GalleryPanel(self.parent,self.visualizer,size=(x,y))
         return self.galleryPanel
         

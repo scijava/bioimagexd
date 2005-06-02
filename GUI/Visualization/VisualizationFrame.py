@@ -37,7 +37,7 @@ import time
 
 import vtk
 from vtk.wx.wxVTKRenderWindowInteractor import wxVTKRenderWindowInteractor
-from Events import *
+from GUI import Events
 import Dialogs
 import  wx.lib.colourselect as  csel
 import wx.lib.scrolledpanel as scrolled

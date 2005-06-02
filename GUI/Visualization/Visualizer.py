@@ -40,15 +40,13 @@ import vtk
 import os
 import glob
 
-from Events import *
 import Dialogs
 
 import DataUnit
 import DataUnitProcessing
 
 from Lights import *
-from Events import *
-
+from GUI import Events
 import PreviewFrame
 
 visualizerInstance=None
@@ -306,10 +304,25 @@ class Visualizer:
             self.sidebarWin.SetDefaultSize((200,1024))
             
         self.currentWindow = modeinst.activate(self.sidebarWin)
-        modeinst.setDataUnit(self.dataUnit)    
+        self.currentWindow.enable(self.enabled)
+        
+        if modeinst.dataUnit != self.dataUnit:
+            print "Re-setting dataunit"
+            modeinst.setDataUnit(self.dataUnit)    
         wx.LayoutAlgorithm().LayoutWindow(self.parent, self.visWin)            
         
         self.currentWindow.Show()
+        
+    def showItemToolbar(self,flag):
+        """
+        Method: showItemToolbar()
+        Created: 01.06.2005, KP
+        Description: Show / hide item toolbar
+        """
+        if flag:
+            self.itemWin.SetDefaultSize((500,64))
+        else:
+            self.itemWin.SetDefaultSize((500,0))
         
     def enable(self,flag):
         """
@@ -317,7 +330,10 @@ class Visualizer:
         Created: 23.05.2005, KP
         Description: Enable/Disable updates
         """
+        print "\n\nenable(%d)\n\n"%flag
         self.enabled=flag
+        if self.currentWindow:
+            self.currentWindow.enable(flag)
 
     def setBackground(self,r,g,b):
         """
@@ -349,13 +365,20 @@ class Visualizer:
         Created: 28.04.2005, KP
         Description: Sets the dataunit this module uses for visualization
         """
+        print "visualizer.setDataUnit(",dataunit,")"
         self.dataUnit = dataunit
         count=dataunit.getLength()
         print "Setting range to",count
         self.timeslider.SetRange(0,count-1)
-        if self.enabled:                 
-            if "setDataUnit" in dir(self.currentWindow):
-                self.currentWindow.setDataUnit(dataunit)
+        showItems=0
+        if self.processedMode:
+            n=len(dataunit.getSourceDataUnits())
+            if n>1:
+                showItems=1
+        self.showItemToolbar(showItems)
+            
+        if self.enabled and self.currMode:                 
+            print "calling current modes setDataUnit"
             self.currMode.setDataUnit(self.dataUnit)
             
     def updateRendering(self,event=None):
@@ -383,7 +406,9 @@ class Visualizer:
         Created: 28.04.2005, KP
         Description: Render the scene
         """
-        self.currMode.Render()
+        if self.enabled:
+            print "Render()"
+            self.currMode.Render()
         
     def onChangeTimepoint(self,event):
         """
@@ -420,6 +445,7 @@ class Visualizer:
         Created: 28.04.2005, KP
         Description: Set the timepoint to be shown
         """  
+        print "setTimepoint()"
         if self.timeslider.GetValue()!=timepoint:
             self.timeslider.SetValue(timepoint)
         self.timepoint = timepoint

@@ -35,7 +35,7 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 import wx
 
 import vtk
-from Events import *
+from GUI import Events
 from VisualizationModules  import *
 import ColorTransferEditor
 import Dialogs

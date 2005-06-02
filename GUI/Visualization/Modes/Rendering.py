@@ -173,6 +173,9 @@ class RenderingMode:
         Created: 26.05.2005, KP
         Description: Update the rendering
         """      
+        if not self.visualizer.enabled:
+            print "Visualizer not enabled, won't render!"
+            return
         for module in self.visualizer.modules:
             module.showTimepoint(self.timepoint)
             module.updateRendering()
@@ -187,7 +190,7 @@ class RenderingMode:
         self.wxrenwin.Show(0)       
         self.configPanel.Show(0) 
         
-        mgr=MenuManager.getManager()
+        mgr=self.menuManager
         
         mgr.disable(MenuManager.ID_LIGHTS)
         mgr.disable(MenuManager.ID_RENDERWIN)
