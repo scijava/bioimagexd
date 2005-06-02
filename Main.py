@@ -96,7 +96,7 @@ if __name__=='__main__':
         #    psyco.full()
         #except ImportError:
         #    pass
-        app=LSMApplication(False)
+        app=LSMApplication(0)
         app.run()
 
 
