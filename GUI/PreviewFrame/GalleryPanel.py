@@ -114,20 +114,24 @@ class GalleryPanel(wx.ScrolledWindow):
         Description: Sets the timepoint to display
         """    
         self.timepoint=timepoint
-        print "Got timepoint"
-        # TODO: Use combined dataunit if possible
         if self.visualizer.getProcessedMode():
-            image=self.dataUnit.doPreview(-1,1,self.timepoint)
+            image=self.dataUnit.doPreview(-2,1,self.timepoint)
             ctf = self.dataUnit.getSourceDataUnits()[0].getColorTransferFunction()
+            print "Got data ",image
+
         else:
             image=self.dataUnit.getTimePoint(timepoint)
             ctf=self.dataUnit.getColorTransferFunction()
-        maptocolor=vtk.vtkImageMapToColors()
-        maptocolor.SetInput(image)
-        maptocolor.SetLookupTable(ctf)
-        maptocolor.SetOutputFormatToRGB()
-        maptocolor.Update()
-        self.imagedata=maptocolor.GetOutput()
+        
+        if self.dataUnit.getBitDepth()!=32:
+            maptocolor=vtk.vtkImageMapToColors()
+            maptocolor.SetInput(image)
+            maptocolor.SetLookupTable(ctf)
+            maptocolor.SetOutputFormatToRGB()
+            maptocolor.Update()
+            self.imagedata=maptocolor.GetOutput()
+        else:
+            self.imagedata=image
         self.calculateBuffer()
         x,y,z=self.imagedata.GetDimensions()
         

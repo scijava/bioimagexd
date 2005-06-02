@@ -63,6 +63,8 @@ class IntegratedPreview(PreviewFrame):
         self.mapToColors.SetOutputFormatToRGB()
         self.renderpanel.Bind(wx.EVT_RIGHT_DOWN,self.onRightClick)
         
+        self.enabled=1
+        
         self.ID_MERGE=wx.NewId()
         self.ID_COLOC=wx.NewId()
         self.ID_SINGLE=wx.NewId()
@@ -212,10 +214,9 @@ class IntegratedPreview(PreviewFrame):
                 data=mip.GetOutput()
                 data.SetUpdateExtent(data.GetWholeExtent())
                 #print "data=",data
-                print "Mip done"
             self.mapToColors.RemoveAllInputs()
             self.mapToColors.SetInput(data)
-            #print "Updating color"
+            #print "Updatinalreadyg color"
             self.updateColor()
             #print "Coloring with ",self.currentCt
             colorImage=self.mapToColors.GetOutput()
@@ -223,9 +224,18 @@ class IntegratedPreview(PreviewFrame):
             self.mapToColors.Update()
             data=self.mapToColors.GetOutput()
         else:
-            print "Image got %d components already"%ncomps
+            pass
+            #print "Image got %d components already"%ncomps
                 
         return data
+        
+    def enable(self,flag):
+        """
+        Method: enable(flag)
+        Created: 02.06.2005, KP
+        Description: Enable/Disable updates
+        """
+        self.enabled=flag
         
     def updatePreview(self,renew=1):
         """
@@ -236,6 +246,9 @@ class IntegratedPreview(PreviewFrame):
         renew    Whether the method should recalculate the images
         """
         if not self.dataUnit:
+            return
+        if not self.enabled:
+            print "NOT ENABLED, WONT RENDER"
             return
         self.updateColor()
         if not self.running:
@@ -265,7 +278,7 @@ class IntegratedPreview(PreviewFrame):
             self.oldy=y
             
 
-        print "Showing slice ",self.z
+#        print "Showing slice ",self.z
         self.renderpanel.setZSlice(self.z)
         self.renderpanel.setImage(colorImage)
         self.renderpanel.updatePreview()

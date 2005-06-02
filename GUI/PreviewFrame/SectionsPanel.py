@@ -37,7 +37,7 @@ from wx.lib.statbmp  import GenStaticBitmap as StaticBitmap
 import ImageOperations
 import vtk
 from IntegratedPreview import *
-from Events import *
+from GUI import Events
 
 class SectionsPanel(wx.Panel):
     """

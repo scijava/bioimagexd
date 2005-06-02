@@ -58,7 +58,7 @@ import VTKScrollPanel
 import WxPreviewPanel
 import time
 
-from Events import *
+from GUI import Events
 from Logging import *
 
 import vtk
@@ -66,7 +66,6 @@ import wx
 
 ZOOM_TO_FIT=-1
 
-from Events import *
 
 class PreviewFrame(wx.Panel):
     """
@@ -359,7 +358,7 @@ class PreviewFrame(wx.Panel):
             newz=val
         if self.z!=newz:
             self.z=newz
-            evt=ChangeEvent(myEVT_ZSLICE_CHANGED,self.GetId())
+            evt=Events.ChangeEvent(Events.myEVT_ZSLICE_CHANGED,self.GetId())
             evt.setValue(newz)
             self.GetEventHandler().ProcessEvent(evt)
             
@@ -397,7 +396,7 @@ class PreviewFrame(wx.Panel):
         if self.timePoint!=timePoint:
             self.timePoint=timePoint
             self.updatePreview(1)
-            evt=ChangeEvent(myEVT_TIMEPOINT_CHANGED,self.GetId())
+            evt=Events.ChangeEvent(Events.myEVT_TIMEPOINT_CHANGED,self.GetId())
             evt.setValue(timePoint)
             self.GetEventHandler().ProcessEvent(evt)
                 
