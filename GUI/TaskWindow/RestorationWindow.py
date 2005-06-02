@@ -95,9 +95,9 @@ class RestorationWindow(TaskWindow.TaskWindow):
         TaskWindow.TaskWindow.createOptionsFrame(self)
         self.taskNameLbl.SetLabel("Restored dataset series name:")
             
-        self.paletteLbl = wx.StaticText(self.commonSettingsPanel,-1,"Channel palette:")
+        self.paletteLbl = wx.StaticText(self,-1,"Channel palette:")
         self.commonSettingsSizer.Add(self.paletteLbl,(1,0))
-        self.colorBtn = ColorTransferEditor.CTFButton(self.commonSettingsPanel)
+        self.colorBtn = ColorTransferEditor.CTFButton(self)
         self.commonSettingsSizer.Add(self.colorBtn,(2,0))
         
         #controls for filtering

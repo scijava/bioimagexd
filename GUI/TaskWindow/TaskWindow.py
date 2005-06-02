@@ -47,7 +47,9 @@ from DataUnit import *
 from PreviewFrame import *
 from Logging import *
 from ProcessingManager import *
-from Events import *
+#from Events import *
+#import Events
+from GUI import Events
 
 import Dialogs
 import sys
@@ -78,7 +80,7 @@ class TaskWindow(scrolled.ScrolledPanel):
         #wx.Frame.__init__(self,root,-1,"Task Window",style=wx.DEFAULT_FRAME_STYLE, #|wx.NO_FULL_REPAINT_ON_RESIZE,
         #size=(1024,768))
         scrolled.ScrolledPanel.__init__(self,root,-1,size=(200,-1))
-        self.toolWin = tb
+        self.toolMgr = tb
         # Unbind to not get annoying behaviour of scrolling
         # when clicking on the panel
         self.Unbind(wx.EVT_CHILD_FOCUS)
@@ -141,10 +143,10 @@ class TaskWindow(scrolled.ScrolledPanel):
         Description: Method to create a toolbar for the window that allows use to select processed channel
         """      
         #self.tb2 = self.CreateToolBar(wx.TB_HORIZONTAL)
-        self.tb2 = wx.ToolBar(self.toolWin,-1,style=wx.TB_HORIZONTAL|wx.TB_TEXT|wx.TB_FLAT)
+        self.toolMgr.clearItemsBar()
         print "Creating item toolbar"
         #self.tb2 = wx.ToolBar(self,-1,style=wx.TB_VERTICAL|wx.TB_TEXT)
-        self.tb2.SetToolBitmapSize((32,32))# this required for non-standard size buttons on MSW
+        #self.tb2.SetToolBitmapSize((32,32))# this required for non-standard size buttons on MSW
         #self.tb2 = self.toolbar
         n=0
         #self.tb2.AddSeparator()
@@ -153,7 +155,6 @@ class TaskWindow(scrolled.ScrolledPanel):
             #color = dataunit.getColor()
             ctf = dataunit.getColorTransferFunction()
             name = dataunit.getName()
-            print "Adding item ",name
             dc= wx.MemoryDC()
             bmp=ImageOperations.vtkImageDataToPreviewBitmap(dataunit.getTimePoint(0),ctf,30,30)
             dc.SelectObject(bmp)
@@ -168,7 +169,6 @@ class TaskWindow(scrolled.ScrolledPanel):
             val=[0,0,0]
             ctf.GetColor(255,val)
             dc.SetBrush(wx.TRANSPARENT_BRUSH)
-            print "Drawing rectangle with color ",val
             r,g,b=val
             r*=255
             g*=255
@@ -179,16 +179,15 @@ class TaskWindow(scrolled.ScrolledPanel):
             dc.SelectObject(wx.EmptyBitmap(0,0))
             toolid=wx.NewId()
             #self.tb2.AddRadioTool(toolid,name,bmp,shortHelp=name)
-            self.tb2.DoAddTool(toolid,name,bmp,kind=wx.ITEM_RADIO)
+            self.toolMgr.addItem(name,bmp,toolid,lambda e,x=n,s=self:s.selectItem(e,x))
             #self.tb2.AddTool(toolid,bmp)#,shortHelp=name)
-            self.Bind(wx.EVT_TOOL,lambda e,x=n,s=self:s.selectItem(e,x),id=toolid)
             n=n+1
 
         #self.mainsizer.Add(self.tb2,(0,4))
-        self.tb2.Realize()
-        return self.tb2
+        #self.tb2.Realize()
+        #return self.tb2
         #self.previewSizer.Add(self.tb2,(0,0))
-        
+        #self.Bind(EVT_DATA_UPDATE,self.updateRendering,id=self.GetId())
         
     def OnSize(self,event):
         """
@@ -282,6 +281,7 @@ class TaskWindow(scrolled.ScrolledPanel):
         Description: A callback function called when a channel is selected in
                      the menu
         """
+        print "Select item(",event,",",index,")"
         if index==-1:
             raise "No index given"
             index=self.itemMenu.GetSelection()
@@ -369,10 +369,11 @@ class TaskWindow(scrolled.ScrolledPanel):
         Description: A callback for the button "Preview" and other events
                      that wish to update the preview
         """
-        if self.preview:
-            self.preview.updatePreview()
-            
-        evt=DataUpdateEvent(myEVT_DATA_UPDATE,self.GetId(),delay=0)
+        #if self.preview:
+        #    self.preview.updatePreview()
+        print "Sending update event, id=",self.GetId()
+        print "Sending out ",Events.myEVT_DATA_UPDATE
+        evt=Events.DataUpdateEvent(Events.myEVT_DATA_UPDATE,self.GetId(),delay=0)
         self.GetEventHandler().ProcessEvent(evt)
 
 

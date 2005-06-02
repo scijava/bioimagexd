@@ -45,7 +45,6 @@ from Logging import *
 
 import TaskWindow
 import sys
-import ColorMerging
 
 import Dialogs
 import time
@@ -128,8 +127,6 @@ class ColorMergingWindow(TaskWindow.TaskWindow):
         
         self.editIntensityPanel.SetSizer(self.editIntensitySizer)
         self.editIntensityPanel.SetAutoLayout(1)
-        self.settingsNotebook.InsertPage(1,self.editIntensityPanel,"Intensity Transfer Function")
-
         
         self.editIntensityPanel.Layout()
         self.editIntensitySizer.Fit(self.editIntensityPanel)
@@ -159,6 +156,7 @@ class ColorMergingWindow(TaskWindow.TaskWindow):
         self.editAlphaPanel.SetSizer(self.editAlphaSizer)
         self.editAlphaSizer.Fit(self.editAlphaPanel)
         
+        self.settingsNotebook.AddPage(self.editIntensityPanel,"Intensity")
         self.settingsNotebook.AddPage(self.editAlphaPanel,"Alpha Channel")
         
 #        self.optionssizer.Add(self.intensityTransferEditor,(3,0))
@@ -247,6 +245,8 @@ class ColorMergingWindow(TaskWindow.TaskWindow):
         #self.dataUnit.setOpacityTransfer(self.alphaTF)
         self.settings.set("AlphaTransferFunction",self.alphaTF)
         ctf = self.settings.get("MergingColorTransferFunction")
+        self.intensityTransferEditor.updateCallback=self.doPreviewCallback
+
         if self.colorBtn:
             print "Setting ctf"
             self.colorBtn.setColorTransferFunction(ctf)

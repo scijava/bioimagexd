@@ -90,6 +90,12 @@ class AdjustmentWindow(TaskWindow.TaskWindow):
         self.mainsizer.Fit(self)
 
     def createIntensityInterpolationPanel(self):
+        """
+        Method: createIntensityInterpolationPanel()
+        Created: 09.12.2004, KP
+        Description: Creates a frame holding the entries for configuring 
+                     interpolation
+        """        
         self.interpolationPanel=wx.Panel(self.settingsNotebook)
         #self.interpolationPanel=wx.Panel(self.iTFEditor)
         self.interpolationSizer=wx.GridBagSizer()
@@ -149,10 +155,10 @@ class AdjustmentWindow(TaskWindow.TaskWindow):
 
     def createIntensityTransferPage(self):
         """
-        Method: createIntensityInterpolationPanel()
+        Method: createIntensityTransferPage()
         Created: 09.12.2004, KP
         Description: Creates a frame holding the entries for configuring 
-                     interpolation
+                     intensity
         """
         self.editIntensityPanel=wx.Panel(self.settingsNotebook,-1)
         self.editIntensitySizer=wx.GridBagSizer()
