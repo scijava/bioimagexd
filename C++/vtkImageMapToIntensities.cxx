@@ -83,7 +83,7 @@ void vtkImageMapToIntensities::ExecuteData(vtkDataObject *)
 //  output->SetExtent(output->GetWholeExtent());
   output->AllocateScalars();
   if (this->IntensityTransferFunction->IsIdentical()) {
-      printf("Identical function!\n");
+//      printf("Identical function!\n");
       output->DeepCopy(input);
       return;
   }
