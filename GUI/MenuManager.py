@@ -91,6 +91,44 @@ class MenuManager:
         self.mainwin=mainwin
         # This is the menubar object that holds all the menus
         self.mapping={}
+        self.visualizer=None
+        self.itemBar = None
+        self.toolIds=[]
+        
+    def setVisualizer(self,visualizer):
+        """
+        Method: setVisualizer
+        Created: 01.06.2005, KP
+        Description: Set the visualizer instance managed by this class
+        """
+        self.visualizer=visualizer
+    def clearItemsBar(self):
+        """
+        Method: clearItemsBar()
+        Created: 01.06.2005, KP
+        Description: Clear items bar
+        """
+        if not self.itemBar:return
+        for i in self.toolIds:
+            self.itemBar.DeleteTool(i)
+        self.toolIds=[]
+        self.itemBar.Realize()
+        
+
+    def addItem(self,name,bitmap,toolid,func):
+        """
+        Method: addItem
+        Created: 01.06.2005, KP
+        Description: Add a toolbar item
+        """
+        self.toolIds.append(toolid)
+        if not self.itemBar:
+            self.itemBar = wx.ToolBar(self.visualizer.itemWin,-1,style=wx.TB_HORIZONTAL|wx.TB_TEXT)
+
+        self.visualizer.itemWin.Bind(wx.EVT_TOOL,func,id=toolid)
+
+        self.itemBar.DoAddTool(toolid,name,bitmap,kind=wx.ITEM_RADIO)
+        self.itemBar.Realize()
 
     def addMenuItem(self,menu,menuid,name,hlp=None,callback=None):
         """
