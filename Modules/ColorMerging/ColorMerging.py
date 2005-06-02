@@ -133,9 +133,10 @@ class ColorMerging(Module):
 
         # Map scalars with intensity transfer list
 
+        print "\nDOING COLORMERGING\n"
         processed=[]
         imagelen=len(self.images)
-        print "Mapping through intensities..."
+        #print "Mapping through intensities..."
         for i in range(0,imagelen):
             #self.images[i].GlobalReleaseDataFlagOn()
             mapIntensities=vtk.vtkImageMapToIntensities()
@@ -144,13 +145,13 @@ class ColorMerging(Module):
             mapIntensities.Update()
             data=mapIntensities.GetOutput()
             processed.append(data)
-        print "Mapped %d datasets"%len(processed)
+        #print "Mapped %d datasets"%len(processed)
         
         luminance=0
         if self.doAlpha:
-            print "Creating alpha..."
+            #print "Creating alpha..."
             createalpha=vtk.vtkImageAlphaFilter()
-            print "self.alpaMode=",self.alphaMode
+            #print "self.alpaMode=",self.alphaMode
             if self.alphaMode[0]==0:
                 print "Maximum mode"
                 createalpha.MaximumModeOn()
@@ -167,14 +168,14 @@ class ColorMerging(Module):
                 createalpha.Update()
                 alpha=createalpha.GetOutput()
                 #print "alpha=",alpha
-                print "Created alpha with dims and datatype:",alpha.GetDimensions(),alpha.GetScalarTypeAsString()
+                #print "Created alpha with dims and datatype:",alpha.GetDimensions(),alpha.GetScalarTypeAsString()
         
         # Color the datasets to 24-bit datasets using VTK classes            
         
         colored=[]
         for i in range(0,imagelen):
             if processed[i].GetNumberOfScalarComponents()==1:
-                print "Mapping through..."
+                #print "Mapping through..."
                 mapToColors=vtk.vtkImageMapToColors()
                 mapToColors.SetOutputFormatToRGB()
                 ct=self.ctfs[i]
@@ -186,8 +187,8 @@ class ColorMerging(Module):
                 print "Dataset %d is RGB Data, will not map through ctf"%i
                 colored.append(processed[i])
         # result rgb
-        print "Mappend %d datasets"%len(colored)
-        print "Merging..."
+        #print "Mapped %d datasets"%len(colored)
+        #print "Merging..."
         merge=vtk.vtkImageMerge()
         for i in colored:
             merge.AddInput(i)
