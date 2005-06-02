@@ -1,31 +1,12 @@
 #! /usr/bin/env python
-#! /usr/bin/env python
 # -*- coding: iso-8859-1 -*-
 """
  Unit: MainWindow.py
- Project: Selli
- Created: 03.11.2004
- Creator: KP
+ Project: BioImageXD
+ Created: 03.11.2004, KP
  Description:
 
  The main window for the LSM module.
-
- Modified: 03.11.2004 KP - Now using the DataUnit classes.
-           09.11.2004 KP - Now only displaying really opened files
-                           Cleared up the hierarchy.
-           09.11.2004 KP - Now using datasource to read .du files
-
-           10.11.2004 JV - Added ColorCombination-window
-
-           23.11.2004 JV - Uimport DataUnitProcessingpdated onMenuMergeChannels
-
-           25.11.2004 JV - Added VSIAWindow
-           29.11.2004 JV - Added icon
-           10.12.2004 JV - Fixed: name setting for colorCombinationDataUnit in 
-                           onMenuMergeChannels
-           04.01.2005 JV - Fixed: bug in MenuVSIA
-           11.01.2005 JV - Added comments
-           20.01.2005 KP - Now using wx.Python
 
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
@@ -45,7 +26,7 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
-__author__ = "BioImageXD Project"
+__author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.71 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
@@ -57,7 +38,7 @@ import vtk
 from ConfigParser import *
 from TreeWidget import *
 from Logging import *
-from Events import *
+from GUI import Events
 
 from TaskWindow import TaskWindow,ColorMergingWindow,ColocalizationWindow
 from TaskWindow import AdjustmentWindow,RestorationWindow
@@ -68,6 +49,7 @@ import ExportDialog
 import RenderingInterface
 
 import Visualization
+
 
 import InfoWidget
 import MenuManager
@@ -223,7 +205,7 @@ class MainWindow(wx.Frame):
             window.Show()
             
         wx.LayoutAlgorithm().LayoutWindow(self, self.visWin)
-        self.visWin.Refresh()
+#        self.visWin.Refresh()
             
 
     def createToolBar(self):
@@ -236,7 +218,8 @@ class MainWindow(wx.Frame):
         self.CreateToolBar(wx.NO_BORDER|wx.TB_HORIZONTAL|wx.TB_TEXT)
         tb=self.GetToolBar()            
         tb.SetToolBitmapSize((32,32))
-
+        self.taskIds=[]
+        self.visIds=[]
         print "adding tool"
         #bmp = wx.Image(os.path.join(iconpath,"OpenLSM.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap()
         #tb.DoAddTool(MenuManager.ID_OPEN,"Open",bmp,shortHelp="Open dataset series")
@@ -245,53 +228,67 @@ class MainWindow(wx.Frame):
         #tb.AddSeparator()
 
         bmp = wx.Image(os.path.join(iconpath,"tree.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap()
-        tb.DoAddTool(MenuManager.ID_SHOW_TREE,"File manager",bmp,kind=wx.ITEM_RADIO,shortHelp="Show file management tree")
+        tb.DoAddTool(MenuManager.ID_SHOW_TREE,"File manager",bmp,kind=wx.ITEM_CHECK,shortHelp="Show file management tree")
         wx.EVT_TOOL(self,MenuManager.ID_SHOW_TREE,self.onMenuShowTree)       
         tb.ToggleTool(MenuManager.ID_SHOW_TREE,1)
         
+        self.taskIds.append(MenuManager.ID_SHOW_TREE)
+        
         bmp = wx.Image(os.path.join(iconpath,"ColorCombination.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap()
-        tb.DoAddTool(MenuManager.ID_COLORMERGING,"Merge",bmp,kind=wx.ITEM_RADIO,shortHelp="Merge multiple datasets")        
-        wx.EVT_TOOL(self,MenuManager.ID_COLORMERGING,self.onMenuMergeChannels)       
+        tb.DoAddTool(MenuManager.ID_COLORMERGING,"Merge",bmp,kind=wx.ITEM_CHECK,shortHelp="Merge multiple datasets")        
+        wx.EVT_TOOL(self,MenuManager.ID_COLORMERGING,self.onMenuShowTaskWindow)       
 
-
+        self.taskIds.append(MenuManager.ID_COLORMERGING)
+        
         bmp = wx.Image(os.path.join(iconpath,"Colocalization.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap()
-        tb.DoAddTool(MenuManager.ID_COLOCALIZATION,"Colocalization",bmp,kind=wx.ITEM_RADIO,shortHelp="Calculate colocalization between channels")        
-        wx.EVT_TOOL(self,MenuManager.ID_COLOCALIZATION,self.onMenuColocalization)       
+        tb.DoAddTool(MenuManager.ID_COLOCALIZATION,"Colocalization",bmp,kind=wx.ITEM_CHECK,shortHelp="Calculate colocalization between channels")        
+        wx.EVT_TOOL(self,MenuManager.ID_COLOCALIZATION,self.onMenuShowTaskWindow)       
 
+        self.taskIds.append(MenuManager.ID_COLOCALIZATION)
         #tb.AddSimpleTool(MenuManager.ID_VSIA,
         #wx.Image(os.path.join(iconpath,"HIV.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Visualization of sparse intensity aggregations","Visualization of sparse intensity aggregations")
-        #wx.EVT_TOOL(self,MenuManager.ID_VSIA,self.menuVSIA)
+        #wx.EVT_TOOL(self,MenuManager.ID_VSIA,onMenuShowTaskWindow)
 
         bmp = wx.Image(os.path.join(iconpath,"Adjustment.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap()
-        tb.DoAddTool(MenuManager.ID_ADJUST,"Adjust",bmp,kind=wx.ITEM_RADIO,shortHelp="Adjust a dataset")        
-        wx.EVT_TOOL(self,MenuManager.ID_ADJUST,self.onMenuAdjustDataUnit)
+        tb.DoAddTool(MenuManager.ID_ADJUST,"Adjust",bmp,kind=wx.ITEM_CHECK,shortHelp="Adjust a dataset")        
+        wx.EVT_TOOL(self,MenuManager.ID_ADJUST,self.onMenuShowTaskWindow)
+
+        self.taskIds.append(MenuManager.ID_ADJUST)
 
         bmp = wx.Image(os.path.join(iconpath,"Restoration.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap()
-        tb.DoAddTool(MenuManager.ID_RESTORE,"Restoration",bmp,kind=wx.ITEM_RADIO,shortHelp="Improve dataset quality")
-        wx.EVT_TOOL(self,MenuManager.ID_RESTORE,self.onMenuRestoreDataUnit)
+        tb.DoAddTool(MenuManager.ID_RESTORE,"Restoration",bmp,kind=wx.ITEM_CHECK,shortHelp="Improve dataset quality")
+        wx.EVT_TOOL(self,MenuManager.ID_RESTORE,self.onMenuShowTaskWindow)
 
+        self.taskIds.append(MenuManager.ID_RESTORE)
         tb.AddSeparator()
 
         #tb.AddSimpleTool(MenuManager.ID_RESLICE,
         #wx.Image(os.path.join(iconpath,"Reslice.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Re-edit dataset series","Re-edit a dataset series")
-        #wx.EVT_TOOL(self,MenuManager.ID_RESLICE,self.onMenuReslice)
+        #wx.EVT_TOOL(self,MenuManager.ID_RESLICE,onMenuShowTaskWindow)
 
         bmp = wx.Image(os.path.join(iconpath,"SlicePreview.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap()
-        tb.DoAddTool(MenuManager.ID_VIS_SLICES,"Slices",bmp,kind=wx.ITEM_RADIO,shortHelp="Preview dataset slice by slice")                
+        tb.DoAddTool(MenuManager.ID_VIS_SLICES,"Slices",bmp,kind=wx.ITEM_CHECK,shortHelp="Preview dataset slice by slice")                
         wx.EVT_TOOL(self,MenuManager.ID_VIS_SLICES,self.onMenuVisualizer)
 
+        self.visIds.append(MenuManager.ID_VIS_SLICES)
 
         bmp = wx.Image(os.path.join(iconpath,"GalleryPreview.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap()
-        tb.DoAddTool(MenuManager.ID_VIS_GALLERY,"Gallery",bmp,kind=wx.ITEM_RADIO,shortHelp="Gallery of dataset slices")                
+        tb.DoAddTool(MenuManager.ID_VIS_GALLERY,"Gallery",bmp,kind=wx.ITEM_CHECK,shortHelp="Gallery of dataset slices")                
         wx.EVT_TOOL(self,MenuManager.ID_VIS_GALLERY,self.onMenuVisualizer)
 
+        self.visIds.append(MenuManager.ID_VIS_GALLERY)
+
         bmp = wx.Image(os.path.join(iconpath,"SectionPreview.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap()
-        tb.DoAddTool(MenuManager.ID_VIS_SECTIONS,"Sections",bmp,kind=wx.ITEM_RADIO,shortHelp="Preview sections of dataset")                
+        tb.DoAddTool(MenuManager.ID_VIS_SECTIONS,"Sections",bmp,kind=wx.ITEM_CHECK,shortHelp="Preview sections of dataset")                
         wx.EVT_TOOL(self,MenuManager.ID_VIS_SECTIONS,self.onMenuVisualizer)
 
+        self.visIds.append(MenuManager.ID_VIS_SECTIONS)
+
         bmp = wx.Image(os.path.join(iconpath,"3DPreview.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap()
-        tb.DoAddTool(MenuManager.ID_VIS_3D,"3D",bmp,kind=wx.ITEM_RADIO,shortHelp="Render dataset in 3D")                
+        tb.DoAddTool(MenuManager.ID_VIS_3D,"3D",bmp,kind=wx.ITEM_CHECK,shortHelp="Render dataset in 3D")                
         wx.EVT_TOOL(self,MenuManager.ID_VIS_3D,self.onMenuVisualizer)
+
+        self.visIds.append(MenuManager.ID_VIS_3D)
 
         tb.AddSeparator()
         
@@ -300,8 +297,6 @@ class MainWindow(wx.Frame):
         wx.EVT_TOOL(self,MenuManager.ID_RENDER,self.onMenuRender)
 
         tb.Realize()
-        #tb.ToggleTool(MenuManager.ID_VIS_SLICES,1)
-        #tb.ToggleTool(MenuManager.ID_COLORMERGING,1)
         
     def createMenu(self):
         """
@@ -354,11 +349,16 @@ class MainWindow(wx.Frame):
         mgr.addMenuItem(self.fileMenu,MenuManager.ID_QUIT,"&Quit\tCtrl-Q","Quit the application",self.quitApp)
 
         
-        mgr.addMenuItem(self.taskMenu,MenuManager.ID_COLOCALIZATION,"&Colocalization...","Create a colocalization map",self.onMenuColocalization)
-        mgr.addMenuItem(self.taskMenu,MenuManager.ID_COLORMERGING,"Color &Merging...","Merge dataset series",self.onMenuMergeChannels)
-        mgr.addMenuItem(self.taskMenu,MenuManager.ID_ADJUST,"&Adjust...","Adjust dataset series",self.onMenuAdjustDataUnit)
-        mgr.addMenuItem(self.taskMenu,MenuManager.ID_RESTORE,"&Restore...","Restore dataset series",self.onMenuRestoreDataUnit)
+        mgr.addMenuItem(self.taskMenu,MenuManager.ID_COLOCALIZATION,"&Colocalization...","Create a colocalization map",self.onMenuShowTaskWindow)
+        mgr.addMenuItem(self.taskMenu,MenuManager.ID_COLORMERGING,"Color &Merging...","Merge dataset series",self.onMenuShowTaskWindow)
+        mgr.addMenuItem(self.taskMenu,MenuManager.ID_ADJUST,"&Adjust...","Adjust dataset series",self.onMenuShowTaskWindow)
+        mgr.addMenuItem(self.taskMenu,MenuManager.ID_RESTORE,"&Restore...","Restore dataset series",self.onMenuShowTaskWindow)
 
+        mgr.addMenuItem(self.renderMenu,MenuManager.ID_VIS_SLICES,"&Slices","Visualize individual optical slices")
+        mgr.addMenuItem(self.renderMenu,MenuManager.ID_VIS_SECTIONS,"S&ections","Visualize xy- xz- and yz- planes")
+        mgr.addMenuItem(self.renderMenu,MenuManager.ID_VIS_GALLERY,"&Gallery","Visualize all the optical slices")
+        mgr.addMenuItem(self.renderMenu,MenuManager.ID_VIS_3D,"&Visualize in 3D","Visualize the dataset in 3D")
+        self.renderMenu.AppendSeparator()
         mgr.addMenuItem(self.renderMenu,MenuManager.ID_LIGHTS,"&Lights...","Configure lightning")
         mgr.addMenuItem(self.renderMenu,MenuManager.ID_RENDERWIN,"&Render window","Configure Render Window")
         mgr.addMenuItem(self.renderMenu,MenuManager.ID_RELOAD,"Re-&Load Modules","Reload the visualization modules")
@@ -368,7 +368,6 @@ class MainWindow(wx.Frame):
         mgr.disable(MenuManager.ID_RELOAD)
         
         wx.EVT_MENU(self,MenuManager.ID_RENDER,self.onMenuRender)
-        wx.EVT_MENU(self,MenuManager.ID_MAYAVI,self.onMenuVisualizer)
         wx.EVT_MENU(self,MenuManager.ID_RELOAD,self.onMenuReload)
 
         mgr.addMenuItem(self.helpMenu,MenuManager.ID_ABOUT,"&About BioImageXD","About BioImageXD",self.onMenuAbout)
@@ -381,22 +380,25 @@ class MainWindow(wx.Frame):
         Created: 23.05.2005, KP
         Description: Callback for toggling the dataset tree
         """
-        flag=self.GetToolBar().GetToolState(MenuManager.ID_SHOW_TREE)
-        if not flag:
+        #flag=self.GetToolBar().GetToolState(MenuManager.ID_SHOW_TREE)
+        if not evt:
             print "Hidin..."
             w,h=self.treeWin.GetSize()
             self.sashPos=w
             self.treeWin.SetDefaultSize((0,h))
-            
+            self.GetToolBar().ToggleTool(MenuManager.ID_SHOW_TREE,0)
         else:
-            print "Showin..."
+            if self.sashPos == 0:
+                self.sashPos = 200
+            print "Showin...",self.sashPos
             w,h=self.treeWin.GetSize()
             self.treeWin.SetDefaultSize((self.sashPos,h))
+            self.infowidget.SetSize(self.visWin.GetSize())
             self.showVisualization(self.infowidget)
-            
+            self.setButtonSelection(MenuManager.ID_SHOW_TREE,1)
         wx.LayoutAlgorithm().LayoutWindow(self, self.visWin)
-        self.Layout()
-        self.visWin.Refresh()
+#        self.Layout()
+#        self.visWin.Refresh()
     
     def onMenuImport(self,evt):
         """
@@ -407,14 +409,6 @@ class MainWindow(wx.Frame):
         self.importdlg=ImportDialog.ImportDialog(self)
         self.importdlg.ShowModal()
 
-    def onMenuShowInfo(self,evt):
-        """
-        Method: onMenuShowInfo
-        Created: 22.05.2005, KP
-        Description: Callback function for toolbar item show info
-        """
-        print "Showing infowidget"
-        self.showVisualization(self.infowidget)
         
     def onMenuExport(self,evt):
         """
@@ -470,30 +464,38 @@ class MainWindow(wx.Frame):
             mode="sections"
         else:
             mode="3d"
-        self.GetToolBar().ToggleTool(MenuManager.ID_SHOW_TREE,0)
-        self.onMenuShowTree(None)
+        
+        
+        self.setButtonSelection(eid)
             
+        self.onMenuShowTree(None)
 
+        self.visualizer.enable(0)
         # If a visualizer is already running, just switch the mode
         if self.visualizer:
             self.visualizer.setVisualizationMode(mode)
             self.showVisualization(self.visPanel)
+            self.visualizer.enable(1)
             #self.showVisualization(self.visWin)
             return
             
         selectedFiles=self.tree.getSelectedDataUnits()
         if len(selectedFiles)>1:
+            lst=[]
+            for i in selectedFiles:
+                lst.append(i.getName())
             Dialogs.showerror(self,
             "You have selected the following datasets: %s.\n"
             "More than one dataset cannot be opened in the visualizer concurrently.\nPlease "
-            "select only one dataset and try again."%(", ".join(selectedFiles)),
+            "select only one dataset or use the merging tool."%(", ".join(lst)),
             "Multiple datasets selected")
             return
         if len(selectedFiles)<1:
             Dialogs.showerror(self,
             "You have not selected a dataset series to be loaded to mayavi.\nPlease "
             "select a dataset series and try again.\n","No dataset selected")
-            return
+            return            
+            
         dataunit = selectedFiles[0]
         self.loadVisualizer(dataunit,mode,0)
         
@@ -512,12 +514,12 @@ class MainWindow(wx.Frame):
             #self.visPanel = wx.Panel(self.visWin,-1)
             self.visPanel = wx.SashLayoutWindow(self.visWin,-1)
             self.visualizer=Visualization.Visualizer(self.visPanel,self.menuManager)
-            
+            self.menuManager.setVisualizer(self.visualizer)
             self.visualizer.setProcessedMode(processed)
+            self.visualizer.enable(0)
             
             self.renderMenu.Enable(MenuManager.ID_RELOAD,1)
 
-        self.visualizer.enable(0)
         self.visualizer.setDataUnit(dataunit)
         
         self.visualizer.setVisualizationMode(mode)        
@@ -525,6 +527,7 @@ class MainWindow(wx.Frame):
         #self.showVisualization(self.visWin)
         self.showVisualization(self.visPanel)
         self.visualizer.enable(1)
+                
 
     def onMenuRender(self,evt):
         """
@@ -644,12 +647,57 @@ class MainWindow(wx.Frame):
             print "adding to tree ",name,path,ext,dataunits
             self.tree.addToTree(name,path,ext,dataunits)
 
-    def showTaskWindow(self,action,moduletype,windowtype,filesAtLeast,filesAtMost):
+    def onMenuShowTaskWindow(self,event):
         """
         Method: showTaskWindow
         Created: 11.1.2005, KP
         Description: A method that shows a taskwindow of given type
         """
+        self.onMenuShowTree(None)
+        self.setButtonSelection(event.GetId())
+        eid = event.GetId()
+        if eid==MenuManager.ID_COLOCALIZATION:
+            moduletype=Colocalization.Colocalization
+            windowtype=ColocalizationWindow.ColocalizationWindow
+            unittype=ColocalizationDataUnit
+            filesAtLeast=2
+            filesAtMost=-1
+            action="Colocalization"
+        elif eid==MenuManager.ID_RESLICE:
+            moduletype=Reslice.Reslice
+            windowtype=ResliceWindow.ResliceWindow
+            unittype=ResliceDataUnit
+            filesAtLeast=1
+            filesAtMost=1
+            action="Reslice"
+        elif eid==MenuManager.ID_COLORMERGING:
+            moduletype=ColorMerging.ColorMerging
+            windowtype=ColorMergingWindow.ColorMergingWindow
+            unittype=ColorMergingDataUnit
+            filesAtLeast=2
+            filesAtMost=-1
+            action="Merging"
+        elif eid==MenuManager.ID_ADJUST:
+            moduletype=DataUnitProcessing.DataUnitProcessing
+            windowtype=AdjustmentWindow.AdjustmentWindow
+            unittype=CorrectedSourceDataUnit
+            filesAtLeast=1
+            filesAtMost=1
+            action="Adjusted"
+        elif eid==MenuManager.ID_RESTORE:
+            moduletype=DataUnitProcessing.DataUnitProcessing
+            windowtype=RestorationWindow.RestorationWindow
+            unittype=CorrectedSourceDataUnit
+            filesAtLeast=1
+            filesAtMost=1
+            action="Restored"
+        elif eid==MenuManager.ID_VSIA:
+            moduletype=VSIA.VSIA
+            windowtype=VSIAWindow.VSIAWindow
+            filesAtLeast=1
+            filesAtMost=1
+            action="VSIA'd"
+        print "got moduletype",moduletype
         selectedFiles=self.tree.getSelectedDataUnits()
         if filesAtLeast!=-1 and len(selectedFiles)<filesAtLeast:
             Dialogs.showerror(self,
@@ -664,12 +712,10 @@ class MainWindow(wx.Frame):
         # Sets name for new dataset series
         name="%s (%s)"%(action,", ".join(names))
 
-        moduleToClass={DataUnitProcessing.DataUnitProcessing:CorrectedSourceDataUnit,
-        Colocalization.Colocalization:ColocalizationDataUnit,
-        ColorMerging.ColorMerging:ColorMergingDataUnit,
-        Reslice.Reslice:ResliceDataUnit}    
-
-        unit = moduleToClass[moduletype](name)
+        print unittype,dir(unittype),name
+        unit = unittype(name)
+        print unit
+        print "unit = %s(%s)=%s"%(unittype,name,unit)
         for dataunit in selectedFiles:
             unit.addSourceDataUnit(dataunit)
 
@@ -686,24 +732,28 @@ class MainWindow(wx.Frame):
         if not self.visualizer:
             print "Loading visualizer for ",unit
             self.loadVisualizer(unit,"slices",1)
-            
         else:
-            self.visualizer.setProcessedMode(1)
+            if not self.visualizer.getProcessedMode():
+                self.visualizer.setProcessedMode(1)
+
         self.visualizer.setDataUnit(unit)
+            
+        if self.currentVisualizationWindow==self.infowidget:
+            print "Switching to slices"
+            self.visualizer.setVisualizationMode("slices")
+            
         
-        window=windowtype(self.taskWin,self.visualizer.itemWin)
+        window=windowtype(self.taskWin,self.menuManager)
         window.setCombinedDataUnit(unit)
 
+        self.visWin.Bind(Events.EVT_TIMEPOINT_CHANGED,window.updateTimepoint)
+        window.Bind(Events.EVT_DATA_UPDATE,self.visualizer.updateRendering,id=window.GetId())
 
-        window.Bind(EVT_DATA_UPDATE,self.visualizer.updateRendering,id=window.GetId())
-        self.visWin.Bind(EVT_TIMEPOINT_CHANGED,window.updateTimepoint)
-        
         if self.currentTaskWindow:          
             self.currentTaskWindow.Show(0)
             window.Show()
             self.currentTaskWindow=window
         else:
-            print "Showing ",window
             self.currentTaskWindow = window
         w,h=self.taskWin.GetSize()
         self.taskWin.SetDefaultSize((300,h))
@@ -720,66 +770,27 @@ class MainWindow(wx.Frame):
         # Add the dataset (node) into tree
         #self.tree.addToTree(dataunit.getName(),filepath,'du',[dataunit])        
         
-    def onMenuColocalization(self,evt):
+    def setButtonSelection(self,eid,all=0):
         """
-        Method: onMenuColocalization()
-        Created: 03.11.2004, KP
-        Description: Callback function for menu item "Colocalization"
+        Method: showButtonSelection(eid)
+        Created: 01.06.2005, KP
+        Description: Select only the selected button
         """
-        return self.showTaskWindow("Colocalization",
-        Colocalization.Colocalization,
-        ColocalizationWindow.ColocalizationWindow,2,-1)
+        lst=[]
+        if all:
+            lst.extend(self.visIds)
+            lst.extend(self.taskIds)
+        else:
+            if eid in self.visIds:
+                lst.extend(self.visIds)
+            else:
+                lst.extend(self.taskIds)
+        tb=self.GetToolBar()
+        for i in lst:
+            flag=(i == eid)
+            tb.ToggleTool(i,flag)
+
         
-    def onMenuReslice(self,evt):
-        """
-        Method: onMenuReslice()
-        Created: 03.11.2004, KP
-        Description: Callback function for menu item "Reslice"
-        """
-        return self.showTaskWindow("Reslice",
-        Reslice.Reslice,
-        ResliceWindow.ResliceWindow,1,1)        
-        
-    def onMenuMergeChannels(self,evt):
-        """
-        Method: onMenuMergeChannels()
-        Created: 03.11.2004, KP
-        Description: Callback function for menu item Merge Channels
-        """
-        return self.showTaskWindow("Color Merging",
-        ColorMerging.ColorMerging,
-        ColorMergingWindow.ColorMergingWindow,2,-1)
-
-    def onMenuAdjustDataUnit(self,evt):
-        """
-        Method: onMenuAdjustDataUnit()
-        Created: 03.11.2004, KP
-        Description:
-        """
-        return self.showTaskWindow("Adjustment",
-        DataUnitProcessing.DataUnitProcessing,
-        AdjustmentWindow.AdjustmentWindow,1,1)
-
-    def onMenuRestoreDataUnit(self,evt):
-        """
-        Method: onMenuAdjustDataUnit()
-        Created: 03.11.2004, KP
-        Description:
-        """
-        return self.showTaskWindow("Restoration",
-        DataUnitProcessing.DataUnitProcessing,
-        RestorationWindow.RestorationWindow,1,1)
-
-
-    def menuVSIA(self,evt):
-        """
-        Method: menuVSIA()
-        Created: 25.11.2004, JV
-        Description:
-        """
-        return self.showTaskWindow("Visualization of Sparse Intensity Aggregations",
-        VSIA.VSIA,
-        VSIAWindow.VSIAWindow,1,1)
 
     def onMenuAbout(self,evt):
         """
