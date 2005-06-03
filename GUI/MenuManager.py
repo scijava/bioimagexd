@@ -82,12 +82,15 @@ class MenuManager:
     instance=None
     mainwin=None
     mapping={}
-    def __init__(self,mainwin):
+    def __init__(self,mainwin,**kws):
         """
         Method: __init__(parent,id,app)
         Created: 03.11.2004, KP
         Description: Initialization
         """
+        self.text=1
+        if kws.has_key("text"):
+           self.text=kws["text"]
         self.mainwin=mainwin
         # This is the menubar object that holds all the menus
         self.mapping={}
@@ -123,7 +126,11 @@ class MenuManager:
         """
         self.toolIds.append(toolid)
         if not self.itemBar:
-            self.itemBar = wx.ToolBar(self.visualizer.itemWin,-1,style=wx.TB_HORIZONTAL|wx.TB_TEXT)
+            if self.text:
+                flags=wx.TB_HORIZONTAL|wx.TB_TEXT
+            else:
+                flags=wx.TB_HORIZONTAL
+            self.itemBar = wx.ToolBar(self.visualizer.itemWin,-1,style=wx.TB_HORIZONTAL)
             self.itemBar.SetToolBitmapSize((32,32))
 
         self.visualizer.itemWin.Bind(wx.EVT_TOOL,func,id=toolid)

@@ -69,7 +69,13 @@ class LSMApplication(wx.App):
         Created: 10.1.2005, KP
         Description: Create the application's main window
         """
-        self.mainwin=GUI.MainWindow(None,-1,self)
+        bmp = wx.Image(os.path.join("Icons","splash2.jpg"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
+
+        splash=wx.SplashScreen(bmp,
+                                 wx.SPLASH_CENTRE_ON_SCREEN | wx.SPLASH_TIMEOUT,
+                                 3000, None, -1)
+        splash.Show()
+        self.mainwin=GUI.MainWindow(None,-1,self,splash)
         self.mainwin.Show(True)
         self.SetTopWindow(self.mainwin)
         return True
@@ -81,6 +87,7 @@ class LSMApplication(wx.App):
         Description: Run the wxPython main loop
         """
         self.MainLoop()
+
 
 if __name__=='__main__':
 

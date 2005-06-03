@@ -58,6 +58,8 @@ import sys
 import Colocalization
 import time
 
+from GUI import Events
+
 import TaskWindow
 
 def showColocalizationWindow(colocalizationUnit,mainwin):
@@ -110,7 +112,6 @@ class ColocalizationWindow(TaskWindow.TaskWindow):
         self.scatterGram=None
         self.htmlpage=None
         TaskWindow.TaskWindow.__init__(self,root,tb)
-        self.preview.setPreviewType("Colocalization")
         self.operationName="Colocalization"
         
         self.SetTitle("Colocalization")
@@ -178,9 +179,9 @@ class ColocalizationWindow(TaskWindow.TaskWindow):
 
         #self.colorChooser=ColorSelectionDialog(self.commonSettingsPanel,self.setColor)
         #self.commonSettingsSizer.Add(self.colorChooser,(1,0))
-        self.paletteLbl = wx.StaticText(self.commonSettingsPanel,-1,"Channel palette:")
+        self.paletteLbl = wx.StaticText(self,-1,"Channel palette:")
         self.commonSettingsSizer.Add(self.paletteLbl,(1,0))
-        self.colorBtn = ColorTransferEditor.CTFButton(self.commonSettingsPanel)
+        self.colorBtn = ColorTransferEditor.CTFButton(self)
         self.commonSettingsSizer.Add(self.colorBtn,(2,0))
 
         self.colocalizationPanel=wx.Panel(self.settingsNotebook,-1)
@@ -332,7 +333,8 @@ class ColocalizationWindow(TaskWindow.TaskWindow):
         self.updateBitDepth()
         TaskWindow.TaskWindow.doPreviewCallback(self,event)
         if self.scatterGram:
-            self.scatterGram.setZSlice(self.preview.z)
+            #self.scatterGram.setZSlice(self.preview.z)
+            self.scatterGram.setZSlice(0)
             #self.scatterGram.setTimepoint(self.preview.timePoint)
             self.scatterGram.update()
         self.updateHtmlPage()
@@ -345,7 +347,6 @@ class ColocalizationWindow(TaskWindow.TaskWindow):
         """
         TaskWindow.TaskWindow.setCombinedDataUnit(self,dataUnit)
         self.scatterGram.setDataunit(dataUnit)
-        self.Bind(EVT_TIMEPOINT_CHANGED,self.timePointChanged,id=self.preview.GetId())
         ctf = self.settings.get("ColocalizationColorTransferFunction")
         if self.colorBtn:
             self.colorBtn.setColorTransferFunction(ctf)
@@ -359,5 +360,7 @@ class ColocalizationWindow(TaskWindow.TaskWindow):
         Parameters:
                 event   Event object who'se getValue() returns the timepoint
         """
+
         tp=event.getValue()
+        print "timePointChanged",tp
         self.scatterGram.setTimepoint(tp)

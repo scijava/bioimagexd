@@ -234,6 +234,7 @@ class Visualizer:
         Created: 23.05.2005, KP
         Description: Handle size events
         """
+#        if not self.enabled:return
         wx.LayoutAlgorithm().LayoutWindow(self.parent, self.visWin)
         self.currentWindow.SetSize(self.visWin.GetSize())
                 
@@ -296,36 +297,36 @@ class Visualizer:
             print "%s already selected"%mode
             return
         self.mode=mode
-        
+
         if self.currMode:
             self.currMode.deactivate()
-            
+
         modeinst,modeclass,module=self.modes[mode]
         if not modeinst:
             modeinst=modeclass(self.visWin,self)
             self.modes[mode]=(modeinst,modeclass,module)
-        
-        # dataunit might have been changed so set it every time a 
+
+        # dataunit might have been changed so set it every time a
         # mode is loaded
-        
+
         self.currMode=modeinst
         self.currModeModule=module
-        
+
         if not modeinst.showSideBar():
             self.sidebarWin.SetDefaultSize((0,1024))
         else:
             self.sidebarWin.SetDefaultSize((200,1024))
-            
+
         self.currentWindow = modeinst.activate(self.sidebarWin)
         self.currentWindow.enable(self.enabled)
-        
-        if modeinst.dataUnit != self.dataUnit:
+
+        if self.dataUnit and modeinst.dataUnit != self.dataUnit:
             print "Re-setting dataunit"
-            modeinst.setDataUnit(self.dataUnit)    
-        wx.LayoutAlgorithm().LayoutWindow(self.parent, self.visWin)            
-        
+            modeinst.setDataUnit(self.dataUnit)
+        wx.LayoutAlgorithm().LayoutWindow(self.parent, self.visWin)
+
         self.currentWindow.Show()
-        
+
     def showItemToolbar(self,flag):
         """
         Method: showItemToolbar()
@@ -347,6 +348,9 @@ class Visualizer:
         self.enabled=flag
         if self.currentWindow:
             self.currentWindow.enable(flag)
+        if flag:        
+           wx.LayoutAlgorithm().LayoutWindow(self.parent, self.visWin)
+           self.currentWindow.SetSize(self.visWin.GetSize())
 
     def setBackground(self,r,g,b):
         """

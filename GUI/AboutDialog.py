@@ -117,7 +117,7 @@ aboutText = u"""
 <html>
 <body bgcolor="%(bgcolor)s">
 <center><h2>About BioImageXD</h2></center>
-
+<center><img src="Icons/logo_medium.jpg"></center><br>
 <p><b>BioImageXD</b> is a program for post-processing and visualizing
 data produced by a confocal laser scanning microscope.</p>
 
@@ -163,7 +163,7 @@ This version, however, is NOT yet a public release as specified by that license.
 This version is incomplete and intended for private testing purposes only. 
 You must NOT modify or distribute this program, the source code or parts of it to anyone. 
 You are also expected to keep detailed information of this software confidential, and give 
-feedback only to the developers whose contact information you have been given. Use of this version 
+feedback only to the developers whose contact information you have been given. Use of this version
 for scientific work is not recommended, because some features and functions have not yet been confirmed to 
 perform properly and correctly.
 </p>

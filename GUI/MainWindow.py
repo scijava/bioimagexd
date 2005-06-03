@@ -70,7 +70,7 @@ class MainWindow(wx.Frame):
     Created: 03.11.2004, KP
     Description: The main window for the LSM module
     """
-    def __init__(self,parent,id,app):
+    def __init__(self,parent,id,app,splash):
         """
         Method: __init__(parent,id,app)
         Created: 03.11.2004, KP
@@ -92,7 +92,7 @@ class MainWindow(wx.Frame):
             id=MenuManager.ID_TREE_WIN, id2=MenuManager.ID_TASK_WIN,
         )
 
-        self.menuManager=MenuManager.MenuManager(self)
+        self.menuManager=MenuManager.MenuManager(self,text=0)
         
         print MenuManager.ID_TREE_WIN
         self.treeWin=wx.SashLayoutWindow(self,MenuManager.ID_TREE_WIN,style=wx.RAISED_BORDER|wx.SW_3D)
@@ -126,7 +126,7 @@ class MainWindow(wx.Frame):
         self.app=app
         
         # Icon for the window
-        ico=reduce(os.path.join,["Icons","Selli.ico"])
+        ico=reduce(os.path.join,["Icons","logo.ico"])
         self.icon = wx.Icon(ico,wx.BITMAP_TYPE_ICO)
         self.SetIcon(self.icon)
 
@@ -150,16 +150,32 @@ class MainWindow(wx.Frame):
         self.showVisualization(self.infowidget)
         
         self.Bind(wx.EVT_SIZE, self.OnSize)
-        self.Show(True)        
-        
 
+
+        self.preloadWindows()
+        splash.Show(False)
+        self.Show(True)
+
+    def preloadWindows(self):
+        """
+        Method: preloadWindows()
+        Created: 03.6.2005, KP
+        Description: A method for preloading renderer so that it won't be as slow to
+                     show it
+        """
+        # The 0,1 means not processed mode and to just preload
+
+        self.loadVisualizer(None,"slices",0,1)
+        self.loadVisualizer(None,"gallery",0,1)
+        self.loadVisualizer(None,"3d",0,1)
+        self.showVisualization(self.infowidget)
 
     def onSashDrag(self, event):
         """
         Method: onSashDrag
         Created: 24.5.2005, KP
         Description: A method for laying out the window
-        """        
+        """
         if event.GetDragStatus() == wx.SASH_STATUS_OUT_OF_RANGE:
             return
 
@@ -179,7 +195,7 @@ class MainWindow(wx.Frame):
         
         wx.LayoutAlgorithm().LayoutWindow(self, self.visWin)
         self.visWin.Refresh()
-        
+
     def OnSize(self, event):
         wx.LayoutAlgorithm().LayoutWindow(self, self.visWin)
         
@@ -222,27 +238,33 @@ class MainWindow(wx.Frame):
         self.taskIds=[]
         self.visIds=[]
         print "adding tool"
-        #bmp = wx.Image(os.path.join(iconpath,"OpenLSM.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap()
-        #tb.DoAddTool(MenuManager.ID_OPEN,"Open",bmp,shortHelp="Open dataset series")
-        #wx.EVT_TOOL(self,MenuManager.ID_OPEN,self.onMenuOpen)
-        
-        #tb.AddSeparator()
+        bmp = wx.Image(os.path.join(iconpath,"open_dataset.jpg"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
+        tb.DoAddTool(MenuManager.ID_OPEN,"Open",bmp,shortHelp="Open dataset series")
+        wx.EVT_TOOL(self,MenuManager.ID_OPEN,self.onMenuOpen)
+        bmp = wx.Image(os.path.join(iconpath,"open_settings.jpg"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
+        tb.DoAddTool(MenuManager.ID_OPEN_SETTINGS,"Open settings",bmp,shortHelp="Open settings")
+#        wx.EVT_TOOL(self,MenuManager.ID_OPEN_SETTINGS,self.onMenuOpenSettings)
+        bmp = wx.Image(os.path.join(iconpath,"save_settings.jpg"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
+        tb.DoAddTool(MenuManager.ID_OPEN_SETTINGS,"Save settings",bmp,shortHelp="Save settings")
+#        wx.EVT_TOOL(self,MenuManager.ID_OPEN_SETTINGS,self.onMenuOpenSettings)
 
-        bmp = wx.Image(os.path.join(iconpath,"tree.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap()
+        tb.AddSeparator()
+
+        bmp = wx.Image(os.path.join(iconpath,"tree.jpg"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
         tb.DoAddTool(MenuManager.ID_SHOW_TREE,"File manager",bmp,kind=wx.ITEM_CHECK,shortHelp="Show file management tree")
         wx.EVT_TOOL(self,MenuManager.ID_SHOW_TREE,self.onMenuShowTree)       
         tb.ToggleTool(MenuManager.ID_SHOW_TREE,1)
         
         self.taskIds.append(MenuManager.ID_SHOW_TREE)
         
-        bmp = wx.Image(os.path.join(iconpath,"ColorCombination.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap()
+        bmp = wx.Image(os.path.join(iconpath,"task_merge.jpg"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
         tb.DoAddTool(MenuManager.ID_COLORMERGING,"Merge",bmp,kind=wx.ITEM_CHECK,shortHelp="Merge multiple datasets")        
         wx.EVT_TOOL(self,MenuManager.ID_COLORMERGING,self.onMenuShowTaskWindow)       
 
         self.taskIds.append(MenuManager.ID_COLORMERGING)
         
-        bmp = wx.Image(os.path.join(iconpath,"Colocalization.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap()
-        tb.DoAddTool(MenuManager.ID_COLOCALIZATION,"Colocalization",bmp,kind=wx.ITEM_CHECK,shortHelp="Calculate colocalization between channels")        
+        bmp = wx.Image(os.path.join(iconpath,"task_colocalization.jpg"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
+        tb.DoAddTool(MenuManager.ID_COLOCALIZATION,"Colocalization",bmp,kind=wx.ITEM_CHECK,shortHelp="Calculate colocalization between channels")
         wx.EVT_TOOL(self,MenuManager.ID_COLOCALIZATION,self.onMenuShowTaskWindow)       
 
         self.taskIds.append(MenuManager.ID_COLOCALIZATION)
@@ -250,14 +272,14 @@ class MainWindow(wx.Frame):
         #wx.Image(os.path.join(iconpath,"HIV.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Visualization of sparse intensity aggregations","Visualization of sparse intensity aggregations")
         #wx.EVT_TOOL(self,MenuManager.ID_VSIA,onMenuShowTaskWindow)
 
-        bmp = wx.Image(os.path.join(iconpath,"Adjustment.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap()
+        bmp = wx.Image(os.path.join(iconpath,"task_adjust.jpg"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
         tb.DoAddTool(MenuManager.ID_ADJUST,"Adjust",bmp,kind=wx.ITEM_CHECK,shortHelp="Adjust a dataset")        
         wx.EVT_TOOL(self,MenuManager.ID_ADJUST,self.onMenuShowTaskWindow)
 
         self.taskIds.append(MenuManager.ID_ADJUST)
 
-        bmp = wx.Image(os.path.join(iconpath,"Restoration.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap()
-        tb.DoAddTool(MenuManager.ID_RESTORE,"Restoration",bmp,kind=wx.ITEM_CHECK,shortHelp="Improve dataset quality")
+        bmp = wx.Image(os.path.join(iconpath,"task_process.jpg"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
+        tb.DoAddTool(MenuManager.ID_RESTORE,"Process",bmp,kind=wx.ITEM_CHECK,shortHelp="Improve dataset quality")
         wx.EVT_TOOL(self,MenuManager.ID_RESTORE,self.onMenuShowTaskWindow)
 
         self.taskIds.append(MenuManager.ID_RESTORE)
@@ -267,25 +289,25 @@ class MainWindow(wx.Frame):
         #wx.Image(os.path.join(iconpath,"Reslice.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Re-edit dataset series","Re-edit a dataset series")
         #wx.EVT_TOOL(self,MenuManager.ID_RESLICE,onMenuShowTaskWindow)
 
-        bmp = wx.Image(os.path.join(iconpath,"SlicePreview.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap()
+        bmp = wx.Image(os.path.join(iconpath,"view_slices.jpg"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
         tb.DoAddTool(MenuManager.ID_VIS_SLICES,"Slices",bmp,kind=wx.ITEM_CHECK,shortHelp="Preview dataset slice by slice")                
         wx.EVT_TOOL(self,MenuManager.ID_VIS_SLICES,self.onMenuVisualizer)
 
         self.visIds.append(MenuManager.ID_VIS_SLICES)
 
-        bmp = wx.Image(os.path.join(iconpath,"GalleryPreview.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap()
+        bmp = wx.Image(os.path.join(iconpath,"view_gallery.jpg"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
         tb.DoAddTool(MenuManager.ID_VIS_GALLERY,"Gallery",bmp,kind=wx.ITEM_CHECK,shortHelp="Gallery of dataset slices")                
         wx.EVT_TOOL(self,MenuManager.ID_VIS_GALLERY,self.onMenuVisualizer)
 
         self.visIds.append(MenuManager.ID_VIS_GALLERY)
 
-        bmp = wx.Image(os.path.join(iconpath,"SectionPreview.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap()
-        tb.DoAddTool(MenuManager.ID_VIS_SECTIONS,"Sections",bmp,kind=wx.ITEM_CHECK,shortHelp="Preview sections of dataset")                
+        bmp = wx.Image(os.path.join(iconpath,"view_sections.jpg"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
+        tb.DoAddTool(MenuManager.ID_VIS_SECTIONS,"Sections",bmp,kind=wx.ITEM_CHECK,shortHelp="Preview sections of dataset")
         wx.EVT_TOOL(self,MenuManager.ID_VIS_SECTIONS,self.onMenuVisualizer)
 
         self.visIds.append(MenuManager.ID_VIS_SECTIONS)
 
-        bmp = wx.Image(os.path.join(iconpath,"3DPreview.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap()
+        bmp = wx.Image(os.path.join(iconpath,"view_rendering.jpg"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
         tb.DoAddTool(MenuManager.ID_VIS_3D,"3D",bmp,kind=wx.ITEM_CHECK,shortHelp="Render dataset in 3D")                
         wx.EVT_TOOL(self,MenuManager.ID_VIS_3D,self.onMenuVisualizer)
 
@@ -293,7 +315,7 @@ class MainWindow(wx.Frame):
 
         tb.AddSeparator()
         
-        bmp = wx.Image(os.path.join(iconpath,"Render.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap()
+        bmp = wx.Image(os.path.join(iconpath,"task_animator.jpg"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
         tb.DoAddTool(MenuManager.ID_RENDER,"Animator",bmp,shortHelp="Render the dataset using Animator")                
         wx.EVT_TOOL(self,MenuManager.ID_RENDER,self.onMenuRender)
 
@@ -449,7 +471,7 @@ class MainWindow(wx.Frame):
         Description: Callback function for reloading vis modules
         """
         self.visualizer.reloadModules()
-        
+
     def onMenuVisualizer(self,evt):
         """
         Method: onMenuVisualizer()
@@ -465,16 +487,18 @@ class MainWindow(wx.Frame):
             mode="sections"
         else:
             mode="3d"
-        
-        
+
+
         self.setButtonSelection(eid)
-            
+
         self.onMenuShowTree(None)
 
         # If a visualizer is already running, just switch the mode
+        dataunit = selectedFiles[0]
         if self.visualizer:
             self.visualizer.enable(0)
             self.visualizer.setVisualizationMode(mode)
+            self.visualizer.setDataUnit(dataunit)
             self.showVisualization(self.visPanel)
             self.visualizer.enable(1)
             #self.showVisualization(self.visWin)
@@ -500,12 +524,12 @@ class MainWindow(wx.Frame):
         dataunit = selectedFiles[0]
         self.loadVisualizer(dataunit,mode,0)
         
-    def loadVisualizer(self,dataunit,mode,processed=0):
+    def loadVisualizer(self,dataunit,mode,processed=0,preload=0):
         """
         Method: loadVisualizer
         Created: 25.05.2005, KP
         Description: Load a dataunit and a given mode to visualizer
-        """        
+        """
         if isinstance(dataunit,CombinedDataUnit):
             print "Is instance of combined dataunit"
             self.processed=1
@@ -521,14 +545,16 @@ class MainWindow(wx.Frame):
             self.renderMenu.Enable(MenuManager.ID_RELOAD,1)
         self.visualizer.enable(0)
 
-        self.visualizer.setDataUnit(dataunit)
-        
-        self.visualizer.setVisualizationMode(mode)        
-            
+        if not preload:
+            self.visualizer.setDataUnit(dataunit)
+
+        self.visualizer.setVisualizationMode(mode)
+
+        if not preload:
         #self.showVisualization(self.visWin)
-        self.showVisualization(self.visPanel)
-        self.visualizer.enable(1)
-                
+            self.showVisualization(self.visPanel)
+            self.visualizer.enable(1)
+
 
     def onMenuRender(self,evt):
         """

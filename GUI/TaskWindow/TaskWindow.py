@@ -337,8 +337,6 @@ class TaskWindow(scrolled.ScrolledPanel):
         print "Closing..."
         self.cancelled=1
         # These calls are necessary to have proper functioning in windows
-        self.preview.Show(0)
-        self.preview.Destroy()
         self.Destroy()
         #self.EndModal(wx.ID_OK)
 
