@@ -42,7 +42,7 @@ def getName():return "slices"
 def getClass():return SlicesMode
 def getImmediateRendering(): return True
 def getRenderingDelay(): return 1500
-
+def showZoomToolbar(): return True
         
 class SlicesMode:
     def __init__(self,parent,visualizer):
@@ -56,6 +56,25 @@ class SlicesMode:
         self.preview=None
         self.init=1
         self.dataUnit=None
+        
+        
+    def zoomToFit(self):
+        """
+        Method: zoomToFit()
+        Created: 05.06.2005, KP
+        Description: Zoom the dataset to fit the available screen space
+        """
+        if self.preview:
+            self.preview.renderpanel.zoomToFit()
+    
+    def setZoomFactor(self,factor):
+        """
+        Method: setZoomFactor(factor)
+        Created: 05.06.2005, KP
+        Description: Set the factor by which the image is zoomed
+        """
+        if self.preview:
+            self.preview.renderpanel.setZoomFactor(factor)
         
     def showSideBar(self):
         """
@@ -109,7 +128,7 @@ class SlicesMode:
             print "Generating preview"
             self.preview=PreviewFrame.IntegratedPreview(self.parent,
             previewsize=(512,512),pixelvalue=False,renderingpreview=False,
-            zoom=False,zslider=True,timeslider=False,scrollbars=False)
+            zoom=False,zslider=True,timeslider=False,scrollbars=True)
         return self.preview
             
         
@@ -146,3 +165,11 @@ class SlicesMode:
         """
         print "Setting previewed timepoint"
         self.preview.setTimepoint(tp)
+        
+    def saveSnapshot(self,filename):
+        """
+        Method: saveSnapshot(filename)
+        Created: 05.06.2005, KP
+        Description: Save a snapshot of the scene
+        """      
+        self.preview.saveSnapshot(filename)

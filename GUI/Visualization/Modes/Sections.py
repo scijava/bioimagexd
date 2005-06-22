@@ -42,7 +42,7 @@ def getName():return "sections"
 def getClass():return SectionsMode
 def getImmediateRendering(): return False
 def getRenderingDelay(): return 500
-    
+def showZoomToolbar(): return True    
 
         
 class SectionsMode:
@@ -97,7 +97,7 @@ class SectionsMode:
         """
         if not self.sectionsPanel:
             x,y=self.visualizer.visWin.GetSize()
-            self.sectionsPanel=PreviewFrame.SectionsPanel(self.parent,size=(x,y))
+            self.sectionsPanel=PreviewFrame.SectionsPanel(self.parent,self.visualizer,size=(x,y))
         return self.sectionsPanel
         
     def deactivate(self):
@@ -116,12 +116,8 @@ class SectionsMode:
         Created: 25.05.2005, KP
         Description: Set the dataunit to be visualized
         """
-        unit=DataUnit.CorrectedSourceDataUnit("preview")
-        unit.addSourceDataUnit(dataUnit)
-        unit.setModule(DataUnitProcessing.DataUnitProcessing())
-        
-        self.sectionsPanel.setDataUnit(unit)
-        self.dataUnit=unit
+        self.sectionsPanel.setDataUnit(dataUnit)
+        self.dataUnit=dataUnit
         
     def setTimepoint(self,tp):
         """

@@ -40,7 +40,8 @@ def getName():return "gallery"
 def getClass():return GalleryMode
 def getImmediateRendering(): return False
 def getRenderingDelay(): return 500
-        
+def showZoomToolbar(): return True
+    
 class GalleryMode:
     def __init__(self,parent,visualizer):
         """
@@ -52,7 +53,26 @@ class GalleryMode:
         self.visualizer=visualizer
         self.galleryPanel=None
         self.timepoint=0
+        self.enabled=1
         self.dataUnit=None
+        
+    def zoomToFit(self):
+        """
+        Method: zoomToFit()
+        Created: 05.06.2005, KP
+        Description: Zoom the dataset to fit the available screen space
+        """
+        if self.galleryPanel:
+            self.galleryPanel.zoomToFit()
+    
+    def setZoomFactor(self,factor):
+        """
+        Method: setZoomFactor(factor)
+        Created: 05.06.2005, KP
+        Description: Set the factor by which the image is zoomed
+        """
+        if self.galleryPanel:
+            self.galleryPanel.setZoomFactor(factor)        
         
     def showSideBar(self):
         """
@@ -128,6 +148,7 @@ class GalleryMode:
         """
         self.galleryPanel.setDataUnit(dataUnit)
         self.dataUnit=dataUnit
+        self.galleryPanel.drawScaleBar(10)
         
     def setTimepoint(self,tp):
         """
@@ -138,3 +159,10 @@ class GalleryMode:
         self.timepoint=tp
         self.galleryPanel.setTimepoint(tp)
 
+    def saveSnapshot(self,filename):
+        """
+        Method: saveSnapshot(filename)
+        Created: 05.06.2005, KP
+        Description: Save a snapshot of the scene
+        """      
+        self.galleryPanel.saveSnapshot(filename)

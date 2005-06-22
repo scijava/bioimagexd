@@ -1,7 +1,7 @@
 # -*- coding: iso-8859-1 -*-
 
 """
- Unit: SlicesMode
+ Unit: Rendering
  Project: BioImageXD
  Created: 28.04.2005, KP
  Description:
@@ -33,6 +33,8 @@ __author__ = "BioImageXD Project"
 __version__ = "$Revision: 1.9 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
+import wx
+
 import DataUnit
 import DataUnitProcessing
 
@@ -56,7 +58,7 @@ def getName():return "3d"
 def getClass():return RenderingMode
 def getImmediateRendering(): return False
 def getRenderingDelay(): return 1000
-
+def showZoomToolbar(): return True
 
         
 class RenderingMode:
@@ -121,7 +123,9 @@ class RenderingMode:
         Description: Set the mode of visualization
         """
         self.sidebarWin=sidebarwin
-        if not self.wxrenwin:
+        # If we're preloading, don't create the render window
+        # since it will mess up the rendering
+        if not self.wxrenwin and not self.visualizer.preload:
             self.wxrenwin = VisualizerWindow.VisualizerWindow(self.parent,size=(512,512))
             self.wxrenwin.Render()
             self.GetRenderWindow=self.wxrenwin.GetRenderWindow
@@ -132,20 +136,34 @@ class RenderingMode:
             self.getRenderer=self.GetRenderer=self.wxrenwin.getRenderer
 
         if not self.configPanel:
-            self.configPanel = VisualizationFrame.ConfigurationPanel(self.sidebarWin,self.visualizer,self)
+            # When we embed the sidebar in a sashlayoutwindow, the size
+            # is set correctly
+            self.container = wx.SashLayoutWindow(self.sidebarWin)
+            
+            self.configPanel = VisualizationFrame.ConfigurationPanel(self.container,self.visualizer,self)
             self.configPanel.Show()
         else:
             self.configPanel.Show()
             
+        if self.visualizer.preload:
+            return self.parent
         if not self.lightsManager:
-            self.lightsManager = Lights.LightManager(self, self.wxrenwin, self.getRenderer(), mode='raymond')
+            self.lightsManager = Lights.LightManager(self.parent, self.wxrenwin, self.getRenderer(), mode='raymond')
 
         mgr=self.menuManager
         
         mgr.enable(MenuManager.ID_LIGHTS,self.configPanel.onConfigureLights)
         mgr.enable(MenuManager.ID_RENDERWIN,self.configPanel.onConfigureRenderwindow)
-
+        
         return self.wxrenwin
+        
+    def saveSnapshot(self,filename):
+        """
+        Method: saveSnapshot(filename)
+        Created: 05.06.2005, KP
+        Description: Save a snapshot of the scene
+        """      
+        self.wxrenwin.save_screen(filename)
         
     def Render(self):
         """
@@ -187,7 +205,8 @@ class RenderingMode:
         Created: 24.05.2005, KP
         Description: Unset the mode of visualization
         """
-        self.wxrenwin.Show(0)       
+        if self.wxrenwin:
+            self.wxrenwin.Show(0)       
         self.configPanel.Show(0) 
         
         mgr=self.menuManager
