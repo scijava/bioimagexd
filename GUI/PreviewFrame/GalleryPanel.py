@@ -37,6 +37,8 @@ from wx.lib.statbmp  import GenStaticBitmap as StaticBitmap
 import ImageOperations
 import vtk
 
+import math
+
 class GalleryPanel(wx.ScrolledWindow):
     """
     Class: GalleryPanel
@@ -54,12 +56,14 @@ class GalleryPanel(wx.ScrolledWindow):
         self.bmp=None
         self.bgcolor=(127,127,127)
         print "size=",size
+        self.enabled=1
         self.slices=[]
         
         if kws.has_key("slicesize"):
             self.sliceSize=kws["slicesize"]
         else:
             self.sliceSize=(128,128)
+        self.originalSliceSize=self.sliceSize
         
         x,y=size
         self.paintSize=size
@@ -72,10 +76,55 @@ class GalleryPanel(wx.ScrolledWindow):
         self.scrollsize=32
         self.scrollTo=None
         self.dataUnit=None
+        
+        self.scaleBar = None
+        self.scaleBarWidth = 0
+        self.voxelSize=(0,0,0)
+
+        
         self.timepoint=0
         self.paintPreview()
         self.Bind(wx.EVT_PAINT,self.OnPaint)
         self.Bind(wx.EVT_SIZE,self.onSize)
+        
+    def drawScaleBar(self,width):
+        """
+        Method: drawScaleBar(width,voxelsize)
+        Created: 05.06.2005, KP
+        Description: Draw a scale bar of given size
+        """    
+        self.scaleBarWidth = width
+        f=self.sliceSize[0]/float(self.dims[0])
+        print "Scale factor for gallery=",f
+        self.scaleBar = ImageOperations.drawScaleBar(64,0,self.voxelSize,(0,0,0),f)
+        
+    def zoomToFit(self):
+        """
+        Method: zoomToFit()
+        Created: 05.06.2005, KP
+        Description: Zoom the dataset to fit the available screen space
+        """
+        pass
+        
+    def setZoomFactor(self,factor):
+        """
+        Method: setZoomFactor(factor)
+        Created: 05.06.2005, KP
+        Description: Set the factor by which the image is zoomed
+        """
+        x,y=self.originalSliceSize
+        x*=factor
+        y*=factor        #for preview in [self.xypreview,self.xzpreview,self.yzpreview]:
+        #    preview.setTimepoint(tp)
+        #    preview.updatePreview(1)
+        #self.xypreview.setTimepoint(tp)
+        
+
+        self.sliceSize=(x,y)
+        self.slices=[]
+        self.drawScaleBar(self.scaleBarWidth)
+        self.updatePreview()
+        self.Refresh()
 
     def setBackground(self,r,g,b):
         """
@@ -102,6 +151,11 @@ class GalleryPanel(wx.ScrolledWindow):
         Description: Sets the dataunit to display
         """    
         self.dataUnit=dataunit
+        if self.visualizer.getProcessedMode():
+            dataunit=dataunit.getSourceDataUnits()[0]
+        
+        self.dims=dataunit.getDimensions()
+        self.voxelSize=dataunit.getVoxelSize()
         print "Got dataunit"
         #print "Got image",image
         #self.imagedata=image
@@ -118,7 +172,6 @@ class GalleryPanel(wx.ScrolledWindow):
             image=self.dataUnit.doPreview(-2,1,self.timepoint)
             ctf = self.dataUnit.getSourceDataUnits()[0].getColorTransferFunction()
             print "Got data ",image
-
         else:
             image=self.dataUnit.getTimePoint(timepoint)
             ctf=self.dataUnit.getColorTransferFunction()
@@ -158,12 +211,13 @@ class GalleryPanel(wx.ScrolledWindow):
         w,h=self.sliceSize
         
         xreq=self.size[0]//(w+6)
-        yreq=(z//(xreq+1))
+        yreq=math.ceil(z/float(xreq))
         print "Need %d x %d grid to show the dataset"%(xreq,yreq)
         
+
         # allow for 3 pixel border
         x=12+(xreq)*(w+6)
-        y=12+(1+yreq)*(h+6)
+        y=12+(yreq)*(h+6)
         
         self.rows=yreq
         self.cols=xreq
@@ -264,8 +318,6 @@ class GalleryPanel(wx.ScrolledWindow):
         Created: 24.03.2005, KP
         Description: Paints the image to a DC
         """
-
-        print "Drawing gray"
         dc = self.dc = wx.BufferedDC(wx.ClientDC(self),self.buffer)
         dc.BeginDrawing()
         dc.SetBackground(wx.Brush(wx.Colour(*self.bgcolor)))
@@ -293,6 +345,26 @@ class GalleryPanel(wx.ScrolledWindow):
             if col>=self.cols:
                 col=0
                 row+=1
+        
+        y=9+(self.rows)*(3+self.sliceSize[1])
+        if self.scaleBar:
+            print "Drawing scalebar at ",5,y-40
+            dc.DrawBitmap(self.scaleBar,12,y-30,True)
+
 
         dc.EndDrawing()
         self.dc = None
+        
+    def saveSnapshot(self,filename):
+        """
+        Method: saveSnapshot(filename)
+        Created: 05.06.2005, KP
+        Description: Save a snapshot of the scene
+        """      
+        ext=filename.split(".")[-1].lower()
+        if ext=="jpg":ext="jpeg"
+        if ext=="tif":ext="tiff"
+        mime="image/%s"%ext
+        img=self.buffer.ConvertToImage()
+        img.SaveMimeFile(filename,mime)
+        

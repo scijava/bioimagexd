@@ -78,12 +78,27 @@ class WxPreviewPanel(wx.ScrolledWindow):
         self.zoomFactor=1
         self.singleslice=0
         self.scrollTo=None
+        self.scaleBar = None
+        self.scaleBarWidth = 0
+        self.voxelSize=(1,1,1)
+        
         self.paintPreview()
         self.Bind(wx.EVT_PAINT,self.OnPaint)
 
         self.Bind(wx.EVT_LEFT_DOWN,self.markRubberband)
         self.Bind(wx.EVT_MOTION,self.updateRubberband)
         self.Bind(wx.EVT_LEFT_UP,self.zoomToRubberband)
+        
+    def drawScaleBar(self,width,voxelsize):
+        """
+        Method: drawScaleBar(width,voxelsize)
+        Created: 05.06.2005, KP
+        Description: Draw a scale bar of given size
+        """    
+        self.scaleBarWidth = width
+        self.voxelSize = voxelsize
+        print "self.zoomFactor=",self.zoomFactor
+        self.scaleBar = ImageOperations.drawScaleBar(0,self.scaleBarWidth,self.voxelSize,(0,0,0),self.zoomFactor)
 
     def setSingleSliceMode(self,mode):
         """
@@ -212,6 +227,7 @@ class WxPreviewPanel(wx.ScrolledWindow):
         if f>10:
             f=10
         self.zoomFactor=f
+        self.drawScaleBar(self.scaleBarWidth,self.voxelSize)
         self.Scroll(0,0)
         
     def zoomToFit(self):
@@ -340,6 +356,7 @@ class WxPreviewPanel(wx.ScrolledWindow):
         dc.BeginDrawing()
 
         dc.DrawBitmap(bmp,0,0,True)
+        w,h=bmp.GetWidth(),bmp.GetHeight()
         self.bmp=bmp
 
         if self.rubberstart and self.rubberend:
@@ -357,6 +374,9 @@ class WxPreviewPanel(wx.ScrolledWindow):
             dc.SetPen(wx.Pen(wx.Colour(255,0,0),2))
             dc.SetBrush(wx.TRANSPARENT_BRUSH)
             dc.DrawRectangle(x1,y1,d1,d2)
+        
+        if self.scaleBar:
+            dc.DrawBitmap(self.scaleBar,5,h-40,True)
         
         dc.EndDrawing()
         self.dc = None

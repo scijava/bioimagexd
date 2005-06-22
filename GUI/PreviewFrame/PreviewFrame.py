@@ -150,7 +150,7 @@ class PreviewFrame(wx.Panel):
 
         self.renderpanel = WxPreviewPanel.WxPreviewPanel(self,size=size,scroll=self.show["SCROLL"],zoomx=self.zoomx,zoomy=self.zoomy)
         self.sizer.Add(self.renderpanel,(0,0))
-
+        
         # The preview can be no larger than these
         self.maxX,self.maxY=size
         self.xdim,self.ydim,self.zdim=0,0,0
@@ -200,78 +200,6 @@ class PreviewFrame(wx.Panel):
         self.settings.set("PreviewedDataset",item)
         self.updatePreview(1)
         
-    def zoomObject(self,evt):
-        """
-        Method: zoomObject()
-        Created: 19.03.2005, KP
-        Description: Lets the user select the part of the object that is zoomed
-        """
-        self.renderpanel.startZoom()
-        
-    def zoomOut(self,evt):
-        """
-        Method: zoomOut()
-        Created: 19.03.2005, KP
-        Description: Makes the zoom factor smaller
-        """
-        return self.zoomComboDirection(-1)
-        
-    def zoomToComboSelection(self,evt):
-        """
-        Method: zoomToComboSelection()
-        Created: 19.03.2005, KP
-        Description: Sets the zoom according to the combo selection
-        """
-        return self.zoomComboDirection(0)        
-        
-    def zoomComboDirection(self,dir):
-        """
-        Method: zoomComboDirection()
-        Created: 21.02.2005, KP
-        Description: Makes the zoom factor larger/smaller based on values in the zoom combobox
-        """
-        pos=self.zoomCombo.GetSelection()
-        s=self.zoomCombo.GetString(pos)
-        if dir>0 and pos >= self.zoomCombo.GetCount():
-            #print "Zoom at max: ",s
-            return
-        if dir<0 and pos==0:
-            #print "Zoom at min: ",s
-            return
-        pos+=dir
-        s=self.zoomCombo.GetString(pos)
-        factor = float(s[:-1])/100.0
-        self.zoomCombo.SetSelection(pos)
-        self.renderpanel.setZoomFactor(factor)
-        #print "Set zoom factor to ",s,"=",factor
-        self.updatePreview(1)
-        
-        
-    def zoomIn(self,evt,factor=-1):
-        """
-        Method: zoomIn()
-        Created: 21.02.2005, KP0
-        Description: Makes the zoom factor larger 
-        """
-        return self.zoomComboDirection(1)
-              
-    def zoomToFit(self,evt):
-        """
-        Method: zoomToFit()
-        Created: 21.02.2005, KP
-        Description: Sets the zoom factor to fit the image into the preview window
-        """
-        self.renderpanel.zoomToFit()
-        self.updatePreview(1)
-        
-    def zoomTo100(self,evt):
-        """
-        Method: zoomTo100
-        Created: 21.02.2005, KP
-        Description: Sets the zoom factor to 1
-        """
-        self.renderpanel.setZoomFactor(1.0)
-        self.updatePreview(1)
                 
         
     def getVoxelValue(self,event):
@@ -285,7 +213,7 @@ class PreviewFrame(wx.Panel):
         x,y=event.GetPosition()
         x,y=self.renderpanel.getScrolledXY(x,y)
         
-        evt=VoxelEvent(myEVT_VOXEL,self.GetId())
+        evt=Events.VoxelEvent(Events.myEVT_VOXEL,self.GetId())
         z=self.z
         dims=[x,y,z]
         rx,ry,rz=dims
@@ -314,9 +242,9 @@ class PreviewFrame(wx.Panel):
         
         if self.rgbMode==0:
             scalar=self.currentImage.GetScalarComponentAsDouble(x,y,self.z,0)
-	    val=[0,0,0]
+            val=[0,0,0]
             self.currentCt.GetColor(scalar,val)
-	    r,g,b=val
+            r,g,b=val
             r*=255
             g*=255
             b*=255
@@ -358,6 +286,7 @@ class PreviewFrame(wx.Panel):
             newz=val
         if self.z!=newz:
             self.z=newz
+#            print "Sending zslice changed event"
             evt=Events.ChangeEvent(Events.myEVT_ZSLICE_CHANGED,self.GetId())
             evt.setValue(newz)
             self.GetEventHandler().ProcessEvent(evt)
@@ -450,6 +379,7 @@ class PreviewFrame(wx.Panel):
         print "Setting renderpanel to %d,%d"%(x,y)
         self.renderpanel.SetSize((x,y))
         self.renderpanel.Layout()
+        
 
         if selectedItem!=-1:
             self.setSelectedItem(selectedItem)
@@ -458,12 +388,15 @@ class PreviewFrame(wx.Panel):
             #print "Got zoom factor",
             if self.zoomFactor == ZOOM_TO_FIT:
                 #print "Factor = zoom to fit"
-                self.zoomToFit(None)
+                self.renderpanel.zoomToFit()
+                self.updatePreview(1)
             else:
                 #print "Factor = ",self.zoomFactor
                 self.renderpanel.setZoomFactor(self.zoomFactor)
                 self.updatePreview(1)
-        
+
+        self.renderpanel.drawScaleBar(10,self.dataUnit.getSourceDataUnits()[0].getVoxelSize())
+
         self.Layout()
         self.sizer.Fit(self)
         self.sizer.SetSizeHints(self)
@@ -471,30 +404,23 @@ class PreviewFrame(wx.Panel):
     def updatePreview(self,renew=1):
         """
         Method: updatePreview(renew=1)
-        Created: 03.11.2004, KP
+        Created: 03.11.2004,MIP KP
         Description: Update the preview
         Parameters:
             renew    Whether the method should recalculate the images
         """
         raise "updatePreview() called from the base class"
        
-    def captureSlice(self,event):
+    def saveSnapshot(self,filename):
         """
-        Method: captureSlice(event)
+        Method: saveSnapshot(filename)
         Created: 19.03.2005, KP
-        Description: Method to capture the currently displayed optical slice
+        Description: Method to save the currently displayed screen
         """        
         data=self.finalImage
         if not data:
             raise "No data"
-        wc="PNG file|*.png|JPEG file|*.jpeg|TIFF file|*.tiff|BMP file|*.bmp"
-        initFile="%s_%d.png"%(self.dataUnit.getName(),self.z)
-        dlg=wx.FileDialog(self.parent,"Save optical slice to file",defaultFile=initFile,wildcard=wc,style=wx.SAVE)
-        filename=None
-        if dlg.ShowModal()==wx.ID_OK:
-            filename=dlg.GetPath()
-            ImageOperations.saveImageAs(data,self.z,filename)
-            
+        ImageOperations.saveImageAs(data,self.z,filename)
             
 
 
