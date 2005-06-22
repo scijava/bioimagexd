@@ -30,6 +30,7 @@ __version__ = "$Revision: 1.93 $"
 __date__ = "$Date: 2005/01/13 14:09:15 $"
 
 import Interpolation
+import ImageOperations
 
 import vtk
 
@@ -72,11 +73,12 @@ class CorrectedSourceDataUnit(CombinedDataUnit):
         Description: Interpolates intensity transfer functions for timepoints 
                      between a given list of timepoints
         """
-        if len(self.interpolationTimePoints)<2:
+        interpolationTimepoints=self.settings.get("InterpolationTimepoints")
+        if len(interpolationTimepoints)<2:
             Logging.error("Cannot interpolate from one timepoint",
             "You need to specify at least two timepoints for interpolation")
             return
-        lst=self.interpolationTimePoints[:]
+        lst=interpolationTimepoints[:]
         while -1 in lst:
             lst.remove(-1)
         for i in range(1,len(lst)):
@@ -101,19 +103,29 @@ class CorrectedSourceDataUnit(CombinedDataUnit):
         if timepoint1>timepoint2:
             timepoint2,timepoint1=timepoint1,timepoint2
         n=timepoint2-timepoint1
-        params1=self.intensityTransferFunctions[timepoint1].getAsParameterList()
-        params2=self.intensityTransferFunctions[timepoint2].getAsParameterList()
+        itf1=self.settings.getCounted("IntensityTransferFunctions",timepoint1)
+        itf2=self.settings.getCounted("IntensityTransferFunctions",timepoint2)
+        params1=ImageOperations.getAsParameterList(itf1)
+        params2=ImageOperations.getAsParameterList(itf2)
         # There are n-1 timepoints between the specified timepoints
         params=Interpolation.interpolate(params1,params2,n-1)
         print "params1=",params1
-        for i in params:
-            print i
         print "params2=",params2
         print "Interpolated %d new paramlists"%len(params)
         for i in range(n-1):
             print "Setting new parameters for timepoint ",timepoint1+i+1
-            iTF=self.intensityTransferFunctions[timepoint1+i+1]
-            iTF.setFromParameterList(params[i])
+            iTF=self.settings.getCounted("IntensityTransferFunctions",timepoint1+i+1)
+            ImageOperations.setFromParameterList(iTF,params[i])
+            self.settings.setCounted("IntensityTransferFunctions",timepoint1+i+1,iTF)
+       
+
+    def getColorTransferFunction(self):
+        """
+        Method: getColorTransferFunction()
+        Created: 21.06.2005, KP
+        Description: Returns the ctf of the source dataunit
+        """
+        return self.original.getColorTransferFunction()
        
     def addSourceDataUnit(self,dataUnit):
         """
@@ -125,7 +137,10 @@ class CorrectedSourceDataUnit(CombinedDataUnit):
         self.setOriginal(dataUnit)    
         CombinedDataUnit.addSourceDataUnit(self,dataUnit)
         self.name = "Processed_%s"%dataUnit.getName()
+        print "Updating settings for corrected source dataunit"
+        #print dataUnit.getColorTransferFunction()
         self.updateSettings()
+        #print self.settings.get("ColorTransferFunction")
   
     def copyIntensityTransferFunctionToAll(self,iTF):
         """
@@ -147,3 +162,10 @@ class CorrectedSourceDataUnit(CombinedDataUnit):
         return SingleUnitProcessingSettings
 
         
+    def __str__(self):
+        """
+        Method: __str__
+        Created: 02.06.2005, KP
+        Description: Return string representation of self
+        """
+        return str(self.__class__)

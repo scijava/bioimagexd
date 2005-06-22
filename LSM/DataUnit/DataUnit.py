@@ -85,11 +85,6 @@ class DataUnit:
         if not self.dataSource and not self.ctf:
             print "Using no CTF"
             return None
-            #print "No datasource, using ctf 0"
-            ctf = vtk.vtkColorTransferFunction()
-            ctf.AddRGBPoint(255,0,0,0)
-            #self.ctf = ctf
-            return ctf
         if not self.ctf:
             self.ctf=self.dataSource.getColorTransferFunction()
 #            print "Got color from datasource:",self.ctf
@@ -113,15 +108,17 @@ class DataUnit:
         Description: Sets the settings of this object based on the datasource
         """
         if not self.settings:
+            print "No settings, wont update"
             return
-        ctf = self.getColorTransferFunction()
-        # Watch out not to overwrite the palette
-        #self.ctf = self.settings.get("ColorTransferFunction")
-        #ctf = self.ctf
-        
-        self.settings.set("ColorTransferFunction",ctf)
-        if ctf and self.settings.get("Type")=="ColorMergingSettings":
-            self.settings.set("MergingColorTransferFunction",ctf)
+        if not (self.settings and self.settings.get("ColorTransferFunction")):
+            ctf = self.getColorTransferFunction()
+            # Watch out not to overwrite the palette
+            #self.ctf = self.settings.get("ColorTransferFunction")
+            #ctf = self.ctf
+            #print "Setting ctf to ",ctf
+            self.settings.set("ColorTransferFunction",ctf)
+            if ctf and self.settings.get("Type")=="ColorMergingSettings":
+                self.settings.set("MergingColorTransferFunction",ctf)
                 
 
         if self.dataSource:

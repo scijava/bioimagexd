@@ -217,6 +217,7 @@ class CombinedDataUnit(DataUnit.DataUnit):
                 # We get the processed timepoint from each of the source data 
                 # units
                 #self.module.setSettings(self.settings)
+                self.module.setTimepoint(timePoint)                
                 for dataunit in self.sourceunits:
                     image=dataunit.getTimePoint(timePoint)
                     self.module.addInput(dataunit,image)
@@ -252,7 +253,9 @@ class CombinedDataUnit(DataUnit.DataUnit):
             # and path of the dataunit
             value=str(self.sourceunits[i])
             self.settings.setCounted(key,i,value)
-
+        
+        print "Writing settings",self.settings
+        print "writing ctf=",self.settings.get("ColorTransferFunction")
         self.settings.writeTo(parser)
         writer.write()
 
@@ -322,6 +325,7 @@ class CombinedDataUnit(DataUnit.DataUnit):
             #print "Setting settings=",self.settings
             # Go through all the source datasets for the color merging
             self.module.setSettings(self.settings)
+            self.module.setTimepoint(timePoint)
             for dataunit in self.sourceunits:
                 image=dataunit.getTimePoint(timePoint)
                 self.module.addInput(dataunit,image)
@@ -379,7 +383,7 @@ class ColorMergingDataUnit(CombinedDataUnit):
         Created: 02.06.2005, KP
         Description: Return string representation of self
         """
-	return str(self.__class__)
+        return str(self.__class__)
 
 class ColocalizationDataUnit(CombinedDataUnit):
     def getSettingClass(self):

@@ -192,6 +192,7 @@ class DataUnitSettings:
                         value=parser.get(key,ckey)
                         if ser:
                             value=self.deserialize(okey,value)
+                            print "deserialized",value
                         self.set(ckey,value)
                         self.counted[key]=i
                     except:
@@ -206,6 +207,7 @@ class DataUnitSettings:
                     
                     if ser:
                         value=self.deserialize(key,value)
+                        print "deserialized",key,value
                     self.set(key,value)
                 except:
                     pass
@@ -218,7 +220,9 @@ class DataUnitSettings:
         Description: Write a key and it's value to parser
         """    
         nkey="%s[%d]"%(key,n)
-        if not (key in self.settings or nkey in self.settings):
+        if not (key in self.settings or nkey in self.settings) and not (key in self.private or nkey in self.private):
+            print "self.get(ctf)=",self.get("ColorTransferFunction")
+            print "neither ",key,"nor",nkey,"in ",self.settings.keys()
             return
         okey=key
         if n!=-1:
@@ -231,6 +235,7 @@ class DataUnitSettings:
             value=self.serialize(okey,value)
         if not parser.has_section(okey):
             parser.add_section(okey)
+        print "value of ",okey,"is ",value
         parser.set(okey,key,value)
         
                 
@@ -249,6 +254,7 @@ class DataUnitSettings:
                 for i in range(self.counted[key]+1):
                     self.writeKey(key,parser,i)
             else:
+                print "Writing key ",key
                 self.writeKey(key,parser)                
                
         if len(self.counted.keys()):
@@ -507,6 +513,17 @@ class SingleUnitProcessingSettings(DataUnitSettings):
         self.register("SolitaryProcessingThreshold")
         self.register("InterpolationTimepoints")
         self.set("Type","SingleUnitProcessingSettings")
+        
+        self.registerPrivate("ColorTransferFunction",1)        
+        self.registerCounted("Source")
+        self.register("VoxelSize")
+        self.register("Spacing")
+        #self.register("Origin")
+        self.register("Dimensions")
+        self.register("Type")
+        self.register("Name")
+        self.register("BitDepth")
+        
         #ctf = vtk.vtkColorTransferFunction()
         #ctf.AddRGBPoint(0,0,0,0)
         #ctf.AddRGBPoint(255, 0.7, 0.7, 0.7)
@@ -519,6 +536,8 @@ class SingleUnitProcessingSettings(DataUnitSettings):
         self.set("SolitaryHorizontalThreshold",0)
         self.set("SolitaryVerticalThreshold",0)
         self.set("SolitaryProcessingThreshold",0)
+        
+        
 
             
         
