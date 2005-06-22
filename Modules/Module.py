@@ -64,7 +64,16 @@ class Module:
         self.extent=None
         self.zoomFactor=1
         self.settings=None
-    
+        self.timepoint=-1
+        
+    def setTimepoint(self,tp):
+        """
+        Method: setTimepoint(tp)
+        Created: 21.06.2005, KP
+        Description: Sets the timepoint this module is processing
+        """
+        self.timepoint=tp
+        
     def setSettings(self,settings):
         """
         Method: setSettings(settings)

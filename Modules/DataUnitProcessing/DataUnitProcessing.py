@@ -1,7 +1,7 @@
 # -*- coding: iso-8859-1 -*-
 """
  Unit: DataUnitProcessing
- Project: Selli
+ Project: BioImageXD
  Created: 25.11.2004, KP
  
  Description:
@@ -36,7 +36,7 @@
 
 """
 
-__author__ = "Selli Project <http://sovellusprojektit.it.jyu.fi/selli/>"
+__author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.13 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
@@ -101,7 +101,7 @@ class DataUnitProcessing(Module):
         #self.n+=1
         #settings=self.settings
         #tf=settings.getCounted("IntensityTransferFunctions",self.n)
-        tf = settings.get("IntensityTransferFunctions")
+        tf = settings.getCounted("IntensityTransferFunctions",self.timepoint)
         if not tf:            
             raise ("No Intensity Transfer Function given for Single DataUnit "
             "to be processed")
@@ -125,7 +125,7 @@ class DataUnitProcessing(Module):
         """
         if not self.preview:
             dims=self.images[0].GetDimensions()
-            if z!=-1:
+            if z>=0:
                 self.extent=(0,dims[0]-1,0,dims[1]-1,z,z)
             else:
                 self.extent=None
