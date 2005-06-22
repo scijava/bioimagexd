@@ -126,6 +126,16 @@ class VisualizerWindow(wxVTKRenderWindowInteractor):
         """            
         self.saveScreen(vtk.vtkJPEGWriter(),filename)
         
+    def save_screen(self,filename):
+        """
+        Method: save_tiff(self,filename)
+        Created: 28.04.2005, KP
+        Description: Save the rendered screen as image the format of which
+                     is determined by the file extension
+        """
+        ext=filename.split(".")[-1].lower()
+        eval("self.save_%s(filename)"%ext)
+        
     def save_tiff(self,filename):
         """
         Method: save_tiff(self,filename)
