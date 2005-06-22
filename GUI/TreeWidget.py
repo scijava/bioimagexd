@@ -33,7 +33,7 @@ __version__ = "$Revision: 1.21 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 import wx
 
-class TreeWidget(wx.Panel):
+class TreeWidget(wx.SashLayoutWindow):
     """
     Class: TreeWidget
     Created: 10.01.2005, KP
@@ -45,9 +45,11 @@ class TreeWidget(wx.Panel):
         Created: 10.01.2005, KP
         Description: Initialization
         """        
-        wx.Panel.__init__(self,parent,-1)
-        self.Bind(wx.EVT_SIZE,self.onSize)
+        #wx.Panel.__init__(self,parent,-1)
+        wx.SashLayoutWindow.__init__(self,parent,-1)
+        #self.Bind(wx.EVT_SIZE,self.onSize)
         self.treeId=wx.NewId()
+        self.parent=parent
         self.tree = LSMTree(self,self.treeId,callback)
     
         self.items={}
@@ -78,6 +80,7 @@ class TreeWidget(wx.Panel):
                      own changes in size
         """                
         w,h = self.GetClientSizeTuple()
+#        print "\n***Setting tree size to ",w,h,"***\n"
         self.tree.SetDimensions(0,0,w,h)
     
     def hasItem(self,path):
@@ -139,6 +142,7 @@ class TreeWidget(wx.Panel):
             item=self.dufiles
 
         for obj in objs:
+#	    print "adding ",obj,obj.getName()
             added=self.tree.AppendItem(item,obj.getName())
             self.tree.SetPyData(added,obj)        
             self.tree.SetItemImage(added,fileidx,which=wx.TreeItemIcon_Normal)
