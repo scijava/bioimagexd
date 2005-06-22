@@ -64,6 +64,8 @@ vtkImageSimpleMIP::ExecuteInformation(vtkImageData *input, vtkImageData *output)
   wholeExt[5]=0;
   // We're gonna produce image one slice thick
   output->SetWholeExtent(wholeExt);
+//  printf("Setting number of components to %d\n",input->GetNumberOfScalarComponents());
+  output->SetNumberOfScalarComponents(input->GetNumberOfScalarComponents());
   
 }
 
@@ -75,8 +77,8 @@ void vtkImageSimpleMIP::ExecuteData(vtkDataObject *)
   vtkImageData* input = this->GetInput();
   int inIncX,inIncY,inIncZ;
   int outIncX,outIncY,outIncZ;
-  int maxX,maxY,maxZ;
-  int idxX,idxY,idxZ;
+  int maxX,maxY,maxZ,maxC;
+  int idxX,idxY,idxZ,idxC;
   char *inPtr1;
 
   unsigned char scalar,outScalar;
@@ -105,25 +107,26 @@ void vtkImageSimpleMIP::ExecuteData(vtkDataObject *)
   maxX = uExtent[1] - uExtent[0];
   maxY = uExtent[3] - uExtent[2];
   maxZ = uExtent[5] - uExtent[4];
-
+  maxC = input->GetNumberOfScalarComponents();
+    
   input->GetIncrements(inIncX, inIncY, inIncZ);
   output->GetIncrements(outIncX, outIncY, outIncZ);
   //printf("inIncX=%d,inIncY=%d,inIncZ=%d\n",inIncX,inIncY,inIncZ);
   //printf("outIncX=%d,outIncY=%d,outIncZ=%d\n",outIncX,outIncY,outIncZ);
-
-
   
-  #define GET_AT(x,y,z,ptr) *(ptr+(z)*inIncZ+(y)*inIncY+(x)*inIncX)
-  #define SET_AT(x,y,z,ptr,val) *(ptr+(z)*outIncZ+(y)*outIncY+(x)*outIncX)=val
+  #define GET_AT(x,y,z,c,ptr) *(ptr+(z)*inIncZ+(y)*inIncY+(x)*inIncX+c)
+  #define SET_AT(x,y,z,c,ptr,val) *(ptr+(z)*outIncZ+(y)*outIncY+(x)*outIncX+c)=val
   
   //printf("maxX=%d,maxY=%d,maxZ=%d\n",maxX,maxY,maxZ);
   for(idxZ = 0; idxZ <= maxZ; idxZ++ ) {
     
     for(idxY = 0; idxY <= maxY; idxY++ ) {
-      for(idxX = 0; idxX <= maxX; idxX++ ) {          
-          scalar = GET_AT(idxX,idxY,idxZ,inPtr);
-          outScalar = GET_AT(idxX,idxY,0,outPtr);
-          if(scalar > outScalar) SET_AT(idxX,idxY,0,outPtr,scalar);
+      for(idxX = 0; idxX <= maxX; idxX++ ) {
+	  for(idxC = 0; idxC <= maxC; idxC++) {
+	      scalar = GET_AT(idxX,idxY,idxZ,idxC,inPtr);
+	      outScalar = GET_AT(idxX,idxY,0,idxC,outPtr);
+	      if(scalar > outScalar) SET_AT(idxX,idxY,0,idxC,outPtr,scalar);
+	  }
       }
     }  
   }
