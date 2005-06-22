@@ -96,11 +96,18 @@ class InfoWidget(wx.Panel):
         self.mainsizer.Fit(self)
         self.mainsizer.SetSizeHints(self) 
  
+    def enable(self,flag):
+        """
+        Method: enable(flag)
+        Created: 05.06.2005, KP
+        Description: Enable/disable widget
+        """
+        pass
+ 
     def setTree(self,tree):
         """
         Method: setTree(tree)
-        Created: 3.04.2005
-        Creator: KP
+        Created: 3.04.2005, KP
         Description: Sets the tree widget
         """
         self.tree=tree
