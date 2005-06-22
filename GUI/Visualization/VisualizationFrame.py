@@ -132,6 +132,7 @@ class RendererConfiguration(wx.MiniFrame):
         self.sizer = wx.GridBagSizer()
         self.parent = parent
         self.visualizer=visualizer
+        self.mode=self.visualizer.currMode
         
         self.buttonBox = wx.BoxSizer(wx.HORIZONTAL)
         self.okButton = wx.Button(self,-1,"Ok")
@@ -164,7 +165,7 @@ class RendererConfiguration(wx.MiniFrame):
     def initializeGUI(self):
         """
         Method: initializeGUI()
-        Created: 16.05.2005, KP
+        Created: 16.05.2005, KPself.mode
         Description: Build up the configuration GUI
         """             
         self.colorLbl=wx.StaticText(self,-1,"Background color:")
@@ -269,7 +270,7 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
         # Unbind to not get annoying behaviour of scrolling
         # when clicking on the panel
         self.Unbind(wx.EVT_CHILD_FOCUS)
-
+        #self.Bind(wx.EVT_CALCULATE_LAYOUT,self.onCalculateLayout)
         self.parent = parent
         self.visualizer = visualizer
         self.mode=mode
@@ -317,6 +318,20 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
         self.SetAutoLayout(1)
         self.SetupScrolling()
         
+    def onCalculateLayout(self,event):
+        """
+        Method: onCalculateLayout
+        Created: 05.06.2005, KP
+        Description: Size the window
+        """
+        rect=event.GetRect()
+        
+        w,h=rect.GetSize()
+        w-=15
+        self.SetSize(rect.GetSize())
+        rect.Deflate(w,h)
+        event.SetRect(rect)
+        
     def onConfigureRenderwindow(self,event):
         """
         Method: onConfigureRenderwindow
@@ -358,6 +373,7 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
         self.confPanel.setLabel("Configure %s"%lbl)
         self.confPanel.setColor((255,255,255),(0,0,0))
         
+        print "panel=",panel
         self.currentConf=panel(self,self.visualizer,mode=self.mode)
      
         self.sizer.Add(self.currentConf,(6,0))
@@ -430,6 +446,7 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
             self.sizer.Detach(self.currentConf)
             self.currentConf.Show(0)
             del self.currentConf
+            self.currentConf=None
             self.SetupScrolling()
 
 

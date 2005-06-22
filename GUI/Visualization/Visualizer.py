@@ -44,8 +44,8 @@ import Dialogs
 
 import DataUnit
 import DataUnitProcessing
+import MenuManager
 
-from Lights import *
 from GUI import Events
 import PreviewFrame
 import os.path
@@ -54,6 +54,7 @@ import sys
 visualizerInstance=None
 
 def getVisualizer():
+    print "getVisualizer() called! returning",visualizerInstance
     global visualizerInstance
     return visualizerInstance
 
@@ -89,7 +90,7 @@ class Visualizer:
     Created: 05.04.2005, KP
     Description: A class that is the controller for the visualization
     """
-    def __init__(self,parent,menuManager,**kws):
+    def __init__(self,parent,menuManager,mainwin,**kws):
         """
         Method: __init__(parent)
         Created: 28.04.2005, KP
@@ -97,7 +98,7 @@ class Visualizer:
         """
         global visualizerInstance
         visualizerInstance=self
-        
+        self.mainwin=mainwin
         self.menuManager=menuManager
         self.renderingTime=0
         self.parent = parent
@@ -107,6 +108,7 @@ class Visualizer:
         self.dataUnit = None
         self.enabled=1
         self.timepoint = -1
+        self.preload=0
         self.processedMode = 0
         self.modes=getModes()
         
@@ -133,7 +135,7 @@ class Visualizer:
         self.toolWin.SetOrientation(wx.LAYOUT_HORIZONTAL)
         self.toolWin.SetAlignment(wx.LAYOUT_TOP)
         self.toolWin.SetSashVisible(wx.SASH_BOTTOM,False)
-        self.toolWin.SetDefaultSize((500,32))
+        self.toolWin.SetDefaultSize((500,44))
         
         self.visWin=wx.SashLayoutWindow(self.parent,self.ID_VISAREA_WIN,style=wx.NO_BORDER|wx.SW_3D)
         self.visWin.SetOrientation(wx.LAYOUT_VERTICAL)
@@ -148,16 +150,9 @@ class Visualizer:
         self.sliderWin.SetAlignment(wx.LAYOUT_BOTTOM)
         self.sliderWin.SetSashVisible(wx.SASH_TOP,False)
         self.sliderWin.SetDefaultSize((500,32))
-        
-        self.itemWin=wx.SashLayoutWindow(self.parent,self.ID_TOOL_WIN,style=wx.NO_BORDER)
-        self.itemWin.SetOrientation(wx.LAYOUT_HORIZONTAL)
-        self.itemWin.SetAlignment(wx.LAYOUT_BOTTOM)
-        self.itemWin.SetSashVisible(wx.SASH_TOP,False)
-        self.itemWin.SetDefaultSize((500,64))
 
         self.timeslider=wx.Slider(self.sliderWin,value=0,minValue=0,maxValue=1,
         style=wx.SL_HORIZONTAL|wx.SL_AUTOTICKS|wx.SL_LABELS)
-        #self.sizer.Add(self.timeslider,(1,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT,span=(1,2))
         self.timeslider.Bind(wx.EVT_SCROLL,self.onChangeTimepoint)
 
         self.currMode=None
@@ -178,31 +173,88 @@ class Visualizer:
         Description: Method to create a toolbar for the window
         """        
         self.tb = wx.ToolBar(self.toolWin,-1,style=wx.TB_HORIZONTAL)
-        ID_CAPTURE=wx.NewId()
-        ID_ZOOM_OUT=wx.NewId()
-        ID_ZOOM_IN=wx.NewId()
-        ID_ZOOM_TO_FIT=wx.NewId()
-        ID_ZOOM_OBJECT=wx.NewId()
-        self.tb.AddSimpleTool(ID_CAPTURE,wx.Image(os.path.join("Icons","camera.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Capture slice","Capture the current optical slice")
-        self.tb.AddSimpleTool(ID_ZOOM_OUT,wx.Image(os.path.join("Icons","zoom-out.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Zoom out","Zoom out on the optical slice")
+        self.tb.SetToolBitmapSize((32,32))
+        self.tb.AddSimpleTool(MenuManager.ID_ZOOM_OUT,wx.Image(os.path.join("Icons","zoom-out.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Zoom out","Zoom out on the optical slice")
         #EVT_TOOL(self,ID_OPEN,self.menuOpen)
 
         self.zoomCombo=wx.ComboBox(self.tb,-1,"100%",choices=["12.5%","25%","33.33%","50%","66.67%","75%","100%","125%","150%","200%","300%","400%","600%","800%"],size=(100,-1),style=wx.CB_DROPDOWN)
         self.zoomCombo.SetSelection(6)
         self.tb.AddControl(self.zoomCombo)
         #self.preview.setZoomCombobox(self.zoomCombo)
-        self.tb.AddSimpleTool(ID_ZOOM_IN,wx.Image(os.path.join("Icons","zoom-in.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Zoom in","Zoom in on the slice")
-        self.tb.AddSimpleTool(ID_ZOOM_TO_FIT,wx.Image(os.path.join("Icons","zoom-to-fit.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Zoom to Fit","Zoom the slice so that it fits in the window")
-        self.tb.AddSimpleTool(ID_ZOOM_OBJECT,wx.Image(os.path.join("Icons","zoom-object.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Zoom object","Zoom user selected portion of the slice")
+        self.tb.AddSimpleTool(MenuManager.ID_ZOOM_IN,wx.Image(os.path.join("Icons","zoom-in.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Zoom in","Zoom in on the slice")
+        self.tb.AddSimpleTool(MenuManager.ID_ZOOM_TO_FIT,wx.Image(os.path.join("Icons","zoom-to-fit.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Zoom to Fit","Zoom the slice so that it fits in the window")
+        self.tb.AddSimpleTool(MenuManager.ID_ZOOM_OBJECT,wx.Image(os.path.join("Icons","zoom-object.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Zoom object","Zoom user selected portion of the slice")
 
-        #wx.EVT_TOOL(self,ID_CAPTURE,self.preview.captureSlice)
-        #wx.EVT_TOOL(self,ID_ZOOM_IN,self.preview.zoomIn)
-        #wx.EVT_TOOL(self,ID_ZOOM_OUT,self.preview.zoomOut)
-        #wx.EVT_TOOL(self,ID_ZOOM_TO_FIT,self.preview.zoomToFit)
-        #wx.EVT_TOOL(self,ID_ZOOM_OBJECT,self.preview.zoomObject)
-        #self.zoomCombo.Bind(wx.EVT_COMBOBOX,self.preview.zoomToComboSelection)
+        wx.EVT_TOOL(self.parent,MenuManager.ID_ZOOM_IN,self.zoomIn)
+        wx.EVT_TOOL(self.parent,MenuManager.ID_ZOOM_OUT,self.zoomOut)
+        wx.EVT_TOOL(self.parent,MenuManager.ID_ZOOM_TO_FIT,self.zoomToFit)
+        wx.EVT_TOOL(self.parent,MenuManager.ID_ZOOM_OBJECT,self.zoomObject)
+        self.zoomCombo.Bind(wx.EVT_COMBOBOX,self.zoomToComboSelection)
         self.tb.Realize()
 
+    def zoomObject(self,evt):
+        """
+        Method: zoomObject()
+        Created: 19.03.2005, KP
+        Description: Lets the user select the part of the object that is zoomed
+        """
+        pass
+        #self.renderpanel.startZoom()
+        
+    def zoomOut(self,evt):
+        """
+        Method: zoomOut()
+        Created: 19.03.2005, KP
+        Description: Makes the zoom factor smaller
+        """
+        return self.zoomComboDirection(-1)
+        
+    def zoomToComboSelection(self,evt):
+        """
+        Method: zoomToComboSelection()
+        Created: 19.03.2005, KP
+        Description: Sets the zoom according to the combo selection
+        """
+        return self.zoomComboDirection(0)        
+        
+    def zoomComboDirection(self,dir):
+        """
+        Method: zoomComboDirection()
+        Created: 21.02.2005, KP
+        Description: Makes the zoom factor larger/smaller based on values in the zoom combobox
+        """
+        pos=self.zoomCombo.GetSelection()
+        s=self.zoomCombo.GetString(pos)
+        if dir>0 and pos >= self.zoomCombo.GetCount():
+            #print "Zoom at max: ",s
+            return
+        if dir<0 and pos==0:
+            #print "Zoom at min: ",s
+            return
+        pos+=dir
+        s=self.zoomCombo.GetString(pos)
+        factor = float(s[:-1])/100.0
+        self.zoomCombo.SetSelection(pos)
+        self.currMode.setZoomFactor(factor)
+        self.currMode.Render()
+        
+        
+    def zoomIn(self,evt,factor=-1):
+        """
+        Method: zoomIn()
+        Created: 21.02.2005, KP0
+        Description: Makes the zoom factor larger 
+        """
+        return self.zoomComboDirection(1)
+              
+    def zoomToFit(self,evt):
+        """
+        Method: zoomToFit()
+        Created: 21.02.2005, KP
+        Description: Sets the zoom factor to fit the image into the preview window
+        """
+        self.currMode.zoomToFit()
+        self.currMode.Render()
         
     def onSashDrag(self, event):
         """
@@ -285,6 +337,22 @@ class Visualizer:
         """
         return self.processedMode
         
+    def getCurrentMode(self):
+        """
+        Method: setCurrentMode
+        Created: 20.06.2005, KP
+        Description: Return the current visualization mode
+        """
+        return self.currMode
+        
+    def getCurrentModeName(self):
+        """
+        Method: setCurrentModeName
+        Created: 20.06.2005, KP
+        Description: Return the current visualization mode
+        """
+        return self.mode
+        
     def setVisualizationMode(self,mode):
         """
         Method: setVisualizationMode
@@ -294,8 +362,11 @@ class Visualizer:
             mode     The mode.
         """
         if self.mode == mode:
-            print "%s already selected"%mode
-            return
+            print "%s already selected"%mode   
+            if self.dataUnit and self.currMode.dataUnit != self.dataUnit:
+                print "Re-setting dataunit"
+                self.currMode.setDataUnit(self.dataUnit)
+                return
         self.mode=mode
 
         if self.currMode:
@@ -305,6 +376,10 @@ class Visualizer:
         if not modeinst:
             modeinst=modeclass(self.visWin,self)
             self.modes[mode]=(modeinst,modeclass,module)
+        if not module.showZoomToolbar():
+            self.toolWin.SetDefaultSize((500,0))
+        else:
+            self.toolWin.SetDefaultSize((500,44))
 
         # dataunit might have been changed so set it every time a
         # mode is loaded
@@ -318,7 +393,7 @@ class Visualizer:
             self.sidebarWin.SetDefaultSize((200,1024))
 
         self.currentWindow = modeinst.activate(self.sidebarWin)
-        self.currentWindow.enable(self.enabled)
+        #self.currentWindow.enable(self.enabled)
 
         if self.dataUnit and modeinst.dataUnit != self.dataUnit:
             print "Re-setting dataunit"
@@ -333,21 +408,32 @@ class Visualizer:
         Created: 01.06.2005, KP
         Description: Show / hide item toolbar
         """
-        if flag:
-            self.itemWin.SetDefaultSize((500,64))
-        else:
-            self.itemWin.SetDefaultSize((500,0))
+        pass
+        #if flag:
+        #    self.itemWin.SetDefaultSize((500,64))
+        #else:
+        #    self.itemWin.SetDefaultSize((500,0))
         
-    def enable(self,flag):
+    def enable(self,flag,**kws):
         """
         Method: enable(flag)
         Created: 23.05.2005, KP
         Description: Enable/Disable updates
         """
+        self.preload=0
+        if kws.has_key("preload"):
+            self.preload=kws["preload"]
         print "\n\nenable(%d)\n\n"%flag
         self.enabled=flag
         if self.currentWindow:
-            self.currentWindow.enable(flag)
+            try:
+                self.currentWindow.enable(flag)
+            except:
+                pass
+        if flag:        
+           wx.LayoutAlgorithm().LayoutWindow(self.parent, self.visWin)
+           print "Setting size to",self.visWin.GetSize()
+           self.currentWindow.SetSize(self.visWin.GetSize())
         if flag:        
            wx.LayoutAlgorithm().LayoutWindow(self.parent, self.visWin)
            self.currentWindow.SetSize(self.visWin.GetSize())
@@ -427,6 +513,15 @@ class Visualizer:
             print "Render()"
             self.currMode.Render()
         
+    def onSetTimepoint(self,event):
+        """
+        Method: onSetTimepoint
+        Created: 21.06.2005, KP
+        Description: Update the timepoint according to an evnet
+        """
+        tp=event.getValue()
+        self.setTimepoint(tp)
+        
     def onChangeTimepoint(self,event):
         """
         Method: onChangeTimepoint
@@ -436,11 +531,26 @@ class Visualizer:
         tp=self.timeslider.GetValue()
         if self.timepoint != tp:
             self.setTimepoint(tp)
-            evt=ChangeEvent(myEVT_TIMEPOINT_CHANGED,self.parent.GetId())
+            evt=Events.ChangeEvent(Events.myEVT_TIMEPOINT_CHANGED,self.parent.GetId())
             evt.setValue(tp)
             print "Sending change event",tp
             self.parent.GetEventHandler().ProcessEvent(evt)
 
+    def onSnapshot(self,event):
+        """
+        Method: onSnapshot
+        Created: 05.06.2005, KP
+        Description: Save a snapshot of current visualization
+        """  
+        if self.currMode and self.dataUnit:
+            wc="PNG file|*.png|JPEG file|*.jpeg|TIFF file|*.tiff|BMP file|*.bmp"
+            initFile="%s.png"%(self.dataUnit.getName())
+            dlg=wx.FileDialog(self.parent,"Save snapshot of rendered scene",defaultFile=initFile,wildcard=wc,style=wx.SAVE)
+            filename=None
+            if dlg.ShowModal()==wx.ID_OK:
+                filename=dlg.GetPath()
+            self.currMode.saveSnapshot(filename)
+        
 
     def setRenderWindowSize(self,size):
         """
@@ -451,7 +561,7 @@ class Visualizer:
         self.currentWindow.SetSize((size))
         #self.wxrenwin.SetSize((size))
         #self.renwin.SetSize((size))
-        self.sizer.Fit(self.parent)
+        self.OnSize(None)
         self.parent.Layout()
         self.parent.Refresh()
         self.Render()
