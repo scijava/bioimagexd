@@ -82,7 +82,7 @@ class TimelineConfig(wx.Panel):
         self.fpsLabel=wx.StaticText(self,-1,"FPS: 0.5")
 
         self.totalFrames=wx.TextCtrl(self,-1,"30",size=(50,-1),style=wx.TE_PROCESS_ENTER)
-        self.duration=masked.TextCtrl(self,-1,"00:00:60",autoformat="24HRTIMEHHMMSS",size=(50,-1),style=wx.TE_PROCESS_ENTER)
+        self.duration=masked.TimeCtrl(self,-1,"00:00:60",fmt24hr=True,size=(50,-1),style=wx.TE_PROCESS_ENTER)
 
         self.totalFrames.Bind(wx.EVT_TEXT,self.updateFrameCount)
         self.duration.Bind(wx.EVT_TEXT,self.updateDuration)

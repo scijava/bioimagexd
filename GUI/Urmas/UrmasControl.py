@@ -92,16 +92,17 @@ class UrmasControl:
                      pickling
         """    
         self.clearGUI()
-        print "\nAfter clearing myself: ",self,"\n"
+#        print "\nAfter clearing myself: ",self,"\n"
 
         p=UrmasPersist.UrmasPersist(self)
         p.depersist(filename)
-        
+        self.updateLayouts()
+        self.window.sizer.Fit(self.window)
         # Assimilate the loaded object's dict
 #        self.timeline.__dict__.update(ctrl.timeline.__dict__)
 #        del ctrl.timeline
 #        self.__dict__.update(ctrl.__dict__)
-        print "\nDepersisted ",self,"\n"
+#        print "\nDepersisted ",self,"\n"
         #self.updateGUI()
         
     def clearGUI(self):
@@ -173,13 +174,6 @@ class UrmasControl:
         """    
         self.timelinePanel = timelinepanel
 
-    def startMayavi(self):
-        """
-        Method: startMayavi()
-        Created: 20.04.2005, KP
-        Description: Start mayavi
-        """            
-        self.renderer.startMayavi(self)
 
     def renderProject(self,preview,**kws):
         """
@@ -187,6 +181,7 @@ class UrmasControl:
         Created: 19.04.2005, KP
         Description: Render this project
         """            
+        self.renderer.startAnimation(self)
         return self.renderer.render(self,preview,**kws)
         
     def getDataUnit(self):

@@ -52,8 +52,10 @@ import VideoGeneration
 import Dialogs
 
 import UrmasPalette
-        
-class UrmasWindow(wx.Frame):
+
+from GUI import MenuManager
+
+class UrmasWindow(wx.SashLayoutWindow):
     """
     Class: UrmasWindow
     Created: 10.02.2005, KP
@@ -61,139 +63,107 @@ class UrmasWindow(wx.Frame):
                  The window has a notebook with different pages for rendering and
                  animation modes, and a page for configuring the movie generation.
     """
-    def __init__(self,parent):
-        wx.Frame.__init__(self,parent,-1,"Rendering Manager / Animator",size=(1024,768))
-        self.status=wx.ID_OK
-        ico=reduce(os.path.join,["Icons","Selli.ico"])
-        self.icon = wx.Icon(ico,wx.BITMAP_TYPE_ICO)
-        self.SetIcon(self.icon)
+    def __init__(self,parent,menumanager,taskwin,visualizer):
+        #wx.Frame.__init__(self,parent,-1,"Rendering Manager / Animator",size=(1024,768))
+        wx.SashLayoutWindow.__init__(self,parent,-1)
+    
+        self.taskWin=taskwin
+        self.visualizer=visualizer
 
-        self.CreateStatusBar()
-        self.SetStatusText("Initializing rendering manager...")
-
-        self.createMenu()
+        self.menuManager=menumanager
+        self.createMenu(menumanager)
         
         self.control = UrmasControl.UrmasControl(self)
 
-        self.Bind(wx.EVT_CLOSE,self.closeWindowCallback)
+        #self.Bind(wx.EVT_CLOSE,self.closeWindowCallback)
 
         self.sizer=wx.BoxSizer(wx.VERTICAL)
         self.palette = UrmasPalette.UrmasPalette(self,self.control)
-        self.sizer.Add(self.palette,1,flag=wx.EXPAND)
+        self.sizer.Add(self.palette,0,flag=wx.EXPAND)
 
         self.timelinePanel=TimelinePanel.TimelinePanel(self,self.control,size=(1024,500))
         self.control.setTimelinePanel(self.timelinePanel)
         
-        self.sizer.Add(self.timelinePanel)
+        self.sizer.Add(self.timelinePanel,1,flag=wx.EXPAND)
 
-        
+        self.control.setAnimationMode(1)
+
         
         self.SetSizer(self.sizer)
         self.SetAutoLayout(1)
         self.sizer.Fit(self)
-        self.SetStatusText("Done.")
-
-
+        #self.SetStatusText("Done.")
 
         
-    def createMenu(self):
+    def cleanMenu(self):
+        """
+        Method: createMenu()
+        Created: 06.04.2005, KP
+        Description: Removes the menu items from menu
+        """
+        mgr=self.menuManager
+        
+        mgr.remove(MenuManager.ID_PREFERENCES)
+        mgr.remove(MenuManager.ID_ADD_SPLINE)
+        mgr.remove(MenuManager.ID_ADD_TIMEPOINT)
+        mgr.remove(MenuManager.ID_ADD_TRACK)
+        mgr.remove(MenuManager.ID_ANIMATE)
+
+        mgr.remove(MenuManager.ID_FIT_TRACK)
+    
+        mgr.remove(MenuManager.ID_MIN_TRACK)
+        mgr.remove(MenuManager.ID_OPEN_PROJECT)
+        mgr.remove(MenuManager.ID_RENDER_PROJECT)
+        mgr.remove(MenuManager.ID_RENDER_PREVIEW)
+        mgr.remove(MenuManager.ID_SAVE)
+        mgr.remove(MenuManager.ID_SET_TRACK)
+        mgr.remove(MenuManager.ID_SPLINE_CLOSED)
+        mgr.remove(MenuManager.ID_SPLINE_SET_BEGIN)
+        mgr.remove(MenuManager.ID_SPLINE_SET_END)
+
+        mgr.removeMenu("track")
+        mgr.removeMenu("rendering")
+        mgr.removeMenu("camera")
+
+    def createMenu(self,mgr):
         """
         Method: createMenu()
         Created: 06.04.2005, KP
         Description: Creates a menu for the window
         """
-        # This is the menubar object that holds all the menus
-        self.menu = wx.MenuBar()
-        self.SetMenuBar(self.menu)
-        
-        # We create the menu objects
-        self.fileMenu=wx.Menu()
-        self.helpMenu=wx.Menu()
-        
-        self.settingsMenu=wx.Menu()
-        self.trackMenu = wx.Menu()
-        self.renderMenu=wx.Menu()
-        self.cameraMenu = wx.Menu()
-         # and add them as sub menus to the menubar
-        self.menu.Append(self.fileMenu,"&File")
-        self.menu.Append(self.settingsMenu,"&Settings")
-        self.menu.Append(self.trackMenu,"&Track")
-        self.menu.Append(self.renderMenu,"&Rendering")
-        self.menu.Append(self.cameraMenu,"&Camera")
-        self.menu.Append(self.helpMenu,"&Help")
+        mgr.createMenu("track","&Track",before="help")
+        mgr.createMenu("rendering","&Rendering",before="help")
+        mgr.createMenu("camera","&Camera",before="help")
       
-        self.ID_PREFERENCES = wx.NewId()
-        self.settingsMenu.Append(self.ID_PREFERENCES,"&Preferences...")
-        wx.EVT_MENU(self,self.ID_PREFERENCES,self.onMenuPreferences)
+        mgr.addMenuItem("settings",MenuManager.ID_PREFERENCES,"&Preferences",self.onMenuPreferences)
         
-        self.ID_OPEN=wx.NewId()
-        self.ID_SAVE=wx.NewId()
-        self.ID_CLOSE=wx.NewId()
-        self.fileMenu.Append(self.ID_OPEN,"Open project...","Open a BioImageXD Animator Project")
-        self.fileMenu.Append(self.ID_SAVE,"Save project as...","Save current BioImageXD Animator Project")
-        self.fileMenu.AppendSeparator()
-        self.fileMenu.Append(self.ID_CLOSE,"Close","Close BioImageXD Animator")
-        wx.EVT_MENU(self,self.ID_OPEN,self.onMenuOpenProject)
-        wx.EVT_MENU(self,self.ID_SAVE,self.onMenuSaveProject)
-        wx.EVT_MENU(self,self.ID_CLOSE,self.closeWindowCallback)
+        mgr.addMenuItem("file",MenuManager.ID_OPEN_PROJECT,"Open project...","Open a BioImageXD Animator Project",self.onMenuOpenProject,before=MenuManager.ID_IMPORT)
+        mgr.addMenuItem("file",MenuManager.ID_SAVE_PROJECT,"Save project as...","Save current BioImageXD Animator Project",self.onMenuSaveProject,before=MenuManager.ID_IMPORT)
+        mgr.addSeparator("file",before=MenuManager.ID_IMPORT)
         
-        self.ID_ADD_SPLINE=wx.NewId()
-        self.ID_ADD_TIMEPOINT=wx.NewId()
-        self.addTrackMenu=wx.Menu()
-        self.addTrackMenu.Append(self.ID_ADD_TIMEPOINT,"Timepoint Track","Add a timepoint track to the timeline")
-        self.addTrackMenu.Append(self.ID_ADD_SPLINE,"Camera Path Track","Add a camera path track to the timeline")
-        self.addTrackMenu.Enable(self.ID_ADD_SPLINE,0)
-        wx.EVT_MENU(self,self.ID_ADD_SPLINE,self.onMenuAddSplineTrack)
-        wx.EVT_MENU(self,self.ID_ADD_TIMEPOINT,self.onMenuAddTimepointTrack)
-        self.ID_ADD_TRACK=wx.NewId()
-        self.trackMenu.AppendMenu(self.ID_ADD_TRACK,"&Add Track",self.addTrackMenu)
-        self.trackMenu.AppendSeparator()
+        mgr.createMenu("addtrack","&Add Track",place=0)
         
-        self.ID_FIT_TRACK = wx.NewId()
-        self.ID_MIN_TRACK = wx.NewId()
-        self.ID_SET_TRACK = wx.NewId()
-        self.trackMenu.Append(self.ID_FIT_TRACK,"Expand to maximum","Expand the track to encompass the whole timeline")
-        self.trackMenu.Append(self.ID_MIN_TRACK,"Shrink to minimum","Shrink the track to as small as possible")
-        self.trackMenu.Append(self.ID_SET_TRACK,"Set item size","Set each item on this track to be of given size")
+        mgr.addMenuItem("addtrack",MenuManager.ID_ADD_TIMEPOINT,"Timepoint Track","Add a timepoint track to the timeline",self.onMenuAddTimepointTrack)
+        mgr.addMenuItem("addtrack",MenuManager.ID_ADD_SPLINE,"Camera Path Track","Add a camera path track to the timeline",self.onMenuAddSplineTrack)
         
-        wx.EVT_MENU(self,self.ID_FIT_TRACK,self.onMaxTrack)
-        wx.EVT_MENU(self,self.ID_MIN_TRACK,self.onMinTrack)
-        wx.EVT_MENU(self,self.ID_SET_TRACK,self.onSetTrack)
+        mgr.addSubMenu("track","addtrack","&Add Track",MenuManager.ID_ADD_TRACK)
+        mgr.addSeparator("track")
         
-        self.ID_ANIMATE = wx.NewId()
-        self.renderMenu.AppendCheckItem(self.ID_ANIMATE,"&Animated rendering","Select whether to produce animation or still images")
-        wx.EVT_MENU(self,self.ID_ANIMATE,self.onMenuAnimate)
+        mgr.addMenuItem("track",MenuManager.ID_FIT_TRACK,"Expand to maximum","Expand the track to encompass the whole timeline",self.onMaxTrack)
+        mgr.addMenuItem("track",MenuManager.ID_MIN_TRACK,"Shrink to minimum","Shrink the track to as small as possible",self.onMinTrack)
+        mgr.addMenuItem("track",MenuManager.ID_SET_TRACK,"Set item size","Set each item on this track to be of given size",self.onSetTrack)
         
-        self.renderMenu.AppendSeparator()
-        
-        self.ID_RENDER_PREVIEW=wx.NewId()
-        self.renderMenu.Append(self.ID_RENDER_PREVIEW,"Rendering &Preview","Preview rendering")
-        wx.EVT_MENU(self,self.ID_RENDER_PREVIEW,self.onMenuRender)
-
-        #self.ID_MAYAVI=wx.NewId()
-        #self.renderMenu.Append(self.ID_MAYAVI,"&Start Renderer Program","Start Mayavi for rendering")
-        #wx.EVT_MENU(self,self.ID_MAYAVI,self.onMenuMayavi)
-
-        self.ID_RENDER=wx.NewId()
-        self.renderMenu.Append(self.ID_RENDER,"&Render project","Render this project")
-        wx.EVT_MENU(self,self.ID_RENDER,self.onMenuRender)
+        mgr.addMenuItem("rendering",MenuManager.ID_ANIMATE,"&Animated rendering","Select whether to produce animation or still images",self.onMenuAnimate,check=1)
+        mgr.addSeparator("rendering")
+        mgr.addMenuItem("rendering",MenuManager.ID_RENDER_PREVIEW,"Rendering &Preview","Preview rendering",self.onMenuRender)
+        mgr.addMenuItem("rendering",MenuManager.ID_RENDER_PROJECT,"&Render project","Render this project",self.onMenuRender)
     
-        #self.renderMenu.Enable(self.ID_RENDER,0)
-
-        self.ID_SPLINE_CLOSED = wx.NewId()
-        self.cameraMenu.AppendCheckItem(self.ID_SPLINE_CLOSED,"&Closed Path","Set the camera path to open / closed.")
-        wx.EVT_MENU(self,self.ID_SPLINE_CLOSED,self.onMenuClosedSpline)
-
-        self.ID_SPLINE_SET_BEGIN = wx.NewId()
-        self.cameraMenu.Append(self.ID_SPLINE_SET_BEGIN,"&Begin at the end of previous path","Set this camera path to begin where the previous path ends")
-        wx.EVT_MENU(self,self.ID_SPLINE_SET_BEGIN,self.onMenuSetBegin)
-        
-        self.ID_SPLINE_SET_END = wx.NewId()
-        self.cameraMenu.Append(self.ID_SPLINE_SET_END,"&End at the beginning of next path","Set this camera path to end where the next path starts")
-        wx.EVT_MENU(self,self.ID_SPLINE_SET_END,self.onMenuSetEnd)
+        mgr.addMenuItem("camera",MenuManager.ID_SPLINE_CLOSED,"&Closed Path","Set the camera path to open / closed.",self.onMenuClosedSpline,check=1)
+        mgr.addMenuItem("camera",MenuManager.ID_SPLINE_SET_BEGIN,"&Begin at the end of previous path","Set this camera path to begin where the previous path ends",self.onMenuSetBegin)
+        mgr.addMenuItem("camera",MenuManager.ID_SPLINE_SET_END,"&End at the beginning of next path","Set this camera path to end where the next path starts",self.onMenuSetEnd)
             
-        self.cameraMenu.Enable(self.ID_SPLINE_SET_BEGIN,0)
-        self.cameraMenu.Enable(self.ID_SPLINE_SET_END,0)
+        mgr.disable(MenuManager.ID_SPLINE_SET_BEGIN)
+        mgr.disable(MenuManager.ID_SPLINE_SET_END)
 
     def updateMenus(self):
         """
@@ -204,8 +174,8 @@ class UrmasWindow(wx.Frame):
         spltracks=len(self.control.timeline.getSplineTracks())
         flag=(spltracks>=2)
         print "updateMenus()",spltracks
-        self.cameraMenu.Enable(self.ID_SPLINE_SET_BEGIN,flag)
-        self.cameraMenu.Enable(self.ID_SPLINE_SET_END,flag)
+        self.menuManager.enable(MenuManager.ID_SPLINE_SET_BEGIN)
+        self.menuManager.enable(MenuManager.ID_SPLINE_SET_END)
         
     def onMenuMayavi(self,event):
         """
@@ -213,7 +183,7 @@ class UrmasWindow(wx.Frame):
         Created: 20.04.2005, KP
         Description: Start mayavi for rendering
         """
-        self.renderMenu.Enable(self.ID_RENDER,1)
+        self.renderMenu.Enable(MenuManager.ID_RENDER_PROJECT,1)
         self.control.startMayavi()
 
     def onMenuRender(self,event):
@@ -222,10 +192,14 @@ class UrmasWindow(wx.Frame):
         Created: 19.04.2005, KP
         Description: Render this project
         """
-        if event.GetId() == self.ID_RENDER:
-            video=VideoGeneration.VideoGeneration(self,self.control)
-            video.RunWizard(video.videopage)
-            video.Destroy()
+        if event.GetId() == MenuManager.ID_RENDER_PROJECT:
+            w,h=self.taskWin.GetSize()
+            self.taskWin.SetDefaultSize((200,h))
+            video=VideoGeneration.VideoGeneration(self.taskWin,self.control,self.visualizer)
+            video.SetSize((200,h))
+            video.Show()
+            self.visualizer.mainwin.OnSize(None)
+            print "Setting taskwin size to ",200,h
 
             #self.control.renderProject(0)
         else:
@@ -246,8 +220,10 @@ class UrmasWindow(wx.Frame):
         Created: 19.04.2005, KP
         Description: Callback function for menu item minimize track
         """
+
         dlg = wx.TextEntryDialog(self,"Set duration of each item (seconds):","Set item duration")
         dlg.SetValue("5")
+        val=5
         if dlg.ShowModal()==wx.ID_OK:
             try:
                 val=int(dlg.GetValue())
@@ -303,7 +279,7 @@ class UrmasWindow(wx.Frame):
         """
         flag=evt.IsChecked()
         self.control.setAnimationMode(flag)
-        self.addTrackMenu.Enable(self.ID_ADD_SPLINE,flag)
+        self.addTrackMenu.Enable(MenuManager.ID_ADD_SPLINE,flag)
         
 
     def onMenuAddSplineTrack(self,evt):
@@ -411,11 +387,3 @@ class UrmasWindow(wx.Frame):
         #self.timelinePanel.setDataUnit(dataUnit)
         self.control.setDataUnit(dataUnit)
         
-    def closeWindowCallback(self,event):
-        """
-        Method: closeWindowCallback
-        Created: 10.2.2005, KP
-        Description: A callback that is used to close this window
-        """
-        #self.EndModal(self.status)
-        self.Destroy()

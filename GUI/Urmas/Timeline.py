@@ -203,11 +203,12 @@ class Timeline(scrolled.ScrolledPanel):
             moveTo      Move them here
             howMany     How many tracks there are to move
         """ 
+        print "moveTracks!\n\n****\n\n"
         replace=[]
         for i in range(howMany):
             item=self.sizer.FindItemAtPosition((self.trackOffset+moveFrom+i,0))
             item=item.GetWindow()
-            print "Got item =",item
+            #print "Got item =",item
             print "Detaching %d at (%d,0)"%(i,self.trackOffset+moveFrom+i)
             self.sizer.Show(item,0)
             self.sizer.Detach(item)
@@ -237,6 +238,7 @@ class Timeline(scrolled.ScrolledPanel):
         if self.splinepointTrackAmnt:
             self.moveTracks(self.timepointTrackAmnt,self.timepointTrackAmnt+1,self.splinepointTrackAmnt)
         self.Layout()
+        print "Adding track to ",self.trackOffset+self.timepointTrackAmnt
         self.sizer.Add(tr,(self.trackOffset+self.timepointTrackAmnt,0),flag=wx.EXPAND|wx.ALL)
         tr.setColor((56,196,248))
         if n:
@@ -263,7 +265,7 @@ class Timeline(scrolled.ScrolledPanel):
         tr.setColor((248,196,56))
         self.splinepointTrackAmnt = len(self.splinepointTracks)
         self.timepointTrackAmnt = len(self.timepointTracks)
-        
+        print "Adding track to ",self.trackOffset+self.timepointTrackAmnt
         self.sizer.Add(tr,(self.trackOffset+self.timepointTrackAmnt+self.splinepointTrackAmnt,0),flag=wx.EXPAND|wx.ALL)
         self.Layout()
         self.SetupScrolling()
@@ -337,6 +339,7 @@ class Timeline(scrolled.ScrolledPanel):
         Created: 06.04.2005, KP
         Description: Remove a track from the GUI
         """    
+        print "Hiding ",track
         self.sizer.Show(track,0)
         self.sizer.Detach(track)
         track.remove()

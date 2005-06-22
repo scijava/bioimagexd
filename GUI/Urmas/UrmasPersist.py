@@ -68,15 +68,15 @@ class UrmasPersist:
         self.control.persist_lbl="control"
         while len(to_persist):
             name,obj=to_persist[0]
-            print "Persisting ",name,"=",obj
+            #print "Persisting ",name,"=",obj
             d=obj.__getstate__()
             for item,value in d.items():
                 if type(value) in [type([])]:
                     n=0
-                    print "adding items of ",value
+                    #print "adding items of ",value
                     for additem in value:
                         lbl="%s.%s(%d)"%(name,item,n)
-                        print "additem=",additem
+                        #print "additem=",additem
                         to_persist.append((lbl,additem))
                         n=n+1
                 elif "__getstate__" in dir(value):
@@ -112,7 +112,7 @@ class UrmasPersist:
         self.parser.optionxform=str
         self.parser.read([filename])
         sections = self.parser.sections()
-        print "sections=",sections
+        #print "sections=",sections
         sections.sort()
         for section in sections:
             self.depersist_section(section)
@@ -123,7 +123,7 @@ class UrmasPersist:
         Created: 11.04.2005, KP
         Description: Read a given section from a given persisted file
         """               
-        print "Depersisting section",section
+        #print "Depersisting section",section
         s=section.replace("(","[")
         s=s.replace(")","]")
         for option in self.parser.options(section):
@@ -131,13 +131,13 @@ class UrmasPersist:
             #value=eval(value)
             code="self.%s.%s=%s"%(s,option,value)
             
-            print code
+            #print code
             codeobj=compile(code,"Depersist","single")
-            print "code=",code
+            #print "code=",code
             eval(codeobj,globals(),locals())
             #eval(code,globals(),locals())
         obj=eval("self.%s"%s)
         if "refresh" in dir(obj):
-            print "Refreshing self.%s"%(s)
+            #print "Refreshing self.%s"%(s)
             obj.refresh()
             

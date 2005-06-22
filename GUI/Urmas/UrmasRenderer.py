@@ -63,7 +63,7 @@ class UrmasRenderer:
         self.renderingInterface = RenderingInterface.getRenderingInterface(1)
         self.oldTimepoint=-1
 
-    def startMayavi(self,control):
+    def startAnimation(self,control):
         """
         Class: startMayavi
         Created: 20.04.2005, KP
@@ -77,8 +77,8 @@ class UrmasRenderer:
         self.renderingInterface.setCurrentTimepoint(0)
         self.renderingInterface.setTimePoints([0])
         settings = self.dataUnit.getSettings()
-        ctf= settings.get("ColorTransferFunction")
-        self.renderingInterface.doRendering(preview=data,ctf = ctf)
+#        ctf= settings.get("ColorTransferFunction")
+#        self.renderingInterface.doRendering(preview=data,ctf = ctf)
 
         
     def render(self,control,preview=0,**kws):

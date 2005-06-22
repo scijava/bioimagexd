@@ -505,6 +505,7 @@ class SplineTrack(Track):
         Description: Method called to indicate that a user is no longer dragging
                      something to this track
         """     
+        oldlen=len(self.items)
         if data=="Circular":
             pos = 0
             if len(self.items):
@@ -554,6 +555,9 @@ class SplineTrack(Track):
                 
                 self.Refresh()
                 self.Layout()
+        # If there were no items before this, then expand to max
+        if not oldlen:
+            self.expandToMax()
             
     def getSplineLength(self,splinepoint):
         """
@@ -610,13 +614,13 @@ class SplineTrack(Track):
         else:
             point = self.splineEditor.getRandomPoint()
         itemkws["point"]=point
-        print "Setting point to ",point
+#        print "Setting point to ",point
         pts=[]
 
         for item in self.items:
-            print "item=",item
+ #           print "item=",item
             pts.append(item.getPoint())
-        print "current=",pts
+ #       print "current=",pts
         pts.insert(position,point)
 
         if len(pts)>=2:
@@ -715,12 +719,15 @@ class TimepointTrack(Track):
         Created: 12.04.2005, KP
         Description: Method called to indicate that a user is no longer dragging
                      something to this track
-        """     
+        """
+        oldlen=len(self.items)
         timepoints=TimepointSelection.TimepointSelection(self.parent)
         timepoints.setDataUnit(self.control.getDataUnit())
         if timepoints.ShowModal()==wx.ID_OK:
             tps=timepoints.getSelectedTimepoints()
             self.insertTimepoints(tps)
+        if not oldlen:
+            self.expandToMax()
             
     def showThumbnail(self,flag):
         """

@@ -123,22 +123,24 @@ class UrmasPalette(wx.Panel):
         iconpath=reduce(os.path.join,["Icons"])
         self.ID_NEWSPLINE=wx.NewId()
         
+
         p=wx.Panel(self,-1,size=(64,64))#,style=wx.RAISED_BORDER)
-        bmp=wx.Image(os.path.join(iconpath,"spline.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap()
+        self.ID_NEWTIMEPOINT=wx.NewId()
+        bmp=wx.Image(os.path.join(iconpath,"timepoint.jpg"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
+        self.newtimepoint=wx.StaticBitmap(p,self.ID_NEWTIMEPOINT,bmp,style=wx.RAISED_BORDER)
+        self.newtimepoint.Bind(wx.EVT_MOTION,self.onToolNewTimepoint)
+        self.sizer.Add(p,flag=wx.RIGHT,border=5)
+
+        p=wx.Panel(self,-1,size=(64,64))#,style=wx.RAISED_BORDER)
+        bmp=wx.Image(os.path.join(iconpath,"spline_random.jpg"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
         self.newspline=wx.StaticBitmap(p,self.ID_NEWSPLINE,bmp,style=wx.RAISED_BORDER)
         self.newspline.Bind(wx.EVT_MOTION,self.onToolNewSpline)
         self.sizer.Add(p,flag=wx.RIGHT,border=10)
 
-        p=wx.Panel(self,-1,size=(64,64))#,style=wx.RAISED_BORDER)
-        self.ID_NEWTIMEPOINT=wx.NewId()
-        bmp=wx.Image(os.path.join(iconpath,"timepoint.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap()
-        self.newtimepoint=wx.StaticBitmap(p,self.ID_NEWTIMEPOINT,bmp,style=wx.RAISED_BORDER)
-        self.newtimepoint.Bind(wx.EVT_MOTION,self.onToolNewTimepoint)
-        self.sizer.Add(p,flag=wx.RIGHT,border=5)
-       
+
         p=wx.Panel(self,-1,size=(64,64))#,style=wx.RAISED_BORDER)
         self.ID_NEWCIRCULAR=wx.NewId()
-        bmp=wx.Image(os.path.join(iconpath,"circular.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap()
+        bmp=wx.Image(os.path.join(iconpath,"spline_rotate_x.jpg"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
         self.newcircular=wx.StaticBitmap(p,self.ID_NEWCIRCULAR,bmp,style=wx.RAISED_BORDER)
         self.newcircular.Bind(wx.EVT_MOTION,self.onToolNewCircular)
         
@@ -146,7 +148,7 @@ class UrmasPalette(wx.Panel):
         
         p=wx.Panel(self,-1,size=(64,64))#,style=wx.RAISED_BORDER)
         self.ID_NEWPERPENDICULAR=wx.NewId()
-        bmp=wx.Image(os.path.join(iconpath,"perpendicular.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap()
+        bmp=wx.Image(os.path.join(iconpath,"spline_rotate_y.jpg"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
         self.newperpendicular=wx.StaticBitmap(p,self.ID_NEWPERPENDICULAR,bmp,style=wx.RAISED_BORDER)
         self.newperpendicular.Bind(wx.EVT_MOTION,self.onToolNewPerpendicular)
         
