@@ -89,6 +89,8 @@ class Scattergram(wx.Panel):
         self.renew=1
         self.wholeVolume = 0
         self.dataUnit=0
+        self.reddata=None
+        self.greendata=None
         self.scatter=None
         self.buffer = wx.EmptyBitmap(256,256)
         self.Bind(wx.EVT_PAINT,self.OnPaint)
@@ -126,6 +128,8 @@ class Scattergram(wx.Panel):
         Description: Method to set on / off the voxel counting mode of scattergram
         """       
         self.countVoxels = event.Checked()
+        self.renew=1
+        self.update()
         
             
     def setWholeVolume(self,event):
@@ -136,6 +140,8 @@ class Scattergram(wx.Panel):
                      the whole volume
         """       
         self.wholeVolume = event.Checked()
+        self.renew=1
+        self.update()
         
 
     def markRubberband(self,event):
@@ -145,6 +151,7 @@ class Scattergram(wx.Panel):
         Description: Sets the starting position of rubber band for zooming
         """    
         self.rubberstart=event.GetPosition()
+        print "set rubberstart to",self.rubberstart
         
     def updateRubberband(self,event):
         """
@@ -174,14 +181,14 @@ class Scattergram(wx.Panel):
         reds.set("ColocalizationLowerThreshold",y1)
         reds.set("ColocalizationUpperThreshold",y2)
         
-        print "In red:"
-        for key in reds.settings.keys():
-            if "Threshold" in key:
-                print key,reds.settings[key]
-        print "In green:"
-        for key in greens.settings.keys():
-            if "Threshold" in key:
-                print key,greens.settings[key]
+#        print "In red:"
+#        for key in reds.settings.keys():
+#            if "Threshold" in key:
+#                print key,reds.settings[key]
+#        print "In green:"
+#        for key in greens.settings.keys():
+#            if "Threshold" in key:
+#                print key,greens.settings[key]
         evt=ThresholdEvent(myEVT_THRESHOLD_CHANGED,self.GetId())
         evt.setRedThreshold(y1,y2)
         evt.setGreenThreshold(x1,x2)
@@ -191,6 +198,7 @@ class Scattergram(wx.Panel):
         self.rubberstart = None
         self.rubberend = None
         self.renew=1
+        self.update()
 
         self.Refresh()
         
@@ -235,21 +243,21 @@ class Scattergram(wx.Panel):
             green=None
 
             for i in dataunits:
-		col=[0,0,0]
+                col=[0,0,0]
                 i.getColorTransferFunction().GetColor(255,col)
                 if col[0]>col[1]:
                     self.red=i
                 elif col[1]>col[0]:
                     self.green=i
-            tp=self.timepoint
-            reddata=self.red.getTimePoint(tp)
-            greendata=self.green.getTimePoint(tp)
+            self.reddata=self.red.getTimePoint(self.timepoint)
+            self.greendata=self.green.getTimePoint(self.timepoint)
             #print "Using z=",self.z,reddata,greendata
-            scatter=ImageOperations.scatterPlot(reddata,greendata,self.z, self.countVoxels, self.wholeVolume)
+            scatter=ImageOperations.scatterPlot(self.reddata,self.greendata,self.z, self.countVoxels, self.wholeVolume)
             self.scatter=scatter.Mirror(0)
             self.renew=0
-            self.paintScattergram()
-            self.Refresh()
+        self.paintScattergram()
+        wx.GetApp().Yield(1)
+        self.Refresh()
 
     def OnPaint(self,event):
         """
@@ -287,7 +295,6 @@ class Scattergram(wx.Panel):
             x1,x2=min(x1,x2),max(x1,x2)
             y1,y2=min(y1,y2),max(y1,y2)
             d1,d2=abs(x2-x1),abs(y2-y1)
-                
             dc.SetPen(wx.Pen(wx.Colour(255,0,0),2))
             dc.SetBrush(wx.TRANSPARENT_BRUSH)
             dc.DrawRectangle(x1,y1,d1,d2)
