@@ -97,8 +97,8 @@ class LightRenderingInterface(RenderingInterface.RenderingInterface):
         Method: getRenderWindow()
         Created: 22.02.2005, KP
         Description: Returns the mayavi's render window. Added for Animator compatibility
-        """        
-        return self.visualizer.GetRenderWindow()
+        """
+        return self.visualizer.getCurrentMode().GetRenderWindow()
         
     def render(self):
 #        self.visualizer.Raise()
@@ -112,7 +112,15 @@ class LightRenderingInterface(RenderingInterface.RenderingInterface):
         Created: 28.04.2005, KP
         Description: Returns the renderer
         """        
-        return self.visualizer.getRenderer()
+        return self.visualizer.getCurrentMode().GetRenderer()
+        
+    def setVisualizer(self,visualizer):
+        """
+        Method: setVisualizer(visualizer)
+        Created: 20.06.2005, KP
+        Description: Set the visualizer instance to use
+        """        
+        self.visualizer=visualizer
 
     def createVisualizerWindow(self):
         """
@@ -120,6 +128,7 @@ class LightRenderingInterface(RenderingInterface.RenderingInterface):
         Created: 22.02.2005, KP
         Description: A method that creates an instance of mayavi
         """    
+        raise "createVisualizerWindow"
         vis=Visualization.VisualizationFrame(self.parent)
         if not self.dataUnit:
             raise "No dataunit given but attempt to create visualization window"
@@ -149,7 +158,7 @@ class LightRenderingInterface(RenderingInterface.RenderingInterface):
         Created: 22.02.2005, KP
         Description: A method that returns true if a mayavi has a visualization module loaded.
         """
-        return len(self.visualizer.getModules())
+        return len(self.visualizer.getCurrentMode().getModules())
 
         
     def doRendering(self,**kws):
@@ -186,5 +195,6 @@ class LightRenderingInterface(RenderingInterface.RenderingInterface):
         """
         visualizer=self.visualizer
         type=self.type
-        comm = "visualizer.wxrenwin.save_%s(filename)"
-        eval(eval("comm%type"))
+        print "Saving %s"%filename
+        comm = "visualizer.getCurrentMode().saveSnapshot(filename)"
+        eval(comm)
