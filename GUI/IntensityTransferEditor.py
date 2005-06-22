@@ -599,6 +599,7 @@ class IntensityTransferEditor(wx.Panel):
         gamma=self.iTF.GetGamma()
         brightness = self.iTF.GetBrightness()
         if sliders:
+            print "Setting brightness to ",brightness
             self.contrastSlider.setScaledValue(contrast)
             self.brightnessSlider.setScaledValue(brightness)
             self.gammaSlider.setScaledValue(gamma)
@@ -653,7 +654,7 @@ class IntensityTransferEditor(wx.Panel):
                      by this widget
         """
         self.iTF=TF
-        self.updateGUI()
+        self.updateGUI(1)
         self.updateGraph()
 
 
