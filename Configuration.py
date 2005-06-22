@@ -68,6 +68,8 @@ class Configuration:
         self.setConfigItem("MayaviPath","Mayavi",mayavipath,0)
 
         self.setConfigItem("ImageFormat","Output","png",0)
+	self.setConfigItem("FramePath",os.path.expanduser("~/"),0)
+	self.setConfigItem("VideoPath",os.path.expanduser("~/video.avi"),0)
 
         self.setConfigItem("DataPath","Paths","/home/kalpaha/BioImageXD/Data/",0)
         self.setConfigItem("LastPath","Paths","/home/kalpaha/BioImageXD/Data/",0)
