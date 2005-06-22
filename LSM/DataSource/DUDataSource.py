@@ -260,9 +260,14 @@ class VtiDataSource(DataSource):
         # resume data processing. First, we return the DataUnit to the caller,
         # so it can set a reference to it:
         dataunit=dataunitclass()
+        #settingsclass = "DataUnit."+self.parser.get("Type","Type")+"()"
+        
         settings = DataUnit.DataUnitSettings()
+        #settings = eval(settingsclass)
         settings = settings.readFrom(self.parser)
         self.settings = settings
+        print "self=",self
+        print "Read settings",settings.get("ColorTransferFunction")
         dataunit.setSettings(settings)
         dataunit.setDataSource(self)
         return [dataunit]
@@ -270,7 +275,7 @@ class VtiDataSource(DataSource):
     def getName(self):
         """
         Method: getName
-        Created: 18.11.2004, KP
+        Created: 18.11.2004, KPloadFrom
         Description: Returns the name of the dataset series which this datasource
                      operates on
         """
@@ -285,10 +290,6 @@ class VtiDataSource(DataSource):
         """
         raise "NEVER EVER CALL GETCOLOR AGAIN!!!"
         
-        if not self.parser.has_section("Color"):
-            return None
-        return eval(self.parser.get("Color","Color"))
-        
     def getColorTransferFunction(self):
         """
         Method: getColorTransferFunction()
@@ -296,9 +297,13 @@ class VtiDataSource(DataSource):
         Description: Returns the ctf of the dataset series which this datasource
                      operates on
         """
+        print "self=",self
         if not self.ctf:
+            print self.settings
+            print "settings.ctf=",self.settings.get("ColorTransferFunction")
             try:
-                ctf=self.parser.get("ColorTransferFunction","ColorTransferFunction")
+                #ctf=self.parser.get("ColorTransferFunction","ColorTransferFunction")
+                ctf=self.settings.get("ColorTransferFunction")
             except:
                 return None
             if not ctf:
@@ -312,6 +317,6 @@ class VtiDataSource(DataSource):
                 ctf.AddRGBPoint(0,0,0,0)
                 ctf.AddRGBPoint(255,r,g,b)
             else:
-                print "Using CTF read from dataset"
+                print "Using CTF read from dataset",ctf
             self.ctf = ctf
         return self.ctf

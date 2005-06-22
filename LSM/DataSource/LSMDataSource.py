@@ -263,6 +263,7 @@ class LsmDataSource(DataSource):
         g=self.reader.GetChannelColorComponent(self.channelNum,1)
         b=self.reader.GetChannelColorComponent(self.channelNum,2)
         return (r,g,b)
+        
     def getColorTransferFunction(self):
         """
         Method: getColorTransferFunction()
