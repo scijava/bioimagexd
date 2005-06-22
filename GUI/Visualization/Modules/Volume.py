@@ -74,7 +74,7 @@ class VolumeModule(VisualizationModule):
         self.volume.SetProperty(self.volumeProperty)
         self.setMethod(2)
         self.parent.getRenderer().AddVolume(self.volume)
-        self.setShading(1)
+        self.setShading(0)
         #self.updateRendering()
         
     def setDataUnit(self,dataunit):
@@ -83,6 +83,7 @@ class VolumeModule(VisualizationModule):
         Created: 28.04.2005, KP
         Description: Sets the dataunit this module uses for visualization
         """       
+        print "Volume got dataunit",dataunit
         if dataunit.getBitDepth()==32:
             self.setMethod(1)
         VisualizationModule.setDataUnit(self,dataunit)
@@ -171,13 +172,18 @@ class VolumeModule(VisualizationModule):
         try:
             from vtk import vtkFixedPointVolumeRayCastMapper
             self.vtkcvs=1
+
         except:
             pass
+        if self.vtkcvs:
+           rgbf=None
+        else:
+            rgbf=vtk.vtkVolumeRayCastRGBCompositeFunction
         self.method=method
         print "Setting volume rendering method to ",method
         #Ray Casting, RGBA Ray Casting, Texture Mapping, MIP
         composites = [vtk.vtkVolumeRayCastCompositeFunction,
-                      vtk.vtkVolumeRayCastRGBCompositeFunction,
+                      rgbf,
                       None,
                       vtk.vtkVolumeRayCastMIPFunction,
                       vtk.vtkVolumeRayCastIsosurfaceFunction
@@ -185,8 +191,8 @@ class VolumeModule(VisualizationModule):
         if self.vtkcvs and method == 1:
             self.mapper = vtk.vtkFixedPointVolumeRayCastMapper()
             self.volumeProperty.IndependentComponentsOff()
-        elif method==3:
-            self.mapper=vtk.vtkVolumeShearWarpMapper()
+        #elif method==3:
+        #    self.mapper=vtk.vtkVolumeShearWarpMapper()
             
         elif method in [0,1,3,4]:
             if self.vtkcvs:
@@ -195,6 +201,7 @@ class VolumeModule(VisualizationModule):
             else:
                 self.mapper = vtk.vtkVolumeRayCastMapper()
                 self.function = composites[method]()
+                print "using function",self.function
                 self.mapper.SetVolumeRayCastFunction(self.function)
         elif method==2: # texture mapping
             self.mapper = vtk.vtkVolumeTextureMapper2D()
@@ -211,7 +218,7 @@ class VolumeModule(VisualizationModule):
         """             
         if not input:
             input=self.data
-        print "Rendering!"
+        print "Rendering: ",self.mapper.__class__
         self.mapper.SetInput(input)
 #        print "self.mapper=",self.mapper
         self.mapper.Update()
@@ -323,8 +330,8 @@ class VolumeConfigurationPanel(ModuleConfigurationPanel):
         n+=1
         
         self.shadingBtn=wx.CheckBox(self.lightPanel,-1,"Use shading")
-        self.shadingBtn.SetValue(1)
-        self.shading=1
+        self.shadingBtn.SetValue(0)
+        self.shading=0
         self.shadingBtn.Bind(wx.EVT_CHECKBOX,self.onCheckShading)
         
         self.lightSizer.Add(self.shadingBtn,(4,0))

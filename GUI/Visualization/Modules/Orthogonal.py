@@ -123,7 +123,10 @@ class ImagePlaneModule(VisualizationModule):
         """       
         VisualizationModule.setDataUnit(self,dataunit)
         print "got dataunit",dataunit
-        data=self.dataUnit.getTimePoint(0)
+        if self.visualizer.getProcessedMode():
+            data=self.dataUnit.getSourceDataUnits()[0].getTimePoint(0)
+        else:
+            data=self.dataUnit.getTimePoint(0)
         self.origin = data.GetOrigin()
         self.spacing = data.GetSpacing()
         self.extent = data.GetWholeExtent()
