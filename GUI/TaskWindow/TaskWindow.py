@@ -110,15 +110,6 @@ class TaskWindow(scrolled.ScrolledPanel):
         self.buttonPanel.SetSizer(self.buttonSizer)
         self.buttonPanel.SetAutoLayout(1)
         self.mainsizer.Add(self.buttonPanel,(1,0),span=(1,1),flag=wx.EXPAND)
-
-        
-        # GET THESE
-        #self.Bind(EVT_ZSLICE_CHANGED,self.updateZSlice,id=self.preview.GetId())
-        #self.Bind(EVT_TIMEPOINT_CHANGED,self.updateTimepoint,id=ID_TIMEPOINT)
-        
-        #self.preview = ColorMergingPreview(self)
-        #self.previewSizer.Add(self.preview,(0,1),flag=wx.EXPAND|wx.ALL)
-    
     
         self.filePath=None
         self.dataUnit=None
@@ -130,11 +121,8 @@ class TaskWindow(scrolled.ScrolledPanel):
 
         self.SetSizer(self.mainsizer)
         self.SetAutoLayout(True)
-        #self.mainsizer.Fit(self)
-        #self.mainsizer.SetSizeHints(self)
         
         self.SetupScrolling()
-        #self.Bind(wx.EVT_SIZE,self.OnSize)
 
     def createItemToolbar(self):
         """
@@ -159,13 +147,13 @@ class TaskWindow(scrolled.ScrolledPanel):
             bmp=ImageOperations.vtkImageDataToPreviewBitmap(dataunit.getTimePoint(0),ctf,30,30)
             dc.SelectObject(bmp)
             dc.BeginDrawing()
-#            dc.SetFont(wx.Font(9,wx.SWISS,wx.NORMAL,wx.BOLD))
-#            dc.SetTextForeground(wx.Colour(255,255,255))
-#            w,h=dc.GetTextExtent(name)
-#            d=(32-w)/2.0
-#            dy=(32-h)
-#            if d<0:d=0
-#            dc.DrawText(name,d,dy)
+            #dc.SetFont(wx.Font(8,wx.SWISS,wx.NORMAL,wx.BOLD))
+            #dc.SetTextForeground(wx.Colour(255,255,255))
+            #w,h=dc.GetTextExtent(name)
+            #d=(32-w)/2.0
+            #dy=(32-h)
+            #if d<0:d=0
+            #dc.DrawText(name,d,dy)
             val=[0,0,0]
             ctf.GetColor(255,val)
             dc.SetBrush(wx.TRANSPARENT_BRUSH)
@@ -188,16 +176,7 @@ class TaskWindow(scrolled.ScrolledPanel):
         #return self.tb2
         #self.previewSizer.Add(self.tb2,(0,0))
         #self.Bind(EVT_DATA_UPDATE,self.updateRendering,id=self.GetId())
-        
-    def OnSize(self,event):
-        """
-        Method: OnSize(event)
-        Created: n/a, KP
-        Description: Method called when the window size changes
-        """        
-        self.SetSize(event.GetSize())
-        self.Layout()
-        self.buttonPanel.Layout()
+        return n
 
     def updateZSlice(self,event):
         """

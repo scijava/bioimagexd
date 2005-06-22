@@ -231,7 +231,6 @@ class ColocalizationWindow(TaskWindow.TaskWindow):
         Created: 25.03.2005, KP
         Description: A callback function called when the zslice is changed
         """
-        print "updateZSlice"
         if self.scatterGram:
             self.scatterGram.setZSlice(event.getValue())
             self.scatterGram.update()
@@ -364,3 +363,45 @@ class ColocalizationWindow(TaskWindow.TaskWindow):
         tp=event.getValue()
         print "timePointChanged",tp
         self.scatterGram.setTimepoint(tp)
+        
+    def createItemToolbar(self):
+        """
+        Method: createItemToolbar()
+        Created: 31.03.2005, KP
+        Description: Method to create a toolbar for the window that allows use to select processed channel
+        """      
+        n=TaskWindow.TaskWindow.createItemToolbar(self)
+        
+        coloc=vtk.vtkImageColocalizationFilter()
+        coloc.SetOutputDepth(8)
+        i=0
+        for dataunit in self.dataUnit.getSourceDataUnits():
+            coloc.AddInput(dataunit.getTimePoint(0))
+            coloc.SetColocalizationLowerThreshold(i,10)
+            coloc.SetColocalizationUpperThreshold(i,255)
+            i=i+1
+        coloc.Update()
+        ctf=vtk.vtkColorTransferFunction()
+        ctf.AddRGBPoint(0,0,0,0)
+        ctf.AddRGBPoint(255,1,1,1)
+        bmp=ImageOperations.vtkImageDataToPreviewBitmap(coloc.GetOutput(),ctf,30,30)
+        dc= wx.MemoryDC()
+
+        dc.SelectObject(bmp)
+        dc.BeginDrawing()
+        val=[0,0,0]
+        ctf.GetColor(255,val)
+        dc.SetBrush(wx.TRANSPARENT_BRUSH)
+        r,g,b=val
+        r*=255
+        g*=255
+        b*=255
+        dc.SetPen(wx.Pen(wx.Colour(r,g,b),4))
+        dc.DrawRectangle(0,0,32,32)
+        dc.EndDrawing()
+        dc.SelectObject(wx.EmptyBitmap(0,0))
+        toolid=wx.NewId()
+        n=n+1
+        name="Colocalization"
+        self.toolMgr.addItem(name,bmp,toolid,lambda e,x=n,s=self:s.selectItem(e,x))
+        

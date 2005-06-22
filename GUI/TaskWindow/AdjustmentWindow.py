@@ -23,7 +23,7 @@
            17.12.2004 JV - Fixed: get right filter settings when changing 
                            timepoint
            02.02.2005 KP - Conversion to wxPython complete, using Notebook
-                           
+
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
 
@@ -58,6 +58,8 @@ from Logging import *
 import sys
 import time
 
+from GUI import Events
+
 import TaskWindow
 import ColorTransferEditor
 
@@ -75,17 +77,18 @@ class AdjustmentWindow(TaskWindow.TaskWindow):
         Parameters:
                 root    Is the parent widget of this window
         """
+        self.operationName="Adjust"
         self.lbls=[]
         self.btns=[]
         self.entries=[]
         self.timePoint = 0
         TaskWindow.TaskWindow.__init__(self,parent,tb)
-        # Preview has to be generated here
+        # Preview has to be generated heregoto
         # self.colorChooser=None
         self.createIntensityTransferPage()
-        
+
         self.Show()
-    
+
         self.mainsizer.Layout()
         self.mainsizer.Fit(self)
 
@@ -135,7 +138,7 @@ class AdjustmentWindow(TaskWindow.TaskWindow):
         self.interpolationSizer.SetSizeHints(self.interpolationPanel)
 
         self.settingsNotebook.AddPage(self.interpolationPanel,"Interpolation")
-        
+
         self.interpolationBox=wx.BoxSizer(wx.HORIZONTAL)
 
         self.reset2Btn=wx.Button(self.interpolationPanel,-1,"Reset all timepoints")
@@ -146,8 +149,8 @@ class AdjustmentWindow(TaskWindow.TaskWindow):
         self.interpolateBtn.Bind(wx.EVT_BUTTON,self.startInterpolation)
         self.interpolationBox.Add(self.interpolateBtn)
         self.interpolationSizer.Add(self.interpolationBox,(last+1,0))
-        
-        
+
+
         #self.mainsizer.Add(self.interpolationPanel,(1,0))
         #self.panel.Layout()
         #self.mainsizer.Fit(self.panel)
@@ -188,7 +191,7 @@ class AdjustmentWindow(TaskWindow.TaskWindow):
         self.settingsNotebook.SetSelection(0)
         print "Updating settings!"
         self.updateSettings()
-        
+
     def setInterpolationTimePoints(self,event):
         """
         Method: setInterpolationTimePoints()
@@ -225,8 +228,12 @@ class AdjustmentWindow(TaskWindow.TaskWindow):
             pass
         else:
             print "Previewing tp=",tp
-            self.preview.setTimepoint(tp)
 
+            evt=Events.ChangeEvent(Events.myEVT_TIMEPOINT_CHANGED,self.GetId())
+            evt.setValue(tp)
+            print "Sending change event",tp
+            self.GetEventHandler().ProcessEvent(evt)
+            self.updateTimepoint(evt)
 
     def createButtonBox(self):
         """
@@ -236,7 +243,7 @@ class AdjustmentWindow(TaskWindow.TaskWindow):
                      Preview and Close
         """
         TaskWindow.TaskWindow.createButtonBox(self)
-        
+
         #self.processButton.SetLabel("Process Dataset Series")
         self.processButton.Bind(wx.EVT_BUTTON,self.doProcessingCallback)
 
@@ -250,13 +257,13 @@ class AdjustmentWindow(TaskWindow.TaskWindow):
         """
         TaskWindow.TaskWindow.createOptionsFrame(self)
         self.taskNameLbl.SetLabel("Adjusted dataset series name:")
-            
+
         self.paletteLbl = wx.StaticText(self,-1,"Channel palette:")
         self.commonSettingsSizer.Add(self.paletteLbl,(1,0))
         self.colorBtn = ColorTransferEditor.CTFButton(self)
         self.commonSettingsSizer.Add(self.colorBtn,(2,0))
         self.Layout()
-        
+
     def updateTimepoint(self,event):
         """
         Method: updateTimepoint(event)
@@ -265,9 +272,8 @@ class AdjustmentWindow(TaskWindow.TaskWindow):
         """
         timePoint=event.getValue()
         print "Now configuring timepoint %d"%(timePoint)
-        self.iTFEditor.setIntensityTransferFunction(
-        self.settings.getCounted("IntensityTransferFunctions",timePoint)
-        )
+        itf=self.settings.getCounted("IntensityTransferFunctions",timePoint)
+        self.iTFEditor.setIntensityTransferFunction(itf)
         self.timePoint=timePoint
  
     def copyTransferFunctionToAll(self,event=None):
@@ -276,7 +282,13 @@ class AdjustmentWindow(TaskWindow.TaskWindow):
         Created: 10.03.2005, KP
         Description: A method to copy this transfer function to all timepooints
         """
-        pass
+        itf=self.settings.getCounted("IntensityTransferFunctions",self.timePoint)
+        l=self.dataUnit.getLength()
+        for i in range(l):
+            if i!=self.timePoint:
+                self.settings.setCounted("IntensityTransferFunctions",i,itf)
+        
+                
 
     def resetTransferFunctions(self,event=None):
         """
@@ -284,9 +296,16 @@ class AdjustmentWindow(TaskWindow.TaskWindow):
         Created: 30.11.2004, KP
         Description: A method to reset all the intensity transfer functions
         """
-        pass
-
-    def startInterpolation(self):
+        l=self.dataUnit.getLength()
+        for i in range(l):
+            itf=vtk.vtkIntensityTransferFunction()
+            self.settings.setCounted("IntensityTransferFunctions",i,itf)
+            
+        itf=self.settings.getCounted("IntensityTransferFunctions",self.timePoint)
+        print "itf=",itf
+        self.iTFEditor.setIntensityTransferFunction(itf)
+        
+    def startInterpolation(self,evt):
         """
         Method: startInterpolation()
         Created: 24.11.2004, KP
