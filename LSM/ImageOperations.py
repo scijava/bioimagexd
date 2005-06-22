@@ -67,9 +67,9 @@ def paintCTFValues(ctf,height=32):
     dc.BeginDrawing()
         
     for x1 in range(0,256):
-	val=[0,0,0]
+        val=[0,0,0]
         ctf.GetColor(x1,val)
-	r,g,b = val
+        r,g,b = val
         r*=255
         g*=255
         b*=255
@@ -169,9 +169,9 @@ def lutToString(ctf):
     s=""
     for col in range(0,3):
         for i in range(0,256):
-	    val=[0,0,0]
+            val=[0,0,0]
             ctf.GetColor(i,val)
-	    r,g,b = val
+            r,g,b = val
             r*=255
             g*=255
             b*=255
@@ -182,10 +182,6 @@ def lutToString(ctf):
             s+=chr(color[col])
     return s
         
-                    
-    
-    
-
 def getAsParameterList(iTF):
     lst=[]
     lst.append(iTF.GetBrightness())
@@ -199,6 +195,7 @@ def getAsParameterList(iTF):
     return lst
     
 def setFromParameterList(iTF,list):
+    br,cr,g,mt,mv,mat,mav,mpt=list
     iTF.SetContrast(float(cr))
     iTF.SetGamma(float(g))
     iTF.SetMinimumThreshold(int(mt))
@@ -257,20 +254,18 @@ def vtkImageDataToPreviewBitmap(imageData,color,width=0,height=0,bgcolor=(0,0,0)
         ctf.AddRGBPoint(255.0,r,g,b)
     else:
         ctf=color
-    
-    # We do a simple mip that sets each pixel (x,y) of the image to have the
-    # value of the brightest voxel (x,y,0) - (x,y,z)
-    #imageData.SetUpdateExtent(imageData.GetWholeExtent())
-    #print "doing mip of ",imageData
-    #mip.Update()
-#    output=mip.GetOutput()
-    maptocolor=vtk.vtkImageMapToColors()
-    maptocolor.SetInput(mip.GetOutput())
-    maptocolor.SetLookupTable(ctf)
-    maptocolor.SetOutputFormatToRGB()
-    maptocolor.Update()
+    output=mip.GetOutput()
+    mip.Update()
+    if output.GetNumberOfScalarComponents()==1: 
+        maptocolor=vtk.vtkImageMapToColors()
+        maptocolor.SetInput(mip.GetOutput())
+        maptocolor.SetLookupTable(ctf)
+        maptocolor.SetOutputFormatToRGB()
+        maptocolor.Update()
 
-    imagedata=maptocolor.GetOutput()
+        imagedata=maptocolor.GetOutput()
+    else:
+        imagedata=mip.GetOutput()
     image = vtkImageDataToWxImage(imagedata)
 
     if not width and height:
@@ -285,6 +280,30 @@ def vtkImageDataToPreviewBitmap(imageData,color,width=0,height=0,bgcolor=(0,0,0)
     image.Rescale(width,height)
     bitmap=image.ConvertToBitmap()
     return bitmap
+
+def getPlane(data,plane,x,y,z):
+    """
+    Method: getPlane(data,plane,coord)
+    Created: 06.06.2005, KP
+    Description: Get a plane from given the volume
+    """   
+    permute=vtk.vtkImagePermute()
+    dx,dy,dz=data.GetDimensions()
+    voi=vtk.vtkExtractVOI()
+    voi.SetInput(permute.GetOutput())
+    if plane=="zy":
+        data.SetUpdateExtent(x,x,0,dy-1,0,dz-1)
+        voi.SetVOI(0,dz-1,0,dy-1,x,x)
+        permute.SetFilteredAxes(2,1,0)
+        
+    elif plane=="xz":
+        data.SetUpdateExtent(0,dx-1,y,y,0,dz-1)
+        voi.SetVOI(0,dx-1,0,dz-1,y,y)
+        permute.SetFilteredAxes(1,2,0)
+    permute.SetInput(data)
+    voi.Update()
+    return voi.GetOutput()
+
 
 def scatterPlot(imagedata1,imagedata2,z,countVoxels, wholeVolume):
     """
@@ -326,11 +345,25 @@ def scatterPlot(imagedata1,imagedata2,z,countVoxels, wholeVolume):
     return image
     
 def getZoomFactor(x1,y1,x2,y2):
+    """
+    Method: getZoomFactor(x1,y1,x2,y2)
+    Created: KP
+    Description: Calculate a zoom factor so that the image
+                 will be zoomed to be as large as possible
+                 while fitting to x2,y2
+    """       
+    
     xf=float(x2)/x1
     yf=float(y2)/y1
     return min(xf,yf)
     
 def vtkZoomImage(image,f):
+    """
+    Method: vtkZoomImage()
+    Created: KP
+    Description: Zoom a volume
+    """       
+    
     f=1.0/f
     reslice=vtk.vtkImageReslice()
     reslice.SetInput(image)
@@ -358,14 +391,30 @@ def vtkZoomImage(image,f):
     return reslice.GetOutput()
     
 def zoomImageToSize(image,x,y):
+    """
+    Method: zoomImagetoSize()
+    Created: KP
+    Description: Scale an image to a given size
+    """       
+    
     return image.Scale(x,y)
     
 def zoomImageByFactor(image,f):
+    """
+    Method: zoomImageByFactor()
+    Created: KP
+    Description: Scale an image by a given factor
+    """       
     x,y=image.GetWidth(),image.GetHeight()
     x,y=int(f*x),int(f*y)
     return zoomImageToSize(image,x,y)
 
 def getSlice(volume,zslice,startpos=None,endpos=None):
+    """
+    Method: getSlice
+    Created: KP
+    Description: Extract a given slice from a volume
+    """           
     voi=vtk.vtkExtractVOI()
     voi.SetInput(volume)
     x,y,z=volume.GetDimensions()
@@ -378,6 +427,12 @@ def getSlice(volume,zslice,startpos=None,endpos=None):
     return voi.GetOutput()
     
 def saveImageAs(imagedata,zslice,filename):
+    """
+    Method: saveImageAs
+    Created: KP
+    Description: Save a given slice of a volume
+    """       
+    
     ext=filename.split(".")[-1]        
     extMap={"tiff":"TIFF","tif":"TIFF","jpg":"JPEG","jpeg":"JPEG","png":"PNG"}
     if not extMap.has_key(ext):
@@ -391,8 +446,13 @@ def saveImageAs(imagedata,zslice,filename):
     writer.Write()
     
 def getColorTransferFunction(fg):
+    """
+    Method: getColorTransferFunction
+    Created: KP
+    Description: Return a color transfer function based on a color
+    """       
+    
     ct=vtk.vtkColorTransferFunction()
-
     ct.AddRGBPoint(0,0,0,0)
     r,g,b=fg
     r/=255.0
@@ -400,4 +460,58 @@ def getColorTransferFunction(fg):
     b/=255.0
     ct.AddRGBPoint(255,r,g,b)
     return ct    
-
+    
+def drawScaleBar(widthPx=0,widthMicro=0,voxelSize=(1,1,1),bg=(127,127,127),scaleFactor=1.0):
+    """
+    Method: drawScaleBar
+    Created: 05.06.2005, KP
+    Description: Draw a scalar bar of given size. Size is defined either
+                 in pixels or in micrometers
+    Parameters:
+        widthPx       Scalar bar's width in pixels
+        widthMicro    Scalar bar's width in micrometers
+    """         
+    vx = voxelSize[0]
+    vx*=1000000
+    print "vx=",vx,"scaleFactor=",scaleFactor
+    vx/=float(scaleFactor)
+    print "vx now=",vx
+    if widthPx:
+        widthMicro=widthPx*vx
+    else:
+        # x*vx = 10
+        widthPx=widthMicro/vx
+        print "%f micrometers is %f pixels"%(widthMicro,widthPx)
+        widthPx=int(widthPx)
+        
+    bmp = wx.EmptyBitmap(widthPx,24)
+    dc = wx.MemoryDC()
+    dc.SelectObject(bmp)
+    dc.BeginDrawing()
+    dc.SetBackground(wx.Brush(bg))
+    dc.SetBrush(wx.Brush(bg))
+    dc.SetPen(wx.Pen(bg,1))
+    dc.DrawRectangle(0,0,widthPx,24)
+    
+    dc.SetPen(wx.Pen((255,255,255),2))
+    dc.DrawLine(0,6,widthPx,6)
+    dc.DrawLine(1,3,1,9)
+    dc.DrawLine(widthPx-1,3,widthPx-1,9)
+    
+    dc.SetTextForeground((255,255,255))
+    dc.SetFont(wx.Font(8,wx.SWISS,wx.NORMAL,wx.NORMAL))
+    if int(widthMicro)==widthMicro:
+        text=u"%d\u03bcm"%widthMicro
+    else:
+        text=u"%.2f\u03bcm"%widthMicro
+    w,h=dc.GetTextExtent(text)
+    x=widthPx/2
+    x-=(w/2)
+    print "Drawing  text at ",x
+    dc.DrawText(text,x,12)
+    
+    dc.EndDrawing()
+    dc.SelectObject(wx.NullBitmap)
+    dc = None 
+    return bmp
+    
