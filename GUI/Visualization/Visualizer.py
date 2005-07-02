@@ -44,7 +44,6 @@ import Dialogs
 import Logging
 
 import DataUnit
-import DataUnitProcessing
 import MenuManager
 
 from GUI import Events
@@ -52,35 +51,14 @@ import PreviewFrame
 import os.path
 import sys
 
+import Modules
+
 visualizerInstance=None
 
 def getVisualizer():
-    print "getVisualizer() called! returning",visualizerInstance
     global visualizerInstance
+    print "getVisualizer() called! returning",visualizerInstance
     return visualizerInstance
-
-def getModes():
-    path=reduce(os.path.join,["GUI","Visualization","Modes","*.py"])
-    spath=reduce(os.path.join,[os.getcwd(),"GUI","Visualization","Modes"])
-    Logging.info("Path to modes: %s"%spath,kw="visualizer")
-    sys.path=sys.path+[spath]
-    modules=glob.glob(path)
-    moddict={}
-    for file in modules:
-        mod=file.split(".")[0:-1]
-        mod=".".join(mod)
-        mod=mod.replace("/",".")
-        mod=mod.replace("\\",".")
-        frompath=mod.split(".")[:-1]
-        frompath=".".join(frompath)
-        mod=mod.split(".")[-1]
-        module = __import__(mod,globals(),locals(),mod)
-        Logging.info("Importing %s from %s, module=%s"%(mod,frompath,module),kw="visualizer")
-        name=module.getName()
-        modclass=module.getClass()
-        moddict[name]=(None,modclass,module)
-    return moddict
-    
 
 class Visualizer:
     """
@@ -108,8 +86,10 @@ class Visualizer:
         self.timepoint = -1
         self.preload=0
         self.processedMode = 0
-        self.modes=getModes()
-        
+        self.modes=Modules.DynamicLoader.getVisualizationModes()
+        self.instances={}
+        for key in self.modes.keys():
+            self.instances[key]=None
         
         self.ID_TOOL_WIN=wx.NewId()
         self.ID_VISAREA_WIN=wx.NewId()
@@ -334,10 +314,10 @@ class Visualizer:
         if "reloadModules" in dir(self.currMode):
             self.currMode.reloadModules()
         for key in self.modes.keys():
-            mod,module=self.modes[key]
+            mod,settingclass,module=self.modes[key]
             module=reload(module)
             print "Reloaded mode ",module
-            self.modes[key]=(mod,module)
+            self.modes[key]=(mod,settingclass,module)
         return
         # Borrowed from mayavi
         my_dir = os.path.dirname (os.path.abspath (__file__))
@@ -403,10 +383,11 @@ class Visualizer:
         if self.currMode:
             self.currMode.deactivate()
 
-        modeinst,modeclass,module=self.modes[mode]
+        modeclass,settingclass,module=self.modes[mode]
+        modeinst=self.instances[mode]
         if not modeinst:
             modeinst=modeclass(self.visWin,self)
-            self.modes[mode]=(modeinst,modeclass,module)
+            self.instances[mode]=modeinst
         if not module.showZoomToolbar():
             self.toolWin.SetDefaultSize((500,0))
         else:

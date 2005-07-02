@@ -1,30 +1,15 @@
 #! /usr/bin/env python
 # -*- coding: iso-8859-1 -*-
 """
- Unit: ColocalizationWindow.py
- Project: Selli
- Created: 03.11.2004
- Creator: KP
+ Unit: ColocalizationPanel
+ Project: BioImageXD
+ Created: 03.11.2004, KP
  Description:
 
  A wx.Python wx.Dialog window that is used to control the settings for the
  colocalization module. Expects to be handed a ColocalizationDataUnit()
  containing the datasets from which the colocalization map is generated.
  Uses the PreviewFrame for previewing.
-
- Modified: 03.11.2004 KP - Added support for getting the file names from the
-                           DataUnits.
-           08.11.2004 KP - Simplified the preview code. Now the preview frame
-                           is just handed the dataunit and updatePreview() 
-                           called when needed
-           08.11.2004 KP - A button and supporting methods for setting 
-                           colocalization color
-           07.12.2004 JM - Fixed: Clicking cancel on color selection no longer
-                           causes exception
-                           Fixed: Color selection now shows the current color 
-                           as default
-           14.12.2004 JM - Colocalization depth is now saved and loaded properly
-           03.02.2005 KP - Window converted to wx.Python and made to use a notebook
 
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
@@ -43,7 +28,7 @@
  along with this program; if not, write to the Free Software
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
-__author__ = "Selli Project <http://sovellusprojektit.it.jyu.fi/selli/>"
+__author__ = "BioImageXD Project <http://www.bioimagexd.org>"
 __version__ = "$Revision: 1.40 $"
 __date__ = "$Date: 2005/01/13 14:52:39 $"
 
@@ -60,23 +45,7 @@ import time
 
 from GUI import Events
 
-import TaskWindow
-
-def showColocalizationWindow(colocalizationUnit,mainwin):
-    """
-    Function: showColocalizationWindow(colocalizationUnit,mainwin)
-    Created: 15.11.2004
-    Creator: KP
-    Description: A function that displays the colocalization window and
-                 waits for the user to create the colocalization. After
-                 the colocalization is done or cancel is pressed, the results
-                 are returned to the caller
-    """
-
-    result=TaskWindow.showTaskWindow(ColocalizationWindow,colocalizationUnit,
-                                     mainwin)
-
-    return result
+import TaskPanel
 
 infoString="""<html><body bgcolor=%(bgcolor)s">
 <table>
@@ -93,9 +62,9 @@ infoString="""<html><body bgcolor=%(bgcolor)s">
 </body></html>
 """    
 
-class ColocalizationWindow(TaskWindow.TaskWindow):
+class ColocalizationPanel(TaskPanel.TaskPanel):
     """
-    Class: ColocalizationWindow
+    Class: ColocalizationPanel
     Created: 03.11.2004, KP
     Description: A window for controlling the settings of the
                  colocalization module
@@ -111,7 +80,7 @@ class ColocalizationWindow(TaskWindow.TaskWindow):
         """
         self.scatterGram=None
         self.htmlpage=None
-        TaskWindow.TaskWindow.__init__(self,root,tb)
+        TaskPanel.TaskPanel.__init__(self,root,tb)
         self.operationName="Colocalization"
         
         self.SetTitle("Colocalization")
@@ -162,7 +131,7 @@ class ColocalizationWindow(TaskWindow.TaskWindow):
         Description: Creates a button box containing the buttons Render, 
                      Preview and Close
         """
-        TaskWindow.TaskWindow.createButtonBox(self)
+        TaskPanel.TaskPanel.createButtonBox(self)
         self.processButton.SetLabel("Do Colocalization")
         self.processButton.Bind(wx.EVT_BUTTON,self.doColocalizationCallback)
 
@@ -173,7 +142,7 @@ class ColocalizationWindow(TaskWindow.TaskWindow):
         Description: Creates a frame that contains the various widgets
                      used to control the colocalization settings
         """
-        TaskWindow.TaskWindow.createOptionsFrame(self)
+        TaskPanel.TaskPanel.createOptionsFrame(self)
 
         self.taskNameLbl.SetLabel("Colocalization name:")
 
@@ -309,7 +278,7 @@ class ColocalizationWindow(TaskWindow.TaskWindow):
         Description: A callback for the button "Do colocalization"
         """
         self.updateBitDepth()
-        TaskWindow.TaskWindow.doOperation(self)
+        TaskPanel.TaskPanel.doOperation(self)
 
     def updateBitDepth(self,event=None):
         """
@@ -330,7 +299,7 @@ class ColocalizationWindow(TaskWindow.TaskWindow):
                      that wish to update the preview
         """
         self.updateBitDepth()
-        TaskWindow.TaskWindow.doPreviewCallback(self,event)
+        TaskPanel.TaskPanel.doPreviewCallback(self,event)
         if self.scatterGram:
             #self.scatterGram.setZSlice(self.preview.z)
             self.scatterGram.setZSlice(0)
@@ -344,7 +313,7 @@ class ColocalizationWindow(TaskWindow.TaskWindow):
         Created: 25.03.2005, KP
         Description: Set the dataunit used by scattergram
         """
-        TaskWindow.TaskWindow.setCombinedDataUnit(self,dataUnit)
+        TaskPanel.TaskPanel.setCombinedDataUnit(self,dataUnit)
         self.scatterGram.setDataunit(dataUnit)
         ctf = self.settings.get("ColocalizationColorTransferFunction")
         if self.colorBtn:
@@ -370,7 +339,7 @@ class ColocalizationWindow(TaskWindow.TaskWindow):
         Created: 31.03.2005, KP
         Description: Method to create a toolbar for the window that allows use to select processed channel
         """      
-        n=TaskWindow.TaskWindow.createItemToolbar(self)
+        n=TaskPanel.TaskPanel.createItemToolbar(self)
         
         coloc=vtk.vtkImageColocalizationFilter()
         coloc.SetOutputDepth(8)

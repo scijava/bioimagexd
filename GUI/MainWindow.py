@@ -1,5 +1,4 @@
 #! /usr/bin/env python
-#! /usr/bin/env python
 # -*- coding: iso-8859-1 -*-
 """
  Unit: MainWindow.py
@@ -41,9 +40,6 @@ from TreeWidget import *
 from Logging import *
 from GUI import Events
 
-from TaskWindow import TaskWindow,ColorMergingWindow,ColocalizationWindow
-from TaskWindow import AdjustmentWindow,RestorationWindow
-
 import SettingsWindow
 import ImportDialog
 import ExportDialog
@@ -51,18 +47,16 @@ import RenderingInterface
 
 import Visualization
 
-
 import InfoWidget
 import MenuManager
 
 import Dialogs
 import AboutDialog
 
-import Reslice
-
 from DataUnit import *
 from DataSource import *
 
+import Modules
 import Urmas
 
 class MainWindow(wx.Frame):
@@ -140,6 +134,8 @@ class MainWindow(wx.Frame):
         self.loadVisualizer(None,"info")
         # HACK
         self.tree = self.visualizer.currMode.tree
+
+        self.taskPanels = Modules.DynamicLoader.getTaskModules()
 
         splash.Show(False)
         self.Show(True)
@@ -640,43 +636,37 @@ class MainWindow(wx.Frame):
         self.setButtonSelection(event.GetId())
         eid = event.GetId()
         if eid==MenuManager.ID_COLOCALIZATION:
-            moduletype=Colocalization.Colocalization
-            windowtype=ColocalizationWindow.ColocalizationWindow
+            moduletype,windowtype,mod=self.taskPanels["Colocalization"]
             unittype=ColocalizationDataUnit
             filesAtLeast=2
             filesAtMost=-1
             action="Colocalization"
         elif eid==MenuManager.ID_RESLICE:
-            moduletype=Reslice.Reslice
-            windowtype=ResliceWindow.ResliceWindow
+            moduletype,windowtype,mod=self.taskPanels["Reslice"]
             unittype=ResliceDataUnit
             filesAtLeast=1
             filesAtMost=1
             action="Reslice"
         elif eid==MenuManager.ID_COLORMERGING:
-            moduletype=ColorMerging.ColorMerging
-            windowtype=ColorMergingWindow.ColorMergingWindow
+            moduletype,windowtype,mod=self.taskPanels["Merging"]
             unittype=ColorMergingDataUnit
             filesAtLeast=2
             filesAtMost=-1
             action="Merging"
         elif eid==MenuManager.ID_ADJUST:
-            moduletype=DataUnitProcessing.DataUnitProcessing
-            windowtype=AdjustmentWindow.AdjustmentWindow
+            moduletype,windowtype,mod=self.taskPanels["Adjust"]
             unittype=CorrectedSourceDataUnit
             filesAtLeast=1
             filesAtMost=1
             action="Adjusted"
         elif eid==MenuManager.ID_RESTORE:
-            moduletype=DataUnitProcessing.DataUnitProcessing
-            windowtype=RestorationWindow.RestorationWindow
+            moduletype,windowtype,mod=self.taskPanels["Process"]
             unittype=CorrectedSourceDataUnit
             filesAtLeast=1
             filesAtMost=1
             action="Restored"
         elif eid==MenuManager.ID_VSIA:
-            moduletype=VSIA.VSIA
-            windowtype=VSIAWindow.VSIAWindow
+            moduletype,windowtype,mod=self.taskPanels["SurfaceConstruction"]
             filesAtLeast=1
             filesAtMost=1
             action="VSIA'd"

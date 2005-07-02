@@ -32,13 +32,13 @@ __author__ = "BioImageXD Project"
 __version__ = "$Revision: 1.9 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 import DataUnit
-import DataUnitProcessing
 
 import PreviewFrame
 
 def getName():return "gallery"
 def getClass():return GalleryMode
 def getImmediateRendering(): return False
+def getConfigPanel(): return None
 def getRenderingDelay(): return 500
 def showZoomToolbar(): return True
     

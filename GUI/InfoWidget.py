@@ -42,8 +42,6 @@ from Logging import *
 
 import DataUnit
 import PreviewFrame
-import DataUnitProcessing
-import ColorMerging
 
 import ColorTransferEditor
 

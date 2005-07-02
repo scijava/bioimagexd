@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 # -*- coding: iso-8859-1 -*-
 """
- Unit: ColorMergingWindow
+ Unit: MergingPanel
  Project: BioImageXD
  Created: 10.11.2004, JV
  Description:
@@ -10,11 +10,6 @@
  colocalization module. Expects to be handed a ColorCombinationDataUnit() 
  containing the datasets from which the color combination is generated.
  Uses the PreviewFrame for previewingge.
-
- Modified from ColocalizationWindow.py.
-
- Modified:  28.01.2005 KP - Changed the class over to wxPython
-            02.02.2005 KP - Converted the class to use a notebook
 
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
@@ -43,7 +38,7 @@ from PreviewFrame import *
 from IntensityTransferEditor import *
 from Logging import *
 
-import TaskWindow
+import TaskPanel
 import sys
 
 import Dialogs
@@ -51,7 +46,7 @@ import time
 import vtk
 
 
-class ColorMergingWindow(TaskWindow.TaskWindow):
+class MergingPanel(TaskPanel.TaskPanel):
     """
     Class: ColorMergingWindow
     Created: 10.11.2004, JV
@@ -68,7 +63,7 @@ class ColorMergingWindow(TaskWindow.TaskWindow):
         """
         self.alphaTF=vtk.vtkIntensityTransferFunction()
         self.operationName="Color Merging"
-        TaskWindow.TaskWindow.__init__(self,parent,tb)
+        TaskPanel.TaskPanel.__init__(self,parent,tb)
         self.SetTitle("Color Merging")
 
         
@@ -84,7 +79,7 @@ class ColorMergingWindow(TaskWindow.TaskWindow):
         Description: Creates a button box containing the buttons Render,
                      Preview and Close
         """
-        TaskWindow.TaskWindow.createButtonBox(self)
+        TaskPanel.TaskPanel.createButtonBox(self)
         #self.processButton.SetLabel("Do Color Merging")
         self.processButton.Bind(wx.EVT_BUTTON,self.doColorMergingCallback)
         
@@ -95,7 +90,7 @@ class ColorMergingWindow(TaskWindow.TaskWindow):
         Description: Creates a frame that contains the various widgets
                      used to control the colocalization settings
         """
-        TaskWindow.TaskWindow.createOptionsFrame(self)
+        TaskPanel.TaskPanel.createOptionsFrame(self)
         self.taskNameLbl.SetLabel("Merged dataset name:")
 
         self.paletteLbl = wx.StaticText(self,-1,"Channel palette:")
@@ -211,7 +206,7 @@ class ColorMergingWindow(TaskWindow.TaskWindow):
         Description: A callback for the button "Preview" and other events
                      that wish to update the preview
         """
-        TaskWindow.TaskWindow.doPreviewCallback(self,event)
+        TaskPanel.TaskPanel.doPreviewCallback(self,event)
 
     def doColorMergingCallback(self,event):
         """
@@ -228,7 +223,7 @@ class ColorMergingWindow(TaskWindow.TaskWindow):
         #self.dataUnit.setAlphaMode(lst)
         self.settings.set("AlphaMode",lst)
 
-        TaskWindow.TaskWindow.doOperation(self)
+        TaskPanel.TaskPanel.doOperation(self)
         
     def createItemToolbar(self):
         """
@@ -236,7 +231,7 @@ class ColorMergingWindow(TaskWindow.TaskWindow):
         Created: 31.03.2005, KP
         Description: Method to create a toolbar for the window that allows use to select processed channel
         """      
-        n=TaskWindow.TaskWindow.createItemToolbar(self)
+        n=TaskPanel.TaskPanel.createItemToolbar(self)
         
         merge=vtk.vtkImageMerge()
         
@@ -284,7 +279,7 @@ class ColorMergingWindow(TaskWindow.TaskWindow):
                      It is then used to get the names of all the source 
                      data units and they are added to the menu.
         """
-        TaskWindow.TaskWindow.setCombinedDataUnit(self,dataUnit)
+        TaskPanel.TaskPanel.setCombinedDataUnit(self,dataUnit)
         # We add entry "Alpha Channel" to the list of channels to allow
         # the user to edit the alpha channel for the 24-bit color merging
         #self.dataUnit.setOpacityTransfer(self.alphaTF)

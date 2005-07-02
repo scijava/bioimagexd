@@ -1,16 +1,14 @@
 #! /usr/bin/env python
 # -*- coding: iso-8859-1 -*-
 """
- Unit: ProcessingWindow.py
+ Unit: ProcessPanel
  Project: BioImageXD
  Created: 31.05.2005, KP
  Description:
 
  A task window for restoring a dataset. This includes any filtering,
  deblurring, deconvolution etc. 
- 
- Modified: 31.05.2005 KP - Split the module from dataunitprocessing
-                           
+                            
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
 
@@ -44,9 +42,9 @@ from Logging import *
 import sys
 import time
 
-import TaskWindow
+import TaskPanel
 
-class RestorationWindow(TaskWindow.TaskWindow):
+class ProcessPanel(TaskPanel.TaskPanel):
     """
     Class: RestorationWindow
     Created: 03.11.2004, KP
@@ -61,7 +59,7 @@ class RestorationWindow(TaskWindow.TaskWindow):
                 root    Is the parent widget of this window
         """
         self.timePoint = 0
-        TaskWindow.TaskWindow.__init__(self,parent,tb)
+        TaskPanel.TaskPanel.__init__(self,parent,tb)
         # Preview has to be generated here
         # self.colorChooser=None
         
@@ -79,7 +77,7 @@ class RestorationWindow(TaskWindow.TaskWindow):
         Description: Creates a button box containing the buttons Render,
                      Preview and Close
         """
-        TaskWindow.TaskWindow.createButtonBox(self)
+        TaskPanel.TaskPanel.createButtonBox(self)
         
         #self.processButton.SetLabel("Process Dataset Series")
         self.processButton.Bind(wx.EVT_BUTTON,self.doProcessingCallback)
@@ -92,7 +90,7 @@ class RestorationWindow(TaskWindow.TaskWindow):
         Description: Creates a frame that contains the various widgets
                      used to control the colocalization settings
         """
-        TaskWindow.TaskWindow.createOptionsFrame(self)
+        TaskPanel.TaskPanel.createOptionsFrame(self)
         self.taskNameLbl.SetLabel("Restored dataset series name:")
             
         self.paletteLbl = wx.StaticText(self,-1,"Channel palette:")
@@ -292,7 +290,7 @@ class RestorationWindow(TaskWindow.TaskWindow):
         Description: A callback for the button "Process Dataset Series"
         """
         self.updateFilterData()
-        TaskWindow.TaskWindow.doOperation(self)
+        TaskPanel.TaskPanel.doOperation(self)
 
     def doPreviewCallback(self,event=None):
         """
@@ -308,7 +306,7 @@ class RestorationWindow(TaskWindow.TaskWindow):
         self.updateFilterData()
         print "Update preview"
 
-        TaskWindow.TaskWindow.doPreviewCallback(self,event)
+        TaskPanel.TaskPanel.doPreviewCallback(self,event)
 
     def setCombinedDataUnit(self,dataUnit):
         """
@@ -317,10 +315,10 @@ class RestorationWindow(TaskWindow.TaskWindow):
         Description: Sets the processed dataunit that is to be processed.
                      It is then used to get the names of all the source data
                      units and they are added to the menu.
-                     This is overwritten from taskwindow since we only process
+                     This is overwritten from TaskPanel since we only process
                      one dataunit here, not multiple source data units
         """
-        TaskWindow.TaskWindow.setCombinedDataUnit(self,dataUnit)
+        TaskPanel.TaskPanel.setCombinedDataUnit(self,dataUnit)
         
         ctf = self.settings.get("ColorTransferFunction")
         if self.colorBtn:

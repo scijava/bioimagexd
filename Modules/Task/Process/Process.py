@@ -1,6 +1,6 @@
 # -*- coding: iso-8859-1 -*-
 """
- Unit: process
+ Unit: Process
  Project: BioImageXD
  Created: 25.11.2004, KP
  

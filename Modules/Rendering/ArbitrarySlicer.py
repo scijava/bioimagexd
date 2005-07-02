@@ -41,7 +41,7 @@ import Dialogs
 from Visualization.VisualizationModules import *
 
 def getClass():return ArbitrarySliceModule
-def getConfig():return ArbitrarySliceConfigurationPanel
+def getConfigPanel():return ArbitrarySliceConfigurationPanel
 def getName():return "Arbitrary Slices"
 
 class ArbitrarySliceModule(VisualizationModule):

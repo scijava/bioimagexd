@@ -36,7 +36,7 @@ from Visualization.VisualizationModules import *
 
 
 def getClass():return AxesModule
-def getConfig():return AxesConfigurationPanel
+def getConfigPanel():return AxesConfigurationPanel
 def getName():return "Axes"
 
 class AxesModule(VisualizationModule):

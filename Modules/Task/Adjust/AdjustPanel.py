@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 # -*- coding: iso-8859-1 -*-
 """
- Unit: AdjustmentWindow.py
+ Unit: AdjustPanel
  Project: BioImageXD
  Created: 24.11.2004, KP
  Description:
@@ -11,18 +11,6 @@
  including but not limited to: Correction of bleaching, mapping intensities 
  through intensity transfer
  function and noise removal.
-
- Modified: 24.11.2004 KP - Created the module
-           26.11.2004 JV - Added gui controls for filtering, no functionality
-            07.12.2004 JM - Fixed: Clicking cancel on color selection no longer 
-                            causes exception
-                            Fixed: Color selection now shows the current color 
-                            as default
-           10.12.2004 JV - Added: Passes settings to dataset in preview
-           14.12.2004 JV - Added: Disabling of filter settings
-           17.12.2004 JV - Fixed: get right filter settings when changing 
-                           timepoint
-           02.02.2005 KP - Conversion to wxPython complete, using Notebook
 
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
@@ -60,12 +48,12 @@ import time
 
 from GUI import Events
 
-import TaskWindow
+import TaskPanel
 import ColorTransferEditor
 
-class AdjustmentWindow(TaskWindow.TaskWindow):
+class AdjustPanel(TaskPanel.TaskPanel):
     """
-    Class: AdjustmentWindow
+    Class: AdjustPanel
     Created: 03.11.2004, KP
     Description: A window for processing a single dataunit
     """
@@ -82,7 +70,7 @@ class AdjustmentWindow(TaskWindow.TaskWindow):
         self.btns=[]
         self.entries=[]
         self.timePoint = 0
-        TaskWindow.TaskWindow.__init__(self,parent,tb)
+        TaskPanel.TaskPanel.__init__(self,parent,tb)
         # Preview has to be generated heregoto
         # self.colorChooser=None
         self.createIntensityTransferPage()
@@ -242,7 +230,7 @@ class AdjustmentWindow(TaskWindow.TaskWindow):
         Description: Creates a button box containing the buttons Render,
                      Preview and Close
         """
-        TaskWindow.TaskWindow.createButtonBox(self)
+        TaskPanel.TaskPanel.createButtonBox(self)
 
         #self.processButton.SetLabel("Process Dataset Series")
         self.processButton.Bind(wx.EVT_BUTTON,self.doProcessingCallback)
@@ -255,7 +243,7 @@ class AdjustmentWindow(TaskWindow.TaskWindow):
         Description: Creates a frame that contains the various widgets
                      used to control the colocalization settings
         """
-        TaskWindow.TaskWindow.createOptionsFrame(self)
+        TaskPanel.TaskPanel.createOptionsFrame(self)
         self.taskNameLbl.SetLabel("Adjusted dataset series name:")
 
         self.paletteLbl = wx.StaticText(self,-1,"Channel palette:")
@@ -353,7 +341,7 @@ class AdjustmentWindow(TaskWindow.TaskWindow):
         Created: 03.11.2004, KP
         Description: A callback for the button "Process Dataset Series"
         """
-        TaskWindow.TaskWindow.doOperation(self)
+        TaskPanel.TaskPanel.doOperation(self)
 
     def doPreviewCallback(self,event=None):
         """
@@ -364,7 +352,7 @@ class AdjustmentWindow(TaskWindow.TaskWindow):
         """
         # TODO: Validity checks, here or in dataunit
         print "Update preview"
-        TaskWindow.TaskWindow.doPreviewCallback(self,event)
+        TaskPanel.TaskPanel.doPreviewCallback(self,event)
 
     def setCombinedDataUnit(self,dataUnit):
         """
@@ -373,10 +361,10 @@ class AdjustmentWindow(TaskWindow.TaskWindow):
         Description: Sets the processed dataunit that is to be processed.
                      It is then used to get the names of all the source data
                      units and they are added to the menu.
-                     This is overwritten from taskwindow since we only process
+                     This is overwritten from TaskPanel since we only process
                      one dataunit here, not multiple source data units
         """
-        TaskWindow.TaskWindow.setCombinedDataUnit(self,dataUnit)
+        TaskPanel.TaskPanel.setCombinedDataUnit(self,dataUnit)
     
         ctf = self.settings.get("ColorTransferFunction")
         if self.colorBtn:

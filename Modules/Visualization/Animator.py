@@ -36,6 +36,7 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 def getName():return "animator"
 def getClass():return AnimatorMode
+def getConfigPanel(): return None
 def getImmediateRendering(): return False
 def getRenderingDelay(): return 10000
 def showZoomToolbar(): return False

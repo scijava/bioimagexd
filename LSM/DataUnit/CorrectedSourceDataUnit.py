@@ -34,7 +34,6 @@ import ImageOperations
 
 import vtk
 
-import DataUnitProcessing
 import Logging
 import DataSource
 from CombinedDataUnit import *

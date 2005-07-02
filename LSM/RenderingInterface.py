@@ -1,17 +1,13 @@
 # -*- coding: iso-8859-1 -*-
 """
  Unit: RenderingInterface.py
- Project: Selli
+ Project: BioImageXD
  Created: 17.11.2004, KP
  Description:
 
  The module used to render selected timepoints in a dataunit. Works as an 
  interface between LSM and MayaVi
 
- Modified: 17.11.2004 KP - Created the class.
-           13.12.2004 KP - Added code for previewing
-           22.02.2005 KP - Added methods necessary to be compatible with Heikki's animator
-           22.02.2005 KP - Introduced concept of current dataset
            
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
@@ -29,10 +25,9 @@
  You should have received a copy of the GNU General Public License
  along with this program; if not, write to the Free Software
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-
 """
 
-__author__ = "Selli Project <http://sovellusprojektit.it.jyu.fi/selli/>"
+__author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.21 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 

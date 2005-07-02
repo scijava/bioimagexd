@@ -39,7 +39,7 @@ import os.path
 import sys
 
 HIDE_DEBUG=["visualizer","init","io","scale","preview","processing"]
-KWS=["visualizer","main","init","animator","io","task","preview","scale","imageop"]
+KWS=["visualizer","main","init","animator","io","task","preview","scale","imageop","modules"]
 
 import sys
 

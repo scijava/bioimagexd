@@ -34,13 +34,13 @@ __version__ = "$Revision: 1.9 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 import DataUnit
-import DataUnitProcessing
 
 import PreviewFrame
 
 def getName():return "slices"
 def getClass():return SlicesMode
 def getImmediateRendering(): return True
+def getConfigPanel(): return None
 def getRenderingDelay(): return 1500
 def showZoomToolbar(): return True
         

@@ -39,7 +39,7 @@ import Dialogs
 from Visualization.VisualizationModules import *
 
 def getClass():return ClippingPlaneModule
-def getConfig():return ClippingPlaneConfigurationPanel
+def getConfigPanel():return ClippingPlaneConfigurationPanel
 def getName():return "Clipping Plane"
 
 

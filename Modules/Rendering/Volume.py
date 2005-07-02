@@ -40,7 +40,7 @@ import Dialogs
 from Visualization.VisualizationModules import *
 
 def getClass():return VolumeModule
-def getConfig():return VolumeConfigurationPanel
+def getConfigPanel():return VolumeConfigurationPanel
 def getName():return "Volume Rendering"
 
 

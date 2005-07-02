@@ -33,18 +33,16 @@
 __author__ = "BioImageXD Project"
 __version__ = "$Revision: 1.40 $"
 __date__ = "$Date: 2005/01/13 14:52:39 $"
-import os.path
 
+import os.path
 
 from PreviewFrame import *
 import wx
 
-import ColorMerging
-import Colocalization
-import DataUnitProcessing
 import ColorTransferEditor
 
-from Logging import *
+import Modules
+import Logging
 import vtk
 import wx.lib.scrolledpanel as scrolled
 
@@ -72,10 +70,8 @@ class IntegratedPreview(PreviewFrame):
                
         self.mip = 0
         self.previewtype=""
-        self.modules={}
-        self.modules[""]=DataUnitProcessing.DataUnitProcessing()
-        self.modules["Colocalization"]=Colocalization.Colocalization()
-        self.modules["ColorMerging"]=ColorMerging.ColorMerging()
+        self.modules=Modules.DynamicLoader.getTaskModules()
+        self.modules[""]=self.modules["Processing"]
         
         self.menu=wx.Menu()
         self.typemenu=wx.Menu()        
@@ -125,7 +121,7 @@ class IntegratedPreview(PreviewFrame):
             if eid==self.ID_COLOC:
                 self.previewtype="Colocalization"
             elif eid==self.ID_MERGE:
-                self.previewtype="ColorMerging"
+                self.previewtype="Merging"
             elif eid==self.ID_MIP:
                 self.previewtype=""
                 self.mip =1 
@@ -164,7 +160,7 @@ class IntegratedPreview(PreviewFrame):
                      function
         Parameters:
         """
-        if self.previewtype=="ColorMerging":
+        if self.previewtype=="Merging":
             return
         if self.dataUnit:
             ct = self.settings.get("%sColorTransferFunction"%self.previewtype)
@@ -239,7 +235,7 @@ class IntegratedPreview(PreviewFrame):
             self.running=1
         try:
             preview=self.dataUnit.doPreview(self.z,renew,self.timePoint)
-        except GUIError, ex:
+        except Logging.GUIError, ex:
             ex.show()
             return
         if not preview:

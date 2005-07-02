@@ -41,7 +41,7 @@ import Dialogs
 from Visualization.VisualizationModules import *
 
 def getClass():return ImagePlaneModule
-def getConfig():return ImagePlaneConfigurationPanel
+def getConfigPanel():return ImagePlaneConfigurationPanel
 def getName():return "Orthogonal Slices"
 
 

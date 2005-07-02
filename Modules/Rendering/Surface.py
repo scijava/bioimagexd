@@ -41,7 +41,7 @@ import Dialogs
 from Visualization.VisualizationModules import *
 
 def getClass():return SurfaceModule
-def getConfig():return SurfaceConfigurationPanel
+def getConfigPanel():return SurfaceConfigurationPanel
 def getName():return "Surface Rendering"
 
     

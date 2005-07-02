@@ -36,7 +36,6 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 import wx
 
 import DataUnit
-import DataUnitProcessing
 
 import Visualization.VisualizationFrame as VisualizationFrame
 
@@ -52,11 +51,14 @@ import Visualization.ModuleConfiguration as ModuleConfiguration
 import MenuManager
 import Visualization.Lights as Lights
 
+import Modules
+
 import Dialogs
 
 def getName():return "3d"
 def getClass():return RenderingMode
 def getImmediateRendering(): return False
+def getConfigPanel(): return None
 def getRenderingDelay(): return 1000
 def showZoomToolbar(): return True
 
@@ -73,7 +75,7 @@ class RenderingMode:
         self.visualizer=visualizer
         self.wxrenwin=None
         self.timepoint=0
-        self.mapping=vmods.getModules()
+        self.mapping=Modules.DynamicLoader.getRenderingModules()
         
         self.lightsManager=None
         self.configPanel=None

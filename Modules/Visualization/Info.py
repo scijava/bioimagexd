@@ -39,6 +39,7 @@ import TreeWidget
 
 def getName():return "info"
 def getClass():return InfoMode
+def getConfigPanel(): return None
 def getImmediateRendering(): return False
 def getRenderingDelay(): return 10000
 def showZoomToolbar(): return False

@@ -36,7 +36,7 @@ from Visualization.VisualizationModules import *
 
 
 def getClass():return ScaleBarModule
-def getConfig():return ScaleBarConfigurationPanel
+def getConfigPanel():return ScaleBarConfigurationPanel
 def getName():return "Scale bar"
 
 class ScaleBarModule(VisualizationModule):

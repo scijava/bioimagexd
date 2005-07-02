@@ -1,14 +1,13 @@
 #! /usr/bin/env python
 # -*- coding: iso-8859-1 -*-
 """
- Unit: ResliceWindow.py
+ Unit: ReslicePanel
  Project: BioImageXD
  Created: 04.04.2005, KP
  Description:
 
  A window for slicing the dataset in various ways
- 
-                           
+                            
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
 
@@ -40,10 +39,10 @@ from PreviewFrame import *
 import sys
 import time
 
-import TaskWindow
+import TaskPanel
 
 
-class ResliceWindow(TaskWindow.TaskWindow):
+class ReslicePanel(TaskPanel.TaskPanel):
     """
     Class: ResliceWindow
     Created: 04.04.2005, KP
@@ -57,7 +56,7 @@ class ResliceWindow(TaskWindow.TaskWindow):
         """
         self.timePoint = 0
         self.operationName="Single Dataset Series Processing"
-        TaskWindow.TaskWindow.__init__(self,parent)
+        TaskPanel.TaskPanel.__init__(self,parent)
         
         self.Show()
 
@@ -75,7 +74,7 @@ class ResliceWindow(TaskWindow.TaskWindow):
         Description: Creates a button box containing the buttons Render,
                      Preview and Close
         """
-        TaskWindow.TaskWindow.createButtonBox(self)
+        TaskPanel.TaskPanel.createButtonBox(self)
         
         self.processButton.SetLabel("Process Dataset Series")
         self.processButton.Bind(wx.EVT_BUTTON,self.doProcessingCallback)
@@ -88,7 +87,7 @@ class ResliceWindow(TaskWindow.TaskWindow):
         Description: Creates a frame that contains the various widgets
                      used to control the colocalization settings
         """
-        TaskWindow.TaskWindow.createOptionsFrame(self)
+        TaskPanel.TaskPanel.createOptionsFrame(self)
         self.taskNameLbl.SetLabel("Resliced dataset:")
             
         #controls for filtering
@@ -139,7 +138,7 @@ class ResliceWindow(TaskWindow.TaskWindow):
         Created: 03.11.2004, KP
         Description: A callback for the button "Process Dataset Series"
         """
-        TaskWindow.TaskWindow.doOperation(self)
+        TaskPanel.TaskPanel.doOperation(self)
 
     def doPreviewCallback(self,event=None):
         """
@@ -156,7 +155,7 @@ class ResliceWindow(TaskWindow.TaskWindow):
         self.settings.set("ResliceZAngle",z)
         
 
-        TaskWindow.TaskWindow.doPreviewCallback(self,event)
+        TaskPanel.TaskPanel.doPreviewCallback(self,event)
 
     def setCombinedDataUnit(self,dataUnit):
         """
@@ -165,10 +164,10 @@ class ResliceWindow(TaskWindow.TaskWindow):
         Description: Sets the processed dataunit that is to be processed.
                      It is then used to get the names of all the source data
                      units and they are added to the menu.
-                     This is overwritten from taskwindow since we only process
+                     This is overwritten from TaskPanel since we only process
                      one dataunit here, not multiple source data units
         """
-        TaskWindow.TaskWindow.setCombinedDataUnit(self,dataUnit)
+        TaskPanel.TaskPanel.setCombinedDataUnit(self,dataUnit)
 
         # We register a callback to be notified when the timepoint changes
         # We do it here because the timePointChanged() code requires the dataunit

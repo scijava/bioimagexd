@@ -39,32 +39,10 @@ from GUI import Events
 import ColorTransferEditor
 import Dialogs
 import Logging
+import Modules
 
 import glob
 import os,sys
-
-def getModules():
-    path=reduce(os.path.join,["GUI","Visualization","Modules","*.py"])
-    spath=reduce(os.path.join,[os.getcwd(),"GUI","Visualization","Modules"])
-
-    sys.path=sys.path+[spath]
-
-    modules=glob.glob(path)
-    moddict={}
-    for file in modules:
-        mod=file.split(".")[0:-1]
-        mod=".".join(mod)
-        mod=mod.replace("/",".")
-        mod=mod.replace("\\",".")
-        frompath=mod
-        mod=mod.split(".")[-1]
-        module = __import__(mod,globals(),locals(),mod)
-        Logging.info("importing %s from %s, module=%s"%(mod,frompath,module),kw="visualizer")
-        name=module.getName()
-        modclass=module.getClass()
-        settingclass=module.getConfig()
-        moddict[name]=(modclass,settingclass,module)
-    return moddict
 
 class VisualizationModule:
     """
@@ -334,7 +312,7 @@ class ModuleConfigurationPanel(wx.Panel):
         Created: 28.04.2005, KP
         Description: Refresh the modules affected by this configuration
         """     
-        modules = self.mode.getModules()
+        modules = Modules.DynamicLoader.getRenderingModules()
         j=0
         for module in modules:
             if module.getName() == self.name:

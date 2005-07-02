@@ -1,19 +1,15 @@
 #! /usr/bin/env python
 # -*- coding: iso-8859-1 -*-
 """
- Unit: VSIAWindow.py
- Project: Selli
- Created: 25.11.2004
- Creator: JV
+ Unit: SurfaceConstructionPanel
+ Project: BioImageXD
+ Created: 25.11.2004, JV
  Description:
 
  A wxPython Toplevel window that is used to process a single dataset series with
  VSIA.
  (write this)
  Modified from SingleUnitProcessingWindow
-
- Modified: 25.11.2004 JV - Created the module
-
 
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
@@ -32,7 +28,7 @@
  along with this program; if not, write to the Free Software
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
-__author__ = "Selli Project <http://sovellusprojektit.it.jyu.fi/selli/>"
+__author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.23 $"
 __date__ = "$Date: 2005/01/14 09:23:07 $"
 
@@ -47,10 +43,10 @@ from Logging import *
 import sys
 import time
 
-import TaskWindow
+import TaskPanel
 
 
-class VSIAWindow(TaskWindow.TaskWindow):
+class SurfaceConstructionpanel(TaskPanel.TaskPanel):
     """
     Class: VSIAWindow
     Created: 25.11.2004, JV
@@ -68,7 +64,7 @@ class VSIAWindow(TaskWindow.TaskWindow):
         self.frames={}
         self.oldFilter=None
 
-        TaskWindow.TaskWindow.__init__(self,root)
+        TaskPanel.TaskPanel.__init__(self,root)
         # Preview has to be generated here
         self.preview=VSIAPreview(self)
         self.preview.grid(row=0,column=0,sticky=N)
@@ -98,7 +94,7 @@ class VSIAWindow(TaskWindow.TaskWindow):
         Description: Creates a frame that contains the various widgets
                      used to control the VSIA settings
         """
-        TaskWindow.TaskWindow.createOptionsFrame(self)
+        TaskPanel.TaskPanel.createOptionsFrame(self)
         self.taskNameLbl.config(text="Processed dataset name:")
 
         self.lowerLimitVar=StringVar()
@@ -375,7 +371,7 @@ class VSIAWindow(TaskWindow.TaskWindow):
                      that wish to update the preview
         """
         self.updateFilterData()
-        TaskWindow.TaskWindow.doPreviewCallback(self,event)
+        TaskPanel.TaskPanel.doPreviewCallback(self,event)
 
     def setCombinedDataUnit(self,dataUnit):
         """
@@ -384,7 +380,7 @@ class VSIAWindow(TaskWindow.TaskWindow):
         Description: Sets the processed dataunit that is to be processed.
                      It is then used to get the names of all the source data
                      units and they are added to the listbox.
-                     This is overwritten from taskwindow since we
+                     This is overwritten from TaskPanel since we
                      only process one dataunit here, not multiple
                      source data units
         """

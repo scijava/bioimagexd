@@ -95,7 +95,6 @@ class Configuration:
         
     def insertModuleDirectories(self):
         self.insertPath(self.getPath("LSM"))
-        self.insertPath(self.getPath("Modules"))
         self.insertPath(self.getPath("GUI"))
         self.insertPath(self.getPath("Libraries"))
         
@@ -107,7 +106,7 @@ class Configuration:
         wrapping=self.getPath([vtkdir,"Wrapping","Python"])
         self.insertPath(bin)
         self.insertPath(wrapping)
-        self.insertPath(self.getConfigItem("MayaviPath","Mayavi"))
+        self.appendPath(self.getConfigItem("MayaviPath","Mayavi"))
         
     def setConfigItem(self,configItem, section,value,write=1):
         self.configItems[configItem]=value
@@ -167,3 +166,5 @@ class Configuration:
     def insertPath(self,path,n=0):
         sys.path.insert(n,path)
         
+    def appendPath(self,path):
+	sys.path.append(path)

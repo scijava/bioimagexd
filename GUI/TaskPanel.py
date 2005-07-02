@@ -1,19 +1,15 @@
 #! /usr/bin/env python
 # -*- coding: iso-8859-1 -*-
 """
- Unit: TaskWindow.py
- Project: Selli
- Created: 23.11.2004
- Creator: KP
+ Unit: TaskPanel
+ Project: BioImageXD
+ Created: 23.11.2004, KP
  Description:
 
  A panel that is a base class for all the task panels that are 
  used to control the settings for the various modules. Expects to be handed a 
  CombinedDataUnit() containing the datasets that the module processes
  Uses the Visualizer for previewing.
-
- Modified:
-    	   23.11.2004 KP - Created from ColocalizationWindow
 
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
@@ -59,12 +55,12 @@ import ImageOperations
 import ColorTransferEditor
 
 
-class TaskWindow(scrolled.ScrolledPanel):
+class TaskPanel(scrolled.ScrolledPanel):
     """
-    Class: TaskWindow
+    Class: TaskPanel
     Created: 23.11.2004, KP
-    Description: A baseclass for a window for controlling the settings of the 
-                 various task module
+    Description: A baseclass for a panel for controlling the settings of the 
+                 various task modules
     """
     def __init__(self,root,tb):
         """
