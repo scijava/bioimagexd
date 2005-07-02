@@ -611,7 +611,8 @@ class SplinePoint(TrackItem):
         start,end=self.position
         desc="SP%d(%d,%d,%d)"%(self.itemnum,self.point[0],self.point[1],self.point[2])
         return "[%s %ds:%ds]"%(desc,start,end)      
-
+    
+    def isStopped(self):return 0
 
 class EmptyItem(TrackItem):
     """
@@ -652,3 +653,69 @@ class EmptyItem(TrackItem):
         start,end=self.position
         return "[E %ds:%ds]"%(start,end)      
         
+class StopItem(TrackItem):
+    """
+    Class: StopItem
+    Created: 24.06.2005, KP
+    Description: An item representing stop in a camera movement
+    """       
+    def __init__(self,parent,size,**kws):
+        """
+        Method: __init__
+        Created: 24.06.2005, KP
+        Description: Initialize
+        """       
+        TrackItem.__init__(self,parent,"Stop",size,**kws)
+        
+    def isStopped(self):return 1
+        
+    def drawItem(self,hilight=-1):
+        """
+        Method: drawItem()
+        Created: 24.06.2005, KP
+        Description: A method that draws the item.
+        """
+        self.dc = wx.BufferedDC(wx.ClientDC(self),self.buffer)
+        self.dc.Clear()
+        self.dc.BeginDrawing()
+        self.dc.SetPen(wx.Pen((0,0,0)))
+
+        # draw the body
+        r,g,b=self.color
+        col=wx.Colour(r,g,b)
+        self.dc.SetBrush(wx.Brush(col))
+        #self.dc.SetBackground(wx.Brush(wx.BLACK))
+        self.dc.DrawRectangle(0,0,self.width,self.height)        
+
+        TrackItem.drawHeader(self)
+        
+        r,g,b=self.headercolor
+        self.dc.SetPen(wx.Pen(wx.Colour(r,g,b),2))
+        self.dc.DrawLine(self.width-1,0,self.width-1,self.height)
+
+
+        self.dc.SetTextForeground((0,0,0))
+        self.dc.SetFont(wx.Font(8,wx.SWISS,wx.NORMAL,wx.NORMAL))
+        s=self.parent.getDuration(self.GetSize()[0])
+
+        text= u"Motionless camera"
+        text2=u"Duration: %.2fs"%(s)
+        
+        self.dc.DrawText(text,5,self.labelheight+5)
+        self.dc.DrawText(text2,5,10+self.labelheight+5)
+
+        if hilight != -1:
+            self.hilight(hilight)
+ 
+        
+        self.dc.EndDrawing()
+        self.dc = None
+        
+    def __str__(self):
+        """
+        Method: __str__
+        Created: 13.04.2005, KP
+        Description: Return string representation of self
+        """  
+        start,end=self.position
+        return "[E %ds:%ds]"%(start,end)      

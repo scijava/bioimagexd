@@ -150,5 +150,4 @@ class TimeScale(wx.Panel):
         self.dc = None
     
     def onPaint(self,event):
-        print "Painting ",self.buffer
         dc=wx.BufferedPaintDC(self,self.buffer)

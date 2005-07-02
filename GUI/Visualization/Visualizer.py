@@ -151,9 +151,25 @@ class Visualizer:
         self.sliderWin.SetSashVisible(wx.SASH_TOP,False)
         self.sliderWin.SetDefaultSize((500,32))
 
-        self.timeslider=wx.Slider(self.sliderWin,value=0,minValue=0,maxValue=1,
+        self.sliderPanel=wx.Panel(self.sliderWin,-1)
+        self.prev=wx.Button(self.sliderPanel,-1,"<")
+        self.prev.SetSize((64,64))
+        self.next=wx.Button(self.sliderPanel,-1,">")
+        self.next.SetSize((64,64))
+        self.sliderbox=wx.BoxSizer(wx.HORIZONTAL)
+        self.prev.Bind(wx.EVT_BUTTON,self.onPrevTimepoint)
+        self.next.Bind(wx.EVT_BUTTON,self.onNextTimepoint)
+        
+        self.timeslider=wx.Slider(self.sliderPanel,value=0,minValue=0,maxValue=1,
         style=wx.SL_HORIZONTAL|wx.SL_AUTOTICKS|wx.SL_LABELS)
         self.timeslider.Bind(wx.EVT_SCROLL,self.onChangeTimepoint)
+
+        self.sliderbox.Add(self.prev)
+        self.sliderbox.Add(self.timeslider,1)
+        self.sliderbox.Add(self.next)
+        self.sliderPanel.SetSizer(self.sliderbox)
+        self.sliderPanel.SetAutoLayout(1)
+        self.sliderbox.Fit(self.sliderPanel)
 
         self.currMode=None
         self.currModeModule = None
@@ -166,6 +182,23 @@ class Visualizer:
         self.createToolbar()
         self.parent.Bind(wx.EVT_SIZE,self.OnSize)
         
+    def onNextTimepoint(self,evt):
+        """
+        Method: onNextTimepoint
+        Created: 26.06.2005, KP
+        Description: Go to next timepoint
+        """ 
+        if self.timepoint<self.maxTimepoint:
+            self.setTimepoint(self.timepoint+1)
+        
+    def onPrevTimepoint(self,evt):
+        """
+        Method: onPrevTimepoint
+        Created: 26.06.2005, KP
+        Description: Go to previous timepoint
+        """        
+        if self.timepoint>=1:
+            self.setTimepoint(self.timepoint-1)
     def createToolbar(self):
         """
         Method: createToolBar()
@@ -472,6 +505,7 @@ class Visualizer:
         self.dataUnit = dataunit
         count=dataunit.getLength()
         print "Setting range to",count
+        self.maxTimepoint=count-1
         self.timeslider.SetRange(0,count-1)
         showItems=0
         if self.processedMode:

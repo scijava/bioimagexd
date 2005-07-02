@@ -94,7 +94,10 @@ ID_SET_TRACK        =153
 ID_SPLINE_CLOSED    =154
 ID_SPLINE_SET_BEGIN =155
 ID_SPLINE_SET_END   =156
-        
+ID_SET_TRACK_TOTAL  =157
+ID_CLOSE_PROJECT    =158
+ID_MAINTAIN_UP      =159
+ID_SET_TRACK_RELATIVE=160
         
 class MenuManager:
     """
@@ -148,6 +151,14 @@ class MenuManager:
                     break
             menu.InsertSeparator(k)
 
+    def check(self,itemid,flag):
+        """
+        Method: check(itemid,flag)
+        Created: 25.06.2005, KP
+        Description: Check / uncheck a menu item
+        """
+        menu=self.mapping[itemid]
+        self.menus[menu].Check(itemid,flag)
         
     def addSubMenu(self,menuname,submenuname,title,menuid):
         """

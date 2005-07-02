@@ -45,15 +45,15 @@ class AxesModule(VisualizationModule):
     Created: 05.06.2005, KP
     Description: A module for showing a scale bar
     """    
-    def __init__(self,parent,visualizer):
+    def __init__(self,parent,visualizer,**kws):
         """
         Method: __init__(parent)
         Created: 03.05.2005, KP
         Description: Initialization
         """     
         self.x,self.y,self.z=-1,-1,-1
-        VisualizationModule.__init__(self,parent,visualizer)   
-        self.name = "Axes"
+        VisualizationModule.__init__(self,parent,visualizer,**kws)   
+        #self.name = "Axes"
         self.renew = 1
         self.mapper = vtk.vtkPolyDataMapper()
         
@@ -137,13 +137,13 @@ class AxesConfiguration(ModuleConfiguration):
         self.panel=AxesConfigurationPanel(self,visualizer)
         
 class AxesConfigurationPanel(ModuleConfigurationPanel):
-    def __init__(self,parent,visualizer,**kws):
+    def __init__(self,parent,visualizer,name="Axes",**kws):
         """Scale bar
         Method: __init__(parent)
         Created: 04.05.2005, KP
         Description: Initialization
         """     
-        ModuleConfigurationPanel.__init__(self,parent,visualizer,"Axes",**kws)
+        ModuleConfigurationPanel.__init__(self,parent,visualizer,name,**kws)
     
     def initializeGUI(self):
         """

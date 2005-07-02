@@ -72,13 +72,14 @@ class VisualizationModule:
     Created: 28.04.2005, KP
     Description: A class representing a visualization module
     """
-    def __init__(self,parent,visualizer):
+    def __init__(self,parent,visualizer,**kws):
         """
         Method: __init__(parent)
         Created: 28.04.2005, KP
         Description: Initialization
         """    
-        self.name="Module"
+        #self.name="Module"
+        self.name=kws["label"]
         self.timepoint = -1
         self.parent = parent
         self.visualizer=visualizer
@@ -334,6 +335,7 @@ class ModuleConfigurationPanel(wx.Panel):
         Description: Refresh the modules affected by this configuration
         """     
         modules = self.mode.getModules()
+        j=0
         for module in modules:
             if module.getName() == self.name:
                 self.setModule(module)

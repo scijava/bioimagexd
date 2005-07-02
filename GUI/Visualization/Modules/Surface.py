@@ -51,14 +51,14 @@ class SurfaceModule(VisualizationModule):
     Created: 28.04.2005, KP
     Description: A surface Rendering module
     """    
-    def __init__(self,parent,visualizer):
+    def __init__(self,parent,visualizer,**kws):
         """
         Method: __init__(parent)
         Created: 28.04.2005, KP
         Description: Initialization
         """     
-        VisualizationModule.__init__(self,parent,visualizer)   
-        self.name = "Surface Rendering"
+        VisualizationModule.__init__(self,parent,visualizer,**kws)   
+        #self.name = "Surface Rendering"
         self.normals = vtk.vtkPolyDataNormals()
         self.generateNormals = 0
         self.volumeModule = None
@@ -190,13 +190,13 @@ class SurfaceConfiguration(ModuleConfiguration):
         self.method=0
 
 class SurfaceConfigurationPanel(ModuleConfigurationPanel):
-    def __init__(self,parent,visualizer,**kws):
+    def __init__(self,parent,visualizer,name="Surface Rendering",**kws):
         """
         Method: __init__(parent)
         Created: 28.04.2005, KP
         Description: Initialization
         """     
-        ModuleConfigurationPanel.__init__(self,parent,visualizer,"Surface Rendering",**kws)
+        ModuleConfigurationPanel.__init__(self,parent,visualizer,name,**kws)
         self.method=0
             
     def initializeGUI(self):

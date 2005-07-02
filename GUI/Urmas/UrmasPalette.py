@@ -154,6 +154,13 @@ class UrmasPalette(wx.Panel):
         
         self.sizer.Add(p,flag=wx.RIGHT,border=5)
 
+        p=wx.Panel(self,-1,size=(64,64))#,style=wx.RAISED_BORDER)
+        self.ID_STOP_CAMERA=wx.NewId()
+        bmp=wx.Image(os.path.join(iconpath,"spline_stop.jpg"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
+        self.newstop=wx.StaticBitmap(p,self.ID_STOP_CAMERA,bmp,style=wx.RAISED_BORDER)
+        self.newstop.Bind(wx.EVT_MOTION,self.onToolNewStop)
+        
+        self.sizer.Add(p,flag=wx.RIGHT,border=5)
         
         self.SetSizer(self.sizer)
         self.SetAutoLayout(1)
@@ -168,6 +175,16 @@ class UrmasPalette(wx.Panel):
         
         if event.Dragging():
             self.dropItem("Spline","Perpendicular")
+            
+    def onToolNewStop(self,event):
+        """
+        Method: onToolNewStop
+        Created: 06.04.2005, KP
+        Description: A method for dragging a spline from palette
+        """
+        
+        if event.Dragging():
+            self.dropItem("Spline","Stop")
 
 
     def onToolNewCircular(self,event):

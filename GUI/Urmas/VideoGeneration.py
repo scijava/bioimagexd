@@ -152,7 +152,7 @@ class VideoGeneration(wx.Panel):
                 ffmpeg=ffmpegs[i]
                 break
         print "Using ffmpeg %s"%ffmpeg
-        commandLine="%s -r %d -s %dx%d -i \"%s\" -vcodec %s %s"%(ffmpeg,frameRate,x,y,pattern,vcodec,file)
+        commandLine="%s -b 8192 -r %d -s %dx%d -i \"%s\" -vcodec %s %s"%(ffmpeg,frameRate,x,y,pattern,vcodec,file)
         print "Command line for ffmpeg=",commandLine
         os.system(commandLine)
         if os.path.exists(file):
@@ -235,7 +235,7 @@ class VideoGeneration(wx.Panel):
 
         self.frameRateLbl=wx.StaticText(self,-1,"Frame rate:")
         self.frameRate = wx.TextCtrl(self,-1,"24")
-        self.padFrames = wx.CheckBox(self,-1,"Duplicate frames to achieve framerate")
+        self.padFrames = wx.CheckBox(self,-1,"Duplicate frames")
         self.padFrames.Bind(wx.EVT_CHECKBOX,self.onPadFrames)
         self.padFrames.SetValue(1)
         n=0
@@ -272,7 +272,7 @@ class VideoGeneration(wx.Panel):
             path=os.path.expanduser("~/")
         if not video:
             video=os.path.expanduser("~/video.avi")
-        self.rendir=wx.TextCtrl(self,-1,path,size=(350,-1))
+        self.rendir=wx.TextCtrl(self,-1,path,size=(150,-1))#,size=(350,-1))
         self.rendirLbl=wx.StaticText(self,
         -1,"Directory for rendered frames:")
         
@@ -288,7 +288,7 @@ class VideoGeneration(wx.Panel):
         self.renderingsizer.Add(self.rendir,(1,0))
         self.renderingsizer.Add(self.dirBtn,(1,1))
         
-        self.videofile=wx.TextCtrl(self,-1,video,size=(350,-1))
+        self.videofile=wx.TextCtrl(self,-1,video,size=(150,-1))
         self.videofileLbl=wx.StaticText(self,-1,"Output file name:")
         self.videofileBtn=wx.Button(self,-1,"...")
         self.videofileBtn.Bind(wx.EVT_BUTTON,self.onSelectOutputFile)

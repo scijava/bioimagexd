@@ -66,6 +66,8 @@ class Track(wx.Panel):
         self.duration=0
         self.frames=0
         height=80
+        self.stopItems=[]
+        self.positionItemLength=0
         self.editable=1
         self.SetBackgroundColour((255,255,255))
         self.control = kws["control"]
@@ -177,6 +179,15 @@ class Track(wx.Panel):
                 curritem=item
                 self.dragEndPosition = self.items.index(item)+1
         if curritem:
+            if self.stopItems:
+                ix,iy=curritem.GetPosition()
+                # Take into account the stop items also
+                for sitem in self.stopItems:
+                    sx,sy=sitem.GetPosition()
+                    if sx<ix:
+                        self.dragEndPosition+=1
+                        continue
+
             if self.previtem and self.previtem != curritem:
                 self.previtem.drawItem()
                 self.previtem.Refresh()
@@ -205,6 +216,8 @@ class Track(wx.Panel):
         """    
         self.setItemAmount(self.itemAmount)
         self.namePanel.setLabel(self.label)
+        w,h=self.positionItem.GetSize()
+        self.positionItem.SetSize((self.positionItemLength,h))
 
     def updateLabels(self):
         """
@@ -231,12 +244,13 @@ class Track(wx.Panel):
             
             self.sizer.Show(self.itemBox,0)
             self.sizer.Detach(self.itemBox)
-            for i in range(len(self.items)):
+            for i in range(len(self.items)-1,0,-1):
                 self.removeItem(i)
-            self.itemBox.Show(self.positionItem,0)
-            self.itemBox.Detach(self.positionItem)
-            self.positionItem.Destroy()
-            self.positionItem = None
+            if self.positionItem:
+                self.itemBox.Show(self.positionItem,0)
+                self.itemBox.Detach(self.positionItem)
+                self.positionItem.Destroy()
+                self.positionItem = None
             self.itemBox.Destroy()    
 
     def removeItem(self,position):
@@ -245,6 +259,7 @@ class Track(wx.Panel):
         Created: 14.04.2005, KP
         Description: Remove an item from this track
         """              
+        print "Removing item ",position
         item=self.items[position]
         self.itemBox.Show(item,0)
         self.itemBox.Detach(item)
@@ -340,6 +355,15 @@ class Track(wx.Panel):
             last.setWidth(w+diff)
         self.updateLayout()
         
+    def setToSizeTotal(self,size):
+        """
+        Method: setToSizeTotal(size)
+        Created: 19.04.2005, KP
+        Description: Set duration of all items in this track
+        """              
+        n=float(size)/len(self.items)
+        self.setToSize(n)
+
     def setToSize(self,size=8):
         """
         Method: setToSize(size)
@@ -450,7 +474,10 @@ class Track(wx.Panel):
         odict={}
         keys=[""]
         self.itemAmount = len(self.items)
-        for key in ["label","items","color","nameColor","number","itemAmount"]:
+        self.positionItemLength=0
+        if self.positionItem:
+            self.positionItemLength=self.positionItem.GetSize()[0]
+        for key in ["label","items","color","nameColor","number","itemAmount","positionItemLength"]:
             odict[key]=self.__dict__[key]
         return odict        
     
@@ -465,7 +492,10 @@ class SplineTrack(Track):
     def __init__(self,name,parent,**kws):
         Track.__init__(self,name,parent,**kws)   
         self.closed = 0
+        self.stopItems=[]
+        self.stopItemPositions=[]
         self.nameColor = (0,148,213)
+        self.maintainUpDirection=0
         self.namePanel.setColor((0,0,0),self.nameColor)
         if "item" in kws:
             self.itemClass=kws["item"]
@@ -475,6 +505,15 @@ class SplineTrack(Track):
             self.closed = kws["closed"]
         dt = UrmasPalette.UrmasDropTarget(self,"Spline")
         self.SetDropTarget(dt)
+        
+    def setMaintainUpDirection(self,flag):
+        """
+        Method: setMaintainUpDirection(flag)
+        Created: 25.06.2005, KP
+        Description: Toggles whether up direction is maintained in track
+        """     
+        print "Will maintain up direction: %s"%(flag!=0)
+        self.maintainUpDirection=flag
         
     def getClosed(self):
         """
@@ -518,6 +557,7 @@ class SplineTrack(Track):
                 self.addSplinePoint(pos,(i==3),point=bounds[i])
                 pos=pos+1
             self.setClosed(1,0)
+            self.setMaintainUpDirection(1)
         elif data=="Perpendicular":
             pos = 0
             if len(self.items):
@@ -538,7 +578,12 @@ class SplineTrack(Track):
                 self.addSplinePoint(pos,(i==3),point=pts[i])
                 pos=pos+1
             self.setClosed(1,0)
-            
+        # If this is a stop-camera item
+        elif data=="Stop":
+            pos=self.dragEndPosition
+            self.addStopPoint(pos)
+            self.Refresh()
+            self.Layout()
         else:
             dlg = wx.TextEntryDialog(self,"How many control points should the camera path have:","Configure Camera path")
             dlg.SetValue("5")
@@ -552,9 +597,11 @@ class SplineTrack(Track):
                 for i in range(val):
                     self.addSplinePoint(pos)
                     pos=pos+1
-                
+                self.setMaintainUpDirection(1)
+
                 self.Refresh()
                 self.Layout()
+                
         # If there were no items before this, then expand to max
         if not oldlen:
             self.expandToMax()
@@ -569,7 +616,47 @@ class SplineTrack(Track):
         if not self.duration:
             return 0
         return self.splineEditor.getSplineLength(splinepoint,splinepoint+1)
+
+    def setToRelativeSize(self,size):
+        """
+        Method: setToRelativeSize(size)
+        Created: 19.04.2005, KP
+        Description: Set duration of all items in this track
+        """              
+        n=len(self.items)
+        total=self.splineEditor.getSplineLength(0,n-1)
         
+        if not n:
+            return
+        
+        tot=0
+        last=0
+        print "total size=",total," (pixels=",size,")"
+        for i in self.items:
+            n=self.getSplineLength(i.getItemNumber())
+            if n:
+                percent=float(n)/total
+                print "item ",i.getItemNumber(),"is ",n,"which is ",percent,"percent"
+    
+                i.setWidth(size*percent)
+                tot+=size*percent
+                last=i
+            else:
+                i.setWidth(8)
+       
+        self.updateLayout()
+            
+
+
+    def getStopItems(self):
+        """
+        Method: getItems()
+        Created: 19.04.2005, KP
+        Description: Return items in this track
+        """ 
+        return self.stopItems
+
+
     def getSplinePoint(self,point):
         """
         Method: getSplinePoint
@@ -594,12 +681,22 @@ class SplineTrack(Track):
         Created: 14.04.2005, KP
         Description: Remove an item from this track
         """
-        self.removeItem(position)
+        #self.removeItem(position)
         self.showSpline()
         self.Layout()
-        #self.sizer.Fit(self)        
+        #self.sizer.Fit(self)     
 
-        
+    def addStopPoint(self,position):
+        """
+        Method: addStopPoint
+        Created: 24.06.2005, KP
+        Description: A method to add a stop in the camera movement
+        """
+        h=self.namePanel.GetSize()[1]
+
+        item=StopItem(self,(20,h))
+        self.itemBox.Insert(position+1,item)
+        self.stopItems.append(item)
         
     def addSplinePoint(self,position,update=1,**kws):
         """
@@ -646,6 +743,20 @@ class SplineTrack(Track):
             self.Layout()
             #self.sizer.Fit(self)
             
+    def refresh(self):
+        """
+        Method: refresh()
+        Created: 11.04.2005, KP
+        Description: Method called by UrmasPersist to allow the object
+                     to refresh before it's items are created
+        """    
+        Track.refresh(self)
+        # If the stopItemPositions has been stored as a string
+        # then eval it back to list format
+        if type(self.stopItemPositions)==type(""):
+            self.stopItemPositions=eval(self.stopItemPositions)
+        for pos in self.stopItemPositions:
+            self.addStopPoint(pos)
 
         
     def __getstate__(self):
@@ -655,7 +766,35 @@ class SplineTrack(Track):
         Description: Return the dict that is to be pickled to disk
         """      
         odict = Track.__getstate__(self)
-        for key in ["closed"]:
+        self.stopItemAmount=len(self.stopItems)
+        n=0
+        pos=0
+        self.stopItemPositions=[]
+        # Here we need to serialize the positions of the stop items
+        # to be able to restore them in their proper places
+        for item in self.stopItems:
+            # Get the position of the stop item
+            x,y=item.GetPosition()
+            # if there's only one item
+            if len(self.items)==1:
+                # determine if we are before or after it
+                flag=(self.items[0].GetPosition()[0]<x)
+                self.stopItemPositions=[flag]
+            else:
+                # otherwise go through all the items
+                for i in range(len(self.items)-1):
+                    x2,y2=self.items[i].GetPosition()
+                    x3,y3=self.items[i+1].GetPosition()
+                    # if we're between items i and i+1
+                    if x2<x and x3>x:
+                        # store that position in the list
+                        self.stopItemPositions.append(n+i+1)
+                        n+=1
+                        break
+        # convert the list to string since UrmasPersist cannot
+        # persist list of ints
+        self.stopItemPositions=str(self.stopItemPositions)
+        for key in ["closed","stopItems","stopItemPositions","maintainUpDirection"]:
             odict[key]=self.__dict__[key]
         return odict        
         
@@ -688,6 +827,17 @@ class SplineTrack(Track):
         Method: setItemAmount
         Created: 20.04.2005, KP
         Description: A method to set the amount of items in this track
+        """               
+        self.remove()
+        self.initTrack()
+        for i in range(n):
+            self.addSplinePoint(i,0)
+            
+    def setStopItemAmount(self,n):
+        """
+        Method: setStopItemAmount
+        Created: 24.06.2005, KP
+        Description: A method to set the amount of stop items in this track
         """               
         self.remove()
         self.initTrack()

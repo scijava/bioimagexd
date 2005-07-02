@@ -117,9 +117,12 @@ class UrmasWindow(wx.SashLayoutWindow):
         mgr.remove(MenuManager.ID_RENDER_PREVIEW)
         mgr.remove(MenuManager.ID_SAVE)
         mgr.remove(MenuManager.ID_SET_TRACK)
+        mgr.remove(MenuManager.ID_SET_TRACK_RELATIVE)
+        mgr.remove(MenuManager.ID_MAINTAIN_UP)
         mgr.remove(MenuManager.ID_SPLINE_CLOSED)
         mgr.remove(MenuManager.ID_SPLINE_SET_BEGIN)
         mgr.remove(MenuManager.ID_SPLINE_SET_END)
+        mgr.remove(MenuManager.ID_CLOSE_PROJECT)
 
         mgr.removeMenu("track")
         mgr.removeMenu("rendering")
@@ -139,6 +142,7 @@ class UrmasWindow(wx.SashLayoutWindow):
         
         mgr.addMenuItem("file",MenuManager.ID_OPEN_PROJECT,"Open project...","Open a BioImageXD Animator Project",self.onMenuOpenProject,before=MenuManager.ID_IMPORT)
         mgr.addMenuItem("file",MenuManager.ID_SAVE_PROJECT,"Save project as...","Save current BioImageXD Animator Project",self.onMenuSaveProject,before=MenuManager.ID_IMPORT)
+        mgr.addMenuItem("file",MenuManager.ID_CLOSE_PROJECT,"Close project","Close this Animator Project",self.onMenuCloseProject,before=MenuManager.ID_IMPORT)
         mgr.addSeparator("file",before=MenuManager.ID_IMPORT)
         
         mgr.createMenu("addtrack","&Add Track",place=0)
@@ -152,7 +156,8 @@ class UrmasWindow(wx.SashLayoutWindow):
         mgr.addMenuItem("track",MenuManager.ID_FIT_TRACK,"Expand to maximum","Expand the track to encompass the whole timeline",self.onMaxTrack)
         mgr.addMenuItem("track",MenuManager.ID_MIN_TRACK,"Shrink to minimum","Shrink the track to as small as possible",self.onMinTrack)
         mgr.addMenuItem("track",MenuManager.ID_SET_TRACK,"Set item size","Set each item on this track to be of given size",self.onSetTrack)
-        
+        mgr.addMenuItem("track",MenuManager.ID_SET_TRACK_TOTAL,"Set total length","Set total length of items on this track",self.onSetTrackTotal)
+        mgr.addMenuItem("track",MenuManager.ID_SET_TRACK_RELATIVE,"Set to physical length","Set the length of items on this track to be relative to their physical length",self.onSetTrackRelative)
         mgr.addMenuItem("rendering",MenuManager.ID_ANIMATE,"&Animated rendering","Select whether to produce animation or still images",self.onMenuAnimate,check=1)
         mgr.addSeparator("rendering")
         mgr.addMenuItem("rendering",MenuManager.ID_RENDER_PREVIEW,"Rendering &Preview","Preview rendering",self.onMenuRender)
@@ -161,6 +166,8 @@ class UrmasWindow(wx.SashLayoutWindow):
         mgr.addMenuItem("camera",MenuManager.ID_SPLINE_CLOSED,"&Closed Path","Set the camera path to open / closed.",self.onMenuClosedSpline,check=1)
         mgr.addMenuItem("camera",MenuManager.ID_SPLINE_SET_BEGIN,"&Begin at the end of previous path","Set this camera path to begin where the previous path ends",self.onMenuSetBegin)
         mgr.addMenuItem("camera",MenuManager.ID_SPLINE_SET_END,"&End at the beginning of next path","Set this camera path to end where the next path starts",self.onMenuSetEnd)
+        mgr.addSeparator("camera")
+        mgr.addMenuItem("camera",MenuManager.ID_MAINTAIN_UP,"&Maintain up direction",self.onMenuSetMaintainUp,check=1)
             
         mgr.disable(MenuManager.ID_SPLINE_SET_BEGIN)
         mgr.disable(MenuManager.ID_SPLINE_SET_END)
@@ -173,9 +180,12 @@ class UrmasWindow(wx.SashLayoutWindow):
         """
         spltracks=len(self.control.timeline.getSplineTracks())
         flag=(spltracks>=2)
-        print "updateMenus()",spltracks
+        #print "updateMenus()",spltracks
         self.menuManager.enable(MenuManager.ID_SPLINE_SET_BEGIN)
         self.menuManager.enable(MenuManager.ID_SPLINE_SET_END)
+        active = self.control.getSelectedTrack()
+        if active and "maintainUpDirection" in dir(active):
+            self.menuManager.check(MenuManager.ID_MAINTAIN_UP,active.maintainUpDirection)
         
     def onMenuMayavi(self,event):
         """
@@ -233,6 +243,49 @@ class UrmasWindow(wx.SashLayoutWindow):
         print "Setting to size ",size,"(",val,"seconds)"
         active = self.control.getSelectedTrack()
         active.setToSize(size)
+        
+    def onSetTrackRelative(self,evt):
+        """
+        Method: onSetTrackTotal
+        Created: 25.06.2005, KP
+        Description: Set the length of items in a track relative to their physical size
+        """
+        active = self.control.getSelectedTrack()
+        
+        dlg = wx.TextEntryDialog(self,"Set total duration (seconds) of items in track:","Set track duration")
+        dlg.SetValue("30")
+        val=5
+        if dlg.ShowModal()==wx.ID_OK:
+            try:
+                val=int(dlg.GetValue())
+            except:
+                return
+        size=val*self.control.getPixelsPerSecond()
+        print "Setting to size ",size,"(",val,"seconds)"
+
+        active.setToRelativeSize(size)
+        
+
+    def onSetTrackTotal(self,evt):
+        """
+        Method: onSetTrackTotal
+        Created: 23.06.2005, KP
+        Description: Set the total length of items in a track
+        """
+
+        dlg = wx.TextEntryDialog(self,"Set total duration (seconds) of items in track:","Set track duration")
+        dlg.SetValue("30")
+        val=5
+        if dlg.ShowModal()==wx.ID_OK:
+            try:
+                val=int(dlg.GetValue())
+            except:
+                return
+        size=val*self.control.getPixelsPerSecond()
+        print "Setting to size ",size,"(",val,"seconds)"
+        active = self.control.getSelectedTrack()
+        active.setToSizeTotal(size)
+
 
     def onMaxTrack(self,evt):
         """
@@ -260,6 +313,16 @@ class UrmasWindow(wx.SashLayoutWindow):
         """
         active = self.control.getSelectedTrack()
         self.control.timeline.setEndToNext(active)
+        
+    def onMenuSetMaintainUp(self,evt):
+        """
+        Method: onMenuSetMaintainUp
+        Created: 18.04.2005, KP
+        Description: Set the track to maintain up direction
+        """
+        active = self.control.getSelectedTrack()
+        if "setMaintainUpDirection" in dir(active):
+            active.setMaintainUpDirection(evt.IsChecked())
         
     def onMenuClosedSpline(self,evt):
         """
@@ -307,6 +370,15 @@ class UrmasWindow(wx.SashLayoutWindow):
         """
         self.settingswindow=SettingsWindow.SettingsWindow(self)
         self.settingswindow.ShowModal()
+        
+    def onMenuCloseProject(self,event):
+        """
+        Method: onMenuCloseProject(self,event)
+        Created: 24.06.2005, KP
+        Description: Reset the animator
+        """
+        self.control.resetAnimator()
+
 
     def onMenuOpenProject(self,event):
         """

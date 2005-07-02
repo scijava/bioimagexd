@@ -122,7 +122,6 @@ class NamePanel(wx.Panel):
         Description: Set the label
         """
         self.label=label
-        print "Changing label to ",self.label
         self.paintLabel()
 
 

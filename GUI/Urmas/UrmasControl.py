@@ -83,6 +83,14 @@ class UrmasControl:
         p=UrmasPersist.UrmasPersist(self)
         p.persist(filename)
         
+    def resetAnimator(self):
+        """
+        Method: resetAnimator()
+        Created: 24.06.2005, KP
+        Description: Reset the animator
+        """    
+        self.clearGUI()
+        self.updateLayouts()
 
     def readFromDisk(self,filename):
         """

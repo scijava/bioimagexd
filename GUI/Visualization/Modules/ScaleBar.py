@@ -45,15 +45,15 @@ class ScaleBarModule(VisualizationModule):
     Created: 05.06.2005, KP
     Description: A module for showing a scale bar
     """    
-    def __init__(self,parent,visualizer):
+    def __init__(self,parent,visualizer,**kws):
         """
         Method: __init__(parent)
         Created: 03.05.2005, KP
         Description: Initialization
         """     
         self.x,self.y,self.z=-1,-1,-1
-        VisualizationModule.__init__(self,parent,visualizer)   
-        self.name = "Scale bar"
+        VisualizationModule.__init__(self,parent,visualizer,**kws)   
+        #self.name = "Scale bar"
         self.renew = 1
         self.mapper = vtk.vtkDataSetMapper()
         
@@ -226,13 +226,13 @@ class ScaleBarConfiguration(ModuleConfiguration):
         self.panel=ScaleBarConfigurationPanel(self,visualizer)
         
 class ScaleBarConfigurationPanel(ModuleConfigurationPanel):
-    def __init__(self,parent,visualizer,**kws):
+    def __init__(self,parent,visualizer,name="Scale bar",**kws):
         """
         Method: __init__(parent)
         Created: 04.05.2005, KP
         Description: Initialization
         """     
-        ModuleConfigurationPanel.__init__(self,parent,visualizer,"Scale bar",**kws)
+        ModuleConfigurationPanel.__init__(self,parent,visualizer,name,**kws)
     
     def initializeGUI(self):
         """

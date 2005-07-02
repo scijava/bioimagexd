@@ -106,7 +106,12 @@ class RestorationWindow(TaskWindow.TaskWindow):
         self.settingsNotebook.AddPage(self.filtersPanel,"Filtering")
         
         self.filtersSizer=wx.GridBagSizer()
-        
+        # Edge preserving smoothing
+        self.doAnisoptropicCheckbutton = wx.CheckBox(self.filtersPanel,
+        -1,"Edge Preserving Smoothing")
+        self.doAnisoptropicCheckbutton.Bind(wx.EVT_CHECKBOX,self.doFilterCheckCallback)
+
+
         #Median Filtering
         self.doMedianCheckbutton = wx.CheckBox(self.filtersPanel,
         -1,"Median Filtering")
@@ -123,17 +128,22 @@ class RestorationWindow(TaskWindow.TaskWindow):
         self.neighborhoodYLbl=wx.StaticText(self.filtersPanel,-1,"Y:")
         self.neighborhoodZLbl=wx.StaticText(self.filtersPanel,-1,"Z:")
 
-        
-        self.filtersSizer.Add(self.doMedianCheckbutton,(1,0))
-        self.filtersSizer.Add(self.neighborhoodLbl,(2,0))
-
-        self.filtersSizer.Add(self.neighborhoodXLbl,(3,0))
-        self.filtersSizer.Add(self.neighborhoodX,(3,1))
-        self.filtersSizer.Add(self.neighborhoodYLbl,(4,0))
-        self.filtersSizer.Add(self.neighborhoodY,(4,1))
-        self.filtersSizer.Add(self.neighborhoodZLbl,(5,0))
-        self.filtersSizer.Add(self.neighborhoodZ,(5,1))
-
+        n=0
+        self.filtersSizer.Add(self.doAnisoptropicCheckbutton,(n,0))
+        n+=1
+        self.filtersSizer.Add(self.doMedianCheckbutton,(n,0))
+        n+=1
+        self.filtersSizer.Add(self.neighborhoodLbl,(n,0))
+        n+=1
+        self.filtersSizer.Add(self.neighborhoodXLbl,(n,0))
+        self.filtersSizer.Add(self.neighborhoodX,(n,1))
+        n+=1
+        self.filtersSizer.Add(self.neighborhoodYLbl,(n,0))
+        self.filtersSizer.Add(self.neighborhoodY,(n,1))
+        n+=1
+        self.filtersSizer.Add(self.neighborhoodZLbl,(n,0))
+        self.filtersSizer.Add(self.neighborhoodZ,(n,1))
+        n+=1
         #Solitary Filtering
 
         self.doSolitaryCheckbutton = wx.CheckBox(self.filtersPanel,
@@ -151,18 +161,23 @@ class RestorationWindow(TaskWindow.TaskWindow):
         self.solitaryThresholdLbl=wx.StaticText(self.filtersPanel,-1,
         "Processing threshold:")
 
-        self.filtersSizer.Add(self.doSolitaryCheckbutton,(6,0))
-        self.filtersSizer.Add(self.solitaryLbl,(7,0))
-        self.filtersSizer.Add(self.solitaryXLbl,(8,0))
-        self.filtersSizer.Add(self.solitaryX,(8,1))
-        self.filtersSizer.Add(self.solitaryYLbl,(9,0))
-        self.filtersSizer.Add(self.solitaryY,(9,1))
-
-        self.filtersSizer.Add(self.solitaryThresholdLbl,(10,0))
-        self.filtersSizer.Add(self.solitaryThreshold,(10,1))
         
+        self.filtersSizer.Add(self.doSolitaryCheckbutton,(n,0))
+        n+=1
+        self.filtersSizer.Add(self.solitaryLbl,(n,0))
+        n+=1
+        self.filtersSizer.Add(self.solitaryXLbl,(n,0))
+        self.filtersSizer.Add(self.solitaryX,(n,1))
+        n+=1
+        self.filtersSizer.Add(self.solitaryYLbl,(n,0))
+        self.filtersSizer.Add(self.solitaryY,(n,1))
+        n+=1
+        self.filtersSizer.Add(self.solitaryThresholdLbl,(n,0))
+        self.filtersSizer.Add(self.solitaryThreshold,(n,1))
+        n+=1
         self.filtersPanel.SetSizer(self.filtersSizer)
         self.filtersPanel.SetAutoLayout(1)
+        self.filtersSizer.Fit(self.filtersPanel)
 
     def updateTimepoint(self,event):
         """
@@ -248,7 +263,7 @@ class RestorationWindow(TaskWindow.TaskWindow):
         Description: A method used to set the right values in dataset
                      from filter GUI widgets
         """
-
+        self.settings.set("AnisotropicDiffusion",self.doAnisoptropicCheckbutton.GetValue())
         self.settings.set("MedianFiltering",self.doMedianCheckbutton.GetValue())
         self.settings.set("SolitaryFiltering",self.doSolitaryCheckbutton.GetValue())
         nbh=(self.neighborhoodX.GetValue(),

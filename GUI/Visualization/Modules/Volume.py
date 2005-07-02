@@ -50,14 +50,14 @@ class VolumeModule(VisualizationModule):
     Created: 28.04.2005, KP
     Description: A volume Rendering module
     """    
-    def __init__(self,parent,visualizer):
+    def __init__(self,parent,visualizer,**kws):
         """
         Method: __init__(parent)
         Created: 28.04.2005, KP
         Description: Initialization
         """     
-        VisualizationModule.__init__(self,parent,visualizer)   
-        self.name = "Volume Rendering"
+        VisualizationModule.__init__(self,parent,visualizer,**kws)   
+        #self.name = "Volume Rendering"
         self.quality = 10
         self.method=2
         self.opacityTransferFunction = vtk.vtkPiecewiseFunction()
@@ -256,14 +256,14 @@ class VolumeConfiguration(ModuleConfiguration):
         
 
 class VolumeConfigurationPanel(ModuleConfigurationPanel):
-    def __init__(self,parent,visualizer,**kws):
+    def __init__(self,parent,visualizer,name="Volume Rendering",**kws):
         """
         Method: __init__(parent)
         Created: 28.04.2005, KP
         Description: Initialization
         """     
         self.method=2
-        ModuleConfigurationPanel.__init__(self,parent,visualizer,"Volume Rendering",**kws)
+        ModuleConfigurationPanel.__init__(self,parent,visualizer,name,**kws)
         self.editFlag=0
 
     def initializeGUI(self):
@@ -440,5 +440,6 @@ class VolumeConfigurationPanel(ModuleConfigurationPanel):
             self.Layout()
 
         self.onSetQuality(None)
-        self.module. updateData()
-        self.module.updateRendering()
+        self.module.updateData()
+        # module.updateData() will call updateRendering()
+        #self.module.updateRendering()

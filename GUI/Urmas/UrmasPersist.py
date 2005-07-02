@@ -134,7 +134,10 @@ class UrmasPersist:
             #print code
             codeobj=compile(code,"Depersist","single")
             #print "code=",code
-            eval(codeobj,globals(),locals())
+            try:
+                eval(codeobj,globals(),locals())
+            except:
+                print "Failed to depersist:\n",code
             #eval(code,globals(),locals())
         obj=eval("self.%s"%s)
         if "refresh" in dir(obj):

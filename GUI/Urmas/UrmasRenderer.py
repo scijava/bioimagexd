@@ -62,6 +62,9 @@ class UrmasRenderer:
         """    
         self.renderingInterface = RenderingInterface.getRenderingInterface(1)
         self.oldTimepoint=-1
+        self.lastpoint=None
+        self.currTrack=None
+        self.lastSplinePoint=None
 
     def startAnimation(self,control):
         """
@@ -117,11 +120,22 @@ class UrmasRenderer:
 
         self.splineEditor = control.getSplineEditor()
         spf = duration / float(frames)
+
+        if preview:
+            cam = self.splineEditor.getCamera()
+            self.ren = self.splineEditor.renderer
+        else:
+            self.ren = self.renderingInterface.getRenderer()
+            cam = self.ren.GetActiveCamera()
+        self.cam = cam
+        #cam.SetViewUp(self.splineEditor.get_camera().GetViewUp())
+        
+        
+#        cam.ComputeViewPlaneNormal()
+#        cam.OrthogonalizeViewUp()
+
         for n in range(frames):
-            if preview:
-                self.renderPreviewFrame(n,(n+1)*spf,spf)
-            else:
-                self.renderFrame(n,(n+1)*spf,spf)
+            self.renderFrame(n,(n+1)*spf,spf,preview=preview)
         if not preview:
             pass
 #            self.dlg.Destroy()
@@ -154,14 +168,30 @@ class UrmasRenderer:
         tracks = self.control.timeline.getSplineTracks()
         points=[]
         for track in tracks:
+            # See the stop items first
+            for item in track.getStopItems():
+                start,end=item.getPosition()
+                if time >= start and time <= end:
+                    print "Found in stop items"
+                    return item
+            
             for item in track.getItems():
                 start,end=item.getPosition()
                 if time >= start and time <= end:
+                    if track != self.currTrack:
+                        # Reset camera everytime we switch tracks
+                        self.cam.SetFocalPoint(0,0,0)        
+                        self.cam.SetViewUp((0,0,1))        
+                        self.ren.ResetCamera()
+
+                        self.currTrack=track
+                        track.showSpline()
                     return item
+                    
                 
         return None
         
-    def renderFrame(self,frame,timepos,spf):
+    def renderFrame(self,frame,timepos,spf,preview=0):
         """
         Method: renderFrame(frame,time)
         Created: 04.04.2005, KP
@@ -171,9 +201,9 @@ class UrmasRenderer:
         time    The current time in the timeline
         spf     Seconds per one frame
         """            
-
+        print "renderFrame at ",timepos
         timepoint = self.getTimepointAt(timepos)
-        if timepoint != self.oldTimepoint:
+        if not preview and (timepoint != self.oldTimepoint):
             # Set the timepoint to be used
             self.renderingInterface.setCurrentTimepoint(timepoint)
             # and update the renderer to use the timepoint
@@ -183,42 +213,72 @@ class UrmasRenderer:
         if not point:
             print "No camera position"
 #            Dialogs.showerror(self.control.window,"Camera path ended prematurely","Cannot determine camera position")
-            return -1
-         
-        p0=point.getPoint()
-        #self.dlg.Update(frame,"Rendering at %.2fs / %.2fs (frame %d / %d)"%(timepos,self.duration,frame,self.frames))
-        print "Rendering frame %d using timepoint %d, time is %f"%(frame,timepoint,timepos)
-        start,end=point.getPosition()
-        # how far along this part of spline we are
-        d=timepos-start
-        # how long is it in total
-        n = end-start
-        # gives us a percent of the length we've traveled
-        percentage = d/float(n)
-        #print "time %.2f is %.3f%% between %.2f and %.2f"%(timepos,percentage,start,end)
-        n=point.getItemNumber()
-        #print "p0=",p0,"item=",n
-        
-        p,point = self.control.splineEditor.getCameraPosition(n,p0,percentage)
-        x,y,z=point
-        print "Camera position is point %d = %.2f,%.2f,%.2f"%(p,x,y,z)
-        
-        cam = self.ren.GetActiveCamera()
+        if point and not point.isStopped():
+                
+            p0=point.getPoint()
+            #self.dlg.Update(frame,"Rendering at %.2fs / %.2fs (frame %d / %d)"%(timepos,self.duration,frame,self.frames))
+            print "Rendering frame %d using timepoint %d, time is %f"%(frame,timepoint,timepos)
+            start,end=point.getPosition()
+            # how far along this part of spline we are
+            d=timepos-start
+            # how long is it in total
+            n = end-start
+            # gives us a percent of the length we've traveled
+            percentage = d/float(n)
+            #print "time %.2f is %.3f%% between %.2f and %.2f"%(timepos,percentage,start,end)
+            n=point.getItemNumber()
+            #print "p0=",p0,"item=",n
+            p,point = self.control.splineEditor.getCameraPosition(n,p0,percentage)
+            x,y,z=point
+            self.lastSplinePoint=(x,y,z)
+        elif point:
+            print "Camera stopped, using last point"
+            x,y,z=self.lastSplinePoint
+            point=(x,y,z)
         focal = self.splineEditor.getCameraFocalPointCenter()
-        cam.SetFocalPoint(focal)
-
-        cam.SetPosition(point)
-        #cam.SetViewUp(self.splineEditor.get_camera().GetViewUp())
-        cam.SetViewUp((0,0,1))
-        cam.ComputeViewPlaneNormal()
-        cam.OrthogonalizeViewUp()
-        # With this we can be sure that all of the props will be visible.
-        self.ren.ResetCameraClippingRange()
-        curr_file_name = self.renderingInterface.getFilename(frame)
-        print "Saving with name",curr_file_name
-        self.renderingInterface.render()     
-        self.renderingInterface.saveFrame(curr_file_name)
+        if not preview:
+            cam = self.ren.GetActiveCamera()
+            ren=self.ren
+        else:
+            cam = self.splineEditor.getCamera()
+            ren=self.splineEditor.renderer
+            
+        self.setCameraParameters(cam,ren, point, focal)
+            
+        if not preview:
+            # With this we can be sure that all of the props will be visible.
+            #self.ren.ResetCameraClippingRange()
+            curr_file_name = self.renderingInterface.getFilename(frame)
+            print "Saving with name",curr_file_name
+            self.renderingInterface.render()     
+            self.renderingInterface.saveFrame(curr_file_name)
+        else:
+            self.splineEditor.render()
+            time.sleep(0.1)
         
+    def setCameraParameters(self,cam,renderer,point,focal):
+        """
+        Method: setCameraParameters(camera,renderer, point, focal)
+        Created: 04.04.2005, KP
+        Description: Sets the camera parameters
+        """
+        if point:
+            cam.SetPosition(point)        
+        cam.SetFocalPoint(focal)
+        # if the track wishes to maintain up direction
+        if self.currTrack and self.currTrack.maintainUpDirection:
+            cam.SetViewUp((0,0,1))
+            cam.ComputeViewPlaneNormal()
+            cam.OrthogonalizeViewUp()
+        elif self.currTrack:
+            # if there's movement in z direction
+            if self.lastpoint and abs(self.lastpoint[2]-point[2])>2:
+                print "Orthogonalizing because old z=",self.lastpoint[2],"!= new z",point[2]
+                cam.OrthogonalizeViewUp()
+        self.lastpoint=point
+        renderer.ResetCameraClippingRange()
+        
+
                     
     def renderPreviewFrame(self,frame,timepos,spf):
         """
@@ -256,13 +316,8 @@ class UrmasRenderer:
         
         cam = self.splineEditor.getCamera()
         focal = self.splineEditor.getCameraFocalPointCenter()
-        cam.SetFocalPoint(focal)
-        cam.SetPosition(point)
-        #cam.SetViewUp(self.splineEditor.get_camera().GetViewUp())
-        cam.SetViewUp((0,0,1))
-        cam.ComputeViewPlaneNormal()
-        cam.OrthogonalizeViewUp()
-        # With this we can be sure that all of the props will be visible.
+        
+        self.setCameraParameters(cam,ren, point, focal)
         self.splineEditor.renderer.ResetCameraClippingRange()
         self.splineEditor.render()
-        time.sleep(0.1)
+        #time.sleep(0.1)

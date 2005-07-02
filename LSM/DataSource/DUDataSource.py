@@ -307,15 +307,18 @@ class VtiDataSource(DataSource):
             except:
                 return None
             if not ctf:
-                print "Using ctf based on Color"
-                col = eval(self.parser.get("Color","Color"))
-                ctf = vtk.vtkColorTransferFunction()
-                r,g,b=col
-                r/=255.0
-                g/=255.0
-                b/=255.0
-                ctf.AddRGBPoint(0,0,0,0)
-                ctf.AddRGBPoint(255,r,g,b)
+                try:
+                    col = eval(self.parser.get("Color","Color"))
+                    print "Using ctf based on Color"
+                    ctf = vtk.vtkColorTransferFunction()
+                    r,g,b=col
+                    r/=255.0
+                    g/=255.0
+                    b/=255.0
+                    ctf.AddRGBPoint(0,0,0,0)
+                    ctf.AddRGBPoint(255,r,g,b)
+                except:
+                    return None
             else:
                 print "Using CTF read from dataset",ctf
             self.ctf = ctf

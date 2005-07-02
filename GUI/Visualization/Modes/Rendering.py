@@ -267,17 +267,18 @@ class RenderingMode:
                 else:
                     module.enableRendering()
 
-    def loadModule(self,name):
+    def loadModule(self,name,lbl=None):
         """
-        Method: loadModule(name)
+        Method: loadModule(name,lbl)
         Created: 28.04.2005, KP
         Description: Load a visualization module
         """
+        if not lbl:lbl=name
         if not self.dataUnit:
             Dialogs.showerror(self.parent,"No dataset has been loaded for visualization","Cannot load visualization module")
             return
         self.wxrenwin.initializeVTK()
-        module = self.mapping[name][0](self,self.visualizer)
+        module = self.mapping[name][0](self,self.visualizer,label=lbl)
         self.modules.append(module)
         module.setDataUnit(self.dataUnit)
         module.showTimepoint(self.timepoint)

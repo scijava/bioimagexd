@@ -275,6 +275,7 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
         self.visualizer = visualizer
         self.mode=mode
         self.currentConf=None
+        self.count={}
         self.currentConfMode=""
         #self.titlePanel = TitledPanel(self,"Visualizer",1)
         self.namePanel = NamePanel(self,"Visualizer",(0,0,0),
@@ -288,6 +289,13 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
         self.moduleChoice.SetSelection(0)
         
         self.moduleListbox = wx.CheckListBox(self,-1)
+        
+        font=self.moduleListbox.GetFont()
+        font.SetPointSize(font.GetPointSize()-2)
+        self.moduleListbox.SetFont(font)
+
+        
+        
         self.moduleListbox.Bind(wx.EVT_CHECKLISTBOX,self.onCheckItem)
         self.moduleListbox.Bind(wx.EVT_LISTBOX,self.onSelectItem)
         
@@ -348,6 +356,7 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
         Created: 15.05.2005, KP
         Description: Select a module
         """
+        print "Selected item=",event.GetSelection()
         self.selected = event.GetSelection()
         self.showConfiguration(self.selected)
         
@@ -363,7 +372,8 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
             self.currentConf.Show(0)
         lbl = self.moduleListbox.GetString(n)
         self.currentConfLbl = lbl
-        panel=self.mode.getConfigurationPanel(lbl)
+        modname=lbl.split("#")[0].strip()
+        panel=self.mode.getConfigurationPanel(modname)
         
         w,h=self.moduleListbox.GetSize()
         
@@ -374,7 +384,7 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
         self.confPanel.setColor((255,255,255),(0,0,0))
         
         print "panel=",panel
-        self.currentConf=panel(self,self.visualizer,mode=self.mode)
+        self.currentConf=panel(self,self.visualizer,lbl,mode=self.mode)
      
         self.sizer.Add(self.currentConf,(6,0))
         #self.currentConf.Layout()
@@ -412,8 +422,16 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
         Description: Load the selected module
         """
         lbl = self.moduleChoice.GetStringSelection()
-        self.mode.loadModule(lbl)
-        self.appendModuleToList(lbl)
+        if not lbl in self.count:
+            self.count[lbl]=0
+        n=self.count[lbl]
+        nlbl=lbl
+        if n>0:
+            nlbl="%s #%d"%(lbl,n+1)
+        self.count[lbl]+=1
+            
+        self.mode.loadModule(lbl,nlbl)
+        self.appendModuleToList(nlbl)
         
     def appendModuleToList(self,module):
         """

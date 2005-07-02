@@ -82,6 +82,7 @@ class DataUnitProcessing(Module):
         self.preview=None
         self.intensityTransferFunctions = []
         self.doMedian=False
+        self.doAnisotropic=False
         self.medianNeighborhood=(1,1,1)
         self.doSolitary=False
         self.solitaryX=0
@@ -116,6 +117,8 @@ class DataUnitProcessing(Module):
             self.solitaryX=settings.get("SolitaryHorizontalThreshold")
             self.solitaryY=settings.get("SolitaryVerticalThreshold")
             self.solitaryThreshold=settings.get("SolitaryProcessingThreshold")
+        if settings.get("AnisotropicDiffusion"):
+            self.doAnisotropic=True
 
     def getPreview(self,z):
         """
@@ -188,6 +191,12 @@ class DataUnitProcessing(Module):
             #median.ReleaseDataFlagOff()
             median.Update()
             data=median.GetOutput()
+        if self.doAnisotropic:
+            print "Doing anisotropic diffusion"
+            aniso=vtk.vtkImageAnisotropicDiffusion3D()
+            aniso.SetInput(data)
+            aniso.Update()
+            data=aniso.GetOutput()
 
         t2=time.time()
         print "Processing took %f seconds"%(t2-t1)

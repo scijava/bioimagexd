@@ -464,9 +464,10 @@ class MainWindow(wx.Frame):
             self.visualizer.enable(0)
 #            if not self.visualizer.dataUnit:
             if not self.visualizer.dataUnit or (not self.visualizer.getProcessedMode() and (self.visualizer.dataUnit != dataunit)):
+                print "Setting dataunit"
                 self.visualizer.setDataUnit(dataunit)
             self.visualizer.setVisualizationMode(mode)
-            self.visualizer.setDataUnit(dataunit)
+            #self.visualizer.setDataUnit(dataunit)
             self.showVisualization(self.visPanel)
             self.visualizer.enable(1)
             return

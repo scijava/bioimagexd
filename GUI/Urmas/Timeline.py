@@ -241,6 +241,10 @@ class Timeline(scrolled.ScrolledPanel):
         print "Adding track to ",self.trackOffset+self.timepointTrackAmnt
         self.sizer.Add(tr,(self.trackOffset+self.timepointTrackAmnt,0),flag=wx.EXPAND|wx.ALL)
         tr.setColor((56,196,248))
+        if self.dataUnit:
+            print "Setting dataunit",self.dataUnit
+            tr.setDataUnit(self.dataUnit)
+        
         if n:
             tr.setItemAmount(n)
         
@@ -249,8 +253,7 @@ class Timeline(scrolled.ScrolledPanel):
         self.timepointTracks.append(tr)
         self.control.window.updateMenus()
         if self.dataUnit:
-            print "Setting dataunit & Enabling thumbnail"
-            tr.setDataUnit(self.dataUnit)
+            print "Enabling thumbnail",self.dataUnit
             tr.showThumbnail(True)
             
     def addSplinepointTrack(self,label):

@@ -82,15 +82,19 @@ class TimelineConfig(wx.Panel):
         self.fpsLabel=wx.StaticText(self,-1,"FPS: 0.5")
 
         self.totalFrames=wx.TextCtrl(self,-1,"30",size=(50,-1),style=wx.TE_PROCESS_ENTER)
-        self.duration=masked.TimeCtrl(self,-1,"00:00:60",fmt24hr=True,size=(50,-1),style=wx.TE_PROCESS_ENTER)
+        self.spin = wx.SpinButton( self, -1,style=wx.SP_VERTICAL )
+        self.duration=masked.TimeCtrl(self,-1,"00:01:00",fmt24hr=True,size=(50,-1),style=wx.TE_PROCESS_ENTER,spinButton=self.spin)
 
         self.totalFrames.Bind(wx.EVT_TEXT,self.updateFrameCount)
         self.duration.Bind(wx.EVT_TEXT,self.updateDuration)
         
-        
+        box=wx.BoxSizer(wx.HORIZONTAL)
+        box.Add(self.duration)
+        box.Add(self.spin)
         
         self.outputsizer.Add(self.durationLabel,(0,0))
-        self.outputsizer.Add(self.duration,(0,1))        
+        #self.outputsizer.Add(self.duration,(0,1))   
+        self.outputsizer.Add(box,(0,1))   
         
         self.outputsizer.Add(self.totalFramesLabel,(1,0))
         self.outputsizer.Add(self.totalFrames,(1,1))

@@ -51,15 +51,15 @@ class ImagePlaneModule(VisualizationModule):
     Created: 03.05.2005, KP
     Description: A module for slicing the dataset
     """    
-    def __init__(self,parent,visualizer):
+    def __init__(self,parent,visualizer,**kws):
         """
         Method: __init__(parent)
         Created: 03.05.2005, KP
         Description: Initialization
         """     
         self.x,self.y,self.z=-1,-1,-1
-        VisualizationModule.__init__(self,parent,visualizer)   
-        self.name = "Orthogonal Slices"
+        VisualizationModule.__init__(self,parent,visualizer,**kws)   
+        #self.name = "Orthogonal Slices"
         self.on = 0
         self.renew = 1
         self.mapper = vtk.vtkPolyDataMapper()
@@ -307,13 +307,13 @@ class ImagePlaneConfiguration(ModuleConfiguration):
         self.panel=ImagePlaneConfigurationPanel(self,visualizer)
 
 class ImagePlaneConfigurationPanel(ModuleConfigurationPanel):
-    def __init__(self,parent,visualizer,**kws):
+    def __init__(self,parent,visualizer,name="Orthogonal Slices",**kws):
         """
         Method: __init__(parent)
         Created: 04.05.2005, KP
         Description: Initialization
         """     
-        ModuleConfigurationPanel.__init__(self,parent,visualizer,"Orthogonal Slices",**kws)
+        ModuleConfigurationPanel.__init__(self,parent,visualizer,name,**kws)
     
     def initializeGUI(self):
         """
