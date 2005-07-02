@@ -187,16 +187,7 @@ class IntegratedPreview(PreviewFrame):
         Method: processOutputData()
         Created: 03.04.2005, KP
         Description: Process the data before it's send to the preview
-        """
-        if self.permute:
-            permute=vtk.vtkImagePermute()
-            Logging.info("Setting permuted axes to ",self.permute,kw="preview")
-            permute.SetFilteredAxes(*self.permute)
-            permute.SetInput(data)
-            permute.Update()
-            data=permute.GetOutput()
-            
-        
+        """            
         ncomps = data.GetNumberOfScalarComponents()
         if ncomps == 1:
             if self.mip:
@@ -254,14 +245,10 @@ class IntegratedPreview(PreviewFrame):
         if not preview:
             raise "Did not get a preview"
         self.currentImage=preview
-             
 
         colorImage = self.processOutputData(preview)
         
-        if self.permute:
-            x,y,z=colorImage.GetDimensions()
-        else:
-            x,y,z=preview.GetDimensions()
+        x,y,z=preview.GetDimensions()
     
         if x!=self.oldx or y!=self.oldy:
             self.renderpanel.resetScroll()
@@ -269,8 +256,9 @@ class IntegratedPreview(PreviewFrame):
             self.oldx=x
             self.oldy=y
             
-        self.renderpanel.setZSlice(self.z)
+        Logging.info("Setting image of renderpanel (not null: %s)"%(not not colorImage),kw="preview")
         self.renderpanel.setImage(colorImage)
+        self.renderpanel.setZSlice(self.z)
         self.renderpanel.updatePreview()
     
         self.finalImage=colorImage

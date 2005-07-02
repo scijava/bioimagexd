@@ -186,13 +186,18 @@ class WxPreviewPanel(wx.ScrolledWindow):
         x,y=self.size
         x2,y2,z=image.GetDimensions()
         if x2<x:
-            Logging.info("Using smaller x for size",kw="preview")
             x=x2
         if y2<y:
-            Logging.info("Using smaller y for size",kw="preview")
             y=y2
         Logging.info("Setting scrollbars for size %d,%d"%(x,y),kw="preview")
         self.setScrollbars(x,y)
+        if x==x2 or y==y2:
+            if x==x2:s="x"
+            if y==y2:
+                if s:s+=" and "
+                s+="y"
+            Logging.info("Using smaller %s for size"%s,kw="preview")            
+            self.Layout()
         if self.fitLater:
             self.fitLater=0
             self.zoomToFit()
@@ -235,6 +240,7 @@ class WxPreviewPanel(wx.ScrolledWindow):
         """
         if f>10:
             f=10
+        Logging.info("Setting zoom factor to ",f,kw="preview")
         self.zoomFactor=f
         self.drawScaleBar(self.scaleBarWidth,self.voxelSize)
         self.Scroll(0,0)
@@ -248,10 +254,11 @@ class WxPreviewPanel(wx.ScrolledWindow):
         if self.imagedata:
             w,h=self.size
             x,y,z=self.imagedata.GetDimensions()
-            if w>x or h>y:
+            if w!=x or h!=y:
                 Logging.info("Determining zoom factor from (%d,%d) to (%d,%d)"%(x,y,w,h),kw="preview")
                 self.setZoomFactor(ImageOperations.getZoomFactor(x,y,w,h))
         else:
+            Logging.info("Will zoom to fit later",kw="preview")
             self.fitLater=1
 
 
@@ -268,10 +275,10 @@ class WxPreviewPanel(wx.ScrolledWindow):
             self.buffer = wx.EmptyBitmap(xdim,ydim)
             
         if self.scroll:
-            Logging.info("\n\nENABLING SCROLLING, size=(%d,%d)\n"%(xdim,ydim),kw="preview")
+            Logging.info("ENABLING SCROLLING, size=(%d,%d)"%(xdim,ydim),kw="preview")
             self.SetVirtualSize((xdim,ydim))
             self.SetScrollRate(self.scrollsize,self.scrollsize)
-
+            
 
     def startZoom(self):
         """
@@ -294,7 +301,12 @@ class WxPreviewPanel(wx.ScrolledWindow):
         if self.singleslice:
             Logging.info("Single slice, will use z=0",kw="preview")
             z=0
-        self.slice=ImageOperations.vtkImageDataToWxImage(self.imagedata,z)
+        if not self.imagedata:
+            Logging.info("No imagedata to preview",kw="preview")
+            Logging.backtrace()
+        else:
+            self.slice=ImageOperations.vtkImageDataToWxImage(self.imagedata,z)
+        Logging.info("Painting preview",kw="preview")
         self.paintPreview()
         wx.GetApp().Yield(1)
         self.updateScrolling()
@@ -346,7 +358,7 @@ class WxPreviewPanel(wx.ScrolledWindow):
             self.dc = None
             return
         bmp=self.slice
-
+        Logging.info("Zoom factor for painting =",self.zoomFactor,kw="preview")
         if self.zoomFactor!=1:
             bmp=ImageOperations.zoomImageByFactor(self.slice,self.zoomFactor)
             w,h=bmp.GetWidth(),bmp.GetHeight()

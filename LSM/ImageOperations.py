@@ -207,7 +207,7 @@ def setFromParameterList(iTF,list):
 
 def vtkImageDataToWxImage(data,slice=-1,startpos=None,endpos=None):
     if slice>=0:
-        
+        Logging.info("Getting slice %d"%slice,kw="imageop")
         data=getSlice(data,slice,startpos,endpos)
         
     exporter=vtk.vtkImageExport()

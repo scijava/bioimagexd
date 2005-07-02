@@ -36,9 +36,10 @@ __date__ = "$Date: 2005/01/11 14:36:00 $"
 import traceback
 import wx
 import os.path
+import sys
 
-HIDE_DEBUG=["visualizer","init","io","scale"]
-KWS=["visualizer","main","init","animator","io","task","preview","scale"]
+HIDE_DEBUG=["visualizer","init","io","scale","preview","processing"]
+KWS=["visualizer","main","init","animator","io","task","preview","scale","imageop"]
 
 import sys
 
@@ -109,8 +110,7 @@ def error(title,msg,x=sys._getframe()):
 def info(msg,*args,**kws):
     """
     Function: info
-    Created: 13.12.2004
-    Creator: KP
+    Created: 13.12.2004, KP
     Description: Prints information
     Parameters:
             msg        The message
@@ -122,3 +122,32 @@ def info(msg,*args,**kws):
         file=os.path.split(xframe.f_code.co_filename)[-1]
         lineno=xframe.f_lineno
         print "%s:%d: %s %s"%(file,lineno,msg," ".join(map(str,args)))
+
+def backtrace():
+    """
+    Function: info
+    Created: 02.07.2005, KP
+    Description: Prints backtrace of callers
+    """
+    i=0
+    xframe=sys._getframe(1)
+    file=os.path.split(xframe.f_code.co_filename)[-1]
+    lineno=xframe.f_lineno
+    print "%s:%d: Generating backtrace of calls:"%(file,lineno)
+    
+    indent=-1
+    oldfile=None
+    while 1:
+        try:
+            frame=sys._getframe(i)
+        except:
+            break
+        file=os.path.split(frame.f_code.co_filename)[-1]
+        if file!=oldfile:
+            indent+=1
+        oldfile=file
+        lineno=frame.f_lineno
+        function=frame.f_code.co_name
+        indentstr="  "*indent
+        print "%sFile %s, function %s on line %d"%(indentstr,file,function,lineno)
+        i+=1

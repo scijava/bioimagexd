@@ -119,24 +119,6 @@ class PreviewFrame(wx.Panel):
             self.zoomy=kws["zoomy"]
         if kws.has_key("scrollbars"):
             self.show["SCROLL"]=kws["scrollbars"]
-            
-        self.permute=None
-        if kws.has_key("plane"):
-            plane=kws["plane"]
-            
-            if plane=="xz":
-                self.permute=(0,2,1)
-                self.unpermute=(0,2,1)
-            elif plane=="yz":
-                self.permute=(1,2,0)
-                self.unpermute=(2,0,1)
-            elif plane=="zy":
-                self.permute=(2,1,0)
-                self.unpermute=(2,1,0)
-            elif plane=="zx":
-                self.permute=(2,0,1)
-                self.unpermute=(1,2,0)
-                
         
         self.dataUnit=None
         self.rgbMode=0
@@ -217,13 +199,7 @@ class PreviewFrame(wx.Panel):
         z=self.z
         dims=[x,y,z]
         rx,ry,rz=dims
-        if self.permute:            
-            rx=dims[self.unpermute[0]]
-            ry=dims[self.unpermute[1]]
-            rz=dims[self.unpermute[2]]
-            Logging.info("Returning permuted (%d,%d,%d), unpermuted (%d,%d,%d)"%(rx,ry,rz,x,y,z),kw="preview")
-        else:
-            Logging.info("Returning x,y,z=(%d,%d,%d)"%(rx,ry,rz))
+        Logging.info("Returning x,y,z=(%d,%d,%d)"%(rx,ry,rz))
         evt.setCoord(rx,ry,rz)
         self.GetEventHandler().ProcessEvent(evt)
     
@@ -354,11 +330,6 @@ class PreviewFrame(wx.Panel):
             return
             
         dims=[x,y,z]
-        if self.permute:
-            x=dims[self.permute[0]]
-            y=dims[self.permute[1]]
-            z=dims[self.permute[2]]
-            Logging.info("Permuted z goes to %d"%z)
         self.xdim,self.ydim,self.zdim=x,y,z
         
         if self.show["ZSLIDER"]:

@@ -43,6 +43,7 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 import vtk
 import time
+import Logging
 from Module import *
 
 class DataUnitProcessing(Module):
@@ -150,7 +151,7 @@ class DataUnitProcessing(Module):
         if len(self.images)>1:
             settings = self.dataunits[0].getSettings()
             n=settings.get("PreviewedDataset")
-            print "More than one source dataset for Single DataUnit Processing, using %d"%n
+            Logging.info("More than one source dataset for data processing, using %dth"%n,kw="processing")
             
         mapdata=self.images[n]
         mapIntensities=vtk.vtkImageMapToIntensities()
@@ -159,13 +160,13 @@ class DataUnitProcessing(Module):
         
         data=mapIntensities.GetOutput()
         if self.extent:
-            print "Update extent=",self.extent
+            Logging.info("Update extent = ",self.extent,kw="processing")
             mapdata.SetUpdateExtent(self.extent)
             data.SetUpdateExtent(self.extent)
         mapIntensities.Update()
         
         if self.doSolitary:
-            print "Doing New Solitary Filtering"
+            Logging.info("Doing solitary filtering",kw="processing")
             t3=time.time()
             # Using VTK´s vtkImageMedian3D-filter
             solitary = vtk.vtkImageSolitaryFilter()
@@ -175,13 +176,11 @@ class DataUnitProcessing(Module):
             solitary.SetVerticalThreshold(self.solitaryY)
             solitary.Update()
             t4=time.time()
-            print "New Solitary filtering took ",(t4-t3),"seconds"
+            Logging.info("It took %.4f seconds"%(t4-t3),kw="processing")
             data=solitary.GetOutput()
-            print "data type=",data.GetScalarTypeAsString()
-            print "data dimensions=",data.GetDimensions()
         # Median filtering
         if self.doMedian:
-            print "Doing Median Filtering"
+            Logging.info("Doing median filtering",kw="processing")
             # Using VTK´s vtkImageMEdian3D-filter
             median = vtk.vtkImageMedian3D()
             median.SetInput(data)
@@ -192,13 +191,13 @@ class DataUnitProcessing(Module):
             median.Update()
             data=median.GetOutput()
         if self.doAnisotropic:
-            print "Doing anisotropic diffusion"
+            Logging.info("Doing anisotropic diffusion",kw="processing")
             aniso=vtk.vtkImageAnisotropicDiffusion3D()
             aniso.SetInput(data)
             aniso.Update()
             data=aniso.GetOutput()
 
         t2=time.time()
-        print "Processing took %f seconds"%(t2-t1)
+        Logging.info("Processing took %.4f seconds"%(t2-t1))
 
         return data
