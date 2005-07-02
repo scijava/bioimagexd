@@ -38,6 +38,7 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 import vtk
 import wx
 import struct
+import Logging
 
 def gcd2(a, b):
     """Greatest common divisor using Euclid's algorithm."""
@@ -324,7 +325,7 @@ def scatterPlot(imagedata1,imagedata2,z,countVoxels, wholeVolume):
         #print "Got data=",data
         ctf=vtk.vtkColorTransferFunction()
         n = scatter.GetNumberOfPairs()
-        print "Number of pairs=",n
+        Logging.info("Number of pairs=%d"%n,kw="colocalization")
         p=0.75/n
         ctf.AddHSVPoint(0,0,0.0,0.0)
         for i in xrange(1,n,255):

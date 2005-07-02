@@ -59,7 +59,7 @@ import WxPreviewPanel
 import time
 
 from GUI import Events
-from Logging import *
+import Logging
 
 import vtk
 import wx
@@ -194,7 +194,7 @@ class PreviewFrame(wx.Panel):
         Created: 05.04.2005, KP
         Description: Set the item selected for configuration
         """
-        print "Selected item = ",item
+        Logging.info("Selected item "+str(item),kw="preview")
         self.selectedItem = item
         self.settings = self.dataUnit.getSourceDataUnits()[item].getSettings()
         self.settings.set("PreviewedDataset",item)
@@ -217,14 +217,13 @@ class PreviewFrame(wx.Panel):
         z=self.z
         dims=[x,y,z]
         rx,ry,rz=dims
-        if self.permute:
-            
+        if self.permute:            
             rx=dims[self.unpermute[0]]
             ry=dims[self.unpermute[1]]
             rz=dims[self.unpermute[2]]
-            print "Returning permuted ",rx,ry,rz,"(unpermuted ",x,y,z,")"
+            Logging.info("Returning permuted (%d,%d,%d), unpermuted (%d,%d,%d)"%(rx,ry,rz,x,y,z),kw="preview")
         else:
-            print "Returning x,y,z=",rx,ry,rz
+            Logging.info("Returning x,y,z=(%d,%d,%d)"%(rx,ry,rz))
         evt.setCoord(rx,ry,rz)
         self.GetEventHandler().ProcessEvent(evt)
     
@@ -350,7 +349,7 @@ class PreviewFrame(wx.Panel):
         try:
             count=dataUnit.getLength()
             x,y,z=dataUnit.getDimensions()
-        except GUIError, ex:
+        except Logging.GUIError, ex:
             ex.show()
             return
             
@@ -359,13 +358,14 @@ class PreviewFrame(wx.Panel):
             x=dims[self.permute[0]]
             y=dims[self.permute[1]]
             z=dims[self.permute[2]]
-            print "Permuted z goes to ",z
+            Logging.info("Permuted z goes to %d"%z)
         self.xdim,self.ydim,self.zdim=x,y,z
         
         if self.show["ZSLIDER"]:
             #print "zslider goes to %d"%(z-1)
             self.zslider.SetRange(0,z-1)
         if x>self.maxX or y>self.maxY:
+            Logging.info("Setting scrollbars to %d,%d"%(x,y),kw="preview")
             self.renderpanel.setScrollbars(x,y)
         
         if x>self.maxX:x=self.maxX
@@ -376,7 +376,7 @@ class PreviewFrame(wx.Panel):
 
         x*=self.zoomx
         y*=self.zoomy
-        print "Setting renderpanel to %d,%d"%(x,y)
+        Logging.info("Setting renderpanel to %d,%d"%(x,y),kw="preview")
         self.renderpanel.SetSize((x,y))
         self.renderpanel.Layout()
         
@@ -387,7 +387,7 @@ class PreviewFrame(wx.Panel):
         if self.zoomFactor:
             #print "Got zoom factor",
             if self.zoomFactor == ZOOM_TO_FIT:
-                #print "Factor = zoom to fit"
+                Logging.info("Factor = zoom to fit",kw="preview")
                 self.renderpanel.zoomToFit()
                 self.updatePreview(1)
             else:

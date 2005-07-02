@@ -41,6 +41,7 @@ import os
 import glob
 
 import Dialogs
+import Logging
 
 import DataUnit
 import DataUnitProcessing
@@ -61,23 +62,20 @@ def getVisualizer():
 def getModes():
     path=reduce(os.path.join,["GUI","Visualization","Modes","*.py"])
     spath=reduce(os.path.join,[os.getcwd(),"GUI","Visualization","Modes"])
-    print "adding ",spath
+    Logging.info("Path to modes: %s"%spath,kw="visualizer")
     sys.path=sys.path+[spath]
-    print "path=",path
     modules=glob.glob(path)
     moddict={}
     for file in modules:
         mod=file.split(".")[0:-1]
         mod=".".join(mod)
-        print "mod=",mod
         mod=mod.replace("/",".")
         mod=mod.replace("\\",".")
         frompath=mod.split(".")[:-1]
         frompath=".".join(frompath)
         mod=mod.split(".")[-1]
-        print "importing %s from %s"%(mod,frompath)
         module = __import__(mod,globals(),locals(),mod)
-        print "module=",module
+        Logging.info("Importing %s from %s, module=%s"%(mod,frompath,module),kw="visualizer")
         name=module.getName()
         modclass=module.getClass()
         moddict[name]=(None,modclass,module)
@@ -296,14 +294,14 @@ class Visualizer:
         Description: A method for laying out the window
         """        
         if event.GetDragStatus() == wx.SASH_STATUS_OUT_OF_RANGE:
-            print "Out of range!!!!!!!!!\n"
+            Logging.info("Out of range",kw="visualizer")
             return
 
         eID = event.GetId()
 
         if eID == self.ID_VISTREE_WIN:
             w,h=self.sidebarWin.GetSize()
-            print "setting sidebarWin size"
+            Logging.info("Sidebar window size = %d,%d"%(event.GetDragRect().width,h),kw="visualizer")
             self.sidebarWin.SetDefaultSize((event.GetDragRect().width,h))
         
         #elif eID == ID_VISAREA_WIN:
@@ -395,9 +393,9 @@ class Visualizer:
             mode     The mode.
         """
         if self.mode == mode:
-            print "%s already selected"%mode   
+            Logging.info("Mode %s already selected"%mode,kw="visualizer")
             if self.dataUnit and self.currMode.dataUnit != self.dataUnit:
-                print "Re-setting dataunit"
+                Logging.info("Re-setting dataunit",kw="visualizer")
                 self.currMode.setDataUnit(self.dataUnit)
                 return
         self.mode=mode
@@ -429,7 +427,7 @@ class Visualizer:
         #self.currentWindow.enable(self.enabled)
 
         if self.dataUnit and modeinst.dataUnit != self.dataUnit:
-            print "Re-setting dataunit"
+            Logging.info("Re-setting dataunit",kw="visualizer")
             modeinst.setDataUnit(self.dataUnit)
         wx.LayoutAlgorithm().LayoutWindow(self.parent, self.visWin)
 
@@ -456,7 +454,8 @@ class Visualizer:
         self.preload=0
         if kws.has_key("preload"):
             self.preload=kws["preload"]
-        print "\n\nenable(%d)\n\n"%flag
+        
+        Logging.info("\nenable(%s)\n"%(not not flag),kw="visualizer")
         self.enabled=flag
         if self.currentWindow:
             try:
@@ -465,7 +464,7 @@ class Visualizer:
                 pass
         if flag:        
            wx.LayoutAlgorithm().LayoutWindow(self.parent, self.visWin)
-           print "Setting size to",self.visWin.GetSize()
+           Logging.info("Setting visualizer window to ",self.visWin.GetSize(),kw="visualizer")
            self.currentWindow.SetSize(self.visWin.GetSize())
         if flag:        
            wx.LayoutAlgorithm().LayoutWindow(self.parent, self.visWin)
@@ -501,10 +500,10 @@ class Visualizer:
         Created: 28.04.2005, KP
         Description: Sets the dataunit this module uses for visualization
         """
-        print "visualizer.setDataUnit(",dataunit,")"
+        Logging.info("visualizer.setDataUnit(%s)"%str(dataunit),kw="visualizer")
         self.dataUnit = dataunit
         count=dataunit.getLength()
-        print "Setting range to",count
+        Logging.info("Setting range to %d"%count,kw="visualizer")
         self.maxTimepoint=count-1
         self.timeslider.SetRange(0,count-1)
         showItems=0
@@ -514,8 +513,8 @@ class Visualizer:
                 showItems=1
         self.showItemToolbar(showItems)
             
-        if self.enabled and self.currMode:                 
-            print "calling current modes setDataUnit"
+        if self.enabled and self.currMode:           
+            Logging.info("Setting dataunit to current mode",kw="visualizer")
             self.currMode.setDataUnit(self.dataUnit)
             
     def updateRendering(self,event=None):
@@ -524,7 +523,7 @@ class Visualizer:
         Created: 25.05.2005, KP
         Description: Update the rendering
         """
-        print "Updating rendering"
+        Logging.info("Updating rendering",kw="visualizer")
         # If the visualization mode doesn't want immediate rendering
         # then we will delay a bit with this
         imm=self.currModeModule.getImmediateRendering()
@@ -532,7 +531,7 @@ class Visualizer:
             t=time.time()
             delay = self.currModeModule.getRenderingDelay()/1000.0
             if abs(self.renderingTime-t) < delay: 
-                print "Delaying, delay=",delay,"diff=",abs(self.renderingTime-t)
+                Logging.info("Delaying, delay=%f, diff=%f"%(delay,abs(self.renderingTime-t)),kw="visualizer")
                 return
         self.renderingTime=time.time()
         self.currMode.updateRendering()
@@ -544,7 +543,7 @@ class Visualizer:
         Description: Render the scene
         """
         if self.enabled:
-            print "Render()"
+            Logging.info("Render()",kw="visualizer")
             self.currMode.Render()
         
     def onSetTimepoint(self,event):
@@ -567,7 +566,7 @@ class Visualizer:
             self.setTimepoint(tp)
             evt=Events.ChangeEvent(Events.myEVT_TIMEPOINT_CHANGED,self.parent.GetId())
             evt.setValue(tp)
-            print "Sending change event",tp
+            Logging.info("Sending timepoint change event (tp=%d)"%tp,kw="visualizer")
             self.parent.GetEventHandler().ProcessEvent(evt)
 
     def onSnapshot(self,event):
@@ -606,7 +605,7 @@ class Visualizer:
         Created: 28.04.2005, KP
         Description: Set the timepoint to be shown
         """  
-        print "setTimepoint()"
+        Logging.info("setTimepoint()",kw="visualizer")
         if self.timeslider.GetValue()!=timepoint:
             self.timeslider.SetValue(timepoint)
         self.timepoint = timepoint

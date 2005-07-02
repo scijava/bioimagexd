@@ -35,6 +35,7 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 import wx    
 from wx.lib.statbmp  import GenStaticBitmap as StaticBitmap
 import ImageOperations
+import Logging
 
 class WxPreviewPanel(wx.ScrolledWindow):
     """
@@ -52,6 +53,7 @@ class WxPreviewPanel(wx.ScrolledWindow):
         self.imagedata=None
         self.bmp=None
         self.scroll=scroll
+        Logging.info
         print "size=",size
         
         self.rubberstart=None
@@ -239,7 +241,10 @@ class WxPreviewPanel(wx.ScrolledWindow):
         if self.imagedata:
             w,h=self.size
             x,y,z=self.imagedata.GetDimensions()
-            if x>w or h>y:
+            #print "prewview size = ",w,h
+            #print "data size=",x,y
+            if w>x or h>y:
+                print "Getting a zoom factor for ",(x,y),(w,h)
                 self.setZoomFactor(ImageOperations.getZoomFactor(x,y,w,h))
         else:
             self.fitLater=1

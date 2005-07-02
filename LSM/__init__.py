@@ -1,8 +1,7 @@
-import Color24bit
 import ImageOperations
-import IntensityTransferFunction
 import Interpolation
 import Logging
 import RenderingInterface
+import LightRenderingInterface
 import DataUnit
 import DataSource

@@ -38,6 +38,7 @@ import vtk
 from GUI import Events
 import ColorTransferEditor
 import Dialogs
+import Logging
 
 import glob
 import os,sys
@@ -57,9 +58,8 @@ def getModules():
         mod=mod.replace("\\",".")
         frompath=mod
         mod=mod.split(".")[-1]
-        print "importing %s from %s"%(mod,frompath)
         module = __import__(mod,globals(),locals(),mod)
-        print "module=",module
+        Logging.info("importing %s from %s, module=%s"%(mod,frompath,module),kw="visualizer")
         name=module.getName()
         modclass=module.getClass()
         settingclass=module.getConfig()
@@ -129,10 +129,10 @@ class VisualizationModule:
         self.timepoint = value
         
         if self.visualizer.getProcessedMode():
-            print "Will render processed data instead"
+            Logging.info("Will render processed data instead",kw="visualizer")
             self.data = self.dataUnit.doPreview(-1,1,self.timepoint)
         else:
-            print "Using timepoint data for tp",value
+            Logging.info("Using timepoint data for tp",value,kw="visualizer")
             self.data = self.dataUnit.getTimePoint(value)
 
         self.updateRendering()
@@ -339,7 +339,7 @@ class ModuleConfigurationPanel(wx.Panel):
         for module in modules:
             if module.getName() == self.name:
                 self.setModule(module)
-                print "Configuring module",module
+                Logging.info("Configuring module",module,kw="visualizer")
                 return
 
     def setModule(self,module):
@@ -348,6 +348,6 @@ class ModuleConfigurationPanel(wx.Panel):
         Created: 28.04.2005, KP
         Description: Set the module to be configured
         """  
-        print "Module is",module
+        Logging.info("Module is",module,kw="visualizer")
         self.module = module
 

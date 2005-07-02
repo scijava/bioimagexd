@@ -36,7 +36,7 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 import os.path
 import sys, types
 import ConfigParser
-
+from LSM import Logging
 conf=None
 
 def getConfiguration():
@@ -156,12 +156,12 @@ class Configuration:
             for name in names:
                 if i.find(name) != -1:
                     removethese.append(i)
-        print "Removing following path entries: ",", ".join(removethese)
+        Logging.info("Removing following path entries: ",", ".join(removethese),kw="init")
         for i in removethese:
             try:
                 sys.path.remove(i)
             except:
-                print "Failed to remove ",i
+                Logging.info("Failed to remove ",i,kw="init")
 
             
     def insertPath(self,path,n=0):

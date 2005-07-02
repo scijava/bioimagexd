@@ -93,15 +93,7 @@ class MainWindow(wx.Frame):
         )
 
         self.menuManager=MenuManager.MenuManager(self,text=0)
-        
-        print MenuManager.ID_TREE_WIN
-#        self.treeWin=wx.SashLayoutWindow(self,MenuManager.ID_TREE_WIN,style=wx.RAISED_BORDER|wx.SW_3D)
-#        self.treeWin.SetOrientation(wx.LAYOUT_VERTICAL)
-#        self.treeWin.SetAlignment(wx.LAYOUT_LEFT)
-#        self.treeWin.SetSashVisible(wx.SASH_RIGHT,True)
-#        self.treeWin.SetSashBorder(wx.SASH_RIGHT,True)
-#        self.treeWin.SetDefaultSize((200,768))
-        
+
         self.visWin=wx.SashLayoutWindow(self,MenuManager.ID_VIS_WIN,style=wx.RAISED_BORDER|wx.SW_3D)
         self.visWin.SetOrientation(wx.LAYOUT_VERTICAL)
         self.visWin.SetAlignment(wx.LAYOUT_LEFT)
@@ -183,7 +175,7 @@ class MainWindow(wx.Frame):
 
         elif eID == MenuManager.ID_TASK_WIN:
             w,h=self.taskWin.GetSize()
-            print "Setting task win size"
+            Logging.info("Setting task window size",kw="main")
             self.taskWin.SetDefaultSize((event.GetDragRect().width,h))
         
         wx.LayoutAlgorithm().LayoutWindow(self, self.visWin)
@@ -203,14 +195,14 @@ class MainWindow(wx.Frame):
             return
         if self.currentVisualizationWindow:     
             if self.currentVisualizationWindow != self.visWin:
-                print "hiding",self.currentVisualizationWindow
+                Logging.info("Hiding ",self.currentVisualizationWindow,kw="main")
                 self.currentVisualizationWindow.Show(0)
-            print "showing",window
+            Logging.info("Showing",window,kw="main")
             window.Show()
             window.SetSize((self.currentVisualizationWindow.GetSize()))
             self.currentVisualizationWindow=window
         else:
-            print "Showing ",window
+            Logging.info("Showing",window,kw="main")
             self.currentVisualizationWindow = window
             window.Show()
             
@@ -230,7 +222,7 @@ class MainWindow(wx.Frame):
         tb.SetToolBitmapSize((32,32))
         self.taskIds=[]
         self.visIds=[]
-        print "adding tool"
+        Logging.info("Creating toolbar",kw="init")
         bmp = wx.Image(os.path.join(iconpath,"open_dataset.jpg"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
         tb.DoAddTool(MenuManager.ID_OPEN,"Open",bmp,shortHelp="Open dataset series")
         wx.EVT_TOOL(self,MenuManager.ID_OPEN,self.onMenuOpen)
@@ -464,7 +456,7 @@ class MainWindow(wx.Frame):
             self.visualizer.enable(0)
 #            if not self.visualizer.dataUnit:
             if not self.visualizer.dataUnit or (not self.visualizer.getProcessedMode() and (self.visualizer.dataUnit != dataunit)):
-                print "Setting dataunit"
+                Logging.info("Setting dataunit for visualizer",kw="main")
                 self.visualizer.setDataUnit(dataunit)
             self.visualizer.setVisualizationMode(mode)
             #self.visualizer.setDataUnit(dataunit)
@@ -498,7 +490,7 @@ class MainWindow(wx.Frame):
         """
         preload=0
         if kws.has_key("preload"):
-            print "Preloading!"
+            Logging.info("Preloading",kw="init")
             preload=kws["preload"]
             
         if not self.visualizer:
@@ -519,8 +511,7 @@ class MainWindow(wx.Frame):
         self.visualizer.setVisualizationMode(mode)
 
         if not preload:
-            self.showVisualization(self.visPanel)
-            print "visualizer.enable(1)"
+            self.showVisualization(self.visPanel)            
             self.visualizer.enable(1)
 
     def onMenuAnimator(self,evt):
@@ -542,16 +533,14 @@ class MainWindow(wx.Frame):
             "You have not selected a dataset series to be rendered.\nPlease "
             "select a dataset series and try again.\n","No dataset selected")
             return
-        
-        print "Creating urmas window"
+        Logging.info("Creating urmas window",kw="animator")
         self.renderWindow=Urmas.UrmasWindow(self)
         
         dataunit=selectedFiles[0]
         #correctedUnit=CorrectedSourceDataUnit("Rendered dataunit")
         #correctedUnit.addSourceDataUnit(dataunit)
-        print "Setting dataunit"
+        Logging.info("Setting dataunit for animator",kw="animator")
         self.renderWindow.setDataUnit(dataunit)
-        print "SHowing..."
         self.renderWindow.Show()
         #self.renderWindow.startWizard()
 
@@ -608,7 +597,8 @@ class MainWindow(wx.Frame):
                 pass
 
         # We try to load the actual data
-        print "ext=",ext
+        Logging.info("Loading dataset with extension %s, path=%s"%(ext,path),kw="io")
+    
         extToSource={"du":VtiDataSource,"lsm":LsmDataSource,"txt":LeicaDataSource}
         try:
             datasource=extToSource[ext]()
@@ -634,11 +624,11 @@ class MainWindow(wx.Frame):
                 if d.has_key(name):d[name].append(unit)
                 else:d[name]=[unit]
             for key in d.keys():
-                print "Adding %s %s %s"%(key,path,ext)
+                Logging.info("Adding dataunit %s %s %s"%(key,path,ext),kw="io")
                 self.tree.addToTree(key,path,ext,d[key])
         else:
             # If we got data, add corresponding nodes to tree
-            print "adding to tree ",name,path,ext,dataunits
+            Logging.info("Adding to tree ",name,path,ext,dataunits,kw="io")
             self.tree.addToTree(name,path,ext,dataunits)
 
     def onMenuShowTaskWindow(self,event):
@@ -690,7 +680,7 @@ class MainWindow(wx.Frame):
             filesAtLeast=1
             filesAtMost=1
             action="VSIA'd"
-        print "got moduletype",moduletype
+        Logging.info("Module type for taskwindow: ",moduletype,kw="task")
         selectedFiles=self.tree.getSelectedDataUnits()
         if filesAtLeast!=-1 and len(selectedFiles)<filesAtLeast:
             Dialogs.showerror(self,
@@ -705,10 +695,9 @@ class MainWindow(wx.Frame):
         # Sets name for new dataset series
         name="%s (%s)"%(action,", ".join(names))
 
-        print unittype,dir(unittype),name
+        Logging.info(unittype,dir(unittype),name,kw="task")
         unit = unittype(name)
-        print unit
-        print "unit = %s(%s)=%s"%(unittype,name,unit)
+        Logging.info("unit = %s(%s)=%s"%(unittype,name,unit),kw="task")
         for dataunit in selectedFiles:
             unit.addSourceDataUnit(dataunit)
 
@@ -723,7 +712,7 @@ class MainWindow(wx.Frame):
         # If visualizer has not been loaded, load it now
         # This is a high time to have a visualization loaded
         if not self.visualizer:
-            print "Loading visualizer for ",unit
+            Logging.info("Loading slices view for ",unit,kw="task")
             self.loadVisualizer(unit,"slices",1)
         else:
             if not self.visualizer.getProcessedMode():
@@ -732,7 +721,7 @@ class MainWindow(wx.Frame):
         self.visualizer.setDataUnit(unit)
             
         if self.visualizer.mode=="info":
-            print "Switching to slices"
+            Logging.info("Switching to slices from info",kw="task")
             self.visualizer.setVisualizationMode("slices")
             self.visualizer.enable(1)
             
