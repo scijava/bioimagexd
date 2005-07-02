@@ -1,6 +1,5 @@
 import ImageOperations
 import Interpolation
-import Logging
 import RenderingInterface
 import LightRenderingInterface
 import DataUnit

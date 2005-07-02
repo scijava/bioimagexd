@@ -37,8 +37,8 @@ import traceback
 import wx
 import os.path
 
-HIDE_DEBUG=["visualizer","init","io"]
-KWS=["visualizer","main","init","animator","io","task","preview"]
+HIDE_DEBUG=["visualizer","init","io","scale"]
+KWS=["visualizer","main","init","animator","io","task","preview","scale"]
 
 import sys
 
@@ -121,4 +121,4 @@ def info(msg,*args,**kws):
     if not ("kw" in kws) or (("kw" in kws) and (kws["kw"] not in HIDE_DEBUG)):
         file=os.path.split(xframe.f_code.co_filename)[-1]
         lineno=xframe.f_lineno
-        print "%s: %s: %s %s"%(file,lineno,msg," ".join(map(str,args)))
+        print "%s:%d: %s %s"%(file,lineno,msg," ".join(map(str,args)))

@@ -36,7 +36,7 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 import os.path
 import sys, types
 import ConfigParser
-from LSM import Logging
+import Logging
 conf=None
 
 def getConfiguration():

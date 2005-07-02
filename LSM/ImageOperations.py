@@ -77,7 +77,7 @@ def paintCTFValues(ctf,height=32):
         r=int(r)
         g=int(g)
         b=int(b)
-        #print x1,"=",(r,g,b)
+        
         dc.SetPen(wx.Pen((r,g,b)))
         dc.DrawLine(x1,0,x1,height)
                     
@@ -101,8 +101,6 @@ def loadNIHLut(data):
     ncolors=ord(ncolors[0])*(2**8)+ord(ncolors[1])
     start=ord(start[0])*(2**8)+ord(start[1])
     end=ord(end[0])*(2**8)+ord(end[1])
-    #print "start=",start,"end=",end,"ncolors=",ncolors
-    #print "ranges=[",0,":",ncolors,"],[",ncolors,":",(2*ncolors),"],[",(2*ncolors),":",(3*ncolors),"]"
     
     reds=lut[:ncolors]
     greens=lut[ncolors:(2*ncolors)]
@@ -140,7 +138,7 @@ def loadLUTFromString(lut,ctf):
         greens=lut[256:512]
         blues=lut[512:768]
     n=len(reds)
-    #print "n=",n
+    
     for i in range(0,n):
         r=ord(reds[i])
         g=ord(greens[i])
@@ -209,7 +207,7 @@ def setFromParameterList(iTF,list):
 
 def vtkImageDataToWxImage(data,slice=-1,startpos=None,endpos=None):
     if slice>=0:
-        #print "Getting slice=",slice
+        
         data=getSlice(data,slice,startpos,endpos)
         
     exporter=vtk.vtkImageExport()
@@ -219,21 +217,18 @@ def vtkImageDataToWxImage(data,slice=-1,startpos=None,endpos=None):
     exporter.SetInput(data)
 
     siz=exporter.GetDataMemorySize()
-    #print "siz=",siz
+    
     fs="%ds"%siz
-    #print "size=",siz
+    
     ss=struct.pack(fs,"")
-    #print "len(ss)=",len(ss)
+    
     exporter.SetExportVoidPointer(ss)
-    #print "Exporting..."
+    
     exporter.Export()
     
 
     x,y,z=data.GetDimensions()
-    #print "Dimensions=",x,y,z
-    #print "Original image size=(%d,%d)"%(x,y)
     image=wx.EmptyImage(x,y)
-    #image.SetData(exporter.GetPointerToData())
     image.SetData(ss)
     return image
 
@@ -277,7 +272,7 @@ def vtkImageDataToPreviewBitmap(imageData,color,width=0,height=0,bgcolor=(0,0,0)
         height=aspect*width
     if not width and not height:
         width=height=64
-    #print "Scaling to %d,%d"%(width,height)
+    
     image.Rescale(width,height)
     bitmap=image.ConvertToBitmap()
     return bitmap
@@ -322,18 +317,17 @@ def scatterPlot(imagedata1,imagedata2,z,countVoxels, wholeVolume):
     scatter.Update()
     data=scatter.GetOutput()
     if countVoxels:
-        #print "Got data=",data
+        
         ctf=vtk.vtkColorTransferFunction()
         n = scatter.GetNumberOfPairs()
         Logging.info("Number of pairs=%d"%n,kw="colocalization")
         p=0.75/n
         ctf.AddHSVPoint(0,0,0.0,0.0)
         for i in xrange(1,n,255):
-            #print "AddHSVPoint(%d,%f,%f,%f)"%(i,i*p,1.0,1.0)
+            
             ctf.AddHSVPoint(i, 0.75*(i/float(p)), 1.0, 1.0)
 
         ctf.SetColorSpaceToHSV()
-        print "Using ctf=",ctf
         maptocolor=vtk.vtkImageMapToColors()
         maptocolor.SetInput(data)
         maptocolor.SetLookupTable(ctf)
@@ -474,15 +468,15 @@ def drawScaleBar(widthPx=0,widthMicro=0,voxelSize=(1,1,1),bg=(127,127,127),scale
     """         
     vx = voxelSize[0]
     vx*=1000000
-    print "vx=",vx,"scaleFactor=",scaleFactor
+    Logging.info("voxel x=%d, scale=%f"%(vx,scaleFactor),kw="scale")
     vx/=float(scaleFactor)
-    print "vx now=",vx
+    Logging.info("scaled voxel size=%f"%vx,kw="scale")
     if widthPx:
         widthMicro=widthPx*vx
     else:
         # x*vx = 10
         widthPx=widthMicro/vx
-        print "%f micrometers is %f pixels"%(widthMicro,widthPx)
+        Logging.info("%f micrometers is %f pixels"%(widthMicro,widthPx),kw="scale")
         widthPx=int(widthPx)
         
     bmp = wx.EmptyBitmap(widthPx,24)
@@ -508,7 +502,7 @@ def drawScaleBar(widthPx=0,widthMicro=0,voxelSize=(1,1,1),bg=(127,127,127),scale
     w,h=dc.GetTextExtent(text)
     x=widthPx/2
     x-=(w/2)
-    print "Drawing  text at ",x
+    
     dc.DrawText(text,x,12)
     
     dc.EndDrawing()
