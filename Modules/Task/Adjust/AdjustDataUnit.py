@@ -1,6 +1,6 @@
 # -*- coding: iso-8859-1 -*-
 """
- Unit: CorrectedSourceDataUnit.py
+ Unit: AdjustDataUnit
  Project: BioImageXD
  Created: 01.01.2004, KP
  Description: A dataunit class that represents a data unit produced by adjustment and processing
@@ -29,19 +29,15 @@ __date__ = "$Date: 2005/01/13 14:09:15 $"
 
 import Interpolation
 import ImageOperations
-
-import vtk
-
+import AdjustSettings
 import Logging
-import DataSource
-from CombinedDataUnit import *
+from DataUnit import CombinedDataUnit
 
-
-class CorrectedSourceDataUnit(CombinedDataUnit):
+class AdjustDataUnit(CombinedDataUnit):
     """
-    Class: CorrectedSourceDataUnit
+    Class: AdjustDataUnit
     Created: 24.11.2004, JM, JV
-    Description: Class for a corrected single-channel 4D DataUnit
+    Description: Class for an adjusted single-channel 4D DataUnit
     """
 
     def __init__(self,name=""):
@@ -129,12 +125,12 @@ class CorrectedSourceDataUnit(CombinedDataUnit):
         Method: addSourceDataUnit
         Created: 27.03.2005
         Creator: KP
-        Description: Adds a source data unit to this dataunit"
+        Description: Adds a source data unit to this dataunit
         """
         self.setOriginal(dataUnit)    
         CombinedDataUnit.addSourceDataUnit(self,dataUnit)
-        self.name = "Processed_%s"%dataUnit.getName()
-        print "Updating settings for corrected source dataunit"
+        self.name = "Adjusted %s"%dataUnit.getName()
+	Logging.info("Updating settings for corrected source dataunit",kw="processing")
         #print dataUnit.getColorTransferFunction()
         self.updateSettings()
         #print self.settings.get("ColorTransferFunction")
@@ -156,7 +152,7 @@ class CorrectedSourceDataUnit(CombinedDataUnit):
         Created: 02.04.2005, KP
         Description: Return the class that represents settings for this dataunit
         """
-        return SingleUnitProcessingSettings
+        return AdjustSettings.AdjustSettings
 
         
     def __str__(self):

@@ -1,11 +1,10 @@
 from Adjust import *
 from AdjustPanel import *
 from AdjustSettings import *
+from AdjustDataUnit import *
 
 from DataUnit import CombinedDataUnit
 
-class AdjustDataUnit(CombinedDataUnit):
-    def getSettingsClass(): return AdjustSettings
 
 def getClass(): return Adjust
 def getConfigPanel(): return AdjustPanel
