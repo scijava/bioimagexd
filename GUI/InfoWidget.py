@@ -44,6 +44,7 @@ import DataUnit
 import PreviewFrame
 
 import ColorTransferEditor
+import Modules
 
 
 
@@ -86,6 +87,10 @@ class InfoWidget(wx.Panel):
         
         self.infoNotebook=wx.Notebook(self,-1,size=(300,300))        
         self.mainsizer.Add(self.infoNotebook,(0,1),flag=wx.EXPAND|wx.ALL)
+
+        self.modules=Modules.DynamicLoader.getTaskModules()
+        for key in self.modules:
+            self.modules[key]=self.modules[key][0]
 
         self.createInfoNotebook()
         
@@ -145,10 +150,11 @@ class InfoWidget(wx.Panel):
             else:
                 self.preview.setPreviewType("MIP")
                 
-                
                 unit=DataUnit.CorrectedSourceDataUnit("preview")
                 unit.addSourceDataUnit(dataunit)
-                unit.setModule(DataUnitProcessing.DataUnitProcessing())
+                taskclass=self.modules["Process"]
+                unit.setModule(taskclass())
+                
                 ctf = dataunit.getColorTransferFunction()
                 print "dataunit.getBitDepth()=",dataunit.getBitDepth()
                 if dataunit.getBitDepth()==32:

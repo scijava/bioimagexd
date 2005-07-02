@@ -46,6 +46,7 @@ import time
 from GUI import Events
 
 import TaskPanel
+print TaskPanel,dir(TaskPanel)
 
 infoString="""<html><body bgcolor=%(bgcolor)s">
 <table>

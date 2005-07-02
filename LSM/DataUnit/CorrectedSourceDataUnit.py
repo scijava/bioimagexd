@@ -3,9 +3,7 @@
  Unit: CorrectedSourceDataUnit.py
  Project: BioImageXD
  Created: 01.01.2004, KP
- Description: Classes for 4D DataUnits
-
- Modified: 01.01.2005 KP - Split the class from DataUnit.py to a module of it's own
+ Description: A dataunit class that represents a data unit produced by adjustment and processing
 
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
@@ -25,7 +23,7 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
-__author__ = "Selli Project <http://sovellusprojektit.it.jyu.fi/selli/>"
+__author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.93 $"
 __date__ = "$Date: 2005/01/13 14:09:15 $"
 

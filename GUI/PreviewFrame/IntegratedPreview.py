@@ -38,6 +38,7 @@ import os.path
 
 from PreviewFrame import *
 import wx
+from DataUnit import CombinedDataUnit
 
 import ColorTransferEditor
 
@@ -71,7 +72,9 @@ class IntegratedPreview(PreviewFrame):
         self.mip = 0
         self.previewtype=""
         self.modules=Modules.DynamicLoader.getTaskModules()
-        self.modules[""]=self.modules["Processing"]
+        self.modules[""]=self.modules["Process"]
+        for key in self.modules:
+            self.modules[key]=self.modules[key][0]
         
         self.menu=wx.Menu()
         self.typemenu=wx.Menu()        
@@ -233,11 +236,14 @@ class IntegratedPreview(PreviewFrame):
         if not self.running:
             renew=1
             self.running=1
-        try:
-            preview=self.dataUnit.doPreview(self.z,renew,self.timePoint)
-        except Logging.GUIError, ex:
-            ex.show()
-            return
+        if isinstance(self.dataUnit,CombinedDataUnit):
+            try:
+                preview=self.dataUnit.doPreview(self.z,renew,self.timePoint)
+            except Logging.GUIError, ex:
+                ex.show()
+                return
+        else:
+            preview = self.dataUnit.getTimePoint(self.timePoint)
         if not preview:
             raise "Did not get a preview"
         self.currentImage=preview

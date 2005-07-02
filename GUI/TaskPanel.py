@@ -29,7 +29,7 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 """
-__author__ = "BioImageXD Project"
+__author__ = "BioImageXD Project <http://www.bioimagexd.org>"
 __version__ = "$Revision: 1.21 $"
 __date__ = "$Date: 2005/01/13 14:36:20 $"
 
@@ -49,8 +49,6 @@ from GUI import Events
 
 import Dialogs
 import sys
-import Colocalization
-import ColorMerging
 import ImageOperations
 import ColorTransferEditor
 

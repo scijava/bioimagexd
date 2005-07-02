@@ -1,32 +1,9 @@
 # -*- coding: iso-8859-1 -*-
 """
  Unit: DataUnit.py
- Project: Selli
+ Project: BioImageXD
  Created: 03.11.2004, JM
  Description: Classes for 4D DataUnits
-
- Modified: 09.11.2004 JM - modified: SourceDataUnit.__init__()
-                           added: SourceDataUnit.setDataSource()
-           09.11.2004 KP - getTimePoint() uses DataSource for reading timepoints
-                           from disk
-           10.11.2004 JM - numerous bug fixes made and compliance with class 
-                           diagrams checked
-           24.11.2004 JM - Added validity checks to set-methods,
-                           class ProcessedSourceDataUnit added
-           25.11.2004 JV - Added VSIA
-           26.11.2004 JM - more comments added
-           09.12.2004 KP - Added method for intepolating intensity transfer 
-                           functions
-           10.12.2004 JV - set/getNeighborhood, 
-                           set/getProcessingSolitaryThreshold,
-                           passes settings to DataUnitProcessing
-           11.12.2004 JV - Added: doProcessing, does not work
-           13.12.2004 JV - Processing and saving works
-           14.12.2004 JM - More validity checks added
-           14.12.2004 JV,JM - Loading of settings in ProcessedSourceDataUnit
-           17.12.2004 JV - Handles the settings to module
-           04.01.2005 JV - VSIASourceDataUnit saves and loads settings
-           27.03.2005 KP - Started merging / refactoring classes together
            
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
@@ -47,7 +24,7 @@
 
 """
 
-__author__ = "Selli Project <http://sovellusprojektit.it.jyu.fi/selli/>"
+__author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.93 $"
 __date__ = "$Date: 2005/01/13 14:09:15 $"
 

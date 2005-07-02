@@ -9,26 +9,6 @@
 
  A widget that can be used to Preview any operations done by a subclass of Module
 
- Modified 03.11.2004 KP - Methods for colocalization window to pass on the file 
-                          names to be processed
-          04.11.2004 KP - Inherited specialized preview classes from the 
-                          PreviewFrame
-          08.11.2004 KP - Preview now uses the dataunit's doPreview() method to do 
-                      the preview. No more nosing around with dataunits internal
-                      structure
-          08.11.2004 KP - Preview now uses the color of the dataunits
-          08.11.2004 KP - The preview is now generated in a single image at the
-                          specified depth, and the previewed depth is controlled
-                          with vtkImageMapper's SetZSlice()-method
-          09.11.2004 KP - Added the ability to display a pixels value
-          10.11.2004 JV - Added class ColorCombinationPreview (made after 
-                          ColpocalizationPreview)
-          11.11.2004 JV - Changed setPreviewedSlice so that it works with color merging
-                          preview
-          16.11.2004 KP - Refactoring code from ColocalizationPreview back to the 
-                          base class PreviewFrame
-          13.12.2004 KP - Added code for previewing in MayaVi
-
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
 
@@ -54,7 +34,7 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 import os.path,sys
 
 import ImageOperations
-import VTKScrollPanel
+
 import WxPreviewPanel
 import time
 
