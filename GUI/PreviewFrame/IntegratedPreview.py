@@ -136,7 +136,7 @@ class IntegratedPreview(PreviewFrame):
         self.mip = 0
         self.renderpanel.setSingleSliceMode(0)            
         m=self.modules[self.previewtype]
-        print "Module that corresponds to %s: %s"%(self.previewtype,m)
+        Logging.info("Module that corresponds to %s: %s"%(self.previewtype,m),kw="preview")
         self.dataUnit.setModule(m)
         sourceunits=self.dataUnit.getSourceDataUnits()
         t=self.previewtype
@@ -145,13 +145,12 @@ class IntegratedPreview(PreviewFrame):
             settingstype="%sSettings"%t
             settings = unit.getSettings()
             if settings:
-                print "Converting settings of %s to %s"%(unit,settingstype)
+                Logging.info("Converting settings of %s to %s"%(unit,settingstype),kw="preview")
                 settings = settings.asType(settingstype)
             else:
                 raise "Got no settings from dataunit",unit
             unit.setSettings(settings)
-            print "Type of settings now:",
-            print unit.getSettings().get("Type")
+            Logging.info("Type of settings now:",unit.getSettings().get("Type"),kw="preview")
         self.setSelectedItem(0)
         
         self.updatePreview(1)
@@ -169,19 +168,13 @@ class IntegratedPreview(PreviewFrame):
             return
         if self.dataUnit:
             ct = self.settings.get("%sColorTransferFunction"%self.previewtype)
-            #print "Got ",ct
+        
             if self.selectedItem != -1:
                 ctc = self.settings.getCounted("%sColorTransferFunction"%self.previewtype,self.selectedItem)            
                 if ctc:
-                    print "Using counted %d instead"%self.selectedItem
+                    Logging.info("Using item %d (counted)"%self.selectedItem,kw="preview")
                     ct=ctc
-                #rgb = self.settings.getCounted("%sColor"%self.previewtype,self.selectedItem)
-                #if rgb:
-                #    print "Using counted %d instead (%s)"%(self.selectedItem,str(rgb))
-                #    self.rgb = rgb
             
-        #print "Got ctf",ct
-#        print "Using ctf ",ct,"to color preview"
         self.currentCt = ct
         #self.currentCt=ImageOperations.getColorTransferFunction(self.rgb)
         
@@ -197,7 +190,7 @@ class IntegratedPreview(PreviewFrame):
         """
         if self.permute:
             permute=vtk.vtkImagePermute()
-            print "Setting permuted axes to",self.permute
+            Logging.info("Setting permuted axes to ",self.permute,kw="preview")
             permute.SetFilteredAxes(*self.permute)
             permute.SetInput(data)
             permute.Update()
@@ -213,19 +206,18 @@ class IntegratedPreview(PreviewFrame):
                 mip.Update()
                 data=mip.GetOutput()
                 data.SetUpdateExtent(data.GetWholeExtent())
-                #print "data=",data
+            
             self.mapToColors.RemoveAllInputs()
             self.mapToColors.SetInput(data)
-            #print "Updatinalreadyg color"
+            
             self.updateColor()
-            #print "Coloring with ",self.currentCt
+            
             colorImage=self.mapToColors.GetOutput()
             colorImage.SetUpdateExtent(data.GetExtent())
             self.mapToColors.Update()
             data=self.mapToColors.GetOutput()
         else:
             pass
-            #print "Image got %d components already"%ncomps
                 
         return data
         
@@ -248,7 +240,7 @@ class IntegratedPreview(PreviewFrame):
         if not self.dataUnit:
             return
         if not self.enabled:
-            print "NOT ENABLED, WONT RENDER"
+            Logging.info("Preview not enabled, won't render",kw="preview")
             return
         self.updateColor()
         if not self.running:
@@ -277,8 +269,6 @@ class IntegratedPreview(PreviewFrame):
             self.oldx=x
             self.oldy=y
             
-
-#        print "Showing slice ",self.z
         self.renderpanel.setZSlice(self.z)
         self.renderpanel.setImage(colorImage)
         self.renderpanel.updatePreview()
