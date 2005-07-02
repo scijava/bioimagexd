@@ -35,6 +35,12 @@ __date__ = "$Date: 2005/01/11 14:36:00 $"
 
 import traceback
 import wx
+import os.path
+
+HIDE_DEBUG=["visualizer","init","io"]
+KWS=["visualizer","main","init","animator","io","task","preview"]
+
+import sys
 
 class GUIError:
     """
@@ -86,7 +92,7 @@ class GUIError:
         return str(self)
 
 
-def error(title,msg):
+def error(title,msg,x=sys._getframe()):
     """
     Function: error
     Created: 13.12.2004
@@ -96,11 +102,11 @@ def error(title,msg):
             title      Title for the error message
             msg        The actual error message
     """
-    print "ERROR: %s"%msg
-    raise GUIError(title,msg)
+    print "%s: %s"%(x.f_code.co_filename,x.f_lineno),"ERROR: %s"%msg
+    raise GUIError(title,"%s: %s"%(x.f_code.co_filename,x.f_lineno)+" "+msg)
 
 
-def info(msg,*args):
+def info(msg,*args,**kws):
     """
     Function: info
     Created: 13.12.2004
@@ -110,4 +116,9 @@ def info(msg,*args):
             msg        The message
             args       Arguments to be printed along with message
     """
-    print msg," ".join(map(str,args))
+    xframe=sys._getframe(1)
+    if "kw" in kws and kws["kw"] not in KWS:raise Exception("Unknown keyword "+kws["kw"])
+    if not ("kw" in kws) or (("kw" in kws) and (kws["kw"] not in HIDE_DEBUG)):
+        file=os.path.split(xframe.f_code.co_filename)[-1]
+        lineno=xframe.f_lineno
+        print "%s: %s: %s %s"%(file,lineno,msg," ".join(map(str,args)))
