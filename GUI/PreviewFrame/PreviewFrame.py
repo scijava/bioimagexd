@@ -35,7 +35,7 @@ import os.path,sys
 
 import ImageOperations
 
-import WxPreviewPanel
+import PreviewPanel
 import time
 
 from GUI import Events
@@ -110,7 +110,7 @@ class PreviewFrame(wx.Panel):
         self.currentImage=None
         self.currentCt=None
 
-        self.renderpanel = WxPreviewPanel.WxPreviewPanel(self,size=size,scroll=self.show["SCROLL"],zoomx=self.zoomx,zoomy=self.zoomy)
+        self.renderpanel = PreviewPanel.PreviewPanel(self,size=size,scroll=self.show["SCROLL"],zoomx=self.zoomx,zoomy=self.zoomy)
         self.sizer.Add(self.renderpanel,(0,0))
         
         # The preview can be no larger than these

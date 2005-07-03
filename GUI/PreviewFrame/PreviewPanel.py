@@ -1,7 +1,7 @@
 # -*- coding: iso-8859-1 -*-
 
 """
- Unit: WxPreviewPanel.py
+ Unit: PreviewPanel.py
  Project: BioImageXD
  Created: 24.03.2005, KP
  Description:
@@ -36,10 +36,11 @@ import wx
 from wx.lib.statbmp  import GenStaticBitmap as StaticBitmap
 import ImageOperations
 import Logging
+import InteractivePanel
 
-class WxPreviewPanel(wx.ScrolledWindow):
+class PreviewPanel(InteractivePanel.InteractivePanel):
     """
-    Class: WxPreviewPanel
+    Class: PreviewPanel
     Created: 24.03.2005, KP
     Description: A panel that can be used to preview volume data one slice at a time
     """
@@ -49,13 +50,13 @@ class WxPreviewPanel(wx.ScrolledWindow):
         Created: 24.03.2005, KP
         Description: Initialization
         """    
+        InteractivePanel.InteractivePanel.__init__(self,parent,size,**kws)
         self.fitLater=0
         self.imagedata=None
         self.bmp=None
         self.scroll=scroll
         Logging.info("preview panel size=",size,kw="preview")
         
-        self.rubberstart=None
         self.yielding=0
         x,y=size
         self.buffer = wx.EmptyBitmap(x,y)
@@ -67,7 +68,6 @@ class WxPreviewPanel(wx.ScrolledWindow):
             self.zoomy=kws["zoomy"]
             del kws["zoomy"]
         Logging.info("zoom xf=%f, yf=%f"%(self.zoomx,self.zoomy),kw="preview")
-        wx.ScrolledWindow.__init__(self,parent,-1,size=size,**kws)
         if kws.has_key("scrollbars"):
             self.scroll=kws["scrollbars"]
         self.size=size
@@ -75,7 +75,6 @@ class WxPreviewPanel(wx.ScrolledWindow):
         self.z = 0
         self.zooming = 0
         self.scrollsize=32
-        self.zoomFactor=1
         self.singleslice=0
         self.scrollTo=None
         self.scaleBar = None
@@ -85,21 +84,6 @@ class WxPreviewPanel(wx.ScrolledWindow):
         self.paintPreview()
         self.Bind(wx.EVT_PAINT,self.OnPaint)
 
-        self.Bind(wx.EVT_LEFT_DOWN,self.markRubberband)
-        self.Bind(wx.EVT_MOTION,self.updateRubberband)
-        self.Bind(wx.EVT_LEFT_UP,self.zoomToRubberband)
-        
-    def drawScaleBar(self,width,voxelsize):
-        """
-        Method: drawScaleBar(width,voxelsize)
-        Created: 05.06.2005, KP
-        Description: Draw a scale bar of given size
-        """    
-        self.scaleBarWidth = width
-        self.voxelSize = voxelsize
-        Logging.info("zoom factor for scale bar=%f"%self.zoomFactor,kw="preview")
-        self.scaleBar = ImageOperations.drawScaleBar(0,self.scaleBarWidth,self.voxelSize,(0,0,0),self.zoomFactor)
-
     def setSingleSliceMode(self,mode):
         """
         Method: setSingleSliceMode()
@@ -107,67 +91,7 @@ class WxPreviewPanel(wx.ScrolledWindow):
         Description: Sets this preview to only show a single slice
         """    
         self.singleslice = mode
-        
-        
-    def markRubberband(self,event):
-        """
-        Method: markRubberband
-        Created: 24.03.2005, KP
-        Description: Sets the starting position of rubber band for zooming
-        """    
-        if not self.zooming:
-            return False
-        self.rubberstart=event.GetPosition()
-        
-    def updateRubberband(self,event):
-        """
-        Method: updateRubberband
-        Created: 24.03.2005, KP
-        Description: Draws the rubber band to current mouse position
-        """
-        if not self.zooming:
-            return
-        if event.LeftIsDown():
-            self.rubberend=event.GetPosition()
-        self.updatePreview()
-    
-        
-    def zoomToRubberband(self,event):
-        """
-        Method: zoomToRubberband()
-        Created: 24.03.2005, KP
-        Description: Zooms to the rubberband
-        """
-        if not self.zooming:
-            return
-        self.zooming=0
-        x1,y1=self.rubberstart
-        x2,y2=self.rubberend
-
-        self.rubberstart=None
-        self.rubberend=None
-        x1,x2=min(x1,x2),max(x1,x2)
-        y1,y2=min(y1,y2),max(y1,y2)
-        
-        if self.zoomFactor!=1:
-            f=float(self.zoomFactor)
-            x1,x2,y1,y2=int(x1/f),int(x2/f),int(y1/f),int(y2/f)
-            x1/=float(self.zoomx)
-            x2/=float(self.zoomx)
-            y1/=float(self.zoomy)
-            y2/=float(self.zoomy)
-            
-        
-        x1,y1=self.getScrolledXY(x1,y1)
-        x2,y2=self.getScrolledXY(x2,y2)
-
-        w,h=self.size
-        self.setZoomFactor(ImageOperations.getZoomFactor((x2-x1),(y2-y1),w,h))
-        
-        self.scrollTo=(self.zoomFactor*x1*self.zoomx,self.zoomFactor*y1*self.zoomy)
-        
-        self.updatePreview()
-        
+                
     def setZSlice(self,z):
         """
         Method: setZSlice(z)
@@ -330,15 +254,6 @@ class WxPreviewPanel(wx.ScrolledWindow):
             self.Scroll(sx,sy)
             self.scrollTo=None
 
-    def OnPaint(self,event):
-        """
-        Method: paintPreview()
-        Created: 28.04.2005, KP
-        Description: Does the actual blitting of the bitmap
-        """
-        dc=wx.BufferedPaintDC(self,self.buffer)#,self.buffer)
-
-
     def paintPreview(self):
         """
         Method: paintPreview()
@@ -382,25 +297,8 @@ class WxPreviewPanel(wx.ScrolledWindow):
         dc.DrawBitmap(bmp,0,0,True)
         w,h=bmp.GetWidth(),bmp.GetHeight()
         self.bmp=bmp
-
-        if self.rubberstart and self.rubberend:
-            x1,y1=self.rubberstart
-            x2,y2=self.rubberend
-            x1,x2=min(x1,x2),max(x1,x2)
-            y1,y2=min(y1,y2),max(y1,y2)
-            d1,d2=abs(x2-x1),abs(y2-y1)
-
-            if self.zoomFactor!=1:
-                f=self.zoomFactor
-                x1,y1=self.getScrolledXY(x1,y1)
-                x1,y1=int(f*x1),int(f*y1)
-                
-            dc.SetPen(wx.Pen(wx.Colour(255,0,0),2))
-            dc.SetBrush(wx.TRANSPARENT_BRUSH)
-            dc.DrawRectangle(x1,y1,d1,d2)
         
-        if self.scaleBar:
-            dc.DrawBitmap(self.scaleBar,5,h-40,True)
+        InteractivePanel.InteractivePanel.paintPreview(self)
         
         dc.EndDrawing()
         self.dc = None

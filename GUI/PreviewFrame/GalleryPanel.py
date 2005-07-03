@@ -38,6 +38,7 @@ import ImageOperations
 import vtk
 
 import math
+import Logging
 
 class GalleryPanel(wx.ScrolledWindow):
     """
@@ -55,7 +56,7 @@ class GalleryPanel(wx.ScrolledWindow):
         self.visualizer=visualizer
         self.bmp=None
         self.bgcolor=(127,127,127)
-        print "size=",size
+	Logging.info("Size of gallery =",size,kw="preview")
         self.enabled=1
         self.slices=[]
         
@@ -95,7 +96,7 @@ class GalleryPanel(wx.ScrolledWindow):
         """    
         self.scaleBarWidth = width
         f=self.sliceSize[0]/float(self.dims[0])
-        print "Scale factor for gallery=",f
+	Logging.info("Scale factor for gallery=",f,kw="preview")
         self.scaleBar = ImageOperations.drawScaleBar(64,0,self.voxelSize,(0,0,0),f)
         
     def zoomToFit(self):
@@ -141,7 +142,7 @@ class GalleryPanel(wx.ScrolledWindow):
         Description: Size event handler
         """    
         self.size=event.GetSize()
-        print "gallery size changed",self.size
+	Logging.info("Gallery size changed to ",self.size,kw="preview")
         self.sizeChanged=1
 
     def setDataUnit(self,dataunit):
@@ -156,8 +157,6 @@ class GalleryPanel(wx.ScrolledWindow):
         
         self.dims=dataunit.getDimensions()
         self.voxelSize=dataunit.getVoxelSize()
-        print "Got dataunit"
-        #print "Got image",image
         #self.imagedata=image
         
         
@@ -171,7 +170,7 @@ class GalleryPanel(wx.ScrolledWindow):
         if self.visualizer.getProcessedMode():
             image=self.dataUnit.doPreview(-2,1,self.timepoint)
             ctf = self.dataUnit.getSourceDataUnits()[0].getColorTransferFunction()
-            print "Got data ",image
+	    Logging.info("Using ",image,"for gallery",kw="preview")
         else:
             image=self.dataUnit.getTimePoint(timepoint)
             ctf=self.dataUnit.getColorTransferFunction()
@@ -190,7 +189,6 @@ class GalleryPanel(wx.ScrolledWindow):
         
         
         self.slices=[]
-        print "x,y,z=",x,y,z
         for i in range(z):
             slice=ImageOperations.vtkImageDataToWxImage(self.imagedata,i)    
             self.slices.append(slice)
@@ -212,7 +210,7 @@ class GalleryPanel(wx.ScrolledWindow):
         
         xreq=self.size[0]//(w+6)
         yreq=math.ceil(z/float(xreq))
-        print "Need %d x %d grid to show the dataset"%(xreq,yreq)
+        Logging.info("Need %d x %d grid to show the dataset"%(xreq,yreq),kw="preview")
         
 
         # allow for 3 pixel border
@@ -223,7 +221,7 @@ class GalleryPanel(wx.ScrolledWindow):
         self.cols=xreq
             
         self.paintSize=(x,y)
-        print "paintSize=",self.paintSize
+	Logging.info("paintSize=",self.paintSize,kw="preview")
         
         self.setScrollbars(x,y)
 
@@ -250,7 +248,7 @@ class GalleryPanel(wx.ScrolledWindow):
         Description: Configures scroll bar behavior depending on the
                      size of the dataset, which is given as parameters.
         """
-        print "setScrollbars(%d,%d)"%(xdim,ydim)
+        Logging.info("setScrollbars(%d,%d)"%(xdim,ydim),kw="preview")
         w,h=self.buffer.GetWidth(),self.buffer.GetHeight()
         
         if w!=xdim or h!=ydim:
@@ -275,7 +273,7 @@ class GalleryPanel(wx.ScrolledWindow):
         Description: Updates the viewed image
         """
         if not self.enabled:
-           print "Won't draw gallery cause not enabled"
+           Logging.info("Won't draw gallery cause not enabled",kw="preview")
            return
         if not self.slices:
             self.setTimepoint(self.timepoint)
@@ -291,7 +289,7 @@ class GalleryPanel(wx.ScrolledWindow):
         """
         if self.scrollTo:
             x,y=self.scrollTo
-            print "Scrolling to ",x,y
+            Logging.info("Scrolling to ",x,y,kw="preview")
             sx=int(x/self.scrollsize)
             sy=int(y/self.scrollsize)
             #sx=x/self.scrollsize
@@ -306,7 +304,7 @@ class GalleryPanel(wx.ScrolledWindow):
         Description: Does the actual blitting of the bitmap
         """
         if self.sizeChanged:
-            print "size changed, calculating buffer"
+            Logging.info("size changed, calculating buffer",kw="preview")
             self.calculateBuffer()
             self.updatePreview()
             self.sizeChanged=0
@@ -326,7 +324,7 @@ class GalleryPanel(wx.ScrolledWindow):
         dc.DrawRectangle(0,0,self.paintSize[0],self.paintSize[1])
         
         if not self.slices:
-            print "Haven't got any slices"
+            Logging.info("Haven't got any slices",kw="preview")
             dc.EndDrawing()
             self.dc = None
             return
@@ -348,7 +346,7 @@ class GalleryPanel(wx.ScrolledWindow):
         
         y=9+(self.rows)*(3+self.sliceSize[1])
         if self.scaleBar:
-            print "Drawing scalebar at ",5,y-40
+            Logging.info("Drawing scalebar at ",5,y-40,kw="preview")
             dc.DrawBitmap(self.scaleBar,12,y-30,True)
 
 
