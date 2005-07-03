@@ -182,6 +182,7 @@ class PreviewFrame(wx.Panel):
         Logging.info("Returning x,y,z=(%d,%d,%d)"%(rx,ry,rz))
         evt.setCoord(rx,ry,rz)
         self.GetEventHandler().ProcessEvent(evt)
+        event.Skip()
     
     def getPixelValue(self,event):
         """

@@ -59,6 +59,24 @@ class SlicesMode:
         self.dataUnit=None
         self.modules=Modules.DynamicLoader.getTaskModules()
 
+    def drawScale(self):
+        """
+        Method: drawScale()
+        Created: 03.07.2005, KP
+        Description: Draw a scale into the preview
+        """
+        if self.preview:
+            self.preview.renderpanel.startScale()
+        
+
+    def zoomObject(self):
+        """
+        Method: zoomObject()
+        Created: 03.07.2005, KP
+        Description: Zoom to a user selected portion of the image
+        """
+        if self.preview:
+            self.preview.renderpanel.zoomObject()
         
     def zoomToFit(self):
         """
@@ -101,7 +119,7 @@ class SlicesMode:
         Created: 26.05.2005, KP
         Description: Update the rendering
         """
-	Logging.info("Updating rendering",kw="preview")
+        Logging.info("Updating rendering",kw="preview")
         self.preview.updatePreview(1)
         
     def setBackground(self,r,g,b):
@@ -127,7 +145,7 @@ class SlicesMode:
         Description: Set the mode of visualization
         """
         if not self.preview:
-	    Logging.info("Generating preview",kw="visualizer")
+            Logging.info("Generating preview",kw="visualizer")
             self.preview=PreviewFrame.IntegratedPreview(self.parent,
             previewsize=(512,512),pixelvalue=False,renderingpreview=False,
             zoom=False,zslider=True,timeslider=False,scrollbars=True)
@@ -141,10 +159,10 @@ class SlicesMode:
         Created: 25.05.2005, KP
         Description: Set the dataunit to be visualized
         """
-	Logging.info("setDataUnit(",dataUnit,")",kw="visualizer")
+        Logging.info("setDataUnit(",dataUnit,")",kw="visualizer")
         if dataUnit == self.dataUnit:
-	    Logging.info("Same dataunit, not changing",kw="visualizer")
-	    return
+            Logging.info("Same dataunit, not changing",kw="visualizer")
+            return
         if self.init:
             self.preview.setPreviewType("")
             self.init=0
@@ -158,7 +176,7 @@ class SlicesMode:
             unit.setModule(taskclass())
             
         else:
-	    Logging.info("Using dataunit",dataUnit,kw="visualizer")
+            Logging.info("Using dataunit",dataUnit,kw="visualizer")
             unit=dataUnit
         self.preview.setDataUnit(unit,0)
         
@@ -168,7 +186,7 @@ class SlicesMode:
         Created: 25.05.2005, KP
         Description: Set the timepoint to be visualized
         """
-	Logging.info("Setting timepoint to ",tp,kw="visualizer")
+        Logging.info("Setting timepoint to ",tp,kw="visualizer")
         self.preview.setTimepoint(tp)
         
     def saveSnapshot(self,filename):

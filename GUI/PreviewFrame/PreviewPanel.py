@@ -50,7 +50,6 @@ class PreviewPanel(InteractivePanel.InteractivePanel):
         Created: 24.03.2005, KP
         Description: Initialization
         """    
-        InteractivePanel.InteractivePanel.__init__(self,parent,size,**kws)
         self.fitLater=0
         self.imagedata=None
         self.bmp=None
@@ -80,6 +79,7 @@ class PreviewPanel(InteractivePanel.InteractivePanel):
         self.scaleBar = None
         self.scaleBarWidth = 0
         self.voxelSize=(1,1,1)
+        InteractivePanel.InteractivePanel.__init__(self,parent,size,**kws)
         
         self.paintPreview()
         self.Bind(wx.EVT_PAINT,self.OnPaint)
@@ -204,7 +204,7 @@ class PreviewPanel(InteractivePanel.InteractivePanel):
             self.SetScrollRate(self.scrollsize,self.scrollsize)
             
 
-    def startZoom(self):
+    def zoomObject(self):
         """
         Method: startZoomObject()
         Created: 24.03.2005, KP
@@ -212,6 +212,7 @@ class PreviewPanel(InteractivePanel.InteractivePanel):
                      by drawing a "rubber band"
         """
         Logging.info("Will zoom",kw="preview")
+        self.startRubberband()
         self.zooming=1
 
 

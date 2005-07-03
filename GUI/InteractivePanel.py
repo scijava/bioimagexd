@@ -47,17 +47,19 @@ class InteractivePanel(wx.ScrolledWindow):
         Created: 24.03.2005, KP
         Description: Initialization
         """    
-        self.fitLater=0
+        self.action=0
         self.imagedata=None
         self.bmp=None
         self.scroll=scroll
         Logging.info("interactive panel size=",size,kw="iactivepanel")
         
-        self.rubberstart=None
+        self.actionstart=None
+        self.actionend=None
+        self.scalepos=None
+        
         x,y=size
         self.buffer = wx.EmptyBitmap(x,y)
-        self.rubberend=None
-        wx.ScrolledWindow.__init__(self,parent,-1,size=size,**kws)
+        wx.ScrolledWindow.__init__(self,parent,-1,size=size)
         self.size=size
 
         self.scaleBar = None
@@ -68,57 +70,112 @@ class InteractivePanel(wx.ScrolledWindow):
         self.paintPreview()
         self.Bind(wx.EVT_PAINT,self.OnPaint)
 
-        self.Bind(wx.EVT_LEFT_DOWN,self.markRubberband)
-        self.Bind(wx.EVT_MOTION,self.updateRubberband)
-        self.Bind(wx.EVT_LEFT_UP,self.zoomToRubberband)
+        self.Bind(wx.EVT_LEFT_DOWN,self.markActionStart)
+        self.Bind(wx.EVT_MOTION,self.updateActionEnd)
+        self.Bind(wx.EVT_LEFT_UP,self.executeAction)
+        
+    def executeAction(self,event):
+        """
+        Method: executeAction
+        Created: 03.07.2005, KP
+        Description: Call the right callback depending on what we're doing
+        """    
+        if self.action==0:
+            self.zoomToRubberband(event)
+        elif self.action==1:
+            self.updateScaleBar(event)
         
     def drawScaleBar(self,width,voxelsize):
         """
         Method: drawScaleBar(width,voxelsize)
         Created: 05.06.2005, KP
-        Description: Draw a scale bar of given size
+        Description: Gets the scale bar information
         """    
         self.scaleBarWidth = width
         self.voxelSize = voxelsize
         Logging.info("zoom factor for scale bar=%f"%self.zoomFactor,kw="preview")
-        self.scaleBar = ImageOperations.drawScaleBar(0,self.scaleBarWidth,self.voxelSize,(0,0,0),self.zoomFactor)
-                
-    def markRubberband(self,event):
+        
+    def updateScaleBar(self,event=None):
         """
-        Method: markRubberband
+        Method: updateScaleBar
+        Created: 05.06.2005, KP
+        Description: Draw a scale bar of given size
+        """
+        x0,y0=self.scalePos
+        x1,y1=self.actionend
+        xd=x1-x0
+        yd=y1-y0
+        vertical=0
+        diff=xd
+        if yd>xd:
+            vertical=1
+            diff=yd
+        
+        self.scaleBar = ImageOperations.drawScaleBar(widthPx=diff,
+            widthMicro=0,voxelSize=self.voxelSize,
+            bgColor=(0,0,0),
+            scaleFactor=self.zoomFactor,
+            vertical=vertical,
+            round=1)
+                
+    def markActionStart(self,event):
+        """
+        Method: markActionStart
         Created: 24.03.2005, KP
         Description: Sets the starting position of rubber band for zooming
         """    
-        if not self.zooming:
+        if not self.action:
             return False
-        self.rubberstart=event.GetPosition()
+        self.actionstart=event.GetPosition()
+        if self.action==2:
+            self.scalePos=self.actionstart
         
-    def updateRubberband(self,event):
+    def updateActionEnd(self,event):
         """
-        Method: updateRubberband
+        Method: updateActionEnd
         Created: 24.03.2005, KP
         Description: Draws the rubber band to current mouse position
         """
-        if not self.zooming:
+        if not self.action:
             return
         if event.LeftIsDown():
-            self.rubberend=event.GetPosition()
-        self.updatePreview()    
+            self.actionend=event.GetPosition()
+            if self.action==2:
+                self.updateScaleBar(event)    
+        self.updatePreview()
+        
+    def startRubberband(self):
+        """
+        Method: startRubberband()
+        Created: 03.07.2005
+        Description: Start rubber band
+        """
+        self.action=1
+        
+    def startScale(self):
+        """
+        Method: startRubberband()
+        Created: 03.07.2005
+        Description: Start rubber band
+        """
+        self.action=2
         
     def zoomToRubberband(self,event):
         """
         Method: zoomToRubberband()
         Created: 24.03.2005, KP
         Description: Zooms to the rubberband
-        """
-        if not self.zooming:
+        """ 
+        if not (self.rubberBanding or self.scaleDrawing):
+            Logging.info("Not drawing rubberband,returning",kw="iactivepanel")
             return
-        self.zooming=0
-        x1,y1=self.rubberstart
-        x2,y2=self.rubberend
-
-        self.rubberstart=None
-        self.rubberend=None
+        self.rubberBanding=0
+        x1,y1=self.actionstart
+        x2,y2=self.actionend
+        Logging.info("Zooming to rubberband defined by (%d,%d),(%d,%d)"%(x1,y1,x2,y2),kw="iactivepanel")
+        
+        self.actionstart=None
+        self.actionend=None
         x1,x2=min(x1,x2),max(x1,x2)
         y1,y2=min(y1,y2),max(y1,y2)
         
@@ -165,24 +222,32 @@ class InteractivePanel(wx.ScrolledWindow):
         Created: 24.03.2005, KP
         Description: Paints the image to a DC
         """
-        if self.rubberstart and self.rubberend:
-            x1,y1=self.rubberstart
-            x2,y2=self.rubberend
-            x1,x2=min(x1,x2),max(x1,x2)
-            y1,y2=min(y1,y2),max(y1,y2)
-            d1,d2=abs(x2-x1),abs(y2-y1)
-
-            if self.zoomFactor!=1:
-                f=self.zoomFactor
-                x1,y1=self.getScrolledXY(x1,y1)
-                x1,y1=int(f*x1),int(f*y1)
-                
-            dc.SetPen(wx.Pen(wx.Colour(255,0,0),2))
-            dc.SetBrush(wx.TRANSPARENT_BRUSH)
-            dc.DrawRectangle(x1,y1,d1,d2)
+        dc=self.dc
+        bmp=self.bmp
         
+        w,h=bmp.GetWidth(),bmp.GetHeight()
+        
+        w*=self.zoomx
+        h*=self.zoomy
+        if self.action==1:
+            if self.actionstart and self.actionend:
+                x1,y1=self.actionstart
+                x2,y2=self.actionend
+                x1,x2=min(x1,x2),max(x1,x2)
+                y1,y2=min(y1,y2),max(y1,y2)
+                d1,d2=abs(x2-x1),abs(y2-y1)
+    
+                if self.zoomFactor!=1:
+                    f=self.zoomFactor
+                    x1,y1=self.getScrolledXY(x1,y1)
+                    x1,y1=int(f*x1),int(f*y1)
+                    
+                dc.SetPen(wx.Pen(wx.Colour(255,0,0),2))
+                dc.SetBrush(wx.TRANSPARENT_BRUSH)
+                dc.DrawRectangle(x1,y1,d1,d2)
         if self.scaleBar:
-            dc.DrawBitmap(self.scaleBar,5,h-40,True)
+            x,y=self.scalePos
+            dc.DrawBitmap(self.scaleBar,x,y,True)
         
         dc.EndDrawing()
         self.dc = None

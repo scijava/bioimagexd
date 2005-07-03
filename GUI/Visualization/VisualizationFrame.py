@@ -6,10 +6,8 @@
  Created: 28.04.2005, KP
  Description:
 
- A framework for replacing MayaVi for simple rendering tasks.
+ A framework for embedding different visualization modes to BioImageXD
  
- Modified 28.04.2005 KP - Created the class
-          
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
 

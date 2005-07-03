@@ -98,6 +98,7 @@ ID_SET_TRACK_TOTAL  =157
 ID_CLOSE_PROJECT    =158
 ID_MAINTAIN_UP      =159
 ID_SET_TRACK_RELATIVE=160
+ID_ADD_SCALE        =161
         
 class MenuManager:
     """

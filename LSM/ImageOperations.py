@@ -3,14 +3,11 @@
 """
  Unit: ImageOperations
  Project: BioImageXD
- Created: 10.02.2005
- Creator: KP
+ Created: 10.02.2005, KP
  Description:
 
  This is a module with functions for various kind of image operations, for example
  conversion from VTK image data to wxPython bitmap
- 
- Modified: 10.02.2005 KP - Created the class
 
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
@@ -28,10 +25,9 @@
  You should have received a copy of the GNU General Public License
  along with this program; if not, write to the Free Software
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-
 """
 
-__author__ = "BioImageXD Project"
+__author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.21 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
@@ -456,7 +452,7 @@ def getColorTransferFunction(fg):
     ct.AddRGBPoint(255,r,g,b)
     return ct    
     
-def drawScaleBar(widthPx=0,widthMicro=0,voxelSize=(1,1,1),bg=(127,127,127),scaleFactor=1.0):
+def drawScaleBar(widthPx=0,widthMicro=0,voxelSize=(1,1,1),bgColor=(127,127,127),scaleFactor=1.0,vertical=0,round=1):
     """
     Method: drawScaleBar
     Created: 05.06.2005, KP
@@ -466,44 +462,77 @@ def drawScaleBar(widthPx=0,widthMicro=0,voxelSize=(1,1,1),bg=(127,127,127),scale
         widthPx       Scalar bar's width in pixels
         widthMicro    Scalar bar's width in micrometers
     """         
+    bg=bgColor
     vx = voxelSize[0]
     vx*=1000000
+    snapToMicro=[0.5,1,2,5,10]
+    for i in range(10,5000,5):
+        snapToMicro.append(i)
     Logging.info("voxel x=%d, scale=%f"%(vx,scaleFactor),kw="scale")
     vx/=float(scaleFactor)
     Logging.info("scaled voxel size=%f"%vx,kw="scale")
     if widthPx:
         widthMicro=widthPx*vx
-    else:
+        if int(widthMicro)!=widthMicro:
+            Logging.info("Pixel width %.4f equals %.4f um. Snapping..."%(widthPx,widthMicro),kw="scale")
+            for i,micro in enumerate(snapToMicro[:-1]):
+                if micro<=widthMicro and snapToMicro[i+1]>widthMicro:
+                    widthMicro=micro
+                    Logging.info("Snapped to %.4fum"%widthMicro,kw="scale")
+            widthPx=0
+            
+    if widthMicro and not widthPx:
         # x*vx = 10
         widthPx=widthMicro/vx
         Logging.info("%f micrometers is %f pixels"%(widthMicro,widthPx),kw="scale")
         widthPx=int(widthPx)
         
-    bmp = wx.EmptyBitmap(widthPx,24)
+    if not vertical:
+        heightPx=32
+        
+    else:
+        heightPx=widthPx
+        widthPx=32
+        
+    bmp = wx.EmptyBitmap(widthPx,heightPx)
+    
     dc = wx.MemoryDC()
     dc.SelectObject(bmp)
     dc.BeginDrawing()
     dc.SetBackground(wx.Brush(bg))
     dc.SetBrush(wx.Brush(bg))
     dc.SetPen(wx.Pen(bg,1))
-    dc.DrawRectangle(0,0,widthPx,24)
+    dc.DrawRectangle(0,0,widthPx,heightPx)
     
     dc.SetPen(wx.Pen((255,255,255),2))
-    dc.DrawLine(0,6,widthPx,6)
-    dc.DrawLine(1,3,1,9)
-    dc.DrawLine(widthPx-1,3,widthPx-1,9)
-    
+    if not vertical:
+        dc.DrawLine(0,6,widthPx,6)
+        dc.DrawLine(1,3,1,9)
+        dc.DrawLine(widthPx-1,3,widthPx-1,9)
+    else:
+        dc.DrawLine(6,0,6,heightPx)
+        dc.DrawLine(3,1,9,1)
+        dc.DrawLine(3,heightPx-1,9,heightPx-1)
+        
     dc.SetTextForeground((255,255,255))
-    dc.SetFont(wx.Font(8,wx.SWISS,wx.NORMAL,wx.NORMAL))
+    if not vertical:
+        dc.SetFont(wx.Font(8,wx.SWISS,wx.NORMAL,wx.NORMAL))
+    else:
+        dc.SetFont(wx.Font(9,wx.SWISS,wx.NORMAL,wx.NORMAL))
     if int(widthMicro)==widthMicro:
         text=u"%d\u03bcm"%widthMicro
     else:
         text=u"%.2f\u03bcm"%widthMicro
     w,h=dc.GetTextExtent(text)
-    x=widthPx/2
-    x-=(w/2)
-    
-    dc.DrawText(text,x,12)
+    if not vertical:
+        x=widthPx/2
+        x-=(w/2)
+        
+        dc.DrawText(text,x,12)
+    else:
+        y=heightPx/2
+        y-=(h/2)
+        dc.DrawRotatedText(text,12,y,90)
     
     dc.EndDrawing()
     dc.SelectObject(wx.NullBitmap)

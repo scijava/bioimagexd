@@ -195,11 +195,13 @@ class Visualizer:
         self.tb.AddSimpleTool(MenuManager.ID_ZOOM_IN,wx.Image(os.path.join("Icons","zoom-in.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Zoom in","Zoom in on the slice")
         self.tb.AddSimpleTool(MenuManager.ID_ZOOM_TO_FIT,wx.Image(os.path.join("Icons","zoom-to-fit.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Zoom to Fit","Zoom the slice so that it fits in the window")
         self.tb.AddSimpleTool(MenuManager.ID_ZOOM_OBJECT,wx.Image(os.path.join("Icons","zoom-object.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Zoom object","Zoom user selected portion of the slice")
+        self.tb.AddSimpleTool(MenuManager.ID_ADD_SCALE,wx.Image(os.path.join("Icons","scale.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Draw scale","Draw a scale bar on the image")
 
         wx.EVT_TOOL(self.parent,MenuManager.ID_ZOOM_IN,self.zoomIn)
         wx.EVT_TOOL(self.parent,MenuManager.ID_ZOOM_OUT,self.zoomOut)
         wx.EVT_TOOL(self.parent,MenuManager.ID_ZOOM_TO_FIT,self.zoomToFit)
         wx.EVT_TOOL(self.parent,MenuManager.ID_ZOOM_OBJECT,self.zoomObject)
+        wx.EVT_TOOL(self.parent,MenuManager.ID_ADD_SCALE,self.addScale)
         self.zoomCombo.Bind(wx.EVT_COMBOBOX,self.zoomToComboSelection)
         self.tb.Realize()
 
@@ -209,9 +211,17 @@ class Visualizer:
         Created: 19.03.2005, KP
         Description: Lets the user select the part of the object that is zoomed
         """
-        pass
-        #self.renderpanel.startZoom()
-        
+        self.currMode.zoomObject()
+
+    def addScale(self,event):
+        """
+        Method: addScale()
+        Created: 03.07.2005, KP
+        Description: Draw a scale to the visualization
+        """
+        self.currMode.drawScale()
+
+
     def zoomOut(self,evt):
         """
         Method: zoomOut()
