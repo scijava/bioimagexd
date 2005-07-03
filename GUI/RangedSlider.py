@@ -39,6 +39,7 @@ __version__ = "$Revision: 1.22 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 import wx
+import Logging
 
 class RangedSlider(wx.Slider):
 #class RangedSlider:
@@ -114,9 +115,9 @@ class RangedSlider(wx.Slider):
         else:
             val+=abs(currRange[2])
         percent = float(val) / distance
-        #print "percent = ",percent,"mytot=",mytot,"distance=",distance
+	Logging.info("percent = ",percent,"mytot=",mytot,"distance=",distance,kw="trivial")
         n = self.totalValues / len(self.ranges)
-        #print "Returning %d + %f * %d = "%(mytot,percent,n),mytot+percent*n
+        Logging.info("Returning %d + %f * %d = "%(mytot,percent,n),mytot+percent*n,kw="trivial")
         if currRange[3]<currRange[2]:
             offset=self.totalValues
             op=-1
@@ -137,8 +138,6 @@ class RangedSlider(wx.Slider):
         percent = float(val) / self.totalValues
         currRange=None
         percent*=100
-        #print "percent = ",percent
-
         for r in self.ranges:
             # If we found the right range
             if percent >= r[0] and percent <= r[1]:
@@ -156,9 +155,8 @@ class RangedSlider(wx.Slider):
         #distance=(currRange[3]-currRange[2])
         # This tells us how far in percent we are along the current range
         percentOfRange = (percent-currRange[mini2])/(currRange[maxi2]-currRange[mini2])
-#        print "distance = ",distance," percentsOfRange=",percentOfRange
+	Logging.info("distance = ",distance," percentsOfRange=",percentOfRange,kw="trivial")
         ret=currRange[mini]+distance * percentOfRange
-        #print "ret=",ret,"percent=",percent
         for i in self.snapPoints:
             if ret>= i[0] and ret<=i[2]:
                 return i[1]

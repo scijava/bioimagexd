@@ -80,7 +80,6 @@ class TreeWidget(wx.SashLayoutWindow):
                      own changes in size
         """                
         w,h = self.GetClientSizeTuple()
-#        print "\n***Setting tree size to ",w,h,"***\n"
         self.tree.SetDimensions(0,0,w,h)
     
     def hasItem(self,path):
@@ -142,7 +141,6 @@ class TreeWidget(wx.SashLayoutWindow):
             item=self.dufiles
 
         for obj in objs:
-#	    print "adding ",obj,obj.getName()
             added=self.tree.AppendItem(item,obj.getName())
             self.tree.SetPyData(added,obj)        
             self.tree.SetItemImage(added,fileidx,which=wx.TreeItemIcon_Normal)
@@ -157,7 +155,6 @@ class TreeWidget(wx.SashLayoutWindow):
         """            
         items=self.tree.GetSelections()
         objs=[self.tree.GetPyData(x) for x in items]
-#        print "Selected items=",objs
         return objs
 
 class LSMTree(wx.TreeCtrl):

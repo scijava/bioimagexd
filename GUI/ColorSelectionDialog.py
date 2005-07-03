@@ -56,10 +56,10 @@ class ColorSelectionDialog(cc.PyColourChooser):
         colorlst=[color.Red(),color.Green(),color.Blue()]
         if 255 not in colorlst and max(colorlst)>0:
             mval=max(colorlst)
-            print "Converting ",colorlst
+	    Logging.info("Converting ",colorlst,kw="trivial")
             coeff=255.0/mval
             ncolor=[int(x*coeff) for x in colorlst]
-            print "new color,",ncolor
+	    Logging.info("New color ",ncolor,kw="trivial")
             col=wx.Colour(ncolor[0],ncolor[1],ncolor[2])
             return self.SetValue(col)
         else:

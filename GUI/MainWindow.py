@@ -533,8 +533,6 @@ class MainWindow(wx.Frame):
         self.renderWindow=Urmas.UrmasWindow(self)
         
         dataunit=selectedFiles[0]
-        #correctedUnit=CorrectedSourceDataUnit("Rendered dataunit")
-        #correctedUnit.addSourceDataUnit(dataunit)
         Logging.info("Setting dataunit for animator",kw="animator")
         self.renderWindow.setDataUnit(dataunit)
         self.renderWindow.Show()
@@ -602,9 +600,8 @@ class MainWindow(wx.Frame):
             Dialogs.showerror(self,"Failed to load file %s: Unrecognized extension %s"%(name,ext),"Unrecognized extension")
             return
         #try:
-        #    print "Loading from datasource ",datasource
+        #    Logging.info("Loading from data source ",datasource,kw="io")
         dataunits = datasource.loadFromFile(path)
-        #    print "Got ",dataunits
         #except:
         #    Dialogs.showerror(self,"Failed to load file %s."%(name),"Failed to load file")
         #    return
@@ -637,36 +634,37 @@ class MainWindow(wx.Frame):
         eid = event.GetId()
         if eid==MenuManager.ID_COLOCALIZATION:
             moduletype,windowtype,mod=self.taskPanels["Colocalization"]
-            unittype=ColocalizationDataUnit
+            unittype=mod.getDataUnit()
             filesAtLeast=2
             filesAtMost=-1
             action="Colocalization"
         elif eid==MenuManager.ID_RESLICE:
             moduletype,windowtype,mod=self.taskPanels["Reslice"]
-            unittype=ResliceDataUnit
+            unittype=mod.getDataUnit()
             filesAtLeast=1
             filesAtMost=1
             action="Reslice"
         elif eid==MenuManager.ID_COLORMERGING:
             moduletype,windowtype,mod=self.taskPanels["Merging"]
-            unittype=ColorMergingDataUnit
+            unittype=mod.getDataUnit()
             filesAtLeast=2
             filesAtMost=-1
             action="Merging"
         elif eid==MenuManager.ID_ADJUST:
             moduletype,windowtype,mod=self.taskPanels["Adjust"]
-            unittype=CorrectedSourceDataUnit
+            unittype=mod.getDataUnit()
             filesAtLeast=1
             filesAtMost=1
             action="Adjusted"
         elif eid==MenuManager.ID_RESTORE:
             moduletype,windowtype,mod=self.taskPanels["Process"]
-            unittype=CorrectedSourceDataUnit
+            unittype=mod.getDataUnit()
             filesAtLeast=1
             filesAtMost=1
             action="Restored"
         elif eid==MenuManager.ID_VSIA:
             moduletype,windowtype,mod=self.taskPanels["SurfaceConstruction"]
+            unittype=mod.getDataUnit()
             filesAtLeast=1
             filesAtMost=1
             action="VSIA'd"
@@ -685,11 +683,12 @@ class MainWindow(wx.Frame):
         # Sets name for new dataset series
         name="%s (%s)"%(action,", ".join(names))
 
-        Logging.info(unittype,dir(unittype),name,kw="task")
+        Logging.info(unittype,name,kw="task")
         unit = unittype(name)
         Logging.info("unit = %s(%s)=%s"%(unittype,name,unit),kw="task")
         for dataunit in selectedFiles:
             unit.addSourceDataUnit(dataunit)
+            Logging.info("ctf of source=",dataunit.getSettings().get("ColorTransferFunction"),kw="ctf")
 
         module=moduletype()
         unit.setModule(module)
@@ -734,16 +733,7 @@ class MainWindow(wx.Frame):
             
         wx.LayoutAlgorithm().LayoutWindow(self, self.visWin)
         self.visWin.Refresh()
-
-#        dataunit,filepath=TaskWindow.showTaskWindow(windowtype,unit,self)
-
-        # If user cancelled operation, we do not get a new dataset -> return
-        if not dataunit:
-            return
-
-        # Add the dataset (node) into tree
-        #self.tree.addToTree(dataunit.getName(),filepath,'du',[dataunit])        
-        
+       
     def setButtonSelection(self,eid,all=0):
         """
         Method: showButtonSelection(eid)
@@ -762,9 +752,7 @@ class MainWindow(wx.Frame):
         tb=self.GetToolBar()
         for i in lst:
             flag=(i == eid)
-            tb.ToggleTool(i,flag)
-
-        
+            tb.ToggleTool(i,flag)        
 
     def onMenuAbout(self,evt):
         """

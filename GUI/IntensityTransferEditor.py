@@ -1,21 +1,13 @@
 # -*- coding: iso-8859-1 -*-
 """
- Unit: TransferWidget.py
- Project: Selli
+ Unit: IntensityTransferEditor
+ Project: BioImageXD
  Created: 30.10.2004, KP
  Description:
 
  A widget used to view and modify an intensity transfer function. The widget
  draws the graph of the function and allows the user to modify six points that
  affect the function.
-
- Modified: 17.11.2004 KP - Added comments
-           23.11.2004 KP - Added Gamma
-           24.11.2004 KP - Moved all the logic from TransferWidget to 
-                           IntensityTransferFunction
-           1.12.2004 KP, JM - Added a checkbox for switching between "free" and
-                              "limited" mode, made
-                              the controls dis/appear accordingly
 
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
@@ -35,7 +27,7 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 """
-__author__ = "Selli Project <http://sovellusprojektit.it.jyu.fi/selli/>"
+__author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.36 $"
 __date__ = "$Date: 2005/01/13 14:52:39 $"
 
@@ -104,7 +96,7 @@ class PaintPanel(wx.Panel):
             self.dc.DrawLine(x12/self.scale,y12/self.scale,
             x22/self.scale,y22/self.scale)
         except:
-            print "Failed to draw line from %f/%f,%f/%f to %f/%f,%f/%f"%(x12,self.scale,y12,self.scale,x22,self.scale,y22,self.scale)
+            Logging.info("Failed to draw line from %f/%f,%f/%f to %f/%f,%f/%f"%(x12,self.scale,y12,self.scale,x22,self.scale,y22,self.scale),kw="ctf")
         if kws.has_key("arrow"):
             if kws["arrow"]=="HORIZONTAL":
                 lst=[(x22/self.scale-3,y22/self.scale-3),(x22/self.scale,y22/self.scale),(x22/self.scale-3,y22/self.scale+3)]            
@@ -145,7 +137,6 @@ class PaintPanel(wx.Panel):
         ox=x/self.scale
         if useoffset:
             ox+=self.xoffset
-        #print "Drawing %s at %d,%d"%(text,ox,y/self.scale)
         self.dc.DrawText(text,ox,y/self.scale)
         
 
@@ -155,7 +146,6 @@ class PaintPanel(wx.Panel):
         Created: 30.10.2004, KP
         Description: Paints the graph of the function specified by the six points
         """
-        #print "Painting..."
 
         #dc = wx.BufferedDC(None,self.buffer)
 
@@ -227,7 +217,7 @@ class IntensityTransferEditor(wx.Panel):
         self.calling=0
         self.guiupdate=0
         if kws.has_key("update"):
-            print "Got update callback"
+	    Logging.info("Got update callback",kw="ctf")
             self.updateCallback=kws["update"]
 
         self.iTF=vtk.vtkIntensityTransferFunction()
@@ -366,7 +356,7 @@ class IntensityTransferEditor(wx.Panel):
         Created: 8.12.2004, KP
         Description: Restores the default settings for this widget
         """
-        print "Restoring..."
+	Logging.info("Restoring defaults for iTF",kw="ctf")
         self.iTF.Reset()
         self.setIntensityTransferFunction(self.iTF)
 
@@ -397,7 +387,6 @@ class IntensityTransferEditor(wx.Panel):
         """
         gamma=event.GetPosition()
         gammaEx = self.gammaSlider.getScaledValue()
-        #print "gammaEx=",gammaEx
         self.iTF.SetGamma(gammaEx)
         self.updateGraph()
         self.updateGUI()
@@ -599,7 +588,6 @@ class IntensityTransferEditor(wx.Panel):
         gamma=self.iTF.GetGamma()
         brightness = self.iTF.GetBrightness()
         if sliders:
-            print "Setting brightness to ",brightness
             self.contrastSlider.setScaledValue(contrast)
             self.brightnessSlider.setScaledValue(brightness)
             self.gammaSlider.setScaledValue(gamma)

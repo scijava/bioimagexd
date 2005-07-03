@@ -38,7 +38,7 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 import os.path
 import wx, wx.html
 
-from Logging import *
+import Logging
 
 import DataUnit
 import PreviewFrame
@@ -59,20 +59,18 @@ infoString="""<html><body bgcolor=%(bgcolor)s">
 </table>
 </body></html>
 """
-
+#"
 class InfoWidget(wx.Panel):
     """
     Class: InfoWidget
-    Created: 03.11.2004
-    Creator: KP
+    Created: 03.11.2004, KP
     Description: A class for displaying information about selected datasets
                  of given type
     """
     def __init__(self,master,**kws):
         """
         Method: __init__
-        Created: 03.11.2004
-        Creator: KP
+        Created: 03.11.2004, KP
         Description: Initialization for the Info node
         """
         wx.Panel.__init__(self,master,-1,**kws)
@@ -89,8 +87,6 @@ class InfoWidget(wx.Panel):
         self.mainsizer.Add(self.infoNotebook,(0,1),flag=wx.EXPAND|wx.ALL)
 
         self.modules=Modules.DynamicLoader.getTaskModules()
-        for key in self.modules:
-            self.modules[key]=self.modules[key][0]
 
         self.createInfoNotebook()
         
@@ -133,37 +129,38 @@ class InfoWidget(wx.Panel):
             spacing=dataunit.getSpacing()
             voxelsize=dataunit.getVoxelSize()
             bitdepth=dataunit.getBitDepth()
-            print "Got bitdepth=",bitdepth
+            Logging.info("Dataset bit depth =",bitdepth,kw="trivial")
             
             list=self.tree.getSelectedDataUnits()
             if 0 and len(list)>1:
-                print "Cannot show more than one"
-                unit=list[0]
-                #self.preview.setPreviewType("ColorMerging")
-                #unit=DataUnit.ColorMergingDataUnit()
-                #for i in list:
-                #    #setting=DataUnit.ColorMergingSettings()
-                #    #setting.initialize(unit,len(list),1)
-                #    #i.setSettings(setting)
-                #    unit.addSourceDataUnit(i)
-                #unit.setModule(ColorMerging.ColorMerging())                                    
+                self.preview.setPreviewType("Merging")
+                unitclass=self.modules["Merging"][2].getDataUnit()
+                unit=unitclass("Merged preview")
+                for i in list:
+                    setting = self.modules["Merging"][2].getSettingsClass()()
+#                    setting.initialize(unit,len(list),1)
+#                    i.setSettings(setting)
+                    Logging.info("setting.ctf=",setting.get("MergingColorTransferFunction"),kw="ctf")
+                    unit.addSourceDataUnit(i)
+                taskclass=self.modules["Merging"][0]
+                unit.setModule(taskclass())         
             else:
                 self.preview.setPreviewType("MIP")
                 
-                unit=DataUnit.CorrectedSourceDataUnit("preview")
+                unitclass=self.modules["Process"][2].getDataUnit()
+                unit=unitclass("MIP preview")
                 unit.addSourceDataUnit(dataunit)
-                taskclass=self.modules["Process"]
+                
+                taskclass=self.modules["Process"][0]                
                 unit.setModule(taskclass())
                 
                 ctf = dataunit.getColorTransferFunction()
-                print "dataunit.getBitDepth()=",dataunit.getBitDepth()
+
                 if dataunit.getBitDepth()==32:
                     self.colorBtn.Enable(0)
                 else:
-                    #print "Setting ctf=",ctf
                     self.colorBtn.setColorTransferFunction(ctf)
-            print "datasource=",dataunit.dataSource
-            #print "ctf is",dataunit.getSettings().get("ColorTransferFunction")
+
             self.dataUnit=unit
             self.taskName.SetValue(dataunit.getName())
             # The 0 tells preview to view source dataunit 0

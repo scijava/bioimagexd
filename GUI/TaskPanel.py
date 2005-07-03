@@ -126,7 +126,7 @@ class TaskPanel(scrolled.ScrolledPanel):
         """      
         #self.tb2 = self.CreateToolBar(wx.TB_HORIZONTAL)
         self.toolMgr.clearItemsBar()
-        print "Creating item toolbar"
+	Logging.info("Creating item toolbar",kw="init")
         #self.tb2 = wx.ToolBar(self,-1,style=wx.TB_VERTICAL|wx.TB_TEXT)
         #self.tb2.SetToolBitmapSize((32,32))# this required for non-standard size buttons on MSW
         #self.tb2 = self.toolbar
@@ -254,19 +254,15 @@ class TaskPanel(scrolled.ScrolledPanel):
         Description: A callback function called when a channel is selected in
                      the menu
         """
-        print "Select item(",event,",",index,")"
-        if index==-1:
+	Logging.info("Select item %d"%index, kw="dataunit")
+        if index==-1:	    
             raise "No index given"
             index=self.itemMenu.GetSelection()
-        print "Selecting item %d"%index
         #name=self.itemMenu.GetString(index)
-        #print "Now configuring item",name
-        #print "self.Dataunit.getSetting()=",self.dataUnit.getSettings()
         self.settings = self.dataUnit.getSourceDataUnits()[index].getSettings()
         
         #self.preview.setSelectedItem(index)
         
-        #print "Got settings = ",self.settings
         self.updateSettings()
 
     def updateSettings(self):
@@ -298,27 +294,10 @@ class TaskPanel(scrolled.ScrolledPanel):
             return
         self.grayOut(1)
 
-        
-    def closeWindowCallback(self,event):
-        """
-        Method: closeWindowCallback()
-        Created: 03.11.2004
-        Creator: KP
-        Description: A method that withdraws (i.e. hides) the colocalization
-                     window, but does not destory it.
-        """
-        print "Closing..."
-        self.cancelled=1
-        # These calls are necessary to have proper functioning in windows
-        self.Destroy()
-        #self.EndModal(wx.ID_OK)
-
-        
     def grayOut(self,enable=0):
         """
         Method: grayOut(enable=0)
-        Created: 16.11.2004
-        Creator: KP
+        Created: 16.11.2004, KP
         Description: Grays out the widget while doing colocalization
         Parameters:
             enable      If the enable parameter is defined, the effect of the
@@ -327,11 +306,7 @@ class TaskPanel(scrolled.ScrolledPanel):
 
         """
         # TODO: Implement properly
-        if enable==1:
-            self.Enable(1)
-    
-        else:
-            self.Enable(0)
+	self.Enable(enable)
 
     def doPreviewCallback(self,event=None):
         """
@@ -342,8 +317,8 @@ class TaskPanel(scrolled.ScrolledPanel):
         """
         #if self.preview:
         #    self.preview.updatePreview()
-        print "Sending update event, id=",self.GetId()
-        print "Sending out ",Events.myEVT_DATA_UPDATE
+	Logging.info("Sending preview update event with id=",self.GetId(),kw="event")
+
         evt=Events.DataUpdateEvent(Events.myEVT_DATA_UPDATE,self.GetId(),delay=0)
         self.GetEventHandler().ProcessEvent(evt)
 
@@ -388,7 +363,7 @@ class TaskPanel(scrolled.ScrolledPanel):
         if filename[-3:].lower()!=".du":
             filename+=".du"
 
-        print "Saving to ",filename
+	Logging.info("Saving to ",filename,kw="processing")
 
         self.updateSettings()
         self.dataUnit.doProcessing(filename,settings_only=True)
@@ -403,7 +378,7 @@ class TaskPanel(scrolled.ScrolledPanel):
         """
         self.dataUnit=dataUnit
         name=dataUnit.getName()
-        print "Name of dataUnit=%s"%name
+	Logging.info("Name of dataunit is ",name,kw="dataunit")
         self.taskName.SetValue(name)
         try:
             #self.preview.setDataUnit(dataUnit)

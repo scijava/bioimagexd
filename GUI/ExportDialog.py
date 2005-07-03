@@ -106,28 +106,27 @@ class ExportDialog(wx.Dialog):
         writer="vtk.vtk%sWriter()"%(ext.upper())
         writer=eval(writer)
         prefix=dirname+os.path.sep
-        n=pattern.count("%")
-        print "n=",n
+	n=pattern.count("%")
+	Logging.info("Number of images =",n,kw="io")
         self.dlg = wx.ProgressDialog("Writing","Writing image %d / %d"%(0,0),maximum = self.imageAmnt-1, parent = self)
         
         if n==0:
             pattern=pattern+"%d"
             n=1
-        print "prefix=",prefix,"pattern=",pattern
+	Logging.info("Prefix = ",prefix,"pattern = ",pattern,kw="io")
         writer.SetFilePrefix(prefix)
         for t in range(self.n):
-            print "Writing timepoint %d"%t
+	    Logging.info("Writing timepoint %d"%t,kw="io")
             if n==2:
                 begin=pattern.rfind("%")
                 
                 beginstr=pattern[:begin-1]
-                print "beginstr=",beginstr
-                print "currpattern=",beginstr%t+pattern[begin-1:]
+		Logging.info("beginstr=%s, currpattern=%s"%(beginstr,beginstr%t+pattern[begin-1:]),kw="io")
             else:
                 currpattern="_"+pattern
             currpattern+=".%s"%ext
             currpattern="%s"+currpattern
-            print "setting pattern=",currpattern
+	    Logging.info("Setting pattern %s"%currpattern,kw="io")
             writer.SetFilePattern(currpattern)
             data=self.dataUnit.getTimePoint(t)
             data.Update()
@@ -135,14 +134,13 @@ class ExportDialog(wx.Dialog):
             writer.SetFileDimensionality(2)
             self.dlg.Update(t*self.z,"Writing image %d / %d"%(t*self.z,self.imageAmnt))
 
-            print "writer=",writer
+	    Logging.info("Writer = ",writer,kw="io")
             writer.Write()
             if n==1:
                 for z in range(self.z):
                     img=prefix+"_"+pattern%z+".%s"%ext
                     num=t*self.z+z
                     newname=prefix+pattern%num+".%s"%ext
-                    #print "Renaming %s to %s"%(img,newname)
                     os.rename(img,newname)
         self.dlg.Destroy()
             

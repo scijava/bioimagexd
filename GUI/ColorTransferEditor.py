@@ -28,7 +28,7 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 """
-__author__ = "BioImageXD Project"
+__author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.28 $"
 __date__ = "$Date: 2005/01/13 14:52:39 $"
 
@@ -125,7 +125,7 @@ class CTFPaintPanel(wx.Panel):
             self.dc.DrawLine(x12/self.scale,y12/self.scale,
             x22/self.scale,y22/self.scale)
         except:
-            print "Failed to draw line from %f/%f,%f/%f to %f/%f,%f/%f"%(x12,self.scale,y12,self.scale,x22,self.scale,y22,self.scale)
+            Logging.info("Failed to draw line from %f/%f,%f/%f to %f/%f,%f/%f"%(x12,self.scale,y12,self.scale,x22,self.scale,y22,self.scale),kw="ctf")
         if kws.has_key("arrow"):
             if kws["arrow"]=="HORIZONTAL":
                 lst=[(x22/self.scale-3,y22/self.scale-3),(x22/self.scale,y22/self.scale),(x22/self.scale-3,y22/self.scale+3)]            
@@ -166,7 +166,6 @@ class CTFPaintPanel(wx.Panel):
         ox=x/self.scale
         if useoffset:
             ox+=self.xoffset
-        #print "Drawing %s at %d,%d"%(text,ox,y/self.scale)
         self.dc.DrawText(text,ox,y/self.scale)
         
 
@@ -477,7 +476,7 @@ class ColorTransferEditor(wx.Panel):
         filename=Dialogs.askOpenFileName(self,"Load lookup table","Lookup table (*.lut)|*.lut")
         if filename:
             filename=filename[0]
-            print "Opening ",filename
+	    Logging.info("Opening palette",filename,kw="ctf")
             self.freeMode = 0
             ImageOperations.loadLUT(filename,self.ctf)
             self.setFromColorTransferFunction(self.ctf)
@@ -496,7 +495,7 @@ class ColorTransferEditor(wx.Panel):
             mval=max(color)
             coeff=255.0/mval
             ncolor=[int(x*coeff) for x in color]
-            print "ncolor=",ncolor
+	    Logging.info("New color = ",ncolor,kw="ctf")
             dlg=wx.MessageDialog(self,
                 "The color you selected: %d,%d,%d is incorrect."
                 "At least one of the R, G or B components\n"
@@ -534,7 +533,6 @@ class ColorTransferEditor(wx.Panel):
             pt=(x,y)
             self.points[self.color].append(pt)
             self.points[self.color].sort()
-            #print "Added point ",pt
             self.updateGraph()
 
         
@@ -558,7 +556,6 @@ class ColorTransferEditor(wx.Panel):
                 if pt[0]==x:hasx=1
                 if d<self.selectThreshold and d<currd:
                     self.selectedPoint=pt
-                    #print "Selected point",pt
                     currd=d
                     break
                 
@@ -587,7 +584,7 @@ class ColorTransferEditor(wx.Panel):
                     n=(x1-x0)
                     if n:
                         d=abs(y-self.pos[1])/float(n)
-                        #print "Fixing range %d,%d,d=%f, steps = %d"%(x0,x1,d,n)
+			Logging.info("Fixing range %d,%d,d=%f, steps = %d"%(x0,x1,d,n),kw="ctf")
                     if x>self.pos[0] and y<self.pos[1]:d*=-1
                     if x<self.pos[0] and y>self.pos[1]:d*=-1
                     
@@ -604,8 +601,7 @@ class ColorTransferEditor(wx.Panel):
                             x=x+1
                             break
                     i=self.points[self.color].index(self.selectedPoint)
-                    #pt2=self.points[self.color][i]
-                    #print "Replacing ",pt2,"with ",(x,y)
+
                     self.points[self.color][i]=(x,y)
                     self.selectedPoint = (x,y)
                     self.updateGraph()
@@ -622,11 +618,13 @@ class ColorTransferEditor(wx.Panel):
             self.updateGraph()
             self.setFromColorTransferFunction(self.ctf)
         self.freeMode = event.GetIsDown()
-#        print "Points before=",self.points
+	Logging.info("Points before=",self.points,kw="ctf")
+
         if not self.freeMode and was:
-            print "Analyzing free mode for points"
+            Logging.info("Analyzing free mode for points",kw="ctf")
             self.getPointsFromFree()
-#        print "Points now=",self.points
+	Logging.info("Points after=",self.points,kw="ctf")	    
+
         self.updateGraph()
                 
     def onEditRed(self,event):
@@ -732,16 +730,13 @@ class ColorTransferEditor(wx.Panel):
                     
                     dx=x2-x1
                     if dx and (y2!=y1):
-                        #print "p1=%d,%d,p2=%d,%d"%(x1,y1,x2,y2)
                         dy=(y2-y1)/float(dx)
                     else:dy=0
                     if x2>255:
                         x2=255
                         x1=x1-1
                         
-                    #print "%d From %d,%d to %d,%d dy=%f"%(col,x1,y1,x2+1,y2,dy)
                     for x in range(x1,x2+1):
-                        #print "%d=%d"%(x,y1+(x-x1)*dy
                         func[x][col]=y1+(x-x1)*dy
                         
                         
@@ -755,7 +750,6 @@ class ColorTransferEditor(wx.Panel):
                 if self.alpha:
                     self.otf.AddPoint(i,a)
                                             
-        #print "Painting ",self.ctf
         pts=[]
         if not self.freeMode:
             if not self.alphaMode:
@@ -766,7 +760,6 @@ class ColorTransferEditor(wx.Panel):
         otf=None
         if self.alpha:
             otf=self.otf
-            #print "Painting otf=",otf
         
         self.canvas.paintTransferFunction(self.ctf,pts,otf,self.alphaMode)
         self.value.paintTransferFunction(self.ctf)
@@ -848,18 +841,13 @@ class ColorTransferEditor(wx.Panel):
                     self.alphapoints.append((x,a))
             else:
                 if dr != dr2:
-                    #print "for %d = %d-%d, dr=%d,dr2=%d"%(x,r,r2,dr,dr2)
-                    #print "adding red %d,%d"%(x,r)
                     self.redpoints.append((x,r))
                 if dg != dg2:
-                    #print "adding green %d,%d"%(x,g)
                     self.greenpoints.append((x,g))
                 if db != db2:
-                    #print "adding blue %d,%d"%(x,b)
                     self.bluepoints.append((x,b))
                 if self.alpha:
                     if da != da2:
-                        #print "adding alpha %d,%d"%(x,a)
                         self.alphapoints.append((x,a))
                     da2=da
                     a2=a
@@ -878,12 +866,7 @@ class ColorTransferEditor(wx.Panel):
                      by this widget
         """
         self.ctf=TF
-#        print "Points before=",self.points
         self.getPointsFromFree()
-#        print "Got points = ",self.points
-#        print "self.redpoints=",self.redpoints
-#        print "self.greenpoints=",self.greenpoints
-#        print "self.bluepoints=",self.bluepoints
         self.alphapoints=[(0,0),(255,51)]
         self.points=[self.redpoints,self.greenpoints,self.bluepoints,self.alphapoints]
         

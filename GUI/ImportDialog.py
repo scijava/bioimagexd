@@ -128,8 +128,8 @@ class ImportDialog(wx.Dialog):
                 rdr = eval(self.rdrstr)
                 rdr.SetDataExtent(0,self.x-1,0,self.y-1,0,self.z-1)
                 rdr.SetDataSpacing(self.spacing)
-                rdr.SetDataOrigin(0,0,0)                
-                print "Reading ",file
+                rdr.SetDataOrigin(0,0,0)
+		Logging.info("Reading ",file,kw="io")
                 rdr.SetFileName(file)
                 rdr.Update()
                 self.readers.append(rdr)
@@ -141,14 +141,14 @@ class ImportDialog(wx.Dialog):
             #rdr.SetFileDimensionality(dim)
             pattern = self.patternEdit.GetValue()
             n=pattern.count("%")
-            print "n=",n
+	    Logging.info("Number of %s=",n,kw="io")
             imgAmnt=len(files)
             if n==0 and imgAmnt>1:
                 Dialogs.showerror(self,"You are trying to import multiple files but have not defined a proper pattern for the files to be imported","Bad pattern")
                 return
-            elif n==1:
-                j=0
-                print "self.z=",self.z
+            elif n==1:                
+		j=0
+		Logging.info("self.z=%d",self.z,kw="io")
                 for i in range(0,imgAmnt,self.z):
                     rdr = eval(self.rdrstr)
                     rdr.SetDataExtent(0,self.x-1,0,self.y-1,0,self.z-1)
@@ -156,12 +156,12 @@ class ImportDialog(wx.Dialog):
                     rdr.SetDataOrigin(0,0,0)
                     
                     if i:
-                        print "Setting offset to ",i
+			Logging.info("Setting slice offset to ",i,kw="io")
                         rdr.SetFileNameSliceOffset(i)
                     rdr.SetFilePrefix(dir+os.path.sep)
                     rdr.SetFilePattern("%s"+pattern)
                     rdr.Update()
-                    print "reader=",rdr
+		    Logging.info("Reader = ",rdr,kw="io")
                     self.dlg.Update(j,"Reading dataset %d / %d"%(j+1,self.tot))
                     self.readers.append(rdr)
                     #self.writeData(outname,data,j,len(files))
@@ -178,11 +178,11 @@ class ImportDialog(wx.Dialog):
                     begin=pattern[:pos-1]
                     end=pattern[pos-1:]
                     currpat=begin%i+end
-                    print "Pattern for timepoint %d is "%i,currpat
+		    Logging.info("Pattern for timepoint %d is "%i,currpat,kw="io")
                                      
                     rdr.SetFilePrefix(dir+os.path.sep)
                     rdr.SetFilePattern("%s"+currpat)
-                    print "reader=",rdr
+		    Logging.info("Reader = ",rdr,kw="io")
                     rdr.Update()
                     #data = rdr.GetOutput()
                     #self.writeData(outname,data,i,len(files))
@@ -200,16 +200,17 @@ class ImportDialog(wx.Dialog):
         """ 
         settings = DataUnit.DataUnitSettings()
         settings.set("Type","DataUnitSettings")
-        print "self.spacing=",self.spacing
+	Logging.info("Spacing for dataset=",self.spacing,kw="io")
         settings.set("Spacing",self.spacing)
         x,y,z =self.voxelSize
         x/=1000000.0
         y/=1000000.0
         z/=1000000.0
-        print "Writing voxel size as ",(x,y,z)
+	Logging.info("Writing voxel size as ",x,y,z,kw="io")
         settings.set("VoxelSize",(x,y,z))
-        print "Writing dimensions as ",self.x,self.y,self.z
-        settings.set("Dimensions",(self.x,self.y,self.z))
+	Logging.info("Writing dimensions as ",self.x,self.y,self.z,kw="io")
+
+	settings.set("Dimensions",(self.x,self.y,self.z))
         name=self.nameEdit.GetValue()
         settings.set("Name",name)
         
@@ -219,7 +220,7 @@ class ImportDialog(wx.Dialog):
         parser = self.writer.getParser()
         settings.writeTo(parser)
         i=0
-        print "readers (%d)="%len(self.readers),self.readers
+	Logging.info("readers (%d)="%len(self.readers),self.readers,kw="io")
         for rdr in self.readers:
             rdr.Update()
             self.writer.addImageData(rdr.GetOutput())
@@ -234,8 +235,8 @@ class ImportDialog(wx.Dialog):
         Method: writeData
         Created: 21.04.2005, KP
         Description: Writes a data out
-        """            
-        print "Adding dataset %d"%n,data
+        """
+	Logging.info("Adding dataset %d"%n,data,kw="io")
         self.writer.addImageData(data)
         
     def createImageImport(self):
@@ -385,10 +386,10 @@ class ImportDialog(wx.Dialog):
             vz = float(self.voxelZ.GetValue())
         except:
             return
-        print "voxel sizes=",vx,vy,vz
+	Logging.info("Voxel sizes = ",vx,vy,vz,kw="io")
         self.voxelSize = (vx,vy,vz)
         self.spacing=(1.0,vy/vx,vz/vx)
-        print "Setting spacing to ",self.spacing
+	Logging.info("Setting s√pacing to ",self.spacing,kw="io")
         sx,sy,sz=self.spacing
         self.spacingLbl.SetLabel("%.2f x %.2f x %.2f"%(sx,sy,sz))
 
@@ -435,7 +436,7 @@ class ImportDialog(wx.Dialog):
         """        
         if type(n)!=type(0):
             n=int(self.imageAmountLbl.GetLabel())
-        print "n=",n
+	Logging.info("n=",n,kw="io")
         self.imageAmountLbl.SetLabel("%d"%n)
         val = self.depthEdit.GetValue()
         try:
@@ -497,7 +498,7 @@ class ImportDialog(wx.Dialog):
             pat=dir+"/%s"%(pat)
         else:
             pat=dir+"/*.%s"%ext
-        print "Pattern for all in directory is ",pat
+	Logging.info("Pattern for all in directory is ",pat,kw="io")
         files=glob.glob(pat)
         self.sourceListbox.Clear()
         files.sort(self.sortNumerically)
@@ -526,13 +527,10 @@ class ImportDialog(wx.Dialog):
                     for j in range(filecount):
                         try:
                             filename=pat%(i,j)
-                            #print "filename=",filename
                         except:
                             return
                         for file in files:
-                            #print file,filename
                             if file.find(filename)!=-1:
-#                                print "FOUND!"
                                 self.sourceListbox.Append(file)
                                 n+=1
                                 foundone=1
