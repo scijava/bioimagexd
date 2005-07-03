@@ -1,5 +1,4 @@
 # -*- coding: iso-8859-1 -*-
-
 """
  Unit: MergingSettings.py
  Project: BioImageXD
@@ -36,7 +35,9 @@ __author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.21 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
-from DataUnit import DataUnitSettings        
+import vtk
+from DataUnit import DataUnitSettings      
+import Logging
         
 class MergingSettings(DataUnitSettings):
     """
@@ -52,7 +53,7 @@ class MergingSettings(DataUnitSettings):
         """
         DataUnitSettings.__init__(self,n)
         self.registerCounted("MergingColorTransferFunction",1)       
-        self.set("Type","ColorMergingSettings") 
+        self.set("Type","MergingSettings") 
         self.registerCounted("IntensityTransferFunction",1)
         self.register("AlphaTransferFunction",1)
         self.register("AlphaMode")
@@ -72,3 +73,17 @@ class MergingSettings(DataUnitSettings):
         for i in range(channels):
             tf=vtk.vtkIntensityTransferFunction()
             self.setCounted("IntensityTransferFunction",i,tf,0)
+            
+    def get(self,name):
+        """
+        Method: get(name)
+        Created: 03.07.2005
+        Description: Return the value of a key
+        """
+        val=DataUnitSettings.get(self,name)
+        if name=="MergingColorTransferFunction" and not val:
+            val=DataUnitSettings.get(self,"ColorTransferFunction")
+            Logging.info("Returning proxyed ctf for merging",val,kw="ctf")
+            self.set("MergingColorTransferFunction",val)
+            return val
+        return val

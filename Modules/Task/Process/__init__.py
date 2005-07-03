@@ -1,9 +1,7 @@
 from Process import *
 from ProcessPanel import *
 from DataUnit import CombinedDataUnit
-
-class ProcessDataUnit(CombinedDataUnit):
-        def getSettingsClass(): return ProcessSettings
+from ProcessDataUnit import *
 
 def getClass(): return Process
 def getConfigPanel(): return ProcessPanel

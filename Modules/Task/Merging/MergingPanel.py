@@ -192,10 +192,11 @@ class MergingPanel(TaskPanel.TaskPanel):
         if self.dataUnit and self.settings:
             ctf = self.settings.get("MergingColorTransferFunction")
             if ctf and self.colorBtn:
-                print "Setting colorBtn.ctf"
+                Logging.info("Setting ctf of color button",kw="ctf")
                 self.colorBtn.setColorTransferFunction(ctf)
                 self.colorBtn.Refresh()
-
+    
+            Logging.info("settings=",self.settings,kw="task")
             tf = self.settings.get("IntensityTransferFunction")
             self.intensityTransferEditor.setIntensityTransferFunction(tf)
 
@@ -219,7 +220,7 @@ class MergingPanel(TaskPanel.TaskPanel):
         if method == 1:
             val=int(self.averageEdit.GetValue())
         lst=[method,val]
-        print "Setting alpha mode to",lst
+        Logging.info("Setting alpha mode to ",lst,kw="task")
         #self.dataUnit.setAlphaMode(lst)
         self.settings.set("AlphaMode",lst)
 
@@ -238,7 +239,7 @@ class MergingPanel(TaskPanel.TaskPanel):
         lst=[]
         for dataunit in self.dataUnit.getSourceDataUnits():
             ctf = dataunit.getColorTransferFunction()
-            print "adding ",dataunit,"with ctf",ctf
+            Logging.info("Adding to toolbar",dataunit,"with ctf",ctf,kw="init")
             maptocol=vtk.vtkImageMapToColors()
             maptocol.SetOutputFormatToRGB()
             maptocol.SetLookupTable(ctf)
@@ -273,8 +274,7 @@ class MergingPanel(TaskPanel.TaskPanel):
     def setCombinedDataUnit(self,dataUnit):
         """
         Method: setCombinedDataUnit(dataUnit)
-        Created: 23.11.2004
-        Creator: KP
+        Created: 23.11.2004, KP
         Description: Sets the combined dataunit that is to be processed.
                      It is then used to get the names of all the source 
                      data units and they are added to the menu.
@@ -288,7 +288,7 @@ class MergingPanel(TaskPanel.TaskPanel):
         self.intensityTransferEditor.updateCallback=self.doPreviewCallback
 
         if self.colorBtn:
-            print "Setting ctf"
+            Logging.info("Setting ctf of colorbutton to ",ctf,kw="ctf")
             self.colorBtn.setColorTransferFunction(ctf)
         else:
-            print "Won't set ctf!"        
+            Logging.info("No color button to set ctf to ",kw="ctf")

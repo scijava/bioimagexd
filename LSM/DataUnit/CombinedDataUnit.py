@@ -24,7 +24,7 @@
 
 """
 
-__author__ = "Selli Project <http://sovellusprojektit.it.jyu.fi/selli/>"
+__author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.74 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
@@ -32,6 +32,7 @@ import DataUnit
 from DataUnitSetting import *
 import DataSource
 import vtk
+import Logging
 
 class CombinedDataUnit(DataUnit.DataUnit):
     """
@@ -48,8 +49,8 @@ class CombinedDataUnit(DataUnit.DataUnit):
         """
         DataUnit.DataUnit.__init__(self, name)
         self.sourceunits=[]
-        settingclass=self.getSettingClass()
-        print "settingclass=",settingclass
+        settingclass=self.getSettingsClass()
+        Logging.info("Settings class =",settingclass,kw="dataunit")
         self.settings = settingclass()
         self.byName={}
         self.module = None
@@ -286,7 +287,7 @@ class CombinedDataUnit(DataUnit.DataUnit):
 
         # Create a settings object of correct type for dataunit
         # using the count as the index
-        setting=self.getSettingClass()(count)
+        setting=self.getSettingsClass()(count)
         dataUnit.setSettings(setting)
         # Fetch correct settings for the dataunit from the datasource
         dataUnit.updateSettings()
@@ -351,11 +352,12 @@ class CombinedDataUnit(DataUnit.DataUnit):
             return (0,0,0)
         return self.sourceunits[0].getColor()
         
-    def getSettingClass(self):
+    def getSettingsClass(self):
         """
-        Method: getSettingClass()
+        Method: getSettingsClass()
         Created: 02.04.2005, KP
         Description: Return the class that represents settings for this dataunit
         """
+        raise "Using bare DataUnitSettings"
         return DataUnitSettings
         

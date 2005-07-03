@@ -3,7 +3,7 @@ from SurfaceConstructionPanel import *
 from DataUnit import CombinedDataUnit
 
 class SurfaceConstructionDataUnit(CombinedDataUnit):
-        def getSettingsClass(): return SurfaceConstructionSettings
+        def getSettingsClass(self): return SurfaceConstructionSettings
 def getClass(): return SurfaceConstruction
 def getConfigPanel(): return SurfaceConstructionPanel
 def getName(): return "Surface Construction"

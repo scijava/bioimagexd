@@ -77,11 +77,9 @@ class Configuration:
 
         # Then read the settings file
         self.readPathSettings()
-#        print "Format now=",self.configItems["ImageFormat"]
 
         self.insertModuleDirectories()
         self.processPathSettings()
-        #print sys.path
 
     def writeSettings(self):
         """
@@ -119,7 +117,6 @@ class Configuration:
     def readConfigItem(self,configItem,section):
         try:
             configItemvalue=self.parser.get(section,configItem)
- #           print "Got value %s for %s: %s"%(configItemvalue,section,configItem)
             self.configItems[configItem]=configItemvalue
         except:
             return None

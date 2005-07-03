@@ -1,18 +1,14 @@
 # -*- coding: iso-8859-1 -*-
 """
- Unit: ColorMerging.py
- Project: Selli
+ Unit: Merging
+ Project: BioImageXD
  Created: 24.11.2004, JV
  Description:
 
  Merges two (or more) 8-bit datasets to one 24-bit using classes in the VTK
  library.
 
- Modified:
-        03.12.2004 JV - Changed ColorMergingNumpy to ColorMerging
-        10.12.2004 JV - Does not do intensity mapping if function is identical
-
-  Copyright (C) 2005  BioImageXD Project
+ Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
 
  This program is free software; you can redistribute it and/or modify
@@ -40,7 +36,7 @@ import vtk
 import time
 from Module import *
 
-class ColorMerging(Module):
+class Merging(Module):
     """
     Class: ColorMerging
     Created: 24.11.2004, JV
@@ -93,6 +89,7 @@ class ColorMerging(Module):
         settings = dataunit.getSettings()
         #rgb=self.settings.getCounted("Color",self.n)
         ctf = settings.get("MergingColorTransferFunction")
+        Logging.info("ctf=",ctf,kw="processing")
         self.ctfs.append(ctf)
         self.alphaTF=settings.get("AlphaTransferFunction")
         self.alphaMode=settings.get("AlphaMode")
@@ -100,7 +97,7 @@ class ColorMerging(Module):
         #itf=self.settings.getCounted("IntensityTransferFunction",self.n)
         itf=settings.get("IntensityTransferFunction")
         if not itf:
-            print "Didn't get itf"
+            Logging.error("Didn't get iTF",kw="processing")
         self.intensityTransferFunctions.append(itf)
 
 
@@ -113,7 +110,7 @@ class ColorMerging(Module):
         if z!=-1:
             self.doAlpha=0
         else: # If the whole volume is requested, then we will also do alpha
-            print "Will do alpha as whole volume was requested"
+            Logging.error("Will create alpha channel, because whole volume requested",kw="processing")
             self.doAlpha=1
         if not self.preview:
             self.preview=self.doOperation()
@@ -133,10 +130,10 @@ class ColorMerging(Module):
 
         # Map scalars with intensity transfer list
 
-        print "\nDOING COLORMERGING\n"
+        Logging.info("Merging channels...",kw="processing")
         processed=[]
         imagelen=len(self.images)
-        #print "Mapping through intensities..."
+        
         for i in range(0,imagelen):
             #self.images[i].GlobalReleaseDataFlagOn()
             mapIntensities=vtk.vtkImageMapToIntensities()
@@ -145,18 +142,17 @@ class ColorMerging(Module):
             mapIntensities.Update()
             data=mapIntensities.GetOutput()
             processed.append(data)
-        #print "Mapped %d datasets"%len(processed)
+        
         
         luminance=0
         if self.doAlpha:
-            #print "Creating alpha..."
             createalpha=vtk.vtkImageAlphaFilter()
             #print "self.alpaMode=",self.alphaMode
             if self.alphaMode[0]==0:
-                print "Maximum mode"
+                Logging.info("Alpha mode = maximum", kw="processing")
                 createalpha.MaximumModeOn()
             elif self.alphaMode[0]==1:
-                print "Average mode, threshold=",self.alphaMode[1]
+                Logging.info("Alpha mode = average, threshold = ",self.alphaMode[1],kw="processing")
                 createalpha.AverageModeOn()
                 createalpha.SetAverageThreshold(self.alphaMode[1])
             else:
@@ -167,54 +163,50 @@ class ColorMerging(Module):
                     createalpha.AddInput(i)
                 createalpha.Update()
                 alpha=createalpha.GetOutput()
-                #print "alpha=",alpha
-                #print "Created alpha with dims and datatype:",alpha.GetDimensions(),alpha.GetScalarTypeAsString()
-        
+            
         # Color the datasets to 24-bit datasets using VTK classes            
         
         colored=[]
         for i in range(0,imagelen):
             if processed[i].GetNumberOfScalarComponents()==1:
-                #print "Mapping through..."
                 mapToColors=vtk.vtkImageMapToColors()
                 mapToColors.SetOutputFormatToRGB()
                 ct=self.ctfs[i]
+                Logging.info("Using ctf(%d)=%s"%(i,ct),kw="processing")
                 mapToColors.SetLookupTable(ct)
                 mapToColors.SetInput(processed[i])
                 mapToColors.Update()
                 colored.append(mapToColors.GetOutput())
             else:
-                print "Dataset %d is RGB Data, will not map through ctf"%i
+                Logging.info("Dataset %d is RGB Data, will not map through ctf"%i,kw="processing")
                 colored.append(processed[i])
         # result rgb
-        #print "Mapped %d datasets"%len(colored)
-        #print "Merging..."
         merge=vtk.vtkImageMerge()
         for i in colored:
             merge.AddInput(i)
         merge.Update()
         data=merge.GetOutput()
         
-        print "Result with dims and type",data.GetDimensions(),data.GetScalarTypeAsString(),"components:",data.GetNumberOfScalarComponents()
+        Logging.info("Result with dims and type",data.GetDimensions(),data.GetScalarTypeAsString(),"components:",data.GetNumberOfScalarComponents(),kw="trivial")
 
         if luminance:
-            print "Using vtkImageLuminance"
+            Logging.info("Alpha mode = luminance", kw="processing")
             lum=vtk.vtkImageLuminance()
             lum.SetInput(data)
             lum.Update()
             alpha=lum.GetOutput()
         
         if self.doAlpha:
-            print "appending alpha..."
+            Logging.info("Appending alpha component", kw="processing")
             appendcomp=vtk.vtkImageAppendComponents()
             appendcomp.AddInput(data)
             appendcomp.AddInput(alpha)
             appendcomp.Update()
             data=appendcomp.GetOutput()
-            print "After appending alpha, num of Comps:",data.GetNumberOfScalarComponents()
+            Logging.info("After appending alpha, # of comps=%d",data.GetNumberOfScalarComponents(),kw="processing")
 
         t3=time.time()
-        print "Calculations took %f seconds"%(t3-t1)
+        Logging.info("Merging took %.4f seconds"%(t3-t1),kw="processing")
         
         #data.GlobalReleaseDataFlagOn()
         return data

@@ -37,6 +37,7 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 import os.path
 import sys
+import Logging
 
 import glob
 try:
@@ -90,6 +91,9 @@ class LSMApplication(wx.App):
 
 
 if __name__=='__main__':
+    if "tofile" in sys.argv:
+	fp=open("log.txt","w")
+	Logging.outfile=fp
 
     if "py2exe" in sys.argv:
        setup(console=["Main.py"],

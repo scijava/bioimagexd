@@ -146,9 +146,9 @@ class AdjustDataUnit(CombinedDataUnit):
         for tf in self.intensityTransferFunctions:
             tf.setFromParameterList(iTF.getAsParameterList())
     
-    def getSettingClass(self):
+    def getSettingsClass(self):
         """
-        Method: getSettingClass()
+        Method: getSettingsClass()
         Created: 02.04.2005, KP
         Description: Return the class that represents settings for this dataunit
         """

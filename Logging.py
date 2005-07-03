@@ -1,7 +1,7 @@
 # -*- coding: iso-8859-1 -*-
 """
- Unit: Logging.py
- Project: Selli
+ Unit: Logging
+ Project: BioImageXD
  Created: 13.12.2004, KP
  Description:
 
@@ -28,7 +28,7 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 """
-__author__ = "Selli Project <http://sovellusprojektit.it.jyu.fi/selli/>"
+__author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.6 $"
 __date__ = "$Date: 2005/01/11 14:36:00 $"
 
@@ -38,8 +38,13 @@ import wx
 import os.path
 import sys
 
-HIDE_DEBUG=["visualizer","init","io","scale","preview","processing"]
-KWS=["visualizer","main","init","animator","io","task","preview","scale","imageop","modules"]
+outfile=sys.stdout
+
+HIDE_DEBUG=["visualizer","init","io","scale","preview","trivial","dataunit",
+            "modules","imageop"]
+KWS=["visualizer","main","init","animator","io","task","preview","scale",
+     "imageop","modules","trivial","ctf","dataunit","event","processing",
+     "datasource","iactivepanel"]
 
 import sys
 
@@ -53,8 +58,7 @@ class GUIError:
     def __init__(self,title,msg):
         """
         Method: __init__
-        Created: 13.12.2004
-        Creator: KP
+        Created: 13.12.2004, KP
         Description: Constructor
         Parameters:
             title      Title for the error message
@@ -66,8 +70,7 @@ class GUIError:
     def show(self):
         """
         Method: show
-        Created: 13.12.2004
-        Creator: KP
+        Created: 13.12.2004, KP
         Description: Displays the error message in a tkMessageBox.
         """
         dlg=wx.MessageDialog(None,self.msg,self.title,wx.OK|wx.ICON_ERROR)
@@ -77,8 +80,7 @@ class GUIError:
     def __str__(self):
         """
         Method: __str__
-        Created: 13.12.2004
-        Creator: KP
+        Created: 13.12.2004, KP
         Description: Returns the error message in a string.
         """
         return "[Error: %s: %s]"%(self.title,self.msg)
@@ -86,8 +88,7 @@ class GUIError:
     def __repr__(self):
         """
         Method: __repr__
-        Created: 13.12.2004
-        Creator: KP
+        Created: 13.12.2004, KP
         Description: Returns the error message in a string.
         """
         return str(self)
@@ -96,14 +97,13 @@ class GUIError:
 def error(title,msg,x=sys._getframe()):
     """
     Function: error
-    Created: 13.12.2004
-    Creator: KP
+    Created: 13.12.2004, KP
     Description: Raises an GuiError.
     Parameters:
             title      Title for the error message
             msg        The actual error message
     """
-    print "%s: %s"%(x.f_code.co_filename,x.f_lineno),"ERROR: %s"%msg
+    outfile.write("%s: %s"%(x.f_code.co_filename,x.f_lineno)+" ERROR: %s\n"%msg)
     raise GUIError(title,"%s: %s"%(x.f_code.co_filename,x.f_lineno)+" "+msg)
 
 
@@ -121,7 +121,7 @@ def info(msg,*args,**kws):
     if not ("kw" in kws) or (("kw" in kws) and (kws["kw"] not in HIDE_DEBUG)):
         file=os.path.split(xframe.f_code.co_filename)[-1]
         lineno=xframe.f_lineno
-        print "%s:%d: %s %s"%(file,lineno,msg," ".join(map(str,args)))
+        outfile.write("%s:%d: %s %s\n"%(file,lineno,msg," ".join(map(str,args))))
 
 def backtrace():
     """
@@ -133,7 +133,7 @@ def backtrace():
     xframe=sys._getframe(1)
     file=os.path.split(xframe.f_code.co_filename)[-1]
     lineno=xframe.f_lineno
-    print "%s:%d: Generating backtrace of calls:"%(file,lineno)
+    outfile.write("%s:%d: Generating backtrace of calls:\n"%(file,lineno))
     
     indent=-1
     oldfile=None
@@ -149,5 +149,5 @@ def backtrace():
         lineno=frame.f_lineno
         function=frame.f_code.co_name
         indentstr="  "*indent
-        print "%sFile %s, function %s on line %d"%(indentstr,file,function,lineno)
+        outfile.write("%sFile %s, function %s on line %d\n"%(indentstr,file,function,lineno))
         i+=1

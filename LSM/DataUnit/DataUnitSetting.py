@@ -379,7 +379,7 @@ class DataUnitSettings:
         Created: 30.03.2005
         Description: Returns the string representation of this class
         """
-        return "DataUnitSettings( %s )"%str(self.settings)
+        return "%s ( %s )"%(str(self.__class__),str(self.settings))
 
     def initialize(self,dataunit,channels, timepoints):
         """

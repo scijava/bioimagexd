@@ -201,7 +201,7 @@ class VtiDataSource(DataSource):
         """
         self.filename = filename
         self.path=os.path.dirname(filename)
-        print "Trying to open %s"%filename
+        Logging.info("Trying to open %s"%filename,kw="datasource")
         try:
             # A SafeConfigParser is used to parse the .du-file
             self.parser = RawConfigParser()
@@ -227,7 +227,7 @@ class VtiDataSource(DataSource):
         Parameters:   filename  The .du-file to be loaded
         """
         dataUnitFormat = self.loadDuFile(filename)
-        print "format of unit=",dataUnitFormat
+        Logging.info("format of unit=",dataUnitFormat,kw="datasource")
 
         if (not dataUnitFormat) or (not self.parser):
             return None
@@ -235,7 +235,7 @@ class VtiDataSource(DataSource):
         # Then, the number of datasets/timepoints that belong to this dataset
         # series
         count = self.parser.get("ImageData", "numberOfFiles")
-        print dataUnitFormat,count
+        Logging.info("format=",dataUnitFormat,"count=",count,kw="datasource")
 
 
         # Then read the .vti-filenames and store them in the dataSets-list:
@@ -266,8 +266,6 @@ class VtiDataSource(DataSource):
         #settings = eval(settingsclass)
         settings = settings.readFrom(self.parser)
         self.settings = settings
-        print "self=",self
-        print "Read settings",settings.get("ColorTransferFunction")
         dataunit.setSettings(settings)
         dataunit.setDataSource(self)
         return [dataunit]
@@ -297,29 +295,17 @@ class VtiDataSource(DataSource):
         Description: Returns the ctf of the dataset series which this datasource
                      operates on
         """
-        print "self=",self
         if not self.ctf:
-            print self.settings
-            print "settings.ctf=",self.settings.get("ColorTransferFunction")
+            Logging.info("settings.ctf=",self.settings.get("ColorTransferFunction"),kw="ctf")
             try:
                 #ctf=self.parser.get("ColorTransferFunction","ColorTransferFunction")
                 ctf=self.settings.get("ColorTransferFunction")
             except:
                 return None
             if not ctf:
-                try:
-                    col = eval(self.parser.get("Color","Color"))
-                    print "Using ctf based on Color"
-                    ctf = vtk.vtkColorTransferFunction()
-                    r,g,b=col
-                    r/=255.0
-                    g/=255.0
-                    b/=255.0
-                    ctf.AddRGBPoint(0,0,0,0)
-                    ctf.AddRGBPoint(255,r,g,b)
-                except:
-                    return None
+                Logging.info("Will return no CTF",kw="ctf")
+                return None
             else:
-                print "Using CTF read from dataset",ctf
+                Logging.info("Using CTF read from dataset",ctf,kw="ctf")
             self.ctf = ctf
         return self.ctf

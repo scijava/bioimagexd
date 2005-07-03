@@ -1,22 +1,11 @@
 # -*- coding: iso-8859-1 -*-
 """
  Unit: Module.py
- Project: Selli
+ Project: BioImageXD
  Created: 03.11.2004, KP
  Description:
 
- A Base Class for all data processing modules. Inherits Thread for
- smooth user experience while processing the data
-
- Modified: 03.11.2004 JV - Comments.
-           15.11.2004 KP - Made Module inherit Thread
-           25.11.2004 KP - Module no longer inherits Thread, made a class 
-                           NumericModule that has some methods
-                           required by modules that use Numeric for calculations
-           01.12.2004 JV - Added NumpyToVTK24bit (to be renamed?)
-           03.12.2004 KP - Modified NumpyToVTK to support 3-component data based
-                           on Numeric Array shape, removed
-                           NumpyToVTK24bit
+ A Base Class for all data processing modules.
                            
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
@@ -42,8 +31,7 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 import vtk
 import ImageOperations
-
-
+import Logging
 
 class Module:
     """
@@ -134,9 +122,9 @@ class Module:
             if x!=self.x or y!=self.y or z!=self.z:
                 raise ("ERROR: Dimensions do not match: currently (%d,%d,%d), "
                 "new dimensions (%d,%d,%d)"%(self.x,self.y,self.z,x,y,z))
-        else:
+        else:            
             self.x,self.y,self.z=imageData.GetDimensions()
-            print "Set dimensions to %d,%d,%d"%(x,y,z)
+            Logging.info("Dataset dimensions =(%d,%d,%d)"%(x,y,z),kw="dataunit")
         extent=imageData.GetExtent()
         if self.extent:
             if self.extent!=extent:

@@ -60,11 +60,11 @@ class DataUnit:
         Description: Returns the ctf of this object
         """
         if not self.dataSource and not self.ctf:
-            print "Using no CTF"
+            Logging.info("Using no ctf",kw="ctf")
             return None
         if not self.ctf:
             self.ctf=self.dataSource.getColorTransferFunction()
-#            print "Got color from datasource:",self.ctf
+            Logging.info("Ctf from datasource=",self.ctf,kw="ctf")
         return self.ctf
     
     
@@ -74,7 +74,6 @@ class DataUnit:
         Created: 27.03.2005, KP
         Description: Sets the settings object of this dataunit
         """
-        #print "Setting settings to ",repr(settings)
         self.settings = settings
         self.updateSettings()
     
@@ -85,14 +84,13 @@ class DataUnit:
         Description: Sets the settings of this object based on the datasource
         """
         if not self.settings:
-            print "No settings, wont update"
+            Logging.info("No settings present, won't update",kw="dataunit")
             return
         if not (self.settings and self.settings.get("ColorTransferFunction")):
             ctf = self.getColorTransferFunction()
             # Watch out not to overwrite the palette
             #self.ctf = self.settings.get("ColorTransferFunction")
             #ctf = self.ctf
-            #print "Setting ctf to ",ctf
             self.settings.set("ColorTransferFunction",ctf)
             if ctf and self.settings.get("Type")=="ColorMergingSettings":
                 self.settings.set("MergingColorTransferFunction",ctf)
@@ -171,7 +169,7 @@ class DataUnit:
         self.getSpacing = dataSource.getSpacing
         self.getVoxelSize = dataSource.getVoxelSize
         self.getBitDepth = dataSource.getBitDepth
-        print "Got datasource..."
+        Logging.info("Dataunit ",repr(self),"got datasource",repr(self.dataSource),kw="datasource")
         
         #self.updateSettings()
         

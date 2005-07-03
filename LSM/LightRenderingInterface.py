@@ -148,7 +148,7 @@ class LightRenderingInterface(RenderingInterface.RenderingInterface):
            self.visualizer=Visualization.getVisualizer()
            self.visualizer.setDataUnit(self.dataUnit)
            if self.visualizer:
-              print "Found running instance of visualizer"
+	       Logging.info("Visualizer is running",kw="visualizer")
         return (self.visualizer and not self.visualizer.isClosed())
 
 
@@ -183,7 +183,7 @@ class LightRenderingInterface(RenderingInterface.RenderingInterface):
         # If there is no visualizer instance to do the rendering
         # create one
         if not self.isVisualizationSoftwareRunning():
-            print "Creating visualizer"
+	    Logging.info("Creating visualizer",kw="visualizer")
             self.createVisualizerWindow()
         self.visualizer.setTimepoint(self.currentTimePoint)
 
@@ -195,6 +195,6 @@ class LightRenderingInterface(RenderingInterface.RenderingInterface):
         """
         visualizer=self.visualizer
         type=self.type
-        print "Saving %s"%filename
+	Logging.info("Saving screenshot to ",filename,kw="visualizer")
         comm = "visualizer.getCurrentMode().saveSnapshot(filename)"
         eval(comm)

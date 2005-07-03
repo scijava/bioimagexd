@@ -1,9 +1,9 @@
 from Merging import *
 from MergingPanel import *
 from DataUnit import CombinedDataUnit
+from MergingSettings import *
+from MergingDataUnit import *
 
-class MergingDataUnit(CombinedDataUnit):
-        def getSettingsClass(): return MergingSettings
 def getClass(): return Merging
 def getConfigPanel(): return MergingPanel
 def getName(): return "Merging"

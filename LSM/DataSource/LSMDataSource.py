@@ -1,25 +1,9 @@
 # -*- coding: iso-8859-1 -*-
 """
  Unit: DataSource.py
- Project: Selli
+ Project: BioImageXD
  Created: 03.11.2004, JM
  Description: Classes for managing 4D data located on disk
-
- Modified:  04.11.2004 JM - Fixed a few bugs and implemented a few methods
-
-            09.11.2004 JM
-            - modified: VtiDataSource.__init__()
-            - added: VtiDataSource.LoadFromDuFile()
-
-            10.11.2004 JM - numerous bug fixes made and compliance with class 
-                            diagrams checked
-            10.11.2004 KP, JM - DataSource gets the vtkImageData objects from 
-                                CombinedDataUnit and writes them to disk
-            17.11.2004 KP, JM - loadFromDuFile() now returns a dataunit of the 
-                                type specified in the .du file
-
-            26.11.2004 JM - More comments added
-            11.01.2005 JV - Added comments
 
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
@@ -39,7 +23,7 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
-__author__ = "Selli Project <http://sovellusprojektit.it.jyu.fi/selli/>"
+__author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.37 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
@@ -50,14 +34,13 @@ import vtk
 import os.path
 
 import Logging
-import DataUnit
+from DataUnit import *
 import time
 
 class LsmDataSource(DataSource):
     """
     Class: LsmDataSource
-    Created: 18.11.2004
-    Creator: KP
+    Created: 18.11.2004, KP
     Description: Manages 4D data stored in an lsm-file
     """
     def __init__(self,filename="",channelNum=-1):
@@ -91,8 +74,8 @@ class LsmDataSource(DataSource):
         # If a filename was specified, the file is loaded
         if self.filename:
             self.path=os.path.dirname(filename)
-            print "LsmDataSource created with file %s and channelNum=%d"%\
-            (self.filename,channelNum)
+            Logging.info("LsmDataSource created with file %s and channelNum=%d"%\
+            (self.filename,channelNum),kw="datasource")
             try:
                 f=open(filename)
                 f.close()
@@ -129,7 +112,7 @@ class LsmDataSource(DataSource):
     def getSpacing(self):
         if not self.spacing:
             a,b,c=self.reader.GetVoxelSizes()
-            print "Voxel sizes = ",a,b,c
+            Logging.info("Voxel sizes = ",a,b,c,kw="datasource")
             self.spacing=[1,b/a,c/a]
         return self.spacing
         
@@ -191,12 +174,12 @@ class LsmDataSource(DataSource):
         self.reader.Update()
         dataunits=[]
         channelNum=self.reader.GetNumberOfChannels()
-        print "There are %d channels"%channelNum
+        Logging.info("There are %d channels"%channelNum,kw="datasource")
         for i in range(channelNum):
             # We create a datasource with specific channel number that
             #  we can associate with the dataunit
             datasource=LsmDataSource(filename,i)
-            dataunit=DataUnit.DataUnit.DataUnit()
+            dataunit=DataUnit.DataUnit()
             dataunit.setDataSource(datasource)
             dataunits.append(dataunit)
             
@@ -250,20 +233,6 @@ class LsmDataSource(DataSource):
             self.dataUnitSettings[section]=[]
         self.dataUnitSettings[section].append(settingDict)
 
-            
-    def getColor(self):
-        """
-        Method: getName()
-        Created: 27.03.2005, KP
-        Description: Returns the color of the dataset series which this datasource
-                     operates on
-        """
-        raise "DON'T CALL GETCOLOR!!!"
-        r=self.reader.GetChannelColorComponent(self.channelNum,0)
-        g=self.reader.GetChannelColorComponent(self.channelNum,1)
-        b=self.reader.GetChannelColorComponent(self.channelNum,2)
-        return (r,g,b)
-        
     def getColorTransferFunction(self):
         """
         Method: getColorTransferFunction()
@@ -272,7 +241,7 @@ class LsmDataSource(DataSource):
                      operates on
         """
         if not self.ctf:
-            print "Using ctf based on LSM Color"
+            Logging.info("Using ctf based on LSM Color",kw="datasource")
             ctf = vtk.vtkColorTransferFunction()
             r=self.reader.GetChannelColorComponent(self.channelNum,0)
             g=self.reader.GetChannelColorComponent(self.channelNum,1)

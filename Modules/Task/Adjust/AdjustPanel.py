@@ -177,7 +177,7 @@ class AdjustPanel(TaskPanel.TaskPanel):
         self.editIntensityPanel.SetAutoLayout(1)
         self.settingsNotebook.InsertPage(0,self.editIntensityPanel,"Transfer Function")
         self.settingsNotebook.SetSelection(0)
-        print "Updating settings!"
+
         self.updateSettings()
 
     def setInterpolationTimePoints(self,event):
@@ -198,7 +198,6 @@ class AdjustPanel(TaskPanel.TaskPanel):
             except:
                 # For entries that have no value, add -1 as a place holder
                 lst.append(-1)
-        #print "Setting lst=",lst
         #self.dataUnit.setInterpolationTimePoints(lst)
         self.settings.set("InterpolationTimepoints",lst)
 
@@ -215,11 +214,10 @@ class AdjustPanel(TaskPanel.TaskPanel):
         except:
             pass
         else:
-            print "Previewing tp=",tp
+            Logging.info("Previewing timepoint ",tp,"(will send change event)",kw="task")
 
             evt=Events.ChangeEvent(Events.myEVT_TIMEPOINT_CHANGED,self.GetId())
             evt.setValue(tp)
-            print "Sending change event",tp
             self.GetEventHandler().ProcessEvent(evt)
             self.updateTimepoint(evt)
 
@@ -259,7 +257,7 @@ class AdjustPanel(TaskPanel.TaskPanel):
         Description: A callback function called when the timepoint is changed
         """
         timePoint=event.getValue()
-        print "Now configuring timepoint %d"%(timePoint)
+        Logging.info("Now configuring timepoint",timePoint,kw="task")
         itf=self.settings.getCounted("IntensityTransferFunctions",timePoint)
         self.iTFEditor.setIntensityTransferFunction(itf)
         self.timePoint=timePoint
@@ -290,7 +288,7 @@ class AdjustPanel(TaskPanel.TaskPanel):
             self.settings.setCounted("IntensityTransferFunctions",i,itf)
             
         itf=self.settings.getCounted("IntensityTransferFunctions",self.timePoint)
-        print "itf=",itf
+
         self.iTFEditor.setIntensityTransferFunction(itf)
         
     def startInterpolation(self,evt):
@@ -317,7 +315,6 @@ class AdjustPanel(TaskPanel.TaskPanel):
             self.settings.getCounted("IntensityTransferFunctions",self.timePoint)
             )
             tps=self.settings.get("InterpolationTimepoints")
-            #print "tps=",tps
             if not tps:
                 tps=[]
             
@@ -330,7 +327,6 @@ class AdjustPanel(TaskPanel.TaskPanel):
 
             ctf = self.settings.get("ColorTransferFunction")
             if ctf and self.colorBtn:
-                print "Setting colorBtn.ctf"
                 self.colorBtn.setColorTransferFunction(ctf)
                 self.colorBtn.Refresh()
 
@@ -351,7 +347,7 @@ class AdjustPanel(TaskPanel.TaskPanel):
                      that wish to update the preview
         """
         # TODO: Validity checks, here or in dataunit
-        print "Update preview"
+        Logging.info("Will update preview",kw="preview")
         TaskPanel.TaskPanel.doPreviewCallback(self,event)
 
     def setCombinedDataUnit(self,dataUnit):
@@ -368,10 +364,7 @@ class AdjustPanel(TaskPanel.TaskPanel):
     
         ctf = self.settings.get("ColorTransferFunction")
         if self.colorBtn:
-            print "Setting ctf"
             self.colorBtn.setColorTransferFunction(ctf)
-        else:
-            print "Won't set ctf!"
         
         # We register a callback to be notified when the timepoint changes
         # We do it here because the timePointChanged() code requires the dataunit

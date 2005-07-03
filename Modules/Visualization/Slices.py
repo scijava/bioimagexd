@@ -34,8 +34,9 @@ __version__ = "$Revision: 1.9 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 import DataUnit
-
+import Modules
 import PreviewFrame
+import Logging
 
 def getName():return "slices"
 def getClass():return SlicesMode
@@ -56,7 +57,8 @@ class SlicesMode:
         self.preview=None
         self.init=1
         self.dataUnit=None
-        
+        self.modules=Modules.DynamicLoader.getTaskModules()
+
         
     def zoomToFit(self):
         """
@@ -98,8 +100,8 @@ class SlicesMode:
         Method: updateRendering
         Created: 26.05.2005, KP
         Description: Update the rendering
-        """      
-        print "Updating rendering..."
+        """
+	Logging.info("Updating rendering",kw="preview")
         self.preview.updatePreview(1)
         
     def setBackground(self,r,g,b):
@@ -125,7 +127,7 @@ class SlicesMode:
         Description: Set the mode of visualization
         """
         if not self.preview:
-            print "Generating preview"
+	    Logging.info("Generating preview",kw="visualizer")
             self.preview=PreviewFrame.IntegratedPreview(self.parent,
             previewsize=(512,512),pixelvalue=False,renderingpreview=False,
             zoom=False,zslider=True,timeslider=False,scrollbars=True)
@@ -139,21 +141,24 @@ class SlicesMode:
         Created: 25.05.2005, KP
         Description: Set the dataunit to be visualized
         """
-        print "setDataUnit(",dataUnit,")"
+	Logging.info("setDataUnit(",dataUnit,")",kw="visualizer")
         if dataUnit == self.dataUnit:
-            print "\n\n\nGot same dataunit\n\n\n"
-            return
+	    Logging.info("Same dataunit, not changing",kw="visualizer")
+	    return
         if self.init:
-            print "Setting preview type"
             self.preview.setPreviewType("")
             self.init=0
         if not self.visualizer.getProcessedMode():
-            print "Using corrected source data unit"
-            unit=DataUnit.CorrectedSourceDataUnit("preview")
+            Logging.info("Using ProcessDataUnit for slices preview")
+            unitclass=self.modules["Process"][2].getDataUnit()
+            unit=unitclass("Slices preview")
             unit.addSourceDataUnit(dataUnit)
-            unit.setModule(DataUnitProcessing.DataUnitProcessing())
+            
+            taskclass=self.modules["Process"][0]                
+            unit.setModule(taskclass())
+            
         else:
-            print "Using dataunit",dataUnit
+	    Logging.info("Using dataunit",dataUnit,kw="visualizer")
             unit=dataUnit
         self.preview.setDataUnit(unit,0)
         
@@ -163,7 +168,7 @@ class SlicesMode:
         Created: 25.05.2005, KP
         Description: Set the timepoint to be visualized
         """
-        print "Setting previewed timepoint"
+	Logging.info("Setting timepoint to ",tp,kw="visualizer")
         self.preview.setTimepoint(tp)
         
     def saveSnapshot(self,filename):

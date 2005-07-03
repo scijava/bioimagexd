@@ -77,15 +77,15 @@ class ProcessDataUnit(CombinedDataUnit):
         self.setOriginal(dataUnit)    
         CombinedDataUnit.addSourceDataUnit(self,dataUnit)
         self.name = "Adjusted %s"%dataUnit.getName()
-	Logging.info("Updating settings for corrected source dataunit",kw="processing")
+        Logging.info("Updating settings for corrected source dataunit",kw="processing")
         #print dataUnit.getColorTransferFunction()
         self.updateSettings()
         #print self.settings.get("ColorTransferFunction")
   
 
-    def getSettingClass(self):
+    def getSettingsClass(self):
         """
-        Method: getSettingClass()
+        Method: getSettingsClass()
         Created: 02.04.2005, KP
         Description: Return the class that represents settings for this dataunit
         """
