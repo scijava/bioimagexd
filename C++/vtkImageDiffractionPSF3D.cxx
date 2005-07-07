@@ -30,6 +30,7 @@
 #include "vtkPointData.h"
 
 #include "vtkMath.h"
+#include <ostream.h>
 #include <math.h>
 
 vtkCxxRevisionMacro(vtkImageDiffractionPSF3D, "$Revision: 1.36 $");
@@ -82,35 +83,50 @@ vtkImageDiffractionPSF3D::ExecuteInformation()
   output->SetNumberOfScalarComponents(1);
   output->SetScalarTypeToFloat();
   int uExtent[6];
-  
+  output->SetDimensions(Dimensions[0],Dimensions[1],Dimensions[2]); 
   uExtent[0]=uExtent[2]=uExtent[4]=0;
   uExtent[1]=Dimensions[0]-1;
   uExtent[3]=Dimensions[1]-1;
   uExtent[5]=Dimensions[2]-1;    
+  printf("Setting extents to %d,%d,%d\n",Dimensions[0]-1,Dimensions[1]-1,Dimensions[2]-1);
   output->SetExtent(uExtent);
   output->SetWholeExtent(uExtent);
-  output->SetUpdateExtent(uExtent);
   
 }
-
 //-----------------------------------------------------------------------------
-void vtkImageDiffractionPSF3D::ExecuteData(vtkDataObject *outp)
+template<class T>
+void vtkImageDiffractionPSF3DExecute(vtkImageDiffractionPSF3D *self,
+                               vtkImageData *output, T *outPtr,
+                               int outExt[6], int id)
 {
-  vtkImageData* output = this->AllocateOutputData(outp);
+
+
+  int uExtent[6];
+    
+  printf("Estimated memory size %d\n",output->GetEstimatedMemorySize());    
+//  output->PrintSelf(cout,indent);
   int outIncX,outIncY,outIncZ;
   int maxX,maxY,maxZ,maxC;
   int idxX,idxY,idxZ,idxC;
   int dims[3];
-  int uExtent[6];
+    
+  double Lambda=self->GetLambda();
+  double RefractionIndex=self->GetRefractionIndex();
+  double PixelSpacing=self->GetPixelSpacing();
+  double SliceSpacing=self->GetSliceSpacing();
+  double NumericalAperture=self->GetNumericalAperture();
+  double SphericalAberration=self->GetSphericalAberration();
+  int dB=self->GetdB();
+  int Normalization=self->GetNormalization();
   
   uExtent[0]=uExtent[2]=uExtent[4]=0;
-  uExtent[1]=Dimensions[0]-1;
-  uExtent[3]=Dimensions[1]-1;
-  uExtent[5]=Dimensions[2]-1;    
+  uExtent[1]=self->GetDimensions()[0]-1;
+  uExtent[3]=self->GetDimensions()[1]-1;
+  uExtent[5]=self->GetDimensions()[2]-1;    
     
-  int w = Dimensions[0];
-  int h = Dimensions[1];
-  int d = Dimensions[2];
+  int w = self->GetDimensions()[0];
+  int h = self->GetDimensions()[1];
+  int d = self->GetDimensions()[2];
   int ic = w/2;
   int jc = h/2;
   int kc = d/2;
@@ -119,7 +135,6 @@ void vtkImageDiffractionPSF3D::ExecuteData(vtkDataObject *outp)
 
   //output->AllocateScalars();
   output->GetIncrements(outIncX, outIncY, outIncZ);
-  printf("outIncX=%d, outIncY=%d, outIncZ=%d\n",outIncX,outIncY,outIncZ);
   maxX = uExtent[1] - uExtent[0];
   maxY = uExtent[3] - uExtent[2];
   maxZ = uExtent[5] - uExtent[4];
@@ -138,14 +153,11 @@ void vtkImageDiffractionPSF3D::ExecuteData(vtkDataObject *outp)
   #define GET_AT(x,y,z,ptr) *(ptr+(z)*inIncZ+(y)*inIncY+(x)*inIncX)
   #define SET_AT(x,y,z,ptr,val) *(ptr+(z)*outIncZ+(y)*outIncY+(x)*outIncX)=val
 
-  //float **pixels=new float*[d];
-  float**pixels = (float**)output->GetScalarPointer();
-  //for(int i=0;i<d;i++)pixels[i]=new float[w*h];
-  printf("Allocated %d bytes of pixel data\n",w*h*d*sizeof(float));
-  
+  float **pixels=new float*[d];
+    
+  for(int i=0;i<d;i++)pixels[i]=new float[w*h];
   for(int k = 0; k < d; k++ ) {
-      printf("processing slice %d\n",k);
-    double kz = waveNumber*(k - kc)*SliceSpacing;
+      double kz = waveNumber*(k - kc)*SliceSpacing;
 			for (int r = 0; r < rMax; r++)
        {
     
@@ -172,7 +184,7 @@ void vtkImageDiffractionPSF3D::ExecuteData(vtkDataObject *outp)
 					kz = waveNumber*((k - kc)*SliceSpacing +
 						SphericalAberration*(u/upperLimit)*(u/upperLimit)*(u/upperLimit)*(u/upperLimit));
 					root = sqrt(1 + u*u);
-					bessel = J0(kr*u/root);
+					bessel = self->J0(kr*u/root);
 					angle = kz/root;
 					sumR += 2*cos(angle)*u*bessel/2;
 					sumI += 2*sin(angle)*u*bessel/2;
@@ -184,7 +196,7 @@ void vtkImageDiffractionPSF3D::ExecuteData(vtkDataObject *outp)
 					kz = waveNumber*((k - kc)*SliceSpacing +
 						SphericalAberration*(u/upperLimit)*(u/upperLimit)*(u/upperLimit)*(u/upperLimit));
 					root = sqrt(1 + u*u);
-					bessel = J0(kr*u/root);
+					bessel = self->J0(kr*u/root);
 					angle = kz/root;
 					sumR += 4*cos(angle)*u*bessel/2;
 					sumI += 4*sin(angle)*u*bessel/2;
@@ -193,7 +205,7 @@ void vtkImageDiffractionPSF3D::ExecuteData(vtkDataObject *outp)
 				u = upperLimit;
 				kz = waveNumber*((k - kc)*SliceSpacing + SphericalAberration);
 				root = sqrt(1 + u*u);
-				bessel = J0(kr*u/root);
+				bessel = self->J0(kr*u/root);
 				angle = kz/root;
 				sumR += cos(angle)*u*bessel/2;
 				sumI += sin(angle)*u*bessel/2;
@@ -205,13 +217,13 @@ void vtkImageDiffractionPSF3D::ExecuteData(vtkDataObject *outp)
 //				IJ.showProgress((float)j/h);
 				for (int i = 0; i < w; i++){
 					double rPixels = sqrt((i - ic)*(i-ic) + (j-jc)*(j - jc));
-					pixels[k][i + w*j] = interp(integral,(float)rPixels);
-            
+           
+					pixels[k][i + w*j] = self->interp(integral,(float)rPixels);
+           
 					//pixels[kSym][i + w*j] = interp(integral,(float)rPixels);
 				}
 			}
 		}
-    printf("Normalizing..\n");
 		int n = w*h;
 		if(Normalization == 1){
 			float peak = pixels[kc][ic + w*jc];
@@ -267,34 +279,34 @@ void vtkImageDiffractionPSF3D::ExecuteData(vtkDataObject *outp)
 			}
 		}
 
+float*ptr=(float*)pixels;
+for(int k=0;k<d;k++) {
+    for(int j = 0 ; j < w*h; j++) {
+    *outPtr=pixels[k][j];
+    outPtr++;
+    }
+}
+        
+delete[] integral;
   
-  float scalar, *pixelPtr;
-  pixelPtr=(float*)pixels;
-    int *outExt=output->GetExtent();
-  printf("outExt=%d,%d,%d\n",outExt[1],outExt[3],outExt[5]);
-  float*outPtr = (float *) output->GetScalarPointer(0,0,0);
-  printf("tuples=%d\n",output->GetPointData()->GetNumberOfTuples());
-  printf("Scalar data type=%s\n",output->GetScalarTypeAsString());
-  printf("Copying pixel data... %d*%d*%d, incs %d %d\n",maxZ,maxY,maxX,outIncY,outIncZ);
-  for(idxZ = 0; idxZ <= maxZ; idxZ++ ) {
-      printf("slice %d\n",idxZ);
-    for(idxY = 0; idxY <= maxY; idxY++ ) {
-      for(idxX = 0; idxX <= maxX; idxX++ ) {
-            scalar = *pixelPtr++;
-            SET_AT(idxX,idxY,idxZ,outPtr,scalar);
-//            *(outPtr+=scalar;
-        
-      }
-      //outPtr += outIncY;
-    }  
-    //outPtr += outIncZ;      
-  }
-  printf("Freeing data...\n");
-        
-  delete[] integral;
-  delete[] pixels;
-  for(int i=0;i<d;i++)delete[] pixels[i];
+for(int i=0;i<d;i++)delete[] pixels[i];
+delete[] pixels;
+}
 
+void vtkImageDiffractionPSF3D::ExecuteData(vtkDataObject *output)
+{
+  vtkImageData *data = this->AllocateOutputData(output);
+  int *outExt = data->GetExtent();
+  void *outPtr = data->GetScalarPointerForExtent(outExt);
+
+  // Call the correct templated function for the output
+  switch (VTK_FLOAT)
+    {
+    vtkTemplateMacro5(vtkImageDiffractionPSF3DExecute, this, data,
+                      (VTK_TT *)(outPtr), outExt, 0);
+    default:
+      vtkErrorMacro(<< "Execute: Unknown data type");
+    }
 }
 
 void vtkImageDiffractionPSF3D::PrintSelf(ostream& os, vtkIndent indent)

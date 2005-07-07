@@ -114,14 +114,17 @@ public:
 
   // Description:
   // Toggle whether the result should be in dB
-  vtkSetMacro(dB,double);
-  vtkGetMacro(dB,double);
+  vtkSetMacro(dB,bool);
+  vtkGetMacro(dB,bool);
 
   // Description:
   // The dimensions of the dataset
   vtkSetVector3Macro(Dimensions,int);
   vtkGetVectorMacro(Dimensions,int,3);
       
+	float interp(float y[], float x);
+	double J0(double xIn);
+  
   
 
 protected:
@@ -131,9 +134,6 @@ protected:
   void ExecuteInformation();
   virtual void ExecuteData(vtkDataObject *);
 
-	float interp(float y[], float x);
-	double J0(double xIn);
-  
   
 private:
   vtkImageDiffractionPSF3D(const vtkImageDiffractionPSF3D&);  // Not implemented.
