@@ -33,6 +33,12 @@ import wx
 from wx.lib.statbmp  import GenStaticBitmap as StaticBitmap
 import ImageOperations
 import Logging
+import Annotation
+
+ZOOM_TO_BAND=1
+MANAGE_ANNOTATION=2
+ADD_ANNOTATION=3
+ADD_ROI=4
 
 class InteractivePanel(wx.ScrolledWindow):
     """
@@ -41,30 +47,36 @@ class InteractivePanel(wx.ScrolledWindow):
     Description: A panel that can be used to select regions of interest, drawn
                  annotations on etc.
     """
-    def __init__(self,parent,size=(512,512),scroll=0,**kws):
+    def __init__(self,parent,scroll=0,**kws):
         """
         Method: __init__(parent)
         Created: 24.03.2005, KP
         Description: Initialization
         """    
+        size=(512,512)
+        if "size" in kws:
+            size=kws["size"]
+        self.dataUnit=None
+        self.annotations=[]
+        self.annotationClass=None
+        self.currentAnnotation=None
+        self.voxelSize=(1,1,1)
+        self.bgColor=(0,0,0)
+        if "bgColor" in kws:
+            self.bgColor=kws["bgColor"]
         self.action=0
         self.imagedata=None
         self.bmp=None
         self.scroll=scroll
-        Logging.info("interactive panel size=",size,kw="iactivepanel")
         
-        self.actionstart=None
-        self.actionend=None
-        self.scalepos=None
+        self.actionstart=(0,0)
+        self.actionend=(0,0)
         
         x,y=size
         self.buffer = wx.EmptyBitmap(x,y)
         wx.ScrolledWindow.__init__(self,parent,-1,size=size)
         self.size=size
 
-        self.scaleBar = None
-        self.scaleBarWidth = 0
-        self.voxelSize=(1,1,1)
         self.zoomFactor=1
         
         self.paintPreview()
@@ -73,51 +85,27 @@ class InteractivePanel(wx.ScrolledWindow):
         self.Bind(wx.EVT_LEFT_DOWN,self.markActionStart)
         self.Bind(wx.EVT_MOTION,self.updateActionEnd)
         self.Bind(wx.EVT_LEFT_UP,self.executeAction)
+        self.Bind(wx.EVT_RIGHT_UP,self.actionEnd)
         
-    def executeAction(self,event):
+        
+    def setBackgroundColor(self,bg):
         """
-        Method: executeAction
-        Created: 03.07.2005, KP
-        Description: Call the right callback depending on what we're doing
+        Method: setBackgroundColor(color)
+        Created: 04.07.2005, KP
+        Description: Sets the background color
         """    
-        if self.action==0:
-            self.zoomToRubberband(event)
-        elif self.action==1:
-            self.updateScaleBar(event)
+        self.bgColor=bg
         
-    def drawScaleBar(self,width,voxelsize):
+    def getDrawableRectangles(self):
         """
-        Method: drawScaleBar(width,voxelsize)
-        Created: 05.06.2005, KP
-        Description: Gets the scale bar information
+        Method: getDrawableRectangles()
+        Created: 04.07.2005, KP
+        Description: Return the rectangles can be drawn on as four-tuples
         """    
-        self.scaleBarWidth = width
-        self.voxelSize = voxelsize
-        Logging.info("zoom factor for scale bar=%f"%self.zoomFactor,kw="preview")
+        w=self.buffer.GetWidth()
+        h=self.buffer.GetHeight()
+        return [(0,w,0,h)]
         
-    def updateScaleBar(self,event=None):
-        """
-        Method: updateScaleBar
-        Created: 05.06.2005, KP
-        Description: Draw a scale bar of given size
-        """
-        x0,y0=self.scalePos
-        x1,y1=self.actionend
-        xd=x1-x0
-        yd=y1-y0
-        vertical=0
-        diff=xd
-        if yd>xd:
-            vertical=1
-            diff=yd
-        
-        self.scaleBar = ImageOperations.drawScaleBar(widthPx=diff,
-            widthMicro=0,voxelSize=self.voxelSize,
-            bgColor=(0,0,0),
-            scaleFactor=self.zoomFactor,
-            vertical=vertical,
-            round=1)
-                
     def markActionStart(self,event):
         """
         Method: markActionStart
@@ -126,23 +114,131 @@ class InteractivePanel(wx.ScrolledWindow):
         """    
         if not self.action:
             return False
-        self.actionstart=event.GetPosition()
-        if self.action==2:
-            self.scalePos=self.actionstart
-        
+            
+        pos=event.GetPosition()
+        if self.multiple and self.currentAnnotation:
+            self.currentAnnotation.addPosition(pos)
+            return
+
+        x,y=pos
+        foundDrawable=0
+        for x0,x1,y0,y1 in self.getDrawableRectangles():
+            if x>=x0 and x<=x1 and y>=y0 and y<=y1:
+                foundDrawable=1 
+                break
+        if not foundDrawable:
+            Logging.info("Attempt to draw in non-drawable area: %d,%d"%(x,y),kw="iactivepanel")
+            # we zero the action so nothing further will be done by updateActionEnd
+            self.action=0
+            return
+            
+        self.actionstart=pos
+        if self.action==MANAGE_ANNOTATION:
+            self.findSelectedAnnotation()
+            
     def updateActionEnd(self,event):
         """
         Method: updateActionEnd
         Created: 24.03.2005, KP
-        Description: Draws the rubber band to current mouse position
+        Description: Draws the rubber band to current mou        
         """
         if not self.action:
             return
         if event.LeftIsDown():
             self.actionend=event.GetPosition()
-            if self.action==2:
-                self.updateScaleBar(event)    
+
+            if self.action == ADD_ANNOTATION:
+                self.updateObject(self.annotationClass,event)
+            elif self.action == MANAGE_ANNOTATION:
+                self.updateObject(self.annotationClass,event,moveOnly=1)
         self.updatePreview()
+            
+    def actionEnd(self,event):
+        """
+        Method: actionEnd
+        Created: 05.07.2005, KP
+        Description: Unconditionally end the current action
+        """    
+        self.currentAnnotation=None
+        self.action=0
+        self.annotationClass=None
+        event.Skip()
+        
+    def executeAction(self,event):
+        """
+        Method: executeAction
+        Created: 03.07.2005, KP
+        Description: Call the right callback depending on what we're doing
+        """    
+        if self.action==ZOOM_TO_BAND:
+            self.zoomToRubberband(event)
+        elif self.action==ADD_ANNOTATION:
+            self.updateObject(self.annotationClass,event)
+        
+        if not self.multiple:
+            self.currentAnnotation=None
+            self.action=0
+        self.annotationClass=None
+        
+            
+                
+    def updateAnnotations(self):
+        """
+        Method: updateAnnotations()
+        Created: 04.07.2005, KP
+        Description: Update all the annotations
+        """
+        for i in self.annotations:
+            i.setScaleFactor(self.zoomFactor)
+                
+    def updateObject(self,annotationClass,event=None,moveOnly=0):
+        """
+        Method: updateObject
+        Created: 05.06.2005, KP
+        Description: Draw a scale bar of given size
+        """
+        currobject=self.currentAnnotation  
+        if not currobject:
+            x0,y0=self.actionstart
+            currobject=annotationClass(x0,y0,self.voxelSize,self.zoomFactor,bgColor=self.bgColor)
+            self.annotations.append(currobject)
+            self.currentAnnotation=currobject
+            self.dataUnit.getSettings().set("Annotations",self.annotations)
+
+        if not moveOnly:
+            #Logging.info("Setting ",currobject,"to end at ",self.actionend,kw="iactivepanel")            Logging.info("Re-defining start ",self.actionstart,"and end ",self.actionend,"positions",kw="iactivepanel")
+            currobject.setPosition(self.actionstart)
+            currobject.setEndPosition(self.actionend)
+        else:
+            Logging.info("Moving annotation to ",self.actionend,kw="iactivepanel")
+            currobject.setPosition(self.actionend)
+                        
+
+    def findSelectedAnnotation(self):
+        """
+        Method: findSelectedAnnotation(self)
+        Created: 04.07.2005, KP
+        Description: Find the annotation selected by clicking
+        """
+        x,y=self.actionstart
+        for i in self.annotations:
+            bmp=i.getAsBitmap()
+            w,h=bmp.GetWidth(),bmp.GetHeight()
+            x0,y0=i.pos
+            if x>=x0 and y>=y0 and x<=x0+w and y<=y0+h:
+                Logging.info("Annotation at %d,%d = %s"%(x,y,str(i.__class__)),kw="iactivepanel")
+                self.currentAnnotation=i
+                self.annotationClass=self.currentAnnotation.__class__
+                break
+        
+    def markROI(self,roitype):
+        """
+        Method: markROI(roitype)
+        Created: 05.07.2005
+        Description: Add a ROI to the panel
+        """
+        Logging.info("Adding a %s region of interest"%roitype,kw="iactivepanel")
+        self.action=ADD_ROI
         
     def startRubberband(self):
         """
@@ -150,15 +246,28 @@ class InteractivePanel(wx.ScrolledWindow):
         Created: 03.07.2005
         Description: Start rubber band
         """
-        self.action=1
+        self.action=ZOOM_TO_BAND
         
-    def startScale(self):
+    def manageAnnotation(self):
         """
-        Method: startRubberband()
-        Created: 03.07.2005
-        Description: Start rubber band
+        Method: manageAnnotation()
+        Created: 04.07.2005, KP
+        Description: Manage annotations on the scene
         """
-        self.action=2
+        self.action=MANAGE_ANNOTATION
+        
+    def addAnnotation(self,annClass,**kws):
+        """
+        Method: addAnnotation(annotationClass)
+        Created: 04.07.2005, KP
+        Description: Add an annotation to the scene
+        """
+        multiple=0
+        if "multiple" in kws:
+            multiple=kws["multiple"]
+        self.multiple=multiple
+        self.action=ADD_ANNOTATION
+        self.annotationClass=annClass
         
     def zoomToRubberband(self,event):
         """
@@ -174,8 +283,8 @@ class InteractivePanel(wx.ScrolledWindow):
         x2,y2=self.actionend
         Logging.info("Zooming to rubberband defined by (%d,%d),(%d,%d)"%(x1,y1,x2,y2),kw="iactivepanel")
         
-        self.actionstart=None
-        self.actionend=None
+        self.actionstart=(0,0)
+        self.actionend=(0,0)
         x1,x2=min(x1,x2),max(x1,x2)
         y1,y2=min(y1,y2),max(y1,y2)
         
@@ -198,6 +307,33 @@ class InteractivePanel(wx.ScrolledWindow):
         
         self.updatePreview()
         
+    def getScrolledXY(self,x,y):
+        """
+        Method: getScrolledXY(x,y)
+        Created: 24.03.2005, KP
+        Description: Returns the x and y coordinates moved by the 
+                     x and y scroll offset
+        """
+        tpl=self.CalcUnscrolledPosition(x,y)
+        if self.zoomFactor==1:
+            return tpl
+        else:
+            return [int(float(x)/self.zoomFactor) for x in tpl]        
+        
+    def setDataUnit(self,dataUnit):
+        """
+        Method: setDataUnit(self,dataUnit)
+        Created: 04.07.2005, KP
+        Description: Sets the data unit that is displayed
+        """    
+        self.dataUnit=dataUnit
+        self.voxelSize=dataUnit.getVoxelSize()
+        Logging.info("Got dataunit, voxelSize=",self.voxelSize,kw="iactivepanel")
+        ann=dataUnit.getSettings().get("Annotations")
+        if ann:
+            Logging.info("Got %d annotations"%len(ann),kw="iactivepanel")
+            self.annotations=ann
+            
     def setMaximumSize(self,x,y):
         """
         Method: setMaximumSize(x,y)
@@ -229,7 +365,7 @@ class InteractivePanel(wx.ScrolledWindow):
         
         w*=self.zoomx
         h*=self.zoomy
-        if self.action==1:
+        if self.action==ZOOM_TO_BAND:
             if self.actionstart and self.actionend:
                 x1,y1=self.actionstart
                 x2,y2=self.actionend
@@ -245,9 +381,10 @@ class InteractivePanel(wx.ScrolledWindow):
                 dc.SetPen(wx.Pen(wx.Colour(255,0,0),2))
                 dc.SetBrush(wx.TRANSPARENT_BRUSH)
                 dc.DrawRectangle(x1,y1,d1,d2)
-        if self.scaleBar:
-            x,y=self.scalePos
-            dc.DrawBitmap(self.scaleBar,x,y,True)
+
+        #Logging.info("%d annotations to paint"%len(self.annotations),kw="iactivepanel")
+        for i in self.annotations:
+            i.drawToDC(dc)
         
         dc.EndDrawing()
         self.dc = None
