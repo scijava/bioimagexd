@@ -229,10 +229,10 @@ class MainWindow(wx.Frame):
         
         bmp = wx.Image(os.path.join(iconpath,"open_settings.jpg"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
         tb.DoAddTool(MenuManager.ID_OPEN_SETTINGS,"Open settings",bmp,shortHelp="Open settings")
-#        wx.EVT_TOOL(self,MenuManager.ID_OPEN_SETTINGS,self.onMenuOpenSettings)
+        wx.EVT_TOOL(self,MenuManager.ID_OPEN_SETTINGS,self.onMenuOpenSettings)
         bmp = wx.Image(os.path.join(iconpath,"save_settings.jpg"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
-        tb.DoAddTool(MenuManager.ID_OPEN_SETTINGS,"Save settings",bmp,shortHelp="Save settings")
-#        wx.EVT_TOOL(self,MenuManager.ID_OPEN_SETTINGS,self.onMenuOpenSettings)
+        tb.DoAddTool(MenuManager.ID_SAVE_SETTINGS,"Save settings",bmp,shortHelp="Save settings")
+        wx.EVT_TOOL(self,MenuManager.ID_OPEN_SETTINGS,self.onMenuSaveSettings)
         bmp = wx.Image(os.path.join(iconpath,"tree.jpg"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
         tb.DoAddTool(MenuManager.ID_SHOW_TREE,"File manager",bmp,kind=wx.ITEM_CHECK,shortHelp="Show file management tree")
         wx.EVT_TOOL(self,MenuManager.ID_SHOW_TREE,self.onMenuVisualizer)
@@ -337,10 +337,10 @@ class MainWindow(wx.Frame):
 
         mgr.addMenuItem("file",MenuManager.ID_OPEN,"&Open...\tCtrl-O",self.onMenuOpen)
 
-        mgr.addMenuItem("file",MenuManager.ID_OPEN_SETTINGS,"&Load settings")
-        mgr.addMenuItem("file",MenuManager.ID_SAVE_SETTINGS,"&Save settings")
-        mgr.disable(MenuManager.ID_OPEN_SETTINGS)
-        mgr.disable(MenuManager.ID_SAVE_SETTINGS)
+        mgr.addMenuItem("file",MenuManager.ID_OPEN_SETTINGS,"&Load settings",self.onMenuOpenSettings)
+        mgr.addMenuItem("file",MenuManager.ID_SAVE_SETTINGS,"&Save settings",self.onMenuSaveSettings)
+#        mgr.disable(MenuManager.ID_OPEN_SETTINGS)
+#        mgr.disable(MenuManager.ID_SAVE_SETTINGS)
         
         mgr.addSeparator("file")
         mgr.addSubMenu("file","import","&Import",MenuManager.ID_IMPORT)
@@ -449,15 +449,18 @@ class MainWindow(wx.Frame):
         selectedFiles=self.tree.getSelectedDataUnits()
         dataunit = selectedFiles[0]
         if self.visualizer:
-            self.visualizer.enable(0)
 #            if not self.visualizer.dataUnit:
-            if not self.visualizer.dataUnit or (not self.visualizer.getProcessedMode() and (self.visualizer.dataUnit != dataunit)):
+            hasDataunit=not not self.visualizer.dataUnit
+            if not hasDataunit or (not self.visualizer.getProcessedMode() and (self.visualizer.dataUnit != dataunit)):
                 Logging.info("Setting dataunit for visualizer",kw="main")
                 self.visualizer.setDataUnit(dataunit)
             self.visualizer.setVisualizationMode(mode)
             #self.visualizer.setDataUnit(dataunit)
             self.showVisualization(self.visPanel)
             self.visualizer.enable(1)
+            if hasDataunit:
+                Logging.info("Forcing visualizer update since dataunit has been changed",kw="visualizer")
+                self.visualizer.updateRendering()
             return
         if len(selectedFiles)>1:
             lst=[]
@@ -538,6 +541,21 @@ class MainWindow(wx.Frame):
         self.renderWindow.Show()
         #self.renderWindow.startWizard()
 
+    def onMenuOpenSettings(self,event):
+        """
+        Method: onMenuOpenSettings()
+        Created: 03.11.2004, KP
+        Description: Callback function for menu item "Load settings"
+        """
+        pass
+        
+    def onMenuSaveSettings(self,event):
+        """
+        Method: onMenuSaveSettings()
+        Created: 03.11.2004, KP
+        Description: Callback function for menu item "Save settings"
+        """
+        pass
 
     def onMenuOpen(self,evt):
         """
