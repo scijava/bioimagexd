@@ -52,6 +52,7 @@ import os.path
 import sys
 
 import Modules
+import Annotation
 
 visualizerInstance=None
 
@@ -195,15 +196,28 @@ class Visualizer:
         self.tb.AddSimpleTool(MenuManager.ID_ZOOM_IN,wx.Image(os.path.join("Icons","zoom-in.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Zoom in","Zoom in on the slice")
         self.tb.AddSimpleTool(MenuManager.ID_ZOOM_TO_FIT,wx.Image(os.path.join("Icons","zoom-to-fit.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Zoom to Fit","Zoom the slice so that it fits in the window")
         self.tb.AddSimpleTool(MenuManager.ID_ZOOM_OBJECT,wx.Image(os.path.join("Icons","zoom-object.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Zoom object","Zoom user selected portion of the slice")
+        self.tb.AddSeparator()
+        self.tb.AddSimpleTool(MenuManager.ID_DRAG_ANNOTATION,wx.Image(os.path.join("Icons","arrow.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Manage annotations","Manage annotations on the image")
+        
         self.tb.AddSimpleTool(MenuManager.ID_ADD_SCALE,wx.Image(os.path.join("Icons","scale.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Draw scale","Draw a scale bar on the image")
+        self.tb.AddSeparator()
+        self.tb.AddSimpleTool(MenuManager.ID_ROI_CIRCLE,wx.Image(os.path.join("Icons","circle.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Select circle","Select a circular area of the image")
+        self.tb.AddSimpleTool(MenuManager.ID_ROI_RECTANGLE,wx.Image(os.path.join("Icons","rectangle.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Select rectangle","Select a rectangular area of the image")
+        self.tb.AddSimpleTool(MenuManager.ID_ROI_POLYGON,wx.Image(os.path.join("Icons","polygon.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Select polygon","Select a polygonal area of the image")
 
         wx.EVT_TOOL(self.parent,MenuManager.ID_ZOOM_IN,self.zoomIn)
         wx.EVT_TOOL(self.parent,MenuManager.ID_ZOOM_OUT,self.zoomOut)
         wx.EVT_TOOL(self.parent,MenuManager.ID_ZOOM_TO_FIT,self.zoomToFit)
         wx.EVT_TOOL(self.parent,MenuManager.ID_ZOOM_OBJECT,self.zoomObject)
-        wx.EVT_TOOL(self.parent,MenuManager.ID_ADD_SCALE,self.addScale)
+        wx.EVT_TOOL(self.parent,MenuManager.ID_ADD_SCALE,self.addAnnotation)
+        wx.EVT_TOOL(self.parent,MenuManager.ID_DRAG_ANNOTATION,self.manageAnnotation)
+        
+        wx.EVT_TOOL(self.parent,MenuManager.ID_ROI_CIRCLE,self.addAnnotation)
+        wx.EVT_TOOL(self.parent,MenuManager.ID_ROI_RECTANGLE,self.addAnnotation)
+        wx.EVT_TOOL(self.parent,MenuManager.ID_ROI_POLYGON,self.addAnnotation)
+        
         self.zoomCombo.Bind(wx.EVT_COMBOBOX,self.zoomToComboSelection)
-        self.tb.Realize()
+        self.tb.Realize()            
 
     def zoomObject(self,evt):
         """
@@ -213,13 +227,37 @@ class Visualizer:
         """
         self.currMode.zoomObject()
 
-    def addScale(self,event):
+    def addAnnotation(self,event):
         """
-        Method: addScale()
+        Method: addAnnotation()
         Created: 03.07.2005, KP
         Description: Draw a scale to the visualization
         """
-        self.currMode.drawScale()
+        annclass=None
+        eid=event.GetId()
+        multiple=0
+        if eid==MenuManager.ID_ADD_SCALE:
+            annclass=Annotation.ScaleBar
+        if eid == MenuManager.ID_ROI_CIRCLE:
+            annclass=Annotation.Circle
+        elif eid==MenuManager.ID_ROI_RECTANGLE:
+            annclass=Annotation.Rectangle
+        elif eid==MenuManager.ID_ROI_POLYGON:
+            annclass=Annotation.Polygon
+            multiple=1
+        else:
+            Logging.info("BOGUS ANNOTATION SELECTED!",kw="visualizer")
+                        
+        self.currMode.annotate(annclass,multiple=multiple)
+        
+    def manageAnnotation(self,event):
+        """
+        Method: manageAnnotation()
+        Created: 04.07.2005, KP
+        Description: Manage annotations on the image
+        """
+        self.currMode.manageAnnotation()
+        
 
 
     def zoomOut(self,evt):
