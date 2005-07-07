@@ -59,15 +59,23 @@ class SlicesMode:
         self.dataUnit=None
         self.modules=Modules.DynamicLoader.getTaskModules()
 
-    def drawScale(self):
+    def annotate(self,annclass,**kws):
         """
-        Method: drawScale()
+        Method: annotate(annotationclass)
         Created: 03.07.2005, KP
-        Description: Draw a scale into the preview
+        Description: Add an annotation to the scene
         """
         if self.preview:
-            self.preview.renderpanel.startScale()
+            self.preview.renderpanel.addAnnotation(annclass,**kws)
         
+    def manageAnnotation(self):
+        """
+        Method: manageAnnotation()
+        Created: 03.07.2005, KP
+        Description: Manage annotations on the scene
+        """
+        if self.preview:
+            self.preview.renderpanel.manageAnnotation()
 
     def zoomObject(self):
         """
@@ -128,7 +136,8 @@ class SlicesMode:
         Created: 24.05.2005, KP
         Description: Set the background color
         """      
-        pass
+        if self.preview:
+            self.preview.renderpanel.setBackgroundColor((r,g,b))
   
     def deactivate(self):
         """

@@ -52,7 +52,7 @@ class ColocalizationSettings(DataUnitSettings):
         """
         DataUnitSettings.__init__(self,n)
         
-        self.set("Type","ColocalizationSettings")
+        self.set("Type","Colocalization")
         self.registerCounted("ColocalizationLowerThreshold")
         self.registerCounted("ColocalizationUpperThreshold")
 

@@ -51,10 +51,12 @@ class ResliceSettings(DataUnitSettings):
         """
         DataUnitSettings.__init__(self,n)
         self.register("ResliceXAngle")        
-        self.register("ResliceYAngle")        
+        self.register("ResliceYAngle")
+
         self.register("ResliceZAngle") 
         self.set("ResliceXAngle",0.0)
         self.set("ResliceYAngle",0.0)
         self.set("ResliceZAngle",90.0)
-        self.register("Color")   
+	self.set("Type","Reslice")
+
         

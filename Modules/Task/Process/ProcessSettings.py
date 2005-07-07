@@ -59,7 +59,7 @@ class ProcessSettings(DataUnitSettings):
         self.register("SolitaryHorizontalThreshold")
         self.register("SolitaryVerticalThreshold")
         self.register("SolitaryProcessingThreshold")
-        self.set("Type","ProcessSettings")
+        self.set("Type","Process")
         
         self.registerPrivate("ColorTransferFunction",1)        
         self.registerCounted("Source")

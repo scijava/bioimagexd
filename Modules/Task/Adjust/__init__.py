@@ -10,4 +10,4 @@ def getClass(): return Adjust
 def getConfigPanel(): return AdjustPanel
 def getName(): return "Adjust"
 def getDataUnit(): return AdjustDataUnit
-def getSettingsClass(): return AdjustSettings
+def getSettingsClass(): return AdjustSettings.AdjustSettings

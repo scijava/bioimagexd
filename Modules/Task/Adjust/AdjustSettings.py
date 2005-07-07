@@ -36,6 +36,7 @@ __version__ = "$Revision: 1.21 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 from DataUnit import DataUnitSettings
+import vtk
 
 class AdjustSettings(DataUnitSettings):
     """
@@ -52,7 +53,7 @@ class AdjustSettings(DataUnitSettings):
         DataUnitSettings.__init__(self,n)
         self.registerCounted("IntensityTransferFunctions",1)
         self.register("InterpolationTimepoints")
-        self.set("Type","AdjustSettings")
+        self.set("Type","Adjust")
         
         self.registerPrivate("ColorTransferFunction",1)        
         self.registerCounted("Source")

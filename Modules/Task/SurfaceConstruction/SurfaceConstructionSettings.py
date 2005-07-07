@@ -58,4 +58,4 @@ class ResliceSettings(DataUnitSettings):
 #        self.set("ResliceYAngle",0.0)
 #        self.set("ResliceZAngle",90.0)
 #        self.register("Color")   
-        
+	self.set("Type","SurfaceReconstruction")

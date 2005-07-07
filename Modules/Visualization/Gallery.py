@@ -56,6 +56,34 @@ class GalleryMode:
         self.enabled=1
         self.dataUnit=None
         
+    def annotate(self,annclass,**kws):
+        """
+        Method: annotate(annotationclass)
+        Created: 04.07.2005, KP
+        Description: Add an annotation to the scene
+        """
+        if self.galleryPanel:
+            self.galleryPanel.addAnnotation(annclass,**kws)
+        
+    def manageAnnotation(self):
+        """
+        Method: manageAnnotation()
+        Created: 04.07.2005, KP
+        Description: Manage annotations on the scene
+        """
+        if self.galleryPanel:
+            self.galleryPanel.manageAnnotation()
+
+    def zoomObject(self):
+        """
+        Method: zoomObject()
+        Created: 04.07.2005, KP
+        Description: Zoom to a user selected portion of the image
+        """
+        if self.preview:
+            self.preview.renderpanel.zoomObject()
+                
+        
     def zoomToFit(self):
         """
         Method: zoomToFit()
@@ -114,9 +142,9 @@ class GalleryMode:
         Description: Update the rendering
         """      
         if not self.enabled:
-            print "NOT ENABLED WONT UPDATE GALLERY"
+            Logging.info("Visualizer is disabled, won't update gallery",kw="visualizer")
             return
-        print "Updating gallery..."
+        Logging.info("Updating gallery",kw="visualizer")
         self.galleryPanel.setTimepoint(self.timepoint)
         self.galleryPanel.updatePreview()
         self.galleryPanel.Refresh()
@@ -148,7 +176,6 @@ class GalleryMode:
         """
         self.galleryPanel.setDataUnit(dataUnit)
         self.dataUnit=dataUnit
-        self.galleryPanel.drawScaleBar(10)
         
     def setTimepoint(self,tp):
         """

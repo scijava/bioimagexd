@@ -58,13 +58,60 @@ class SectionsMode:
         self.dataUnit=None
         self.sectionsPanel=None
         
+    def annotate(self,annclass,**kws):
+        """
+        Method: annotate(annotationclass)
+        Created: 04.07.2005, KP
+        Description: Add an annotation to the scene
+        """
+        if self.sectionsPanel:
+            self.sectionsPanel.addAnnotation(annclass,**kws)
+        
+    def manageAnnotation(self):
+        """
+        Method: manageAnnotation()
+        Created: 04.07.2005, KP
+        Description: Manage annotations on the scene
+        """
+        if self.sectionsPanel:
+            self.sectionsPanel.manageAnnotation()
+
+    def zoomObject(self):
+        """
+        Method: zoomObject()
+        Created: 04.07.2005, KP
+        Description: Zoom to a user selected portion of the image
+        """
+        if self.preview:
+            self.preview.renderpanel.zoomObject()
+                
+        
+    def zoomToFit(self):
+        """
+        Method: zoomToFit()
+        Created: 05.06.2005, KP
+        Description: Zoom the dataset to fit the available screen space
+        """
+        if self.sectionsPanel:
+            self.sectionsPanel.zoomToFit()
+    
+    def setZoomFactor(self,factor):
+        """
+        Method: setZoomFactor(factor)
+        Created: 05.06.2005, KP
+        Description: Set the factor by which the image is zoomed
+        """
+        if self.sectionsPanel:
+            self.sectionsPanel.setZoomFactor(factor)        
+        
+        
     def setBackground(self,r,g,b):
         """
         Method: setBackground(r,g,b)
         Created: 24.05.2005, KP
         Description: Set the background color
         """      
-        pass
+        self.sectionsPanel.setBackgroundColor((r,g,b))
     def Render(self):
         """
         Method: Render()
