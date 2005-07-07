@@ -43,13 +43,13 @@ import sys
 
 import RenderingInterface
 
-import Visualization
+import Visualizer
 
 class LightRenderingInterface(RenderingInterface.RenderingInterface):
     """
     Class: LightRenderingInterface
     Created: 28.04.2005, KP
-    Description: The interface between LSM and BioImageXD Visualization for rendering
+    Description: The interface between LSM and BioImageXD Visualizer for rendering
     """
     def __init__(self,dataUnit=None,timePoints=[],**kws):
         """
@@ -129,9 +129,9 @@ class LightRenderingInterface(RenderingInterface.RenderingInterface):
         Description: A method that creates an instance of mayavi
         """    
         raise "createVisualizerWindow"
-        vis=Visualization.VisualizationFrame(self.parent)
+        vis=Visualizer.VisualizationFrame(self.parent)
         if not self.dataUnit:
-            raise "No dataunit given but attempt to create visualization window"
+            raise "No dataunit given but attempt to create Visualizer window"
         vis.setDataUnit(self.dataUnit)
         self.visualizer=vis
         vis.Show()
@@ -145,10 +145,10 @@ class LightRenderingInterface(RenderingInterface.RenderingInterface):
         """
         # Attempt to get a running instance of visualizer
         if not self.visualizer:
-           self.visualizer=Visualization.getVisualizer()
+           self.visualizer=Visualizer.getVisualizer()
            self.visualizer.setDataUnit(self.dataUnit)
            if self.visualizer:
-	       Logging.info("Visualizer is running",kw="visualizer")
+               Logging.info("Visualizer is running",kw="visualizer")
         return (self.visualizer and not self.visualizer.isClosed())
 
 
@@ -183,7 +183,7 @@ class LightRenderingInterface(RenderingInterface.RenderingInterface):
         # If there is no visualizer instance to do the rendering
         # create one
         if not self.isVisualizationSoftwareRunning():
-	    Logging.info("Creating visualizer",kw="visualizer")
+            Logging.info("Creating visualizer",kw="visualizer")
             self.createVisualizerWindow()
         self.visualizer.setTimepoint(self.currentTimePoint)
 
@@ -195,6 +195,6 @@ class LightRenderingInterface(RenderingInterface.RenderingInterface):
         """
         visualizer=self.visualizer
         type=self.type
-	Logging.info("Saving screenshot to ",filename,kw="visualizer")
+        Logging.info("Saving screenshot to ",filename,kw="visualizer")
         comm = "visualizer.getCurrentMode().saveSnapshot(filename)"
         eval(comm)

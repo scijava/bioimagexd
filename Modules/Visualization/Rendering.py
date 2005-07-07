@@ -37,19 +37,19 @@ import wx
 
 import DataUnit
 
-import Visualization.VisualizationFrame as VisualizationFrame
+import Visualizer.VisualizationFrame as VisualizationFrame
 
-import Visualization.VisualizerWindow as VisualizerWindow
+import Visualizer.VisualizerWindow as VisualizerWindow
 
 
 import PreviewFrame
 
-import Visualization.VisualizationModules as vmods
+import Visualizer.VisualizationModules as vmods
 
-import Visualization.ModuleConfiguration as ModuleConfiguration
+import Visualizer.ModuleConfiguration as ModuleConfiguration
 
 import MenuManager
-import Visualization.Lights as Lights
+import Visualizer.Lights as Lights
 
 import Modules
 

@@ -45,7 +45,7 @@ import ImportDialog
 import ExportDialog
 import RenderingInterface
 
-import Visualization
+import Visualizer
 
 import InfoWidget
 import MenuManager
@@ -494,7 +494,7 @@ class MainWindow(wx.Frame):
             
         if not self.visualizer:
             self.visPanel = wx.SashLayoutWindow(self.visWin,-1)
-            self.visualizer=Visualization.Visualizer(self.visPanel,self.menuManager,self)
+            self.visualizer=Visualizer.Visualizer(self.visPanel,self.menuManager,self)
             self.menuManager.setVisualizer(self.visualizer)
             self.visualizer.setProcessedMode(processed)
         self.visualizer.enable(0)

@@ -38,7 +38,7 @@ from Events import *
 import ColorTransferEditor
 import Dialogs
 
-from Visualization.VisualizationModules import *
+from Visualizer.VisualizationModules import *
 
 def getClass():return SurfaceModule
 def getConfigPanel():return SurfaceConfigurationPanel

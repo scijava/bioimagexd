@@ -43,9 +43,6 @@ __date__ = "$Date: 2004/11/17 13:16:50 $"
 import wx
 import RenderingInterface
 
-from mayavi import Common, Base, Sources
-from mayavi.Base import Objects, ModuleManager, DataVizManager
-from mayavi.Sources import VtkDataReader, PLOT3DReader, VRMLImporter, VtkXMLDataReader
 import vtkpython
 
 from vtk.wx.wxVTKRenderWindowInteractor import wxVTKRenderWindowInteractor
@@ -60,9 +57,6 @@ import Logging
 import Dialogs
 
 math = vtk.vtkMath()
-
-debug = Common.debug
-print_err = Common.print_err
 
 class AnimatorPanel:
     """

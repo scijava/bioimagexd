@@ -40,7 +40,7 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 import wx
 import Dialogs
 import RenderingInterface
-import Visualization
+import Visualizer
 import Configuration
 import os,sys
 

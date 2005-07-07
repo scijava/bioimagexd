@@ -37,7 +37,7 @@ import vtk
 from Events import *
 import ColorTransferEditor
 import Dialogs
-from Visualization.VisualizationModules import *
+from Visualizer.VisualizationModules import *
 
 def getClass():return VolumeModule
 def getConfigPanel():return VolumeConfigurationPanel

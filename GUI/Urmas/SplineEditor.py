@@ -50,7 +50,6 @@ import types, os
 import string
 
 import vtk
-from mayavi import Common
 from vtk.util.colors import tomato, banana
 
 import wx

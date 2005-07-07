@@ -32,7 +32,6 @@ __version__ = "$Revision: 1.21 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 import vtk
-import mayavi
 import math
 import os.path
 import Logging

@@ -32,7 +32,7 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 import wx
 
 import vtk
-from Visualization.VisualizationModules import *
+from Visualizer.VisualizationModules import *
 
 
 def getClass():return AxesModule
