@@ -55,7 +55,6 @@ class PreviewPanel(InteractivePanel.InteractivePanel):
         self.bmp=None
         self.scroll=scroll
         Logging.info("preview panel size=",size,kw="preview")
-        
         self.yielding=0
         x,y=size
         self.buffer = wx.EmptyBitmap(x,y)
@@ -76,10 +75,7 @@ class PreviewPanel(InteractivePanel.InteractivePanel):
         self.scrollsize=32
         self.singleslice=0
         self.scrollTo=None
-        self.scaleBar = None
-        self.scaleBarWidth = 0
-        self.voxelSize=(1,1,1)
-        InteractivePanel.InteractivePanel.__init__(self,parent,size,**kws)
+        InteractivePanel.InteractivePanel.__init__(self,parent,size=size,**kws)
         
         self.paintPreview()
         self.Bind(wx.EVT_PAINT,self.OnPaint)
@@ -135,18 +131,6 @@ class PreviewPanel(InteractivePanel.InteractivePanel):
         Logging.info("Maximum size for preview is (%d,%d)"%(x,y),kw="preview")
         self.maxX,self.maxY=x,y
                 
-    def getScrolledXY(self,x,y):
-        """
-        Method: getScrolledXY(x,y)
-        Created: 24.03.2005, KP
-        Description: Returns the x and y coordinates moved by the 
-                     x and y scroll offset
-        """
-        tpl=self.CalcUnscrolledPosition(x,y)
-        if self.zoomFactor==1:
-            return tpl
-        else:
-            return [int(float(x)/self.zoomFactor) for x in tpl]
         
     def resetScroll(self):
         """
@@ -166,7 +150,7 @@ class PreviewPanel(InteractivePanel.InteractivePanel):
             f=10
         Logging.info("Setting zoom factor to ",f,kw="preview")
         self.zoomFactor=f
-        self.drawScaleBar(self.scaleBarWidth,self.voxelSize)
+        self.updateAnnotations()
         self.Scroll(0,0)
         
     def zoomToFit(self):
@@ -228,7 +212,7 @@ class PreviewPanel(InteractivePanel.InteractivePanel):
             z=0
         if not self.imagedata:
             Logging.info("No imagedata to preview",kw="preview")
-            Logging.backtrace()
+            return
         else:
             self.slice=ImageOperations.vtkImageDataToWxImage(self.imagedata,z)
         Logging.info("Painting preview",kw="preview")
@@ -242,8 +226,10 @@ class PreviewPanel(InteractivePanel.InteractivePanel):
         Created: 24.03.2005, KP
         Description: Updates the scroll settings
         """
-        Logging.info("Updating scroll settings (size %d,%d)"%(self.bmp.GetWidth(),self.bmp.GetHeight()),kw="preview")
+        if not self.bmp:
+            return
         if self.bmp:
+            Logging.info("Updating scroll settings (size %d,%d)"%(self.bmp.GetWidth(),self.bmp.GetHeight()),kw="preview")
             self.setScrollbars(self.bmp.GetWidth()*self.zoomx,self.bmp.GetHeight()*self.zoomy)       
         if self.scrollTo:
             x,y=self.scrollTo
@@ -296,10 +282,10 @@ class PreviewPanel(InteractivePanel.InteractivePanel):
         dc.BeginDrawing()
 
         dc.DrawBitmap(bmp,0,0,True)
-        w,h=bmp.GetWidth(),bmp.GetHeight()
-        self.bmp=bmp
+        self.bmp=self.buffer
         
         InteractivePanel.InteractivePanel.paintPreview(self)
+
         
         dc.EndDrawing()
         self.dc = None

@@ -80,6 +80,7 @@ class PreviewFrame(wx.Panel):
         self.show["SCROLL"]=1
         self.modeChoice = None
         self.zoomx,self.zoomy=1,1
+        Logging.info("kws=",kws,kw="preview")
         if not parentwin:
             parentwin=parent
         self.parentwin=parentwin
@@ -87,6 +88,7 @@ class PreviewFrame(wx.Panel):
             self.show["ZSLIDER"]=kws["zslider"]
         if kws.has_key("previewsize"):
             size=kws["previewsize"]
+            Logging.info("Got previewsize=",size,kw="preview")
         if kws.has_key("pixelvalue"):
             self.show["PIXELS"]=kws["pixelvalue"]
         if kws.has_key("timeslider"):
@@ -109,7 +111,7 @@ class PreviewFrame(wx.Panel):
         # They are used when getting the value of a pixel
         self.currentImage=None
         self.currentCt=None
-
+        Logging.info("Creating preview panel with size=",size,kw="preview")
         self.renderpanel = PreviewPanel.PreviewPanel(self,size=size,scroll=self.show["SCROLL"],zoomx=self.zoomx,zoomy=self.zoomy)
         self.sizer.Add(self.renderpanel,(0,0))
         
@@ -303,6 +305,8 @@ class PreviewFrame(wx.Panel):
         """
         self.dataUnit=dataUnit
         self.settings = dataUnit.getSettings()
+        self.renderpanel.setDataUnit(self.dataUnit)
+        
         try:
             count=dataUnit.getLength()
             x,y,z=dataUnit.getDimensions()
@@ -330,7 +334,6 @@ class PreviewFrame(wx.Panel):
         y*=self.zoomy
         Logging.info("Setting renderpanel to %d,%d"%(x,y),kw="preview")
         self.renderpanel.SetSize((x,y))
-        self.renderpanel.Layout()
         
 
         if selectedItem!=-1:
@@ -346,12 +349,14 @@ class PreviewFrame(wx.Panel):
                 #print "Factor = ",self.zoomFactor
                 self.renderpanel.setZoomFactor(self.zoomFactor)
                 self.updatePreview(1)
+        
 
-        self.renderpanel.drawScaleBar(10,self.dataUnit.getSourceDataUnits()[0].getVoxelSize())
-
+        self.renderpanel.Layout()
         self.Layout()
+        self.parent.Layout()
         self.sizer.Fit(self)
-        self.sizer.SetSizeHints(self)
+        self.updatePreview(1)
+        #self.sizer.SetSizeHints(self)
 
     def updatePreview(self,renew=1):
         """

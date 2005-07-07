@@ -103,6 +103,7 @@ class IntegratedPreview(PreviewFrame):
                      pressed down on this item
         """      
         self.PopupMenu(self.menu,event.GetPosition())
+        event.Skip()
         
     def setPreviewType(self,event):
         """

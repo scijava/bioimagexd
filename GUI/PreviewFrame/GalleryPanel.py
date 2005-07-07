@@ -39,8 +39,9 @@ import vtk
 
 import math
 import Logging
+import InteractivePanel
 
-class GalleryPanel(wx.ScrolledWindow):
+class GalleryPanel(InteractivePanel.InteractivePanel):
     """
     Class: GalleryPanel
     Created: 23.05.2005, KP
@@ -56,10 +57,11 @@ class GalleryPanel(wx.ScrolledWindow):
         self.visualizer=visualizer
         self.bmp=None
         self.bgcolor=(127,127,127)
-	Logging.info("Size of gallery =",size,kw="preview")
+        Logging.info("Size of gallery =",size,kw="preview")
         self.enabled=1
         self.slices=[]
-        
+        self.zoomx=1
+        self.zoomy=1
         if kws.has_key("slicesize"):
             self.sliceSize=kws["slicesize"]
         else:
@@ -69,35 +71,31 @@ class GalleryPanel(wx.ScrolledWindow):
         x,y=size
         self.paintSize=size
         self.buffer = wx.EmptyBitmap(x,y)
-        wx.ScrolledWindow.__init__(self,parent,-1,size=size,**kws)
+        #wx.ScrolledWindow.__init__(self,parent,-1,size=size,**kws)
+        InteractivePanel.InteractivePanel.__init__(self,parent,size=size,**kws)
         self.size=size
         self.sizeChanged=0
         self.rows=0
         self.cols=0
         self.scrollsize=32
         self.scrollTo=None
+        self.drawableRects=[]
         self.dataUnit=None
         
-        self.scaleBar = None
-        self.scaleBarWidth = 0
         self.voxelSize=(0,0,0)
-
         
         self.timepoint=0
         self.paintPreview()
         self.Bind(wx.EVT_PAINT,self.OnPaint)
         self.Bind(wx.EVT_SIZE,self.onSize)
         
-    def drawScaleBar(self,width):
+    def getDrawableRectangles(self):
         """
-        Method: drawScaleBar(width,voxelsize)
-        Created: 05.06.2005, KP
-        Description: Draw a scale bar of given size
+        Method: getDrawableRectangles()
+        Created: 04.07.2005, KP
+        Description: Return the rectangles can be drawn on as four-tuples
         """    
-        self.scaleBarWidth = width
-        f=self.sliceSize[0]/float(self.dims[0])
-	Logging.info("Scale factor for gallery=",f,kw="preview")
-        self.scaleBar = ImageOperations.drawScaleBar(64,0,self.voxelSize,(0,0,0),f)
+        return self.drawableRects
         
     def zoomToFit(self):
         """
@@ -113,6 +111,8 @@ class GalleryPanel(wx.ScrolledWindow):
         Created: 05.06.2005, KP
         Description: Set the factor by which the image is zoomed
         """
+        self.zoomFactor=factor
+        self.updateAnnotations()
         x,y=self.originalSliceSize
         x*=factor
         y*=factor        #for preview in [self.xypreview,self.xzpreview,self.yzpreview]:
@@ -123,9 +123,9 @@ class GalleryPanel(wx.ScrolledWindow):
 
         self.sliceSize=(x,y)
         self.slices=[]
-        self.drawScaleBar(self.scaleBarWidth)
         self.updatePreview()
         self.Refresh()
+        
 
     def setBackground(self,r,g,b):
         """
@@ -142,7 +142,7 @@ class GalleryPanel(wx.ScrolledWindow):
         Description: Size event handler
         """    
         self.size=event.GetSize()
-	Logging.info("Gallery size changed to ",self.size,kw="preview")
+        Logging.info("Gallery size changed to ",self.size,kw="preview")
         self.sizeChanged=1
 
     def setDataUnit(self,dataunit):
@@ -157,6 +157,7 @@ class GalleryPanel(wx.ScrolledWindow):
         
         self.dims=dataunit.getDimensions()
         self.voxelSize=dataunit.getVoxelSize()
+        InteractivePanel.InteractivePanel.setDataUnit(self,dataunit)
         #self.imagedata=image
         
         
@@ -170,7 +171,7 @@ class GalleryPanel(wx.ScrolledWindow):
         if self.visualizer.getProcessedMode():
             image=self.dataUnit.doPreview(-2,1,self.timepoint)
             ctf = self.dataUnit.getSourceDataUnits()[0].getColorTransferFunction()
-	    Logging.info("Using ",image,"for gallery",kw="preview")
+            Logging.info("Using ",image,"for gallery",kw="preview")
         else:
             image=self.dataUnit.getTimePoint(timepoint)
             ctf=self.dataUnit.getColorTransferFunction()
@@ -221,7 +222,7 @@ class GalleryPanel(wx.ScrolledWindow):
         self.cols=xreq
             
         self.paintSize=(x,y)
-	Logging.info("paintSize=",self.paintSize,kw="preview")
+        Logging.info("paintSize=",self.paintSize,kw="preview")
         
         self.setScrollbars(x,y)
 
@@ -329,7 +330,7 @@ class GalleryPanel(wx.ScrolledWindow):
             self.dc = None
             return
         row,col=0,0
-
+    
         for slice in self.slices:
             w,h=self.sliceSize
             slice.Rescale(w,h)
@@ -343,12 +344,16 @@ class GalleryPanel(wx.ScrolledWindow):
             if col>=self.cols:
                 col=0
                 row+=1
+                
+            # Mark the rectangle as drawable
+            x0,x1=x,x+w
+            y0,y1=y,y+h
+            self.drawableRects.append((x0,x1,y0,y1))
         
         y=9+(self.rows)*(3+self.sliceSize[1])
-        if self.scaleBar:
-            Logging.info("Drawing scalebar at ",5,y-40,kw="preview")
-            dc.DrawBitmap(self.scaleBar,12,y-30,True)
+        self.bmp=self.buffer
 
+        InteractivePanel.InteractivePanel.paintPreview(self)
 
         dc.EndDrawing()
         self.dc = None
