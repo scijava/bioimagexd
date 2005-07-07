@@ -41,6 +41,10 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 import vtk
 import ImageOperations
 import pickle
+import Logging
+import zlib
+import Modules
+import ConfigParser
 
 class DataUnitSettings:
     """
@@ -68,6 +72,7 @@ class DataUnitSettings:
         self.private={}
         self.isPrivate={}
         self.type=None
+        self.modules=Modules.DynamicLoader.getTaskModules()
         self.dataunit = None
         self.channels = 0
         self.timepoints = 0
@@ -75,10 +80,11 @@ class DataUnitSettings:
             self.setType(kws["type"])
         self.n=n
         self.serialized={}
-        self.registerPrivate("ColorTransferFunction",1)        
+        self.registerPrivate("ColorTransferFunction",serialize=1)
         self.register("PreviewedDataset")
         self.set("PreviewedDataset",-1)
-        self.register("SourceCount")
+        self.register("Annotations",serialize=1)
+#        self.register("SourceCount")
         self.registerCounted("Source")
         self.register("VoxelSize")
         self.register("Spacing")
@@ -170,47 +176,50 @@ class DataUnitSettings:
         """    
         if not self.get("Type"):
             type=parser.get("Type","Type")
-            obj=eval(type)(self.n)
+            settingsclass=self.modules[type][2].getSettingsClass()
+            
+            #obj=eval(type)(self.n)
+            obj=settingsclass(self.n)
             obj.setType(type)
             return obj.readFrom(parser)
         
         for key in self.registered.keys():
             ser=self.serialized[key]
-            if ser:print "is %s serialized: %s"%(key,ser)
+            if ser:
+                Logging.info("is %s serialized: %s"%(key,ser),kw="dataunit")
             if key in self.counted:
                 try:
                     n=parser.get("Count",key)
                 except:
-                    print "Got no count for %s"%key
+                    Logging.info("Got no key count for %s"%key,kw="dataunit")
                     continue
                 n=int(n)
-                print "Got %d keys for %s"%(n,key)
+                Logging.info("Got %d keys for %s"%(n,key),kw="dataunit")
                 
                 for i in range(n):
                     ckey="%s[%d]"%(key,i)
+                    #try:
                     try:
                         value=parser.get(key,ckey)
                         if ser:
-                            value=self.deserialize(okey,value)
-                            print "deserialized",value
-                        self.set(ckey,value)
+                            value=self.deserialize(key,value)
+                            Logging.info("Deserialized ",key,"=",value,kw="dataunit")
+                        self.setCounted(key,i,value)
                         self.counted[key]=i
-                    except:
-                        pass
+                    except ConfigParser.NoSectionError:
+                        Logging.info("Got no keys for section %s"%key,kw="dataunit")
             else:
                 #value=parser.get("ColorTransferFunction","ColorTransferFunction")
                 try:
-                    #print "Trying to read %s"%key
-                    #print "has section:%s"%parser.has_section(key)
                     value=parser.get(key,key)
-                    #print "Got ",value
                     
                     if ser:
+                        Logging.info("Trying to deserialize ",key,value,kw="dataunit")
                         value=self.deserialize(key,value)
-                        print "deserialized",key,value
+                        Logging.info("Deserialized ",key,"=",value,kw="dataunit")
                     self.set(key,value)
-                except:
-                    pass
+                except ConfigParser.NoSectionError:
+                    Logging.info("Got no keys for section %s"%key,kw="dataunit")
         return self
                 
     def writeKey(self,key,parser,n=-1):
@@ -337,18 +346,23 @@ class DataUnitSettings:
         Description: Returns the value of a given key in a format
                      that can be written to disk.
         """
-        print "serializing name=",name
+        Logging.info("Serializing name ",name,kw="dataunit")
         if "ColorTransferFunction" in name:
             s=ImageOperations.lutToString(value)
             s2=""
             for i in s:
                 s2+=repr(i)
             return s2
-
+        # Annotations is a list of classes that can easily be
+        # pickled / unpickled
+        if "Annotations" in name:
+            Logging.info("Pickling %d annotations"%len(value),kw="dataunit")
+            s=pickle.dumps(value,protocol=pickle.HIGHEST_PROTOCOL)
+            s=zlib.compress(s)
+            return s
+            
         if name not in ["IntensityTransferFunction","IntensityTransferFunctions","AlphaTransferFunction"]:
             return str(value)
-            
-            
             
         val=ImageOperations.getAsParameterList(value)
         return str(val)
@@ -359,13 +373,20 @@ class DataUnitSettings:
         Created: 27.03.2005
         Description: Returns the value of a given key
         """
-        #print "deserialize(%s,...)"%name    
+        print "deserialize",name
         if "ColorTransferFunction" in name:
-            data=eval(value)   
-            
+            data=eval(value)            
             ctf=vtk.vtkColorTransferFunction()
             ImageOperations.loadLUTFromString(data,ctf)
             return ctf
+        # Annotations is a list of classes that can easily be
+        # pickled / unpickled
+        if "Annotations" in name:
+            Logging.info("deserializing Annotations",kw="dataunit")
+            val=zlib.decompress(value)
+            val=pickle.loads(val)
+            Logging.info("unpickled %d annotations"%len(val),kw="dataunit")
+            return val
         if name not in ["IntensityTransferFunction","IntensityTransferFunctions","AlphaTransferFunction"]:
             return eval(value)
         tf=vtk.vtkIntensityTransferFunction()

@@ -54,6 +54,21 @@ class CombinedDataUnit(DataUnit.DataUnit):
         self.settings = settingclass()
         self.byName={}
         self.module = None
+        
+    def getDimensions(self): 
+        if self.sourceunits:
+            return self.sourceunits[0].getDimensions()
+    def getSpacing(self): 
+        if self.sourceunits:
+            return self.sourceunits[0].getSpacing()
+    def getVoxelSize(self): 
+        if self.sourceunits:
+            return self.sourceunits[0].getVoxelSize()
+    def getBitDepth(self): 
+        if self.sourceunits:
+            return self.sourceunits[0].getBitDepth()
+
+
     
     def setModule(self,module):
         """
@@ -326,6 +341,7 @@ class CombinedDataUnit(DataUnit.DataUnit):
             self.module.setSettings(self.settings)
             self.module.setTimepoint(timePoint)
             for dataunit in self.sourceunits:
+                Logging.info("Adding source image data",kw="dataunit")
                 image=dataunit.getTimePoint(timePoint)
                 self.module.addInput(dataunit,image)
 
