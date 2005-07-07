@@ -1,25 +1,9 @@
 # -*- coding: iso-8859-1 -*-
 """
  Unit: DataSource.py
- Project: Selli
+ Project: BioImageXD
  Created: 03.11.2004, JM
  Description: Classes for managing 4D data located on disk
-
- Modified:  04.11.2004 JM - Fixed a few bugs and implemented a few methods
-
-            09.11.2004 JM
-            - modified: VtiDataSource.__init__()
-            - added: VtiDataSource.LoadFromDuFile()
-
-            10.11.2004 JM - numerous bug fixes made and compliance with class 
-                            diagrams checked
-            10.11.2004 KP, JM - DataSource gets the vtkImageData objects from 
-                                CombinedDataUnit and writes them to disk
-            17.11.2004 KP, JM - loadFromDuFile() now returns a dataunit of the 
-                                type specified in the .du file
-
-            26.11.2004 JM - More comments added
-            11.01.2005 JV - Added comments
 
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
@@ -40,7 +24,7 @@
 
 """
 
-__author__ = "Selli Project <http://sovellusprojektit.it.jyu.fi/selli/>"
+__author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.37 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
@@ -253,7 +237,7 @@ class VtiDataSource(DataSource):
             self.dataSets.append(filename)
             Logging.info("dataset[%d]=%s"%(i,self.dataSets[i]))
 
-        dataunitclass=DataUnit.DataUnit.DataUnit
+        dataunitclass=DataUnit.DataUnit
 
         # If everything went well, we create a new DataUnit-instance of the
         # correct subclass, so that the DataUnit-instace can take over and
