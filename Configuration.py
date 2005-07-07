@@ -92,7 +92,7 @@ class Configuration:
         fp.close()
         
     def insertModuleDirectories(self):
-        self.insertPath(self.getPath("LSM"))
+        self.insertPath(self.getPath("lib"))
         self.insertPath(self.getPath("GUI"))
         self.insertPath(self.getPath("Libraries"))
         
