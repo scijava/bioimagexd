@@ -3,15 +3,11 @@
 
 """
  Unit: Main.py
- Project: Selli
+ Project: BioImageXD
  Created: 01.11.2004, KP
  Description:
 
- Main program for the LSM Module
-
- Modified: 03.11.2004 KP - Added the LSMApplication class to encapsulate Tk root
-                           creation
-           10.1.2005 KP - Changed class to use wxPython classes
+ BioImageXD main program
 
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
@@ -31,7 +27,7 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 """
-__author__ = "Selli Project <http://sovellusprojektit.it.jyu.fi/selli/>"
+__author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.22 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
