@@ -75,8 +75,7 @@ class InfoWidget(wx.Panel):
         """
         wx.Panel.__init__(self,master,-1,**kws)
         self.mainsizer=wx.GridBagSizer(5,5)
-
-        
+        Logging.info("Creating previewframe for infowidget...",kw="preview")
         self.preview=PreviewFrame.IntegratedPreview(self,
         previewsize=(384,384),pixelvalue=False,renderingpreview=False,
         zoom=False,zslider=False,timeslider=False,scrollbars=False,zoom_factor=PreviewFrame.ZOOM_TO_FIT)
