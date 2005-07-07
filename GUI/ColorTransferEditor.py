@@ -8,8 +8,6 @@
  A widget used to view and modify a color transfer function. The widget
  draws the graph of the function and allows the user to modify the function.
 
- Modified: 16.04.2005 KP - Created the module
-
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
 
@@ -44,8 +42,8 @@ import wx.lib.colourselect as csel
 if __name__=='__main__':
     import sys
         
-    sys.path.append(os.path.normpath(os.path.join(os.getcwd(),"LSM")))
-    sys.path.append(os.path.normpath(os.path.join(os.getcwd(),"../LSM")))
+    sys.path.append(os.path.normpath(os.path.join(os.getcwd(),"..")))
+    sys.path.append(os.path.normpath(os.path.join(os.getcwd(),"../lib")))
     sys.path.insert(0,os.path.normpath(os.path.join(os.getcwd(),"../Libraries/VTK/bin")))
     sys.path.insert(0,os.path.normpath(os.path.join(os.getcwd(),"../Libraries/VTK/Wrapping/Python")))
 
@@ -401,10 +399,10 @@ class ColorTransferEditor(wx.Panel):
         self.colorBtn = csel.ColourSelect(self,-1,"")
         self.colorBtn.Bind(csel.EVT_COLOURSELECT,self.onSetToColor)
 
-        open = wx.Image(os.path.join(iconpath,"open.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap()
-        save = wx.Image(os.path.join(iconpath,"save.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap()
-        self.openBtn = wx.BitmapButton(self,-1,open)
-        self.saveBtn = wx.BitmapButton(self,-1,save)
+        openGif = wx.Image(os.path.join(iconpath,"open.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap()
+        saveGif = wx.Image(os.path.join(iconpath,"save.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap()
+        self.openBtn = wx.BitmapButton(self,-1,openGif)
+        self.saveBtn = wx.BitmapButton(self,-1,saveGif)
         
         self.itemBox.Add(self.redBtn)
         self.itemBox.Add(self.greenBtn)
