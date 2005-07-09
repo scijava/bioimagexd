@@ -1,0 +1,276 @@
+/*=========================================================================
+
+  Program:   BioImageXD
+  Module:    $RCSfile: vtkImageColocalizationFilter.cxx,v $
+
+ Copyright (C) 2005  BioImageXD Project
+ See CREDITS.txt for details
+
+ This program is free software; you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation; either version 2 of the License, or
+ (at your option) any later version.
+
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with this program; if not, write to the Free Software
+ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+
+=========================================================================*/
+#include "vtkImageColocalizationFilter.h"
+
+#include "vtkImageData.h"
+#include "vtkObjectFactory.h"
+#include "vtkImageProgressIterator.h"
+
+vtkCxxRevisionMacro(vtkImageColocalizationFilter, "$Revision: 1.25 $");
+vtkStandardNewMacro(vtkImageColocalizationFilter);
+
+//----------------------------------------------------------------------------
+vtkImageColocalizationFilter::vtkImageColocalizationFilter()
+{
+    this->OutputDepth = 8;
+    this->LeastVoxelsOverThreshold = 0;
+    this->ColocalizationAmount = 0;
+    this->NumberOfDatasets = 8;
+    this->ColocalizationLowerThresholds = new int[this->NumberOfDatasets];
+    this->ColocalizationUpperThresholds = new int[this->NumberOfDatasets];
+    for(int i = 0; i < this->NumberOfDatasets; i++) {
+        this->ColocalizationUpperThresholds[i]=255;
+        this->ColocalizationLowerThresholds[i]=0;
+    }
+}
+
+void vtkImageColocalizationFilter::SetColocalizationLowerThreshold(int dataset, int threshold) {
+    int *NewThresholds;
+    if (this->NumberOfDatasets < dataset) {
+            
+            NewThresholds = new int[this->NumberOfDatasets *2];
+            
+            for(int i = 0; i< this->NumberOfDatasets ; i++) {
+                NewThresholds[i] = this->ColocalizationLowerThresholds[i];
+            }
+            for(int i = this->NumberOfDatasets; i < this->NumberOfDatasets*2; i++) {
+                NewThresholds[i]=0;
+            }
+            this->NumberOfDatasets *= 2;
+            delete[] this->ColocalizationLowerThresholds;
+            this->ColocalizationLowerThresholds = NewThresholds;
+    }
+    this->ColocalizationLowerThresholds[dataset] = threshold;
+}
+void vtkImageColocalizationFilter::SetColocalizationUpperThreshold(int dataset, int threshold) {
+    int *NewThresholds;
+    if (this->NumberOfDatasets < dataset) {
+            
+            NewThresholds = new int[this->NumberOfDatasets *2];
+            
+            for(int i = 0; i< this->NumberOfDatasets ; i++) {
+                NewThresholds[i] = this->ColocalizationUpperThresholds[i];
+            }
+            for(int i = this->NumberOfDatasets; i < this->NumberOfDatasets*2; i++) {
+                NewThresholds[i]=0;
+            }
+            this->NumberOfDatasets *= 2;
+            delete[] this->ColocalizationUpperThresholds;
+            this->ColocalizationUpperThresholds = NewThresholds;
+    }
+    this->ColocalizationUpperThresholds[dataset] = threshold;
+}
+
+//----------------------------------------------------------------------------
+vtkImageColocalizationFilter::~vtkImageColocalizationFilter()
+{
+        delete[] this->ColocalizationLowerThresholds;
+        delete[] this->ColocalizationUpperThresholds;
+}
+
+//----------------------------------------------------------------------------
+void vtkImageColocalizationFilter::ExecuteInformation(vtkImageData **inputs, 
+                                        vtkImageData *output)
+{
+  vtkImageMultipleInputFilter::ExecuteInformation(inputs,output);
+ 
+}
+
+
+
+//----------------------------------------------------------------------------
+// This templated function executes the filter for any type of data.
+template <class T>
+void vtkImageColocalizationFilterExecute(vtkImageColocalizationFilter *self, int id,int NumberOfInputs, 
+                           vtkImageData **inData,vtkImageData*outData,int outExt[6],
+                            T*)
+{
+    int i;
+    int inIncX,inIncY,inIncZ;
+    int outIncX,outIncY,outIncZ;
+    int maxX,maxY,maxZ;
+    int idxX,idxY,idxZ;
+
+    double S[2], Scoloc[2];
+    S[0]=Scoloc[0]=S[1]=Scoloc[1]=0;
+    double S2[2],SS;
+    S2[0]=S2[1]=SS=0;
+    
+    
+    int ColocalizationAmount = 0, LeastVoxelsOverThreshold = 0;
+
+    int *ColocThresholds = self->GetColocalizationLowerThresholds();
+    int *UpperThresholds = self->GetColocalizationUpperThresholds();
+    int BitDepth = self->GetOutputDepth();
+    int *ColocVoxels;
+    T** inPtrs;
+    T* outPtr;
+    ColocVoxels = new int[NumberOfInputs];
+    inPtrs=new T*[NumberOfInputs];
+    printf("outext=[%d,%d,%d,%d,%d,%d]\n",outExt[0],outExt[1],outExt[2],outExt[3],outExt[4],outExt[5]);
+    for(i=0; i < NumberOfInputs; i++) {
+        inPtrs[i]=(T*)inData[i]->GetScalarPointerForExtent(outExt);
+        ColocVoxels[i] = 0;
+    }
+    outPtr=(T*)outData->GetScalarPointerForExtent(outExt);
+    
+    
+    inData[0]->GetContinuousIncrements(outExt,inIncX, inIncY, inIncZ);
+    outData->GetContinuousIncrements(outExt,outIncX, outIncY, outIncZ);
+    maxX = outExt[1] - outExt[0];
+    maxY = outExt[3] - outExt[2];
+    maxZ = outExt[5] - outExt[4];
+    
+    T currScalar = 0, ColocalizationScalar = 0;
+    int maxval = 0, n = 0;
+    char colocFlag = 0;
+    double mul=0;
+    maxval=int(pow(2,8*sizeof(T)))-1;
+    printf("Colocalization depth = %d, maxval=%d\n",BitDepth,maxval);
+    
+    for(idxZ = 0; idxZ <= maxZ; idxZ++ ) {
+        for(idxY = 0; idxY <= maxY; idxY++ ) {
+          for(idxX = 0; idxX <= maxX; idxX++ ) {
+            currScalar = n = 0;
+            colocFlag = 1;
+            mul = 1;
+            for(i=0; i < NumberOfInputs; i++ ) {
+                currScalar = *inPtrs[i]; 
+                S[i] += currScalar;
+                S2[i] += currScalar*currScalar;
+                mul *= currScalar;
+                if(currScalar > ColocThresholds[i] && currScalar < UpperThresholds[i]) {
+                    ColocVoxels[i]++;
+                    ColocalizationScalar += currScalar;
+                    Scoloc[i] += currScalar;
+                    n++;
+                } else {
+                    colocFlag = 0;
+                }
+                inPtrs[i]++;
+            }
+            SS+=mul;
+            ColocalizationAmount += colocFlag;
+            if(colocFlag > 0) {
+                
+                if (BitDepth == 1 ) ColocalizationScalar = maxval;
+                if (BitDepth == 8 ) ColocalizationScalar /= n;
+                if(ColocalizationScalar > maxval) ColocalizationScalar=maxval;
+                
+            } else ColocalizationScalar = 0;
+            
+            *outPtr = ColocalizationScalar;
+            outPtr++;
+          }
+          for(i=0; i < NumberOfInputs; i++ ) {
+              inPtrs[i]+=inIncY;
+          }
+          outPtr += outIncY;
+        }  
+        for(i=0; i < NumberOfInputs; i++ ) {
+          inPtrs[i]+=inIncZ;
+        }
+        outPtr += outIncZ;      
+    }
+    printf("total=%d*%d*%d\n",outExt[1],outExt[3],outExt[5]);
+    int totalVoxels = outExt[1]*outExt[3]*outExt[5];
+    double Saver[2];
+    Saver[0] = S[0] / totalVoxels;
+    Saver[1] = S[1] / totalVoxels;
+    // Assume that every voxel was colocalizing
+    LeastVoxelsOverThreshold = totalVoxels;
+    // Then find out what was the real lowest count of colocalized voxels
+    for (i=0; i  < NumberOfInputs; i++) {
+        if (ColocVoxels[i] < LeastVoxelsOverThreshold) LeastVoxelsOverThreshold = ColocVoxels[i];
+    }
+    delete[] ColocVoxels;
+    self->SetLeastVoxelsOverThreshold(LeastVoxelsOverThreshold);
+    self->SetColocalizationAmount(ColocalizationAmount);
+    
+    
+    double K = (S[0]*S[1])/(S[0]*S[0]);
+    self->SetOverlapCoefficientK1(K);
+    K = (S[0]*S[1])/(S[1]*S[1]);
+    self->SetOverlapCoefficientK2(K);
+    
+    double M = Scoloc[0]/S[0];
+    self->SetColocalizationCoefficientM1(M);
+    M = Scoloc[1]/S[1];
+    self->SetColocalizationCoefficientM2(M);
+
+    delete[] inPtrs;
+    double sumX=S2[0]- (S[0]*S[0])/totalVoxels;
+    double sumY=S2[1]- (S[1]*S[1])/totalVoxels;
+    double R = ( SS - (S[0]*S[1])/ totalVoxels )/ (sqrt(sumX*sumY));
+    self->SetPearsonsCorrelation(R);
+    R = (S[0]*S[1])/sqrt(S[0]*S[0]*S[1]*S[1]);
+    self->SetOverlapCoefficient(R);
+
+}
+//----------------------------------------------------------------------------
+// This method is passed a input and output regions, and executes the filter
+// algorithm to fill the output from the inputs.
+// It just executes a switch statement to call the correct function for
+// the regions data types.
+void vtkImageColocalizationFilter::ThreadedExecute(vtkImageData **inData, 
+                                     vtkImageData *outData,
+                                     int outExt[6], int id)
+{
+  int idx1;
+  int inExt[6], cOutExt[6];
+
+  switch (inData[0]->GetScalarType())
+  {
+  vtkTemplateMacro7(vtkImageColocalizationFilterExecute, this, id, 
+                    this->NumberOfInputs,inData, 
+                    outData, outExt,static_cast<VTK_TT *>(0));
+  default:
+    vtkErrorMacro(<< "Execute: Unknown ScalarType");
+  return;
+  }    
+    
+}
+
+
+
+//----------------------------------------------------------------------------
+void vtkImageColocalizationFilter::PrintSelf(ostream& os, vtkIndent indent)
+{
+  this->Superclass::PrintSelf(os, indent);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
