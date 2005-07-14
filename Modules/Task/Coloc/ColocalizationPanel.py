@@ -35,7 +35,8 @@ __date__ = "$Date: 2005/01/13 14:52:39 $"
 import os.path
 import csv
 import time
-from enthought.tvtk import messenger
+#from enthought.tvtk import messenger
+import messenger
 import Dialogs
 from GUI import Events
 from PreviewFrame import *

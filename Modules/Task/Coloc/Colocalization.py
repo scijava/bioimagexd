@@ -33,7 +33,8 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 import vtk
 import time
-from enthought.tvtk import messenger
+#from enthought.tvtk import messenger
+import messenger
 from Module import *
 
 class Colocalization(Module):
