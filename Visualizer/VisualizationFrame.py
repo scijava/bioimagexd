@@ -35,7 +35,6 @@ import time
 
 import vtk
 from vtk.wx.wxVTKRenderWindowInteractor import wxVTKRenderWindowInteractor
-from GUI import Events
 import Dialogs
 import  wx.lib.colourselect as  csel
 import wx.lib.scrolledpanel as scrolled
@@ -382,7 +381,7 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
         self.confPanel.setColor((255,255,255),(0,0,0))
         
         print "panel=",panel
-        self.currentConf=panel(self,self.visualizer,lbl,mode=self.mode)
+        self.currentConf=panel(self,self.visualizer,lbl)#,mode=self.mode)
      
         self.sizer.Add(self.currentConf,(6,0))
         #self.currentConf.Layout()

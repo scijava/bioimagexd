@@ -7,9 +7,7 @@
  Description:
 
  A framework for replacing MayaVi for simple rendering tasks.
- 
- Modified 15.05.2005 KP - Split the VisualizerWindow to a module of it's own
-          
+           
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
 
@@ -28,7 +26,7 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 """
-__author__ = "BioImageXD Project"
+__author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.9 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
@@ -38,7 +36,6 @@ import time
 import vtk
 from vtk.wx.wxVTKRenderWindowInteractor import wxVTKRenderWindowInteractor
 
-from GUI import Events
 import Dialogs
 from VisualizationModules import *
 from ModuleConfiguration import *

@@ -35,12 +35,13 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 import wx
 
 import vtk
-from GUI import Events
 import ColorTransferEditor
+from ModuleConfiguration import *
 import Dialogs
 import Logging
 import Modules
-
+#from enthought.tvtk import messenger
+import messenger
 import glob
 import os,sys
 
@@ -64,7 +65,18 @@ class VisualizationModule:
         self.wxrenwin = parent.wxrenwin
         self.renWin = self.wxrenwin.GetRenderWindow()    
         self.renderer = self.parent.getRenderer()
-        
+        self.eventDesc="Rendering"
+    
+    def updateProgress(self,obj,event):
+        """
+        Method: updateProgress(object,event)
+        Created: 13.07.2005, KP
+        Description: Update the progress information
+        """            
+        progress=obj.GetProgress()
+        txt=obj.GetProgressText()
+        if not txt:txt=self.eventDesc
+        messenger.send(None,"update_progress",progress,txt)        
     
     def getName(self):
         """
@@ -158,174 +170,4 @@ class VisualizationModule:
         else:
             property.ShadeOff()
     
-
-
-class ModuleConfiguration(wx.MiniFrame):
-    """
-    Class: ModuleConfiguration
-    Created: 28.04.2005, KP
-    Description: A base class for module configuration dialogs
-    """    
-    def __init__(self,parent,name):
-        """
-        Method: __init__(parent)
-        Created: 28.04.2005, KP
-        Description: Initialization
-        """     
-        wx.MiniFrame.__init__(self,parent.parent,-1,"Configure: %s"%name)
-           
-        
-class ModuleConfigurationPanel(wx.Panel):
-    """
-    Class: ModuleConfigurationPanel
-    Created: 23.05.2005, KP
-    Description: A base class for module configuration dialogs
-    """    
-    def __init__(self,parent,visualizer,name,**kws):
-        """
-        Method: __init__(parent).parent
-        Created: 28.04.2005, KP
-        Description: Initialization
-        """
-        #scrolled.ScrolledPanel.__init__(self,parent.parent,-1)
-        self.mode=kws["mode"]
-        del kws["mode"]
-        wx.Panel.__init__(self,parent,-1,**kws)
-        self.sizer = wx.GridBagSizer()
-        self.visualizer=visualizer
-        self.parent = parent
-        self.name = name
-        
-        self.buttonBox = wx.BoxSizer(wx.HORIZONTAL)
-        #self.okButton = wx.Button(self,-1,"Ok")
-        self.applyButton = wx.Button(self,-1,"Apply")
-        #self.cancelButton = wx.Button(self,-1,"Cancel")
-        
-        #self.okButton.Bind(wx.EVT_BUTTON,self.onOk)
-        self.applyButton.Bind(wx.EVT_BUTTON,self.onApply)
-        #self.cancelButton.Bind(wx.EVT_BUTTON,self.onCancel)
-        
-        
-        #self.buttonBox.Add(self.okButton)
-        self.buttonBox.Add(self.applyButton)
-        #self.buttonBox.Add(self.cancelButton)
-        
-        self.contentSizer = wx.GridBagSizer()
-        self.sizer.Add(self.contentSizer,(0,0))
-        
-        self.toggleBtn=wx.ToggleButton(self,-1,"Lighting>>")
-        self.toggleBtn.SetValue(0)
-        self.toggleBtn.Bind(wx.EVT_TOGGLEBUTTON,self.onMaterial)
-        self.sizer.Add(self.toggleBtn,(1,0))
-        
-        self.lightPanel=wx.Panel(self,-1)
-        self.lightSizer=wx.GridBagSizer()
-        self.ambientLbl=wx.StaticText(self.lightPanel,-1,"Ambient lighting:")
-        self.diffuseLbl=wx.StaticText(self.lightPanel,-1,"Diffuse lighting:")
-        self.specularLbl=wx.StaticText(self.lightPanel,-1,"Specular lighting:")
-        self.specularPowerLbl=wx.StaticText(self.lightPanel,-1,"Specular power:")
-            
-        self.ambientEdit=wx.TextCtrl(self.lightPanel,-1,"0.1")
-        self.diffuseEdit=wx.TextCtrl(self.lightPanel,-1,"0.7")
-        self.specularEdit=wx.TextCtrl(self.lightPanel,-1,"0.2")
-        self.specularPowerEdit=wx.TextCtrl(self.lightPanel,-1,"10.0")
-        
-        self.lightSizer.Add(self.ambientLbl,(0,0))
-        self.lightSizer.Add(self.ambientEdit,(0,1))
-        self.lightSizer.Add(self.diffuseLbl,(1,0))
-        self.lightSizer.Add(self.diffuseEdit,(1,1))
-        self.lightSizer.Add(self.specularLbl,(2,0))
-        self.lightSizer.Add(self.specularEdit,(2,1))
-        self.lightSizer.Add(self.specularPowerLbl,(3,0))
-        self.lightSizer.Add(self.specularPowerEdit,(3,1))
-        self.lightPanel.SetSizer(self.lightSizer)
-        self.lightSizer.Fit(self.lightPanel)
-        
-        self.sizer.Add(self.lightPanel,(2,0))
-        
-        self.line = wx.StaticLine(self,-1)
-        self.sizer.Add(self.line,(3,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
-        self.sizer.Add(self.buttonBox,(4,0))
-        
-        self.sizer.Show(self.lightPanel,0)
-        self.initializeGUI()
-        
-        self.SetSizer(self.sizer)
-        self.SetAutoLayout(1)
-        self.sizer.Fit(self)
-        
-        self.findModule()
-        
-    def onMaterial(self,event):
-        """
-        Method: onMaterial
-        Created: 23.05.2005, KP
-        Description: Toggle material configuration
-        """     
-        val=self.toggleBtn.GetValue()
-        lbl="Lighting>>"
-        if val:lbl="Lighting<<"
-            
-        self.toggleBtn.SetLabel(lbl)
-        self.sizer.Show(self.lightPanel,val)
-        self.Layout()
-        self.parent.Layout()
-        self.parent.FitInside()
-        #self.parent.SetupScrolling()
-        
-    def onCancel(self,event):
-        """
-        Method: onCancel()
-        Created: 28.04.2005, KP
-        Description: Close this dialog
-        """     
-        #self.Close()
-        pass
-        
-    def onOk(self,event):
-        """
-        Method: onApply()
-        Created: 28.04.2005, KP
-        Description: Apply changes and close
-        """ 
-        self.onApply(None)
-        #self.Close()
-        
-    def onApply(self,event):
-        """
-        Method: onApply()
-        Created: 16.05.2005, KP
-        Description: Apply the changes
-        """     
-        try:
-            ambient=float(self.ambientEdit.GetValue())
-            diffuse=float(self.diffuseEdit.GetValue())
-            specular=float(self.specularEdit.GetValue())
-            specularpwr=float(self.specularPowerEdit.GetValue())
-        except:
-            return
-        self.module.setProperties(ambient,diffuse,specular,specularpwr)
-        
-    def findModule(self):
-        """
-        Method: findModule()
-        Created: 28.04.2005, KP
-        Description: Refresh the modules affected by this configuration
-        """     
-        modules = Modules.DynamicLoader.getRenderingModules()
-        j=0
-        for module in modules:
-            if module.getName() == self.name:
-                self.setModule(module)
-                Logging.info("Configuring module",module,kw="visualizer")
-                return
-
-    def setModule(self,module):
-        """
-        Method: setModule(module)
-        Created: 28.04.2005, KP
-        Description: Set the module to be configured
-        """  
-        Logging.info("Module is",module,kw="visualizer")
-        self.module = module
 

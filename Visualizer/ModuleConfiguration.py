@@ -35,7 +35,6 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 import wx
 
 import vtk
-from GUI import Events
 from VisualizationModules  import *
 import ColorTransferEditor
 import Dialogs
@@ -72,6 +71,9 @@ class ModuleConfigurationPanel(wx.ScrolledWindow):
         Description: Initialization
         """
         #scrolled.ScrolledPanel.__init__(self,parent.parent,-1)
+        if "mode "in kws:
+            self.mode=kws["mode"]
+            del kws["mode"]
         wx.ScrolledWindow.__init__(self,parent,-1,**kws)
         self.sizer = wx.GridBagSizer()
         self.visualizer=visualizer
@@ -192,7 +194,7 @@ class ModuleConfigurationPanel(wx.ScrolledWindow):
         Created: 28.04.2005, KP
         Description: Refresh the modules affected by this configuration
         """     
-        modules = self.visualizer.getModules()
+        modules = self.visualizer.getCurrentMode().getModules()
         for module in modules:
             if module.getName() == self.name:
                 self.setModule(module)

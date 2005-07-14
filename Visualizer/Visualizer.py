@@ -7,10 +7,7 @@
  Description:
 
  A framework for replacing MayaVi for simple rendering tasks.
- 
- Modified 28.04.2005 KP - Created the class
-          23.05.2005 KP - Split the class to a module of it's own
-          
+           
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
 
@@ -35,6 +32,8 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 import wx
 import time
+#from enthought.tvtk import messenger
+import messenger
 
 import vtk
 import os
@@ -45,8 +44,9 @@ import Logging
 
 import DataUnit
 import MenuManager
+import Histogram
 
-from GUI import Events
+
 import PreviewFrame
 import os.path
 import sys
@@ -58,7 +58,6 @@ visualizerInstance=None
 
 def getVisualizer():
     global visualizerInstance
-    print "getVisualizer() called! returning",visualizerInstance
     return visualizerInstance
 
 class Visualizer:
@@ -75,10 +74,16 @@ class Visualizer:
         """
         global visualizerInstance
         visualizerInstance=self
+        
+        self.histogramDataUnit=None
+        self.histograms=[]
+        
         self.mainwin=mainwin
         self.menuManager=menuManager
         self.renderingTime=0
         self.parent = parent
+        messenger.connect(None,"timepoint_changed",self.onSetTimepoint)
+        messenger.connect(None,"data_changed",self.updateRendering)
         self.closed = 0
         self.initialized = 0
         self.renderer=None
@@ -96,6 +101,12 @@ class Visualizer:
         self.ID_VISAREA_WIN=wx.NewId()
         self.ID_VISTREE_WIN=wx.NewId()
         self.ID_VISSLIDER_WIN=wx.NewId()
+        self.ID_HISTOGRAM_WIN=wx.NewId()
+        
+        messenger.connect(None,"show",self.onSetVisibility)
+        messenger.connect(None,"hide",self.onSetVisibility)
+        
+        self.sizes={}
         
         self.parent.Bind(
             wx.EVT_SASH_DRAGGED_RANGE, self.onSashDrag,
@@ -115,7 +126,21 @@ class Visualizer:
         self.toolWin.SetAlignment(wx.LAYOUT_TOP)
         self.toolWin.SetSashVisible(wx.SASH_BOTTOM,False)
         self.toolWin.SetDefaultSize((500,44))
+
+        self.histogramWin=wx.SashLayoutWindow(self.parent,self.ID_HISTOGRAM_WIN,style=wx.NO_BORDER)
+        self.histogramWin.SetOrientation(wx.LAYOUT_HORIZONTAL)
+        self.histogramWin.SetAlignment(wx.LAYOUT_TOP)
+        #self.histogramWin.SetSashVisible(wx.SASH_BOTTOM,False)
+        self.histogramWin.SetDefaultSize((500,0))
         
+        self.histogramPanel=wx.Panel(self.histogramWin)
+        self.histogramBox=wx.BoxSizer(wx.HORIZONTAL)
+
+        self.histogramPanel.SetSizer(self.histogramBox)
+        self.histogramPanel.SetAutoLayout(1)
+        self.histogramBox.Fit(self.histogramPanel)
+
+
         self.visWin=wx.SashLayoutWindow(self.parent,self.ID_VISAREA_WIN,style=wx.NO_BORDER|wx.SW_3D)
         self.visWin.SetOrientation(wx.LAYOUT_VERTICAL)
         self.visWin.SetAlignment(wx.LAYOUT_LEFT)
@@ -131,9 +156,12 @@ class Visualizer:
         self.sliderWin.SetDefaultSize((500,32))
 
         self.sliderPanel=wx.Panel(self.sliderWin,-1)
-        self.prev=wx.Button(self.sliderPanel,-1,"<")
+        iconpath=reduce(os.path.join,["Icons"])
+        leftarrow = wx.Image(os.path.join(iconpath,"leftarrow.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap()
+        rightarrow = wx.Image(os.path.join(iconpath,"rightarrow.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap()
+        self.prev=wx.BitmapButton(self.sliderPanel,-1,leftarrow)
         self.prev.SetSize((64,64))
-        self.next=wx.Button(self.sliderPanel,-1,">")
+        self.next=wx.BitmapButton(self.sliderPanel,-1,rightarrow)
         self.next.SetSize((64,64))
         self.sliderbox=wx.BoxSizer(wx.HORIZONTAL)
         self.prev.Bind(wx.EVT_BUTTON,self.onPrevTimepoint)
@@ -161,6 +189,54 @@ class Visualizer:
         self.createToolbar()
         self.parent.Bind(wx.EVT_SIZE,self.OnSize)
         
+    def onSetVisibility(self,obj,evt,arg):
+        """
+        Method: onSetVisibility
+        Created: 12.07.2005, KP
+        Description: Set an object's visibility
+        """ 
+        obj=None
+        if arg=="toolbar":obj=self.toolWin
+        elif arg=="histogram":
+            obj=self.histogramWin
+            w,h=0,0
+            for i in self.histograms:
+                w2,h2=i[0].GetSize()
+                w=w2
+                if h<h2:h=h2
+            Logging.info("Got ",w,h,"for histogram size")
+            if not h:h=200
+            self.sizes["histogram"]=w,h
+        elif arg=="config":obj=self.sidebarWin
+        if evt=="hide":
+            Logging.info("Hiding ",arg)
+            if arg not in self.sizes:
+                w,h=obj.GetSize()
+                self.sizes[arg]=(w,h)
+                obj.SetDefaultSize((0,0))
+        else:
+            Logging.info("Showing ",arg)
+            if arg in self.sizes:
+                obj.SetDefaultSize(self.sizes[arg])
+            del self.sizes[arg]
+        if evt=="show" and arg=="histogram":
+            self.histogramPanel.Layout()
+            for histogram,sbox,sboxsizer in self.histograms:
+                sboxsizer.Fit(histogram)
+            
+        self.OnSize(None)
+            
+            
+        
+        
+    def getDataUnit(self):
+        """
+        Method: getDataUnit()
+        Created: 09.07.2005, KP
+        Description: Return the dataunit that is currently shown
+        """ 
+        return self.dataUnit
+        
     def onNextTimepoint(self,evt):
         """
         Method: onNextTimepoint
@@ -178,6 +254,42 @@ class Visualizer:
         """        
         if self.timepoint>=1:
             self.setTimepoint(self.timepoint-1)
+
+    def createHistogram(self):
+        """
+        Method: createHistogram()
+        Created: 28.05.2005, KP
+        Description: Method to create histograms of the dataunit
+        """        
+        if self.dataUnit != self.histogramDataUnit:
+            self.histogramDataUnit=self.dataUnit
+        for histogram,sbox,sboxsizer in self.histograms:
+            print "Detaching ",sboxsizer
+            self.histogramBox.Detach(sboxsizer)
+            sboxsizer.Detach(histogram)
+            sboxsizer.Destroy()
+            sbox.Destroy()
+            histogram.Destroy()
+        self.histograms=[]
+        units=[]
+        if self.processedMode:
+            units=self.dataUnit.getSourceDataUnits()
+        else:
+            units=[self.dataUnit]
+        for unit in units:
+            histogram=Histogram.Histogram(self.histogramPanel)
+            name=unit.getName()
+            sbox=wx.StaticBox(self.histogramPanel,-1,"Channel %s"%name)
+            sboxsizer=wx.StaticBoxSizer(sbox,wx.VERTICAL)
+            sboxsizer.Add(histogram)
+            self.histogramBox.Add(sboxsizer,1,border=10,flag=wx.BOTTOM)
+            histogram.setDataUnit(unit)
+            self.histograms.append((histogram,sbox,sboxsizer))
+        self.histogramPanel.Layout()
+        self.OnSize(None)
+            
+
+            
     def createToolbar(self):
         """
         Method: createToolBar()
@@ -332,11 +444,6 @@ class Visualizer:
             Logging.info("Sidebar window size = %d,%d"%(event.GetDragRect().width,h),kw="visualizer")
             self.sidebarWin.SetDefaultSize((event.GetDragRect().width,h))
         
-        #elif eID == ID_VISAREA_WIN:
-        #    w,h=self.taskWin.GetSize()
-        #    self.taskWin.SetDefaultSize((event.GetDragRect().width,h))
-        
-        #self.visWin.Refresh()
         wx.LayoutAlgorithm().LayoutWindow(self.parent, self.visWin)
         
     def OnSize(self, event):
@@ -545,8 +652,10 @@ class Visualizer:
         if self.enabled and self.currMode:           
             Logging.info("Setting dataunit to current mode",kw="visualizer")
             self.currMode.setDataUnit(self.dataUnit)
+        self.createHistogram()
+             
             
-    def updateRendering(self,event=None):
+    def updateRendering(self,event=None,object=None,delay=0):
         """
         Method: updateRendering
         Created: 25.05.2005, KP
@@ -575,13 +684,13 @@ class Visualizer:
             Logging.info("Render()",kw="visualizer")
             self.currMode.Render()
         
-    def onSetTimepoint(self,event):
+    def onSetTimepoint(self,obj,event,tp):
         """
         Method: onSetTimepoint
         Created: 21.06.2005, KP
-        Description: Update the timepoint according to an evnet
+        Description: Update the timepoint according to an event
         """
-        tp=event.getValue()
+        #tp=event.getValue()
         self.setTimepoint(tp)
         
     def onChangeTimepoint(self,event):
@@ -593,10 +702,9 @@ class Visualizer:
         tp=self.timeslider.GetValue()
         if self.timepoint != tp:
             self.setTimepoint(tp)
-            evt=Events.ChangeEvent(Events.myEVT_TIMEPOINT_CHANGED,self.parent.GetId())
-            evt.setValue(tp)
+            messenger.send(None,"timepoint_changed",tp)
             Logging.info("Sending timepoint change event (tp=%d)"%tp,kw="visualizer")
-            self.parent.GetEventHandler().ProcessEvent(evt)
+            #self.parent.GetEventHandler().ProcessEvent(evt)
 
     def onSnapshot(self,event):
         """
