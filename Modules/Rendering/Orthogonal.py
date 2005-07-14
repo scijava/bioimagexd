@@ -34,7 +34,6 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 import wx
 
 import vtk
-from Events import *
 import ColorTransferEditor
 import Dialogs
 
@@ -63,7 +62,7 @@ class ImagePlaneModule(VisualizationModule):
         self.on = 0
         self.renew = 1
         self.mapper = vtk.vtkPolyDataMapper()
-        
+        self.eventDesc="Rendering orthogonal slices"
         self.outline = vtk.vtkOutlineFilter()
         self.outlineMapper = vtk.vtkPolyDataMapper()
         self.outlineActor = vtk.vtkActor()
@@ -436,5 +435,5 @@ class ImagePlaneConfigurationPanel(ModuleConfigurationPanel):
         Description: Apply the changes
         """     
         ModuleConfigurationPanel.onApply(self,event)
-        self.updateData()
+        self.module.updateData()
         self.module.updateRendering()

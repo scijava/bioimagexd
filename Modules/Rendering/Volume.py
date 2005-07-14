@@ -34,7 +34,6 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 import wx
 
 import vtk
-from Events import *
 import ColorTransferEditor
 import Dialogs
 from Visualizer.VisualizationModules import *
@@ -63,7 +62,7 @@ class VolumeModule(VisualizationModule):
         self.opacityTransferFunction = vtk.vtkPiecewiseFunction()
         self.opacityTransferFunction.AddPoint(0, 0.0)
         self.opacityTransferFunction.AddPoint(255, 0.2)
-        
+        self.eventDesc="Rendering volume"
         self.colorTransferFunction = None
 
         self.volumeProperty =  vtk.vtkVolumeProperty()
@@ -220,6 +219,7 @@ class VolumeModule(VisualizationModule):
             input=self.data
         print "Rendering: ",self.mapper.__class__
         self.mapper.SetInput(input)
+        self.mapper.AddObserver("ProgressEvent",self.updateProgress)
 #        print "self.mapper=",self.mapper
         self.mapper.Update()
         self.parent.Render()

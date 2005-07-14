@@ -34,9 +34,9 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 import wx
 
 import vtk
-from Events import *
 import ColorTransferEditor
 import Dialogs
+import Logging
 
 from Visualizer.VisualizationModules import *
 
@@ -65,7 +65,11 @@ class SurfaceModule(VisualizationModule):
         self.isoValue = 128
         self.contourRange = (-1,-1,-1)
         self.setIsoValue(128)
+        self.eventDesc="Rendering iso-surface"
         
+        self.decimate = vtk.vtkDecimatePro()
+        self.decimateLevel=50
+        self.preserveTopology=1
         self.setMethod(1)
         self.init=0
         self.mapper = vtk.vtkPolyDataMapper()
@@ -75,8 +79,18 @@ class SurfaceModule(VisualizationModule):
         self.lodActor.SetNumberOfCloudPoints(10000)
         
         self.parent.getRenderer().AddActor(self.lodActor)
-        print "adding actor"
         #self.updateRendering()
+        
+    def setDecimate(self,level,preserveTopology):
+        """
+        Method: setDecimate(level,preserveTopology)
+        Created: 07.07.2005, KP
+        Description: Set the decimation settings
+        """       
+        self.decimateLevel=level
+        self.preserveTopology=preserveTopology
+        self.decimate.SetPreserveTopology(preserveTopology)
+        self.decimate.SetTargetReduction(level/100.0)
         
     def setDataUnit(self,dataunit):
         """
@@ -85,7 +99,7 @@ class SurfaceModule(VisualizationModule):
         Description: Sets the dataunit this module uses for visualization
         """       
         VisualizationModule.setDataUnit(self,dataunit)
-        print "got dataunit",dataunit
+        
             
     def setIsoValue(self,isovalue):
         """
@@ -95,8 +109,7 @@ class SurfaceModule(VisualizationModule):
         """  
         self.contourRange = (-1,-1,-1)
         self.isoValue = isovalue
-        print "Iso value=",self.isoValue
-        
+        Logging.info("Iso value for surface = ",self.isoValue,kw="visualizer")        
     def setContourRange(self,start,end,contours):
         """
         Method: setContourRange(start,end,contours)
@@ -105,7 +118,7 @@ class SurfaceModule(VisualizationModule):
         """             
         self.isoValue = -1
         self.contourRange = (start,end,contours)
-        print "contour range=",start,end,contours
+        Logging.info("Contour range = ",start,"to",end,"# of contours =",contours,kw="visualizer")
 
     def setGenerateNormals(self,angle):
         """
@@ -115,6 +128,7 @@ class SurfaceModule(VisualizationModule):
         """             
         self.generateNormals = 1
         self.normals.SetFeatureAngle(angle)
+        self.featureAngle=angle
         
 
     def setMethod(self,method):
@@ -127,13 +141,13 @@ class SurfaceModule(VisualizationModule):
         if method<2:
             #Ray Casting, RGBA Ray Casting, Texture Mapping, MIP
             filters = [vtk.vtkContourFilter,vtk.vtkMarchingCubes]
-            print "Using ",filters[method],"as  contourer"
+            Logging.info("Using ",filters[method],"as  contourer",kw="visualizer")
             self.contour = filters[method]()
             if self.volumeModule:
                 self.volumeModule.disableRendering()
                 self.volumeModule = None
         else:
-            print "Using volume Rendering for isosurfacing"
+            Logging.info("Using volume rendering for isosurface")
             self.disableRendering()
             self.volumeModule = VolumeModule(self.parent)
             self.volumeModule.setMethod(5)
@@ -154,25 +168,40 @@ class SurfaceModule(VisualizationModule):
         if not self.init:
             self.init=1
             self.mapper.ColorByArrayComponent(0,0)
-        self.contour.SetInput(self.data)
-        
+        self.mapper.AddObserver("ProgressEvent",self.updateProgress)
         self.mapper.SetLookupTable(self.dataUnit.getColorTransferFunction())
         self.mapper.ScalarVisibilityOn()
         self.mapper.SetScalarRange(0,255)
         self.mapper.SetColorModeToMapScalars()
-    
+
+        input=self.data
+
+        self.contour.SetInput(input)
+        input=self.contour.GetOutput()
         if self.isoValue != -1:
             self.contour.SetValue(0,self.isoValue)
         else:
-            print "Generating %d values in range %d-%d"%(n,begin,end)
+            Logging.info("Generating %d values in range %d-%d"%(n,begin,end),kw="visualizer")
             begin,end,n=self.contourRange
             self.contour.GenerateValues(n,begin,end)
+        if self.decimateLevel != 1:
+            Logging.info("Decimating %.2f%%, preserve topology: %s"%(self.decimateLevel/100.0,self.preserveTopology),kw="visualizer")
+            self.decimate.SetInput(input)
+            input=self.decimate.GetOutput()
+        smooth=vtk.vtkSmoothPolyDataFilter()
+        smooth.SetInput(input)
+        smooth.SetNumberOfIterations(50)
+        #smooth.SetRelaxationFactor(0.9)
+        smooth.SetFeatureEdgeSmoothing(1)
+        input=smooth.GetOutput()
+        
         if self.generateNormals:
-            print "Generating normals"
-            self.normals.SetInput(self.contour.GetOutput())
-            self.mapper.SetInput(self.normals.GetOutput())
-        else:
-            self.mapper.SetInput(self.contour.GetOutput())
+            Logging.info("Generating normals at angle",self.featureAngle,kw="visualizer")
+            
+            self.normals.SetInput(input)
+            input=self.normals.GetOutput()
+        
+        self.mapper.SetInput(input)
         self.mapper.Update()
         self.parent.Render()    
 
@@ -227,6 +256,20 @@ class SurfaceConfigurationPanel(ModuleConfigurationPanel):
         n+=1
         self.contentSizer.Add(self.featureAngle,(n,0))
         n+=1
+        
+        self.decimateLbl=wx.StaticText(self,-1,"Simplify surface:")
+        
+        self.decimateSlider=wx.Slider(self,value=0,minValue=0,maxValue=100,style=wx.HORIZONTAL|wx.SL_AUTOTICKS|wx.SL_LABELS,size=(255,-1))
+        self.decimateCheckbox=wx.CheckBox(self,-1,"Preserve topology")
+        
+        self.contentSizer.Add(self.decimateLbl,(n,0))
+        n+=1
+        self.contentSizer.Add(self.decimateSlider,(n,0))
+        n+=1
+        self.contentSizer.Add(self.decimateCheckbox,(n,0))
+        
+        n+=1
+        
         self.isoValueLbl = wx.StaticText(self,-1,"Iso value:")
         self.isoSlider = wx.Slider(self,value=128, minValue=0,maxValue = 255,
         style=wx.HORIZONTAL|wx.SL_AUTOTICKS|wx.SL_LABELS,size=(255,-1))
@@ -292,8 +335,11 @@ class SurfaceConfigurationPanel(ModuleConfigurationPanel):
             self.module.setContourRange(start,end,n)
         else:
             self.module.setIsoValue(self.isoSlider.GetValue())
+        
+        if self.decimateSlider.GetValue()!=1:
+            self.module.setDecimate(self.decimateSlider.GetValue(),self.decimateCheckbox.GetValue())
 
-        self.updateData()
+        self.module.updateData()
         self.module.updateRendering()
         
     def onSelectMethod(self,event):
