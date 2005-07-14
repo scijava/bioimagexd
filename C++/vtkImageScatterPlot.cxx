@@ -133,14 +133,14 @@ void vtkImageScatterPlotExecute(vtkImageScatterPlot *self, int id,int NumberOfIn
     #define GET_AT(x,y,z,ptr) *(ptr+(z)*inIncZ+(y)*inIncY+(x)*inIncX)
     #define SET_AT(x,y,z,ptr,val) *(ptr+(z)*outIncZ+(y)*outIncY+(x)*outIncX)=val
     #define SET_AT_COMP(x,y,z,c,ptr,val) *(ptr+(int)((z)*outIncZ)+(int)((y)*outIncY)+(int)((x)*outIncX)+(c))=val
+    #define GET_AT_OUT(x,y,z,ptr) *(ptr+(z)*outIncZ+(y)*outIncY+(x)*outIncX)
+    #define SET_AT_OUT(x,y,z,ptr,val) *(ptr+(z)*outIncZ+(y)*outIncY+(x)*outIncX)=val
      
      if(0&&countvox) {
         outIncX*=sizeof(VTK_LONG_MAX);
         outIncY*=sizeof(VTK_LONG_MAX);
         outIncZ*=sizeof(VTK_LONG_MAX);         
      }
-    #define GET_AT_OUT(x,y,z,ptr) *(ptr+(z)*outIncZ+(y)*outIncY+(x)*outIncX)
-    #define SET_AT_OUT(x,y,z,ptr,val) *(ptr+(z)*outIncZ+(y)*outIncY+(x)*outIncX)=val
 
     if(self->GetZSlice()<0) {
         z0 = 0;

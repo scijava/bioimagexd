@@ -101,8 +101,13 @@ void vtkImageMapToIntensities::ExecuteData(vtkDataObject *)
 
   
   #define GET_AT(x,y,z,ptr) *(ptr+(z)*inIncZ+(y)*inIncY+(x)*inIncX)
-  
+
+  char progressText[200];  
   for(idxZ = 0; idxZ <= maxZ; idxZ++ ) {
+    UpdateProgress(idxZ/float(maxZ));
+    sprintf(progressText,"Applying intensity transfer function (slice %d / %d)",idxX,maxZ);
+    SetProgressText(progressText);
+
     for(idxY = 0; idxY <= maxY; idxY++ ) {
       for(idxX = 0; idxX <= maxX; idxX++ ) {
           //for(idxC = 0; idxC <= maxC; idxC++ ) {

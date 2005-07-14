@@ -83,7 +83,12 @@ void vtkImageMergeExecute(vtkImageMerge *self, int id,int NumberOfInputs,
     maxval=int(pow(2,8*sizeof(T)))-1;
     T val;
     maxX *= (inData[0]->GetNumberOfScalarComponents());
+    char progressText[200];
     for(idxZ = 0; idxZ <= maxZ; idxZ++ ) {
+    self->UpdateProgress(idxZ/float(maxZ));
+    sprintf(progressText,"Merging channels (slice %d / %d)",idxZ,maxZ);
+    self->SetProgressText(progressText);
+        
         for(idxY = 0; idxY <= maxY; idxY++ ) {
           for(idxX = 0; idxX <= maxX; idxX++ ) {
             scalar = currScalar = 0;

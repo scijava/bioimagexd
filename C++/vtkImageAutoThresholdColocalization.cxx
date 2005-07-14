@@ -1,7 +1,7 @@
 /*=========================================================================
 
   Program:   BioImageXD
-  Module:    $RCSfile: vtkImageColocalizationFilter.cxx,v $
+  Module:    $RCSfile: vtkImageAutoThresholdColocalization.cxx,v $
 
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
@@ -22,255 +22,666 @@
 
 
 =========================================================================*/
-#include "vtkImageColocalizationFilter.h"
+#include "vtkImageAutoThresholdColocalization.h"
 
 #include "vtkImageData.h"
 #include "vtkObjectFactory.h"
 #include "vtkImageProgressIterator.h"
+#include "vtkPointData.h"
 
-vtkCxxRevisionMacro(vtkImageColocalizationFilter, "$Revision: 1.25 $");
-vtkStandardNewMacro(vtkImageColocalizationFilter);
+#define GET_AT(x,y,z,ptr) *(ptr+(z)*inIncZ+(y)*inIncY+(x)*inIncX)
+#define SET_AT(x,y,z,ptr,val) *(ptr+(z)*outIncZ+(y)*outIncY+(x)*outIncX)=val
+#define SET_AT_COMP(x,y,z,c,ptr,val) *(ptr+(int)((z)*outIncZ)+(int)((y)*outIncY)+(int)((x)*outIncX)+(c))=val
+#define GET_AT_OUT(x,y,z,ptr) *(ptr+(z)*outIncZ+(y)*outIncY+(x)*outIncX)
+#define SET_AT_OUT(x,y,z,ptr,val) *(ptr+(z)*outIncZ+(y)*outIncY+(x)*outIncX)=val
+
+#define GET_AT_PLOT(x,y,z,ptr) *(ptr+(z)*plotIncZ+(y)*plotIncY+(x)*plotIncX)
+#define SET_AT_PLOT(x,y,z,ptr,val) *(ptr+(z)*plotIncZ+(y)*plotIncY+(x)*plotIncX)=val
+
+
+vtkCxxRevisionMacro(vtkImageAutoThresholdColocalization,
+		    "$Revision: 1.25 $");
+vtkStandardNewMacro(vtkImageAutoThresholdColocalization);
 
 //----------------------------------------------------------------------------
-vtkImageColocalizationFilter::vtkImageColocalizationFilter()
+vtkImageAutoThresholdColocalization::vtkImageAutoThresholdColocalization()
 {
-    this->OutputDepth = 8;
-    this->LeastVoxelsOverThreshold = 0;
-    this->ColocalizationAmount = 0;
-    this->NumberOfDatasets = 8;
-    this->ColocalizationLowerThresholds = new int[this->NumberOfDatasets];
-    this->ColocalizationUpperThresholds = new int[this->NumberOfDatasets];
-    for(int i = 0; i < this->NumberOfDatasets; i++) {
-        this->ColocalizationUpperThresholds[i]=255;
-        this->ColocalizationLowerThresholds[i]=0;
-    }
+	IncludeZeroPixels = 0;
+	ConstantVoxelValue = 0;
+	vtkImageData *plot;
+	plot = vtkImageData::New();
+	plot->ReleaseData();
+	this->AddOutput(plot);
+	plot->Delete();
 }
 
-void vtkImageColocalizationFilter::SetColocalizationLowerThreshold(int dataset, int threshold) {
-    int *NewThresholds;
-    if (this->NumberOfDatasets < dataset) {
-            
-            NewThresholds = new int[this->NumberOfDatasets *2];
-            
-            for(int i = 0; i< this->NumberOfDatasets ; i++) {
-                NewThresholds[i] = this->ColocalizationLowerThresholds[i];
-            }
-            for(int i = this->NumberOfDatasets; i < this->NumberOfDatasets*2; i++) {
-                NewThresholds[i]=0;
-            }
-            this->NumberOfDatasets *= 2;
-            delete[] this->ColocalizationLowerThresholds;
-            this->ColocalizationLowerThresholds = NewThresholds;
-    }
-    this->ColocalizationLowerThresholds[dataset] = threshold;
-}
-void vtkImageColocalizationFilter::SetColocalizationUpperThreshold(int dataset, int threshold) {
-    int *NewThresholds;
-    if (this->NumberOfDatasets < dataset) {
-            
-            NewThresholds = new int[this->NumberOfDatasets *2];
-            
-            for(int i = 0; i< this->NumberOfDatasets ; i++) {
-                NewThresholds[i] = this->ColocalizationUpperThresholds[i];
-            }
-            for(int i = this->NumberOfDatasets; i < this->NumberOfDatasets*2; i++) {
-                NewThresholds[i]=0;
-            }
-            this->NumberOfDatasets *= 2;
-            delete[] this->ColocalizationUpperThresholds;
-            this->ColocalizationUpperThresholds = NewThresholds;
-    }
-    this->ColocalizationUpperThresholds[dataset] = threshold;
+
+//----------------------------------------------------------------------------
+vtkImageAutoThresholdColocalization::~vtkImageAutoThresholdColocalization()
+{
 }
 
 //----------------------------------------------------------------------------
-vtkImageColocalizationFilter::~vtkImageColocalizationFilter()
+void vtkImageAutoThresholdColocalization::
+ComputeInputUpdateExtents(vtkDataObject * output)
 {
-        delete[] this->ColocalizationLowerThresholds;
-        delete[] this->ColocalizationUpperThresholds;
+	int outExt[6], inExt[6];
+	inExt[0] = inExt[1] = inExt[2] = inExt[3] = inExt[4] = inExt[5] =
+	    0;
+	//printf("Setting input update\n");
+	for (int idx = 0; idx < this->NumberOfInputs; idx++) {
+		if (this->Inputs[idx] != NULL) {
+			//      this->Inputs[idx]->SetUpdateExtent( this->Inputs[idx]->GetWholeExtent() );
+			this->Inputs[idx]->SetUpdateExtent(inExt);
+		}
+	}
 }
 
 //----------------------------------------------------------------------------
-void vtkImageColocalizationFilter::ExecuteInformation(vtkImageData **inputs, 
-                                        vtkImageData *output)
+void vtkImageAutoThresholdColocalization::
+ExecuteInformation(vtkImageData ** inputs, vtkImageData ** outputs)
 {
-  vtkImageMultipleInputFilter::ExecuteInformation(inputs,output);
- 
+	vtkImageMultipleInputOutputFilter::ExecuteInformation(inputs,
+							      outputs);
+
+	int wholeExt[6];
+
+	wholeExt[1] = wholeExt[3] = 255;
+	wholeExt[0] = wholeExt[2] = 0;
+	wholeExt[4] = wholeExt[5] = 0;
+	//printf("extent of scatterplot is (%d,%d,%d,%d,%d,%d)\n",wholeExt[0],wholeExt[1],wholeExt[2],wholeExt[3],wholeExt[4],wholeExt[5]);
+	// We're gonna produce image one slice thick and 255x255 in size
+	outputs[1]->SetWholeExtent(wholeExt);
+	outputs[1]->RequestExactExtentOff();
+	outputs[1]->SetUpdateExtent(wholeExt);
+
+
 }
 
 
 
 //----------------------------------------------------------------------------
 // This templated function executes the filter for any type of data.
-template <class T>
-void vtkImageColocalizationFilterExecute(vtkImageColocalizationFilter *self, int id,int NumberOfInputs, 
-                           vtkImageData **inData,vtkImageData*outData,int outExt[6],
-                            T*)
-{
-    int i;
-    int inIncX,inIncY,inIncZ;
-    int outIncX,outIncY,outIncZ;
-    int maxX,maxY,maxZ;
-    int idxX,idxY,idxZ;
+template < class T >
+    void
+    vtkImageAutoThresholdColocalizationExecute
+    (vtkImageAutoThresholdColocalization * self, int id,
+     int NumberOfInputs, vtkImageData ** inData, vtkImageData ** outData,
+     int outExt[6], T *) {
+	int i;
+	int inIncX, inIncY, inIncZ;
+	int outIncX, outIncY, outIncZ;
+	int plotIncX, plotIncY, plotIncZ;
+	int maxX, maxY, maxZ;
+	int idxX, idxY, idxZ;
 
-    double S[2], Scoloc[2];
-    S[0]=Scoloc[0]=S[1]=Scoloc[1]=0;
-    double S2[2],SS;
-    S2[0]=S2[1]=SS=0;
-    
-    
-    int ColocalizationAmount = 0, LeastVoxelsOverThreshold = 0;
+	int ch1, ch2, ch3;
+	double pearsons1, pearsons2, pearsons3;
+	double r2 = 1;
+	double sumX, sumY, sumXY, sumXX, sumYY, sumXYm;
+	double countX, countY;
+	int count;
+	double colocX, colocY;
+	int Nch1, Nch2;
 
-    int *ColocThresholds = self->GetColocalizationLowerThresholds();
-    int *UpperThresholds = self->GetColocalizationUpperThresholds();
-    int BitDepth = self->GetOutputDepth();
-    int *ColocVoxels;
-    T** inPtrs;
-    T* outPtr;
-    ColocVoxels = new int[NumberOfInputs];
-    inPtrs=new T*[NumberOfInputs];
-    printf("outext=[%d,%d,%d,%d,%d,%d]\n",outExt[0],outExt[1],outExt[2],outExt[3],outExt[4],outExt[5]);
-    for(i=0; i < NumberOfInputs; i++) {
-        inPtrs[i]=(T*)inData[i]->GetScalarPointerForExtent(outExt);
-        ColocVoxels[i] = 0;
-    }
-    outPtr=(T*)outData->GetScalarPointerForExtent(outExt);
-    
-    
-    inData[0]->GetContinuousIncrements(outExt,inIncX, inIncY, inIncZ);
-    outData->GetContinuousIncrements(outExt,outIncX, outIncY, outIncZ);
-    maxX = outExt[1] - outExt[0];
-    maxY = outExt[3] - outExt[2];
-    maxZ = outExt[5] - outExt[4];
-    
-    T currScalar = 0, ColocalizationScalar = 0;
-    int maxval = 0, n = 0;
-    char colocFlag = 0;
-    double mul=0;
-    maxval=int(pow(2,8*sizeof(T)))-1;
-    printf("Colocalization depth = %d, maxval=%d\n",BitDepth,maxval);
-    
-    for(idxZ = 0; idxZ <= maxZ; idxZ++ ) {
-        for(idxY = 0; idxY <= maxY; idxY++ ) {
-          for(idxX = 0; idxX <= maxX; idxX++ ) {
-            currScalar = n = 0;
-            colocFlag = 1;
-            mul = 1;
-            for(i=0; i < NumberOfInputs; i++ ) {
-                currScalar = *inPtrs[i]; 
-                S[i] += currScalar;
-                S2[i] += currScalar*currScalar;
-                mul *= currScalar;
-                if(currScalar > ColocThresholds[i] && currScalar < UpperThresholds[i]) {
-                    ColocVoxels[i]++;
-                    ColocalizationScalar += currScalar;
-                    Scoloc[i] += currScalar;
-                    n++;
-                } else {
-                    colocFlag = 0;
-                }
-                inPtrs[i]++;
-            }
-            SS+=mul;
-            ColocalizationAmount += colocFlag;
-            if(colocFlag > 0) {
-                
-                if (BitDepth == 1 ) ColocalizationScalar = maxval;
-                if (BitDepth == 8 ) ColocalizationScalar /= n;
-                if(ColocalizationScalar > maxval) ColocalizationScalar=maxval;
-                
-            } else ColocalizationScalar = 0;
-            
-            *outPtr = ColocalizationScalar;
-            outPtr++;
-          }
-          for(i=0; i < NumberOfInputs; i++ ) {
-              inPtrs[i]+=inIncY;
-          }
-          outPtr += outIncY;
-        }  
-        for(i=0; i < NumberOfInputs; i++ ) {
-          inPtrs[i]+=inIncZ;
-        }
-        outPtr += outIncZ;      
-    }
-    printf("total=%d*%d*%d\n",outExt[1],outExt[3],outExt[5]);
-    int totalVoxels = outExt[1]*outExt[3]*outExt[5];
-    double Saver[2];
-    Saver[0] = S[0] / totalVoxels;
-    Saver[1] = S[1] / totalVoxels;
-    // Assume that every voxel was colocalizing
-    LeastVoxelsOverThreshold = totalVoxels;
-    // Then find out what was the real lowest count of colocalized voxels
-    for (i=0; i  < NumberOfInputs; i++) {
-        if (ColocVoxels[i] < LeastVoxelsOverThreshold) LeastVoxelsOverThreshold = ColocVoxels[i];
-    }
-    delete[] ColocVoxels;
-    self->SetLeastVoxelsOverThreshold(LeastVoxelsOverThreshold);
-    self->SetColocalizationAmount(ColocalizationAmount);
-    
-    
-    double K = (S[0]*S[1])/(S[0]*S[0]);
-    self->SetOverlapCoefficientK1(K);
-    K = (S[0]*S[1])/(S[1]*S[1]);
-    self->SetOverlapCoefficientK2(K);
-    
-    double M = Scoloc[0]/S[0];
-    self->SetColocalizationCoefficientM1(M);
-    M = Scoloc[1]/S[1];
-    self->SetColocalizationCoefficientM2(M);
+	double oldMax = 0;
+	int sumCh2gtT = 0;
+	int sumCh1gtT = 0;
+	double sumCh1total = 0;
+	double sumCh2total = 0;
+	double mCh2coloc = 0;
+	double mCh1coloc = 0;
 
-    delete[] inPtrs;
-    double sumX=S2[0]- (S[0]*S[0])/totalVoxels;
-    double sumY=S2[1]- (S[1]*S[1])/totalVoxels;
-    double R = ( SS - (S[0]*S[1])/ totalVoxels )/ (sqrt(sumX*sumY));
-    self->SetPearsonsCorrelation(R);
-    R = (S[0]*S[1])/sqrt(S[0]*S[0]*S[1]*S[1]);
-    self->SetOverlapCoefficient(R);
+	int Ncoloc = 0;
+	int sumColocCh1 = 0;
+	int sumColocCh2 = 0;
 
+	int N = 0;
+	int N2 = 0;
+	int Nzero = 0;
+	int Nch1gtT = 0;
+	int Nch2gtT = 0;
+
+	bool thresholdFound = 0, divByZero = 0;
+
+	double range[2];
+	inData[0]->GetScalarRange(range);
+	int ch1Max = 255;
+	int ch1Min = 0;
+	inData[1]->GetScalarRange(range);
+	int ch2Max = 255;
+	int ch2Min = 0;
+	int scaledXvalue = 0, scaledYvalue = 0;
+
+	double ch1threshmin = 0;
+	double ch1threshmax = 255;
+	double ch2threshmin = 0;
+	double ch2threshmax = 255;
+
+	double bBest = 0;
+	double mBest = 0;
+	double bestr2 = 1;
+	double ch1BestThresh = 0;
+	double ch2BestThresh = 0;
+	//start regression
+	//printf("1/3: Performing regression.\n");
+	int ch1Sum = 0;
+	int ch2Sum = 0;
+	int ch3Sum = 0;
+	double ch1mch1MeanSqSum = 0;
+	double ch2mch2MeanSqSum = 0;
+	double ch3mch3MeanSqSum = 0;
+
+
+	T *inPtr1, *inPtr2;
+	//printf("outext=[%d,%d,%d,%d,%d,%d]\n", outExt[0], outExt[1],
+	//       outExt[2], outExt[3], outExt[4], outExt[5]);
+	inPtr1 = (T *) inData[0]->GetScalarPointerForExtent(outExt);
+	inPtr2 = (T *) inData[1]->GetScalarPointerForExtent(outExt);
+
+	inData[0]->GetContinuousIncrements(outExt, inIncX, inIncY, inIncZ);
+	outData[0]->GetIncrements(outIncX, outIncY,
+					    outIncZ);
+	int plotExt[] = { 0, 255, 0, 255, 0, 0 };
+	vtkImageData *plotData = outData[1];
+	plotData->SetWholeExtent(plotExt);
+	plotData->SetUpdateExtent(plotExt);
+	plotData->SetExtent(plotExt);
+	plotData->SetScalarTypeToUnsignedInt();
+	plotData->AllocateScalars();
+	plotData->GetIncrements(plotIncX, plotIncY,
+					  plotIncZ);
+  //printf("Increments for plot=%d,%d,%d\n",plotIncX,plotIncY,plotIncZ);
+	vtkPointData *pd;
+	pd = plotData->GetPointData();
+	pd->GetScalars()->SetName("Scatter plot");
+	pd = outData[0]->GetPointData();
+	pd->GetScalars()->SetName("Colocalization map");
+
+	maxX = outExt[1] - outExt[0];
+	maxY = outExt[3] - outExt[2];
+	maxZ = outExt[5] - outExt[4];
+
+	for (idxZ = 0; idxZ <= maxZ; idxZ++) {
+		for (idxY = 0; idxY <= maxY; idxY++) {
+			for (idxX = 0; idxX <= maxX; idxX++) {
+				ch1 = (int) *inPtr1++;
+				ch2 = (int) *inPtr2++;
+				ch3 = ch1 + ch2;
+				ch1Sum += ch1;
+				ch2Sum += ch2;
+				ch3Sum += ch3;
+				if (ch1 + ch2 != 0)
+					N++;
+			}
+			inPtr1 += inIncY;
+			inPtr2 += inIncY;
+		}
+		inPtr1 += inIncZ;
+		inPtr2 += inIncZ;
+	}
+	double ch1Mean = ch1Sum / N;
+	double ch2Mean = ch2Sum / N;
+	double ch3Mean = ch3Sum / N;
+	N = 0;
+	inPtr1 = (T *) inData[0]->GetScalarPointerForExtent(outExt);
+	inPtr2 = (T *) inData[1]->GetScalarPointerForExtent(outExt);
+
+	for (idxZ = 0; idxZ <= maxZ; idxZ++) {
+		for (idxY = 0; idxY <= maxY; idxY++) {
+			for (idxX = 0; idxX <= maxX; idxX++) {
+				ch1 = (int) *inPtr1++;
+				ch2 = (int) *inPtr2++;
+				ch3 = ch1 + ch2;
+				ch1mch1MeanSqSum +=
+				    (ch1 - ch1Mean) * (ch1 - ch1Mean);
+				ch2mch2MeanSqSum +=
+				    (ch2 - ch2Mean) * (ch2 - ch2Mean);
+				ch3mch3MeanSqSum +=
+				    (ch3 - ch3Mean) * (ch3 - ch3Mean);
+
+				if (ch1 + ch2 == 0)
+					Nzero++;
+				//calc pearsons for original image
+				sumX = sumX + ch1;
+				sumXY = sumXY + (ch1 * ch2);
+				sumXX = sumXX + (ch1 * ch1);
+				sumYY = sumYY + (ch2 * ch2);
+				sumY = sumY + ch2;
+				N++;
+			}
+			inPtr1 += inIncY;
+			inPtr2 += inIncY;
+		}
+		inPtr1 += inIncZ;
+		inPtr2 += inIncZ;
+	}
+	N = N - Nzero;
+	pearsons1 = sumXY - (sumX * sumY / N);
+	pearsons2 = sumXX - (sumX * sumX / N);
+	pearsons3 = sumYY - (sumY * sumY / N);
+	double rTotal = pearsons1 / (sqrt(pearsons2 * pearsons3));
+
+	//http://mathworld.wolfram.com/Covariance.html
+	//?2 = X2?(X)2 
+	// = E[X2]?(E[X])2 
+	//var (x+y) = var(x)+var(y)+2(covar(x,y));
+	//2(covar(x,y)) = var(x+y) - var(x)-var(y);
+
+	double ch1Var = ch1mch1MeanSqSum / (N - 1);
+	double ch2Var = ch2mch2MeanSqSum / (N - 1);
+	double ch3Var = ch3mch3MeanSqSum / (N - 1);
+	double ch1ch2covar = 0.5 * (ch3Var - (ch1Var + ch2Var));
+
+	//do regression 
+	//See:Dissanaike and Wang
+	// http://papers.ssrn.com/sol3/papers.cfm?abstract_id=407560
+	// 
+	double denom = 2 * ch1ch2covar;
+	double num =
+	    ch2Var - ch1Var +
+	    sqrt((ch2Var - ch1Var) * (ch2Var - ch1Var) +
+		 (4 * ch1ch2covar * ch1ch2covar));
+
+	double m = num / denom;
+	double b = ch2Mean - m * ch1Mean;
+
+	bool prevDivByZero = false;
+	double newMax = ch1Max;
+	double r2Prev = 0;
+	double r2Prev2 = 1;
+	int iteration = 1;
+	r2 = 0;
+	bool prevByZero = false;
+	double tolerance = 0.01;
+
+  char progressText[200];
+	while ((thresholdFound == false) && iteration < 30) {
+    self->UpdateProgress(0.5*(iteration/30.0));
+    sprintf(progressText,"Calculating threshold (iteration %d)",iteration);
+    self->SetProgressText(progressText);
+		if (iteration == 2 && r2 < 0) {
+			printf("No positive correlations found. Ending\n");
+			return;
+		}
+		ch1threshmax = round(newMax);
+		//printf("Setting ch1threshmax to %f\n", ch1threshmax);
+		ch2threshmax =
+		    round(((double) ch1threshmax * (double) m) +
+			  (double) b);
+
+		//printf
+		//    ("2/3: Calculating Threshold. i = %d.\n",
+		//     iteration);
+		//reset values
+		sumX = 0;
+		sumXY = 0;
+		sumXX = 0;
+		sumYY = 0;
+		sumY = 0;
+		N2 = 0;
+		N = 0;
+		Nzero = 0;
+		//printf("Acquiring input pointers\n");
+		inPtr1 =
+		    (T *) inData[0]->GetScalarPointerForExtent(outExt);
+		inPtr2 =
+		    (T *) inData[1]->GetScalarPointerForExtent(outExt);
+
+		for (idxZ = 0; idxZ <= maxZ; idxZ++) {
+			for (idxY = 0; idxY <= maxY; idxY++) {
+				for (idxX = 0; idxX <= maxX; idxX++) {
+					ch1 = (int) *inPtr1++;
+					ch2 = (int) *inPtr2++;
+
+					if ((ch1 < (ch1threshmax))
+					    || (ch2 < (ch2threshmax))) {
+						if (ch1 + ch2 == 0)
+							Nzero++;
+						//calc pearsons
+						sumX = sumX + ch1;
+						sumXY =
+						    sumXY + (ch1 * ch2);
+						sumXX =
+						    sumXX + (ch1 * ch1);
+						sumYY =
+						    sumYY + (ch2 * ch2);
+						sumY = sumY + ch2;
+						N++;
+
+					}
+					inPtr1 += inIncY;
+					inPtr2 += inIncY;
+				}
+				inPtr1 += inIncZ;
+				inPtr2 += inIncZ;
+			}
+		}
+
+
+		if (!self->GetIncludeZeroPixels())
+			N = N - Nzero;
+		pearsons1 = sumXY - (sumX * sumY / N);
+		pearsons2 = sumXX - (sumX * sumX / N);
+		pearsons3 = sumYY - (sumY * sumY / N);
+
+		r2Prev2 = r2Prev;
+		r2Prev = r2;
+		r2 = pearsons1 / (sqrt(pearsons2 * pearsons3));
+
+
+		//if r is not a number then set divide by zero to be true  
+		if (((sqrt(pearsons2 * pearsons3)) == 0) || N == 0)
+			divByZero = true;
+		else
+			divByZero = false;
+
+		//check to see if we're getting colser to zero for r                                               
+		if ((bestr2 * bestr2 > r2 * r2)) {
+			ch1BestThresh = ch1threshmax;
+			bestr2 = r2;
+		}
+		//if our r is close to our level of tolerance then set threshold has been found
+		if ((r2 < tolerance) && (r2 > -tolerance)) {
+
+			thresholdFound = true;
+		}
+		//if we've reached ch1 =1 then we've exhausted posibilities
+		if (round(ch1threshmax) == 0)
+			thresholdFound = true;
+
+		oldMax = newMax;
+		//change threshold max
+		if (r2 >= 0) {
+			if ((r2 >= r2Prev) && (!divByZero))
+				newMax = newMax / 2;
+			if ((r2 < r2Prev) || (divByZero))
+				newMax = newMax + (newMax / 2);
+		}
+		if ((r2 < 0) || divByZero) {
+			newMax = newMax + (newMax / 2);
+		}
+		iteration++;
+
+	}
+
+
+	ch1threshmax = round((ch1BestThresh));
+	ch2threshmax =
+	    round(((double) ch1BestThresh * (double) m) + (double) b);
+	int colocInt = 255;
+
+	Nzero = 0;
+	sumColocCh1 = 0;
+	sumColocCh2 = 0;
+	Ncoloc = 0;
+	//imp1.setSlice(i);
+	//             imp2.setSlice(i);
+	sumXYm = 0;
+	sumCh1gtT = 0;
+	sumCh2gtT = 0;
+
+	mCh2coloc = 0;
+	mCh1coloc = 0;
+	sumCh1total = 0;
+	sumCh2total = 0;
+
+
+	//IJ.showMessage("thresholds "+ (int)ch1threshmax+ ";"+(int)ch2threshmax);
+
+	sumXYm = 0;
+	sumX = 0;
+	sumXY = 0;
+	sumXX = 0;
+	sumYY = 0;
+	sumY = 0;
+	N2 = 0;
+	N = 0;
+	Ncoloc = 0;
+
+	//printf("Acquiring input pointers again.\n");
+	inPtr1 = (T *) inData[0]->GetScalarPointerForExtent(outExt);
+	inPtr2 = (T *) inData[1]->GetScalarPointerForExtent(outExt);
+
+	//printf("Acquiring plot and output pointers.\n");
+
+	T *plotPtr, *outPtr;
+	plotPtr = (T *) plotData->GetScalarPointerForExtent(plotExt);
+	outPtr = (T *) outData[0]->GetScalarPointerForExtent(outExt);
+
+
+	for (idxZ = 0; idxZ <= maxZ; idxZ++) {
+    self->UpdateProgress(0.5+idxZ/float(maxZ));        
+    sprintf(progressText,"Performing final regression (slice %d / %d)",idxZ,maxZ);
+    self->SetProgressText(progressText);
+        
+		//printf
+		//    ("3/3: Performing final regression. Slice = %d.\n",
+		//     idxZ);
+		for (idxY = 0; idxY <= maxY; idxY++) {
+			for (idxX = 0; idxX <= maxX; idxX++) {
+				ch1 = (int) *inPtr1++;
+				ch2 = (int) *inPtr2++;
+
+				SET_AT_OUT(idxX, idxY, idxZ, outPtr, 0);
+
+
+				sumCh1total = sumCh1total + ch1;
+				sumCh2total = sumCh2total + ch2;
+				N++;
+				/*scaledXvalue =
+				   (int) ((double) ch1 *
+				   ch1Scaling);
+				   scaledYvalue =
+				   255 -
+				   (int) ((double) ch2 *
+				   ch2Scaling); */
+
+				//printf("Reading count from plot at (%d,%d)\n",ch1,ch2);
+				count = (int)
+				    GET_AT_PLOT(ch1, ch2, 0, plotPtr);
+				count++;
+         //if(count>200)
+				//printf("at %d,%d count now =%d\n",ch1,ch2,count);
+				SET_AT_PLOT(ch1, ch2, 0, plotPtr, count);
+
+				if (ch1 + ch2 == 0)
+					Nzero++;
+				if (ch1 > 0) {
+					Nch1++;
+					mCh2coloc = mCh2coloc + ch2;
+				}
+				if (ch2 > 0) {
+					Nch2++;
+					mCh1coloc = mCh1coloc + ch1;
+				}
+
+				if ((double) ch2 >= ch2threshmax) {
+					Nch2gtT++;
+					sumCh2gtT = sumCh2gtT + ch2;
+					colocX = colocX + ch1;
+				}
+				if ((double) ch1 >= ch1threshmax) {
+					Nch1gtT++;
+					sumCh1gtT = sumCh1gtT + ch1;
+					colocY = colocY + ch2;
+				}
+				//printf("ch1=%d,ch2=%d,ch1threshmax=%f,ch2threshmax=%f\n",ch1,ch2,ch1threshmax,ch2threshmax);
+				if (((double) ch1 > ch1threshmax)
+				    && ((double) ch2 > ch2threshmax)) {
+					sumColocCh1 = sumColocCh1 + ch1;
+					sumColocCh2 = sumColocCh2 + ch2;
+					Ncoloc++;
+					colocInt =
+					    self->GetConstantVoxelValue();
+					if (!colocInt) {
+						colocInt =
+						    (int) sqrt(ch1 * ch2);
+					}
+					SET_AT_OUT(idxX, idxY, idxZ,
+						   outPtr, colocInt);
+					//calc pearsons
+					sumX = sumX + ch1;
+					sumXY = sumXY + (ch1 * ch2);
+					sumXX = sumXX + (ch1 * ch1);
+					sumYY = sumYY + (ch2 * ch2);
+					sumY = sumY + ch2;
+				}
+			}
+
+			inPtr1 += inIncY;
+			inPtr2 += inIncY;
+		}
+		inPtr1 += inIncZ;
+		inPtr2 += inIncZ;
+	}
+
+
+
+  self->SetSlope(m);
+  self->SetIntercept(b);
+
+		
+	pearsons1 = sumXY - (sumX * sumY / N);
+	pearsons2 = sumXX - (sumX * sumX / N);
+	pearsons3 = sumYY - (sumY * sumY / N);
+
+
+	//Pearsons for coloclaised volume
+	double Rcoloc = pearsons1 / (sqrt(pearsons2 * pearsons3));
+
+	self->SetPearsonWholeImage(rTotal);
+	self->SetPearsonImageAbove(Rcoloc);
+	self->SetPearsonImageBelow(bestr2);
+
+
+	//Mander's original
+	//[i.e. E(ch1if ch2>0) ÷ E(ch1total)]
+
+	double M1 = mCh1coloc / sumCh1total;
+	double M2 = mCh2coloc / sumCh2total;
+	self->SetM1(M1);
+	self->SetM2(M2);
+
+	//Manders using threshold
+	//[i.e. E(ch1 if ch2>ch2threshold) ÷ (Ech1total)]
+	double colocM1 = (double) colocX / (double) sumCh1total;
+	double colocM2 = (double) colocY / (double) sumCh2total;
+	self->SetThresholdM1(colocM1);
+	self->SetThresholdM2(colocM2);
+
+	//as in Coste's paper
+	//[i.e. E(ch1>ch1threshold) ÷ E(ch1total)]
+
+	double colocC1 = (double) sumCh1gtT / (double) sumCh1total;
+	double colocC2 = (double) sumCh2gtT / (double) sumCh2total;
+	self->SetC1(colocC1);
+	self->SetC2(colocC2);
+
+	//Imaris percentage volume
+	double percVolCh1 = (double) Ncoloc / (double) Nch1gtT;
+	double percVolCh2 = (double) Ncoloc / (double) Nch2gtT;
+
+	self->SetPercentageVolumeCh1(percVolCh1);
+	self->SetPercentageVolumeCh2(percVolCh1);
+
+	double percTotCh1 = (double) sumColocCh1 / (double) sumCh1total;
+	double percTotCh2 = (double) sumColocCh2 / (double) sumCh2total;
+	self->SetPercentageTotalCh1(percTotCh1);
+	self->SetPercentageTotalCh2(percTotCh1);
+
+	//Imaris percentage material
+	double percMatCh1 = (double) sumColocCh1 / (double) sumCh1gtT;
+	double percMatCh2 = (double) sumColocCh2 / (double) sumCh2gtT;
+
+	self->SetPercentageMaterialCh1(percMatCh1);
+	self->SetPercentageMaterialCh2(percMatCh2);
+
+	self->SetCh1ThresholdMax(ch1threshmax);
+	self->SetCh2ThresholdMax(ch2threshmax);
+
+	self->SetColocAmount(Ncoloc);
+	self->SetColocPercent((double)Ncoloc / (maxX * maxY * maxZ));
+
+	self->SetSumOverThresholdCh1(sumCh1gtT);
+	self->SetSumOverThresholdCh2(sumCh2gtT);
+	self->SetSumCh1(sumCh1gtT);
+	self->SetSumCh2(sumCh2gtT);
 }
+
 //----------------------------------------------------------------------------
 // This method is passed a input and output regions, and executes the filter
 // algorithm to fill the output from the inputs.
 // It just executes a switch statement to call the correct function for
 // the regions data types.
-void vtkImageColocalizationFilter::ThreadedExecute(vtkImageData **inData, 
-                                     vtkImageData *outData,
-                                     int outExt[6], int id)
+void vtkImageAutoThresholdColocalization::ThreadedExecute(vtkImageData **
+							  inData,
+							  vtkImageData **
+							  outData,
+							  int outExt[6],
+							  int id)
 {
-  int idx1;
-  int inExt[6], cOutExt[6];
+	int idx1;
+	int inExt[6], cOutExt[6];
 
-  switch (inData[0]->GetScalarType())
-  {
-  vtkTemplateMacro7(vtkImageColocalizationFilterExecute, this, id, 
-                    this->NumberOfInputs,inData, 
-                    outData, outExt,static_cast<VTK_TT *>(0));
-  default:
-    vtkErrorMacro(<< "Execute: Unknown ScalarType");
-  return;
-  }    
-    
+	switch (inData[0]->GetScalarType()) {
+		vtkTemplateMacro7
+		    (vtkImageAutoThresholdColocalizationExecute, this, id,
+		     this->NumberOfInputs, inData, outData, outExt,
+		     static_cast < VTK_TT * >(0));
+	default:
+		vtkErrorMacro(<<"Execute: Unknown ScalarType");
+		return;
+	}
+
 }
 
 
 
 //----------------------------------------------------------------------------
-void vtkImageColocalizationFilter::PrintSelf(ostream& os, vtkIndent indent)
+void vtkImageAutoThresholdColocalization::PrintSelf(ostream & os,
+						    vtkIndent indent)
 {
-  this->Superclass::PrintSelf(os, indent);
+	this->Superclass::PrintSelf(os, indent);
+	os << "\n";
+	os << indent << "Channel 1 Threshold: " << Ch1ThresholdMax << "\n";
+	os << indent << "Channel 2 Threshold: " << Ch2ThresholdMax << "\n";
+	os << indent << "R_colocaliation: " << PearsonImageAbove << "\n";
+	os << indent << "R_below: " << PearsonImageBelow << "\n";
+	os << indent << "R_total: " << PearsonWholeImage << "\n";
+	os << "\n";
+	os << indent << "M1: " << M1 << "\n";
+	os << indent << "M2: " << M2 << "\n";
+
+	os << indent << "Colocalization M1: " << ThresholdM1 << "\n";
+	os << indent << "Colocalization M2: " << ThresholdM2 << "\n";
+
+	os << "\n";
+	os << indent << "Amount of colocalization: " << ColocAmount <<
+	    "\n";
+	os << indent << "Colocalization (% of volume): " << ColocPercent <<
+	    "\n";
+	os << "\n";
+	os << indent << "Colocalization (% of Ch1): " <<
+	    PercentageVolumeCh1 << "\n";
+	os << indent << "Colocalization (% of Ch2): " <<
+	    PercentageVolumeCh2 << "\n";
+	os << "\n";
+	os << indent << "Colocalization (% of Ch1 Intensity): " <<
+	    PercentageTotalCh1 << "\n";
+	os << indent << "Colocalization (% of Ch2 Intensity): " <<
+	    PercentageTotalCh2 << "\n";
+	os << "\n";
+	os << indent << "Colocalization (% of Ch1 Intensity > Threshold): "
+	    << PercentageMaterialCh1 << "\n";
+	os << indent << "Colocalization (% of Ch2 Intensity > Threshold): "
+	    << PercentageMaterialCh2 << "\n";
+	os << "\n";
+	os << indent << "Sum of voxels > Threshold (Ch1): " <<
+	    SumOverThresholdCh1 << "\n";
+	os << indent << "Sum of voxels > Threshold (Ch2): " <<
+	    SumOverThresholdCh2 << "\n";
+	os << "\n";
+	os << indent << "Sum of all voxels (Ch1): " << SumCh1 << "\n";
+	os << indent << "Sum of all voxels (Ch2): " << SumCh2 << "\n";
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-

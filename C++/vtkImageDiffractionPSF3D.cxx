@@ -163,7 +163,7 @@ void vtkImageDiffractionPSF3DExecute(vtkImageDiffractionPSF3D *self,
     
 				double kr = waveNumber*r*PixelSpacing;
 				int numCyclesJ = 1 + (int)(kr*upperLimit/3);
-				int numCyclesCos = 1 + (int)(abs(kz)*0.36*upperLimit/6);
+				int numCyclesCos = 1 + (int)(fabs(kz)*0.36*upperLimit/6);
 				int numCycles = numCyclesJ;
 				if(numCyclesCos > numCycles)numCycles = numCyclesCos;
 				int nStep = 2*stepsPerCycle*numCycles;
@@ -282,7 +282,7 @@ void vtkImageDiffractionPSF3DExecute(vtkImageDiffractionPSF3D *self,
 float*ptr=(float*)pixels;
 for(int k=0;k<d;k++) {
     for(int j = 0 ; j < w*h; j++) {
-    *outPtr=pixels[k][j];
+    *outPtr=(T)pixels[k][j];
     outPtr++;
     }
 }

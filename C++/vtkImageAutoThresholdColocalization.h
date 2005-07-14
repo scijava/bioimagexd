@@ -1,7 +1,7 @@
 /*=========================================================================
 
   Program:   BioImageXD
-  Module:    $RCSfile: vtkImageColocalizationFilter.h,v $
+  Module:    $RCSfile: vtkImageAutoThresholdColocalization.h,v $
 
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
@@ -21,11 +21,11 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 =========================================================================*/
-// .NAME vtkImageColocalizationFilter - Collects data from multiple inputs into one image.
+// .NAME vtkImageAutoThresholdColocalization - Collects data from multiple inputs into one image.
 // .SECTION Description
-// vtkImageColocalizationFilter takes the components from multiple inputs and ColocalizationFilters
-// them into one output. The output images are ColocalizationFilter along the "ColocalizationFilterAxis".
-// Except for the ColocalizationFilter axis, all inputs must have the same extent.  
+// vtkImageAutoThresholdColocalization takes the components from multiple inputs and AutoThresholdColocalizations
+// them into one output. The output images are AutoThresholdColocalization along the "AutoThresholdColocalizationAxis".
+// Except for the AutoThresholdColocalization axis, all inputs must have the same extent.  
 // All inputs must have the same number of scalar components.  
 // A future extension might be to pad or clip inputs to have the same extent.
 // The output has the same origin and spacing as the first input.
@@ -33,126 +33,176 @@
 // must have the same scalar type.
 
 
-#ifndef __vtkImageColocalizationFilter_h
-#define __vtkImageColocalizationFilter_h
+#ifndef __vtkImageAutoThresholdColocalization_h
+#define __vtkImageAutoThresholdColocalization_h
 
 
-#include "vtkImageMultipleInputFilter.h"
+#include "vtkImageMultipleInputOutputFilter.h"
 
-class VTK_IMAGING_EXPORT vtkImageColocalizationFilter : public vtkImageMultipleInputFilter
+class VTK_FILTERING_EXPORT vtkImageAutoThresholdColocalization : public vtkImageMultipleInputOutputFilter
 {
 public:
-  static vtkImageColocalizationFilter *New();
-  vtkTypeRevisionMacro(vtkImageColocalizationFilter,vtkImageMultipleInputFilter);
+  static vtkImageAutoThresholdColocalization *New();
+  vtkTypeRevisionMacro(vtkImageAutoThresholdColocalization,vtkImageMultipleInputOutputFilter);
   void PrintSelf(ostream& os, vtkIndent indent);
 
-  // Description:
-  // Set the bit depth of the generated colocalization map
-  vtkSetMacro(OutputDepth,int);
-  vtkGetMacro(OutputDepth,int);
-  void SetOutputDepthTo24Bit() { this->SetOutputDepth(24); }
-  void SetOutputDepthTo8Bit() { this->SetOutputDepth(8); }
-  void SetOutputDepthTo1Bit() { this->SetOutputDepth(1); }
-  
-  // Description:
-  // Get the value for Pearson's correlation of the datasets
-  vtkGetMacro(PearsonsCorrelation,double);
-  vtkSetMacro(PearsonsCorrelation,double);
 
   // Description:
-  // Get the value for overlap coefficient
-  vtkGetMacro(OverlapCoefficient,double);
-  vtkSetMacro(OverlapCoefficient,double);    
+  // Include zero-zero pixel pairs in colocalization
+  vtkGetMacro(IncludeZeroPixels,bool);
+  vtkSetMacro(IncludeZeroPixels,bool);
 
   // Description:
-  // Get the value for overlap coefficients k1 and k2
-  vtkGetMacro(OverlapCoefficientK1,double);
-  vtkGetMacro(OverlapCoefficientK2,double);  
-  vtkSetMacro(OverlapCoefficientK1,double);
-  vtkSetMacro(OverlapCoefficientK2,double);
+  // Set colocalized voxels to this value
+  vtkGetMacro(ConstantVoxelValue,int);
+  vtkSetMacro(ConstantVoxelValue,int);
 
   // Description:
-  // Get the value for colocalization coefficients m1 and m2
-  vtkGetMacro(ColocalizationCoefficientM1,double);
-  vtkGetMacro(ColocalizationCoefficientM2,double);    
-  vtkSetMacro(ColocalizationCoefficientM1,double);
-  vtkSetMacro(ColocalizationCoefficientM2,double);    
+  // Pearson's correlation for whole volume, voxels above threshold and 
+  // voxels below threshold
+  vtkGetMacro(PearsonWholeImage,double);
+  vtkSetMacro(PearsonWholeImage,double);
+  vtkGetMacro(PearsonImageAbove,double);
+  vtkSetMacro(PearsonImageAbove,double);
+  vtkGetMacro(PearsonImageBelow,double);
+  vtkSetMacro(PearsonImageBelow,double);
   
   // Description:
-  // Get the value for colocalization coefficients m1 and m2
-  // calculated based on only the AOI
-  vtkGetMacro(AOIColocalizationCoefficientM1,double);
-  vtkGetMacro(AOIColocalizationCoefficientM2,double);    
-  vtkSetMacro(AOIColocalizationCoefficientM1,double);
-  vtkSetMacro(AOIColocalizationCoefficientM2,double);    
+  // Manders' original colocalization coefficients M1 and M2
+  // voxels below threshold
+  vtkGetMacro(M1,double);
+  vtkSetMacro(M1,double);
+  vtkGetMacro(M2,double);
+  vtkSetMacro(M2,double);
 
+  // Description:
+  // Manders' colocalization coefficients M1 and M2 for thresholded areas
+  vtkGetMacro(ThresholdM1,double);
+  vtkSetMacro(ThresholdM1,double);
+  vtkGetMacro(ThresholdM2,double);
+  vtkSetMacro(ThresholdM2,double);
+      
+  // Description:
+  // Costes' colocalization coefficients C1 and C2 
+  vtkGetMacro(C1,double);
+  vtkSetMacro(C1,double);
+  vtkGetMacro(C2,double);
+  vtkSetMacro(C2,double);  
+      
+  // Description:
+  // Imaris percentage volume
+  vtkGetMacro(PercentageVolumeCh1,double);
+  vtkSetMacro(PercentageVolumeCh1,double);
+  vtkGetMacro(PercentageVolumeCh2,double);
+  vtkSetMacro(PercentageVolumeCh2,double);
+
+    // Description:
+  // Imaris percentage total
+  vtkGetMacro(PercentageTotalCh1,double);
+  vtkSetMacro(PercentageTotalCh1,double);
+  vtkGetMacro(PercentageTotalCh2,double);
+  vtkSetMacro(PercentageTotalCh2,double);
+      
+    // Description:
+  // Imaris percentage material
+  vtkGetMacro(PercentageMaterialCh1,double);
+  vtkSetMacro(PercentageMaterialCh1,double);
+  vtkGetMacro(PercentageMaterialCh2,double);
+  vtkSetMacro(PercentageMaterialCh2,double);  
+
+  // Description:
+  // Maximum Threshold of Channel 1 and 2
+  vtkGetMacro(Ch1ThresholdMax,double);
+  vtkSetMacro(Ch1ThresholdMax,double);
+  vtkGetMacro(Ch2ThresholdMax,double);
+  vtkSetMacro(Ch2ThresholdMax,double);  
+      
+  // Description:
+  // Sum of voxels over threshold for channels 1 and 2
+  vtkGetMacro(SumOverThresholdCh1,double);
+  vtkSetMacro(SumOverThresholdCh1,double);
+  vtkGetMacro(SumOverThresholdCh2,double);
+  vtkSetMacro(SumOverThresholdCh2,double);
+        
+  // Description:
+  // Sum of all voxels for channels 1 and 2
+  vtkGetMacro(SumCh1,double);
+  vtkSetMacro(SumCh1,double);
+  vtkGetMacro(SumCh2,double);
+  vtkSetMacro(SumCh2,double);
+      
+  // Description:
+  // Slope of the regression
+  vtkGetMacro(Slope,double);
+  vtkSetMacro(Slope,double);  
   
   // Description:
-  // Voxels in the specified dataset that have a scalar value above
-  // this threshold and below the upper threshold are considered to be colocalizing
-  void SetColocalizationLowerThreshold(int dataset, int threshold);
-  int GetColocalizationLowerThreshold(int dataset) { 
-      if (dataset < this->NumberOfDatasets) return ColocalizationLowerThresholds[dataset];
-      return 0;
-  }
-  // Description:
-  // Voxels in the specified dataset that have a scalar value below 
-  // this threshold and above the lower threshold are considered to be colocalizing
-  void SetColocalizationUpperThreshold(int dataset, int threshold);
-  int GetColocalizationUpperThreshold(int dataset) { 
-      if (dataset < this->NumberOfDatasets) return ColocalizationUpperThresholds[dataset];
-      return 0;
-  }
-  int* GetColocalizationLowerThresholds() { return this->ColocalizationLowerThresholds; }
-  int* GetColocalizationUpperThresholds() { return this->ColocalizationUpperThresholds; }
+  // Intercept of the regression
+  vtkGetMacro(Intercept,double);
+  vtkSetMacro(Intercept,double);  
   
   // Description:
-  // Get the amount of colocalization in the image
-  vtkGetMacro(ColocalizationAmount,int);
-  vtkSetMacro(ColocalizationAmount,int);
+  // Colocalization amount
+  vtkGetMacro(ColocAmount,double);
+  vtkSetMacro(ColocAmount,double);  
+      
   // Description:
-  // Get the number of voxels over the threshold from the
-  // dataset that has the least number of voxels over the threshold.
-  vtkGetMacro(LeastVoxelsOverThreshold,int);
-  vtkSetMacro(LeastVoxelsOverThreshold,int);
+  // Colocalization percentage
+  vtkGetMacro(ColocPercent,double);
+  vtkSetMacro(ColocPercent,double);    
 
 protected:
-  vtkImageColocalizationFilter();
-  ~vtkImageColocalizationFilter();
+  vtkImageAutoThresholdColocalization();
+  ~vtkImageAutoThresholdColocalization();
 
+  void ComputeInputUpdateExtents( vtkDataObject*output );
 
-  void ExecuteInformation(vtkImageData **inputs, vtkImageData *output);
+  void ExecuteInformation(vtkImageData **inputs, vtkImageData **output);
   void ComputeInputUpdateExtent(int inExt[6], int outExt[6]);
   
-  void ThreadedExecute(vtkImageData **inDatas, vtkImageData *outData,
+  void ThreadedExecute(vtkImageData **inDatas, vtkImageData **outData,
                        int extent[6], int id);
   
 
   void InitOutput(int outExt[6], vtkImageData *outData);
 private:
-  vtkImageColocalizationFilter(const vtkImageColocalizationFilter&);  // Not implemented.
-  void operator=(const vtkImageColocalizationFilter&);  // Not implemented.
+  vtkImageAutoThresholdColocalization(const vtkImageAutoThresholdColocalization&);  // Not implemented.
+  void operator=(const vtkImageAutoThresholdColocalization&);  // Not implemented.
 
-  int OutputDepth;
-  int *ColocalizationLowerThresholds;
-  int *ColocalizationUpperThresholds;
-  int ColocalizationAmount;
-  int LeastVoxelsOverThreshold;
-  int NumberOfDatasets;
+  int ConstantVoxelValue;
+  bool IncludeZeroPixels;
 
-  double PearsonsCorrelation;
-  double OverlapCoefficient;
-  double OverlapCoefficientK1;
-  double OverlapCoefficientK2;
-  double ColocalizationCoefficientM1;
-  double ColocalizationCoefficientM2;
-  double AOIColocalizationCoefficientM1;
-  double AOIColocalizationCoefficientM2;
+  double PearsonWholeImage;
+  double PearsonImageAbove;
+  double PearsonImageBelow;
+      
+  double M1;
+  double M2;
+  double ThresholdM1;
+  double ThresholdM2;
+  double C1;
+  double C2;
   
+  double PercentageVolumeCh1;
+  double PercentageVolumeCh2;
+  double PercentageTotalCh1;
+  double PercentageTotalCh2;
+  double Ch1ThresholdMax;
+  double Ch2ThresholdMax;
+      
+  double PercentageMaterialCh1;
+  double PercentageMaterialCh2;
+      
+  double ColocAmount;
+  double ColocPercent;
+  double SumOverThresholdCh1;
+  double SumOverThresholdCh2;
+  double SumCh1;
+  double SumCh2;
+      
+
+  double Slope;
+  double Intercept;
 };
 
 #endif
-
-
-
-

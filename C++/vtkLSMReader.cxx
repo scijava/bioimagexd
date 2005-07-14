@@ -352,8 +352,11 @@ int vtkLSMReader::ReadChannelColorsAndNames(ifstream *f,unsigned long start)
   colorBuff = new char[4];
 
   pos = start;
+  // Read size of structure
   sizeOfStructure = this->ReadInt(f,&pos);
+  // Read number of colors
   colNum = this->ReadInt(f,&pos);
+  // Read number of names
   nameNum = this->ReadInt(f,&pos);
   sizeOfNames = sizeOfStructure - ( (10*4) + (colNum*4) );
 
@@ -369,13 +372,16 @@ int vtkLSMReader::ReadChannelColorsAndNames(ifstream *f,unsigned long start)
     vtkWarningMacro(<<"Number of channel names is not same as number of channels!");
     }
 
+  // Read offset to color info
   colorOffset = this->ReadInt(f,&pos) + start;
+  // Read offset to name info
   nameOffset = this->ReadInt(f,&pos) + start;
 
   this->ChannelColors->Reset();
   this->ChannelColors->SetNumberOfValues(3*colNum);
   this->ChannelColors->SetNumberOfComponents(3);
 
+  // Read the colors
   for(int j=0;j<colNum;j++)
     {
     this->ReadFile(f,&colorOffset,4,colorBuff);
@@ -427,43 +433,84 @@ int vtkLSMReader::ReadTimeStampInformation(ifstream *f,unsigned long offset)
   return 0;
 }
 
+/* Read the TIF_CZ_LSMINFO entry described in Table 17 of the LSM file format specification
+ *
+ *
+ */
 int vtkLSMReader::ReadLSMSpecificInfo(ifstream *f,unsigned long pos)
 {
   unsigned long offset;
   pos += 2 * 4; // skip over the start of the LSMInfo
+                // first 4 byte entry if magic number
+                // second is number of bytes in this structure
 
+  // Then we read X
   this->NumberOfIntensityValues[0] = this->ReadInt(f,&pos); 
   this->Dimensions[0] = this->NumberOfIntensityValues[0];
+  // Y
   this->NumberOfIntensityValues[1] = this->ReadInt(f,&pos); 
   this->Dimensions[1] = this->NumberOfIntensityValues[1];
+  // and Z dimension
   this->NumberOfIntensityValues[2] = this->ReadInt(f,&pos); 
   this->Dimensions[2] = this->NumberOfIntensityValues[2];
 
+  // Read number of channels
   this->Dimensions[4] = this->ReadInt(f,&pos); 
 
+  // Read number of timepoints
   this->NumberOfIntensityValues[3] = this->ReadInt(f,&pos);
   this->Dimensions[3] = this->NumberOfIntensityValues[3];
 
+  // Read datatype, 1 for 8-bit unsigned int
+  //                2 for 12-bit unsigned int
+  //                5 for 32-bit float (timeseries mean of ROIs)
+  //                0 if the channels have different types
+  //                In that case, u32OffsetChannelDataTypes
+  //                has further info
   this->DataType = this->ReadInt(f,&pos);
 
+  // Skip the width and height of thumbnails
   pos += 2 * 4;
 
+  // Read voxel sizes
   this->VoxelSizes[0] = this->ReadDouble(f,&pos);
   this->VoxelSizes[1] = this->ReadDouble(f,&pos);
   this->VoxelSizes[2] = this->ReadDouble(f,&pos);
 
+  // Skip over OriginX,OriginY,OriginZ which are not used
   pos += 3*8;
-
+  
+  // Read scan type which is 
+  // 0 for normal x-y-z scan
+  // 1 for z-scan (x-z plane)
+  // 2 for line scan
+  // 3 for time series x-y
+  // 4 for time series x-z
+  // 5 time series mean of ROIs
+  // 6 time series x y z
+  // 7 spline scan
+  // 8 spline plane x-z
+  // 9 time series spline plane
+  // 10 point mode
   this->ScanType = this->ReadShort(f,&pos);
 
+  // skip over SpectralScan flag
+  // if 0, no spectral scan
+  // if 1, image has been acquired with spectral scan mode with a "meta" detector
+  // skip over DataType, Offset to vector overlay, Offset to input LUT
   pos += 1*2 + 4*4;// + 1*8 + 3*4;
-
+  
+  // Read OffsetChannelColors, which is an offset to channel colors and names
   this->ChannelInfoOffset = this->ReadUnsignedInt(f,&pos);
-
   this->ReadChannelColorsAndNames(f,this->ChannelInfoOffset);
 
+  // Skip time interval in seconds (8 bytes)
+  // Skip offset to channel datatypes, if they differ from above
+  // Skip scan information (device settings)
+  // SKip Zeiss Vision KS-3D speific data
   pos += 1*8 + 3*4;
 
+  // Read timestamp information
   offset = this->ReadUnsignedInt(f,&pos);
   this->ReadTimeStampInformation(f,offset);
 
@@ -703,6 +750,7 @@ void vtkLSMReader::ExecuteData(vtkDataObject *output)
   for(int i=0;i<this->Dimensions[2];i++)
   //for(int i=0;i<1;i++)
     {
+    UpdateProgress(i/float(this->Dimensions[2]));
     imageOffset = this->GetOffsetToImage(i,timepoint);
     this->ReadImageDirectory(this->GetFile(),imageOffset);
     offset = this->StripOffset->GetValue(channel);

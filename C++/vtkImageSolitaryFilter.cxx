@@ -105,8 +105,8 @@ void vtkImageSolitaryFilter::ExecuteData(vtkDataObject *)
   output->AllocateScalars();
   input->GetIncrements(inIncX, inIncY, inIncZ);
   output->GetContinuousIncrements(uExtent,outIncX, outIncY, outIncZ);
-  printf("inIncX=%d,inIncY=%d,inIncZ=%d\n",inIncX,inIncY,inIncZ);
-  printf("outIncX=%d,outIncY=%d,outIncZ=%d\n",outIncX,outIncY,outIncZ);
+  //printf("inIncX=%d,inIncY=%d,inIncZ=%d\n",inIncX,inIncY,inIncZ);
+  //printf("outIncX=%d,outIncY=%d,outIncZ=%d\n",outIncX,outIncY,outIncZ);
   maxX = uExtent[1] - uExtent[0];
   maxY = uExtent[3] - uExtent[2];
   maxZ = uExtent[5] - uExtent[4];
@@ -118,10 +118,14 @@ void vtkImageSolitaryFilter::ExecuteData(vtkDataObject *)
   
   #define GET_AT(x,y,z,ptr) *(ptr+(z)*inIncZ+(y)*inIncY+(x)*inIncX)
   
-  printf("maxX=%d,maxY=%d,maxZ=%d\n",maxX,maxY,maxZ);
-  printf("Filtering Threshold=%d,Horizontal=%d, Vertical=%d\n",this->FilteringThreshold,this->HorizontalThreshold,this->VerticalThreshold);
+  //printf("maxX=%d,maxY=%d,maxZ=%d\n",maxX,maxY,maxZ);
+  //printf("Filtering Threshold=%d,Horizontal=%d, Vertical=%d\n",this->FilteringThreshold,this->HorizontalThreshold,this->VerticalThreshold);
+  char progressText[200];
   for(idxZ = 0; idxZ <= maxZ; idxZ++ ) {
-    
+    UpdateProgress(idxZ/float(maxZ));
+    sprintf(progressText,"Removing solitary noise voxels (slice %d / %d)",idxX,maxZ);
+    SetProgressText(progressText);
+
     for(idxY = 0; idxY <= maxY; idxY++ ) {
       for(idxX = 0; idxX <= maxX; idxX++ ) {
           

@@ -29,6 +29,8 @@
 #include "vtkObjectFactory.h"
 #include "vtkPointData.h"
 
+#define PRT_EXT(ext) ext[0],ext[1],ext[2],ext[3],ext[4],ext[5]
+
 vtkCxxRevisionMacro(vtkImageSimpleMIP, "$Revision: 1.36 $");
 vtkStandardNewMacro(vtkImageSimpleMIP);
 
@@ -73,6 +75,7 @@ vtkImageSimpleMIP::ExecuteInformation(vtkImageData *input, vtkImageData *output)
 void vtkImageSimpleMIP::ExecuteData(vtkDataObject *)
 {
   int uExtent[6];
+  printf("GetOutput()\n");
   vtkImageData* output = this->GetOutput();
   vtkImageData* input = this->GetInput();
   int inIncX,inIncY,inIncZ;
@@ -82,18 +85,21 @@ void vtkImageSimpleMIP::ExecuteData(vtkDataObject *)
   char *inPtr1;
 
   unsigned char scalar,outScalar;
-
+  if(!output) {
+      printf("No output\n");
+  }
   output->GetUpdateExtent(uExtent);
+  printf("update extent=%d,%d,%d,%d,%d,%d",PRT_EXT(uExtent));
   output->SetExtent(uExtent);
 
   // We will want the input update extent to be the one we go through
   input->GetUpdateExtent(uExtent);
-  //printf("Update extent is %d,%d,%d,%d,%d,%d",uExtent[0],uExtent[1],uExtent[2],uExtent[3],uExtent[4],uExtent[5]);
+  printf("Update extent is %d,%d,%d,%d,%d,%d",PRT_EXT(uExtent));
  
   // Get pointers for input and output
   char *inPtr = (char *) input->GetScalarPointerForExtent(uExtent);
   char *outPtr = (char *) output->GetScalarPointerForExtent(uExtent);
-      
+  
   if(!input) {
     vtkErrorMacro("No input is specified.");
   } 
@@ -113,13 +119,13 @@ void vtkImageSimpleMIP::ExecuteData(vtkDataObject *)
   output->GetIncrements(outIncX, outIncY, outIncZ);
   //printf("inIncX=%d,inIncY=%d,inIncZ=%d\n",inIncX,inIncY,inIncZ);
   //printf("outIncX=%d,outIncY=%d,outIncZ=%d\n",outIncX,outIncY,outIncZ);
-  
+  printf("x=%d,y=%d,z=%d\n",maxX,maxY,maxZ);
   #define GET_AT(x,y,z,c,ptr) *(ptr+(z)*inIncZ+(y)*inIncY+(x)*inIncX+c)
   #define SET_AT(x,y,z,c,ptr,val) *(ptr+(z)*outIncZ+(y)*outIncY+(x)*outIncX+c)=val
   
   //printf("maxX=%d,maxY=%d,maxZ=%d\n",maxX,maxY,maxZ);
   for(idxZ = 0; idxZ <= maxZ; idxZ++ ) {
-    
+    UpdateProgress(idxZ/float(maxZ));
     for(idxY = 0; idxY <= maxY; idxY++ ) {
       for(idxX = 0; idxX <= maxX; idxX++ ) {
 	  for(idxC = 0; idxC <= maxC; idxC++) {
