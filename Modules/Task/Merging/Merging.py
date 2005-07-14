@@ -134,19 +134,27 @@ class Merging(Module):
         processed=[]
         imagelen=len(self.images)
         
+        self.shift=0
+        self.scale=0.333
+        self.scale/=imagelen
         for i in range(0,imagelen):
             #self.images[i].GlobalReleaseDataFlagOn()
             mapIntensities=vtk.vtkImageMapToIntensities()
             mapIntensities.SetIntensityTransferFunction(self.intensityTransferFunctions[i])
             mapIntensities.SetInput(self.images[i])
+            mapIntensities.AddObserver("ProgressEvent",self.updateProgress)
             mapIntensities.Update()
             data=mapIntensities.GetOutput()
             processed.append(data)
         
         
         luminance=0
+        self.shift=0.333
+        self.scale=0.333
+        
         if self.doAlpha:
             createalpha=vtk.vtkImageAlphaFilter()
+            createalpha.AddObserver("ProgressEvent",self.updateProgress)
             #print "self.alpaMode=",self.alphaMode
             if self.alphaMode[0]==0:
                 Logging.info("Alpha mode = maximum", kw="processing")
@@ -167,6 +175,8 @@ class Merging(Module):
         # Color the datasets to 24-bit datasets using VTK classes            
         
         colored=[]
+        self.shift=0.666
+        self.scale=0.333
         for i in range(0,imagelen):
             if processed[i].GetNumberOfScalarComponents()==1:
                 mapToColors=vtk.vtkImageMapToColors()
@@ -182,6 +192,7 @@ class Merging(Module):
                 colored.append(processed[i])
         # result rgb
         merge=vtk.vtkImageMerge()
+        merge.AddObserver("ProgressEvent",self.updateProgress)
         for i in colored:
             merge.AddInput(i)
         merge.Update()
@@ -207,6 +218,7 @@ class Merging(Module):
 
         t3=time.time()
         Logging.info("Merging took %.4f seconds"%(t3-t1),kw="processing")
+        messenger.send(None,"update_progress",100,"Done.")
         
         #data.GlobalReleaseDataFlagOn()
         return data

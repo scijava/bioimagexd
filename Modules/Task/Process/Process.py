@@ -93,13 +93,18 @@ class Process(Module):
         if settings.get("MedianFiltering"):
             self.doMedian=True
             self.medianNeighborhood=settings.get("MedianNeighborhood")
+            #if type(self.medianNeighborhood)==type(""):
+            #    self.medianNeighborhood=eval(self.medianNeighborhood)
 
         if settings.get("SolitaryFiltering"):
             self.doSolitary=True
-            self.solitaryX=settings.get("SolitaryHorizontalThreshold")
-            self.solitaryY=settings.get("SolitaryVerticalThreshold")
-            self.solitaryThreshold=settings.get("SolitaryProcessingThreshold")
-        if settings.get("AnisotropicDiffusion"):
+            self.solitaryX=int(settings.get("SolitaryHorizontalThreshold"))
+            self.solitaryY=int(settings.get("SolitaryVerticalThreshold"))
+            self.solitaryThreshold=int(settings.get("SolitaryProcessingThreshold"))
+        
+        ani=settings.get("AnisotropicDiffusion")
+        if ani:
+            Logging.info("Doing anisotropic diffusion: ",ani,kw="processing")
             self.doAnisotropic=True
 
     def getPreview(self,z):
@@ -137,7 +142,7 @@ class Process(Module):
         data=self.images[n]
         
         if self.doSolitary:
-            Logging.info("Doing solitary filtering",kw="processing")
+            Logging.info("Doing solitary filtering, threshold =",self.solitaryThreshold,kw="processing")
             t3=time.time()
             # Using VTK´s vtkImageMedian3D-filter
             solitary = vtk.vtkImageSolitaryFilter()
@@ -145,16 +150,19 @@ class Process(Module):
             solitary.SetFilteringThreshold(self.solitaryThreshold)
             solitary.SetHorizontalThreshold(self.solitaryX)
             solitary.SetVerticalThreshold(self.solitaryY)
+            solitary.AddObserver("ProgressEvent",self.updateProgress)
             solitary.Update()
             t4=time.time()
             Logging.info("It took %.4f seconds"%(t4-t3),kw="processing")
             data=solitary.GetOutput()
         # Median filtering
         if self.doMedian:
+            self.eventDesc="Applying median filter"
             Logging.info("Doing median filtering",kw="processing")
             # Using VTK´s vtkImageMEdian3D-filter
             median = vtk.vtkImageMedian3D()
             median.SetInput(data)
+            median.AddObserver("ProgressEvent",self.updateProgress)
             median.SetKernelSize(self.medianNeighborhood[0],
                                  self.medianNeighborhood[1],
                                  self.medianNeighborhood[2])
@@ -162,13 +170,17 @@ class Process(Module):
             median.Update()
             data=median.GetOutput()
         if self.doAnisotropic:
+            self.eventDesc="Applying anisotrophic diffusion"
+            Logging.info("Doing median filtering",kw="processing")
+            
             Logging.info("Doing anisotropic diffusion",kw="processing")
             aniso=vtk.vtkImageAnisotropicDiffusion3D()
+            aniso.AddObserver("ProgressEvent",self.updateProgress)
             aniso.SetInput(data)
             aniso.Update()
             data=aniso.GetOutput()
 
         t2=time.time()
         Logging.info("Processing took %.4f seconds"%(t2-t1))
-
+        messenger.send(None,"update_progress",100,"Done.")
         return data

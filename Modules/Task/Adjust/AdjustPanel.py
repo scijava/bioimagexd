@@ -35,7 +35,7 @@ __version__ = "$Revision: 1.42 $"
 __date__ = "$Date: 2005/01/13 14:52:39 $"
 
 import wx
-
+from enthought.tvtk import messenger
 import os.path
 import Dialogs
 
@@ -74,7 +74,7 @@ class AdjustPanel(TaskPanel.TaskPanel):
         # Preview has to be generated heregoto
         # self.colorChooser=None
         self.createIntensityTransferPage()
-
+        messenger.connect(None,"timepoint_changed",self.updateTimepoint)
         self.Show()
 
         self.mainsizer.Layout()
@@ -216,10 +216,8 @@ class AdjustPanel(TaskPanel.TaskPanel):
         else:
             Logging.info("Previewing timepoint ",tp,"(will send change event)",kw="task")
 
-            evt=Events.ChangeEvent(Events.myEVT_TIMEPOINT_CHANGED,self.GetId())
-            evt.setValue(tp)
-            self.GetEventHandler().ProcessEvent(evt)
-            self.updateTimepoint(evt)
+            messenger.send(None,"timepoint_changed",tp)
+            #self.updateTimepoint(evt)
 
     def createButtonBox(self):
         """
@@ -250,13 +248,13 @@ class AdjustPanel(TaskPanel.TaskPanel):
         self.commonSettingsSizer.Add(self.colorBtn,(2,0))
         self.Layout()
 
-    def updateTimepoint(self,event):
+    def updateTimepoint(self,obj,evt,timePoint):
         """
         Method: updateTimepoint(event)
         Created: 04.04.2005, KP
         Description: A callback function called when the timepoint is changed
         """
-        timePoint=event.getValue()
+        #timePoint=event.getValue()
         Logging.info("Now configuring timepoint",timePoint,kw="task")
         itf=self.settings.getCounted("IntensityTransferFunctions",timePoint)
         self.iTFEditor.setIntensityTransferFunction(itf)

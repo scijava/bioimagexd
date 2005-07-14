@@ -125,6 +125,7 @@ class Adjust(Module):
             
         mapdata=self.images[n]
         mapIntensities=vtk.vtkImageMapToIntensities()
+        mapIntensities.AddObserver("ProgressEvent",self.updateProgress)
         mapIntensities.SetIntensityTransferFunction(self.intensityTransferFunctions[n])
         mapIntensities.SetInput(mapdata)
         
