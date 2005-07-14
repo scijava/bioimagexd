@@ -39,6 +39,7 @@ ZOOM_TO_BAND=1
 MANAGE_ANNOTATION=2
 ADD_ANNOTATION=3
 ADD_ROI=4
+SET_THRESHOLD=5
 
 class InteractivePanel(wx.ScrolledWindow):
     """
@@ -56,6 +57,7 @@ class InteractivePanel(wx.ScrolledWindow):
         size=(512,512)
         if "size" in kws:
             size=kws["size"]
+        self.multiple=0
         self.dataUnit=None
         self.annotations=[]
         self.annotationClass=None
@@ -146,7 +148,7 @@ class InteractivePanel(wx.ScrolledWindow):
             return
         if event.LeftIsDown():
             self.actionend=event.GetPosition()
-
+            Logging.info("start=",self.actionstart,"end=",self.actionend,kw="iactivepanel")
             if self.action == ADD_ANNOTATION:
                 self.updateObject(self.annotationClass,event)
             elif self.action == MANAGE_ANNOTATION:
@@ -174,6 +176,8 @@ class InteractivePanel(wx.ScrolledWindow):
             self.zoomToRubberband(event)
         elif self.action==ADD_ANNOTATION:
             self.updateObject(self.annotationClass,event)
+        elif self.action==SET_THRESHOLD:
+            self.setThreshold()
         
         if not self.multiple:
             self.currentAnnotation=None
