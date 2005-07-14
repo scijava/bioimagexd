@@ -43,9 +43,6 @@ from DataUnit import *
 from PreviewFrame import *
 from Logging import *
 from ProcessingManager import *
-#from Events import *
-#import Events
-from GUI import Events
 
 import Dialogs
 import sys
@@ -117,7 +114,8 @@ class TaskPanel(scrolled.ScrolledPanel):
         self.SetAutoLayout(True)
         
         self.SetupScrolling()
-
+        wx.FutureCall(500,self.doPreviewCallback)
+        
     def createItemToolbar(self):
         """
         Method: createItemToolbar()
@@ -126,7 +124,7 @@ class TaskPanel(scrolled.ScrolledPanel):
         """      
         #self.tb2 = self.CreateToolBar(wx.TB_HORIZONTAL)
         self.toolMgr.clearItemsBar()
-	Logging.info("Creating item toolbar",kw="init")
+        Logging.info("Creating item toolbar",kw="init")
         #self.tb2 = wx.ToolBar(self,-1,style=wx.TB_VERTICAL|wx.TB_TEXT)
         #self.tb2.SetToolBitmapSize((32,32))# this required for non-standard size buttons on MSW
         #self.tb2 = self.toolbar
@@ -165,28 +163,7 @@ class TaskPanel(scrolled.ScrolledPanel):
             #self.tb2.AddTool(toolid,bmp)#,shortHelp=name)
             n=n+1
 
-        #self.mainsizer.Add(self.tb2,(0,4))
-        #self.tb2.Realize()
-        #return self.tb2
-        #self.previewSizer.Add(self.tb2,(0,0))
-        #self.Bind(EVT_DATA_UPDATE,self.updateRendering,id=self.GetId())
         return n
-
-    def updateZSlice(self,event):
-        """
-        Method: updateZSlice(event)
-        Created: 03.04.2005, KP
-        Description: A callback function called when the zslice is changed
-        """
-        pass
-        
-    def updateTimepoint(self,event):
-        """
-        Method: updateTimepoint(event)
-        Created: 04.04.2005, KP
-        Description: A callback function called when the timepoint is changed
-        """
-        pass
         
     def getResult(self):
         """
@@ -201,19 +178,17 @@ class TaskPanel(scrolled.ScrolledPanel):
         return self.dataUnit,self.filePath
 
     def createButtonBox(self):
-        
-        
         self.buttonsSizer2=wx.BoxSizer(wx.HORIZONTAL)
 
         self.previewButton=wx.Button(self.buttonPanel,-1,"Preview")
         self.previewButton.Bind(wx.EVT_BUTTON,self.doPreviewCallback)
-        self.buttonsSizer2.Add(self.previewButton)        
+        self.buttonsSizer2.Add(self.previewButton,1,wx.RIGHT|wx.ALIGN_CENTER,10)        
         
-        self.processButton=wx.Button(self.buttonPanel,-1,"Process dataset")
+        self.processButton=wx.Button(self.buttonPanel,-1,"Process")
         #self.processDatasetButton.Bind(EVT_BUTTON,self.doProcessingCallback)
-        self.buttonsSizer2.Add(self.processButton)
+        self.buttonsSizer2.Add(self.processButton,1,wx.RIGHT|wx.ALIGN_CENTER,10)
 
-        self.buttonSizer.Add(self.buttonsSizer2)    
+        self.buttonSizer.Add(self.buttonsSizer2,1)    
 
         
     def createOptionsFrame(self):
@@ -254,7 +229,7 @@ class TaskPanel(scrolled.ScrolledPanel):
         Description: A callback function called when a channel is selected in
                      the menu
         """
-	Logging.info("Select item %d"%index, kw="dataunit")
+        Logging.info("Select item %d"%index, kw="dataunit")
         if index==-1:	    
             raise "No index given"
             index=self.itemMenu.GetSelection()
@@ -306,7 +281,7 @@ class TaskPanel(scrolled.ScrolledPanel):
 
         """
         # TODO: Implement properly
-	self.Enable(enable)
+        self.Enable(enable)
 
     def doPreviewCallback(self,event=None):
         """
@@ -315,12 +290,8 @@ class TaskPanel(scrolled.ScrolledPanel):
         Description: A callback for the button "Preview" and other events
                      that wish to update the preview
         """
-        #if self.preview:
-        #    self.preview.updatePreview()
-	Logging.info("Sending preview update event with id=",self.GetId(),kw="event")
-
-        evt=Events.DataUpdateEvent(Events.myEVT_DATA_UPDATE,self.GetId(),delay=0)
-        self.GetEventHandler().ProcessEvent(evt)
+        Logging.info("Sending preview update event",kw="event")
+        messenger.send(None,"data_changed",0)
 
 
     def loadSettingsCallback(self,event):
@@ -363,7 +334,7 @@ class TaskPanel(scrolled.ScrolledPanel):
         if filename[-3:].lower()!=".du":
             filename+=".du"
 
-	Logging.info("Saving to ",filename,kw="processing")
+        Logging.info("Saving to ",filename,kw="processing")
 
         self.updateSettings()
         self.dataUnit.doProcessing(filename,settings_only=True)
@@ -378,7 +349,7 @@ class TaskPanel(scrolled.ScrolledPanel):
         """
         self.dataUnit=dataUnit
         name=dataUnit.getName()
-	Logging.info("Name of dataunit is ",name,kw="dataunit")
+        Logging.info("Name of dataunit is ",name,kw="dataunit")
         self.taskName.SetValue(name)
         try:
             #self.preview.setDataUnit(dataUnit)

@@ -32,13 +32,14 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 import os.path,os,types
 import wx
-
+import types
 import vtk
+#from enthought.tvtk import messenger
+import messenger
 
 from ConfigParser import *
 from TreeWidget import *
 from Logging import *
-from GUI import Events
 
 import SettingsWindow
 import ImportDialog
@@ -78,14 +79,12 @@ class MainWindow(wx.Frame):
         #Toplevel.__init__(self,root)
         wx.Frame.__init__(self,parent,-1,"BioImageXD",size=(1024,768),
             style=wx.DEFAULT_FRAME_STYLE|wx.NO_FULL_REPAINT_ON_RESIZE)
-        
-
-        self.sashPos=200
         self.Bind(
             wx.EVT_SASH_DRAGGED_RANGE, self.onSashDrag,
             id=MenuManager.ID_TREE_WIN, id2=MenuManager.ID_TASK_WIN,
         )
-
+        self.statusbar=None
+        self.progress=None
         self.menuManager=MenuManager.MenuManager(self,text=0)
 
         self.visWin=wx.SashLayoutWindow(self,MenuManager.ID_VIS_WIN,style=wx.RAISED_BORDER|wx.SW_3D)
@@ -112,24 +111,25 @@ class MainWindow(wx.Frame):
         ico=reduce(os.path.join,["Icons","logo.ico"])
         self.icon = wx.Icon(ico,wx.BITMAP_TYPE_ICO)
         self.SetIcon(self.icon)
+        messenger.send(None,"update_progress",0.1,"Loading BioImageXD...")        
 
-        self.CreateStatusBar()
-        self.SetStatusText("Starting up...")
-
+        
         # Create Menu, ToolBar and Tree
-        self.createMenu()
-        self.createToolBar()
+        self.createStatusBar()
+        messenger.send(None,"update_progress",0.3,"Creating menus...")        
 
+        self.createMenu()
+        messenger.send(None,"update_progress",0.6,"Creating toolbars...")        
+        self.createToolBar()
         self.dataunits={}
         self.paths={}
         self.currentVisualizationWindow=None
         self.currentTaskWindow=None
         self.currentTaskWindowType=None
 
-        self.SetStatusText("Done.")
         
         self.Bind(wx.EVT_SIZE, self.OnSize)
-
+        messenger.send(None,"update_progress",0.9,"Pre-loading visualization views...")        
         self.preloadWindows()
         self.loadVisualizer(None,"info")
         # HACK
@@ -138,7 +138,10 @@ class MainWindow(wx.Frame):
         self.taskPanels = Modules.DynamicLoader.getTaskModules()
 
         splash.Show(False)
-        self.Show(True)
+        self.Show(True)            
+        
+        messenger.send(None,"update_progress",1.0,"Done.")        
+
 
     def preloadWindows(self):
         """
@@ -147,8 +150,12 @@ class MainWindow(wx.Frame):
         Description: A method for preloading renderer so that it won't be as slow to
                      show it
         """
+        messenger.send(None,"update_progress",0.93,"Pre-loading slices view")        
+        
         self.loadVisualizer(None,"slices",0,preload=1)
+        messenger.send(None,"update_progress",0.96,"Pre-loading gallery view")        
         self.loadVisualizer(None,"gallery",0,preload=1)
+        messenger.send(None,"update_progress",0.99,"Pre-loading 3D view")        
         self.loadVisualizer(None,"3d",0,preload=1)
         
     def onSashDrag(self, event):
@@ -179,6 +186,10 @@ class MainWindow(wx.Frame):
 
     def OnSize(self, event):
         wx.LayoutAlgorithm().LayoutWindow(self, self.visWin)
+        if self.statusbar:
+            rect=self.statusbar.GetFieldRect(1)
+            self.progress.SetPosition((rect.x+2,rect.y+2))
+            self.progress.SetSize((rect.width-4,rect.height-4))
         
 
     def showVisualization(self,window):
@@ -204,7 +215,38 @@ class MainWindow(wx.Frame):
             
         wx.LayoutAlgorithm().LayoutWindow(self, self.visWin)
         self.visWin.Refresh()
+        
+    def createStatusBar(self):
+        """
+        Method: createStatusBar()
+        Created: 13.7.2006, KP
+        Description: Creates a status bar for the window
+        """
+        self.statusbar=wx.StatusBar(self)
+        self.SetStatusBar(self.statusbar)
+        self.statusbar.SetFieldsCount(2)
+        self.statusbar.SetStatusWidths([-3,-1])
+        self.progress=wx.Gauge(self.statusbar)
+        self.progress.SetRange(100)
+        self.progress.SetValue(100)
 
+        messenger.connect(None,"update_progress",self.updateProgressBar)
+        
+        
+        
+    def updateProgressBar(self,obj,event,arg,text=None):
+        """
+        Method: updateProgressBar()
+        Created: 03.11.2004, KP
+        Description: Updates the progress bar
+        """
+        if type(arg)==types.FloatType:
+            arg*=100
+        self.progress.SetValue(int(arg))
+        if text:
+            self.statusbar.SetStatusText(text)
+        wx.GetApp().Yield(1)
+        #wx.SafeYield()
 
     def createToolBar(self):
         """
@@ -232,7 +274,7 @@ class MainWindow(wx.Frame):
         wx.EVT_TOOL(self,MenuManager.ID_OPEN_SETTINGS,self.onMenuOpenSettings)
         bmp = wx.Image(os.path.join(iconpath,"save_settings.jpg"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
         tb.DoAddTool(MenuManager.ID_SAVE_SETTINGS,"Save settings",bmp,shortHelp="Save settings")
-        wx.EVT_TOOL(self,MenuManager.ID_OPEN_SETTINGS,self.onMenuSaveSettings)
+        wx.EVT_TOOL(self,MenuManager.ID_SAVE_SETTINGS,self.onMenuSaveSettings)
         bmp = wx.Image(os.path.join(iconpath,"tree.jpg"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
         tb.DoAddTool(MenuManager.ID_SHOW_TREE,"File manager",bmp,kind=wx.ITEM_CHECK,shortHelp="Show file management tree")
         wx.EVT_TOOL(self,MenuManager.ID_SHOW_TREE,self.onMenuVisualizer)
@@ -322,6 +364,7 @@ class MainWindow(wx.Frame):
         mgr.createMenu("settings","&Settings")
         mgr.createMenu("processing","&Processing")
         mgr.createMenu("visualization","&Visualization")
+        mgr.createMenu("view","V&iew")
         mgr.createMenu("help","&Help")
       
         mgr.addMenuItem("settings",MenuManager.ID_PREFERENCES,"&Preferences...",self.onMenuPreferences)
@@ -345,6 +388,9 @@ class MainWindow(wx.Frame):
         mgr.addSeparator("file")
         mgr.addSubMenu("file","import","&Import",MenuManager.ID_IMPORT)
         mgr.addSubMenu("file","export","&Export",MenuManager.ID_EXPORT)
+        mgr.addSeparator("file")
+        mgr.addMenuItem("file",MenuManager.ID_CLOSE_TASKWIN,"&Close\tCtrl-W","Close the task panel",self.onCloseTaskPanel)
+        mgr.disable(MenuManager.ID_CLOSE_TASKWIN)
         mgr.addSeparator("file")
         mgr.addMenuItem("file",MenuManager.ID_QUIT,"&Quit\tCtrl-Q","Quit the application",self.quitApp)
 
@@ -370,9 +416,67 @@ class MainWindow(wx.Frame):
         wx.EVT_MENU(self,MenuManager.ID_RENDER,self.onMenuAnimator)
         wx.EVT_MENU(self,MenuManager.ID_RELOAD,self.onMenuReload)
 
+        mgr.addMenuItem("view",MenuManager.ID_VIEW_CONFIG,"View &Configuration Panel","Show or hide the configuration panel",self.onMenuToggleVisibility,check=1,checked=1)
+        mgr.addMenuItem("view",MenuManager.ID_VIEW_TASKPANEL,"View &Task Panel","Show or hide task panel",self.onMenuToggleVisibility,check=1,checked=1)
+        mgr.disable(MenuManager.ID_VIEW_TASKPANEL)
+
+        mgr.addMenuItem("view",MenuManager.ID_VIEW_TOOLBAR,"View &Toolbar","Show or hide toolbar",self.onMenuToggleVisibility,check=1,checked=1)
+        mgr.addMenuItem("view",MenuManager.ID_VIEW_HISTOGRAM,"View &Histograms","Show or hide channel histograms",self.onMenuToggleVisibility,check=1,checked=0)
+        mgr.disable(MenuManager.ID_VIEW_TOOLBAR)
+        mgr.disable(MenuManager.ID_VIEW_HISTOGRAM)
+
         mgr.addMenuItem("help",MenuManager.ID_ABOUT,"&About BioImageXD","About BioImageXD",self.onMenuAbout)
         mgr.addSeparator("help")
         mgr.addMenuItem("help",MenuManager.ID_HELP,"&Help\tCtrl-H","Online Help")        
+    
+    def onMenuToggleVisibility(self,evt):
+        """
+        Method: onMenuToggleVisibility()
+        Created: 16.03.2005, KP
+        Description: Callback function for menu item "Import"
+        """
+        eid=evt.GetId()
+        cmd="hide"
+        if evt.IsChecked():cmd="show"
+        if eid==MenuManager.ID_VIEW_CONFIG:
+            obj="config"
+        elif eid==MenuManager.ID_VIEW_TOOLBAR:
+            obj="toolbar"
+        elif eid==MenuManager.ID_VIEW_HISTOGRAM:
+            obj="histogram"
+        elif eid==MenuManager.ID_VIEW_TASKPANEL:
+            if cmd=="hide":
+                self.taskWin.origSize=self.taskWin.GetSize()
+                self.taskWin.SetDefaultSize((0,0))
+            else:
+                self.taskWin.SetDefaultSize(self.taskWin.origSize)
+            self.OnSize(None)
+            return
+
+        messenger.send(None,cmd,obj)
+        
+    def onCloseTaskPanel(self,event):
+        """
+        Method: onCloseTaskPanel(event)
+        Created: 14.07.2005, KP
+        Description: Called when the user wants to close the task panel
+        """
+        if self.currentTaskWindow: 
+            self.currentTaskWindow.Show(0)
+            self.currentTaskWindow.Destroy()
+            del self.currentTaskWindow
+            self.currentTaskWindow=None
+        self.menuManager.disable(MenuManager.ID_CLOSE_TASKWIN)            
+        self.taskWin.SetDefaultSize((0,0))
+        self.loadVisualizer(None,"info")
+        self.setButtonSelection(MenuManager.ID_SHOW_TREE,1)
+        # Set the dataunit used by visualizer to one of the source units
+        selectedUnits=self.tree.getSelectedDataUnits()
+        self.visualizer.setProcessedMode(0)
+        self.visualizer.setDataUnit(selectedUnits[0])
+        wx.LayoutAlgorithm().LayoutWindow(self, self.visWin)
+        self.visWin.Refresh()
+        
     
     def onMenuImport(self,evt):
         """
@@ -508,10 +612,15 @@ class MainWindow(wx.Frame):
             self.visualizer.setDataUnit(dataunit)
 
         self.visualizer.setVisualizationMode(mode)
+        # handle icons
 
         if not preload:
             self.showVisualization(self.visPanel)            
             self.visualizer.enable(1)
+            mgr=self.menuManager
+            mgr.enable(MenuManager.ID_VIEW_TOOLBAR)
+            mgr.enable(MenuManager.ID_VIEW_HISTOGRAM)
+
 
     def onMenuAnimator(self,evt):
         """
@@ -547,16 +656,43 @@ class MainWindow(wx.Frame):
         Created: 03.11.2004, KP
         Description: Callback function for menu item "Load settings"
         """
-        pass
+        if self.visualizer:
+            dataunit=self.visualizer.getDataUnit()
+            if dataunit:
+                name=dataunit.getName()
+                filenames=Dialogs.askOpenFileName(self,"Open settings for %s"%name,"Settings (*.du)|*.du")
         
+                if not filenames:
+                    Logging.info("Got no name for settings file",kw="dataunit")
+                    return
+                Logging.info("Loading settings for dataset",name," from ",filenames,kw="dataunit")
+                parser = RawConfigParser()
+                parser.read(filenames)
+                dataunit.getSettings().readFrom(parser)
+                self.visualizer.setDataUnit(dataunit)
+            else:
+                Logging.info("No dataunit, cannot load settings")
+
     def onMenuSaveSettings(self,event):
         """
         Method: onMenuSaveSettings()
         Created: 03.11.2004, KP
         Description: Callback function for menu item "Save settings"
         """
-        pass
-
+        if self.visualizer:
+            dataunit=self.visualizer.getDataUnit()
+            if dataunit:
+                name=dataunit.getName()
+                filename=Dialogs.askSaveAsFileName(self,"Save settings of %s as"%name,"settings.du","Settings (*.du)|*.du")
+        
+                if not filename:
+                    Logging.info("Got no name for settings file",kw="dataunit")
+                    return
+                Logging.info("Saving settings of dataset",name," to ",filename,kw="dataunit")
+                dataunit.doProcessing(filename,settings_only=1)
+            else:
+                Logging.info("No dataunit, cannot save settings")
+        
     def onMenuOpen(self,evt):
         """
         Method: onMenuOpen()
@@ -708,10 +844,12 @@ class MainWindow(wx.Frame):
             unit.addSourceDataUnit(dataunit)
             Logging.info("ctf of source=",dataunit.getSettings().get("ColorTransferFunction"),kw="ctf")
 
+        Logging.info("Moduletype=",moduletype,kw="dataunit")
         module=moduletype()
         unit.setModule(module)
 
         if windowtype==self.currentTaskWindowType:
+            Logging.info("Window of type ",windowtype,"already showing",kw="task")
             return
         self.currentTaskWindowType=windowtype
         
@@ -721,6 +859,8 @@ class MainWindow(wx.Frame):
         if not self.visualizer:
             Logging.info("Loading slices view for ",unit,kw="task")
             self.loadVisualizer(unit,"slices",1)
+            self.setButtonSelection(MenuManager.ID_VIS_SLICES)
+
         else:
             if not self.visualizer.getProcessedMode():
                 self.visualizer.setProcessedMode(1)
@@ -730,27 +870,27 @@ class MainWindow(wx.Frame):
         if self.visualizer.mode=="info":
             Logging.info("Switching to slices from info",kw="task")
             self.visualizer.setVisualizationMode("slices")
+            self.setButtonSelection(MenuManager.ID_VIS_SLICES)
             self.visualizer.enable(1)
-            
 
         window=windowtype(self.taskWin,self.menuManager)
         window.setCombinedDataUnit(unit)
 
-        self.visWin.Bind(Events.EVT_ZSLICE_CHANGED,window.updateZSlice)
-        self.visWin.Bind(Events.EVT_TIMEPOINT_CHANGED,window.updateTimepoint)
-        window.Bind(Events.EVT_DATA_UPDATE,self.visualizer.updateRendering,id=window.GetId())
-        window.Bind(Events.EVT_TIMEPOINT_CHANGED,self.visualizer.onSetTimepoint,id=window.GetId())
         if self.currentTaskWindow:          
             self.currentTaskWindow.Show(0)
+            self.currentTaskWindow.Destroy()
+            del self.currentTaskWindow
             window.Show()
             self.currentTaskWindow=window
         else:
             self.currentTaskWindow = window
         w,h=self.taskWin.GetSize()
-        self.taskWin.SetDefaultSize((300,h))
+        self.taskWin.SetDefaultSize((350,h))
             
         wx.LayoutAlgorithm().LayoutWindow(self, self.visWin)
         self.visWin.Refresh()
+        self.menuManager.enable(MenuManager.ID_CLOSE_TASKWIN)
+        self.menuManager.enable(MenuManager.ID_VIEW_TASKPANEL)
        
     def setButtonSelection(self,eid,all=0):
         """
