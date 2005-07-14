@@ -3,14 +3,11 @@
 """
 Unit: Scattergram
 Project: BioImageXD
-Created: 25.03.2005
-Creator: KP
+Created: 25.03.2005, KP
 Description:
 
 A module that displays a scattergram of two images and lets the user
 select the colocalization threshold based on the plot
-
-Modified: 25.03.2005 KP - Created the module
 
 BioImageXD includes the following persons:
 
@@ -32,12 +29,12 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 """
-__author__ = "BioImageXD Project"
+__author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.22 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 
-
+import InteractivePanel
 import ImageOperations
 import sys
 import wx
@@ -67,7 +64,7 @@ class ThresholdEvent(wx.PyCommandEvent):
     def setRedThreshold(self,lower,upper):
         self.redthreshold = (lower,upper)
 
-class Scattergram(wx.Panel):
+class Scattergram(InteractivePanel.InteractivePanel):
     """
     Class: Scattergram
     Created: 25.03.2005, KP
@@ -79,9 +76,8 @@ class Scattergram(wx.Panel):
         Created: 03.11.2004, KP
         Description: Initialization
         """
-        wx.Panel.__init__(self,parent,-1,size=size,**kws)
-        self.rubberstart=None
-        self.rubberend=None
+        #wx.Panel.__init__(self,parent,-1,size=size,**kws)
+        InteractivePanel.InteractivePanel.__init__(self,parent,size=size,**kws);
         self.size=size
         self.slice=None
         self.z = 0
@@ -94,10 +90,7 @@ class Scattergram(wx.Panel):
         self.scatter=None
         self.buffer = wx.EmptyBitmap(256,256)
         self.Bind(wx.EVT_PAINT,self.OnPaint)
-
-        self.Bind(wx.EVT_LEFT_DOWN,self.markRubberband)
-        self.Bind(wx.EVT_MOTION,self.updateRubberband)
-        self.Bind(wx.EVT_LEFT_UP,self.setThresholdToRubberband)
+        self.Bind(wx.EVT_LEFT_UP,self.setThreshold)
 
         self.Bind(wx.EVT_RIGHT_DOWN,self.onRightClick)
         self.ID_COUNTVOXELS=wx.NewId()
@@ -129,7 +122,7 @@ class Scattergram(wx.Panel):
         """       
         self.countVoxels = event.Checked()
         self.renew=1
-        self.update()
+        self.updatePreview()
         
             
     def setWholeVolume(self,event):
@@ -141,37 +134,16 @@ class Scattergram(wx.Panel):
         """       
         self.wholeVolume = event.Checked()
         self.renew=1
-        self.update()
+        self.updatePreview()
         
-
-    def markRubberband(self,event):
+    def setThreshold(self,event):
         """
-        Method: markRubberband
+        Method: zoomToactionband()
         Created: 24.03.2005, KP
-        Description: Sets the starting position of rubber band for zooming
-        """    
-        self.rubberstart=event.GetPosition()
-        print "set rubberstart to",self.rubberstart
-        
-    def updateRubberband(self,event):
+        Description: Zooms to the actionband
         """
-        Method: updateRubberband
-        Created: 24.03.2005, KP
-        Description: Draws the rubber band to current mouse position
-        """
-        if event.LeftIsDown():
-            self.rubberend=event.GetPosition()
-        self.update()
-    
-        
-    def setThresholdToRubberband(self,event):
-        """
-        Method: zoomToRubberband()
-        Created: 24.03.2005, KP
-        Description: Zooms to the rubberband
-        """
-        x1,y1=self.rubberstart
-        x2,y2=self.rubberend
+        x1,y1=self.actionstart
+        x2,y2=self.actionend
         print "Using %d-%d as green and %d-%d as red range"%(x1,x2,y1,y2)
         reds=self.red.getSettings()
         greens=self.green.getSettings()
@@ -180,27 +152,20 @@ class Scattergram(wx.Panel):
         greens.set("ColocalizationUpperThreshold",x2)
         reds.set("ColocalizationLowerThreshold",y1)
         reds.set("ColocalizationUpperThreshold",y2)
-        
-#        print "In red:"
-#        for key in reds.settings.keys():
-#            if "Threshold" in key:
-#                print key,reds.settings[key]
-#        print "In green:"
-#        for key in greens.settings.keys():
-#            if "Threshold" in key:
-#                print key,greens.settings[key]
+
         evt=ThresholdEvent(myEVT_THRESHOLD_CHANGED,self.GetId())
         evt.setRedThreshold(y1,y2)
         evt.setGreenThreshold(x1,x2)
         self.GetEventHandler().ProcessEvent(evt)
 
         
-        self.rubberstart = None
-        self.rubberend = None
+        self.actionstart = None
+        self.actionend = None
         self.renew=1
-        self.update()
+        self.updatePreview()
 
         self.Refresh()
+        
         
 
     def setZSlice(self,z):
@@ -231,9 +196,9 @@ class Scattergram(wx.Panel):
         """    
         self.dataUnit=dataunit
         
-    def update(self):
+    def updatePreview(self):
         """
-        Method: update()
+        Method: updatePreview()
         Created: 25.03.2005, KP
         Description: A method that draws the scattergram
         """          
@@ -289,9 +254,9 @@ class Scattergram(wx.Panel):
         dc.DrawBitmap(bmp,0,0,True)
         self.bmp=bmp
         
-        if self.rubberstart and self.rubberend:
-            x1,y1=self.rubberstart
-            x2,y2=self.rubberend
+        if self.actionstart and self.actionend:
+            x1,y1=self.actionstart
+            x2,y2=self.actionend
             x1,x2=min(x1,x2),max(x1,x2)
             y1,y2=min(y1,y2),max(y1,y2)
             d1,d2=abs(x2-x1),abs(y2-y1)
