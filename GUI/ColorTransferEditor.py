@@ -35,7 +35,7 @@ import os.path
 import sys
 import time
 import math
-
+import Logging
 import wx.lib.buttons as buttons
 import wx.lib.colourselect as csel
 
@@ -474,7 +474,7 @@ class ColorTransferEditor(wx.Panel):
         filename=Dialogs.askOpenFileName(self,"Load lookup table","Lookup table (*.lut)|*.lut")
         if filename:
             filename=filename[0]
-	    Logging.info("Opening palette",filename,kw="ctf")
+            Logging.info("Opening palette",filename,kw="ctf")
             self.freeMode = 0
             ImageOperations.loadLUT(filename,self.ctf)
             self.setFromColorTransferFunction(self.ctf)
@@ -493,7 +493,7 @@ class ColorTransferEditor(wx.Panel):
             mval=max(color)
             coeff=255.0/mval
             ncolor=[int(x*coeff) for x in color]
-	    Logging.info("New color = ",ncolor,kw="ctf")
+            Logging.info("New color = ",ncolor,kw="ctf")
             dlg=wx.MessageDialog(self,
                 "The color you selected: %d,%d,%d is incorrect."
                 "At least one of the R, G or B components\n"
@@ -582,7 +582,7 @@ class ColorTransferEditor(wx.Panel):
                     n=(x1-x0)
                     if n:
                         d=abs(y-self.pos[1])/float(n)
-			Logging.info("Fixing range %d,%d,d=%f, steps = %d"%(x0,x1,d,n),kw="ctf")
+                    Logging.info("Fixing range %d,%d,d=%f, steps = %d"%(x0,x1,d,n),kw="ctf")
                     if x>self.pos[0] and y<self.pos[1]:d*=-1
                     if x<self.pos[0] and y>self.pos[1]:d*=-1
                     
@@ -616,12 +616,12 @@ class ColorTransferEditor(wx.Panel):
             self.updateGraph()
             self.setFromColorTransferFunction(self.ctf)
         self.freeMode = event.GetIsDown()
-	Logging.info("Points before=",self.points,kw="ctf")
+        Logging.info("Points before=",self.points,kw="ctf")
 
         if not self.freeMode and was:
             Logging.info("Analyzing free mode for points",kw="ctf")
             self.getPointsFromFree()
-	Logging.info("Points after=",self.points,kw="ctf")	    
+        Logging.info("Points after=",self.points,kw="ctf")	    
 
         self.updateGraph()
                 
@@ -778,9 +778,9 @@ class ColorTransferEditor(wx.Panel):
         Description: Sets the colors of this graph
         """
         for i in range(256):
-	    val = [0,0,0]
+            val = [0,0,0]
             TF.GetColor(i,val)
-	    r,g,b = val
+            r,g,b = val
             r*=255
             g*=255
             b*=255
@@ -816,9 +816,9 @@ class ColorTransferEditor(wx.Panel):
                 a=int(a)
                 da = a-a2
                 
-	    val = [0,0,0]
+            val = [0,0,0]
             self.ctf.GetColor(x,val)
-	    r,g,b=val
+            r,g,b=val
             
             r*=255
             g*=255
