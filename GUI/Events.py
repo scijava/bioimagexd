@@ -48,6 +48,31 @@ EVT_VOXEL=wx.PyEventBinder(myEVT_VOXEL,1)
 myEVT_DATA_UPDATE=wx.NewEventType()
 EVT_DATA_UPDATE=wx.PyEventBinder(myEVT_DATA_UPDATE,1)
 
+myEVT_THRESHOLD_CHANGED=wx.NewEventType()
+EVT_THRESHOLD_CHANGED=wx.PyEventBinder(myEVT_THRESHOLD_CHANGED,1)
+
+class ThresholdEvent(wx.PyCommandEvent):
+    """
+    Class: ThresholdEvent
+    Created: 03.04.2005, KP
+    Description: An event type that represents a lower and upper threshold change
+    """
+    def __init__(self,evtType,id):
+        wx.PyCommandEvent.__init__(self,evtType,id)
+        self.greenthreshold=(127,127)
+        self.redthreshold=(127,127)
+    def getGreenThreshold(self):
+        return self.greenthreshold
+        
+    def getRedThreshold(self):
+        return self.redthreshold
+        
+    def setGreenThreshold(self,lower,upper):
+        self.greenthreshold = (lower,upper)
+        
+    def setRedThreshold(self,lower,upper):
+        self.redthreshold = (lower,upper)
+
 
 class ChangeEvent(wx.PyCommandEvent):
     """
