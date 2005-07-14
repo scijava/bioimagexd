@@ -32,6 +32,8 @@ __version__ = "$Revision: 1.63 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 import os.path,sys
+#from enthought.tvtk import messenger
+import messenger
 
 import ImageOperations
 
@@ -176,14 +178,11 @@ class PreviewFrame(wx.Panel):
             return
         x,y=event.GetPosition()
         x,y=self.renderpanel.getScrolledXY(x,y)
-        
-        evt=Events.VoxelEvent(Events.myEVT_VOXEL,self.GetId())
         z=self.z
         dims=[x,y,z]
         rx,ry,rz=dims
         Logging.info("Returning x,y,z=(%d,%d,%d)"%(rx,ry,rz))
-        evt.setCoord(rx,ry,rz)
-        self.GetEventHandler().ProcessEvent(evt)
+        messenger.send(None,"get_voxel_at",rx,ry,rz)
         event.Skip()
     
     def getPixelValue(self,event):
@@ -245,9 +244,7 @@ class PreviewFrame(wx.Panel):
         if self.z!=newz:
             self.z=newz
 #            print "Sending zslice changed event"
-            evt=Events.ChangeEvent(Events.myEVT_ZSLICE_CHANGED,self.GetId())
-            evt.setValue(newz)
-            self.GetEventHandler().ProcessEvent(evt)
+            messenger.send(None,"zslice_changed",newz)
             
             # was updatePreview(1)
             self.updatePreview(0)
@@ -283,9 +280,7 @@ class PreviewFrame(wx.Panel):
         if self.timePoint!=timePoint:
             self.timePoint=timePoint
             self.updatePreview(1)
-            evt=Events.ChangeEvent(Events.myEVT_TIMEPOINT_CHANGED,self.GetId())
-            evt.setValue(timePoint)
-            self.GetEventHandler().ProcessEvent(evt)
+            messenger.send(None,"timepoint_changed",timePoint)
                 
     def setZoomCombobox(self,combo):
         """
