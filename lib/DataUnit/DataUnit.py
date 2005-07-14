@@ -172,7 +172,75 @@ class DataUnit:
         Logging.info("Dataunit ",repr(self),"got datasource",repr(self.dataSource),kw="datasource")
         
         #self.updateSettings()
+    def doProcessing(self,duFile,**kws):
+        """
+        Method: doProcessing(duFile, callback)
+        Created: 14.07.2005, KP
+        Description: Executes the module's operation using the current settings
+        Parameters:
+                duFile      The name of the created .DU file
+        Keywords:
+                callback    The callback used to give progress info to the GUI
+                            The callback is a method that takes two arguments:
+                            timepoint     The timepoint we're processing now
+                            total         Total number of timepoints we're 
+                                           processing
+                settings_only   If this parameter is set, then only the 
+                                settings will be written out and not the VTI 
+                                files.
+                timepoints      The timepoints that should be processed
+        """
+        settings_only=0
+        callback=None
+        timepoints=range(self.getLength())
+        if "settings_only" in kws:
+            settings_only=kws["settings_only"]
+        if "timepoints" in kws:
+            timepoints=kws["timepoints"]
+        # We create the vtidatasource with the name of the dataunit file
+        # so it knows where to store the vtkImageData objects
+        import DataSource
+        self.dataWriter=DataSource.DUDataWriter(duFile)
+
+        imageList=[]
+        self.n=1
+        if not settings_only:
+            for timePoint in timepoints:
+                # We get the processed timepoint from each of the source data 
+                # units
+                #self.module.setSettings(self.settings)
+                imageData=dataunit.getTimePoint(timePoint)
+                self.n+=1
+                # Write the image data to disk
+                if not settings_only:
+                    self.dataWriter.addImageData(imageData)
+                    self.dataWriter.sync()
+
+        if settings_only:
+            self.settings.set("SettingsOnly","True")
+        print "Processing done."
+        self.createDataUnitFile(self.dataWriter)
+
+    def createDataUnitFile(self,writer):
+        """
+        Method: createDataUnitFile
+        Created: 1.12.2004, KP, JM
+        Description: Writes a du file to disk
+        """
+        parser=writer.getParser()
         
+        # Write out the names of the datasets used for this operation
+    
+        key="Source"
+        # Use the string representation of the dataunit to get the type 
+        # and path of the dataunit
+        value=str(self)
+        self.settings.setCounted(key,0,value)
+    
+        print "Writing settings",self.settings
+        self.settings.writeTo(parser)
+        writer.write()
+
     def __str__(self):
         """
         Method: __str__

@@ -28,7 +28,7 @@ __author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.37 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
-
+from enthought.tvtk import messenger
 from ConfigParser import *
 from DataSource import *
 import DataUnit
@@ -119,6 +119,15 @@ class VtiDataSource(DataSource):
             self.readInfo(data)
 
         return self.dimensions
+    def updateProgress(self,obj,evt):
+        """
+        Method: updateProgress
+        Created: 13.07.2004, KP
+        Description: Sends progress update event
+        """        
+        progress=obj.GetProgress()
+        messenger.send(None,"update_progress",progress,"Reading %s..."%self.shortname)
+             
         
     def getSpacing(self):
         """
@@ -166,6 +175,7 @@ class VtiDataSource(DataSource):
         Parameters:   filename  The file where Dataset is loaded from
         """
         self.reader=vtk.vtkXMLImageDataReader()
+        self.reader.AddObserver("ProgressEvent",self.updateProgress)
         filepath=os.path.join(self.path,filename)
         if not self.reader.CanReadFile(filepath):
             Logging.error("Cannot read file",
@@ -210,6 +220,7 @@ class VtiDataSource(DataSource):
 
         Parameters:   filename  The .du-file to be loaded
         """
+        self.shortname=os.path.basename(filename)
         dataUnitFormat = self.loadDuFile(filename)
         Logging.info("format of unit=",dataUnitFormat,kw="datasource")
 

@@ -32,6 +32,7 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 import vtk
 import ImageOperations
 import Logging
+from enthought.tvtk import messenger
 
 class Module:
     """
@@ -53,6 +54,19 @@ class Module:
         self.zoomFactor=1
         self.settings=None
         self.timepoint=-1
+        self.eventDesc="Processing data"
+        
+    def updateProgress(self,obj,evt):
+        """
+        Method: updateProgress
+        Created: 13.07.2004, KP
+        Description: Sends progress update event
+        """        
+        progress=obj.GetProgress()
+        progress=self.shift+progress*self.scale
+        txt=obj.GetProgressText()
+        if not txt:txt=self.eventDesc
+        messenger.send(None,"update_progress",progress,txt)        
         
     def setTimepoint(self,tp):
         """
@@ -99,16 +113,18 @@ class Module:
         return self.zoomFactor
 
     def reset(self):
-         """
-         Method: reset()
-         Created: 04.11.2004, KP
-         Description: Resets the module to initial state
-         """
-         self.images=[]
-         for i in self.images:
-             del i
-         self.extent=None
-         self.x,self.y,self.z=0,0,0
+        """
+        Method: reset()
+        Created: 04.11.2004, KP
+        Description: Resets the module to initial state
+        """
+        self.images=[]
+        for i in self.images:
+         del i
+        self.extent=None
+        self.x,self.y,self.z=0,0,0
+        self.shift=0
+        self.scale=1
 
     def addInput(self,dataunit,imageData):
         """

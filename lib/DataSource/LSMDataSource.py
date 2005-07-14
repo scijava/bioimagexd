@@ -27,7 +27,7 @@ __author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.37 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
-
+from enthought.tvtk import messenger
 from ConfigParser import *
 from DataSource import *
 import vtk
@@ -53,6 +53,8 @@ class LsmDataSource(DataSource):
         DataSource.__init__(self)
         # Name and path of the lsm-file:
         self.filename = filename
+        self.timepoint=-1
+        self.shortname=os.path.basename(filename)
         self.path=""
         # An lsm-file may contain multiple channels. However, LsmDataSource only
         # handles one channel. The following attribute indicates, which channel
@@ -70,7 +72,7 @@ class LsmDataSource(DataSource):
         self.voxelsize=None
         # vtkLSMReader is used to do the actual reading:
         self.reader=vtk.vtkLSMReader()
-
+        self.reader.AddObserver("ProgressEvent",self.updateProgress)
         # If a filename was specified, the file is loaded
         if self.filename:
             self.path=os.path.dirname(filename)
@@ -86,6 +88,21 @@ class LsmDataSource(DataSource):
             self.reader.SetFileName(self.filename)
             self.reader.Update()
             
+    def updateProgress(self,obj,evt):
+        """
+        Method: updateProgress
+        Created: 13.07.2004, KP
+        Description: Sends progress update event
+        """        
+        progress=obj.GetProgress()
+        if self.channelNum>=0:
+            msg="Reading channel %d of %s"%(self.channelNum+1,self.shortname)
+            if self.timepoint>=0:
+                 msg+="(timepoint %d / %d)"%(self.timepoint,self.dimensions[3])
+        else:
+            msg="Reading %s..."%self.shortname
+        messenger.send(None,"update_progress",progress,msg)
+             
 
     def getDataSetCount(self):
         """
@@ -145,6 +162,7 @@ class LsmDataSource(DataSource):
             "LSM Data Source got a request for dataset from timepoint "
             "%d, but no channel number has been specified"%(i))
             return None
+        self.timepoint=i
         self.reader.SetUpdateTimePoint(i)
         self.reader.SetUpdateChannel(self.channelNum)
         self.reader.Update()
@@ -162,6 +180,7 @@ class LsmDataSource(DataSource):
         Parameters:   filename  The .lsm-file to be loaded
         """
         self.filename=filename
+        self.shortname=os.path.basename(filename)
         self.path=os.path.dirname(filename)
         self.reader.SetFileName(filename)
         try:
@@ -174,6 +193,7 @@ class LsmDataSource(DataSource):
         self.reader.Update()
         dataunits=[]
         channelNum=self.reader.GetNumberOfChannels()
+        self.timepointAmnt=channelNum
         Logging.info("There are %d channels"%channelNum,kw="datasource")
         for i in range(channelNum):
             # We create a datasource with specific channel number that

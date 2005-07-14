@@ -80,6 +80,7 @@ class DataUnitSettings:
             self.setType(kws["type"])
         self.n=n
         self.serialized={}
+        self.register("SettingsOnly",serialize=1)
         self.registerPrivate("ColorTransferFunction",serialize=1)
         self.register("PreviewedDataset")
         self.set("PreviewedDataset",-1)
@@ -230,8 +231,7 @@ class DataUnitSettings:
         """    
         nkey="%s[%d]"%(key,n)
         if not (key in self.settings or nkey in self.settings) and not (key in self.private or nkey in self.private):
-            print "self.get(ctf)=",self.get("ColorTransferFunction")
-            print "neither ",key,"nor",nkey,"in ",self.settings.keys()
+            Logging.info("neither ",key,"nor",nkey,"in ",self.settings.keys(),kw="dataunit")
             return
         okey=key
         if n!=-1:
@@ -244,7 +244,6 @@ class DataUnitSettings:
             value=self.serialize(okey,value)
         if not parser.has_section(okey):
             parser.add_section(okey)
-        print "value of ",okey,"is ",value
         parser.set(okey,key,value)
         
                 
