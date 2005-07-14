@@ -103,6 +103,12 @@ ID_DRAG_ANNOTATION  =162
 ID_ROI_CIRCLE       =163
 ID_ROI_RECTANGLE    =164
 ID_ROI_POLYGON      =165
+
+ID_VIEW_CONFIG      =166
+ID_VIEW_TASKPANEL   =167
+ID_VIEW_TOOLBAR     =168
+ID_VIEW_HISTOGRAM   =169
+ID_CLOSE_TASKWIN    =170
         
 class MenuManager:
     """
@@ -231,7 +237,7 @@ class MenuManager:
         self.itemBar.DoAddTool(toolid,name,bitmap,kind=wx.ITEM_RADIO)
         self.itemBar.Realize()
 
-    def addMenuItem(self,menu,menuid,name,hlp=None,callback=None,before=None,check=0):
+    def addMenuItem(self,menu,menuid,name,hlp=None,callback=None,before=None,check=0,checked=1):
         """
         Method: addMenuItem
         Created: 29.05.2005, KP
@@ -267,6 +273,9 @@ class MenuManager:
             
         if callback:
             wx.EVT_MENU(self.mainwin,menuid,callback)
+        if checked:
+            self.check(menuid,1)
+
         
         
     def disable(self,itemid):
