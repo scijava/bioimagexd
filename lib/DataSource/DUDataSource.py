@@ -31,6 +31,7 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 from enthought.tvtk import messenger
 from ConfigParser import *
 from DataSource import *
+import messenger
 import DataUnit
 import vtk
 import os.path

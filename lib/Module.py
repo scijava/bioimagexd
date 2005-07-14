@@ -32,7 +32,8 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 import vtk
 import ImageOperations
 import Logging
-from enthought.tvtk import messenger
+#from enthought.tvtk import messenger
+import messenger
 
 class Module:
     """

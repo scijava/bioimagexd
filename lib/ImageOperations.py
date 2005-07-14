@@ -36,7 +36,8 @@ import wx
 import math
 import struct
 import Logging
-from enthought.tvtk import messenger
+#from enthought.tvtk import messenger
+import messenger
 
 def gcd2(a, b):
     """Greatest common divisor using Euclid's algorithm."""
