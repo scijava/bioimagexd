@@ -33,8 +33,10 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 import vtk
 import wx
+import math
 import struct
 import Logging
+from enthought.tvtk import messenger
 
 def gcd2(a, b):
     """Greatest common divisor using Euclid's algorithm."""
@@ -104,7 +106,7 @@ def loadNIHLut(data):
     return reds,greens,blues
 
     
-def loadLUT(filename,ctf=None):
+def loadLUT(filename,ctf=None,ctfrange=(0,256)):
     """
     Method: loadLUT(filename)
     Created: 17.04.2005, KP
@@ -118,12 +120,12 @@ def loadLUT(filename,ctf=None):
     f=open(filename)
     lut=f.read()
     f.close()
-    loadLUTFromString(lut,ctf)
+    loadLUTFromString(lut,ctf,ctfrange)
     return ctf
     
-def loadLUTFromString(lut,ctf):
+def loadLUTFromString(lut,ctf,ctfrange=(0,256)):
     """
-    Method: loadLUTFromString(string)
+    Method: loadLUTFromString(binarystring,ctf,range)
     Created: 18.04.2005, KP
     Description: Load an ImageJ binary LUT from string
     """        
@@ -135,14 +137,17 @@ def loadLUTFromString(lut,ctf):
         blues=lut[512:768]
     n=len(reds)
     
-    for i in range(0,n):
-        r=ord(reds[i])
-        g=ord(greens[i])
-        b=ord(blues[i])
+    step=int(math.ceil(ctfrange[1]/255.0))
+    j=0
+    for i in range(int(ctfrange[0]),int(ctfrange[1]),int(step)):
+        r=ord(reds[j])
+        g=ord(greens[j])
+        b=ord(blues[j])
         r/=255.0
         g/=255.0
         b/=255.0
         ctf.AddRGBPoint(i,r,g,b)
+        j+=1
     
     
 def saveLUT(ctf,filename):
@@ -227,10 +232,29 @@ def vtkImageDataToWxImage(data,slice=-1,startpos=None,endpos=None):
     image=wx.EmptyImage(x,y)
     image.SetData(ss)
     return image
+    
+def updateProgress(obj,evt,*args):
+    """
+    Method: updateProgress
+    Created: 14.07.2005, KP
+    Description: A function that sends an update event
+    """
+    #progress=obj.GetProgress()
+    #print progress
+    messenger.send(None,"update_progress",0)
+    
 
     
 def vtkImageDataToPreviewBitmap(imageData,color,width=0,height=0,bgcolor=(0,0,0)):
+    """
+    Method: vtkImageDataToPreviewBitmap
+    Created: KP
+    Description: A function that will take a volume and do a simple
+                 maximum intensity projection that will be converted to a
+                 wxBitmap
+    """   
     mip=vtk.vtkImageSimpleMIP()
+    #mip.AddObserver("ProgressEvent",updateProgress)
     mip.SetInput(imageData)
     x,y,z=imageData.GetDimensions()
     
@@ -296,8 +320,158 @@ def getPlane(data,plane,x,y,z):
     voi.Update()
     return voi.GetOutput()
 
+def fire(x0,x1):
+    reds=[0,0,1,25,49,73,98,122,146,162,173,184,195,207,217,229,240,252,255,255,255,255,255,255,255,255,255,255,255,255,255,255]
+    greens=[0,0,0,0,0,0,0,0,0,0,0,0,0,14,35,57,79,101,117,133,147,161,175,190,205,219,234,248,255,255,255,255]
+    blues=[31,61,96,130,165,192,220,227,210,181,151,122,93,64,35,5,0,0,0,0,0,0,0,0,0,0,0,35,98,160,223,255]
+    n=min(len(reds),len(greens),len(blues))
+    div=x1/n
+    
+    ctf=vtk.vtkColorTransferFunction()
+    ctf.AddRGBPoint(0,0,0,0)
+    for i in range(0,n):
+        r=reds[i]/255.0
+        g=greens[i]/255.0
+        b=blues[i]/255.0
+        ctf.AddRGBPoint(i*div,r,g,b)
+    return ctf
 
-def scatterPlot(imagedata1,imagedata2,z,countVoxels, wholeVolume):
+def getOverlay(width,height,color,alpha):
+    """
+    Method: getOverlay(width,height,color,alpha=
+    Created: 11.07.2005, KP
+    Description: Create an overlay
+    """       
+    siz=width*height*3
+    fs="%ds"%siz    
+    r,g,b=color
+    s=chr(r)+chr(g)+chr(b)
+    s=(width*height)*s
+    ss=struct.pack(fs,s)
+    img=wx.EmptyImage(width,height)
+    img.SetData(ss)
+    siz=width*height
+    s=chr(alpha)
+    fs="%ds"%siz    
+    s=siz*s
+    ss=struct.pack(fs,s)
+    img.SetAlphaData(ss)
+    return img
+    
+    
+def histogram(imagedata,ctf=None,bg=(200,200,200),logarithmic=1,ignore_border=0,lower=0,upper=0,percent_only=0):
+    """
+    Method: histogram(imagedata)
+    Created: 11.07.2005, KP
+    Description: Draw a histogram of a volume
+    """       
+    accu=vtk.vtkImageAccumulate()
+    accu.SetInput(imagedata)
+    accu.Update()
+
+    data=accu.GetOutput()
+    values=[]
+    sum=0
+    sumth=0
+    percent=0
+    Logging.info("lower=",lower,"upper=",upper,kw="imageop")
+    for i in range(0,256):
+        c=data.GetScalarComponentAsDouble(i,0,0,0)
+        values.append(c)
+        sum+=c
+        if (lower or upper):
+            if i>=lower and i<=upper:
+                sumth+=c
+    retvals=values[:]
+    if sumth:
+        percent=(float(sumth)/sum)
+        #Logging.info("percent=",percent,kw="imageop")
+    if ignore_border:
+        ma=max(values[5:])
+        mi=min(values[0:250])
+        for i in range(0,5):
+            values[i]=ma
+        for i in range(250,255):
+            values[i]=mi
+            
+    for i,value in enumerate(values):
+        if value==0:values[i]=1
+    if logarithmic:
+        values=map(math.log,values)
+    m=max(values)
+    scale=150.0/m
+    values=[x*scale for x in values]
+    w=256
+    x1=max(values)
+    diff=0
+    if ctf:
+        diff=40
+    if percent:
+        diff+=30
+    Logging.info("Creating a %dx%d bitmap for histogram"%(int(w),int(x1)+diff),kw="imageop")
+        
+    bmp=wx.EmptyBitmap(int(w),int(x1)+diff)
+    dc = wx.MemoryDC()
+    dc.SelectObject(bmp)
+    dc.BeginDrawing()
+    
+    blackpen=wx.Pen((0,0,0),1)
+    graypen=wx.Pen((100,100,100),1)
+    whitepen=wx.Pen((255,255,255),1)
+    
+    dc.SetBackground(wx.Brush(bg))
+
+    dc.Clear()
+    dc.SetBrush(wx.Brush(wx.Colour(200,200,200)))
+    dc.DrawRectangle(0,0,256,150)
+    xoffset=7
+    for i in range(0,255):
+        c=values[i]
+        c2=values[i+1]
+        dc.SetPen(graypen)
+        dc.DrawLine(xoffset+i,x1,xoffset+i,x1-c)
+        dc.SetPen(blackpen)
+        dc.DrawLine(xoffset+i,x1-c,xoffset+i+1,x1-c2)
+    
+    if not logarithmic:
+        points=range(1,150,150/8)
+    else:
+        #         
+        points=[4,8,16,28,44,64,88,116,148]
+        points=[p+2 for p in points]
+        points.reverse()
+        
+    for i in points:
+        y=i
+        dc.SetPen(blackpen)
+        dc.DrawLine(0,y,5,y)
+        dc.SetPen(whitepen)
+        dc.DrawLine(0,y-1,5,y-1)
+            
+    if ctf:
+        Logging.info("Painting ctf",kw="imageop")
+        for i in range(0,256):
+            val=[0,0,0]
+            ctf.GetColor(i,val)
+            r,g,b = val
+            r=int(r*255)
+            b=int(b*255)
+            g=int(g*255)
+            dc.SetPen(wx.Pen(wx.Colour(r,g,b),1))
+            dc.DrawLine(xoffset+i,x1+8,xoffset+i,x1+30)
+        dc.SetPen(whitepen)
+        dc.SetFont(wx.Font(8,wx.SWISS,wx.NORMAL,wx.NORMAL))
+        dc.DrawText("255",230,x1+10)
+    else:
+        Logging.info("Got no ctf for histogram",kw="imageop")
+    
+    dc.EndDrawing()
+    dc.SelectObject(wx.NullBitmap)
+    dc = None    
+    return bmp,percent,retvals
+
+
+def scatterPlot(imagedata1,imagedata2,z,countVoxels, wholeVolume,logarithmic=1):
     """
     Method: scatterPlot(imageData,imageData2,z,countVoxels,wholeVolume)
     Created: 25.03.2005, KP
@@ -312,26 +486,35 @@ def scatterPlot(imagedata1,imagedata2,z,countVoxels, wholeVolume):
     scatter.AddInput(imagedata2)
     scatter.Update()
     data=scatter.GetOutput()
+    if logarithmic:
+        logscale=vtk.vtkImageLogarithmicScale()
+        logscale.SetInput(data)
+        logscale.Update()
+        data=logscale.GetOutput()
+    x0,x1=data.GetScalarRange()
+    print "max=",x1
+    scale=255.0/x1
+    print "scale=",scale
+    shiftscale=vtk.vtkImageShiftScale()
+    shiftscale.SetOutputScalarTypeToUnsignedShort()
+    shiftscale.SetScale(scale)
+    shiftscale.SetInput(data)
+    shiftscale.Update()
+    data=shiftscale.GetOutput()
+    
     if countVoxels:
-        
-        ctf=vtk.vtkColorTransferFunction()
+        x0,x1=data.GetScalarRange()
+        Logging.info("Scalar range of scatterplot=",x0,x1,kw="imageop")
+        ctf=fire(x0,x1)
         n = scatter.GetNumberOfPairs()
-        Logging.info("Number of pairs=%d"%n,kw="colocalization")
-        p=0.75/n
-        ctf.AddHSVPoint(0,0,0.0,0.0)
-        for i in xrange(1,n,255):
-            
-            ctf.AddHSVPoint(i, 0.75*(i/float(p)), 1.0, 1.0)
-
-        ctf.SetColorSpaceToHSV()
+        Logging.info("Number of pairs=%d"%n,kw="imageop")
         maptocolor=vtk.vtkImageMapToColors()
         maptocolor.SetInput(data)
         maptocolor.SetLookupTable(ctf)
         maptocolor.SetOutputFormatToRGB()
         maptocolor.Update()
         data=maptocolor.GetOutput()
-        #print "data=",data
-        
+            
     image=vtkImageDataToWxImage(data)
     return image
     
@@ -423,7 +606,7 @@ def saveImageAs(imagedata,zslice,filename):
     Created: KP
     Description: Save a given slice of a volume
     """       
-    
+    if not filename:return
     ext=filename.split(".")[-1]        
     extMap={"tiff":"TIFF","tif":"TIFF","jpg":"JPEG","jpeg":"JPEG","png":"PNG"}
     if not extMap.has_key(ext):
