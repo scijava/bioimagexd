@@ -134,6 +134,7 @@ class Timeline(scrolled.ScrolledPanel):
         if self.selectedTrack and track != self.selectedTrack:
             self.selectedTrack.setSelected(None)
         self.selectedTrack=track
+        self.control.window.updateMenus()
         
         
     def setBeginningToPrevious(self,track):

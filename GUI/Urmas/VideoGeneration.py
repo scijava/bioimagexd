@@ -198,7 +198,7 @@ class VideoGeneration(wx.Panel):
         Created: 26.04.2005, KP
         Description: Generate the GUI
         """ 
-        self.outputsizer=wx.GridBagSizer(5,5)
+        self.outputsizer=wx.GridBagSizer(0,5)
         box=wx.StaticBox(self,wx.HORIZONTAL,"Rendering")
         self.outputstaticbox=wx.StaticBoxSizer(box,wx.HORIZONTAL)
         self.outputstaticbox.Add(self.outputsizer)
@@ -211,8 +211,8 @@ class VideoGeneration(wx.Panel):
         
         self.totalFramesLabel=wx.StaticText(self,-1,"Frames:")
         self.durationLabel=wx.StaticText(self,-1,"Duration:")
-        self.fpsLabel=wx.StaticText(self,-1,"Rendered frames:\t%.3f / second"%self.fps)
-        self.padfpsLabel=wx.StaticText(self,-1,"Padding frames:\t%.3f / second"%(24-self.fps))
+        self.fpsLabel=wx.StaticText(self,-1,"Frames:\t%.2f / s"%self.fps)
+        self.padfpsLabel=wx.StaticText(self,-1,"Padding:\t%.2f / s"%(24-self.fps))
 
         self.totalFrames=wx.TextCtrl(self,-1,"%d"%self.frames,size=(50,-1),style=wx.TE_PROCESS_ENTER)
         self.totalFrames.Bind(wx.EVT_TEXT,self.onUpdateFrames)

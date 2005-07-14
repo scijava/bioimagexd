@@ -13,10 +13,7 @@
  to specify a path for the camera to follow (using Heikki Uuksulainen's MayaVi animator code)
  and also allows them to produce videos of the rendering using ffmpeg.
 
- Theitems placed on the track are implemented in this module
-
- Modified: 04.02.2005 KP - Original code created
-           19.03.2005 KP - Placed code in file of its own
+ The items placed on the track are implemented in this module
  
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
@@ -45,11 +42,10 @@ import wx
 import os.path
 import sys
 import math,random
-import threading
 
 import ImageOperations
 import UrmasControl
-
+import threading
         
 class TrackItem(wx.Panel):
     """
@@ -142,7 +138,7 @@ class TrackItem(wx.Panel):
         ix,iy=self.GetPosition()
         d=abs(ix-x)
         if d>w/2:
-            hilight=w-1
+            hilight=w-3
         else:
             hilight=2
         self.drawItem(hilight)
@@ -277,23 +273,11 @@ class TrackItem(wx.Panel):
         # is still running
         try:
             self.volume=self.dataUnit.getTimePoint(self.thumbtimepoint)
-        except:
-            pass
-    def updateAfterThumbnail(self):
-        """
-        Method: updateAfterThumbnail()
-        Created: 11.04.2005, KP
-        Description: A method that refereshes this item, when a thumbnail has been generated
-        """   
-        try:
+            self.getting=2
             self.drawItem()
         except:
-            return
-        self.parent.Refresh()
-        self.Refresh()
-        self.parent.Layout()
-        #wx.SafeYield()
-                
+            pass
+
         
     def drawThumbnail(self):
         """
@@ -307,17 +291,16 @@ class TrackItem(wx.Panel):
                 self.volume=0
                 self.getting=1
                 n=(1+self.thumbtimepoint)*750
-                t=threading.Thread(None,self.getThumbnail)
-                wx.FutureCall(n,lambda t=t:t.start())
-                wx.FutureCall(n+300,self.updateAfterThumbnail)
-                
-                
-            elif self.volume:
+                wx.FutureCall(n,self.getThumbnail)
+                return
+            if self.volume and self.getting==2:
                 vx,vy,vz=self.volume.GetDimensions()
+                print "vx=%d,vy=%d,vz=%d"%(vx,vy,vz)
                 ctf=self.dataUnit.getSettings().get("ColorTransferFunction")
                 self.thumbnailbmp=ImageOperations.vtkImageDataToPreviewBitmap(self.volume,ctf,0,self.height-self.labelheight)
             if not self.thumbnailbmp:
                 return
+            
         iw,ih=self.thumbnailbmp.GetSize()
         #print "image size=",iw,ih
         wdiff=(self.width-iw)/2

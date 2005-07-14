@@ -46,6 +46,8 @@ from UrmasControl import *
 import time
 import Dialogs
 import wx
+#from enthought.tvtk import messenger
+import messenger
 
 class UrmasRenderer:
     """
@@ -136,6 +138,8 @@ class UrmasRenderer:
 
         for n in range(frames):
             self.renderFrame(n,(n+1)*spf,spf,preview=preview)
+            messenger.send(None,"update_progress",n/float(frames),"Rendering frame %d / %d. Time: %.1fs"%(n,frames,(n+1)*spf))        
+
         if not preview:
             pass
 #            self.dlg.Destroy()

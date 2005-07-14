@@ -19,9 +19,6 @@
  the timeline that can be written out or sent to the renderer that produces
  the final movie.
  
- Modified: 22.02.2005 KP - Created the module
-           12.03.2005 KP - Created a module of it's own for the control
- 
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
 

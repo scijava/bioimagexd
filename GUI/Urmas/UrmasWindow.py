@@ -204,12 +204,12 @@ class UrmasWindow(wx.SashLayoutWindow):
         """
         if event.GetId() == MenuManager.ID_RENDER_PROJECT:
             w,h=self.taskWin.GetSize()
-            self.taskWin.SetDefaultSize((200,h))
+            self.taskWin.SetDefaultSize((300,h))
             video=VideoGeneration.VideoGeneration(self.taskWin,self.control,self.visualizer)
-            video.SetSize((200,h))
+            video.SetSize((300,h))
             video.Show()
             self.visualizer.mainwin.OnSize(None)
-            print "Setting taskwin size to ",200,h
+            #print "Setting taskwin size to ",200,h
 
             #self.control.renderProject(0)
         else:

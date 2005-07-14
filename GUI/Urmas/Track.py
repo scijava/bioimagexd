@@ -173,11 +173,14 @@ class Track(wx.Panel):
         curritem=None
         for item in self.items:
             ix,iy=item.GetPosition()
+            w,h=item.GetSize()
             #print "ix,iy=",ix,iy
             if ix<= x:
                 #print "Found item",item
                 curritem=item
                 self.dragEndPosition = self.items.index(item)+1
+                d=abs(ix-x)
+                if d<w/2:self.dragEndPosition-=1
         if curritem:
             if self.stopItems:
                 ix,iy=curritem.GetPosition()
