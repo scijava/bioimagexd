@@ -134,7 +134,7 @@ class Configuration:
         self.readConfigItem("RemoveOldVTK","VTK")
         self.readConfigItem("VTKPath","VTK")
         self.readConfigItem("UseSystemMayavi","Mayavi")
-        self.readConfigItem("MayaviPath","Mayavi")   
+        self.readConfigItem("MayaviPath","Mayavi")
         self.readConfigItem("DataPath","Paths")
         self.readConfigItem("ImageFormat","Output")
             

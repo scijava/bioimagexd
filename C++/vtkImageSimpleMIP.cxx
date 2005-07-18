@@ -75,7 +75,6 @@ vtkImageSimpleMIP::ExecuteInformation(vtkImageData *input, vtkImageData *output)
 void vtkImageSimpleMIP::ExecuteData(vtkDataObject *)
 {
   int uExtent[6];
-  printf("GetOutput()\n");
   vtkImageData* output = this->GetOutput();
   vtkImageData* input = this->GetInput();
   int inIncX,inIncY,inIncZ;
@@ -89,12 +88,12 @@ void vtkImageSimpleMIP::ExecuteData(vtkDataObject *)
       printf("No output\n");
   }
   output->GetUpdateExtent(uExtent);
-  printf("update extent=%d,%d,%d,%d,%d,%d",PRT_EXT(uExtent));
+//	 printf("update extent=%d,%d,%d,%d,%d,%d",PRT_EXT(uExtent));
   output->SetExtent(uExtent);
 
   // We will want the input update extent to be the one we go through
   input->GetUpdateExtent(uExtent);
-  printf("Update extent is %d,%d,%d,%d,%d,%d",PRT_EXT(uExtent));
+//  printf("Update extent is %d,%d,%d,%d,%d,%d",PRT_EXT(uExtent));
  
   // Get pointers for input and output
   char *inPtr = (char *) input->GetScalarPointerForExtent(uExtent);
@@ -119,7 +118,7 @@ void vtkImageSimpleMIP::ExecuteData(vtkDataObject *)
   output->GetIncrements(outIncX, outIncY, outIncZ);
   //printf("inIncX=%d,inIncY=%d,inIncZ=%d\n",inIncX,inIncY,inIncZ);
   //printf("outIncX=%d,outIncY=%d,outIncZ=%d\n",outIncX,outIncY,outIncZ);
-  printf("x=%d,y=%d,z=%d\n",maxX,maxY,maxZ);
+//  printf("x=%d,y=%d,z=%d\n",maxX,maxY,maxZ);
   #define GET_AT(x,y,z,c,ptr) *(ptr+(z)*inIncZ+(y)*inIncY+(x)*inIncX+c)
   #define SET_AT(x,y,z,c,ptr,val) *(ptr+(z)*outIncZ+(y)*outIncY+(x)*outIncX+c)=val
   

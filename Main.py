@@ -33,6 +33,9 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 import os.path
 import sys
+import csv
+
+
 import Logging
 
 import glob
@@ -48,10 +51,10 @@ import Configuration
 # configuration file, or sensible defaults
 cfg=Configuration.Configuration("BioImageXD.ini")
 
-import wx
-
+import lib
 import GUI
-
+import Visualizer
+import wx
 
 class LSMApplication(wx.App):
     """
@@ -72,7 +75,7 @@ class LSMApplication(wx.App):
                                  wx.SPLASH_CENTRE_ON_SCREEN | wx.SPLASH_TIMEOUT,
                                  3000, None, -1)
         splash.Show()
-        self.mainwin=GUI.MainWindow(None,-1,self,splash)
+        self.mainwin=GUI.MainWindow.MainWindow(None,-1,self,splash)
         self.mainwin.Show(True)
         self.SetTopWindow(self.mainwin)
         return True
@@ -92,10 +95,17 @@ if __name__=='__main__':
         Logging.outfile=fp
 
     if "py2exe" in sys.argv:
-       setup(console=["Main.py"],
-       data_files=[("Icons",glob.glob("Icons\\*.*")),("Binaries",glob.glob("bin\\*.*"))],
-       options = {"py2exe": { "excludes": ['MayaViUserReader', 'PyShell', 'dl', 'dotblas', 'hexdump', 'libvtkCommonPython', 'libvtkFilteringPython', 'libvtkGraphicsPython', 'libvtkHybridPython', 'libvtkIOPython', 'libvtkImagingPython', 'libvtkParallelPython', 'libvtkPatentedPython', 'libvtkRenderingPython', 'mx', 'win32com.gen_py'],
-       "packages": ["encodings"]}})
+        EXCLUDES=['MayaViUserReader', 'PyShell', 'dl', 'dotblas', 'hexdump', 'libvtkCommonPython', 'libvtkFilteringPython', 'libvtkGraphicsPython', 'libvtkHybridPython', 'libvtkIOPython', 'libvtkImagingPython', 'libvtkParallelPython', 'libvtkPatentedPython', 'libvtkRenderingPython', 'mx', 'win32com.gen_py']
+        # Exclude the sources because they will be packaged as plain python files
+        #SOURCES=["GUI","Modules","Visualizer"]
+        #EXCLUDES+=SOURCES
+        setup(console=["Main.py"],
+        data_files=[("Icons",glob.glob("Icons\\*.*")),
+        ("Binaries",glob.glob("bin\\*.*"))],
+        options = {"py2exe": 
+        { "excludes": EXCLUDES,
+        "packages": ["encodings"]}})
+        #zipfile="lib/libraries.zip")
     else:
         # Import Psyco if available
         #try:

@@ -1,6 +1,6 @@
 #! /bin/sh
 if [ "$1" = "" ]; then
-   echo "Usage: code_code.sh <vtk directory>"
+   echo "Usage: code_code.sh <vtk directory> [copy]"
    echo "Where <vtk directory> is the directory for the VTK source code"
    exit
 fi
@@ -15,20 +15,25 @@ function add_to_cmakelist() {
    mv -f $CMAKELISTS.new $CMAKELISTS
 }
 
+CMD="ln -s"
+if [ "$2" = "copy" ]; then
+   CMD=cp
+fi
+
 for i in `grep -H IMAGING *.h|cut -d: -f1`
 do
   FILE=$PWD/$i
-  ln -s $FILE $VTKDIR/Imaging/$i
+  $CMD $FILE $VTKDIR/Imaging/$i
   cxxfile=`echo $i|sed s/h$/cxx/`
-  ln -s $PWD/$cxxfile $VTKDIR/Imaging/$cxxfile
+  $CMD $PWD/$cxxfile $VTKDIR/Imaging/$cxxfile
   add_to_cmakelist $VTKDIR/Imaging/CMakeLists.txt $cxxfile
 done
 for i in `grep -H FILTERING *.h|cut -d: -f1`
 do
   FILE=$PWD/$i
-  ln -s $FILE $VTKDIR/Filtering/$i
+  $CMD $FILE $VTKDIR/Filtering/$i
   cxxfile=`echo $i|sed s/h$/cxx/`
-  ln -s $PWD/$cxxfile $VTKDIR/Filtering/$cxxfile
+  $CMD $PWD/$cxxfile $VTKDIR/Filtering/$cxxfile
   add_to_cmakelist $VTKDIR/Filtering/CMakeLists.txt $cxxfile
 
 done
