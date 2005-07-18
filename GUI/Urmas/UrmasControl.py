@@ -4,8 +4,7 @@
 """
  Unit: UrmasControl
  Project: BioImageXD
- Created: 22.02.2005
- Creator: KP
+ Created: 22.02.2005, KP
  Description:
 
  URM/AS - The Unified Rendering Manager / Animator for Selli
@@ -42,11 +41,11 @@ __version__ = "$Revision: 1.22 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 import wx
-import wx.wizard
 from Timeline import *
 import TimepointSelection
 import RenderingInterface
 import TrackItem
+import Logging
 
 #import pickle
 import UrmasPersist
@@ -125,19 +124,20 @@ class UrmasControl:
         Description: Update the GUI to match the data structures
         """    
         #print "updateGUI frames=%d duration=%d"%(self.frames,self.duration)
-        self.refresh()
+        self.__set_pure_state__(self)
         self.updateLayouts()
         
-    def refresh(self):
+    def __set_pure_state__(self,state):
         """
-        Method: refresh()
+        Method: __set_pure_state__()
         Created: 11.04.2005, KP
         Description: Update the GUI to match the data structures
         """    
-        self.setAnimationMode(self.animationMode)
-        self.timelineConfig.setFrames(self.frames)
-        self.timelineConfig.setDuration(self.duration)
-        self.configureTimeline(self.duration,self.frames)
+        Logging.info("Setting pure state of control...",kw="animator")
+        self.setAnimationMode(state.animationMode)
+        self.timelineConfig.setFrames(state.frames)
+        self.timelineConfig.setDuration(state.duration)
+        self.configureTimeline(state.duration,state.frames)
         
     def getFrames(self):
         """

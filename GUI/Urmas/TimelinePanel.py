@@ -15,9 +15,6 @@
  and also allows them to produce videos of the rendering using ffmpeg.
  
  The timeline widget and the timescale are implemented in this module.
-
- Modified: 04.02.2005 KP - Created the module
-           12.03.2005 KP - Split the classes to a module of their own
  
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
@@ -44,7 +41,8 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 import  wx.lib.scrolledpanel as scrolled
 import wx
 import wx.lib.masked as masked
-from vtk.wx.wxVTKRenderWindowInteractor import wxVTKRenderWindowInteractor
+#from vtk.wx.wxVTKRenderWindowInteractor import wxVTKRenderWindowInteractor
+from Visualizer import VisualizerWindow
 
 from Track import *
 from Timeline import *
@@ -203,21 +201,20 @@ class TimelinePanel(wx.Panel):
         self.animBox=wx.StaticBox(self,-1,"Animation Control Pane")
         self.animBoxSizer=wx.StaticBoxSizer(self.animBox,wx.VERTICAL)
 #       
-        self.wxrenwin=wxVTKRenderWindowInteractor(self,-1,size=(400,300))
-        
-        self.wxrenwin.Initialize()
-        self.wxrenwin.Start()
-        #self.animator = Animator.AnimatorPanel(self,self.control,self.wxrenwin)
-        #self.control.setAnimator(self.animator)
+        #self.wxrenwin=wxVTKRenderWindowInteractor(self,-1,size=(400,300))
+        self.wxrenwin=VisualizerWindow.VisualizerWindow(self,size=(400,300))
+        self.wxrenwin.Render()
+#        self.wxrenwin.Initialize()
+#        self.wxrenwin.Start()
         
         self.splineEditor=SplineEditor.SplineEditor(self,self.wxrenwin)
         self.control.setSplineEditor(self.splineEditor)
         
-        self.wxrenwin.Render()
+        #self.wxrenwin.Render()
         
-        self.animBoxSizer.Add(self.wxrenwin)
-        self.sizer.Add(self.animBoxSizer,(2,1),flag=wx.EXPAND|wx.ALL)
-
+        #self.animBoxSizer.Add(self.wxrenwin)
+        #self.sizer.Add(self.animBoxSizer,(2,1))#,flag=wx.EXPAND|wx.ALL)
+        self.sizer.Add(self.wxrenwin,(2,1))#,flag=wx.EXPAND|wx.ALL)
         
         self.SetSizer(self.sizer)
         self.SetAutoLayout(1)

@@ -35,7 +35,8 @@ import vtk
 import time
 #from enthought.tvtk import messenger
 import messenger
-from Module import *
+import lib.Module
+from lib.Module import *
 
 class Colocalization(Module):
     """

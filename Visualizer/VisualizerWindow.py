@@ -6,7 +6,7 @@
  Created: 15.05.2005, KP
  Description:
 
- A framework for replacing MayaVi for simple rendering tasks.
+ A window encapsulating wxVTKRenderWindowInteractor
            
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details

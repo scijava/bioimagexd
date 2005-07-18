@@ -1,4 +1,3 @@
-#! /usr/bin/env python
 # -*- coding: iso-8859-1 -*-
 """
  Unit: ColocalizationPanel
@@ -35,15 +34,14 @@ __date__ = "$Date: 2005/01/13 14:52:39 $"
 import os.path
 import csv
 import time
-#from enthought.tvtk import messenger
 import messenger
 import Dialogs
 from GUI import Events
 from PreviewFrame import *
-from ColorSelectionDialog import *
+
 from Logging import *
-import Scatterplot
-import ImageOperations
+from GUI import Scatterplot
+from lib import ImageOperations
 import sys
 import Colocalization
 import time
@@ -51,7 +49,7 @@ import threading
 
 from GUI import Events
 
-import TaskPanel
+from GUI import TaskPanel
 
 class ColocalizationPanel(TaskPanel.TaskPanel):
     """
@@ -377,10 +375,14 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
         self.listctrl.InsertColumn(0,"Quantity")
         self.listctrl.InsertColumn(1,"Total")
         self.listctrl.InsertColumn(2,"Over threshold")
-        for i in range(0,3):
-            item=self.listctrl.GetItem(i)
-            font=item.GetFont()
-            font.SetPointSize(font.GetPointSize()-1)
+##        for i in range(0,3):
+##            item=self.listctrl.GetColumn(i)
+##            print "got item=",item
+##            font=item.GetFont()
+##            print "got font=",font
+##            pts=font.GetPointSize()
+##            print "got pts=",pts
+##            font.SetPointSize(pts-1)
 
         self.listctrl.SetColumnWidth(0,180)
         self.listctrl.SetColumnWidth(1,60)

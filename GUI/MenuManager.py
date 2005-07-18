@@ -109,6 +109,8 @@ ID_VIEW_TASKPANEL   =167
 ID_VIEW_TOOLBAR     =168
 ID_VIEW_HISTOGRAM   =169
 ID_CLOSE_TASKWIN    =170
+
+ID_DELETE_TRACK     =171
         
 class MenuManager:
     """
@@ -192,7 +194,14 @@ class MenuManager:
             self.menubar.Append(self.menus[menuname],menutitle)
         else:
             menu=self.menus[before]
-            pos=self.menubar.FindMenu(menu.GetTitle())
+            print "Searching for menu ",menu,   menu.GetTitle()
+            for i in range(0,self.menubar.GetMenuCount()):
+                gmenu=self.menubar.GetMenu(i)
+                if gmenu==menu:
+                    pos=i
+                    break
+            #pos=self.menubar.FindMenu(menu.GetTitle())
+            
             self.menubar.Insert(pos,self.menus[menuname],menutitle)
             
     def setVisualizer(self,visualizer):
@@ -273,7 +282,7 @@ class MenuManager:
             
         if callback:
             wx.EVT_MENU(self.mainwin,menuid,callback)
-        if checked:
+        if check and checked:
             self.check(menuid,1)
 
         

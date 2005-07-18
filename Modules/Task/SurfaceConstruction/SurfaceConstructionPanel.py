@@ -37,13 +37,14 @@ import os.path
 import Dialogs
 
 from PreviewFrame import *
-from IntensityTransferEditor import *
+import GUI.IntensityTransferEditor
+from GUI.IntensityTransferEditor import *
 from Logging import *
 
 import sys
 import time
 
-import TaskPanel
+from GUI import TaskPanel
 
 
 class SurfaceConstructionpanel(TaskPanel.TaskPanel):

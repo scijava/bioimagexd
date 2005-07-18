@@ -84,6 +84,9 @@ class Scatterplot(InteractivePanel.InteractivePanel):
         self.ID_WHOLEVOLUME=wx.NewId()
         self.ID_LOGARITHMIC=wx.NewId()
         self.menu=wx.Menu()
+        
+        messenger.connect(None,"threshold_changed",self.updatePreview)
+        
         item = wx.MenuItem(self.menu,self.ID_COUNTVOXELS,"Show frequency",kind=wx.ITEM_CHECK)
         self.Bind(wx.EVT_MENU,self.setVoxelCount,id=self.ID_COUNTVOXELS)
         self.menu.AppendItem(item)
@@ -209,7 +212,7 @@ class Scatterplot(InteractivePanel.InteractivePanel):
         self.renew=1
         self.updatePreview()
 
-        self.Refresh()
+        #self.Refresh()
         self.actionstart = None
         self.actionend = None
         
@@ -242,7 +245,7 @@ class Scatterplot(InteractivePanel.InteractivePanel):
         self.ctf=ImageOperations.loadLUT("LUT/rainbow2.lut",None,(x0,x1))
         print self.ctf
         
-    def updatePreview(self):
+    def updatePreview(self,*args):
         """
         Method: updatePreview()
         Created: 25.03.2005, KP
@@ -256,7 +259,8 @@ class Scatterplot(InteractivePanel.InteractivePanel):
             self.renew=0
         self.paintPreview()
         wx.GetApp().Yield(1)
-        self.Refresh()
+        # Commented for windows' sake
+        #self.Refresh()
 
     def OnPaint(self,event):
         """

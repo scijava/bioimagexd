@@ -16,8 +16,6 @@
  
  The timescale widget is implemented in this module.
 
- Modified: 04.02.2005 KP - Created the module
- 
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
 
@@ -51,7 +49,7 @@ class TimeScale(wx.Panel):
     def __init__(self,parent):
         wx.Panel.__init__(self,parent,-1,style=wx.RAISED_BORDER)
         self.perSecond=24
-        self.xOffset=15
+        self.xOffset=15+self.getLabelWidth()
         self.yOffset=6
         self.bgcolor=(255,255,255)
         self.fgcolor=(0,0,0)
@@ -59,7 +57,8 @@ class TimeScale(wx.Panel):
         #self.setDuration(60)
         self.Bind(wx.EVT_PAINT,self.onPaint)
 
-
+    def getLabelWidth(self):
+        return 125
 
     def setDisabled(self,flag):
         """

@@ -35,8 +35,8 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 import vtk
 import time
-from Module import *
-from Numeric import *
+import lib.Module
+from lib.Module import *
 
 class VSIA(Module):
     """
@@ -55,12 +55,12 @@ class VSIA(Module):
         """
         Module.__init__(self,**kws)
 
-     	self.images=[]
-     	self.doRGB=0
-     	self.x,self.y,self.z=0,0,0
-     	self.extent=None
-     	self.running=0
-     	self.depth=8
+        self.images=[]
+        self.doRGB=0
+        self.x,self.y,self.z=0,0,0
+        self.extent=None
+        self.running=0
+        self.depth=8
 
         self.renderingMode=0
         self.reset()

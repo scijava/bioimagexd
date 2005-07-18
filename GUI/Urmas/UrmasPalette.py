@@ -4,8 +4,7 @@
 """
  Unit: UrmasPalette
  Project: BioImageXD
- Created: 12.04.2005
- Creator: KP
+ Created: 12.04.2005, KP
  Description:
 
  URM/AS - The Unified Rendering Manager / Animator for Selli
@@ -67,6 +66,7 @@ class UrmasDropTarget(wx.PyDropTarget):
         Created: 13.04.2005, KP
         Description: Track mouse movement for reporting to target
         """
+        #print "OnLeave"
         self.target.OnDragLeave()
         
     def OnDrop(self,x,y):
@@ -75,7 +75,7 @@ class UrmasDropTarget(wx.PyDropTarget):
         Created: 12.04.2005, KP
         Description: Return true to accept drop
         """
-        print "Got drop at %d,%d"%(x,y)
+        #print "Got drop at %d,%d"%(x,y)
         self.target.OnDragLeave()
         return True
         
@@ -85,7 +85,7 @@ class UrmasDropTarget(wx.PyDropTarget):
         Created: 12.04.2005, KP
         Description: 
         """
-        #print "OnDragOver ",x,y,d
+        #print "OnDragOver(%d,%d)"%(x,y)
         self.target.OnDragOver(x,y,d)
         return wx.DragCopy
         
@@ -97,7 +97,7 @@ class UrmasDropTarget(wx.PyDropTarget):
         """
         if self.GetData():
             data=self.data.GetData()
-            print "Got at %d,%d: %s"%(x,y,data)
+            #print "Got at %d,%d: %s"%(x,y,data)
             self.target.AcceptDrop(x,y,data)
 
         return d
@@ -129,12 +129,14 @@ class UrmasPalette(wx.Panel):
         bmp=wx.Image(os.path.join(iconpath,"timepoint.jpg"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
         self.newtimepoint=wx.StaticBitmap(p,self.ID_NEWTIMEPOINT,bmp,style=wx.RAISED_BORDER)
         self.newtimepoint.Bind(wx.EVT_MOTION,self.onToolNewTimepoint)
+        p.Bind(wx.EVT_MOTION,self.onToolNewTimepoint)
         self.sizer.Add(p,flag=wx.RIGHT,border=5)
 
         p=wx.Panel(self,-1,size=(64,64))#,style=wx.RAISED_BORDER)
         bmp=wx.Image(os.path.join(iconpath,"spline_random.jpg"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
         self.newspline=wx.StaticBitmap(p,self.ID_NEWSPLINE,bmp,style=wx.RAISED_BORDER)
         self.newspline.Bind(wx.EVT_MOTION,self.onToolNewSpline)
+        p.Bind(wx.EVT_MOTION,self.onToolNewSpline)
         self.sizer.Add(p,flag=wx.RIGHT,border=10)
 
 
@@ -143,7 +145,7 @@ class UrmasPalette(wx.Panel):
         bmp=wx.Image(os.path.join(iconpath,"spline_rotate_x.jpg"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
         self.newcircular=wx.StaticBitmap(p,self.ID_NEWCIRCULAR,bmp,style=wx.RAISED_BORDER)
         self.newcircular.Bind(wx.EVT_MOTION,self.onToolNewCircular)
-        
+        p.Bind(wx.EVT_MOTION,self.onToolNewCircular)
         self.sizer.Add(p,flag=wx.RIGHT,border=5)
         
         p=wx.Panel(self,-1,size=(64,64))#,style=wx.RAISED_BORDER)
@@ -151,7 +153,7 @@ class UrmasPalette(wx.Panel):
         bmp=wx.Image(os.path.join(iconpath,"spline_rotate_y.jpg"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
         self.newperpendicular=wx.StaticBitmap(p,self.ID_NEWPERPENDICULAR,bmp,style=wx.RAISED_BORDER)
         self.newperpendicular.Bind(wx.EVT_MOTION,self.onToolNewPerpendicular)
-        
+        p.Bind(wx.EVT_MOTION,self.onToolNewPerpendicular)
         self.sizer.Add(p,flag=wx.RIGHT,border=5)
 
         p=wx.Panel(self,-1,size=(64,64))#,style=wx.RAISED_BORDER)
@@ -159,6 +161,7 @@ class UrmasPalette(wx.Panel):
         bmp=wx.Image(os.path.join(iconpath,"spline_stop.jpg"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
         self.newstop=wx.StaticBitmap(p,self.ID_STOP_CAMERA,bmp,style=wx.RAISED_BORDER)
         self.newstop.Bind(wx.EVT_MOTION,self.onToolNewStop)
+        p.Bind(wx.EVT_MOTION,self.onToolNewStop)
         
         self.sizer.Add(p,flag=wx.RIGHT,border=5)
         
@@ -172,7 +175,6 @@ class UrmasPalette(wx.Panel):
         Created: 20.04.2005, KP
         Description: A method for dragging a spline from palette
         """
-        
         if event.Dragging():
             self.dropItem("Spline","Perpendicular")
             
@@ -182,7 +184,6 @@ class UrmasPalette(wx.Panel):
         Created: 06.04.2005, KP
         Description: A method for dragging a spline from palette
         """
-        
         if event.Dragging():
             self.dropItem("Spline","Stop")
 
@@ -193,7 +194,6 @@ class UrmasPalette(wx.Panel):
         Created: 06.04.2005, KP
         Description: A method for dragging a spline from palette
         """
-        
         if event.Dragging():
             self.dropItem("Spline","Circular")
         

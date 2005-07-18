@@ -9,17 +9,6 @@
  This module defines gui for editing the spline which defines the
  camera path.
 
- Changes:
-            10.02.2005 KP - Started integration with wxPython and Selli
-            20.03.2005 KP - Integrated the classes SplineWidget3D and SplineEditor
-                            into one. Unnecessary repetition together with minimal
-                            effort required to convert the new SplineEditor to any
-                            other GUI library give this move justification.
- 
- Bugs:
-      Lots of them.
-      Creating a new spline curve crashes the animator.
-
  This code is distributed under the conditions of the BSD license.  See
  LICENSE.txt for details.
 
@@ -54,9 +43,8 @@ from vtk.util.colors import tomato, banana
 
 import wx
 import wx.lib.scrolledpanel as scrolled
-from vtk.wx.wxVTKRenderWindowInteractor import wxVTKRenderWindowInteractor
-from vtk.wx.wxVTKRenderWindow import wxVTKRenderWindow
 import PreviewFrame
+import Logging
 
 
 math = vtk.vtkMath()
@@ -206,6 +194,8 @@ class SplineEditor:
             p1=points.GetPoint(n-1)
         else:
             p1=pps[ip1]
+        if ip0>=len(pps):
+            Logging.info("Attempt to get spline length of ip0=%d,ip1=%d"%(ip0,ip1),kw="animator")
         p0=pps[ip0]
 
         pp0,pp1=-1,-1
@@ -271,6 +261,7 @@ class SplineEditor:
                 #print "Using closest %d instead of the one we found %d"%(closest,pointindex)
                 pointindex = closest
             else:
+                Logging.info("closest=",closest,"pointindex=",pointindex,"d0=",d0,kw="animator")
                 raise "Didn't get closest!"
         if n == len(pps)-1:
             #print "Using last point"

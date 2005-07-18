@@ -27,7 +27,7 @@ __author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.93 $"
 __date__ = "$Date: 2005/01/13 14:09:15 $"
 
-import Interpolation
+from lib import Interpolation
 import ImageOperations
 import AdjustSettings
 import Logging

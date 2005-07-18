@@ -34,8 +34,8 @@ __version__ = "$Revision: 1.9 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 
-import InfoWidget
-import TreeWidget
+from GUI import InfoWidget
+from GUI import TreeWidget
 
 def getName():return "info"
 def getClass():return InfoMode

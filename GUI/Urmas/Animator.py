@@ -11,9 +11,6 @@
  Bugs:
      Widgets are not deleted in proper order.
      Creating a new spline curve crashes the animator.
-
- Changes:
-            10.02.2005 KP - Started conversion to wxPython
      
  This code is distributed under the conditions of the BSD license.  See
  LICENSE.txt for details.
@@ -40,6 +37,7 @@ __author__ = "Heikki Uuksulainen <heuuksul@cc.jyu.fi>"
 __version__ = "$Revision: 0.1 $"
 __date__ = "$Date: 2004/11/17 13:16:50 $"
 
+raise "NEVER IMPORT ME AGAIN"
 import wx
 import RenderingInterface
 

@@ -41,7 +41,7 @@ import os.path
 import Dialogs
 
 from PreviewFrame import *
-from IntensityTransferEditor import *
+from GUI.IntensityTransferEditor import *
 from Logging import *
 
 import sys
@@ -49,7 +49,7 @@ import time
 
 from GUI import Events
 
-import TaskPanel
+from GUI import TaskPanel
 import ColorTransferEditor
 
 class AdjustPanel(TaskPanel.TaskPanel):

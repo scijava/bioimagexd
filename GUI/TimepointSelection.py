@@ -67,7 +67,7 @@ class TimepointSelectionPanel(wx.Panel):
         self.Bind(wx.EVT_SIZE,self.onSize)
         self.timepointButtonSizer=wx.GridBagSizer()
         #,style=wx.RAISED_BORDER
-        self.buttonFrame = scrolled.ScrolledPanel(self, -1,size=(640,50))
+        self.buttonFrame = scrolled.ScrolledPanel(self, -1,size=(640,128))
         self.buttonFrame.SetSizer(self.timepointButtonSizer)
         self.buttonFrame.SetAutoLayout(True)
         self.buttonFrame.SetupScrolling()
@@ -264,7 +264,7 @@ class TimepointSelection(wx.Dialog):
 
         self.rendering=0
         self.SetTitle("Timepoint Selection")
-        ico=reduce(os.path.join,["Icons","Selli.ico"])
+        ico=reduce(os.path.join,["Icons","logo.ico"])
         self.icon = wx.Icon(ico,wx.BITMAP_TYPE_ICO)
         self.SetIcon(self.icon)
 

@@ -4,16 +4,13 @@
 """
  Unit: VideoGeneration
  Project: BioImageXD
- Created: 10.02.2005
- Creator: KP
+ Created: 10.02.2005, KP
  Description:
 
  URM/AS - The Unified Rendering Manager / Animator for Selli
  
  This module contains a panel that can be used to control the creation of a movie
  out of a set of rendered images.
- 
- Modified: 10.02.2005 KP - Created the module
  
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
@@ -38,11 +35,11 @@ __version__ = "$Revision: 1.22 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 import wx
-import Dialogs
 import RenderingInterface
 import Visualizer
 import Configuration
 import os,sys
+import Dialogs
 
 class VideoGeneration(wx.Panel):
     """
@@ -69,7 +66,7 @@ class VideoGeneration(wx.Panel):
         self.outputFormats=[["PNG","BMP","JPEG","TIFF"],["MPEG1","MPEG2","MPEG4","WMV1","MS MPEG4","MS MPEG4 v2"]]
         self.outputCodecs = ["mpeg1video","mpeg2video","mpeg4","wmv1","msmpeg4","msmpeg4v2"]
         self.padding = [1,1,0,0,0,0]
-        self.needpad=1
+        self.needpad=0
         self.mainsizer=wx.GridBagSizer()
         self.generateGUI()
         
@@ -107,25 +104,25 @@ class VideoGeneration(wx.Panel):
         self.control.configureTimeline(self.dur,self.frames)
 
         print "Will produce %s, rendered frames go to %s"%(file,path)
-        size=self.frameSize.GetStringSelection()
-        x,y=size.split("x")
-        x=int(x)
-        y=int(y)
-        size=(x,y)
+        #size=self.frameSize.GetStringSelection()
+        #x,y=size.split("x")
+        #x=int(x)
+        #y=int(y)
+        #size=(x,y)
 #        self.parent.FitToPage(self.parent.renderingPage)
-        print "Will set render window to ",size
-        self.visualizer.setRenderWindowSize((x,y))
-        flag=self.control.renderProject(0,renderpath=path,size=size)
+        #print "Will set render window to ",size
+        #self.visualizer.setRenderWindowSize((x,y))
+        flag=self.control.renderProject(0,renderpath=path)
         if flag==-1:
             return
         if self.formatMenu.GetSelection()==1:
 
             print "Will produce video"
-            self.encodeVideo(size,path,file)
+            self.encodeVideo(path,file)
 
 #        self.Close()
 
-    def encodeVideo(self,size,path,file):
+    def encodeVideo(self,path,file):
         """
         Method: encodeVideo()
         Created: 27.04.2005, KP
@@ -141,10 +138,24 @@ class VideoGeneration(wx.Panel):
         pattern=os.path.join(path,pattern)
         print "Pattern for files = ",pattern
         
-        frameRate = int(self.frameRate.GetValue())
+        #frameRate = int(self.frameRate.GetValue())
+        frameRate=float(self.frameRate.GetValue())
         codec=self.outputFormat.GetSelection()
+        if self.needpad and frameRate not in [12,24]:
+            scodec=self.outputFormats[1][codec]
+            if frameRate<12:frameRate=12
+            else:frameRate=24
+            Dialogs.showmessage(self,"For the code you've selected (%s), the target frame rate must be either 12 or 24. %d will be used."%(scodec,frameRate),"Bad framerate")
+            
         vcodec = self.outputCodecs[codec]
-        x,y=size
+        try:
+            x,y=self.visualizer.getCurrentMode().GetRenderWindow().GetSize()
+            print "Render window size =",x,y
+            if x%2:x-=(x%2)
+            if y%2:y-=(y%2)
+            print "x,y=",x,y
+        except:
+            x,y=512,512
         ffmpegs={"linux":"ffmpeg","win":"bin\\ffmpeg.exe","darwin":"bin/ffmpeg.osx"}
         ffmpeg="ffmpeg"
         for i in ffmpegs.keys():
@@ -152,7 +163,7 @@ class VideoGeneration(wx.Panel):
                 ffmpeg=ffmpegs[i]
                 break
         print "Using ffmpeg %s"%ffmpeg
-        commandLine="%s -b 8192 -r %d -s %dx%d -i \"%s\" -vcodec %s %s"%(ffmpeg,frameRate,x,y,pattern,vcodec,file)
+        commandLine="%s -b 8192 -r %.2f -s %dx%d -i \"%s\" -vcodec %s %s"%(ffmpeg,frameRate,x,y,pattern,vcodec,file)
         print "Command line for ffmpeg=",commandLine
         os.system(commandLine)
         if os.path.exists(file):
@@ -189,7 +200,7 @@ class VideoGeneration(wx.Panel):
         if sel==1:
             codec=self.outputFormat.GetSelection()
             self.needpad=self.padding[codec]
-            self.padFrames.Enable(self.needpad)
+            #self.padFrames.Enable(self.needpad)
             self.onPadFrames(None)
 
     def generateGUI(self):
@@ -212,7 +223,7 @@ class VideoGeneration(wx.Panel):
         self.totalFramesLabel=wx.StaticText(self,-1,"Frames:")
         self.durationLabel=wx.StaticText(self,-1,"Duration:")
         self.fpsLabel=wx.StaticText(self,-1,"Frames:\t%.2f / s"%self.fps)
-        self.padfpsLabel=wx.StaticText(self,-1,"Padding:\t%.2f / s"%(24-self.fps))
+        #self.padfpsLabel=wx.StaticText(self,-1,"Padding:\t%.2f / s"%(24-self.fps))
 
         self.totalFrames=wx.TextCtrl(self,-1,"%d"%self.frames,size=(50,-1),style=wx.TE_PROCESS_ENTER)
         self.totalFrames.Bind(wx.EVT_TEXT,self.onUpdateFrames)
@@ -229,15 +240,15 @@ class VideoGeneration(wx.Panel):
         self.outputFormat.Bind(wx.EVT_CHOICE,self.onUpdateCodec)
         self.outputFormat.SetSelection(2)
         
-        self.frameSizeLbl = wx.StaticText(self,-1,"Frame size:")
-        self.frameSize = wx.Choice(self,-1,choices=["320 x 240","640 x 480"])
-        self.frameSize.SetSelection(1)
+        #self.frameSizeLbl = wx.StaticText(self,-1,"Frame size:")
+        #self.frameSize = wx.Choice(self,-1,choices=["320 x 240","640 x 480"])
+        #self.frameSize.SetSelection(1)
 
         self.frameRateLbl=wx.StaticText(self,-1,"Frame rate:")
-        self.frameRate = wx.TextCtrl(self,-1,"24")
-        self.padFrames = wx.CheckBox(self,-1,"Duplicate frames")
-        self.padFrames.Bind(wx.EVT_CHECKBOX,self.onPadFrames)
-        self.padFrames.SetValue(1)
+        self.frameRate = wx.TextCtrl(self,-1,"%.2f"%self.fps)
+        #self.padFrames = wx.CheckBox(self,-1,"Duplicate frames")
+        #self.padFrames.Bind(wx.EVT_CHECKBOX,self.onPadFrames)
+        #self.padFrames.SetValue(1)
         n=0
         self.outputsizer.Add(self.formatLabel,(n,0))
         self.outputsizer.Add(self.formatMenu,(n,1))
@@ -245,14 +256,14 @@ class VideoGeneration(wx.Panel):
         self.outputsizer.Add(self.outputFormatLbl,(n,0))
         self.outputsizer.Add(self.outputFormat,(n,1))
         n+=1
-        self.outputsizer.Add(self.frameSizeLbl,(n,0))
-        self.outputsizer.Add(self.frameSize,(n,1))
-        n+=1
+        #self.outputsizer.Add(self.frameSizeLbl,(n,0))
+        #self.outputsizer.Add(self.frameSize,(n,1))
+        #n+=1
         self.outputsizer.Add(self.frameRateLbl,(n,0))
         self.outputsizer.Add(self.frameRate,(n,1))
         n+=1
-        self.outputsizer.Add(self.padFrames,(n,0))
-        n+=1
+        #self.outputsizer.Add(self.padFrames,(n,0))
+        #n+=1
         self.outputsizer.Add(self.durationLabel,(n,0))
         self.outputsizer.Add(self.duration,(n,1))        
         n+=1
@@ -261,7 +272,7 @@ class VideoGeneration(wx.Panel):
         n+=1
         self.outputsizer.Add(self.fpsLabel,(n,0))
         n+=1
-        self.outputsizer.Add(self.padfpsLabel,(n,0))
+        #self.outputsizer.Add(self.padfpsLabel,(n,0))
         
         self.mainsizer.Add(self.outputstaticbox,(0,0))
     
@@ -340,6 +351,7 @@ class VideoGeneration(wx.Panel):
             self.fps = self.frames / float(self.dur)
             print "frames per second = ",self.fps
             self.fpsLabel.SetLabel("Rendered frames:\t%.3f / second"%self.fps)
+            self.frameRate.SetValue("%.2f"%self.fps)
             self.onPadFrames(None)
         except:
             return

@@ -4,8 +4,7 @@
 """
  Unit: UrmasRenderer
  Project: BioImageXD
- Created: 04.04.2005
- Creator: KP
+ Created: 04.04.2005, KP
  Description:
 
  URM/AS - The Unified Rendering Manager / Animator for Selli
@@ -16,8 +15,6 @@
  
  This module contains the class that takes a datastructure representation
  of the timeline and renders it to a movie or set of images. 
- 
- Modified: 04.04.2005 KP - Created the module
  
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
@@ -46,7 +43,6 @@ from UrmasControl import *
 import time
 import Dialogs
 import wx
-#from enthought.tvtk import messenger
 import messenger
 
 class UrmasRenderer:
@@ -171,16 +167,10 @@ class UrmasRenderer:
         """            
         tracks = self.control.timeline.getSplineTracks()
         points=[]
-        for track in tracks:
-            # See the stop items first
-            for item in track.getStopItems():
-                start,end=item.getPosition()
-                if time >= start and time <= end:
-                    print "Found in stop items"
-                    return item
-            
+        for track in tracks:           
             for item in track.getItems():
                 start,end=item.getPosition()
+                print "time=",time,"item.pos=",start,end
                 if time >= start and time <= end:
                     if track != self.currTrack:
                         # Reset camera everytime we switch tracks
@@ -214,9 +204,6 @@ class UrmasRenderer:
             self.renderingInterface.updateDataset()
             self.oldTimepoint = timepoint
         point = self.getSplinepointsAt(timepos)
-        if not point:
-            print "No camera position"
-#            Dialogs.showerror(self.control.window,"Camera path ended prematurely","Cannot determine camera position")
         if point and not point.isStopped():
                 
             p0=point.getPoint()
@@ -239,6 +226,11 @@ class UrmasRenderer:
             print "Camera stopped, using last point"
             x,y,z=self.lastSplinePoint
             point=(x,y,z)
+        else:
+            print "No camera position"
+#            Dialogs.showerror(self.control.window,"Camera path ended prematurely","Cannot determine camera position")
+            point=self.lastpoint
+
         focal = self.splineEditor.getCameraFocalPointCenter()
         if not preview:
             cam = self.ren.GetActiveCamera()
@@ -276,6 +268,7 @@ class UrmasRenderer:
             cam.OrthogonalizeViewUp()
         elif self.currTrack:
             # if there's movement in z direction
+            print "lastpoint=",self.lastpoint,"point=",point
             if self.lastpoint and abs(self.lastpoint[2]-point[2])>2:
                 print "Orthogonalizing because old z=",self.lastpoint[2],"!= new z",point[2]
                 cam.OrthogonalizeViewUp()

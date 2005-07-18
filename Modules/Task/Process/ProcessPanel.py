@@ -42,7 +42,7 @@ from Logging import *
 import sys
 import time
 
-import TaskPanel
+from GUI import TaskPanel
 
 class ProcessPanel(TaskPanel.TaskPanel):
     """

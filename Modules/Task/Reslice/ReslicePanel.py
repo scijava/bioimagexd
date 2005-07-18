@@ -39,7 +39,7 @@ from PreviewFrame import *
 import sys
 import time
 
-import TaskPanel
+from GUI import TaskPanel
 
 
 class ReslicePanel(TaskPanel.TaskPanel):

@@ -33,7 +33,8 @@ __date__ = "$Date: 2005/01/13 14:52:39 $"
 
 import vtk
 import time
-from Module import *
+import lib.Module
+from lib.Module import *
 
 class Reslice(Module):
     """

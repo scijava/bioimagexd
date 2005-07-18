@@ -3,8 +3,7 @@
 """
  Unit: Track
  Project: BioImageXD
- Created: 05.02.2005
- Creator: KP
+ Created: 05.02.2005, KP
  Description:
 
  URM/AS - The Unified Rendering Manager / Animator for Selli
@@ -15,8 +14,6 @@
  
  The widgets that implement the Tracks of the timeline are implemented in this module.
 
- Modified: 04.02.2005 KP - Created the module
- 
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
 
@@ -40,7 +37,7 @@ __version__ = "$Revision: 1.22 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 import wx
-
+import Logging
 import os.path
 import sys
 import math,random
@@ -65,54 +62,158 @@ class Track(wx.Panel):
         self.number=0
         self.duration=0
         self.frames=0
-        height=80
-        self.stopItems=[]
-        self.positionItemLength=0
+        self.bold=0
+        self.height=80
+        self.startOfTrack=0
         self.editable=1
+        self.selectedItem=None
+        self.dragItem=None
         self.SetBackgroundColour((255,255,255))
         self.control = kws["control"]
         self.splineEditor = self.control.getSplineEditor()
         self.label = name
         self.previtem = None
-        print "Height = ",height
         if kws.has_key("height"):
            print "Setting height to ",kws["height"]
-           height=kws["height"]
+           self.height=kws["height"]
         if kws.has_key("editable"):
             self.editable=kws["editable"]
         self.timescale=kws["timescale"]
         if kws.has_key("number"):
             self.number=kws["number"]
-        print "Height now=",height
-        self.sizer=wx.GridBagSizer()
-        self.itemBox=None
+        
+        #self.sizer=wx.GridBagSizer()
         self.color=None
         self.parent=parent
 
         self.enabled = 1
+        w,h=self.parent.GetSize()
+        d=self.control.getDuration()
+        self.width=d*self.timescale.getPixelsPerSecond()+self.getLabelWidth()
 
-
-        self.namePanel=NamePanel(self,name,(255,255,255),size=(125,height))
-        self.sizer.Add(self.namePanel,(0,0))
-
-        #self.sizer.Add(self.itemBox,(0,1))
-        
+        self.buffer = wx.EmptyBitmap(self.width,self.height)
+        self.SetSize((self.width,self.height))
         self.dragEndPosition=0
                 
-        self.SetSizer(self.sizer)
-        self.SetAutoLayout(1)
-        self.sizer.Fit(self)
         self.items=[]
         self.itemAmount = 0
         self.oldNamePanelColor = 0
     
         self.initTrack()
+
+        self.Bind(wx.EVT_MOTION,self.onDrag)
+        self.Bind(wx.EVT_LEFT_DOWN,self.onDown)
+        self.Bind(wx.EVT_LEFT_UP,self.onUp)
         
-        self.namePanel.Bind(wx.EVT_LEFT_UP,self.setSelected)
-        d,s=self.control.getDuration(),self.control.getFrames()
+        self.Bind(wx.EVT_PAINT,self.onPaint)
+
+        s=self.control.getFrames()
         print "duration=",d,"frames=",s
         self.setDuration(d,s)
+        self.paintTrack()
         
+    def onPaint(self,event):
+        """
+        Method: onPaint()
+        Created: 17.07.2005, KP
+        Description: Blit the buffer
+        """ 
+        dc=wx.BufferedPaintDC(self,self.buffer)#,self.buffer)
+        
+    def paintTrack(self):
+        """
+        Method: paintTrack
+        Created: 17.07.2005, KP
+        Description: Paint the track
+        """ 
+        self.dc = wx.BufferedDC(wx.ClientDC(self),self.buffer)
+        self.dc.Clear()
+        self.dc.SetBrush(wx.Brush(self.bg))
+        #self.dc.SetPen(wx.Pen(self.fg,1))
+        self.dc.BeginDrawing()
+        self.dc.DrawRectangle(0,0,self.getLabelWidth(),self.height)
+        
+        self.dc.SetTextForeground(self.fg)
+        weight=wx.NORMAL
+        if self.bold:
+           weight=wx.BOLD
+        self.dc.SetFont(wx.Font(9,wx.SWISS,wx.NORMAL,weight))
+        self.dc.DrawText(self.label,0,0)
+
+        x=self.startOfTrack+self.getLabelWidth()
+        for item in self.items:
+            self.dc.DrawBitmap(item.buffer,x,0)
+            item.SetPosition((x,0))
+
+            w,h=item.GetSize()
+            x+=w
+    
+        self.dc.EndDrawing()
+        self.dc = None
+
+       
+    def updatePositions(self):
+        """
+        Method: updatePositions()
+        Created: 17.07.2005, KP
+        Description: Update each item with new position
+        """
+        x=self.startOfTrack+self.getLabelWidth()
+        for item in self.items:
+            item.SetPosition((x,0))
+            w,h=item.GetSize()
+            x+=w
+         
+        
+    def onEvent(self,etype,event):
+        """
+        Method: onEvent
+        Created: 17.07.2005, KP
+        Description: Item is dragged
+        """    
+        ex,ey=event.GetPosition()
+        for item in self.items:
+            x,y=item.GetPosition()
+            w,h=item.GetSize()
+            if ex>=x and ex<=x+w:
+                eval("item.on%s(event)"%etype)
+                self.selectedItem=item
+                return 1
+        return 0
+                
+    def onDrag(self,event):
+        """
+        Method: onDown
+        Created: 17.07.2005, KP
+        Description: Item is clicked
+        """
+        if self.dragItem and self.dragItem.dragMode:
+            self.dragItem.onDrag(event)
+            return
+        self.onEvent("Drag",event)
+        self.dragItem=self.selectedItem
+                        
+                
+    def onDown(self,event):
+        """
+        Method: onDown
+        Created: 17.07.2005, KP
+        Description: Item is clicked
+        """
+        return self.onEvent("Down",event)
+        
+    def onUp(self,event):
+        """
+        Method: onUp
+        Created: 17.07.2005, KP
+        Description: Item is clicked
+        """
+        if self.selectedItem:
+            self.selectedItem.onUp(event)
+        if not self.onEvent("Up",event):
+            self.setSelected(event)
+        
+                
     def getItems(self):
         """
         Method: getItems()
@@ -127,13 +228,14 @@ class Track(wx.Panel):
         Created: 14.04.2005, KP
         Description: Selects this track
         """
-        print "setSelected(",event,")"
+        #print "setSelected(",event,")"
         if event:
-            self.namePanel.setWeight(1)
+            self.bold=1
             self.parent.setSelectedTrack(self)
         else:
             self.SetWindowStyle(wx.SIMPLE_BORDER)
-            self.namePanel.setWeight(0)
+            self.bold=0
+        self.paintTrack()
             
     def setEnabled(self,flag):
         """
@@ -146,9 +248,11 @@ class Track(wx.Panel):
             self.oldNamePanelColor=col
             r=g=b=200
             print "Setting background to ",r,g,b
-            self.namePanel.setColor((128,128,128),(r,g,b))
+            self.fg=(128,128,128)
+            self.bg=(r,g,b)
         else:
-            self.namePanel.setColor((0,0,0),self.nameColor)
+            self.fg=(0,0,0)
+            self.bg=self.nameColor
 
         
     def OnDragOver(self,x,y,d):
@@ -160,40 +264,32 @@ class Track(wx.Panel):
         """ 
         #print "OnDragOver(%d,%d,%s)"%(x,y,d)
         if not self.oldNamePanelColor:
-            #col=self.namePanel.GetBackgroundColour()
-            col=self.namePanel.bg
+            col=self.bg
             #r,g,b=col.Red(),col.Green(),col.Blue()
             r,g,b=col
             self.oldNamePanelColor=col
             r=int(r*0.8)
             g=int(g*0.8)
             b=int(b*0.8)
-            self.namePanel.setColor((255,255,255),(r,g,b))
-        self.namePanel.Refresh()
+            self.fg=(255,255,255)
+            self.bg=(r,g,b)
+            self.paintTrack()
+            self.Refresh()
         curritem=None
         for item in self.items:
             ix,iy=item.GetPosition()
             w,h=item.GetSize()
             #print "ix,iy=",ix,iy
-            if ix<= x:
+            if ix<= x and ix+w>=x:
                 #print "Found item",item
                 curritem=item
                 self.dragEndPosition = self.items.index(item)+1
                 d=abs(ix-x)
                 if d<w/2:self.dragEndPosition-=1
-        if curritem:
-            if self.stopItems:
-                ix,iy=curritem.GetPosition()
-                # Take into account the stop items also
-                for sitem in self.stopItems:
-                    sx,sy=sitem.GetPosition()
-                    if sx<ix:
-                        self.dragEndPosition+=1
-                        continue
-
             if self.previtem and self.previtem != curritem:
                 self.previtem.drawItem()
-                self.previtem.Refresh()
+                #self.previtem.Refresh()
+        if curritem:
             curritem.OnDragOver(x,y)
             self.previtem = curritem
         else:
@@ -207,21 +303,26 @@ class Track(wx.Panel):
                      something to this track
         """     
         self.oldNamePanelColor = None
-        self.namePanel.setColor((0,0,0),self.nameColor)
-        self.namePanel.Refresh()
+        self.fg=(0,0,0)
+        self.bg=self.nameColor
+        self.paintTrack()
+        self.Refresh()
 
-    def refresh(self):
+    def __set_pure_state__(self,state):
         """
-        Method: refresh()
+        Method: __set_pure_state__()
         Created: 11.04.2005, KP
         Description: Method called by UrmasPersist to allow the object
                      to refresh before it's items are created
-        """    
-        self.setItemAmount(self.itemAmount)
-        self.namePanel.setLabel(self.label)
-        w,h=self.positionItem.GetSize()
-        self.positionItem.SetSize((self.positionItemLength,h))
-
+        """ 
+        print "Setting pure state of track"
+        Logging.info("Set pure state of track",state.label,kw="animator")
+        self.label = state.label
+        self.startOfTrack = state.startOfTrack
+        self.color = state.color
+        self.nameColor = state.nameColor
+        #self.namePanel.setLabel(self.label)
+        
     def updateLabels(self):
         """
         Method: updateLabels
@@ -232,9 +333,67 @@ class Track(wx.Panel):
         for item in self.items:
             item.updateItem()
             item.drawItem()
-            item.Refresh()
+            #item.Refresh()
+        self.paintTrack()
         self.Refresh()
-        self.Layout()
+#        self.Layout()
+        
+    def onDragItem(self,trackitem,event):
+        """
+        Method: doDragItem
+        Created: 16.07.2005, KP
+        Description: Execute dragging of item
+        """         
+        x,y=event.GetPosition()
+        
+        if trackitem.dragMode == 2:
+            x-=self.getLabelWidth()
+            print "Setting empty space to ",x
+            self.setEmptySpace(x)
+            self.paintTrack()
+            self.Refresh()
+            return
+        
+        posx,posy=trackitem.GetPosition()            
+        
+        # Dragged from the beginning
+        if trackitem.dragMode == 3:
+            diff=x-trackitem.beginX
+            # we actually need to drag the previous item
+            pos=self.items.index(trackitem)
+            pos-=1
+            item=self.items[pos]
+            if diff>=0:
+                itemdiff=diff
+                #trackitemdiff=-diff
+                trackitemdiff=0
+            elif diff < 0:
+                itemdiff=diff
+                #trackitemdiff=abs(diff)
+                trackitemdiff=0
+            #print "diff=",diff,"itemdiff=",itemdiff,"trackdiff=",trackitemdiff
+            if item.width+itemdiff<item.minSize:
+                return
+            if trackitem.width+trackitemdiff<trackitem.minSize:
+                return
+            item.setWidth(item.width+itemdiff)
+            trackitem.setWidth(trackitem.width+trackitemdiff)
+            trackitem.beginX=x
+    
+        elif trackitem.dragMode == 1:
+            diff=x-trackitem.beginX
+            #print "beginX=",trackitem.beginX,"x=",x,"diff=",diff
+            if trackitem.width+diff<trackitem.minSize:
+                return
+            if diff>0 and not self.itemCanResize(trackitem.width,trackitem.width+diff):
+                print "Would go over the timescale"
+                return
+            trackitem.beginX=x
+            trackitem.setWidth(trackitem.width+diff)
+        #self.updatePositions()
+        self.paintTrack()
+        self.Refresh()
+#        self.updateLayout()
         
     def remove(self):
         """
@@ -242,20 +401,9 @@ class Track(wx.Panel):
         Created: 06.04.2005, KP
         Description: Remove all items from self
         """               
-        if self.itemBox:
-            print "Removing ",len(self.items)," items"    
-            
-            self.sizer.Show(self.itemBox,0)
-            self.sizer.Detach(self.itemBox)
-            for i in range(len(self.items)-1,0,-1):
-                self.removeItem(i)
-            if self.positionItem:
-                self.itemBox.Show(self.positionItem,0)
-                self.itemBox.Detach(self.positionItem)
-                self.positionItem.Destroy()
-                self.positionItem = None
-            self.itemBox.Destroy()    
-
+        for i in range(len(self.items)-1,0,-1):
+            self.removeItem(i)
+        
     def removeItem(self,position):
         """
         Method: removeItem(position)
@@ -264,12 +412,7 @@ class Track(wx.Panel):
         """              
         print "Removing item ",position
         item=self.items[position]
-        self.itemBox.Show(item,0)
-        self.itemBox.Detach(item)
-        self.positionItem = None
         self.items.remove(item)
-        item.Destroy()
-        
         
     def setDataUnit(self,dataUnit):
         """
@@ -278,7 +421,6 @@ class Track(wx.Panel):
         Description: A method to set the dataunit this track contains
         """           
         self.dataUnit=dataUnit
-    
         
     def getLength(self):
         """
@@ -296,8 +438,8 @@ class Track(wx.Panel):
         Description: A method that tells whether an item can change its size
                      from the specified size to a new size
         """               
+        return 1
         diff=toWidth-fromWidth
-        w,h=self.itemBox.GetSize()
         w+=diff
         
         print "w=",w,"duration=",self.duration,"pps=",self.timescale.getPixelsPerSecond()
@@ -310,15 +452,7 @@ class Track(wx.Panel):
         Method: initTrack
         Created: 11.04.2005, KP
         Description: Initialize the GUI portion of this track
-        """               
-        self.itemBox=wx.BoxSizer(wx.HORIZONTAL)
-        self.sizer.Add(self.itemBox,(0,1))
-        self.positionItem = wx.Panel(self,-1)#EmptyItem(self,(0,1))
-        self.positionItem.SetBackgroundColour(self.GetBackgroundColour())
-        self.positionItem.SetSize((0,-1))
-        self.itemBox.Insert(0,self.positionItem)
-        
-        self.updateLayout()
+        """
         self.items=[]
    
         
@@ -400,12 +534,18 @@ class Track(wx.Panel):
             print "Won't grow beyond %d"%maxempty
             space=maxempty
         #self.positionItem.setWidth(space)
-        self.positionItem.SetSize((space,-1))
-        #self.Layout()
-        self.parent.Layout()
-        #self.updateLayout()
-        print "setting positionItem size",self.positionItem.GetSize()
+        self.startOfTrack=space
         
+        self.buffer = wx.EmptyBitmap(self.width+space,self.height)
+        self.paintTrack()
+#        self.positionItem.SetSize((space,-1))
+        #self.Layout()
+        self.Refresh()
+        #self.updateLayout()
+        print "setting positionItem size",space
+
+    def GetSize(self):
+        return (self.width+self.startOfTrack,self.height)
         
     def getLabelWidth(self):
         """
@@ -413,7 +553,7 @@ class Track(wx.Panel):
         Created: 04.02.2005, KP
         Description: A method that returns the width of the name panel
         """               
-        return self.namePanel.GetSize()[0]
+        return self.timescale.getLabelWidth()
 
     def setColor(self,col):
         """
@@ -425,7 +565,7 @@ class Track(wx.Panel):
         self.headercolor=(127,127,127)
         for item in self.items:
             item.setColor(col,self.headercolor)
-            item.Layout()
+            #item.Layout()
             
     def updateLayout(self):
         """
@@ -433,10 +573,12 @@ class Track(wx.Panel):
         Created: 04.02.2005, KP
         Description: A method that updates the layout of this track
         """               
-        self.Layout()
-        self.parent.Layout()
+        #self.Layout()
+        #self.parent.Layout()
         for item in self.items:
             item.updateItem()
+        self.paintTrack()
+        self.Refresh()
          
         
     def getDuration(self,pixels):
@@ -477,10 +619,7 @@ class Track(wx.Panel):
         odict={}
         keys=[""]
         self.itemAmount = len(self.items)
-        self.positionItemLength=0
-        if self.positionItem:
-            self.positionItemLength=self.positionItem.GetSize()[0]
-        for key in ["label","items","color","nameColor","number","itemAmount","positionItemLength"]:
+        for key in ["label","items","color","nameColor","number","itemAmount","startOfTrack"]:
             odict[key]=self.__dict__[key]
         return odict        
     
@@ -493,13 +632,13 @@ class SplineTrack(Track):
     Description: A class representing a spline track in the timeline
     """       
     def __init__(self,name,parent,**kws):
+        self.nameColor = (0,148,213)
+        self.fg=(0,0,0)
+        self.bg=self.nameColor
         Track.__init__(self,name,parent,**kws)   
         self.closed = 0
-        self.stopItems=[]
-        self.stopItemPositions=[]
-        self.nameColor = (0,148,213)
         self.maintainUpDirection=0
-        self.namePanel.setColor((0,0,0),self.nameColor)
+        #self.namePanel.setColor((0,0,0),self.nameColor)
         if "item" in kws:
             self.itemClass=kws["item"]
         else:
@@ -567,7 +706,7 @@ class SplineTrack(Track):
                 Dialogs.showerror(self,"Perpendicular camera path can only be placed on an empty track","Cannot place camera path")
                 return
             x,y,z = self.splineEditor.dataDimensions()
-            r = max(x,y,z)
+            r = 2*max(x,y,z)
             x0,y0,z0 = self.splineEditor.getCameraFocalPointCenter()
             
             # On top
@@ -585,8 +724,8 @@ class SplineTrack(Track):
         elif data=="Stop":
             pos=self.dragEndPosition
             self.addStopPoint(pos)
+            self.paintTrack()
             self.Refresh()
-            self.Layout()
         else:
             dlg = wx.TextEntryDialog(self,"How many control points should the camera path have:","Configure Camera path")
             dlg.SetValue("5")
@@ -636,6 +775,9 @@ class SplineTrack(Track):
         last=0
         print "total size=",total," (pixels=",size,")"
         for i in self.items:
+            if i.isStopped():
+                i.setWidth(30)
+                continue
             n=self.getSplineLength(i.getItemNumber())
             if n:
                 percent=float(n)/total
@@ -648,16 +790,6 @@ class SplineTrack(Track):
                 i.setWidth(8)
        
         self.updateLayout()
-            
-
-
-    def getStopItems(self):
-        """
-        Method: getItems()
-        Created: 19.04.2005, KP
-        Description: Return items in this track
-        """ 
-        return self.stopItems
 
 
     def getSplinePoint(self,point):
@@ -695,11 +827,11 @@ class SplineTrack(Track):
         Created: 24.06.2005, KP
         Description: A method to add a stop in the camera movement
         """
-        h=self.namePanel.GetSize()[1]
-
-        item=StopItem(self,(20,h))
-        self.itemBox.Insert(position+1,item)
-        self.stopItems.append(item)
+        h=self.height
+        item=StopItem(self,(30,h))
+        self.items.insert(position,item)
+        self.updatePositions()
+        return item
         
     def addSplinePoint(self,position,update=1,**kws):
         """
@@ -707,21 +839,29 @@ class SplineTrack(Track):
         Created: 04.02.2005, KP
         Description: A method to add a new item to this track
         """
-        h=self.namePanel.GetSize()[1]
+        h=self.height
         itemkws={"itemnum":position,"editable":self.editable}
+        print "itemnum=",position
         if kws.has_key("point"):
             point = kws["point"]
         else:
             point = self.splineEditor.getRandomPoint()
         itemkws["point"]=point
+        
 #        print "Setting point to ",point
         pts=[]
-
         for item in self.items:
  #           print "item=",item
-            pts.append(item.getPoint())
- #       print "current=",pts
-        pts.insert(position,point)
+            if not "stopitem" in dir(item):
+                pts.append(item.getPoint())
+            
+        if position>=len(pts)-1:
+            print "append pts, pos=%d,len=%d"%(position,len(pts))
+            pts.append(point)
+        else:
+            print "insert pts"
+            pts.insert(position,point)
+        Logging.info("spline pts=",pts,kw="animator")    
 
         if len(pts)>=2:
             self.splineEditor.setClosed(self.closed)
@@ -731,37 +871,31 @@ class SplineTrack(Track):
         item=self.itemClass(self,"%d"%position,(20,h),**itemkws)
         if self.color:
             item.setColor(self.color,self.headercolor)
-        self.items.insert(position,item)
+        if position>=len(pts)-1:
+            print "appending item",item.itemnum
+            self.items.append(item)
+        else:
+            print "Inserting items"
+            self.items.insert(position,item)
         # +1 accounts for the empty item
-        self.itemBox.Insert(position+1,item)
-
-        for i in range(len(self.items)):
-            self.items[i].setItemNumber(i)
-            self.items[i].setText("%d"%i)
-            if update:
-                self.items[i].updateItem()
-                self.items[i].drawItem()
+        spc=0
+        for i,item in enumerate(self.items):
+            if not item.isStopped():
+                self.items[i].setItemNumber(spc)
+                self.items[i].setText("%d"%spc)
+                spc+=1
+                if update:
+                    self.items[i].updateItem()
+                    self.items[i].drawItem()
         
+        self.updatePositions()
+
         if update:
-            self.Layout()
+            self.paintTrack()
+            self.Refresh()
             #self.sizer.Fit(self)
+        return item
             
-    def refresh(self):
-        """
-        Method: refresh()
-        Created: 11.04.2005, KP
-        Description: Method called by UrmasPersist to allow the object
-                     to refresh before it's items are created
-        """    
-        Track.refresh(self)
-        # If the stopItemPositions has been stored as a string
-        # then eval it back to list format
-        if type(self.stopItemPositions)==type(""):
-            self.stopItemPositions=eval(self.stopItemPositions)
-        for pos in self.stopItemPositions:
-            self.addStopPoint(pos)
-
-        
     def __getstate__(self):
         """
         Method: __getstate__
@@ -769,35 +903,9 @@ class SplineTrack(Track):
         Description: Return the dict that is to be pickled to disk
         """      
         odict = Track.__getstate__(self)
-        self.stopItemAmount=len(self.stopItems)
         n=0
         pos=0
-        self.stopItemPositions=[]
-        # Here we need to serialize the positions of the stop items
-        # to be able to restore them in their proper places
-        for item in self.stopItems:
-            # Get the position of the stop item
-            x,y=item.GetPosition()
-            # if there's only one item
-            if len(self.items)==1:
-                # determine if we are before or after it
-                flag=(self.items[0].GetPosition()[0]<x)
-                self.stopItemPositions=[flag]
-            else:
-                # otherwise go through all the items
-                for i in range(len(self.items)-1):
-                    x2,y2=self.items[i].GetPosition()
-                    x3,y3=self.items[i+1].GetPosition()
-                    # if we're between items i and i+1
-                    if x2<x and x3>x:
-                        # store that position in the list
-                        self.stopItemPositions.append(n+i+1)
-                        n+=1
-                        break
-        # convert the list to string since UrmasPersist cannot
-        # persist list of ints
-        self.stopItemPositions=str(self.stopItemPositions)
-        for key in ["closed","stopItems","stopItemPositions","maintainUpDirection"]:
+        for key in ["closed","maintainUpDirection"]:
             odict[key]=self.__dict__[key]
         return odict        
         
@@ -811,6 +919,7 @@ class SplineTrack(Track):
         if event:
             self.showSpline()
             self.control.setSplineInteractionCallback(self.updateLabels)        
+            
     def showSpline(self):
         """
         Method: showSpline()
@@ -819,7 +928,8 @@ class SplineTrack(Track):
         """ 
         pts=[]
         for item in self.items:
-            pts.append(item.getPoint())
+            if not isinstance(item,StopItem):
+                pts.append(item.getPoint())
         if len(pts)>=2:
             self.splineEditor.setSplinePoints(pts)
             self.splineEditor.setClosed(self.closed)
@@ -836,16 +946,31 @@ class SplineTrack(Track):
         for i in range(n):
             self.addSplinePoint(i,0)
             
-    def setStopItemAmount(self,n):
+    def __set_pure_state__(self,state):
         """
-        Method: setStopItemAmount
-        Created: 24.06.2005, KP
-        Description: A method to set the amount of stop items in this track
-        """               
-        self.remove()
-        self.initTrack()
-        for i in range(n):
-            self.addSplinePoint(i,0)
+        Method: __set_pure_state__()
+        Created: 11.04.2005, KP
+        Description: Method called by UrmasPersist to allow the object
+                     to refresh before it's items are created
+        """ 
+        Track.__set_pure_state__(self,state)
+        self.closed = state.closed
+        spc=0
+        
+        for i,item in enumerate(state.items):
+            if not "stopitem" in  dir(item):
+                Logging.info("Add spline point spc=%d,i=%d, itemnum=%d"%(spc,i,item.itemnum),kw="animator")
+                tp=self.addSplinePoint(spc,0,point=item.point)
+                tp.__set_pure_state__(item)
+                spc+=1
+            else:
+                Logging.info("Add stop point i=%d, itemnum=%d"%(i,item.itemnum),kw="animator")
+                tp=self.addStopPoint(i)
+                tp.__set_pure_state__(item)
+        #self.updatePositions()
+        for i,item in enumerate(self.items):
+            print "item at %d: %s"%(i,str(item))
+        self.paintTrack()
         
         
 class TimepointTrack(Track):
@@ -855,9 +980,10 @@ class TimepointTrack(Track):
     Description: A class representing a timepoint track in the timeline
     """       
     def __init__(self,name,parent,**kws):
-        Track.__init__(self,name,parent,**kws)
         self.nameColor = (128,195,155)
-        self.namePanel.setColor((0,0,0),self.nameColor)
+        self.fg=(0,0,0)
+        self.bg=self.nameColor
+        Track.__init__(self,name,parent,**kws)
         if "item" in kws:
             self.itemClass=kws["item"]
         else:
@@ -914,7 +1040,7 @@ class TimepointTrack(Track):
         Created: 04.02.2005, KP
         Description: A method to add a new item to this track
         """              
-        h=self.namePanel.GetSize()[1]
+        h=self.height
         kws={"editable":self.editable}
         kws["dataunit"]=self.dataUnit
         kws["thumbnail"]=timepoint
@@ -925,15 +1051,17 @@ class TimepointTrack(Track):
             item.setColor(self.color,self.headercolor)
         self.items.insert(position,item)
         # +1 accounts for the empty item
-        self.itemBox.Insert(position+1,item)
         
-        for i,item in enumerate(self.items):
-            item.setItemNumber(i)
+        for i,trackitem in enumerate(self.items):
+            trackitem.setItemNumber(i)
             
         if update:
             self.Layout()
             self.sizer.Fit(self)
         item.updateItem()
+        self.updatePositions()
+        return item
+        
             
     def setItemAmount(self,n):
         """
@@ -945,3 +1073,17 @@ class TimepointTrack(Track):
         self.initTrack()
         for i in range(n):
             self.addTimepoint(i,i,0)
+            
+    def __set_pure_state__(self,state):
+        """
+        Method: __set_pure_state__()
+        Created: 11.04.2005, KP
+        Description: Method called by UrmasPersist to allow the object
+                     to refresh before it's items are created
+        """ 
+        Track.__set_pure_state__(self,state)
+        for i,item in enumerate(state.items):
+            tp=self.addTimepoint(i,item.timepoint,0)
+            tp.__set_pure_state__(item)
+        #self.updatePositions()
+        self.paintTrack()

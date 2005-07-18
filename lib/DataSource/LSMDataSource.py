@@ -30,7 +30,7 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 #from enthought.tvtk import messenger
 import messenger
 from ConfigParser import *
-from DataSource import *
+import DataSource
 import vtk
 import os.path
 
@@ -38,7 +38,7 @@ import Logging
 from DataUnit import *
 import time
 
-class LsmDataSource(DataSource):
+class LsmDataSource(DataSource.DataSource):
     """
     Class: LsmDataSource
     Created: 18.11.2004, KP
@@ -51,7 +51,7 @@ class LsmDataSource(DataSource):
         Creator: KP
         Description: Constructor
         """
-        DataSource.__init__(self)
+        DataSource.DataSource.__init__(self)
         # Name and path of the lsm-file:
         self.filename = filename
         self.timepoint=-1

@@ -151,6 +151,7 @@ class UrmasWindow(wx.SashLayoutWindow):
         mgr.addMenuItem("addtrack",MenuManager.ID_ADD_SPLINE,"Camera Path Track","Add a camera path track to the timeline",self.onMenuAddSplineTrack)
         
         mgr.addSubMenu("track","addtrack","&Add Track",MenuManager.ID_ADD_TRACK)
+        mgr.addMenuItem("track",MenuManager.ID_DELETE_TRACK,"&Remove track","Remove the track from timeline",self.onMenuRemoveTrack)
         mgr.addSeparator("track")
         
         mgr.addMenuItem("track",MenuManager.ID_FIT_TRACK,"Expand to maximum","Expand the track to encompass the whole timeline",self.onMaxTrack)
@@ -343,6 +344,15 @@ class UrmasWindow(wx.SashLayoutWindow):
         flag=evt.IsChecked()
         self.control.setAnimationMode(flag)
         self.addTrackMenu.Enable(MenuManager.ID_ADD_SPLINE,flag)
+        
+    def onMenuRemoveTrack(self,evt):
+        """
+        Method: onMenuRemoveTrack
+        Created: 18.07.2005, KP
+        Description: Callback function for removing a track
+        """
+        track=self.control.getSelectedTrack()
+        self.control.timeline.removeTrack(track,1)
         
 
     def onMenuAddSplineTrack(self,evt):

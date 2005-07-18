@@ -221,7 +221,8 @@ class Histogram(wx.Panel):
             
         self.paintPreview()
         
-        self.Refresh()
+        # Commented because in windows looks bad and not needed
+        #self.Refresh()
         
     def paintPreview(self):
         """

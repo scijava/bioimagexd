@@ -34,11 +34,13 @@ __date__ = "$Date: 2005/01/13 14:52:39 $"
 
 import os.path
 
+
 from PreviewFrame import *
-from IntensityTransferEditor import *
+import GUI.IntensityTransferEditor
+from GUI.IntensityTransferEditor import *
 from Logging import *
 
-import TaskPanel
+from GUI import TaskPanel
 import sys
 
 import Dialogs

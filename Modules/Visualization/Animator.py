@@ -41,7 +41,8 @@ def getImmediateRendering(): return False
 def getRenderingDelay(): return 10000
 def showZoomToolbar(): return False
 
-import Urmas
+
+from GUI import Urmas
 
         
 class AnimatorMode:
