@@ -98,7 +98,7 @@ class Merging(Module):
         #itf=self.settings.getCounted("IntensityTransferFunction",self.n)
         itf=settings.get("IntensityTransferFunction")
         if not itf:
-            Logging.error("Didn't get iTF",kw="processing")
+            Logging.info("Didn't get iTF",kw="processing")
         self.intensityTransferFunctions.append(itf)
 
 
@@ -111,7 +111,7 @@ class Merging(Module):
         if z!=-1:
             self.doAlpha=0
         else: # If the whole volume is requested, then we will also do alpha
-            Logging.error("Will create alpha channel, because whole volume requested",kw="processing")
+            Logging.info("Will create alpha channel, because whole volume requested",kw="processing")
             self.doAlpha=1
         if not self.preview:
             self.preview=self.doOperation()
