@@ -148,7 +148,7 @@ void vtkImageColocalizationFilterExecute(vtkImageColocalizationFilter *self, int
             colocFlag = 1;
             for(i=0; i < NumberOfInputs; i++ ) {
                 currScalar = *inPtrs[i]; 
-                if(currScalar > ColocThresholds[i] && currScalar < UpperThresholds[i]) {
+                if(currScalar >= ColocThresholds[i] && currScalar <= UpperThresholds[i]) {
                     ColocalizationScalar += currScalar;
                     n++;
                 } else {
