@@ -26,7 +26,7 @@ do
   $CMD $FILE $VTKDIR/Imaging/$i
   cxxfile=`echo $i|sed s/h$/cxx/`
   $CMD $PWD/$cxxfile $VTKDIR/Imaging/$cxxfile
-  add_to_cmakelist $VTKDIR/Imaging/CMakeLists.txt $cxxfile
+#  add_to_cmakelist $VTKDIR/Imaging/CMakeLists.txt $cxxfile
 done
 for i in `grep -H FILTERING *.h|cut -d: -f1`
 do
@@ -34,6 +34,27 @@ do
   $CMD $FILE $VTKDIR/Filtering/$i
   cxxfile=`echo $i|sed s/h$/cxx/`
   $CMD $PWD/$cxxfile $VTKDIR/Filtering/$cxxfile
-  add_to_cmakelist $VTKDIR/Filtering/CMakeLists.txt $cxxfile
-
+#  add_to_cmakelist $VTKDIR/Filtering/CMakeLists.txt $cxxfile
 done
+
+
+for i in `grep -H RENDERING *.h|cut -d: -f1`
+do
+  FILE=$PWD/$i
+  $CMD $FILE $VTKDIR/Rendering/$i
+  cxxfile=`echo $i|sed s/h$/cxx/`
+  $CMD $PWD/$cxxfile $VTKDIR/Rendering/$cxxfile
+#  add_to_cmakelist $VTKDIR/Rendering/CMakeLists.txt $cxxfile
+done
+
+
+for i in `grep -H IO_EXPORT *.h|cut -d: -f1`
+do
+  FILE=$PWD/$i
+  $CMD $FILE $VTKDIR/IO/$i
+  cxxfile=`echo $i|sed s/h$/cxx/`
+  $CMD $PWD/$cxxfile $VTKDIR/IO/$cxxfile
+#  add_to_cmakelist $VTKDIR/IO/CMakeLists.txt $cxxfile
+done
+
+
