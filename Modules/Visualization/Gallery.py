@@ -1,14 +1,11 @@
 # -*- coding: iso-8859-1 -*-
 """
- Unit: SlicesMode
+ Unit: Gallery
  Project: BioImageXD
  Created: 28.04.2005, KP
  Description:
 
- A slices viewing rendering mode for Visualizer
- 
- Modified 28.04.2005 KP - Created the class
-          23.05.2005 KP - Split the class to a module of it's own
+ A gallery view for Visualizer
           
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
@@ -34,6 +31,9 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 import DataUnit
 
 import PreviewFrame
+import Logging
+import wx
+import wx.lib.scrolledpanel as scrolled
 
 def getName():return "gallery"
 def getClass():return GalleryMode
@@ -41,6 +41,72 @@ def getImmediateRendering(): return False
 def getConfigPanel(): return None
 def getRenderingDelay(): return 500
 def showZoomToolbar(): return True
+    
+class GalleryConfigurationPanel(scrolled.ScrolledPanel):
+    """
+    Class: GalleryConfigurationPanel
+    Created: 21.07.2005, KP
+    Description: A panel that can be used to configure gallery view
+    """
+    def __init__(self,parent,visualizer,mode,**kws):
+        """
+        Method: __init__(parent)
+        Created: 28.04.2005, KP
+        Description: Initialization
+        """
+        scrolled.ScrolledPanel.__init__(self,parent,-1,size=(200,500))    
+        self.visualizer=visualizer
+        self.mode=mode
+    
+        #self.box=wx.StaticBox(self,-1,"Show gallery")
+        #self.sizer=wx.StaticBoxSizer(self.box,wx.VERTICAL)
+        self.sizer=wx.GridBagSizer()
+        self.radiobox=wx.RadioBox(self,-1,"View in gallery",
+        choices=["Slices","Timepoints"],majorDimension=2,
+        style=wx.RA_SPECIFY_COLS
+        )
+        z=1
+        if visualizer.dataUnit:
+            x,y,z=visualizer.dataUnit.getDimensions()
+        self.zslider=wx.Slider(self,value=0,minValue=0,maxValue=z-1,
+        style=wx.SL_HORIZONTAL|wx.SL_AUTOTICKS|wx.SL_LABELS)
+        #self.zslider.Bind(wx.EVT_SCROLL,self.onChangeTimepoint)
+
+        self.okbutton=wx.Button(self,-1,"Update")
+        self.okbutton.Bind(wx.EVT_BUTTON,self.onSetViewMode)
+        self.sizer.Add(self.radiobox,(0,0))
+        self.sizer.Add(self.zslider,(1,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
+        self.sizer.Add(self.okbutton,(2,0))
+        
+        self.SetSizer(self.sizer)
+        self.SetAutoLayout(1)
+        self.SetupScrolling()
+
+        
+    def setDataUnit(self,dataUnit):
+        """
+        Method: setDataUnt
+        Created: 21.07.2005, KP
+        Description: Set the dataunit
+        """       
+        x,y,z=dataUnit.getDimensions()
+        self.zslider.SetRange(0,z-1)
+        w,h2=self.GetSize()
+        w2,h=self.zslider.GetSize()
+        self.zslider.SetSize((w,h))
+        self.Layout()
+        
+    def onSetViewMode(self,event):
+        """
+        Method: onSetViewMode
+        Created: 21.07.2005, KP
+        Description: Configure whether to show timepoints or slices
+        """       
+        pos=self.radiobox.GetSelection()
+        print "Showing timepoints: %s,zslider=%d"%(not not pos,self.zslider.GetValue())
+        self.mode.galleryPanel.setShowTimepoints(pos,self.zslider.GetValue())
+
+
     
 class GalleryMode:
     def __init__(self,parent,visualizer):
@@ -54,6 +120,7 @@ class GalleryMode:
         self.galleryPanel=None
         self.timepoint=0
         self.enabled=1
+        self.configPanel=None
         self.dataUnit=None
         
     def annotate(self,annclass,**kws):
@@ -109,7 +176,7 @@ class GalleryMode:
         Description: Method that is queried to determine whether
                      to show the sidebar
         """
-        return False
+        return True
   
     def setBackground(self,r,g,b):
         """
@@ -155,9 +222,24 @@ class GalleryMode:
         Created: 24.05.2005, KP
         Description: Set the mode of visualization
         """
+        self.sidebarWin=sidebarwin
         if not self.galleryPanel:
             x,y=self.visualizer.visWin.GetSize()
             self.galleryPanel=PreviewFrame.GalleryPanel(self.parent,self.visualizer,size=(x,y))
+        
+        print "configPanel=",self.configPanel
+        if not self.configPanel:
+            # When we embed the sidebar in a sashlayoutwindow, the size
+            # is set correctly
+            print "Showing configPanel"
+            self.container = wx.SashLayoutWindow(self.sidebarWin)
+
+            self.configPanel = GalleryConfigurationPanel(self.container,self.visualizer,self,size=(x,y))
+            if self.dataUnit:
+                self.configPanel.setDataUnit(self.dataUnit)
+            self.configPanel.Show()
+        else:
+            self.configPanel.Show()
         return self.galleryPanel
         
     def deactivate(self):
@@ -176,6 +258,8 @@ class GalleryMode:
         """
         self.galleryPanel.setDataUnit(dataUnit)
         self.dataUnit=dataUnit
+        if self.configPanel:
+            self.configPanel.setDataUnit(dataUnit)
         
     def setTimepoint(self,tp):
         """

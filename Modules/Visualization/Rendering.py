@@ -7,10 +7,7 @@
  Description:
 
  A slices viewing rendering mode for Visualizer
- 
- Modified 28.04.2005 KP - Created the class
-          23.05.2005 KP - Split the class to a module of it's own
-          
+           
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
 
