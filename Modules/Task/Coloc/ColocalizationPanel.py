@@ -212,9 +212,6 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
         """
         TaskPanel.TaskPanel.createOptionsFrame(self)
 
-        self.taskNameLbl.SetLabel("Name of colocalization:")
-
-
         self.colocalizationPanel=wx.Panel(self.settingsNotebook,-1)
         self.colocalizationSizer=wx.GridBagSizer()
         n=0
@@ -475,9 +472,10 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
                 self.upperthreshold.SetValue(th)
             
         if self.dataUnit and self.settings:
-            ctf = self.settings.get("ColocalizationColorTransferFunction")
+            #ctf = self.settings.get("ColocalizationColorTransferFunction")
+            ctf = self.settings.get("ColorTransferFunction")
             if ctf and self.colorBtn:
-                print "Setting colorBtn.ctf"
+                Logging.info("Setting colorBtn.ctf=",ctf,kw="ctf")
                 self.colorBtn.setColorTransferFunction(ctf)
                 self.colorBtn.Refresh()
 
@@ -526,7 +524,7 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
         """
         TaskPanel.TaskPanel.setCombinedDataUnit(self,dataUnit)
         #self.scatterPlot.setDataunit(dataUnit)
-        ctf = self.settings.get("ColocalizationColorTransferFunction")
+        ctf = self.settings.get("ColorTransferFunction")
         if self.colorBtn:
             self.colorBtn.setColorTransferFunction(ctf)
         self.scatterPlot.setDataUnit(dataUnit)

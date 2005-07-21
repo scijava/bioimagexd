@@ -70,11 +70,11 @@ class ColocalizationSettings(DataUnitSettings):
                   "SumOverThresholdCh1","SumOverThresholdCh2","SumCh1","SumCh2"]:
             self.register(i,1)
 
-        self.register("ColocalizationColorTransferFunction",1)
+        #self.register("ColocalizationColorTransferFunction",1)
         ctf = vtk.vtkColorTransferFunction()
         ctf.AddRGBPoint(0,0,0,0)
         ctf.AddRGBPoint(255, 1.0, 1.0, 1.0)
-        self.set("ColocalizationColorTransferFunction",ctf)
+        self.set("ColorTransferFunction",ctf)
 
     def initialize(self,dataunit,channels, timepoints):
         """
