@@ -270,8 +270,8 @@ class IntensityTransferEditor(wx.Panel):
         self.brightnessBox.Add(self.brightnessEdit,0,wx.ALIGN_CENTER_VERTICAL|wx.ALL)
 
 
-        self.minValueLbl=wx.StaticText(self,wx.NewId(),"Minimum value:")
-        self.maxValueLbl=wx.StaticText(self,wx.NewId(),"Maximum value:")
+        self.minValueLbl=wx.StaticText(self,wx.NewId(),"Min value:")
+        self.maxValueLbl=wx.StaticText(self,wx.NewId(),"Max value:")
 
         self.minValue=wx.TextCtrl(self,-1,style=wx.TE_PROCESS_ENTER)
         self.maxValue=wx.TextCtrl(self,-1,style=wx.TE_PROCESS_ENTER)
@@ -285,8 +285,8 @@ class IntensityTransferEditor(wx.Panel):
         fieldsizer.Add(self.maxValueLbl,(0,2))
         fieldsizer.Add(self.maxValue,(0,3))
         
-        self.minthresholdLbl=wx.StaticText(self,wx.NewId(),"Minimum threshold:")
-        self.maxthresholdLbl=wx.StaticText(self,wx.NewId(),"Maximum threshold:")
+        self.minthresholdLbl=wx.StaticText(self,wx.NewId(),"Min threshold:")
+        self.maxthresholdLbl=wx.StaticText(self,wx.NewId(),"Max threshold:")
 
         self.minthreshold=wx.TextCtrl(self,-1,style=wx.TE_PROCESS_ENTER)
         self.maxthreshold=wx.TextCtrl(self,-1,style=wx.TE_PROCESS_ENTER)
@@ -296,7 +296,7 @@ class IntensityTransferEditor(wx.Panel):
         fieldsizer.Add(self.maxthresholdLbl,(1,2))
         fieldsizer.Add(self.maxthreshold,(1,3))
 
-        self.minProcessLbl=wx.StaticText(self,-1,"Processing threshold:")
+        self.minProcessLbl=wx.StaticText(self,-1,"Processing\nthreshold:")
         self.minProcess=wx.TextCtrl(self,-1,style=wx.TE_PROCESS_ENTER)
 
         fieldsizer.Add(self.minProcessLbl,(2,0))
@@ -356,7 +356,7 @@ class IntensityTransferEditor(wx.Panel):
         Created: 8.12.2004, KP
         Description: Restores the default settings for this widget
         """
-	Logging.info("Restoring defaults for iTF",kw="ctf")
+        Logging.info("Restoring defaults for iTF",kw="ctf")
         self.iTF.Reset()
         self.setIntensityTransferFunction(self.iTF)
 
