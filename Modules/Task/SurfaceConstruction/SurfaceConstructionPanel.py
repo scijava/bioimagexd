@@ -96,7 +96,6 @@ class SurfaceConstructionpanel(TaskPanel.TaskPanel):
                      used to control the VSIA settings
         """
         TaskPanel.TaskPanel.createOptionsFrame(self)
-        self.taskNameLbl.config(text="Processed dataset name:")
 
         self.lowerLimitVar=StringVar()
         self.upperLimitVar=StringVar()
