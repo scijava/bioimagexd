@@ -130,7 +130,7 @@ class AdjustDataUnit(CombinedDataUnit):
         self.setOriginal(dataUnit)    
         CombinedDataUnit.addSourceDataUnit(self,dataUnit)
         self.name = "Adjusted %s"%dataUnit.getName()
-	Logging.info("Updating settings for corrected source dataunit",kw="processing")
+        Logging.info("Updating settings for corrected source dataunit",kw="processing")
         #print dataUnit.getColorTransferFunction()
         self.updateSettings()
         #print self.settings.get("ColorTransferFunction")

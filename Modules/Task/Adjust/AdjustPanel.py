@@ -162,15 +162,15 @@ class AdjustPanel(TaskPanel.TaskPanel):
         self.editIntensitySizer.Add(self.box,(2,0))
         self.createIntensityInterpolationPanel()
 
-        self.restoreBtn=wx.Button(self.editIntensityPanel,-1,"Reset defaults")
+        self.restoreBtn=wx.Button(self.editIntensityPanel,-1,"Reset current")
         self.restoreBtn.Bind(wx.EVT_BUTTON,self.iTFEditor.restoreDefaults)
         self.box.Add(self.restoreBtn)
 
-        self.resetBtn=wx.Button(self.editIntensityPanel,-1,"Reset all timepoints")
+        self.resetBtn=wx.Button(self.editIntensityPanel,-1,"Reset all")
         self.resetBtn.Bind(wx.EVT_BUTTON,self.resetTransferFunctions)
         self.box.Add(self.resetBtn)
 
-        self.copyiTFBtn=wx.Button(self.editIntensityPanel,-1,"Copy to all timepoints")
+        self.copyiTFBtn=wx.Button(self.editIntensityPanel,-1,"Copy to all")
         self.copyiTFBtn.Bind(wx.EVT_BUTTON,self.copyTransferFunctionToAll)
         self.box.Add(self.copyiTFBtn)
 
@@ -241,7 +241,6 @@ class AdjustPanel(TaskPanel.TaskPanel):
                      used to control the colocalization settings
         """
         TaskPanel.TaskPanel.createOptionsFrame(self)
-        self.taskNameLbl.SetLabel("Adjusted dataset series name:")
 
         self.paletteLbl = wx.StaticText(self,-1,"Channel palette:")
         self.commonSettingsSizer.Add(self.paletteLbl,(1,0))

@@ -19,7 +19,7 @@
  the Free Software Foundation; either version 2 of the License, or
  (at your option) any later version.
 
- This program is distributed in the hope that it will be useful,
+ This program is direstributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
@@ -64,9 +64,8 @@ class MergingPanel(TaskPanel.TaskPanel):
                 parent    Is the parent widget of this window
         """
         self.alphaTF=vtk.vtkIntensityTransferFunction()
-        self.operationName="Color Merging"
+        self.operationName="Merge"
         TaskPanel.TaskPanel.__init__(self,parent,tb)
-        self.SetTitle("Color Merging")
 
         
         self.oldBg=self.GetBackgroundColour()
@@ -93,7 +92,6 @@ class MergingPanel(TaskPanel.TaskPanel):
                      used to control the colocalization settings
         """
         TaskPanel.TaskPanel.createOptionsFrame(self)
-        self.taskNameLbl.SetLabel("Merged dataset name:")
 
         self.paletteLbl = wx.StaticText(self,-1,"Channel palette:")
         self.commonSettingsSizer.Add(self.paletteLbl,(1,0))
@@ -109,18 +107,9 @@ class MergingPanel(TaskPanel.TaskPanel):
         self.box=wx.BoxSizer(wx.HORIZONTAL)
         self.editIntensitySizer.Add(self.box,(3,0))
         
-        self.restoreBtn=wx.Button(self.editIntensityPanel,-1,"Reset defaults")
+        self.restoreBtn=wx.Button(self.editIntensityPanel,-1,"Reset current")
         self.restoreBtn.Bind(wx.EVT_BUTTON,self.intensityTransferEditor.restoreDefaults)
-        self.box.Add(self.restoreBtn)
-        
-        self.resetBtn=wx.Button(self.editIntensityPanel,-1,"Reset all timepoints")
-        self.resetBtn.Bind(wx.EVT_BUTTON,self.resetTransferFunctions)
-        self.box.Add(self.resetBtn)
-
-        self.copyiTFBtn=wx.Button(self.editIntensityPanel,-1,"Copy to all timepoints")
-        #self.copyiTFBtn.Bind(wx.EVT_BUTTON,self.copyTransferFunctionToAll)
-        self.box.Add(self.copyiTFBtn)        
-        
+        self.box.Add(self.restoreBtn)        
         
         self.editIntensityPanel.SetSizer(self.editIntensitySizer)
         self.editIntensityPanel.SetAutoLayout(1)

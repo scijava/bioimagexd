@@ -88,7 +88,6 @@ class ReslicePanel(TaskPanel.TaskPanel):
                      used to control the colocalization settings
         """
         TaskPanel.TaskPanel.createOptionsFrame(self)
-        self.taskNameLbl.SetLabel("Resliced dataset:")
             
         #controls for filtering
 

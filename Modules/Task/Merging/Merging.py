@@ -183,7 +183,7 @@ class Merging(Module):
                 mapToColors=vtk.vtkImageMapToColors()
                 mapToColors.SetOutputFormatToRGB()
                 ct=self.ctfs[i]
-                Logging.info("Using ctf(%d)=%s"%(i,ct),kw="processing")
+                Logging.info("Using ctf(%d)=%s"%(i,ct),kw="ctf")
                 mapToColors.SetLookupTable(ct)
                 mapToColors.SetInput(processed[i])
                 mapToColors.Update()

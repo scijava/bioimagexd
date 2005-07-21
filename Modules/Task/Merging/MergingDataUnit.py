@@ -39,7 +39,8 @@ class MergingDataUnit(CombinedDataUnit):
     Created: 03.07.2005, KP
     Description: Class for an merged channels dataset
     """
-
+    def getBitDepth(self):
+        return 32
     def getSettingsClass(self):
         """
         Method: getSettingsClass()

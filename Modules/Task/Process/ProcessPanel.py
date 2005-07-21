@@ -92,7 +92,6 @@ class ProcessPanel(TaskPanel.TaskPanel):
                      used to control the colocalization settings
         """
         TaskPanel.TaskPanel.createOptionsFrame(self)
-        self.taskNameLbl.SetLabel("Restored dataset series name:")
             
         self.paletteLbl = wx.StaticText(self,-1,"Channel palette:")
         self.commonSettingsSizer.Add(self.paletteLbl,(1,0))
