@@ -13,8 +13,6 @@
  This code was re-written for clarity. The code produced by the
  Selli-project was used as a starting point for producing this code.
  http://sovellusprojektit.it.jyu.fi/selli/
- 
- Modified: 26.03.2005 - Started complete re-write.
 
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
@@ -178,7 +176,7 @@ class DataUnitSettings:
         if not self.get("Type"):
             type=parser.get("Type","Type")
             settingsclass=self.modules[type][2].getSettingsClass()
-            
+            Logging.info("Settings class=",settingsclass,kw="processing")
             #obj=eval(type)(self.n)
             obj=settingsclass(self.n)
             obj.setType(type)

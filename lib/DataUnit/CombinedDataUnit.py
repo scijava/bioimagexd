@@ -20,7 +20,7 @@
 
  You should have received a copy of the GNU General Public License
  along with this program; if not, write to the Free Software
- Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ Foundatiocan, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 """
 
@@ -33,6 +33,7 @@ from DataUnitSetting import *
 import DataSource
 import vtk
 import Logging
+import messenger
 
 class CombinedDataUnit(DataUnit.DataUnit):
     """
@@ -190,17 +191,12 @@ class CombinedDataUnit(DataUnit.DataUnit):
 
     def doProcessing(self,duFile,**kws):
         """
-        Method: doProcessing(duFile, callback)
+        Method: doProcessing(duFile)
         Created: 08.11.2004, JM
         Description: Executes the module's operation using the current settings
         Parameters:
                 duFile      The name of the created .DU file
         Keywords:
-                callback    The callback used to give progress info to the GUI
-                            The callback is a method that takes two arguments:
-                            timepoint     The timepoint we're processing now
-                            total         Total number of timepoints we're 
-                                           processing
                 settings_only   If this parameter is set, then only the 
                                 settings will be written out and not the VTI 
                                 files.
@@ -239,8 +235,7 @@ class CombinedDataUnit(DataUnit.DataUnit):
                 # for this time point
                 # TODO: Change this to a wxpython event
                 imageData=self.module.doOperation()
-                if self.guicallback:
-                    self.guicallback(timePoint,self.n,len(timepoints))
+                messenger.send(None,"update_processing_progress",timePoint,self.n,len(timepoints))
                 self.n+=1
                 # Write the image data to disk
                 if not settings_only:
