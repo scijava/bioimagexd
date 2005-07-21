@@ -267,7 +267,7 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
         # Unbind to not get annoying behaviour of scrolling
         # when clicking on the panel
         self.Unbind(wx.EVT_CHILD_FOCUS)
-        #self.Bind(wx.EVT_CALCULATE_LAYOUT,self.onCalculateLayout)
+
         self.parent = parent
         self.visualizer = visualizer
         self.mode=mode
@@ -322,20 +322,6 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
         self.SetSizer(self.sizer)
         self.SetAutoLayout(1)
         self.SetupScrolling()
-        
-    def onCalculateLayout(self,event):
-        """
-        Method: onCalculateLayout
-        Created: 05.06.2005, KP
-        Description: Size the window
-        """
-        rect=event.GetRect()
-        
-        w,h=rect.GetSize()
-        w-=15
-        self.SetSize(rect.GetSize())
-        rect.Deflate(w,h)
-        event.SetRect(rect)
         
     def onConfigureRenderwindow(self,event):
         """

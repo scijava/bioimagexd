@@ -74,7 +74,7 @@ class Visualizer:
         """
         global visualizerInstance
         visualizerInstance=self
-        
+        self.histogramIsShowing=0
         self.histogramDataUnit=None
         self.histograms=[]
         
@@ -220,9 +220,14 @@ class Visualizer:
                 obj.SetDefaultSize(self.sizes[arg])
             del self.sizes[arg]
         if evt=="show" and arg=="histogram":
+            if not self.histogramIsShowing:
+                self.createHistogram()
             self.histogramPanel.Layout()
             for histogram,sbox,sboxsizer in self.histograms:
                 sboxsizer.Fit(histogram)
+            self.histogramIsShowing=1
+        elif evt=="hide" and arg=="histogram":
+            self.histogramIsShowing=0
             
         self.OnSize(None)
             
@@ -643,6 +648,7 @@ class Visualizer:
         self.maxTimepoint=count-1
         self.timeslider.SetRange(0,count-1)
         showItems=0
+
         if self.processedMode:
             n=len(dataunit.getSourceDataUnits())
             if n>1:
@@ -652,8 +658,8 @@ class Visualizer:
         if self.enabled and self.currMode:           
             Logging.info("Setting dataunit to current mode",kw="visualizer")
             self.currMode.setDataUnit(self.dataUnit)
-        self.createHistogram()
-             
+        if self.histogramIsShowing:
+            self.createHistogram()             
             
     def updateRendering(self,event=None,object=None,delay=0):
         """
