@@ -138,8 +138,9 @@ def loadLUTFromString(lut,ctf,ctfrange=(0,256)):
         blues=lut[512:768]
     n=len(reds)
     
-    step=int(math.ceil(ctfrange[1]/255.0))
+    step=int(math.ceil(ctfrange[1]/256.0))
     j=0
+    Logging.info("Ctf range = ",ctfrange[0]," - ",ctfrange[1],"step=",step)
     for i in range(int(ctfrange[0]),int(ctfrange[1]),int(step)):
         r=ord(reds[j])
         g=ord(greens[j])
@@ -209,7 +210,7 @@ def setFromParameterList(iTF,list):
 
 def vtkImageDataToWxImage(data,slice=-1,startpos=None,endpos=None):
     if slice>=0:
-        Logging.info("Getting slice %d"%slice,kw="imageop")
+        #Logging.info("Getting slice %d"%slice,kw="imageop")
         data=getSlice(data,slice,startpos,endpos)
         
     exporter=vtk.vtkImageExport()
