@@ -10,8 +10,7 @@
  This is a base widget for all operations that need to let the user select
  the timepoints that are operated upon. Used by rendering and various 
  operation windows 
- 
- Modified: 03.02.2005 KP - Created the class from RenderingManager
+
 
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
