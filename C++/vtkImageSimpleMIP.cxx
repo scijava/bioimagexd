@@ -67,7 +67,9 @@ vtkImageSimpleMIP::ExecuteInformation(vtkImageData *input, vtkImageData *output)
   // We're gonna produce image one slice thick
   output->SetWholeExtent(wholeExt);
 //  printf("Setting number of components to %d\n",input->GetNumberOfScalarComponents());
-  output->SetNumberOfScalarComponents(input->GetNumberOfScalarComponents());
+  int ncomps = input->GetNumberOfScalarComponents();
+  if(ncomps>3)ncomps=3;
+  output->SetNumberOfScalarComponents(ncomps);
   
 }
 
@@ -113,6 +115,7 @@ void vtkImageSimpleMIP::ExecuteData(vtkDataObject *)
   maxY = uExtent[3] - uExtent[2];
   maxZ = uExtent[5] - uExtent[4];
   maxC = input->GetNumberOfScalarComponents();
+  if(maxC>3)maxC=3;
     
   input->GetIncrements(inIncX, inIncY, inIncZ);
   output->GetIncrements(outIncX, outIncY, outIncZ);
