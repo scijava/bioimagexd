@@ -44,7 +44,7 @@ HIDE_DEBUG=["visualizer","init","io","scale","preview","trivial",
             "modules","!imageop"]
 KWS=["visualizer","main","init","animator","io","task","preview","scale",
      "imageop","modules","trivial","ctf","dataunit","event","processing",
-     "datasource","iactivepanel","annotation"]
+     "datasource","iactivepanel","annotation","ui"]
 
 import sys
 
