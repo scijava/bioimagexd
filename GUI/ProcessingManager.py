@@ -38,6 +38,7 @@ import wx
 from TimepointSelection import *
 import time
 import UIElements
+import messenger
 from Logging import *
 
 class ProcessingManager(TimepointSelection):
@@ -114,7 +115,7 @@ class ProcessingManager(TimepointSelection):
         self.actionBtn.SetLabel("Process Time Points")
         self.actionBtn.Bind(wx.EVT_BUTTON,self.doProcessing)
     
-    def updateProgressMeter(self,tp,nth,total):
+    def updateProgressMeter(self,obj,eventt,tp,nth,total):
         """
         Method: updateProgressMeter(tp,nth,total)
         Created: 15.11.2004, KP
@@ -138,7 +139,10 @@ class ProcessingManager(TimepointSelection):
         secs=totsecs%60
         self.progressDialog.Update(nth,"Timepoint %d (%d/%d) (%d%%) ETA: "
         "%d mins %d seconds"%(tp,nth,total,100*(1.0*nth)/total,mins,secs))
-
+        print "Nth=",nth,"total=",total
+        if nth==total:
+            self.progressDialog.Close()
+        wx.App.Yield(1)
     
     def doProcessing(self,event):
         """
@@ -148,9 +152,17 @@ class ProcessingManager(TimepointSelection):
         """    
         self.status=wx.ID_CANCEL
                 
+        #name=self.operationName+" ("
+        #name+=", ".join([x.getName() for x in self.dataUnit.getSourceDataUnits()])
+        #name+=")"
         name=self.dataUnit.getName()
+        
         filename=Dialogs.askSaveAsFileName(self,"Save %s dataset as"%self.operationName,"%s.du"%name,"%s Dataunit (*.du)|*.du"%name)
-
+        name=os.path.basename(filename)
+        name=".".join(name.split(".")[:-1])
+        self.dataUnit.setName(name)
+        
+        
         if not filename:
             return
         self.status=wx.ID_OK
@@ -159,11 +171,10 @@ class ProcessingManager(TimepointSelection):
         self.t1=time.time()
         
         tps=self.getSelectedTimepoints()
+        messenger.connect(None,"update_processing_progress",self.updateProgressMeter)
         try:
-            self.dataUnit.doProcessing(filename,callback=self.updateProgressMeter,timepoints=tps)
+            self.dataUnit.doProcessing(filename,timepoints=tps)
         except GUIError,ex:
             ex.show()
-        else:
-            # then we close this window...
-            self.Close()
-
+        # then we close this window...
+        self.Close()
