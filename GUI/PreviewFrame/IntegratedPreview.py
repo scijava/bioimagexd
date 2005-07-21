@@ -1,17 +1,13 @@
 # -*- coding: iso-8859-1 -*-
 
 """
- Unit: IntegratedFrame.py
+ Unit: IntegratedPreview
  Project: BIoImageXD
- Created: 03.04.2005
- Creator: KP
+ Created: 03.04.2005, KP
  Description:
 
  A widget that can be used to Preview any operations done by a subclass of Module.
  The type of preview can be selected and depends on the type of data that is input.
-
- Modified 03.04.2005 KP - Started integration of code from all the different classes
-                          into one integrated preview
  
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
@@ -189,15 +185,23 @@ class IntegratedPreview(PreviewFrame):
         Description: Process the data before it's send to the preview
         """            
         ncomps = data.GetNumberOfScalarComponents()
-        if ncomps == 1:
-            if self.mip:
-                data.SetUpdateExtent(data.GetWholeExtent())
-                mip=vtk.vtkImageSimpleMIP()
-                mip.SetInput(data)
-                mip.Update()
-                data=mip.GetOutput()
-                data.SetUpdateExtent(data.GetWholeExtent())
-            
+        if ncomps>3:
+            Logging.info("Previewed data has %d components, extracting"%ncomps,kw="preview")
+            extract=vtk.vtkImageExtractComponents()
+            extract.SetComponents(0,1,2)
+            extract.SetInput(data)
+            extract.Update()
+            data=extract.GetOutput()
+        
+        if self.mip:
+            data.SetUpdateExtent(data.GetWholeExtent())
+            mip=vtk.vtkImageSimpleMIP()
+            mip.SetInput(data)
+            mip.Update()
+            data=mip.GetOutput()
+            data.SetUpdateExtent(data.GetWholeExtent())
+            #print "Output from mip:",data
+        if ncomps == 1:            
             self.mapToColors.RemoveAllInputs()
             self.mapToColors.SetInput(data)
             

@@ -1,7 +1,7 @@
 # -*- coding: iso-8859-1 -*-
 
 """
- Unit: GalleryPanel.py
+ Unit: GalleryPanel
  Project: BioImageXD
  Created: 23.05.2005, KP
  Description:
@@ -9,8 +9,6 @@
  A panel that can display previews of all the optical slices of
  volume data independent of a VTK render window,using the tools provided by wxPython.
  
- Modified 23.05.2005 KP - Created the class
-
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
 
@@ -81,13 +79,26 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
         self.scrollTo=None
         self.drawableRects=[]
         self.dataUnit=None
+        self.slice=0
         
         self.voxelSize=(0,0,0)
-        
+        self.showTimepoints=0
         self.timepoint=0
         self.paintPreview()
         self.Bind(wx.EVT_PAINT,self.OnPaint)
         self.Bind(wx.EVT_SIZE,self.onSize)
+        
+    def setShowTimepoints(self,showtps,slice):
+        """
+        Method: setShowTimepoints
+        Created: 21.07.2005, KP
+        Description: Configure whether to show z slices or timepoints
+        """    
+        self.slice=slice
+        self.showTimepoints=showtps
+        self.setSlice(slice)
+        self.updatePreview()
+        self.Refresh()
         
     def getDrawableRectangles(self):
         """
@@ -168,6 +179,11 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
         Description: Sets the timepoint to display
         """    
         self.timepoint=timepoint
+        # if we're showing one slice of each timepoint
+        # instead of each slice of one timepoint, call the
+        # appropriate function
+        if self.showTimepoints:
+            return self.setSlice(self.slice)
         if self.visualizer.getProcessedMode():
             image=self.dataUnit.doPreview(-2,1,self.timepoint)
             ctf = self.dataUnit.getSourceDataUnits()[0].getColorTransferFunction()
@@ -175,17 +191,26 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
         else:
             image=self.dataUnit.getTimePoint(timepoint)
             ctf=self.dataUnit.getColorTransferFunction()
+
+        ncomps = image.GetNumberOfScalarComponents()
         
-        if self.dataUnit.getBitDepth()!=32:
+        if ncomps==1:
             maptocolor=vtk.vtkImageMapToColors()
             maptocolor.SetInput(image)
             maptocolor.SetLookupTable(ctf)
             maptocolor.SetOutputFormatToRGB()
             maptocolor.Update()
             self.imagedata=maptocolor.GetOutput()
+        elif ncomps>3:
+            Logging.info("Previewed data has %d components, extracting"%ncomps,kw="preview")
+            extract=vtk.vtkImageExtractComponents()
+            extract.SetComponents(0,1,2)
+            extract.SetInput(image)
+            extract.Update()
+            self.imagedata=extract.GetOutput()
+
         else:
             self.imagedata=image
-        self.calculateBuffer()
         x,y,z=self.imagedata.GetDimensions()
         
         
@@ -193,7 +218,58 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
         for i in range(z):
             slice=ImageOperations.vtkImageDataToWxImage(self.imagedata,i)    
             self.slices.append(slice)
+        self.calculateBuffer()
 
+        self.updatePreview()
+        
+    def setSlice(self,slice):
+        """
+        Method: setSlice(tp)
+        Created: 21.07.2005, KP
+        Description: Sets the slice to show
+        """    
+        self.slice=slice
+        # if we're showing each slice of one timepoint
+        # instead of one slice of each timepoint, call the
+        # appropriate function
+        if not self.showTimepoints:
+            return self.setTimepoint(self.timepoint)
+        count=self.dataUnit.getLength()
+        self.slices=[]
+        for tp in range(0,count):
+            if self.visualizer.getProcessedMode():
+                image=self.dataUnit.doPreview(self.slice,1,tp)
+                ctf = self.dataUnit.getSourceDataUnits()[0].getColorTransferFunction()
+                Logging.info("Using ",image,"for gallery",kw="preview")
+            else:
+                image=self.dataUnit.getTimePoint(tp)
+                image=ImageOperations.getSlice(image,self.slice)
+                ctf=self.dataUnit.getColorTransferFunction()
+    
+            ncomps = image.GetNumberOfScalarComponents()
+            
+            if ncomps==1:
+                maptocolor=vtk.vtkImageMapToColors()
+                maptocolor.SetInput(image)
+                maptocolor.SetLookupTable(ctf)
+                maptocolor.SetOutputFormatToRGB()
+                maptocolor.Update()
+                self.imagedata=maptocolor.GetOutput()
+            elif ncomps>3:
+                Logging.info("Previewed data has %d components, extracting"%ncomps,kw="preview")
+                extract=vtk.vtkImageExtractComponents()
+                extract.SetComponents(0,1,2)
+                extract.SetInput(image)
+                extract.Update()
+                self.imagedata=extract.GetOutput()
+
+            else:
+                self.imagedata=image
+            slice=ImageOperations.vtkImageDataToWxImage(self.imagedata,self.slice)
+            self.slices.append(slice)
+            
+        self.calculateBuffer()
+        
         self.updatePreview()
 
 
@@ -208,9 +284,15 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
         x,y,z=self.imagedata.GetDimensions()
         
         w,h=self.sliceSize
-        
+        #Logging.info("self.size=",self.size)#,kw="preview")
         xreq=self.size[0]//(w+6)
-        yreq=math.ceil(z/float(xreq))
+        if not xreq:xreq=1
+        n=z
+        if len(self.slices)>z:
+            Logging.info("Using number of slices (%d) instead of z dim (%d)"%(len(self.slices),z),kw="preview")
+            n=len(self.slices)
+            
+        yreq=math.ceil(n/float(xreq))
         Logging.info("Need %d x %d grid to show the dataset"%(xreq,yreq),kw="preview")
         
 
