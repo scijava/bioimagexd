@@ -293,7 +293,7 @@ class CTFButton(wx.BitmapButton):
         Method: setColorTransferFunction
         Created: 18.04.2005, KP
         Description: Set the color transfer function that is edited
-        """        
+        """   
         self.ctf = ctf
         self.bmp = ImageOperations.paintCTFValues(self.ctf)
         self.SetBitmapLabel(self.bmp)
@@ -761,7 +761,10 @@ class ColorTransferEditor(wx.Panel):
         
         self.canvas.paintTransferFunction(self.ctf,pts,otf,self.alphaMode)
         self.value.paintTransferFunction(self.ctf)
-
+        val=[0,0,0]
+        self.ctf.GetColor(255,val)
+        r,g,b=val
+        self.colorBtn.SetColour(wx.Colour(r,g,b))
 
     def getColorTransferFunction(self):
         """
@@ -867,7 +870,11 @@ class ColorTransferEditor(wx.Panel):
         self.getPointsFromFree()
         self.alphapoints=[(0,0),(255,51)]
         self.points=[self.redpoints,self.greenpoints,self.bluepoints,self.alphapoints]
-        
+        val=[0,0,0]
+        self.ctf.GetColor(255,val)
+        r,g,b=val
+        self.colorBtn.SetColour(wx.Colour(r,g,b))
+       
         self.updateGraph()
 
     def getOpacityTransferFunction(self):
