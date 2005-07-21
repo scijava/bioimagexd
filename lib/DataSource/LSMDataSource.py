@@ -170,7 +170,13 @@ class LsmDataSource(DataSource.DataSource):
         data=self.reader.GetOutput()
 
         return data
-
+    def getFileName(self):
+        """
+        Method: getFileName()
+        Created: 21.07.2005
+        Description: Return the file name
+        """    
+        return self.filename
     def loadFromFile(self,filename):
         """
         Method: loadFromLsmFile(filename)

@@ -49,6 +49,7 @@ class DataWriter:
         """    
         pass
         
+        
     def sync(self):
         """
         Method: sync()
@@ -107,6 +108,14 @@ class DataSource:
         NOT IMPLEMENTED HERE
         """
         raise "Abstract method getDataSetCount() in DataSource called"
+
+    def getFileName(self):
+        """
+        Method: getFileName()
+        Created: 21.07.2005
+        Description: Return the file name
+        """    
+        raise "Abstract method getFileName() called in DataSource"
 
     def getDataSet(self, i):
         """

@@ -54,6 +54,7 @@ class LeicaDataSource(DataSource):
         Created: 12.04.2005, KP
         Description: Constructor
         """    
+        self.filename=filename
         self.reader = LeicaExperiment(filename)
         self.experiment = experiment
         self.channel = channel
@@ -71,7 +72,13 @@ class LeicaDataSource(DataSource):
         managed by this DataSource
         """
         return self.reader.GetNumberOfTimepoints(self.experiment)
-        
+    def getFileName(self):
+        """
+        Method: getFileName()
+        Created: 21.07.2005
+        Description: Return the file name
+        """    
+        return self.filename
     def getDataSet(self, i):
         """
         Method: getDataSet

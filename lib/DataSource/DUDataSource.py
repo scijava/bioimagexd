@@ -71,6 +71,13 @@ class VtiDataSource(DataSource):
         self.spacing = None
         self.voxelsizes=None
         
+    def getFileName(self):
+        """
+        Method: getFileName()
+        Created: 21.07.2005
+        Description: Return the file name
+        """    
+        return self.filename
     def getParser(self):
         """
         Method: getParser()
@@ -295,6 +302,10 @@ class VtiDataSource(DataSource):
             try:
                 #ctf=self.parser.get("ColorTransferFunction","ColorTransferFunction")
                 ctf=self.settings.get("ColorTransferFunction")
+                
+                if not ctf:
+                    ctf=self.settings.get("ColocalizationColorTransferFunction")
+                    print "ctf=",ctf
             except:
                 return None
             if not ctf:
