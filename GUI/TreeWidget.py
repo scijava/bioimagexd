@@ -2,13 +2,10 @@
 """
  Unit: TreeWidget
  Project: BioImageXD
- Created: 10.01.2005
- Creator: KP
+ Created: 10.01.2005, KP
  Description:
 
  A widget for displaying a hierarchical tree of items.
-
- Modified: 10.01.2005 - Re-wrote old module with wxPython
 
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
@@ -32,6 +29,8 @@ __author__ = "BioImageXD Project"
 __version__ = "$Revision: 1.21 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 import wx
+import Logging
+import types
 
 class TreeWidget(wx.SashLayoutWindow):
     """
@@ -64,7 +63,7 @@ class TreeWidget(wx.SashLayoutWindow):
         self.il=il
     
         self.root=self.tree.AddRoot("Data Sets")
-        self.tree.SetPyData(self.root,None)
+        self.tree.SetPyData(self.root,"1")
         self.tree.SetItemImage(self.root,fldridx,which=wx.TreeItemIcon_Normal)
         self.tree.SetItemImage(self.root,fldropenidx,which=wx.TreeItemIcon_Expanded)
 
@@ -72,6 +71,46 @@ class TreeWidget(wx.SashLayoutWindow):
         self.leicafiles=None
         self.dufiles=None
         
+        self.tree.Bind(wx.EVT_RIGHT_DOWN,self.onRightClick)
+        self.Bind(wx.EVT_RIGHT_DOWN,self.onRightClick)
+        self.ID_CLOSE_DATAUNIT=wx.NewId()
+        self.menu=wx.Menu()
+        
+       
+        item = wx.MenuItem(self.menu,self.ID_CLOSE_DATAUNIT,"Close dataset")
+        self.tree.Bind(wx.EVT_MENU,self.onCloseDataset,id=self.ID_CLOSE_DATAUNIT)
+        self.Bind(wx.EVT_MENU,self.onCloseDataset,id=self.ID_CLOSE_DATAUNIT)
+        self.menu.AppendItem(item)
+        
+    def onRightClick(self,event):
+        """
+        Method: onRightClick
+        Created: 21.07.2005
+        Description: Method that is called when the right mouse button is
+                     pressed down on this item
+        """      
+        print "onRightDown"
+        pt = event.GetPosition()
+        item, flags = self.tree.HitTest(pt)
+        if not item:
+            print "No item under"
+            return
+        self.tree.SelectItem(item)
+        self.selectedItem=item
+        self.PopupMenu(self.menu,event.GetPosition())   
+ 
+    def onCloseDataset(self,event):
+        """
+        Method: onCloseDataset
+        Created: 21.07.2005, KP
+        Description: Method to close a dataset
+        """        
+        item=self.selectedItem
+        obj=self.tree.GetPyData(item)
+        if obj!="1":
+            self.tree.Delete(item)
+        else:
+            Logging.info("Cannot delete top-level entry",kw="ui")
     def onSize(self, event):
         """
         Method: onSize()
@@ -113,28 +152,28 @@ class TreeWidget(wx.SashLayoutWindow):
         if objtype=="lsm":
             if not self.lsmfiles:
                 self.lsmfiles=self.tree.AppendItem(self.root,"LSM Files")
-                self.tree.SetPyData(self.lsmfiles,None)
+                self.tree.SetPyData(self.lsmfiles,"1")
                 self.tree.SetItemImage(self.lsmfiles,fldridx,which=wx.TreeItemIcon_Normal)
                 self.tree.SetItemImage(self.lsmfiles,fldropenidx,which=wx.TreeItemIcon_Expanded)
             item=self.lsmfiles
             item=self.tree.AppendItem(item,name)
-            self.tree.SetPyData(item,None)        
+            self.tree.SetPyData(item,"2")        
             self.tree.SetItemImage(item,fldropenidx,which=wx.TreeItemIcon_Expanded)
         elif objtype=="txt":
             if not self.leicafiles:
                 self.leicafiles=self.tree.AppendItem(self.root,"Leica Files")
-                self.tree.SetPyData(self.leicafiles,None)
+                self.tree.SetPyData(self.leicafiles,"1")
                 self.tree.SetItemImage(self.leicafiles,fldridx,which=wx.TreeItemIcon_Normal)
                 self.tree.SetItemImage(self.leicafiles,fldropenidx,which=wx.TreeItemIcon_Expanded)        
 
             item=self.leicafiles
             item=self.tree.AppendItem(item,name)
-            self.tree.SetPyData(item,None)
+            self.tree.SetPyData(item,"2")
             self.tree.SetItemImage(item,fldropenidx,which=wx.TreeItemIcon_Expanded)
         elif objtype=="du":
             if not self.dufiles:
                 self.dufiles=self.tree.AppendItem(self.root,"Dataset series")
-                self.tree.SetPyData(self.dufiles,None)        
+                self.tree.SetPyData(self.dufiles,"1")        
                 self.tree.SetItemImage(self.dufiles,fldridx,which=wx.TreeItemIcon_Normal)
                 self.tree.SetItemImage(self.dufiles,fldropenidx,which=wx.TreeItemIcon_Expanded)
 
@@ -182,5 +221,5 @@ class LSMTree(wx.TreeCtrl):
         """        
         item=event.GetItem()
         obj=self.GetPyData(item)
-        if obj:
+        if obj and type(obj)!=types.StringType:
             self.callback(obj)
