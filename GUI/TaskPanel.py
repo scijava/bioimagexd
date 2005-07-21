@@ -182,13 +182,13 @@ class TaskPanel(scrolled.ScrolledPanel):
 
         self.previewButton=wx.Button(self.buttonPanel,-1,"Preview")
         self.previewButton.Bind(wx.EVT_BUTTON,self.doPreviewCallback)
-        self.buttonsSizer2.Add(self.previewButton,1,wx.RIGHT|wx.ALIGN_CENTER,10)        
+        self.buttonsSizer2.Add(self.previewButton,1,wx.RIGHT|wx.TOP|wx.ALIGN_CENTER,10)
         
         self.processButton=wx.Button(self.buttonPanel,-1,"Process")
         #self.processDatasetButton.Bind(EVT_BUTTON,self.doProcessingCallback)
-        self.buttonsSizer2.Add(self.processButton,1,wx.RIGHT|wx.ALIGN_CENTER,10)
+        self.buttonsSizer2.Add(self.processButton,1,wx.RIGHT|wx.TOP|wx.ALIGN_CENTER,10)
 
-        self.buttonSizer.Add(self.buttonsSizer2,1)    
+        self.buttonSizer.Add(self.buttonsSizer2)  
 
         
     def createOptionsFrame(self):
@@ -208,16 +208,10 @@ class TaskPanel(scrolled.ScrolledPanel):
         self.commonSettingsSizer.Add(self.namesizer,(0,0))
         
 
-        self.taskNameLbl=wx.StaticText(self,-1,"Dataunit Name:")
-        self.taskName=wx.TextCtrl(self,-1,size=(250,-1))
-        self.namesizer.Add(self.taskNameLbl)
-        self.namesizer.Add(self.taskName)
-
         #self.commonSettingsPanel.SetSizer(self.commonSettingsSizer)
         #self.commonSettingsPanel.SetAutoLayout(1)
 
 #        self.commonSettingsPanel.SetBackgroundColour(self.GetBackgroundColour())
-#        self.taskNameLbl.SetBackgroundColour(self.GetBackgroundColour())
         self.settingsSizer.Add(self.commonSettingsSizer,(0,0),flag=wx.EXPAND|wx.ALL)
         self.settingsSizer.Add(self.settingsNotebook,(1,0),flag=wx.EXPAND|wx.ALL)
         self.Layout()
@@ -256,17 +250,13 @@ class TaskPanel(scrolled.ScrolledPanel):
         Created: 03.2.2005, KP
         Description: A method that executes the operation on the selected
                      dataset
-        """
-        name=self.taskName.GetValue()
-        self.dataUnit.setName(name)
-        
+        """        
         mgr=ProcessingManager(self,self.operationName)
         mgr.setDataUnit(self.dataUnit)
         self.grayOut()
 
-        if mgr.ShowModal() == wx.ID_OK:
-            self.Close()
-            return
+        mgr.ShowModal()
+        mgr.Destroy()
         self.grayOut(1)
 
     def grayOut(self,enable=0):
@@ -347,16 +337,29 @@ class TaskPanel(scrolled.ScrolledPanel):
                      It is then used to get the names of all the source data
                      units and they are added to the menu.
         """
+        messenger.send(None,"current_task",self.operationName)
+        
+        
         self.dataUnit=dataUnit
         name=dataUnit.getName()
         Logging.info("Name of dataunit is ",name,kw="dataunit")
-        self.taskName.SetValue(name)
+        #self.taskName.SetValue(name)
         try:
             #self.preview.setDataUnit(dataUnit)
             units=self.dataUnit.getSourceDataUnits()
             
         except GUIError, ex:
             ex.show()
+        fileNames=[]
+        for unit in units:
+            ds=unit.dataSource.getFileName()
+            ds=os.path.basename(ds)
+            if ds not in fileNames:
+                fileNames.append(ds)
+            
+        messenger.send(None,"current_file",", ".join(fileNames))         
+        
+            
         #names=[i.getName() for i in units]
         #for name in names:
         #        self.itemMenu.Append(name)
