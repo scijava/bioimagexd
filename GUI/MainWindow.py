@@ -130,7 +130,7 @@ class MainWindow(wx.Frame):
         
         self.Bind(wx.EVT_SIZE, self.OnSize)
         messenger.send(None,"update_progress",0.9,"Pre-loading visualization views...")        
-        self.preloadWindows()
+        
         self.loadVisualizer(None,"info")
         # HACK
         self.tree = self.visualizer.currMode.tree
@@ -139,24 +139,26 @@ class MainWindow(wx.Frame):
 
         splash.Show(False)
         self.Show(True)            
+        self.currentTask=""
+        self.currentFile=""
+        messenger.send(None,"update_progress",1.0,"Done.") 
+        messenger.connect(None,"current_task",self.updateTitle)
+        messenger.connect(None,"current_file",self.updateTitle)
         
-        messenger.send(None,"update_progress",1.0,"Done.")        
-
-
-    def preloadWindows(self):
-        """
-        Method: preloadWindows()
-        Created: 03.6.2005, KP
-        Description: A method for preloading renderer so that it won't be as slow to
-                     show it
-        """
-        messenger.send(None,"update_progress",0.93,"Pre-loading slices view")        
         
-        self.loadVisualizer(None,"slices",0,preload=1)
-        messenger.send(None,"update_progress",0.96,"Pre-loading gallery view")        
-        self.loadVisualizer(None,"gallery",0,preload=1)
-        messenger.send(None,"update_progress",0.99,"Pre-loading 3D view")        
-        self.loadVisualizer(None,"3d",0,preload=1)
+    def updateTitle(self,obj,evt,data):
+        """
+        Method: onSashDrag
+        Created: 24.5.2005, KP
+        Description: A method for laying out the window
+        """
+        
+        if evt=="current_task":self.currentTask=data
+        elif evt=="current_file":self.currentFile=data
+        lst=["BioImageXD",self.currentTask,self.currentFile] 
+        
+        self.SetTitle(lst[0]+" - " + lst[1]+" ("+lst[2]+")")
+        
         
     def onSashDrag(self, event):
         """
@@ -700,7 +702,7 @@ class MainWindow(wx.Frame):
         Description: Callback function for menu item "Open VTK File"
         """
         asklist=[]
-        wc="LSM Files (*.lsm)|*.lsm;*.LSM|Leica TCS-NT Files (*.txt)|*.txt;*.TXT|Dataset Series (*.du)|*.du;*.DU|VTK Image Data (*.vti)|*.vti;*.VTI"
+        wc="Volume datasets|*.lsm;*.LSM;*.du;*.txt;*.TXT|LSM Files (*.lsm)|*.lsm;*.LSM|Leica TCS-NT Files (*.txt)|*.txt;*.TXT|Dataset Series (*.du)|*.du;*.DU|VTK Image Data (*.vti)|*.vti;*.VTI"
         asklist=Dialogs.askOpenFileName(self,"Open dataset series or LSM File",wc)
         
         for askfile in asklist:
@@ -885,7 +887,7 @@ class MainWindow(wx.Frame):
         else:
             self.currentTaskWindow = window
         w,h=self.taskWin.GetSize()
-        self.taskWin.SetDefaultSize((350,h))
+        self.taskWin.SetDefaultSize((360,h))
             
         wx.LayoutAlgorithm().LayoutWindow(self, self.visWin)
         self.visWin.Refresh()
@@ -931,3 +933,4 @@ class MainWindow(wx.Frame):
         """
         self.Close(True)
         
+
