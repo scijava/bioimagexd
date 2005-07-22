@@ -3,15 +3,12 @@
 """
  Unit: InfoWidget.py
  Project: BioImageXD
- Created: 21.02.2005
- Creator: KP
+ Created: 21.02.2005, KP
  Description:
 
  A widget that displays information about channels/dataset series selected in 
  the tree view.
-
- Modified 21.02.2005 KP - Created the class
-          
+         
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
 
@@ -46,6 +43,8 @@ import PreviewFrame
 import ColorTransferEditor
 import Modules
 
+import messenger
+
 
 
 smX="<font size=\"-1\">x</font>"
@@ -76,7 +75,7 @@ class InfoWidget(wx.Panel):
         wx.Panel.__init__(self,master,-1,**kws)
         self.mainsizer=wx.GridBagSizer(5,5)
         Logging.info("Creating previewframe for infowidget...",kw="preview")
-        self.preview=PreviewFrame.IntegratedPreview(self,
+        self.preview=PreviewFrame.PreviewFrame(self,
         previewsize=(384,384),pixelvalue=False,renderingpreview=False,
         zoom=False,zslider=False,timeslider=False,scrollbars=False,zoom_factor=PreviewFrame.ZOOM_TO_FIT)
         self.mainsizer.Add(self.preview,(0,0),flag=wx.EXPAND|wx.ALL)
@@ -92,8 +91,11 @@ class InfoWidget(wx.Panel):
         self.SetAutoLayout(True)
         self.SetSizer(self.mainsizer)
         self.mainsizer.Fit(self)
-        self.mainsizer.SetSizeHints(self) 
+        self.mainsizer.SetSizeHints(self)
+       
+        messenger.connect(None,"tree_selection_changed",self.showInfo) 
  
+        messenger.connect(None,"tree_selection_changed",self.updateInfo)
     def enable(self,flag):
         """
         Method: enable(flag)
@@ -110,11 +112,18 @@ class InfoWidget(wx.Panel):
         """
         self.tree=tree
         
-    def showInfo(self,dataunit):
+    def updateInfo(self,obj,evt,*args):
         """
-        Method: showInfo(dataunit)
-        Created: 21.02.2005
-        Creator: KP
+        Method: updateInfo(obj,evt,args)
+        Created: 21.07.2005, KP
+        Description: Update the rendering of the MIP
+        """
+        self.showInfo(None,None,self.dataUnit)
+        
+    def showInfo(self,obj=None,evt=None,dataunit=None):
+        """
+        Method: showInfo(object, event, dataunit)
+        Created: 21.02.2005, KP
         Description: Sets the infowidget to show info on a given dataunit
         """
         if not dataunit:
