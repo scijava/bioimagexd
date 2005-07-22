@@ -128,7 +128,7 @@ class ProcessingManager(TimepointSelection):
         """
         if not self.progressDialog:
             self.progressDialog=wx.ProgressDialog("Processing data","Timepoint   (  /  ) (0%) ETA:   mins   seconds",
-            maximum=total,parent=self,style=wx.PD_CAN_ABORT|wx.PD_APP_MODAL)
+            maximum=total,parent=self,style=wx.PD_CAN_ABORT|wx.PD_APP_MODAL|wx.PD_AUTO_HIDE)
             
         t2=time.time()
         diff=t2-self.t1
@@ -139,10 +139,10 @@ class ProcessingManager(TimepointSelection):
         secs=totsecs%60
         self.progressDialog.Update(nth,"Timepoint %d (%d/%d) (%d%%) ETA: "
         "%d mins %d seconds"%(tp,nth,total,100*(1.0*nth)/total,mins,secs))
-        print "Nth=",nth,"total=",total
         if nth==total:
-            self.progressDialog.Close()
-        wx.App.Yield(1)
+            self.progressDialog.Destroy()
+            
+        wx.GetApp().Yield(1)
     
     def doProcessing(self,event):
         """
@@ -157,7 +157,7 @@ class ProcessingManager(TimepointSelection):
         #name+=")"
         name=self.dataUnit.getName()
         
-        filename=Dialogs.askSaveAsFileName(self,"Save %s dataset as"%self.operationName,"%s.du"%name,"%s Dataunit (*.du)|*.du"%name)
+        filename=Dialogs.askSaveAsFileName(self,"Save %s dataset as"%self.operationName,"%s.du"%name,"Dataunit (*.du)|*.du")
         name=os.path.basename(filename)
         name=".".join(name.split(".")[:-1])
         self.dataUnit.setName(name)
@@ -177,4 +177,5 @@ class ProcessingManager(TimepointSelection):
         except GUIError,ex:
             ex.show()
         # then we close this window...
+        messenger.send(None,"load_dataunit",filename)
         self.Close()
