@@ -198,8 +198,8 @@ class TimelinePanel(wx.Panel):
         self.timelineConfig=TimelineConfig(self,control)
         
         self.sizer.Add(self.timelineConfig,(2,0),flag=wx.EXPAND|wx.ALL)
-        self.animBox=wx.StaticBox(self,-1,"Animation Control Pane")
-        self.animBoxSizer=wx.StaticBoxSizer(self.animBox,wx.VERTICAL)
+        #self.animBox=wx.StaticBox(self,-1,"Animation Control Pane")
+        #self.animBoxSizer=wx.StaticBoxSizer(self.animBox,wx.VERTICAL)
 #       
         #self.wxrenwin=wxVTKRenderWindowInteractor(self,-1,size=(400,300))
         self.wxrenwin=VisualizerWindow.VisualizerWindow(self,size=(400,300))
