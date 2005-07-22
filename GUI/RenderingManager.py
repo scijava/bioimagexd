@@ -1,24 +1,13 @@
 # -*- coding: iso-8859-1 -*-
 
 """
- Unit: RenderingManager.py
- Project: Selli
- Created: 10.11.2004
- Creator: KP
+ Unit: RenderingManager
+ Project: BioImageXD
+ Created: 10.11.2004, KP
  Description:
 
  The window that is used for selecting the timepoints that are sent to MayaVi
  to be rendered.
-
- Modified: 10.11.2004 KP - Created the class.
-           17.11.2004 KP - Fixed the timepoint selection
-           17.11.2004 KP - Uses RenderingInterface to render the selected 
-                           timepoint
-           17.11.2004 KP - GUI for selecting every nth timepoint
-           14.12.2004 KP - The visualization loading code
-           31.01.2005 KP - Converted the GUI to wxPython
-           03.02.2005 KP - Derived TimepointSelection from existing code
-                           and made RenderingManager inherit that.
 
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
