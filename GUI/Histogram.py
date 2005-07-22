@@ -89,6 +89,11 @@ class Histogram(wx.Panel):
         pos=event.GetPosition()
         x,y=pos
         y=255-y
+        if x>255:x=255
+        if y>255:y=255
+        if x<0:x=0
+        if y<0:y=0
+            
         get=self.dataUnit.getSettings().get
         lower=get("ColocalizationLowerThreshold")
         if lower==None:
@@ -111,6 +116,10 @@ class Histogram(wx.Panel):
         if event.LeftIsDown():
             x,y=event.GetPosition()
             y=255-y
+            if x>255:x=255
+            if y>255:y=255
+            if x<0:x=0
+            if y<0:y=0            
             self.actionstart=(x,y)
             self.updatePreview()
             
@@ -127,6 +136,7 @@ class Histogram(wx.Panel):
         get=self.dataUnit.getSettings().get
         lower=get("ColocalizationLowerThreshold")
         upper=get("ColocalizationUpperThreshold")
+        if lower is None or upper is None:return
         if self.mode=="upper":
             set("ColocalizationUpperThreshold",x1)
         else:
@@ -235,6 +245,8 @@ class Histogram(wx.Panel):
         dc.DrawBitmap(self.histogram,0,0,1)
         get=self.dataUnit.getSettings().get
         set=self.dataUnit.getSettings().set
+        if get("ColocalizationLowerThreshold")==None:
+            return
         if self.actionstart or get("ColocalizationLowerThreshold")!=None:
             lower1=int(get("ColocalizationLowerThreshold"))
             upper1=int(get("ColocalizationUpperThreshold"))
