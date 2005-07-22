@@ -55,6 +55,16 @@ class CombinedDataUnit(DataUnit.DataUnit):
         self.settings = settingclass()
         self.byName={}
         self.module = None
+        self.outputChls={}
+        
+    def setOutputChannel(self,ch,flag):
+        """
+        Method: setOutputChannel(ch,flag)
+        Created: 22.07.2005, KP
+        Description: Mark a channel as being part of the output
+        """
+        self.outputChls[ch]=flag
+        Logging.info("output channels now=",self.outputChls,kw="dataunit")
         
     def getDimensions(self): 
         if self.sourceunits:
@@ -308,40 +318,86 @@ class CombinedDataUnit(DataUnit.DataUnit):
         for unit in self.sourceunits:
             unit.getSettings().initialize(unit,count+1,unit.getLength())        
         self.settings.initialize(self,count,self.sourceunits[0].getLength())
-            
+        
+        
     def doPreview(self, depth,renew,timePoint=0):
         """
         Method: doPreview
         Created: 08.11.2004, JM
         Description: Makes a two-dimensional preview using
                      the class-specific combination function
-                     NOT IMPLEMENTED HERE
         Parameters: depth       The preview depth
                     renew       Flag indicating, whether the preview should be 
                                 regenerated or if a stored image can be reused
                     timePoint   The timepoint from which to generate the preview
                                 Defaults to 0
         """
+        preview=None
         # If the given timepoint > number of timepoints,
         # it is scaled to be in the range 0-getDataUnitCount()-1
         # with the modulo operator
         timePoint=timePoint%self.getLength()
-        # If the renew flag is true, we need to regenerate the preview
-        if renew:
-            # We then tell the color merging module to reset itself and
-            # initialize it again
-            self.module.reset()
-            #print "Setting settings=",self.settings
-            # Go through all the source datasets for the color merging
-            self.module.setSettings(self.settings)
-            self.module.setTimepoint(timePoint)
-            for dataunit in self.sourceunits:
-                Logging.info("Adding source image data",kw="dataunit")
-                image=dataunit.getTimePoint(timePoint)
-                self.module.addInput(dataunit,image)
-
-        # module.getPreview() returns a vtkImageData object
-        return self.module.getPreview(depth)
+        
+        # If the requested output channels have been specified,
+        # then we map those through their corresponding ctf's
+        # to be merged to the output
+        n=len(self.sourceunits)
+        if self.outputChls:
+            merged=[]
+            for i,unit in enumerate(self.sourceunits):
+                if i in self.outputChls and self.outputChls[i]:
+                    data=unit.getTimePoint(timePoint)
+                    maptocol=vtk.vtkImageMapToColors()
+                    maptocol.SetInput(data)
+                    maptocol.SetOutputFormatToRGB()
+                    maptocol.SetLookupTable(unit.getColorTransferFunction())
+                    maptocol.Update()
+                    merged.append(maptocol.GetOutput())
+            if n not in self.outputChls:
+                self.outputChls[n]=0
+        # If either no output channels have been specified (in which case
+        # we return just the normal preview) or the combined result
+        # (n = last chl+1) has  been requested
+        if not self.outputChls or self.outputChls[n]:
+            #Logging.info("outputChls=",self.outputChls,"n=",n)
+            # If the renew flag is true, we need to regenerate the preview
+            if renew:
+                # We then tell the module to reset itself and
+                # initialize it again
+                self.module.reset()
+                # Go through all the source datasets for the module
+                self.module.setSettings(self.settings)
+                self.module.setTimepoint(timePoint)
+                for dataunit in self.sourceunits:
+                    Logging.info("Adding source image data",kw="dataunit")
+                    image=dataunit.getTimePoint(timePoint)
+                    self.module.addInput(dataunit,image)
+    
+            # module.getPreview() returns a vtkImageData object
+            preview=self.module.getPreview(depth)
+            # If no output channels were requested, then just return the
+            # preview
+            if not self.outputChls:
+                return preview
+                
+            if preview.GetNumberOfScalarComponents()==1:
+                maptocol=vtk.vtkImageMapToColors()
+                maptocol.SetInput(preview)
+                maptocol.SetOutputFormatToRGB()
+                maptocol.SetLookupTable(self.getColorTransferFunction())
+                maptocol.Update()
+                preview=maptocol.GetOutput()
+            merged.append(preview)
+        if len(merged)>1:
+            merge=vtk.vtkImageMerge()
+            for data in merged:
+                merge.AddInput(data)
+            merge.Update()
+            preview=merge.GetOutput()
+        elif len(merged)==1:
+            preview=merged[0]
+        return preview
+            
 
     def getBitDepth(self):
         """
