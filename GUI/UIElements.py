@@ -37,6 +37,53 @@ import wx
 import  wx.lib.filebrowsebutton as filebrowse
 import Configuration
 
+class AcceptedValidator(wx.PyValidator):
+    def __init__(self, accept,above=-1,below=-1):
+        wx.PyValidator.__init__(self)
+        self.accept=accept
+        self.above=above
+        self.below=below
+        self.Bind(wx.EVT_CHAR, self.OnChar)
+
+    def Clone(self):
+        return AcceptedValidator(self.accept)
+
+    def Validate(self, win):
+        tc = self.GetWindow()
+        val = tc.GetValue()
+        if self.above !=-1 or self.below != -1:
+            try:
+                ival=int(val)
+            except:
+                return False
+            if above!=-1 and ival <above:return False
+            if below!=-1 and ival >below:return False    
+            
+
+        for x in val:
+            if x not in self.accept:
+                return False
+
+        return True    
+        
+    def OnChar(self, event):
+        key = event.KeyCode()
+
+        if key < wx.WXK_SPACE or key == wx.WXK_DELETE or key > 255:
+            event.Skip()
+            return
+            
+        if chr(key) in self.accept:
+            event.Skip()
+            return
+
+        if not wx.Validator_IsSilent():
+            wx.Bell()
+
+        # Returning without calling even.Skip eats the event before it
+        # gets to the text control
+        return
+
 
 
 class NamePanel(wx.Panel):
