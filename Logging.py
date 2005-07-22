@@ -6,9 +6,6 @@
  Description:
 
  A module for reporting and logging errors
-
- Modified: 13.12.2004 KP - Created the module
-           11.01.2005 JV - Added comments
  
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
@@ -41,10 +38,10 @@ import sys
 outfile=sys.stdout
 
 HIDE_DEBUG=["visualizer","init","io","scale","preview","trivial",
-            "modules","!imageop"]
+            "modules","imageop","ctf"]
 KWS=["visualizer","main","init","animator","io","task","preview","scale",
      "imageop","modules","trivial","ctf","dataunit","event","processing",
-     "datasource","iactivepanel","annotation","ui"]
+     "datasource","iactivepanel","annotation","ui","rendering"]
 
 import sys
 
