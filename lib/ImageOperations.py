@@ -621,20 +621,29 @@ def saveImageAs(imagedata,zslice,filename):
     writer.SetFileName(filename)
     writer.Write()
     
-def getColorTransferFunction(fg):
+def imageDataTo3Component(image,ctf):
     """
-    Method: getColorTransferFunction
-    Created: KP
-    Description: Return a color transfer function based on a color
-    """       
-    
-    ct=vtk.vtkColorTransferFunction()
-    ct.AddRGBPoint(0,0,0,0)
-    r,g,b=fg
-    r/=255.0
-    g/=255.0
-    b/=255.0
-    ct.AddRGBPoint(255,r,g,b)
-    return ct    
-    
-    
+    Method: imageDataTo3Component
+    Created: 22.07.2005, KP
+    Description: Processes image data to get it to proper 3 component RGB data
+    """         
+    ncomps = image.GetNumberOfScalarComponents()
+        
+    if ncomps==1:
+        maptocolor=vtk.vtkImageMapToColors()
+        maptocolor.SetInput(image)
+        maptocolor.SetLookupTable(ctf)
+        maptocolor.SetOutputFormatToRGB()
+        maptocolor.Update()
+        imagedata=maptocolor.GetOutput()
+    elif ncomps>3:
+        Logging.info("Data has %d components, extracting"%ncomps,kw="imageop")
+        extract=vtk.vtkImageExtractComponents()
+        extract.SetComponents(0,1,2)
+        extract.SetInput(image)
+        extract.Update()
+        imagedata=extract.GetOutput()
+
+    else:
+        imagedata=image
+    return imagedata
