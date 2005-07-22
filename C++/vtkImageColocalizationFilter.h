@@ -64,7 +64,12 @@ public:
   }
   int* GetColocalizationLowerThresholds() { return this->ColocalizationLowerThresholds; }
   int* GetColocalizationUpperThresholds() { return this->ColocalizationUpperThresholds; }
-
+ 
+  // Description:
+  // Set / Get the constant scalar used for colocalized voxels.
+  // Defaults to 2**sizeof(datatype)
+  vtkGetMacro(OutputScalar,double);
+  vtkSetMacro(OutputScalar,double);   
 
 protected:
   vtkImageColocalizationFilter();
@@ -87,6 +92,7 @@ private:
   int *ColocalizationLowerThresholds;
   int *ColocalizationUpperThresholds;
   int NumberOfDatasets;
+  double OutputScalar;
 
 };
 

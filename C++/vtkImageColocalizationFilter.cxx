@@ -36,6 +36,7 @@ vtkImageColocalizationFilter::vtkImageColocalizationFilter()
 {
     this->OutputDepth = 8;
     this->NumberOfDatasets = 8;
+    this->OutputScalar = -1;
     this->ColocalizationLowerThresholds = new int[this->NumberOfDatasets];
     this->ColocalizationUpperThresholds = new int[this->NumberOfDatasets];
     for(int i = 0; i < this->NumberOfDatasets; i++) {
@@ -110,7 +111,8 @@ void vtkImageColocalizationFilterExecute(vtkImageColocalizationFilter *self, int
     int maxX,maxY,maxZ;
     int idxX,idxY,idxZ;
     
-
+    double OutputScalar = self->GetOutputScalar();
+    
     int *ColocThresholds = self->GetColocalizationLowerThresholds();
     int *UpperThresholds = self->GetColocalizationUpperThresholds();
     int BitDepth = self->GetOutputDepth();
@@ -129,12 +131,13 @@ void vtkImageColocalizationFilterExecute(vtkImageColocalizationFilter *self, int
     maxX = outExt[1] - outExt[0];
     maxY = outExt[3] - outExt[2];
     maxZ = outExt[5] - outExt[4];
-    
-    T currScalar = 0, ColocalizationScalar = 0;
+    double ColocalizationScalar=0;
+    T currScalar = 0;
     int maxval = 0, n = 0;
     char colocFlag = 0;
     double mul=0;
     maxval=int(pow(2,8*sizeof(T)))-1;
+    if(OutputScalar < 0)OutputScalar = maxval;
     //printf("Colocalization depth = %d, maxval=%d\n",BitDepth,maxval);
     char progressText[200];
     for(idxZ = 0; idxZ <= maxZ; idxZ++ ) {
@@ -149,7 +152,7 @@ void vtkImageColocalizationFilterExecute(vtkImageColocalizationFilter *self, int
             for(i=0; i < NumberOfInputs; i++ ) {
                 currScalar = *inPtrs[i]; 
                 if(currScalar >= ColocThresholds[i] && currScalar <= UpperThresholds[i]) {
-                    ColocalizationScalar += currScalar;
+                    ColocalizationScalar *= currScalar;
                     n++;
                 } else {
                     colocFlag = 0;
@@ -158,14 +161,17 @@ void vtkImageColocalizationFilterExecute(vtkImageColocalizationFilter *self, int
             }
             if(colocFlag > 0) {
                 
-                if (BitDepth == 1 ) ColocalizationScalar = maxval;
-                if (BitDepth == 8 ) ColocalizationScalar /= n;
+                if (BitDepth == 1 ) ColocalizationScalar = OutputScalar;
+                if (BitDepth == 8 ) {
+                    ColocalizationScalar = pow(ColocalizationScalar, 1.0/n);
+                }
                 if(ColocalizationScalar > maxval) ColocalizationScalar=maxval;
                 
             } else ColocalizationScalar = 0;
             
-            *outPtr = ColocalizationScalar;
+            *outPtr = (T)ColocalizationScalar;
             outPtr++;
+            ColocalizationScalar = 1;
           }
           for(i=0; i < NumberOfInputs; i++ ) {
               inPtrs[i]+=inIncY;
