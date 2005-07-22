@@ -130,8 +130,8 @@ class TaskPanel(scrolled.ScrolledPanel):
         #self.tb2 = self.toolbar
         n=0
         #self.tb2.AddSeparator()
-        
-        for dataunit in self.dataUnit.getSourceDataUnits():
+        self.toolIds=[]
+        for i,dataunit in enumerate(self.dataUnit.getSourceDataUnits()):
             #color = dataunit.getColor()
             ctf = dataunit.getColorTransferFunction()
             name = dataunit.getName()
@@ -158,11 +158,14 @@ class TaskPanel(scrolled.ScrolledPanel):
             dc.EndDrawing()
             dc.SelectObject(wx.EmptyBitmap(0,0))
             toolid=wx.NewId()
+            self.toolIds.append(toolid)
             #self.tb2.AddRadioTool(toolid,name,bmp,shortHelp=name)
-            self.toolMgr.addItem(name,bmp,toolid,lambda e,x=n,s=self:s.selectItem(e,x))
+            #self.toolMgr.addItem(name,bmp,toolid,lambda e,x=n,s=self:s.selectItem(e,x))
+            self.toolMgr.addItem(name,bmp,toolid,lambda e,x=n,s=self:s.setPreviewedData(e,x))
+            self.toolMgr.toggleTool(toolid,1)
+            self.dataUnit.setOutputChannel(i,1)
             #self.tb2.AddTool(toolid,bmp)#,shortHelp=name)
             n=n+1
-
         return n
         
     def getResult(self):
@@ -216,6 +219,17 @@ class TaskPanel(scrolled.ScrolledPanel):
         self.settingsSizer.Add(self.settingsNotebook,(1,0),flag=wx.EXPAND|wx.ALL)
         self.Layout()
 
+    def setPreviewedData(self,event,index=-1):
+        """
+        Method: setPreviewedData
+        Created: 22.07.2005, KP
+        Description: A callback function for marking channels to be rendered
+                     in the preview.
+        """
+        flag=event.IsChecked()
+        self.dataUnit.setOutputChannel(index,flag)
+        self.doPreviewCallback(None)
+        
     def selectItem(self,event,index=-1):
         """
         Method: selectItem(event)
@@ -226,8 +240,7 @@ class TaskPanel(scrolled.ScrolledPanel):
         Logging.info("Select item %d"%index, kw="dataunit")
         if index==-1:	    
             raise "No index given"
-            index=self.itemMenu.GetSelection()
-        #name=self.itemMenu.GetString(index)
+
         self.settings = self.dataUnit.getSourceDataUnits()[index].getSettings()
         
         #self.preview.setSelectedItem(index)
@@ -359,10 +372,5 @@ class TaskPanel(scrolled.ScrolledPanel):
             
         messenger.send(None,"current_file",", ".join(fileNames))         
         
-            
-        #names=[i.getName() for i in units]
-        #for name in names:
-        #        self.itemMenu.Append(name)
         self.selectItem(None,0)
-        #self.itemMenu.SetSelection(0)
         self.createItemToolbar()
