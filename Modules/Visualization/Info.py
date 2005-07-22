@@ -7,10 +7,7 @@
  Description:
 
  A info mode for Visualizer
- 
- Modified 28.04.2005 KP - Created the class
-          23.05.2005 KP - Split the class to a module of it's own
-          
+           
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
 
@@ -85,7 +82,7 @@ class InfoMode:
         
 
         if not self.tree:
-            self.tree=TreeWidget.TreeWidget(self.sidebarWin,self.infowidget.showInfo)        
+            self.tree=TreeWidget.TreeWidget(self.sidebarWin)
             #self.tree.SetSize(self.sidebarWin.GetSize())
             self.infowidget.setTree(self.tree)
             self.tree.Show()

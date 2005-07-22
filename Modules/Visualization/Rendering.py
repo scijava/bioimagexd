@@ -92,7 +92,15 @@ class RenderingMode:
             module=reload(module)
             print "Reloaded visualization module",module
             self.mapping[key]=(mod,conf,module)
-        
+            
+
+    def zoomObject(self):
+        """
+        Method: zoomObject()
+        Created: 04.07.2005, KP
+        Description: Zoom to a user selected portion of the image
+        """            
+        self.wxrenwin.zoomToRubberband()        
     def showSideBar(self):
         """
         Method: showSideBar()
@@ -129,7 +137,6 @@ class RenderingMode:
             self.wxrenwin.Render()
             self.GetRenderWindow=self.wxrenwin.GetRenderWindow
             self.renwin=self.wxrenwin.GetRenderWindow()
-    
             self.wxrenwin.Render()
     
             self.getRenderer=self.GetRenderer=self.wxrenwin.getRenderer
@@ -223,6 +230,7 @@ class RenderingMode:
         self.dataUnit=dataUnit
         if not len(self.modules):
             self.loadModule(self.defaultModule)
+            self.wxrenwin.setView((1,1,1,0,0,1))
             self.configPanel.appendModuleToList(self.defaultModule)
         for module in self.modules:
             module.setDataUnit(dataUnit)

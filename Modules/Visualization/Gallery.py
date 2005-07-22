@@ -34,6 +34,7 @@ import PreviewFrame
 import Logging
 import wx
 import wx.lib.scrolledpanel as scrolled
+from Visualizer.VisualizationMode import VisualizationMode
 
 def getName():return "gallery"
 def getClass():return GalleryMode
@@ -108,99 +109,16 @@ class GalleryConfigurationPanel(scrolled.ScrolledPanel):
 
 
     
-class GalleryMode:
+class GalleryMode(VisualizationMode):
     def __init__(self,parent,visualizer):
         """
         Method: __init__
         Created: 24.05.2005, KP
         Description: Initialization
         """
-        self.parent=parent
-        self.visualizer=visualizer
+        VisualizationMode.__init__(self,parent,visualizer)
         self.galleryPanel=None
-        self.timepoint=0
-        self.enabled=1
         self.configPanel=None
-        self.dataUnit=None
-        
-    def annotate(self,annclass,**kws):
-        """
-        Method: annotate(annotationclass)
-        Created: 04.07.2005, KP
-        Description: Add an annotation to the scene
-        """
-        if self.galleryPanel:
-            self.galleryPanel.addAnnotation(annclass,**kws)
-        
-    def manageAnnotation(self):
-        """
-        Method: manageAnnotation()
-        Created: 04.07.2005, KP
-        Description: Manage annotations on the scene
-        """
-        if self.galleryPanel:
-            self.galleryPanel.manageAnnotation()
-
-    def zoomObject(self):
-        """
-        Method: zoomObject()
-        Created: 04.07.2005, KP
-        Description: Zoom to a user selected portion of the image
-        """
-        if self.preview:
-            self.preview.renderpanel.zoomObject()
-                
-        
-    def zoomToFit(self):
-        """
-        Method: zoomToFit()
-        Created: 05.06.2005, KP
-        Description: Zoom the dataset to fit the available screen space
-        """
-        if self.galleryPanel:
-            self.galleryPanel.zoomToFit()
-    
-    def setZoomFactor(self,factor):
-        """
-        Method: setZoomFactor(factor)
-        Created: 05.06.2005, KP
-        Description: Set the factor by which the image is zoomed
-        """
-        if self.galleryPanel:
-            self.galleryPanel.setZoomFactor(factor)        
-        
-    def showSideBar(self):
-        """
-        Method: showSideBar()
-        Created: 24.05.2005, KP
-        Description: Method that is queried to determine whether
-                     to show the sidebar
-        """
-        return True
-  
-    def setBackground(self,r,g,b):
-        """
-        Method: setBackground(r,g,b)
-        Created: 24.05.2005, KP
-        Description: Set the background color
-        """        
-        self.galleryPanel.setBackground(r,g,b)
-        
-    def Render(self):
-        """
-        Method: Render()
-        Created: 24.05.2005, KP
-        Description: Update the rendering
-        """      
-        pass        
-        
-    def enable(self,flag):
-        """
-        Method: enable(flag)
-        Created: 02.06.2005, KP
-        Description: Enable/Disable updates
-        """
-        self.enabled=flag        
         
     def updateRendering(self):
         """
@@ -226,7 +144,7 @@ class GalleryMode:
         if not self.galleryPanel:
             x,y=self.visualizer.visWin.GetSize()
             self.galleryPanel=PreviewFrame.GalleryPanel(self.parent,self.visualizer,size=(x,y))
-        
+            self.iactivePanel=self.galleryPanel
         print "configPanel=",self.configPanel
         if not self.configPanel:
             # When we embed the sidebar in a sashlayoutwindow, the size
@@ -242,38 +160,14 @@ class GalleryMode:
             self.configPanel.Show()
         return self.galleryPanel
         
-    def deactivate(self):
-        """
-        Method: deactivate()
-        Created: 24.05.2005, KP
-        Description: Unset the mode of visualization
-        """
-        self.galleryPanel.Show(0)        
-        
+
     def setDataUnit(self,dataUnit):
         """
         Method: setDataUnit
         Created: 25.05.2005, KP
         Description: Set the dataunit to be visualized
         """
-        self.galleryPanel.setDataUnit(dataUnit)
-        self.dataUnit=dataUnit
+        VisualizationMode.setDataUnit(self,dataUnit)
         if self.configPanel:
             self.configPanel.setDataUnit(dataUnit)
         
-    def setTimepoint(self,tp):
-        """
-        Method: setTimepoint
-        Created: 25.05.2005, KP
-        Description: Set the timepoint to be visualized
-        """
-        self.timepoint=tp
-        self.galleryPanel.setTimepoint(tp)
-
-    def saveSnapshot(self,filename):
-        """
-        Method: saveSnapshot(filename)
-        Created: 05.06.2005, KP
-        Description: Save a snapshot of the scene
-        """      
-        self.galleryPanel.saveSnapshot(filename)

@@ -1,15 +1,12 @@
 # -*- coding: iso-8859-1 -*-
 
 """
- Unit: SlicesMode
+ Unit: Slices
  Project: BioImageXD
  Created: 28.04.2005, KP
  Description:
 
  A slices viewing rendering mode for Visualizer
- 
- Modified 28.04.2005 KP - Created the class
-          23.05.2005 KP - Split the class to a module of it's own
           
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
@@ -37,6 +34,7 @@ import DataUnit
 import Modules
 import PreviewFrame
 import Logging
+from Visualizer.VisualizationMode import VisualizationMode
 
 def getName():return "slices"
 def getClass():return SlicesMode
@@ -45,13 +43,14 @@ def getConfigPanel(): return None
 def getRenderingDelay(): return 1500
 def showZoomToolbar(): return True
         
-class SlicesMode:
+class SlicesMode(VisualizationMode):
     def __init__(self,parent,visualizer):
         """
         Method: __init__
         Created: 24.05.2005, KP
         Description: Initialization
         """
+        VisualizationMode.__init__(self,parent,visualizer)        
         self.parent=parent
         self.visualizer=visualizer
         self.preview=None
@@ -59,50 +58,6 @@ class SlicesMode:
         self.dataUnit=None
         self.modules=Modules.DynamicLoader.getTaskModules()
 
-    def annotate(self,annclass,**kws):
-        """
-        Method: annotate(annotationclass)
-        Created: 03.07.2005, KP
-        Description: Add an annotation to the scene
-        """
-        if self.preview:
-            self.preview.renderpanel.addAnnotation(annclass,**kws)
-        
-    def manageAnnotation(self):
-        """
-        Method: manageAnnotation()
-        Created: 03.07.2005, KP
-        Description: Manage annotations on the scene
-        """
-        if self.preview:
-            self.preview.renderpanel.manageAnnotation()
-
-    def zoomObject(self):
-        """
-        Method: zoomObject()
-        Created: 03.07.2005, KP
-        Description: Zoom to a user selected portion of the image
-        """
-        if self.preview:
-            self.preview.renderpanel.zoomObject()
-        
-    def zoomToFit(self):
-        """
-        Method: zoomToFit()
-        Created: 05.06.2005, KP
-        Description: Zoom the dataset to fit the available screen space
-        """
-        if self.preview:
-            self.preview.renderpanel.zoomToFit()
-    
-    def setZoomFactor(self,factor):
-        """
-        Method: setZoomFactor(factor)
-        Created: 05.06.2005, KP
-        Description: Set the factor by which the image is zoomed
-        """
-        if self.preview:
-            self.preview.renderpanel.setZoomFactor(factor)
         
     def showSideBar(self):
         """
@@ -138,15 +93,7 @@ class SlicesMode:
         """      
         if self.preview:
             self.preview.renderpanel.setBackgroundColor((r,g,b))
-  
-    def deactivate(self):
-        """
-        Method: deactivate()
-        Created: 24.05.2005, KP
-        Description: Unset the mode of visualization
-        """
-        self.preview.Show(0)
-  
+
     def activate(self,sidebarwin):
         """
         Method: activate()
@@ -155,9 +102,10 @@ class SlicesMode:
         """
         if not self.preview:
             Logging.info("Generating preview",kw="visualizer")
-            self.preview=PreviewFrame.IntegratedPreview(self.parent,
-            previewsize=(512,512),pixelvalue=False,renderingpreview=False,
+            self.preview=PreviewFrame.PreviewFrame(self.parent,
+            previewsize=(512,512),pixelvalue=False,
             zoom=False,zslider=True,timeslider=False,scrollbars=True)
+            self.iactivePanel=self.preview.renderpanel
         return self.preview
             
         
@@ -198,10 +146,3 @@ class SlicesMode:
         Logging.info("Setting timepoint to ",tp,kw="visualizer")
         self.preview.setTimepoint(tp)
         
-    def saveSnapshot(self,filename):
-        """
-        Method: saveSnapshot(filename)
-        Created: 05.06.2005, KP
-        Description: Save a snapshot of the scene
-        """      
-        self.preview.saveSnapshot(filename)

@@ -36,6 +36,7 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 import DataUnit
 
 import PreviewFrame
+from Visualizer.VisualizationMode import VisualizationMode
 
 def getName():return "sections"
 def getClass():return SectionsMode
@@ -45,80 +46,17 @@ def getRenderingDelay(): return 500
 def showZoomToolbar(): return True    
 
         
-class SectionsMode:
+class SectionsMode(VisualizationMode):
     def __init__(self,parent,visualizer):
         """
         Method: __init__
         Created: 24.05.2005, KP
         Description: Initialization
         """
-        self.parent=parent
-        self.timepoint=0
-        self.visualizer=visualizer
-        self.dataUnit=None
+        VisualizationMode.__init__(self,parent,visualizer)
         self.sectionsPanel=None
         
-    def annotate(self,annclass,**kws):
-        """
-        Method: annotate(annotationclass)
-        Created: 04.07.2005, KP
-        Description: Add an annotation to the scene
-        """
-        if self.sectionsPanel:
-            self.sectionsPanel.addAnnotation(annclass,**kws)
-        
-    def manageAnnotation(self):
-        """
-        Method: manageAnnotation()
-        Created: 04.07.2005, KP
-        Description: Manage annotations on the scene
-        """
-        if self.sectionsPanel:
-            self.sectionsPanel.manageAnnotation()
-
-    def zoomObject(self):
-        """
-        Method: zoomObject()
-        Created: 04.07.2005, KP
-        Description: Zoom to a user selected portion of the image
-        """
-        if self.preview:
-            self.preview.renderpanel.zoomObject()
-                
-        
-    def zoomToFit(self):
-        """
-        Method: zoomToFit()
-        Created: 05.06.2005, KP
-        Description: Zoom the dataset to fit the available screen space
-        """
-        if self.sectionsPanel:
-            self.sectionsPanel.zoomToFit()
-    
-    def setZoomFactor(self,factor):
-        """
-        Method: setZoomFactor(factor)
-        Created: 05.06.2005, KP
-        Description: Set the factor by which the image is zoomed
-        """
-        if self.sectionsPanel:
-            self.sectionsPanel.setZoomFactor(factor)        
-        
-        
-    def setBackground(self,r,g,b):
-        """
-        Method: setBackground(r,g,b)
-        Created: 24.05.2005, KP
-        Description: Set the background color
-        """      
-        self.sectionsPanel.setBackgroundColor((r,g,b))
-    def Render(self):
-        """
-        Method: Render()
-        Created: 24.05.2005, KP
-        Description: Update the rendering
-        """      
-        pass        
+      
     def updateRendering(self):
         """
         Method: updateRendering
@@ -145,32 +83,5 @@ class SectionsMode:
         if not self.sectionsPanel:
             x,y=self.visualizer.visWin.GetSize()
             self.sectionsPanel=PreviewFrame.SectionsPanel(self.parent,self.visualizer,size=(x,y))
+            self.iactivePanel=self.sectionsPanel
         return self.sectionsPanel
-        
-    def deactivate(self):
-        """
-        Method: deactivate()
-        Created: 24.05.2005, KP
-        Description: Unset the mode of visualization
-        """
-        self.sectionsPanel.Show(0)
-        
-
-        
-    def setDataUnit(self,dataUnit):
-        """
-        Method: setDataUnit
-        Created: 25.05.2005, KP
-        Description: Set the dataunit to be visualized
-        """
-        self.sectionsPanel.setDataUnit(dataUnit)
-        self.dataUnit=dataUnit
-        
-    def setTimepoint(self,tp):
-        """
-        Method: setTimepoint
-        Created: 25.05.2005, KP
-        Description: Set the timepoint to be visualized
-        """
-        self.timepoint=tp
-        self.sectionsPanel.setTimepoint(tp)
