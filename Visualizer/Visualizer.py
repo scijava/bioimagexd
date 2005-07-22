@@ -6,7 +6,7 @@
  Created: 28.04.2005, KP
  Description:
 
- A framework for replacing MayaVi for simple rendering tasks.
+ A visualization framework for the BioImageXD software
            
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
@@ -204,16 +204,16 @@ class Visualizer:
                 w2,h2=i[0].GetSize()
                 w=w2
                 if h<h2:h=h2
-            Logging.info("Got ",w,h,"for histogram size")
+            Logging.info("Got ",w,h,"for histogram size",kw="visualizer")
             if not h:h=200
             self.sizes["histogram"]=w,h
         elif arg=="config":obj=self.sidebarWin
         if evt=="hide":
-            Logging.info("Hiding ",arg)
+            Logging.info("Hiding ",arg,"=",obj,kw="visualizer")
             if arg not in self.sizes:
                 w,h=obj.GetSize()
                 self.sizes[arg]=(w,h)
-                obj.SetDefaultSize((0,0))
+            obj.SetDefaultSize((0,0))
         else:
             Logging.info("Showing ",arg)
             if arg in self.sizes:
@@ -303,13 +303,19 @@ class Visualizer:
         """        
         self.tb = wx.ToolBar(self.toolWin,-1,style=wx.TB_HORIZONTAL)
         self.tb.SetToolBitmapSize((32,32))
+        
+        self.viewCombo=wx.ComboBox(self.tb,MenuManager.ID_SET_VIEW,"Isometric",choices=["+X","-X","+Y","-Y","+Z","-Z","Isometric"],size=(100,-1),style=wx.CB_DROPDOWN)
+        self.viewCombo.SetSelection(6)
+        self.tb.AddControl(self.viewCombo)
+        wx.EVT_COMBOBOX(self.parent,MenuManager.ID_SET_VIEW,self.onSetView)
+        
         self.tb.AddSimpleTool(MenuManager.ID_ZOOM_OUT,wx.Image(os.path.join("Icons","zoom-out.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Zoom out","Zoom out on the optical slice")
         #EVT_TOOL(self,ID_OPEN,self.menuOpen)
 
         self.zoomCombo=wx.ComboBox(self.tb,-1,"100%",choices=["12.5%","25%","33.33%","50%","66.67%","75%","100%","125%","150%","200%","300%","400%","600%","800%"],size=(100,-1),style=wx.CB_DROPDOWN)
         self.zoomCombo.SetSelection(6)
         self.tb.AddControl(self.zoomCombo)
-        #self.preview.setZoomCombobox(self.zoomCombo)
+
         self.tb.AddSimpleTool(MenuManager.ID_ZOOM_IN,wx.Image(os.path.join("Icons","zoom-in.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Zoom in","Zoom in on the slice")
         self.tb.AddSimpleTool(MenuManager.ID_ZOOM_TO_FIT,wx.Image(os.path.join("Icons","zoom-to-fit.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Zoom to Fit","Zoom the slice so that it fits in the window")
         self.tb.AddSimpleTool(MenuManager.ID_ZOOM_OBJECT,wx.Image(os.path.join("Icons","zoom-object.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Zoom object","Zoom user selected portion of the slice")
@@ -318,9 +324,9 @@ class Visualizer:
         
         self.tb.AddSimpleTool(MenuManager.ID_ADD_SCALE,wx.Image(os.path.join("Icons","scale.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Draw scale","Draw a scale bar on the image")
         self.tb.AddSeparator()
-        self.tb.AddSimpleTool(MenuManager.ID_ROI_CIRCLE,wx.Image(os.path.join("Icons","circle.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Select circle","Select a circular area of the image")
-        self.tb.AddSimpleTool(MenuManager.ID_ROI_RECTANGLE,wx.Image(os.path.join("Icons","rectangle.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Select rectangle","Select a rectangular area of the image")
-        self.tb.AddSimpleTool(MenuManager.ID_ROI_POLYGON,wx.Image(os.path.join("Icons","polygon.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Select polygon","Select a polygonal area of the image")
+ #       self.tb.AddSimpleTool(MenuManager.ID_ROI_CIRCLE,wx.Image(os.path.join("Icons","circle.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Select circle","Select a circular area of the image")
+ #       self.tb.AddSimpleTool(MenuManager.ID_ROI_RECTANGLE,wx.Image(os.path.join("Icons","rectangle.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Select rectangle","Select a rectangular area of the image")
+ #       self.tb.AddSimpleTool(MenuManager.ID_ROI_POLYGON,wx.Image(os.path.join("Icons","polygon.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Select polygon","Select a polygonal area of the image")
 
         wx.EVT_TOOL(self.parent,MenuManager.ID_ZOOM_IN,self.zoomIn)
         wx.EVT_TOOL(self.parent,MenuManager.ID_ZOOM_OUT,self.zoomOut)
@@ -329,13 +335,27 @@ class Visualizer:
         wx.EVT_TOOL(self.parent,MenuManager.ID_ADD_SCALE,self.addAnnotation)
         wx.EVT_TOOL(self.parent,MenuManager.ID_DRAG_ANNOTATION,self.manageAnnotation)
         
-        wx.EVT_TOOL(self.parent,MenuManager.ID_ROI_CIRCLE,self.addAnnotation)
-        wx.EVT_TOOL(self.parent,MenuManager.ID_ROI_RECTANGLE,self.addAnnotation)
-        wx.EVT_TOOL(self.parent,MenuManager.ID_ROI_POLYGON,self.addAnnotation)
+#        wx.EVT_TOOL(self.parent,MenuManager.ID_ROI_CIRCLE,self.addAnnotation)
+#        wx.EVT_TOOL(self.parent,MenuManager.ID_ROI_RECTANGLE,self.addAnnotation)
+#        wx.EVT_TOOL(self.parent,MenuManager.ID_ROI_POLYGON,self.addAnnotation)
         
         self.zoomCombo.Bind(wx.EVT_COMBOBOX,self.zoomToComboSelection)
-        self.tb.Realize()            
+        self.tb.Realize()       
+        
+    def onSetView(self,evt):
+        """
+        Method: onSetView
+        Created: 22.07.2005, KP
+        Description: Set view mode
+        """
+        item=evt.GetString()
+        viewmapping={"+X":(1,0,0,0,0,1),"-X":(-1,0,0,0,0,1),
+                     "+Y":(0,1,0,1,0,0),"-Y":(0,-1,0,1,0,0),
+                     "+Z":(0,0,1,0,1,0),"-Z":(0,0,-1,0,1,0),
+                     "Isometric":(1,1,1,0,0,1)}
 
+        if "wxrenwin" in dir(self.currMode):
+            self.currMode.wxrenwin.setView(viewmapping[item])
     def zoomObject(self,evt):
         """
         Method: zoomObject()
