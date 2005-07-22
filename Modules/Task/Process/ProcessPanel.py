@@ -43,6 +43,8 @@ import sys
 import time
 
 from GUI import TaskPanel
+import UIElements
+import string
 
 class ProcessPanel(TaskPanel.TaskPanel):
     """
@@ -59,7 +61,7 @@ class ProcessPanel(TaskPanel.TaskPanel):
                 root    Is the parent widget of this window
         """
         self.timePoint = 0
-	self.operationName="Process"
+        self.operationName="Process"
         TaskPanel.TaskPanel.__init__(self,parent,tb)
         # Preview has to be generated here
         # self.colorChooser=None
@@ -114,10 +116,11 @@ class ProcessPanel(TaskPanel.TaskPanel):
         self.doMedianCheckbutton = wx.CheckBox(self.filtersPanel,
         -1,"Median Filtering")
         self.doMedianCheckbutton.Bind(wx.EVT_CHECKBOX,self.doFilterCheckCallback)
-
-        self.neighborhoodX=wx.TextCtrl(self.filtersPanel,-1,"1")
-        self.neighborhoodY=wx.TextCtrl(self.filtersPanel,-1,"1")
-        self.neighborhoodZ=wx.TextCtrl(self.filtersPanel,-1,"1")
+    
+        val=UIElements.AcceptedValidator
+        self.neighborhoodX=wx.TextCtrl(self.filtersPanel,-1,"1",validator=val(string.digits))
+        self.neighborhoodY=wx.TextCtrl(self.filtersPanel,-1,"1",validator=val(string.digits))
+        self.neighborhoodZ=wx.TextCtrl(self.filtersPanel,-1,"1",validator=val(string.digits))
 
 
         self.neighborhoodLbl=wx.StaticText(self.filtersPanel,-1,
@@ -148,10 +151,10 @@ class ProcessPanel(TaskPanel.TaskPanel):
         -1,"Solitary Filtering")
         self.doSolitaryCheckbutton.Bind(wx.EVT_CHECKBOX,self.doFilterCheckCallback)
 
-        self.solitaryX=wx.TextCtrl(self.filtersPanel,-1,"1")
-        self.solitaryY=wx.TextCtrl(self.filtersPanel,-1,"1")
+        self.solitaryX=wx.TextCtrl(self.filtersPanel,-1,"1",validator=val(string.digits))
+        self.solitaryY=wx.TextCtrl(self.filtersPanel,-1,"1",validator=val(string.digits))
         self.solitaryThreshold=wx.TextCtrl(self.filtersPanel,
-        -1,"0")
+        -1,"0",validator=val(string.digits))
 
         self.solitaryLbl=wx.StaticText(self.filtersPanel,-1,"Thresholds:")
         self.solitaryXLbl=wx.StaticText(self.filtersPanel,-1,"X:")
@@ -267,17 +270,19 @@ class ProcessPanel(TaskPanel.TaskPanel):
         nbh=(self.neighborhoodX.GetValue(),
             self.neighborhoodY.GetValue(),
             self.neighborhoodZ.GetValue())
-        nbh=map(int,nbh)
-        self.settings.set("MedianNeighborhood",nbh)
-
+        try:
+            nbh=map(int,nbh)
+            self.settings.set("MedianNeighborhood",nbh)
+        except ValueError:
+            pass
         sx,sy,st=0,0,0
         
-        try:sx=int(self.solitaryX.GetValue())
-        except:pass
-        try:sy=int(self.solitaryY.GetValue())
-        except:pass
-        try:st=int(self.solitaryThreshold.GetValue())
-        except:pass
+        try:
+            sx=int(self.solitaryX.GetValue())
+            sy=int(self.solitaryY.GetValue())
+            st=int(self.solitaryThreshold.GetValue())
+        except ValueError:
+            pass
         
         self.settings.set("SolitaryHorizontalThreshold",sx)
         self.settings.set("SolitaryVerticalThreshold",sy)
