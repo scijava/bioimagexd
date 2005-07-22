@@ -57,6 +57,7 @@ class MergingSettings(DataUnitSettings):
         self.registerCounted("IntensityTransferFunction",1)
         self.register("AlphaTransferFunction",1)
         self.register("AlphaMode")
+        self.registerCounted("PreviewChannel")
         
         tf=vtk.vtkIntensityTransferFunction()
         self.set("AlphaTransferFunction",tf)
@@ -73,6 +74,7 @@ class MergingSettings(DataUnitSettings):
         for i in range(channels):
             tf=vtk.vtkIntensityTransferFunction()
             self.setCounted("IntensityTransferFunction",i,tf,0)
+        self.set("PreviewChannel",1)
             
     def get(self,name):
         """

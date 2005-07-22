@@ -82,13 +82,16 @@ class Merging(Module):
         Created: 24.11.2004, JV
         Description: Adds an input for the color merging filter
         """
+        settings = dataunit.getSettings()
+        if not settings.get("PreviewChannel"):
+            Logging.info("Not including ",dataunit,"in merging",kw="processing")
+            return
         Module.addInput(self,dataunit,data)
 
         self.n+=1
         # ugly
         dims=data.GetDimensions()
-        settings = dataunit.getSettings()
-        #rgb=self.settings.getCounted("Color",self.n)
+            
         ctf = settings.get("MergingColorTransferFunction")
         Logging.info("ctf=",ctf,kw="processing")
         self.ctfs.append(ctf)
@@ -134,7 +137,8 @@ class Merging(Module):
         Logging.info("Merging channels...",kw="processing")
         processed=[]
         imagelen=len(self.images)
-        
+        if not imagelen:
+            return None
         self.shift=0
         self.scale=0.333
         self.scale/=imagelen

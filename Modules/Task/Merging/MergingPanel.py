@@ -224,42 +224,6 @@ class MergingPanel(TaskPanel.TaskPanel):
         Description: Method to create a toolbar for the window that allows use to select processed channel
         """      
         n=TaskPanel.TaskPanel.createItemToolbar(self)
-        
-        merge=vtk.vtkImageMerge()
-        
-        lst=[]
-        for dataunit in self.dataUnit.getSourceDataUnits():
-            ctf = dataunit.getColorTransferFunction()
-            Logging.info("Adding to toolbar",dataunit,"with ctf",ctf,kw="init")
-            maptocol=vtk.vtkImageMapToColors()
-            maptocol.SetOutputFormatToRGB()
-            maptocol.SetLookupTable(ctf)
-            maptocol.SetInput(dataunit.getTimePoint(0))
-            maptocol.Update()
-            lst.append(maptocol.GetOutput())
-        lst.reverse()
-        for i in lst:
-            merge.AddInput(i)
-        merge.Update()
-        bmp=ImageOperations.vtkImageDataToPreviewBitmap(merge.GetOutput(),ctf,30,30)
-        #dc= wx.MemoryDC()
-        #dc.SelectObject(bmp)
-        #dc.BeginDrawing()
-        #val=[0,0,0]
-        #ctf.GetColor(255,val)
-        #dc.SetBrush(wx.TRANSPARENT_BRUSH)
-        #r,g,b=val
-        #r*=255
-        #g*=255
-        #b*=255
-        #dc.SetPen(wx.Pen(wx.Colour(r,g,b),4))
-        #dc.DrawRectangle(0,0,32,32)
-        #dc.EndDrawing()
-        #dc.SelectObject(wx.EmptyBitmap(0,0))
-        toolid=wx.NewId()
-        n=n+1
-        name="Colocalization"
-        self.toolMgr.addItem(name,bmp,toolid,lambda e,x=n,s=self:s.selectItem(e,x))
                 
 
     def setCombinedDataUnit(self,dataUnit):
@@ -277,7 +241,8 @@ class MergingPanel(TaskPanel.TaskPanel):
         self.settings.set("AlphaTransferFunction",self.alphaTF)
         ctf = self.settings.get("MergingColorTransferFunction")
         self.intensityTransferEditor.updateCallback=self.doPreviewCallback
-
+        for i in range(len(dataUnit.getSourceDataUnits())):
+            self.dataUnit.setOutputChannel(i,1)
         if self.colorBtn:
             Logging.info("Setting ctf of colorbutton to ",ctf,kw="ctf")
             self.colorBtn.setColorTransferFunction(ctf)

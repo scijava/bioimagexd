@@ -39,6 +39,7 @@ class MergingDataUnit(CombinedDataUnit):
     Created: 03.07.2005, KP
     Description: Class for an merged channels dataset
     """
+
     def getBitDepth(self):
         return 32
     def getSettingsClass(self):
@@ -48,3 +49,15 @@ class MergingDataUnit(CombinedDataUnit):
         Description: Return the class that represents settings for this dataunit
         """
         return MergingSettings.MergingSettings
+        
+    def setOutputChannel(self,ch,flag):
+        """
+        Method: setOutputChannel(ch,flag)
+        Created: 22.07.2005, KP
+        Description: Mark a channel as being part of the output
+        """
+        # We duplicate a bit of functionality from combined data unit
+        # with this, but because they need to function differently, it
+        # is easier than to duplicate the doPreview() function
+        self.sourceunits[ch].getSettings().set("PreviewChannel",flag)
+        
