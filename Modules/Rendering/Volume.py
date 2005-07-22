@@ -37,6 +37,7 @@ import vtk
 import ColorTransferEditor
 import Dialogs
 from Visualizer.VisualizationModules import *
+import Logging
 
 def getClass():return VolumeModule
 def getConfigPanel():return VolumeConfigurationPanel
@@ -82,13 +83,13 @@ class VolumeModule(VisualizationModule):
         Created: 28.04.2005, KP
         Description: Sets the dataunit this module uses for visualization
         """       
-        print "Volume got dataunit",dataunit
+        Logging.info("Dataunit for Volume Rendering:",dataunit,kw="rendering")
         if dataunit.getBitDepth()==32:
             self.setMethod(1)
         VisualizationModule.setDataUnit(self,dataunit)
         # If 32 bit data, use method 1
         if self.visualizer.getProcessedMode():
-            print "Using ctf of first source"
+            Logging.info("Processed mode, using ctf of first source",kw="rendering")
             self.colorTransferFunction = self.dataUnit.getSourceDataUnits()[0].getColorTransferFunction()
         else:    
             self.colorTransferFunction = self.dataUnit.getColorTransferFunction()
@@ -115,15 +116,15 @@ class VolumeModule(VisualizationModule):
             self.mapper = vtk.vtkVolumeProMapper()
         except:
             # no support for volumepro available
-            print "No support for volumepro"
+            Logging.info("No support for VolumePro detected",kw="rendering")
             self.haveVolpro=0
             self.volpro.Enable(0)
             self.volpro.SetValue(0)
             return
         cmd="self.mapper.SetBlendModeTo%s()"%acc
-        print "Setting blending mode to ",acc
+        Logging.info("Setting blending mode to ",acc,kw="rendering")
         eval(cmd)
-        print "Setting parallel projection"
+        Logging.info("Setting parallel projetion",kw="rendering")
         self.renderer.GetActiveCamera().ParallelProjectionOn()
         
     def setQuality(self,quality,raw=0):
@@ -134,17 +135,16 @@ class VolumeModule(VisualizationModule):
         """ 
         if self.method<0:return 0
         if raw:
-            print "Setting quality setting to raw",quality
+            Logging.info("Setting quality to raw ",quality,kw="rendering")
             if self.method == 2:
-                print "Setting maximum number of planes to ",quality
+                Logging.info("Setting maximum number of planes to",quality,kw="rendering")
                 self.mapper.SetMaximumNumberOfPlanes(quality)
             else:
-                print "Setting sample distance to ",quality
+                Logging.info("Setting sample distance to ",quality,kw="rendering")
                 self.mapper.SetSampleDistance(quality)
             return quality
-            
         else:
-            print "Setting quality to ",quality
+            Logging.info("Setting quality to",quality,kw="rendering")
         if quality==10:
             self.volumeProperty.SetInterpolationTypeToLinear()            
         elif quality==9:
@@ -154,10 +154,8 @@ class VolumeModule(VisualizationModule):
             if self.method != 2:
                 self.mapper.SetSampleDistance(quality)
                 return quality
-                print "Image Sample distance=",self.mapper.GetSampleDistance()
             else:
                 self.mapper.SetMaximumNumberOfPlanes(25-quality)
-                print "Maximum planes=",self.mapper.GetMaximumNumberOfPlanes()
                 return 25-quality
         return 0
 
@@ -179,7 +177,9 @@ class VolumeModule(VisualizationModule):
         else:
             rgbf=vtk.vtkVolumeRayCastRGBCompositeFunction
         self.method=method
-        print "Setting volume rendering method to ",method
+        tbl=["Ray cast","RGBA Ray cast","Texture Map","MIP"]
+        Logging.info("Volume rendering method: ",tbl[method],kw="rendering")
+        
         #Ray Casting, RGBA Ray Casting, Texture Mapping, MIP
         composites = [vtk.vtkVolumeRayCastCompositeFunction,
                       rgbf,
@@ -187,20 +187,21 @@ class VolumeModule(VisualizationModule):
                       vtk.vtkVolumeRayCastMIPFunction,
                       vtk.vtkVolumeRayCastIsosurfaceFunction
                       ]
-        if self.vtkcvs and method == 1:
-            self.mapper = vtk.vtkFixedPointVolumeRayCastMapper()
-            self.volumeProperty.IndependentComponentsOff()
-        #elif method==3:
-        #    self.mapper=vtk.vtkVolumeShearWarpMapper()
-            
-        elif method in [0,1,3,4]:
-            if self.vtkcvs:
+        blendModes=["Composite","Composite","Composite","MaximumIntensity","Composite"]
+        if method in [0,1,3,4]:
+            # Iso surfacing with fixedpoint mapper is not supported
+            if self.vtkcvs and method!=4:
                 self.mapper = vtk.vtkFixedPointVolumeRayCastMapper()
                 self.volumeProperty.IndependentComponentsOff()
+                mode=blendModes[method]
+                Logging.info("Setting fixed point rendering mode to ",mode,kw="rendering")
+                cmd="self.mapper.SetBlendModeTo%s()"%(mode)
+                eval(cmd)
+
             else:
                 self.mapper = vtk.vtkVolumeRayCastMapper()
                 self.function = composites[method]()
-                print "using function",self.function
+                Logging.info("Using ray cast function ",self.function,kw="rendering")
                 self.mapper.SetVolumeRayCastFunction(self.function)
         elif method==2: # texture mapping
             self.mapper = vtk.vtkVolumeTextureMapper2D()
@@ -217,10 +218,10 @@ class VolumeModule(VisualizationModule):
         """             
         if not input:
             input=self.data
-        print "Rendering: ",self.mapper.__class__
+        Logging.info("Rendering using, ",self.mapper.__class__,kw="rendering")
         self.mapper.SetInput(input)
         self.mapper.AddObserver("ProgressEvent",self.updateProgress)
-#        print "self.mapper=",self.mapper
+
         self.mapper.Update()
         self.parent.Render()
         
@@ -286,7 +287,7 @@ class VolumeConfigurationPanel(ModuleConfigurationPanel):
         modes = ["Ray Casting","Ray Casting for RGBA datasets","Texture Mapping","Maximum Intensity Projection"]
         try:
             volpro=vtk.vtkVolumeProMapper()
-            self.haveVolpro=1
+            self.haveVolpro=0
             if volpro.GetNumberOfBoards():
                 self.haveVolpro=1
         except:
