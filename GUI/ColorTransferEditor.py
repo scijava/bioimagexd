@@ -39,6 +39,8 @@ import Logging
 import wx.lib.buttons as buttons
 import wx.lib.colourselect as csel
 
+import messenger
+
 if __name__=='__main__':
     import sys
         
@@ -325,6 +327,7 @@ class CTFButton(wx.BitmapButton):
         dlg.ShowModal()
         self.bmp = ImageOperations.paintCTFValues(self.ctf)
         self.SetBitmapLabel(self.bmp)
+        messenger.send(None,"data_changed",0)
         
     def getOpacityTransferFunction(self):
         """
@@ -388,21 +391,22 @@ class ColorTransferEditor(wx.Panel):
         self.blueBtn.SetBackgroundColour((0,0,255))
         
         if self.alpha:
-            self.alphaBtn=buttons.GenToggleButton(self,-1,"",size=(32,32))
-            self.alphaBtn.Bind(wx.EVT_TOGGLEBUTTON,self.onEditAlpha)
+            self.alphaBtn=buttons.GenToggleButton(self,-1,"Alpha",size=(32,32))
+            self.alphaBtn.Bind(wx.EVT_BUTTON,self.onEditAlpha)
             self.alphaBtn.SetBackgroundColour((255,255,255))
         #self.freeBtn = wx.ToggleButton(self,-1,)
         iconpath=reduce(os.path.join,["Icons"])        
         self.freeBtn = buttons.GenBitmapToggleButton(self, -1, None)
+        self.freeBtn.SetBestSize((32,32))
         bmp = wx.Image(os.path.join(iconpath,"draw.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap()
         self.freeBtn.SetBitmapLabel(bmp)
-        self.colorBtn = csel.ColourSelect(self,-1,"")
+        self.colorBtn = csel.ColourSelect(self,-1,"",size=(32,32))
         self.colorBtn.Bind(csel.EVT_COLOURSELECT,self.onSetToColor)
 
         openGif = wx.Image(os.path.join(iconpath,"open.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap()
         saveGif = wx.Image(os.path.join(iconpath,"save.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap()
-        self.openBtn = wx.BitmapButton(self,-1,openGif)
-        self.saveBtn = wx.BitmapButton(self,-1,saveGif)
+        self.openBtn = wx.BitmapButton(self,-1,openGif,size=(32,32))
+        self.saveBtn = wx.BitmapButton(self,-1,saveGif,size=(32,32))
         
         self.itemBox.Add(self.redBtn)
         self.itemBox.Add(self.greenBtn)
@@ -512,6 +516,7 @@ class ColorTransferEditor(wx.Panel):
         self.points=[self.redpoints,self.greenpoints,self.bluepoints,self.alphapoints]
         self.freeMode = 0
         self.updateGraph()
+        self.colorBtn.SetColour(col)
         
         
         
@@ -549,6 +554,7 @@ class ColorTransferEditor(wx.Panel):
             d=10
             currd=255
             hasx=0
+            Logging.info("points for color %d = "%self.color,self.points[self.color])
             for pt in self.points[self.color]:
                 d=self.dist((x,y),pt)
                 if pt[0]==x:hasx=1
@@ -646,6 +652,7 @@ class ColorTransferEditor(wx.Panel):
         self.blueBtn.SetValue(0)
         self.greenBtn.SetValue(0)
         self.redBtn.SetValue(0)
+        Logging.info("Editing alpha channel")
         self.color = 3
         self.updateGraph()
         
@@ -761,11 +768,6 @@ class ColorTransferEditor(wx.Panel):
         
         self.canvas.paintTransferFunction(self.ctf,pts,otf,self.alphaMode)
         self.value.paintTransferFunction(self.ctf)
-        val=[0,0,0]
-        self.ctf.GetColor(255,val)
-        r,g,b=val
-        self.colorBtn.SetColour(wx.Colour(r,g,b))
-
     def getColorTransferFunction(self):
         """
         Method: getColorTransferFunction()
@@ -873,8 +875,14 @@ class ColorTransferEditor(wx.Panel):
         val=[0,0,0]
         self.ctf.GetColor(255,val)
         r,g,b=val
-        self.colorBtn.SetColour(wx.Colour(r,g,b))
-       
+        r*=255
+        g*=255
+        b*=255
+        col=wx.Colour(int(r),int(g),int(b))
+        print "Setting to ",(int(r),int(g),int(b))
+        self.colorBtn.SetColour(((int(r),int(g),int(b))))
+        self.colorBtn.Refresh()
+
         self.updateGraph()
 
     def getOpacityTransferFunction(self):
