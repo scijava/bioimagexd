@@ -246,6 +246,8 @@ class ScaleBar(Annotation):
         vx = self.voxelSize[0]
         vx*=1000000
         if self.widthMicro and self.widthPx:
+            if self.widthMicro in self.snapToMicro:
+                return
             if int(self.widthMicro)==self.widthMicro:
                 return
         if self.widthPx:
