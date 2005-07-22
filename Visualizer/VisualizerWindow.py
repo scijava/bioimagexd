@@ -59,6 +59,7 @@ class VisualizerWindow(wxVTKRenderWindowInteractor):
         wxVTKRenderWindowInteractor.__init__(self,parent,-1,**kws)
         self.renderer=None
         self.doSave=0
+        self.rubberband=0
 
     def enable(self,flag):
         """
@@ -81,6 +82,32 @@ class VisualizerWindow(wxVTKRenderWindowInteractor):
         self.iren.SetSize(self.GetRenderWindow().GetSize())
         self.renderer.AddObserver("StartEvent",self.onRenderBegin)
         self.renderer.AddObserver("EndEvent",self.onRenderEnd)
+        
+    def setView(self,params):
+        """
+        Method: setView
+        Created: 22.07.2005
+        Description: Set the view according to given params
+        """
+        self.getRenderer()
+        cam=self.renderer.GetActiveCamera()
+        x,y,z,a,b,c=params
+        cam.SetFocalPoint(0,0,0)
+        cam.SetPosition(x,y,z)
+        cam.SetViewUp(a,b,c)
+        self.renderer.ResetCamera()
+
+        
+
+    def zoomToRubberband(self):        
+        """
+        Method: zoomToRubberband
+        Created: 30.04.2005, KP
+        Description: Zoom to rubberband
+        """
+        self.rubberband=1
+        self.oldStyle=self.iren.GetInteractorStyle()
+        self.iren.SetInteractorStyle(vtk.vtkInteractorStyleRubberBandZoom())
 
 
     def onRenderBegin(self,event=None,e2=None):
@@ -98,7 +125,10 @@ class VisualizerWindow(wxVTKRenderWindowInteractor):
         Description: Called when rendering begins
         """
         self.rendering=0
-
+        if self.rubberband:
+            self.iren.SetInteractorStyle(self.oldStyle)
+            self.rubberband=0
+        
     def save_png(self,filename):
         """
         Method: save_png(self,filename)
