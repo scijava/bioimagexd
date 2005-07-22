@@ -2,7 +2,7 @@
 # -*- coding: iso-8859-1 -*-
 
 """
- Unit: Main.py
+ Unit: Main
  Project: BioImageXD
  Created: 01.11.2004, KP
  Description:
