@@ -111,6 +111,13 @@ ID_VIEW_HISTOGRAM   =169
 ID_CLOSE_TASKWIN    =170
 
 ID_DELETE_TRACK     =171
+ID_VIS_SIMPLE       =172
+
+ID_SET_VIEW         =173
+ID_VIEW_TOOL_NAMES  =174
+
+ID_VIEW_SHELL       =175
+ID_SHELL_WIN        =176
         
 class MenuManager:
     """
@@ -137,6 +144,11 @@ class MenuManager:
         self.visualizer=None
         self.itemBar = None
         self.toolIds=[]
+        self.showToolNames=0
+        
+        
+
+        
 
     def setMenuBar(self,menubar):
         """
@@ -172,6 +184,15 @@ class MenuManager:
         """
         menu=self.mapping[itemid]
         self.menus[menu].Check(itemid,flag)
+        
+    def isChecked(self,itemid):
+        """
+        Method: isChecked(itemid)
+        Created: 21.07.2005, KP
+        Description: Return whether an item is checked
+        """
+        menu=self.mapping[itemid]
+        self.menus[menu].IsChecked(itemid)
         
     def addSubMenu(self,menuname,submenuname,title,menuid):
         """
@@ -243,8 +264,16 @@ class MenuManager:
         self.itemBar=self.visualizer.tb
         self.visualizer.toolWin.Bind(wx.EVT_TOOL,func,id=toolid)
 
-        self.itemBar.DoAddTool(toolid,name,bitmap,kind=wx.ITEM_RADIO)
+        self.itemBar.DoAddTool(toolid,name,bitmap,kind=wx.ITEM_CHECK)
         self.itemBar.Realize()
+        
+    def toggleTool(self,toolid,flag):
+        """
+        Method: toggleTool(toolid,flag)
+        Created: 22.07.2005, KP
+        Description: Toggle a toolbar item
+        """
+        self.visualizer.tb.ToggleTool(toolid,flag)
 
     def addMenuItem(self,menu,menuid,name,hlp=None,callback=None,before=None,check=0,checked=1):
         """
