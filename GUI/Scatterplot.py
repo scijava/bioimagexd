@@ -137,6 +137,10 @@ class Scatterplot(InteractivePanel.InteractivePanel):
         pos=event.GetPosition()
         x,y=pos
         y=255-y
+        if x>255:x=255
+        if y>255:y=255
+        if x<0:x=0
+        if y<0:y=0        
         self.actionstart=(x,y)
             
     def updateActionEnd(self,event):
@@ -148,6 +152,10 @@ class Scatterplot(InteractivePanel.InteractivePanel):
         if event.LeftIsDown():
             x,y=event.GetPosition()
             y=255-y
+            if x>255:x=255
+            if y>255:y=255
+            if x<0:x=0
+            if y<0:y=0            
             self.actionend=(x,y)
             self.updatePreview()
             
