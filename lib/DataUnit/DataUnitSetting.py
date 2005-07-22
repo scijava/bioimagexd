@@ -256,11 +256,11 @@ class DataUnitSettings:
             parser.add_section("Settings")
         for key in self.registered.keys():
             if key in self.counted:
-                print "Writing key %s with count %d"%(key,self.counted[key])
+                #print "Writing key %s with count %d"%(key,self.counted[key])
                 for i in range(self.counted[key]+1):
                     self.writeKey(key,parser,i)
             else:
-                print "Writing key ",key
+                #print "Writing key ",key
                 self.writeKey(key,parser)                
                
         if len(self.counted.keys()):
