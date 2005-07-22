@@ -69,6 +69,7 @@ class ColocalizationSettings(DataUnitSettings):
                   "PercentageVolumeCh2","PercentageMaterialCh1","PercentageMaterialCh2",
                   "SumOverThresholdCh1","SumOverThresholdCh2","SumCh1","SumCh2"]:
             self.register(i,1)
+        self.register("OutputScalar",1)
 
         #self.register("ColocalizationColorTransferFunction",1)
         ctf = vtk.vtkColorTransferFunction()
@@ -89,3 +90,4 @@ class ColocalizationSettings(DataUnitSettings):
         for i in range(channels):
             self.setCounted("ColocalizationLowerThreshold",i,128,0)
             self.setCounted("ColocalizationUpperThreshold",i,255,0)    
+        self.set("OutputScalar",255)

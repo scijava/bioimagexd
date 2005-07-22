@@ -45,7 +45,9 @@ from lib import ImageOperations
 import sys
 import Colocalization
 import time
-import threading
+
+import string
+import UIElements
 
 from GUI import Events
 
@@ -215,13 +217,13 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
         self.colocalizationPanel=wx.Panel(self.settingsNotebook,-1)
         self.colocalizationSizer=wx.GridBagSizer()
         n=0
-        self.depthLbl=wx.StaticText(self.colocalizationPanel,-1,"Colocalization Depth:")
-        self.colocalizationSizer.Add(self.depthLbl,(n,0))
-        n+=1
-        self.depthMenu=wx.Choice(self.colocalizationPanel,-1,choices=["1-bit","8-bit"])
-        self.colocalizationSizer.Add(self.depthMenu,(n,0))
-        n+=1
-        self.depthMenu.Bind(wx.EVT_CHOICE,self.updateBitDepth)
+        #self.depthLbl=wx.StaticText(self.colocalizationPanel,-1,"Colocalization Depth:")
+        #self.colocalizationSizer.Add(self.depthLbl,(n,0))
+        #n+=1
+        #self.depthMenu=wx.Choice(self.colocalizationPanel,-1,choices=["1-bit","8-bit"])
+        #self.colocalizationSizer.Add(self.depthMenu,(n,0))
+        #n+=1
+        #self.depthMenu.Bind(wx.EVT_CHOICE,self.updateBitDepth)
 
         self.lowerThresholdLbl=wx.StaticText(self.colocalizationPanel,-1,"Lower threshold:")
         self.upperThresholdLbl=wx.StaticText(self.colocalizationPanel,-1,"Upper threshold:")
@@ -284,6 +286,20 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
         sboxsizer=wx.StaticBoxSizer(sbox,wx.VERTICAL)
         self.colorBtn = ColorTransferEditor.CTFButton(self.colocalizationPanel)
         sboxsizer.Add(self.colorBtn)
+
+        val=UIElements.AcceptedValidator
+ 
+        self.constColocCheckbox=wx.CheckBox(self.colocalizationPanel,-1,"Use constant value for colocalization")
+        self.constColocValue=wx.TextCtrl(self.colocalizationPanel,-1,"255",
+                                    validator=val(string.digits,below=255))
+        self.constColocValue.Enable(0)
+
+        self.constColocCheckbox.Bind(wx.EVT_CHECKBOX,
+        lambda e,s=self,v=self.constColocValue:v.Enable(e.IsChecked()))
+        
+        sboxsizer.Add(self.constColocCheckbox)
+        sboxsizer.Add(self.constColocValue)
+        
         self.colocalizationSizer.Add(sboxsizer,(n,0))
         n+=1
         
@@ -345,7 +361,7 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
         w.writerow(["Manders' coefficient M1 / M2",get1("M1"),get2("M2")])
         w.writerow(["Manders' coefficient M1 / M2 (voxels > threshold)",get1("ThresholdM1"),get2("ThresholdM2")])
         w.writerow([""])
-        mapping=["Costes'","Fay's","van Steensel's"]
+        mapping=["Fay's","Costes'","van Steensel's"]
         method=get1("Method")
         w.writerow(["P-Value (%s method)"%mapping[method],get1("PValue")])
         w.writerow(["Correlation (observed)",get1("RObserved")])
@@ -372,15 +388,7 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
         self.listctrl.InsertColumn(0,"Quantity")
         self.listctrl.InsertColumn(1,"Total")
         self.listctrl.InsertColumn(2,"Over threshold")
-##        for i in range(0,3):
-##            item=self.listctrl.GetColumn(i)
-##            print "got item=",item
-##            font=item.GetFont()
-##            print "got font=",font
-##            pts=font.GetPointSize()
-##            print "got pts=",pts
-##            font.SetPointSize(pts-1)
-
+        
         self.listctrl.SetColumnWidth(0,180)
         self.listctrl.SetColumnWidth(1,60)
         self.listctrl.SetColumnWidth(2,60)
@@ -401,7 +409,7 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
         n+=1
         self.listctrl.InsertStringItem(n,"M1")
         n+=1
-        self.listctrl.InsertStringItem(n,"M1")
+        self.listctrl.InsertStringItem(n,"M2")
         n+=1
         self.listctrl.InsertStringItem(n,"Sum of channel 1")
         n+=1
@@ -424,7 +432,6 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
         Created: 25.03.2005, KP
         Description: A callback function called when the zslice is changed
         """
-        print "UpdateTimepoint"
         self.timePoint=timePoint
         if self.scatterPlot:
             self.scatterPlot.setTimepoint(self.timePoint)
@@ -434,8 +441,7 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
         """
         Method: updateThreshold(event)
         Created: 03.11.2004, KP
-        Description: A callback function called when the threshold is 
-        configured via the slider
+        Description: A callback function called when the threshold is configured via the slider
         """
         # We might get called before any channel has been selected. 
         # In that case, do nothing
@@ -447,7 +453,9 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
             self.settings.set("ColocalizationLowerThreshold",newlthreshold)
             self.settings.set("ColocalizationUpperThreshold",newuthreshold)            
             if (oldlthreshold != newlthreshold) or (olduthreshold != newuthreshold):
+                messenger.send(None,"threshold_changed")                
                 self.doPreviewCallback()
+                
 
     def updateSettings(self,*args):
         """
@@ -459,10 +467,9 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
         """
         if self.settings:
             format = self.settings.get("ColocalizationDepth")
-            formattable={1:0,8:1,32:2}
-            format=formattable[format]
-            format=1
-            self.depthMenu.SetSelection(format)
+            scalar = self.settings.get("OutputScalar")
+            self.constColocCheckbox.SetValue(format==1)
+            self.constColocValue.SetValue("%d"%scalar)
             
             th=self.settings.get("ColocalizationLowerThreshold")
             if th != None:
@@ -495,10 +502,18 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
         Created: 17.11.2004, KP
         Description: Updates the preview to be done at the selected depth
         """
-        if self.settings and self.settings.get("Type")=="ColocalizationSettings":
-            depth=self.depthMenu.GetSelection()
-            table=[1,8,32]
-            self.settings.set("ColocalizationDepth",table[depth])
+        if self.settings:
+            #depth=self.depthMenu.GetSelection()
+            #table=[1,8,32]
+            #self.settings.set("ColocalizationDepth",table[depth])
+            if self.constColocCheckbox.GetValue():
+                self.settings.set("ColocalizationDepth",1)
+                colocval=self.constColocValue.GetValue()
+                colocval=int(colocval)
+                self.settings.set("OutputScalar",colocval)
+            else:
+                self.settings.set("ColocalizationDepth",8)
+            
 
     def doPreviewCallback(self,event=None):
         """
@@ -567,7 +582,14 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
         dc.EndDrawing()
         dc.SelectObject(wx.EmptyBitmap(0,0))
         toolid=wx.NewId()
-        n=n+1
+        #n=n+1
         name="Colocalization"
-        self.toolMgr.addItem(name,bmp,toolid,lambda e,x=n,s=self:s.selectItem(e,x))
+        self.toolMgr.addItem(name,bmp,toolid,lambda e,x=n,s=self:s.setPreviewedData(e,x))        
         
+        for i,tid in enumerate(self.toolIds):
+            self.dataUnit.setOutputChannel(i,0)
+            self.toolMgr.toggleTool(tid,0)
+        
+        self.dataUnit.setOutputChannel(len(self.toolIds),1)
+        self.toolIds.append(toolid)
+        self.toolMgr.toggleTool(toolid,1)

@@ -11,7 +11,7 @@ class ColocalizationDataUnit(CombinedDataUnit):
         Created: 20.07.2005, KP
         Description: Returns the ctf of the source dataunit
         """
-        return self.settings.get("ColocalizationColorTransferFunction")
+        return self.settings.get("ColorTransferFunction")
 def getClass(): return Colocalization.Colocalization
 def getConfigPanel(): return ColocalizationPanel
 def getName(): return "Colocalization"

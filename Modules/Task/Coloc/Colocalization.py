@@ -148,6 +148,9 @@ class Colocalization(Module):
             self.settings.set("CalculateThresholds",0)
             #settings.set("ColocalizationScatterplot",self.colocFilter.GetOutput(1))
         self.eventDesc="Calculating colocalization..."
+        outScalar=self.settings.get("OutputScalar")
+        Logging.info("Using ",outScalar," as output scalar",kw="processing")
+        self.colocFilter.SetOutputScalar(outScalar)
         for i in range(len(self.images)):
             Logging.info("Using %d as lower and %d as upper threshold"%self.thresholds[i],kw="processing")
             self.colocFilter.AddInput(self.images[i])
