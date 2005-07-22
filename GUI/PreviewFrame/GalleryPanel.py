@@ -192,27 +192,9 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
             image=self.dataUnit.getTimePoint(timepoint)
             ctf=self.dataUnit.getColorTransferFunction()
 
-        ncomps = image.GetNumberOfScalarComponents()
+        self.imagedata = ImageOperations.imageDataTo3Component(image,ctf)
         
-        if ncomps==1:
-            maptocolor=vtk.vtkImageMapToColors()
-            maptocolor.SetInput(image)
-            maptocolor.SetLookupTable(ctf)
-            maptocolor.SetOutputFormatToRGB()
-            maptocolor.Update()
-            self.imagedata=maptocolor.GetOutput()
-        elif ncomps>3:
-            Logging.info("Previewed data has %d components, extracting"%ncomps,kw="preview")
-            extract=vtk.vtkImageExtractComponents()
-            extract.SetComponents(0,1,2)
-            extract.SetInput(image)
-            extract.Update()
-            self.imagedata=extract.GetOutput()
-
-        else:
-            self.imagedata=image
         x,y,z=self.imagedata.GetDimensions()
-        
         
         self.slices=[]
         for i in range(z):
@@ -246,25 +228,8 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
                 image=ImageOperations.getSlice(image,self.slice)
                 ctf=self.dataUnit.getColorTransferFunction()
     
-            ncomps = image.GetNumberOfScalarComponents()
+            self.imagedata = ImageOperations.imageDataTo3Component(image,ctf)
             
-            if ncomps==1:
-                maptocolor=vtk.vtkImageMapToColors()
-                maptocolor.SetInput(image)
-                maptocolor.SetLookupTable(ctf)
-                maptocolor.SetOutputFormatToRGB()
-                maptocolor.Update()
-                self.imagedata=maptocolor.GetOutput()
-            elif ncomps>3:
-                Logging.info("Previewed data has %d components, extracting"%ncomps,kw="preview")
-                extract=vtk.vtkImageExtractComponents()
-                extract.SetComponents(0,1,2)
-                extract.SetInput(image)
-                extract.Update()
-                self.imagedata=extract.GetOutput()
-
-            else:
-                self.imagedata=image
             slice=ImageOperations.vtkImageDataToWxImage(self.imagedata,self.slice)
             self.slices.append(slice)
             

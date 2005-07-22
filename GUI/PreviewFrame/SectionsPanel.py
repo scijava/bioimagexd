@@ -243,24 +243,7 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
             image=self.dataUnit.getTimePoint(tp)
             ctf=self.dataUnit.getColorTransferFunction()
         
-        ncomps = image.GetNumberOfScalarComponents()
-        
-        if ncomps==1:
-            maptocolor=vtk.vtkImageMapToColors()
-            maptocolor.SetInput(image)
-            maptocolor.SetLookupTable(ctf)
-            maptocolor.SetOutputFormatToRGB()
-            maptocolor.Update()
-            self.imagedata=maptocolor.GetOutput()
-        elif ncomps>3:
-            Logging.info("Previewed data has %d components, extracting"%ncomps,kw="preview")
-            extract=vtk.vtkImageExtractComponents()
-            extract.SetComponents(0,1,2)
-            extract.SetInput(image)
-            extract.Update()
-            self.imagedata=extract.GetOutput()            
-        else:
-            self.imagedata=image
+        self.imagedata = ImageOperations.imageDataTo3Component(image,ctf)
         
         self.dims=self.imagedata.GetDimensions()
             

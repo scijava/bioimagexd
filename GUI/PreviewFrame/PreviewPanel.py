@@ -7,10 +7,8 @@
  Description:
 
  A panel that can display previews of optical slices of volume data independent
- of a VTK render window,using the tools provided by wxPython.
- 
- Modified 24.03.2005 KP - Created the class
-          
+ of a VTK render window, using the tools provided by wxPython.
+           
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
 
