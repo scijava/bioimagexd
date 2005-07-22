@@ -5,7 +5,7 @@
  Created: 10.01.2005, KP
  Description:
 
- A widget for displaying a hierarchical tree of items.
+ A widget for displaying a hierarchical tree of datasets
 
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
@@ -31,6 +31,7 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 import wx
 import Logging
 import types
+import messenger
 
 class TreeWidget(wx.SashLayoutWindow):
     """
@@ -38,7 +39,7 @@ class TreeWidget(wx.SashLayoutWindow):
     Created: 10.01.2005, KP
     Description: A panel containing thre tree
     """
-    def __init__(self,parent,callback=None):
+    def __init__(self,parent):
         """
         Method: __init__
         Created: 10.01.2005, KP
@@ -49,8 +50,10 @@ class TreeWidget(wx.SashLayoutWindow):
         #self.Bind(wx.EVT_SIZE,self.onSize)
         self.treeId=wx.NewId()
         self.parent=parent
-        self.tree = LSMTree(self,self.treeId,callback)
-    
+        self.tree = wx.TreeCtrl(self,self.treeId,wx.DefaultPosition,wx.DefaultSize,
+        wx.TR_HAS_BUTTONS|wx.TR_MULTIPLE)
+
+        self.tree.Bind(wx.EVT_TREE_SEL_CHANGED,self.onSelectionChanged,id=self.tree.GetId())    
         self.items={}
     
         isz = (16,16)
@@ -89,11 +92,10 @@ class TreeWidget(wx.SashLayoutWindow):
         Description: Method that is called when the right mouse button is
                      pressed down on this item
         """      
-        print "onRightDown"
         pt = event.GetPosition()
         item, flags = self.tree.HitTest(pt)
         if not item:
-            print "No item under"
+            Logging.info("No item to select",kw="ui")
             return
         self.tree.SelectItem(item)
         self.selectedItem=item
@@ -156,7 +158,11 @@ class TreeWidget(wx.SashLayoutWindow):
                 self.tree.SetItemImage(self.lsmfiles,fldridx,which=wx.TreeItemIcon_Normal)
                 self.tree.SetItemImage(self.lsmfiles,fldropenidx,which=wx.TreeItemIcon_Expanded)
             item=self.lsmfiles
+            self.tree.Expand(item)            
             item=self.tree.AppendItem(item,name)
+            self.tree.Expand(item)
+
+            self.tree.Expand(item)
             self.tree.SetPyData(item,"2")        
             self.tree.SetItemImage(item,fldropenidx,which=wx.TreeItemIcon_Expanded)
         elif objtype=="txt":
@@ -167,7 +173,10 @@ class TreeWidget(wx.SashLayoutWindow):
                 self.tree.SetItemImage(self.leicafiles,fldropenidx,which=wx.TreeItemIcon_Expanded)        
 
             item=self.leicafiles
+            self.tree.Expand(item)
             item=self.tree.AppendItem(item,name)
+            self.tree.Expand(item)
+            
             self.tree.SetPyData(item,"2")
             self.tree.SetItemImage(item,fldropenidx,which=wx.TreeItemIcon_Expanded)
         elif objtype=="du":
@@ -178,12 +187,16 @@ class TreeWidget(wx.SashLayoutWindow):
                 self.tree.SetItemImage(self.dufiles,fldropenidx,which=wx.TreeItemIcon_Expanded)
 
             item=self.dufiles
-
+            self.tree.Expand(item)
+        
+        self.tree.Expand(item)
         for obj in objs:
             added=self.tree.AppendItem(item,obj.getName())
+
             self.tree.SetPyData(added,obj)        
             self.tree.SetItemImage(added,fileidx,which=wx.TreeItemIcon_Normal)
             #self.tree.SetItemImage(added,fldropenidx,which=wx.TreeItemIcon_Expanded)
+            self.tree.EnsureVisible(added)
         self.tree.Expand(self.root)
 
     def getSelectedDataUnits(self):
@@ -195,23 +208,6 @@ class TreeWidget(wx.SashLayoutWindow):
         items=self.tree.GetSelections()
         objs=[self.tree.GetPyData(x) for x in items]
         return objs
-
-class LSMTree(wx.TreeCtrl):
-    """
-    Class: LSMTree
-    Created: 10.01.2005, KP
-    Description: A tree inherited from wx.TreeCtrl
-    """            
-    def __init__(self,parent,id,callback=None):
-        """
-        Method: __init__
-        Created: 10.01.2005, KP
-        Description: Initialization
-        """                
-        wx.TreeCtrl.__init__(self,parent,id,wx.DefaultPosition,wx.DefaultSize,
-        wx.TR_HAS_BUTTONS|wx.TR_MULTIPLE)
-        self.Bind(wx.EVT_TREE_SEL_CHANGED,self.onSelectionChanged,id=self.GetId())
-        self.callback=callback
         
     def onSelectionChanged(self,event):
         """
@@ -220,6 +216,6 @@ class LSMTree(wx.TreeCtrl):
         Description: A event handler called when user selects and item.
         """        
         item=event.GetItem()
-        obj=self.GetPyData(item)
+        obj=self.tree.GetPyData(item)
         if obj and type(obj)!=types.StringType:
-            self.callback(obj)
+            messenger.send(None,"tree_selection_changed",obj)        
