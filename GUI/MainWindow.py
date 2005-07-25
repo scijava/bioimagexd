@@ -83,7 +83,7 @@ class MainWindow(wx.Frame):
             style=wx.DEFAULT_FRAME_STYLE|wx.NO_FULL_REPAINT_ON_RESIZE)
         self.Bind(
             wx.EVT_SASH_DRAGGED_RANGE, self.onSashDrag,
-            id=MenuManager.ID_TREE_WIN, id2=MenuManager.ID_TASK_WIN,
+            id=MenuManager.ID_TREE_WIN, id2=MenuManager.ID_INFO_WIN,
         )
         self.statusbar=None
         self.progress=None
@@ -129,7 +129,18 @@ class MainWindow(wx.Frame):
         self.taskWin.SetSashVisible(wx.SASH_LEFT,True)
         self.taskWin.SetSashBorder(wx.SASH_LEFT,True)
         self.taskWin.SetDefaultSize((0,768))
+        
+        # A window for the task panels
+        self.infoWin=wx.SashLayoutWindow(self,MenuManager.ID_INFO_WIN,style=wx.RAISED_BORDER|wx.SW_3D)
+        self.infoWin.SetOrientation(wx.LAYOUT_VERTICAL)
+        self.infoWin.SetAlignment(wx.LAYOUT_RIGHT)
+        self.infoWin.SetSashVisible(wx.SASH_LEFT,True)
+        self.infoWin.SetSashBorder(wx.SASH_LEFT,True)
+        self.infoWin.SetDefaultSize((350,768))        
+        self.infoWin.origSize = (350,768)
         #self.taskWin=wx.Panel(self,-1,size=(0,768))
+        
+        self.infoWidget=InfoWidget.InfoWidget(self.infoWin)
         
         self.shellWin=wx.SashLayoutWindow(self,MenuManager.ID_SHELL_WIN,style=wx.NO_BORDER)
         self.shellWin.SetOrientation(wx.LAYOUT_HORIZONTAL)
@@ -220,9 +231,13 @@ class MainWindow(wx.Frame):
         #    w,h=self.visWin.GetSize()
         #    self.visWin.SetDefaultSize((event.GetDragRect().width,h))
 
+        elif eID == MenuManager.ID_INFO_WIN:
+            w,h=self.infoWin.GetSize()
+            self.infoWin.SetDefaultSize((event.GetDragRect().width,h))
+            
         elif eID == MenuManager.ID_TASK_WIN:
             w,h=self.taskWin.GetSize()
-            Logging.info("Setting task window size",kw="main")
+            #Logging.info("Setting task window size",kw="main")
             self.taskWin.SetDefaultSize((event.GetDragRect().width,h))
         
         wx.LayoutAlgorithm().LayoutWindow(self, self.visWin)
@@ -451,7 +466,7 @@ class MainWindow(wx.Frame):
         mgr.addSubMenu("file","import","&Import",MenuManager.ID_IMPORT)
         mgr.addSubMenu("file","export","&Export",MenuManager.ID_EXPORT)
         mgr.addSeparator("file")
-        mgr.addMenuItem("file",MenuManager.ID_CLOSE_TASKWIN,"&Close\tCtrl-W","Close the task panel",self.onCloseTaskPanel)
+        mgr.addMenuItem("file",MenuManager.ID_CLOSE_TASKWIN,"&Close task panel\tCtrl-W","Close the task panel",self.onCloseTaskPanel)
         mgr.disable(MenuManager.ID_CLOSE_TASKWIN)
         mgr.addSeparator("file")
         mgr.addMenuItem("file",MenuManager.ID_QUIT,"&Quit\tCtrl-Q","Quit the application",self.quitApp)
@@ -484,6 +499,7 @@ class MainWindow(wx.Frame):
 
         mgr.addMenuItem("view",MenuManager.ID_VIEW_TOOLBAR,"T&oolbar","Show or hide toolbar",self.onMenuToggleVisibility,check=1,checked=1)
         mgr.addMenuItem("view",MenuManager.ID_VIEW_HISTOGRAM,"&Histograms","Show or hide channel histograms",self.onMenuToggleVisibility,check=1,checked=0)
+        mgr.addMenuItem("view",MenuManager.ID_VIEW_INFO,"&Dataset info","Show or hide information about the dataset",self.onMenuToggleVisibility,check=1,checked=0)
         mgr.addSeparator("view")
         mgr.addMenuItem("view",MenuManager.ID_VIEW_TOOL_NAMES,"&Show tool names","Show or hide the names of the items on the toolbar",self.toggleToolNames,check=1)
         mgr.addSeparator("view")
@@ -544,12 +560,14 @@ class MainWindow(wx.Frame):
             obj="toolbar"
         elif eid==MenuManager.ID_VIEW_HISTOGRAM:
             obj="histogram"
-        elif eid==MenuManager.ID_VIEW_TASKPANEL:
+        elif eid in [MenuManager.ID_VIEW_INFO,MenuManager.ID_VIEW_TASKPANEL]:
+            win=self.taskWin
+            if eid== MenuManager.ID_VIEW_INFO:win=self.infoWin
             if cmd=="hide":
-                self.taskWin.origSize=self.taskWin.GetSize()
-                self.taskWin.SetDefaultSize((0,0))
+                win.origSize=win.GetSize()
+                win.SetDefaultSize((0,0))
             else:
-                self.taskWin.SetDefaultSize(self.taskWin.origSize)
+                win.SetDefaultSize(win.origSize)
             self.OnSize(None)
             return
         elif eid==MenuManager.ID_VIEW_SHELL:
@@ -586,6 +604,10 @@ class MainWindow(wx.Frame):
         selectedUnits=self.tree.getSelectedDataUnits()
         self.visualizer.setProcessedMode(0)
         self.visualizer.setDataUnit(selectedUnits[0])
+        
+        self.infoWin.SetDefaultSize(self.infoWin.origSize)
+        self.menuManager.check(MenuManager.ID_VIEW_INFO,1)
+        
         wx.LayoutAlgorithm().LayoutWindow(self, self.visWin)
         self.visWin.Refresh()
         
@@ -644,6 +666,11 @@ class MainWindow(wx.Frame):
         Created: 26.04.2005, KP
         Description: Callback function for launching the visualizer
         """
+        # Hide the infowin and toggle the menu item accordingly
+        self.infoWin.SetDefaultSize((0,0))
+        self.menuManager.check(MenuManager.ID_VIEW_INFO,0)
+        wx.LayoutAlgorithm().LayoutWindow(self, self.visWin)
+        
         eid=evt.GetId()
         if eid==MenuManager.ID_VIS_GALLERY:
             mode="gallery"
@@ -694,6 +721,7 @@ class MainWindow(wx.Frame):
             "You have not selected a dataset to be loaded to Visualizer.\nPlease "
             "select a dataset and try again.\n","No dataset selected")
             return            
+            
             
         dataunit = selectedFiles[0]
         self.loadVisualizer(dataunit,mode,0)
@@ -908,7 +936,7 @@ class MainWindow(wx.Frame):
         if windowtype==self.currentTaskWindowType:
             Logging.info("Window of type ",windowtype,"already showing, will close",kw="task")
             tb.ToggleTool(eid,0)
-            self.onCloseTaskPanel()            
+            self.onCloseTaskPanel(None)            
             return
         
         selectedFiles=self.tree.getSelectedDataUnits()
@@ -920,7 +948,28 @@ class MainWindow(wx.Frame):
             Dialogs.showerror(self,
             "You can select at most %d source datasets for %s"%(filesAtMost,action),"Too many source datasets")
             return
+        self.onMenuShowTree(None,0)
+        # Hide the infowin and toggle the menu item accordingly
+        self.infoWin.SetDefaultSize((0,0))
+        self.menuManager.check(MenuManager.ID_VIEW_INFO,0)
+        self.currentTaskWindowType=windowtype
+        window=windowtype(self.taskWin,self.menuManager)
 
+        if self.currentTaskWindow:          
+            self.currentTaskWindow.Show(0)
+            self.currentTaskWindow.Destroy()
+            del self.currentTaskWindow
+            window.Show()
+            self.currentTaskWindow=window
+        else:
+            self.currentTaskWindow = window
+        w,h=self.taskWin.GetSize()
+        self.taskWin.SetDefaultSize((360,h))
+        
+        
+        wx.LayoutAlgorithm().LayoutWindow(self, self.visWin)
+
+        
         names=[i.getName() for i in selectedFiles]
         # Sets name for new dataset series
         name="%s (%s)"%(action,", ".join(names))
@@ -936,8 +985,9 @@ class MainWindow(wx.Frame):
         module=moduletype()
         unit.setModule(module)
 
-        self.currentTaskWindowType=windowtype
         
+        window.setCombinedDataUnit(unit)
+
         self.setButtonSelection(event.GetId())
 
         # If visualizer has not been loaded, load it now
@@ -952,27 +1002,6 @@ class MainWindow(wx.Frame):
                 self.visualizer.setProcessedMode(1)
 
         self.visualizer.setDataUnit(unit)
-            
-        if self.visualizer.mode=="info":
-            Logging.info("Switching to slices from info",kw="task")
-            self.visualizer.setVisualizationMode("slices")
-            self.setButtonSelection(MenuManager.ID_VIS_SLICES)
-            self.visualizer.enable(1)
-
-        window=windowtype(self.taskWin,self.menuManager)
-        window.setCombinedDataUnit(unit)
-
-        if self.currentTaskWindow:          
-            self.currentTaskWindow.Show(0)
-            self.currentTaskWindow.Destroy()
-            del self.currentTaskWindow
-            window.Show()
-            self.currentTaskWindow=window
-        else:
-            self.currentTaskWindow = window
-        w,h=self.taskWin.GetSize()
-        self.taskWin.SetDefaultSize((360,h))
-        self.onMenuShowTree(None,0)
         
             
         wx.LayoutAlgorithm().LayoutWindow(self, self.visWin)
