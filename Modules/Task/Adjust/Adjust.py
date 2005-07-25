@@ -3,8 +3,8 @@
  Unit: Adjust
  Project: BioImageXD
  Created: 25.11.2004, KP
- 
  Description:
+ 
  A Module for adjusting a dataset by changing for example it's brightness, contrast
  or gamma
 
@@ -126,6 +126,7 @@ class Adjust(Module):
             
         mapdata=self.images[n]
         mapIntensities=vtk.vtkImageMapToIntensities()
+        mapIntensities.GetOutput().ReleaseDataFlagOn()
         mapIntensities.AddObserver("ProgressEvent",self.updateProgress)
         mapIntensities.SetIntensityTransferFunction(self.intensityTransferFunctions[n])
         mapIntensities.SetInput(mapdata)

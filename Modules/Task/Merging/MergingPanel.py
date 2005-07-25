@@ -191,14 +191,6 @@ class MergingPanel(TaskPanel.TaskPanel):
             tf = self.settings.get("IntensityTransferFunction")
             self.intensityTransferEditor.setIntensityTransferFunction(tf)
 
-    def doPreviewCallback(self,event=None):
-        """
-        Method: doPreviewCallback()
-        Created: 23.11.2004, JV
-        Description: A callback for the button "Preview" and other events
-                     that wish to update the preview
-        """
-        TaskPanel.TaskPanel.doPreviewCallback(self,event)
 
     def doColorMergingCallback(self,event):
         """

@@ -48,6 +48,14 @@ class ProcessDataUnit(CombinedDataUnit):
         """
         CombinedDataUnit.__init__(self,name)
         self.original = None
+        
+    def setOutputChannel(self,ch,flag):
+        """
+        Method: setOutputChannel(ch,flag)
+        Created: 22.07.2005, KP
+        Description: Mark a channel as being part of the output
+        """
+        pass        
 
     def setOriginal(self, dataUnit):
         """

@@ -145,12 +145,14 @@ class Merging(Module):
         for i in range(0,imagelen):
             #self.images[i].GlobalReleaseDataFlagOn()
             mapIntensities=vtk.vtkImageMapToIntensities()
+            mapIntensities.GetOutput().ReleaseDataFlagOn()
             mapIntensities.SetIntensityTransferFunction(self.intensityTransferFunctions[i])
             mapIntensities.SetInput(self.images[i])
             mapIntensities.AddObserver("ProgressEvent",self.updateProgress)
             mapIntensities.Update()
             data=mapIntensities.GetOutput()
             processed.append(data)
+            del mapIntensities
         
         
         luminance=0
@@ -159,6 +161,7 @@ class Merging(Module):
         
         if self.doAlpha:
             createalpha=vtk.vtkImageAlphaFilter()
+            createalpha.GetOutput().ReleaseDataFlagOn()
             createalpha.AddObserver("ProgressEvent",self.updateProgress)
             #print "self.alpaMode=",self.alphaMode
             if self.alphaMode[0]==0:
@@ -185,6 +188,7 @@ class Merging(Module):
         for i in range(0,imagelen):
             if processed[i].GetNumberOfScalarComponents()==1:
                 mapToColors=vtk.vtkImageMapToColors()
+                mapToColors.GetOutput().ReleaseDataFlagOn()
                 mapToColors.SetOutputFormatToRGB()
                 ct=self.ctfs[i]
                 Logging.info("Using ctf(%d)=%s"%(i,ct),kw="ctf")
@@ -197,6 +201,7 @@ class Merging(Module):
                 colored.append(processed[i])
         # result rgb
         merge=vtk.vtkImageMerge()
+        
         merge.AddObserver("ProgressEvent",self.updateProgress)
         for i in colored:
             merge.AddInput(i)
@@ -208,13 +213,16 @@ class Merging(Module):
         if luminance:
             Logging.info("Alpha mode = luminance", kw="processing")
             lum=vtk.vtkImageLuminance()
+            lum.GetOutput().ReleaseDataFlagOn()
             lum.SetInput(data)
             lum.Update()
             alpha=lum.GetOutput()
         
         if self.doAlpha:
             Logging.info("Appending alpha component", kw="processing")
+            merge.GetOutput().ReleaseDataFlagOn()
             appendcomp=vtk.vtkImageAppendComponents()
+            #appendcomp.GetOutput().ReleaseDataFlagOn()
             appendcomp.AddInput(data)
             appendcomp.AddInput(alpha)
             appendcomp.Update()

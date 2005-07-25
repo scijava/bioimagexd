@@ -147,6 +147,7 @@ class Process(Module):
             t3=time.time()
             # Using VTK´s vtkImageMedian3D-filter
             solitary = vtk.vtkImageSolitaryFilter()
+            solitary.GetOutput().ReleaseDataFlagOn()
             solitary.SetInput(data)
             solitary.SetFilteringThreshold(self.solitaryThreshold)
             solitary.SetHorizontalThreshold(self.solitaryX)
@@ -162,6 +163,7 @@ class Process(Module):
             Logging.info("Doing median filtering",kw="processing")
             # Using VTK´s vtkImageMEdian3D-filter
             median = vtk.vtkImageMedian3D()
+            median.GetOutput().ReleaseDataFlagOn()
             median.SetInput(data)
             median.AddObserver("ProgressEvent",self.updateProgress)
             median.SetKernelSize(self.medianNeighborhood[0],
@@ -176,6 +178,7 @@ class Process(Module):
             
             Logging.info("Doing anisotropic diffusion",kw="processing")
             aniso=vtk.vtkImageAnisotropicDiffusion3D()
+            aniso.GetOutput().ReleaseDataFlagOn()
             aniso.AddObserver("ProgressEvent",self.updateProgress)
             aniso.SetInput(data)
             aniso.Update()

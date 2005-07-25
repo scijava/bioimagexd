@@ -337,17 +337,6 @@ class AdjustPanel(TaskPanel.TaskPanel):
         """
         TaskPanel.TaskPanel.doOperation(self)
 
-    def doPreviewCallback(self,event=None):
-        """
-        Method: doPreviewCallback()
-        Created: 03.11.2004, KP
-        Description: A callback for the button "Preview" and other events
-                     that wish to update the preview
-        """
-        # TODO: Validity checks, here or in dataunit
-        Logging.info("Will update preview",kw="preview")
-        TaskPanel.TaskPanel.doPreviewCallback(self,event)
-
     def setCombinedDataUnit(self,dataUnit):
         """
         Method: setCombinedDataUnit(dataUnit)

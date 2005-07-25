@@ -72,8 +72,10 @@ class Colocalization(Module):
         """
         Module.reset(self)
         self.colocFilter=vtk.vtkImageColocalizationFilter()
+        #self.colocFilter.GetOutput().ReleaseDataFlagOn()
         self.colocFilter.AddObserver("ProgressEvent",self.updateProgress)
         self.colocAutoThreshold=vtk.vtkImageAutoThresholdColocalization()
+        self.colocAutoThreshold.GetOutput().ReleaseDataFlagOn()
         self.colocAutoThreshold.AddObserver("ProgressEvent",self.updateProgress)
         self.thresholds=[]
         self.settingsLst=[]
