@@ -3,8 +3,7 @@
 """
  Unit: TimepointSelection.py
  Project: BioImageXD
- Created: 03.02.2005
- Creator: KP
+ Created: 03.02.2005, KP
  Description:
 
  This is a base widget for all operations that need to let the user select
@@ -49,37 +48,37 @@ import wx.lib.buttons as buttons
 import vtk
 
 
-class TimepointSelectionPanel(wx.Panel):
+class TimepointSelectionPanel(scrolled.ScrolledPanel):
     """
     Class: TimepointSelectionPanel
-    Created: 10.2.2005
-    Creator: KP
+    Created: 10.2.2005, KP
     Description: A class containing the basic timepoint selection functionality
                  in a panel. This is a class separete from TimepointSelection
                  so that this can be also embedded in any other dialog.
     """
     def __init__(self,parent):
-        wx.Panel.__init__(self,parent,size=(640,480))
+        #wx.Panel.__init__(self,parent,size=(640,480))
+        scrolled.ScrolledPanel.__init__(self,parent,size=(640,300))
         self.mainsizer=wx.GridBagSizer(10,10)
         self.configFrame=None
 
-        self.Bind(wx.EVT_SIZE,self.onSize)
         self.timepointButtonSizer=wx.GridBagSizer()
         #,style=wx.RAISED_BORDER
-        self.buttonFrame = scrolled.ScrolledPanel(self, -1,size=(640,128))
+        #self.buttonFrame = scrolled.ScrolledPanel(self, -1,size=(640,300))
+        self.buttonFrame=wx.Panel(self,-1,size=(640,300))
         self.buttonFrame.SetSizer(self.timepointButtonSizer)
         self.buttonFrame.SetAutoLayout(True)
-        self.buttonFrame.SetupScrolling()
+        #self.buttonFrame.SetupScrolling()
         #self.timepointLbl=wx.StaticText(self,-1,"Select timepoints")
         
         #self.mainsizer.Add(self.timepointLbl,(0,0))        
         
         self.selectbox=wx.StaticBox(self,-1,"Select Timepoints")
         self.selectboxsizer=wx.StaticBoxSizer(self.selectbox,wx.VERTICAL)
-        self.selectboxsizer.Add(self.buttonFrame)
+        self.selectboxsizer.Add(self.buttonFrame,1)
         
         #self.mainsizer.Add(self.buttonFrame,(1,0),span=(1,2),flag=wx.EXPAND|wx.ALL)
-        self.mainsizer.Add(self.selectboxsizer,(0,0),span=(1,2),flag=wx.EXPAND|wx.ALL)
+        self.mainsizer.Add(self.selectboxsizer,(0,0),flag=wx.EXPAND|wx.ALL)
         
         self.buttonList=[]
         self.selectedFrames={}
@@ -88,20 +87,9 @@ class TimepointSelectionPanel(wx.Panel):
         self.SetAutoLayout(True)
         self.SetSizer(self.mainsizer)
         self.mainsizer.Fit(self)
-        self.mainsizer.SetSizeHints(self)
-        
-    def onSize(self,event):
-        """
-        Method: onSize(event)
-        Created: 16.03.2005, KP
-        Description: Method that is called when the window resizes
-        """          
-        w,h=self.buttonFrame.GetSize()
-        w,h2=event.GetSize()
-        self.buttonFrame.SetSize((w,h))
-        self.Layout()
-        self.buttonFrame.Layout()
-        
+        self.SetupScrolling()
+        #self.mainsizer.SetSizeHints(self)
+                
     def getSelectedTimepoints(self):
         timepoints=[]
         for i in self.selectedFrames.keys():
@@ -113,8 +101,7 @@ class TimepointSelectionPanel(wx.Panel):
     def createConfigFrame(self):
         """
         Method: createConfigFrame(self)
-        Created: 17.11.2004
-        Creator: KP
+        Created: 17.11.2004, KP
         Description: A callback that is used to close this window
         """
         self.configFrame=wx.Panel(self)
@@ -185,6 +172,7 @@ class TimepointSelectionPanel(wx.Panel):
             self.buttonList.append(btn)
             self.timepointButtonSizer.Add(btn,(nrow,ncol))
             ncol=ncol+1
+        self.buttonFrame.Layout()
         self.timepointButtonSizer.Fit(self.buttonFrame)
         self.mainsizer.Fit(self)
 
@@ -275,10 +263,10 @@ class TimepointSelection(wx.Dialog):
         
         self.status=wx.ID_CANCEL
 
-        self.SetAutoLayout(True)
         self.SetSizer(self.mainsizer)
+        self.SetAutoLayout(True)
         self.mainsizer.Fit(self)
-        self.mainsizer.SetSizeHints(self)
+        #self.mainsizer.SetSizeHints(self)
         
     def setLabel(self,lbl):
         self.panel.timepointLbl.SetLabel(lbl)
@@ -303,8 +291,8 @@ class TimepointSelection(wx.Dialog):
         self.buttonsSizer1.AddSizer((100,-1))
         self.buttonsSizer.Add(self.buttonsSizer1,flag=wx.ALIGN_LEFT)
         self.staticLine=wx.StaticLine(self)
-        self.mainsizer.Add(self.staticLine,(3,0),span=(1,2),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
-        self.mainsizer.Add(self.buttonsSizer,(4,0),span=(1,2))
+        self.mainsizer.Add(self.staticLine,(3,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
+        self.mainsizer.Add(self.buttonsSizer,(4,0))
 
     def getSelectedTimepoints(self):
         return self.panel.getSelectedTimepoints()

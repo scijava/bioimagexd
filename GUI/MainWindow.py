@@ -1051,7 +1051,6 @@ class MainWindow(wx.Frame):
         self.menuManager.menus["visualization"].Enable(MenuManager.ID_RELOAD,1)
         wx.EVT_TOOL(self,MenuManager.ID_SAVE_SNAPSHOT,self.visualizer.onSnapshot)    
             
-        self.visualizer.enable(0)
 
         if not "init" in kws and dataunit:
             self.visualizer.setDataUnit(dataunit)
@@ -1064,7 +1063,8 @@ class MainWindow(wx.Frame):
         mgr=self.menuManager
         mgr.enable(MenuManager.ID_VIEW_TOOLBAR)
         mgr.enable(MenuManager.ID_VIEW_HISTOGRAM)
-
+        wx.LayoutAlgorithm().LayoutWindow(self, self.visWin)
+        self.visWin.Refresh()
 
     def setButtonSelection(self,eid,all=0):
         """

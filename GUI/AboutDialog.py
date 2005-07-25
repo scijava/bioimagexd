@@ -1,15 +1,13 @@
 #! /usr/bin/env python
 # -*- coding: iso-8859-1 -*-
 """
- Unit: AboutDialog.py
+ Unit: AboutDialog
  Project: BioImageXD
  Created: 22.02.2005, KP
  Description:
 
  A wxPython wx.Dialog window that is used to show an about dialog. The about dialog is specified
  using HTML markup.
-
- Modified: 22.02.2005 KP - Created the module
  
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
@@ -119,7 +117,7 @@ aboutText = u"""
 <center><h2>About BioImageXD</h2></center>
 <center><img src="Icons/logo_medium.jpg"></center><br>
 <p><b>BioImageXD</b> is a program for post-processing and visualizing
-data produced by a confocal laser scanning microscope.</p>
+three- and four-dimensional microscopy data.</p>
 
 <h2>The BioImageXD Project</h2>
 <p><b>The main development team</b></p><p>

@@ -140,7 +140,7 @@ class RenderingMode:
             self.wxrenwin.Render()
     
             self.getRenderer=self.GetRenderer=self.wxrenwin.getRenderer
-
+        #self.wxrenwin.Show()
         if not self.configPanel:
             # When we embed the sidebar in a sashlayoutwindow, the size
             # is set correctly

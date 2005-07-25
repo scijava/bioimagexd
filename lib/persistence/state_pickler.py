@@ -101,7 +101,10 @@ Notes
 import sys
 import types
 import cPickle
-import Numeric
+try:
+    import Numeric
+except:
+    pass
 import gzip
 from cStringIO import StringIO
 

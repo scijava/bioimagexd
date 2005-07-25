@@ -153,7 +153,7 @@ class Visualizer:
         self.sliderWin.SetOrientation(wx.LAYOUT_HORIZONTAL)
         self.sliderWin.SetAlignment(wx.LAYOUT_BOTTOM)
         self.sliderWin.SetSashVisible(wx.SASH_TOP,False)
-        self.sliderWin.SetDefaultSize((500,32))
+        self.sliderWin.SetDefaultSize((500,64))
 
         self.sliderPanel=wx.Panel(self.sliderWin,-1)
         iconpath=reduce(os.path.join,["Icons"])
@@ -592,6 +592,7 @@ class Visualizer:
             modeinst.setDataUnit(self.dataUnit)
         wx.LayoutAlgorithm().LayoutWindow(self.parent, self.visWin)
 
+        print "Showing ",self.currentWindow
         self.currentWindow.Show()
 
     def showItemToolbar(self,flag):

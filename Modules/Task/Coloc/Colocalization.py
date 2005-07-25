@@ -26,7 +26,7 @@
 
 """
 
-__author__ = "Selli Project <http://sovellusprojektit.it.jyu.fi/selli/>"
+__author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.24 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 

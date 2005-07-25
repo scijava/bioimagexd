@@ -146,3 +146,11 @@ class SlicesMode(VisualizationMode):
         Logging.info("Setting timepoint to ",tp,kw="visualizer")
         self.preview.setTimepoint(tp)
         
+    def deactivate(self):
+        """
+        Method: deactivate()
+        Created: 24.05.2005, KP
+        Description: Unset the mode of visualization
+        """
+        self.preview.Show(0)
+        

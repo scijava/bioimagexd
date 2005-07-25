@@ -6,6 +6,11 @@ if [ "$1" = "" ]; then
 fi
 VTKDIR=$1
 
+function run_cmd() {
+         echo $CMD $*
+         $CMD $*
+}
+
 function add_to_cmakelist() {
    CMAKELISTS=$1
    ADD_FILE=$2
@@ -23,7 +28,7 @@ fi
 for i in `grep -H IMAGING *.h|cut -d: -f1`
 do
   FILE=$PWD/$i
-  $CMD $FILE $VTKDIR/Imaging/$i
+  run_cmd $FILE $VTKDIR/Imaging/$i
   cxxfile=`echo $i|sed s/h$/cxx/`
   $CMD $PWD/$cxxfile $VTKDIR/Imaging/$cxxfile
 #  add_to_cmakelist $VTKDIR/Imaging/CMakeLists.txt $cxxfile
@@ -31,9 +36,9 @@ done
 for i in `grep -H FILTERING *.h|cut -d: -f1`
 do
   FILE=$PWD/$i
-  $CMD $FILE $VTKDIR/Filtering/$i
+    run_cmd $FILE $VTKDIR/Filtering/$i
   cxxfile=`echo $i|sed s/h$/cxx/`
-  $CMD $PWD/$cxxfile $VTKDIR/Filtering/$cxxfile
+    run_cmd $PWD/$cxxfile $VTKDIR/Filtering/$cxxfile
 #  add_to_cmakelist $VTKDIR/Filtering/CMakeLists.txt $cxxfile
 done
 
@@ -41,9 +46,9 @@ done
 for i in `grep -H RENDERING *.h|cut -d: -f1`
 do
   FILE=$PWD/$i
-  $CMD $FILE $VTKDIR/Rendering/$i
+    run_cmd $FILE $VTKDIR/Rendering/$i
   cxxfile=`echo $i|sed s/h$/cxx/`
-  $CMD $PWD/$cxxfile $VTKDIR/Rendering/$cxxfile
+    run_cmd $PWD/$cxxfile $VTKDIR/Rendering/$cxxfile
 #  add_to_cmakelist $VTKDIR/Rendering/CMakeLists.txt $cxxfile
 done
 
@@ -51,9 +56,9 @@ done
 for i in `grep -H IO_EXPORT *.h|cut -d: -f1`
 do
   FILE=$PWD/$i
-  $CMD $FILE $VTKDIR/IO/$i
+    run_cmd $FILE $VTKDIR/IO/$i
   cxxfile=`echo $i|sed s/h$/cxx/`
-  $CMD $PWD/$cxxfile $VTKDIR/IO/$cxxfile
+   run_cmd $PWD/$cxxfile $VTKDIR/IO/$cxxfile
 #  add_to_cmakelist $VTKDIR/IO/CMakeLists.txt $cxxfile
 done
 

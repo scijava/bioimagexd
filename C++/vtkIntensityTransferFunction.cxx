@@ -415,7 +415,8 @@ void vtkIntensityTransferFunction::CalculateReferencePoint(void) {
     x=this->ReferencePoint[0];
     //y=this->ReferencePoint[1];
     y = (this->MaximumValue - this->MinimumValue) / 2;
-    x= 128 + this->Brightness;
+    //x= 128 + this->Brightness;
+    x= 128 - this->Brightness;
     this->SetReferencePoint(x,y);
 }
 
@@ -554,8 +555,8 @@ void vtkIntensityTransferFunction::PrintSelf(ostream& os, vtkIndent indent)
   os << indent << "Maximum Threshold: " << this->MaximumThreshold << "\n";
   os << indent << "Processing Threshold: " << this->ProcessingThreshold << "\n";
   os << indent << "Gamma: " << this->Gamma << "\n";
-  os << indent << "Contrast: " << this->Gamma << "\n";
-  os << indent << "Brightness: " << this->Gamma << "\n";
+  os << indent << "Contrast: " << this->Contrast << "\n";
+  os << indent << "Brightness: " << this->Brightness << "\n";
   if ( this->Gamma ) {
     os << indent << "Gamma Start Point: (" << this->GammaStart[0] <<", "<< this->GammaStart[1] << ")\n";
     os << indent << "Gamma End Point: (" << this->GammaEnd[0] <<", "<< this->GammaEnd[1] << ")\n";      

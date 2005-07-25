@@ -152,7 +152,7 @@ void vtkImageColocalizationFilterExecute(vtkImageColocalizationFilter *self, int
             for(i=0; i < NumberOfInputs; i++ ) {
                 currScalar = *inPtrs[i]; 
                 if(currScalar >= ColocThresholds[i] && currScalar <= UpperThresholds[i]) {
-                    ColocalizationScalar *= currScalar;
+                    ColocalizationScalar += currScalar;
                     n++;
                 } else {
                     colocFlag = 0;
@@ -163,7 +163,7 @@ void vtkImageColocalizationFilterExecute(vtkImageColocalizationFilter *self, int
                 
                 if (BitDepth == 1 ) ColocalizationScalar = OutputScalar;
                 if (BitDepth == 8 ) {
-                    ColocalizationScalar = pow(ColocalizationScalar, 1.0/n);
+                    ColocalizationScalar /=n;
                 }
                 if(ColocalizationScalar > maxval) ColocalizationScalar=maxval;
                 
@@ -171,7 +171,7 @@ void vtkImageColocalizationFilterExecute(vtkImageColocalizationFilter *self, int
             
             *outPtr = (T)ColocalizationScalar;
             outPtr++;
-            ColocalizationScalar = 1;
+            ColocalizationScalar = 0;
           }
           for(i=0; i < NumberOfInputs; i++ ) {
               inPtrs[i]+=inIncY;

@@ -1,7 +1,7 @@
 4#! /usr/bin/env python
 # -*- coding: iso-8859-1 -*-
 """
- Unit: ImportDialog.py
+ Unit: ImportDialog
  Project: BioImageXD
  Created: 16.03.2005
  Creator: KP
@@ -9,8 +9,6 @@
 
  A dialog for importing different kinds of data to form a .du file
  
- Modified: 16.03.2005 KP - Created the module
-
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
 
@@ -41,7 +39,7 @@ import vtk
 import Dialogs
 import ColorTransferEditor
 import  wx.lib.masked as  masked
-
+import Logging
 import DataUnit
 import DataSource
 
@@ -97,7 +95,7 @@ class ImportDialog(wx.Dialog):
         self.Close()
 
         self.convertFiles(filename)
-        
+
     def convertFiles(self,outname):
         """
         Method: convertFiles()
@@ -126,10 +124,9 @@ class ImportDialog(wx.Dialog):
             self.dlg = wx.ProgressDialog("Importing","Reading dataset %d / %d"%(0,0),maximum = 2*self.tot, parent = self)        
             for i,file in enumerate(files):   
                 rdr = eval(self.rdrstr)
-                rdr.SetDataExtent(0,self.x-1,0,self.y-1,0,self.z-1)
-                rdr.SetDataSpacing(self.spacing)
-                rdr.SetDataOrigin(0,0,0)
-		Logging.info("Reading ",file,kw="io")
+                # This is not required for VTK dataset readers, so 
+                # we ignore any errors 0
+                Logging.info("Reading ",file,kw="io")
                 rdr.SetFileName(file)
                 rdr.Update()
                 self.readers.append(rdr)
@@ -137,18 +134,18 @@ class ImportDialog(wx.Dialog):
 #                self.writeData(outname,data,i,len(files))
         else:
             self.tot = len(files) / self.z
-            self.dlg = wx.ProgressDialog("Importing","Reading dataset %d / %d"%(0,0),maximum = 2*self.tot, parent = self)        
+            self.dlg = wx.ProgressDialog("Importing","Reading dataset %d / %d"%(0,0),maximum = 2*self.tot, parent = self)
             #rdr.SetFileDimensionality(dim)
             pattern = self.patternEdit.GetValue()
             n=pattern.count("%")
-	    Logging.info("Number of %s=",n,kw="io")
+            Logging.info("Number of %s=",n,kw="io")
             imgAmnt=len(files)
             if n==0 and imgAmnt>1:
                 Dialogs.showerror(self,"You are trying to import multiple files but have not defined a proper pattern for the files to be imported","Bad pattern")
                 return
-            elif n==1:                
-		j=0
-		Logging.info("self.z=%d",self.z,kw="io")
+            elif n==1:
+                j=0
+                Logging.info("self.z=%d",self.z,kw="io")
                 for i in range(0,imgAmnt,self.z):
                     rdr = eval(self.rdrstr)
                     rdr.SetDataExtent(0,self.x-1,0,self.y-1,0,self.z-1)
@@ -156,12 +153,12 @@ class ImportDialog(wx.Dialog):
                     rdr.SetDataOrigin(0,0,0)
                     
                     if i:
-			Logging.info("Setting slice offset to ",i,kw="io")
+                        Logging.info("Setting slice offset to ",i,kw="io")
                         rdr.SetFileNameSliceOffset(i)
                     rdr.SetFilePrefix(dir+os.path.sep)
                     rdr.SetFilePattern("%s"+pattern)
                     rdr.Update()
-		    Logging.info("Reader = ",rdr,kw="io")
+                    Logging.info("Reader = ",rdr,kw="io")
                     self.dlg.Update(j,"Reading dataset %d / %d"%(j+1,self.tot))
                     self.readers.append(rdr)
                     #self.writeData(outname,data,j,len(files))
@@ -178,11 +175,11 @@ class ImportDialog(wx.Dialog):
                     begin=pattern[:pos-1]
                     end=pattern[pos-1:]
                     currpat=begin%i+end
-		    Logging.info("Pattern for timepoint %d is "%i,currpat,kw="io")
+                    Logging.info("Pattern for timepoint %d is "%i,currpat,kw="io")
                                      
                     rdr.SetFilePrefix(dir+os.path.sep)
                     rdr.SetFilePattern("%s"+currpat)
-		    Logging.info("Reader = ",rdr,kw="io")
+                    Logging.info("Reader = ",rdr,kw="io")
                     rdr.Update()
                     #data = rdr.GetOutput()
                     #self.writeData(outname,data,i,len(files))
@@ -199,18 +196,18 @@ class ImportDialog(wx.Dialog):
         Description: Writes a .du file
         """ 
         settings = DataUnit.DataUnitSettings()
-        settings.set("Type","DataUnitSettings")
-	Logging.info("Spacing for dataset=",self.spacing,kw="io")
+        settings.set("Type","Adjust")
+        Logging.info("Spacing for dataset=",self.spacing,kw="io")
         settings.set("Spacing",self.spacing)
         x,y,z =self.voxelSize
         x/=1000000.0
         y/=1000000.0
         z/=1000000.0
-	Logging.info("Writing voxel size as ",x,y,z,kw="io")
+        Logging.info("Writing voxel size as ",x,y,z,kw="io")
         settings.set("VoxelSize",(x,y,z))
-	Logging.info("Writing dimensions as ",self.x,self.y,self.z,kw="io")
+        Logging.info("Writing dimensions as ",self.x,self.y,self.z,kw="io")
 
-	settings.set("Dimensions",(self.x,self.y,self.z))
+        settings.set("Dimensions",(self.x,self.y,self.z))
         name=self.nameEdit.GetValue()
         settings.set("Name",name)
         
@@ -220,10 +217,14 @@ class ImportDialog(wx.Dialog):
         parser = self.writer.getParser()
         settings.writeTo(parser)
         i=0
-	Logging.info("readers (%d)="%len(self.readers),self.readers,kw="io")
+        Logging.info("readers (%d)="%len(self.readers),self.readers,kw="io")
         for rdr in self.readers:
             rdr.Update()
-            self.writer.addImageData(rdr.GetOutput())
+            image=rdr.GetOutput()
+            #image.SetExtent(0,self.x-1,0,self.y-1,0,self.z-1)
+            image.SetSpacing(self.spacing)
+            image.SetOrigin(0,0,0)
+            self.writer.addImageData(image)
             self.writer.sync()
             self.dlg.Update(self.tot+i,"Writing dataset %d / %d"%(i+1,self.tot))
             i=i+1
@@ -236,7 +237,7 @@ class ImportDialog(wx.Dialog):
         Created: 21.04.2005, KP
         Description: Writes a data out
         """
-	Logging.info("Adding dataset %d"%n,data,kw="io")
+        Logging.info("Adding dataset %d"%n,data,kw="io")
         self.writer.addImageData(data)
         
     def createImageImport(self):
@@ -386,10 +387,10 @@ class ImportDialog(wx.Dialog):
             vz = float(self.voxelZ.GetValue())
         except:
             return
-	Logging.info("Voxel sizes = ",vx,vy,vz,kw="io")
+        Logging.info("Voxel sizes = ",vx,vy,vz,kw="io")
         self.voxelSize = (vx,vy,vz)
         self.spacing=(1.0,vy/vx,vz/vx)
-	Logging.info("Setting s√pacing to ",self.spacing,kw="io")
+        Logging.info("Setting spacing to ",self.spacing,kw="io")
         sx,sy,sz=self.spacing
         self.spacingLbl.SetLabel("%.2f x %.2f x %.2f"%(sx,sy,sz))
 
@@ -436,7 +437,7 @@ class ImportDialog(wx.Dialog):
         """        
         if type(n)!=type(0):
             n=int(self.imageAmountLbl.GetLabel())
-	Logging.info("n=",n,kw="io")
+        Logging.info("n=",n,kw="io")
         self.imageAmountLbl.SetLabel("%d"%n)
         val = self.depthEdit.GetValue()
         try:
@@ -498,7 +499,7 @@ class ImportDialog(wx.Dialog):
             pat=dir+"/%s"%(pat)
         else:
             pat=dir+"/*.%s"%ext
-	Logging.info("Pattern for all in directory is ",pat,kw="io")
+        Logging.info("Pattern for all in directory is ",pat,kw="io")
         files=glob.glob(pat)
         self.sourceListbox.Clear()
         files.sort(self.sortNumerically)

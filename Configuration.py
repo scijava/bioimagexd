@@ -10,8 +10,6 @@
  A module that loads / saves a configuration file and gives information
  about the current configuration. Also handles path management.
 
- Modified: 23.02.2005 KP - Created the class
-
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
 
@@ -60,7 +58,7 @@ class Configuration:
     
         # Set the initial values
         #vtkpath=self.getPath(["Libraries","VTK"])
-        vtkpath=self.getPath(["C:\\VTK"])
+        vtkpath=self.getPath(["C:\\VTK-build"])
         mayavipath=self.getPath(["Libraries","mayavi"])
         self.setConfigItem("RemoveOldVTK","VTK",1,0);
         self.setConfigItem("VTKPath","VTK",vtkpath,0)
@@ -68,8 +66,8 @@ class Configuration:
         self.setConfigItem("MayaviPath","Mayavi",mayavipath,0)
 
         self.setConfigItem("ImageFormat","Output","png",0)
-	self.setConfigItem("FramePath",os.path.expanduser("~/"),0)
-	self.setConfigItem("VideoPath",os.path.expanduser("~/video.avi"),0)
+        self.setConfigItem("FramePath",os.path.expanduser("~/"),0)
+        self.setConfigItem("VideoPath",os.path.expanduser("~/video.avi"),0)
 
         self.setConfigItem("DataPath","Paths","/home/kalpaha/BioImageXD/Data/",0)
         self.setConfigItem("LastPath","Paths","/home/kalpaha/BioImageXD/Data/",0)
@@ -164,4 +162,4 @@ class Configuration:
         sys.path.insert(n,path)
         
     def appendPath(self,path):
-	sys.path.append(path)
+        sys.path.append(path)

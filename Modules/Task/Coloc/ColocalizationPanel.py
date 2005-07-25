@@ -515,7 +515,7 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
                 self.settings.set("ColocalizationDepth",8)
             
 
-    def doPreviewCallback(self,event=None):
+    def doPreviewCallback(self,event=None,*args):
         """
         Method: doPreviewCallback()
         Created: 03.11.2004, KP

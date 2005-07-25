@@ -10,7 +10,7 @@ import sys
 import inspect
 
 # Enthought library imports.
-from enthought.logging import logger
+#from enthought.logging import logger
 
 
 ######################################################################
@@ -62,7 +62,7 @@ class HandlerRegistry:
         key = (class_name, module)
         if key in self.handlers:
             msg = 'Overwriting version handler for (%s, %s)'%(key[0], key[1])
-            logger.warn(msg)
+            #logger.warn(msg)
         self.handlers[(class_name, module)] = handler
 
     def unregister(self, class_name, module):

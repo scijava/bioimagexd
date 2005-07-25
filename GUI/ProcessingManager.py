@@ -9,9 +9,6 @@
  This is a dialog used to control the execution of all operations. The dialog
  will give the option to select the processed timepoints
  
- Modified:  
-            03.02.2005 KP - Created the class
-
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
 
@@ -61,37 +58,6 @@ class ProcessingManager(TimepointSelection):
         #self.timepointLbl.SetLabel("Select Time Points to be Processed")
         self.SetTitle("Processing - %s"%operation)
         
-        #self.configBox=wx.StaticBox(self,-1,"Output Settings")
-        #self.configBoxSizer=wx.StaticBoxSizer(self.configBox,wx.VERTICAL)
-        self.selectBox=wx.StaticBox(self,-1,"Select slices to the output")
-        self.selectBoxSizer=wx.StaticBoxSizer(self.selectBox,wx.VERTICAL)
-        self.selectSlice=UIElements.getSliceSelection(self)
-        self.selectBoxSizer.Add(self.selectSlice)
-        
-        self.outputBox=wx.StaticBox(self,-1,"Output Settings")
-        self.outputBoxSizer=wx.StaticBoxSizer(self.outputBox,wx.VERTICAL)
-        self.checkBox=wx.CheckBox(self,-1,"Output slices as images")
-        self.checkBox.Bind(wx.EVT_CHECKBOX,self.updateOutputFormat)
-        
-    
-        self.outputBoxSizer.Add(self.checkBox)
-        self.outputFormat=UIElements.getImageFormatMenu(self)
-        self.outputFormat.menu.Enable(0)        
-        self.outputBoxSizer.Add(self.outputFormat)
-        
-        self.formatLbl=wx.StaticText(self,-1,"Filename format:")
-        self.formatEdit=wx.TextCtrl(self,-1,"%d_%d")
-        self.outputBoxSizer.Add(self.formatLbl)
-        self.outputBoxSizer.Add(self.formatEdit)
-        
-        #self.radioBox=wx.RadioBox(self,-1,"Filename Formatting",choices=["Use single numbering","Use double numbering"],majorDimension=1,style=wx.RA_SPECIFY_COLS)
-        #self.outputBoxSizer.Add(self.radioBox)
-
-        
-        box=wx.BoxSizer(wx.VERTICAL)
-        box.Add(self.selectBoxSizer,1,wx.EXPAND)
-        box.Add(self.outputBoxSizer,1,wx.EXPAND)
-        self.mainsizer.Add(box,(2,0),flag=wx.EXPAND|wx.ALL)
         self.Layout()
         self.mainsizer.Fit(self)
 
