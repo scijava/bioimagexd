@@ -35,7 +35,7 @@ import wx
 import os.path
 import sys
 import time
-
+import messenger
 
 if __name__=='__main__':
     import sys
@@ -212,13 +212,9 @@ class IntensityTransferEditor(wx.Panel):
         """
         self.parent=parent
         wx.Panel.__init__(self,parent,-1)
-        self.updateCallback=0
         self.doyield=1
         self.calling=0
         self.guiupdate=0
-        if kws.has_key("update"):
-	    Logging.info("Got update callback",kw="ctf")
-            self.updateCallback=kws["update"]
 
         self.iTF=vtk.vtkIntensityTransferFunction()
         
@@ -597,15 +593,6 @@ class IntensityTransferEditor(wx.Panel):
         self.contrastEdit.SetValue("%.2f"%contrast)
         self.guiupdate=0
 
-    def callUpdateCallback(self):
-        """
-        Method: callUpdateCallback()
-        Created: 19.03.2005, KP
-        Description: Calls the update callback and clears a flag
-        """
-        self.calling=0
-        print "Calling updateCallback"
-        self.updateCallback()        
             
     def updateGraph(self):
         """
@@ -619,12 +606,8 @@ class IntensityTransferEditor(wx.Panel):
            self.doyield=0
            #wx.Yield()
            self.doyield=1
-            
-        if self.updateCallback:
-            if not self.calling:
-                self.calling=1
-                wx.FutureCall(250,self.callUpdateCallback)
 
+        messenger.send(None,"itf_update")
 
     def getIntensityTransferFunction(self):
         """
