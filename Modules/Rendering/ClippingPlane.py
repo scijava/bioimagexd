@@ -80,10 +80,8 @@ class ClippingPlaneModule(VisualizationModule):
         Description: Remove a clipping plane
         """       
         for module in self.parent.getModules():
-            if "mapper" in dir(module):
-                if "SetClippingPlanes" in dir(module.mapper):
-#                    print "Setting clipping planes of ",module
-                    module.mapper.RemoveClippingPlane(plane)
+            if hasattr(module,"mapper") and hasattr(module.mapper,"SetClippingPlanes"):
+                module.mapper.RemoveClippingPlane(plane)
         
     def clipVolumeRendering(self,object,event):
         """
@@ -96,11 +94,9 @@ class ClippingPlaneModule(VisualizationModule):
             self.currentPlane=None
         object.GetPlane(self.plane)
         for module in self.parent.getModules():
-            if "mapper" in dir(module):
-                if "SetClippingPlanes" in dir(module.mapper):
-                    print "Setting clipping planes of ",module
-                    module.mapper.AddClippingPlane(self.plane)
-                    self.currentPlane=self.plane
+            if hasattr(module,"mapper") and hasattr(module.mapper,"SetClippingPlanes"):
+                module.mapper.AddClippingPlane(self.plane)
+                self.currentPlane=self.plane
         
     def setDataUnit(self,dataunit):
         """
