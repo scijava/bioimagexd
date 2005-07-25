@@ -150,7 +150,7 @@ class SurfaceModule(VisualizationModule):
             Logging.info("Using volume rendering for isosurface")
             self.disableRendering()
             self.volumeModule = VolumeModule(self.parent)
-            self.volumeModule.setMethod(5)
+            self.volumeModule.setMethod(4)
             self.volumeModule.setDataUnit(self.dataUnit)
             self.volumeModule.showTimepoint(self.timepoint)
             

@@ -7,8 +7,6 @@
  Description:
 
  A module containing the volume rendering module for the visualization
- 
- Modified 24.05.2005 KP - Split the class to a module of it's own
           
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
@@ -59,20 +57,30 @@ class VolumeModule(VisualizationModule):
         VisualizationModule.__init__(self,parent,visualizer,**kws)   
         #self.name = "Volume Rendering"
         self.quality = 10
-        self.method=2
-        self.opacityTransferFunction = vtk.vtkPiecewiseFunction()
-        self.opacityTransferFunction.AddPoint(0, 0.0)
-        self.opacityTransferFunction.AddPoint(255, 0.2)
+        self.method=1
+        self.otfs=[]
+        # This is the MIP otf
+        otf2=vtk.vtkPiecewiseFunction()
+        otf2.AddPoint(0, 0.0)
+        otf2.AddPoint(255, 1.0)
+
+        # this is the normal otf
+        otf = vtk.vtkPiecewiseFunction()
+        otf.AddPoint(0, 0.0)
+        otf.AddPoint(255, 0.2)
+        self.otfs.append(otf)
+        self.otfs.append(otf)
+        self.otfs.append(otf2)
         self.eventDesc="Rendering volume"
         self.colorTransferFunction = None
 
         self.volumeProperty =  vtk.vtkVolumeProperty()
-        self.volumeProperty.SetScalarOpacity(self.opacityTransferFunction)
+        self.volumeProperty.SetScalarOpacity(self.otfs[self.method])
         self.setQuality(10)
         self.volume = vtk.vtkVolume()
         self.actor = self.volume
         self.volume.SetProperty(self.volumeProperty)
-        self.setMethod(2)
+        self.setMethod(1)
         self.parent.getRenderer().AddVolume(self.volume)
         self.setShading(0)
         #self.updateRendering()
@@ -84,8 +92,6 @@ class VolumeModule(VisualizationModule):
         Description: Sets the dataunit this module uses for visualization
         """       
         Logging.info("Dataunit for Volume Rendering:",dataunit,kw="rendering")
-        if dataunit.getBitDepth()==32:
-            self.setMethod(1)
         VisualizationModule.setDataUnit(self,dataunit)
         # If 32 bit data, use method 1
         if self.visualizer.getProcessedMode():
@@ -101,9 +107,9 @@ class VolumeModule(VisualizationModule):
         Method: setOpacityTransferFunction(otf)
         Created: 28.04.2005, KP
         Description: Set the opacity transfer function
-        """ 
-        self.opacityTransferFunction = otf
-        self.volumeProperty.SetScalarOpacity(self.opacityTransferFunction)
+        """
+        self.otfs[self.method]=otf
+        self.volumeProperty.SetScalarOpacity(otf)
         
     def setVolumeProAcceleration(self,acc):
         """
@@ -172,38 +178,35 @@ class VolumeModule(VisualizationModule):
 
         except:
             pass
-        if self.vtkcvs:
-           rgbf=None
-        else:
-            rgbf=vtk.vtkVolumeRayCastRGBCompositeFunction
         self.method=method
-        tbl=["Ray cast","RGBA Ray cast","Texture Map","MIP"]
+        self.volumeProperty.SetScalarOpacity(self.otfs[self.method])
+        
+        tbl=["Ray cast","Texture Map","MIP"]
         Logging.info("Volume rendering method: ",tbl[method],kw="rendering")
         
         #Ray Casting, RGBA Ray Casting, Texture Mapping, MIP
         composites = [vtk.vtkVolumeRayCastCompositeFunction,
-                      rgbf,
                       None,
                       vtk.vtkVolumeRayCastMIPFunction,
                       vtk.vtkVolumeRayCastIsosurfaceFunction
                       ]
-        blendModes=["Composite","Composite","Composite","MaximumIntensity","Composite"]
-        if method in [0,1,3,4]:
+        blendModes=["Composite","Composite","MaximumIntensity","Composite"]
+        if method in [0,2,3]:
             # Iso surfacing with fixedpoint mapper is not supported
-            if self.vtkcvs and method!=4:
+            if self.vtkcvs and method!=3:
                 self.mapper = vtk.vtkFixedPointVolumeRayCastMapper()
-                self.volumeProperty.IndependentComponentsOff()
+                #self.volumeProperty.IndependentComponentsOff()
                 mode=blendModes[method]
                 Logging.info("Setting fixed point rendering mode to ",mode,kw="rendering")
                 cmd="self.mapper.SetBlendModeTo%s()"%(mode)
+                print cmd
                 eval(cmd)
-
             else:
                 self.mapper = vtk.vtkVolumeRayCastMapper()
                 self.function = composites[method]()
                 Logging.info("Using ray cast function ",self.function,kw="rendering")
                 self.mapper.SetVolumeRayCastFunction(self.function)
-        elif method==2: # texture mapping
+        elif method==1: # texture mapping
             self.mapper = vtk.vtkVolumeTextureMapper2D()
         
         self.volume.SetMapper(self.mapper)    
@@ -219,6 +222,12 @@ class VolumeModule(VisualizationModule):
         if not input:
             input=self.data
         Logging.info("Rendering using, ",self.mapper.__class__,kw="rendering")
+        if input.GetNumberOfScalarComponents()>1:
+            self.setMethod(0)
+            self.volumeProperty.IndependentComponentsOff()            
+        else:
+            self.volumeProperty.IndependentComponentsOn()            
+        
         self.mapper.SetInput(input)
         self.mapper.AddObserver("ProgressEvent",self.updateProgress)
 
@@ -284,7 +293,7 @@ class VolumeConfigurationPanel(ModuleConfigurationPanel):
         self.contentSizer.Add(self.colorPanel,(n,0))
         n+=1
         
-        modes = ["Ray Casting","Ray Casting for RGBA datasets","Texture Mapping","Maximum Intensity Projection"]
+        modes = ["Ray Casting","Texture Mapping","Maximum Intensity Projection"]
         try:
             volpro=vtk.vtkVolumeProMapper()
             self.haveVolpro=0
@@ -389,6 +398,8 @@ class VolumeConfigurationPanel(ModuleConfigurationPanel):
             self.volpro.Enable(flag)
         if self.method==4:
             self.volpro.SetValue(1)
+        
+        self.colorPanel.setOpacityTransferFunction(self.module.otfs[self.method])
             
       
     def setModule(self,module):
