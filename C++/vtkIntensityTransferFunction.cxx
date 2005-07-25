@@ -378,10 +378,13 @@ void vtkIntensityTransferFunction::GetGammaPoints(int *gx0, int *gy0, int *gx1, 
         x1=x;
         //printf("x1=%d\n",x1);
         y1= minY;
+        printf("Cross the ceiling, x1=%d,y1=%d\n",x1,y1);
+
     } else { // If we do not cross the ceiling
         x1 = this->MaximumThreshold;
         //y1 = y;
         y1 = LineValue(x1);
+        printf("Don't cross the ceiling, x1=%d,y1=%d\n",x1,y1);
     }
     
     y = int( this->Contrast*0 + b );
@@ -395,9 +398,11 @@ void vtkIntensityTransferFunction::GetGammaPoints(int *gx0, int *gy0, int *gx1, 
         x0 = x;
         //printf("minX=%d\n",minX);
         y0 = minX;
+        printf("Cross the floor, x1=%d,y1=%d\n",x1,y1);
     } else {
         x0 = this->MinimumThreshold;
         y0 = LineValue(x0);
+        printf("Dont cross the floor, x1=%d,y1=%d\n",x1,y1);
     }
     *gx0 = x0;
     *gy0 = y0;
@@ -408,7 +413,8 @@ void vtkIntensityTransferFunction::GetGammaPoints(int *gx0, int *gy0, int *gx1, 
 void vtkIntensityTransferFunction::CalculateReferencePoint(void) {
     int x=0,y=0;
     x=this->ReferencePoint[0];
-    y=this->ReferencePoint[1];
+    //y=this->ReferencePoint[1];
+    y = (this->MaximumValue - this->MinimumValue) / 2;
     x= 128 + this->Brightness;
     this->SetReferencePoint(x,y);
 }
@@ -436,12 +442,21 @@ void vtkIntensityTransferFunction::ComputeFunction(void) {
     GetSlopeEnd(&x1,&y1);
     //printf("Slope starts at (%d,%d) and ends to (%d,%d)\n",x0,y0,x1,y1);
     //printf("Contrast = %f\n",this->Contrast);
-    
+    // There's no harm in calculating these
+    GetGammaPoints(&gx0,&gy0,&gx1,&gy1); 
+    this->GammaStart[0]=gx0;
+    this->GammaStart[1]=gy0;
+    this->GammaEnd[0]=gx1;
+    this->GammaEnd[1]=gy1;  
+    this->ReferencePoint[0]=gx0+((gx1-gx0)/2.0);
+    this->ReferencePoint[1]=gy0+((gy1-gy0)/2.0);
+
     for(x = 0;x < this->ArraySize; x++) {
+    
+        
         // If we're below the processing threshold,
         // then the function is identical, i.e. y=x
         if(x < this->ProcessingThreshold) {
-            printf("Below processing threshold\n");
             this->Function[x]=x;
             continue;
         }
@@ -477,19 +492,9 @@ void vtkIntensityTransferFunction::ComputeFunction(void) {
             }
             
             if( fabs(this->Gamma-1.0) > 0.0001 ) {
-                GetGammaPoints(&gx0,&gy0,&gx1,&gy1); 
-                
-                this->GammaStart[0]=gx0;
-                this->GammaStart[1]=gy0;
-                this->GammaEnd[0]=gx1;
-                this->GammaEnd[1]=gy1;
                 y = this->GammaValue(gx0,gy0,gx1,gy1,x,this->Gamma);
                 printf("y = gammavalue from %d,%d to %d,%d at %d is %d\n",gx0,gy0,gx1,gy1,x,y);                
             } else {
-                this->GammaStart[0]=-1;
-                this->GammaStart[1]=-1;
-                this->GammaEnd[0]=-1;
-                this->GammaEnd[1]=-1;
                 y = LineValue(x);
                 //printf("Y = linevalue(%d)=%d,",x,y);                
             }
@@ -560,6 +565,7 @@ void vtkIntensityTransferFunction::PrintSelf(ostream& os, vtkIndent indent)
   for( i = 0; i < this->ArraySize; i++ )
     {
     os << indent << indent
-       << i << ": " << this->GetValue(i) << "\n";
+       << i << " -> " << this->GetValue(i) << ", ";
     }
+    os << "\n";
 }

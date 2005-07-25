@@ -179,6 +179,10 @@ public:
   // That is, the point around which the contrast rotates the slope
   vtkGetVector2Macro(ReferencePoint,int);
 
+  // Description:
+  // Get the shifted reference point of the function
+  // That is, the point around which the contrast rotates the slope
+  vtkGetVector2Macro(ShiftedReferencePoint,int);
   
   void Reset(void);
 protected:
@@ -223,6 +227,7 @@ protected:
   void CalculateReferencePoint(void);
   vtkSetVector2Macro(ReferencePoint,int);
   int ReferencePoint[2];
+  int ShiftedReferencePoint[2];
   
 private:
   vtkIntensityTransferFunction(const vtkIntensityTransferFunction&);  // Not implemented.
