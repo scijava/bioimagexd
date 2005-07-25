@@ -163,8 +163,6 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
         Description: Sets the dataunit to display
         """    
         self.dataUnit=dataunit
-        if self.visualizer.getProcessedMode():
-            dataunit=dataunit.getSourceDataUnits()[0]
         
         self.dims=dataunit.getDimensions()
         self.voxelSize=dataunit.getVoxelSize()
@@ -273,14 +271,7 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
         
         self.setScrollbars(x,y)
 
-    def setMaximumSize(self,x,y):
-        """
-        Method: setMaximumSize(x,y)
-        Created: 24.03.2005, KP
-        Description: Sets the maximum size for this widget
-        """    
-        self.maxX,self.maxY=x,y
-                        
+
     def resetScroll(self):
         """
         Method: resetScroll()

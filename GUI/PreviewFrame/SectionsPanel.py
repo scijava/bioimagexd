@@ -209,10 +209,7 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
         Description: Set the dataunit used for preview. 
         """
         self.dataUnit=dataUnit
-        
-        
-        if self.visualizer.getProcessedMode():
-            dataUnit=dataUnit.getSourceDataUnits()[0]
+                
         
         self.dims=dataUnit.getDimensions()
         
