@@ -42,7 +42,7 @@ class PreviewPanel(InteractivePanel.InteractivePanel):
     Created: 24.03.2005, KP
     Description: A panel that can be used to preview volume data one slice at a time
     """
-    def __init__(self,parent,size=(512,512),scroll=0,**kws):
+    def __init__(self,parent,size=(1024,1024),scroll=0,**kws):
         """
         Method: __init__(parent)
         Created: 24.03.2005, KP
@@ -51,7 +51,9 @@ class PreviewPanel(InteractivePanel.InteractivePanel):
         self.fitLater=0
         self.imagedata=None
         self.bmp=None
-        self.scroll=scroll
+        self.parent = parent
+        #self.scroll=scroll
+        self.scroll=1
         Logging.info("preview panel size=",size,kw="preview")
         self.yielding=0
         x,y=size
@@ -64,8 +66,8 @@ class PreviewPanel(InteractivePanel.InteractivePanel):
             self.zoomy=kws["zoomy"]
             del kws["zoomy"]
         Logging.info("zoom xf=%f, yf=%f"%(self.zoomx,self.zoomy),kw="preview")
-        if kws.has_key("scrollbars"):
-            self.scroll=kws["scrollbars"]
+        #if kws.has_key("scrollbars"):
+        #    self.scroll=kws["scrollbars"]
         self.size=size
         self.slice=None
         self.z = 0
@@ -120,16 +122,6 @@ class PreviewPanel(InteractivePanel.InteractivePanel):
             self.fitLater=0
             self.zoomToFit()
         
-    def setMaximumSize(self,x,y):
-        """
-        Method: setMaximumSize(x,y)
-        Created: 24.03.2005, KP
-        Description: Sets the maximum size for this widget
-        """    
-        Logging.info("Maximum size for preview is (%d,%d)"%(x,y),kw="preview")
-        self.maxX,self.maxY=x,y
-                
-        
     def resetScroll(self):
         """
         Method: resetScroll()
@@ -147,6 +139,13 @@ class PreviewPanel(InteractivePanel.InteractivePanel):
         if f>10:
             f=10
         Logging.info("Setting zoom factor to ",f,kw="preview")
+        if f<self.zoomFactor:
+            # black the preview
+            slice=self.slice
+            self.slice=None
+            self.paintPreview()
+            self.slice=slice
+            
         self.zoomFactor=f
         self.updateAnnotations()
         self.Scroll(0,0)
@@ -178,25 +177,13 @@ class PreviewPanel(InteractivePanel.InteractivePanel):
         w,h=self.buffer.GetWidth(),self.buffer.GetHeight()
         
         if w!=xdim or h!=ydim:
+            Logging.info("Creating new buffer of size %dx%d"%(xdim,ydim),"scroll=",self.scroll,kw="preview")
             self.buffer = wx.EmptyBitmap(xdim,ydim)
             
         if self.scroll:
             Logging.info("ENABLING SCROLLING, size=(%d,%d)"%(xdim,ydim),kw="preview")
             self.SetVirtualSize((xdim,ydim))
             self.SetScrollRate(self.scrollsize,self.scrollsize)
-            
-
-    def zoomObject(self):
-        """
-        Method: startZoomObject()
-        Created: 24.03.2005, KP
-        Description: Sets a flag indicating that the user wishes to zoom in
-                     by drawing a "rubber band"
-        """
-        Logging.info("Will zoom",kw="preview")
-        self.startRubberband()
-        self.zooming=1
-
 
     def updatePreview(self):
         """
@@ -245,7 +232,6 @@ class PreviewPanel(InteractivePanel.InteractivePanel):
         Created: 24.03.2005, KP
         Description: Paints the image to a DC
         """
-
         if not self.slice:
             Logging.info("Black preview",kw="preview")
             dc = self.dc = wx.BufferedDC(wx.ClientDC(self),self.buffer)
@@ -263,8 +249,9 @@ class PreviewPanel(InteractivePanel.InteractivePanel):
             bmp=ImageOperations.zoomImageByFactor(self.slice,self.zoomFactor)
             w,h=bmp.GetWidth(),bmp.GetHeight()
             Logging.info("Setting scrollbars (%d,%d) because of zooming"%(w,h),kw="preview")
-            
             self.setScrollbars(w,h)
+
+        dc = self.dc = wx.BufferedDC(wx.ClientDC(self),self.buffer)
         
         if self.zoomx!=1 or self.zoomy!=1:
             w,h=bmp.GetWidth(),bmp.GetHeight()
@@ -276,8 +263,6 @@ class PreviewPanel(InteractivePanel.InteractivePanel):
             self.setScrollbars(w,h)
         
         bmp=bmp.ConvertToBitmap()
-        dc = self.dc = wx.BufferedDC(wx.ClientDC(self),self.buffer)
-        dc.BeginDrawing()
 
         dc.DrawBitmap(bmp,0,0,True)
         self.bmp=self.buffer
