@@ -3,8 +3,7 @@
 """
  Unit: PreviewFrame.py
  Project: BioImageXD
- Created: 03.11.2004
- Creator: KP
+ Created: 03.11.2004, KP
  Description:
 
  A widget that can be used to Preview any operations done by a subclass of Module
@@ -76,7 +75,8 @@ class PreviewFrame(wx.Panel):
         self.updateFactor = 0.001
         self.zoomFactor=1
         self.selectedItem=-1
-        size=(512,512)
+        #size=(512,512)
+        size=(1024,1024)
         self.oldx,self.oldy=0,0
         self.show={}
         self.show["PIXELS"]=1
@@ -118,7 +118,7 @@ class PreviewFrame(wx.Panel):
         # They are used when getting the value of a pixel
         Logging.info("Creating preview panel with size=",size,kw="preview")
         self.renderpanel = PreviewPanel.PreviewPanel(self,size=size,scroll=self.show["SCROLL"],zoomx=self.zoomx,zoomy=self.zoomy)
-        self.sizer.Add(self.renderpanel,(0,0))
+        self.sizer.Add(self.renderpanel,(0,0),flag=wx.EXPAND|wx.ALL)
         
         # The preview can be no larger than these
         self.maxX,self.maxY=size
