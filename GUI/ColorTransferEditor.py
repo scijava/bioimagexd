@@ -337,6 +337,13 @@ class CTFButton(wx.BitmapButton):
         """
         return self.panel.getOpacityTransferFunction()
         
+    def setOpacityTransferFunction(self,otf):
+        """
+        Method: setOpacityTransferFunction()
+        Created: 25.07.2005, KP
+        Description: Returns the opacity function
+        """
+        return self.panel.setOpacityTransferFunction(otf)
         
         
         
@@ -768,6 +775,7 @@ class ColorTransferEditor(wx.Panel):
         
         self.canvas.paintTransferFunction(self.ctf,pts,otf,self.alphaMode)
         self.value.paintTransferFunction(self.ctf)
+        
     def getColorTransferFunction(self):
         """
         Method: getColorTransferFunction()
@@ -892,6 +900,15 @@ class ColorTransferEditor(wx.Panel):
         Description: Returns the opacity function
         """
         return self.otf
+        
+    def setOpacityTransferFunction(self,otf):
+        """
+        Method: getOpacityTransferFunction()
+        Created: 28.04.2005, KP
+        Description: Returns the opacity function
+        """
+        self.otf=otf
+        self.getPointsFromFree()
 
 if __name__=='__main__':
  
