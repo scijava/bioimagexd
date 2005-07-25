@@ -185,7 +185,7 @@ class UrmasWindow(wx.SashLayoutWindow):
         self.menuManager.enable(MenuManager.ID_SPLINE_SET_BEGIN)
         self.menuManager.enable(MenuManager.ID_SPLINE_SET_END)
         active = self.control.getSelectedTrack()
-        if active and "maintainUpDirection" in dir(active):
+        if active and hasattr(active,"maintainUpDirection"):
             self.menuManager.check(MenuManager.ID_MAINTAIN_UP,active.maintainUpDirection)
         
     def onMenuMayavi(self,event):
@@ -322,7 +322,7 @@ class UrmasWindow(wx.SashLayoutWindow):
         Description: Set the track to maintain up direction
         """
         active = self.control.getSelectedTrack()
-        if "setMaintainUpDirection" in dir(active):
+        if hasattr(active,"setMaintainUpDirection"):
             active.setMaintainUpDirection(evt.IsChecked())
         
     def onMenuClosedSpline(self,evt):
@@ -332,7 +332,7 @@ class UrmasWindow(wx.SashLayoutWindow):
         Description: Callback function for menu item camera path is closed
         """
         track=self.control.getSelectedTrack()
-        if "setClosed" in dir(track):
+        if hasattr(track,"setClosed"):
             track.setClosed(evt.IsChecked())
         
     def onMenuAnimate(self,evt):

@@ -852,7 +852,7 @@ class SplineTrack(Track):
         pts=[]
         for item in self.items:
  #           print "item=",item
-            if not "stopitem" in dir(item):
+            if not hasattr(item,"stopitem"):
                 pts.append(item.getPoint())
             
         if position>=len(pts)-1:
