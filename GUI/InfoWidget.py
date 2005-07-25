@@ -38,7 +38,6 @@ import wx, wx.html
 import Logging
 
 import DataUnit
-import PreviewFrame
 
 import ColorTransferEditor
 import Modules
@@ -74,12 +73,6 @@ class InfoWidget(wx.Panel):
         """
         wx.Panel.__init__(self,master,-1,**kws)
         self.mainsizer=wx.GridBagSizer(5,5)
-        Logging.info("Creating previewframe for infowidget...",kw="preview")
-        self.preview=PreviewFrame.PreviewFrame(self,
-        previewsize=(384,384),pixelvalue=False,renderingpreview=False,
-        zoom=False,zslider=False,timeslider=False,scrollbars=False,zoom_factor=PreviewFrame.ZOOM_TO_FIT)
-        self.mainsizer.Add(self.preview,(0,0),flag=wx.EXPAND|wx.ALL)
-                
         
         self.infoNotebook=wx.Notebook(self,-1,size=(300,300))        
         self.mainsizer.Add(self.infoNotebook,(0,1),flag=wx.EXPAND|wx.ALL)
@@ -95,7 +88,7 @@ class InfoWidget(wx.Panel):
        
         messenger.connect(None,"tree_selection_changed",self.showInfo) 
  
-        messenger.connect(None,"tree_selection_changed",self.updateInfo)
+        #messenger.connect(None,"tree_selection_changed",self.updateInfo)
     def enable(self,flag):
         """
         Method: enable(flag)
@@ -138,41 +131,28 @@ class InfoWidget(wx.Panel):
             voxelsize=dataunit.getVoxelSize()
             bitdepth=dataunit.getBitDepth()
             Logging.info("Dataset bit depth =",bitdepth,kw="trivial")
-            
-            list=self.tree.getSelectedDataUnits()
-            if 0 and len(list)>1:
-                self.preview.setPreviewType("Merging")
-                unitclass=self.modules["Merging"][2].getDataUnit()
-                unit=unitclass("Merged preview")
-                for i in list:
-                    setting = self.modules["Merging"][2].getSettingsClass()()
-#                    setting.initialize(unit,len(list),1)
-#                    i.setSettings(setting)
-                    Logging.info("setting.ctf=",setting.get("MergingColorTransferFunction"),kw="ctf")
-                    unit.addSourceDataUnit(i)
-                taskclass=self.modules["Merging"][0]
-                unit.setModule(taskclass())         
-            else:
-                self.preview.setPreviewType("MIP")
-                
-                unitclass=self.modules["Process"][2].getDataUnit()
-                unit=unitclass("MIP preview")
-                unit.addSourceDataUnit(dataunit)
-                
-                taskclass=self.modules["Process"][0]                
-                unit.setModule(taskclass())
-                
-                ctf = dataunit.getColorTransferFunction()
-
-                if dataunit.getBitDepth()==32:
-                    self.colorBtn.Enable(0)
-                else:
-                    self.colorBtn.setColorTransferFunction(ctf)
+            unit = dataunit
+##            list=self.tree.getSelectedDataUnits()
+##            self.preview.setPreviewType("MIP")
+##            
+##            unitclass=self.modules["Process"][2].getDataUnit()
+##            unit=unitclass("MIP preview")
+##            unit.addSourceDataUnit(dataunit)
+##            
+##            taskclass=self.modules["Process"][0]                
+##            unit.setModule(taskclass())
+##            
+##            ctf = dataunit.getColorTransferFunction()
+##
+##            if dataunit.getBitDepth()==32:
+##                self.colorBtn.Enable(0)
+##            else:
+##                self.colorBtn.setColorTransferFunction(ctf)
 
             self.dataUnit=unit
             self.taskName.SetValue(dataunit.getName())
             # The 0 tells preview to view source dataunit 0
-            self.preview.setDataUnit(self.dataUnit,0)
+            #self.preview.setDataUnit(self.dataUnit,0)
             tps=dataunit.getLength()
             
             # TODO: Have this data available in dataunit
