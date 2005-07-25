@@ -118,6 +118,8 @@ ID_VIEW_TOOL_NAMES  =174
 
 ID_VIEW_SHELL       =175
 ID_SHELL_WIN        =176
+ID_INFO_WIN         =177
+ID_VIEW_INFO        =178
         
 class MenuManager:
     """
