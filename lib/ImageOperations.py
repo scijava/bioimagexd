@@ -280,7 +280,6 @@ def vtkImageDataToPreviewBitmap(imageData,color,width=0,height=0,bgcolor=(0,0,0)
         maptocolor.SetLookupTable(ctf)
         maptocolor.SetOutputFormatToRGB()
         maptocolor.Update()
-
         imagedata=maptocolor.GetOutput()
     else:
         imagedata=mip.GetOutput()
