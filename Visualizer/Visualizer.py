@@ -354,7 +354,7 @@ class Visualizer:
                      "+Z":(0,0,1,0,1,0),"-Z":(0,0,-1,0,1,0),
                      "Isometric":(1,1,1,0,0,1)}
 
-        if "wxrenwin" in dir(self.currMode):
+        if hasattr(self.currMode,"wxrenwin"):
             self.currMode.wxrenwin.setView(viewmapping[item])
     def zoomObject(self,evt):
         """
@@ -491,7 +491,7 @@ class Visualizer:
         Created: 24.05.2005, KP
         Description: Reload all the visualization modules.
         """
-        if "reloadModules" in dir(self.currMode):
+        if hasattr(self.currMode,"reloadModules"):
             self.currMode.reloadModules()
         for key in self.modes.keys():
             mod,settingclass,module=self.modes[key]
@@ -772,7 +772,7 @@ class Visualizer:
         if self.timeslider.GetValue()!=timepoint:
             self.timeslider.SetValue(timepoint)
         self.timepoint = timepoint
-        if "setTimepoint" in dir(self.currentWindow):
+        if hasattr(self.currentWindow,"setTimepoint"):
             self.currentWindow.setTimepoint(self.timepoint)
         self.currMode.setTimepoint(self.timepoint)
         
