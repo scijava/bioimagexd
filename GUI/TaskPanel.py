@@ -116,6 +116,8 @@ class TaskPanel(scrolled.ScrolledPanel):
         self.SetupScrolling()
         wx.FutureCall(500,self.doPreviewCallback)
         
+        messenger.connect(None,"itf_update",self.doPreviewCallback)
+        
     def createItemToolbar(self):
         """
         Method: createItemToolbar()
@@ -286,7 +288,7 @@ class TaskPanel(scrolled.ScrolledPanel):
         # TODO: Implement properly
         self.Enable(enable)
 
-    def doPreviewCallback(self,event=None):
+    def doPreviewCallback(self,*args):
         """
         Method: doPreviewCallback()
         Created: 03.11.2004, KP
