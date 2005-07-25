@@ -48,7 +48,7 @@ class InteractivePanel(wx.ScrolledWindow):
     Description: A panel that can be used to select regions of interest, drawn
                  annotations on etc.
     """
-    def __init__(self,parent,scroll=0,**kws):
+    def __init__(self,parent,**kws):
         """
         Method: __init__(parent)
         Created: 24.03.2005, KP
@@ -69,7 +69,6 @@ class InteractivePanel(wx.ScrolledWindow):
         self.action=0
         self.imagedata=None
         self.bmp=None
-        self.scroll=scroll
         
         self.actionstart=(0,0)
         self.actionend=(0,0)
@@ -338,15 +337,6 @@ class InteractivePanel(wx.ScrolledWindow):
             Logging.info("Got %d annotations"%len(ann),kw="iactivepanel")
             self.annotations=ann
             
-    def setMaximumSize(self,x,y):
-        """
-        Method: setMaximumSize(x,y)
-        Created: 24.03.2005, KP
-        Description: Sets the maximum size for this widget
-        """    
-        Logging.info("Maximum size for preview is (%d,%d)"%(x,y),kw="preview")
-        self.maxX,self.maxY=x,y
-
     def OnPaint(self,event):
         """
         Method: paintPreview()
