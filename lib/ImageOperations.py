@@ -234,6 +234,27 @@ def vtkImageDataToWxImage(data,slice=-1,startpos=None,endpos=None):
     image=wx.EmptyImage(x,y)
     image.SetData(ss)
     return image
+def vtkImageDataToPngString(data,slice=-1,startpos=None,endpos=None):
+    """
+    Method: vtkImageDataToPngString()
+    Created: 26.07.2005, KP
+    Description: A function that returns a vtkImageData object as png
+                 data in a string
+    """    
+    if slice>=0:
+        #Logging.info("Getting slice %d"%slice,kw="imageop")
+        data=getSlice(data,slice,startpos,endpos)
+        
+    pngwriter=vtk.vtkPNGWriter()
+    pngwriter.WriteToMemoryOn()
+    pngwriter.SetInput(data)
+    #pngwriter.Update()
+    pngwriter.Write()
+    result=pngwriter.GetResult()
+    data=""
+    for i in range(result.GetNumberOfTuples()):
+        data+=chr(result.GetValue(i))
+    return data
     
 def updateProgress(obj,evt,*args):
     """
@@ -247,7 +268,7 @@ def updateProgress(obj,evt,*args):
     
 
     
-def vtkImageDataToPreviewBitmap(imageData,color,width=0,height=0,bgcolor=(0,0,0)):
+def vtkImageDataToPreviewBitmap(imageData,color,width=0,height=0,bgcolor=(0,0,0),getpng=0):
     """
     Method: vtkImageDataToPreviewBitmap
     Created: KP
@@ -283,6 +304,8 @@ def vtkImageDataToPreviewBitmap(imageData,color,width=0,height=0,bgcolor=(0,0,0)
         imagedata=maptocolor.GetOutput()
     else:
         imagedata=mip.GetOutput()
+    if getpng:
+        pngstr=vtkImageDataToPngString(imagedata)
     image = vtkImageDataToWxImage(imagedata)
 
     if not width and height:
@@ -296,6 +319,8 @@ def vtkImageDataToPreviewBitmap(imageData,color,width=0,height=0,bgcolor=(0,0,0)
     
     image.Rescale(width,height)
     bitmap=image.ConvertToBitmap()
+    if getpng:
+        return bitmap,pngstr
     return bitmap
 
 def getPlane(data,plane,x,y,z):
