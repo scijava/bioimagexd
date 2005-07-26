@@ -36,11 +36,13 @@ import os.path
 
 
 from PreviewFrame import *
+
 import GUI.IntensityTransferEditor
 from GUI.IntensityTransferEditor import *
 from Logging import *
 
 from GUI import TaskPanel
+from GUI import ColorTransferEditor
 import sys
 
 import Dialogs

@@ -237,3 +237,11 @@ class SimpleMode(VisualizationMode):
         self.module.showTimepoint(self.timepoint)
         self.setRenderedMode(0)
 
+    def saveSnapshot(self,filename):
+        """
+        Method: saveSnapshot(filename)
+        Created: 05.06.2005, KP
+        Description: Save a snapshot of the scene
+        """      
+        self.wxrenwin.save_screen(filename)
+        

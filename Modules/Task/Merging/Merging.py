@@ -93,7 +93,7 @@ class Merging(Module):
         dims=data.GetDimensions()
             
         ctf = settings.get("MergingColorTransferFunction")
-        Logging.info("ctf=",ctf,kw="processing")
+#        Logging.info("ctf=",ctf,kw="processing")
         self.ctfs.append(ctf)
         self.alphaTF=settings.get("AlphaTransferFunction")
         self.alphaMode=settings.get("AlphaMode")

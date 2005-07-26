@@ -49,7 +49,7 @@ import time
 import string
 import UIElements
 
-from GUI import Events
+from GUI import ColorTransferEditor
 
 from GUI import TaskPanel
 
