@@ -34,7 +34,6 @@ import wx
 from wx.lib.statbmp  import GenStaticBitmap as StaticBitmap
 import ImageOperations
 import vtk
-from IntegratedPreview import *
 from GUI import Events
 
 import InteractivePanel
