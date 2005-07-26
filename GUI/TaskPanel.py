@@ -1,4 +1,3 @@
-#! /usr/bin/env python
 # -*- coding: iso-8859-1 -*-
 """
  Unit: TaskPanel
@@ -48,6 +47,7 @@ import Dialogs
 import sys
 import ImageOperations
 import ColorTransferEditor
+import ChannelListBox
 
 
 class TaskPanel(scrolled.ScrolledPanel):
@@ -85,9 +85,12 @@ class TaskPanel(scrolled.ScrolledPanel):
         self.mainsizer=wx.GridBagSizer()
 
 
+        self.channelBox = ChannelListBox.ChannelListBox(self, size=(250, 72), style=wx.BORDER_SUNKEN|wx.LB_NEEDED_SB)
+        self.mainsizer.Add(self.channelBox,(0,0))
+
         self.settingsSizer=wx.GridBagSizer()
         #self.mainsizer.Add(self.settingsSizer,(0,1),flag=wx.EXPAND|wx.ALL)
-        self.mainsizer.Add(self.settingsSizer,(0,0),flag=wx.EXPAND|wx.ALL)
+        self.mainsizer.Add(self.settingsSizer,(1,0),flag=wx.EXPAND|wx.ALL)
         self.settingsNotebook=wx.Notebook(self,-1,style=wx.NB_MULTILINE)
         
         font=self.settingsNotebook.GetFont()
@@ -100,7 +103,7 @@ class TaskPanel(scrolled.ScrolledPanel):
         self.buttonSizer=wx.BoxSizer(wx.HORIZONTAL)
         self.buttonPanel.SetSizer(self.buttonSizer)
         self.buttonPanel.SetAutoLayout(1)
-        self.mainsizer.Add(self.buttonPanel,(1,0),span=(1,1),flag=wx.EXPAND)
+        self.mainsizer.Add(self.buttonPanel,(2,0),span=(1,1),flag=wx.EXPAND)
     
         self.filePath=None
         self.dataUnit=None
@@ -117,6 +120,7 @@ class TaskPanel(scrolled.ScrolledPanel):
         wx.FutureCall(500,self.doPreviewCallback)
         
         messenger.connect(None,"itf_update",self.doPreviewCallback)
+        messenger.connect(None,"channel_selected",self.selectItem)
         
     def createItemToolbar(self):
         """
@@ -138,7 +142,8 @@ class TaskPanel(scrolled.ScrolledPanel):
             ctf = dataunit.getColorTransferFunction()
             name = dataunit.getName()
             dc= wx.MemoryDC()
-            bmp=ImageOperations.vtkImageDataToPreviewBitmap(dataunit.getTimePoint(0),ctf,30,30)
+            bmp,pngstr=ImageOperations.vtkImageDataToPreviewBitmap(dataunit.getTimePoint(0),ctf,30,30,getpng=1)
+            self.channelBox.setPreview(i,pngstr)
             dc.SelectObject(bmp)
             dc.BeginDrawing()
             #dc.SetFont(wx.Font(8,wx.SWISS,wx.NORMAL,wx.BOLD))
@@ -161,12 +166,9 @@ class TaskPanel(scrolled.ScrolledPanel):
             dc.SelectObject(wx.EmptyBitmap(0,0))
             toolid=wx.NewId()
             self.toolIds.append(toolid)
-            #self.tb2.AddRadioTool(toolid,name,bmp,shortHelp=name)
-            #self.toolMgr.addItem(name,bmp,toolid,lambda e,x=n,s=self:s.selectItem(e,x))
             self.toolMgr.addItem(name,bmp,toolid,lambda e,x=n,s=self:s.setPreviewedData(e,x))
             self.toolMgr.toggleTool(toolid,1)
             self.dataUnit.setOutputChannel(i,1)
-            #self.tb2.AddTool(toolid,bmp)#,shortHelp=name)
             n=n+1
         return n
         
@@ -232,7 +234,7 @@ class TaskPanel(scrolled.ScrolledPanel):
         self.dataUnit.setOutputChannel(index,flag)
         self.doPreviewCallback(None)
         
-    def selectItem(self,event,index=-1):
+    def selectItem(self,obj,event,index=-1):
         """
         Method: selectItem(event)
         Created: 03.11.2004, KP
@@ -371,8 +373,9 @@ class TaskPanel(scrolled.ScrolledPanel):
             ds=os.path.basename(ds)
             if ds not in fileNames:
                 fileNames.append(ds)
-            
+        self.channelBox.setDataUnit(dataUnit)
+        
         messenger.send(None,"current_file",", ".join(fileNames))         
         
-        self.selectItem(None,0)
+        self.selectItem(None,None,0)
         self.createItemToolbar()
