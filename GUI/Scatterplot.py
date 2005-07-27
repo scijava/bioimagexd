@@ -210,12 +210,13 @@ class Scatterplot(InteractivePanel.InteractivePanel):
         greens=self.sources[1].getSettings()
         
 #        print "reds.n=",reds.n,"greens.n=",greens.n
-        greens.set("ColocalizationLowerThreshold",x1)
-        greens.set("ColocalizationUpperThreshold",x2)
-        reds.set("ColocalizationLowerThreshold",y1)
-        reds.set("ColocalizationUpperThreshold",y2)
+        greens.set("ColocalizationLowerThreshold",y1)
+        greens.set("ColocalizationUpperThreshold",y2)
+        reds.set("ColocalizationLowerThreshold",x1)
+        reds.set("ColocalizationUpperThreshold",x2)
 
         messenger.send(None,"threshold_changed",(y1,y2),(x1,x2))
+        messenger.send(None,"data_changed",1)
 
         self.renew=1
         self.updatePreview()

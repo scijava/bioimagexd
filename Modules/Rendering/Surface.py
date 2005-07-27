@@ -7,9 +7,7 @@
  Description:
 
  A module containing the surface rendering modules for the visualization
- 
- Modified 28.04.2005 KP - Created the class
-          
+           
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
 
@@ -64,11 +62,12 @@ class SurfaceModule(VisualizationModule):
         self.volumeModule = None
         self.isoValue = 128
         self.contourRange = (-1,-1,-1)
+        self.opacity = 1.0
         self.setIsoValue(128)
         self.eventDesc="Rendering iso-surface"
         
         self.decimate = vtk.vtkDecimatePro()
-        self.decimateLevel=50
+        self.decimateLevel=0
         self.preserveTopology=1
         self.setMethod(1)
         self.init=0
@@ -80,6 +79,14 @@ class SurfaceModule(VisualizationModule):
         
         self.parent.getRenderer().AddActor(self.lodActor)
         #self.updateRendering()
+        
+    def setOpacity(self,opacity):
+        """
+        Method: setOpacity(opacity)
+        Created: 27.07.2005, KP
+        Description: Set the opacity
+        """       
+        self.opacity = opacity
         
     def setDecimate(self,level,preserveTopology):
         """
@@ -173,7 +180,8 @@ class SurfaceModule(VisualizationModule):
         self.mapper.ScalarVisibilityOn()
         self.mapper.SetScalarRange(0,255)
         self.mapper.SetColorModeToMapScalars()
-
+        Logging.info("Using opacity ",self.opacity,kw="visualizer")
+        self.actor.GetProperty().SetOpacity(self.opacity)
         input=self.data
 
         self.contour.SetInput(input)
@@ -181,23 +189,24 @@ class SurfaceModule(VisualizationModule):
         if self.isoValue != -1:
             self.contour.SetValue(0,self.isoValue)
         else:
-            Logging.info("Generating %d values in range %d-%d"%(n,begin,end),kw="visualizer")
             begin,end,n=self.contourRange
+            Logging.info("Generating %d values in range %d-%d"%(n,begin,end),kw="visualizer")
+            
             self.contour.GenerateValues(n,begin,end)
-        if self.decimateLevel != 1:
+        if self.decimateLevel != 0:
             Logging.info("Decimating %.2f%%, preserve topology: %s"%(self.decimateLevel/100.0,self.preserveTopology),kw="visualizer")
             self.decimate.SetInput(input)
             input=self.decimate.GetOutput()
-        smooth=vtk.vtkSmoothPolyDataFilter()
-        smooth.SetInput(input)
-        smooth.SetNumberOfIterations(50)
+        #smooth=vtk.vtkSmoothPolyDataFilter()
+        #smooth.SetInput(input)
+        #smooth.SetNumberOfIterations(50)
         #smooth.SetRelaxationFactor(0.9)
-        smooth.SetFeatureEdgeSmoothing(1)
-        input=smooth.GetOutput()
+        #smooth.SetFeatureEdgeSmoothing(1)
+        #input=smooth.GetOutput()
         
         if self.generateNormals:
             Logging.info("Generating normals at angle",self.featureAngle,kw="visualizer")
-            
+    
             self.normals.SetInput(input)
             input=self.normals.GetOutput()
         
@@ -261,6 +270,7 @@ class SurfaceConfigurationPanel(ModuleConfigurationPanel):
         
         self.decimateSlider=wx.Slider(self,value=0,minValue=0,maxValue=100,style=wx.HORIZONTAL|wx.SL_AUTOTICKS|wx.SL_LABELS,size=(255,-1))
         self.decimateCheckbox=wx.CheckBox(self,-1,"Preserve topology")
+        self.decimateCheckbox.SetValue(1)
         
         self.contentSizer.Add(self.decimateLbl,(n,0))
         n+=1
@@ -286,6 +296,13 @@ class SurfaceConfigurationPanel(ModuleConfigurationPanel):
         self.amntLbl = wx.StaticText(self,-1,"Amount of surfaces:")
         self.isoRangeSurfaces = wx.SpinCtrl(self,-1,"",style=wx.SP_VERTICAL)
 
+        self.opacityMax=100
+        self.opacityLbl=wx.StaticText(self,-1,"Surface transparency:")
+        self.opacitySlider=wx.Slider(self,-1,
+        value=0,minValue=0,maxValue=self.opacityMax,
+        style=wx.HORIZONTAL|wx.SL_AUTOTICKS|wx.SL_LABELS,size=(255,-1))
+        
+
         self.isoRangeSurfaces.SetRange(0,255)
         self.isoRangeSurfaces.SetValue(0)
         self.isoRangeBegin.SetRange(0,255)
@@ -304,6 +321,10 @@ class SurfaceConfigurationPanel(ModuleConfigurationPanel):
         self.contentSizer.Add(self.amntLbl,(n,0))
         n+=1
         self.contentSizer.Add(self.isoRangeSurfaces,(n,0))
+        n+=1
+        self.contentSizer.Add(self.opacityLbl,(n,0))
+        n+=1
+        self.contentSizer.Add(self.opacitySlider,(n,0))
         n+=1
 
     def onSetSmoothing(self,event):
@@ -336,9 +357,9 @@ class SurfaceConfigurationPanel(ModuleConfigurationPanel):
         else:
             self.module.setIsoValue(self.isoSlider.GetValue())
         
-        if self.decimateSlider.GetValue()!=1:
+        if self.decimateSlider.GetValue()!=0:
             self.module.setDecimate(self.decimateSlider.GetValue(),self.decimateCheckbox.GetValue())
-
+        self.module.setOpacity((self.opacityMax-self.opacitySlider.GetValue())/float(self.opacityMax))
         self.module.updateData()
         self.module.updateRendering()
         

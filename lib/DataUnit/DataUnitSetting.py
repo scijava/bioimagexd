@@ -89,6 +89,7 @@ class DataUnitSettings:
         self.register("Spacing")
         #self.register("Origin")
         self.register("Dimensions")
+        self.register("ShowOriginal",serialize=1)
         self.register("Type")
         self.register("Name")
         self.register("BitDepth")

@@ -151,7 +151,11 @@ class Merging(Module):
             mapIntensities.AddObserver("ProgressEvent",self.updateProgress)
             mapIntensities.Update()
             data=mapIntensities.GetOutput()
-            processed.append(data)
+            if not self.settings.get("ShowOriginal"):
+                processed.append(data)
+            else:
+                Logging.info("Using original data instead of mapping through",kw="processing")
+                processed.append(self.images[i])
             del mapIntensities
         
         

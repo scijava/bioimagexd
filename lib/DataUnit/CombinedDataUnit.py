@@ -54,6 +54,7 @@ class CombinedDataUnit(DataUnit.DataUnit):
         Logging.info("Settings class =",settingclass,kw="dataunit")
         self.settings = settingclass()
         self.byName={}
+        self.handleOriginal=0
         self.module = None
         self.outputChls={}
         
@@ -373,8 +374,12 @@ class CombinedDataUnit(DataUnit.DataUnit):
                     image=dataunit.getTimePoint(timePoint)
                     self.module.addInput(dataunit,image)
     
-            # module.getPreview() returns a vtkImageData object
-            preview=self.module.getPreview(depth)
+            if not self.handleOriginal or not self.settings.get("ShowOriginal"):
+                # module.getPreview() returns a vtkImageData object
+                preview=self.module.getPreview(depth)
+            else:
+                Logging.info("Using the original dataset as image",kw="dataunit")
+                preview = image
             # If no output channels were requested, then just return the
             # preview
             if not self.outputChls:

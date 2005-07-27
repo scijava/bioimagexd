@@ -137,9 +137,11 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
             event.Skip()
             return
         x,y=event.GetPosition()
+        x/=float(self.zoomFactor)
+        y/=float(self.zoomFactor)
         dims=self.imagedata.GetDimensions()
-        dims=(dims[0],dims[1],dims[2]*self.zoomZ)
-        dims=[i*self.zoomFactor for i in dims]
+        #dims=(dims[0],dims[1],dims[2]*self.zoomZ)
+        #dims=[i*self.zoomFactor for i in dims]
         
         # the yz plane
         if x>dims[0]+(2*self.xmargin) and y>self.ymargin and y<dims[1] and x<dims[0]+(2*self.xmargin)+dims[2]:
@@ -173,7 +175,8 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
             return
             
         #print "showing ",nx,ny,nz
-        self.drawPos=(nx,ny,nz)
+        self.drawPos=[x*self.zoomFactor for x in (nx,ny,nz)]
+        
         if self.x!=nx or self.y!=ny or self.z!=nz:
             self.x,self.y,self.z=nx,ny,nz
             #print "Redrawing slices"
@@ -338,7 +341,7 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
         Description: Does the actual blitting of the bitmap
         """
         if self.sizeChanged:
-            print "size changed, calculating buffer"
+            Logging.info("Size changed, calculating buffer",kw="preview")
             self.calculateBuffer()
             self.updatePreview()
             self.sizeChanged=0

@@ -39,6 +39,15 @@ class MergingDataUnit(CombinedDataUnit):
     Created: 03.07.2005, KP
     Description: Class for an merged channels dataset
     """
+    def __init__(self, name=""):
+        """
+        Method: __init__
+        Created: 03.11.2004, JM
+        Description: Constructor
+        """
+        CombinedDataUnit.__init__(self,name)
+        self.handleOriginal=1
+    
 
     def getBitDepth(self):
         return 32

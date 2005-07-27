@@ -325,6 +325,10 @@ class Visualizer:
         
         self.tb.AddSimpleTool(MenuManager.ID_ADD_SCALE,wx.Image(os.path.join("Icons","scale.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Draw scale","Draw a scale bar on the image")
         self.tb.AddSeparator()
+        self.origBtn=wx.Button(self.tb,-1,"Original")
+        self.origBtn.Bind(wx.EVT_LEFT_DOWN,self.onShowOriginal)
+        self.origBtn.Bind(wx.EVT_LEFT_UP,self.onHideOriginal)
+        self.tb.AddControl(self.origBtn)
  #       self.tb.AddSimpleTool(MenuManager.ID_ROI_CIRCLE,wx.Image(os.path.join("Icons","circle.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Select circle","Select a circular area of the image")
  #       self.tb.AddSimpleTool(MenuManager.ID_ROI_RECTANGLE,wx.Image(os.path.join("Icons","rectangle.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Select rectangle","Select a rectangular area of the image")
  #       self.tb.AddSimpleTool(MenuManager.ID_ROI_POLYGON,wx.Image(os.path.join("Icons","polygon.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Select polygon","Select a polygonal area of the image")
@@ -342,7 +346,25 @@ class Visualizer:
         
         self.zoomCombo.Bind(wx.EVT_COMBOBOX,self.zoomToComboSelection)
         self.tb.Realize()       
+    def onHideOriginal(self,evt):
+        """
+        Method: onShowOriginal
+        Created: 27.07.2005, KP
+        Description: Show the original datasets instead of processed ones
+        """
+        if self.dataUnit:
+            self.dataUnit.getSettings().set("ShowOriginal",0)
+        self.updateRendering()
         
+    def onShowOriginal(self,evt):
+        """
+        Method: onShowOriginal
+        Created: 27.07.2005, KP
+        Description: Show the original datasets instead of processed ones
+        """
+        if self.dataUnit:
+            self.dataUnit.getSettings().set("ShowOriginal",1)
+        self.updateRendering()
     def onSetView(self,evt):
         """
         Method: onSetView
