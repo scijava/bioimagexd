@@ -99,7 +99,7 @@ class LsmDataSource(DataSource.DataSource):
         if self.channelNum>=0:
             msg="Reading channel %d of %s"%(self.channelNum+1,self.shortname)
             if self.timepoint>=0:
-                 msg+="(timepoint %d / %d)"%(self.timepoint,self.dimensions[3])
+                 msg+="(timepoint %d / %d)"%(self.timepoint+1,self.dimensions[3])
         else:
             msg="Reading %s..."%self.shortname
         messenger.send(None,"update_progress",progress,msg)
