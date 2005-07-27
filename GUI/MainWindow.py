@@ -595,6 +595,7 @@ class MainWindow(wx.Frame):
             self.currentTaskWindow.Destroy()
             del self.currentTaskWindow
             self.currentTaskWindow=None
+            self.currentTaskWindowType=None
             
         self.menuManager.disable(MenuManager.ID_CLOSE_TASKWIN)            
         self.taskWin.SetDefaultSize((0,0))
