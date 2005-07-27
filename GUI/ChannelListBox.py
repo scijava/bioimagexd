@@ -47,6 +47,7 @@ class ChannelListBox(wx.HtmlListBox):
         self.Bind(wx.EVT_LISTBOX,self.onSelectItem)
         self.dataUnit = None
         self.previews={}
+        self.SetItemCount(0)
         self.units=[]
         
     def onSelectItem(self,event):
@@ -70,7 +71,6 @@ class ChannelListBox(wx.HtmlListBox):
             units=self.dataUnit.getSourceDataUnits()
         except:
             units = [self.dataUnit]
-        self.SetItemCount(len(units))
         self.units=[]
         for unit in units:
             name=unit.getName()
@@ -80,7 +80,15 @@ class ChannelListBox(wx.HtmlListBox):
                 filename=os.path.basename(filename)
             x,y,z=unit.getDimensions()
             dims="%d x %d x %d"%(x,y,z)
-            self.units.append((name,filename,dims))
+            ctf = unit.getColorTransferFunction()
+            val=[0,0,0]
+            ctf.GetColor(255,val)
+            r,g,b=val
+            r*=255
+            g*=255
+            b*=255
+            color="#%.2x%.2x%.2x"%(r,g,b)
+            self.units.append((color,name,filename,dims))
             
     def setPreview(self,n,image):
         """
@@ -95,8 +103,16 @@ class ChannelListBox(wx.HtmlListBox):
             pngdata=self.previews[n]
             wx.FileSystem_AddHandler(wx.MemoryFSHandler())
             wx.MemoryFSHandler_AddFile("%d.png"%(n), pngdata)
+        self.SetItemCount(n+1)
             
-
+    def __del__(self):
+        """
+        Method: __del__
+        Created: 27.07.2005, KP
+        Description: Destructor
+        """        
+        for i in self.previews.keys():
+            wx.MemoryFSHandler_RemoveFile("%d.png"%i)
         
     def OnGetItem(self, n):
         """
@@ -106,13 +122,13 @@ class ChannelListBox(wx.HtmlListBox):
         """        
         if len(self.units)<=n:return ""
         data=self.units[n]
-
+        
         print "data=",data
         return """<table>
 <tr><td valign="top">
 <img align="left" src="memory:%d.png" width="64" height="64"></td>
-<td valign="top"><b>%s</b><br>
+<td valign="top"><font color="%s"><b>%s</font></b><br>
 <font size="-1">%s</font><br>
 <font color="#808080" size="-1">%s</font></td></tr>
 </table>
-"""%(n,data[0],data[1],data[2])
+"""%(n,data[0],data[1],data[2],data[3])
