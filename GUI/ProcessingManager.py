@@ -104,7 +104,7 @@ class ProcessingManager(TimepointSelection):
         mins=totsecs/60
         secs=totsecs%60
         self.progressDialog.Update(nth,"Timepoint %d (%d/%d) (%d%%) ETA: "
-        "%d mins %d seconds"%(tp,nth,total,100*(1.0*nth)/total,mins,secs))
+        "%d mins %d seconds"%(tp+1,nth,total,100*(1.0*nth)/total,mins,secs))
         if nth==total:
             self.progressDialog.Destroy()
             
