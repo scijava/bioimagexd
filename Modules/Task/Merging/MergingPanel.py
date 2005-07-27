@@ -234,7 +234,9 @@ class MergingPanel(TaskPanel.TaskPanel):
         #self.dataUnit.setOpacityTransfer(self.alphaTF)
         self.settings.set("AlphaTransferFunction",self.alphaTF)
         ctf = self.settings.get("MergingColorTransferFunction")
-        self.intensityTransferEditor.updateCallback=self.doPreviewCallback
+        tf = self.settings.get("IntensityTransferFunction")
+        self.intensityTransferEditor.setIntensityTransferFunction(tf)
+        
         for i in range(len(dataUnit.getSourceDataUnits())):
             self.dataUnit.setOutputChannel(i,1)
         if self.colorBtn:

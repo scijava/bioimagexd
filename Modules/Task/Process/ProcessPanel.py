@@ -41,6 +41,7 @@ from Logging import *
 
 import sys
 import time
+from GUI import ColorTransferEditor
 
 from GUI import TaskPanel
 import UIElements

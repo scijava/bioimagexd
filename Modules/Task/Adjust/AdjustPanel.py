@@ -35,7 +35,6 @@ __version__ = "$Revision: 1.42 $"
 __date__ = "$Date: 2005/01/13 14:52:39 $"
 
 import wx
-#from enthought.tvtk import messenger
 import messenger
 import os.path
 import Dialogs
@@ -51,6 +50,7 @@ from GUI import Events
 
 from GUI import TaskPanel
 import ColorTransferEditor
+import Logging
 
 class AdjustPanel(TaskPanel.TaskPanel):
     """
