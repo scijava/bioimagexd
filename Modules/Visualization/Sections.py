@@ -1,16 +1,14 @@
 # -*- coding: iso-8859-1 -*-
 
 """
- Unit: SlicesMode
+ Unit: Sections
  Project: BioImageXD
  Created: 28.04.2005, KP
  Description:
 
- A slices viewing rendering mode for Visualizer
+ A visualization mode for Visualizer that shows the xy- xz, and yz- planes
+ of the data.
  
- Modified 28.04.2005 KP - Created the class
-          23.05.2005 KP - Split the class to a module of it's own
-          
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
 
@@ -56,7 +54,6 @@ class SectionsMode(VisualizationMode):
         VisualizationMode.__init__(self,parent,visualizer)
         self.sectionsPanel=None
         
-      
     def updateRendering(self):
         """
         Method: updateRendering
@@ -64,6 +61,8 @@ class SectionsMode(VisualizationMode):
         Description: Update the rendering
         """      
         self.sectionsPanel.setTimepoint(self.timepoint)
+        self.sectionsPanel.updatePreview()
+        self.sectionsPanel.Refresh()
         
     def showSideBar(self):
         """
