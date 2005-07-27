@@ -35,7 +35,7 @@ from wx.lib.statbmp  import GenStaticBitmap as StaticBitmap
 import ImageOperations
 import vtk
 from GUI import Events
-
+import Logging
 import InteractivePanel
 
 class SectionsPanel(InteractivePanel.InteractivePanel):
@@ -234,7 +234,6 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
         if self.visualizer.getProcessedMode():
             image=self.dataUnit.doPreview(-2,1,self.timepoint)
             ctf = self.dataUnit.getSourceDataUnits()[0].getColorTransferFunction()
-            print "Got data ",image
         else:
             image=self.dataUnit.getTimePoint(tp)
             ctf=self.dataUnit.getColorTransferFunction()
