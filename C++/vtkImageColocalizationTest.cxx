@@ -482,9 +482,10 @@ template < class T >
             uext[4]=uext[5]=chRandz;
             extract->SetInput(outData);
             extract->SetVOI(uext);
+            extract->Update();
             //printf("Extracting slice %d...\n",chRandz);
             vtkImageData*slice=extract->GetOutput();
-
+        
             uext[4]=uext[5]=0;
             
             gb->SetInput(extract->GetOutput());
@@ -493,6 +494,7 @@ template < class T >
             //printf("Smoothing...");
             gb->Update();
             vtkImageData* smoothed = gb->GetOutput();
+            
             int d[3];
             smoothed->GetDimensions(d);
 //            printf("smoothed dims= %d,%d,%d\n",d[0],d[1],d[2]);
