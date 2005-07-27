@@ -170,6 +170,10 @@ class TaskPanel(scrolled.ScrolledPanel):
             self.toolMgr.toggleTool(toolid,1)
             self.dataUnit.setOutputChannel(i,1)
             n=n+1
+        #self.channelBox.Deselect(0)
+        self.channelBox.Select(0,0)
+        self.channelBox.SetSelection(0)
+        self.channelBox.Refresh()
         return n
         
     def getResult(self):
