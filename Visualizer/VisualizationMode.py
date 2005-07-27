@@ -176,5 +176,5 @@ class VisualizationMode:
         Created: 24.05.2005, KP
         Description: Update the rendering
         """      
-        pass          
+        self.iactivePanel.Refresh()
                 

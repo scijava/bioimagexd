@@ -89,7 +89,7 @@ class Visualizer:
         self.renderer=None
         self.dataUnit = None
         self.enabled=1
-        self.timepoint = -1
+        self.timepoint = 0
         self.preload=0
         self.processedMode = 0
         self.modes=Modules.DynamicLoader.getVisualizationModes()
@@ -167,7 +167,7 @@ class Visualizer:
         self.prev.Bind(wx.EVT_BUTTON,self.onPrevTimepoint)
         self.next.Bind(wx.EVT_BUTTON,self.onNextTimepoint)
         
-        self.timeslider=wx.Slider(self.sliderPanel,value=0,minValue=0,maxValue=1,
+        self.timeslider=wx.Slider(self.sliderPanel,value=1,minValue=1,maxValue=1,
         style=wx.SL_HORIZONTAL|wx.SL_AUTOTICKS|wx.SL_LABELS)
         self.timeslider.Bind(wx.EVT_SCROLL,self.onChangeTimepoint)
 
@@ -249,6 +249,7 @@ class Visualizer:
         Description: Go to next timepoint
         """ 
         if self.timepoint<self.maxTimepoint:
+            Logging.info("Setting timepoint to ",self.timepoint+1,kw="visualizer")
             self.setTimepoint(self.timepoint+1)
         
     def onPrevTimepoint(self,evt):
@@ -667,7 +668,7 @@ class Visualizer:
         count=dataunit.getLength()
         Logging.info("Setting range to %d"%count,kw="visualizer")
         self.maxTimepoint=count-1
-        self.timeslider.SetRange(0,count-1)
+        self.timeslider.SetRange(1,count)
         showItems=0
 
         if self.processedMode:
@@ -727,6 +728,7 @@ class Visualizer:
         Description: Set the timepoint to be shown
         """
         tp=self.timeslider.GetValue()
+        tp-=1 # slider starts from one
         if self.timepoint != tp:
             self.setTimepoint(tp)
             messenger.send(None,"timepoint_changed",tp)
@@ -769,9 +771,10 @@ class Visualizer:
         Created: 28.04.2005, KP
         Description: Set the timepoint to be shown
         """  
-        Logging.info("setTimepoint()",kw="visualizer")
-        if self.timeslider.GetValue()!=timepoint:
-            self.timeslider.SetValue(timepoint)
+        Logging.info("setTimepoint(%d)"%timepoint,kw="visualizer")
+        curr=self.timeslider.GetValue()
+        if curr-1!=timepoint:
+            self.timeslider.SetValue(timepoint+1)
         self.timepoint = timepoint
         if hasattr(self.currentWindow,"setTimepoint"):
             self.currentWindow.setTimepoint(self.timepoint)
