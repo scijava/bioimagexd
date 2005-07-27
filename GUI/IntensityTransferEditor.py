@@ -627,6 +627,7 @@ class IntensityTransferEditor(wx.Panel):
         self.iTF=TF
         self.updateGUI(1)
         self.updateGraph()
+        self.Refresh()
 
 
 if __name__=='__main__':
@@ -637,9 +638,9 @@ if __name__=='__main__':
             self.SetTopWindow(frame)
             frame.Show(True)
             return True
-	def setAlphaMode(self,flag):
-	    if flag:
-		self.panel.setAlphaMode(1)
+        def setAlphaMode(self,flag):
+            if flag:
+                self.panel.setAlphaMode(1)
     app=MyApp()
     flag=("alpha" in sys.argv)
     app.setAlphaMode(flag)
