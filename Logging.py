@@ -45,6 +45,10 @@ KWS=["visualizer","main","init","animator","io","task","preview","scale",
 
 import sys
 
+def enableFull():
+    global HIDE_DEBUG
+    HIDE_DEBUG=[]
+
 class GUIError:
     """
     Class: GUIError

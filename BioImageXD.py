@@ -32,6 +32,7 @@ __version__ = "$Revision: 1.22 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 import os.path
+import os
 import sys
 import csv
 
@@ -39,17 +40,24 @@ import csv
 import Logging
 
 import glob
-try:
-    import py2exe
-    from distutils.core import setup
-except:
-    pass
 import Configuration
 
 #sys.path.insert(0,"C:\\Mingw\\lib")
 # This will fix the VTK paths using either values from the
 # configuration file, or sensible defaults
 cfg=Configuration.Configuration("BioImageXD.ini")
+
+import imp
+
+def main_is_frozen():
+   return (hasattr(sys, "frozen") or # new py2exe
+           hasattr(sys, "importers") # old py2exe
+           or imp.is_frozen("__main__")) # tools/freeze
+
+def get_main_dir():
+   if main_is_frozen():
+       return os.path.dirname(sys.executable)
+   return os.path.dirname(sys.argv[0])
 
 import lib
 import GUI
@@ -95,17 +103,8 @@ if __name__=='__main__':
         Logging.outfile=fp
 
     if "py2exe" in sys.argv:
-        EXCLUDES=['MayaViUserReader', 'PyShell', 'dl', 'dotblas', 'hexdump', 'libvtkCommonPython', 'libvtkFilteringPython', 'libvtkGraphicsPython', 'libvtkHybridPython', 'libvtkIOPython', 'libvtkImagingPython', 'libvtkParallelPython', 'libvtkPatentedPython', 'libvtkRenderingPython', 'mx', 'win32com.gen_py']
-        # Exclude the sources because they will be packaged as plain python files
-        #SOURCES=["GUI","Modules","Visualizer"]
-        #EXCLUDES+=SOURCES
-        setup(console=["Main.py"],
-        data_files=[("Icons",glob.glob("Icons\\*.*")),
-        ("Binaries",glob.glob("bin\\*.*"))],
-        options = {"py2exe": 
-        { "excludes": EXCLUDES,
-        "packages": ["encodings"]}})
-        #zipfile="lib/libraries.zip")
+        from build_app import *
+        build()
     else:
         # Import Psyco if available
         #try:
@@ -113,6 +112,16 @@ if __name__=='__main__':
         #    psyco.full()
         #except ImportError:
         #    pass
+        # If the main application is frozen, then we redirect logging
+        # to  a log file
+        if main_is_frozen():
+            import time
+            logfile="%s.log"%(time.strftime("%d.%m.%y"))
+            f=open(logfile,"w")
+            sys.stdout = f 
+            sys.stderr = f
+            Logging.outfile = f
+            Logging.enableFull()
         app=LSMApplication(0)
         app.run()
 

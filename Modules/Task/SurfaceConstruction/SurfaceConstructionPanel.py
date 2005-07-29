@@ -32,7 +32,6 @@ __author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.23 $"
 __date__ = "$Date: 2005/01/14 09:23:07 $"
 
-from Tkinter import *
 import os.path
 import Dialogs
 
@@ -153,7 +152,7 @@ class SurfaceConstructionpanel(TaskPanel.TaskPanel):
         
         self.filterLbl.grid(row=9,column=0,sticky=W+E)
         self.filterVar=StringVar()
-    	self.filterVar.set("Gaussian Splat")
+        self.filterVar.set("Gaussian Splat")
         self.filterMenu=OptionMenu(self.optionFrame,self.filterVar,
         "Gaussian Splat","Shepard Method","Delaunay Triangulation",
         "Surface Reconstruction")
