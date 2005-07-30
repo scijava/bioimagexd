@@ -43,21 +43,21 @@ vtkImageSimpleMIP::vtkImageSimpleMIP()
 
 //-----------------------------------------------------------------------------
 
-void vtkImageSimpleMIP::ComputeInputUpdateExtent(int inExt[6], 
+// Given an xyz output extend, determine what input extent we need in order to execute
+void vtkImageSimpleMIP::ComputeInputUpdateExtent(int inExt[6],
                                              int outExt[6])
 {
     int i = 0, k = 0;
     int wholeExt[6];
-    //printf("Getting input update extent from output extent\n");
-    //printf("inExt=%d,%d,%d,%d,%d,%d\n",inExt[0],inExt[1],inExt[2],inExt[3],inExt[4],inExt[5]);
-    //printf("outExt=%d,%d,%d,%d,%d,%d\n",outExt[0],outExt[1],outExt[2],outExt[3],outExt[4],outExt[5]);
+    printf("MIP: Getting input update extent from output extent\n");
+    printf("MIP: outExt=%d,%d,%d,%d,%d,%d\n",PRT_EXT(outExt));
     this->GetInput()->GetWholeExtent(wholeExt);
-    memcpy(inExt,wholeExt,sizeof(int)*6);
-    
+    memcpy(wholeExt,inExt,sizeof(int)*6);
+
 }
 
 //-----------------------------------------------------------------------------
-void 
+void
 vtkImageSimpleMIP::ExecuteInformation(vtkImageData *input, vtkImageData *output)
 {
   this->vtkImageToImageFilter::ExecuteInformation( input, output );
@@ -66,11 +66,11 @@ vtkImageSimpleMIP::ExecuteInformation(vtkImageData *input, vtkImageData *output)
   wholeExt[5]=0;
   // We're gonna produce image one slice thick
   output->SetWholeExtent(wholeExt);
-//  printf("Setting number of components to %d\n",input->GetNumberOfScalarComponents());
+  printf("MIP: Setting number of components to %d\n",input->GetNumberOfScalarComponents());
   int ncomps = input->GetNumberOfScalarComponents();
   if(ncomps>3)ncomps=3;
   output->SetNumberOfScalarComponents(ncomps);
-  
+
 }
 
 //-----------------------------------------------------------------------------
@@ -87,24 +87,26 @@ void vtkImageSimpleMIP::ExecuteData(vtkDataObject *)
 
   unsigned char scalar,outScalar;
   if(!output) {
-      printf("No output\n");
+      printf("MIP: No output\n");
   }
   output->GetUpdateExtent(uExtent);
-//	 printf("update extent=%d,%d,%d,%d,%d,%d",PRT_EXT(uExtent));
+  printf("MIP: update extent of output=%d,%d,%d,%d,%d,%d\n",PRT_EXT(uExtent));
   output->SetExtent(uExtent);
 
-  // We will want the input update extent to be the one we go through
-  input->GetUpdateExtent(uExtent);
-//  printf("Update extent is %d,%d,%d,%d,%d,%d",PRT_EXT(uExtent));
- 
+   // WRONG!:
+  // We will want the input whole extent to be the one we go through
+ input->GetWholeExtent(uExtent);
+ printf("MIP: whole extent is %d,%d,%d,%d,%d,%d\n",PRT_EXT(uExtent));
+
   // Get pointers for input and output
-  char *inPtr = (char *) input->GetScalarPointerForExtent(uExtent);
-  char *outPtr = (char *) output->GetScalarPointerForExtent(uExtent);
-  
+  char *inPtr = (char *) input->GetScalarPointer();
+  char *outPtr = (char *) output->GetScalarPointer();
+
   if(!input) {
     vtkErrorMacro("No input is specified.");
-  } 
+  }
   if(this->UpdateExtentIsEmpty(output)) {
+      printf("MIP: EMPTY UPDATE EXTENT!\n");
       return;
   }
   
@@ -116,29 +118,30 @@ void vtkImageSimpleMIP::ExecuteData(vtkDataObject *)
   maxZ = uExtent[5] - uExtent[4];
   maxC = input->GetNumberOfScalarComponents();
   if(maxC>3)maxC=3;
-    
+
   input->GetIncrements(inIncX, inIncY, inIncZ);
   output->GetIncrements(outIncX, outIncY, outIncZ);
-  //printf("inIncX=%d,inIncY=%d,inIncZ=%d\n",inIncX,inIncY,inIncZ);
-  //printf("outIncX=%d,outIncY=%d,outIncZ=%d\n",outIncX,outIncY,outIncZ);
-//  printf("x=%d,y=%d,z=%d\n",maxX,maxY,maxZ);
+  printf("MIP: inIncX=%d,inIncY=%d,inIncZ=%d\n",inIncX,inIncY,inIncZ);
+  printf("MIP: outIncX=%d,outIncY=%d,outIncZ=%d\n",outIncX,outIncY,outIncZ);
+  printf("MIP: x=%d,y=%d,z=%d,c=%d\n",maxX,maxY,maxZ,maxC);
+
   #define GET_AT(x,y,z,c,ptr) *(ptr+(z)*inIncZ+(y)*inIncY+(x)*inIncX+c)
+  #define GET_AT_OUT(x,y,z,c,ptr) *(ptr+(z)*outIncZ+(y)*outIncY+(x)*outIncX+c)
   #define SET_AT(x,y,z,c,ptr,val) *(ptr+(z)*outIncZ+(y)*outIncY+(x)*outIncX+c)=val
-  
-  //printf("maxX=%d,maxY=%d,maxZ=%d\n",maxX,maxY,maxZ);
+
   for(idxZ = 0; idxZ <= maxZ; idxZ++ ) {
     UpdateProgress(idxZ/float(maxZ));
     for(idxY = 0; idxY <= maxY; idxY++ ) {
       for(idxX = 0; idxX <= maxX; idxX++ ) {
-	  for(idxC = 0; idxC <= maxC; idxC++) {
-	      scalar = GET_AT(idxX,idxY,idxZ,idxC,inPtr);
-	      outScalar = GET_AT(idxX,idxY,0,idxC,outPtr);
-	      if(scalar > outScalar) SET_AT(idxX,idxY,0,idxC,outPtr,scalar);
-	  }
+          for(idxC = 0; idxC < maxC; idxC++) {
+              scalar = GET_AT(idxX,idxY,idxZ,idxC,inPtr);
+              outScalar = GET_AT_OUT(idxX,idxY,0,idxC,outPtr);
+              if(scalar > outScalar) SET_AT(idxX,idxY,0,idxC,outPtr,scalar);
+          }
       }
-    }  
+    }
   }
-  
+  printf("MIP: done\n");
 }
 
 

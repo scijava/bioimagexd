@@ -1,5 +1,4 @@
 # -*- coding: iso-8859-1 -*-
-
 """
  Unit: ImageOperations
  Project: BioImageXD
@@ -256,15 +255,6 @@ def vtkImageDataToPngString(data,slice=-1,startpos=None,endpos=None):
         data+=chr(result.GetValue(i))
     return data
     
-def updateProgress(obj,evt,*args):
-    """
-    Method: updateProgress
-    Created: 14.07.2005, KP
-    Description: A function that sends an update event
-    """
-    #progress=obj.GetProgress()
-    #print progress
-    messenger.send(None,"update_progress",0)
     
 
     
@@ -277,7 +267,6 @@ def vtkImageDataToPreviewBitmap(imageData,color,width=0,height=0,bgcolor=(0,0,0)
                  wxBitmap
     """   
     mip=vtk.vtkImageSimpleMIP()
-    #mip.AddObserver("ProgressEvent",updateProgress)
     mip.SetInput(imageData)
     x,y,z=imageData.GetDimensions()
     
@@ -294,17 +283,21 @@ def vtkImageDataToPreviewBitmap(imageData,color,width=0,height=0,bgcolor=(0,0,0)
     else:
         ctf=color
     output=mip.GetOutput()
+    Logging.info("Got MIP",kw="imageop")
     mip.Update()
-    if output.GetNumberOfScalarComponents()==1: 
+    
+    if output.GetNumberOfScalarComponents()==1:
+        Logging.info("Mapping MIP through ctf",kw="imageop")
         maptocolor=vtk.vtkImageMapToColors()
-        maptocolor.SetInput(mip.GetOutput())
+        maptocolor.SetInput(output)
         maptocolor.SetLookupTable(ctf)
         maptocolor.SetOutputFormatToRGB()
         maptocolor.Update()
         imagedata=maptocolor.GetOutput()
     else:
-        imagedata=mip.GetOutput()
+        imagedata=output
     if getpng:
+        Logging.info("Getting PNG string",kw="imageop")
         pngstr=vtkImageDataToPngString(imagedata)
     image = vtkImageDataToWxImage(imagedata)
 
@@ -316,7 +309,7 @@ def vtkImageDataToPreviewBitmap(imageData,color,width=0,height=0,bgcolor=(0,0,0)
         height=aspect*width
     if not width and not height:
         width=height=64
-    
+    Logging.info("Scaling to %dx%d"%(width,height),kw="imageop")
     image.Rescale(width,height)
     bitmap=image.ConvertToBitmap()
     if getpng:

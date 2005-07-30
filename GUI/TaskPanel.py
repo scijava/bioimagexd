@@ -170,10 +170,7 @@ class TaskPanel(scrolled.ScrolledPanel):
             self.toolMgr.toggleTool(toolid,1)
             self.dataUnit.setOutputChannel(i,1)
             n=n+1
-        #self.channelBox.Deselect(0)
-        self.channelBox.Select(0,0)
         self.channelBox.SetSelection(0)
-        self.channelBox.Refresh()
         return n
         
     def getResult(self):
@@ -246,7 +243,7 @@ class TaskPanel(scrolled.ScrolledPanel):
                      the menu
         """
         Logging.info("Select item %d"%index, kw="dataunit")
-        if index==-1:	    
+        if index==-1:       
             raise "No index given"
 
         self.settings = self.dataUnit.getSourceDataUnits()[index].getSettings()

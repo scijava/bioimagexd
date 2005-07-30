@@ -278,7 +278,7 @@ class MainWindow(wx.Frame):
         wx.LayoutAlgorithm().LayoutWindow(self, self.visWin)
         self.visWin.Refresh()
         
-    def updateProgressBar(self,obj,event,arg,text=None):
+    def updateProgressBar(self,obj,event,arg,text=None,allow_gui=1):
         """
         Method: updateProgressBar()
         Created: 03.11.2004, KP
@@ -289,8 +289,10 @@ class MainWindow(wx.Frame):
         self.progress.SetValue(int(arg))
         if text:
             self.statusbar.SetStatusText(text)
-        wx.GetApp().Yield(1)
-        #wx.SafeYield()
+        if allow_gui:
+            wx.GetApp().Yield(1)
+        else:
+            wx.SafeYield()
     def updateVoxelInfo(self,obj,event,x,y,z,r,g,b,a,ctf):
         """
         Method: updateVoxelInfo

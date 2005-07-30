@@ -102,7 +102,7 @@ class LsmDataSource(DataSource.DataSource):
                  msg+="(timepoint %d / %d)"%(self.timepoint+1,self.dimensions[3])
         else:
             msg="Reading %s..."%self.shortname
-        messenger.send(None,"update_progress",progress,msg)
+        messenger.send(None,"update_progress",progress,msg,0)
              
 
     def getDataSetCount(self):

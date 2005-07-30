@@ -67,7 +67,7 @@ class Module:
         progress=self.shift+progress*self.scale
         txt=obj.GetProgressText()
         if not txt:txt=self.eventDesc
-        messenger.send(None,"update_progress",progress,txt)        
+        messenger.send(None,"update_progress",progress,txt,0)        
         
     def setTimepoint(self,tp):
         """

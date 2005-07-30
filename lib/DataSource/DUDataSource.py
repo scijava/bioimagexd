@@ -133,7 +133,7 @@ class VtiDataSource(DataSource):
         Description: Sends progress update event
         """        
         progress=obj.GetProgress()
-        messenger.send(None,"update_progress",progress,"Reading %s..."%self.shortname)
+        messenger.send(None,"update_progress",progress,"Reading %s..."%self.shortname,0)
              
         
     def getSpacing(self):
