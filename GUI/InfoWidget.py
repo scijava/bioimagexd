@@ -71,10 +71,10 @@ class InfoWidget(wx.Panel):
         Created: 03.11.2004, KP
         Description: Initialization for the Info node
         """
-        wx.Panel.__init__(self,master,-1,**kws)
+        wx.Panel.__init__(self,master,-1,style=wx.BORDER_RAISED,**kws)
         self.mainsizer=wx.GridBagSizer(5,5)
         
-        self.infoNotebook=wx.Notebook(self,-1,size=(300,300))        
+        self.infoNotebook=wx.Notebook(self,-1,size=(280,300))        
         self.mainsizer.Add(self.infoNotebook,(0,1),flag=wx.EXPAND|wx.ALL)
 
         self.modules=Modules.DynamicLoader.getTaskModules()
@@ -184,6 +184,7 @@ class InfoWidget(wx.Panel):
                      dataunit
         """
         self.infoPanel=wx.Panel(self.infoNotebook,-1)
+        #self.infoPanel=wx.Panel(self,-1)
         self.infoSizer=wx.GridBagSizer(5,5)
 
         self.infoNotebook.AddPage(self.infoPanel,"Channel info")
@@ -206,7 +207,7 @@ class InfoWidget(wx.Panel):
         #self.infoNotebook.AddPage(self.commonSettingsPanel,"Data Unit")
         
         
-        self.htmlpage=wx.html.HtmlWindow(self.infoPanel,-1,size=(350,200))
+        self.htmlpage=wx.html.HtmlWindow(self.infoPanel,-1,size=(280,200))
         if "gtk2" in wx.PlatformInfo:
             self.htmlpage.SetStandardFonts()
  
@@ -223,4 +224,4 @@ class InfoWidget(wx.Panel):
         
         self.infoPanel.SetSizer(self.infoSizer)
         self.infoPanel.SetAutoLayout(1)
-        
+        #self.mainsizer.Add(self.infoPanel,(0,1),flag=wx.EXPAND|wx.ALL)        

@@ -98,23 +98,28 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
         offset=-2
         coloffset=1
         mapping={ "PValue":(2,0,fs2),
-                  "PearsonImageAbove":(7,1,fs2),
-                  "PearsonImageBelow":(8,0,fs2),
-                  "PearsonWholeImage":(7,0,fs2),
-                  "M1":(9,0,fs2),
-                  "M2":(10,0,fs2),
-                  "ThresholdM1":(9,1,fs2),
-                  "ThresholdM2":(10,1,fs2),
-                  "ColocAmount":(3,0,ds),
+                  "ColocAmount":(2,0,ds),
                   "ColocPercent":(4,0,fs,100),
                   "PercentageVolumeCh1":(5,0,fs,100),
-                  "PercentageVolumeCh2":(6,0,fs,100),
                   "PercentageMaterialCh1":(5,1,fs,100),
                   "PercentageMaterialCh2":(6,1,fs,100),
-                  "SumOverThresholdCh1":(11,1,ds),
-                  "SumOverThresholdCh2":(12,1,ds),
-                  "SumCh1":(11,0,ds),
-                  "SumCh2":(12,0,ds)}
+                  "PercentageVolumeCh2":(6,0,fs,100),
+                  "PearsonWholeImage":(7,0,fs2),
+                  "PearsonImageAbove":(7,1,fs2),
+                  "PearsonImageBelow":(8,0,fs2),
+#                  "M1":(9,0,fs2),
+#                  "M2":(10,0,fs2),
+                  "ThresholdM1":(9,0,fs2),
+                  "ThresholdM2":(10,0,fs2),
+                  "K1":(11,0,fs2),
+                  "K2":(12,0,fs2),
+                  
+                  "SumCh1":(13,0,ds),
+                  "SumOverThresholdCh1":(13,1,ds),
+                  "SumCh2":(14,0,ds),
+                  "SumOverThresholdCh2":(14,1,ds)
+        }
+                  
         for item in mapping.keys():
             val=0.0
             if self.settings:
@@ -358,12 +363,14 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
         w.writerow([""]+names)
         w.writerow(["% of channel colocalized",100*get1("PercentageVolumeCh1"),100*get2("PercentageVolumeCh2")])
         w.writerow(["% of channel colocalized (voxels > threshold)",100*get1("PercentageMaterialCh1"),100*get2("PercentageMaterialCh2")])
-        w.writerow(["Manders' coefficient M1 / M2",get1("M1"),get2("M2")])
+        w.writerow(["Manders' coefficient m1 / m2",get1("M1"),get2("M2")])
         w.writerow(["Manders' coefficient M1 / M2 (voxels > threshold)",get1("ThresholdM1"),get2("ThresholdM2")])
+        w.writerow(["Overlap coefficient k1 / k2",get1("K1"),get2("K2")])        
         w.writerow([""])
         mapping=["Fay's","Costes'","van Steensel's"]
         method=get1("Method")
-        w.writerow(["P-Value (%s method)"%mapping[method],get1("PValue")])
+        if method != None:
+            w.writerow(["P-Value (%s method)"%mapping[method],get1("PValue")])
         w.writerow(["Correlation (observed)",get1("RObserved")])
         w.writerow(["Mean of Correlation (randomized)",get1("RRandMean")])
         w.writerow(["Standard deviation of Correlation (randomized)",get1("RRandSD")])
@@ -391,7 +398,7 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
         
         self.listctrl.SetColumnWidth(0,180)
         self.listctrl.SetColumnWidth(1,60)
-        self.listctrl.SetColumnWidth(2,60)
+        self.listctrl.SetColumnWidth(2,120)
         n=0
         self.listctrl.InsertStringItem(n,"P-Value")
         n+=1
@@ -410,6 +417,10 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
         self.listctrl.InsertStringItem(n,"M1")
         n+=1
         self.listctrl.InsertStringItem(n,"M2")
+        n+=1
+        self.listctrl.InsertStringItem(n,"K1")
+        n+=1
+        self.listctrl.InsertStringItem(n,"K2")
         n+=1
         self.listctrl.InsertStringItem(n,"Sum of channel 1")
         n+=1

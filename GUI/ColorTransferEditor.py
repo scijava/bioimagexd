@@ -523,6 +523,7 @@ class ColorTransferEditor(wx.Panel):
         self.points=[self.redpoints,self.greenpoints,self.bluepoints,self.alphapoints]
         self.freeMode = 0
         self.updateGraph()
+        messenger.send(None,"data_changed",0)
         self.colorBtn.SetColour(col)
         
         
@@ -604,6 +605,7 @@ class ColorTransferEditor(wx.Panel):
                 
                 self.funcs[self.color][x]=y
                 self.updateGraph()     
+                messenger.send(None,"data_changed",0)
                 self.pos = (x,y)
             else:
                 if self.selectedPoint and self.selectedPoint in self.points[self.color]:
@@ -616,6 +618,7 @@ class ColorTransferEditor(wx.Panel):
                     self.points[self.color][i]=(x,y)
                     self.selectedPoint = (x,y)
                     self.updateGraph()
+                    messenger.send(None,"data_changed",0)
     
     def onFreeMode(self,event):
         """
@@ -634,7 +637,7 @@ class ColorTransferEditor(wx.Panel):
         if not self.freeMode and was:
             Logging.info("Analyzing free mode for points",kw="ctf")
             self.getPointsFromFree()
-        Logging.info("Points after=",self.points,kw="ctf")	    
+        Logging.info("Points after=",self.points,kw="ctf")      
 
         self.updateGraph()
                 
@@ -892,7 +895,7 @@ class ColorTransferEditor(wx.Panel):
         self.colorBtn.Refresh()
 
         self.updateGraph()
-
+        
     def getOpacityTransferFunction(self):
         """
         Method: getOpacityTransferFunction()

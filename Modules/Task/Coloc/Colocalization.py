@@ -131,6 +131,7 @@ class Colocalization(Module):
             Logging.info("Done!",kw="processing")
             for i in ["Ch1ThresholdMax","Ch2ThresholdMax","PearsonImageAbove",
                       "PearsonImageBelow","PearsonWholeImage","M1","M2",
+                      "K1","K2",
                       "ThresholdM1","ThresholdM2","Slope","Intercept",
                       "ColocAmount","ColocPercent","PercentageVolumeCh1",
                       "PercentageVolumeCh2","PercentageMaterialCh1","PercentageMaterialCh2",

@@ -7,9 +7,7 @@
  Description:
 
  A module containing the orthogonal slices module for the visualization
- 
- Modified 28.04.2005 KP - Created the class
-          
+           
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
 
@@ -73,7 +71,6 @@ class ImagePlaneModule(VisualizationModule):
         
         self.planeWidgetX = vtk.vtkImagePlaneWidget()
         self.planeWidgetX.DisplayTextOn()
-        self.planeWidgetX.SetPlaneOrientationToXAxes()
         self.planeWidgetX.SetPicker(self.picker)
         self.planeWidgetX.SetKeyPressActivationValue("x")
         #self.planeWidgetX.UserControlledLookupTableOn()
@@ -83,7 +80,6 @@ class ImagePlaneModule(VisualizationModule):
 
         self.planeWidgetY = vtk.vtkImagePlaneWidget()
         self.planeWidgetY.DisplayTextOn()
-        self.planeWidgetY.SetPlaneOrientationToYAxes()
         self.planeWidgetY.SetPicker(self.picker)
         self.planeWidgetY.SetKeyPressActivationValue("y")
         self.prop2 = self.planeWidgetY.GetPlaneProperty()
@@ -97,7 +93,6 @@ class ImagePlaneModule(VisualizationModule):
         # cross-hair cursor snapping to pixel centers
         self.planeWidgetZ = vtk.vtkImagePlaneWidget()
         self.planeWidgetZ.DisplayTextOn()
-        self.planeWidgetZ.SetPlaneOrientationToZAxes()
         self.planeWidgetZ.SetPicker(self.picker)
         self.planeWidgetZ.SetKeyPressActivationValue("z")
         self.prop3 = self.planeWidgetZ.GetPlaneProperty()
@@ -225,11 +220,12 @@ class ImagePlaneModule(VisualizationModule):
         self.outlineMapper.Update()
 
         if self.renew:
-
             self.planeWidgetX.SetInput(self.data)
             self.planeWidgetZ.SetInput(self.data)
             self.planeWidgetY.SetInput(self.data)
             self.renew=0
+            for i in ["X","Y","Z"]:
+                eval("self.planeWidget%s.SetPlaneOrientationTo%sAxes()"%(i,i))            
         self.planeWidgetX.SetSliceIndex(self.x)
         self.planeWidgetY.SetSliceIndex(self.y)
         self.planeWidgetZ.SetSliceIndex(self.z)

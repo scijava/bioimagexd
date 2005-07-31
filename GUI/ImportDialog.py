@@ -260,6 +260,7 @@ class ImportDialog(wx.Dialog):
         
         self.sourcelbl=wx.StaticText(self.imagePanel,-1,"Imported dataset consists of:")
         self.choice= wx.Choice(self.imagePanel,-1,choices=["Files following pattern","All files in same directory"],size=(200,-1))
+        self.choice.SetSelection(0)
         self.choice.Bind(wx.EVT_CHOICE,self.setInputType)
         
         self.patternEdit=wx.TextCtrl(self.imagePanel,-1,"",style=wx.TE_PROCESS_ENTER)

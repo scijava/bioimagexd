@@ -7,9 +7,6 @@
  Description:
 
  A module containing the various Rendering modules for the visualization
- 
- Modified 28.04.2005 KP - Created the class
-          24.05.2005 KP - Combined base class for config objects to this mod
           
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details

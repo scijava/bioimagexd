@@ -95,7 +95,8 @@ class AxesModule(VisualizationModule):
         Created: 28.04.2005, KP
         Description: Set the timepoint to be displayed
         """          
-        pass
+        self.updateRendering()
+ 
         
     def updateRendering(self,e1=None,e2=None):
         """

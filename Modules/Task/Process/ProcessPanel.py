@@ -298,7 +298,7 @@ class ProcessPanel(TaskPanel.TaskPanel):
         self.updateFilterData()
         TaskPanel.TaskPanel.doOperation(self)
 
-    def doPreviewCallback(self,event=None):
+    def doPreviewCallback(self,event=None,*args):
         """
         Method: doPreviewCallback()
         Created: 03.11.2004, KP
@@ -310,8 +310,6 @@ class ProcessPanel(TaskPanel.TaskPanel):
         #print "doMedianVar in window: "
         #print self.doMedianVar.get()
         self.updateFilterData()
-        print "Update preview"
-
         TaskPanel.TaskPanel.doPreviewCallback(self,event)
 
     def setCombinedDataUnit(self,dataUnit):

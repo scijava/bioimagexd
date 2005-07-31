@@ -110,9 +110,9 @@ class MainWindow(wx.Frame):
         self.treeWin=wx.SashLayoutWindow(self,MenuManager.ID_TREE_WIN,style=wx.RAISED_BORDER|wx.SW_3D)
         self.treeWin.SetOrientation(wx.LAYOUT_VERTICAL)
         self.treeWin.SetAlignment(wx.LAYOUT_LEFT)
-        #self.treeWin.SetSashVisible(wx.SASH_RIGHT,False)
-        self.treeWin.SetDefaultSize((200,768))
-        self.treeWin.origSize=(200,768)
+        self.treeWin.SetSashVisible(wx.SASH_RIGHT,True)
+        self.treeWin.SetDefaultSize((160,768))
+        self.treeWin.origSize=(160,768)
 
         # A window for the visualization modes
         self.visWin=wx.SashLayoutWindow(self,MenuManager.ID_VIS_WIN,style=wx.RAISED_BORDER|wx.SW_3D)
@@ -136,8 +136,8 @@ class MainWindow(wx.Frame):
         self.infoWin.SetAlignment(wx.LAYOUT_RIGHT)
         self.infoWin.SetSashVisible(wx.SASH_LEFT,True)
         self.infoWin.SetSashBorder(wx.SASH_LEFT,True)
-        self.infoWin.SetDefaultSize((350,768))        
-        self.infoWin.origSize = (350,768)
+        self.infoWin.SetDefaultSize((280,768))        
+        self.infoWin.origSize = (280,768)
         #self.taskWin=wx.Panel(self,-1,size=(0,768))
         
         self.infoWidget=InfoWidget.InfoWidget(self.infoWin)
@@ -226,19 +226,24 @@ class MainWindow(wx.Frame):
 
         if eID == MenuManager.ID_TREE_WIN:
             w,h=self.treeWin.GetSize()
-            self.treeWin.SetDefaultSize((event.GetDragRect().width,h))
+            newsize=(event.GetDragRect().width,h)
+            self.treeWin.SetDefaultSize(newsize)
+            self.treeWin.origSize=newsize
         #elif eID == MenuManager.ID_VIS_WIN:
         #    w,h=self.visWin.GetSize()
         #    self.visWin.SetDefaultSize((event.GetDragRect().width,h))
 
         elif eID == MenuManager.ID_INFO_WIN:
             w,h=self.infoWin.GetSize()
-            self.infoWin.SetDefaultSize((event.GetDragRect().width,h))
-            
+            newsize=(event.GetDragRect().width,h)
+            self.infoWin.SetDefaultSize(newsize)
+            self.infoWin.origSize=newsize
         elif eID == MenuManager.ID_TASK_WIN:
             w,h=self.taskWin.GetSize()
             #Logging.info("Setting task window size",kw="main")
-            self.taskWin.SetDefaultSize((event.GetDragRect().width,h))
+            newsize=(event.GetDragRect().width,h)
+            self.taskWin.SetDefaultSize(newsize)
+            self.taskWin.origSize=newsize
         
         wx.LayoutAlgorithm().LayoutWindow(self, self.visWin)
         self.visWin.Refresh()
@@ -394,6 +399,7 @@ class MainWindow(wx.Frame):
         bmp = wx.Image(os.path.join(iconpath,"view_slices.jpg"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
         tb.DoAddTool(MenuManager.ID_VIS_SLICES,"Slices",bmp,kind=wx.ITEM_CHECK,shortHelp="Slices view")                
         wx.EVT_TOOL(self,MenuManager.ID_VIS_SLICES,self.onMenuVisualizer)
+        tb.ToggleTool(MenuManager.ID_VIS_SLICES,1)
 
         self.visIds.append(MenuManager.ID_VIS_SLICES)
 
@@ -543,10 +549,7 @@ class MainWindow(wx.Frame):
         self.showToolNames=evt.IsChecked() 
         self.GetToolBar().Destroy()
         self.createToolBar()
-#        flags=wx.NO_BORDER|wx.TB_HORIZONTAL
-#        if self.showToolNames:
-#            flags|=wx.TB_TEXT
-#        self.GetToolBar().SetWindowStyleFlag(flags)
+
     def onMenuToggleVisibility(self,evt):
         """
         Method: onMenuToggleVisibility()
@@ -571,6 +574,7 @@ class MainWindow(wx.Frame):
             else:
                 win.SetDefaultSize(win.origSize)
             self.OnSize(None)
+            self.visualizer.OnSize(None)
             return
         elif eid==MenuManager.ID_VIEW_SHELL:
             if cmd=="hide":
@@ -582,6 +586,7 @@ class MainWindow(wx.Frame):
                     self.shell = py.shell.Shell(self.shellWin, -1, introText=intro)
                 self.shellWin.SetDefaultSize(self.shellWin.origSize)
             self.OnSize(None)
+            self.visualizer.OnSize(None)
             return
 
         messenger.send(None,cmd,obj)
@@ -670,9 +675,9 @@ class MainWindow(wx.Frame):
         Description: Callback function for launching the visualizer
         """
         # Hide the infowin and toggle the menu item accordingly
-        self.infoWin.SetDefaultSize((0,0))
-        self.menuManager.check(MenuManager.ID_VIEW_INFO,0)
-        wx.LayoutAlgorithm().LayoutWindow(self, self.visWin)
+        #self.infoWin.SetDefaultSize((0,0))
+        #self.menuManager.check(MenuManager.ID_VIEW_INFO,0)
+        #wx.LayoutAlgorithm().LayoutWindow(self, self.visWin)
         
         eid=evt.GetId()
         if eid==MenuManager.ID_VIS_GALLERY:
@@ -690,7 +695,7 @@ class MainWindow(wx.Frame):
 
 
         self.setButtonSelection(eid)
-        self.onMenuShowTree(None,0)
+        #self.onMenuShowTree(None,0)
 
         # If a visualizer is already running, just switch the mode
         selectedFiles=self.tree.getSelectedDataUnits()

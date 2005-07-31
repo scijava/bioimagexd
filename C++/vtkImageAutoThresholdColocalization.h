@@ -74,7 +74,13 @@ public:
   vtkSetMacro(M1,double);
   vtkGetMacro(M2,double);
   vtkSetMacro(M2,double);
+  // Description:
+  // Overlap coefficients k1 and k2
 
+  vtkGetMacro(K1,double);
+  vtkSetMacro(K1,double);
+  vtkGetMacro(K2,double);
+  vtkSetMacro(K2,double);
   // Description:
   // Manders' colocalization coefficients M1 and M2 for thresholded areas
   vtkGetMacro(ThresholdM1,double);
@@ -182,6 +188,8 @@ private:
   double ThresholdM2;
   double C1;
   double C2;
+  double K1;
+  double K2;
   
   double PercentageVolumeCh1;
   double PercentageVolumeCh2;

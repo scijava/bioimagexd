@@ -8,8 +8,6 @@
  Description:
 
  A dialog for exporting data
- 
- Modified: 20.04.2005 KP - Created the module
 
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
@@ -39,6 +37,7 @@ import wx
 import  wx.lib.filebrowsebutton as filebrowse
 import UIElements
 import vtk
+import Logging
 
 class ExportDialog(wx.Dialog):
     """
@@ -106,27 +105,27 @@ class ExportDialog(wx.Dialog):
         writer="vtk.vtk%sWriter()"%(ext.upper())
         writer=eval(writer)
         prefix=dirname+os.path.sep
-	n=pattern.count("%")
-	Logging.info("Number of images =",n,kw="io")
+        n=pattern.count("%")
+        Logging.info("Number of images =",n,kw="io")
         self.dlg = wx.ProgressDialog("Writing","Writing image %d / %d"%(0,0),maximum = self.imageAmnt-1, parent = self)
         
         if n==0:
             pattern=pattern+"%d"
             n=1
-	Logging.info("Prefix = ",prefix,"pattern = ",pattern,kw="io")
+        Logging.info("Prefix = ",prefix,"pattern = ",pattern,kw="io")
         writer.SetFilePrefix(prefix)
         for t in range(self.n):
-	    Logging.info("Writing timepoint %d"%t,kw="io")
+            Logging.info("Writing timepoint %d"%t,kw="io")
             if n==2:
                 begin=pattern.rfind("%")
                 
                 beginstr=pattern[:begin-1]
-		Logging.info("beginstr=%s, currpattern=%s"%(beginstr,beginstr%t+pattern[begin-1:]),kw="io")
+                Logging.info("beginstr=%s, currpattern=%s"%(beginstr,beginstr%t+pattern[begin-1:]),kw="io")
             else:
                 currpattern="_"+pattern
             currpattern+=".%s"%ext
             currpattern="%s"+currpattern
-	    Logging.info("Setting pattern %s"%currpattern,kw="io")
+            Logging.info("Setting pattern %s"%currpattern,kw="io")
             writer.SetFilePattern(currpattern)
             data=self.dataUnit.getTimePoint(t)
             data.Update()
@@ -134,7 +133,7 @@ class ExportDialog(wx.Dialog):
             writer.SetFileDimensionality(2)
             self.dlg.Update(t*self.z,"Writing image %d / %d"%(t*self.z,self.imageAmnt))
 
-	    Logging.info("Writer = ",writer,kw="io")
+            Logging.info("Writer = ",writer,kw="io")
             writer.Write()
             if n==1:
                 for z in range(self.z):
@@ -208,6 +207,7 @@ class ExportDialog(wx.Dialog):
         self.sourcesizer.Add(self.patternBox)        
         
         self.outputFormat=UIElements.getImageFormatMenu(self.imagePanel)
+        self.outputFormat.menu.SetSelection(0)
         self.outputFormat.menu.Bind(wx.EVT_CHOICE,self.updateListOfImages)
         self.sourcesizer.Add(self.outputFormat)
         
