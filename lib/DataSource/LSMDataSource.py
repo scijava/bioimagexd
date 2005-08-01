@@ -88,6 +88,7 @@ class LsmDataSource(DataSource.DataSource):
                 return
             self.reader.SetFileName(self.filename)
             self.reader.Update()
+            self.updateProgress(None,None)
             
     def updateProgress(self,obj,evt):
         """
@@ -95,14 +96,20 @@ class LsmDataSource(DataSource.DataSource):
         Created: 13.07.2004, KP
         Description: Sends progress update event
         """        
-        progress=obj.GetProgress()
+        if not obj:
+            progress=1.0
+        else:
+            progress=obj.GetProgress()
         if self.channelNum>=0:
             msg="Reading channel %d of %s"%(self.channelNum+1,self.shortname)
             if self.timepoint>=0:
                  msg+="(timepoint %d / %d)"%(self.timepoint+1,self.dimensions[3])
         else:
             msg="Reading %s..."%self.shortname
-        messenger.send(None,"update_progress",progress,msg,0)
+        notinvtk=0
+        
+        if progress==1.0:notinvtk=1
+        messenger.send(None,"update_progress",progress,msg,notinvtk)
              
 
     def getDataSetCount(self):

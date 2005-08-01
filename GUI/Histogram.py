@@ -162,7 +162,8 @@ class Histogram(wx.Panel):
         Created: 12.07.2005, KP
         Description: Set the scale to logarithmic
         """
-        self.logarithmic=evt.IsChecked()
+        self.logarithmic=not self.logarithmic
+        self.menu.Check(self.ID_LOGARITHMIC,self.logarithmic)
         self.renew=1
         self.updatePreview()
         self.Refresh()
@@ -173,7 +174,8 @@ class Histogram(wx.Panel):
         Created: 12.07.2005, KP
         Description: Set the scale to logarithmic
         """
-        self.ignoreBorder=evt.IsChecked()
+        self.ignoreBorder=not self.ignoreBorder
+        self.menu.Check(self.ID_IGNORE_BORDER,self.ignoreBorder)
         self.renew=1
         self.updatePreview()
         

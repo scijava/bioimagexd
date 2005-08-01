@@ -37,6 +37,10 @@ import Dialogs
 from Visualizer.VisualizationModules import *
 import Logging
 
+TEXTURE_MAPPING=1
+RAYCAST=0
+MIP=2
+
 def getClass():return VolumeModule
 def getConfigPanel():return VolumeConfigurationPanel
 def getName():return "Volume Rendering"
@@ -55,9 +59,10 @@ class VolumeModule(VisualizationModule):
         Description: Initialization
         """     
         VisualizationModule.__init__(self,parent,visualizer,**kws)   
+        self.mapper = None
         #self.name = "Volume Rendering"
         self.quality = 10
-        self.method=1
+        self.method=TEXTURE_MAPPING
         self.otfs=[]
         # This is the MIP otf
         otf2=vtk.vtkPiecewiseFunction()
@@ -142,7 +147,7 @@ class VolumeModule(VisualizationModule):
         if self.method<0:return 0
         if raw:
             Logging.info("Setting quality to raw ",quality,kw="rendering")
-            if self.method == 2:
+            if self.method == TEXTURE_MAPPING:
                 Logging.info("Setting maximum number of planes to",quality,kw="rendering")
                 self.mapper.SetMaximumNumberOfPlanes(quality)
             else:
@@ -152,12 +157,17 @@ class VolumeModule(VisualizationModule):
         else:
             Logging.info("Setting quality to",quality,kw="rendering")
         if quality==10:
-            self.volumeProperty.SetInterpolationTypeToLinear()            
+            self.volumeProperty.SetInterpolationTypeToLinear()
+            if self.mapper:
+                if self.method != TEXTURE_MAPPING:
+                    self.mapper.SetSampleDistance(self.sampleDistance)
+                else:
+                    self.mapper.SetMaximumNumberOfPlanes(self.maxPlanes)
         elif quality==9:
             self.volumeProperty.SetInterpolationTypeToNearest()
         elif quality<9:
             quality=10-quality
-            if self.method != 2:
+            if self.method != TEXTURE_MAPPING:
                 self.mapper.SetSampleDistance(quality)
                 return quality
             else:
@@ -195,6 +205,7 @@ class VolumeModule(VisualizationModule):
             # Iso surfacing with fixedpoint mapper is not supported
             if self.vtkcvs and method!=3:
                 self.mapper = vtk.vtkFixedPointVolumeRayCastMapper()
+                self.sampleDistance = self.mapper.GetSampleDistance()
                 #self.volumeProperty.IndependentComponentsOff()
                 mode=blendModes[method]
                 Logging.info("Setting fixed point rendering mode to ",mode,kw="rendering")
@@ -208,6 +219,7 @@ class VolumeModule(VisualizationModule):
                 self.mapper.SetVolumeRayCastFunction(self.function)
         elif method==1: # texture mapping
             self.mapper = vtk.vtkVolumeTextureMapper2D()
+            self.maxPlanes = self.mapper.GetMaximumNumberOfPlanes()
         
         self.volume.SetMapper(self.mapper)    
         
@@ -272,7 +284,7 @@ class VolumeConfigurationPanel(ModuleConfigurationPanel):
         Created: 28.04.2005, KP
         Description: Initialization
         """     
-        self.method=2
+        self.method=TEXTURE_MAPPING
         ModuleConfigurationPanel.__init__(self,parent,visualizer,name,**kws)
         self.editFlag=0
 
@@ -383,7 +395,9 @@ class VolumeConfigurationPanel(ModuleConfigurationPanel):
         if setting:
             val="%d"%setting
         else:val=""
+        flag=self.editFlag
         self.settingEdit.SetValue(val)
+        self.editFlag=flag
         
         
     def onSelectMethod(self,event):

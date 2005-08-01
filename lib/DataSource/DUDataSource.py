@@ -132,8 +132,13 @@ class VtiDataSource(DataSource):
         Created: 13.07.2004, KP
         Description: Sends progress update event
         """        
-        progress=obj.GetProgress()
-        messenger.send(None,"update_progress",progress,"Reading %s..."%self.shortname,0)
+        if not obj:
+            progress=1.0
+        else:
+            progress=obj.GetProgress()
+        notinvtk=0
+        if progress==1.0:notinvtk=1
+        messenger.send(None,"update_progress",progress,"Reading %s..."%self.shortname,notinvtk)
              
         
     def getSpacing(self):
@@ -189,6 +194,7 @@ class VtiDataSource(DataSource):
             "Cannot read XML Image Data File %s"%filename)
         self.reader.SetFileName(filepath)
         self.reader.Update()
+        self.updateProgress()
         return self.reader.GetOutput()
 
     def loadDuFile(self, filename):

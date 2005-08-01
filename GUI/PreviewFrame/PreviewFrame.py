@@ -472,17 +472,20 @@ class PreviewFrame(wx.Panel):
                 
         return data
        
+
     def saveSnapshot(self,filename):
         """
         Method: saveSnapshot(filename)
-        Created: 19.03.2005, KP
-        Description: Method to save the currently displayed screen
-        """        
-        data=self.finalImage
-        if not data:
-            raise "No data"
-        ImageOperations.saveImageAs(data,self.z,filename)
-
+        Created: 05.06.2005, KP
+        Description: Save a snapshot of the scene
+        """      
+        ext=filename.split(".")[-1].lower()
+        if ext=="jpg":ext="jpeg"
+        if ext=="tif":ext="tiff"
+        mime="image/%s"%ext
+        img=self.renderpanel.buffer.ConvertToImage()
+        img.SaveMimeFile(filename,mime)
+        
     def enable(self,flag):
         """
         Method: enable(flag)

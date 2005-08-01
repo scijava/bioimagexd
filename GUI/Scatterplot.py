@@ -87,14 +87,14 @@ class Scatterplot(InteractivePanel.InteractivePanel):
         
         messenger.connect(None,"threshold_changed",self.updatePreview)
         
-        item = wx.MenuItem(self.menu,self.ID_COUNTVOXELS,"Show frequency",kind=wx.ITEM_CHECK)
-        self.Bind(wx.EVT_MENU,self.setVoxelCount,id=self.ID_COUNTVOXELS)
-        self.menu.AppendItem(item)
-        self.menu.Check(self.ID_COUNTVOXELS,1)
-        item = wx.MenuItem(self.menu,self.ID_WHOLEVOLUME,"Show scattergram of whole volume",kind=wx.ITEM_CHECK)
-        self.Bind(wx.EVT_MENU,self.setWholeVolume,id=self.ID_WHOLEVOLUME)
-        self.menu.AppendItem(item)
-        self.menu.Check(self.ID_WHOLEVOLUME,1)
+#        item = wx.MenuItem(self.menu,self.ID_COUNTVOXELS,"Show frequency",kind=wx.ITEM_CHECK)
+#        self.Bind(wx.EVT_MENU,self.setVoxelCount,id=self.ID_COUNTVOXELS)
+#        self.menu.AppendItem(item)
+#        self.menu.Check(self.ID_COUNTVOXELS,1)
+#        item = wx.MenuItem(self.menu,self.ID_WHOLEVOLUME,"Show scattergram of whole volume",kind=wx.ITEM_CHECK)
+#        self.Bind(wx.EVT_MENU,self.setWholeVolume,id=self.ID_WHOLEVOLUME)
+#        self.menu.AppendItem(item)
+#        self.menu.Check(self.ID_WHOLEVOLUME,1)
         item = wx.MenuItem(self.menu,self.ID_LOGARITHMIC,"Logarithmic scale",kind=wx.ITEM_CHECK)
         self.Bind(wx.EVT_MENU,self.onSetLogarithmic,id=self.ID_LOGARITHMIC)
         self.menu.AppendItem(item)
@@ -122,7 +122,8 @@ class Scatterplot(InteractivePanel.InteractivePanel):
         Created: 12.07.2005, KP
         Description: Set the scale to logarithmic
         """
-        self.logarithmic=evt.IsChecked()
+        self.logarithmic=not self.logarithmic
+        self.menu.Check(self.ID_LOGARITHMIC,self.logarithmic)
         self.renew=1
         self.updatePreview()
         self.Refresh()

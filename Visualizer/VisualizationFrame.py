@@ -261,7 +261,9 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
         """
         #wx.Panel.__init__(self,parent,-1,style=wx.RAISED_BORDER)
         #wx.ScrolledWindow.__init__(self,parent,-1)
-        scrolled.ScrolledPanel.__init__(self,parent,-1,size=(200,-1))
+        size=(200,-1)
+        if "size" in kws:size=kws["size"]
+        scrolled.ScrolledPanel.__init__(self,parent,-1,size=size)
         
         self.sizer = wx.GridBagSizer() 
         # Unbind to not get annoying behaviour of scrolling

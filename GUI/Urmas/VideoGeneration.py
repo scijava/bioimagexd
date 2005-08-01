@@ -40,7 +40,7 @@ import Visualizer
 import Configuration
 import os,sys
 import Dialogs
-
+import platform
 class VideoGeneration(wx.Panel):
     """
     Class: RenderingPage
@@ -62,9 +62,9 @@ class VideoGeneration(wx.Panel):
         self.fps = self.control.getFrames() / float(self.control.getDuration())
         self.dur=self.control.getDuration()
 
-        self.outputExts=[["png","bmp","jpg","tif"],["mpg","mpg","avi","wmv","avi","avi"]]
-        self.outputFormats=[["PNG","BMP","JPEG","TIFF"],["MPEG1","MPEG2","MPEG4","WMV1","MS MPEG4","MS MPEG4 v2"]]
-        self.outputCodecs = ["mpeg1video","mpeg2video","mpeg4","wmv1","msmpeg4","msmpeg4v2"]
+        self.outputExts=[["png","bmp","jpg","tif"],["mpg","mpg","avi","wmv","avi","avi","mov"]]
+        self.outputFormats=[["PNG","BMP","JPEG","TIFF"],["MPEG1","MPEG2","MPEG4","WMV1","WMV2","MS MPEG4","MS MPEG4 v2","QuickTime MPEG4"]]
+        self.outputCodecs = ["mpeg1video","mpeg2video","mpeg4","wmv1","wmv2","msmpeg4","msmpeg4v2","mov"]
         self.padding = [1,1,0,0,0,0]
         self.needpad=0
         self.mainsizer=wx.GridBagSizer()
@@ -188,7 +188,14 @@ class VideoGeneration(wx.Panel):
         
         for i in self.outputFormats[sel]:
             self.outputFormat.Append(i)
-        self.outputFormat.SetSelection(0)
+            
+        # Produce quicktime by default but msmpeg4v2 on windows
+        sel=6
+        if platform.system()=="Windows":
+            sel=7
+        self.outputFormat.SetSelection(sel)
+        
+        
     
     def onUpdateCodec(self,event):
         """

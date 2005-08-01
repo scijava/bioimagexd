@@ -154,3 +154,10 @@ class SlicesMode(VisualizationMode):
         """
         self.preview.Show(0)
         
+    def saveSnapshot(self,filename):
+        """
+        Method: saveSnapshot(filename)
+        Created: 05.06.2005, KP
+        Description: Save a snapshot of the scene
+        """      
+        self.preview.saveSnapshot(filename)

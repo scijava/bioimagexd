@@ -295,8 +295,12 @@ class MainWindow(wx.Frame):
         if text:
             self.statusbar.SetStatusText(text)
         if allow_gui:
+            if self.visualizer:
+                self.visualizer.in_vtk=0
             wx.GetApp().Yield(1)
         else:
+            if self.visualizer:
+                self.visualizer.in_vtk=1        
             wx.SafeYield()
     def updateVoxelInfo(self,obj,event,x,y,z,r,g,b,a,ctf):
         """
@@ -418,7 +422,7 @@ class MainWindow(wx.Frame):
         bmp = wx.Image(os.path.join(iconpath,"view_rendering.jpg"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
         tb.DoAddTool(MenuManager.ID_VIS_SIMPLE,"Simple view",bmp,kind=wx.ITEM_CHECK,shortHelp="Simple view")                
         wx.EVT_TOOL(self,MenuManager.ID_VIS_SIMPLE,self.onMenuVisualizer)
-
+        self.visIds.append(MenuManager.ID_VIS_SIMPLE)
         bmp = wx.Image(os.path.join(iconpath,"view_rendering_3d.jpg"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
         tb.DoAddTool(MenuManager.ID_VIS_3D,"3D",bmp,kind=wx.ITEM_CHECK,shortHelp="3D view")                
         wx.EVT_TOOL(self,MenuManager.ID_VIS_3D,self.onMenuVisualizer)
@@ -598,6 +602,7 @@ class MainWindow(wx.Frame):
         Description: Called when the user wants to close the task panel
         """
         if self.currentTaskWindow: 
+            self.menuManager.clearItemsBar()
             self.currentTaskWindow.Show(0)
             self.currentTaskWindow.Destroy()
             del self.currentTaskWindow

@@ -77,10 +77,11 @@ class Visualizer:
         self.histogramIsShowing=0
         self.histogramDataUnit=None
         self.histograms=[]
-        
+        self.changing=0
         self.mainwin=mainwin
         self.menuManager=menuManager
         self.renderingTime=0
+        self.in_vtk=0
         self.parent = parent
         messenger.connect(None,"timepoint_changed",self.onSetTimepoint)
         messenger.connect(None,"data_changed",self.updateRendering)
@@ -120,6 +121,7 @@ class Visualizer:
         self.sidebarWin.SetSashVisible(wx.SASH_RIGHT,True)
         self.sidebarWin.SetSashBorder(wx.SASH_RIGHT,True)
         self.sidebarWin.SetDefaultSize((200,768))
+        self.sidebarWin.origSize=(200,768)
 
         self.toolWin=wx.SashLayoutWindow(self.parent,self.ID_TOOL_WIN,style=wx.NO_BORDER)
         self.toolWin.SetOrientation(wx.LAYOUT_HORIZONTAL)
@@ -475,26 +477,32 @@ class Visualizer:
         self.currMode.zoomToFit()
         self.currMode.Render()
         
-    def onSashDrag(self, event):
+    def onSashDrag(self, event=None):
         """
         Method: onSashDrag
         Created: 24.5.2005, KP
         Description: A method for laying out the window
         """        
-        if event.GetDragStatus() == wx.SASH_STATUS_OUT_OF_RANGE:
+        if event and event.GetDragStatus() == wx.SASH_STATUS_OUT_OF_RANGE:
             Logging.info("Out of range",kw="visualizer")
             return
-
-        eID = event.GetId()
+        w,h=self.sidebarWin.GetSize()
+        if event:
+            eID = event.GetId()
+            newsize=(event.GetDragRect().width,h)
+        else:
+            eID = self.ID_VISTREE_WIN
+            newsize = self.sidebarWin.origSize
 
         if eID == self.ID_VISTREE_WIN:
-            w,h=self.sidebarWin.GetSize()
-            Logging.info("Sidebar window size = %d,%d"%(event.GetDragRect().width,h),kw="visualizer")
-            self.sidebarWin.SetDefaultSize((event.GetDragRect().width,h))
+            Logging.info("Sidebar window size = %d,%d"%newsize,kw="visualizer")
+            self.sidebarWin.SetDefaultSize(newsize)
+            
+            self.sidebarWin.origSize=newsize
         
         wx.LayoutAlgorithm().LayoutWindow(self.parent, self.visWin)
         
-    def OnSize(self, event):
+    def OnSize(self, event=None):
         """
         Method: onSize
         Created: 23.05.2005, KP
@@ -585,7 +593,7 @@ class Visualizer:
 
         if self.currMode:
             self.currMode.deactivate()
-
+            self.currentWindow.Show(0)
         modeclass,settingclass,module=self.modes[mode]
         modeinst=self.instances[mode]
         if not modeinst:
@@ -602,22 +610,26 @@ class Visualizer:
         self.currMode=modeinst
         self.currModeModule=module
 
+        self.currentWindow = modeinst.activate(self.sidebarWin)        
+        self.sidebarWin.SetDefaultSize((0,1024))
+        wx.LayoutAlgorithm().LayoutWindow(self.parent, self.visWin)
         if not modeinst.showSideBar():
-            self.sidebarWin.SetDefaultSize((0,1024))
+            if self.sidebarWin.GetSize()[0]:
+                self.sidebarWin.SetDefaultSize((0,1024))
+                wx.LayoutAlgorithm().LayoutWindow(self.parent, self.visWin)
         else:
-            self.sidebarWin.SetDefaultSize((200,1024))
-
-        self.currentWindow = modeinst.activate(self.sidebarWin)
+            if self.sidebarWin.GetSize()!=self.sidebarWin.origSize:
+                self.sidebarWin.SetDefaultSize(self.sidebarWin.origSize)
+                wx.LayoutAlgorithm().LayoutWindow(self.parent, self.visWin)
         #self.currentWindow.enable(self.enabled)
 
         if self.dataUnit and modeinst.dataUnit != self.dataUnit:
             Logging.info("Re-setting dataunit",kw="visualizer")
             modeinst.setDataUnit(self.dataUnit)
-        wx.LayoutAlgorithm().LayoutWindow(self.parent, self.visWin)
-
-        print "Showing ",self.currentWindow
-        self.currentWindow.Show()
-
+        self.currentWindow.Show()        
+        
+        
+        
     def showItemToolbar(self,flag):
         """
         Method: showItemToolbar()
@@ -743,20 +755,38 @@ class Visualizer:
         #tp=event.getValue()
         self.setTimepoint(tp)
         
-    def onChangeTimepoint(self,event):
+    def onUpdateTimepoint(self):
         """
-        Method: onChangeTimepoint
-        Created: 28.04.2005, KP
+        Method: onUpdateTimepoint
+        Created: 31.07.2005, KP
         Description: Set the timepoint to be shown
-        """
+        """    
+        diff=abs(time.time()-self.changing)
+        if diff < 0.01:
+            Logging.info("delay too small: ",diff,kw="visualizer")
+            wx.FutureCall(200,self.onUpdateTimepoint)
+            self.changing=time.time()
+            return
+        if self.in_vtk:
+            Logging.info("In vtk, delaying",kw="visualizer")
+            wx.FutureCall(50,self.onUpdateTimepoint)
+            return
         tp=self.timeslider.GetValue()
         tp-=1 # slider starts from one
         if self.timepoint != tp:
             self.setTimepoint(tp)
             messenger.send(None,"timepoint_changed",tp)
             Logging.info("Sending timepoint change event (tp=%d)"%tp,kw="visualizer")
-            #self.parent.GetEventHandler().ProcessEvent(evt)
-
+            
+    def onChangeTimepoint(self,event):
+        """
+        Method: onChangeTimepoint
+        Created: 28.04.2005, KP
+        Description: Set the timepoint to be shown
+        """
+        self.changing=time.time()
+        wx.FutureCall(200,self.onUpdateTimepoint)
+        
     def onSnapshot(self,event):
         """
         Method: onSnapshot

@@ -37,7 +37,7 @@ from ModuleConfiguration import *
 import Dialogs
 import Logging
 import Modules
-#from enthought.tvtk import messenger
+
 import messenger
 import glob
 import os,sys

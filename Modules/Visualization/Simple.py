@@ -59,7 +59,9 @@ class SimpleConfigurationPanel(scrolled.ScrolledPanel):
         Created: 28.04.2005, KP
         Description: Initialization
         """
-        scrolled.ScrolledPanel.__init__(self,parent,-1,size=(200,500))    
+        size=(200,500)
+        if "size" in kws:size=kws["size"]
+        scrolled.ScrolledPanel.__init__(self,parent,-1,size=size)    
         self.visualizer=visualizer
         self.mode=mode
     
@@ -159,9 +161,8 @@ class SimpleMode(VisualizationMode):
         Description: Unset the mode of visualization
         """
         if self.wxrenwin:
-            self.wxrenwin.Show(0)       
-        self.configPanel.Show(0) 
-        
+            self.wxrenwin.Show(0)
+        self.configPanel.Show(0)        
         
     def updateRendering(self):
         """
@@ -191,6 +192,7 @@ class SimpleMode(VisualizationMode):
         Description: Set the mode of visualization
         """
         self.sidebarWin=sidebarwin
+        print "\n\nACTIVATE SIMPLE"
         if not self.wxrenwin:
             self.wxrenwin = VisualizerWindow.VisualizerWindow(self.parent,size=(512,512))
             self.wxrenwin.Render()
@@ -206,13 +208,14 @@ class SimpleMode(VisualizationMode):
             # is set correctly
             print "Showing configPanel"
             self.container = wx.SashLayoutWindow(self.sidebarWin)
-
             self.configPanel = SimpleConfigurationPanel(self.container,self.visualizer,self)
-            if self.dataUnit:
-                self.configPanel.setDataUnit(self.dataUnit)
-            self.configPanel.Show()
-        else:
-            self.configPanel.Show()
+
+        self.configPanel.SetSize(self.sidebarWin.GetSize())
+        self.container.SetSize(self.sidebarWin.GetSize())
+        self.configPanel.Show(0)
+        self.configPanel.Show(1)
+        print "pos=",self.configPanel.GetPosition(),"size=",self.configPanel.GetSize(),"shown=",self.configPanel.IsShown()
+        print "pos=",self.container.GetPosition(),"size=",self.container.GetSize(),"shown=",self.container.IsShown()
         return self.wxrenwin
         
 

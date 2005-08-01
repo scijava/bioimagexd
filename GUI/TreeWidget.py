@@ -209,13 +209,18 @@ class TreeWidget(wx.SashLayoutWindow):
         objs=[self.tree.GetPyData(x) for x in items]
         return objs
         
-    def onSelectionChanged(self,event):
+    def onSelectionChanged(self,event=None):
         """
         Method: onSelectionChanged
         Created: 10.01.2005, KP
         Description: A event handler called when user selects and item.
         """        
-        item=event.GetItem()
+        if event:
+            self.item=event.GetItem()
+            wx.FutureCall(10,self.onSelectionChanged)
+            
+            return
+        item=self.item
         obj=self.tree.GetPyData(item)
         if obj and type(obj)!=types.StringType:
             messenger.send(None,"tree_selection_changed",obj)        

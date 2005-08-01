@@ -127,13 +127,13 @@ class SurfaceModule(VisualizationModule):
         self.contourRange = (start,end,contours)
         Logging.info("Contour range = ",start,"to",end,"# of contours =",contours,kw="visualizer")
 
-    def setGenerateNormals(self,angle):
+    def setGenerateNormals(self,gen,angle):
         """
-        Method: setGenerateNormals(self,angle)
+        Method: setGenerateNormals(self,gen,angle)
         Created: 30.04.2005, KP
         Description: Set the feature angle at which normals are generated
         """             
-        self.generateNormals = 1
+        self.generateNormals = gen
         self.normals.SetFeatureAngle(angle)
         self.featureAngle=angle
         
@@ -348,7 +348,9 @@ class SurfaceConfigurationPanel(ModuleConfigurationPanel):
         if self.normalsBox.GetValue():
             angle=float(self.featureAngle.GetValue())
             print "Setting generated normals to",angle
-            self.module.setGenerateNormals(angle)
+            self.module.setGenerateNormals(1,angle)
+        else:
+            self.module.setGenerateNormals(0,0)
         if self.isoRangeSurfaces.GetValue() != 0:
             start=int(self.isoRangeBegin.GetValue())
             end=int(self.isoRangeEnd.GetValue())
