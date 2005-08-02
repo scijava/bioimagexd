@@ -31,73 +31,53 @@ __version__ = "$Revision: 1.63 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 import os.path,sys
-#from enthought.tvtk import messenger
 import messenger
 
 import ImageOperations
 
-import PreviewPanel
+#import PreviewPanel
 import time
 
 from GUI import Events
 import Logging
 import Modules
 from DataUnit import CombinedDataUnit
-
+import InteractivePanel
 import vtk
 import wx
 
 ZOOM_TO_FIT=-1
 
 
-class PreviewFrame(wx.Panel):
+class PreviewFrame(InteractivePanel.InteractivePanel):
     """
     Class: PreviewFrame
     Created: 03.11.2004, KP
     Description: A widget that uses the wxVTKRenderWidget to display a preview
                  of operations done by a subclass of Module
     """
-    def __init__(self,parent,parentwin=None,**kws):
+    def __init__(self,parent,**kws):
         """
         Method: __init__(parent)
         Created: 03.11.2004, KP
         Description: Initialization
-        Parameters:
-               master  The widget containing this preview
         """
-        wx.Panel.__init__(self,parent,-1)
+        #wx.Panel.__init__(self,parent,-1)
         self.parent=parent
-        self.depthT=0
-        self.timeT=0
         self.blackImage=None
         self.finalImage=None
         self.xdiff,self.ydiff=0,0
-        self.updateFactor = 0.001
+        self.oldZoomFactor=1
         self.zoomFactor=1
         self.selectedItem=-1
-        #size=(512,512)
+        self.show={"SCROLL":0}
         size=(1024,1024)
         self.oldx,self.oldy=0,0
-        self.show={}
-        self.show["PIXELS"]=1
-        self.show["TIMESLIDER"]=1
-        self.show["ZSLIDER"]=1
-        self.show["SCROLL"]=1
-        self.modeChoice = None
         self.zoomx,self.zoomy=1,1
         Logging.info("kws=",kws,kw="preview")
-        if not parentwin:
-            parentwin=parent
-        self.parentwin=parentwin
-        if kws.has_key("zslider"):
-            self.show["ZSLIDER"]=kws["zslider"]
         if kws.has_key("previewsize"):
             size=kws["previewsize"]
             Logging.info("Got previewsize=",size,kw="preview")
-        if kws.has_key("pixelvalue"):
-            self.show["PIXELS"]=kws["pixelvalue"]
-        if kws.has_key("timeslider"):
-            self.show["TIMESLIDER"]=kws["timeslider"]
         if kws.has_key("zoom_factor"):
             self.zoomFactor=kws["zoom_factor"]
         if kws.has_key("zoomx"):
@@ -112,38 +92,10 @@ class PreviewFrame(wx.Panel):
         self.currentImage=None
         self.currentCt=None
         
-        self.sizer=wx.GridBagSizer()
-        self.previewsizer=wx.BoxSizer(wx.VERTICAL)
-        # These are the current image and color transfer function
-        # They are used when getting the value of a pixel
-        Logging.info("Creating preview panel with size=",size,kw="preview")
-        self.renderpanel = PreviewPanel.PreviewPanel(self,size=size,scroll=self.show["SCROLL"],zoomx=self.zoomx,zoomy=self.zoomy)
-        self.sizer.Add(self.renderpanel,(0,0),flag=wx.EXPAND|wx.ALL)
-        
         # The preview can be no larger than these
-        self.maxX,self.maxY=size
-        self.xdim,self.ydim,self.zdim=0,0,0
-                       
-        if self.show["PIXELS"]:
-            self.renderpanel.Bind(wx.EVT_LEFT_DOWN,self.getPixelValue)        
-        self.renderpanel.Bind(wx.EVT_LEFT_UP,self.getVoxelValue)
         
-        if self.show["TIMESLIDER"]:
-            self.timeslider=wx.Slider(self,value=0,minValue=0,maxValue=1,size=(300,-1),
-            style=wx.SL_HORIZONTAL|wx.SL_AUTOTICKS|wx.SL_LABELS)
-            self.sizer.Add(self.timeslider,(1,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
-            self.timeslider.Bind(wx.EVT_SCROLL,self.updateTimePoint)
-        if self.show["ZSLIDER"]:
-            self.zslider=wx.Slider(self,value=0,minValue=0,maxValue=100,size=(-1,300),
-            style=wx.SL_VERTICAL|wx.SL_AUTOTICKS|wx.SL_LABELS)
-            self.zslider.Bind(wx.EVT_SCROLL,self.setPreviewedSlice)
-            self.sizer.Add(self.zslider,(0,1),flag=wx.EXPAND|wx.TOP|wx.BOTTOM)
-
-        if self.show["PIXELS"]:
-            self.pixelPanel=wx.Panel(self,-1)
-            self.pixelLbl=wx.StaticText(self.pixelPanel,-1,"Scalar 0 at (0,0,0) maps to (0,0,0)")
-            self.sizer.Add(self.pixelPanel,(3,0),flag=wx.EXPAND|wx.RIGHT)
-
+        self.xdim,self.ydim,self.zdim=0,0,0
+                               
         self.running=0
 
         self.rgb=(255,255,0)
@@ -156,11 +108,6 @@ class PreviewFrame(wx.Panel):
         self.mapToColors.SetOutputFormatToRGB()
         
         self.enabled=1
-        
-        self.ID_MERGE=wx.NewId()
-        self.ID_COLOC=wx.NewId()
-        self.ID_SINGLE=wx.NewId()
-        self.ID_MIP=wx.NewId()
                
         self.mip = 0
         self.previewtype=""
@@ -168,12 +115,67 @@ class PreviewFrame(wx.Panel):
         self.modules[""]=self.modules["Process"]
         for key in self.modules:
             self.modules[key]=self.modules[key][0]
+                
+        messenger.connect(None,"zslice_changed",self.setPreviewedSlice)
+        
+        self.fitLater=0
+        self.imagedata=None
+        self.bmp=None
+        self.parent = parent
+        self.scroll=1
+        Logging.info("preview panel size=",size,kw="preview")
+        
+        x,y=size
+        self.buffer = wx.EmptyBitmap(x,y)
+        if kws.has_key("zoomx"):
+            self.zoomx=kws["zoomx"]
+            del kws["zoomx"]
+        if kws.has_key("zoomy"):
+            self.zoomy=kws["zoomy"]
+            del kws["zoomy"]
+        Logging.info("zoom xf=%f, yf=%f"%(self.zoomx,self.zoomy),kw="preview")
+        #if kws.has_key("scrollbars"):
+        #    self.scroll=kws["scrollbars"]
+        self.size=size
+        self.slice=None
+        self.z = 0
+        self.zooming = 0
+        self.scrollsize=32
+        self.singleslice=0
+        self.scrollTo=None
+        InteractivePanel.InteractivePanel.__init__(self,parent,size=size,**kws)
+        
+        
+        self.paintPreview()
+        
+        self.Bind(wx.EVT_RIGHT_DOWN,self.onRightClick)
+        
+        self.ID_VARY=wx.NewId()
+        self.ID_NONE=wx.NewId()
+        self.ID_LINEAR=wx.NewId()
+        self.ID_CUBIC=wx.NewId()
+        self.interpolation=-1
+        self.renew=1
+        self.menu=wx.Menu()
+        
+        item = wx.MenuItem(self.menu,self.ID_VARY,"Interpolation depends on size",kind=wx.ITEM_RADIO)
+        self.menu.AppendItem(item)
+        self.menu.Check(self.ID_VARY,1)
+        item = wx.MenuItem(self.menu,self.ID_NONE,"No interpolation",kind=wx.ITEM_RADIO)
+        self.menu.AppendItem(item)
+        item = wx.MenuItem(self.menu,self.ID_LINEAR,"Linear interpolation",kind=wx.ITEM_RADIO)
+        self.menu.AppendItem(item)
+        item = wx.MenuItem(self.menu,self.ID_CUBIC,"Cubic interpolation",kind=wx.ITEM_RADIO)
+        self.menu.AppendItem(item)
+        
+        self.Bind(wx.EVT_MENU,self.onSetInterpolation,id=self.ID_VARY)
+        self.Bind(wx.EVT_MENU,self.onSetInterpolation,id=self.ID_NONE)
+        self.Bind(wx.EVT_MENU,self.onSetInterpolation,id=self.ID_LINEAR)
+        self.Bind(wx.EVT_MENU,self.onSetInterpolation,id=self.ID_CUBIC)
 
         
-        self.SetAutoLayout(True)
-        self.SetSizer(self.sizer)
-        self.sizer.Fit(self)
-        self.sizer.SetSizeHints(self)
+        self.Bind(wx.EVT_PAINT,self.OnPaint)        
+        self.Bind(wx.EVT_LEFT_DOWN,self.getVoxelValue)
         
     def setSelectedItem(self,item):
         """
@@ -187,6 +189,40 @@ class PreviewFrame(wx.Panel):
         self.settings.set("PreviewedDataset",item)
         self.updatePreview(1)
         
+    def onSetInterpolation(self,event):
+        """
+        Method: onSetInterpolation
+        Created: 01.08.2005, KP
+        Description: Set the inteprolation method
+        """      
+        eID=event.GetId()
+        flags=(1,0,0,0)
+        interpolation=-1
+        if eID == self.ID_NONE:
+            flags=(0,1,0,0)
+            interpolation=0
+        elif eID == self.ID_LINEAR:
+            flags=(0,0,1,0)
+            interpolation=1
+        elif eID == self.ID_CUBIC:
+            flags=(0,0,0,1)
+            interpolation=2
+        
+        self.menu.Check(self.ID_VARY,flags[0])
+        self.menu.Check(self.ID_NONE,flags[1])
+        self.menu.Check(self.ID_LINEAR,flags[2])
+        self.menu.Check(self.ID_CUBIC,flags[3])
+        self.interpolation=interpolation
+            
+        
+    def onRightClick(self,event):
+        """
+        Method: onRightClick
+        Created: 02.04.2005, KP
+        Description: Method that is called when the right mouse button is
+                     pressed down on this item
+        """      
+        self.PopupMenu(self.menu,event.GetPosition())
                 
         
     def getVoxelValue(self,event):
@@ -198,7 +234,7 @@ class PreviewFrame(wx.Panel):
         if not self.currentImage:
             return
         x,y=event.GetPosition()
-        x,y=self.renderpanel.getScrolledXY(x,y)
+        x,y=self.getScrolledXY(x,y)
         z=self.z
         dims=[x,y,z]
         rx,ry,rz=dims
@@ -220,67 +256,16 @@ class PreviewFrame(wx.Panel):
         messenger.send(None,"get_voxel_at",rx,ry,rz,r,g,b,alpha,self.currentCt)
         event.Skip()
     
-    def getPixelValue(self,event):
-        """
-        Method: getPixelValue(event)
-        Created: 10.11.2004, KP
-        Description: Shows the RGB and scalar value of a clicked pixel
-        """
-        if not self.currentImage:
-            return
-        x,y=event.GetPosition()
-        x,y=self.renderpanel.getScrolledXY(x,y)
-        
-        
-        if self.rgbMode==0:
-            scalar=self.currentImage.GetScalarComponentAsDouble(x,y,self.z,0)
-            val=[0,0,0]
-            self.currentCt.GetColor(scalar,val)
-            r,g,b=val
-            r*=255
-            g*=255
-            b*=255
-            frgb=(255-r,255-g,255-b)
-            self.pixelLbl.SetForegroundColour(frgb)
-            self.pixelPanel.SetBackgroundColour((r,g,b))
-            self.pixelLbl.SetBackgroundColour((r,g,b))
-            self.pixelLbl.SetLabel("Scalar %d at (%d,%d,%d) maps to (%d,%d,%d)"%\
-            (scalar,x,y,self.z,r,g,b))
-        else:
-            r=self.currentImage.GetScalarComponentAsDouble(x,y,self.z,0)
-            g=self.currentImage.GetScalarComponentAsDouble(x,y,self.z,1)
-            b=self.currentImage.GetScalarComponentAsDouble(x,y,self.z,2)
-            alpha=-1
-            if self.currentImage.GetNumberOfScalarComponents()>3:
-                alpha=self.currentImage.GetScalarComponentAsDouble(x,y,self.z,3)
-            frgb=(255-r,255-g,255-b)
-            self.pixelLbl.SetForegroundColour(frgb)
-            self.pixelPanel.SetBackgroundColour((r,g,b))
-            self.pixelLbl.SetBackgroundColour((r,g,b))
-            txt="Color at (%d,%d,%d) is (%d,%d,%d)"%(x,y,self.z,r,g,b)
-            if alpha!=-1:
-                txt=txt+" with alpha %d"%alpha
-            self.pixelLbl.SetLabel(txt)
-        event.Skip()
             
-    def setPreviewedSlice(self,event,val=-1):
+    def setPreviewedSlice(self,obj,event,val=-1):
         """
         Method: setPreviewedSlice()
         Created: 4.11.2004, KP
         Description: Sets the preview to display the selected z slice
         """
-        t=time.time()
-        if abs(self.depthT-t) < self.updateFactor: return
-        self.depthT=time.time()
-        if event:
-            newz=self.zslider.GetValue()
-        else:
-            newz=val
+        newz=val
         if self.z!=newz:
             self.z=newz
-#            print "Sending zslice changed event"
-            messenger.send(None,"zslice_changed",newz)
-            
             # was updatePreview(1)
             self.updatePreview(0)
 
@@ -292,30 +277,10 @@ class PreviewFrame(wx.Panel):
         Parameters:
                 tp      The timepoint to show
         """
-        if self.show["TIMESLIDER"]:
-            self.timeslider.SetValue(tp)
-        
-        self.updateTimePoint(None,tp)
-
-    def updateTimePoint(self,event,tp=-1):
-        """
-        Method: updateTimePoint()
-        Created: 04.11.2004, KP
-        Description: Sets the time point displayed in the preview
-        """
-        t=time.time()
-        if abs(self.timeT-t) < self.updateFactor: return
-        self.timeT=time.time()
-
-        if self.show["TIMESLIDER"]:
-            timePoint=self.timeslider.GetValue()
-        else:
-            timePoint=tp
-#        print "Use time point %d"%timePoint
+        timePoint=tp
         if self.timePoint!=timePoint:
             self.timePoint=timePoint
             self.updatePreview(1)
-            messenger.send(None,"timepoint_changed",timePoint)
                 
     def setDataUnit(self,dataUnit,selectedItem=-1):
         """
@@ -327,7 +292,7 @@ class PreviewFrame(wx.Panel):
         """
         self.dataUnit=dataUnit
         self.settings = dataUnit.getSettings()
-        self.renderpanel.setDataUnit(self.dataUnit)
+        InteractivePanel.InteractivePanel.setDataUnit(self,self.dataUnit)
         
         try:
             count=dataUnit.getLength()
@@ -339,23 +304,17 @@ class PreviewFrame(wx.Panel):
         dims=[x,y,z]
         self.xdim,self.ydim,self.zdim=x,y,z
         
-        if self.show["ZSLIDER"]:
-            #print "zslider goes to %d"%(z-1)
-            self.zslider.SetRange(0,z-1)
         if x>self.maxX or y>self.maxY:
             Logging.info("Setting scrollbars to %d,%d"%(x,y),kw="preview")
-            self.renderpanel.setScrollbars(x,y)
+            self.setScrollbars(x,y)
         
         if x>self.maxX:x=self.maxX
         if y>self.maxY:y=self.maxY
         
-        if self.show["TIMESLIDER"]:
-            self.timeslider.SetRange(0,count-1)
-
         x*=self.zoomx
         y*=self.zoomy
-        Logging.info("Setting renderpanel to %d,%d"%(x,y),kw="preview")
-        self.renderpanel.SetSize((x,y))
+        Logging.info("Setting preview to %d,%d"%(x,y),kw="preview")
+        self.SetSize((x,y))
         
 
         if selectedItem!=-1:
@@ -365,20 +324,16 @@ class PreviewFrame(wx.Panel):
             #print "Got zoom factor",
             if self.zoomFactor == ZOOM_TO_FIT:
                 Logging.info("Factor = zoom to fit",kw="preview")
-                self.renderpanel.zoomToFit()
+                self.zoomToFit()
                 self.updatePreview(1)
             else:
                 #print "Factor = ",self.zoomFactor
-                self.renderpanel.setZoomFactor(self.zoomFactor)
+                self.setZoomFactor(self.zoomFactor)
                 self.updatePreview(1)
         
-
-        self.renderpanel.Layout()
         self.Layout()
         self.parent.Layout()
-        self.sizer.Fit(self)
         self.updatePreview(1)
-        #self.sizer.SetSizeHints(self)
 
 
     def updatePreview(self,renew=1):
@@ -422,16 +377,30 @@ class PreviewFrame(wx.Panel):
         x,y,z=preview.GetDimensions()
     
         if x!=self.oldx or y!=self.oldy:
-            self.renderpanel.resetScroll()
-            self.renderpanel.setScrollbars(x,y)
+            #self.resetScroll()
+            self.setScrollbars(x,y)
             self.oldx=x
             self.oldy=y
             
-        Logging.info("Setting image of renderpanel (not null: %s)"%(not not colorImage),kw="preview")
-        self.renderpanel.setImage(colorImage)
-        self.renderpanel.setZSlice(self.z)
-        self.renderpanel.updatePreview()
-    
+        Logging.info("Setting image (not null: %s)"%(not not colorImage),kw="preview")
+        self.setImage(colorImage)
+        self.setZSlice(self.z)
+        
+        z=self.z
+        if self.singleslice:
+            Logging.info("Single slice, will use z=0",kw="preview")
+            z=0
+        if not self.imagedata:
+            Logging.info("No imagedata to preview",kw="preview")
+            return
+        else:
+            self.slice=ImageOperations.vtkImageDataToWxImage(self.imagedata,z)
+            
+        Logging.info("Painting preview",kw="preview")
+        self.paintPreview()
+        wx.GetApp().Yield(1)
+        self.updateScrolling()
+        
         self.finalImage=colorImage
 
     def processOutputData(self,data):
@@ -483,7 +452,7 @@ class PreviewFrame(wx.Panel):
         if ext=="jpg":ext="jpeg"
         if ext=="tif":ext="tiff"
         mime="image/%s"%ext
-        img=self.renderpanel.buffer.ConvertToImage()
+        img=self.buffer.ConvertToImage()
         img.SaveMimeFile(filename,mime)
         
     def enable(self,flag):
@@ -509,21 +478,9 @@ class PreviewFrame(wx.Panel):
             else:
                 self.previewtype=event
                 return
-        else:
-            eid=event.GetId()
-            if eid==self.ID_COLOC:
-                self.previewtype="Colocalization"
-            elif eid==self.ID_MERGE:
-                self.previewtype="Merging"
-            elif eid==self.ID_MIP:
-                self.previewtype=""
-                self.mip =1 
-                return
-            else:
-                self.previewtype=""
     
         self.mip = 0
-        self.renderpanel.setSingleSliceMode(0)            
+        self.setSingleSliceMode(0)            
         m=self.modules[self.previewtype]
         Logging.info("Module that corresponds to %s: %s"%(self.previewtype,m),kw="preview")
         self.dataUnit.setModule(m)
@@ -557,7 +514,7 @@ class PreviewFrame(wx.Panel):
             return
         if self.dataUnit:
             ct = self.settings.get("ColorTransferFunction")
-        
+
             if self.selectedItem != -1:
                 ctc = self.settings.getCounted("ColorTransferFunction",self.selectedItem)            
                 if ctc:
@@ -570,3 +527,171 @@ class PreviewFrame(wx.Panel):
         self.mapToColors.SetOutputFormatToRGB()
 
  
+    def setSingleSliceMode(self,mode):
+        """
+        Method: setSingleSliceMode()
+        Created: 05.04.2005, KP
+        Description: Sets this preview to only show a single slice
+        """    
+        self.singleslice = mode
+                
+    def setZSlice(self,z):
+        """
+        Method: setZSlice(z)
+        Created: 24.03.2005, KP
+        Description: Sets the optical slice to preview
+        """    
+        self.z=z
+        
+    def setImage(self,image):
+        """
+        Method: setImage(image)
+        Created: 24.03.2005, KP
+        Description: Sets the image to display
+        """    
+        self.imagedata=image
+        x,y=self.size
+        x2,y2,z=image.GetDimensions()
+        if x2<x:
+            x=x2
+        if y2<y:
+            y=y2
+        
+        #Logging.info("Setting scrollbars for size %d,%d"%(x,y),kw="preview")
+        #self.setScrollbars(x,y)
+        #if x==x2 or y==y2:
+        #    if x==x2:s="x"
+        #    if y==y2:
+        #        if s:s+=" and "
+        #        s+="y"
+        #    Logging.info("Using smaller %s for size"%s,kw="preview")            
+        #self.Layout()
+        if self.fitLater:
+            self.fitLater=0
+            self.zoomToFit()
+        
+        
+    def setZoomFactor(self,f):
+        """
+        Method: setZoomFactor
+        Created: 24.03.2005, KP
+        Description: Sets the factor by which the image should be zoomed
+        """
+        if f>10:
+            f=10
+        Logging.info("Setting zoom factor to ",f,kw="preview")
+        if f<self.zoomFactor:
+            # black the preview
+            slice=self.slice
+            self.slice=None
+            self.paintPreview()
+            self.slice=slice
+            
+        self.zoomFactor=f
+        self.updateAnnotations()
+        #self.Scroll(0,0)
+        
+    def zoomToFit(self):
+        """
+        Method: zoomToFit()
+        Created: 25.03.2005, KP
+        Description: Sets the zoom factor so that the image will fit into the screen
+        """
+        if self.imagedata:
+            w,h=self.size
+            x,y,z=self.imagedata.GetDimensions()
+            if w!=x or h!=y:
+                Logging.info("Determining zoom factor from (%d,%d) to (%d,%d)"%(x,y,w,h),kw="preview")
+                self.setZoomFactor(ImageOperations.getZoomFactor(x,y,w,h))
+        else:
+            Logging.info("Will zoom to fit later",kw="preview")
+            self.fitLater=1
+
+        
+    def updateScrolling(self,event=None):
+        """
+        Method: updateScrolling
+        Created: 24.03.2005, KP
+        Description: Updates the scroll settings
+        """
+        if not self.bmp:
+            return
+        if self.bmp:
+            Logging.info("Updating scroll settings (size %d,%d)"%(self.bmp.GetWidth(),self.bmp.GetHeight()),kw="preview")
+            self.setScrollbars(self.bmp.GetWidth()*self.zoomx,self.bmp.GetHeight()*self.zoomy)       
+        if self.scrollTo:
+            x,y=self.scrollTo
+            Logging.info("Scrolling to %d,%d"%(x,y),kw="preview")
+            sx=int(x/self.scrollsize)
+            sy=int(y/self.scrollsize)
+            #sx=x/self.scrollsize
+            #sy=y/self.scrollsize
+            self.Scroll(sx,sy)
+            self.scrollTo=None
+
+    def paintPreview(self):
+        """
+        Method: paintPreview()
+        Created: 24.03.2005, KP
+        Description: Paints the image to a DC
+        """
+        if not self.slice:
+            Logging.info("Black preview",kw="preview")
+            dc = self.dc = wx.BufferedDC(wx.ClientDC(self),self.buffer)
+            dc.BeginDrawing()
+            dc.SetBackground(wx.Brush(wx.Colour(0,0,0)))
+            dc.SetPen(wx.Pen(wx.Colour(0,0,0),0))
+            dc.SetBrush(wx.Brush(wx.Color(0,0,0)))
+            dc.DrawRectangle(0,0,self.size[0],self.size[1])
+            dc.EndDrawing()
+            self.dc = None
+            return
+        bmp=self.slice
+        Logging.info("Zoom factor for painting =",self.zoomFactor,kw="preview")
+        if self.zoomFactor != 1 or self.zoomFactor!=self.oldZoomFactor:
+            self.oldZoomFactor=self.zoomFactor
+            interpolation = self.interpolation
+            if interpolation == -1:
+                x,y,z=self.imagedata.GetDimensions()
+                # if x*y < 512*512, cubic
+                pixels=(x*self.zoomFactor)*(y*self.zoomFactor)
+                if pixels<=1024*1024:
+                    Logging.info("Using cubic",kw="preview")
+                    interpolation=2
+                # if x*y < 1024*1024, linear
+                elif pixels<=2048*2048:
+                    Logging.info("Using nearest",kw="preview")
+                    interpolation=1
+                else:
+                    Logging.info("Using no interpolation",kw="preview")
+                    interpolation=0
+            if interpolation == 0:
+                bmp=ImageOperations.zoomImageByFactor(self.slice,self.zoomFactor)                
+            else:
+                img=ImageOperations.scaleImage(self.imagedata,self.zoomFactor,self.z,interpolation)
+                bmp=ImageOperations.vtkImageDataToWxImage(img)
+            w,h=bmp.GetWidth(),bmp.GetHeight()
+            Logging.info("Setting scrollbars (%d,%d) because of zooming"%(w,h),kw="preview")
+            self.setScrollbars(w,h)
+
+        dc = self.dc = wx.BufferedDC(wx.ClientDC(self),self.buffer)
+        
+        if self.zoomx!=1 or self.zoomy!=1:
+            w,h=bmp.GetWidth(),bmp.GetHeight()
+            w*=self.zoomx
+            h*=self.zoomy
+            Logging.info("Scaling to ",w,h,kw="preview")
+            bmp.Rescale(w,h)
+            
+            self.setScrollbars(w,h)
+        
+        bmp=bmp.ConvertToBitmap()
+
+        dc.DrawBitmap(bmp,0,0,True)
+        self.bmp=self.buffer
+        
+        InteractivePanel.InteractivePanel.paintPreview(self)
+
+        
+        dc.EndDrawing()
+        self.dc = None

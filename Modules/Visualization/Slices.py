@@ -92,7 +92,7 @@ class SlicesMode(VisualizationMode):
         Description: Set the background color
         """      
         if self.preview:
-            self.preview.renderpanel.setBackgroundColor((r,g,b))
+            self.preview.setBackgroundColor((r,g,b))
 
     def activate(self,sidebarwin):
         """
@@ -105,7 +105,7 @@ class SlicesMode(VisualizationMode):
             self.preview=PreviewFrame.PreviewFrame(self.parent,
             previewsize=(512,512),pixelvalue=False,
             zoom=False,zslider=True,timeslider=False,scrollbars=True)
-            self.iactivePanel=self.preview.renderpanel
+            self.iactivePanel=self.preview
         return self.preview
             
         

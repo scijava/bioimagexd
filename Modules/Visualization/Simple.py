@@ -163,6 +163,7 @@ class SimpleMode(VisualizationMode):
         if self.wxrenwin:
             self.wxrenwin.Show(0)
         self.configPanel.Show(0)        
+        self.container.Show(0)
         
     def updateRendering(self):
         """
@@ -201,21 +202,15 @@ class SimpleMode(VisualizationMode):
     
             self.wxrenwin.Render()
     
-            self.getRenderer=self.GetRenderer=self.wxrenwin.getRenderer        
-        print "configPanel=",self.configPanel
+            self.getRenderer=self.GetRenderer=self.wxrenwin.getRenderer
         if not self.configPanel:
             # When we embed the sidebar in a sashlayoutwindow, the size
             # is set correctly
             print "Showing configPanel"
             self.container = wx.SashLayoutWindow(self.sidebarWin)
             self.configPanel = SimpleConfigurationPanel(self.container,self.visualizer,self)
-
-        self.configPanel.SetSize(self.sidebarWin.GetSize())
-        self.container.SetSize(self.sidebarWin.GetSize())
-        self.configPanel.Show(0)
-        self.configPanel.Show(1)
-        print "pos=",self.configPanel.GetPosition(),"size=",self.configPanel.GetSize(),"shown=",self.configPanel.IsShown()
-        print "pos=",self.container.GetPosition(),"size=",self.container.GetSize(),"shown=",self.container.IsShown()
+        self.container.Show()            
+        self.configPanel.Show()
         return self.wxrenwin
         
 

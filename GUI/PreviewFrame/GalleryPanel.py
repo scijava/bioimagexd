@@ -126,10 +126,7 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
         self.updateAnnotations()
         x,y=self.originalSliceSize
         x*=factor
-        y*=factor        #for preview in [self.xypreview,self.xzpreview,self.yzpreview]:
-        #    preview.setTimepoint(tp)
-        #    preview.updatePreview(1)
-        #self.xypreview.setTimepoint(tp)
+        y*=factor
         
 
         self.sliceSize=(x,y)
@@ -137,7 +134,6 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
         self.updatePreview()
         self.Refresh()
         
-
     def setBackground(self,r,g,b):
         """
         Method: setBackground(r,g,b)
@@ -280,21 +276,6 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
         """    
         self.Scroll(0,0)
 
-    def setScrollbars(self,xdim,ydim):
-        """
-        Method: setScrollbars(x,y)
-        Created: 24.03.2005, KP
-        Description: Configures scroll bar behavior depending on the
-                     size of the dataset, which is given as parameters.
-        """
-        Logging.info("setScrollbars(%d,%d)"%(xdim,ydim),kw="preview")
-        w,h=self.buffer.GetWidth(),self.buffer.GetHeight()
-        
-        if w!=xdim or h!=ydim:
-            self.buffer = wx.EmptyBitmap(xdim,ydim)
-            
-        self.SetVirtualSize((xdim,ydim))
-        self.SetScrollRate(self.scrollsize,self.scrollsize)
 
     def enable(self,flag):
         """
@@ -347,7 +328,8 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
             self.calculateBuffer()
             self.updatePreview()
             self.sizeChanged=0
-        dc=wx.BufferedPaintDC(self,self.buffer)#,self.buffer)
+        InteractivePanel.InteractivePanel.OnPaint(self,event)
+#        dc=wx.BufferedPaintDC(self,self.buffer)#,self.buffer)
 
     def paintPreview(self):
         """

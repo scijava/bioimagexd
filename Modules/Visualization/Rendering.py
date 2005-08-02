@@ -147,12 +147,8 @@ class RenderingMode:
             self.container = wx.SashLayoutWindow(self.sidebarWin)
             
             self.configPanel = VisualizationFrame.ConfigurationPanel(self.container,self.visualizer,self)
-            
-        self.configPanel.Show(0)
-        self.configPanel.Show(1)
-        self.container.SetSize(self.sidebarWin.GetSize())        
-        self.configPanel.SetSize(self.sidebarWin.GetSize())
-        wx.LayoutAlgorithm().LayoutWindow(self.sidebarWin, self.container)
+        self.container.Show()
+        self.configPanel.Show()
         if not self.lightsManager:
             self.lightsManager = Lights.LightManager(self.parent, self.wxrenwin, self.getRenderer(), mode='raymond')
 
@@ -213,8 +209,7 @@ class RenderingMode:
         """
         if self.wxrenwin:
             self.wxrenwin.Show(0)       
-        #del self.configPanel
-        #self.configPanel=None        
+        self.container.Show(0)
         self.configPanel.Show(0)
         mgr=self.menuManager
         

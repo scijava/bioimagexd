@@ -108,7 +108,17 @@ class VisualizationMode:
         Description: Set the factor by which the image is zoomed
         """
         if self.iactivePanel:
-            self.iactivePanel.setZoomFactor(factor)        
+            self.iactivePanel.setZoomFactor(factor)  
+            
+    def getZoomFactor(self):
+        """
+        Method: getZoomFactor(factor)
+        Created: 01.08.2005, KP
+        Description: Get the zoom factor
+        """
+        if self.iactivePanel:
+            return self.iactivePanel.getZoomFactor()   
+        return 1.0
             
     def showSideBar(self):
         """

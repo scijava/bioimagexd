@@ -74,6 +74,12 @@ class Visualizer:
         """
         global visualizerInstance
         visualizerInstance=self
+        
+        self.updateFactor = 0.001
+        self.depthT=0
+        
+        self.z=0
+        
         self.histogramIsShowing=0
         self.histogramDataUnit=None
         self.histograms=[]
@@ -102,6 +108,7 @@ class Visualizer:
         self.ID_VISAREA_WIN=wx.NewId()
         self.ID_VISTREE_WIN=wx.NewId()
         self.ID_VISSLIDER_WIN=wx.NewId()
+        self.ID_ZSLIDER_WIN=wx.NewId()
         self.ID_HISTOGRAM_WIN=wx.NewId()
         
         messenger.connect(None,"show",self.onSetVisibility)
@@ -111,7 +118,7 @@ class Visualizer:
         
         self.parent.Bind(
             wx.EVT_SASH_DRAGGED_RANGE, self.onSashDrag,
-            id=self.ID_TOOL_WIN, id2=self.ID_VISSLIDER_WIN,
+            id=self.ID_TOOL_WIN, id2=self.ID_HISTOGRAM_WIN,
         )
 
         
@@ -149,36 +156,22 @@ class Visualizer:
         self.visWin.SetSashVisible(wx.SASH_RIGHT,False)
         self.visWin.SetSashVisible(wx.SASH_LEFT,False)
         self.visWin.SetDefaultSize((512,768))
-
         
         self.sliderWin=wx.SashLayoutWindow(self.parent,self.ID_VISSLIDER_WIN,style=wx.NO_BORDER)
         self.sliderWin.SetOrientation(wx.LAYOUT_HORIZONTAL)
         self.sliderWin.SetAlignment(wx.LAYOUT_BOTTOM)
         self.sliderWin.SetSashVisible(wx.SASH_TOP,False)
         self.sliderWin.SetDefaultSize((500,64))
-
-        self.sliderPanel=wx.Panel(self.sliderWin,-1)
-        iconpath=reduce(os.path.join,["Icons"])
-        leftarrow = wx.Image(os.path.join(iconpath,"leftarrow.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap()
-        rightarrow = wx.Image(os.path.join(iconpath,"rightarrow.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap()
-        self.prev=wx.BitmapButton(self.sliderPanel,-1,leftarrow)
-        self.prev.SetSize((64,64))
-        self.next=wx.BitmapButton(self.sliderPanel,-1,rightarrow)
-        self.next.SetSize((64,64))
-        self.sliderbox=wx.BoxSizer(wx.HORIZONTAL)
-        self.prev.Bind(wx.EVT_BUTTON,self.onPrevTimepoint)
-        self.next.Bind(wx.EVT_BUTTON,self.onNextTimepoint)
         
-        self.timeslider=wx.Slider(self.sliderPanel,value=1,minValue=1,maxValue=1,
-        style=wx.SL_HORIZONTAL|wx.SL_AUTOTICKS|wx.SL_LABELS)
-        self.timeslider.Bind(wx.EVT_SCROLL,self.onChangeTimepoint)
+        self.zsliderWin=wx.SashLayoutWindow(self.parent,self.ID_VISAREA_WIN,style=wx.NO_BORDER|wx.SW_3D)
+        self.zsliderWin.SetOrientation(wx.LAYOUT_VERTICAL)
+        self.zsliderWin.SetAlignment(wx.LAYOUT_RIGHT)
+        self.zsliderWin.SetSashVisible(wx.SASH_RIGHT,False)
+        self.zsliderWin.SetSashVisible(wx.SASH_LEFT,False)
+        self.zsliderWin.SetDefaultSize((32,768))        
 
-        self.sliderbox.Add(self.prev)
-        self.sliderbox.Add(self.timeslider,1)
-        self.sliderbox.Add(self.next)
-        self.sliderPanel.SetSizer(self.sliderbox)
-        self.sliderPanel.SetAutoLayout(1)
-        self.sliderbox.Fit(self.sliderPanel)
+        
+        self.createSliders()
 
         self.currMode=None
         self.currModeModule = None
@@ -190,6 +183,41 @@ class Visualizer:
         
         self.createToolbar()
         self.parent.Bind(wx.EVT_SIZE,self.OnSize)
+        
+    def createSliders(self):
+        """
+        Method: createSliders
+        Created: 1.08.2005, KP
+        Description: Method that creates the sliders 
+        """     
+        self.sliderPanel=wx.Panel(self.sliderWin,-1)
+        iconpath=reduce(os.path.join,["Icons"])
+        leftarrow = wx.Image(os.path.join(iconpath,"leftarrow.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap()
+        rightarrow = wx.Image(os.path.join(iconpath,"rightarrow.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap()
+        self.prev=wx.BitmapButton(self.sliderPanel,-1,leftarrow)
+        self.prev.SetSize((64,64))
+        self.next=wx.BitmapButton(self.sliderPanel,-1,rightarrow)
+        self.next.SetSize((64,64))
+        
+        self.sliderbox=wx.BoxSizer(wx.HORIZONTAL)
+        self.prev.Bind(wx.EVT_BUTTON,self.onPrevTimepoint)
+        self.next.Bind(wx.EVT_BUTTON,self.onNextTimepoint)
+        
+        self.timeslider=wx.Slider(self.sliderPanel,value=1,minValue=1,maxValue=1,
+        style=wx.SL_HORIZONTAL|wx.SL_LABELS)
+        self.timeslider.Bind(wx.EVT_SCROLL,self.onChangeTimepoint)
+
+        self.zslider=wx.Slider(self.zsliderWin,value=1,minValue=1,maxValue=1,
+        style=wx.SL_VERTICAL|wx.SL_LABELS|wx.SL_AUTOTICKS)
+        self.zslider.Bind(wx.EVT_SCROLL,self.onChangeZSlice)
+        messenger.connect(None,"zslice_changed",self.onChangeZSlice)
+        
+        self.sliderbox.Add(self.prev)
+        self.sliderbox.Add(self.timeslider,1)
+        self.sliderbox.Add(self.next)
+        self.sliderPanel.SetSizer(self.sliderbox)
+        self.sliderPanel.SetAutoLayout(1)
+        self.sliderbox.Fit(self.sliderPanel)
         
     def onSetVisibility(self,obj,evt,arg):
         """
@@ -315,7 +343,9 @@ class Visualizer:
         self.tb.AddSimpleTool(MenuManager.ID_ZOOM_OUT,wx.Image(os.path.join("Icons","zoom-out.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Zoom out","Zoom out on the optical slice")
         #EVT_TOOL(self,ID_OPEN,self.menuOpen)
 
-        self.zoomCombo=wx.ComboBox(self.tb,-1,"100%",choices=["12.5%","25%","33.33%","50%","66.67%","75%","100%","125%","150%","200%","300%","400%","600%","800%"],size=(100,-1),style=wx.CB_DROPDOWN)
+        self.zoomLevels=[0.125, 0.25, 0.3333, 0.5, 0.6667, 0.75, 1.0, 1.25, 1.5, 2.0, 3.0, 4.0, 6.0, 8.0,-1]
+        self.zoomCombo=wx.ComboBox(self.tb,-1,"100%",
+                          choices=["12.5%","25%","33.33%","50%","66.67%","75%","100%","125%","150%","200%","300%","400%","600%","800%","Zoom to fit"],size=(100,-1),style=wx.CB_DROPDOWN)
         self.zoomCombo.SetSelection(6)
         self.tb.AddControl(self.zoomCombo)
 
@@ -428,7 +458,16 @@ class Visualizer:
         Created: 19.03.2005, KP
         Description: Makes the zoom factor smaller
         """
-        return self.zoomComboDirection(-1)
+        f=self.currMode.getZoomFactor()
+        
+        n=len(self.zoomLevels)
+        for i in range(n-1,0,-1):
+            if self.zoomLevels[i]>0 and self.zoomLevels[i]<f:
+                level=self.zoomLevels[i]
+                Logging.info("Current zoom factor=",f,"setting to",level,kw="visualizer")                
+                self.setComboBoxToFactor(level)
+                break
+        return self.zoomComboDirection(0)
         
     def zoomToComboSelection(self,evt):
         """
@@ -438,6 +477,20 @@ class Visualizer:
         """
         return self.zoomComboDirection(0)        
         
+    def setComboBoxToFactor(self,factor):
+        """
+        Method: setComboBoxToFactor
+        Created: 01.08.2005, KP
+        Description: Set the value of the combobox to the correct zoom factor
+        """     
+        pos=6
+        for i,f in enumerate(self.zoomLevels):
+            if f == factor:
+                pos=i
+                break
+        self.zoomCombo.SetSelection(pos)
+        self.currMode.setZoomFactor(self.zoomLevels[pos])
+            
     def zoomComboDirection(self,dir):
         """
         Method: zoomComboDirection()
@@ -453,10 +506,14 @@ class Visualizer:
             #print "Zoom at min: ",s
             return
         pos+=dir
-        s=self.zoomCombo.GetString(pos)
-        factor = float(s[:-1])/100.0
+        #s=self.zoomCombo.GetString(pos)
+        #factor = float(s[:-1])/100.0
+        factor=self.zoomLevels[pos]
         self.zoomCombo.SetSelection(pos)
         self.currMode.setZoomFactor(factor)
+        if factor==-1:
+            self.currMode.zoomToFit()
+            
         self.currMode.Render()
         
         
@@ -466,8 +523,15 @@ class Visualizer:
         Created: 21.02.2005, KP0
         Description: Makes the zoom factor larger 
         """
-        return self.zoomComboDirection(1)
-              
+        f=self.currMode.getZoomFactor()
+        n=len(self.zoomLevels)
+        for i in range(0,n):
+            if self.zoomLevels[i]>f:
+                level=self.zoomLevels[i]
+                self.setComboBoxToFactor(level)
+                break
+        return self.zoomComboDirection(0)
+        
     def zoomToFit(self,evt):
         """
         Method: zoomToFit()
@@ -483,6 +547,7 @@ class Visualizer:
         Created: 24.5.2005, KP
         Description: A method for laying out the window
         """        
+        print "onSashDrag"
         if event and event.GetDragStatus() == wx.SASH_STATUS_OUT_OF_RANGE:
             Logging.info("Out of range",kw="visualizer")
             return
@@ -500,8 +565,8 @@ class Visualizer:
             
             self.sidebarWin.origSize=newsize
         
-        wx.LayoutAlgorithm().LayoutWindow(self.parent, self.visWin)
-        
+        #wx.LayoutAlgorithm().LayoutWindow(self.parent, self.visWin)
+        self.OnSize(None)        
     def OnSize(self, event=None):
         """
         Method: onSize
@@ -511,6 +576,7 @@ class Visualizer:
 #        if not self.enabled:return
         wx.LayoutAlgorithm().LayoutWindow(self.parent, self.visWin)
         self.currentWindow.SetSize(self.visWin.GetSize())
+        
                 
     def __del__(self):
         global visualizerInstance
@@ -611,6 +677,8 @@ class Visualizer:
         self.currModeModule=module
 
         self.currentWindow = modeinst.activate(self.sidebarWin)        
+        if hasattr(self.currMode,"getZoomFactor"):
+            self.setComboBoxToFactor(self.currentWindow.getZoomFactor())
         self.sidebarWin.SetDefaultSize((0,1024))
         wx.LayoutAlgorithm().LayoutWindow(self.parent, self.visWin)
         if not modeinst.showSideBar():
@@ -703,6 +771,10 @@ class Visualizer:
         Logging.info("Setting range to %d"%count,kw="visualizer")
         self.maxTimepoint=count-1
         self.timeslider.SetRange(1,count)
+        
+        x,y,z=dataunit.getDimensions()
+        self.zslider.SetRange(1,z)
+        
         showItems=0
 
         if self.processedMode:
@@ -786,6 +858,24 @@ class Visualizer:
         """
         self.changing=time.time()
         wx.FutureCall(200,self.onUpdateTimepoint)
+        
+    def onChangeZSlice(self,obj,event=None,arg=None):
+        """
+        Method: onChangeZSlice
+        Created: 1.08.2005, KP
+        Description: Set the z slice to be shown
+        """        
+        t=time.time()
+        if abs(self.depthT-t) < self.updateFactor: return
+        self.depthT=time.time()
+        if arg:
+            newz=arg
+        else:
+            newz=self.zslider.GetValue()-1
+        if self.z != newz:
+            self.z=newz
+#            print "Sending zslice changed event"
+            messenger.send(None,"zslice_changed",newz)        
         
     def onSnapshot(self,event):
         """

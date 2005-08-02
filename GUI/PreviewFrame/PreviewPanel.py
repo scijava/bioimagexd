@@ -58,7 +58,6 @@ class PreviewPanel(InteractivePanel.InteractivePanel):
         self.yielding=0
         x,y=size
         self.buffer = wx.EmptyBitmap(x,y)
-        self.rubberend=None
         if kws.has_key("zoomx"):
             self.zoomx=kws["zoomx"]
             del kws["zoomx"]

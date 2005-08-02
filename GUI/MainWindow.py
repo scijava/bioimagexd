@@ -246,6 +246,7 @@ class MainWindow(wx.Frame):
             self.taskWin.origSize=newsize
         
         wx.LayoutAlgorithm().LayoutWindow(self, self.visWin)
+        self.visualizer.OnSize(None)
         self.visWin.Refresh()
 
     def OnSize(self, event):

@@ -34,6 +34,7 @@ from wx.lib.statbmp  import GenStaticBitmap as StaticBitmap
 import ImageOperations
 import Logging
 import Annotation
+import platform
 
 ZOOM_TO_BAND=1
 MANAGE_ANNOTATION=2
@@ -54,7 +55,12 @@ class InteractivePanel(wx.ScrolledWindow):
         Created: 24.03.2005, KP
         Description: Initialization
         """    
+        self.is_windows=platform.system()=="Windows"
         size=(512,512)
+        self.maxX=512
+        self.maxY=512
+        self.origX = 512
+        self.origY = 512
         if "size" in kws:
             size=kws["size"]
         self.multiple=0
@@ -310,6 +316,13 @@ class InteractivePanel(wx.ScrolledWindow):
         
         self.updatePreview()
         
+    def getZoomFactor(self):
+        """
+        Method: getZoomFactor()
+        Created: 1.08.2005, KP
+        Description: Return the zoom factor
+        """        
+        return self.zoomFactor
     def getScrolledXY(self,x,y):
         """
         Method: getScrolledXY(x,y)
@@ -321,7 +334,15 @@ class InteractivePanel(wx.ScrolledWindow):
         if self.zoomFactor==1:
             return tpl
         else:
-            return [int(float(x)/self.zoomFactor) for x in tpl]        
+            return [int(float(x)/self.zoomFactor) for x in tpl]      
+        
+    def resetScroll(self):
+        """
+        Method: resetScroll()
+        Created: 24.03.2005, KP
+        Description: Sets the scrollbars to their initial values
+        """    
+        self.Scroll(0,0)            
         
     def setDataUnit(self,dataUnit):
         """
@@ -331,6 +352,8 @@ class InteractivePanel(wx.ScrolledWindow):
         """    
         self.dataUnit=dataUnit
         self.voxelSize=dataUnit.getVoxelSize()
+        x,y,z=self.dataUnit.getDimensions()
+        self.origX, self.origY = x,y
         Logging.info("Got dataunit, voxelSize=",self.voxelSize,kw="iactivepanel")
         ann=dataUnit.getSettings().get("Annotations")
         if ann:
@@ -343,6 +366,16 @@ class InteractivePanel(wx.ScrolledWindow):
         Created: 28.04.2005, KP
         Description: Does the actual blitting of the bitmap
         """
+        if self.is_windows:
+            x,y=self.GetViewStart()
+            if x or y:
+                #Logging.info("Resorting to unbuffered drawing because of scrolling",kw="iactivepanel")
+                dc=wx.PaintDC(self)
+                self.PrepareDC(dc)
+                dc.BeginDrawing()
+                dc.DrawBitmap(self.buffer,0,0,False)
+                dc.EndDrawing()
+                return
         dc=wx.BufferedPaintDC(self,self.buffer)#,self.buffer)
 
 
@@ -382,3 +415,41 @@ class InteractivePanel(wx.ScrolledWindow):
         
         dc.EndDrawing()
         self.dc = None
+        
+    def setScrollbars(self,xdim,ydim):
+        """
+        Method: setScrollbars(x,y)
+        Created: 24.03.2005, KP
+        Description: Configures scroll bar behavior depending on the
+                     size of the dataset, which is given as parameters.
+        """
+        w,h=self.buffer.GetWidth(),self.buffer.GetHeight()
+        
+        if w!=xdim or h!=ydim:
+            self.buffer = wx.EmptyBitmap(xdim,ydim)
+            
+        newy=self.maxY
+        newx=self.maxX
+        if xdim<self.maxX:
+            newx=xdim
+        if ydim<self.maxY:
+            newy=ydim
+        if newx<=self.origX:newx=self.origX
+        if newy<=self.origY:newy=self.origY
+        #s=self.GetSize()
+        #print "s=",s
+        #if s!=(newx,newy):
+        print "Setting size to ",newx,newy
+        self.SetSize((newx,newy))
+        s=self.GetVirtualSize()
+        #if s!=(xdim,ydim):
+        print "Setting virtual size to ",xdim,ydim
+        self.SetVirtualSize((xdim,ydim))
+        xrate,yrate=0,0
+        if xdim>newx:
+            xrate=self.scrollsize
+        if ydim>newy:
+            yrate=self.scrollsize
+       
+        self.SetScrollRate(xrate,yrate)
+        

@@ -234,10 +234,10 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
         self.upperThresholdLbl=wx.StaticText(self.colocalizationPanel,-1,"Upper threshold:")
         
         self.lowerthreshold=wx.Slider(self.colocalizationPanel,value=128,minValue=1,maxValue=255,size=(300,-1),
-        style=wx.SL_HORIZONTAL|wx.SL_AUTOTICKS|wx.SL_LABELS)
+        style=wx.SL_HORIZONTAL|wx.SL_LABELS)
         self.lowerthreshold.Bind(wx.EVT_SCROLL,self.updateThreshold)
         self.upperthreshold=wx.Slider(self.colocalizationPanel,value=128,minValue=1,maxValue=255,size=(300,-1),
-        style=wx.SL_HORIZONTAL|wx.SL_AUTOTICKS|wx.SL_LABELS)
+        style=wx.SL_HORIZONTAL|wx.SL_LABELS)
         self.upperthreshold.Bind(wx.EVT_SCROLL,self.updateThreshold)
         
         self.colocalizationSizer.Add(self.lowerThresholdLbl,(n,0))

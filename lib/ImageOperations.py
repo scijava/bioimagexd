@@ -83,7 +83,37 @@ def paintCTFValues(ctf,height=32):
     dc.SelectObject(wx.NullBitmap)
     dc = None    
     return bmp
-    
+
+
+def scaleImage(data,factor,z=-1,interpolation=1):
+    """
+    Method: scaleImage(data,factor)
+    Created: 01.08.2005, KP
+    Description: Scale an image with cubic interpolation
+    """    
+    if z!=-1:
+        data=getSlice(data,z)
+    data.SetSpacing(1,1,1)
+    x,y,z=data.GetDimensions()
+    data.SetOrigin(x/2.0,y/2.0,0)
+    transform=vtk.vtkTransform()
+    x0,x1,y0,y1,z0,z1=data.GetExtent()
+    transform.Scale(1/factor,1/factor,1)
+    #transform.Translate((x1*factor)/2.0,(y1*factor)/2.0,0)
+    reslice=vtk.vtkImageReslice()
+#    reslice.SetOutputSpacing(1,1,1)
+    reslice.SetOutputOrigin(0,0,0)
+    reslice.SetInput(data)
+    reslice.SetOutputExtent(x0*factor,x1*factor,y0*factor,y1*factor,z0,z1)
+    #reslice.SetOutputDimensions(x*factor,y*factor,z)
+    reslice.SetResliceTransform(transform)
+    if interpolation==1:
+        #reslice.SetInterpolationModeToNearestNeighbor()
+        reslice.SetInterpolationModeToLinear()
+    else:
+        reslice.SetInterpolationModeToCubic()
+    reslice.Update() 
+    return reslice.GetOutput()
     
 def loadNIHLut(data):
     """

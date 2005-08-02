@@ -4,17 +4,12 @@
 """
  Unit: RangedSlider
  Project: BioImageXD
- Created: 06.03.2005
- Creator: KP
+ Created: 06.03.2005, KP
  Description:
 
  Ranged slider is a slider for which you can specify integer ranges and values that those
  ranges map into. For example, you can specify that 50% of the slider (from 0 to 50) map to range 0.0 - 1.0
  and another 50% (from 50 to 100) map to range 1.0 - 25.0
-
- Modified: 06.03.2005 KP - Created the module
-           10.03.2005 KP - Added support for ranges that start < 0
-           11.03.2005 KP - Added support for "snap points"
 
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
@@ -40,7 +35,7 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 import wx
 import Logging
-
+import time
 class RangedSlider(wx.Slider):
 #class RangedSlider:
     """
@@ -61,12 +56,31 @@ class RangedSlider(wx.Slider):
         self.totalValues = numberOfPoints
         self.SetRange(0, self.totalValues)        
         self.snapPoints=[]
+        self.Bind(wx.EVT_SCROLL_ENDSCROLL,self.onEndScroll)
+        self.Bind(wx.EVT_SCROLL_THUMBRELEASE,self.onEndScroll)
         
+    def onEndScroll(self,evt):
+        """
+        Method: onEndScroll
+        Created: 1.08.2005, KP
+        Description: Callback called when the user ends scrolling
+        """        
+        self.endscroll=1
+        wx.FutureCall(50,self.onEnableScroll)
+        
+    def onEnableScroll(self):
+        """
+        Method: onEnableScroll
+        Created: 1.08.2005, KP
+        Description: Callback called when the user ends scrolling
+        """     
+        self.enablescroll=0
+                
     def setRange(self, startPercent, endPercent, rangeStart, rangeEnd):
         """
         Method: setRange(startPercent, endPercent, rangeStart,rangeEnd)
         Created: 06.03.2005, KP
-        Description: Initialization
+        Description: Set the range that the slider covers
         """        
         per=(endPercent-startPercent)/100.0
         n=self.totalValues*per
@@ -115,7 +129,7 @@ class RangedSlider(wx.Slider):
         else:
             val+=abs(currRange[2])
         percent = float(val) / distance
-	Logging.info("percent = ",percent,"mytot=",mytot,"distance=",distance,kw="trivial")
+        Logging.info("percent = ",percent,"mytot=",mytot,"distance=",distance,kw="trivial")
         n = self.totalValues / len(self.ranges)
         Logging.info("Returning %d + %f * %d = "%(mytot,percent,n),mytot+percent*n,kw="trivial")
         if currRange[3]<currRange[2]:
@@ -155,7 +169,7 @@ class RangedSlider(wx.Slider):
         #distance=(currRange[3]-currRange[2])
         # This tells us how far in percent we are along the current range
         percentOfRange = (percent-currRange[mini2])/(currRange[maxi2]-currRange[mini2])
-	Logging.info("distance = ",distance," percentsOfRange=",percentOfRange,kw="trivial")
+        Logging.info("distance = ",distance," percentsOfRange=",percentOfRange,kw="trivial")
         ret=currRange[mini]+distance * percentOfRange
         for i in self.snapPoints:
             if ret>= i[0] and ret<=i[2]:

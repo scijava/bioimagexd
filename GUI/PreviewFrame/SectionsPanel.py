@@ -34,9 +34,9 @@ import wx
 from wx.lib.statbmp  import GenStaticBitmap as StaticBitmap
 import ImageOperations
 import vtk
-from GUI import Events
 import Logging
 import InteractivePanel
+import messenger
 
 class SectionsPanel(InteractivePanel.InteractivePanel):
     """
@@ -93,6 +93,8 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
         self.Bind(wx.EVT_LEFT_DOWN,self.onLeftDown)
         self.Bind(wx.EVT_MOTION,self.onLeftDown)
         
+        messenger.connect(None,"zslice_changed",self.onSetZSlice)        
+        
     def getDrawableRectangles(self):
         """
         Method: getDrawableRectangles()
@@ -121,6 +123,18 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
             
         self.updatePreview()
         self.Refresh()
+        
+    def onSetZSlice(self,obj,event,arg):
+        """
+        Method: onSetZSlice
+        Created: 1.08.2005, KP
+        Description: Set the shown zslice
+        """    
+        nx,ny=self.x,self.y
+        nz=arg
+        self.z=arg
+        self.drawPos=[x*self.zoomFactor for x in (nx,ny,nz)]
+        self.updatePreview()        
         
     def onLeftDown(self,event):
         """
@@ -176,7 +190,7 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
             
         #print "showing ",nx,ny,nz
         self.drawPos=[x*self.zoomFactor for x in (nx,ny,nz)]
-        
+        messenger.send(None,"zslice_changed",nz) 
         if self.x!=nx or self.y!=ny or self.z!=nz:
             self.x,self.y,self.z=nx,ny,nz
             #print "Redrawing slices"
@@ -280,21 +294,6 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
         
         self.setScrollbars(x,y)
         
-    def setScrollbars(self,xdim,ydim):
-        """
-        Method: setScrollbars(x,y)
-        Created: 24.03.2005, KP
-        Description: Configures scroll bar behavior depending on the
-                     size of the dataset, which is given as parameters.
-        """
-        #print "setScrollbars(%d,%d)"%(xdim,ydim)
-        w,h=self.buffer.GetWidth(),self.buffer.GetHeight()
-        
-        if w!=xdim or h!=ydim:
-            self.buffer = wx.EmptyBitmap(xdim,ydim)
-            
-        self.SetVirtualSize((xdim,ydim))
-        self.SetScrollRate(self.scrollsize,self.scrollsize)
         
     def enable(self,flag):
         """
@@ -345,7 +344,7 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
             self.calculateBuffer()
             self.updatePreview()
             self.sizeChanged=0
-        dc=wx.BufferedPaintDC(self,self.buffer)#,self.buffer)    
+        InteractivePanel.InteractivePanel.OnPaint(self,event)    
     
     
     def paintPreview(self):

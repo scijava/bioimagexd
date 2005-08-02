@@ -132,22 +132,12 @@ class InfoWidget(wx.Panel):
             bitdepth=dataunit.getBitDepth()
             Logging.info("Dataset bit depth =",bitdepth,kw="trivial")
             unit = dataunit
-##            list=self.tree.getSelectedDataUnits()
-##            self.preview.setPreviewType("MIP")
-##            
-##            unitclass=self.modules["Process"][2].getDataUnit()
-##            unit=unitclass("MIP preview")
-##            unit.addSourceDataUnit(dataunit)
-##            
-##            taskclass=self.modules["Process"][0]                
-##            unit.setModule(taskclass())
-##            
-##            ctf = dataunit.getColorTransferFunction()
-##
-##            if dataunit.getBitDepth()==32:
-##                self.colorBtn.Enable(0)
-##            else:
-##                self.colorBtn.setColorTransferFunction(ctf)
+            ctf = dataunit.getColorTransferFunction()
+
+            if dataunit.getBitDepth()==32:
+                self.colorBtn.Enable(0)
+            else:
+                self.colorBtn.setColorTransferFunction(ctf)
 
             self.dataUnit=unit
             self.taskName.SetValue(dataunit.getName())
