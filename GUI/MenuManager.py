@@ -8,7 +8,6 @@
 
  A module for managing the menus
 
- Modified: 29.05.2005 KP - Created the class
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
 
@@ -120,7 +119,9 @@ ID_VIEW_SHELL       =175
 ID_SHELL_WIN        =176
 ID_INFO_WIN         =177
 ID_VIEW_INFO        =178
-        
+ID_LOAD_SCENE       =179
+ID_SAVE_SCENE       =180
+ID_SEPARATOR        =181
 class MenuManager:
     """
     Class: MenuManager
@@ -137,6 +138,7 @@ class MenuManager:
         Description: Initialization
         """
         self.text=1
+        self.separators={}
         if kws.has_key("text"):
            self.text=kws["text"]
         self.mainwin=mainwin
@@ -148,10 +150,6 @@ class MenuManager:
         self.toolIds=[]
         self.showToolNames=0
         
-        
-
-        
-
     def setMenuBar(self,menubar):
         """
         Method: setMenuBar
@@ -160,14 +158,30 @@ class MenuManager:
         """
         self.menubar=menubar
         
-    def addSeparator(self,menuname,before=None):
+    def removeSeparator(self,sepid):
+        """
+        Method: removeSeparator
+        Created: 02.09.2005, KP
+        Description: delete a separator
+        """    
+        menu=self.menus[self.mapping[sepid]]
+        menu.RemoveItem(self.separators[sepid])
+        
+    def addSeparator(self,menuname,sepid=None,before=None):
         """
         Method: addSeparator(menuname)
         Created: 19.06.2005, KP
         Description: add a separator
         """
         if not before:
-            self.menus[menuname].AppendSeparator()
+            if not sepid:
+                self.menus[menuname].AppendSeparator()
+            else:
+                
+                item=wx.MenuItem(self.menus[menuname],wx.ID_SEPARATOR,kind=wx.ITEM_SEPARATOR)
+                self.separators[sepid]=item
+                self.menus[menuname].Append(item)
+                self.mapping[sepid]=menuname
         else:
             menu=self.menus[menuname]
             # Find the position where the item belongs            
@@ -176,7 +190,14 @@ class MenuManager:
                 if menu.FindItemByPosition(i).GetId()==before:
                     k=i
                     break
-            menu.InsertSeparator(k)
+            if not sepid:
+                menu.InsertSeparator(k)
+            else:
+                item=wx.MenuItem(self.menus[menuname],wx.ID_SEPARATOR,kind=wx.ITEM_SEPARATOR)
+                self.separators[sepid]=item
+                
+                self.menus[menuname].InsertItem(k,item)
+                self.mapping[sepid]=menuname                
 
     def check(self,itemid,flag):
         """

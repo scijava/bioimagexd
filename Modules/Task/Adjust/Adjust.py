@@ -98,6 +98,8 @@ class Adjust(Module):
         Created: 1.12.2004, KP
         Description: Does a preview calculation for the x-y plane at depth z
         """
+        if self.settings.get("ShowOriginal"):
+            return self.images[0]        
         if not self.preview:
             dims=self.images[0].GetDimensions()
             if z>=0:

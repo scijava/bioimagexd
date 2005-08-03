@@ -47,6 +47,7 @@ import SettingsWindow
 import ImportDialog
 import ExportDialog
 import RenderingInterface
+import HelpViewer
 
 import Visualizer
 
@@ -512,7 +513,7 @@ class MainWindow(wx.Frame):
 
         mgr.addMenuItem("view",MenuManager.ID_VIEW_TOOLBAR,"T&oolbar","Show or hide toolbar",self.onMenuToggleVisibility,check=1,checked=1)
         mgr.addMenuItem("view",MenuManager.ID_VIEW_HISTOGRAM,"&Histograms","Show or hide channel histograms",self.onMenuToggleVisibility,check=1,checked=0)
-        mgr.addMenuItem("view",MenuManager.ID_VIEW_INFO,"&Dataset info","Show or hide information about the dataset",self.onMenuToggleVisibility,check=1,checked=0)
+        mgr.addMenuItem("view",MenuManager.ID_VIEW_INFO,"&Dataset info","Show or hide information about the dataset",self.onMenuToggleVisibility,check=1,checked=1)
         mgr.addSeparator("view")
         mgr.addMenuItem("view",MenuManager.ID_VIEW_TOOL_NAMES,"&Show tool names","Show or hide the names of the items on the toolbar",self.toggleToolNames,check=1)
         mgr.addSeparator("view")
@@ -522,7 +523,7 @@ class MainWindow(wx.Frame):
 
         mgr.addMenuItem("help",MenuManager.ID_ABOUT,"&About BioImageXD","About BioImageXD",self.onMenuAbout)
         mgr.addSeparator("help")
-        mgr.addMenuItem("help",MenuManager.ID_HELP,"&Help\tCtrl-H","Online Help")        
+        mgr.addMenuItem("help",MenuManager.ID_HELP,"&Help\tCtrl-H","Online Help",self.onMenuHelp)        
     
     def createStatusBar(self):
         """
@@ -777,7 +778,7 @@ class MainWindow(wx.Frame):
             dataunit=self.visualizer.getDataUnit()
             if dataunit:
                 name=dataunit.getName()
-                filenames=Dialogs.askOpenFileName(self,"Open settings for %s"%name,"Settings (*.du)|*.du")
+                filenames=Dialogs.askOpenFileName(self,"Open settings for %s"%name,"Settings (*.bxd)|*.bxd")
         
                 if not filenames:
                     Logging.info("Got no name for settings file",kw="dataunit")
@@ -800,7 +801,7 @@ class MainWindow(wx.Frame):
             dataunit=self.visualizer.getDataUnit()
             if dataunit:
                 name=dataunit.getName()
-                filename=Dialogs.askSaveAsFileName(self,"Save settings of %s as"%name,"settings.du","Settings (*.du)|*.du")
+                filename=Dialogs.askSaveAsFileName(self,"Save settings of %s as"%name,"settings.bxd","Settings (*.bxd)|*.bxd")
         
                 if not filename:
                     Logging.info("Got no name for settings file",kw="dataunit")
@@ -819,7 +820,7 @@ class MainWindow(wx.Frame):
         if not evt2:
             self.onMenuShowTree(None,1)
             asklist=[]
-            wc="Volume datasets|*.lsm;*.LSM;*.du;*.txt;*.TXT|LSM Files (*.lsm)|*.lsm;*.LSM|Leica TCS-NT Files (*.txt)|*.txt;*.TXT|Dataset Series (*.du)|*.du;*.DU|VTK Image Data (*.vti)|*.vti;*.VTI"
+            wc="Volume datasets|*.lsm;*.LSM;*.bxd;*.txt;*.TXT|LSM Files (*.lsm)|*.lsm;*.LSM|Leica TCS-NT Files (*.txt)|*.txt;*.TXT|BioImageXD Datasets (*.bxd)|*.bxd;*.bxd|VTK Image Data (*.vti)|*.vti;*.VTI"
             asklist=Dialogs.askOpenFileName(self,"Open a volume dataset",wc)
         else:
             asklist=args
@@ -1109,6 +1110,23 @@ class MainWindow(wx.Frame):
         about=AboutDialog.AboutDialog(self)
         about.ShowModal()
         about.Destroy()
+        
+    def onMenuHelp(self,evt):
+        """
+        Method: onMenuHelp()
+        Created: 02.08.2004, KP
+        Description: Callback function for menu item "Help"
+        """
+        #help=HelpViewer.HelpViewerFrame(self)
+        #help.Show()
+        help=wx.html.HtmlHelpController()
+        
+        help.AddBook("Help\\help.hhp",1)
+        #help.Display("Adjust")
+        help.SetTempDir("C:\\temp")
+        help.SetTitleFormat("BioImageXD - %s")
+        help.Display("BioImageXD")
+        help.DisplayContents()
         
 
     def quitApp(self,evt):

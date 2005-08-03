@@ -262,7 +262,7 @@ class StatePickler:
                     types.InstanceType: self._do_instance,
                     types.DictType: self._do_dict,
                     types.DictionaryType: self._do_dict,
-                    Numeric.ArrayType: self._do_numeric,
+#                    Numeric.ArrayType: self._do_numeric,
                     State: self._do_state,
                     }
         self.type_map = type_map

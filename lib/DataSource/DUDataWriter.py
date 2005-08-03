@@ -1,16 +1,13 @@
 
 # -*- coding: iso-8859-1 -*-
 """
- Unit: AboutDialog.py
+ Unit: DUDataWriter
  Project: BioImageXD
  Created: 22.02.2005, KP
  Description:
 
- A wxPython wx.Dialog window that is used to show an about dialog. The about dialog is specified
- using HTML markup.
-
- Modified: 22.02.2005 KP - Created the module
-
+ A writer of BioImageXD .bxd files
+ 
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
 

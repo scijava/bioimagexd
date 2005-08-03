@@ -43,6 +43,7 @@ from PreviewFrame import *
 from Logging import *
 from ProcessingManager import *
 
+import HelpViewer
 import Dialogs
 import sys
 import ImageOperations
@@ -193,11 +194,21 @@ class TaskPanel(scrolled.ScrolledPanel):
         self.buttonsSizer2.Add(self.previewButton,1,wx.RIGHT|wx.TOP|wx.ALIGN_CENTER,10)
         
         self.processButton=wx.Button(self.buttonPanel,-1,"Process")
-        #self.processDatasetButton.Bind(EVT_BUTTON,self.doProcessingCallback)
         self.buttonsSizer2.Add(self.processButton,1,wx.RIGHT|wx.TOP|wx.ALIGN_CENTER,10)
 
+        self.helpButton=wx.Button(self.buttonPanel,-1,"Help")
+        self.helpButton.Bind(wx.EVT_BUTTON,self.onHelp)
+        self.buttonsSizer2.Add(self.helpButton,1,wx.RIGHT|wx.TOP|wx.ALIGN_CENTER,10)        
         self.buttonSizer.Add(self.buttonsSizer2)  
 
+    def onHelp(self,evt):
+        """
+        Method: onHelp
+        Created: 03.11.2004, KP
+        Description: Shows a help for this task panel
+        """
+        help=HelpViewer.HelpViewerFrame(self,page="%s.html"%self.operationName.lower())
+        help.Show()
         
     def createOptionsFrame(self):
         """
@@ -309,7 +320,7 @@ class TaskPanel(scrolled.ScrolledPanel):
         Description: A callback to load the settings for this operation from a
                      du file
         """
-        wc="Dataset Settings(*.du)|*.du"
+        wc="Dataset Settings(*.bxd)|*.bxd"
         dlg=wx.FileDialog(self,"Load dataset settings from file",wildcard=wc,style=wx.OPEN)
         filename=None
         if dlg.ShowModal()==wx.ID_OK:
@@ -329,7 +340,7 @@ class TaskPanel(scrolled.ScrolledPanel):
         Description: A callback to save the settings for this operation to a 
                      du file
         """
-        wc="Dataset Settings(*.du)|*.du"
+        wc="Dataset Settings(*.bxd)|*.bxd"
         dlg=wx.FileDialog(self,"Save dataset settings to file",wildcard=wc,style=wx.SAVE)
         filename=None
         if dlg.ShowModal()==wx.ID_OK:
@@ -339,8 +350,8 @@ class TaskPanel(scrolled.ScrolledPanel):
 
         if not filename:
             return
-        if filename[-3:].lower()!=".du":
-            filename+=".du"
+        if filename[-3:].lower()!=".bxd":
+            filename+=".bxd"
 
         Logging.info("Saving to ",filename,kw="processing")
 

@@ -64,11 +64,11 @@ class SurfaceModule(VisualizationModule):
         self.contourRange = (-1,-1,-1)
         self.opacity = 1.0
         self.setIsoValue(128)
+        self.decimateLevel=0
+        self.preserveTopology=1
         self.eventDesc="Rendering iso-surface"
         
         self.decimate = vtk.vtkDecimatePro()
-        self.decimateLevel=0
-        self.preserveTopology=1
         self.setMethod(1)
         self.init=0
         self.mapper = vtk.vtkPolyDataMapper()
@@ -117,6 +117,7 @@ class SurfaceModule(VisualizationModule):
         self.contourRange = (-1,-1,-1)
         self.isoValue = isovalue
         Logging.info("Iso value for surface = ",self.isoValue,kw="visualizer")        
+        
     def setContourRange(self,start,end,contours):
         """
         Method: setContourRange(start,end,contours)
@@ -214,6 +215,50 @@ class SurfaceModule(VisualizationModule):
         self.mapper.Update()
         self.parent.Render()    
 
+    def __getstate__(self):
+        """
+        Method: __getstate__
+        Created: 02.08.2005, KP
+        Description: A getstate method that saves the lights
+        """            
+        odict=VisualizationModule.__getstate__(self)
+        odict.update({"mapper":self.getVTKState(self.mapper)})
+        odict.update({"actor":self.getVTKState(self.actor)})
+        odict.update({"renderer":self.getVTKState(self.renderer)})
+        odict.update({"camera":self.getVTKState(self.renderer.GetActiveCamera())})
+        odict.update({"method":self.method})
+        
+        odict.update({"generateNormals":self.generateNormals,
+                      "isoValue":self.isoValue,
+                      "contourRange":self.contourRange,
+                      "opacity":self.opacity,
+                      "decimateLevel":self.decimateLevel,
+                      "preserveTopology":self.preserveTopology})
+        return odict
+        
+    def __set_pure_state__(self,state):
+        """
+        Method: __set_pure_state__()
+        Created: 02.08.2005, KP
+        Description: Set the state of the light
+        """        
+        print "\n\n\n__set_pure_state__\n\n\n"
+        self.setVTKState(self.mapper,state.mapper)
+        self.setVTKState(self.actor,state.actor)
+        self.setVTKState(self.renderer,state.renderer)
+        self.setVTKState(self.renderer.GetActiveCamera(),state.camera)
+        self.setMethod(state.method)
+        self.generateNormals = state.generateNormals
+        print "state.isoValue=",state.isoValue
+        self.isoValue = state.isoValue
+        
+        self.contourRange = state.contourRange
+        self.opacity = state.opacity
+        print "state.decimateLevel=",state.decimateLevel
+        if state.decimateLevel:
+            self.setDecimate(state.decimateLevel,state.preserveTopology)
+        
+        VisualizationModule.__set_pure_state__(self,state)        
 
 
 class SurfaceConfiguration(ModuleConfiguration):
@@ -236,6 +281,35 @@ class SurfaceConfigurationPanel(ModuleConfigurationPanel):
         """     
         ModuleConfigurationPanel.__init__(self,parent,visualizer,name,**kws)
         self.method=0
+        
+    def setModule(self,module):
+        """
+        Method: setModule(module)
+        Created: 28.04.2005, KP
+        Description: Set the module to be configured
+        """  
+        ModuleConfigurationPanel.setModule(self,module)
+        print "Setting configuration from",module
+        self.method=module.method
+        self.moduleChoice.SetSelection(self.method)
+        self.normalsBox.SetValue(module.generateNormals)
+        print "normals=",module.generateNormals
+        self.decimateSlider.SetValue(module.decimateLevel)
+        print "decimate=",module.decimateLevel
+        self.decimateCheckbox.SetValue(module.preserveTopology)
+        print "isovalue=",module.isoValue
+        if module.isoValue != -1:
+            self.isoSlider.SetValue(module.isoValue)
+        if module.contourRange != (-1,-1,-1):
+            begin,end,n=module.contourRange
+            self.isoRangeBegin.SetValue("%d"%begin)
+            self.isoRangeEnd.SetValue("%d"%end)
+            self.isoRangeSurfaces.SetValue("%d"%n)
+            
+        self.opacitySlider.SetValue(self.opacityMax-(self.opacityMax*module.opacity))
+            
+            
+        #self.shadingBtn.SetValue(module.shading)        
             
     def initializeGUI(self):
         """

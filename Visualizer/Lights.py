@@ -1,5 +1,4 @@
 """
-
 A VTK light manipulation tool for wxPython.  This is sufficiently
 general that it can be used by non-BioImageXD applications.  It basically
 creates 8 different lights which can be configured using a GUI. 
@@ -27,26 +26,44 @@ inclusion in MayaVi."""
 #import Tkinter
 #from vtkRenderWidget import vtkTkRenderWidget
 import wx
-from vtk.wx.wxVTKRenderWindowInteractor import wxVTKRenderWindowInteractor
+from vtk.wx.wxVTKRenderWindow import wxVTKRenderWindow
 from math import pi, sin, cos, atan2, sqrt
-import vtkpython
+import vtk
 import string
 import sys
 import Dialogs
 from RangedSlider import *
-
 
 import  wx.lib.colourselect as  csel
 
 
 class Light:
     def __init__(self):
-        self.source = vtkpython.vtkLight()
+        self.source = vtk.vtkLight()
         self.glyph = LightGlyph()
         self.el = 0
         self.az = 0
         self.saved=[]
-
+        
+    def __getstate__(self):
+        """
+        Method: __getstate__
+        Created: 02.08.2005, KP
+        Description: A getstate method that saves the lights
+        """            
+        self.save()
+        odict={"saved":self.saved}
+        return odict
+        
+    def __set_pure_state__(self,state):
+        """
+        Method: __set_pure_state__()
+        Created: 02.08.2005, KP
+        Description: Set the state of the light
+        """
+        self.saved = state.saved
+        self.restore()
+        
     def switchon(self):
         self.source.SwitchOn()
         self.glyph.show()
@@ -142,39 +159,39 @@ class LightGlyph:
         nverts = 10
             
         # First build the cone portion
-        cone = vtkpython.vtkConeSource()
+        cone = vtk.vtkConeSource()
         cone.SetResolution(nverts)
         cone.SetRadius(.08)
         cone.SetHeight(.2)
         cone.CappingOff()
     
-        coneMapper = vtkpython.vtkPolyDataMapper()
+        coneMapper = vtk.vtkPolyDataMapper()
         coneMapper.SetInput(cone.GetOutput())
 
         # Now take care of the capping polygon
-        pts = vtkpython.vtkPoints()
+        pts = vtk.vtkPoints()
         pts.SetNumberOfPoints(nverts)
     
         for i in range(0, nverts):
             theta = 2*i*pi/nverts + pi/2
             pts.InsertPoint(i,0.8,.08*sin(theta),.08*cos(theta))
         
-        poly = vtkpython.vtkPolygon()
+        poly = vtk.vtkPolygon()
         poly.GetPointIds().SetNumberOfIds(nverts)
         for i in range(0, nverts):
             poly.GetPointIds().SetId(i, i)
         
-        pdata = vtkpython.vtkPolyData()
+        pdata = vtk.vtkPolyData()
         pdata.Allocate(1, 1)
         pdata.InsertNextCell(poly.GetCellType(), poly.GetPointIds())
         pdata.SetPoints(pts)
-        capmapper = vtkpython.vtkPolyDataMapper()
+        capmapper = vtk.vtkPolyDataMapper()
         capmapper.SetInput(pdata)
 
         self.el = 0.0
         self.az = 0.0
 
-        self.coneActor = vtkpython.vtkActor()
+        self.coneActor = vtk.vtkActor()
         self.coneActor.SetMapper(coneMapper)
         self.coneActor.SetPosition(0.9,0,0)
         self.coneActor.SetOrigin(-0.9,0,0)
@@ -182,7 +199,7 @@ class LightGlyph:
         self.coneActor.GetProperty().SetAmbient(.1)
         self.coneActor.RotateY(-90)
 
-        self.capActor = vtkpython.vtkActor()
+        self.capActor = vtk.vtkActor()
         self.capActor.SetMapper(capmapper)
         self.capActor.GetProperty().SetAmbientColor(1, 1,0)
         self.capActor.GetProperty().SetAmbient(1)
@@ -219,7 +236,7 @@ def ArcActor(fromValue, to, rad=1.0, axis='z', n=20):
     to = to*pi/180
     angle = to - fromValue
     
-    ppnts = vtkpython.vtkPoints()
+    ppnts = vtk.vtkPoints()
     ppnts.SetNumberOfPoints(n)
     
     for i in range(0, n):
@@ -231,20 +248,20 @@ def ArcActor(fromValue, to, rad=1.0, axis='z', n=20):
         elif axis == 'z':
             ppnts.InsertPoint(i, cos(theta), sin(theta),0.0)
             
-    pline = vtkpython.vtkPolyLine()
+    pline = vtk.vtkPolyLine()
     pline.GetPointIds().SetNumberOfIds(n)
     for i in range(0, n):
         pline.GetPointIds().SetId(i, i)
 
-    pdata = vtkpython.vtkPolyData()
+    pdata = vtk.vtkPolyData()
     pdata.Allocate(1, 1)
     pdata.InsertNextCell(pline.GetCellType(), pline.GetPointIds())
     pdata.SetPoints(ppnts)
     
-    mapper = vtkpython.vtkPolyDataMapper()
+    mapper = vtk.vtkPolyDataMapper()
     mapper.SetInput(pdata)
     
-    actor = vtkpython.vtkActor()
+    actor = vtk.vtkActor()
     actor.SetMapper(mapper)
     actor.GetProperty().SetColor(1,0,0)
     return actor
@@ -337,7 +354,7 @@ class ScrollScale(RangedSlider):
     def redraw(self):
         pass
         
-class ElTool(ScrollScale):
+class ElevationTool(ScrollScale):
     def __init__(self, master, ren, rendercmd):
         ScrollScale.__init__(self, master, fromValue=90 , to=-90,
                             orient='vertical', width=12,
@@ -374,7 +391,7 @@ class ElTool(ScrollScale):
         self.setel(self.light.getelevation())
 
 
-class AzTool(ScrollScale):
+class AzimuthTool(ScrollScale):
     def __init__(self, master, ren, rendercmd):
         ScrollScale.__init__(self, master, fromValue=-180, to=180,
                             orient='horizontal', width=12,
@@ -478,14 +495,14 @@ class LightTool(wx.Frame):
             l.save()
         self.sizer = wx.GridBagSizer()
         
-        self.gfxwin = wxVTKRenderWindowInteractor(self,-1,size=(220,200))
-#        self.gfxwin.Initialize()
-#        self.gfxwin.Start()
-        self.ren = vtkpython.vtkRenderer()
+        self.gfxwin = wxVTKRenderWindow(self,-1,size=(220,200))
+        #self.gfxwin.Render()
+        self.gfxwin.Initialize()
+        self.gfxwin.Start()
+        self.ren = vtk.vtkRenderer()
 
         self.switchbank = wx.Panel(self,-1,style=wx.RAISED_BORDER)
         self.switchsizer=wx.GridBagSizer()
-        
         
         self.sw=[]
         for i in range(0, 8):
@@ -507,10 +524,8 @@ class LightTool(wx.Frame):
         self.switchsizer.Fit(self.switchbank)
 
 
-        self.azbar = AzTool(self, self.ren, self.redraw)
-        self.elbar = ElTool(self, self.ren, self.redraw)
-
-
+        self.azimuthBar = AzimuthTool(self, self.ren, self.redraw)
+        self.elevationBar = ElevationTool(self, self.ren, self.redraw)
         
         self.f1 = wx.Panel(self,-1)#,style=wx.RAISED_BORDER)
         self.f1sizer=wx.GridBagSizer()
@@ -570,8 +585,8 @@ class LightTool(wx.Frame):
         self.f2sizer.Fit(self.f2)
 
         self.sizer.Add(self.gfxwin,(0,0))
-        self.sizer.Add(self.elbar,(0,1),flag=wx.EXPAND|wx.TOP|wx.BOTTOM)
-        self.sizer.Add(self.azbar,(1,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
+        self.sizer.Add(self.elevationBar,(0,1),flag=wx.EXPAND|wx.TOP|wx.BOTTOM)
+        self.sizer.Add(self.azimuthBar,(1,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
 #        self.sizer.Add(self.resetelaz,(1,1))
         
         self.sizer.Add(self.switchbank,(2,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
@@ -601,7 +616,7 @@ class LightTool(wx.Frame):
         self.gfxwin.GetRenderWindow().AddRenderer(self.ren)
         self.gfxwin.Render()
         self.ren.SetBackground(0.0,0.0,0.0)
-        self.picker = vtkpython.vtkCellPicker()
+        self.picker = vtk.vtkCellPicker()
         self.picker.SetTolerance(0.0005)
 
         for l in lights:
@@ -628,12 +643,12 @@ class LightTool(wx.Frame):
     def update(self):
         for i in self.sw:
             i.update()
-        for i in (self.azbar, self.elbar, self.intscale, self.colorbtn):
+        for i in (self.azimuthBar, self.elevationBar, self.intscale, self.colorbtn):
             i.update()
 
     def elazreset_handler(self,event):
-        self.elbar.setel(0.0, norender=1)
-        self.azbar.setaz(0.0, norender=1)
+        self.elevationBar.setel(0.0, norender=1)
+        self.azimuthBar.setaz(0.0, norender=1)
         self.redraw('all')
 
     def apply_handler(self, event=None):
@@ -694,8 +709,8 @@ class LightTool(wx.Frame):
             if self.connected != None: self.sw[self.connected].ledoff()
             self.connected = lnum
             self.sw[lnum].ledon()
-            self.elbar.attach(self.lights[lnum])
-            self.azbar.attach(self.lights[lnum])
+            self.elevationBar.attach(self.lights[lnum])
+            self.azimuthBar.attach(self.lights[lnum])
             self.intscale.attach(self.lights[lnum])
             self.colorbtn.attach(self.lights[lnum])
             self.redraw('lights')
@@ -775,7 +790,7 @@ class LightManager:
 
         # this hack seems to be necessary under VTK 4.x too.
 
-        dumblight = vtkpython.vtkLight()
+        dumblight = vtk.vtkLight()
         dumblight.SwitchOff()
         ren.AddLight(dumblight)
         for l in lights:
@@ -785,7 +800,25 @@ class LightManager:
         
     def init_lights(self, mode='vtk'):
         init_lights(self.lights, mode)
+        
+    def __getstate__(self):
+        """
+        Method: __getstate__
+        Created: 02.08.2005, KP
+        Description: A getstate method that saves the lights
+        """            
+        odict={"lights":self.lights}
+        return odict
 
+    def __set_pure_state__(self,state):
+        """
+        Method: __set_pure_state__()
+        Created: 11.04.2005, KP
+        Description: Set the state of the light
+        """
+        for i,light in enumerate(state.lights):
+            self.lights[i].__set_pure_state__(light)
+        
     def config(self, event=None):
         """Shows the light configuration dialog."""
         if (not self.cfg_widget):

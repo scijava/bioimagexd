@@ -87,7 +87,8 @@ class InfoWidget(wx.Panel):
         self.mainsizer.SetSizeHints(self)
        
         messenger.connect(None,"tree_selection_changed",self.showInfo) 
- 
+        self.SetHelpText("This window shows you information about the selected dataset.")
+        self.htmlpage.SetHelpText("This window shows you information about the selected dataset.")
         #messenger.connect(None,"tree_selection_changed",self.updateInfo)
     def enable(self,flag):
         """

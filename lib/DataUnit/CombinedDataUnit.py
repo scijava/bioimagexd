@@ -54,7 +54,6 @@ class CombinedDataUnit(DataUnit.DataUnit):
         Logging.info("Settings class =",settingclass,kw="dataunit")
         self.settings = settingclass()
         self.byName={}
-        self.handleOriginal=0
         self.module = None
         self.outputChls={}
         
@@ -372,17 +371,13 @@ class CombinedDataUnit(DataUnit.DataUnit):
                 for dataunit in self.sourceunits:
                     Logging.info("Adding source image data",kw="dataunit")
                     image=dataunit.getTimePoint(timePoint)
-                    self.module.addInput(dataunit,image)
-    
-            if not self.handleOriginal or not self.settings.get("ShowOriginal"):
-                # module.getPreview() returns a vtkImageData object
-                preview=self.module.getPreview(depth)
-            else:
-                Logging.info("Using the original dataset as image",kw="dataunit")
-                preview = image
+                    self.module.addInput(dataunit,image)    
+
+            preview=self.module.getPreview(depth)
             # If no output channels were requested, then just return the
             # preview
             if not self.outputChls:
+#                print "Returning preview",preview.GetDimensions()
                 return preview
                 
             if preview.GetNumberOfScalarComponents()==1:
@@ -401,6 +396,7 @@ class CombinedDataUnit(DataUnit.DataUnit):
             preview=merge.GetOutput()
         elif len(merged)==1:
             preview=merged[0]
+        print "returning preview=",preview.GetDimensions()
         return preview
             
 

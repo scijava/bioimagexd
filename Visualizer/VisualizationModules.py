@@ -55,9 +55,11 @@ class VisualizationModule:
         Description: Initialization
         """    
         #self.name="Module"
+        self.moduleName=kws["moduleName"]
         self.name=kws["label"]
         self.timepoint = -1
         self.parent = parent
+        self.shading=0
         self.visualizer=visualizer
         self.wxrenwin = parent.wxrenwin
         self.renWin = self.wxrenwin.GetRenderWindow()    
@@ -116,10 +118,10 @@ class VisualizationModule:
         self.timepoint = value
         
         if self.visualizer.getProcessedMode():
-            Logging.info("Will render processed data instead",kw="visualizer")
+            Logging.info("Will render processed data instead",kw="rendering")
             self.data = self.dataUnit.doPreview(-1,1,self.timepoint)
         else:
-            Logging.info("Using timepoint data for tp",value,kw="visualizer")
+            Logging.info("Using timepoint data for tp",value,kw="rendering")
             self.data = self.dataUnit.getTimePoint(value)
 
         self.updateRendering()
@@ -161,6 +163,7 @@ class VisualizationModule:
         Created: 16.05.2005, KP
         Description: Set shading on / off
         """          
+        self.shading=shading
         property=self.actor.GetProperty()
         if shading:
             property.ShadeOn()
@@ -168,3 +171,65 @@ class VisualizationModule:
             property.ShadeOff()
     
 
+    def __getstate__(self):
+        """
+        Method: __getstate__
+        Created: 02.08.2005, KP
+        Description: A getstate method that saves the lights
+        """            
+        odict={"timepoint":self.timepoint,
+               "name":self.name,
+               "moduleName":self.moduleName,
+               "shading":self.shading
+        }
+        if hasattr(self,"actor"):
+            odict.update({"actorProperty":self.getVTKState(self.actor.GetProperty())})
+        return odict
+        
+    def getVTKState(self,obj):
+        """
+        Method: getVTKState()
+        Created: 02.08.2005, KP
+        Description: Get state of vtk object
+        """     
+        state={}
+        blocked=["GetOutput","GetReleaseDataFlag","GetOutputPort","GetViewPlaneNormal"]
+        dirlist=dir(obj)
+        for i in dirlist:
+            if i not in blocked:                
+                if i[0:3]=="Get":
+                    setter=i.replace("Get","Set")
+                    if setter in dirlist:
+                        try:
+                            state[i]=eval("obj.%s()"%i)
+                        except:
+                            pass
+        return state
+    def setVTKState(self,obj,state):
+        """
+        Method: setVTKState()
+        Created: 02.08.2005, KP
+        Description: Set state of vtk object
+        """     
+        for key in state.keys():
+            setfunc=key.replace("Get","Set")
+#            Logging.info("Setting %s of %s"%(setfunc,obj),kw="rendering")
+            try:
+                eval("obj.%s(state[\"%s\"])"%(setfunc,key))
+            except:
+                pass
+            
+            
+    def __set_pure_state__(self,state):
+        """
+        Method: __set_pure_state__()
+        Created: 02.08.2005, KP
+        Description: Set the state of the light
+        """
+        self.name = state.name
+        self.moduleName = state.moduleName
+        self.showTimepoint(state.timepoint)
+        if hasattr(self,"actor"):
+            self.setVTKState(self.actor.GetProperty(),state.actorProperty)
+        self.setShading(state.shading)
+        

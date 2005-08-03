@@ -14,9 +14,7 @@
  to specify a path for the camera to follow (using Heikki Uuksulainen's MayaVi animator code)
  and also allows them to produce videos of the rendering using ffmpeg.
  
- This is the wx.Dialog based window that contains the Urmas.
- 
- Modified: 10.02.2005 KP - Created the module
+ This is the window that contains the Urmas.
  
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details

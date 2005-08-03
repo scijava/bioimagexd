@@ -32,19 +32,20 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 import wx
 
 import vtk
+import messenger
 import ColorTransferEditor
-import Dialogs
 
+import Logging
 from Visualizer.VisualizationModules import *
 
-def getClass():return ImagePlaneModule
-def getConfigPanel():return ImagePlaneConfigurationPanel
+def getClass():return OrthogonalPlaneModule
+def getConfigPanel():return OrthogonalPlaneConfigurationPanel
 def getName():return "Orthogonal Slices"
 
 
-class ImagePlaneModule(VisualizationModule):
+class OrthogonalPlaneModule(VisualizationModule):
     """
-    Class: ImagePlaneModule
+    Class: OrthogonalPlaneModule
     Created: 03.05.2005, KP
     Description: A module for slicing the dataset
     """    
@@ -106,8 +107,51 @@ class ImagePlaneModule(VisualizationModule):
         self.planeWidgetX.SetInteractor(iactor)
         self.planeWidgetY.SetInteractor(iactor)
         self.planeWidgetZ.SetInteractor(iactor)
-        print "adding actor"
+        
+        messenger.connect(None,"zslice_changed",self.setZ)
         #self.updateRendering()
+        
+       
+    def __getstate__(self):
+        """
+        Method: __getstate__
+        Created: 02.08.2005, KP
+        Description: A getstate method that saves the lights
+        """            
+        odict=VisualizationModule.__getstate__(self)
+        odict.update({"planeWidgetX":self.getVTKState(self.planeWidgetX)})
+        odict.update({"planeWidgetY":self.getVTKState(self.planeWidgetY)})
+        odict.update({"planeWidgetZ":self.getVTKState(self.planeWidgetZ)})
+        odict.update({"prop1":self.getVTKState(self.prop1)})
+        odict.update({"prop2":self.getVTKState(self.prop2)})
+        odict.update({"prop3":self.getVTKState(self.prop3)})        
+        odict.update({"renderer":self.getVTKState(self.renderer)})
+        odict.update({"camera":self.getVTKState(self.renderer.GetActiveCamera())})
+        odict.update({"x":self.x})
+        odict.update({"z":self.z})
+        odict.update({"y":self.y})
+        return odict
+        
+    def __set_pure_state__(self,state):
+        """
+        Method: __set_pure_state__()
+        Created: 02.08.2005, KP
+        Description: Set the state of the light
+        """        
+        
+        self.setVTKState(self.planeWidgetX,state.planeWidgetX)
+        self.setVTKState(self.planeWidgetX,state.planeWidgetY)
+        self.setVTKState(self.planeWidgetX,state.planeWidgetZ)
+        
+        self.setVTKState(self.prop1,state.prop1)
+        self.setVTKState(self.prop2,state.prop2)        
+        self.setVTKState(self.prop3,state.prop3)       
+        
+        self.setVTKState(self.renderer,state.renderer)
+        self.setVTKState(self.renderer.GetActiveCamera(),state.camera)
+        self.x,self.y,self.z=state.x,state.y,state.z
+        VisualizationModule.__set_pure_state__(self,state)
+         
         
     def setDataUnit(self,dataunit):
         """
@@ -116,7 +160,6 @@ class ImagePlaneModule(VisualizationModule):
         Description: Sets the dataunit this module uses for visualization
         """       
         VisualizationModule.setDataUnit(self,dataunit)
-        print "got dataunit",dataunit
         if self.visualizer.getProcessedMode():
             data=self.dataUnit.getSourceDataUnits()[0].getTimePoint(0)
         else:
@@ -140,6 +183,16 @@ class ImagePlaneModule(VisualizationModule):
         self.planeWidgetZ.GetColorMap().SetLookupTable(ctf)
         self.planeWidgetZ.maxDim = z
     
+    def setZ(self,obj,evt,arg):
+        """
+        Method: setZ
+        Created: 04.05.2005, KP
+        Description: Set the slices to display
+        """         
+        self.z=arg
+        self.updateRendering()
+        
+    
     def setDisplaySlice(self,x,y,z):
         """
         Method: setDisplaySlice
@@ -149,7 +202,7 @@ class ImagePlaneModule(VisualizationModule):
         self.x,self.y,self.z=x,y,z
         #self.parent.getRenderer().ResetCameraClippingRange()
         #self.wxrenwin.GetRenderWindow().Render()
-        print "Showing slices ",self.x,self.y,self.z
+        Logging.info("Showing slices ",self.x,self.y,self.z,kw="rendering")
 
     def showTimepoint(self,value):
         """
@@ -195,7 +248,6 @@ class ImagePlaneModule(VisualizationModule):
         py = cy+ny*2
         d=float(xMax)/zMax
         if d<1:d=1
-        print "d=",d
         pz = cz+nz*(3.0+d)
     
         camera = self.renderer.GetActiveCamera()
@@ -284,14 +336,14 @@ class ImagePlaneModule(VisualizationModule):
         """          
         for widget in [self.planeWidgetX,self.planeWidgetY,self.planeWidgetZ]:
             property=widget.GetTexturePlaneProperty()
-            if shading:
-                property.ShadeOn()
-            else:
-                property.ShadeOff()        
+            #if shading:
+            #    property.ShadeOn()
+            #else:
+            #    property.ShadeOff()        
 
 
 
-class ImagePlaneConfiguration(ModuleConfiguration):
+class OrthogonalPlaneConfiguration(ModuleConfiguration):
     def __init__(self,parent,visualizer):
         """
         Method: __init__(parent)
@@ -299,9 +351,9 @@ class ImagePlaneConfiguration(ModuleConfiguration):
         Description: Initialization
         """     
         ModuleConfiguration.__init__(self,parent,"Orthogonal Slices")
-        self.panel=ImagePlaneConfigurationPanel(self,visualizer)
+        self.panel=OrthogonalPlaneConfigurationPanel(self,visualizer)
 
-class ImagePlaneConfigurationPanel(ModuleConfigurationPanel):
+class OrthogonalPlaneConfigurationPanel(ModuleConfigurationPanel):
     def __init__(self,parent,visualizer,name="Orthogonal Slices",**kws):
         """
         Method: __init__(parent)
@@ -382,13 +434,13 @@ class ImagePlaneConfigurationPanel(ModuleConfigurationPanel):
         Description: Align the camera to face a certain plane
         """  
         if event.GetId()==self.ID_X:
-            print "aliging to X"
+            Logging.info("aliging to X",kw="rendering")
             self.module.alignCamera(self.module.planeWidgetX)
         elif event.GetId()==self.ID_Y:
-            print "aliging to Y"
+            Logging.info("aliging to Y",kw="rendering")
             self.module.alignCamera(self.module.planeWidgetY)
         else:
-            print "aliging to Z"
+            Logging.info("aliging to Z",kw="rendering")
             self.module.alignCamera(self.module.planeWidgetZ)
         
     def setModule(self,module):
@@ -400,15 +452,15 @@ class ImagePlaneConfigurationPanel(ModuleConfigurationPanel):
         ModuleConfigurationPanel.setModule(self,module)
         ext=module.getDataUnit().getTimePoint(0).GetWholeExtent()
         x,y,z=ext[1],ext[3],ext[5]
-        print "x=%d, y=%d, z=%d"%(x,y,z)
+        Logging.info("x=%d, y=%d, z=%d"%(x,y,z),kw="rendering")
         self.xSlider.SetRange(0,x)
-        self.xSlider.SetValue(x/2)
+        self.xSlider.SetValue(module.x)
         
         self.ySlider.SetRange(0,y)
-        self.ySlider.SetValue(y/2)
+        self.ySlider.SetValue(module.y)
         
         self.zSlider.SetRange(0,z)
-        self.zSlider.SetValue(z/2)
+        self.zSlider.SetValue(module.z)
         self.onUpdateSlice(None)
         
     def onUpdateSlice(self,event):

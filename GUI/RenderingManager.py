@@ -154,7 +154,7 @@ class RenderingManager(TimepointSelection):
         self.renderint.setOutputPath(self.rendir.GetValue())
         
         initFile="settings.mv"
-        wc="Mayavi Settings File (*.mv)|*.du"
+        wc="Mayavi Settings File (*.mv)|*.mv"
         filename=""
         dlg=wx.FileDialog(self,"Create Mayavi Settings file",defaultFile=initFile,wildcard=wc,style=wx.SAVE)
         filename=None
@@ -183,7 +183,7 @@ class RenderingManager(TimepointSelection):
                      user defined the camera, module etc. settings
         """
         initFile="settings.mv"
-        wc="Mayavi Settings File (*.mv)|*.du"
+        wc="Mayavi Settings File (*.mv)|*.mv"
         filename=""
         dlg=wx.FileDialog(self,"Create Mayavi Settings file",defaultFile=initFile,wildcard=wc,style=wx.OPEN)
         if dlg.ShowModal()==wx.ID_OK:

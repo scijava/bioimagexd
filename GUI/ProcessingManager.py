@@ -123,7 +123,7 @@ class ProcessingManager(TimepointSelection):
         #name+=")"
         name=self.dataUnit.getName()
         
-        filename=Dialogs.askSaveAsFileName(self,"Save %s dataset as"%self.operationName,"%s.du"%name,"Dataunit (*.du)|*.du")
+        filename=Dialogs.askSaveAsFileName(self,"Save %s dataset as"%self.operationName,"%s.bxd"%name,"BioImageXD Dataset (*.bxd)|*.bxd")
         name=os.path.basename(filename)
         name=".".join(name.split(".")[:-1])
         self.dataUnit.setName(name)

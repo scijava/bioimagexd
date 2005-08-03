@@ -176,7 +176,7 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         
         self.Bind(wx.EVT_PAINT,self.OnPaint)        
         self.Bind(wx.EVT_LEFT_DOWN,self.getVoxelValue)
-        
+        self.SetHelpText("This window displays the selected dataset slice by slice.")
     def setSelectedItem(self,item):
         """
         Method: setSelectedItem(n)
@@ -356,12 +356,15 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         if isinstance(self.dataUnit,CombinedDataUnit):
             try:
                 preview=self.dataUnit.doPreview(self.z,renew,self.timePoint)
+                #print "Got preview",preview.GetDimensions()
             except Logging.GUIError, ex:
                 ex.show()
                 return
         else:
             preview = self.dataUnit.getTimePoint(self.timePoint)
+            Logging.info("Using timepoint %d as preview"%self.timePoint,kw="preview")
         if not preview:
+            Logging.info("Creating black preview",kw="preview")
             if not self.blackImage:
                 xor=vtk.vtkImageLogic()
                 xor.SetOperationToXor()
@@ -369,19 +372,19 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
                 xor.AddInput(self.currentImage)
                 xor.Update()
                 self.blackImage=xor.GetOutput()
+            #print "Preview = blackimage"
             preview=self.blackImage
         self.currentImage=preview
-
+        #print "Processing preview=",preview.GetDimensions()
         colorImage = self.processOutputData(preview)
-        
-        x,y,z=preview.GetDimensions()
-    
+        x,y,z=colorImage.GetDimensions()
+        #print "Preview dims=",preview.GetDimensions()
         if x!=self.oldx or y!=self.oldy:
             #self.resetScroll()
             self.setScrollbars(x,y)
             self.oldx=x
             self.oldy=y
-            
+        #print "colorImage=",colorImage.GetDimensions()
         Logging.info("Setting image (not null: %s)"%(not not colorImage),kw="preview")
         self.setImage(colorImage)
         self.setZSlice(self.z)
@@ -399,6 +402,7 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         Logging.info("Painting preview",kw="preview")
         self.paintPreview()
         wx.GetApp().Yield(1)
+        #print "self.bmp=",self.bmp,self.bmp.GetWidth(),self.bmp.GetHeight()
         self.updateScrolling()
         
         self.finalImage=colorImage
@@ -410,6 +414,7 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         Description: Process the data before it's send to the preview
         """            
         ncomps = data.GetNumberOfScalarComponents()
+        Logging.info("Data has %d components"%ncomps,kw="preview")
         if ncomps>3:
             Logging.info("Previewed data has %d components, extracting"%ncomps,kw="preview")
             extract=vtk.vtkImageExtractComponents()
@@ -419,6 +424,7 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
             data=extract.GetOutput()
         
         if self.mip:
+            Logging.info("Doing mip",kw="preview")
             data.SetUpdateExtent(data.GetWholeExtent())
             mip=vtk.vtkImageSimpleMIP()
             mip.SetInput(data)
@@ -427,6 +433,7 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
             data.SetUpdateExtent(data.GetWholeExtent())
             #print "Output from mip:",data
         if ncomps == 1:            
+            Logging.info("Mapping trough ctf",kw="preview")
             self.mapToColors.RemoveAllInputs()
             self.mapToColors.SetInput(data)
             
@@ -434,11 +441,15 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
             
             colorImage=self.mapToColors.GetOutput()
             colorImage.SetUpdateExtent(data.GetExtent())
+            #print "upadte extent=",data.GetExtent()
             self.mapToColors.Update()
+            #print "colorImage=",colorImage.GetDimensions()
             data=self.mapToColors.GetOutput()
+            #print "data =",data.GetDimensions()
         else:
             pass
-                
+            
+        #print "data =",data.GetDimensions()
         return data
        
 
@@ -598,11 +609,9 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         Description: Sets the zoom factor so that the image will fit into the screen
         """
         if self.imagedata:
-            w,h=self.size
             x,y,z=self.imagedata.GetDimensions()
-            if w!=x or h!=y:
-                Logging.info("Determining zoom factor from (%d,%d) to (%d,%d)"%(x,y,w,h),kw="preview")
-                self.setZoomFactor(ImageOperations.getZoomFactor(x,y,w,h))
+            Logging.info("Determining zoom factor from (%d,%d) to (%d,%d)"%(x,y,self.maxX,self.maxY),kw="preview")
+            self.setZoomFactor(ImageOperations.getZoomFactor(x,y,self.maxX,self.maxY))
         else:
             Logging.info("Will zoom to fit later",kw="preview")
             self.fitLater=1
@@ -674,6 +683,7 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
             Logging.info("Setting scrollbars (%d,%d) because of zooming"%(w,h),kw="preview")
             self.setScrollbars(w,h)
 
+        Logging.info("Buffer for drawing=",self.buffer.GetWidth(),self.buffer.GetHeight(),kw="preview")
         dc = self.dc = wx.BufferedDC(wx.ClientDC(self),self.buffer)
         
         if self.zoomx!=1 or self.zoomy!=1:

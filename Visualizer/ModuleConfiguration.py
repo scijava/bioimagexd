@@ -9,8 +9,6 @@
  A module containing the configuration dialogs for various rendering 
  modules.
  
- Modified 30.04.2005 KP - Created the class by splitting VisualizationModules.py
-          
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
 
@@ -35,6 +33,8 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 import wx
 
 import vtk
+import messenger
+
 from VisualizationModules  import *
 import ColorTransferEditor
 import Dialogs
@@ -139,7 +139,16 @@ class ModuleConfigurationPanel(wx.ScrolledWindow):
         self.sizer.Fit(self)
         
         self.findModule()
-        
+        messenger.connect(None,"update_module_settings",self.updateModuleSettings)
+
+    def updateModuleSettings(self,obj,evt,*args):
+        """
+        Method: updateModuleSettings
+        Created: 02.08.2005, KP
+        Description: Signal for updating the module settings
+        """     
+        if self.module:
+            self.setModule(self.module)
     def onMaterial(self,event):
         """
         Method: onMaterial

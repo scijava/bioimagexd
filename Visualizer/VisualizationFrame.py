@@ -39,6 +39,7 @@ import Dialogs
 import  wx.lib.colourselect as  csel
 import wx.lib.scrolledpanel as scrolled
 
+from lib.persistence import state_pickler
 
 from VisualizationModules import *
 from ModuleConfiguration import *
@@ -302,8 +303,7 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
         self.moduleLoad.Bind(wx.EVT_BUTTON,self.onLoadModule)
         
         self.moduleRemove = wx.Button(self,-1,"Remove")
-        self.moduleRemove.Bind(wx.EVT_BUTTON,self.onRemoveModule)
-
+        self.moduleRemove.Bind(wx.EVT_BUTTON,self.onRemoveModule)        
         n=0
         self.sizer.Add(self.namePanel,(n,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
         n+=1
@@ -452,7 +452,35 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
             self.currentConf=None
             self.SetupScrolling()
 
-
+    def onOpenScene(self,event):
+        """
+        Method: onLoadScene
+        Created: 02.08.2005, KP
+        Description: Load a scene from file
+        """    
+        wc="3D view scene (*.3xd)|*.3xd"
+        filename=Dialogs.askOpenFileName(self,"Open 3D view scene",wc,0)
+        if filename:        
+            state=state_pickler.load_state(open(filename[0],"r"))
+            #state_pickler.set_state(self.mode,state)
+            self.moduleListbox.Clear()
+            self.mode.__set_pure_state__(state)
+            messenger.send(None,"update_module_settings")
+    
+    def onSaveScene(self,event):
+        """
+        Method: onSaveScene
+        Created: 02.08.2005, KP
+        Description: Save a scene to file
+        """    
+        wc="3D view scene (*.3xd)|*.3xd"
+        filename=None
+        dlg=wx.FileDialog(self,"Save 3D view scene as...",defaultFile="scene.3xd",wildcard=wc,style=wx.SAVE)
+        if dlg.ShowModal()==wx.ID_OK:
+            filename=dlg.GetPath()        
+        if filename:
+            p=state_pickler.dump(self.mode,open(filename,"w"))        
+        
 class VisualizationFrame(wx.Frame):
     """
     Class: VisualizationFrame

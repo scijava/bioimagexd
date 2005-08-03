@@ -73,7 +73,7 @@ class RenderingMode:
         self.wxrenwin=None
         self.timepoint=0
         self.mapping=Modules.DynamicLoader.getRenderingModules()
-        
+        self.first=1
         self.lightsManager=None
         self.configPanel=None
         self.dataUnit=None
@@ -129,6 +129,7 @@ class RenderingMode:
         Created: 24.05.2005, KP
         Description: Set the mode of visualization
         """
+        
         self.sidebarWin=sidebarwin
         # If we're preloading, don't create the render window
         # since it will mess up the rendering
@@ -156,7 +157,9 @@ class RenderingMode:
         
         mgr.enable(MenuManager.ID_LIGHTS,self.configPanel.onConfigureLights)
         mgr.enable(MenuManager.ID_RENDERWIN,self.configPanel.onConfigureRenderwindow)
-        
+        mgr.addMenuItem("file",MenuManager.ID_LOAD_SCENE,"Open 3D view scene...","Open a 3D view scene file",self.configPanel.onOpenScene,before=MenuManager.ID_IMPORT)
+        mgr.addMenuItem("file",MenuManager.ID_SAVE_SCENE,"Save 3D view scene...","Save a 3D view scene",self.configPanel.onSaveScene,before=MenuManager.ID_IMPORT)                
+        mgr.addSeparator("file",sepid=MenuManager.ID_SEPARATOR,before=MenuManager.ID_IMPORT)
         return self.wxrenwin
         
     def saveSnapshot(self,filename):
@@ -207,12 +210,16 @@ class RenderingMode:
         Created: 24.05.2005, KP
         Description: Unset the mode of visualization
         """
+        mgr=self.menuManager
+        mgr.remove(MenuManager.ID_SAVE_SCENE)
+        mgr.remove(MenuManager.ID_LOAD_SCENE)
+        mgr.removeSeparator(MenuManager.ID_SEPARATOR)
         if self.wxrenwin:
             self.wxrenwin.Show(0)       
         self.container.Show(0)
         self.configPanel.Show(0)
         mgr=self.menuManager
-        
+                
         mgr.disable(MenuManager.ID_LIGHTS)
         mgr.disable(MenuManager.ID_RENDERWIN)
         
@@ -281,10 +288,11 @@ class RenderingMode:
             Dialogs.showerror(self.parent,"No dataset has been loaded for visualization","Cannot load visualization module")
             return
         self.wxrenwin.initializeVTK()
-        module = self.mapping[name][0](self,self.visualizer,label=lbl)
+        module = self.mapping[name][0](self,self.visualizer,label=lbl,moduleName=name)
         self.modules.append(module)
         module.setDataUnit(self.dataUnit)
         module.showTimepoint(self.timepoint)
+        return module
             
     def getModules(self):
         """
@@ -305,3 +313,30 @@ class RenderingMode:
             module.showTimepoint(self.timepoint)
 
 
+    def __getstate__(self):
+        """
+        Method: __getstate__
+        Created: 02.08.2005, KP
+        Description: A getstate method that saves the lights
+        """            
+        odict={"lightsManager":self.lightsManager,
+               "timepoint":self.timepoint,
+               "modules":self.modules}
+        return odict
+        
+    def __set_pure_state__(self,state):
+        """
+        Method: __set_pure_state__()
+        Created: 02.08.2005, KP
+        Description: Set the state of the light
+        """
+        self.lightsManager.__set_pure_state__(state.lightsManager)
+        self.setTimepoint(state.timepoint)
+        for module in self.modules:
+            self.removeModule(module.getName())
+        for module in state.modules:
+            name=module.moduleName
+            label=module.name
+            mod=self.loadModule(name,label)
+            self.configPanel.appendModuleToList(label)
+            mod.__set_pure_state__(module)

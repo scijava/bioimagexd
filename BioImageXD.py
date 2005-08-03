@@ -83,6 +83,8 @@ class LSMApplication(wx.App):
                                  wx.SPLASH_CENTRE_ON_SCREEN | wx.SPLASH_TIMEOUT,
                                  3000, None, -1)
         splash.Show()
+        provider = wx.SimpleHelpProvider()
+        wx.HelpProvider_Set(provider)        
         self.mainwin=GUI.MainWindow.MainWindow(None,-1,self,splash)
         self.mainwin.Show(True)
         self.SetTopWindow(self.mainwin)

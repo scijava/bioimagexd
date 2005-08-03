@@ -52,7 +52,7 @@ class TreeWidget(wx.SashLayoutWindow):
         self.parent=parent
         self.tree = wx.TreeCtrl(self,self.treeId,wx.DefaultPosition,wx.DefaultSize,
         wx.TR_HAS_BUTTONS|wx.TR_MULTIPLE)
-
+        
         self.tree.Bind(wx.EVT_TREE_SEL_CHANGED,self.onSelectionChanged,id=self.tree.GetId())    
         self.items={}
     
@@ -72,13 +72,13 @@ class TreeWidget(wx.SashLayoutWindow):
 
         self.lsmfiles=None
         self.leicafiles=None
-        self.dufiles=None
+        self.bxdfiles=None
         
         self.tree.Bind(wx.EVT_RIGHT_DOWN,self.onRightClick)
         self.Bind(wx.EVT_RIGHT_DOWN,self.onRightClick)
         self.ID_CLOSE_DATAUNIT=wx.NewId()
         self.menu=wx.Menu()
-        
+        self.tree.SetHelpText("Files that you open appear in this tree.")        
        
         item = wx.MenuItem(self.menu,self.ID_CLOSE_DATAUNIT,"Close dataset")
         self.tree.Bind(wx.EVT_MENU,self.onCloseDataset,id=self.ID_CLOSE_DATAUNIT)
@@ -139,7 +139,7 @@ class TreeWidget(wx.SashLayoutWindow):
         Parameters:
             name        Name of the item
             path        Path of the item
-            objtype     Type of the object (lsm, du)
+            objtype     Type of the object (lsm, bxd)
             objs        objects to add
         """            
         item=None
@@ -179,14 +179,14 @@ class TreeWidget(wx.SashLayoutWindow):
             
             self.tree.SetPyData(item,"2")
             self.tree.SetItemImage(item,fldropenidx,which=wx.TreeItemIcon_Expanded)
-        elif objtype=="du":
-            if not self.dufiles:
-                self.dufiles=self.tree.AppendItem(self.root,"Dataset series")
-                self.tree.SetPyData(self.dufiles,"1")        
-                self.tree.SetItemImage(self.dufiles,fldridx,which=wx.TreeItemIcon_Normal)
-                self.tree.SetItemImage(self.dufiles,fldropenidx,which=wx.TreeItemIcon_Expanded)
+        elif objtype=="bxd":
+            if not self.bxdfiles:
+                self.bxdfiles=self.tree.AppendItem(self.root,"Dataset series")
+                self.tree.SetPyData(self.bxdfiles,"1")        
+                self.tree.SetItemImage(self.bxdfiles,fldridx,which=wx.TreeItemIcon_Normal)
+                self.tree.SetItemImage(self.bxdfiles,fldropenidx,which=wx.TreeItemIcon_Expanded)
 
-            item=self.dufiles
+            item=self.bxdfiles
             self.tree.Expand(item)
         
         self.tree.Expand(item)

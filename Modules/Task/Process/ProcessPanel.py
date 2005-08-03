@@ -111,25 +111,26 @@ class ProcessPanel(TaskPanel.TaskPanel):
         self.doAnisoptropicCheckbutton = wx.CheckBox(self.filtersPanel,
         -1,"Edge Preserving Smoothing")
         self.doAnisoptropicCheckbutton.Bind(wx.EVT_CHECKBOX,self.doFilterCheckCallback)
-
+        self.doAnisoptropicCheckbutton.SetHelpText("Smooth data with anisotropic diffusion. An anisotropic diffusion preserves the edges in the image.")
 
         #Median Filtering
         self.doMedianCheckbutton = wx.CheckBox(self.filtersPanel,
         -1,"Median Filtering")
         self.doMedianCheckbutton.Bind(wx.EVT_CHECKBOX,self.doFilterCheckCallback)
-    
+        self.doMedianCheckbutton.SetHelpText("Smooth data with a median filter. A median filter replaces each pixel with the median value from a rectangular neighborhood around that pixel.")
         val=UIElements.AcceptedValidator
         self.neighborhoodX=wx.TextCtrl(self.filtersPanel,-1,"1",validator=val(string.digits))
         self.neighborhoodY=wx.TextCtrl(self.filtersPanel,-1,"1",validator=val(string.digits))
         self.neighborhoodZ=wx.TextCtrl(self.filtersPanel,-1,"1",validator=val(string.digits))
-
 
         self.neighborhoodLbl=wx.StaticText(self.filtersPanel,-1,
         "Neighborhood:")
         self.neighborhoodXLbl=wx.StaticText(self.filtersPanel,-1,"X:")
         self.neighborhoodYLbl=wx.StaticText(self.filtersPanel,-1,"Y:")
         self.neighborhoodZLbl=wx.StaticText(self.filtersPanel,-1,"Z:")
-
+        for i in ["X","Y","Z"]:
+            eval("self.neighborhood%s.SetHelpText('Size of the median neighborhood in %s direction.')"%(i,i))
+            eval("self.neighborhood%sLbl.SetHelpText('Size of the median neighborhood in %s direction.')"%(i,i))
         n=0
         self.filtersSizer.Add(self.doAnisoptropicCheckbutton,(n,0))
         n+=1
@@ -150,6 +151,7 @@ class ProcessPanel(TaskPanel.TaskPanel):
 
         self.doSolitaryCheckbutton = wx.CheckBox(self.filtersPanel,
         -1,"Solitary Filtering")
+        self.doSolitaryCheckbutton.SetHelpText("Remove solitary noise pixels from the data by comparing them with their neighborhood.")
         self.doSolitaryCheckbutton.Bind(wx.EVT_CHECKBOX,self.doFilterCheckCallback)
 
         self.solitaryX=wx.TextCtrl(self.filtersPanel,-1,"1",validator=val(string.digits))
@@ -162,8 +164,12 @@ class ProcessPanel(TaskPanel.TaskPanel):
         self.solitaryYLbl=wx.StaticText(self.filtersPanel,-1,"Y:")
         self.solitaryThresholdLbl=wx.StaticText(self.filtersPanel,-1,
         "Processing threshold:")
-
-        
+        self.solitaryX.SetHelpText("Threshold that a pixel's horizontal neighbor needs to be over so that the pixel is not removed.")
+        self.solitaryY.SetHelpText("Threshold that a pixel's vertical neighbor needs to be over so that the pixel is not removed.")
+        self.solitaryThreshold.SetHelpText("Threshold that a pixel needs to be over to get processed by solitary filter.")        
+        self.solitaryXLbl.SetHelpText("Threshold that a pixel's horizontal neighbor needs to be over so that the pixel is not removed.")
+        self.solitaryYLbl.SetHelpText("Threshold that a pixel's vertical neighbor needs to be over so that the pixel is not removed.")
+        self.solitaryThresholdLbl.SetHelpText("Threshold that a pixel needs to be over to get processed by solitary filter.")        
         self.filtersSizer.Add(self.doSolitaryCheckbutton,(n,0))
         n+=1
         self.filtersSizer.Add(self.solitaryLbl,(n,0))

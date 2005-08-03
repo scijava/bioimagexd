@@ -60,7 +60,7 @@ class ClippingPlaneModule(VisualizationModule):
         self.on = 0
         self.renew = 1
         self.currentPlane=None
-                
+        self.clipped = 0
         self.planeWidget = vtk.vtkPlaneWidget()
         self.planeWidget.AddObserver("InteractionEvent",self.clipVolumeRendering)
         self.planeWidget.SetResolution(20)
@@ -73,6 +73,37 @@ class ClippingPlaneModule(VisualizationModule):
         print "adding actor"
         #self.updateRendering()
         
+    def __getstate__(self):
+        """
+        Method: __getstate__
+        Created: 02.08.2005, KP
+        Description: A getstate method that saves the lights
+        """            
+        odict=VisualizationModule.__getstate__(self)
+        odict.update({"planeWidget":self.getVTKState(self.planeWidget)})
+        odict.update({"currentPlane":self.getVTKState(self.currentPlane)})
+        odict.update({"renderer":self.getVTKState(self.renderer)})
+        odict.update({"camera":self.getVTKState(self.renderer.GetActiveCamera())})
+        odict.update({"clipped":self.clipped})
+        return odict
+        
+    def __set_pure_state__(self,state):
+        """
+        Method: __set_pure_state__()
+        Created: 02.08.2005, KP
+        Description: Set the state of the light
+        """        
+        self.setVTKState(self.planeWidget,state.planeWidget)
+        self.setVTKState(self.currentPlane,state.currentPlane)
+        self.setVTKState(self.renderer,state.renderer)
+        self.setVTKState(self.renderer.GetActiveCamera(),state.camera)
+
+        self.clipped = state.clipped
+        if self.clipped:
+            self.clipVolumeRendering(self.planeWidget,None)
+        VisualizationModule.__set_pure_state__(self,state)
+                
+        
     def removeClippingPlane(self,plane):
         """
         Method: removeClippingPlane(plane)
@@ -82,6 +113,7 @@ class ClippingPlaneModule(VisualizationModule):
         for module in self.parent.getModules():
             if hasattr(module,"mapper") and hasattr(module.mapper,"SetClippingPlanes"):
                 module.mapper.RemoveClippingPlane(plane)
+                self.clipped = 0
         
     def clipVolumeRendering(self,object,event):
         """
@@ -97,6 +129,7 @@ class ClippingPlaneModule(VisualizationModule):
             if hasattr(module,"mapper") and hasattr(module.mapper,"SetClippingPlanes"):
                 module.mapper.AddClippingPlane(self.plane)
                 self.currentPlane=self.plane
+                self.clipped = 1
         
     def setDataUnit(self,dataunit):
         """

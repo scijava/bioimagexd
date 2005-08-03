@@ -34,6 +34,7 @@ import wx
 import vtk
 import ColorTransferEditor
 import Dialogs
+import types
 from Visualizer.VisualizationModules import *
 import Logging
 
@@ -90,6 +91,45 @@ class VolumeModule(VisualizationModule):
         self.setShading(0)
         #self.updateRendering()
         
+    def __getstate__(self):
+        """
+        Method: __getstate__
+        Created: 02.08.2005, KP
+        Description: A getstate method that saves the lights
+        """            
+        odict=VisualizationModule.__getstate__(self)
+        odict.update({"mapper":self.getVTKState(self.mapper)})
+        odict.update({"volume":self.getVTKState(self.volume)})
+        odict.update({"volumeProperty":self.getVTKState(self.volumeProperty)})
+        odict.update({"actor":self.getVTKState(self.actor)})
+        odict.update({"otf0":self.getVTKState(self.otfs[0])})
+        odict.update({"otf1":self.getVTKState(self.otfs[1])})
+        odict.update({"otf2":self.getVTKState(self.otfs[2])})
+        odict.update({"renderer":self.getVTKState(self.renderer)})
+        odict.update({"camera":self.getVTKState(self.renderer.GetActiveCamera())})
+        odict.update({"quality":self.quality})
+        odict.update({"method":self.method})
+        return odict
+        
+    def __set_pure_state__(self,state):
+        """
+        Method: __set_pure_state__()
+        Created: 02.08.2005, KP
+        Description: Set the state of the light
+        """        
+        self.setVTKState(self.mapper,state.mapper)
+        self.setVTKState(self.volume,state.volume)
+        self.setVTKState(self.volumeProperty,state.volumeProperty)
+        self.setVTKState(self.actor,state.actor)
+        self.setVTKState(self.otfs[0],state.otf0)
+        self.setVTKState(self.otfs[1],state.otf1)        
+        self.setVTKState(self.otfs[2],state.otf2)       
+        self.setVTKState(self.renderer,state.renderer)
+        self.setVTKState(self.renderer.GetActiveCamera(),state.camera)
+        self.setMethod(state.method)
+        self.setQuality(state.quality)
+        VisualizationModule.__set_pure_state__(self,state)
+        
     def setDataUnit(self,dataunit):
         """
         Method: setDataUnit(self)
@@ -144,6 +184,7 @@ class VolumeModule(VisualizationModule):
         Created: 28.04.2005, KP
         Description: Set the quality of Rendering
         """ 
+        self.quality = quality
         if self.method<0:return 0
         if raw:
             Logging.info("Setting quality to raw ",quality,kw="rendering")
@@ -388,12 +429,15 @@ class VolumeConfigurationPanel(ModuleConfigurationPanel):
             q=self.qualitySlider.GetValue()
         else:
             try:
-                q=int(self.settingEdit.GetValue())
+                q=float(self.settingEdit.GetValue())
             except:
                 q=self.qualitySlider.GetValue()
         setting = self.module.setQuality(q,self.editFlag)
         if setting:
-            val="%d"%setting
+            if type(setting)==types.FloatType:
+                val="%f"%setting
+            else:
+                val="%d"%setting
         else:val=""
         flag=self.editFlag
         self.settingEdit.SetValue(val)
@@ -435,6 +479,9 @@ class VolumeConfigurationPanel(ModuleConfigurationPanel):
             else:
                 ctf= module.getDataUnit().getColorTransferFunction()
             self.colorPanel.setColorTransferFunction(ctf)
+        self.qualitySlider.SetValue(module.quality)
+        self.shadingBtn.SetValue(module.shading)
+        
         
     def onApply(self,event):
         """
@@ -449,9 +496,9 @@ class VolumeConfigurationPanel(ModuleConfigurationPanel):
         
         otf = self.colorPanel.getOpacityTransferFunction()
         self.module.setOpacityTransferFunction(otf)
-        if self.haveVolpro and self.method in [0,3,4] and self.volpro.GetValue():
+        if self.haveVolpro and self.method in [0,2,3] and self.volpro.GetValue():
             # use volumepro accelerated rendering
-            modes=["Composite",None,None,"MaximumIntensity","MinimumIntensity"]
+            modes=["Composite",None,"MaximumIntensity","MinimumIntensity"]
             self.module.setVolumeProAcceleration(modes[self.method])
             self.settingEdit.Enable(0)
             self.qualitySlider.Enable(0)
@@ -459,7 +506,7 @@ class VolumeConfigurationPanel(ModuleConfigurationPanel):
             self.settingEdit.Enable(1)
             self.qualitySlider.Enable(1)
             self.module.setMethod(self.method)
-            if self.method==2:
+            if self.method==1:
                 self.settingLbl.SetLabel("Maximum number of planes:")
             else:
                 self.settingLbl.SetLabel("Sample Distance:")

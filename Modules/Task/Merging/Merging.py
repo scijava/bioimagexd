@@ -116,6 +116,10 @@ class Merging(Module):
         else: # If the whole volume is requested, then we will also do alpha
             Logging.info("Will create alpha channel, because whole volume requested",kw="processing")
             self.doAlpha=1
+        if self.settings.get("ShowOriginal"):
+            ret=self.doOperation()      
+            self.doAlpha=1
+            return ret
         if not self.preview:
             self.preview=self.doOperation()
         self.doAlpha=1

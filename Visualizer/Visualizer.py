@@ -205,10 +205,12 @@ class Visualizer:
         
         self.timeslider=wx.Slider(self.sliderPanel,value=1,minValue=1,maxValue=1,
         style=wx.SL_HORIZONTAL|wx.SL_LABELS)
+        self.timeslider.SetHelpText("Use this slider to select the displayed timepoint.")
         self.timeslider.Bind(wx.EVT_SCROLL,self.onChangeTimepoint)
 
         self.zslider=wx.Slider(self.zsliderWin,value=1,minValue=1,maxValue=1,
         style=wx.SL_VERTICAL|wx.SL_LABELS|wx.SL_AUTOTICKS)
+        self.zslider.SetHelpText("Use this slider to select the displayed optical slice.")
         self.zslider.Bind(wx.EVT_SCROLL,self.onChangeZSlice)
         messenger.connect(None,"zslice_changed",self.onChangeZSlice)
         
@@ -261,8 +263,6 @@ class Visualizer:
             
         self.OnSize(None)
             
-            
-        
         
     def getDataUnit(self):
         """
@@ -337,6 +337,7 @@ class Visualizer:
         
         self.viewCombo=wx.ComboBox(self.tb,MenuManager.ID_SET_VIEW,"Isometric",choices=["+X","-X","+Y","-Y","+Z","-Z","Isometric"],size=(100,-1),style=wx.CB_DROPDOWN)
         self.viewCombo.SetSelection(6)
+        self.viewCombo.SetHelpText("This controls the view angle of 3D view mode.")
         self.tb.AddControl(self.viewCombo)
         wx.EVT_COMBOBOX(self.parent,MenuManager.ID_SET_VIEW,self.onSetView)
         
@@ -347,6 +348,7 @@ class Visualizer:
         self.zoomCombo=wx.ComboBox(self.tb,-1,"100%",
                           choices=["12.5%","25%","33.33%","50%","66.67%","75%","100%","125%","150%","200%","300%","400%","600%","800%","Zoom to fit"],size=(100,-1),style=wx.CB_DROPDOWN)
         self.zoomCombo.SetSelection(6)
+        self.zoomCombo.SetHelpText("This controls the zoom level of visualization views.")        
         self.tb.AddControl(self.zoomCombo)
 
         self.tb.AddSimpleTool(MenuManager.ID_ZOOM_IN,wx.Image(os.path.join("Icons","zoom-in.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Zoom in","Zoom in on the slice")
@@ -358,6 +360,7 @@ class Visualizer:
         self.tb.AddSimpleTool(MenuManager.ID_ADD_SCALE,wx.Image(os.path.join("Icons","scale.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Draw scale","Draw a scale bar on the image")
         self.tb.AddSeparator()
         self.origBtn=wx.Button(self.tb,-1,"Original")
+        self.origBtn.SetHelpText("Use this button to show how the unprocessed dataset looks like.")
         self.origBtn.Bind(wx.EVT_LEFT_DOWN,self.onShowOriginal)
         self.origBtn.Bind(wx.EVT_LEFT_UP,self.onHideOriginal)
         self.tb.AddControl(self.origBtn)
@@ -365,6 +368,9 @@ class Visualizer:
  #       self.tb.AddSimpleTool(MenuManager.ID_ROI_RECTANGLE,wx.Image(os.path.join("Icons","rectangle.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Select rectangle","Select a rectangular area of the image")
  #       self.tb.AddSimpleTool(MenuManager.ID_ROI_POLYGON,wx.Image(os.path.join("Icons","polygon.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Select polygon","Select a polygonal area of the image")
 
+        self.cBtn = wx.ContextHelpButton(self.tb)
+        self.tb.AddControl(self.cBtn)
+ 
         wx.EVT_TOOL(self.parent,MenuManager.ID_ZOOM_IN,self.zoomIn)
         wx.EVT_TOOL(self.parent,MenuManager.ID_ZOOM_OUT,self.zoomOut)
         wx.EVT_TOOL(self.parent,MenuManager.ID_ZOOM_TO_FIT,self.zoomToFit)
@@ -677,8 +683,6 @@ class Visualizer:
         self.currModeModule=module
 
         self.currentWindow = modeinst.activate(self.sidebarWin)        
-        if hasattr(self.currMode,"getZoomFactor"):
-            self.setComboBoxToFactor(self.currentWindow.getZoomFactor())
         self.sidebarWin.SetDefaultSize((0,1024))
         wx.LayoutAlgorithm().LayoutWindow(self.parent, self.visWin)
         if not modeinst.showSideBar():
@@ -695,7 +699,8 @@ class Visualizer:
             Logging.info("Re-setting dataunit",kw="visualizer")
             modeinst.setDataUnit(self.dataUnit)
         self.currentWindow.Show()        
-        
+        if hasattr(self.currMode,"getZoomFactor"):
+            self.setComboBoxToFactor(self.currentWindow.getZoomFactor())        
         
         
     def showItemToolbar(self,flag):

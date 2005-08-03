@@ -54,7 +54,7 @@ class VisualizationMode:
         Created: 28.04.2005, KP
         Description: Initialization
         """    
-        self.timepoint = -1
+
         self.parent = parent
         self.dataUnit = None
         self.enabled=1
@@ -62,6 +62,8 @@ class VisualizationMode:
         self.timepoint=0
 
         self.visualizer=visualizer
+        
+   
     
     def annotate(self,annclass,**kws):
         """

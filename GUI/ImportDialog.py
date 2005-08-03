@@ -7,7 +7,7 @@
  Creator: KP
  Description:
 
- A dialog for importing different kinds of data to form a .du file
+ A dialog for importing different kinds of data to form a .bxd file
  
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
@@ -47,7 +47,7 @@ class ImportDialog(wx.Dialog):
     """
     Class: ImportDialog
     Created: 16.03.2005, KP
-    Description: A dialog for importing various forms of data to create a .du file
+    Description: A dialog for importing various forms of data to create a .bxd file
     """
     def __init__(self, parent,imageMode=1):
         """
@@ -91,7 +91,7 @@ class ImportDialog(wx.Dialog):
             
         name=self.nameEdit.GetValue()
         name=name.replace(" ","_")
-        filename=Dialogs.askSaveAsFileName(self,"Save imported dataset as","%s.du"%name,"Dataunit (*.du)|*.du")
+        filename=Dialogs.askSaveAsFileName(self,"Save imported dataset as","%s.bxd"%name,"BioImageXD Dataset (*.bxd)|*.bxd")
         self.Close()
 
         self.convertFiles(filename)
@@ -193,7 +193,7 @@ class ImportDialog(wx.Dialog):
         """
         Method: writeDataUnitFile
         Created: 25.04.2005, KP
-        Description: Writes a .du file
+        Description: Writes a .bxd file
         """ 
         settings = DataUnit.DataUnitSettings()
         settings.set("Type","Adjust")
