@@ -135,14 +135,12 @@ class TimepointSelectionPanel(scrolled.ScrolledPanel):
             n=int(self.nthEntry.GetValue())
         except:
             n=1
-        
         if not n:
             for i in range(len(self.buttonList)):
                 self.selectedFrames[i]=0
                 self.setButtonState(self.buttonList[i],0)
             return
-        for i in range(len(self.buttonList)):
-            btn=self.buttonList[i]
+        for i,btn in enumerate(self.buttonList):
             if not (i)%n:
                 self.selectedFrames[i]=1
                 self.setButtonState(btn,1)
@@ -208,9 +206,9 @@ class TimepointSelectionPanel(scrolled.ScrolledPanel):
             button.SetBackgroundColour(button.origColor)
             button.SetForegroundColour(button.origFgColor)
         else:
-            button.SetBackgroundColour("#333333")
+            button.SetBackgroundColour((51,51,51))
             button.SetForegroundColour((255,255,255)) 
-        
+        button.Refresh()
             
     def setDataUnit(self,dataUnit):
         """
