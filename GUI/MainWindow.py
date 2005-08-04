@@ -1117,16 +1117,16 @@ class MainWindow(wx.Frame):
         Created: 02.08.2004, KP
         Description: Callback function for menu item "Help"
         """
-        #help=HelpViewer.HelpViewerFrame(self)
-        #help.Show()
-        help=wx.html.HtmlHelpController()
-        
-        help.AddBook("Help\\help.hhp",1)
+        help=HelpViewer.HelpViewerFrame(self)
+        help.Show()
+        #help=wx.html.HtmlHelpController()
+        #help.UseConfig(self.config)
+        #help.AddBook("Help\\help.hhp",1)
         #help.Display("Adjust")
-        help.SetTempDir("C:\\temp")
-        help.SetTitleFormat("BioImageXD - %s")
-        help.Display("BioImageXD")
-        help.DisplayContents()
+        #help.SetTempDir("C:\\temp")
+        #help.SetTitleFormat("BioImageXD - %s")
+        #help.Display("BioImageXD")
+        #help.DisplayContents()
         
 
     def quitApp(self,evt):
