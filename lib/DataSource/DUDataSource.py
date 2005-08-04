@@ -194,7 +194,7 @@ class VtiDataSource(DataSource):
             "Cannot read XML Image Data File %s"%filename)
         self.reader.SetFileName(filepath)
         self.reader.Update()
-        self.updateProgress()
+        self.updateProgress(None,None)
         return self.reader.GetOutput()
 
     def loadDuFile(self, filename):

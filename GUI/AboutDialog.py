@@ -141,6 +141,7 @@ Jukka Varsaluoma<br>
 </p><p>
 <b>The following people have significantly contributed to the development of BioImageXD:</b></p><p>
 Jorma Virtanen<br>
+Mikko Huhtala<br>
 </p><p>
 <b>The following companies have supported the development of BioImageXD:</b></p><p>
 N / A

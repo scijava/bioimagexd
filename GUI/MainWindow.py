@@ -47,7 +47,6 @@ import SettingsWindow
 import ImportDialog
 import ExportDialog
 import RenderingInterface
-import HelpViewer
 
 import Visualizer
 
@@ -86,6 +85,7 @@ class MainWindow(wx.Frame):
             wx.EVT_SASH_DRAGGED_RANGE, self.onSashDrag,
             id=MenuManager.ID_TREE_WIN, id2=MenuManager.ID_INFO_WIN,
         )
+        self.help=None
         self.statusbar=None
         self.progress=None
         self.visualizationPanel=None
@@ -187,7 +187,7 @@ class MainWindow(wx.Frame):
         messenger.connect(None,"tree_selection_changed",self.onSetDataset)
         messenger.connect(None,"get_voxel_at",self.updateVoxelInfo)
         messenger.connect(None,"load_dataunit",self.onMenuOpen)
-        
+        messenger.connect(None,"view_help",self.viewHelp)
         
     def onSetDataset(self,obj,evt,data):
         """
@@ -869,7 +869,7 @@ class MainWindow(wx.Frame):
         # We try to load the actual data
         Logging.info("Loading dataset with extension %s, path=%s"%(ext,path),kw="io")
     
-        extToSource={"du":VtiDataSource,"lsm":LsmDataSource,"txt":LeicaDataSource}
+        extToSource={"bxd":VtiDataSource,"lsm":LsmDataSource,"txt":LeicaDataSource}
         try:
             datasource=extToSource[ext]()
         except KeyError,ex:
@@ -1111,22 +1111,28 @@ class MainWindow(wx.Frame):
         about.ShowModal()
         about.Destroy()
         
+    def viewHelp(self,obj,evt,args):
+        """
+        Method: viewHelp
+        Created: 05.08.2004, KP
+        Description: A method that shows a help of some item
+        """
+        if not self.help:
+            self.help=wx.html.HtmlHelpController()
+            self.help.AddBook("Help\\help.hhp",1)
+            self.help.SetTitleFormat("BioImageXD - %s")
+        if not args:
+            self.help.DisplayContents()
+        else:
+            self.help.Display(args)
+            
     def onMenuHelp(self,evt):
         """
         Method: onMenuHelp()
         Created: 02.08.2004, KP
         Description: Callback function for menu item "Help"
         """
-        help=HelpViewer.HelpViewerFrame(self)
-        help.Show()
-        #help=wx.html.HtmlHelpController()
-        #help.UseConfig(self.config)
-        #help.AddBook("Help\\help.hhp",1)
-        #help.Display("Adjust")
-        #help.SetTempDir("C:\\temp")
-        #help.SetTitleFormat("BioImageXD - %s")
-        #help.Display("BioImageXD")
-        #help.DisplayContents()
+        self.viewHelp(None,None,None)
         
 
     def quitApp(self,evt):

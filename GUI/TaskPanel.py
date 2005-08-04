@@ -43,7 +43,6 @@ from PreviewFrame import *
 from Logging import *
 from ProcessingManager import *
 
-import HelpViewer
 import Dialogs
 import sys
 import ImageOperations
@@ -207,8 +206,10 @@ class TaskPanel(scrolled.ScrolledPanel):
         Created: 03.11.2004, KP
         Description: Shows a help for this task panel
         """
-        help=HelpViewer.HelpViewerFrame(self,page="%s.html"%self.operationName.lower())
-        help.Show()
+        messenger.send(None,"view_help",self.operationName)
+#        self.help = wx.html.Html
+#        help=HelpViewer.HelpViewerFrame(self,page="%s.html"%self.operationName.lower())
+#        help.Show()
         
     def createOptionsFrame(self):
         """
