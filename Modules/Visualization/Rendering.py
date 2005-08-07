@@ -6,7 +6,7 @@
  Created: 28.04.2005, KP
  Description:
 
- A slices viewing rendering mode for Visualizer
+ A 3D rendering mode for Visualizer
            
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
@@ -44,6 +44,7 @@ import PreviewFrame
 import Visualizer.VisualizationModules as vmods
 
 import Visualizer.ModuleConfiguration as ModuleConfiguration
+from Visualizer.VisualizationMode import VisualizationMode
 
 import MenuManager
 import Visualizer.Lights as Lights
@@ -60,13 +61,14 @@ def getRenderingDelay(): return 1000
 def showZoomToolbar(): return True
 
         
-class RenderingMode:
+class RenderingMode(VisualizationMode):
     def __init__(self,parent,visualizer):
         """
         Method: __init__
         Created: 24.05.2005, KP
         Description: Initialization
         """
+        VisualizationMode.__init__(self,parent,visualizer)
         self.parent=parent
         self.menuManager=visualizer.menuManager
         self.visualizer=visualizer
@@ -139,7 +141,7 @@ class RenderingMode:
             self.GetRenderWindow=self.wxrenwin.GetRenderWindow
             self.renwin=self.wxrenwin.GetRenderWindow()
             self.wxrenwin.Render()
-    
+            self.iactivePanel=self.wxrenwin
             self.getRenderer=self.GetRenderer=self.wxrenwin.getRenderer
         #self.wxrenwin.Show()
         if not self.configPanel:

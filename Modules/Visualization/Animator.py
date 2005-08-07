@@ -7,8 +7,6 @@
  Description:
 
  An animator mode for Visualizer
- 
- Modified 19.06.2005 KP - Created the class
           
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
@@ -33,6 +31,7 @@ __version__ = "$Revision: 1.9 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 
+from Visualizer.VisualizationMode import VisualizationMode
 
 def getName():return "animator"
 def getClass():return AnimatorMode
@@ -45,13 +44,14 @@ def showZoomToolbar(): return False
 from GUI import Urmas
 
         
-class AnimatorMode:
+class AnimatorMode(VisualizationMode):
     def __init__(self,parent,visualizer):
         """
         Method: __init__
         Created: 24.05.2005, KP
         Description: Initialization
         """
+        VisualizationMode.__init__(self,parent,visualizer)
         self.parent=parent
         self.menuManager=visualizer.menuManager
         self.visualizer=visualizer
@@ -70,6 +70,14 @@ class AnimatorMode:
         """
         return False
         
+    def relayout(self):
+        """
+        Method: relayout()
+        Created: 07.08.2005, KP
+        Description: Method called when the size of the window changes
+        """    
+        self.urmaswin.SetupScrolling()
+        
     def activate(self,sidebarwin):
         """
         Method: activate()
@@ -82,7 +90,8 @@ class AnimatorMode:
         if not self.urmaswin:
             # Ugly hack
             self.urmaswin=Urmas.UrmasWindow(self.parent,self.visualizer.menuManager,self.visualizer.mainwin.taskWin,self.visualizer)
-    
+        else:
+            self.urmaswin.Show()
             
         return self.urmaswin
         

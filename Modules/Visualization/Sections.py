@@ -64,6 +64,15 @@ class SectionsMode(VisualizationMode):
         self.sectionsPanel.updatePreview()
         self.sectionsPanel.Refresh()
         
+    def showSliceSlider(self):
+        """
+        Method: showSliceSlider()
+        Created: 07.08.2005, KP
+        Description: Method that is queried to determine whether
+                     to show the zslider
+        """
+        return True
+        
     def showSideBar(self):
         """
         Method: showSideBar()

@@ -163,13 +163,13 @@ class Visualizer:
         self.sliderWin.SetSashVisible(wx.SASH_TOP,False)
         self.sliderWin.SetDefaultSize((500,64))
         
-        self.zsliderWin=wx.SashLayoutWindow(self.parent,self.ID_VISAREA_WIN,style=wx.NO_BORDER|wx.SW_3D)
+        self.zsliderWin=wx.SashLayoutWindow(self.parent,self.ID_ZSLIDER_WIN,style=wx.NO_BORDER|wx.SW_3D)
         self.zsliderWin.SetOrientation(wx.LAYOUT_VERTICAL)
         self.zsliderWin.SetAlignment(wx.LAYOUT_RIGHT)
         self.zsliderWin.SetSashVisible(wx.SASH_RIGHT,False)
         self.zsliderWin.SetSashVisible(wx.SASH_LEFT,False)
         self.zsliderWin.SetDefaultSize((32,768))        
-
+        self.zsliderWin.origSize=(32,768)
         
         self.createSliders()
 
@@ -229,6 +229,7 @@ class Visualizer:
         """ 
         obj=None
         if arg=="toolbar":obj=self.toolWin
+        elif arg=="zslider":obj=self.zsliderWin
         elif arg=="histogram":
             obj=self.histogramWin
             w,h=0,0
@@ -580,9 +581,10 @@ class Visualizer:
         Description: Handle size events
         """
 #        if not self.enabled:return
+        print "visuyalizer.OnSize()"
         wx.LayoutAlgorithm().LayoutWindow(self.parent, self.visWin)
         self.currentWindow.SetSize(self.visWin.GetSize())
-        
+        self.currMode.relayout()
                 
     def __del__(self):
         global visualizerInstance
@@ -685,14 +687,20 @@ class Visualizer:
         self.currentWindow = modeinst.activate(self.sidebarWin)        
         self.sidebarWin.SetDefaultSize((0,1024))
         wx.LayoutAlgorithm().LayoutWindow(self.parent, self.visWin)
+        if not modeinst.showSliceSlider():
+            if self.zsliderWin.GetSize()[0]:
+                self.zsliderWin.SetDefaultSize((0,1024))
+        else:
+            if self.zsliderWin.GetSize()!=self.zsliderWin.origSize:
+                self.zsliderWin.SetDefaultSize(self.zsliderWin.origSize)
+            
         if not modeinst.showSideBar():
             if self.sidebarWin.GetSize()[0]:
                 self.sidebarWin.SetDefaultSize((0,1024))
-                wx.LayoutAlgorithm().LayoutWindow(self.parent, self.visWin)
         else:
             if self.sidebarWin.GetSize()!=self.sidebarWin.origSize:
                 self.sidebarWin.SetDefaultSize(self.sidebarWin.origSize)
-                wx.LayoutAlgorithm().LayoutWindow(self.parent, self.visWin)
+        wx.LayoutAlgorithm().LayoutWindow(self.parent, self.visWin)
         #self.currentWindow.enable(self.enabled)
 
         if self.dataUnit and modeinst.dataUnit != self.dataUnit:
@@ -852,8 +860,9 @@ class Visualizer:
         tp-=1 # slider starts from one
         if self.timepoint != tp:
             self.setTimepoint(tp)
-            messenger.send(None,"timepoint_changed",tp)
             Logging.info("Sending timepoint change event (tp=%d)"%tp,kw="visualizer")
+            messenger.send(None,"timepoint_changed",tp)
+            
             
     def onChangeTimepoint(self,event):
         """

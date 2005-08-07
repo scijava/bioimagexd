@@ -15,8 +15,6 @@
  
  This is a palette containing different items that can be dragged to the timeline.
  
- Modified: 10.02.2005 KP - Created the module
- 
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
 
@@ -40,6 +38,7 @@ __version__ = "$Revision: 1.22 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 import wx
+import Dialogs
 import os.path
 
 class UrmasDropTarget(wx.PyDropTarget):
@@ -129,7 +128,14 @@ class UrmasPalette(wx.Panel):
         bmp=wx.Image(os.path.join(iconpath,"timepoint.jpg"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
         self.newtimepoint=wx.StaticBitmap(p,self.ID_NEWTIMEPOINT,bmp,style=wx.RAISED_BORDER)
         self.newtimepoint.Bind(wx.EVT_MOTION,self.onToolNewTimepoint)
+        
+        toolTip = wx.ToolTip("Drag this on to a timepoint track to select visualized timepoints.")
+        self.newtimepoint.SetHelpText(toolTip.GetTip())
+        self.newtimepoint.SetToolTip(toolTip)        
+        
         p.Bind(wx.EVT_MOTION,self.onToolNewTimepoint)
+        p.Bind(                wx.EVT_LEFT_UP,self.onToolClick)
+        self.newtimepoint.Bind(wx.EVT_LEFT_UP,self.onToolClick)
         self.sizer.Add(p,flag=wx.RIGHT,border=5)
 
         p=wx.Panel(self,-1,size=(64,64))#,style=wx.RAISED_BORDER)
@@ -137,38 +143,73 @@ class UrmasPalette(wx.Panel):
         self.newspline=wx.StaticBitmap(p,self.ID_NEWSPLINE,bmp,style=wx.RAISED_BORDER)
         self.newspline.Bind(wx.EVT_MOTION,self.onToolNewSpline)
         p.Bind(wx.EVT_MOTION,self.onToolNewSpline)
+        p.Bind(             wx.EVT_LEFT_UP,self.onToolClick)
+        self.newspline.Bind(wx.EVT_LEFT_UP,self.onToolClick)
         self.sizer.Add(p,flag=wx.RIGHT,border=10)
-
-
+        
+        toolTip = wx.ToolTip("Drag this on to a camera path track to add a random camera path.")
+        self.newspline.SetToolTip(toolTip)        
+        self.newspline.SetHelpText(toolTip.GetTip())
+        p.SetToolTip(toolTip)
+        
         p=wx.Panel(self,-1,size=(64,64))#,style=wx.RAISED_BORDER)
         self.ID_NEWCIRCULAR=wx.NewId()
         bmp=wx.Image(os.path.join(iconpath,"spline_rotate_x.jpg"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
         self.newcircular=wx.StaticBitmap(p,self.ID_NEWCIRCULAR,bmp,style=wx.RAISED_BORDER)
         self.newcircular.Bind(wx.EVT_MOTION,self.onToolNewCircular)
         p.Bind(wx.EVT_MOTION,self.onToolNewCircular)
+        p.Bind(               wx.EVT_LEFT_UP,self.onToolClick)
+        self.newcircular.Bind(wx.EVT_LEFT_UP,self.onToolClick)
         self.sizer.Add(p,flag=wx.RIGHT,border=5)
-        
+
+        toolTip=wx.ToolTip("Drag this on to a camera path track to make camera rotate around X axis.")
+        self.newcircular.SetToolTip(toolTip)
+        self.newcircular.SetHelpText(toolTip.GetTip())
+        p.SetToolTip(toolTip)
+
         p=wx.Panel(self,-1,size=(64,64))#,style=wx.RAISED_BORDER)
         self.ID_NEWPERPENDICULAR=wx.NewId()
         bmp=wx.Image(os.path.join(iconpath,"spline_rotate_y.jpg"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
         self.newperpendicular=wx.StaticBitmap(p,self.ID_NEWPERPENDICULAR,bmp,style=wx.RAISED_BORDER)
         self.newperpendicular.Bind(wx.EVT_MOTION,self.onToolNewPerpendicular)
         p.Bind(wx.EVT_MOTION,self.onToolNewPerpendicular)
+        p.Bind(                    wx.EVT_LEFT_UP,self.onToolClick)
+        self.newperpendicular.Bind(wx.EVT_LEFT_UP,self.onToolClick)
         self.sizer.Add(p,flag=wx.RIGHT,border=5)
+        
+        toolTip=wx.ToolTip("Drag this on to a camera path track to make camera rotate around Y axis.")
+        self.newperpendicular.SetToolTip(toolTip)
+        self.newperpendicular.SetHelpText(toolTip.GetTip())
+        p.SetToolTip(toolTip)
 
         p=wx.Panel(self,-1,size=(64,64))#,style=wx.RAISED_BORDER)
         self.ID_STOP_CAMERA=wx.NewId()
         bmp=wx.Image(os.path.join(iconpath,"spline_stop.jpg"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
         self.newstop=wx.StaticBitmap(p,self.ID_STOP_CAMERA,bmp,style=wx.RAISED_BORDER)
         self.newstop.Bind(wx.EVT_MOTION,self.onToolNewStop)
+        p.Bind(           wx.EVT_LEFT_UP,self.onToolClick)
+        self.newstop.Bind(wx.EVT_LEFT_UP,self.onToolClick)
         p.Bind(wx.EVT_MOTION,self.onToolNewStop)
+        
+        toolTip=wx.ToolTip("Drag this on to a camera path to add a pause in camera movement.")
+        self.newstop.SetToolTip(toolTip)
+        self.newstop.SetHelpText(toolTip.GetTip())
+        p.SetToolTip(toolTip)
         
         self.sizer.Add(p,flag=wx.RIGHT,border=5)
         
         self.SetSizer(self.sizer)
         self.SetAutoLayout(1)
         self.sizer.Fit(self)
-
+        
+    def onToolClick(self,event):
+        """
+        Method: onToolNewPerpendicular
+        Created: 07.08.2005, KP
+        Description: A method that displays instructions if the user clicks on the palette
+        """
+        Dialogs.showwarning(None,"You need to drag and drop this item on to a track.","Drag item instead of clicking")
+        
     def onToolNewPerpendicular(self,event):
         """
         Method: onToolNewPerpendicular
@@ -177,6 +218,7 @@ class UrmasPalette(wx.Panel):
         """
         if event.Dragging():
             self.dropItem("Spline","Perpendicular")
+        event.Skip()
             
     def onToolNewStop(self,event):
         """
@@ -186,7 +228,7 @@ class UrmasPalette(wx.Panel):
         """
         if event.Dragging():
             self.dropItem("Spline","Stop")
-
+        event.Skip()
 
     def onToolNewCircular(self,event):
         """
@@ -196,6 +238,7 @@ class UrmasPalette(wx.Panel):
         """
         if event.Dragging():
             self.dropItem("Spline","Circular")
+        event.Skip()
         
     def onToolNewSpline(self,event):
         """
@@ -206,7 +249,8 @@ class UrmasPalette(wx.Panel):
         
         if event.Dragging():
             self.dropItem("Spline")
-
+        event.Skip()
+        
     def onToolNewTimepoint(self,event):
         """
         Method: onToolNewTimepoint
@@ -215,7 +259,7 @@ class UrmasPalette(wx.Panel):
         """
         if event.Dragging():
             self.dropItem("Timepoint")
-                
+        event.Skip()        
             
         
     def dropItem(self,datatype,indata="Hello, World!"):

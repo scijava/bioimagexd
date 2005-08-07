@@ -3,7 +3,7 @@
  Unit: SplineEditor
  Project: BioImageXD
  Created: n/a
- Creator: Heikki Uuksulainen
+ Creator: Heikki Uuksulainen, KP
  Description:
 
  This module defines gui for editing the spline which defines the
@@ -113,7 +113,7 @@ class SplineEditor:
         print "Initializing camera"
         self.initCamera()
         self.spline.SetInteractor(self.iren)
-        self.initSpline(2)
+        #self.initSpline(2)
         self.spline.On()
         self.spline.SetEnabled(1)
         self.wxrenwin.Render()

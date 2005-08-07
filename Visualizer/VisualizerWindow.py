@@ -59,6 +59,7 @@ class VisualizerWindow(wxVTKRenderWindowInteractor):
         wxVTKRenderWindowInteractor.__init__(self,parent,-1,**kws)
         self.renderer=None
         self.doSave=0
+        self.zoomFactor=1.0
         self.rubberband=0
 
     def enable(self,flag):
@@ -83,6 +84,28 @@ class VisualizerWindow(wxVTKRenderWindowInteractor):
         self.renderer.AddObserver("StartEvent",self.onRenderBegin)
         self.renderer.AddObserver("EndEvent",self.onRenderEnd)
         
+    def getZoomFactor(self):
+        """
+        Method: setView
+        Created: 22.07.2005
+        Description: Set the view according to given params
+        """
+        return self.zoomFactor
+        
+    def setZoomFactor(self,factor):
+        """
+        Method: setView
+        Created: 22.07.2005
+        Description: Set the view according to given params
+        """
+        cam=self.renderer.GetActiveCamera()
+        cam.SetParallelScale(self.origParallelScale)
+        cam.SetViewAngle(self.origViewAngle)
+        self.zoomFactor=factor
+        print "Setting zoom factor to",factor
+        self.renderer.GetActiveCamera().Zoom(factor)
+        self.renderer.Render()
+        
     def setView(self,params):
         """
         Method: setView
@@ -96,6 +119,8 @@ class VisualizerWindow(wxVTKRenderWindowInteractor):
         cam.SetPosition(x,y,z)
         cam.SetViewUp(a,b,c)
         self.renderer.ResetCamera()
+        self.origParallelScale=cam.GetParallelScale()
+        self.origViewAngle=cam.GetViewAngle()
 
         
 

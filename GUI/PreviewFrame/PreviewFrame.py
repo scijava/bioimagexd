@@ -35,7 +35,6 @@ import messenger
 
 import ImageOperations
 
-#import PreviewPanel
 import time
 
 from GUI import Events

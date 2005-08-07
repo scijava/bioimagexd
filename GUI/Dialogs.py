@@ -1,15 +1,12 @@
 # -*- coding: iso-8859-1 -*-
 """
- Unit: Dialogs.py
+ Unit: Dialogs
  Project: BioImageXD
  Created: 28.01.2005
  Creator: KP
  Description:
 
  Shortcut methods for displaying most of the normal dialogs. 
-
- Modified: 28.01.2005 KP - Created the modules
-           12.03.2005 KP - Made file dialogs save the last openend path
 
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details

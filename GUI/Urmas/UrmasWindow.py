@@ -4,8 +4,7 @@
 """
  Unit: UrmasWindow
  Project: BioImageXD
- Created: 10.02.2005
- Creator: KP
+ Created: 10.02.2005, KP
  Description:
 
  URM/AS - The Unified Rendering Manager / Animator for Selli
@@ -46,14 +45,15 @@ import UrmasTimepointSelection
 import RenderingInterface
 import UrmasControl
 import VideoGeneration
-
+import  wx.lib.scrolledpanel as scrolled
 import Dialogs
 
 import UrmasPalette
 
 from GUI import MenuManager
 
-class UrmasWindow(wx.SashLayoutWindow):
+#class UrmasWindow(wx.SashLayoutWindow):
+class UrmasWindow(scrolled.ScrolledPanel):
     """
     Class: UrmasWindow
     Created: 10.02.2005, KP
@@ -63,7 +63,8 @@ class UrmasWindow(wx.SashLayoutWindow):
     """
     def __init__(self,parent,menumanager,taskwin,visualizer):
         #wx.Frame.__init__(self,parent,-1,"Rendering Manager / Animator",size=(1024,768))
-        wx.SashLayoutWindow.__init__(self,parent,-1)
+        #wx.SashLayoutWindow.__init__(self,parent,-1)
+        scrolled.ScrolledPanel.__init__(self,parent,-1)
     
         self.taskWin=taskwin
         self.visualizer=visualizer
@@ -89,7 +90,8 @@ class UrmasWindow(wx.SashLayoutWindow):
         
         self.SetSizer(self.sizer)
         self.SetAutoLayout(1)
-        self.sizer.Fit(self)
+        self.SetupScrolling()
+        #self.sizer.Fit(self)
         #self.SetStatusText("Done.")
 
         

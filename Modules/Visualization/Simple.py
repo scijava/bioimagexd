@@ -40,55 +40,12 @@ import Visualizer.VisualizerWindow as VisualizerWindow
 
 import Modules
 
-def getName():return "simple"
+def getName():return "MIP"
 def getClass():return SimpleMode
 def getImmediateRendering(): return False
 def getConfigPanel(): return None
 def getRenderingDelay(): return 500
 def showZoomToolbar(): return True
-    
-class SimpleConfigurationPanel(scrolled.ScrolledPanel):
-    """
-    Class: SimpleConfigurationPanel
-    Created: 21.07.2005, KP
-    Description: A panel that can be used to configure MIP view
-    """
-    def __init__(self,parent,visualizer,mode,**kws):
-        """
-        Method: __init__(parent)
-        Created: 28.04.2005, KP
-        Description: Initialization
-        """
-        size=(200,500)
-        if "size" in kws:size=kws["size"]
-        scrolled.ScrolledPanel.__init__(self,parent,-1,size=size)    
-        self.visualizer=visualizer
-        self.mode=mode
-    
-        self.sizer=wx.GridBagSizer()
-        self.radiobox=wx.RadioBox(self,-1,"View data",
-        choices=["Fixed","Rotate"],majorDimension=2,
-        style=wx.RA_SPECIFY_COLS
-        )
-        self.okbutton=wx.Button(self,-1,"Select")
-        self.okbutton.Bind(wx.EVT_BUTTON,self.onSetViewMode)
-        self.sizer.Add(self.radiobox,(0,0))
-        
-        self.sizer.Add(self.okbutton,(1,0))
-        
-        self.SetSizer(self.sizer)
-        self.SetAutoLayout(1)
-        self.SetupScrolling()
-
-        
-    def onSetViewMode(self,event):
-        """
-        Method: onSetViewMode
-        Created: 21.07.2005, KP
-        Description: Configure whether to show timepoints or slices
-        """       
-        pos=self.radiobox.GetSelection()
-        self.mode.setRenderedMode(pos)
 
     
 class SimpleMode(VisualizationMode):
@@ -98,27 +55,22 @@ class SimpleMode(VisualizationMode):
         Created: 24.05.2005, KP
         Description: Initialization
         """
-        VisualizationMode.__init__(self,parent,visualizer)
-        self.configPanel=None
-        self.renderedMode=0
-        self.module=None
-        self.wxrenwin=None
-        self.mapping=Modules.DynamicLoader.getRenderingModules()
+        VisualizationMode.__init__(self,parent,visualizer)        
+        self.parent=parent
+        self.visualizer=visualizer
+        self.preview=None
+        self.init=1
+        self.dataUnit=None
+        self.modules=Modules.DynamicLoader.getTaskModules()
 
-    def setRenderedMode(self,mode):
+    def showSliceSlider(self):
         """
-        Method: setRenderedMode
-        Created: 22.07.2005, KP
-        Description: Set the method of visualization
+        Method: showSliceSlider()
+        Created: 07.08.2005, KP
+        Description: Method that is queried to determine whether
+                     to show the zslider
         """
-        self.iren = iren = self.GetRenderWindow().GetInteractor()
-        if mode:
-            self.iren.Enable()
-        else:
-            self.wxrenwin.setView((0,0,1,0,1,0))
-            self.visualizer.viewCombo.SetSelection(4)
-            self.iren.Disable()
-            self.Render()
+        return True
         
     def showSideBar(self):
         """
@@ -127,23 +79,7 @@ class SimpleMode(VisualizationMode):
         Description: Method that is queried to determine whether
                      to show the sidebar
         """
-        return True
-  
-    def enable(self,flag):
-        """
-        Method: enable(flag)
-        Created: 02.06.2005, KP
-        Description: Enable/Disable updates
-        """
-        self.enabled=flag        
-        
-    def zoomObject(self):
-        """
-        Method: zoomObject()
-        Created: 04.07.2005, KP
-        Description: Zoom to a user selected portion of the image
-        """            
-        self.wxrenwin.zoomToRubberband()        
+        return False
         
     def Render(self):
         """
@@ -151,69 +87,41 @@ class SimpleMode(VisualizationMode):
         Created: 24.05.2005, KP
         Description: Update the rendering
         """      
-        self.wxrenwin.Render()              
-      
-             
-    def deactivate(self):
-        """
-        Method: deactivate()
-        Created: 22.07.2005, KP
-        Description: Unset the mode of visualization
-        """
-        if self.wxrenwin:
-            self.wxrenwin.Show(0)
-        self.configPanel.Show(0)        
-        self.container.Show(0)
+        self.preview.updatePreview(0)
         
     def updateRendering(self):
         """
         Method: updateRendering
         Created: 26.05.2005, KP
         Description: Update the rendering
-        """      
-        if not self.enabled:
-            Logging.info("Visualizer is disabled, won't update simple view",kw="visualizer")
-            return
-        Logging.info("Updating simple view",kw="visualizer")
-        self.module.showTimepoint(self.timepoint)        
-    def setTimepoint(self,tp):
         """
-        Method: setTimepoint
-        Created: 25.05.2005, KP
-        Description: Set the timepoint to be visualized
-        """
-        self.timepoint=tp
-        self.module.showTimepoint(self.timepoint)
+        Logging.info("Updating rendering",kw="preview")
+        self.preview.updatePreview(1)
         
-  
+    def setBackground(self,r,g,b):
+        """
+        Method: setBackground(r,g,b)
+        Created: 24.05.2005, KP
+        Description: Set the background color
+        """      
+        if self.preview:
+            self.preview.setBackgroundColor((r,g,b))
+
     def activate(self,sidebarwin):
         """
         Method: activate()
         Created: 24.05.2005, KP
         Description: Set the mode of visualization
         """
-        self.sidebarWin=sidebarwin
-        print "\n\nACTIVATE SIMPLE"
-        if not self.wxrenwin:
-            self.wxrenwin = VisualizerWindow.VisualizerWindow(self.parent,size=(512,512))
-            self.wxrenwin.Render()
-            self.GetRenderWindow=self.wxrenwin.GetRenderWindow
-            self.renwin=self.wxrenwin.GetRenderWindow()
-    
-            self.wxrenwin.Render()
-    
-            self.getRenderer=self.GetRenderer=self.wxrenwin.getRenderer
-        if not self.configPanel:
-            # When we embed the sidebar in a sashlayoutwindow, the size
-            # is set correctly
-            print "Showing configPanel"
-            self.container = wx.SashLayoutWindow(self.sidebarWin)
-            self.configPanel = SimpleConfigurationPanel(self.container,self.visualizer,self)
-        self.container.Show()            
-        self.configPanel.Show()
-        return self.wxrenwin
+        if not self.preview:
+            Logging.info("Generating preview",kw="visualizer")
+            self.preview=PreviewFrame.PreviewFrame(self.parent,
+            previewsize=(512,512),pixelvalue=False,
+            zoom=False,zslider=True,timeslider=False,scrollbars=True)
+            self.iactivePanel=self.preview
+        return self.preview
+            
         
-
         
     def setDataUnit(self,dataUnit):
         """
@@ -221,25 +129,50 @@ class SimpleMode(VisualizationMode):
         Created: 25.05.2005, KP
         Description: Set the dataunit to be visualized
         """
-        VisualizationMode.setDataUnit(self,dataUnit)
-
-        self.wxrenwin.initializeVTK()
-        if not self.module:
-            self.module = self.mapping["Volume Rendering"][0](self,self.visualizer,label="Volume")
-            self.module.setMethod(2)
-            otf=vtk.vtkPiecewiseFunction()
-            otf.AddPoint(0, 0.0)
-            otf.AddPoint(255, 1.0)
-            self.module.setOpacityTransferFunction(otf)
-        self.module.setDataUnit(self.dataUnit)
-        self.module.showTimepoint(self.timepoint)
-        self.setRenderedMode(0)
-
+        Logging.info("setDataUnit(",dataUnit,")",kw="visualizer")
+        if dataUnit == self.dataUnit:
+            Logging.info("Same dataunit, not changing",kw="visualizer")
+            return
+        if self.init:
+            self.preview.setPreviewType("")
+            self.init=0
+        if not self.visualizer.getProcessedMode():
+            Logging.info("Using ProcessDataUnit for slices preview")
+            unitclass=self.modules["Process"][2].getDataUnit()
+            unit=unitclass("Slices preview")
+            unit.addSourceDataUnit(dataUnit)
+            
+            taskclass=self.modules["Process"][0]                
+            unit.setModule(taskclass())
+            
+        else:
+            Logging.info("Using dataunit",dataUnit,kw="visualizer")
+            unit=dataUnit
+        self.preview.setDataUnit(unit,0)
+        
+    def setTimepoint(self,tp):
+        """
+        Method: setTimepoint
+        Created: 25.05.2005, KP
+        Description: Set the timepoint to be visualized
+        """
+        Logging.info("Setting timepoint to ",tp,kw="visualizer")
+        self.preview.setTimepoint(tp)
+        
+    def deactivate(self):
+        """
+        Method: deactivate()
+        Created: 24.05.2005, KP
+        Description: Unset the mode of visualization
+        """
+        self.preview.Show(0)
+        
     def saveSnapshot(self,filename):
         """
         Method: saveSnapshot(filename)
         Created: 05.06.2005, KP
         Description: Save a snapshot of the scene
         """      
-        self.wxrenwin.save_screen(filename)
+        self.preview.saveSnapshot(filename)
+        
         

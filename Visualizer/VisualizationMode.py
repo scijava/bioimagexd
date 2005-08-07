@@ -130,6 +130,15 @@ class VisualizationMode:
                      to show the sidebar
         """
         return False
+        
+    def showSliceSlider(self):
+        """
+        Method: showSliceSlider()
+        Created: 07.08.2005, KP
+        Description: Method that is queried to determine whether
+                     to show the zslider
+        """
+        return False        
   
     def setBackground(self,r,g,b):
         """
@@ -190,3 +199,11 @@ class VisualizationMode:
         """      
         self.iactivePanel.Refresh()
                 
+    def relayout(self):
+        """
+        Method: relayout()
+        Created: 07.08.2005, KP
+        Description: Method called when the size of the window changes
+        """    
+        pass
+        

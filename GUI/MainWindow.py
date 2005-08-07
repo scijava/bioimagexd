@@ -41,7 +41,7 @@ from ConfigParser import *
 import TreeWidget
 from Logging import *
 
-import  wx.py   as  py
+import  wx.py as py
 
 import SettingsWindow
 import ImportDialog
@@ -100,10 +100,10 @@ class MainWindow(wx.Frame):
         self.currentTask=""
         self.currentFile=""
         self.showToolNames=0
+        self.progressCoeff=1.0
+        self.progressShift=0.0
         
         self.taskPanels = Modules.DynamicLoader.getTaskModules()
-
-        
         
         self.menuManager=MenuManager.MenuManager(self,text=0)
         
@@ -293,7 +293,15 @@ class MainWindow(wx.Frame):
         """
         if type(arg)==types.FloatType:
             arg*=100
+        # The progress coefficient gives us some amount of control on what range
+        arg*=self.progressCoeff
+        arg+=self.progressShift
+        
         self.progress.SetValue(int(arg))
+        if int(arg)>=100:
+            self.progress.Show(0)
+        else:
+            self.progress.Show()
         if text:
             self.statusbar.SetStatusText(text)
         if allow_gui:
@@ -422,7 +430,7 @@ class MainWindow(wx.Frame):
         self.visIds.append(MenuManager.ID_VIS_SECTIONS)
         
         bmp = wx.Image(os.path.join(iconpath,"view_rendering.jpg"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
-        tb.DoAddTool(MenuManager.ID_VIS_SIMPLE,"Simple view",bmp,kind=wx.ITEM_CHECK,shortHelp="Simple view")                
+        tb.DoAddTool(MenuManager.ID_VIS_SIMPLE,"MIP view",bmp,kind=wx.ITEM_CHECK,shortHelp="Maximum Intensity Projection view")                
         wx.EVT_TOOL(self,MenuManager.ID_VIS_SIMPLE,self.onMenuVisualizer)
         self.visIds.append(MenuManager.ID_VIS_SIMPLE)
         bmp = wx.Image(os.path.join(iconpath,"view_rendering_3d.jpg"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
@@ -685,7 +693,6 @@ class MainWindow(wx.Frame):
         #self.infoWin.SetDefaultSize((0,0))
         #self.menuManager.check(MenuManager.ID_VIEW_INFO,0)
         #wx.LayoutAlgorithm().LayoutWindow(self, self.visWin)
-        
         eid=evt.GetId()
         if eid==MenuManager.ID_VIS_GALLERY:
             mode="gallery"
@@ -696,10 +703,10 @@ class MainWindow(wx.Frame):
         elif eid==MenuManager.ID_RENDER:
             mode="animator"
         elif eid==MenuManager.ID_VIS_SIMPLE:
-            mode="simple"
+            mode="MIP"
         else:
             mode="3d"
-
+        messenger.send(None,"update_progress",0.1,"Loading %s view..."%mode)
 
         self.setButtonSelection(eid)
         #self.onMenuShowTree(None,0)
@@ -714,6 +721,7 @@ class MainWindow(wx.Frame):
                 Logging.info("Setting dataunit for visualizer",kw="main")
                 self.visualizer.setDataUnit(dataunit)
             self.visualizer.setVisualizationMode(mode)
+            messenger.send(None,"update_progress",0.3,"Loading %s view..."%mode)
             #self.visualizer.setDataUnit(dataunit)
             self.showVisualization(self.visPanel)
             self.visualizer.enable(1)
@@ -737,8 +745,8 @@ class MainWindow(wx.Frame):
             "select a dataset and try again.\n","No dataset selected")
             return            
             
-            
         dataunit = selectedFiles[0]
+        messenger.send(None,"update_progress",0.5,"Loading %s view..."%mode)
         self.loadVisualizer(dataunit,mode,0)
         
     def onMenuAnimator(self,evt):
@@ -963,13 +971,14 @@ class MainWindow(wx.Frame):
             Dialogs.showerror(self,
             "You can select at most %d source datasets for %s"%(filesAtMost,action),"Too many source datasets")
             return
+        messenger.send(None,"update_progress",0.1,"Loading task %s..."%action)
         self.onMenuShowTree(None,0)
         # Hide the infowin and toggle the menu item accordingly
         self.infoWin.SetDefaultSize((0,0))
         self.menuManager.check(MenuManager.ID_VIEW_INFO,0)
         self.currentTaskWindowType=windowtype
         window=windowtype(self.taskWin,self.menuManager)
-
+        messenger.send(None,"update_progress",0.2,"Loading task %s..."%action)
         if self.currentTaskWindow:          
             self.currentTaskWindow.Show(0)
             self.currentTaskWindow.Destroy()
@@ -995,7 +1004,7 @@ class MainWindow(wx.Frame):
         for dataunit in selectedFiles:
             unit.addSourceDataUnit(dataunit)
             Logging.info("ctf of source=",dataunit.getSettings().get("ColorTransferFunction"),kw="ctf")
-
+        messenger.send(None,"update_progress",0.3,"Loading task %s..."%action)
         Logging.info("Moduletype=",moduletype,kw="dataunit")
         module=moduletype()
         unit.setModule(module)
@@ -1007,6 +1016,8 @@ class MainWindow(wx.Frame):
 
         # If visualizer has not been loaded, load it now
         # This is a high time to have a visualization loaded
+        self.progressCoeff=0.5
+        self.progressShift=30
         if not self.visualizer:
             Logging.info("Loading slices view for ",unit,kw="task")
             self.loadVisualizer(unit,"slices",1)
@@ -1017,13 +1028,14 @@ class MainWindow(wx.Frame):
                 self.visualizer.setProcessedMode(1)
 
         self.visualizer.setDataUnit(unit)
-        
-            
+        self.progressCoeff=1.0
+        self.progressShift=0
+        messenger.send(None,"update_progress",0.9,"Loading task %s..."%action)
         wx.LayoutAlgorithm().LayoutWindow(self, self.visWin)
         self.visWin.Refresh()
         self.menuManager.enable(MenuManager.ID_CLOSE_TASKWIN)
         self.menuManager.enable(MenuManager.ID_VIEW_TASKPANEL)
-
+        messenger.send(None,"update_progress",1.0,"Loading task %s... done"%action)
     def onMenuShowTree(self,event,show=-1):
         """
         Method: showTree
@@ -1048,7 +1060,8 @@ class MainWindow(wx.Frame):
         self.treeWin.SetDefaultSize((w,h))
         
         wx.LayoutAlgorithm().LayoutWindow(self, self.visWin)
-        self.visWin.Refresh()
+        self.visualizer.OnSize(None)
+        #self.visWin.Refresh()
 
     def loadVisualizer(self,dataunit,mode,processed=0,**kws):
         """
@@ -1062,7 +1075,7 @@ class MainWindow(wx.Frame):
             self.menuManager.setVisualizer(self.visualizer)
             self.visualizer.setProcessedMode(processed)
         self.visualizer.enable(0)
-
+        messenger.send(None,"update_progress",0.6,"Loading %s view..."%mode)
         self.menuManager.menus["visualization"].Enable(MenuManager.ID_RELOAD,1)
         wx.EVT_TOOL(self,MenuManager.ID_SAVE_SNAPSHOT,self.visualizer.onSnapshot)    
             
@@ -1072,6 +1085,7 @@ class MainWindow(wx.Frame):
 
         self.visualizer.setVisualizationMode(mode)
         # handle icons
+        messenger.send(None,"update_progress",0.8,"Loading %s view..."%mode)        
 
         self.showVisualization(self.visPanel)            
         self.visualizer.enable(1)
@@ -1080,6 +1094,7 @@ class MainWindow(wx.Frame):
         mgr.enable(MenuManager.ID_VIEW_HISTOGRAM)
         wx.LayoutAlgorithm().LayoutWindow(self, self.visWin)
         self.visWin.Refresh()
+        messenger.send(None,"update_progress",1.0,"Loading %s view... done."%mode)        
 
     def setButtonSelection(self,eid,all=0):
         """
