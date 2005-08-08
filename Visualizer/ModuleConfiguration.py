@@ -97,13 +97,16 @@ class ModuleConfigurationPanel(wx.ScrolledWindow):
         self.contentSizer = wx.GridBagSizer()
         self.sizer.Add(self.contentSizer,(0,0))
         
-        self.toggleBtn=wx.ToggleButton(self,-1,"Lighting>>")
+        self.toggleBtn=wx.ToggleButton(self,-1,"Advanced >>")
         self.toggleBtn.SetValue(0)
         self.toggleBtn.Bind(wx.EVT_TOGGLEBUTTON,self.onMaterial)
         self.sizer.Add(self.toggleBtn,(1,0))
         
+        self.lightBox=wx.StaticBox(self,-1,"Lighting")
+        self.lightBoxSizer=wx.StaticBoxSizer(self.lightBox,wx.VERTICAL)
         self.lightPanel=wx.Panel(self,-1)
         self.lightSizer=wx.GridBagSizer()
+        self.lightBoxSizer.Add(self.lightPanel)
         self.ambientLbl=wx.StaticText(self.lightPanel,-1,"Ambient lighting:")
         self.diffuseLbl=wx.StaticText(self.lightPanel,-1,"Diffuse lighting:")
         self.specularLbl=wx.StaticText(self.lightPanel,-1,"Specular lighting:")
@@ -125,13 +128,14 @@ class ModuleConfigurationPanel(wx.ScrolledWindow):
         self.lightPanel.SetSizer(self.lightSizer)
         self.lightSizer.Fit(self.lightPanel)
         
-        self.sizer.Add(self.lightPanel,(2,0))
+        #self.sizer.Add(self.lightPanel,(2,0))
+        self.sizer.Add(self.lightBoxSizer,(2,0))
         
         self.line = wx.StaticLine(self,-1)
         self.sizer.Add(self.line,(3,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
         self.sizer.Add(self.buttonBox,(4,0))
         
-        self.sizer.Show(self.lightPanel,0)
+        self.sizer.Show(self.lightBoxSizer,0)
         self.initializeGUI()
         
         self.SetSizer(self.sizer)
@@ -157,7 +161,7 @@ class ModuleConfigurationPanel(wx.ScrolledWindow):
         """     
         val=self.toggleBtn.GetValue()
         
-        self.sizer.Show(self.lightPanel,val)
+        self.sizer.Show(self.lightBoxSizer,val)
         self.Layout()
         self.parent.Layout()
         self.parent.FitInside()

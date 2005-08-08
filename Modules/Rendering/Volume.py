@@ -32,6 +32,8 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 import wx
 
 import vtk
+import messenger
+
 import ColorTransferEditor
 import Dialogs
 import types
@@ -65,6 +67,8 @@ class VolumeModule(VisualizationModule):
         self.quality = 10
         self.method=TEXTURE_MAPPING
         self.otfs=[]
+        self.interpolation = 1
+        
         # This is the MIP otf
         otf2=vtk.vtkPiecewiseFunction()
         otf2.AddPoint(0, 0.0)
@@ -89,6 +93,7 @@ class VolumeModule(VisualizationModule):
         self.setMethod(1)
         self.parent.getRenderer().AddVolume(self.volume)
         self.setShading(0)
+        self.setInterpolation(1)
         #self.updateRendering()
         
     def __getstate__(self):
@@ -192,29 +197,48 @@ class VolumeModule(VisualizationModule):
                 Logging.info("Setting maximum number of planes to",quality,kw="rendering")
                 self.mapper.SetMaximumNumberOfPlanes(quality)
             else:
-                Logging.info("Setting sample distance to ",quality,kw="rendering")
+                
+                if quality<=0.00001:
+                    toq=0.1
+                    Dialogs.showwarning(None,"The selected sample distance (%f) is too small, %f will be used."%(quality,toq),"Too small sample distance")
+                    quality=toq
+                Logging.info("Setting sample distance to ",quality,kw="rendering")                    
                 self.mapper.SetSampleDistance(quality)
             return quality
         else:
             Logging.info("Setting quality to",quality,kw="rendering")
         if quality==10:
-            self.volumeProperty.SetInterpolationTypeToLinear()
             if self.mapper:
                 if self.method != TEXTURE_MAPPING:
                     self.mapper.SetSampleDistance(self.sampleDistance)
                 else:
                     self.mapper.SetMaximumNumberOfPlanes(self.maxPlanes)
-        elif quality==9:
-            self.volumeProperty.SetInterpolationTypeToNearest()
-        elif quality<9:
-            quality=10-quality
+        #elif quality==9:
+        #    self.volumeProperty.SetInterpolationTypeToNearest()
+        elif quality<10:
+           
             if self.method != TEXTURE_MAPPING:
-                self.mapper.SetSampleDistance(quality)
-                return quality
+                self.mapper.SetSampleDistance(15-quality)
+                return 15-quality
             else:
+                quality=10-quality
                 self.mapper.SetMaximumNumberOfPlanes(25-quality)
                 return 25-quality
         return 0
+        
+    def setInterpolation(self,interpolation):
+        """
+        Method: setInterpolation(self,interpolation)
+        Created: 28.04.2005, KP
+        Description: Set the interpolation method used
+        """             
+        self.interpolation=interpolation
+        ints=["nearest neighbor","linear"]
+        Logging.info("Using %s interpolation"%ints[self.interpolation],kw="rendering")
+        if self.interpolation==0:
+            self.volumeProperty.SetInterpolationTypeToNearest()
+        else:
+            self.volumeProperty.SetInterpolationTypeToLinear()        
 
     def setMethod(self,method):
         """
@@ -246,6 +270,7 @@ class VolumeModule(VisualizationModule):
             # Iso surfacing with fixedpoint mapper is not supported
             if self.vtkcvs and method!=3:
                 self.mapper = vtk.vtkFixedPointVolumeRayCastMapper()
+                #self.mapper.SetAutoAdjustSampleDistances(1)
                 self.sampleDistance = self.mapper.GetSampleDistance()
                 #self.volumeProperty.IndependentComponentsOff()
                 mode=blendModes[method]
@@ -274,17 +299,21 @@ class VolumeModule(VisualizationModule):
         """             
         if not input:
             input=self.data
-        Logging.info("Rendering using, ",self.mapper.__class__,kw="rendering")
-        if input.GetNumberOfScalarComponents()>1:
+        ncomps=input.GetNumberOfScalarComponents()
+        Logging.info("Number of comps=",ncomps,kw="rendering")
+        if ncomps>1 and self.method == TEXTURE_MAPPING:
             self.setMethod(0)
-            self.volumeProperty.IndependentComponentsOff()            
+            messenger.send(None,"update_module_settings")
+        if ncomps>1:
+            self.volumeProperty.IndependentComponentsOff()
         else:
             self.volumeProperty.IndependentComponentsOn()            
-        
+            
+        Logging.info("Rendering using, ",self.mapper.__class__,kw="rendering")
         self.mapper.SetInput(input)
-        self.mapper.AddObserver("ProgressEvent",self.updateProgress)
+        #self.mapper.AddObserver("ProgressEvent",self.updateProgress)
 
-        self.mapper.Update()
+        #self.mapper.Update()
         self.parent.Render()
         
     def disableRendering(self):
@@ -357,40 +386,56 @@ class VolumeConfigurationPanel(ModuleConfigurationPanel):
         if self.haveVolpro:
             modes.append("Minimum Intensity Projection")
         
-        self.methodLbl = wx.StaticText(self,-1,"Volume rendering method:")
+        #self.methodLbl = wx.StaticText(self,-1,"Volume rendering method:")
+        
+        self.methodBox=wx.StaticBox(self,-1,"Volume rendering method")
+        self.methodSizer=wx.StaticBoxSizer(self.methodBox,wx.VERTICAL)
         self.moduleChoice = wx.Choice(self,-1,choices = modes)
     
         self.moduleChoice.Bind(wx.EVT_CHOICE,self.onSelectMethod)
         self.moduleChoice.SetSelection(self.method)
         
       
-        self.contentSizer.Add(self.methodLbl,(n,0))
+        #self.contentSizer.Add(self.methodLbl,(n,0))
         n+=1
-        self.contentSizer.Add(self.moduleChoice,(n,0))
+        self.methodSizer.Add(self.moduleChoice)
+        self.contentSizer.Add(self.methodSizer,(n,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
         n+=1
-            
+        
+        self.qualityBox=wx.StaticBox(self,-1,"Rendering quality")
+        self.qualitySizer=wx.StaticBoxSizer(self.qualityBox,wx.VERTICAL)
+        self.interpolationBox = wx.RadioBox(
+                self, -1, "Interpolation", wx.DefaultPosition, wx.DefaultSize,
+                ["Nearest Neighbor","Linear"], 2, wx.RA_SPECIFY_COLS
+                )
+        s="""Set the type of interpolation used in rendering.
+Nearest Neighbor interpolation is faster than Linear interpolation, 
+but using linear interpolation yields a better rendering quality."""
+        self.interpolationBox.SetToolTip(wx.ToolTip(s))
+        self.interpolationBox.SetHelpText(s)
+        self.interpolationBox.Bind(wx.EVT_RADIOBOX,self.onSetInterpolation)
+        self.contentSizer.Add(self.interpolationBox,(n,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
+        n+=1
+        #self.qualitySizer.Add(self.interpolationBox)
+                
         if self.haveVolpro:
             self.volpro=wx.CheckBox(self,-1,"Use VolumePro acceleration")
             self.volpro.Enable(0)
             self.contentSizer.Add(self.volpro,(n,0))
             n+=1
-        self.qualityLbl = wx.StaticText(self,-1,"Rendering quality:")
         self.qualitySlider = wx.Slider(self,value=10, minValue=0,maxValue = 10,
         style=wx.HORIZONTAL|wx.SL_AUTOTICKS|wx.SL_LABELS,size=(250,-1))
         self.qualitySlider.Bind(wx.EVT_SCROLL,self.onSetQuality)
         
-        self.contentSizer.Add(self.qualityLbl,(n,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
-        n+=1
-        self.contentSizer.Add(self.qualitySlider,(n,0))
+        self.qualitySizer.Add(self.qualitySlider)
+        self.contentSizer.Add(self.qualitySizer,(n,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
         n+=1
         
         self.settingLbl=wx.StaticText(self,-1,"Maximum number of planes:")
         self.settingEdit = wx.TextCtrl(self,-1,"")
         self.settingEdit.Bind(wx.EVT_TEXT,self.onEditQuality)
-        self.contentSizer.Add(self.settingLbl,(n,0))
-        n+=1
-        self.contentSizer.Add(self.settingEdit,(n,0))
-        n+=1
+        self.qualitySizer.Add(self.settingLbl)
+        self.qualitySizer.Add(self.settingEdit)
         
         self.shadingBtn=wx.CheckBox(self.lightPanel,-1,"Use shading")
         self.shadingBtn.SetValue(0)
@@ -399,6 +444,13 @@ class VolumeConfigurationPanel(ModuleConfigurationPanel):
         
         self.lightSizer.Add(self.shadingBtn,(4,0))
         
+    def onSetInterpolation(self,event):
+        """
+        Method: onSetInterpolation
+        Created: 08.08.2005, KP
+        Description: Set the interpolation used
+        """  
+        self.interpolation=self.interpolationBox.GetSelection()      
         
     def onCheckShading(self,event):
         """
@@ -458,7 +510,10 @@ class VolumeConfigurationPanel(ModuleConfigurationPanel):
             self.volpro.SetValue(1)
         
         self.colorPanel.setOpacityTransferFunction(self.module.otfs[self.method])
-            
+        if self.method==1:
+            self.settingLbl.SetLabel("Maximum number of planes:")
+        else:
+            self.settingLbl.SetLabel("Sample Distance:")            
       
     def setModule(self,module):
         """
@@ -470,6 +525,8 @@ class VolumeConfigurationPanel(ModuleConfigurationPanel):
         unit=module.getDataUnit()
         self.method=module.method
         self.moduleChoice.SetSelection(self.method)
+        self.interpolation=module.interpolation
+        self.interpolationBox.SetSelection(module.interpolation)
         if unit.getBitDepth()==32:
             self.colorPanel.setAlphaMode(1)
             
@@ -492,7 +549,7 @@ class VolumeConfigurationPanel(ModuleConfigurationPanel):
         ModuleConfigurationPanel.onApply(self,event)
         #if self.colorPanel.isChanged():
         self.module.setShading(self.shading)
-        
+        self.module.setInterpolation(self.interpolation)
         
         otf = self.colorPanel.getOpacityTransferFunction()
         self.module.setOpacityTransferFunction(otf)

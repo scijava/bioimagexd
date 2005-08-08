@@ -5,10 +5,9 @@
  Created: 03.11.2004, KP
  Description:
 
- A wx.Python wx.Dialog window that is used to control the settings for the
+ A window that is used to control the settings for the
  colocalization module. Expects to be handed a ColocalizationDataUnit()
  containing the datasets from which the colocalization map is generated.
- Uses the PreviewFrame for previewing.
 
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
@@ -294,7 +293,7 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
 
         val=UIElements.AcceptedValidator
  
-        self.constColocCheckbox=wx.CheckBox(self.colocalizationPanel,-1,"Use constant value for colocalization")
+        self.constColocCheckbox=wx.CheckBox(self.colocalizationPanel,-1,"Use single (1-bit) value for colocalization")
         self.constColocValue=wx.TextCtrl(self.colocalizationPanel,-1,"255",
                                     validator=val(string.digits,below=255))
         self.constColocValue.Enable(0)
@@ -490,8 +489,7 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
                 self.upperthreshold.SetValue(th)
             
         if self.dataUnit and self.settings:
-            #ctf = self.settings.get("ColocalizationColorTransferFunction")
-            ctf = self.settings.get("ColorTransferFunction")
+            ctf = self.dataUnit.getSettings().get("ColorTransferFunction")
             if ctf and self.colorBtn:
                 Logging.info("Setting colorBtn.ctf=",ctf,kw="ctf")
                 self.colorBtn.setColorTransferFunction(ctf)
@@ -540,6 +538,8 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
             self.scatterPlot.setZSlice(0)
             self.scatterPlot.setTimepoint(self.timePoint)
             self.scatterPlot.updatePreview()
+        ctf = self.dataUnit.getSettings().get("ColorTransferFunction")
+        self.dataUnit.getSettings().set("ColocalizationColorTransferFunction",ctf)            
         self.updateListCtrl()
         
     def setCombinedDataUnit(self,dataUnit):
@@ -550,7 +550,13 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
         """
         TaskPanel.TaskPanel.setCombinedDataUnit(self,dataUnit)
         #self.scatterPlot.setDataunit(dataUnit)
-        ctf = self.settings.get("ColorTransferFunction")
+        # See if the dataunit has a stored colocalizationctf
+        # then use that.
+        ctf=self.dataUnit.getSettings().get("ColocalizationColorTransferFunction")
+        if not ctf:
+            ctf = self.dataUnit.getSettings().get("ColorTransferFunction")
+        else:
+            Logging.info("Using ColocalizationColorTransferFunction",kw="task")
         if self.colorBtn:
             self.colorBtn.setColorTransferFunction(ctf)
         self.scatterPlot.setDataUnit(dataUnit)

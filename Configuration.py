@@ -60,6 +60,11 @@ class Configuration:
         #vtkpath=self.getPath(["Libraries","VTK"])
         vtkpath=self.getPath(["C:\\VTK-build"])
         mayavipath=self.getPath(["Libraries","mayavi"])
+        self.setConfigItem("ShowTip","General",1,0)
+        self.setConfigItem("TipNumber","General",0,0)
+        self.readConfigItem("ShowTip","General")
+        self.readConfigItem("TipNumber","General")
+        
         self.setConfigItem("RemoveOldVTK","VTK",1,0);
         self.setConfigItem("VTKPath","VTK",vtkpath,0)
         self.setConfigItem("UseSystemMayavi","Mayavi",0,0)

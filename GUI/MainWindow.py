@@ -34,6 +34,7 @@ import os.path,os,types
 import wx
 import types
 import vtk
+import random
 
 import messenger
 
@@ -47,6 +48,7 @@ import SettingsWindow
 import ImportDialog
 import ExportDialog
 import RenderingInterface
+import Configuration
 
 import Visualizer
 
@@ -130,6 +132,7 @@ class MainWindow(wx.Frame):
         self.taskWin.SetSashVisible(wx.SASH_LEFT,True)
         self.taskWin.SetSashBorder(wx.SASH_LEFT,True)
         self.taskWin.SetDefaultSize((0,768))
+        self.taskWin.origSize=(360,768)
         
         # A window for the task panels
         self.infoWin=wx.SashLayoutWindow(self,MenuManager.ID_INFO_WIN,style=wx.RAISED_BORDER|wx.SW_3D)
@@ -188,7 +191,29 @@ class MainWindow(wx.Frame):
         messenger.connect(None,"get_voxel_at",self.updateVoxelInfo)
         messenger.connect(None,"load_dataunit",self.onMenuOpen)
         messenger.connect(None,"view_help",self.viewHelp)
+        wx.CallAfter(self.showTip)
         
+    def showTip(self):
+        """
+        Method: showTip
+        Created: 08.08.2005, KP
+        Description: Show a tip to the user
+        """
+        conf = Configuration.getConfiguration()
+        showTip = eval(conf.getConfigItem("ShowTip","General"))
+        tipNumber = int(conf.getConfigItem("TipNumber","General"))
+        print "showtip=",showTip,type(showTip)
+        if showTip:
+            f=open("Help/tips.txt","r")
+            n=len(f.readlines())
+            f.close()
+            tp = wx.CreateFileTipProvider("Help/tips.txt", random.randrange(n))
+            ##tp = MyTP(0)
+            showTip = wx.ShowTip(self, tp)
+            index = tp.GetCurrentTip()
+            conf.setConfigItem("ShowTip","General",showTip)
+            conf.setConfigItem("TipNumber","General",index)
+            
     def onSetDataset(self,obj,evt,data):
         """
         Method: onSetDataset
@@ -311,7 +336,7 @@ class MainWindow(wx.Frame):
         else:
             if self.visualizer:
                 self.visualizer.in_vtk=1        
-            wx.SafeYield()
+            wx.SafeYield(None,1)
     def updateVoxelInfo(self,obj,event,x,y,z,r,g,b,a,ctf):
         """
         Method: updateVoxelInfo
@@ -906,6 +931,10 @@ class MainWindow(wx.Frame):
         else:
             # If we got data, add corresponding nodes to tree
             Logging.info("Adding to tree ",name,path,ext,dataunits,kw="io")
+            for i in dataunits:
+                if i.getBitDepth()==12:
+                    Dialogs.showwarning(self,"The selected dataset is a 12-bit dataset. BioImageXD natively supports only 8-bit datasets, so the dataset has been converted. For optimal performance, you should write the data out as a 8-bit file.","12-bit data converted to 8-bit")
+                    break
             self.tree.addToTree(name,path,ext,dataunits)
 
     def onMenuShowTaskWindow(self,event):
@@ -971,6 +1000,7 @@ class MainWindow(wx.Frame):
             Dialogs.showerror(self,
             "You can select at most %d source datasets for %s"%(filesAtMost,action),"Too many source datasets")
             return
+        self.visualizer.enable(0)
         messenger.send(None,"update_progress",0.1,"Loading task %s..."%action)
         self.onMenuShowTree(None,0)
         # Hide the infowin and toggle the menu item accordingly
@@ -979,20 +1009,19 @@ class MainWindow(wx.Frame):
         self.currentTaskWindowType=windowtype
         window=windowtype(self.taskWin,self.menuManager)
         messenger.send(None,"update_progress",0.2,"Loading task %s..."%action)
+        window.Show()
+
         if self.currentTaskWindow:          
             self.currentTaskWindow.Show(0)
             self.currentTaskWindow.Destroy()
-            del self.currentTaskWindow
-            window.Show()
-            self.currentTaskWindow=window
-        else:
-            self.currentTaskWindow = window
+            del self.currentTaskWindow                
+        
+        self.currentTaskWindow=window
         w,h=self.taskWin.GetSize()
-        self.taskWin.SetDefaultSize((360,h))
-        
-        
+        w,h2=self.taskWin.origSize
+        self.taskWin.SetDefaultSize((w,h))
+        self.currentTaskWindow.SetSize((w,h))
         wx.LayoutAlgorithm().LayoutWindow(self, self.visWin)
-
         
         names=[i.getName() for i in selectedFiles]
         # Sets name for new dataset series
@@ -1018,6 +1047,7 @@ class MainWindow(wx.Frame):
         # This is a high time to have a visualization loaded
         self.progressCoeff=0.5
         self.progressShift=30
+        self.visualizer.enable(1)
         if not self.visualizer:
             Logging.info("Loading slices view for ",unit,kw="task")
             self.loadVisualizer(unit,"slices",1)
@@ -1028,6 +1058,7 @@ class MainWindow(wx.Frame):
                 self.visualizer.setProcessedMode(1)
 
         self.visualizer.setDataUnit(unit)
+        
         self.progressCoeff=1.0
         self.progressShift=0
         messenger.send(None,"update_progress",0.9,"Loading task %s..."%action)
@@ -1036,6 +1067,7 @@ class MainWindow(wx.Frame):
         self.menuManager.enable(MenuManager.ID_CLOSE_TASKWIN)
         self.menuManager.enable(MenuManager.ID_VIEW_TASKPANEL)
         messenger.send(None,"update_progress",1.0,"Loading task %s... done"%action)
+        
     def onMenuShowTree(self,event,show=-1):
         """
         Method: showTree

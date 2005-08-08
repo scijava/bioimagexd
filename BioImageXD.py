@@ -34,6 +34,25 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 import os.path
 import os
 import sys
+import imp
+
+def main_is_frozen():
+   return (hasattr(sys, "frozen") or # new py2exe
+           hasattr(sys, "importers") # old py2exe
+           or imp.is_frozen("__main__")) # tools/freeze
+
+def get_main_dir():
+   if main_is_frozen():
+       return os.path.dirname(sys.executable)
+   return os.path.dirname(sys.argv[0])
+todir=get_main_dir()
+
+#todir=os.path.dirname(__file__)
+#todir=os.path.join(os.getcwd(),todir)
+if todir:
+    os.chdir(todir)
+
+
 import csv
 
 
@@ -47,17 +66,7 @@ import Configuration
 # configuration file, or sensible defaults
 cfg=Configuration.Configuration("BioImageXD.ini")
 
-import imp
 
-def main_is_frozen():
-   return (hasattr(sys, "frozen") or # new py2exe
-           hasattr(sys, "importers") # old py2exe
-           or imp.is_frozen("__main__")) # tools/freeze
-
-def get_main_dir():
-   if main_is_frozen():
-       return os.path.dirname(sys.executable)
-   return os.path.dirname(sys.argv[0])
 
 import lib
 import GUI
@@ -127,4 +136,5 @@ if __name__=='__main__':
         app.run()
 
 
+        
 

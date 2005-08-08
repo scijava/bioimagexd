@@ -6,7 +6,7 @@
  Created: 26.03.2005, KP
  Description:
 
- This is a class that holds all settings of a dataunit. A dataunit's 
+ This is a class that holds all settings of a colocalization dataunit. A dataunit's 
  setting object is the only thing differentiating it from another
  dataunit.
  
@@ -76,6 +76,8 @@ class ColocalizationSettings(DataUnitSettings):
         ctf.AddRGBPoint(0,0,0,0)
         ctf.AddRGBPoint(255, 1.0, 1.0, 1.0)
         self.set("ColorTransferFunction",ctf)
+        # This is used purely for remembering the ctf the user has set
+        self.register("ColocalizationColorTransferFunction",1)
 
     def initialize(self,dataunit,channels, timepoints):
         """

@@ -134,6 +134,7 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
         nz=arg
         self.z=arg
         self.drawPos=[x*self.zoomFactor for x in (nx,ny,nz)]
+        self.setTimepoint(self.timepoint)
         self.updatePreview()        
         
     def onLeftDown(self,event):

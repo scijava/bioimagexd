@@ -1,16 +1,13 @@
 #! /usr/bin/env python
 # -*- coding: iso-8859-1 -*-
 """
- Unit: SettingsWindow.py
+ Unit: SettingsWindow
  Project: BioImageXD
- Created: 09.02.2005
- Creator: KP
+ Created: 09.02.2005, KP
  Description:
 
  A wxPython wxDialog window that is used to control the settings for the
  whole application.
- 
- Modified: 09.02.2005 KP - Created the module
 
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details

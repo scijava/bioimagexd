@@ -438,13 +438,11 @@ class InteractivePanel(wx.ScrolledWindow):
         if newx<=self.origX:newx=self.origX
         if newy<=self.origY:newy=self.origY
         #s=self.GetSize()
-        #print "s=",s
         #if s!=(newx,newy):
-        print "Setting size to ",newx,newy
+        Logging.info("Setting size of",self," to ",newx,newy,"virtual size to ",xdim,ydim,kw="iactivepanel")
         self.SetSize((newx,newy))
         s=self.GetVirtualSize()
         #if s!=(xdim,ydim):
-        print "Setting virtual size to ",xdim,ydim
         self.SetVirtualSize((xdim,ydim))
         xrate,yrate=0,0
         if xdim>newx:

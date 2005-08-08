@@ -142,5 +142,5 @@ class Adjust(Module):
         
         t2=time.time()
         Logging.info("Processing took %.4f seconds"%(t2-t1))
-
+        data.ReleaseDataFlagOff()
         return data

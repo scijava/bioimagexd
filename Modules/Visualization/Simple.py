@@ -37,7 +37,7 @@ import wx.lib.scrolledpanel as scrolled
 from Visualizer.VisualizationMode import VisualizationMode
 
 import Visualizer.VisualizerWindow as VisualizerWindow
-
+import PreviewFrame
 import Modules
 
 def getName():return "MIP"
@@ -63,14 +63,7 @@ class SimpleMode(VisualizationMode):
         self.dataUnit=None
         self.modules=Modules.DynamicLoader.getTaskModules()
 
-    def showSliceSlider(self):
-        """
-        Method: showSliceSlider()
-        Created: 07.08.2005, KP
-        Description: Method that is queried to determine whether
-                     to show the zslider
-        """
-        return True
+
         
     def showSideBar(self):
         """
@@ -116,8 +109,8 @@ class SimpleMode(VisualizationMode):
         if not self.preview:
             Logging.info("Generating preview",kw="visualizer")
             self.preview=PreviewFrame.PreviewFrame(self.parent,
-            previewsize=(512,512),pixelvalue=False,
-            zoom=False,zslider=True,timeslider=False,scrollbars=True)
+            previewsize=(512,512))
+            self.preview.setPreviewType("MIP")
             self.iactivePanel=self.preview
         return self.preview
             

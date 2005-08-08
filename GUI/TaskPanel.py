@@ -207,9 +207,6 @@ class TaskPanel(scrolled.ScrolledPanel):
         Description: Shows a help for this task panel
         """
         messenger.send(None,"view_help",self.operationName)
-#        self.help = wx.html.Html
-#        help=HelpViewer.HelpViewerFrame(self,page="%s.html"%self.operationName.lower())
-#        help.Show()
         
     def createOptionsFrame(self):
         """

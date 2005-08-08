@@ -320,13 +320,11 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
             self.setSelectedItem(selectedItem)
 
         if self.zoomFactor:
-            #print "Got zoom factor",
             if self.zoomFactor == ZOOM_TO_FIT:
                 Logging.info("Factor = zoom to fit",kw="preview")
                 self.zoomToFit()
                 self.updatePreview(1)
             else:
-                #print "Factor = ",self.zoomFactor
                 self.setZoomFactor(self.zoomFactor)
                 self.updatePreview(1)
         

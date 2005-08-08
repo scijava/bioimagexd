@@ -50,6 +50,7 @@ if __name__=='__main__':
     sys.path.insert(0,os.path.normpath(os.path.join(os.getcwd(),"../Libraries/VTK/Wrapping/Python")))
 
 import vtk
+import time
 import ImageOperations
 import Dialogs  
 
@@ -169,7 +170,7 @@ class CTFPaintPanel(wx.Panel):
         self.dc.DrawText(text,ox,y/self.scale)
         
 
-    def paintTransferFunction(self,ctf,pointlist,otf=None,alphaMode=None):
+    def paintTransferFunction(self,ctf,pointlist,otf=None,alphaMode=None,selectedPoint=None):
         """
         Method: paintTransferFunction()
         Created: 30.10.2004, KP
@@ -186,6 +187,9 @@ class CTFPaintPanel(wx.Panel):
         for point in pointlist:
             x,y=point
             self.createOval(x,y,2)
+        if selectedPoint:
+            x,y=selectedPoint
+            self.createOval(x,y,2,(255,255,255))
         
         self.createLine(0,0,0,260,arrow="VERTICAL")
         self.createLine(0,0,260,0,arrow="HORIZONTAL")
@@ -349,7 +353,7 @@ class CTFButton(wx.BitmapButton):
         
 class ColorTransferEditor(wx.Panel):
     """
-    Class: TransferWidget
+    Class: ColorTransferEditor
     Created: 30.10.2004, KP
     Description: A widget used to view and modify an intensity transfer function
     """
@@ -360,7 +364,9 @@ class ColorTransferEditor(wx.Panel):
         Description: Initialization
         """
         self.parent=parent
+        self.selectedPoint = None
         wx.Panel.__init__(self,parent,-1)
+        self.updateT=0
         if kws.has_key("alpha"):
             self.alpha=kws["alpha"]
         self.updateCallback=0
@@ -370,6 +376,7 @@ class ColorTransferEditor(wx.Panel):
         self.guiupdate=0
         self.freeMode = 0
         self.selectThreshold=5.0
+        self.ptThreshold=0.0
         self.color = 0
         self.otf = vtk.vtkPiecewiseFunction()
         self.restoreDefaults(None)
@@ -415,6 +422,12 @@ class ColorTransferEditor(wx.Panel):
         self.openBtn = wx.BitmapButton(self,-1,openGif,size=(32,32))
         self.saveBtn = wx.BitmapButton(self,-1,saveGif,size=(32,32))
         
+        self.maxNodes=wx.SpinCtrl(self,-1,"9999",min=2,max=9999,size=(54,-1),style=wx.TE_PROCESS_ENTER)
+        self.maxNodes.SetToolTip(wx.ToolTip("Set the maximum number of nodes in the graph."))
+        self.maxNodes.SetHelpText("Use this control to set the maximum number of nodes in the graph. This is useful if you have a hand drawn palette that you wish to edit by dragging the nodes.")
+        self.maxNodes.Bind(wx.EVT_SPINCTRL,self.onSetMaxNodes)
+        self.maxNodes.Bind(wx.EVT_TEXT_ENTER,self.onSetMaxNodes)
+        
         self.itemBox.Add(self.redBtn)
         self.itemBox.Add(self.greenBtn)
         self.itemBox.Add(self.blueBtn)
@@ -425,6 +438,7 @@ class ColorTransferEditor(wx.Panel):
         self.itemBox.Add(self.colorBtn)
         self.itemBox.Add(self.openBtn)
         self.itemBox.Add(self.saveBtn)
+        self.itemBox.Add(self.maxNodes)
         
         self.redBtn.Bind(wx.EVT_BUTTON,self.onEditRed)
         self.greenBtn.Bind(wx.EVT_BUTTON,self.onEditGreen)
@@ -442,13 +456,69 @@ class ColorTransferEditor(wx.Panel):
         self.mainsizer.SetSizeHints(self)
 
         self.canvas.Bind(wx.EVT_LEFT_DOWN,self.onEditFunction)
+        self.canvas.Bind(wx.EVT_LEFT_DCLICK,self.onDeletePoint)
+        
         self.canvas.Bind(wx.EVT_RIGHT_DOWN,self.onCreatePoint)
         self.canvas.Bind(wx.EVT_MOTION,self.onDrawFunction)
         
         self.updateGraph()
         self.pos = (0,0)
-        self.selectedPoint = None
         
+    def onSetMaxNodes(self,evt):
+        """
+        Method: onSetMaxNodes
+        Created: 08.08.2005, KP
+        Description: Sets the maximum number of nodes
+        """                
+        n=len(self.points)
+        tot=0
+        for i,pts in enumerate(self.points):
+            tot+=len(pts)
+        
+        maxpts=self.maxNodes.GetValue()
+        if maxpts>=tot:
+            return
+        everyNth=float(tot)/maxpts
+        Logging.info("Removing every %f pts (pts=%d)"%(everyNth,maxpts))
+        n=0
+        k=1
+        toRemove=[]
+        for i,pts in enumerate(self.points):
+            for j,point in enumerate(pts):
+                n+=1
+                print n,k,n%k,everyNth
+                if k<everyNth:
+                    toRemove.append(point)
+                    k+=1
+                else:
+                    k=1
+            for point in toRemove:
+                pts.remove(point)
+            toRemove=[]
+        
+        tot=0
+        for i,pts in enumerate(self.points):
+            tot+=len(pts)
+        Logging.info("Points left = %d"%tot)
+        self.updateGraph()
+                
+        
+        
+        
+        
+    def onDeletePoint(self,event):
+        """
+        Method: onDeletePoint
+        Created: 08.08.2005, KP
+        Description: Delete the selected point
+        """        
+        if self.selectedPoint:
+            for i,pts in enumerate(self.points):
+                if self.selectedPoint in pts:
+                    pts.remove(self.selectedPoint)
+            self.selectedPoint=None
+            self.updateGraph()
+            
     def setAlphaMode(self,flag):
         """
         Method: setAlphaMode
@@ -589,6 +659,10 @@ class ColorTransferEditor(wx.Panel):
         if event.Dragging():
             x,y=event.GetPosition()
             x,y=self.canvas.toGraphCoords(x,y)
+            if y<=0:y=0
+            if y>=255:y=255
+            if x<=0:x=0
+            if x>=255:x=255
             if self.freeMode:
                 if self.pos[0]:
                     x0=min(self.pos[0],x)
@@ -596,16 +670,18 @@ class ColorTransferEditor(wx.Panel):
                     n=(x1-x0)
                     if n:
                         d=abs(y-self.pos[1])/float(n)
-                    Logging.info("Fixing range %d,%d,d=%f, steps = %d"%(x0,x1,d,n),kw="ctf")
-                    if x>self.pos[0] and y<self.pos[1]:d*=-1
-                    if x<self.pos[0] and y>self.pos[1]:d*=-1
+                        Logging.info("Fixing range %d,%d,d=%f, steps = %d"%(x0,x1,d,n),kw="ctf")
+                        if x>self.pos[0] and y<self.pos[1]:d*=-1
+                        if x<self.pos[0] and y>self.pos[1]:d*=-1
                     
-                    for i in range(x0,x1):
-                        self.funcs[self.color][i]=int(y+(i-x0)*d)
+                        for i in range(x0,x1):
+                            ny=int(y+(i-x0)*d)
+                            if ny<0:ny=0
+                            if ny>=255:ny=255
+                            self.funcs[self.color][i]=ny
                 
                 self.funcs[self.color][x]=y
                 self.updateGraph()     
-                messenger.send(None,"data_changed",0)
                 self.pos = (x,y)
             else:
                 if self.selectedPoint and self.selectedPoint in self.points[self.color]:
@@ -618,7 +694,16 @@ class ColorTransferEditor(wx.Panel):
                     self.points[self.color][i]=(x,y)
                     self.selectedPoint = (x,y)
                     self.updateGraph()
-                    messenger.send(None,"data_changed",0)
+            wx.FutureCall(500,self.updatePreview)
+    def updatePreview(self):
+        """
+        Method: updatePreview
+        Created: 08.08.2005, KP
+        Description: Send an event updating the preview
+        """            
+        if abs(time.time()-self.updateT)>0.5:
+            self.updateT=time.time()
+            messenger.send(None,"data_changed",0)
     
     def onFreeMode(self,event):
         """
@@ -776,7 +861,7 @@ class ColorTransferEditor(wx.Panel):
         if self.alpha:
             otf=self.otf
         
-        self.canvas.paintTransferFunction(self.ctf,pts,otf,self.alphaMode)
+        self.canvas.paintTransferFunction(self.ctf,pts,otf,self.alphaMode,self.selectedPoint)
         self.value.paintTransferFunction(self.ctf)
         
     def getColorTransferFunction(self):
@@ -854,14 +939,14 @@ class ColorTransferEditor(wx.Panel):
                 if self.alpha:
                     self.alphapoints.append((x,a))
             else:
-                if dr != dr2:
+                if abs(dr - dr2)>self.ptThreshold:
                     self.redpoints.append((x,r))
-                if dg != dg2:
+                if abs(dg - dg2)>self.ptThreshold:
                     self.greenpoints.append((x,g))
-                if db != db2:
+                if abs(db - db2)>self.ptThreshold:
                     self.bluepoints.append((x,b))
                 if self.alpha:
-                    if da != da2:
+                    if abs(da - da2)>self.ptThreshold:
                         self.alphapoints.append((x,a))
                     da2=da
                     a2=a

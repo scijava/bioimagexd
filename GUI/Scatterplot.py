@@ -73,8 +73,9 @@ class Scatterplot(InteractivePanel.InteractivePanel):
         self.scatter=None
         self.scatterplot=None
         
-        self.buffer = wx.EmptyBitmap(256,256)
-        InteractivePanel.InteractivePanel.__init__(self,parent,size=size,**kws);
+        
+        InteractivePanel.InteractivePanel.__init__(self,parent,size=size,**kws)
+
         self.action=5
         self.Bind(wx.EVT_PAINT,self.OnPaint)
         #self.Bind(wx.EVT_LEFT_UP,self.setThreshold)
@@ -105,6 +106,18 @@ class Scatterplot(InteractivePanel.InteractivePanel):
         self.Bind(wx.EVT_LEFT_UP,self.setThreshold)
         self.actionstart=None
         self.actionend=None
+        self.buffer = wx.EmptyBitmap(256,256)
+        
+    def setScrollbars(self,xdim,ydim):
+        """
+        Method: setScrollbars(x,y)
+        Created: 24.03.2005, KP
+        Description: Configures scroll bar behavior depending on the
+                     size of the dataset, which is given as parameters.
+        """
+        self.SetSize((256,256))
+        self.SetVirtualSize((256,256))
+        self.buffer = wx.EmptyBitmap(256,256)
         
     def onRightClick(self,event):
         """
@@ -170,6 +183,7 @@ class Scatterplot(InteractivePanel.InteractivePanel):
         InteractivePanel.InteractivePanel.setDataUnit(self,dataUnit)
         self.sources=dataUnit.getSourceDataUnits()
         self.settings =self.sources[0].getSettings()
+        self.buffer = wx.EmptyBitmap(256,256)
         
     def setVoxelCount(self,event):
         """
@@ -262,10 +276,13 @@ class Scatterplot(InteractivePanel.InteractivePanel):
         Description: A method that draws the scattergram
         """
         if self.renew and self.dataUnit:
+            self.buffer = wx.EmptyBitmap(256,256)
             t1=self.sources[0].getTimePoint(self.timepoint)
             t2=self.sources[1].getTimePoint(self.timepoint)            
             self.scatter = ImageOperations.scatterPlot(t1,t2,-1,self.countVoxels,self.wholeVolume,logarithmic=self.logarithmic)
             self.scatter=self.scatter.Mirror(0)
+            print "scatter=",self.scatter.GetWidth(),self.scatter.GetHeight()
+            print "buffer=",self.buffer.GetWidth(),self.buffer.GetHeight()
             self.renew=0
         self.paintPreview()
         wx.GetApp().Yield(1)

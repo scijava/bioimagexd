@@ -121,9 +121,14 @@ def loadNIHLut(data):
     Created: 17.04.2005, KP
     Description: Load an NIH Image LUT and return it as CTF
     """    
+    if not len(data):
+        raise "loadNIHLut got no data"
     n=256
     d=len(data)-32
-    header,version,ncolors,start,end,fill1,fill2,filler,lut = struct.unpack("4s2s2s2s2s8s8si%ds"%d,data)
+    
+    s="4s2s2s2s2s8s8si%ds"%d
+    Logging.info("Unpacking ",s,"d=",d,"len(data)=",len(data))#,kw="imageop")
+    header,version,ncolors,start,end,fill1,fill2,filler,lut = struct.unpack(s,data)
     if header!="ICOL":
         raise "Did not get NIH header!"
     ncolors=ord(ncolors[0])*(2**8)+ord(ncolors[1])
@@ -147,7 +152,7 @@ def loadLUT(filename,ctf=None,ctfrange=(0,256)):
         ctf.RemoveAllPoints()
     else:
         ctf=vtk.vtkColorTransferFunction()    
-    f=open(filename)
+    f=open(filename,"rb")
     lut=f.read()
     f.close()
     loadLUTFromString(lut,ctf,ctfrange)
@@ -188,7 +193,8 @@ def saveLUT(ctf,filename):
     Description: Save a CTF as ImageJ binary LUT
     """    
     f=open(filename,"wb")
-    f.write(lutToString(ctf))
+    s=lutToString(ctf)
+    f.write(s)
     f.close()
     
 def lutToString(ctf):
@@ -209,6 +215,12 @@ def lutToString(ctf):
             r=int(r)
             g=int(g)
             b=int(b)
+            if r<0:r=0
+            if b<0:b=0
+            if g<0:g=0
+            if r>=255:r=255
+            if g>=255:g=255
+            if b>=255:b=255
             color=[r,g,b]
             s+=chr(color[col])
     return s
@@ -243,6 +255,7 @@ def vtkImageDataToWxImage(data,slice=-1,startpos=None,endpos=None):
         data=getSlice(data,slice,startpos,endpos)
         
     exporter=vtk.vtkImageExport()
+    print "data.GetWholeExtent()=",data.GetWholeExtent()
     data.SetUpdateExtent(data.GetWholeExtent())
     data.Update()
     
@@ -535,21 +548,25 @@ def scatterPlot(imagedata1,imagedata2,z,countVoxels, wholeVolume,logarithmic=1):
     scatter.AddInput(imagedata2)
     scatter.Update()
     data=scatter.GetOutput()
+#    Logging.info("Scatterplot has dimensions:",data.GetDimensions(),kw="imageop")
     if logarithmic:
+        Logging.info("Scaling scatterplot logarithmically",kw="imageop")
         logscale=vtk.vtkImageLogarithmicScale()
         logscale.SetInput(data)
         logscale.Update()
         data=logscale.GetOutput()
+#    Logging.info("Logarithmic has dimensions:",data.GetDimensions(),kw="imageop")        
     x0,x1=data.GetScalarRange()
-    print "max=",x1
+    #print "max=",x1
     scale=255.0/x1
-    print "scale=",scale
+    #print "scale=",scale
     shiftscale=vtk.vtkImageShiftScale()
     shiftscale.SetOutputScalarTypeToUnsignedShort()
     shiftscale.SetScale(scale)
     shiftscale.SetInput(data)
     shiftscale.Update()
     data=shiftscale.GetOutput()
+#    Logging.info("Shift scale has dimensions:",data.GetDimensions(),kw="imageop")            
     
     if countVoxels:
         x0,x1=data.GetScalarRange()
@@ -563,8 +580,11 @@ def scatterPlot(imagedata1,imagedata2,z,countVoxels, wholeVolume,logarithmic=1):
         maptocolor.SetOutputFormatToRGB()
         maptocolor.Update()
         data=maptocolor.GetOutput()
-            
+    Logging.info("Scatterplot has dimensions:",data.GetDimensions(),data.GetExtent(),kw="imageop")                        
+    data.SetWholeExtent(data.GetExtent())
+    print "data.GetWHoleExtent()=",data.GetWholeExtent()
     image=vtkImageDataToWxImage(data)
+    print "Image dims=",image.GetWidth(),image.GetHeight()
     return image
     
 def getZoomFactor(x1,y1,x2,y2):

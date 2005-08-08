@@ -46,6 +46,7 @@ import DataUnit
 import MenuManager
 import Histogram
 
+import platform
 
 import PreviewFrame
 import os.path
@@ -206,7 +207,11 @@ class Visualizer:
         self.timeslider=wx.Slider(self.sliderPanel,value=1,minValue=1,maxValue=1,
         style=wx.SL_HORIZONTAL|wx.SL_LABELS)
         self.timeslider.SetHelpText("Use this slider to select the displayed timepoint.")
-        self.timeslider.Bind(wx.EVT_SCROLL,self.onChangeTimepoint)
+        if platform.system()=="Windows":
+            self.timeslider.Bind(wx.EVT_SCROLL_ENDSCROLL,self.onUpdateTimepoint)
+            self.timeslider.Bind(wx.EVT_SCROLL_THUMBRELEASE,self.onUpdateTimepoint)
+        else:
+            self.timeslider.Bind(wx.EVT_SCROLL,self.onChangeTimepoint)
 
         self.zslider=wx.Slider(self.zsliderWin,value=1,minValue=1,maxValue=1,
         style=wx.SL_VERTICAL|wx.SL_LABELS|wx.SL_AUTOTICKS)
@@ -282,7 +287,7 @@ class Visualizer:
         if self.timepoint<self.maxTimepoint:
             Logging.info("Setting timepoint to ",self.timepoint+1,kw="visualizer")
             self.setTimepoint(self.timepoint+1)
-        
+            messenger.send(None,"timepoint_changed",self.timepoint)        
     def onPrevTimepoint(self,evt):
         """
         Method: onPrevTimepoint
@@ -291,7 +296,7 @@ class Visualizer:
         """        
         if self.timepoint>=1:
             self.setTimepoint(self.timepoint-1)
-
+            messenger.send(None,"timepoint_changed",self.timepoint)        
     def createHistogram(self):
         """
         Method: createHistogram()
@@ -581,7 +586,6 @@ class Visualizer:
         Description: Handle size events
         """
 #        if not self.enabled:return
-        print "visuyalizer.OnSize()"
         wx.LayoutAlgorithm().LayoutWindow(self.parent, self.visWin)
         self.currentWindow.SetSize(self.visWin.GetSize())
         self.currMode.relayout()
@@ -840,28 +844,29 @@ class Visualizer:
         #tp=event.getValue()
         self.setTimepoint(tp)
         
-    def onUpdateTimepoint(self):
+    def onUpdateTimepoint(self,evt=None):
         """
         Method: onUpdateTimepoint
         Created: 31.07.2005, KP
         Description: Set the timepoint to be shown
         """    
-        diff=abs(time.time()-self.changing)
-        if diff < 0.01:
-            Logging.info("delay too small: ",diff,kw="visualizer")
-            wx.FutureCall(200,self.onUpdateTimepoint)
-            self.changing=time.time()
-            return
+        if not evt:
+            diff=abs(time.time()-self.changing)
+            if diff < 0.01:
+                Logging.info("delay too small: ",diff,kw="visualizer")
+                wx.FutureCall(200,self.onUpdateTimepoint)
+                self.changing=time.time()
+                return
         if self.in_vtk:
             Logging.info("In vtk, delaying",kw="visualizer")
-            wx.FutureCall(50,self.onUpdateTimepoint)
+            wx.FutureCall(50,lambda e=evt:self.onUpdateTimepoint(evt))
             return
         tp=self.timeslider.GetValue()
         tp-=1 # slider starts from one
         if self.timepoint != tp:
-            self.setTimepoint(tp)
             Logging.info("Sending timepoint change event (tp=%d)"%tp,kw="visualizer")
             messenger.send(None,"timepoint_changed",tp)
+            self.setTimepoint(tp)
             
             
     def onChangeTimepoint(self,event):

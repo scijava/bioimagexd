@@ -55,6 +55,7 @@ class LsmDataSource(DataSource.DataSource):
         # Name and path of the lsm-file:
         self.filename = filename
         self.timepoint=-1
+        self.bitdepth=0
         self.shortname=os.path.basename(filename)
         self.path=""
         # An lsm-file may contain multiple channels. However, LsmDataSource only
@@ -147,7 +148,17 @@ class LsmDataSource(DataSource.DataSource):
         Created: 28.05.2005, KP
         Description: Return the bit depth of data
         """
-        return 8
+        if not self.bitdepth:
+            data=self.getDataSet(0,raw=1)
+            scalartype=data.GetScalarType()
+            if scalartype==5:
+                self.bitdepth=12
+            elif scalartype==3:
+                self.bitdepth=8
+            else:
+                raise "Bad LSM bit depth, %d,%s"%(scalartype,data.GetScalarTypeAsString())
+            self.bitdepth*=data.GetNumberOfScalarComponents()
+        return self.bitdepth
         
     def getVoxelSize(self):
         if not self.voxelsize:
@@ -155,7 +166,7 @@ class LsmDataSource(DataSource.DataSource):
         return self.voxelsize
             
         
-    def getDataSet(self, i):
+    def getDataSet(self, i,raw=0):
         """
         Method: getDataSet
         Created: 18.11.2004
@@ -175,7 +186,15 @@ class LsmDataSource(DataSource.DataSource):
         self.reader.SetUpdateChannel(self.channelNum)
         self.reader.Update()
         data=self.reader.GetOutput()
-
+        if data.GetScalarType()!=3 and not raw:
+            shift=vtk.vtkImageShiftScale()
+            shift.SetInput(data)
+            shift.SetOutputScalarTypeToUnsignedChar()
+            x0,x1=data.GetScalarRange()
+            scale=255.0/x1
+            shift.SetScale(scale)
+            shift.Update()
+            data=shift.GetOutput()
         return data
     def getFileName(self):
         """

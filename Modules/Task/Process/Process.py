@@ -160,9 +160,12 @@ class Process(Module):
             Logging.info("It took %.4f seconds"%(t4-t3),kw="processing")
             data=solitary.GetOutput()
         # Median filtering
-        if self.doMedian:
+        if tuple(self.medianNeighborhood)==(1,1,1):
+            Logging.info("Not doing median - default neighborhood",kw="processing")
+        elif self.doMedian:
+            
             self.eventDesc="Applying median filter"
-            Logging.info("Doing median filtering",kw="processing")
+            Logging.info("Doing median filtering ",self.medianNeighborhood,kw="processing")
             # Using VTK´s vtkImageMEdian3D-filter
             median = vtk.vtkImageMedian3D()
             median.GetOutput().ReleaseDataFlagOn()
@@ -189,4 +192,5 @@ class Process(Module):
         t2=time.time()
         Logging.info("Processing took %.4f seconds"%(t2-t1))
         messenger.send(None,"update_progress",100,"Done.")
+        data.ReleaseDataFlagOff()
         return data

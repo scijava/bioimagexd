@@ -50,6 +50,7 @@ class CombinedDataUnit(DataUnit.DataUnit):
         """
         DataUnit.DataUnit.__init__(self, name)
         self.sourceunits=[]
+        self.doOrig=0
         settingclass=self.getSettingsClass()
         Logging.info("Settings class =",settingclass,kw="dataunit")
         self.settings = settingclass()
@@ -324,8 +325,7 @@ class CombinedDataUnit(DataUnit.DataUnit):
         """
         Method: doPreview
         Created: 08.11.2004, JM
-        Description: Makes a two-dimensional preview using
-                     the class-specific combination function
+        Description: Makes a two-dimensional preview using the class-specific combination function
         Parameters: depth       The preview depth
                     renew       Flag indicating, whether the preview should be 
                                 regenerated or if a stored image can be reused
@@ -338,6 +338,15 @@ class CombinedDataUnit(DataUnit.DataUnit):
         # with the modulo operator
         timePoint=timePoint%self.getLength()
         
+        # If the previously requested preview was a "show original" preview
+        # then we can just restore the preview before that without any
+        # processing
+        showOrig=self.settings.get("ShowOriginal")
+        if not showOrig and self.doOrig:
+            self.doOrig=0
+            Logging.info("Returning saved preview",kw="dataunit")
+            return self.origPreview
+            
         # If the requested output channels have been specified,
         # then we map those through their corresponding ctf's
         # to be merged to the output
@@ -371,32 +380,39 @@ class CombinedDataUnit(DataUnit.DataUnit):
                 for dataunit in self.sourceunits:
                     Logging.info("Adding source image data",kw="dataunit")
                     image=dataunit.getTimePoint(timePoint)
-                    self.module.addInput(dataunit,image)    
+                    self.module.addInput(dataunit,image)
 
             preview=self.module.getPreview(depth)
             # If no output channels were requested, then just return the
             # preview
-            if not self.outputChls:
+            
+#            if not self.outputChls:
 #                print "Returning preview",preview.GetDimensions()
-                return preview
-                
+#                return preview
+        if self.outputChls:
             if preview.GetNumberOfScalarComponents()==1:
                 maptocol=vtk.vtkImageMapToColors()
                 maptocol.SetInput(preview)
                 maptocol.SetOutputFormatToRGB()
+
                 maptocol.SetLookupTable(self.getColorTransferFunction())
                 maptocol.Update()
                 preview=maptocol.GetOutput()
             merged.append(preview)
-        if len(merged)>1:
-            merge=vtk.vtkImageMerge()
-            for data in merged:
-                merge.AddInput(data)
-            merge.Update()
-            preview=merge.GetOutput()
-        elif len(merged)==1:
-            preview=merged[0]
-        print "returning preview=",preview.GetDimensions()
+            if len(merged)>1:
+                merge=vtk.vtkImageMerge()
+                for data in merged:
+                    merge.AddInput(data)
+                merge.Update()
+                preview=merge.GetOutput()
+            elif len(merged)==1:
+                preview=merged[0]
+            
+        
+        if not showOrig and not self.doOrig:
+            self.origPreview=preview
+        elif showOrig:
+            self.doOrig=1            
         return preview
             
 
