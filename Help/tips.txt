@@ -1,0 +1,6 @@
+If volume rendering feels sluggish, you can use nearest neighbor interpolation when you're adjusting the rendering settings, and switch to linear interpolation for the final rendering.
+You can switch the interpolation type used by slices view by right-clicking on the picture.
+You can toggle logarithmic scaling of channel histograms by right-clicking on the histogram.
+You should report any problems you have to the BioImageXD Bug Tracking System at http://www.bioimagexd.org/
+You can download the latest release of BioImageXD at http://www.bioimagexd.org/
+
