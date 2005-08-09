@@ -200,7 +200,10 @@ class MainWindow(wx.Frame):
         Description: Show a tip to the user
         """
         conf = Configuration.getConfiguration()
-        showTip = eval(conf.getConfigItem("ShowTip","General"))
+        showTip=conf.getConfigItem("ShowTip","General")
+        print "showTip=",showTip
+        if showTip:
+            showTip = eval(showTip)
         tipNumber = int(conf.getConfigItem("TipNumber","General"))
         print "showtip=",showTip,type(showTip)
         if showTip:

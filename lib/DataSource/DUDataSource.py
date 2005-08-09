@@ -95,7 +95,7 @@ class VtiDataSource(DataSource):
         """
         return len(self.dataSets)
 
-    def getDataSet(self, i):
+    def getDataSet(self, i,raw=0):
         """
         Method: getDataSet
         Created: 03.11.2004, JM
@@ -112,7 +112,7 @@ class VtiDataSource(DataSource):
         """
         self.dimensions=data.GetDimensions()
         self.spacing=data.GetSpacing()
-        self.bitdepth=8*data.GetNumberOfScalarComponents()
+        #self.bitdepth=8*data.GetNumberOfScalarComponents()
 
     def getDimensions(self):
         """
@@ -166,18 +166,6 @@ class VtiDataSource(DataSource):
             return eval(vsiz)
         return vsiz
     
-    def getBitDepth(self):
-        """
-        Method: getBitDepth
-        Created: 28.05.2005, KP
-        Description: Returns the bit depth of the datasets this 
-                     dataunit contains
-        """
-        if not self.bitdepth:
-            data=self.getDataSet(0)
-            self.readInfo(data)
-        return self.bitdepth
-
     def loadVti(self, filename):
         """
         Method: loadVti

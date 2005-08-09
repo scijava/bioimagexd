@@ -55,7 +55,6 @@ class LsmDataSource(DataSource.DataSource):
         # Name and path of the lsm-file:
         self.filename = filename
         self.timepoint=-1
-        self.bitdepth=0
         self.shortname=os.path.basename(filename)
         self.path=""
         # An lsm-file may contain multiple channels. However, LsmDataSource only
@@ -142,23 +141,6 @@ class LsmDataSource(DataSource.DataSource):
             self.spacing=[1,b/a,c/a]
         return self.spacing
         
-    def getBitDepth(self):
-        """
-        Method: getBitDepth
-        Created: 28.05.2005, KP
-        Description: Return the bit depth of data
-        """
-        if not self.bitdepth:
-            data=self.getDataSet(0,raw=1)
-            scalartype=data.GetScalarType()
-            if scalartype==5:
-                self.bitdepth=12
-            elif scalartype==3:
-                self.bitdepth=8
-            else:
-                raise "Bad LSM bit depth, %d,%s"%(scalartype,data.GetScalarTypeAsString())
-            self.bitdepth*=data.GetNumberOfScalarComponents()
-        return self.bitdepth
         
     def getVoxelSize(self):
         if not self.voxelsize:

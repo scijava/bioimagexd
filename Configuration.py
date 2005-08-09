@@ -60,7 +60,7 @@ class Configuration:
         #vtkpath=self.getPath(["Libraries","VTK"])
         vtkpath=self.getPath(["C:\\VTK-build"])
         mayavipath=self.getPath(["Libraries","mayavi"])
-        self.setConfigItem("ShowTip","General",1,0)
+        self.setConfigItem("ShowTip","General","True",0)
         self.setConfigItem("TipNumber","General",0,0)
         self.readConfigItem("ShowTip","General")
         self.readConfigItem("TipNumber","General")
@@ -71,8 +71,8 @@ class Configuration:
         self.setConfigItem("MayaviPath","Mayavi",mayavipath,0)
 
         self.setConfigItem("ImageFormat","Output","png",0)
-        self.setConfigItem("FramePath",os.path.expanduser("~/"),0)
-        self.setConfigItem("VideoPath",os.path.expanduser("~/video.avi"),0)
+        self.setConfigItem("FramePath","Paths",os.path.expanduser("~/"),0)
+        self.setConfigItem("VideoPath","Paths",os.path.expanduser("~/video.avi"),0)
 
         self.setConfigItem("DataPath","Paths","/home/kalpaha/BioImageXD/Data/",0)
         self.setConfigItem("LastPath","Paths","/home/kalpaha/BioImageXD/Data/",0)

@@ -49,7 +49,6 @@ class DataWriter:
         """    
         pass
         
-        
     def sync(self):
         """
         Method: sync()
@@ -98,6 +97,8 @@ class DataSource:
         Description: Initialization
         """
         self.ctf = None
+        self.bitdepth=0
+        
 
     def getDataSetCount(self):
         """
@@ -117,7 +118,7 @@ class DataSource:
         """    
         raise "Abstract method getFileName() called in DataSource"
 
-    def getDataSet(self, i):
+    def getDataSet(self, i,raw=0):
         """
         Method: getDataSet
         Created: 03.11.2004, JM
@@ -145,3 +146,20 @@ class DataSource:
         """
         raise "Abstract method getDimensions() in DataSource called"
 
+    def getBitDepth(self):
+        """
+        Method: getBitDepth
+        Created: 28.05.2005, KP
+        Description: Return the bit depth of data
+        """
+        if not self.bitdepth:
+            data=self.getDataSet(0,raw=1)
+            scalartype=data.GetScalarType()
+            if scalartype==5:
+                self.bitdepth=12
+            elif scalartype==3:
+                self.bitdepth=8
+            else:
+                raise "Bad LSM bit depth, %d,%s"%(scalartype,data.GetScalarTypeAsString())
+            self.bitdepth*=data.GetNumberOfScalarComponents()
+        return self.bitdepth
