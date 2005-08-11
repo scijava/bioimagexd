@@ -133,7 +133,14 @@ class GalleryMode(VisualizationMode):
         self.galleryPanel.setTimepoint(self.timepoint)
         self.galleryPanel.updatePreview()
         self.galleryPanel.Refresh()
-  
+    def showSideBar(self):
+        """
+        Method: showSideBar()
+        Created: 24.05.2005, KP
+        Description: Method that is queried to determine whether
+                     to show the sidebar
+        """
+        return True  
     def activate(self,sidebarwin):
         """
         Method: activate()
@@ -158,6 +165,7 @@ class GalleryMode(VisualizationMode):
             self.configPanel.Show()
         else:
             self.configPanel.Show()
+            self.container.Show()
         return self.galleryPanel
         
 
@@ -170,4 +178,16 @@ class GalleryMode(VisualizationMode):
         VisualizationMode.setDataUnit(self,dataUnit)
         if self.configPanel:
             self.configPanel.setDataUnit(dataUnit)
+        
+    def deactivate(self):
+        """
+        Method: deactivate()
+        Created: 24.05.2005, KP
+        Description: Unset the mode of visualization
+        """
+        self.container.Show(0)
+        self.configPanel.Show(0)
+        
+
+        
         

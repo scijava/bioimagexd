@@ -212,7 +212,8 @@ class SurfaceModule(VisualizationModule):
             input=self.normals.GetOutput()
         
         self.mapper.SetInput(input)
-        self.mapper.Update()
+        VisualizationModule.updateRendering(self,input)
+        #self.mapper.Update()
         self.parent.Render()    
 
     def __getstate__(self):

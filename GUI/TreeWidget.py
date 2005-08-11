@@ -228,9 +228,9 @@ class TreeWidget(wx.SashLayoutWindow):
         if event:
             self.item=event.GetItem()
             wx.FutureCall(10,self.onSelectionChanged)
-            
             return
         item=self.item
+        print "item=",item
         obj=self.tree.GetPyData(item)
         if obj and type(obj)!=types.StringType:
             messenger.send(None,"tree_selection_changed",obj)        

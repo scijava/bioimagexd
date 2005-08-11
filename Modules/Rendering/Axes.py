@@ -105,6 +105,7 @@ class AxesModule(VisualizationModule):
         Description: Update the Rendering of this module
         """             
         self.mapper.Update()
+        VisualizationModule.updateRendering(self,input)
         self.wxrenwin.Render()    
 
     def disableRendering(self):

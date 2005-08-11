@@ -152,6 +152,7 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
             event.Skip()
             return
         x,y=event.GetPosition()
+        x,y=self.getScrolledXY(x,y)
         x/=float(self.zoomFactor)
         y/=float(self.zoomFactor)
         dims=self.imagedata.GetDimensions()
@@ -207,6 +208,7 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
         Created: 23.05.2005, KP
         Description: Size event handler
         """    
+        InteractivePanel.InteractivePanel.OnSize(self,event)
         self.size=event.GetSize()
         Logging.info("Sections panel size changed to ",self.size,kw="preview")
         self.sizeChanged=1
@@ -290,10 +292,17 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
         
         x+=z*self.zoomZ+2*self.xmargin
         y+=z*self.zoomZ+2*self.ymargin
+        if self.maxSizeX>x:
+            x=self.maxSizeX
+        if self.maxSizeY>y:
+            y=self.maxSizeY
         self.paintSize=(x,y)
-        #print "paintSize=",self.paintSize
-        
-        self.setScrollbars(x,y)
+        if self.buffer.GetWidth()!=x or self.buffer.GetHeight()!=y:
+            self.buffer = wx.EmptyBitmap(x,y)
+            Logging.info("Paint size=",self.paintSize,kw="preview")
+            #print "paintSize=",self.paintSize
+            
+            self.setScrollbars(x,y)
         
         
     def enable(self,flag):
@@ -318,21 +327,6 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
             self.setTimepoint(self.timepoint)
         self.paintPreview()
         wx.GetApp().Yield(1)
-        self.updateScrolling()
-        
-    def updateScrolling(self,event=None):
-        """
-        Method: updateScrolling
-        Created: 24.03.2005, KP
-        Description: Updates the scroll settings
-        """
-        if self.scrollTo:
-            x,y=self.scrollTo
-            print "Scrolling to ",x,y
-            sx=int(x/self.scrollsize)
-            sy=int(y/self.scrollsize)
-            self.Scroll(sx,sy)
-            self.scrollTo=None
 
     def OnPaint(self,event):
         """

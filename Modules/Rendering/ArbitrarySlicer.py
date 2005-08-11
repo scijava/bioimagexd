@@ -7,8 +7,6 @@
  Description:
 
  A module containing the arbitrary slices module for the visualization
- 
- Modified 28.04.2005 KP - Created the class
           
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
@@ -169,7 +167,8 @@ class ArbitrarySliceModule(VisualizationModule):
                 planeWidget.On()
             self.on = 1
         
-        self.mapper.Update()
+        #self.mapper.Update()
+        VisualizationModule.updateRendering(self,input)
         self.parent.Render()    
 
     def disableRendering(self):

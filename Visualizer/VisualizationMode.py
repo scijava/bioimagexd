@@ -138,7 +138,16 @@ class VisualizationMode:
         Description: Method that is queried to determine whether
                      to show the zslider
         """
-        return False        
+        return False   
+   
+    def showViewAngleCombo(self):
+        """
+        Method: showViewAngleCombo()
+        Created: 11.08.2005, KP
+        Description: Method that is queried to determine whether
+                     to show the view angle combo box in the toolbar
+        """
+        return False  
   
     def setBackground(self,r,g,b):
         """

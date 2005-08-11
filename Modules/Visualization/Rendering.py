@@ -111,7 +111,14 @@ class RenderingMode(VisualizationMode):
                      to show the sidebar
         """
         return True
-        
+    def showViewAngleCombo(self):
+        """
+        Method: showViewAngleCombo()
+        Created: 11.08.2005, KP
+        Description: Method that is queried to determine whether
+                     to show the view angle combo box in the toolbar
+        """
+        return True        
     def setStereoMode(self,mode):
         """
         Method: setStereoMode()
@@ -234,8 +241,12 @@ class RenderingMode(VisualizationMode):
         """
         self.dataUnit=dataUnit
         if not len(self.modules):
-            self.loadModule(self.defaultModule)
-            self.wxrenwin.setView((1,1,1,0,0,1))
+            # we instruct loadModule not to render the scene, software
+            # we can set the view before rendering
+            module=self.loadModule(self.defaultModule,render=0)
+            #self.wxrenwin.setView((1,1,1,0,0,1))
+            module.setView((1,1,1,0,0,1))
+            module.showTimepoint(self.timepoint)
             self.configPanel.appendModuleToList(self.defaultModule)
         for module in self.modules:
             module.setDataUnit(dataUnit)
@@ -279,7 +290,7 @@ class RenderingMode(VisualizationMode):
                 else:
                     module.enableRendering()
 
-    def loadModule(self,name,lbl=None):
+    def loadModule(self,name,lbl=None,render=1):
         """
         Method: loadModule(name,lbl)
         Created: 28.04.2005, KP
@@ -293,7 +304,8 @@ class RenderingMode(VisualizationMode):
         module = self.mapping[name][0](self,self.visualizer,label=lbl,moduleName=name)
         self.modules.append(module)
         module.setDataUnit(self.dataUnit)
-        module.showTimepoint(self.timepoint)
+        if render:
+            module.showTimepoint(self.timepoint)
         return module
             
     def getModules(self):

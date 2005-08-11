@@ -197,7 +197,7 @@ class MainWindow(wx.Frame):
         messenger.send(None,"update_progress",1.0,"Done.") 
         messenger.connect(None,"current_task",self.updateTitle)
         messenger.connect(None,"current_file",self.updateTitle)
-        messenger.connect(None,"tree_selection_changed",self.onSetDataset)
+        messenger.connect(None,"tree_selection_changed",self.onTreeSelectionChanged)
         messenger.connect(None,"get_voxel_at",self.updateVoxelInfo)
         messenger.connect(None,"load_dataunit",self.onMenuOpen)
         messenger.connect(None,"view_help",self.viewHelp)
@@ -236,15 +236,16 @@ class MainWindow(wx.Frame):
             conf.setConfigItem("ShowTip","General",showTip)
             conf.setConfigItem("TipNumber","General",index)
             
-    def onSetDataset(self,obj,evt,data):
+    def onTreeSelectionChanged(self,obj,evt,data):
         """
-        Method: onSetDataset
+        Method: onTreeSelectionChanged
         Created: 22.07.2005, KP
         Description: A method for updating the dataset based on tree selection
         """
         # If no task window has been loaded, then we will update the visualizer
         # with the selected dataset
         if not self.currentTaskWindow:
+            Logging.info("Setting dataset for visualizer=",data.__class__,kw="dataunit")
             self.visualizer.setDataUnit(data)
         
     def updateTitle(self,obj,evt,data):
@@ -660,6 +661,9 @@ class MainWindow(wx.Frame):
         Created: 14.07.2005, KP
         Description: Called when the user wants to close the task panel
         """
+        selectedUnits=self.tree.getSelectedDataUnits()
+        self.visualizer.setProcessedMode(0)
+        self.visualizer.setDataUnit(selectedUnits[0])        
         if self.currentTaskWindow: 
             self.menuManager.clearItemsBar()
             self.currentTaskWindow.Show(0)
@@ -673,9 +677,6 @@ class MainWindow(wx.Frame):
         
         #self.onMenuShowTree(None,1)
         # Set the dataunit used by visualizer to one of the source units
-        selectedUnits=self.tree.getSelectedDataUnits()
-        self.visualizer.setProcessedMode(0)
-        self.visualizer.setDataUnit(selectedUnits[0])
         
         self.infoWin.SetDefaultSize(self.infoWin.origSize)
         self.menuManager.check(MenuManager.ID_VIEW_INFO,1)
@@ -932,12 +933,12 @@ class MainWindow(wx.Frame):
         except KeyError,ex:
             Dialogs.showerror(self,"Failed to load file %s: Unrecognized extension %s"%(name,ext),"Unrecognized extension")
             return
-        #try:
+        dataunits=[]
+        try:
         #    Logging.info("Loading from data source ",datasource,kw="io")
-        dataunits = datasource.loadFromFile(path)
-        #except:
-        #    Dialogs.showerror(self,"Failed to load file %s."%(name),"Failed to load file")
-        #    return
+            dataunits = datasource.loadFromFile(path)
+        except GUIError,ex:
+            ex.show()
 
         #print dataunits[0].getSettings().get("Type")
         if not dataunits:

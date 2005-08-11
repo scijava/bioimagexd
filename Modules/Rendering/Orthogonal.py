@@ -289,6 +289,7 @@ class OrthogonalPlaneModule(VisualizationModule):
             self.on = 1
         
         #self.mapper.Update()
+        VisualizationModule.updateRendering(self,input)
         self.parent.Render()    
 
     def disableRendering(self):

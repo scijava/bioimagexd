@@ -148,8 +148,9 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
         Created: 23.05.2005, KP
         Description: Size event handler
         """    
-        self.size=event.GetSize()
-        Logging.info("Gallery size changed to ",self.size,kw="preview")
+        InteractivePanel.InteractivePanel.OnSize(self,event)
+        #self.gallerySize=event.GetSize()
+        #Logging.info("Gallery size changed to ",self.gallerySize,kw="preview")
         self.sizeChanged=1
 
     def setDataUnit(self,dataunit):
@@ -172,6 +173,7 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
         Created: 23.05.2005, KP
         Description: Sets the timepoint to display
         """    
+        self.scrollTo=self.GetScroll()
         self.timepoint=timepoint
         # if we're showing one slice of each timepoint
         # instead of each slice of one timepoint, call the
@@ -241,10 +243,13 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
         if not self.imagedata:
             return
         x,y,z=self.imagedata.GetDimensions()
-        
+        maxX=self.maxX
+        maxY=self.maxY
+        if self.maxSizeX>maxX:maxX=self.maxSizeX
+        if self.maxSizeY>maxY:maxY=self.maxSizeY
         w,h=self.sliceSize
-        #Logging.info("self.size=",self.size)#,kw="preview")
-        xreq=self.size[0]//(w+6)
+        Logging.info("maxX=",maxX,"maxY=",maxY,kw="preview")
+        xreq=maxX//(w+6)
         if not xreq:xreq=1
         n=z
         if len(self.slices)>z:

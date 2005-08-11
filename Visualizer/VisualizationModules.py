@@ -65,6 +65,16 @@ class VisualizationModule:
         self.renWin = self.wxrenwin.GetRenderWindow()    
         self.renderer = self.parent.getRenderer()
         self.eventDesc="Rendering"
+        self.view=None
+    
+    def setView(self,view):
+        """
+        Method: setView(view)
+        Created: 11.08.2005, KP
+        Description: Set the view that is to be set for the render window before
+                     first render.
+        """        
+        self.view=view
     
     def updateProgress(self,obj,event):
         """
@@ -123,8 +133,17 @@ class VisualizationModule:
         else:
             Logging.info("Using timepoint data for tp",value,kw="rendering")
             self.data = self.dataUnit.getTimePoint(value)
-
         self.updateRendering()
+        
+    def updateRendering(self,input=None):
+        """
+        Method: updateRendering()
+        Created: 11.08.2005, KP
+        Description: Update the Rendering of this module
+        """              
+        if self.view:
+            self.wxrenwin.setView(self.view)
+            self.view=None
         
     def disableRendering(self):
         """

@@ -88,6 +88,8 @@ class LsmDataSource(DataSource.DataSource):
                 return
             self.reader.SetFileName(self.filename)
             self.reader.Update()
+            if self.reader.IsCompressed():
+                raise Logging.GUIError("Cannot handle compressed dataset","The dataset you've selected (%s) is compressed. The LSM reader cannot currently read compressed data."%filename)
             self.updateProgress(None,None)
             
     def updateProgress(self,obj,evt):
@@ -198,6 +200,7 @@ class LsmDataSource(DataSource.DataSource):
         self.shortname=os.path.basename(filename)
         self.path=os.path.dirname(filename)
         self.reader.SetFileName(filename)
+        
         try:
             f=open(filename)
             f.close()
@@ -206,6 +209,8 @@ class LsmDataSource(DataSource.DataSource):
             "Failed to open file %s for reading: %s"%(filename,str(ex)))
 
         self.reader.Update()
+        if self.reader.IsCompressed():
+            raise Logging.GUIError("Cannot handle compressed dataset","The dataset you've selected (%s) is compressed. The LSM reader cannot currently read compressed data."%filename)        
         dataunits=[]
         channelNum=self.reader.GetNumberOfChannels()
         self.timepointAmnt=channelNum

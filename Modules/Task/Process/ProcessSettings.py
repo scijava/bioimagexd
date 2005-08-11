@@ -54,6 +54,14 @@ class ProcessSettings(DataUnitSettings):
 #        self.register("ColorTransferFunction")        
         self.register("MedianFiltering",serialize=1)
         self.register("AnisotropicDiffusion",serialize=1)
+        self.register("AnisotropicDiffusionMeasure",serialize=1)
+        self.register("AnisotropicDiffusionThreshold",serialize=1)
+        self.register("AnisotropicDiffusionFactor",serialize=1)
+        self.register("AnisotropicDiffusionFaces",serialize=1)
+        self.register("AnisotropicDiffusionEdges",serialize=1)
+        self.register("AnisotropicDiffusionCorners",serialize=1)
+        
+        
         self.register("MedianNeighborhood",serialize=1)
         self.register("SolitaryFiltering",serialize=1)
         self.register("SolitaryHorizontalThreshold",serialize=1)
@@ -76,7 +84,14 @@ class ProcessSettings(DataUnitSettings):
         self.set("SolitaryFiltering",0)
         self.set("SolitaryHorizontalThreshold",0)
         self.set("SolitaryVerticalThreshold",0)
-        self.set("SolitaryProcessingThreshold",0)                            
+        self.set("SolitaryProcessingThreshold",0)      
+
+        self.set("AnisotropicDiffusionFaces",1)
+        self.set("AnisotropicDiffusionCorners",1)
+        self.set("AnisotropicDiffusionEdges",1)
+        self.set("AnisotropicDiffusionMeasure",1)
+        self.set("AnisotropicDiffusionThreshold",5.0)
+        self.set("AnisotropicDiffusionFactor",1.0)
         
     def initialize(self,dataunit,channels, timepoints):
         """

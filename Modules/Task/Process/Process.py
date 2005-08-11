@@ -179,13 +179,26 @@ class Process(Module):
             data=median.GetOutput()
         if self.doAnisotropic:
             self.eventDesc="Applying anisotrophic diffusion"
-            Logging.info("Doing median filtering",kw="processing")
-            
-            Logging.info("Doing anisotropic diffusion",kw="processing")
             aniso=vtk.vtkImageAnisotropicDiffusion3D()
+            
+            factor=self.settings.get("AnisotropicDiffusionFactor")
+            aniso.SetDiffusionFactor(factor)
+            threshold=self.settings.get("AnisotropicDiffusionThreshold")
+            aniso.SetDiffusionThreshold(threshold)
+            measure=self.settings.get("AnisotropicDiffusionMeasure")
+            aniso.SetGradientMagnitudeThreshold(not measure)
+                        
+            faces=self.settings.get("AnisotropicDiffusionFaces")
+            aniso.SetFaces(faces)
+            edges=self.settings.get("AnisotropicDiffusionEdges")
+            aniso.SetEdges(edges)
+            corners=self.settings.get("AnisotropicDiffusionCorners")
+            aniso.SetCorners(corners)
+            
             aniso.GetOutput().ReleaseDataFlagOn()
             aniso.AddObserver("ProgressEvent",self.updateProgress)
             aniso.SetInput(data)
+            Logging.info("Doing anisotrophic diffusion, faces=%s, edges=%s, corners=%s, measure=%d, threshold=%f, factor=%f"%(str(faces),str(edges),str(corners),int(measure),threshold,factor),kw="processing")
             aniso.Update()
             data=aniso.GetOutput()
 

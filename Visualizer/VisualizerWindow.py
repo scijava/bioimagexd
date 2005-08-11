@@ -86,7 +86,7 @@ class VisualizerWindow(wxVTKRenderWindowInteractor):
         
     def getZoomFactor(self):
         """
-        Method: setView
+        Method: getZoomFactor
         Created: 22.07.2005
         Description: Set the view according to given params
         """
@@ -94,7 +94,7 @@ class VisualizerWindow(wxVTKRenderWindowInteractor):
         
     def setZoomFactor(self,factor):
         """
-        Method: setView
+        Method: setZoomFactor
         Created: 22.07.2005
         Description: Set the view according to given params
         """

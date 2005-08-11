@@ -107,46 +107,38 @@ class ProcessPanel(TaskPanel.TaskPanel):
         self.settingsNotebook.AddPage(self.filtersPanel,"Filtering")
         
         self.filtersSizer=wx.GridBagSizer()
-        # Edge preserving smoothing
-        self.doAnisoptropicCheckbutton = wx.CheckBox(self.filtersPanel,
-        -1,"Edge Preserving Smoothing")
-        self.doAnisoptropicCheckbutton.Bind(wx.EVT_CHECKBOX,self.doFilterCheckCallback)
-        self.doAnisoptropicCheckbutton.SetHelpText("Smooth data with anisotropic diffusion. An anisotropic diffusion preserves the edges in the image.")
-
+        n=0
         #Median Filtering
         self.doMedianCheckbutton = wx.CheckBox(self.filtersPanel,
         -1,"Median Filtering")
+        medianSbox=wx.StaticBox(self.filtersPanel,-1,"Median filtering")
+        self.medianSizer=wx.StaticBoxSizer(medianSbox,wx.VERTICAL)
         self.doMedianCheckbutton.Bind(wx.EVT_CHECKBOX,self.doFilterCheckCallback)
         self.doMedianCheckbutton.SetHelpText("Smooth data with a median filter. A median filter replaces each pixel with the median value from a rectangular neighborhood around that pixel.")
         val=UIElements.AcceptedValidator
-        self.neighborhoodX=wx.TextCtrl(self.filtersPanel,-1,"1",validator=val(string.digits))
-        self.neighborhoodY=wx.TextCtrl(self.filtersPanel,-1,"1",validator=val(string.digits))
-        self.neighborhoodZ=wx.TextCtrl(self.filtersPanel,-1,"1",validator=val(string.digits))
-
-        self.neighborhoodLbl=wx.StaticText(self.filtersPanel,-1,
-        "Neighborhood:")
-        self.neighborhoodXLbl=wx.StaticText(self.filtersPanel,-1,"X:")
-        self.neighborhoodYLbl=wx.StaticText(self.filtersPanel,-1,"Y:")
-        self.neighborhoodZLbl=wx.StaticText(self.filtersPanel,-1,"Z:")
+        j=0
+        lsizer=wx.GridBagSizer()
         for i in ["X","Y","Z"]:
+            self.__dict__["neighborhood%s"%i]=eval('wx.TextCtrl(self.filtersPanel,-1,"1",validator=val(string.digits))')
+            self.__dict__["neighborhood%sLbl"%i]=eval('wx.StaticText(self.filtersPanel,-1,"%s:")'%i)
             eval("self.neighborhood%s.SetHelpText('Size of the median neighborhood in %s direction.')"%(i,i))
             eval("self.neighborhood%sLbl.SetHelpText('Size of the median neighborhood in %s direction.')"%(i,i))
-        n=0
-        self.filtersSizer.Add(self.doAnisoptropicCheckbutton,(n,0))
+            lbl=eval("self.neighborhood%sLbl"%i)
+            ctrl=eval("self.neighborhood%s"%i)
+            lsizer.Add(lbl,(j,0))
+            lsizer.Add(ctrl,(j,1))
+            j+=1
+        self.neighborhoodLbl=wx.StaticText(self.filtersPanel,-1,
+        "Neighborhood:")
+
         n+=1
-        self.filtersSizer.Add(self.doMedianCheckbutton,(n,0))
+        self.medianSizer.Add(self.doMedianCheckbutton)
+        self.medianSizer.Add(self.neighborhoodLbl)
+        self.medianSizer.Add(lsizer)
+        
+        self.filtersSizer.Add(self.medianSizer,(n,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
         n+=1
-        self.filtersSizer.Add(self.neighborhoodLbl,(n,0))
-        n+=1
-        self.filtersSizer.Add(self.neighborhoodXLbl,(n,0))
-        self.filtersSizer.Add(self.neighborhoodX,(n,1))
-        n+=1
-        self.filtersSizer.Add(self.neighborhoodYLbl,(n,0))
-        self.filtersSizer.Add(self.neighborhoodY,(n,1))
-        n+=1
-        self.filtersSizer.Add(self.neighborhoodZLbl,(n,0))
-        self.filtersSizer.Add(self.neighborhoodZ,(n,1))
-        n+=1
+        
         #Solitary Filtering
 
         self.doSolitaryCheckbutton = wx.CheckBox(self.filtersPanel,
@@ -154,35 +146,79 @@ class ProcessPanel(TaskPanel.TaskPanel):
         self.doSolitaryCheckbutton.SetHelpText("Remove solitary noise pixels from the data by comparing them with their neighborhood.")
         self.doSolitaryCheckbutton.Bind(wx.EVT_CHECKBOX,self.doFilterCheckCallback)
 
-        self.solitaryX=wx.TextCtrl(self.filtersPanel,-1,"1",validator=val(string.digits))
-        self.solitaryY=wx.TextCtrl(self.filtersPanel,-1,"1",validator=val(string.digits))
-        self.solitaryThreshold=wx.TextCtrl(self.filtersPanel,
-        -1,"0",validator=val(string.digits))
+        solitarySbox=wx.StaticBox(self.filtersPanel,-1,"Solitary Filtering")
+        self.solitarySizer=wx.StaticBoxSizer(solitarySbox,wx.VERTICAL)
 
         self.solitaryLbl=wx.StaticText(self.filtersPanel,-1,"Thresholds:")
-        self.solitaryXLbl=wx.StaticText(self.filtersPanel,-1,"X:")
-        self.solitaryYLbl=wx.StaticText(self.filtersPanel,-1,"Y:")
-        self.solitaryThresholdLbl=wx.StaticText(self.filtersPanel,-1,
-        "Processing threshold:")
-        self.solitaryX.SetHelpText("Threshold that a pixel's horizontal neighbor needs to be over so that the pixel is not removed.")
-        self.solitaryY.SetHelpText("Threshold that a pixel's vertical neighbor needs to be over so that the pixel is not removed.")
-        self.solitaryThreshold.SetHelpText("Threshold that a pixel needs to be over to get processed by solitary filter.")        
-        self.solitaryXLbl.SetHelpText("Threshold that a pixel's horizontal neighbor needs to be over so that the pixel is not removed.")
-        self.solitaryYLbl.SetHelpText("Threshold that a pixel's vertical neighbor needs to be over so that the pixel is not removed.")
-        self.solitaryThresholdLbl.SetHelpText("Threshold that a pixel needs to be over to get processed by solitary filter.")        
-        self.filtersSizer.Add(self.doSolitaryCheckbutton,(n,0))
+        Xhelp="Threshold that a pixel's horizontal neighbor needs to be over so that the pixel is not removed."
+        Yhelp="Threshold that a pixel's vertical neighbor needs to be over so that the pixel is not removed."
+        Thresholdhelp="Threshold that a pixel needs to be over to get processed by solitary filter."
+        j=0
+        lsizer=wx.GridBagSizer()
+        for i in ["X","Y","Threshold"]:
+            self.__dict__["solitary%s"%i]=eval('wx.TextCtrl(self.filtersPanel,-1,"1",validator=val(string.digits))')
+            self.__dict__["solitary%sLbl"%i]=eval('wx.StaticText(self.filtersPanel,-1,"%s:")'%i)
+            eval("self.solitary%s.SetHelpText(%shelp)"%(i,i))
+            eval("self.solitary%sLbl.SetHelpText(%shelp)"%(i,i))
+            lbl=eval("self.solitary%sLbl"%i)
+            ctrl=eval("self.solitary%s"%i)
+            lsizer.Add(lbl,(j,0))
+            lsizer.Add(ctrl,(j,1))
+            j+=1
+        self.solitaryThresholdLbl.SetLabel("Processing threshold:")
+        
+        self.solitarySizer.Add(self.doSolitaryCheckbutton)
+        self.solitarySizer.Add(self.solitaryLbl)
+        self.solitarySizer.Add(lsizer)            
+        self.filtersSizer.Add(self.solitarySizer,(n,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
         n+=1
-        self.filtersSizer.Add(self.solitaryLbl,(n,0))
-        n+=1
-        self.filtersSizer.Add(self.solitaryXLbl,(n,0))
-        self.filtersSizer.Add(self.solitaryX,(n,1))
-        n+=1
-        self.filtersSizer.Add(self.solitaryYLbl,(n,0))
-        self.filtersSizer.Add(self.solitaryY,(n,1))
-        n+=1
-        self.filtersSizer.Add(self.solitaryThresholdLbl,(n,0))
-        self.filtersSizer.Add(self.solitaryThreshold,(n,1))
-        n+=1
+        # Edge preserving smoothing
+        self.doAnisoptropicCheckbutton = wx.CheckBox(self.filtersPanel,
+        -1,"Edge Preserving Smoothing")
+        self.doAnisoptropicCheckbutton.Bind(wx.EVT_CHECKBOX,self.doFilterCheckCallback)
+        self.doAnisoptropicCheckbutton.SetHelpText("Smooth data with anisotropic diffusion. An anisotropic diffusion preserves the edges in the image.")
+        
+        anisoSbox=wx.StaticBox(self.filtersPanel,-1,"Edge preserving smoothing")
+        self.anisoSizer=wx.StaticBoxSizer(anisoSbox,wx.VERTICAL)
+        self.anisoSizer.Add(self.doAnisoptropicCheckbutton)
+        
+        self.anisoLbl=wx.StaticText(self.filtersPanel,-1,"Neighborhood:")
+        self.anisoSizer.Add(self.anisoLbl)
+        Faceshelp="Toggle whether the 6 voxels adjoined by faces are included in the neighborhood."
+        Cornershelp="Toggle whether the 8 corner connected voxels are included in the neighborhood."
+        Edgeshelp="Toggle whether the 12 edge connected voxels are included in the neighborhood."
+        lsizer=wx.GridBagSizer()
+        j=0
+        for i in ["Faces","Corners","Edges"]:
+            self.__dict__["anisoNeighborhood%s"%i]=eval('wx.CheckBox(self.filtersPanel,-1,"%s")'%i)
+            eval("self.anisoNeighborhood%s.SetHelpText(%shelp)"%(i,i))
+            ctrl=eval("self.anisoNeighborhood%s"%i)
+            ctrl.SetValue(1)
+            lsizer.Add(ctrl,(0,j))
+            j+=1            
+        self.anisoSizer.Add(lsizer)    
+        
+        self.anisoThresholdLbl=wx.StaticText(self.filtersPanel,-1,"Threshold:")
+        self.anisoSizer.Add(self.anisoThresholdLbl)
+        
+        self.anisoMeasureBox=wx.RadioBox(self.filtersPanel,-1,"Gradient measure",
+        choices=["Central difference","Gradient to neighbor"],majorDimension=2,
+        style=wx.RA_SPECIFY_COLS
+        )
+        self.anisoMeasureBox.SetSelection(1)
+        self.anisoSizer.Add(self.anisoMeasureBox)
+        self.anisoDiffusionThresholdLbl=wx.StaticText(self.filtersPanel,-1,"Diffusion threshold:")
+        self.anisoDiffusionThreshold=wx.TextCtrl(self.filtersPanel,-1,"5.0")
+        self.anisoDiffusionFactorLbl=wx.StaticText(self.filtersPanel,-1,"Diffusion factor:")
+        self.anisoDiffusionFactor=wx.TextCtrl(self.filtersPanel,-1,"1.0")
+        lsizer=wx.GridBagSizer()
+        lsizer.Add(self.anisoDiffusionThresholdLbl,(0,0))
+        lsizer.Add(self.anisoDiffusionThreshold,(0,1))
+        lsizer.Add(self.anisoDiffusionFactorLbl,(1,0))
+        lsizer.Add(self.anisoDiffusionFactor,(1,1))
+        self.anisoSizer.Add(lsizer)
+        
+        self.filtersSizer.Add(self.anisoSizer,(n,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)                
         self.filtersPanel.SetSizer(self.filtersSizer)
         self.filtersPanel.SetAutoLayout(1)
         self.filtersSizer.Fit(self.filtersPanel)
@@ -205,23 +241,22 @@ class ProcessPanel(TaskPanel.TaskPanel):
                      filtering checkbox changes state
         """
 
-        if self.doMedianCheckbutton.GetValue():
-            for widget in [self.neighborhoodX,self.neighborhoodY,self.neighborhoodZ,self.neighborhoodXLbl,\
-            self.neighborhoodYLbl,self.neighborhoodZLbl]:
-                widget.Enable(1)
-        else:
-            for widget in [self.neighborhoodX,self.neighborhoodY,self.neighborhoodZ,self.neighborhoodXLbl,\
-            self.neighborhoodYLbl,self.neighborhoodZLbl]:
-                widget.Enable(0)
+        doMedian=self.doMedianCheckbutton.GetValue()
+        doSolitary=self.doSolitaryCheckbutton.GetValue()
+        doAniso=self.doAnisoptropicCheckbutton.GetValue()
+        
+        for widget in [self.neighborhoodX,self.neighborhoodY,self.neighborhoodZ,self.neighborhoodXLbl,\
+        self.neighborhoodYLbl,self.neighborhoodZLbl]:
+            widget.Enable(doMedian)
+    
 
-        if self.doSolitaryCheckbutton.GetValue():
-            for widget in [self.solitaryX,self.solitaryY,self.solitaryThreshold,self.solitaryXLbl,self.solitaryYLbl,\
-            self.solitaryThresholdLbl]:
-                widget.Enable(1)
-        else:
-            for widget in [self.solitaryX,self.solitaryY,self.solitaryThreshold,self.solitaryXLbl,self.solitaryYLbl,\
-            self.solitaryThresholdLbl]:
-                widget.Enable(0)
+        for widget in [self.solitaryX,self.solitaryY,self.solitaryThreshold,self.solitaryXLbl,self.solitaryYLbl,\
+        self.solitaryThresholdLbl]:
+            widget.Enable(doSolitary)
+        
+        
+        for widget in [self.anisoDiffusionFactor,self.anisoDiffusionThreshold,self.anisoNeighborhoodFaces,self.anisoNeighborhoodEdges,self.anisoNeighborhoodCorners,self.anisoMeasureBox]:
+            widget.Enable(doAniso)
 
         self.updateFilterData()
         #self.doPreviewCallback()
@@ -234,36 +269,53 @@ class ProcessPanel(TaskPanel.TaskPanel):
         """
 
         if self.dataUnit:
-
-            ctf = self.settings.get("ColorTransferFunction")
+            get=self.settings.get
+            set=self.settings.set
+            ctf = get("ColorTransferFunction")
             if ctf and self.colorBtn:
                 print "Setting colorBtn.ctf"
                 self.colorBtn.setColorTransferFunction(ctf)
                 self.colorBtn.Refresh()
             # median filtering
-            #print self.settings
-            median=self.settings.get("MedianFiltering")
+            
+            median=get("MedianFiltering")
             
             self.doMedianCheckbutton.SetValue(median)
             #neighborhood=self.dataUnit.getNeighborhood()
-            neighborhood=self.settings.get("MedianNeighborhood")
+            neighborhood=get("MedianNeighborhood")
             self.neighborhoodX.SetValue(str(neighborhood[0]))
             self.neighborhoodY.SetValue(str(neighborhood[1]))
             self.neighborhoodZ.SetValue(str(neighborhood[2]))
 
             # solitary filtering
             #solitary=self.dataUnit.getRemoveSolitary()
-            solitary=self.settings.get("SolitaryFiltering")
-            solitaryX=self.settings.get("SolitaryHorizontalThreshold")
-            solitaryY=self.settings.get("SolitaryVerticalThreshold")
-            solitaryThreshold=self.settings.get("SolitaryProcessingThreshold")
+            solitary=get("SolitaryFiltering")
+            solitaryX=get("SolitaryHorizontalThreshold")
+            solitaryY=get("SolitaryVerticalThreshold")
+            solitaryThreshold=get("SolitaryProcessingThreshold")
             self.doSolitaryCheckbutton.SetValue(solitary)
             self.solitaryX.SetValue(str(solitaryX))
             self.solitaryY.SetValue(str(solitaryY))
             self.solitaryThreshold.SetValue(str(solitaryThreshold))
+            
+            diffFac=get("AnisotropicDiffusionFactor")
+            diffMeasure=get("AnisotropicDiffusionMeasure")
+            diffThreshold=get("AnisotropicDiffusionThreshold")
+            doAniso=get("AnisotropicDiffusion")
+            self.anisoDiffusionFactor.SetValue(str(diffFac))
+            self.anisoDiffusionThreshold.SetValue(str(diffThreshold))
+            self.anisoMeasureBox.SetSelection(int(diffMeasure))
+            self.doAnisoptropicCheckbutton.SetValue((not not doAniso))
 
             self.doFilterCheckCallback()
 
+            faces=get("AnisotropicDiffusionFaces")
+            self.anisoNeighborhoodFaces.SetValue(faces)        
+            edges=get("AnisotropicDiffusionEdges")
+            self.anisoNeighborhoodEdges.SetValue(edges)
+            corners=get("AnisotropicDiffusionCorners")
+            self.anisoNeighborhoodCorners.SetValue(corners)
+                
     def updateFilterData(self):
         """
         Method: updateFilterData()
@@ -271,9 +323,10 @@ class ProcessPanel(TaskPanel.TaskPanel):
         Description: A method used to set the right values in dataset
                      from filter GUI widgets
         """
-        self.settings.set("AnisotropicDiffusion",self.doAnisoptropicCheckbutton.GetValue())
-        self.settings.set("MedianFiltering",self.doMedianCheckbutton.GetValue())
-        self.settings.set("SolitaryFiltering",self.doSolitaryCheckbutton.GetValue())
+        set=self.settings.set
+        set("AnisotropicDiffusion",self.doAnisoptropicCheckbutton.GetValue())
+        set("MedianFiltering",self.doMedianCheckbutton.GetValue())
+        set("SolitaryFiltering",self.doSolitaryCheckbutton.GetValue())
         nbh=(self.neighborhoodX.GetValue(),
             self.neighborhoodY.GetValue(),
             self.neighborhoodZ.GetValue())
@@ -288,13 +341,28 @@ class ProcessPanel(TaskPanel.TaskPanel):
             sx=int(self.solitaryX.GetValue())
             sy=int(self.solitaryY.GetValue())
             st=int(self.solitaryThreshold.GetValue())
+            set("SolitaryHorizontalThreshold",sx)
+            set("SolitaryVerticalThreshold",sy)
+            set("SolitaryProcessingThreshold",st)
         except ValueError:
             pass
+        try:
+            anisoFac=float(self.anisoDiffusionFactor.GetValue())
+            set("AnisotropicDiffusionFactor",anisoFac)
+        except:
+            pass
+        anisoMeasure=self.anisoMeasureBox.GetSelection()
+        set("AnisotropicDiffusionMeasure",anisoMeasure)
+        try:
+            anisoThreshold=float(self.anisoThreshold.GetValue())
+            set("AnisotropicDiffusionThreshold",anisoThreshold)
+        except:
+            pass
         
-        self.settings.set("SolitaryHorizontalThreshold",sx)
-        self.settings.set("SolitaryVerticalThreshold",sy)
-        self.settings.set("SolitaryProcessingThreshold",st)
-
+        set("AnisotropicDiffusionFaces",self.anisoNeighborhoodFaces.GetValue())        
+        set("AnisotropicDiffusionEdges",self.anisoNeighborhoodEdges.GetValue())
+        set("AnisotropicDiffusionCorners",self.anisoNeighborhoodCorners.GetValue())
+        
     def doProcessingCallback(self,event=None):
         """
         Method: doProcessingCallback()

@@ -313,7 +313,7 @@ class VolumeModule(VisualizationModule):
         self.mapper.SetInput(input)
         #self.mapper.AddObserver("ProgressEvent",self.updateProgress)
 
-        #self.mapper.Update()
+        VisualizationModule.updateRendering(self,input)
         self.parent.Render()
         
     def disableRendering(self):

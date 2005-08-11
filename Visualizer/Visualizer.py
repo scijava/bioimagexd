@@ -80,7 +80,7 @@ class Visualizer:
         self.depthT=0
         
         self.z=0
-        
+        self.viewCombo = None
         self.histogramIsShowing=0
         self.histogramDataUnit=None
         self.histograms=[]
@@ -340,13 +340,12 @@ class Visualizer:
         """        
         self.tb = wx.ToolBar(self.toolWin,-1,style=wx.TB_HORIZONTAL)
         self.tb.SetToolBitmapSize((32,32))
-        
         self.viewCombo=wx.ComboBox(self.tb,MenuManager.ID_SET_VIEW,"Isometric",choices=["+X","-X","+Y","-Y","+Z","-Z","Isometric"],size=(100,-1),style=wx.CB_DROPDOWN)
         self.viewCombo.SetSelection(6)
         self.viewCombo.SetHelpText("This controls the view angle of 3D view mode.")
-        self.tb.AddControl(self.viewCombo)
+        self.tb.InsertControl(0,self.viewCombo)
         wx.EVT_COMBOBOX(self.parent,MenuManager.ID_SET_VIEW,self.onSetView)
-        
+        self.tb.Realize()                
         self.tb.AddSimpleTool(MenuManager.ID_ZOOM_OUT,wx.Image(os.path.join("Icons","zoom-out.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Zoom out","Zoom out on the optical slice")
         #EVT_TOOL(self,ID_OPEN,self.menuOpen)
 
@@ -390,6 +389,7 @@ class Visualizer:
         
         self.zoomCombo.Bind(wx.EVT_COMBOBOX,self.zoomToComboSelection)
         self.tb.Realize()       
+        self.viewCombo.Enable(0)
     def onHideOriginal(self,evt):
         """
         Method: onShowOriginal
@@ -423,6 +423,8 @@ class Visualizer:
 
         if hasattr(self.currMode,"wxrenwin"):
             self.currMode.wxrenwin.setView(viewmapping[item])
+            self.currMode.wxrenwin.Render()
+            
     def zoomObject(self,evt):
         """
         Method: zoomObject()
@@ -587,7 +589,7 @@ class Visualizer:
         """
 #        if not self.enabled:return
         wx.LayoutAlgorithm().LayoutWindow(self.parent, self.visWin)
-        self.currentWindow.SetSize(self.visWin.GetSize())
+        self.currentWindow.SetSize(self.visWin.GetClientSize())
         self.currMode.relayout()
                 
     def __del__(self):
@@ -681,6 +683,8 @@ class Visualizer:
             self.toolWin.SetDefaultSize((500,0))
         else:
             self.toolWin.SetDefaultSize((500,44))
+            
+
 
         # dataunit might have been changed so set it every time a
         # mode is loaded
@@ -697,6 +701,13 @@ class Visualizer:
         else:
             if self.zsliderWin.GetSize()!=self.zsliderWin.origSize:
                 self.zsliderWin.SetDefaultSize(self.zsliderWin.origSize)
+            
+        if modeinst.showViewAngleCombo():
+            self.viewCombo.Enable(1)
+#            self.tb.EnableTool(MenuManager.ID_SET_VIEW,1)
+        else:
+            self.viewCombo.Enable(0)
+#            self.tb.EnableTool(MenuManager.ID_SET_VIEW,0)
             
         if not modeinst.showSideBar():
             if self.sidebarWin.GetSize()[0]:
@@ -747,10 +758,10 @@ class Visualizer:
         if flag:        
            wx.LayoutAlgorithm().LayoutWindow(self.parent, self.visWin)
            Logging.info("Setting visualizer window to ",self.visWin.GetSize(),kw="visualizer")
-           self.currentWindow.SetSize(self.visWin.GetSize())
+           self.currentWindow.SetSize(self.visWin.GetClientSize())
         if flag:        
            wx.LayoutAlgorithm().LayoutWindow(self.parent, self.visWin)
-           self.currentWindow.SetSize(self.visWin.GetSize())
+           self.currentWindow.SetSize(self.visWin.GetClientSize())
 
     def setBackground(self,r,g,b):
         """
@@ -803,6 +814,7 @@ class Visualizer:
         if self.enabled and self.currMode:           
             Logging.info("Setting dataunit to current mode",kw="visualizer")
             self.currMode.setDataUnit(self.dataUnit)
+            self.currMode.setTimepoint(self.timepoint)
         if self.histogramIsShowing:
             self.createHistogram()             
             

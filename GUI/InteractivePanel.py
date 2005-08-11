@@ -55,10 +55,13 @@ class InteractivePanel(wx.ScrolledWindow):
         Created: 24.03.2005, KP
         Description: Initialization
         """    
+        self.parent=parent
         self.is_windows=1#=platform.system()=="Windows"
         size=(512,512)
         self.maxX=512
         self.maxY=512
+        self.maxSizeX=512
+        self.maxSizeY=512
         self.origX = 512
         self.origY = 512
         if "size" in kws:
@@ -93,7 +96,18 @@ class InteractivePanel(wx.ScrolledWindow):
         self.Bind(wx.EVT_MOTION,self.updateActionEnd)
         self.Bind(wx.EVT_LEFT_UP,self.executeAction)
         self.Bind(wx.EVT_RIGHT_UP,self.actionEnd)
+        self.Bind(wx.EVT_SIZE,self.OnSize)
         
+    def OnSize(self,evt):
+        """
+        Method: OnSize
+        Created: 11.08.2005, KP
+        Description: The size evet
+        """            
+        #print "event size=",event.GetSize(),"client size=",self.parent.GetClientSize()
+        #self.maxSizeX,self.maxSizeY=evt.GetSize()
+        self.maxSizeX,self.maxSizeY=self.parent.GetClientSize()
+        evt.Skip()
         
     def setBackgroundColor(self,bg):
         """
@@ -428,12 +442,16 @@ class InteractivePanel(wx.ScrolledWindow):
         
         if w!=xdim or h!=ydim:
             self.buffer = wx.EmptyBitmap(xdim,ydim)
-            
-        newy=self.maxY
-        newx=self.maxX
-        if xdim<self.maxX:
+
+        maxX=self.maxX
+        maxY=self.maxY
+        if self.maxSizeX>maxX:maxX=self.maxSizeX
+        if self.maxSizeY>maxY:maxY=self.maxSizeY
+        newy=maxY
+        newx=maxX
+        if xdim<maxX:
             newx=xdim
-        if ydim<self.maxY:
+        if ydim<maxY:
             newy=ydim
         if newx<=self.origX:newx=self.origX
         if newy<=self.origY:newy=self.origY
