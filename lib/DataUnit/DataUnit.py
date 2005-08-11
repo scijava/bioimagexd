@@ -92,8 +92,8 @@ class DataUnit:
             #self.ctf = self.settings.get("ColorTransferFunction")
             #ctf = self.ctf
             self.settings.set("ColorTransferFunction",ctf)
-            if ctf and self.settings.get("Type")=="ColorMergingSettings":
-                self.settings.set("MergingColorTransferFunction",ctf)
+            #if ctf and self.settings.get("Type")=="ColorMergingSettings":
+            #    self.settings.set("MergingColorTransferFunction",ctf)
                 
 
         if self.dataSource:

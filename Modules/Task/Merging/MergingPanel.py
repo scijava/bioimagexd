@@ -183,7 +183,7 @@ class MergingPanel(TaskPanel.TaskPanel):
                      stored in the instance variable self.configSetting
         """
         if self.dataUnit and self.settings:
-            ctf = self.settings.get("MergingColorTransferFunction")
+            ctf = self.settings.get("ColorTransferFunction")
             if ctf and self.colorBtn:
                 Logging.info("Setting ctf of color button",kw="ctf")
                 self.colorBtn.setColorTransferFunction(ctf)
@@ -233,7 +233,7 @@ class MergingPanel(TaskPanel.TaskPanel):
         # the user to edit the alpha channel for the 24-bit color merging
         #self.dataUnit.setOpacityTransfer(self.alphaTF)
         self.settings.set("AlphaTransferFunction",self.alphaTF)
-        ctf = self.settings.get("MergingColorTransferFunction")
+        ctf = self.settings.get("ColorTransferFunction")
         tf = self.settings.get("IntensityTransferFunction")
         self.intensityTransferEditor.setIntensityTransferFunction(tf)
         

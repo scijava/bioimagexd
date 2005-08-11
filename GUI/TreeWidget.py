@@ -33,6 +33,7 @@ import Logging
 import types
 import messenger
 
+
 class TreeWidget(wx.SashLayoutWindow):
     """
     Class: TreeWidget
@@ -47,11 +48,11 @@ class TreeWidget(wx.SashLayoutWindow):
         """        
         #wx.Panel.__init__(self,parent,-1)
         wx.SashLayoutWindow.__init__(self,parent,-1)
+        #self.sizer=wx.GridBagSizer()
         #self.Bind(wx.EVT_SIZE,self.onSize)
         self.treeId=wx.NewId()
         self.parent=parent
-        self.tree = wx.TreeCtrl(self,self.treeId,wx.DefaultPosition,wx.DefaultSize,
-        wx.TR_HAS_BUTTONS|wx.TR_MULTIPLE)
+        self.tree = wx.TreeCtrl(self,self.treeId,style=wx.TR_HAS_BUTTONS|wx.TR_MULTIPLE)
         
         self.tree.Bind(wx.EVT_TREE_SEL_CHANGED,self.onSelectionChanged,id=self.tree.GetId())    
         self.items={}
@@ -85,6 +86,15 @@ class TreeWidget(wx.SashLayoutWindow):
         self.Bind(wx.EVT_MENU,self.onCloseDataset,id=self.ID_CLOSE_DATAUNIT)
         self.menu.AppendItem(item)
         
+        #self.switchPanel=wx.Panel(self,-1,style=wx.RAISED_BORDER)
+#        self.switchBtn=wx.Button(self,-1,"Switch dataset")
+            
+        #self.sizer.Add(self.tree,(0,0),flag=wx.EXPAND|wx.ALL)
+#        self.sizer.Add(self.switchBtn,(1,0),flag=wx.EXPAND|wx.ALL)
+        #self.SetSizer(self.sizer)
+        #self.SetAutoLayout(1)
+        #self.sizer.Fit(self)
+            
     def onRightClick(self,event):
         """
         Method: onRightClick

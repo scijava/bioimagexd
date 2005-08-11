@@ -996,7 +996,9 @@ class ColorTransferEditor(wx.Panel):
         Description: Returns the opacity function
         """
         self.otf=otf
+        print "\n\n\nSetting otf to ",otf.GetValue(255)
         self.getPointsFromFree()
+        self.updateGraph()        
 
 if __name__=='__main__':
  

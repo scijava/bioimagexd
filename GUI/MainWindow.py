@@ -117,6 +117,16 @@ class MainWindow(wx.Frame):
         self.treeWin.SetDefaultSize((160,768))
         self.treeWin.origSize=(160,768)
 
+        self.treeBtnWin=wx.SashLayoutWindow(self.treeWin,wx.NewId(),style=wx.SW_3D)
+        self.treeBtnWin.SetOrientation(wx.LAYOUT_HORIZONTAL)
+        self.treeBtnWin.SetAlignment(wx.LAYOUT_BOTTOM)
+        self.treeBtnWin.SetSashVisible(wx.SASH_TOP,False)
+        self.treeBtnWin.SetDefaultSize((160,32))
+        
+        self.switchBtn=wx.Button(self.treeBtnWin,-1,"Switch dataset")
+        self.switchBtn.Bind(wx.EVT_BUTTON,self.onSwitchDataset)
+        self.switchBtn.Enable(0)
+    
         # A window for the visualization modes
         self.visWin=wx.SashLayoutWindow(self,MenuManager.ID_VIS_WIN,style=wx.RAISED_BORDER|wx.SW_3D)
         self.visWin.SetOrientation(wx.LAYOUT_VERTICAL)
@@ -193,6 +203,15 @@ class MainWindow(wx.Frame):
         messenger.connect(None,"view_help",self.viewHelp)
         wx.CallAfter(self.showTip)
         
+    def onSwitchDataset(self,evt):
+        """
+        Method: onSwitchDataset
+        Created: 11.08.2005, KP
+        Description: Switch the datasets used by a task module
+        """        
+        selectedFiles=self.tree.getSelectedDataUnits()
+        messenger.send(None,"switch_datasets",selectedFiles)
+        
     def showTip(self):
         """
         Method: showTip
@@ -257,7 +276,9 @@ class MainWindow(wx.Frame):
             w,h=self.treeWin.GetSize()
             newsize=(event.GetDragRect().width,h)
             self.treeWin.SetDefaultSize(newsize)
+            #self.tree.SetSize(newsize)
             self.treeWin.origSize=newsize
+            #self.tree.SetSize(self.treeWin.GetClientSize())
         #elif eID == MenuManager.ID_VIS_WIN:
         #    w,h=self.visWin.GetSize()
         #    self.visWin.SetDefaultSize((event.GetDragRect().width,h))
@@ -287,7 +308,7 @@ class MainWindow(wx.Frame):
             rect=self.statusbar.GetFieldRect(1)
             self.colorLbl.SetPosition((rect.x+2,rect.y+2))
             self.colorLbl.SetSize((rect.width-4,rect.height-4))
-        
+        #self.tree.SetSize(self.treeWin.GetClientSize())
 
     def showVisualization(self,window):
         """
@@ -646,7 +667,7 @@ class MainWindow(wx.Frame):
             del self.currentTaskWindow
             self.currentTaskWindow=None
             self.currentTaskWindowType=None
-            
+        self.switchBtn.Enable(0)            
         self.menuManager.disable(MenuManager.ID_CLOSE_TASKWIN)            
         self.taskWin.SetDefaultSize((0,0))
         
@@ -1013,7 +1034,8 @@ class MainWindow(wx.Frame):
         window=windowtype(self.taskWin,self.menuManager)
         messenger.send(None,"update_progress",0.2,"Loading task %s..."%action)
         window.Show()
-
+        
+        self.switchBtn.Enable(1)
         if self.currentTaskWindow:          
             self.currentTaskWindow.Show(0)
             self.currentTaskWindow.Destroy()
@@ -1033,9 +1055,15 @@ class MainWindow(wx.Frame):
         Logging.info(unittype,name,kw="task")
         unit = unittype(name)
         Logging.info("unit = %s(%s)=%s"%(unittype,name,unit),kw="task")
-        for dataunit in selectedFiles:
-            unit.addSourceDataUnit(dataunit)
-            Logging.info("ctf of source=",dataunit.getSettings().get("ColorTransferFunction"),kw="ctf")
+        try:
+            for dataunit in selectedFiles:
+                unit.addSourceDataUnit(dataunit)
+                Logging.info("ctf of source=",dataunit.getSettings().get("ColorTransferFunction"),kw="ctf")
+        except Logging.GUIError,ex:
+            ex.show()
+            self.onCloseTaskPanel(None)
+            self.onMenuShowTree(None,1)
+            return
         messenger.send(None,"update_progress",0.3,"Loading task %s..."%action)
         Logging.info("Moduletype=",moduletype,kw="dataunit")
         module=moduletype()

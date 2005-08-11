@@ -3,4 +3,4 @@ You can switch the interpolation type used by slices view by right-clicking on t
 You can toggle logarithmic scaling of channel histograms by right-clicking on the histogram.
 You should report any problems you have to the BioImageXD Bug Tracking System at http://www.bioimagexd.org/
 You can download the latest release of BioImageXD at http://www.bioimagexd.org/
-
+You can use the Control-key to select or de-select multiple datasets in the file tree.

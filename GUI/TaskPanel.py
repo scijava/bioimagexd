@@ -121,6 +121,19 @@ class TaskPanel(scrolled.ScrolledPanel):
         
         messenger.connect(None,"itf_update",self.doPreviewCallback)
         messenger.connect(None,"channel_selected",self.selectItem)
+        messenger.connect(None,"switch_datasets",self.onSwitchDatasets)
+        
+    def onSwitchDatasets(self,obj,evt,args):
+        """
+        Method: onSwitchDatasets(obj,args)
+        Created: 11.08.2005, KP
+        Description: Switch the used source datasets
+        """     
+        try:
+            self.dataUnit.switchSourceDataUnits(args)
+        except GUIError,err:
+            err.show()
+        self.doPreviewCallback()
         
     def createItemToolbar(self):
         """

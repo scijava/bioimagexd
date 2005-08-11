@@ -152,13 +152,13 @@ class VolumeModule(VisualizationModule):
         
         self.volumeProperty.SetColor(self.colorTransferFunction)
         
-    def setOpacityTransferFunction(self,otf):
+    def setOpacityTransferFunction(self,otf,method):
         """
         Method: setOpacityTransferFunction(otf)
         Created: 28.04.2005, KP
         Description: Set the opacity transfer function
         """
-        self.otfs[self.method]=otf
+        self.otfs[method]=otf
         self.volumeProperty.SetScalarOpacity(otf)
         
     def setVolumeProAcceleration(self,acc):
@@ -504,11 +504,11 @@ but using linear interpolation yields a better rendering quality."""
         """  
         self.method = self.moduleChoice.GetSelection()
         if self.haveVolpro:
-            flag=(self.method in [0,3,4])
+            flag=(self.method in [0,2,3])
             self.volpro.Enable(flag)
         if self.method==4:
             self.volpro.SetValue(1)
-        
+        Logging.info("Setting otf to ",self.method)
         self.colorPanel.setOpacityTransferFunction(self.module.otfs[self.method])
         if self.method==1:
             self.settingLbl.SetLabel("Maximum number of planes:")
@@ -525,6 +525,7 @@ but using linear interpolation yields a better rendering quality."""
         unit=module.getDataUnit()
         self.method=module.method
         self.moduleChoice.SetSelection(self.method)
+        self.colorPanel.setOpacityTransferFunction(self.module.otfs[self.method])
         self.interpolation=module.interpolation
         self.interpolationBox.SetSelection(module.interpolation)
         if unit.getBitDepth()==32:
@@ -552,7 +553,7 @@ but using linear interpolation yields a better rendering quality."""
         self.module.setInterpolation(self.interpolation)
         
         otf = self.colorPanel.getOpacityTransferFunction()
-        self.module.setOpacityTransferFunction(otf)
+        self.module.setOpacityTransferFunction(otf,self.method)
         if self.haveVolpro and self.method in [0,2,3] and self.volpro.GetValue():
             # use volumepro accelerated rendering
             modes=["Composite",None,"MaximumIntensity","MinimumIntensity"]

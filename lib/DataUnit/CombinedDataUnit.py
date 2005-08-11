@@ -131,48 +131,6 @@ class CombinedDataUnit(DataUnit.DataUnit):
             raise "A CombinedDataUnit can only be loaded from a VtiDataSource"
         # Call to base class, to run common setDataSource
         DataUnit.DataUnit.setDataSource(self,dataSource)
-
-    def loadSourceDataUnits(self):
-        """
-        Method: setSourceDataUnits()
-        Created: 27.03.2005, KP
-        Description: Load source data units from disk
-        """
-        self.settings = DataUnitSetting.DataUnitSettings()
-        parser = self.dataSource.getParser()
-        self.settings = self.settings.readFrom(parser)
-        # Then start loading SourceDataUnits, first check the number of them:
-        sourceCount = self.settings.get("SourceCount")
-        # Next parse the information about SourceDataUnits and their settings:
-        for i in range(sourceCount):
-            sourceUnitString = self.setting["Source_%d"%i]
-            
-            sourceUnitList=sourceUnitString.split("|")
-
-            print sourceUnitList
-
-            # A SourceDataUnit can be stored in either vti- or lsm-format, act
-            # accordingly:
-            if sourceUnitList[0]=="vti":
-                datasource=DataSource.VtiDataSource()
-                sourceUnit = datasource.loadFromDuFile(sourceUnitList[1])
-                sourceUnit=sourceUnit[0]
-            elif sourceUnitList[0]=="lsm":
-                datasource=DataSource.LsmDataSource(sourceUnitList[1],
-                int(sourceUnitList[2]))
-                sourceUnit=DataUnit.SourceDataUnit()
-                sourceUnit.setDataSource(datasource)
-            else:
-                raise "Wrong format for source%d: %s"%(i,sourceList[0])
-
-            if not sourceUnit:
-                Logging.error("Failed to read dataunit",
-                "Failed to read dataunit %s of type %s"%\
-                (sourceUnitList[1],sourceUnitList[0]))
-
-            # Finally, if everything worked out, add SourceDataUnits and
-            # settings to the dictionary
-            self.addSourceDataUnit(sourceUnit)
         
     def getDimensions(self):
         """
@@ -279,7 +237,7 @@ class CombinedDataUnit(DataUnit.DataUnit):
         self.settings.writeTo(parser)
         writer.write()
 
-    def addSourceDataUnit(self, dataUnit):
+    def addSourceDataUnit(self, dataUnit,no_init=0):
         """
         Method: addSourceDataUnit
         Created: 03.11.2004, JM
@@ -289,7 +247,7 @@ class CombinedDataUnit(DataUnit.DataUnit):
         """
         # If one or more SourceDataUnits have already been added, check that the
         # new SourceDataUnit has the same length as the previously added one(s):
-        print dataUnit
+        
         if (self.length != 0) and (self.length != dataUnit.length):
             # XXX: Raise
             print "Given dataunit had wrong length (%d != %d)"%\
@@ -299,7 +257,7 @@ class CombinedDataUnit(DataUnit.DataUnit):
         # previously added, or the dictionary won't work:
         name = dataUnit.getName()
         if name in self.byName:
-            raise "Dataunit %s already exists"%name
+            raise Logging.GUIError("Datasets have the same name","Cannot load two datasets with the name %s"%name)
         
         count = len(self.sourceunits)
         #count+=1
@@ -315,11 +273,29 @@ class CombinedDataUnit(DataUnit.DataUnit):
         # If we just added the first SourceDataUnit, this sets the correct length
         # for the entire CombinedDataUnit. If not, it doesn't change anything.
         self.length = dataUnit.length
+        if not no_init:
+            for unit in self.sourceunits:
+                unit.getSettings().initialize(unit,count+1,unit.getLength())        
+            self.settings.initialize(self,count,self.sourceunits[0].getLength())
         
-        for unit in self.sourceunits:
-            unit.getSettings().initialize(unit,count+1,unit.getLength())        
-        self.settings.initialize(self,count,self.sourceunits[0].getLength())
-        
+    def switchSourceDataUnits(self,units):
+        """
+        Method: switchSourceDataUnits
+        Created: 11.08.2005, KP
+        Description: Switch the source data units used
+        """
+        if len(units)!=len(self.sourceunits):
+            raise Logging.GUIError("Wrong number of dataunits","Cannot switch the processed datasets: you've selected a wrong number of source dataunits.")
+        #oldsources=self.sourceunits
+        self.sourceunits=[]
+        self.byName={}
+        for i,unit in enumerate(units):
+            #oldunit=oldsources[i]
+            self.addSourceDataUnit(unit,no_init=1)
+            #unit.getSettings().copySettings(oldunit.getSettings())
+            #self.sourceunits.append(unit)
+        for i in self.sourceunits:
+            i.getSettings().set("ColorTransferFunction",i.getColorTransferFunction())
         
     def doPreview(self, depth,renew,timePoint=0):
         """
