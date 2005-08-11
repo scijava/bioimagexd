@@ -94,34 +94,55 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
         fs="%.2f%%"
         fs2="%.4f"
         ds="%d"
+        ss="%s"
         offset=-2
         coloffset=1
-        mapping={ "PValue":(2,0,fs2),
-                  "ColocAmount":(2,0,ds),
-                  "ColocPercent":(4,0,fs,100),
-                  "PercentageVolumeCh1":(5,0,fs,100),
-                  "PercentageMaterialCh1":(5,1,fs,100),
-                  "PercentageMaterialCh2":(6,1,fs,100),
-                  "PercentageVolumeCh2":(6,0,fs,100),
-                  "PearsonWholeImage":(7,0,fs2),
-                  "PearsonImageAbove":(7,1,fs2),
-                  "PearsonImageBelow":(8,0,fs2),
+        n=2
+        mapping={ "Ch1Th":(n,0,ss),
+                  "Ch2Th":(n+1,0,ss),
+                  "PValue":(n+2,0,fs2),
+                  "ColocAmount":(n+3,0,ds),
+                  "ColocPercent":(n+4,0,fs,100),
+                  "PercentageVolumeCh1":(n+5,0,fs,100),
+                  "PercentageMaterialCh1":(n+5,1,fs,100),
+                  "PercentageVolumeCh2":(n+6,0,fs,100),
+                  "PercentageMaterialCh2":(n+6,1,fs,100),
+                  "PearsonWholeImage":(n+7,0,fs2),
+                  "PearsonImageAbove":(n+7,1,fs2),
+                  "PearsonImageBelow":(n+8,0,fs2),
 #                  "M1":(9,0,fs2),
 #                  "M2":(10,0,fs2),
-                  "ThresholdM1":(9,0,fs2),
-                  "ThresholdM2":(10,0,fs2),
-                  "K1":(11,0,fs2),
-                  "K2":(12,0,fs2),
+                  "ThresholdM1":(n+9,0,fs2),
+                  "ThresholdM2":(n+10,0,fs2),
+                  "K1":(n+11,0,fs2),
+                  "K2":(n+12,0,fs2),
                   
-                  "SumCh1":(13,0,ds),
-                  "SumOverThresholdCh1":(13,1,ds),
-                  "SumCh2":(14,0,ds),
-                  "SumOverThresholdCh2":(14,1,ds)
+                  "SumCh1":(n+13,0,ds),
+                  "SumOverThresholdCh1":(n+13,1,ds),
+                  "SumCh2":(n+14,0,ds),
+                  "SumOverThresholdCh2":(n+14,1,ds)
         }
-                  
+        
+        sources=[]
+        if self.dataUnit:
+            sources=self.dataUnit.getSourceDataUnits()                  
         for item in mapping.keys():
             val=0.0
-            if self.settings:
+            if item == "Ch1Th":
+                if sources:
+                    th1=sources[0].getSettings().get("ColocalizationLowerThreshold")
+                    th2=sources[0].getSettings().get("ColocalizationUpperThreshold")                
+                    val="%d / %d"%(th1,th2)
+                else:
+                    val="0 / 128"
+            elif item == "Ch2Th":
+                if sources:
+                    th1=sources[1].getSettings().get("ColocalizationLowerThreshold")
+                    th2=sources[1].getSettings().get("ColocalizationUpperThreshold")
+                    val="%d / %d"%(th1,th2)
+                else:
+                    val="0 / 128"
+            elif self.settings:
                 val=self.settings.get(item)
             if not val:val=0
             try:
@@ -267,7 +288,7 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
         self.thresholdButton.Bind(wx.EVT_BUTTON,self.getAutoThreshold)
         box.Add(self.thresholdButton)        
 
-        self.colocalizationSizer.Add(box,(n,0))
+        self.colocalizationSizer.Add(box,(n,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
         n+=1
         
 
@@ -399,6 +420,10 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
         self.listctrl.SetColumnWidth(1,60)
         self.listctrl.SetColumnWidth(2,120)
         n=0
+        self.listctrl.InsertStringItem(n,"Ch1 Lower / Upper threshold")
+        n+=1
+        self.listctrl.InsertStringItem(n,"Ch2 Lower / Upper threshold")
+        n+=1
         self.listctrl.InsertStringItem(n,"P-Value")
         n+=1
         self.listctrl.InsertStringItem(n,"# of colocalized voxels")

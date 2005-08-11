@@ -55,7 +55,7 @@ class InteractivePanel(wx.ScrolledWindow):
         Created: 24.03.2005, KP
         Description: Initialization
         """    
-        self.is_windows=platform.system()=="Windows"
+        self.is_windows=1#=platform.system()=="Windows"
         size=(512,512)
         self.maxX=512
         self.maxY=512
