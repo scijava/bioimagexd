@@ -650,7 +650,7 @@ template < class T >
 //50*{1 + erf[(V -mean)/(sqrt(2)*sdev)]
 
 	double fx = 0.5 * (1 + erf(r - r2mean) / (sqrt(2) * r2sd));
-	vtkDebugMacro(<<"fx="<<fx<<"\n");
+//	vtkDebugMacro(<<"fx="<<fx<<"\n");
 	if (fx >= 1)
 		fx = 1;
 	if (fx <= 0)
@@ -665,7 +665,7 @@ template < class T >
   self->SetRObserved(r);
   self->SetRRandMean(r2mean);    
   self->SetRRandSD(r2sd);
-  vtkDebugMacro(<<"fx="<<fx<<"\n");
+//  vtkDebugMacro(<<"fx="<<fx<<"\n");
   self->SetPValue(fx);
   self->SetColocCount(colocCount);
   self->SetNumIterations(iterations);

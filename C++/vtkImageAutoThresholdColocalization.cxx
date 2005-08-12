@@ -163,7 +163,7 @@ template < class T >
     double ch1BestThresh = 0;
     double ch2BestThresh = 0;
     //start regression
-    vtkDebugMacro(<<"1/3: Performing regression\n");
+//    vtkDebugMacro(<<"1/3: Performing regression\n");
 
     int ch1Sum = 0;
     int ch2Sum = 0;
@@ -298,7 +298,7 @@ template < class T >
     sprintf(progressText,"Calculating threshold (iteration %d)",iteration);
     self->SetProgressText(progressText);
         if (iteration == 2 && r2 < 0) {
-           vtkDebugMacro(<<"No positive correlations found. Ending\n");
+//           vtkDebugMacro(<<"No positive correlations found. Ending\n");
             return;
         }
         ch1threshmax = round(newMax);

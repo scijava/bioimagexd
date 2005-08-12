@@ -71,11 +71,11 @@ void vtkImageAlphaFilterExecute(vtkImageAlphaFilter *self, int id,int NumberOfIn
     int MaxMode = self->GetMaximumMode();					
     int AvgMode = self->GetAverageMode();
     if(!MaxMode&&!AvgMode)AvgMode=1;
-    vtkDebugMacro(<<"Using average mode="<<AvgMode<<"maxMode="<<MaxMode<<"threshold="<<AvgThreshold<<"\n");
+//    vtkDebugMacro(<<"Using average mode="<<AvgMode<<"maxMode="<<MaxMode<<"threshold="<<AvgThreshold<<"\n");
     T** inPtrs;
     T* outPtr;
     inPtrs=new T*[NumberOfInputs];
-    vtkDebugMacro("Outext="<<outExt[0]<<","<<outExt[1]<<","<<outExt[2]<<","<<outExt[3]<<","<<outExt[4]<<","<<outExt[5]<<"\n");
+//    vtkDebugMacro("Outext="<<outExt[0]<<","<<outExt[1]<<","<<outExt[2]<<","<<outExt[3]<<","<<outExt[4]<<","<<outExt[5]<<"\n");
     for(i=0; i < NumberOfInputs; i++) {
         inPtrs[i]=(T*)inData[i]->GetScalarPointerForExtent(outExt);
     }
@@ -91,7 +91,7 @@ void vtkImageAlphaFilterExecute(vtkImageAlphaFilter *self, int id,int NumberOfIn
     T scalar = 0, currScalar = 0, alphaScalar = 0;
     int maxval = 0, n = 0;
     maxval=int(pow(2,8*sizeof(T)))-1;
-    vtkDebugMacro("Maximum value="<<maxval<<"\n");
+//    vtkDebugMacro("Maximum value="<<maxval<<"\n");
     T val;
     
     for(idxZ = 0; idxZ <= maxZ; idxZ++ ) {
