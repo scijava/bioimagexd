@@ -10,8 +10,6 @@
  Intial code by Karl Garsha <garsha@itg.uiuc.edu>. 
  Modified by Kalle Pahajoki for BioImageXD use.
  
- Modified: 12.04.2005 - Created module with Karl's code as a base
-
  Copyright (C) 2005  Karl Garsha, BioImageXD Project
  See CREDITS.txt for details
 
@@ -353,7 +351,7 @@ class LeicaExperiment:
     def Sep_Series(self, ExpPathTxt):
         InfoFile=open(ExpPathTxt)#If the actual file is returned with the open dialog, we can skip this.
         InfoFile_AsString=InfoFile.read()
-        SplitString = re.compile(r'\*+\sNEXT\sIMAGE\s\*+',re.I)	
+        SplitString = re.compile(r'\*+\sNEXT\sIMAGE\s\*+',re.I) 
         ImageList=SplitString.split(InfoFile_AsString)
         self.Series_Data_List=[]
         for stringa in ImageList:
@@ -658,7 +656,7 @@ class LeicaExperiment:
             ChnlVolDataLst=[] #contains the volumetric datasets for each channel w/in each timepoint
             for Channel in TimePoint:
                 ImageReader=vtk.vtkImageReader()
-                TIFFReader=vtk.vtkTIFFReader()
+                TIFFReader=vtk.vtkExtTIFFReader()
                 TIFFReader.RawModeOn()
                 #First read the images for a particular channel
                 ImageName=Channel[0] #Take the first tif name
@@ -703,7 +701,7 @@ class LeicaExperiment:
                 
                 #ImageReader.Update() #necessary--used when incremental changes are made to ImageReader properties
                 ChnlVolDataLst.append(TIFFReader)#now we have a list with the imported volume data for each channel
-            self.TP_CH_VolDataList.append(ChnlVolDataLst)	
+            self.TP_CH_VolDataList.append(ChnlVolDataLst)   
             
         #used for testing image reader behavior on different platforms
         #def ViewSampleImage(self,Series_Name):

@@ -88,7 +88,7 @@ vtkImageDiffractionPSF3D::ExecuteInformation()
   uExtent[1]=Dimensions[0]-1;
   uExtent[3]=Dimensions[1]-1;
   uExtent[5]=Dimensions[2]-1;    
-  printf("Setting extents to %d,%d,%d\n",Dimensions[0]-1,Dimensions[1]-1,Dimensions[2]-1);
+//  printf("Setting extents to %d,%d,%d\n",Dimensions[0]-1,Dimensions[1]-1,Dimensions[2]-1);
   output->SetExtent(uExtent);
   output->SetWholeExtent(uExtent);
   
@@ -102,8 +102,8 @@ void vtkImageDiffractionPSF3DExecute(vtkImageDiffractionPSF3D *self,
 
 
   int uExtent[6];
-    
-  printf("Estimated memory size %d\n",output->GetEstimatedMemorySize());    
+
+//  printf("Estimated memory size %d\n",output->GetEstimatedMemorySize());
 //  output->PrintSelf(cout,indent);
   int outIncX,outIncY,outIncZ;
   int maxX,maxY,maxZ,maxC;
@@ -141,11 +141,11 @@ void vtkImageDiffractionPSF3DExecute(vtkImageDiffractionPSF3D *self,
 
   float a = 2*vtkMath::Pi()*RefractionIndex/Lambda;
   double dRing = 0.6*Lambda/(PixelSpacing*NumericalAperture);
-  printf("PSF: peak to first dark ring (w/o sph. aber.). Rayleigh resolution = %f pixels\n",dRing);
+  vtkDebugMacro(<<"PSF: peak to first dark ring (w/o sph. aber.). Rayleigh resolution = " << dRing <<" pixels\n");
 
-  int rMax = 2+(int)sqrt(ic*ic+jc*jc); 
-  printf("rMax=%d\n",rMax);
-  float *integral = new float[rMax]; 
+  int rMax = 2+(int)sqrt(ic*ic+jc*jc);
+  vtkDebugMacro(<<"rMax="<<rMax<<"\n");
+  float *integral = new float[rMax];
   double upperLimit = tan(asin(NumericalAperture/RefractionIndex));
 	double waveNumber = 2*vtkMath::Pi()*RefractionIndex/Lambda;
 

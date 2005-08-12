@@ -122,6 +122,14 @@ ID_VIEW_INFO        =178
 ID_LOAD_SCENE       =179
 ID_SAVE_SCENE       =180
 ID_SEPARATOR        =181
+
+ID_TOOL_WIN         =182
+ID_VISAREA_WIN      =183
+ID_VISTREE_WIN      =184
+ID_VISSLIDER_WIN    =185
+ID_ZSLIDER_WIN      =186
+ID_HISTOGRAM_WIN    =187
+
 class MenuManager:
     """
     Class: MenuManager

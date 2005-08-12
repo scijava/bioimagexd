@@ -201,7 +201,27 @@ class MainWindow(wx.Frame):
         messenger.connect(None,"get_voxel_at",self.updateVoxelInfo)
         messenger.connect(None,"load_dataunit",self.onMenuOpen)
         messenger.connect(None,"view_help",self.viewHelp)
+        messenger.connect(None,"delete_dataset",self.onDeleteDataset)
         wx.CallAfter(self.showTip)
+        
+    def onDeleteDataset(self,obj,evt,arg):
+        """
+        Method: onDeleteDataset
+        Created: 12.08.2005, KP
+        Description: Remove a dataset from the program
+        """        
+        close=0
+        Logging.info("onDeleteDataset, visualizer dataset=",self.visualizer.dataUnit,"deleted=",arg)
+        if self.visualizer.dataUnit == arg:
+            close=1
+        if self.visualizer.getProcessedMode():
+            if arg in self.visualizer.dataUnit.getSourceDataUnits():
+                self.onCloseTaskPanel(None)
+        if close:
+            self.visualizer.closeVisualizer()
+            self.loadVisualizer(None,"slices",reload=1)
+        
+            
         
     def onSwitchDataset(self,evt):
         """
@@ -461,7 +481,7 @@ class MainWindow(wx.Frame):
 
 
         bmp = wx.Image(os.path.join(iconpath,"view_slices.jpg"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
-        tb.DoAddTool(MenuManager.ID_VIS_SLICES,"Slices",bmp,kind=wx.ITEM_CHECK,shortHelp="Slices view")                
+        tb.DoAddTool(MenuManager.ID_VIS_SLICES,"Slices",bmp,kind=wx.ITEM_CHECK,shortHelp="Slices view")
         wx.EVT_TOOL(self,MenuManager.ID_VIS_SLICES,self.onMenuVisualizer)
         tb.ToggleTool(MenuManager.ID_VIS_SLICES,1)
 
@@ -1146,8 +1166,11 @@ class MainWindow(wx.Frame):
 
         if not "init" in kws and dataunit:
             self.visualizer.setDataUnit(dataunit)
-
-        self.visualizer.setVisualizationMode(mode)
+        reload=0
+        if "reload" in kws:
+            reload=kws["reload"]
+        
+        self.visualizer.setVisualizationMode(mode,reload=reload)
         # handle icons
         messenger.send(None,"update_progress",0.8,"Loading %s view..."%mode)        
 

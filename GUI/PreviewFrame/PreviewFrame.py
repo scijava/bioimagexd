@@ -114,8 +114,10 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         self.modules[""]=self.modules["Process"]
         for key in self.modules:
             self.modules[key]=self.modules[key][0]
-                
+            
+        self.renewNext=0
         messenger.connect(None,"zslice_changed",self.setPreviewedSlice)
+        messenger.connect(None,"renew_preview",self.setRenewFlag)
         
         self.fitLater=0
         self.imagedata=None
@@ -173,9 +175,18 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         self.Bind(wx.EVT_MENU,self.onSetInterpolation,id=self.ID_CUBIC)
 
         
-        self.Bind(wx.EVT_PAINT,self.OnPaint)        
+        #self.Bind(wx.EVT_PAINT,self.OnPaint)        
         self.Bind(wx.EVT_LEFT_DOWN,self.getVoxelValue)
         self.SetHelpText("This window displays the selected dataset slice by slice.")
+    
+    def setRenewFlag(self,obj,evt):
+        """
+        Method: setRenewFlag
+        Created: 12.08.2005, KP
+        Description: Set the flag telling the preview to renew
+        """        
+        self.renewNext=1
+        
     def setSelectedItem(self,item):
         """
         Method: setSelectedItem(n)
@@ -341,6 +352,10 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         Parameters:
         renew    Whether the method should recalculate the images
         """
+        if self.renewNext:
+            renew=1
+            self.renewNext=0
+        
         if not self.dataUnit:
             return
         if not self.enabled:
@@ -398,6 +413,7 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
             
         Logging.info("Painting preview",kw="preview")
         self.paintPreview()
+        self.Refresh()
         wx.GetApp().Yield(1)
         #print "self.bmp=",self.bmp,self.bmp.GetWidth(),self.bmp.GetHeight()
         self.updateScrolling()

@@ -69,8 +69,10 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
         x,y=size
         self.paintSize=size
         self.buffer = wx.EmptyBitmap(x,y)
+        
         #wx.ScrolledWindow.__init__(self,parent,-1,size=size,**kws)
         InteractivePanel.InteractivePanel.__init__(self,parent,size=size,**kws)
+        
         self.size=size
         self.sizeChanged=0
         self.rows=0
@@ -173,7 +175,8 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
         Created: 23.05.2005, KP
         Description: Sets the timepoint to display
         """    
-        self.scrollTo=self.GetScroll()
+        #self.scrollTo=self.getScrolledXY(0,0)
+        #self.resetScroll()
         self.timepoint=timepoint
         # if we're showing one slice of each timepoint
         # instead of each slice of one timepoint, call the
@@ -197,8 +200,8 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
             slice=ImageOperations.vtkImageDataToWxImage(self.imagedata,i)    
             self.slices.append(slice)
         self.calculateBuffer()
-
         self.updatePreview()
+        
         
     def setSlice(self,slice):
         """
@@ -266,11 +269,11 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
         
         self.rows=yreq
         self.cols=xreq
+        if self.paintSize!=(x,y):    
+            self.paintSize=(x,y)
+            Logging.info("paintSize=",self.paintSize,kw="preview")
             
-        self.paintSize=(x,y)
-        Logging.info("paintSize=",self.paintSize,kw="preview")
-        
-        self.setScrollbars(x,y)
+            self.setScrollbars(x,y)
 
 
     def resetScroll(self):
@@ -303,8 +306,10 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
         if not self.slices:
             self.setTimepoint(self.timepoint)
         self.paintPreview()
-        wx.GetApp().Yield(1)
         self.updateScrolling()
+        self.Refresh()
+        #wx.GetApp().Yield(1)
+        
         
     def updateScrolling(self,event=None):
         """

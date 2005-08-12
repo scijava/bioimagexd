@@ -378,31 +378,33 @@ void vtkIntensityTransferFunction::GetGammaPoints(int *gx0, int *gy0, int *gx1, 
         x1=x;
         //printf("x1=%d\n",x1);
         y1= minY;
-        printf("Cross the ceiling, x1=%d,y1=%d\n",x1,y1);
+        vtkDebugMacro(<<"Cross the ceiling, x1="<<x1<<",y1="<<y1<<"\n");
+
 
     } else { // If we do not cross the ceiling
         x1 = this->MaximumThreshold;
         //y1 = y;
         y1 = LineValue(x1);
-        printf("Don't cross the ceiling, x1=%d,y1=%d\n",x1,y1);
+        vtkDebugMacro(<<"Don't cross the ceiling, x1="<<x1<<",y1="<<y1<<"\n");
     }
-    
+
     y = int( this->Contrast*0 + b );
     // If we cross the floor
     if ( y < 0 ) {
         minX = LineValue(this->MinimumThreshold);
         if(minX<0)minX=0;
         if (this->MinimumValue > minX) minX = this->MinimumValue;
-            
+
         x = int( ( minX - b) / this->Contrast );
         x0 = x;
         //printf("minX=%d\n",minX);
         y0 = minX;
-        printf("Cross the floor, x1=%d,y1=%d\n",x1,y1);
+        vtkDebugMacro(<<"Cross the floor, x1="<<x1<<",y1="<<y1<<"\n");
+
     } else {
         x0 = this->MinimumThreshold;
         y0 = LineValue(x0);
-        printf("Dont cross the floor, x1=%d,y1=%d\n",x1,y1);
+        vtkDebugMacro(<<"Don't cross the floor, x1="<<x1<<",y1="<<y1<<"\n");
     }
     *gx0 = x0;
     *gy0 = y0;
@@ -494,10 +496,10 @@ void vtkIntensityTransferFunction::ComputeFunction(void) {
             
             if( fabs(this->Gamma-1.0) > 0.0001 ) {
                 y = this->GammaValue(gx0,gy0,gx1,gy1,x,this->Gamma);
-                printf("y = gammavalue from %d,%d to %d,%d at %d is %d\n",gx0,gy0,gx1,gy1,x,y);                
+                vtkDebugMacro(<<"Y = gamma value from "<<gx0<<","<<gy0<<","<<gx1<<","<<gy1<<","<<x<<","<<y<<"\n");
             } else {
                 y = LineValue(x);
-                //printf("Y = linevalue(%d)=%d,",x,y);                
+                //printf("Y = linevalue(%d)=%d,",x,y);
             }
         }
         if( y > this->MaximumValue || (x > x1 && x <= this->MaximumThreshold) ) {

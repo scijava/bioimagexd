@@ -68,7 +68,7 @@ ComputeInputUpdateExtents(vtkDataObject * output)
     int outExt[6], inExt[6];
     inExt[0] = inExt[1] = inExt[2] = inExt[3] = inExt[4] = inExt[5] =
         0;
-    //printf("Setting input update\n");
+
     for (int idx = 0; idx < this->NumberOfInputs; idx++) {
         if (this->Inputs[idx] != NULL) {
             //      this->Inputs[idx]->SetUpdateExtent( this->Inputs[idx]->GetWholeExtent() );
@@ -89,7 +89,6 @@ ExecuteInformation(vtkImageData ** inputs, vtkImageData ** outputs)
     wholeExt[1] = wholeExt[3] = 255;
     wholeExt[0] = wholeExt[2] = 0;
     wholeExt[4] = wholeExt[5] = 0;
-    //printf("extent of scatterplot is (%d,%d,%d,%d,%d,%d)\n",wholeExt[0],wholeExt[1],wholeExt[2],wholeExt[3],wholeExt[4],wholeExt[5]);
     // We're gonna produce image one slice thick and 255x255 in size
     outputs[1]->SetWholeExtent(wholeExt);
     outputs[1]->RequestExactExtentOff();
@@ -164,7 +163,8 @@ template < class T >
     double ch1BestThresh = 0;
     double ch2BestThresh = 0;
     //start regression
-    //printf("1/3: Performing regression.\n");
+    vtkDebugMacro(<<"1/3: Performing regression\n");
+
     int ch1Sum = 0;
     int ch2Sum = 0;
     int ch3Sum = 0;
@@ -174,8 +174,6 @@ template < class T >
 
 
     T *inPtr1, *inPtr2;
-    //printf("outext=[%d,%d,%d,%d,%d,%d]\n", outExt[0], outExt[1],
-    //       outExt[2], outExt[3], outExt[4], outExt[5]);
     inPtr1 = (T *) inData[0]->GetScalarPointerForExtent(outExt);
     inPtr2 = (T *) inData[1]->GetScalarPointerForExtent(outExt);
 
@@ -191,7 +189,6 @@ template < class T >
     plotData->AllocateScalars();
     plotData->GetIncrements(plotIncX, plotIncY,
                       plotIncZ);
-  //printf("Increments for plot=%d,%d,%d\n",plotIncX,plotIncY,plotIncZ);
     vtkPointData *pd;
     pd = plotData->GetPointData();
     pd->GetScalars()->SetName("Scatter plot");
@@ -301,7 +298,7 @@ template < class T >
     sprintf(progressText,"Calculating threshold (iteration %d)",iteration);
     self->SetProgressText(progressText);
         if (iteration == 2 && r2 < 0) {
-            printf("No positive correlations found. Ending\n");
+           vtkDebugMacro(<<"No positive correlations found. Ending\n");
             return;
         }
         ch1threshmax = round(newMax);
@@ -559,7 +556,8 @@ template < class T >
     //[i.e. E(ch1if ch2>0) ÷ E(ch1total)]
     double M1 = mCh1coloc / sumCh1total;
     double M2 = mCh2coloc / sumCh2total;
-    printf("M2=%f,ch2coloc=%f,totalch2=%f\n",M2,mCh2coloc,sumCh2total);
+
+    //printf("M2=%f,ch2coloc=%f,totalch2=%f\n",M2,mCh2coloc,sumCh2total);
     self->SetM1(M1);
     self->SetM2(M2);
     

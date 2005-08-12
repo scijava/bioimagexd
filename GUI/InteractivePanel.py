@@ -337,6 +337,7 @@ class InteractivePanel(wx.ScrolledWindow):
         Description: Return the zoom factor
         """        
         return self.zoomFactor
+        
     def getScrolledXY(self,x,y):
         """
         Method: getScrolledXY(x,y)
@@ -455,13 +456,13 @@ class InteractivePanel(wx.ScrolledWindow):
             newy=ydim
         if newx<=self.origX:newx=self.origX
         if newy<=self.origY:newy=self.origY
-        #s=self.GetSize()
-        #if s!=(newx,newy):
-        Logging.info("Setting size of",self," to ",newx,newy,"virtual size to ",xdim,ydim,kw="iactivepanel")
-        self.SetSize((newx,newy))
+        s=self.GetSize()
+        if s!=(newx,newy):
+            Logging.info("Setting size of",self," to ",newx,newy,"virtual size to ",xdim,ydim,kw="iactivepanel")
+            self.SetSize((newx,newy))
         s=self.GetVirtualSize()
-        #if s!=(xdim,ydim):
-        self.SetVirtualSize((xdim,ydim))
+        if s!=(xdim,ydim):
+            self.SetVirtualSize((xdim,ydim))
         xrate,yrate=0,0
         if xdim>newx:
             xrate=self.scrollsize

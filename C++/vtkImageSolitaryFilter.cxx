@@ -51,18 +51,18 @@ void vtkImageSolitaryFilter::ComputeInputUpdateExtent(int inExt[6],
     int wholeExt[6];
     this->GetInput()->GetWholeExtent(wholeExt);
     memcpy(inExt,wholeExt,6*sizeof(int));
-    printf("Required ext for solitary = (");
+//    printf("Required ext for solitary = (");
     for(int i=0;i<3;i++) {
         k=inExt[2*i];
         if(k > 0) k--;
-        printf("%d, ",k);
+//        printf("%d, ",k);
         inExt[2*i]=k;
         k=inExt[2*i+1];
         if(k < wholeExt[2*i+1]-1)k++;
         inExt[2*i+1]=k;
-        printf("%d, ",k);
+//        printf("%d, ",k);
     }
-    printf(")\n");   
+//    printf(")\n");   
 }
 
 //-----------------------------------------------------------------------------
@@ -89,7 +89,7 @@ void vtkImageSolitaryFilter::ExecuteData(vtkDataObject *)
   //output->GetUpdateExtent(uExtent);
   output->GetUpdateExtent(uExtent);
   output->SetExtent(uExtent);
-  printf("Exent=(%d,%d,%d,%d,%d,%d)\n",uExtent[0],uExtent[1],uExtent[2],uExtent[3],uExtent[4],uExtent[5]);
+//  printf("Exent=(%d,%d,%d,%d,%d,%d)\n",uExtent[0],uExtent[1],uExtent[2],uExtent[3],uExtent[4],uExtent[5]);
   char *inPtr = (char *) input->GetScalarPointerForExtent(uExtent);
   char *outPtr = (char *) output->GetScalarPointerForExtent(uExtent);
     

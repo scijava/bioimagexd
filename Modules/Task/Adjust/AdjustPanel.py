@@ -6,9 +6,8 @@
  Created: 24.11.2004, KP
  Description:
 
- A wxPython Dialog window that is used to process a single dataset series in 
- various ways,
- including but not limited to: Correction of bleaching, mapping intensities 
+ A configuration panel for module that is used to process a single dataset series in 
+ various ways, including Correction of bleaching, mapping intensities 
  through intensity transfer function
 
  Copyright (C) 2005  BioImageXD Project

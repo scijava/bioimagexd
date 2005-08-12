@@ -105,13 +105,6 @@ class Visualizer:
         for key in self.modes.keys():
             self.instances[key]=None
         
-        self.ID_TOOL_WIN=wx.NewId()
-        self.ID_VISAREA_WIN=wx.NewId()
-        self.ID_VISTREE_WIN=wx.NewId()
-        self.ID_VISSLIDER_WIN=wx.NewId()
-        self.ID_ZSLIDER_WIN=wx.NewId()
-        self.ID_HISTOGRAM_WIN=wx.NewId()
-        
         messenger.connect(None,"show",self.onSetVisibility)
         messenger.connect(None,"hide",self.onSetVisibility)
         
@@ -119,11 +112,11 @@ class Visualizer:
         
         self.parent.Bind(
             wx.EVT_SASH_DRAGGED_RANGE, self.onSashDrag,
-            id=self.ID_TOOL_WIN, id2=self.ID_HISTOGRAM_WIN,
+            id=MenuManager.ID_TOOL_WIN, id2=MenuManager.ID_HISTOGRAM_WIN,
         )
 
         
-        self.sidebarWin=wx.SashLayoutWindow(self.parent,self.ID_VISTREE_WIN,style=wx.RAISED_BORDER|wx.SW_3D)
+        self.sidebarWin=wx.SashLayoutWindow(self.parent,MenuManager.ID_VISTREE_WIN,style=wx.RAISED_BORDER|wx.SW_3D)
         self.sidebarWin.SetOrientation(wx.LAYOUT_VERTICAL)
         self.sidebarWin.SetAlignment(wx.LAYOUT_LEFT)
         self.sidebarWin.SetSashVisible(wx.SASH_RIGHT,True)
@@ -131,13 +124,13 @@ class Visualizer:
         self.sidebarWin.SetDefaultSize((200,768))
         self.sidebarWin.origSize=(200,768)
 
-        self.toolWin=wx.SashLayoutWindow(self.parent,self.ID_TOOL_WIN,style=wx.NO_BORDER)
+        self.toolWin=wx.SashLayoutWindow(self.parent,MenuManager.ID_TOOL_WIN,style=wx.NO_BORDER)
         self.toolWin.SetOrientation(wx.LAYOUT_HORIZONTAL)
         self.toolWin.SetAlignment(wx.LAYOUT_TOP)
         self.toolWin.SetSashVisible(wx.SASH_BOTTOM,False)
         self.toolWin.SetDefaultSize((500,44))
 
-        self.histogramWin=wx.SashLayoutWindow(self.parent,self.ID_HISTOGRAM_WIN,style=wx.NO_BORDER)
+        self.histogramWin=wx.SashLayoutWindow(self.parent,MenuManager.ID_HISTOGRAM_WIN,style=wx.NO_BORDER)
         self.histogramWin.SetOrientation(wx.LAYOUT_HORIZONTAL)
         self.histogramWin.SetAlignment(wx.LAYOUT_TOP)
         #self.histogramWin.SetSashVisible(wx.SASH_BOTTOM,False)
@@ -151,20 +144,20 @@ class Visualizer:
         self.histogramBox.Fit(self.histogramPanel)
 
 
-        self.visWin=wx.SashLayoutWindow(self.parent,self.ID_VISAREA_WIN,style=wx.NO_BORDER|wx.SW_3D)
+        self.visWin=wx.SashLayoutWindow(self.parent,MenuManager.ID_VISAREA_WIN,style=wx.NO_BORDER|wx.SW_3D)
         self.visWin.SetOrientation(wx.LAYOUT_VERTICAL)
         self.visWin.SetAlignment(wx.LAYOUT_LEFT)
         self.visWin.SetSashVisible(wx.SASH_RIGHT,False)
         self.visWin.SetSashVisible(wx.SASH_LEFT,False)
         self.visWin.SetDefaultSize((512,768))
         
-        self.sliderWin=wx.SashLayoutWindow(self.parent,self.ID_VISSLIDER_WIN,style=wx.NO_BORDER)
+        self.sliderWin=wx.SashLayoutWindow(self.parent,MenuManager.ID_VISSLIDER_WIN,style=wx.NO_BORDER)
         self.sliderWin.SetOrientation(wx.LAYOUT_HORIZONTAL)
         self.sliderWin.SetAlignment(wx.LAYOUT_BOTTOM)
         self.sliderWin.SetSashVisible(wx.SASH_TOP,False)
         self.sliderWin.SetDefaultSize((500,64))
         
-        self.zsliderWin=wx.SashLayoutWindow(self.parent,self.ID_ZSLIDER_WIN,style=wx.NO_BORDER|wx.SW_3D)
+        self.zsliderWin=wx.SashLayoutWindow(self.parent,MenuManager.ID_ZSLIDER_WIN,style=wx.NO_BORDER|wx.SW_3D)
         self.zsliderWin.SetOrientation(wx.LAYOUT_VERTICAL)
         self.zsliderWin.SetAlignment(wx.LAYOUT_RIGHT)
         self.zsliderWin.SetSashVisible(wx.SASH_RIGHT,False)
@@ -399,6 +392,7 @@ class Visualizer:
         if self.dataUnit:
             self.dataUnit.getSettings().set("ShowOriginal",0)
         self.updateRendering()
+        evt.Skip()
         
     def onShowOriginal(self,evt):
         """
@@ -409,6 +403,7 @@ class Visualizer:
         if self.dataUnit:
             self.dataUnit.getSettings().set("ShowOriginal",1)
         self.updateRendering()
+        evt.Skip()
     def onSetView(self,evt):
         """
         Method: onSetView
@@ -570,10 +565,10 @@ class Visualizer:
             eID = event.GetId()
             newsize=(event.GetDragRect().width,h)
         else:
-            eID = self.ID_VISTREE_WIN
+            eID = MenuManager.ID_VISTREE_WIN
             newsize = self.sidebarWin.origSize
 
-        if eID == self.ID_VISTREE_WIN:
+        if eID == MenuManager.ID_VISTREE_WIN:
             Logging.info("Sidebar window size = %d,%d"%newsize,kw="visualizer")
             self.sidebarWin.SetDefaultSize(newsize)
             
@@ -589,8 +584,9 @@ class Visualizer:
         """
 #        if not self.enabled:return
         wx.LayoutAlgorithm().LayoutWindow(self.parent, self.visWin)
-        self.currentWindow.SetSize(self.visWin.GetClientSize())
-        self.currMode.relayout()
+        if self.currentWindow:
+            self.currentWindow.SetSize(self.visWin.GetClientSize())
+            self.currMode.relayout()
                 
     def __del__(self):
         global visualizerInstance
@@ -655,13 +651,29 @@ class Visualizer:
         """
         return self.mode
         
-    def setVisualizationMode(self,mode):
+    def closeVisualizer(self):
+        """
+        Method: setVisualizationMode
+        Created: 12.08.2005, KP
+        Description: Close the visualizer
+        """
+        if self.currMode:
+            self.currMode.deactivate()
+            self.currentWindow.Show(0)
+            self.currMode=None
+            self.currentWindow=None
+            self.mode=None
+            self.currModeModule=None
+        self.sidebarWin.SetDefaultSize((0,1024))
+        wx.LayoutAlgorithm().LayoutWindow(self.parent, self.visWin)
+        self.dataUnit=None
+        
+        
+    def setVisualizationMode(self,mode,reload=0):
         """
         Method: setVisualizationMode
         Created: 23.05.2005, KP
         Description: Set the mode of visualization
-        Parameters:
-            mode     The mode.
         """
         if self.mode == mode:
             Logging.info("Mode %s already selected"%mode,kw="visualizer")
@@ -676,7 +688,7 @@ class Visualizer:
             self.currentWindow.Show(0)
         modeclass,settingclass,module=self.modes[mode]
         modeinst=self.instances[mode]
-        if not modeinst:
+        if not modeinst or reload:
             modeinst=modeclass(self.visWin,self)
             self.instances[mode]=modeinst
         if not module.showZoomToolbar():

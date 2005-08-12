@@ -857,7 +857,7 @@ void vtkLSMReader::ExecuteInformation()
 
   if(this->IsCompressed())
     {
-      vtkErrorMacro("Can't handle compressed data!");
+      vtkDebugMacro("Can't handle compressed data!");
       return;
     }
 

@@ -240,7 +240,6 @@ class ProcessPanel(TaskPanel.TaskPanel):
         Description: A callback function called when the neither of the
                      filtering checkbox changes state
         """
-
         doMedian=self.doMedianCheckbutton.GetValue()
         doSolitary=self.doSolitaryCheckbutton.GetValue()
         doAniso=self.doAnisoptropicCheckbutton.GetValue()
@@ -324,15 +323,21 @@ class ProcessPanel(TaskPanel.TaskPanel):
                      from filter GUI widgets
         """
         set=self.settings.set
-        set("AnisotropicDiffusion",self.doAnisoptropicCheckbutton.GetValue())
-        set("MedianFiltering",self.doMedianCheckbutton.GetValue())
-        set("SolitaryFiltering",self.doSolitaryCheckbutton.GetValue())
+        get=self.settings.get
+        def setval(name,value):
+            if get(name)!=value:
+                set(name,value)
+                messenger.send(None,"renew_preview")
+        
+        setval("AnisotropicDiffusion",self.doAnisoptropicCheckbutton.GetValue())
+        setval("MedianFiltering",self.doMedianCheckbutton.GetValue())
+        setval("SolitaryFiltering",self.doSolitaryCheckbutton.GetValue())
         nbh=(self.neighborhoodX.GetValue(),
             self.neighborhoodY.GetValue(),
             self.neighborhoodZ.GetValue())
         try:
             nbh=map(int,nbh)
-            self.settings.set("MedianNeighborhood",nbh)
+            setval("MedianNeighborhood",nbh)
         except ValueError:
             pass
         sx,sy,st=0,0,0
@@ -341,27 +346,27 @@ class ProcessPanel(TaskPanel.TaskPanel):
             sx=int(self.solitaryX.GetValue())
             sy=int(self.solitaryY.GetValue())
             st=int(self.solitaryThreshold.GetValue())
-            set("SolitaryHorizontalThreshold",sx)
-            set("SolitaryVerticalThreshold",sy)
-            set("SolitaryProcessingThreshold",st)
+            setval("SolitaryHorizontalThreshold",sx)
+            setval("SolitaryVerticalThreshold",sy)
+            setval("SolitaryProcessingThreshold",st)
         except ValueError:
             pass
         try:
             anisoFac=float(self.anisoDiffusionFactor.GetValue())
-            set("AnisotropicDiffusionFactor",anisoFac)
+            setval("AnisotropicDiffusionFactor",anisoFac)
         except:
             pass
         anisoMeasure=self.anisoMeasureBox.GetSelection()
-        set("AnisotropicDiffusionMeasure",anisoMeasure)
+        setval("AnisotropicDiffusionMeasure",anisoMeasure)
         try:
             anisoThreshold=float(self.anisoThreshold.GetValue())
-            set("AnisotropicDiffusionThreshold",anisoThreshold)
+            setval("AnisotropicDiffusionThreshold",anisoThreshold)
         except:
             pass
         
-        set("AnisotropicDiffusionFaces",self.anisoNeighborhoodFaces.GetValue())        
-        set("AnisotropicDiffusionEdges",self.anisoNeighborhoodEdges.GetValue())
-        set("AnisotropicDiffusionCorners",self.anisoNeighborhoodCorners.GetValue())
+        setval("AnisotropicDiffusionFaces",self.anisoNeighborhoodFaces.GetValue())        
+        setval("AnisotropicDiffusionEdges",self.anisoNeighborhoodEdges.GetValue())
+        setval("AnisotropicDiffusionCorners",self.anisoNeighborhoodCorners.GetValue())
         
     def doProcessingCallback(self,event=None):
         """

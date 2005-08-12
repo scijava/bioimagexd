@@ -106,7 +106,7 @@ void vtkImageSimpleMIP::ExecuteData(vtkDataObject *)
     vtkErrorMacro("No input is specified.");
   }
   if(this->UpdateExtentIsEmpty(output)) {
-      printf("MIP: EMPTY UPDATE EXTENT!\n");
+      vtkErrorMacro(<<"MIP: Empty update extent\n");
       return;
   }
   
@@ -121,9 +121,9 @@ void vtkImageSimpleMIP::ExecuteData(vtkDataObject *)
 
   input->GetIncrements(inIncX, inIncY, inIncZ);
   output->GetIncrements(outIncX, outIncY, outIncZ);
-  printf("MIP: inIncX=%d,inIncY=%d,inIncZ=%d\n",inIncX,inIncY,inIncZ);
-  printf("MIP: outIncX=%d,outIncY=%d,outIncZ=%d\n",outIncX,outIncY,outIncZ);
-  printf("MIP: x=%d,y=%d,z=%d,c=%d\n",maxX,maxY,maxZ,maxC);
+  vtkDebugMacro(<<"MIP: inIncX="<<inIncX<<" inIncY="<<inIncY<<" inIncZ="<<inIncZ<<"\n");
+  vtkDebugMacro(<<"MIP: outIncX="<<outIncX<<" outIncY="<<outIncY<<" outIncZ="<<outIncZ<<"\n");
+  vtkDebugMacro(<<"MIP: x="<<maxX<<", y="<<maxY<<",z="<<maxZ<<",c="<<maxC<<"\n");
 
   #define GET_AT(x,y,z,c,ptr) *(ptr+(z)*inIncZ+(y)*inIncY+(x)*inIncX+c)
   #define GET_AT_OUT(x,y,z,c,ptr) *(ptr+(z)*outIncZ+(y)*outIncY+(x)*outIncX+c)
@@ -141,7 +141,7 @@ void vtkImageSimpleMIP::ExecuteData(vtkDataObject *)
       }
     }
   }
-  printf("MIP: done\n");
+  vtkDebugMacro(<<"MIP: done\n");
 }
 
 
