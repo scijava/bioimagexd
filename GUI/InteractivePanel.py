@@ -448,21 +448,24 @@ class InteractivePanel(wx.ScrolledWindow):
         maxY=self.maxY
         if self.maxSizeX>maxX:maxX=self.maxSizeX
         if self.maxSizeY>maxY:maxY=self.maxSizeY
+        Logging.info("maxX=",self.maxX,"maxSizeX=",self.maxSizeX,"xdim=",xdim,"origX=",self.origX);
         newy=maxY
         newx=maxX
         if xdim<maxX:
             newx=xdim
         if ydim<maxY:
             newy=ydim
-        if newx<=self.origX:newx=self.origX
-        if newy<=self.origY:newy=self.origY
+        if newx<=self.origX and self.origX<=self.maxSizeX:
+            newx=self.origX
+        if newy<=self.origY and self.origY<=self.maxSizeY:
+            newy=self.origY
         s=self.GetSize()
-        if s!=(newx,newy):
-            Logging.info("Setting size of",self," to ",newx,newy,"virtual size to ",xdim,ydim,kw="iactivepanel")
-            self.SetSize((newx,newy))
+        #if s!=(newx,newy):
+        Logging.info("Setting size of",self," to ",newx,newy,"virtual size to ",xdim,ydim,kw="iactivepanel")
+        self.SetSize((newx,newy))
         s=self.GetVirtualSize()
-        if s!=(xdim,ydim):
-            self.SetVirtualSize((xdim,ydim))
+        #if s!=(xdim,ydim):
+        self.SetVirtualSize((xdim,ydim))
         xrate,yrate=0,0
         if xdim>newx:
             xrate=self.scrollsize

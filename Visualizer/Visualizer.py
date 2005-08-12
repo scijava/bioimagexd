@@ -548,6 +548,7 @@ class Visualizer:
         Description: Sets the zoom factor to fit the image into the preview window
         """
         self.currMode.zoomToFit()
+        self.zoomCombo.SetStringSelection("Zoom to fit")
         self.currMode.Render()
         
     def onSashDrag(self, event=None):

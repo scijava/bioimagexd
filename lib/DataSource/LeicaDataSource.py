@@ -39,6 +39,7 @@ import vtk
 import Image
         
 from DataSource import *
+import DataUnit
         
 class LeicaDataSource(DataSource):
     """
@@ -163,7 +164,7 @@ class LeicaDataSource(DataSource):
                 #  we can associate with the dataunit
                 
                 datasource=LeicaDataSource(filename,experiment,i)
-                dataunit=DataUnit.DataUnit.DataUnit()
+                dataunit=DataUnit.DataUnit()
                 dataunit.setDataSource(datasource)
                 dataunits.append((experiment,dataunit))
             
