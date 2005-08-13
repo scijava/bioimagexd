@@ -87,11 +87,10 @@ float* makeKernel(double radius,int*ksize) {
         *ksize=size-2;
         return kernel2;
 }
-template <class T> void smooth(T* inPtr,T*outPtr,int psf,int ext[6],
-    bool horizontal,int inIncX,int inIncY,int inIncZ,int outIncX,int outIncY,int outIncZ) {
+template <class T> void smooth(T* inPtr,T*outPtr,int psf,int ext[6],bool horizontal,
+    int inIncX,int inIncY,int inIncZ,int outIncX,int outIncY,int outIncZ) {
     int size;
     float*kernel = makeKernel(psf,&size);
-    
     int uc,vc;
     if(horizontal) {
         uc = size / 2;
@@ -100,29 +99,31 @@ template <class T> void smooth(T* inPtr,T*outPtr,int psf,int ext[6],
         uc = 0;
         vc = size / 2;
     }
+    
+    if ((size&1)!=1) {
+        printf("\n\n\n\n******* Error, convolution kernel size not odd *******\n\n\n");
+    }
     int xmin,xmax,ymin,ymax;
     int z = ext[4];
     xmin=ext[0];
     xmax=ext[1];
     ymin=ext[2];
     ymax=ext[3];
-    //printf("smoothing data with psf=%d, z=%d, uc=%d, vc=%d\n",psf,z,uc,vc);
+    
+    printf("smoothing data with psf=%d, z=%d, uc=%d, vc=%d\n",psf,z,uc,vc);
     //for(int i=0;i<size;i++)printf("kernel[%d]=%f\n",i,kernel[i]);
     bool edgePixel;
     double sum;
     int height = ymax, width = xmax;
-    
+    int xedge = width - uc;
+    int yedge = height - vc;
     int offset,i;
     for(int y=ymin; y<ymax; y++) {
-            //IJ.write(""+y);
-            edgePixel = y<vc || y>=ymax+vc;
             for(int x=xmin; x<xmax; x++) {
                 sum = 0.0;
                 i = 0;
-                if (x<uc || x>=height+uc)
-                    edgePixel = true;
+                edgePixel = y<vc || y>=yedge || x<uc || x>=xedge;
                 for(int v=-vc; v <= vc; v++) {
-                    offset = x+(y+v)*width;
                     for(int u = -uc; u <= uc; u++) {
                         int nx,ny;
                         if (edgePixel) {
@@ -407,7 +408,7 @@ template < class T >
     int blockCount = 0;
     bool rBlock = true;
     int vacant;
-    int copyIteration = (int)vtkMath::Random(0,iterations);
+    //int copyIteration = (int)vtkMath::Random(0,iterations);
     //printf("Copying at iteration %d\n",copyIteration);
     //start randomisations and calculation or Rrands
 
@@ -417,9 +418,10 @@ template < class T >
         sprintf(progressText,"Calculating P-Value (iteration %d / %d)",c,iterations);
         self->SetProgressText(progressText);
         
-        if(c-1 == copyIteration) {
+        if(c == iterations) {
             // Copy the sample random data
             //printf("Copying...\n");
+            printf("Copying output data...\n");
             outData->CopyAndCastFrom(outbuf,0,maxX,0,maxY,0,maxZ);
         }
             
@@ -429,160 +431,172 @@ template < class T >
         
         // Clear the buffer
         for(int i=0;i<maxX*maxY*maxZ;i++)*outPtr++=0;
-            outPtr = (T *) outbuf->GetScalarPointer();    
+        //printf("Zeroed %d bytes (%d,%d,%d)\n",maxX*maxY*maxZ,maxX,maxY,maxZ);
+        
+        outPtr = (T *) outbuf->GetScalarPointer();    
         //      stackRand = new ImageStack(rwidth, rheight);
-            if (Fay) {
-                if (c == 26 || c == 51) {
-                    zOffset2 += 1;
-                    xOffset2 = -15;
-                    yOffset2 = -10;
-                }
-                if (xOffset2 < 10)
-                    xOffset2 += 5;
-                else {
-                    xOffset2 = -15;
-                    yOffset2 += 5;
-                }
+        if (Fay) {
+            if (c == 26 || c == 51) {
+                zOffset2 += 1;
+                xOffset2 = -15;
+                yOffset2 = -10;
             }
-            if (vanS) {
-             //printf("xOffset: %d\n",xOffset2);
-                xOffset2 += 1;
+            if (xOffset2 < 10)
+                xOffset2 += 5;
+            else {
+                xOffset2 = -15;
+                yOffset2 += 5;
             }
-        
-            int chRandz=0;
-            float progress=0;
-            for (int s = startSlice; s < nslices; s++)
-            {
-                progress=float(c)/iterations;
-                progress+=s/float(100*nslices);
-                self->UpdateProgress(progress);
-                
-                slicesDone++;
-                if (currentSliceNo>=0) {
-                    //printf("Only for slice %d\n",currentSliceNo);
-                    s = currentSliceNo;
-                    nslices = s;
-                }
-                //printf("Iteration %d / %d Slice: %d / %d\n",c,iterations,s,nslices);
-                int ch1z = s, ch2z=s+zOffset2;
-                
-                for (int y = 0; y < rheight; y++) {
-                    for (int x = 0; x <= rwidth; x++) {
-                            //printf("Reading ch1 and ch2 from %d, %d,%d\n",x+xOffset,y+yOffset,ch1z);
-                            ch1 =(int) GET_AT(x + xOffset, y + yOffset, ch1z,inPtr1);
-                            ch2 =(int) GET_AT(x + xOffset, y + yOffset, ch2z,inPtr2);
-                            //printf("got %d and %d\n",ch1,ch2);
-                            ch3 = 0;
-                            if ((ignoreZeroZero)) {
-                                if (Fay) {
-                                    //printf("Reading ch3 from %d,%d,%d\n",x+xOffset+xOffset2,
-                                    // y+yOffset+yOffset2,ch2z);
-                                    ch3=0;
-                                    int dx=x+xOffset+xOffset2;
-                                    int dy=y+yOffset+yOffset2;
-                                    if(dx>=0 && dy>=0 && dx<rwidth&&dy<=rheight) {
-                                        ch3 =(int) GET_AT(dx,dy,ch2z, inPtr2);
-                                    }
-                                    //printf("Got %d\n",ch3);
-                          
-                                    SET_AT_OUT(x,y,chRandz,outPtr,ch3);
+        }
+        if (vanS) {
+         //printf("xOffset: %d\n",xOffset2);
+            xOffset2 += 1;
+        }
+        //printf("startSlice=%d, nSlices=%d\n",startSlice,nslices);
+        int chRandz=0;
+        float progress=0;
+        for (int s = startSlice; s < nslices; s++)
+        {
+            progress=float(c)/iterations;
+            progress+=s/float(100*nslices);
+            self->UpdateProgress(progress);
+            
+            slicesDone++;
+            if (currentSliceNo>=0) {
+                //printf("Only for slice %d\n",currentSliceNo);
+                s = currentSliceNo;
+                nslices = s;
+            }
+            //printf("Iteration %d / %d Slice: %d / %d, rheight=%d, rwidth=%d\n",c,iterations,s,nslices,rheight,rwidth);
+            int ch1z = s, ch2z=s+zOffset2;
+            
+            for (int y = 0; y < rheight; y++) {
+                for (int x = 0; x <= rwidth; x++) {
+//                        if(x%10)
+//                           printf("Reading ch1 and ch2 from %d, %d,%d\n",x+xOffset,y+yOffset,ch1z);
+                        ch1 =(int) GET_AT(x + xOffset, y + yOffset, ch1z,inPtr1);
+                        ch2 =(int) GET_AT(x + xOffset, y + yOffset, ch2z,inPtr2);
+                        
+                        //printf("got %d and %d from %d,%d, %d and %d\n",ch1,ch2,x+xOffset,y+yOffset,ch1z,ch2z);
+                        ch3 = 0;
+                        if ((ignoreZeroZero)) {
+                            if (Fay) {
+                                //printf("Reading ch3 from %d,%d,%d\n",x+xOffset+xOffset2,
+                                // y+yOffset+yOffset2,ch2z);
+                                ch3=0;
+                                int dx=x+xOffset+xOffset2;
+                                int dy=y+yOffset+yOffset2;
+                                if(dx>=0 && dy>=0 && dx<rwidth&&dy<=rheight) {
+                                    ch3 =(int) GET_AT(dx,dy,ch2z, inPtr2);
                                 }
-                                if (vanS) {
-                                    //ch3 = (int)ip2.getPixel(x + xOffset + xOffset2,
-                                    //     y + yOffset);
-                                    int dx=x+xOffset+xOffset2;
-                                    int dy=y+yOffset;
-                                    ch3=0;
-                                    if(dx>=0 && dy>=0 && dx<rwidth&&dy<=rheight) {
-                                                    
-                                        ch3 = (int)GET_AT(dx,y + yOffset,ch2z,inPtr2);
-                                    }
-                                    SET_AT_OUT(x,y,chRandz,outPtr,ch3);
-                                }
-                                if ((Costes && !randZ) || (Costes && nslices < 1)) {
-                                    ch4 = 1;
-                                    while(ch4 != 0) {
-                                        rx = (int) (vtkMath::Random() * (double) width);
-                                        ry = (int) (vtkMath::Random() * (double) height);
-                                        ch4 = (int)GET_AT_OUT(rx,ry,chRandz,outPtr);
-                                    }
-                                    //if(ch2)
-                                    //  printf("Writing at %d,%d,%d=%d\n",x,y,chRandz,ch2);
-                                    
-                                    SET_AT_OUT(rx,ry,chRandz,outPtr,ch2);
-                                }
-        
-                                if ((Costes &&randZ && nslices > 1) && ch2 != 0) {
-                                    ch3 =(int) ((vtkMath::Random() * (ch2Max - ch2Min)) + ch2Min);
-                                    SET_AT_OUT(x,y,chRandz,outPtr,ch3);
-                                }
-        
+                                //printf("Got %d\n",ch3);
+                      
+                                SET_AT_OUT(x,y,chRandz,outPtr,ch3);
                             }
-                            //add to random image        
-                    }
+                            if (vanS) {
+                                //ch3 = (int)ip2.getPixel(x + xOffset + xOffset2,
+                                //     y + yOffset);
+                                int dx=x+xOffset+xOffset2;
+                                int dy=y+yOffset;
+                                ch3=0;
+                                if(dx>=0 && dy>=0 && dx<rwidth&&dy<=rheight) {
+                                                
+                                    ch3 = (int)GET_AT(dx,y + yOffset,ch2z,inPtr2);
+                                }
+                                SET_AT_OUT(x,y,chRandz,outPtr,ch3);
+                            }
+                            if ((Costes && !randZ) || (Costes && nslices < 1)) {
+                                //ch4 = 1;
+                                //while(ch4 != 0) {
+                                    rx = (int) (vtkMath::Random() * (double) width);
+                                    ry = (int) (vtkMath::Random() * (double) height);
+                                //    printf("reading random from %d,%d,%d\n",rx,ry,chRandz);
+                                //    ch4 = (int)GET_AT_OUT(rx,ry,chRandz,outPtr);
+                                //}
+                                //if(ch2)
+                                //  printf("Writing at %d,%d,%d=%d\n",x,y,chRandz,ch2);
+                                
+                                SET_AT_OUT(rx,ry,chRandz,outPtr,ch2);
+                            }
+    
+                            if ((Costes &&randZ && nslices > 1) && ch2 != 0) {
+                                ch3 =(int) ((vtkMath::Random() * (ch2Max - ch2Min)) + ch2Min);
+                                //printf("Writing at %d,%d,%d = %d\n",x,y,chRandz,ch3);
+                                SET_AT_OUT(x,y,chRandz,outPtr,ch3);
+                            }
+    
+                        }
+                        //add to random image        
                 }
-                if (Costes) {
-                    //gb.blur(ipRand, psf);
-                    vtkImageData* copybuf = vtkImageData::New();
-                    copybuf->SetExtent(outbuf->GetExtent());
-                    copybuf->SetScalarType(outbuf->GetScalarType());
-                    copybuf->AllocateScalars();                
-                    T* outPtr = (T*)outbuf->GetScalarPointer();
-                    T* copyPtr = (T*)copybuf->GetScalarPointer();
-                    int uext[6];
-                    uext[0]=uext[2]=0;
-                    uext[1]=rwidth;
-                    uext[3]=rheight;
-                    //uext[4]=0;
-                    //uext[5]=maxZ;
-                    //outData->SetUpdateExtent(uext);   
-                    uext[4]=uext[5]=chRandz;        
-                    // First smooth the data horizontally and 
-                    // store output in copyPtr
-                    //printf("psf=%f rwidth=%d, rheight=%d, z=%d\n",psf,rwidth,rheight,chRandz);
-                    smooth(outPtr,copyPtr,(int)psf,uext,1,inIncX,inIncY,inIncZ,
-                    outIncX,outIncY,outIncZ);
-                    // Then smooth the copyPtr vertically and store the data back to outPtr
-                    smooth(outPtr,copyPtr,(int)psf,uext,0,inIncX,inIncY,inIncZ,
-                    outIncX,outIncY,outIncZ);
-                    outbuf->CopyAndCastFrom(copybuf,0,rwidth,0,rheight,chRandz,chRandz);
-                    copybuf->Delete();
-                    //printf("copied %d bytes of smoothed data\n",rwidth*rheight);
-                }
-                 //stackRand.addSlice("Correlation Plot", ipRand);
-            chRandz++;
             }
-            //random image created now calculate r
-        
-            //reset values for r
-            sumXX = 0;
-            sumX = 0;
-            sumXY = 0;
-            sumYY = 0;
-            sumY = 0;
-            N = 0;
-            N2 = 0;
-            int s2 = 0;
-            sumXtotal = 0;
-            sumYtotal = 0;
-            colocX = 0;
-            colocY = 0;
-            double ICQrand = 0;
-            int countPos2 = 0;
-            countAll = 0;
-            //xOffset2=-21;
-        
-            for (int s = startSlice; s < nslices; s++) {
-                s2 = s;
-                if (Fay && nslices > 1)
-                    s2 -= 1;
-                if (currentSliceNo>=0) {
-                    s = currentSliceNo;
-                    nslices = s;
-                    s2 = 0;
-                }
-                //ip1 = img1.getProcessor(s);
-                //ip2 = stackRand.getProcessor(s2);
+            
+            if (Costes) {
+                //gb.blur(ipRand, psf);
+                vtkImageData* copybuf = vtkImageData::New();
+                copybuf->SetExtent(outbuf->GetExtent());
+                copybuf->SetScalarType(outbuf->GetScalarType());
+                copybuf->AllocateScalars();                                
+                T* outPtr = (T*)outbuf->GetScalarPointer();
+                T* copyPtr = (T*)copybuf->GetScalarPointer();
+                //T* copyPtr2 = (T*)copybuf2->GetScalarPointer();
+                int uext[6];
+                uext[0]=uext[2]=0;
+                uext[1]=rwidth;
+                uext[3]=rheight;
+                //uext[4]=0;
+                //uext[5]=maxZ;
+                //outData->SetUpdateExtent(uext);   
+                uext[4]=uext[5]=chRandz;        
+                // First smooth the data horizontally and 
+                // store output in copyPtr
+                //printf("psf=%f rwidth=%d, rheight=%d, z=%d\n",psf,rwidth,rheight,chRandz);
+//                printf("inIncX=%d,inIncY=%d,inIncZ=%d, outIncX=%d,outIncY=%d,outIncZ=%d\n",inIncX,inIncY,inIncZ,outIncX,outIncY,outIncZ);
+                smooth(outPtr,copyPtr,(int)psf,uext,1,inIncX,inIncY,inIncZ,
+                outIncX,outIncY,outIncZ);
+                outbuf->CopyAndCastFrom(copybuf,0,rwidth,0,rheight,chRandz,chRandz);
+                // Then smooth the copyPtr vertically and store the data back to outPtr
+                smooth(outPtr,copyPtr,(int)psf,uext,0,inIncX,inIncY,inIncZ,
+                outIncX,outIncY,outIncZ);
+                
+                outbuf->CopyAndCastFrom(copybuf,0,rwidth,0,rheight,chRandz,chRandz);
+                copybuf->Delete();
+                
+                //printf("copied %d bytes of smoothed data\n",rwidth*rheight);
+            }
+             //stackRand.addSlice("Correlation Plot", ipRand);
+        chRandz++;
+        }
+        //random image created now calculate r
+    
+        //reset values for r
+        sumXX = 0;
+        sumX = 0;
+        sumXY = 0;
+        sumYY = 0;
+        sumY = 0;
+        N = 0;
+        N2 = 0;
+        int s2 = 0;
+        sumXtotal = 0;
+        sumYtotal = 0;
+        colocX = 0;
+        colocY = 0;
+        double ICQrand = 0;
+        int countPos2 = 0;
+        countAll = 0;
+        //xOffset2=-21;
+    
+        for (int s = startSlice; s < nslices; s++) {
+            s2 = s;
+            if (Fay && nslices > 1)
+                s2 -= 1;
+            if (currentSliceNo>=0) {
+                s = currentSliceNo;
+                nslices = s;
+                s2 = 0;
+            }
+            //ip1 = img1.getProcessor(s);
+            //ip2 = stackRand.getProcessor(s2);
            int ch1z=s;
            int chRandz=s2;
                 for (int y = 0; y < rheight; y++) {
@@ -686,7 +700,6 @@ template < class T >
 //http://www.cs.princeton.edu/introcs/26function/MyMath.java.html
 //Thanks to Bob Dougherty
 //50*{1 + erf[(V -mean)/(sqrt(2)*sdev)]
-
     double fx = 0.5 * (1 + erf(r - r2mean) / (sqrt(2) * r2sd));
 //  vtkDebugMacro(<<"fx="<<fx<<"\n");
     if (fx >= 1)
@@ -704,6 +717,7 @@ template < class T >
   self->SetRRandMean(r2mean);    
   self->SetRRandSD(r2sd);
 //  vtkDebugMacro(<<"fx="<<fx<<"\n");
+  printf("Setting pvalue to %f\n",fx);
   self->SetPValue(fx);
   self->SetColocCount(colocCount);
   self->SetNumIterations(iterations);

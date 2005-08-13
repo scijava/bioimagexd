@@ -150,8 +150,8 @@ class MainWindow(wx.Frame):
         self.infoWin.SetAlignment(wx.LAYOUT_RIGHT)
         self.infoWin.SetSashVisible(wx.SASH_LEFT,True)
         self.infoWin.SetSashBorder(wx.SASH_LEFT,True)
-        self.infoWin.SetDefaultSize((280,768))        
-        self.infoWin.origSize = (280,768)
+        self.infoWin.SetDefaultSize((300,768))        
+        self.infoWin.origSize = (300,768)
         #self.taskWin=wx.Panel(self,-1,size=(0,768))
         
         self.infoWidget=InfoWidget.InfoWidget(self.infoWin)
