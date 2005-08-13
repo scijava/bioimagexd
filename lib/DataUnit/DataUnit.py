@@ -169,6 +169,7 @@ class DataUnit:
         self.getSpacing = dataSource.getSpacing
         self.getVoxelSize = dataSource.getVoxelSize
         self.getBitDepth = dataSource.getBitDepth
+        self.getScalarRange = dataSource.getScalarRange
         Logging.info("Dataunit ",repr(self),"got datasource",repr(self.dataSource),kw="datasource")
         
         #self.updateSettings()

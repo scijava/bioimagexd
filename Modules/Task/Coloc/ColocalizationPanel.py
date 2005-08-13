@@ -190,7 +190,7 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
     
         coloctest.SetMethod(method)
         coloctest.SetManualPSFSize(10)
-        coloctest.SetNumIterations(100)
+        coloctest.SetNumIterations(10)
         
         for i in sources:
             data=i.getTimePoint(self.timePoint)

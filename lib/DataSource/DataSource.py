@@ -146,6 +146,14 @@ class DataSource:
         """
         raise "Abstract method getDimensions() in DataSource called"
 
+    def getScalarRange(self):
+        """
+        Method: getBitDepth
+        Created: 28.05.2005, KP
+        Description: Return the bit depth of data
+        """
+        self.getBitDepth()
+        return self.scalarRange
     def getBitDepth(self):
         """
         Method: getBitDepth
@@ -154,6 +162,7 @@ class DataSource:
         """
         if not self.bitdepth:
             data=self.getDataSet(0,raw=1)
+            self.scalarRange=data.GetScalarRange()
             scalartype=data.GetScalarType()
             if scalartype==5:
                 self.bitdepth=12

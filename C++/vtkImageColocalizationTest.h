@@ -39,6 +39,9 @@
 
 #include "vtkImageMultipleInputFilter.h"
 
+double sqr(double x) {return x*x;}
+float* makeKernel(double radius);
+        
 class VTK_IMAGING_EXPORT vtkImageColocalizationTest : public vtkImageMultipleInputFilter
 {
 public:
@@ -47,7 +50,6 @@ public:
   void PrintSelf(ostream& os, vtkIndent indent);
 
 
-  // Description:
   // Ignore zero-zero pixel pairs in colocalization
   vtkGetMacro(IgnoreZeroPixels,bool);
   vtkSetMacro(IgnoreZeroPixels,bool);

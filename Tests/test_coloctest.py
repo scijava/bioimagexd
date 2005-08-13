@@ -2,7 +2,8 @@
 import vtk
 import sys,time
 import threading
-FILE="/home/kalpaha/BioImageXD/Data/sample2.lsm"
+#FILE="/home/kalpaha/BioImageXD/Data/sample2.lsm"
+FILE="C:\\BioImageXD\\Data\\sample2.lsm"
 #FILE="/home/kalpaha/BioImageXD/Data/Selli_coloc2_8-bit.lsm"
 #FILE="/home/kalpaha/BioImageXD/Data/selli_noise9.lsm"
 sys.path.insert(0,"../lib")
@@ -27,7 +28,7 @@ ch2=reader2.GetOutput()
 
 coloctest=vtk.vtkImageColocalizationTest()
 # Use costes method
-coloctest.SetMethod(2);
+coloctest.SetMethod(1);
 coloctest.SetManualPSFSize(10);
 coloctest.SetNumIterations(2);
 coloctest.AddInput(ch1)

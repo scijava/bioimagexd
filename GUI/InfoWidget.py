@@ -54,6 +54,7 @@ infoString="""<html><body bgcolor=%(bgcolor)s">
 <tr><td>Voxel Size:</td><td>%(nf)s%(voxelX).2f%(fe)s&mu;m %(smX)s %(nf)s%(voxelY).2f%(fe)s&mu;m %(smX)s %(nf)s%(voxelZ).2f%(fe)s&mu;m</td></tr>
 <tr><td>Spacing:</td><td>%(spX).2f %(smX)s %(spY).2f %(smX)s %(spZ).2f</td></tr>
 <tr><td>Data type:</td><td>%(bitdepth)d bit</td></tr>
+<tr><td>Intensity range:</td><td>%(intlower)d - %(intupper)d</td></tr>
 </table>
 </body></html>
 """
@@ -125,12 +126,15 @@ class InfoWidget(wx.Panel):
             spacing=(0,0,0)
             voxelsize=(0,0,0)
             bitdepth=8
+            intlower=0
+            intupper=255
             tps=0
         else:
             dims=dataunit.getDimensions()
             spacing=dataunit.getSpacing()
             voxelsize=dataunit.getVoxelSize()
             bitdepth=dataunit.getBitDepth()
+            intlower,intupper=dataunit.getScalarRange()
             Logging.info("Dataset bit depth =",bitdepth,kw="trivial")
             unit = dataunit
             ctf = dataunit.getColorTransferFunction()
@@ -162,7 +166,7 @@ class InfoWidget(wx.Panel):
         "spX":spX,"spY":spY,"spZ":spZ,"xdimm":xdim*voxelX,
         "ydimm":ydim*voxelY,"zdimm":zdim*voxelZ,"bgcolor":bgcol,
         "fe":"</font>","nf":"<font size=\"normal\">",
-        "tps":tps,"bitdepth":bitdepth}
+        "tps":tps,"bitdepth":bitdepth,"intlower":intlower,"intupper":intupper}
         
         self.htmlpage.SetPage(infoString%dict)
     
@@ -198,7 +202,7 @@ class InfoWidget(wx.Panel):
         #self.infoNotebook.AddPage(self.commonSettingsPanel,"Data Unit")
         
         
-        self.htmlpage=wx.html.HtmlWindow(self.infoPanel,-1,size=(280,200))
+        self.htmlpage=wx.html.HtmlWindow(self.infoPanel,-1,size=(280,300))
         if "gtk2" in wx.PlatformInfo:
             self.htmlpage.SetStandardFonts()
  
