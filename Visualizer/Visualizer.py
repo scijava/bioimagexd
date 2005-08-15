@@ -958,14 +958,72 @@ class Visualizer:
                 filename=dlg.GetPath()
             self.currMode.saveSnapshot(filename)
         
-
-    def setRenderWindowSize(self,size):
+    def restoreWindowSizes(self):
+        """
+        Method: restoreWindowSizes
+        Created: 15.08.2005, KP
+        Description: Restores the window sizes that may be changed by setRenderWIndowSize
+        """  
+        self.visWin.SetDefaultSize(self.visWin.origSize)
+        self.sidebarWin.SetDefaultSize(self.sidebarWin.origSize)
+        self.sliderWin.SetDefaultSize(self.sliderWin.origSize)
+        self.toolWin.SetDefaultSize(self.toolWin.origSize)
+        self.OnSize(None)
+        
+    def setRenderWindowSize(self,size,taskwin):
         """
         Method: setRenderWindowSize(size)
         Created: 28.04.2005, KP
         Description: Set the render window size
         """  
-        self.currentWindow.SetSize((size))
+        x,y=size
+        #self.currentWindow.SetSize((size))
+        
+        currx,curry=self.visWin.GetSize()
+        self.visWin.origSize=(currx,curry)
+        Logging.info("Current window size=",currx,curry)
+        diffx=currx-x
+        diffy=curry-y
+        Logging.info("Need to modify renderwindow size by ",diffx,",",diffy)#,kw="visualizer")
+        sx,sy=self.sidebarWin.GetSize()
+        self.sidebarWin.origSize=(sx,sy)
+        sx2,sy2=taskwin.GetSize()
+        d2=sx2-sx
+        if sx2<abs(diffx/2):
+            diffx-=sx
+            sx2=0
+        else:
+            d=diffx/2
+            d-=(d2/2)
+            sx2+=d
+            diffx+=-d
+        taskwin.SetDefaultSize((sx2,sy2))
+        taskwin.parent.OnSize(None)
+            
+        if sx:
+            sx+=diffx
+            self.sidebarWin.SetDefaultSize((sx,sy))
+            Logging.info("Size of siderbar window after modification=",sx,sy)
+        slx,sly=self.sliderWin.GetSize()
+        self.sliderWin.origSize=(slx,sly)
+        
+        if diffy<0 and abs(diffy)>abs(sly):
+            Logging.info("Hiding toolbar to get more space in y-direction")#,kw="visualizer")
+            tx,ty=self.toolWin.GetSize()
+            self.toolWin.origSize=(tx,ty)
+            self.toolWin.SetDefaultSize((0,0))
+            diffy+=ty
+        if diffy:
+            Logging.info("I'm told to set renderwindow size to %d,%d with a %d modification of y-size."%(x,y,diffy))#,kw="visualizer")
+            
+            if sly<diffy:
+                Logging.info("Giving %d more to y-size is the best I can do"%sy)#,kw="visualizer")
+                sly=0
+            else:
+                sly+=diffy
+                Logging.info("Size of slider win after modification=",sx,sy)
+            
+            self.sliderWin.SetDefaultSize((slx,sly))
         #self.wxrenwin.SetSize((size))
         #self.renwin.SetSize((size))
         self.OnSize(None)

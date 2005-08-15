@@ -137,6 +137,7 @@ class MainWindow(wx.Frame):
         
         # A window for the task panels
         self.taskWin=wx.SashLayoutWindow(self,MenuManager.ID_TASK_WIN,style=wx.RAISED_BORDER|wx.SW_3D)
+        self.taskWin.parent=self
         self.taskWin.SetOrientation(wx.LAYOUT_VERTICAL)
         self.taskWin.SetAlignment(wx.LAYOUT_RIGHT)
         self.taskWin.SetSashVisible(wx.SASH_LEFT,True)

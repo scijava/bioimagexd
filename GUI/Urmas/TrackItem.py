@@ -268,10 +268,10 @@ class TrackItem:
         Created: 19.03.2005, KP
         Description: A method that creates a thumbnail for a timepoint
         """
-        self.volume=self.dataUnit.getTimePoint(self.thumbtimepoint)
-        self.drawItem()
-        self.parent.paintTrack()
-        self.parent.Refresh()
+        #self.volume=
+        #self.drawItem()
+        #self.parent.paintTrack()
+        #self.parent.Refresh()
         
 
         
@@ -289,13 +289,12 @@ class TrackItem:
             #    #n=(1+self.thumbtimepoint)*750
             #    wx.FutureCall(n,self.getThumbnail)
             #    return
-            self.getThumbnail()
-            if self.volume and self.getting:
-                vx,vy,vz=self.volume.GetDimensions()
-                ctf=self.dataUnit.getSettings().get("ColorTransferFunction")
-                self.thumbnailbmp=ImageOperations.vtkImageDataToPreviewBitmap(self.volume,ctf,0,self.height-self.labelheight)
-            if not self.thumbnailbmp:
-                return
+            
+            self.volume = self.dataUnit.getTimePoint(self.thumbtimepoint)
+            
+            vx,vy,vz=self.volume.GetDimensions()
+            ctf=self.dataUnit.getSettings().get("ColorTransferFunction")
+            self.thumbnailbmp=ImageOperations.vtkImageDataToPreviewBitmap(self.volume,ctf,0,self.height-self.labelheight)
             
         iw,ih=self.thumbnailbmp.GetSize()
         #print "image size=",iw,ih

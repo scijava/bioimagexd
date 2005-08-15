@@ -41,6 +41,8 @@ import Configuration
 import os,sys
 import Dialogs
 import platform
+import Logging
+
 class VideoGeneration(wx.Panel):
     """
     Class: RenderingPage
@@ -100,29 +102,36 @@ class VideoGeneration(wx.Panel):
         file=self.videofile.GetValue()
         renderingInterface=RenderingInterface.getRenderingInterface(1)
         renderingInterface.setVisualizer(self.visualizer)
-        print "Setting duration to ",self.dur,"and frames to",self.frames
+        Logging.info("Setting duration to ",self.dur,"and frames to",self.frames,kw="animator")
         self.control.configureTimeline(self.dur,self.frames)
 
-        print "Will produce %s, rendered frames go to %s"%(file,path)
-        #size=self.frameSize.GetStringSelection()
-        #x,y=size.split("x")
-        #x=int(x)
-        #y=int(y)
-        #size=(x,y)
+        Logging.info("Will produce %s, rendered frames go to %s"%(file,path),kw="animator")
+        size=self.frameSize.GetStringSelection()
+        x,y=size.split("x")
+        x=int(x)
+        y=int(y)
+        size=(x,y)
 #        self.parent.FitToPage(self.parent.renderingPage)
-        #print "Will set render window to ",size
-        #self.visualizer.setRenderWindowSize((x,y))
+        #print "self.parent=",self.parent
+        
+        Logging.info("Will set render window to ",size,kw="animator")
+        self.visualizer.setRenderWindowSize((x,y),self.parent)
         flag=self.control.renderProject(0,renderpath=path)
         if flag==-1:
             return
+        self.visualizer.restoreWindowSizes()
+        self.parent.SetDefaultSize(self.parent.origSize)
+        self.parent.parent.OnSize(None)
+                    
         if self.formatMenu.GetSelection()==1:
 
-            print "Will produce video"
-            self.encodeVideo(path,file)
+            Logging.info("Will produce video",kw="animator")
+            self.encodeVideo(path,file,size)
+
 
 #        self.Close()
 
-    def encodeVideo(self,path,file):
+    def encodeVideo(self,path,file,size):
         """
         Method: encodeVideo()
         Created: 27.04.2005, KP
@@ -136,7 +145,7 @@ class VideoGeneration(wx.Panel):
         pattern=pattern.split(os.path.sep)[-1]
         pattern=pattern.replace("%s",framename)
         pattern=os.path.join(path,pattern)
-        print "Pattern for files = ",pattern
+        Logging.info("Pattern for files = ",pattern,kw="animator")
         
         #frameRate = int(self.frameRate.GetValue())
         frameRate=float(self.frameRate.GetValue())
@@ -148,23 +157,24 @@ class VideoGeneration(wx.Panel):
             Dialogs.showmessage(self,"For the code you've selected (%s), the target frame rate must be either 12 or 24. %d will be used."%(scodec,frameRate),"Bad framerate")
             
         vcodec = self.outputCodecs[codec]
-        try:
-            x,y=self.visualizer.getCurrentMode().GetRenderWindow().GetSize()
-            print "Render window size =",x,y
-            if x%2:x-=(x%2)
-            if y%2:y-=(y%2)
-            print "x,y=",x,y
-        except:
-            x,y=512,512
+#        try:
+#            x,y=self.visualizer.getCurrentMode().GetRenderWindow().GetSize()
+#            print "Render window size =",x,y
+#            if x%2:x-=(x%2)
+#            if y%2:y-=(y%2)
+#            print "x,y=",x,y
+#        except:
+#            x,y=512,512
+        x,y=size
         ffmpegs={"linux":"ffmpeg","win":"bin\\ffmpeg.exe","darwin":"bin/ffmpeg.osx"}
         ffmpeg="ffmpeg"
         for i in ffmpegs.keys():
             if i in sys.platform:
                 ffmpeg=ffmpegs[i]
                 break
-        print "Using ffmpeg %s"%ffmpeg
-        commandLine="%s -b 8192 -r %.2f -s %dx%d -i \"%s\" -vcodec %s %s"%(ffmpeg,frameRate,x,y,pattern,vcodec,file)
-        print "Command line for ffmpeg=",commandLine
+        Logging.info("Using ffmpeg %s"%ffmpeg,kw="animator")
+        commandLine="%s -b 8192 -r %.2f -s %dx%d -i \"%s\" -vcodec %s \"%s\""%(ffmpeg,frameRate,x,y,pattern,vcodec,file)
+        Logging.info("Command line for ffmpeg=",commandLine,kw="animator")
         os.system(commandLine)
         if os.path.exists(file):
             Dialogs.showmessage(self,"Encoding was successful!","Encoding done")
@@ -247,9 +257,9 @@ class VideoGeneration(wx.Panel):
         self.outputFormat.Bind(wx.EVT_CHOICE,self.onUpdateCodec)
         self.outputFormat.SetSelection(2)
         
-        #self.frameSizeLbl = wx.StaticText(self,-1,"Frame size:")
-        #self.frameSize = wx.Choice(self,-1,choices=["320 x 240","640 x 480"])
-        #self.frameSize.SetSelection(1)
+        self.frameSizeLbl = wx.StaticText(self,-1,"Frame size:")
+        self.frameSize = wx.Choice(self,-1,choices=["320 x 240","512 x 512","640 x 480","800 x 600"])
+        self.frameSize.SetSelection(1)
 
         self.frameRateLbl=wx.StaticText(self,-1,"Frame rate:")
         self.frameRate = wx.TextCtrl(self,-1,"%.2f"%self.fps)
@@ -263,9 +273,9 @@ class VideoGeneration(wx.Panel):
         self.outputsizer.Add(self.outputFormatLbl,(n,0))
         self.outputsizer.Add(self.outputFormat,(n,1))
         n+=1
-        #self.outputsizer.Add(self.frameSizeLbl,(n,0))
-        #self.outputsizer.Add(self.frameSize,(n,1))
-        #n+=1
+        self.outputsizer.Add(self.frameSizeLbl,(n,0))
+        self.outputsizer.Add(self.frameSize,(n,1))
+        n+=1
         self.outputsizer.Add(self.frameRateLbl,(n,0))
         self.outputsizer.Add(self.frameRate,(n,1))
         n+=1
@@ -353,10 +363,9 @@ class VideoGeneration(wx.Panel):
         """ 
         try:
             val=int(self.totalFrames.GetValue())
-            print "val=",val
             self.frames = val
             self.fps = self.frames / float(self.dur)
-            print "frames per second = ",self.fps
+            Logging.info("frames per second = ",self.fps,kw="animator")
             self.fpsLabel.SetLabel("Rendered frames:\t%.3f / second"%self.fps)
             self.frameRate.SetValue("%.2f"%self.fps)
             self.onPadFrames(None)

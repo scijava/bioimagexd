@@ -73,7 +73,7 @@ class UrmasRenderer:
         self.control = control
         self.dataUnit = control.getDataUnit()
         data = self.dataUnit.getTimePoint(0)
-        print "Setting dataunit to",self.dataUnit
+        #print "Setting dataunit to",self.dataUnit
         self.renderingInterface.setDataUnit(self.dataUnit)
         self.renderingInterface.setCurrentTimepoint(0)
         self.renderingInterface.setTimePoints([0])
@@ -170,7 +170,7 @@ class UrmasRenderer:
         for track in tracks:           
             for item in track.getItems():
                 start,end=item.getPosition()
-                print "time=",time,"item.pos=",start,end
+                #print "time=",time,"item.pos=",start,end
                 if time >= start and time <= end:
                     if track != self.currTrack:
                         # Reset camera everytime we switch tracks
@@ -195,7 +195,7 @@ class UrmasRenderer:
         time    The current time in the timeline
         spf     Seconds per one frame
         """            
-        print "renderFrame at ",timepos
+        
         timepoint = self.getTimepointAt(timepos)
         if not preview and (timepoint != self.oldTimepoint):
             # Set the timepoint to be used
@@ -208,7 +208,7 @@ class UrmasRenderer:
                 
             p0=point.getPoint()
             #self.dlg.Update(frame,"Rendering at %.2fs / %.2fs (frame %d / %d)"%(timepos,self.duration,frame,self.frames))
-            print "Rendering frame %d using timepoint %d, time is %f"%(frame,timepoint,timepos)
+            Logging.info("Rendering frame %d using timepoint %d, time is %f"%(frame,timepoint,timepos),kw="animator")
             start,end=point.getPosition()
             # how far along this part of spline we are
             d=timepos-start
@@ -223,11 +223,12 @@ class UrmasRenderer:
             x,y,z=point
             self.lastSplinePoint=(x,y,z)
         elif point:
-            print "Camera stopped, using last point"
+            Logging.info("Camera is motionless, using last position",kw="animator")
             x,y,z=self.lastSplinePoint
             point=(x,y,z)
         else:
-            print "No camera position"
+            Logging.info("No camera position",kw="animator")
+
 #            Dialogs.showerror(self.control.window,"Camera path ended prematurely","Cannot determine camera position")
             point=self.lastpoint
 
@@ -245,7 +246,7 @@ class UrmasRenderer:
             # With this we can be sure that all of the props will be visible.
             #self.ren.ResetCameraClippingRange()
             curr_file_name = self.renderingInterface.getFilename(frame)
-            print "Saving with name",curr_file_name
+            Logging.info("Saving to ",curr_file_name,kw="animator")
             self.renderingInterface.render()     
             self.renderingInterface.saveFrame(curr_file_name)
         else:
@@ -268,53 +269,14 @@ class UrmasRenderer:
             cam.OrthogonalizeViewUp()
         elif self.currTrack:
             # if there's movement in z direction
-            print "lastpoint=",self.lastpoint,"point=",point
+#            print "lastpoint=",self.lastpoint,"point=",point
             if self.lastpoint and abs(self.lastpoint[2]-point[2])>2:
-                print "Orthogonalizing because old z=",self.lastpoint[2],"!= new z",point[2]
+                #print "Orthogonalizing because old z=",self.lastpoint[2],"!= new z",point[2]
                 cam.OrthogonalizeViewUp()
         self.lastpoint=point
         renderer.ResetCameraClippingRange()
         
 
                     
-    def renderPreviewFrame(self,frame,timepos,spf):
-        """
-        Method: renderFrame(frame,time)
-        Created: 04.04.2005, KP
-        Description: This renders a given frame
-        Parameters:
-        frame   The frame we're rendering
-        time    The current time in the timeline
-        spf     Seconds per one frame
-        """            
 
-        timepoint = self.getTimepointAt(timepos)
-        point = self.getSplinepointsAt(timepos)
-        if not point:
-            print "No camera position"
-#            Dialogs.showerror(self.control.window,"Camera path ended prematurely","Cannot determine camera position")
-            return -1
-        p0=point.getPoint()
-        print "Rendering frame %d using timepoint %d, time is %f"%(frame,timepoint,timepos)
-        start,end=point.getPosition()
-        # how far along this part of spline we are
-        d=timepos-start
-        # how long is it in total
-        n = end-start
-        # gives us a percent of the length we've traveled
-        percentage = d/float(n)
-        #print "time %.2f is %.3f%% between %.2f and %.2f"%(timepos,percentage,start,end)
-        n=point.getItemNumber()
-        #print "p0=",p0,"item=",n
         
-        p,point = self.control.splineEditor.getCameraPosition(n,p0,percentage)
-        x,y,z=point
-        print "Camera position is point %d = %.2f,%.2f,%.2f"%(p,x,y,z)
-        
-        cam = self.splineEditor.getCamera()
-        focal = self.splineEditor.getCameraFocalPointCenter()
-        
-        self.setCameraParameters(cam,ren, point, focal)
-        self.splineEditor.renderer.ResetCameraClippingRange()
-        self.splineEditor.render()
-        #time.sleep(0.1)

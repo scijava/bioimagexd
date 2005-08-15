@@ -60,6 +60,7 @@ class VisualizerWindow(wxVTKRenderWindowInteractor):
         self.renderer=None
         self.doSave=0
         self.zoomFactor=1.0
+        self.rendering=0
         self.rubberband=0
 
     def enable(self,flag):
