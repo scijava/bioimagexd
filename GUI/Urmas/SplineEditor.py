@@ -98,24 +98,8 @@ class SplineEditor:
         self.outlinemapper = vtk.vtkPolyDataMapper ()
         self.outlineactor = vtk.vtkActor ()
         self.axes = vtk.vtkCubeAxesActor2D ()
-
-        self.spline = spline = vtk.vtkSplineWidget()
-        self.spline.GetLineProperty().SetColor(1,0,0)
-        self.spline.GetHandleProperty().SetColor(0,1,0)
-#        print "Setting current renderer to",self.renderer
-
-        self.spline.SetResolution(1000)
-
-        self.spline.AddObserver("EndInteractionEvent",self.endInteraction)
-        self.spline.AddObserver("InteractionEvent",self.endInteraction)
-        if not ren:
-            raise "No renderer in SplineEditor!"
         print "Initializing camera"
         self.initCamera()
-        self.spline.SetInteractor(self.iren)
-        #self.initSpline(2)
-        self.spline.On()
-        self.spline.SetEnabled(1)
         self.wxrenwin.Render()
 
     def setClosed(self,flag):
@@ -327,16 +311,29 @@ class SplineEditor:
         volumeProperty = vtk.vtkVolumeProperty()
         volumeProperty.SetColor(colorTransferFunction)
         volumeProperty.SetScalarOpacity(opacityTransferFunction)
-        #volumeProperty.ShadeOn()
+        volumeProperty.ShadeOff()
         #volumeProperty.SetInterpolationTypeToLinear()
 
         
-        volumeMapper = vtk.vtkVolumeTextureMapper2D()
-        volumeMapper.SetMaximumNumberOfPlanes(18)
+        #volumeMapper = vtk.vtkVolumeTextureMapper2D()
+        volumeMapper = vtk.vtkFixedPointVolumeRayCastMapper()
+        volumeMapper.SetIntermixIntersectingGeometry(1)
+        volumeMapper.SetSampleDistance(2)
+        volumeMapper.SetBlendModeToComposite()
+        #volumeMapper.SetMaximumNumberOfPlanes(18)        
         data.Update()
-        volumeMapper.SetInput(data)
+        ncomps=data.GetNumberOfScalarComponents()
+        if ncomps>1:
+            volumeProperty.IndependentComponentsOff()
+        else:
+            volumeProperty.IndependentComponentsOn()                    
+        volumeMapper.SetInput(self.data)
         
         volume = vtk.vtkVolume()
+        print "Adding volume"
+        self.renderer.AddVolume(volume)
+        print "done"
+        
         volume.SetMapper(volumeMapper)
         volume.SetProperty(volumeProperty)
         
@@ -354,21 +351,31 @@ class SplineEditor:
         #self.axes.SetInertia(10)
         self.axes.ScalingOff ()
         self.axes.SetCamera (self.renderer.GetActiveCamera ())
-        #if hasattr(self.axes, "GetAxisTitleTextProperty"):
-        #    self.axes.GetAxisTitleTextProperty().ShadowOff()
-        #    self.axes.GetAxisLabelTextProperty().ShadowOff()
-        #else:
-        #    self.axes.ShadowOff ()
 
-        self.renderer.AddVolume(volume)
         self.renderer.AddActor (self.axes)
         self.axes.SetInput (self.outline.GetOutput ())
+        
+        self.spline = spline = vtk.vtkSplineWidget()
+        self.spline.GetLineProperty().SetColor(1,0,0)
+        self.spline.GetHandleProperty().SetColor(0,1,0)
+        self.spline.SetResolution(1000)
+
+        self.spline.AddObserver("EndInteractionEvent",self.endInteraction)
+        self.spline.AddObserver("InteractionEvent",self.endInteraction)
+        self.spline.SetInteractor(self.iren)
+        self.spline.On()
+        
+        self.spline.SetEnabled(1)        
 
         #print "Axes actor inertia: %d"%(self.axes.GetInertia())
-
-        self.renderer.Render()
+        self.volume = volume
+        self.volumeMapper = volumeMapper
+        self.volumeProperty = volumeProperty
+        print "Rendering...",
+        #self.renderer.Render()
+        print "...almost..."
         self.wxrenwin.Render()
-
+        print "done"
     def getCamera(self):
         """
         Method: getCamera()
