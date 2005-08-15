@@ -69,6 +69,7 @@ class TrackItem:
         self.thumbnailbmp=0
         self.dragMode=0
         self.labelheight=15
+        self.volume = None
         self.thumbtimepoint=-1
         self.timepoint = -1
         if "timepoint" in kws:
@@ -79,6 +80,7 @@ class TrackItem:
             self.dataUnit=kws["dataunit"]
         if kws.has_key("thumbnail"):
             self.thumbtimepoint=kws["thumbnail"]
+            #self.setThumbnailDataunit(self.dataUnit)
         self.color=(255,255,255)
         self.headercolor=(127,127,127)
         
@@ -145,6 +147,9 @@ class TrackItem:
         """       
         self.dataUnit=dataunit
         self.thumbtimepoint=self.timepoint
+        #print "self.timepoint=",self.timepoint
+        #self.volume = self.dataUnit.getTimePoint(self.thumbtimepoint)
+        #print "release data=",self.volume.GetReleaseDataFlag()
         
     def __set_pure_state__(self,state):
         """
@@ -261,19 +266,6 @@ class TrackItem:
         """ 
         self.dc.SetPen(wx.Pen(wx.Colour(0,0,0),2))
         self.dc.DrawLine(h,0,h,self.height)
- 
-    def getThumbnail(self):
-        """
-        Method: getThumbnail()
-        Created: 19.03.2005, KP
-        Description: A method that creates a thumbnail for a timepoint
-        """
-        #self.volume=
-        #self.drawItem()
-        #self.parent.paintTrack()
-        #self.parent.Refresh()
-        
-
         
     def drawThumbnail(self):
         """
@@ -283,17 +275,12 @@ class TrackItem:
                      this will create one
         """   
         if not self.thumbnailbmp:
-            #if not self.getting:
-            #    self.volume=0
-            #    self.getting=1
-            #    #n=(1+self.thumbtimepoint)*750
-            #    wx.FutureCall(n,self.getThumbnail)
-            #    return
-            
-            self.volume = self.dataUnit.getTimePoint(self.thumbtimepoint)
-            
+            if not self.volume:
+                self.volume = self.dataUnit.getTimePoint(self.thumbtimepoint)
+            #self.volume.Update()
             vx,vy,vz=self.volume.GetDimensions()
             ctf=self.dataUnit.getSettings().get("ColorTransferFunction")
+            print self.volume.GetUpdateExtent()
             self.thumbnailbmp=ImageOperations.vtkImageDataToPreviewBitmap(self.volume,ctf,0,self.height-self.labelheight)
             
         iw,ih=self.thumbnailbmp.GetSize()

@@ -309,8 +309,15 @@ def vtkImageDataToPreviewBitmap(imageData,color,width=0,height=0,bgcolor=(0,0,0)
                  maximum intensity projection that will be converted to a
                  wxBitmap
     """   
+    #print "imageData=",imageData
     mip=vtk.vtkImageSimpleMIP()
+    imageData.SetUpdateExtent(imageData.GetWholeExtent())
+    print "imageData.GetUpdateExtent()=",imageData.GetUpdateExtent()
     mip.SetInput(imageData)
+    #mip.DebugOn()
+    mip.Update()
+    
+    imageData.SetUpdateExtent(imageData.GetWholeExtent())        
     x,y,z=imageData.GetDimensions()
     
     if type(color)==type( (0,0,0)) :
@@ -327,8 +334,6 @@ def vtkImageDataToPreviewBitmap(imageData,color,width=0,height=0,bgcolor=(0,0,0)
         ctf=color
     output=mip.GetOutput()
     Logging.info("Got MIP",kw="imageop")
-    mip.Update()
-    
     if output.GetNumberOfScalarComponents()==1:
         Logging.info("Mapping MIP through ctf",kw="imageop")
         maptocolor=vtk.vtkImageMapToColors()

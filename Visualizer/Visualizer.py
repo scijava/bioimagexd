@@ -130,6 +130,7 @@ class Visualizer:
         self.toolWin.SetAlignment(wx.LAYOUT_TOP)
         self.toolWin.SetSashVisible(wx.SASH_BOTTOM,False)
         self.toolWin.SetDefaultSize((500,44))
+        self.toolWin.origSize=(500,44)
 
         self.histogramWin=wx.SashLayoutWindow(self.parent,MenuManager.ID_HISTOGRAM_WIN,style=wx.NO_BORDER)
         self.histogramWin.SetOrientation(wx.LAYOUT_HORIZONTAL)

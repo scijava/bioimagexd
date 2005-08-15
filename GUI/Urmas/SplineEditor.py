@@ -569,13 +569,13 @@ class SplineEditor:
         if self.interactionCallback:
             self.interactionCallback()
 
-    def __del__(self):     
-        """
-        Method: __del__()
-        Created: Heikki Uuksulainen
-        Description: Destructs renderwindow
-        """           
-        del self.renWin
+    #def __del__(self):     
+    #    """
+    #    Method: __del__()
+    #    Created: Heikki Uuksulainen
+    #    Description: Destructs renderwindow
+    #    """           
+    #    #del self.renWin
 
     def render(self):
         """

@@ -433,7 +433,7 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         """            
         ncomps = data.GetNumberOfScalarComponents()
         Logging.info("I was created by: ",self.creator,"I am the ",PreviewFrame.count,"th instance")
-        Logging.backtrace()
+        #Logging.backtrace()
         Logging.info("Data has %d components"%ncomps,kw="preview")
         if ncomps>3:
             Logging.info("Previewed data has %d components, extracting"%ncomps,kw="preview")

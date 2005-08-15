@@ -1030,9 +1030,9 @@ class TimepointTrack(Track):
         for tp in timepoints:
             self.addTimepoint(pos,tp,0)
             pos+=1
-            self.paintTrack()
-            self.Refresh()
-        self.Layout()
+#        self.paintTrack()
+#        self.Refresh()
+#        self.Layout()
         #self.sizer.Fit(self)
             
 

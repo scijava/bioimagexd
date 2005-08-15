@@ -30,7 +30,7 @@
 #include "vtkPointData.h"
 
 #define PRT_EXT(ext) ext[0],ext[1],ext[2],ext[3],ext[4],ext[5]
-
+#define PRT_EXT2(ext) ext[0]<<","<<ext[1]<<","<<ext[2]<<","<<ext[3]<<","<<ext[4]<<","<<ext[5]
 vtkCxxRevisionMacro(vtkImageSimpleMIP, "$Revision: 1.36 $");
 vtkStandardNewMacro(vtkImageSimpleMIP);
 
@@ -49,28 +49,30 @@ void vtkImageSimpleMIP::ComputeInputUpdateExtent(int inExt[6],
 {
     int i = 0, k = 0;
     int wholeExt[6];
-    printf("MIP: Getting input update extent from output extent\n");
-    printf("MIP: outExt=%d,%d,%d,%d,%d,%d\n",PRT_EXT(outExt));
+    vtkDebugMacro("MIP: Getting input update extent from output extent\n");
+    vtkDebugMacro("MIP: outExt="<<PRT_EXT2(outExt)<<"\n");
     this->GetInput()->GetWholeExtent(wholeExt);
     memcpy(wholeExt,inExt,sizeof(int)*6);
-
+    
 }
 
 //-----------------------------------------------------------------------------
 void
 vtkImageSimpleMIP::ExecuteInformation(vtkImageData *input, vtkImageData *output)
 {
-  this->vtkImageToImageFilter::ExecuteInformation( input, output );
+
   int wholeExt[6];
   this->GetInput()->GetWholeExtent(wholeExt);
+  this->GetInput()->SetUpdateExtent(wholeExt);   
+  this->vtkImageToImageFilter::ExecuteInformation( input, output ); 
   wholeExt[5]=0;
   // We're gonna produce image one slice thick
   output->SetWholeExtent(wholeExt);
-  printf("MIP: Setting number of components to %d\n",input->GetNumberOfScalarComponents());
+  vtkDebugMacro("MIP: Setting number of components to "<<input->GetNumberOfScalarComponents()<<"\n");
   int ncomps = input->GetNumberOfScalarComponents();
   if(ncomps>3)ncomps=3;
   output->SetNumberOfScalarComponents(ncomps);
-
+  
 }
 
 //-----------------------------------------------------------------------------
@@ -87,21 +89,23 @@ void vtkImageSimpleMIP::ExecuteData(vtkDataObject *)
 
   unsigned char scalar,outScalar;
   if(!output) {
-      printf("MIP: No output\n");
+      vtkDebugMacro("MIP: No output\n");
   }
   output->GetUpdateExtent(uExtent);
-  printf("MIP: update extent of output=%d,%d,%d,%d,%d,%d\n",PRT_EXT(uExtent));
+  vtkDebugMacro("MIP: update extent of output="<<PRT_EXT2(uExtent)<<"\n");
   output->SetExtent(uExtent);
-
+  input->GetUpdateExtent(uExtent);
+  vtkDebugMacro("MIP: update extent of input="<<PRT_EXT2(uExtent)<<"\n");
    // WRONG!:
   // We will want the input whole extent to be the one we go through
  input->GetWholeExtent(uExtent);
- printf("MIP: whole extent is %d,%d,%d,%d,%d,%d\n",PRT_EXT(uExtent));
+ 
+ vtkDebugMacro("MIP: whole extent is"<<PRT_EXT2(uExtent)<<"\n");
 
   // Get pointers for input and output
   char *inPtr = (char *) input->GetScalarPointer();
   char *outPtr = (char *) output->GetScalarPointer();
-
+  
   if(!input) {
     vtkErrorMacro("No input is specified.");
   }
@@ -118,7 +122,8 @@ void vtkImageSimpleMIP::ExecuteData(vtkDataObject *)
   maxZ = uExtent[5] - uExtent[4];
   maxC = input->GetNumberOfScalarComponents();
   if(maxC>3)maxC=3;
-
+  for(int i=0;i<maxX*maxY*maxC;i++)*outPtr++=0;
+  outPtr = (char *) output->GetScalarPointer();
   input->GetIncrements(inIncX, inIncY, inIncZ);
   output->GetIncrements(outIncX, outIncY, outIncZ);
   vtkDebugMacro(<<"MIP: inIncX="<<inIncX<<" inIncY="<<inIncY<<" inIncZ="<<inIncZ<<"\n");

@@ -197,7 +197,7 @@ class MayaViAnimator:
             
         self.splineEditor.render()
 
-    def __del__(self):
-        del self.splineEditor
+    #def __del__(self):
+    #    del self.splineEditor
 
 
