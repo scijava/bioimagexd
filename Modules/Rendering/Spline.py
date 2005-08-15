@@ -39,7 +39,7 @@ import Logging
 from Visualizer.VisualizationModules import *
 
 def getClass():return SplineModule
-def getConfigPanel():return SplinConfigurationPanel
+def getConfigPanel():return SplineConfigurationPanel
 def getName():return "Camera path"
 
 
@@ -197,7 +197,7 @@ class SplineConfiguration(ModuleConfiguration):
         ModuleConfiguration.__init__(self,parent,"Camera Path")
         self.panel=SplineConfigurationPanel(self,visualizer)
 
-class SplinePlaneConfigurationPanel(ModuleConfigurationPanel):
+class SplineConfigurationPanel(ModuleConfigurationPanel):
     def __init__(self,parent,visualizer,name="Camera Path",**kws):
         """
         Method: __init__(parent)

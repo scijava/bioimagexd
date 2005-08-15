@@ -297,8 +297,8 @@ class SplineEditor:
 
         # Create transfer mapping scalar value to opacity
         opacityTransferFunction = vtk.vtkPiecewiseFunction()
-        opacityTransferFunction.AddPoint(50, 0.0)
-        opacityTransferFunction.AddPoint(255, 0.15)
+        opacityTransferFunction.AddPoint(10, 0.0)
+        opacityTransferFunction.AddPoint(255, 0.2)
 
         colorTransferFunction = ctf
         if not colorTransferFunction:
@@ -371,11 +371,8 @@ class SplineEditor:
         self.volume = volume
         self.volumeMapper = volumeMapper
         self.volumeProperty = volumeProperty
-        print "Rendering...",
-        #self.renderer.Render()
-        print "...almost..."
         self.wxrenwin.Render()
-        print "done"
+        
     def getCamera(self):
         """
         Method: getCamera()
