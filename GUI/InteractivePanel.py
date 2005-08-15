@@ -41,6 +41,7 @@ MANAGE_ANNOTATION=2
 ADD_ANNOTATION=3
 ADD_ROI=4
 SET_THRESHOLD=5
+DELETE_ANNOTATION=6
 
 class InteractivePanel(wx.ScrolledWindow):
     """
@@ -154,7 +155,7 @@ class InteractivePanel(wx.ScrolledWindow):
             return
             
         self.actionstart=pos
-        if self.action==MANAGE_ANNOTATION:
+        if self.action in [MANAGE_ANNOTATION,DELETE_ANNOTATION]:
             self.findSelectedAnnotation()
             
     def updateActionEnd(self,event):
@@ -198,7 +199,13 @@ class InteractivePanel(wx.ScrolledWindow):
             self.updateObject(self.annotationClass,event)
         elif self.action==SET_THRESHOLD:
             self.setThreshold()
-        
+        elif self.action==DELETE_ANNOTATION:
+            ann=self.currentAnnotation
+            print "Deleting",ann
+            self.annotations.remove(ann)
+            self.action=0
+            self.currentAnnotation=None
+            self.updatePreview()
         if not self.multiple:
             self.currentAnnotation=None
             self.action=0
@@ -279,6 +286,14 @@ class InteractivePanel(wx.ScrolledWindow):
         Description: Manage annotations on the scene
         """
         self.action=MANAGE_ANNOTATION
+        
+    def deleteAnnotation(self):
+        """
+        Method: deleteAnnotation()
+        Created: 15.08.2005, KP
+        Description: Delete annotations on the scene
+        """
+        self.action=DELETE_ANNOTATION        
         
     def addAnnotation(self,annClass,**kws):
         """

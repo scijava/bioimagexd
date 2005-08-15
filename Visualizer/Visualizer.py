@@ -357,6 +357,10 @@ class Visualizer:
         self.tb.AddSeparator()
         self.tb.AddSimpleTool(MenuManager.ID_DRAG_ANNOTATION,wx.Image(os.path.join("Icons","arrow.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Manage annotations","Manage annotations on the image")
         
+        bmp = wx.ArtProvider_GetBitmap(wx.ART_DELETE,wx.ART_TOOLBAR, (32,32))
+        self.tb.AddSimpleTool(MenuManager.ID_DEL_ANNOTATION,bmp,"Delete annotation","Delete an annotation")
+        
+        
         self.tb.AddSimpleTool(MenuManager.ID_ADD_SCALE,wx.Image(os.path.join("Icons","scale.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Draw scale","Draw a scale bar on the image")
         self.tb.AddSeparator()
         self.origBtn=wx.Button(self.tb,-1,"Original")
@@ -377,7 +381,7 @@ class Visualizer:
         wx.EVT_TOOL(self.parent,MenuManager.ID_ZOOM_OBJECT,self.zoomObject)
         wx.EVT_TOOL(self.parent,MenuManager.ID_ADD_SCALE,self.addAnnotation)
         wx.EVT_TOOL(self.parent,MenuManager.ID_DRAG_ANNOTATION,self.manageAnnotation)
-        
+        wx.EVT_TOOL(self.parent,MenuManager.ID_DEL_ANNOTATION,self.deleteAnnotation)
 #        wx.EVT_TOOL(self.parent,MenuManager.ID_ROI_CIRCLE,self.addAnnotation)
 #        wx.EVT_TOOL(self.parent,MenuManager.ID_ROI_RECTANGLE,self.addAnnotation)
 #        wx.EVT_TOOL(self.parent,MenuManager.ID_ROI_POLYGON,self.addAnnotation)
@@ -463,7 +467,13 @@ class Visualizer:
         """
         self.currMode.manageAnnotation()
         
-
+    def deleteAnnotation(self,event):
+        """
+        Method: deleteAnnotation()
+        Created: 04.07.2005, KP
+        Description: DElete annotations on the image
+        """
+        self.currMode.deleteAnnotation()
 
     def zoomOut(self,evt):
         """

@@ -83,6 +83,15 @@ class VisualizationMode:
         if self.iactivePanel:
             self.iactivePanel.manageAnnotation()
 
+    def deleteAnnotation(self):
+        """
+        Method: deleteAnnotation()
+        Created: 15.08.2005, KP
+        Description: Delete annotations on the scene
+        """
+        if self.iactivePanel:
+            self.iactivePanel.deleteAnnotation()
+            
     def zoomObject(self):
         """
         Method: zoomObject()

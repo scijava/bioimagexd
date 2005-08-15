@@ -130,6 +130,8 @@ ID_VISSLIDER_WIN    =185
 ID_ZSLIDER_WIN      =186
 ID_HISTOGRAM_WIN    =187
 
+ID_DEL_ANNOTATION   =188
+
 class MenuManager:
     """
     Class: MenuManager
