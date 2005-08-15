@@ -85,7 +85,7 @@ def paintCTFValues(ctf,height=32):
     return bmp
 
 
-def scaleImage(data,factor,z=-1,interpolation=1):
+def scaleImage(data,factor=1.0,z=-1,interpolation=1,xfactor=0.0,yfactor=0.0):
     """
     Method: scaleImage(data,factor)
     Created: 01.08.2005, KP
@@ -98,13 +98,20 @@ def scaleImage(data,factor,z=-1,interpolation=1):
     data.SetOrigin(x/2.0,y/2.0,0)
     transform=vtk.vtkTransform()
     x0,x1,y0,y1,z0,z1=data.GetExtent()
-    transform.Scale(1/factor,1/factor,1)
+    if not (xfactor or yfactor):
+        transform.Scale(1/factor,1/factor,1)
+    else:
+        transform.Scale(1/xfactor,1/yfactor,1)
+    
     #transform.Translate((x1*factor)/2.0,(y1*factor)/2.0,0)
     reslice=vtk.vtkImageReslice()
 #    reslice.SetOutputSpacing(1,1,1)
     reslice.SetOutputOrigin(0,0,0)
     reslice.SetInput(data)
-    reslice.SetOutputExtent(x0*factor,x1*factor,y0*factor,y1*factor,z0,z1)
+    if not (xfactor or yfactor):
+        reslice.SetOutputExtent(x0*factor,x1*factor,y0*factor,y1*factor,z0,z1)
+    else:
+        reslice.SetOutputExtent(x0*xfactor,x1*xfactor,y0*yfactor,y1*yfactor,z0,z1)  
     #reslice.SetOutputDimensions(x*factor,y*factor,z)
     reslice.SetResliceTransform(transform)
     if interpolation==1:

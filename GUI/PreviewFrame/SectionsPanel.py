@@ -220,7 +220,23 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
             self.setTimepoint(self.timepoint)
         self.updatePreview()
         messenger.send(None,"zslice_changed",nz) 
-        
+                
+        ncomps=self.imagedata.GetNumberOfScalarComponents()
+        if ncomps==1:
+            r=self.imagedata.GetScalarComponentAsDouble(self.x,self.y,self.z,0)
+            g=-1
+            b=-1
+            alpha=-1
+        else:
+            r=self.imagedata.GetScalarComponentAsDouble(self.x,self.y,self.z,0)
+            g=self.imagedata.GetScalarComponentAsDouble(self.x,self.y,self.z,1)
+            b=self.imagedata.GetScalarComponentAsDouble(self.x,self.y,self.z,2)
+            alpha=-1
+            if ncomps>3:
+                alpha=self.imagedata.GetScalarComponentAsDouble(self.x,self.y,self.z,3)
+    
+        messenger.send(None,"get_voxel_at",self.x,self.y,self.z,r,g,b,alpha,self.ctf)
+        event.Skip()
         
         event.Skip()
             
@@ -277,12 +293,12 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
         self.timepoint=tp
         if self.visualizer.getProcessedMode():
             image=self.dataUnit.doPreview(-2,1,self.timepoint)
-            ctf = self.dataUnit.getSourceDataUnits()[0].getColorTransferFunction()
+            self.ctf = self.dataUnit.getSourceDataUnits()[0].getColorTransferFunction()
         else:
             image=self.dataUnit.getTimePoint(tp)
-            ctf=self.dataUnit.getColorTransferFunction()
+            self.ctf=self.dataUnit.getColorTransferFunction()
         
-        self.imagedata = ImageOperations.imageDataTo3Component(image,ctf)
+        self.imagedata = ImageOperations.imageDataTo3Component(image,self.ctf)
         
         self.dims=self.imagedata.GetDimensions()
             
@@ -300,11 +316,15 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
         slice=ImageOperations.getPlane(self.imagedata,"zy",self.x,self.y,z)
         if self.zoomFactor != 1:
             slice=ImageOperations.scaleImage(slice,self.zoomFactor)
+        if self.zoomZ != 1:
+            slice=ImageOperaations.scaleImage(slice,xfactor=self.zoomZ)
         slice=ImageOperations.vtkImageDataToWxImage(slice)
         self.slices.append(slice)
         slice=ImageOperations.getPlane(self.imagedata,"xz",self.x,self.y,z)
-        if self.zoomFactor != 1:
+        if self.zoomFactor != 1 or self.zoomZ != 1:
             slice=ImageOperations.scaleImage(slice,self.zoomFactor)
+        if self.zoomZ != 1:
+            slice=ImageOperaations.scaleImage(slice,yfactor=self.zoomZ)        
         slice=ImageOperations.vtkImageDataToWxImage(slice)
         self.slices.append(slice)        
 
@@ -399,16 +419,17 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
 
         pos=[(self.xmargin,self.ymargin),(x+(2*self.xmargin),self.ymargin),(self.xmargin,y+(2*self.ymargin))]
         for i,slice in enumerate(self.slices):
-            w,h=slice.GetWidth(),slice.GetHeight()
-                        
-            if i==1:
-                slice.Rescale(w*self.zoomZ,h)
-            elif i==2:
-                slice.Rescale(w,h*self.zoomZ)
+            w,h=slice.GetWidth(),slice.GetHeight()                        
+            #if i==1:
+            #    slice.Rescale(w*self.zoomZ,h)
+            #elif i==2:
+            #    slice.Rescale(w,h*self.zoomZ)
 #            if self.zoomFactor!=1:
 #                slice=ImageOperations.zoomImageByFactor(slice,self.zoomFactor)
             
             w,h=slice.GetWidth(),slice.GetHeight()
+            #if i==2:
+                #slice=slice.Mirror(1)
             bmp=slice.ConvertToBitmap()
 
             sx,sy=pos[i]
