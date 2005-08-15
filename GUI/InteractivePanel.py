@@ -248,7 +248,7 @@ class InteractivePanel(wx.ScrolledWindow):
         for i in self.annotations:
             bmp=i.getAsBitmap()
             w,h=bmp.GetWidth(),bmp.GetHeight()
-            x0,y0=i.pos
+            x0,y0=i.getScaledPosition()
             if x>=x0 and y>=y0 and x<=x0+w and y<=y0+h:
                 Logging.info("Annotation at %d,%d = %s"%(x,y,str(i.__class__)),kw="iactivepanel")
                 self.currentAnnotation=i

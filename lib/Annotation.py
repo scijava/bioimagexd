@@ -49,6 +49,9 @@ class Annotation:
         self.vertical=0
         self.region=0
         self.bmp=None
+        scaleFactor=float(scaleFactor)
+        x/=scaleFactor
+        y/=scaleFactor
         self.pos=(x,y)
         self.voxelSize=voxelSize
         self.scaleFactor=scaleFactor
@@ -84,7 +87,10 @@ class Annotation:
         else:
             if pos:
                 self.pointList.append(pos)
-        self.pos=pos
+        x,y=pos
+        x/=self.scaleFactor
+        y/=self.scaleFactor
+        self.pos=(x,y)
         self.update=1
     
     def getAsBitmap(self):
@@ -102,7 +108,7 @@ class Annotation:
         Description: Draw the annotation to a drawing context
         """     
         bmp=self.getAsBitmap()
-        x,y=self.pos
+        x,y=self.getScaledPosition()
         dc.DrawBitmap(bmp,x,y,True)
         
 
@@ -116,6 +122,10 @@ class Annotation:
                      horizontal and also the length of the annotation
                      in the vertical/horizontal direction
         """     
+        x,y=pos
+        x/=self.scaleFactor
+        y/=self.scaleFactor
+        pos=(x,y)
         self.endpos=pos
         x0,y0=self.pos
         x1,y1=self.endpos
@@ -146,6 +156,14 @@ class Annotation:
         self.setPixelLength(diff)
         self.setAlignment(vertical)            
         self.update=1
+        
+    def getScaledPosition(self):
+        """
+        Method: getScaledPosition
+        Created: 15.08.2005, KP
+        Description: Return the position scaled by the zoom factor
+        """             
+        return [x*self.scaleFactor for x in self.pos]
         
     def setAlignment(self,vertical=0):
         """
@@ -184,6 +202,7 @@ class Annotation:
         """     
         self.scaleFactor=factor
         self.update=1
+        
     def __setstate__(self,d):
         """
         Method: __setstate__
@@ -283,8 +302,10 @@ class ScaleBar(Annotation):
         vx = self.voxelSize[0]
         vx*=1000000
         Logging.info("voxel width=%d, scale=%f, scaled %.4f"%(vx,self.scaleFactor,vx/self.scaleFactor),kw="annotation")
-        vx/=float(self.scaleFactor)
-            
+        # as the widths and positions are already scaled back, 
+        # we don't need to scale the voxel size
+        #vx/=float(self.scaleFactor)
+ 
         if not self.vertical:
             heightPx=32
             widthPx=self.widthPx
@@ -292,6 +313,7 @@ class ScaleBar(Annotation):
             heightPx=self.widthPx
             widthPx=32
             
+        widthPx*=self.scaleFactor
         dc = wx.MemoryDC()
 
         # Set the font for the label and calculate the extent
@@ -411,8 +433,8 @@ class Circle(Annotation):
         dc.DrawRectangle(0,0,bmpw,bmpw)
         
         dc.SetPen(wx.Pen((0,255,0),2))
-
-        dc.DrawCircle(self.widthPx/2,self.widthPx/2,self.widthPx/2)
+        widthPx=self.widthPx*self.scaleFactor
+        dc.DrawCircle(widthPx/2,widthPx/2,widthPx/2)
         
         dc.EndDrawing()
         dc.SelectObject(wx.NullBitmap)
@@ -452,7 +474,9 @@ class Rectangle(Annotation):
 
         dc = wx.MemoryDC()
         bmpw=self.widthPx
+        bmpw*=self.scaleFactor
         bmph=self.heightPx
+        bmph*=self.scaleFactor
         bmp = wx.EmptyBitmap(bmpw,bmph)
         bg=(127,127,127)
         dc.SelectObject(bmp)
@@ -490,7 +514,6 @@ class Polygon(Annotation):
         Annotation.__init__(self,x,y,voxelSize,scaleFactor)
         self.region=1
             
-        
     def getAsBitmap(self):
         """
         Method: getAsBitmap()
@@ -531,6 +554,8 @@ class Polygon(Annotation):
             Logging.info("Drawing points in ",self.pointList,kw="iactivepanel")
             for point in self.pointList:
                 x,y=point.x,point.y
+                x*=self.scaleFactor
+                y*=self.scaleFactor
                 Logging.info("Drawing circle at ",x,y,kw="iactivepanel")
                 dc.DrawCircle(x,y,2)
             
@@ -540,10 +565,12 @@ class Polygon(Annotation):
             for p1 in self.pointList[1:]:
                 x0,y0=p0
                 x1,y1=p1
+                x0,y0,x1,y1=[x*self.scaleFactor for x in (x0,y0,x1,y1)]
                 dc.DrawLine(x0,y0,x1,y1)
                 p0=p1
             x0,y0=self.pointList[-1]
             x1,y1=self.pointList[0]
+            x0,y0,x1,y1=[x*self.scaleFactor for x in (x0,y0,x1,y1)]
             dc.DrawLine(x0,y0,x1,y1)
         
         dc.EndDrawing()

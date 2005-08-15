@@ -208,10 +208,7 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
         #nz/=self.zoomFactor
         #print "showing ",nx,ny,nz
         
-        #self.drawPos=[x*self.zoomFactor for x in (nx,ny,nz)]
         self.drawPos=[x*self.zoomFactor for x in (self.x,self.y,self.z)]
-        #self.drawPos[0]+=self.xmargin
-        #self.drawPos[1]+=self.ymargin
         
         Logging.info("drawPos=",self.drawPos,"zoomFactor=",self.zoomFactor,"nx=%d, ny=%d, nz=%d"%(nx,ny,nz))
         if self.x!=nx or self.y!=ny or self.z!=nz:

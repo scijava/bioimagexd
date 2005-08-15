@@ -42,7 +42,6 @@ def getImmediateRendering(): return False
 def getConfigPanel(): return None
 def getRenderingDelay(): return 500
 def showZoomToolbar(): return True    
-
         
 class SectionsMode(VisualizationMode):
     def __init__(self,parent,visualizer):
