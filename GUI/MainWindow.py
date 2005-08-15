@@ -778,6 +778,15 @@ class MainWindow(wx.Frame):
             mode="3d"
         messenger.send(None,"update_progress",0.1,"Loading %s view..."%mode)
 
+        # If it's animator we're loading, then hide the dataset info
+        # and file tree
+        if mode=="animator":
+            self.onMenuShowTree(None,0)
+            self.infoWin.SetDefaultSize((0,0))
+            self.menuManager.check(MenuManager.ID_VIEW_INFO,0)
+            self.OnSize(None)
+#            self.OnSize(None)
+#            self.visualizer.OnSize(None)
         self.setButtonSelection(eid)
         #self.onMenuShowTree(None,0)
 

@@ -46,7 +46,7 @@ import vtk
 import wx
 
 ZOOM_TO_FIT=-1
-
+import sys
 
 class PreviewFrame(InteractivePanel.InteractivePanel):
     """
@@ -55,13 +55,17 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
     Description: A widget that uses the wxVTKRenderWidget to display a preview
                  of operations done by a subclass of Module
     """
+    count=0
     def __init__(self,parent,**kws):
         """
         Method: __init__(parent)
         Created: 03.11.2004, KP
         Description: Initialization
         """
+        PreviewFrame.count+=1
         #wx.Panel.__init__(self,parent,-1)
+        xframe=sys._getframe(1)
+        self.creator=xframe.f_code.co_filename+": "+str(xframe.f_lineno)
         self.parent=parent
         self.blackImage=None
         self.finalImage=None
@@ -178,7 +182,8 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         #self.Bind(wx.EVT_PAINT,self.OnPaint)        
         self.Bind(wx.EVT_LEFT_DOWN,self.getVoxelValue)
         self.SetHelpText("This window displays the selected dataset slice by slice.")
-    
+    def __del__(self):        
+        PreviewFrame.count-=1
     def setRenewFlag(self,obj,evt):
         """
         Method: setRenewFlag
@@ -427,6 +432,8 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         Description: Process the data before it's send to the preview
         """            
         ncomps = data.GetNumberOfScalarComponents()
+        Logging.info("I was created by: ",self.creator,"I am the ",PreviewFrame.count,"th instance")
+        Logging.backtrace()
         Logging.info("Data has %d components"%ncomps,kw="preview")
         if ncomps>3:
             Logging.info("Previewed data has %d components, extracting"%ncomps,kw="preview")

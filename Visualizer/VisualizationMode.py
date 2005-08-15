@@ -90,7 +90,7 @@ class VisualizationMode:
         Description: Zoom to a user selected portion of the image
         """
         if self.iactivePanel:
-            self.iactivePanel.zoomObject()
+            self.iactivePanel.startRubberband()
             
         
     def zoomToFit(self):

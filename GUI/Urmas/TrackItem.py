@@ -280,15 +280,16 @@ class TrackItem:
         Method: drawThumbnail()
         Created: 10.02.2005, KP
         Description: A method that draws a thumbnail on an item. If no thumbnail exists,
-                     this will create a thread to create one and return
+                     this will create one
         """   
         if not self.thumbnailbmp:
-            if not self.getting:
-                self.volume=0
-                self.getting=1
-                n=(1+self.thumbtimepoint)*750
-                wx.FutureCall(n,self.getThumbnail)
-                return
+            #if not self.getting:
+            #    self.volume=0
+            #    self.getting=1
+            #    #n=(1+self.thumbtimepoint)*750
+            #    wx.FutureCall(n,self.getThumbnail)
+            #    return
+            self.getThumbnail()
             if self.volume and self.getting:
                 vx,vy,vz=self.volume.GetDimensions()
                 ctf=self.dataUnit.getSettings().get("ColorTransferFunction")

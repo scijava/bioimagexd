@@ -78,7 +78,8 @@ class Visualizer:
         
         self.updateFactor = 0.001
         self.depthT=0
-        
+        self.zoomToFitFlag=1
+        self.zoomFactor=1.0
         self.z=0
         self.viewCombo = None
         self.histogramIsShowing=0
@@ -343,9 +344,9 @@ class Visualizer:
         #EVT_TOOL(self,ID_OPEN,self.menuOpen)
 
         self.zoomLevels=[0.125, 0.25, 0.3333, 0.5, 0.6667, 0.75, 1.0, 1.25, 1.5, 2.0, 3.0, 4.0, 6.0, 8.0,-1]
-        self.zoomCombo=wx.ComboBox(self.tb,-1,"100%",
+        self.zoomCombo=wx.ComboBox(self.tb,-1,"Zoom to fit",
                           choices=["12.5%","25%","33.33%","50%","66.67%","75%","100%","125%","150%","200%","300%","400%","600%","800%","Zoom to fit"],size=(100,-1),style=wx.CB_DROPDOWN)
-        self.zoomCombo.SetSelection(6)
+        self.zoomCombo.SetSelection(14)
         self.zoomCombo.SetHelpText("This controls the zoom level of visualization views.")        
         self.tb.AddControl(self.zoomCombo)
 
@@ -426,7 +427,9 @@ class Visualizer:
         Created: 19.03.2005, KP
         Description: Lets the user select the part of the object that is zoomed
         """
+        self.zoomToFitFlag=0
         self.currMode.zoomObject()
+        #self.zoomFactor=self.currMode.getZoomFactor()
 
     def addAnnotation(self,event):
         """
@@ -499,6 +502,7 @@ class Visualizer:
                 break
         self.zoomCombo.SetSelection(pos)
         self.currMode.setZoomFactor(self.zoomLevels[pos])
+        self.zoomFactor=self.currMode.getZoomFactor()
             
     def zoomComboDirection(self,dir):
         """
@@ -522,7 +526,7 @@ class Visualizer:
         self.currMode.setZoomFactor(factor)
         if factor==-1:
             self.currMode.zoomToFit()
-            
+        self.zoomFactor=self.currMode.getZoomFactor()    
         self.currMode.Render()
         
         
@@ -547,6 +551,7 @@ class Visualizer:
         Created: 21.02.2005, KP
         Description: Sets the zoom factor to fit the image into the preview window
         """
+        self.zoomToFitFlag=1
         self.currMode.zoomToFit()
         self.zoomCombo.SetStringSelection("Zoom to fit")
         self.currMode.Render()
@@ -654,7 +659,7 @@ class Visualizer:
         
     def closeVisualizer(self):
         """
-        Method: setVisualizationMode
+        Method: closeVisualizer
         Created: 12.08.2005, KP
         Description: Close the visualizer
         """
@@ -685,13 +690,24 @@ class Visualizer:
         self.mode=mode
 
         if self.currMode:
+            self.zoomFactor=self.currMode.getZoomFactor()
             self.currMode.deactivate()
+            if hasattr(self.currentWindow,"enable"):
+                self.currentWindow.enable(0)
             self.currentWindow.Show(0)
         modeclass,settingclass,module=self.modes[mode]
         modeinst=self.instances[mode]
-        if not modeinst or reload:
+        new=0
+        if reload:
+            del self.instances[mode]
+            modeinst=None
+            
+        if not modeinst:
             modeinst=modeclass(self.visWin,self)
             self.instances[mode]=modeinst
+            self.currMode=modeinst
+            new=1
+            
         if not module.showZoomToolbar():
             self.toolWin.SetDefaultSize((500,0))
         else:
@@ -704,8 +720,8 @@ class Visualizer:
 
         self.currMode=modeinst
         self.currModeModule=module
-
         self.currentWindow = modeinst.activate(self.sidebarWin)        
+        
         self.sidebarWin.SetDefaultSize((0,1024))
         wx.LayoutAlgorithm().LayoutWindow(self.parent, self.visWin)
         if not modeinst.showSliceSlider():
@@ -734,9 +750,15 @@ class Visualizer:
         if self.dataUnit and modeinst.dataUnit != self.dataUnit:
             Logging.info("Re-setting dataunit",kw="visualizer")
             modeinst.setDataUnit(self.dataUnit)
-        self.currentWindow.Show()        
-        if hasattr(self.currMode,"getZoomFactor"):
-            self.setComboBoxToFactor(self.currentWindow.getZoomFactor())        
+        self.currentWindow.Show()
+        if hasattr(self.currentWindow,"enable"):
+            self.currentWindow.enable(1)
+        if self.zoomToFitFlag:
+            self.currMode.zoomToFit()
+        else:
+            self.currMode.setZoomFactor(self.zoomFactor)        
+        if not self.zoomToFitFlag and hasattr(self.currMode,"getZoomFactor"):
+            self.setComboBoxToFactor(self.currMode.getZoomFactor())        
         
         
     def showItemToolbar(self,flag):

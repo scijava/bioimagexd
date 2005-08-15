@@ -60,6 +60,7 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
         self.slices=[]
         self.zoomx=1
         self.zoomy=1
+        self.zoomToFitFlag=0
         if kws.has_key("slicesize"):
             self.sliceSize=kws["slicesize"]
         else:
@@ -116,7 +117,8 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
         Created: 05.06.2005, KP
         Description: Zoom the dataset to fit the available screen space
         """
-        pass
+        self.zoomToFitFlag=1
+        self.calculateBuffer()
         
     def setZoomFactor(self,factor):
         """
@@ -125,6 +127,7 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
         Description: Set the factor by which the image is zoomed
         """
         self.zoomFactor=factor
+        self.zoomToFitFlag=0
         self.updateAnnotations()
         x,y=self.originalSliceSize
         x*=factor
@@ -248,18 +251,38 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
         x,y,z=self.imagedata.GetDimensions()
         maxX=self.maxX
         maxY=self.maxY
-        if self.maxSizeX>maxX:maxX=self.maxSizeX
-        if self.maxSizeY>maxY:maxY=self.maxSizeY
-        w,h=self.sliceSize
-        Logging.info("maxX=",maxX,"maxY=",maxY,kw="preview")
-        xreq=maxX//(w+6)
-        if not xreq:xreq=1
         n=z
         if len(self.slices)>z:
             Logging.info("Using number of slices (%d) instead of z dim (%d)"%(len(self.slices),z),kw="preview")
             n=len(self.slices)
-            
-        yreq=math.ceil(n/float(xreq))
+
+        if self.maxSizeX>maxX:maxX=self.maxSizeX
+        if self.maxSizeY>maxY:maxY=self.maxSizeY
+        if not self.zoomToFitFlag:
+            w,h=self.sliceSize
+            Logging.info("maxX=",maxX,"maxY=",maxY,kw="preview")
+            xreq=maxX//(w+6)
+            if not xreq:xreq=1
+                
+            yreq=math.ceil(n/float(xreq))
+        else:
+            sizes=range(0,1024,8)
+            Logging.info("Searching for right gallery size...",kw="preview")
+            for j in range(len(sizes)-1,0,-1):
+                i=sizes[j]
+                nx=maxX//(i+6)
+                if not nx:continue
+                ny=math.ceil(n/float(nx))
+                if ny*i <maxY and (nx*ny)>n:
+                    Logging.info("Size %dx%d which takes %dx%d squares fits into %dx%d"%(i,i,nx,ny,maxX,maxY),kw="preview")
+                    w=i
+                    h=i
+                    self.sliceSize=(w,h)
+                    xreq=nx
+                    yreq=ny
+                    break
+                else:
+                    Logging.info("%dx%d doesn't fit"%(i,i),kw="preview")
         Logging.info("Need %d x %d grid to show the dataset"%(xreq,yreq),kw="preview")
         
 
@@ -270,10 +293,9 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
         self.rows=yreq
         self.cols=xreq
         if self.paintSize!=(x,y):    
-            self.paintSize=(x,y)
-            Logging.info("paintSize=",self.paintSize,kw="preview")
-            
+            self.paintSize=(x,y)            
             self.setScrollbars(x,y)
+        Logging.info("paintSize=",self.paintSize,kw="preview")
 
 
     def resetScroll(self):

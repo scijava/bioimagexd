@@ -354,3 +354,11 @@ class RenderingMode(VisualizationMode):
             mod=self.loadModule(name,label)
             self.configPanel.appendModuleToList(label)
             mod.__set_pure_state__(module)
+    def zoomToFit(self):
+        """
+        Method: zoomToFit()
+        Created: 05.06.2005, KP
+        Description: Zoom the dataset to fit the available screen space
+        """
+        pass
+            

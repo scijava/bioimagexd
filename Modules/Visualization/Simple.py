@@ -58,7 +58,7 @@ class SimpleMode(VisualizationMode):
         VisualizationMode.__init__(self,parent,visualizer)        
         self.parent=parent
         self.visualizer=visualizer
-        self.preview=None
+        self.iactivePanel=None
         self.init=1
         self.dataUnit=None
         self.modules=Modules.DynamicLoader.getTaskModules()
@@ -80,7 +80,7 @@ class SimpleMode(VisualizationMode):
         Created: 24.05.2005, KP
         Description: Update the rendering
         """      
-        self.preview.updatePreview(0)
+        self.iactivePanel.updatePreview(0)
         
     def updateRendering(self):
         """
@@ -89,7 +89,7 @@ class SimpleMode(VisualizationMode):
         Description: Update the rendering
         """
         Logging.info("Updating rendering",kw="preview")
-        self.preview.updatePreview(1)
+        self.iactivePanel.updatePreview(1)
         
     def setBackground(self,r,g,b):
         """
@@ -97,8 +97,8 @@ class SimpleMode(VisualizationMode):
         Created: 24.05.2005, KP
         Description: Set the background color
         """      
-        if self.preview:
-            self.preview.setBackgroundColor((r,g,b))
+        if self.iactivePanel:
+            self.iactivePanel.setBackgroundColor((r,g,b))
 
     def activate(self,sidebarwin):
         """
@@ -106,13 +106,12 @@ class SimpleMode(VisualizationMode):
         Created: 24.05.2005, KP
         Description: Set the mode of visualization
         """
-        if not self.preview:
+        if not self.iactivePanel:
             Logging.info("Generating preview",kw="visualizer")
-            self.preview=PreviewFrame.PreviewFrame(self.parent,
+            self.iactivePanel=PreviewFrame.PreviewFrame(self.parent,
             previewsize=(512,512))
-            self.preview.setPreviewType("MIP")
-            self.iactivePanel=self.preview
-        return self.preview
+            self.iactivePanel.setPreviewType("MIP")
+        return self.iactivePanel
             
         
         
@@ -127,7 +126,7 @@ class SimpleMode(VisualizationMode):
             Logging.info("Same dataunit, not changing",kw="visualizer")
             return
         if self.init:
-            self.preview.setPreviewType("")
+            self.iactivePanel.setPreviewType("")
             self.init=0
         if not self.visualizer.getProcessedMode():
             Logging.info("Using ProcessDataUnit for slices preview")
@@ -141,7 +140,7 @@ class SimpleMode(VisualizationMode):
         else:
             Logging.info("Using dataunit",dataUnit,kw="visualizer")
             unit=dataUnit
-        self.preview.setDataUnit(unit,0)
+        self.iactivePanel.setDataUnit(unit,0)
         
     def setTimepoint(self,tp):
         """
@@ -150,7 +149,7 @@ class SimpleMode(VisualizationMode):
         Description: Set the timepoint to be visualized
         """
         Logging.info("Setting timepoint to ",tp,kw="visualizer")
-        self.preview.setTimepoint(tp)
+        self.iactivePanel.setTimepoint(tp)
         
     def deactivate(self):
         """
@@ -158,7 +157,9 @@ class SimpleMode(VisualizationMode):
         Created: 24.05.2005, KP
         Description: Unset the mode of visualization
         """
-        self.preview.Show(0)
+        self.iactivePanel.Show(0)
+        del self.iactivePanel
+        self.iactivePanel=None
         
     def saveSnapshot(self,filename):
         """
@@ -166,6 +167,6 @@ class SimpleMode(VisualizationMode):
         Created: 05.06.2005, KP
         Description: Save a snapshot of the scene
         """      
-        self.preview.saveSnapshot(filename)
+        self.iactivePanel.saveSnapshot(filename)
         
         

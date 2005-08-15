@@ -110,6 +110,7 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
         Description: Set the factor by which the image is zoomed
         """
         self.zoomFactor=factor
+        self.setTimepoint(self.timepoint)
         self.updateAnnotations()
         self.sizeChanged=1
 
@@ -152,52 +153,75 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
             event.Skip()
             return
         x,y=event.GetPosition()
-        x,y=self.getScrolledXY(x,y)
+        
+        #x,y=self.getScrolledXY(x,y)
+        x-=self.xmargin
+        y-=self.ymargin
+        Logging.info("x=%d,y=%d"%(x,y))
+        
         x/=float(self.zoomFactor)
         y/=float(self.zoomFactor)
+            
         dims=self.imagedata.GetDimensions()
+        Logging.info("x,y=(%d,%d)"%(x,y),"dims=",dims,"margins=",self.xmargin,self.ymargin)
         #dims=(dims[0],dims[1],dims[2]*self.zoomZ)
         #dims=[i*self.zoomFactor for i in dims]
         
         # the yz plane
-        if x>dims[0]+(2*self.xmargin) and y>self.ymargin and y<dims[1] and x<dims[0]+(2*self.xmargin)+dims[2]:
-            #print "YZ plane"
-            nz=x-dims[0]-(2*self.xmargin)
-            ny=y-self.ymargin
+        #print "x=%d,mx=%d+%d"%(x,dims[0],self.xmargin)
+        # calculate scaled margins, because the click coordinates are scaled as well
+        sxmargin=self.xmargin/self.zoomFactor
+        symargin=self.ymargin/self.zoomFactor
+        if x>=dims[0]+sxmargin+dims[2]:
+            x=dims[0]+sxmargin+dims[2]-1
+        if y>=dims[1]+symargin+dims[2]:
+            y=dims[1]+symargin+dims[2]-1
+        if x>dims[0]+(sxmargin) and y>0 and y<dims[1] and x<dims[0]+sxmargin+dims[2]:
+            print "YZ plane"
+            nz=x-dims[0]-sxmargin
+            ny=y#-self.ymargin
             nx=self.x
         # the xy plane
-        elif x>self.xmargin and x<dims[0]+self.xmargin and y>self.ymargin and y< dims[1]+self.ymargin:
-            #print "XY plane"
-            nx=x-self.xmargin
-            ny=y-self.ymargin
+        elif x>0 and x<dims[0] and y>0 and y< dims[1]:
+            print "XY plane"
+            nx=x#+self.xmargin
+            ny=y#+self.ymargin
             nz=self.z
         # the xz plane
-        elif x> self.xmargin and x< dims[0]+self.xmargin and y>dims[1]+(2*self.ymargin) and y<dims[1]+(2*self.ymargin)+dims[2]:
-            #print "XZ plane"
-            nx=x-self.xmargin
-            nz=y-dims[1]-(2*self.ymargin)
+        elif x> 0 and x< dims[0] and y>dims[1]+symargin and y<dims[1]+symargin+dims[2]:
+            print "XZ plane"
+            nx=x#-self.xmargin
+            nz=y-dims[1]-symargin
             ny=self.y
         # the gray area
-        elif x>dims[0]+(2*self.xmargin) and x<dims[0]+(2*self.xmargin)+dims[2] and y>dims[1]+(2*self.ymargin) and y<dims[1]+(2*self.ymargin)+dims[2]:
-            #print "Gray area"
+        elif x>dims[0]+sxmargin and x<dims[0]+sxmargin+dims[2] and y>dims[1]+symargin and y<dims[1]+symargin+dims[2]:
+            print "Gray area"
             if y>x:
-                nz=y-dims[1]-(2*self.ymargin)
+                nz=y-dims[1]-symargin
             else:
-                nz=x-dims[0]-(2*self.xmargin)
+                nz=x-dims[0]-sxmargin
             nx=self.x
             ny=self.y
         else:
             Logging.info("Out of bounds (%d,%d)"%(x,y),kw="preview")
             return
-            
+        #nz/=self.zoomFactor
         #print "showing ",nx,ny,nz
-        self.drawPos=[x*self.zoomFactor for x in (nx,ny,nz)]
-        messenger.send(None,"zslice_changed",nz) 
+        
+        #self.drawPos=[x*self.zoomFactor for x in (nx,ny,nz)]
+        self.drawPos=[x*self.zoomFactor for x in (self.x,self.y,self.z)]
+        #self.drawPos[0]+=self.xmargin
+        #self.drawPos[1]+=self.ymargin
+        
+        Logging.info("drawPos=",self.drawPos,"zoomFactor=",self.zoomFactor,"nx=%d, ny=%d, nz=%d"%(nx,ny,nz))
         if self.x!=nx or self.y!=ny or self.z!=nz:
             self.x,self.y,self.z=nx,ny,nz
             #print "Redrawing slices"
             self.setTimepoint(self.timepoint)
         self.updatePreview()
+        messenger.send(None,"zslice_changed",nz) 
+        
+        
         event.Skip()
             
         
@@ -266,13 +290,21 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
         # obtain the slices
 
         z=self.z/self.zoomZ
-        z/=self.zoomFactor
-        slice=ImageOperations.vtkImageDataToWxImage(self.imagedata,z)
+        #z/=self.zoomFactor
+        if self.zoomFactor!=1:
+            img=ImageOperations.scaleImage(self.imagedata,self.zoomFactor,z)
+            slice=ImageOperations.vtkImageDataToWxImage(img)        
+        else:
+            slice=ImageOperations.vtkImageDataToWxImage(self.imagedata,z)
         self.slices.append(slice)
         slice=ImageOperations.getPlane(self.imagedata,"zy",self.x,self.y,z)
+        if self.zoomFactor != 1:
+            slice=ImageOperations.scaleImage(slice,self.zoomFactor)
         slice=ImageOperations.vtkImageDataToWxImage(slice)
         self.slices.append(slice)
         slice=ImageOperations.getPlane(self.imagedata,"xz",self.x,self.y,z)
+        if self.zoomFactor != 1:
+            slice=ImageOperations.scaleImage(slice,self.zoomFactor)
         slice=ImageOperations.vtkImageDataToWxImage(slice)
         self.slices.append(slice)        
 
@@ -373,8 +405,8 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
                 slice.Rescale(w*self.zoomZ,h)
             elif i==2:
                 slice.Rescale(w,h*self.zoomZ)
-            if self.zoomFactor!=1:
-                slice=ImageOperations.zoomImageByFactor(slice,self.zoomFactor)
+#            if self.zoomFactor!=1:
+#                slice=ImageOperations.zoomImageByFactor(slice,self.zoomFactor)
             
             w,h=slice.GetWidth(),slice.GetHeight()
             bmp=slice.ConvertToBitmap()
@@ -385,6 +417,8 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
             
         if self.drawPos:
             posx,posy,posz=self.drawPos
+            posx+=self.xmargin
+            posy+=self.ymargin
             dc.SetPen(wx.Pen((255,255,255),1))
             # horiz across the xy
             dc.DrawLine(0,posy,(2*self.xmargin)+x+z,posy)
@@ -417,4 +451,19 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
         mime="image/%s"%ext
         img=self.buffer.ConvertToImage()
         img.SaveMimeFile(filename,mime)
+        
+    def zoomToFit(self):
+        """
+        Method: zoomToFit()
+        Created: 14.08.2005, KP
+        Description: Zoom the dataset to fit the available screen space
+        """
+        x,y,z=self.imagedata.GetDimensions()
+        
+        x+=z*self.zoomZ+2*self.xmargin
+        y+=z*self.zoomZ+2*self.ymargin
+        f=self.maxSizeX/x
+        f2=self.maxSizeY/y
+        f=min(f,f2)
+        self.setZoomFactor(f)
         

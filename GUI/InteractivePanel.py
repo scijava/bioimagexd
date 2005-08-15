@@ -191,6 +191,7 @@ class InteractivePanel(wx.ScrolledWindow):
         Created: 03.07.2005, KP
         Description: Call the right callback depending on what we're doing
         """    
+        #Logging.info("Executing action: ",self.action,kw="iactivepanel")
         if self.action==ZOOM_TO_BAND:
             self.zoomToRubberband(event)
         elif self.action==ADD_ANNOTATION:
@@ -298,10 +299,6 @@ class InteractivePanel(wx.ScrolledWindow):
         Created: 24.03.2005, KP
         Description: Zooms to the rubberband
         """ 
-        if not (self.rubberBanding or self.scaleDrawing):
-            Logging.info("Not drawing rubberband,returning",kw="iactivepanel")
-            return
-        self.rubberBanding=0
         x1,y1=self.actionstart
         x2,y2=self.actionend
         Logging.info("Zooming to rubberband defined by (%d,%d),(%d,%d)"%(x1,y1,x2,y2),kw="iactivepanel")

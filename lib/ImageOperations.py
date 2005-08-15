@@ -255,7 +255,7 @@ def vtkImageDataToWxImage(data,slice=-1,startpos=None,endpos=None):
         data=getSlice(data,slice,startpos,endpos)
         
     exporter=vtk.vtkImageExport()
-    #print "data.GetWholeExtent()=",data.GetWholeExtent()
+    Logging.info("Setting update extent to ",data.GetWholeExtent(),kw="imageop")
     data.SetUpdateExtent(data.GetWholeExtent())
     data.Update()
     

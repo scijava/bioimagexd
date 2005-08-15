@@ -190,7 +190,12 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
     
         coloctest.SetMethod(method)
         coloctest.SetManualPSFSize(10)
-        coloctest.SetNumIterations(10)
+        n=100
+        try:
+            n=int(self.iterations.GetValue())
+        except:
+            pass
+        coloctest.SetNumIterations(n)
         
         for i in sources:
             data=i.getTimePoint(self.timePoint)
@@ -282,7 +287,15 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
         choices=["None","Costes","Fay","van Steensel"],majorDimension=2,
         style=wx.RA_SPECIFY_COLS
         )
+        self.radiobox.Bind(wx.EVT_RADIOBOX,self.onSetTestMethod)
         box.Add(self.radiobox)
+        self.iterLbl=wx.StaticText(self.colocalizationPanel,-1,"Iterations:")
+        self.iterations = wx.SpinCtrl(self.colocalizationPanel,-1,"100",min=2,max=999,initial=100)
+        self.iterations.Enable(0)
+        iterbox=wx.BoxSizer(wx.HORIZONTAL)
+        iterbox.Add(self.iterLbl)
+        iterbox.Add(self.iterations)
+        box.Add(iterbox)
         
         self.thresholdButton=wx.Button(self.colocalizationPanel,-1,"Calculate")
         self.thresholdButton.Bind(wx.EVT_BUTTON,self.getAutoThreshold)
@@ -333,6 +346,16 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
         self.colocalizationPanel.SetAutoLayout(1)
         
         self.settingsNotebook.AddPage(self.colocalizationPanel,"Colocalization")
+    
+    def onSetTestMethod(self,event):
+        """
+        Method: onSetTestMethod
+        Created: 13.07.2005, KP
+        Description: Set the method used for colocalisation test
+        """
+        n=self.radiobox.GetSelection()
+        flag=(n==1)
+        self.iterations.Enable(flag)
 
     def onExportStatistics(self,event):
         """
