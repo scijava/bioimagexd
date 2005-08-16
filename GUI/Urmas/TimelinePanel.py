@@ -4,8 +4,7 @@
 """
  Unit: TimelinePanel
  Project: BioImageXD
- Created: 04.02.2005
- Creator: KP
+ Created: 04.02.2005, KP
  Description:
 
  URM/AS - The Unified Rendering Manager / Animator for Selli
@@ -14,7 +13,7 @@
  to specify a path for the camera to follow (using Heikki Uuksulainen's MayaVi animator code)
  and also allows them to produce videos of the rendering using ffmpeg.
  
- The timeline widget and the timescale are implemented in this module.
+ The timeline widget and it's configuration is implemented in this module.
  
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
@@ -38,7 +37,6 @@ __author__ = "BioImageXD Project"
 __version__ = "$Revision: 1.22 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
-import  wx.lib.scrolledpanel as scrolled
 import wx
 import wx.lib.masked as masked
 #from vtk.wx.wxVTKRenderWindowInteractor import wxVTKRenderWindowInteractor
@@ -53,7 +51,7 @@ import SplineEditor
 import os.path
 import sys,types
 import operator
-
+import messenger
 
 class TimelineConfig(wx.Panel):
     """
@@ -68,10 +66,11 @@ class TimelineConfig(wx.Panel):
         #wx.wizard.WizardPageSimple.__init__(self,parent)
         self.control.setTimelineConfig(self)
         self.sizer=wx.GridBagSizer(5,5)
+        self.storedCameraPosition=None
         self.parent=parent
         
         self.outputsizer=wx.GridBagSizer(5,5)
-        box=wx.StaticBox(self,wx.HORIZONTAL,"Rendering")
+        box=wx.StaticBox(self,wx.HORIZONTAL,"Rendering parameters")
         self.outputstaticbox=wx.StaticBoxSizer(box,wx.HORIZONTAL)
         self.outputstaticbox.Add(self.outputsizer)
         
@@ -101,10 +100,6 @@ class TimelineConfig(wx.Panel):
                 
         self.sizer.Add(self.outputstaticbox,(0,0),flag=wx.EXPAND|wx.ALL)
         #self.sizer.Add(self.animationstaticbox,(0,1),flag=wx.EXPAND|wx.ALL)
-
-        self.useButton=wx.Button(self,-1,"Use settings")
-        self.useButton.Bind(wx.EVT_BUTTON,self.useSettings)
-        self.outputsizer.Add(self.useButton,(3,0))
         
         #self.sline=wx.StaticLine(self)
         #self.sizer.Add(self.sline,(4,0),flag=wx.EXPAND|wx.RIGHT|wx.LEFT)
@@ -115,12 +110,34 @@ class TimelineConfig(wx.Panel):
         self.sizer.Fit(self)
         #self.updateFormat()
         self.useSettings()
+        
+    def getFrameAmount(self):
+        """
+        Method: getFrameAmount
+        Created: 15.08.2005, KP
+        Description: Return the number of frames selected
+        """     
+        try:
+            n=int(self.totalFrames.GetValue())
+            return n
+        except:
+            return 0
 
     def setFrames(self,n):
+        """
+        Method: setFrames
+        Created: N/A, KP
+        Description: Set the number of frames in the GUI
+        """        
         self.totalFrames.SetValue(str(n))
         self.useSettings()
         
     def setDuration(self,t):
+        """
+        Method: setDuration
+        Created: N/A, KP
+        Description: Set the duration in the GUI
+        """            
         if type(t) != types.StringType:
             h=t/3600
             m=t/60
@@ -130,23 +147,22 @@ class TimelineConfig(wx.Panel):
         self.useSettings()
     
     def useSettings(self,event=None):
-        print "Trying to report..."
+        """
+        Method: useSettings
+        Created: N/A, KP
+        Description: Use the GUI settings
+        """        
         try:
             duration=self.duration.GetValue()
-            print "Got duration=",duration
             hh,mm,ss=map(int,duration.split(":"))
             print hh,mm,ss
             secs=hh*3600+mm*60+ss
-            print "Getting value.."
             frameCount=self.totalFrames.GetValue()
-            print "frameCount=",frameCount
             frameCount=int(frameCount)
-            print "Got frameCount=",frameCount
-            print "Reporting to parent"
             self.control.configureTimeline(secs,frameCount)
         except:
             pass
-        self.parent.sizer.Fit(self.parent)
+        #self.parent.sizer.Fit(self.parent)
         
     def updateDuration(self,event):
         duration=self.duration.GetValue()
@@ -182,39 +198,59 @@ class TimelinePanel(wx.Panel):
     """    
     def __init__(self,parent,control,size=(800,300)):
         wx.Panel.__init__(self,parent,-1,style=wx.RAISED_BORDER,size=size)
-        #wx.wizard.PyWizardPage.__init__(self,parent)
+        
         self.parent=parent
         self.control=control
         self.sizer=wx.GridBagSizer()
-        #self.Bind(wx.EVT_SIZE,self.onSize)
+        
         w=size[0]
-        print "size=",size
-        self.timeline=Timeline(self,self.control,size=(w,300))
-        self.sizer.Add(self.timeline,(0,0),span=(1,2),flag=wx.EXPAND|wx.ALL)
+        self.timeline=Timeline(self,self.control,size=(w,200))
+        self.sizer.Add(self.timeline,(0,0),span=(1,2),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
         
         sline=wx.StaticLine(self)
         self.sizer.Add(sline,(1,0),span=(1,2),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
         
-        self.timelineConfig=TimelineConfig(self,control)
+
+        self.confPanel=wx.Panel(self,-1)
+        self.confSizer=wx.GridBagSizer()
         
-        self.sizer.Add(self.timelineConfig,(2,0),flag=wx.EXPAND|wx.ALL)
-        #self.animBox=wx.StaticBox(self,-1,"Animation Control Pane")
-        #self.animBoxSizer=wx.StaticBoxSizer(self.animBox,wx.VERTICAL)
-#       
-        #self.wxrenwin=wxVTKRenderWindowInteractor(self,-1,size=(400,300))
+        self.timelineConfig=TimelineConfig(self.confPanel,control)
+
+        self.confSizer.Add(self.timelineConfig,(0,0),flag=wx.EXPAND|wx.ALL)
+        self.confPanel.SetSizer(self.confSizer)
+        self.confPanel.SetAutoLayout(1)
+
+        sbox=wx.StaticBox(self,-1,"Animator configuration")
+        sboxsizer=wx.StaticBoxSizer(sbox,wx.VERTICAL)
+        sboxsizer.Add(self.confPanel)
+        
+        self.useButton=wx.Button(self.confPanel,-1,"Use settings")
+        self.useButton.Bind(wx.EVT_BUTTON,self.useSettings)
+           
+        self.confSizer.Add(self.useButton,(1,0))
+        
+        self.modeBox=wx.RadioBox(self.confPanel,-1,"Show preview",
+        choices=["Camera path","Camera view"],majorDimension=2,
+        style=wx.RA_SPECIFY_ROWS    
+        )
+        self.confSizer.Add(self.modeBox,(0,1))
+        
+        self.sizer.Add(sboxsizer,(2,0),flag=wx.EXPAND|wx.ALL)
+        
+
         self.wxrenwin=VisualizerWindow.VisualizerWindow(self,size=(400,300))
         self.wxrenwin.Render()
 #        self.wxrenwin.Initialize()
 #        self.wxrenwin.Start()
-        
+
+        sbox=wx.StaticBox(self,-1,"Rendering preview")
+        sboxsizer=wx.StaticBoxSizer(sbox,wx.VERTICAL)
         self.splineEditor=SplineEditor.SplineEditor(self,self.wxrenwin)
-        self.control.setSplineEditor(self.splineEditor)
         
-        #self.wxrenwin.Render()
+        sboxsizer.Add(self.wxrenwin)
+        self.control.setSplineEditor(self.splineEditor)        
         
-        #self.animBoxSizer.Add(self.wxrenwin)
-        #self.sizer.Add(self.animBoxSizer,(2,1))#,flag=wx.EXPAND|wx.ALL)
-        self.sizer.Add(self.wxrenwin,(2,1))#,flag=wx.EXPAND|wx.ALL)
+        self.sizer.Add(sboxsizer,(2,1))#,flag=wx.EXPAND|wx.ALL)
         
         self.SetSizer(self.sizer)
         self.SetAutoLayout(1)
@@ -228,14 +264,29 @@ class TimelinePanel(wx.Panel):
         self.wxrenwin.Render()
         self.wxrenwin.Refresh()
         self.Refresh()
+        messenger.send(None,"set_time_range",1,600)
 
-    def onSize(self,evt):
-        x,y=evt.GetSize()
-        tx,ty=self.timeline.GetSize()
-        self.timeline.SetSize((x,ty))
-        self.timeline.Layout()
-        self.Layout()
-
+    def useSettings(self,evt):
+        """
+        Method: useSettings
+        Created: 16.08.2005, KP
+        Description: Use the configured settings
+        """    
+        self.timelineConfig.useSettings(evt)
+        n=self.control.getDuration()
+        messenger.send(None,"set_time_range",1,n*10)
+        showAngle=self.modeBox.GetSelection()
+        self.splineEditor.setViewMode(showAngle)
+        cam = self.splineEditor.getCamera()
+        if showAngle:
+            print "Storing position"
+            self.storedCameraPosition=cam.GetPosition()
+            self.parent.onShowFrame(None)
+        else:
+            if self.storedCameraPosition:
+                print "Restoring position"
+                cam.SetPosition(self.storedCameraPosition)
+                self.splineEditor.render()
     def useTimeline(self,flag):
         print "useTimeline called!"
         if not flag:

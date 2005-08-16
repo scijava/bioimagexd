@@ -52,17 +52,20 @@ class UrmasRenderer:
     Description: This class takes a datastructure representation of the 
                  timeline and renders it to a movie or set of images.
     """
-    def __init__(self):
+    def __init__(self,control):
         """
         Class: __init__
         Created: 04.04.2005, KP
         Description: Initialization
         """    
+        self.control=control
+        self.splineEditor=None
         self.renderingInterface = RenderingInterface.getRenderingInterface(1)
         self.oldTimepoint=-1
         self.lastpoint=None
         self.currTrack=None
         self.lastSplinePoint=None
+        messenger.connect(None,"render_time_pos",self.renderPreviewAt)
 
     def startAnimation(self,control):
         """
@@ -93,6 +96,7 @@ class UrmasRenderer:
         self.dataUnit = control.getDataUnit()
         self.duration = duration = control.getDuration()
         self.frames = frames = control.getFrames()
+        spf = duration / float(frames)
         if not preview and not self.renderingInterface.isVisualizationSoftwareRunning():
             Dialogs.showerror(self.control.window,"Cannot render project: visualization software is not running","Visualizer is not running")
             return -1
@@ -117,8 +121,7 @@ class UrmasRenderer:
 #            self.dlg.Show()
 
         self.splineEditor = control.getSplineEditor()
-        spf = duration / float(frames)
-
+        
         if preview:
             cam = self.splineEditor.getCamera()
             self.ren = self.splineEditor.renderer
@@ -139,7 +142,30 @@ class UrmasRenderer:
         if not preview:
             pass
 #            self.dlg.Destroy()
-            
+
+    def renderPreviewAt(self,evt,obj,timepos):
+        """
+        Method: renderPreviewAt
+        Created: 15.08.2005, KP
+        Description: Renders a preview at given time position
+        """           
+        if not self.splineEditor:
+            self.splineEditor = self.control.getSplineEditor()  
+        # if the view mode is "camera path", do not render
+        if not self.splineEditor.viewMode:
+            return
+        
+        
+        self.cam = self.splineEditor.getCamera()
+
+        self.ren = self.splineEditor.renderer       
+        duration = self.control.getDuration()
+        frames = self.control.getFrames()
+        spf = duration / float(frames)        
+        frame=spf*timepos
+        self.renderFrame(frame,timepos,spf,preview=1) 
+        
+         
     def getTimepointAt(self,time):
         """
         Method: getTimepointAt(time)

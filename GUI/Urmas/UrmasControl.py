@@ -65,7 +65,7 @@ class UrmasControl:
         self.duration = 60 # seconds
         self.frames = 120 # frames
         self.animationMode= 0
-        self.renderer=UrmasRenderer.UrmasRenderer()
+        self.renderer=UrmasRenderer.UrmasRenderer(self)
         
     def writeToDisk(self,filename):
         """

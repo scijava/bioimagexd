@@ -38,7 +38,7 @@ __version__ = "$Revision: 1.22 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 import wx
-import wx.wizard
+
 from Timeline import *
 import TimelinePanel
 import UrmasTimepointSelection
@@ -51,6 +51,7 @@ import Dialogs
 import UrmasPalette
 
 from GUI import MenuManager
+import messenger
 
 #class UrmasWindow(wx.SashLayoutWindow):
 class UrmasWindow(scrolled.ScrolledPanel):
@@ -68,7 +69,7 @@ class UrmasWindow(scrolled.ScrolledPanel):
     
         self.taskWin=taskwin
         self.visualizer=visualizer
-
+        self.Unbind(wx.EVT_CHILD_FOCUS)
         self.menuManager=menumanager
         self.createMenu(menumanager)
         
@@ -78,7 +79,7 @@ class UrmasWindow(scrolled.ScrolledPanel):
 
         self.sizer=wx.BoxSizer(wx.VERTICAL)
         self.palette = UrmasPalette.UrmasPalette(self,self.control)
-        self.sizer.Add(self.palette,0,flag=wx.EXPAND)
+        self.sizer.Add(self.palette,0,flag=wx.EXPAND)#,flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
 
         self.timelinePanel=TimelinePanel.TimelinePanel(self,self.control,size=(1024,500))
         self.control.setTimelinePanel(self.timelinePanel)
@@ -87,13 +88,26 @@ class UrmasWindow(scrolled.ScrolledPanel):
 
         self.control.setAnimationMode(1)
 
+        # get all the events emitted so we can update the GUI in real time
+        self.visualizer.bindTimeslider(self.onShowFrame,all=1)
         
         self.SetSizer(self.sizer)
         self.SetAutoLayout(1)
         self.SetupScrolling()
         #self.sizer.Fit(self)
         #self.SetStatusText("Done.")
-
+        
+    def onShowFrame(self,evt):
+        """
+        Method: onShowFrame
+        Created: 15.08.2005, KP
+        Description: Sets the frame to be shown
+        """
+        tp=self.visualizer.timeslider.GetValue()
+        tp/=10.0
+        messenger.send(None,"show_time_pos",tp-1)
+        messenger.send(None,"render_time_pos",tp-1)
+        self.timelinePanel.timeline.Refresh()
         
     def cleanMenu(self):
         """

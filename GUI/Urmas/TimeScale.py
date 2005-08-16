@@ -4,8 +4,7 @@
 """
  Unit: TimeScale
  Project: BioImageXD
- Created: 04.02.2005
- Creator: KP
+ Created: 04.02.2005, KP
  Description:
 
  URM/AS - The Unified Rendering Manager / Animator for Selli

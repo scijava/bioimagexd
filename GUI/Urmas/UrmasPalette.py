@@ -117,13 +117,13 @@ class UrmasPalette(wx.Panel):
         """
         self.parent=parent
         self.control=control
-        wx.Panel.__init__(self,parent,style=wx.RAISED_BORDER)
+        wx.Panel.__init__(self,parent,style=wx.RAISED_BORDER,size=(800,32))
         self.sizer=wx.BoxSizer(wx.HORIZONTAL)
         iconpath=reduce(os.path.join,["Icons"])
         self.ID_NEWSPLINE=wx.NewId()
         
 
-        p=wx.Panel(self,-1,size=(64,64))#,style=wx.RAISED_BORDER)
+        p=wx.Panel(self,-1,size=(32,32))#,style=wx.RAISED_BORDER)
         self.ID_NEWTIMEPOINT=wx.NewId()
         bmp=wx.Image(os.path.join(iconpath,"timepoint.jpg"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
         self.newtimepoint=wx.StaticBitmap(p,self.ID_NEWTIMEPOINT,bmp,style=wx.RAISED_BORDER)
@@ -138,7 +138,7 @@ class UrmasPalette(wx.Panel):
         self.newtimepoint.Bind(wx.EVT_LEFT_UP,self.onToolClick)
         self.sizer.Add(p,flag=wx.RIGHT,border=5)
 
-        p=wx.Panel(self,-1,size=(64,64))#,style=wx.RAISED_BORDER)
+        p=wx.Panel(self,-1,size=(32,32))#,style=wx.RAISED_BORDER)
         bmp=wx.Image(os.path.join(iconpath,"spline_random.jpg"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
         self.newspline=wx.StaticBitmap(p,self.ID_NEWSPLINE,bmp,style=wx.RAISED_BORDER)
         self.newspline.Bind(wx.EVT_MOTION,self.onToolNewSpline)
@@ -152,7 +152,7 @@ class UrmasPalette(wx.Panel):
         self.newspline.SetHelpText(toolTip.GetTip())
         p.SetToolTip(toolTip)
         
-        p=wx.Panel(self,-1,size=(64,64))#,style=wx.RAISED_BORDER)
+        p=wx.Panel(self,-1,size=(32,32))#,style=wx.RAISED_BORDER)
         self.ID_NEWCIRCULAR=wx.NewId()
         bmp=wx.Image(os.path.join(iconpath,"spline_rotate_x.jpg"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
         self.newcircular=wx.StaticBitmap(p,self.ID_NEWCIRCULAR,bmp,style=wx.RAISED_BORDER)
@@ -167,7 +167,7 @@ class UrmasPalette(wx.Panel):
         self.newcircular.SetHelpText(toolTip.GetTip())
         p.SetToolTip(toolTip)
 
-        p=wx.Panel(self,-1,size=(64,64))#,style=wx.RAISED_BORDER)
+        p=wx.Panel(self,-1,size=(32,32))#,style=wx.RAISED_BORDER)
         self.ID_NEWPERPENDICULAR=wx.NewId()
         bmp=wx.Image(os.path.join(iconpath,"spline_rotate_y.jpg"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
         self.newperpendicular=wx.StaticBitmap(p,self.ID_NEWPERPENDICULAR,bmp,style=wx.RAISED_BORDER)
@@ -182,7 +182,7 @@ class UrmasPalette(wx.Panel):
         self.newperpendicular.SetHelpText(toolTip.GetTip())
         p.SetToolTip(toolTip)
 
-        p=wx.Panel(self,-1,size=(64,64))#,style=wx.RAISED_BORDER)
+        p=wx.Panel(self,-1,size=(32,32))#,style=wx.RAISED_BORDER)
         self.ID_STOP_CAMERA=wx.NewId()
         bmp=wx.Image(os.path.join(iconpath,"spline_stop.jpg"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
         self.newstop=wx.StaticBitmap(p,self.ID_STOP_CAMERA,bmp,style=wx.RAISED_BORDER)

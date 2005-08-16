@@ -66,6 +66,7 @@ class SplineEditor:
        
         self.parent=parent
         self.data = None
+        self.viewMode=0
         self.wxrenwin=renwin
         self.initializeVTK()
 
@@ -134,8 +135,17 @@ class SplineEditor:
         p8 = (xmin,ymax,zmax)
         return [p1,p2,p3,p4,p5,p6,p7,p8]
 
-        
-        
+    def setViewMode(self,showViewAngle):
+        """
+        Method: setViewMode
+        Created: 15.08.2005, KP
+        Description: Sets the view mode
+        """
+        if showViewAngle:
+            self.spline.Off()
+        else:
+            self.spline.On()
+        self.viewMode=showViewAngle    
 
     def findControlPoint(self,pt):
         """

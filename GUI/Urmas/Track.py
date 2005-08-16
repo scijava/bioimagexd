@@ -49,6 +49,8 @@ import ImageOperations
 import Dialogs
 import TimepointSelection
 
+import messenger
+
 from UIElements import NamePanel
 
 class Track(wx.Panel):
@@ -100,17 +102,32 @@ class Track(wx.Panel):
         self.oldNamePanelColor = 0
     
         self.initTrack()
+        self.timePos=0
+        self.timePosInPixels=0
 
         self.Bind(wx.EVT_MOTION,self.onDrag)
         self.Bind(wx.EVT_LEFT_DOWN,self.onDown)
         self.Bind(wx.EVT_LEFT_UP,self.onUp)
         
         self.Bind(wx.EVT_PAINT,self.onPaint)
-
+        
+        self.renew=0
         s=self.control.getFrames()
-        print "duration=",d,"frames=",s
+        #print "duration=",d,"frames=",s
         self.setDuration(d,s)
         self.paintTrack()
+        messenger.connect(None,"show_time_pos",self.onShowTimePosition)
+        
+    def onShowTimePosition(self,obj,evt,arg):
+        """
+        Method: onShowtimePosition
+        Created: 15.08.2005, KP
+        Description: Show the frame position
+        """     
+        #print "showtimePos",obj,evt,arg
+        self.timePos=arg
+        # When renew=2 it means that only the time position needs to be re-drawn
+        self.renew=2
         
     def onPaint(self,event):
         """
@@ -118,6 +135,9 @@ class Track(wx.Panel):
         Created: 17.07.2005, KP
         Description: Blit the buffer
         """ 
+        if self.renew:
+            self.paintTrack()
+            self.renew=0
         dc=wx.BufferedPaintDC(self,self.buffer)#,self.buffer)
         
     def paintTrack(self):
@@ -127,27 +147,56 @@ class Track(wx.Panel):
         Description: Paint the track
         """ 
         self.dc = wx.BufferedDC(wx.ClientDC(self),self.buffer)
-        self.dc.Clear()
-        self.dc.SetBrush(wx.Brush(self.bg))
-        #self.dc.SetPen(wx.Pen(self.fg,1))
-        self.dc.BeginDrawing()
-        self.dc.DrawRectangle(0,0,self.getLabelWidth(),self.height)
+        if self.renew != 2:
+            self.dc.Clear()
+            print "Painting new"
+            self.dc.SetBrush(wx.Brush(self.bg))
+            #self.dc.SetPen(wx.Pen(self.fg,1))
+            self.dc.BeginDrawing()
+            self.dc.DrawRectangle(0,0,self.getLabelWidth(),self.height)
+            
+            self.dc.SetTextForeground(self.fg)
+            weight=wx.NORMAL
+            if self.bold:
+               weight=wx.BOLD
+            self.dc.SetFont(wx.Font(9,wx.SWISS,wx.NORMAL,weight))
+            self.dc.DrawText(self.label,0,0)
         
-        self.dc.SetTextForeground(self.fg)
-        weight=wx.NORMAL
-        if self.bold:
-           weight=wx.BOLD
-        self.dc.SetFont(wx.Font(9,wx.SWISS,wx.NORMAL,weight))
-        self.dc.DrawText(self.label,0,0)
-
-        x=self.startOfTrack+self.getLabelWidth()
-        for item in self.items:
-            self.dc.DrawBitmap(item.buffer,x,0)
-            item.SetPosition((x,0))
-
-            w,h=item.GetSize()
-            x+=w
-    
+            x=self.startOfTrack+self.getLabelWidth()
+            for item in self.items:
+                self.dc.DrawBitmap(item.buffer,x,0)
+                item.SetPosition((x,0))
+        
+                w,h=item.GetSize()
+                x+=w
+            #self.stored=self.buffer.GetSubBitmap((0,0,self.buffer.GetWidth(),self.buffer.GetHeight()))
+            w,h=self.buffer.GetWidth(),self.buffer.GetHeight()
+            self.stored=wx.EmptyBitmap(w,h)
+            mdc = wx.MemoryDC()
+            mdc.SelectObject(self.stored)
+            mdc.BeginDrawing()
+            mdc.Blit(0,0,w,h,self.dc,0,0)
+            self.mdc=mdc
+            #mdc.SelectObject(wx.NullBitmap)
+            #mdc=None
+        else:
+            self.renew=0
+            #self.dc.Clear()
+            #self.dc.DrawBitmap(self.stored,0,0)
+            if self.timePosInPixels:
+                self.dc.Blit(self.timePosInPixels-1,0,self.timePosInPixels+3,self.height,self.mdc,self.timePosInPixels-1,0)
+            
+        
+        pps=self.timescale.getPixelsPerSecond() 
+        
+        if self.timePos:
+            #print "Position of %dth frame is at %d+%d"%(self.timePos,self.getLabelWidth(),len*(float(self.timePos)))
+            pos=self.getLabelWidth() + self.timePos*pps
+        
+            self.dc.SetPen(wx.Pen((255,255,255),2))
+            self.dc.DrawLine(pos,0,pos,self.height)
+            self.timePosInPixels=pos
+        
         self.dc.EndDrawing()
         self.dc = None
 

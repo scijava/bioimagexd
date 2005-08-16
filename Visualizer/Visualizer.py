@@ -91,6 +91,7 @@ class Visualizer:
         self.renderingTime=0
         self.in_vtk=0
         self.parent = parent
+        messenger.connect(None,"set_time_range",self.onSetTimeRange)
         messenger.connect(None,"timepoint_changed",self.onSetTimepoint)
         messenger.connect(None,"data_changed",self.updateRendering)
         self.closed = 0
@@ -202,11 +203,7 @@ class Visualizer:
         self.timeslider=wx.Slider(self.sliderPanel,value=1,minValue=1,maxValue=1,
         style=wx.SL_HORIZONTAL|wx.SL_LABELS)
         self.timeslider.SetHelpText("Use this slider to select the displayed timepoint.")
-        if platform.system()=="Windows":
-            self.timeslider.Bind(wx.EVT_SCROLL_ENDSCROLL,self.onUpdateTimepoint)
-            self.timeslider.Bind(wx.EVT_SCROLL_THUMBRELEASE,self.onUpdateTimepoint)
-        else:
-            self.timeslider.Bind(wx.EVT_SCROLL,self.onChangeTimepoint)
+        self.bindTimeslider(self.onUpdateTimepoint)
 
         self.zslider=wx.Slider(self.zsliderWin,value=1,minValue=1,maxValue=1,
         style=wx.SL_VERTICAL|wx.SL_LABELS|wx.SL_AUTOTICKS)
@@ -220,6 +217,22 @@ class Visualizer:
         self.sliderPanel.SetSizer(self.sliderbox)
         self.sliderPanel.SetAutoLayout(1)
         self.sliderbox.Fit(self.sliderPanel)
+
+    def bindTimeslider(self,method,all=0):
+        """
+        Method: bindTimeslider
+        Created: 15.08.2005, KP
+        Description: Bind the timeslider to a method
+        """     
+        if not all and platform.system()=="Windows":
+            self.timeslider.Unbind(wx.EVT_SCROLL_ENDSCROLL)
+            #self.timeslider.Unbind(wx.EVT_SCROLL_THUMBRELEASE)
+            self.timeslider.Bind(wx.EVT_SCROLL_ENDSCROLL,method)
+            #self.timeslider.Bind(wx.EVT_SCROLL_THUMBRELEASE,method)
+        else:
+            self.timesliderMethod = method
+            self.timeslider.Unbind(wx.EVT_SCROLL)
+            self.timeslider.Bind(wx.EVT_SCROLL,self.delayedTimesliderEvent)    
         
     def onSetVisibility(self,obj,evt,arg):
         """
@@ -365,8 +378,8 @@ class Visualizer:
         self.tb.AddSeparator()
         self.origBtn=wx.Button(self.tb,-1,"Original")
         self.origBtn.SetHelpText("Use this button to show how the unprocessed dataset looks like.")
-        self.origBtn.Bind(wx.EVT_LEFT_DOWN,self.onShowOriginal)
-        self.origBtn.Bind(wx.EVT_LEFT_UP,self.onHideOriginal)
+        self.origBtn.Bind(wx.EVT_LEFT_DOWN,lambda s=self:s.onShowOriginal("show"))
+        self.origBtn.Bind(wx.EVT_LEFT_UP,lambda s=self:s.onShowOriginal("hide"))
         self.tb.AddControl(self.origBtn)
  #       self.tb.AddSimpleTool(MenuManager.ID_ROI_CIRCLE,wx.Image(os.path.join("Icons","circle.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Select circle","Select a circular area of the image")
  #       self.tb.AddSimpleTool(MenuManager.ID_ROI_RECTANGLE,wx.Image(os.path.join("Icons","rectangle.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Select rectangle","Select a rectangular area of the image")
@@ -389,16 +402,6 @@ class Visualizer:
         self.zoomCombo.Bind(wx.EVT_COMBOBOX,self.zoomToComboSelection)
         self.tb.Realize()       
         self.viewCombo.Enable(0)
-    def onHideOriginal(self,evt):
-        """
-        Method: onShowOriginal
-        Created: 27.07.2005, KP
-        Description: Show the original datasets instead of processed ones
-        """
-        if self.dataUnit:
-            self.dataUnit.getSettings().set("ShowOriginal",0)
-        self.updateRendering()
-        evt.Skip()
         
     def onShowOriginal(self,evt):
         """
@@ -406,8 +409,10 @@ class Visualizer:
         Created: 27.07.2005, KP
         Description: Show the original datasets instead of processed ones
         """
+        flag=1
+        if evt=="hide":flag=0
         if self.dataUnit:
-            self.dataUnit.getSettings().set("ShowOriginal",1)
+            self.dataUnit.getSettings().set("ShowOriginal",flag)
         self.updateRendering()
         evt.Skip()
     def onSetView(self,evt):
@@ -731,6 +736,13 @@ class Visualizer:
 
         self.currMode=modeinst
         self.currModeModule=module
+        
+        if self.dataUnit:
+            count=self.dataUnit.getLength()
+            self.timeslider.SetRange(1,count)        
+        # We restore the default binding, but before the activate()
+        # call so the mode can still overwrite the timeslider behaviour
+        self.bindTimeslider(self.onUpdateTimepoint)
         self.currentWindow = modeinst.activate(self.sidebarWin)        
         
         self.sidebarWin.SetDefaultSize((0,1024))
@@ -770,6 +782,7 @@ class Visualizer:
             self.currMode.setZoomFactor(self.zoomFactor)        
         if not self.zoomToFitFlag and hasattr(self.currMode,"getZoomFactor"):
             self.setComboBoxToFactor(self.currMode.getZoomFactor())        
+        
         
         
     def showItemToolbar(self,flag):
@@ -892,6 +905,14 @@ class Visualizer:
         if self.enabled:
             Logging.info("Render()",kw="visualizer")
             self.currMode.Render()
+            
+    def onSetTimeRange(self,obj,event,r1,r2):
+        """
+        Method: onSetTimeRange
+        Created: 15.08.2005, KP
+        Description: Set the range that the time slider shows
+        """        
+        self.timeslider.SetRange(r1,r2)
         
     def onSetTimepoint(self,obj,event,tp):
         """
@@ -927,14 +948,14 @@ class Visualizer:
             self.setTimepoint(tp)
             
             
-    def onChangeTimepoint(self,event):
+    def delayedTimesliderEvent(self,event):
         """
-        Method: onChangeTimepoint
+        Method: delayedTimesliderEvent
         Created: 28.04.2005, KP
         Description: Set the timepoint to be shown
         """
         self.changing=time.time()
-        wx.FutureCall(200,self.onUpdateTimepoint)
+        wx.FutureCall(200,lambda e=event,s=self:s.timesliderMethod(e))
         
     def onChangeZSlice(self,obj,event=None,arg=None):
         """
