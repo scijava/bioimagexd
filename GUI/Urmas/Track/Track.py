@@ -51,8 +51,6 @@ import TimepointSelection
 
 import messenger
 
-from UIElements import NamePanel
-
 class Track(wx.Panel):
     """
     Class: Track
