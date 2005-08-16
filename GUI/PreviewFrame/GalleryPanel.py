@@ -169,6 +169,9 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
         self.dims=dataunit.getDimensions()
         self.voxelSize=dataunit.getVoxelSize()
         InteractivePanel.InteractivePanel.setDataUnit(self,dataunit)
+        self.setTimepoint(self.timepoint)
+        x,y=self.paintSize
+        self.setScrollbars(x,y)
         #self.imagedata=image
         
         
@@ -282,7 +285,8 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
                     yreq=ny
                     break
                 else:
-                    Logging.info("%dx%d doesn't fit"%(i,i),kw="preview")
+                    pass
+                    #Logging.info("%dx%d doesn't fit"%(i,i),kw="preview")
         Logging.info("Need %d x %d grid to show the dataset"%(xreq,yreq),kw="preview")
         
 

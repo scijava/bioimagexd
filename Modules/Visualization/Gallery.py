@@ -32,6 +32,7 @@ import DataUnit
 
 import PreviewFrame
 import Logging
+import DataUnit
 import wx
 import wx.lib.scrolledpanel as scrolled
 from Visualizer.VisualizationMode import VisualizationMode
@@ -175,6 +176,7 @@ class GalleryMode(VisualizationMode):
         Created: 25.05.2005, KP
         Description: Set the dataunit to be visualized
         """
+
         VisualizationMode.setDataUnit(self,dataUnit)
         if self.configPanel:
             self.configPanel.setDataUnit(dataUnit)

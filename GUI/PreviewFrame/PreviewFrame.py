@@ -522,7 +522,7 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
             settingstype="%sSettings"%t
             settings = unit.getSettings()
             if settings:
-                Logging.info("Converting settings of %s to %s"%(unit,settingstype),kw="preview")
+                #Logging.info("\n\n\n\nConverting settings of %s to %s"%(unit,settingstype))#,kw="preview")
                 settings = settings.asType(settingstype)
             else:
                 raise "Got no settings from dataunit",unit

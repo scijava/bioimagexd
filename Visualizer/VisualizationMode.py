@@ -37,6 +37,7 @@ from ModuleConfiguration import *
 import Dialogs
 import Logging
 import Modules
+import DataUnit
 
 import messenger
 import glob
@@ -173,6 +174,9 @@ class VisualizationMode:
         Description: Sets the dataunit this module uses for visualization
         """            
         self.dataUnit = dataunit
+        if not dataunit.getSettings():
+            settings=DataUnit.DataUnitSettings()
+            dataunit.setSettings(settings)        
         if self.iactivePanel:
             self.iactivePanel.setDataUnit(dataunit)
         

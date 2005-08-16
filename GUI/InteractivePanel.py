@@ -382,6 +382,7 @@ class InteractivePanel(wx.ScrolledWindow):
         x,y,z=self.dataUnit.getDimensions()
         self.buffer = wx.EmptyBitmap(x,y)
         self.origX, self.origY = x,y
+        Logging.info("\n\n\n settings for dataunit=",dataUnit.getSettings())
         Logging.info("Got dataunit, voxelSize=",self.voxelSize,kw="iactivepanel")
         ann=dataUnit.getSettings().get("Annotations")
         if ann:

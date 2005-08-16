@@ -280,7 +280,10 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
 
         self.voxelSize=dataUnit.getVoxelSize()
         InteractivePanel.InteractivePanel.setDataUnit(self,dataUnit)
-        
+        self.setTimepoint(self.timepoint)
+        self.calculateBuffer()
+        self.updatePreview()
+        self.Refresh()
     def setTimepoint(self,tp):
         """
         Method: setTimepoint(dataUnit)
