@@ -43,8 +43,8 @@ import sys
 import math,random
 import threading
 
-from TrackItem import *
-import UrmasPalette
+from Urmas.TrackItem import *
+from Urmas import UrmasPalette
 import ImageOperations
 import Dialogs
 import TimepointSelection
