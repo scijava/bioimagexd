@@ -153,8 +153,7 @@ class LsmDataSource(DataSource.DataSource):
     def getDataSet(self, i,raw=0):
         """
         Method: getDataSet
-        Created: 18.11.2004
-        Creator: KP
+        Created: 18.11.2004, KP
         Description: Returns the timepoint at the specified index
         Parameters:   i       The index
         """
@@ -179,6 +178,7 @@ class LsmDataSource(DataSource.DataSource):
             shift.SetScale(scale)
             shift.Update()
             data=shift.GetOutput()
+        data.ReleaseDataFlagOff()
         return data
     def getFileName(self):
         """

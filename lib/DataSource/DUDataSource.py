@@ -60,6 +60,7 @@ class VtiDataSource(DataSource):
         self.filename = filename
         # path to the .du-file and .vti-file(s)
         self.path=""
+        self.reader=None
         
         # Number of datasets added to this datasource
         self.counter=0
@@ -102,7 +103,9 @@ class VtiDataSource(DataSource):
         Description: Returns the DataSet at the specified index
         Parameters:   i       The index
         """
-        return self.loadVti(self.dataSets[i])
+        data=self.loadVti(self.dataSets[i])
+        data.ReleaseDataFlagOff()
+        return data
 
     def readInfo(self,data):
         """
@@ -174,15 +177,17 @@ class VtiDataSource(DataSource):
                      it as vtkImageData
         Parameters:   filename  The file where Dataset is loaded from
         """
-        self.reader=vtk.vtkXMLImageDataReader()
-        self.reader.AddObserver("ProgressEvent",self.updateProgress)
-        filepath=os.path.join(self.path,filename)
-        if not self.reader.CanReadFile(filepath):
-            Logging.error("Cannot read file",
-            "Cannot read XML Image Data File %s"%filename)
-        self.reader.SetFileName(filepath)
-        self.reader.Update()
-        self.updateProgress(None,None)
+        if not self.reader or self.filename != filename:
+            self.filename = filename
+            self.reader=vtk.vtkXMLImageDataReader()
+            self.reader.AddObserver("ProgressEvent",self.updateProgress)
+            filepath=os.path.join(self.path,filename)
+            if not self.reader.CanReadFile(filepath):
+                Logging.error("Cannot read file",
+                "Cannot read XML Image Data File %s"%filename)
+            self.reader.SetFileName(filepath)
+            self.reader.Update()
+            self.updateProgress(None,None)
         return self.reader.GetOutput()
 
     def loadDuFile(self, filename):

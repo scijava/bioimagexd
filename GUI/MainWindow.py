@@ -87,6 +87,7 @@ class MainWindow(wx.Frame):
             wx.EVT_SASH_DRAGGED_RANGE, self.onSashDrag,
             id=MenuManager.ID_TREE_WIN, id2=MenuManager.ID_INFO_WIN,
         )
+        self.progressTimeStamp=0
         self.help=None
         self.statusbar=None
         self.progress=None
@@ -362,6 +363,11 @@ class MainWindow(wx.Frame):
         Created: 03.11.2004, KP
         Description: Updates the progress bar
         """
+        t=time.time()
+        if arg not in [1.0, 100] and abs(t-self.progressTimeStamp)<0.1:
+            return
+
+        self.progressTimeStamp=t
         if type(arg)==types.FloatType:
             arg*=100
         # The progress coefficient gives us some amount of control on what range
