@@ -1,7 +1,7 @@
 # -*- coding: iso-8859-1 -*-
 
 """
- Unit: SplinePoint
+ Unit: KeyframePoint
  Project: BioImageXD
  Created: 19.03.2005, KP
  Description:
@@ -41,6 +41,7 @@ import wx
 import os.path
 import sys
 import math,random
+import vtk
 
 import ImageOperations
 from Urmas import UrmasControl
@@ -51,11 +52,11 @@ DRAG_OFFSET=20
 from TrackItem import *
 
 
-class SplinePoint(TrackItem):
+class KeyframePoint(TrackItem):
     """
-    Class: SplinePoint
-    Created: 19.03.2005, KP
-    Description: A class representing an item in a spline points track.
+    Class: KeyframePoint
+    Created: 18.03.2005, KP
+    Description: A class representing an item in a keyframe track.
     """       
     def __init__(self,parent,text,size,**kws):
         """
@@ -67,7 +68,8 @@ class SplinePoint(TrackItem):
         self.itemnum=0
         if "itemnum" in kws:
             self.itemnum=kws["itemnum"]
-        self.orientation=(0,0,1),(0,0,0)
+        self.image=None
+        self.cam=None
         TrackItem.__init__(self,parent,text,size,**kws)
         if kws.has_key("point"):
             print "Got point",kws["point"]
@@ -93,64 +95,70 @@ class SplinePoint(TrackItem):
     def drawItem(self,hilight=-1):
         """
         Method: drawItem()
-        Created: 19.03.2005, KP
-        Description: A method that draws the splinetrack item.
-        """       
+        Created: 10.02.2005, KP
+        Description: A method that draws this track item
+        """
         #self.dc = wx.BufferedDC(wx.ClientDC(self),self.buffer)
         self.dc = wx.MemoryDC()
         self.dc.SelectObject(self.buffer)
 
-        r,g,b=self.color
-        if hilight!=-1:
-            r-=32
-            g-=32
-            b-=32
-            if r<0:r=0
-            if g<0:g=0
-            if b<0:b=0
-        
-        col=wx.Colour(r,g,b)
-        self.dc.SetBackground(wx.Brush(col))
-        self.dc.Clear()
         self.dc.BeginDrawing()
+        r,g,b=0,0,0
+        if hilight!=-1:
+            r=32
+            g=32
+            b=32
+        brush=wx.Brush(wx.Colour(r,g,b))
+        self.dc.SetBackground(brush)
+        self.dc.Clear()
+
         self.dc.SetPen(wx.Pen((0,0,0)))
+
         # draw the body
-        self.dc.SetBrush(wx.Brush(col))
-        #self.dc.SetBackground(wx.Brush(wx.BLACK))
-        self.dc.DrawRectangle(0,0,self.width,self.height)        
-        TrackItem.drawHeader(self,hilight)
+        #r,g,b=self.color
+        #col=wx.Colour(r,g,b)
+        #self.dc.SetBrush(wx.Brush(wx.BLACK))
+        #self.dc.DrawRectangle(0,0,self.width,self.height)        
         
-        r,g,b=self.headercolor
-        self.dc.SetPen(wx.Pen(wx.Colour(r,g,b),2))
-        self.dc.DrawLine(self.width-1,0,self.width-1,self.height)
-
-
-        self.dc.SetTextForeground((0,0,0))
-        self.dc.SetFont(wx.Font(8,wx.SWISS,wx.NORMAL,wx.NORMAL))
-        #Logging.info("Getting spline length of item",self.itemnum,kw="animator")
-        l=self.parent.getSplineLength(self.itemnum)
-        s=self.parent.getDuration(self.GetSize()[0])
-        x,y,z=self.point
-        #fx,fy,fz,fw=self.orientation
-        text= u"Control point: %.2f,%.2f,%.2f"%(x,y,z)
-        #text1=u"Orientation: %.2f,%.2f,%.2f,%.2f"%(fx,fy,fz,fw)
-        nutext2="Length:       %.2fum"%l
-        text2=u"Length:        %.2f\u03bcm"%l
-        text3=u"Duration:      %.2fs"%(s)
-        n=0
-        for text,nonunicode in [(text,text),(text2,nutext2),(text3,text3)]:
-            try:
-                self.dc.DrawText(text,5,n+self.labelheight+5)
-            except:
-                self.dc.DrawText(nonunicode,5,n+self.labelheight+5)
-            n+=10
-
+        self.drawHeader(hilight)
         if hilight != -1:
             self.hilight(hilight)
- 
-        self.dc.SelectObject(wx.NullBitmap)
+        #if self.thumbtimepoint>=0:
+        self.drawThumbnail()
+        r,g,b=self.headercolor
+
+        self.dc.SetPen(wx.Pen(wx.Colour(r,g,b),2))
+        self.dc.DrawLine(self.width-1,0,self.width-1,self.height)
         self.dc.EndDrawing()
-        self.dc = None
+        self.dc.SelectObject(wx.NullBitmap)
+        self.dc = None    
+    
+    def drawThumbnail(self):
+        """
+        Method: drawThumbnail()
+        Created: 10.02.2005, KP
+        Description: A method that draws a thumbnail on an item. If no thumbnail exists,
+                     this will create one
+        """   
+        if not self.thumbnailbmp:
+            if not self.image:
+                self.image = self.parent.splineEditor.getAsImage()
+                cam=self.parent.splineEditor.getCamera()
+                self.cam=vtk.vtkCamera()
+                for i in ["Position","FocalPoint","ViewUp","ViewAngle","ParallelScale","ClippingRange"]:
+                    eval("self.cam.Set%s(cam.Get%s())"%(i,i))
+            #self.volume.Update()
+            vx,vy,vz=self.image.GetDimensions()
+            img=ImageOperations.vtkImageDataToWxImage(self.image)
+            f=(self.height-self.labelheight)/float(img.GetHeight())
+            img=img.Mirror(0)
+            self.thumbnailbmp=img.Scale(vx*f,self.height-self.labelheight).ConvertToBitmap()
+            
+        iw,ih=self.thumbnailbmp.GetSize()
+        #print "image size=",iw,ih
+        wdiff=(self.width-iw)/2
+        if wdiff<0:wdiff=0
+        self.dc.DrawBitmap(self.thumbnailbmp,wdiff,self.labelheight)
     
     def updateItem(self):
         """
@@ -159,8 +167,8 @@ class SplinePoint(TrackItem):
         Description: A method called when the item has been resized
         """     
         TrackItem.updateItem(self)  
-        pos=self.parent.getSplinePoint(self.itemnum)
-        self.point = pos
+#        pos=self.parent.getSplinePoint(self.itemnum)
+#        self.point = pos
         
     def __set_pure_state__(self,state):
         """
@@ -183,7 +191,7 @@ class SplinePoint(TrackItem):
         Description: Return the dict that is to be pickled to disk
         """     
         odict=TrackItem.__getstate__(self)
-        for key in ["point","focalPoint"]:
+        for key in ["point"]:
             odict[key]=self.__dict__[key]
         return odict        
         

@@ -283,6 +283,7 @@ def vtkImageDataToWxImage(data,slice=-1,startpos=None,endpos=None):
     image=wx.EmptyImage(x,y)
     image.SetData(ss)
     return image
+    
 def vtkImageDataToPngString(data,slice=-1,startpos=None,endpos=None):
     """
     Method: vtkImageDataToPngString()
@@ -304,8 +305,6 @@ def vtkImageDataToPngString(data,slice=-1,startpos=None,endpos=None):
     for i in range(result.GetNumberOfTuples()):
         data+=chr(result.GetValue(i))
     return data
-    
-    
 
     
 def vtkImageDataToPreviewBitmap(imageData,color,width=0,height=0,bgcolor=(0,0,0),getpng=0):

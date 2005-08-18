@@ -1,16 +1,14 @@
 # -*- coding: iso-8859-1 -*-
 
 """
- Unit: Interpolation.py
- Project: Selli
+ Unit: Interpolation
+ Project: BioImageXD
  Created: 09.12.2004, KP
  Description:
 
  A module used to interpolate the intensity transfer functions based on given 
  parameters.
 
- Modified 09.12.2004 KP - Created the module
-          11.01.2005 JV - Added comments
 
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
@@ -29,17 +27,15 @@
  along with this program; if not, write to the Free Software
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
-__author__ = "Selli Project <http://sovellusprojektit.it.jyu.fi/selli/>"
+__author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.3 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 
 def linearInterpolation(paramlist1,paramlist2,n):
         """
-        --------------------------------------------------------------
         Function: linearInterpolation(paramlist1,paramlist2,n)
-        Created: 09.12.2004
-        Creator: KP
+        Created: 09.12.2004, KP
         Description: A function that interpolates n new parameter lists between 
                      two given parameterlists
         Parameters:
@@ -47,7 +43,6 @@ def linearInterpolation(paramlist1,paramlist2,n):
             paramlist2      The ending parameters
             n               How many parameter lists are interpolated between 
                             paramlist1 and paramlist2
-        -------------------------------------------------------------
         """
         paramlen=len(paramlist1)
         if len(paramlist1) != len(paramlist2):

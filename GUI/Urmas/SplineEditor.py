@@ -45,6 +45,7 @@ import wx
 import wx.lib.scrolledpanel as scrolled
 import PreviewFrame
 import Logging
+import messenger
 
 
 math = vtk.vtkMath()
@@ -66,6 +67,7 @@ class SplineEditor:
        
         self.parent=parent
         self.data = None
+        self.cmds={}
         self.viewMode=0
         self.wxrenwin=renwin
         self.initializeVTK()
@@ -86,6 +88,7 @@ class SplineEditor:
         self.iren = iren = self.renWin.GetInteractor()
         self.iren.SetSize(self.renWin.GetSize())
         self.iren.SetInteractorStyle(vtk.vtkInteractorStyleTrackballCamera())
+        #self.iren.SetInteractorStyle(vtk.vtkInteractorStyleJoystickCamera())
 
         self.dataExtensionX = 50
         self.dataExtensionY = 50
@@ -94,7 +97,20 @@ class SplineEditor:
         self.data = None
         self.interactionCallback=None
 
+        self.spline = spline = vtk.vtkSplineWidget()
+        self.spline.GetLineProperty().SetColor(1,0,0)
+        self.spline.GetHandleProperty().SetColor(0,1,0)
+        self.spline.SetResolution(1000)
+        
+        self.style=self.iren.GetInteractorStyle()
+        self.style.AddObserver("EndInteractionEvent",self.endInteraction)
+        self.style.AddObserver("InteractionEvent",self.endInteraction)
+        self.spline.SetInteractor(self.iren)
+        self.spline.On()
+        
+        self.spline.SetEnabled(1)        
 
+        
         self.outline = vtk.vtkOutlineFilter ()
         self.outlinemapper = vtk.vtkPolyDataMapper ()
         self.outlineactor = vtk.vtkActor ()
@@ -102,7 +118,39 @@ class SplineEditor:
         print "Initializing camera"
         self.initCamera()
         self.wxrenwin.Render()
-
+        
+    def setMovement(self,flag):
+        """
+        Method: setMovement
+        Created: 17.08.2005, KP
+        Description: Enable / Disable moving the camera around
+        """
+        self.style=self.iren.GetInteractorStyle()
+        events=["RightButtonPressEvent","MiddleButtonPressEvent","RightButtonReleaseEvent","MiddleButtonReleaseEvent","MouseWheelForwardEvent","MouseWheelBackwardEvent"]
+        
+        for event in events:
+            if not flag:
+                if self.cmds.has_key(event):
+                    self.style.RemoveObserver(self.cmds[event])
+                cmd=self.style.AddObserver(event,self.onDisableEvent)
+                self.cmds[event]=cmd
+            else:
+                if event in self.cmds:
+                    self.style.RemoveObserver(self.cmds[event])
+                    del self.cmds[event]
+                
+    def onDisableEvent(self,obj,evt,*args):
+        """
+        Method: onDisableEvent
+        Created: 17.08.2005, KP
+        Description: Stop the event from propagating
+        """
+        #print obj,evt,args
+        #tag=self.cmds[evt]
+        #print dir(self.style),dir(self.iren)
+        #cmd=self.style.GetCommand(tag)
+        #cmd.SetAbortFlag(1)
+        return False
     def setClosed(self,flag):
         """
         Method: setClosed(flag)
@@ -142,9 +190,15 @@ class SplineEditor:
         Description: Sets the view mode
         """
         if showViewAngle:
+            Logging.info("Turning spline off",kw="animator")
             self.spline.Off()
+            self.spline.SetEnabled(0)
+            self.setMovement(0)
         else:
+            Logging.info("Turning spline on",kw="animator")
             self.spline.On()
+            self.spline.SetEnabled(1)
+            self.setMovement(1)
         self.viewMode=showViewAngle    
 
     def findControlPoint(self,pt):
@@ -365,23 +419,21 @@ class SplineEditor:
         self.renderer.AddActor (self.axes)
         self.axes.SetInput (self.outline.GetOutput ())
         
-        self.spline = spline = vtk.vtkSplineWidget()
-        self.spline.GetLineProperty().SetColor(1,0,0)
-        self.spline.GetHandleProperty().SetColor(0,1,0)
-        self.spline.SetResolution(1000)
-
-        self.spline.AddObserver("EndInteractionEvent",self.endInteraction)
-        self.spline.AddObserver("InteractionEvent",self.endInteraction)
-        self.spline.SetInteractor(self.iren)
-        self.spline.On()
-        
-        self.spline.SetEnabled(1)        
 
         #print "Axes actor inertia: %d"%(self.axes.GetInertia())
         self.volume = volume
         self.volumeMapper = volumeMapper
         self.volumeProperty = volumeProperty
         self.wxrenwin.Render()
+
+    def setCamera(self,cam):
+        """
+        Method: setCamera(cam)
+        Created: 18.8.2005, KP
+        Description: Set the active camera
+        """
+        if self.renderer:
+            self.renderer.SetActiveCamera(cam)
         
     def getCamera(self):
         """
@@ -443,7 +495,7 @@ class SplineEditor:
             #self.spline.SetHandleSize(100)
         #
         #self.spline.GetHandleProperty().SetColor(0,0,1)
-        self.spline.SetEnabled(1)
+        #self.spline.SetEnabled(1)
 
         self.renderer.Render()
 
@@ -579,7 +631,13 @@ class SplineEditor:
         Created: 19.03.2005, KP
         Description: Method called when user manipulates the spline and then 
                      lets the mouse button up. Used to call a callback.
-        """               
+        """
+        cam=self.getCamera()
+        
+        #print "Orientation=",cam.GetOrientationWXYZ()
+        if self.viewMode == 1:
+            messenger.send(None,"set_camera",cam)
+        
         if self.interactionCallback:
             self.interactionCallback()
 
@@ -591,6 +649,19 @@ class SplineEditor:
     #    """           
     #    #del self.renWin
 
+    def getAsImage(self):
+        """
+        Method: getAsImage
+        Created: 18.8.2005, KP
+        Description: Render the scene to a vtkImageData
+        """
+        filter=vtk.vtkWindowToImageFilter()
+        filter.SetInput(self.renWin)
+        self.renderer.RemoveActor(self.outlineactor)
+        filter.Update()
+        self.renderer.AddActor(self.outlineactor)        
+        return filter.GetOutput()
+    
     def render(self):
         """
         Method: render()

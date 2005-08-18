@@ -49,6 +49,8 @@ import ImageOperations
 import Dialogs
 import TimepointSelection
 
+
+
 import messenger
 
 class Track(wx.Panel):
@@ -74,7 +76,7 @@ class Track(wx.Panel):
         self.label = name
         self.previtem = None
         if kws.has_key("height"):
-           print "Setting height to ",kws["height"]
+           #print "Setting height to ",kws["height"]
            self.height=kws["height"]
         if kws.has_key("editable"):
             self.editable=kws["editable"]
@@ -101,6 +103,7 @@ class Track(wx.Panel):
     
         self.initTrack()
         self.timePos=0
+        self.timePosItem=None
         self.timePosInPixels=0
 
         self.Bind(wx.EVT_MOTION,self.onDrag)
@@ -147,7 +150,6 @@ class Track(wx.Panel):
         self.dc = wx.BufferedDC(wx.ClientDC(self),self.buffer)
         if self.renew != 2:
             self.dc.Clear()
-            print "Painting new"
             self.dc.SetBrush(wx.Brush(self.bg))
             #self.dc.SetPen(wx.Pen(self.fg,1))
             self.dc.BeginDrawing()
@@ -186,8 +188,19 @@ class Track(wx.Panel):
             
         
         pps=self.timescale.getPixelsPerSecond() 
-        
-        if self.timePos:
+        viewMode=self.control.getViewMode()
+        if self.timePos and not (viewMode==1 and not isinstance(self,SplineTrack.SplineTrack)):
+            if self.control.getViewMode()==1:
+                if not self.timePosItem or (self.timePos != self.timePosItem.getPosition()[0]):
+                    curr=None
+                    for item in self.items:
+                        start,end=item.getPosition()
+                        if start<= self.timePos and end >= self.timePos:
+                            curr=item
+                            break
+                    self.timePosItem=curr
+                    self.timePos=start
+            
             #print "Position of %dth frame is at %d+%d"%(self.timePos,self.getLabelWidth(),len*(float(self.timePos)))
             pos=self.getLabelWidth() + self.timePos*pps
         
@@ -294,7 +307,7 @@ class Track(wx.Panel):
         if not flag:
             self.oldNamePanelColor=col
             r=g=b=200
-            print "Setting background to ",r,g,b
+            #print "Setting background to ",r,g,b
             self.fg=(128,128,128)
             self.bg=(r,g,b)
         else:
@@ -323,10 +336,12 @@ class Track(wx.Panel):
             self.paintTrack()
             self.Refresh()
         curritem=None
+        n=0
         for item in self.items:
             ix,iy=item.GetPosition()
             w,h=item.GetSize()
             #print "ix,iy=",ix,iy
+            if ix<=x:n+=1
             if ix<= x and ix+w>=x:
                 #print "Found item",item
                 curritem=item
@@ -340,7 +355,10 @@ class Track(wx.Panel):
             curritem.OnDragOver(x,y)
             self.previtem = curritem
         else:
-            self.dragEndPosition = 0
+            if n==0:
+                self.dragEndPosition = 0
+            else:
+                self.dragEndPosition = -1
         
     def OnDragLeave(self):
         """
@@ -376,7 +394,7 @@ class Track(wx.Panel):
         Created: 19.03.2005, KP
         Description: A method that updates all the items in this track
         """           
-        print "Updating labels"
+        #print "Updating labels"
         for item in self.items:
             item.updateItem()
             item.drawItem()
@@ -395,7 +413,7 @@ class Track(wx.Panel):
         
         if trackitem.dragMode == 2:
             x-=self.getLabelWidth()
-            print "Setting empty space to ",x
+            #print "Setting empty space to ",x
             self.setEmptySpace(x)
             self.paintTrack()
             self.Refresh()
@@ -489,7 +507,7 @@ class Track(wx.Panel):
         diff=toWidth-fromWidth
         w+=diff
         
-        print "w=",w,"duration=",self.duration,"pps=",self.timescale.getPixelsPerSecond()
+        #print "w=",w,"duration=",self.duration,"pps=",self.timescale.getPixelsPerSecond()
         if w>self.duration*self.timescale.getPixelsPerSecond():
             return 0
         return 1
@@ -574,11 +592,10 @@ class Track(wx.Panel):
         Description: Sets the empty space at the beginning of a track
         """        
         maxempty = self.parent.getLargestTrackLength(self)
-        print "maxempty=",maxempty
         if space<0:
             space=0
         if space>maxempty:
-            print "Won't grow beyond %d"%maxempty
+            Logging.info("Won't grow beyond ",maxempty,kw="animator")
             space=maxempty
         #self.positionItem.setWidth(space)
         self.startOfTrack=space
@@ -589,7 +606,7 @@ class Track(wx.Panel):
         #self.Layout()
         self.Refresh()
         #self.updateLayout()
-        print "setting positionItem size",space
+        #print "setting positionItem size",space
 
     def GetSize(self):
         return (self.width+self.startOfTrack,self.height)
@@ -670,469 +687,12 @@ class Track(wx.Panel):
             odict[key]=self.__dict__[key]
         return odict        
     
-
- 
-class SplineTrack(Track):
-    """
-    Class: SplineTrack
-    Created: 13.04.2005, KP
-    Description: A class representing a spline track in the timeline
-    """       
-    def __init__(self,name,parent,**kws):
-        self.nameColor = (0,148,213)
-        self.fg=(0,0,0)
-        self.bg=self.nameColor
-        Track.__init__(self,name,parent,**kws)   
-        self.closed = 0
-        self.maintainUpDirection=0
-        #self.namePanel.setColor((0,0,0),self.nameColor)
-        if "item" in kws:
-            self.itemClass=kws["item"]
-        else:
-            self.itemClass=SplinePoint
-        if "closed" in kws:
-            self.closed = kws["closed"]
-        dt = UrmasPalette.UrmasDropTarget(self,"Spline")
-        self.SetDropTarget(dt)
-        
-    def setMaintainUpDirection(self,flag):
-        """
-        Method: setMaintainUpDirection(flag)
-        Created: 25.06.2005, KP
-        Description: Toggles whether up direction is maintained in track
-        """     
-        print "Will maintain up direction: %s"%(flag!=0)
-        self.maintainUpDirection=flag
-        
-    def getClosed(self):
-        """
-        Method: getClosed()
-        Created: 14.04.2005, KP
-        Description: Is this spline closed or not
-        """     
-        return self.closed
-        
-    def setClosed(self,flag,add=1):
-        """
-        Method: setClosed
-        Created: 14.04.2005, KP
-        Description: Sets the spline represented by this flag to be closed
-        """     
-        print "setClosed(",flag,")"
-        self.closed = flag
-        self.splineEditor.setClosed(flag)
-        if flag and add:
-            self.addSplinePoint(len(self.items))
-        elif add:
-            self.removeItem(len(self.items))
-
-    def AcceptDrop(self,x,y,data):
-        """
-        Method: AcceptDrop
-        Created: 12.04.2005, KP
-        Description: Method called to indicate that a user is no longer dragging
-                     something to this track
-        """     
-        oldlen=len(self.items)
-        if data=="Circular":
-            pos = 0
-            if len(self.items):
-                Dialogs.showerror(self,"Circular camera path can only be placed on an empty track","Cannot place camera path")
-                return
-            bounds = self.splineEditor.getBounds()
-            print "got bounds=",bounds
-            pts=bounds[0:4]
-            for i in range(4):
-                self.addSplinePoint(pos,(i==3),point=bounds[i])
-                pos=pos+1
-            self.setClosed(1,0)
-            self.setMaintainUpDirection(1)
-        elif data=="Perpendicular":
-            pos = 0
-            if len(self.items):
-                Dialogs.showerror(self,"Perpendicular camera path can only be placed on an empty track","Cannot place camera path")
-                return
-            x,y,z = self.splineEditor.dataDimensions()
-            r = 2*max(x,y,z)
-            x0,y0,z0 = self.splineEditor.getCameraFocalPointCenter()
-            
-            # On top
-            p0 = (x0,y0,z0+r)
-            p1 = (x0+r,y0,z0)
-            p2 = (x0,y0,z0-r)
-            p3 = (x0-r,y0,z0)
-            pts=[p0,p1,p2,p3]
-            for i in range(4):
-                print "adding %d = "%pos,pts[i]
-                self.addSplinePoint(pos,(i==3),point=pts[i])
-                pos=pos+1
-            self.setClosed(1,0)
-        # If this is a stop-camera item
-        elif data=="Stop":
-            pos=self.dragEndPosition
-            self.addStopPoint(pos)
-            self.paintTrack()
-            self.Refresh()
-        else:
-            dlg = wx.TextEntryDialog(self,"How many control points should the camera path have:","Configure Camera path")
-            dlg.SetValue("5")
-            if dlg.ShowModal()==wx.ID_OK:
-                try:
-                    val=int(dlg.GetValue())
-                except:
-                    return
-                print "Adding %d spline points"%val
-                pos=self.dragEndPosition
-                for i in range(val):
-                    self.addSplinePoint(pos)
-                    pos=pos+1
-                self.setMaintainUpDirection(1)
-
-                self.Refresh()
-                self.Layout()
-                
-        # If there were no items before this, then expand to max
-        if not oldlen:
-            self.expandToMax()
-            
-    def getSplineLength(self,splinepoint):
-        """
-        Method: getSplineLength
-        Created: 19.03.2005, KP
-        Description: A method that returns the physical length of a spline
-                     range given the spline points width
-        """ 
-        if not self.duration:
-            return 0
-        return self.splineEditor.getSplineLength(splinepoint,splinepoint+1)
-
-    def setToRelativeSize(self,size):
-        """
-        Method: setToRelativeSize(size)
-        Created: 19.04.2005, KP
-        Description: Set duration of all items in this track
-        """              
-        n=len(self.items)
-        total=self.splineEditor.getSplineLength(0,n-1)
-        
-        if not n:
-            return
-        
-        tot=0
-        last=0
-        print "total size=",total," (pixels=",size,")"
-        for i in self.items:
-            if i.isStopped():
-                i.setWidth(30)
-                continue
-            n=self.getSplineLength(i.getItemNumber())
-            if n:
-                percent=float(n)/total
-                print "item ",i.getItemNumber(),"is ",n,"which is ",percent,"percent"
-    
-                i.setWidth(size*percent)
-                tot+=size*percent
-                last=i
-            else:
-                i.setWidth(8)
-       
-        self.updateLayout()
-
-
-    def getSplinePoint(self,point):
-        """
-        Method: getSplinePoint
-        Created: 06.04.2005, KP
-        Description: A method that returns the physical position of a spline
-                     control point
-        """ 
-        return self.splineEditor.findControlPoint(point)
-
-    def setSplinePoint(self,pointnum,point):
-        """
-        Method: setSplinePoint
-        Created: 11.04.2005, KP
-        Description: A method that sets the physical position of a spline
-                     control point
-        """ 
-        return self.splineEditor.setSplinePoint(pointnum,point)   
-
-    def removeItem(self,position):
-        """
-        Method: removeItem(position)
-        Created: 14.04.2005, KP
-        Description: Remove an item from this track
-        """
-        #self.removeItem(position)
-        self.showSpline()
-        self.Layout()
-        #self.sizer.Fit(self)     
-
-    def addStopPoint(self,position):
-        """
-        Method: addStopPoint
-        Created: 24.06.2005, KP
-        Description: A method to add a stop in the camera movement
-        """
-        h=self.height
-        item=StopItem(self,(30,h))
-        self.items.insert(position,item)
-        self.updatePositions()
-        return item
-        
-    def addSplinePoint(self,position,update=1,**kws):
-        """
-        Method: addItem
-        Created: 04.02.2005, KP
-        Description: A method to add a new item to this track
-        """
-        h=self.height
-        itemkws={"itemnum":position,"editable":self.editable}
-        print "itemnum=",position
-        if kws.has_key("point"):
-            point = kws["point"]
-        else:
-            point = self.splineEditor.getRandomPoint()
-        itemkws["point"]=point
-        
-#        print "Setting point to ",point
-        pts=[]
-        for item in self.items:
- #           print "item=",item
-            if not hasattr(item,"stopitem"):
-                pts.append(item.getPoint())
-            
-        if position>=len(pts)-1:
-            print "append pts, pos=%d,len=%d"%(position,len(pts))
-            pts.append(point)
-        else:
-            print "insert pts"
-            pts.insert(position,point)
-        Logging.info("spline pts=",pts,kw="animator")    
-
-        if len(pts)>=2:
-            self.splineEditor.setClosed(self.closed)
-            self.splineEditor.setSplinePoints(pts)
-            self.control.setSplineInteractionCallback(self.updateLabels)
-
-        item=self.itemClass(self,"%d"%position,(20,h),**itemkws)
-        if self.color:
-            item.setColor(self.color,self.headercolor)
-        if position>=len(pts)-1:
-            print "appending item",item.itemnum
-            self.items.append(item)
-        else:
-            print "Inserting items"
-            self.items.insert(position,item)
-        # +1 accounts for the empty item
-        spc=0
-        for i,item in enumerate(self.items):
-            if not item.isStopped():
-                self.items[i].setItemNumber(spc)
-                self.items[i].setText("%d"%spc)
-                spc+=1
-                if update:
-                    self.items[i].updateItem()
-                    self.items[i].drawItem()
-        
-        self.updatePositions()
-
-        if update:
-            self.paintTrack()
-            self.Refresh()
-            #self.sizer.Fit(self)
-        return item
-            
-    def __getstate__(self):
-        """
-        Method: __getstate__
-        Created: 14.04.2005, KP
-        Description: Return the dict that is to be pickled to disk
-        """      
-        odict = Track.__getstate__(self)
-        n=0
-        pos=0
-        for key in ["closed","maintainUpDirection"]:
-            odict[key]=self.__dict__[key]
-        return odict        
-        
-    def setSelected(self,event):
-        """
-        Method: setSelected(event)
-        Created: 14.04.2005, KP
-        Description: Selects this track
-        """ 
-        Track.setSelected(self,event)
-        if event:
-            self.showSpline()
-            self.control.setSplineInteractionCallback(self.updateLabels)        
-            
-    def showSpline(self):
-        """
-        Method: showSpline()
-        Created: 18.04.2005, KP
-        Description: Show spline represented by this track
-        """ 
-        pts=[]
-        for item in self.items:
-            if not isinstance(item,StopItem):
-                pts.append(item.getPoint())
-        if len(pts)>=2:
-            self.splineEditor.setSplinePoints(pts)
-            self.splineEditor.setClosed(self.closed)
-            self.splineEditor.render()
-            
-    def setItemAmount(self,n):
-        """
-        Method: setItemAmount
-        Created: 20.04.2005, KP
-        Description: A method to set the amount of items in this track
-        """               
-        self.remove()
-        self.initTrack()
-        for i in range(n):
-            self.addSplinePoint(i,0)
-            
-    def __set_pure_state__(self,state):
-        """
-        Method: __set_pure_state__()
-        Created: 11.04.2005, KP
-        Description: Method called by UrmasPersist to allow the object
-                     to refresh before it's items are created
-        """ 
-        Track.__set_pure_state__(self,state)
-        self.closed = state.closed
-        spc=0
-        
-        for i,item in enumerate(state.items):
-            if not "stopitem" in  dir(item):
-                Logging.info("Add spline point spc=%d,i=%d, itemnum=%d"%(spc,i,item.itemnum),kw="animator")
-                tp=self.addSplinePoint(spc,0,point=item.point)
-                tp.__set_pure_state__(item)
-                spc+=1
-            else:
-                Logging.info("Add stop point i=%d, itemnum=%d"%(i,item.itemnum),kw="animator")
-                tp=self.addStopPoint(i)
-                tp.__set_pure_state__(item)
-        #self.updatePositions()
-        for i,item in enumerate(self.items):
-            print "item at %d: %s"%(i,str(item))
-        self.paintTrack()
-        
-        
-class TimepointTrack(Track):
-    """
-    Class: TimepointTrack
-    Created: 13.04.2005, KP
-    Description: A class representing a timepoint track in the timeline
-    """       
-    def __init__(self,name,parent,**kws):
-        self.nameColor = (128,195,155)
-        self.fg=(0,0,0)
-        self.bg=self.nameColor
-        Track.__init__(self,name,parent,**kws)
-        if "item" in kws:
-            self.itemClass=kws["item"]
-        else:
-            self.itemClass=TrackItem
-        dt = UrmasPalette.UrmasDropTarget(self,"Timepoint")
-        self.SetDropTarget(dt)
-        self.thumbnail=1
-    
-    def AcceptDrop(self,x,y,data):
-        """
-        Method: AcceptDrop
-        Created: 12.04.2005, KP
-        Description: Method called to indicate that a user is no longer dragging
-                     something to this track
-        """
-        oldlen=len(self.items)
-        timepoints=TimepointSelection.TimepointSelection(self.parent)
-        timepoints.setDataUnit(self.control.getDataUnit())
-        if timepoints.ShowModal()==wx.ID_OK:
-            tps=timepoints.getSelectedTimepoints()
-            self.insertTimepoints(tps)
-        if not oldlen:
-            self.expandToMax()
-            
-    def showThumbnail(self,flag):
-        """
-        Method: showThumbnail
-        Created: 04.02.2005, KP
-        Description: A method to set a flag indicating, whether to show a
-                     thumbnail on the items in this track
-        """           
-        self.thumbnail=flag
-        for item in self.items:
-            #print "Setting thumbnail on",item
-            item.setThumbnailDataunit(self.dataUnit)
-    
-    def insertTimepoints(self,timepoints):
-        """
-        Method: insertTimepoints(tps)
-        Created: 13.04.2005, KP
-        Description: Insert the given timepoints to the track
-        """              
-        pos=self.dragEndPosition
-        for tp in timepoints:
-            self.addTimepoint(pos,tp,0)
-            pos+=1
-            self.paintTrack()
-#        self.Refresh()
-#        self.Layout()
-        #self.sizer.Fit(self)
-            
-
-    def addTimepoint(self,position,timepoint,update=1):
-        """
-        Method: addTimepoint
-        Created: 04.02.2005, KP
-        Description: A method to add a new item to this track
-        """              
-        h=self.height
-        kws={"editable":self.editable}
-        kws["dataunit"]=self.dataUnit
-        kws["thumbnail"]=timepoint
-        kws["timepoint"]=timepoint
-        text="%d"%timepoint
-        item=self.itemClass(self,text,(20,h),**kws)
-        if self.color:
-            item.setColor(self.color,self.headercolor)
-        self.items.insert(position,item)
-        # +1 accounts for the empty item
-        
-        for i,trackitem in enumerate(self.items):
-            trackitem.setItemNumber(i)
-            
-        if update:
-            self.Layout()
-            self.sizer.Fit(self)
-        item.updateItem()
-        self.updatePositions()
-        return item
         
             
-    def setItemAmount(self,n):
-        """
-        Method: setItemAmount
-        Created: 20.04.2005, KP
-        Description: A method to set the amount of items in this track
-        """               
-        self.remove()
-        self.initTrack()
-        for i in range(n):
-            self.addTimepoint(i,i,0)
-            
-    def __set_pure_state__(self,state):
-        """
-        Method: __set_pure_state__()
-        Created: 11.04.2005, KP
-        Description: Method called by UrmasPersist to allow the object
-                     to refresh before it's items are created
-        """ 
-        Track.__set_pure_state__(self,state)
-        for i,item in enumerate(state.items):
-            tp=self.addTimepoint(i,item.timepoint,0)
-            tp.__set_pure_state__(item)
-        #self.updatePositions()
-        self.paintTrack()
+
+        
+import SplineTrack        
+        
+"""
+FOo
+"""

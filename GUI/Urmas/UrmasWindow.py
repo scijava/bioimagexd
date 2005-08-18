@@ -105,8 +105,8 @@ class UrmasWindow(scrolled.ScrolledPanel):
         """
         tp=self.visualizer.timeslider.GetValue()
         tp/=10.0
-        messenger.send(None,"show_time_pos",tp-1)
-        messenger.send(None,"render_time_pos",tp-1)
+        messenger.send(None,"show_time_pos",tp-0.1)
+        messenger.send(None,"render_time_pos",tp-0.1)
         self.timelinePanel.timeline.Refresh()
         
     def cleanMenu(self):
@@ -163,7 +163,7 @@ class UrmasWindow(scrolled.ScrolledPanel):
         
         mgr.addMenuItem("addtrack",MenuManager.ID_ADD_TIMEPOINT,"Timepoint Track","Add a timepoint track to the timeline",self.onMenuAddTimepointTrack)
         mgr.addMenuItem("addtrack",MenuManager.ID_ADD_SPLINE,"Camera Path Track","Add a camera path track to the timeline",self.onMenuAddSplineTrack)
-        
+        mgr.addMenuItem("addtrack",MenuManager.ID_ADD_KEYFRAME,"Keyframe Track","Add a keyframe track to the timeline",self.onMenuAddKeyframeTrack)        
         mgr.addSubMenu("track","addtrack","&Add Track",MenuManager.ID_ADD_TRACK)
         mgr.addMenuItem("track",MenuManager.ID_DELETE_TRACK,"&Remove track","Remove the track from timeline",self.onMenuRemoveTrack)
         mgr.addSeparator("track")
@@ -201,16 +201,7 @@ class UrmasWindow(scrolled.ScrolledPanel):
         active = self.control.getSelectedTrack()
         if active and hasattr(active,"maintainUpDirection"):
             self.menuManager.check(MenuManager.ID_MAINTAIN_UP,active.maintainUpDirection)
-        
-    def onMenuMayavi(self,event):
-        """
-        Method: onMenuMayavi
-        Created: 20.04.2005, KP
-        Description: Start mayavi for rendering
-        """
-        self.renderMenu.Enable(MenuManager.ID_RENDER_PROJECT,1)
-        self.control.startMayavi()
-
+ 
     def onMenuRender(self,event):
         """
         Method: onMenuRender()
@@ -376,6 +367,14 @@ class UrmasWindow(scrolled.ScrolledPanel):
         Description: Callback function for adding camera path track
         """
         self.control.timeline.addSplinepointTrack("")
+
+    def onMenuAddKeyframeTrack(self,evt):
+        """
+        Method: onMenuAddKeyframeTrack
+        Created: 18.04.2005, KP
+        Description: Callback function for adding keyframe track
+        """
+        self.control.timeline.addKeyframeTrack("")
         
     def onMenuAddTimepointTrack(self,evt):
         """

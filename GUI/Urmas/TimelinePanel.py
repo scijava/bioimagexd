@@ -229,28 +229,35 @@ class TimelinePanel(wx.Panel):
            
         self.confSizer.Add(self.useButton,(1,0))
         
-        self.modeBox=wx.RadioBox(self.confPanel,-1,"Show preview",
-        choices=["Camera path","Camera view"],majorDimension=2,
+        self.modeBox=wx.RadioBox(self.confPanel,-1,"Preview mode",
+        choices=["Modify Camera path",
+        #"Set Camera angle",
+        "Add Keyframes"],
+        majorDimension=3,
         style=wx.RA_SPECIFY_ROWS    
         )
         self.confSizer.Add(self.modeBox,(0,1))
+        self.sizer.Add(sboxsizer,(2,0),flag=wx.EXPAND|wx.ALL)        
         
-        self.sizer.Add(sboxsizer,(2,0),flag=wx.EXPAND|wx.ALL)
         
-
-        self.wxrenwin=VisualizerWindow.VisualizerWindow(self,size=(400,300))
+        
+        self.wxrenwin=VisualizerWindow.VisualizerWindow(self,size=(400,260))
+        
         self.wxrenwin.Render()
 #        self.wxrenwin.Initialize()
 #        self.wxrenwin.Start()
 
-        sbox=wx.StaticBox(self,-1,"Rendering preview")
-        sboxsizer=wx.StaticBoxSizer(sbox,wx.VERTICAL)
         self.splineEditor=SplineEditor.SplineEditor(self,self.wxrenwin)
-        
-        sboxsizer.Add(self.wxrenwin)
         self.control.setSplineEditor(self.splineEditor)        
+#        self.control.setViewMode(1)
+#        self.control.setViewMode(0)
+
+        sbox=wx.StaticBox(self,-1,"Rendering preview")
+        sboxsizer=wx.StaticBoxSizer(sbox,wx.VERTICAL)                
+        sboxsizer.Add(self.wxrenwin)
         
-        self.sizer.Add(sboxsizer,(2,1))#,flag=wx.EXPAND|wx.ALL)
+        self.sizer.Add(sboxsizer,(2,1))#,flag=wx.EXPAND|wx.ALL) 
+        
         
         self.SetSizer(self.sizer)
         self.SetAutoLayout(1)
@@ -276,7 +283,9 @@ class TimelinePanel(wx.Panel):
         n=self.control.getDuration()
         messenger.send(None,"set_time_range",1,n*10)
         showAngle=self.modeBox.GetSelection()
+        self.control.setViewMode(showAngle)
         self.splineEditor.setViewMode(showAngle)
+        
         cam = self.splineEditor.getCamera()
         if showAngle:
             print "Storing position"
@@ -286,7 +295,8 @@ class TimelinePanel(wx.Panel):
             if self.storedCameraPosition:
                 print "Restoring position"
                 cam.SetPosition(self.storedCameraPosition)
-                self.splineEditor.render()
+        self.splineEditor.render()
+        
     def useTimeline(self,flag):
         print "useTimeline called!"
         if not flag:

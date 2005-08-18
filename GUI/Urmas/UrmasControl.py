@@ -65,6 +65,7 @@ class UrmasControl:
         self.duration = 60 # seconds
         self.frames = 120 # frames
         self.animationMode= 0
+        self.viewMode=0
         self.renderer=UrmasRenderer.UrmasRenderer(self)
         
     def writeToDisk(self,filename):
@@ -78,6 +79,17 @@ class UrmasControl:
         #pickle.dump(self,f)
         p=UrmasPersist.UrmasPersist(self)
         p.persist(filename)
+    
+    def getViewMode(self):return self.viewMode    
+    def setViewMode(self,mode):
+        """
+        Method: setViewMode(mode)
+        Created: 17.08.2005, KP
+        Description: Set the view mode of spline editor
+        """    
+        self.viewMode=mode
+    
+    
         
     def resetAnimator(self):
         """

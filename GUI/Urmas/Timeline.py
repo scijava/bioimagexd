@@ -79,8 +79,10 @@ class Timeline(scrolled.ScrolledPanel):
    
         self.timepointTracks=[]
         self.splinepointTracks=[]
+        self.keyframeTracks=[]
         self.timepointTrackAmnt=0
         self.splinepointTrackAmnt=0
+        self.keyframeTrackAmnt=0
         self.trackOffset = 1
         
         w,h=self.GetSize()
@@ -105,10 +107,17 @@ class Timeline(scrolled.ScrolledPanel):
         """
         Method: getTimepointTracks
         Created: 19.04.2005, KP
-        Description: Return the camera path tracks
+        Description: Return the timepoint tracks
         """ 
         return self.timepointTracks
         
+    def getKeyframeTracks(self):
+        """
+        Method: getKeyframeTracks
+        Created: 18.08.2005, KP
+        Description: Return the keyframe tracks
+        """ 
+        return self.keyframeTracks
         
     def getSelectedTrack(self):
         """
@@ -237,9 +246,12 @@ class Timeline(scrolled.ScrolledPanel):
         self.timeScale.setOffset(tr.getLabelWidth())
         self.splinepointTrackAmnt = len(self.splinepointTracks)
         self.timepointTrackAmnt = len(self.timepointTracks)
+        self.keyframeTrackAmnt = len(self.keyframeTracks)
         # Move the splinepoints down by one step
         if self.splinepointTrackAmnt:
             self.moveTracks(self.timepointTrackAmnt,self.timepointTrackAmnt+1,self.splinepointTrackAmnt)
+        if self.keyframeTrackAmnt:
+            self.moveTracks(self.timepointTrackAmnt+self.splinepointTrackAmnt,self.timepointTrackAmnt+self.splinepointTrackAmnt+1,self.keyframeTrackAmnt)
         self.Layout()
         print "Adding track to ",self.trackOffset+self.timepointTrackAmnt
         self.sizer.Add(tr,(self.trackOffset+self.timepointTrackAmnt,0),flag=wx.EXPAND|wx.ALL)
@@ -269,9 +281,12 @@ class Timeline(scrolled.ScrolledPanel):
         if label=="":
             label="Camera Path %d"%len(self.splinepointTracks)
         tr=SplineTrack(label,self,number=1,timescale=self.timeScale,control=self.control,height=55)
-        tr.setColor((248,196,56))
+        tr.setColor((56,196,248))
         self.splinepointTrackAmnt = len(self.splinepointTracks)
         self.timepointTrackAmnt = len(self.timepointTracks)
+        self.keyframeTrackAmnt=len(self.keyframeTracks)
+        if self.keyframeTrackAmnt:
+            self.moveTracks(self.timepointTrackAmnt+self.splinepointTrackAmnt,self.timepointTrackAmnt+self.splinepointTrackAmnt+1,self.keyframeTrackAmnt)        
         print "Adding track to ",self.trackOffset+self.timepointTrackAmnt
         self.sizer.Add(tr,(self.trackOffset+self.timepointTrackAmnt+self.splinepointTrackAmnt,0),flag=wx.EXPAND|wx.ALL)
         self.Layout()
@@ -280,6 +295,27 @@ class Timeline(scrolled.ScrolledPanel):
         self.control.window.updateMenus()
         return tr
 
+    def addKeyframeTrack(self,label):
+        """
+        Method: addKeyframeTrack(label)
+        Created: 18.08.2005, KP
+        Description:
+        """
+        if label=="":
+            label="Keyframe %d"%len(self.keyframeTracks)
+        tr=KeyframeTrack(label,self,number=1,timescale=self.timeScale,control=self.control,height=55)
+        
+        self.keyframeTrackAmnt = len(self.splinepointTracks)
+        self.timepointTrackAmnt = len(self.timepointTracks)
+        self.splinepointTrackAmnt=len(self.splinepointTracks)
+        print "Adding track to ",self.trackOffset+self.timepointTrackAmnt+self.splinepointTrackAmnt
+        self.sizer.Add(tr,(self.trackOffset+self.timepointTrackAmnt+self.splinepointTrackAmnt+self.keyframeTrackAmnt,0),flag=wx.EXPAND|wx.ALL)
+        self.Layout()
+        self.SetupScrolling()
+        self.keyframeTracks.append(tr)    
+        self.control.window.updateMenus()
+        return tr        
+        
     def getLargestTrackLength(self,cmptrack):
         """
         Method: getLargestTrackLength
@@ -290,6 +326,7 @@ class Timeline(scrolled.ScrolledPanel):
         tracks=[]
         tracks.extend(self.timepointTracks)
         tracks.extend(self.splinepointTracks)
+        tracks.extend(self.keyframeTracks)
         ret=0
         for track in tracks:
             if track != cmptrack and track.__class__ == cmptrack.__class__:
@@ -338,8 +375,11 @@ class Timeline(scrolled.ScrolledPanel):
             self.removeTrack(track)
         for track in self.splinepointTracks:
             self.removeTrack(track)
+        for track in self.keyframeTracks:
+            self.removeTrack(track)
         self.splinepointTracks=[]
         self.timepointTracks=[]
+        self.keyframeTracks=[]
         
     def removeTrack(self,track,reorder=0):
         """
@@ -357,7 +397,7 @@ class Timeline(scrolled.ScrolledPanel):
                 pos=lst.index(track)
                 self.moveTracks(pos+1,pos,len(self.timepointTracks[pos:])+self.splinepointTrackAmnt)
                 self.timepointTrackAmnt-=1                    
-            else:
+            elif track in self.splinepointTracks:
                 lst=self.splinepointTracks
                 pos=lst.index(track)
                 n=pos
@@ -365,6 +405,12 @@ class Timeline(scrolled.ScrolledPanel):
                 print "Moving from ",pos+1,"to ",pos,"#",self.splinepointTrackAmnt-n
                 self.moveTracks(pos+1,pos,self.splinepointTrackAmnt-n)
                 self.splinepointTrackAmnt-=1
+            else:
+                lst=self.keyframeTracks
+                pos=lst.index(track)
+                pos+=self.timepointTrackAmnt+self.splinepointTrackAmnt
+                self.moveTracks(pos+1,pos,self.keyframeTrackAmnt-n)
+                self.keyframeTrackAmnt-=1
             lst.remove(track)
             
                 
@@ -414,7 +460,9 @@ class Timeline(scrolled.ScrolledPanel):
         for i in self.splinepointTracks:
             if i:
                 i.setDuration(seconds,frames)
-        
+        for i in self.keyframeTracks:
+            if i:
+                i.setDuration(seconds,frames)        
     def __str__(self):
         """
         Method: __str__
@@ -426,6 +474,9 @@ class Timeline(scrolled.ScrolledPanel):
         s+="}\n"
         s+="Splinepoint tracks: {"
         s+=", ".join(map(str,self.splinepointTracks))
+        s+="}\n"
+        s+="Keyframe tracks: {"
+        s+=", ".join(map(str,self.keyframeTracks))
         s+="}\n"
         return s
     
@@ -439,7 +490,8 @@ class Timeline(scrolled.ScrolledPanel):
         keys=[""]
         self.timepointTrackAmnt = len(self.timepointTracks)
         self.splinepointTrackAmnt = len(self.splinepointTracks)
-        for key in ["timepointTracks","splinepointTracks","splinepointTrackAmnt","timepointTrackAmnt"]:
+        self.keyframeTrackAmnt = len(self.keyframeTracks)
+        for key in ["timepointTracks","splinepointTracks","splinepointTrackAmnt","timepointTrackAmnt","keyframeTracks","keyframeTrackAmnt"]:
             odict[key]=self.__dict__[key]
         return odict        
  

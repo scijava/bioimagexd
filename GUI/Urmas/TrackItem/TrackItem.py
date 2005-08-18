@@ -45,7 +45,7 @@ import math,random
 import ImageOperations
 from Urmas import UrmasControl
 import Logging        
-DRAG_OFFSET=20
+DRAG_OFFSET=15
         
 class TrackItem:
     """
@@ -327,6 +327,7 @@ class TrackItem:
         w,h=self.GetSize()
         posx,posy=self.GetPosition()
         x-=posx
+        Logging.info("Item number #%d selected"%self.itemnum,kw="animator")
         if self.itemnum == 0 and x<DRAG_OFFSET:
             # Drag mode where first item is dragged, this affects the
             # empty space at the front
@@ -495,6 +496,7 @@ class StopItem(TrackItem):
         Description: Initialize
         """       
         self.itemnum = -1
+        self.stopitem=1
         TrackItem.__init__(self,parent,"Stop",size,**kws)
         
     def isStopped(self):return 1

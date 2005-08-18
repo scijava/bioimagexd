@@ -119,10 +119,9 @@ class UrmasPalette(wx.Panel):
         self.control=control
         wx.Panel.__init__(self,parent,style=wx.RAISED_BORDER,size=(800,32))
         self.sizer=wx.BoxSizer(wx.HORIZONTAL)
+        
         iconpath=reduce(os.path.join,["Icons"])
         self.ID_NEWSPLINE=wx.NewId()
-        
-
         p=wx.Panel(self,-1,size=(32,32))#,style=wx.RAISED_BORDER)
         self.ID_NEWTIMEPOINT=wx.NewId()
         bmp=wx.Image(os.path.join(iconpath,"timepoint.jpg"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
@@ -198,6 +197,22 @@ class UrmasPalette(wx.Panel):
         
         self.sizer.Add(p,flag=wx.RIGHT,border=5)
         
+        p=wx.Panel(self,-1,size=(32,32))#,style=wx.RAISED_BORDER)
+        self.ID_ADD_KEYFRAME=wx.NewId()
+        bmp=wx.Image(os.path.join(iconpath,"add_keyframe.jpg"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
+        self.newkeyframe=wx.StaticBitmap(p,self.ID_ADD_KEYFRAME,bmp,style=wx.RAISED_BORDER)
+        self.newkeyframe.Bind(wx.EVT_MOTION,self.onToolNewKeyframe)
+        p.Bind(           wx.EVT_LEFT_UP,self.onToolClick)
+        self.newkeyframe.Bind(wx.EVT_LEFT_UP,self.onToolClick)
+        p.Bind(wx.EVT_MOTION,self.onToolNewKeyframe)
+        toolTip=wx.ToolTip("Drag this on to a keyframe track to add a keyframe at the current camera position.")
+        self.newkeyframe.SetToolTip(toolTip)
+        self.newkeyframe.SetHelpText(toolTip.GetTip())
+        p.SetToolTip(toolTip)
+        
+        self.sizer.Add(p,flag=wx.RIGHT,border=5)
+        
+        
         self.SetSizer(self.sizer)
         self.SetAutoLayout(1)
         self.sizer.Fit(self)
@@ -219,7 +234,17 @@ class UrmasPalette(wx.Panel):
         if event.Dragging():
             self.dropItem("Spline","Perpendicular")
         event.Skip()
-            
+
+    def onToolNewKeyframe(self,event):
+        """
+        Method: onToolNewKeyframe
+        Created: 20.04.2005, KP
+        Description: A method for dragging a spline from palette
+        """
+        if event.Dragging():
+            self.dropItem("Keyframe","Keyframe")
+        event.Skip()
+        
     def onToolNewStop(self,event):
         """
         Method: onToolNewStop

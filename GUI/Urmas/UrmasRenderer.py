@@ -44,6 +44,8 @@ import time
 import Dialogs
 import wx
 import messenger
+import Interpolation
+import vtk
 
 class UrmasRenderer:
     """
@@ -63,8 +65,9 @@ class UrmasRenderer:
         self.renderingInterface = RenderingInterface.getRenderingInterface(1)
         self.oldTimepoint=-1
         self.lastpoint=None
-        self.currTrack=None
         self.lastSplinePoint=None
+        self.currTrack=None
+        self.lastSplinePosition=None
         messenger.connect(None,"render_time_pos",self.renderPreviewAt)
 
     def startAnimation(self,control):
@@ -121,7 +124,7 @@ class UrmasRenderer:
 #            self.dlg.Show()
 
         self.splineEditor = control.getSplineEditor()
-        
+        self.initializeCameraInterpolator()
         if preview:
             cam = self.splineEditor.getCamera()
             self.ren = self.splineEditor.renderer
@@ -143,14 +146,33 @@ class UrmasRenderer:
             pass
 #            self.dlg.Destroy()
 
+    def initializeCameraInterpolator(self):
+        """
+        Method: initializeCameraInterpolator
+        Created: 18.08.2005, KP
+        Description: Initialize the camera interpolator if there are keyframes
+        """           
+        tracks=self.getKeyframes()
+        if not tracks:
+            self.interpolator = None
+            return
+        self.interpolator = vtk.vtkCameraInterpolator()
+        self.interpolator.SetInterpolationTypeToSpline()
+        for track in tracks:
+            for item in track.getItems():
+                start,end=item.getPosition()
+                self.interpolator.AddCamera(start,item.cam)
+        
     def renderPreviewAt(self,evt,obj,timepos):
         """
         Method: renderPreviewAt
         Created: 15.08.2005, KP
         Description: Renders a preview at given time position
         """           
+        self.initializeCameraInterpolator()
         if not self.splineEditor:
-            self.splineEditor = self.control.getSplineEditor()  
+            self.splineEditor = self.control.getSplineEditor()
+        
         # if the view mode is "camera path", do not render
         if not self.splineEditor.viewMode:
             return
@@ -182,6 +204,15 @@ class UrmasRenderer:
                 if time >= start and time <= end:
                     timepoint = item.getTimepoint()
         return timepoint
+        
+    def getKeyframes(self):
+        """
+        Method: getKeyframes
+        Created: 18.08.2005, KP
+        Description: Return the keyframes if there is a keyframe track
+        """
+        tracks=self.control.timeline.getKeyframeTracks()
+        return tracks
         
     def getSplinepointsAt(self,time):
         """
@@ -245,18 +276,41 @@ class UrmasRenderer:
             #print "time %.2f is %.3f%% between %.2f and %.2f"%(timepos,percentage,start,end)
             n=point.getItemNumber()
             #print "p0=",p0,"item=",n
-            p,point = self.control.splineEditor.getCameraPosition(n,p0,percentage)
-            x,y,z=point
-            self.lastSplinePoint=(x,y,z)
+            p,pos = self.control.splineEditor.getCameraPosition(n,p0,percentage)
+            x,y,z=pos
+            self.lastSplinePosition=(x,y,z)
+            #viewUp,focalPoint=point.getOrientation()
+            #p=percentage
+            #print "viewUp=",viewUp,"focalPoint=",focalPoint
+            #if self.lastSplinePoint:
+            #    oldViewUp,oldFocalPoint=self.lastSplinePoint.getOrientation()
+            #    if oldViewUp!=viewUp:
+            #        x=viewUp
+            #        y=oldViewUp
+            #        viewUp=[(x[i]-y[i])*p for i in range(3)]
+            #    if oldFocalPoint != focalPoint:
+            #        x=focalPoint
+            #        y=oldFocalPoint
+            #        focalPoint=[(x[i]-y[i])*p for i in range(3)]
+            #    Logging.info("Interpolating ",p,"%% yields viewUp=",viewUp,"and focal point=",focalPoint,kw="animator")
+            #else:
+            #    Logging.info("Using current orientation where viewUp=",viewUp," and focal point=",focalPoint,kw="animator")
+            #currOrientation=viewUp,focalPoint
+            self.lastSplinePoint=point
+            
+            
+            
         elif point:
             Logging.info("Camera is motionless, using last position",kw="animator")
-            x,y,z=self.lastSplinePoint
+            x,y,z=self.lastSplinePosition
             point=(x,y,z)
         else:
             Logging.info("No camera position",kw="animator")
 
 #            Dialogs.showerror(self.control.window,"Camera path ended prematurely","Cannot determine camera position")
             point=self.lastpoint
+            
+        
 
         focal = self.splineEditor.getCameraFocalPointCenter()
         if not preview:
@@ -265,8 +319,13 @@ class UrmasRenderer:
         else:
             cam = self.splineEditor.getCamera()
             ren=self.splineEditor.renderer
+           
+        if not self.interpolator:
+            self.setCameraParameters(cam,ren, pos, focal)
+        else:
+            Logging.info("Interpolating camera at ",timepos,kw="animator")
+            self.interpolator.InterpolateCamera(timepos,cam)
             
-        self.setCameraParameters(cam,ren, point, focal)
             
         if not preview:
             # With this we can be sure that all of the props will be visible.
@@ -288,7 +347,11 @@ class UrmasRenderer:
         if point:
             cam.SetPosition(point)        
         cam.SetFocalPoint(focal)
+        #viewUp,focalPoint=orientation
+        #cam.SetFocalPoint(focalPoint)
+        
         # if the track wishes to maintain up direction
+        #cam.SetViewUp(viewUp)
         if self.currTrack and self.currTrack.maintainUpDirection:
             cam.SetViewUp((0,0,1))
             cam.ComputeViewPlaneNormal()
@@ -300,6 +363,7 @@ class UrmasRenderer:
                 #print "Orthogonalizing because old z=",self.lastpoint[2],"!= new z",point[2]
                 cam.OrthogonalizeViewUp()
         self.lastpoint=point
+        
         renderer.ResetCameraClippingRange()
         
 
