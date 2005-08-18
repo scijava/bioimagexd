@@ -133,6 +133,23 @@ class KeyframePoint(TrackItem):
         self.dc.SelectObject(wx.NullBitmap)
         self.dc = None    
     
+    def getThumbnail(self):
+        """
+        Method: getThumbnail
+        Created: 18.08.2005, KP
+        Description: Get the thumbnail image
+        """     
+        self.image = self.parent.splineEditor.getAsImage()        
+        vx,vy,vz=self.image.GetDimensions()
+        img=ImageOperations.vtkImageDataToWxImage(self.image)
+        f=(self.height-self.labelheight)/float(img.GetHeight())
+        img=img.Mirror(0)
+        self.thumbnailbmp=img.Scale(vx*f,self.height-self.labelheight).ConvertToBitmap()
+        cam=self.parent.splineEditor.getCamera()
+        self.cam=vtk.vtkCamera()
+        for i in ["Position","FocalPoint","ViewUp","ViewAngle","ParallelScale","ClippingRange"]:
+            eval("self.cam.Set%s(cam.Get%s())"%(i,i))    
+
     def drawThumbnail(self):
         """
         Method: drawThumbnail()
@@ -141,18 +158,8 @@ class KeyframePoint(TrackItem):
                      this will create one
         """   
         if not self.thumbnailbmp:
-            if not self.image:
-                self.image = self.parent.splineEditor.getAsImage()
-                cam=self.parent.splineEditor.getCamera()
-                self.cam=vtk.vtkCamera()
-                for i in ["Position","FocalPoint","ViewUp","ViewAngle","ParallelScale","ClippingRange"]:
-                    eval("self.cam.Set%s(cam.Get%s())"%(i,i))
+            self.getThumbnail()
             #self.volume.Update()
-            vx,vy,vz=self.image.GetDimensions()
-            img=ImageOperations.vtkImageDataToWxImage(self.image)
-            f=(self.height-self.labelheight)/float(img.GetHeight())
-            img=img.Mirror(0)
-            self.thumbnailbmp=img.Scale(vx*f,self.height-self.labelheight).ConvertToBitmap()
             
         iw,ih=self.thumbnailbmp.GetSize()
         #print "image size=",iw,ih

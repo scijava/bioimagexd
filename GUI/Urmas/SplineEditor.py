@@ -193,12 +193,12 @@ class SplineEditor:
             Logging.info("Turning spline off",kw="animator")
             self.spline.Off()
             self.spline.SetEnabled(0)
-            self.setMovement(0)
+            #self.setMovement(0)
         else:
             Logging.info("Turning spline on",kw="animator")
             self.spline.On()
             self.spline.SetEnabled(1)
-            self.setMovement(1)
+            #self.setMovement(1)
         self.viewMode=showViewAngle    
 
     def findControlPoint(self,pt):
@@ -635,7 +635,8 @@ class SplineEditor:
         cam=self.getCamera()
         
         #print "Orientation=",cam.GetOrientationWXYZ()
-        if self.viewMode == 1:
+        print "viewMode=",self.viewMode
+        if self.viewMode == 0:
             messenger.send(None,"set_camera",cam)
         
         if self.interactionCallback:

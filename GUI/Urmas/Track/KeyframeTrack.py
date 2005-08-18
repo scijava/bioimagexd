@@ -82,8 +82,13 @@ class KeyframeTrack(SplineTrack):
         Created: 18.08.2005, KP
         Description: Set the camera for the current item
         """             
+        print "self.timePosItem=",self.timePosItem
         if self.timePosItem:    
-            self.timePosItem.setCamera(cam)
+            self.timePosItem.getThumbnail()
+            self.timePosItem.drawItem()
+            self.paintTrack()
+            #self.Refresh()
+            
     def AcceptDrop(self,x,y,data):
         """
         Method: AcceptDrop
@@ -183,14 +188,7 @@ class KeyframeTrack(SplineTrack):
         Created: 18.04.2005, KP
         Description: Show Keyframe represented by this track
         """ 
-        pts=[]
-        #for item in self.items:
-        #    if not isinstance(item,StopItem):
-        #        pts.append(item.getPoint())
-        #if len(pts)>=2:
-        #    self.splineEditor.setKeyframePoints(pts)
-        #    self.splineEditor.setClosed(self.closed)
-        #    self.splineEditor.render()
+        self.splineEditor.setViewMode(1)
             
             
     def __set_pure_state__(self,state):

@@ -105,6 +105,7 @@ class Track(wx.Panel):
         self.timePos=0
         self.timePosItem=None
         self.timePosInPixels=0
+        self.timePosInPixelsEnd=0
 
         self.Bind(wx.EVT_MOTION,self.onDrag)
         self.Bind(wx.EVT_LEFT_DOWN,self.onDown)
@@ -138,6 +139,7 @@ class Track(wx.Panel):
         """ 
         if self.renew:
             self.paintTrack()
+
             self.renew=0
         dc=wx.BufferedPaintDC(self,self.buffer)#,self.buffer)
         
@@ -177,6 +179,7 @@ class Track(wx.Panel):
             mdc.BeginDrawing()
             mdc.Blit(0,0,w,h,self.dc,0,0)
             self.mdc=mdc
+            
             #mdc.SelectObject(wx.NullBitmap)
             #mdc=None
         else:
@@ -184,13 +187,13 @@ class Track(wx.Panel):
             #self.dc.Clear()
             #self.dc.DrawBitmap(self.stored,0,0)
             if self.timePosInPixels:
-                self.dc.Blit(self.timePosInPixels-1,0,self.timePosInPixels+3,self.height,self.mdc,self.timePosInPixels-1,0)
+                self.dc.Blit(self.timePosInPixels-1,0,self.timePosInPixelsEnd,self.height,self.mdc,self.timePosInPixels-1,0)
             
         
         pps=self.timescale.getPixelsPerSecond() 
         viewMode=self.control.getViewMode()
-        if self.timePos and not (viewMode==1 and not isinstance(self,SplineTrack.SplineTrack)):
-            if self.control.getViewMode()==1:
+        if self.timePos and not (viewMode==0 and not isinstance(self,SplineTrack.SplineTrack)):
+            if viewMode==0:
                 if not self.timePosItem or (self.timePos != self.timePosItem.getPosition()[0]):
                     curr=None
                     for item in self.items:
@@ -198,15 +201,31 @@ class Track(wx.Panel):
                         if start<= self.timePos and end >= self.timePos:
                             curr=item
                             break
+                    import sys
+                                                
                     self.timePosItem=curr
                     self.timePos=start
+                    w=(end-start)*pps
+                    h=self.height
+                    
+                    try:
+                        overlay=ImageOperations.getOverlay(int(w),int(h),(0,255,0),30)
+                    except Exception, e:
+                        print "Failed to create overlay:",e
+                        sys.stdin.readline()
+                    overlay=overlay.ConvertToBitmap()
+                    
+                    pos=self.getLabelWidth() + self.timePos*pps
+                    self.timePosInPixelsEnd=pos+w+1
+                    self.timePosInPixels=pos
+                    self.dc.DrawBitmap(overlay,pos,0,1)
+            else:
+                #print "Position of %dth frame is at %d+%d"%(self.timePos,self.getLabelWidth(),len*(float(self.timePos)))
+                pos=self.getLabelWidth() + self.timePos*pps
             
-            #print "Position of %dth frame is at %d+%d"%(self.timePos,self.getLabelWidth(),len*(float(self.timePos)))
-            pos=self.getLabelWidth() + self.timePos*pps
-        
-            self.dc.SetPen(wx.Pen((255,255,255),2))
-            self.dc.DrawLine(pos,0,pos,self.height)
-            self.timePosInPixels=pos
+                self.dc.SetPen(wx.Pen((255,255,255),2))
+                self.dc.DrawLine(pos,0,pos,self.height)
+                self.timePosInPixels=pos
         
         self.dc.EndDrawing()
         self.dc = None

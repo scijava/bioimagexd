@@ -252,8 +252,17 @@ class UrmasRenderer:
         time    The current time in the timeline
         spf     Seconds per one frame
         """            
+        interpolated=0
+        pos=None
         
         timepoint = self.getTimepointAt(timepos)
+        if not preview:
+            cam = self.ren.GetActiveCamera()
+            ren=self.ren
+        else:
+            cam = self.splineEditor.getCamera()
+            ren=self.splineEditor.renderer
+            
         if not preview and (timepoint != self.oldTimepoint):
             # Set the timepoint to be used
             self.renderingInterface.setCurrentTimepoint(timepoint)
@@ -275,56 +284,34 @@ class UrmasRenderer:
             percentage = d/float(n)
             #print "time %.2f is %.3f%% between %.2f and %.2f"%(timepos,percentage,start,end)
             n=point.getItemNumber()
-            #print "p0=",p0,"item=",n
             p,pos = self.control.splineEditor.getCameraPosition(n,p0,percentage)
             x,y,z=pos
             self.lastSplinePosition=(x,y,z)
-            #viewUp,focalPoint=point.getOrientation()
-            #p=percentage
-            #print "viewUp=",viewUp,"focalPoint=",focalPoint
-            #if self.lastSplinePoint:
-            #    oldViewUp,oldFocalPoint=self.lastSplinePoint.getOrientation()
-            #    if oldViewUp!=viewUp:
-            #        x=viewUp
-            #        y=oldViewUp
-            #        viewUp=[(x[i]-y[i])*p for i in range(3)]
-            #    if oldFocalPoint != focalPoint:
-            #        x=focalPoint
-            #        y=oldFocalPoint
-            #        focalPoint=[(x[i]-y[i])*p for i in range(3)]
-            #    Logging.info("Interpolating ",p,"%% yields viewUp=",viewUp,"and focal point=",focalPoint,kw="animator")
-            #else:
-            #    Logging.info("Using current orientation where viewUp=",viewUp," and focal point=",focalPoint,kw="animator")
-            #currOrientation=viewUp,focalPoint
+
             self.lastSplinePoint=point
-            
-            
             
         elif point:
             Logging.info("Camera is motionless, using last position",kw="animator")
             x,y,z=self.lastSplinePosition
             point=(x,y,z)
         else:
-            Logging.info("No camera position",kw="animator")
-
-#            Dialogs.showerror(self.control.window,"Camera path ended prematurely","Cannot determine camera position")
-            point=self.lastpoint
+            # if we didn't find camera position, maybe we need to use
+            # keyframe interpolation
+            minT=self.interpolator.GetMinimumT()
+            maxT=self.interpolator.GetMaximumT()
             
-        
+            if self.interpolator and minT <= timepos and maxT >= timepos:
+                interpolated=1
+                Logging.info("Interpolating camera at ",timepos,kw="animator")
+                self.interpolator.InterpolateCamera(timepos,cam)
+            else:
+                Logging.info("No camera position, using last position",kw="animator")
+                point=self.lastpoint
 
         focal = self.splineEditor.getCameraFocalPointCenter()
-        if not preview:
-            cam = self.ren.GetActiveCamera()
-            ren=self.ren
-        else:
-            cam = self.splineEditor.getCamera()
-            ren=self.splineEditor.renderer
            
-        if not self.interpolator:
+        if not interpolated and pos:
             self.setCameraParameters(cam,ren, pos, focal)
-        else:
-            Logging.info("Interpolating camera at ",timepos,kw="animator")
-            self.interpolator.InterpolateCamera(timepos,cam)
             
             
         if not preview:

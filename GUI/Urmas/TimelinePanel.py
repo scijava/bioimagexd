@@ -229,11 +229,11 @@ class TimelinePanel(wx.Panel):
            
         self.confSizer.Add(self.useButton,(1,0))
         
-        self.modeBox=wx.RadioBox(self.confPanel,-1,"Preview mode",
-        choices=["Modify Camera path",
+        self.modeBox=wx.RadioBox(self.confPanel,-1,"Keyframe mode",
+        choices=["Modify Keyframe",
         #"Set Camera angle",
-        "Add Keyframes"],
-        majorDimension=3,
+        "Add Keyframe"],
+        majorDimension=2,
         style=wx.RA_SPECIFY_ROWS    
         )
         self.confSizer.Add(self.modeBox,(0,1))
@@ -249,8 +249,6 @@ class TimelinePanel(wx.Panel):
 
         self.splineEditor=SplineEditor.SplineEditor(self,self.wxrenwin)
         self.control.setSplineEditor(self.splineEditor)        
-#        self.control.setViewMode(1)
-#        self.control.setViewMode(0)
 
         sbox=wx.StaticBox(self,-1,"Rendering preview")
         sboxsizer=wx.StaticBoxSizer(sbox,wx.VERTICAL)                
@@ -282,20 +280,20 @@ class TimelinePanel(wx.Panel):
         self.timelineConfig.useSettings(evt)
         n=self.control.getDuration()
         messenger.send(None,"set_time_range",1,n*10)
-        showAngle=self.modeBox.GetSelection()
-        self.control.setViewMode(showAngle)
-        self.splineEditor.setViewMode(showAngle)
+        keyframeMode=self.modeBox.GetSelection()
+        self.control.setViewMode(keyframeMode)
+        
         
         cam = self.splineEditor.getCamera()
-        if showAngle:
-            print "Storing position"
-            self.storedCameraPosition=cam.GetPosition()
-            self.parent.onShowFrame(None)
-        else:
-            if self.storedCameraPosition:
-                print "Restoring position"
-                cam.SetPosition(self.storedCameraPosition)
-        self.splineEditor.render()
+#       if keyframeMode:
+#           print "Storing position"
+#            self.storedCameraPosition=cam.GetPosition()
+#            self.parent.onShowFrame(None)
+#        else:
+#            if self.storedCameraPosition:
+#                print "Restoring position"
+#                cam.SetPosition(self.storedCameraPosition)
+#        self.splineEditor.render()
         
     def useTimeline(self,flag):
         print "useTimeline called!"
