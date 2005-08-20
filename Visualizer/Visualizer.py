@@ -91,6 +91,7 @@ class Visualizer:
         self.renderingTime=0
         self.in_vtk=0
         self.parent = parent
+        messenger.connect(None,"set_timeslider_value",self.onSetTimeslider)
         messenger.connect(None,"set_time_range",self.onSetTimeRange)
         messenger.connect(None,"timepoint_changed",self.onSetTimepoint)
         messenger.connect(None,"data_changed",self.updateRendering)
@@ -922,7 +923,14 @@ class Visualizer:
         """
         #tp=event.getValue()
         self.setTimepoint(tp)
-        
+
+    def onSetTimeslider(self,obj,event,tp):
+        """
+        Method: onSetTimeslider
+        Created: 21.08.2005, KP
+        Description: Update the timeslider according to an event
+        """
+        self.timeslider.SetValue(tp)
     def onUpdateTimepoint(self,evt=None):
         """
         Method: onUpdateTimepoint

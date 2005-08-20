@@ -196,6 +196,7 @@ class Track(wx.Panel):
         #print "viewMode=",viewMode
         #import sys
         #sys.stdin.readline()
+        print "viewMode=",viewMode
         if self.timePos and not (viewMode==0 and not isinstance(self,KeyframeTrack.KeyframeTrack)):
             # if we're in the edit keyframe-mode, then hilight the current
             # keyframe item with an overlay
@@ -213,9 +214,9 @@ class Track(wx.Panel):
                     self.timePos=start
                     w=(end-start)*pps
                     h=self.height
-                    
+                    print "Painting overlay at ",self.timePos*pps
                     try:
-                        overlay=ImageOperations.getOverlay(int(w),int(h),(255,255,255),30)
+                        overlay=ImageOperations.getOverlay(int(w),int(h),(0,255,0),75)
                     except Exception, e:
                         print "Failed to create overlay:",e
                         sys.stdin.readline()
@@ -289,7 +290,17 @@ class Track(wx.Panel):
         Created: 17.07.2005, KP
         Description: Item is clicked
         """
-        return self.onEvent("Down",event)
+        ret=self.onEvent("Down",event)
+        if self.selectedItem and self.control.getViewMode()==0:
+            #self.timePosItem=self.selectedItem
+            start,end=self.selectedItem.getPosition()
+            self.timePosItem=None
+            self.timePos=start+1
+            messenger.send(None,"set_timeslider_value",start*10.0)
+            messenger.send(None,"render_time_pos",start)
+            self.paintTrack()
+            self.Refresh()                
+        return ret
         
     def onUp(self,event):
         """
