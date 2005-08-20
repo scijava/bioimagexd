@@ -99,7 +99,7 @@ class KeyframeTrack(SplineTrack):
         oldlen=len(self.items)
         pos=self.dragEndPosition
         if pos==-1:
-            pos=len(self.items)-1
+            pos=len(self.items)
         Logging.info("Adding keyframe at pos ",pos,kw="animator")
         self.addKeyframePoint(pos)
         pos=pos+1
@@ -188,6 +188,7 @@ class KeyframeTrack(SplineTrack):
         Created: 18.04.2005, KP
         Description: Show Keyframe represented by this track
         """ 
+        messenger.send(None,"set_keyframe_mode",1)
         self.splineEditor.setViewMode(1)
             
             

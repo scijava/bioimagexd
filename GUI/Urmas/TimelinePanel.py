@@ -270,7 +270,16 @@ class TimelinePanel(wx.Panel):
         self.wxrenwin.Refresh()
         self.Refresh()
         messenger.send(None,"set_time_range",1,600)
-
+        messenger.connect(None,"set_keyframe_mode",self.onSetKeyframeMode)
+        
+    def onSetKeyframeMode(self,obj,evt,arg):
+        """
+        Method: onSetKeyframeMode
+        Created: 18.08.2005, KP
+        Description: Toggles the keyframe mode on / off
+        """            
+        self.modeBox.Enable(arg)
+        
     def useSettings(self,evt):
         """
         Method: useSettings

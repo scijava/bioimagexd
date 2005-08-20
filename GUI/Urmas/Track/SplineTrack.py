@@ -349,6 +349,7 @@ class SplineTrack(Track):
         Created: 18.04.2005, KP
         Description: Show spline represented by this track
         """ 
+        messenger.send(None,"set_keyframe_mode",0)
         pts=[]
         for item in self.items:
             if not isinstance(item,StopItem):

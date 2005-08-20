@@ -138,8 +138,11 @@ class Track(wx.Panel):
         Description: Blit the buffer
         """ 
         if self.renew:
-            self.paintTrack()
-
+            try:
+                self.paintTrack()
+            except Exception,e:
+                print "Failed to paint track:",e
+                event.Skip()
             self.renew=0
         dc=wx.BufferedPaintDC(self,self.buffer)#,self.buffer)
         
@@ -171,6 +174,7 @@ class Track(wx.Panel):
         
                 w,h=item.GetSize()
                 x+=w
+
             #self.stored=self.buffer.GetSubBitmap((0,0,self.buffer.GetWidth(),self.buffer.GetHeight()))
             w,h=self.buffer.GetWidth(),self.buffer.GetHeight()
             self.stored=wx.EmptyBitmap(w,h)
@@ -178,21 +182,23 @@ class Track(wx.Panel):
             mdc.SelectObject(self.stored)
             mdc.BeginDrawing()
             mdc.Blit(0,0,w,h,self.dc,0,0)
-            self.mdc=mdc
-            
-            #mdc.SelectObject(wx.NullBitmap)
-            #mdc=None
+            self.mdc=mdc  
         else:
-            self.renew=0
-            #self.dc.Clear()
-            #self.dc.DrawBitmap(self.stored,0,0)
             if self.timePosInPixels:
+                
+                # print "Blitting..., self.timePosInPixels=",self.timePosInPixels,self.timePosInPixelsEnd
+                # import sys
+                # sys.stdin.readline()
                 self.dc.Blit(self.timePosInPixels-1,0,self.timePosInPixelsEnd,self.height,self.mdc,self.timePosInPixels-1,0)
-            
-        
+                    
         pps=self.timescale.getPixelsPerSecond() 
         viewMode=self.control.getViewMode()
-        if self.timePos and not (viewMode==0 and not isinstance(self,SplineTrack.SplineTrack)):
+        #print "viewMode=",viewMode
+        #import sys
+        #sys.stdin.readline()
+        if self.timePos and not (viewMode==0 and not isinstance(self,KeyframeTrack.KeyframeTrack)):
+            # if we're in the edit keyframe-mode, then hilight the current
+            # keyframe item with an overlay
             if viewMode==0:
                 if not self.timePosItem or (self.timePos != self.timePosItem.getPosition()[0]):
                     curr=None
@@ -201,7 +207,7 @@ class Track(wx.Panel):
                         if start<= self.timePos and end >= self.timePos:
                             curr=item
                             break
-                    import sys
+                    
                                                 
                     self.timePosItem=curr
                     self.timePos=start
@@ -209,7 +215,7 @@ class Track(wx.Panel):
                     h=self.height
                     
                     try:
-                        overlay=ImageOperations.getOverlay(int(w),int(h),(0,255,0),30)
+                        overlay=ImageOperations.getOverlay(int(w),int(h),(255,255,255),30)
                     except Exception, e:
                         print "Failed to create overlay:",e
                         sys.stdin.readline()
@@ -220,12 +226,16 @@ class Track(wx.Panel):
                     self.timePosInPixels=pos
                     self.dc.DrawBitmap(overlay,pos,0,1)
             else:
+                import sys
+                print "Drawing the bar"
+                sys.stdin.readline()
                 #print "Position of %dth frame is at %d+%d"%(self.timePos,self.getLabelWidth(),len*(float(self.timePos)))
                 pos=self.getLabelWidth() + self.timePos*pps
             
                 self.dc.SetPen(wx.Pen((255,255,255),2))
                 self.dc.DrawLine(pos,0,pos,self.height)
                 self.timePosInPixels=pos
+                self.timePosInPixelsEnd=pos+5
         
         self.dc.EndDrawing()
         self.dc = None
@@ -710,7 +720,7 @@ class Track(wx.Panel):
             
 
         
-import SplineTrack        
+import KeyframeTrack
         
 """
 FOo

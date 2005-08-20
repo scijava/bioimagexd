@@ -61,13 +61,14 @@ class SurfaceModule(VisualizationModule):
         self.generateNormals = 0
         self.volumeModule = None
         self.isoValue = 128
+        self.scalarRange=(0,255)
         self.contourRange = (-1,-1,-1)
         self.opacity = 1.0
         self.setIsoValue(128)
         self.decimateLevel=0
         self.preserveTopology=1
         self.eventDesc="Rendering iso-surface"
-        
+        self.useGaussian=1
         self.decimate = vtk.vtkDecimatePro()
         self.setMethod(1)
         self.init=0
@@ -79,6 +80,14 @@ class SurfaceModule(VisualizationModule):
         
         self.parent.getRenderer().AddActor(self.lodActor)
         #self.updateRendering()
+
+    def setGaussian(self,flag):
+        """
+        Method: setGaussian(flag)
+        Created: 20.08.2005, KP
+        Description: Toggle use of gaussian smoothing
+        """       
+        self.useGaussian=flag
         
     def setOpacity(self,opacity):
         """
@@ -106,7 +115,10 @@ class SurfaceModule(VisualizationModule):
         Description: Sets the dataunit this module uses for visualization
         """       
         VisualizationModule.setDataUnit(self,dataunit)
-        
+        self.data=self.dataUnit.getTimePoint(0)
+        min,max=self.data.GetScalarRange()
+        self.setIsoValue((min+max)*0.5)
+        self.scalarRange=(min,max)
             
     def setIsoValue(self,isovalue):
         """
@@ -179,12 +191,19 @@ class SurfaceModule(VisualizationModule):
         self.mapper.AddObserver("ProgressEvent",self.updateProgress)
         self.mapper.SetLookupTable(self.dataUnit.getColorTransferFunction())
         self.mapper.ScalarVisibilityOn()
-        self.mapper.SetScalarRange(0,255)
+        min,max=self.data.GetScalarRange()
+        self.mapper.SetScalarRange(min,max)
         self.mapper.SetColorModeToMapScalars()
         Logging.info("Using opacity ",self.opacity,kw="visualizer")
         self.actor.GetProperty().SetOpacity(self.opacity)
         input=self.data
-
+        if self.useGaussian:
+            Logging.info("Doing gaussian smoothing",kw="visualizer")
+            self.smooth=vtk.vtkImageGaussianSmooth()
+            self.smooth.SetInput(input)
+            self.smooth.Update()
+            input=self.smooth.GetOutput()
+        self.scalarRange=input.GetScalarRange()
         self.contour.SetInput(input)
         input=self.contour.GetOutput()
         if self.isoValue != -1:
@@ -243,7 +262,7 @@ class SurfaceModule(VisualizationModule):
         Created: 02.08.2005, KP
         Description: Set the state of the light
         """        
-        print "\n\n\n__set_pure_state__\n\n\n"
+        #print "\n\n\n__set_pure_state__\n\n\n"
         self.setVTKState(self.mapper,state.mapper)
         self.setVTKState(self.actor,state.actor)
         self.setVTKState(self.renderer,state.renderer)
@@ -293,6 +312,7 @@ class SurfaceConfigurationPanel(ModuleConfigurationPanel):
         print "Setting configuration from",module
         self.method=module.method
         self.moduleChoice.SetSelection(self.method)
+        self.gaussianBox.SetValue(module.useGaussian)
         self.normalsBox.SetValue(module.generateNormals)
         print "normals=",module.generateNormals
         self.decimateSlider.SetValue(module.decimateLevel)
@@ -301,6 +321,8 @@ class SurfaceConfigurationPanel(ModuleConfigurationPanel):
         print "isovalue=",module.isoValue
         if module.isoValue != -1:
             self.isoSlider.SetValue(module.isoValue)
+        min,max=module.scalarRange
+        self.isoSlider.SetRange(min,max)
         if module.contourRange != (-1,-1,-1):
             begin,end,n=module.contourRange
             self.isoRangeBegin.SetValue("%d"%begin)
@@ -327,6 +349,12 @@ class SurfaceConfigurationPanel(ModuleConfigurationPanel):
         n+=1
         self.contentSizer.Add(self.moduleChoice,(n,0))
         n+=1
+        self.gaussianBox = wx.CheckBox(self,-1,"Smooth surface with gaussian smoothing")
+        self.gaussianBox.SetValue(1)
+        
+        #self.gaussianBox = wx.CheckBox(self,-1,"Smooth surface with gaussian smoothing")
+        #self.gaussianBox.SetValue(0)        
+        
         self.normalsBox = wx.CheckBox(self,-1,"Smooth surface with surface normals")
         self.normalsBox.SetValue(0)
         self.normalsBox.Bind(wx.EVT_CHECKBOX,self.onSetSmoothing)
@@ -334,6 +362,8 @@ class SurfaceConfigurationPanel(ModuleConfigurationPanel):
         self.featureAngle = wx.TextCtrl(self,-1,"45")
         self.featureAngle.Enable(0)
         
+        self.contentSizer.Add(self.gaussianBox,(n,0))
+        n+=1
         self.contentSizer.Add(self.normalsBox,(n,0))
         n+=1
         self.contentSizer.Add(self.featureLbl,(n,0))
@@ -426,6 +456,8 @@ class SurfaceConfigurationPanel(ModuleConfigurationPanel):
             self.module.setGenerateNormals(1,angle)
         else:
             self.module.setGenerateNormals(0,0)
+            
+        self.module.setGaussian(self.gaussianBox.GetValue())
         if self.isoRangeSurfaces.GetValue() != 0:
             start=int(self.isoRangeBegin.GetValue())
             end=int(self.isoRangeEnd.GetValue())

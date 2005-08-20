@@ -411,9 +411,9 @@ def fire(x0,x1):
 
 def getOverlay(width,height,color,alpha):
     """
-    Method: getOverlay(width,height,color,alpha=
+    Method: getOverlay(width,height,color,alpha)
     Created: 11.07.2005, KP
-    Description: Create an overlay
+    Description: Create an overlay of given color with given alpha
     """       
     siz=width*height*3
     fs="%ds"%siz    
