@@ -159,7 +159,9 @@ class TimelineConfig(wx.Panel):
             secs=hh*3600+mm*60+ss
             frameCount=self.totalFrames.GetValue()
             frameCount=int(frameCount)
-            self.control.configureTimeline(secs,frameCount)
+            messenger.send(None,"set_duration",secs)
+            messenger.send(None,"set_frames",frameCount)
+            #self.control.configureTimeline(secs,frameCount)
         except:
             pass
         #self.parent.sizer.Fit(self.parent)

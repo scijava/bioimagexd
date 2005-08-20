@@ -47,9 +47,10 @@ import os.path
 import sys,types
 import Logging
 import operator
-    
+import messenger    
         
 class Timeline(scrolled.ScrolledPanel):
+#class Timeline(wx.ScrolledWindow):
     """
     Class: Timeline
     Created: 04.02.2005, KP
@@ -66,14 +67,16 @@ class Timeline(scrolled.ScrolledPanel):
         if kws.has_key("size"):
             size=kws["size"]
         scrolled.ScrolledPanel.__init__(self,parent,-1,size=size)
+        #wx.ScrolledWindow.__init__(self,parent,-1,size=size)
         self.control = control
+        self.parent = parent
         self.selectedTrack = None
         control.setTimeline(self)
         self.sizer=wx.GridBagSizer(5,1)
         self.timeScale=TimeScale(self)
         self.timeScale.setDuration(self.control.getDuration())
-        self.timeScale.setDisabled(1)
-        self.sizer.Add(self.timeScale,(0,0))
+#        self.timeScale.setDisabled(1)
+        self.sizer.Add(self.timeScale,(0,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
         self.Unbind(wx.EVT_CHILD_FOCUS)
 
    
@@ -94,6 +97,21 @@ class Timeline(scrolled.ScrolledPanel):
         self.SetAutoLayout(1)
         self.SetupScrolling()
         self.sizer.Fit(self)
+        messenger.connect(None,"set_timeline_size",self.setupScrolling)
+        
+    def setupScrolling(self,obj=None,evt=None,arg=None):
+        """
+        Method: setupScrolling
+        Created: 21.08.2005, KP
+        Description: Set the scrollbars
+        """         
+        print "timesclae size=",self.timeScale.GetSize()
+        print self.sizer.GetMinSize(),self.sizer.GetSize()
+#        self.sizer.Fit(self)
+#        self.Layout()
+        print self.sizer.GetMinSize(),self.sizer.GetSize()
+        print "timesclae size=",self.timeScale.GetSize()
+        self.SetupScrolling()
         
     def getSplineTracks(self):
         """
@@ -261,9 +279,8 @@ class Timeline(scrolled.ScrolledPanel):
             tr.setDataUnit(self.dataUnit)
         
         if n:
-            tr.setItemAmount(n)
-        
-        self.Layout()
+            tr.setItemAmount(n)        
+        self.Layout()            
         self.SetupScrolling()
         self.timepointTracks.append(tr)
         self.control.window.updateMenus()
@@ -448,12 +465,18 @@ class Timeline(scrolled.ScrolledPanel):
     
         self.seconds = seconds
         self.frames = frames
-        print "Configuring frame amount to ",frames
+        #print "Configuring frame amount to ",frames
         frameWidth=(seconds*self.timeScale.getPixelsPerSecond())/float(frames)
-        print "frame width=",frameWidth
+        #print "frame width=",frameWidth
         self.timeScale.setDuration(seconds)
         tx,ty=self.timeScale.GetSize()
+        #self.parent.SetSize((tx,-1))
+        #w,h=self.GetSize()
+        #Logging.info("Setting size of timeline to ",(tx,h),kw="animator")
+        #self.SetSize((tx,h))
         self.Layout()
+        self.sizer.Fit(self)
+        self.SetupScrolling()
         for i in self.timepointTracks:
             if i:
                 i.setDuration(seconds,frames)

@@ -38,7 +38,8 @@ __version__ = "$Revision: 1.22 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 import wx
-
+import messenger
+import Logging
 class TimeScale(wx.Panel):
     """
     Class: TimeScale
@@ -54,8 +55,18 @@ class TimeScale(wx.Panel):
         self.fgcolor=(0,0,0)
 
         #self.setDuration(60)
+        messenger.connect(None,"set_duration",self.onSetDuration)
         self.Bind(wx.EVT_PAINT,self.onPaint)
 
+        
+    def onSetDuration(self,obj,evt,duration):
+        """
+        Method: onSetDuration
+        Created: 21.08.2005, KP
+        Description: Sets the duration of this timescale
+        """    
+        self.setDuration(duration)
+        
     def getLabelWidth(self):
         return 125
 
@@ -95,8 +106,12 @@ class TimeScale(wx.Panel):
         self.width=self.perSecond*seconds+2*self.xOffset
         self.height=20+self.yOffset
         self.SetSize((self.width+10,self.height))
-        print "Set Size to %d,%d"%(self.width+10,self.height+10)
+        #print "Set Size to %d,%d"%(self.width+10,self.height+10)
         self.buffer=wx.EmptyBitmap(self.width,self.height)
+        print self.buffer.GetWidth(),self.buffer.GetHeight()
+        self.SetMinSize((self.width+10,self.height))
+        Logging.info("Set timescale size to %d,%d"%(self.width,self.height),kw="animator")
+        messenger.send(None,"set_timeline_size",(self.width,self.height))
         self.paintScale()
         self.Refresh()
 
