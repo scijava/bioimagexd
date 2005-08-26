@@ -121,6 +121,24 @@ class UrmasPalette(wx.Panel):
         self.sizer=wx.BoxSizer(wx.HORIZONTAL)
         
         iconpath=reduce(os.path.join,["Icons"])
+        p=wx.Panel(self,-1,size=(32,32))#,style=wx.RAISED_BORDER)
+        self.ID_NEWTIMEPOINTTRACK=wx.NewId()
+        bmp=wx.Image(os.path.join(iconpath,"timepoint_track.jpg"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
+        self.newtimepointtrack=wx.StaticBitmap(p,self.ID_NEWTIMEPOINTTRACK,bmp,style=wx.RAISED_BORDER)
+        #self.newtimepointtrack.Bind(wx.EVT_MOTION,self.onToolNewTimepointTrack)        
+        self.sizer.Add(p,flag=wx.RIGHT,border=2)
+        p=wx.Panel(self,-1,size=(32,32))#,style=wx.RAISED_BORDER)
+        self.ID_NEWSPLINETRACK=wx.NewId()
+        bmp=wx.Image(os.path.join(iconpath,"spline_track.jpg"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
+        self.newsplinetrack=wx.StaticBitmap(p,self.ID_NEWSPLINETRACK,bmp,style=wx.RAISED_BORDER)
+        #self.newsplinetrack.Bind(wx.EVT_MOTION,self.onToolNewSplineTrack)        
+        self.sizer.Add(p,flag=wx.RIGHT,border=2)
+        p=wx.Panel(self,-1,size=(32,32))#,style=wx.RAISED_BORDER)
+        self.ID_NEWKEYFRAMETRACK=wx.NewId()
+        bmp=wx.Image(os.path.join(iconpath,"keyframe_track.jpg"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
+        self.newkeyframetrack=wx.StaticBitmap(p,self.ID_NEWKEYFRAMETRACK,bmp,style=wx.RAISED_BORDER)
+        #self.newkeyframetrack.Bind(wx.EVT_MOTION,self.onToolNewKeyframeTrack)        
+        self.sizer.Add(p,flag=wx.RIGHT,border=5)        
         self.ID_NEWSPLINE=wx.NewId()
         p=wx.Panel(self,-1,size=(32,32))#,style=wx.RAISED_BORDER)
         self.ID_NEWTIMEPOINT=wx.NewId()
@@ -135,7 +153,7 @@ class UrmasPalette(wx.Panel):
         p.Bind(wx.EVT_MOTION,self.onToolNewTimepoint)
         p.Bind(                wx.EVT_LEFT_UP,self.onToolClick)
         self.newtimepoint.Bind(wx.EVT_LEFT_UP,self.onToolClick)
-        self.sizer.Add(p,flag=wx.RIGHT,border=5)
+        self.sizer.Add(p,flag=wx.RIGHT,border=2)
 
         p=wx.Panel(self,-1,size=(32,32))#,style=wx.RAISED_BORDER)
         bmp=wx.Image(os.path.join(iconpath,"spline_random.jpg"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
@@ -144,7 +162,7 @@ class UrmasPalette(wx.Panel):
         p.Bind(wx.EVT_MOTION,self.onToolNewSpline)
         p.Bind(             wx.EVT_LEFT_UP,self.onToolClick)
         self.newspline.Bind(wx.EVT_LEFT_UP,self.onToolClick)
-        self.sizer.Add(p,flag=wx.RIGHT,border=10)
+        self.sizer.Add(p,flag=wx.RIGHT,border=2)
         
         toolTip = wx.ToolTip("Drag this on to a camera path track to add a random camera path.")
         self.newspline.SetToolTip(toolTip)        
@@ -159,7 +177,7 @@ class UrmasPalette(wx.Panel):
         p.Bind(wx.EVT_MOTION,self.onToolNewCircular)
         p.Bind(               wx.EVT_LEFT_UP,self.onToolClick)
         self.newcircular.Bind(wx.EVT_LEFT_UP,self.onToolClick)
-        self.sizer.Add(p,flag=wx.RIGHT,border=5)
+        self.sizer.Add(p,flag=wx.RIGHT,border=2)
 
         toolTip=wx.ToolTip("Drag this on to a camera path track to make camera rotate around X axis.")
         self.newcircular.SetToolTip(toolTip)
@@ -174,7 +192,7 @@ class UrmasPalette(wx.Panel):
         p.Bind(wx.EVT_MOTION,self.onToolNewPerpendicular)
         p.Bind(                    wx.EVT_LEFT_UP,self.onToolClick)
         self.newperpendicular.Bind(wx.EVT_LEFT_UP,self.onToolClick)
-        self.sizer.Add(p,flag=wx.RIGHT,border=5)
+        self.sizer.Add(p,flag=wx.RIGHT,border=2)
         
         toolTip=wx.ToolTip("Drag this on to a camera path track to make camera rotate around Y axis.")
         self.newperpendicular.SetToolTip(toolTip)
@@ -195,7 +213,7 @@ class UrmasPalette(wx.Panel):
         self.newstop.SetHelpText(toolTip.GetTip())
         p.SetToolTip(toolTip)
         
-        self.sizer.Add(p,flag=wx.RIGHT,border=5)
+        self.sizer.Add(p,flag=wx.RIGHT,border=2)
         
         p=wx.Panel(self,-1,size=(32,32))#,style=wx.RAISED_BORDER)
         self.ID_ADD_KEYFRAME=wx.NewId()
@@ -210,7 +228,7 @@ class UrmasPalette(wx.Panel):
         self.newkeyframe.SetHelpText(toolTip.GetTip())
         p.SetToolTip(toolTip)
         
-        self.sizer.Add(p,flag=wx.RIGHT,border=5)
+        self.sizer.Add(p,flag=wx.RIGHT,border=2)
         
         
         self.SetSizer(self.sizer)
