@@ -75,7 +75,7 @@ class Visualizer:
         """
         global visualizerInstance
         visualizerInstance=self
-        
+        self.delayed=0
         self.updateFactor = 0.001
         self.depthT=0
         self.zoomToFitFlag=1
@@ -894,14 +894,21 @@ class Visualizer:
         if not imm:
             t=time.time()
             delay/=1000.0
-            Logging.info("diff=",self.renderingTime-t,"delay=",delay)
-            diff=abs(self.renderingTime-t)
-            if abs(self.renderingTime-t) < delay: 
-                Logging.info("Delaying, delay=%f, diff=%f"%(delay,abs(self.renderingTime-t)),kw="visualizer")
+            #Logging.info("diff=",self.renderingTime-t,"delay=",delay)
+            print "self.renderingTime=",self.renderingTime,"t=",t
+            if not self.renderingTime:
+                self.renderingTime=t-(delay*2)
+            diff=t-self.renderingTime
+            print "diff=",diff
+            if diff < delay and not self.delayed: 
+                diff=200+int(1000*diff)
+                Logging.info("Delaying, delay=%f, diff=%d"%(delay,diff),kw="visualizer")
+                self.delayed=1
                 wx.FutureCall(diff,self.updateRendering)
                 return
         self.renderingTime=time.time()                
         self.currMode.updateRendering()
+        self.delayed=0
                         
     def Render(self,evt=None):
         """

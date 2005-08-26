@@ -317,7 +317,7 @@ def vtkImageDataToPreviewBitmap(imageData,color,width=0,height=0,bgcolor=(0,0,0)
     """   
     #print "imageData=",imageData
     mip=vtk.vtkImageSimpleMIP()
-    imageData.SetUpdateExtent(imageData.GetWholeExtent())
+    #imageData.SetUpdateExtent(imageData.GetWholeExtent())
     print "imageData.GetUpdateExtent()=",imageData.GetUpdateExtent()
     mip.SetInput(imageData)
     #mip.DebugOn()
@@ -370,28 +370,6 @@ def vtkImageDataToPreviewBitmap(imageData,color,width=0,height=0,bgcolor=(0,0,0)
         return bitmap,pngstr
     return bitmap
 
-def getPlane2(data,plane,x,y,z):
-    """
-    Method: getPlane(data,plane,coord)
-    Created: 06.06.2005, KP
-    Description: Get a plane from given the volume
-    """   
-    permute=vtk.vtkImagePermute()
-    dx,dy,dz=data.GetDimensions()
-    voi=vtk.vtkExtractVOI()
-    voi.SetInput(permute.GetOutput())
-    if plane=="zy":
-        data.SetUpdateExtent(x,x,0,dy-1,0,dz-1)
-        voi.SetVOI(0,dz-1,0,dy-1,x,x)
-        permute.SetFilteredAxes(2,1,0)
-        
-    elif plane=="xz":
-        data.SetUpdateExtent(0,dx-1,y,y,0,dz-1)
-        voi.SetVOI(0,dx-1,0,dz-1,y,y)
-        permute.SetFilteredAxes(1,2,0)
-    permute.SetInput(data)
-    voi.Update()
-    return voi.GetOutput()
     
 def getPlane(data,plane,x,y,z):
     """
@@ -399,6 +377,7 @@ def getPlane(data,plane,x,y,z):
     Created: 06.06.2005, KP
     Description: Get a plane from given the volume
     """   
+    X,Y,Z=0,1,2
     permute=vtk.vtkImagePermute()
     dx,dy,dz=data.GetDimensions()
     voi=vtk.vtkExtractVOI()
@@ -408,19 +387,16 @@ def getPlane(data,plane,x,y,z):
     if plane=="zy":
         data.SetUpdateExtent(x,x,0,dy-1,0,dz-1)
         voi.SetVOI(x,x,0,dy-1,0,dz-1)
-        permute.SetFilteredAxes(2,1,0)
+        permute.SetFilteredAxes(Z,Y,X)
         
     elif plane=="xz":
         data.SetUpdateExtent(0,dx-1,y,y,0,dz-1)
         #voi.SetVOI(0,dx-1,0,dz-1,y,y)
         voi.SetVOI(0,dx-1,y,y,0,dz-1)
-        permute.SetFilteredAxes(0,2,1)
+        permute.SetFilteredAxes(X,Z,Y)
     #permute.SetInput(data)
-    voi.Update()
-    print voi.GetOutput().GetDimensions()
     #return voi.GetOutput()    
     permute.Update()
-    print permute.GetOutput().GetDimensions()
     return permute.GetOutput()
 
 def fire(x0,x1):

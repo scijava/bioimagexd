@@ -54,6 +54,7 @@ void vtkImageSimpleMIP::ComputeInputUpdateExtent(int inExt[6],
     vtkDebugMacro("MIP: Getting input update extent from output extent\n");
     vtkDebugMacro("MIP: outExt="<<PRT_EXT2(outExt)<<"\n");
     this->GetInput()->GetWholeExtent(wholeExt);
+    vtkDebugMacro("MIP: wholeExt="<<PRT_EXT2(wholeExt)<<"\n");
     memcpy(inExt,wholeExt,sizeof(int)*6);
     
 }

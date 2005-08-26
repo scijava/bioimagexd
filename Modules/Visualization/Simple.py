@@ -44,7 +44,7 @@ def getName():return "MIP"
 def getClass():return SimpleMode
 def getImmediateRendering(): return False
 def getConfigPanel(): return None
-def getRenderingDelay(): return 500
+def getRenderingDelay(): return 1500
 def showZoomToolbar(): return True
 
     

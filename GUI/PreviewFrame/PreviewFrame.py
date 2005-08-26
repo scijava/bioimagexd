@@ -372,7 +372,11 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
             self.running=1
         if isinstance(self.dataUnit,CombinedDataUnit):
             try:
-                preview=self.dataUnit.doPreview(self.z,renew,self.timePoint)
+                z=self.z
+                # if we're doing a MIP, we need to set z to -1
+                # to indicate we want the whole volume
+                if self.mip:z=-1
+                preview=self.dataUnit.doPreview(z,renew,self.timePoint)
                 #print "Got preview",preview.GetDimensions()
             except Logging.GUIError, ex:
                 ex.show()
@@ -444,13 +448,15 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
             data=extract.GetOutput()
         
         if self.mip:
-            Logging.info("Doing mip",kw="preview")
-            data.SetUpdateExtent(data.GetWholeExtent())
+            Logging.info("Doing mip",data.GetWholeExtent(),kw="preview")
+            #data.SetUpdateExtent(data.GetWholeExtent())
             mip=vtk.vtkImageSimpleMIP()
             mip.SetInput(data)
             mip.Update()
             data=mip.GetOutput()
+            Logging.info("Got MIP with extent=",data.GetWholeExtent(),kw="preview")
             data.SetUpdateExtent(data.GetWholeExtent())
+            
             #print "Output from mip:",data
         if ncomps == 1:            
             Logging.info("Mapping trough ctf",kw="preview")
