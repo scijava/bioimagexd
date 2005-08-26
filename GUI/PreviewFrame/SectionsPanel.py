@@ -314,6 +314,7 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
             slice=ImageOperations.vtkImageDataToWxImage(self.imagedata,z)
         self.slices.append(slice)
         slice=ImageOperations.getPlane(self.imagedata,"zy",self.x,self.y,z)
+        #slice=ImageOperations.getPlane(self.imagedata,"xz",self.x,self.y,z)
         if self.zoomFactor != 1:
             slice=ImageOperations.scaleImage(slice,self.zoomFactor)
         if self.zoomZ != 1:
@@ -321,6 +322,7 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
         slice=ImageOperations.vtkImageDataToWxImage(slice)
         self.slices.append(slice)
         slice=ImageOperations.getPlane(self.imagedata,"xz",self.x,self.y,z)
+        #slice=ImageOperations.getPlane(self.imagedata,"zy",self.x,self.y,z)
         if self.zoomFactor != 1 or self.zoomZ != 1:
             slice=ImageOperations.scaleImage(slice,self.zoomFactor)
         if self.zoomZ != 1:

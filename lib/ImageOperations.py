@@ -370,7 +370,7 @@ def vtkImageDataToPreviewBitmap(imageData,color,width=0,height=0,bgcolor=(0,0,0)
         return bitmap,pngstr
     return bitmap
 
-def getPlane(data,plane,x,y,z):
+def getPlane2(data,plane,x,y,z):
     """
     Method: getPlane(data,plane,coord)
     Created: 06.06.2005, KP
@@ -392,6 +392,36 @@ def getPlane(data,plane,x,y,z):
     permute.SetInput(data)
     voi.Update()
     return voi.GetOutput()
+    
+def getPlane(data,plane,x,y,z):
+    """
+    Method: getPlane(data,plane,coord)
+    Created: 06.06.2005, KP
+    Description: Get a plane from given the volume
+    """   
+    permute=vtk.vtkImagePermute()
+    dx,dy,dz=data.GetDimensions()
+    voi=vtk.vtkExtractVOI()
+    #voi.SetInput(permute.GetOutput())
+    voi.SetInput(data)
+    permute.SetInput(voi.GetOutput())
+    if plane=="zy":
+        data.SetUpdateExtent(x,x,0,dy-1,0,dz-1)
+        voi.SetVOI(x,x,0,dy-1,0,dz-1)
+        permute.SetFilteredAxes(2,1,0)
+        
+    elif plane=="xz":
+        data.SetUpdateExtent(0,dx-1,y,y,0,dz-1)
+        #voi.SetVOI(0,dx-1,0,dz-1,y,y)
+        voi.SetVOI(0,dx-1,y,y,0,dz-1)
+        permute.SetFilteredAxes(0,2,1)
+    #permute.SetInput(data)
+    voi.Update()
+    print voi.GetOutput().GetDimensions()
+    #return voi.GetOutput()    
+    permute.Update()
+    print permute.GetOutput().GetDimensions()
+    return permute.GetOutput()
 
 def fire(x0,x1):
     reds=[0,0,1,25,49,73,98,122,146,162,173,184,195,207,217,229,240,252,255,255,255,255,255,255,255,255,255,255,255,255,255,255]
