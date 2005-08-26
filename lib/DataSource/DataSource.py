@@ -164,6 +164,8 @@ class DataSource:
             data=self.getDataSet(0,raw=1)
             self.scalarRange=data.GetScalarRange()
             scalartype=data.GetScalarType()
+            if scalartype==4:
+                self.bitdepth=16
             if scalartype==5:
                 self.bitdepth=12
             elif scalartype==3:

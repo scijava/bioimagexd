@@ -61,7 +61,7 @@ class VtiDataSource(DataSource):
         # path to the .du-file and .vti-file(s)
         self.path=""
         self.reader=None
-        
+        self.shift=None
         # Number of datasets added to this datasource
         self.counter=0
         self.parser = None
@@ -104,6 +104,18 @@ class VtiDataSource(DataSource):
         Parameters:   i       The index
         """
         data=self.loadVti(self.dataSets[i])
+        if data.GetScalarType()!=3 and not raw:
+            if not self.shift:
+                self.shift=vtk.vtkImageShiftScale()
+                self.shift.SetOutputScalarTypeToUnsignedChar()
+            self.shift.SetInput(data)
+            
+            x0,x1=data.GetScalarRange()
+            scale=255.0/x1
+            self.shift.SetScale(scale)
+            self.shift.Update()
+            data=self.shift.GetOutput()
+        data.ReleaseDataFlagOff()        
         data.ReleaseDataFlagOff()
         return data
 

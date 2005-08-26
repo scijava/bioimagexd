@@ -658,9 +658,9 @@ class SplineEditor:
         """
         filter=vtk.vtkWindowToImageFilter()
         filter.SetInput(self.renWin)
-        self.renderer.RemoveActor(self.outlineactor)
+#        self.renderer.RemoveActor(self.outlineactor)
         filter.Update()
-        self.renderer.AddActor(self.outlineactor)        
+#        self.renderer.AddActor(self.outlineactor)        
         return filter.GetOutput()
     
     def render(self):

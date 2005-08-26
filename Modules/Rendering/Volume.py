@@ -67,7 +67,7 @@ class VolumeModule(VisualizationModule):
         self.quality = 10
         self.method=TEXTURE_MAPPING
         self.otfs=[]
-        self.interpolation = 1
+        self.interpolation = 0
         
         # This is the MIP otf
         otf2=vtk.vtkPiecewiseFunction()
@@ -93,7 +93,7 @@ class VolumeModule(VisualizationModule):
         self.setMethod(1)
         self.parent.getRenderer().AddVolume(self.volume)
         self.setShading(0)
-        self.setInterpolation(1)
+        self.setInterpolation(0)
         #self.updateRendering()
         
     def __getstate__(self):

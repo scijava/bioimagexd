@@ -127,7 +127,7 @@ class AdjustDataUnit(CombinedDataUnit):
         """
         return self.original.getColorTransferFunction()
        
-    def addSourceDataUnit(self,dataUnit):
+    def addSourceDataUnit(self,dataUnit,**args):
         """
         Method: addSourceDataUnit
         Created: 27.03.2005
@@ -135,7 +135,7 @@ class AdjustDataUnit(CombinedDataUnit):
         Description: Adds a source data unit to this dataunit
         """
         self.setOriginal(dataUnit)    
-        CombinedDataUnit.addSourceDataUnit(self,dataUnit)
+        CombinedDataUnit.addSourceDataUnit(self,dataUnit,**args)
         self.name = "Adjusted %s"%dataUnit.getName()
         Logging.info("Updating settings for corrected source dataunit",kw="processing")
         #print dataUnit.getColorTransferFunction()

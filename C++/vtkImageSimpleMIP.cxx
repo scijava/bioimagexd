@@ -47,12 +47,14 @@ vtkImageSimpleMIP::vtkImageSimpleMIP()
 void vtkImageSimpleMIP::ComputeInputUpdateExtent(int inExt[6],
                                              int outExt[6])
 {
+    vtkDebugMacro("ComputeInputUpdateExtent\n");
+    //getchar();
     int i = 0, k = 0;
     int wholeExt[6];
     vtkDebugMacro("MIP: Getting input update extent from output extent\n");
     vtkDebugMacro("MIP: outExt="<<PRT_EXT2(outExt)<<"\n");
     this->GetInput()->GetWholeExtent(wholeExt);
-    memcpy(wholeExt,inExt,sizeof(int)*6);
+    memcpy(inExt,wholeExt,sizeof(int)*6);
     
 }
 
@@ -61,8 +63,11 @@ void
 vtkImageSimpleMIP::ExecuteInformation(vtkImageData *input, vtkImageData *output)
 {
 
+    vtkDebugMacro("ExecuteInformation()\n");
+    //getchar();
   int wholeExt[6];
   this->GetInput()->GetWholeExtent(wholeExt);
+  vtkDebugMacro("Setting inputUpdateExtent to "<<PRT_EXT2(wholeExt)<<"\n");
   this->GetInput()->SetUpdateExtent(wholeExt);   
   this->vtkImageToImageFilter::ExecuteInformation( input, output ); 
   wholeExt[5]=0;
@@ -78,6 +83,8 @@ vtkImageSimpleMIP::ExecuteInformation(vtkImageData *input, vtkImageData *output)
 //-----------------------------------------------------------------------------
 void vtkImageSimpleMIP::ExecuteData(vtkDataObject *)
 {
+  vtkDebugMacro("ExecuteData()\n");
+    //getchar();
   int uExtent[6];
   vtkImageData* output = this->GetOutput();
   vtkImageData* input = this->GetInput();

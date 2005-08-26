@@ -64,6 +64,10 @@ class KeyframeTrack(SplineTrack):
         self.fg=(0,0,0)
         self.bg=self.nameColor
         kws["height"]=80
+        self.overlayPosInPixels=0
+        self.overlayPosInPixelsEnd=0
+        self.overlayPos=-1
+        self.overlayItem=None        
         Track.__init__(self,name,parent,**kws)   
         #self.namePanel.setColor((0,0,0),self.nameColor)
         if "item" in kws:
@@ -76,16 +80,80 @@ class KeyframeTrack(SplineTrack):
         self.SetDropTarget(dt)
         messenger.connect(None,"set_camera",self.onSetCamera)
 
+    def onDown(self,event):
+        """
+        Method: onDown
+        Created: 17.07.2005, KP
+        Description: Item is clicked
+        """
+        ret=Track.onDown(self,event)
+        if ret:
+            item=self.selectedItem
+        else:
+            item=None
+        if self.selectedItem.dragMode:
+            return ret
+        self.selectedItem=None
+        if item:
+            #self.timePosItem=self.selectedItem
+            start,end=item.getPosition()
+            self.overlayItem=item
+            self.overlayPos=start+1
+            messenger.send(None,"set_timeslider_value",start*10.0)
+            messenger.send(None,"render_time_pos",start)
+            self.paintTrack()
+            self.Refresh()
+            return ret
+        else:
+            self.overlayPos=-1
+            self.overlayItem=None            
+        return ret
+        
+    def onPaintTrack(self):
+        """
+        Method: onPaintTrack(self)
+        Created: 22.08.2005, KP
+        Description: Called by Track so that track types can do their own painting
+        """
+        if self.overlayPos!=-1:
+            if not self.overlayItem or (self.overlayPos != self.overlayItem.getPosition()[0]):
+                curr=None
+                for item in self.items:
+                    start,end=item.getPosition()
+                    if start<= self.timePos and end >= self.timePos:
+                        curr=item
+                        break
+                self.overlayItem=curr
+                self.overlayPos=start
+                pps=self.timescale.getPixelsPerSecond() 
+                w=(end-start)*pps
+                h=self.height
+                print "Painting overlay at ",self.overlayPos*pps
+                try:
+                    overlay=ImageOperations.getOverlay(int(w),int(h),(0,255,0),75)
+                except Exception, e:
+                    print "Failed to create overlay:",e
+                    sys.stdin.readline()
+                overlay=overlay.ConvertToBitmap()
+                
+                pos=self.getLabelWidth() + self.overlayPos*pps
+                self.overlayPosInPixelsEnd=pos+w+1
+                self.overlayPosInPixels=pos
+                self.dc.DrawBitmap(overlay,pos,0,1)    
+        
+        if self.renew != 2 and self.overlayPosInPixels:
+            self.dc.Blit(self.overlayPosInPixels-1,0,self.overlayPosInPixelsEnd,self.height,self.mdc,self.overlayPosInPixels-1,0)                    
+            
     def onSetCamera(self,obj,evt,cam):
         """
         Method: onSetCamera
         Created: 18.08.2005, KP
         Description: Set the camera for the current item
         """             
-        print "self.timePosItem=",self.timePosItem
-        if self.timePosItem:    
-            self.timePosItem.getThumbnail()
-            self.timePosItem.drawItem()
+        print "overlyaItem=",self.overlayItem
+        if self.overlayItem:    
+            self.overlayItem.getThumbnail()
+            self.overlayItem.drawItem()
             self.paintTrack()
             #self.Refresh()
             
@@ -189,7 +257,7 @@ class KeyframeTrack(SplineTrack):
         Description: Show Keyframe represented by this track
         """ 
         messenger.send(None,"set_keyframe_mode",1)
-        self.splineEditor.setViewMode(1)
+        self.splineEditor.setViewMode(0)
             
             
     def __set_pure_state__(self,state):

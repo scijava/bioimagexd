@@ -95,6 +95,7 @@ class Visualizer:
         messenger.connect(None,"set_time_range",self.onSetTimeRange)
         messenger.connect(None,"timepoint_changed",self.onSetTimepoint)
         messenger.connect(None,"data_changed",self.updateRendering)
+        messenger.connect(None,"itf_update",self.updateRendering)
         self.closed = 0
         self.initialized = 0
         self.renderer=None
@@ -379,8 +380,8 @@ class Visualizer:
         self.tb.AddSeparator()
         self.origBtn=wx.Button(self.tb,-1,"Original")
         self.origBtn.SetHelpText("Use this button to show how the unprocessed dataset looks like.")
-        self.origBtn.Bind(wx.EVT_LEFT_DOWN,lambda s=self:s.onShowOriginal("show"))
-        self.origBtn.Bind(wx.EVT_LEFT_UP,lambda s=self:s.onShowOriginal("hide"))
+        self.origBtn.Bind(wx.EVT_LEFT_DOWN,lambda x:self.onShowOriginal(x,1))
+        self.origBtn.Bind(wx.EVT_LEFT_UP,lambda x:self.onShowOriginal(x,0))
         self.tb.AddControl(self.origBtn)
  #       self.tb.AddSimpleTool(MenuManager.ID_ROI_CIRCLE,wx.Image(os.path.join("Icons","circle.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Select circle","Select a circular area of the image")
  #       self.tb.AddSimpleTool(MenuManager.ID_ROI_RECTANGLE,wx.Image(os.path.join("Icons","rectangle.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Select rectangle","Select a rectangular area of the image")
@@ -404,13 +405,13 @@ class Visualizer:
         self.tb.Realize()       
         self.viewCombo.Enable(0)
         
-    def onShowOriginal(self,evt):
+    def onShowOriginal(self,evt,flag=1):
         """
         Method: onShowOriginal
         Created: 27.07.2005, KP
         Description: Show the original datasets instead of processed ones
         """
-        flag=1
+        print "flag=",flag
         if evt=="hide":flag=0
         if self.dataUnit:
             self.dataUnit.getSettings().set("ShowOriginal",flag)
@@ -888,15 +889,20 @@ class Visualizer:
         # If the visualization mode doesn't want immediate rendering
         # then we will delay a bit with this
         imm=self.currModeModule.getImmediateRendering()
+        delay = self.currModeModule.getRenderingDelay()
+        Logging.info("Immediate rendering=",imm,"delay=",delay,kw="visualizer")
         if not imm:
             t=time.time()
-            delay = self.currModeModule.getRenderingDelay()/1000.0
+            delay/=1000.0
+            Logging.info("diff=",self.renderingTime-t,"delay=",delay)
+            diff=abs(self.renderingTime-t)
             if abs(self.renderingTime-t) < delay: 
                 Logging.info("Delaying, delay=%f, diff=%f"%(delay,abs(self.renderingTime-t)),kw="visualizer")
+                wx.FutureCall(diff,self.updateRendering)
                 return
-        self.renderingTime=time.time()
+        self.renderingTime=time.time()                
         self.currMode.updateRendering()
-                
+                        
     def Render(self,evt=None):
         """
         Method: Render()

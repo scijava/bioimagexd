@@ -57,7 +57,7 @@ def getName():return "3d"
 def getClass():return RenderingMode
 def getImmediateRendering(): return False
 def getConfigPanel(): return None
-def getRenderingDelay(): return 1000
+def getRenderingDelay(): return 2000
 def showZoomToolbar(): return True
 
         

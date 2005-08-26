@@ -102,11 +102,11 @@ class Track(wx.Panel):
         self.oldNamePanelColor = 0
     
         self.initTrack()
-        self.timePos=0
+        self.timePos=-1
         self.timePosItem=None
         self.timePosInPixels=0
         self.timePosInPixelsEnd=0
-
+        
         self.Bind(wx.EVT_MOTION,self.onDrag)
         self.Bind(wx.EVT_LEFT_DOWN,self.onDown)
         self.Bind(wx.EVT_LEFT_UP,self.onUp)
@@ -183,60 +183,19 @@ class Track(wx.Panel):
             mdc.BeginDrawing()
             mdc.Blit(0,0,w,h,self.dc,0,0)
             self.mdc=mdc  
-        else:
-            if self.timePosInPixels:
-                
-                # print "Blitting..., self.timePosInPixels=",self.timePosInPixels,self.timePosInPixelsEnd
-                # import sys
-                # sys.stdin.readline()
-                self.dc.Blit(self.timePosInPixels-1,0,self.timePosInPixelsEnd,self.height,self.mdc,self.timePosInPixels-1,0)
-                    
+        elif self.timePosInPixels:
+            self.dc.Blit(self.timePosInPixels-1,0,self.timePosInPixelsEnd,self.height,self.mdc,self.timePosInPixels-1,0)
         pps=self.timescale.getPixelsPerSecond() 
-        viewMode=self.control.getViewMode()
-        #print "viewMode=",viewMode
-        #import sys
-        #sys.stdin.readline()
-        print "viewMode=",viewMode
-        if self.timePos and not (viewMode==0 and not isinstance(self,KeyframeTrack.KeyframeTrack)):
-            # if we're in the edit keyframe-mode, then hilight the current
-            # keyframe item with an overlay
-            if viewMode==0:
-                if not self.timePosItem or (self.timePos != self.timePosItem.getPosition()[0]):
-                    curr=None
-                    for item in self.items:
-                        start,end=item.getPosition()
-                        if start<= self.timePos and end >= self.timePos:
-                            curr=item
-                            break
-                    
-                                                
-                    self.timePosItem=curr
-                    self.timePos=start
-                    w=(end-start)*pps
-                    h=self.height
-                    print "Painting overlay at ",self.timePos*pps
-                    try:
-                        overlay=ImageOperations.getOverlay(int(w),int(h),(0,255,0),75)
-                    except Exception, e:
-                        print "Failed to create overlay:",e
-                        sys.stdin.readline()
-                    overlay=overlay.ConvertToBitmap()
-                    
-                    pos=self.getLabelWidth() + self.timePos*pps
-                    self.timePosInPixelsEnd=pos+w+1
-                    self.timePosInPixels=pos
-                    self.dc.DrawBitmap(overlay,pos,0,1)
-            else:
-                import sys
-                print "Drawing the bar"
-                sys.stdin.readline()
-                #print "Position of %dth frame is at %d+%d"%(self.timePos,self.getLabelWidth(),len*(float(self.timePos)))
-                pos=self.getLabelWidth() + self.timePos*pps
-            
-                self.dc.SetPen(wx.Pen((255,255,255),2))
-                self.dc.DrawLine(pos,0,pos,self.height)
-                self.timePosInPixels=pos
-                self.timePosInPixelsEnd=pos+5
+
+        if hasattr(self,"onPaintTrack"):
+            self.onPaintTrack()
+        
+        if self.timePos!=-1:
+            pos=self.getLabelWidth() + self.timePos*pps        
+            self.dc.SetPen(wx.Pen((255,255,255),2))
+            self.dc.DrawLine(pos,0,pos,self.height)
+            self.timePosInPixels=pos
+            self.timePosInPixelsEnd=pos+5
         
         self.dc.EndDrawing()
         self.dc = None
@@ -273,7 +232,7 @@ class Track(wx.Panel):
                 
     def onDrag(self,event):
         """
-        Method: onDown
+        Method: onDrag
         Created: 17.07.2005, KP
         Description: Item is clicked
         """
@@ -290,17 +249,8 @@ class Track(wx.Panel):
         Created: 17.07.2005, KP
         Description: Item is clicked
         """
-        ret=self.onEvent("Down",event)
-        if self.selectedItem and self.control.getViewMode()==0:
-            #self.timePosItem=self.selectedItem
-            start,end=self.selectedItem.getPosition()
-            self.timePosItem=None
-            self.timePos=start+1
-            messenger.send(None,"set_timeslider_value",start*10.0)
-            messenger.send(None,"render_time_pos",start)
-            self.paintTrack()
-            self.Refresh()                
-        return ret
+        return self.onEvent("Down",event)
+
         
     def onUp(self,event):
         """

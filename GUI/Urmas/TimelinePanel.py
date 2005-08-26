@@ -231,14 +231,14 @@ class TimelinePanel(wx.Panel):
            
         self.confSizer.Add(self.useButton,(1,0))
         
-        self.modeBox=wx.RadioBox(self.confPanel,-1,"Keyframe mode",
-        choices=["Modify Keyframe",
+        #self.modeBox=wx.RadioBox(self.confPanel,-1,"Keyframe mode",
+        #choices=["Modify Keyframe",
         #"Set Camera angle",
-        "Add Keyframe"],
-        majorDimension=2,
-        style=wx.RA_SPECIFY_ROWS    
-        )
-        self.confSizer.Add(self.modeBox,(0,1))
+        #"Add Keyframe"],
+        #majorDimension=2,
+        #style=wx.RA_SPECIFY_ROWS    
+        #)
+        #self.confSizer.Add(self.modeBox,(0,1))
         self.sizer.Add(sboxsizer,(2,0),flag=wx.EXPAND|wx.ALL)        
         
         
@@ -291,8 +291,8 @@ class TimelinePanel(wx.Panel):
         self.timelineConfig.useSettings(evt)
         n=self.control.getDuration()
         messenger.send(None,"set_time_range",1,n*10)
-        keyframeMode=self.modeBox.GetSelection()
-        self.control.setViewMode(keyframeMode)
+        #keyframeMode=self.modeBox.GetSelection()
+        #self.control.setViewMode(keyframeMode)
         
         
         cam = self.splineEditor.getCamera()
