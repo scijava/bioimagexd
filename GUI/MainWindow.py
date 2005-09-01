@@ -102,6 +102,7 @@ class MainWindow(wx.Frame):
         self.currentTaskWindowType=None
         self.currentTask=""
         self.currentFile=""
+        self.mode=""
         self.showToolNames=0
         self.progressCoeff=1.0
         self.progressShift=0.0
@@ -524,6 +525,7 @@ class MainWindow(wx.Frame):
         wx.EVT_TOOL(self,MenuManager.ID_RENDER,self.onMenuVisualizer)
 
         tb.Realize()
+        self.menuManager.setMainToolbar(tb)
         
     def createMenu(self):
         """
@@ -783,6 +785,10 @@ class MainWindow(wx.Frame):
             mode="MIP"
         else:
             mode="3d"
+        reload=0
+        if self.mode==mode:
+            reload=1
+        self.mode=mode
         messenger.send(None,"update_progress",0.1,"Loading %s view..."%mode)
 
         # If it's animator we're loading, then hide the dataset info
@@ -806,6 +812,14 @@ class MainWindow(wx.Frame):
             if not hasDataunit or (not self.visualizer.getProcessedMode() and (self.visualizer.dataUnit != dataunit)):
                 Logging.info("Setting dataunit for visualizer",kw="main")
                 self.visualizer.setDataUnit(dataunit)
+            else:
+                if reload:
+                    Logging.info("Closing on reload: ",self.visualizer.currMode.closeOnReload())
+                    #self.visualizer.currMode.reloadMode()
+                    if self.visualizer.currMode.closeOnReload():
+                        # close the mode
+                        self.loadVisualizer(None,"slices")
+                        return
             self.visualizer.setVisualizationMode(mode)
             messenger.send(None,"update_progress",0.3,"Loading %s view..."%mode)
             #self.visualizer.setDataUnit(dataunit)
@@ -814,6 +828,7 @@ class MainWindow(wx.Frame):
             if hasDataunit:
                 Logging.info("Forcing visualizer update since dataunit has been changed",kw="visualizer")
                 self.visualizer.updateRendering()
+            messenger.send(None,"update_progress",1.0,"Loading %s view..."%mode)                
             return
         if len(selectedFiles)>1:
             lst=[]

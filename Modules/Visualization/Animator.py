@@ -32,6 +32,7 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 
 from Visualizer.VisualizationMode import VisualizationMode
+from GUI import MenuManager
 
 def getName():return "animator"
 def getClass():return AnimatorMode
@@ -42,6 +43,7 @@ def showZoomToolbar(): return False
 
 
 from GUI import Urmas
+import Logging
 
         
 class AnimatorMode(VisualizationMode):
@@ -60,6 +62,8 @@ class AnimatorMode(VisualizationMode):
         
         self.urmaswin=None
         
+    def closeOnReload(self):
+        return True
         
     def showSideBar(self):
         """
@@ -85,7 +89,11 @@ class AnimatorMode(VisualizationMode):
         Description: Set the mode of visualization
         """
         self.sidebarWin=sidebarwin
-        
+        Logging.info("Disabling tasks in menu",kw="visualizer")
+        self.menuManager.mainToolbar.EnableTool(MenuManager.ID_ADJUST,0)
+        self.menuManager.mainToolbar.EnableTool(MenuManager.ID_RESTORE,0)
+        self.menuManager.mainToolbar.EnableTool(MenuManager.ID_COLOCALIZATION,0)
+        self.menuManager.mainToolbar.EnableTool(MenuManager.ID_COLORMERGING,0)
         
         if not self.urmaswin:
             # Ugly hack
@@ -126,6 +134,10 @@ class AnimatorMode(VisualizationMode):
         Description: Unset the mode of visualization
         """
         self.urmaswin.Show(0)       
+        self.menuManager.mainToolbar.EnableTool(MenuManager.ID_ADJUST,1)
+        self.menuManager.mainToolbar.EnableTool(MenuManager.ID_RESTORE,1)
+        self.menuManager.mainToolbar.EnableTool(MenuManager.ID_COLOCALIZATION,1)
+        self.menuManager.mainToolbar.EnableTool(MenuManager.ID_COLORMERGING,1)        
         
     def setDataUnit(self,dataUnit):
         """
@@ -150,3 +162,17 @@ class AnimatorMode(VisualizationMode):
         Description: Save a snapshot of the scene
         """      
         pass
+        
+    def reloadMode(self):
+        """
+        Method: reloadMode()
+        Created: 1.09.2005, KP
+        Description: Method called when the user tries to reload the mode
+        """    
+        pass
+#        self.menuManager.enable(MenuManager.ID_ADJUST)
+#        self.menuManager.enable(MenuManager.ID_RESTORE)
+#        self.menuManager.enable(MenuManager.ID_COLOCALIZATION)
+
+
+        # safeguard

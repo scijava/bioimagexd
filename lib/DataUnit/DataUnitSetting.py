@@ -203,7 +203,7 @@ class DataUnitSettings:
                         value=parser.get(key,ckey)
                         if ser:
                             value=self.deserialize(key,value)
-                            Logging.info("Deserialized ",key,"=",value,kw="dataunit")
+                            #Logging.info("Deserialized ",key,"=",value,kw="dataunit")
                         self.setCounted(key,i,value)
                         self.counted[key]=i
                     except ConfigParser.NoSectionError:
@@ -214,9 +214,9 @@ class DataUnitSettings:
                     value=parser.get(key,key)
                     
                     if ser:
-                        Logging.info("Trying to deserialize ",key,value,kw="dataunit")
+                        #Logging.info("Trying to deserialize ",key,value,kw="dataunit")
                         value=self.deserialize(key,value)
-                        Logging.info("Deserialized ",key,"=",value,kw="dataunit")
+                        #Logging.info("Deserialized ",key,"=",value,kw="dataunit")
                     self.set(key,value)
                 except ConfigParser.NoSectionError:
                     Logging.info("Got no keys for section %s"%key,kw="dataunit")
@@ -371,7 +371,7 @@ class DataUnitSettings:
         Created: 27.03.2005
         Description: Returns the value of a given key
         """
-        print "deserialize",name
+        #print "deserialize",name
         if "ColorTransferFunction" in name:
             data=eval(value)            
             ctf=vtk.vtkColorTransferFunction()

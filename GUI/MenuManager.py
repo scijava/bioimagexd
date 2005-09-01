@@ -158,6 +158,7 @@ class MenuManager:
         self.menus={}
         self.visualizer=None
         self.itemBar = None
+        self.mainToolbar=None
         self.toolIds=[]
         self.showToolNames=0
         
@@ -168,7 +169,14 @@ class MenuManager:
         Description: Set the menubar
         """
         self.menubar=menubar
-        
+
+    def setMainToolbar(self,bar):
+        """
+        Method: setMenuBar
+        Created: 19.06.2005, KP
+        Description: Set the menubar
+        """
+        self.mainToolbar=bar       
     def removeSeparator(self,sepid):
         """
         Method: removeSeparator

@@ -158,6 +158,15 @@ class VisualizationMode:
                      to show the view angle combo box in the toolbar
         """
         return False  
+        
+    def closeOnReload(self):
+        """
+        Method: closeOnReload
+        Created: 1.09.2005, KP
+        Description: Method to determine whether the visualization mode
+                     should be closed if the user clicks it again.
+        """    
+        return False
   
     def setBackground(self,r,g,b):
         """
@@ -229,3 +238,10 @@ class VisualizationMode:
         """    
         pass
         
+    def reloadMode(self):
+        """
+        Method: reloadMode()
+        Created: 1.09.2005, KP
+        Description: Method called when the user tries to reload the mode
+        """    
+        pass
