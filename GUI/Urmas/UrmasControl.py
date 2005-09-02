@@ -58,7 +58,7 @@ class UrmasControl:
     Created: 22.02.2005, KP
     Description: A class that controls Urmas
     """
-    def __init__(self,window):
+    def __init__(self,window,visualizer):
         self.window = window
         self.splineEditor = None
         self.splinePointAmount = 5
@@ -66,6 +66,7 @@ class UrmasControl:
         self.frames = 120 # frames
         self.animationMode= 0
         self.viewMode=0
+        self.visualizer=visualizer
         self.renderer=UrmasRenderer.UrmasRenderer(self)
         
     def writeToDisk(self,filename):
@@ -215,9 +216,10 @@ class UrmasControl:
         Created: 20.03.2005, KP
         Description: Sets the dataunit used as a source of data
         """    
-        self.renderingInterface=RenderingInterface.getRenderingInterface()
-        self.renderingInterface.setDataUnit(dataunit)
         self.dataUnit = dataunit
+        self.renderingInterface = RenderingInterface.getRenderingInterface(1)
+        self.renderingInterface.setDataUnit(dataunit)
+        self.renderingInterface.setVisualizer(self.visualizer)
         self.timelinePanel.setDataUnit(dataunit)
         #n=10*self.dataUnit.getLength()
         #self.timelineConfig.setFrames(n)

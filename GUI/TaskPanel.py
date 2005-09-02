@@ -155,7 +155,7 @@ class TaskPanel(scrolled.ScrolledPanel):
             ctf = dataunit.getColorTransferFunction()
             name = dataunit.getName()
             dc= wx.MemoryDC()
-            bmp,pngstr=ImageOperations.vtkImageDataToPreviewBitmap(dataunit.getTimePoint(0),ctf,30,30,getpng=1)
+            bmp,pngstr=ImageOperations.vtkImageDataToPreviewBitmap(dataunit,0,None,30,30,getpng=1)
             self.channelBox.setPreview(i,pngstr)
             dc.SelectObject(bmp)
             dc.BeginDrawing()
@@ -167,12 +167,18 @@ class TaskPanel(scrolled.ScrolledPanel):
             #if d<0:d=0
             #dc.DrawText(name,d,dy)
             val=[0,0,0]
-            ctf.GetColor(255,val)
             dc.SetBrush(wx.TRANSPARENT_BRUSH)
-            r,g,b=val
-            r*=255
-            g*=255
-            b*=255
+            if ctf:
+                ctf.GetColor(255,val)
+    
+                r,g,b=val
+                r*=255
+                g*=255
+                b*=255
+            else:
+                r=255
+                g=255
+                b=255
             dc.SetPen(wx.Pen(wx.Colour(r,g,b),4))
             dc.DrawRectangle(0,0,32,32)
             dc.EndDrawing()

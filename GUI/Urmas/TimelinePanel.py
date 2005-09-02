@@ -280,7 +280,8 @@ class TimelinePanel(wx.Panel):
         Created: 18.08.2005, KP
         Description: Toggles the keyframe mode on / off
         """            
-        self.modeBox.Enable(arg)
+        pass
+        #self.modeBox.Enable(arg)
         
     def useSettings(self,evt):
         """

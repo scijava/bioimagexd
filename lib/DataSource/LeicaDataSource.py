@@ -85,7 +85,8 @@ class LeicaDataSource(DataSource):
         Description: Returns the DataSet at the specified index
         Parameters:   i       The index
         """
-        return self.reader.GetTimepoint(self.experiment,self.channel,i)
+        data=self.reader.GetTimepoint(self.experiment,self.channel,i)
+        return self.getResampledData(data)
         
     def getDimensions(self):
         """

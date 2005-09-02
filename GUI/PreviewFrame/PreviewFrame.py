@@ -444,9 +444,9 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
             extract=vtk.vtkImageExtractComponents()
             extract.SetComponents(0,1,2)
             extract.SetInput(data)
-            extract.Update()
             data=extract.GetOutput()
-        
+            extract.Update()
+            
         if self.mip:
             Logging.info("Doing mip",data.GetWholeExtent(),kw="preview")
             #data.SetUpdateExtent(data.GetWholeExtent())

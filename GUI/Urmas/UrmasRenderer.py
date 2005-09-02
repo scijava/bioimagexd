@@ -63,6 +63,8 @@ class UrmasRenderer:
         self.control=control
         self.splineEditor=None
         self.renderingInterface = RenderingInterface.getRenderingInterface(1)
+        self.renderingInterface.setVisualizer(control.visualizer)
+
         self.oldTimepoint=-1
         self.lastpoint=None
         self.lastSplinePoint=None
@@ -114,7 +116,7 @@ class UrmasRenderer:
 #            print "self.renwin=",self.renwin
             self.ren = self.renderingInterface.getRenderer()
             if self.renderingInterface.isVisualizationModuleLoaded() == False:
-                Dialogs.showwarning(self.control.window,"You must specify some module to MayaVi first!","Oops!")
+                Dialogs.showwarning(self.control.window,"A visualization module needs to be loaded for rendering","No visualization modules loaded")
                 return
 
             if not self.ren:
@@ -162,6 +164,9 @@ class UrmasRenderer:
             for item in track.getItems():
                 start,end=item.getPosition()
                 self.interpolator.AddCamera(start,item.cam)
+            item=track.getItems()[-1]
+            start,end=item.getPosition()
+            self.interpolator.AddCamera(end,item.cam)
         
     def renderPreviewAt(self,evt,obj,timepos):
         """
@@ -173,19 +178,23 @@ class UrmasRenderer:
         if not self.splineEditor:
             self.splineEditor = self.control.getSplineEditor()
         
-        # if the view mode is "camera path", do not render
-        if not self.splineEditor.viewMode:
-            return
+        ## if the view mode is "camera path", do not render
+        #if not self.splineEditor.viewMode:
+        #    return
         
-        
-        self.cam = self.splineEditor.getCamera()
-
-        self.ren = self.splineEditor.renderer       
+        if self.renderingInterface.visualizer.mode=="3d":
+            self.renwin = self.renderingInterface.getRenderWindow() 
+#            print "self.renwin=",self.renwin
+            self.ren = self.renderingInterface.getRenderer()
+            self.cam = self.ren.GetActiveCamera()
+        else:
+            self.cam = self.splineEditor.getCamera()
+            self.ren = self.splineEditor.renderer       
         duration = self.control.getDuration()
         frames = self.control.getFrames()
         spf = duration / float(frames)        
         frame=spf*timepos
-        self.renderFrame(frame,timepos,spf,preview=1) 
+        self.renderFrame(frame,timepos,spf,preview=1,use_cam=1) 
         
          
     def getTimepointAt(self,time):
@@ -242,7 +251,7 @@ class UrmasRenderer:
                 
         return None
         
-    def renderFrame(self,frame,timepos,spf,preview=0):
+    def renderFrame(self,frame,timepos,spf,preview=0,use_cam=0):
         """
         Method: renderFrame(frame,time)
         Created: 04.04.2005, KP
@@ -256,7 +265,7 @@ class UrmasRenderer:
         pos=None
         
         timepoint = self.getTimepointAt(timepos)
-        if not preview:
+        if (not preview) or use_cam:
             cam = self.ren.GetActiveCamera()
             ren=self.ren
         else:
@@ -299,7 +308,7 @@ class UrmasRenderer:
             # keyframe interpolation
             minT=self.interpolator.GetMinimumT()
             maxT=self.interpolator.GetMaximumT()
-            
+            print "maxT=",maxT,"timepos=",timepos
             if self.interpolator and minT <= timepos and maxT >= timepos:
                 interpolated=1
                 Logging.info("Interpolating camera at ",timepos,kw="animator")
@@ -313,17 +322,19 @@ class UrmasRenderer:
         if not interpolated and pos:
             self.setCameraParameters(cam,ren, pos, focal)
             
+        if (not preview) or use_cam:
+            self.renderingInterface.render()     
+
+        else:
+            self.splineEditor.render()
+            time.sleep(0.1)
             
         if not preview:
             # With this we can be sure that all of the props will be visible.
             #self.ren.ResetCameraClippingRange()
             curr_file_name = self.renderingInterface.getFilename(frame)
             Logging.info("Saving to ",curr_file_name,kw="animator")
-            self.renderingInterface.render()     
             self.renderingInterface.saveFrame(curr_file_name)
-        else:
-            self.splineEditor.render()
-            time.sleep(0.1)
         
     def setCameraParameters(self,cam,renderer,point,focal):
         """

@@ -62,15 +62,17 @@ void vtkImageMapToIntensities::ExecuteData(vtkDataObject *)
   int* table;
 
   unsigned char scalar,newScalar,cmpScalar;
-
+  output->SetNumberOfScalarComponents(input->GetNumberOfScalarComponents());
   output->GetUpdateExtent(uExtent);
   output->SetExtent(uExtent);
   if(!this->IntensityTransferFunction) {
       vtkErrorMacro("No IntensityTransferFunction specified");
   }
   table = this->IntensityTransferFunction->GetDataPointer();
-  char *inPtr = (char *) input->GetScalarPointerForExtent(uExtent);
-  char *outPtr = (char *) output->GetScalarPointerForExtent(uExtent);
+  //char *inPtr = (char *) input->GetScalarPointerForExtent(uExtent);
+  //char *outPtr = (char *) output->GetScalarPointerForExtent(uExtent);
+  char *inPtr = (char *) input->GetScalarPointer();
+  char *outPtr = (char *) output->GetScalarPointer();
     
   //output->GetDimensions(dims);
   
@@ -87,41 +89,50 @@ void vtkImageMapToIntensities::ExecuteData(vtkDataObject *)
       output->DeepCopy(input);
       return;
   }
-  input->GetContinuousIncrements(uExtent,inIncX, inIncY, inIncZ);
-  output->GetContinuousIncrements(uExtent,outIncX, outIncY, outIncZ);
+  input->GetIncrements(inIncX, inIncY, inIncZ);
+  output->GetIncrements(outIncX, outIncY, outIncZ);
   //printf("uExtent=(%d,%d,%d,%d,%d,%d)\n",uExtent[0],uExtent[1],uExtent[2],uExtent[3],uExtent[4],uExtent[5]);
   maxX = uExtent[1] - uExtent[0];
   maxY = uExtent[3] - uExtent[2];
   maxZ = uExtent[5] - uExtent[4];
   maxC = input->GetNumberOfScalarComponents();
+  //printf("minX=%d, minY=%d, minZ=%d\n",uExtent[0],uExtent[2],uExtent[4]);
   //printf("maxX=%d,maxY=%d,maxZ=%d, maxC=%d\n",maxX,maxY,maxZ,maxC);
   //inIncX *= input->GetScalarSize();
   //inIncY *= input->GetScalarSize();
   //inIncZ *= input->GetScalarSize();
 
   
-  #define GET_AT(x,y,z,ptr) *(ptr+(z)*inIncZ+(y)*inIncY+(x)*inIncX)
+  
+  #define GET_AT(x,y,z,c,ptr) *(ptr+(z)*inIncZ+(y)*inIncY+(x)*inIncX+c)
+  #define SET_AT(x,y,z,c,ptr,val) *(ptr+(z)*outIncZ+(y)*outIncY+(x)*outIncX+c)=val
 
   char progressText[200];  
   for(idxZ = 0; idxZ <= maxZ; idxZ++ ) {
+    printf("Processing slice %d\n",uExtent[4]+idxZ);
     UpdateProgress(idxZ/float(maxZ));
     sprintf(progressText,"Applying intensity transfer function (slice %d / %d)",idxX,maxZ);
     SetProgressText(progressText);
 
     for(idxY = 0; idxY <= maxY; idxY++ ) {
+      //printf("Processing Y=%d\n",idxY);
       for(idxX = 0; idxX <= maxX; idxX++ ) {
-          //for(idxC = 0; idxC <= maxC; idxC++ ) {
-            scalar = *inPtr++;
+          for(idxC = 0; idxC < maxC; idxC++ ) {
+            //scalar = *inPtr++;
+            scalar = GET_AT(idxX+uExtent[0],idxY+uExtent[2],idxZ+uExtent[4],idxC,inPtr);
+              
             newScalar=table[scalar];
-            *outPtr++=newScalar;
-          //}
+            SET_AT(idxX+uExtent[0],idxY+uExtent[2],idxZ+uExtent[4],idxC,outPtr,newScalar);
+            //*outPtr++=newScalar;
+          }
       }
-      inPtr += inIncY;
-      outPtr += outIncY;
+      //inPtr += inIncY;
+      //outPtr += outIncY;
     }  
-    inPtr += inIncZ;
-    outPtr += outIncZ;      
+    //inPtr += inIncZ;
+    //outPtr += outIncZ;      
   }
+  //printf("done\n");
   
 }
 

@@ -30,6 +30,8 @@ __author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.71 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
+VERSION="0.6beta"
+
 import os.path,os,types
 import wx
 import types
@@ -64,7 +66,7 @@ from DataSource import *
 import Modules
 import Urmas
 import UIElements
-
+import ResampleDialog
 class MainWindow(wx.Frame):
     """
     Class: MainWindow
@@ -106,6 +108,8 @@ class MainWindow(wx.Frame):
         self.showToolNames=0
         self.progressCoeff=1.0
         self.progressShift=0.0
+        
+        self.resampleDimensions=None
         
         self.taskPanels = Modules.DynamicLoader.getTaskModules()
         
@@ -577,7 +581,9 @@ class MainWindow(wx.Frame):
         mgr.addMenuItem("processing",MenuManager.ID_COLORMERGING,"Color &Merging...","Merge dataset series",self.onMenuShowTaskWindow)
         mgr.addMenuItem("processing",MenuManager.ID_ADJUST,"&Adjust...","Adjust dataset series",self.onMenuShowTaskWindow)
         mgr.addMenuItem("processing",MenuManager.ID_RESTORE,"&Restore...","Restore dataset series",self.onMenuShowTaskWindow)
-
+        mgr.addSeparator("processing")
+        mgr.addMenuItem("processing",MenuManager.ID_RESAMPLE,"Re&sample data...","Resample data to be smaller or larger",self.onMenuResampleData)
+        
         mgr.addMenuItem("visualization",MenuManager.ID_VIS_SLICES,"&Slices","Visualize individual optical slices")
         mgr.addMenuItem("visualization",MenuManager.ID_VIS_SECTIONS,"S&ections","Visualize xy- xz- and yz- planes")
         mgr.addMenuItem("visualization",MenuManager.ID_VIS_GALLERY,"&Gallery","Visualize all the optical slices")
@@ -642,6 +648,21 @@ class MainWindow(wx.Frame):
         self.showToolNames=evt.IsChecked() 
         self.GetToolBar().Destroy()
         self.createToolBar()
+        
+    def onMenuResampleData(self,evt):
+        """
+        Method: onMenuResampleData
+        Created: 1.09.2005, KP
+        Description: Resize data to be smaller or larger
+        """
+        selectedFiles=self.tree.getSelectedDataUnits()
+        if not selectedFiles:
+            return
+        dlg=ResampleDialog.ResampleDialog(self)
+        dlg.setDataUnit(selectedFiles[0])
+        dlg.Show()
+        
+        
 
     def onMenuToggleVisibility(self,evt):
         """
@@ -985,6 +1006,8 @@ class MainWindow(wx.Frame):
             Dialogs.showerror(self,"Failed to load file %s: Unrecognized extension %s"%(name,ext),"Unrecognized extension")
             return
         dataunits=[]
+        if self.resampleDimensions:
+            datasource.setResampleDimensions(self.resampleDimensions)
         try:
         #    Logging.info("Loading from data source ",datasource,kw="io")
             dataunits = datasource.loadFromFile(path)

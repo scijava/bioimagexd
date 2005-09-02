@@ -151,7 +151,7 @@ class SimpleMode(VisualizationMode):
         Logging.info("Setting timepoint to ",tp,kw="visualizer")
         self.iactivePanel.setTimepoint(tp)
         
-    def deactivate(self):
+    def deactivate(self,newmode=None):
         """
         Method: deactivate()
         Created: 24.05.2005, KP

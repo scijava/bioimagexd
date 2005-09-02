@@ -115,7 +115,7 @@ class InfoMode:
         """      
         pass
         
-    def deactivate(self):
+    def deactivate(self,newmode=None):
         """
         Method: deactivate()
         Created: 24.05.2005, KP

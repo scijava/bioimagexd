@@ -133,6 +133,7 @@ ID_HISTOGRAM_WIN    =187
 ID_DEL_ANNOTATION   =188
 
 ID_ADD_KEYFRAME     =189
+ID_RESAMPLE         =190
 class MenuManager:
     """
     Class: MenuManager

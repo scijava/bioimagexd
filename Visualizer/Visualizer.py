@@ -699,6 +699,7 @@ class Visualizer:
         Created: 23.05.2005, KP
         Description: Set the mode of visualization
         """
+        oldmode=self.mode
         if self.mode == mode:
             Logging.info("Mode %s already selected"%mode,kw="visualizer")
             if self.dataUnit and self.currMode.dataUnit != self.dataUnit:
@@ -709,7 +710,7 @@ class Visualizer:
 
         if self.currMode:
             self.zoomFactor=self.currMode.getZoomFactor()
-            self.currMode.deactivate()
+            self.currMode.deactivate(self.mode)
             if hasattr(self.currentWindow,"enable"):
                 self.currentWindow.enable(0)
             self.currentWindow.Show(0)
@@ -741,10 +742,16 @@ class Visualizer:
         
         if self.dataUnit:
             count=self.dataUnit.getLength()
-            self.timeslider.SetRange(1,count)        
+            # We restore the time slider if it's not a
+            # transition from animator to 3d
+            if not ((oldmode=="animator" and mode=="3d") or (mode=="animator" and oldmode=="3d")):
+                self.timeslider.SetRange(1,count)        
         # We restore the default binding, but before the activate()
         # call so the mode can still overwrite the timeslider behaviour
-        self.bindTimeslider(self.onUpdateTimepoint)
+        # We restore the time slider if it's not a
+        # transition from animator to 3d
+        if not (oldmode=="animator" and mode=="3d"):
+            self.bindTimeslider(self.onUpdateTimepoint)
         self.currentWindow = modeinst.activate(self.sidebarWin)        
         
         self.sidebarWin.SetDefaultSize((0,1024))

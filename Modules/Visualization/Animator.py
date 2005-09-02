@@ -127,17 +127,18 @@ class AnimatorMode(VisualizationMode):
         """      
         pass
         
-    def deactivate(self):
+    def deactivate(self,newmode=None):
         """
         Method: deactivate()
         Created: 24.05.2005, KP
         Description: Unset the mode of visualization
         """
         self.urmaswin.Show(0)       
-        self.menuManager.mainToolbar.EnableTool(MenuManager.ID_ADJUST,1)
-        self.menuManager.mainToolbar.EnableTool(MenuManager.ID_RESTORE,1)
-        self.menuManager.mainToolbar.EnableTool(MenuManager.ID_COLOCALIZATION,1)
-        self.menuManager.mainToolbar.EnableTool(MenuManager.ID_COLORMERGING,1)        
+        if newmode!="3d":
+            self.menuManager.mainToolbar.EnableTool(MenuManager.ID_ADJUST,1)
+            self.menuManager.mainToolbar.EnableTool(MenuManager.ID_RESTORE,1)
+            self.menuManager.mainToolbar.EnableTool(MenuManager.ID_COLOCALIZATION,1)
+            self.menuManager.mainToolbar.EnableTool(MenuManager.ID_COLORMERGING,1)        
         
     def setDataUnit(self,dataUnit):
         """

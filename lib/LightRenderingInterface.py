@@ -144,11 +144,11 @@ class LightRenderingInterface(RenderingInterface.RenderingInterface):
                      can be used for rendering
         """
         # Attempt to get a running instance of visualizer
-        if not self.visualizer:
-           self.visualizer=Visualizer.getVisualizer()
-           self.visualizer.setDataUnit(self.dataUnit)
-           if self.visualizer:
-               Logging.info("Visualizer is running",kw="visualizer")
+        #if not self.visualizer:
+        #   self.visualizer=Visualizer.getVisualizer()
+        #   self.visualizer.setDataUnit(self.dataUnit)
+        #   if self.visualizer:
+        #       Logging.info("Visualizer is running",kw="visualizer")
         return (self.visualizer and not self.visualizer.isClosed())
 
 
@@ -156,7 +156,7 @@ class LightRenderingInterface(RenderingInterface.RenderingInterface):
         """
         Method: isVisualizationModuleLoaded()
         Created: 22.02.2005, KP
-        Description: A method that returns true if a mayavi has a visualization module loaded.
+        Description: A method that returns true if a visualizer has a visualization module loaded.
         """
         return len(self.visualizer.getCurrentMode().getModules())
 

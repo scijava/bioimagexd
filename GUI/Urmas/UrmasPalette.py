@@ -125,20 +125,35 @@ class UrmasPalette(wx.Panel):
         self.ID_NEWTIMEPOINTTRACK=wx.NewId()
         bmp=wx.Image(os.path.join(iconpath,"timepoint_track.jpg"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
         self.newtimepointtrack=wx.StaticBitmap(p,self.ID_NEWTIMEPOINTTRACK,bmp,style=wx.RAISED_BORDER)
-        #self.newtimepointtrack.Bind(wx.EVT_MOTION,self.onToolNewTimepointTrack)        
+        self.newtimepointtrack.Bind(wx.EVT_MOTION,self.onToolNewTimepointTrack)        
+        p.Bind(wx.EVT_MOTION,self.onToolNewTimepointTrack)        
         self.sizer.Add(p,flag=wx.RIGHT,border=2)
+        p.Bind(               wx.EVT_LEFT_UP,self.onToolClick)
+        self.newtimepointtrack.Bind(wx.EVT_LEFT_UP,self.onToolClick)
+
+        
         p=wx.Panel(self,-1,size=(32,32))#,style=wx.RAISED_BORDER)
         self.ID_NEWSPLINETRACK=wx.NewId()
         bmp=wx.Image(os.path.join(iconpath,"spline_track.jpg"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
         self.newsplinetrack=wx.StaticBitmap(p,self.ID_NEWSPLINETRACK,bmp,style=wx.RAISED_BORDER)
-        #self.newsplinetrack.Bind(wx.EVT_MOTION,self.onToolNewSplineTrack)        
+        self.newsplinetrack.Bind(wx.EVT_MOTION,self.onToolNewSplineTrack)        
+        p.Bind(wx.EVT_MOTION,self.onToolNewSplineTrack)        
+        p.Bind(               wx.EVT_LEFT_UP,self.onToolClick)
+        self.newsplinetrack.Bind(wx.EVT_LEFT_UP,self.onToolClick)
+
         self.sizer.Add(p,flag=wx.RIGHT,border=2)
+        
         p=wx.Panel(self,-1,size=(32,32))#,style=wx.RAISED_BORDER)
         self.ID_NEWKEYFRAMETRACK=wx.NewId()
         bmp=wx.Image(os.path.join(iconpath,"keyframe_track.jpg"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
         self.newkeyframetrack=wx.StaticBitmap(p,self.ID_NEWKEYFRAMETRACK,bmp,style=wx.RAISED_BORDER)
-        #self.newkeyframetrack.Bind(wx.EVT_MOTION,self.onToolNewKeyframeTrack)        
+        self.newkeyframetrack.Bind(wx.EVT_MOTION,self.onToolNewKeyframeTrack)        
+        p.Bind(wx.EVT_MOTION,self.onToolNewKeyframeTrack)        
+        p.Bind(               wx.EVT_LEFT_UP,self.onToolClick)
+        self.newkeyframetrack.Bind(wx.EVT_LEFT_UP,self.onToolClick)
+
         self.sizer.Add(p,flag=wx.RIGHT,border=5)        
+        
         self.ID_NEWSPLINE=wx.NewId()
         p=wx.Panel(self,-1,size=(32,32))#,style=wx.RAISED_BORDER)
         self.ID_NEWTIMEPOINT=wx.NewId()
@@ -263,6 +278,38 @@ class UrmasPalette(wx.Panel):
             self.dropItem("Keyframe","Keyframe")
         event.Skip()
         
+    def onToolNewKeyframeTrack(self,event):
+        """
+        Method: onToolNewKeyframeTrack
+        Created: 2.09.2005, KP
+        Description: A method for dragging a keyframe track from palette
+        """
+        if event.Dragging():
+            self.dropItem("Track","Keyframe")
+        event.Skip()
+
+    def onToolNewSplineTrack(self,event):
+        """
+        Method: onToolNewSplineTrack
+        Created: 2.09.2005, KP
+        Description: A method for dragging a spline track from palette
+        """
+        if event.Dragging():
+            self.dropItem("Track","Spline")
+        event.Skip()
+        
+    def onToolNewTimepointTrack(self,event):
+        """
+        Method: onToolNewTimepointTrack
+        Created: 2.09.2005, KP
+        Description: A method for dragging a timepoint track from palette
+        """
+        if event.Dragging():
+            self.dropItem("Track","Timepoint")
+        event.Skip()
+        
+
+        
     def onToolNewStop(self,event):
         """
         Method: onToolNewStop
@@ -311,11 +358,11 @@ class UrmasPalette(wx.Panel):
         Created: 06.04.2005, KP
         Description: A method that creates a DnD of specified type
         """
-        print "Dropping data of type %s:%s"%(datatype,indata)
+        #print "Dropping data of type %s:%s"%(datatype,indata)
         data = wx.CustomDataObject(wx.CustomDataFormat(datatype))
         data.SetData(indata)
         dropsource = wx.DropSource(self)
         dropsource.SetData(data)
         result = dropsource.DoDragDrop(wx.Drag_AllowMove)
-        print "Result=",result        
+        #print "Result=",result        
         return result

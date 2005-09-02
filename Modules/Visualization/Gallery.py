@@ -181,7 +181,7 @@ class GalleryMode(VisualizationMode):
         if self.configPanel:
             self.configPanel.setDataUnit(dataUnit)
         
-    def deactivate(self):
+    def deactivate(self,newmode=None):
         """
         Method: deactivate()
         Created: 24.05.2005, KP

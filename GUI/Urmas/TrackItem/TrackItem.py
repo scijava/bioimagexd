@@ -280,8 +280,8 @@ class TrackItem:
             #self.volume.Update()
             vx,vy,vz=self.volume.GetDimensions()
             ctf=self.dataUnit.getSettings().get("ColorTransferFunction")
-            print self.volume.GetUpdateExtent()
-            self.thumbnailbmp=ImageOperations.vtkImageDataToPreviewBitmap(self.volume,ctf,0,self.height-self.labelheight)
+            #print self.volume.GetUpdateExtent()
+            self.thumbnailbmp=ImageOperations.vtkImageDataToPreviewBitmap(self.dataUnit,self.thumbtimepoint,ctf,0,self.height-self.labelheight)
             
         iw,ih=self.thumbnailbmp.GetSize()
         #print "image size=",iw,ih

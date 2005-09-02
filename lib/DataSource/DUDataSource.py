@@ -104,6 +104,7 @@ class VtiDataSource(DataSource):
         Parameters:   i       The index
         """
         data=self.loadVti(self.dataSets[i])
+        data=self.getResampledData(data,i)
         if data.GetScalarType()!=3 and not raw:
             if not self.shift:
                 self.shift=vtk.vtkImageShiftScale()

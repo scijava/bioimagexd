@@ -98,7 +98,41 @@ class DataSource:
         """
         self.ctf = None
         self.bitdepth=0
+        self.resample=None
+        self.resampleDims=None
+        self.resampleTp=-1
         
+    def setResampleDimensions(self,dims):
+        """
+        Method: setResampleDimensions
+        Created: 1.09.2005, KP
+        Description: Set the resample dimensions
+        """    
+        self.resampleDims=dims
+        
+    def getResampledData(self,data,n):
+        """
+        Method: getResampledData
+        Created: 1.09.2005, KP
+        Description: Return the data resampled to given dimensions
+        """
+        if not self.resampleDims:return data
+        if n==self.resampleTp and self.resample:
+            return self.resample.GetOutput()
+        else:
+            Logging.info("Resampling data to 512x512x25")
+            self.resample=vtk.vtkImageResample()
+            self.resample.SetInput(data)
+            x,y,z=data.GetDimensions()
+            rx,ry,rz=self.resampleDims
+            xf=rx/float(x)
+            yf=ry/float(y)
+            zf=rz/float(z)
+            self.resample.SetAxisMagnificationFactor(0,xf)
+            self.resample.SetAxisMagnificationFactor(1,yf)
+            self.resample.SetAxisMagnificationFactor(2,zf)
+            self.resample.Update()
+            return self.resample.GetOutput()        
 
     def getDataSetCount(self):
         """

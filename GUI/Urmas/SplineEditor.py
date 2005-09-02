@@ -635,7 +635,7 @@ class SplineEditor:
         cam=self.getCamera()
         
         #print "Orientation=",cam.GetOrientationWXYZ()
-        print "viewMode=",self.viewMode
+        
         if self.viewMode == 0:
             messenger.send(None,"set_camera",cam)
         

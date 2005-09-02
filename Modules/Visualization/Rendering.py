@@ -213,7 +213,7 @@ class RenderingMode(VisualizationMode):
             module.updateRendering()
         self.wxrenwin.Render()
         
-    def deactivate(self):
+    def deactivate(self,newmode=None):
         """
         Method: deactivate()
         Created: 24.05.2005, KP

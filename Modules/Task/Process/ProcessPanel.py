@@ -404,8 +404,7 @@ class ProcessPanel(TaskPanel.TaskPanel):
         TaskPanel.TaskPanel.setCombinedDataUnit(self,dataUnit)
         
         ctf = self.settings.get("ColorTransferFunction")
-        if self.colorBtn:
-            print "Setting ctf"
+        if ctf and self.colorBtn:
             self.colorBtn.setColorTransferFunction(ctf)
         else:
             print "Won't set ctf!"

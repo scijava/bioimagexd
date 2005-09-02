@@ -30,7 +30,7 @@ __date__ = "$Date: 2005/01/13 14:09:15 $"
 
 import Logging
 import vtk
-
+import ImageOperations
 class DataUnit:
     """
     Class: DataUnit
@@ -51,7 +51,26 @@ class DataUnit:
         self.color= None
         self.ctf = None
         self.settings = None
-    
+        self.mip=None
+        self.mipTimepoint=-1
+
+        
+    def getMIP(self,tp,color):
+        """
+        Method: getMIP
+        Created: 1.09.2005, KP
+        Description: Returns MIP of the given timepoint
+        """
+        if self.mip and self.mipTimepoint==tp:
+            Logging.info("Using existing MIP")
+            return self.mip
+        else:
+            Logging.info("Generating MIP of tp=",tp)
+            imagedata=self.getTimePoint(tp)
+            if not color:
+                color=self.getColorTransferFunction()
+            self.mip=ImageOperations.getMIP(imagedata,color)
+            return self.mip
 
     def getColorTransferFunction(self):
         """
@@ -143,6 +162,7 @@ class DataUnit:
             "No datasource specified for DataUnit, unable to get timepoint!")
             return None
         return self.dataSource.getDataSet(n)
+        
 
     def getLength(self):
         """

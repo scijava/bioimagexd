@@ -134,7 +134,7 @@ class Adjust(Module):
         mapIntensities.SetInput(mapdata)
         
         data=mapIntensities.GetOutput()
-        if self.extent:
+        if 0 and self.extent:
             Logging.info("Update extent = ",self.extent,kw="processing")
             mapdata.SetUpdateExtent(self.extent)
             data.SetUpdateExtent(self.extent)

@@ -81,13 +81,16 @@ class ChannelListBox(wx.HtmlListBox):
             x,y,z=unit.getDimensions()
             dims="%d x %d x %d"%(x,y,z)
             ctf = unit.getColorTransferFunction()
-            val=[0,0,0]
-            ctf.GetColor(255,val)
-            r,g,b=val
-            r*=255
-            g*=255
-            b*=255
-            color="#%.2x%.2x%.2x"%(r,g,b)
+            if ctf:
+                val=[0,0,0]
+                ctf.GetColor(255,val)
+                r,g,b=val
+                r*=255
+                g*=255
+                b*=255
+                color="#%.2x%.2x%.2x"%(r,g,b)
+            else:
+                color="#000000"
             self.units.append((color,name,filename,dims))
             
     def setPreview(self,n,image):

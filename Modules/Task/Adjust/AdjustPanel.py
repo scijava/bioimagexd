@@ -347,7 +347,7 @@ class AdjustPanel(TaskPanel.TaskPanel):
         TaskPanel.TaskPanel.setCombinedDataUnit(self,dataUnit)
     
         ctf = self.settings.get("ColorTransferFunction")
-        if self.colorBtn:
+        if ctf and self.colorBtn:
             self.colorBtn.setColorTransferFunction(ctf)
         
         # We register a callback to be notified when the timepoint changes

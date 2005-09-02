@@ -91,13 +91,50 @@ class Timeline(scrolled.ScrolledPanel):
         w,h=self.GetSize()
         w2,h=self.timeScale.GetSize()
         self.timeScale.SetSize((w,h))
-
+        dt = UrmasPalette.UrmasDropTarget(self,"Track")
+        self.SetDropTarget(dt)
+        self.oldBgCol=self.GetBackgroundColour()
         
         self.SetSizer(self.sizer)
         self.SetAutoLayout(1)
         self.SetupScrolling()
         self.sizer.Fit(self)
         messenger.connect(None,"set_timeline_size",self.setupScrolling)
+        
+    def AcceptDrop(self,x,y,data):
+        """
+        Method: AcceptDrop
+        Created: 02.09.2005, KP
+        Description: Method called to indicate that a user is no longer dragging
+                     something to this track
+        """     
+        print "AcceptDrop",x,y,data
+        if data=="Spline":
+            self.addSplinepointTrack("")
+        elif data=="Keyframe":
+            self.addKeyframeTrack("")
+        else:
+            self.addTrack("")
+            
+    def OnDragLeave(self):
+        """
+        Method: OnDragLeave
+        Created: 02.09.2005, KP
+        Description: Method called to indicate that a user is no longer dragging
+                     something to this track
+        """     
+        self.SetBackgroundColour(self.oldBgCol)
+        self.Refresh()
+            
+    def OnDragOver(self,x,y,d):
+        """
+        Method: OnDragOver
+        Created: 02.09.2005, KP
+        Description: Method called to indicate that a user is dragging
+                     something to this track
+        """ 
+        self.SetBackgroundColour((192,192,192))
+        self.Refresh()
         
     def setupScrolling(self,obj=None,evt=None,arg=None):
         """

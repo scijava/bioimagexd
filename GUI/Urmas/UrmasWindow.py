@@ -73,7 +73,7 @@ class UrmasWindow(scrolled.ScrolledPanel):
         self.menuManager=menumanager
         self.createMenu(menumanager)
         
-        self.control = UrmasControl.UrmasControl(self)
+        self.control = UrmasControl.UrmasControl(self,visualizer)
 
         #self.Bind(wx.EVT_CLOSE,self.closeWindowCallback)
 
@@ -90,7 +90,9 @@ class UrmasWindow(scrolled.ScrolledPanel):
 
         # get all the events emitted so we can update the GUI in real time
         self.visualizer.bindTimeslider(self.onShowFrame,all=1)
-        
+        n=self.control.getDuration()
+        messenger.send(None,"set_time_range",1,n*10)
+
         self.SetSizer(self.sizer)
         self.SetAutoLayout(1)
         self.SetupScrolling()

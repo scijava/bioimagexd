@@ -150,7 +150,7 @@ class SlicesMode(VisualizationMode):
         Logging.info("Setting timepoint to ",tp,kw="visualizer")
         self.iactivePanel.setTimepoint(tp)
         
-    def deactivate(self):
+    def deactivate(self,newmode=None):
         """
         Method: deactivate()
         Created: 24.05.2005, KP
@@ -164,4 +164,4 @@ class SlicesMode(VisualizationMode):
         Created: 05.06.2005, KP
         Description: Save a snapshot of the scene
         """      
-        self.preview.saveSnapshot(filename)
+        self.iactivePanel.saveSnapshot(filename)
