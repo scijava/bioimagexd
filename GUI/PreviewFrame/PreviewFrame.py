@@ -377,27 +377,42 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
                 # to indicate we want the whole volume
                 if self.mip:z=-1
                 preview=self.dataUnit.doPreview(z,renew,self.timePoint)
-                #print "Got preview",preview.GetDimensions()
+                
+                #Logging.info("Got preview",preview.GetDimensions(),kw="preview")
             except Logging.GUIError, ex:
                 ex.show()
                 return
         else:
             preview = self.dataUnit.getTimePoint(self.timePoint)
             Logging.info("Using timepoint %d as preview"%self.timePoint,kw="preview")
+        black=0
         if not preview:
             Logging.info("Creating black preview",kw="preview")
             if not self.blackImage:
-                xor=vtk.vtkImageLogic()
-                xor.SetOperationToXor()
-                xor.AddInput(self.currentImage)
-                xor.AddInput(self.currentImage)
-                xor.Update()
-                self.blackImage=xor.GetOutput()
-            #print "Preview = blackimage"
+                #xor=vtk.vtkImageLogic()
+                #xor.SetOperationToXor()
+                data=self.dataUnit.getSourceDataUnits()[0].getTimePoint(0)
+                #xor.AddInput(data)
+                #print "source=",data
+                #xor.AddInput(data)
+                #xor.Update()
+                extent=data.GetExtent()
+                dims=data.GetDimensions()
+                #self.blackImage=xor.GetOutput()
+                self.blackImage=vtk.vtkImageData()
+                self.blackImage.SetDimensions(dims)
+                self.blackImage.SetNumberOfScalarComponents(3)
+                self.blackImage.SetExtent(extent)
+                self.blackImage.AllocateScalars()
+            print "Preview = blackimage=",self.blackImage
             preview=self.blackImage
+            black=1
         self.currentImage=preview
-        #print "Processing preview=",preview.GetDimensions()
-        colorImage = self.processOutputData(preview)
+        if not black:
+            #print "Processing preview=",preview.GetDimensions()
+            colorImage = self.processOutputData(preview)
+        else:
+            colorImage=preview
         x,y,z=colorImage.GetDimensions()
         #print "Preview dims=",preview.GetDimensions()
         if x!=self.oldx or y!=self.oldy:
@@ -418,6 +433,7 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
             Logging.info("No imagedata to preview",kw="preview")
             return
         else:
+            print "imagedata=",self.imagedata
             self.slice=ImageOperations.vtkImageDataToWxImage(self.imagedata,z)
             
         Logging.info("Painting preview",kw="preview")

@@ -67,6 +67,7 @@ class MergingPanel(TaskPanel.TaskPanel):
         """
         self.alphaTF=vtk.vtkIntensityTransferFunction()
         self.operationName="Merge"
+        self.createItemSelection=1
         TaskPanel.TaskPanel.__init__(self,parent,tb)
 
         
@@ -109,7 +110,7 @@ class MergingPanel(TaskPanel.TaskPanel):
         self.box=wx.BoxSizer(wx.HORIZONTAL)
         self.editIntensitySizer.Add(self.box,(3,0))
         
-        self.restoreBtn=wx.Button(self.editIntensityPanel,-1,"Reset current")
+        self.restoreBtn=wx.Button(self.editIntensityPanel,-1,"Reset")
         self.restoreBtn.Bind(wx.EVT_BUTTON,self.intensityTransferEditor.restoreDefaults)
         self.box.Add(self.restoreBtn)        
         

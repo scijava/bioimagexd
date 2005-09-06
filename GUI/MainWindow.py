@@ -714,8 +714,8 @@ class MainWindow(wx.Frame):
         selectedUnits=self.tree.getSelectedDataUnits()
         self.visualizer.setProcessedMode(0)
         self.visualizer.setDataUnit(selectedUnits[0])        
+        self.menuManager.clearItemsBar()
         if self.currentTaskWindow: 
-            self.menuManager.clearItemsBar()
             self.currentTaskWindow.Show(0)
             self.currentTaskWindow.Destroy()
             del self.currentTaskWindow

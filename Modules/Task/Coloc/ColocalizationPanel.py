@@ -69,7 +69,7 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
                 root    Is the parent widget of this window
         """
         self.scatterPlot=None
-        
+        self.createItemSelection=1
         self.timePoint=0
         TaskPanel.TaskPanel.__init__(self,root,tb)
         self.operationName="Colocalization"
@@ -617,7 +617,7 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
         Description: Method to create a toolbar for the window that allows use to select processed channel
         """      
         n=TaskPanel.TaskPanel.createItemToolbar(self)
-        
+        #self.toolMgr.clearItemsBar()
         coloc=vtk.vtkImageColocalizationFilter()
         coloc.SetOutputDepth(8)
         i=0
@@ -630,7 +630,9 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
         ctf=vtk.vtkColorTransferFunction()
         ctf.AddRGBPoint(0,0,0,0)
         ctf.AddRGBPoint(255,1,1,1)
-        bmp=ImageOperations.vtkImageDataToPreviewBitmap(coloc.GetOutput(),ctf,30,30)
+        imagedata=ImageOperations.getMIP(coloc.GetOutput(),ctf)
+        bmp=ImageOperations.vtkImageDataToWxImage(imagedata)
+        bmp=bmp.Rescale(30,30).ConvertToBitmap()
         dc= wx.MemoryDC()
 
         dc.SelectObject(bmp)

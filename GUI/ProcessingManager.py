@@ -93,7 +93,7 @@ class ProcessingManager(TimepointSelection):
                 total   There are a total of this many timepoints to be processed
         """
         if not self.progressDialog:
-            self.progressDialog=wx.ProgressDialog("Processing data","Timepoint   (  /  ) (0%) ETA:   mins   seconds",
+            self.progressDialog=wx.ProgressDialog("Processing data","Timepoint   (  /  ) (0%) Time remaining:   mins   seconds",
             maximum=total,parent=self,style=wx.PD_CAN_ABORT|wx.PD_APP_MODAL|wx.PD_AUTO_HIDE)
             
         t2=time.time()
@@ -103,7 +103,7 @@ class ProcessingManager(TimepointSelection):
         print "Diff=%f, total=%d, n=%d, secs=%d"%(diff,total,nth,totsecs)
         mins=totsecs/60
         secs=totsecs%60
-        self.progressDialog.Update(nth,"Timepoint %d (%d/%d) (%d%%) ETA: "
+        self.progressDialog.Update(nth,"Timepoint %d (%d/%d) (%d%%) Time remaining: "
         "%d mins %d seconds"%(tp+1,nth,total,100*(1.0*nth)/total,mins,secs))
         if nth==total:
             self.progressDialog.Destroy()

@@ -134,6 +134,10 @@ ID_DEL_ANNOTATION   =188
 
 ID_ADD_KEYFRAME     =189
 ID_RESAMPLE         =190
+ID_TOOL_WIN2        =191
+ID_ZOOM_COMBO       =192
+ORIG_BUTTON         =193
+CONTEXT_HELP        =194
 class MenuManager:
     """
     Class: MenuManager

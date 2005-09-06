@@ -320,7 +320,7 @@ class SurfaceConstructionpanel(TaskPanel.TaskPanel):
         self.t1=time.time()
         if not self.progressMeter:
             self.progressMeter=Meter(self,relief=RIDGE,bd=3,fillcolor='lightblue')
-            self.progressMeter.set(0,"Timepoint  /   (0%) ETA:   mins   seconds")
+            self.progressMeter.set(0,"Timepoint  /   (0%) Time remaining:   mins   seconds")
             self.progressMeter.grid(row=3,column=0,columnspan=2,sticky=W+E)
 
         self.grayOut()

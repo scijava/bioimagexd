@@ -64,7 +64,6 @@ class TaskPanel(scrolled.ScrolledPanel):
         Description: Initialization
         Parameters:
                 root    Is the parent widget of this window
-                title   Is the title for this window
         """
         #wx.Dialog.__init__(self,root,-1,"Task Window",
         #style=wx.CAPTION|wx.STAY_ON_TOP|wx.CLOSE_BOX|wx.MAXIMIZE_BOX|wx.MINIMIZE_BOX|wx.RESIZE_BORDER|wx.DIALOG_EX_CONTEXTHELP,
@@ -83,14 +82,19 @@ class TaskPanel(scrolled.ScrolledPanel):
 
         #self.Bind(wx.EVT_CLOSE,self.closeWindowCallback)
         self.mainsizer=wx.GridBagSizer()
+        if not hasattr(self,"createItemSelection"):
+            self.createItemSelection=0
 
-
-        self.channelBox = ChannelListBox.ChannelListBox(self, size=(250, 72), style=wx.BORDER_SUNKEN|wx.LB_NEEDED_SB)
-        self.mainsizer.Add(self.channelBox,(0,0))
-
+        n=0
+        if self.createItemSelection:
+            self.channelBox = ChannelListBox.ChannelListBox(self, size=(250, 72), style=wx.BORDER_SUNKEN|wx.LB_NEEDED_SB)
+            self.mainsizer.Add(self.channelBox,(n,0))
+            n+=1
+        
         self.settingsSizer=wx.GridBagSizer()
         #self.mainsizer.Add(self.settingsSizer,(0,1),flag=wx.EXPAND|wx.ALL)
-        self.mainsizer.Add(self.settingsSizer,(1,0),flag=wx.EXPAND|wx.ALL)
+        self.mainsizer.Add(self.settingsSizer,(n,0),flag=wx.EXPAND|wx.ALL)
+        n+=1
         self.settingsNotebook=wx.Notebook(self,-1,style=wx.NB_MULTILINE)
         
         font=self.settingsNotebook.GetFont()
@@ -103,8 +107,8 @@ class TaskPanel(scrolled.ScrolledPanel):
         self.buttonSizer=wx.BoxSizer(wx.HORIZONTAL)
         self.buttonPanel.SetSizer(self.buttonSizer)
         self.buttonPanel.SetAutoLayout(1)
-        self.mainsizer.Add(self.buttonPanel,(2,0),span=(1,1),flag=wx.EXPAND)
-    
+        self.mainsizer.Add(self.buttonPanel,(n,0),span=(1,1),flag=wx.EXPAND)
+        n+=1
         self.filePath=None
         self.dataUnit=None
         self.settings = None
@@ -150,7 +154,10 @@ class TaskPanel(scrolled.ScrolledPanel):
         n=0
         #self.tb2.AddSeparator()
         self.toolIds=[]
-        for i,dataunit in enumerate(self.dataUnit.getSourceDataUnits()):
+        sourceUnits=self.dataUnit.getSourceDataUnits()
+        if len(sourceUnits)==1:
+            return
+        for i,dataunit in enumerate(sourceUnits):
             #color = dataunit.getColor()
             ctf = dataunit.getColorTransferFunction()
             name = dataunit.getName()

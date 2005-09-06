@@ -55,6 +55,7 @@ import sys
 import Modules
 import Annotation
 
+
 visualizerInstance=None
 
 def getVisualizer():
@@ -76,10 +77,13 @@ class Visualizer:
         global visualizerInstance
         visualizerInstance=self
         self.delayed=0
+        self.oldClientSize=0
         self.updateFactor = 0.001
         self.depthT=0
         self.zoomToFitFlag=1
         self.zoomFactor=1.0
+        self.tb1=None
+        self.tb2=None
         self.z=0
         self.viewCombo = None
         self.histogramIsShowing=0
@@ -135,6 +139,13 @@ class Visualizer:
         self.toolWin.SetDefaultSize((500,44))
         self.toolWin.origSize=(500,44)
 
+        self.toolWin2=wx.SashLayoutWindow(self.parent,MenuManager.ID_TOOL_WIN2,style=wx.NO_BORDER)
+        self.toolWin2.SetOrientation(wx.LAYOUT_HORIZONTAL)
+        self.toolWin2.SetAlignment(wx.LAYOUT_TOP)
+        self.toolWin2.SetSashVisible(wx.SASH_BOTTOM,False)
+        self.toolWin2.SetDefaultSize((500,0))
+        self.toolWin2.origSize=(500,0)        
+        
         self.histogramWin=wx.SashLayoutWindow(self.parent,MenuManager.ID_HISTOGRAM_WIN,style=wx.NO_BORDER)
         self.histogramWin.SetOrientation(wx.LAYOUT_HORIZONTAL)
         self.histogramWin.SetAlignment(wx.LAYOUT_TOP)
@@ -180,8 +191,10 @@ class Visualizer:
         self.sectionsPanel=None
         self.mode = None
         
-        self.createToolbar()
         self.parent.Bind(wx.EVT_SIZE,self.OnSize)
+        
+        #wx.FutureCall(50,self.createToolbar)
+        self.createToolbar()
         
     def createSliders(self):
         """
@@ -341,55 +354,115 @@ class Visualizer:
         self.OnSize(None)
             
 
-            
+    
     def createToolbar(self):
         """
         Method: createToolBar()
         Created: 28.05.2005, KP
         Description: Method to create a toolbar for the window
         """        
-        self.tb = wx.ToolBar(self.toolWin,-1,style=wx.TB_HORIZONTAL)
-        self.tb.SetToolBitmapSize((32,32))
+        if self.tb1:
+            self.tb1.Destroy()
+        self.tb1 = wx.ToolBar(self.toolWin,-1,style=wx.TB_HORIZONTAL)
+        self.tb1.SetToolBitmapSize((32,32))
+        
+        if self.tb2:
+            self.tb2.Destroy()    
+        self.tb2 = wx.ToolBar(self.toolWin2,-1,style=wx.TB_HORIZONTAL)
+        self.tb2.SetToolBitmapSize((32,32)) 
+        
+        self.maxWidth=self.parent.GetSize()[0]
+        self.currWidth = 0
+        self.tb = self.tb1
+        toolSize=self.tb.GetToolSize()[0]
+        
+        
         self.viewCombo=wx.ComboBox(self.tb,MenuManager.ID_SET_VIEW,"Isometric",choices=["+X","-X","+Y","-Y","+Z","-Z","Isometric"],size=(100,-1),style=wx.CB_DROPDOWN)
         self.viewCombo.SetSelection(6)
         self.viewCombo.SetHelpText("This controls the view angle of 3D view mode.")
-        self.tb.InsertControl(0,self.viewCombo)
+        self.tb.AddControl(self.viewCombo)
+
+        self.currWidth+=self.viewCombo.GetSize()[0]
+        if self.currWidth+toolSize>=self.maxWidth:self.tb=self.tb2
+        
         wx.EVT_COMBOBOX(self.parent,MenuManager.ID_SET_VIEW,self.onSetView)
-        self.tb.Realize()                
+        #self.tb.Realize()                
         self.tb.AddSimpleTool(MenuManager.ID_ZOOM_OUT,wx.Image(os.path.join("Icons","zoom-out.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Zoom out","Zoom out on the optical slice")
         #EVT_TOOL(self,ID_OPEN,self.menuOpen)
-
+        
+        self.currWidth+=toolSize
+        if self.currWidth+toolSize>=self.maxWidth:self.tb=self.tb2
+        
         self.zoomLevels=[0.125, 0.25, 0.3333, 0.5, 0.6667, 0.75, 1.0, 1.25, 1.5, 2.0, 3.0, 4.0, 6.0, 8.0,-1]
-        self.zoomCombo=wx.ComboBox(self.tb,-1,"Zoom to fit",
+        self.zoomCombo=wx.ComboBox(self.tb,MenuManager.ID_ZOOM_COMBO,"Zoom to fit",
                           choices=["12.5%","25%","33.33%","50%","66.67%","75%","100%","125%","150%","200%","300%","400%","600%","800%","Zoom to fit"],size=(100,-1),style=wx.CB_DROPDOWN)
         self.zoomCombo.SetSelection(14)
         self.zoomCombo.SetHelpText("This controls the zoom level of visualization views.")        
         self.tb.AddControl(self.zoomCombo)
+        
+        self.currWidth+=self.zoomCombo.GetSize()[0]
+        if self.currWidth+toolSize>=self.maxWidth:self.tb=self.tb2
 
         self.tb.AddSimpleTool(MenuManager.ID_ZOOM_IN,wx.Image(os.path.join("Icons","zoom-in.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Zoom in","Zoom in on the slice")
+        
+        self.currWidth+=toolSize
+        if self.currWidth+toolSize>=self.maxWidth:self.tb=self.tb2        
+        
         self.tb.AddSimpleTool(MenuManager.ID_ZOOM_TO_FIT,wx.Image(os.path.join("Icons","zoom-to-fit.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Zoom to Fit","Zoom the slice so that it fits in the window")
+        
+        self.currWidth+=toolSize
+        if self.currWidth+toolSize>=self.maxWidth:self.tb=self.tb2
+        
         self.tb.AddSimpleTool(MenuManager.ID_ZOOM_OBJECT,wx.Image(os.path.join("Icons","zoom-object.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Zoom object","Zoom user selected portion of the slice")
+        
+        self.currWidth+=toolSize
+        if self.currWidth+toolSize>=self.maxWidth:self.tb=self.tb2
+        
         self.tb.AddSeparator()
+        self.currWidth+=self.tb.GetToolSeparation()
+        
+        
         self.tb.AddSimpleTool(MenuManager.ID_DRAG_ANNOTATION,wx.Image(os.path.join("Icons","arrow.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Manage annotations","Manage annotations on the image")
+        
+        self.currWidth+=toolSize
+        if self.currWidth+toolSize>=self.maxWidth:self.tb=self.tb2
         
         bmp = wx.ArtProvider_GetBitmap(wx.ART_DELETE,wx.ART_TOOLBAR, (32,32))
         self.tb.AddSimpleTool(MenuManager.ID_DEL_ANNOTATION,bmp,"Delete annotation","Delete an annotation")
         
+        self.currWidth+=toolSize
+        if self.currWidth+toolSize>=self.maxWidth:self.tb=self.tb2
         
         self.tb.AddSimpleTool(MenuManager.ID_ADD_SCALE,wx.Image(os.path.join("Icons","scale.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Draw scale","Draw a scale bar on the image")
+        
+        self.currWidth+=toolSize        
         self.tb.AddSeparator()
-        self.origBtn=wx.Button(self.tb,-1,"Original")
+        self.currWidth+=self.tb.GetToolSeparation()
+        
+        if self.currWidth+2*toolSize>=self.maxWidth:self.tb=self.tb2
+        
+        print "self.tb=",self.tb
+        self.origBtn=wx.Button(self.tb,MenuManager.ORIG_BUTTON,"Original")
         self.origBtn.SetHelpText("Use this button to show how the unprocessed dataset looks like.")
         self.origBtn.Bind(wx.EVT_LEFT_DOWN,lambda x:self.onShowOriginal(x,1))
         self.origBtn.Bind(wx.EVT_LEFT_UP,lambda x:self.onShowOriginal(x,0))
+        
+        
+        print "currWidth=",self.currWidth,"maxWidth=",self.maxWidth
+        
         self.tb.AddControl(self.origBtn)
+        self.currWidth+=self.origBtn.GetSize()[0]
+        if self.currWidth+toolSize>=self.maxWidth:self.tb=self.tb2
+        
+        
  #       self.tb.AddSimpleTool(MenuManager.ID_ROI_CIRCLE,wx.Image(os.path.join("Icons","circle.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Select circle","Select a circular area of the image")
  #       self.tb.AddSimpleTool(MenuManager.ID_ROI_RECTANGLE,wx.Image(os.path.join("Icons","rectangle.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Select rectangle","Select a rectangular area of the image")
  #       self.tb.AddSimpleTool(MenuManager.ID_ROI_POLYGON,wx.Image(os.path.join("Icons","polygon.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Select polygon","Select a polygonal area of the image")
 
-        self.cBtn = wx.ContextHelpButton(self.tb)
+        self.cBtn = wx.ContextHelpButton(self.tb,MenuManager.CONTEXT_HELP)
         self.tb.AddControl(self.cBtn)
- 
+        
+        
         wx.EVT_TOOL(self.parent,MenuManager.ID_ZOOM_IN,self.zoomIn)
         wx.EVT_TOOL(self.parent,MenuManager.ID_ZOOM_OUT,self.zoomOut)
         wx.EVT_TOOL(self.parent,MenuManager.ID_ZOOM_TO_FIT,self.zoomToFit)
@@ -402,8 +475,24 @@ class Visualizer:
 #        wx.EVT_TOOL(self.parent,MenuManager.ID_ROI_POLYGON,self.addAnnotation)
         
         self.zoomCombo.Bind(wx.EVT_COMBOBOX,self.zoomToComboSelection)
-        self.tb.Realize()       
+        self.tb1.Realize()     
+        if self.tb == self.tb2:
+            self.toolWin2.SetDefaultSize((500,44))
+            self.tb2.Realize()
+        else:
+            self.toolWin2.SetDefaultSize((500,0))
+            
         self.viewCombo.Enable(0)
+        
+        #self.organizeToolbar()
+        
+    def organizeToolbar(self):
+        """
+        Method: organizeToolbar
+        Created: 3.09.2005, KP
+        Description: Organize the toolbar depending on the window size
+        """        
+        pass
         
     def onShowOriginal(self,evt,flag=1):
         """
@@ -611,6 +700,14 @@ class Visualizer:
         if self.currentWindow:
             self.currentWindow.SetSize(self.visWin.GetClientSize())
             self.currMode.relayout()
+        newsize=self.visWin.GetClientSize()[0]
+        if newsize!=self.oldClientSize:
+            self.createToolbar()
+            #self.tb.SetSize((newsize,-1))
+            #self.tb.SetVirtualSize((999,-1))
+            #self.tb.SetScrollra
+            pass
+        self.oldClientSize=newsize
                 
     def __del__(self):
         global visualizerInstance
