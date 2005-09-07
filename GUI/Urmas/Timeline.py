@@ -93,14 +93,14 @@ class Timeline(scrolled.ScrolledPanel):
         self.timeScale.SetSize((w,h))
         dt = UrmasPalette.UrmasDropTarget(self,"Track")
         self.SetDropTarget(dt)
-        self.oldBgCol=self.GetBackgroundColour()
+        
         
         self.SetSizer(self.sizer)
         self.SetAutoLayout(1)
         self.SetupScrolling()
         self.sizer.Fit(self)
         messenger.connect(None,"set_timeline_size",self.setupScrolling)
-        
+        self.oldBgCol=self.GetBackgroundColour()
     def AcceptDrop(self,x,y,data):
         """
         Method: AcceptDrop
@@ -142,12 +142,6 @@ class Timeline(scrolled.ScrolledPanel):
         Created: 21.08.2005, KP
         Description: Set the scrollbars
         """         
-        print "timesclae size=",self.timeScale.GetSize()
-        print self.sizer.GetMinSize(),self.sizer.GetSize()
-#        self.sizer.Fit(self)
-#        self.Layout()
-        print self.sizer.GetMinSize(),self.sizer.GetSize()
-        print "timesclae size=",self.timeScale.GetSize()
         self.SetupScrolling()
         
     def getSplineTracks(self):

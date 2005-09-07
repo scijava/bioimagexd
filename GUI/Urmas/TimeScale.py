@@ -96,7 +96,7 @@ class TimeScale(wx.Panel):
 
     def setPixelsPerSecond(self,x):
         self.perSecond=x
-        print "pixels per second=",x
+        #print "pixels per second=",x
 
     def getPixelsPerSecond(self):
         return self.perSecond

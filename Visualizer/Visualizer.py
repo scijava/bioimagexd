@@ -83,7 +83,7 @@ class Visualizer:
         self.zoomToFitFlag=1
         self.zoomFactor=1.0
         self.tb1=None
-	self.tb=None
+        self.tb=None
         self.tb2=None
         self.z=0
         self.viewCombo = None
@@ -442,7 +442,6 @@ class Visualizer:
         
         if self.currWidth+90>=self.maxWidth:self.tb=self.tb2
        
-	print "tb==tb2",self.tb==self.tb2
         self.origBtn=wx.Button(self.tb,MenuManager.ORIG_BUTTON,"Original")
         self.origBtn.SetHelpText("Use this button to show how the unprocessed dataset looks like.")
         self.origBtn.Bind(wx.EVT_LEFT_DOWN,lambda x:self.onShowOriginal(x,1))
@@ -461,11 +460,40 @@ class Visualizer:
 
         self.cBtn = wx.ContextHelpButton(self.tb,MenuManager.CONTEXT_HELP)
         self.tb.AddControl(self.cBtn)
-	self.currWidth+=self.cBtn.GetSize()[0]
-	
-	# Since there will potentially be > 2 MIP items on the toolbar and they should be 
-	# in the same toolbar, make sure at least three of them will fit in the toolbar
-	if self.currWidth+3*toolSize>=self.maxWidth:self.tb=self.tb2
+        self.currWidth+=self.cBtn.GetSize()[0]
+    
+        self.pitch=wx.SpinButton(self.tb, MenuManager.PITCH,style=wx.SP_VERTICAL)
+        self.tb.AddControl(self.pitch)
+        self.currWidth+=self.pitch.GetSize()[0]
+        if self.currWidth+toolSize>=self.maxWidth:self.tb=self.tb2
+        
+        self.yaw=wx.SpinButton(self.tb, MenuManager.YAW,style=wx.SP_VERTICAL)
+        self.tb.AddControl(self.yaw)
+        self.currWidth+=self.yaw.GetSize()[0]
+        if self.currWidth+toolSize>=self.maxWidth:self.tb=self.tb2
+        
+        self.roll=wx.SpinButton(self.tb, MenuManager.ROLL,style=wx.SP_VERTICAL)
+        self.tb.AddControl(self.roll)
+        self.currWidth+=self.roll.GetSize()[0]
+        if self.currWidth+toolSize>=self.maxWidth:self.tb=self.tb2
+
+        self.elevation=wx.SpinButton(self.tb, -1,style=wx.SP_VERTICAL)
+        self.tb.AddControl(self.elevation)
+        self.currWidth+=self.roll.GetSize()[0]
+        if self.currWidth+toolSize>=self.maxWidth:self.tb=self.tb2        
+
+        
+        self.pitch.Bind(wx.EVT_SPIN_UP, self.onPitchUp)
+        self.pitch.Bind(wx.EVT_SPIN_DOWN, self.onPitchDown)
+        self.yaw.Bind(wx.EVT_SPIN_UP, self.onYawUp)
+        self.yaw.Bind(wx.EVT_SPIN_DOWN, self.onYawDown)
+        self.roll.Bind(wx.EVT_SPIN_UP, self.onRollUp)
+        self.roll.Bind(wx.EVT_SPIN_DOWN, self.onRollDown)        
+        self.elevation.Bind(wx.EVT_SPIN_UP, self.onElevationUp)
+        self.elevation.Bind(wx.EVT_SPIN_DOWN, self.onElevationDown)  
+        # Since there will potentially be > 2 MIP items on the toolbar and they should be 
+        # in the same toolbar, make sure at least three of them will fit in the toolbar
+        if self.currWidth+3*toolSize>=self.maxWidth:self.tb=self.tb2        
         
         wx.EVT_TOOL(self.parent,MenuManager.ID_ZOOM_IN,self.zoomIn)
         wx.EVT_TOOL(self.parent,MenuManager.ID_ZOOM_OUT,self.zoomOut)
@@ -487,8 +515,43 @@ class Visualizer:
             self.toolWin2.SetDefaultSize((500,0))
             
         self.viewCombo.Enable(0)
-	self.menuManager.restoreItemToolbar() 
+        self.menuManager.restoreItemToolbar() 
         
+    def onElevationUp(self,evt):
+        if self.mode=="3d":
+            self.currMode.getRenderer().GetActiveCamera().Elevation(1)
+            self.currMode.Render()
+    def onElevationDown(self,evt):
+        if self.mode=="3d":
+            self.currMode.getRenderer().GetActiveCamera().Elevation(-1)
+            self.currMode.Render()        
+        
+    def onPitchUp(self,evt):
+        if self.mode=="3d":
+            self.currMode.getRenderer().GetActiveCamera().Pitch(1)
+            self.currMode.Render()
+    def onPitchDown(self,evt):
+        if self.mode=="3d":
+            self.currMode.getRenderer().GetActiveCamera().Pitch(-1)
+            self.currMode.Render()
+    def onRollUp(self,evt):
+        if self.mode=="3d":
+            self.currMode.getRenderer().GetActiveCamera().Roll(1)
+            self.currMode.Render()
+        
+    def onRollDown(self,evt):
+        if self.mode=="3d":
+            self.currMode.getRenderer().GetActiveCamera().Roll(-1)
+            self.currMode.Render()
+    def onYawUp(self,evt):
+        if self.mode=="3d":
+            self.currMode.getRenderer().GetActiveCamera().Yaw(1)    
+            self.currMode.Render()
+    
+    def onYawDown(self,evt):
+        if self.mode=="3d":
+            self.currMode.getRenderer().GetActiveCamera().Yaw(-1)    
+            self.currMode.Render()
     def onShowOriginal(self,evt,flag=1):
         """
         Method: onShowOriginal
@@ -821,8 +884,11 @@ class Visualizer:
             
         if not module.showZoomToolbar():
             self.toolWin.SetDefaultSize((500,0))
+            self.toolWin2.SetDefaultSize((500,0))
         else:
             self.toolWin.SetDefaultSize((500,44))
+            if self.tb==self.tb2:
+                self.toolWin2.SetDefaultSize((500,44))
             
 
 
@@ -842,7 +908,7 @@ class Visualizer:
         # call so the mode can still overwrite the timeslider behaviour
         # We restore the time slider if it's not a
         # transition from animator to 3d
-        if not (oldmode=="animator" and mode=="3d"):
+        if not ((oldmode=="animator" and mode=="3d") or (mode=="animator" and oldmode=="3d")):
             self.bindTimeslider(self.onUpdateTimepoint)
         self.currentWindow = modeinst.activate(self.sidebarWin)        
         

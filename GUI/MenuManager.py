@@ -39,7 +39,7 @@ ID_COLOCALIZATION   =103
 ID_COLORMERGING     =104
 ID_VSIA             =105
 ID_ADJUST           =106
-ID_RENDER           =107
+ID_VIS_ANIMATOR     =107
 ID_REEDIT           =108
 ID_TREE             =109
 ID_IMPORT           =110
@@ -138,6 +138,10 @@ ID_TOOL_WIN2        =191
 ID_ZOOM_COMBO       =192
 ORIG_BUTTON         =193
 CONTEXT_HELP        =194
+
+PITCH               =195
+YAW                 =196
+ROLL                =197
 class MenuManager:
     """
     Class: MenuManager
@@ -165,7 +169,7 @@ class MenuManager:
         self.itemBar = None
         self.mainToolbar=None
         self.toolIds=[]
-	self.tools={}
+        self.tools={}
         self.showToolNames=0
         
     def setMenuBar(self,menubar):
@@ -310,9 +314,9 @@ class MenuManager:
 #            self.itemBar.SetToolBitmapSize((32,32))
 
         self.itemBar=self.visualizer.tb
-	self.visualizer.tb.Bind(wx.EVT_TOOL,func,id=toolid)
-	
-	self.tools[toolid]=(name,bitmap,func)
+        self.visualizer.tb.Bind(wx.EVT_TOOL,func,id=toolid)
+    
+        self.tools[toolid]=(name,bitmap,func)
         self.itemBar.DoAddTool(toolid,name,bitmap,kind=wx.ITEM_CHECK)
         self.itemBar.Realize()
        
@@ -321,17 +325,16 @@ class MenuManager:
         Method: restoreItemToolbar
         Created: 06.09.2005, KP
         Description: Restore the MIP items to the toolbar
-        """	
-
-	if not self.visualizer:return
-	self.itemBar=self.visualizer.tb
-	print "toolids=",self.toolIds,"tools=",self.tools
-	for itemid in self.toolIds:
-	    name,bitmap,func=self.tools[itemid]
-	    self.itemBar.DoAddTool(itemid,name,bitmap,kind=wx.ITEM_CHECK)
-	    self.visualizer.tb.Bind(wx.EVT_TOOL,func,id=itemid)
-	self.itemBar.Realize()
-	
+        """ 
+        if not self.visualizer:return
+        self.itemBar=self.visualizer.tb
+        print "toolids=",self.toolIds,"tools=",self.tools
+        for itemid in self.toolIds:
+            name,bitmap,func=self.tools[itemid]
+            self.itemBar.DoAddTool(itemid,name,bitmap,kind=wx.ITEM_CHECK)
+            self.visualizer.tb.Bind(wx.EVT_TOOL,func,id=itemid)
+        self.itemBar.Realize()
+    
     def toggleTool(self,toolid,flag):
         """
         Method: toggleTool(toolid,flag)

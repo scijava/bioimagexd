@@ -524,10 +524,11 @@ class MainWindow(wx.Frame):
         tb.AddSeparator()
         
         bmp = wx.Image(os.path.join(iconpath,"task_animator.jpg"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
-        tb.DoAddTool(MenuManager.ID_RENDER,"Animator",bmp,shortHelp="Render the dataset using Animator")                
-        #wx.EVT_TOOL(self,MenuManager.ID_RENDER,self.onMenuAnimator)
-        wx.EVT_TOOL(self,MenuManager.ID_RENDER,self.onMenuVisualizer)
+        tb.DoAddTool(MenuManager.ID_VIS_ANIMATOR,"Animator",bmp,kind=wx.ITEM_CHECK,shortHelp="Render the dataset using Animator")                
+        #wx.EVT_TOOL(self,MenuManager.ID_VIS_ANIMATOR,self.onMenuAnimator)
+        wx.EVT_TOOL(self,MenuManager.ID_VIS_ANIMATOR,self.onMenuVisualizer)
 
+        self.visIds.append(MenuManager.ID_VIS_ANIMATOR)
         tb.Realize()
         self.menuManager.setMainToolbar(tb)
         
@@ -597,7 +598,7 @@ class MainWindow(wx.Frame):
         mgr.disable(MenuManager.ID_RENDERWIN)
         mgr.disable(MenuManager.ID_RELOAD)
         
-        wx.EVT_MENU(self,MenuManager.ID_RENDER,self.onMenuAnimator)
+        #wx.EVT_MENU(self,MenuManager.ID_VIS_ANIMATOR,self.onMenuAnimator)
         wx.EVT_MENU(self,MenuManager.ID_RELOAD,self.onMenuReload)
 
         mgr.addMenuItem("view",MenuManager.ID_VIEW_CONFIG,"&Configuration Panel","Show or hide the configuration panel",self.onMenuToggleVisibility,check=1,checked=1)
@@ -800,7 +801,7 @@ class MainWindow(wx.Frame):
             mode="slices"
         elif eid==MenuManager.ID_VIS_SECTIONS:
             mode="sections"
-        elif eid==MenuManager.ID_RENDER:
+        elif eid==MenuManager.ID_VIS_ANIMATOR:
             mode="animator"
         elif eid==MenuManager.ID_VIS_SIMPLE:
             mode="MIP"

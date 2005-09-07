@@ -187,14 +187,16 @@ class UrmasRenderer:
 #            print "self.renwin=",self.renwin
             self.ren = self.renderingInterface.getRenderer()
             self.cam = self.ren.GetActiveCamera()
+            do_use_cam=1
         else:
             self.cam = self.splineEditor.getCamera()
             self.ren = self.splineEditor.renderer       
+            do_use_cam=0
         duration = self.control.getDuration()
         frames = self.control.getFrames()
         spf = duration / float(frames)        
         frame=spf*timepos
-        self.renderFrame(frame,timepos,spf,preview=1,use_cam=1) 
+        self.renderFrame(frame,timepos,spf,preview=1,use_cam=do_use_cam) 
         
          
     def getTimepointAt(self,time):
@@ -266,9 +268,11 @@ class UrmasRenderer:
         
         timepoint = self.getTimepointAt(timepos)
         if (not preview) or use_cam:
+            Logging.info("Using self.ren as renderer",kw="animator")
             cam = self.ren.GetActiveCamera()
             ren=self.ren
         else:
+            Logging.info("Using splineEditor as renderer",kw="animator")
             cam = self.splineEditor.getCamera()
             ren=self.splineEditor.renderer
             

@@ -79,7 +79,16 @@ class KeyframeTrack(SplineTrack):
         dt = UrmasPalette.UrmasDropTarget(self,"Keyframe")
         self.SetDropTarget(dt)
         messenger.connect(None,"set_camera",self.onSetCamera)
+        messenger.connect(None,"show_time_pos",self.onDisableOverlay)
 
+    def onDisableOverlay(self,obj,evt,*arg):
+        """
+        Method: onDisableOverlay
+        Created: 7.09.2005, KP
+        Description: Disable the overlay when the user uses the timeslider
+        """        
+        self.overlayPos=-1
+        self.overlayItem=None
     def onDown(self,event):
         """
         Method: onDown
@@ -122,6 +131,7 @@ class KeyframeTrack(SplineTrack):
         if self.renew != 2 and self.overlayPosInPixels:
             self.dc.Blit(self.overlayPosInPixels-1,0,self.overlayPosInPixelsEnd,self.height,self.mdc,self.overlayPosInPixels-1,0)                    
         
+        print "overlayPos=",self.overlayPos,"overlayItem=",self.overlayItem
         if self.overlayPos!=-1:
             if not self.overlayItem or (self.overlayPos != self.overlayItem.getPosition()[0]):
                 curr=None

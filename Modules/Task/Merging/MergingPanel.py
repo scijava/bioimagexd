@@ -114,24 +114,23 @@ class MergingPanel(TaskPanel.TaskPanel):
         self.restoreBtn.Bind(wx.EVT_BUTTON,self.intensityTransferEditor.restoreDefaults)
         self.box.Add(self.restoreBtn)        
         
-        self.editIntensityPanel.SetSizer(self.editIntensitySizer)
-        self.editIntensityPanel.SetAutoLayout(1)
-        
-        self.editIntensityPanel.Layout()
-        self.editIntensitySizer.Fit(self.editIntensityPanel)
 
-        self.editAlphaPanel=wx.Panel(self.settingsNotebook,-1)
+        # The alpha function doesn't need to be edited
+        # Code left if futher need shows ups
+        
+        #self.editAlphaPanel=wx.Panel(self.settingsNotebook,-1)
+        self.editAlphaPanel=wx.Panel(self.editIntensityPanel,-1)
         self.editAlphaSizer=wx.GridBagSizer()
         
-        self.alphaEditor=IntensityTransferEditor(self.editAlphaPanel)
-        self.alphaEditor.setIntensityTransferFunction(self.alphaTF)
-        self.alphaEditor.setAlphaMode(1)
-        self.editAlphaSizer.Add(self.alphaEditor,(0,0),span=(1,2))        
+        #self.alphaEditor=IntensityTransferEditor(self.editAlphaPanel)
+        #self.alphaEditor.setIntensityTransferFunction(self.alphaTF)
+        #self.alphaEditor.setAlphaMode(1)
+        #self.editAlphaSizer.Add(self.alphaEditor,(0,0),span=(1,2))        
         
-        self.alphaModeBox=wx.RadioBox(self.editAlphaPanel,-1,"Alpha mode",
+        self.alphaModeBox=wx.RadioBox(self.editAlphaPanel,-1,"Alpha channel construction",
         choices=["Maximum Mode","Average Mode","Image Luminance"],majorDimension=2,style=wx.RA_SPECIFY_COLS)
         
-        self.editAlphaSizer.Add(self.alphaModeBox,(1,0))
+        
         self.alphaModeBox.Bind(wx.EVT_RADIOBOX,self.modeSelect)
         
         self.averageLbl=wx.StaticText(self.editAlphaPanel,-1,"Average Threshold:")
@@ -141,12 +140,20 @@ class MergingPanel(TaskPanel.TaskPanel):
         box=wx.BoxSizer(wx.HORIZONTAL)
         box.Add(self.averageLbl)
         box.Add(self.averageEdit)
-        self.editAlphaSizer.Add(box,(2,0))
+        self.editAlphaSizer.Add(self.alphaModeBox,(0,0))
+        self.editAlphaSizer.Add(box,(1,0))
+        
         self.editAlphaPanel.SetSizer(self.editAlphaSizer)
         self.editAlphaSizer.Fit(self.editAlphaPanel)
+        self.editIntensitySizer.Add(self.editAlphaPanel,(4,0))
+
+        self.editIntensityPanel.SetSizer(self.editIntensitySizer)
+        self.editIntensityPanel.SetAutoLayout(1)
         
+        self.editIntensityPanel.Layout()
+        self.editIntensitySizer.Fit(self.editIntensityPanel)        
         self.settingsNotebook.AddPage(self.editIntensityPanel,"Intensity")
-        self.settingsNotebook.AddPage(self.editAlphaPanel,"Alpha Channel")
+        #self.settingsNotebook.AddPage(self.editAlphaPanel,"Alpha Channel")
         
 #        self.optionssizer.Add(self.intensityTransferEditor,(3,0))
 
