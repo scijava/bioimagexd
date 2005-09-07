@@ -165,6 +165,7 @@ class MenuManager:
         self.itemBar = None
         self.mainToolbar=None
         self.toolIds=[]
+	self.tools={}
         self.showToolNames=0
         
     def setMenuBar(self,menubar):
@@ -309,11 +310,28 @@ class MenuManager:
 #            self.itemBar.SetToolBitmapSize((32,32))
 
         self.itemBar=self.visualizer.tb
-        self.visualizer.toolWin.Bind(wx.EVT_TOOL,func,id=toolid)
-
+	self.visualizer.tb.Bind(wx.EVT_TOOL,func,id=toolid)
+	
+	self.tools[toolid]=(name,bitmap,func)
         self.itemBar.DoAddTool(toolid,name,bitmap,kind=wx.ITEM_CHECK)
         self.itemBar.Realize()
-        
+       
+    def restoreItemToolbar(self):
+        """
+        Method: restoreItemToolbar
+        Created: 06.09.2005, KP
+        Description: Restore the MIP items to the toolbar
+        """	
+
+	if not self.visualizer:return
+	self.itemBar=self.visualizer.tb
+	print "toolids=",self.toolIds,"tools=",self.tools
+	for itemid in self.toolIds:
+	    name,bitmap,func=self.tools[itemid]
+	    self.itemBar.DoAddTool(itemid,name,bitmap,kind=wx.ITEM_CHECK)
+	    self.visualizer.tb.Bind(wx.EVT_TOOL,func,id=itemid)
+	self.itemBar.Realize()
+	
     def toggleTool(self,toolid,flag):
         """
         Method: toggleTool(toolid,flag)

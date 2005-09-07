@@ -426,6 +426,8 @@ int vtkIntensityTransferFunction:: LineValue(int x) {
     int b;
     b = int(this->ReferencePoint[1]-this->Contrast*this->ReferencePoint[0]);
     return int(this->Contrast * x + b);
+//      int b=this->Brightness;
+//      return int(this->Contrast * x + ((255+b)/2.0)-this->Contrast*((255-b)/2.0));
 }
 
 void vtkIntensityTransferFunction::ComputeFunction(void) {
@@ -451,8 +453,8 @@ void vtkIntensityTransferFunction::ComputeFunction(void) {
     this->GammaStart[1]=gy0;
     this->GammaEnd[0]=gx1;
     this->GammaEnd[1]=gy1;  
-    this->ReferencePoint[0]=gx0+((gx1-gx0)/2.0);
-    this->ReferencePoint[1]=gy0+((gy1-gy0)/2.0);
+//    this->ReferencePoint[0]=gx0+((gx1-gx0)/2.0);
+//    this->ReferencePoint[1]=gy0+((gy1-gy0)/2.0);
 
     for(x = 0;x < this->ArraySize; x++) {
     

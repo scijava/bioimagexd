@@ -83,6 +83,7 @@ class Visualizer:
         self.zoomToFitFlag=1
         self.zoomFactor=1.0
         self.tb1=None
+	self.tb=None
         self.tb2=None
         self.z=0
         self.viewCombo = None
@@ -372,7 +373,7 @@ class Visualizer:
         self.tb2.SetToolBitmapSize((32,32)) 
         
         self.maxWidth=self.parent.GetSize()[0]
-        self.currWidth = 0
+        self.currWidth = 64
         self.tb = self.tb1
         toolSize=self.tb.GetToolSize()[0]
         
@@ -439,15 +440,14 @@ class Visualizer:
         self.tb.AddSeparator()
         self.currWidth+=self.tb.GetToolSeparation()
         
-        if self.currWidth+2*toolSize>=self.maxWidth:self.tb=self.tb2
-        
-        print "self.tb=",self.tb
+        if self.currWidth+90>=self.maxWidth:self.tb=self.tb2
+       
+	print "tb==tb2",self.tb==self.tb2
         self.origBtn=wx.Button(self.tb,MenuManager.ORIG_BUTTON,"Original")
         self.origBtn.SetHelpText("Use this button to show how the unprocessed dataset looks like.")
         self.origBtn.Bind(wx.EVT_LEFT_DOWN,lambda x:self.onShowOriginal(x,1))
         self.origBtn.Bind(wx.EVT_LEFT_UP,lambda x:self.onShowOriginal(x,0))
-        
-        
+                
         print "currWidth=",self.currWidth,"maxWidth=",self.maxWidth
         
         self.tb.AddControl(self.origBtn)
@@ -461,7 +461,11 @@ class Visualizer:
 
         self.cBtn = wx.ContextHelpButton(self.tb,MenuManager.CONTEXT_HELP)
         self.tb.AddControl(self.cBtn)
-        
+	self.currWidth+=self.cBtn.GetSize()[0]
+	
+	# Since there will potentially be > 2 MIP items on the toolbar and they should be 
+	# in the same toolbar, make sure at least three of them will fit in the toolbar
+	if self.currWidth+3*toolSize>=self.maxWidth:self.tb=self.tb2
         
         wx.EVT_TOOL(self.parent,MenuManager.ID_ZOOM_IN,self.zoomIn)
         wx.EVT_TOOL(self.parent,MenuManager.ID_ZOOM_OUT,self.zoomOut)
@@ -483,16 +487,7 @@ class Visualizer:
             self.toolWin2.SetDefaultSize((500,0))
             
         self.viewCombo.Enable(0)
-        
-        #self.organizeToolbar()
-        
-    def organizeToolbar(self):
-        """
-        Method: organizeToolbar
-        Created: 3.09.2005, KP
-        Description: Organize the toolbar depending on the window size
-        """        
-        pass
+	self.menuManager.restoreItemToolbar() 
         
     def onShowOriginal(self,evt,flag=1):
         """

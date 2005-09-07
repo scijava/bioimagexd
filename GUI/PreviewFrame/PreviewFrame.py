@@ -37,7 +37,6 @@ import ImageOperations
 
 import time
 
-from GUI import Events
 import Logging
 import Modules
 from DataUnit import CombinedDataUnit
@@ -401,8 +400,9 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
                 #self.blackImage=xor.GetOutput()
                 self.blackImage=vtk.vtkImageData()
                 self.blackImage.SetDimensions(dims)
+		self.blackImage.SetScalarTypeToUnsignedChar()
                 self.blackImage.SetNumberOfScalarComponents(3)
-                self.blackImage.SetExtent(extent)
+                self.blackImage.SetExtent(extent)		
                 self.blackImage.AllocateScalars()
             print "Preview = blackimage=",self.blackImage
             preview=self.blackImage

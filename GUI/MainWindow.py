@@ -369,7 +369,7 @@ class MainWindow(wx.Frame):
         Description: Updates the progress bar
         """
         t=time.time()
-        if arg not in [1.0, 100] and abs(t-self.progressTimeStamp)<0.1:
+        if arg not in [1.0, 100] and abs(t-self.progressTimeStamp)<1:
             return
 
         self.progressTimeStamp=t
