@@ -123,7 +123,7 @@ class UrmasPalette(wx.Panel):
         iconpath=reduce(os.path.join,["Icons"])
         p=wx.Panel(self,-1,size=(32,32))#,style=wx.RAISED_BORDER)
         self.ID_NEWTIMEPOINTTRACK=wx.NewId()
-        bmp=wx.Image(os.path.join(iconpath,"timepoint_track.jpg"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
+        bmp=wx.Image(os.path.join(iconpath,"timepoint_track.JPG"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
         self.newtimepointtrack=wx.StaticBitmap(p,self.ID_NEWTIMEPOINTTRACK,bmp,style=wx.RAISED_BORDER)
         self.newtimepointtrack.Bind(wx.EVT_MOTION,self.onToolNewTimepointTrack)        
         p.Bind(wx.EVT_MOTION,self.onToolNewTimepointTrack)        
@@ -134,7 +134,7 @@ class UrmasPalette(wx.Panel):
         
         p=wx.Panel(self,-1,size=(32,32))#,style=wx.RAISED_BORDER)
         self.ID_NEWSPLINETRACK=wx.NewId()
-        bmp=wx.Image(os.path.join(iconpath,"spline_track.jpg"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
+        bmp=wx.Image(os.path.join(iconpath,"spline_track.JPG"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
         self.newsplinetrack=wx.StaticBitmap(p,self.ID_NEWSPLINETRACK,bmp,style=wx.RAISED_BORDER)
         self.newsplinetrack.Bind(wx.EVT_MOTION,self.onToolNewSplineTrack)        
         p.Bind(wx.EVT_MOTION,self.onToolNewSplineTrack)        
@@ -145,7 +145,7 @@ class UrmasPalette(wx.Panel):
         
         p=wx.Panel(self,-1,size=(32,32))#,style=wx.RAISED_BORDER)
         self.ID_NEWKEYFRAMETRACK=wx.NewId()
-        bmp=wx.Image(os.path.join(iconpath,"keyframe_track.jpg"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
+        bmp=wx.Image(os.path.join(iconpath,"keyframe_track.JPG"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
         self.newkeyframetrack=wx.StaticBitmap(p,self.ID_NEWKEYFRAMETRACK,bmp,style=wx.RAISED_BORDER)
         self.newkeyframetrack.Bind(wx.EVT_MOTION,self.onToolNewKeyframeTrack)        
         p.Bind(wx.EVT_MOTION,self.onToolNewKeyframeTrack)        
