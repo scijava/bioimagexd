@@ -110,6 +110,14 @@ class DataSource:
         """    
         self.resampleDims=dims
         
+    def getResampleDimensions(self):
+        """
+        Method: getResampleDimensions
+        Created: 11.09.2005, KP
+        Description: Get the resample dimensions
+        """        
+        return self.resampleDims
+        
     def getResampledData(self,data,n):
         """
         Method: getResampledData
@@ -117,10 +125,11 @@ class DataSource:
         Description: Return the data resampled to given dimensions
         """
         if not self.resampleDims:return data
+        raise "FOo"
         if n==self.resampleTp and self.resample:
             return self.resample.GetOutput()
         else:
-            Logging.info("Resampling data to 512x512x25")
+            Logging.info("Resampling data to ",self.resampleDims,kw="dataunit")
             self.resample=vtk.vtkImageResample()
             self.resample.SetInput(data)
             x,y,z=data.GetDimensions()

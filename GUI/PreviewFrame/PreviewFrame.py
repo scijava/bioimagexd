@@ -392,7 +392,7 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
                 #xor.SetOperationToXor()
                 data=self.dataUnit.getSourceDataUnits()[0].getTimePoint(0)
                 #xor.AddInput(data)
-                #print "source=",data
+                
                 #xor.AddInput(data)
                 #xor.Update()
                 extent=data.GetExtent()
@@ -400,11 +400,11 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
                 #self.blackImage=xor.GetOutput()
                 self.blackImage=vtk.vtkImageData()
                 self.blackImage.SetDimensions(dims)
-		self.blackImage.SetScalarTypeToUnsignedChar()
+                self.blackImage.SetScalarTypeToUnsignedChar()
                 self.blackImage.SetNumberOfScalarComponents(3)
-                self.blackImage.SetExtent(extent)		
+                self.blackImage.SetExtent(extent)       
                 self.blackImage.AllocateScalars()
-            print "Preview = blackimage=",self.blackImage
+            
             preview=self.blackImage
             black=1
         self.currentImage=preview
@@ -433,7 +433,7 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
             Logging.info("No imagedata to preview",kw="preview")
             return
         else:
-            print "imagedata=",self.imagedata
+            
             self.slice=ImageOperations.vtkImageDataToWxImage(self.imagedata,z)
             
         Logging.info("Painting preview",kw="preview")

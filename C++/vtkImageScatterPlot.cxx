@@ -79,7 +79,7 @@ void vtkImageScatterPlot::ComputeInputUpdateExtents( vtkDataObject*output )
     {
         if (this->Inputs[idx] != NULL)
         {
-    //	    this->Inputs[idx]->SetUpdateExtent( this->Inputs[idx]->GetWholeExtent() );
+    //      this->Inputs[idx]->SetUpdateExtent( this->Inputs[idx]->GetWholeExtent() );
             this->Inputs[idx]->SetUpdateExtent( inExt);
         }
     }
@@ -109,14 +109,16 @@ void vtkImageScatterPlotExecute(vtkImageScatterPlot *self, int id,int NumberOfIn
         inPtrs[i]=(T*)inData[i]->GetScalarPointerForExtent(inExt);
     }
     int countvox=self->GetCountVoxels();
-    
-    long*outLongPtr=(long*)outData->GetScalarPointerForExtent(outExt);
-    T*outPtr=(T*)outData->GetScalarPointerForExtent(outExt);
-//    inData[0]->GetContinuousIncrements(inExt,inIncX, inIncY, inIncZ);
     inData[0]->GetIncrements(inIncX,inIncY,inIncZ);
     maxX = inExt[1] - inExt[0];
     maxY = inExt[3] - inExt[2];
     maxZ = inExt[5] - inExt[4];
+    
+    long*outLongPtr=(long*)outData->GetScalarPointerForExtent(outExt);
+    T*outPtr=(T*)outData->GetScalarPointerForExtent(outExt);
+    for(int i=0;i<maxX*maxY;i++)*outPtr++=0;    
+    outPtr=(T*)outData->GetScalarPointerForExtent(outExt);        
+//    inData[0]->GetContinuousIncrements(inExt,inIncX, inIncY, inIncZ);
     
     T redScalar = 0, greenScalar = 0;
     //double outScalar = 0;

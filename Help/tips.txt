@@ -4,3 +4,4 @@ You can toggle logarithmic scaling of channel histograms by right-clicking on th
 You should report any problems you have to the BioImageXD Bug Tracking System at http://www.bioimagexd.org/
 You can download the latest release of BioImageXD at http://www.bioimagexd.org/
 You can use the Control-key to select or de-select multiple datasets in the file tree.
+You can resample datasets to a smaller size if you do not have enough memory to open them. Resampled datasets are marked with red color and an asterisk (*) in the file tree.

@@ -58,6 +58,18 @@ infoString="""<html><body bgcolor=%(bgcolor)s">
 </table>
 </body></html>
 """
+infoStringResample="""<html><body bgcolor=%(bgcolor)s">
+<table>
+<tr><td>Resampled dimensions:</td><td>%(rxdim)d %(smX)s %(rydim)d %(smX)s %(rzdim)d (%(nf)s%(rxdimm).2f%(fe)s&mu;m %(smX)s %(nf)s%(rydimm).2f%(fe)s&mu;m %(smX)s %(nf)s%(rzdimm).2f%(fe)s&mu;m)</td></tr>
+<tr><td>Original dimensions:</td><td>%(xdim)d %(smX)s %(ydim)d %(smX)s %(zdim)d (%(nf)s%(xdimm).2f%(fe)s&mu;m %(smX)s %(nf)s%(ydimm).2f%(fe)s&mu;m %(smX)s %(nf)s%(zdimm).2f%(fe)s&mu;m)</td></tr>
+<tr><td>Time Points:</td><td>%(tps)d</td></tr>
+<tr><td>Voxel Size:</td><td>%(nf)s%(voxelX).2f%(fe)s&mu;m %(smX)s %(nf)s%(voxelY).2f%(fe)s&mu;m %(smX)s %(nf)s%(voxelZ).2f%(fe)s&mu;m</td></tr>
+<tr><td>Spacing:</td><td>%(spX).2f %(smX)s %(spY).2f %(smX)s %(spZ).2f</td></tr>
+<tr><td>Data type:</td><td>%(bitdepth)d bit</td></tr>
+<tr><td>Intensity range:</td><td>%(intlower)d - %(intupper)d</td></tr>
+</table>
+</body></html>
+"""
 #"
 class InfoWidget(wx.Panel):
     """
@@ -123,6 +135,7 @@ class InfoWidget(wx.Panel):
         """
         if not dataunit:
             dims=(0,0,0)
+            resampledims=(0,0,0)
             spacing=(0,0,0)
             voxelsize=(0,0,0)
             bitdepth=8
@@ -131,6 +144,7 @@ class InfoWidget(wx.Panel):
             tps=0
         else:
             dims=dataunit.getDimensions()
+            resampledims=dataunit.dataSource.getResampleDimensions()
             spacing=dataunit.getSpacing()
             voxelsize=dataunit.getVoxelSize()
             bitdepth=dataunit.getBitDepth()
@@ -158,17 +172,26 @@ class InfoWidget(wx.Panel):
         voxelY*=1000000
         voxelZ*=1000000
         spX,spY,spZ=spacing
-        
+            
+        if resampledims:
+            rxdim,rydim,rzdim=resampledims
+        else:
+            rxdim,rydim,rzdim=0,0,0
         col=self.GetBackgroundColour()
         bgcol="#%2x%2x%2x"%(col.Red(),col.Green(),col.Blue())
         dict={"smX":smX,"xdim":xdim,"ydim":ydim,"zdim":zdim,
         "voxelX":voxelX,"voxelY":voxelY,"voxelZ":voxelZ,
+        "rxdim":rxdim,"rydim":rydim,"rzdim":rzdim,
+        "rxdimm":rxdim*voxelX,"rydimm":rydim*voxelY,"rzdimm":rzdim*voxelZ,
         "spX":spX,"spY":spY,"spZ":spZ,"xdimm":xdim*voxelX,
         "ydimm":ydim*voxelY,"zdimm":zdim*voxelZ,"bgcolor":bgcol,
         "fe":"</font>","nf":"<font size=\"normal\">",
         "tps":tps,"bitdepth":bitdepth,"intlower":intlower,"intupper":intupper}
         
-        self.htmlpage.SetPage(infoString%dict)
+        if resampledims and resampledims!=(0,0,0):
+            self.htmlpage.SetPage(infoStringResample%dict)
+        else:
+            self.htmlpage.SetPage(infoString%dict)
     
     def createInfoNotebook(self):
         """

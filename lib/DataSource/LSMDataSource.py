@@ -181,7 +181,7 @@ class LsmDataSource(DataSource.DataSource):
             self.shift.SetScale(scale)
             self.shift.Update()
             data=self.shift.GetOutput()
-        data=self.getResampledData(data,i)            
+        #data=self.getResampledData(data,i)            
         data.ReleaseDataFlagOff()
         return data
     def getFileName(self):

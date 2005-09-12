@@ -656,12 +656,22 @@ class MainWindow(wx.Frame):
         Created: 1.09.2005, KP
         Description: Resize data to be smaller or larger
         """
-        selectedFiles=self.tree.getSelectedDataUnits()
+        #selectedFiles=self.tree.getSelectedDataUnits()
+        selectedFiles,items = self.tree.getSelectionContainer()
+        print selectedFiles
         if not selectedFiles:
             return
         dlg=ResampleDialog.ResampleDialog(self)
-        dlg.setDataUnit(selectedFiles[0])
-        dlg.Show()
+        dlg.setDataUnits(selectedFiles)
+        dlg.ShowModal()
+        if dlg.result==1:
+            self.tree.markRed(items,"*")
+            self.infoWidget.updateInfo(None,None,None)
+            mode=self.visualizer.mode
+            unit=self.visualizer.dataUnit
+            self.visualizer.closeVisualizer()
+            self.loadVisualizer(unit,mode)
+#            self.loadVisualizer(None,self.visualizer.mode,reload=1)        
         
         
 

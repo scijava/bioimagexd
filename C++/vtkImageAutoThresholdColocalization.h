@@ -156,7 +156,34 @@ public:
   // Colocalization percentage
   vtkGetMacro(ColocPercent,double);
   vtkSetMacro(ColocPercent,double);    
-
+      
+  // Description:
+  // Differential staining calculated using intensity / voxel amount
+  //
+  // Differential staining
+  // Is calculated as the percentage of one channel to another
+  // Where the colocalized voxels are subtracted from the second channel
+  //
+  //             I_r + I_coloc
+  // DiffStain = ------------------
+  //             I_g - I_coloc
+  // Where I_coloc is the sum of intensities of colocalized voxels in green
+  // channel
+  vtkGetMacro(DiffStainIntCh1,double);
+  vtkSetMacro(DiffStainIntCh1,double);
+  // Description:
+  // Differential staining calculated using intensity / voxel amount
+  vtkGetMacro(DiffStainVoxelsCh1,double);
+  vtkSetMacro(DiffStainVoxelsCh1,double);
+  // Description:
+  // Differential staining calculated using intensity / voxel amount
+  vtkGetMacro(DiffStainIntCh2,double);
+  vtkSetMacro(DiffStainIntCh2,double);
+  // Description:
+  // Differential staining calculated using intensity / voxel amount
+  vtkGetMacro(DiffStainVoxelsCh2,double);
+  vtkSetMacro(DiffStainVoxelsCh2,double);     
+      
 protected:
   vtkImageAutoThresholdColocalization();
   ~vtkImageAutoThresholdColocalization();
@@ -208,6 +235,10 @@ private:
   double SumCh1;
   double SumCh2;
       
+  double DiffStainIntCh1;
+  double DiffStainVoxelsCh1; 
+  double DiffStainIntCh2;
+  double DiffStainVoxelsCh2;       
 
   double Slope;
   double Intercept;

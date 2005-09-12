@@ -84,19 +84,8 @@ public:
     LastMTime=this->GetMTime();
     return this->Function;
   }
-  
-  // Description:
-  // Returns the min and max point locations of the function.
-  int *GetRange();
 
-  // Description:
-  // Return the type of function:
-  // Function Types:
-  //    0 : Constant        (No change in slope between end points)
-  //    1 : NonDecreasing   (Always increasing or zero slope)
-  //    2 : NonIncreasing   (Always decreasing or zero slope)
-  //    3 : Varied          (Contains both decreasing and increasing slopes)
-  const char  *GetType();
+
 
   // Description:
   // Get the mtime of this object - override to consider the

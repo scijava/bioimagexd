@@ -132,88 +132,6 @@ int vtkIntensityTransferFunction::GetSize()
   return( this->ArraySize );
 }
 
-// Return the type of function stored in object:
-// Function Types:
-//    0 ) Constant        (No change in slope between end points)
-//    1 ) NonDecreasing   (Always increasing or zero slope)
-//    2 ) NonIncreasing   (Always decreasing or zero slope)
-//    3 ) Varied          (Contains both decreasing and increasing slopes)
-//    4 ) Unknown         (Error condition)
-//
-const char *vtkIntensityTransferFunction::GetType()
-{
-  int   i;
-  int value;
-  int prev_value = 0;
-  int   function_type;
-
-  this->Update();
-
-  function_type = 0;
-
-  if( this->FunctionSize )
-    {
-    prev_value = this->Function[0];
-    }
-
-  for( i=0; i < this->ArraySize; i++ )
-    {
-    value = this->Function[i];
-
-    // Do not change the function type if equal
-    if( value  !=  prev_value )
-      {
-      if( value > prev_value )
-        {
-        switch( function_type )
-          {
-          case 0:
-          case 1:
-            function_type = 1;  // NonDecreasing
-            break;
-          case 2:
-            function_type = 3;  // Varied
-            break;
-          }
-        }
-      else // value < prev_value
-        {
-        switch( function_type )
-          {
-          case 0:
-          case 2:
-            function_type = 2;  // NonIncreasing
-            break;
-          case 1:
-            function_type = 3;  // Varied
-            break;
-          }
-        } 
-      }
-
-    prev_value = value;
-
-    // Exit loop if we find a Varied function
-    if( function_type == 3 )
-      {
-      break;
-      }
-    }
-
-  switch( function_type )
-    {
-    case 0:
-      return( "Constant" );
-    case 1:
-      return( "NonDecreasing" );
-    case 2:
-      return( "NonIncreasing" );
-    case 3:
-      return( "Varied" );
-    }
-
-    return( "Unknown" );
-}
 
 int vtkIntensityTransferFunction::GetValue( int x ) {
     if(this->LastMTime < this->GetMTime()) this->ComputeFunction();
@@ -307,11 +225,6 @@ void vtkIntensityTransferFunction::RemoveAllPoints()
 }
 
 
-// Return the smallest and largest position stored in function
-int *vtkIntensityTransferFunction::GetRange()
-{
-  return( this->FunctionRange );
-}
 
 // Increase the size of the array used to store the function
 void vtkIntensityTransferFunction::IncreaseArraySize()

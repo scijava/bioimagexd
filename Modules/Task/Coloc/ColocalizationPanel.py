@@ -107,22 +107,28 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
                   "PercentageMaterialCh1":(n+5,1,fs,100),
                   "PercentageVolumeCh2":(n+6,0,fs,100),
                   "PercentageMaterialCh2":(n+6,1,fs,100),
-                  "PearsonWholeImage":(n+7,0,fs2),
-                  "PearsonImageAbove":(n+7,1,fs2),
-                  "PearsonImageBelow":(n+8,0,fs2),
+                  "PercentageTotalCh1":(n+7,0,fs,100),
+                  "PercentageTotalCh2":(n+8,0,fs,100),                  
+                  "PearsonWholeImage":(n+9,0,fs2),
+                  "PearsonImageAbove":(n+9,1,fs2),
+                  "PearsonImageBelow":(n+10,0,fs2),
 #                  "M1":(9,0,fs2),
 #                  "M2":(10,0,fs2),
-                  "ThresholdM1":(n+9,0,fs2),
-                  "ThresholdM2":(n+10,0,fs2),
-                  "K1":(n+11,0,fs2),
-                  "K2":(n+12,0,fs2),
+                  "ThresholdM1":(n+11,0,fs2),
+                  "ThresholdM2":(n+12,0,fs2),
+                  "K1":(n+13,0,fs2),
+                  "K2":(n+14,0,fs2),
                   
-                  "SumCh1":(n+13,0,ds),
-                  "SumOverThresholdCh1":(n+13,1,ds),
-                  "SumCh2":(n+14,0,ds),
-                  "SumOverThresholdCh2":(n+14,1,ds)
+                  "SumCh1":(n+15,0,ds),
+                  "SumOverThresholdCh1":(n+15,1,ds),
+                  "SumCh2":(n+16,0,ds),
+                  "SumOverThresholdCh2":(n+16,1,ds),
+                  "DiffStainVoxelsCh1":(n+17,0,fs2),
+                  "DiffStainIntCh1":(n+17,1,fs2),
+                  "DiffStainVoxelsCh2":(n+18,0,fs2),
+                  "DiffStainIntCh2":(n+18,1,fs2),                  
         }
-        
+     
         sources=[]
         if self.dataUnit:
             sources=self.dataUnit.getSourceDataUnits()                  
@@ -437,11 +443,11 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
         """
         self.listctrl.InsertColumn(0,"Quantity")
         self.listctrl.InsertColumn(1,"Total")
-        self.listctrl.InsertColumn(2,"Over threshold")
+        self.listctrl.InsertColumn(1,"")
         
         self.listctrl.SetColumnWidth(0,180)
         self.listctrl.SetColumnWidth(1,60)
-        self.listctrl.SetColumnWidth(2,120)
+        #self.listctrl.SetColumnWidth(2,120)
         n=0
         self.listctrl.InsertStringItem(n,"Ch1 Lower / Upper threshold")
         n+=1
@@ -453,9 +459,13 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
         n+=1
         self.listctrl.InsertStringItem(n,"% of volume colocalized")
         n+=1
-        self.listctrl.InsertStringItem(n,"% of ch 1 colocalized")
+        self.listctrl.InsertStringItem(n,"% of ch1 colocalized (voxels / intensity)")
         n+=1
-        self.listctrl.InsertStringItem(n,"% of ch 2 colocalized")
+        self.listctrl.InsertStringItem(n,"% of ch2 colocalized (voxels / intensity)")
+        n+=1
+        self.listctrl.InsertStringItem(n,"% of ch1 colocalized (total intensity)")
+        n+=1
+        self.listctrl.InsertStringItem(n,"% of ch2 colocalized (total intensity)")
         n+=1
         self.listctrl.InsertStringItem(n,"Correlation")
         n+=1
@@ -472,7 +482,10 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
         self.listctrl.InsertStringItem(n,"Sum of channel 1")
         n+=1
         self.listctrl.InsertStringItem(n,"Sum of channel 2")
-        
+        n+=1
+        self.listctrl.InsertStringItem(n,"Differential stain of ch1 to ch2 (voxels / intensity)") 
+        n+=1
+        self.listctrl.InsertStringItem(n,"Differential stain of ch2 to ch1 (voxels / intensity)")                
     def updateZSlice(self,obj,event,zslice):
         """
         Method: updateZSlice(event)

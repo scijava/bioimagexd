@@ -135,7 +135,44 @@ class TreeWidget(wx.SashLayoutWindow):
         """                
         w,h = self.GetClientSizeTuple()
         self.tree.SetDimensions(0,0,w,h)
-    
+        
+    def getSelectionContainer(self):
+        """
+        Method: getSelectionContainer
+        Created: 11.09.2005, KP
+        Description: Return the dataset that contains a channel
+        """         
+        selections=self.tree.GetSelections()
+        dataunits=[]
+        items=[]
+        for i in selections:
+            parent=self.tree.GetItemParent(i)
+            data=self.tree.GetPyData(parent)
+            if data =="2":
+                item,cookie=self.tree.GetFirstChild(parent)
+            else:
+                item,cookie=self.tree.GetFirstChild(parent)
+            while item.IsOk():
+                data=self.tree.GetPyData(item)
+                dataunits.append(data)
+                items.append(item)
+                item,cookie=self.tree.GetNextChild(item,cookie)
+                
+        return dataunits,items
+        
+    def markRed(self,items,appendchar=""):
+        """
+        Method: markRed(items)
+        Created: 11.09.2005, KP
+        Description: Mark given items red
+        """                
+        for item in items:
+            if appendchar!="":
+                txt=self.tree.GetItemText(item)
+                self.tree.SetItemText(item,txt+appendchar)
+            self.tree.SetItemTextColour(item,(255,0,0))
+        
+        
     def hasItem(self,path):
         """
         Method: hasItem(path)

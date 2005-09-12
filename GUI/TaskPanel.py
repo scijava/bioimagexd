@@ -86,6 +86,7 @@ class TaskPanel(scrolled.ScrolledPanel):
             self.createItemSelection=0
 
         n=0
+        self.channelBox=None
         if self.createItemSelection:
             self.channelBox = ChannelListBox.ChannelListBox(self, size=(250, 72), style=wx.BORDER_SUNKEN|wx.LB_NEEDED_SB)
             self.mainsizer.Add(self.channelBox,(n,0))
@@ -163,7 +164,8 @@ class TaskPanel(scrolled.ScrolledPanel):
             name = dataunit.getName()
             dc= wx.MemoryDC()
             bmp,pngstr=ImageOperations.vtkImageDataToPreviewBitmap(dataunit,0,None,30,30,getpng=1)
-            self.channelBox.setPreview(i,pngstr)
+            if self.channelBox:
+                self.channelBox.setPreview(i,pngstr)
             dc.SelectObject(bmp)
             dc.BeginDrawing()
             #dc.SetFont(wx.Font(8,wx.SWISS,wx.NORMAL,wx.BOLD))
@@ -196,7 +198,8 @@ class TaskPanel(scrolled.ScrolledPanel):
             self.toolMgr.toggleTool(toolid,1)
             self.dataUnit.setOutputChannel(i,1)
             n=n+1
-        self.channelBox.SetSelection(0)
+        if self.channelBox:
+            self.channelBox.SetSelection(0)
         return n
         
     def getResult(self):
@@ -409,7 +412,8 @@ class TaskPanel(scrolled.ScrolledPanel):
             ds=os.path.basename(ds)
             if ds not in fileNames:
                 fileNames.append(ds)
-        self.channelBox.setDataUnit(dataUnit)
+        if self.channelBox:
+            self.channelBox.setDataUnit(dataUnit)
         
         messenger.send(None,"current_file",", ".join(fileNames))         
         

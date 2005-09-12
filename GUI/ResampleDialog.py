@@ -55,7 +55,7 @@ class ResampleDialog(wx.Dialog):
         self.createResample()
         self.sizer.Add(self.btnsizer,(1,0),flag=wx.EXPAND|wx.RIGHT|wx.LEFT)
         wx.EVT_BUTTON(self,wx.ID_OK,self.onOkButton)
-        
+        self.result=0
         self.currSize=(512,512,25)
         self.SetSizer(self.sizer)
         self.SetAutoLayout(1)
@@ -67,18 +67,20 @@ class ResampleDialog(wx.Dialog):
         Created: 21.04.2005, KP
         Description: Executes the procedure
         """
-        self.dataUnit.dataSource.setResampleDimensions(self.currSize)
+        for i in self.dataUnits:
+            i.dataSource.setResampleDimensions(self.currSize)
+        self.result=1
         self.Close()
 
         
-    def setDataUnit(self,dataunit):
+    def setDataUnits(self,dataunits):
         """
-        Method: setDataUnit
+        Method: setDataUnits
         Created: 1.09.2005, KP
-        Description: Set the dataunit to be resampled
+        Description: Set the dataunits to be resampled
         """        
-        self.dataUnit=dataunit
-        x,y,z=dataunit.getDimensions()
+        self.dataUnits=dataunits
+        x,y,z=dataunits[0].getDimensions()
         self.dimsLbl.SetLabel(self.currDimText%(x,y,z))
         self.onUpdateDims(None)
         
@@ -95,7 +97,7 @@ class ResampleDialog(wx.Dialog):
         except:
             pass
         self.currSize=(rx,ry,rz)
-        x,y,z=self.dataUnit.getDimensions()
+        x,y,z=self.dataUnits[0].getDimensions()
         xf=rx/float(x)
         yf=ry/float(y)
         zf=rz/float(z)

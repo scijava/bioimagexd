@@ -108,6 +108,17 @@ class Scatterplot(InteractivePanel.InteractivePanel):
         self.actionend=None
         self.buffer = wx.EmptyBitmap(256,256)
         
+        messenger.connect(None,"timepoint_changed",self.onUpdateScatterplot)
+    
+    def onUpdateScatterplot(self,evt,obj,*args):
+        """
+        Method: onUpdateScatterplot
+        Created: 9.09.2005, KP
+        Description: Update the scatterplot when timepoint changes
+        """        
+        self.renew=1
+        self.setTimepoint(args[0])
+        self.updatePreview()
     def setScrollbars(self,xdim,ydim):
         """
         Method: setScrollbars(x,y)

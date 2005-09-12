@@ -131,14 +131,17 @@ class Colocalization(Module):
             Logging.info("Done!",kw="processing")
             for i in ["Ch1ThresholdMax","Ch2ThresholdMax","PearsonImageAbove",
                       "PearsonImageBelow","PearsonWholeImage","M1","M2",
-                      "K1","K2",
+                      "K1","K2","DiffStainIntCh1","DiffStainIntCh2",
+                      "DiffStainVoxelsCh1","DiffStainVoxelsCh2",
                       "ThresholdM1","ThresholdM2","Slope","Intercept",
                       "ColocAmount","ColocPercent","PercentageVolumeCh1",
                       "PercentageVolumeCh2","PercentageMaterialCh1","PercentageMaterialCh2",
                       "SumOverThresholdCh1","SumOverThresholdCh2","SumCh1","SumCh2"]:
                 method="self.colocAutoThreshold.Get%s()"%i
-                
+
                 val=eval(method)
+                if "DiffStain" in i:
+                    print i,val                
                 settings.set(i,val)
             t1=settings.get("Ch1ThresholdMax")
             t2=settings.get("Ch2ThresholdMax")

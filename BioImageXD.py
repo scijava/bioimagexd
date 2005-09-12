@@ -35,16 +35,21 @@ import os.path
 import os
 import sys
 import imp
-
+if "check" in sys.argv:
+    import pychecker.checker
+    import Logging
+    Logging.HIDE_DEBUG=Logging.KWS
 def main_is_frozen():
    return (hasattr(sys, "frozen") or # new py2exe
            hasattr(sys, "importers") # old py2exe
            or imp.is_frozen("__main__")) # tools/freeze
 
 def get_main_dir():
-   if main_is_frozen():
-       return os.path.dirname(sys.executable)
-   return os.path.dirname(sys.argv[0])
+    if "checker.py" in sys.argv[0]:
+        return "."
+    if main_is_frozen():
+        return os.path.dirname(sys.executable)
+    return os.path.dirname(sys.argv[0])
 todir=get_main_dir()
 
 #todir=os.path.dirname(__file__)
@@ -66,9 +71,8 @@ import Configuration
 # configuration file, or sensible defaults
 cfg=Configuration.Configuration("BioImageXD.ini")
 
-
-
 import lib
+
 import GUI
 import Visualizer
 import wx
@@ -92,8 +96,17 @@ class LSMApplication(wx.App):
                                  wx.SPLASH_CENTRE_ON_SCREEN | wx.SPLASH_TIMEOUT,
                                  3000, None, -1)
         splash.Show()
+         # Import Psyco if available
+        #try:
+            #import psyco
+
+            #psyco.log()
+            #psyco.profile()
+            #psyco.full()
+        #except ImportError:
+        #    pass        
         provider = wx.SimpleHelpProvider()
-        wx.HelpProvider_Set(provider)    
+        wx.HelpProvider_Set(provider)
     
         self.mainwin=GUI.MainWindow.MainWindow(None,-1,self,splash)
         self.mainwin.config=wx.Config("BioImageXD", style=wx.CONFIG_USE_LOCAL_FILE)        
@@ -116,12 +129,8 @@ if __name__=='__main__':
         from build_app import *
         build()
     else:
-        # Import Psyco if available
-        #try:
-        #    import psyco
-        #    psyco.full()
-        #except ImportError:
-        #    pass
+
+
         # If the main application is frozen, then we redirect logging
         # to  a log file
         if "tofile" in sys.argv or main_is_frozen():
@@ -136,5 +145,5 @@ if __name__=='__main__':
         app.run()
 
 
-        
+
 

@@ -64,7 +64,8 @@ class ColocalizationSettings(DataUnitSettings):
                   "Ch1ThresholdMax","Ch2ThresholdMax","PearsonImageAbove",
                   "PearsonImageBelow","PearsonWholeImage","M1","M2",
                   "ThresholdM1","ThresholdM2","Slope","Intercept",
-                  "K1","K2",
+                  "K1","K2","DiffStainIntCh1","DiffStainIntCh2",
+                      "DiffStainVoxelsCh1","DiffStainVoxelsCh2",
                   "ColocAmount","ColocPercent","PercentageVolumeCh1",
                   "PercentageVolumeCh2","PercentageMaterialCh1","PercentageMaterialCh2",
                   "SumOverThresholdCh1","SumOverThresholdCh2","SumCh1","SumCh2"]:
