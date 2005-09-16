@@ -109,7 +109,6 @@ class MainWindow(wx.Frame):
         self.progressCoeff=1.0
         self.progressShift=0.0
         
-        self.resampleDimensions=None
         
         self.taskPanels = Modules.DynamicLoader.getTaskModules()
         
@@ -990,8 +989,6 @@ class MainWindow(wx.Frame):
             Dialogs.showerror(self,"Failed to load file %s: Unrecognized extension %s"%(name,ext),"Unrecognized extension")
             return
         dataunits=[]
-        if self.resampleDimensions:
-            datasource.setResampleDimensions(self.resampleDimensions)
         try:
         #    Logging.info("Loading from data source ",datasource,kw="io")
             dataunits = datasource.loadFromFile(path)

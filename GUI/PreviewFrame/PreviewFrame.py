@@ -365,7 +365,7 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         if not self.enabled:
             Logging.info("Preview not enabled, won't render",kw="preview")
             return
-        self.updateColor()
+        #self.updateColor()
         if not self.running:
             renew=1
             self.running=1
@@ -404,15 +404,18 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
                 self.blackImage.SetNumberOfScalarComponents(3)
                 self.blackImage.SetExtent(extent)       
                 self.blackImage.AllocateScalars()
-            
+            #print "preview=",self.blackImage
             preview=self.blackImage
             black=1
         self.currentImage=preview
+        
         if not black:
             #print "Processing preview=",preview.GetDimensions()
             colorImage = self.processOutputData(preview)
         else:
             colorImage=preview
+        
+                    
         x,y,z=colorImage.GetDimensions()
         #print "Preview dims=",preview.GetDimensions()
         if x!=self.oldx or y!=self.oldy:
@@ -433,7 +436,6 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
             Logging.info("No imagedata to preview",kw="preview")
             return
         else:
-            
             self.slice=ImageOperations.vtkImageDataToWxImage(self.imagedata,z)
             
         Logging.info("Painting preview",kw="preview")
@@ -475,18 +477,38 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
             
             #print "Output from mip:",data
         if ncomps == 1:            
+            writer=vtk.vtkPNGWriter()
+            voi=vtk.vtkExtractVOI()
+            voi.SetInput(data)
+            voi.SetVOI(0,511,0,511,self.z,self.z)
+            voi.Update()
+            writer.SetInput(voi.GetOutput())
+            writer.SetFileDimensionality(2)
+            writer.SetFileName("foo.png")
+            writer.Write()                            
             Logging.info("Mapping trough ctf",kw="preview")
-            self.mapToColors.RemoveAllInputs()
+            #self.mapToColors.RemoveAllInputs()
+            self.mapToColors=vtk.vtkImageMapToColors()
             self.mapToColors.SetInput(data)
             
-            self.updateColor()
-            
+            #self.updateColor()
+            ctf=vtk.vtkColorTransferFunction()
+            ctf.AddRGBPoint(0,0,0,0)
+            ctf.AddRGBPoint(255.0,0,1.0,0)
+            self.currentCt=ctf
+            self.mapToColors.SetLookupTable(ctf)
+            self.mapToColors.SetOutputFormatToRGB()
+
             colorImage=self.mapToColors.GetOutput()
             colorImage.SetUpdateExtent(data.GetExtent())
             #print "upadte extent=",data.GetExtent()
-            self.mapToColors.Update()
+            
             #print "colorImage=",colorImage.GetDimensions()
+            self.mapToColors.Update()
             data=self.mapToColors.GetOutput()
+
+            #data.ReleaseDataFlagOff()
+            return data
             #print "data =",data.GetDimensions()
         else:
             pass
@@ -567,7 +589,10 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
             return
         if self.dataUnit:
             ct = self.settings.get("ColorTransferFunction")
-
+            #print "Mapping through",ct
+            #val=[0,0,0]
+            #ct.GetColor(255,val)
+            #print "value of 255=",val
             if self.selectedItem != -1:
                 ctc = self.settings.getCounted("ColorTransferFunction",self.selectedItem)            
                 if ctc:

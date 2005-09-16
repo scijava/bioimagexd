@@ -69,6 +69,7 @@ class ResampleDialog(wx.Dialog):
         """
         for i in self.dataUnits:
             i.dataSource.setResampleDimensions(self.currSize)
+        
         self.result=1
         self.Close()
 

@@ -137,6 +137,8 @@ class VtiDataSource(DataSource):
         Description: Returns the (x,y,z) dimensions of the datasets this 
                      dataunit contains
         """
+        if self.resampleDims:
+            return self.resampleDims        
         if not self.dimensions:
             data=self.getDataSet(0)
             self.readInfo(data)

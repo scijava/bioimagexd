@@ -277,6 +277,7 @@ class UrmasRenderer:
             ren=self.splineEditor.renderer
             
         if not preview and (timepoint != self.oldTimepoint):
+            Logging.info("Switching to timepoint",timepoint,kw="animator")
             # Set the timepoint to be used
             self.renderingInterface.setCurrentTimepoint(timepoint)
             # and update the renderer to use the timepoint
@@ -312,7 +313,8 @@ class UrmasRenderer:
             # keyframe interpolation
             minT=self.interpolator.GetMinimumT()
             maxT=self.interpolator.GetMaximumT()
-            print "maxT=",maxT,"timepos=",timepos
+            
+            #print "maxT=",maxT,"timepos=",timepos
             if self.interpolator and minT <= timepos and maxT >= timepos:
                 interpolated=1
                 Logging.info("Interpolating camera at ",timepos,kw="animator")
@@ -322,14 +324,14 @@ class UrmasRenderer:
                 point=self.lastpoint
 
         focal = self.splineEditor.getCameraFocalPointCenter()
-           
+        Logging.info("focal=",focal,"pos=",pos,kw="animator")
         if not interpolated and pos:
             self.setCameraParameters(cam,ren, pos, focal)
             
         if (not preview) or use_cam:
             self.renderingInterface.render()     
-
         else:
+            Logging.info("splineEditor.render()")
             self.splineEditor.render()
             time.sleep(0.1)
             
@@ -355,6 +357,7 @@ class UrmasRenderer:
         # if the track wishes to maintain up direction
         #cam.SetViewUp(viewUp)
         if self.currTrack and self.currTrack.maintainUpDirection:
+            Logging.info("Orthogonalize view up",kw="animator")
             cam.SetViewUp((0,0,1))
             cam.ComputeViewPlaneNormal()
             cam.OrthogonalizeViewUp()
@@ -363,6 +366,7 @@ class UrmasRenderer:
 #            print "lastpoint=",self.lastpoint,"point=",point
             if self.lastpoint and abs(self.lastpoint[2]-point[2])>2:
                 #print "Orthogonalizing because old z=",self.lastpoint[2],"!= new z",point[2]
+                Logging.info("Orthogonalize because oldz!=newz",kw="animator")
                 cam.OrthogonalizeViewUp()
         self.lastpoint=point
         

@@ -130,7 +130,10 @@ class UrmasPalette(wx.Panel):
         self.sizer.Add(p,flag=wx.RIGHT,border=2)
         p.Bind(               wx.EVT_LEFT_UP,self.onToolClick)
         self.newtimepointtrack.Bind(wx.EVT_LEFT_UP,self.onToolClick)
-
+        toolTip = wx.ToolTip("Drag this on to the timeline to add a track for controlling animated timepoints.")
+        self.newtimepointtrack.SetHelpText(toolTip.GetTip())
+        self.newtimepointtrack.SetToolTip(toolTip)        
+        p.SetToolTip(toolTip)
         
         p=wx.Panel(self,-1,size=(32,32))#,style=wx.RAISED_BORDER)
         self.ID_NEWSPLINETRACK=wx.NewId()
@@ -140,7 +143,10 @@ class UrmasPalette(wx.Panel):
         p.Bind(wx.EVT_MOTION,self.onToolNewSplineTrack)        
         p.Bind(               wx.EVT_LEFT_UP,self.onToolClick)
         self.newsplinetrack.Bind(wx.EVT_LEFT_UP,self.onToolClick)
-
+        toolTip = wx.ToolTip("Drag this on to the timeline to add a track for controlling the camera movement using a spline curve.")
+        self.newsplinetrack.SetHelpText(toolTip.GetTip())
+        self.newsplinetrack.SetToolTip(toolTip)        
+        p.SetToolTip(toolTip)
         self.sizer.Add(p,flag=wx.RIGHT,border=2)
         
         p=wx.Panel(self,-1,size=(32,32))#,style=wx.RAISED_BORDER)
@@ -151,7 +157,10 @@ class UrmasPalette(wx.Panel):
         p.Bind(wx.EVT_MOTION,self.onToolNewKeyframeTrack)        
         p.Bind(               wx.EVT_LEFT_UP,self.onToolClick)
         self.newkeyframetrack.Bind(wx.EVT_LEFT_UP,self.onToolClick)
-
+        toolTip = wx.ToolTip("Drag this on to the timeline to add a track for controlling the camera movement by creating keyframes.")
+        self.newkeyframetrack.SetHelpText(toolTip.GetTip())
+        self.newkeyframetrack.SetToolTip(toolTip)        
+        p.SetToolTip(toolTip)
         self.sizer.Add(p,flag=wx.RIGHT,border=5)        
         
         self.ID_NEWSPLINE=wx.NewId()
@@ -164,7 +173,7 @@ class UrmasPalette(wx.Panel):
         toolTip = wx.ToolTip("Drag this on to a timepoint track to select visualized timepoints.")
         self.newtimepoint.SetHelpText(toolTip.GetTip())
         self.newtimepoint.SetToolTip(toolTip)        
-        
+        p.SetToolTip(toolTip)
         p.Bind(wx.EVT_MOTION,self.onToolNewTimepoint)
         p.Bind(                wx.EVT_LEFT_UP,self.onToolClick)
         self.newtimepoint.Bind(wx.EVT_LEFT_UP,self.onToolClick)

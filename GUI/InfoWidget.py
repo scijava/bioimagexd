@@ -60,8 +60,7 @@ infoString="""<html><body bgcolor=%(bgcolor)s">
 """
 infoStringResample="""<html><body bgcolor=%(bgcolor)s">
 <table>
-<tr><td>Resampled dimensions:</td><td>%(rxdim)d %(smX)s %(rydim)d %(smX)s %(rzdim)d (%(nf)s%(rxdimm).2f%(fe)s&mu;m %(smX)s %(nf)s%(rydimm).2f%(fe)s&mu;m %(smX)s %(nf)s%(rzdimm).2f%(fe)s&mu;m)</td></tr>
-<tr><td>Original dimensions:</td><td>%(xdim)d %(smX)s %(ydim)d %(smX)s %(zdim)d (%(nf)s%(xdimm).2f%(fe)s&mu;m %(smX)s %(nf)s%(ydimm).2f%(fe)s&mu;m %(smX)s %(nf)s%(zdimm).2f%(fe)s&mu;m)</td></tr>
+<tr><td>Resampled dimensions:</td><td>%(xdim)d %(smX)s %(ydim)d %(smX)s %(zdim)d (%(nf)s%(xdimm).2f%(fe)s&mu;m %(smX)s %(nf)s%(ydimm).2f%(fe)s&mu;m %(smX)s %(nf)s%(zdimm).2f%(fe)s&mu;m)</td></tr>
 <tr><td>Time Points:</td><td>%(tps)d</td></tr>
 <tr><td>Voxel Size:</td><td>%(nf)s%(voxelX).2f%(fe)s&mu;m %(smX)s %(nf)s%(voxelY).2f%(fe)s&mu;m %(smX)s %(nf)s%(voxelZ).2f%(fe)s&mu;m</td></tr>
 <tr><td>Spacing:</td><td>%(spX).2f %(smX)s %(spY).2f %(smX)s %(spZ).2f</td></tr>

@@ -173,6 +173,7 @@ class Visualizer:
         self.sliderWin.SetAlignment(wx.LAYOUT_BOTTOM)
         self.sliderWin.SetSashVisible(wx.SASH_TOP,False)
         self.sliderWin.SetDefaultSize((500,64))
+        self.sliderWin.origSize=(500,64)
         
         self.zsliderWin=wx.SashLayoutWindow(self.parent,MenuManager.ID_ZSLIDER_WIN,style=wx.NO_BORDER|wx.SW_3D)
         self.zsliderWin.SetOrientation(wx.LAYOUT_VERTICAL)
@@ -181,6 +182,7 @@ class Visualizer:
         self.zsliderWin.SetSashVisible(wx.SASH_LEFT,False)
         self.zsliderWin.SetDefaultSize((32,768))        
         self.zsliderWin.origSize=(32,768)
+        #self.zText=wx.StaticText(self.zsliderWin,-1,"Z")
         
         self.createSliders()
 
@@ -217,7 +219,7 @@ class Visualizer:
         self.next.Bind(wx.EVT_BUTTON,self.onNextTimepoint)
         
         self.timeslider=wx.Slider(self.sliderPanel,value=1,minValue=1,maxValue=1,
-        style=wx.SL_HORIZONTAL|wx.SL_LABELS)
+        style=wx.SL_HORIZONTAL|wx.SL_LABELS|wx.SL_AUTOTICKS)
         self.timeslider.SetHelpText("Use this slider to select the displayed timepoint.")
         self.bindTimeslider(self.onUpdateTimepoint)
 
@@ -898,18 +900,30 @@ class Visualizer:
         self.currMode=modeinst
         self.currModeModule=module
         
+        
+        if mode=="animator":
+            self.sliderWin.SetDefaultSize(self.sliderWin.origSize)        
+
         if self.dataUnit:
             count=self.dataUnit.getLength()
+            if count==1:
+                self.sliderWin.SetDefaultSize((0,0))
+            else:
+                self.sliderWin.SetDefaultSize(self.sliderWin.origSize)
             # We restore the time slider if it's not a
             # transition from animator to 3d
             if not ((oldmode=="animator" and mode=="3d") or (mode=="animator" and oldmode=="3d")):
-                self.timeslider.SetRange(1,count)        
+                self.timeslider.SetRange(1,count) 
+            else:
+                self.sliderWin.SetDefaultSize(self.sliderWin.origSize)        
         # We restore the default binding, but before the activate()
         # call so the mode can still overwrite the timeslider behaviour
         # We restore the time slider if it's not a
         # transition from animator to 3d
         if not ((oldmode=="animator" and mode=="3d") or (mode=="animator" and oldmode=="3d")):
             self.bindTimeslider(self.onUpdateTimepoint)
+        else:
+            self.sliderWin.SetDefaultSize(self.sliderWin.origSize)        
         self.currentWindow = modeinst.activate(self.sidebarWin)        
         
         self.sidebarWin.SetDefaultSize((0,1024))
@@ -1024,9 +1038,14 @@ class Visualizer:
         count=dataunit.getLength()
         Logging.info("Setting range to %d"%count,kw="visualizer")
         self.maxTimepoint=count-1
+        if count==1:
+            self.sliderWin.SetDefaultSize((0,0))
+        else:
+            self.sliderWin.SetDefaultSize(self.sliderWin.origSize)        
         self.timeslider.SetRange(1,count)
         
         x,y,z=dataunit.getDimensions()
+        print "Dataset dimensions = ",x,y,z
         self.zslider.SetRange(1,z)
         
         showItems=0
@@ -1043,6 +1062,7 @@ class Visualizer:
             self.currMode.setTimepoint(self.timepoint)
         if self.histogramIsShowing:
             self.createHistogram()             
+        self.OnSize(None)
             
     def updateRendering(self,event=None,object=None,delay=0):
         """

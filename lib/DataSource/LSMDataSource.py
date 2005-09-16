@@ -133,6 +133,8 @@ class LsmDataSource(DataSource.DataSource):
         Description: Returns the (x,y,z) dimensions of the datasets this 
                      dataunit contains
         """
+        if self.resampleDims:
+            return self.resampleDims
         if not self.dimensions:
             self.dimensions=self.reader.GetDimensions()
         return self.dimensions[0:3]
@@ -181,9 +183,11 @@ class LsmDataSource(DataSource.DataSource):
             self.shift.SetScale(scale)
             self.shift.Update()
             data=self.shift.GetOutput()
-        #data=self.getResampledData(data,i)            
+        
+        data=self.getResampledData(data,i)            
         data.ReleaseDataFlagOff()
         return data
+        
     def getFileName(self):
         """
         Method: getFileName()

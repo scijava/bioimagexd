@@ -124,8 +124,11 @@ class DataSource:
         Created: 1.09.2005, KP
         Description: Return the data resampled to given dimensions
         """
+        dims=data.GetDimensions()
+        if dims[0]*dims[1]>(1024*1024):
+            self.resampleDims=(1024,1024,dims[2])
         if not self.resampleDims:return data
-        raise "FOo"
+        
         if n==self.resampleTp and self.resample:
             return self.resample.GetOutput()
         else:
