@@ -418,7 +418,7 @@ def fire(x0,x1):
     greens=[0,0,0,0,0,0,0,0,0,0,0,0,0,14,35,57,79,101,117,133,147,161,175,190,205,219,234,248,255,255,255,255]
     blues=[31,61,96,130,165,192,220,227,210,181,151,122,93,64,35,5,0,0,0,0,0,0,0,0,0,0,0,35,98,160,223,255]
     n=min(len(reds),len(greens),len(blues))
-    div=x1/n
+    div=x1/float(n)
     
     ctf=vtk.vtkColorTransferFunction()
     ctf.AddRGBPoint(0,0,0,0)
@@ -570,15 +570,31 @@ def scatterPlot(imagedata1,imagedata2,z,countVoxels, wholeVolume,logarithmic=1):
     Created: 25.03.2005, KP
     Description: Create scatterplot
     """       
-    scatter=vtk.vtkImageScatterPlot()
+    #Logging.info("extents of source data=",imagedata1.GetExtent(),imagedata2.GetExtent())
+    #scatter=vtk.vtkImageScatterPlot()
     if not wholeVolume:
+        Logging.info("Using slice ",z," for scatterplot")
         scatter.SetZSlice(z)
     if countVoxels:
-        scatter.CountVoxelsOn()
-    scatter.AddInput(imagedata1)
-    scatter.AddInput(imagedata2)
-    scatter.Update()
-    data=scatter.GetOutput()
+        Logging.info("Counting voxels")
+        #scatter.CountVoxelsOn()
+    imagedata1.SetUpdateExtent(imagedata1.GetWholeExtent())
+    imagedata2.SetUpdateExtent(imagedata1.GetWholeExtent())
+    #scatter.AddInput(imagedata1)
+    #scatter.AddInput(imagedata2)
+    #scatter.Update()
+    #data=scatter.GetOutput()
+    app=vtk.vtkImageAppendComponents()
+    app.AddInput(imagedata1)
+    app.AddInput(imagedata2)
+    #app.Update()
+    acc=vtk.vtkImageAccumulate()
+    
+    acc.SetComponentExtent(0,255,0,255,0,0)
+    acc.SetInput(app.GetOutput())
+    acc.Update()
+    data=acc.GetOutput()
+    
 #    Logging.info("Scatterplot has dimensions:",data.GetDimensions(),kw="imageop")
     if logarithmic:
         Logging.info("Scaling scatterplot logarithmically",kw="imageop")
@@ -590,10 +606,12 @@ def scatterPlot(imagedata1,imagedata2,z,countVoxels, wholeVolume,logarithmic=1):
     x0,x1=data.GetScalarRange()
     #print "max=",x1
     scale=255.0/x1
+    
     #print "scale=",scale
     shiftscale=vtk.vtkImageShiftScale()
-    shiftscale.SetOutputScalarTypeToUnsignedShort()
+    shiftscale.SetOutputScalarTypeToUnsignedChar()
     shiftscale.SetScale(scale)
+    
     shiftscale.SetInput(data)
     shiftscale.Update()
     data=shiftscale.GetOutput()
@@ -603,8 +621,8 @@ def scatterPlot(imagedata1,imagedata2,z,countVoxels, wholeVolume,logarithmic=1):
         x0,x1=data.GetScalarRange()
         Logging.info("Scalar range of scatterplot=",x0,x1,kw="imageop")
         ctf=fire(x0,x1)
-        n = scatter.GetNumberOfPairs()
-        Logging.info("Number of pairs=%d"%n,kw="imageop")
+        #n = scatter.GetNumberOfPairs()
+        #Logging.info("Number of pairs=%d"%n,kw="imageop")
         maptocolor=vtk.vtkImageMapToColors()
         maptocolor.SetInput(data)
         maptocolor.SetLookupTable(ctf)
@@ -613,9 +631,9 @@ def scatterPlot(imagedata1,imagedata2,z,countVoxels, wholeVolume,logarithmic=1):
         data=maptocolor.GetOutput()
     Logging.info("Scatterplot has dimensions:",data.GetDimensions(),data.GetExtent(),kw="imageop")                        
     data.SetWholeExtent(data.GetExtent())
-    print "data.GetWHoleExtent()=",data.GetWholeExtent()
+    #print "data.GetWholeExtent()=",data.GetWholeExtent()
     image=vtkImageDataToWxImage(data)
-    print "Image dims=",image.GetWidth(),image.GetHeight()
+    
     return image
     
 def getZoomFactor(x1,y1,x2,y2):

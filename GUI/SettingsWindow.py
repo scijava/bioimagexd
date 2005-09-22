@@ -51,7 +51,7 @@ class GeneralSettings(wx.Panel):
         
         self.imageBox=wx.StaticBox(self,-1,"Image Format",size=(600,150))
         self.imageBoxSizer=wx.StaticBoxSizer(self.imageBox,wx.VERTICAL)
-        self.imageBoxSizer.SetMinSize(self.imageBox.GetSize())
+#        self.imageBoxSizer.SetMinSize(self.imageBox.GetSize())
         
         self.lbl=wx.StaticText(self,-1,"Default format for Images:")
         self.choice=wx.Choice(self,-1,choices=["PNG","PNM","BMP","JPEG","TIFF"])
@@ -61,8 +61,18 @@ class GeneralSettings(wx.Panel):
         self.imageBoxSizer.Add(self.lbl)
         self.imageBoxSizer.Add(self.choice)
         
-        self.sizer.Add(self.imageBoxSizer,(0,0))
+        self.sizer.Add(self.imageBoxSizer,(1,0))
+
+        self.tipBox=wx.StaticBox(self,-1,"Startup tips")
+        self.tipBoxSizer=wx.StaticBoxSizer(self.tipBox,wx.VERTICAL)
+        self.tipCheckbox=wx.CheckBox(self,-1,"Show tips at startup")
+        self.tipBoxSizer.Add(self.tipCheckbox)
         
+        self.sizer.Add(self.tipBoxSizer,(0,0))
+ 
+#        self.imageBox=wx.StaticBox(self,-1,"Image Format",size=(600,150))
+#        self.imageBoxSizer=wx.StaticBoxSizer(self.imageBox,wx.VERTICAL)
+#        self.imageBoxSizer.SetMinSize(self.imageBox.GetSize())
         
         
         self.SetSizer(self.sizer)
@@ -79,6 +89,9 @@ class GeneralSettings(wx.Panel):
         format=self.choice.GetStringSelection()
         print "Setting format to ",format.lower()
         conf.setConfigItem("ImageFormat","Output",format.lower())
+        showTip=self.tipCheckbox.GetValue()
+        conf.setConfigItem("ShowTip","General",showTip)
+
         
 class PathSettings(wx.Panel):
     """

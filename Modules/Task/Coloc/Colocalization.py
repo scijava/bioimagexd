@@ -72,6 +72,8 @@ class Colocalization(Module):
         """
         Module.reset(self)
         self.colocFilter=vtk.vtkImageColocalizationFilter()
+        self.colocFilter.AddObserver("ProgressEvent",self.updateProgress)
+
         #self.colocFilter.GetOutput().ReleaseDataFlagOn()
         self.colocFilter.AddObserver("ProgressEvent",self.updateProgress)
         self.colocAutoThreshold=vtk.vtkImageAutoThresholdColocalization()
@@ -81,14 +83,14 @@ class Colocalization(Module):
         self.settingsLst=[]
         self.preview=None
         self.n=-1
-    
+
     def addInput(self,dataunit,data):
         """
         Method: addInput(data)
         Created: 03.11.2004, KP
         Description: Adds an input for the colocalization filter
         """
-        
+
         Module.addInput(self,dataunit,data)
         settings = dataunit.getSettings()
         self.settingsLst.append(settings)
@@ -96,8 +98,8 @@ class Colocalization(Module):
         th1=settings.get("ColocalizationUpperThreshold")
         self.thresholds.append((th0,th1))
         self.depth = self.settings.get("ColocalizationDepth")
-        
- 
+
+
     def getPreview(self,z):
         """
         Method: getPreview(z)
@@ -114,17 +116,20 @@ class Colocalization(Module):
         Created: 10.11.2004, KP
         Description: Does colocalization for the whole dataset
                      using doColocalizationXBit() where X is user defined
-        """        
-        
+        """
+
         Logging.info("Doing ",self.depth,"-bit colocalization",kw="processing")
+#        self.colocFilter=vtk.vtkImageColocalizationFilter()
+#        self.colocFilter.AddObserver("ProgressEvent",self.updateProgress)
         self.colocFilter.SetOutputDepth(self.depth)
 
-        
+
         settings = self.settingsLst[0]
-        if settings.get("CalculateThresholds"):
+        calcVal=settings.get("CalculateThresholds")
+        if calcVal:
             self.eventDesc="Calculating thresholds"
             Logging.info("Calculating thresholds...",kw="processing")
-            
+
             self.colocAutoThreshold.AddInput(self.images[0])
             self.colocAutoThreshold.AddInput(self.images[1])
             self.colocAutoThreshold.Update()
@@ -141,28 +146,35 @@ class Colocalization(Module):
 
                 val=eval(method)
                 if "DiffStain" in i:
-                    print i,val                
+                    print i,val
                 settings.set(i,val)
             t1=settings.get("Ch1ThresholdMax")
             t2=settings.get("Ch2ThresholdMax")
             l=[(t1,255),(t2,255)]
-            for i in range(0,2):
-                self.settingsLst[i].set("ColocalizationLowerThreshold",l[i][0])
-                self.settingsLst[i].set("ColocalizationUpperThreshold",l[i][1])
-            Logging.info("Threshold for Ch1 =",t1," and Ch2 =",t2,kw="processing")
-            self.thresholds=[(t1,255),(t2,255)]
+            # if CalculateThresholds == 1, then set the calculated thresholds
+            # if it's 2 then only the statistics need to be calculated
+            if calcVal==1:
+                for i in range(0,2):
+                    self.settingsLst[i].set("ColocalizationLowerThreshold",l[i][0])
+                    self.settingsLst[i].set("ColocalizationUpperThreshold",l[i][1])
+                Logging.info("Threshold for Ch1 =",t1," and Ch2 =",t2,kw="processing")
+                self.thresholds=[(t1,255),(t2,255)]
             self.settings.set("CalculateThresholds",0)
             #settings.set("ColocalizationScatterplot",self.colocFilter.GetOutput(1))
         self.eventDesc="Calculating colocalization..."
         outScalar=self.settings.get("OutputScalar")
-        Logging.info("Using ",outScalar," as output scalar",kw="processing")
-        self.colocFilter.SetOutputScalar(outScalar)
+        Logging.info("Using ",outScalar," as output scalar")#,kw="processing")
+        self.colocFilter.SetOutputScalarValue(outScalar)
+
         for i in range(len(self.images)):
             Logging.info("Using %d as lower and %d as upper threshold"%self.thresholds[i],kw="processing")
+
+#            print "Adding input %d"%i
             self.colocFilter.AddInput(self.images[i])
+
             self.colocFilter.SetColocalizationLowerThreshold(i,int(self.thresholds[i][0]))
             self.colocFilter.SetColocalizationUpperThreshold(i,int(self.thresholds[i][1]))
-        self.colocFilter.Update()        
+        self.colocFilter.Update()
 
         messenger.send(None,"update_progress",100,"Done.")
         

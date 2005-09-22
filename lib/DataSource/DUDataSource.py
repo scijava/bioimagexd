@@ -112,11 +112,13 @@ class VtiDataSource(DataSource):
             self.shift.SetInput(data)
             
             x0,x1=data.GetScalarRange()
+            print "Scalar range=",x0,x1
+            if not x1:
+                x1=1
             scale=255.0/x1
             self.shift.SetScale(scale)
             self.shift.Update()
             data=self.shift.GetOutput()
-        data.ReleaseDataFlagOff()        
         data.ReleaseDataFlagOff()
         return data
 

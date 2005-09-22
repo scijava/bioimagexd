@@ -146,7 +146,17 @@ class ImportDialog(wx.Dialog):
             elif n==1:
                 j=0
                 Logging.info("self.z=%d",self.z,kw="io")
-                for i in range(0,imgAmnt,self.z):
+                start=0
+                for i in range(0,imgAmnt):
+                    
+                    file=dir+os.path.sep+pattern%i
+                    print "CHecking ",file
+                    if os.path.exists(file):
+                        start=i
+                        Logging.info("Files start at %d"%i)
+                        break
+                    
+                for i in range(start,imgAmnt+start,self.z):
                     rdr = eval(self.rdrstr)
                     rdr.SetDataExtent(0,self.x-1,0,self.y-1,0,self.z-1)
                     rdr.SetDataSpacing(self.spacing)

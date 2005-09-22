@@ -110,7 +110,7 @@ template <class T> void smooth(T* inPtr,T*outPtr,int psf,int ext[6],bool horizon
     ymin=ext[2];
     ymax=ext[3];
     
-    printf("smoothing data with psf=%d, z=%d, uc=%d, vc=%d\n",psf,z,uc,vc);
+    //printf("smoothing data with psf=%d, z=%d, uc=%d, vc=%d\n",psf,z,uc,vc);
     //for(int i=0;i<size;i++)printf("kernel[%d]=%f\n",i,kernel[i]);
     bool edgePixel;
     double sum;
@@ -118,23 +118,31 @@ template <class T> void smooth(T* inPtr,T*outPtr,int psf,int ext[6],bool horizon
     int xedge = width - uc;
     int yedge = height - vc;
     int offset,i;
-    for(int y=ymin; y<ymax; y++) {
-            for(int x=xmin; x<xmax; x++) {
+    for(int y=ymin; y<=ymax; y++) {
+            for(int x=xmin; x<=xmax; x++) {
                 sum = 0.0;
                 i = 0;
                 edgePixel = y<vc || y>=yedge || x<uc || x>=xedge;
                 for(int v=-vc; v <= vc; v++) {
                     for(int u = -uc; u <= uc; u++) {
                         int nx,ny;
+                        nx=x+u;
+                        ny=y+v;
                         if (edgePixel) {
-                            if (x<=0) nx = 0;
-                            if (x>=width) nx = width-1;
-                            if (y<=0) ny = 0;
-                            if (y>=height) ny = height-1;
+                            //if (x<=0) nx = 0;
+                            //if (x>width) nx = width;
+                            //if (y<=0) ny = 0;
+                            //if (y>height) ny = height;
+                            
+                            if (nx<=0) nx = 0;
+                            if (nx>width) nx = width;
+                            if (ny<=0) ny = 0;
+                            if (ny>height) ny = height;
                             //sum += getPixel(x+u, y+v, inPtr, width, height)*kernel[i++];
+                            
                         } else {
-                                nx=x+u;
-                                ny=y+v;
+                         //nx=x+u;
+                         //       ny=y+v;       
                         }
                         //if(nx||ny)printf("nx=%d,ny=%d\n",nx,ny);
                         T val = GET_AT(nx,ny,z,inPtr);
@@ -241,8 +249,7 @@ template < class T >
     char progressText[300];  
     psf = (0.61*self->GetCh2Lambda())/self->GetNumericalAperture();
     psf = (psf)/(self->GetPixelSize()*1000);
-    if (self->GetManualPSFSize()) psf = self->GetManualPSFSize();
-  //printf("psf = %f\n",psf);
+    if (self->GetManualPSFSize()) psf = 2*self->GetManualPSFSize();
 
     int iterations = self->GetNumIterations();
  

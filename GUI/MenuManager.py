@@ -142,6 +142,8 @@ CONTEXT_HELP        =194
 PITCH               =195
 YAW                 =196
 ROLL                =197
+
+ID_HIDE_INFO        =198
 class MenuManager:
     """
     Class: MenuManager

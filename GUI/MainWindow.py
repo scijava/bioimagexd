@@ -246,11 +246,11 @@ class MainWindow(wx.Frame):
         """
         conf = Configuration.getConfiguration()
         showTip=conf.getConfigItem("ShowTip","General")
-        print "showTip=",showTip
+        #print "showTip=",showTip
         if showTip:
             showTip = eval(showTip)
         tipNumber = int(conf.getConfigItem("TipNumber","General"))
-        print "showtip=",showTip,type(showTip)
+        #print "showtip=",showTip,type(showTip)
         if showTip:
             f=open("Help/tips.txt","r")
             n=len(f.readlines())
@@ -273,6 +273,7 @@ class MainWindow(wx.Frame):
         if not self.currentTaskWindow:
             Logging.info("Setting dataset for visualizer=",data.__class__,kw="dataunit")
             self.visualizer.setDataUnit(data)
+            self.visualizer.updateRendering()
         
     def updateTitle(self,obj,evt,data):
         """
@@ -607,6 +608,7 @@ class MainWindow(wx.Frame):
         mgr.addMenuItem("view",MenuManager.ID_VIEW_TOOLBAR,"T&oolbar","Show or hide toolbar",self.onMenuToggleVisibility,check=1,checked=1)
         mgr.addMenuItem("view",MenuManager.ID_VIEW_HISTOGRAM,"&Histograms","Show or hide channel histograms",self.onMenuToggleVisibility,check=1,checked=0)
         mgr.addMenuItem("view",MenuManager.ID_VIEW_INFO,"&Dataset info","Show or hide information about the dataset",self.onMenuToggleVisibility,check=1,checked=1)
+        mgr.addMenuItem("view",MenuManager.ID_HIDE_INFO,"&Hide info windows\tAlt-Enter","Hide all info windows, giving visualizer maximum screen space",self.onMenuHideInfo)
         mgr.addSeparator("view")
         mgr.addMenuItem("view",MenuManager.ID_VIEW_TOOL_NAMES,"&Show tool names","Show or hide the names of the items on the toolbar",self.toggleToolNames,check=1)
         mgr.addSeparator("view")
@@ -649,6 +651,18 @@ class MainWindow(wx.Frame):
         self.GetToolBar().Destroy()
         self.createToolBar()
         
+    def onMenuHideInfo(self,evt):
+        """
+        Method: onMenuHideInfo
+        Created: 21.09.2005, KP
+        Description: Hide info windows, giving visualizer maximum screen estate
+        """        
+        self.GetToolBar().ToggleTool(MenuManager.ID_SHOW_TREE,0)
+        self.onMenuShowTree(None,0)
+        self.menuManager.check(MenuManager.ID_VIEW_INFO,0)
+        self.infoWin.SetDefaultSize((0,0))
+        self.OnSize(None)
+        self.visualizer.OnSize(None)        
     def onMenuResampleData(self,evt):
         """
         Method: onMenuResampleData

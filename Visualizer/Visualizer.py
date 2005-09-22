@@ -86,6 +86,10 @@ class Visualizer:
         self.tb=None
         self.tb2=None
         self.z=0
+        self.PitchStep=2
+        self.YawStep=2
+        self.RollStep=2
+        self.ElevationStep=5
         self.viewCombo = None
         self.histogramIsShowing=0
         self.histogramDataUnit=None
@@ -449,7 +453,7 @@ class Visualizer:
         self.origBtn.Bind(wx.EVT_LEFT_DOWN,lambda x:self.onShowOriginal(x,1))
         self.origBtn.Bind(wx.EVT_LEFT_UP,lambda x:self.onShowOriginal(x,0))
                 
-        print "currWidth=",self.currWidth,"maxWidth=",self.maxWidth
+        
         
         self.tb.AddControl(self.origBtn)
         self.currWidth+=self.origBtn.GetSize()[0]
@@ -484,6 +488,7 @@ class Visualizer:
         self.currWidth+=self.roll.GetSize()[0]
         if self.currWidth+toolSize>=self.maxWidth:self.tb=self.tb2        
 
+        
         
         self.pitch.Bind(wx.EVT_SPIN_UP, self.onPitchUp)
         self.pitch.Bind(wx.EVT_SPIN_DOWN, self.onPitchDown)
@@ -521,39 +526,40 @@ class Visualizer:
         
     def onElevationUp(self,evt):
         if self.mode=="3d":
-            self.currMode.getRenderer().GetActiveCamera().Elevation(1)
+            self.currMode.getRenderer().GetActiveCamera().Elevation(self.ElevationStep)
             self.currMode.Render()
     def onElevationDown(self,evt):
         if self.mode=="3d":
-            self.currMode.getRenderer().GetActiveCamera().Elevation(-1)
+            self.currMode.getRenderer().GetActiveCamera().Elevation(-self.ElevationStep)
             self.currMode.Render()        
         
     def onPitchUp(self,evt):
         if self.mode=="3d":
-            self.currMode.getRenderer().GetActiveCamera().Pitch(1)
+            self.currMode.getRenderer().GetActiveCamera().Pitch(self.PitchStep)
             self.currMode.Render()
     def onPitchDown(self,evt):
         if self.mode=="3d":
-            self.currMode.getRenderer().GetActiveCamera().Pitch(-1)
+            self.currMode.getRenderer().GetActiveCamera().Pitch(-self.PitchStep)
             self.currMode.Render()
     def onRollUp(self,evt):
         if self.mode=="3d":
-            self.currMode.getRenderer().GetActiveCamera().Roll(1)
+            self.currMode.getRenderer().GetActiveCamera().Roll(self.RollStep)
             self.currMode.Render()
         
     def onRollDown(self,evt):
         if self.mode=="3d":
-            self.currMode.getRenderer().GetActiveCamera().Roll(-1)
+            self.currMode.getRenderer().GetActiveCamera().Roll(-self.RollStep)
             self.currMode.Render()
     def onYawUp(self,evt):
         if self.mode=="3d":
-            self.currMode.getRenderer().GetActiveCamera().Yaw(1)    
+            self.currMode.getRenderer().GetActiveCamera().Yaw(self.YawStep)    
             self.currMode.Render()
     
     def onYawDown(self,evt):
         if self.mode=="3d":
-            self.currMode.getRenderer().GetActiveCamera().Yaw(-1)    
+            self.currMode.getRenderer().GetActiveCamera().Yaw(-self.YawStep)    
             self.currMode.Render()
+
     def onShowOriginal(self,evt,flag=1):
         """
         Method: onShowOriginal
@@ -941,6 +947,12 @@ class Visualizer:
         else:
             self.viewCombo.Enable(0)
 #            self.tb.EnableTool(MenuManager.ID_SET_VIEW,0)
+        if self.zoomToFitFlag:
+            self.currMode.zoomToFit()
+        else:
+            self.currMode.setZoomFactor(self.zoomFactor)        
+        if not self.zoomToFitFlag and hasattr(self.currMode,"getZoomFactor"):
+            self.setComboBoxToFactor(self.currMode.getZoomFactor())        
             
         if not modeinst.showSideBar():
             if self.sidebarWin.GetSize()[0]:
@@ -957,12 +969,12 @@ class Visualizer:
         self.currentWindow.Show()
         if hasattr(self.currentWindow,"enable"):
             self.currentWindow.enable(1)
-        if self.zoomToFitFlag:
-            self.currMode.zoomToFit()
-        else:
-            self.currMode.setZoomFactor(self.zoomFactor)        
-        if not self.zoomToFitFlag and hasattr(self.currMode,"getZoomFactor"):
-            self.setComboBoxToFactor(self.currMode.getZoomFactor())        
+#        if self.zoomToFitFlag:
+#            self.currMode.zoomToFit()
+#        else:
+#            self.currMode.setZoomFactor(self.zoomFactor)        
+#        if not self.zoomToFitFlag and hasattr(self.currMode,"getZoomFactor"):
+#            self.setComboBoxToFactor(self.currMode.getZoomFactor())        
         
         
         
@@ -1036,6 +1048,8 @@ class Visualizer:
         Logging.info("visualizer.setDataUnit(%s)"%str(dataunit),kw="visualizer")
         self.dataUnit = dataunit
         count=dataunit.getLength()
+        
+        
         Logging.info("Setting range to %d"%count,kw="visualizer")
         self.maxTimepoint=count-1
         if count==1:
@@ -1059,9 +1073,15 @@ class Visualizer:
         if self.enabled and self.currMode:           
             Logging.info("Setting dataunit to current mode",kw="visualizer")
             self.currMode.setDataUnit(self.dataUnit)
+            if self.zoomToFitFlag:
+                self.currMode.zoomToFit()
+            else:
+                self.currMode.setZoomFactor(self.zoomFactor)             
+
             self.currMode.setTimepoint(self.timepoint)
         if self.histogramIsShowing:
             self.createHistogram()             
+
         self.OnSize(None)
             
     def updateRendering(self,event=None,object=None,delay=0):

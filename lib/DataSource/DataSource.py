@@ -212,7 +212,7 @@ class DataSource:
             scalartype=data.GetScalarType()
             if scalartype==4:
                 self.bitdepth=16
-            if scalartype==5:
+            elif scalartype==5:
                 self.bitdepth=12
             elif scalartype==3:
                 self.bitdepth=8

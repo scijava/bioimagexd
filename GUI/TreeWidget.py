@@ -56,7 +56,9 @@ class TreeWidget(wx.SashLayoutWindow):
         
         self.tree.Bind(wx.EVT_TREE_SEL_CHANGED,self.onSelectionChanged,id=self.tree.GetId())    
         self.items={}
-    
+        self.greenitems=[]
+        self.yellowitems=[]
+        
         isz = (16,16)
         il = wx.ImageList(isz[0], isz[1])
         fldridx     = il.Add(wx.ArtProvider_GetBitmap(wx.ART_FOLDER,      wx.ART_OTHER, isz))
@@ -74,6 +76,8 @@ class TreeWidget(wx.SashLayoutWindow):
         self.lsmfiles=None
         self.leicafiles=None
         self.bxdfiles=None
+        
+        self.itemColor=(0,0,0)
         
         self.tree.Bind(wx.EVT_RIGHT_DOWN,self.onRightClick)
         self.Bind(wx.EVT_RIGHT_DOWN,self.onRightClick)
@@ -159,6 +163,39 @@ class TreeWidget(wx.SashLayoutWindow):
                 item,cookie=self.tree.GetNextChild(item,cookie)
                 
         return dataunits,items
+        
+        
+    def markGreen(self,items):
+        """
+        Method: markGreen(items)
+        Created: 16.09.2005, KP
+        Description: Mark given items green and set the old green item to default color
+        """                    
+        if self.greenitems:
+            for item in self.greenitems:
+                self.tree.SetItemBold(item,0)
+            pass
+        self.greenitems=items    
+        for item in items:
+            #if not item.IsOk():raise "Item not ok"
+            #print "Marking ",item,"green"
+            #self.itemColor=self.tree.GetItemTextColour(item)
+            self.tree.SetItemBold(item,1)
+            
+    def markYellow(self,items):
+        """
+        Method: markYellow(items)
+        Created: 16.09.2005, KP
+        Description: Mark given items yellow and set the old yellow item to default color
+        """        
+        if self.yellowitems:
+            for item in self.yellowitems:
+                self.tree.SetItemBackgroundColour(item,(255,255,255))
+            pass
+        self.yellowitems=items    
+        for item in items:
+            #self.itemColor=self.tree.GetItemTextColour(item)
+            self.tree.SetItemBackgroundColour(item,(255,255,0))    
         
     def markRed(self,items,appendchar=""):
         """
@@ -264,13 +301,37 @@ class TreeWidget(wx.SashLayoutWindow):
         Method: onSelectionChanged
         Created: 10.01.2005, KP
         Description: A event handler called when user selects and item.
-        """        
+        """      
+        #if event:
+        #    key=event.GetKeyEvent()
+        #    if key.ControlDown() or key.ShiftDown():
+        #        event.Skip()
+        #        return
+        if 0 or event:
+            pass
+            #self.item=event.GetItem()
+            #items=self.tree.GetSelections()
+            #item=items[-1]
+            #self.markGreen([item])
+            #items.remove(self.item)
+            #self.markYellow(items)
+            #wx.FutureCall(10,self.onSelectionChanged)
+            #return 1
+        #item=self.item
         if event:
-            self.item=event.GetItem()
-            wx.FutureCall(10,self.onSelectionChanged)
-            return
-        item=self.item
+            item=event.GetItem()
+            self.item=item
+        else:
+            item=self.item
         print "item=",item
+        if not item.IsOk():
+            return
+        
         obj=self.tree.GetPyData(item)
         if obj and type(obj)!=types.StringType:
+            Logging.info("Switching to ",obj)
             messenger.send(None,"tree_selection_changed",obj)        
+
+        ### SAFEGUARD
+        ### FOO
+        

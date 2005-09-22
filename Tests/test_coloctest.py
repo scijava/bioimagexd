@@ -3,9 +3,9 @@ import vtk
 import sys,time
 import threading
 #FILE="/home/kalpaha/BioImageXD/Data/sample2.lsm"
-#FILE="C:\\BioImageXD\\Data\\sample2.lsm"
+FILE="K:\\Data\\sample2.lsm"
 #FILE="C:\\BioImageXD\\Data\\selli_noise1.lsm"
-FILE="C:\\BioImageXD\\Data\\Selli_coloc2_8-bit.lsm"
+#FILE="C:\\BioImageXD\\Data\\Selli_coloc2_8-bit.lsm"
 #FILE="/home/kalpaha/BioImageXD/Data/Selli_coloc2_8-bit.lsm"
 #FILE="/home/kalpaha/BioImageXD/Data/selli_noise9.lsm"
 sys.path.insert(0,"../lib")
@@ -26,7 +26,7 @@ reader2.Update()
 ch2=reader2.GetOutput()
 
 def updateProgress(obj,evt):
-    #print "Progress: ",obj.GetProgressText(),obj.GetProgress()
+    print "Progress: ",obj.GetProgressText(),obj.GetProgress()
     pass
 print "Now calculating P-value..."
 coloctest=vtk.vtkImageColocalizationTest()

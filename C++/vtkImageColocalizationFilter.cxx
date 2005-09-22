@@ -26,8 +26,10 @@
 
 #include "vtkImageData.h"
 #include "vtkObjectFactory.h"
-#include "vtkImageProgressIterator.h"
-
+#include "vtkImageIterator.h"
+#include "vtkInformation.h"
+#include "vtkInformationVector.h"
+#include "vtkStreamingDemandDrivenPipeline.h"
 vtkCxxRevisionMacro(vtkImageColocalizationFilter, "$Revision: 1.25 $");
 vtkStandardNewMacro(vtkImageColocalizationFilter);
 
@@ -36,7 +38,7 @@ vtkImageColocalizationFilter::vtkImageColocalizationFilter()
 {
     this->OutputDepth = 8;
     this->NumberOfDatasets = 8;
-    this->OutputScalar = -1;
+    this->OutputScalarValue = -1;
     this->ColocalizationLowerThresholds = new int[this->NumberOfDatasets];
     this->ColocalizationUpperThresholds = new int[this->NumberOfDatasets];
     for(int i = 0; i < this->NumberOfDatasets; i++) {
@@ -47,9 +49,9 @@ vtkImageColocalizationFilter::vtkImageColocalizationFilter()
 
 void vtkImageColocalizationFilter::SetColocalizationLowerThreshold(int dataset, int threshold) {
     int *NewThresholds;
-    if (this->NumberOfDatasets < dataset) {            
+    if (this->NumberOfDatasets < dataset) {
             NewThresholds = new int[this->NumberOfDatasets *2];
-            
+
             for(int i = 0; i< this->NumberOfDatasets ; i++) {
                 NewThresholds[i] = this->ColocalizationLowerThresholds[i];
             }
@@ -88,69 +90,84 @@ vtkImageColocalizationFilter::~vtkImageColocalizationFilter()
         delete[] this->ColocalizationUpperThresholds;
 }
 
-//----------------------------------------------------------------------------
-void vtkImageColocalizationFilter::ExecuteInformation(vtkImageData **inputs, 
-                                        vtkImageData *output)
+// The output extent is the same as the input extent.
+int vtkImageColocalizationFilter::RequestInformation (
+  vtkInformation * vtkNotUsed(request),
+  vtkInformationVector **inputVector,
+  vtkInformationVector *outputVector)
 {
-  vtkImageMultipleInputFilter::ExecuteInformation(inputs,output);
- 
+  // get the info objects
+  vtkInformation* outInfo = outputVector->GetInformationObject(0);
+  vtkInformation *inInfo = inputVector[0]->GetInformationObject(0);
+
+  int ext[6], ext2[6], idx;
+
+  inInfo->Get(vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT(),ext);
+  outInfo->Set(vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT(),ext,6);
+
+  return 1;
 }
-
-
 
 //----------------------------------------------------------------------------
 // This templated function executes the filter for any type of data.
 template <class T>
-void vtkImageColocalizationFilterExecute(vtkImageColocalizationFilter *self, int id,int NumberOfInputs, 
+void vtkImageColocalizationFilterExecute(vtkImageColocalizationFilter *self, int id,int NumberOfInputs,
                            vtkImageData **inData,vtkImageData*outData,int outExt[6],
                             T*)
 {
-    int i;
+    int i, maxval = 0, n =0;
     int inIncX,inIncY,inIncZ;
     int outIncX,outIncY,outIncZ;
     int maxX,maxY,maxZ;
     int idxX,idxY,idxZ;
-    
-    double OutputScalar = self->GetOutputScalar();
-    
+    double mul = 0, ColocalizationScalar=0;
+    T currScalar = 0;
+    char colocFlag = 0;
+
+    double OutputScalar = self->GetOutputScalarValue();
+
     int *ColocThresholds = self->GetColocalizationLowerThresholds();
     int *UpperThresholds = self->GetColocalizationUpperThresholds();
     int BitDepth = self->GetOutputDepth();
+
     T** inPtrs;
     T* outPtr;
+
+
     inPtrs=new T*[NumberOfInputs];
-    //printf("outext=[%d,%d,%d,%d,%d,%d]\n",outExt[0],outExt[1],outExt[2],outExt[3],outExt[4],outExt[5]);
+
     for(i=0; i < NumberOfInputs; i++) {
         inPtrs[i]=(T*)inData[i]->GetScalarPointerForExtent(outExt);
     }
     outPtr=(T*)outData->GetScalarPointerForExtent(outExt);
-    
-    
+
+
     inData[0]->GetContinuousIncrements(outExt,inIncX, inIncY, inIncZ);
     outData->GetContinuousIncrements(outExt,outIncX, outIncY, outIncZ);
+
     maxX = outExt[1] - outExt[0];
     maxY = outExt[3] - outExt[2];
     maxZ = outExt[5] - outExt[4];
-    double ColocalizationScalar=0;
-    T currScalar = 0;
-    int maxval = 0, n = 0;
-    char colocFlag = 0;
-    double mul=0;
+
     maxval=int(pow(2,8*sizeof(T)))-1;
     if(OutputScalar < 0)OutputScalar = maxval;
-    //printf("Colocalization depth = %d, maxval=%d\n",BitDepth,maxval);
+
     char progressText[200];
+
+
+
     for(idxZ = 0; idxZ <= maxZ; idxZ++ ) {
+
         sprintf(progressText,"Calculating colocalization (slice %d / %d)",idxZ,maxZ);
         self->SetProgressText(progressText);
         self->UpdateProgress(idxZ/float(maxZ));
-        
+
         for(idxY = 0; idxY <= maxY; idxY++ ) {
           for(idxX = 0; idxX <= maxX; idxX++ ) {
             currScalar = n = 0;
             colocFlag = 1;
             for(i=0; i < NumberOfInputs; i++ ) {
-                currScalar = *inPtrs[i]; 
+                currScalar = *inPtrs[i];
                 if(currScalar >= ColocThresholds[i] && currScalar <= UpperThresholds[i]) {
                     ColocalizationScalar += currScalar;
                     n++;
@@ -160,15 +177,15 @@ void vtkImageColocalizationFilterExecute(vtkImageColocalizationFilter *self, int
                 inPtrs[i]++;
             }
             if(colocFlag > 0) {
-                
+
                 if (BitDepth == 1 ) ColocalizationScalar = OutputScalar;
                 if (BitDepth == 8 ) {
                     ColocalizationScalar /=n;
                 }
                 if(ColocalizationScalar > maxval) ColocalizationScalar=maxval;
-                
+
             } else ColocalizationScalar = 0;
-            
+
             *outPtr = (T)ColocalizationScalar;
             outPtr++;
             ColocalizationScalar = 0;
@@ -177,57 +194,74 @@ void vtkImageColocalizationFilterExecute(vtkImageColocalizationFilter *self, int
               inPtrs[i]+=inIncY;
           }
           outPtr += outIncY;
-        }  
+        }
         for(i=0; i < NumberOfInputs; i++ ) {
           inPtrs[i]+=inIncZ;
         }
         outPtr += outIncZ;      
     }
-
     delete[] inPtrs;
 }
+
 //----------------------------------------------------------------------------
 // This method is passed a input and output regions, and executes the filter
 // algorithm to fill the output from the inputs.
 // It just executes a switch statement to call the correct function for
 // the regions data types.
-void vtkImageColocalizationFilter::ThreadedExecute(vtkImageData **inData, 
-                                     vtkImageData *outData,
-                                     int outExt[6], int id)
+void vtkImageColocalizationFilter::ThreadedRequestData (
+  vtkInformation * vtkNotUsed( request ),
+  vtkInformationVector** vtkNotUsed( inputVector ),
+  vtkInformationVector * vtkNotUsed( outputVector ),
+  vtkImageData ***inData,
+  vtkImageData **outData,
+  int outExt[6], int id)
 {
-  int idx1;
-  int inExt[6], cOutExt[6];
+  if (inData[0][0] == NULL)
+    {
+    vtkErrorMacro(<< "Input " << 0 << " must be specified.");
+    return;
+    }
 
-  switch (inData[0]->GetScalarType())
+  // this filter expects that input is the same type as output.
+  if (inData[0][0]->GetScalarType() != outData[0]->GetScalarType())
+    {
+    vtkErrorMacro(<< "Execute: input ScalarType, "
+                  << inData[0][0]->GetScalarType()
+                  << ", must match out ScalarType "
+                  << outData[0]->GetScalarType());
+    return;
+    }
+
+//  printf("Number of connections=%d, outExt=%d,%d,%d,%d,%d,%d\n",this->GetNumberOfInputConnections(0),
+//                 outExt[0],outExt[1],outExt[2],outExt[3],outExt[4],outExt[5]);
+  switch (inData[0][0]->GetScalarType())
   {
-  vtkTemplateMacro7(vtkImageColocalizationFilterExecute, this, id, 
-                    this->NumberOfInputs,inData, 
-                    outData, outExt,static_cast<VTK_TT *>(0));
+    vtkTemplateMacro(vtkImageColocalizationFilterExecute(this, id,
+                    this->GetNumberOfInputConnections(0),inData[0],
+                    outData[0], outExt,static_cast<VTK_TT *>(0)));
   default:
     vtkErrorMacro(<< "Execute: Unknown ScalarType");
   return;
-  }    
-    
+  }
+
 }
 
+int vtkImageColocalizationFilter::FillInputPortInformation(
+  int port, vtkInformation* info)
+{
+  info->Set(vtkAlgorithm::INPUT_IS_REPEATABLE(), 1);
 
+  info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkImageData");
+  return 1;
+}
 
-//----------------------------------------------------------------------------
 void vtkImageColocalizationFilter::PrintSelf(ostream& os, vtkIndent indent)
 {
-  this->Superclass::PrintSelf(os, indent);
+  this->Superclass::PrintSelf(os,indent);
+  for(int i=0;i<this->GetNumberOfInputConnections(0);i++) {
+          os << indent << "Lower Threshold ("<<i<<"):" <<this->ColocalizationLowerThresholds[i] << "\n";
+          os << indent << "Upper Threshold ("<<i<<"):" <<this->ColocalizationUpperThresholds[i]<< "\n";
+  }
 }
-
-
-
-
-
-
-
-
-
-
-
-
 
 

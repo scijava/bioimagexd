@@ -119,6 +119,7 @@ class Track(wx.Panel):
         self.setDuration(d,s)
         self.paintTrack()
         messenger.connect(None,"show_time_pos",self.onShowTimePosition)
+
         
     def onShowTimePosition(self,obj,evt,arg):
         """
@@ -520,6 +521,11 @@ class Track(wx.Panel):
         """              
         self.duration=seconds
         self.frames=frames
+        print "Set duration of ",self," to ",seconds
+        w=self.duration*self.timescale.getPixelsPerSecond()
+        self.width = w+self.getLabelWidth()
+        self.buffer = wx.EmptyBitmap(self.width,self.height)
+        self.paintTrack()
 
     def expandToMax(self):
         """

@@ -306,6 +306,7 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         """
         self.dataUnit=dataUnit
         self.settings = dataUnit.getSettings()
+        self.updateColor()
         InteractivePanel.InteractivePanel.setDataUnit(self,self.dataUnit)
         
         try:
@@ -365,7 +366,7 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         if not self.enabled:
             Logging.info("Preview not enabled, won't render",kw="preview")
             return
-        #self.updateColor()
+        self.updateColor()
         if not self.running:
             renew=1
             self.running=1
@@ -454,9 +455,9 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         Description: Process the data before it's send to the preview
         """            
         ncomps = data.GetNumberOfScalarComponents()
-        Logging.info("I was created by: ",self.creator,"I am the ",PreviewFrame.count,"th instance")
+        #Logging.info("I was created by: ",self.creator,"I am the ",PreviewFrame.count,"th instance")
         #Logging.backtrace()
-        Logging.info("Data has %d components"%ncomps,kw="preview")
+        #Logging.info("Data has %d components"%ncomps,kw="preview")
         if ncomps>3:
             Logging.info("Previewed data has %d components, extracting"%ncomps,kw="preview")
             extract=vtk.vtkImageExtractComponents()
@@ -491,13 +492,7 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
             self.mapToColors=vtk.vtkImageMapToColors()
             self.mapToColors.SetInput(data)
             
-            #self.updateColor()
-            ctf=vtk.vtkColorTransferFunction()
-            ctf.AddRGBPoint(0,0,0,0)
-            ctf.AddRGBPoint(255.0,0,1.0,0)
-            self.currentCt=ctf
-            self.mapToColors.SetLookupTable(ctf)
-            self.mapToColors.SetOutputFormatToRGB()
+            self.updateColor()
 
             colorImage=self.mapToColors.GetOutput()
             colorImage.SetUpdateExtent(data.GetExtent())
@@ -590,17 +585,22 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         if self.dataUnit:
             ct = self.settings.get("ColorTransferFunction")
             #print "Mapping through",ct
-            #val=[0,0,0]
-            #ct.GetColor(255,val)
-            #print "value of 255=",val
+            val=[0,0,0]
             if self.selectedItem != -1:
                 ctc = self.settings.getCounted("ColorTransferFunction",self.selectedItem)            
+                
                 if ctc:
+                    ctc.GetColor(255,val)
+                    Logging.info("Using ctf of selected item",val,kw="ctf")
+                    
                     Logging.info("Using item %d (counted)"%self.selectedItem,kw="preview")
                     ct=ctc
             
         self.currentCt = ct
         
+        #ct.GetColor(255,val)
+        #Logging.info("value of 255=",val,kw="ctf")
+    
         self.mapToColors.SetLookupTable(self.currentCt)
         self.mapToColors.SetOutputFormatToRGB()
 
@@ -675,8 +675,10 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         Created: 25.03.2005, KP
         Description: Sets the zoom factor so that the image will fit into the screen
         """
-        if self.imagedata:
-            x,y,z=self.imagedata.GetDimensions()
+        #if self.imagedata:
+        if self.dataUnit:
+            #x,y,z=self.imagedata.GetDimensions()
+            x,y,z=self.dataUnit.getDimensions()
             Logging.info("Determining zoom factor from (%d,%d) to (%d,%d)"%(x,y,self.maxX,self.maxY),kw="preview")
             self.setZoomFactor(ImageOperations.getZoomFactor(x,y,self.maxX,self.maxY))
         else:

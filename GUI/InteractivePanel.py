@@ -461,7 +461,7 @@ class InteractivePanel(wx.ScrolledWindow):
         maxY=self.maxY
         if self.maxSizeX>maxX:maxX=self.maxSizeX
         if self.maxSizeY>maxY:maxY=self.maxSizeY
-        Logging.info("maxX=",self.maxX,"maxSizeX=",self.maxSizeX,"xdim=",xdim,"origX=",self.origX);
+        Logging.info("maxX=",self.maxX,"maxSizeX=",self.maxSizeX,"xdim=",xdim,"origX=",self.origX,kw="iactivepanel");
         newy=maxY
         newx=maxX
         if xdim<maxX:

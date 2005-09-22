@@ -117,6 +117,7 @@ class Scatterplot(InteractivePanel.InteractivePanel):
         Description: Update the scatterplot when timepoint changes
         """        
         self.renew=1
+        print "Setting timepoint to ",args[0]
         self.setTimepoint(args[0])
         self.updatePreview()
     def setScrollbars(self,xdim,ydim):
@@ -277,8 +278,8 @@ class Scatterplot(InteractivePanel.InteractivePanel):
         #print "Got coloc=",coloc
         x0,x1=self.scatterplot.GetScalarRange()
         Logging.info("Scalar range of scatterplot=",x0,x1,kw="processing")
-        self.ctf=ImageOperations.loadLUT("LUT/rainbow2.lut",None,(x0,x1))
-        print self.ctf
+        #self.ctf=ImageOperations.loadLUT("LUT/rainbow2.lut",None,(x0,x1))
+        #print self.ctf
         
     def updatePreview(self,*args):
         """
@@ -288,15 +289,19 @@ class Scatterplot(InteractivePanel.InteractivePanel):
         """
         if self.renew and self.dataUnit:
             self.buffer = wx.EmptyBitmap(256,256)
+            Logging.info("Generating scatterplot of timepoint",self.timepoint)
             t1=self.sources[0].getTimePoint(self.timepoint)
             t2=self.sources[1].getTimePoint(self.timepoint)            
             self.scatter = ImageOperations.scatterPlot(t1,t2,-1,self.countVoxels,self.wholeVolume,logarithmic=self.logarithmic)
+            self.scatter=self.scatter.Rotate90()
+            self.scatter=self.scatter.Mirror(1)
             self.scatter=self.scatter.Mirror(0)
-            print "scatter=",self.scatter.GetWidth(),self.scatter.GetHeight()
-            print "buffer=",self.buffer.GetWidth(),self.buffer.GetHeight()
+            
+            #print "scatter=",self.scatter.GetWidth(),self.scatter.GetHeight()
+            #print "buffer=",self.buffer.GetWidth(),self.buffer.GetHeight()
             self.renew=0
         self.paintPreview()
-        wx.GetApp().Yield(1)
+#        wx.GetApp().Yield(1)
         # Commented for windows' sake
         #self.Refresh()
 

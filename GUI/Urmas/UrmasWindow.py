@@ -230,6 +230,9 @@ class UrmasWindow(scrolled.ScrolledPanel):
         Description: Callback function for menu item minimize track
         """
         active = self.control.getSelectedTrack()
+        if not active:
+            Dialogs.showwarning(self,"You need to select a track that you wish to perform the operation on.","No track selected")
+            return
         active.setToSize()
 
     def onSetTrack(self,evt):
@@ -250,6 +253,9 @@ class UrmasWindow(scrolled.ScrolledPanel):
         size=val*self.control.getPixelsPerSecond()
         print "Setting to size ",size,"(",val,"seconds)"
         active = self.control.getSelectedTrack()
+        if not active:
+            Dialogs.showwarning(self,"You need to select a track that you wish to perform the operation on.","No track selected")
+            return        
         active.setToSize(size)
         
     def onSetTrackRelative(self,evt):
@@ -269,8 +275,10 @@ class UrmasWindow(scrolled.ScrolledPanel):
             except:
                 return
         size=val*self.control.getPixelsPerSecond()
-        print "Setting to size ",size,"(",val,"seconds)"
-
+        #print "Setting to size ",size,"(",val,"seconds)"
+        if not active:
+            Dialogs.showwarning(self,"You need to select a track that you wish to perform the operation on.","No track selected")
+            return
         active.setToRelativeSize(size)
         
 
@@ -290,8 +298,11 @@ class UrmasWindow(scrolled.ScrolledPanel):
             except:
                 return
         size=val*self.control.getPixelsPerSecond()
-        print "Setting to size ",size,"(",val,"seconds)"
+        #print "Setting to size ",size,"(",val,"seconds)"
         active = self.control.getSelectedTrack()
+        if not active:
+            Dialogs.showwarning(self,"You need to select a track that you wish to perform the operation on.","No track selected")
+            return        
         active.setToSizeTotal(size)
 
 
@@ -302,6 +313,9 @@ class UrmasWindow(scrolled.ScrolledPanel):
         Description: Callback function for menu item minimize track
         """
         active = self.control.getSelectedTrack()
+        if not active:
+            Dialogs.showwarning(self,"You need to select a track that you wish to perform the operation on.","No track selected")
+            return        
         active.expandToMax()
 
     def onMenuSetBegin(self,evt):
@@ -329,6 +343,9 @@ class UrmasWindow(scrolled.ScrolledPanel):
         Description: Set the track to maintain up direction
         """
         active = self.control.getSelectedTrack()
+        if not active:
+            Dialogs.showwarning(self,"You need to select a track that you wish to perform the operation on.","No track selected")
+            return        
         if hasattr(active,"setMaintainUpDirection"):
             active.setMaintainUpDirection(evt.IsChecked())
         

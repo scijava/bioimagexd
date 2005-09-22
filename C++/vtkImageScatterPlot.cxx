@@ -34,7 +34,7 @@ vtkStandardNewMacro(vtkImageScatterPlot);
 vtkImageScatterPlot::vtkImageScatterPlot()
 {
     ZSlice=-1;
-    CountVoxels = 0;
+    CountVoxels = 1;
 }
 
 //----------------------------------------------------------------------------
@@ -106,7 +106,7 @@ void vtkImageScatterPlotExecute(vtkImageScatterPlot *self, int id,int NumberOfIn
     //printf("outext=[%d,%d,%d,%d,%d,%d]\n",outExt[0],outExt[1],outExt[2],outExt[3],outExt[4],outExt[5]);
     //printf("inext=[%d,%d,%d,%d,%d,%d]\n",inExt[0],inExt[1],inExt[2],inExt[3],inExt[4],inExt[5]);     
     for(i=0; i < NumberOfInputs; i++) {
-        inPtrs[i]=(T*)inData[i]->GetScalarPointerForExtent(inExt);
+        inPtrs[i]=(T*)inData[i]->GetScalarPointer();//ForExtent(inExt);
     }
     int countvox=self->GetCountVoxels();
     inData[0]->GetIncrements(inIncX,inIncY,inIncZ);
@@ -114,10 +114,10 @@ void vtkImageScatterPlotExecute(vtkImageScatterPlot *self, int id,int NumberOfIn
     maxY = inExt[3] - inExt[2];
     maxZ = inExt[5] - inExt[4];
     
-    long*outLongPtr=(long*)outData->GetScalarPointerForExtent(outExt);
-    T*outPtr=(T*)outData->GetScalarPointerForExtent(outExt);
+    long*outLongPtr=(long*)outData->GetScalarPointer();//ForExtent(outExt);
+    T*outPtr=(T*)outData->GetScalarPointer();//ForExtent(outExt);
     for(int i=0;i<maxX*maxY;i++)*outPtr++=0;    
-    outPtr=(T*)outData->GetScalarPointerForExtent(outExt);        
+    outPtr=(T*)outData->GetScalarPointer();//ForExtent(outExt);        
 //    inData[0]->GetContinuousIncrements(inExt,inIncX, inIncY, inIncZ);
     
     T redScalar = 0, greenScalar = 0;
@@ -130,8 +130,8 @@ void vtkImageScatterPlotExecute(vtkImageScatterPlot *self, int id,int NumberOfIn
     
      
      outData->GetIncrements(outIncX, outIncY, outIncZ);
-//    printf("outIncX=%d, outIncY=%d,outIncZ=%d",outIncX,outIncY,outIncZ);
-//     printf("inIncX=%d, inIncY=%d,inIncZ=%d",inIncX,inIncY,inIncZ);
+    printf("outIncX=%d, outIncY=%d,outIncZ=%d",outIncX,outIncY,outIncZ);
+     printf("inIncX=%d, inIncY=%d,inIncZ=%d",inIncX,inIncY,inIncZ);
     #define GET_AT(x,y,z,ptr) *(ptr+(z)*inIncZ+(y)*inIncY+(x)*inIncX)
     #define SET_AT(x,y,z,ptr,val) *(ptr+(z)*outIncZ+(y)*outIncY+(x)*outIncX)=val
     #define SET_AT_COMP(x,y,z,c,ptr,val) *(ptr+(int)((z)*outIncZ)+(int)((y)*outIncY)+(int)((x)*outIncX)+(c))=val
@@ -151,7 +151,7 @@ void vtkImageScatterPlotExecute(vtkImageScatterPlot *self, int id,int NumberOfIn
         z1 = z0 = self->GetZSlice();
     }
     
-//    printf("maxX=%d,maxY=%d,z0=%d,z1=%d\n",maxX,maxY,z0,z1);
+    printf("maxX=%d,maxY=%d,z0=%d,z1=%d\n",maxX,maxY,z0,z1);
     //for(idxY = 0; idxY <= maxY; idxY++) {
     //for(idxX = 0; idxX <= maxX; idxX++) {
     //        SET_AT(idxX,idxY,0,outPtr,0);
@@ -188,7 +188,7 @@ void vtkImageScatterPlotExecute(vtkImageScatterPlot *self, int id,int NumberOfIn
         }
     }
     delete[] inPtrs;
-//    printf("maxCount=%d\n",maxCount);
+    printf("maxCount=%d\n",maxCount);
     self->SetNumberOfPairs(maxCount);
 }
 

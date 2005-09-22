@@ -100,6 +100,8 @@ class Timeline(scrolled.ScrolledPanel):
         self.SetupScrolling()
         self.sizer.Fit(self)
         messenger.connect(None,"set_timeline_size",self.setupScrolling)
+        messenger.connect(None,"set_duration",self.onSetDuration)
+        messenger.connect(None,"set_frames",self.onSetFrames)
         self.oldBgCol=self.GetBackgroundColour()
     def AcceptDrop(self,x,y,data):
         """
@@ -475,6 +477,24 @@ class Timeline(scrolled.ScrolledPanel):
             track.setDataUnit(dataUnit)
             track.showThumbnail(True)
         
+    def onSetDuration(self,obj,evt,duration):
+        """
+        Method: onSetDuration
+        Created: 20.09.2005, KP
+        Description: Method to set the timeline duration
+        """
+        print "On set duration",duration
+        self.seconds = duration
+        self.configureTimeline(duration,self.frames)
+        
+    def onSetFrames(self,obj,evt,frames):
+        """
+        Method: onSetDuration
+        Created: 20.09.2005, KP
+        Description: Method to set the timeline duration
+        """
+        self.frames = seconds
+        
     def reconfigureTimeline(self):
         """
         Method: reconfigureTimeline()
@@ -493,11 +513,11 @@ class Timeline(scrolled.ScrolledPanel):
                      given amount of seconds, and the frame amount to
                      given amount of frames
         """
-    
+        print "cONFIGURE TIMELINE"
         self.seconds = seconds
         self.frames = frames
         #print "Configuring frame amount to ",frames
-        frameWidth=(seconds*self.timeScale.getPixelsPerSecond())/float(frames)
+        #frameWidth=(seconds*self.timeScale.getPixelsPerSecond())/float(frames)
         #print "frame width=",frameWidth
         self.timeScale.setDuration(seconds)
         tx,ty=self.timeScale.GetSize()
@@ -505,9 +525,11 @@ class Timeline(scrolled.ScrolledPanel):
         #w,h=self.GetSize()
         #Logging.info("Setting size of timeline to ",(tx,h),kw="animator")
         #self.SetSize((tx,h))
-        self.Layout()
-        self.sizer.Fit(self)
-        self.SetupScrolling()
+        #self.Layout()
+        #self.sizer.Fit(self)
+        #self.SetupScrolling()
+        #print "foo"
+        #print "Configuring tracks",self.timepointTracks,self.splinepointTracks,self.keyframeTracks
         for i in self.timepointTracks:
             if i:
                 i.setDuration(seconds,frames)

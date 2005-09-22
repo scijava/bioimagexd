@@ -174,13 +174,24 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
         self.doPreviewCallback(event)
         self.dataUnit.getSourceDataUnits()[0].getSettings().set("CalculateThresholds",0) 
         messenger.send(None,"threshold_changed")
+            
+    def getStatistics(self, event=None):
+        """
+        Method: getAutoThreshold
+        Created: 11.07.2004, KP
+        Description: Use vtkAutoThresholdColocalization to determine thresholds
+                     for colocalization and calculate statistics
+        """
+        self.dataUnit.getSourceDataUnits()[0].getSettings().set("CalculateThresholds",2)
+        self.eventDesc="Calculating statistics"
+        
+        self.dataUnit.getSourceDataUnits()[0].getSettings().set("CalculateThresholds",0) 
         
         pos=self.radiobox.GetSelection()
         if pos:
             map=[1,0,2]
             method=map[pos-1]
-            self.getPValue(method)
-        
+            self.getPValue(method)        
         
     def getPValue(self,method=1):
         """
@@ -302,10 +313,14 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
         iterbox.Add(self.iterLbl)
         iterbox.Add(self.iterations)
         box.Add(iterbox)
-        
-        self.thresholdButton=wx.Button(self.colocalizationPanel,-1,"Calculate")
+        box2=wx.BoxSizer(wx.HORIZONTAL)
+        self.statsButton=wx.Button(self.colocalizationPanel,-1,"Statistics")
+        self.statsButton.Bind(wx.EVT_BUTTON,self.getStatistics)
+        box2.Add(self.statsButton)        
+        self.thresholdButton=wx.Button(self.colocalizationPanel,-1,"Auto-Threshold")
         self.thresholdButton.Bind(wx.EVT_BUTTON,self.getAutoThreshold)
-        box.Add(self.thresholdButton)        
+        box2.Add(self.thresholdButton) 
+        box.Add(box2)
 
         self.colocalizationSizer.Add(box,(n,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
         n+=1

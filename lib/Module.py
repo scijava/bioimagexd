@@ -141,7 +141,7 @@ class Module:
                 "new dimensions (%d,%d,%d)"%(self.x,self.y,self.z,x,y,z))
         else:            
             self.x,self.y,self.z=imageData.GetDimensions()
-            Logging.info("Dataset dimensions =(%d,%d,%d)"%(x,y,z),kw="dataunit")
+            #Logging.info("Dataset dimensions =(%d,%d,%d)"%(x,y,z),kw="dataunit")
         extent=imageData.GetExtent()
         if self.extent:
             if self.extent!=extent:
