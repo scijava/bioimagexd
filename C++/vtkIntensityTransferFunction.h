@@ -140,6 +140,9 @@ public:
   // Description:
   // Get the point where the gamma curve ends
   vtkGetVector2Macro(GammaEnd,int);
+  
+  // Get the point where the gamma curve ends
+  vtkGetVector2Macro(ReferencePoint,int);  
                      
   // Description:
   // A method that returns the y from the following formula:
@@ -162,16 +165,6 @@ public:
   // The function is of format:
   // y = contrast * x + b
   int LineValue(int x);
- 
-  // Description:
-  // Get the reference point of the function
-  // That is, the point around which the contrast rotates the slope
-  vtkGetVector2Macro(ReferencePoint,int);
-
-  // Description:
-  // Get the shifted reference point of the function
-  // That is, the point around which the contrast rotates the slope
-  vtkGetVector2Macro(ShiftedReferencePoint,int);
   
   void Reset(void);
 protected:
@@ -213,11 +206,8 @@ protected:
   double Contrast;
   int GammaStart[2];
   int GammaEnd[2];
-  void CalculateReferencePoint(void);
-  vtkSetVector2Macro(ReferencePoint,int);
   int ReferencePoint[2];
-  int ShiftedReferencePoint[2];
-  
+
 private:
   vtkIntensityTransferFunction(const vtkIntensityTransferFunction&);  // Not implemented.
   void operator=(const vtkIntensityTransferFunction&);  // Not implemented.

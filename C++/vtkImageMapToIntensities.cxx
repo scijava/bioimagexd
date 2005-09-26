@@ -109,7 +109,6 @@ void vtkImageMapToIntensities::ExecuteData(vtkDataObject *)
 
   char progressText[200];  
   for(idxZ = 0; idxZ <= maxZ; idxZ++ ) {
-    printf("Processing slice %d\n",uExtent[4]+idxZ);
     UpdateProgress(idxZ/float(maxZ));
     sprintf(progressText,"Applying intensity transfer function (slice %d / %d)",idxX,maxZ);
     SetProgressText(progressText);

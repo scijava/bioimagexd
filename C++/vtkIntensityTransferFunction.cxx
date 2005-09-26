@@ -54,8 +54,6 @@ void vtkIntensityTransferFunction::Reset(void) {
     this->Contrast = 1;
     this->Brightness = 0;
     this->ProcessingThreshold = 0;
-    this->SetReferencePoint( (this->MaximumThreshold - this->MinimumThreshold) / 2,
-                             (this->MaximumValue - this->MinimumValue) / 2);  
     this->Modified();
 }
 
@@ -260,34 +258,26 @@ int vtkIntensityTransferFunction::GammaValue(int x0,int y0, int x1,int y1,int x,
     return int( ( (y1-y0)/ ( pow((x1-x0),g)) )* ( pow((x-x0),g) ) + y0 );
 }
 
-void vtkIntensityTransferFunction::GetSlopeStart(int *x,int *y) {
-    int b;
-    
-    b = int(this->ReferencePoint[1]-this->Contrast*this->ReferencePoint[0]);
-    *y = this->MinimumValue;
-    *x = int( (this->MinimumValue - b ) / this->Contrast );
-}
-
-void vtkIntensityTransferFunction::GetSlopeEnd(int *x, int *y) {
-    int b;
-    b = int(this->ReferencePoint[1]-this->Contrast*this->ReferencePoint[0]);
-    *y = this->MaximumValue;
-    *x = int( (this->MaximumValue - b ) / this->Contrast );
-}
 void vtkIntensityTransferFunction::GetGammaPoints(int *gx0, int *gy0, int *gx1, int *gy1) {
     int x0=0,y0=0,x1=0,y1=0;
     int y = 0, x = 0, b = 0;
     int minX = 0, minY = 0;
     // Calculate where the slope ends (x = 255)
-    b = int(this->ReferencePoint[1]-this->Contrast*this->ReferencePoint[0]);
-    y = LineValue(255);
+    //b = int(this->ReferencePoint[1]-this->Contrast*this->ReferencePoint[0]);
+
+    // Calculate b (also called d in the paper) the new way
+    b = int( 0.5*(255+this->Brightness) - 0.5*this->Contrast*(255-this->Brightness));
     
+    // Get the value at 255. If it's > 255, we know that the function has "crossed the ceiling"
+    // which happens in cases II and IV in the paper
+    y = LineValue(255);
+
     // If we cross the ceiling
     if ( y > 255 ) {
         minY = LineValue(this->MaximumThreshold);
         if(minY >255)minY = 255;
         //x = int( (this->MaximumValue - b) / this->Contrast );
-        x = int( (minY - b) / this->Contrast );        
+        x = int( (minY - b) / this->Contrast );
         x1=x;
         //printf("x1=%d\n",x1);
         y1= minY;
@@ -301,17 +291,19 @@ void vtkIntensityTransferFunction::GetGammaPoints(int *gx0, int *gy0, int *gx1, 
         vtkDebugMacro(<<"Don't cross the ceiling, x1="<<x1<<",y1="<<y1<<"\n");
     }
 
+    // Calculate the value of the function at 0. If it's < 0, then we know that we've crossed the floor
+    // Which happens in cases III and IV in the paper
     y = int( this->Contrast*0 + b );
     // If we cross the floor
     if ( y < 0 ) {
-        minX = LineValue(this->MinimumThreshold);
-        if(minX<0)minX=0;
-        if (this->MinimumValue > minX) minX = this->MinimumValue;
+        minY = LineValue(this->MinimumThreshold);
+        if(minY<0)minY=0;
+        if (this->MinimumValue > minY) minY = this->MinimumValue;
 
-        x = int( ( minX - b) / this->Contrast );
+        x = int( ( minY - b) / this->Contrast );
         x0 = x;
         //printf("minX=%d\n",minX);
-        y0 = minX;
+        y0 = minY;
         vtkDebugMacro(<<"Cross the floor, x1="<<x1<<",y1="<<y1<<"\n");
 
     } else {
@@ -325,61 +317,61 @@ void vtkIntensityTransferFunction::GetGammaPoints(int *gx0, int *gy0, int *gx1, 
     *gy1 = y1;
 }
 
-void vtkIntensityTransferFunction::CalculateReferencePoint(void) {
-    int x=0,y=0;
-    x=this->ReferencePoint[0];
-    //y=this->ReferencePoint[1];
-    y = (this->MaximumValue - this->MinimumValue) / 2;
-    //x= 128 + this->Brightness;
-    x= 128 - this->Brightness;
-    this->SetReferencePoint(x,y);
-}
 
 int vtkIntensityTransferFunction:: LineValue(int x) {
     int b;
-    b = int(this->ReferencePoint[1]-this->Contrast*this->ReferencePoint[0]);
+    // The old way: with reference point
+    //b = int(this->ReferencePoint[1]-this->Contrast*this->ReferencePoint[0]);
+
+    // the new way (b = the d in the paper)
+    b = int(0.5*(255+this->Brightness) - this->Contrast*0.5*(255-this->Brightness));
     return int(this->Contrast * x + b);
-//      int b=this->Brightness;
-//      return int(this->Contrast * x + ((255+b)/2.0)-this->Contrast*((255-b)/2.0));
 }
 
 void vtkIntensityTransferFunction::ComputeFunction(void) {
     // These are the slope start and end points (x0,y0) and (x1,y1)
-    int x0=0,y0=0,x1=0,y1=0;    
-    // These are the variables holding the x coordinate and 
-    // the function's value at that point 
+    int x0=0,y0=0,x1=0,y1=0;
+    // These are the variables holding the x coordinate and
+    // the function's value at that point
     int x=0,y=0;
     // These are the start and end points of the gamma
     int gx0=0,gy0=0,gx1=0,gy1=0;
     int flag = 0;
     int refX, refY;
 
-    CalculateReferencePoint();
-    
-    GetSlopeStart(&x0,&y0);
-    GetSlopeEnd(&x1,&y1);
-    //printf("Slope starts at (%d,%d) and ends to (%d,%d)\n",x0,y0,x1,y1);
-    //printf("Contrast = %f\n",this->Contrast);
-    // There's no harm in calculating these
-    GetGammaPoints(&gx0,&gy0,&gx1,&gy1); 
+// The old way: determine explicit "reference point"
+//    CalculateReferencePoint();
+//    GetSlopeStart(&x0,&y0);
+//    GetSlopeEnd(&x1,&y1);
+//    printf("Slope starts at (%d,%d) and ends to (%d,%d)\n",x0,y0,x1,y1);
+//    printf("Contrast = %f\n",this->Contrast);
+
+    // The new way: the gamma points are all we need.
+    GetGammaPoints(&gx0,&gy0,&gx1,&gy1);
     this->GammaStart[0]=gx0;
     this->GammaStart[1]=gy0;
     this->GammaEnd[0]=gx1;
-    this->GammaEnd[1]=gy1;  
-//    this->ReferencePoint[0]=gx0+((gx1-gx0)/2.0);
-//    this->ReferencePoint[1]=gy0+((gy1-gy0)/2.0);
+    this->GammaEnd[1]=gy1;
+
+    // The gamma points also define the start (x0,y0) and end (x1,y1) of the "slope region"
+    x0 = gx0;
+    y0=gy0;
+    x1 = gx1;
+    y1 = gy1;
+    
+    // We set the reference point to something that can be displayed by the program
+    this->ReferencePoint[0] = x0+(x1-x0)*0.5;
+    this->ReferencePoint[1] = LineValue(this->ReferencePoint[0]);
 
     for(x = 0;x < this->ArraySize; x++) {
-    
-        
-        // If we're below the processing threshold,
+        // 2.1 If we're below the processing threshold,
         // then the function is identical, i.e. y=x
         if(x < this->ProcessingThreshold) {
             this->Function[x]=x;
             continue;
         }
-        // If we're below minimum threshold, the function should get the
-        // minimum value. But if processing threshold has a larger value than 
+        // 2.2 If we're below minimum threshold, the function should get the
+        // minimum value. But if processing threshold has a larger value than
         // the minimum value, then we use that instead.
         if(x < this->MinimumThreshold) {
             if(this->ProcessingThreshold <= MinimumValue) {
@@ -391,56 +383,59 @@ void vtkIntensityTransferFunction::ComputeFunction(void) {
             }
             continue;
         }
-        
+
+        // After the minimum threshold, the value is at least MinimumValue
         if(x >= this->MinimumThreshold) {
             y = this->MinimumValue;
         }
-        
-        // If the point is on the slope region
+
+        // 2.3 If the point is on the slope region (as calculated in the GetGammaPoints()
+        // method, these correspond to the "rajapisteet (x1,y1) ja (x2,y2)" in the paper
         if( x >= x0 && x <= x1 ) {
             if(x0 < this->MinimumThreshold) {
                 x0 = this->MinimumThreshold;
                 y = LineValue(x0);
-                //printf("Value at point x0=%d is %d\n",x0,y);
             }
             if(x1 > this->MaximumThreshold) {
                 x1 = this->MaximumThreshold;
                 y = LineValue(x1);
-                //printf("Value at point x1=%d is %d\n",x1,y);                
             }
-            
+            // 2.3.3
             if( fabs(this->Gamma-1.0) > 0.0001 ) {
                 y = this->GammaValue(gx0,gy0,gx1,gy1,x,this->Gamma);
                 vtkDebugMacro(<<"Y = gamma value from "<<gx0<<","<<gy0<<","<<gx1<<","<<gy1<<","<<x<<","<<y<<"\n");
-            } else {
+            } else { // 2.3.4
                 y = LineValue(x);
-                //printf("Y = linevalue(%d)=%d,",x,y);
+  //              printf("Y = linevalue(%d)=%d,",x,y);
             }
         }
+        // 2.3.5 If y larger than maximum value, then it is set to maximum value
+        // Also, if we're past the slope region but haven't reached the Maximum threshold yet
+        // then the value is the maximum value
         if( y > this->MaximumValue || (x > x1 && x <= this->MaximumThreshold) ) {
             y = this->MaximumValue;
         }
-        
-        // Once we go over the processing threshold, set a flag
-        if( x > this->ProcessingThreshold && 
+
+        // 2.3.4 Once we go over the processing threshold, set a flag
+        if( x > this->ProcessingThreshold &&
             y > this->ProcessingThreshold    ) flag = 1;
-        
+
         if(y < this->MinimumValue) y = this->MinimumValue;
         // If the functions value tries to go below
         // processing threshold before we've reached
         // value above processing threshold,
         // we use the processing threshold as a minimum value
-        if ( this->ProcessingThreshold     && 
-            x >= this->ProcessingThreshold && 
+        if ( this->ProcessingThreshold     &&
+            x >= this->ProcessingThreshold &&
             y < this->ProcessingThreshold  &&
             flag == 0) {
             y = this->ProcessingThreshold;
         }
-        
+
         if( x > this->MaximumThreshold ) {
             y = this->MinimumValue;
         }
-        //printf("y=%d\n",y);
+    //    printf("y=%d\n",y);
         this->Function[x]=y;
     }
 }
