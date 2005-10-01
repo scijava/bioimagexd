@@ -183,7 +183,15 @@ public:
   // Differential staining calculated using intensity / voxel amount
   vtkGetMacro(DiffStainVoxelsCh2,double);
   vtkSetMacro(DiffStainVoxelsCh2,double);     
-      
+
+  // Description:
+  // Instead of calculating thresholds, use the given thresholds
+  vtkGetMacro(LowerThresholdCh1,int);
+  vtkSetMacro(LowerThresholdCh1,int);    
+  // Description:
+  // Instead of calculating thresholds, use the given thresholds
+  vtkGetMacro(LowerThresholdCh2,int);
+  vtkSetMacro(LowerThresholdCh2,int);          
 protected:
   vtkImageAutoThresholdColocalization();
   ~vtkImageAutoThresholdColocalization();
@@ -242,6 +250,9 @@ private:
 
   double Slope;
   double Intercept;
+      
+  int LowerThresholdCh1;
+  int LowerThresholdCh2;
 };
 
 #endif

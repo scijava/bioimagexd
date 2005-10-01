@@ -48,6 +48,7 @@ vtkImageAutoThresholdColocalization::vtkImageAutoThresholdColocalization()
 {
     IncludeZeroPixels = 0;
     ConstantVoxelValue = 0;
+    LowerThresholdCh1 = LowerThresholdCh2 = -1;
     vtkImageData *plot;
     plot = vtkImageData::New();
     plot->ReleaseData();
@@ -114,6 +115,10 @@ template < class T >
     int maxX, maxY, maxZ;
     int idxX, idxY, idxZ;
 
+         
+    int LowerThresholdCh1 = self->GetLowerThresholdCh1();
+    int LowerThresholdCh2 = self->GetLowerThresholdCh2();
+         
     int ch1, ch2, ch3;
     double pearsons1, pearsons2, pearsons3;
     double r2 = 1;
@@ -301,11 +306,15 @@ template < class T >
 //           vtkDebugMacro(<<"No positive correlations found. Ending\n");
             return;
         }
+        
         ch1threshmax = round(newMax);
         //printf("Setting ch1threshmax to %f\n", ch1threshmax);
         ch2threshmax =
             round(((double) ch1threshmax * (double) m) +
               (double) b);
+                  
+        if(LowerThresholdCh1 >= 0) ch1threshmax = LowerThresholdCh1;
+        if(LowerThresholdCh2 >= 0) ch2threshmax = LowerThresholdCh2;
 
         //printf
         //    ("2/3: Calculating Threshold. i = %d.\n",
@@ -378,6 +387,10 @@ template < class T >
             ch1BestThresh = ch1threshmax;
             bestr2 = r2;
         }
+        // If we're using user supplied thresholds, then just do one iteration
+        if(LowerThresholdCh1 >= 0) {
+            thresholdFound = 1;
+        }
         //if our r is close to our level of tolerance then set threshold has been found
         if ((r2 < tolerance) && (r2 > -tolerance)) {
 
@@ -402,10 +415,15 @@ template < class T >
 
     }
 
-
     ch1threshmax = round((ch1BestThresh));
     ch2threshmax =
         round(((double) ch1BestThresh * (double) m) + (double) b);
+    if(LowerThresholdCh1 >= 0) {
+        ch1threshmax = LowerThresholdCh1;
+    }
+    if(LowerThresholdCh2 >= 0) {
+        ch2threshmax = LowerThresholdCh2;
+    }
     int colocInt = 255;
 
     Nzero = 0;

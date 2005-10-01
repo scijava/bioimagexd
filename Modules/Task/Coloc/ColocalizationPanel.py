@@ -184,7 +184,7 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
         """
         self.dataUnit.getSourceDataUnits()[0].getSettings().set("CalculateThresholds",2)
         self.eventDesc="Calculating statistics"
-        
+        self.doPreviewCallback(event)
         self.dataUnit.getSourceDataUnits()[0].getSettings().set("CalculateThresholds",0) 
         
         pos=self.radiobox.GetSelection()

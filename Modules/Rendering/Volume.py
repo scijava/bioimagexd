@@ -276,7 +276,7 @@ class VolumeModule(VisualizationModule):
                 mode=blendModes[method]
                 Logging.info("Setting fixed point rendering mode to ",mode,kw="rendering")
                 cmd="self.mapper.SetBlendModeTo%s()"%(mode)
-                print cmd
+                #print cmd
                 eval(cmd)
             else:
                 self.mapper = vtk.vtkVolumeRayCastMapper()
