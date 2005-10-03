@@ -422,7 +422,7 @@ class ColorTransferEditor(wx.Panel):
         self.openBtn = wx.BitmapButton(self,-1,openGif,size=(32,32))
         self.saveBtn = wx.BitmapButton(self,-1,saveGif,size=(32,32))
         
-        self.maxNodes=wx.SpinCtrl(self,-1,"9999",min=2,max=9999,size=(54,-1),style=wx.TE_PROCESS_ENTER)
+        self.maxNodes=wx.SpinCtrl(self,-1,"256",min=2,max=9999,size=(54,-1),style=wx.TE_PROCESS_ENTER)
         self.maxNodes.SetToolTip(wx.ToolTip("Set the maximum number of nodes in the graph."))
         self.maxNodes.SetHelpText("Use this control to set the maximum number of nodes in the graph. This is useful if you have a hand drawn palette that you wish to edit by dragging the nodes.")
         self.maxNodes.Bind(wx.EVT_SPINCTRL,self.onSetMaxNodes)
@@ -485,9 +485,10 @@ class ColorTransferEditor(wx.Panel):
         toRemove=[]
         for i,pts in enumerate(self.points):
             for j,point in enumerate(pts):
+                firstOrLast=(j==0 or j==len(pts)-1)
                 n+=1
-                print n,k,n%k,everyNth
-                if k<everyNth:
+                #print n,k,n%k,everyNth
+                if not firstOrLast and k<everyNth:
                     toRemove.append(point)
                     k+=1
                 else:
