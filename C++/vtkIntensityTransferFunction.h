@@ -130,6 +130,26 @@ public:
   // Set / Get the gamma
   vtkSetClampMacro(Gamma,double,0.0,255.0);
   vtkGetMacro(Gamma,double);      
+  
+  // Description:
+  // Set / Get the smooth start gamma
+  vtkSetClampMacro(SmoothStartGamma,double,0.0,255.0);
+  vtkGetMacro(SmoothStartGamma,double);
+
+  // Description:
+  // Set / Get the smooth end gamma
+  vtkSetClampMacro(SmoothEndGamma,double,0.0,255.0);
+  vtkGetMacro(SmoothEndGamma,double);
+
+  // Description:
+  // Set / Get the smooth start
+  vtkSetClampMacro(SmoothStart,int,0,255);
+  vtkGetMacro(SmoothStart,int);
+  // Description:
+  // Set / Get the smooth end
+  vtkSetClampMacro(SmoothEnd,int,0,255);
+  vtkGetMacro(SmoothEnd,int);
+
   // Description:
   // Get the table representing this function
   //vtkGetVectorMacro(Function,int,255);
@@ -164,8 +184,9 @@ public:
   // Returns the value of the function at slope point x
   // The function is of format:
   // y = contrast * x + b
-  int LineValue(int x);
-  
+
+
+  int f4(int x, int gx1,int gy1,int gx2,int gy2);
   void Reset(void);
 protected:
   vtkIntensityTransferFunction();
@@ -202,7 +223,11 @@ protected:
   int ProcessingThreshold;
   int Brightness;
   int LastMTime;
+  int SmoothStart;
+  int SmoothEnd;
   double Gamma;
+  double SmoothStartGamma;
+  double SmoothEndGamma;
   double Contrast;
   int GammaStart[2];
   int GammaEnd[2];

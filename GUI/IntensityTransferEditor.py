@@ -223,6 +223,7 @@ class IntensityTransferEditor(wx.Panel):
         self.canvasBox=wx.BoxSizer(wx.HORIZONTAL)
         self.contrastBox=wx.BoxSizer(wx.VERTICAL)
         self.gammaBox=wx.BoxSizer(wx.HORIZONTAL)
+        
         self.brightnessBox=wx.BoxSizer(wx.HORIZONTAL)
 
         self.contrastSlider = RangedSlider(self,-1,10000,size=(-1,280),style=wx.SL_VERTICAL)
@@ -292,12 +293,50 @@ class IntensityTransferEditor(wx.Panel):
         fieldsizer.Add(self.maxthresholdLbl,(1,2))
         fieldsizer.Add(self.maxthreshold,(1,3))
 
-        self.minProcessLbl=wx.StaticText(self,-1,"Processing\nthreshold:")
-        self.minProcess=wx.TextCtrl(self,-1,style=wx.TE_PROCESS_ENTER)
+        #self.minProcessLbl=wx.StaticText(self,-1,"Processing\nthreshold:")
+        #self.minProcess=wx.TextCtrl(self,-1,style=wx.TE_PROCESS_ENTER)
 
-        fieldsizer.Add(self.minProcessLbl,(2,0))
-        fieldsizer.Add(self.minProcess,(2,1))
+        #fieldsizer.Add(self.minProcessLbl,(2,0))
+        #fieldsizer.Add(self.minProcess,(2,1))
+        
+        
+        self.ssThresholdLbl=wx.StaticText(self,-1,"Smooth start:")
+        self.ssThreshold=wx.TextCtrl(self,-1,"0",style=wx.TE_PROCESS_ENTER)
+        
+        self.ssgammaEdit=wx.TextCtrl(self,-1,"1.00",size=(70,-1),style=wx.TE_PROCESS_ENTER)        
+        self.ssgammaSlider = RangedSlider(self,-1,10000,size=(150,-1),style=wx.SL_HORIZONTAL)
+        self.ssgammaSlider.setRange(0,50,0.0001,1.0)
+        self.ssgammaSlider.setRange(50.01,100,1.0,15.0)
+        self.ssgammaSlider.setScaledValue(1.0)
+        self.ssgammaSlider.setSnapPoint(1.0,0.1)        
+        self.Bind(wx.EVT_COMMAND_SCROLL,self.setSSGamma,self.ssgammaSlider)
+        
+        fieldsizer.Add(self.ssThresholdLbl,(2,0))
+        fieldsizer.Add(self.ssThreshold,(2,1))
+        fieldsizer.Add(self.ssgammaSlider,(2,2))        
+        fieldsizer.Add(self.ssgammaEdit,(2,3))
 
+        self.seThresholdLbl=wx.StaticText(self,-1,"Smooth end:")
+        self.seThreshold=wx.TextCtrl(self,-1,"255",style=wx.TE_PROCESS_ENTER)
+        self.segammaEdit=wx.TextCtrl(self,-1,"1.00",size=(70,-1),style=wx.TE_PROCESS_ENTER)        
+        self.segammaSlider = RangedSlider(self,-1,10000,size=(150,-1),style=wx.SL_HORIZONTAL)
+        self.segammaSlider.setRange(0,50,0.0001,1.0)
+        self.segammaSlider.setRange(50.01,100,1.0,15.0)
+        self.segammaSlider.setScaledValue(1.0)
+        self.segammaSlider.setSnapPoint(1.0,0.1)        
+        self.Bind(wx.EVT_COMMAND_SCROLL,self.setSEGamma,self.segammaSlider)
+
+
+        self.seThreshold.Bind(wx.EVT_KILL_FOCUS,self.updateSE)
+        self.seThreshold.Bind(wx.EVT_TEXT_ENTER,self.updateSE)
+        self.ssThreshold.Bind(wx.EVT_KILL_FOCUS,self.updateSS)
+        self.ssThreshold.Bind(wx.EVT_TEXT_ENTER,self.updateSS)
+        
+        fieldsizer.Add(self.seThresholdLbl,(3,0))
+        fieldsizer.Add(self.seThreshold,(3,1))
+        fieldsizer.Add(self.segammaSlider,(3,2))        
+        fieldsizer.Add(self.segammaEdit,(3,3))        
+        
         self.gammaEdit.Bind(wx.EVT_KILL_FOCUS,self.updateGamma)
         self.gammaEdit.Bind(wx.EVT_TEXT_ENTER,self.updateGamma)
         self.contrastEdit.Bind(wx.EVT_KILL_FOCUS,self.updateContrast)
@@ -315,12 +354,12 @@ class IntensityTransferEditor(wx.Panel):
         self.maxthreshold.Bind(wx.EVT_KILL_FOCUS,self.updateMaximumThreshold)
         self.maxthreshold.Bind(wx.EVT_TEXT_ENTER,self.updateMaximumThreshold)
 
-        self.minProcess.Bind(wx.EVT_KILL_FOCUS,self.updateProcessingThreshold)
-        self.minProcess.Bind(wx.EVT_TEXT_ENTER,self.updateProcessingThreshold)
+        #self.minProcess.Bind(wx.EVT_KILL_FOCUS,self.updateProcessingThreshold)
+        #self.minProcess.Bind(wx.EVT_TEXT_ENTER,self.updateProcessingThreshold)
         
         self.setMinimumThreshold(0)
         self.setMaximumThreshold(255)
-        self.setProcessingThreshold(0)
+        #self.setProcessingThreshold(0)
 
         self.setMinimumValue(0)
         self.setMaximumValue(255)
@@ -387,6 +426,35 @@ class IntensityTransferEditor(wx.Panel):
         self.updateGraph()
         self.updateGUI()
         event.Skip()
+        
+    def setSSGamma(self,event):
+        """
+        Method: setSSGamma(event)
+        Created: 30.10.2004, KP
+        Description: Updates the gamma part of the function according to the
+                     gamma slider in the GUI
+        """
+        gamma=event.GetPosition()
+        gammaEx = self.ssgammaSlider.getScaledValue()
+        self.iTF.SetSmoothStartGamma(gammaEx)
+        self.updateGraph()
+        self.updateGUI()
+        event.Skip()
+        
+    def setSEGamma(self,event):
+        """
+        Method: setSSGamma(event)
+        Created: 30.10.2004, KP
+        Description: Updates the gamma part of the function according to the
+                     gamma slider in the GUI
+        """
+        gamma=event.GetPosition()
+        gammaEx = self.segammaSlider.getScaledValue()
+        self.iTF.SetSmoothEndGamma(gammaEx)
+        self.updateGraph()
+        self.updateGUI()
+        event.Skip()                
+    
 
     def setContrast(self,event):
         """
@@ -511,6 +579,30 @@ class IntensityTransferEditor(wx.Panel):
         self.setMinimumValue(int(self.minValue.GetValue()))
         self.updateGraph()
         event.Skip()
+        
+    def updateSS(self,event):
+        """
+        Method: updateSS(x)
+        Created: 3.10.2005, KP
+        Description: A callback used to update the smooth start threshold
+                     to reflect the GUI settings
+        """
+        if self.guiupdate:return
+        self.iTF.SetSmoothStart(int(self.ssThreshold.GetValue()))
+        self.updateGraph()
+        event.Skip()     
+        
+    def updateSE(self,event):
+        """
+        Method: updateSE(x)
+        Created: 3.10.2005, KP
+        Description: A callback used to update the minimum value
+                     to reflect the GUI settings
+        """
+        if self.guiupdate:return
+        self.iTF.SetSmoothEnd(int(self.seThreshold.GetValue()))
+        self.updateGraph()
+        event.Skip()                
 
     def updateGamma(self,event):
         """
@@ -578,19 +670,28 @@ class IntensityTransferEditor(wx.Panel):
         self.maxValue.SetValue("%d"%self.iTF.GetMaximumValue())
         self.minthreshold.SetValue("%d"%self.iTF.GetMinimumThreshold())
         self.maxthreshold.SetValue("%d"%self.iTF.GetMaximumThreshold())
-        self.minProcess.SetValue("%d"%self.iTF.GetProcessingThreshold())
+        #self.minProcess.SetValue("%d"%self.iTF.GetProcessingThreshold())
 
+        self.ssThreshold.SetValue("%d"%self.iTF.GetSmoothStart())
+        self.seThreshold.SetValue("%d"%self.iTF.GetSmoothEnd())
+        
         contrast=self.iTF.GetContrast()
         gamma=self.iTF.GetGamma()
         brightness = self.iTF.GetBrightness()
+        ssgamma = self.iTF.GetSmoothStartGamma()
+        segamma = self.iTF.GetSmoothEndGamma()
         if sliders:
             self.contrastSlider.setScaledValue(contrast)
             self.brightnessSlider.setScaledValue(brightness)
             self.gammaSlider.setScaledValue(gamma)
-
+            self.ssgammaSlider.setScaledValue(ssgamma)
+            self.segammaSlider.setScaledValue(segamma)
+            
         self.gammaEdit.SetValue("%.2f"%gamma)
         self.brightnessEdit.SetValue("%.2f"%brightness)
         self.contrastEdit.SetValue("%.2f"%contrast)
+        self.ssgammaEdit.SetValue("%.2f"%ssgamma)
+        self.segammaEdit.SetValue("%.2f"%segamma)
         self.guiupdate=0
 
             
