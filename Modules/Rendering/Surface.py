@@ -77,8 +77,8 @@ class SurfaceModule(VisualizationModule):
         self.actor = self.lodActor = vtk.vtkLODActor()
         self.lodActor.SetMapper(self.mapper)
         self.lodActor.SetNumberOfCloudPoints(10000)
-        
-        self.parent.getRenderer().AddActor(self.lodActor)
+        self.renderer = self.parent.getRenderer()
+        self.renderer.AddActor(self.lodActor)
         #self.updateRendering()
 
     def setGaussian(self,flag):
@@ -96,6 +96,13 @@ class SurfaceModule(VisualizationModule):
         Description: Set the opacity
         """       
         self.opacity = opacity
+        Logging.info("Opacity = ",opacity,kw="visualizer")
+        if opacity!=1:
+            Logging.info("Setting traversing order to BackToFront",kw="visualizer")
+            cullers = self.parent.getRenderer().GetCullers()
+            cullers.InitTraversal()
+            culler = cullers.GetNextItem()
+            culler.SetSortingStyleToBackToFront()
         
     def setDecimate(self,level,preserveTopology):
         """
