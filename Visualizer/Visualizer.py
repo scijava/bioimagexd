@@ -1090,6 +1090,9 @@ class Visualizer:
         Created: 25.05.2005, KP
         Description: Update the rendering
         """
+        if not self.enabled:
+            Logging.info("Disabled, will not update rendering",kw="visualizer")
+            return
         Logging.info("Updating rendering",kw="visualizer")
         # If the visualization mode doesn't want immediate rendering
         # then we will delay a bit with this
@@ -1100,17 +1103,18 @@ class Visualizer:
             t=time.time()
             delay/=1000.0
             #Logging.info("diff=",self.renderingTime-t,"delay=",delay)
-            print "self.renderingTime=",self.renderingTime,"t=",t
+            #print "self.renderingTime=",self.renderingTime,"t=",t
             if not self.renderingTime:
                 self.renderingTime=t-(delay*2)
             diff=t-self.renderingTime
-            print "diff=",diff
+            Logging.info("diff in renderTime=",diff,kw="visualizer")
             if diff < delay and not self.delayed: 
                 diff=200+int(1000*diff)
                 Logging.info("Delaying, delay=%f, diff=%d"%(delay,diff),kw="visualizer")
                 self.delayed=1
                 wx.FutureCall(diff,self.updateRendering)
                 return
+        Logging.info("Updating rendering",kw="visualizer")
         self.renderingTime=time.time()                
         self.currMode.updateRendering()
         self.delayed=0

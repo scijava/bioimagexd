@@ -70,6 +70,7 @@ class Timeline(scrolled.ScrolledPanel):
         #wx.ScrolledWindow.__init__(self,parent,-1,size=size)
         self.control = control
         self.parent = parent
+        self.frames = 0
         self.selectedTrack = None
         control.setTimeline(self)
         self.sizer=wx.GridBagSizer(5,1)
@@ -103,6 +104,7 @@ class Timeline(scrolled.ScrolledPanel):
         messenger.connect(None,"set_duration",self.onSetDuration)
         messenger.connect(None,"set_frames",self.onSetFrames)
         self.oldBgCol=self.GetBackgroundColour()
+        
     def AcceptDrop(self,x,y,data):
         """
         Method: AcceptDrop
@@ -125,6 +127,7 @@ class Timeline(scrolled.ScrolledPanel):
         Description: Method called to indicate that a user is no longer dragging
                      something to this track
         """     
+        print "OnDragLeave"
         self.SetBackgroundColour(self.oldBgCol)
         self.Refresh()
             
@@ -135,6 +138,7 @@ class Timeline(scrolled.ScrolledPanel):
         Description: Method called to indicate that a user is dragging
                      something to this track
         """ 
+        print "OnDragOver"
         self.SetBackgroundColour((192,192,192))
         self.Refresh()
         
@@ -317,6 +321,7 @@ class Timeline(scrolled.ScrolledPanel):
         self.SetupScrolling()
         self.timepointTracks.append(tr)
         self.control.window.updateMenus()
+        #print "almost done"
         if self.dataUnit:
             print "Enabling thumbnail",self.dataUnit
             tr.showThumbnail(True)
@@ -493,7 +498,7 @@ class Timeline(scrolled.ScrolledPanel):
         Created: 20.09.2005, KP
         Description: Method to set the timeline duration
         """
-        self.frames = seconds
+        self.frames = frames
         
     def reconfigureTimeline(self):
         """

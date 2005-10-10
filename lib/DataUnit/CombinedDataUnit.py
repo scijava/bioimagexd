@@ -377,6 +377,7 @@ class CombinedDataUnit(DataUnit.DataUnit):
             merged.append(preview)
             if len(merged)>1:
                 merge=vtk.vtkImageMerge()
+                
                 for data in merged:
                     merge.AddInput(data)
                 merge.Update()

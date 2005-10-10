@@ -97,14 +97,14 @@ class LSMApplication(wx.App):
                                  3000, None, -1)
         splash.Show()
          # Import Psyco if available
-        #try:
-            #import psyco
+        try:
+            import psyco
 
             #psyco.log()
             #psyco.profile()
             #psyco.full()
-        #except ImportError:
-        #    pass        
+        except ImportError:
+            pass        
         provider = wx.SimpleHelpProvider()
         wx.HelpProvider_Set(provider)
     

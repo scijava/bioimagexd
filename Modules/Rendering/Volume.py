@@ -238,7 +238,8 @@ class VolumeModule(VisualizationModule):
         if self.interpolation==0:
             self.volumeProperty.SetInterpolationTypeToNearest()
         else:
-            self.volumeProperty.SetInterpolationTypeToLinear()        
+            self.volumeProperty.SetInterpolationTypeToLinear() 
+        self.volume.SetProperty(self.volumeProperty)
 
     def setMethod(self,method):
         """

@@ -89,6 +89,7 @@ class MainWindow(wx.Frame):
             wx.EVT_SASH_DRAGGED_RANGE, self.onSashDrag,
             id=MenuManager.ID_TREE_WIN, id2=MenuManager.ID_INFO_WIN,
         )
+        self.Bind(wx.EVT_CLOSE,self.quitApp)
         self.progressTimeStamp=0
         self.help=None
         self.statusbar=None
@@ -1284,14 +1285,15 @@ class MainWindow(wx.Frame):
         Description: Callback function for menu item "Help"
         """
         self.viewHelp(None,None,None)
-        
-
+    
     def quitApp(self,evt):
         """
         Method: quitApp()
         Created: 03.11.2004, KP
         Description: Quits the application
         """
-        self.Close(True)
+        #self.visualizer.closeVisualizer()
+        #self.visualizer.enable(0)
+        self.Destroy()
         
 

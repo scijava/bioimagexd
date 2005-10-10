@@ -78,7 +78,8 @@ void vtkImageMergeExecute(vtkImageMerge *self, int id,int NumberOfInputs,
     maxY = outExt[3] - outExt[2];
     maxZ = outExt[5] - outExt[4];
     
-    T scalar = 0, currScalar = 0;
+    T  currScalar = 0;
+    double scalar; 
     int maxval = 0, n = 0;
     maxval=int(pow(2,8*sizeof(T)))-1;
     T val;
@@ -98,7 +99,7 @@ void vtkImageMergeExecute(vtkImageMerge *self, int id,int NumberOfInputs,
                 inPtrs[i]++;
             }
             if(scalar > maxval)scalar=maxval;
-            *outPtr = scalar;
+            *outPtr = (T)scalar;
             outPtr++;
           }
           for(i=0; i < NumberOfInputs; i++ ) {
@@ -110,7 +111,7 @@ void vtkImageMergeExecute(vtkImageMerge *self, int id,int NumberOfInputs,
           inPtrs[i]+=inIncZ;
         }
         outPtr += outIncZ;      
-//	printf("Processed slice %d\n",idxZ);
+//  printf("Processed slice %d\n",idxZ);
     }
   
     delete[] inPtrs;

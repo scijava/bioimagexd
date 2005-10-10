@@ -61,7 +61,7 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         Created: 03.11.2004, KP
         Description: Initialization
         """
-        PreviewFrame.count+=1
+        #PreviewFrame.count+=1
         #wx.Panel.__init__(self,parent,-1)
         xframe=sys._getframe(1)
         self.creator=xframe.f_code.co_filename+": "+str(xframe.f_lineno)
@@ -181,8 +181,8 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         #self.Bind(wx.EVT_PAINT,self.OnPaint)        
         self.Bind(wx.EVT_LEFT_DOWN,self.getVoxelValue)
         self.SetHelpText("This window displays the selected dataset slice by slice.")
-    def __del__(self):        
-        PreviewFrame.count-=1
+#    def __del__(self):        
+#        PreviewFrame.count-=1
     def setRenewFlag(self,obj,evt):
         """
         Method: setRenewFlag

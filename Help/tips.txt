@@ -6,4 +6,5 @@ You can download the latest release of BioImageXD at http://www.bioimagexd.org/
 You can use the Control-key to select or de-select multiple datasets in the file tree.
 You can resample datasets to a smaller size if you do not have enough memory to open them. Resampled datasets are marked with red color and an asterisk (*) in the file tree.
 When starting to work on the animator, you need to interact with the rendering preview to enable it.
+To visualize multiple channels, you can use the Merge tool that combines the channels into one RGBA volume.
 

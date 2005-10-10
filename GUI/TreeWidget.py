@@ -206,7 +206,8 @@ class TreeWidget(wx.SashLayoutWindow):
         for item in items:
             if appendchar!="":
                 txt=self.tree.GetItemText(item)
-                self.tree.SetItemText(item,txt+appendchar)
+                if txt[-len(appendchar):]!=appendchar:
+                    self.tree.SetItemText(item,txt+appendchar)
             self.tree.SetItemTextColour(item,(255,0,0))
         
         
@@ -296,12 +297,32 @@ class TreeWidget(wx.SashLayoutWindow):
         objs=[self.tree.GetPyData(x) for x in items]
         return objs
         
+    def onUpdateSelection(self):
+        """
+        Method: onUpdateSelection
+        Created: 4.10.2005, KP
+        Description: A event handler called when the seleced item is updated
+        """              
+        items=self.tree.GetSelections()
+        item=items[-1]
+        if not item.IsOk():
+            return
+        
+        obj=self.tree.GetPyData(item)
+        self.item=item
+        if obj and type(obj)!=types.StringType:
+            Logging.info("Switching to ",obj)
+            messenger.send(None,"tree_selection_changed",obj)        
+            self.markGreen([item])        
+        
     def onSelectionChanged(self,event=None):
         """
         Method: onSelectionChanged
         Created: 10.01.2005, KP
         Description: A event handler called when user selects and item.
         """      
+        wx.FutureCall(500,self.onUpdateSelection)
+        return
         #if event:
         #    key=event.GetKeyEvent()
         #    if key.ControlDown() or key.ShiftDown():
@@ -331,7 +352,8 @@ class TreeWidget(wx.SashLayoutWindow):
         if obj and type(obj)!=types.StringType:
             Logging.info("Switching to ",obj)
             messenger.send(None,"tree_selection_changed",obj)        
-
+            #self.markGreen([item])
+            
         ### SAFEGUARD
         ### FOO
         

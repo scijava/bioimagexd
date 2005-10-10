@@ -232,6 +232,8 @@ class IntensityTransferEditor(wx.Panel):
         self.contrastSlider.setRange(50.01,100,1.0,20.0)
         self.contrastSlider.setScaledValue(1.0)
 
+        self.contrastLbl=wx.StaticText(self,-1,"Contrast")
+        
         self.Bind(wx.EVT_COMMAND_SCROLL,self.setContrast,self.contrastSlider)
 
         self.canvas=PaintPanel(self)
@@ -239,7 +241,9 @@ class IntensityTransferEditor(wx.Panel):
         self.canvasBox.Add(self.contrastBox)
 
         self.contrastEdit=wx.TextCtrl(self,-1,"1.00",size=(50,-1))
+        self.contrastBox.Add(self.contrastLbl)
         self.contrastBox.Add(self.contrastEdit)
+        
         self.contrastBox.Add(self.contrastSlider,1,wx.TOP|wx.BOTTOM,0)
 
 

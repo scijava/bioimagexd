@@ -65,7 +65,7 @@ class UrmasDropTarget(wx.PyDropTarget):
         Created: 13.04.2005, KP
         Description: Track mouse movement for reporting to target
         """
-        #print "OnLeave"
+        print "OnLeave"
         self.target.OnDragLeave()
         
     def OnDrop(self,x,y):
@@ -74,9 +74,9 @@ class UrmasDropTarget(wx.PyDropTarget):
         Created: 12.04.2005, KP
         Description: Return true to accept drop
         """
-        #print "Got drop at %d,%d"%(x,y)
+        print "Got drop at %d,%d"%(x,y)
         self.target.OnDragLeave()
-        return True
+        return 1
         
     def OnDragOver(self,x,y,d):
         """
@@ -84,7 +84,8 @@ class UrmasDropTarget(wx.PyDropTarget):
         Created: 12.04.2005, KP
         Description: 
         """
-        #print "OnDragOver(%d,%d)"%(x,y)
+        print "OnDragOver"
+        print "OnDragOver(%d,%d)"%(x,y)
         self.target.OnDragOver(x,y,d)
         return wx.DragCopy
         
@@ -94,6 +95,7 @@ class UrmasDropTarget(wx.PyDropTarget):
         Created: 12.04.2005, KP
         Description: Get the dropped data
         """
+        print "OnData"
         if self.GetData():
             data=self.data.GetData()
             #print "Got at %d,%d: %s"%(x,y,data)
@@ -117,6 +119,11 @@ class UrmasPalette(wx.Panel):
         """
         self.parent=parent
         self.control=control
+        try:
+            import psyco
+            psyco.cannotcompile(self.dropItem)
+        except ImportError:
+            pass
         wx.Panel.__init__(self,parent,style=wx.RAISED_BORDER,size=(800,32))
         self.sizer=wx.BoxSizer(wx.HORIZONTAL)
         
@@ -293,6 +300,7 @@ class UrmasPalette(wx.Panel):
         Created: 2.09.2005, KP
         Description: A method for dragging a keyframe track from palette
         """
+        print "onToolNewKeyframeTrack"
         if event.Dragging():
             self.dropItem("Track","Keyframe")
         event.Skip()
@@ -303,6 +311,7 @@ class UrmasPalette(wx.Panel):
         Created: 2.09.2005, KP
         Description: A method for dragging a spline track from palette
         """
+        print "onToolNewSplineTrack"
         if event.Dragging():
             self.dropItem("Track","Spline")
         event.Skip()
@@ -367,11 +376,13 @@ class UrmasPalette(wx.Panel):
         Created: 06.04.2005, KP
         Description: A method that creates a DnD of specified type
         """
-        #print "Dropping data of type %s:%s"%(datatype,indata)
+        print "Dropping data of type %s:%s"%(datatype,indata)
         data = wx.CustomDataObject(wx.CustomDataFormat(datatype))
         data.SetData(indata)
-        dropsource = wx.DropSource(self)
-        dropsource.SetData(data)
-        result = dropsource.DoDragDrop(wx.Drag_AllowMove)
-        #print "Result=",result        
-        return result
+        print "Creating dropsource"
+        self.dropsource = wx.DropSource(self)
+        self.dropsource.SetData(data)
+        print "Doing drag and drop"
+        res = self.dropsource.DoDragDrop(wx.Drag_AllowMove)
+        print "Result=",res
+        return res

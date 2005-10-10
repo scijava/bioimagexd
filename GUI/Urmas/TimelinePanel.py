@@ -274,6 +274,8 @@ class TimelinePanel(wx.Panel):
         messenger.send(None,"set_time_range",1,600)
         messenger.connect(None,"set_keyframe_mode",self.onSetKeyframeMode)
         
+
+        
     def onSetKeyframeMode(self,obj,evt,arg):
         """
         Method: onSetKeyframeMode
@@ -318,3 +320,8 @@ class TimelinePanel(wx.Panel):
         print "setDataUnit called!"
         self.dataUnit=dataUnit
         self.timeline.setDataUnit(dataUnit)
+
+    def __del__(self):
+        del self.wxrenwin
+        
+        
