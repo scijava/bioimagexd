@@ -101,6 +101,7 @@ class SurfaceModule(VisualizationModule):
             Logging.info("Setting traversing order to BackToFront",kw="visualizer")
             cullers = self.parent.getRenderer().GetCullers()
             cullers.InitTraversal()
+            print cullers
             culler = cullers.GetNextItem()
             culler.SetSortingStyleToBackToFront()
         

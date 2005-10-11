@@ -375,15 +375,37 @@ class CombinedDataUnit(DataUnit.DataUnit):
                 maptocol.Update()
                 preview=maptocol.GetOutput()
             merged.append(preview)
+           
             if len(merged)>1:
+                #createalpha=vtk.vtkImageAlphaFilter()
+                #createalpha.GetOutput().ReleaseDataFlagOn()                
+                #createalpha.MaximumModeOn()
                 merge=vtk.vtkImageMerge()
                 
                 for data in merged:
                     merge.AddInput(data)
+                    #createalpha.AddInput(data)
                 merge.Update()
-                preview=merge.GetOutput()
+                #createalpha.Update()
+                lum=vtk.vtkImageLuminance()
+                lum.GetOutput().ReleaseDataFlagOn()
+                lum.SetInput(merge.GetOutput())
+                lum.Update()
+                alpha=lum.GetOutput()
+                appendcomp=vtk.vtkImageAppendComponents()
+                #appendcomp.GetOutput().ReleaseDataFlagOn()
+                #print "merge=",merge.GetOutput()
+                print "alpha=",alpha
+                appendcomp.AddInput(merge.GetOutput())
+                appendcomp.AddInput(alpha)
+                appendcomp.Update()
+                preview=appendcomp.GetOutput()                
+                
+                #preview=merge.GetOutput()
+                
             elif len(merged)==1:
                 preview=merged[0]
+
             
         
         if not showOrig and not self.doOrig:

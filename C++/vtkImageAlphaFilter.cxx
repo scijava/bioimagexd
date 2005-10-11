@@ -50,7 +50,8 @@ void vtkImageAlphaFilter::ExecuteInformation(vtkImageData **inputs,
                                         vtkImageData *output)
 {
   vtkImageMultipleInputFilter::ExecuteInformation(inputs,output);
- 
+  output->SetNumberOfScalarComponents(1);
+  
 }
 
 
@@ -68,7 +69,7 @@ void vtkImageAlphaFilterExecute(vtkImageAlphaFilter *self, int id,int NumberOfIn
     int maxX,maxY,maxZ;
     int idxX,idxY,idxZ;
     int AvgThreshold = self->GetAverageThreshold();
-    int MaxMode = self->GetMaximumMode();					
+    int MaxMode = self->GetMaximumMode();                   
     int AvgMode = self->GetAverageMode();
     if(!MaxMode&&!AvgMode)AvgMode=1;
 //    vtkDebugMacro(<<"Using average mode="<<AvgMode<<"maxMode="<<MaxMode<<"threshold="<<AvgThreshold<<"\n");
@@ -87,8 +88,9 @@ void vtkImageAlphaFilterExecute(vtkImageAlphaFilter *self, int id,int NumberOfIn
     maxX = outExt[1] - outExt[0];
     maxY = outExt[3] - outExt[2];
     maxZ = outExt[5] - outExt[4];
-    
-    T scalar = 0, currScalar = 0, alphaScalar = 0;
+    double scalar = 0, alphaScalar = 0;
+        
+    T currScalar = 0;
     int maxval = 0, n = 0;
     maxval=int(pow(2,8*sizeof(T)))-1;
 //    vtkDebugMacro("Maximum value="<<maxval<<"\n");
@@ -98,7 +100,7 @@ void vtkImageAlphaFilterExecute(vtkImageAlphaFilter *self, int id,int NumberOfIn
         for(idxY = 0; idxY <= maxY; idxY++ ) {
           for(idxX = 0; idxX <= maxX; idxX++ ) {
             scalar = currScalar = n = 0;
-	    alphaScalar = 0;
+            alphaScalar = 0;
             for(i=0; i < NumberOfInputs; i++ ) {
                 currScalar = *inPtrs[i];                            
                     if(MaxMode) {
@@ -117,9 +119,9 @@ void vtkImageAlphaFilterExecute(vtkImageAlphaFilter *self, int id,int NumberOfIn
                 inPtrs[i]++;
             }
 
-	    if(AvgMode && n>0) alphaScalar /= n;
+        if(AvgMode && n>0) alphaScalar /= n;
             if(alphaScalar > maxval)alphaScalar=maxval;
-	    *outPtr = alphaScalar;
+        *outPtr = (T)alphaScalar;
             outPtr++;
           }
           for(i=0; i < NumberOfInputs; i++ ) {
