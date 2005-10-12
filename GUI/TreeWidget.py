@@ -152,16 +152,22 @@ class TreeWidget(wx.SashLayoutWindow):
         for i in selections:
             parent=self.tree.GetItemParent(i)
             data=self.tree.GetPyData(parent)
+	    print "parent of item=",parent,"data=",data
             if data =="2":
                 item,cookie=self.tree.GetFirstChild(parent)
             else:
                 item,cookie=self.tree.GetFirstChild(parent)
+	    print "first child=",item
             while item.IsOk():
                 data=self.tree.GetPyData(item)
+#		print "data=",data
                 dataunits.append(data)
                 items.append(item)
-                item,cookie=self.tree.GetNextChild(item,cookie)
-                
+		item=self.tree.GetNextSibling(item)
+#                item,cookie=self.tree.GetNextChild(item,cookie)
+#		print "next child=",item,"is ok=",item.IsOk()
+	    
+	print "returning ",dataunits
         return dataunits,items
         
         
