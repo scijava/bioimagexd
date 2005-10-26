@@ -25,6 +25,21 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 =========================================================================*/
+
+#define TIF_NEWSUBFILETYPE 254
+#define TIF_IMAGEWIDTH 256
+#define TIF_IMAGELENGTH 257
+#define TIF_BITSPERSAMPLE 258
+#define TIF_COMPRESSION 259
+#define TIF_PHOTOMETRICINTERPRETATION 262
+#define TIF_STRIPOFFSETS 273
+#define TIF_SAMPLESPERPIXEL 277
+#define TIF_STRIPBYTECOUNTS 279
+#define TIF_PLANARCONFIGURATION 284
+#define TIF_PREDICTOR 317
+#define TIF_COLORMAP 320
+#define TIF_CZ_LSMINFO 34412
+
 // .NAME vtkLSMReader - read LSM files
 // .SECTION Description
 // vtkLSMReader is a source object that reads LSM files.
@@ -87,7 +102,7 @@ public:
   int GetNumberOfTimePoints();
   int GetNumberOfChannels();
   int OpenFile();
-  void Print();
+
   int GetChannelColorComponent(int,int);
   char* GetChannelName(int);
   void SetFileName(const char *);
@@ -197,7 +212,7 @@ protected:
   short ReadShort(ifstream *,unsigned long *);
   unsigned short ReadUnsignedShort(ifstream *,unsigned long *);
   double ReadDouble(ifstream *,unsigned long *);
-  int ReadFile(ifstream *,unsigned long *,int,char *);
+  int ReadFile(ifstream *,unsigned long *,int,char *,bool swap=0);
   int ReadData(ifstream *,unsigned long *,int,char *);
 
 

@@ -353,13 +353,15 @@ int vtkLSMReader::ReadChannelColorsAndNames(ifstream *f,unsigned long start)
 
   pos = start;
   // Read size of structure
+
   sizeOfStructure = this->ReadInt(f,&pos);
+  vtkDebugMacro(<<"size of structure = "<<sizeOfStructure<<"\n");
   // Read number of colors
   colNum = this->ReadInt(f,&pos);
   // Read number of names
   nameNum = this->ReadInt(f,&pos);
   sizeOfNames = sizeOfStructure - ( (10*4) + (colNum*4) );
-
+  vtkDebugMacro(<<"sizeofNames="<<sizeOfNames<<"\n");
   nameBuff = new char[sizeOfNames];
   name = new char[sizeOfNames];
 
@@ -384,7 +386,7 @@ int vtkLSMReader::ReadChannelColorsAndNames(ifstream *f,unsigned long start)
   // Read the colors
   for(int j=0;j<colNum;j++)
     {
-    this->ReadFile(f,&colorOffset,4,colorBuff);
+    this->ReadFile(f,&colorOffset,4,colorBuff,1);
     for(int i=0;i<3;i++)
       {
       component = this->CharPointerToUnsignedChar(colorBuff+i);
@@ -392,7 +394,7 @@ int vtkLSMReader::ReadChannelColorsAndNames(ifstream *f,unsigned long start)
       }
     }
 
-  this->ReadFile(f,&nameOffset,sizeOfNames,nameBuff);
+  this->ReadFile(f,&nameOffset,sizeOfNames,nameBuff,1);
 
   nameLength = nameSkip = 0;
   tempBuff = nameBuff;
@@ -440,12 +442,14 @@ int vtkLSMReader::ReadTimeStampInformation(ifstream *f,unsigned long offset)
 int vtkLSMReader::ReadLSMSpecificInfo(ifstream *f,unsigned long pos)
 {
   unsigned long offset;
+  vtkDebugMacro("ReadLSMSpecificInfo(stream,"<<pos<<")\n");
   pos += 2 * 4; // skip over the start of the LSMInfo
                 // first 4 byte entry if magic number
                 // second is number of bytes in this structure
 
   // Then we read X
   this->NumberOfIntensityValues[0] = this->ReadInt(f,&pos); 
+  // vtkByteSwap::Swap4LE((int*)&this->NumberOfIntensityValues[0]);
   this->Dimensions[0] = this->NumberOfIntensityValues[0];
   // Y
   this->NumberOfIntensityValues[1] = this->ReadInt(f,&pos); 
@@ -453,7 +457,7 @@ int vtkLSMReader::ReadLSMSpecificInfo(ifstream *f,unsigned long pos)
   // and Z dimension
   this->NumberOfIntensityValues[2] = this->ReadInt(f,&pos); 
   this->Dimensions[2] = this->NumberOfIntensityValues[2];
-
+  vtkDebugMacro(<<"Dimensions =" << Dimensions[0]<<","<<Dimensions[1]<<","<<Dimensions[2]<<"\n");
   // Read number of channels
   this->Dimensions[4] = this->ReadInt(f,&pos); 
 
@@ -476,6 +480,7 @@ int vtkLSMReader::ReadLSMSpecificInfo(ifstream *f,unsigned long pos)
   this->VoxelSizes[0] = this->ReadDouble(f,&pos);
   this->VoxelSizes[1] = this->ReadDouble(f,&pos);
   this->VoxelSizes[2] = this->ReadDouble(f,&pos);
+  vtkDebugMacro("Voxel size="<<VoxelSizes[0]<<","<<VoxelSizes[1]<<","<<VoxelSizes[3]<<"\n");
 
   // Skip over OriginX,OriginY,OriginZ which are not used
   pos += 3*8;
@@ -502,6 +507,7 @@ int vtkLSMReader::ReadLSMSpecificInfo(ifstream *f,unsigned long pos)
   
   // Read OffsetChannelColors, which is an offset to channel colors and names
   this->ChannelInfoOffset = this->ReadUnsignedInt(f,&pos);
+  vtkDebugMacro(<<"Channel info offset (from addr"<<pos<<")="<<this->ChannelInfoOffset<<"\n");
   this->ReadChannelColorsAndNames(f,this->ChannelInfoOffset);
 
   // Skip time interval in seconds (8 bytes)
@@ -523,23 +529,29 @@ int vtkLSMReader::AnalyzeTag(ifstream *f,unsigned long startPos)
   unsigned short type,length,tag;
   unsigned long readSize;
   int value, dataSize,i;
-  char tempValue[4];
+  char tempValue[4],tempValue2[2];
   char *actualValue = NULL;
-
+  //  vtkDebugMacro(<<"Analyze tag start pos="<<startPos<<"\n");
   tag = this->ReadUnsignedShort(f,&startPos);
   type = this->ReadUnsignedShort(f,&startPos);
   length = this->ReadUnsignedInt(f,&startPos);
   this->ReadFile(f,&startPos,4,tempValue);
-  value = this->CharPointerToUnsignedInt(tempValue);
 
+  for(int i=0;i<4;i++)tempValue2[i]=tempValue[i];
+#ifdef VTK_WORDS_BIGENDIAN
+  vtkByteSwap::Swap4LE((unsigned int*)tempValue2);
+#endif
+  value = this->CharPointerToUnsignedInt(tempValue2);
+  //  vtkDebugMacro(<<"value="<<value<<"\n");
   // if there is more than 4 bytes in value, 
   // value is an offset to the actual data
   dataSize = this->TIFF_BYTES(type);
   readSize = dataSize*length;
-  if(readSize > 4 && tag != 34412)
+  if(readSize > 4 && tag != TIF_CZ_LSMINFO)
     {
     actualValue = new char[readSize];
     startPos = value;
+   if(tag==273||tag==279) vtkDebugMacro(<<"Reading actual value from "<<startPos<<"to " << startPos+readSize);
     if( !this->ReadFile(f,&startPos,readSize,actualValue) ) return 0;
     }
   else
@@ -551,61 +563,119 @@ int vtkLSMReader::AnalyzeTag(ifstream *f,unsigned long startPos)
     }
   switch(tag)
     {
-    case 254: 
-      this->NewSubFileType = this->CharPointerToUnsignedInt(actualValue);
+    case TIF_NEWSUBFILETYPE: 
+      this->NewSubFileType = value;
+      
+      /*
+      vtkByteSwap::Swap4LE((unsigned int*)actualValue);
+      {
+	unsigned int subfileType = this->CharPointerToUnsignedInt(actualValue);
+	vtkDebugMacro(<<"Subfiletype="<<subfileType<<"value="<<value);
+	this->NewSubFileType = subfileType;
+	}*/
       break;
-    case 256: 
+    case TIF_IMAGEWIDTH: 
+#ifdef VTK_WORDS_BIGENDIAN
+      vtkByteSwap::Swap4LE((unsigned int*)actualValue);
+      //vtkDebugMacro(<<"Image width="<<value);
+#endif
       //this->Dimensions[0] = this->CharPointerToUnsignedInt(actualValue);
       //this->Dimensions[0] = value;
       break;
-    case 257: 
+    case TIF_IMAGELENGTH:
+#ifdef VTK_WORDS_BIGENDIAN
+      vtkByteSwap::Swap4LE((unsigned int*)actualValue);
       //this->Dimensions[1] = this->CharPointerToUnsignedInt(actualValue);
+      vtkDebugMacro(<<"Image length="<<value);
+#endif
       //this->Dimensions[1] = value;
       break;
-    case 258: 
+    case TIF_BITSPERSAMPLE:
+#ifdef VTK_WORDS_BIGENDIAN
+      vtkByteSwap::Swap2LE((unsigned short*)actualValue);
+#endif
       this->BitsPerSample->SetNumberOfValues(length);
+      unsigned short bitsPerSample;
       for(i=0;i<length;i++)
 	{
-	this->BitsPerSample->SetValue(i,this->CharPointerToUnsignedShort(actualValue + (this->TIFF_BYTES(TIFF_SHORT)*i)));
+	  bitsPerSample = this->CharPointerToUnsignedShort(actualValue + (this->TIFF_BYTES(TIFF_SHORT)*i));
+	  //	  vtkDebugMacro(<<"Bits per sample " << i<<"="<<bitsPerSample<<"\n");
+	  this->BitsPerSample->SetValue(i,bitsPerSample);
 	}
 	break;
-    case 259: 
+    case TIF_COMPRESSION:
+#ifdef VTK_WORDS_BIGENDIAN
+      vtkByteSwap::Swap2LE((unsigned short*)actualValue);
+#endif
       this->Compression = this->CharPointerToUnsignedShort(actualValue);
       break;
-    case 262:
+    case TIF_PHOTOMETRICINTERPRETATION:
+#ifdef VTK_WORDS_BIGENDIAN
+      vtkByteSwap::Swap2LE((unsigned short*)actualValue);
+#endif
       this->PhotometricInterpretation = this->CharPointerToUnsignedShort(actualValue);
       break;
-    case 273: 
-      this->StripOffset->SetNumberOfValues(length);      
+    case TIF_STRIPOFFSETS:
+      //      vtkDebugMacro(<<"Number of values="<<length);
+      this->StripOffset->SetNumberOfValues(length);
+#ifdef VTK_WORDS_BIGENDIAN
+      vtkByteSwap::Swap4LERange((unsigned int*)actualValue,length);
+#endif
       for(i=0;i<length;i++)
 	{
-	this->StripOffset->SetValue(i,this->CharPointerToUnsignedInt(actualValue + (this->TIFF_BYTES(TIFF_LONG)*i)));
+	  //          unsigned int stripOffset = this->CharPointerToUnsignedInt(actualValue + (this->TIFF_BYTES(TIFF_LONG)*i));
+	  unsigned int* offsets = (unsigned int*)actualValue;
+	  //	this->StripOffset->SetValue(i,this->CharPointerToUnsignedInt(actualValue + (this->TIFF_BYTES(TIFF_LONG)*i)));
+	  unsigned int stripOffset=offsets[i];
+	  vtkDebugMacro(<<"Strip offset to "<<i<<"="<<stripOffset);   
+	  this->StripOffset->SetValue(i,stripOffset);
 	}
       break;
-    case 277: 
+    case TIF_SAMPLESPERPIXEL:
+#ifdef VTK_WORDS_BIGENDIAN
+      vtkByteSwap::Swap4LE((unsigned int*)actualValue);
+#endif
       this->SamplesPerPixel = this->CharPointerToUnsignedInt(actualValue);
+      //      vtkDebugMacro(<<"Samples per pixel="<<SamplesPerPixel<<"\n");
       break;
-    case 279: 
+    case TIF_STRIPBYTECOUNTS:
+#ifdef VTK_WORDS_BIGENDIAN
+      vtkByteSwap::Swap4LERange((unsigned int*)actualValue,length);
+#endif      
       this->StripByteCount->SetNumberOfValues(length);
+
       for(i=0;i<length;i++)
 	{
-	this->StripByteCount->SetValue(i,this->CharPointerToUnsignedInt(actualValue + (this->TIFF_BYTES(TIFF_LONG)*i)));
+	  unsigned int* counts = (unsigned int*)actualValue;
+	  this->StripByteCount->SetValue(i,this->CharPointerToUnsignedInt(actualValue + (this->TIFF_BYTES(TIFF_LONG)*i)));
+	//  this->StripByteCount->SetValue(i,counts[i]);
+		vtkDebugMacro(<<"Strip byte count of " << i <<"="<<counts[i]);
 	}
       break;
-    case 284: 
+    case TIF_PLANARCONFIGURATION:
+#ifdef VTK_WORDS_BIGENDIAN
+      vtkByteSwap::Swap2LE((unsigned short*)actualValue);
+#endif
       this->PlanarConfiguration = this->CharPointerToUnsignedShort(actualValue);
       break;
-    case 317: 
+    case TIF_PREDICTOR:
+#ifdef VTK_WORDS_BIGENDIAN
+      vtkByteSwap::Swap2LE((unsigned short*)actualValue);
+#endif
       this->Predictor = this->CharPointerToUnsignedShort(actualValue);
       break;
-    case 320: 
+    case TIF_COLORMAP:
+#ifdef VTK_WORDS_BIGENDIAN
+      vtkByteSwap::Swap4LE((unsigned int*)actualValue);
+#endif
       //this->ColorMapOffset = this->CharPointerToUnsignedInt(actualValue);
       break;
-    case 34412: 
-      this->LSMSpecificInfoOffset = this->CharPointerToUnsignedInt(actualValue);
+    case TIF_CZ_LSMINFO:
+
+      this->LSMSpecificInfoOffset = value;
       break;
     }
-  if(actualValue) 
+  if(actualValue)
     {
     delete [] actualValue;
     }
@@ -687,6 +757,7 @@ unsigned long vtkLSMReader::ReadImageDirectory(ifstream *f,unsigned long offset)
   unsigned long nextOffset = offset;
 
   numberOfTags = this->ReadUnsignedShort(f,&offset);
+  //  vtkDebugMacro(<<"Number of tags="<<numberOfTags<<"\n");
   for(int i=0;i<numberOfTags;i++)
     {
     this->AnalyzeTag(f,offset);
@@ -719,7 +790,7 @@ void vtkLSMReader::ExecuteData(vtkDataObject *output)
   int size,readSize,numberOfPix,timepoint,channel;
   time_t start, end;
   
-  vtkDebugMacro(<<"Executing data.");
+  vtkDebugMacro(<<"Executing data. Foo.");
 
   vtkImageData *data = this->GetOutput();
 
@@ -740,6 +811,7 @@ void vtkLSMReader::ExecuteData(vtkDataObject *output)
   channel = (this->UpdateExtent[4]>this->GetNumberOfChannels()-1?this->GetNumberOfChannels()-1:this->UpdateExtent[4]);
 
   numberOfPix = this->Dimensions[0]*this->Dimensions[1]*this->Dimensions[2];
+  vtkDebugMacro(<<"Channel = "<<channel<<",numberOfPix="<<numberOfPix);
   size = numberOfPix*this->BYTES_BY_DATA_TYPE(this->DataType);
 
   // this buffer will be deleted by the vtkXXXArray when the array is destroyed.
@@ -748,15 +820,23 @@ void vtkLSMReader::ExecuteData(vtkDataObject *output)
 
   start = time (NULL);
   for(int i=0;i<this->Dimensions[2];i++)
+
   //for(int i=0;i<1;i++)
     {
     UpdateProgress(i/float(this->Dimensions[2]));
     imageOffset = this->GetOffsetToImage(i,timepoint);
+    vtkDebugMacro(<<"Offset to image "<<i<<"="<<imageOffset);
     this->ReadImageDirectory(this->GetFile(),imageOffset);
     offset = this->StripOffset->GetValue(channel);
+    vtkDebugMacro(<<"Offset to channel"<<offset);
     readSize = this->StripByteCount->GetValue(channel);
-    this->ReadFile(this->GetFile(),&offset,readSize,(char *)tempBuf);
-      
+
+    vtkDebugMacro(<<"Strip byte count="<<readSize);
+    this->ReadFile(this->GetFile(),&offset,readSize,(char *)tempBuf,1);
+    /*    for(int m = 0; m < readSize;m++)       {
+      char x=tempBuf[m];
+      tempBuf[m] = ((x<<8) |((x>>8)&0xff));
+      }*/
     /*
     if(this->IsCompressed())
       {
@@ -834,7 +914,7 @@ void vtkLSMReader::ExecuteInformation()
     }
   
   imageDirOffset = this->ReadUnsignedInt(this->GetFile(),&startPos);
-
+  vtkDebugMacro(<<"Image dir offset="<<imageDirOffset<<"\n");
   // get information from the first image directory
   this->ReadImageDirectory(this->GetFile(),imageDirOffset);
 
@@ -849,7 +929,7 @@ void vtkLSMReader::ExecuteInformation()
     }
   if( !(this->ScanType == 6 || this->ScanType == 0) )
     {
-      vtkErrorMacro("Sorry! Your LSM-file must be of type 6 LSM-file (time series x-y-z) or type 0 (normal x-y-z). Type of this file is " <<this->ScanType);
+      vtkErrorMacro("Sorry! Your LSM-file must be of type 6 LSM-file (time series x-y-z) or type 0 (normal x-y-z). Type of this File is " <<this->ScanType);
       return;
     }
   
@@ -1017,6 +1097,9 @@ int vtkLSMReader::ReadInt(ifstream *f,unsigned long *pos)
 {
   char buff[4];
   this->ReadFile(f,pos,4,buff);
+#ifdef VTK_WORDS_BIGENDIAN
+  vtkByteSwap::Swap4LE((int*)buff);
+#endif
   return CharPointerToInt(buff);
 }
 
@@ -1024,6 +1107,9 @@ unsigned int vtkLSMReader::ReadUnsignedInt(ifstream *f,unsigned long *pos)
 {
   char buff[4];
   this->ReadFile(f,pos,4,buff);
+#ifdef VTK_WORDS_BIGENDIAN
+  vtkByteSwap::Swap4LE((unsigned int*)buff);
+#endif
   return this->CharPointerToUnsignedInt(buff);
 }
 
@@ -1031,6 +1117,9 @@ short vtkLSMReader::ReadShort(ifstream *f,unsigned long *pos)
 {
   char buff[2];
   this->ReadFile(f,pos,2,buff);
+#ifdef VTK_WORDS_BIGENDIAN
+  vtkByteSwap::Swap2LE((short*)buff);
+#endif  
   return this->CharPointerToShort(buff);
 }
 
@@ -1038,12 +1127,9 @@ unsigned short vtkLSMReader::ReadUnsignedShort(ifstream *f,unsigned long *pos)
 {
   char buff[2];
   this->ReadFile(f,pos,2,buff);
-  /*
-  if(this->GetSwapBytes())
-    {
-    vtkByteSwap::Swap2BE((unsigned short *)buff);
-    }
-  */
+#ifdef VTK_WORDS_BIGENDIAN
+  vtkByteSwap::Swap2LE((unsigned short*)buff);
+#endif
   return this->CharPointerToUnsignedShort(buff);
 }
 
@@ -1051,59 +1137,65 @@ double vtkLSMReader::ReadDouble(ifstream *f,unsigned long *pos)
 {
   char buff[8];
   this->ReadFile(f,pos,8,buff);
+#ifdef VTK_WORDS_BIGENDIAN
+  vtkByteSwap::Swap8LE((double*)buff);
+#endif  
   return this->CharPointerToDouble(buff);
 }
 
 int vtkLSMReader::ReadData(ifstream *f,unsigned long *pos,int size,char *buf)
 {
-  return this->ReadFile(f,pos,size,buf);
+  return this->ReadFile(f,pos,size,buf,1);
 }
 
-int vtkLSMReader::ReadFile(ifstream *f,unsigned long *pos,int size,char *buf)
+int vtkLSMReader::ReadFile(ifstream *f,unsigned long *pos,int size,char *buf,bool swap)
 {
   f->seekg(*pos,ios::beg);
   f->read(buf,size);
+  if(swap) {
+#ifdef VTK_WORDS_BIGENDIAN
+    vtkByteSwap::SwapLERange(buf,size);
+#endif
+  }
   if( !f ) return 0;
   *pos = *pos + size;
   return 1;
 }
 
-void vtkLSMReader::Print()
-{
-  printf("Identifier:%d\n",this->Identifier);
-  printf("DimensionX: %d\n",this->Dimensions[0]);  
-  printf("DimensionY: %d\n",this->Dimensions[1]);  
-  printf("DimensionZ: %d\n",this->Dimensions[2]);  
-  printf("Time points: %d\n",this->Dimensions[3]);  
-  printf("NumberOfIntensityValuesX: %d\n",this->NumberOfIntensityValues[0]);
-  printf("NumberOfIntensityValuesY: %d\n",this->NumberOfIntensityValues[1]);
-  printf("NumberOfIntensityValuesZ: %d\n",this->NumberOfIntensityValues[2]);
-  printf("NumberOfIntensityValuesTime: %d\n",this->NumberOfIntensityValues[3]);
-  cout << "VoxelSizeX: " << this->VoxelSizes[0] << "\n";
-  cout << "VoxelSizeY: " << this->VoxelSizes[1] << "\n";
-  cout << "VoxelSizeZ: " << this->VoxelSizes[2] << "\n";
-  printf("ScanType: %d\n",this->ScanType);
-  printf("DataType: %d\n",this->DataType);
-  printf("Compression: %d\n",this->Compression);  
-  printf("PlanarConfiguration: %d\n",this->PlanarConfiguration);
-  printf("PhotometricInterpretation: %d\n",this->PhotometricInterpretation);
-  printf("Predictor: %d\n",this->Predictor);
-  printf("NumberOfChannels: %d\n",this->Dimensions[4]);
-  printf("ChannelInfo:\n");
-  for(int i=0;i<this->Dimensions[4];i++)
-    {
-    printf("\t%s,(%d,%d,%d)\n",this->GetChannelName(i),this->GetChannelColorComponent(i,0),this->GetChannelColorComponent(i,1),this->GetChannelColorComponent(i,2));
-    }
-  printf("StripByteCounts:\n");
-  for(int i=0;i<this->Dimensions[4];i++)
-    {
-      printf("\t%d\n",this->StripByteCount->GetValue(i));
-    }
-}
-
 void vtkLSMReader::PrintSelf(ostream& os, vtkIndent indent)
 {
   this->Superclass::PrintSelf(os,indent);
-  this->Print();
+  os << indent << "Identifier: " << this->Identifier <<"\n";
+  os << indent << "Dimensions: " << this->Dimensions[0] << "," << this->Dimensions[1] << ","<<this->Dimensions[2] << "\n";
+  os << indent << "Time points: " << this->Dimensions[3] << "\n";
+  os << "Number of channels: " << this->Dimensions[4] << "\n";
+  os << "\n";
+  os << indent << "Number of intensity values X: " << this->NumberOfIntensityValues[0] << "\n";
+  os << indent << "Number of intensity values Y: " << this->NumberOfIntensityValues[1] << "\n";
+  os << indent << "Number of intensity values Z: " << this->NumberOfIntensityValues[2] << "\n";
+  os << indent << "Number of intensity values Time: " << this->NumberOfIntensityValues[3] << "\n";
+  os << indent << "Voxel size X: " << this->VoxelSizes[0] << "\n";
+  os << indent << "Voxel size Y: " << this->VoxelSizes[1] << "\n";
+  os << indent << "Voxel size Z: " << this->VoxelSizes[2] << "\n";
+  os << "\n";
+  os << indent << "Scan type: " << this->ScanType << "\n";
+  os << indent << "Data type: " << this->DataType << "\n";
+  os << indent << "Compression: " << this->Compression << "\n";
+  os << "\n";
+  os << indent << "Planar configuration: " << this->PlanarConfiguration << "\n";
+  os << indent << "Photometric interpretation: " << this->PhotometricInterpretation << "\n";
+  os << indent << "Predictor: " << this->Predictor << "\n";
+  os << indent << "Channel info:\n";
+
+  for(int i=0;i<this->Dimensions[4];i++)
+    {
+        os << indent << indent << this->GetChannelName(i)<<",("<<this->GetChannelColorComponent(i,0)<<","<<this->GetChannelColorComponent(i,1)<<","<<this->GetChannelColorComponent(i,2)<<")\n";
+    }
+  os << indent << "Strip byte counts:\n";
+
+  for(int i=0;i<this->Dimensions[4];i++)
+    {
+      os << indent << indent << this->StripByteCount->GetValue(i) << "\n";
+    }
 }
 
