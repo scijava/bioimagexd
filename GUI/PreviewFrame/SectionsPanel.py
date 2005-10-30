@@ -51,6 +51,7 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
         Description: Initialization
         """    
         self.imagedata=None
+        self.fitLater =0
         self.visualizer=visualizer
         self.bmp=None
         self.bgcolor=(127,127,127)
@@ -299,7 +300,9 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
             self.ctf=self.dataUnit.getColorTransferFunction()
         
         self.imagedata = ImageOperations.imageDataTo3Component(image,self.ctf)
-        
+        if self.fitLater:
+            self.fitLater=0
+            self.zoomToFit()        
         self.dims=self.imagedata.GetDimensions()
             
         self.slices=[]
@@ -481,6 +484,9 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
         Created: 14.08.2005, KP
         Description: Zoom the dataset to fit the available screen space
         """
+        if not self.imagedata:
+            self.fitLater = 1
+            return
         x,y,z=self.imagedata.GetDimensions()
         
         x+=z*self.zoomZ+2*self.xmargin
