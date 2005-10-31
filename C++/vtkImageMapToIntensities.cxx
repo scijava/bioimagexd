@@ -54,8 +54,8 @@ void vtkImageMapToIntensities::ExecuteData(vtkDataObject *)
   int uExtent[6];
   vtkImageData* output = this->GetOutput();
   vtkImageData* input = this->GetInput();
-  int inIncX,inIncY,inIncZ;
-  int outIncX,outIncY,outIncZ;
+  vtkIdType inIncX,inIncY,inIncZ;
+  vtkIdType outIncX,outIncY,outIncZ;
   int maxX,maxY,maxZ,maxC;
   int idxX,idxY,idxZ,idxC;
   char *inPtr1;

@@ -93,8 +93,8 @@ void vtkImageScatterPlotExecute(vtkImageScatterPlot *self, int id,int NumberOfIn
                             T*)
 {
     int i;
-    int inIncX,inIncY,inIncZ;
-    int outIncX,outIncY,outIncZ;
+    vtkIdType inIncX,inIncY,inIncZ;
+    vtkIdType outIncX,outIncY,outIncZ;
     int maxX,maxY,maxZ;
     int z0 = 0, z1 = 0;
     int idxX,idxY,idxZ;

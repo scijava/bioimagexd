@@ -58,8 +58,8 @@ void vtkImageMergeExecute(vtkImageMerge *self, int id,int NumberOfInputs,
                             T*)
 {
     int i;
-    int inIncX,inIncY,inIncZ;
-    int outIncX,outIncY,outIncZ;
+    vtkIdType inIncX,inIncY,inIncZ;
+    vtkIdType outIncX,outIncY,outIncZ;
     int maxX,maxY,maxZ;
     int idxX,idxY,idxZ;
 
