@@ -269,10 +269,10 @@ void vtkExtTIFFReaderUpdate2(vtkExtTIFFReader *self, OT *outPtr,
 template <class OT>
 void vtkExtTIFFReaderUpdate(vtkExtTIFFReader *self, vtkImageData *data, OT *outPtr)
 {
-  int outIncr[3];
+  vtkIdType outIncr[3];
   int outExtent[6];
   OT *outPtr2;
-  
+
   data->GetExtent(outExtent);
   data->GetIncrements(outIncr);
 
