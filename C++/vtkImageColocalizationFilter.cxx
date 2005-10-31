@@ -116,8 +116,8 @@ void vtkImageColocalizationFilterExecute(vtkImageColocalizationFilter *self, int
                             T*)
 {
     int i, maxval = 0, n =0;
-    int inIncX,inIncY,inIncZ;
-    int outIncX,outIncY,outIncZ;
+    vtkIdType inIncX,inIncY,inIncZ;
+    vtkIdType outIncX,outIncY,outIncZ;
     int maxX,maxY,maxZ;
     int idxX,idxY,idxZ;
     double mul = 0, ColocalizationScalar=0;
