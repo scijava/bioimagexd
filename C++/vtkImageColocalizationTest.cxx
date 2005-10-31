@@ -88,7 +88,7 @@ float* makeKernel(double radius,int*ksize) {
         return kernel2;
 }
 template <class T> void smooth(T* inPtr,T*outPtr,int psf,int ext[6],bool horizontal,
-    int inIncX,int inIncY,int inIncZ,int outIncX,int outIncY,int outIncZ) {
+    vtkIdType inIncX,int inIncY,int inIncZ,int outIncX,int outIncY,int outIncZ) {
     int size;
     float*kernel = makeKernel(psf,&size);
     int uc,vc;
@@ -166,8 +166,8 @@ template < class T >
     (vtkImageColocalizationTest * self, int id,
      int NumberOfInputs, vtkImageData ** inData, vtkImageData * outData,
      int outExt[6], T *) {
-    int inIncX, inIncY, inIncZ;
-    int outIncX, outIncY, outIncZ;
+    vtkIdType inIncX, inIncY, inIncZ;
+    vtkIdType outIncX, outIncY, outIncZ;
     int maxX, maxY, maxZ;
     int idxX, idxY, idxZ;
     T* outPtr;
