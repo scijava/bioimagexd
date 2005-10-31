@@ -109,11 +109,11 @@ template < class T >
      int NumberOfInputs, vtkImageData ** inData, vtkImageData ** outData,
      int outExt[6], T *) {
     int i;
-    int inIncX, inIncY, inIncZ;
-    int outIncX, outIncY, outIncZ;
-    int plotIncX, plotIncY, plotIncZ;
-    int maxX, maxY, maxZ;
-    int idxX, idxY, idxZ;
+    vtkIdType inIncX, inIncY, inIncZ;
+    vtkIdType outIncX, outIncY, outIncZ;
+    vtkIdType plotIncX, plotIncY, plotIncZ;
+    vtkIdType maxX, maxY, maxZ;
+    vtkIdType idxX, idxY, idxZ;
 
          
     int LowerThresholdCh1 = self->GetLowerThresholdCh1();
