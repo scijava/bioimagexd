@@ -82,7 +82,7 @@
 class VTK_IO_EXPORT vtkLSMReader : public vtkImageSource
 {
 public:
-
+ 
   static vtkLSMReader *New();
   vtkTypeMacro(vtkLSMReader,vtkImageSource);
   virtual void PrintSelf(ostream& os, vtkIndent indent);
