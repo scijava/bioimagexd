@@ -64,8 +64,8 @@ void vtkImageAlphaFilterExecute(vtkImageAlphaFilter *self, int id,int NumberOfIn
                             T*)
 {
     int i;
-    int inIncX,inIncY,inIncZ;
-    int outIncX,outIncY,outIncZ;
+    vtkIdType inIncX,inIncY,inIncZ;
+    vtkIdType outIncX,outIncY,outIncZ;
     int maxX,maxY,maxZ;
     int idxX,idxY,idxZ;
     int AvgThreshold = self->GetAverageThreshold();
