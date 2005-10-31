@@ -249,7 +249,7 @@ void vtkExtTIFFReader::ExecuteInformation()
 
 template <class OT>
 void vtkExtTIFFReaderUpdate2(vtkExtTIFFReader *self, OT *outPtr,
-                          int *outExt, int* vtkNotUsed(outInc), long)
+                          int *outExt, vtkIdType* vtkNotUsed(outInc), long)
 {
   if ( !self->GetInternalImage()->Open(self->GetInternalFileName()) )
     {
