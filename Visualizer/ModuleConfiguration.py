@@ -81,18 +81,12 @@ class ModuleConfigurationPanel(wx.ScrolledWindow):
         self.name = name
         
         self.buttonBox = wx.BoxSizer(wx.HORIZONTAL)
-        self.okButton = wx.Button(self,-1,"Ok")
         self.applyButton = wx.Button(self,-1,"Apply")
-        self.cancelButton = wx.Button(self,-1,"Cancel")
         
-        self.okButton.Bind(wx.EVT_BUTTON,self.onOk)
         self.applyButton.Bind(wx.EVT_BUTTON,self.onApply)
-        self.cancelButton.Bind(wx.EVT_BUTTON,self.onCancel)
         
         
-        self.buttonBox.Add(self.okButton)
         self.buttonBox.Add(self.applyButton)
-        self.buttonBox.Add(self.cancelButton)
         
         self.contentSizer = wx.GridBagSizer()
         self.sizer.Add(self.contentSizer,(0,0))
@@ -166,24 +160,6 @@ class ModuleConfigurationPanel(wx.ScrolledWindow):
         self.parent.Layout()
         self.parent.FitInside()
         #self.parent.SetupScrolling()
-        
-    def onCancel(self,event):
-        """
-        Method: onCancel()
-        Created: 28.04.2005, KP
-        Description: Close this dialog
-        """     
-        #self.Close()
-        pass
-        
-    def onOk(self,event):
-        """
-        Method: onApply()
-        Created: 28.04.2005, KP
-        Description: Apply changes and close
-        """ 
-        self.onApply(None)
-        #self.Close()
         
     def onApply(self,event):
         """

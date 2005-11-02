@@ -507,7 +507,7 @@ class MainWindow(wx.Frame):
         self.visIds.append(MenuManager.ID_VIS_GALLERY)
 
         bmp = wx.Image(os.path.join(iconpath,"view_sections.jpg"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
-        tb.DoAddTool(MenuManager.ID_VIS_SECTIONS,"Sections",bmp,kind=wx.ITEM_CHECK,shortHelp="Sections view")
+        tb.DoAddTool(MenuManager.ID_VIS_SECTIONS,"Orthographical",bmp,kind=wx.ITEM_CHECK,shortHelp="Sections view")
         wx.EVT_TOOL(self,MenuManager.ID_VIS_SECTIONS,self.onMenuVisualizer)
 
         self.visIds.append(MenuManager.ID_VIS_SECTIONS)
@@ -529,9 +529,22 @@ class MainWindow(wx.Frame):
         
         wx.EVT_TOOL(self,MenuManager.ID_VIS_ANIMATOR,self.onMenuVisualizer)
 
+        tb.AddSeparator()
+        self.cBtn = wx.ContextHelpButton(tb,MenuManager.CONTEXT_HELP)
+        tb.AddControl(self.cBtn)
+        self.cBtn.Bind(wx.EVT_BUTTON,self.onContextHelp)
+        
         self.visIds.append(MenuManager.ID_VIS_ANIMATOR)
         tb.Realize()
         self.menuManager.setMainToolbar(tb)
+        
+    def onContextHelp(self,evt):
+        """
+        Method: onContexHelp
+        Created: 02.11.2005, KP
+        Description: Put the app in a context help mode
+        """
+        wx.ContextHelp(self)
         
     def createMenu(self):
         """
@@ -593,14 +606,14 @@ class MainWindow(wx.Frame):
         mgr.addSeparator("visualization")
         mgr.addMenuItem("visualization",MenuManager.ID_LIGHTS,"&Lights...","Configure lightning")
         mgr.addMenuItem("visualization",MenuManager.ID_RENDERWIN,"&Render window","Configure Render Window")
-        mgr.addMenuItem("visualization",MenuManager.ID_RELOAD,"Re-&Load Modules","Reload the visualization modules")
+#        mgr.addMenuItem("visualization",MenuManager.ID_RELOAD,"Re-&Load Modules","Reload the visualization modules")
         
         mgr.disable(MenuManager.ID_LIGHTS)
         mgr.disable(MenuManager.ID_RENDERWIN)
-        mgr.disable(MenuManager.ID_RELOAD)
+        #mgr.disable(MenuManager.ID_RELOAD)
         
         
-        wx.EVT_MENU(self,MenuManager.ID_RELOAD,self.onMenuReload)
+        #wx.EVT_MENU(self,MenuManager.ID_RELOAD,self.onMenuReload)
 
         mgr.addMenuItem("view",MenuManager.ID_VIEW_CONFIG,"&Configuration Panel","Show or hide the configuration panel",self.onMenuToggleVisibility,check=1,checked=1)
         mgr.addMenuItem("view",MenuManager.ID_VIEW_TASKPANEL,"&Task Panel","Show or hide task panel",self.onMenuToggleVisibility,check=1,checked=1)
@@ -975,7 +988,7 @@ class MainWindow(wx.Frame):
         if self.tree.hasItem(path):
             return
         ext=ext.lower()
-        if ext=='du':
+        if ext=='bxd':
             # We check that the file is not merely a settings file
             try:
                 self.parser = SafeConfigParser()
@@ -1027,12 +1040,10 @@ class MainWindow(wx.Frame):
             # If we got data, add corresponding nodes to tree
             Logging.info("Adding to tree ",name,path,ext,dataunits,kw="io")
             for i in dataunits:
-		print "Bit depth of ",i,
-		print i.getBitDepth()
                 if i.getBitDepth()==12:
                     Dialogs.showwarning(self,"The selected dataset is a 12-bit dataset. BioImageXD natively supports only 8-bit datasets, so the dataset has been converted. For optimal performance, you should write the data out as a 8-bit file.","12-bit data converted to 8-bit")
                     break
-	    print "Calling addToTree"
+            print "Calling addToTree"
             self.tree.addToTree(name,path,ext,dataunits)
 
     def onMenuShowTaskWindow(self,event):
@@ -1213,7 +1224,7 @@ class MainWindow(wx.Frame):
             self.visualizer.setProcessedMode(processed)
         self.visualizer.enable(0)
         messenger.send(None,"update_progress",0.6,"Loading %s view..."%mode)
-        self.menuManager.menus["visualization"].Enable(MenuManager.ID_RELOAD,1)
+        #self.menuManager.menus["visualization"].Enable(MenuManager.ID_RELOAD,1)
         wx.EVT_TOOL(self,MenuManager.ID_SAVE_SNAPSHOT,self.visualizer.onSnapshot)    
             
 

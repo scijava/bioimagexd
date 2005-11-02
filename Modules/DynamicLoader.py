@@ -42,7 +42,7 @@ import sys
 def getRenderingModules(): return getModules("Rendering")
 def getVisualizationModes(): return getModules("Visualization")
 def getTaskModules(): return getModules("Task","*")
-
+IGNORE=["ScaleBar","Spline","Arbitrary","SurfaceConstruction","Reslice"]
 def getModules(name,flag="*.py"):
     """
     Function: getModules()
@@ -61,6 +61,13 @@ def getModules(name,flag="*.py"):
     
     modules=glob.glob(path)
     moddict={}
+    to_remove=[]
+    for file in modules:
+        for i in IGNORE:
+            if i in file:
+                to_remove.append(file)
+    for i in to_remove:
+        modules.remove(i)
     for file in modules:
         Logging.info("About to import ",file,kw="modules")
         if file.find(".") != -1:

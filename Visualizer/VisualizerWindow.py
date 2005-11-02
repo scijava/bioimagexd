@@ -62,6 +62,7 @@ class VisualizerWindow(wxVTKRenderWindowInteractor):
         self.zoomFactor=1.0
         self.rendering=0
         self.rubberband=0
+        
 
     def enable(self,flag):
         """
@@ -77,15 +78,54 @@ class VisualizerWindow(wxVTKRenderWindowInteractor):
         Created: 29.04.2005, KP
         Description: initialize the vtk renderer
         """
+        self.keyPressEvents=[]
         self.iren = iren = self.GetRenderWindow().GetInteractor()
 #        self.iren.SetInteractorStyle(vtk.vtkInteractorStyleTrackballCamera())
 #        self.iren.SetInteractorStyle(vtk.vtkInteractorStyleTrackballActor())
-        self.iren.SetInteractorStyle(vtk.vtkInteractorStyleSwitch())
+        self.irenStyle = vtk.vtkInteractorStyleSwitch()
+        #self.irenStyle = vtk.vtkInteractorStyleJoystickCamera()
+        #self.irenStyle.SetCurrentStyleToJoystickActor()
+        self.iren.SetInteractorStyle(self.irenStyle)
+        self.imarisStyle = vtk.vtkInteractorStyleJoystickActor()
+        
+        self.iren.AddObserver("KeyPressEvent",self.onKeypress)
+        self.imarisStyle.AddObserver("LeftButtonReleaseEvent",self.onIgnoreRelease)
+        self.imarisStyle.AddObserver("RightButtonReleaseEvent",self.onIgnoreRelease)
+        self.imarisStyle.AddObserver("MiddleButtonReleaseEvent",self.onIgnoreRelease)
+        
         self.getRenderer()
         self.renderer.SetBackground(0,0,0)
         self.iren.SetSize(self.GetRenderWindow().GetSize())
         self.renderer.AddObserver("StartEvent",self.onRenderBegin)
         self.renderer.AddObserver("EndEvent",self.onRenderEnd)
+    
+    def onKeypress(self,obj,evt):
+        """
+        Method: onKeypress
+        Created: 02.11.2005
+        Description: Catch keypresses from the window and do actions
+        """    
+        key=obj.GetKeyCode()
+        print "Keypress",key
+        if key == "i":
+            self.iren.SetInteractorStyle(self.imarisStyle)
+            
+            return 1
+        elif key in ["j","a","c","t"]:
+            self.iren.SetInteractorStyle(self.irenStyle)
+#            for i in self.keyPressEvents:
+#                self.irenStyle.RemoveObserver(i)
+            pass
+        return 0
+        
+    def onIgnoreRelease(self,obj,evt):
+        """
+        Method: onIgnoreRelease
+        Created: 02.11.2005
+        Description: Ignore mouse release events so the actor keeps on rotating
+        """        
+        print "Ignoring release",obj,evt
+        return 1
         
     def getZoomFactor(self):
         """

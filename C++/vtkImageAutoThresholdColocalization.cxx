@@ -626,18 +626,18 @@ template < class T >
     // Is calculated as the percentage of one channel to another
     // Where the colocalized voxels are subtracted from the second channel
     // 
-    //             I_r + I_coloc
+    //             I_r 
     // DiffStain = ------------------
     //             I_g - I_coloc
     // Where I_coloc is the sum of intensities of colocalized voxels in green
     // channel
     
     
-    self->SetDiffStainVoxelsCh1( (Nch1gtT + Ncoloc)/float((Nch2gtT - Ncoloc)));
-    self->SetDiffStainVoxelsCh2( (Nch2gtT + Ncoloc)/float((Nch1gtT - Ncoloc)));
+    self->SetDiffStainVoxelsCh1( (Nch1gtT)/float((Nch2gtT - Ncoloc)));
+    self->SetDiffStainVoxelsCh2( (Nch2gtT)/float((Nch1gtT - Ncoloc)));
     
-    self->SetDiffStainIntCh1( (sumCh1gtT + sumColocCh2)/float((sumCh2gtT - sumColocCh2)));
-    self->SetDiffStainIntCh2( (sumCh2gtT + sumColocCh1)/float((sumCh1gtT - sumColocCh1)));
+    self->SetDiffStainIntCh1( (sumCh1gtT)/float((sumCh2gtT - sumColocCh2)));
+    self->SetDiffStainIntCh2( (sumCh2gtT)/float((sumCh1gtT - sumColocCh1)));
     
     self->SetColocAmount(Ncoloc);
     self->SetColocPercent((double)Ncoloc / (maxX * maxY * maxZ));

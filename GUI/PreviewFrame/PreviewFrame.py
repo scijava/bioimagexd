@@ -226,9 +226,9 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         self.menu.Check(self.ID_NONE,flags[1])
         self.menu.Check(self.ID_LINEAR,flags[2])
         self.menu.Check(self.ID_CUBIC,flags[3])
-	if self.interpolation != interpolation:
-	    self.interpolation=interpolation
-	    self.updatePreview()
+        if self.interpolation != interpolation:
+            self.interpolation=interpolation
+            self.updatePreview()
         
         
     def onRightClick(self,event):
@@ -480,15 +480,6 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
             
             #print "Output from mip:",data
         if ncomps == 1:            
-            writer=vtk.vtkPNGWriter()
-            voi=vtk.vtkExtractVOI()
-            voi.SetInput(data)
-            voi.SetVOI(0,511,0,511,self.z,self.z)
-            voi.Update()
-            writer.SetInput(voi.GetOutput())
-            writer.SetFileDimensionality(2)
-            writer.SetFileName("foo.png")
-            writer.Write()                            
             Logging.info("Mapping trough ctf",kw="preview")
             #self.mapToColors.RemoveAllInputs()
             self.mapToColors=vtk.vtkImageMapToColors()

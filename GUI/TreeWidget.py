@@ -68,7 +68,7 @@ class TreeWidget(wx.SashLayoutWindow):
         self.tree.SetImageList(il)
         self.il=il
     
-        self.root=self.tree.AddRoot("Data Sets")
+        self.root=self.tree.AddRoot("Datasets")
         self.tree.SetPyData(self.root,"1")
         self.tree.SetItemImage(self.root,fldridx,which=wx.TreeItemIcon_Normal)
         self.tree.SetItemImage(self.root,fldropenidx,which=wx.TreeItemIcon_Expanded)
@@ -249,7 +249,7 @@ class TreeWidget(wx.SashLayoutWindow):
         if objtype=="lsm":
 	    print "Object type is LSM"	
             if not self.lsmfiles:
-                self.lsmfiles=self.tree.AppendItem(self.root,"LSM Files")
+                self.lsmfiles=self.tree.AppendItem(self.root,"LSM files")
                 self.tree.SetPyData(self.lsmfiles,"1")
                 self.tree.SetItemImage(self.lsmfiles,fldridx,which=wx.TreeItemIcon_Normal)
                 self.tree.SetItemImage(self.lsmfiles,fldropenidx,which=wx.TreeItemIcon_Expanded)
@@ -265,7 +265,7 @@ class TreeWidget(wx.SashLayoutWindow):
 	    print "done lsm"
         elif objtype=="txt":
             if not self.leicafiles:
-                self.leicafiles=self.tree.AppendItem(self.root,"Leica Files")
+                self.leicafiles=self.tree.AppendItem(self.root,"Leica files")
                 self.tree.SetPyData(self.leicafiles,"1")
                 self.tree.SetItemImage(self.leicafiles,fldridx,which=wx.TreeItemIcon_Normal)
                 self.tree.SetItemImage(self.leicafiles,fldropenidx,which=wx.TreeItemIcon_Expanded)        
@@ -279,7 +279,7 @@ class TreeWidget(wx.SashLayoutWindow):
             self.tree.SetItemImage(item,fldropenidx,which=wx.TreeItemIcon_Expanded)
         elif objtype=="bxd":
             if not self.bxdfiles:
-                self.bxdfiles=self.tree.AppendItem(self.root,"Dataset series")
+                self.bxdfiles=self.tree.AppendItem(self.root,"BioImageXD files")
                 self.tree.SetPyData(self.bxdfiles,"1")        
                 self.tree.SetItemImage(self.bxdfiles,fldridx,which=wx.TreeItemIcon_Normal)
                 self.tree.SetItemImage(self.bxdfiles,fldropenidx,which=wx.TreeItemIcon_Expanded)

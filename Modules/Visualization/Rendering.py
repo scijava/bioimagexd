@@ -164,6 +164,8 @@ class RenderingMode(VisualizationMode):
 
         mgr=self.menuManager
         
+        self.visualizer.tb.EnableTool(MenuManager.ID_ZOOM_TO_FIT,0)
+        
         mgr.enable(MenuManager.ID_LIGHTS,self.configPanel.onConfigureLights)
         mgr.enable(MenuManager.ID_RENDERWIN,self.configPanel.onConfigureRenderwindow)
         mgr.addMenuItem("file",MenuManager.ID_LOAD_SCENE,"Open 3D view scene...","Open a 3D view scene file",self.configPanel.onOpenScene,before=MenuManager.ID_IMPORT)
@@ -223,6 +225,9 @@ class RenderingMode(VisualizationMode):
         mgr.remove(MenuManager.ID_SAVE_SCENE)
         mgr.remove(MenuManager.ID_LOAD_SCENE)
         mgr.removeSeparator(MenuManager.ID_SEPARATOR)
+        
+        
+        self.visualizer.tb.EnableTool(MenuManager.ID_ZOOM_TO_FIT,1)
         if self.wxrenwin:
             self.wxrenwin.Show(0)       
         self.container.Show(0)

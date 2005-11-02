@@ -285,8 +285,10 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
                 
         self.moduleLbl = wx.StaticText(self,-1,"Rendering module:")
         modules=self.mode.mapping.keys()
+        modules.sort()
         self.moduleChoice = wx.Choice(self,-1,choices=modules)
         self.moduleChoice.SetSelection(0)
+        
         
         self.moduleListbox = wx.CheckListBox(self,-1)
         

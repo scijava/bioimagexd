@@ -240,9 +240,9 @@ class ProcessPanel(TaskPanel.TaskPanel):
         Description: A callback function called when the neither of the
                      filtering checkbox changes state
         """
-	self.doMedianCheckbutton.Enable(1)
-	self.doSolitaryCheckbutton.Enable(1)
-	self.doAnisotropicCheckbutton.Enable(1)	
+        self.doMedianCheckbutton.Enable(1)
+        self.doSolitaryCheckbutton.Enable(1)
+        self.doAnisoptropicCheckbutton.Enable(1) 
         doMedian=self.doMedianCheckbutton.GetValue()
         doSolitary=self.doSolitaryCheckbutton.GetValue()
         doAniso=self.doAnisoptropicCheckbutton.GetValue()

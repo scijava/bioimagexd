@@ -192,6 +192,7 @@ class AdjustPanel(TaskPanel.TaskPanel):
             val=i.GetValue()
             try:
                 n=int(val)
+                n-=1
                 lst.append(n)
             except:
                 # For entries that have no value, add -1 as a place holder
@@ -212,6 +213,7 @@ class AdjustPanel(TaskPanel.TaskPanel):
         except:
             pass
         else:
+            tp-=1
             Logging.info("Previewing timepoint ",tp,"(will send change event)",kw="task")
 
             messenger.send(None,"timepoint_changed",tp)

@@ -464,9 +464,6 @@ class Visualizer:
  #       self.tb.AddSimpleTool(MenuManager.ID_ROI_RECTANGLE,wx.Image(os.path.join("Icons","rectangle.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Select rectangle","Select a rectangular area of the image")
  #       self.tb.AddSimpleTool(MenuManager.ID_ROI_POLYGON,wx.Image(os.path.join("Icons","polygon.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Select polygon","Select a polygonal area of the image")
 
-        self.cBtn = wx.ContextHelpButton(self.tb,MenuManager.CONTEXT_HELP)
-        self.tb.AddControl(self.cBtn)
-        self.currWidth+=self.cBtn.GetSize()[0]
     
         self.pitch=wx.SpinButton(self.tb, MenuManager.PITCH,style=wx.SP_VERTICAL)
         self.tb.AddControl(self.pitch)
@@ -763,9 +760,9 @@ class Visualizer:
         """
 #        if not self.enabled:return
         wx.LayoutAlgorithm().LayoutWindow(self.parent, self.visWin)
-	x,y=self.zsliderWin.GetSize()
-	x,y2=self.zslider.GetSize()
-	self.zslider.SetSize((x,y))
+        x,y=self.zsliderWin.GetSize()
+        x,y2=self.zslider.GetSize()
+        self.zslider.SetSize((x,y))
         if self.currentWindow:
             self.currentWindow.SetSize(self.visWin.GetClientSize())
             self.currMode.relayout()
