@@ -1027,9 +1027,12 @@ class MainWindow(wx.Frame):
             # If we got data, add corresponding nodes to tree
             Logging.info("Adding to tree ",name,path,ext,dataunits,kw="io")
             for i in dataunits:
+		print "Bit depth of ",i,
+		print i.getBitDepth()
                 if i.getBitDepth()==12:
                     Dialogs.showwarning(self,"The selected dataset is a 12-bit dataset. BioImageXD natively supports only 8-bit datasets, so the dataset has been converted. For optimal performance, you should write the data out as a 8-bit file.","12-bit data converted to 8-bit")
                     break
+	    print "Calling addToTree"
             self.tree.addToTree(name,path,ext,dataunits)
 
     def onMenuShowTaskWindow(self,event):

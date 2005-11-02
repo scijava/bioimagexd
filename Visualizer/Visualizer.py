@@ -246,7 +246,7 @@ class Visualizer:
         Created: 15.08.2005, KP
         Description: Bind the timeslider to a method
         """     
-        if not all and platform.system()=="Windows":
+        if not all and platform.system() in ["Windows","Darwin"]:
             self.timeslider.Unbind(wx.EVT_SCROLL_ENDSCROLL)
             #self.timeslider.Unbind(wx.EVT_SCROLL_THUMBRELEASE)
             self.timeslider.Bind(wx.EVT_SCROLL_ENDSCROLL,method)
@@ -763,6 +763,9 @@ class Visualizer:
         """
 #        if not self.enabled:return
         wx.LayoutAlgorithm().LayoutWindow(self.parent, self.visWin)
+	x,y=self.zsliderWin.GetSize()
+	x,y2=self.zslider.GetSize()
+	self.zslider.SetSize((x,y))
         if self.currentWindow:
             self.currentWindow.SetSize(self.visWin.GetClientSize())
             self.currMode.relayout()
@@ -1061,7 +1064,7 @@ class Visualizer:
         x,y,z=dataunit.getDimensions()
         print "Dataset dimensions = ",x,y,z
         self.zslider.SetRange(1,z)
-        
+
         showItems=0
 
         if self.processedMode:

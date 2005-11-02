@@ -167,11 +167,14 @@ class LsmDataSource(DataSource.DataSource):
             "LSM Data Source got a request for dataset from timepoint "
             "%d, but no channel number has been specified"%(i))
             return None
+	print "Getting timepoint ",i," from channel",self.channelNum
         self.timepoint=i
         self.reader.SetUpdateTimePoint(i)
         self.reader.SetUpdateChannel(self.channelNum)
+	print "Reading..."
         self.reader.Update()
         data=self.reader.GetOutput()
+	print "done"
         if data.GetScalarType()!=3 and not raw:
             if not self.shift:
                 self.shift=vtk.vtkImageShiftScale()

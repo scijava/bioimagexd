@@ -192,7 +192,7 @@ template < class T >
     plotData->SetExtent(plotExt);
     plotData->SetScalarTypeToUnsignedInt();
     plotData->AllocateScalars();
-    plotData->GetIncrements(plotIncX, plotIncY,
+    outData[1]->GetIncrements(plotIncX, plotIncY,
                       plotIncZ);
     vtkPointData *pd;
     pd = plotData->GetPointData();

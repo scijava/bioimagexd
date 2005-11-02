@@ -418,4 +418,6 @@ class TaskPanel(scrolled.ScrolledPanel):
         messenger.send(None,"current_file",", ".join(fileNames))         
         
         self.selectItem(None,None,0)
-        self.createItemToolbar()
+	# Delay the call, maybe it will make it work on mac
+	wx.FutureCall(100,self.createItemToolbar)
+#        self.createItemToolbar()

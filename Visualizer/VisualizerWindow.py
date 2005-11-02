@@ -78,7 +78,9 @@ class VisualizerWindow(wxVTKRenderWindowInteractor):
         Description: initialize the vtk renderer
         """
         self.iren = iren = self.GetRenderWindow().GetInteractor()
-        self.iren.SetInteractorStyle(vtk.vtkInteractorStyleTrackballCamera())
+#        self.iren.SetInteractorStyle(vtk.vtkInteractorStyleTrackballCamera())
+#        self.iren.SetInteractorStyle(vtk.vtkInteractorStyleTrackballActor())
+        self.iren.SetInteractorStyle(vtk.vtkInteractorStyleSwitch())
         self.getRenderer()
         self.renderer.SetBackground(0,0,0)
         self.iren.SetSize(self.GetRenderWindow().GetSize())

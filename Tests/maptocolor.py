@@ -1,6 +1,6 @@
 import vtk
 reader=vtk.vtkXMLImageDataReader()
-reader.SetFileName("J:\\Data\\Sample2_1tp_0.vti")
+reader.SetFileName("sample2_1tp_0.vti")
 reader.Update()
 data=reader.GetOutput()
 writer=vtk.vtkPNGWriter()

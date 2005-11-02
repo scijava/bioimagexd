@@ -207,9 +207,13 @@ class DataSource:
         Description: Return the bit depth of data
         """
         if not self.bitdepth:
+	    print "Getting bit depth"
             data=self.getDataSet(0,raw=1)
+	    print "data=",data
             self.scalarRange=data.GetScalarRange()
+	    print "Scalar range=",self.scalarRange
             scalartype=data.GetScalarType()
+ 	    print "Scalar type=",scalartype,data.GetScalarTypeAsString()
             if scalartype==4:
                 self.bitdepth=16
             elif scalartype==5:
@@ -217,6 +221,7 @@ class DataSource:
             elif scalartype==3:
                 self.bitdepth=8
             else:
+		print "Bad LSM bit depth"
                 raise "Bad LSM bit depth, %d,%s"%(scalartype,data.GetScalarTypeAsString())
             self.bitdepth*=data.GetNumberOfScalarComponents()
         return self.bitdepth

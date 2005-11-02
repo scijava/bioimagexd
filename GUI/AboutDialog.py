@@ -39,13 +39,13 @@ import MainWindow
 
 class AboutDialog(wx.Dialog):
     def __init__(self, parent):
-        wx.Dialog.__init__(self, parent, -1, 'About BioImageXD',)
+        wx.Dialog.__init__(self, parent, -1, 'About BioImageXD',size=(600,400))
         self.sizer=wx.GridBagSizer(5,5)
         x,y=(600,400)
         
-        self.notebook = wx.Notebook(self,-1)
+        self.notebook = wx.Notebook(self,-1,size=(600,400))
         
-        self.about = wx.html.HtmlWindow(self.notebook, -1, size=(420, -1))
+        self.about = wx.html.HtmlWindow(self.notebook, -1, size=(420, 400))
         if "gtk2" in wx.PlatformInfo:
             self.about.SetStandardFonts()
         col=self.GetBackgroundColour()
@@ -60,7 +60,7 @@ class AboutDialog(wx.Dialog):
         
         #self.gplPanel = scrolled.ScrolledPanel(self.notebook,-1,size=(x,y))
         #box= wx.BoxSizer(wx.VERTICAL)
-        self.gpl = wx.html.HtmlWindow(self.notebook,-1,size=(420,-1))
+        self.gpl = wx.html.HtmlWindow(self.notebook,-1,size=(420,400))
         if "gtk2" in wx.PlatformInfo:
             self.gpl.SetStandardFonts()
         #box.Add(self.gpl)
@@ -76,7 +76,7 @@ class AboutDialog(wx.Dialog):
         
         #self.licensingPanel = scrolled.ScrolledPanel(self.notebook,-1,size=(420,200))
         #box=wx.BoxSizer(wx.VERTICAL)
-        self.licensing = wx.html.HtmlWindow(self.notebook, -1, size=(420, -1))
+        self.licensing = wx.html.HtmlWindow(self.notebook, -1, size=(420, 400))
         if "gtk2" in wx.PlatformInfo:
             self.licensing.SetStandardFonts()
         #box.Add(self.licensing)

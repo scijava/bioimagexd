@@ -124,7 +124,6 @@ class LSMApplication(wx.App):
 
 
 if __name__=='__main__':
-
     if "py2exe" in sys.argv:
         from build_app import *
         build()

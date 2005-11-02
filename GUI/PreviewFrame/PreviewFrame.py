@@ -226,8 +226,10 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         self.menu.Check(self.ID_NONE,flags[1])
         self.menu.Check(self.ID_LINEAR,flags[2])
         self.menu.Check(self.ID_CUBIC,flags[3])
-        self.interpolation=interpolation
-            
+	if self.interpolation != interpolation:
+	    self.interpolation=interpolation
+	    self.updatePreview()
+        
         
     def onRightClick(self,event):
         """

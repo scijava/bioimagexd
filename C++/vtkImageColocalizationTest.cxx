@@ -39,6 +39,7 @@
 #define SET_AT_OUT(x,y,z,ptr,val) *(ptr+(z)*outIncZ+(y)*outIncY+(x)*outIncX)=val
 
 
+double mysqr(double x) { return x*x; }
 
 vtkCxxRevisionMacro(vtkImageColocalizationTest, "$Revision: 1.25 $");
 vtkStandardNewMacro(vtkImageColocalizationTest);
@@ -77,7 +78,7 @@ float* makeKernel(double radius,int*ksize) {
         float *kernel = new float[size];
         double v;
         for (int i=0; i<size; i++)
-            kernel[i] = (float)exp(-0.5*(sqr((i-radius)/(radius*2)))/sqr(0.2));
+            kernel[i] = (float)exp(-0.5*(mysqr((i-radius)/(radius*2)))/mysqr(0.2));
         float *kernel2 = new float[size-2];
         for (int i=0; i<size-2; i++)
             kernel2[i] = kernel[i+1];

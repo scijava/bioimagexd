@@ -159,7 +159,7 @@ void vtkImageSolitaryFilter::ExecuteData(vtkDataObject *)
         
           }
           *outPtr=newScalar; 
-        }
+        } else *outPtr = scalar;
         outPtr++;
       }
       outPtr += outIncY;
