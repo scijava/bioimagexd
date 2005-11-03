@@ -564,6 +564,30 @@ def histogram(imagedata,ctf=None,bg=(200,200,200),logarithmic=1,ignore_border=0,
     return bmp,percent,retvals
 
 
+def equalize(imagedata):
+    accu=vtk.vtkImageAccumulate()
+    accu.SetInput(imagedata)
+    accu.Update()
+
+    data=accu.GetOutput()
+    print "data=",data
+    histogram=[]
+    sum=[]
+    tot=0
+    for i in range(0,256):
+        c=data.GetScalarComponentAsDouble(i,0,0,0)
+        histogram.append(c)
+        tot+=c
+        sum.append(tot)
+    x,y,z=imagedata.GetDimensions()
+    print "sum=",sum,"histogram=",histogram
+    n=255.0/x*y*z
+    print "N=",n
+    f=lambda x:x*n
+    sum=map(f,sum)
+    print "LUT=",sum
+    
+    
 def scatterPlot(imagedata1,imagedata2,z,countVoxels, wholeVolume,logarithmic=1):
     """
     Method: scatterPlot(imageData,imageData2,z,countVoxels,wholeVolume)
@@ -615,8 +639,9 @@ def scatterPlot(imagedata1,imagedata2,z,countVoxels, wholeVolume,logarithmic=1):
     shiftscale.SetInput(data)
     shiftscale.Update()
     data=shiftscale.GetOutput()
+    #data = equalize(data)
+    equalize(data)
 #    Logging.info("Shift scale has dimensions:",data.GetDimensions(),kw="imageop")            
-    
     if countVoxels:
         x0,x1=data.GetScalarRange()
         Logging.info("Scalar range of scatterplot=",x0,x1,kw="imageop")

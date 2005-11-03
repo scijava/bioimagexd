@@ -293,9 +293,9 @@ class Scatterplot(InteractivePanel.InteractivePanel):
             t1=self.sources[0].getTimePoint(self.timepoint)
             t2=self.sources[1].getTimePoint(self.timepoint)            
             self.scatter = ImageOperations.scatterPlot(t1,t2,-1,self.countVoxels,self.wholeVolume,logarithmic=self.logarithmic)
-            self.scatter=self.scatter.Rotate90()
-            self.scatter=self.scatter.Mirror(1)
+            #self.scatter=self.scatter.Rotate90()
             self.scatter=self.scatter.Mirror(0)
+            #self.scatter=self.scatter.Mirror(0)
             
             #print "scatter=",self.scatter.GetWidth(),self.scatter.GetHeight()
             #print "buffer=",self.buffer.GetWidth(),self.buffer.GetHeight()

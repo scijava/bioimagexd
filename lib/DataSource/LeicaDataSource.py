@@ -53,6 +53,7 @@ class LeicaDataSource(DataSource):
         Created: 12.04.2005, KP
         Description: Constructor
         """    
+        DataSource.__init__(self)
         self.filename=filename
         self.reader = LeicaExperiment(filename)
         self.experiment = experiment
@@ -78,7 +79,10 @@ class LeicaDataSource(DataSource):
         Description: Return the file name
         """    
         return self.filename
-    def getDataSet(self, i):
+        
+
+    
+    def getDataSet(self, i,raw=0):
         """
         Method: getDataSet
         Created: 12.04.2005, KP
@@ -86,7 +90,7 @@ class LeicaDataSource(DataSource):
         Parameters:   i       The index
         """
         data=self.reader.GetTimepoint(self.experiment,self.channel,i)
-        return self.getResampledData(data)
+        return self.getResampledData(data,i)
         
     def getDimensions(self):
         """
@@ -99,14 +103,7 @@ class LeicaDataSource(DataSource):
             self.dimensions=self.reader.GetDimensions(self.experiment)
             #print "Got dimensions=",self.dimensions
         return self.dimensions
-        
-    def getBitDepth(self):
-        """
-        Method: getBitDepth()
-        Created: 12.04.2005, KP
-        Description: Returns the bit depth of this dataset
-        """
-        return 8
+
     
         
     def getSpacing(self):
