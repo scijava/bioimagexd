@@ -36,6 +36,7 @@ import sys
 import re
 import string
 import vtk
+import math
 import Image
         
 from DataSource import *
@@ -281,9 +282,9 @@ class LeicaExperiment:
         Method: GetNumberOfTimepoints(experiment)
         Created: 12.04.2005, KP
         Description: Return the number of channels an experiment contains
-        """
+        """        
         #print self.SeriesDict.keys()
-        #return self.SeriesDict[experiment]["Num_T"]
+        return self.SeriesDict[experiment]["Num_T"]
         
     def GetDimensions(self,experiment):
         """
@@ -447,11 +448,12 @@ class LeicaExperiment:
         """          
         SeriesDataSplit=self.RE_T.split(Series_Data)
         T_String=SeriesDataSplit[1]
-        T_Match=self.RE_LogicalSize.search(NumSect_String)
+        T_Match=self.RE_LogicalSize.search(T_String)
         T_Line=T_Match.group(0)
+        T_Line=T_Line.replace(chr(0)," ")
         WordsNumT=T_Line.split()
-        WordsNumT.reverse()
-        NumT=int(WordsNumT[0].strip())
+        #WordsNumT.reverse()
+        NumT=int(WordsNumT[-1].strip())
         return NumT
         
     def GetWidth(self,Series_Data):
@@ -615,11 +617,14 @@ class LeicaExperiment:
                     Series_Data=SeriesDataSplit[1] #Breaks data text into progressively smaller pieces
                 
                 #Check for Time dimension--if so, get time data
-                if self.RE_T.match(Series_Data):
-                    Series_Info['Num_T']=self.GetTimeDimension(Series_Data)
+                if self.RE_T.search(Series_Data):
+                    t=self.GetTimeDimension(Series_Data)
+                    
+                    Series_Info['Num_T']=t
                     SeriesDataSplit=self.RE_T.split(Series_Data)
                     Series_Data=SeriesDataSplit[1]
                 else:
+                    raise "No timepoints found"
                     Series_Info['Num_T']=1
                 Series_Info['Width_X']=self.GetWidth(Series_Data)
                 Series_Info['Height_Y']=self.GetHeight(Series_Data)
@@ -641,9 +646,17 @@ class LeicaExperiment:
             Series_Info=value
             Series_Name=key
             Num_T_Points=(Series_Info['Num_T'])
+            print "Num_T_Points=",Num_T_Points
             TimePoints=[]
             for a in xrange(Num_T_Points): #starts at 0 and counts up to (but not including) Num_T_Points.
-                TP_Name='_t'+str((a%10000)//1000)+str((a%1000)//100)+str((a%100)//10)+str((a%10)//1)
+                n=int(math.log(Num_T_Points))
+                if n==1:n=2
+                TP_pat="_t%%.%dd"%n
+                #print "TP_Pattern=",TP_pat
+                #raise "foo"
+                TP_Name=TP_pat%a
+                #TP_Name='_t'+str((a%10000)//1000)+str((a%1000)//100)+str((a%100)//10)+str((a%10)//1)
+                
                 Num_Chan=Series_Info['NumChan']
                 Channels=[]
                 for b in xrange(Num_Chan):
