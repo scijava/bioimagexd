@@ -198,7 +198,7 @@ class LeicaDataSource(DataSource):
                      operates on
         """
         if not self.ctf:
-            print "Using ctf based on LSM Color"
+            print "Using ctf based on TIFF Color"
             ctf = vtk.vtkColorTransferFunction()
             r,g,b=self.reader.GetColor(self.experiment,self.channel)
             r/=255.0
@@ -225,7 +225,7 @@ class LeicaExperiment:
         self.RE_LogicalSize=re.compile(r'Logical\sSize.+\d+',re.I)
         self.RE_NumSect=re.compile(r'Dimension_3.*',re.I)
         self.RE_T=re.compile(r'Dimension_4.*',re.I)
-        self.RE_SeriesName=re.compile(r'Series\sName:.*',re.I)
+        self.RE_SeriesName=re.compile(r'Series\sName:(.*)',re.I)
         self.RE_Width=re.compile(r'Size-Width.+\d+',re.I)
         self.RE_Height=re.compile(r'Size-Height.+\d+',re.I)
         self.RE_Depth=re.compile(r'Size-Depth.+\d+',re.I)
@@ -283,7 +283,7 @@ class LeicaExperiment:
         Description: Return the number of channels an experiment contains
         """
         #print self.SeriesDict.keys()
-        return self.SeriesDict[experiment]["Num_T"]
+        #return self.SeriesDict[experiment]["Num_T"]
         
     def GetDimensions(self,experiment):
         """
@@ -308,8 +308,17 @@ class LeicaExperiment:
         channels=self.TP_CH_VolDataList[0]
         rdr=channels[channel]
         rdr.ComputeInternalFileName(0)
-        filename=rdr.GetInternalFileName()
-        img=Image.open(filename)
+        #filename = self.SeriesDict[experiment]["TiffList"][0][0][0]
+#        print filename
+
+        #filename=rdr.GetInternalFileName()
+        fn=rdr.GetInternalFileName()
+        #fn=os.path.join(self.path,filename)
+        #print fn##
+        #f=open(fn)
+        
+        img=Image.open(fn)
+        
         palette=img.palette.getdata()[1]
         r=palette[255]
         g=palette[2*256-1]
@@ -383,12 +392,17 @@ class LeicaExperiment:
         Description: Return the series name from given data
         """               
         SeriesNameString=self.RE_SeriesName.search(Series_Data)
-        SeriesNameLine=SeriesNameString.group(0)
+        SeriesNameLine=SeriesNameString.group(1)
+        SeriesNameLine=SeriesNameLine.strip()
+        SeriesNameLine=SeriesNameLine.replace(chr(0),"")
+        return SeriesNameLine
         SeriesNameSplit=SeriesNameLine.split()
         SeriesNameSplit.reverse()
         SeriesNameTxtString=self.RE_NonWhitespace.search(SeriesNameSplit[0].strip())#this is intended to get the alpha-num. char values and drop the newlines
-        SeriesName=SeriesNameTxtString.group(0)# should return the series name w/o newline
-        return SeriesName#It works! Holy toledo-what a pain in butt.
+        SeriesName=SeriesNameTxtString.group(0)
+        # should return the series name w/o newline
+        return SeriesName
+        #It works! Holy toledo-what a pain in butt.
         
     def GetNumChan(self,Series_Data):
         """
@@ -412,7 +426,11 @@ class LeicaExperiment:
         Description: Return the z dimension from given data
         """              
         #Get the z-dimension value
+        if not self.RE_NumSect.search(Series_Data):
+            return 1
         SeriesDataSplit=self.RE_NumSect.split(Series_Data)
+        
+        
         NumSect_String=SeriesDataSplit[1]
         NumSectMatch=self.RE_LogicalSize.search(NumSect_String)
         NumSectLine=NumSectMatch.group(0)
@@ -555,9 +573,14 @@ class LeicaExperiment:
                         
                         
     def Extract_Series_Info(self):
+        """
+        Method: Extract_Series_Info
+        Created: 15.04.2005, KP, based on Karl Garsha's code
+        Description: Extract the info about the series
+        """        
         self.SeriesDict={}
         
-        print "Series_Data_List=",self.Series_Data_List
+        #print "Series_Data_List=",self.Series_Data_List
         for string in self.Series_Data_List:
             Series_Data=string
             Series_Info={}
@@ -566,6 +589,7 @@ class LeicaExperiment:
             SeriesScanMode=self.GetScanMode(Series_Data)
             
             Series_Info['Series_Name'] = seriesname
+            #print "\n\nSeries name=",seriesname,"\nScanMode=",SeriesScanMode,"\n"
             if not SeriesScanMode:
                 if "snapshot" in seriesname.lower():
                     # TODO: This is a snapshot, handle it as such
@@ -577,15 +601,18 @@ class LeicaExperiment:
                 Series_Info['Scan_Mode']=SeriesScanMode
             
             if SeriesScanMode=='xyz' or SeriesScanMode=='xyzt':
+                Logging.info("Scan mode is ",SeriesScanMode,kw="io")
+                #print Series_Data
                 Series_Info['NumChan']=self.GetNumChan(Series_Data)
-                
+                #print "Number of channels=",Series_Info['NumChan']
                 SeriesDataSplit=self.RE_NumChan.split(Series_Data)
                 Series_Data=SeriesDataSplit[1] #Breaks data text into progressively smaller pieces
           
-                Series_Info['Number_Sections']=self.GetZDimension(Series_Data)
-                
-                SeriesDataSplit=self.RE_NumSect.split(Series_Data)
-                Series_Data=SeriesDataSplit[1] #Breaks data text into progressively smaller pieces
+                z=self.GetZDimension(Series_Data)
+                Series_Info['Number_Sections']=z
+                if z !=1:
+                    SeriesDataSplit=self.RE_NumSect.split(Series_Data)
+                    Series_Data=SeriesDataSplit[1] #Breaks data text into progressively smaller pieces
                 
                 #Check for Time dimension--if so, get time data
                 if self.RE_T.match(Series_Data):
@@ -624,7 +651,10 @@ class LeicaExperiment:
                     CH_Name=('_ch'+str((b%100)//10)+str((b%10)//1))
                     Num_Z_Sec=Series_Info['Number_Sections']
                     for c in xrange(Num_Z_Sec):
-                        Z_Name=str('_z'+str((c%1000)//100)+str((c%100)//10)+str((c%10)//1))
+                        if Num_Z_Sec!=1:
+                            Z_Name=str('_z'+str((c%1000)//100)+str((c%100)//10)+str((c%10)//1))
+                        else:
+                            Z_Name=""
                         if Num_T_Points > 1:
                             Slice_Name = self.ExpName + '_' + Series_Name + TP_Name + Z_Name + CH_Name + '.tif'
                         else:
@@ -659,21 +689,45 @@ class LeicaExperiment:
                 TIFFReader.RawModeOn()
                 #First read the images for a particular channel
                 ImageName=Channel[0] #Take the first tif name
+                #print "Image name='%s'"%ImageName
                 #RE_zsplit=re.compile(r'.+_z000.+',re.I)  #split the filename at the z position, exising the z-pos variable
-                RE_FilePrefix=re.compile(r'.+_z',re.I) #match for the file prefix
+                #match for the file prefix
+                RE_FilePrefix=re.compile(r'.+_z',re.I) 
+                # match for files that only have _chXXX
+                RE_FileChPrefix=re.compile(r'(.+)_ch',re.I)
                 RE_FilePostfix=re.compile(r'_ch\d+.tif',re.I) #search for the end part of the file name
                 FilePrefixMatch=re.match(RE_FilePrefix,ImageName)
-                ImagePrefix=string.strip(FilePrefixMatch.group(0))#we match the first part of the filename (above), then get the matched string
+                if FilePrefixMatch:
+                    ImagePrefix=string.strip(FilePrefixMatch.group(0))#we match the first part of the filename (above), then get the matched string
+                    #print "ImagePrefix (z)=",ImagePrefix
+                else:
+                    FilePrefixMatch=re.match(RE_FileChPrefix,ImageName)
+                    #raise "Got no ImagePrefix for ",ImageName
+                    #we match the first part of the filename (above), then get the matched string
+                    ImagePrefix=string.strip(FilePrefixMatch.group(1))
+                    print FilePrefixMatch.groups()
+                    print "ImagePrefix (ch only)=",ImagePrefix                    
                 FilePostfixSearch=re.search(RE_FilePostfix,ImageName)
                 FilePostfixGroup=FilePostfixSearch.group(0)#this gives us the string found by the search
-                ImagePattern='%s%03i'+str(FilePostfixGroup) #fsprint stuff--string+3 int spaces padded w/ zeros+last part of name eg. "_ch00.tif"
+                print "FilePostfixGroup=",FilePostfixGroup
+                if Series_Info["Number_Sections"]>1:                
+                    #fsprint stuff--string+3 int spaces padded w/ zeros+last part of name eg. "_ch00.tif"
+                    ImagePattern='%s%03i'+str(FilePostfixGroup) 
+                else:
+                    ImagePattern='%s'+str(FilePostfixGroup)
+                print "ImagePattern=",ImagePattern
                 if FilePrefixMatch != None:
-                    #print "self.path=",self.path
+                    print "self.path=",self.path
+                    
                     ImagePrefix=os.path.join(self.path,ImagePrefix)
-                    #print "Using image prefix=",ImagePrefix
+                    ImagePrefix.encode("latin-1")
+                    #print "Using image# prefix='%s'"%ImagePrefix
+##                    for i in ImagePrefix:
+#                        print i,ord(i)
                     ImageReader.SetFilePrefix(ImagePrefix)
                     TIFFReader.SetFilePrefix(ImagePrefix) 
                 if FilePostfixSearch != None:
+                    ImagePattern.encode("latin-1")
                     ImageReader.SetFilePattern(ImagePattern)
                     TIFFReader.SetFilePattern(ImagePattern)
                 if Series_Info['Bit_Depth']==8:

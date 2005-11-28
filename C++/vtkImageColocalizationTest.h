@@ -51,12 +51,12 @@ public:
 
 
   // Ignore zero-zero pixel pairs in colocalization
-  vtkGetMacro(IgnoreZeroPixels,bool);
-  vtkSetMacro(IgnoreZeroPixels,bool);
+  vtkGetMacro(IgnoreZeroPixels,int);
+  vtkSetMacro(IgnoreZeroPixels,int);
   // Description:
   // Randomize in Z direction also
-  vtkGetMacro(RandomizeZ,bool);
-  vtkSetMacro(RandomizeZ,bool);
+  vtkGetMacro(RandomizeZ,int);
+  vtkSetMacro(RandomizeZ,int);
 
   // Description:
   // Set the size of the PSF (in pixels) manually
@@ -141,9 +141,9 @@ private:
   vtkImageColocalizationTest(const vtkImageColocalizationTest&);  // Not implemented.
   void operator=(const vtkImageColocalizationTest&);  // Not implemented.
 
-  bool IgnoreZeroPixels;
-  bool RandomizeZ;
-  bool Smooth;
+  int IgnoreZeroPixels;
+  int RandomizeZ;
+  int Smooth;
   int ManualPSFSize;
   int NumIterations;
   int Ch2Lambda;

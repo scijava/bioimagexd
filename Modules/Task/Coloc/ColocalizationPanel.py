@@ -200,6 +200,7 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
         Description: Get the P value for colocalization
         """
         coloctest=vtk.vtkImageColocalizationTest()
+        coloctest.SetRandomizeZ(1)
         sources=self.dataUnit.getSourceDataUnits()
         self.eventDesc="Calculating P-Value"
         methods=["Fay","Costes","van Steensel"]
