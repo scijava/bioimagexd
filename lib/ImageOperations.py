@@ -640,7 +640,7 @@ def scatterPlot(imagedata1,imagedata2,z,countVoxels, wholeVolume,logarithmic=1):
     shiftscale.Update()
     data=shiftscale.GetOutput()
     #data = equalize(data)
-    equalize(data)
+    #equalize(data)
 #    Logging.info("Shift scale has dimensions:",data.GetDimensions(),kw="imageop")            
     if countVoxels:
         x0,x1=data.GetScalarRange()

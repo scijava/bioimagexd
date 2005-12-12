@@ -41,6 +41,8 @@ import wx
 import Dialogs
 import os.path
 
+from wx.lib.statbmp  import GenStaticBitmap as StaticBitmap
+
 class UrmasDropTarget(wx.PyDropTarget):
     """
     Class: UrmasDropTarget
@@ -84,7 +86,6 @@ class UrmasDropTarget(wx.PyDropTarget):
         Created: 12.04.2005, KP
         Description: 
         """
-        print "OnDragOver"
         print "OnDragOver(%d,%d)"%(x,y)
         self.target.OnDragOver(x,y,d)
         return wx.DragCopy
@@ -119,152 +120,89 @@ class UrmasPalette(wx.Panel):
         """
         self.parent=parent
         self.control=control
-        try:
-            import psyco
-            psyco.cannotcompile(self.dropItem)
-        except ImportError:
-            pass
+        self.dropsource = None
+        self.icons={}
+        self.panels={}
+        self.sbmps={}
+        #try:
+        #    import psyco
+        #    psyco.cannotcompile(self.dropItem)
+        #except ImportError:
+        #    pass
         wx.Panel.__init__(self,parent,style=wx.RAISED_BORDER,size=(800,32))
         self.sizer=wx.BoxSizer(wx.HORIZONTAL)
         
-        iconpath=reduce(os.path.join,["Icons"])
-        p=wx.Panel(self,-1,size=(32,32))#,style=wx.RAISED_BORDER)
+        iconpath=self.iconpath=reduce(os.path.join,["Icons"])
+        
         self.ID_NEWTIMEPOINTTRACK=wx.NewId()
-        bmp=wx.Image(os.path.join(iconpath,"timepoint_track.JPG"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
-        self.newtimepointtrack=wx.StaticBitmap(p,self.ID_NEWTIMEPOINTTRACK,bmp,style=wx.RAISED_BORDER)
-        self.newtimepointtrack.Bind(wx.EVT_MOTION,self.onToolNewTimepointTrack)        
-        p.Bind(wx.EVT_MOTION,self.onToolNewTimepointTrack)        
-        self.sizer.Add(p,flag=wx.RIGHT,border=2)
-        p.Bind(               wx.EVT_LEFT_UP,self.onToolClick)
-        self.newtimepointtrack.Bind(wx.EVT_LEFT_UP,self.onToolClick)
         toolTip = wx.ToolTip("Drag this on to the timeline to add a track for controlling animated timepoints.")
-        self.newtimepointtrack.SetHelpText(toolTip.GetTip())
-        self.newtimepointtrack.SetToolTip(toolTip)        
-        p.SetToolTip(toolTip)
+        self.addDragDropItem(self.ID_NEWTIMEPOINTTRACK,
+        "timepoint_track.JPG",self.onToolNewTimepointTrack,toolTip)        
         
-        p=wx.Panel(self,-1,size=(32,32))#,style=wx.RAISED_BORDER)
         self.ID_NEWSPLINETRACK=wx.NewId()
-        bmp=wx.Image(os.path.join(iconpath,"spline_track.JPG"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
-        self.newsplinetrack=wx.StaticBitmap(p,self.ID_NEWSPLINETRACK,bmp,style=wx.RAISED_BORDER)
-        self.newsplinetrack.Bind(wx.EVT_MOTION,self.onToolNewSplineTrack)        
-        p.Bind(wx.EVT_MOTION,self.onToolNewSplineTrack)        
-        p.Bind(               wx.EVT_LEFT_UP,self.onToolClick)
-        self.newsplinetrack.Bind(wx.EVT_LEFT_UP,self.onToolClick)
         toolTip = wx.ToolTip("Drag this on to the timeline to add a track for controlling the camera movement using a spline curve.")
-        self.newsplinetrack.SetHelpText(toolTip.GetTip())
-        self.newsplinetrack.SetToolTip(toolTip)        
-        p.SetToolTip(toolTip)
-        self.sizer.Add(p,flag=wx.RIGHT,border=2)
+        self.addDragDropItem(self.ID_NEWSPLINETRACK,
+        "spline_track.JPG",self.onToolNewSplineTrack,toolTip)        
+
         
-        p=wx.Panel(self,-1,size=(32,32))#,style=wx.RAISED_BORDER)
         self.ID_NEWKEYFRAMETRACK=wx.NewId()
-        bmp=wx.Image(os.path.join(iconpath,"keyframe_track.JPG"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
-        self.newkeyframetrack=wx.StaticBitmap(p,self.ID_NEWKEYFRAMETRACK,bmp,style=wx.RAISED_BORDER)
-        self.newkeyframetrack.Bind(wx.EVT_MOTION,self.onToolNewKeyframeTrack)        
-        p.Bind(wx.EVT_MOTION,self.onToolNewKeyframeTrack)        
-        p.Bind(               wx.EVT_LEFT_UP,self.onToolClick)
-        self.newkeyframetrack.Bind(wx.EVT_LEFT_UP,self.onToolClick)
         toolTip = wx.ToolTip("Drag this on to the timeline to add a track for controlling the camera movement by creating keyframes.")
-        self.newkeyframetrack.SetHelpText(toolTip.GetTip())
-        self.newkeyframetrack.SetToolTip(toolTip)        
-        p.SetToolTip(toolTip)
-        self.sizer.Add(p,flag=wx.RIGHT,border=5)        
+        self.addDragDropItem(self.ID_NEWKEYFRAMETRACK,
+        "keyframe_track.JPG",self.onToolNewKeyframeTrack,toolTip)        
         
-        self.ID_NEWSPLINE=wx.NewId()
-        p=wx.Panel(self,-1,size=(32,32))#,style=wx.RAISED_BORDER)
         self.ID_NEWTIMEPOINT=wx.NewId()
-        bmp=wx.Image(os.path.join(iconpath,"timepoint.jpg"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
-        self.newtimepoint=wx.StaticBitmap(p,self.ID_NEWTIMEPOINT,bmp,style=wx.RAISED_BORDER)
-        self.newtimepoint.Bind(wx.EVT_MOTION,self.onToolNewTimepoint)
-        
         toolTip = wx.ToolTip("Drag this on to a timepoint track to select visualized timepoints.")
-        self.newtimepoint.SetHelpText(toolTip.GetTip())
-        self.newtimepoint.SetToolTip(toolTip)        
-        p.SetToolTip(toolTip)
-        p.Bind(wx.EVT_MOTION,self.onToolNewTimepoint)
-        p.Bind(                wx.EVT_LEFT_UP,self.onToolClick)
-        self.newtimepoint.Bind(wx.EVT_LEFT_UP,self.onToolClick)
-        self.sizer.Add(p,flag=wx.RIGHT,border=2)
+        self.addDragDropItem(self.ID_NEWTIMEPOINT,
+        "timepoint.jpg",self.onToolNewTimepoint,toolTip)        
 
-        p=wx.Panel(self,-1,size=(32,32))#,style=wx.RAISED_BORDER)
-        bmp=wx.Image(os.path.join(iconpath,"spline_random.jpg"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
-        self.newspline=wx.StaticBitmap(p,self.ID_NEWSPLINE,bmp,style=wx.RAISED_BORDER)
-        self.newspline.Bind(wx.EVT_MOTION,self.onToolNewSpline)
-        p.Bind(wx.EVT_MOTION,self.onToolNewSpline)
-        p.Bind(             wx.EVT_LEFT_UP,self.onToolClick)
-        self.newspline.Bind(wx.EVT_LEFT_UP,self.onToolClick)
-        self.sizer.Add(p,flag=wx.RIGHT,border=2)
-        
+        self.ID_NEWSPLINE=wx.NewId()                
         toolTip = wx.ToolTip("Drag this on to a camera path track to add a random camera path.")
-        self.newspline.SetToolTip(toolTip)        
-        self.newspline.SetHelpText(toolTip.GetTip())
-        p.SetToolTip(toolTip)
+        self.addDragDropItem(self.ID_NEWSPLINE,
+        "spline_random.jpg",self.onToolNewSpline,toolTip)        
         
-        p=wx.Panel(self,-1,size=(32,32))#,style=wx.RAISED_BORDER)
         self.ID_NEWCIRCULAR=wx.NewId()
-        bmp=wx.Image(os.path.join(iconpath,"spline_rotate_x.jpg"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
-        self.newcircular=wx.StaticBitmap(p,self.ID_NEWCIRCULAR,bmp,style=wx.RAISED_BORDER)
-        self.newcircular.Bind(wx.EVT_MOTION,self.onToolNewCircular)
-        p.Bind(wx.EVT_MOTION,self.onToolNewCircular)
-        p.Bind(               wx.EVT_LEFT_UP,self.onToolClick)
-        self.newcircular.Bind(wx.EVT_LEFT_UP,self.onToolClick)
-        self.sizer.Add(p,flag=wx.RIGHT,border=2)
-
         toolTip=wx.ToolTip("Drag this on to a camera path track to make camera rotate around X axis.")
-        self.newcircular.SetToolTip(toolTip)
-        self.newcircular.SetHelpText(toolTip.GetTip())
-        p.SetToolTip(toolTip)
-
-        p=wx.Panel(self,-1,size=(32,32))#,style=wx.RAISED_BORDER)
+        self.addDragDropItem(self.ID_NEWCIRCULAR,
+        "spline_rotate_x.jpg",self.onToolNewCircular,toolTip)        
+        
         self.ID_NEWPERPENDICULAR=wx.NewId()
-        bmp=wx.Image(os.path.join(iconpath,"spline_rotate_y.jpg"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
-        self.newperpendicular=wx.StaticBitmap(p,self.ID_NEWPERPENDICULAR,bmp,style=wx.RAISED_BORDER)
-        self.newperpendicular.Bind(wx.EVT_MOTION,self.onToolNewPerpendicular)
-        p.Bind(wx.EVT_MOTION,self.onToolNewPerpendicular)
-        p.Bind(                    wx.EVT_LEFT_UP,self.onToolClick)
-        self.newperpendicular.Bind(wx.EVT_LEFT_UP,self.onToolClick)
-        self.sizer.Add(p,flag=wx.RIGHT,border=2)
-        
         toolTip=wx.ToolTip("Drag this on to a camera path track to make camera rotate around Y axis.")
-        self.newperpendicular.SetToolTip(toolTip)
-        self.newperpendicular.SetHelpText(toolTip.GetTip())
-        p.SetToolTip(toolTip)
-
-        p=wx.Panel(self,-1,size=(32,32))#,style=wx.RAISED_BORDER)
-        self.ID_STOP_CAMERA=wx.NewId()
-        bmp=wx.Image(os.path.join(iconpath,"spline_stop.jpg"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
-        self.newstop=wx.StaticBitmap(p,self.ID_STOP_CAMERA,bmp,style=wx.RAISED_BORDER)
-        self.newstop.Bind(wx.EVT_MOTION,self.onToolNewStop)
-        p.Bind(           wx.EVT_LEFT_UP,self.onToolClick)
-        self.newstop.Bind(wx.EVT_LEFT_UP,self.onToolClick)
-        p.Bind(wx.EVT_MOTION,self.onToolNewStop)
+        self.addDragDropItem(self.ID_NEWPERPENDICULAR,
+        "spline_rotate_y.jpg",self.onToolNewPerpendicular,toolTip)        
         
+        self.ID_STOP_CAMERA=wx.NewId()        
         toolTip=wx.ToolTip("Drag this on to a camera path to add a pause in camera movement.")
-        self.newstop.SetToolTip(toolTip)
-        self.newstop.SetHelpText(toolTip.GetTip())
-        p.SetToolTip(toolTip)
+        self.addDragDropItem(self.ID_STOP_CAMERA,
+        "spline_stop.jpg",self.onToolNewStop,toolTip)        
         
-        self.sizer.Add(p,flag=wx.RIGHT,border=2)
         
-        p=wx.Panel(self,-1,size=(32,32))#,style=wx.RAISED_BORDER)
         self.ID_ADD_KEYFRAME=wx.NewId()
-        bmp=wx.Image(os.path.join(iconpath,"add_keyframe.jpg"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
-        self.newkeyframe=wx.StaticBitmap(p,self.ID_ADD_KEYFRAME,bmp,style=wx.RAISED_BORDER)
-        self.newkeyframe.Bind(wx.EVT_MOTION,self.onToolNewKeyframe)
-        p.Bind(           wx.EVT_LEFT_UP,self.onToolClick)
-        self.newkeyframe.Bind(wx.EVT_LEFT_UP,self.onToolClick)
-        p.Bind(wx.EVT_MOTION,self.onToolNewKeyframe)
-        toolTip=wx.ToolTip("Drag this on to a keyframe track to add a keyframe at the current camera position.")
-        self.newkeyframe.SetToolTip(toolTip)
-        self.newkeyframe.SetHelpText(toolTip.GetTip())
-        p.SetToolTip(toolTip)
-        
-        self.sizer.Add(p,flag=wx.RIGHT,border=2)
-        
+        toolTip=wx.ToolTip("Drag this on to a keyframe track to add a keyframe at the current camera position.")        
+        self.addDragDropItem(self.ID_ADD_KEYFRAME,
+        "add_keyframe.jpg",self.onToolNewKeyframe,toolTip)     
         
         self.SetSizer(self.sizer)
         self.SetAutoLayout(1)
         self.sizer.Fit(self)
+        
+    def addDragDropItem(self,newid,icon,dragCallback,toolTip):        
+        #p=wx.Panel(self,-1,size=(32,32))#,style=wx.RAISED_BORDER)
+        #self.panels[newid]=p
+        bmp=wx.Image(os.path.join(self.iconpath,icon),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
+        self.icons[newid]=bmp
+        sbmp=StaticBitmap(self,newid,bmp,style=wx.RAISED_BORDER)
+        self.sbmps[newid]=sbmp
+        sbmp.Bind(wx.EVT_MOTION,dragCallback)        
+        #p.Bind(wx.EVT_MOTION,dragCallback)        
+        #self.sizer.Add(p,flag=wx.RIGHT,border=2)
+        #p.Bind(               wx.EVT_LEFT_UP,self.onToolClick)
+        self.sizer.Add(sbmp,flag=wx.RIGHT,border=2)
+        
+        sbmp.Bind(wx.EVT_LEFT_UP,self.onToolClick)
+        
+        sbmp.SetHelpText(toolTip.GetTip())
+        sbmp.SetToolTip(toolTip)        
+        #p.SetToolTip(toolTip)        
         
     def onToolClick(self,event):
         """
@@ -386,3 +324,23 @@ class UrmasPalette(wx.Panel):
         res = self.dropsource.DoDragDrop(wx.Drag_AllowMove)
         print "Result=",res
         return res
+
+    def fooDestroy(self):
+        self.Show(0)
+        #print "Destroying static bitmaps..."
+        for i in self.sbmps.values():
+            i.Show(0)
+            i.Destroy()
+        print "Destroying panels..."
+        #for i in self.panels.values():
+        #    i.Show(0)
+        #    self.sizer.Detach(i)
+        #    print "Destroying ",i
+        #    #i.Destroy()
+        
+        print "Destroying palette..."
+        if self.dropsource:
+            self.dropsource.Destroy()
+        print "Now destroying..."
+        wx.Panel.Destroy(self)
+        

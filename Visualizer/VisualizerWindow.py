@@ -271,3 +271,6 @@ class VisualizerWindow(wxVTKRenderWindowInteractor):
                 self.renderer=collection.GetItemAsObject(0)
         return self.renderer
     
+
+    def __del__(self):
+        print "Deleting visualizerwindow..."

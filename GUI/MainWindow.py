@@ -1306,8 +1306,11 @@ class MainWindow(wx.Frame):
         Created: 03.11.2004, KP
         Description: Quits the application
         """
-        #self.visualizer.closeVisualizer()
-        #self.visualizer.enable(0)
+        self.visualizer.enable(0)
+        
+        print "QUITAPP!\n\n\n"
+        self.visualizer.closeVisualizer()
+        
         self.Destroy()
         
 

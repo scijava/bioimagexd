@@ -149,8 +149,8 @@ class Colocalization(Module):
                 method="self.colocAutoThreshold.Get%s()"%i
 
                 val=eval(method)
-                if "DiffStain" in i:
-                    print i,val
+#                if "DiffStain" in i:
+#                    print i,val
                 settings.set(i,val)
             t1=settings.get("Ch1ThresholdMax")
             t2=settings.get("Ch2ThresholdMax")

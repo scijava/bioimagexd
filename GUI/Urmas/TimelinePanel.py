@@ -320,8 +320,7 @@ class TimelinePanel(wx.Panel):
         print "setDataUnit called!"
         self.dataUnit=dataUnit
         self.timeline.setDataUnit(dataUnit)
-
-    def __del__(self):
-        del self.wxrenwin
         
         
+        
+# safeguard

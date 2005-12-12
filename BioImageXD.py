@@ -35,6 +35,9 @@ import os.path
 import os
 import sys
 import imp
+
+import profile
+
 if "check" in sys.argv:
     import pychecker.checker
     import Logging
@@ -98,7 +101,8 @@ class LSMApplication(wx.App):
         splash.Show()
          # Import Psyco if available
         try:
-            import psyco
+            pass
+            #import psyco
 
             #psyco.log()
             #psyco.profile()
@@ -140,8 +144,18 @@ if __name__=='__main__':
             sys.stderr = f
             Logging.outfile = f
             Logging.enableFull()
-        app=LSMApplication(0)
-        app.run()
+        
+        if "profint" in sys.argv:
+            import pstats
+            p = pstats.Stats('prof.log')
+            p.sort_stats('time', 'cum').print_stats(.5, 'init')
+            sys.exit(0)
+        
+        app=LSMApplication(0)    
+        if "profile" in sys.argv:
+            profile.run('app.run()', 'prof.log')
+        else:
+            app.run()
 
 
 

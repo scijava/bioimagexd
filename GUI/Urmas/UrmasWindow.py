@@ -99,6 +99,10 @@ class UrmasWindow(scrolled.ScrolledPanel):
         #self.sizer.Fit(self)
         #self.SetStatusText("Done.")
         
+    def __del__(self):
+        print "Deleting UrmasWindow..."
+        
+        
     def onShowFrame(self,evt):
         """
         Method: onShowFrame
@@ -446,50 +450,6 @@ class UrmasWindow(scrolled.ScrolledPanel):
             name=dlg.GetPath()
         if name:
             self.control.writeToDisk(name)
-        
-    def startWizard(self):
-        """
-        Method: startWizard()
-        Created: 14.03.2005, KP
-        Description: Start this wizard
-        """              
-        #self.RunWizard(self.timepointSelection)
-        
-    
-    def onSize(self,evt):
-        """
-        Method: onSize()
-        Created: 22.2.2005, KP
-        Description: Event handler used to resize the window
-        """        
-        x,y=evt.GetSize()
-        if 1 or self.animatorOn == False:
-            self.notebook.SetSize((x,y))
-        else:
-            self.notebook.SetSize((x/2,y))
-            self.animator.SetSize((x/2,y))
-        
-    
-    def showAnimator(self,flag):
-        """
-        Method: showAnimator(flag)
-        Created: 22.2.2005, KP
-        Description: Method used to either show or hide the animator
-        """    
-        if flag == True:
-            self.animator.Show(1)
-            self.animatorOn=1
-            w,h=self.GetSize()
-            wa,ha=self.animator.GetSize()
-            self.SetSize((w,h+ha))
-            self.splitter.SplitHorizontally(self.notebook,self.animator,h)
-        else:
-            self.animatorOn=0
-            w,h=self.GetSize()
-            wa,ha=self.animator.GetSize()
-            self.SetSize((w,h-ha))
-            self.splitter.Unsplit(self.animator)
-            
 
     def setDataUnit(self,dataUnit):
         """
@@ -500,4 +460,7 @@ class UrmasWindow(scrolled.ScrolledPanel):
         #self.timepointSelection.setDataUnit(dataUnit)
         #self.timelinePanel.setDataUnit(dataUnit)
         self.control.setDataUnit(dataUnit)
+
+
         
+# safeguard        

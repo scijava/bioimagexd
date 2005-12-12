@@ -877,6 +877,7 @@ class Visualizer:
             if hasattr(self.currentWindow,"enable"):
                 self.currentWindow.enable(0)
             self.currentWindow.Show(0)
+        
         modeclass,settingclass,module=self.modes[mode]
         modeinst=self.instances[mode]
         new=0

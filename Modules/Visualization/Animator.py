@@ -133,7 +133,7 @@ class AnimatorMode(VisualizationMode):
         Created: 24.05.2005, KP
         Description: Unset the mode of visualization
         """
-        self.urmaswin.Show(0)       
+        self.urmaswin.Show(0)      
         if newmode!="3d":
             self.menuManager.mainToolbar.EnableTool(MenuManager.ID_ADJUST,1)
             self.menuManager.mainToolbar.EnableTool(MenuManager.ID_RESTORE,1)
@@ -177,3 +177,7 @@ class AnimatorMode(VisualizationMode):
 
 
         # safeguard
+
+    def __del_(self):
+        print "Deleting urmaswin"
+        del self.urmaswin

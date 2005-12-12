@@ -26,6 +26,7 @@ inclusion in MayaVi."""
 #import Tkinter
 #from vtkRenderWidget import vtkTkRenderWidget
 import wx
+from vtk.wx.wxVTKRenderWindowInteractor import wxVTKRenderWindowInteractor
 from vtk.wx.wxVTKRenderWindow import wxVTKRenderWindow
 from math import pi, sin, cos, atan2, sqrt
 import vtk
@@ -481,9 +482,12 @@ class ColorTool(csel.ColourSelect):
 
 class LightTool(wx.Frame):
     def __init__(self, master, lights, renwidget ):
-        #Tkinter.Toplevel.__init__(self, master)
-        print "master=",master
         wx.Frame.__init__(self,master,-1)
+        self.s=wx.BoxSizer(wx.VERTICAL)
+        
+        self.panel=wx.Panel(self,-1)
+        self.s.Add(self.panel,1)
+        
         self.connected = None
         self.num_lights_on = 0
         self.lights = lights
@@ -495,13 +499,14 @@ class LightTool(wx.Frame):
             l.save()
         self.sizer = wx.GridBagSizer()
         
-        self.gfxwin = wxVTKRenderWindow(self,-1,size=(220,200))
+        self.gfxwin = wxVTKRenderWindow(self.panel,-1,size=(220,200))
+        
         #self.gfxwin.Render()
-        self.gfxwin.Initialize()
-        self.gfxwin.Start()
+        #self.gfxwin.Initialize()
+        #self.gfxwin.Start()
         self.ren = vtk.vtkRenderer()
 
-        self.switchbank = wx.Panel(self,-1,style=wx.RAISED_BORDER)
+        self.switchbank = wx.Panel(self.panel,-1,style=wx.RAISED_BORDER)
         self.switchsizer=wx.GridBagSizer()
         
         self.sw=[]
@@ -524,10 +529,10 @@ class LightTool(wx.Frame):
         self.switchsizer.Fit(self.switchbank)
 
 
-        self.azimuthBar = AzimuthTool(self, self.ren, self.redraw)
-        self.elevationBar = ElevationTool(self, self.ren, self.redraw)
+        self.azimuthBar = AzimuthTool(self.panel, self.ren, self.redraw)
+        self.elevationBar = ElevationTool(self.panel, self.ren, self.redraw)
         
-        self.f1 = wx.Panel(self,-1)#,style=wx.RAISED_BORDER)
+        self.f1 = wx.Panel(self.panel,-1)#,style=wx.RAISED_BORDER)
         self.f1sizer=wx.GridBagSizer()
         
         l = wx.StaticText(self.f1,-1,"Default lighting:")
@@ -545,7 +550,7 @@ class LightTool(wx.Frame):
         self.f1.SetAutoLayout(1)
         self.f1sizer.Fit(self.f1)
 
-        self.btnPanel=wx.Panel(self,-1)
+        self.btnPanel=wx.Panel(self.panel,-1)
         self.btnsizer=wx.GridBagSizer()
         
         self.resetelaz = wx.Button(self.btnPanel,-1,"Set to headlight")
@@ -564,7 +569,7 @@ class LightTool(wx.Frame):
         
         self.btnsizer.Fit(self.btnPanel)
 
-        self.f2 = wx.Panel(self)
+        self.f2 = wx.Panel(self.panel)
         self.f2sizer=wx.GridBagSizer()
         
         b = wx.Button(self.f2,-1,"OK")
@@ -614,6 +619,14 @@ class LightTool(wx.Frame):
         self.Bind(wx.EVT_CLOSE,self.cancel_handler)
 
         self.gfxwin.GetRenderWindow().AddRenderer(self.ren)
+
+        cam=self.ren.GetActiveCamera()
+        x,y,z,a,b,c=(0,0,1,0,1,0)
+        cam.SetFocalPoint(0,0,0)
+        cam.SetPosition(x,y,z)
+        cam.SetViewUp(a,b,c)
+        self.ren.ResetCamera()
+        
         self.gfxwin.Render()
         self.ren.SetBackground(0.0,0.0,0.0)
         self.picker = vtk.vtkCellPicker()
@@ -625,9 +638,13 @@ class LightTool(wx.Frame):
         self.ren.GetActiveCamera().Zoom(1.6)
         self.connect('first')
 
-        self.SetSizer(self.sizer)
-        self.SetAutoLayout(1)
-        self.sizer.Fit(self)
+        self.panel.SetSizer(self.sizer)
+        self.panel.SetAutoLayout(1)
+        self.sizer.Fit(self.panel)
+        
+        self.SetSizer(self.s)
+        self.s.Fit(self)
+        self.SetAutoLayout(1)        
 
     def switchhandler(self, which, state):
         if state == 'on':

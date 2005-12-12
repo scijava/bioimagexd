@@ -127,15 +127,18 @@ class RendererConfiguration(wx.MiniFrame):
         Description: Initialization
         """     
         wx.MiniFrame.__init__(self,parent,-1,"Configure Render Window")
+        self.panel=wx.Panel(self,-1)
+        self.s=wx.BoxSizer(wx.VERTICAL)
+        
         self.sizer = wx.GridBagSizer()
         self.parent = parent
         self.visualizer=visualizer
         self.mode=self.visualizer.currMode
         
         self.buttonBox = wx.BoxSizer(wx.HORIZONTAL)
-        self.okButton = wx.Button(self,-1,"Ok")
-        self.applyButton = wx.Button(self,-1,"Apply")
-        self.cancelButton = wx.Button(self,-1,"Cancel")
+        self.okButton = wx.Button(self.panel,-1,"Ok")
+        self.applyButton = wx.Button(self.panel,-1,"Apply")
+        self.cancelButton = wx.Button(self.panel,-1,"Cancel")
         
         self.okButton.Bind(wx.EVT_BUTTON,self.onOk)
         self.applyButton.Bind(wx.EVT_BUTTON,self.onApply)
@@ -149,16 +152,21 @@ class RendererConfiguration(wx.MiniFrame):
         self.contentSizer = wx.GridBagSizer()
         self.sizer.Add(self.contentSizer,(0,0))
         
-        self.line = wx.StaticLine(self,-1)
+        self.line = wx.StaticLine(self.panel,-1)
         self.sizer.Add(self.line,(2,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
         self.sizer.Add(self.buttonBox,(3,0))
         
         self.initializeGUI()
         
-        self.SetSizer(self.sizer)
-        self.SetAutoLayout(1)
-        self.sizer.Fit(self)
+        self.panel.SetSizer(self.sizer)
+        self.panel.SetAutoLayout(1)
+        self.sizer.Fit(self.panel)
+        self.SetSize(self.panel.GetSize())
         
+        self.s.Add(self.panel)
+        self.SetSizer(self.s)        
+        self.SetAutoLayout(1)
+        self.s.Fit(self)
         
     def initializeGUI(self):
         """
@@ -166,17 +174,17 @@ class RendererConfiguration(wx.MiniFrame):
         Created: 16.05.2005, KPself.mode
         Description: Build up the configuration GUI
         """             
-        self.colorLbl=wx.StaticText(self,-1,"Background color:")
-        self.colorBtn=csel.ColourSelect(self,-1)
+        self.colorLbl=wx.StaticText(self.panel,-1,"Background color:")
+        self.colorBtn=csel.ColourSelect(self.panel,-1)
         self.Bind(csel.EVT_COLOURSELECT,self.onSelectColor,id=self.colorBtn.GetId())
 
-        self.sizeLbl=wx.StaticText(self,-1,"Window size:")
-        self.sizeEdit=wx.TextCtrl(self,-1,"512x512")
+        self.sizeLbl=wx.StaticText(self.panel,-1,"Window size:")
+        self.sizeEdit=wx.TextCtrl(self.panel,-1,"512x512")
 
-        self.stereoLbl=wx.StaticText(self,-1,"Stereo rendering:")
+        self.stereoLbl=wx.StaticText(self.panel,-1,"Stereo rendering:")
         self.modes=[None,"RedBlue","CrystalEyes","Dresden","Interlaced","Left","Right"]
         stereomodes=["No stereo","Red-Blue","Crystal Eyes","Dresden","Interlaced","Left","Right"]
-        self.stereoChoice=wx.Choice(self,-1,choices=stereomodes)
+        self.stereoChoice=wx.Choice(self.panel,-1,choices=stereomodes)
         
         self.stereoChoice.Bind(wx.EVT_CHOICE,self.onSetStereoMode)
         
