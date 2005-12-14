@@ -164,13 +164,14 @@ class UrmasRenderer:
         self.interpolator.SetInterpolationTypeToSpline()
         for track in tracks:
             items=track.getItems()
-            for item in items:
+            for item in items[:-1]:
                 start,end=item.getPosition()
                 self.interpolator.AddCamera(start,item.cam)
+            # The last item is the end of track-item
             if len(items):
                 item=items[-1]
                 start,end=item.getPosition()
-                self.interpolator.AddCamera(end,item.cam)
+                self.interpolator.AddCamera(start,item.cam)
         
     def renderPreviewAt(self,evt,obj,timepos):
         """

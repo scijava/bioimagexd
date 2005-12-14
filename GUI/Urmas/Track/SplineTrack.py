@@ -100,10 +100,11 @@ class SplineTrack(Track):
         Logging.info("Track is closed: %s"%(flag!=0),kw="animator")
         self.closed = flag
         self.splineEditor.setClosed(flag)
-        if flag and add:
-            self.addSplinePoint(len(self.items))
-        elif add:
-            self.removeItem(len(self.items))
+        #if flag and add:
+        #    #self.addSplinePoint(len(self.items))
+        #    
+        #elif add:
+        #    self.removeItem(len(self.items))
 
     def AcceptDrop(self,x,y,data):
         """
@@ -396,3 +397,6 @@ class SplineTrack(Track):
             print "item at %d: %s"%(i,str(item))
         self.paintTrack()
         
+        
+        
+#foobar    

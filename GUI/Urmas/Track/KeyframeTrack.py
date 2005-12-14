@@ -131,7 +131,7 @@ class KeyframeTrack(SplineTrack):
         if self.renew != 2 and self.overlayPosInPixels:
             self.dc.Blit(self.overlayPosInPixels-1,0,self.overlayPosInPixelsEnd,self.height,self.mdc,self.overlayPosInPixels-1,0)                    
         
-        print "overlayPos=",self.overlayPos,"overlayItem=",self.overlayItem
+        #print "overlayPos=",self.overlayPos,"overlayItem=",self.overlayItem
         if self.overlayPos!=-1:
             if not self.overlayItem or (self.overlayPos != self.overlayItem.getPosition()[0]):
                 curr=None
@@ -147,12 +147,12 @@ class KeyframeTrack(SplineTrack):
             pps=self.timescale.getPixelsPerSecond() 
             w=(end-start)*pps
             h=self.height
-            print "Painting overlay at ",self.overlayPos*pps
+            #print "Painting overlay at ",self.overlayPos*pps
             try:
                 overlay=ImageOperations.getOverlay(int(w),int(h),(0,255,0),25)
             except Exception, e:
                 print "Failed to create overlay:",e
-                sys.stdin.readline()
+                #sys.stdin.readline()
             overlay=overlay.ConvertToBitmap()
             
             pos=self.getLabelWidth() + self.overlayPos*pps
@@ -167,7 +167,7 @@ class KeyframeTrack(SplineTrack):
         Created: 18.08.2005, KP
         Description: Set the camera for the current item
         """             
-        print "overlayItem=",self.overlayItem
+        #print "overlayItem=",self.overlayItem
         if self.overlayItem:    
             self.overlayItem.getThumbnail()
             self.overlayItem.drawItem()
@@ -184,7 +184,9 @@ class KeyframeTrack(SplineTrack):
         oldlen=len(self.items)
         pos=self.dragEndPosition
         if pos==-1:
-            pos=len(self.items)
+            pos=len(self.items)-1
+        if pos==len(self.items):
+            pos-=1
         Logging.info("Adding keyframe at pos ",pos,kw="animator")
         self.addKeyframePoint(pos)
         pos=pos+1
@@ -226,6 +228,11 @@ class KeyframeTrack(SplineTrack):
             self.items.insert(position,item)
         # +1 accounts for the empty item
         spc=0
+        # if this is the first item to be added, then we insert an endpoint
+        # as well
+        if len(self.items)==1:
+            item=KeyframeEndPoint(self,"",(20,h),**itemkws)
+            self.items.append(item)        
         for i,item in enumerate(self.items):
             if not item.isStopped():
                 self.items[i].setItemNumber(spc)
@@ -234,7 +241,7 @@ class KeyframeTrack(SplineTrack):
                 if update:
                     self.items[i].updateItem()
                     self.items[i].drawItem()
-        
+
         self.updatePositions()
 
         if update:

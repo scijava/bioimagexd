@@ -110,7 +110,7 @@ class TimeScale(wx.Panel):
         self.buffer=wx.EmptyBitmap(self.width,self.height)
         print self.buffer.GetWidth(),self.buffer.GetHeight()
         self.SetMinSize((self.width+10,self.height))
-        Logging.info("Set timescale size to %d,%d"%(self.width,self.height),kw="animator")
+        #Logging.info("Set timescale size to %d,%d"%(self.width,self.height),kw="animator")
         messenger.send(None,"set_timeline_size",(self.width,self.height))
         self.paintScale()
         self.Refresh()

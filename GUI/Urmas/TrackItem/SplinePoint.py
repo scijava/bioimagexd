@@ -200,3 +200,46 @@ class SplinePoint(TrackItem):
     def isStopped(self):return 0
 
         
+class SplineEndPoint(SplinePoint):
+    """
+    Class: SplineEndPoint
+    Created: 14.12.2005, KP
+    Description: A class representing the last item in a spline track
+    """       
+    def __init__(self,parent,text,size,**kws):
+        """
+        Method: __init__
+        Created: 14.12.2005, KP
+        Description: Initialize the item
+        """
+        text="End Point"
+        self.init_done=0
+        w,h=size
+        w=h
+        print "Creating keyframe endpoint with size=",w,h
+        KeyframePoint.__init__(self,parent,text,size,**kws)
+        self.headercolor = (80,100,200)
+        self.setWidth(w)
+        
+        
+        self.init_done=1
+        
+    def setWidth(self,w):
+        if self.init_done:
+            return
+        KeyframePoint.setWidth(self,w)
+    def setColor(self,col,headercolor):
+        """
+        Method: setColor(color, headercolor)
+        Created: 10.02.2005, KP
+        Description: Set the color and header color for this item
+        """       
+        self.color=col
+        self.drawItem()        
+    def setText(self,s):
+        """
+        Method: setText
+        Created: 14.04.2005, KP
+        Description: Set the text number of this item
+        """       
+        pass        

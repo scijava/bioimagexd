@@ -94,6 +94,7 @@ class TrackItem:
         
     def GetPosition(self):
         return self.pos
+        
     def GetSize(self):
         return self.width,self.height
         

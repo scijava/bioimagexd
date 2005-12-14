@@ -128,7 +128,7 @@ class Timeline(scrolled.ScrolledPanel):
         Description: Method called to indicate that a user is no longer dragging
                      something to this track
         """     
-        print "AcceptDrop",x,y,data
+        #print "AcceptDrop",x,y,data
         if data=="Spline":
             self.addSplinepointTrack("")
         elif data=="Keyframe":
@@ -143,8 +143,8 @@ class Timeline(scrolled.ScrolledPanel):
         Description: Method called to indicate that a user is no longer dragging
                      something to this track
         """     
-        print "OnDragLeave"
-        print "old bg color=",self.oldBgCol
+        #print "OnDragLeave"
+        #print "old bg color=",self.oldBgCol
         self.SetBackgroundColour(self.oldBgCol)
         self.Refresh()
             
@@ -155,7 +155,7 @@ class Timeline(scrolled.ScrolledPanel):
         Description: Method called to indicate that a user is dragging
                      something to this track
         """ 
-        print "OnDragOver"
+        #print "OnDragOver"
         self.SetBackgroundColour((192,192,192))
         self.Refresh()
         
@@ -224,7 +224,7 @@ class Timeline(scrolled.ScrolledPanel):
             return
         p=self.splinepointTracks[i-1].items[-1].getPoint()
         self.splinepointTracks[i].items[0].setPoint(p)
-        print "Setting track %d to begin at %s"%(i,str(p))
+        #print "Setting track %d to begin at %s"%(i,str(p))
         self.splinepointTracks[i].showSpline()
         
     def setEndToNext(self,track):
@@ -241,7 +241,7 @@ class Timeline(scrolled.ScrolledPanel):
             return
         p=self.splinepointTracks[i+1].items[0].getPoint()
         self.splinepointTracks[i].items[-1].setPoint(p)
-        print "Setting track %d to end at %s"%(i,str(p))
+        #print "Setting track %d to end at %s"%(i,str(p))
         self.splinepointTracks[i].showSpline()
         
             
