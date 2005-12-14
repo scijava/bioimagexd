@@ -65,8 +65,8 @@ class VideoGeneration(wx.Panel):
         self.dur=self.control.getDuration()
 
         self.outputExts=[["png","bmp","jpg","tif"],["mpg","mpg","avi","wmv","avi","avi","mov"]]
-        self.outputFormats=[["PNG","BMP","JPEG","TIFF"],["MPEG1","MPEG2","MPEG4","WMV1","WMV2","MS MPEG4","MS MPEG4 v2","QuickTime MPEG4"]]
-        self.outputCodecs = ["mpeg1video","mpeg2video","mpeg4","wmv1","wmv2","msmpeg4","msmpeg4v2","mov"]
+        self.outputFormats=[["PNG","BMP","JPEG","TIFF"],["AVI","MPEG1","MPEG2","MPEG4","WMV1","WMV2","MS MPEG4","MS MPEG4 v2","QuickTime MPEG4"]]
+        self.outputCodecs = ["avi","mpeg1video","mpeg2video","mpeg4","wmv1","wmv2","msmpeg4","msmpeg4v2","mov"]
         self.padding = [1,1,0,0,0,0]
         self.needpad=0
         self.mainsizer=wx.GridBagSizer()
@@ -102,6 +102,13 @@ class VideoGeneration(wx.Panel):
         file=self.videofile.GetValue()
         renderingInterface=RenderingInterface.getRenderingInterface(1)
         renderingInterface.setVisualizer(self.visualizer)
+        # if we produce images, then set the correct file type
+        if self.formatMenu.GetSelection()==0:
+            formatNum=self.outputFormat.GetSelection()
+            imageExt=self.outputExts[0][formatNum]
+            Logging.info("Setting output image format to ",imageExt,kw="animator")
+            renderingInterface.setType(imageExt)
+        
         Logging.info("Setting duration to ",self.dur,"and frames to",self.frames,kw="animator")
         self.control.configureTimeline(self.dur,self.frames)
 
@@ -138,8 +145,10 @@ class VideoGeneration(wx.Panel):
         Description: Encode video from the frames produced
         """ 
         renderingInterface=RenderingInterface.getRenderingInterface(1)
+        
         pattern=renderingInterface.getFilenamePattern()
         framename=renderingInterface.getFrameName()
+        
         # FFMPEG uses %3d instead of %.3d for files numbered 000 - 999
         pattern=pattern.replace("%.","%")
         pattern=pattern.split(os.path.sep)[-1]
@@ -200,9 +209,9 @@ class VideoGeneration(wx.Panel):
             self.outputFormat.Append(i)
             
         # Produce quicktime by default but msmpeg4v2 on windows
-        sel=6
+        sel=7
         if platform.system()=="Windows":
-            sel=7
+            sel=8
         self.outputFormat.SetSelection(sel)
         
         
@@ -297,9 +306,9 @@ class VideoGeneration(wx.Panel):
         path = conf.getConfigItem("FramePath","Animator")
         video = conf.getConfigItem("VideoPath","Animator")
         if not path:
-            path=os.path.expanduser("~/")
+            path=os.path.expanduser("~")
         if not video:
-            video=os.path.expanduser("~/video.avi")
+            video=os.path.join(path,"video.avi")
         self.rendir=wx.TextCtrl(self,-1,path,size=(150,-1))#,size=(350,-1))
         self.rendirLbl=wx.StaticText(self,
         -1,"Directory for rendered frames:")

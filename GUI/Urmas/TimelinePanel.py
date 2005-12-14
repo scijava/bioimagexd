@@ -52,6 +52,7 @@ import os.path
 import sys,types
 import operator
 import messenger
+import CameraView
 
 class TimelineConfig(wx.Panel):
     """
@@ -198,7 +199,7 @@ class TimelinePanel(wx.Panel):
     Created: 04.02.2005, KP
     Description: Contains the timescale and the different "tracks"
     """    
-    def __init__(self,parent,control,size=(800,300)):
+    def __init__(self,parent,control,size=(750,300)):
         wx.Panel.__init__(self,parent,-1,style=wx.RAISED_BORDER,size=size)
         
         self.parent=parent
@@ -218,13 +219,17 @@ class TimelinePanel(wx.Panel):
         
         self.timelineConfig=TimelineConfig(self.confPanel,control)
 
+        
         self.confSizer.Add(self.timelineConfig,(0,0),flag=wx.EXPAND|wx.ALL)
+        
         self.confPanel.SetSizer(self.confSizer)
         self.confPanel.SetAutoLayout(1)
 
         sbox=wx.StaticBox(self,-1,"Animator configuration")
-        sboxsizer=wx.StaticBoxSizer(sbox,wx.VERTICAL)
+        sboxsizer=wx.StaticBoxSizer(sbox,wx.HORIZONTAL)
         sboxsizer.Add(self.confPanel)
+        self.camView=CameraView.CameraView(self,-1)
+        sboxsizer.Add(self.camView)
         
         self.useButton=wx.Button(self.confPanel,-1,"Use settings")
         self.useButton.Bind(wx.EVT_BUTTON,self.useSettings)
@@ -239,8 +244,7 @@ class TimelinePanel(wx.Panel):
         #style=wx.RA_SPECIFY_ROWS    
         #)
         #self.confSizer.Add(self.modeBox,(0,1))
-        self.sizer.Add(sboxsizer,(2,0),flag=wx.EXPAND|wx.ALL)        
-        
+        self.sizer.Add(sboxsizer,(2,0),flag=wx.EXPAND|wx.ALL)
         
         
         self.wxrenwin=VisualizerWindow.VisualizerWindow(self,size=(400,260))

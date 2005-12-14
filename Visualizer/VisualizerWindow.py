@@ -270,7 +270,5 @@ class VisualizerWindow(wxVTKRenderWindowInteractor):
                 print "Using existing rendererer"
                 self.renderer=collection.GetItemAsObject(0)
         return self.renderer
-    
 
-    def __del__(self):
-        print "Deleting visualizerwindow..."
+# safeguard

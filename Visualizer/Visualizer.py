@@ -1292,6 +1292,7 @@ class Visualizer:
         self.OnSize(None)
         self.parent.Layout()
         self.parent.Refresh()
+        self.currentWindow.Update()
         self.Render()
         
     def setTimepoint(self,timepoint):

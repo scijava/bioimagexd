@@ -633,11 +633,12 @@ class SplineEditor:
                      lets the mouse button up. Used to call a callback.
         """
         cam=self.getCamera()
-        
+            
         #print "Orientation=",cam.GetOrientationWXYZ()
         
         if self.viewMode == 0:
             messenger.send(None,"set_camera",cam)
+            messenger.send(None,"view_camera",cam)
         
         if self.interactionCallback:
             self.interactionCallback()

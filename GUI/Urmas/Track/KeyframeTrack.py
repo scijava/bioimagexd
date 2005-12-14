@@ -201,7 +201,7 @@ class KeyframeTrack(SplineTrack):
         Created: 14.04.2005, KP
         Description: Remove an item from this track
         """
-        self.removeItem(position)
+        #self.removeItem(position)
         #self.showKeyframe()
         self.Layout()
         #self.sizer.Fit(self)     

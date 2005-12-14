@@ -68,10 +68,11 @@ class UrmasRenderer:
         self.oldTimepoint=-1
         self.lastpoint=None
         self.lastSplinePoint=None
+        
         self.currTrack=None
         self.lastSplinePosition=None
         messenger.connect(None,"render_time_pos",self.renderPreviewAt)
-
+        
     def startAnimation(self,control):
         """
         Class: startMayavi
@@ -142,6 +143,7 @@ class UrmasRenderer:
 
         for n in range(frames):
             self.renderFrame(n,(n+1)*spf,spf,preview=preview)
+            
             messenger.send(None,"update_progress",n/float(frames),"Rendering frame %d / %d. Time: %.1fs"%(n,frames,(n+1)*spf))        
 
         if not preview:
@@ -161,12 +163,14 @@ class UrmasRenderer:
         self.interpolator = vtk.vtkCameraInterpolator()
         self.interpolator.SetInterpolationTypeToSpline()
         for track in tracks:
-            for item in track.getItems():
+            items=track.getItems()
+            for item in items:
                 start,end=item.getPosition()
                 self.interpolator.AddCamera(start,item.cam)
-            item=track.getItems()[-1]
-            start,end=item.getPosition()
-            self.interpolator.AddCamera(end,item.cam)
+            if len(items):
+                item=items[-1]
+                start,end=item.getPosition()
+                self.interpolator.AddCamera(end,item.cam)
         
     def renderPreviewAt(self,evt,obj,timepos):
         """
@@ -197,7 +201,7 @@ class UrmasRenderer:
         spf = duration / float(frames)        
         frame=spf*timepos
         self.renderFrame(frame,timepos,spf,preview=1,use_cam=do_use_cam) 
-        
+        messenger.send(None,"view_camera",self.cam)
          
     def getTimepointAt(self,time):
         """
@@ -309,16 +313,19 @@ class UrmasRenderer:
             x,y,z=self.lastSplinePosition
             point=(x,y,z)
         else:
-            # if we didn't find camera position, maybe we need to use
-            # keyframe interpolation
-            minT=self.interpolator.GetMinimumT()
-            maxT=self.interpolator.GetMaximumT()
-            
-            #print "maxT=",maxT,"timepos=",timepos
-            if self.interpolator and minT <= timepos and maxT >= timepos:
-                interpolated=1
-                Logging.info("Interpolating camera at ",timepos,kw="animator")
-                self.interpolator.InterpolateCamera(timepos,cam)
+            if self.interpolator:
+                # if we didn't find camera position, maybe we need to use
+                # keyframe interpolation
+                minT=self.interpolator.GetMinimumT()
+                maxT=self.interpolator.GetMaximumT()
+                
+                #print "maxT=",maxT,"timepos=",timepos
+                if minT <= timepos and maxT >= timepos:
+                    interpolated=1
+                    Logging.info("Interpolating camera at ",timepos,kw="animator")
+                    self.interpolator.InterpolateCamera(timepos,cam)                    
+                    self.ren.ResetCameraClippingRange()
+                    
             else:
                 Logging.info("No camera position, using last position",kw="animator")
                 point=self.lastpoint
@@ -337,7 +344,7 @@ class UrmasRenderer:
             
         if not preview:
             # With this we can be sure that all of the props will be visible.
-            #self.ren.ResetCameraClippingRange()
+            
             curr_file_name = self.renderingInterface.getFilename(frame)
             Logging.info("Saving to ",curr_file_name,kw="animator")
             self.renderingInterface.saveFrame(curr_file_name)

@@ -158,8 +158,10 @@ class UrmasWindow(scrolled.ScrolledPanel):
         mgr.createMenu("rendering","&Rendering",before="help")
         mgr.createMenu("camera","&Camera",before="help")
       
+      
         mgr.addMenuItem("settings",MenuManager.ID_PREFERENCES,"&Preferences",self.onMenuPreferences)
         
+      
         mgr.addMenuItem("file",MenuManager.ID_OPEN_PROJECT,"Open project...","Open a BioImageXD Animator Project",self.onMenuOpenProject,before=MenuManager.ID_IMPORT)
         mgr.addMenuItem("file",MenuManager.ID_SAVE_PROJECT,"Save project as...","Save current BioImageXD Animator Project",self.onMenuSaveProject,before=MenuManager.ID_IMPORT)
         mgr.addMenuItem("file",MenuManager.ID_CLOSE_PROJECT,"Close project","Close this Animator Project",self.onMenuCloseProject,before=MenuManager.ID_IMPORT)
@@ -208,6 +210,7 @@ class UrmasWindow(scrolled.ScrolledPanel):
         if active and hasattr(active,"maintainUpDirection"):
             self.menuManager.check(MenuManager.ID_MAINTAIN_UP,active.maintainUpDirection)
  
+    
     def onMenuRender(self,event):
         """
         Method: onMenuRender()

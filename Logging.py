@@ -45,6 +45,16 @@ KWS=["visualizer","main","init","animator","io","task","preview","scale",
 
 import sys
 
+DO_DEBUG=1
+
+def ignore_all(*args,**kws):
+    pass
+
+def possibly_ignore(arg):
+    if DO_DEBUG:return arg
+    return ignore_all
+    
+
 def enableFull():
     global HIDE_DEBUG
     HIDE_DEBUG=[]
@@ -94,7 +104,7 @@ class GUIError:
         """
         return str(self)
 
-
+#@possibly_ignore
 def error(title,msg,x=sys._getframe()):
     """
     Function: error
@@ -107,7 +117,7 @@ def error(title,msg,x=sys._getframe()):
     outfile.write("%s: %s"%(x.f_code.co_filename,x.f_lineno)+" ERROR: %s\n"%msg)
     raise GUIError(title,"%s: %s"%(x.f_code.co_filename,x.f_lineno)+" "+msg)
 
-
+#@possibly_ignore
 def info(msg,*args,**kws):
     """
     Function: info
@@ -124,6 +134,7 @@ def info(msg,*args,**kws):
         lineno=xframe.f_lineno
         outfile.write("%s:%d: %s %s\n"%(file,lineno,msg," ".join(map(str,args))))
 
+#@possibly_ignore
 def backtrace():
     """
     Function: info

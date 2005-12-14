@@ -129,7 +129,7 @@ class UrmasPalette(wx.Panel):
         #    psyco.cannotcompile(self.dropItem)
         #except ImportError:
         #    pass
-        wx.Panel.__init__(self,parent,style=wx.RAISED_BORDER,size=(800,32))
+        wx.Panel.__init__(self,parent,style=wx.RAISED_BORDER,size=(750,32))
         self.sizer=wx.BoxSizer(wx.HORIZONTAL)
         
         iconpath=self.iconpath=reduce(os.path.join,["Icons"])

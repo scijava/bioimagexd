@@ -84,6 +84,15 @@ class RenderingInterface:
         print "Got type ",self.type,"from configuration"
         if not self.type:
             self.type="pnm"
+            
+    def setType(self,type):
+        """
+        Method: getColorTransferFunction()
+        Created: 13.12.2005, KP
+        Description: Set the type of the rendered frame
+        """            
+        self.type = type
+        
     def getColorTransferFunction(self):
         """
         Method: getColorTransferFunction()
