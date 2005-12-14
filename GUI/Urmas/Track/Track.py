@@ -61,6 +61,7 @@ class Track(wx.Panel):
     """
     def __init__(self,name,parent,**kws):
         wx.Panel.__init__(self,parent,-1,style=wx.SIMPLE_BORDER)
+        self.paintOverlay=0
         self.number=0
         self.duration=0
         self.frames=0
@@ -83,6 +84,11 @@ class Track(wx.Panel):
         self.timescale=kws["timescale"]
         if kws.has_key("number"):
             self.number=kws["number"]
+            
+        self.overlayPosInPixels=0
+        self.overlayPosInPixelsEnd=0
+        self.overlayPos=-1
+        self.overlayItem=None              
         
         #self.sizer=wx.GridBagSizer()
         self.color=None
@@ -190,6 +196,9 @@ class Track(wx.Panel):
 
         if hasattr(self,"onPaintTrack"):
             self.onPaintTrack()
+            
+        if self.paintOverlay == 1:
+            self.onPaintOverlay()
         
         if self.timePos!=-1:
             pos=self.getLabelWidth() + self.timePos*pps        
@@ -201,6 +210,44 @@ class Track(wx.Panel):
         self.dc.EndDrawing()
         self.dc = None
 
+    def onPaintOverlay(self):
+        """
+        Method: onPaintOverlay(self)
+        Created: 22.08.2005, KP
+        Description: Called by Track so that track types can do their own painting
+        """
+        if self.renew != 2 and self.overlayPosInPixels:
+            self.dc.Blit(self.overlayPosInPixels-1,0,self.overlayPosInPixelsEnd,self.height,self.mdc,self.overlayPosInPixels-1,0)                    
+        
+        #print "overlayPos=",self.overlayPos,"overlayItem=",self.overlayItem
+        if self.overlayPos!=-1:
+            if not self.overlayItem or (self.overlayPos != self.overlayItem.getPosition()[0]):
+                curr=None
+                for item in self.items:
+                    start,end=item.getPosition()
+                    if start<= self.overlayPos and end >= self.overlayPos:
+                        curr=item
+                        break
+                self.overlayItem=curr
+                self.overlayPos=start
+
+            start,end=self.overlayItem.getPosition()
+            pps=self.timescale.getPixelsPerSecond() 
+            w=(end-start)*pps
+            h=self.height
+            #print "Painting overlay at ",self.overlayPos*pps
+            try:
+                color,percentage = self.overlayColor
+                overlay=ImageOperations.getOverlay(int(w),int(h),color,percentage)
+            except Exception, e:
+                print "Failed to create overlay:",e
+                #sys.stdin.readline()
+            overlay=overlay.ConvertToBitmap()
+            
+            pos=self.getLabelWidth() + self.overlayPos*pps
+            self.overlayPosInPixelsEnd=pos+w+1
+            self.overlayPosInPixels=pos
+            self.dc.DrawBitmap(overlay,pos,0,1)            
        
     def updatePositions(self):
         """
@@ -250,7 +297,29 @@ class Track(wx.Panel):
         Created: 17.07.2005, KP
         Description: Item is clicked
         """
-        return self.onEvent("Down",event)
+        ret=self.onEvent("Down",event)
+        #print "ret=",ret,"selectedItem=",self.selectedItem
+        if ret:
+            item=self.selectedItem
+            #print "dragmode=",self.selectedItem.dragMode
+        else:
+            item=None
+            
+        if self.selectedItem and self.selectedItem.dragMode:
+            return ret
+        self.selectedItem=None
+        if item:
+            #print "Setting overlay item"
+            #self.timePosItem=self.selectedItem
+            start,end=item.getPosition()
+            self.overlayItem=item
+            self.overlayPos=start
+            return ret
+        else:
+            self.overlayPos=-1
+            self.overlayItem=None          
+        
+        return ret
 
         
     def onUp(self,event):

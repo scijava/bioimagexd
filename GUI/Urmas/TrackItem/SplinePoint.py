@@ -47,6 +47,7 @@ from Urmas import UrmasControl
 import Logging        
 DRAG_OFFSET=20
 
+import messenger
 
 from TrackItem import *
 
@@ -199,6 +200,16 @@ class SplinePoint(TrackItem):
     
     def isStopped(self):return 0
 
+    def onDown(self,event):
+        """
+        Method: onDown(event)
+        Created: 14.12.2005, KP
+        Description: Event handler for when the mouse is pressed down over
+                     this item. 
+        """      
+        TrackItem.onDown(self,event)
+        
+        messenger.send(None,"show_arrow",self.point)    
         
 class SplineEndPoint(SplinePoint):
     """
@@ -243,3 +254,9 @@ class SplineEndPoint(SplinePoint):
         Description: Set the text number of this item
         """       
         pass        
+        
+
+
+        
+        
+# safeguard        

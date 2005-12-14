@@ -71,6 +71,9 @@ class SplineEditor:
         self.viewMode=0
         self.wxrenwin=renwin
         self.initializeVTK()
+        messenger.connect(None,"show_arrow",self.onShowArrow)
+        
+        self.arrow=None
 
     def initializeVTK(self):
         """
@@ -117,7 +120,33 @@ class SplineEditor:
         self.axes = vtk.vtkCubeAxesActor2D ()
         print "Initializing camera"
         self.initCamera()
+        
         self.wxrenwin.Render()
+        
+        self.arrow = vtk.vtkArrowSource()
+        #self.arrow = vtk.vtkSphereSource()
+        #self.arrow.SetThetaResolution(15)
+        #self.arrow.SetPhiResolution(15)
+        #self.arrow.SetTipResolution(15)
+        #self.arrow.SetShaftResolution(15)
+        self.arrowTransform = vtk.vtkTransform()
+        self.arrowTransform.RotateX(90.0)
+        self.arrowTransform.Scale(80.0, 200.0, 200.0)
+        #self.arrowTransform.Scale(200.0, 200.0, 200.0)
+        #self.arrowTransform.Scale(10,10,10)
+        self.transformFilter = vtk.vtkTransformFilter()
+            
+        self.transformFilter.SetTransform(self.arrowTransform)
+        self.transformFilter.SetInput(self.arrow.GetOutput())
+        self.arrowMapper = vtk.vtkPolyDataMapper()
+        self.arrowMapper.SetInput(self.transformFilter.GetOutput())
+        #self.arrowActor = vtk.vtkFollower()
+        self.arrowActor = vtk.vtkActor()
+        self.arrowActor.GetProperty().SetColor((0,0,1))
+        self.arrowActor.SetMapper(self.arrowMapper)
+        #self.arrowActor.SetCamera(self.renderer.GetActiveCamera())
+        self.renderer.AddActor(self.arrowActor)         
+        
         
     def setMovement(self,flag):
         """
@@ -419,6 +448,8 @@ class SplineEditor:
         self.renderer.AddActor (self.axes)
         self.axes.SetInput (self.outline.GetOutput ())
         
+        
+        self.arrowActor.SetVisibility(0)
 
         #print "Axes actor inertia: %d"%(self.axes.GetInertia())
         self.volume = volume
@@ -663,7 +694,19 @@ class SplineEditor:
         filter.Update()
 #        self.renderer.AddActor(self.outlineactor)        
         return filter.GetOutput()
-    
+
+    def onShowArrow(self,obj, evt, arg):
+        x,y,z=arg
+        print "Showing arrow at ",x,y,z
+        x-=100
+        #self.arrowTransform.Translate(x-5,y,z)        
+        self.arrowActor.SetVisibility(1)      
+        #self.transformFilter.Update()
+        self.arrowActor.SetPosition(x,y,z)
+        self.arrowMapper.Update()
+        self.render()
+        
+        
     def render(self):
         """
         Method: render()

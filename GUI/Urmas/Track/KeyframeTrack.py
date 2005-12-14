@@ -63,12 +63,14 @@ class KeyframeTrack(SplineTrack):
         self.nameColor = (255,51,153)
         self.fg=(0,0,0)
         self.bg=self.nameColor
+        
         kws["height"]=80
-        self.overlayPosInPixels=0
-        self.overlayPosInPixelsEnd=0
-        self.overlayPos=-1
-        self.overlayItem=None        
+
         Track.__init__(self,name,parent,**kws)   
+        
+        self.paintOverlay=1
+        self.overlayColor = ((0,255,0),25)        
+        
         #self.namePanel.setColor((0,0,0),self.nameColor)
         if "item" in kws:
             self.itemClass=kws["item"]
@@ -89,6 +91,7 @@ class KeyframeTrack(SplineTrack):
         """        
         self.overlayPos=-1
         self.overlayItem=None
+        
     def onDown(self,event):
         """
         Method: onDown
@@ -96,69 +99,15 @@ class KeyframeTrack(SplineTrack):
         Description: Item is clicked
         """
         ret=Track.onDown(self,event)
-        #print "ret=",ret,"selectedItem=",self.selectedItem
-        if ret:
-            item=self.selectedItem
-            #print "dragmode=",self.selectedItem.dragMode
-        else:
-            item=None
-            
-        if self.selectedItem and self.selectedItem.dragMode:
-            return ret
-        self.selectedItem=None
-        if item:
-            #print "Setting overlay item"
-            #self.timePosItem=self.selectedItem
-            start,end=item.getPosition()
-            self.overlayItem=item
-            self.overlayPos=start
-            messenger.send(None,"set_timeslider_value",start*10.0)
-            messenger.send(None,"render_time_pos",start)
+        if self.overlayItem and self.overlayPos != -1:
+            messenger.send(None,"set_timeslider_value",self.overlayPos*10.0)
+            messenger.send(None,"render_time_pos",self.overlayPos)
             self.paintTrack()
             self.Refresh()
             return ret
-        else:
-            self.overlayPos=-1
-            self.overlayItem=None            
         return ret
         
-    def onPaintTrack(self):
-        """
-        Method: onPaintTrack(self)
-        Created: 22.08.2005, KP
-        Description: Called by Track so that track types can do their own painting
-        """
-        if self.renew != 2 and self.overlayPosInPixels:
-            self.dc.Blit(self.overlayPosInPixels-1,0,self.overlayPosInPixelsEnd,self.height,self.mdc,self.overlayPosInPixels-1,0)                    
-        
-        #print "overlayPos=",self.overlayPos,"overlayItem=",self.overlayItem
-        if self.overlayPos!=-1:
-            if not self.overlayItem or (self.overlayPos != self.overlayItem.getPosition()[0]):
-                curr=None
-                for item in self.items:
-                    start,end=item.getPosition()
-                    if start<= self.overlayPos and end >= self.overlayPos:
-                        curr=item
-                        break
-                self.overlayItem=curr
-                self.overlayPos=start
 
-            start,end=self.overlayItem.getPosition()
-            pps=self.timescale.getPixelsPerSecond() 
-            w=(end-start)*pps
-            h=self.height
-            #print "Painting overlay at ",self.overlayPos*pps
-            try:
-                overlay=ImageOperations.getOverlay(int(w),int(h),(0,255,0),25)
-            except Exception, e:
-                print "Failed to create overlay:",e
-                #sys.stdin.readline()
-            overlay=overlay.ConvertToBitmap()
-            
-            pos=self.getLabelWidth() + self.overlayPos*pps
-            self.overlayPosInPixelsEnd=pos+w+1
-            self.overlayPosInPixels=pos
-            self.dc.DrawBitmap(overlay,pos,0,1)    
         
             
     def onSetCamera(self,obj,evt,cam):

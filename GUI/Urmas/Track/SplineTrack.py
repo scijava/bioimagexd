@@ -61,7 +61,12 @@ class SplineTrack(Track):
         self.nameColor = (0,148,213)
         self.fg=(0,0,0)
         self.bg=self.nameColor
+
         Track.__init__(self,name,parent,**kws)   
+        
+        self.paintOverlay=1
+        self.overlayColor = ((0,0,255),25)                
+        
         self.closed = 0
         self.maintainUpDirection=0
         #self.namePanel.setColor((0,0,0),self.nameColor)
@@ -90,6 +95,18 @@ class SplineTrack(Track):
         Description: Is this spline closed or not
         """     
         return self.closed
+        
+    def onDown(self,event):
+        """
+        Method: onDown
+        Created: 17.07.2005, KP
+        Description: Item is clicked
+        """
+        ret=Track.onDown(self,event)
+        if self.overlayItem and self.overlayPos != -1:
+            self.paintTrack()
+            self.Refresh()
+            return ret        
         
     def setClosed(self,flag,add=1):
         """
