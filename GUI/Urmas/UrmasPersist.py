@@ -42,6 +42,40 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 from lib.persistence import state_pickler
 
+def getVTKState(obj):
+    """
+    Method: getVTKState()
+    Created: 02.08.2005, KP
+    Description: Get state of vtk object
+    """     
+    state={}
+    blocked=["GetOutput","GetReleaseDataFlag","GetOutputPort","GetViewPlaneNormal"]
+    dirlist=dir(obj)
+    for i in dirlist:
+        if i not in blocked:                
+            if i[0:3]=="Get":
+                setter=i.replace("Get","Set")
+                if setter in dirlist:
+                    try:
+                        state[i]=eval("obj.%s()"%i)
+                    except:
+                        pass
+    return state
+    
+def setVTKState(obj,state):
+    """
+    Method: setVTKState()
+    Created: 02.08.2005, KP
+    Description: Set state of vtk object
+    """     
+    for key in state.keys():
+        setfunc=key.replace("Get","Set")
+#            Logging.info("Setting %s of %s"%(setfunc,obj),kw="rendering")
+        try:
+            eval("obj.%s(state[\"%s\"])"%(setfunc,key))
+        except:
+            pass
+    
 
 class UrmasPersist:
     """

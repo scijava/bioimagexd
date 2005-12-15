@@ -249,10 +249,8 @@ class TimelinePanel(wx.Panel):
         
         self.wxrenwin=VisualizerWindow.VisualizerWindow(self,size=(400,260))
         
-        self.wxrenwin.Render()
-#        self.wxrenwin.Initialize()
-#        self.wxrenwin.Start()
-
+        #self.wxrenwin.Render()
+        
         self.splineEditor=SplineEditor.SplineEditor(self,self.wxrenwin)
         self.control.setSplineEditor(self.splineEditor)        
 
@@ -272,12 +270,14 @@ class TimelinePanel(wx.Panel):
 
 #        self.wxrenwin.RightButtonReleaseEvent()
 
-        self.wxrenwin.Render()
-        self.wxrenwin.Refresh()
+        #self.wxrenwin.Render()
+        #self.wxrenwin.Refresh()
+        
         self.Refresh()
+        
+        
         messenger.send(None,"set_time_range",1,600)
         messenger.connect(None,"set_keyframe_mode",self.onSetKeyframeMode)
-        
 
         
     def onSetKeyframeMode(self,obj,evt,arg):

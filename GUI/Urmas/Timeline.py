@@ -292,6 +292,10 @@ class Timeline(scrolled.ScrolledPanel):
         for sptrack in state.splinepointTracks:
             t=self.addSplinepointTrack(sptrack.label)
             t.__set_pure_state__(sptrack)
+        for kftrack in state.keyframeTracks:
+            t=self.addKeyframeTrack(kftrack.label)
+            t.__set_pure_state__(kftrack)
+            
 
 #        for n in range(tpamnt-len(self.timepointTracks)):
 #            print "Adding timepoint track"
@@ -496,33 +500,27 @@ class Timeline(scrolled.ScrolledPanel):
         Created: 06.04.2005, KP
         Description: Remove a track from the GUI
         """    
-        print "Hiding ",track
-        self.sizer.Show(track,0)
-        self.sizer.Detach(track)
+        if track in self.timepointTracks:
+            sizer=self.timepointSizer
+            lst=self.timepointTracks
+            amnt=self.timepointTrackAmnt
+        elif track in self.splinepointTracks:
+            sizer=self.splineSizer
+            lst=self.splinepointTracks            
+            amnt=self.splinepointTrackAmnt
+        else:
+            sizer=self.keyframeSizer
+            lst=self.keyframeTracks
+            amnt=self.keyframeTrackAmnt
+        sizer.Show(track,0)
+        sizer.Detach(track)
         track.remove()
         if reorder:
-            if track in self.timepointTracks:
-                lst=self.timepointTracks
-                pos=lst.index(track)
-                self.moveTracks(pos+1,pos,len(self.timepointTracks[pos:])+self.splinepointTrackAmnt)
-                self.timepointTrackAmnt-=1                    
-            elif track in self.splinepointTracks:
-                lst=self.splinepointTracks
-                pos=lst.index(track)
-                n=pos
-                pos+=self.timepointTrackAmnt
-                #print "Moving from ",pos+1,"to ",pos,"#",self.splinepointTrackAmnt-n
-                self.moveTracks(pos+1,pos,self.splinepointTrackAmnt-n)
-                self.splinepointTrackAmnt-=1
-            else:
-                lst=self.keyframeTracks
-                pos=lst.index(track)
-                pos+=self.timepointTrackAmnt+self.splinepointTrackAmnt
-                self.moveTracks(pos+1,pos,self.keyframeTrackAmnt-n)
-                self.keyframeTrackAmnt-=1
+            pos=lst.index(track)
+            self.moveTracks(sizer,pos+1,pos,len(lst[pos+1:]))
+            amnt-=1
+            self.timepointTrackAmnt-=1                    
             lst.remove(track)
-            
-                
             self.Layout()
 
     def setDataUnit(self,dataUnit):

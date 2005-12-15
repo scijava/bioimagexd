@@ -1322,9 +1322,22 @@ class MainWindow(wx.Frame):
         Created: 03.11.2004, KP
         Description: Quits the application
         """
-        self.visualizer.enable(0)
+        conf = Configuration.getConfiguration()
         
-        print "QUITAPP!\n\n\n"
+        askOnQuit = conf.getConfigItem("AskOnQuit","General")
+        if askOnQuit and eval(askOnQuit):
+            dlg = wx.MessageDialog(self, 'Are you sure you wish to quit BioImageXD?',
+                               'Do you really want to quit',
+                               wx.OK |wx.CANCEL | wx.ICON_QUESTION
+                               #wx.YES_NO | wx.NO_DEFAULT | wx.CANCEL | wx.ICON_INFORMATION
+                               )
+            answer=dlg.ShowModal()
+            dlg.Destroy()            
+            if answer != wx.ID_OK:
+                return
+            
+        self.visualizer.enable(0)        
+        
         self.visualizer.closeVisualizer()
         
         self.Destroy()

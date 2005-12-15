@@ -48,7 +48,15 @@ class GeneralSettings(wx.Panel):
         self.sizer = wx.GridBagSizer(5,5)
         conf = Configuration.getConfiguration()
         format = conf.getConfigItem("ImageFormat","Output")
+        showTips=conf.getConfigItem("ShowTip","General")
+        askOnQuit=conf.getConfigItem("AskOnQuit","General")
         
+        #print "showTip=",showTip
+        if showTips:
+            showTips = eval(showTips)
+        if askOnQuit:
+            askOnQuit = eval(askOnQuit)
+            
         self.imageBox=wx.StaticBox(self,-1,"Image Format",size=(600,150))
         self.imageBoxSizer=wx.StaticBoxSizer(self.imageBox,wx.VERTICAL)
 #        self.imageBoxSizer.SetMinSize(self.imageBox.GetSize())
@@ -61,15 +69,23 @@ class GeneralSettings(wx.Panel):
         self.imageBoxSizer.Add(self.lbl)
         self.imageBoxSizer.Add(self.choice)
         
-        self.sizer.Add(self.imageBoxSizer,(1,0))
+        self.sizer.Add(self.imageBoxSizer,(2,0))
 
         self.tipBox=wx.StaticBox(self,-1,"Startup tips")
         self.tipBoxSizer=wx.StaticBoxSizer(self.tipBox,wx.VERTICAL)
         self.tipCheckbox=wx.CheckBox(self,-1,"Show tips at startup")
+        self.tipCheckbox.SetValue(showTips)
         self.tipBoxSizer.Add(self.tipCheckbox)
         
         self.sizer.Add(self.tipBoxSizer,(0,0))
- 
+
+        self.quitBox=wx.StaticBox(self,-1,"Closing the application")
+        self.quitBoxSizer=wx.StaticBoxSizer(self.quitBox,wx.VERTICAL)
+        self.askOnQuitCheckbox=wx.CheckBox(self,-1,"Verify before quitting BioImageXD")
+        self.askOnQuitCheckbox.SetValue(askOnQuit)
+        self.quitBoxSizer.Add(self.askOnQuitCheckbox)
+        
+        self.sizer.Add(self.quitBoxSizer,(1,0)) 
 #        self.imageBox=wx.StaticBox(self,-1,"Image Format",size=(600,150))
 #        self.imageBoxSizer=wx.StaticBoxSizer(self.imageBox,wx.VERTICAL)
 #        self.imageBoxSizer.SetMinSize(self.imageBox.GetSize())
@@ -92,6 +108,8 @@ class GeneralSettings(wx.Panel):
         showTip=self.tipCheckbox.GetValue()
         conf.setConfigItem("ShowTip","General",showTip)
 
+        askOnQuit=self.askOnQuitCheckbox.GetValue()
+        conf.setConfigItem("AskOnQuit","General",askOnQuit)
         
 class PathSettings(wx.Panel):
     """
@@ -106,9 +124,9 @@ class PathSettings(wx.Panel):
         
         conf=Configuration.getConfiguration()
         vtkpath = conf.getConfigItem("VTKPath","VTK")
-        mayavipath = conf.getConfigItem("MayaviPath","Mayavi")
+        
         datapath=conf.getConfigItem("DataPath","Paths")
-        systemmayavi = conf.getConfigItem("UseSystemMayavi","Mayavi")
+        
         removevtk = conf.getConfigItem("RemoveOldVTK","VTK")
         remember =conf.getConfigItem("RememberPath","Paths")
 
@@ -127,22 +145,6 @@ class PathSettings(wx.Panel):
         self.removeVTKCheckbox.SetValue(removevtk)
         self.vtkBoxSizer.Add(self.removeVTKCheckbox)
 
-
-        self.mayaviBox=wx.StaticBox(self,-1,"MayaVi Path",size=(600,150))
-        self.mayaviBoxSizer=wx.StaticBoxSizer(self.mayaviBox,wx.VERTICAL)
-        self.mayaviBoxSizer.SetMinSize(self.mayaviBox.GetSize())
-        self.mayavibrowse=filebrowse.DirBrowseButton(self,-1,labelText="Location of MayaVi",
-        toolTip="Set the location of the version of Mayavi you want to use",
-        startDirectory=mayavipath)
-        self.mayavibrowse.SetValue(mayavipath)
-        self.mayaviBoxSizer.Add(self.mayavibrowse,0,wx.EXPAND)
-        self.removeMayaviCheckbox = wx.CheckBox(self,-1,"Use system version of MayaVi")
-        if type(systemmayavi)==type(""):
-            systemmayavi=eval(systemmayavi)
-        self.removeMayaviCheckbox.SetValue(systemmayavi)
-        self.mayaviBoxSizer.Add(self.removeMayaviCheckbox)
-
-
         self.dataBox=wx.StaticBox(self,-1,"Data Files Directory",size=(600,150))
         self.dataBoxSizer=wx.StaticBoxSizer(self.dataBox,wx.VERTICAL)
         self.dataBoxSizer.SetMinSize(self.dataBox.GetSize())
@@ -160,7 +162,6 @@ class PathSettings(wx.Panel):
         
         
         self.sizer.Add(self.vtkBoxSizer, (0,0),flag=wx.EXPAND|wx.ALL)
-        self.sizer.Add(self.mayaviBoxSizer, (1,0),flag=wx.EXPAND|wx.ALL)
         self.sizer.Add(self.dataBoxSizer,(2,0),flag=wx.EXPAND|wx.ALL)        
         self.SetAutoLayout(1)
         self.SetSizer(self.sizer)
@@ -175,15 +176,14 @@ class PathSettings(wx.Panel):
                      in this window.
         """     
         vtkpath=self.vtkbrowse.GetValue()
-        mayavipath=self.mayavibrowse.GetValue()
+        
         datapath=self.databrowse.GetValue()
         rememberlast=self.useLastCheckbox.GetValue()
-        usesystemmayavi=self.removeMayaviCheckbox.GetValue()
+        
         removevtk=self.removeVTKCheckbox.GetValue()
         conf.setConfigItem("VTKPath","VTK",vtkpath)
-        conf.setConfigItem("MayaviPath","Mayavi",mayavipath)
         conf.setConfigItem("DataPath","Paths",datapath)
-        conf.setConfigItem("UseSystemMayavi","Mayavi",usesystemmayavi)
+        
         conf.setConfigItem("RemoveOldVTK","VTK",removevtk)
         conf.setConfigItem("RememberPath","Paths",rememberlast)        
 

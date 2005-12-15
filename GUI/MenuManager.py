@@ -145,6 +145,10 @@ ROLL                =197
 
 ID_HIDE_INFO        =198
 ID_ANIM_ZOOM_COMBO  =199
+ID_ITEM_SIZES       =200
+ID_ITEM_ORDER       =201
+ID_ITEM_ROTATE_CW   =202
+ID_ITEM_ROTATE_CCW   =203
 
 class MenuManager:
     """

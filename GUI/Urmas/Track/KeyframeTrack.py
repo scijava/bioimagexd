@@ -80,8 +80,8 @@ class KeyframeTrack(SplineTrack):
             self.itemClass=kws["item"]
         else:
             self.itemClass=KeyframePoint
-        if "closed" in kws:
-            self.closed = kws["closed"]
+        #if "closed" in kws:
+        #    self.closed = kws["closed"]
         dt = UrmasPalette.UrmasDropTarget(self,"Keyframe")
         self.SetDropTarget(dt)
         messenger.connect(None,"set_camera",self.onSetCamera)
@@ -169,21 +169,22 @@ class KeyframeTrack(SplineTrack):
         """
         h=self.height
         itemkws={"itemnum":position,"editable":self.editable}
-
-        item=self.itemClass(self,"%d"%position,(20,h),**itemkws)
-        if self.color:
-            item.setColor(self.color,self.headercolor)
-        if position>=len(self.items):
-            Logging.info("Appending item ",item.itemnum,kw="animator")
-            self.items.append(item)
-        else:
-            Logging.info("Inserting item ",item.itemnum,kw="animator")
-            self.items.insert(position,item)
-        # +1 accounts for the empty item
+        if "add_endpoint" not in kws:
+            item=self.itemClass(self,"%d"%position,(20,h),**itemkws)
+            if self.color:
+                item.setColor(self.color,self.headercolor)
+            if position>=len(self.items):
+                Logging.info("Appending item ",item.itemnum,kw="animator")
+                self.items.append(item)
+            else:
+                Logging.info("Inserting item ",item.itemnum,kw="animator")
+                self.items.insert(position,item)
+            # +1 accounts for the empty item
         spc=0
         # if this is the first item to be added, then we insert an endpoint
-        # as well
-        if len(self.items)==1:
+        # as well. Also by having kw add_endpoint in kws, it is possible
+        # to only insert the endpoint
+        if "add_endpoint" in kws or (len(self.items)==1 and "no_endpoint" not in kws):
             item=KeyframeEndPoint(self,"",(20,h),**itemkws)
             self.items.append(item)        
         for i,item in enumerate(self.items):
@@ -210,10 +211,10 @@ class KeyframeTrack(SplineTrack):
         Description: Return the dict that is to be pickled to disk
         """      
         odict = Track.__getstate__(self)
-        n=0
-        pos=0
-        for key in ["closed","maintainUpDirection"]:
-            odict[key]=self.__dict__[key]
+        #n=0
+        #pos=0
+        #for key in ["closed","maintainUpDirection"]:
+        #    odict[key]=self.__dict__[key]
         return odict        
         
     def setSelected(self,event):
@@ -234,7 +235,7 @@ class KeyframeTrack(SplineTrack):
         Description: Show Keyframe represented by this track
         """ 
         messenger.send(None,"set_keyframe_mode",1)
-        self.splineEditor.setViewMode(0)
+        self.splineEditor.setViewMode(1)
             
             
     def __set_pure_state__(self,state):
@@ -245,22 +246,30 @@ class KeyframeTrack(SplineTrack):
                      to refresh before it's items are created
         """ 
         Track.__set_pure_state__(self,state)
-        self.closed = state.closed
+        
         spc=0
         
-        for i,item in enumerate(state.items):
+        for i,item in enumerate(state.items[:-1]):
             if not "stopitem" in  dir(item):
                 Logging.info("Add Keyframe point spc=%d,i=%d, itemnum=%d"%(spc,i,item.itemnum),kw="animator")
-                tp=self.addKeyframePoint(spc,0,point=item.point)
+                tp=self.addKeyframePoint(spc,0,point=item.point,no_endpoint=1)
                 tp.__set_pure_state__(item)
+                
                 spc+=1
             else:
                 Logging.info("Add stop point i=%d, itemnum=%d"%(i,item.itemnum),kw="animator")
                 tp=self.addStopPoint(i)
                 tp.__set_pure_state__(item)
+                
+        # Add the endpoint manually
+        tp=self.addKeyframePoint(spc,0,point=state.items[-1].point,add_endpoint=1)
+        tp.__set_pure_state__(state.items[-1])
+        
+        
         #self.updatePositions()
         for i,item in enumerate(self.items):
-            print "item at %d: %s"%(i,str(item))
+            item.updateThumbnail()
+            item.drawItem()
         self.paintTrack()
         
         

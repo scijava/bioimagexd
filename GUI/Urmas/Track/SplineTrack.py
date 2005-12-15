@@ -360,9 +360,30 @@ class SplineTrack(Track):
         Description: Selects this track
         """ 
         Track.setSelected(self,event)
+        messenger.send(None,"set_keyframe_mode",0)
+        self.splineEditor.setViewMode(0)
         if event:
             self.showSpline()
             self.control.setSplineInteractionCallback(self.updateLabels)        
+
+    def shiftItems(self,direction):
+        """
+        Method: shiftItems
+        Created: 15.12.2005, KP
+        Description: Shift items in the given direction
+        """        
+        Track.shiftItems(self,direction)
+        for i in self.items:
+            i.setText("%d"%i.getItemNumber())
+        #spc=0
+        #for i,item in enumerate(self.items):
+        #    if not item.isStopped():
+        #        self.items[i].setItemNumber(spc)
+        #        self.items[i].setText("%d"%spc)
+        #        spc+=1                
+        #        self.items[i].updateItem()
+        #        self.items[i].drawItem()        
+        self.showSpline()
             
     def showSpline(self):
         """
@@ -376,6 +397,7 @@ class SplineTrack(Track):
             if not isinstance(item,StopItem):
                 pts.append(item.getPoint())
         if len(pts)>=2:
+            print "Setting spline points: ",pts
             self.splineEditor.setSplinePoints(pts)
             self.splineEditor.setClosed(self.closed)
             self.splineEditor.render()

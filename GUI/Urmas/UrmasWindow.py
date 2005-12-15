@@ -100,10 +100,17 @@ class UrmasWindow(scrolled.ScrolledPanel):
         self.SetupScrolling()
         #self.sizer.Fit(self)
         #self.SetStatusText("Done.")
+        wx.CallAfter(self.updateRenderWindow)
         
-    def __del__(self):
-        print "Deleting UrmasWindow..."
-        
+    def updateRenderWindow(self,*args):
+        """
+        Method: updateRenderWindow
+        Created: 15.12.2005, KP
+        Description: Updates the render window camera settings
+                     after all initialization is done. For some
+                     reason, it has to be done here to take effect.                    
+        """
+        self.timelinePanel.wxrenwin.setView((1,1,1,0,0,1))
         
     def onShowFrame(self,evt):
         """
@@ -176,14 +183,23 @@ class UrmasWindow(scrolled.ScrolledPanel):
         mgr.addMenuItem("addtrack",MenuManager.ID_ADD_KEYFRAME,"Keyframe Track","Add a keyframe track to the timeline",self.onMenuAddKeyframeTrack)        
         mgr.addSubMenu("track","addtrack","&Add Track",MenuManager.ID_ADD_TRACK)
         mgr.addMenuItem("track",MenuManager.ID_DELETE_TRACK,"&Remove track","Remove the track from timeline",self.onMenuRemoveTrack)
-        mgr.addSeparator("track")
+        #mgr.addSeparator("track")
         
-        mgr.addMenuItem("track",MenuManager.ID_FIT_TRACK,"Expand to maximum","Expand the track to encompass the whole timeline",self.onMaxTrack)
-        mgr.addMenuItem("track",MenuManager.ID_MIN_TRACK,"Shrink to minimum","Shrink the track to as small as possible",self.onMinTrack)
-        mgr.addMenuItem("track",MenuManager.ID_SET_TRACK,"Set item size","Set each item on this track to be of given size",self.onSetTrack)
-        mgr.addMenuItem("track",MenuManager.ID_SET_TRACK_TOTAL,"Set total length","Set total length of items on this track",self.onSetTrackTotal)
-        mgr.addMenuItem("track",MenuManager.ID_SET_TRACK_RELATIVE,"Set to physical length","Set the length of items on this track to be relative to their physical length",self.onSetTrackRelative)
-        mgr.addMenuItem("rendering",MenuManager.ID_ANIMATE,"&Animated rendering","Select whether to produce animation or still images",self.onMenuAnimate,check=1)
+        mgr.createMenu("sizetrack","&Item Sizes",place=0)
+        mgr.addSubMenu("track","sizetrack","&Item Sizes",MenuManager.ID_ITEM_SIZES)
+        
+        mgr.addMenuItem("sizetrack",MenuManager.ID_FIT_TRACK,"Expand to maximum","Expand the track to encompass the whole timeline",self.onMaxTrack)
+        mgr.addMenuItem("sizetrack",MenuManager.ID_MIN_TRACK,"Shrink to minimum","Shrink the track to as small as possible",self.onMinTrack)
+        mgr.addMenuItem("sizetrack",MenuManager.ID_SET_TRACK,"Set item size","Set each item on this track to be of given size",self.onSetTrack)
+        mgr.addMenuItem("sizetrack",MenuManager.ID_SET_TRACK_TOTAL,"Set total length","Set total length of items on this track",self.onSetTrackTotal)
+        mgr.addMenuItem("sizetrack",MenuManager.ID_SET_TRACK_RELATIVE,"Set to physical length","Set the length of items on this track to be relative to their physical length",self.onSetTrackRelative)
+        #mgr.addMenuItem("",MenuManager.ID_ANIMATE,"&Animated rendering","Select whether to produce animation or still images",self.onMenuAnimate,check=1)
+
+        mgr.createMenu("shuffle","&Shift items",place=0)
+        mgr.addSubMenu("track","shuffle","Shift items",MenuManager.ID_ITEM_ORDER)
+        mgr.addMenuItem("shuffle",MenuManager.ID_ITEM_ROTATE_CW,"&Clockwise",self.onShiftClockwise)
+        mgr.addMenuItem("shuffle",MenuManager.ID_ITEM_ROTATE_CCW,"C&ounter-Clockwise",self.onShiftCounterClockwise)
+        
         mgr.addSeparator("rendering")
         mgr.addMenuItem("rendering",MenuManager.ID_RENDER_PREVIEW,"Rendering &Preview","Preview rendering",self.onMenuRender)
         mgr.addMenuItem("rendering",MenuManager.ID_RENDER_PROJECT,"&Render project","Render this project",self.onMenuRender)
@@ -212,6 +228,29 @@ class UrmasWindow(scrolled.ScrolledPanel):
         if active and hasattr(active,"maintainUpDirection"):
             self.menuManager.check(MenuManager.ID_MAINTAIN_UP,active.maintainUpDirection)
  
+    def onShiftClockwise(self,event):
+        """
+        Method: onShiftClockwise()
+        Created: 15.12.2005, KP
+        Description: Shift items in current track one step clockwise
+        """
+        active = self.control.getSelectedTrack()
+        if not active:
+            Dialogs.showwarning(self,"You need to select a track that you wish to perform the operation on.","No track selected")
+            return
+        active.shiftItems(1)
+        
+    def onShiftCounterClockwise(self,event):
+        """
+        Method: onShiftCounterClockwise()
+        Created: 15.12.2005, KP
+        Description: Shift items in current track one step counter clockwise
+        """
+        active = self.control.getSelectedTrack()
+        if not active:
+            Dialogs.showwarning(self,"You need to select a track that you wish to perform the operation on.","No track selected")
+            return
+        active.shiftItems(-1)       
     
     def onMenuRender(self,event):
         """

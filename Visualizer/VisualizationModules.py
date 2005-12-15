@@ -41,7 +41,7 @@ import Modules
 import messenger
 import glob
 import os,sys
-
+import GUI.Urmas.UrmasPersist
 class VisualizationModule:
     """
     Class: VisualizationModule
@@ -66,6 +66,8 @@ class VisualizationModule:
         self.renderer = self.parent.getRenderer()
         self.eventDesc="Rendering"
         self.view=None
+        self.setVTKState = GUI.Urmas.UrmasPersist.setVTKState
+        self.getVTKState = GUI.Urmas.UrmasPersist.getVTKState
     
     def setView(self,view):
         """
@@ -205,38 +207,38 @@ class VisualizationModule:
             odict.update({"actorProperty":self.getVTKState(self.actor.GetProperty())})
         return odict
         
-    def getVTKState(self,obj):
-        """
-        Method: getVTKState()
-        Created: 02.08.2005, KP
-        Description: Get state of vtk object
-        """     
-        state={}
-        blocked=["GetOutput","GetReleaseDataFlag","GetOutputPort","GetViewPlaneNormal"]
-        dirlist=dir(obj)
-        for i in dirlist:
-            if i not in blocked:                
-                if i[0:3]=="Get":
-                    setter=i.replace("Get","Set")
-                    if setter in dirlist:
-                        try:
-                            state[i]=eval("obj.%s()"%i)
-                        except:
-                            pass
-        return state
-    def setVTKState(self,obj,state):
-        """
-        Method: setVTKState()
-        Created: 02.08.2005, KP
-        Description: Set state of vtk object
-        """     
-        for key in state.keys():
-            setfunc=key.replace("Get","Set")
-#            Logging.info("Setting %s of %s"%(setfunc,obj),kw="rendering")
-            try:
-                eval("obj.%s(state[\"%s\"])"%(setfunc,key))
-            except:
-                pass
+##    def getVTKState(self,obj):
+##        """
+##        Method: getVTKState()
+##        Created: 02.08.2005, KP
+##        Description: Get state of vtk object
+##        """     
+##        state={}
+##        blocked=["GetOutput","GetReleaseDataFlag","GetOutputPort","GetViewPlaneNormal"]
+##        dirlist=dir(obj)
+##        for i in dirlist:
+##            if i not in blocked:                
+##                if i[0:3]=="Get":
+##                    setter=i.replace("Get","Set")
+##                    if setter in dirlist:
+##                        try:
+##                            state[i]=eval("obj.%s()"%i)
+##                        except:
+##                            pass
+##        return state
+##    def setVTKState(self,obj,state):
+##        """
+##        Method: setVTKState()
+##        Created: 02.08.2005, KP
+##        Description: Set state of vtk object
+##        """     
+##        for key in state.keys():
+##            setfunc=key.replace("Get","Set")
+###            Logging.info("Setting %s of %s"%(setfunc,obj),kw="rendering")
+##            try:
+##                eval("obj.%s(state[\"%s\"])"%(setfunc,key))
+##            except:
+##                pass
             
             
     def __set_pure_state__(self,state):

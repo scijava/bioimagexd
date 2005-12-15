@@ -66,6 +66,7 @@ class SplinePoint(TrackItem):
         """ 
         self.point=(0,0,0)
         self.itemnum=0
+        self.focalPoint = (0,0,0)
         if "itemnum" in kws:
             self.itemnum=kws["itemnum"]
         self.orientation=(0,0,1),(0,0,0)

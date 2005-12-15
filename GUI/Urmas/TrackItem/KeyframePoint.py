@@ -42,9 +42,10 @@ import os.path
 import sys
 import math,random
 import vtk
-
+import messenger
 import ImageOperations
 from Urmas import UrmasControl
+from Urmas import UrmasPersist
 import Logging        
 DRAG_OFFSET=20
 
@@ -150,6 +151,19 @@ class KeyframePoint(TrackItem):
         for i in ["Position","FocalPoint","ViewUp","ViewAngle","ParallelScale","ClippingRange"]:
             eval("self.cam.Set%s(cam.Get%s())"%(i,i))    
 
+            
+    def updateThumbnail(self):
+        """
+        Method: updateThumbnail()
+        Created: 15.12.2005, KP
+        Description: A method that first sets the camera of the renderwindow
+                     and then generates the thumbnail
+        """
+        #messenger.send(None,"show_camera",self.cam)#
+        self.parent.splineEditor.setCamera(self.cam)
+        self.parent.splineEditor.render()
+        self.getThumbnail()
+        
     def drawThumbnail(self):
         """
         Method: drawThumbnail()
@@ -185,10 +199,9 @@ class KeyframePoint(TrackItem):
         """       
         TrackItem.__set_pure_state__(self,state)
         self.point = state.point
-        try:
-            self.focalPoint = state.focalPoint
-        except:
-            self.focalPoint = (0,0,0)
+        self.cam=vtk.vtkCamera()
+        
+        UrmasPersist.setVTKState(self.cam,state.cam)
         self.parent.setSplinePoint(self.itemnum,self.point)
         
     def __getstate__(self):
@@ -200,6 +213,7 @@ class KeyframePoint(TrackItem):
         odict=TrackItem.__getstate__(self)
         for key in ["point"]:
             odict[key]=self.__dict__[key]
+        odict.update({"cam":UrmasPersist.getVTKState(self.cam)})
         return odict        
         
     def __str__(self):

@@ -725,7 +725,23 @@ class Track(wx.Panel):
             item.updateItem()
         self.paintTrack()
         self.Refresh()
-         
+
+    def shiftItems(self,direction):
+        """
+        Method: shiftItems
+        Created: 15.12.2005, KP
+        Description: Shift items in the given direction
+        """      
+        print "Shifting items ",direction
+        nitems=[]
+        n=len(self.items)
+        nitems=[self.items[i%n] for i in range(direction,n+direction)]
+        for i,item in enumerate(nitems):
+            item.setItemNumber(i)
+        self.items=nitems
+        print "shifted items: ",self.items
+        self.paintTrack()
+        self.Refresh()
         
     def getDuration(self,pixels):
         """

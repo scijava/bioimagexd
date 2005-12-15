@@ -60,9 +60,11 @@ class Configuration:
         #vtkpath=self.getPath(["Libraries","VTK"])
         vtkpath=self.getPath(["C:\\VTK-build"])
         self.setConfigItem("ShowTip","General","True",0)
+        self.setConfigItem("AskOnQuit","General","True",0)
         self.setConfigItem("TipNumber","General",0,0)
         self.readConfigItem("ShowTip","General")
         self.readConfigItem("TipNumber","General")
+        self.readConfigItem("AskOnQuit","General")
         
         self.setConfigItem("RemoveOldVTK","VTK",1,0);
         self.setConfigItem("VTKPath","VTK",vtkpath,0)
@@ -134,8 +136,6 @@ class Configuration:
     def readPathSettings(self):
         self.readConfigItem("RemoveOldVTK","VTK")
         self.readConfigItem("VTKPath","VTK")
-        self.readConfigItem("UseSystemMayavi","Mayavi")
-        self.readConfigItem("MayaviPath","Mayavi")
         self.readConfigItem("DataPath","Paths")
         self.readConfigItem("ImageFormat","Output")
         self.readConfigItem("FramePath","Paths")
