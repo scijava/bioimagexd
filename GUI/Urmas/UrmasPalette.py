@@ -39,7 +39,9 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 import wx
 import Dialogs
+import MenuManager
 import os.path
+import messenger
 
 from wx.lib.statbmp  import GenStaticBitmap as StaticBitmap
 
@@ -150,6 +152,9 @@ class UrmasPalette(wx.Panel):
         self.addDragDropItem(self.ID_NEWKEYFRAMETRACK,
         "keyframe_track.JPG",self.onToolNewKeyframeTrack,toolTip)        
         
+        p=wx.Panel(self,-1,size=(50,1))
+        self.sizer.Add(p,flag=wx.RIGHT,border=2)
+        
         self.ID_NEWTIMEPOINT=wx.NewId()
         toolTip = wx.ToolTip("Drag this on to a timepoint track to select visualized timepoints.")
         self.addDragDropItem(self.ID_NEWTIMEPOINT,
@@ -181,13 +186,37 @@ class UrmasPalette(wx.Panel):
         self.addDragDropItem(self.ID_ADD_KEYFRAME,
         "add_keyframe.jpg",self.onToolNewKeyframe,toolTip)     
         
+        self.zoomLevels=[0.25,0.3333,0.5,0.6667,0.75,1.0, 1.25, 1.5, 2.0, 3.0, 4.0, 6.0]
+        self.zoomCombo=wx.ComboBox(self,MenuManager.ID_ANIM_ZOOM_COMBO,
+                          choices=["25%","33.33%","50%","66.67%","75%","100%","125%","150%","200%","300%","400%","600%"],size=(100,-1),style=wx.CB_DROPDOWN)
+        self.zoomCombo.SetSelection(5)
+        self.zoomCombo.SetHelpText("This controls the zoom level of animator tracks.")        
+        self.zoomCombo.Bind(wx.EVT_COMBOBOX,self.zoomToComboSelection)
+        
+        self.sizer.Add(self.zoomCombo,flag=wx.RIGHT,border=2)
+        
+        
         self.SetSizer(self.sizer)
         self.SetAutoLayout(1)
         self.sizer.Fit(self)
         
+    def zoomToComboSelection(self,event):
+        """
+        Method: zoomToComboSelection
+        Created: 15.12.2005, KP
+        Description: Set the zoom level of the tracks
+        """        
+        pos=self.zoomCombo.GetSelection()
+        lvl=self.zoomLevels[pos]
+        messenger.send(None,"set_animator_zoom",lvl)
+        
+        
     def addDragDropItem(self,newid,icon,dragCallback,toolTip):        
-        #p=wx.Panel(self,-1,size=(32,32))#,style=wx.RAISED_BORDER)
-        #self.panels[newid]=p
+        """
+        Method: addDragDropItem
+        Created: 12.12.2005, KP
+        Description: Add an item to the toolbar
+        """
         bmp=wx.Image(os.path.join(self.iconpath,icon),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
         self.icons[newid]=bmp
         sbmp=StaticBitmap(self,newid,bmp,style=wx.RAISED_BORDER)

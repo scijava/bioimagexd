@@ -63,6 +63,9 @@ class TimepointTrack(Track):
         self.nameColor = (128,195,155)
         self.fg=(0,0,0)
         self.bg=self.nameColor
+        # A flag that indicates that keyframe track is similiar to
+        # camera path track in that it defines the camera movement
+        self.trackType = "DEFINE_TIMEPOINT"        
         Track.__init__(self,name,parent,**kws)
         if "item" in kws:
             self.itemClass=kws["item"]

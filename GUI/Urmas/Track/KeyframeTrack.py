@@ -64,6 +64,10 @@ class KeyframeTrack(SplineTrack):
         self.fg=(0,0,0)
         self.bg=self.nameColor
         
+        # A flag that indicates that keyframe track is similiar to
+        # camera path track in that it defines the camera movement
+        self.trackType = "DEFINE_CAMERA"
+        
         kws["height"]=80
 
         Track.__init__(self,name,parent,**kws)   

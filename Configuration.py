@@ -54,12 +54,11 @@ class Configuration:
         self.parser=ConfigParser.ConfigParser()
         cfgfile=self.getPath(configFile)
         self.configFile=cfgfile
-        self.parser.read([cfgfile])
+        self.parser.read([cfgfile])    
     
         # Set the initial values
         #vtkpath=self.getPath(["Libraries","VTK"])
         vtkpath=self.getPath(["C:\\VTK-build"])
-        mayavipath=self.getPath(["Libraries","mayavi"])
         self.setConfigItem("ShowTip","General","True",0)
         self.setConfigItem("TipNumber","General",0,0)
         self.readConfigItem("ShowTip","General")
@@ -67,12 +66,11 @@ class Configuration:
         
         self.setConfigItem("RemoveOldVTK","VTK",1,0);
         self.setConfigItem("VTKPath","VTK",vtkpath,0)
-        self.setConfigItem("UseSystemMayavi","Mayavi",0,0)
-        self.setConfigItem("MayaviPath","Mayavi",mayavipath,0)
-
+        
         self.setConfigItem("ImageFormat","Output","png",0)
-        self.setConfigItem("FramePath","Paths",os.path.expanduser("~/"),0)
-        self.setConfigItem("VideoPath","Paths",os.path.expanduser("~/video.avi"),0)
+        fpath=os.path.expanduser("~")
+        self.setConfigItem("FramePath","Paths",fpath,0)
+        self.setConfigItem("VideoPath","Paths",os.path.join(fpath,"video.avi"),0)
 
         self.setConfigItem("DataPath","Paths","/home/kalpaha/BioImageXD/Data/",0)
         self.setConfigItem("LastPath","Paths","/home/kalpaha/BioImageXD/Data/",0)
@@ -107,7 +105,7 @@ class Configuration:
         wrapping=self.getPath([vtkdir,"Wrapping","Python"])
         self.insertPath(bin)
         self.insertPath(wrapping)
-        self.appendPath(self.getConfigItem("MayaviPath","Mayavi"))
+        
         
     def setConfigItem(self,configItem, section,value,write=1):
         self.configItems[configItem]=value
@@ -140,7 +138,8 @@ class Configuration:
         self.readConfigItem("MayaviPath","Mayavi")
         self.readConfigItem("DataPath","Paths")
         self.readConfigItem("ImageFormat","Output")
-            
+        self.readConfigItem("FramePath","Paths")
+        self.readConfigItem("VideoPath","Paths")
     def setCurrentDir(self,path):
         self.installPath=path
 

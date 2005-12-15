@@ -159,6 +159,7 @@ class Track(wx.Panel):
         Created: 17.07.2005, KP
         Description: Paint the track
         """ 
+        #print "Painting track",self.buffer.GetWidth(),self.buffer.GetHeight()
         self.dc = wx.BufferedDC(wx.ClientDC(self),self.buffer)
         if self.renew != 2:
             self.dc.Clear()
@@ -249,6 +250,17 @@ class Track(wx.Panel):
             self.overlayPosInPixels=pos
             self.dc.DrawBitmap(overlay,pos,0,1)            
        
+    def updateItemSizes(self):
+        """
+        Method: updateItemSizes
+        Created: 15.12.2005, KP
+        Description: Update each item's width based on it's position
+        """       
+        pps=self.timescale.getPixelsPerSecond()
+        for item in self.items:
+            x,y=item.getPosition()
+            item.setWidth(abs(x-y)*pps)
+        
     def updatePositions(self):
         """
         Method: updatePositions()
@@ -470,6 +482,7 @@ class Track(wx.Panel):
         Description: Execute dragging of item
         """         
         x,y=event.GetPosition()
+        #print "onDragItem",trackitem.dragMode,x,y
         
         if trackitem.dragMode == 2:
             x-=self.getLabelWidth()
@@ -590,10 +603,14 @@ class Track(wx.Panel):
         """              
         self.duration=seconds
         self.frames=frames
-        print "Set duration of ",self," to ",seconds
+        
+        
         w=self.duration*self.timescale.getPixelsPerSecond()
         self.width = w+self.getLabelWidth()
+        print "Set duration of ",self," to ",seconds,"new width=",self.width
         self.buffer = wx.EmptyBitmap(self.width,self.height)
+        self.SetSize((self.width,self.height))
+        self.renew=0
         self.paintTrack()
 
     def expandToMax(self):

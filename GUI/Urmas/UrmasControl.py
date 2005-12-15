@@ -60,6 +60,7 @@ class UrmasControl:
     """
     def __init__(self,window,visualizer):
         self.window = window
+        
         self.splineEditor = None
         self.splinePointAmount = 5
         self.duration = 60 # seconds
@@ -278,6 +279,7 @@ class UrmasControl:
         """    
         self.timeline=timeline
         self.getSelectedTrack = timeline.getSelectedTrack
+        
         
     def setTimelineConfig(self,config):
         """

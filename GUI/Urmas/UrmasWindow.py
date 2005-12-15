@@ -68,6 +68,7 @@ class UrmasWindow(scrolled.ScrolledPanel):
         scrolled.ScrolledPanel.__init__(self,parent,-1)
     
         self.taskWin=taskwin
+        self.videoGenerationPanel = None
         self.visualizer=visualizer
         self.Unbind(wx.EVT_CHILD_FOCUS)
         self.menuManager=menumanager
@@ -92,7 +93,8 @@ class UrmasWindow(scrolled.ScrolledPanel):
         self.visualizer.bindTimeslider(self.onShowFrame,all=1)
         n=self.control.getDuration()
         messenger.send(None,"set_time_range",1,n*10)
-
+    
+        messenger.connect(None,"video_generation_close",self.onVideoGenerationClose)
         self.SetSizer(self.sizer)
         self.SetAutoLayout(1)
         self.SetupScrolling()
@@ -220,15 +222,37 @@ class UrmasWindow(scrolled.ScrolledPanel):
         if event.GetId() == MenuManager.ID_RENDER_PROJECT:
             w,h=self.taskWin.GetSize()
             self.taskWin.SetDefaultSize((300,h))
-            video=VideoGeneration.VideoGeneration(self.taskWin,self.control,self.visualizer)
-            video.SetSize((300,h))
-            video.Show()
+            self.videoGenerationPanel=VideoGeneration.VideoGeneration(self.taskWin,self.control,self.visualizer)
+            self.videoGenerationPanel.SetSize((300,h))
+            self.videoGenerationPanel.Show()
             self.visualizer.mainwin.OnSize(None)
             #print "Setting taskwin size to ",200,h
 
             #self.control.renderProject(0)
         else:
+            messenger.send(None,"set_preview_mode",1)
             self.control.renderProject(1)
+            messenger.send(None,"set_preview_mode",0)
+            
+    def onVideoGenerationClose(self,obj, evt, *args):
+        """
+        Method: onVideoGenerationClose
+        Created: 15.12.2005, KP
+        Description: Callback for closing the video generation
+        """ 
+        w,h=self.taskWin.GetSize()       
+        if self.videoGenerationPanel:            
+            self.taskWin.SetDefaultSize((0,h))
+            self.visualizer.mainwin.OnSize(None)
+            self.videoGenerationPanel.Destroy()
+            self.videoGenerationPanel=None
+            if self.visualizer.getCurrentModeName()!="animator":
+                self.visualizer.setVisualizationMode("animator")            
+
+        self.FitInside()
+        self.SetupScrolling()
+        self.Layout()
+        
         
     def onMinTrack(self,evt):
         """
@@ -250,15 +274,15 @@ class UrmasWindow(scrolled.ScrolledPanel):
         """
 
         dlg = wx.TextEntryDialog(self,"Set duration of each item (seconds):","Set item duration")
-        dlg.SetValue("5")
+        dlg.SetValue("5.0")
         val=5
         if dlg.ShowModal()==wx.ID_OK:
             try:
-                val=int(dlg.GetValue())
+                val=float(dlg.GetValue())
             except:
                 return
-        size=val*self.control.getPixelsPerSecond()
-        print "Setting to size ",size,"(",val,"seconds)"
+        size=int(val*self.control.getPixelsPerSecond())
+        #print "Setting to size ",size,"(",val,"seconds)"
         active = self.control.getSelectedTrack()
         if not active:
             Dialogs.showwarning(self,"You need to select a track that you wish to perform the operation on.","No track selected")
@@ -274,14 +298,14 @@ class UrmasWindow(scrolled.ScrolledPanel):
         active = self.control.getSelectedTrack()
         
         dlg = wx.TextEntryDialog(self,"Set total duration (seconds) of items in track:","Set track duration")
-        dlg.SetValue("30")
+        dlg.SetValue("30.0")
         val=5
         if dlg.ShowModal()==wx.ID_OK:
             try:
-                val=int(dlg.GetValue())
+                val=float(dlg.GetValue())
             except:
                 return
-        size=val*self.control.getPixelsPerSecond()
+        size=int(val*self.control.getPixelsPerSecond())
         #print "Setting to size ",size,"(",val,"seconds)"
         if not active:
             Dialogs.showwarning(self,"You need to select a track that you wish to perform the operation on.","No track selected")

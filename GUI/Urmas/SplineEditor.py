@@ -72,9 +72,28 @@ class SplineEditor:
         self.wxrenwin=renwin
         self.initializeVTK()
         messenger.connect(None,"show_arrow",self.onShowArrow)
-        
+        messenger.connect(None,"set_preview_mode",self.onSetPreviewMode)
         self.arrow=None
-
+        self.arrowVisibility=0
+        
+    def onSetPreviewMode(self,obj, evt, flag):
+        """
+        Method: onSetPreviewMode
+        Created: 14.12.2005, KP
+        Description: Set the preview mode. Toggles visibility of spline, frame etc.
+        """                   
+        if flag:
+            self.spline.Off()
+        else:
+            self.spline.On()
+        if not flag:
+            self.arrowActor.SetVisibility(self.arrowVisibility)
+        else:
+            self.arrowVisibility = self.arrowActor.GetVisibility()
+            self.arrowActor.SetVisibility(0)
+        self.outlineactor.SetVisibility((not flag))
+        self.axes.SetVisibility((not flag))
+        
     def initializeVTK(self):
         """
         Method: initializeVTK()

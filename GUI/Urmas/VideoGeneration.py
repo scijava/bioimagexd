@@ -42,6 +42,8 @@ import os,sys
 import Dialogs
 import platform
 import Logging
+import messenger
+
 
 class VideoGeneration(wx.Panel):
     """
@@ -74,14 +76,14 @@ class VideoGeneration(wx.Panel):
         
         self.buttonBox = wx.BoxSizer(wx.HORIZONTAL)
         self.okButton = wx.Button(self,-1,"Ok")
-#        self.cancelButton = wx.Button(self,-1,"Cancel")
+        self.cancelButton = wx.Button(self,-1,"Cancel")
         
         self.okButton.Bind(wx.EVT_BUTTON,self.onOk)
-#        self.cancelButton.Bind(wx.EVT_BUTTON,self.onCancel)
+        self.cancelButton.Bind(wx.EVT_BUTTON,self.onCancel)
         
         
         self.buttonBox.Add(self.okButton)
-        #self.buttonBox.Add(self.cancelButton)
+        self.buttonBox.Add(self.cancelButton)
         
 
         self.mainsizer.Add(self.buttonBox,(5,0),flag=wx.EXPAND|wx.RIGHT|wx.LEFT)
@@ -90,6 +92,14 @@ class VideoGeneration(wx.Panel):
         self.SetAutoLayout(True)
         self.mainsizer.Fit(self)
 
+    def onCancel(self,event):
+        """
+        Method: onCancel()
+        Created: 15.12.2005, KP
+        Description: Close the video generation window
+        """        
+        messenger.send(None,"video_generation_close")
+        
     def onOk(self,event):
         """
         Method: onOk()
@@ -100,6 +110,11 @@ class VideoGeneration(wx.Panel):
             self.visualizer.setVisualizationMode("3d")
         path=self.rendir.GetValue()
         file=self.videofile.GetValue()
+        conf = Configuration.getConfiguration()
+        conf.setConfigItem("FramePath","Paths",path)
+        conf.setConfigItem("VideoPath","Paths",file)
+        conf.writeSettings()
+        
         renderingInterface=RenderingInterface.getRenderingInterface(1)
         renderingInterface.setVisualizer(self.visualizer)
         # if we produce images, then set the correct file type
@@ -135,7 +150,7 @@ class VideoGeneration(wx.Panel):
             Logging.info("Will produce video",kw="animator")
             self.encodeVideo(path,file,size)
 
-
+        messenger.send(None,"video_generation_close")
 #        self.Close()
 
     def encodeVideo(self,path,file,size):
@@ -303,8 +318,8 @@ class VideoGeneration(wx.Panel):
         self.mainsizer.Add(self.outputstaticbox,(0,0))
     
         conf = Configuration.getConfiguration()
-        path = conf.getConfigItem("FramePath","Animator")
-        video = conf.getConfigItem("VideoPath","Animator")
+        path = conf.getConfigItem("FramePath","Paths")
+        video = conf.getConfigItem("VideoPath","Paths")
         if not path:
             path=os.path.expanduser("~")
         if not video:

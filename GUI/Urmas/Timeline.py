@@ -119,7 +119,33 @@ class Timeline(scrolled.ScrolledPanel):
         messenger.connect(None,"set_timeline_size",self.setupScrolling)
         messenger.connect(None,"set_duration",self.onSetDuration)
         messenger.connect(None,"set_frames",self.onSetFrames)
+        messenger.connect(None,"update_timeline",self.onUpdateTimeline)
         
+    def onUpdateTimeline(self,obj,evt,*args):
+        """
+        Method: onUpdateTimeline
+        Created: 15.12.2005, KP
+        Description: Method to refresh the whole timeline
+        """
+        for tracks,sizer in [(self.timepointTracks,self.timepointSizer),
+                              (self.splinepointTracks,self.splineSizer),
+                              (self.keyframeTracks,self.keyframeSizer)]:
+            #t=None
+            for i in tracks:
+                if i:
+                    #t=i
+                    i.updateItemSizes()
+                    i.setDuration(self.seconds,self.frames)
+                    print i.GetSize()
+            #if t:
+            #    sizer.Fit(t)
+        #print self.timepointTracks[0].GetSize()
+        #self.FitInside()
+        #self.SetupScrolling()
+        #self.Layout()        
+        #print self.timepointSizer.GetSize()
+        #self.SetBackgroundColour((255,0,0))
+        #print self.timepointTracks[0].GetSize(),self.GetSize()
         
     def AcceptDrop(self,x,y,data):
         """
@@ -258,8 +284,7 @@ class Timeline(scrolled.ScrolledPanel):
         # since URPO doesn't know how to create the tracks, just how to load the contents
 #        spamnt = self.splinepointTrackAmnt
 #        tpamnt = self.timepointTrackAmnt
-#        print "self.splinepointTrackAmnt=",self.splinepointTrackAmnt
-#        print "self.timepointTrackAmnt=",self.timepointTrackAmnt
+
         #for tptrack in state.timepointTracks:
         for tptrack in state.timepointTracks:
             t=self.addTrack(tptrack.label)
@@ -292,14 +317,14 @@ class Timeline(scrolled.ScrolledPanel):
             item=sizer.FindItemAtPosition((moveFrom+i,0))
             item=item.GetWindow()
             #print "Got item =",item
-            print "Detaching %d at (%d,0)"%(i,moveFrom+i)
+#            print "Detaching %d at (%d,0)"%(i,moveFrom+i)
             sizer.Show(item,0)
             sizer.Detach(item)
             replace.append(item)
         
         for i in range(0,len(replace)):
             item=replace[i]
-            print "Placing %d to (%d,0)"%(i,moveTo+i)
+            #print "Placing %d to (%d,0)"%(i,moveTo+i)
             #self.sizer.Add(item,(self.trackOffset+moveTo+i,0),flag=wx.EXPAND|wx.ALL)
             sizer.Add(item,(moveTo+i,0),flag=wx.EXPAND|wx.ALL)
             item.SetSize((item.width,item.height))
@@ -327,12 +352,12 @@ class Timeline(scrolled.ScrolledPanel):
 #        if self.keyframeTrackAmnt:
 #            self.moveTracks(self.timepointTrackAmnt+self.splinepointTrackAmnt,self.timepointTrackAmnt+self.splinepointTrackAmnt+1,self.keyframeTrackAmnt)
 #        self.Layout()
-        print "Adding track to ",self.trackOffset+self.timepointTrackAmnt
+        #print "Adding track to ",self.trackOffset+self.timepointTrackAmnt
         #self.sizer.Add(tr,(self.trackOffset+self.timepointTrackAmnt,0),flag=wx.EXPAND|wx.ALL)
         self.timepointSizer.Add(tr,(self.timepointTrackAmnt,0),flag=wx.EXPAND|wx.ALL)
         tr.setColor((56,196,248))
         if self.dataUnit:
-            print "Setting dataunit",self.dataUnit
+            #print "Setting dataunit",self.dataUnit
             tr.setDataUnit(self.dataUnit)
         
         if n:
@@ -388,7 +413,7 @@ class Timeline(scrolled.ScrolledPanel):
         self.keyframeTrackAmnt = len(self.keyframeTracks)
         self.timepointTrackAmnt = len(self.timepointTracks)
         self.splinepointTrackAmnt=len(self.splinepointTracks)
-        print "Adding track to ",self.trackOffset+self.timepointTrackAmnt+self.splinepointTrackAmnt
+        #print "Adding track to ",self.trackOffset+self.timepointTrackAmnt+self.splinepointTrackAmnt
         #self.sizer.Add(tr,(self.trackOffset+self.timepointTrackAmnt+self.splinepointTrackAmnt+self.keyframeTrackAmnt,0),flag=wx.EXPAND|wx.ALL)
         self.keyframeSizer.Add(tr,(self.keyframeTrackAmnt,0),flag=wx.EXPAND|wx.ALL)
         
@@ -413,7 +438,7 @@ class Timeline(scrolled.ScrolledPanel):
         tracks.extend(self.keyframeTracks)
         ret=0
         for track in tracks:
-            if track != cmptrack and track.__class__ == cmptrack.__class__:
+            if track != cmptrack and track.trackType == cmptrack.trackType:
                 item=track.items[-1]
                 x,y=item.GetPosition()
                 w,h=item.GetSize()
@@ -486,7 +511,7 @@ class Timeline(scrolled.ScrolledPanel):
                 pos=lst.index(track)
                 n=pos
                 pos+=self.timepointTrackAmnt
-                print "Moving from ",pos+1,"to ",pos,"#",self.splinepointTrackAmnt-n
+                #print "Moving from ",pos+1,"to ",pos,"#",self.splinepointTrackAmnt-n
                 self.moveTracks(pos+1,pos,self.splinepointTrackAmnt-n)
                 self.splinepointTrackAmnt-=1
             else:
@@ -517,7 +542,7 @@ class Timeline(scrolled.ScrolledPanel):
         Created: 20.09.2005, KP
         Description: Method to set the timeline duration
         """
-        print "On set duration",duration
+        #print "On set duration",duration
         self.seconds = duration
         self.configureTimeline(duration,self.frames)
         
@@ -547,7 +572,7 @@ class Timeline(scrolled.ScrolledPanel):
                      given amount of seconds, and the frame amount to
                      given amount of frames
         """
-        print "cONFIGURE TIMELINE"
+        #print "cONFIGURE TIMELINE"
         self.seconds = seconds
         self.frames = frames
         #print "Configuring frame amount to ",frames
@@ -564,15 +589,10 @@ class Timeline(scrolled.ScrolledPanel):
         #self.SetupScrolling()
         #print "foo"
         #print "Configuring tracks",self.timepointTracks,self.splinepointTracks,self.keyframeTracks
-        for i in self.timepointTracks:
+        for i in self.timepointTracks+self.splinepointTracks+self.keyframeTracks:
             if i:
                 i.setDuration(seconds,frames)
-        for i in self.splinepointTracks:
-            if i:
-                i.setDuration(seconds,frames)
-        for i in self.keyframeTracks:
-            if i:
-                i.setDuration(seconds,frames)        
+
     def __str__(self):
         """
         Method: __str__

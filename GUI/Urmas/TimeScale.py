@@ -49,6 +49,7 @@ class TimeScale(wx.Panel):
     def __init__(self,parent):
         wx.Panel.__init__(self,parent,-1,style=wx.RAISED_BORDER)
         self.perSecond=24
+        self.zoomLevel = 1
         self.xOffset=15+self.getLabelWidth()
         self.yOffset=6
         self.bgcolor=(255,255,255)
@@ -56,8 +57,18 @@ class TimeScale(wx.Panel):
 
         #self.setDuration(60)
         messenger.connect(None,"set_duration",self.onSetDuration)
+        messenger.connect(None,"set_animator_zoom",self.onSetZoomLevel)
         self.Bind(wx.EVT_PAINT,self.onPaint)
 
+        
+    def onSetZoomLevel(self,obj,evt,level):
+        """
+        Method: onSetZoomLevel
+        Created: 15.12.2005, KP
+        Description: Sets the zoom level of the animator
+        """            
+        self.setZoomLevel(level)
+        messenger.send(None,"update_timeline")
         
     def onSetDuration(self,obj,evt,duration):
         """
@@ -91,24 +102,58 @@ class TimeScale(wx.Panel):
             self.bgcolor=(r,g,b)
 
     def setOffset(self,x):
+        """
+        Method: setOffset
+        Created: N/A, KP
+        Description: Sets the offset of the timescale, which is
+                     mainly determined by the tracks' titles
+        """    
         self.xOffset=x
         self.paintScale()
 
     def setPixelsPerSecond(self,x):
+        """
+        Method: setPixelsPerSecond
+        Created: N/A, KP
+        Description: Set how many pixels the timeline will show per second
+        """    
         self.perSecond=x
         #print "pixels per second=",x
 
+    def setZoomLevel(self,level):
+        """
+        Method: setZoomLevel
+        Created: 15.12.2005, KP
+        Description: Set a zoom level affecting the pixels per second
+        """    
+        if self.zoomLevel != level:
+            self.zoomLevel = level
+            # the easiest way to update the timescale is to
+            # set the same duration as now, which will resize
+            # and repaint the whole thing
+            self.setDuration(self.seconds)
+        
     def getPixelsPerSecond(self):
-        return self.perSecond
+        """
+        Method: getPixelsPerSecond
+        Created: N/A, KP
+        Description: Return the pixels per second, modified by the zoom level
+        """        
+        return int(self.perSecond*self.zoomLevel)
 
     def setDuration(self,seconds):
+        """
+        Method: setDuration
+        Created: N/A, KP
+        Description: Set the length of the timescale
+        """        
         self.seconds=seconds
-        self.width=self.perSecond*seconds+2*self.xOffset
+        self.width=self.getPixelsPerSecond()*seconds+2*self.xOffset
         self.height=20+self.yOffset
         self.SetSize((self.width+10,self.height))
         #print "Set Size to %d,%d"%(self.width+10,self.height+10)
         self.buffer=wx.EmptyBitmap(self.width,self.height)
-        print self.buffer.GetWidth(),self.buffer.GetHeight()
+        #print self.buffer.GetWidth(),self.buffer.GetHeight()
         self.SetMinSize((self.width+10,self.height))
         #Logging.info("Set timescale size to %d,%d"%(self.width,self.height),kw="animator")
         messenger.send(None,"set_timeline_size",(self.width,self.height))
@@ -116,6 +161,11 @@ class TimeScale(wx.Panel):
         self.Refresh()
 
     def paintScale(self):
+        """
+        Method: paintScale
+        Created: N/A, KP
+        Description: Paint the timescale
+        """        
         dc = wx.BufferedDC(wx.ClientDC(self),self.buffer)
         #col=self.GetBackgroundColour()
         r,g,b=self.bgcolor
@@ -136,7 +186,7 @@ class TimeScale(wx.Panel):
         r,g,b=self.fgcolor
         self.dc.SetPen(wx.Pen((r,g,b)))
         for i in range(0,self.seconds+1):
-            x=i*self.perSecond+self.xOffset
+            x=i*self.getPixelsPerSecond()+self.xOffset
             y=10+self.yOffset
             if not i%10:
                 h=int(i/3600)
@@ -163,4 +213,10 @@ class TimeScale(wx.Panel):
         self.dc = None
     
     def onPaint(self,event):
+        """
+        Method: onPaint
+        Created: N/A, KP
+        Description: The event handler for paint events. Just blits
+                     a bmp
+        """    
         dc=wx.BufferedPaintDC(self,self.buffer)

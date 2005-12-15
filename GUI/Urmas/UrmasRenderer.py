@@ -46,6 +46,13 @@ import wx
 import messenger
 import Interpolation
 import vtk
+import math
+
+def distance(p1,p2):
+    xd=p1[0]-p2[0]
+    yd=p1[1]-p2[1]
+    zd=p1[2]-p2[2]
+    return math.sqrt(xd*xd+yd*yd+zd*zd)
 
 class UrmasRenderer:
     """
@@ -69,15 +76,21 @@ class UrmasRenderer:
         self.lastpoint=None
         self.lastSplinePoint=None
         
+        # we need to keep a list of the camera positions
+        # so we can ignore the interpolated camera positions
+        # if the camera positions are the same (since the interpolated)
+        # results will in that case be incorrect
+        self.camPositions=[]
+        
         self.currTrack=None
         self.lastSplinePosition=None
         messenger.connect(None,"render_time_pos",self.renderPreviewAt)
         
     def startAnimation(self,control):
         """
-        Class: startMayavi
+        Class: startAnimation
         Created: 20.04.2005, KP
-        Description: Start mayavi for rendering
+        Description: Initialize the rendering
         """
         self.control = control
         self.dataUnit = control.getDataUnit()
@@ -98,6 +111,7 @@ class UrmasRenderer:
         Description: Render the timeline
         """    
         renderpath="."
+        messenger.send(None,"report_progress_only",self)
         self.control = control
         self.dataUnit = control.getDataUnit()
         self.duration = duration = control.getDuration()
@@ -141,13 +155,17 @@ class UrmasRenderer:
 #        cam.ComputeViewPlaneNormal()
 #        cam.OrthogonalizeViewUp()
 
-        for n in range(frames):
-            self.renderFrame(n,(n+1)*spf,spf,preview=preview)
+        for n in range(frames+1):
             
-            messenger.send(None,"update_progress",n/float(frames),"Rendering frame %d / %d. Time: %.1fs"%(n,frames,(n+1)*spf))        
+            messenger.send(None,"set_timeslider_value",(n+1)*spf*10.0)
+            self.renderFrame(n,(n+1)*spf,spf,preview=preview)            
+            messenger.send(self,"update_progress",(n+1)/float(frames+1),"Rendering frame %d / %d. Time: %.1fs"%(n,frames,(n+1)*spf))        
 
+        messenger.send(None,"report_progress_only",None)
         if not preview:
-            pass
+            messenger.send(None,"update_progress",1.0,"Rendering done.")
+        else:
+            messenger.send(None,"update_progress",1.0,"")
 #            self.dlg.Destroy()
 
     def initializeCameraInterpolator(self):
@@ -162,15 +180,20 @@ class UrmasRenderer:
             return
         self.interpolator = vtk.vtkCameraInterpolator()
         self.interpolator.SetInterpolationTypeToSpline()
+        self.camPositions=[]
         for track in tracks:
             items=track.getItems()
             for item in items[:-1]:
                 start,end=item.getPosition()
+                campos=item.cam.GetPosition()
+                self.camPositions.append((start,campos))
                 self.interpolator.AddCamera(start,item.cam)
             # The last item is the end of track-item
             if len(items):
                 item=items[-1]
                 start,end=item.getPosition()
+                campos=item.cam.GetPosition()
+                self.camPositions.append((start,campos))                
                 self.interpolator.AddCamera(start,item.cam)
         
     def renderPreviewAt(self,evt,obj,timepos):
@@ -325,6 +348,22 @@ class UrmasRenderer:
                     interpolated=1
                     Logging.info("Interpolating camera at ",timepos,kw="animator")
                     self.interpolator.InterpolateCamera(timepos,cam)                    
+                    
+                    # we check the stored camera positions
+                    for i,pos in enumerate(self.camPositions[:-1]):                        
+                        t,camPos=pos
+                        if timepos>=t:
+                            t2,camPos2=self.camPositions[i+1]
+                            # if the distance between the two consecutive
+                            # camera positions is < 1.0 then the first
+                            # position is used instead of an interpolated
+                            # one since the interpolated position may be
+                            # wrong
+                            if distance(camPos,camPos2) < 1.0:
+                                Logging.info("Using original camera position instead of interpolated",kw="animator")
+                                cam.SetPosition(camPos)
+                            break
+                    
                     self.ren.ResetCameraClippingRange()
                     
             else:

@@ -91,6 +91,8 @@ class MainWindow(wx.Frame):
         )
         self.Bind(wx.EVT_CLOSE,self.quitApp)
         self.progressTimeStamp=0
+        self.progressObject=None
+        
         self.help=None
         self.statusbar=None
         self.progress=None
@@ -369,6 +371,8 @@ class MainWindow(wx.Frame):
         Created: 03.11.2004, KP
         Description: Updates the progress bar
         """
+        if self.progressObject and obj != self.progressObject:
+            return
         t=time.time()
         if arg not in [1.0, 100] and abs(t-self.progressTimeStamp)<1:
             return
@@ -654,6 +658,18 @@ class MainWindow(wx.Frame):
         self.colorLbl=UIElements.NamePanel(self.statusbar,"",col,size=(rect.width-4,rect.height-4))
         self.colorLbl.SetPosition((rect.x+2,rect.y+2))
         messenger.connect(None,"update_progress",self.updateProgressBar)
+        messenger.connect(None,"report_progress_only",self.onSetProgressObject)
+        
+    def onSetProgressObject(self,obj,evt,arg):
+        """
+        Method: onSetProgressObject
+        Created: 14.12.2005, KP
+        Description: Set the object that is allowed to send progress updates
+        """
+        if not arg and self.progressObject:
+            messenger.disconnect(self.progressObject,"update_progress")
+        self.progressObject=arg
+        messenger.connect(self.progressObject,"update_progress",self.updateProgressBar)
         
     def toggleToolNames(self,evt):
         """
