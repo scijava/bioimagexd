@@ -575,6 +575,7 @@ int vtkLSMReader::AnalyzeTag(ifstream *f,unsigned long startPos)
     this->NewSubFileType = subfileType;
     }*/
       break;
+    
     case TIF_IMAGEWIDTH: 
 #ifdef VTK_WORDS_BIGENDIAN
       vtkByteSwap::Swap4LE((unsigned int*)actualValue);
@@ -583,6 +584,7 @@ int vtkLSMReader::AnalyzeTag(ifstream *f,unsigned long startPos)
       //this->Dimensions[0] = this->CharPointerToUnsignedInt(actualValue);
       //this->Dimensions[0] = value;
       break;
+    
     case TIF_IMAGELENGTH:
 #ifdef VTK_WORDS_BIGENDIAN
       vtkByteSwap::Swap4LE((unsigned int*)actualValue);
@@ -591,6 +593,7 @@ int vtkLSMReader::AnalyzeTag(ifstream *f,unsigned long startPos)
 #endif
       //this->Dimensions[1] = value;
       break;
+    
     case TIF_BITSPERSAMPLE:
 #ifdef VTK_WORDS_BIGENDIAN
       vtkByteSwap::Swap2LE((unsigned short*)actualValue);
@@ -604,34 +607,43 @@ int vtkLSMReader::AnalyzeTag(ifstream *f,unsigned long startPos)
       this->BitsPerSample->SetValue(i,bitsPerSample);
     }
     break;
+    
     case TIF_COMPRESSION:
 #ifdef VTK_WORDS_BIGENDIAN
       vtkByteSwap::Swap2LE((unsigned short*)actualValue);
 #endif
       this->Compression = this->CharPointerToUnsignedShort(actualValue);
       break;
+    
     case TIF_PHOTOMETRICINTERPRETATION:
 #ifdef VTK_WORDS_BIGENDIAN
       vtkByteSwap::Swap2LE((unsigned short*)actualValue);
 #endif
       this->PhotometricInterpretation = this->CharPointerToUnsignedShort(actualValue);
       break;
+    
     case TIF_STRIPOFFSETS:
       //      vtkDebugMacro(<<"Number of values="<<length);
       this->StripOffset->SetNumberOfValues(length);
 #ifdef VTK_WORDS_BIGENDIAN
       vtkByteSwap::Swap4LERange((unsigned int*)actualValue,length);
 #endif
-      for(i=0;i<length;i++)
-    {
-      //          unsigned int stripOffset = this->CharPointerToUnsignedInt(actualValue + (this->TIFF_BYTES(TIFF_LONG)*i));
-      unsigned int* offsets = (unsigned int*)actualValue;
-      //    this->StripOffset->SetValue(i,this->CharPointerToUnsignedInt(actualValue + (this->TIFF_BYTES(TIFF_LONG)*i)));
-      unsigned int stripOffset=offsets[i];
-      vtkDebugMacro(<<"Strip offset to "<<i<<"="<<stripOffset);   
-      this->StripOffset->SetValue(i,stripOffset);
+    if(length>1) {
+          for(i=0;i<length;i++)
+        {
+          //          unsigned int stripOffset = this->CharPointerToUnsignedInt(actualValue + (this->TIFF_BYTES(TIFF_LONG)*i));
+          unsigned int* offsets = (unsigned int*)actualValue;
+          //    this->StripOffset->SetValue(i,this->CharPointerToUnsignedInt(actualValue + (this->TIFF_BYTES(TIFF_LONG)*i)));
+          unsigned int stripOffset=offsets[i];
+          vtkDebugMacro(<<"Strip offset to "<<i<<"="<<stripOffset);   
+          this->StripOffset->SetValue(i,stripOffset);
+        }
+    } else {
+        vtkDebugMacro(<<"Strip offset to only channel="<<value);
+        this->StripOffset->SetValue(0,value);
     }
       break;
+    
     case TIF_SAMPLESPERPIXEL:
 #ifdef VTK_WORDS_BIGENDIAN
       vtkByteSwap::Swap4LE((unsigned int*)actualValue);
@@ -639,18 +651,26 @@ int vtkLSMReader::AnalyzeTag(ifstream *f,unsigned long startPos)
       this->SamplesPerPixel = this->CharPointerToUnsignedInt(actualValue);
       //      vtkDebugMacro(<<"Samples per pixel="<<SamplesPerPixel<<"\n");
       break;
+    
     case TIF_STRIPBYTECOUNTS:
 #ifdef VTK_WORDS_BIGENDIAN
       vtkByteSwap::Swap4LERange((unsigned int*)actualValue,length);
 #endif      
       this->StripByteCount->SetNumberOfValues(length);
 
-      for(i=0;i<length;i++)
-    {
-      unsigned int* counts = (unsigned int*)actualValue;
-      this->StripByteCount->SetValue(i,this->CharPointerToUnsignedInt(actualValue + (this->TIFF_BYTES(TIFF_LONG)*i)));
-    //  this->StripByteCount->SetValue(i,counts[i]);
-        vtkDebugMacro(<<"Strip byte count of " << i <<"="<<counts[i]);
+    if(length>1) {
+          for(i=0;i<length;i++)
+        {
+          unsigned int* counts = (unsigned int*)actualValue;
+          unsigned int bytecount = this->CharPointerToUnsignedInt(actualValue + (this->TIFF_BYTES(TIFF_LONG)*i));
+          
+            this->StripByteCount->SetValue(i,bytecount);
+        //  this->StripByteCount->SetValue(i,counts[i]);
+            vtkDebugMacro(<<"Strip byte count of " << i <<"="<<counts[i] <<"("<<bytecount<<")");
+        }
+    } else {
+         vtkDebugMacro(<<"Bytecount of only strip="<<value);
+         this->StripByteCount->SetValue(0,value);
     }
       break;
     case TIF_PLANARCONFIGURATION:
@@ -738,6 +758,8 @@ unsigned long vtkLSMReader::SeekFile(int image)
   do
     {
     // we count only image directories and not thumbnail images
+    // subfiletype 0 = images
+    // subfiletype 1 = thumbnails
     if(this->NewSubFileType == 0) 
       {
       i++;
