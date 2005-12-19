@@ -551,7 +551,8 @@ int vtkLSMReader::AnalyzeTag(ifstream *f,unsigned long startPos)
     {
     actualValue = new char[readSize];
     startPos = value;
-   if(tag==273||tag==279) vtkDebugMacro(<<"Reading actual value from "<<startPos<<"to " << startPos+readSize);
+   if(tag == TIF_STRIPOFFSETS ||tag == TIF_STRIPBYTECOUNTS) 
+       vtkDebugMacro(<<"Reading actual value from "<<startPos<<"to " << startPos+readSize);
     if( !this->ReadFile(f,&startPos,readSize,actualValue) ) return 0;
     }
   else
@@ -569,10 +570,10 @@ int vtkLSMReader::AnalyzeTag(ifstream *f,unsigned long startPos)
       /*
       vtkByteSwap::Swap4LE((unsigned int*)actualValue);
       {
-	unsigned int subfileType = this->CharPointerToUnsignedInt(actualValue);
-	vtkDebugMacro(<<"Subfiletype="<<subfileType<<"value="<<value);
-	this->NewSubFileType = subfileType;
-	}*/
+    unsigned int subfileType = this->CharPointerToUnsignedInt(actualValue);
+    vtkDebugMacro(<<"Subfiletype="<<subfileType<<"value="<<value);
+    this->NewSubFileType = subfileType;
+    }*/
       break;
     case TIF_IMAGEWIDTH: 
 #ifdef VTK_WORDS_BIGENDIAN
@@ -597,12 +598,12 @@ int vtkLSMReader::AnalyzeTag(ifstream *f,unsigned long startPos)
       this->BitsPerSample->SetNumberOfValues(length);
       unsigned short bitsPerSample;
       for(i=0;i<length;i++)
-	{
-	  bitsPerSample = this->CharPointerToUnsignedShort(actualValue + (this->TIFF_BYTES(TIFF_SHORT)*i));
-	  //	  vtkDebugMacro(<<"Bits per sample " << i<<"="<<bitsPerSample<<"\n");
-	  this->BitsPerSample->SetValue(i,bitsPerSample);
-	}
-	break;
+    {
+      bitsPerSample = this->CharPointerToUnsignedShort(actualValue + (this->TIFF_BYTES(TIFF_SHORT)*i));
+      //      vtkDebugMacro(<<"Bits per sample " << i<<"="<<bitsPerSample<<"\n");
+      this->BitsPerSample->SetValue(i,bitsPerSample);
+    }
+    break;
     case TIF_COMPRESSION:
 #ifdef VTK_WORDS_BIGENDIAN
       vtkByteSwap::Swap2LE((unsigned short*)actualValue);
@@ -622,14 +623,14 @@ int vtkLSMReader::AnalyzeTag(ifstream *f,unsigned long startPos)
       vtkByteSwap::Swap4LERange((unsigned int*)actualValue,length);
 #endif
       for(i=0;i<length;i++)
-	{
-	  //          unsigned int stripOffset = this->CharPointerToUnsignedInt(actualValue + (this->TIFF_BYTES(TIFF_LONG)*i));
-	  unsigned int* offsets = (unsigned int*)actualValue;
-	  //	this->StripOffset->SetValue(i,this->CharPointerToUnsignedInt(actualValue + (this->TIFF_BYTES(TIFF_LONG)*i)));
-	  unsigned int stripOffset=offsets[i];
-	  vtkDebugMacro(<<"Strip offset to "<<i<<"="<<stripOffset);   
-	  this->StripOffset->SetValue(i,stripOffset);
-	}
+    {
+      //          unsigned int stripOffset = this->CharPointerToUnsignedInt(actualValue + (this->TIFF_BYTES(TIFF_LONG)*i));
+      unsigned int* offsets = (unsigned int*)actualValue;
+      //    this->StripOffset->SetValue(i,this->CharPointerToUnsignedInt(actualValue + (this->TIFF_BYTES(TIFF_LONG)*i)));
+      unsigned int stripOffset=offsets[i];
+      vtkDebugMacro(<<"Strip offset to "<<i<<"="<<stripOffset);   
+      this->StripOffset->SetValue(i,stripOffset);
+    }
       break;
     case TIF_SAMPLESPERPIXEL:
 #ifdef VTK_WORDS_BIGENDIAN
@@ -645,12 +646,12 @@ int vtkLSMReader::AnalyzeTag(ifstream *f,unsigned long startPos)
       this->StripByteCount->SetNumberOfValues(length);
 
       for(i=0;i<length;i++)
-	{
-	  unsigned int* counts = (unsigned int*)actualValue;
-	  this->StripByteCount->SetValue(i,this->CharPointerToUnsignedInt(actualValue + (this->TIFF_BYTES(TIFF_LONG)*i)));
-	//  this->StripByteCount->SetValue(i,counts[i]);
-		vtkDebugMacro(<<"Strip byte count of " << i <<"="<<counts[i]);
-	}
+    {
+      unsigned int* counts = (unsigned int*)actualValue;
+      this->StripByteCount->SetValue(i,this->CharPointerToUnsignedInt(actualValue + (this->TIFF_BYTES(TIFF_LONG)*i)));
+    //  this->StripByteCount->SetValue(i,counts[i]);
+        vtkDebugMacro(<<"Strip byte count of " << i <<"="<<counts[i]);
+    }
       break;
     case TIF_PLANARCONFIGURATION:
 #ifdef VTK_WORDS_BIGENDIAN
@@ -1152,11 +1153,12 @@ int vtkLSMReader::ReadFile(ifstream *f,unsigned long *pos,int size,char *buf,boo
 {
   f->seekg(*pos,ios::beg);
   f->read(buf,size);
-  if(swap) {
 #ifdef VTK_WORDS_BIGENDIAN
+  if(swap) {
     vtkByteSwap::SwapLERange(buf,size);
+  }      
 #endif
-  }
+  
   if( !f ) return 0;
   *pos = *pos + size;
   return 1;
