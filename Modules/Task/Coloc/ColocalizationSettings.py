@@ -67,6 +67,7 @@ class ColocalizationSettings(DataUnitSettings):
                   "K1","K2","DiffStainIntCh1","DiffStainIntCh2",
                       "DiffStainVoxelsCh1","DiffStainVoxelsCh2",
                   "ColocAmount","ColocPercent","PercentageVolumeCh1",
+                  "PercentageTotalCh1","PercentageTotalCh2",
                   "PercentageVolumeCh2","PercentageMaterialCh1","PercentageMaterialCh2",
                   "SumOverThresholdCh1","SumOverThresholdCh2","SumCh1","SumCh2"]:
             self.register(i,1)

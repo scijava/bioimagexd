@@ -144,6 +144,7 @@ class Colocalization(Module):
                       "DiffStainVoxelsCh1","DiffStainVoxelsCh2",
                       "ThresholdM1","ThresholdM2","Slope","Intercept",
                       "ColocAmount","ColocPercent","PercentageVolumeCh1",
+                      "PercentageTotalCh1","PercentageTotalCh2",
                       "PercentageVolumeCh2","PercentageMaterialCh1","PercentageMaterialCh2",
                       "SumOverThresholdCh1","SumOverThresholdCh2","SumCh1","SumCh2"]:
                 method="self.colocAutoThreshold.Get%s()"%i
