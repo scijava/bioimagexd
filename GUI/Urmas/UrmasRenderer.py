@@ -76,6 +76,7 @@ class UrmasRenderer:
         self.lastpoint=None
         self.lastSplinePoint=None
         
+        self.stopFlag=0
         # we need to keep a list of the camera positions
         # so we can ignore the interpolated camera positions
         # if the camera positions are the same (since the interpolated)
@@ -85,10 +86,19 @@ class UrmasRenderer:
         self.currTrack=None
         self.lastSplinePosition=None
         messenger.connect(None,"render_time_pos",self.renderPreviewAt)
+        messenger.connect(None,"stop_rendering",self.onStopRendering)
+        
+    def onStopRendering(self,obj,evt,*args):
+        """
+        Method: startAnimation
+        Created: 19.12.2005, KP
+        Description: Stop any rendering we're doing and exit
+        """        
+        self.stopFlag=1
         
     def startAnimation(self,control):
         """
-        Class: startAnimation
+        Method: startAnimation
         Created: 20.04.2005, KP
         Description: Initialize the rendering
         """
@@ -155,15 +165,18 @@ class UrmasRenderer:
 #        cam.ComputeViewPlaneNormal()
 #        cam.OrthogonalizeViewUp()
 
+        status="Rendering done."
         for n in range(frames+1):
-            
+            if self.stopFlag:
+                status = "Rendering aborted at frame %d / %d."%(n,frames)
+                break
             messenger.send(None,"set_timeslider_value",(n+1)*spf*10.0)
             self.renderFrame(n,(n+1)*spf,spf,preview=preview)            
             messenger.send(self,"update_progress",(n+1)/float(frames+1),"Rendering frame %d / %d. Time: %.1fs"%(n,frames,(n+1)*spf))        
 
         messenger.send(None,"report_progress_only",None)
         if not preview:
-            messenger.send(None,"update_progress",1.0,"Rendering done.")
+            messenger.send(None,"update_progress",1.0,status)
         else:
             messenger.send(None,"update_progress",1.0,"")
 #            self.dlg.Destroy()

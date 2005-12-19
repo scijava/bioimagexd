@@ -148,6 +148,7 @@ class TimeScale(wx.Panel):
         Description: Set the length of the timescale
         """        
         self.seconds=seconds
+        
         self.width=self.getPixelsPerSecond()*seconds+2*self.xOffset
         self.height=20+self.yOffset
         self.SetSize((self.width+10,self.height))
@@ -159,6 +160,14 @@ class TimeScale(wx.Panel):
         messenger.send(None,"set_timeline_size",(self.width,self.height))
         self.paintScale()
         self.Refresh()
+        
+    def getDuration(self):
+        """
+        Method: getDuration
+        Created: 19.12.2005, KP
+        Description: Return the length of the timescale
+        """           
+        return self.seconds
 
     def paintScale(self):
         """

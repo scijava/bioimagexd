@@ -60,15 +60,34 @@ class UrmasControl:
     """
     def __init__(self,window,visualizer):
         self.window = window
-        
+        self.timeline = None
+        self.timelinePanel = None
+        self.timescale = None
         self.splineEditor = None
         self.splinePointAmount = 5
         self.duration = 60 # seconds
-        self.frames = 120 # frames
+        self.frames = 12*self.duration # frames
         self.animationMode= 0
         self.viewMode=0
+        self.frameSize = (512,512)
         self.visualizer=visualizer
         self.renderer=UrmasRenderer.UrmasRenderer(self)
+        
+    def setFrameSize(self,x,y):
+        """
+        Method: setFrameSize
+        Created: 19.12.2005, KP
+        Description: Set the frame size of the rendered images
+        """
+        self.frameSize = (x,y)
+        
+    def getFrameSize(self):
+        """
+        Method: setFrameSize
+        Created: 19.12.2005, KP
+        Description: Get the frame size of the rendered images
+        """    
+        return self.frameSize
         
     def writeToDisk(self,filename):
         """
@@ -247,10 +266,14 @@ class UrmasControl:
         Created: 20.03.2005, KP
         Description: Update various parts of the window as the layout changes
         """    
-        self.timeline.Layout()
-        self.timelineConfig.Layout()
-        self.timelinePanel.Layout()
-        self.window.Layout()
+        if self.timeline:
+            self.timeline.Layout()
+        if self.timelineConfig:
+            self.timelineConfig.Layout()
+        if self.timelinePanel:
+            self.timelinePanel.Layout()
+        if self.window:
+            self.window.Layout()
         
     def getSplineEditor(self):
         """

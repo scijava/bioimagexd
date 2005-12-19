@@ -60,8 +60,10 @@ class VideoGeneration(wx.Panel):
         wx.Panel.__init__(self,parent,-1)
         self.control = control
         self.visualizer=visualizer
-
+        self.rendering = 0
+        self.abort = 0
         self.parent = parent
+        self.size = self.control.getFrameSize()
         self.frames = self.control.getFrames()
         self.fps = self.control.getFrames() / float(self.control.getDuration())
         self.dur=self.control.getDuration()
@@ -98,6 +100,9 @@ class VideoGeneration(wx.Panel):
         Created: 15.12.2005, KP
         Description: Close the video generation window
         """        
+        if self.rendering:
+            messenger.send(None,"stop_rendering")
+            self.abort = 1
         messenger.send(None,"video_generation_close")
         
     def onOk(self,event):
@@ -106,6 +111,8 @@ class VideoGeneration(wx.Panel):
         Created: 26.04.2005, KP
         Description: Render the whole damn thing
         """
+        self.okButton.Enable(0)
+        self.abort = 0
         if self.visualizer.getCurrentModeName()!="3d":
             self.visualizer.setVisualizationMode("3d")
         path=self.rendir.GetValue()
@@ -128,28 +135,39 @@ class VideoGeneration(wx.Panel):
         self.control.configureTimeline(self.dur,self.frames)
 
         Logging.info("Will produce %s, rendered frames go to %s"%(file,path),kw="animator")
-        size=self.frameSize.GetStringSelection()
-        x,y=size.split("x")
-        x=int(x)
-        y=int(y)
-        size=(x,y)
+        #size=self.frameSize.GetStringSelection()
+        size=self.size
+        x,y=size
+        #x,y=size.split("x")
+        #x=int(x)
+        #y=int(y)
+        #size=(x,y)
 #        self.parent.FitToPage(self.parent.renderingPage)
         #print "self.parent=",self.parent
         
         Logging.info("Will set render window to ",size,kw="animator")
         self.visualizer.setRenderWindowSize((x,y),self.parent)
+        self.rendering = 1
         flag=self.control.renderProject(0,renderpath=path)
+        self.rendering = 0
         if flag==-1:
             return
-        self.visualizer.restoreWindowSizes()
-        self.parent.SetDefaultSize(self.parent.origSize)
-        self.parent.parent.OnSize(None)
+        # if the rendering wasn't aborted, then restore the animator
+        if not self.abort:
+            self.visualizer.restoreWindowSizes()
+            self.parent.SetDefaultSize(self.parent.origSize)
+            self.parent.parent.OnSize(None)
                     
         if self.formatMenu.GetSelection()==1:
 
             Logging.info("Will produce video",kw="animator")
             self.encodeVideo(path,file,size)
 
+        # clear the flags so that urmaswindow will destroy as cleanly
+        
+        self.abort=0
+        self.rendering=0
+        
         messenger.send(None,"video_generation_close")
 #        self.Close()
 
@@ -282,8 +300,9 @@ class VideoGeneration(wx.Panel):
         self.outputFormat.SetSelection(2)
         
         self.frameSizeLbl = wx.StaticText(self,-1,"Frame size:")
-        self.frameSize = wx.Choice(self,-1,choices=["320 x 240","512 x 512","640 x 480","800 x 600"])
-        self.frameSize.SetSelection(1)
+        #self.frameSize = wx.Choice(self,-1,choices=["320 x 240","512 x 512","640 x 480","800 x 600"])
+        #self.frameSize.SetSelection(1)
+        self.frameSize = wx.StaticText(self,-1,"%d x %d"%self.size)
 
         self.frameRateLbl=wx.StaticText(self,-1,"Frame rate:")
         self.frameRate = wx.TextCtrl(self,-1,"%.2f"%self.fps)

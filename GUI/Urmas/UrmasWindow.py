@@ -67,6 +67,7 @@ class UrmasWindow(scrolled.ScrolledPanel):
         #wx.SashLayoutWindow.__init__(self,parent,-1)
         scrolled.ScrolledPanel.__init__(self,parent,-1)
     
+        self.parent = parent
         self.taskWin=taskwin
         self.videoGenerationPanel = None
         self.visualizer=visualizer
@@ -101,6 +102,26 @@ class UrmasWindow(scrolled.ScrolledPanel):
         #self.sizer.Fit(self)
         #self.SetStatusText("Done.")
         wx.CallAfter(self.updateRenderWindow)
+        
+        self.Bind(wx.EVT_SIZE,self.OnSize)
+        
+    def OnSize(self,evt):
+        """
+        Method: OnSize
+        Created: 19.12.2005, KP
+        Description: The size evet
+        """            
+        #print "event size=",event.GetSize(),"client size=",self.parent.GetClientSize()
+        #self.maxSizeX,self.maxSizeY=evt.GetSize()
+        x,y=self.parent.GetClientSize()
+        print "Maximum size = ",x,y
+        
+        #self.SetSize((x,y))
+        #self.SetClientSizeWH(x,y)
+        #self.sizer.Fit(self)
+        #self.Layout()
+        wx.CallAfter(self.Layout)
+        evt.Skip()
         
     def updateRenderWindow(self,*args):
         """
@@ -166,9 +187,6 @@ class UrmasWindow(scrolled.ScrolledPanel):
         mgr.createMenu("track","&Track",before="help")
         mgr.createMenu("rendering","&Rendering",before="help")
         mgr.createMenu("camera","&Camera",before="help")
-      
-      
-        mgr.addMenuItem("settings",MenuManager.ID_PREFERENCES,"&Preferences",self.onMenuPreferences)
         
       
         mgr.addMenuItem("file",MenuManager.ID_OPEN_PROJECT,"Open project...","Open a BioImageXD Animator Project",self.onMenuOpenProject,before=MenuManager.ID_IMPORT)
@@ -283,8 +301,13 @@ class UrmasWindow(scrolled.ScrolledPanel):
         if self.videoGenerationPanel:            
             self.taskWin.SetDefaultSize((0,h))
             self.visualizer.mainwin.OnSize(None)
-            self.videoGenerationPanel.Destroy()
-            self.videoGenerationPanel=None
+            # destroy the video generation panel if the rendering wasn't aborted
+            # if it was aborted, let the panel destroy itself            
+            if not (self.videoGenerationPanel.rendering and self.videoGenerationPanel.abort):
+                self.videoGenerationPanel.Destroy()
+                self.videoGenerationPanel=None
+            else:
+                self.videoGenerationPanel.Show(0)
             if self.visualizer.getCurrentModeName()!="animator":
                 self.visualizer.setVisualizationMode("animator")            
 
@@ -472,17 +495,7 @@ class UrmasWindow(scrolled.ScrolledPanel):
         Description: Callback function for adding timepoint track
         """
         self.control.timeline.addTrack("")
-        
-
-    def onMenuPreferences(self,evt):
-        """
-        Method: onMenuPreferences()
-        Created: 09.02.2005, KP
-        Description: Callback function for menu item "Preferences"
-        """
-        self.settingswindow=SettingsWindow.SettingsWindow(self)
-        self.settingswindow.ShowModal()
-        
+                
     def onMenuCloseProject(self,event):
         """
         Method: onMenuCloseProject(self,event)

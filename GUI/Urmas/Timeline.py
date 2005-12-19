@@ -541,8 +541,9 @@ class Timeline(scrolled.ScrolledPanel):
         Description: Method to set the timeline duration
         """
         #print "On set duration",duration
-        self.seconds = duration
-        self.configureTimeline(duration,self.frames)
+        if self.self.seconds != duration:
+            self.seconds = duration
+            self.configureTimeline(duration,self.frames)
         
     def onSetFrames(self,obj,evt,frames):
         """

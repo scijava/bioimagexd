@@ -71,9 +71,9 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
         self.scatterPlot=None
         self.createItemSelection=1
         self.timePoint=0        
-        self.beginner = wx.Colour(0,255,128)
-        self.intermediate = wx.Colour(255,255,128)
-        self.expert = wx.Colour(0,128,255)
+        self.beginner = wx.Colour(180,255,180)
+        self.intermediate = wx.Colour(255,255,180)
+        self.expert = wx.Colour(0,180,255)
         
         TaskPanel.TaskPanel.__init__(self,root,tb)
         self.operationName="Colocalization"

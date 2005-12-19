@@ -44,7 +44,7 @@ def showZoomToolbar(): return False
 
 from GUI import Urmas
 import Logging
-
+import wx
         
 class AnimatorMode(VisualizationMode):
     def __init__(self,parent,visualizer):
@@ -80,7 +80,11 @@ class AnimatorMode(VisualizationMode):
         Created: 07.08.2005, KP
         Description: Method called when the size of the window changes
         """    
-        self.urmaswin.SetupScrolling()
+        #self.urmaswin.SetupScrolling()
+        #wx.CallAfter(self.urmaswin.Layout)
+        
+        
+
         
     def activate(self,sidebarwin):
         """
