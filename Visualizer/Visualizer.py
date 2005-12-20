@@ -754,7 +754,7 @@ class Visualizer:
         self.OnSize(None)        
     def OnSize(self, event=None):
         """
-        Method: onSize
+        Method: OnSize
         Created: 23.05.2005, KP
         Description: Handle size events
         """
@@ -763,18 +763,22 @@ class Visualizer:
         x,y=self.zsliderWin.GetSize()
         x,y2=self.zslider.GetSize()
         self.zslider.SetSize((x,y))
-        if self.currentWindow:
-            self.currentWindow.SetSize(self.visWin.GetClientSize())
-            self.currMode.relayout()
-        newsize=self.visWin.GetClientSize()[0]
-        if newsize!=self.oldClientSize:
+        visSize=self.visWin.GetClientSize()
+        # was here
+        
+        newsize=visSize[0]
+        if abs(newsize-self.oldClientSize)>10:
             self.createToolbar()
-            #self.tb.SetSize((newsize,-1))
-            #self.tb.SetVirtualSize((999,-1))
-            #self.tb.SetScrollra
-            pass
         self.oldClientSize=newsize
+        if self.currentWindow:            
+            self.currentWindow.SetSize(visSize)
+            self.currMode.relayout()
+            if self.currMode.layoutTwice() and event:
+                wx.CallAfter(self.OnSize)
                 
+                
+
+            
     def __del__(self):
         global visualizerInstance
         visualizerInstance=None

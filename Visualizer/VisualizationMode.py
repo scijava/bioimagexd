@@ -65,7 +65,15 @@ class VisualizationMode:
         self.visualizer=visualizer
         
    
-    
+    def layoutTwice(self):
+        """
+        Method: layoutTwice()
+        Created: 20.12.2005, KP
+        Description: Method that is queried for whether the mode needs to
+                     be laid out twice
+        """
+        return False
+        
     def annotate(self,annclass,**kws):
         """
         Method: annotate(annotationclass)

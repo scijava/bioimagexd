@@ -54,7 +54,8 @@ from GUI import MenuManager
 import messenger
 
 #class UrmasWindow(wx.SashLayoutWindow):
-class UrmasWindow(scrolled.ScrolledPanel):
+#class UrmasWindow(scrolled.ScrolledPanel):
+class UrmasWindow(wx.ScrolledWindow):
     """
     Class: UrmasWindow
     Created: 10.02.2005, KP
@@ -65,13 +66,14 @@ class UrmasWindow(scrolled.ScrolledPanel):
     def __init__(self,parent,menumanager,taskwin,visualizer):
         #wx.Frame.__init__(self,parent,-1,"Rendering Manager / Animator",size=(1024,768))
         #wx.SashLayoutWindow.__init__(self,parent,-1)
-        scrolled.ScrolledPanel.__init__(self,parent,-1)
+        #scrolled.ScrolledPanel.__init__(self,parent,-1)
+        wx.ScrolledWindow.__init__(self,parent,-1)
     
         self.parent = parent
         self.taskWin=taskwin
         self.videoGenerationPanel = None
         self.visualizer=visualizer
-        self.Unbind(wx.EVT_CHILD_FOCUS)
+        #self.Unbind(wx.EVT_CHILD_FOCUS)
         self.menuManager=menumanager
         self.createMenu(menumanager)
         
@@ -98,12 +100,14 @@ class UrmasWindow(scrolled.ScrolledPanel):
         messenger.connect(None,"video_generation_close",self.onVideoGenerationClose)
         self.SetSizer(self.sizer)
         self.SetAutoLayout(1)
-        self.SetupScrolling()
+        #self.SetupScrolling()
+        self.SetScrollRate(20,20)
+        
         #self.sizer.Fit(self)
         #self.SetStatusText("Done.")
         wx.CallAfter(self.updateRenderWindow)
         
-        self.Bind(wx.EVT_SIZE,self.OnSize)
+#        self.Bind(wx.EVT_SIZE,self.OnSize)
         
     def OnSize(self,evt):
         """
@@ -111,18 +115,17 @@ class UrmasWindow(scrolled.ScrolledPanel):
         Created: 19.12.2005, KP
         Description: The size evet
         """            
-        #print "event size=",event.GetSize(),"client size=",self.parent.GetClientSize()
-        #self.maxSizeX,self.maxSizeY=evt.GetSize()
-        x,y=self.parent.GetClientSize()
-        print "Maximum size = ",x,y
+        s=evt.GetSize()
+        print "Setting size to ",s
         
-        #self.SetSize((x,y))
-        #self.SetClientSizeWH(x,y)
+        #self.SetSize(evt.GetSize())
+        #self.parent.Layout()
+        #wx.CallAfter(self.visualizer.OnSize)
+        #evt.Skip()
         #self.sizer.Fit(self)
-        #self.Layout()
-        wx.CallAfter(self.Layout)
+        #self.Update()
         evt.Skip()
-        
+
     def updateRenderWindow(self,*args):
         """
         Method: updateRenderWindow

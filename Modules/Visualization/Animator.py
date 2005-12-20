@@ -62,6 +62,15 @@ class AnimatorMode(VisualizationMode):
         
         self.urmaswin=None
         
+    def layoutTwice(self):
+        """
+        Method: layoutTwice()
+        Created: 20.12.2005, KP
+        Description: Method that is queried for whether the mode needs to
+                     be laid out twice
+        """
+        return True
+        
     def closeOnReload(self):
         return True
         
@@ -82,6 +91,7 @@ class AnimatorMode(VisualizationMode):
         """    
         #self.urmaswin.SetupScrolling()
         #wx.CallAfter(self.urmaswin.Layout)
+        #wx.CallAfter(self.visualizer.OnSize)
         
         
 
