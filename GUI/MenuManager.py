@@ -336,7 +336,7 @@ class MenuManager:
         """ 
         if not self.visualizer:return
         self.itemBar=self.visualizer.tb
-        print "toolids=",self.toolIds,"tools=",self.tools
+        
         for itemid in self.toolIds:
             name,bitmap,func=self.tools[itemid]
             self.itemBar.DoAddTool(itemid,name,bitmap,kind=wx.ITEM_CHECK)

@@ -116,9 +116,10 @@ class VtiDataSource(DataSource):
             if not x1:
                 x1=1
             scale=255.0/x1
-            self.shift.SetScale(scale)
-            self.shift.Update()
-            data=self.shift.GetOutput()
+            if scale:
+                self.shift.SetScale(scale)
+                self.shift.Update()
+                data=self.shift.GetOutput()
         data.ReleaseDataFlagOff()
         return data
 

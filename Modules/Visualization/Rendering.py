@@ -150,6 +150,8 @@ class RenderingMode(VisualizationMode):
             self.wxrenwin.Render()
             self.iactivePanel=self.wxrenwin
             self.getRenderer=self.GetRenderer=self.wxrenwin.getRenderer
+        else:
+            self.wxrenwin.iren.Enable()
         #self.wxrenwin.Show()
         if not self.configPanel:
             # When we embed the sidebar in a sashlayoutwindow, the size
@@ -230,6 +232,7 @@ class RenderingMode(VisualizationMode):
         self.visualizer.tb.EnableTool(MenuManager.ID_ZOOM_TO_FIT,1)
         if self.wxrenwin:
             self.wxrenwin.Show(0)       
+            self.wxrenwin.iren.Disable()
         self.container.Show(0)
         self.configPanel.Show(0)
         mgr=self.menuManager

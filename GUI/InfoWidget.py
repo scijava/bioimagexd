@@ -54,7 +54,7 @@ infoString="""<html><body bgcolor=%(bgcolor)s">
 <tr><td>Voxel Size:</td><td>%(nf)s%(voxelX).2f%(fe)s&mu;m %(smX)s %(nf)s%(voxelY).2f%(fe)s&mu;m %(smX)s %(nf)s%(voxelZ).2f%(fe)s&mu;m</td></tr>
 <tr><td>Spacing:</td><td>%(spX).2f %(smX)s %(spY).2f %(smX)s %(spZ).2f</td></tr>
 <tr><td>Data type:</td><td>%(bitdepth)d bit</td></tr>
-<tr><td>Intensity range:</td><td>%(intlower)d - %(intupper)d</td></tr>
+<tr><td>Intensity range:</td><td>%(intlower)s - %(intupper)s</td></tr>
 </table>
 </body></html>
 """
@@ -65,7 +65,7 @@ infoStringResample="""<html><body bgcolor=%(bgcolor)s">
 <tr><td>Voxel Size:</td><td>%(nf)s%(voxelX).2f%(fe)s&mu;m %(smX)s %(nf)s%(voxelY).2f%(fe)s&mu;m %(smX)s %(nf)s%(voxelZ).2f%(fe)s&mu;m</td></tr>
 <tr><td>Spacing:</td><td>%(spX).2f %(smX)s %(spY).2f %(smX)s %(spZ).2f</td></tr>
 <tr><td>Data type:</td><td>%(bitdepth)d bit</td></tr>
-<tr><td>Intensity range:</td><td>%(intlower)d - %(intupper)d</td></tr>
+<tr><td>Intensity range:</td><td>%(intlower)s - %(intupper)s</td></tr>
 </table>
 </body></html>
 """
@@ -177,6 +177,8 @@ class InfoWidget(wx.Panel):
         else:
             rxdim,rydim,rzdim=0,0,0
         col=self.GetBackgroundColour()
+        intlower=str(intlower)
+        intupper=str(intupper)
         bgcol="#%2x%2x%2x"%(col.Red(),col.Green(),col.Blue())
         dict={"smX":smX,"xdim":xdim,"ydim":ydim,"zdim":zdim,
         "voxelX":voxelX,"voxelY":voxelY,"voxelZ":voxelZ,

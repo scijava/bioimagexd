@@ -135,15 +135,9 @@ class VideoGeneration(wx.Panel):
         self.control.configureTimeline(self.dur,self.frames)
 
         Logging.info("Will produce %s, rendered frames go to %s"%(file,path),kw="animator")
-        #size=self.frameSize.GetStringSelection()
         size=self.size
         x,y=size
-        #x,y=size.split("x")
-        #x=int(x)
-        #y=int(y)
-        #size=(x,y)
-#        self.parent.FitToPage(self.parent.renderingPage)
-        #print "self.parent=",self.parent
+
         
         Logging.info("Will set render window to ",size,kw="animator")
         self.visualizer.setRenderWindowSize((x,y),self.parent)

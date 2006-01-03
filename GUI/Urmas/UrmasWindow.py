@@ -54,8 +54,8 @@ from GUI import MenuManager
 import messenger
 
 #class UrmasWindow(wx.SashLayoutWindow):
-#class UrmasWindow(scrolled.ScrolledPanel):
-class UrmasWindow(wx.ScrolledWindow):
+class UrmasWindow(scrolled.ScrolledPanel):
+#class UrmasWindow(wx.ScrolledWindow):
     """
     Class: UrmasWindow
     Created: 10.02.2005, KP
@@ -66,14 +66,14 @@ class UrmasWindow(wx.ScrolledWindow):
     def __init__(self,parent,menumanager,taskwin,visualizer):
         #wx.Frame.__init__(self,parent,-1,"Rendering Manager / Animator",size=(1024,768))
         #wx.SashLayoutWindow.__init__(self,parent,-1)
-        #scrolled.ScrolledPanel.__init__(self,parent,-1)
-        wx.ScrolledWindow.__init__(self,parent,-1)
+        scrolled.ScrolledPanel.__init__(self,parent,-1)
+        #wx.ScrolledWindow.__init__(self,parent,-1)
     
         self.parent = parent
         self.taskWin=taskwin
         self.videoGenerationPanel = None
         self.visualizer=visualizer
-        #self.Unbind(wx.EVT_CHILD_FOCUS)
+        self.Unbind(wx.EVT_CHILD_FOCUS)
         self.menuManager=menumanager
         self.createMenu(menumanager)
         
@@ -100,14 +100,20 @@ class UrmasWindow(wx.ScrolledWindow):
         messenger.connect(None,"video_generation_close",self.onVideoGenerationClose)
         self.SetSizer(self.sizer)
         self.SetAutoLayout(1)
-        #self.SetupScrolling()
-        self.SetScrollRate(20,20)
+        self.SetupScrolling()
+        #self.SetScrollRate(20,20)
         
         #self.sizer.Fit(self)
         #self.SetStatusText("Done.")
         wx.CallAfter(self.updateRenderWindow)
         
-#        self.Bind(wx.EVT_SIZE,self.OnSize)
+        #self.Bind(wx.EVT_SIZE,self.OnSize)
+        
+    def enableRendering(self,flag):
+        if flag:
+            self.timelinePanel.splineEditor.iren.Enable()
+        else:
+            self.timelinePanel.splineEditor.iren.Disable()
         
     def OnSize(self,evt):
         """
@@ -115,15 +121,7 @@ class UrmasWindow(wx.ScrolledWindow):
         Created: 19.12.2005, KP
         Description: The size evet
         """            
-        s=evt.GetSize()
-        print "Setting size to ",s
-        
-        #self.SetSize(evt.GetSize())
-        #self.parent.Layout()
-        #wx.CallAfter(self.visualizer.OnSize)
-        #evt.Skip()
-        #self.sizer.Fit(self)
-        #self.Update()
+        wx.CallAfter(self.Layout)
         evt.Skip()
 
     def updateRenderWindow(self,*args):
@@ -314,9 +312,13 @@ class UrmasWindow(wx.ScrolledWindow):
             if self.visualizer.getCurrentModeName()!="animator":
                 self.visualizer.setVisualizationMode("animator")            
 
+        #self.timelinePanel.wxrenwin.Update()
+        #self.timelinePanel.wxrenwin.Render()
+        #self.visualizer.OnSize()
         self.FitInside()
         self.SetupScrolling()
         self.Layout()
+
         
         
     def onMinTrack(self,evt):

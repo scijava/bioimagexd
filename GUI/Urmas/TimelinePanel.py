@@ -111,7 +111,7 @@ class TimelinePanel(wx.Panel):
         
         
         #self.wxrenwin=VisualizerWindow.VisualizerWindow(self,size=(400,300))
-        self.wxrenwin=VisualizerWindow.VisualizerWindow(self,size=(512,512))
+        self.wxrenwin=VisualizerWindow.VisualizerWindow(self,size=(300,300))
         
         #self.wxrenwin.Render()
         
@@ -143,7 +143,7 @@ class TimelinePanel(wx.Panel):
         Created: 19.12.2005, KP
         Description: Event to change the size of the rendering preview
                      based on the size of the actual rendered frames
-        """         
+        """
         x,y=size
         xtoy=float(x)/y
         y=300

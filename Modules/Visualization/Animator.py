@@ -70,6 +70,7 @@ class AnimatorMode(VisualizationMode):
                      be laid out twice
         """
         return True
+        #return False
         
     def closeOnReload(self):
         return True
@@ -89,7 +90,7 @@ class AnimatorMode(VisualizationMode):
         Created: 07.08.2005, KP
         Description: Method called when the size of the window changes
         """    
-        #self.urmaswin.SetupScrolling()
+        #self.urmaswin.Layout()
         #wx.CallAfter(self.urmaswin.Layout)
         #wx.CallAfter(self.visualizer.OnSize)
         
@@ -113,6 +114,7 @@ class AnimatorMode(VisualizationMode):
             # Ugly hack
             self.urmaswin=Urmas.UrmasWindow(self.parent,self.visualizer.menuManager,self.visualizer.mainwin.taskWin,self.visualizer)
         else:
+            self.urmaswin.enableRendering(1)
             self.urmaswin.Show()
             
         return self.urmaswin
@@ -147,7 +149,8 @@ class AnimatorMode(VisualizationMode):
         Created: 24.05.2005, KP
         Description: Unset the mode of visualization
         """
-        self.urmaswin.Show(0)      
+        self.urmaswin.Show(0) 
+        self.urmaswin.enableRendering(0)     
         if newmode!="3d":
             self.menuManager.mainToolbar.EnableTool(MenuManager.ID_ADJUST,1)
             self.menuManager.mainToolbar.EnableTool(MenuManager.ID_RESTORE,1)

@@ -221,6 +221,10 @@ class DataSource:
                 self.bitdepth=12
             elif scalartype==3:
                 self.bitdepth=8
+            elif scalartype==7:
+                self.bitdepth=16
+            elif scalartype==11:
+                self.bitdepth=16
             else:
 
                 raise "Bad LSM bit depth, %d,%s"%(scalartype,data.GetScalarTypeAsString())

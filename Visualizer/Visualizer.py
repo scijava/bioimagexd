@@ -752,6 +752,30 @@ class Visualizer:
         
         #wx.LayoutAlgorithm().LayoutWindow(self.parent, self.visWin)
         self.OnSize(None)        
+    def oldOnSize(self, event=None):
+        """
+        Method: onSize
+        Created: 23.05.2005, KP
+        Description: Handle size events
+        """
+#        if not self.enabled:return
+        wx.LayoutAlgorithm().LayoutWindow(self.parent, self.visWin)
+        x,y=self.zsliderWin.GetSize()
+        x,y2=self.zslider.GetSize()
+        self.zslider.SetSize((x,y))
+        if self.currentWindow:
+            self.currentWindow.SetSize(self.visWin.GetClientSize())
+
+            self.currMode.relayout()
+        newsize=self.visWin.GetClientSize()[0]
+        if newsize!=self.oldClientSize:
+            self.createToolbar()
+            #self.tb.SetSize((newsize,-1))
+            #self.tb.SetVirtualSize((999,-1))
+            #self.tb.SetScrollra
+            pass
+        self.oldClientSize=newsize        
+        
     def OnSize(self, event=None):
         """
         Method: OnSize
@@ -769,16 +793,15 @@ class Visualizer:
         newsize=visSize[0]
         if abs(newsize-self.oldClientSize)>10:
             self.createToolbar()
-        self.oldClientSize=newsize
+        
         if self.currentWindow:            
             self.currentWindow.SetSize(visSize)
             self.currMode.relayout()
             if self.currMode.layoutTwice() and event:
                 wx.CallAfter(self.OnSize)
-                
-                
-
-            
+    
+        self.oldClientSize=newsize    
+        
     def __del__(self):
         global visualizerInstance
         visualizerInstance=None
@@ -1131,7 +1154,6 @@ class Visualizer:
         Description: Render the scene
         """
         if self.enabled:
-            Logging.info("Render()",kw="visualizer")
             self.currMode.Render()
             
     def onSetTimeRange(self,obj,event,r1,r2):
@@ -1141,6 +1163,7 @@ class Visualizer:
         Description: Set the range that the time slider shows
         """        
         self.timeslider.SetRange(r1,r2)
+        self.timeslider.Refresh()
         
     def onSetTimepoint(self,obj,event,tp):
         """

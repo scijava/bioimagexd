@@ -109,7 +109,7 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
                   "PValue":(n+2,0,fs2),
                   "ColocAmount":(n+3,0,ds),
                   "ColocPercent":(n+4,0,fs,100),
-# volume = number of voxels
+# volume = number of voxels (Imaris)
 # material = intensity
                   "PercentageVolumeCh1":(n+5,0,ss),
 #                  "PercentageMaterialCh1":(n+5,1,fs,100),
@@ -252,14 +252,14 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
         Description: Get the P value for colocalization
         """
         coloctest=vtk.vtkImageColocalizationTest()
-        coloctest.SetRandomizeZ(1)
+        #coloctest.SetRandomizeZ(1)
         sources=self.dataUnit.getSourceDataUnits()
         self.eventDesc="Calculating P-Value"
         methods=["Fay","Costes","van Steensel"]
         Logging.info("Using %s method (%d)"%(methods[method],method),kw="processing")
     
         coloctest.SetMethod(method)
-        coloctest.SetManualPSFSize(10)
+        coloctest.SetManualPSFSize(6)
         n=100
         try:
             n=int(self.iterations.GetValue())
