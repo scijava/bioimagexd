@@ -77,6 +77,26 @@ class SplineEditor:
         self.arrow=None
         self.arrowVisibility=0
         
+    def onShowCamera(self,obj,evt,cam):
+        """
+        Method: onShowCamera
+        Created: 15.12.2005, KP
+        Description: Set the active based on an event
+        """
+        self.setCamera(cam)
+        self.render()
+        
+    def onShowArrow(self,obj, evt, arg):
+        x,y,z=arg
+        print "Showing arrow at ",x,y,z
+        x-=100
+        #self.arrowTransform.Translate(x-5,y,z)        
+        self.arrowActor.SetVisibility(1)      
+        #self.transformFilter.Update()
+        self.arrowActor.SetPosition(x,y,z)
+        self.arrowMapper.Update()
+        self.render()        
+        
     def onSetPreviewMode(self,obj, evt, flag):
         """
         Method: onSetPreviewMode
@@ -93,8 +113,8 @@ class SplineEditor:
             self.arrowVisibility = self.arrowActor.GetVisibility()
             self.arrowActor.SetVisibility(0)
         self.outlineactor.SetVisibility((not flag))
-        self.axes.SetVisibility((not flag))
-        
+        self.axes.SetVisibility((not flag))        
+
     def initializeVTK(self):
         """
         Method: initializeVTK()
@@ -103,10 +123,10 @@ class SplineEditor:
         """           
 
         self.renWin = self.wxrenwin.GetRenderWindow()
-        #self.renderer = ren = vtk.vtkRenderer ()
-        ren = self.renderer = self.wxrenwin.getRenderer()
-        #self.renWin.AddRenderer(ren)
-        self.wxrenwin.initializeVTK()
+        self.renderer = ren = vtk.vtkRenderer ()
+        self.renWin.AddRenderer(ren)
+        ren.SetBackground(0,0,0)
+        self.wxrenwin.Render()
 
         self.iren = iren = self.renWin.GetInteractor()
         self.iren.SetSize(self.renWin.GetSize())
@@ -120,19 +140,26 @@ class SplineEditor:
         self.data = None
         self.interactionCallback=None
 
-        
-     
+        self.spline = spline = vtk.vtkSplineWidget()
+        self.spline.GetLineProperty().SetColor(1,0,0)
+        self.spline.GetHandleProperty().SetColor(0,1,0)
+        self.spline.SetResolution(1000)
         
         self.style=self.iren.GetInteractorStyle()
         self.style.AddObserver("EndInteractionEvent",self.endInteraction)
         self.style.AddObserver("InteractionEvent",self.endInteraction)
+        self.spline.SetInteractor(self.iren)
+        self.spline.On()
+        
+        self.spline.SetEnabled(1)        
+
         
         self.outline = vtk.vtkOutlineFilter ()
-        self.outline.SetInput(self.data)
         self.outlinemapper = vtk.vtkPolyDataMapper ()
         self.outlineactor = vtk.vtkActor ()
         self.axes = vtk.vtkCubeAxesActor2D ()
         print "Initializing camera"
+        self.initCamera()
                 
         self.arrow = vtk.vtkArrowSource()
 
@@ -152,8 +179,10 @@ class SplineEditor:
         self.arrowActor.GetProperty().SetColor((0,0,1))
         self.arrowActor.SetMapper(self.arrowMapper)
         #self.arrowActor.SetCamera(self.renderer.GetActiveCamera())
-        self.renderer.AddActor(self.arrowActor)         
+        self.renderer.AddActor(self.arrowActor)    
+        self.arrowActor.SetVisibility(0)
         
+        self.wxrenwin.Render()
         
     def setMovement(self,flag):
         """
@@ -386,11 +415,9 @@ class SplineEditor:
             del self.data
 
         self.data = data
-        data.Update()
         #print "Got data=",data
-                
-        self.outline.SetInput(self.data)     
         
+        self.outline.SetInput(self.data)
         self.outlinemapper.SetInput (self.outline.GetOutput ())
         self.outlineactor.SetMapper (self.outlinemapper)
         self.outlineactor.GetProperty().SetColor((255,255,255))
@@ -423,7 +450,7 @@ class SplineEditor:
         volumeMapper.SetSampleDistance(2)
         volumeMapper.SetBlendModeToComposite()
         #volumeMapper.SetMaximumNumberOfPlanes(18)        
-        
+        data.Update()
         ncomps=data.GetNumberOfScalarComponents()
         if ncomps>1:
             volumeProperty.IndependentComponentsOff()
@@ -432,15 +459,13 @@ class SplineEditor:
         volumeMapper.SetInput(self.data)
         
         volume = vtk.vtkVolume()
-        
+        print "Adding volume"
         self.renderer.AddVolume(volume)
-                
+        print "done"
+        
         volume.SetMapper(volumeMapper)
         volume.SetProperty(volumeProperty)
-            
-        #volumeMapper.Update()
-        #self.wxrenwin.Render()
-            
+        
         txt = ("X", "Y", "Z")
         for t in txt:
                 eval ("self.axes.%sAxisVisibilityOn ()"%t)
@@ -459,37 +484,13 @@ class SplineEditor:
         self.renderer.AddActor (self.axes)
         self.axes.SetInput (self.outline.GetOutput ())
         
-        self.arrowActor.SetVisibility(0)
 
         #print "Axes actor inertia: %d"%(self.axes.GetInertia())
         self.volume = volume
         self.volumeMapper = volumeMapper
         self.volumeProperty = volumeProperty
-    
-        #self.initCamera()        
-        
-        self.spline = spline = vtk.vtkSplineWidget()
-        self.spline.GetLineProperty().SetColor(1,0,0)
-        self.spline.GetHandleProperty().SetColor(0,1,0)
-        self.spline.SetResolution(1000)
-        self.spline.SetInteractor(self.iren)
-        self.spline.On()        
-        self.spline.SetEnabled(1)
-        
-        #cam=self.wxrenwin.renderer.GetActiveCamera()
         self.wxrenwin.Render()
-        messenger.send(None,"view_camera",self.getCamera())
-        
 
-    def onShowCamera(self,obj,evt,cam):
-        """
-        Method: onShowCamera
-        Created: 15.12.2005, KP
-        Description: Set the active based on an event
-        """
-        self.setCamera(cam)
-        self.render()
-        
     def setCamera(self,cam):
         """
         Method: setCamera(cam)
@@ -727,19 +728,7 @@ class SplineEditor:
         filter.Update()
 #        self.renderer.AddActor(self.outlineactor)        
         return filter.GetOutput()
-
-    def onShowArrow(self,obj, evt, arg):
-        x,y,z=arg
-        print "Showing arrow at ",x,y,z
-        x-=100
-        #self.arrowTransform.Translate(x-5,y,z)        
-        self.arrowActor.SetVisibility(1)      
-        #self.transformFilter.Update()
-        self.arrowActor.SetPosition(x,y,z)
-        self.arrowMapper.Update()
-        self.render()
-        
-        
+    
     def render(self):
         """
         Method: render()
