@@ -116,6 +116,7 @@ class AnimatorMode(VisualizationMode):
         else:
             self.urmaswin.enableRendering(1)
             self.urmaswin.Show()
+            wx.CallAfter(self.urmaswin.updateRenderWindow)
             
         return self.urmaswin
         
