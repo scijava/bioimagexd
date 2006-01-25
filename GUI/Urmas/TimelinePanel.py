@@ -55,7 +55,16 @@ import messenger
 import CameraView
 import RenderingConfigPanel
 
-        
+class SplitPanel(wx.SplitterWindow):
+    """
+    Class: SplitPanel
+    Created: 25.01.2006, KP
+    Description: A splitterwindow containing the timeline and it's configuration
+    """    
+    def __init__(self, parent, ID):
+        wx.SplitterWindow.__init__(self, parent, ID,
+                                   style = wx.SP_LIVE_UPDATE
+                                   )        
 class TimelinePanel(wx.Panel):
     """
     Class: TimelinePanel
@@ -70,8 +79,8 @@ class TimelinePanel(wx.Panel):
         self.sizer=wx.GridBagSizer()
         
         w=size[0]
-        self.timeline=Timeline(self,self.control,size=(w,200))
-        self.sizer.Add(self.timeline,(0,0),span=(1,2),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
+        #self.timeline=Timeline(self,self.control,size=(w,200))
+#        self.sizer.Add(self.timeline,(0,0),span=(1,2),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
         
         sline=wx.StaticLine(self)
         self.sizer.Add(sline,(1,0),span=(1,2),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)

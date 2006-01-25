@@ -85,10 +85,19 @@ class UrmasWindow(scrolled.ScrolledPanel):
         self.palette = UrmasPalette.UrmasPalette(self,self.control)
         self.sizer.Add(self.palette,0,flag=wx.EXPAND)#,flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
 
-        self.timelinePanel=TimelinePanel.TimelinePanel(self,self.control,size=(1024,500))
+        self.splitter = TimelinePanel.SplitPanel(self,-1)
+        w=self.GetSize()[0]
+        self.timeline=Timeline(self.splitter,self.control,size=(w,200))
+        self.timelinePanel=TimelinePanel.TimelinePanel(self.splitter,self.control,size=(1024,500))
+        self.timelinePanel.timeline=self.timeline
+        self.splitter.SetMinimumPaneSize(64)
+        self.splitter.SplitHorizontally(self.timeline,self.timelinePanel,150)
+        
+        
         self.control.setTimelinePanel(self.timelinePanel)
         
-        self.sizer.Add(self.timelinePanel,1,flag=wx.EXPAND)
+        #self.sizer.Add(self.timelinePanel,1,flag=wx.EXPAND)
+        self.sizer.Add(self.splitter,1,flag=wx.EXPAND)
 
         self.control.setAnimationMode(1)
 
