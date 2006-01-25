@@ -442,7 +442,8 @@ class Timeline(scrolled.ScrolledPanel):
         tracks.extend(self.keyframeTracks)
         ret=0
         for track in tracks:
-            if track != cmptrack and track.trackType == cmptrack.trackType:
+            if track != cmptrack and track.trackType == cmptrack.trackType and len(track.items):
+                
                 item=track.items[-1]
                 x,y=item.GetPosition()
                 w,h=item.GetSize()

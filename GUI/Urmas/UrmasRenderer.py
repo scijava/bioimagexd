@@ -74,6 +74,7 @@ class UrmasRenderer:
 
         self.oldTimepoint=-1
         self.lastpoint=None
+        self.firstpoint = None
         self.lastSplinePoint=None
         
         self.stopFlag=0
@@ -120,6 +121,7 @@ class UrmasRenderer:
         Created: 04.04.2005, KP
         Description: Render the timeline
         """    
+        self.lastSplinePosition = None
         renderpath="."
         messenger.send(None,"report_progress_only",self)
         self.control = control
@@ -266,7 +268,7 @@ class UrmasRenderer:
         tracks=self.control.timeline.getKeyframeTracks()
         return tracks
         
-    def getSplinepointsAt(self,time):
+    def getSplinepointsAt(self,time,get_first = 0):
         """
         Method: getSplinepointAt(time)
         Created: 05.04.2005, KP
@@ -276,9 +278,13 @@ class UrmasRenderer:
         """            
         tracks = self.control.timeline.getSplineTracks()
         points=[]
+        first_dict = {}
         for track in tracks:           
             for item in track.getItems():
                 start,end=item.getPosition()
+                if get_first:
+                    first_dict[start] = item
+                    break
                 #print "time=",time,"item.pos=",start,end
                 if time >= start and time <= end:
                     if track != self.currTrack:
@@ -291,7 +297,10 @@ class UrmasRenderer:
                         track.showSpline()
                     return item
                     
-                
+        if get_first:
+            keys=first_dict.keys()
+            if not keys:return None
+            return first_dict[min(keys)]
         return None
         
     def renderFrame(self,frame,timepos,spf,preview=0,use_cam=0):
@@ -306,7 +315,8 @@ class UrmasRenderer:
         """            
         interpolated=0
         pos=None
-        
+        if not self.firstpoint:
+            self.firstpoint = self.getSplinepointsAt(0, get_first = 1)
         timepoint = self.getTimepointAt(timepos)
         if (not preview) or use_cam:
             Logging.info("Using self.ren as renderer",kw="animator")
@@ -325,6 +335,29 @@ class UrmasRenderer:
             self.renderingInterface.updateDataset()
             self.oldTimepoint = timepoint
         point = self.getSplinepointsAt(timepos)
+        minT = -1
+        maxT = -1
+        if self.interpolator:
+            # if we didn't find camera position, maybe we need to use
+            # keyframe interpolation
+            minT=self.interpolator.GetMinimumT()
+            maxT=self.interpolator.GetMaximumT()
+
+        # If we found no splinepoint definining the position
+        # and there has been no previous splinepoint
+        print "point=",point,"lastpos=",self.lastSplinePosition,"firstpoint=",self.firstpoint
+        if (not point) and (not self.lastSplinePosition) and self.firstpoint:
+            first_start,first_end = self.firstpoint.getPosition()
+            # then if there is no camera interpolator that would define 
+            # a timepoint that is earlier than the first splinepoint
+            # then we use the splinepoint
+            if minT <0 or minT > first_start:
+                point = self.firstpoint
+                print "*** Using first splinepoint"
+            # else we fall back to using the earliest point
+            # defined by the camera interpolator
+            
+                
         if point and not point.isStopped():
                 
             p0=point.getPoint()
@@ -350,12 +383,13 @@ class UrmasRenderer:
             x,y,z=self.lastSplinePosition
             point=(x,y,z)
         else:
-            if self.interpolator:
-                # if we didn't find camera position, maybe we need to use
-                # keyframe interpolation
-                minT=self.interpolator.GetMinimumT()
-                maxT=self.interpolator.GetMaximumT()
                 
+                # We use this so that the camera point is always defined, 
+                # if nothing else was found for the item
+                if timepos < minT:
+                    timepos=minT
+                    print "*** Using first interpolated point!"
+                    print "point=",point,"lastpos=",self.lastSplinePosition,"firstpoint=",self.firstpoint
                 #print "maxT=",maxT,"timepos=",timepos
                 if minT <= timepos and maxT >= timepos:
                     interpolated=1
@@ -379,9 +413,9 @@ class UrmasRenderer:
                     
                     self.ren.ResetCameraClippingRange()
                     
-            else:
-                Logging.info("No camera position, using last position",kw="animator")
-                point=self.lastpoint
+                else:
+                    Logging.info("No camera position, using last position",kw="animator")
+                    point=self.lastpoint
 
         focal = self.splineEditor.getCameraFocalPointCenter()
         Logging.info("focal=",focal,"pos=",pos,kw="animator")

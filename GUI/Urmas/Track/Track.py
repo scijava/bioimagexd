@@ -232,6 +232,11 @@ class Track(wx.Panel):
                 self.overlayItem=curr
                 self.overlayPos=start
 
+            # It is possible that the overlay item is not found e.g.
+            # if the user has dragged the item
+            # in that case, just don't paint it
+            if not self.overlayItem:
+                return
             start,end=self.overlayItem.getPosition()
             pps=self.timescale.getPixelsPerSecond() 
             w=(end-start)*pps
@@ -676,7 +681,7 @@ class Track(wx.Panel):
         maxempty = self.parent.getLargestTrackLength(self)
         if space<0:
             space=0
-        if space>maxempty:
+        if 0 and space>maxempty:
             Logging.info("Won't grow beyond ",maxempty,kw="animator")
             space=maxempty
         #self.positionItem.setWidth(space)

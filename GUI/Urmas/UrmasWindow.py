@@ -121,8 +121,11 @@ class UrmasWindow(scrolled.ScrolledPanel):
         Created: 19.12.2005, KP
         Description: The size evet
         """            
-        wx.CallAfter(self.Layout)
+        w,h=evt.GetSize()
+        w2,h=self.timelinePanel.GetSize()
+        self.timelinePanel.SetSize((w,h))
         evt.Skip()
+        print "Setting timeline panel to ",w,h
 
     def updateRenderWindow(self,*args):
         """
@@ -298,6 +301,7 @@ class UrmasWindow(scrolled.ScrolledPanel):
         Created: 15.12.2005, KP
         Description: Callback for closing the video generation
         """ 
+    
         w,h=self.taskWin.GetSize()       
         if self.videoGenerationPanel:            
             self.taskWin.SetDefaultSize((0,h))
@@ -314,7 +318,7 @@ class UrmasWindow(scrolled.ScrolledPanel):
 
         #self.timelinePanel.wxrenwin.Update()
         #self.timelinePanel.wxrenwin.Render()
-        #self.visualizer.OnSize()
+        self.visualizer.OnSize()
         self.FitInside()
         self.SetupScrolling()
         self.Layout()
