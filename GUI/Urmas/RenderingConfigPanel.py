@@ -85,6 +85,14 @@ class RenderingConfigPanel(wx.Panel):
         self.totalFrames.Bind(wx.EVT_TEXT,self.updateFrameCount)
         self.duration.Bind(wx.EVT_TEXT,self.updateDuration)
         
+        self.followAspect=wx.CheckBox(self, -1, "Don't resize preview, only use aspect ratio.")
+        toolTip = wx.ToolTip("""If this box is checked, the rendering preview window
+will always be sized so that it fits into the screen and
+uses the aspect ratio of the final rendered frame. If 
+this is unchecked, the preview window will be resized to
+be the same size as the final frame.""")
+        self.followAspect.SetToolTip(toolTip)
+        self.followAspect.SetValue(1)
         box=wx.BoxSizer(wx.HORIZONTAL)
         box.Add(self.duration)
         box.Add(self.spin)
@@ -103,6 +111,7 @@ class RenderingConfigPanel(wx.Panel):
         self.outputsizer.Add(self.fpsLabel,(2,1))
         self.outputsizer.Add(self.frameSizeLbl,(3,0))
         self.outputsizer.Add(self.frameSize,(3,1))
+        self.outputsizer.Add(self.followAspect,(4,0))
                 
         self.sizer.Add(self.outputstaticbox,(0,0),flag=wx.EXPAND|wx.ALL)
         #self.sizer.Add(self.animationstaticbox,(0,1),flag=wx.EXPAND|wx.ALL)
@@ -176,17 +185,20 @@ class RenderingConfigPanel(wx.Panel):
             pass
         if duration != -1 and frameCount != -1:
             self.control.configureTimeline(secs,frameCount)
-            
+
+        x=-1
+        y=-1
         try:
             size=self.frameSize.GetStringSelection()
             x,y=size.split("x")
             x=int(x)
             y=int(y)
-            
-            self.control.setFrameSize(x,y)
-            messenger.send(None,"set_frame_size",(x,y))
+            keepAspect=self.followAspect.GetValue()
         except:
             pass            
+        if x!=-1 and y!=-1:
+            self.control.setFrameSize(x,y)
+            messenger.send(None,"set_frame_size",(x,y),keepAspect)
             
             
             #self.control.configureTimeline(secs,frameCount)

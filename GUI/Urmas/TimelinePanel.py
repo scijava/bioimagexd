@@ -127,11 +127,11 @@ class TimelinePanel(wx.Panel):
         self.splineEditor=SplineEditor.SplineEditor(self,self.wxrenwin)
         self.control.setSplineEditor(self.splineEditor)        
 
-        sbox=wx.StaticBox(self,-1,"Rendering preview")
-        sboxsizer=wx.StaticBoxSizer(sbox,wx.VERTICAL)                
-        sboxsizer.Add(self.wxrenwin)
+        self.sbox=wx.StaticBox(self,-1,"Rendering preview")
+        self.sboxsizer=wx.StaticBoxSizer(self.sbox,wx.VERTICAL)                
+        self.sboxsizer.Add(self.wxrenwin)
         
-        self.sizer.Add(sboxsizer,(0,1))#,flag=wx.EXPAND|wx.ALL) 
+        self.sizer.Add(self.sboxsizer,(0,1))#,flag=wx.EXPAND|wx.ALL) 
         
         
         self.SetSizer(self.sizer)
@@ -146,7 +146,7 @@ class TimelinePanel(wx.Panel):
         messenger.connect(None,"set_frame_size",self.onSetFrameSize)
         messenger.connect(None,"set_keyframe_mode",self.onSetKeyframeMode)
 
-    def onSetFrameSize(self,obj,evt,size):
+    def onSetFrameSize(self,obj,evt,size,onlyAspect):
         """
         Method: onSetFrameSize
         Created: 19.12.2005, KP
@@ -155,13 +155,22 @@ class TimelinePanel(wx.Panel):
         """
         x,y=size
         xtoy=float(x)/y
-        y=300
-        x=xtoy*y
+        if onlyAspect:
+            y=300
+            x=xtoy*y
+        
+        
         self.wxrenwin.SetSize((x,y))
+        self.wxrenwin.SetMinSize((x,y))
         print "Setting size of renderwindow to ",(x,y)
-        self.sboxsizer.Fit(self.wxrenwin)
-        self.Layout()
+        
+        #self.sboxsizer.Fit(self.wxrenwin)
+        self.wxrenwin.Update()
+        self.sboxsizer.SetMinSize((x+10,y+25))
+        self.sbox.SetSize((x+10,y+25))
+        #self.sbox.SetClientSize((x,y))
         self.wxrenwin.Render()
+        
         
     def onSetKeyframeMode(self,obj,evt,arg):
         """
