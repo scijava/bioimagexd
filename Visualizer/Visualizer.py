@@ -76,6 +76,7 @@ class Visualizer:
         """
         global visualizerInstance
         visualizerInstance=self
+        self.currSliderPanel = None
         self.delayed=0
         self.oldClientSize=0
         self.updateFactor = 0.001
@@ -100,8 +101,8 @@ class Visualizer:
         self.renderingTime=0
         self.in_vtk=0
         self.parent = parent
-        messenger.connect(None,"set_timeslider_value",self.onSetTimeslider)
-        messenger.connect(None,"set_time_range",self.onSetTimeRange)
+        #messenger.connect(None,"set_timeslider_value",self.onSetTimeslider)
+        #messenger.connect(None,"set_time_range",self.onSetTimeRange)
         messenger.connect(None,"timepoint_changed",self.onSetTimepoint)
         messenger.connect(None,"data_changed",self.updateRendering)
         messenger.connect(None,"itf_update",self.updateRendering)
@@ -203,6 +204,8 @@ class Visualizer:
         #wx.FutureCall(50,self.createToolbar)
         self.createToolbar()
         
+
+        
     def createSliders(self):
         """
         Method: createSliders
@@ -210,6 +213,7 @@ class Visualizer:
         Description: Method that creates the sliders 
         """     
         self.sliderPanel=wx.Panel(self.sliderWin,-1)
+        self.setCurrentSliderPanel(self.sliderPanel)
         iconpath=reduce(os.path.join,["Icons"])
         leftarrow = wx.Image(os.path.join(iconpath,"leftarrow.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap()
         rightarrow = wx.Image(os.path.join(iconpath,"rightarrow.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap()
@@ -752,29 +756,6 @@ class Visualizer:
         
         #wx.LayoutAlgorithm().LayoutWindow(self.parent, self.visWin)
         self.OnSize(None)        
-    def oldOnSize(self, event=None):
-        """
-        Method: onSize
-        Created: 23.05.2005, KP
-        Description: Handle size events
-        """
-#        if not self.enabled:return
-        wx.LayoutAlgorithm().LayoutWindow(self.parent, self.visWin)
-        x,y=self.zsliderWin.GetSize()
-        x,y2=self.zslider.GetSize()
-        self.zslider.SetSize((x,y))
-        if self.currentWindow:
-            self.currentWindow.SetSize(self.visWin.GetClientSize())
-
-            self.currMode.relayout()
-        newsize=self.visWin.GetClientSize()[0]
-        if newsize!=self.oldClientSize:
-            self.createToolbar()
-            #self.tb.SetSize((newsize,-1))
-            #self.tb.SetVirtualSize((999,-1))
-            #self.tb.SetScrollra
-            pass
-        self.oldClientSize=newsize        
         
     def OnSize(self, event=None):
         """
@@ -790,6 +771,8 @@ class Visualizer:
         visSize=self.visWin.GetClientSize()
         # was here
         
+
+        
         newsize=visSize[0]
         if abs(newsize-self.oldClientSize)>10:
             self.createToolbar()
@@ -801,6 +784,16 @@ class Visualizer:
                 wx.CallAfter(self.OnSize)
     
         self.oldClientSize=newsize    
+        if self.currSliderPanel:
+            self.currSliderPanel.SetSize(self.sliderWin.GetSize())        
+        
+    def setCurrentSliderPanel(self,p):
+        """
+        Method: setCurrentSliderPanel
+        Created: 26.01.2006, KP
+        Description: Set the currently visible timeslider panel
+        """    
+        self.currSliderPanel=p
         
     def __del__(self):
         global visualizerInstance
@@ -1306,7 +1299,7 @@ class Visualizer:
         if diffy:
             Logging.info("I'm told to set renderwindow size to %d,%d with a %d modification of y-size."%(x,y,diffy))#,kw="visualizer")
             
-            if sly<diffy:
+            if diffy < 0 and sly<diffy:
                 Logging.info("Giving %d more to y-size is the best I can do"%sy)#,kw="visualizer")
                 sly=0
             else:

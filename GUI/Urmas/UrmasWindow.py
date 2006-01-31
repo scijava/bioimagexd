@@ -49,6 +49,7 @@ import  wx.lib.scrolledpanel as scrolled
 import Dialogs
 
 import UrmasPalette
+import PlaybackControl
 
 from GUI import MenuManager
 import messenger
@@ -87,12 +88,12 @@ class UrmasWindow(scrolled.ScrolledPanel):
 
         self.splitter = TimelinePanel.SplitPanel(self,-1)
         w=self.GetSize()[0]
-        self.timeline=Timeline(self.splitter,self.control,size=(w,200))
+        self.timeline=Timeline(self.splitter,self.control,size=(w,50))
         self.timelinePanel=TimelinePanel.TimelinePanel(self.splitter,self.control,size=(1024,500))
         self.timelinePanel.timeline=self.timeline
-        self.splitter.SetMinimumPaneSize(64)
-        self.splitter.SplitHorizontally(self.timeline,self.timelinePanel,150)
-        
+        #self.splitter.SetMinimumPaneSize(10)
+        self.splitter.SplitHorizontally(self.timeline,self.timelinePanel,-300)
+        #self.splitter.SetSashPosition(150)
         
         self.control.setTimelinePanel(self.timelinePanel)
         
@@ -102,10 +103,18 @@ class UrmasWindow(scrolled.ScrolledPanel):
         self.control.setAnimationMode(1)
 
         # get all the events emitted so we can update the GUI in real time
-        self.visualizer.bindTimeslider(self.onShowFrame,all=1)
+        #self.visualizer.bindTimeslider(self.onShowFrame,all=1)
+        self.visualizer.sliderPanel.Show(0)
+        #self.visualizer.timeslider.Show(0)
         n=self.control.getDuration()
-        messenger.send(None,"set_time_range",1,n*10)
     
+        self.controlpanel = PlaybackControl.PlaybackControl(self.visualizer.sliderWin,n*10)
+        self.controlpanel.bindTimeslider(self.onShowFrame,all=1)
+        s=self.visualizer.sliderWin.GetSize()
+        self.visualizer.setCurrentSliderPanel(self.controlpanel)
+        self.controlpanel.SetSize(s)
+        messenger.send(None,"set_time_range",1,n*10)
+        
         messenger.connect(None,"video_generation_close",self.onVideoGenerationClose)
         self.SetSizer(self.sizer)
         self.SetAutoLayout(1)
@@ -152,7 +161,8 @@ class UrmasWindow(scrolled.ScrolledPanel):
         Created: 15.08.2005, KP
         Description: Sets the frame to be shown
         """
-        tp=self.visualizer.timeslider.GetValue()
+        #tp=self.visualizer.timeslider.GetValue()
+        tp=self.controlpanel.timeslider.GetValue()
         tp/=10.0
         messenger.send(None,"show_time_pos",tp-0.1)
         messenger.send(None,"render_time_pos",tp-0.1)
@@ -213,13 +223,13 @@ class UrmasWindow(scrolled.ScrolledPanel):
         mgr.addMenuItem("addtrack",MenuManager.ID_ADD_SPLINE,"Camera Path Track","Add a camera path track to the timeline",self.onMenuAddSplineTrack)
         mgr.addMenuItem("addtrack",MenuManager.ID_ADD_KEYFRAME,"Keyframe Track","Add a keyframe track to the timeline",self.onMenuAddKeyframeTrack)        
         mgr.addSubMenu("track","addtrack","&Add Track",MenuManager.ID_ADD_TRACK)
-        mgr.addMenuItem("track",MenuManager.ID_DELETE_TRACK,"&Remove track","Remove the track from timeline",self.onMenuRemoveTrack)
         #mgr.addSeparator("track")
         
         mgr.createMenu("sizetrack","&Item Sizes",place=0)
         mgr.addSubMenu("track","sizetrack","&Item Sizes",MenuManager.ID_ITEM_SIZES)
         
         mgr.addMenuItem("sizetrack",MenuManager.ID_FIT_TRACK,"Expand to maximum","Expand the track to encompass the whole timeline",self.onMaxTrack)
+        mgr.addMenuItem("sizetrack",MenuManager.ID_FIT_TRACK_RATIO,"Expand to track length (keep ratio)","Expand the track to encompass the whole timeline while retainining the relative sizes of each item.",self.onMaxTrackRatio)        
         mgr.addMenuItem("sizetrack",MenuManager.ID_MIN_TRACK,"Shrink to minimum","Shrink the track to as small as possible",self.onMinTrack)
         mgr.addMenuItem("sizetrack",MenuManager.ID_SET_TRACK,"Set item size","Set each item on this track to be of given size",self.onSetTrack)
         mgr.addMenuItem("sizetrack",MenuManager.ID_SET_TRACK_TOTAL,"Set total length","Set total length of items on this track",self.onSetTrackTotal)
@@ -230,9 +240,13 @@ class UrmasWindow(scrolled.ScrolledPanel):
         mgr.addSubMenu("track","shuffle","Shift items",MenuManager.ID_ITEM_ORDER)
         mgr.addMenuItem("shuffle",MenuManager.ID_ITEM_ROTATE_CW,"&Clockwise",self.onShiftClockwise)
         mgr.addMenuItem("shuffle",MenuManager.ID_ITEM_ROTATE_CCW,"C&ounter-Clockwise",self.onShiftCounterClockwise)
+
+        mgr.addSeparator("track")
+        mgr.addMenuItem("track",MenuManager.ID_DELETE_TRACK,"&Remove track","Remove the track from timeline",self.onMenuRemoveTrack)
+        mgr.addMenuItem("track",MenuManager.ID_DELETE_ITEM,"&Remove item","Remove the selected track item",self.onMenuRemoveTrackItem)
         
         mgr.addSeparator("rendering")
-        mgr.addMenuItem("rendering",MenuManager.ID_RENDER_PREVIEW,"Rendering &Preview","Preview rendering",self.onMenuRender)
+#        mgr.addMenuItem("rendering",MenuManager.ID_RENDER_PREVIEW,"Rendering &Preview","Preview rendering",self.onMenuRender)
         mgr.addMenuItem("rendering",MenuManager.ID_RENDER_PROJECT,"&Render project","Render this project",self.onMenuRender)
     
         mgr.addMenuItem("camera",MenuManager.ID_SPLINE_CLOSED,"&Closed Path","Set the camera path to open / closed.",self.onMenuClosedSpline,check=1)
@@ -327,11 +341,12 @@ class UrmasWindow(scrolled.ScrolledPanel):
 
         #self.timelinePanel.wxrenwin.Update()
         #self.timelinePanel.wxrenwin.Render()
+        self.visualizer.getCurrentMode().lockSliderPanel(0)
         self.visualizer.OnSize()
-        self.FitInside()
-        self.SetupScrolling()
-        self.Layout()
-
+        #self.FitInside()
+        #self.SetupScrolling()
+        #self.Layout()
+        
         
         
     def onMinTrack(self,evt):
@@ -428,7 +443,19 @@ class UrmasWindow(scrolled.ScrolledPanel):
             Dialogs.showwarning(self,"You need to select a track that you wish to perform the operation on.","No track selected")
             return        
         active.expandToMax()
-
+    
+    def onMaxTrackRatio(self,evt):
+        """
+        Method: onMinTrack
+        Created: 19.04.2005, KP
+        Description: Callback function for menu item minimize track
+        """
+        active = self.control.getSelectedTrack()
+        if not active:
+            Dialogs.showwarning(self,"You need to select a track that you wish to perform the operation on.","No track selected")
+            return        
+        active.expandToMax(keep_ratio=1)
+        
     def onMenuSetBegin(self,evt):
         """
         Method: onMenuSetBegin
@@ -487,9 +514,21 @@ class UrmasWindow(scrolled.ScrolledPanel):
         Description: Callback function for removing a track
         """
         track=self.control.getSelectedTrack()
-        self.control.timeline.removeTrack(track,1)
+        if track:
+            self.control.timeline.removeTrack(track,1)
         
 
+    def onMenuRemoveTrackItem(self,evt):
+        """
+        Method: onMenuRemoveTrack
+        Created: 31.01.2006, KP
+        Description: Callback function for removing an item from a track
+        """
+        track=self.control.getSelectedTrack()
+        if track:
+            track.removeActiveItem()
+                
+        
     def onMenuAddSplineTrack(self,evt):
         """
         Method: onMenuAddSplineTrack

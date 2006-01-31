@@ -71,6 +71,10 @@ class TimepointTrack(Track):
             self.itemClass=kws["item"]
         else:
             self.itemClass=TrackItem
+
+        self.paintOverlay=1
+        self.overlayColor = ((255,255,255),25)                
+    
         dt = UrmasPalette.UrmasDropTarget(self,"Timepoint")
         self.SetDropTarget(dt)
         self.thumbnail=1

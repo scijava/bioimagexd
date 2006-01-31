@@ -205,6 +205,14 @@ class VisualizerWindow(wxVTKRenderWindowInteractor):
         """            
         self.saveScreen(vtk.vtkPNGWriter(),filename)
 
+    def save_png(self,filename):
+        """
+        Method: save_png(self,filename)
+        Created: 28.04.2005, KP
+        Description: Save the rendered screen as png
+        """            
+        self.saveScreen(vtk.vtkPNGWriter(),filename)
+        
     def save_pnm(self,filename):
         """
         Method: save_pnm(self,filename)
@@ -223,6 +231,8 @@ class VisualizerWindow(wxVTKRenderWindowInteractor):
 
     def save_jpg(self,filename):
         return self.save_jpeg(filename)
+        
+    
         
     def save_jpeg(self,filename):
         """

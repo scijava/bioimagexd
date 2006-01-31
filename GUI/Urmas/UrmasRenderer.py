@@ -73,6 +73,7 @@ class UrmasRenderer:
         self.renderingInterface.setVisualizer(control.visualizer)
 
         self.oldTimepoint=-1
+        self.spf=1
         self.lastpoint=None
         self.firstpoint = None
         self.lastSplinePoint=None
@@ -88,15 +89,83 @@ class UrmasRenderer:
         self.lastSplinePosition=None
         messenger.connect(None,"render_time_pos",self.renderPreviewAt)
         messenger.connect(None,"stop_rendering",self.onStopRendering)
+        self.pausedRendering=0
+        self.rendering=0
+        self.pauseFrame = 0
+        self.pauseFlag=0
+        self.currentIsPreview=0
+        self.renderingPreviewFlag=0
+        
+        messenger.connect(None,"playback_pause",self.onPausePlayback)
+        messenger.connect(None,"playback_play",self.onPlayPlayback)
+        messenger.connect(None,"playback_stop",self.onStopPlayback)
+       
+    def onStopPlayback(self,obj,evt,*args):
+        """
+        Method: onStopPlayback
+        Created: 30.1.2006, KP
+        Description: A callback to stop rendering if it's currently underway
+                     in a preview mode
+        """        
+        if self.rendering and self.currentIsPreview:
+            print "\n\n**** ON STOP PLAYBACK"
+            self.stopFlag=1
+            self.renderPreviewAt(None,None,0)
+            messenger.send(None,"set_preview_mode",0)
+            print "\n\nPreview mode ends because preview stopped (btn)"
+      
+    def onPlayPlayback(self,obj,evt,*args):
+        """
+        Method: onPlayPlayback
+        Created: 30.1.2006, KP
+        Description: A callback to resume rendering if it's currently underway
+                     but paused
+        """  
+        
+        # If we wered paused, then continue the rendering from where
+        # we left off
+        if self.rendering and self.pausedRendering:
+            print "\n\n*** CONTINUE RENDERING ***\n\n"
+            self.pauseFlag=0
+            self.doRenderFrames(self.currentIsPreview)
+            #if self.currentIsPreview:
+            #    messenger.send(None,"set_preview_mode",)
+        #But if we weren't rendering, then do a rendering preview
+        elif not self.rendering:
+            print "\n\ *** RESTART RENDERING ***\n\n\n"
+            self.renderingPreviewFlag=1
+            
+            self.render(self.control,preview=1)
+            
+            
+    def onPausePlayback(self,obj,evt,*args):
+        """
+        Method: onPausePlayback
+        Created: 30.1.2006, KP
+        Description: A callback to pause rendering if it's currently underway
+        """  
+        if self.rendering:
+            self.pauseFlag=1
+        
+    def isPaused(self):
+        """
+        Method: isPaused
+        Created: 30.1.2006, KP
+        Description: A query function that tells whether the rendering is paused
+        """            
+        return self.pausedRendering
         
     def onStopRendering(self,obj,evt,*args):
         """
-        Method: startAnimation
-        Created: 19.12.2005, KP
+        Method: onStopRendering
+        Created: 30.1.2006, KP
         Description: Stop any rendering we're doing and exit
         """        
         self.stopFlag=1
-        
+        if self.renderingPreviewFlag:
+            messenger.send(None,"set_preview_mode",0)
+            self.renderingPreviewFlag=0
+            
     def startAnimation(self,control):
         """
         Method: startAnimation
@@ -121,14 +190,18 @@ class UrmasRenderer:
         Created: 04.04.2005, KP
         Description: Render the timeline
         """    
+        self.startAnimation(self.control)
         self.lastSplinePosition = None
         renderpath="."
+        self.stopFlag=0
+        print "\n\n####IS PREVIEW",preview
+        self.currentIsPreview=preview
         messenger.send(None,"report_progress_only",self)
         self.control = control
         self.dataUnit = control.getDataUnit()
         self.duration = duration = control.getDuration()
         self.frames = frames = control.getFrames()
-        spf = duration / float(frames)
+        self.spf = duration / float(frames)
         if not preview and not self.renderingInterface.isVisualizationSoftwareRunning():
             Dialogs.showerror(self.control.window,"Cannot render project: visualization software is not running","Visualizer is not running")
             return -1
@@ -167,22 +240,59 @@ class UrmasRenderer:
 #        cam.ComputeViewPlaneNormal()
 #        cam.OrthogonalizeViewUp()
 
+        self.doRenderFrames(preview)
+        
+    def doRenderFrames(self,preview):
+        """
+        Class: doRenderFrames()
+        Created: 31.01.2006, KP
+        Description: Method that only does the rendering.
+                     This is separate from render() to make it
+                     easier to pause/resume rendering
+        """ 
         status="Rendering done."
-        for n in range(frames+1):
+        start=0
+        if self.currentIsPreview:
+            messenger.send(None,"set_preview_mode",1)
+        if self.pausedRendering:
+            if self.currentIsPreview:
+                messenger.send(None,"set_preview_mode",1)
+            print "\n\n --- RESTORING PAUSED POS ",self.pauseFrame
+            start=self.pauseFrame
+            self.pausedRendering=0
+        self.rendering=1
+        for n in range(start,self.frames+1):
+            print "Now rendering frame ",n,"spf=",self.spf
             if self.stopFlag:
-                status = "Rendering aborted at frame %d / %d."%(n,frames)
+                print "\n\n*** ABORT RENDERING"
+                self.stopFlag=0
+                
+                status = "Rendering aborted at frame %d / %d."%(n,self.frames)
                 break
-            messenger.send(None,"set_timeslider_value",(n+1)*spf*10.0)
-            self.renderFrame(n,(n+1)*spf,spf,preview=preview)            
-            messenger.send(self,"update_progress",(n+1)/float(frames+1),"Rendering frame %d / %d. Time: %.1fs"%(n,frames,(n+1)*spf))        
-
+            if self.pauseFlag:
+                status = "Rendering paused at frame %d / %d."%(n,self.frames)
+                self.pauseFrame = n
+                self.pausedRendering = 1
+                return
+            messenger.send(None,"set_timeslider_value",(n+1)*self.spf*10.0)
+            self.renderFrame(n,(n+1)*self.spf,self.spf,preview=preview)            
+            messenger.send(self,"update_progress",(n+1)/float(self.frames+1),"Rendering frame %d / %d. Time: %.1fs"%(n,self.frames,(n+1)*self.spf))        
+        self.rendering=0
+        self.pausedRendering = 0
+        self.pauseFrame=0
+        
+        if self.currentIsPreview:
+            print "\n\nPreview mode ends because we're at end"
+            messenger.send(None,"set_preview_mode",0)
         messenger.send(None,"report_progress_only",None)
         if not preview:
             messenger.send(None,"update_progress",1.0,status)
         else:
             messenger.send(None,"update_progress",1.0,"")
 #            self.dlg.Destroy()
-
+        
+        messenger.send(None,"rendering_done")
+        
     def initializeCameraInterpolator(self):
         """
         Method: initializeCameraInterpolator
@@ -237,9 +347,12 @@ class UrmasRenderer:
             do_use_cam=0
         duration = self.control.getDuration()
         frames = self.control.getFrames()
-        spf = duration / float(frames)        
-        frame=spf*timepos
-        self.renderFrame(frame,timepos,spf,preview=1,use_cam=do_use_cam) 
+        self.spf = duration / float(frames)        
+        frame=timepos/self.spf
+        if self.pausedRendering:
+            print "\n\n\n**** SETTING PAUSE FRAME TO ",frame,"spf=",self.spf
+            self.pauseFrame=frame
+        self.renderFrame(frame,timepos,self.spf,preview=1,use_cam=do_use_cam) 
         messenger.send(None,"view_camera",self.cam)
          
     def getTimepointAt(self,time):

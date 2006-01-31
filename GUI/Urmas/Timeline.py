@@ -387,6 +387,7 @@ class Timeline(scrolled.ScrolledPanel):
         if label=="":
             label="Camera Path %d"%len(self.splinepointTracks)
         tr=SplineTrack(label,self,number=1,timescale=self.timeScale,control=self.control,height=55)
+        self.timeScale.setOffset(tr.getLabelWidth())
         tr.setColor((56,196,248))
         self.splinepointTrackAmnt = len(self.splinepointTracks)
         self.timepointTrackAmnt = len(self.timepointTracks)
@@ -413,7 +414,7 @@ class Timeline(scrolled.ScrolledPanel):
         if label=="":
             label="Keyframe %d"%len(self.keyframeTracks)
         tr=KeyframeTrack(label,self,number=1,timescale=self.timeScale,control=self.control,height=55)
-        
+        self.timeScale.setOffset(tr.getLabelWidth())
         self.keyframeTrackAmnt = len(self.keyframeTracks)
         self.timepointTrackAmnt = len(self.timepointTracks)
         self.splinepointTrackAmnt=len(self.splinepointTracks)

@@ -60,6 +60,11 @@ class VideoGeneration(wx.Panel):
         wx.Panel.__init__(self,parent,-1)
         self.control = control
         self.visualizer=visualizer
+            
+        # The slider panel will be unlocked by UrmasWindow, not 
+        # VideoGeneration
+        self.visualizer.getCurrentMode().lockSliderPanel(1)
+        
         self.rendering = 0
         self.abort = 0
         self.parent = parent
@@ -68,9 +73,12 @@ class VideoGeneration(wx.Panel):
         self.fps = self.control.getFrames() / float(self.control.getDuration())
         self.dur=self.control.getDuration()
 
-        self.outputExts=[["png","bmp","jpg","tif"],["mpg","mpg","avi","wmv","avi","avi","mov"]]
-        self.outputFormats=[["PNG","BMP","JPEG","TIFF"],["AVI","MPEG1","MPEG2","MPEG4","WMV1","WMV2","MS MPEG4","MS MPEG4 v2","QuickTime MPEG4"]]
-        self.outputCodecs = ["avi","mpeg1video","mpeg2video","mpeg4","wmv1","wmv2","msmpeg4","msmpeg4v2","mov"]
+        self.outputExts=[["png","bmp","jpg","tif","pnm"],["mpg","mpg","avi","wmv","avi","avi","mov"]]
+        self.outputFormats=[["PNG","BMP","JPEG","TIFF","PNM"],
+                             ["MPEG1","MPEG2","WMV1",
+                              "WMV2","MS MPEG4","MS MPEG4 v2",
+                              "QuickTime MPEG4","AVI MPEG4"]]
+        self.outputCodecs = [("mpeg1video","mpg"),("mpeg2video","mpg"),("wmv1","wmv"),("wmv2","wmv"),("msmpeg4","avi"),("msmpeg4v2","avi"),("mpeg4","mov"),("mpeg4","avi")]
         self.padding = [1,1,0,0,0,0]
         self.needpad=0
         self.mainsizer=wx.GridBagSizer()
@@ -94,7 +102,7 @@ class VideoGeneration(wx.Panel):
         self.SetAutoLayout(True)
         self.mainsizer.Fit(self)
 
-    def onCancel(self,event):
+    def onCancel(self,*args):
         """
         Method: onCancel()
         Created: 15.12.2005, KP
@@ -103,7 +111,9 @@ class VideoGeneration(wx.Panel):
         if self.rendering:
             messenger.send(None,"stop_rendering")
             self.abort = 1
+#        self.visualizer.getCurrentMode().lockSliderPanel(0)            
         messenger.send(None,"video_generation_close")
+        
         
     def onOk(self,event):
         """
@@ -112,11 +122,21 @@ class VideoGeneration(wx.Panel):
         Description: Render the whole damn thing
         """
         self.okButton.Enable(0)
+        messenger.send(None,"set_play_mode")
+        messenger.connect(None,"playback_stop",self.onCancel)
+        
         self.abort = 0
         if self.visualizer.getCurrentModeName()!="3d":
             self.visualizer.setVisualizationMode("3d")
         path=self.rendir.GetValue()
         file=self.videofile.GetValue()
+        
+        codec=self.outputFormat.GetSelection()    
+        vcodec,ext = self.outputCodecs[codec]
+        file_coms=file.split(".")
+        file_coms[-1]=ext
+        file=".".join(file_coms)
+        
         conf = Configuration.getConfiguration()
         conf.setConfigItem("FramePath","Paths",path)
         conf.setConfigItem("VideoPath","Paths",file)
@@ -137,15 +157,26 @@ class VideoGeneration(wx.Panel):
         Logging.info("Will produce %s, rendered frames go to %s"%(file,path),kw="animator")
         size=self.size
         x,y=size
+        self.file=file
+        self.size=size
+        self.path=path
 
         
         Logging.info("Will set render window to ",size,kw="animator")
         self.visualizer.setRenderWindowSize((x,y),self.parent)
         self.rendering = 1
+        messenger.connect(None,"rendering_done",self.cleanUp)
         flag=self.control.renderProject(0,renderpath=path)
         self.rendering = 0
         if flag==-1:
             return
+            
+    def cleanUp(self,*args):
+        """
+        Method: cleanUp
+        Created: 30.1.2006, KP
+        Description: Method to clean up after rendering is done
+        """     
         # if the rendering wasn't aborted, then restore the animator
         if not self.abort:
             self.visualizer.restoreWindowSizes()
@@ -155,15 +186,17 @@ class VideoGeneration(wx.Panel):
         if self.formatMenu.GetSelection()==1:
 
             Logging.info("Will produce video",kw="animator")
-            self.encodeVideo(path,file,size)
+            self.encodeVideo(self.path,self.file,self.size)
 
         # clear the flags so that urmaswindow will destroy as cleanly
         
         self.abort=0
         self.rendering=0
         
+        
         messenger.send(None,"video_generation_close")
 #        self.Close()
+        messenger.disconnect(None,"rendering_done")
 
     def encodeVideo(self,path,file,size):
         """
@@ -185,14 +218,13 @@ class VideoGeneration(wx.Panel):
         
         #frameRate = int(self.frameRate.GetValue())
         frameRate=float(self.frameRate.GetValue())
-        codec=self.outputFormat.GetSelection()
+        codec=self.outputFormat.GetSelection()    
+        vcodec,ext = self.outputCodecs[codec]        
         if self.needpad and frameRate not in [12,24]:
             scodec=self.outputFormats[1][codec]
             if frameRate<12:frameRate=12
             else:frameRate=24
             Dialogs.showmessage(self,"For the code you've selected (%s), the target frame rate must be either 12 or 24. %d will be used."%(scodec,frameRate),"Bad framerate")
-            
-        vcodec = self.outputCodecs[codec]
 #        try:
 #            x,y=self.visualizer.getCurrentMode().GetRenderWindow().GetSize()
 #            print "Render window size =",x,y
@@ -235,10 +267,10 @@ class VideoGeneration(wx.Panel):
         for i in self.outputFormats[sel]:
             self.outputFormat.Append(i)
             
-        # Produce quicktime by default but msmpeg4v2 on windows
-        sel=7
+        # Produce quicktime MPEG4 by default but MS MPEG4 v2 on windows
+        sel=6
         if platform.system()=="Windows":
-            sel=8
+            sel=5
         self.outputFormat.SetSelection(sel)
         
         

@@ -449,6 +449,7 @@ def getOverlay(width,height,color,alpha):
     s=siz*s
     ss=struct.pack(fs,s)
     img.SetAlphaData(ss)
+        
     return img
     
     

@@ -249,6 +249,14 @@ class Track(wx.Panel):
                 print "Failed to create overlay:",e
                 #sys.stdin.readline()
             overlay=overlay.ConvertToBitmap()
+            overlaydc=wx.MemoryDC()
+            overlaydc.SelectObject(overlay)
+            pen=wx.Pen(wx.Colour(255,255,255),2)
+            overlaydc.SetPen(pen)
+            overlaydc.SetBrush(wx.TRANSPARENT_BRUSH)
+            overlaydc.DrawRectangle(1,1,w-3,h-3)
+            overlaydc.SelectObject(wx.NullBitmap)
+            
             
             pos=self.getLabelWidth() + self.overlayPos*pps
             self.overlayPosInPixelsEnd=pos+w+1
@@ -338,7 +346,22 @@ class Track(wx.Panel):
         
         return ret
 
-        
+    def removeActiveItem(self):
+        """
+        Method: removeActiveItem
+        Created: 31.01.2006, KP
+        Description: Remove the currently selected item
+        """        
+        if self.selectedItem:
+            self.items.remove(self.selectedItem)
+            self.overlayPosInPixels=0
+            self.overlayPosInPixelsEnd=0
+            self.overlayPos=-1
+            self.overlayItem=None    
+            self.paintTrack()
+           
+            
+            
     def onUp(self,event):
         """
         Method: onUp
@@ -347,8 +370,8 @@ class Track(wx.Panel):
         """
         if self.selectedItem:
             self.selectedItem.onUp(event)
-        if not self.onEvent("Up",event):
-            self.setSelected(event)
+        #if not self.onEvent("Up",event):
+        self.setSelected(event)
         
                 
     def getItems(self):
@@ -370,8 +393,15 @@ class Track(wx.Panel):
             self.bold=1
             self.parent.setSelectedTrack(self)
         else:
+            print "\n\n*** IM NOT SELECTE#D ANYMORE"
             self.SetWindowStyle(wx.SIMPLE_BORDER)
             self.bold=0
+            # Reset also the overlay
+            self.overlayPosInPixels=0
+            self.overlayPosInPixelsEnd=0
+            self.overlayPos=-1
+            self.overlayItem=None              
+            
         self.paintTrack()
             
     def setEnabled(self,flag):
@@ -618,7 +648,7 @@ class Track(wx.Panel):
         self.renew=0
         self.paintTrack()
 
-    def expandToMax(self):
+    def expandToMax(self,keep_ratio=0):
         """
         Method: expandToMax()
         Created: 19.04.2005, KP
@@ -630,11 +660,17 @@ class Track(wx.Panel):
         
         w=float(self.duration)/float(n)
         w*=self.timescale.getPixelsPerSecond()
-        
+        lastpos=self.items[-1].getPosition()[1]
+        coeff = self.timescale.getDuration() / float(lastpos)
+        print "coeff=",coeff
         tot=0
         last=0
         for i in self.items:
-            i.setWidth(w)
+            if keep_ratio:
+                neww = i.width * coeff
+            else:
+                neww=w
+            i.setWidth(neww)
             tot+=w
             last=i
        

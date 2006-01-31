@@ -146,6 +146,8 @@ class SplineEditor:
         self.spline.SetResolution(1000)
         
         self.style=self.iren.GetInteractorStyle()
+        self.spline.AddObserver("EndInteractionEvent",self.endInteraction)
+        self.spline.AddObserver("InteractionEvent",self.endInteraction)
         self.style.AddObserver("EndInteractionEvent",self.endInteraction)
         self.style.AddObserver("InteractionEvent",self.endInteraction)
         self.spline.SetInteractor(self.iren)
@@ -706,6 +708,7 @@ class SplineEditor:
             messenger.send(None,"view_camera",cam)
         
         if self.interactionCallback:
+            print "\n\n*** Calling interactionCallback\n\n"
             self.interactionCallback()
 
     #def __del__(self):     

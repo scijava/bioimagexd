@@ -261,9 +261,30 @@ class SplineTrack(Track):
         Description: Remove an item from this track
         """
         #self.removeItem(position)
+        spc=0
+        for i,item in enumerate(self.items):
+            if not item.isStopped():
+                self.items[i].setItemNumber(spc)
+                self.items[i].setText("%d"%spc)
+                spc+=1        
         self.showSpline()
         self.Layout()
         #self.sizer.Fit(self)     
+        
+    def removeActiveItem(self):
+        """
+        Method: removeActiveItem
+        Created: 31.01.2006, KP
+        Description: Remove the currently selected item
+        """       
+        Track.removeActiveItem(self)
+        spc=0
+        for i,item in enumerate(self.items):
+            if not item.isStopped():
+                self.items[i].setItemNumber(spc)
+                self.items[i].setText("%d"%spc)
+                spc+=1        
+        self.showSpline()
 
     def addStopPoint(self,position):
         """

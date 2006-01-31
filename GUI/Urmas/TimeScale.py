@@ -108,6 +108,7 @@ class TimeScale(wx.Panel):
         Description: Sets the offset of the timescale, which is
                      mainly determined by the tracks' titles
         """    
+        
         self.xOffset=x
         self.paintScale()
 

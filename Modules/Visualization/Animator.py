@@ -61,6 +61,7 @@ class AnimatorMode(VisualizationMode):
         self.dataUnit=None
         
         self.urmaswin=None
+        self.doLockSliderPanel=0
         
     def layoutTwice(self):
         """
@@ -109,7 +110,7 @@ class AnimatorMode(VisualizationMode):
         self.menuManager.mainToolbar.EnableTool(MenuManager.ID_RESTORE,0)
         self.menuManager.mainToolbar.EnableTool(MenuManager.ID_COLOCALIZATION,0)
         self.menuManager.mainToolbar.EnableTool(MenuManager.ID_COLORMERGING,0)
-        
+        self.visualizer.sliderPanel.Show(0)
         if not self.urmaswin:
             # Ugly hack
             self.urmaswin=Urmas.UrmasWindow(self.parent,self.visualizer.menuManager,self.visualizer.mainwin.taskWin,self.visualizer)
@@ -144,6 +145,16 @@ class AnimatorMode(VisualizationMode):
         """      
         pass
         
+    def lockSliderPanel(self,flag):
+        """
+        Method: lockSliderPanel
+        Created: 30.01.2006, KP
+        Description: Set a flag indicating whether the sliderpanel 
+                     should be switched back to normal when switching
+                     from animator
+        """     
+        self.doLockSliderPanel=flag
+        
     def deactivate(self,newmode=None):
         """
         Method: deactivate()
@@ -151,7 +162,11 @@ class AnimatorMode(VisualizationMode):
         Description: Unset the mode of visualization
         """
         self.urmaswin.Show(0) 
-        self.urmaswin.enableRendering(0)     
+        self.urmaswin.enableRendering(0)   
+        
+        if not self.doLockSliderPanel:
+            self.visualizer.setCurrentSliderPanel(self.visualizer.sliderPanel)        
+            self.visualizer.sliderPanel.Show(1)
         if newmode!="3d":
             self.menuManager.mainToolbar.EnableTool(MenuManager.ID_ADJUST,1)
             self.menuManager.mainToolbar.EnableTool(MenuManager.ID_RESTORE,1)

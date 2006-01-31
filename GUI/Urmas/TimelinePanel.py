@@ -82,8 +82,8 @@ class TimelinePanel(wx.Panel):
         #self.timeline=Timeline(self,self.control,size=(w,200))
 #        self.sizer.Add(self.timeline,(0,0),span=(1,2),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
         
-        sline=wx.StaticLine(self)
-        self.sizer.Add(sline,(1,0),span=(1,2),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
+        #sline=wx.StaticLine(self)
+        #self.sizer.Add(sline,(1,0),span=(1,2),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
         
 
         self.confPanel=wx.Panel(self,-1)
@@ -116,7 +116,7 @@ class TimelinePanel(wx.Panel):
         #style=wx.RA_SPECIFY_ROWS    
         #)
         #self.confSizer.Add(self.modeBox,(0,1))
-        self.sizer.Add(sboxsizer,(2,0),flag=wx.EXPAND|wx.ALL)
+        self.sizer.Add(sboxsizer,(0,0),flag=wx.EXPAND|wx.ALL)
         
         
         #self.wxrenwin=VisualizerWindow.VisualizerWindow(self,size=(400,300))
@@ -131,7 +131,7 @@ class TimelinePanel(wx.Panel):
         sboxsizer=wx.StaticBoxSizer(sbox,wx.VERTICAL)                
         sboxsizer.Add(self.wxrenwin)
         
-        self.sizer.Add(sboxsizer,(2,1))#,flag=wx.EXPAND|wx.ALL) 
+        self.sizer.Add(sboxsizer,(0,1))#,flag=wx.EXPAND|wx.ALL) 
         
         
         self.SetSizer(self.sizer)
