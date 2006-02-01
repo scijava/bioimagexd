@@ -256,6 +256,7 @@ class SplineEditor:
         Created: 15.08.2005, KP
         Description: Sets the view mode
         """
+        
         if showViewAngle:
             Logging.info("Turning spline off",kw="animator")
             self.spline.Off()
@@ -702,8 +703,8 @@ class SplineEditor:
         cam=self.getCamera()
             
         #print "Orientation=",cam.GetOrientationWXYZ()
-        
-        if self.viewMode == 0:
+
+        if self.viewMode == 1:
             messenger.send(None,"set_camera",cam)
             messenger.send(None,"view_camera",cam)
         
