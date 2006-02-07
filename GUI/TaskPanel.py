@@ -127,6 +127,15 @@ class TaskPanel(scrolled.ScrolledPanel):
         #messenger.connect(None,"itf_update",self.doPreviewCallback)
         messenger.connect(None,"channel_selected",self.selectItem)
         messenger.connect(None,"switch_datasets",self.onSwitchDatasets)
+        messenger.connect(None,"update_settings_gui",self.onUpdateGUI)
+        
+    def onUpdateGUI(self,*arg):
+        """
+        Method: onUpdateGUI
+        Created: 07.02.2006, KP
+        Description: A callback for updating the GUI when settings have been changed
+        """         
+        self.updateSettings()
         
     def onSwitchDatasets(self,obj,evt,args):
         """
@@ -418,6 +427,6 @@ class TaskPanel(scrolled.ScrolledPanel):
         messenger.send(None,"current_file",", ".join(fileNames))         
         
         self.selectItem(None,None,0)
-	# Delay the call, maybe it will make it work on mac
-	wx.FutureCall(100,self.createItemToolbar)
+        # Delay the call, maybe it will make it work on mac
+        wx.FutureCall(100,self.createItemToolbar)
 #        self.createItemToolbar()

@@ -188,10 +188,12 @@ public:
   // Instead of calculating thresholds, use the given thresholds
   vtkGetMacro(LowerThresholdCh1,int);
   vtkSetMacro(LowerThresholdCh1,int);    
-  // Description:
-  // Instead of calculating thresholds, use the given thresholds
   vtkGetMacro(LowerThresholdCh2,int);
-  vtkSetMacro(LowerThresholdCh2,int);          
+  vtkSetMacro(LowerThresholdCh2,int);     
+  vtkGetMacro(UpperThresholdCh1,int);
+  vtkSetMacro(UpperThresholdCh1,int);    
+  vtkGetMacro(UpperThresholdCh2,int);
+  vtkSetMacro(UpperThresholdCh2,int);    
 protected:
   vtkImageAutoThresholdColocalization();
   ~vtkImageAutoThresholdColocalization();
@@ -253,6 +255,8 @@ private:
       
   int LowerThresholdCh1;
   int LowerThresholdCh2;
+  int UpperThresholdCh1;
+  int UpperThresholdCh2;  
 };
 
 #endif

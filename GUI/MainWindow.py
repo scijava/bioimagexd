@@ -945,6 +945,7 @@ class MainWindow(wx.Frame):
                 parser.read(filenames)
                 dataunit.getSettings().readFrom(parser)
                 self.visualizer.setDataUnit(dataunit)
+                messenger.send(None,"update_settings_gui")
             else:
                 Logging.info("No dataunit, cannot load settings")
 
@@ -1004,24 +1005,30 @@ class MainWindow(wx.Frame):
         if self.tree.hasItem(path):
             return
         ext=ext.lower()
+        print "ext=",ext
         if ext=='bxd':
             # We check that the file is not merely a settings file
+            #try:
+            self.parser = SafeConfigParser()
+            self.parser.read([path])
+            settingsOnly=""
             try:
-                self.parser = SafeConfigParser()
-                self.parser.read([path])
                 # We read the Key SettingsOnly, and check it's value.
-                settingsOnly = self.parser.get("Settings", "SettingsOnly")
-                if settingsOnly.lower()=="true":
-                    # If this file contains only settings, then we report an 
-                    # error and do not load it
-                    Dialogs.showerror(self,
-                    "The file you selected, %s, contains only settings "
-                    "and cannot be loaded.\n"
-                    "Use 'Load settings' from the File menu "
-                    "to load it."%name,"Trying to load settings file")
-                    return
-            except:
+                settingsOnly = self.parser.get("SettingsOnly", "SettingsOnly")
+            except ConfigParser.NoOptionError:
                 pass
+            print "\n\n*** SETTINGS ONLY: ", settingsOnly
+            if settingsOnly.lower()=="true":
+                # If this file contains only settings, then we report an 
+                # error and do not load it
+                Dialogs.showerror(self,
+                "The file you selected, %s, contains only settings "
+                "and cannot be loaded.\n"
+                "Use 'Load settings' from the File menu "
+                "to load it."%name,"Trying to load settings file")
+                return
+            #except:
+            #    pass
 
         # We try to load the actual data
         Logging.info("Loading dataset with extension %s, path=%s"%(ext,path),kw="io")

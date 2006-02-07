@@ -136,6 +136,8 @@ class Colocalization(Module):
                 Logging.info("Setting thresholds ",int(self.thresholds[0][0]),int(self.thresholds[1][0]),"for statistics")
                 self.colocAutoThreshold.SetLowerThresholdCh1(int(self.thresholds[0][0]))
                 self.colocAutoThreshold.SetLowerThresholdCh2(int(self.thresholds[1][0]))
+                self.colocAutoThreshold.SetUpperThresholdCh1(int(self.thresholds[0][1]))
+                self.colocAutoThreshold.SetUpperThresholdCh2(int(self.thresholds[1][1]))                
             self.colocAutoThreshold.Update()
             Logging.info("Done!",kw="processing")
             for i in ["Ch1ThresholdMax","Ch2ThresholdMax","PearsonImageAbove",

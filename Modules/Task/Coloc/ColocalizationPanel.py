@@ -124,16 +124,16 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
 #                  "M2":(10,0,fs2),
                   "ThresholdM1":(n+12,0,fs2),
                   "ThresholdM2":(n+13,0,fs2),
-                  "K1":(n+14,0,fs2),
-                  "K2":(n+15,0,fs2),
+#                  "K1":(n+14,0,fs2),
+#                  "K2":(n+15,0,fs2),
                   
-                  "SumCh1":(n+16,0,ss),
+                  "SumCh1":(n+14,0,ss),
 #                  "SumOverThresholdCh1":(n+15,1,ds),
-                  "SumCh2":(n+17,0,ss),
+                  "SumCh2":(n+15,0,ss),
 #                  "SumOverThresholdCh2":(n+16,1,ds),
-                  "DiffStainVoxelsCh1":(n+18,0,ss),
+                  "DiffStainVoxelsCh1":(n+16,0,ss),
 #                  "DiffStainIntCh1":(n+17,1,fs2),
-                  "DiffStainVoxelsCh2":(n+19,0,ss),
+                  "DiffStainVoxelsCh2":(n+17,0,ss),
 #                  "DiffStainIntCh2":(n+18,1,fs2),                  
         }
      
@@ -176,6 +176,8 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
                     sum = sources[0].getSettings().get(item)
                     sumth = sources[0].getSettings().get("SumOverThresholdCh1")
                     print "pvolch=",pvolch,type(pvolch)
+                    if not sum:sum=0
+                    if not sumth:sumth=0
                     val = "%d / %d"%(sum,sumth)
                 else:
                     val = "0 / 0"
@@ -183,6 +185,8 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
                 if sources:
                     sum = sources[1].getSettings().get(item)
                     sumth = sources[1].getSettings().get("SumOverThresholdCh2")
+                    if not sum:sum=0
+                    if not sumth:sumth=0
                     val = "%d / %d"%(sum,sumth)
                 else:
                     val = "0 / 0"  
@@ -482,7 +486,7 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
         w.writerow(["% of channel colocalized (voxels > threshold)",100*get1("PercentageMaterialCh1"),100*get2("PercentageMaterialCh2")])
         w.writerow(["Manders' coefficient m1 / m2",get1("M1"),get2("M2")])
         w.writerow(["Manders' coefficient M1 / M2 (voxels > threshold)",get1("ThresholdM1"),get2("ThresholdM2")])
-        w.writerow(["Overlap coefficient k1 / k2",get1("K1"),get2("K2")])        
+#        w.writerow(["Overlap coefficient k1 / k2",get1("K1"),get2("K2")])        
         w.writerow([])
         mapping=["Fay's","Costes'","van Steensel's"]
         method=get1("Method")
@@ -561,12 +565,12 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
         self.listctrl.InsertStringItem(n,"M2")
         self.listctrl.SetItemBackgroundColour(n,self.intermediate)
         n+=1
-        self.listctrl.InsertStringItem(n,"K1")
-        self.listctrl.SetItemBackgroundColour(n,self.expert)
-        n+=1
-        self.listctrl.InsertStringItem(n,"K2")
-        self.listctrl.SetItemBackgroundColour(n,self.expert)
-        n+=1
+#        self.listctrl.InsertStringItem(n,"K1")
+#        self.listctrl.SetItemBackgroundColour(n,self.expert)
+#        n+=1
+#        self.listctrl.InsertStringItem(n,"K2")
+#        self.listctrl.SetItemBackgroundColour(n,self.expert)
+#        n+=1
         self.listctrl.InsertStringItem(n,"Sum of Ch1 (total / over threshold)")
         self.listctrl.SetItemBackgroundColour(n,self.expert)
         n+=1

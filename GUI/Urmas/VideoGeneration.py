@@ -21,6 +21,7 @@
  (at your option) any later version.
 
  This program is distributed in the hope that it will be useful,
+ This program is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
@@ -217,14 +218,16 @@ class VideoGeneration(wx.Panel):
         Logging.info("Pattern for files = ",pattern,kw="animator")
         
         #frameRate = int(self.frameRate.GetValue())
-        frameRate=float(self.frameRate.GetValue())
+        #frameRate=float(self.frameRate.GetValue())
+        frameRate=self.fps
         codec=self.outputFormat.GetSelection()    
         vcodec,ext = self.outputCodecs[codec]        
-        if self.needpad and frameRate not in [12,24]:
+        if self.needpad and frameRate not in [12.5,25]:
             scodec=self.outputFormats[1][codec]
-            if frameRate<12:frameRate=12
-            else:frameRate=24
-            Dialogs.showmessage(self,"For the code you've selected (%s), the target frame rate must be either 12 or 24. %d will be used."%(scodec,frameRate),"Bad framerate")
+            #if frameRate<12.5:frameRate=12
+            #else:frameRate=24
+            frameRate=25
+            Dialogs.showmessage(self,"For the code you've selected (%s), the target frame rate must be either 12.5 or 25. %d will be used."%(scodec,frameRate),"Bad framerate")
 #        try:
 #            x,y=self.visualizer.getCurrentMode().GetRenderWindow().GetSize()
 #            print "Render window size =",x,y
@@ -236,12 +239,13 @@ class VideoGeneration(wx.Panel):
         x,y=size
         ffmpegs={"linux":"ffmpeg","win":"bin\\ffmpeg.exe","darwin":"bin/ffmpeg.osx"}
         ffmpeg="ffmpeg"
+        quality=self.qualitySlider.GetValue()
         for i in ffmpegs.keys():
             if i in sys.platform:
                 ffmpeg=ffmpegs[i]
                 break
         Logging.info("Using ffmpeg %s"%ffmpeg,kw="animator")
-        commandLine="%s -b 8192 -r %.2f -s %dx%d -i \"%s\" -vcodec %s \"%s\""%(ffmpeg,frameRate,x,y,pattern,vcodec,file)
+        commandLine="%s -qscale %d -b 8192 -r %.2f -s %dx%d -i \"%s\" -vcodec %s \"%s\""%(ffmpeg,quality,frameRate,x,y,pattern,vcodec,file)
         Logging.info("Command line for ffmpeg=",commandLine,kw="animator")
         os.system(commandLine)
         if os.path.exists(file):
@@ -307,11 +311,12 @@ class VideoGeneration(wx.Panel):
         
         self.totalFramesLabel=wx.StaticText(self,-1,"Frames:")
         self.durationLabel=wx.StaticText(self,-1,"Duration:")
-        self.fpsLabel=wx.StaticText(self,-1,"Frames:\t%.2f / s"%self.fps)
+        #self.fpsLabel=wx.StaticText(self,-1,"Frames:\t%.2f / s"%self.fps)
         #self.padfpsLabel=wx.StaticText(self,-1,"Padding:\t%.2f / s"%(24-self.fps))
 
-        self.totalFrames=wx.TextCtrl(self,-1,"%d"%self.frames,size=(50,-1),style=wx.TE_PROCESS_ENTER)
-        self.totalFrames.Bind(wx.EVT_TEXT,self.onUpdateFrames)
+        #self.totalFrames=wx.TextCtrl(self,-1,"%d"%self.frames,size=(50,-1),style=wx.TE_PROCESS_ENTER)
+        self.totalFrames=wx.StaticText(self,-1,"%d"%self.frames,size=(50,-1))
+        #self.totalFrames.Bind(wx.EVT_TEXT,self.onUpdateFrames)
         
         t=self.dur
         h=t/3600
@@ -331,10 +336,10 @@ class VideoGeneration(wx.Panel):
         self.frameSize = wx.StaticText(self,-1,"%d x %d"%self.size)
 
         self.frameRateLbl=wx.StaticText(self,-1,"Frame rate:")
-        self.frameRate = wx.TextCtrl(self,-1,"%.2f"%self.fps)
-        #self.padFrames = wx.CheckBox(self,-1,"Duplicate frames")
-        #self.padFrames.Bind(wx.EVT_CHECKBOX,self.onPadFrames)
-        #self.padFrames.SetValue(1)
+        self.frameRate = wx.StaticText(self,-1,"%.2f"%self.fps)
+        
+        self.qualityLbl=wx.StaticText(self,-1,"Encoding quality (1 = best, 31 = worst)")
+        self.qualitySlider = wx.Slider(self,-1,value=1,minValue=1,maxValue=31,style=wx.SL_HORIZONTAL|wx.SL_LABELS|wx.SL_AUTOTICKS,size=(250,-1))
         n=0
         self.outputsizer.Add(self.formatLabel,(n,0))
         self.outputsizer.Add(self.formatMenu,(n,1))
@@ -356,8 +361,11 @@ class VideoGeneration(wx.Panel):
         self.outputsizer.Add(self.totalFramesLabel,(n,0))
         self.outputsizer.Add(self.totalFrames,(n,1))
         n+=1
-        self.outputsizer.Add(self.fpsLabel,(n,0))
+        self.outputsizer.Add(self.qualityLbl,(n,0),span=(1,2))
         n+=1
+        self.outputsizer.Add(self.qualitySlider,(n,0),span=(1,2))
+        #self.outputsizer.Add(self.fpsLabel,(n,0))
+        #n+=1
         #self.outputsizer.Add(self.padfpsLabel,(n,0))
         
         self.mainsizer.Add(self.outputstaticbox,(0,0))
@@ -435,8 +443,8 @@ class VideoGeneration(wx.Panel):
             self.frames = val
             self.fps = self.frames / float(self.dur)
             Logging.info("frames per second = ",self.fps,kw="animator")
-            self.fpsLabel.SetLabel("Rendered frames:\t%.3f / second"%self.fps)
-            self.frameRate.SetValue("%.2f"%self.fps)
+            #self.fpsLabel.SetLabel("Rendered frames:\t%.3f / second"%self.fps)
+            self.frameRate.SetLabel("%.2f"%self.fps)
             self.onPadFrames(None)
         except:
             return

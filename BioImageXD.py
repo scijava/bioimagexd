@@ -136,7 +136,7 @@ if __name__=='__main__':
 
         # If the main application is frozen, then we redirect logging
         # to  a log file
-        if "tofile" in sys.argv or main_is_frozen():
+        if "tofile" in sys.argv: # or main_is_frozen():
             import time
             logfile="%s.log"%(time.strftime("%d.%m.%y"))
             f=open(logfile,"w")

@@ -49,6 +49,7 @@ vtkImageAutoThresholdColocalization::vtkImageAutoThresholdColocalization()
     IncludeZeroPixels = 0;
     ConstantVoxelValue = 0;
     LowerThresholdCh1 = LowerThresholdCh2 = -1;
+    UpperThresholdCh1 = UpperThresholdCh2 = 255;
     vtkImageData *plot;
     plot = vtkImageData::New();
     plot->ReleaseData();
@@ -119,6 +120,10 @@ template < class T >
     int LowerThresholdCh1 = self->GetLowerThresholdCh1();
     int LowerThresholdCh2 = self->GetLowerThresholdCh2();
          
+    int UpperThresholdCh1 = self->GetUpperThresholdCh1();
+    int UpperThresholdCh2 = self->GetUpperThresholdCh2();
+    
+         
     int ch1, ch2, ch3;
     double pearsons1, pearsons2, pearsons3;
     double r2 = 1;
@@ -161,6 +166,8 @@ template < class T >
     double ch1threshmax = 255;
     double ch2threshmin = 0;
     double ch2threshmax = 255;
+        
+    
 
     double bBest = 0;
     double mBest = 0;
@@ -340,6 +347,8 @@ template < class T >
                     ch1 = (int) *inPtr1++;
                     ch2 = (int) *inPtr2++;
 
+                    // Calculate pearson's for voxels below
+                    // lower threshold
                     if ((ch1 < (ch1threshmax))
                         || (ch2 < (ch2threshmax))) {
                         if (ch1 + ch2 == 0)
@@ -418,6 +427,8 @@ template < class T >
     ch1threshmax = round((ch1BestThresh));
     ch2threshmax =
         round(((double) ch1BestThresh * (double) m) + (double) b);
+    
+    // If the user has specified the thresholds, then simply use them
     if(LowerThresholdCh1 >= 0) {
         ch1threshmax = LowerThresholdCh1;
     }
@@ -511,19 +522,19 @@ template < class T >
                     mCh1coloc = mCh1coloc + ch1;
                 }
 
-                if ((double) ch2 >= ch2threshmax) {
+                if ((double) ch2 >= ch2threshmax && (double)ch2 <= UpperThresholdCh2) {
                     Nch2gtT++;
                     sumCh2gtT = sumCh2gtT + ch2;
                     colocX = colocX + ch1;
                 }
-                if ((double) ch1 >= ch1threshmax) {
+                if ((double) ch1 >= ch1threshmax && (double)ch1 <= UpperThresholdCh1) {
                     Nch1gtT++;
                     sumCh1gtT = sumCh1gtT + ch1;
                     colocY = colocY + ch2;
                 }
                 //printf("ch1=%d,ch2=%d,ch1threshmax=%f,ch2threshmax=%f\n",ch1,ch2,ch1threshmax,ch2threshmax);
-                if (((double) ch1 > ch1threshmax)
-                    && ((double) ch2 > ch2threshmax)) {
+                if (((double) ch1 > ch1threshmax  && (double)ch1 <= UpperThresholdCh1)
+                    && ((double) ch2 > ch2threshmax)  && (double)ch2 <= UpperThresholdCh2) {
                     sumColocCh1 = sumColocCh1 + ch1;
                     sumColocCh2 = sumColocCh2 + ch2;
                     Ncoloc++;

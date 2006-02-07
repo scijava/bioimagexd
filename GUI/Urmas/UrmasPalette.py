@@ -69,7 +69,7 @@ class UrmasDropTarget(wx.PyDropTarget):
         Created: 13.04.2005, KP
         Description: Track mouse movement for reporting to target
         """
-        print "OnLeave"
+        
         self.target.OnDragLeave()
         
     def OnDrop(self,x,y):
@@ -78,7 +78,7 @@ class UrmasDropTarget(wx.PyDropTarget):
         Created: 12.04.2005, KP
         Description: Return true to accept drop
         """
-        print "Got drop at %d,%d"%(x,y)
+        
         self.target.OnDragLeave()
         return 1
         
@@ -88,7 +88,7 @@ class UrmasDropTarget(wx.PyDropTarget):
         Created: 12.04.2005, KP
         Description: 
         """
-        print "OnDragOver(%d,%d)"%(x,y)
+        
         self.target.OnDragOver(x,y,d)
         return wx.DragCopy
         
@@ -98,7 +98,7 @@ class UrmasDropTarget(wx.PyDropTarget):
         Created: 12.04.2005, KP
         Description: Get the dropped data
         """
-        print "OnData"
+        
         if self.GetData():
             data=self.data.GetData()
             #print "Got at %d,%d: %s"%(x,y,data)
@@ -267,7 +267,7 @@ class UrmasPalette(wx.Panel):
         Created: 2.09.2005, KP
         Description: A method for dragging a keyframe track from palette
         """
-        print "onToolNewKeyframeTrack"
+        
         if event.Dragging():
             self.dropItem("Track","Keyframe")
         event.Skip()
@@ -278,7 +278,7 @@ class UrmasPalette(wx.Panel):
         Created: 2.09.2005, KP
         Description: A method for dragging a spline track from palette
         """
-        print "onToolNewSplineTrack"
+        
         if event.Dragging():
             self.dropItem("Track","Spline")
         event.Skip()
@@ -343,33 +343,14 @@ class UrmasPalette(wx.Panel):
         Created: 06.04.2005, KP
         Description: A method that creates a DnD of specified type
         """
-        print "Dropping data of type %s:%s"%(datatype,indata)
+        
         data = wx.CustomDataObject(wx.CustomDataFormat(datatype))
         data.SetData(indata)
-        print "Creating dropsource"
+        
         self.dropsource = wx.DropSource(self)
         self.dropsource.SetData(data)
-        print "Doing drag and drop"
+        
         res = self.dropsource.DoDragDrop(wx.Drag_AllowMove)
-        print "Result=",res
+        
         return res
 
-    def fooDestroy(self):
-        self.Show(0)
-        #print "Destroying static bitmaps..."
-        for i in self.sbmps.values():
-            i.Show(0)
-            i.Destroy()
-        print "Destroying panels..."
-        #for i in self.panels.values():
-        #    i.Show(0)
-        #    self.sizer.Detach(i)
-        #    print "Destroying ",i
-        #    #i.Destroy()
-        
-        print "Destroying palette..."
-        if self.dropsource:
-            self.dropsource.Destroy()
-        print "Now destroying..."
-        wx.Panel.Destroy(self)
-        

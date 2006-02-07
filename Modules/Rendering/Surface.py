@@ -114,6 +114,12 @@ class SurfaceModule(VisualizationModule):
         self.decimateLevel=level
         self.preserveTopology=preserveTopology
         self.decimate.SetPreserveTopology(preserveTopology)
+        if not preserveTopology:
+            self.decimate.SplittingOn()
+            self.decimate.BoundaryVertexDeletionOn()
+        else:
+            self.decimate.SplittingOff()
+            self.decimate.BoundaryVertexDeletionOff()
         self.decimate.SetTargetReduction(level/100.0)
         
     def setDataUnit(self,dataunit):
