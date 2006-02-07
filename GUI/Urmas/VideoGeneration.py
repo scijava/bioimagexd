@@ -67,6 +67,7 @@ class VideoGeneration(wx.Panel):
         self.visualizer.getCurrentMode().lockSliderPanel(1)
         
         self.rendering = 0
+        self.oldformat=None
         self.abort = 0
         self.parent = parent
         self.size = self.control.getFrameSize()
@@ -81,6 +82,8 @@ class VideoGeneration(wx.Panel):
                               "QuickTime MPEG4","AVI MPEG4"]]
         self.outputCodecs = [("mpeg1video","mpg"),("mpeg2video","mpg"),("wmv1","wmv"),("wmv2","wmv"),("msmpeg4","avi"),("msmpeg4v2","avi"),("mpeg4","mov"),("mpeg4","avi")]
         self.padding = [1,1,0,0,0,0]
+        self.presets=[(0,0,0),((720,576),(25),6000),((720,480),(29.97),6000)]
+        self.targets=["","pal-dvd","ntsc-dvd"]
         self.needpad=0
         self.mainsizer=wx.GridBagSizer()
         self.generateGUI()
@@ -161,7 +164,11 @@ class VideoGeneration(wx.Panel):
         self.file=file
         self.size=size
         self.path=path
-
+        
+        
+        sel=self.preset.GetSelection()
+        if sel != 0:
+            (x,y),fps,br=self.presets[sel]
         
         Logging.info("Will set render window to ",size,kw="animator")
         self.visualizer.setRenderWindowSize((x,y),self.parent)
@@ -236,16 +243,26 @@ class VideoGeneration(wx.Panel):
 #            print "x,y=",x,y
 #        except:
 #            x,y=512,512
+
         x,y=size
         ffmpegs={"linux":"ffmpeg","win":"bin\\ffmpeg.exe","darwin":"bin/ffmpeg.osx"}
         ffmpeg="ffmpeg"
         quality=self.qualitySlider.GetValue()
+
+        target=""
+        sel=self.preset.GetSelection()
+        if sel != 0:
+            target=self.targets[sel]
+            (x,y),fps,br=self.presets[sel]
         for i in ffmpegs.keys():
             if i in sys.platform:
                 ffmpeg=ffmpegs[i]
                 break
-        Logging.info("Using ffmpeg %s"%ffmpeg,kw="animator")
-        commandLine="%s -qscale %d -b 8192 -r %.2f -s %dx%d -i \"%s\" -vcodec %s \"%s\""%(ffmpeg,quality,frameRate,x,y,pattern,vcodec,file)
+        if not target:
+            commandLine="%s -qscale %d -b 8192 -r %.2f -s %dx%d -i \"%s\" -vcodec %s \"%s\""%(ffmpeg,quality,frameRate,x,y,pattern,vcodec,file)
+        else:
+            
+            commandLine="%s -qscale %d -s %dx%d -i \"%s\" -target %s \"%s\""%(ffmpeg,quality,x,y,pattern,target,file)
         Logging.info("Command line for ffmpeg=",commandLine,kw="animator")
         os.system(commandLine)
         if os.path.exists(file):
@@ -291,7 +308,36 @@ class VideoGeneration(wx.Panel):
             self.needpad=self.padding[codec]
             #self.padFrames.Enable(self.needpad)
             self.onPadFrames(None)
-
+            
+    def onUpdatePreset(self,event):
+        """
+        Method: onUpdatePreset
+        Created: 07.02.2006, KP
+        Description: Update the GUI based on the selected preset
+        """ 
+        sel = self.preset.GetSelection()
+        flag=(sel==0)
+        self.formatMenu.Enable(flag)
+        self.outputFormat.Enable(flag)
+        
+        if not flag:
+            (x,y),fps,br=self.presets[sel]
+            oldformat1=self.formatMenu.GetStringSelection()
+            oldformat2=self.outputFormat.GetStringSelection()
+            self.oldformat = (oldformat1,oldformat2)
+            self.formatMenu.SetStringSelection("Video")
+            self.outputFormat.SetStringSelection("MPEG2")
+            self.frameRate.SetLabel("%.2f"%fps)
+            self.frameSize.SetLabel("%d x %d"%(x,y))
+        else:
+            if self.oldformat:
+                oldformat1,oldformat2=self.oldformat
+                self.formatMenu.SetStringSelection(oldformat1)
+                self.outputFormat.SetStringSelection(oldformat2)
+                self.frameRate.SetLabel("%.2f"%self.fps)
+                self.frameSize.SetLabel("%d x %d"%self.size)
+            
+            
     def generateGUI(self):
         """
         Method: generateGUI
@@ -340,7 +386,17 @@ class VideoGeneration(wx.Panel):
         
         self.qualityLbl=wx.StaticText(self,-1,"Encoding quality (1 = best, 31 = worst)")
         self.qualitySlider = wx.Slider(self,-1,value=1,minValue=1,maxValue=31,style=wx.SL_HORIZONTAL|wx.SL_LABELS|wx.SL_AUTOTICKS,size=(250,-1))
+        
+        self.presetLbl = wx.StaticText(self,-1,"Preset encoding targets:")
+        self.preset = wx.Choice(self,-1,choices=["Use settings below","PAL-DVD","NTSC-DVD"])
+        self.preset.Bind(wx.EVT_CHOICE,self.onUpdatePreset)
+        self.preset.SetSelection(0)
         n=0
+        self.outputsizer.Add(self.presetLbl,(n,0))
+        n+=1
+        self.outputsizer.Add(self.preset,(n,0))
+        
+        n+=1
         self.outputsizer.Add(self.formatLabel,(n,0))
         self.outputsizer.Add(self.formatMenu,(n,1))
         n+=1
