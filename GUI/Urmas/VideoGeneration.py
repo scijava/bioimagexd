@@ -44,6 +44,7 @@ import Dialogs
 import platform
 import Logging
 import messenger
+import math
 
 
 class VideoGeneration(wx.Panel):
@@ -248,7 +249,10 @@ class VideoGeneration(wx.Panel):
         ffmpegs={"linux":"ffmpeg","win":"bin\\ffmpeg.exe","darwin":"bin/ffmpeg.osx"}
         ffmpeg="ffmpeg"
         quality=self.qualitySlider.GetValue()
-
+        
+        quality =math.ceil(1+(3.333333*(quality-1)))
+        
+        
         target=""
         sel=self.preset.GetSelection()
         if sel != 0:
@@ -384,8 +388,8 @@ class VideoGeneration(wx.Panel):
         self.frameRateLbl=wx.StaticText(self,-1,"Frame rate:")
         self.frameRate = wx.StaticText(self,-1,"%.2f"%self.fps)
         
-        self.qualityLbl=wx.StaticText(self,-1,"Encoding quality (1 = best, 31 = worst)")
-        self.qualitySlider = wx.Slider(self,-1,value=1,minValue=1,maxValue=31,style=wx.SL_HORIZONTAL|wx.SL_LABELS|wx.SL_AUTOTICKS,size=(250,-1))
+        self.qualityLbl=wx.StaticText(self,-1,"Encoding quality (1 = worst, 10 = best)")
+        self.qualitySlider = wx.Slider(self,-1,value=10,minValue=1,maxValue=10,style=wx.SL_HORIZONTAL|wx.SL_LABELS|wx.SL_AUTOTICKS,size=(250,-1))
         
         self.presetLbl = wx.StaticText(self,-1,"Preset encoding targets:")
         self.preset = wx.Choice(self,-1,choices=["Use settings below","PAL-DVD","NTSC-DVD"])
