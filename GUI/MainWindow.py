@@ -30,7 +30,7 @@ __author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.71 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
-VERSION="0.6beta"
+VERSION="0.9.0 beta"
 
 import os.path,os,types
 import wx
@@ -1015,7 +1015,7 @@ class MainWindow(wx.Frame):
             try:
                 # We read the Key SettingsOnly, and check it's value.
                 settingsOnly = self.parser.get("SettingsOnly", "SettingsOnly")
-            except ConfigParser.NoOptionError:
+            except (NoOptionError,NoSectionError):
                 pass
             print "\n\n*** SETTINGS ONLY: ", settingsOnly
             if settingsOnly.lower()=="true":

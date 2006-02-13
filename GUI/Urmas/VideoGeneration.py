@@ -249,7 +249,7 @@ class VideoGeneration(wx.Panel):
         ffmpegs={"linux":"ffmpeg","win":"bin\\ffmpeg.exe","darwin":"bin/ffmpeg.osx"}
         ffmpeg="ffmpeg"
         quality=self.qualitySlider.GetValue()
-        
+        quality=11-quality
         quality =math.ceil(1+(3.333333*(quality-1)))
         
         
