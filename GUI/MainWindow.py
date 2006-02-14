@@ -49,6 +49,9 @@ import  wx.py as py
 import SettingsWindow
 import ImportDialog
 import ExportDialog
+import ScriptEditor
+import UndoListBox
+
 import RenderingInterface
 import Configuration
 
@@ -63,10 +66,15 @@ import AboutDialog
 from DataUnit import *
 from DataSource import *
 
+import Command # Module for classes that implement the Command design pattern
 import Modules
-import Urmas
+import Urmas # The animator, Unified Rendering / Animator
 import UIElements
 import ResampleDialog
+
+import scripting
+
+
 class MainWindow(wx.Frame):
     """
     Class: MainWindow
@@ -93,6 +101,8 @@ class MainWindow(wx.Frame):
         self.progressTimeStamp=0
         self.progressObject=None
         
+        self.commands={}
+        
         self.help=None
         self.statusbar=None
         self.progress=None
@@ -100,6 +110,7 @@ class MainWindow(wx.Frame):
         self.visualizer=None
         self.nodes_to_be_added=[]
         self.app=app
+        self.cmdhistory = None
         self.dataunits={}
         self.paths={}
         self.currentVisualizationWindow=None
@@ -211,7 +222,48 @@ class MainWindow(wx.Frame):
         messenger.connect(None,"load_dataunit",self.onMenuOpen)
         messenger.connect(None,"view_help",self.viewHelp)
         messenger.connect(None,"delete_dataset",self.onDeleteDataset)
+        messenger.connect(None,"execute_command",self.onExecuteCommand)        
+        
         wx.CallAfter(self.showTip)
+        
+    def onMenuUndo(self,evt):
+        """
+        Method: onMenuUndo
+        Created: 13.02.2006, KP
+        Description: Undo a previous command
+        """    
+        cmd=self.menuManager.getLastCommand()
+        if cmd.canUndo():
+            cmd.undo()
+            self.menuManager.setUndoedCommand(cmd)
+            self.menuManager.enable(MenuManager.ID_REDO)
+        
+    def onMenuRedo(self,evt):
+        """
+        Method: onMenuRedo
+        Created: 13.02.2006, KP
+        Description: Redo a previously undo'd action
+        """    
+        cmd=self.menuManager.getUndoedCommand()        
+        cmd.run()
+        self.menuManager.disable(MenuManager.ID_REDO)
+        self.menuManager.enable(MenuManager.ID_UNDO)
+        
+    def onExecuteCommand(self,obj,evt,command,undo=0):
+        """
+        Method: onExecuteCommand
+        Created: 13.02.2006, KP
+        Description: A command was executed
+        """    
+        if not undo:
+            if command.canUndo():
+                undolbl="Undo %s..."%command.getCategory()
+                self.menuManager.menus["edit"].SetLabel(MenuManager.ID_UNDO,undolbl)
+        else:
+            redolbl="Redo %s..."%command.getCategory()
+            self.menuManager.menus["edit"].SetLabel(MenuManager.ID_REDO,redolbl)
+            self.menuManager.menus["edit"].SetLabel(MenuManager.ID_UNDO,"Undo...")
+        self.menuManager.addCommand(command)
         
     def onDeleteDataset(self,obj,evt,arg):
         """
@@ -399,6 +451,7 @@ class MainWindow(wx.Frame):
             if self.visualizer:
                 self.visualizer.in_vtk=1        
             wx.SafeYield(None,1)
+            
     def updateVoxelInfo(self,obj,event,x,y,z,r,g,b,a,ctf):
         """
         Method: updateVoxelInfo
@@ -426,6 +479,7 @@ class MainWindow(wx.Frame):
         self.colorLbl.setColor(fg,bg)
         wx.GetApp().Yield(1)
         #wx.SafeYield()    
+        
     def createToolBar(self):
         """
         Method: createToolBar()
@@ -532,7 +586,7 @@ class MainWindow(wx.Frame):
         tb.DoAddTool(MenuManager.ID_VIS_ANIMATOR,"Animator",bmp,kind=wx.ITEM_CHECK,shortHelp="Render the dataset using Animator")                
         
         wx.EVT_TOOL(self,MenuManager.ID_VIS_ANIMATOR,self.onMenuVisualizer)
-
+        
         tb.AddSeparator()
         self.cBtn = wx.ContextHelpButton(tb,MenuManager.CONTEXT_HELP)
         tb.AddControl(self.cBtn)
@@ -562,11 +616,19 @@ class MainWindow(wx.Frame):
         mgr.setMenuBar(self.menu)
         # We create the menu objects
         mgr.createMenu("file","&File")
+        mgr.createMenu("edit","&Edit")
         mgr.createMenu("settings","&Settings")
         mgr.createMenu("processing","&Processing")
         mgr.createMenu("visualization","&Visualization")
         mgr.createMenu("view","V&iew")
         mgr.createMenu("help","&Help")
+        
+        mgr.addMenuItem("edit",MenuManager.ID_UNDO,"&Undo\tCtrl-Z",self.onMenuUndo)
+        mgr.addMenuItem("edit",MenuManager.ID_REDO,"&Redo\tShift-Ctrl-Z",self.onMenuRedo)
+        mgr.addSeparator("edit")
+        mgr.addMenuItem("edit",MenuManager.ID_COMMAND_HISTORY,"Command history",self.onShowCommandHistory)
+        
+        mgr.disable(MenuManager.ID_REDO)
       
         mgr.addMenuItem("settings",MenuManager.ID_PREFERENCES,"&Preferences...",self.onMenuPreferences)
     
@@ -612,6 +674,9 @@ class MainWindow(wx.Frame):
         mgr.addMenuItem("visualization",MenuManager.ID_RENDERWIN,"&Render window","Configure Render Window")
 #        mgr.addMenuItem("visualization",MenuManager.ID_RELOAD,"Re-&Load Modules","Reload the visualization modules")
         
+        mgr.addSeparator("visualization")
+        mgr.addMenuItem("visualization",MenuManager.ID_IMMEDIATE_RENDER,"&Immediate updating","Toggle immediate updating of rendering (when settings that affect the visualization change) on or off.",self.onMenuImmediateRender,check=1,checked=1)
+        
         mgr.disable(MenuManager.ID_LIGHTS)
         mgr.disable(MenuManager.ID_RENDERWIN)
         #mgr.disable(MenuManager.ID_RELOAD)
@@ -630,7 +695,8 @@ class MainWindow(wx.Frame):
         mgr.addSeparator("view")
         mgr.addMenuItem("view",MenuManager.ID_VIEW_TOOL_NAMES,"&Show tool names","Show or hide the names of the items on the toolbar",self.toggleToolNames,check=1)
         mgr.addSeparator("view")
-        mgr.addMenuItem("view",MenuManager.ID_VIEW_SHELL,"&Show Python Shell","Show a python interpreter",self.onMenuToggleVisibility,check=1,checked=0)
+        mgr.addMenuItem("view",MenuManager.ID_VIEW_SHELL,"Show Python &Shell","Show a python interpreter",self.onMenuToggleVisibility,check=1,checked=0)
+        mgr.addMenuItem("view",MenuManager.ID_VIEW_SCRIPTEDIT,"Show Script &Editor","Show the script editor",self.onMenuShowScriptEditor)
         mgr.disable(MenuManager.ID_VIEW_TOOLBAR)
         mgr.disable(MenuManager.ID_VIEW_HISTOGRAM)
 
@@ -680,6 +746,49 @@ class MainWindow(wx.Frame):
         self.showToolNames=evt.IsChecked() 
         self.GetToolBar().Destroy()
         self.createToolBar()
+  
+    def onShowCommandHistory(self,evt):
+        """
+        Method: onShowCommandHistory
+        Created: 13.02.2006, KP
+        Description: Show the command history
+        """
+        # Use a clever contraption in where if we're called from the menu
+        # then we create a command object that will call us, but with an
+        # empty argument that will trigger the actual dialog to show
+        if evt:
+            if "show_history" not in self.commands:
+                do_cmd = "scripting.mainwin.onShowCommandHistory(None)"
+                undo_cmd="scripting.mainwin.cmdhistory.Destroy()\nscripting.mainwin.cmdhistory=None"
+                
+                cmd=Command.Command(Command.MENU_CMD,None,None,do_cmd,undo_cmd,desc="Show command history")
+                self.commands["show_history"]=cmd
+            self.commands["show_history"].run()
+        else:
+            if not self.cmdhistory:
+                self.cmdhistory=UndoListBox.CommandHistory(self,self.menuManager)
+            
+            self.cmdhistory.update()
+            self.cmdhistory.Show()
+            
+    def onMenuImmediateRender(self,evt):
+        """
+        Method: onMenuImmediateRender
+        Created: 14.02.2006, KP
+        Description: Toggle immediate render updates on or off
+        """                        
+        flag=evt.IsChecked()
+        self.visualizer.setImmediateRender(flag)
+        
+    def onMenuShowScriptEditor(self,evt):
+        """
+        Method: onMenuShowScriptEditor
+        Created: 13.02.2006, KP
+        Description: Show the script editor
+        """                
+        self.scriptEditor = ScriptEditor.ScriptEditorFrame(self)
+        self.scriptEditor.Show()
+        
         
     def onMenuHideInfo(self,evt):
         """
@@ -693,6 +802,7 @@ class MainWindow(wx.Frame):
         self.infoWin.SetDefaultSize((0,0))
         self.OnSize(None)
         self.visualizer.OnSize(None)        
+        
     def onMenuResampleData(self,evt):
         """
         Method: onMenuResampleData
@@ -795,8 +905,20 @@ class MainWindow(wx.Frame):
         Created: 16.03.2005, KP
         Description: Callback function for menu item "Import"
         """
-        self.importdlg=ImportDialog.ImportDialog(self)
-        self.importdlg.ShowModal()
+        if not "show_import" in self.commands:
+            import_code="""
+    importdlg = ImportDialog.ImportDialog(scripting.mainwin)
+    importdlg.ShowModal()
+    """
+            
+            #import_code=import_code.replace("self","scripting.mainwin")
+        
+            command = Command.Command(Command.MENU_CMD,None,None,import_code,"",imports=["ImportDialog"],desc="Show import dialog")
+            self.commands["show_import"]=command
+        self.commands["show_import"].run()
+        #self.importdlg=ImportDialog.ImportDialog(self)
+        #self.importdlg.ShowModal()
+        
         
     def onMenuExport(self,evt):
         """
@@ -815,9 +937,9 @@ class MainWindow(wx.Frame):
         imageMode = 0
         if eid == MenuManager.ID_EXPORT_IMAGES:
             imageMode = 1
-        self.importdlg=ExportDialog.ExportDialog(self,selectedFiles[0],imageMode)
+        self.exportdlg=ExportDialog.ExportDialog(self,selectedFiles[0],imageMode)
         
-        self.importdlg.ShowModal()
+        self.exportdlg.ShowModal()
         
     
     def onMenuPreferences(self,evt):
@@ -880,6 +1002,9 @@ class MainWindow(wx.Frame):
 
         # If a visualizer is already running, just switch the mode
         selectedFiles=self.tree.getSelectedDataUnits()
+        if not len(selectedFiles):
+            Dialogs.showerror(self,"You need to select a dataset to load in the visualizer.","Please select a dataset")
+            return
         dataunit = selectedFiles[0]
         if self.visualizer:
 #            if not self.visualizer.dataUnit:
@@ -987,7 +1112,10 @@ class MainWindow(wx.Frame):
             sep=askfile.split(".")[-1]
             fname=os.path.split(askfile)[-1]
             self.SetStatusText("Loading "+fname+"...")
-            self.createDataUnit(fname,askfile)
+            do_cmd="scripting.mainwin.createDataUnit(\"%s\",\"%s\")"%(fname,askfile)
+            cmd=Command.Command(Command.OPEN_CMD,None,None,do_cmd,"",desc="Load dataset %s"%fname)
+            cmd.run()
+            #self.createDataUnit(fname,askfile)
         self.SetStatusText("Done.")
 
     def createDataUnit(self,name,path):
@@ -1327,7 +1455,7 @@ class MainWindow(wx.Frame):
         """
         Method: quitApp()
         Created: 03.11.2004, KP
-        Description: Quits the application
+        Description: Possibly queries the user before quitting, then quits
         """
         conf = Configuration.getConfiguration()
         
@@ -1342,11 +1470,13 @@ class MainWindow(wx.Frame):
             dlg.Destroy()            
             if answer != wx.ID_OK:
                 return
-            
+            self.exitApp()
         self.visualizer.enable(0)        
         
         self.visualizer.closeVisualizer()
         
         self.Destroy()
-        
+            
 
+        
+# 

@@ -65,6 +65,8 @@ import csv
 
 
 import Logging
+import scripting
+
 
 import glob
 import Configuration
@@ -111,9 +113,13 @@ class LSMApplication(wx.App):
             pass        
         provider = wx.SimpleHelpProvider()
         wx.HelpProvider_Set(provider)
-    
+        
         self.mainwin=GUI.MainWindow.MainWindow(None,-1,self,splash)
         self.mainwin.config=wx.Config("BioImageXD", style=wx.CONFIG_USE_LOCAL_FILE)        
+        
+        scripting.app = self
+        scripting.mainwin = self.mainwin
+        
         self.mainwin.Show(True)
         self.SetTopWindow(self.mainwin)
         return True

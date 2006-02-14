@@ -78,6 +78,7 @@ class Visualizer:
         visualizerInstance=self
         self.currSliderPanel = None
         self.delayed=0
+        self.immediateRender=1
         self.oldClientSize=0
         self.updateFactor = 0.001
         self.depthT=0
@@ -114,6 +115,7 @@ class Visualizer:
         self.timepoint = 0
         self.preload=0
         self.processedMode = 0
+        self.maxTimepoint = 0
         self.modes=Modules.DynamicLoader.getVisualizationModes()
         self.instances={}
         for key in self.modes.keys():
@@ -1105,6 +1107,14 @@ class Visualizer:
 
         self.OnSize(None)
             
+    def setImmediateRender(self,flag):
+        """
+        Method: setImmediateRender
+        Created: 14.02.2006, KP
+        Description: Toggle immediate rendering on or off
+        """
+        self.immediateRender = flag
+            
     def updateRendering(self,event=None,object=None,delay=0):
         """
         Method: updateRendering
@@ -1114,10 +1124,19 @@ class Visualizer:
         if not self.enabled:
             Logging.info("Disabled, will not update rendering",kw="visualizer")
             return
+            
+        print "immediate render=",self.immediateRender,"delay=",delay
+        if not self.immediateRender and delay>=0:
+            Logging.info("Will not update rendering on other than apply button",kw="visualizer")
+            return
+            
         Logging.info("Updating rendering",kw="visualizer")
+        imm=1
         # If the visualization mode doesn't want immediate rendering
         # then we will delay a bit with this
-        imm=self.currModeModule.getImmediateRendering()
+        # If the delay is negative, then rendering will be immediate
+        if delay>=0:
+            imm=self.currModeModule.getImmediateRendering()
         delay = self.currModeModule.getRenderingDelay()
         Logging.info("Immediate rendering=",imm,"delay=",delay,kw="visualizer")
         if not imm:

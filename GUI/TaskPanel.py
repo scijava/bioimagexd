@@ -346,7 +346,7 @@ class TaskPanel(scrolled.ScrolledPanel):
                      that wish to update the preview
         """
         Logging.info("Sending preview update event",kw="event")
-        messenger.send(None,"data_changed",0)
+        messenger.send(None,"data_changed",-1)
 
 
     def loadSettingsCallback(self,event):

@@ -31,6 +31,7 @@ __version__ = "$Revision: 1.71 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 import wx
+import messenger
     
 ID_OPEN             =100
 ID_QUIT             =101
@@ -150,7 +151,22 @@ ID_ITEM_ORDER       =201
 ID_ITEM_ROTATE_CW   =202
 ID_ITEM_ROTATE_CCW  =203
 ID_FIT_TRACK_RATIO  =204
-ID_DELETE_ITEM     =205
+ID_DELETE_ITEM      =205
+    
+ID_VIEW_SCRIPTEDIT  =206
+ID_RECORD_SCRIPT    =207
+ID_STOP_RECORD      =208
+ID_RUN_SCRIPT       =209
+
+ID_UNDO             =210
+ID_REDO             =211
+ID_COMMAND_HISTORY  =212
+
+ID_SAVE_SCRIPT      =213
+ID_LOAD_SCRIPT      =214
+ID_CLOSE_SCRIPTEDITOR=215
+
+ID_IMMEDIATE_RENDER =216
 
 class MenuManager:
     """
@@ -180,7 +196,54 @@ class MenuManager:
         self.mainToolbar=None
         self.toolIds=[]
         self.tools={}
+        
+        
+        self.commands = []
+        
         self.showToolNames=0
+        
+    def getCommands(self):
+        """
+        Method: getCommands
+        Created: 13.02.2006, KP
+        Description: Return the list of commands
+        """     
+        return self.commands
+        
+        
+    def addCommand(self,cmd):
+        """
+        Method: addCommand
+        Created: 13.02.2006, KP
+        Description: Add a command to the list of executed commands
+        """    
+        if cmd not in self.commands:
+            self.commands.append(cmd)
+        
+    def getLastCommand(self):
+        """
+        Method: getLastCommand
+        Created: 13.02.2006, KP
+        Description: Return the last executed command
+        """        
+        return self.commands[-1]
+        
+    def setUndoedCommand(self,cmd):
+        """
+        Method: setUndoedCommand
+        Created: 13.02.2006, KP
+        Description: Set the last command that was undoed
+        """        
+        self.undoCmd=cmd
+    
+    def getUndoedCommand(self):
+        """
+        Method: getUndoedCommand
+        Created: 13.02.2006, KP
+        Description: Return the last undoed command
+        """        
+        return self.undoCmd
+        
         
     def setMenuBar(self,menubar):
         """
