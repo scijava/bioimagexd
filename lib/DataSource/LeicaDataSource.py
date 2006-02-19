@@ -248,6 +248,7 @@ class LeicaExperiment:
         Created: 12.04.2005, KP
         Description: Sets the file name to be opened
         """
+        print "File name = ",filename
         self.filename=filename
         if filename:
             self.path=os.path.dirname(filename)
@@ -259,6 +260,7 @@ class LeicaExperiment:
         Created: 12.04.2005, KP
         Description: Read the given file
         """    
+        print "Trying to read ",self.filename
         self.CreateExpDataStruct(self.filename)
         
     def GetExperiments(self):
@@ -319,7 +321,7 @@ class LeicaExperiment:
         #f=open(fn)
         
         img=Image.open(fn)
-        
+        print img,img.palette
         palette=img.palette.getdata()[1]
         r=palette[255]
         g=palette[2*256-1]
@@ -602,7 +604,7 @@ class LeicaExperiment:
             else:
                 Series_Info['Scan_Mode']=SeriesScanMode
             
-            if SeriesScanMode=='xyz' or SeriesScanMode=='xyzt':
+            if SeriesScanMode in ['xyz','xyzt']:
                 Logging.info("Scan mode is ",SeriesScanMode,kw="io")
                 #print Series_Data
                 Series_Info['NumChan']=self.GetNumChan(Series_Data)
@@ -624,7 +626,7 @@ class LeicaExperiment:
                     SeriesDataSplit=self.RE_T.split(Series_Data)
                     Series_Data=SeriesDataSplit[1]
                 else:
-                    raise "No timepoints found"
+                    #raise "No timepoints found"
                     Series_Info['Num_T']=1
                 Series_Info['Width_X']=self.GetWidth(Series_Data)
                 Series_Info['Height_Y']=self.GetHeight(Series_Data)
@@ -646,7 +648,10 @@ class LeicaExperiment:
             Series_Info=value
             Series_Name=key
             Num_T_Points=(Series_Info['Num_T'])
+            print "Creating TIFF list"
             print "Num_T_Points=",Num_T_Points
+            
+            
             TimePoints=[]
             for a in xrange(Num_T_Points): #starts at 0 and counts up to (but not including) Num_T_Points.
                 n=int(math.log(Num_T_Points))
@@ -658,10 +663,15 @@ class LeicaExperiment:
                 #TP_Name='_t'+str((a%10000)//1000)+str((a%1000)//100)+str((a%100)//10)+str((a%10)//1)
                 
                 Num_Chan=Series_Info['NumChan']
+                print "Num_Chan=",Num_Chan
                 Channels=[]
                 for b in xrange(Num_Chan):
                     File_List=[]
-                    CH_Name=('_ch'+str((b%100)//10)+str((b%10)//1))
+                    if Num_Chan>1:
+                        CH_Name=('_ch'+str((b%100)//10)+str((b%10)//1))
+                    else:
+                        print "Since only one channel, no _chXXX"
+                        CH_Name=("")
                     Num_Z_Sec=Series_Info['Number_Sections']
                     for c in xrange(Num_Z_Sec):
                         if Num_Z_Sec!=1:
@@ -702,67 +712,88 @@ class LeicaExperiment:
                 TIFFReader.RawModeOn()
                 #First read the images for a particular channel
                 ImageName=Channel[0] #Take the first tif name
-                #print "Image name='%s'"%ImageName
-                #RE_zsplit=re.compile(r'.+_z000.+',re.I)  #split the filename at the z position, exising the z-pos variable
-                #match for the file prefix
-                RE_FilePrefix=re.compile(r'.+_z',re.I) 
-                # match for files that only have _chXXX
-                RE_FileChPrefix=re.compile(r'(.+)_ch',re.I)
-                RE_FilePostfix=re.compile(r'_ch\d+.tif',re.I) #search for the end part of the file name
-                FilePrefixMatch=re.match(RE_FilePrefix,ImageName)
-                if FilePrefixMatch:
-                    ImagePrefix=string.strip(FilePrefixMatch.group(0))#we match the first part of the filename (above), then get the matched string
-                    #print "ImagePrefix (z)=",ImagePrefix
+                print "Image name='%s'"%ImageName
+                # Check to see whether the image name contains either
+                # channels or z slices at all. If not, then we can just you
+                # the filename and skip a whole bunch of processing
+                if ("_ch" in ImageName) or ("_z" in ImageName):
+                    #RE_zsplit=re.compile(r'.+_z000.+',re.I)  #split the filename at the z position, exising the z-pos variable
+                    #match for the file prefix
+                    RE_FilePrefix=re.compile(r'.+_z',re.I) 
+                    # match for files that only have _chXXX
+                    RE_FileChPrefix=re.compile(r'(.+)_ch',re.I)
+                    #search for the end part of the file name
+                    RE_FilePostfix=re.compile(r'_ch\d+.tif',re.I) 
+                    FilePrefixMatch=re.match(RE_FilePrefix,ImageName)
+                    if FilePrefixMatch:
+                        ImagePrefix=string.strip(FilePrefixMatch.group(0))#we match the first part of the filename (above), then get the matched string
+                        #print "ImagePrefix (z)=",ImagePrefix
+                    else:
+                        FilePrefixMatch=re.match(RE_FileChPrefix,ImageName)
+                        #raise "Got no ImagePrefix for ",ImageName
+                        #we match the first part of the filename (above), then get the matched string
+                        if FilePrefixMatch:
+                            ImagePrefix=string.strip(FilePrefixMatch.group(1))
+                        
+                            print FilePrefixMatch.groups()
+                            print "ImagePrefix (ch only)=",ImagePrefix                    
+                        else:
+                            print "No file prefix"
+                            ImagePrefix=""
+                    FilePostfixSearch=re.search(RE_FilePostfix,ImageName)
+                    if FilePostfixSearch:
+                        FilePostfixGroup=FilePostfixSearch.group(0)#this gives us the string found by the search
+                        print "FilePostfixGroup=",FilePostfixGroup
+                    else:
+                        print "No file postfix group"
+                        FilePostfixGroup=""
+                    if Series_Info["Number_Sections"]>1:                
+                        #fsprint stuff--string+3 int spaces padded w/ zeros+last part of name eg. "_ch00.tif"
+                        ImagePattern='%s%03i'+str(FilePostfixGroup) 
+                    else:
+                        ImagePattern='%s'+str(FilePostfixGroup)
+                    print "ImagePattern=",ImagePattern
+                    if FilePrefixMatch != None:
+                        print "self.path=",self.path
+                        
+                        ImagePrefix=os.path.join(self.path,ImagePrefix)
+                        ImagePrefix.encode("latin-1")
+                        #print "Using image# prefix='%s'"%ImagePrefix
+    
+                        #ImageReader.SetFilePrefix(ImagePrefix)
+                        TIFFReader.SetFilePrefix(ImagePrefix) 
+                    if FilePostfixSearch != None:
+                        ImagePattern.encode("latin-1")
+                        #ImageReader.SetFilePattern(ImagePattern)
+                        TIFFReader.SetFilePattern(ImagePattern)
                 else:
-                    FilePrefixMatch=re.match(RE_FileChPrefix,ImageName)
-                    #raise "Got no ImagePrefix for ",ImageName
-                    #we match the first part of the filename (above), then get the matched string
-                    ImagePrefix=string.strip(FilePrefixMatch.group(1))
-                    print FilePrefixMatch.groups()
-                    print "ImagePrefix (ch only)=",ImagePrefix                    
-                FilePostfixSearch=re.search(RE_FilePostfix,ImageName)
-                FilePostfixGroup=FilePostfixSearch.group(0)#this gives us the string found by the search
-                print "FilePostfixGroup=",FilePostfixGroup
-                if Series_Info["Number_Sections"]>1:                
-                    #fsprint stuff--string+3 int spaces padded w/ zeros+last part of name eg. "_ch00.tif"
-                    ImagePattern='%s%03i'+str(FilePostfixGroup) 
-                else:
-                    ImagePattern='%s'+str(FilePostfixGroup)
-                print "ImagePattern=",ImagePattern
-                if FilePrefixMatch != None:
-                    print "self.path=",self.path
+                    print "Using simply the ImageName",ImageName
+                    name=os.path.join(self.path,ImageName)
+                    #ImageReader.SetFileName(name)
+                    TIFFReader.SetFileName(name)
+                
+                print "Bit depth of image=",Series_Info["Bit_Depth"]
                     
-                    ImagePrefix=os.path.join(self.path,ImagePrefix)
-                    ImagePrefix.encode("latin-1")
-                    #print "Using image# prefix='%s'"%ImagePrefix
-##                    for i in ImagePrefix:
-#                        print i,ord(i)
-                    ImageReader.SetFilePrefix(ImagePrefix)
-                    TIFFReader.SetFilePrefix(ImagePrefix) 
-                if FilePostfixSearch != None:
-                    ImagePattern.encode("latin-1")
-                    ImageReader.SetFilePattern(ImagePattern)
-                    TIFFReader.SetFilePattern(ImagePattern)
                 if Series_Info['Bit_Depth']==8:
-                    ImageReader.SetDataScalarTypeToUnsignedChar()
+                    #ImageReader.SetDataScalarTypeToUnsignedChar()
                     TIFFReader.SetDataScalarTypeToUnsignedChar()
                 else:
                     raise "Only 8-bit data supported"
                 #print ImageReader
                 #ImageReader.SetDataByteOrderToLittleEndian()
-                ImageReader.FileLowerLeftOff()
+                #ImageReader.FileLowerLeftOff()
                 TIFFReader.FileLowerLeftOff()
-                ImageReader.SetDataOrigin(0.0,0.0,0.0)
-                ImageReader.SetNumberOfScalarComponents(1)
+                #ImageReader.SetDataOrigin(0.0,0.0,0.0)
+                #ImageReader.SetNumberOfScalarComponents(1)
                 TIFFReader.SetNumberOfScalarComponents(1)
                 #ImageReader.SetDataScalarTypeToUnsignedChar()
-                ImageReader.SetDataExtent(0,XYDim,0,XYDim,0,NumSect)
+                #ImageReader.SetDataExtent(0,XYDim,0,XYDim,0,NumSect)
                 TIFFReader.SetDataExtent(0,XYDim,0,XYDim,0,NumSect)
-                ImageReader.SetDataSpacing(XSpace,YSpace,ZSpace)
+                #ImageReader.SetDataSpacing(XSpace,YSpace,ZSpace)
                 TIFFReader.SetDataSpacing(XSpace,YSpace,ZSpace)
                 
                 TIFFReader.Update()
-                ImageReader.Update()
+                #ImageReader.Update()
                 
                 
                 #ImageReader.Update() #necessary--used when incremental changes are made to ImageReader properties

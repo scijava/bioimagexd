@@ -212,13 +212,19 @@ class DataSource:
             data=self.getDataSet(0,raw=1)
             
             self.scalarRange=data.GetScalarRange()
-        
+            print "Scalar range of data",self.scalarRange
             scalartype=data.GetScalarType()
+            print "Scalar type",scalartype,data.GetScalarTypeAsString()
+            print "Number of scalar components",data.GetNumberOfScalarComponents()
         
             if scalartype==4:
                 self.bitdepth=16
             elif scalartype==5:
-                self.bitdepth=12
+                self.bitdepth=16
+#                if max(self.scalarRange)>4096:
+#                    self.bitdepth=16
+#                else:
+#                    self.bitdepth=12
             elif scalartype==3:
                 self.bitdepth=8
             elif scalartype==7:
