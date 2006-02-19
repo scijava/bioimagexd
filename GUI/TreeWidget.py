@@ -76,6 +76,7 @@ class TreeWidget(wx.SashLayoutWindow):
         self.lsmfiles=None
         self.leicafiles=None
         self.bxdfiles=None
+        self.oiffiles=None
         
         self.itemColor=(0,0,0)
         
@@ -152,22 +153,20 @@ class TreeWidget(wx.SashLayoutWindow):
         for i in selections:
             parent=self.tree.GetItemParent(i)
             data=self.tree.GetPyData(parent)
-	    print "parent of item=",parent,"data=",data
+ 
             if data =="2":
                 item,cookie=self.tree.GetFirstChild(parent)
             else:
                 item,cookie=self.tree.GetFirstChild(parent)
-	    print "first child=",item
             while item.IsOk():
                 data=self.tree.GetPyData(item)
-#		print "data=",data
+#       print "data=",data
                 dataunits.append(data)
                 items.append(item)
-		item=self.tree.GetNextSibling(item)
+        item=self.tree.GetNextSibling(item)
 #                item,cookie=self.tree.GetNextChild(item,cookie)
-#		print "next child=",item,"is ok=",item.IsOk()
-	    
-	print "returning ",dataunits
+#       print "next child=",item,"is ok=",item.IsOk()
+        
         return dataunits,items
         
         
@@ -236,7 +235,7 @@ class TreeWidget(wx.SashLayoutWindow):
             objtype     Type of the object (lsm, bxd)
             objs        objects to add
         """            
-	print "At addToTree"
+    
         item=None
         isz = (16,16)
         il = wx.ImageList(isz[0], isz[1])
@@ -247,13 +246,13 @@ class TreeWidget(wx.SashLayoutWindow):
         self.items[path]=1
         
         if objtype=="lsm":
-	    print "Object type is LSM"	
+        
             if not self.lsmfiles:
                 self.lsmfiles=self.tree.AppendItem(self.root,"LSM files")
                 self.tree.SetPyData(self.lsmfiles,"1")
                 self.tree.SetItemImage(self.lsmfiles,fldridx,which=wx.TreeItemIcon_Normal)
                 self.tree.SetItemImage(self.lsmfiles,fldropenidx,which=wx.TreeItemIcon_Expanded)
-	    print "Adding to ",self.lsmfiles
+        
             item=self.lsmfiles
             self.tree.Expand(item)            
             item=self.tree.AppendItem(item,name)
@@ -262,7 +261,7 @@ class TreeWidget(wx.SashLayoutWindow):
 #            self.tree.Expand(item)
             self.tree.SetPyData(item,"2")        
             self.tree.SetItemImage(item,fldropenidx,which=wx.TreeItemIcon_Expanded)
-	    print "done lsm"
+        
         elif objtype=="txt":
             if not self.leicafiles:
                 self.leicafiles=self.tree.AppendItem(self.root,"Leica files")
@@ -277,6 +276,19 @@ class TreeWidget(wx.SashLayoutWindow):
             
             self.tree.SetPyData(item,"2")
             self.tree.SetItemImage(item,fldropenidx,which=wx.TreeItemIcon_Expanded)
+        elif objtype=="oif":
+            if not self.oiffiles:
+                self.oiffiles=self.tree.AppendItem(self.root,"Olympus files")
+                self.tree.SetPyData(self.oiffiles,"1")
+                self.tree.SetItemImage(self.oiffiles,fldridx,which=wx.TreeItemIcon_Normal)
+                self.tree.SetItemImage(self.oiffiles,fldropenidx,which=wx.TreeItemIcon_Expanded)
+            item=self.oiffiles
+            self.tree.Expand(item)
+            item=self.tree.AppendItem(item,name)
+            self.tree.Expand(item)
+            self.tree.SetPyData(item,"2")
+            self.tree.SetItemImage(item,fldropenidx,which=wx.TreeItemIcon_Expanded)
+            
         elif objtype=="bxd":
             if not self.bxdfiles:
                 self.bxdfiles=self.tree.AppendItem(self.root,"BioImageXD files")
@@ -296,7 +308,7 @@ class TreeWidget(wx.SashLayoutWindow):
             #self.tree.SetItemImage(added,fldropenidx,which=wx.TreeItemIcon_Expanded)
             self.tree.EnsureVisible(added)
         self.tree.Expand(self.root)
-	print "Done adding"
+    print "Done adding"
 
     def getSelectedDataUnits(self):
         """

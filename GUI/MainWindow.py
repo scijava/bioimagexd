@@ -1103,16 +1103,19 @@ class MainWindow(wx.Frame):
         if not evt2:
             self.onMenuShowTree(None,1)
             asklist=[]
-            wc="Volume datasets|*.lsm;*.LSM;*.bxd;*.txt;*.TXT|LSM Files (*.lsm)|*.lsm;*.LSM|Leica TCS-NT Files (*.txt)|*.txt;*.TXT|BioImageXD Datasets (*.bxd)|*.bxd;*.bxd|VTK Image Data (*.vti)|*.vti;*.VTI"
+            wc="Volume datasets|*.oif;*.OIF;*.lsm;*.LSM;*.bxd;*.txt;*.TXT|Olympus OIF Files (*.oif)|*.oif;*.OIF|LSM Files (*.lsm)|*.lsm;*.LSM|Leica TCS-NT Files (*.txt)|*.txt;*.TXT|BioImageXD Datasets (*.bxd)|*.bxd;*.bxd|VTK Image Data (*.vti)|*.vti;*.VTI"
             asklist=Dialogs.askOpenFileName(self,"Open a volume dataset",wc)
         else:
             asklist=args
         
         for askfile in asklist:
+            
             sep=askfile.split(".")[-1]
             fname=os.path.split(askfile)[-1]
             self.SetStatusText("Loading "+fname+"...")
+            askfile=askfile.replace("\\","\\\\")
             do_cmd="scripting.mainwin.createDataUnit(\"%s\",\"%s\")"%(fname,askfile)
+            
             cmd=Command.Command(Command.OPEN_CMD,None,None,do_cmd,"",desc="Load dataset %s"%fname)
             cmd.run()
             #self.createDataUnit(fname,askfile)
@@ -1128,12 +1131,14 @@ class MainWindow(wx.Frame):
             name    Name used to identify this dataunit
             path    Path to the file this dataunit points to
         """
+        
+        
         ext=path.split(".")[-1]
         dataunit=None
         if self.tree.hasItem(path):
             return
         ext=ext.lower()
-        print "ext=",ext
+        
         if ext=='bxd':
             # We check that the file is not merely a settings file
             #try:
@@ -1161,7 +1166,8 @@ class MainWindow(wx.Frame):
         # We try to load the actual data
         Logging.info("Loading dataset with extension %s, path=%s"%(ext,path),kw="io")
     
-        extToSource={"bxd":VtiDataSource,"lsm":LsmDataSource,"txt":LeicaDataSource}
+        extToSource={"bxd":VtiDataSource,"lsm":LsmDataSource,"txt":LeicaDataSource,
+        "oif":OlympusDataSource}
         try:
             datasource=extToSource[ext]()
         except KeyError,ex:
@@ -1191,10 +1197,11 @@ class MainWindow(wx.Frame):
             # If we got data, add corresponding nodes to tree
             Logging.info("Adding to tree ",name,path,ext,dataunits,kw="io")
             for i in dataunits:
-                if i.getBitDepth()==12:
-                    Dialogs.showwarning(self,"The selected dataset is a 12-bit dataset. BioImageXD natively supports only 8-bit datasets, so the dataset has been converted. For optimal performance, you should write the data out as a 8-bit file.","12-bit data converted to 8-bit")
+                bd=i.getBitDepth()
+                if bd not in [8,32]:
+                    Dialogs.showwarning(self,"The selected dataset is a %d-bit dataset. BioImageXD natively supports only 8-bit datasets, so the dataset has been converted. For optimal performance, you should write the data out as a 8-bit file."%bd,"12-bit data converted to 8-bit")
                     break
-            print "Calling addToTree"
+            print "Calling addToTree",name,path,ext,dataunits
             self.tree.addToTree(name,path,ext,dataunits)
 
     def onMenuShowTaskWindow(self,event):
