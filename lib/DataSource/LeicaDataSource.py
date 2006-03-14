@@ -198,9 +198,13 @@ class LeicaDataSource(DataSource):
         Description: Returns the ctf of the dataset series which this datasource
                      operates on
         """
+        bd=self.getBitDepth()
+        print "Bit depth=",bd
+        if bd==32:
+            return None
         if not self.ctf:
             print "Using ctf based on TIFF Color"
-            ctf = vtk.vtkColorTransferFunction()
+            ctf = vtk.vtkColorTransferFunction()            
             r,g,b=self.reader.GetColor(self.experiment,self.channel)
             r/=255.0
             g/=255.0
@@ -234,6 +238,7 @@ class LeicaExperiment:
         self.RE_VoxelHeight=re.compile(r'Voxel-Height.+\d+',re.I)
         self.RE_VoxelDepth=re.compile(r'Voxel-Depth.+\d+',re.I)
         self.RE_Bit_Depth=re.compile(r'Resolution.+\d+',re.I)
+        self.RE_PixelSize=re.compile(r'Pixel Size in Byte.+\d+',re.I)
         self.RE_NonWhitespace=re.compile(r'\w+',re.I)
         
         
@@ -321,7 +326,9 @@ class LeicaExperiment:
         #f=open(fn)
         
         img=Image.open(fn)
-        print img,img.palette
+        if not img.palette:
+            return 255,255,255
+        
         palette=img.palette.getdata()[1]
         r=palette[255]
         g=palette[2*256-1]
@@ -548,7 +555,23 @@ class LeicaExperiment:
         SeriesBitDepthSplit.reverse()
         SeriesBitDepth=float(SeriesBitDepthSplit[0].strip())
         return SeriesBitDepth
-                        
+
+    def GetNumberOfComponents(self,Series_Data):
+        """
+        Method: GetNumberOfComponents(data)
+        Created: 20.02.2006, KP
+        Description: Return the number of components per pixel
+        """             
+        SeriesPixelSizeString=self.RE_PixelSize.search(Series_Data)
+        if not SeriesPixelSizeString:
+            return 1
+        SeriesPixelSizeLine=SeriesPixelSizeString.group(0)
+        SeriesPixelSizeSplit=SeriesPixelSizeLine.split()
+        SeriesPixelSizeSplit.reverse()
+        SeriesPixelSize=float(SeriesPixelSizeSplit[0].strip())
+        return SeriesPixelSize
+        
+        
     def GetResolutionX(self,Series_Data):
         """
         Method: GetResolutionX(data)
@@ -591,6 +614,8 @@ class LeicaExperiment:
  
             seriesname = self.GetSeriesName(Series_Data)
             SeriesScanMode=self.GetScanMode(Series_Data)
+            Series_Info['Pixel_Size']=self.GetNumberOfComponents(Series_Data)                
+            
             
             Series_Info['Series_Name'] = seriesname
             #print "\n\nSeries name=",seriesname,"\nScanMode=",SeriesScanMode,"\n"
@@ -634,8 +659,10 @@ class LeicaExperiment:
                 Series_Info['Voxel_Width_X']=self.GetVoxelWidth(Series_Data)
                 Series_Info['Voxel_Height_Y']=self.GetVoxelHeight(Series_Data)
                 Series_Info['Voxel_Depth_Z']=self.GetVoxelDepth(Series_Data)
-                
+
                 Series_Info['Bit_Depth']=self.GetBitDepth(Series_Data)
+
+                print "Pixel size of dataset=",Series_Info['Pixel_Size']
                 Series_Info['Resolution_X']=self.GetResolutionX(Series_Data)
                 Series_Info['Resolution_Y']=self.GetResolutionY(Series_Data)
                 
@@ -709,7 +736,8 @@ class LeicaExperiment:
             for Channel in TimePoint:
                 ImageReader=vtk.vtkImageReader()
                 TIFFReader=vtk.vtkExtTIFFReader()
-                TIFFReader.RawModeOn()
+                if Series_Info['Pixel_Size'] !=3:
+                    TIFFReader.RawModeOn()
                 #First read the images for a particular channel
                 ImageName=Channel[0] #Take the first tif name
                 print "Image name='%s'"%ImageName
@@ -717,6 +745,7 @@ class LeicaExperiment:
                 # channels or z slices at all. If not, then we can just you
                 # the filename and skip a whole bunch of processing
                 if ("_ch" in ImageName) or ("_z" in ImageName):
+                    print "Has channels or is z stack"
                     #RE_zsplit=re.compile(r'.+_z000.+',re.I)  #split the filename at the z position, exising the z-pos variable
                     #match for the file prefix
                     RE_FilePrefix=re.compile(r'.+_z',re.I) 
@@ -725,10 +754,13 @@ class LeicaExperiment:
                     #search for the end part of the file name
                     RE_FilePostfix=re.compile(r'_ch\d+.tif',re.I) 
                     FilePrefixMatch=re.match(RE_FilePrefix,ImageName)
+                    
+                    # Match the part before _z
                     if FilePrefixMatch:
                         ImagePrefix=string.strip(FilePrefixMatch.group(0))#we match the first part of the filename (above), then get the matched string
-                        #print "ImagePrefix (z)=",ImagePrefix
+                        print "ImagePrefix=",ImagePrefix
                     else:
+                        print "No Z, Matching ch only"
                         FilePrefixMatch=re.match(RE_FileChPrefix,ImageName)
                         #raise "Got no ImagePrefix for ",ImageName
                         #we match the first part of the filename (above), then get the matched string
@@ -740,16 +772,24 @@ class LeicaExperiment:
                         else:
                             print "No file prefix"
                             ImagePrefix=""
+                    print "Image prefix=",ImagePrefix
                     FilePostfixSearch=re.search(RE_FilePostfix,ImageName)
                     if FilePostfixSearch:
-                        FilePostfixGroup=FilePostfixSearch.group(0)#this gives us the string found by the search
+                        #this gives us the string found by the search
+                        FilePostfixGroup=FilePostfixSearch.group(0)                        
                         print "FilePostfixGroup=",FilePostfixGroup
                     else:
                         print "No file postfix group"
-                        FilePostfixGroup=""
+                        FilePostfixGroup=".tif"
                     if Series_Info["Number_Sections"]>1:                
                         #fsprint stuff--string+3 int spaces padded w/ zeros+last part of name eg. "_ch00.tif"
-                        ImagePattern='%s%03i'+str(FilePostfixGroup) 
+                        print "Has z slices"
+                        z=Series_Info['Depth_Z']
+                        
+                        nzslices=int(math.ceil(math.log(z,10)))
+                        print "z=%d, log z=%d"%(z,nzslices)
+                        pat='%%s%%0%di'%nzslices
+                        ImagePattern=pat+str(FilePostfixGroup) 
                     else:
                         ImagePattern='%s'+str(FilePostfixGroup)
                     print "ImagePattern=",ImagePattern
@@ -762,7 +802,8 @@ class LeicaExperiment:
     
                         #ImageReader.SetFilePrefix(ImagePrefix)
                         TIFFReader.SetFilePrefix(ImagePrefix) 
-                    if FilePostfixSearch != None:
+                    #if FilePostfixSearch != None:
+                    if ImagePattern:
                         ImagePattern.encode("latin-1")
                         #ImageReader.SetFilePattern(ImagePattern)
                         TIFFReader.SetFilePattern(ImagePattern)
@@ -785,7 +826,7 @@ class LeicaExperiment:
                 TIFFReader.FileLowerLeftOff()
                 #ImageReader.SetDataOrigin(0.0,0.0,0.0)
                 #ImageReader.SetNumberOfScalarComponents(1)
-                TIFFReader.SetNumberOfScalarComponents(1)
+                #TIFFReader.SetNumberOfScalarComponents(1)
                 #ImageReader.SetDataScalarTypeToUnsignedChar()
                 #ImageReader.SetDataExtent(0,XYDim,0,XYDim,0,NumSect)
                 TIFFReader.SetDataExtent(0,XYDim,0,XYDim,0,NumSect)
