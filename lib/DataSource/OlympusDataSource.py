@@ -285,7 +285,8 @@ class OlympusDataSource(DataSource):
             self.noZ=1
         vx/=float(x)
         vy/=float(y)
-        vz/=float(z-1)
+        if z>1:
+            vz/=float(z-1)
         return x,y,z,timepoints,channels,vx,vy,vz
                 
                 
