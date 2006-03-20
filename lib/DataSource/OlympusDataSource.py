@@ -42,7 +42,7 @@ class OlympusDataSource(DataSource):
     Created: 12.04.2005, KP
     Description: Olympus OIF files datasource
     """
-    def __init__(self,filename="",channel=-1,basename="",name="",dims=(0,0,0),t=0,voxelsize=(1,1,1)):
+    def __init__(self,filename="",channel=-1,basename="",name="",dims=(0,0,0),t=0,voxelsize=(1,1,1),reverse=0):
         """
         Method: __init__
         Created: 12.04.2005, KP
@@ -63,7 +63,7 @@ class OlympusDataSource(DataSource):
         self.color = None
         self.shift = None
         self.noZ=0
-        
+        self.reverseSlices=reverse
         if filename:
             self.path=os.path.dirname(filename)
         if channel>=0:
@@ -147,7 +147,12 @@ class OlympusDataSource(DataSource):
         pat=path+zpat+tpat+".tif"
         print "pattern=",pat
         self.reader.SetFilePattern(pat)
-        self.reader.SetFileNameSliceOffset(1)
+        if self.reverseSlices:
+            print "offset=",self.dimensions[2]
+            self.reader.SetFileNameSliceOffset(self.dimensions[2])
+            self.reader.SetFileNameSliceSpacing(-1)
+        else:
+            self.reader.SetFileNameSliceOffset(1)
         #self.reader.ComputeInternalFileName(0)
         #print self.reader.GetInternalFileName()        
         self.reader.Update()
@@ -253,7 +258,10 @@ class OlympusDataSource(DataSource):
             startpos=float(parser.get(sect,"StartPosition"))
             endpos = float(parser.get(sect,"EndPosition"))
             
-            diff=endpos-startpos
+            if endpos<startpos:
+                self.reverseSlices=1
+            
+            diff=abs(endpos-startpos)
             if unit in self.unit_coeffs:
                 coeff=self.unit_coeffs[unit]
             
@@ -277,7 +285,7 @@ class OlympusDataSource(DataSource):
             self.noZ=1
         vx/=float(x)
         vy/=float(y)
-        vz/=float(z)
+        vz/=float(z-1)
         return x,y,z,timepoints,channels,vx,vy,vz
                 
                 
@@ -328,7 +336,7 @@ class OlympusDataSource(DataSource):
         dataunits=[]
         for ch in range(1,chs+1):
             name=names[ch-1]    
-            datasource=OlympusDataSource(filename,ch,name=name,basename=basefile,dims=(x,y,z),t=tps,voxelsize=voxsiz)
+            datasource=OlympusDataSource(filename,ch,name=name,basename=basefile,dims=(x,y,z),t=tps,voxelsize=voxsiz,reverse=self.reverseSlices)
             dataunit=DataUnit.DataUnit()
             dataunit.setDataSource(datasource)
             dataunits.append(dataunit)
