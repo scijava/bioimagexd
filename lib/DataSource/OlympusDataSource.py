@@ -62,6 +62,8 @@ class OlympusDataSource(DataSource):
         self.spacing = None
         self.color = None
         self.shift = None
+        self.noZ=0
+        
         if filename:
             self.path=os.path.dirname(filename)
         if channel>=0:
@@ -138,7 +140,7 @@ class OlympusDataSource(DataSource):
         cpat=os.path.sep+"%s_C%.3d"%(self.basename,self.channel)
         path+=cpat
         #self.reader.SetFilePrefix(path)
-        if self.dimensions[2]>0:
+        if self.dimensions[2]>1:
             zpat="Z%.3d"
         if self.tps > 0:
             tpat="T%.3d"
@@ -238,7 +240,7 @@ class OlympusDataSource(DataSource):
         channels = 0
         x = 0
         y = 0
-        z = 0
+        z = 1
         for i in range(0,7):
             sect="Axis %d Parameters Common"%i
             key = "AxisCode"
@@ -269,6 +271,10 @@ class OlympusDataSource(DataSource):
             elif data == '"Z"':
                 z = n
                 vz=diff
+        
+        if z==0:
+            z=1
+            self.noZ=1
         vx/=float(x)
         vy/=float(y)
         vz/=float(z)
