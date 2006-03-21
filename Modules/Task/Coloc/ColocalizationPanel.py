@@ -144,10 +144,14 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
                   "SumCh1":(n+14,0,ss),
 #                  "SumOverThresholdCh1":(n+15,1,ds),
                   "SumCh2":(n+15,0,ss),
+                  "NonZeroCh1":(n+16,0,ss),
+#                  "NonZeroCh2":(n+17,0,ss),
+                  "OverThresholdCh1":(n+17,0,ss),
+#                  "OverThresholdCh2":(n+19,0,ss),
 #                  "SumOverThresholdCh2":(n+16,1,ds),
-                  "DiffStainVoxelsCh1":(n+16,0,ss),
+                  "DiffStainVoxelsCh1":(n+18,0,ss),
 #                  "DiffStainIntCh1":(n+17,1,fs2),
-                  "DiffStainVoxelsCh2":(n+17,0,ss),
+                  "DiffStainVoxelsCh2":(n+19,0,ss),
 #                  "DiffStainIntCh2":(n+18,1,fs2),                  
         }
      
@@ -230,6 +234,33 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
                     val = "0 / 0"  
                     val1=0
                     val2=0
+            elif item == "NonZeroCh1":                    
+                if sources:
+                    sum = sources[1].getSettings().get(item)
+                    sumth = sources[1].getSettings().get("NonZeroCh2")
+                    if not sum:sum=0
+                    if not sumth:sumth=0
+                    val = "%d / %d"%(sum,sumth)
+                    val1=sum
+                    val2=sumth
+                else:
+                    val = "0 / 0"  
+                    val1=0
+                    val2=0                    
+            elif item == "OverThresholdCh1":                    
+                if sources:
+                    sum = sources[1].getSettings().get(item)
+                    sumth = sources[1].getSettings().get("OverThresholdCh2")
+                    if not sum:sum=0
+                    if not sumth:sumth=0
+                    val = "%d / %d"%(sum,sumth)
+                    val1=sum
+                    val2=sumth
+                else:
+                    val = "0 / 0"  
+                    val1=0
+                    val2=0   
+
             elif item == "DiffStainVoxelsCh1":
                 if sources:
                     ds = sources[0].getSettings().get(item)
@@ -581,6 +612,8 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
         ["M2","","",1],
         ["Sum of Ch1 (total / over threshold)","","",2],
         ["Sum of Ch2 (total / over threshold)","","",2],
+        ["# of non-zero voxels (ch1 / ch2)","","",2],
+        ["# of voxels > threshold (ch1 / ch2)","","",2],
         ["Differ. stain of ch1 to ch2 (voxels / intensity)","","",2],
         ["Differ. stain of ch2 to ch1 (voxels / intensity)","","",2]
         ]

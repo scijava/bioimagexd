@@ -148,7 +148,8 @@ class Colocalization(Module):
                       "ColocAmount","ColocPercent","PercentageVolumeCh1",
                       "PercentageTotalCh1","PercentageTotalCh2",
                       "PercentageVolumeCh2","PercentageMaterialCh1","PercentageMaterialCh2",
-                      "SumOverThresholdCh1","SumOverThresholdCh2","SumCh1","SumCh2"]:
+                      "SumOverThresholdCh1","SumOverThresholdCh2","SumCh1","SumCh2",
+                      "NonZeroCh1","NonZeroCh2","OverThresholdCh2","OverThresholdCh1"]:
                 method="self.colocAutoThreshold.Get%s()"%i
 
                 val=eval(method)

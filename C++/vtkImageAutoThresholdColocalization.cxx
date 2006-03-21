@@ -51,6 +51,8 @@ vtkImageAutoThresholdColocalization::vtkImageAutoThresholdColocalization()
     LowerThresholdCh1 = LowerThresholdCh2 = -1;
     UpperThresholdCh1 = UpperThresholdCh2 = 255;
     vtkImageData *plot;
+    
+    OverThresholdCh1 = OverThresholdCh2 = NonZeroCh1 = NonZeroCh2 = 0;
     plot = vtkImageData::New();
     plot->ReleaseData();
     this->AddOutput(plot);
@@ -166,6 +168,7 @@ template < class T >
     double ch1threshmax = 255;
     double ch2threshmin = 0;
     double ch2threshmax = 255;
+    int Nnonzeroch1 = 0, Nnonzeroch2 = 0;
         
     
 
@@ -241,6 +244,8 @@ template < class T >
             for (idxX = 0; idxX <= maxX; idxX++) {
                 ch1 = (int) *inPtr1++;
                 ch2 = (int) *inPtr2++;
+                if(ch1)Nnonzeroch1++;
+                if(ch2)Nnonzeroch2++;
                 ch3 = ch1 + ch2;
                 ch1mch1MeanSqSum +=
                     (ch1 - ch1Mean) * (ch1 - ch1Mean);
@@ -436,7 +441,7 @@ template < class T >
         ch2threshmax = LowerThresholdCh2;
     }
     int colocInt = 255;
-
+    
     Nzero = 0;
     sumColocCh1 = 0;
     sumColocCh2 = 0;
@@ -646,6 +651,11 @@ template < class T >
     
     self->SetDiffStainVoxelsCh1( (Nch1gtT)/float((Nch2gtT - Ncoloc)));
     self->SetDiffStainVoxelsCh2( (Nch2gtT)/float((Nch1gtT - Ncoloc)));
+    
+    self->SetOverThresholdCh1(Nch1gtT);
+    self->SetOverThresholdCh2(Nch2gtT);
+    self->SetNonZeroCh1(Nnonzeroch1);
+    self->SetNonZeroCh2(Nnonzeroch2);
     
     self->SetDiffStainIntCh1( (sumCh1gtT)/float((sumCh2gtT - sumColocCh2)));
     self->SetDiffStainIntCh2( (sumCh2gtT)/float((sumCh1gtT - sumColocCh1)));
