@@ -262,6 +262,15 @@ class DataUnit:
         self.settings.writeTo(parser)
         writer.write()
 
+    def getFileName(self):
+        """
+        Method: __str__
+        Created: 21.03.2006, KP
+        Description: Return the path to the file this dataunit represents
+        """
+        return self.dataSource.getFileName()
+        
+        
     def __str__(self):
         """
         Method: __str__
