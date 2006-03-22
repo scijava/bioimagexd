@@ -127,7 +127,7 @@ class RenderingMode(VisualizationMode):
         """
         if mode:
             self.renwin.StereoRenderOn()
-            cmd="self.renwin.SetStereoTypeTo%s"%mode
+            cmd="self.renwin.SetStereoTypeTo%s()"%mode
             eval(cmd)
         else:
             self.renwin.StereoRenderOff()        

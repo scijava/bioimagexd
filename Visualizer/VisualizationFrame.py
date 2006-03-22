@@ -252,6 +252,7 @@ class RendererConfiguration(wx.MiniFrame):
         """             
         index=event.GetSelection()
         mode=self.modes[index]
+	print "Setting stereo mode ",index,mode
         self.stereoMode=mode
             
     
