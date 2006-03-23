@@ -189,6 +189,8 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
                     pvolch = sources[0].getSettings().get(item)
                     pmatch = sources[0].getSettings().get("PercentageMaterialCh1")
                     print "pvolch=",pvolch,type(pvolch)
+                    if not pvolch:pvolch=0
+                    if not pmatch:pmatch=0
                     val = "%.3f%% / %.3f%%"%(pvolch*100,pmatch*100)
                     val1="%.3f%%"%(pvolch*100)
                     val2="%.3f%%"%(pmatch*100)
@@ -201,6 +203,8 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
                     pvolch = sources[1].getSettings().get(item)
                     pmatch = sources[1].getSettings().get("PercentageMaterialCh2")
                     val = "%.3f%% / %.3f%%"%(pvolch*100,pmatch*100)
+                    if not pvolch:pvolch=0
+                    if not pmatch:pmatch=0
                     val1 = "%.3f%%"%(pvolch*100)
                     val2="%.3f%%"%(pmatch*100)                    
                 else:
@@ -211,7 +215,7 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
                 if sources:
                     sum = sources[0].getSettings().get(item)
                     sumth = sources[0].getSettings().get("SumOverThresholdCh1")
-                    print "pvolch=",pvolch,type(pvolch)
+                    
                     if not sum:sum=0
                     if not sumth:sumth=0
                     val = "%d / %d"%(sum,sumth)
@@ -804,7 +808,8 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
         dc.SetPen(wx.Pen(wx.Colour(r,g,b),4))
         dc.DrawRectangle(0,0,32,32)
         dc.EndDrawing()
-        dc.SelectObject(wx.EmptyBitmap(0,0))
+        #dc.SelectObject(wx.EmptyBitmap(0,0))
+        dc.SelectObject(wx.NullBitmap)
         toolid=wx.NewId()
         #n=n+1
         name="Colocalization"
