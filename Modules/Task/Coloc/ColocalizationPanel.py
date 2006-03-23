@@ -269,6 +269,8 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
                 if sources:
                     ds = sources[0].getSettings().get(item)
                     dsint = sources[0].getSettings().get("DiffStainIntCh1")
+                    if not ds:ds=0
+                    if not dsint:dsint=0
                     val = "%.3f / %.3f"%(ds,dsint)
                     val1=ds
                     val2=dsint
@@ -280,6 +282,8 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
                 if sources:
                     ds = sources[1].getSettings().get(item)
                     dsint = sources[1].getSettings().get("DiffStainIntCh2")
+                    if not ds:ds=0
+                    if not dsint:dsint=0
                     val = "%.3f / %.3f"%(ds,dsint)
                     val1=ds
                     val2=dsint
