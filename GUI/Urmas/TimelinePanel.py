@@ -86,24 +86,28 @@ class TimelinePanel(wx.Panel):
         #self.sizer.Add(sline,(1,0),span=(1,2),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
         
 
-        self.confPanel=wx.Panel(self,-1)
+        #self.confPanel=wx.Panel(self,-1)
         self.confSizer=wx.GridBagSizer()
         
-        self.timelineConfig=RenderingConfigPanel.RenderingConfigPanel(self.confPanel,control)
+#        self.timelineConfig=RenderingConfigPanel.RenderingConfigPanel(self.confPanel,control)
+        self.timelineConfig=RenderingConfigPanel.RenderingConfigPanel(self,control)
 
         
         self.confSizer.Add(self.timelineConfig,(0,0),flag=wx.EXPAND|wx.ALL)
         
-        self.confPanel.SetSizer(self.confSizer)
-        self.confPanel.SetAutoLayout(1)
+        #self.confPanel.SetSizer(self.confSizer)
+        #self.confPanel.SetAutoLayout(1)
 
         sbox=wx.StaticBox(self,-1,"Animator configuration")
         sboxsizer=wx.StaticBoxSizer(sbox,wx.HORIZONTAL)
-        sboxsizer.Add(self.confPanel)
+        #sboxsizer.Add(self.confPanel)
+        sboxsizer.Add(self.confSizer)
         #self.camView=CameraView.CameraView(self,-1)
         #sboxsizer.Add(self.camView)
         
-        self.useButton=wx.Button(self.confPanel,-1,"Use settings")
+#        self.useButton=wx.Button(self.confPanel,-1,"Use settings")
+        self.useButton=wx.Button(self,-1,"Use settings")
+
         self.useButton.Bind(wx.EVT_BUTTON,self.useSettings)
            
         self.confSizer.Add(self.useButton,(1,0))

@@ -180,7 +180,7 @@ class MainWindow(wx.Frame):
         self.shellWin.SetOrientation(wx.LAYOUT_HORIZONTAL)
         self.shellWin.SetAlignment(wx.LAYOUT_BOTTOM)
         #self.shellWin.SetSashVisible(wx.SASH_TOP,False)
-        self.shellWin.origSize=(500,64)
+        self.shellWin.origSize=(500,128)
         self.shellWin.SetDefaultSize((0,0))
         self.shell=None
         
@@ -1477,7 +1477,6 @@ class MainWindow(wx.Frame):
             dlg.Destroy()            
             if answer != wx.ID_OK:
                 return
-            self.exitApp()
         self.visualizer.enable(0)        
         
         self.visualizer.closeVisualizer()

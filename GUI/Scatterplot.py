@@ -85,7 +85,7 @@ class Scatterplot(InteractivePanel.InteractivePanel):
         self.ID_WHOLEVOLUME=wx.NewId()
         self.ID_LOGARITHMIC=wx.NewId()
         self.menu=wx.Menu()
-        
+	self.SetScrollbars(0,0,0,0)        
         messenger.connect(None,"threshold_changed",self.updatePreview)
         
 #        item = wx.MenuItem(self.menu,self.ID_COUNTVOXELS,"Show frequency",kind=wx.ITEM_CHECK)
