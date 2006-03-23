@@ -31,7 +31,7 @@ __date__ = "$Date: 2005/01/11 14:36:00 $"
 
 
 import traceback
-import wx
+
 import os.path
 import sys
 
@@ -77,6 +77,9 @@ class GUIError:
         """
         self.msg=msg
         self.title=title
+        import wx
+        self.wx=wx
+       
 
     def show(self):
         """
@@ -84,7 +87,7 @@ class GUIError:
         Created: 13.12.2004, KP
         Description: Displays the error message in a tkMessageBox.
         """
-        dlg=wx.MessageDialog(None,self.msg,self.title,wx.OK|wx.ICON_ERROR)
+        dlg=self.wx.MessageDialog(None,self.msg,self.title,wx.OK|wx.ICON_ERROR)
         dlg.ShowModal()
         dlg.Destroy()
 

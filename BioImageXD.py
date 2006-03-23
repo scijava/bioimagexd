@@ -38,6 +38,9 @@ import imp
 
 import profile
 
+#import vtk
+
+
 if "check" in sys.argv:
     import pychecker.checker
     import Logging
@@ -47,13 +50,20 @@ def main_is_frozen():
            hasattr(sys, "importers") # old py2exe
            or imp.is_frozen("__main__")) # tools/freeze
 
+
+
 def get_main_dir():
     if "checker.py" in sys.argv[0]:
         return "."
     if main_is_frozen():
         return os.path.dirname(sys.executable)
     return os.path.dirname(sys.argv[0])
+    
+
 todir=get_main_dir()
+
+
+
 
 #todir=os.path.dirname(__file__)
 #todir=os.path.join(os.getcwd(),todir)
@@ -64,17 +74,27 @@ if todir:
 import csv
 
 
-import Logging
-import scripting
-
-
-import glob
 import Configuration
-
 #sys.path.insert(0,"C:\\Mingw\\lib")
 # This will fix the VTK paths using either values from the
 # configuration file, or sensible defaults
 cfg=Configuration.Configuration("BioImageXD.ini")
+
+# We need to import VTK here so that it is imported before wxpython.
+# if wxpython gets imported before vtk, the vtkExtTIFFReader will not read the olympus files
+# DO NOT ask me why that is!
+import vtk
+
+
+import Logging
+
+import scripting
+
+
+import glob
+
+
+
 
 import lib
 
@@ -122,6 +142,8 @@ class LSMApplication(wx.App):
         
         self.mainwin.Show(True)
         self.SetTopWindow(self.mainwin)
+        
+
         return True
 
     def run(self):
