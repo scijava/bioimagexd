@@ -529,20 +529,22 @@ int vtkLSMReader::AnalyzeTag(ifstream *f,unsigned long startPos)
   unsigned short type,length,tag;
   unsigned long readSize;
   int value, dataSize,i;
-  char tempValue[4],tempValue2[2];
+  char tempValue[4],tempValue2[4];
   char *actualValue = NULL;
-  //  vtkDebugMacro(<<"Analyze tag start pos="<<startPos<<"\n");
+    vtkDebugMacro(<<"Analyze tag start pos="<<startPos<<"\n");
   tag = this->ReadUnsignedShort(f,&startPos);
   type = this->ReadUnsignedShort(f,&startPos);
   length = this->ReadUnsignedInt(f,&startPos);
+   
   this->ReadFile(f,&startPos,4,tempValue);
 
   for(int i=0;i<4;i++)tempValue2[i]=tempValue[i];
 #ifdef VTK_WORDS_BIGENDIAN
+  vtkDebugMacro(<<"Swapping byte order...");
   vtkByteSwap::Swap4LE((unsigned int*)tempValue2);
 #endif
   value = this->CharPointerToUnsignedInt(tempValue2);
-  //  vtkDebugMacro(<<"value="<<value<<"\n");
+    vtkDebugMacro(<<"value="<<value<<"\n");
   // if there is more than 4 bytes in value, 
   // value is an offset to the actual data
   dataSize = this->TIFF_BYTES(type);
@@ -562,10 +564,13 @@ int vtkLSMReader::AnalyzeTag(ifstream *f,unsigned long startPos)
       // stupid..
       for(int o=0;o<4;o++)actualValue[o] = tempValue[o];
     }
+    vtkDebugMacro(<<"Analuzing tag"<<tag);
   switch(tag)
     {
     case TIF_NEWSUBFILETYPE: 
-      this->NewSubFileType = value;
+      vtkDebugMacro(<<"New subfile type="<<value);
+	this->NewSubFileType = value;
+       vtkDebugMacro(<<"done");
       
       /*
       vtkByteSwap::Swap4LE((unsigned int*)actualValue);
@@ -696,10 +701,13 @@ int vtkLSMReader::AnalyzeTag(ifstream *f,unsigned long startPos)
       this->LSMSpecificInfoOffset = value;
       break;
     }
-  if(actualValue)
+
+  if(actualValue)	 
     {
-    delete [] actualValue;
+	vtkDebugMacro(<<"Deleting actual value...");
+	delete [] actualValue;
     }
+    vtkDebugMacro(<<"done\n");
   return 0;
 }
 
@@ -778,16 +786,23 @@ unsigned long vtkLSMReader::ReadImageDirectory(ifstream *f,unsigned long offset)
 {
   unsigned short numberOfTags=0;
   unsigned long nextOffset = offset;
-
+  
+  vtkDebugMacro(<<"Reading unsigned short from "<<offset<<"\n");
   numberOfTags = this->ReadUnsignedShort(f,&offset);
-  //  vtkDebugMacro(<<"Number of tags="<<numberOfTags<<"\n");
+    vtkDebugMacro(<<"Number of tags="<<numberOfTags<<"\n");
   for(int i=0;i<numberOfTags;i++)
-    {
+    {	
     this->AnalyzeTag(f,offset);
-    if(this->NewSubFileType == 1) break; //thumbnail image
+    vtkDebugMacro(<<"Tag analyed...\n");
+    if(this->NewSubFileType == 1) {
+	vtkDebugMacro(<<"Found thumbnail, get next");
+	break; //thumbnail image
+    }
     offset = offset + 12;
+	vtkDebugMacro(<<"New offset="<<offset);
     }
   nextOffset += 2 + numberOfTags * 12;
+    vtkDebugMacro(<<"Next offset is "<<nextOffset);
   return this->ReadUnsignedInt(f,&nextOffset);
 }
 
@@ -940,7 +955,7 @@ void vtkLSMReader::ExecuteInformation()
   vtkDebugMacro(<<"Image dir offset="<<imageDirOffset<<"\n");
   // get information from the first image directory
   this->ReadImageDirectory(this->GetFile(),imageDirOffset);
-
+  vtkDebugMacro(<<"Read image directory\n");
   if(this->LSMSpecificInfoOffset)
     {
       ReadLSMSpecificInfo(this->GetFile(),(unsigned long)this->LSMSpecificInfoOffset);
