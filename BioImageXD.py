@@ -36,10 +36,10 @@ import os
 import sys
 import imp
 
-import profile
-
-#import vtk
-
+try:
+    import profile
+except:
+    profile=None
 
 if "check" in sys.argv:
     import pychecker.checker
@@ -62,9 +62,6 @@ def get_main_dir():
 
 todir=get_main_dir()
 
-
-
-
 #todir=os.path.dirname(__file__)
 #todir=os.path.join(os.getcwd(),todir)
 if todir:
@@ -72,7 +69,6 @@ if todir:
 
 
 import csv
-
 
 import Configuration
 #sys.path.insert(0,"C:\\Mingw\\lib")
@@ -85,16 +81,11 @@ cfg=Configuration.Configuration("BioImageXD.ini")
 # DO NOT ask me why that is!
 import vtk
 
-
 import Logging
-
 import scripting
 
 
 import glob
-
-
-
 
 import lib
 
@@ -142,8 +133,8 @@ class LSMApplication(wx.App):
         
         self.mainwin.Show(True)
         self.SetTopWindow(self.mainwin)
-        
-
+    
+    
         return True
 
     def run(self):
@@ -180,11 +171,7 @@ if __name__=='__main__':
             sys.exit(0)
         
         app=LSMApplication(0)    
-        if "profile" in sys.argv:
+        if "profile" in sys.argv and profile:
             profile.run('app.run()', 'prof.log')
         else:
             app.run()
-
-
-
-
