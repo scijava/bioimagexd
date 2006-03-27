@@ -211,7 +211,10 @@ class MainWindow(wx.Frame):
         self.loadVisualizer(None,"slices",init=1)
         self.onMenuShowTree(None,1)
 
-        splash.Show(False)
+        try:
+            splash.Show(False)
+        except:
+            pass
         self.Show(True)       
         # Start listening for messenger signals
         messenger.send(None,"update_progress",1.0,"Done.") 
