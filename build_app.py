@@ -91,7 +91,7 @@ def build():
         # use windows=[{... to not show the console
         # use console=[{ to show the console
         setup(name="BioImageXD",
-               console=[{"script":"BioImageXD.py",
+               windows=[{"script":"BioImageXD.py",
                          "icon_resources": [(1, "Icons\\logo.ico")]} ],
                data_files = DATA_FILES,
                options = {"py2exe":
