@@ -336,7 +336,6 @@ class TaskPanel(scrolled.ScrolledPanel):
                         state
 
         """
-        # TODO: Implement properly
         self.Enable(enable)
 
     def doPreviewCallback(self,*args):
