@@ -55,7 +55,7 @@ from GUI import ColorTransferEditor
 
 from GUI import TaskPanel
 
-class MyListCtrl(wx.ListCtrl, listmix.TextEditMixin,listmix.ListCtrlAutoWidthMixin):
+class MyListCtrl(wx.ListCtrl, listmix.TextEditMixin):
     def __init__(self, parent, ID, pos=wx.DefaultPosition,
                  size=wx.DefaultSize, style=0):
         wx.ListCtrl.__init__(self, parent, ID, pos, size, style)
@@ -178,12 +178,10 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
                     th1=sources[1].getSettings().get("ColocalizationLowerThreshold")
                     th2=sources[1].getSettings().get("ColocalizationUpperThreshold")
                     val="%d / %d"%(th1,th2)
-                    val1=th1
-                    val2=th2                    
+                    val1,val2=th1,th2
                 else:
                     val="0 / 128"
-                    val1=0
-                    val2=128
+                    val1,val2=0,128
             elif item == "PercentageVolumeCh1":
                 if sources:
                     pvolch = sources[0].getSettings().get(item)
@@ -202,6 +200,8 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
                 if sources:
                     pvolch = sources[1].getSettings().get(item)
                     pmatch = sources[1].getSettings().get("PercentageMaterialCh2")
+                    if not pvolch:pvolch=0
+                    if not pmatch:pmatch=0
                     val = "%.3f%% / %.3f%%"%(pvolch*100,pmatch*100)
                     if not pvolch:pvolch=0
                     if not pmatch:pmatch=0
