@@ -263,7 +263,7 @@ template < class T >
 
     
     int size;
-    float*kernel;
+    float*kernel = 0;
     double scale = 1.0, kernelsum = 0;
     if(Costes) {
         kernel = makeKernel(psf,&size);
@@ -271,8 +271,9 @@ template < class T >
             kernelsum += kernel[i];
         if(kernelsum)
             scale = 1.0 / kernelsum;
+	printf("Scale for smoothing=%f, kernelsize=%d\n",scale,size);
     }
-    printf("Scale for smoothing=%f, kernelsize=%d\n",scale,size);
+
     int iterations = self->GetNumIterations();
  
     xOffset = 0, yOffset = 0;
@@ -711,7 +712,7 @@ template < class T >
     //Thanks to Bob Dougherty
     //50*{1 + erf[(V -mean)/(sqrt(2)*sdev)]
     double fx = 0.5 * (1 + erf(r - r2mean) / (sqrt(2) * r2sd));
-
+    printf("fx=%f\n",fx);
     if (fx >= 1.0)
         fx = 1.0;
     if (fx <= 0)
@@ -740,7 +741,9 @@ template < class T >
     //  plot.draw();
     //}
     outbuf->Delete();
-    delete[] kernel;
+    if(kernel) {
+	delete[] kernel;
+    }
 }
 
 //code from:
