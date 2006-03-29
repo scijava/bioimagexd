@@ -1485,7 +1485,7 @@ class MainWindow(wx.Frame):
         self.visualizer.closeVisualizer()
         
         self.Destroy()
-            
+	sys.exit(0)
 
         
 # 
