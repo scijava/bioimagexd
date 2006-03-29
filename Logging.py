@@ -47,6 +47,39 @@ import sys
 
 DO_DEBUG=1
 
+class Tee:
+    # Tee( file1, file2 [, filen ] ) 
+    # creates a writable fileobject where the output is tee-ed to all of
+    # the individual files. 
+    def __init__( self, *optargs ):
+	self._files = []
+	for arg in optargs:
+	    self.addfile( arg )
+    def addfile( self, file ):
+	self._files.append( file  )
+    def remfile( self, file ):
+	file.flush()
+	self._files.remove( file )
+    def files( self ):
+	return self._files
+    def write( self, what ):
+	for eachfile in self._files: 
+	    eachfile.write( what )
+    def writelines( self, lines ): 
+	for eachline in lines: self.write( eachline )
+    def flush( self ):
+	for eachfile in self._files:
+	    eachfile.flush()
+    def close( self ):
+	for eachfile in self._files:
+	    self.remfile( eachfile ) # Don't CLOSE the real files.
+    def CLOSE( self ):
+	for eachfile in self._files:
+	    self.remfile( eachfile ) 
+	    self.eachfile.close() 
+    def isatty( self ):
+	return 0
+
 def ignore_all(*args,**kws):
     pass
 
