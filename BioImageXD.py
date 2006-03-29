@@ -36,7 +36,10 @@ import os
 import sys
 import imp
 
-import profile
+try:
+    import profile
+except:
+    profile=None
 
 if "check" in sys.argv:
     import pychecker.checker
@@ -47,12 +50,16 @@ def main_is_frozen():
            hasattr(sys, "importers") # old py2exe
            or imp.is_frozen("__main__")) # tools/freeze
 
+
+
 def get_main_dir():
     if "checker.py" in sys.argv[0]:
         return "."
     if main_is_frozen():
         return os.path.dirname(sys.executable)
     return os.path.dirname(sys.argv[0])
+    
+
 todir=get_main_dir()
 
 #todir=os.path.dirname(__file__)
@@ -63,18 +70,22 @@ if todir:
 
 import csv
 
+import Configuration
+#sys.path.insert(0,"C:\\Mingw\\lib")
+# This will fix the VTK paths using either values from the
+# configuration file, or sensible defaults
+cfg=Configuration.Configuration("BioImageXD.ini")
+
+# We need to import VTK here so that it is imported before wxpython.
+# if wxpython gets imported before vtk, the vtkExtTIFFReader will not read the olympus files
+# DO NOT ask me why that is!
+import vtk
 
 import Logging
 import scripting
 
 
 import glob
-import Configuration
-
-#sys.path.insert(0,"C:\\Mingw\\lib")
-# This will fix the VTK paths using either values from the
-# configuration file, or sensible defaults
-cfg=Configuration.Configuration("BioImageXD.ini")
 
 import lib
 
@@ -102,7 +113,7 @@ class LSMApplication(wx.App):
                                  3000, None, -1)
         splash.Show()
          # Import Psyco if available
-        try:
+	try:
             pass
             #import psyco
 
@@ -122,6 +133,8 @@ class LSMApplication(wx.App):
         
         self.mainwin.Show(True)
         self.SetTopWindow(self.mainwin)
+    
+    
         return True
 
     def run(self):
@@ -130,8 +143,10 @@ class LSMApplication(wx.App):
         Created: 03.11.2004, KP
         Description: Run the wxPython main loop
         """
-        self.MainLoop()
+	self.MainLoop()
 
+	    
+	    
 
 if __name__=='__main__':
     if "py2exe" in sys.argv:
@@ -142,10 +157,16 @@ if __name__=='__main__':
 
         # If the main application is frozen, then we redirect logging
         # to  a log file
-        if "tofile" in sys.argv: # or main_is_frozen():
+        if "tofile" in sys.argv or main_is_frozen():
             import time
-            logfile="%s.log"%(time.strftime("%d.%m.%y"))
-            f=open(logfile,"w")
+            logfile="output_%s.log"%(time.strftime("%d.%m.%y@:%H:%M"))
+	    logfile=os.path.join("logs",logfile)
+            f1=open(logfile,"w")
+	    logfile2=os.path.join("logs","latest.log")
+	    f2=open(logfile2,"w")
+	    f = Logging.Tee(f1,f2)
+	    import atexit
+	    atexit.register(f.flush)
             sys.stdout = f 
             sys.stderr = f
             Logging.outfile = f
@@ -158,11 +179,7 @@ if __name__=='__main__':
             sys.exit(0)
         
         app=LSMApplication(0)    
-        if "profile" in sys.argv:
+        if "profile" in sys.argv and profile:
             profile.run('app.run()', 'prof.log')
         else:
             app.run()
-
-
-
-

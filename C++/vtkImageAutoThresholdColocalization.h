@@ -194,6 +194,21 @@ public:
   vtkSetMacro(UpperThresholdCh1,int);    
   vtkGetMacro(UpperThresholdCh2,int);
   vtkSetMacro(UpperThresholdCh2,int);    
+  
+  // Description:
+  // The number of voxels in channel 1 and 2 that are between the lower and upper thresholds.
+  vtkSetMacro(OverThresholdCh1,int);
+  vtkGetMacro(OverThresholdCh1,int)
+  vtkSetMacro(OverThresholdCh2,int);
+  vtkGetMacro(OverThresholdCh2,int)
+
+  // Description:
+  // The number of non-zero voxels in channel 1 and 2
+  vtkSetMacro(NonZeroCh1,int);
+  vtkGetMacro(NonZeroCh1,int)
+  vtkSetMacro(NonZeroCh2,int);
+  vtkGetMacro(NonZeroCh2,int)
+
 protected:
   vtkImageAutoThresholdColocalization();
   ~vtkImageAutoThresholdColocalization();
@@ -257,6 +272,11 @@ private:
   int LowerThresholdCh2;
   int UpperThresholdCh1;
   int UpperThresholdCh2;  
+  
+  int OverThresholdCh1;
+  int OverThresholdCh2;
+  int NonZeroCh1;
+  int NonZeroCh2;
 };
 
 #endif

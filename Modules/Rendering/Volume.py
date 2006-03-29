@@ -41,9 +41,10 @@ from Visualizer.VisualizationModules import *
 import Logging
 
 TEXTURE_MAPPING=1
+TEXTURE_MAPPING3D=2
 RAYCAST=0
-MIP=2
-
+MIP=3
+ISOSURFACE=4
 def getClass():return VolumeModule
 def getConfigPanel():return VolumeConfigurationPanel
 def getName():return "Volume Rendering"
@@ -78,9 +79,10 @@ class VolumeModule(VisualizationModule):
         otf = vtk.vtkPiecewiseFunction()
         otf.AddPoint(0, 0.0)
         otf.AddPoint(255, 0.2)
-        self.otfs.append(otf)
-        self.otfs.append(otf)
-        self.otfs.append(otf2)
+        self.otfs.append(otf) # ray cast
+        self.otfs.append(otf) # texture map
+        self.otfs.append(otf) # texture map 3d
+        self.otfs.append(otf2) #mip
         self.eventDesc="Rendering volume"
         self.colorTransferFunction = None
 
@@ -110,6 +112,7 @@ class VolumeModule(VisualizationModule):
         odict.update({"otf0":self.getVTKState(self.otfs[0])})
         odict.update({"otf1":self.getVTKState(self.otfs[1])})
         odict.update({"otf2":self.getVTKState(self.otfs[2])})
+        odict.update({"otf3":self.getVTKState(self.otfs[3])})
         odict.update({"renderer":self.getVTKState(self.renderer)})
         odict.update({"camera":self.getVTKState(self.renderer.GetActiveCamera())})
         odict.update({"quality":self.quality})
@@ -129,6 +132,7 @@ class VolumeModule(VisualizationModule):
         self.setVTKState(self.otfs[0],state.otf0)
         self.setVTKState(self.otfs[1],state.otf1)        
         self.setVTKState(self.otfs[2],state.otf2)       
+        self.setVTKState(self.otfs[2],state.otf3)       
         self.setVTKState(self.renderer,state.renderer)
         self.setVTKState(self.renderer.GetActiveCamera(),state.camera)
         self.setMethod(state.method)
@@ -193,7 +197,7 @@ class VolumeModule(VisualizationModule):
         if self.method<0:return 0
         if raw:
             Logging.info("Setting quality to raw ",quality,kw="rendering")
-            if self.method == TEXTURE_MAPPING:
+            if self.method in [TEXTURE_MAPPING]:
                 Logging.info("Setting maximum number of planes to",quality,kw="rendering")
                 self.mapper.SetMaximumNumberOfPlanes(quality)
             else:
@@ -209,7 +213,7 @@ class VolumeModule(VisualizationModule):
             Logging.info("Setting quality to",quality,kw="rendering")
         if quality==10:
             if self.mapper:
-                if self.method != TEXTURE_MAPPING:
+                if self.method not in [TEXTURE_MAPPING]:
                     self.mapper.SetSampleDistance(self.sampleDistance)
                 else:
                     self.mapper.SetMaximumNumberOfPlanes(self.maxPlanes)
@@ -217,7 +221,7 @@ class VolumeModule(VisualizationModule):
         #    self.volumeProperty.SetInterpolationTypeToNearest()
         elif quality<10:
            
-            if self.method != TEXTURE_MAPPING:
+            if self.method not in [TEXTURE_MAPPING]:
                 self.mapper.SetSampleDistance(15-quality)
                 return 15-quality
             else:
@@ -257,19 +261,20 @@ class VolumeModule(VisualizationModule):
         self.method=method
         self.volumeProperty.SetScalarOpacity(self.otfs[self.method])
         
-        tbl=["Ray cast","Texture Map","MIP"]
+        tbl=["Ray cast","Texture Map","3D texture map","MIP"]
         Logging.info("Volume rendering method: ",tbl[method],kw="rendering")
         
         #Ray Casting, RGBA Ray Casting, Texture Mapping, MIP
         composites = [vtk.vtkVolumeRayCastCompositeFunction,
                       None,
+                      None,
                       vtk.vtkVolumeRayCastMIPFunction,
                       vtk.vtkVolumeRayCastIsosurfaceFunction
                       ]
-        blendModes=["Composite","Composite","MaximumIntensity","Composite"]
-        if method in [0,2,3]:
+        blendModes=["Composite","Composite","Composite","MaximumIntensity","Composite"]
+        if method in [RAYCAST,MIP,ISOSURFACE]:
             # Iso surfacing with fixedpoint mapper is not supported
-            if self.vtkcvs and method!=3:
+            if self.vtkcvs and method!=4:
                 self.mapper = vtk.vtkFixedPointVolumeRayCastMapper()
                 #self.mapper.SetAutoAdjustSampleDistances(1)
                 self.sampleDistance = self.mapper.GetSampleDistance()
@@ -284,7 +289,10 @@ class VolumeModule(VisualizationModule):
                 self.function = composites[method]()
                 Logging.info("Using ray cast function ",self.function,kw="rendering")
                 self.mapper.SetVolumeRayCastFunction(self.function)
-        elif method==1: # texture mapping
+        elif method==TEXTURE_MAPPING3D: # 3d texture mapping
+            self.mapper = vtk.vtkVolumeTextureMapper3D()
+            self.sampleDistance = self.mapper.GetSampleDistance()
+        elif method==TEXTURE_MAPPING: # texture mapping
             self.mapper = vtk.vtkVolumeTextureMapper2D()
             self.maxPlanes = self.mapper.GetMaximumNumberOfPlanes()
         
@@ -376,7 +384,7 @@ class VolumeConfigurationPanel(ModuleConfigurationPanel):
         self.contentSizer.Add(self.colorPanel,(n,0))
         n+=1
         
-        modes = ["Ray Casting","Texture Mapping","Maximum Intensity Projection"]
+        modes = ["Ray Casting","Texture Mapping","3D Texture Mapping","Maximum Intensity Projection"]
         try:
             volpro=vtk.vtkVolumeProMapper()
             self.haveVolpro=0
@@ -424,6 +432,7 @@ but using linear interpolation yields a better rendering quality."""
             self.volpro.Enable(0)
             self.contentSizer.Add(self.volpro,(n,0))
             n+=1
+        
         self.qualitySlider = wx.Slider(self,value=10, minValue=0,maxValue = 10,
         style=wx.HORIZONTAL|wx.SL_AUTOTICKS|wx.SL_LABELS,size=(250,-1))
         self.qualitySlider.Bind(wx.EVT_SCROLL,self.onSetQuality)
@@ -505,13 +514,13 @@ but using linear interpolation yields a better rendering quality."""
         """  
         self.method = self.moduleChoice.GetSelection()
         if self.haveVolpro:
-            flag=(self.method in [0,2,3])
+            flag=(self.method in [RAYCASTING,MIP,ISOSURFACE])
             self.volpro.Enable(flag)
         if self.method==4:
             self.volpro.SetValue(1)
         Logging.info("Setting otf to ",self.method)
         self.colorPanel.setOpacityTransferFunction(self.module.otfs[self.method])
-        if self.method==1:
+        if self.method == TEXTURE_MAPPING:
             self.settingLbl.SetLabel("Maximum number of planes:")
         else:
             self.settingLbl.SetLabel("Sample Distance:")            
@@ -555,9 +564,9 @@ but using linear interpolation yields a better rendering quality."""
         
         otf = self.colorPanel.getOpacityTransferFunction()
         self.module.setOpacityTransferFunction(otf,self.method)
-        if self.haveVolpro and self.method in [0,2,3] and self.volpro.GetValue():
+        if self.haveVolpro and self.method in [RAYCAST,ISOSURFACE,MIP] and self.volpro.GetValue():
             # use volumepro accelerated rendering
-            modes=["Composite",None,"MaximumIntensity","MinimumIntensity"]
+            modes=["Composite",None,None,"MaximumIntensity","MinimumIntensity"]
             self.module.setVolumeProAcceleration(modes[self.method])
             self.settingEdit.Enable(0)
             self.qualitySlider.Enable(0)

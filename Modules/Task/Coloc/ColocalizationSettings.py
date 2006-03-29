@@ -69,7 +69,8 @@ class ColocalizationSettings(DataUnitSettings):
                   "ColocAmount","ColocPercent","PercentageVolumeCh1",
                   "PercentageTotalCh1","PercentageTotalCh2",
                   "PercentageVolumeCh2","PercentageMaterialCh1","PercentageMaterialCh2",
-                  "SumOverThresholdCh1","SumOverThresholdCh2","SumCh1","SumCh2"]:
+                  "SumOverThresholdCh1","SumOverThresholdCh2","SumCh1","SumCh2",
+                  "NonZeroCh1","NonZeroCh2","OverThresholdCh1","OverThresholdCh2"]:
             self.register(i,1)
         self.register("OutputScalar",1)
 

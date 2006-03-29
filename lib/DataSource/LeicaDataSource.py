@@ -37,8 +37,10 @@ import re
 import string
 import vtk
 import math
-import Image
-        
+try:
+    import Image
+except:
+    Image=None
 from DataSource import *
 import DataUnit
         
@@ -324,7 +326,7 @@ class LeicaExperiment:
         #fn=os.path.join(self.path,filename)
         #print fn##
         #f=open(fn)
-        
+        if not Image:return 0,0,0
         img=Image.open(fn)
         if not img.palette:
             return 255,255,255

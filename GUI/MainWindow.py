@@ -180,7 +180,7 @@ class MainWindow(wx.Frame):
         self.shellWin.SetOrientation(wx.LAYOUT_HORIZONTAL)
         self.shellWin.SetAlignment(wx.LAYOUT_BOTTOM)
         #self.shellWin.SetSashVisible(wx.SASH_TOP,False)
-        self.shellWin.origSize=(500,64)
+        self.shellWin.origSize=(500,128)
         self.shellWin.SetDefaultSize((0,0))
         self.shell=None
         
@@ -211,7 +211,10 @@ class MainWindow(wx.Frame):
         self.loadVisualizer(None,"slices",init=1)
         self.onMenuShowTree(None,1)
 
-        splash.Show(False)
+        try:
+            splash.Show(False)
+        except:
+            pass
         self.Show(True)       
         # Start listening for messenger signals
         messenger.send(None,"update_progress",1.0,"Done.") 
@@ -1477,13 +1480,12 @@ class MainWindow(wx.Frame):
             dlg.Destroy()            
             if answer != wx.ID_OK:
                 return
-            self.exitApp()
         self.visualizer.enable(0)        
         
         self.visualizer.closeVisualizer()
         
         self.Destroy()
-            
+	sys.exit(0)
 
         
 # 

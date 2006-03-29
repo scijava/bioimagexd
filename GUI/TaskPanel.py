@@ -200,8 +200,9 @@ class TaskPanel(scrolled.ScrolledPanel):
             dc.SetPen(wx.Pen(wx.Colour(r,g,b),4))
             dc.DrawRectangle(0,0,32,32)
             dc.EndDrawing()
-            dc.SelectObject(wx.EmptyBitmap(0,0))
-            toolid=wx.NewId()
+            #dc.SelectObject(wx.EmptyBitmap(0,0))
+            dc.SelectObject(wx.NullBitmap)
+	    toolid=wx.NewId()
             self.toolIds.append(toolid)
             self.toolMgr.addItem(name,bmp,toolid,lambda e,x=n,s=self:s.setPreviewedData(e,x))
             self.toolMgr.toggleTool(toolid,1)
@@ -335,7 +336,6 @@ class TaskPanel(scrolled.ScrolledPanel):
                         state
 
         """
-        # TODO: Implement properly
         self.Enable(enable)
 
     def doPreviewCallback(self,*args):

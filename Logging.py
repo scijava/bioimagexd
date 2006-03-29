@@ -31,7 +31,7 @@ __date__ = "$Date: 2005/01/11 14:36:00 $"
 
 
 import traceback
-import wx
+
 import os.path
 import sys
 
@@ -46,6 +46,39 @@ KWS=["visualizer","main","init","animator","io","task","preview","scale",
 import sys
 
 DO_DEBUG=1
+
+class Tee:
+    # Tee( file1, file2 [, filen ] ) 
+    # creates a writable fileobject where the output is tee-ed to all of
+    # the individual files. 
+    def __init__( self, *optargs ):
+	self._files = []
+	for arg in optargs:
+	    self.addfile( arg )
+    def addfile( self, file ):
+	self._files.append( file  )
+    def remfile( self, file ):
+	file.flush()
+	self._files.remove( file )
+    def files( self ):
+	return self._files
+    def write( self, what ):
+	for eachfile in self._files: 
+	    eachfile.write( what )
+    def writelines( self, lines ): 
+	for eachline in lines: self.write( eachline )
+    def flush( self ):
+	for eachfile in self._files:
+	    eachfile.flush()
+    def close( self ):
+	for eachfile in self._files:
+	    self.remfile( eachfile ) # Don't CLOSE the real files.
+    def CLOSE( self ):
+	for eachfile in self._files:
+	    self.remfile( eachfile ) 
+	    self.eachfile.close() 
+    def isatty( self ):
+	return 0
 
 def ignore_all(*args,**kws):
     pass
@@ -77,6 +110,9 @@ class GUIError:
         """
         self.msg=msg
         self.title=title
+        import wx
+        self.wx=wx
+       
 
     def show(self):
         """
@@ -84,7 +120,7 @@ class GUIError:
         Created: 13.12.2004, KP
         Description: Displays the error message in a tkMessageBox.
         """
-        dlg=wx.MessageDialog(None,self.msg,self.title,wx.OK|wx.ICON_ERROR)
+        dlg=self.wx.MessageDialog(None,self.msg,self.title,wx.OK|wx.ICON_ERROR)
         dlg.ShowModal()
         dlg.Destroy()
 

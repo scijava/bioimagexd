@@ -51,6 +51,8 @@ vtkImageAutoThresholdColocalization::vtkImageAutoThresholdColocalization()
     LowerThresholdCh1 = LowerThresholdCh2 = -1;
     UpperThresholdCh1 = UpperThresholdCh2 = 255;
     vtkImageData *plot;
+    
+    OverThresholdCh1 = OverThresholdCh2 = NonZeroCh1 = NonZeroCh2 = 0;
     plot = vtkImageData::New();
     plot->ReleaseData();
     this->AddOutput(plot);
@@ -166,6 +168,7 @@ template < class T >
     double ch1threshmax = 255;
     double ch2threshmin = 0;
     double ch2threshmax = 255;
+    int Nnonzeroch1 = 0, Nnonzeroch2 = 0;
         
     
 
@@ -207,6 +210,8 @@ template < class T >
     pd = outData[0]->GetPointData();
     pd->GetScalars()->SetName("Colocalization map");
 
+	 
+    int maxval=pow(2,sizeof(T)*8)-1;
     maxX = outExt[1] - outExt[0];
     maxY = outExt[3] - outExt[2];
     maxZ = outExt[5] - outExt[4];
@@ -241,6 +246,8 @@ template < class T >
             for (idxX = 0; idxX <= maxX; idxX++) {
                 ch1 = (int) *inPtr1++;
                 ch2 = (int) *inPtr2++;
+                if(ch1)Nnonzeroch1++;
+                if(ch2)Nnonzeroch2++;
                 ch3 = ch1 + ch2;
                 ch1mch1MeanSqSum +=
                     (ch1 - ch1Mean) * (ch1 - ch1Mean);
@@ -319,10 +326,14 @@ template < class T >
         ch2threshmax =
             round(((double) ch1threshmax * (double) m) +
               (double) b);
-                  
+	
+	printf("ch1thresmax=%f, ch2thresmax=%f\n",ch1threshmax,ch2threshmax);
+	// If a user specified threshold has been given, then it will be used
+	// instead of the calculated threshold
         if(LowerThresholdCh1 >= 0) ch1threshmax = LowerThresholdCh1;
         if(LowerThresholdCh2 >= 0) ch2threshmax = LowerThresholdCh2;
-
+	
+	
         //printf
         //    ("2/3: Calculating Threshold. i = %d.\n",
         //     iteration);
@@ -349,8 +360,8 @@ template < class T >
 
                     // Calculate pearson's for voxels below
                     // lower threshold
-                    if ((ch1 < (ch1threshmax))
-                        || (ch2 < (ch2threshmax))) {
+                    if ((ch1 <= (ch1threshmax))
+                        || (ch2 <= (ch2threshmax))) {
                         if (ch1 + ch2 == 0)
                             Nzero++;
                         //calc pearsons
@@ -435,8 +446,11 @@ template < class T >
     if(LowerThresholdCh2 >= 0) {
         ch2threshmax = LowerThresholdCh2;
     }
+    
+    if(ch1threshmax>maxval)ch1threshmax=maxval;
+    if(ch2threshmax>maxval)ch2threshmax=maxval;
     int colocInt = 255;
-
+    
     Nzero = 0;
     sumColocCh1 = 0;
     sumColocCh2 = 0;
@@ -533,8 +547,8 @@ template < class T >
                     colocY = colocY + ch2;
                 }
                 //printf("ch1=%d,ch2=%d,ch1threshmax=%f,ch2threshmax=%f\n",ch1,ch2,ch1threshmax,ch2threshmax);
-                if (((double) ch1 > ch1threshmax  && (double)ch1 <= UpperThresholdCh1)
-                    && ((double) ch2 > ch2threshmax)  && (double)ch2 <= UpperThresholdCh2) {
+                if (((double) ch1 >= ch1threshmax  && (double)ch1 <= UpperThresholdCh1)
+                    && ((double) ch2 >= ch2threshmax)  && (double)ch2 <= UpperThresholdCh2) {
                     sumColocCh1 = sumColocCh1 + ch1;
                     sumColocCh2 = sumColocCh2 + ch2;
                     Ncoloc++;
@@ -646,6 +660,11 @@ template < class T >
     
     self->SetDiffStainVoxelsCh1( (Nch1gtT)/float((Nch2gtT - Ncoloc)));
     self->SetDiffStainVoxelsCh2( (Nch2gtT)/float((Nch1gtT - Ncoloc)));
+    
+    self->SetOverThresholdCh1(Nch1gtT);
+    self->SetOverThresholdCh2(Nch2gtT);
+    self->SetNonZeroCh1(Nnonzeroch1);
+    self->SetNonZeroCh2(Nnonzeroch2);
     
     self->SetDiffStainIntCh1( (sumCh1gtT)/float((sumCh2gtT - sumColocCh2)));
     self->SetDiffStainIntCh2( (sumCh2gtT)/float((sumCh1gtT - sumColocCh1)));
