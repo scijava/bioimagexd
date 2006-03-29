@@ -113,7 +113,7 @@ class LSMApplication(wx.App):
                                  3000, None, -1)
         splash.Show()
          # Import Psyco if available
-        try:
+	try:
             pass
             #import psyco
 
@@ -143,8 +143,10 @@ class LSMApplication(wx.App):
         Created: 03.11.2004, KP
         Description: Run the wxPython main loop
         """
-        self.MainLoop()
+	self.MainLoop()
 
+	    
+	    
 
 if __name__=='__main__':
     if "py2exe" in sys.argv:
@@ -157,10 +159,14 @@ if __name__=='__main__':
         # to  a log file
         if "tofile" in sys.argv or main_is_frozen():
             import time
-	    
             logfile="output_%s.log"%(time.strftime("%d.%m.%y@:%H:%M"))
 	    logfile=os.path.join("logs",logfile)
-            f=open(logfile,"w")
+            f1=open(logfile,"w")
+	    logfile2=os.path.join("logs","latest.log")
+	    f2=open(logfile2,"w")
+	    f = Logging.Tee(f1,f2)
+	    import atexit
+	    atexit.register(f.flush)
             sys.stdout = f 
             sys.stderr = f
             Logging.outfile = f
