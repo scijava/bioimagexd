@@ -54,7 +54,8 @@ import operator
 import messenger
 import CameraView
 
-class RenderingConfigPanel(wx.Panel):
+#class RenderingConfigPanel(wx.Panel):
+class RenderingConfigPanel:
     """
     Class: TimelineConfig
     Created: 04.02.2005, KP
@@ -62,7 +63,8 @@ class RenderingConfigPanel(wx.Panel):
     """    
     def __init__(self,parent,control):
         self.control=control
-        wx.Panel.__init__(self,parent,-1)#,style=wx.SUNKEN_BORDER)
+        self.parent = parent
+        #wx.Panel.__init__(self,parent,-1)#,style=wx.SUNKEN_BORDER)
         #wx.wizard.WizardPageSimple.__init__(self,parent)
         self.control.setTimelineConfig(self)
         self.sizer=wx.GridBagSizer(5,5)
@@ -72,22 +74,22 @@ class RenderingConfigPanel(wx.Panel):
         self.updated = 0
         self.no_update=0
         self.outputsizer=wx.GridBagSizer(5,5)
-        box=wx.StaticBox(self,wx.HORIZONTAL,"Rendering parameters")
+        box=wx.StaticBox(self.parent,wx.HORIZONTAL,"Rendering parameters")
         self.outputstaticbox=wx.StaticBoxSizer(box,wx.HORIZONTAL)
         self.outputstaticbox.Add(self.outputsizer)
         
-        self.totalFramesLabel=wx.StaticText(self,-1,"Frames:")
-        self.durationLabel=wx.StaticText(self,-1,"Duration:")
+        self.totalFramesLabel=wx.StaticText(self.parent,-1,"Frames:")
+        self.durationLabel=wx.StaticText(self.parent,-1,"Duration:")
         #self.fpsLabel=wx.StaticText(self,-1,"12 / second")
 
-        self.totalFrames=wx.TextCtrl(self,-1,"720",size=(50,-1),style=wx.TE_PROCESS_ENTER)
-        self.spin = wx.SpinButton( self, -1,style=wx.SP_VERTICAL )
-        self.duration=masked.TimeCtrl(self,-1,"00:01:00",fmt24hr=True,size=(50,-1),style=wx.TE_PROCESS_ENTER,spinButton=self.spin)
+        self.totalFrames=wx.TextCtrl(self.parent,-1,"720",size=(50,-1),style=wx.TE_PROCESS_ENTER)
+        self.spin = wx.SpinButton( self.parent, -1,style=wx.SP_VERTICAL )
+        self.duration=masked.TimeCtrl(self.parent,-1,"00:01:00",fmt24hr=True,size=(50,-1),style=wx.TE_PROCESS_ENTER,spinButton=self.spin)
         
         self.totalFrames.Bind(wx.EVT_TEXT,self.updateFrameCount)
         self.duration.Bind(wx.EVT_TEXT,self.updateDuration)
 
-        self.followAspect=wx.CheckBox(self, -1, "Don't resize preview, only use aspect ratio.")
+        self.followAspect=wx.CheckBox(self.parent, -1, "Don't resize preview, only use aspect ratio.")
         toolTip = wx.ToolTip("""If this box is checked, the rendering preview window
 will always be sized so that it fits into the screen and
 uses the aspect ratio of the final rendered frame. If 
@@ -99,9 +101,9 @@ be the same size as the final frame.""")
         box.Add(self.duration)
         box.Add(self.spin)
         
-        self.frameSizeLbl = wx.StaticText(self,-1,"Frame size:")
+        self.frameSizeLbl = wx.StaticText(self.parent,-1,"Frame size:")
         self.resLst = [(0,0),(320,240),(512,512),(640,480),(720,576),(800,600)]
-        self.frameSize = wx.Choice(self,-1,
+        self.frameSize = wx.Choice(self.parent,-1,
         choices=["Custom","320 x 240","512 x 512","640 x 480","720x576 (PAL)","800 x 600"])
         self.frameSize.SetSelection(1)        
         self.frameSize.Bind(wx.EVT_CHOICE,self.onUpdateFrameSize)
@@ -113,18 +115,18 @@ be the same size as the final frame.""")
         self.outputsizer.Add(self.totalFrames,(1,1))
                 
         #self.outputsizer.Add(self.fpsLabel,(2,1))
-        self.frameRateLbl=wx.StaticText(self,-1,"Frame rate:")
-        self.frameRate = wx.TextCtrl(self,-1,"%.2f"%12,style=wx.TE_PROCESS_ENTER)
+        self.frameRateLbl=wx.StaticText(self.parent,-1,"Frame rate:")
+        self.frameRate = wx.TextCtrl(self.parent,-1,"%.2f"%12,style=wx.TE_PROCESS_ENTER)
         self.frameRate.Bind(wx.EVT_TEXT,self.updateFPS)
         
         
         self.outputsizer.Add(self.frameRateLbl,(2,0))
         self.outputsizer.Add(self.frameRate,(2,1))
         
-        self.custLbl=wx.StaticText(self,-1,"Custom size:")
-        self.custXLbl=wx.StaticText(self,-1,"x")
-        self.custX=wx.TextCtrl(self,-1,"512",size=(48,-1))
-        self.custY=wx.TextCtrl(self,-1,"512",size=(48,-1))
+        self.custLbl=wx.StaticText(self.parent,-1,"Custom size:")
+        self.custXLbl=wx.StaticText(self.parent,-1,"x")
+        self.custX=wx.TextCtrl(self.parent,-1,"512",size=(48,-1))
+        self.custY=wx.TextCtrl(self.parent,-1,"512",size=(48,-1))
         self.custX.Enable(0)
         self.custY.Enable(0)
         box=wx.BoxSizer(wx.HORIZONTAL)
@@ -145,9 +147,9 @@ be the same size as the final frame.""")
         #self.sizer.Add(self.sline,(4,0),flag=wx.EXPAND|wx.RIGHT|wx.LEFT)
         #self.sizer.Add(self.useButton,(5,0))
         
-        self.SetSizer(self.sizer)
-        self.SetAutoLayout(1)
-        self.sizer.Fit(self)
+        #self.SetSizer(self.sizer)
+        #self.SetAutoLayout(1)
+        #self.sizer.Fit(self)
         #self.updateFormat()
         self.useSettings()
         

@@ -268,8 +268,8 @@ class UrmasControl:
         """    
         if self.timeline:
             self.timeline.Layout()
-        if self.timelineConfig:
-            self.timelineConfig.Layout()
+        #if self.timelineConfig:
+        #    self.timelineConfig.Layout()
         if self.timelinePanel:
             self.timelinePanel.Layout()
         if self.window:

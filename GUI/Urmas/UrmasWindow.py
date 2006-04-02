@@ -143,7 +143,7 @@ class UrmasWindow(scrolled.ScrolledPanel):
         w2,h=self.timelinePanel.GetSize()
         self.timelinePanel.SetSize((w,h))
         evt.Skip()
-        print "Setting timeline panel to ",w,h
+        Logging.info("Setting timeline panel size to ",w,h,kw="animator")
 
     def updateRenderWindow(self,*args):
         """
@@ -153,6 +153,7 @@ class UrmasWindow(scrolled.ScrolledPanel):
                      after all initialization is done. For some
                      reason, it has to be done here to take effect.                    
         """
+        Logging.info("Setting view of render window",kw="animator")
         self.timelinePanel.wxrenwin.setView((1,1,1,0,0,1))
         
     def onShowFrame(self,evt):

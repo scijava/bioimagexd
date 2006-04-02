@@ -92,8 +92,11 @@ class TimelinePanel(wx.Panel):
 #        self.timelineConfig=RenderingConfigPanel.RenderingConfigPanel(self.confPanel,control)
         self.timelineConfig=RenderingConfigPanel.RenderingConfigPanel(self,control)
 
-        
-        self.confSizer.Add(self.timelineConfig,(0,0),flag=wx.EXPAND|wx.ALL)
+        # The timelineConfig is not actually a panel, just an object that contains
+        # the sizer we want to add to the layout. This is done to thin the hierarchy of
+        # panels because MacOS X doesn't like many nested panels. That's why we just
+        # add the sizer 
+        self.confSizer.Add(self.timelineConfig.sizer,(0,0),flag=wx.EXPAND|wx.ALL)
         
         #self.confPanel.SetSizer(self.confSizer)
         #self.confPanel.SetAutoLayout(1)
