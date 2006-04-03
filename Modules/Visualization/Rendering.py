@@ -214,7 +214,8 @@ class RenderingMode(VisualizationMode):
             return
         for module in self.modules:
             module.showTimepoint(self.timepoint)
-            module.updateRendering()
+            # Don't call updateRendering(), showTimepoint() will take care of it
+            #module.updateRendering()
         self.wxrenwin.Render()
         
     def deactivate(self,newmode=None):

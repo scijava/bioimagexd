@@ -347,7 +347,7 @@ class CombinedDataUnit(DataUnit.DataUnit):
             #Logging.info("outputChls=",self.outputChls,"n=",n)
             # If the renew flag is true, we need to regenerate the preview
             if renew:
-                Logging.backtrace()
+                
                 # We then tell the module to reset itself and
                 # initialize it again
                 self.module.reset()

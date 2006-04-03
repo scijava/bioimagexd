@@ -121,7 +121,7 @@ class VisualizationModule:
         """          
         self.showTimepoint(self.timepoint)
 
-    def showTimepoint(self,value):
+    def showTimepoint(self,value,update=1):
         """
         Method: showTimepoint(tp)
         Created: 28.04.2005, KP
@@ -135,7 +135,8 @@ class VisualizationModule:
         else:
             Logging.info("Using timepoint data for tp",value,kw="rendering")
             self.data = self.dataUnit.getTimePoint(value)
-        self.updateRendering()
+        if update:
+            self.updateRendering()
         
     def updateRendering(self,input=None):
         """

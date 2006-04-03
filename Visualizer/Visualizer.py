@@ -94,6 +94,7 @@ class Visualizer:
         self.ElevationStep=5
         self.viewCombo = None
         self.histogramIsShowing=0
+        self.blockTpUpdate=0
         self.histogramDataUnit=None
         self.histograms=[]
         self.changing=0
@@ -323,7 +324,9 @@ class Visualizer:
         if self.timepoint<self.maxTimepoint:
             Logging.info("Setting timepoint to ",self.timepoint+1,kw="visualizer")
             self.setTimepoint(self.timepoint+1)
+            self.blockTpUpdate=1
             messenger.send(None,"timepoint_changed",self.timepoint)        
+            self.blockTpUpdate=0
     def onPrevTimepoint(self,evt):
         """
         Method: onPrevTimepoint
@@ -332,7 +335,9 @@ class Visualizer:
         """        
         if self.timepoint>=1:
             self.setTimepoint(self.timepoint-1)
+            self.blockTpUpdate=1
             messenger.send(None,"timepoint_changed",self.timepoint)        
+            self.blockTpUpdate=0
     def createHistogram(self):
         """
         Method: createHistogram()
@@ -1214,7 +1219,9 @@ class Visualizer:
         tp-=1 # slider starts from one
         if self.timepoint != tp:
             Logging.info("Sending timepoint change event (tp=%d)"%tp,kw="visualizer")
+            self.blockTpUpdate=1
             messenger.send(None,"timepoint_changed",tp)
+            self.blockTpUpdate=0
             self.setTimepoint(tp)
             
             
@@ -1340,6 +1347,8 @@ class Visualizer:
         Created: 28.04.2005, KP
         Description: Set the timepoint to be shown
         """  
+        if self.blockTpUpdate:return
+
         Logging.info("setTimepoint(%d)"%timepoint,kw="visualizer")
         curr=self.timeslider.GetValue()
         if curr-1!=timepoint:
