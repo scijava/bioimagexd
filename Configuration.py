@@ -23,7 +23,7 @@
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
 
- You should have received a copy of the GNU General Public License
+ You should have received a cop of the GNU General Public License
  along with this program; if not, write to the Free Software
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
@@ -36,6 +36,7 @@ import sys, types
 import ConfigParser
 import Logging
 conf=None
+import platform
 
 def getConfiguration():
     return conf
@@ -58,7 +59,10 @@ class Configuration:
     
         # Set the initial values
         #vtkpath=self.getPath(["Libraries","VTK"])
-        vtkpath=self.getPath(["C:\\VTK-build"])
+        if platform.system()=="Windows":
+            vtkpath=self.getPath(["C:\\VTK-build"])
+        else:
+            vtkpath="/home/kalpaha/BioImageXD/VTK-current"
         self.setConfigItem("ShowTip","General","True",0)
         self.setConfigItem("AskOnQuit","General","True",0)
         self.setConfigItem("TipNumber","General",0,0)

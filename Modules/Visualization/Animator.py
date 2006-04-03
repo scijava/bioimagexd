@@ -119,6 +119,7 @@ class AnimatorMode(VisualizationMode):
             self.urmaswin.Show()
             wx.CallAfter(self.urmaswin.updateRenderWindow)
             
+        print "Activation done..."
         return self.urmaswin
         
     def Render(self):

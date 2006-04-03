@@ -63,7 +63,7 @@ class SplitPanel(wx.SplitterWindow):
     """    
     def __init__(self, parent, ID):
         wx.SplitterWindow.__init__(self, parent, ID,
-                                   style = wx.SP_LIVE_UPDATE
+                                   #style = wx.SP_LIVE_UPDATE
                                    )        
 class TimelinePanel(wx.Panel):
     """
@@ -71,25 +71,15 @@ class TimelinePanel(wx.Panel):
     Created: 04.02.2005, KP
     Description: Contains the timescale and the different "tracks"
     """    
-    def __init__(self,parent,control,size=(750,300)):
+    def __init__(self,parent,control,size=(750,300),p=None):
         wx.Panel.__init__(self,parent,-1,style=wx.RAISED_BORDER,size=size)
-        
         self.parent=parent
         self.control=control
-        self.sizer=wx.GridBagSizer()
-        
+        self.sizer=wx.GridBagSizer()        
         w=size[0]
-        #self.timeline=Timeline(self,self.control,size=(w,200))
-#        self.sizer.Add(self.timeline,(0,0),span=(1,2),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
-        
-        #sline=wx.StaticLine(self)
-        #self.sizer.Add(sline,(1,0),span=(1,2),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
-        
 
-        #self.confPanel=wx.Panel(self,-1)
         self.confSizer=wx.GridBagSizer()
         
-#        self.timelineConfig=RenderingConfigPanel.RenderingConfigPanel(self.confPanel,control)
         self.timelineConfig=RenderingConfigPanel.RenderingConfigPanel(self,control)
 
         # The timelineConfig is not actually a panel, just an object that contains
@@ -98,48 +88,30 @@ class TimelinePanel(wx.Panel):
         # add the sizer 
         self.confSizer.Add(self.timelineConfig.sizer,(0,0),flag=wx.EXPAND|wx.ALL)
         
-        #self.confPanel.SetSizer(self.confSizer)
-        #self.confPanel.SetAutoLayout(1)
-
         sbox=wx.StaticBox(self,-1,"Animator configuration")
         sboxsizer=wx.StaticBoxSizer(sbox,wx.HORIZONTAL)
-        #sboxsizer.Add(self.confPanel)
         sboxsizer.Add(self.confSizer)
-        #self.camView=CameraView.CameraView(self,-1)
-        #sboxsizer.Add(self.camView)
-        
-#        self.useButton=wx.Button(self.confPanel,-1,"Use settings")
+    
         self.useButton=wx.Button(self,-1,"Use settings")
 
         self.useButton.Bind(wx.EVT_BUTTON,self.useSettings)
            
         self.confSizer.Add(self.useButton,(1,0))
         
-        #self.modeBox=wx.RadioBox(self.confPanel,-1,"Keyframe mode",
-        #choices=["Modify Keyframe",
-        #"Set Camera angle",
-        #"Add Keyframe"],
-        #majorDimension=2,
-        #style=wx.RA_SPECIFY_ROWS    
-        #)
-        #self.confSizer.Add(self.modeBox,(0,1))
         self.sizer.Add(sboxsizer,(0,0),flag=wx.EXPAND|wx.ALL)
         
-        
-        #self.wxrenwin=VisualizerWindow.VisualizerWindow(self,size=(400,300))
         self.wxrenwin=VisualizerWindow.VisualizerWindow(self,size=(300,300))
-        
-        #self.wxrenwin.Render()
+        self.wxrenwin.Enable(0)
         
         self.splineEditor=SplineEditor.SplineEditor(self,self.wxrenwin)
         self.control.setSplineEditor(self.splineEditor)        
+
 
         self.sbox=wx.StaticBox(self,-1,"Rendering preview")
         self.sboxsizer=wx.StaticBoxSizer(self.sbox,wx.VERTICAL)                
         self.sboxsizer.Add(self.wxrenwin)
         
         self.sizer.Add(self.sboxsizer,(0,1))#,flag=wx.EXPAND|wx.ALL) 
-        
         
         self.SetSizer(self.sizer)
         self.SetAutoLayout(1)
@@ -171,11 +143,10 @@ class TimelinePanel(wx.Panel):
         self.wxrenwin.SetMinSize((x,y))
         print "Setting size of renderwindow to ",(x,y)
         
-        #self.sboxsizer.Fit(self.wxrenwin)
         self.wxrenwin.Update()
         self.sboxsizer.SetMinSize((x+10,y+25))
         self.sbox.SetSize((x+10,y+25))
-        #self.sbox.SetClientSize((x,y))
+        
         self.wxrenwin.Render()
         
         

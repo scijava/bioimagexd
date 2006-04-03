@@ -331,7 +331,7 @@ class MainWindow(wx.Frame):
         if not self.currentTaskWindow:
             Logging.info("Setting dataset for visualizer=",data.__class__,kw="dataunit")
             self.visualizer.setDataUnit(data)
-            self.visualizer.updateRendering()
+            #self.visualizer.updateRendering()
         
     def updateTitle(self,obj,evt,data):
         """
@@ -1106,7 +1106,7 @@ class MainWindow(wx.Frame):
         if not evt2:
             self.onMenuShowTree(None,1)
             asklist=[]
-            wc="Volume datasets|*.oif;*.OIF;*.lsm;*.LSM;*.bxd;*.txt;*.TXT|Olympus OIF Files (*.oif)|*.oif;*.OIF|LSM Files (*.lsm)|*.lsm;*.LSM|Leica TCS-NT Files (*.txt)|*.txt;*.TXT|BioImageXD Datasets (*.bxd)|*.bxd;*.bxd|VTK Image Data (*.vti)|*.vti;*.VTI"
+            wc="Volume datasets|*.pic;*.PIC;*.oif;*.OIF;*.lsm;*.LSM;*.bxd;*.txt;*.TXT|Biorad PIC files (*.pic)|*.pic;*.PIC|Olympus OIF Files (*.oif)|*.oif;*.OIF|LSM Files (*.lsm)|*.lsm;*.LSM|Leica TCS-NT Files (*.txt)|*.txt;*.TXT|BioImageXD Datasets (*.bxd)|*.bxd;*.bxd|VTK Image Data (*.vti)|*.vti;*.VTI"
             asklist=Dialogs.askOpenFileName(self,"Open a volume dataset",wc)
         else:
             asklist=args
@@ -1170,7 +1170,7 @@ class MainWindow(wx.Frame):
         Logging.info("Loading dataset with extension %s, path=%s"%(ext,path),kw="io")
     
         extToSource={"bxd":VtiDataSource,"lsm":LsmDataSource,"txt":LeicaDataSource,
-        "oif":OlympusDataSource}
+        "oif":OlympusDataSource,"pic":BioradDataSource}
         try:
             datasource=extToSource[ext]()
         except KeyError,ex:

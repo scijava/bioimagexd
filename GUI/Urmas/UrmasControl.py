@@ -254,9 +254,11 @@ class UrmasControl:
 #        print "updating spline editor with ",data
         ctf=self.renderingInterface.getColorTransferFunction()
 #        print "ctf=",ctf
+        
         self.splineEditor.updateData(data,ctf)
+        
         self.splineEditor.initCamera()
-
+        
         self.splineEditor.render()
 
         

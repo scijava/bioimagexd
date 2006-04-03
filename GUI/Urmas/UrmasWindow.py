@@ -54,9 +54,9 @@ import PlaybackControl
 from GUI import MenuManager
 import messenger
 
-#class UrmasWindow(wx.SashLayoutWindow):
+
 class UrmasWindow(scrolled.ScrolledPanel):
-#class UrmasWindow(wx.ScrolledWindow):
+#class UrmasWindow(wx.Panel):
     """
     Class: UrmasWindow
     Created: 10.02.2005, KP
@@ -67,9 +67,10 @@ class UrmasWindow(scrolled.ScrolledPanel):
     def __init__(self,parent,menumanager,taskwin,visualizer):
         #wx.Frame.__init__(self,parent,-1,"Rendering Manager / Animator",size=(1024,768))
         #wx.SashLayoutWindow.__init__(self,parent,-1)
+        self.scrolled = 1
         scrolled.ScrolledPanel.__init__(self,parent,-1)
         #wx.ScrolledWindow.__init__(self,parent,-1)
-    
+        #wx.Panel.__init__(self,parent,-1)
         self.parent = parent
         self.taskWin=taskwin
         self.videoGenerationPanel = None
@@ -89,7 +90,7 @@ class UrmasWindow(scrolled.ScrolledPanel):
         self.splitter = TimelinePanel.SplitPanel(self,-1)
         w=self.GetSize()[0]
         self.timeline=Timeline(self.splitter,self.control,size=(w,50))
-        self.timelinePanel=TimelinePanel.TimelinePanel(self.splitter,self.control,size=(1024,500))
+        self.timelinePanel=TimelinePanel.TimelinePanel(self.splitter,self.control,size=(1024,500),p=self.parent)
         self.timelinePanel.timeline=self.timeline
         #self.splitter.SetMinimumPaneSize(10)
         self.splitter.SplitHorizontally(self.timeline,self.timelinePanel,-300)
@@ -118,12 +119,12 @@ class UrmasWindow(scrolled.ScrolledPanel):
         messenger.connect(None,"video_generation_close",self.onVideoGenerationClose)
         self.SetSizer(self.sizer)
         self.SetAutoLayout(1)
-        self.SetupScrolling()
-        #self.SetScrollRate(20,20)
+        if self.scrolled:
+            self.SetupScrolling()
         
-        #self.sizer.Fit(self)
-        #self.SetStatusText("Done.")
+        self.splitter.UpdateSize()
         wx.CallAfter(self.updateRenderWindow)
+        
         
         #self.Bind(wx.EVT_SIZE,self.OnSize)
         
@@ -132,19 +133,6 @@ class UrmasWindow(scrolled.ScrolledPanel):
             self.timelinePanel.splineEditor.iren.Enable()
         else:
             self.timelinePanel.splineEditor.iren.Disable()
-        
-    def OnSize(self,evt):
-        """
-        Method: OnSize
-        Created: 19.12.2005, KP
-        Description: The size evet
-        """            
-        w,h=evt.GetSize()
-        w2,h=self.timelinePanel.GetSize()
-        self.timelinePanel.SetSize((w,h))
-        evt.Skip()
-        Logging.info("Setting timeline panel size to ",w,h,kw="animator")
-
     def updateRenderWindow(self,*args):
         """
         Method: updateRenderWindow
@@ -162,7 +150,6 @@ class UrmasWindow(scrolled.ScrolledPanel):
         Created: 15.08.2005, KP
         Description: Sets the frame to be shown
         """
-        #tp=self.visualizer.timeslider.GetValue()
         tp=self.controlpanel.timeslider.GetValue()
         tp/=10.0
         messenger.send(None,"show_time_pos",tp-0.1)
@@ -340,13 +327,8 @@ class UrmasWindow(scrolled.ScrolledPanel):
             if self.visualizer.getCurrentModeName()!="animator":
                 self.visualizer.setVisualizationMode("animator")            
 
-        #self.timelinePanel.wxrenwin.Update()
-        #self.timelinePanel.wxrenwin.Render()
         self.visualizer.getCurrentMode().lockSliderPanel(0)
         self.visualizer.OnSize()
-        #self.FitInside()
-        #self.SetupScrolling()
-        #self.Layout()
         
         
         
@@ -597,7 +579,6 @@ class UrmasWindow(scrolled.ScrolledPanel):
         #self.timepointSelection.setDataUnit(dataUnit)
         #self.timelinePanel.setDataUnit(dataUnit)
         self.control.setDataUnit(dataUnit)
-
 
         
 # safeguard        

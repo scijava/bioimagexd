@@ -4,3 +4,4 @@ from LSMDataSource import *
 from DUDataWriter import *
 from LeicaDataSource import *
 from OlympusDataSource import *
+from BioradDataSource import *

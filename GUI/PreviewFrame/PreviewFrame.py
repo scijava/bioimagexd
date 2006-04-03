@@ -191,7 +191,7 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         """        
         self.renewNext=1
         
-    def setSelectedItem(self,item):
+    def setSelectedItem(self,item,update=1):
         """
         Method: setSelectedItem(n)
         Created: 05.04.2005, KP
@@ -201,7 +201,8 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         self.selectedItem = item
         self.settings = self.dataUnit.getSourceDataUnits()[item].getSettings()
         self.settings.set("PreviewedDataset",item)
-        self.updatePreview(1)
+        if update:
+            self.updatePreview(1)
         
     def onSetInterpolation(self,event):
         """
@@ -335,20 +336,24 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         
 
         if selectedItem!=-1:
-            self.setSelectedItem(selectedItem)
+            self.setSelectedItem(selectedItem,update=0)
 
+        updated=0
         if self.zoomFactor:
             if self.zoomFactor == ZOOM_TO_FIT:
                 Logging.info("Factor = zoom to fit",kw="preview")
                 self.zoomToFit()
                 self.updatePreview(1)
+                updated=1
             else:
                 self.setZoomFactor(self.zoomFactor)
                 self.updatePreview(1)
+                updated=1
         
         self.Layout()
         self.parent.Layout()
-        self.updatePreview(1)
+        if not updated:
+            self.updatePreview(1)
 
 
     def updatePreview(self,renew=1):

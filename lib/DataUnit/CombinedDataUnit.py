@@ -202,7 +202,6 @@ class CombinedDataUnit(DataUnit.DataUnit):
                     self.module.addInput(dataunit,image)
                 # Get the vtkImageData containing the results of the operation 
                 # for this time point
-                # TODO: Change this to a wxpython event
                 imageData=self.module.doOperation()
                 messenger.send(None,"update_processing_progress",timePoint,self.n,len(timepoints))
                 self.n+=1
@@ -308,6 +307,7 @@ class CombinedDataUnit(DataUnit.DataUnit):
                     timePoint   The timepoint from which to generate the preview
                                 Defaults to 0
         """
+        
         preview=None
         # If the given timepoint > number of timepoints,
         # it is scaled to be in the range 0-getDataUnitCount()-1
@@ -347,6 +347,7 @@ class CombinedDataUnit(DataUnit.DataUnit):
             #Logging.info("outputChls=",self.outputChls,"n=",n)
             # If the renew flag is true, we need to regenerate the preview
             if renew:
+                Logging.backtrace()
                 # We then tell the module to reset itself and
                 # initialize it again
                 self.module.reset()

@@ -36,6 +36,7 @@ import time
 import vtk
 from vtk.wx.wxVTKRenderWindowInteractor import wxVTKRenderWindowInteractor
 
+
 import Dialogs
 from VisualizationModules import *
 from ModuleConfiguration import *
@@ -132,6 +133,7 @@ class VisualizerWindow(wxVTKRenderWindowInteractor):
         self.zoomFactor=factor
         print "Setting zoom factor to",factor
         self.renderer.GetActiveCamera().Zoom(factor)
+    
         self.renderer.Render()
         
     def setView(self,params):
@@ -160,9 +162,8 @@ class VisualizerWindow(wxVTKRenderWindowInteractor):
         """
         self.rubberband=1
         self.oldStyle=self.iren.GetInteractorStyle()
-        self.iren.SetInteractorStyle(vtk.vtkInteractorStyleRubberBandZoom())
-
-
+        self.iren.SetInteractorStyle(vtk.vtkInteractorStyleRubberBandZoom())    
+    
     def onRenderBegin(self,event=None,e2=None):
         """
         Method: onRenderBegin
@@ -273,7 +274,6 @@ class VisualizerWindow(wxVTKRenderWindowInteractor):
         if not self.renderer:
             collection=self.GetRenderWindow().GetRenderers()
             if collection.GetNumberOfItems()==0:
-                print "Adding renderer"
                 self.renderer = vtk.vtkRenderer()
                 self.GetRenderWindow().AddRenderer(self.renderer)
             else:

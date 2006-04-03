@@ -32,6 +32,7 @@ import wx
 import Logging
 import types
 import messenger
+import time
 
 
 class TreeWidget(wx.SashLayoutWindow):
@@ -54,7 +55,9 @@ class TreeWidget(wx.SashLayoutWindow):
         self.parent=parent
         self.tree = wx.TreeCtrl(self,self.treeId,style=wx.TR_HAS_BUTTONS|wx.TR_MULTIPLE)
         
+        self.lastobj = None
         self.tree.Bind(wx.EVT_TREE_SEL_CHANGED,self.onSelectionChanged,id=self.tree.GetId())    
+        self.tree.Bind(wx.EVT_TREE_ITEM_ACTIVATED,self.onActivateItem,id=self.tree.GetId())
         self.items={}
         self.greenitems=[]
         self.yellowitems=[]
@@ -77,6 +80,7 @@ class TreeWidget(wx.SashLayoutWindow):
         self.leicafiles=None
         self.bxdfiles=None
         self.oiffiles=None
+        self.bioradfiles=None
         
         self.itemColor=(0,0,0)
         
@@ -288,7 +292,14 @@ class TreeWidget(wx.SashLayoutWindow):
             self.tree.Expand(item)
             self.tree.SetPyData(item,"2")
             self.tree.SetItemImage(item,fldropenidx,which=wx.TreeItemIcon_Expanded)
-            
+        elif objtype=="pic":
+            if not self.bioradfiles:
+                self.bioradfiles=self.tree.AppendItem(self.root,"BioRad files")
+                self.tree.SetPyData(self.bioradfiles,"1")
+                self.tree.SetItemImage(self.bioradfiles,fldridx,which=wx.TreeItemIcon_Normal)
+                self.tree.SetItemImage(self.bioradfiles,fldropenidx,which=wx.TreeItemIcon_Expanded)
+            item=self.bioradfiles
+            self.tree.Expand(item)
         elif objtype=="bxd":
             if not self.bxdfiles:
                 self.bxdfiles=self.tree.AppendItem(self.root,"BioImageXD files")
@@ -308,7 +319,6 @@ class TreeWidget(wx.SashLayoutWindow):
             #self.tree.SetItemImage(added,fldropenidx,which=wx.TreeItemIcon_Expanded)
             self.tree.EnsureVisible(added)
         self.tree.Expand(self.root)
-    print "Done adding"
 
     def getSelectedDataUnits(self):
         """
@@ -320,23 +330,22 @@ class TreeWidget(wx.SashLayoutWindow):
         objs=[self.tree.GetPyData(x) for x in items]
         return objs
         
-    def onUpdateSelection(self):
+
+    def onActivateItem(self,event=None):
         """
-        Method: onUpdateSelection
-        Created: 4.10.2005, KP
-        Description: A event handler called when the seleced item is updated
-        """              
-        items=self.tree.GetSelections()
-        item=items[-1]
+        Method: onActivateItem
+        Created: 03.04.2006, KP
+        Description: A event handler called when user double clicks an item
+        """      
+        item = event.GetItem()
         if not item.IsOk():
             return
-        
         obj=self.tree.GetPyData(item)
-        self.item=item
-        if obj and type(obj)!=types.StringType:
-            Logging.info("Switching to ",obj)
-            messenger.send(None,"tree_selection_changed",obj)        
-            self.markGreen([item])        
+        self.item = item
+        messenger.send(None,"tree_selection_changed",obj)
+        self.markGreen([item])
+        
+        event.Skip()
         
     def onSelectionChanged(self,event=None):
         """
@@ -344,39 +353,19 @@ class TreeWidget(wx.SashLayoutWindow):
         Created: 10.01.2005, KP
         Description: A event handler called when user selects and item.
         """      
-        wx.FutureCall(500,self.onUpdateSelection)
-        return
-        #if event:
-        #    key=event.GetKeyEvent()
-        #    if key.ControlDown() or key.ShiftDown():
-        #        event.Skip()
-        #        return
-        if 0 or event:
-            pass
-            #self.item=event.GetItem()
-            #items=self.tree.GetSelections()
-            #item=items[-1]
-            #self.markGreen([item])
-            #items.remove(self.item)
-            #self.markYellow(items)
-            #wx.FutureCall(10,self.onSelectionChanged)
-            #return 1
-        #item=self.item
-        if event:
-            item=event.GetItem()
-            self.item=item
-        else:
-            item=self.item
-        print "item=",item
+        item=event.GetItem()
+        #items=self.tree.GetSelections()
+        #item=items[-1]
         if not item.IsOk():
             return
         
         obj=self.tree.GetPyData(item)
+        self.item=item
         if obj and type(obj)!=types.StringType:
-            Logging.info("Switching to ",obj)
-            messenger.send(None,"tree_selection_changed",obj)        
-            #self.markGreen([item])
-            
-        ### SAFEGUARD
-        ### FOO
-        
+            if self.lastobj != obj:
+                print "Last obj=",self.lastobj,"!=",obj
+                Logging.info("Switching to ",obj)
+                messenger.send(None,"tree_selection_changed",obj)        
+                self.markGreen([item])        
+                self.lastobj = obj
+        #event.Skip()
