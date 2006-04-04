@@ -35,6 +35,7 @@ import os.path
 import os
 import sys
 import imp
+import platform
 
 try:
     import profile
@@ -67,6 +68,12 @@ todir=get_main_dir()
 if todir:
     os.chdir(todir)
 
+def get_config_dir():
+    if platform.system()=="Darwin":
+        return os.path.expanduser("~/Library/Preferences")
+    else:
+        return get_main_dir()
+        
 
 import csv
 
@@ -74,7 +81,9 @@ import Configuration
 #sys.path.insert(0,"C:\\Mingw\\lib")
 # This will fix the VTK paths using either values from the
 # configuration file, or sensible defaults
-cfg=Configuration.Configuration("BioImageXD.ini")
+
+conffile = os.path.join(get_config_dir(),"BioImageXD.ini")
+cfg=Configuration.Configuration(conffile)
 
 # We need to import VTK here so that it is imported before wxpython.
 # if wxpython gets imported before vtk, the vtkExtTIFFReader will not read the olympus files

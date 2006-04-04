@@ -2,7 +2,7 @@
 import vtk
 import sys
 reader=vtk.vtkLSMReader()
-reader.SetFileName("/Users/bioimagexd/Desktop/lsm_samples/selli_coloc1_8-bit.lsm")
+reader.SetFileName("/home/dan/danielwh/stuff/volumerender/lsmfiles/selli_coloc1_8-bit.lsm")
 reader.SetUpdateChannel(1)
 reader.Update()
 
