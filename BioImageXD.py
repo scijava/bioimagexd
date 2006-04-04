@@ -71,7 +71,7 @@ if todir:
 
 def get_log_dir():
     if platform.system()=="Darwin":
-        return os.path.expanduser("~/Library/BioImageXD")
+        return os.path.expanduser("~/Library/Logs/BioImageXD")
     else:
         return "logs"
     
