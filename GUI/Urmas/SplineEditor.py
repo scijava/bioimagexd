@@ -121,16 +121,17 @@ class SplineEditor:
         Created: 20.03.2005, HU, KP
         Description: Code to initialize VTK portions of this widget
         """           
-
+        
         self.renWin = self.wxrenwin.GetRenderWindow()
-        self.renderer = ren = vtk.vtkRenderer ()
-        self.renWin.AddRenderer(ren)
+        
+        ren = self.renderer = self.wxrenwin.getRenderer()
+        
         ren.SetBackground(0,0,0)
         self.wxrenwin.Render()
 
         self.iren = iren = self.renWin.GetInteractor()
         self.iren.SetSize(self.renWin.GetSize())
-        self.iren.SetInteractorStyle(vtk.vtkInteractorStyleTrackballCamera())
+        #self.iren.SetInteractorStyle(vtk.vtkInteractorStyleTrackballCamera())
         #self.iren.SetInteractorStyle(vtk.vtkInteractorStyleJoystickCamera())
 
         self.dataExtensionX = 50
@@ -151,6 +152,7 @@ class SplineEditor:
         self.style.AddObserver("EndInteractionEvent",self.endInteraction)
         self.style.AddObserver("InteractionEvent",self.endInteraction)
         self.spline.SetInteractor(self.iren)
+        
         self.spline.On()
         
         self.spline.SetEnabled(1)        
@@ -181,7 +183,10 @@ class SplineEditor:
         self.arrowActor.GetProperty().SetColor((0,0,1))
         self.arrowActor.SetMapper(self.arrowMapper)
         #self.arrowActor.SetCamera(self.renderer.GetActiveCamera())
+        
+        # TEMPO
         self.renderer.AddActor(self.arrowActor)    
+        
         self.arrowActor.SetVisibility(0)
         
         self.wxrenwin.Render()
@@ -448,11 +453,9 @@ class SplineEditor:
 
         
         #volumeMapper = vtk.vtkVolumeTextureMapper2D()
-        volumeMapper = vtk.vtkFixedPointVolumeRayCastMapper()
-        volumeMapper.SetIntermixIntersectingGeometry(1)
-        volumeMapper.SetSampleDistance(2)
-        volumeMapper.SetBlendModeToComposite()
-        #volumeMapper.SetMaximumNumberOfPlanes(18)        
+        
+        volumeMapper = vtk.vtkVolumeTextureMapper3D()
+        
         data.Update()
         ncomps=data.GetNumberOfScalarComponents()
         if ncomps>1:
@@ -463,6 +466,7 @@ class SplineEditor:
         
         volume = vtk.vtkVolume()
         print "Adding volume"
+        # temporary
         self.renderer.AddVolume(volume)
         print "done"
         
@@ -493,7 +497,15 @@ class SplineEditor:
         self.volumeMapper = volumeMapper
         self.volumeProperty = volumeProperty
         self.wxrenwin.Render()
-
+        if not self.volumeMapper.IsRenderSupported(self.volumeProperty):
+            self.volumeMapper =  vtk.vtkFixedPointVolumeRayCastMapper()
+            self.volumeMapper.SetIntermixIntersectingGeometry(1)
+            self.volumeMapper.SetSampleDistance(2)
+            self.volumeMapper.SetBlendModeToComposite()
+            volume.SetMapper(self.volumeMapper)
+            self.volumeMapper.SetInput(self.data)
+            
+            
     def setCamera(self,cam):
         """
         Method: setCamera(cam)

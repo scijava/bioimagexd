@@ -99,9 +99,9 @@ class TimelinePanel(wx.Panel):
         self.confSizer.Add(self.useButton,(1,0))
         
         self.sizer.Add(sboxsizer,(0,0),flag=wx.EXPAND|wx.ALL)
-        
+        #f=wx.Frame(self,-1)
         self.wxrenwin=VisualizerWindow.VisualizerWindow(self,size=(300,300))
-        self.wxrenwin.Enable(0)
+        
         
         self.splineEditor=SplineEditor.SplineEditor(self,self.wxrenwin)
         self.control.setSplineEditor(self.splineEditor)        
