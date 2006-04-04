@@ -1,7 +1,7 @@
 # -*- coding: iso-8859-1 -*-
 
 """
- Unit: ProcessSetting
+ Unit: ManipulationSetting
  Project: BioImageXD
  Created: 26.03.2005, KP
  Description:
@@ -38,11 +38,11 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 from DataUnit import DataUnitSettings
 
-class ProcessSettings(DataUnitSettings):
+class ManipulationSettings(DataUnitSettings):
     """
-    Class: ProcessSettings
+    Class: ManipulationSettings
     Created: 27.03.2005, KP
-    Description: Stores settings related to single unit processing
+    Description: Stores settings related to single unit Manipulationing
     """
     def __init__(self,n=-1):
         """
@@ -51,23 +51,7 @@ class ProcessSettings(DataUnitSettings):
         Description: Constructor
         """
         DataUnitSettings.__init__(self,n)
-#        self.register("ColorTransferFunction")        
-        self.register("MedianFiltering",serialize=1)
-        self.register("AnisotropicDiffusion",serialize=1)
-        self.register("AnisotropicDiffusionMeasure",serialize=1)
-        self.register("AnisotropicDiffusionThreshold",serialize=1)
-        self.register("AnisotropicDiffusionFactor",serialize=1)
-        self.register("AnisotropicDiffusionFaces",serialize=1)
-        self.register("AnisotropicDiffusionEdges",serialize=1)
-        self.register("AnisotropicDiffusionCorners",serialize=1)
-        
-        
-        self.register("MedianNeighborhood",serialize=1)
-        self.register("SolitaryFiltering",serialize=1)
-        self.register("SolitaryHorizontalThreshold",serialize=1)
-        self.register("SolitaryVerticalThreshold",serialize=1)
-        self.register("SolitaryProcessingThreshold",serialize=1)
-        self.set("Type","Process")
+        self.set("Type","Manipulation")
         
         self.registerPrivate("ColorTransferFunction",1)        
         self.registerCounted("Source")
@@ -78,20 +62,6 @@ class ProcessSettings(DataUnitSettings):
         self.register("Type")
         self.register("Name")
         self.register("BitDepth")
-        
-        self.set("MedianFiltering",0)
-        self.set("MedianNeighborhood",[1,1,1])
-        self.set("SolitaryFiltering",0)
-        self.set("SolitaryHorizontalThreshold",0)
-        self.set("SolitaryVerticalThreshold",0)
-        self.set("SolitaryProcessingThreshold",0)      
-
-        self.set("AnisotropicDiffusionFaces",1)
-        self.set("AnisotropicDiffusionCorners",1)
-        self.set("AnisotropicDiffusionEdges",1)
-        self.set("AnisotropicDiffusionMeasure",1)
-        self.set("AnisotropicDiffusionThreshold",5.0)
-        self.set("AnisotropicDiffusionFactor",1.0)
         
     def initialize(self,dataunit,channels, timepoints):
         """

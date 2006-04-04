@@ -1,9 +1,9 @@
 # -*- coding: iso-8859-1 -*-
 """
- Unit: ProcessDataUnit
+ Unit: ManipulationDataUnit
  Project: BioImageXD
  Created: 01.01.2004, KP
- Description: A dataunit class that represents a data unit processed through filters
+ Description: A dataunit class that represents a data unit Manipulated through filters
 
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
@@ -31,11 +31,11 @@ __date__ = "$Date: 2005/01/13 14:09:15 $"
 import Logging
 
 from DataUnit import CombinedDataUnit
-import ProcessSettings
+import ManipulationSettings
 
-class ProcessDataUnit(CombinedDataUnit):
+class ManipulationDataUnit(CombinedDataUnit):
     """
-    Class: ProcessDataUnit
+    Class: ManipulationDataUnit
     Created: 24.11.2004, JM, JV
     Description: Class for an adjusted single-channel 4D DataUnit
     """
@@ -61,7 +61,7 @@ class ProcessDataUnit(CombinedDataUnit):
         """
         Method: setOriginal
         Created: 14.12.2004, JM, JV
-        Description: Sets the original DataUnit for this ProcessedSourceDataUnit
+        Description: Sets the original DataUnit for this ManipulationedSourceDataUnit
         Parameters: dataUnit  The original unmodified DataUnit
         """
         self.original = dataUnit
@@ -83,8 +83,7 @@ class ProcessDataUnit(CombinedDataUnit):
         """
         self.setOriginal(dataUnit)    
         CombinedDataUnit.addSourceDataUnit(self,dataUnit,**args)
-        self.name = "Adjusted %s"%dataUnit.getName()
-        Logging.info("Updating settings for corrected source dataunit",kw="processing")
+        self.name = "Manipulated %s"%dataUnit.getName()
         #print dataUnit.getColorTransferFunction()
         self.updateSettings()
         #print self.settings.get("ColorTransferFunction")
@@ -96,7 +95,7 @@ class ProcessDataUnit(CombinedDataUnit):
         Created: 02.04.2005, KP
         Description: Return the class that represents settings for this dataunit
         """
-        return ProcessSettings.ProcessSettings
+        return ManipulationSettings.ManipulationSettings
 
         
     def __str__(self):

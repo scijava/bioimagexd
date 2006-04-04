@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 # -*- coding: iso-8859-1 -*-
 """
- Unit: ProcessPanel
+ Unit: ManipulationPanel
  Project: BioImageXD
  Created: 31.05.2005, KP
  Description:
@@ -47,7 +47,7 @@ from GUI import TaskPanel
 import UIElements
 import string
 
-class ProcessPanel(TaskPanel.TaskPanel):
+class ManipulationPanel(TaskPanel.TaskPanel):
     """
     Class: RestorationWindow
     Created: 03.11.2004, KP
@@ -62,7 +62,7 @@ class ProcessPanel(TaskPanel.TaskPanel):
                 root    Is the parent widget of this window
         """
         self.timePoint = 0
-        self.operationName="Process"
+        self.operationName="Manipulation"
         TaskPanel.TaskPanel.__init__(self,parent,tb)
         # Preview has to be generated here
         # self.colorChooser=None
@@ -83,8 +83,8 @@ class ProcessPanel(TaskPanel.TaskPanel):
         """
         TaskPanel.TaskPanel.createButtonBox(self)
         
-        #self.processButton.SetLabel("Process Dataset Series")
-        self.processButton.Bind(wx.EVT_BUTTON,self.doProcessingCallback)
+        #self.ManipulationButton.SetLabel("Manipulation Dataset Series")
+        self.ManipulationButton.Bind(wx.EVT_BUTTON,self.doManipulationingCallback)
 
     def createOptionsFrame(self):
         """
@@ -152,7 +152,7 @@ class ProcessPanel(TaskPanel.TaskPanel):
         self.solitaryLbl=wx.StaticText(self.filtersPanel,-1,"Thresholds:")
         Xhelp="Threshold that a pixel's horizontal neighbor needs to be over so that the pixel is not removed."
         Yhelp="Threshold that a pixel's vertical neighbor needs to be over so that the pixel is not removed."
-        Thresholdhelp="Threshold that a pixel needs to be over to get processed by solitary filter."
+        Thresholdhelp="Threshold that a pixel needs to be over to get Manipulationed by solitary filter."
         j=0
         lsizer=wx.GridBagSizer()
         for i in ["X","Y","Threshold"]:
@@ -165,7 +165,7 @@ class ProcessPanel(TaskPanel.TaskPanel):
             lsizer.Add(lbl,(j,0))
             lsizer.Add(ctrl,(j,1))
             j+=1
-        self.solitaryThresholdLbl.SetLabel("Processing threshold:")
+        self.solitaryThresholdLbl.SetLabel("Manipulationing threshold:")
         
         self.solitarySizer.Add(self.doSolitaryCheckbutton)
         self.solitarySizer.Add(self.solitaryLbl)
@@ -240,28 +240,6 @@ class ProcessPanel(TaskPanel.TaskPanel):
         Description: A callback function called when the neither of the
                      filtering checkbox changes state
         """
-        self.doMedianCheckbutton.Enable(1)
-        self.doSolitaryCheckbutton.Enable(1)
-        self.doAnisoptropicCheckbutton.Enable(1) 
-        doMedian=self.doMedianCheckbutton.GetValue()
-        doSolitary=self.doSolitaryCheckbutton.GetValue()
-        doAniso=self.doAnisoptropicCheckbutton.GetValue()
-        
-        for widget in [self.neighborhoodX,self.neighborhoodY,self.neighborhoodZ,self.neighborhoodXLbl,\
-        self.neighborhoodYLbl,self.neighborhoodZLbl]:
-            widget.Enable(doMedian)
-    
-
-        for widget in [self.solitaryX,self.solitaryY,self.solitaryThreshold,self.solitaryXLbl,self.solitaryYLbl,\
-        self.solitaryThresholdLbl]:
-            widget.Enable(doSolitary)
-        
-        
-        for widget in [self.anisoDiffusionFactor,self.anisoDiffusionThreshold,self.anisoNeighborhoodFaces,self.anisoNeighborhoodEdges,self.anisoNeighborhoodCorners,self.anisoMeasureBox]:
-            widget.Enable(doAniso)
-
-        self.updateFilterData()
-        #self.doPreviewCallback()
 
     def updateSettings(self):
         """
@@ -273,50 +251,6 @@ class ProcessPanel(TaskPanel.TaskPanel):
         if self.dataUnit:
             get=self.settings.get
             set=self.settings.set
-            ctf = get("ColorTransferFunction")
-            if ctf and self.colorBtn:
-                print "Setting colorBtn.ctf"
-                self.colorBtn.setColorTransferFunction(ctf)
-                self.colorBtn.Refresh()
-            # median filtering
-            
-            median=get("MedianFiltering")
-            
-            self.doMedianCheckbutton.SetValue(median)
-            #neighborhood=self.dataUnit.getNeighborhood()
-            neighborhood=get("MedianNeighborhood")
-            self.neighborhoodX.SetValue(str(neighborhood[0]))
-            self.neighborhoodY.SetValue(str(neighborhood[1]))
-            self.neighborhoodZ.SetValue(str(neighborhood[2]))
-
-            # solitary filtering
-            #solitary=self.dataUnit.getRemoveSolitary()
-            solitary=get("SolitaryFiltering")
-            solitaryX=get("SolitaryHorizontalThreshold")
-            solitaryY=get("SolitaryVerticalThreshold")
-            solitaryThreshold=get("SolitaryProcessingThreshold")
-            self.doSolitaryCheckbutton.SetValue(solitary)
-            self.solitaryX.SetValue(str(solitaryX))
-            self.solitaryY.SetValue(str(solitaryY))
-            self.solitaryThreshold.SetValue(str(solitaryThreshold))
-            
-            diffFac=get("AnisotropicDiffusionFactor")
-            diffMeasure=get("AnisotropicDiffusionMeasure")
-            diffThreshold=get("AnisotropicDiffusionThreshold")
-            doAniso=get("AnisotropicDiffusion")
-            self.anisoDiffusionFactor.SetValue(str(diffFac))
-            self.anisoDiffusionThreshold.SetValue(str(diffThreshold))
-            self.anisoMeasureBox.SetSelection(int(diffMeasure))
-            self.doAnisoptropicCheckbutton.SetValue((not not doAniso))
-
-            self.doFilterCheckCallback()
-
-            faces=get("AnisotropicDiffusionFaces")
-            self.anisoNeighborhoodFaces.SetValue(faces)        
-            edges=get("AnisotropicDiffusionEdges")
-            self.anisoNeighborhoodEdges.SetValue(edges)
-            corners=get("AnisotropicDiffusionCorners")
-            self.anisoNeighborhoodCorners.SetValue(corners)
                 
     def updateFilterData(self):
         """
@@ -325,57 +259,13 @@ class ProcessPanel(TaskPanel.TaskPanel):
         Description: A method used to set the right values in dataset
                      from filter GUI widgets
         """
-        set=self.settings.set
-        get=self.settings.get
-        def setval(name,value):
-            if get(name)!=value:
-                set(name,value)
-                messenger.send(None,"renew_preview")
+        pass
         
-        setval("AnisotropicDiffusion",self.doAnisoptropicCheckbutton.GetValue())
-        setval("MedianFiltering",self.doMedianCheckbutton.GetValue())
-        setval("SolitaryFiltering",self.doSolitaryCheckbutton.GetValue())
-        nbh=(self.neighborhoodX.GetValue(),
-            self.neighborhoodY.GetValue(),
-            self.neighborhoodZ.GetValue())
-        try:
-            nbh=map(int,nbh)
-            setval("MedianNeighborhood",nbh)
-        except ValueError:
-            pass
-        sx,sy,st=0,0,0
-        
-        try:
-            sx=int(self.solitaryX.GetValue())
-            sy=int(self.solitaryY.GetValue())
-            st=int(self.solitaryThreshold.GetValue())
-            setval("SolitaryHorizontalThreshold",sx)
-            setval("SolitaryVerticalThreshold",sy)
-            setval("SolitaryProcessingThreshold",st)
-        except ValueError:
-            pass
-        try:
-            anisoFac=float(self.anisoDiffusionFactor.GetValue())
-            setval("AnisotropicDiffusionFactor",anisoFac)
-        except:
-            pass
-        anisoMeasure=self.anisoMeasureBox.GetSelection()
-        setval("AnisotropicDiffusionMeasure",anisoMeasure)
-        try:
-            anisoThreshold=float(self.anisoThreshold.GetValue())
-            setval("AnisotropicDiffusionThreshold",anisoThreshold)
-        except:
-            pass
-        
-        setval("AnisotropicDiffusionFaces",self.anisoNeighborhoodFaces.GetValue())        
-        setval("AnisotropicDiffusionEdges",self.anisoNeighborhoodEdges.GetValue())
-        setval("AnisotropicDiffusionCorners",self.anisoNeighborhoodCorners.GetValue())
-        
-    def doProcessingCallback(self,event=None):
+    def doManipulationingCallback(self,event=None):
         """
-        Method: doProcessingCallback()
+        Method: doManipulationingCallback()
         Created: 03.11.2004, KP
-        Description: A callback for the button "Process Dataset Series"
+        Description: A callback for the button "Manipulation Dataset Series"
         """
         self.updateFilterData()
         TaskPanel.TaskPanel.doOperation(self)
@@ -387,10 +277,6 @@ class ProcessPanel(TaskPanel.TaskPanel):
         Description: A callback for the button "Preview" and other events
                      that wish to update the preview
         """
-        # TODO: Validity checks, here or in dataunit
-
-        #print "doMedianVar in window: "
-        #print self.doMedianVar.get()
         self.updateFilterData()
         TaskPanel.TaskPanel.doPreviewCallback(self,event)
 
@@ -398,24 +284,11 @@ class ProcessPanel(TaskPanel.TaskPanel):
         """
         Method: setCombinedDataUnit(dataUnit)
         Created: 23.11.2004, KP
-        Description: Sets the processed dataunit that is to be processed.
+        Description: Sets the Manipulationed dataunit that is to be Manipulationed.
                      It is then used to get the names of all the source data
                      units and they are added to the menu.
-                     This is overwritten from TaskPanel since we only process
+                     This is overwritten from TaskPanel since we only Manipulation
                      one dataunit here, not multiple source data units
         """
         TaskPanel.TaskPanel.setCombinedDataUnit(self,dataUnit)
-        
-        ctf = self.settings.get("ColorTransferFunction")
-        if ctf and self.colorBtn:
-            self.colorBtn.setColorTransferFunction(ctf)
-        else:
-            print "Won't set ctf!"
-        
-        # We register a callback to be notified when the timepoint changes
-        # We do it here because the timePointChanged() code requires the dataunit
-        #self.Bind(EVT_TIMEPOINT_CHANGED,self.timePointChanged,id=ID_TIMEPOINT)
-
-        tf=self.settings.getCounted("IntensityTransferFunctions",self.timePoint)
-
         self.updateSettings()
