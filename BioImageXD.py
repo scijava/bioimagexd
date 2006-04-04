@@ -68,6 +68,13 @@ todir=get_main_dir()
 if todir:
     os.chdir(todir)
 
+
+def get_log_dir():
+    if platform.system()=="Darwin":
+        return os.path.expanduser("~/Library/BioImageXD")
+    else:
+        return "logs"
+    
 def get_config_dir():
     if platform.system()=="Darwin":
         return os.path.expanduser("~/Library/Preferences")
@@ -169,9 +176,12 @@ if __name__=='__main__':
         if "tofile" in sys.argv or main_is_frozen():
             import time
             logfile="output_%s.log"%(time.strftime("%d.%m.%y@:%H:%M"))
-	    logfile=os.path.join("logs",logfile)
+            logdir=get_log_dir()
+            if not os.path.exists(logdir):
+                os.mkdir(logdir)
+	    logfile=os.path.join(logdir,logfile)
             f1=open(logfile,"w")
-	    logfile2=os.path.join("logs","latest.log")
+	    logfile2=os.path.join(logdir,"latest.log")
 	    f2=open(logfile2,"w")
 	    f = Logging.Tee(f1,f2)
 	    import atexit

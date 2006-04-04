@@ -35,6 +35,7 @@ import traceback
 import os.path
 import sys
 
+
 outfile=sys.stdout
 #HIDE_DEBUG=[]
 HIDE_DEBUG=["visualizer","init","!io","scale","!preview","trivial",
