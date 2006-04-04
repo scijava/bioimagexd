@@ -55,6 +55,7 @@ def get_files(directory,asmodule=0):
                 else:
                     f=f[:-3] # remove the .py
                     modroot=root.replace("\\",".")
+		    modroot=root.replace("/",".")
                     modules.append(modroot+"."+f)
         if not asmodule:
            modules.append((root,incurrent))
@@ -71,7 +72,7 @@ def build():
         "pywin", "pywin.debugger", "pywin.debugger.dbgcon",
             "pywin.dialogs", "pywin.dialogs.list",
             "Tkconstants","Tkinter","tcl"
-            ]
+        ]
         # Exclude the sources because they will be packaged as plain python files
         #SOURCES=["GUI","Modules","Visualizer"]
         #EXCLUDES+=SOURCES
@@ -89,44 +90,40 @@ def build():
         DATA_FILES.extend(modules)
 
         if platform.system() == "Darwin":
-		    import py2app
-			# Note that you must replace hypens '-' with underscores '_'
-			# when converting option names from the command line to a script.
-			# For example, the --argv-emulation option is passed as 
-			# argv_emulation in an options dict.
-			py2app_options = dict(
-				# Map "open document" events to sys.argv.
-				# Scripts that expect files as command line arguments
-				# can be trivially used as "droplets" using this option.
-				# Without this option, sys.argv should not be used at all
-				# as it will contain only Mac OS X specific stuff.
-				argv_emulation=True,
-			
-				# This is a shortcut that will place MyApplication.icns
-				# in the Contents/Resources folder of the application bundle,
-				# and make sure the CFBundleIcon plist key is set appropriately.
-				iconfile='Icons/BioImageXD.icns',
-				excludes = EXCLUDES,
-				includes = incl_modules,
-				packages = ["encodings"]
-			)
-			DATA_FILES.append(('../Frameworks', [
-					'/usr/local/lib/wxPython-unicode-2.5.5.1/lib/libwx_macud-2.5.5.rsrc',
-					])
-			setup(
-#				app=['/Users/bioimagexd/Desktop/bioimagexdsvn/selli/trunk/BioImageXD.py'],
+		import py2app
+		# Note that you must replace hypens '-' with underscores '_'
+		# when converting option names from the command line to a script.
+		# For example, the --argv-emulation option is passed as 
+		# argv_emulation in an options dict.
+	        py2app_options = dict(
+			# Map "open document" events to sys.argv.
+			# Scripts that expect files as command line arguments
+			# can be trivially used as "droplets" using this option.
+			# Without this option, sys.argv should not be used at all
+			# as it will contain only Mac OS X specific stuff.
+			argv_emulation=True,
+    			# This is a shortcut that will place MyApplication.icns
+	    		# in the Contents/Resources folder of the application bundle,
+			# and make sure the CFBundleIcon plist key is set appropriately.
+			iconfile='Icons/BioImageXD.icns',
+			excludes = EXCLUDES,
+			includes = incl_modules,
+			packages = ["encodings"]
+	        )
+		DATA_FILES.append( ('../Frameworks', [
+			'/usr/local/lib/wxPython-unicode-2.5.5.1/lib/libwx_macud-2.5.5.rsrc',
+		]))
+                setup(
 				app=['BioImageXD.py'],
-
 				data_files = DATA_FILES, 
 				options = dict( py2app = py2app_options )
-				,
-			)
+		)
 		
-		elif platform.system() == "Linux":
-			# freeze code
-			pass
-		elif platform.system() == "Windows":
-		    import py2exe
+        elif platform.system() == "Linux":
+		# freeze code
+	        pass
+	elif platform.system() == "Windows":
+	       		import py2exe
 
 			# use windows=[{... to not show the console
 			# use console=[{ to show the console

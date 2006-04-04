@@ -411,7 +411,7 @@ void vtkExtTIFFReader::GetColor( int index, unsigned short *red,
       }
     }
   
-  unsigned short *red_orig, *green_orig, *blue_orig;
+  unsigned short *red_orig, *green_orig, *blue_orig; 
   
   switch (this->GetInternalImage()->BitsPerSample) 
     {
@@ -493,7 +493,7 @@ void vtkExtTIFFReader::ReadImageInternal( void* vtkNotUsed(in), void* outPtr,
         {
         if (TIFFReadScanline(InternalImage->Image, buf, row, 0) <= 0)
           {
-          vtkErrorMacro( << "Problem reading the row: " << row );
+	    vtkErrorMacro( << "Problem reading the row: " << row <<"of file"<<GetInternalFileName());
           break;
           }
           unsigned short* buf2 = (unsigned short*)buf;

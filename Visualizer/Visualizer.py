@@ -188,8 +188,11 @@ class Visualizer:
         self.zsliderWin.SetAlignment(wx.LAYOUT_RIGHT)
         self.zsliderWin.SetSashVisible(wx.SASH_RIGHT,False)
         self.zsliderWin.SetSashVisible(wx.SASH_LEFT,False)
-        self.zsliderWin.SetDefaultSize((32,768))        
-        self.zsliderWin.origSize=(32,768)
+        self.zsliderWin.SetDefaultSize((32,768)) 
+       	w=32
+       	if platform.system() =='Darwin':
+       		w=44
+        self.zsliderWin.origSize=(w,768)
         #self.zText=wx.StaticText(self.zsliderWin,-1,"Z")
         
         self.createSliders()

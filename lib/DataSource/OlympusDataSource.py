@@ -145,17 +145,24 @@ class OlympusDataSource(DataSource):
         if self.tps > 0:
             tpat="T%.3d"
         pat=path+zpat+tpat+".tif"
-        print "pattern=",pat
+#        print "pattern='"+pat+"'"
+        
         self.reader.SetFilePattern(pat)
-        if self.reverseSlices:
+        if self.reverseSlices and 0:
             print "offset=",self.dimensions[2]
             self.reader.SetFileNameSliceOffset(self.dimensions[2])
             self.reader.SetFileNameSliceSpacing(-1)
         else:
             self.reader.SetFileNameSliceOffset(1)
-        #self.reader.ComputeInternalFileName(0)
-        #print self.reader.GetInternalFileName()        
+
+#        print "pattern='"+self.reader.GetFilePattern()+"'"
         self.reader.Update()
+        #print self.reader
+#        print vtk,self.reader
+#        print "Scalar range for data=",self.reader.GetOutput().GetScalarRange()
+        return self.reader.GetOutput()
+        
+
         return self.reader.GetOutput()
         
     def getDimensions(self):
