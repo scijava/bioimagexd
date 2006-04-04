@@ -41,7 +41,7 @@ from Visualizer.VisualizationModules import *
 import Logging
 
 TEXTURE_MAPPING=1
-TEXTURE_MAPPING3D=2
+TEXTURE_MAPPING_3D=2
 RAYCAST=0
 MIP=3
 ISOSURFACE=4
@@ -289,7 +289,7 @@ class VolumeModule(VisualizationModule):
                 self.function = composites[method]()
                 Logging.info("Using ray cast function ",self.function,kw="rendering")
                 self.mapper.SetVolumeRayCastFunction(self.function)
-        elif method==TEXTURE_MAPPING3D: # 3d texture mapping
+        elif method==TEXTURE_MAPPING_3D: # 3d texture mapping
             self.mapper = vtk.vtkVolumeTextureMapper3D()
             self.sampleDistance = self.mapper.GetSampleDistance()
         elif method==TEXTURE_MAPPING: # texture mapping
@@ -325,6 +325,12 @@ class VolumeModule(VisualizationModule):
 
         VisualizationModule.updateRendering(self,input)
         self.parent.Render()
+        if self.method == TEXTURE_MAPPING_3D:
+            if not self.mapper.IsRenderSupported(self.volumeProperty):
+                messenger.send(None,"show_error","3D texture mapping not supported",
+                "Your graphics hardware does not support 3D accelerated texture mapping. Please use one of the other volume rendering methods.")
+                
+            
         
     def disableRendering(self):
         """
