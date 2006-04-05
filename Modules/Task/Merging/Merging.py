@@ -146,78 +146,40 @@ class Merging(Module):
         self.shift=0
         self.scale=0.333
         self.scale/=imagelen
-        for i in range(0,imagelen):
-            #self.images[i].GlobalReleaseDataFlagOn()
-            mapIntensities=vtk.vtkImageMapToIntensities()
-            mapIntensities.GetOutput().ReleaseDataFlagOn()
-            mapIntensities.SetIntensityTransferFunction(self.intensityTransferFunctions[i])
-            mapIntensities.SetInput(self.images[i])
-            mapIntensities.AddObserver("ProgressEvent",self.updateProgress)
-            mapIntensities.Update()
-            data=mapIntensities.GetOutput()
-            if not self.settings.get("ShowOriginal"):
-                processed.append(data)
-            else:
-                Logging.info("Using original data instead of mapping through",kw="processing")
-                processed.append(self.images[i])
-            del mapIntensities
-        
         
         luminance=0
         self.shift=0.333
         self.scale=0.333
+        merge=vtk.vtkImageColorMerge()
         
         if self.doAlpha:
-            createalpha=vtk.vtkImageAlphaFilter()
-            createalpha.GetOutput().ReleaseDataFlagOn()
-            createalpha.AddObserver("ProgressEvent",self.updateProgress)
-            #print "self.alpaMode=",self.alphaMode
+            merge.BuildAlphaOn()
             if self.alphaMode[0]==0:
                 Logging.info("Alpha mode = maximum", kw="processing")
-                createalpha.MaximumModeOn()
+                merge.MaximumModeOn()
+                
             elif self.alphaMode[0]==1:
                 Logging.info("Alpha mode = average, threshold = ",self.alphaMode[1],kw="processing")
-                createalpha.AverageModeOn()
-                createalpha.SetAverageThreshold(self.alphaMode[1])
+                merge.AverageModeOn()
+                merge.SetAverageThreshold(self.alphaMode[1])
             else:
                 luminance=1
             
-            if not luminance:
-                for i in processed:
-                    createalpha.AddInput(i)
-                createalpha.Update()
-                alpha=createalpha.GetOutput()
-            
-        # Color the datasets to 24-bit datasets using VTK classes            
-        
-        colored=[]
         self.shift=0.666
         self.scale=0.333
-        for i in range(0,imagelen):
-            if processed[i].GetNumberOfScalarComponents()==1:
-                mapToColors=vtk.vtkImageMapToColors()
-                mapToColors.GetOutput().ReleaseDataFlagOn()
-                mapToColors.SetOutputFormatToRGB()
-                ct=self.ctfs[i]
-                Logging.info("Using ctf(%d)=%s"%(i,ct),kw="ctf")
-                mapToColors.SetLookupTable(ct)
-                mapToColors.SetInput(processed[i])
-                mapToColors.Update()
-                colored.append(mapToColors.GetOutput())
-            else:
-                Logging.info("Dataset %d is RGB Data, will not map through ctf"%i,kw="processing")
-                colored.append(processed[i])
-        # result rgb
-        merge=vtk.vtkImageMerge()
+        
         
         merge.AddObserver("ProgressEvent",self.updateProgress)
-        for i in colored:
-            merge.AddInput(i)
+        for i,image in enumerate(self.images):
+            merge.AddInput(image)
+            merge.AddLookupTable(self.ctfs[i])
+            print self.ctfs[i]
+            merge.AddIntensityTransferFunction(self.intensityTransferFunctions[i])
         merge.Update()
         data=merge.GetOutput()
         
-        Logging.info("Result with dims and type",data.GetDimensions(),data.GetScalarTypeAsString(),"components:",data.GetNumberOfScalarComponents(),kw="trivial")
-
+        Logging.info("Result with dims and type",data.GetDimensions(),data.GetScalarTypeAsString(),"components:",data.GetNumberOfScalarComponents())
+        print data.GetScalarRange()
         if luminance:
             Logging.info("Alpha mode = luminance", kw="processing")
             lum=vtk.vtkImageLuminance()
@@ -226,9 +188,9 @@ class Merging(Module):
             lum.Update()
             alpha=lum.GetOutput()
         
-        if self.doAlpha:
+        if self.doAlpha and luminance:
             Logging.info("Appending alpha component", kw="processing")
-            merge.GetOutput().ReleaseDataFlagOn()
+            #merge.GetOutput().ReleaseDataFlagOn()
             appendcomp=vtk.vtkImageAppendComponents()
             #appendcomp.GetOutput().ReleaseDataFlagOn()
             appendcomp.AddInput(data)

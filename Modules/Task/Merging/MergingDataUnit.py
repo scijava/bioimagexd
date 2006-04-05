@@ -51,6 +51,7 @@ class MergingDataUnit(CombinedDataUnit):
 
     def getBitDepth(self):
         return 32
+        
     def getSettingsClass(self):
         """
         Method: getSettingsClass()
