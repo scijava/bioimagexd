@@ -122,7 +122,7 @@ class TaskPanel(scrolled.ScrolledPanel):
         self.SetAutoLayout(True)
         
         self.SetupScrolling()
-        wx.FutureCall(500,self.doPreviewCallback)
+        #wx.FutureCall(500,self.doPreviewCallback)
         
         #messenger.connect(None,"itf_update",self.doPreviewCallback)
         messenger.connect(None,"channel_selected",self.selectItem)

@@ -65,14 +65,26 @@ class VisualizerWindow(wxVTKRenderWindowInteractor):
         self.rubberband=0
         self.controlled="Camera"
         self.control="Joystick"
-
+        self.enabled = 1
     def enable(self,flag):
         """
         Method: enable(flag)
         Created: 02.06.2005, KP
         Description: Enable/Disable updates
         """
-        pass
+        self.enabled = flag
+        
+    def isEnabled(self):
+        return self.enabled
+        
+    def Render(self):
+        """
+        Method: Render()
+        Created: 05.06.2005, KP
+        Description: If this windows is enabled, call the super class Render()
+        """
+        if self.enabled:
+            wxVTKRenderWindowInteractor.Render(self)
 
     def initializeVTK(self):
         """

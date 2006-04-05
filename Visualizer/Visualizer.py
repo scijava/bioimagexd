@@ -996,6 +996,7 @@ class Visualizer:
         wx.LayoutAlgorithm().LayoutWindow(self.parent, self.visWin)
         #self.currentWindow.enable(self.enabled)
 
+        self.currentWindow.enable(0)
         if self.dataUnit and modeinst.dataUnit != self.dataUnit:
             Logging.info("Re-setting dataunit",kw="visualizer")
             modeinst.setDataUnit(self.dataUnit)

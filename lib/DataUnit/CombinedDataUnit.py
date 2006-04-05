@@ -344,6 +344,7 @@ class CombinedDataUnit(DataUnit.DataUnit):
         # we return just the normal preview) or the combined result
         # (n = last chl+1) has  been requested
         if not self.outputChls or self.outputChls[n]:
+            Logging.backtrace()
             #Logging.info("outputChls=",self.outputChls,"n=",n)
             # If the renew flag is true, we need to regenerate the preview
             if renew:

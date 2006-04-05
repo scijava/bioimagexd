@@ -209,7 +209,7 @@ class RenderingMode(VisualizationMode):
         Created: 26.05.2005, KP
         Description: Update the rendering
         """      
-        if not self.visualizer.enabled:
+        if not self.wxrenwin.enabled:
             print "Visualizer not enabled, won't render!"
             return
         for module in self.modules:
