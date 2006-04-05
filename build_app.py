@@ -82,10 +82,13 @@ def build():
         incl_modules.extend(["wx.lib.mixins.listctrl"])
         print "Included modules=",incl_modules
         modules = get_files("Modules")
+	iconFiles = os.path.join("Icons","*.*")
+	binFiles = os.path.join("bin","*.*")
+	helpFiles = os.path.join("Help","*.*")
         DATA_FILES=[
-                    ("Icons",glob.glob("Icons\\*.*")),
-                    ("Bin",glob.glob("bin\\*.*")),
-                    ("Help",glob.glob("Help\\*.*"))
+                    ("Icons",glob.glob(iconFiles)),
+                    ("Bin",glob.glob(binFiles)),
+                    ("Help",glob.glob(helpFiles))
         ]
         DATA_FILES.extend(modules)
 
