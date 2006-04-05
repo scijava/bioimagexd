@@ -1,53 +1,47 @@
 #! /usr/bin/env python
 import vtk
 import time
+D="/media/sda12/Data/selli/Selli_BIG.lsm"
+#D="/media/sda12/Data/selli/selli_coloc1_8-bit.lsm"
 t=time.time()
 def elapsed():
     global t
     return "(%.2fs elapsed)"%(time.time()-t)
 
 r1=vtk.vtkLSMReader()
-r1.SetFileName("/media/sda12/Data/selli/Selli_BIG.lsm")
+r1.SetFileName(D)
 r2=vtk.vtkLSMReader()
-r2.SetFileName("/media/sda12/Data/selli/Selli_BIG.lsm")
+r2.SetFileName(D)
 r1.SetUpdateChannel(0)
 r2.SetUpdateChannel(1)
 d1=r1.GetOutput()
 d2=r2.GetOutput()
-
-
-r1.Update()
-r2.Update()
 print "Read data ",elapsed()
+
+
+
+itf1=vtk.vtkIntensityTransferFunction()
+itf2=vtk.vtkIntensityTransferFunction()
 
 ctf1=vtk.vtkColorTransferFunction()
 ctf1.AddRGBPoint(0,0,0,0)
 ctf1.AddRGBPoint(255.0,0,255,0)
 
+
 ctf2=vtk.vtkColorTransferFunction()
 ctf2.AddRGBPoint(0,0,0,0)
 ctf2.AddRGBPoint(255.0,255,0,0)
 
-m1=vtk.vtkImageMapToColors()
-m2=vtk.vtkImageMapToColors()
-m1.SetOutputFormatToRGB()
-m2.SetOutputFormatToRGB()
-m1.SetLookupTable(ctf1)
-m2.SetLookupTable(ctf2)
-print "Feeding channels to coloring ",elapsed()
-m1.SetInput(d1)
-m2.SetInput(d2)
-m1.ReleaseDataFlagOn()
-m1.ReleaseDataFlagOn()
-cd1=m1.GetOutput()
-cd2=m2.GetOutput()
-m1.Update()
-m2.Update()
+
 print "Feeding channels to merge ",elapsed()
-merge = vtk.vtkImageMerge()
-merge.AddInput(cd1)
-merge.AddInput(cd2)
-merge.ReleaseDataFlagOn()
+merge = vtk.vtkImageColorMerge()
+merge.AddInput(d1)
+merge.AddInput(d2)
+merge.AddLookupTable(ctf1)
+merge.AddLookupTable(ctf2)
+merge.AddIntensityTransferFunction(itf1)
+merge.AddIntensityTransferFunction(itf2)
+
 merge.Update()
 
 mip=vtk.vtkImageSimpleMIP()
