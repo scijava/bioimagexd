@@ -128,6 +128,8 @@ void vtkIntensityTransferFunction::Initialize()
     {
     this->Function[i] = 0;
     }
+    
+    ComputeFunction();
 }
 
 
@@ -140,8 +142,8 @@ int vtkIntensityTransferFunction::GetSize()
 
 
 int vtkIntensityTransferFunction::GetValue( int x ) {
-    if(this->LastMTime < this->GetMTime()) this->ComputeFunction();
-    this->LastMTime=this->GetMTime();
+    if(this->GetMTime() > this->BuildTime.GetMTime()) this->ComputeFunction();
+    
 
     return this->Function[x];
 }
@@ -273,6 +275,7 @@ void vtkIntensityTransferFunction::ComputeFunction(void) {
     int bx1,bx2,by1,by2;
     int midx,midy;
     int y;
+    this->BuildTime.Modified();
     if(this->Brightness>0) {
         bx1 = 0;
         by1 = this->Brightness;
@@ -380,19 +383,19 @@ int vtkIntensityTransferFunction::f4(int x, int gx1,int gy1,int gx2,int gy2) {
     return y;
 }
 
-bool vtkIntensityTransferFunction::IsIdentical() {
-    if(this->Gamma != 1) return 0;
-    if(this->Contrast != 1) return 0;
-    if(this->Brightness != 0) return 0;
-    if(this->MinimumValue != 0) return 0;
-    if(this->MaximumValue != 255) return 0;
-    if(this->MinimumThreshold != 0) return 0;
-    if(this->MaximumThreshold != 255) return 0;
-    if(this->ProcessingThreshold != 0) return 0;
-    if(this->SmoothStart != 0)return 0;
-    if(this->SmoothStartGamma != 1)return 0;
-    if(this->SmoothEnd != 0)return 0;
-    if(this->SmoothEndGamma != 1)return 0;
+int vtkIntensityTransferFunction::IsIdentical() {
+    if(this->Gamma != 1) { /*printf("gamma != 1\n");*/return 0;}
+    if(this->Contrast != 1) {/*printf("contrast != 1\n");*/return 0;}
+    if(this->Brightness != 0) {/*printf("brightness != 0\n");*/return 0;}
+    if(this->MinimumValue != 0) {/*printf("minimumvalue != 0\n");*/return 0;}
+    if(this->MaximumValue != 255) {/*printf("maximumvalue != 255\n");*/return 0;}
+    if(this->MinimumThreshold != 0) {/*printf("minimumthreshold != 0\n");*/return 0;}
+    if(this->MaximumThreshold != 255) {/*printf("maximumthreshold != 255\n");*/return 0;}
+    if(this->ProcessingThreshold != 0) {/*printf("processing threshold!=0\n");*/return 0;}
+    if(this->SmoothStart != 0){/*printf("smooth start != 0\n");*/return 0;}
+    if(this->SmoothStartGamma != 1) {/*printf("smooth start gamma != 1\n");*/return 0;}
+    if(this->SmoothEnd != 255){/*printf("smooth end!=0\n");*/return 0;}
+    if(this->SmoothEndGamma != 1){/*printf("smooth end gamma != 1\n");*/return 0;}
 
     return 1;
 }
@@ -405,7 +408,8 @@ void vtkIntensityTransferFunction::PrintSelf(ostream& os, vtkIndent indent)
   this->Superclass::PrintSelf(os, indent);
 
   int i;
-
+  if(this->GetMTime() > this->BuildTime.GetMTime()) this->ComputeFunction();
+  
   os << indent << "Minimum Value: " << this->MinimumValue << "\n";
   os << indent << "Minimum Threshold: " << this->MinimumThreshold << "\n";
   os << indent << "Maximum Value: " << this->MaximumValue << "\n";

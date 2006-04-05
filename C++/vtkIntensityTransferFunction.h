@@ -74,14 +74,14 @@ public:
   // Description:
   // Returns true if this is an identical function, i.e.
   // y = x
-  bool IsIdentical(void);
+  int IsIdentical(void);
   
   // Description:
   // Returns a pointer to the data stored in the table.
   // Fills from a pointer to data stored in a similar table.
   int *GetDataPointer() { 
-    if(this->LastMTime < this->GetMTime()) this->ComputeFunction();
-    LastMTime=this->GetMTime();
+    if(this->GetMTime() > this->BuildTime.GetMTime()) this->ComputeFunction();
+    
     return this->Function;
   }
 
@@ -222,7 +222,6 @@ protected:
   int MaximumThreshold;
   int ProcessingThreshold;
   int Brightness;
-  int LastMTime;
   int SmoothStart;
   int SmoothEnd;
   double Gamma;
@@ -232,7 +231,7 @@ protected:
   int GammaStart[2];
   int GammaEnd[2];
   int ReferencePoint[2];
-
+  vtkTimeStamp BuildTime;
 private:
   vtkIntensityTransferFunction(const vtkIntensityTransferFunction&);  // Not implemented.
   void operator=(const vtkIntensityTransferFunction&);  // Not implemented.
