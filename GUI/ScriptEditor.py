@@ -42,6 +42,8 @@ import scripting
 import re
 import types
 import MenuManager
+import scripting
+
 intro="""Welcome to BioImageXD Script Editor"""
 
 class ScriptEditor(editor.Editor):
@@ -247,7 +249,7 @@ class ScriptEditorFrame(wx.Frame):
         tb=self.GetToolBar()            
         tb.SetToolBitmapSize((32,32))
         
-        iconpath=reduce(os.path.join,["Icons"])
+        iconpath=scripting.get_icon_dir()
         bmp = wx.Image(os.path.join(iconpath,"record.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap()
         tb.DoAddTool(MenuManager.ID_RECORD_SCRIPT,"Record",bmp,shortHelp="Record script")
         wx.EVT_TOOL(self,MenuManager.ID_RECORD_SCRIPT,self.onRecordScript)

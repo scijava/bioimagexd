@@ -36,6 +36,7 @@ import os.path
 import wx
 import  wx.lib.filebrowsebutton as filebrowse
 import Configuration
+import scripting
 
 class GeneralSettings(wx.Panel):
     """
@@ -215,7 +216,7 @@ class SettingsWindow(wx.Dialog):
         
         self.imagelist=wx.ImageList(32,32)
         self.listbook.AssignImageList(self.imagelist)
-        imgpath=reduce(os.path.join,["Icons"])
+        imgpath = scripting.get_icon_dir()
         for i in ["General.gif","Paths.gif","Video.gif"]:
             icon=os.path.join(imgpath,i)
             print "icon=",icon

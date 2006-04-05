@@ -168,6 +168,8 @@ ID_CLOSE_SCRIPTEDITOR=215
 
 ID_IMMEDIATE_RENDER =216
 
+ID_MANIPULATE       =217
+
 class MenuManager:
     """
     Class: MenuManager

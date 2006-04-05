@@ -38,6 +38,7 @@ import wx
 import messenger
 import os
 import time
+import scripting
 
 PLAY_MODE=0
 PAUSE_MODE=1
@@ -59,7 +60,7 @@ class PlaybackControl(wx.Panel):
         #wx.SashLayoutWind#ow.__init__(self,parent,-1)
         self.sizer = wx.BoxSizer()
         #self.SetBackgroundColour((255,0,0))
-        iconpath=reduce(os.path.join,["Icons"])
+        iconpath=scripting.get_icon_dir()
         self.playicon = wx.Image(os.path.join(iconpath,"play.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap()
         self.pauseicon = wx.Image(os.path.join(iconpath,"pause.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap()
         self.stopicon = wx.Image(os.path.join(iconpath,"stop.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap()

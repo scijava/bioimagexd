@@ -54,6 +54,7 @@ import sys
 
 import Modules
 import Annotation
+import scripting
 
 
 visualizerInstance=None
@@ -220,7 +221,7 @@ class Visualizer:
         """     
         self.sliderPanel=wx.Panel(self.sliderWin,-1)
         self.setCurrentSliderPanel(self.sliderPanel)
-        iconpath=reduce(os.path.join,["Icons"])
+        iconpath=scripting.get_icon_dir()
         leftarrow = wx.Image(os.path.join(iconpath,"leftarrow.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap()
         rightarrow = wx.Image(os.path.join(iconpath,"rightarrow.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap()
         self.prev=wx.BitmapButton(self.sliderPanel,-1,leftarrow)
@@ -382,6 +383,7 @@ class Visualizer:
         Created: 28.05.2005, KP
         Description: Method to create a toolbar for the window
         """        
+        icondir = scripting.get_icon_dir()
         if self.tb1:
             self.tb1.Destroy()
         self.tb1 = wx.ToolBar(self.toolWin,-1,style=wx.TB_HORIZONTAL)
@@ -408,7 +410,7 @@ class Visualizer:
         
         wx.EVT_COMBOBOX(self.parent,MenuManager.ID_SET_VIEW,self.onSetView)
         #self.tb.Realize()                
-        self.tb.AddSimpleTool(MenuManager.ID_ZOOM_OUT,wx.Image(os.path.join("Icons","zoom-out.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Zoom out","Zoom out on the optical slice")
+        self.tb.AddSimpleTool(MenuManager.ID_ZOOM_OUT,wx.Image(os.path.join(icondir,"zoom-out.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Zoom out","Zoom out on the optical slice")
         #EVT_TOOL(self,ID_OPEN,self.menuOpen)
         
         self.currWidth+=toolSize
@@ -424,17 +426,17 @@ class Visualizer:
         self.currWidth+=self.zoomCombo.GetSize()[0]
         if self.currWidth+toolSize>=self.maxWidth:self.tb=self.tb2
 
-        self.tb.AddSimpleTool(MenuManager.ID_ZOOM_IN,wx.Image(os.path.join("Icons","zoom-in.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Zoom in","Zoom in on the slice")
+        self.tb.AddSimpleTool(MenuManager.ID_ZOOM_IN,wx.Image(os.path.join(icondir,"zoom-in.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Zoom in","Zoom in on the slice")
         
         self.currWidth+=toolSize
         if self.currWidth+toolSize>=self.maxWidth:self.tb=self.tb2        
         
-        self.tb.AddSimpleTool(MenuManager.ID_ZOOM_TO_FIT,wx.Image(os.path.join("Icons","zoom-to-fit.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Zoom to Fit","Zoom the slice so that it fits in the window")
+        self.tb.AddSimpleTool(MenuManager.ID_ZOOM_TO_FIT,wx.Image(os.path.join(icondir,"zoom-to-fit.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Zoom to Fit","Zoom the slice so that it fits in the window")
         
         self.currWidth+=toolSize
         if self.currWidth+toolSize>=self.maxWidth:self.tb=self.tb2
         
-        self.tb.AddSimpleTool(MenuManager.ID_ZOOM_OBJECT,wx.Image(os.path.join("Icons","zoom-object.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Zoom object","Zoom user selected portion of the slice")
+        self.tb.AddSimpleTool(MenuManager.ID_ZOOM_OBJECT,wx.Image(os.path.join(icondir,"zoom-object.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Zoom object","Zoom user selected portion of the slice")
         
         self.currWidth+=toolSize
         if self.currWidth+toolSize>=self.maxWidth:self.tb=self.tb2
@@ -443,7 +445,7 @@ class Visualizer:
         self.currWidth+=self.tb.GetToolSeparation()
         
         
-        self.tb.AddSimpleTool(MenuManager.ID_DRAG_ANNOTATION,wx.Image(os.path.join("Icons","arrow.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Manage annotations","Manage annotations on the image")
+        self.tb.AddSimpleTool(MenuManager.ID_DRAG_ANNOTATION,wx.Image(os.path.join(icondir,"arrow.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Manage annotations","Manage annotations on the image")
         
         self.currWidth+=toolSize
         if self.currWidth+toolSize>=self.maxWidth:self.tb=self.tb2
@@ -454,7 +456,7 @@ class Visualizer:
         self.currWidth+=toolSize
         if self.currWidth+toolSize>=self.maxWidth:self.tb=self.tb2
         
-        self.tb.AddSimpleTool(MenuManager.ID_ADD_SCALE,wx.Image(os.path.join("Icons","scale.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Draw scale","Draw a scale bar on the image")
+        self.tb.AddSimpleTool(MenuManager.ID_ADD_SCALE,wx.Image(os.path.join(icondir,"scale.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Draw scale","Draw a scale bar on the image")
         
         self.currWidth+=toolSize        
         self.tb.AddSeparator()
@@ -474,9 +476,9 @@ class Visualizer:
         if self.currWidth+toolSize>=self.maxWidth:self.tb=self.tb2
         
         
- #       self.tb.AddSimpleTool(MenuManager.ID_ROI_CIRCLE,wx.Image(os.path.join("Icons","circle.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Select circle","Select a circular area of the image")
- #       self.tb.AddSimpleTool(MenuManager.ID_ROI_RECTANGLE,wx.Image(os.path.join("Icons","rectangle.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Select rectangle","Select a rectangular area of the image")
- #       self.tb.AddSimpleTool(MenuManager.ID_ROI_POLYGON,wx.Image(os.path.join("Icons","polygon.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Select polygon","Select a polygonal area of the image")
+ #       self.tb.AddSimpleTool(MenuManager.ID_ROI_CIRCLE,wx.Image(os.path.join(icondir,"circle.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Select circle","Select a circular area of the image")
+ #       self.tb.AddSimpleTool(MenuManager.ID_ROI_RECTANGLE,wx.Image(os.path.join(icondir,"rectangle.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Select rectangle","Select a rectangular area of the image")
+ #       self.tb.AddSimpleTool(MenuManager.ID_ROI_POLYGON,wx.Image(os.path.join(icondir,"polygon.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Select polygon","Select a polygonal area of the image")
 
     
         self.pitch=wx.SpinButton(self.tb, MenuManager.PITCH,style=wx.SP_VERTICAL)

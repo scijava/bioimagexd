@@ -63,7 +63,6 @@ class LsmDataSource(DataSource.DataSource):
         # within the lsm-file is hadled by this LsmDataSource instance.
         self.channelNum=channelNum
 
-        # TODO: what is this?
         self.dataUnitSettings={}
         # TODO: what is this?
         self.count=0

@@ -121,7 +121,16 @@ def build():
 		
         elif platform.system() == "Linux":
 		# freeze code
-	        pass
+		file = "/usr/share/doc/python2.4/examples/Tools/freeze/freeze.py"
+		excl=""
+		for x in EXCLUDES:
+		    excl+=" -x %s"%x
+		    
+		mods=" ".join(incl_modules)
+	        cmd_line="python %s -o  linux-build %s BioImageXD.py -m %s"%(file,excl,mods)
+		print cmd_line
+		os.system(cmd_line)
+		
 	elif platform.system() == "Windows":
 	       		import py2exe
 

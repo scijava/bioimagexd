@@ -43,6 +43,7 @@ def getRenderingModules(): return getModules("Rendering")
 def getVisualizationModes(): return getModules("Visualization")
 def getTaskModules(): return getModules("Task","*")
 IGNORE=["ScaleBar","Spline","Arbitrary","SurfaceConstruction","Reslice"]
+
 def getModules(name,flag="*.py"):
     """
     Function: getModules()

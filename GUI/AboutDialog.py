@@ -36,6 +36,7 @@ import wx                  # This module uses the new wx namespace
 import wx.html
 import  wx.lib.scrolledpanel as scrolled
 import MainWindow
+import scripting
 
 class AboutDialog(wx.Dialog):
     def __init__(self, parent):
@@ -50,7 +51,7 @@ class AboutDialog(wx.Dialog):
             self.about.SetStandardFonts()
         col=self.GetBackgroundColour()
         bgcol="#%2x%2x%2x"%(col.Red(),col.Green(),col.Blue())
-        dict={"bgcolor":bgcol,"version":MainWindow.VERSION}
+        dict={"bgcolor":bgcol,"version":MainWindow.VERSION,"icondir":scripting.get_icon_dir()}
         self.about.SetPage(aboutText%dict)
         ir = self.about.GetInternalRepresentation()
         
@@ -116,7 +117,7 @@ aboutText = u"""
 <html>
 <body bgcolor="%(bgcolor)s">
 <center><h2>BioImageXD %(version)s</h2></center>
-<center><img src="Icons/logo_medium.jpg"></center><br>
+<center><img src="%(icondir)s/logo_medium.jpg"></center><br>
 <p><b>BioImageXD</b> is a program for post-processing and visualizing
 three- and four-dimensional microscopy data.</p>
 

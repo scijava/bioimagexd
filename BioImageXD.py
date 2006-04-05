@@ -36,6 +36,7 @@ import os
 import sys
 import imp
 import platform
+import scripting
 
 try:
     import profile
@@ -46,40 +47,15 @@ if "check" in sys.argv:
     import pychecker.checker
     import Logging
     Logging.HIDE_DEBUG=Logging.KWS
-def main_is_frozen():
-   return (hasattr(sys, "frozen") or # new py2exe
-           hasattr(sys, "importers") # old py2exe
-           or imp.is_frozen("__main__")) # tools/freeze
 
-
-
-def get_main_dir():
-    if "checker.py" in sys.argv[0]:
-        return "."
-    if main_is_frozen():
-        return os.path.dirname(sys.executable)
-    return os.path.dirname(sys.argv[0])
     
 
-todir=get_main_dir()
+todir=scripting.get_main_dir()
 
 #todir=os.path.dirname(__file__)
 #todir=os.path.join(os.getcwd(),todir)
 if todir:
     os.chdir(todir)
-
-
-def get_log_dir():
-    if platform.system()=="Darwin":
-        return os.path.expanduser("~/Library/Logs/BioImageXD")
-    else:
-        return "logs"
-    
-def get_config_dir():
-    if platform.system()=="Darwin":
-        return os.path.expanduser("~/Library/Preferences")
-    else:
-        return get_main_dir()
         
 
 import csv
@@ -89,7 +65,7 @@ import Configuration
 # This will fix the VTK paths using either values from the
 # configuration file, or sensible defaults
 
-conffile = os.path.join(get_config_dir(),"BioImageXD.ini")
+conffile = os.path.join(scripting.get_config_dir(),"BioImageXD.ini")
 cfg=Configuration.Configuration(conffile)
 
 # We need to import VTK here so that it is imported before wxpython.
@@ -122,14 +98,15 @@ class LSMApplication(wx.App):
         Created: 10.1.2005, KP
         Description: Create the application's main window
         """
-        bmp = wx.Image(os.path.join("Icons","splash2.jpg"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
+        iconpath = scripting.get_icon_dir()
+        bmp = wx.Image(os.path.join(iconpath,"splash2.jpg"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
 
         splash=wx.SplashScreen(bmp,
                                  wx.SPLASH_CENTRE_ON_SCREEN | wx.SPLASH_TIMEOUT,
                                  3000, None, -1)
         splash.Show()
          # Import Psyco if available
-	try:
+        try:
             pass
             #import psyco
 
@@ -173,7 +150,7 @@ if __name__=='__main__':
 
         # If the main application is frozen, then we redirect logging
         # to  a log file
-        if "tofile" in sys.argv or main_is_frozen():
+        if "tofile" in sys.argv or scripting.main_is_frozen():
             import time
             logfile="output_%s.log"%(time.strftime("%d.%m.%y@:%H:%M"))
             logdir=get_log_dir()

@@ -38,6 +38,7 @@ import math
 import Logging
 import wx.lib.buttons as buttons
 import wx.lib.colourselect as csel
+import scripting
 
 import messenger
 
@@ -409,7 +410,7 @@ class ColorTransferEditor(wx.Panel):
             self.alphaBtn.Bind(wx.EVT_BUTTON,self.onEditAlpha)
             self.alphaBtn.SetBackgroundColour((255,255,255))
         #self.freeBtn = wx.ToggleButton(self,-1,)
-        iconpath=reduce(os.path.join,["Icons"])        
+        iconpath=scripting.get_icon_dir()        
         self.freeBtn = buttons.GenBitmapToggleButton(self, -1, None)
         self.freeBtn.SetBestSize((32,32))
         bmp = wx.Image(os.path.join(iconpath,"draw.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap()

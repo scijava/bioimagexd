@@ -6,6 +6,6 @@ import ManipulationSettings
 
 def getClass(): return Manipulation
 def getConfigPanel(): return ManipulationPanel
-def getName(): return "Data Manipulation"
+def getName(): return "Manipulation"
 def getDataUnit(): return ManipulationDataUnit
 def getSettingsClass(): return ManipulationSettings.ManipulationSettings

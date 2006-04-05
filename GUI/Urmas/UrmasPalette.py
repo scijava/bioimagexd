@@ -134,7 +134,7 @@ class UrmasPalette(wx.Panel):
         wx.Panel.__init__(self,parent,style=wx.RAISED_BORDER,size=(750,32))
         self.sizer=wx.BoxSizer(wx.HORIZONTAL)
         
-        iconpath=self.iconpath=reduce(os.path.join,["Icons"])
+        iconpath=scripting.get_icon_dir()
         
         self.ID_NEWTIMEPOINTTRACK=wx.NewId()
         toolTip = wx.ToolTip("Drag this on to the timeline to add a track for controlling animated timepoints.")

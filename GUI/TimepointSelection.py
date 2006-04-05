@@ -47,6 +47,8 @@ import wx.lib.scrolledpanel as scrolled
 import wx.lib.buttons as buttons
 import vtk
 
+import scripting
+
 
 class TimepointSelectionPanel(scrolled.ScrolledPanel):
     """
@@ -249,7 +251,7 @@ class TimepointSelection(wx.Dialog):
 
         self.rendering=0
         self.SetTitle("Timepoint Selection")
-        ico=reduce(os.path.join,["Icons","logo.ico"])
+        ico=reduce(os.path.join,[scripting.get_icon_dir(),"logo.ico"])
         self.icon = wx.Icon(ico,wx.BITMAP_TYPE_ICO)
         self.SetIcon(self.icon)
 

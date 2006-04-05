@@ -21,7 +21,7 @@
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
 
- You should have received a copy of the GNU General Public License
+ You should have received a copy of resathe GNU General Public License
  along with this program; if not, write to the Free Software
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
@@ -125,7 +125,7 @@ class MainWindow(wx.Frame):
         
         
         self.taskPanels = Modules.DynamicLoader.getTaskModules()
-        
+        print self.taskPanels
         self.menuManager=MenuManager.MenuManager(self,text=0)
         
         # A window for the file tree
@@ -186,7 +186,7 @@ class MainWindow(wx.Frame):
         
         
         # Icon for the window
-        ico=reduce(os.path.join,["Icons","logo.ico"])
+        ico=reduce(os.path.join,[scripting.get_icon_dir(),"logo.ico"])
         self.icon = wx.Icon(ico,wx.BITMAP_TYPE_ICO)
         self.SetIcon(self.icon)
         
@@ -210,7 +210,6 @@ class MainWindow(wx.Frame):
 
         self.loadVisualizer(None,"slices",init=1)
         self.onMenuShowTree(None,1)
-
         try:
             splash.Show(False)
         except:
@@ -218,6 +217,7 @@ class MainWindow(wx.Frame):
         self.Show(True)       
         # Start listening for messenger signals
         messenger.send(None,"update_progress",1.0,"Done.") 
+        messenger.connect(None,"set_status",self.onSetStatus)
         messenger.connect(None,"current_task",self.updateTitle)
         messenger.connect(None,"current_file",self.updateTitle)
         messenger.connect(None,"tree_selection_changed",self.onTreeSelectionChanged)
@@ -226,7 +226,7 @@ class MainWindow(wx.Frame):
         messenger.connect(None,"view_help",self.viewHelp)
         messenger.connect(None,"delete_dataset",self.onDeleteDataset)
         messenger.connect(None,"execute_command",self.onExecuteCommand)        
-        
+        messenger.connect(None,"show_error",self.onShowError)
         wx.CallAfter(self.showTip)
         
     def onMenuUndo(self,evt):
@@ -419,7 +419,23 @@ class MainWindow(wx.Frame):
             
         wx.LayoutAlgorithm().LayoutWindow(self, self.visWin)
         self.visWin.Refresh()
-        
+
+    def onSetStatus(self,obj,event,arg):
+        """
+        Method: onSetStatus
+        Created: 04.04.2006, KP
+        Description: Set the status text
+        """
+        self.statusbar.SetStatusText(arg)
+    
+    def onShowError(self,obj,event,title,msg):
+        """
+        Method: onShowError
+        Created: 04.04.2006, KP
+        Description: Show an error message
+        """
+        Dialogs.showerror(self,msg,title)
+
     def updateProgressBar(self,obj,event,arg,text=None,allow_gui=1):
         """
         Method: updateProgressBar()
@@ -489,7 +505,7 @@ class MainWindow(wx.Frame):
         Created: 03.11.2004, KP
         Description: Creates a tool bar for the window
         """
-        iconpath=reduce(os.path.join,["Icons"])
+        iconpath=scripting.get_icon_dir()
         flags=wx.NO_BORDER|wx.TB_HORIZONTAL
         if self.showToolNames:
             flags|=wx.TB_TEXT
@@ -545,6 +561,11 @@ class MainWindow(wx.Frame):
         bmp = wx.Image(os.path.join(iconpath,"task_process.jpg"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
         tb.DoAddTool(MenuManager.ID_RESTORE,"Process",bmp,kind=wx.ITEM_CHECK,shortHelp="Process")
         wx.EVT_TOOL(self,MenuManager.ID_RESTORE,self.onMenuShowTaskWindow)
+        
+
+        bmp = wx.Image(os.path.join(iconpath,"task_manipulate.jpg"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
+        tb.DoAddTool(MenuManager.ID_MANIPULATE,"Manipulate",bmp,kind=wx.ITEM_CHECK,shortHelp="Manipulate")
+        wx.EVT_TOOL(self,MenuManager.ID_MANIPULATE,self.onMenuShowTaskWindow)        
 
         self.taskIds.append(MenuManager.ID_RESTORE)
         tb.AddSeparator()
@@ -1253,6 +1274,12 @@ class MainWindow(wx.Frame):
             filesAtLeast=1
             filesAtMost=1
             action="VSIA'd"
+        elif eid==MenuManager.ID_MANIPULATE:
+            moduletype,windowtype,mod=self.taskPanels["Manipulation"]
+            unittype=mod.getDataUnit()
+            filesAtLeast=1
+            filesAtMost=-1
+            action="Manipulation"
         Logging.info("Module type for taskwindow: ",moduletype,kw="task")
         
         if windowtype==self.currentTaskWindowType:

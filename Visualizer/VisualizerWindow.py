@@ -63,7 +63,8 @@ class VisualizerWindow(wxVTKRenderWindowInteractor):
         self.zoomFactor=1.0
         self.rendering=0
         self.rubberband=0
-        
+        self.controlled="Camera"
+        self.control="Joystick"
 
     def enable(self,flag):
         """
@@ -81,10 +82,10 @@ class VisualizerWindow(wxVTKRenderWindowInteractor):
         """
         self.keyPressEvents=[]
         self.iren = iren = self.GetRenderWindow().GetInteractor()
-#        self.iren.SetInteractorStyle(vtk.vtkInteractorStyleTrackballCamera())
+        #self.iren.SetInteractorStyle(vtk.vtkInteractorStyleTrackballCamera())
 #        self.iren.SetInteractorStyle(vtk.vtkInteractorStyleTrackballActor())
-        self.irenStyle = vtk.vtkInteractorStyleSwitch()
-        #self.irenStyle = vtk.vtkInteractorStyleJoystickCamera()
+        #self.irenStyle = vtk.vtkInteractorStyleSwitch()
+        self.irenStyle = vtk.vtkInteractorStyleJoystickCamera()
         #self.irenStyle.SetCurrentStyleToJoystickActor()
         self.iren.SetInteractorStyle(self.irenStyle)
         
@@ -104,12 +105,19 @@ class VisualizerWindow(wxVTKRenderWindowInteractor):
         Description: Catch keypresses from the window and do actions
         """    
         key=obj.GetKeyCode()
+        print "Key event",key
+        words={"j":"Joystick","a":"Actor","c":"Camera","t":"Trackball"}
+        if key in ["a","c"]:
+            self.controlled=words[key]
+            messenger.send(None,"set_status","Now controlling %s"%words[key])
+        elif key in ["j","t"]:
+            self.control=words[key]
+            messenger.send(None,"set_status","Control style is %s"%words[key])
+        style="vtk.vtkInteractorStyle%s%s()"%(self.control,self.controlled)
         
-        if key in ["j","a","c","t"]:
-            self.iren.SetInteractorStyle(self.irenStyle)
-#            for i in self.keyPressEvents:
-#                self.irenStyle.RemoveObserver(i)
-            pass
+        
+        self.irenStyle=eval(style)
+        self.iren.SetInteractorStyle(self.irenStyle)
         return 0
         
         
