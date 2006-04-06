@@ -35,7 +35,10 @@ import codecs
 from DataSource import *
 import DataUnit
         
-        
+def getExtensions(): return ["oif"]
+def getFileType(): return "Olympus Image Format datasets (*.oif)"        
+def getClass(): return OlympusDataSource
+    
 class OlympusDataSource(DataSource):
     """
     Class: OlympusDataSource

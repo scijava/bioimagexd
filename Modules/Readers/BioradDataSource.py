@@ -39,6 +39,12 @@ from DataSource import *
 import DataUnit
 
 import glob
+
+def getExtensions(): return ["pic"]
+def getFileType(): return "BioRad PIC datasets (*.pic)"
+def getClass(): return BioradDataSource    
+    
+
 class BioradDataSource(DataSource):
     """
     Class: BioradDataSource

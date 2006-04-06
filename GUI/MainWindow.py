@@ -32,11 +32,13 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 VERSION="0.9.0 beta"
 
+
 import os.path,os,types
 import wx
 import types
 import vtk
 import random
+import time
 
 import messenger
 
@@ -127,6 +129,25 @@ class MainWindow(wx.Frame):
         
         self.taskPanels = Modules.DynamicLoader.getTaskModules()
         self.visualizationModes=Modules.DynamicLoader.getVisualizationModes()
+        self.readers = Modules.DynamicLoader.getReaders()
+        self.extToSource = {}
+        self.datasetWildcards="Volume datasets|"
+        
+        descs=[]
+        
+        for modeclass,ign,module in self.readers.values():
+            exts = module.getExtensions()
+            wcs=""
+            for ext in exts:
+                self.extToSource[ext]=modeclass
+                wcs+="*.%s;"%ext
+                wcs+="*.%s;"%ext.upper()
+                self.datasetWildcards+=wcs
+                descs.append("%s|%s"%(module.getFileType(),wcs[:-1]))
+        self.datasetWildcards=self.datasetWildcards[:-1]
+        self.datasetWildcards+="|"
+        self.datasetWildcards+= "|".join(descs)
+        print "wc=",self.datasetWildcards
         #moduletype,windowtype,mod=self.taskPanels["Colocalization"]        
         
         for i in self.taskPanels.keys():
@@ -1105,8 +1126,7 @@ class MainWindow(wx.Frame):
         if not evt2:
             self.onMenuShowTree(None,1)
             asklist=[]
-            wc="Volume datasets|*.pic;*.PIC;*.oif;*.OIF;*.lsm;*.LSM;*.bxd;*.txt;*.TXT|Biorad PIC files (*.pic)|*.pic;*.PIC|Olympus OIF Files (*.oif)|*.oif;*.OIF|LSM Files (*.lsm)|*.lsm;*.LSM|Leica TCS-NT Files (*.txt)|*.txt;*.TXT|BioImageXD Datasets (*.bxd)|*.bxd;*.bxd|VTK Image Data (*.vti)|*.vti;*.VTI"
-            asklist=Dialogs.askOpenFileName(self,"Open a volume dataset",wc)
+            asklist=Dialogs.askOpenFileName(self,"Open a volume dataset",self.datasetWildcards)
         else:
             asklist=args
         
@@ -1152,7 +1172,6 @@ class MainWindow(wx.Frame):
                 settingsOnly = self.parser.get("SettingsOnly", "SettingsOnly")
             except (NoOptionError,NoSectionError):
                 pass
-            print "\n\n*** SETTINGS ONLY: ", settingsOnly
             if settingsOnly.lower()=="true":
                 # If this file contains only settings, then we report an 
                 # error and do not load it
@@ -1168,10 +1187,9 @@ class MainWindow(wx.Frame):
         # We try to load the actual data
         Logging.info("Loading dataset with extension %s, path=%s"%(ext,path),kw="io")
     
-        extToSource={"bxd":VtiDataSource,"lsm":LsmDataSource,"txt":LeicaDataSource,
-        "oif":OlympusDataSource,"pic":BioradDataSource}
+            
         try:
-            datasource=extToSource[ext]()
+            datasource=self.extToSource[ext]()
         except KeyError,ex:
             Dialogs.showerror(self,"Failed to load file %s: Unrecognized extension %s"%(name,ext),"Unrecognized extension")
             return

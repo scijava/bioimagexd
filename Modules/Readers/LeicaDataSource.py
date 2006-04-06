@@ -43,6 +43,10 @@ except:
     Image=None
 from DataSource import *
 import DataUnit
+
+def getExtensions(): return ["txt"]
+def getFileType(): return "Leica TCS-NT datasets (*.txt)"
+def getClass(): return LeicaDataSource
         
 class LeicaDataSource(DataSource):
     """

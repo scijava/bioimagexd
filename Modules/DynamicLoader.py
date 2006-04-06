@@ -41,6 +41,7 @@ import sys
 
 def getRenderingModules(): return getModules("Rendering")
 def getVisualizationModes(): return getModules("Visualization")
+def getReaders(): return getModules("Readers")
 def getTaskModules(): return getModules("Task","*")
 IGNORE=["ScaleBar","Spline","Arbitrary","SurfaceConstruction","Reslice"]
 
@@ -84,9 +85,14 @@ def getModules(name,flag="*.py"):
         Logging.info("Importing %s from %s"%(mod,frompath),kw="modules")
         module = __import__(mod,globals(),locals(),mod)
         Logging.info("Module=%s"%module,kw="modules")
-        name=module.getName()
+        if hasattr(module,"getName"):
+            name=module.getName()
+        else:
+            name = mod
         modclass=module.getClass()    
-        settingclass=module.getConfigPanel()
+        settingclass=None
+        if hasattr(module,"getConfigPanel"):
+            settingclass=module.getConfigPanel()
         moddict[name]=(modclass,settingclass,module)
     return moddict
     

@@ -38,8 +38,12 @@ import os.path
 import Logging
 import DataUnit
 
+def getExtensions(): return ["bxd"]
+def getFileType(): return "BioImageXD datasets (*.bxd)"
+def getClass(): return BXDDataSource
 
-class VtiDataSource(DataSource):
+
+class BXDDataSource(DataSource):
     """
     Class: DataSource
     Created: 03.11.2004, JM

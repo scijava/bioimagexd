@@ -35,8 +35,12 @@ import vtk
 import os.path
 
 import Logging
-from DataUnit import *
+import DataUnit
 import time
+
+def getExtensions(): return ["lsm"]
+def getFileType(): return "Zeiss LSM 510 datasets (*.lsm)"
+def getClass(): return LsmDataSource
 
 
 class LsmDataSource(DataSource.DataSource):

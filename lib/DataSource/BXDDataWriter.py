@@ -1,7 +1,7 @@
 
 # -*- coding: iso-8859-1 -*-
 """
- Unit: DUDataWriter
+ Unit: BXDDataWriter
  Project: BioImageXD
  Created: 22.02.2005, KP
  Description:
@@ -39,11 +39,11 @@ import Logging
 import DataUnit
 
 
-class DUDataWriter(DataWriter):
+class BXDDataWriter(DataWriter):
     """
-    Class: DUDataWriter
+    Class: BXDDataWriter
     Created: 26.03.2005, KP
-    Description: A writer of dataunit (.du) files
+    Description: A writer of BioImageXD data (.bxd) files
     """
 
     def __init__(self,filename):
@@ -66,7 +66,6 @@ class DUDataWriter(DataWriter):
         # Number of datasets added to this datasource
         self.counter=0
 
-        # TODO: what is this?
         self.dataUnitSettings={}
         self.parser = None
         

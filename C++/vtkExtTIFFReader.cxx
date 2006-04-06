@@ -150,7 +150,7 @@ int vtkExtTIFFReaderInternal::Initialize()
                  &this->BitsPerSample);
     TIFFGetField(this->Image, TIFFTAG_PHOTOMETRIC, &this->Photometrics);
     TIFFGetField(this->Image, TIFFTAG_PLANARCONFIG, &this->PlanarConfig);
-      printf("Planar configuration=%d\n",this->PlanarConfig);
+//      printf("Planar configuration=%d\n",this->PlanarConfig);
     if ( !TIFFGetField(this->Image, TIFFTAG_TILEDEPTH, &this->TileDepth) )
       {
       this->TileDepth = 0;
@@ -221,31 +221,31 @@ void vtkExtTIFFReader::ExecuteInformation()
   }  else this->SetDataScalarTypeToUnsignedChar();     
       
     
-  printf("Image format = %d\n",this->GetFormat());
+//  printf("Image format = %d\n",this->GetFormat());
   switch ( this->GetFormat() )
     {
     case vtkExtTIFFReader::RAW:
     case vtkExtTIFFReader::GRAYSCALE:
     case vtkExtTIFFReader::PALETTE_GRAYSCALE:
       this->SetNumberOfScalarComponents( 1 );
-      printf("One scalarcomponent\n");
+//      printf("One scalarcomponent\n");
       break;
     case vtkExtTIFFReader::RGB:      
       this->SetNumberOfScalarComponents( 
         this->GetInternalImage()->SamplesPerPixel );
-       printf("RGB, Number of scalar components = %d\n",this->GetInternalImage()->SamplesPerPixel);
+//       printf("RGB, Number of scalar components = %d\n",this->GetInternalImage()->SamplesPerPixel);
       break;
     case vtkExtTIFFReader::PALETTE_RGB:      
       this->SetNumberOfScalarComponents( 3 );
       break;
     default:
-        printf("By default number of scalar components=4\n");
+//        printf("By default number of scalar components=4\n");
       this->SetNumberOfScalarComponents( 4 );
     }
 
   if ( !this->GetInternalImage()->CanRead() )
     {
-        printf("Cannot read internal image\n");
+//        printf("Cannot read internal image\n");
         if(this->GetInternalImage()->BitsPerSample!=16) {
             this->SetNumberOfScalarComponents( 4 );
         }
@@ -273,9 +273,9 @@ void vtkExtTIFFReaderUpdate2(vtkExtTIFFReader *self, OT *outPtr,
                           outPtr, outExt, sizeof(OT) );
 
   // close the file
-    printf("Closing the file\n");
+//    printf("Closing the file\n");
   self->GetInternalImage()->Clean();
-    printf("Done\n");
+//    printf("Done\n");
 }
 
 //----------------------------------------------------------------------------
@@ -299,7 +299,7 @@ void vtkExtTIFFReaderUpdate(vtkExtTIFFReader *self, vtkImageData *data, OT *outP
     {
     self->ComputeInternalFileName(idx2);
     // read in a TIFF file
-    printf("Reading slice %d\n",idx2);
+//    printf("Reading slice %d\n",idx2);
     vtkExtTIFFReaderUpdate2(self, outPtr2, outExtent, outIncr, pixSize);
     self->UpdateProgress((idx2 - outExtent[4])/
                          (outExtent[5] - outExtent[4] + 1.0));
@@ -315,7 +315,7 @@ void vtkExtTIFFReader::ExecuteData(vtkDataObject *output)
 {
   vtkImageData *data = this->AllocateOutputData(output);
 
-    printf("data estimated size=%d\n",data->GetActualMemorySize());
+//    printf("data estimated size=%d\n",data->GetActualMemorySize());
   if (this->InternalFileName == NULL)
     {
     vtkErrorMacro("Either a FileName or FilePrefix must be specified.");
@@ -430,7 +430,7 @@ void vtkExtTIFFReader::GetColor( int index, unsigned short *red,
     vtkErrorMacro("Missing required \"Colormap\" tag");
     return;
     }
-  printf("Bits per sample = %d\n",this->GetInternalImage()->BitsPerSample);
+//  printf("Bits per sample = %d\n",this->GetInternalImage()->BitsPerSample);
   this->TotalColors = (1L << this->GetInternalImage()->BitsPerSample);
 
   if ( index >= this->TotalColors )
@@ -472,7 +472,7 @@ void vtkExtTIFFReader::ReadImageInternal( void* vtkNotUsed(in), void* outPtr,
     int height = this->GetInternalImage()->Height;
     this->InternalExtents = outExt;
     unsigned int isize = TIFFScanlineSize(this->GetInternalImage()->Image);
-      printf("isize=%d, height=%d\n",isize,height);
+//      printf("isize=%d, height=%d\n",isize,height);
     unsigned int cc;
     int row, inc = 1;
     tdata_t buf = _TIFFmalloc(isize);      
@@ -487,7 +487,7 @@ void vtkExtTIFFReader::ReadImageInternal( void* vtkNotUsed(in), void* outPtr,
             
     if (InternalImage->PlanarConfig == PLANARCONFIG_CONTIG)
       {
-          printf("Contig planes\n");
+//          printf("Contig planes\n");
           image = (unsigned short*)outPtr;
       for ( row = 0; row < (int)height; row ++ )
         {
@@ -518,13 +518,13 @@ void vtkExtTIFFReader::ReadImageInternal( void* vtkNotUsed(in), void* outPtr,
           }*/
           
         }
-        printf("Copied %d doublebytes\n",tot);
+//        printf("Copied %d doublebytes\n",tot);
           _TIFFfree(buf);
         return;
       }
     else if(InternalImage->PlanarConfig == PLANARCONFIG_SEPARATE)
       {
-          printf("Separate planes\n");
+//          printf("Separate planes\n");
       unsigned long s, nsamples;
       TIFFGetField(InternalImage->Image, TIFFTAG_SAMPLESPERPIXEL, &nsamples);
       for (s = 0; s < nsamples; s++)
