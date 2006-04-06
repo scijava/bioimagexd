@@ -153,7 +153,7 @@ if __name__=='__main__':
         if "tofile" in sys.argv or scripting.main_is_frozen():
             import time
             logfile="output_%s.log"%(time.strftime("%d.%m.%y@:%H:%M"))
-            logdir=get_log_dir()
+            logdir=scripting.get_log_dir()
             if not os.path.exists(logdir):
                 os.mkdir(logdir)
 	    logfile=os.path.join(logdir,logfile)
