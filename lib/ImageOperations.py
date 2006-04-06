@@ -361,8 +361,8 @@ def vtkImageDataToPreviewBitmap(dataunit,timepoint,color,width=0,height=0,bgcolo
                  maximum intensity projection that will be converted to a
                  wxBitmap
     """   
-    imagedata=dataunit.getMIP(timepoint,color)
-    #imageData=dataunit.getTimepoint(timepoint)
+    imagedata=dataunit.getMIP(timepoint,color,small=1)
+
     #imagedata=getMIP(imageData,color)
     if getpng:
         Logging.info("Getting PNG string",kw="imageop")

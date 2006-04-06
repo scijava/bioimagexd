@@ -55,18 +55,21 @@ class DataUnit:
         self.mipTimepoint=-1
 
         
-    def getMIP(self,tp,color):
+    def getMIP(self,tp,color,small=0):
         """
         Method: getMIP
         Created: 1.09.2005, KP
         Description: Returns MIP of the given timepoint
-        """
+        """        
         if self.mip and self.mipTimepoint==tp:
             Logging.info("Using existing MIP")
             return self.mip
         else:
             Logging.info("Generating MIP of tp=",tp)
-            imagedata=self.getTimePoint(tp)
+            if not small:
+                imagedata=self.getTimePoint(tp)
+            else:
+                imagedata = self.dataSource.getMIPdata(tp)
             if not color:
                 color=self.getColorTransferFunction()
             self.mip=ImageOperations.getMIP(imagedata,color)

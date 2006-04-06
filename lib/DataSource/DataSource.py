@@ -99,6 +99,7 @@ class DataSource:
         self.ctf = None
         self.bitdepth=0
         self.resample=None
+        self.mipData = None
         self.resampleDims=None
         self.resampleTp=-1
         self.scalarRange=None
@@ -118,8 +119,21 @@ class DataSource:
         Description: Get the resample dimensions
         """        
         return self.resampleDims
-        
-    def getResampledData(self,data,n):
+    
+    def getMIPdata(self,n):
+        """
+        Method: getMIPdata
+        Created: 05.06.2006, KP
+        Description: Return a small resampled dataset of which a small
+                     MIP can be created.
+        """                
+        if not self.mipData:
+            print "Resampling data to get fast MIP"
+            x,y,z=self.getDimensions()
+            self.mipData = self.getResampledData(self.getDataSet(n),n,tmpDims = (128,128,z))
+        return self.mipData
+    
+    def getResampledData(self,data,n,tmpDims=None):
         """
         Method: getResampledData
         Created: 1.09.2005, KP
@@ -128,16 +142,20 @@ class DataSource:
         dims=data.GetDimensions()
         if 0 and dims[0]*dims[1]>(1024*1024):
             self.resampleDims=(1024,1024,dims[2])
-        if not self.resampleDims:return data
+        if not tmpDims and not self.resampleDims:return data
         
-        if n==self.resampleTp and self.resample:
+        useDims = self.resampleDims
+        if tmpDims:
+            useDims = tmpDims
+        
+        if n==self.resampleTp and self.resample and not useDims:
             return self.resample.GetOutput()
         else:
             Logging.info("Resampling data to ",self.resampleDims,kw="dataunit")
             self.resample=vtk.vtkImageResample()
             self.resample.SetInput(data)
             x,y,z=data.GetDimensions()
-            rx,ry,rz=self.resampleDims
+            rx,ry,rz=useDims
             xf=rx/float(x)
             yf=ry/float(y)
             zf=rz/float(z)
