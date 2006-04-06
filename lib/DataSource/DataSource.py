@@ -126,7 +126,7 @@ class DataSource:
         Description: Return the data resampled to given dimensions
         """
         dims=data.GetDimensions()
-        if dims[0]*dims[1]>(1024*1024):
+        if 0 and dims[0]*dims[1]>(1024*1024):
             self.resampleDims=(1024,1024,dims[2])
         if not self.resampleDims:return data
         
