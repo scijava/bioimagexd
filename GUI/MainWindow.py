@@ -122,10 +122,18 @@ class MainWindow(wx.Frame):
         self.showToolNames=0
         self.progressCoeff=1.0
         self.progressShift=0.0
-        
+        self.taskToId={}
+        self.visToId={}
         
         self.taskPanels = Modules.DynamicLoader.getTaskModules()
-        print self.taskPanels
+        self.visualizationModes=Modules.DynamicLoader.getVisualizationModes()
+        #moduletype,windowtype,mod=self.taskPanels["Colocalization"]        
+        
+        for i in self.taskPanels.keys():
+            self.taskToId[i] = wx.NewId()
+        for i in self.visualizationModes.keys():
+                self.visToId[i] = wx.NewId()
+        
         self.menuManager=MenuManager.MenuManager(self,text=0)
         
         # A window for the file tree
@@ -535,81 +543,53 @@ class MainWindow(wx.Frame):
         
         #self.visIds.append(MenuManager.ID_SHOW_TREE)
 
-        tb.AddSeparator()
-        
-        bmp = wx.Image(os.path.join(iconpath,"task_merge.jpg"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
-        tb.DoAddTool(MenuManager.ID_COLORMERGING,"Merge",bmp,kind=wx.ITEM_CHECK,shortHelp="Merge")        
-        wx.EVT_TOOL(self,MenuManager.ID_COLORMERGING,self.onMenuShowTaskWindow)       
+        def sortModes(x,y):
+            return cmp(x[2].getToolbarPos(),y[2].getToolbarPos())
 
-        self.taskIds.append(MenuManager.ID_COLORMERGING)
-        
-        bmp = wx.Image(os.path.join(iconpath,"task_colocalization.jpg"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
-        tb.DoAddTool(MenuManager.ID_COLOCALIZATION,"Colocalization",bmp,kind=wx.ITEM_CHECK,shortHelp="Colocalization")
-        wx.EVT_TOOL(self,MenuManager.ID_COLOCALIZATION,self.onMenuShowTaskWindow)       
-
-        self.taskIds.append(MenuManager.ID_COLOCALIZATION)
-        #tb.AddSimpleTool(MenuManager.ID_VSIA,
-        #wx.Image(os.path.join(iconpath,"HIV.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Visualization of sparse intensity aggregations","Visualization of sparse intensity aggregations")
-        #wx.EVT_TOOL(self,MenuManager.ID_VSIA,onMenuShowTaskWindow)
-
-        bmp = wx.Image(os.path.join(iconpath,"task_adjust.jpg"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
-        tb.DoAddTool(MenuManager.ID_ADJUST,"Adjust",bmp,kind=wx.ITEM_CHECK,shortHelp="Adjust")        
-        wx.EVT_TOOL(self,MenuManager.ID_ADJUST,self.onMenuShowTaskWindow)
-
-        self.taskIds.append(MenuManager.ID_ADJUST)
-
-        bmp = wx.Image(os.path.join(iconpath,"task_process.jpg"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
-        tb.DoAddTool(MenuManager.ID_RESTORE,"Process",bmp,kind=wx.ITEM_CHECK,shortHelp="Process")
-        wx.EVT_TOOL(self,MenuManager.ID_RESTORE,self.onMenuShowTaskWindow)
-        
-
-        bmp = wx.Image(os.path.join(iconpath,"task_manipulate.jpg"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
-        tb.DoAddTool(MenuManager.ID_MANIPULATE,"Manipulate",bmp,kind=wx.ITEM_CHECK,shortHelp="Manipulate")
-        wx.EVT_TOOL(self,MenuManager.ID_MANIPULATE,self.onMenuShowTaskWindow)        
-
-        self.taskIds.append(MenuManager.ID_RESTORE)
-        tb.AddSeparator()
-
-        #tb.AddSimpleTool(MenuManager.ID_RESLICE,
-        #wx.Image(os.path.join(iconpath,"Reslice.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Re-edit dataset series","Re-edit a dataset series")
-        #wx.EVT_TOOL(self,MenuManager.ID_RESLICE,onMenuShowTaskWindow)
-
-
-        bmp = wx.Image(os.path.join(iconpath,"view_slices.jpg"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
-        tb.DoAddTool(MenuManager.ID_VIS_SLICES,"Slices",bmp,kind=wx.ITEM_CHECK,shortHelp="Slices view")
-        wx.EVT_TOOL(self,MenuManager.ID_VIS_SLICES,self.onMenuVisualizer)
-        tb.ToggleTool(MenuManager.ID_VIS_SLICES,1)
-
-        self.visIds.append(MenuManager.ID_VIS_SLICES)
-
-        bmp = wx.Image(os.path.join(iconpath,"view_gallery.jpg"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
-        tb.DoAddTool(MenuManager.ID_VIS_GALLERY,"Gallery",bmp,kind=wx.ITEM_CHECK,shortHelp="Gallery view")                
-        wx.EVT_TOOL(self,MenuManager.ID_VIS_GALLERY,self.onMenuVisualizer)
-
-        self.visIds.append(MenuManager.ID_VIS_GALLERY)
-
-        bmp = wx.Image(os.path.join(iconpath,"view_sections.jpg"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
-        tb.DoAddTool(MenuManager.ID_VIS_SECTIONS,"Orthographical",bmp,kind=wx.ITEM_CHECK,shortHelp="Sections view")
-        wx.EVT_TOOL(self,MenuManager.ID_VIS_SECTIONS,self.onMenuVisualizer)
-
-        self.visIds.append(MenuManager.ID_VIS_SECTIONS)
-        
-        bmp = wx.Image(os.path.join(iconpath,"view_rendering.jpg"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
-        tb.DoAddTool(MenuManager.ID_VIS_SIMPLE,"MIP view",bmp,kind=wx.ITEM_CHECK,shortHelp="Maximum Intensity Projection view")                
-        wx.EVT_TOOL(self,MenuManager.ID_VIS_SIMPLE,self.onMenuVisualizer)
-        self.visIds.append(MenuManager.ID_VIS_SIMPLE)
-        bmp = wx.Image(os.path.join(iconpath,"view_rendering_3d.jpg"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
-        tb.DoAddTool(MenuManager.ID_VIS_3D,"3D",bmp,kind=wx.ITEM_CHECK,shortHelp="3D view")                
-        wx.EVT_TOOL(self,MenuManager.ID_VIS_3D,self.onMenuVisualizer)
-
-        self.visIds.append(MenuManager.ID_VIS_3D)
+        modules = self.taskPanels.values()
+        modules.sort(sortModes)
 
         tb.AddSeparator()
+        #moduletype,windowtype,mod=self.taskPanels["Colocalization"]        
+        for (moduletype,windowtype,mod) in modules:
+            name = mod.getName()
+            bmp = wx.Image(os.path.join(iconpath,mod.getIcon())).ConvertToBitmap()
+            name = mod.getName()
+            
+            tid = self.taskToId[name]
+            tb.DoAddTool(tid,name,bmp,kind=wx.ITEM_CHECK,shortHelp=name)
+            wx.EVT_TOOL(self,tid,self.onMenuShowTaskWindow)
+            self.taskIds.append(tid)
+            
+        tb.AddSeparator()
         
-        bmp = wx.Image(os.path.join(iconpath,"task_animator.jpg"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
-        tb.DoAddTool(MenuManager.ID_VIS_ANIMATOR,"Animator",bmp,kind=wx.ITEM_CHECK,shortHelp="Render the dataset using Animator")                
         
-        wx.EVT_TOOL(self,MenuManager.ID_VIS_ANIMATOR,self.onMenuVisualizer)
+        modes = self.visualizationModes.values()
+        modes.sort(sortModes)
+        print modes
+
+        for (mod,settingclass,module) in modes:
+            name = module.getName()
+            iconName = module.getIcon()
+            # Visualization modes that do not wish to appear in the toolbar need to 
+            # return None as their icon name
+            if not iconName:
+                continue
+            bmp = wx.Image(os.path.join(iconpath,iconName)).ConvertToBitmap()
+            vid = self.visToId[name] 
+            
+            sepBefore,sepAfter = module.showSeparator()
+            if sepBefore: tb.AddSeparator()
+            
+            tb.DoAddTool(vid, module.getShortDesc(),bmp,kind=wx.ITEM_CHECK,shortHelp = module.getDesc())
+            
+            if sepAfter: tb.AddSeparator()
+            
+            wx.EVT_TOOL(self,vid, self.onMenuVisualizer)
+            self.visIds.append(vid)
+            if module.isDefaultMode():
+                tb.ToggleTool(vid,1)
+                
         
         tb.AddSeparator()
         self.cBtn = wx.ContextHelpButton(tb,MenuManager.CONTEXT_HELP)
@@ -994,33 +974,31 @@ class MainWindow(wx.Frame):
         #self.menuManager.check(MenuManager.ID_VIEW_INFO,0)
         #wx.LayoutAlgorithm().LayoutWindow(self, self.visWin)
         eid=evt.GetId()
-        if eid==MenuManager.ID_VIS_GALLERY:
-            mode="gallery"
-        elif eid==MenuManager.ID_VIS_SLICES:
-            mode="slices"
-        elif eid==MenuManager.ID_VIS_SECTIONS:
-            mode="sections"
-        elif eid==MenuManager.ID_VIS_ANIMATOR:
-            mode="animator"
-        elif eid==MenuManager.ID_VIS_SIMPLE:
-            mode="MIP"
-        else:
-            mode="3d"
+        mode=""
+        for name,vid in self.visToId.items():
+            if vid == eid:
+                mode = name
+                break
+        if not name:
+            raise "Did not find a visualization mode corresponding to id ",eid
         reload=0
         if self.mode==mode:
             reload=1
         self.mode=mode
         messenger.send(None,"update_progress",0.1,"Loading %s view..."%mode)
 
-        # If it's animator we're loading, then hide the dataset info
-        # and file tree
-        if mode=="animator":
+        modeclass,settingclass,module=self.visualizationModes[mode]
+        needUpdate = 0
+        if not module.showFileTree():
             self.onMenuShowTree(None,0)
+            needUpdate=1
+        if not module.showInfoWindow():
             self.infoWin.SetDefaultSize((0,0))
-            self.menuManager.check(MenuManager.ID_VIEW_INFO,0)
+            #self.menuManager.check(MenuManager.ID_VIEW_INFO,0)
+            needUpdate=1
+        if needUpdate:
             self.OnSize(None)
-#            self.OnSize(None)
-#            self.visualizer.OnSize(None)
+            
         self.setButtonSelection(eid)
         #self.onMenuShowTree(None,0)
 
@@ -1237,49 +1215,19 @@ class MainWindow(wx.Frame):
         eid = event.GetId()
         tb=self.GetToolBar()
         shown=tb.GetToolState(eid)
+        
+        taskname=""
+        for name,taskid in self.taskToId.items():
+            if taskid == eid:
+                taskname=name
+                break
+        if not taskname:
+            raise "Couldn't find a task corresponding to id ",eid
             
-        if eid==MenuManager.ID_COLOCALIZATION:
-            moduletype,windowtype,mod=self.taskPanels["Colocalization"]
-            unittype=mod.getDataUnit()
-            filesAtLeast=2
-            filesAtMost=-1
-            action="Colocalization"
-        elif eid==MenuManager.ID_RESLICE:
-            moduletype,windowtype,mod=self.taskPanels["Reslice"]
-            unittype=mod.getDataUnit()
-            filesAtLeast=1
-            filesAtMost=1
-            action="Reslice"
-        elif eid==MenuManager.ID_COLORMERGING:
-            moduletype,windowtype,mod=self.taskPanels["Merging"]
-            unittype=mod.getDataUnit()
-            filesAtLeast=2
-            filesAtMost=-1
-            action="Merge"
-        elif eid==MenuManager.ID_ADJUST:
-            moduletype,windowtype,mod=self.taskPanels["Adjust"]
-            unittype=mod.getDataUnit()
-            filesAtLeast=1
-            filesAtMost=1
-            action="Adjust"
-        elif eid==MenuManager.ID_RESTORE:
-            moduletype,windowtype,mod=self.taskPanels["Process"]
-            unittype=mod.getDataUnit()
-            filesAtLeast=1
-            filesAtMost=1
-            action="Process"
-        elif eid==MenuManager.ID_VSIA:
-            moduletype,windowtype,mod=self.taskPanels["SurfaceConstruction"]
-            unittype=mod.getDataUnit()
-            filesAtLeast=1
-            filesAtMost=1
-            action="VSIA'd"
-        elif eid==MenuManager.ID_MANIPULATE:
-            moduletype,windowtype,mod=self.taskPanels["Manipulation"]
-            unittype=mod.getDataUnit()
-            filesAtLeast=1
-            filesAtMost=-1
-            action="Manipulation"
+        moduletype,windowtype,mod=self.taskPanels[taskname]
+        filesAtLeast,filesAtMost = mod.getInputLimits()
+        unittype = mod.getDataUnit()
+        action = mod.getName()
         Logging.info("Module type for taskwindow: ",moduletype,kw="task")
         
         if windowtype==self.currentTaskWindowType:
