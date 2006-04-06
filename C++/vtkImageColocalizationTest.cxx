@@ -114,13 +114,6 @@ void smooth(OUT_T* inPtr,OUT_T*outPtr,int psf,int ext[6],float*kernel,double sca
         
         
     int uc,vc;
-    /*if(horizontal) {
-        uc = size / 2;
-        vc = 0;
-    } else {
-        uc = 0;
-        vc = size / 2;
-    }*/
     uc = size / 2;
     vc = size / 2;
     
@@ -137,7 +130,7 @@ void smooth(OUT_T* inPtr,OUT_T*outPtr,int psf,int ext[6],float*kernel,double sca
 //    printf("smoothing data with psf=%d, z=%d, uc=%d, vc=%d\n",psf,z,uc,vc);
     //for(int i=0;i<size*size;i++)printf("kernel[%d]=%f\n",i,kernel[i]);
     bool edgePixel;
-    double sum;
+    float sum;
     int height = ymax, width = xmax;
     int xedge = width - uc;
     int yedge = height - vc;
@@ -150,33 +143,27 @@ void smooth(OUT_T* inPtr,OUT_T*outPtr,int psf,int ext[6],float*kernel,double sca
             for(int x=xmin; x<=xmax; x++) {
                 sum = 0.0;
                 i = 0;
-                edgePixel = y<vc || y>=(ymax+1+vc) || x<uc || x>=(xmax+1+uc)||xedge||yedge;
+                edgePixel = y<vc || y>=(ymax+1+vc) || x<uc || x>=(xmax+1+uc)||x>=xedge||y>=yedge;
                 
                 for(int v=-vc; v <= vc; v++) {
                     for(int u = -uc; u <= uc; u++) {
                         int nx,ny;
                         nx=x+u;
                         ny=y+v;
-                        if (edgePixel||xedge||yedge) {
-                            if (nx<=0) nx = 0;
+                        if (edgePixel) {
+                            if (nx<0) nx = 0;
                             if (nx>width) nx = width;
-                            if (ny<=0) ny = 0;
+                            if (ny<0) ny = 0;
                             if (ny>height) ny = height;
-                            //sum += getPixel(x+u, y+v, inPtr, width, height)*kernel[i++];
-                            
                         } 
-                        //if(nx||ny)printf("nx=%d,ny=%d\n",nx,ny);
+                        
                         val = GET_AT(nx,ny,z,inPtr);
                         //if(val)printf("val at %d,%d,%d=%d\n",nx,ny,z,(int)val);
                         sum += val*kernel[i++];
                         }
                 }
-                //if(sum)printf("sum at %d,%d,%d=%f\n",x,y,z,sum);
-                
-                //if(sum>maxval)sum=maxval;
                 
                 SET_AT_OUT(x,y,z,outPtr,(OUT_T)(scale*sum));
-                //*outPtr[x+y*width] = (T)(sum);
             }
         }
      

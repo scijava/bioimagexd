@@ -91,8 +91,9 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
         
         TaskPanel.TaskPanel.__init__(self,root,tb)
         self.operationName="Colocalization"
+        self.voxelSize=None
         
-
+        
         
         self.SetTitle("Colocalization")
     
@@ -355,9 +356,18 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
         self.eventDesc="Calculating P-Value"
         methods=["Fay","Costes","van Steensel"]
         Logging.info("Using %s method (%d)"%(methods[method],method),kw="processing")
-    
+        t=time.time()
+        
         coloctest.SetMethod(method)
-        coloctest.SetManualPSFSize(6)
+        #coloctest.SetPixelSize(vx)
+        
+        try:
+            n=float(self.fixedPSF.GetValue())
+        except:
+            messenger.send(None,"show_error","Bad PSF width","The given width for point spread function is invalid.")
+            return
+        print "Setting PSF width",int(n)
+        coloctest.SetManualPSFSize(int(n))
         n=100
         try:
             n=int(self.iterations.GetValue())
@@ -369,8 +379,9 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
             data=i.getTimePoint(self.timePoint)
             coloctest.AddInput(data)
         coloctest.AddObserver("ProgressEvent",self.updateProgress)
-        print "Running..."
+        
         coloctest.Update()
+        print "It took ",time.time()-t,"seconds to calculate p-value"
         set=sources[0].getSettings().set
         for i in ["PValue","RObserved","RRandMean","RRandSD",
                   "NumIterations","ColocCount","Method"]:
@@ -459,11 +470,46 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
         box.Add(self.radiobox)
         self.iterLbl=wx.StaticText(self.colocalizationPanel,-1,"Iterations:")
         self.iterations = wx.SpinCtrl(self.colocalizationPanel,-1,"100",min=2,max=999,initial=100)
+        
+        #self.costesBox=wx.StaticBox(self.colocalizationPanel,-1,"Costes' Point Spread Function")
+        #sboxsizer=wx.StaticBoxSizer(self.costesBox,wx.VERTICAL)
+        
+        fixedPSFLbl=wx.StaticText(self.colocalizationPanel,-1,"PSF width (px):")
+        self.fixedPSF = wx.TextCtrl(self.colocalizationPanel,-1,"")
+        
+        costesgrid=wx.GridBagSizer()
+        #sboxsizer.Add(costesgrid)
+        costesgrid.Add(self.iterLbl,(0,0))
+        costesgrid.Add(self.iterations,(0,1))
+
+        costesgrid.Add(fixedPSFLbl,(1,0))
+        costesgrid.Add(self.fixedPSF,(1,1))
+        NALbl = wx.StaticText(self.colocalizationPanel,-1,"Numerical Aperture:")
+        self.NA = wx.TextCtrl(self.colocalizationPanel,-1,"1.4")
+        costesgrid.Add(NALbl,(2,0))
+        costesgrid.Add(self.NA,(2,1))
+        Ch2LambdaLbl = wx.StaticText(self.colocalizationPanel,-1,u"Ch2 \u03BB (nm):")
+        self.Ch2Lambda = wx.TextCtrl(self.colocalizationPanel,-1,"520")
+        costesgrid.Add(Ch2LambdaLbl,(3,0))
+        costesgrid.Add(self.Ch2Lambda,(3,1))
+        
+        self.NA.Bind(wx.EVT_TEXT,self.onUpdatePSF)
+        self.Ch2Lambda.Bind(wx.EVT_TEXT,self.onUpdatePSF)
+        
+        #self.colocalizationSizer.Add(sboxsizer,(n,0))
+        #n+=1
+        
+                
         self.iterations.Enable(0)
-        iterbox=wx.BoxSizer(wx.HORIZONTAL)
-        iterbox.Add(self.iterLbl)
-        iterbox.Add(self.iterations)
-        box.Add(iterbox)
+        self.NA.Enable(0)
+        self.Ch2Lambda.Enable(0)
+        self.fixedPSF.Enable(0)
+        
+        #iterbox=wx.BoxSizer(wx.HORIZONTAL)
+        #iterbox.Add(self.iterLbl)
+        #iterbox.Add(self.iterations)
+        #box.Add(iterbox)
+        box.Add(costesgrid)
         box2=wx.BoxSizer(wx.HORIZONTAL)
         self.statsButton=wx.Button(self.colocalizationPanel,-1,"Statistics")
         self.statsButton.Bind(wx.EVT_BUTTON,self.getStatistics)
@@ -513,12 +559,39 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
         self.colocalizationSizer.Add(sboxsizer,(n,0))
         n+=1
         
-        
         self.colocalizationPanel.SetSizer(self.colocalizationSizer)
         self.colocalizationPanel.SetAutoLayout(1)
         
         self.settingsNotebook.AddPage(self.colocalizationPanel,"Colocalization")
     
+    
+    def onUpdatePSF(self,event):
+        """
+        Method: onUpdatePSF
+        Created: 06.04.2006, KP
+        Description: Update the PSF based on the given NA and lambda
+        """
+        event.Skip()
+        if not self.voxelSize:
+            sources=self.dataUnit.getSourceDataUnits()
+            if sources:
+                self.voxelSize = sources[0].getVoxelSize()
+            else:
+                return
+        vx,vy,vz=self.voxelSize
+        try:
+            l=float(self.Ch2Lambda.GetValue())
+            na=float(self.NA.GetValue())
+        except:
+            
+            return
+        
+        psf = (0.61*l)/na
+        # psf is now in nanometers
+        psf /= (vx*1000*1000000)
+        self.fixedPSF.SetValue("%.2f"%float(psf))
+        
+        
     def onSetTestMethod(self,event):
         """
         Method: onSetTestMethod
@@ -528,6 +601,10 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
         n=self.radiobox.GetSelection()
         flag=(n==1)
         self.iterations.Enable(flag)
+        self.NA.Enable(flag)
+        self.Ch2Lambda.Enable(flag)
+        self.fixedPSF.Enable(flag)
+        
 
     def onExportStatistics(self,event):
         """
