@@ -37,6 +37,16 @@ import Logging
 from Visualizer.VisualizationMode import VisualizationMode
 
 def getName():return "slices"
+def isDefaultMode(): return 1
+def showInfoWindow(): return 1
+def showFileTree(): return 1
+def showSeparator(): return (0,0)
+# We want to be in the far left
+def getToolbarPos(): return -999
+    
+def getIcon(): return "view_slices.jpg"
+def getShortDesc(): return "Slices"
+def getDesc(): return "Slices view"    
 def getClass():return SlicesMode
 def getImmediateRendering(): return True
 def getConfigPanel(): return None

@@ -38,6 +38,18 @@ import wx.lib.scrolledpanel as scrolled
 from Visualizer.VisualizationMode import VisualizationMode
 
 def getName():return "gallery"
+def isDefaultMode(): return 0    
+def getShortDesc(): return "Gallery"
+def getDesc(): return "Gallery view"    
+def getIcon(): return "view_gallery.jpg"
+    
+def getToolbarPos(): return 1
+    
+    
+def showInfoWindow(): return 1
+def showFileTree(): return 1 
+def showSeparator(): return (0,0) 
+
 def getClass():return GalleryMode
 def getImmediateRendering(): return False
 def getConfigPanel(): return None

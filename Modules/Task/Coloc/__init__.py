@@ -15,5 +15,8 @@ class ColocalizationDataUnit(CombinedDataUnit):
 def getClass(): return Colocalization.Colocalization
 def getConfigPanel(): return ColocalizationPanel
 def getName(): return "Colocalization"
+def getIcon(): return "task_colocalization.jpg"
+def getInputLimits(): return (2,-1)
+def getToolbarPos(): return 2
 def getDataUnit(): return ColocalizationDataUnit
 def getSettingsClass(): return ColocalizationSettings

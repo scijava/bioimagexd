@@ -41,6 +41,15 @@ import PreviewFrame
 import Modules
 
 def getName():return "MIP"
+def isDefaultMode(): return 0
+def showInfoWindow(): return 1
+def showFileTree(): return 1
+def showSeparator(): return (0,0)
+def getToolbarPos(): return 5
+    
+def getIcon(): return "view_rendering.jpg"
+def getShortDesc(): return "Maximum Intensity Projection"
+def getDesc(): return "MIP view"
 def getClass():return SimpleMode
 def getImmediateRendering(): return False
 def getConfigPanel(): return None

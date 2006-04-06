@@ -35,6 +35,9 @@ from GUI import InfoWidget
 from GUI import TreeWidget
 
 def getName():return "info"
+# Return None as the icon name to indicate we don't wish to appear in the toolbar
+def getIcon(): return None
+def getToolbarPos(): return -9999
 def getClass():return InfoMode
 def getConfigPanel(): return None
 def getImmediateRendering(): return False

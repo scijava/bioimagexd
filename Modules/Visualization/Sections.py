@@ -37,6 +37,16 @@ import PreviewFrame
 from Visualizer.VisualizationMode import VisualizationMode
 
 def getName():return "sections"
+def isDefaultMode(): return 0    
+def showInfoWindow(): return 1
+def showFileTree(): return 1
+def showSeparator(): return (0,0)
+def getToolbarPos(): return 3
+
+
+def getIcon(): return "view_sections.jpg"
+def getShortDesc(): return "Orthographic"
+def getDesc(): return "Orthographic view"    
 def getClass():return SectionsMode
 def getImmediateRendering(): return False
 def getConfigPanel(): return None

@@ -35,6 +35,17 @@ from Visualizer.VisualizationMode import VisualizationMode
 from GUI import MenuManager
 
 def getName():return "animator"
+def getShortDesc(): return "Create an animation showing the dataset with the Animator"
+def getDesc(): return "Animator"
+def getIcon(): return "task_animator.jpg"
+def isDefaultMode(): return 0
+def showInfoWindow(): return 0
+def showFileTree(): return 0    
+def showSeparator(): return (1,0)
+    
+# We want to be in the far right
+def getToolbarPos(): return 999
+    
 def getClass():return AnimatorMode
 def getConfigPanel(): return None
 def getImmediateRendering(): return False
