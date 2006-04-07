@@ -133,8 +133,6 @@ class DataSource:
             xf=rx/float(x)
             yf=ry/float(y)
             zf=rz/float(z)
-            print "x,y,z=",x,y,z
-            print "rz,ry,rz=",self.resampleDims
             self.resampleFactors = (xf,yf,zf)
         return self.resampleFactors
         
@@ -146,7 +144,6 @@ class DataSource:
             vx,vy,vz=self.getVoxelSize()
         
             rx,ry,rz=self.getResampleFactors()           
-            print rx,ry,rz
             self.resampledVoxelSize=(vx/rx,vy/ry,vz/rz)
         return self.resampledVoxelSize
 
