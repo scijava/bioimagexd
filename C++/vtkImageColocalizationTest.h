@@ -60,8 +60,8 @@ public:
 
   // Description:
   // Set the size of the PSF (in pixels) manually
-  vtkGetMacro(ManualPSFSize,int);
-  vtkSetMacro(ManualPSFSize,int);
+  vtkGetMacro(ManualPSFSize,double);
+  vtkSetMacro(ManualPSFSize,double);
 
   // Description:
   // Set the number of iterations
@@ -144,7 +144,7 @@ private:
   int IgnoreZeroPixels;
   int RandomizeZ;
   int Smooth;
-  int ManualPSFSize;
+  double ManualPSFSize;
   int NumIterations;
   int Ch2Lambda;
   double NumericalAperture;

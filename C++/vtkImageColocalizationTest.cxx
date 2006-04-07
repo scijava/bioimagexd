@@ -56,7 +56,7 @@ vtkImageColocalizationTest::vtkImageColocalizationTest()
     RandomizeZ = false;
     IgnoreZeroPixels = true;
     Smooth = true;
-    ManualPSFSize = 0;
+    ManualPSFSize = 0.0;
     NumIterations = 0;
     Ch2Lambda = 520;
     NumericalAperture = 1.4;
