@@ -106,6 +106,8 @@ class LeicaDataSource(DataSource):
         Description: Returns the (x,y,z) dimensions of the datasets this 
                      dataunit contains
         """
+        if self.resampleDims:
+            return self.resampleDims
         if not self.dimensions:
             self.dimensions=self.reader.GetDimensions(self.experiment)
             #print "Got dimensions=",self.dimensions
@@ -138,6 +140,8 @@ class LeicaDataSource(DataSource):
         """
         if not self.voxelsize:
             self.voxelsize = self.reader.GetVoxelSize(self.experiment)
+
+            
             #print "Got voxel size=",self.voxelsize
         return self.voxelsize
     

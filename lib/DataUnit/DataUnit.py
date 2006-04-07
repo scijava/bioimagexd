@@ -132,7 +132,6 @@ class DataUnit:
         """
         return self.settings
         
-        
     def getName(self):
         """
         Method: getName
@@ -191,6 +190,7 @@ class DataUnit:
         self.getDimensions = dataSource.getDimensions
         self.getSpacing = dataSource.getSpacing
         self.getVoxelSize = dataSource.getVoxelSize
+        self.getResampledVoxelSize = dataSource.getResampledVoxelSize
         self.getBitDepth = dataSource.getBitDepth
         self.getScalarRange = dataSource.getScalarRange
         Logging.info("Dataunit ",repr(self),"got datasource",repr(self.dataSource),kw="datasource")

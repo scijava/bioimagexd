@@ -690,17 +690,12 @@ class MainWindow(wx.Frame):
             desc = mod.getDesc()
             tid = self.taskToId[name]
             #tb.DoAddTool(tid,name,bmp,kind=wx.ITEM_CHECK,shortHelp=name)
-            mgr.addMenuItem("processing",tid, name,desc,self.onMenuShowTaskWindow)
+            mgr.addMenuItem("processing",tid, "&"+name,desc,self.onMenuShowTaskWindow)
             #wx.EVT_TOOL(self,tid,self.onMenuShowTaskWindow)
             
         mgr.addSeparator("processing")
         mgr.addMenuItem("processing",MenuManager.ID_RESAMPLE,"Re&sample data...","Resample data to be smaller or larger",self.onMenuResampleData)
         
-        #mgr.addMenuItem("visualization",MenuManager.ID_VIS_SLICES,"&Slices","Visualize individual optical slices")
-        #mgr.addMenuItem("visualization",MenuManager.ID_VIS_SECTIONS,"S&ections","Visualize xy- xz- and yz- planes")
-        #mgr.addMenuItem("visualization",MenuManager.ID_VIS_GALLERY,"&Gallery","Visualize all the optical slices")
-        #mgr.addMenuItem("visualization",MenuManager.ID_VIS_3D,"&Visualize in 3D","Visualize the dataset in 3D")
-
         modes = self.visualizationModes.values()
         modes.sort(self.sortModes)
 
@@ -855,6 +850,7 @@ class MainWindow(wx.Frame):
         Created: 1.09.2005, KP
         Description: Resize data to be smaller or larger
         """
+        print "onMenuResampleData"
         #selectedFiles=self.tree.getSelectedDataUnits()
         selectedFiles,items = self.tree.getSelectionContainer()
         print selectedFiles
@@ -862,6 +858,7 @@ class MainWindow(wx.Frame):
             return
         dlg=ResampleDialog.ResampleDialog(self)
         dlg.setDataUnits(selectedFiles)
+        print "Showing dialog with ",selectedFiles
         dlg.ShowModal()
         if dlg.result==1:
             self.tree.markRed(items,"*")

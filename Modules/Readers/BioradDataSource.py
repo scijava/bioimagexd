@@ -193,9 +193,11 @@ class BioradDataSource(DataSource):
         Description: Returns the (x,y,z) dimensions of the datasets this 
                      dataunit contains
         """
-        if not self.dimensions:
+        if self.resampleDims:
+            return self.resampleDims
+        if not self.dimensions:            
             self.getVoxelSize()
-            #print "Got dimensions=",self.dimensions
+            #print "Got dimensions=",self.dimensions                
         return self.dimensions
 
         
@@ -220,6 +222,7 @@ class BioradDataSource(DataSource):
         """
         if not self.voxelsize:
             self.getTimepoint(0,onlyDims=1)
+
         return self.voxelsize
   
  

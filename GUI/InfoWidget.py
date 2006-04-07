@@ -60,9 +60,9 @@ infoString="""<html><body bgcolor=%(bgcolor)s">
 """
 infoStringResample="""<html><body bgcolor=%(bgcolor)s">
 <table>
-<tr><td>Resampled dimensions:</td><td>%(xdim)d %(smX)s %(ydim)d %(smX)s %(zdim)d (%(nf)s%(xdimm).2f%(fe)s&mu;m %(smX)s %(nf)s%(ydimm).2f%(fe)s&mu;m %(smX)s %(nf)s%(zdimm).2f%(fe)s&mu;m)</td></tr>
+<tr><td>Resampled Dimensions:</td><td>%(xdim)d %(smX)s %(ydim)d %(smX)s %(zdim)d (%(nf)s%(xdimm).2f%(fe)s&mu;m %(smX)s %(nf)s%(ydimm).2f%(fe)s&mu;m %(smX)s %(nf)s%(zdimm).2f%(fe)s&mu;m)</td></tr>
 <tr><td>Time Points:</td><td>%(tps)d</td></tr>
-<tr><td>Voxel Size:</td><td>%(nf)s%(voxelX).2f%(fe)s&mu;m %(smX)s %(nf)s%(voxelY).2f%(fe)s&mu;m %(smX)s %(nf)s%(voxelZ).2f%(fe)s&mu;m</td></tr>
+<tr><td>Resampled Voxel Size:</td><td>%(nf)s%(voxelX).2f%(fe)s&mu;m %(smX)s %(nf)s%(voxelY).2f%(fe)s&mu;m %(smX)s %(nf)s%(voxelZ).2f%(fe)s&mu;m</td></tr>
 <tr><td>Spacing:</td><td>%(spX).2f %(smX)s %(spY).2f %(smX)s %(spZ).2f</td></tr>
 <tr><td>Data type:</td><td>%(bitdepth)d bit</td></tr>
 <tr><td>Intensity range:</td><td>%(intlower)s - %(intupper)s</td></tr>
@@ -135,6 +135,7 @@ class InfoWidget(wx.Panel):
         if not dataunit:
             dims=(0,0,0)
             resampledims=(0,0,0)
+            rsVoxelsize=(0,0,0)
             spacing=(0,0,0)
             voxelsize=(0,0,0)
             bitdepth=8
@@ -146,6 +147,7 @@ class InfoWidget(wx.Panel):
             resampledims=dataunit.dataSource.getResampleDimensions()
             spacing=dataunit.getSpacing()
             voxelsize=dataunit.getVoxelSize()
+            rsVoxelsize=dataunit.getResampledVoxelSize()
             bitdepth=dataunit.getBitDepth()
             intlower,intupper=dataunit.getScalarRange()
             Logging.info("Dataset bit depth =",bitdepth,kw="trivial")
@@ -166,7 +168,10 @@ class InfoWidget(wx.Panel):
             # TODO: Have this data available in dataunit
             #bitdepth=dataunit.getScalarSize()*dataunit.getComponentAmount()
         xdim,ydim,zdim=dims
-        voxelX,voxelY,voxelZ=voxelsize
+        if not resampledims:
+            voxelX,voxelY,voxelZ=voxelsize
+        else:
+            voxelX,voxelY,voxelZ=rsVoxelsize
         voxelX*=1000000
         voxelY*=1000000
         voxelZ*=1000000

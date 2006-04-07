@@ -82,7 +82,8 @@ class ResampleDialog(wx.Dialog):
         """        
         self.dataUnits=dataunits
         x,y,z=dataunits[0].getDimensions()
-	self.dims=(x,y,z)
+        
+        self.dims=(x,y,z)       
         self.dimsLbl.SetLabel(self.currDimText%(x,y,z))
         self.onUpdateDims(None)
         
@@ -92,7 +93,7 @@ class ResampleDialog(wx.Dialog):
         Created: 1.09.2005, KP
         Description: Update the dimensions
         """
-	rx,ry,rz=self.dims
+        rx,ry,rz=self.dims
         try:
             rx=int(self.newDimX.GetValue())
             ry=int(self.newDimY.GetValue())

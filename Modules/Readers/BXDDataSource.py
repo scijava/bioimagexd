@@ -187,7 +187,7 @@ class BXDDataSource(DataSource):
                      dataunit contains
         """
         vsiz=self.parser.get("VoxelSize","VoxelSize")
-        if type(vsiz)==type(""):
+        if type(vsiz)==type(""):            
             return eval(vsiz)
         return vsiz
     

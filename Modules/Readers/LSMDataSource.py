@@ -141,6 +141,7 @@ class LsmDataSource(DataSource.DataSource):
             return self.resampleDims
         if not self.dimensions:
             self.dimensions=self.reader.GetDimensions()
+            
         return self.dimensions[0:3]
 
     def getSpacing(self):

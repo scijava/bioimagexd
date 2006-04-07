@@ -175,6 +175,8 @@ class OlympusDataSource(DataSource):
         Description: Returns the (x,y,z) dimensions of the datasets this 
                      dataunit contains
         """
+        if self.resampleDims:
+            return self.resampleDims
         if not self.dimensions:
             raise "No dimensions given for ",str(self)
             #print "Got dimensions=",self.dimensions
@@ -241,7 +243,9 @@ class OlympusDataSource(DataSource):
         """
         if not self.voxelsize:
             x,y,z,tp,ch,vx,vy,vz=self.getAllDimensions(self.parser)
+                         
             self.voxelsize=(vx,vy,vz)
+
             #print "Got voxel size=",self.voxelsize
         return self.voxelsize
     

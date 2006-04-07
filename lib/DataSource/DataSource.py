@@ -103,6 +103,9 @@ class DataSource:
         self.resampleDims=None
         self.resampleTp=-1
         self.scalarRange=None
+        self.originalDimensions=None
+        self.resampleFactors = None
+        self.resampledVoxelSize=None
         
     def setResampleDimensions(self,dims):
         """
@@ -111,6 +114,42 @@ class DataSource:
         Description: Set the resample dimensions
         """    
         self.resampleDims=dims
+        
+    def getResampleFactors(self):
+        """
+        Method: getResampleFactors
+        Created: 07.04.2006, KP
+        Description: Return the factors for the resampling
+        """        
+        if not self.resampleFactors and self.resampleDims:        
+            if not self.originalDimensions:
+                rd=self.resampleDims
+                self.resampleDims=None
+                self.originalDimensions = self.getDimensions()
+                self.resampleDims=rd
+            
+            x,y,z=self.originalDimensions
+            rx,ry,rz=self.resampleDims
+            xf=rx/float(x)
+            yf=ry/float(y)
+            zf=rz/float(z)
+            print "x,y,z=",x,y,z
+            print "rz,ry,rz=",self.resampleDims
+            self.resampleFactors = (xf,yf,zf)
+        return self.resampleFactors
+        
+    def getResampledVoxelSize(self):
+        if not self.resampleDims:
+            return None
+        if not self.resampledVoxelSize:
+            
+            vx,vy,vz=self.getVoxelSize()
+        
+            rx,ry,rz=self.getResampleFactors()           
+            print rx,ry,rz
+            self.resampledVoxelSize=(vx/rx,vy/ry,vz/rz)
+        return self.resampledVoxelSize
+
         
     def getResampleDimensions(self):
         """
@@ -155,10 +194,12 @@ class DataSource:
             self.resample=vtk.vtkImageResample()
             self.resample.SetInput(data)
             x,y,z=data.GetDimensions()
+            self.originalDimensions=(x,y,z)
             rx,ry,rz=useDims
             xf=rx/float(x)
             yf=ry/float(y)
             zf=rz/float(z)
+            
             self.resample.SetAxisMagnificationFactor(0,xf)
             self.resample.SetAxisMagnificationFactor(1,yf)
             self.resample.SetAxisMagnificationFactor(2,zf)
