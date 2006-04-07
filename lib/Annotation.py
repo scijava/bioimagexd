@@ -314,6 +314,7 @@ class ScaleBar(Annotation):
             widthPx=32
             
         widthPx*=self.scaleFactor
+        heightPx*=self.scaleFactor
         dc = wx.MemoryDC()
 
         # Set the font for the label and calculate the extent
