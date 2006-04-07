@@ -45,8 +45,8 @@ def getToolbarPos(): return 3
 
 
 def getIcon(): return "view_sections.jpg"
-def getShortDesc(): return "Orthographic"
-def getDesc(): return "Orthographic view"    
+def getShortDesc(): return "Orthographic view"
+def getDesc(): return "Display three orthographic sections of the dataset"    
 def getClass():return SectionsMode
 def getImmediateRendering(): return False
 def getConfigPanel(): return None

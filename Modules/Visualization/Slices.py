@@ -45,8 +45,8 @@ def showSeparator(): return (0,0)
 def getToolbarPos(): return -999
     
 def getIcon(): return "view_slices.jpg"
-def getShortDesc(): return "Slices"
-def getDesc(): return "Slices view"    
+def getShortDesc(): return "Slices view"
+def getDesc(): return "View single optical sections of the dataset"    
 def getClass():return SlicesMode
 def getImmediateRendering(): return True
 def getConfigPanel(): return None

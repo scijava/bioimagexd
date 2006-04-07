@@ -49,7 +49,7 @@ def getToolbarPos(): return 5
     
 def getIcon(): return "view_rendering.jpg"
 def getShortDesc(): return "Maximum Intensity Projection"
-def getDesc(): return "MIP view"
+def getDesc(): return "Create a Maximum Intensity Projection of the dataset"
 def getClass():return SimpleMode
 def getImmediateRendering(): return False
 def getConfigPanel(): return None

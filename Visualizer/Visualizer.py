@@ -342,6 +342,7 @@ class Visualizer:
             self.blockTpUpdate=1
             messenger.send(None,"timepoint_changed",self.timepoint)        
             self.blockTpUpdate=0
+            
     def createHistogram(self):
         """
         Method: createHistogram()
@@ -351,7 +352,7 @@ class Visualizer:
         if self.dataUnit != self.histogramDataUnit:
             self.histogramDataUnit=self.dataUnit
         for histogram,sbox,sboxsizer in self.histograms:
-            print "Detaching ",sboxsizer
+            
             self.histogramBox.Detach(sboxsizer)
             sboxsizer.Detach(histogram)
             sboxsizer.Destroy()

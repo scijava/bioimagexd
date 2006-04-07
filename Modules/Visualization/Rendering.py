@@ -61,8 +61,8 @@ def showSeparator(): return (0,0)
 def getToolbarPos(): return 8
     
 def getIcon(): return "view_rendering_3d.jpg"
-def getShortDesc(): return "3D"
-def getDesc(): return "3D view"    
+def getShortDesc(): return "3D view"
+def getDesc(): return "Render the dataset in three dimensions"    
 def getClass():return RenderingMode
 def getImmediateRendering(): return False
 def getConfigPanel(): return None

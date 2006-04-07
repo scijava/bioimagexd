@@ -35,8 +35,8 @@ from Visualizer.VisualizationMode import VisualizationMode
 from GUI import MenuManager
 
 def getName():return "animator"
-def getShortDesc(): return "Create an animation showing the dataset with the Animator"
-def getDesc(): return "Animator"
+def getDesc(): return "Create an animation showing the dataset with the Animator"
+def getShortDesc(): return "Animator"
 def getIcon(): return "task_animator.jpg"
 def isDefaultMode(): return 0
 def showInfoWindow(): return 0

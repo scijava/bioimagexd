@@ -527,6 +527,8 @@ class MainWindow(wx.Frame):
         self.colorLbl.setColor(fg,bg)
         wx.GetApp().Yield(1)
         #wx.SafeYield()    
+    def sortModes(self,x,y):
+        return cmp(x[2].getToolbarPos(),y[2].getToolbarPos())
         
     def createToolBar(self):
         """
@@ -564,18 +566,15 @@ class MainWindow(wx.Frame):
         
         #self.visIds.append(MenuManager.ID_SHOW_TREE)
 
-        def sortModes(x,y):
-            return cmp(x[2].getToolbarPos(),y[2].getToolbarPos())
 
         modules = self.taskPanels.values()
-        modules.sort(sortModes)
+        modules.sort(self.sortModes)
 
         tb.AddSeparator()
         #moduletype,windowtype,mod=self.taskPanels["Colocalization"]        
         for (moduletype,windowtype,mod) in modules:
             name = mod.getName()
             bmp = wx.Image(os.path.join(iconpath,mod.getIcon())).ConvertToBitmap()
-            name = mod.getName()
             
             tid = self.taskToId[name]
             tb.DoAddTool(tid,name,bmp,kind=wx.ITEM_CHECK,shortHelp=name)
@@ -586,8 +585,7 @@ class MainWindow(wx.Frame):
         
         
         modes = self.visualizationModes.values()
-        modes.sort(sortModes)
-        print modes
+        modes.sort(self.sortModes)
 
         for (mod,settingclass,module) in modes:
             name = module.getName()
@@ -643,7 +641,7 @@ class MainWindow(wx.Frame):
         mgr.createMenu("file","&File")
         mgr.createMenu("edit","&Edit")
         mgr.createMenu("settings","&Settings")
-        mgr.createMenu("processing","&Processing")
+        mgr.createMenu("processing","&Tasks")
         mgr.createMenu("visualization","&Visualization")
         mgr.createMenu("view","V&iew")
         mgr.createMenu("help","&Help")
@@ -682,18 +680,41 @@ class MainWindow(wx.Frame):
         mgr.addSeparator("file")
         mgr.addMenuItem("file",MenuManager.ID_QUIT,"&Quit\tCtrl-Q","Quit the application",self.quitApp)
 
-        
-        mgr.addMenuItem("processing",MenuManager.ID_COLOCALIZATION,"&Colocalization...","Create a colocalization map",self.onMenuShowTaskWindow)
-        mgr.addMenuItem("processing",MenuManager.ID_COLORMERGING,"Color &Merging...","Merge dataset series",self.onMenuShowTaskWindow)
-        mgr.addMenuItem("processing",MenuManager.ID_ADJUST,"&Adjust...","Adjust dataset series",self.onMenuShowTaskWindow)
-        mgr.addMenuItem("processing",MenuManager.ID_RESTORE,"&Restore...","Restore dataset series",self.onMenuShowTaskWindow)
+
+        modules = self.taskPanels.values()
+        modules.sort(self.sortModes)
+
+        #moduletype,windowtype,mod=self.taskPanels["Colocalization"]        
+        for (moduletype,windowtype,mod) in modules:
+            name = mod.getName()
+            desc = mod.getDesc()
+            tid = self.taskToId[name]
+            #tb.DoAddTool(tid,name,bmp,kind=wx.ITEM_CHECK,shortHelp=name)
+            mgr.addMenuItem("processing",tid, name,desc,self.onMenuShowTaskWindow)
+            #wx.EVT_TOOL(self,tid,self.onMenuShowTaskWindow)
+            
         mgr.addSeparator("processing")
         mgr.addMenuItem("processing",MenuManager.ID_RESAMPLE,"Re&sample data...","Resample data to be smaller or larger",self.onMenuResampleData)
         
-        mgr.addMenuItem("visualization",MenuManager.ID_VIS_SLICES,"&Slices","Visualize individual optical slices")
-        mgr.addMenuItem("visualization",MenuManager.ID_VIS_SECTIONS,"S&ections","Visualize xy- xz- and yz- planes")
-        mgr.addMenuItem("visualization",MenuManager.ID_VIS_GALLERY,"&Gallery","Visualize all the optical slices")
-        mgr.addMenuItem("visualization",MenuManager.ID_VIS_3D,"&Visualize in 3D","Visualize the dataset in 3D")
+        #mgr.addMenuItem("visualization",MenuManager.ID_VIS_SLICES,"&Slices","Visualize individual optical slices")
+        #mgr.addMenuItem("visualization",MenuManager.ID_VIS_SECTIONS,"S&ections","Visualize xy- xz- and yz- planes")
+        #mgr.addMenuItem("visualization",MenuManager.ID_VIS_GALLERY,"&Gallery","Visualize all the optical slices")
+        #mgr.addMenuItem("visualization",MenuManager.ID_VIS_3D,"&Visualize in 3D","Visualize the dataset in 3D")
+
+        modes = self.visualizationModes.values()
+        modes.sort(self.sortModes)
+
+        for (mod,settingclass,module) in modes:
+            name = module.getName()
+            vid = self.visToId[name] 
+            sdesc = module.getShortDesc()
+            desc = module.getDesc()
+            # Visualization modes that do not wish to be in the menu can return None as the desc
+            if not desc:
+                continue
+            mgr.addMenuItem("visualization",vid,"&"+sdesc,desc)
+
+
         mgr.addSeparator("visualization")
         mgr.addMenuItem("visualization",MenuManager.ID_LIGHTS,"&Lights...","Configure lightning")
         mgr.addMenuItem("visualization",MenuManager.ID_RENDERWIN,"&Render window","Configure Render Window")

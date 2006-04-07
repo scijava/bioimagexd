@@ -7,6 +7,7 @@ import ProcessSettings
 def getClass(): return Process
 def getConfigPanel(): return ProcessPanel
 def getName(): return "Process"
+def getDesc(): return "Process the dataset with various filters like smoothing and noise removal."
 def getIcon(): return "task_process.jpg"
 def getInputLimits(): return (1,1)    
 def getToolbarPos(): return 5    

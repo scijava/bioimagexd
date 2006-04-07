@@ -39,8 +39,8 @@ from Visualizer.VisualizationMode import VisualizationMode
 
 def getName():return "gallery"
 def isDefaultMode(): return 0    
-def getShortDesc(): return "Gallery"
-def getDesc(): return "Gallery view"    
+def getShortDesc(): return "Gallery view"
+def getDesc(): return "Show the dataset as a gallery of slices"    
 def getIcon(): return "view_gallery.jpg"
     
 def getToolbarPos(): return 1
