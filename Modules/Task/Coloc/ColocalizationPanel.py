@@ -153,7 +153,10 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
                   "DiffStainVoxelsCh1":(n+18,0,ss),
 #                  "DiffStainIntCh1":(n+17,1,fs2),
                   "DiffStainVoxelsCh2":(n+19,0,ss),
-#                  "DiffStainIntCh2":(n+18,1,fs2),                  
+#                  "DiffStainIntCh2":(n+18,1,fs2),  
+                  "RObserved":(n+20,0,fs),
+                  "RRandMean":(n+21,0,ss),
+                  "NumIterations":(n+22,0,ss)
         }
      
         sources=[]
@@ -292,6 +295,30 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
                     val = "0.000 / 0.000"                         
                     val1=0.000
                     val2=0.000
+
+            elif item == "RRandMean":
+                if sources:
+                    randmean = sources[0].getSettings().get(item)
+                    stdev = sources[0].getSettings().get("RRandSD")
+                    if not randmean:randmean=0
+                    if not stdev:stdev=0
+                else:
+                    randmean = 0
+                    stdev=0
+                val=u"%.3f \u00B1 %.3f"%(randmean,stdev)
+            elif item == "NumIterations":
+                if sources:
+                    n1 = sources[0].getSettings().get("NumIterations")
+                    n2 = sources[0].getSettings().get("ColocCount")
+                    if not n1:n1=0
+                    if not n2:n2=0
+                    val1 = int(n1-n2)
+                    val2 = n2
+                else:
+                    val1=0
+                    val2=0
+                val = "%d / %d"%(val1,val2)
+                
             elif self.settings:
                 val=self.settings.get(item)
             if not val:val=0
@@ -474,7 +501,7 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
         #self.costesBox=wx.StaticBox(self.colocalizationPanel,-1,"Costes' Point Spread Function")
         #sboxsizer=wx.StaticBoxSizer(self.costesBox,wx.VERTICAL)
         
-        fixedPSFLbl=wx.StaticText(self.colocalizationPanel,-1,"PSF width (px):")
+        fixedPSFLbl=wx.StaticText(self.colocalizationPanel,-1,"PSF radius (px):")
         self.fixedPSF = wx.TextCtrl(self.colocalizationPanel,-1,"")
         
         costesgrid=wx.GridBagSizer()
@@ -495,7 +522,7 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
         
         self.NA.Bind(wx.EVT_TEXT,self.onUpdatePSF)
         self.Ch2Lambda.Bind(wx.EVT_TEXT,self.onUpdatePSF)
-        
+
         #self.colocalizationSizer.Add(sboxsizer,(n,0))
         #n+=1
         
@@ -571,7 +598,8 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
         Created: 06.04.2006, KP
         Description: Update the PSF based on the given NA and lambda
         """
-        event.Skip()
+        if event:
+            event.Skip()
         if not self.voxelSize:
             sources=self.dataUnit.getSourceDataUnits()
             if sources:
@@ -587,9 +615,10 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
             return
         
         psf = (0.61*l)/na
+        
         # psf is now in nanometers
         psf /= (vx*1000*1000000)
-        self.fixedPSF.SetValue("%.2f"%float(psf))
+        self.fixedPSF.SetValue("%.4f"%float(psf))
         
         
     def onSetTestMethod(self,event):
@@ -700,7 +729,11 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
         ["# of non-zero voxels (ch1 / ch2)","","",2],
         ["# of voxels > threshold (ch1 / ch2)","","",2],
         ["Differ. stain of ch1 to ch2 (voxels / intensity)","","",2],
-        ["Differ. stain of ch2 to ch1 (voxels / intensity)","","",2]
+        ["Differ. stain of ch2 to ch1 (voxels / intensity)","","",2],
+        ["R(obs)","","",2],
+        [u"R(rand) (mean \u00B1 sd)","","",2],
+        ["R(rand) > R(obs)","","",2]
+        
         ]
         
         self.listctrl.InsertColumn(0,"Quantity")
@@ -842,6 +875,19 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
         #self.scatterPlot.setDataunit(dataUnit)
         # See if the dataunit has a stored colocalizationctf
         # then use that.
+        
+        
+        sources = self.dataUnit.getSourceDataUnits()
+        na = sources[1].getNumericalAperture()
+        emission = sources[1].getEmissionWavelength()
+        
+        if na:
+            self.NA.SetValue("%.4f"%na)
+        if emission:
+            self.Ch2Lambda.SetValue("%d"%emission)
+            
+        self.onUpdatePSF(None)
+        
         ctf=self.dataUnit.getSettings().get("ColocalizationColorTransferFunction")
         if not ctf:
             ctf = self.dataUnit.getSettings().get("ColorTransferFunction")
