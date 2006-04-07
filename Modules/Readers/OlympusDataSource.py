@@ -45,7 +45,7 @@ class OlympusDataSource(DataSource):
     Created: 12.04.2005, KP
     Description: Olympus OIF files datasource
     """
-    def __init__(self,filename="",channel=-1,basename="",name="",dims=(0,0,0),t=0,voxelsize=(1,1,1),reverse=0):
+    def __init__(self,filename="",channel=-1,basename="",name="",dims=(0,0,0),t=0,voxelsize=(1,1,1),reverse=0, emission = 0, excitation = 0):
         """
         Method: __init__
         Created: 12.04.2005, KP
@@ -63,6 +63,8 @@ class OlympusDataSource(DataSource):
         self.dimensions = dims
         self.voxelsize = voxelsize
         self.spacing = None
+        self.emission = emission
+        self.excitation = excitation
         self.color = None
         self.shift = None
         self.noZ=0
@@ -85,6 +87,27 @@ class OlympusDataSource(DataSource):
         """
         if not self.tps:return 1
         return self.tps
+        
+    def getEmissionWavelength(self):
+        """
+        Method: getEmissionWavelength
+        Created: 07.04.2006, KP
+        Description: Returns the emission wavelength used to image this channel
+        managed by this DataSource
+        """
+        return self.emission
+            
+    def getExcitationWavelength(self):
+        """
+        Method: getEmissionWavelength
+        Created: 07.04.2006, KP
+        Description: Returns the excitation wavelength used to image this channel
+        managed by this DataSource
+        """
+        return self.excitation
+
+        
+     
         
     def getFileName(self):
         """
@@ -152,7 +175,7 @@ class OlympusDataSource(DataSource):
         
         self.reader.SetFilePattern(pat)
         if self.reverseSlices and 0:
-            print "offset=",self.dimensions[2]
+            #print "offset=",self.dimensions[2]
             self.reader.SetFileNameSliceOffset(self.dimensions[2])
             self.reader.SetFileNameSliceSpacing(-1)
         else:
@@ -190,7 +213,7 @@ class OlympusDataSource(DataSource):
         """
         lutpath = os.path.join(self.path,"%s.oif.files"%self.basename,"%s_LUT%d.lut"%(self.basename,self.channel))
         f=codecs.open(lutpath,"r","utf-16")
-        print "Reading lut from %s..."%lutpath
+        #print "Reading lut from %s..."%lutpath
         while 1:
             line=f.readline()
             if "ColorLUTData" in line:
@@ -202,7 +225,7 @@ class OlympusDataSource(DataSource):
         f=open(lutpath,"rb")
         f.seek(-4*65536,2)
         data=f.read()
-        print "Got ",len(data),"bytes"
+        #print "Got ",len(data),"bytes"
         
         format="i"*65536
         values=struct.unpack(format,data)
@@ -218,7 +241,7 @@ class OlympusDataSource(DataSource):
             if r!=r2 or g!=g2 or b!=b2:
                 ctf.AddRGBPoint(i/255.0,r,g,b)
             r2,g2,b2=r,g,b
-        print "read CTF",ctf
+        #print "read CTF",ctf
         return ctf
         
         
@@ -271,6 +294,7 @@ class OlympusDataSource(DataSource):
             
             startpos=float(parser.get(sect,"StartPosition"))
             endpos = float(parser.get(sect,"EndPosition"))
+        
             
             if endpos<startpos:
                 self.reverseSlices=1
@@ -317,8 +341,10 @@ class OlympusDataSource(DataSource):
             sect="Channel %d Parameters"%i
             data = parser.get(sect,"DyeName")
             data=data.replace('"',"")
+            emission = int(parser.get(sect,"EmissionWavelength"))
+            excitation = int(parser.get(sect,"ExcitationWavelength"))
             names.append(data)
-        return names
+        return names,(excitation,emission)
             
             
     def loadFromFile(self, filename):
@@ -346,12 +372,16 @@ class OlympusDataSource(DataSource):
         x,y,z,tps,chs,vx,vy,vz = self.getAllDimensions(self.parser)
         
         voxsiz=(vx,vy,vz)
-        names=self.getDyes(self.parser,chs)
-        print "names=",names
+        names,(excitation,emission)=self.getDyes(self.parser,chs)
+        
         dataunits=[]
         for ch in range(1,chs+1):
             name=names[ch-1]    
-            datasource=OlympusDataSource(filename,ch,name=name,basename=basefile,dims=(x,y,z),t=tps,voxelsize=voxsiz,reverse=self.reverseSlices)
+            datasource=OlympusDataSource(filename,ch,name=name,basename=basefile,
+                                        dims=(x,y,z),t=tps,voxelsize=voxsiz,
+                                        reverse=self.reverseSlices,
+                                        emission = emission,
+                                        excitation = excitation)
             dataunit=DataUnit.DataUnit()
             dataunit.setDataSource(datasource)
             dataunits.append(dataunit)
