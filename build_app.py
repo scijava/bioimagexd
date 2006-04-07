@@ -55,7 +55,7 @@ def get_files(directory,asmodule=0):
                 else:
                     f=f[:-3] # remove the .py
                     modroot=root.replace("\\",".")
-		    modroot=root.replace("/",".")
+                    modroot=modroot.replace("/",".")
                     modules.append(modroot+"."+f)
         if not asmodule:
            modules.append((root,incurrent))

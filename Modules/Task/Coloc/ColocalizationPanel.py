@@ -682,23 +682,7 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
             else:
                 w.writerow([header,val1])
         
-#        mapping=["Fay's","Costes'","van Steensel's"]
-#        method=get1("Method")
-#        print "Method=",method
-#        if method != None:
-#            w.writerow(["P-Value (%s method)"%mapping[method],get1("PValue")])
-#            w.writerow(["Correlation (observed)",get1("RObserved")])
-#            w.writerow(["Mean of Correlation (randomized)",get1("RRandMean")])
-#            w.writerow(["Standard deviation of Correlation (randomized)",get1("RRandSD")])
-#            if method==1:
-#                w.writerow(["PSF width (px)",get1("PSF")])
-#            its=get1("NumIterations")
-#            cc=get1("ColocCount")
-##            if its:
-##                perc=(its-cc)/float(its)
-#               w.writerow(["Number of iterations",get1("NumIterations")])
-#                w.writerow(["# of iterations where R(rand) > R(obs)",(its-cc)])
-#                w.writerow(["% of iterations where R(rand) > R(obs)",perc])
+
         f.close()
 
 
@@ -710,32 +694,32 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
         Description: Add information to the list control
         """
         self.cols=[self.beginner,self.intermediate,self.expert]
-        self.headervals=[["Ch1 threshold (Lower / Upper)","","",0],
-        ["Ch2 threshold (Lower / Upper)","","",0],
+        self.headervals=[["%ch1% threshold (Lower / Upper)","","",0],
+        ["%ch2% threshold (Lower / Upper)","","",0],
         ["P-Value","","",0],
         ["# of colocalized voxels","","",0],
         ["% of volume colocalized","","",0],
-        ["% of ch1 coloc. (voxels / intensity)","","",1],
-        ["% of ch2 coloc. (voxels / intensity)","","",1],
-        ["% of ch1 coloc. (total intensity)","","",1],
-        ["% of ch2 coloc. (total intensity)","","",1],
+        ["% of %ch1% coloc. (voxels / intensity)","","",1],
+        ["% of %ch2% coloc. (voxels / intensity)","","",1],
+        ["% of %ch1% coloc. (total intensity)","","",1],
+        ["% of %ch2% coloc. (total intensity)","","",1],
         ["Correlation","","",1],
         ["Correlation (voxels > threshold)","","",1],
         ["Correlation (voxels < threshold)","","",1],
         ["M1","","",1],
         ["M2","","",1],
-        ["Sum of Ch1 (total / over threshold)","","",2],
-        ["Sum of Ch2 (total / over threshold)","","",2],
-        ["# of non-zero voxels (ch1 / ch2)","","",2],
-        ["# of voxels > threshold (ch1 / ch2)","","",2],
-        ["Differ. stain of ch1 to ch2 (voxels / intensity)","","",2],
-        ["Differ. stain of ch2 to ch1 (voxels / intensity)","","",2],
+        ["Sum of %ch1% (total / over threshold)","","",2],
+        ["Sum of %ch2% (total / over threshold)","","",2],
+        ["# of non-zero voxels (%ch1% / %ch2%)","","",2],
+        ["# of voxels > threshold (%ch1% / %ch2%)","","",2],
+        ["Differ. stain of %ch1% to %ch2% (voxels / intensity)","","",2],
+        ["Differ. stain of %ch2% to %ch1% (voxels / intensity)","","",2],
         ["R(obs)","","",2],
         [u"R(rand) (mean \u00B1 sd)","","",2],
         ["R(rand) > R(obs)","","",2]
-        
+
         ]
-        
+
         self.listctrl.InsertColumn(0,"Quantity")
         self.listctrl.InsertColumn(1,"Value")
         #self.listctrl.InsertColumn(1,"")
@@ -769,14 +753,14 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
         if self.scatterPlot:
             self.scatterPlot.setTimepoint(self.timePoint)
             self.scatterPlot.updatePreview()
-            
+
     def updateThreshold(self,event):
         """
         Method: updateThreshold(event)
         Created: 03.11.2004, KP
         Description: A callback function called when the threshold is configured via the slider
         """
-        # We might get called before any channel has been selected. 
+        # We might get called before any channel has been selected.
         # In that case, do nothing
         if self.settings:
             oldlthreshold=self.settings.get("ColocalizationLowerThreshold")
@@ -875,19 +859,32 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
         #self.scatterPlot.setDataunit(dataUnit)
         # See if the dataunit has a stored colocalizationctf
         # then use that.
-        
-        
+
+
         sources = self.dataUnit.getSourceDataUnits()
+
+        n1=sources[0].getName()
+        n2=sources[1].getName()
+
+        for i,val in enumerate(self.headervals):
+            s=val[0]
+            s=s.replace("%ch1%",n1)
+            s=s.replace("%ch2%",n2)
+            self.headervals[i][0]=s
+            self.listctrl.InsertStringItem(i,s)
+
+
+
         na = sources[1].getNumericalAperture()
         emission = sources[1].getEmissionWavelength()
-        
+
         if na:
             self.NA.SetValue("%.4f"%na)
         if emission:
             self.Ch2Lambda.SetValue("%d"%emission)
             
         self.onUpdatePSF(None)
-        
+
         ctf=self.dataUnit.getSettings().get("ColocalizationColorTransferFunction")
         if not ctf:
             ctf = self.dataUnit.getSettings().get("ColorTransferFunction")
