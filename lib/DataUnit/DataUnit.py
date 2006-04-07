@@ -123,6 +123,9 @@ class DataUnit:
             self.settings.set("Spacing",self.dataSource.getSpacing())
             self.settings.set("Dimensions",self.dataSource.getDimensions())
             self.settings.set("BitDepth",self.dataSource.getBitDepth())
+            self.settings.set("EmissionWavelength",self.dataSource.getEmissionWavelength())
+            self.settings.set("ExcitationWavelength",self.dataSource.getExcitationWavelength())
+            self.settings.set("NumericalAperture",self.dataSource.getNumericalAperture())
             
     def getSettings(self):
         """
@@ -193,6 +196,9 @@ class DataUnit:
         self.getResampledVoxelSize = dataSource.getResampledVoxelSize
         self.getBitDepth = dataSource.getBitDepth
         self.getScalarRange = dataSource.getScalarRange
+        self.getEmissionWavelength = dataSource.getEmissionWavelength
+        self.getExcitationWavelength = dataSource.getExcitationWavelength
+        self.getNumericalAperture = dataSource.getNumericalAperture
         Logging.info("Dataunit ",repr(self),"got datasource",repr(self.dataSource),kw="datasource")
         
         #self.updateSettings()

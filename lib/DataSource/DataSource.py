@@ -206,6 +206,33 @@ class DataSource:
             self.resample.Update()
             return self.resample.GetOutput()        
 
+    def getEmissionWavelength(self):
+        """
+        Method: getEmissionWavelength
+        Created: 07.04.2006, KP
+        Description: Returns the emission wavelength used to image this channel
+        managed by this DataSource
+        """
+        return 0
+            
+    def getExcitationWavelength(self):
+        """
+        Method: getEmissionWavelength
+        Created: 07.04.2006, KP
+        Description: Returns the excitation wavelength used to image this channel
+        managed by this DataSource
+        """
+        return 0
+        
+    def getNumericalAperture(self):
+        """
+        Method: getNumericalAperture
+        Created: 07.04.2006, KP
+        Description: Returns the numerical aperture used to image this channel
+        managed by this DataSource
+        """
+        return 0
+        
     def getDataSetCount(self):
         """
         Method: getDataSetCount
