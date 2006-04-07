@@ -306,7 +306,6 @@ class VolumeModule(VisualizationModule):
         Created: 28.04.2005, KP
         Description: Update the Rendering of this module
         """             
-        Logging.backtrace()
         if not input:
             input=self.data
         ncomps=input.GetNumberOfScalarComponents()
