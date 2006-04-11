@@ -337,6 +337,8 @@ class OlympusDataSource(DataSource):
         Description: Read the dye names for n channels
         """ 
         names=[]
+        exs=[]
+        ems=[]
         for i in range(1,n+1):
             sect="Channel %d Parameters"%i
             data = parser.get(sect,"DyeName")
@@ -344,7 +346,9 @@ class OlympusDataSource(DataSource):
             emission = int(parser.get(sect,"EmissionWavelength"))
             excitation = int(parser.get(sect,"ExcitationWavelength"))
             names.append(data)
-        return names,(excitation,emission)
+            exs.append(excitation)
+            ems.append(emission)
+        return names,(exs,ems)
             
             
     def loadFromFile(self, filename):
@@ -372,11 +376,13 @@ class OlympusDataSource(DataSource):
         x,y,z,tps,chs,vx,vy,vz = self.getAllDimensions(self.parser)
         
         voxsiz=(vx,vy,vz)
-        names,(excitation,emission)=self.getDyes(self.parser,chs)
+        names,(excitations,emissions)=self.getDyes(self.parser,chs)
         
         dataunits=[]
         for ch in range(1,chs+1):
             name=names[ch-1]    
+            excitation = excitations[ch-1]
+            emission = emissions[ch-1]
             datasource=OlympusDataSource(filename,ch,name=name,basename=basefile,
                                         dims=(x,y,z),t=tps,voxelsize=voxsiz,
                                         reverse=self.reverseSlices,

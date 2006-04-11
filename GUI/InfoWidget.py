@@ -51,8 +51,10 @@ infoString="""<html><body bgcolor=%(bgcolor)s">
 <table>
 <tr><td>Dimensions:</td><td>%(xdim)d %(smX)s %(ydim)d %(smX)s %(zdim)d (%(nf)s%(xdimm).2f%(fe)s&mu;m %(smX)s %(nf)s%(ydimm).2f%(fe)s&mu;m %(smX)s %(nf)s%(zdimm).2f%(fe)s&mu;m)</td></tr>
 <tr><td>Time Points:</td><td>%(tps)d</td></tr>
-<tr><td>Voxel Size:</td><td>%(nf)s%(voxelX).2f%(fe)s&mu;m %(smX)s %(nf)s%(voxelY).2f%(fe)s&mu;m %(smX)s %(nf)s%(voxelZ).2f%(fe)s&mu;m</td></tr>
-<tr><td>Spacing:</td><td>%(spX).2f %(smX)s %(spY).2f %(smX)s %(spZ).2f</td></tr>
+<tr><td>Voxel Size:</td><td>%(nf)s%(voxelX).3f%(fe)s&mu;m %(smX)s %(nf)s%(voxelY).3f%(fe)s&mu;m %(smX)s %(nf)s%(voxelZ).3f%(fe)s&mu;m</td></tr>
+<tr><td>Excitation wavelength:</td><td>%(excitation)s</td></tr>
+<tr><td>Emission wavelength:</td><td>%(emission)s</td></tr>
+<tr><td>Spacing:</td><td>%(spX).3f %(smX)s %(spY).3f %(smX)s %(spZ).3f</td></tr>
 <tr><td>Data type:</td><td>%(bitdepth)d bit</td></tr>
 <tr><td>Intensity range:</td><td>%(intlower)s - %(intupper)s</td></tr>
 </table>
@@ -62,8 +64,10 @@ infoStringResample="""<html><body bgcolor=%(bgcolor)s">
 <table>
 <tr><td>Resampled Dimensions:</td><td>%(xdim)d %(smX)s %(ydim)d %(smX)s %(zdim)d (%(nf)s%(xdimm).2f%(fe)s&mu;m %(smX)s %(nf)s%(ydimm).2f%(fe)s&mu;m %(smX)s %(nf)s%(zdimm).2f%(fe)s&mu;m)</td></tr>
 <tr><td>Time Points:</td><td>%(tps)d</td></tr>
-<tr><td>Resampled Voxel Size:</td><td>%(nf)s%(voxelX).2f%(fe)s&mu;m %(smX)s %(nf)s%(voxelY).2f%(fe)s&mu;m %(smX)s %(nf)s%(voxelZ).2f%(fe)s&mu;m</td></tr>
-<tr><td>Spacing:</td><td>%(spX).2f %(smX)s %(spY).2f %(smX)s %(spZ).2f</td></tr>
+<tr><td>Resampled Voxel Size:</td><td>%(nf)s%(voxelX).3f%(fe)s&mu;m %(smX)s %(nf)s%(voxelY).3f%(fe)s&mu;m %(smX)s %(nf)s%(voxelZ).3f%(fe)s&mu;m</td></tr>
+<tr><td>Excitation wavelength:</td><td>%(excitation)s</td></tr>
+<tr><td>Emission wavelength:</td><td>%(emission)s</td></tr>
+<tr><td>Spacing:</td><td>%(spX).3f %(smX)s %(spY).3f %(smX)s %(spZ).3f</td></tr>
 <tr><td>Data type:</td><td>%(bitdepth)d bit</td></tr>
 <tr><td>Intensity range:</td><td>%(intlower)s - %(intupper)s</td></tr>
 </table>
@@ -142,6 +146,8 @@ class InfoWidget(wx.Panel):
             intlower=0
             intupper=255
             tps=0
+            excitation="n/a"
+            emission="n/a"
         else:
             dims=dataunit.getDimensions()
             resampledims=dataunit.dataSource.getResampleDimensions()
@@ -149,6 +155,17 @@ class InfoWidget(wx.Panel):
             voxelsize=dataunit.getVoxelSize()
             rsVoxelsize=dataunit.getResampledVoxelSize()
             bitdepth=dataunit.getBitDepth()
+            em = dataunit.getEmissionWavelength()
+            ex = dataunit.getExcitationWavelength()
+            if not em:
+                emission="n/a"
+            else:
+                emission="%d nm"%em
+                
+            if not ex:
+                excitation="n/a"
+            else:
+                excitation="%d nm"%ex
             intlower,intupper=dataunit.getScalarRange()
             Logging.info("Dataset bit depth =",bitdepth,kw="trivial")
             unit = dataunit
@@ -192,7 +209,8 @@ class InfoWidget(wx.Panel):
         "spX":spX,"spY":spY,"spZ":spZ,"xdimm":xdim*voxelX,
         "ydimm":ydim*voxelY,"zdimm":zdim*voxelZ,"bgcolor":bgcol,
         "fe":"</font>","nf":"<font size=\"normal\">",
-        "tps":tps,"bitdepth":bitdepth,"intlower":intlower,"intupper":intupper}
+        "tps":tps,"bitdepth":bitdepth,"intlower":intlower,"intupper":intupper,
+        "excitation":excitation,"emission":emission}
         
         if resampledims and resampledims!=(0,0,0):
             self.htmlpage.SetPage(infoStringResample%dict)

@@ -305,7 +305,7 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
                 else:
                     randmean = 0
                     stdev=0
-                val=u"%.3f \u00B1 %.3f"%(randmean,stdev)
+                val=u"%.3f \u00B1 %.5f"%(randmean,stdev)
             elif item == "NumIterations":
                 if sources:
                     n1 = sources[0].getSettings().get("NumIterations")
@@ -871,7 +871,7 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
             s=s.replace("%ch1%",n1)
             s=s.replace("%ch2%",n2)
             self.headervals[i][0]=s
-            self.listctrl.InsertStringItem(i,s)
+            self.listctrl.SetStringItem(i,0,s)
 
 
 
