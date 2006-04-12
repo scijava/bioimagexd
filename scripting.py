@@ -81,4 +81,4 @@ def get_module_dir():
         path=os.path.join(dir,"Modules")
         return path
     else:
-        return os.path.join(".","Modules")        
+        return "Modules"
