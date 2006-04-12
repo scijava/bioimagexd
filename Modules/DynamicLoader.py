@@ -53,7 +53,7 @@ def getModules(name,flag="*.py"):
                  and returns a dictionary that contains 
                  information about them
     """    
-    modpath=script.get_module_path()
+    modpath=scripting.get_module_path()
     pathlst=[modpath,name]
     if flag:pathlst.append(flag)
     path=reduce(os.path.join,pathlst)
