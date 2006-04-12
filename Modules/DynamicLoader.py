@@ -35,7 +35,7 @@ import os
 import glob
 
 import Logging
-
+import scripting
 import os.path
 import sys
 
@@ -53,10 +53,11 @@ def getModules(name,flag="*.py"):
                  and returns a dictionary that contains 
                  information about them
     """    
-    pathlst=["Modules",name]
+    modpath=script.get_module_path()
+    pathlst=[modpath,name]
     if flag:pathlst.append(flag)
     path=reduce(os.path.join,pathlst)
-    spath=reduce(os.path.join,[os.getcwd(),"Modules",name])
+    spath=reduce(os.path.join,[modpath,name])
     
     Logging.info("Path to modes: %s"%spath,kw="modules")
     sys.path=sys.path+[spath]

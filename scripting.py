@@ -73,3 +73,12 @@ def get_icon_dir():
         return path
     else:
         return os.path.join(".","Icons")
+        
+        
+def get_module_dir():
+    if platform.system()=="Darwin" and main_is_frozen():
+        dir=os.environ['RESOURCEPATH']
+        path=os.path.join(dir,"Modules")
+        return path
+    else:
+        return os.path.join(".","Modules")        
