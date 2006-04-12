@@ -39,6 +39,7 @@ import types
 import vtk
 import random
 import time
+import sys
 
 import messenger
 
