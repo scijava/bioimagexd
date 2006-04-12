@@ -59,6 +59,7 @@ class OlympusDataSource(DataSource):
         self.filename=filename
         self.parser = RawConfigParser()
         self.reader = None
+        self.originalScalarRange = (0,4095)
         self.channel = channel
         self.dimensions = dims
         self.voxelsize = voxelsize
@@ -126,23 +127,13 @@ class OlympusDataSource(DataSource):
         Description: Returns the DataSet at the specified index
         Parameters:   i       The index
         """
-        data=self.getTimepoint(i)
+        data=self.getTimepoint(i)        
+        if raw:
+            return data
+        self.originalScalarRange=data.GetScalarRange()
         data=self.getResampledData(data,i)
-        if not self.shift:
-            self.shift=vtk.vtkImageShiftScale()
-            self.shift.SetOutputScalarTypeToUnsignedChar()
-        self.shift.SetInput(data)
-            
-        x0,x1=data.GetScalarRange()
-        print "Scalar range=",x0,x1
-        if not x1:
-            x1=1
-        scale=255.0/x1
         
-        if scale:
-            self.shift.SetScale(scale)
-        self.shift.Update()
-        data=self.shift.GetOutput()
+        data=self.getIntensityScaledData(data)
         data.ReleaseDataFlagOff()
         return data
         

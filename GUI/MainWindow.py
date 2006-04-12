@@ -44,7 +44,8 @@ import messenger
 
 from ConfigParser import *
 import TreeWidget
-from Logging import *
+
+import Logging
 
 import  wx.py as py
 
@@ -64,15 +65,15 @@ import MenuManager
 
 import Dialogs
 import AboutDialog
+import RescaleDialog
+import ResampleDialog
 
-from DataUnit import *
-from DataSource import *
+#from DataUnit import *
 
 import Command # Module for classes that implement the Command design pattern
 import Modules
 import Urmas # The animator, Unified Rendering / Animator
 import UIElements
-import ResampleDialog
 
 import scripting
 
@@ -147,8 +148,6 @@ class MainWindow(wx.Frame):
         self.datasetWildcards=self.datasetWildcards[:-1]
         self.datasetWildcards+="|"
         self.datasetWildcards+= "|".join(descs)
-        print "wc=",self.datasetWildcards
-        #moduletype,windowtype,mod=self.taskPanels["Colocalization"]        
         
         for i in self.taskPanels.keys():
             self.taskToId[i] = wx.NewId()
@@ -571,7 +570,7 @@ class MainWindow(wx.Frame):
         modules.sort(self.sortModes)
 
         tb.AddSeparator()
-        #moduletype,windowtype,mod=self.taskPanels["Colocalization"]        
+        
         for (moduletype,windowtype,mod) in modules:
             name = mod.getName()
             bmp = wx.Image(os.path.join(iconpath,mod.getIcon())).ConvertToBitmap()
@@ -684,7 +683,7 @@ class MainWindow(wx.Frame):
         modules = self.taskPanels.values()
         modules.sort(self.sortModes)
 
-        #moduletype,windowtype,mod=self.taskPanels["Colocalization"]        
+        
         for (moduletype,windowtype,mod) in modules:
             name = mod.getName()
             desc = mod.getDesc()
@@ -1233,12 +1232,19 @@ class MainWindow(wx.Frame):
                 self.tree.addToTree(key,path,ext,d[key])
         else:
             # If we got data, add corresponding nodes to tree
-            Logging.info("Adding to tree ",name,path,ext,dataunits,kw="io")
+            #Logging.info("Adding to tree ",name,path,ext,dataunits,kw="io")
+            needToRescale=0
             for i in dataunits:
                 bd=i.getBitDepth()
                 if bd not in [8,32]:
-                    Dialogs.showwarning(self,"The selected dataset is a %d-bit dataset. BioImageXD natively supports only 8-bit datasets, so the dataset has been converted. For optimal performance, you should write the data out as a 8-bit file."%bd,"12-bit data converted to 8-bit")
-                    break
+                    needToRescale=1
+            if needToRescale:
+                dlg = RescaleDialog.RescaleDialog(self)
+                dlg.setDataUnits(dataunits)
+                dlg.ShowModal()
+                    
+                #    Dialogs.showwarning(self,"The selected dataset is a %d-bit dataset. BioImageXD natively supports only 8-bit datasets, so the dataset has been converted. For optimal performance, you should write the data out as a 8-bit file."%bd,"12-bit data converted to 8-bit")
+                #    break
             print "Calling addToTree",name,path,ext,dataunits
             self.tree.addToTree(name,path,ext,dataunits)
 

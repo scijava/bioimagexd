@@ -102,7 +102,11 @@ class DataSource:
         self.mipData = None
         self.resampleDims=None
         self.resampleTp=-1
+        self.intensityScale = 0
+        self.intensityShift = 0
         self.scalarRange=None
+        self.originalScalarRange=(0,255)
+        self.shift = None
         self.originalDimensions=None
         self.resampleFactors = None
         self.resampledVoxelSize=None
@@ -114,6 +118,16 @@ class DataSource:
         Description: Set the resample dimensions
         """    
         self.resampleDims=dims
+        
+    def getOriginalScalarRange(self):
+        """
+        Method: getOriginalScalarRange
+        Created: 12.04.2006, KP
+        Description: Return the original scalar range for this dataset
+        """                
+        return self.originalScalarRange
+        
+        
         
     def getResampleFactors(self):
         """
@@ -168,6 +182,48 @@ class DataSource:
             x,y,z=self.getDimensions()
             self.mipData = self.getResampledData(self.getDataSet(n),n,tmpDims = (128,128,z))
         return self.mipData
+        
+    def setIntensityScale(self,shift,scale):
+        """
+        Method: setIntensityScale
+        Created: 12.04.2006, KP
+        Description: Set the factors for scaling and shifting the intensity of
+                     the data. Used for emphasizing certain range of intensities
+                     in > 8-bit data.
+        """                    
+        self.intensityScale = scale
+        self.intensityShift = shift
+    
+    def getIntensityScaledData(self,data):
+        """
+        Method: getIntensityScaledData
+        Created: 12.04.2006, KP
+        Description: Return the data shifted and scaled to appropriate intensity range
+        """            
+        if not self.shift:
+            self.shift=vtk.vtkImageShiftScale()
+            self.shift.SetOutputScalarTypeToUnsignedChar()
+            self.shift.SetClampOverflow(1)
+        self.shift.SetInput(data)
+           
+
+        if self.intensityScale:
+            self.shift.SetScale(self.intensityScale)
+            print "Setting scale to",self.intensityScale
+        else:
+            x0,x1=data.GetScalarRange()
+            print "scalar range=",x0,x1
+            scale=255.0/x1
+            print "Scale = ",scale
+            self.shift.SetScale(scale)
+        print "Setting shift to",self.intensityShift
+        self.shift.SetShift(self.intensityShift)
+            
+        self.shift.Update()
+        data=self.shift.GetOutput()
+        print "Range of data",data.GetScalarRange()
+        return data
+
     
     def getResampledData(self,data,n,tmpDims=None):
         """
@@ -277,7 +333,7 @@ class DataSource:
 
     def getScalarRange(self):
         """
-        Method: getBitDepth
+        Method: getScalarRange
         Created: 28.05.2005, KP
         Description: Return the bit depth of data
         """

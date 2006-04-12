@@ -173,7 +173,7 @@ class Merging(Module):
         for i,image in enumerate(self.images):
             merge.AddInput(image)
             merge.AddLookupTable(self.ctfs[i])
-            print self.ctfs[i]
+            
             merge.AddIntensityTransferFunction(self.intensityTransferFunctions[i])
         merge.Update()
         data=merge.GetOutput()

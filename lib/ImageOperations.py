@@ -109,9 +109,9 @@ def scaleImage(data,factor=1.0,z=-1,interpolation=1,xfactor=0.0,yfactor=0.0):
     reslice.SetOutputOrigin(0,0,0)
     reslice.SetInput(data)
     if not (xfactor or yfactor):
-        reslice.SetOutputExtent(x0*factor,x1*factor,y0*factor,y1*factor,z0,z1)
+        reslice.SetOutputExtent(int(x0*factor),int(x1*factor),int(y0*factor),int(y1*factor),z0,z1)
     else:
-        reslice.SetOutputExtent(x0*xfactor,x1*xfactor,y0*yfactor,y1*yfactor,z0,z1)  
+        reslice.SetOutputExtent(int(x0*xfactor),int(x1*xfactor),int(y0*yfactor),int(y1*yfactor),z0,z1)  
     #reslice.SetOutputDimensions(x*factor,y*factor,z)
     reslice.SetResliceTransform(transform)
     if interpolation==1:
@@ -452,8 +452,40 @@ def getOverlay(width,height,color,alpha):
         
     return img
     
+def getOverlayBorders(width,height,color,alpha):
+    """
+    Method: getOverlayBorders(width,height,color,alpha)
+    Created: 12.04.2005, KP
+    Description: Create borders for an overlay that are only very little transparent
+    """       
+    siz=width*height*3
+    fs="%ds"%siz    
+    r,g,b=color
+    s=chr(r)+chr(g)+chr(b)
+    s=(width*height)*s
+    ss=struct.pack(fs,s)
+    img=wx.EmptyImage(width,height)
+    img.SetData(ss)
+    siz=width*height
+    s=chr(0)
+    fs="%ds"%siz    
+    s=siz*s
+    ss=struct.pack(fs,s)
+    ss=chr(alpha)*(2*width)+ss[2*width:]
+    x=len(ss)
+    ss=ss[:x-(2*width)]+chr(alpha)*2*width
+    twochar=chr(alpha)+chr(alpha)
+    for i in range(0,width*height,width):
+        if i:
+            ss=ss[:i-2]+2*twochar+ss[i+2:]
+        else:
+            ss=ss[:i]+twochar+ss[i+2:]
+    img.SetAlphaData(ss)
+        
+    return img    
     
-def histogram(imagedata,ctf=None,bg=(200,200,200),logarithmic=1,ignore_border=0,lower=0,upper=0,percent_only=0):
+    
+def histogram(imagedata,ctf=None,bg=(200,200,200),logarithmic=1,ignore_border=0,lower=0,upper=0,percent_only=0,maxval=255):
     """
     Method: histogram(imagedata)
     Created: 11.07.2005, KP
@@ -466,6 +498,7 @@ def histogram(imagedata,ctf=None,bg=(200,200,200),logarithmic=1,ignore_border=0,
     data=accu.GetOutput()
     values=[]
     sum=0
+    xoffset=10
     sumth=0
     percent=0
     Logging.info("lower=",lower,"upper=",upper,kw="imageop")
@@ -497,6 +530,9 @@ def histogram(imagedata,ctf=None,bg=(200,200,200),logarithmic=1,ignore_border=0,
     values=[x*scale for x in values]
     w=256
     x1=max(values)
+    w+=xoffset+5
+    
+    
     diff=0
     if ctf:
         diff=40
@@ -504,7 +540,8 @@ def histogram(imagedata,ctf=None,bg=(200,200,200),logarithmic=1,ignore_border=0,
         diff+=30
     Logging.info("Creating a %dx%d bitmap for histogram"%(int(w),int(x1)+diff),kw="imageop")
         
-    bmp=wx.EmptyBitmap(int(w),int(x1)+diff)
+    # Add an offset of 15 for the percentage text
+    bmp=wx.EmptyBitmap(int(w),int(x1)+diff+15)
     dc = wx.MemoryDC()
     dc.SelectObject(bmp)
     dc.BeginDrawing()
@@ -517,15 +554,7 @@ def histogram(imagedata,ctf=None,bg=(200,200,200),logarithmic=1,ignore_border=0,
 
     dc.Clear()
     dc.SetBrush(wx.Brush(wx.Colour(200,200,200)))
-    dc.DrawRectangle(0,0,256,150)
-    xoffset=7
-    for i in range(0,255):
-        c=values[i]
-        c2=values[i+1]
-        dc.SetPen(graypen)
-        dc.DrawLine(xoffset+i,x1,xoffset+i,x1-c)
-        dc.SetPen(blackpen)
-        dc.DrawLine(xoffset+i,x1-c,xoffset+i+1,x1-c2)
+    dc.DrawRectangle(0,0,w,150)
     
     if not logarithmic:
         points=range(1,150,150/8)
@@ -541,6 +570,17 @@ def histogram(imagedata,ctf=None,bg=(200,200,200),logarithmic=1,ignore_border=0,
         dc.DrawLine(0,y,5,y)
         dc.SetPen(whitepen)
         dc.DrawLine(0,y-1,5,y-1)
+    
+    
+    for i in range(0,255):
+        c=values[i]
+        c2=values[i+1]
+        dc.SetPen(graypen)
+        dc.DrawLine(xoffset+i,x1,xoffset+i,x1-c)
+        dc.SetPen(blackpen)
+        
+        dc.DrawLine(xoffset+i,x1-c,xoffset+i+1,x1-c2)
+    
             
     if ctf:
         Logging.info("Painting ctf",kw="imageop")
@@ -555,14 +595,14 @@ def histogram(imagedata,ctf=None,bg=(200,200,200),logarithmic=1,ignore_border=0,
             dc.DrawLine(xoffset+i,x1+8,xoffset+i,x1+30)
         dc.SetPen(whitepen)
         dc.SetFont(wx.Font(8,wx.SWISS,wx.NORMAL,wx.NORMAL))
-        dc.DrawText("255",230,x1+10)
+        dc.DrawText(str(int(maxval)),230,x1+10)
     else:
         Logging.info("Got no ctf for histogram",kw="imageop")
     
     dc.EndDrawing()
     dc.SelectObject(wx.NullBitmap)
     dc = None    
-    return bmp,percent,retvals
+    return bmp,percent,retvals,xoffset
 
 
 def equalize(imagedata):

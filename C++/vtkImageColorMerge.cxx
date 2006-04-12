@@ -106,7 +106,6 @@ void vtkImageColorMergeExecute(vtkImageColorMerge *self, int id,int NumberOfInpu
     for(i=0; i < NumberOfInputs; i++) {
         inPtrs[i]=(T*)inData[i]->GetScalarPointerForExtent(outExt);
         ctf = self->GetColorTransferFunction(i);
-        printf("Getting ctf %d\n",i);
         //ctfs[i] = self->GetColorTransferFunction(i)->GetTable(0,255,256);
         ctfs[i] = new double[256*3];
         double val[3];
@@ -119,14 +118,10 @@ void vtkImageColorMergeExecute(vtkImageColorMerge *self, int id,int NumberOfInpu
         }
         
         if( itfCount ) {
-            printf("Getting ITF %d\n",i);
             itf = self->GetIntensityTransferFunction(i);
             
-            printf("Getting ITF table %d\n",i);
             itfs[i] = itf->GetDataPointer();
-            printf("itfs[%d][255]=%d\n",i,itfs[i][255]);
             if( !itf->IsIdentical() ) {
-                printf("Not all itfs are identical\n");
                 allIdentical = 0;
             }
         }
@@ -137,7 +132,6 @@ void vtkImageColorMergeExecute(vtkImageColorMerge *self, int id,int NumberOfInpu
     // ctf[x] -> ctf[ itf(x) ]
     
     if(!allIdentical ){
-        printf("Will map through modified ctfs\n");
         mapctfs = modctfs;
         for(i=0; i < NumberOfInputs; i++) {
             modctfs[i] = new double[3*256];
@@ -149,7 +143,7 @@ void vtkImageColorMergeExecute(vtkImageColorMerge *self, int id,int NumberOfInpu
                 modctfs[i][3*x+1]=ctfs[i][3*newx+1];
                 modctfs[i][3*x+2]=ctfs[i][3*newx+2];
             }
-            printf("ITF%d: Mapping %d to %d (%d,%d,%d)\n",i,255,itfs[i][255],modctfs[i][3*255],modctfs[i][3*255+1],modctfs[i][3*255+2]);
+//            printf("ITF%d: Mapping %d to %d (%d,%d,%d)\n",i,255,itfs[i][255],modctfs[i][3*255],modctfs[i][3*255+1],modctfs[i][3*255+2]);
         } 
     }
     

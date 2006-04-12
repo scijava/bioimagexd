@@ -396,22 +396,15 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         if not preview:
             Logging.info("Creating black preview",kw="preview")
             if not self.blackImage:
-                #xor=vtk.vtkImageLogic()
-                #xor.SetOperationToXor()
                 data=self.dataUnit.getSourceDataUnits()[0].getTimePoint(0)
-                #xor.AddInput(data)
-                
-                #xor.AddInput(data)
-                #xor.Update()
                 extent=data.GetExtent()
                 dims=data.GetDimensions()
-                #self.blackImage=xor.GetOutput()
                 self.blackImage=vtk.vtkImageData()
                 self.blackImage.SetDimensions(dims)
                 self.blackImage.SetScalarTypeToUnsignedChar()
                 self.blackImage.SetNumberOfScalarComponents(3)
                 self.blackImage.SetExtent(extent)       
-                self.blackImage.AllocateScalars()
+                #self.blackImage.AllocateScalars()
             #print "preview=",self.blackImage
             preview=self.blackImage
             black=1
@@ -546,29 +539,6 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
             else:
                 self.previewtype=event
                 return
-    
-        self.mip = 0
-        self.setSingleSliceMode(0)            
-        m=self.modules[self.previewtype]
-        Logging.info("Module that corresponds to %s: %s"%(self.previewtype,m),kw="preview")
-        self.dataUnit.setModule(m)
-        sourceunits=self.dataUnit.getSourceDataUnits()
-        t=self.previewtype
-        if not t:t="SingleUnitProcessing"
-        for unit in sourceunits:
-            settingstype="%sSettings"%t
-            settings = unit.getSettings()
-            if settings:
-                #Logging.info("\n\n\n\nConverting settings of %s to %s"%(unit,settingstype))#,kw="preview")
-                settings = settings.asType(settingstype)
-            else:
-                raise "Got no settings from dataunit",unit
-            unit.setSettings(settings)
-            Logging.info("Type of settings now:",unit.getSettings().get("Type"),kw="preview")
-        self.setSelectedItem(0)
-        
-        self.updatePreview(1)
-            
         
     def updateColor(self):
         """
@@ -578,8 +548,6 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
                      function
         Parameters:
         """
-        if self.previewtype=="Merging":
-            return
         if self.dataUnit:
             ct = self.settings.get("ColorTransferFunction")
             #print "Mapping through",ct

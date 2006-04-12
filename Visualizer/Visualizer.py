@@ -580,7 +580,7 @@ class Visualizer:
         Created: 27.07.2005, KP
         Description: Show the original datasets instead of processed ones
         """
-        print "flag=",flag
+        
         if evt=="hide":flag=0
         if self.dataUnit:
             self.dataUnit.getSettings().set("ShowOriginal",flag)
@@ -749,7 +749,7 @@ class Visualizer:
         Created: 24.5.2005, KP
         Description: A method for laying out the window
         """        
-        print "onSashDrag"
+        
         if event and event.GetDragStatus() == wx.SASH_STATUS_OUT_OF_RANGE:
             Logging.info("Out of range",kw="visualizer")
             return
@@ -1094,7 +1094,7 @@ class Visualizer:
         self.timeslider.SetRange(1,count)
         
         x,y,z=dataunit.getDimensions()
-        print "Dataset dimensions = ",x,y,z
+        
         self.zslider.SetRange(1,z)
 
         showItems=0

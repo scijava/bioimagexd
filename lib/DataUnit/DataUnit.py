@@ -31,6 +31,7 @@ __date__ = "$Date: 2005/01/13 14:09:15 $"
 import Logging
 import vtk
 import ImageOperations
+import DataUnitSetting
 class DataUnit:
     """
     Class: DataUnit
@@ -50,15 +51,22 @@ class DataUnit:
         self.dataSource=None
         self.color= None
         self.ctf = None
-        self.settings = None
+        self.settings = DataUnitSetting.DataUnitSettings()
         self.mip=None
         self.mipTimepoint=-1
 
+    def getDataSource(self):
+        """
+        Method: getDataSet
+        Created: 12.04.2006, KP
+        Description: Returns the data source of this dataset
+        """        
+        return self.dataSource
         
     def getMIP(self,tp,color,small=0):
         """
         Method: getMIP
-        Created: 1.09.2005, KP
+        Created: 01.09.2005, KP
         Description: Returns MIP of the given timepoint
         """        
         if self.mip and self.mipTimepoint==tp:

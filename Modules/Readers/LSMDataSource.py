@@ -70,7 +70,6 @@ class LsmDataSource(DataSource.DataSource):
         self.dataUnitSettings={}
         # TODO: what is this?
         self.count=0
-        self.shift=None
 
         self.dimensions=None
         self.spacing=None
@@ -179,20 +178,14 @@ class LsmDataSource(DataSource.DataSource):
     
         self.reader.Update()
         data=self.reader.GetOutput()
-    
-        if data.GetScalarType()!=3 and not raw:
-            if not self.shift:
-                self.shift=vtk.vtkImageShiftScale()
-                self.shift.SetOutputScalarTypeToUnsignedChar()
-            self.shift.SetInput(data)
-            
-            x0,x1=data.GetScalarRange()
-            scale=255.0/x1
-            self.shift.SetScale(scale)
-            self.shift.Update()
-            data=self.shift.GetOutput()
-        
+        self.originalScalarRange=data.GetScalarRange()
+        if raw:
+            return data
         data=self.getResampledData(data,i)            
+        if data.GetScalarType()!=3 and not raw:
+            data=self.getIntensityScaledData(data)
+        
+        
         data.ReleaseDataFlagOff()
         return data
         

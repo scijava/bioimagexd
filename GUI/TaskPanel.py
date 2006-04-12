@@ -39,7 +39,6 @@ import wx.lib.scrolledpanel as scrolled
 import os.path
 
 from DataUnit import *
-from PreviewFrame import *
 from Logging import *
 from ProcessingManager import *
 
