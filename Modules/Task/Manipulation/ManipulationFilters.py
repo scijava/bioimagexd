@@ -163,13 +163,18 @@ class GUIBuilder(wx.Panel):
         """         
         parameters = currfilter.getParameters()
         gy=0
+        sbox=wx.StaticBox(self,-1,currfilter.getName())
+        sboxsizer=wx.StaticBoxSizer(sbox,wx.VERTICAL)
+        self.sizer.Add(sboxsizer,(0,0))
+        sizer=wx.GridBagSizer()
+        sboxsizer.Add(sizer)
         for param in parameters:
             if type(param)==types.ListType:
                 sboxname,items = param
                 sbox = wx.StaticBox(self,-1,sboxname)
                 sboxsizer=wx.StaticBoxSizer(sbox,wx.VERTICAL)
                 
-                self.sizer.Add(sboxsizer,(gy,0),flag=wx.EXPAND)
+                sizer.Add(sboxsizer,(gy,0),flag=wx.EXPAND)
                 itemsizer = wx.GridBagSizer()
                 sboxsizer.Add(itemsizer)
                 y=0                
