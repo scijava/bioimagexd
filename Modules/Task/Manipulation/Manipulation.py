@@ -110,5 +110,22 @@ class Manipulation(Module):
         Description: Manipulationes the dataset in specified ways
         """
         messenger.send(None,"update_progress",100,"Done.")
+        filterlist = self.settings.get("FilterList")
+        data = self.images
+        if not filterlist:
+            return self.images[0]
+        n=len(filterlist)-1
+        for i,filter in enumerate(filterlist):
+                print "Executing..."
+                flag=(i==n)
+                data = filter.execute(data,update=flag)
+                print "done"
+                data=[data]
+                if not data:
+                    return None                
+        
+        data = data[0]
+        
+        print "result=",data
         data.ReleaseDataFlagOff()
         return data

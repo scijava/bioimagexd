@@ -55,6 +55,7 @@ class ManipulationSettings(DataUnitSettings):
         
         self.registerPrivate("ColorTransferFunction",1)        
         self.registerCounted("Source")
+        self.register("FilterList")
         self.register("VoxelSize")
         self.register("Spacing")
         #self.register("Origin")

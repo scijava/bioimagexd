@@ -3,11 +3,10 @@
 """
  Unit: ManipulationPanel
  Project: BioImageXD
- Created: 31.05.2005, KP
+ Created: 10.04.2005, KP
  Description:
 
- A task window for restoring a dataset. This includes any filtering,
- deblurring, deconvolution etc. 
+ A task window for manipulating the dataset with various filters.
                             
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
@@ -47,9 +46,11 @@ from GUI import TaskPanel
 import UIElements
 import string
 
+import ManipulationFilters
+
 class ManipulationPanel(TaskPanel.TaskPanel):
     """
-    Class: RestorationWindow
+    Class: ManipulationPanel
     Created: 03.11.2004, KP
     Description: A window for restoring a single dataunit
     """
@@ -67,13 +68,30 @@ class ManipulationPanel(TaskPanel.TaskPanel):
         # Preview has to be generated here
         # self.colorChooser=None
         
+        self.categories=[]
+        self.menu = None
+        self.currentGUI = None
+        self.filtersByCategory={}
         self.Show()
+        self.filters = []
+        
+        for filter in ManipulationFilters.getFilterList():
+            self.registerFilter(filter.getCategory(),filter)
       
         self.mainsizer.Layout()
         self.mainsizer.Fit(self)
 
-
-
+    def registerFilter(self,category,filter):
+        """
+        Method: createButtonBox()
+        Created: 03.11.2004, KP
+        Description: Creates a button box containing the buttons Render,
+        """
+        if category not in self.categories:
+            self.categories.append(category)
+        if not category in self.filtersByCategory:
+            self.filtersByCategory[category]=[]
+        self.filtersByCategory[category].append(filter)
     def createButtonBox(self):
         """
         Method: createButtonBox()
@@ -84,7 +102,7 @@ class ManipulationPanel(TaskPanel.TaskPanel):
         TaskPanel.TaskPanel.createButtonBox(self)
         
         #self.ManipulationButton.SetLabel("Manipulation Dataset Series")
-        self.ManipulationButton.Bind(wx.EVT_BUTTON,self.doManipulationingCallback)
+        self.processButton.Bind(wx.EVT_BUTTON,self.doManipulationingCallback)
 
     def createOptionsFrame(self):
         """
@@ -95,134 +113,89 @@ class ManipulationPanel(TaskPanel.TaskPanel):
                      used to control the colocalization settings
         """
         TaskPanel.TaskPanel.createOptionsFrame(self)
-            
-        self.paletteLbl = wx.StaticText(self,-1,"Channel palette:")
-        self.commonSettingsSizer.Add(self.paletteLbl,(1,0))
-        self.colorBtn = ColorTransferEditor.CTFButton(self)
-        self.commonSettingsSizer.Add(self.colorBtn,(2,0))
-        
-        #controls for filtering
 
-        self.filtersPanel=wx.Panel(self.settingsNotebook,-1)
-        self.settingsNotebook.AddPage(self.filtersPanel,"Filtering")
-        
-        self.filtersSizer=wx.GridBagSizer()
-        n=0
-        #Median Filtering
-        self.doMedianCheckbutton = wx.CheckBox(self.filtersPanel,
-        -1,"Median Filtering")
-        medianSbox=wx.StaticBox(self.filtersPanel,-1,"Median filtering")
-        self.medianSizer=wx.StaticBoxSizer(medianSbox,wx.VERTICAL)
-        self.doMedianCheckbutton.Bind(wx.EVT_CHECKBOX,self.doFilterCheckCallback)
-        self.doMedianCheckbutton.SetHelpText("Smooth data with a median filter. A median filter replaces each pixel with the median value from a rectangular neighborhood around that pixel.")
-        val=UIElements.AcceptedValidator
-        j=0
-        lsizer=wx.GridBagSizer()
-        for i in ["X","Y","Z"]:
-            self.__dict__["neighborhood%s"%i]=eval('wx.TextCtrl(self.filtersPanel,-1,"1",validator=val(string.digits))')
-            self.__dict__["neighborhood%sLbl"%i]=eval('wx.StaticText(self.filtersPanel,-1,"%s:")'%i)
-            eval("self.neighborhood%s.SetHelpText('Size of the median neighborhood in %s direction.')"%(i,i))
-            eval("self.neighborhood%sLbl.SetHelpText('Size of the median neighborhood in %s direction.')"%(i,i))
-            lbl=eval("self.neighborhood%sLbl"%i)
-            ctrl=eval("self.neighborhood%s"%i)
-            lsizer.Add(lbl,(j,0))
-            lsizer.Add(ctrl,(j,1))
-            j+=1
-        self.neighborhoodLbl=wx.StaticText(self.filtersPanel,-1,
-        "Neighborhood:")
+        self.panel=wx.Panel(self.settingsNotebook,-1)
+        self.panelsizer=wx.GridBagSizer()
+    
+        self.filtersizer=wx.GridBagSizer()
 
-        n+=1
-        self.medianSizer.Add(self.doMedianCheckbutton)
-        self.medianSizer.Add(self.neighborhoodLbl)
-        self.medianSizer.Add(lsizer)
         
-        self.filtersSizer.Add(self.medianSizer,(n,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
-        n+=1
+        self.filterLbl=wx.StaticText(self.panel,-1,"Filter stack:")
+        self.filterListbox = wx.CheckListBox(self.panel,-1,size=(300,-1))
+        self.filterListbox.Bind(wx.EVT_LISTBOX,self.onSelectFilter)
         
-        #Solitary Filtering
+        self.addBtn = wx.Button(self.panel,-1,"Add filter")
+        self.addBtn.Bind(wx.EVT_LEFT_DOWN,self.onShowAddMenu)
 
-        self.doSolitaryCheckbutton = wx.CheckBox(self.filtersPanel,
-        -1,"Solitary Filtering")
-        self.doSolitaryCheckbutton.SetHelpText("Remove solitary noise pixels from the data by comparing them with their neighborhood.")
-        self.doSolitaryCheckbutton.Bind(wx.EVT_CHECKBOX,self.doFilterCheckCallback)
+        self.filtersizer.Add(self.filterLbl,(0,0))
+        self.filtersizer.Add(self.filterListbox,(1,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
+        self.filtersizer.Add(self.addBtn,(2,0))
+        
+        self.panelsizer.Add(self.filtersizer,(0,0))
 
-        solitarySbox=wx.StaticBox(self.filtersPanel,-1,"Solitary Filtering")
-        self.solitarySizer=wx.StaticBoxSizer(solitarySbox,wx.VERTICAL)
+        self.panel.SetSizer(self.panelsizer)
+        self.panel.SetAutoLayout(1)
+        self.settingsNotebook.AddPage(self.panel,"Filter stack")
 
-        self.solitaryLbl=wx.StaticText(self.filtersPanel,-1,"Thresholds:")
-        Xhelp="Threshold that a pixel's horizontal neighbor needs to be over so that the pixel is not removed."
-        Yhelp="Threshold that a pixel's vertical neighbor needs to be over so that the pixel is not removed."
-        Thresholdhelp="Threshold that a pixel needs to be over to get Manipulationed by solitary filter."
-        j=0
-        lsizer=wx.GridBagSizer()
-        for i in ["X","Y","Threshold"]:
-            self.__dict__["solitary%s"%i]=eval('wx.TextCtrl(self.filtersPanel,-1,"1",validator=val(string.digits))')
-            self.__dict__["solitary%sLbl"%i]=eval('wx.StaticText(self.filtersPanel,-1,"%s:")'%i)
-            eval("self.solitary%s.SetHelpText(%shelp)"%(i,i))
-            eval("self.solitary%sLbl.SetHelpText(%shelp)"%(i,i))
-            lbl=eval("self.solitary%sLbl"%i)
-            ctrl=eval("self.solitary%s"%i)
-            lsizer.Add(lbl,(j,0))
-            lsizer.Add(ctrl,(j,1))
-            j+=1
-        self.solitaryThresholdLbl.SetLabel("Manipulationing threshold:")
+    def onSelectFilter(self,event):
+        """
+        Method: onSelectFilter
+        Created: 13.04.2006, KP
+        Description: Event handler called when user selects a filter in the listbox
+        """
+        self.selected = event.GetSelection()
+        if self.currentGUI:
+            self.panelsizer.Detach(self.currentGUI)
+            self.currentGUI.Show(0)
         
-        self.solitarySizer.Add(self.doSolitaryCheckbutton)
-        self.solitarySizer.Add(self.solitaryLbl)
-        self.solitarySizer.Add(lsizer)            
-        self.filtersSizer.Add(self.solitarySizer,(n,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
-        n+=1
-        # Edge preserving smoothing
-        self.doAnisoptropicCheckbutton = wx.CheckBox(self.filtersPanel,
-        -1,"Edge Preserving Smoothing")
-        self.doAnisoptropicCheckbutton.Bind(wx.EVT_CHECKBOX,self.doFilterCheckCallback)
-        self.doAnisoptropicCheckbutton.SetHelpText("Smooth data with anisotropic diffusion. An anisotropic diffusion preserves the edges in the image.")
+        filter = self.filters[self.selected]
+        self.currentGUI = filter.getGUI(self.panel)
+        self.panelsizer.Add(self.currentGUI,(1,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
+        self.panel.Layout()
+        self.Layout()
+        self.panelsizer.Fit(self.panel)
         
-        anisoSbox=wx.StaticBox(self.filtersPanel,-1,"Edge preserving smoothing")
-        self.anisoSizer=wx.StaticBoxSizer(anisoSbox,wx.VERTICAL)
-        self.anisoSizer.Add(self.doAnisoptropicCheckbutton)
         
-        self.anisoLbl=wx.StaticText(self.filtersPanel,-1,"Neighborhood:")
-        self.anisoSizer.Add(self.anisoLbl)
-        Faceshelp="Toggle whether the 6 voxels adjoined by faces are included in the neighborhood."
-        Cornershelp="Toggle whether the 8 corner connected voxels are included in the neighborhood."
-        Edgeshelp="Toggle whether the 12 edge connected voxels are included in the neighborhood."
-        lsizer=wx.GridBagSizer()
-        j=0
-        for i in ["Faces","Corners","Edges"]:
-            self.__dict__["anisoNeighborhood%s"%i]=eval('wx.CheckBox(self.filtersPanel,-1,"%s")'%i)
-            eval("self.anisoNeighborhood%s.SetHelpText(%shelp)"%(i,i))
-            ctrl=eval("self.anisoNeighborhood%s"%i)
-            ctrl.SetValue(1)
-            lsizer.Add(ctrl,(0,j))
-            j+=1            
-        self.anisoSizer.Add(lsizer)    
         
-        self.anisoThresholdLbl=wx.StaticText(self.filtersPanel,-1,"Threshold:")
-        self.anisoSizer.Add(self.anisoThresholdLbl)
+    def addFilter(self,event,filterclass):
+        """
+        Method: addFilter
+        Created: 13.04.2006, KP
+        Description: Add a filter to the stack
+        """
+        print "Request to add filter",filterclass
+        filter = filterclass()
+        name = filter.getName()
+        n=self.filterListbox.GetCount()
+        self.filterListbox.InsertItems([name],n)
+        self.filterListbox.Check(n)
         
-        self.anisoMeasureBox=wx.RadioBox(self.filtersPanel,-1,"Gradient measure",
-        choices=["Central difference","Gradient to neighbor"],majorDimension=2,
-        style=wx.RA_SPECIFY_COLS
-        )
-        self.anisoMeasureBox.SetSelection(1)
-        self.anisoSizer.Add(self.anisoMeasureBox)
-        self.anisoDiffusionThresholdLbl=wx.StaticText(self.filtersPanel,-1,"Diffusion threshold:")
-        self.anisoDiffusionThreshold=wx.TextCtrl(self.filtersPanel,-1,"5.0")
-        self.anisoDiffusionFactorLbl=wx.StaticText(self.filtersPanel,-1,"Diffusion factor:")
-        self.anisoDiffusionFactor=wx.TextCtrl(self.filtersPanel,-1,"1.0")
-        lsizer=wx.GridBagSizer()
-        lsizer.Add(self.anisoDiffusionThresholdLbl,(0,0))
-        lsizer.Add(self.anisoDiffusionThreshold,(0,1))
-        lsizer.Add(self.anisoDiffusionFactorLbl,(1,0))
-        lsizer.Add(self.anisoDiffusionFactor,(1,1))
-        self.anisoSizer.Add(lsizer)
+        self.filters.append(filter)
         
-        self.filtersSizer.Add(self.anisoSizer,(n,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)                
-        self.filtersPanel.SetSizer(self.filtersSizer)
-        self.filtersPanel.SetAutoLayout(1)
-        self.filtersSizer.Fit(self.filtersPanel)
+        
 
+    def onShowAddMenu(self,event):
+        """
+        Method: onShowAddMenu
+        Created: 13.04.2006, KP
+        Description: Show a menu for adding filters to the stack
+        """
+        if not self.menu:
+            menu=wx.Menu()
+            for i in self.categories:
+                submenu = wx.Menu()
+                if i not in self.filtersByCategory:
+                    self.filtersByCategory[i]=[]
+                for filter in self.filtersByCategory[i]:
+                    menuid = wx.NewId()
+                    name = filter.getName()
+                    submenu.Append(menuid,name)
+                    f=lambda evt, x=filter: self.addFilter(evt,x)
+                    self.Bind(wx.EVT_MENU,f,id=menuid)
+                menu.AppendMenu(-1,i,submenu)
+            self.menu = menu
+        self.PopupMenu(self.menu,event.GetPosition())
+        
     def updateTimepoint(self,event):
         """
         Method: updateTimepoint(event)
@@ -259,7 +232,7 @@ class ManipulationPanel(TaskPanel.TaskPanel):
         Description: A method used to set the right values in dataset
                      from filter GUI widgets
         """
-        pass
+        self.settings.set("FilterList",self.filters)
         
     def doManipulationingCallback(self,event=None):
         """
