@@ -59,6 +59,8 @@ class RescaleDialog(wx.Dialog):
         self.histograms=[]
         self.dataUnits=[]
         self.resampleDims=[]
+        self.shift = 0
+        self.scale = 0
         self.taskPanels = Modules.DynamicLoader.getTaskModules()
         self.createRescale()
         self.sizer.Add(self.btnsizer,(2,0),flag=wx.EXPAND|wx.RIGHT|wx.LEFT)
@@ -80,6 +82,7 @@ class RescaleDialog(wx.Dialog):
             ds=dataUnit.getDataSource()
             ds.setIntensityScale(0,0)
             ds.setResampleDimensions(self.resampleDims[i])
+            
         self.result=0
         self.EndModal(wx.ID_CANCEL)   
         
@@ -93,8 +96,10 @@ class RescaleDialog(wx.Dialog):
             ds=dataUnit.getDataSource()
             ds.setIntensityScale(self.shift,self.scale)
             ds.setResampleDimensions(self.resampleDims[i])
+            
         self.result=1
         self.Close()    
+        
 
         
     def setDataUnits(self,dataunits):

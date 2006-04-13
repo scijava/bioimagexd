@@ -130,10 +130,16 @@ class OlympusDataSource(DataSource):
         data=self.getTimepoint(i)        
         if raw:
             return data
+            
+        
         self.originalScalarRange=data.GetScalarRange()
+        
         data=self.getResampledData(data,i)
         
+        
         data=self.getIntensityScaledData(data)
+        
+        
         data.ReleaseDataFlagOff()
         return data
         
@@ -190,6 +196,7 @@ class OlympusDataSource(DataSource):
                      dataunit contains
         """
         if self.resampleDims:
+            
             return self.resampleDims
         if not self.dimensions:
             raise "No dimensions given for ",str(self)

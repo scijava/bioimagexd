@@ -204,24 +204,24 @@ class DataSource:
             self.shift=vtk.vtkImageShiftScale()
             self.shift.SetOutputScalarTypeToUnsignedChar()
             self.shift.SetClampOverflow(1)
+        
         self.shift.SetInput(data)
-           
+        # Need to call this or it will remember the whole extent it got from resampling
+        self.shift.UpdateWholeExtent()
 
         if self.intensityScale:
             self.shift.SetScale(self.intensityScale)
-            print "Setting scale to",self.intensityScale
+            
         else:
             x0,x1=data.GetScalarRange()
-            print "scalar range=",x0,x1
             scale=255.0/x1
-            print "Scale = ",scale
             self.shift.SetScale(scale)
-        print "Setting shift to",self.intensityShift
+        
         self.shift.SetShift(self.intensityShift)
             
         self.shift.Update()
         data=self.shift.GetOutput()
-        print "Range of data",data.GetScalarRange()
+        
         return data
 
     

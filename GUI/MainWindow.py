@@ -1243,10 +1243,8 @@ class MainWindow(wx.Frame):
                 dlg = RescaleDialog.RescaleDialog(self)
                 dlg.setDataUnits(dataunits)
                 dlg.ShowModal()
-                    
-                #    Dialogs.showwarning(self,"The selected dataset is a %d-bit dataset. BioImageXD natively supports only 8-bit datasets, so the dataset has been converted. For optimal performance, you should write the data out as a 8-bit file."%bd,"12-bit data converted to 8-bit")
-                #    break
-            print "Calling addToTree",name,path,ext,dataunits
+                dlg.Destroy()
+            print dataunits[0].getTimePoint(0).GetDimensions()
             self.tree.addToTree(name,path,ext,dataunits)
 
     def onMenuShowTaskWindow(self,event):
