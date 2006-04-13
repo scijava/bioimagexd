@@ -54,6 +54,7 @@ import sys
 
 import Modules
 import Annotation
+import Configuration
 import scripting
 
 
@@ -84,6 +85,7 @@ class Visualizer:
         self.updateFactor = 0.001
         self.depthT=0
         self.zoomToFitFlag=1
+        self.conf = Configuration.getConfiguration()
         self.zoomFactor=1.0
         self.tb1=None
         self.tb=None
@@ -102,6 +104,8 @@ class Visualizer:
         self.mainwin=mainwin
         self.menuManager=menuManager
         self.renderingTime=0
+        self.lastWinSaveTime=0
+        self.firstLoad={}
         self.in_vtk=0
         self.parent = parent
         #messenger.connect(None,"set_timeslider_value",self.onSetTimeslider)
@@ -190,9 +194,9 @@ class Visualizer:
         self.zsliderWin.SetSashVisible(wx.SASH_RIGHT,False)
         self.zsliderWin.SetSashVisible(wx.SASH_LEFT,False)
         self.zsliderWin.SetDefaultSize((32,768)) 
-       	w=32
-       	if platform.system() =='Darwin':
-       		w=44
+        w=32
+        if platform.system() =='Darwin':
+            w=44
         self.zsliderWin.origSize=(w,768)
         #self.zText=wx.StaticText(self.zsliderWin,-1,"Z")
         
@@ -784,8 +788,6 @@ class Visualizer:
         visSize=self.visWin.GetClientSize()
         # was here
         
-
-        
         newsize=visSize[0]
         if abs(newsize-self.oldClientSize)>10:
             self.createToolbar()
@@ -799,6 +801,34 @@ class Visualizer:
         self.oldClientSize=newsize    
         if self.currSliderPanel:
             self.currSliderPanel.SetSize(self.sliderWin.GetSize())        
+        if time.time()-self.lastWinSaveTime > 5:
+            self.saveWindowSizes()
+            
+    def restoreWindowSizesFromSettings(self):
+        """
+        Method: restoreWindowSizesFromSettings
+        Created: 13.04.2006, KP
+        Description: Restore the window sizes from settings
+        """        
+        
+        item="%s_SidebarSize"%self.mode
+        ssize=self.conf.getConfigItem(item,"Sizes")
+        print "Restoring size from settings",item,ssize,self.mode
+        if not ssize:return 0
+        ssize=eval(ssize)
+        self.sidebarWin.SetDefaultSize(ssize)        
+        return 1
+        
+        
+    def saveWindowSizes(self):
+        """
+        Method: saveWindowSizes
+        Created: 13.04.2006, KP
+        Description: Save window sizes to the settings
+        """
+        if self.mode:
+            ssize=str(self.sidebarWin.GetSize())
+            self.conf.setConfigItem("%s_SidebarSize"%self.mode,"Sizes",ssize)
         
     def setCurrentSliderPanel(self,p):
         """
@@ -993,7 +1023,16 @@ class Visualizer:
                 self.sidebarWin.SetDefaultSize((0,1024))
         else:
             if self.sidebarWin.GetSize()!=self.sidebarWin.origSize:
-                self.sidebarWin.SetDefaultSize(self.sidebarWin.origSize)
+                flag=0
+                # If this is the first time we're loading a visualization mode,then restore the
+                # size from settings
+                if not self.mode in self.firstLoad:            
+                    flag=self.restoreWindowSizesFromSettings()
+                    self.firstLoad[self.mode]=1
+                if not flag:
+                    # If restoring the size from settings failed or this is not the first time, then
+                    # use the sidebarWin.origSize
+                    self.sidebarWin.SetDefaultSize(self.sidebarWin.origSize)
         wx.LayoutAlgorithm().LayoutWindow(self.parent, self.visWin)
         #self.currentWindow.enable(self.enabled)
 

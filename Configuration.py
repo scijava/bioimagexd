@@ -135,6 +135,7 @@ class Configuration:
             
         if not configItem in self.configItems:
             return None
+            
         return self.configItems[configItem]
         
     def readPathSettings(self):

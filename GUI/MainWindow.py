@@ -95,7 +95,15 @@ class MainWindow(wx.Frame):
             id
             app     LSMApplication object
         """
-        wx.Frame.__init__(self,parent,-1,"BioImageXD",size=(1024,768),
+        conf = Configuration.getConfiguration()
+
+        size=conf.getConfigItem("WindowSize","Sizes")
+        if size:
+            size=eval(size)
+        else:
+            size=(1024,768)
+                
+        wx.Frame.__init__(self,parent,-1,"BioImageXD",size=size,
             style=wx.DEFAULT_FRAME_STYLE|wx.NO_FULL_REPAINT_ON_RESIZE)
         self.Bind(
             wx.EVT_SASH_DRAGGED_RANGE, self.onSashDrag,
@@ -119,7 +127,9 @@ class MainWindow(wx.Frame):
         self.paths={}
         self.currentVisualizationWindow=None
         self.currentTaskWindow=None
+        self.currentTaskWindowName=""
         self.currentTaskWindowType=None
+
         self.currentTask=""
         self.currentFile=""
         self.mode=""
@@ -192,6 +202,11 @@ class MainWindow(wx.Frame):
         self.taskWin.SetSashBorder(wx.SASH_LEFT,True)
         self.taskWin.SetDefaultSize((0,768))
         self.taskWin.origSize=(360,768)
+        conf = Configuration.getConfiguration()
+        s=conf.getConfigItem("TaskWinSize","Sizes")
+        if s:
+            s=eval(s)
+            self.taskWin.origSize=s
         
         # A window for the task panels
         self.infoWin=wx.SashLayoutWindow(self,MenuManager.ID_INFO_WIN,style=wx.RAISED_BORDER|wx.SW_3D)
@@ -409,7 +424,10 @@ class MainWindow(wx.Frame):
             newsize=(event.GetDragRect().width,h)
             self.taskWin.SetDefaultSize(newsize)
             self.taskWin.origSize=newsize
-        
+            
+            conf = Configuration.getConfiguration()
+            conf.setConfigItem("TaskWinSize","Sizes",str(newsize))
+            
         wx.LayoutAlgorithm().LayoutWindow(self, self.visWin)
         self.visualizer.OnSize(None)
         self.visWin.Refresh()
@@ -927,6 +945,7 @@ class MainWindow(wx.Frame):
             self.currentTaskWindow.Destroy()
             del self.currentTaskWindow
             self.currentTaskWindow=None
+            self.currentTaskWindowName=""
             self.currentTaskWindowType=None
         self.switchBtn.Enable(0)            
         self.menuManager.disable(MenuManager.ID_CLOSE_TASKWIN)            
@@ -1303,6 +1322,7 @@ class MainWindow(wx.Frame):
             self.currentTaskWindow.Destroy()
             del self.currentTaskWindow                
         
+        self.currentTaskWindowName=taskname
         self.currentTaskWindow=window
         w,h=self.taskWin.GetSize()
         w,h2=self.taskWin.origSize
@@ -1374,13 +1394,11 @@ class MainWindow(wx.Frame):
             tb.ToggleTool(MenuManager.ID_SHOW_TREE,show)
         
         if not show:
-            print "will hide tree"
             w,h=self.treeWin.GetSize()
             if w and h:
                 self.treeWin.origSize=(w,h)
             w=0
         else:
-            print "will show tree"
             w,h=self.treeWin.origSize
         self.treeWin.SetDefaultSize((w,h))
         
@@ -1476,6 +1494,18 @@ class MainWindow(wx.Frame):
         Description: Callback function for menu item "Help"
         """
         self.viewHelp(None,None,None)
+        
+    def saveWindowSizes(self):
+        """
+        Method: saveWindowSizes
+        Created: 13.04.2006, KP
+        Description: Save window sizes to the settings
+        """        
+        conf = Configuration.getConfiguration()
+
+        size=str(self.GetSize())
+        conf.setConfigItem("WindowSize","Sizes",size)
+        conf.writeSettings()
     
     def quitApp(self,evt):
         """
@@ -1496,12 +1526,14 @@ class MainWindow(wx.Frame):
             dlg.Destroy()            
             if answer != wx.ID_OK:
                 return
+            
+        self.saveWindowSizes()
+            
         self.visualizer.enable(0)        
         
         self.visualizer.closeVisualizer()
         
         self.Destroy()
-	sys.exit(0)
+        sys.exit(0)
 
-        
 # 
