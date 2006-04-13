@@ -34,7 +34,7 @@ import wx
 import types
 import vtk
 def getFilterList():
-    return [ErodeFilter]
+    return [ErodeFilter,DilateFilter,MedianFilter]
     
    
 MORPHOLOGICAL="Morphological"
@@ -60,10 +60,29 @@ class ManipulationFilter:
         self.parameters = {}
         self.erode = None
         self.gui = None
+        self.enabled = 1
         for i in self.getParameters():
             title,items = i
             for item in items:
                 self.setParameter(item,self.getDefaultValue(item))
+        
+    def getEnabled(self):
+        """
+        Method: getEnabled
+        Created: 13.04.2007, KP
+        Description: Return whether this filter is enabled or not
+        """                   
+        return self.enabled
+        
+    def setEnabled(self,flag):
+        """
+        Method: setEnabled
+        Created: 13.04.2007, KP
+        Description: Set whether this filter is enabled or not
+        """                   
+        print "Setting ",self,"to enabled=",flag
+        self.enabled = flag     
+    
         
     def getGUI(self,parent):
         """
@@ -121,27 +140,28 @@ class GUIBuilder(wx.Panel):
     Created: 13.04.2006, KP
     Description: A GUI builder for the manipulation filters
     """      
-    def __init__(self,parent,filter):
+    def __init__(self,parent,myfilter):
         """
         Method: __init__()
         Created: 13.04.2007, KP
         Description: Initialization
         """ 
         wx.Panel.__init__(self,parent,-1)
-        self.filter = filter
+        self.filter = myfilter
         self.sizer = wx.GridBagSizer()
         
-        self.buildGUI(filter)
+        
+        self.buildGUI(myfilter)
         self.SetSizer(self.sizer)
         self.SetAutoLayout(1)
         
-    def buildGUI(self,filter):
+    def buildGUI(self,currfilter):
         """
         Method: buildGUI
         Created: 13.04.2007, KP
         Description: Build the GUI for a given filter
         """         
-        parameters = filter.getParameters()
+        parameters = currfilter.getParameters()
         gy=0
         for param in parameters:
             if type(param)==types.ListType:
@@ -154,10 +174,10 @@ class GUIBuilder(wx.Panel):
                 sboxsizer.Add(itemsizer)
                 y=0                
                 for item in items:
-                    desc = filter.getDesc(item)
+                    desc = currfilter.getDesc(item)
                     lbl = wx.StaticText(self,-1,desc)
-                    ftype = filter.getType(item)
-                    defval = filter.getDefaultValue(item)
+                    ftype = currfilter.getType(item)
+                    defval = currfilter.getDefaultValue(item)
                     
                     
                     if ftype == types.IntType:
@@ -173,7 +193,7 @@ class GUIBuilder(wx.Panel):
                         
                     
                 
-    def validateAndPassOn(self,event,input,parameter,ftype,filter):
+    def validateAndPassOn(self,event,input,parameter,ftype,currfilter):
         """
         Method: buildGUI
         Created: 13.04.2007, KP
@@ -184,16 +204,15 @@ class GUIBuilder(wx.Panel):
                 value=int(input.GetValue())
             except:
                 return
-        filter.setParameter(parameter,value)
+        currfilter.setParameter(parameter,value)
                 
-        
-class ErodeFilter(ManipulationFilter):
+class MorphologicalFilter(ManipulationFilter):
     """
     Class: ManipulationFilter
     Created: 13.04.2006, KP
     Description: A base class for manipulation filters
     """     
-    name = "Erode"
+    name = "Morphological filter"
     category = MORPHOLOGICAL
     
     def __init__(self):
@@ -247,15 +266,66 @@ class ErodeFilter(ManipulationFilter):
         """            
         if not ManipulationFilter.execute(self,*inputs):
             return None
-        if not self.erode:
-            self.erode = vtk.vtkImageContinuousErode3D()
         
         x,y,z=self.parameters["KernelX"],self.parameters["KernelY"],self.parameters["KernelZ"]
-        self.erode.SetKernelSize(x,y,z)
-        print "Kernel size=",x,y,z
+        self.vtkfilter.SetKernelSize(x,y,z)
         
         image = inputs[0]
-        self.erode.SetInput(image)
+        self.vtkfilter.SetInput(image)
         if update:
-            self.erode.Update()
-        return self.erode.GetOutput()
+            self.vtkfilter.Update()
+        return self.vtkfilter.GetOutput()                
+        
+class ErodeFilter(MorphologicalFilter):
+    """
+    Class: ErodeFilter
+    Created: 13.04.2006, KP
+    Description: An erosion filter
+    """     
+    name = "Erode 3D"
+    category = MORPHOLOGICAL
+    
+    def __init__(self):
+        """
+        Method: __init__()
+        Created: 13.04.2007, KP
+        Description: Initialization
+        """        
+        MorphologicalFilter.__init__(self)
+        self.vtkfilter = vtk.vtkImageContinuousErode3D()
+        
+class DilateFilter(MorphologicalFilter):
+    """
+    Class: DilateFilter
+    Created: 13.04.2006, KP
+    Description: A dilation filter
+    """      
+    name = "Dilate 3D"
+    category = MORPHOLOGICAL
+    
+    def __init__(self):
+        """
+        Method: __init__()
+        Created: 13.04.2007, KP
+        Description: Initialization
+        """        
+        MorphologicalFilter.__init__(self)
+        self.vtkfilter = vtk.vtkImageContinuousDilate3D()        
+        
+class MedianFilter(MorphologicalFilter):
+    """
+    Class: MedianFilter
+    Created: 13.04.2006, KP
+    Description: A median filter
+    """     
+    name = "Median 3D"
+    category = MORPHOLOGICAL
+    
+    def __init__(self):
+        """
+        Method: __init__()
+        Created: 13.04.2007, KP
+        Description: Initialization
+        """        
+        MorphologicalFilter.__init__(self)
+        self.vtkfilter = vtk.vtkImageMedian3D()        

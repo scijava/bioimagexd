@@ -74,14 +74,15 @@ class ManipulationPanel(TaskPanel.TaskPanel):
         self.filtersByCategory={}
         self.Show()
         self.filters = []
+        self.currentSelected = -1
         
-        for filter in ManipulationFilters.getFilterList():
-            self.registerFilter(filter.getCategory(),filter)
+        for currfilter in ManipulationFilters.getFilterList():
+            self.registerFilter(currfilter.getCategory(),currfilter)
       
         self.mainsizer.Layout()
         self.mainsizer.Fit(self)
 
-    def registerFilter(self,category,filter):
+    def registerFilter(self,category,currfilter):
         """
         Method: createButtonBox()
         Created: 03.11.2004, KP
@@ -91,7 +92,7 @@ class ManipulationPanel(TaskPanel.TaskPanel):
             self.categories.append(category)
         if not category in self.filtersByCategory:
             self.filtersByCategory[category]=[]
-        self.filtersByCategory[category].append(filter)
+        self.filtersByCategory[category].append(currfilter)
     def createButtonBox(self):
         """
         Method: createButtonBox()
@@ -123,20 +124,102 @@ class ManipulationPanel(TaskPanel.TaskPanel):
         self.filterLbl=wx.StaticText(self.panel,-1,"Filter stack:")
         self.filterListbox = wx.CheckListBox(self.panel,-1,size=(300,-1))
         self.filterListbox.Bind(wx.EVT_LISTBOX,self.onSelectFilter)
-        
+        self.filterListbox.Bind(wx.EVT_CHECKLISTBOX,self.onCheckFilter)        
         self.addBtn = wx.Button(self.panel,-1,"Add filter")
         self.addBtn.Bind(wx.EVT_LEFT_DOWN,self.onShowAddMenu)
 
+        btnBox=wx.BoxSizer(wx.HORIZONTAL)
+        self.remove = wx.Button(self.panel,-1,"Remove")
+        self.remove.Bind(wx.EVT_BUTTON,self.onRemoveFilter)
+        self.up = wx.Button(self.panel,-1,"Up")
+        self.up.Bind(wx.EVT_BUTTON,self.onMoveFilterUp)
+        self.down = wx.Button(self.panel,-1,"Down")
+        self.down.Bind(wx.EVT_BUTTON,self.onMoveFilterDown)
+        btnBox.Add(self.remove)
+        btnBox.Add(self.up)
+        btnBox.Add(self.down)
+        btnBox.Add(self.addBtn)
+
         self.filtersizer.Add(self.filterLbl,(0,0))
         self.filtersizer.Add(self.filterListbox,(1,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
-        self.filtersizer.Add(self.addBtn,(2,0))
+        self.filtersizer.Add(btnBox,(2,0))
         
         self.panelsizer.Add(self.filtersizer,(0,0))
 
         self.panel.SetSizer(self.panelsizer)
         self.panel.SetAutoLayout(1)
         self.settingsNotebook.AddPage(self.panel,"Filter stack")
+   
+    def onMoveFilterDown(self,event):
+        """
+        Method: onMoveFilterDown
+        Created: 13.04.2006, KP
+        Description: Move a filter down in the list
+        """
+        index = self.filterListbox.GetSelection()
+        if index == -1:
+            Dialogs.showerror(self,"You have to select a filter to be moved","No filter selected")
+            return 
+        n = self.filterListbox.GetCount()
+        if index==n-1:
+            Dialogs.showerror(self,"Cannot move last filter down","Cannot move filter")
+            return
+            
+        lbl=self.filterListbox.GetString(index)
+        chk = self.filterListbox.IsChecked(index)
+        self.filterListbox.InsertItems([lbl],index+2)
+        self.filterListbox.Check(index+2,chk)
+        self.filterListbox.Delete(index)
+        
+        self.filters[index+1],self.filters[index]=self.filters[index],self.filters[index+1]
+        print self.filters
+        
+    def onMoveFilterUp(self,event):
+        """
+        Method: onMoveFilterUp
+        Created: 13.04.2006, KP
+        Description: Move a filter up in the list
+        """
+        index = self.filterListbox.GetSelection()
+        if index == -1:
+            Dialogs.showerror(self,"You have to select a filter to be moved","No filter selected")
+            return        
+        if index==0:
+            Dialogs.showerror(self,"Cannot move first filter up","Cannot move filter")
+            return
+            
+        lbl=self.filterListbox.GetString(index)
+        chk = self.filterListbox.IsChecked(index)
+        self.filterListbox.InsertItems([lbl],index-1)
+        self.filterListbox.Check(index-1,chk)
+        self.filterListbox.Delete(index+1)
+        
+        self.filters[index-1],self.filters[index]=self.filters[index],self.filters[index-1]
+        print self.filters
+    def onRemoveFilter(self,event):
+        """
+        Method: onRemoveFilter
+        Created: 13.04.2006, KP
+        Description: Remove a filter from the list
+        """
+        index = self.filterListbox.GetSelection()
+        if index == -1:
+            Dialogs.showerror(self,"You have to select a filter to be removed","No filter selected")
+            return        
 
+        self.filterListbox.Delete(index)
+        del self.filters[index]
+        
+    def onCheckFilter(self,event):
+        """
+        Method: onCheckFilter
+        Created: 13.04.2006, KP
+        Description: Event handler called when user toggles filter on or off
+        """
+        index = event.GetSelection()
+        status=self.filterListbox.IsChecked(index)
+        self.filters[index].setEnabled(status)
+        
     def onSelectFilter(self,event):
         """
         Method: onSelectFilter
@@ -144,13 +227,18 @@ class ManipulationPanel(TaskPanel.TaskPanel):
         Description: Event handler called when user selects a filter in the listbox
         """
         self.selected = event.GetSelection()
+        if self.selected == self.currentSelected:
+            return
+        self.currentSelected = self.selected
         if self.currentGUI:
             self.panelsizer.Detach(self.currentGUI)
             self.currentGUI.Show(0)
         
-        filter = self.filters[self.selected]
-        self.currentGUI = filter.getGUI(self.panel)
+        currfilter = self.filters[self.selected]
+        self.currentGUI = currfilter.getGUI(self.panel)
+        
         self.panelsizer.Add(self.currentGUI,(1,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
+        self.currentGUI.Show(1)
         self.panel.Layout()
         self.Layout()
         self.panelsizer.Fit(self.panel)
@@ -164,13 +252,13 @@ class ManipulationPanel(TaskPanel.TaskPanel):
         Description: Add a filter to the stack
         """
         print "Request to add filter",filterclass
-        filter = filterclass()
-        name = filter.getName()
+        addfilter = filterclass()
+        name = addfilter.getName()
         n=self.filterListbox.GetCount()
         self.filterListbox.InsertItems([name],n)
         self.filterListbox.Check(n)
         
-        self.filters.append(filter)
+        self.filters.append(addfilter)
         
         
 
@@ -186,15 +274,15 @@ class ManipulationPanel(TaskPanel.TaskPanel):
                 submenu = wx.Menu()
                 if i not in self.filtersByCategory:
                     self.filtersByCategory[i]=[]
-                for filter in self.filtersByCategory[i]:
+                for currfilter in self.filtersByCategory[i]:
                     menuid = wx.NewId()
-                    name = filter.getName()
+                    name = currfilter.getName()
                     submenu.Append(menuid,name)
-                    f=lambda evt, x=filter: self.addFilter(evt,x)
+                    f=lambda evt, x=currfilter: self.addFilter(evt,x)
                     self.Bind(wx.EVT_MENU,f,id=menuid)
                 menu.AppendMenu(-1,i,submenu)
             self.menu = menu
-        self.PopupMenu(self.menu,event.GetPosition())
+        self.addBtn.PopupMenu(self.menu,event.GetPosition())
         
     def updateTimepoint(self,event):
         """

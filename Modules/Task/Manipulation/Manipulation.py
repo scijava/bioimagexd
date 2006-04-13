@@ -115,11 +115,11 @@ class Manipulation(Module):
         if not filterlist:
             return self.images[0]
         n=len(filterlist)-1
-        for i,filter in enumerate(filterlist):
-                print "Executing..."
+        filterlist=filter(lambda x:x.getEnabled(),filterlist)
+        for i,currfilter in enumerate(filterlist):
                 flag=(i==n)
-                data = filter.execute(data,update=flag)
-                print "done"
+                data = currfilter.execute(data,update=flag)
+                
                 data=[data]
                 if not data:
                     return None                
