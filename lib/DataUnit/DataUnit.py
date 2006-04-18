@@ -238,7 +238,7 @@ class DataUnit:
         # We create the vtidatasource with the name of the dataunit file
         # so it knows where to store the vtkImageData objects
         import DataSource
-        self.dataWriter=DataSource.DUDataWriter(duFile)
+        self.dataWriter=DataSource.BXDDataWriter(duFile)
 
         imageList=[]
         self.n=1

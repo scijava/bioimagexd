@@ -193,6 +193,7 @@ class DataSource:
         """                    
         self.intensityScale = scale
         self.intensityShift = shift
+        
     
     def getIntensityScaledData(self,data):
         """

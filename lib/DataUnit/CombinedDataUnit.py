@@ -182,7 +182,7 @@ class CombinedDataUnit(DataUnit.DataUnit):
             timepoints=kws["timepoints"]
         # We create the vtidatasource with the name of the dataunit file
         # so it knows where to store the vtkImageData objects
-        self.dataWriter=DataSource.DUDataWriter(duFile)
+        self.dataWriter=DataSource.BXDDataWriter(duFile)
 
         imageList=[]
         self.n=1
@@ -329,15 +329,12 @@ class CombinedDataUnit(DataUnit.DataUnit):
         n=len(self.sourceunits)
         if self.outputChls:
             merged=[]
+            
             for i,unit in enumerate(self.sourceunits):
                 if i in self.outputChls and self.outputChls[i]:
                     data=unit.getTimePoint(timePoint)
-                    maptocol=vtk.vtkImageMapToColors()
-                    maptocol.SetInput(data)
-                    maptocol.SetOutputFormatToRGB()
-                    maptocol.SetLookupTable(unit.getColorTransferFunction())
-                    maptocol.Update()
-                    merged.append(maptocol.GetOutput())
+                    merged.append((data,unit.getColorTransferFunction()))
+                    
             if n not in self.outputChls:
                 self.outputChls[n]=0
         # If either no output channels have been specified (in which case
@@ -367,45 +364,24 @@ class CombinedDataUnit(DataUnit.DataUnit):
 #                print "Returning preview",preview.GetDimensions()
 #                return preview
         if self.outputChls:
-            if preview.GetNumberOfScalarComponents()==1:
-                maptocol=vtk.vtkImageMapToColors()
-                maptocol.SetInput(preview)
-                maptocol.SetOutputFormatToRGB()
-
-                maptocol.SetLookupTable(self.getColorTransferFunction())
-                maptocol.Update()
-                preview=maptocol.GetOutput()
-            merged.append(preview)
+            if preview:
+                merged.append((preview,self.getColorTransferFunction()))
            
-            if len(merged)>1:
+            if len(merged)>0:
                 #createalpha=vtk.vtkImageAlphaFilter()
                 #createalpha.GetOutput().ReleaseDataFlagOn()                
                 #createalpha.MaximumModeOn()
-                merge=vtk.vtkImageMerge()
+                merge=vtk.vtkImageColorMerge()
                 
-                for data in merged:
+                for data,ctf in merged:
                     merge.AddInput(data)
+                    merge.AddLookupTable(ctf)
                     #createalpha.AddInput(data)
                 merge.Update()
                 #createalpha.Update()
-                lum=vtk.vtkImageLuminance()
-                lum.GetOutput().ReleaseDataFlagOn()
-                lum.SetInput(merge.GetOutput())
-                lum.Update()
-                alpha=lum.GetOutput()
-                appendcomp=vtk.vtkImageAppendComponents()
-                #appendcomp.GetOutput().ReleaseDataFlagOn()
-                #print "merge=",merge.GetOutput()
-                print "alpha=",alpha
-                appendcomp.AddInput(merge.GetOutput())
-                appendcomp.AddInput(alpha)
-                appendcomp.Update()
-                preview=appendcomp.GetOutput()                
-                
-                #preview=merge.GetOutput()
-                
-            elif len(merged)==1:
-                preview=merged[0]
+                preview=merge.GetOutput()
+            #elif len(merged)==1:
+            #    preview=merged[0][0]
 
             
         
