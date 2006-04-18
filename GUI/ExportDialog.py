@@ -107,7 +107,8 @@ class ExportDialog(wx.Dialog):
         prefix=dirname+os.path.sep
         n=pattern.count("%")
         Logging.info("Number of images =",n,kw="io")
-        self.dlg = wx.ProgressDialog("Writing","Writing image %d / %d"%(0,0),maximum = self.imageAmnt-1, parent = self)
+        self.dlg = wx.ProgressDialog("Writing","Writing image %d / %d"%(0,0),
+        maximum = self.imageAmnt-1, parent = self, style = wx.PD_ELAPSED_TIME|wx.PD_REMAINING_TIME)
         
         if n==0:
             pattern=pattern+"%d"
@@ -153,7 +154,8 @@ class ExportDialog(wx.Dialog):
         pattern=self.vtkpatternEdit.GetValue()
         n=pattern.count("%")
         fext=self.vtkmenu.GetString(self.vtkmenu.GetSelection())
-        self.dlg = wx.ProgressDialog("Writing","Writing dataset %d / %d"%(0,0),maximum = self.n-1, parent = self)
+        self.dlg = wx.ProgressDialog("Writing","Writing dataset %d / %d"%(0,0),maximum = self.n-1, parent = self,
+        style = wx.PD_ELAPSED_TIME|wx.PD_REMAINING_TIME)
         if fext.find("XML")!=-1:
             ext="vti"
             writer=vtk.vtkXMLImageDataWriter()

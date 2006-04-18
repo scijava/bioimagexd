@@ -117,11 +117,12 @@ class ImportDialog(wx.Dialog):
         dim = self.dimMapping[ext]
         self.readers=[]
         
-        self.writer = DataSource.DUDataWriter(outname)
+        self.writer = DataSource.BXDDataWriter(outname)
         
         if dim==3:
             self.tot = len(files)
-            self.dlg = wx.ProgressDialog("Importing","Reading dataset %d / %d"%(0,0),maximum = 2*self.tot, parent = self)        
+            self.dlg = wx.ProgressDialog("Importing","Reading dataset %d / %d"%(0,0),maximum = 2*self.tot, parent = self,
+            style = wx.PD_ELAPSED_TIME|wx.PD_REMAINING_TIME)        
             for i,file in enumerate(files):   
                 rdr = eval(self.rdrstr)
                 # This is not required for VTK dataset readers, so 
@@ -134,7 +135,8 @@ class ImportDialog(wx.Dialog):
 #                self.writeData(outname,data,i,len(files))
         else:
             self.tot = len(files) / self.z
-            self.dlg = wx.ProgressDialog("Importing","Reading dataset %d / %d"%(0,0),maximum = 2*self.tot, parent = self)
+            self.dlg = wx.ProgressDialog("Importing","Reading dataset %d / %d"%(0,0),maximum = 2*self.tot, parent = self,
+            style = wx.PD_ELAPSED_TIME|wx.PD_REMAINING_TIME)
             #rdr.SetFileDimensionality(dim)
             pattern = self.patternEdit.GetValue()
             n=pattern.count("%")

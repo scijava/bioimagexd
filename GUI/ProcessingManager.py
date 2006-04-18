@@ -94,7 +94,8 @@ class ProcessingManager(TimepointSelection):
         """
         if not self.progressDialog:
             self.progressDialog=wx.ProgressDialog("Processing data","Timepoint   (  /  ) (0%) Time remaining:   mins   seconds",
-            maximum=total,parent=self,style=wx.PD_CAN_ABORT|wx.PD_APP_MODAL|wx.PD_AUTO_HIDE)
+            maximum=total,parent=self,
+            style=wx.PD_ELAPSED_TIME|wx.PD_CAN_ABORT|wx.PD_APP_MODAL|wx.PD_AUTO_HIDE)
             
         t2=time.time()
         diff=t2-self.t1
