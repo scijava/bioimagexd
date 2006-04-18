@@ -34,6 +34,7 @@ import messenger
 
 import codecs
         
+import scripting
 import os.path
 from DataSource import *
 import DataUnit
@@ -59,17 +60,7 @@ class BioradDataSource(DataSource):
         """    
         
         DataSource.__init__(self)
-        messenger.send(None,"update_progress",0.2,"Loading BioRad support.")        
-        import ITKIO
-        self.ITKIO=ITKIO
-        messenger.send(None,"update_progress",0.4,"Loading BioRad support..")  
-        import ITKCommonA
-        self.ITKCommonA=ITKCommonA
-        messenger.send(None,"update_progress",0.6,"Loading BioRad support...")        
-        import ItkVtkGlue
-        self.ItkVtkGlue=ItkVtkGlue
-        messenger.send(None,"update_progress",0.7,"Loading BioRad support....")       
-        messenger.send(None,"update_progress",1.0,"BioRad support loaded.")        
+        scripting.loadITK()
         name =os.path.basename(filename)
         name=name.split(".")
         name=".".join(name[:-1])
@@ -166,7 +157,7 @@ class BioradDataSource(DataSource):
         self.reader.Update()
         
         if not self.itkToVtk:
-            self.itkToVtk = self.ItkVtkGlue.ImageToVTKImageFilter[self.ITKCommonA.Image.UC3].New()
+            self.itkToVtk = scripting.ItkVtkGlue.ImageToVTKImageFilter[scripting.ITKCommonA.Image.UC3].New()
         data=self.reader.GetOutput()
         
         if not self.voxelsize:
