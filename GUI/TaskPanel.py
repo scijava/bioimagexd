@@ -148,13 +148,12 @@ class TaskPanel(scrolled.ScrolledPanel):
             err.show()
         self.doPreviewCallback()
         
-    def createItemToolbar(self):
+    def createItemToolbar(self,force=0):
         """
         Method: createItemToolbar()
         Created: 31.03.2005, KP
         Description: Method to create a toolbar for the window that allows use to select processed channel
         """      
-        #self.tb2 = self.CreateToolBar(wx.TB_HORIZONTAL)
         self.toolMgr.clearItemsBar()
         Logging.info("Creating item toolbar",kw="init")
         #self.tb2 = wx.ToolBar(self,-1,style=wx.TB_VERTICAL|wx.TB_TEXT)
@@ -164,7 +163,7 @@ class TaskPanel(scrolled.ScrolledPanel):
         #self.tb2.AddSeparator()
         self.toolIds=[]
         sourceUnits=self.dataUnit.getSourceDataUnits()
-        if len(sourceUnits)==1:
+        if not force and len(sourceUnits)==1:
             return
         for i,dataunit in enumerate(sourceUnits):
             #color = dataunit.getColor()
@@ -201,7 +200,7 @@ class TaskPanel(scrolled.ScrolledPanel):
             dc.EndDrawing()
             #dc.SelectObject(wx.EmptyBitmap(0,0))
             dc.SelectObject(wx.NullBitmap)
-	    toolid=wx.NewId()
+            toolid=wx.NewId()
             self.toolIds.append(toolid)
             self.toolMgr.addItem(name,bmp,toolid,lambda e,x=n,s=self:s.setPreviewedData(e,x))
             self.toolMgr.toggleTool(toolid,1)
