@@ -1070,14 +1070,21 @@ class MathFilter(ManipulationFilter):
             
             return None
         
-        self.vtkfilter.SetInput1(self.getInput(1))
-        self.vtkfilter.SetInput2(self.getInput(2))
+        image = self.getInput(1)
+       
+        if self.numberOfInputs[0]>1:
+            self.vtkfilter.SetInput1(image)
+            self.vtkfilter.SetInput2(self.getInput(2))
+        else:
+            self.vtkfilter.SetInput1(image)
+            self.vtkfilter.SetInput2(image)
+            self.vtkfilter.SetInput(image)    
         f="self.vtkfilter.SetOperationTo%s()"%self.operation
         eval(f)
         
         if update:
             self.vtkfilter.Update()
-        return self.vtkfilter.GetOutput()            
+        return self.vtkfilter.GetOutput() 
         
 class LogicFilter(MathFilter):
     """
@@ -1156,14 +1163,14 @@ class NotFilter(LogicFilter):
     Description: A filter for calculating logical not
     """     
     name = "Not"
-   
+                
     def __init__(self):
         """
         Method: __init__()
         Created: 15.04.2006, KP
         Description: Initialization
         """        
-        LogicFilter.__init__(self,(1,1))
+        LogicFilter.__init__(self,inputs=(1,1))
         self.operation = "Not"       
         
 class NorFilter(LogicFilter):

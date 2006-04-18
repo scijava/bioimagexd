@@ -115,8 +115,9 @@ class Manipulation(Module):
         data = self.images
         if not filterlist:
             return self.images[0]
-        filterlist=filter(lambda x:x.getEnabled(),filterlist)
         n=len(filterlist)-1
+        filterlist=filter(lambda x:x.getEnabled(),filterlist)
+        
         
         for i,currfilter in enumerate(filterlist):
                 flag=(i==n)

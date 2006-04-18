@@ -1262,8 +1262,12 @@ class MainWindow(wx.Frame):
                 dlg = RescaleDialog.RescaleDialog(self)
                 dlg.setDataUnits(dataunits)
                 dlg.ShowModal()
+                if not dlg.result:
+                    del dataunits
+                    dlg.Destroy()
+                    return
                 dlg.Destroy()
-            print dataunits[0].getTimePoint(0).GetDimensions()
+            #print dataunits[0].getTimePoint(0).GetDimensions()
             self.tree.addToTree(name,path,ext,dataunits)
 
     def onMenuShowTaskWindow(self,event):
