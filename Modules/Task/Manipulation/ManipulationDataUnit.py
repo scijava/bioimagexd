@@ -48,14 +48,6 @@ class ManipulationDataUnit(CombinedDataUnit):
         """
         CombinedDataUnit.__init__(self,name)
         self.original = None
-        
-    def setOutputChannel(self,ch,flag):
-        """
-        Method: setOutputChannel(ch,flag)
-        Created: 22.07.2005, KP
-        Description: Mark a channel as being part of the output
-        """
-        pass        
 
     def setOriginal(self, dataUnit):
         """
@@ -70,10 +62,10 @@ class ManipulationDataUnit(CombinedDataUnit):
     def getColorTransferFunction(self):
         """
         Method: getColorTransferFunction()
-        Created: 21.06.2005, KP
+        Created: 20.07.2005, KP
         Description: Returns the ctf of the source dataunit
         """
-        return self.original.getColorTransferFunction()
+        return self.settings.get("ColorTransferFunction")
        
     def addSourceDataUnit(self,dataUnit,**args):
         """

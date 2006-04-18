@@ -129,14 +129,11 @@ class Merging(Module):
         """
         Method: doOperation
         Created: 24.11.2004, JV
-        Description: Does color merging for the whole dataset
-                     using doColorMergingXBit() where X is user defined
+        Description: Does color merging for the dataset
         """
         t1=time.time()
         datasets=[]
         alphas=[]
-
-        # Map scalars with intensity transfer list
 
         Logging.info("Merging channels...",kw="processing")
         processed=[]
@@ -156,19 +153,18 @@ class Merging(Module):
             merge.BuildAlphaOn()
             if self.alphaMode[0]==0:
                 Logging.info("Alpha mode = maximum", kw="processing")
-                merge.MaximumModeOn()
-                
+                merge.MaximumModeOn()                
             elif self.alphaMode[0]==1:
                 Logging.info("Alpha mode = average, threshold = ",self.alphaMode[1],kw="processing")
                 merge.AverageModeOn()
                 merge.SetAverageThreshold(self.alphaMode[1])
             else:
-                luminance=1
-            
+                merge.LuminanceModeOn()
+                Logging.info("Alpha mode = luminance",kw="processing")
+                            
         self.shift=0.666
         self.scale=0.333
-        
-        
+                
         merge.AddObserver("ProgressEvent",self.updateProgress)
         for i,image in enumerate(self.images):
             merge.AddInput(image)
@@ -180,24 +176,6 @@ class Merging(Module):
         
         Logging.info("Result with dims and type",data.GetDimensions(),data.GetScalarTypeAsString(),"components:",data.GetNumberOfScalarComponents())
         print data.GetScalarRange()
-        if luminance:
-            Logging.info("Alpha mode = luminance", kw="processing")
-            lum=vtk.vtkImageLuminance()
-            lum.GetOutput().ReleaseDataFlagOn()
-            lum.SetInput(data)
-            lum.Update()
-            alpha=lum.GetOutput()
-        
-        if self.doAlpha and luminance:
-            Logging.info("Appending alpha component", kw="processing")
-            #merge.GetOutput().ReleaseDataFlagOn()
-            appendcomp=vtk.vtkImageAppendComponents()
-            #appendcomp.GetOutput().ReleaseDataFlagOn()
-            appendcomp.AddInput(data)
-            appendcomp.AddInput(alpha)
-            appendcomp.Update()
-            data=appendcomp.GetOutput()
-            Logging.info("After appending alpha, # of comps=%d",data.GetNumberOfScalarComponents(),kw="processing")
 
         t3=time.time()
         Logging.info("Merging took %.4f seconds"%(t3-t1),kw="processing")

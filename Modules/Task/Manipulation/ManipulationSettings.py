@@ -36,6 +36,7 @@ __author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.21 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
+import vtk
 from DataUnit import DataUnitSettings
 
 class ManipulationSettings(DataUnitSettings):
@@ -63,6 +64,10 @@ class ManipulationSettings(DataUnitSettings):
         self.register("Type")
         self.register("Name")
         self.register("BitDepth")
+        ctf = vtk.vtkColorTransferFunction()
+        ctf.AddRGBPoint(0,0,0,0)
+        ctf.AddRGBPoint(255, 1.0, 1.0, 1.0)
+        self.set("ColorTransferFunction",ctf)
         
     def initialize(self,dataunit,channels, timepoints):
         """

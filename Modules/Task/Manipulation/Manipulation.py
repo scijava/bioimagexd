@@ -109,16 +109,27 @@ class Manipulation(Module):
         Created: 04.04.2006, KP
         Description: Manipulationes the dataset in specified ways
         """
+        
         messenger.send(None,"update_progress",100,"Done.")
         filterlist = self.settings.get("FilterList")
         data = self.images
         if not filterlist:
             return self.images[0]
-        n=len(filterlist)-1
         filterlist=filter(lambda x:x.getEnabled(),filterlist)
+        n=len(filterlist)-1
+        
         for i,currfilter in enumerate(filterlist):
                 flag=(i==n)
-                data = currfilter.execute(data,update=flag)
+                print "Executing with flag=",flag
+                if i>0:
+                    currfilter.setPrevFilter(filterlist[i-1])
+                else:
+                    currfilter.setPrevFilter(None)
+                if not flag:
+                    currfilter.setNextFilter(filterlist[i+1])
+                else:
+                    currfilter.setNextFilter(None)
+                data = currfilter.execute(data,update=flag,last=flag)
                 
                 data=[data]
                 if not data:

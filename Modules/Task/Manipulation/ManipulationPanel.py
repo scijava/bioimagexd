@@ -45,6 +45,7 @@ from GUI import ColorTransferEditor
 from GUI import TaskPanel
 import UIElements
 import string
+import scripting
 
 import ManipulationFilters
 
@@ -67,20 +68,33 @@ class ManipulationPanel(TaskPanel.TaskPanel):
         TaskPanel.TaskPanel.__init__(self,parent,tb)
         # Preview has to be generated here
         # self.colorChooser=None
-        
-        self.categories=[]
+        self.timePoint = 0
         self.menu = None
         self.currentGUI = None
-        self.filtersByCategory={}
+
         self.Show()
         self.filters = []
         self.currentSelected = -1
-        
+
+        self.filtersByCategory={}
+        self.categories=[]
+
         for currfilter in ManipulationFilters.getFilterList():
             self.registerFilter(currfilter.getCategory(),currfilter)
       
         self.mainsizer.Layout()
         self.mainsizer.Fit(self)
+        
+        messenger.connect(None,"timepoint_changed",self.updateTimepoint)
+        
+    def updateTimepoint(self,obj,event,timePoint):
+        """
+        Method: updateTimepoint(event)
+        Created: 27.04.2006, KP
+        Description: A callback function called when the timepoint is changed
+        """
+        self.timePoint=timePoint
+        
 
     def registerFilter(self,category,currfilter):
         """
@@ -93,6 +107,7 @@ class ManipulationPanel(TaskPanel.TaskPanel):
         if not category in self.filtersByCategory:
             self.filtersByCategory[category]=[]
         self.filtersByCategory[category].append(currfilter)
+        
     def createButtonBox(self):
         """
         Method: createButtonBox()
@@ -125,8 +140,11 @@ class ManipulationPanel(TaskPanel.TaskPanel):
         self.filterListbox = wx.CheckListBox(self.panel,-1,size=(300,-1))
         self.filterListbox.Bind(wx.EVT_LISTBOX,self.onSelectFilter)
         self.filterListbox.Bind(wx.EVT_CHECKLISTBOX,self.onCheckFilter)        
-        self.addBtn = wx.Button(self.panel,-1,"Add filter")
+        self.addBtn = wx.Button(self.panel,-1,u"Add \u00BB")
         self.addBtn.Bind(wx.EVT_LEFT_DOWN,self.onShowAddMenu)
+
+        self.reloadBtn = wx.Button(self.panel,-1,"Reload")
+        self.reloadBtn.Bind(wx.EVT_BUTTON,self.onReloadModules)
 
         btnBox=wx.BoxSizer(wx.HORIZONTAL)
         self.remove = wx.Button(self.panel,-1,"Remove")
@@ -139,6 +157,7 @@ class ManipulationPanel(TaskPanel.TaskPanel):
         btnBox.Add(self.up)
         btnBox.Add(self.down)
         btnBox.Add(self.addBtn)
+        btnBox.Add(self.reloadBtn)
 
         self.filtersizer.Add(self.filterLbl,(0,0))
         self.filtersizer.Add(self.filterListbox,(1,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
@@ -150,6 +169,44 @@ class ManipulationPanel(TaskPanel.TaskPanel):
         self.panel.SetAutoLayout(1)
         self.settingsNotebook.AddPage(self.panel,"Filter stack")
    
+   
+    def onReloadModules(self,event):
+        """
+        Method: onReloadModules
+        Created: 18.04.2006, KP
+        Description: Reload the filtering modules
+        """
+        global ManipulationFilters
+        f = reload(ManipulationFilters)
+        ManipulationFilters = f
+        copyfilters = []
+        self.filtersByCategory={}
+        self.categories=[]
+
+        for currfilter in ManipulationFilters.getFilterList():
+            self.registerFilter(currfilter.getCategory(),currfilter)
+      
+        
+        for f in self.filters:
+            print "Reloading",f
+            filterclass=str(f.__class__)
+            c=filterclass.split(".")[-1]
+            filterclass="ManipulationFilters.%s"%c
+            print "filter class=",filterclass
+            filterclass=eval(filterclass)
+            
+            addfilter = filterclass()
+            addfilter.setDataUnit(self.dataUnit)
+            addfilter.parameters = f.parameters
+            copyfilters.append(addfilter)
+        self.removeGUI()
+        self.currentGUI=None
+        del self.filters
+        self.filters=copyfilters
+            
+            
+        
+        
     def onMoveFilterDown(self,event):
         """
         Method: onMoveFilterDown
@@ -195,7 +252,7 @@ class ManipulationPanel(TaskPanel.TaskPanel):
         self.filterListbox.Delete(index+1)
         
         self.filters[index-1],self.filters[index]=self.filters[index],self.filters[index-1]
-        print self.filters
+        
     def onRemoveFilter(self,event):
         """
         Method: onRemoveFilter
@@ -209,6 +266,8 @@ class ManipulationPanel(TaskPanel.TaskPanel):
 
         self.filterListbox.Delete(index)
         del self.filters[index]
+        self.removeGUI()
+        self.currentGUI=None
         
     def onCheckFilter(self,event):
         """
@@ -220,6 +279,17 @@ class ManipulationPanel(TaskPanel.TaskPanel):
         status=self.filterListbox.IsChecked(index)
         self.filters[index].setEnabled(status)
         
+    def removeGUI(self):
+        """
+        Method: removeGUI
+        Created: 18.04.2006, KP
+        Description: Remove the GUI
+        """        
+        if self.currentGUI:
+            self.panelsizer.Detach(self.currentGUI)
+            self.currentGUI.Show(0)
+
+        
     def onSelectFilter(self,event):
         """
         Method: onSelectFilter
@@ -230,12 +300,10 @@ class ManipulationPanel(TaskPanel.TaskPanel):
         if self.selected == self.currentSelected:
             return
         self.currentSelected = self.selected
-        if self.currentGUI:
-            self.panelsizer.Detach(self.currentGUI)
-            self.currentGUI.Show(0)
+        self.removeGUI()
         
         currfilter = self.filters[self.selected]
-        self.currentGUI = currfilter.getGUI(self.panel)
+        self.currentGUI = currfilter.getGUI(self.panel,self)
         
         self.panelsizer.Add(self.currentGUI,(1,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
         self.currentGUI.Show(1)
@@ -253,6 +321,7 @@ class ManipulationPanel(TaskPanel.TaskPanel):
         """
         print "Request to add filter",filterclass
         addfilter = filterclass()
+        addfilter.setDataUnit(self.dataUnit)
         name = addfilter.getName()
         n=self.filterListbox.GetCount()
         self.filterListbox.InsertItems([name],n)
@@ -341,6 +410,50 @@ class ManipulationPanel(TaskPanel.TaskPanel):
         self.updateFilterData()
         TaskPanel.TaskPanel.doPreviewCallback(self,event)
 
+    def createItemToolbar(self):
+        """
+        Method: createItemToolbar()
+        Created: 16.04.2006, KP
+        Description: Method to create a toolbar for the window that allows use to select processed channel
+        """      
+        # Pass flag force which indicates that we do want an item toolbar
+        # although we only have one input channel
+        n=TaskPanel.TaskPanel.createItemToolbar(self,force=1)
+        ctf=vtk.vtkColorTransferFunction()
+        ctf.AddRGBPoint(0,0,0,0)
+        ctf.AddRGBPoint(255,1,1,1)
+        imagedata=ImageOperations.getMIP(self.dataUnit.getSourceDataUnits()[0].getTimePoint(0),ctf)
+        bmp=ImageOperations.vtkImageDataToWxImage(imagedata)
+
+        bmp=bmp.Rescale(30,30).ConvertToBitmap()
+        dc= wx.MemoryDC()
+
+        dc.SelectObject(bmp)
+        dc.BeginDrawing()
+        val=[0,0,0]
+        ctf.GetColor(255,val)
+        dc.SetBrush(wx.TRANSPARENT_BRUSH)
+        r,g,b=val
+        r*=255
+        g*=255
+        b*=255
+        dc.SetPen(wx.Pen(wx.Colour(r,g,b),4))
+        dc.DrawRectangle(0,0,32,32)
+        dc.EndDrawing()
+        #dc.SelectObject(wx.EmptyBitmap(0,0))
+        dc.SelectObject(wx.NullBitmap)
+        toolid=wx.NewId()
+        #n=n+1
+        name="Manipulation"
+        self.toolMgr.addItem(name,bmp,toolid,lambda e,x=n,s=self:s.setPreviewedData(e,x))        
+        
+        for i,tid in enumerate(self.toolIds):
+            self.dataUnit.setOutputChannel(i,0)
+            self.toolMgr.toggleTool(tid,0)
+        self.dataUnit.setOutputChannel(len(self.toolIds),1)
+        self.toolIds.append(toolid)
+        self.toolMgr.toggleTool(toolid,1)
+
     def setCombinedDataUnit(self,dataUnit):
         """
         Method: setCombinedDataUnit(dataUnit)
@@ -352,4 +465,10 @@ class ManipulationPanel(TaskPanel.TaskPanel):
                      one dataunit here, not multiple source data units
         """
         TaskPanel.TaskPanel.setCombinedDataUnit(self,dataUnit)
+        n=0
+        for i,dataunit in enumerate(dataUnit.getSourceDataUnits()):
+            print "Setting channel ",i,"on"
+            dataUnit.setOutputChannel(i,1)
+            n=i
+        self.dataUnit.setOutputChannel(n+1,1)
         self.updateSettings()
