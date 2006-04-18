@@ -35,6 +35,23 @@ import wx
 #from enthought.tvtk import messenger
 import messenger
 
+myEVT_SET_THRESHOLD = wx.NewEventType()
+EVT_SET_THRESHOLD = wx.PyEventBinder(myEVT_SET_THRESHOLD,1)
+
+class ThresholdEvent(wx.PyCommandEvent):
+    def __init__(self,evtType, eid):
+        wx.PyCommandEvent.__init__(self,evtType,eid)
+        self.lowerThreshold = 0
+        self.upperThreshold = 255
+        
+    def setThresholds(self,x,y):
+        self.lowerThreshold = x
+        self.upperThreshold = y
+        
+       
+    def getThresholds(self):
+        return self.lowerThreshold,self.upperThreshold
+
 class Histogram(wx.Panel):
     """
     Class: Histogram
@@ -70,7 +87,9 @@ class Histogram(wx.Panel):
         self.histogram=None
         self.noupdate=0
         self.data = None
+        self.replaceCTF = None
         self.thresholdMode=0
+        self.middleStart = 0
         
         self.xoffset = 0 
         self.lowerThreshold=0
@@ -92,7 +111,15 @@ class Histogram(wx.Panel):
         self.Bind(wx.EVT_LEFT_DOWN,self.markActionStart)
         self.Bind(wx.EVT_MOTION,self.updateActionEnd)
         self.Bind(wx.EVT_LEFT_UP,self.setThreshold)
-        
+       
+    def setReplacementCTF(self,ctf):
+        """
+        Method: setReplacementCTF
+        Created: 15.04.2006, KP
+        Description: Set a CTF that will replace the original CTF
+        """            
+        self.replaceCTF = ctf
+        self.ctf = ctf
         
     def getLowerThreshold(self):
         """
@@ -145,10 +172,19 @@ class Histogram(wx.Panel):
         self.actionstart=(x,y)
         #upper=get("ColocalizationUpperThreshold")
         
-        self.mode="upper"
-        if abs(x-self.lowerThreshold)<abs(x-self.upperThreshold):self.mode="lower"
-        if x < self.lowerThreshold:self.mode="lower"
-        if x > self.upperThreshold:self.mode="upper"
+        ldiff = abs(x-self.lowerThreshold)
+        udiff = abs(x-self.upperThreshold)
+        print "ldiff=",ldiff
+        print "udiff=",udiff
+        if ldiff>30 and udiff>30:
+            print "MIDDLE MODE"
+            self.mode="middle"
+            self.middleStart = x
+        else:            
+            self.mode="upper"
+            if ldiff < udiff: self.mode="lower"
+            if x < self.lowerThreshold: self.mode="lower"
+            if x > self.upperThreshold: self.mode="upper"
         self.updatePreview()
             
     def updateActionEnd(self,event):
@@ -193,13 +229,32 @@ class Histogram(wx.Panel):
             if colocMode:
                 set("ColocalizationUpperThreshold",x1)
             self.upperThreshold = x1
-        else:
+        elif self.mode=="lower":
             if colocMode:
                 set("ColocalizationLowerThreshold",x1)
             self.lowerThreshold = x1
+        elif self.mode=="middle":
+            diff=x1-self.middleStart
+            if self.lowerThreshold+diff <0:
+                diff = -self.lowerThreshold
+            if self.upperThreshold+diff >255:
+                diff = 255 - self.upperThreshold
+            self.lowerThreshold+=diff
+            self.upperThreshold+=diff
+            self.middleStart = x1
+            if colocMode:
+                set("ColocalizationUpperThreshold",self.upperThreshold)
+                set("ColocalizationLowerThreshold",self.lowerThreshold)
+                
             
         if self.thresholdMode:
             messenger.send(self,"threshold_changed",self.lowerThreshold,self.upperThreshold)
+            # Also send out wx style event. This is mainly for the benefit of
+            # the manipulation task
+            evt = ThresholdEvent(myEVT_SET_THRESHOLD,self.GetId())
+            evt.setThresholds(self.lowerThreshold,self.upperThreshold)
+            self.GetEventHandler().ProcessEvent(evt)
+            
             
         if colocMode:
             messenger.send(None,"threshold_changed") 
@@ -264,7 +319,7 @@ class Histogram(wx.Panel):
         self.updatePreview()
         
         
-    def updatePreview(self,*args):
+    def updatePreview(self,*args,**kws):
         """
         Method: updatePreview()
         Created: 12.07.2005, KP
@@ -274,12 +329,15 @@ class Histogram(wx.Panel):
         lower=get("ColocalizationLowerThreshold")
         upper=get("ColocalizationUpperThreshold")
                 
-
+        if "renew" in kws:
+            self.renew=kws["renew"]
         if self.renew:
             if not self.noupdate or not self.data:
                 self.data=self.dataUnit.getTimePoint(self.timePoint)
             self.ctf=self.dataUnit.getSettings().get("ColorTransferFunction")
             if not self.ctf:Logging.info("No ctf!")
+            if self.replaceCTF:
+                self.ctf = self.replaceCTF
             self.bg=self.parent.GetBackgroundColour()
                 
             
@@ -330,9 +388,25 @@ class Histogram(wx.Panel):
                 if self.mode=="upper":
                     upper1=x1
                     self.upperThreshold=x1
-                else:
+                elif self.mode=="lower":
                     lower1=x1
                     self.lowerThreshold=x1
+                elif self.mode=="middle":
+                    diff=x1-self.middleStart
+                    if self.lowerThreshold+diff <0:
+                        diff = -self.lowerThreshold
+                    if self.upperThreshold+diff >255:
+                        diff = 255 - self.upperThreshold
+                    
+                    self.middleStart = x1
+                    self.lowerThreshold+=diff
+                    self.upperThreshold+=diff
+                    lower1=self.lowerThreshold
+                    upper1=self.upperThreshold
+                    if colocMode:
+                        set("ColocalizationLowerThreshold",lower1)
+                        set("ColocalizationUpperThreshold",upper1)
+
                 if self.mode=="upper" and upper1<lower1:
                     self.mode="lower"                    
                     upper1,lower1=lower1,upper1
@@ -352,6 +426,7 @@ class Histogram(wx.Panel):
                     self.upperThreshold=upper1                        
                     
 
+            print "upper1=",upper1,"lower1=",lower1
         
             #dc.SetPen(wx.Pen(wx.Colour(255,255,0),2))
             # vertical line 
