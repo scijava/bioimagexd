@@ -39,6 +39,7 @@ import PreviewFrame
 import Histogram
 import Modules
 import messenger
+import  wx.lib.fancytext as fancytext
 
 class RescaleDialog(wx.Dialog):
     """
@@ -63,7 +64,19 @@ class RescaleDialog(wx.Dialog):
         self.scale = 0
         self.taskPanels = Modules.DynamicLoader.getTaskModules()
         self.createRescale()
-        self.sizer.Add(self.btnsizer,(2,0),flag=wx.EXPAND|wx.RIGHT|wx.LEFT)
+        self.lbl = wx.StaticText(self,-1,
+"""BioImageXD uses 8-bit color depth (256 different intensity values). You are loading a file with a non-8-bit
+color depth. Use the histograms below to the select how the intensities in your file are mapped to range 0-255.
+""")
+        lblbox=wx.BoxSizer(wx.VERTICAL)
+        
+        hdr = wx.StaticText(self, -1, "Select mapping to 8-bit values", (20, 120))
+        font = wx.Font(14, wx.SWISS, wx.NORMAL, wx.NORMAL)
+        hdr.SetFont(font)
+        lblbox.Add(hdr)
+        lblbox.Add(self.lbl)
+        self.sizer.Add(lblbox,(1,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
+        self.sizer.Add(self.btnsizer,(3,0),flag=wx.EXPAND|wx.RIGHT|wx.LEFT)
         wx.EVT_BUTTON(self,wx.ID_OK,self.onOkButton)
         wx.EVT_BUTTON(self,wx.ID_CANCEL,self.onCancelButton)
         self.result=0
@@ -195,7 +208,7 @@ class RescaleDialog(wx.Dialog):
         
         
         self.sizer.Add(previewBox,(0,0),flag=wx.EXPAND|wx.ALL)
-        self.sizer.Add(self.histogramSizer,(1,0),flag=wx.EXPAND|wx.ALL)
+        self.sizer.Add(self.histogramSizer,(2,0),flag=wx.EXPAND|wx.ALL)
         
     def onChangeZSlice(self,event):
         """
