@@ -139,24 +139,18 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
 #                  "M2":(10,0,fs2),
                   "ThresholdM1":(n+12,0,fs2),
                   "ThresholdM2":(n+13,0,fs2),
-#                  "K1":(n+14,0,fs2),
-#                  "K2":(n+15,0,fs2),
-                  
                   "SumCh1":(n+14,0,ss),
-#                  "SumOverThresholdCh1":(n+15,1,ds),
                   "SumCh2":(n+15,0,ss),
                   "NonZeroCh1":(n+16,0,ss),
-#                  "NonZeroCh2":(n+17,0,ss),
                   "OverThresholdCh1":(n+17,0,ss),
-#                  "OverThresholdCh2":(n+19,0,ss),
-#                  "SumOverThresholdCh2":(n+16,1,ds),
                   "DiffStainVoxelsCh1":(n+18,0,ss),
-#                  "DiffStainIntCh1":(n+17,1,fs2),
                   "DiffStainVoxelsCh2":(n+19,0,ss),
-#                  "DiffStainIntCh2":(n+18,1,fs2),  
-                  "RObserved":(n+20,0,fs),
-                  "RRandMean":(n+21,0,ss),
-                  "NumIterations":(n+22,0,ss)
+
+                  "DiffStainPercentageCh1":(n+20,0,ss),
+                  "DiffStainPercentageCh2":(n+21,0,ss),
+                  "RObserved":(n+22,0,fs),
+                  "RRandMean":(n+23,0,ss),
+                  "NumIterations":(n+24,0,ss)
         }
      
         sources=[]
@@ -166,6 +160,8 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
             val=0.0
             val1=""
             val2=""
+                
+            
             if item == "Ch1Th":
                 if sources:
                     th1=sources[0].getSettings().get("ColocalizationLowerThreshold")
@@ -295,7 +291,37 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
                     val = "0.000 / 0.000"                         
                     val1=0.000
                     val2=0.000
-
+                    
+            elif item == "DiffStainPercentageCh1":
+                if sources:
+                    ds = sources[0].getSettings().get("DiffStainVoxelsCh1")
+                    dsint = sources[0].getSettings().get("DiffStainIntCh1")
+                    if not ds:ds=0
+                    if not dsint:dsint = 0
+                    ds = 1.0/(ds+1)
+                    dsint = 1.0 / (dsint+1.0)
+                    val = "%.3f / %.3f"%(ds,dsint)
+                    val1=ds
+                    val2 = dsint
+                else:
+                    val = "0.000 / 0.000"
+                    val1=0.0
+                    val2=0.0
+            elif item == "DiffStainPercentageCh2":
+                if sources:
+                    ds = sources[1].getSettings().get("DiffStainVoxelsCh2")
+                    dsint = sources[1].getSettings().get("DiffStainIntCh2")
+                    if not ds:ds=0
+                    if not dsint:dsint = 0
+                    ds = 1.0/(ds+1)
+                    dsint = 1.0 / (dsint+1.0)
+                    val = "%.3f / %.3f"%(ds,dsint)
+                    val1=ds
+                    val2 = dsint
+                else:
+                    val = "0.000 / 0.000"
+                    val1=0.0
+                    val2=0.0                    
             elif item == "RRandMean":
                 if sources:
                     randmean = sources[0].getSettings().get(item)
@@ -714,6 +740,8 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
         ["# of voxels > threshold (%ch1% / %ch2%)","","",2],
         ["Differ. stain of %ch1% to %ch2% (voxels / intensity)","","",2],
         ["Differ. stain of %ch2% to %ch1% (voxels / intensity)","","",2],
+        ["% of diff. stain of %ch1% (voxels / intensity)","","",2],
+        ["% of diff. stain of %ch2% (voxels / intensity)","","",2],
         ["R(obs)","","",2],
         [u"R(rand) (mean \u00B1 sd)","","",2],
         ["R(rand) > R(obs)","","",2]
