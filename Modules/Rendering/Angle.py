@@ -60,11 +60,60 @@ class AngleModule(VisualizationModule):
         self.renew = 1
     
         self.angleWidget = vtk.vtkAngleWidget()
+        self.angleWidget.AddObserver("EndInteractionEvent",self.onPlacePoint)
         self.angleWidget.CreateDefaultRepresentation()
+        self.representation = self.angleWidget.GetRepresentation()
         self.renderer = self.parent.getRenderer()
         iactor = self.wxrenwin.GetRenderWindow().GetInteractor()
         self.angleWidget.SetInteractor(iactor)
         #self.updateRendering()
+        
+        #self.updateRendering()
+        self.picker = vtk.vtkCellPicker()
+
+        #self.picker.SetTolerance(0.05)
+      
+    def onPlacePoint(self,obj,event):
+        """
+        Method: onPlacePoint
+        Created: 15.04.2006, KP
+        Description: onPlacePoint
+        """        
+        p1=[0,0,0]
+        p2=[0,0,0]
+        c=[0,0,0]
+        pos1=None
+        pos2=None
+        cpos=None
+        
+        self.representation.GetPoint1DisplayPosition(p1)
+        self.representation.GetPoint2DisplayPosition(p2)
+        self.representation.GetCenterDisplayPosition(c)
+        if self.picker.Pick(p1,self.renderer):
+            pos1 = self.picker.GetPickPosition()
+            self.representation.GetPoint1Representation().SetWorldPosition(pos1)
+            
+        if self.picker.Pick(p2,self.renderer):
+            pos2 = self.picker.GetPickPosition()
+            self.representation.GetPoint2Representation().SetWorldPosition(pos2)
+            
+        if self.picker.Pick(c,self.renderer):
+            cpos = self.picker.GetPickPosition()
+            self.representation.GetCenterRepresentation().SetWorldPosition(cpos)
+        print dir(self.representation.GetRay1())
+        if pos1 and cpos:
+            
+            self.representation.GetRay1().GetPositionCoordinate().SetValue(pos1)
+            self.representation.GetRay1().GetPosition2Coordinate().SetValue(cpos)
+
+        if cpos and pos2:
+            self.representation.GetRay2().GetPositionCoordinate().SetValue(cpos)
+            self.representation.GetRay2().GetPosition2Coordinate().SetValue(pos2)
+        
+        if pos1 and pos2:
+            self.representation.GetArc().GetPositionCoordinate().SetValue(pos1)
+            self.representation.GetArc().GetPosition2Coordinate().SetValue(pos2)
+        self.representation.BuildRepresentation()
         
     def __getstate__(self):
         """

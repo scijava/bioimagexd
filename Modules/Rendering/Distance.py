@@ -61,6 +61,7 @@ class DistanceModule(VisualizationModule):
         self.renew = 1
     
         self.distanceWidget = vtk.vtkDistanceWidget()
+        self.distanceWidget.AddObserver("EndInteractionEvent",self.onPlacePoint)
         self.representation = vtk.vtkDistanceRepresentationScaled2D()
         self.representation.SetScaleX(1.0)
         self.representation.SetScaleZ(1.0)
@@ -69,6 +70,39 @@ class DistanceModule(VisualizationModule):
         iactor = self.wxrenwin.GetRenderWindow().GetInteractor()
         self.distanceWidget.SetInteractor(iactor)
         #self.updateRendering()
+        self.picker = vtk.vtkCellPicker()
+
+        #self.picker.SetTolerance(0.05)
+      
+    def onPlacePoint(self,obj,event):
+        """
+        Method: onPlacePoint
+        Created: 15.04.2006, KP
+        Description: onPlacePoint
+        """        
+        p1=[0,0,0]
+        p2=[0,0,0]
+        pos1=None
+        pos2=None
+        
+        self.representation.GetPoint1DisplayPosition(p1)
+        self.representation.GetPoint2DisplayPosition(p2)
+        if self.picker.Pick(p1,self.renderer):
+            pos1=self.picker.GetPickPosition()
+            print "Got point",pos1,"by picking",p1
+            selPt = self.picker.GetSelectionPoint()
+            pos12=selPt[0:2]
+            self.representation.GetPoint1Representation().SetWorldPosition(pos1)
+            self.representation.GetAxis().GetPoint1Coordinate().SetValue(pos1)
+        if self.picker.Pick(p2,self.renderer):
+            pos2=self.picker.GetPickPosition()
+            print "Got point",pos1,"by picking",p1
+            selPt = self.picker.GetSelectionPoint()
+            pos22=selPt[0:2]
+            self.representation.GetPoint2Representation().SetWorldPosition(pos2)
+            self.representation.GetAxis().GetPoint2Coordinate().SetValue(pos2)
+        self.representation.BuildRepresentation()
+        
         
     def __getstate__(self):
         """
@@ -109,6 +143,7 @@ class DistanceModule(VisualizationModule):
             data=self.dataUnit.getSourceDataUnits()[0].getTimePoint(0)
         else:
             data=self.dataUnit.getTimePoint(0)
+        self.data = data
         sx,sy,sz = data.GetSpacing()
         
         vx,vy,vz = self.dataUnit.getVoxelSize()

@@ -83,6 +83,7 @@ class VolumeModule(VisualizationModule):
         self.otfs.append(otf) # texture map
         self.otfs.append(otf) # texture map 3d
         self.otfs.append(otf2) #mip
+        self.otfs.append(otf) # isosurface
         self.eventDesc="Rendering volume"
         self.colorTransferFunction = None
 
@@ -113,6 +114,7 @@ class VolumeModule(VisualizationModule):
         odict.update({"otf1":self.getVTKState(self.otfs[1])})
         odict.update({"otf2":self.getVTKState(self.otfs[2])})
         odict.update({"otf3":self.getVTKState(self.otfs[3])})
+        odict.update({"otf4":self.getVTKState(self.otfs[4])})
         odict.update({"renderer":self.getVTKState(self.renderer)})
         odict.update({"camera":self.getVTKState(self.renderer.GetActiveCamera())})
         odict.update({"quality":self.quality})
@@ -132,7 +134,8 @@ class VolumeModule(VisualizationModule):
         self.setVTKState(self.otfs[0],state.otf0)
         self.setVTKState(self.otfs[1],state.otf1)        
         self.setVTKState(self.otfs[2],state.otf2)       
-        self.setVTKState(self.otfs[2],state.otf3)       
+        self.setVTKState(self.otfs[3],state.otf3)       
+        self.setVTKState(self.otfs[4],state.otf4)    
         self.setVTKState(self.renderer,state.renderer)
         self.setVTKState(self.renderer.GetActiveCamera(),state.camera)
         self.setMethod(state.method)
@@ -261,7 +264,7 @@ class VolumeModule(VisualizationModule):
         self.method=method
         self.volumeProperty.SetScalarOpacity(self.otfs[self.method])
         
-        tbl=["Ray cast","Texture Map","3D texture map","MIP"]
+        tbl=["Ray cast","Texture Map","3D texture map","MIP","Isosurface"]
         Logging.info("Volume rendering method: ",tbl[method],kw="rendering")
         
         #Ray Casting, RGBA Ray Casting, Texture Mapping, MIP
@@ -274,7 +277,7 @@ class VolumeModule(VisualizationModule):
         blendModes=["Composite","Composite","Composite","MaximumIntensity","Composite"]
         if method in [RAYCAST,MIP,ISOSURFACE]:
             # Iso surfacing with fixedpoint mapper is not supported
-            if self.vtkcvs and method!=4:
+            if self.vtkcvs and method!=ISOSURFACE:
                 self.mapper = vtk.vtkFixedPointVolumeRayCastMapper()
                 #self.mapper.SetAutoAdjustSampleDistances(1)
                 self.sampleDistance = self.mapper.GetSampleDistance()

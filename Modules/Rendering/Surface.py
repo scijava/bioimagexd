@@ -35,6 +35,7 @@ import vtk
 import ColorTransferEditor
 import Dialogs
 import Logging
+import Volume
 
 from Visualizer.VisualizationModules import *
 
@@ -183,8 +184,8 @@ class SurfaceModule(VisualizationModule):
         else:
             Logging.info("Using volume rendering for isosurface")
             self.disableRendering()
-            self.volumeModule = VolumeModule(self.parent)
-            self.volumeModule.setMethod(4)
+            self.volumeModule = Volume.VolumeModule(self.parent,self.visualizer,moduleName="Volume",label="Volume")
+            self.volumeModule.setMethod(Volume.ISOSURFACE)
             self.volumeModule.setDataUnit(self.dataUnit)
             self.volumeModule.showTimepoint(self.timepoint)
             
