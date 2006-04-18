@@ -36,6 +36,7 @@ vtkImageColorMerge::vtkImageColorMerge()
     this->ITFCount = this->CTFCount = 0;
     this->AverageMode = 0;
     this->MaximumMode = 0;
+    this->LuminanceMode = 0;
     this->AverageThreshold = 10;    
 }
 
@@ -81,6 +82,7 @@ void vtkImageColorMergeExecute(vtkImageColorMerge *self, int id,int NumberOfInpu
     int AvgThreshold = self->GetAverageThreshold();
     int MaxMode = self->GetMaximumMode();                   
     int AvgMode = self->GetAverageMode();
+    int LuminanceMode = self->GetLuminanceMode();
     if(!MaxMode&&!AvgMode)AvgMode=1;
     
     
@@ -192,7 +194,7 @@ void vtkImageColorMergeExecute(vtkImageColorMerge *self, int id,int NumberOfInpu
                         n++;
                         alphaScalar += currScalar;
                     }
-                }                
+                }              
                 
                 i1=int(3*currScalar);
                 i2=int(3*currScalar)+1;
@@ -205,13 +207,18 @@ void vtkImageColorMergeExecute(vtkImageColorMerge *self, int id,int NumberOfInpu
                 //scalar += currScalar;
                 inPtrs[i]++;
             }
+            r*=255.0;
+            g*=255.0;
+            b*=255.0;
             if(r>maxval)r=maxval;
             if(g>maxval)g=maxval;
             if(b>maxval)b=maxval;
-            
-            *outPtr++ = (T)(255.0*r);
-            *outPtr++ = (T)(255.0*g);
-            *outPtr++ = (T)(255.0*b);
+            if(BuildAlpha && LuminanceMode) {
+                alphaScalar = 0.30*r + 0.59*g + 0.11*b;
+            }   
+            *outPtr++ = (T)(r);
+            *outPtr++ = (T)(g);
+            *outPtr++ = (T)(b);
             r=g=b=0;
             if(BuildAlpha) {
                 if(AvgMode && n>0) alphaScalar /= n;

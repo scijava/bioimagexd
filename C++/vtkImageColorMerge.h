@@ -72,6 +72,12 @@ public:
   vtkSetMacro(MaximumMode,int);
   vtkGetMacro(MaximumMode,int);
   // Description:
+  // In the luminance mode, the alpha channel value will be the 
+  // weighted sum of the intensities of R, G and B
+  vtkBooleanMacro(LuminanceMode,int);
+  vtkSetMacro(LuminanceMode,int);
+  vtkGetMacro(LuminanceMode,int);  
+  // Description:
   // In the average mode, the alpha channel value will be the
   // average of all scalar values that are larger than AverageThreshold
   vtkBooleanMacro(AverageMode,int);
@@ -109,6 +115,7 @@ private:
   int AverageMode;
   int AverageThreshold;
   int MaximumMode;
+  int LuminanceMode;
 
 };
 

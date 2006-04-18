@@ -130,7 +130,8 @@ void vtkImageSimpleMIP::ExecuteData(vtkDataObject *)
   maxZ = uExtent[5] - uExtent[4];
   maxC = input->GetNumberOfScalarComponents();
   if(maxC>3)maxC=3;
-  for(int i=0;i<maxX*maxY*maxC;i++)*outPtr++=0;
+  vtkDebugMacro(<<"maxC="<<maxC);
+  for(int i=0;i<(maxX+1)*(maxY+1)*maxC;i++)*outPtr++=0;
   outPtr = (char *) output->GetScalarPointer();
   input->GetIncrements(inIncX, inIncY, inIncZ);
   output->GetIncrements(outIncX, outIncY, outIncZ);
