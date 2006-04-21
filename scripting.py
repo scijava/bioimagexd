@@ -30,9 +30,10 @@ __author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.21 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
-import sys,os
+import sys,os, os.path
 import imp
 import platform
+import getpass
 
 record = 0
 
@@ -63,14 +64,28 @@ def get_main_dir():
 def get_log_dir():
     if platform.system()=="Darwin":
         return os.path.expanduser("~/Library/Logs/BioImageXD")
+    elif platform.system() == "Windows":
+        appdir=os.path.join("C:","Documents and Settings",getpass.getuser(),"Aplication Data","BioImageXD")
+        if not os.path.exists(appdir):
+            os.mkdir(appdir)
+        return os.path.join(appdir,"Logs")
     else:
-        return "logs"
+        appdir=os.path.expanduser("~/.BioImageXD")
+        if not os.path.exists(appdir):
+            os.mkdir(appdir)
+        return os.path.join(appdir,"Logs")
     
 def get_config_dir():
     if platform.system()=="Darwin":
         return os.path.expanduser("~/Library/Preferences")
+    elif platform.system() == "Windows":
+        appdir=os.path.join("C:","Documents and Settings",getpass.getuser(),"Aplication Data","BioImageXD")
+        if not os.path.exists(appdir):
+            os.mkdir(appdir)        
+        return appdir
     else:
-        return get_main_dir() 
+        return os.path.expanduser("~/.BioImageXD")
+#        return get_main_dir() 
         
 def get_icon_dir():
     if platform.system()=="Darwin" and main_is_frozen():

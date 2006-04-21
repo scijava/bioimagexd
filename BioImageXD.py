@@ -136,10 +136,8 @@ class LSMApplication(wx.App):
         Created: 03.11.2004, KP
         Description: Run the wxPython main loop
         """
-	self.MainLoop()
+        self.MainLoop()
 
-	    
-	    
 
 if __name__=='__main__':
     if "py2exe" in sys.argv or "py2app" in sys.argv:
@@ -156,13 +154,13 @@ if __name__=='__main__':
             logdir=scripting.get_log_dir()
             if not os.path.exists(logdir):
                 os.mkdir(logdir)
-	    logfile=os.path.join(logdir,logfile)
+            logfile=os.path.join(logdir,logfile)
             f1=open(logfile,"w")
-	    logfile2=os.path.join(logdir,"latest.log")
-	    f2=open(logfile2,"w")
-	    f = Logging.Tee(f1,f2)
-	    import atexit
-	    atexit.register(f.flush)
+            logfile2=os.path.join(logdir,"latest.log")
+            f2=open(logfile2,"w")
+            f = Logging.Tee(f1,f2)
+            import atexit
+            atexit.register(f.flush)
             sys.stdout = f 
             sys.stderr = f
             Logging.outfile = f
