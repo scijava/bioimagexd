@@ -84,7 +84,10 @@ def get_config_dir():
             os.mkdir(appdir)        
         return appdir
     else:
-        return os.path.expanduser("~/.BioImageXD")
+        confdir=os.path.expanduser("~/.BioImageXD")
+	if not os.path.exists(confdir):
+	    os.mkdir(confdir)
+	return confdir
 #        return get_main_dir() 
         
 def get_icon_dir():
