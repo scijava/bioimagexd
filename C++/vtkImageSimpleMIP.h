@@ -36,12 +36,12 @@
 #ifndef __vtkImageSimpleMIP_h
 #define __vtkImageSimpleMIP_h
 
-#include "vtkImageToImageFilter.h"
+#include "vtkThreadedImageAlgorithm.h"
 
-class VTK_IMAGING_EXPORT vtkImageSimpleMIP : public vtkImageToImageFilter
+class VTK_IMAGING_EXPORT vtkImageSimpleMIP : public vtkThreadedImageAlgorithm
 {
 public:
-  vtkTypeRevisionMacro(vtkImageSimpleMIP,vtkImageToImageFilter);
+  vtkTypeRevisionMacro(vtkImageSimpleMIP,vtkThreadedImageAlgorithm);
   void PrintSelf(ostream& os, vtkIndent indent);
 
   // Description:
@@ -53,11 +53,28 @@ public:
 protected:
   vtkImageSimpleMIP();
   ~vtkImageSimpleMIP() {};
+  int SplitExtent(int splitExt[6],
+                                 int startExt[6],
+                                 int num, int total);
 
-  virtual void ComputeInputUpdateExtent(int inExt[6], int outExt[6]);
-  void ExecuteInformation(vtkImageData *input, vtkImageData *output);
-  //void ExecuteInformation(){this->vtkImageToImageFilter::ExecuteInformation();};
-  virtual void ExecuteData(vtkDataObject *);
+  // Method that is used to retrieve information about the resulting output dataset
+  virtual int RequestInformation (vtkInformation *, vtkInformationVector **,
+                                  vtkInformationVector *);
+  
+  virtual int RequestUpdateExtent (
+  vtkInformation* vtkNotUsed(request),
+  vtkInformationVector** inputVector,
+  vtkInformationVector* outputVector);  
+  // Method that can be called by multiple threads that is given the input data and an input extent
+  // and is responsible for producing the matching output data.
+  void ThreadedRequestData (vtkInformation* request,
+                            vtkInformationVector** inputVector,
+                            vtkInformationVector* outputVector,
+                            vtkImageData ***inData, vtkImageData **outData,
+                            int ext[6], int id);
+
+  // Implement methods required by vtkAlgorithm.
+  virtual int FillInputPortInformation(int, vtkInformation*);  
 
 private:
   vtkImageSimpleMIP(const vtkImageSimpleMIP&);  // Not implemented.

@@ -26,6 +26,10 @@
 
 #include "vtkImageData.h"
 #include "vtkObjectFactory.h"
+#include "vtkInformation.h"
+#include "vtkInformationVector.h"
+#include "vtkStreamingDemandDrivenPipeline.h"
+
 
 vtkCxxRevisionMacro(vtkImageColorMerge, "$Revision: 1.25 $");
 vtkStandardNewMacro(vtkImageColorMerge);
@@ -45,7 +49,7 @@ vtkImageColorMerge::~vtkImageColorMerge()
 {
 }
 
-//----------------------------------------------------------------------------
+/*//----------------------------------------------------------------------------
 // This method tells the ouput it will have more components
 void vtkImageColorMerge::ExecuteInformation(vtkImageData **inputs, 
                                         vtkImageData *output)
@@ -55,9 +59,7 @@ void vtkImageColorMerge::ExecuteInformation(vtkImageData **inputs,
     output->SetNumberOfScalarComponents(3);
   else output->SetNumberOfScalarComponents(4);
     
-}
-
-
+}*/
 
 //----------------------------------------------------------------------------
 // This templated function executes the filter for any type of data.
@@ -253,30 +255,84 @@ void vtkImageColorMergeExecute(vtkImageColorMerge *self, int id,int NumberOfInpu
     delete[] inPtrs;
 }
 
+
 //----------------------------------------------------------------------------
 // This method is passed a input and output regions, and executes the filter
 // algorithm to fill the output from the inputs.
 // It just executes a switch statement to call the correct function for
 // the regions data types.
-void vtkImageColorMerge::ThreadedExecute(vtkImageData **inData, 
-                                     vtkImageData *outData,
-                                     int outExt[6], int id)
+void vtkImageColorMerge::ThreadedRequestData (
+  vtkInformation * vtkNotUsed( request ),
+  vtkInformationVector** vtkNotUsed( inputVector ),
+  vtkInformationVector * vtkNotUsed( outputVector ),
+  vtkImageData ***inData,
+  vtkImageData **outData,
+  int outExt[6], int id)
 {
-  int idx1;
-  int inExt[6], cOutExt[6];
+  if (inData[0][0] == NULL)
+    {
+    vtkErrorMacro(<< "Input " << 0 << " must be specified.");
+    return;
+    }
 
-  switch (inData[0]->GetScalarType())
+  // this filter expects that input is the same type as output.
+  if (inData[0][0]->GetScalarType() != outData[0]->GetScalarType())
+    {
+    vtkErrorMacro(<< "Execute: input ScalarType, "
+                  << inData[0][0]->GetScalarType()
+                  << ", must match out ScalarType "
+                  << outData[0]->GetScalarType());
+    return;
+    }
+
+//  printf("Number of connections=%d, outExt=%d,%d,%d,%d,%d,%d\n",this->GetNumberOfInputConnections(0),
+//                 outExt[0],outExt[1],outExt[2],outExt[3],outExt[4],outExt[5]);
+
+    switch (inData[0][0]->GetScalarType())
   {
-  vtkTemplateMacro7(vtkImageColorMergeExecute, this, id, 
-                    this->NumberOfInputs,inData, 
-                    outData, outExt,static_cast<VTK_TT *>(0));
+    vtkTemplateMacro(vtkImageColorMergeExecute(this, id,
+                    this->GetNumberOfInputConnections(0),inData[0],
+                    outData[0], outExt,static_cast<VTK_TT *>(0)));
   default:
     vtkErrorMacro(<< "Execute: Unknown ScalarType");
   return;
-  }    
-    
+  }
+
 }
 
+int vtkImageColorMerge::FillInputPortInformation(
+  int port, vtkInformation* info)
+{
+  info->Set(vtkAlgorithm::INPUT_IS_REPEATABLE(), 1);
+
+  info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkImageData");
+
+  return 1;
+}
+
+// The output extent is the same as the input extent.
+int vtkImageColorMerge::RequestInformation (
+  vtkInformation * vtkNotUsed(request),
+  vtkInformationVector **inputVector,
+  vtkInformationVector *outputVector)
+{
+  // get the info objects
+  vtkInformation* outInfo = outputVector->GetInformationObject(0);
+  vtkInformation *inInfo = inputVector[0]->GetInformationObject(0);
+
+  int ext[6], ext2[6], idx;
+
+  inInfo->Get(vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT(),ext);
+  outInfo->Set(vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT(),ext,6);
+
+    
+    
+  int n = 4;
+  if(!this->BuildAlpha) n = 3;
+      
+  vtkDataObject::SetPointDataActiveScalarInfo(outInfo, VTK_UNSIGNED_CHAR,n);
+  return 1;
+}
 
 
 //----------------------------------------------------------------------------

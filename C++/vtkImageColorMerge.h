@@ -39,13 +39,14 @@
 #include "vtkIntensityTransferFunction.h"
 #include "vtkColorTransferFunction.h"
 
-#include "vtkImageMultipleInputFilter.h"
+#include "vtkThreadedImageAlgorithm.h"
 
-class VTK_IMAGING_EXPORT vtkImageColorMerge : public vtkImageMultipleInputFilter
+class VTK_IMAGING_EXPORT vtkImageColorMerge : public vtkThreadedImageAlgorithm
 {
 public:
   static vtkImageColorMerge *New();
-  vtkTypeRevisionMacro(vtkImageColorMerge,vtkImageMultipleInputFilter);
+  vtkTypeRevisionMacro(vtkImageColorMerge, vtkThreadedImageAlgorithm);
+
   void PrintSelf(ostream& os, vtkIndent indent);  
   vtkColorTransferFunction* GetColorTransferFunction(int i) { return ColorTransferFunctions[i]; }
   vtkIntensityTransferFunction* GetIntensityTransferFunction(int i) { return IntensityTransferFunctions[i]; }
@@ -92,7 +93,7 @@ public:
   vtkImageColorMerge();
   ~vtkImageColorMerge();
 
- 
+/* 
   void ExecuteInformation(vtkImageData **inputs, vtkImageData *output);
   void ComputeInputUpdateExtent(int inExt[6], int outExt[6]);
   void ExecuteInformation(){this->vtkImageMultipleInputFilter::ExecuteInformation();};
@@ -100,8 +101,24 @@ public:
   void ThreadedExecute(vtkImageData **inDatas, vtkImageData *outData,
                        int extent[6], int id);
 
-  void InitOutput(int outExt[6], vtkImageData *outData);
+*/
+  // Method that is used to retrieve information about the resulting output dataset
+  virtual int RequestInformation (vtkInformation *, vtkInformationVector **,
+                                  vtkInformationVector *);
   
+  // Method that can be called by multiple threads that is given the input data and an input extent
+  // and is responsible for producing the matching output data.
+  void ThreadedRequestData (vtkInformation* request,
+                            vtkInformationVector** inputVector,
+                            vtkInformationVector* outputVector,
+                            vtkImageData ***inData, vtkImageData **outData,
+                            int ext[6], int id);
+
+  // Implement methods required by vtkAlgorithm.
+  virtual int FillInputPortInformation(int, vtkInformation*);
+
+  void InitOutput(int outExt[6], vtkImageData *outData);
+ 
 private:
   vtkImageColorMerge(const vtkImageColorMerge&);  // Not implemented.
   void operator=(const vtkImageColorMerge&);  // Not implemented.
