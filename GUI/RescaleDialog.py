@@ -111,7 +111,8 @@ color depth. Use the histograms below to the select how the intensities in your 
             ds.setResampleDimensions(self.resampleDims[i])
             
         self.result=1
-        self.Close()    
+        #self.Close()    
+        self.EndModal(wx.ID_OK)
         
 
         

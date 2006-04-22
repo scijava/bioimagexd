@@ -1261,8 +1261,9 @@ class MainWindow(wx.Frame):
             if needToRescale:
                 dlg = RescaleDialog.RescaleDialog(self)
                 dlg.setDataUnits(dataunits)
-                dlg.ShowModal()
-                if not dlg.result:
+                id = dlg.ShowModal()
+                if id != wx.ID_OK:
+                    print "Bad result"
                     del dataunits
                     dlg.Destroy()
                     return

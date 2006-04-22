@@ -65,7 +65,7 @@ def get_log_dir():
     if platform.system()=="Darwin":
         return os.path.expanduser("~/Library/Logs/BioImageXD")
     elif platform.system() == "Windows":
-        appdir=os.path.join("C:","Documents and Settings",getpass.getuser(),"Aplication Data","BioImageXD")
+        appdir=os.path.join("C:\\","Documents and Settings",getpass.getuser(),"Application Data","BioImageXD")
         if not os.path.exists(appdir):
             os.mkdir(appdir)
         return os.path.join(appdir,"Logs")
@@ -79,15 +79,15 @@ def get_config_dir():
     if platform.system()=="Darwin":
         return os.path.expanduser("~/Library/Preferences")
     elif platform.system() == "Windows":
-        appdir=os.path.join("C:","Documents and Settings",getpass.getuser(),"Aplication Data","BioImageXD")
+        appdir=os.path.join("C:\\","Documents and Settings",getpass.getuser(),"Application Data","BioImageXD")
         if not os.path.exists(appdir):
             os.mkdir(appdir)        
         return appdir
     else:
         confdir=os.path.expanduser("~/.BioImageXD")
-	if not os.path.exists(confdir):
-	    os.mkdir(confdir)
-	return confdir
+    if not os.path.exists(confdir):
+        os.mkdir(confdir)
+    return confdir
 #        return get_main_dir() 
         
 def get_icon_dir():
