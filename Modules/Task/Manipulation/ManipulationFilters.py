@@ -103,8 +103,11 @@ class ManipulationFilter:
         if not self.itkToVtk:
             if not scripting.ItkVtkGlue:
                 scripting.loadITK()
-        if not self.vtkToItk:
-            self.vtkToItk = scripting.ItkVtkGlue.VTKImageToImageFilter[scripting.ITKCommonA.Image.UC3].New()
+        if not self.vtkToItk:            
+            ImageType = scripting.ItkVtkGlue.ImageToVTKImageFilter.IUC3
+            if cast==types.FloatType:
+                ImageType = scripting.ItkVtkGlue.VTKImageToImageFilter.IF3
+            self.vtkToItk = ImageType.New()
         if self.prevFilter and self.prevFilter.getITK():
             return image
         if cast:            
@@ -117,7 +120,7 @@ class ManipulationFilter:
         return self.vtkToItk.GetOutput()
             
             
-    def convertITKtoVTK(self,image):
+    def convertITKtoVTK(self,image,cast=None):
         """
         Method: convertITKtoVTK
         Created: 18.04.2006, KP
@@ -129,7 +132,10 @@ class ManipulationFilter:
         if not self.itkToVtk:
             if not scripting.ItkVtkGlue:
                 itk.loadITK()            
+        
         if not self.itkToVtk:
+            
+            ImageType = itk.Image[PixelType, dim]
             self.itkToVtk = scripting.ItkVtkGlue.ImageToVTKImageFilter[scripting.ITKCommonA.Image.UC3].New()
         # If the next filter is also an ITK filter, then won't
         # convert

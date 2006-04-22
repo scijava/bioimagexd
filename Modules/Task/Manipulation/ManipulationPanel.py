@@ -143,8 +143,8 @@ class ManipulationPanel(TaskPanel.TaskPanel):
         self.addBtn = wx.Button(self.panel,-1,u"Add \u00BB")
         self.addBtn.Bind(wx.EVT_LEFT_DOWN,self.onShowAddMenu)
 
-        #self.reloadBtn = wx.Button(self.panel,-1,"Reload")
-        #self.reloadBtn.Bind(wx.EVT_BUTTON,self.onReloadModules)
+        self.reloadBtn = wx.Button(self.panel,-1,"Reload")
+        self.reloadBtn.Bind(wx.EVT_BUTTON,self.onReloadModules)
 
         btnBox=wx.BoxSizer(wx.HORIZONTAL)
         self.remove = wx.Button(self.panel,-1,"Remove")
@@ -157,7 +157,7 @@ class ManipulationPanel(TaskPanel.TaskPanel):
         btnBox.Add(self.up)
         btnBox.Add(self.down)
         btnBox.Add(self.addBtn)
-        #btnBox.Add(self.reloadBtn)
+        btnBox.Add(self.reloadBtn)
 
         self.filtersizer.Add(self.filterLbl,(0,0))
         self.filtersizer.Add(self.filterListbox,(1,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)

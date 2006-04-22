@@ -157,7 +157,7 @@ class BioradDataSource(DataSource):
         self.reader.Update()
         
         if not self.itkToVtk:
-            self.itkToVtk = scripting.ItkVtkGlue.ImageToVTKImageFilter[scripting.ITKCommonA.Image.UC3].New()
+            self.itkToVtk = scripting.ItkVtkGlue.ImageToVTKImageFilter.IUC3.New()
         data=self.reader.GetOutput()
         
         if not self.voxelsize:
