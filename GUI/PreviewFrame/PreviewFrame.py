@@ -479,6 +479,7 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
             #print "Output from mip:",data
         if ncomps == 1:            
             Logging.info("Mapping trough ctf",kw="preview")
+            #t=time.time()
             #self.mapToColors.RemoveAllInputs()
             self.mapToColors=vtk.vtkImageMapToColors()
             self.mapToColors.SetInput(data)
@@ -492,7 +493,7 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
             #print "colorImage=",colorImage.GetDimensions()
             self.mapToColors.Update()
             data=self.mapToColors.GetOutput()
-
+            #print "Mapping through took",time.time()-t
             #data.ReleaseDataFlagOff()
             return data
             #print "data =",data.GetDimensions()

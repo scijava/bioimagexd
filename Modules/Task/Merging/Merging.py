@@ -145,8 +145,8 @@ class Merging(Module):
         self.scale/=imagelen
         
         luminance=0
-        self.shift=0.333
-        self.scale=0.333
+        self.shift=0
+        self.scale=1
         merge=vtk.vtkImageColorMerge()
         
         if self.doAlpha:
@@ -161,10 +161,8 @@ class Merging(Module):
             else:
                 merge.LuminanceModeOn()
                 Logging.info("Alpha mode = luminance",kw="processing")
-                            
-        self.shift=0.666
-        self.scale=0.333
-                
+        else:
+            merge.BuildAlphaOff()
         merge.AddObserver("ProgressEvent",self.updateProgress)
         for i,image in enumerate(self.images):
             merge.AddInput(image)
@@ -174,8 +172,8 @@ class Merging(Module):
         merge.Update()
         data=merge.GetOutput()
         
-        Logging.info("Result with dims and type",data.GetDimensions(),data.GetScalarTypeAsString(),"components:",data.GetNumberOfScalarComponents())
-        print data.GetScalarRange()
+        Logging.info("Result with dims and type",data.GetDimensions(),data.GetScalarTypeAsString(),"components:",data.GetNumberOfScalarComponents(),"scalar range",data.GetScalarRange())
+        
 
         t3=time.time()
         Logging.info("Merging took %.4f seconds"%(t3-t1),kw="processing")

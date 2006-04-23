@@ -49,17 +49,6 @@ vtkImageColorMerge::~vtkImageColorMerge()
 {
 }
 
-/*//----------------------------------------------------------------------------
-// This method tells the ouput it will have more components
-void vtkImageColorMerge::ExecuteInformation(vtkImageData **inputs, 
-                                        vtkImageData *output)
-{
-  vtkImageMultipleInputFilter::ExecuteInformation(inputs,output);
-  if(!this->BuildAlpha)
-    output->SetNumberOfScalarComponents(3);
-  else output->SetNumberOfScalarComponents(4);
-    
-}*/
 
 //----------------------------------------------------------------------------
 // This templated function executes the filter for any type of data.
@@ -183,20 +172,21 @@ void vtkImageColorMergeExecute(vtkImageColorMerge *self, int id,int NumberOfInpu
             alphaScalar =  0;
             for(i=0; i < NumberOfInputs; i++ ) {
                 currScalar = *inPtrs[i];
-                
-                if(BuildAlpha && MaxMode) {
+    
+                if(BuildAlpha) {
+                    
+                  if(MaxMode) {
                         if(alphaScalar < currScalar) {
                             alphaScalar = currScalar;
                         }
                     // If the alpha channel should be in "average mode"
                     // then we take an average of all the scalars in the
                     // current voxel that are above the AverageThreshold
-                } else if(BuildAlpha && AvgMode) {
-                    if(currScalar > AvgThreshold) {
+                  } else if(AvgMode && currScalar > AvgThreshold) {
                         n++;
                         alphaScalar += currScalar;
-                    }
-                }              
+                  }              
+                }
                 
                 i1=int(3*currScalar);
                 i2=int(3*currScalar)+1;
@@ -209,21 +199,22 @@ void vtkImageColorMergeExecute(vtkImageColorMerge *self, int id,int NumberOfInpu
                 //scalar += currScalar;
                 inPtrs[i]++;
             }
-            r*=255.0;
-            g*=255.0;
-            b*=255.0;
+            r*=256.0;
+            g*=256.0;
+            b*=256.0;
             if(r>maxval)r=maxval;
             if(g>maxval)g=maxval;
             if(b>maxval)b=maxval;
-            if(BuildAlpha && LuminanceMode) {
-                alphaScalar = 0.30*r + 0.59*g + 0.11*b;
-            }   
             *outPtr++ = (T)(r);
             *outPtr++ = (T)(g);
             *outPtr++ = (T)(b);
             r=g=b=0;
             if(BuildAlpha) {
                 if(AvgMode && n>0) alphaScalar /= n;
+                if(LuminanceMode) {
+                    alphaScalar = 0.30*r + 0.59*g + 0.11*b;
+                }   
+                    
                 if(alphaScalar > maxval)alphaScalar=maxval;
                 *outPtr++ = (T)alphaScalar;
             }
@@ -248,10 +239,12 @@ void vtkImageColorMergeExecute(vtkImageColorMerge *self, int id,int NumberOfInpu
     if(!allIdentical) {
         for(int i = 0; i < NumberOfInputs; i++) {
             delete modctfs[i];
+            delete ctfs[i];
         }
     }
     delete itfs;
     delete modctfs;
+    delete ctfs;
     delete[] inPtrs;
 }
 

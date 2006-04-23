@@ -106,12 +106,12 @@ class Adjust(Module):
                 self.extent=(0,dims[0]-1,0,dims[1]-1,z,z)
             else:
                 self.extent=None
-            self.preview=self.doOperation()
+            self.preview=self.doOperation(preview=1)
             self.extent=None
         return self.zoomDataset(self.preview)
 
 
-    def doOperation(self):
+    def doOperation(self,preview=0):
         """
         Method: doOperation
         Created: 1.12.2004, KP, JV
@@ -128,7 +128,7 @@ class Adjust(Module):
             
         mapdata=self.images[n]
         mapIntensities=vtk.vtkImageMapToIntensities()
-        mapIntensities.GetOutput().ReleaseDataFlagOn()
+        #mapIntensities.GetOutput().ReleaseDataFlagOn()
         mapIntensities.AddObserver("ProgressEvent",self.updateProgress)
         mapIntensities.SetIntensityTransferFunction(self.intensityTransferFunctions[n])
         mapIntensities.SetInput(mapdata)
@@ -139,8 +139,8 @@ class Adjust(Module):
             mapdata.SetUpdateExtent(self.extent)
             data.SetUpdateExtent(self.extent)
         mapIntensities.Update()
-        
+            
         t2=time.time()
         Logging.info("Processing took %.4f seconds"%(t2-t1))
-        data.ReleaseDataFlagOff()
+        #data.ReleaseDataFlagOff()
         return data
