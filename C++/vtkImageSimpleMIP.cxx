@@ -106,9 +106,7 @@ int vtkImageSimpleMIP::FillInputPortInformation(
   return 1;
 }
 
-//-----------------------------------------------------------------------------
-//void vtkImageSimpleMIP::ExecuteData(vtkDataObject *)
-//{
+
 // This templated function executes the filter for any type of data.
 template <class T>
 void vtkImageSimpleMIPExecute(vtkImageSimpleMIP *self, int id,int NumberOfInputs,
@@ -255,10 +253,8 @@ void vtkImageSimpleMIP::ThreadedRequestData (
     return;
     }
 
-//  printf("Number of connections=%d, outExt=%d,%d,%d,%d,%d,%d\n",this->GetNumberOfInputConnections(0),
-//                 PRT_EXT(outExt));
 
-    switch (inData[0][0]->GetScalarType())
+  switch (inData[0][0]->GetScalarType())
   {
     vtkTemplateMacro(vtkImageSimpleMIPExecute(this, id,
                     this->GetNumberOfInputConnections(0),inData[0],

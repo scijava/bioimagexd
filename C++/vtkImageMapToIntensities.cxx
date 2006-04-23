@@ -28,6 +28,9 @@
 #include "vtkImageData.h"
 #include "vtkObjectFactory.h"
 #include "vtkPointData.h"
+#include "vtkInformation.h"
+#include "vtkInformationVector.h"
+#include "vtkStreamingDemandDrivenPipeline.h"
 
 vtkCxxRevisionMacro(vtkImageMapToIntensities, "$Revision: 1.36 $");
 vtkStandardNewMacro(vtkImageMapToIntensities);
@@ -40,68 +43,62 @@ vtkImageMapToIntensities::vtkImageMapToIntensities()
 }
 
 
-//-----------------------------------------------------------------------------
-void 
-vtkImageMapToIntensities::ExecuteInformation(vtkImageData *input, vtkImageData *output)
+int vtkImageMapToIntensities::FillInputPortInformation(
+  int port, vtkInformation* info)
 {
-  this->vtkImageToImageFilter::ExecuteInformation( input, output );
-  output->SetNumberOfScalarComponents(input->GetNumberOfScalarComponents());
-}
+  info->Set(vtkAlgorithm::INPUT_IS_REPEATABLE(), 0);
 
+  info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkImageData");
+
+  return 1;
+}
 //-----------------------------------------------------------------------------
-void vtkImageMapToIntensities::ExecuteData(vtkDataObject *)
-{
+// This templated function executes the filter for any type of data.
+template <class T>
+void vtkImageMapToIntensitiesExecute(vtkImageMapToIntensities *self, int id,int NumberOfInputs,
+                           vtkImageData **inData,vtkImageData*outData,int outExt[6],
+                            T*)
+{    
   int uExtent[6];
-  vtkImageData* output = this->GetOutput();
-  vtkImageData* input = this->GetInput();
   vtkIdType inIncX,inIncY,inIncZ;
   vtkIdType outIncX,outIncY,outIncZ;
   int maxX,maxY,maxZ,maxC;
   int idxX,idxY,idxZ,idxC;
-  char *inPtr1;
+  T *inPtr, *outPtr;
   int* table;
-
-  unsigned char scalar,newScalar,cmpScalar;
-  output->SetNumberOfScalarComponents(input->GetNumberOfScalarComponents());
-  output->GetUpdateExtent(uExtent);
-  output->SetExtent(uExtent);
-  if(!this->IntensityTransferFunction) {
-      vtkErrorMacro("No IntensityTransferFunction specified");
-  }
-  table = this->IntensityTransferFunction->GetDataPointer();
-  //char *inPtr = (char *) input->GetScalarPointerForExtent(uExtent);
-  //char *outPtr = (char *) output->GetScalarPointerForExtent(uExtent);
-  char *inPtr = (char *) input->GetScalarPointer();
-  char *outPtr = (char *) output->GetScalarPointer();
     
-  //output->GetDimensions(dims);
-  
-  if(!input) {
-    vtkErrorMacro("No input is specified.");
-  } 
-  if(this->UpdateExtentIsEmpty(output)) {
-      return;
-  }
-//  output->SetExtent(output->GetWholeExtent());
-  output->AllocateScalars();
-  if (this->IntensityTransferFunction->IsIdentical()) {
-//      printf("Identical function!\n");
-      output->DeepCopy(input);
-      return;
-  }
-  input->GetIncrements(inIncX, inIncY, inIncZ);
-  output->GetIncrements(outIncX, outIncY, outIncZ);
-  //printf("uExtent=(%d,%d,%d,%d,%d,%d)\n",uExtent[0],uExtent[1],uExtent[2],uExtent[3],uExtent[4],uExtent[5]);
-  maxX = uExtent[1] - uExtent[0];
-  maxY = uExtent[3] - uExtent[2];
-  maxZ = uExtent[5] - uExtent[4];
-  maxC = input->GetNumberOfScalarComponents();
-  //printf("minX=%d, minY=%d, minZ=%d\n",uExtent[0],uExtent[2],uExtent[4]);
-  //printf("maxX=%d,maxY=%d,maxZ=%d, maxC=%d\n",maxX,maxY,maxZ,maxC);
-  //inIncX *= input->GetScalarSize();
-  //inIncY *= input->GetScalarSize();
-  //inIncZ *= input->GetScalarSize();
+  vtkIntensityTransferFunction * IntensityTransferFunction;
+    
+  IntensityTransferFunction = self->GetIntensityTransferFunction();
 
+  T scalar,newScalar,cmpScalar;
+  if(!IntensityTransferFunction) {
+      vtkErrorWithObjectMacro(self,"No IntensityTransferFunction specified");
+      return;
+  }
+  table = IntensityTransferFunction->GetDataPointer();
+ 
+  inPtr = (T*) inData[0]->GetScalarPointerForExtent(outExt);
+  
+  outPtr = (T *) outData->GetScalarPointerForExtent(outExt);
+    
+  
+//  output->SetExtent(output->GetWholeExtent());
+//  output->AllocateScalars();
+  if (IntensityTransferFunction->IsIdentical()) {
+      outData->DeepCopy(inData[0]);
+      return;
+  }
+  //input->GetIncrements(inIncX, inIncY, inIncZ);
+  //output->GetIncrements(outIncX, outIncY, outIncZ);
+  
+  inData[0]->GetContinuousIncrements(outExt,inIncX, inIncY, inIncZ);
+  outData->GetContinuousIncrements(outExt,outIncX, outIncY, outIncZ);
+  
+  maxX = outExt[1] - outExt[0];
+  maxY = outExt[3] - outExt[2];
+  maxZ = outExt[5] - outExt[4];
+  maxC = inData[0]->GetNumberOfScalarComponents();
   
   
   #define GET_AT(x,y,z,c,ptr) *(ptr+(z)*inIncZ+(y)*inIncY+(x)*inIncX+c)
@@ -109,36 +106,78 @@ void vtkImageMapToIntensities::ExecuteData(vtkDataObject *)
 
   char progressText[200];  
   for(idxZ = 0; idxZ <= maxZ; idxZ++ ) {
-    UpdateProgress(idxZ/float(maxZ));
+    self->UpdateProgress(idxZ/float(maxZ));
     sprintf(progressText,"Applying intensity transfer function (slice %d / %d)",idxX,maxZ);
-    SetProgressText(progressText);
+    self->SetProgressText(progressText);
 
     for(idxY = 0; idxY <= maxY; idxY++ ) {
-      //printf("Processing Y=%d\n",idxY);
       for(idxX = 0; idxX <= maxX; idxX++ ) {
           for(idxC = 0; idxC < maxC; idxC++ ) {
             //scalar = *inPtr++;
-            scalar = GET_AT(idxX+uExtent[0],idxY+uExtent[2],idxZ+uExtent[4],idxC,inPtr);
+            //scalar = GET_AT(idxX+uExtent[0],idxY+uExtent[2],idxZ+uExtent[4],idxC,inPtr);
+            scalar = *inPtr++;
+            
+            newScalar=table[(int)scalar];
+            //SET_AT(idxX+uExtent[0],idxY+uExtent[2],idxZ+uExtent[4],idxC,outPtr,newScalar);
               
-            newScalar=table[scalar];
-            SET_AT(idxX+uExtent[0],idxY+uExtent[2],idxZ+uExtent[4],idxC,outPtr,newScalar);
-            //*outPtr++=newScalar;
+            *outPtr=newScalar;
+             outPtr++;
           }
+          outPtr+=outIncX;
+          inPtr+=inIncX;
       }
-      //inPtr += inIncY;
-      //outPtr += outIncY;
+      inPtr += inIncY;
+      outPtr += outIncY;
     }  
-    //inPtr += inIncZ;
-    //outPtr += outIncZ;      
+    inPtr += inIncZ;
+    outPtr += outIncZ;      
   }
   //printf("done\n");
   
 }
 
-void vtkImageMapToIntensities::ComputeInputUpdateExtent(int inExt[6], int outExt[6]) {
+//----------------------------------------------------------------------------
+// This method is passed a input and output regions, and executes the filter
+// algorithm to fill the output from the inputs.
+// It just executes a switch statement to call the correct function for
+// the regions data types.
+void vtkImageMapToIntensities::ThreadedRequestData (
+  vtkInformation * vtkNotUsed( request ),
+  vtkInformationVector** vtkNotUsed( inputVector ),
+  vtkInformationVector * vtkNotUsed( outputVector ),
+  vtkImageData ***inData,
+  vtkImageData **outData,
+  int outExt[6], int id)
+{
+  if (inData[0][0] == NULL)
+    {
+    vtkErrorMacro(<< "Input " << 0 << " must be specified.");
+    return;
+    }
 
-//    printf("required extent for (%d,%d,%d,%d,%d,%d)\n",outExt[0],outExt[1],outExt[2],outExt[3],outExt[4],outExt[5]);    
-    memcpy(inExt,outExt,6*sizeof(int));
+  // this filter expects that input is the same type as output.
+  if (inData[0][0]->GetScalarType() != outData[0]->GetScalarType())
+    {
+    vtkErrorMacro(<< "Execute: input ScalarType, "
+                  << inData[0][0]->GetScalarType()
+                  << ", must match out ScalarType "
+                  << outData[0]->GetScalarType());
+    return;
+    }
+
+//  printf("Number of connections=%d, outExt=%d,%d,%d,%d,%d,%d\n",this->GetNumberOfInputConnections(0),
+//                 outExt[0],outExt[1],outExt[2],outExt[3],outExt[4],outExt[5]);
+
+    switch (inData[0][0]->GetScalarType())
+  {
+    vtkTemplateMacro(vtkImageMapToIntensitiesExecute(this, id,
+                    this->GetNumberOfInputConnections(0),inData[0],
+                    outData[0], outExt,static_cast<VTK_TT *>(0)));
+  default:
+    vtkErrorMacro(<< "Execute: Unknown ScalarType");
+  return;
+  }
+
 }
 
 

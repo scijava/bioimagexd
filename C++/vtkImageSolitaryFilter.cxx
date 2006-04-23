@@ -28,6 +28,10 @@
 #include "vtkImageData.h"
 #include "vtkObjectFactory.h"
 #include "vtkPointData.h"
+#include "vtkInformation.h"
+#include "vtkInformationVector.h"
+#include "vtkStreamingDemandDrivenPipeline.h"
+
 
 vtkCxxRevisionMacro(vtkImageSolitaryFilter, "$Revision: 1.36 $");
 vtkStandardNewMacro(vtkImageSolitaryFilter);
@@ -42,79 +46,80 @@ vtkImageSolitaryFilter::vtkImageSolitaryFilter()
 
 }
 
-//-----------------------------------------------------------------------------
 
-void vtkImageSolitaryFilter::ComputeInputUpdateExtent(int inExt[6], 
-                                             int outExt[6])
+int vtkImageSolitaryFilter::RequestUpdateExtent (
+  vtkInformation* vtkNotUsed(request),
+  vtkInformationVector** inputVector,
+  vtkInformationVector* outputVector)
 {
-    int i = 0, k = 0;
-    int wholeExt[6];
-    this->GetInput()->GetWholeExtent(wholeExt);
-    memcpy(inExt,wholeExt,6*sizeof(int));
-//    printf("Required ext for solitary = (");
+  int inExt[6], wholeExt[6];
+  vtkInformation* outInfo = outputVector->GetInformationObject(0);
+  vtkInformation *inInfo = inputVector[0]->GetInformationObject(0);
+
+  inInfo->Get(vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT(),wholeExt);
+
+  outInfo->Get(vtkStreamingDemandDrivenPipeline::UPDATE_EXTENT(), inExt);
+  int k;
     for(int i=0;i<3;i++) {
         k=inExt[2*i];
         if(k > 0) k--;
-//        printf("%d, ",k);
         inExt[2*i]=k;
         k=inExt[2*i+1];
         if(k < wholeExt[2*i+1]-1)k++;
         inExt[2*i+1]=k;
-//        printf("%d, ",k);
     }
-//    printf(")\n");   
+
+  inInfo->Set(vtkStreamingDemandDrivenPipeline::UPDATE_EXTENT(), inExt,6);
+  return 1;    
 }
 
-//-----------------------------------------------------------------------------
-void 
-vtkImageSolitaryFilter::ExecuteInformation(vtkImageData *input, vtkImageData *output)
+int vtkImageSolitaryFilter::FillInputPortInformation(
+  int port, vtkInformation* info)
 {
-  this->vtkImageToImageFilter::ExecuteInformation( input, output );
+  info->Set(vtkAlgorithm::INPUT_IS_REPEATABLE(), 0);
+
+  info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkImageData");
+
+  return 1;
 }
 
-//-----------------------------------------------------------------------------
-void vtkImageSolitaryFilter::ExecuteData(vtkDataObject *)
-{
+// This templated function executes the filter for any type of data.
+template <class T>
+void vtkImageSolitaryFilterExecute(vtkImageSolitaryFilter *self, int id,int NumberOfInputs,
+                           vtkImageData **inData,vtkImageData*outData,int outExt[6],
+                            T*)
+{    
   int uExtent[6];
-  vtkImageData* output = this->GetOutput();
-  vtkImageData* input = this->GetInput();
   vtkIdType inIncX,inIncY,inIncZ;
   vtkIdType outIncX,outIncY,outIncZ;
   int maxX,maxY,maxZ;
   int idxX,idxY,idxZ;
-  char *inPtr1;
-
-  unsigned char scalar,newScalar,cmpScalar;
-
-  //output->GetUpdateExtent(uExtent);
-  output->GetUpdateExtent(uExtent);
-  output->SetExtent(uExtent);
-//  printf("Exent=(%d,%d,%d,%d,%d,%d)\n",uExtent[0],uExtent[1],uExtent[2],uExtent[3],uExtent[4],uExtent[5]);
-  char *inPtr = (char *) input->GetScalarPointerForExtent(uExtent);
-  char *outPtr = (char *) output->GetScalarPointerForExtent(uExtent);
-    
-  //output->GetDimensions(dims);
   
-  if(!input) {
-    vtkErrorMacro("No input is specified.");
-  } 
-  if(this->UpdateExtentIsEmpty(output)) {
+ 
+  int FilteringThreshold = self->GetFilteringThreshold();
+  int HorizontalThreshold = self->GetHorizontalThreshold();
+  int VerticalThreshold = self->GetVerticalThreshold();
+    
+  T* inPtr, *outPtr;
+
+  T scalar,newScalar,cmpScalar;
+
+  inData[0]->GetUpdateExtent(uExtent);
+
+  inPtr = (T *) inData[0]->GetScalarPointerForExtent(uExtent);
+  outPtr = (T *) outData->GetScalarPointerForExtent(uExtent);
+    
+ 
+  if(!inData) {
+    vtkErrorWithObjectMacro(self,"No input is specified.");
       return;
-  }
-//  output->SetExtent(output->GetWholeExtent());
-  output->AllocateScalars();
-  input->GetIncrements(inIncX, inIncY, inIncZ);
-  output->GetContinuousIncrements(uExtent,outIncX, outIncY, outIncZ);
-  //printf("inIncX=%d,inIncY=%d,inIncZ=%d\n",inIncX,inIncY,inIncZ);
-  //printf("outIncX=%d,outIncY=%d,outIncZ=%d\n",outIncX,outIncY,outIncZ);
+  } 
+  inData[0]->GetIncrements(inIncX, inIncY, inIncZ);
+  outData->GetContinuousIncrements(uExtent,outIncX, outIncY, outIncZ);
   maxX = uExtent[1] - uExtent[0];
   maxY = uExtent[3] - uExtent[2];
   maxZ = uExtent[5] - uExtent[4];
   
-  //inIncX *= input->GetScalarSize();
-  //inIncY *= input->GetScalarSize();
-  //inIncZ *= input->GetScalarSize();
-
   
   #define GET_AT(x,y,z,ptr) *(ptr+(z)*inIncZ+(y)*inIncY+(x)*inIncX)
   
@@ -122,40 +127,41 @@ void vtkImageSolitaryFilter::ExecuteData(vtkDataObject *)
   //printf("Filtering Threshold=%d,Horizontal=%d, Vertical=%d\n",this->FilteringThreshold,this->HorizontalThreshold,this->VerticalThreshold);
   char progressText[200];
   for(idxZ = 0; idxZ <= maxZ; idxZ++ ) {
-    UpdateProgress(idxZ/float(maxZ));
+    self->UpdateProgress(idxZ/float(maxZ));
     sprintf(progressText,"Removing solitary noise voxels (slice %d / %d)",idxX,maxZ);
-    SetProgressText(progressText);
+    self->SetProgressText(progressText);
 
     for(idxY = 0; idxY <= maxY; idxY++ ) {
       for(idxX = 0; idxX <= maxX; idxX++ ) {
           
-        scalar = GET_AT(idxX,idxY,idxZ,inPtr);          
-        if( scalar > this->FilteringThreshold ) {
+        scalar = GET_AT(idxX,idxY,idxZ,inPtr);     
+          
+        if( scalar > FilteringThreshold ) {
           newScalar=0;
           // Compare voxel to the left
-          if (this->HorizontalThreshold && idxX > 0) {
+          if (HorizontalThreshold && idxX > 0) {
             cmpScalar=GET_AT(idxX-1,idxY,idxZ,inPtr);
-            if( cmpScalar >= this->HorizontalThreshold ) {
+            if( cmpScalar >= HorizontalThreshold ) {
                 newScalar=scalar;
             }
         
           }
           // Compare voxel to the right
-          if (this->HorizontalThreshold && idxX < maxX-1) {
+          if (HorizontalThreshold && idxX < maxX-1) {
             cmpScalar=GET_AT(idxX+1,idxY,idxZ,inPtr);
-            if( cmpScalar >= this->HorizontalThreshold ) newScalar=scalar;
+            if( cmpScalar >= HorizontalThreshold ) newScalar=scalar;
         
           }
           // Compare voxel above
-          if (this->VerticalThreshold && idxY > 0) {
+          if (VerticalThreshold && idxY > 0) {
             cmpScalar=GET_AT(idxX,idxY-1,idxZ,inPtr);
-            if( cmpScalar >= this->VerticalThreshold ) newScalar=scalar;
+            if( cmpScalar >= VerticalThreshold ) newScalar=scalar;
         
           }
           // Compare voxel below
-          if (this->VerticalThreshold && idxY < maxY-1) {
+          if (VerticalThreshold && idxY < maxY-1) {
             cmpScalar=GET_AT(idxX,idxY+1,idxZ,inPtr);
-            if( cmpScalar >= this->VerticalThreshold ) newScalar=scalar;
+            if( cmpScalar >= VerticalThreshold ) newScalar=scalar;
         
           }
           *outPtr=newScalar; 
@@ -169,6 +175,47 @@ void vtkImageSolitaryFilter::ExecuteData(vtkDataObject *)
   
 }
 
+//----------------------------------------------------------------------------
+// This method is passed a input and output regions, and executes the filter
+// algorithm to fill the output from the inputs.
+// It just executes a switch statement to call the correct function for
+// the regions data types.
+void vtkImageSolitaryFilter::ThreadedRequestData (
+  vtkInformation * vtkNotUsed( request ),
+  vtkInformationVector** vtkNotUsed( inputVector ),
+  vtkInformationVector * vtkNotUsed( outputVector ),
+  vtkImageData ***inData,
+  vtkImageData **outData,
+  int outExt[6], int id)
+{
+  if (inData[0][0] == NULL)
+    {
+    vtkErrorMacro(<< "Input " << 0 << " must be specified.");
+    return;
+    }
+
+  // this filter expects that input is the same type as output.
+  if (inData[0][0]->GetScalarType() != outData[0]->GetScalarType())
+    {
+    vtkErrorMacro(<< "Execute: input ScalarType, "
+                  << inData[0][0]->GetScalarType()
+                  << ", must match out ScalarType "
+                  << outData[0]->GetScalarType());
+    return;
+    }
+
+
+  switch (inData[0][0]->GetScalarType())
+  {
+    vtkTemplateMacro(vtkImageSolitaryFilterExecute(this, id,
+                    this->GetNumberOfInputConnections(0),inData[0],
+                    outData[0], outExt,static_cast<VTK_TT *>(0)));
+  default:
+    vtkErrorMacro(<< "Execute: Unknown ScalarType");
+  return;
+  }
+
+}
 
 //-----------------------------------------------------------------------------
 void vtkImageSolitaryFilter::PrintSelf(ostream& os, vtkIndent indent)

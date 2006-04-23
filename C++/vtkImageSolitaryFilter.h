@@ -35,12 +35,12 @@
 #ifndef __vtkImageSolitaryFilter_h
 #define __vtkImageSolitaryFilter_h
 
-#include "vtkImageToImageFilter.h"
+#include "vtkThreadedImageAlgorithm.h"
 
-class VTK_IMAGING_EXPORT vtkImageSolitaryFilter : public vtkImageToImageFilter
+class VTK_IMAGING_EXPORT vtkImageSolitaryFilter : public vtkThreadedImageAlgorithm
 {
 public:
-  vtkTypeRevisionMacro(vtkImageSolitaryFilter,vtkImageToImageFilter);
+  vtkTypeRevisionMacro(vtkImageSolitaryFilter, vtkThreadedImageAlgorithm);
   void PrintSelf(ostream& os, vtkIndent indent);
 
   // Description:
@@ -50,26 +50,37 @@ public:
   // Description:
   // Specify the X threshold. Horizontal neighboring pixels that 
   // have lower scalar value than this will be set to zero
-  vtkSetMacro(HorizontalThreshold,int)
+  vtkSetMacro(HorizontalThreshold,int);
+  vtkGetMacro(HorizontalThreshold,int);
   // Description:
   // Specify the Y threshold. Vertical neighboring pixels that 
   // have lower scalar value than this will be set to zero
-  vtkSetMacro(VerticalThreshold,int)	  
+  vtkSetMacro(VerticalThreshold,int);
+  vtkGetMacro(VerticalThreshold,int);
   // Description:
   // Specify the filtering threshold. Pixels with scalar value over
   // this threshold are inspected.
-  vtkSetMacro(FilteringThreshold,int)	  
+  vtkSetMacro(FilteringThreshold,int);  
+  vtkGetMacro(FilteringThreshold,int);
 
 
 protected:
   vtkImageSolitaryFilter();
   ~vtkImageSolitaryFilter() {};
 
-  virtual void ComputeInputUpdateExtent(int inExt[6], int outExt[6]);
-  void ExecuteInformation(vtkImageData *input, vtkImageData *output);
-  void ExecuteInformation(){this->vtkImageToImageFilter::ExecuteInformation();};
-  virtual void ExecuteData(vtkDataObject *);
 
+  virtual int RequestUpdateExtent (
+  vtkInformation* vtkNotUsed(request),
+  vtkInformationVector** inputVector,
+  vtkInformationVector* outputVector);  
+  // Method that can be called by multiple threads that is given the input data and an input extent
+  // and is responsible for producing the matching output data.
+  void ThreadedRequestData (vtkInformation* request, vtkInformationVector** inputVector,
+                            vtkInformationVector* outputVector,vtkImageData ***inData, vtkImageData **outData,
+                            int ext[6], int id);
+
+  // Implement methods required by vtkAlgorithm.
+  virtual int FillInputPortInformation(int, vtkInformation*);  
   int HorizontalThreshold;
   int VerticalThreshold;
   int FilteringThreshold;
