@@ -57,19 +57,44 @@ class AxesModule(VisualizationModule):
         self.renew = 1
         self.mapper = vtk.vtkPolyDataMapper()
         
-        self.axes = vtk.vtkAxes()
-        self.axesTubes = vtk.vtkTubeFilter()
-        self.axesTubes.SetNumberOfSides(6)
+        #self.axes = vtk.vtkAxes()
+        #self.axesTubes = vtk.vtkTubeFilter()
+        #self.axesTubes.SetNumberOfSides(6)
         
-        self.mapper.SetInput(self.axesTubes.GetOutput())
+        #self.mapper.SetInput(self.axesTubes.GetOutput())
                 
-        self.actor = vtk.vtkActor()
-        self.actor.SetMapper(self.mapper)
-        
+        #self.actor = vtk.vtkActor()
+        #self.actor.SetMapper(self.mapper)
+        iactor = self.wxrenwin.GetRenderWindow().GetInteractor()
+
+        axes = vtk.vtkAxesActor()
+        axes.SetShaftTypeToCylinder()
+        axes.SetXAxisLabelText("X")
+        axes.SetYAxisLabelText("Y")
+        axes.SetZAxisLabelText("Z")
+        axes.SetTotalLength(1.5, 1.5, 1.5)
+        tprop = vtk.vtkTextProperty()
+        tprop.ItalicOn()
+        tprop.ShadowOn()
+        tprop.SetFontFamilyToTimes()
+        axes.GetXAxisCaptionActor2D().SetCaptionTextProperty(tprop)
+        tprop2=vtk.vtkTextProperty()
+        tprop2.ShallowCopy(tprop)
+        axes.GetYAxisCaptionActor2D().SetCaptionTextProperty(tprop2)
+        tprop3=vtk.vtkTextProperty()
+        tprop3.ShallowCopy(tprop)
+        axes.GetZAxisCaptionActor2D().SetCaptionTextProperty(tprop3)  
         self.renderer = self.parent.getRenderer()
         
+        self.marker = vtk.vtkOrientationMarkerWidget()
+        self.marker.SetOutlineColor(0.93,0.57,0.13)
+        self.marker.SetOrientationMarker(axes)
+        self.marker.SetViewport(0.0, 0.0, 0.15, 0.3)
         
-        self.renderer.AddActor(self.actor)
+        self.marker.SetInteractor(iactor)
+        self.marker.SetEnabled(1)
+        self.marker.InteractiveOff()
+        #self.renderer.AddActor(self.actor)
         
     def setDataUnit(self,dataunit):
         """
@@ -78,16 +103,8 @@ class AxesModule(VisualizationModule):
         Description: Sets the dataunit this module uses for visualization
         """       
         VisualizationModule.setDataUnit(self,dataunit)
-        
-        
-        if self.visualizer.getProcessedMode():
-            data=dataunit.getSourceDataUnits()[0].getTimePoint(0)
-        else:
-            data=dataunit.getTimePoint(0)  
-        self.axes.SetOrigin(data.GetOrigin())
-        self.axes.SetScaleFactor(data.GetDimensions()[0]/5.0)
-        self.axesTubes.SetInput(self.axes.GetOutput())
-        self.axesTubes.SetRadius(self.axes.GetScaleFactor()/25.0)
+                
+ 
     
     def showTimepoint(self,value):
         """
@@ -104,7 +121,7 @@ class AxesModule(VisualizationModule):
         Created: 03.05.2005, KP
         Description: Update the Rendering of this module
         """             
-        self.mapper.Update()
+        #self.mapper.Update()
         VisualizationModule.updateRendering(self,input)
         self.wxrenwin.Render()    
 
@@ -114,7 +131,8 @@ class AxesModule(VisualizationModule):
         Created: 15.05.2005, KP
         Description: Disable the Rendering of this module
         """          
-        self.renderer.RemoveActor(self.actor)
+        #self.renderer.RemoveActor(self.actor)
+        self.marker.Off()
         self.wxrenwin.Render()
         
         
@@ -124,7 +142,8 @@ class AxesModule(VisualizationModule):
         Created: 15.05.2005, KP
         Description: Enable the Rendering of this module
         """          
-        self.renderer.AddActor(self.actor)
+        #self.renderer.AddActor(self.actor)
+        self.marker.On()
         self.wxrenwin.Render()
         
 
