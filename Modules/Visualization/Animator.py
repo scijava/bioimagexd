@@ -125,12 +125,13 @@ class AnimatorMode(VisualizationMode):
         if not self.urmaswin:
             # Ugly hack
             self.urmaswin=Urmas.UrmasWindow(self.parent,self.visualizer.menuManager,self.visualizer.mainwin.taskWin,self.visualizer)
+            
         else:
             self.urmaswin.enableRendering(1)
             self.urmaswin.Show()
             wx.CallAfter(self.urmaswin.updateRenderWindow)
-            
-        print "Activation done..."
+            self.urmaswin.controlpanel.Show(1)
+        
         return self.urmaswin
         
     def Render(self):
@@ -175,8 +176,9 @@ class AnimatorMode(VisualizationMode):
         """
         self.urmaswin.Show(0) 
         self.urmaswin.enableRendering(0)   
-        
-        if not self.doLockSliderPanel:
+        self.urmaswin.controlpanel.Show(0)
+        if not self.doLockSliderPanel and newmode!="3d":
+            print "\n\n*** DEACTIVATING ANIMATOR\n"
             self.visualizer.setCurrentSliderPanel(self.visualizer.sliderPanel)        
             self.visualizer.sliderPanel.Show(1)
         if newmode!="3d":

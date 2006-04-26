@@ -970,30 +970,6 @@ class Visualizer:
         self.currMode=modeinst
         self.currModeModule=module
         
-        
-        if mode=="animator":
-            self.sliderWin.SetDefaultSize(self.sliderWin.origSize)        
-
-        if self.dataUnit:
-            count=self.dataUnit.getLength()
-            if count==1:
-                self.sliderWin.SetDefaultSize((0,0))
-            else:
-                self.sliderWin.SetDefaultSize(self.sliderWin.origSize)
-            # We restore the time slider if it's not a
-            # transition from animator to 3d
-            if not ((oldmode=="animator" and mode=="3d") or (mode=="animator" and oldmode=="3d")):
-                self.timeslider.SetRange(1,count) 
-            else:
-                self.sliderWin.SetDefaultSize(self.sliderWin.origSize)        
-        # We restore the default binding, but before the activate()
-        # call so the mode can still overwrite the timeslider behaviour
-        # We restore the time slider if it's not a
-        # transition from animator to 3d
-        if not ((oldmode=="animator" and mode=="3d") or (mode=="animator" and oldmode=="3d")):
-            self.bindTimeslider(self.onUpdateTimepoint)
-        else:
-            self.sliderWin.SetDefaultSize(self.sliderWin.origSize)        
         self.currentWindow = modeinst.activate(self.sidebarWin)        
         
         self.sidebarWin.SetDefaultSize((0,1024))
@@ -1005,6 +981,7 @@ class Visualizer:
             if self.zsliderWin.GetSize()!=self.zsliderWin.origSize:
                 self.zsliderWin.SetDefaultSize(self.zsliderWin.origSize)
             
+        print "\n\n\n*** SHOW VIEW ANGLE COMBO FOR",modeinst,": ",(not not modeinst.showViewAngleCombo())
         if modeinst.showViewAngleCombo():
             self.viewCombo.Enable(1)
 #            self.tb.EnableTool(MenuManager.ID_SET_VIEW,1)

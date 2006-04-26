@@ -42,6 +42,7 @@ import Dialogs
 import MenuManager
 import os.path
 import messenger
+import scripting
 
 from wx.lib.statbmp  import GenStaticBitmap as StaticBitmap
 
@@ -134,7 +135,7 @@ class UrmasPalette(wx.Panel):
         wx.Panel.__init__(self,parent,style=wx.RAISED_BORDER,size=(750,32))
         self.sizer=wx.BoxSizer(wx.HORIZONTAL)
         
-        iconpath=scripting.get_icon_dir()
+        self.iconpath=scripting.get_icon_dir()
         
         self.ID_NEWTIMEPOINTTRACK=wx.NewId()
         toolTip = wx.ToolTip("Drag this on to the timeline to add a track for controlling animated timepoints.")

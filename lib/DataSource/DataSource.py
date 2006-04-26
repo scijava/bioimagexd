@@ -221,6 +221,8 @@ class DataSource:
         self.shift.SetShift(self.intensityShift)
             
         self.shift.Update()
+        # Release the memory used by the non-shifted data
+        data.ReleaseDataFlagOn()
         data=self.shift.GetOutput()
         
         return data
@@ -247,6 +249,8 @@ class DataSource:
             Logging.info("Resampling data to ",self.resampleDims,kw="dataunit")
             self.resample=vtk.vtkImageResample()
             self.resample.SetInput(data)
+            # Release the memory used by source data
+            data.ReleaseDataFlagOn()
             x,y,z=data.GetDimensions()
             self.originalDimensions=(x,y,z)
             rx,ry,rz=useDims

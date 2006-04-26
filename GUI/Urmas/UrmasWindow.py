@@ -53,6 +53,7 @@ import PlaybackControl
 
 from GUI import MenuManager
 import messenger
+import time
 
 
 class UrmasWindow(scrolled.ScrolledPanel):
@@ -78,7 +79,8 @@ class UrmasWindow(scrolled.ScrolledPanel):
         self.Unbind(wx.EVT_CHILD_FOCUS)
         self.menuManager=menumanager
         self.createMenu(menumanager)
-        
+        self.lastFrameTime = 0
+        self.delayed = 0
         self.control = UrmasControl.UrmasControl(self,visualizer)
 
         #self.Bind(wx.EVT_CLOSE,self.closeWindowCallback)
@@ -128,6 +130,17 @@ class UrmasWindow(scrolled.ScrolledPanel):
         
         #self.Bind(wx.EVT_SIZE,self.OnSize)
         
+    def enable(self,flag):
+        """
+        Method: enable
+        Created: 26.04.2006, KP
+        Description: Enable / Disable rendering of this window    
+        """
+        if flag:
+            self.Thaw()
+        else:
+            self.Freeze()
+        
     def enableRendering(self,flag):
         if flag:
             self.timelinePanel.splineEditor.iren.Enable()
@@ -144,12 +157,17 @@ class UrmasWindow(scrolled.ScrolledPanel):
         Logging.info("Setting view of render window",kw="animator")
         self.timelinePanel.wxrenwin.setView((1,1,1,0,0,1))
         
-    def onShowFrame(self,evt):
+    def onShowFrame(self,evt=None):
         """
         Method: onShowFrame
         Created: 15.08.2005, KP
         Description: Sets the frame to be shown
         """
+        t=time.time()
+        
+        if t-self.lastFrameTime<0.2:
+            return
+        self.lastFrameTime = t
         tp=self.controlpanel.timeslider.GetValue()
         tp/=10.0
         messenger.send(None,"show_time_pos",tp-0.1)
