@@ -189,7 +189,6 @@ class CombinedDataUnit(DataUnit.DataUnit):
         self.guicallback=callback
         if not settings_only:
             for timePoint in timepoints:
-                print "Now processing timepoint %d"%timePoint
                 # First we reset the module, so that we can start the operation
                 # from clean slate
                 self.module.reset()
@@ -327,6 +326,7 @@ class CombinedDataUnit(DataUnit.DataUnit):
         # then we map those through their corresponding ctf's
         # to be merged to the output
         n=len(self.sourceunits)
+        merged=[]
         if self.outputChls:
             merged=[]
             
@@ -343,8 +343,7 @@ class CombinedDataUnit(DataUnit.DataUnit):
         if not self.outputChls or self.outputChls[n]:
             #Logging.info("outputChls=",self.outputChls,"n=",n)
             # If the renew flag is true, we need to regenerate the preview
-            if renew:
-                
+            if renew:                
                 # We then tell the module to reset itself and
                 # initialize it again
                 self.module.reset()

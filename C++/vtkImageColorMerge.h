@@ -118,6 +118,8 @@ public:
   virtual int FillInputPortInformation(int, vtkInformation*);
 
   void InitOutput(int outExt[6], vtkImageData *outData);
+  
+  void ClearItfs();
  
 private:
   vtkImageColorMerge(const vtkImageColorMerge&);  // Not implemented.

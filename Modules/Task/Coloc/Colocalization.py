@@ -182,8 +182,8 @@ class Colocalization(Module):
 
             self.colocFilter.SetColocalizationLowerThreshold(i,int(self.thresholds[i][0]))
             self.colocFilter.SetColocalizationUpperThreshold(i,int(self.thresholds[i][1]))
-        self.colocFilter.Update()
 
+        data = self.getLimitedOutput(self.colocFilter)        
         messenger.send(None,"update_progress",100,"Done.")
         
-        return self.colocFilter.GetOutput()
+        return data

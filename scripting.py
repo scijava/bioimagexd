@@ -34,17 +34,45 @@ import sys,os, os.path
 import imp
 import platform
 import getpass
+import vtk
+
+
+import Configuration
 
 record = 0
+conf = None
 
 app = None
 mainwin = None
 
+memLimit = None
 ITKCommonA=None
 ITKIO=None
 ItkVtkGlue=None
 ITKBasicFiltersA=None
 ITKAlgorithms=None
+
+def execute_limited(pipeline):
+    limit = get_memory_limit()
+    if not limit:
+        pipeline.Update()
+        return pipeline.Output()
+    
+    streamer = vtk.vtkMemoryLimitImageDataStreamer()
+    streamer.SetMemoryLimit(1024*limit)
+    streamer.SetInput(pipeline.GetOutput())
+    streamer.Update()
+    return streamer.GetOutput()
+
+def get_memory_limit():
+    global conf,memLimit
+    if memLimit:return memLimit
+    if not conf:
+        conf = Configuration.getConfiguration()
+    memLimit = conf.getConfigItem("LimitTo","Performance")
+    if memLimit:
+        memLimit = eval(memLimit)
+    return memLimit
 
 def main_is_frozen():
    return (hasattr(sys, "frozen") or # new py2exe

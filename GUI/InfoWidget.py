@@ -181,14 +181,15 @@ class InfoWidget(wx.Panel):
             # The 0 tells preview to view source dataunit 0
             #self.preview.setDataUnit(self.dataUnit,0)
             tps=dataunit.getLength()
-            
-            # TODO: Have this data available in dataunit
-            #bitdepth=dataunit.getScalarSize()*dataunit.getComponentAmount()
-        xdim,ydim,zdim=dims
+        
+        
+        
         if not resampledims:
             voxelX,voxelY,voxelZ=voxelsize
+            xdim,ydim,zdim=dims
         else:
             voxelX,voxelY,voxelZ=rsVoxelsize
+            xdim,ydim,zdim = resampledims
         voxelX*=1000000
         voxelY*=1000000
         voxelZ*=1000000

@@ -278,6 +278,7 @@ class TaskPanel(scrolled.ScrolledPanel):
                      in the preview.
         """
         flag=event.IsChecked()
+        print "Is checked=",flag,event
         self.dataUnit.setOutputChannel(index,flag)
         self.doPreviewCallback(None)
         

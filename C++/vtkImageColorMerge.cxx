@@ -49,6 +49,11 @@ vtkImageColorMerge::~vtkImageColorMerge()
 {
 }
 
+void vtkImageColorMerge::ClearItfs() {
+    while(this->ITFCount) {
+        this->IntensityTransferFunctions[--ITFCount] = 0;
+    }
+}
 
 //----------------------------------------------------------------------------
 // This templated function executes the filter for any type of data.
@@ -62,10 +67,9 @@ void vtkImageColorMergeExecute(vtkImageColorMerge *self, int id,int NumberOfInpu
     vtkIdType outIncX,outIncY,outIncZ;
     int maxX,maxY,maxZ;
     int idxX,idxY,idxZ;
-    
+
     double **ctfs;
-    double **modctfs;
-    double **mapctfs;
+        
     int **itfs;
     int itfCount = self->GetITFCount();
     
@@ -84,59 +88,48 @@ void vtkImageColorMergeExecute(vtkImageColorMerge *self, int id,int NumberOfInpu
         vtkErrorWithObjectMacro(self, "Number of ITFs ("<<itfCount<<") != number of inputs"<<NumberOfInputs);
     }
     
-    
     T** inPtrs;
     T* outPtr;
-    ctfs = new double*[NumberOfInputs];
-    modctfs = new double*[NumberOfInputs];
     itfs = new int*[NumberOfInputs];
+    
+    ctfs = new double*[NumberOfInputs];
     
     inPtrs=new T*[NumberOfInputs];
     int allIdentical = 1;
-    mapctfs = ctfs;
+    
     vtkIntensityTransferFunction* itf;
     vtkColorTransferFunction* ctf;
+    int isIdentical = 0;
+    
+    const unsigned char* map;
+    
     for(i=0; i < NumberOfInputs; i++) {
         inPtrs[i]=(T*)inData[i]->GetScalarPointerForExtent(outExt);
+        isIdentical = 1;
         ctf = self->GetColorTransferFunction(i);
+        map = ctf->GetTable(0,256,256);
         //ctfs[i] = self->GetColorTransferFunction(i)->GetTable(0,255,256);
         ctfs[i] = new double[256*3];
-        double val[3];
-        for(int x = 0; x < 256; x++) {
-                ctf->GetColor(x,val);
-                
-                ctfs[i][3*x] = val[0];
-                ctfs[i][3*x+1] = val[1];
-                ctfs[i][3*x+2] = val[2];
-        }
-        
+
         if( itfCount ) {
             itf = self->GetIntensityTransferFunction(i);
             
             itfs[i] = itf->GetDataPointer();
             if( !itf->IsIdentical() ) {
-                allIdentical = 0;
+                isIdentical = 0;
+                allIdentical = 0;                
             }
-        }
+        }    
+        
+        for(int x = 0; x < 256; x++) {
+                if(!isIdentical) {
+                    x=itfs[i][x];    
+                }
 
-    }
-    // If all intensity transfer functions are not identical, then we construct a 
-    // modified ctf for each input that reflects the ITF by mapping
-    // ctf[x] -> ctf[ itf(x) ]
-    
-    if(!allIdentical ){
-        mapctfs = modctfs;
-        for(i=0; i < NumberOfInputs; i++) {
-            modctfs[i] = new double[3*256];
-            int newx;
-            for(int x = 0; x < 256; x++) {
-                newx=itfs[i][x];
+                ctfs[i][3*x] = map[3*x];
+                ctfs[i][3*x+1] = map[3*x+1];
+                ctfs[i][3*x+2] = map[3*x+2];
                 
-                modctfs[i][3*x]=ctfs[i][3*newx];
-                modctfs[i][3*x+1]=ctfs[i][3*newx+1];
-                modctfs[i][3*x+2]=ctfs[i][3*newx+2];
-            }
-//            printf("ITF%d: Mapping %d to %d (%d,%d,%d)\n",i,255,itfs[i][255],modctfs[i][3*255],modctfs[i][3*255+1],modctfs[i][3*255+2]);
         } 
     }
     
@@ -149,8 +142,8 @@ void vtkImageColorMergeExecute(vtkImageColorMerge *self, int id,int NumberOfInpu
     maxY = outExt[3] - outExt[2];
     maxZ = outExt[5] - outExt[4];
     
-    T currScalar = 0;
-    double scalar, alphaScalar; 
+    unsigned char currScalar = 0;
+    double alphaScalar; 
     int maxval = 0, n = 0;
     maxval=int(pow(2,8*sizeof(T)))-1;
     T val;
@@ -158,8 +151,7 @@ void vtkImageColorMergeExecute(vtkImageColorMerge *self, int id,int NumberOfInpu
     char progressText[200];
     
     double r,g,b;
-    int i1,i2,i3;
-
+    T ir,ig,ib;
     for(idxZ = 0; idxZ <= maxZ; idxZ++ ) {
         self->UpdateProgress(idxZ/float(maxZ));
         sprintf(progressText,"Merging channels (slice %d / %d)",idxZ,maxZ);
@@ -167,11 +159,11 @@ void vtkImageColorMergeExecute(vtkImageColorMerge *self, int id,int NumberOfInpu
         
         for(idxY = 0; idxY <= maxY; idxY++ ) {
           for(idxX = 0; idxX <= maxX; idxX++ ) {
-            scalar = currScalar = 0;
-            n = 0;
-            alphaScalar =  0;
+              
+            alphaScalar =  currScalar = n = 0;
+  
             for(i=0; i < NumberOfInputs; i++ ) {
-                currScalar = *inPtrs[i];
+                currScalar = (unsigned char)*inPtrs[i];
     
                 if(BuildAlpha) {
                     
@@ -188,30 +180,24 @@ void vtkImageColorMergeExecute(vtkImageColorMerge *self, int id,int NumberOfInpu
                   }              
                 }
                 
-                i1=int(3*currScalar);
-                i2=int(3*currScalar)+1;
-                i3=int(3*currScalar)+2;
-                
-                r += mapctfs[i][i1];
-                g += mapctfs[i][i2];
-                b += mapctfs[i][i3];
+                r += ctfs[i][3*currScalar];
+                g += ctfs[i][3*currScalar+1];
+                b += ctfs[i][3*currScalar+2];
                 
                 //scalar += currScalar;
                 inPtrs[i]++;
             }
-            r*=256.0;
-            g*=256.0;
-            b*=256.0;
-            if(r>maxval)r=maxval;
-            if(g>maxval)g=maxval;
-            if(b>maxval)b=maxval;
-            *outPtr++ = (T)(r);
-            *outPtr++ = (T)(g);
-            *outPtr++ = (T)(b);
+
+            ir = (T)((r>maxval)?maxval:r);
+            ig = (T)((g>maxval)?maxval:g);
+            ib = (T)((b>maxval)?maxval:b);
+            *outPtr++ = ir;
+            *outPtr++ = ig;
+            *outPtr++ = ib;
             r=g=b=0;
             if(BuildAlpha) {
                 if(AvgMode && n>0) alphaScalar /= n;
-                if(LuminanceMode) {
+                else if(LuminanceMode) {
                     alphaScalar = 0.30*r + 0.59*g + 0.11*b;
                 }   
                     
@@ -236,14 +222,12 @@ void vtkImageColorMergeExecute(vtkImageColorMerge *self, int id,int NumberOfInpu
   
     
     // If all itfs where not identical, then we need to release the individual modified ctfs as well
-    if(!allIdentical) {
-        for(int i = 0; i < NumberOfInputs; i++) {
-            delete modctfs[i];
-            delete ctfs[i];
-        }
+    for(int i = 0; i < NumberOfInputs; i++) {
+        delete ctfs[i];
     }
-    delete itfs;
-    delete modctfs;
+    
+    delete[]itfs;
+    //delete modctfs;
     delete ctfs;
     delete[] inPtrs;
 }

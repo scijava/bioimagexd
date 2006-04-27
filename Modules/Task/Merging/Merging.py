@@ -53,7 +53,9 @@ class Merging(Module):
         self.doAlpha=1
         self.extent=[]
         self.thresholds=[]
+        self.merge = None
         self.running=False
+        
 
         self.reset()
 
@@ -72,10 +74,11 @@ class Merging(Module):
         self.infos=[]
         self.intensityTransferFunctions = []
         self.ctfs=[]
+        
         self.alphaMode=[0,0]
         self.n=-1
+        self.merge = None
         
-
     def addInput(self,dataunit,data):
         """
         Method: addInput(dataunit,data)
@@ -93,8 +96,12 @@ class Merging(Module):
         dims=data.GetDimensions()
             
         ctf = settings.get("ColorTransferFunction")
+        
+        
 #        Logging.info("ctf=",ctf,kw="processing")
+        
         self.ctfs.append(ctf)
+        
         self.alphaTF=settings.get("AlphaTransferFunction")
         self.alphaMode=settings.get("AlphaMode")
         #print "n=",self.n,"self.settings=",self.settings
@@ -147,31 +154,36 @@ class Merging(Module):
         luminance=0
         self.shift=0
         self.scale=1
-        merge=vtk.vtkImageColorMerge()
+        self.merge=vtk.vtkImageColorMerge()
+        self.merge.AddObserver("ProgressEvent",self.updateProgress)        
         
         if self.doAlpha:
-            merge.BuildAlphaOn()
+            self.merge.BuildAlphaOn()
             if self.alphaMode[0]==0:
                 Logging.info("Alpha mode = maximum", kw="processing")
-                merge.MaximumModeOn()                
+                self.merge.MaximumModeOn()                
             elif self.alphaMode[0]==1:
                 Logging.info("Alpha mode = average, threshold = ",self.alphaMode[1],kw="processing")
-                merge.AverageModeOn()
-                merge.SetAverageThreshold(self.alphaMode[1])
+                self.merge.AverageModeOn()
+                self.merge.SetAverageThreshold(self.alphaMode[1])
             else:
-                merge.LuminanceModeOn()
+                self.merge.LuminanceModeOn()
                 Logging.info("Alpha mode = luminance",kw="processing")
         else:
-            merge.BuildAlphaOff()
-        merge.AddObserver("ProgressEvent",self.updateProgress)
-        for i,image in enumerate(self.images):
-            merge.AddInput(image)
-            merge.AddLookupTable(self.ctfs[i])
-            
-            merge.AddIntensityTransferFunction(self.intensityTransferFunctions[i])
-        merge.Update()
-        data=merge.GetOutput()
+            self.merge.BuildAlphaOff()
         
+        
+        for i,image in enumerate(self.images):
+            self.merge.AddInput(image)
+            self.merge.AddLookupTable(self.ctfs[i])
+            
+            self.merge.AddIntensityTransferFunction(self.intensityTransferFunctions[i])
+        print "\nBefore update took ",time.time()-t1
+        
+        data = self.getLimitedOutput(self.merge)
+        
+#        self.merge.Update()        
+#        data=self.merge.GetOutput()
         Logging.info("Result with dims and type",data.GetDimensions(),data.GetScalarTypeAsString(),"components:",data.GetNumberOfScalarComponents(),"scalar range",data.GetScalarRange())
         
 

@@ -32,6 +32,7 @@ from ConfigParser import *
 import vtk
 import os.path
 
+import Configuration
 import Logging
 from DataUnit import *
 
@@ -110,7 +111,20 @@ class DataSource:
         self.originalDimensions=None
         self.resampleFactors = None
         self.resampledVoxelSize=None
-        
+
+        conf = Configuration.getConfiguration()
+        self.limitDims = None
+        self.toDims = None
+        val=None
+        try:
+            val=eval(conf.getConfigItem("DoResample","Performance"))
+        except:
+            pass
+        if val:
+            self.limitDims = eval(conf.getConfigItem("ResampleDims","Performance"))
+            self.toDims = eval(conf.getConfigItem("ResampleTo","Performance"))
+
+
     def setResampleDimensions(self,dims):
         """
         Method: setResampleDimensions
@@ -126,8 +140,6 @@ class DataSource:
         Description: Return the original scalar range for this dataset
         """                
         return self.originalScalarRange
-        
-        
         
     def getResampleFactors(self):
         """
@@ -167,7 +179,15 @@ class DataSource:
         Method: getResampleDimensions
         Created: 11.09.2005, KP
         Description: Get the resample dimensions
-        """        
+        """
+        if self.limitDims:
+            dims=self.getDimensions()
+            print dims,self.limitDims
+            if dims[0]*dims[1] > self.limitDims[0]*self.limitDims[1]:
+                x,y=self.toDims
+                print "Setting resample dims",(x,y,dims[2])
+                self.resampleDims=(x,y,dims[2])
+        print "Returning ",self.resampleDims
         return self.resampleDims
     
     def getMIPdata(self,n):
@@ -234,12 +254,9 @@ class DataSource:
         Created: 1.09.2005, KP
         Description: Return the data resampled to given dimensions
         """
-        dims=data.GetDimensions()
-        if 0 and dims[0]*dims[1]>(1024*1024):
-            self.resampleDims=(1024,1024,dims[2])
-        if not tmpDims and not self.resampleDims:return data
+        if not tmpDims and not self.resampleDims and not self.limitDims:return data
         
-        useDims = self.resampleDims
+        useDims = self.getResampleDimensions()
         if tmpDims:
             useDims = tmpDims
         

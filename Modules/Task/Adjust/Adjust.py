@@ -133,12 +133,7 @@ class Adjust(Module):
         mapIntensities.SetIntensityTransferFunction(self.intensityTransferFunctions[n])
         mapIntensities.SetInput(mapdata)
         
-        data=mapIntensities.GetOutput()
-        if 0 and self.extent:
-            Logging.info("Update extent = ",self.extent,kw="processing")
-            mapdata.SetUpdateExtent(self.extent)
-            data.SetUpdateExtent(self.extent)
-        mapIntensities.Update()
+        data = self.getLimitedOutput(mapIntensities)        
             
         t2=time.time()
         Logging.info("Processing took %.4f seconds"%(t2-t1))

@@ -382,34 +382,12 @@ class MenuManager:
         Description: Add a toolbar item
         """
         self.toolIds.append(toolid)
-#        if not self.itemBar:
-#            if self.text:
-#                flags=wx.TB_HORIZONTAL|wx.TB_TEXT
-#            else:
-#                flags=wx.TB_HORIZONTAL
-#            self.itemBar = wx.ToolBar(self.visualizer.itemWin,-1,style=wx.TB_HORIZONTAL)
-#            self.itemBar.SetToolBitmapSize((32,32))
 
         self.itemBar=self.visualizer.tb
         self.visualizer.tb.Bind(wx.EVT_TOOL,func,id=toolid)
     
         self.tools[toolid]=(name,bitmap,func)
         self.itemBar.DoAddTool(toolid,name,bitmap,kind=wx.ITEM_CHECK)
-        self.itemBar.Realize()
-       
-    def restoreItemToolbar(self):
-        """
-        Method: restoreItemToolbar
-        Created: 06.09.2005, KP
-        Description: Restore the MIP items to the toolbar
-        """ 
-        if not self.visualizer:return
-        self.itemBar=self.visualizer.tb
-        
-        for itemid in self.toolIds:
-            name,bitmap,func=self.tools[itemid]
-            self.itemBar.DoAddTool(itemid,name,bitmap,kind=wx.ITEM_CHECK)
-            self.visualizer.tb.Bind(wx.EVT_TOOL,func,id=itemid)
         self.itemBar.Realize()
     
     def toggleTool(self,toolid,flag):

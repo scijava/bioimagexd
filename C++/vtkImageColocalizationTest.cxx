@@ -108,7 +108,61 @@ float* makeKernel(double radius,int*ksize) {
 /*        return kernel2;*/
         return kernel;
 }
-//template <class T> 
+void smooth_foo(OUT_T* inPtr,OUT_T*outPtr,int psf,int ext[6],float*kernel,double scale,int ksize,
+    vtkIdType inIncX,int inIncY,int inIncZ,int outIncX,int outIncY,int outIncZ) {
+        
+//blockedconvolute(float *image, int n, float *kernel, int m, int blocksize, float *A)
+/*%A=convolute(image, kernel, blocksize)
+%image - image to be convoluted, is represented as a matrix
+%kernel - filtering kernel used to convolute the image, is represented as a matrix
+%blocksize - the block size used
+%We assume image and kernel are square. We also skip the convolution of boundary.
+%For testing, we assume kernel is 3 by 3.
+*/
+        int blocksize = 64;
+        int n = ext[1];
+        int m = ksize;
+        int bn=n/blocksize+((n%blocksize)? 1:0);
+
+        OUT_T* image = inPtr;
+        OUT_T* A = outPtr;
+        int hlen=(m-1)/2;
+        int start=hlen;
+        int stop=blocksize+hlen;
+        float size=0;
+        int g, h, tj, tk, tg, ti;
+  
+
+        for(int j=0; j<bn; j++) {
+                tj=j*n*blocksize;
+                for(int i=0; i<bn; i++) {
+                        ti=i*blocksize*blocksize;
+                        for(int k=start; k<stop; k++) {
+                                tk=k*blocksize;
+                                for(int p=start; p<stop; p++) {
+                                        for(int g=-hlen; g<=hlen; g++) {
+                                                A[tj+ti+tk+p]=(OUT_T)image[tj+ti+tk+p+g]*kernel[m+hlen+g];
+                                        }
+                                }
+                                for(int p=start; p<stop; p++) {
+                                        for(int g=-hlen; g<=hlen; g++) {
+                                                A[ti+tj+tk+p]=(OUT_T)image[ti+tj+tk-blocksize+p+g]*kernel[hlen+g];
+                                        }
+                                }
+                                for(int p=start; p<stop; p++) {
+                                        for(int g=-hlen; g<=hlen; g++) {
+                                                A[ti+tj+tk+p]=(OUT_T)image[ti+tj+tk+blocksize+p+g]*kernel[m+m+hlen+g];
+                                        }
+                                }
+                                for(int p=start; p<stop; p++) {
+                                        A[ti+tj+tk+p]*=scale;
+                                }
+                        }
+                }
+        }
+}
+
+
 void smooth(OUT_T* inPtr,OUT_T*outPtr,int psf,int ext[6],float*kernel,double scale,int size,
     vtkIdType inIncX,int inIncY,int inIncZ,int outIncX,int outIncY,int outIncZ) {
         
@@ -143,7 +197,7 @@ void smooth(OUT_T* inPtr,OUT_T*outPtr,int psf,int ext[6],float*kernel,double sca
             for(int x=xmin; x<=xmax; x++) {
                 sum = 0.0;
                 i = 0;
-                edgePixel = y<vc || y>=(ymax+1+vc) || x<uc || x>=(xmax+1+uc)||x>=xedge||y>=yedge;
+                edgePixel = y<vc || y>=(ymax+1-vc) || x<uc || x>=(xmax+1+uc)||x>=xedge||y>=yedge;
                 
                 for(int v=-vc; v <= vc; v++) {
                     for(int u = -uc; u <= uc; u++) {

@@ -152,6 +152,7 @@ color depth. Use the histograms below to the select how the intensities in your 
         self.mergeUnit.setModule(module)
         
         self.preview.setDataUnit(self.mergeUnit)
+        self.preview.updatePreview()
         self.sizer.Fit(self)
         self.Layout()
         
@@ -219,4 +220,4 @@ color depth. Use the histograms below to the select how the intensities in your 
         """             
         self.preview.setZSlice(self.zslider.GetValue()-1)
         print "Setting preview to ",self.zslider.GetValue()-1
-        self.preview.updatePreview()
+        self.preview.updatePreview(0)

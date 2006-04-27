@@ -38,6 +38,7 @@ import ImageOperations
 import time
 
 import Logging
+import scripting
 import Modules
 from DataUnit import CombinedDataUnit
 import InteractivePanel
@@ -471,8 +472,9 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
             #data.SetUpdateExtent(data.GetWholeExtent())
             mip=vtk.vtkImageSimpleMIP()
             mip.SetInput(data)
-            mip.Update()
-            data=mip.GetOutput()
+            data.ReleaseDataFlagOn()
+            data = scripting.execute_limited(mip)
+          
             Logging.info("Got MIP with extent=",data.GetWholeExtent(),kw="preview")
             data.SetUpdateExtent(data.GetWholeExtent())
             
@@ -491,8 +493,10 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
             #print "upadte extent=",data.GetExtent()
             
             #print "colorImage=",colorImage.GetDimensions()
-            self.mapToColors.Update()
-            data=self.mapToColors.GetOutput()
+            data = scripting.execute_limited(self.mapToColors)
+            #data.ReleaseDataFlagOn()
+          
+#            data=self.mapToColors.GetOutput()
             #print "Mapping through took",time.time()-t
             #data.ReleaseDataFlagOff()
             return data

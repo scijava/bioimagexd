@@ -35,6 +35,7 @@ import os.path
 
 import wx
 import  wx.lib.filebrowsebutton as filebrowse
+import  wx.lib.intctrl
 import Configuration
 import scripting
 
@@ -107,10 +108,10 @@ class GeneralSettings(wx.Panel):
         print "Setting format to ",format.lower()
         conf.setConfigItem("ImageFormat","Output",format.lower())
         showTip=self.tipCheckbox.GetValue()
-        conf.setConfigItem("ShowTip","General",showTip)
+        conf.setConfigItem("ShowTip","General",str(showTip))
 
         askOnQuit=self.askOnQuitCheckbox.GetValue()
-        conf.setConfigItem("AskOnQuit","General",askOnQuit)
+        conf.setConfigItem("AskOnQuit","General",str(askOnQuit))
         
 class PathSettings(wx.Panel):
     """
@@ -131,21 +132,6 @@ class PathSettings(wx.Panel):
         removevtk = conf.getConfigItem("RemoveOldVTK","VTK")
         remember =conf.getConfigItem("RememberPath","Paths")
 
-        self.vtkBox=wx.StaticBox(self,-1,"VTK Path",size=(600,150))
-        self.vtkBoxSizer=wx.StaticBoxSizer(self.vtkBox,wx.VERTICAL)
-        self.vtkBoxSizer.SetMinSize(self.vtkBox.GetSize())
-        self.vtkbrowse=filebrowse.DirBrowseButton(self,-1,labelText="Location of VTK",
-        toolTip="Set the location of the version of VTK you want to use",
-        startDirectory=vtkpath)
-        self.vtkbrowse.SetValue(vtkpath)
-
-        self.vtkBoxSizer.Add(self.vtkbrowse,0,wx.EXPAND)
-        self.removeVTKCheckbox = wx.CheckBox(self,-1,"Remove old VTK from path")
-        if type(removevtk)==type(""):
-            removevtk=eval(removevtk)
-        self.removeVTKCheckbox.SetValue(removevtk)
-        self.vtkBoxSizer.Add(self.removeVTKCheckbox)
-
         self.dataBox=wx.StaticBox(self,-1,"Data Files Directory",size=(600,150))
         self.dataBoxSizer=wx.StaticBoxSizer(self.dataBox,wx.VERTICAL)
         self.dataBoxSizer.SetMinSize(self.dataBox.GetSize())
@@ -162,8 +148,8 @@ class PathSettings(wx.Panel):
         self.dataBoxSizer.Add(self.useLastCheckbox)        
         
         
-        self.sizer.Add(self.vtkBoxSizer, (0,0),flag=wx.EXPAND|wx.ALL)
-        self.sizer.Add(self.dataBoxSizer,(2,0),flag=wx.EXPAND|wx.ALL)        
+        #self.sizer.Add(self.vtkBoxSizer, (0,0),flag=wx.EXPAND|wx.ALL)
+        self.sizer.Add(self.dataBoxSizer,(0,0),flag=wx.EXPAND|wx.ALL)        
         self.SetAutoLayout(1)
         self.SetSizer(self.sizer)
         self.Layout()
@@ -176,20 +162,129 @@ class PathSettings(wx.Panel):
         Description: A method that writes out the settings that have been modified
                      in this window.
         """     
-        vtkpath=self.vtkbrowse.GetValue()
+        #vtkpath=self.vtkbrowse.GetValue()
         
         datapath=self.databrowse.GetValue()
         rememberlast=self.useLastCheckbox.GetValue()
         
-        removevtk=self.removeVTKCheckbox.GetValue()
-        conf.setConfigItem("VTKPath","VTK",vtkpath)
+        #removevtk=self.removeVTKCheckbox.GetValue()
+        #conf.setConfigItem("VTKPath","VTK",vtkpath)
         conf.setConfigItem("DataPath","Paths",datapath)
         
-        conf.setConfigItem("RemoveOldVTK","VTK",removevtk)
+        #conf.setConfigItem("RemoveOldVTK","VTK",removevtk)
         conf.setConfigItem("RememberPath","Paths",rememberlast)        
 
 
+class PerformanceSettings(wx.Panel):
+    """
+    Class: PathSettings
+    Created: 27.04.2006, KP
+    Description: A window for controlling the performance settings of the application
+    """ 
+    def __init__(self,parent):
+        wx.Panel.__init__(self,parent,-1,size=(640,480))
+        self.sizer=wx.GridBagSizer(5,5)
+        #self.SetBackgroundColour(wx.Colour(255,0,0))
         
+        conf=Configuration.getConfiguration()
+
+        self.resampleBox=wx.StaticBox(self,-1,"Image resampling",size=(600,150))
+        self.resampleBoxSizer=wx.StaticBoxSizer(self.resampleBox,wx.VERTICAL)
+        self.resampleBoxSizer.SetMinSize(self.resampleBox.GetSize())
+
+        self.resampleCheckbox = wx.CheckBox(self,-1,"Resample large images automatically")
+        resampleLbl = wx.StaticText(self,-1,"Resample images larger than:")
+        resample2Lbl = wx.StaticText(self,-1,"Resample to image size:")
+        
+        val = not not conf.getConfigItem("DoResample","Performance")
+        self.resampleCheckbox.SetValue(val)
+        try:
+            rx,ry=eval(conf.getConfigItem("ResampleDims","Performance"))
+            tx,ty = eval(conf.getConfigItem("ResampleTo","Performance"))
+        except:
+            rx,ry,tx,ty=1024,1024,1024,1024
+            
+        
+        self.resampleX = wx.TextCtrl(self,-1,str(rx))
+        self.resampleY = wx.TextCtrl(self,-1,str(ry))
+        self.resampleToX = wx.TextCtrl(self,-1,str(tx))
+        self.resampleToY = wx.TextCtrl(self,-1,str(ty))
+        
+        x1=wx.StaticText(self,-1,"x")
+        x2=wx.StaticText(self,-1,"x")
+        resampleGrid = wx.GridBagSizer()
+        self.resampleBoxSizer.Add(self.resampleCheckbox)
+        resampleGrid.Add(resampleLbl,(0,0))
+        resampleGrid.Add(resample2Lbl,(1,0))
+        resampleGrid.Add(self.resampleX,(0,1))
+        resampleGrid.Add(x1,(0,2))
+        resampleGrid.Add(self.resampleY,(0,3))
+        resampleGrid.Add(self.resampleToX,(1,1))
+        resampleGrid.Add(x2,(1,2))
+        resampleGrid.Add(self.resampleToY,(1,3))        
+        self.resampleBoxSizer.Add(resampleGrid)
+        
+        self.memoryBox=wx.StaticBox(self,-1,"Memory usage",size=(600,150))
+        self.memoryBoxSizer=wx.StaticBoxSizer(self.memoryBox,wx.VERTICAL)
+        self.memoryBoxSizer.SetMinSize(self.memoryBox.GetSize())
+        
+        self.limitMemoryCheckbox = wx.CheckBox(self,-1,"Limit memory used by a single operation")
+        
+        val = not not conf.getConfigItem("LimitMemory","Performance")
+        self.limitMemoryCheckbox.SetValue(val)
+        
+        try:
+            limitval = eval(conf.getConfigItem("LimitTo","Performance"))
+        except:
+            limitval = 512
+        
+        limitLbl = wx.StaticText(self,-1,"Memory limit (MB):")
+        mblbl = wx.StaticText(self,-1,"MB")
+        self.memoryLimit = wx.lib.intctrl.IntCtrl(self,value=limitval,min=1,max=4096,limited=True)
+        
+        memgrid=wx.GridBagSizer()
+        self.memoryBoxSizer.Add(self.limitMemoryCheckbox)
+        memgrid.Add(limitLbl,(0,0))
+        memgrid.Add(self.memoryLimit,(0,1))
+        memgrid.Add(mblbl,(0,2))
+        self.memoryBoxSizer.Add(memgrid)
+
+    
+        
+        self.sizer.Add(self.memoryBoxSizer,(0,0),flag=wx.EXPAND|wx.ALL)        
+        self.sizer.Add(self.resampleBoxSizer,(1,0),flag=wx.EXPAND|wx.ALL)        
+        
+        self.SetAutoLayout(1)
+        self.SetSizer(self.sizer)
+        self.Layout()
+        self.sizer.Fit(self)
+        
+    def writeSettings(self,conf):
+        """
+        Method: writeSettings(config)
+        Created: 12.03.2005, KP
+        Description: A method that writes out the settings that have been modified
+                     in this window.
+        """     
+        forceResample = self.resampleCheckbox.GetValue()
+        try:
+            rx = int(self.resampleX.GetValue())
+            ry = int(self.resampleY.GetValue())
+            rtx = int(self.resampleToX.GetValue())
+            rty = int(self.resampleToY.GetValue())
+        except:
+            forceResample=0
+        conf.setConfigItem("DoResample","Performance",str(not not forceResample))
+        if forceResample:
+            conf.setConfigItem("ResampleDims","Performance",str((rx,ry)))
+            conf.setConfigItem("ResampleTo","Performance",str((rtx,rty)))
+        
+        limitMem = self.limitMemoryCheckbox.GetValue()
+        limitTo = self.memoryLimit.GetValue()
+        
+        conf.setConfigItem("LimitMemory","Performance",str(not not limitMem))
+        conf.setConfigItem("LimitTo","Performance",str(limitTo))
+
 class MovieSettings(wx.Panel):
     """
     Class: MovieSettings
@@ -217,18 +312,20 @@ class SettingsWindow(wx.Dialog):
         self.imagelist=wx.ImageList(32,32)
         self.listbook.AssignImageList(self.imagelist)
         imgpath = scripting.get_icon_dir()
-        for i in ["General.gif","Paths.gif","Video.gif"]:
+        for i in ["General.gif","Paths.gif","Performance.gif","Video.gif"]:
             icon=os.path.join(imgpath,i)
             print "icon=",icon
             bmp=wx.Bitmap(icon,wx.BITMAP_TYPE_GIF)
             self.imagelist.Add(bmp)
         self.generalPanel=GeneralSettings(self.listbook)
         self.pathsPanel=PathSettings(self.listbook)
-        self.moviePanel=MovieSettings(self.listbook)
+        self.performancePanel = PerformanceSettings(self.listbook)
+        #self.moviePanel=MovieSettings(self.listbook)
         
         self.listbook.AddPage(self.generalPanel,"General",imageId=0)
         self.listbook.AddPage(self.pathsPanel,"Paths",imageId=1)
-        self.listbook.AddPage(self.moviePanel,"Video Output",imageId=2)
+        self.listbook.AddPage(self.performancePanel,"Performance",imageId=2)
+        #self.listbook.AddPage(self.moviePanel,"Video Output",imageId=2)
 
         self.sizer.Add(self.listbook,flag=wx.EXPAND|wx.ALL)
         
@@ -247,6 +344,7 @@ class SettingsWindow(wx.Dialog):
         conf=Configuration.getConfiguration()
         self.pathsPanel.writeSettings(conf)
         self.generalPanel.writeSettings(conf)
+        self.performancePanel.writeSettings(conf)
         conf.writeSettings()
         self.Close()
         

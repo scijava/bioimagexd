@@ -34,6 +34,7 @@ import ImageOperations
 import Logging
 #from enthought.tvtk import messenger
 import messenger
+import scripting
 
 class Module:
     """
@@ -55,6 +56,10 @@ class Module:
         self.zoomFactor=1
         self.settings=None
         self.timepoint=-1
+        self.limit = scripting.get_memory_limit()
+        self.streamer = vtk.vtkMemoryLimitImageDataStreamer()
+        if self.limit:
+            self.streamer.SetMemoryLimit(1024*self.limit)
         self.eventDesc="Processing data"
         
     def updateProgress(self,obj,evt):
@@ -179,3 +184,17 @@ class Module:
         """
         raise "Abstract method doOperation() called"
 
+    def getLimitedOutput(self,filter):
+        """
+        Method: getLimitedOutput
+        Created: 27.04.2006, KP
+        Description: Return the results of the pipeline possibly executed in chunks
+        """
+        if self.limit:
+            self.streamer.SetInput(filter.GetOutput())
+            self.streamer.Update()
+            print "Executing through streamer"
+            return self.streamer.GetOutput()
+        else:
+            filter.Update()
+            return filter.GetOutput()
