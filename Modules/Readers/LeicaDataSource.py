@@ -507,11 +507,15 @@ class LeicaExperiment:
         Created: 15.04.2005, KP, based on Karl Garsha's code
         Description: Return the depth from given data
         """ 
+        print "Searching from",Series_Data
         SeriesDepthString=self.RE_Depth.search(Series_Data)
         SeriesDepthLine=SeriesDepthString.group(0)
+        
         SeriesDepthSplit=SeriesDepthLine.split()
         SeriesDepthSplit.reverse()
+        
         SeriesDepth=float(SeriesDepthSplit[0].strip())
+        print "Returning depth",SeriesDepth
         return SeriesDepth
         
     def GetVoxelWidth(self,Series_Data):
@@ -703,8 +707,8 @@ class LeicaExperiment:
                 print "Num_Chan=",Num_Chan
                 Channels=[]
                 for b in xrange(Num_Chan):
-                    File_List=[]
-                    if Num_Chan>1:
+                    Fuile_List=[]
+                    if 1 or Num_Chan>1:
                         CH_Name=('_ch'+str((b%100)//10)+str((b%10)//1))
                     else:
                         print "Since only one channel, no _chXXX"
@@ -720,6 +724,7 @@ class LeicaExperiment:
                         else:
                             Slice_Name = self.ExpName + '_' + Series_Name + Z_Name + CH_Name + '.tif'
                         File_List.append(Slice_Name)
+                        
                     Channels.append(File_List)
                 TimePoints.append(Channels)
             Series_Info['TiffList']=TimePoints
@@ -794,7 +799,7 @@ class LeicaExperiment:
                     if Series_Info["Number_Sections"]>1:                
                         #fsprint stuff--string+3 int spaces padded w/ zeros+last part of name eg. "_ch00.tif"
                         print "Has z slices"
-                        z=Series_Info['Depth_Z']
+                        z=Series_Info['Number_Sections']
                         
                         nzslices=int(math.ceil(math.log(z,10)))
                         print "z=%d, log z=%d"%(z,nzslices)
@@ -851,31 +856,4 @@ class LeicaExperiment:
                 ChnlVolDataLst.append(TIFFReader)#now we have a list with the imported volume data for each channel
             self.TP_CH_VolDataList.append(ChnlVolDataLst)   
             
-        #used for testing image reader behavior on different platforms
-        #def ViewSampleImage(self,Series_Name):
-        #Series_Info=self.SeriesDict[Series_Name]
-        #TiffList=Series_Info['TiffList']
-        #XYDim=Series_Info['Resolution_X']-1
-        #XSpace=Series_Info['Voxel_Width_X']
-        #YSpace=Series_Info['Voxel_Height_Y']
-        #ZSpace=Series_Info['Voxel_Depth_Z']
-        #ImageReader.SetDataSpacing(XSpace,YSpace,ZSpace)
-        #self.TP_CH_VolDataList=[] #contains the vol data for each timepoint, each channel
-        #TimePoint = TiffList[0]
-        #Channel = TimePoint[1]
-        #ImageReader=vtk.vtkImageReader()
-        #if Series_Info['Bit_Depth']==8:
-            #ImageReader.SetDataScalarTypeToUnsignedChar()
-        #else:
-            #pass
-        #ImageReader.SetDataByteOrderToLittleEndian()
-        #ImageReader.SetNumberOfScalarComponents(1)
-        #ImageReader.SetDataExtent(0,XYDim,0,XYDim,0,0)
-        #ImageReader.SetDataSpacing(XSpace,YSpace,ZSpace)
-        #First read the images for a particular channel
-        #ImageName=Channel[4] #Take the first tif name
-        #ImageReader.SetFileName(ImageName)
-        #ImageReader.Update() 
-        #Viewer=vtk.vtkImageViewer()
-        #Viewer.SetInput(ImageReader.GetOutput())
-        #Viewer.Render()
+ 

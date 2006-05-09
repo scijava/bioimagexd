@@ -35,6 +35,7 @@ import csv
 import time
 import messenger
 import Dialogs
+import codecs
 from GUI import Events
 from PreviewFrame import *
 
@@ -692,7 +693,8 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
         if not filename:
             Logging.info("Got no name for coloc statistics",kw="processing")
             return
-        f=open(filename,"wb")
+#        f=open(filename,"wb")
+	f=codecs.open(filename,"wb","latin1")
         w=csv.writer(f,dialect="excel",delimiter=";")
         get1=sources[0].getSettings().get
         get2=sources[1].getSettings().get
