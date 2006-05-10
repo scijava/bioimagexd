@@ -57,9 +57,13 @@ class Module:
         self.settings=None
         self.timepoint=-1
         self.limit = scripting.get_memory_limit()
-        self.streamer = vtk.vtkMemoryLimitImageDataStreamer()
-        if self.limit:
-            self.streamer.SetMemoryLimit(1024*self.limit)
+        # Gracefully handle lack of vtkParallel kit
+        try:
+            self.streamer = vtk.vtkMemoryLimitImageDataStreamer()
+        except:
+            self.streamer = None
+            if self.limit:
+                self.streamer.SetMemoryLimit(1024*self.limit)
         self.eventDesc="Processing data"
         
     def updateProgress(self,obj,evt):
@@ -190,7 +194,7 @@ class Module:
         Created: 27.04.2006, KP
         Description: Return the results of the pipeline possibly executed in chunks
         """
-        if self.limit:
+        if self.limit and self.streamer:
             self.streamer.SetInput(filter.GetOutput())
             self.streamer.Update()
             print "Executing through streamer"

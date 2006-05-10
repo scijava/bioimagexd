@@ -82,9 +82,9 @@ def build():
         incl_modules.extend(["wx.lib.mixins.listctrl"])
         print "Included modules=",incl_modules
         modules = get_files("Modules")
-	iconFiles = os.path.join("Icons","*.*")
-	binFiles = os.path.join("bin","*.*")
-	helpFiles = os.path.join("Help","*.*")
+        iconFiles = os.path.join("Icons","*.*")
+        binFiles = os.path.join("bin","*.*")
+        helpFiles = os.path.join("Help","*.*")
         DATA_FILES=[
                     ("Icons",glob.glob(iconFiles)),
                     ("Bin",glob.glob(binFiles)),
@@ -93,60 +93,60 @@ def build():
         DATA_FILES.extend(modules)
 
         if platform.system() == "Darwin":
-		import py2app
-		# Note that you must replace hypens '-' with underscores '_'
-		# when converting option names from the command line to a script.
-		# For example, the --argv-emulation option is passed as 
-		# argv_emulation in an options dict.
-	        py2app_options = dict(
-			# Map "open document" events to sys.argv.
-			# Scripts that expect files as command line arguments
-			# can be trivially used as "droplets" using this option.
-			# Without this option, sys.argv should not be used at all
-			# as it will contain only Mac OS X specific stuff.
-			argv_emulation=True,
-    			# This is a shortcut that will place MyApplication.icns
-	    		# in the Contents/Resources folder of the application bundle,
-			# and make sure the CFBundleIcon plist key is set appropriately.
-			iconfile='Icons/BioImageXD.icns',
-			excludes = EXCLUDES,
-			includes = incl_modules,
-			packages = ["encodings"]
-	        )
-		DATA_FILES.append( ('../Frameworks', [
-			'/usr/local/lib/wxPython-unicode-2.5.5.1/lib/libwx_macud-2.5.5.rsrc',
-		]))
-                setup(
-				app=['BioImageXD.py'],
-				data_files = DATA_FILES, 
-				options = dict( py2app = py2app_options )
-		)
-		
+            import py2app
+            # Note that you must replace hypens '-' with underscores '_'
+            # when converting option names from the command line to a script.
+            # For example, the --argv-emulation option is passed as 
+            # argv_emulation in an options dict.
+            py2app_options = dict(
+            # Map "open document" events to sys.argv.
+            # Scripts that expect files as command line arguments
+            # can be trivially used as "droplets" using this option.
+            # Without this option, sys.argv should not be used at all
+            # as it will contain only Mac OS X specific stuff.
+            argv_emulation=True,
+                # This is a shortcut that will place MyApplication.icns
+                # in the Contents/Resources folder of the application bundle,
+            # and make sure the CFBundleIcon plist key is set appropriately.
+            iconfile='Icons/BioImageXD.icns',
+            excludes = EXCLUDES,
+            includes = incl_modules,
+            packages = ["encodings"]
+            )
+            DATA_FILES.append( ('../Frameworks', [
+            '/usr/local/lib/wxPython-unicode-2.5.5.1/lib/libwx_macud-2.5.5.rsrc',
+            ]))
+            setup(
+                app=['BioImageXD.py'],
+                data_files = DATA_FILES, 
+                options = dict( py2app = py2app_options )
+            )        
         elif platform.system() == "Linux":
-		# freeze code
-		file = "/usr/share/doc/python2.4/examples/Tools/freeze/freeze.py"
-		excl=""
-		for x in EXCLUDES:
-		    excl+=" -x %s"%x
-		    
-		mods=" ".join(incl_modules)
-	        cmd_line="python %s -o  linux-build %s BioImageXD.py -m %s"%(file,excl,mods)
-		print cmd_line
-		os.system(cmd_line)
-		
-	elif platform.system() == "Windows":
-	       		import py2exe
+            # freeze code
+            file = "/usr/share/doc/python2.4/examples/Tools/freeze/freeze.py"
+            excl=""
+            for x in EXCLUDES:
+                excl+=" -x %s"%x
+                
+            mods=" ".join(incl_modules)
+            cmd_line="python %s -o  linux-build %s BioImageXD.py -m %s"%(file,excl,mods)
+            print cmd_line
+            os.system(cmd_line)
+            
+        elif platform.system() == "Windows":
+            import py2exe
 
-			# use windows=[{... to not show the console
-			# use console=[{ to show the console
-			setup(name="BioImageXD",
-				   windows=[{"script":"BioImageXD.py",
-							 "icon_resources": [(1, "Icons\\logo.ico")]} ],
-				   data_files = DATA_FILES,
-				   options = {"py2exe":
-							 { "excludes": EXCLUDES,
-							   "includes":incl_modules,
-							   "packages": ["encodings"]}},
-				   zipfile = "python_libs.zip")
+            # use windows=[{... to not show the console
+            # use console=[{ to show the console
+            setup(name="BioImageXD",
+                   #windows=[{"script":"BioImageXD.py",
+                   console=[{"script":"BioImageXD.py",
+                             "icon_resources": [(1, "Icons\\logo.ico")]} ],
+                   data_files = DATA_FILES,
+                   options = {"py2exe":
+                             { "excludes": EXCLUDES,
+                               "includes":incl_modules,
+                               "packages": ["encodings"]}},
+                   zipfile = "python_libs.zip")
 
 

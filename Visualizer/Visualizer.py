@@ -386,6 +386,7 @@ class Visualizer:
         if self.tb1:
             return
         self.tb1 = GUI.Toolbar.Toolbar(self.toolWin,-1,style=wx.TB_HORIZONTAL)
+        #self.tb1 = wx.ToolBar(self.toolWin,-1,style=wx.TB_HORIZONTAL)
         self.tb1.SetToolBitmapSize((32,32))
         
         self.maxWidth=self.parent.GetSize()[0]

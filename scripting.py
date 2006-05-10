@@ -56,13 +56,17 @@ def execute_limited(pipeline):
     limit = get_memory_limit()
     if not limit:
         pipeline.Update()
-        return pipeline.Output()
+        return pipeline.GetOutput()
     
-    streamer = vtk.vtkMemoryLimitImageDataStreamer()
-    streamer.SetMemoryLimit(1024*limit)
-    streamer.SetInput(pipeline.GetOutput())
-    streamer.Update()
-    return streamer.GetOutput()
+    try:
+        streamer = vtk.vtkMemoryLimitImageDataStreamer()
+        streamer.SetMemoryLimit(1024*limit)
+        streamer.SetInput(pipeline.GetOutput())
+        streamer.Update()
+        return streamer.GetOutput()
+    except:
+        pipeline.Update()
+        return pipeline.GetOutput()
 
 def get_memory_limit():
     global conf,memLimit
@@ -93,7 +97,17 @@ def get_log_dir():
     if platform.system()=="Darwin":
         return os.path.expanduser("~/Library/Logs/BioImageXD")
     elif platform.system() == "Windows":
-        appdir=os.path.join("C:\\","Documents and Settings",getpass.getuser(),"Application Data","BioImageXD")
+        appbase=os.path.join("C:\\","Documents and Settings",getpass.getuser(),"Application Data")
+        appdir=os.path.join(appbase,"BioImageXD")
+        if not os.access(appdir,os.F_OK):
+            try:
+                os.mkdir(appdir)
+            except:
+                pass
+            if not os.access(appdir,os.F_OK):
+                print "Cannot write to application data"
+                appdir="."
+        
         if not os.path.exists(appdir):
             os.mkdir(appdir)
         return os.path.join(appdir,"Logs")
@@ -106,8 +120,16 @@ def get_log_dir():
 def get_config_dir():
     if platform.system()=="Darwin":
         return os.path.expanduser("~/Library/Preferences")
-    elif platform.system() == "Windows":
-        appdir=os.path.join("C:\\","Documents and Settings",getpass.getuser(),"Application Data","BioImageXD")
+    elif platform.system() == "Windows": 
+        appbase=os.path.join("C:\\","Documents and Settings",getpass.getuser(),"Application Data")
+        appdir=os.path.join(appbase,"BioImageXD")
+        if not os.access(appdir,os.F_OK):
+            try:
+                os.mkdir(appdir)
+            except:
+                pass
+            if not os.access(appdir,os.F_OK):
+                appdir="."
         if not os.path.exists(appdir):
             os.mkdir(appdir)        
         return appdir

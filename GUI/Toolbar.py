@@ -78,8 +78,10 @@ class Toolbar(wx.Panel):
         Method: OnSize
         Created: 27.04.2006, KP
         Description: Event handler for size events
-        """                    
+        """ 
+        
         if not self.final or (self.minSize > evt.GetSize()[0]):
+            
             self.ReOrderItems(evt.GetSize()[0])            
             x=self.GetSize()[0]            
             if self.y==1:
@@ -87,7 +89,9 @@ class Toolbar(wx.Panel):
             n=self.y+1
             y=44*n
             self.parent.SetDefaultSize((x,y))
-        
+            self.Layout()
+            self.sizer.Fit(self)
+            
     def ReOrderItems(self,tgtsize=None):
         """
         Method: ReOrderItems
@@ -135,8 +139,8 @@ class Toolbar(wx.Panel):
             self.x+=1
             ms += self.sizes[i] + self.toolSeparation
         self.minSize = ms
-        self.Layout()
-        self.sizer.Fit(self)
+        
+        #self.sizer.Fit(self)
         
     def EnableTool(self,toolid,flag):
         """
