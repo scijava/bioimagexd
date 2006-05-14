@@ -296,6 +296,7 @@ class LsmDataSource(DataSource.DataSource):
             r=self.reader.GetChannelColorComponent(self.channelNum,0)
             g=self.reader.GetChannelColorComponent(self.channelNum,1)
             b=self.reader.GetChannelColorComponent(self.channelNum,2)
+            print "Got color components=",r,g,b
             r/=255.0
             g/=255.0
             b/=255.0

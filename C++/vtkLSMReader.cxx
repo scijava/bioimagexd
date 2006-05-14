@@ -401,7 +401,9 @@ int vtkLSMReader::ReadChannelColorsAndNames(ifstream *f,unsigned long start)
     for(int i=0;i<3;i++)
       {
         component = this->CharPointerToUnsignedChar(colorBuff+i);        
-        this->ChannelColors->SetValue(i+((colNum+1)*j),component);
+        //printf("Setting value %d to %d\n",i+((colNum+1)*j),component);
+        //this->ChannelColors->SetValue(i+((colNum+1)*j),component);
+        this->ChannelColors->SetValue(i+(3*j),component);
       }
     }
   //vtkDebugMacro(<<"read colors, now reading"<<sizeOfNames<<"from "<<nameOffset);
@@ -593,7 +595,7 @@ int vtkLSMReader::AnalyzeTag(ifstream *f,unsigned long startPos)
     {
     case TIF_NEWSUBFILETYPE: 
       vtkDebugMacro(<<"New subfile type="<<value);
-	this->NewSubFileType = value;
+    this->NewSubFileType = value;
        vtkDebugMacro(<<"done");
       
       /*
@@ -726,10 +728,10 @@ int vtkLSMReader::AnalyzeTag(ifstream *f,unsigned long startPos)
       break;
     }
 
-  if(actualValue)	 
+  if(actualValue)    
     {
-	vtkDebugMacro(<<"Deleting actual value...");
-	delete [] actualValue;
+    vtkDebugMacro(<<"Deleting actual value...");
+    delete [] actualValue;
     }
     vtkDebugMacro(<<"done\n");
   return 0;
@@ -815,15 +817,15 @@ unsigned long vtkLSMReader::ReadImageDirectory(ifstream *f,unsigned long offset)
   numberOfTags = this->ReadUnsignedShort(f,&offset);
     vtkDebugMacro(<<"Number of tags="<<numberOfTags<<"\n");
   for(int i=0;i<numberOfTags;i++)
-    {	
+    {   
     this->AnalyzeTag(f,offset);
     vtkDebugMacro(<<"Tag analyed...\n");
     if(this->NewSubFileType == 1) {
-	vtkDebugMacro(<<"Found thumbnail, get next");
-	break; //thumbnail image
+    vtkDebugMacro(<<"Found thumbnail, get next");
+    break; //thumbnail image
     }
     offset = offset + 12;
-	vtkDebugMacro(<<"New offset="<<offset);
+    vtkDebugMacro(<<"New offset="<<offset);
     }
   nextOffset += 2 + numberOfTags * 12;
     vtkDebugMacro(<<"Next offset is "<<nextOffset);
@@ -1041,8 +1043,12 @@ int vtkLSMReader::GetChannelColorComponent(int ch, int component)
 {
   if(ch < 0 || ch > this->GetNumberOfChannels()-1 || component < 0 || component > 2)
     {
+        printf("ch%d not in limits (%d)\n",ch,this->GetNumberOfChannels());
     return 0;
     }
+    printf("Returning component %d= %d\n",ch*3+component,*this->ChannelColors->GetPointer((ch*3)+component));
+  
+  //i+((colNum+1)*j  
   return *(this->ChannelColors->GetPointer((ch*3) + component));
 }
 
