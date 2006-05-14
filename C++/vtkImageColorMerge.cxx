@@ -104,7 +104,12 @@ void vtkImageColorMergeExecute(vtkImageColorMerge *self, int id,int NumberOfInpu
     const unsigned char* map;
     
     for(i=0; i < NumberOfInputs; i++) {
+        ctfs[i] = 0;
+        itfs[i] = 0;
+            
         inPtrs[i]=(T*)inData[i]->GetScalarPointerForExtent(outExt);
+        if(inData[i]->GetNumberOfScalarComponents()>1) continue;
+        
         isIdentical = 1;
         ctf = self->GetColorTransferFunction(i);
         map = ctf->GetTable(0,256,256);
@@ -147,11 +152,12 @@ void vtkImageColorMergeExecute(vtkImageColorMerge *self, int id,int NumberOfInpu
     int maxval = 0, n = 0;
     maxval=int(pow(2,8*sizeof(T)))-1;
     T val;
-    maxX *= (inData[0]->GetNumberOfScalarComponents());
+    //maxX *= (inData[0]->GetNumberOfScalarComponents());
     char progressText[200];
     
     double r,g,b;
     T ir,ig,ib;
+    //printf("Processing data...\n");
     for(idxZ = 0; idxZ <= maxZ; idxZ++ ) {
         self->UpdateProgress(idxZ/float(maxZ));
         sprintf(progressText,"Merging channels (slice %d / %d)",idxZ,maxZ);
@@ -179,10 +185,20 @@ void vtkImageColorMergeExecute(vtkImageColorMerge *self, int id,int NumberOfInpu
                         alphaScalar += currScalar;
                   }              
                 }
+                if(inData[i]->GetNumberOfScalarComponents()>1) {
+                    //printf("Reading components straight from data, ncomps=%d\n",inData[i]->GetNumberOfScalarComponents());
+                    r += currScalar;
+                    inPtrs[i]++;
+                    g += *inPtrs[i];
+                    inPtrs[i]++;
+                    b += *inPtrs[i];
+                    
+                } else {
                 
-                r += ctfs[i][3*currScalar];
-                g += ctfs[i][3*currScalar+1];
-                b += ctfs[i][3*currScalar+2];
+                    r += ctfs[i][3*currScalar];
+                    g += ctfs[i][3*currScalar+1];
+                    b += ctfs[i][3*currScalar+2];
+                }
                 
                 //scalar += currScalar;
                 inPtrs[i]++;
@@ -213,6 +229,7 @@ void vtkImageColorMergeExecute(vtkImageColorMerge *self, int id,int NumberOfInpu
           }
           outPtr += outIncY;
         }  
+        //printf("advancing to next slice\n");
         for(i=0; i < NumberOfInputs; i++ ) {
           inPtrs[i]+=inIncZ;
         }
@@ -221,14 +238,17 @@ void vtkImageColorMergeExecute(vtkImageColorMerge *self, int id,int NumberOfInpu
     }
   
     
-    // If all itfs where not identical, then we need to release the individual modified ctfs as well
-    for(int i = 0; i < NumberOfInputs; i++) {
-        delete ctfs[i];
+    //printf("Deleting individual..\n");
+    for(int i = 0; i < NumberOfInputs; i++) {        
+        if(ctfs[i])
+            delete ctfs[i];
     }
-    
+    //printf("Deleting itfs[]\n");
     delete[]itfs;
     //delete modctfs;
+    //printf("deleting ctfs\n");
     delete ctfs;
+    //printf("deleting inptrs\n");
     delete[] inPtrs;
 }
 

@@ -253,10 +253,12 @@ char* vtkLSMReader::GetChannelName(int chNum)
 
 int vtkLSMReader::ClearChannelNames()
 {
-  if(!this->ChannelNames || this->GetNumberOfChannels() < 1)
+  vtkDebugMacro(<<"clearing " << this->GetNumberOfChannels()<<"channel names");
+   if(!this->ChannelNames || this->GetNumberOfChannels() < 1)
     {
     return 0;
     }
+  
   for(int i=0;i<this->GetNumberOfChannels();i++)
     {
     delete [] this->ChannelNames[i];
@@ -269,6 +271,7 @@ int vtkLSMReader::ClearChannelNames()
 int vtkLSMReader::AllocateChannelNames(int chNum)
 {
   this->ClearChannelNames();
+  vtkDebugMacro(<<"allocating space for "<<chNum<<"channel names");
   this->ChannelNames = new char*[chNum];
   if(!this->ChannelNames)
     {
@@ -294,7 +297,9 @@ int vtkLSMReader::SetChannelName(const char *chName, int chNum)
     {
     this->AllocateChannelNames(this->GetNumberOfChannels());
     }
+  
   length = strlen(chName);
+  vtkDebugMacro(<<"length="<<length);    
   name = new char[length+1];
   if(!name)
     {
@@ -349,21 +354,22 @@ int vtkLSMReader::ReadChannelColorsAndNames(ifstream *f,unsigned long start)
   char *nameBuff,*colorBuff,*name,*tempBuff;
   unsigned char component;
 
-  colorBuff = new char[4];
+  colorBuff = new char[5];
 
   pos = start;
   // Read size of structure
 
   sizeOfStructure = this->ReadInt(f,&pos);
-  vtkDebugMacro(<<"size of structure = "<<sizeOfStructure<<"\n");
+  //vtkDebugMacro(<<"size of structure = "<<sizeOfStructure<<"\n");
   // Read number of colors
   colNum = this->ReadInt(f,&pos);
   // Read number of names
   nameNum = this->ReadInt(f,&pos);
+  //vtkDebugMacro(<<"nameNum="<<nameNum);
   sizeOfNames = sizeOfStructure - ( (10*4) + (colNum*4) );
-  vtkDebugMacro(<<"sizeofNames="<<sizeOfNames<<"\n");
-  nameBuff = new char[sizeOfNames];
-  name = new char[sizeOfNames];
+  //vtkDebugMacro(<<"sizeofNames="<<sizeOfNames<<"\n");
+  nameBuff = new char[sizeOfNames+1];
+  name = new char[sizeOfNames+1];
 
   if(colNum != this->GetNumberOfChannels())
     {
@@ -379,36 +385,54 @@ int vtkLSMReader::ReadChannelColorsAndNames(ifstream *f,unsigned long start)
   // Read offset to name info
   nameOffset = this->ReadInt(f,&pos) + start;
 
+  //vtkDebugMacro(<<"colorOffset="<<colorOffset);
+  //vtkDebugMacro(<<"nameOffset="<<nameOffset);
+  //vtkDebugMacro(<<"number of colors"<< colNum);
   this->ChannelColors->Reset();
-  this->ChannelColors->SetNumberOfValues(3*colNum);
+  this->ChannelColors->SetNumberOfValues(3*(colNum+1));
   this->ChannelColors->SetNumberOfComponents(3);
 
+    
   // Read the colors
   for(int j=0;j<colNum;j++)
     {
     this->ReadFile(f,&colorOffset,4,colorBuff,1);
+    
     for(int i=0;i<3;i++)
       {
-      component = this->CharPointerToUnsignedChar(colorBuff+i);
-      this->ChannelColors->SetValue(i+((colNum+1)*j),component);
+        component = this->CharPointerToUnsignedChar(colorBuff+i);        
+        this->ChannelColors->SetValue(i+((colNum+1)*j),component);
       }
     }
-
+  //vtkDebugMacro(<<"read colors, now reading"<<sizeOfNames<<"from "<<nameOffset);
+  
+/*  for(int j=0;j<colNum;j++) {
+      this->ChannelColors->SetValue(0+((colNum+1)*j),255);
+      this->ChannelColors->SetValue(1+((colNum+1)*j),255);
+      this->ChannelColors->SetValue(2+((colNum+1)*j),255);
+  }*/
+  
   this->ReadFile(f,&nameOffset,sizeOfNames,nameBuff,1);
-
+  //printf("namebuf=\n");
+  //for(int k=0;k<sizeOfNames;k++) {
+  //   printf("%c",nameBuff[k]);
+  //}
+  //printf("\n");
   nameLength = nameSkip = 0;
   tempBuff = nameBuff;
   for(int i=0;i<nameNum;i++)
     {
     nameSkip = this->FindChannelNameStart(tempBuff,sizeOfNames-nameSkip);
     nameLength = this->ReadChannelName(tempBuff+nameSkip,sizeOfNames-nameSkip,name);
+    
     tempBuff += nameSkip + nameLength;
+    //vtkDebugMacro(<<"Setting channel "<<i<<"name");
     this->SetChannelName(name,i);
     }
+  
   delete [] nameBuff;
   delete [] name;
   delete [] colorBuff;
-
   return 0;
 }
 
