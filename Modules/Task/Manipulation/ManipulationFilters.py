@@ -37,6 +37,7 @@ import messenger
 import scripting
 
 import ManipulationGUI
+import ImageOperations
 
 def getFilterList():
     return [ErodeFilter,DilateFilter,RangeFilter,SobelFilter,
@@ -47,7 +48,7 @@ def getFilterList():
             AndFilter,OrFilter,XorFilter,NotFilter,NandFilter,NorFilter,
             ThresholdFilter,VarianceFilter,HybridMedianFilter,MaskFilter,
             ITKAnisotropicDiffusionFilter,ITKGradientMagnitudeFilter,
-            ITKWatershedSegmentationFilter]
+            ITKWatershedSegmentationFilter,MapToRGBFilter]
             
 MORPHOLOGICAL="Morphological"
 MATH="Math"
@@ -91,6 +92,14 @@ class ManipulationFilter:
         self.vtkToItk = None
         self.itkToVtk = None
         
+    def setTaskPanel(self,p):
+        """
+        Method: setTaskPanel
+        Created: 14.05.2006, KP
+        Description: Set the task panel that controsl this filter
+        """
+        self.taskPanel = p
+        
     def convertVTKtoITK(self,image,cast=None):
         """
         Method: convertVTKtoITK
@@ -120,7 +129,7 @@ class ManipulationFilter:
         return self.vtkToItk.GetOutput()
             
             
-    def convertITKtoVTK(self,image,cast=None):
+    def convertITKtoVTK(self,image,cast=None,imagetype = "UC3"):
         """
         Method: convertITKtoVTK
         Created: 18.04.2006, KP
@@ -131,12 +140,14 @@ class ManipulationFilter:
             return image
         if not self.itkToVtk:
             if not scripting.ItkVtkGlue:
-                itk.loadITK()            
+                scripting.loadITK()            
         
-        if not self.itkToVtk:
+        if not self.itkToVtk:            
+            #ImageType = scripting.ITKCommonA.Image[PixelType, dim]
             
-            ImageType = itk.Image[PixelType, dim]
-            self.itkToVtk = scripting.ItkVtkGlue.ImageToVTKImageFilter[scripting.ITKCommonA.Image.UC3].New()
+            c=eval("scripting.ITKCommonA.Image.%s"%imagetype)
+            #self.itkToVtk = scripting.ItkVtkGlue.ImageToVTKImageFilter[scripting.ITKCommonA.Image.UC3].New()
+            self.itkToVtk = scripting.ItkVtkGlue.ImageToVTKImageFilter[c].New()
         # If the next filter is also an ITK filter, then won't
         # convert
         if self.nextFilter and self.nextFilter.getITK():
@@ -153,7 +164,7 @@ class ManipulationFilter:
         Created: 18.04.2006, KP
         Description: Set the next filter in the chain
         """        
-        self.nextFilter = nfilter
+        self.nextFilter = nfilter        
     
     def setPrevFilter(self,pfilter):
         """
@@ -309,8 +320,9 @@ class ManipulationFilter:
         Created: 13.04.2006, KP
         Description: Set a value for the parameter
         """    
-        print "Setting",parameter,"to",value
         self.parameters[parameter]=value
+        if self.taskPanel:
+            self.taskPanel.filterModified(self)
         
     def execute(self,inputs):
         """
@@ -334,7 +346,7 @@ class ManipulationFilter:
         Description: Return the description of the parameter
         """    
         try:
-            return self.desc[parameter]
+            return self.descs[parameter]
         except:            
             return ""
         
@@ -1525,7 +1537,7 @@ class ITKAnisotropicDiffusionFilter(ManipulationFilter):
         Description: Return the default value of a parameter
         """    
         if parameter == "TimeStep":
-            return 0.0626
+            return 0.0630
         if parameter == "Conductance":
             return 9.0
         if parameter == "Iterations":
@@ -1699,4 +1711,84 @@ class ITKWatershedSegmentationFilter(ManipulationFilter):
         data=self.itkfilter.GetOutput()            
         if last:
             return self.convertITKtoVTK(data)
+        return data
+        
+class MapToRGBFilter(ManipulationFilter):
+    """
+    Class: MapToRGBFilter
+    Created: 13.05.2006, KP
+    Description: 
+    """     
+    name = "Map To RGB"
+    category = ITK
+    
+    def __init__(self,inputs=(1,1)):
+        """
+        Method: __init__()
+        Created: 13.04.2006, KP
+        Description: Initialization
+        """        
+        ManipulationFilter.__init__(self,inputs)
+        
+        
+        self.descs = {}
+        self.itkFlag = 1
+
             
+    def getDefaultValue(self,parameter):
+        """
+        Method: getDefaultValue
+        Created: 15.04.2006, KP
+        Description: Return the default value of a parameter
+        """    
+        return 0
+        
+    def getType(self,parameter):
+        """
+        Method: getType
+        Created: 13.04.2006, KP
+        Description: Return the type of the parameter
+        """    
+        return types.IntType
+        
+        
+    def getParameters(self):
+        """
+        Method: getParameters
+        Created: 15.04.2006, KP
+        Description: Return the list of parameters needed for configuring this GUI
+        """            
+        return []
+
+
+    def execute(self,inputs,update=0,last=0):
+        """
+        Method: execute
+        Created: 15.04.2006, KP
+        Description: Execute the filter with given inputs and return the output
+        """                    
+        if not ManipulationFilter.execute(self,inputs):
+            return None
+            
+        image = self.getInput(1)
+        import itk
+        
+        image = self.convertITKtoVTK(image,imagetype="UL3")
+        image.Update()
+        
+        
+        x0,x1 = image.GetScalarRange()
+        print "Generating palette from ",x0,"to",x1
+        #ctf = ImageOperations.watershedPalette(x0,x1)
+        ctf = ImageOperations.fire(x0,x1)
+    
+        self.mapper = vtk.vtkImageMapToColors()
+        self.mapper.SetOutputFormatToRGB()
+        self.mapper.SetLookupTable(ctf)
+        self.mapper.AddInput(image)
+        
+        if update:
+            self.mapper.Update()
+        data=self.mapper.GetOutput()            
+            
+        return data

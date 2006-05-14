@@ -77,6 +77,7 @@ class LsmDataSource(DataSource.DataSource):
         self.voxelsize=None
         # vtkLSMReader is used to do the actual reading:
         self.reader=vtk.vtkLSMReader()
+        #self.reader.DebugOn()
         self.reader.AddObserver("ProgressEvent",self.updateProgress)
         # If a filename was specified, the file is loaded
         if self.filename:

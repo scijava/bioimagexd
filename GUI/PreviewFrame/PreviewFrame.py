@@ -179,11 +179,25 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         self.Bind(wx.EVT_MENU,self.onSetInterpolation,id=self.ID_CUBIC)
 
         
+        self.Bind(wx.EVT_SIZE,self.onSize)
         #self.Bind(wx.EVT_PAINT,self.OnPaint)        
         self.Bind(wx.EVT_LEFT_DOWN,self.getVoxelValue)
         self.SetHelpText("This window displays the selected dataset slice by slice.")
 #    def __del__(self):        
 #        PreviewFrame.count-=1
+
+    def onSize(self,event):
+        """
+        Method: onSize
+        Created: 23.05.2005, KP
+        Description: Size event handler
+        """    
+        print "On size"
+        InteractivePanel.InteractivePanel.OnSize(self,event)
+        #self.gallerySize=event.GetSize()
+        #Logging.info("Gallery size changed to ",self.gallerySize,kw="preview")
+        self.sizeChanged=1
+
     def setRenewFlag(self,obj,evt):
         """
         Method: setRenewFlag
@@ -617,6 +631,7 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         #self.Layout()
         if self.fitLater:
             self.fitLater=0
+            print "\n\n*** Zooming to fit"
             self.zoomToFit()
         
         
@@ -646,12 +661,18 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         Created: 25.03.2005, KP
         Description: Sets the zoom factor so that the image will fit into the screen
         """
+        print "\n\n**** ZOOM TO FIT\n"
         #if self.imagedata:
         if self.dataUnit:
             #x,y,z=self.imagedata.GetDimensions()
             x,y,z=self.dataUnit.getDimensions()
-            Logging.info("Determining zoom factor from (%d,%d) to (%d,%d)"%(x,y,self.maxX,self.maxY),kw="preview")
-            self.setZoomFactor(ImageOperations.getZoomFactor(x,y,self.maxX,self.maxY))
+            maxX = self.maxSizeX
+            maxY = self.maxSizeY
+            #if self.maxSizeX<maxX:maxX=self.maxSizeX
+            #if self.maxSizeY<maxY:maxY=self.maxSizeY
+            
+            Logging.info("Determining zoom factor from (%d,%d) to (%d,%d)"%(x,y,maxX,maxY),kw="preview")
+            self.setZoomFactor(ImageOperations.getZoomFactor(x,y,maxX,maxY))
         else:
             Logging.info("Will zoom to fit later",kw="preview")
             self.fitLater=1

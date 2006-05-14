@@ -413,6 +413,33 @@ def getPlane(data,plane,x,y,z):
     permute.Update()
     return permute.GetOutput()
 
+def watershedPalette(x0,x1):    
+    ctf = vtk.vtkColorTransferFunction()
+    div=255.0/x1
+    for i in range(x0,x1):
+        bytes = struct.pack("L",i)
+        
+        print "byte 0=",ord(bytes[0])
+        print "byte 1=",ord(bytes[1])
+        print "byte 2=",ord(bytes[2])
+        r = 3*ord(bytes[0])
+        g = ord(bytes[0]) + 5*ord(bytes[1])
+        b = ord(bytes[0]) + ord(bytes[2]);
+        r%=256
+        g%=256
+        b%=256
+        print "r=",r
+        print "g=",g
+        print "b=",b
+        
+        r*= div
+        g*=div
+        b*=div
+        ctf.AddRGBPoint(float(i), r,g,b)
+        
+    return ctf
+        
+
 def fire(x0,x1):
     reds=[0,0,1,25,49,73,98,122,146,162,173,184,195,207,217,229,240,252,255,255,255,255,255,255,255,255,255,255,255,255,255,255]
     greens=[0,0,0,0,0,0,0,0,0,0,0,0,0,14,35,57,79,101,117,133,147,161,175,190,205,219,234,248,255,255,255,255]

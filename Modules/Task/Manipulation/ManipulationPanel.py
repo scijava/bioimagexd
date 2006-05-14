@@ -75,6 +75,7 @@ class ManipulationPanel(TaskPanel.TaskPanel):
         self.Show()
         self.filters = []
         self.currentSelected = -1
+        
 
         self.filtersByCategory={}
         self.categories=[]
@@ -95,6 +96,21 @@ class ManipulationPanel(TaskPanel.TaskPanel):
         """
         self.timePoint=timePoint
         
+    def filterModified(self,filter):
+        """
+        Method: filterModified
+        Created: 14.05.2006, KP
+        Description: A callback for when filter parameters change
+        """
+        self.setModified(1)
+        
+    def setModified(self,flag):
+        """
+        Method: setModified
+        Created: 14.05.2006, KP
+        Description: A callback for when filter parameters change
+        """
+        self.dataUnit.module.setModified(1)
 
     def registerFilter(self,category,currfilter):
         """
@@ -230,7 +246,7 @@ class ManipulationPanel(TaskPanel.TaskPanel):
         self.filterListbox.Delete(index)
         
         self.filters[index+1],self.filters[index]=self.filters[index],self.filters[index+1]
-        print self.filters
+        self.setModified(1)
         
     def onMoveFilterUp(self,event):
         """
@@ -253,6 +269,7 @@ class ManipulationPanel(TaskPanel.TaskPanel):
         self.filterListbox.Delete(index+1)
         
         self.filters[index-1],self.filters[index]=self.filters[index],self.filters[index-1]
+        self.setModified(1)
         
     def onRemoveFilter(self,event):
         """
@@ -270,6 +287,7 @@ class ManipulationPanel(TaskPanel.TaskPanel):
         self.currentSelected=-1
         self.removeGUI()
         self.currentGUI=None
+        self.setModified(1)
         
     def onCheckFilter(self,event):
         """
@@ -280,6 +298,7 @@ class ManipulationPanel(TaskPanel.TaskPanel):
         index = event.GetSelection()
         status=self.filterListbox.IsChecked(index)
         self.filters[index].setEnabled(status)
+        self.setModified(1)
         
     def removeGUI(self):
         """
@@ -323,6 +342,7 @@ class ManipulationPanel(TaskPanel.TaskPanel):
         """
         print "Request to add filter",filterclass
         addfilter = filterclass()
+        addfilter.setTaskPanel(self)
         addfilter.setDataUnit(self.dataUnit)
         name = addfilter.getName()
         n=self.filterListbox.GetCount()
@@ -330,7 +350,7 @@ class ManipulationPanel(TaskPanel.TaskPanel):
         self.filterListbox.Check(n)
         
         self.filters.append(addfilter)
-        
+        self.setModified(1)
         
 
     def onShowAddMenu(self,event):

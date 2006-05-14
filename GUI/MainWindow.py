@@ -1057,7 +1057,7 @@ class MainWindow(wx.Frame):
         if needUpdate:
             self.OnSize(None)
             
-        self.setButtonSelection(eid)
+        
         #self.onMenuShowTree(None,0)
 
         # If a visualizer is already running, just switch the mode
@@ -1065,6 +1065,7 @@ class MainWindow(wx.Frame):
         if not len(selectedFiles):
             Dialogs.showerror(self,"You need to select a dataset to load in the visualizer.","Please select a dataset")
             return
+        self.setButtonSelection(eid)            
         dataunit = selectedFiles[0]
         if self.visualizer:
 #            if not self.visualizer.dataUnit:

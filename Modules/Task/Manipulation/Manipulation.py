@@ -56,9 +56,19 @@ class Manipulation(Module):
         self.x,self.y,self.z=0,0,0
         self.extent=None
         self.running=0
+        self.cached = None
         self.depth=8
+        self.modified = 0
 
         self.reset()
+        
+    def setModified(self,flag):
+        """
+        Method: setModified
+        Created: 14.05.2006
+        Description: Set a flag indicating whether filter parameters have changed
+        """
+        self.modified = flag
 
     def reset(self):
         """
@@ -109,8 +119,12 @@ class Manipulation(Module):
         Created: 04.04.2006, KP
         Description: Manipulationes the dataset in specified ways
         """
-        
-        messenger.send(None,"update_progress",100,"Done.")
+        if not self.modified and self.cached:
+            print "Returning cached data"
+            return self.cached
+        else:
+            del self.cached
+            self.cached = None
         filterlist = self.settings.get("FilterList")
         data = self.images
         if not filterlist:
@@ -121,7 +135,6 @@ class Manipulation(Module):
         
         for i,currfilter in enumerate(filterlist):
                 flag=(i==n)
-                print "Executing with flag=",flag
                 if i>0:
                     currfilter.setPrevFilter(filterlist[i-1])
                 else:
@@ -134,10 +147,10 @@ class Manipulation(Module):
                 
                 data=[data]
                 if not data:
+                    self.cached = None
                     return None                
         
         data = data[0]
-        
-        print "result=",data
         data.ReleaseDataFlagOff()
+        self.cached = data
         return data

@@ -976,6 +976,7 @@ class ColorTransferEditor(wx.Panel):
         r*=255
         g*=255
         b*=255
+        print "r=",r,"g=",g,"b=",b
         col=wx.Colour(int(r),int(g),int(b))
         print "Setting to ",(int(r),int(g),int(b))
         self.colorBtn.SetColour(((int(r),int(g),int(b))))
