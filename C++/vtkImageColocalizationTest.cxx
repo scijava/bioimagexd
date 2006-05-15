@@ -108,62 +108,130 @@ float* makeKernel(double radius,int*ksize) {
 /*        return kernel2;*/
         return kernel;
 }
-void smooth_foo(OUT_T* inPtr,OUT_T*outPtr,int psf,int ext[6],float*kernel,double scale,int ksize,
-    vtkIdType inIncX,int inIncY,int inIncZ,int outIncX,int outIncY,int outIncZ) {
+
+void smooth(OUT_T* inPtr,OUT_T*outPtr,int,int ext[6],float*kernel,double scale,int size,
+	    int inIncX,int inIncY,int inIncZ,int outIncX,int outIncY,int outIncZ) {
         
-//blockedconvolute(float *image, int n, float *kernel, int m, int blocksize, float *A)
-/*%A=convolute(image, kernel, blocksize)
-%image - image to be convoluted, is represented as a matrix
-%kernel - filtering kernel used to convolute the image, is represented as a matrix
-%blocksize - the block size used
-%We assume image and kernel are square. We also skip the convolution of boundary.
-%For testing, we assume kernel is 3 by 3.
-*/
-        int blocksize = 64;
-        int n = ext[1];
-        int m = ksize;
-        int bn=n/blocksize+((n%blocksize)? 1:0);
+        
+  int uc,vc;
 
-        OUT_T* image = inPtr;
-        OUT_T* A = outPtr;
-        int hlen=(m-1)/2;
-        int start=hlen;
-        int stop=blocksize+hlen;
-        float size=0;
-        int g, h, tj, tk, tg, ti;
+  uc = size / 2;
+  vc = size / 2;
+    
+  if ((size&1)!=1) {
+    printf("\n\n\n\n******* Error, convolution kernel size not odd *******\n\n\n");
+  }
+  int xmin,xmax,ymin,ymax;
+  int z = ext[4];
+  xmin=ext[0];
+  xmax=ext[1];
+  ymin=ext[2];
+  ymax=ext[3];
+
+  double sum;
+  int xedge = xmax - uc;
+  int yedge = ymax - vc;
+  int i=0;
+  OUT_T val;
   
-
-        for(int j=0; j<bn; j++) {
-                tj=j*n*blocksize;
-                for(int i=0; i<bn; i++) {
-                        ti=i*blocksize*blocksize;
-                        for(int k=start; k<stop; k++) {
-                                tk=k*blocksize;
-                                for(int p=start; p<stop; p++) {
-                                        for(int g=-hlen; g<=hlen; g++) {
-                                                A[tj+ti+tk+p]=(OUT_T)image[tj+ti+tk+p+g]*kernel[m+hlen+g];
-                                        }
-                                }
-                                for(int p=start; p<stop; p++) {
-                                        for(int g=-hlen; g<=hlen; g++) {
-                                                A[ti+tj+tk+p]=(OUT_T)image[ti+tj+tk-blocksize+p+g]*kernel[hlen+g];
-                                        }
-                                }
-                                for(int p=start; p<stop; p++) {
-                                        for(int g=-hlen; g<=hlen; g++) {
-                                                A[ti+tj+tk+p]=(OUT_T)image[ti+tj+tk+blocksize+p+g]*kernel[m+m+hlen+g];
-                                        }
-                                }
-                                for(int p=start; p<stop; p++) {
-                                        A[ti+tj+tk+p]*=scale;
-                                }
-                        }
-                }
+  // Assuming (xmin,ymin) is top left corner
+  // kernel is over top-edge, ymin <= y <vc
+  int y = ymin;
+  for(;y < vc; y++) {
+    for(int x = xmin; x<=xmax; x++) {
+      sum = 0.0;
+      i=0;
+      
+      for(int v=-vc; v <= vc; v++) {
+	int ny=y+v;
+        for(int u = -uc; u <= uc; u++) {
+          int nx;
+          nx=x+u;
+	  if (nx<=0) nx = 0;
+	  else if (nx>xmax) nx = xmax;
+	  if (ny<=0) ny = 0;
+	  else if (ny>ymax) ny = ymax;
+          val = GET_AT(nx,ny,z,inPtr);
+          sum += val*kernel[i++];
         }
+      }
+      SET_AT_OUT(x,y,z,outPtr,(OUT_T)(scale*sum+0.5));  
+    }
+  }
+  
+  // kernel is not on any horizontal edge, vc <= y < ymax-vc
+  for(; y <= yedge; y++) {
+    int x=xmin;
+
+    // kernel over left vertical edge, xmin <= x < uc
+    for(; x < uc; x++) {
+      i=0;
+      sum = 0.0;
+      for(int ny=y-vc; ny <= y+vc; ny++) {
+        for(int u = -uc; u <= uc; u++) {
+          int nx = x+u;
+	  if (nx < xmin) nx = xmin;
+          val = GET_AT(nx,ny,z,inPtr);
+          sum += val*kernel[i++];
+        }
+      }
+      SET_AT_OUT(x,y,z,outPtr,(OUT_T)(scale*sum+0.5));  
+    }
+
+    // kernel is not over any edge, most of the time time will 
+    // be spent here when using a large image and small kernel
+    // uc <= x <= xmax-uc
+    for(; x<=xedge; x++) {
+      sum = 0.0; 
+      i = 0;
+      for(int ny=y-vc; ny <= y + vc; ny++) {
+	for(int nx = x - uc; nx <= x + uc; nx++) {
+	  val = GET_AT(nx,ny,z,inPtr);
+	  sum += val*kernel[i++];
+	}
+      }
+      SET_AT_OUT(x,y,z,outPtr,(OUT_T)(scale*sum+0.5));  
+    }
+
+    // kernel over right vertical edge, xmax-uc < x <= xmax
+    for (; x<=xmax; x++) {
+      i=0;
+      sum = 0.0;
+      for(int ny=y-vc; ny <= y+vc; ny++) {
+        for(int u = -uc; u <= uc; u++) {
+          int nx = x+u;
+	  if (nx > xmax) nx = xmax;
+          val = GET_AT(nx,ny,z,inPtr);
+          sum += val*kernel[i++];
+        }
+      }
+      SET_AT_OUT(x,y,z,outPtr,(OUT_T)(scale*sum+0.5));  
+    }
+  }
+
+  // kernel over bottom horizontal edge, ymax-vc <= y <= ymax
+  for(;y<=ymax; y++) {
+    for(int x=xmin; x<=xmax; x++) {
+      sum = 0.0;
+      i = 0;
+      for(int v=-vc; v <= vc; v++) {
+	int ny=y+v;
+        for(int u = -uc; u <= uc; u++) {
+          int nx;
+          nx=x+u;
+	  if (nx<=0) nx = 0;
+	  else if (nx>xmax) nx = xmax;
+	  if (ny>ymax) ny = ymax;
+          val = GET_AT(nx,ny,z,inPtr);
+          sum += val*kernel[i++];
+        }
+      }
+      SET_AT_OUT(x,y,z,outPtr,(OUT_T)(scale*sum+0.5));  
+    }
+  }
 }
 
-
-void smooth(OUT_T* inPtr,OUT_T*outPtr,int psf,int ext[6],float*kernel,double scale,int size,
+void smooth_old(OUT_T* inPtr,OUT_T*outPtr,int psf,int ext[6],float*kernel,double scale,int size,
     vtkIdType inIncX,int inIncY,int inIncZ,int outIncX,int outIncY,int outIncZ) {
         
         
