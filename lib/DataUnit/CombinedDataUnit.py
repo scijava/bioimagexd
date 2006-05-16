@@ -366,7 +366,7 @@ class CombinedDataUnit(DataUnit.DataUnit):
             if preview:
                 merged.append((preview,self.getColorTransferFunction()))
            
-            if len(merged)>0:
+            if len(merged)>1:
                 print "Merging..."
                 #createalpha=vtk.vtkImageAlphaFilter()
                 #createalpha.GetOutput().ReleaseDataFlagOn()                
@@ -375,20 +375,19 @@ class CombinedDataUnit(DataUnit.DataUnit):
                 
                 for data,ctf in merged:                    
                     merge.AddInput(data)
-                    print "ctf=",ctf
                     merge.AddLookupTable(ctf)
                     #createalpha.AddInput(data)
                 print "Update..."
                 merge.Update()
-                print "done"
-                
-                #createalpha.Update()
                 preview=merge.GetOutput()
-            #elif len(merged)==1:
-            #    preview=merged[0][0]
-            print "merge done"
-
-            
+            elif len(merged)==1:
+                print merged
+                data,ctf = merged[0]
+                maptocolor = vtk.vtkImageMapToColors()
+                maptocolor.SetInput(data)
+                maptocolor.SetLookupTable(ctf)
+                maptocolor.Update()
+                preview=maptocolor.GetOutput()
         
         if not showOrig and not self.doOrig:
             self.origPreview=preview

@@ -197,7 +197,8 @@ class RenderingMode(VisualizationMode):
         Method: Render()
         Created: 24.05.2005, KP
         Description: Update the rendering
-        """      
+        """    
+        print "calling wxrenwin.render()"
         self.wxrenwin.Render()        
         
     def setBackground(self,r,g,b):

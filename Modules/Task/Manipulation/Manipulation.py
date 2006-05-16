@@ -126,11 +126,15 @@ class Manipulation(Module):
             del self.cached
             self.cached = None
         filterlist = self.settings.get("FilterList")
+        
+        if type(filterlist)==type(""):
+            filterlist=[]
+        self.settings.set("FilterList",filterlist)
         data = self.images
         if not filterlist:
             return self.images[0]
-        n=len(filterlist)-1
         filterlist=filter(lambda x:x.getEnabled(),filterlist)
+        n=len(filterlist)-1
         
         
         for i,currfilter in enumerate(filterlist):
@@ -144,9 +148,10 @@ class Manipulation(Module):
                 else:
                     currfilter.setNextFilter(None)
                 data = currfilter.execute(data,update=flag,last=flag)
-                
+                #print "Got",data,"from",currfilter
                 data=[data]
                 if not data:
+                    print "GOT NO DATA"
                     self.cached = None
                     return None                
         

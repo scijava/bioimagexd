@@ -142,7 +142,7 @@ class Module:
          Created: 03.11.2004, KP
          Description: Adds an input vtkImageData dataset for the module.
         """
-        imageData.SetScalarTypeToUnsignedChar()
+        #imageData.SetScalarTypeToUnsignedChar()
         x,y,z=imageData.GetDimensions()
         if self.x and self.y and self.z:
             if x!=self.x or y!=self.y or z!=self.z:

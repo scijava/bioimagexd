@@ -254,6 +254,7 @@ class DataSource:
         Created: 1.09.2005, KP
         Description: Return the data resampled to given dimensions
         """
+        #print "getResampledData",data
         if not tmpDims and not self.resampleDims and not self.limitDims:return data
         
         useDims = self.getResampleDimensions()
@@ -267,8 +268,9 @@ class DataSource:
             self.resample=vtk.vtkImageResample()
             self.resample.SetInput(data)
             # Release the memory used by source data
-            data.ReleaseDataFlagOn()
+            
             x,y,z=data.GetDimensions()
+            print "got dims=",x,y,z
             self.originalDimensions=(x,y,z)
             rx,ry,rz=useDims
             xf=rx/float(x)
@@ -279,6 +281,7 @@ class DataSource:
             self.resample.SetAxisMagnificationFactor(1,yf)
             self.resample.SetAxisMagnificationFactor(2,zf)
             self.resample.Update()
+            #data.ReleaseDataFlagOn()
             return self.resample.GetOutput()        
 
     def getEmissionWavelength(self):

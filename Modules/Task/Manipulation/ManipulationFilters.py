@@ -33,6 +33,7 @@ __date__ = "$Date: 2005/01/13 14:52:39 $"
 import wx
 import types
 import vtk
+import itk
 import messenger
 import scripting
 
@@ -44,11 +45,12 @@ def getFilterList():
             MedianFilter,AnisotropicDiffusionFilter,SolitaryFilter,
             ShiftScaleFilter,AddFilter,SubtractFilter,MultiplyFilter,
             DivideFilter,SinFilter,CosFilter,LogFilter,ExpFilter,SQRTFilter,
-            GradientFilter,
+            GradientFilter,GradientMagnitudeFilter,
             AndFilter,OrFilter,XorFilter,NotFilter,NandFilter,NorFilter,
             ThresholdFilter,VarianceFilter,HybridMedianFilter,MaskFilter,
             ITKAnisotropicDiffusionFilter,ITKGradientMagnitudeFilter,
-            ITKWatershedSegmentationFilter,MapToRGBFilter]
+            ITKWatershedSegmentationFilter,MapToRGBFilter,MeasureVolumeFilter,
+            ITKRelabelImageFilter,FilterObjectsFilter]
             
 MORPHOLOGICAL="Morphological"
 MATH="Math"
@@ -56,7 +58,7 @@ SEGMENTATION="Segmentation"
 FILTERING="Filtering"
 LOGIC="Logic"
 ITK="ITK"
-
+MEASUREMENT="Measurements"
    
 class ManipulationFilter:
     """
@@ -91,6 +93,23 @@ class ManipulationFilter:
         
         self.vtkToItk = None
         self.itkToVtk = None
+        self.imageType = "UC3"
+        
+    def setImageType(self,it):
+        """
+        Method: setImageType
+        Created: 15.05.2006, KP
+        Description: Set the image type of the ITK image
+        """             
+        self.imageType = it
+        
+    def getImageType(self):
+        """
+        Method: getImageType
+        Created: 15.05.2006, KP
+        Description: Get the image type of the ITK image
+        """                 
+        return self.imageType
         
     def setTaskPanel(self,p):
         """
@@ -109,13 +128,11 @@ class ManipulationFilter:
         if not self.itkFlag:
             messenger.send(None,"show_error","Non-ITK filter tries to convert to ITK","A non-ITK filter %s tried to convert data to ITK image data"%self.name)
             return image
-        if not self.itkToVtk:
-            if not scripting.ItkVtkGlue:
-                scripting.loadITK()
         if not self.vtkToItk:            
-            ImageType = scripting.ItkVtkGlue.ImageToVTKImageFilter.IUC3
+            ImageType = itk.ImageToVTKImageFilter.IUC3
             if cast==types.FloatType:
-                ImageType = scripting.ItkVtkGlue.VTKImageToImageFilter.IF3
+                ImageType = itk.VTKImageToImageFilter.IF3
+
             self.vtkToItk = ImageType.New()
         if self.prevFilter and self.prevFilter.getITK():
             return image
@@ -129,30 +146,29 @@ class ManipulationFilter:
         return self.vtkToItk.GetOutput()
             
             
-    def convertITKtoVTK(self,image,cast=None,imagetype = "UC3"):
+    def convertITKtoVTK(self,image,cast=None,imagetype = "UC3",force=0):
         """
         Method: convertITKtoVTK
         Created: 18.04.2006, KP
         Description: Convert the image data to ITK image
         """  
         # For non-ITK images, do nothing
-        if not self.prevFilter.getITK():
+        if not force and self.prevFilter and not self.prevFilter.getITK() and not self.getITK():
+            print self.prevFilter,"DIs not itk"
             return image
-        if not self.itkToVtk:
-            if not scripting.ItkVtkGlue:
-                scripting.loadITK()            
         
         if not self.itkToVtk:            
-            #ImageType = scripting.ITKCommonA.Image[PixelType, dim]
             
-            c=eval("scripting.ITKCommonA.Image.%s"%imagetype)
-            #self.itkToVtk = scripting.ItkVtkGlue.ImageToVTKImageFilter[scripting.ITKCommonA.Image.UC3].New()
-            self.itkToVtk = scripting.ItkVtkGlue.ImageToVTKImageFilter[c].New()
+            
+            c=eval("itk.Image.%s"%imagetype)
+            self.itkToVtk = itk.ImageToVTKImageFilter[c].New()
         # If the next filter is also an ITK filter, then won't
         # convert
-        if self.nextFilter and self.nextFilter.getITK():
+        if not force and self.nextFilter and self.nextFilter.getITK():
+            print "NEXT FILTER IS ITK"
             return image
         self.itkToVtk.SetInput(image)
+        print "Returning itktovtk..."
         return self.itkToVtk.GetOutput()
         
         
@@ -891,14 +907,18 @@ class ShiftScaleFilter(ManipulationFilter):
             return None
         
         image = self.getInput(1)
+        #print "Using ",image
         self.vtkfilter.SetInput(image)
         if self.parameters["AutoScale"]:
             x,y=image.GetScalarRange()
+            print "image type=",image.GetScalarTypeAsString()
+            print "Range of data=",x,y
             self.vtkfilter.SetOutputScalarTypeToUnsignedChar()
             if not y:
                 messenger.send(None,"show_error","Bad scalar range","Data has scalar range of %d -%d"%(x,y))
                 return vtk.vtkImageData()
             scale = 255.0 / y
+            print "Scale=",scale
             self.vtkfilter.SetShift(0)
             self.vtkfilter.SetScale(scale)
         else:
@@ -1430,7 +1450,49 @@ class GradientFilter(ManipulationFilter):
         if update:
             self.vtkfilter.Update()
         return self.vtkfilter.GetOutput()            
+
+class GradientMagnitudeFilter(ManipulationFilter):
+    """
+    Class: GradientMagnitudeFilter
+    Created: 13.04.2006, KP
+    Description: A class for calculating the gradient magnitude of the image
+    """     
+    name = "Gradient Magnitude"
+    category = MATH
+    
+    def __init__(self,inputs=(1,1)):
+        """
+        Method: __init__()
+        Created: 13.04.2006, KP
+        Description: Initialization
+        """        
+        ManipulationFilter.__init__(self,inputs)
+        self.vtkfilter = vtk.vtkImageGradientMagnitude()
+        self.vtkfilter.SetDimensionality(3)
+    
+    def getParameters(self):
+        """
+        Method: getParameters
+        Created: 15.04.2006, KP
+        Description: Return the list of parameters needed for configuring this GUI
+        """            
+        return []
+
+    def execute(self,inputs,update=0,last=0):
+        """
+        Method: execute
+        Created: 15.04.2006, KP
+        Description: Execute the filter with given inputs and return the output
+        """            
+        if not ManipulationFilter.execute(self,inputs):
+            return None
         
+        self.vtkfilter.SetInput(self.getInput(1))
+            
+        if update:
+            self.vtkfilter.Update()
+        return self.vtkfilter.GetOutput()            
+
 
 class MaskFilter(ManipulationFilter):
     """
@@ -1525,9 +1587,9 @@ class ITKAnisotropicDiffusionFilter(ManipulationFilter):
         self.descs = {"TimeStep":"Time step for iterations","Conductance":"Conductance parameter",
             "Iterations":"Number of iterations"}
         self.itkFlag = 1
-        scripting.loadITK(filters=1)
-        f3 = scripting.ITKCommonA.Image.F3
-        self.itkfilter = scripting.ITKBasicFiltersA.GradientAnisotropicDiffusionImageFilter[f3,f3].New()
+        
+        f3 = itk.Image.F3
+        self.itkfilter = itk.GradientAnisotropicDiffusionImageFilter[f3,f3].New()
 
             
     def getDefaultValue(self,parameter):
@@ -1590,7 +1652,7 @@ class ITKGradientMagnitudeFilter(ManipulationFilter):
     Created: 13.04.2006, KP
     Description: A class for calculating gradient magnitude on ITK
     """     
-    name = "Gradient Magnitude"
+    name = "ITK Gradient Magnitude"
     category = ITK
     
     def __init__(self,inputs=(1,1)):
@@ -1601,9 +1663,9 @@ class ITKGradientMagnitudeFilter(ManipulationFilter):
         """        
         ManipulationFilter.__init__(self,inputs)
         self.itkFlag = 1
-        scripting.loadITK(filters=1)
-        f3=scripting.ITKCommonA.Image.F3
-        self.itkfilter = scripting.ITKBasicFiltersA.GradientMagnitudeImageFilter[f3,f3].New()
+        
+        f3=itk.Image.F3
+        self.itkfilter = itk.GradientMagnitudeImageFilter[f3,f3].New()
         
         
     def getParameters(self):
@@ -1612,8 +1674,7 @@ class ITKGradientMagnitudeFilter(ManipulationFilter):
         Created: 15.04.2006, KP
         Description: Return the list of parameters needed for configuring this GUI
         """            
-        return []
-
+        return []        
 
     def execute(self,inputs,update=0,last=0):
         """
@@ -1628,9 +1689,16 @@ class ITKGradientMagnitudeFilter(ManipulationFilter):
         image = self.convertVTKtoITK(image,cast=types.FloatType)
         self.itkfilter.SetInput(image)
         
+        self.setImageType("F3")
+        
         if update:
             self.itkfilter.Update()
-        return self.itkfilter.GetOutput()            
+        data = self.itkfilter.GetOutput()
+        #if last or self.nextFilter and not self.nextFilter.getITK():            
+        #    print "Converting to VTK"
+        #    data=self.convertITKtoVTK(data,imagetype="F3")
+        #    print "data=",data
+        return data            
 
 
 class ITKWatershedSegmentationFilter(ManipulationFilter):
@@ -1651,12 +1719,12 @@ class ITKWatershedSegmentationFilter(ManipulationFilter):
         ManipulationFilter.__init__(self,inputs)
         
         
-        self.descs = {"Threshold":"Segmentation Threshold","Level":"Segmentation level"}
+        self.descs = {"Threshold":"Segmentation Threshold","Level":"Segmentation Level"}
         self.itkFlag = 1
 
-        scripting.loadITK(filters=1)
-        f3 = scripting.ITKCommonA.Image.F3
-        self.itkfilter = scripting.ITKAlgorithms.WatershedImageFilter[f3].New()
+        #scripting.loadITK(filters=1)
+        f3 = itk.Image.F3
+        self.itkfilter = itk.WatershedImageFilter[f3].New()
 
             
     def getDefaultValue(self,parameter):
@@ -1704,15 +1772,94 @@ class ITKWatershedSegmentationFilter(ManipulationFilter):
         self.itkfilter.SetThreshold(self.parameters["Threshold"])
         self.itkfilter.SetLevel(self.parameters["Level"])
 
-        
+        self.setImageType("UL3")
 
         if update:
             self.itkfilter.Update()
         data=self.itkfilter.GetOutput()            
         if last:
-            return self.convertITKtoVTK(data)
+            return self.convertITKtoVTK(data,imagetype="UL3")
         return data
         
+        
+class ITKRelabelImageFilter(ManipulationFilter):
+    """
+    Class: ITKRelabelImageFilter
+    Created: 13.04.2006, KP
+    Description: Re-label an image produced by watershed segmentation
+    """     
+    name = "Re-Label Image"
+    category = ITK
+    
+    def __init__(self,inputs=(1,1)):
+        """
+        Method: __init__()
+        Created: 13.04.2006, KP
+        Description: Initialization
+        """        
+        ManipulationFilter.__init__(self,inputs)
+        
+        
+        self.descs = {"Threshold":"Remove objects with less voxels than:"}
+        self.itkFlag = 1
+
+        #scripting.loadITK(filters=1)
+        f3 = itk.Image.UL3
+        self.itkfilter = itk.RelabelComponentImageFilter[itk.Image.UL3,itk.Image.UL3].New()
+
+            
+    def getDefaultValue(self,parameter):
+        """
+        Method: getDefaultValue
+        Created: 15.04.2006, KP
+        Description: Return the default value of a parameter
+        """    
+
+        return 0
+        
+    def getType(self,parameter):
+        """
+        Method: getType
+        Created: 13.04.2006, KP
+        Description: Return the type of the parameter
+        """    
+        return types.IntType
+        
+        
+    def getParameters(self):
+        """
+        Method: getParameters
+        Created: 15.04.2006, KP
+        Description: Return the list of parameters needed for configuring this GUI
+        """            
+        return []
+
+
+    def execute(self,inputs,update=0,last=0):
+        """
+        Method: execute
+        Created: 15.04.2006, KP
+        Description: Execute the filter with given inputs and return the output
+        """                    
+        if not ManipulationFilter.execute(self,inputs):
+            return None
+            
+        image = self.getInput(1)
+        self.itkfilter.SetInput(image)
+        
+        self.setImageType("UL3")
+
+        data=self.itkfilter.GetOutput()            
+                   
+        
+        if update:
+            self.itkfilter.Update()
+        
+        if last:
+            return self.convertITKtoVTK(data,imagetype="UL3")
+        return data
+
+
 class MapToRGBFilter(ManipulationFilter):
     """
     Class: MapToRGBFilter
@@ -1730,7 +1877,8 @@ class MapToRGBFilter(ManipulationFilter):
         """        
         ManipulationFilter.__init__(self,inputs)
         
-        
+        self.palette = None
+        self.paletteRange = (0,0)
         self.descs = {}
         self.itkFlag = 1
 
@@ -1771,24 +1919,238 @@ class MapToRGBFilter(ManipulationFilter):
             return None
             
         image = self.getInput(1)
-        import itk
         
-        image = self.convertITKtoVTK(image,imagetype="UL3")
-        image.Update()
-        
-        
+        if self.prevFilter and self.prevFilter.getITK():
+            image = self.convertITKtoVTK(image,imagetype=self.prevFilter.getImageType())
+            image.Update()
         x0,x1 = image.GetScalarRange()
-        print "Generating palette from ",x0,"to",x1
-        #ctf = ImageOperations.watershedPalette(x0,x1)
-        ctf = ImageOperations.fire(x0,x1)
-    
+        print "scalar type now=",image.GetScalarTypeAsString()
+        
+        if not self.palette or self.paletteRange != (x0,x1):
+            print "Generating palette from ",x0,"to",x1
+            
+            ctf = ImageOperations.watershedPalette(x0,x1)
+            
+            self.palette = ctf
+            self.paletteRange = (x0,x1)
+            bmp = ImageOperations.paintCTFValues(ctf,height=256,width=x1)
+            img = bmp.ConvertToImage()
+            img.SaveMimeFile("foo.png","image/png")
         self.mapper = vtk.vtkImageMapToColors()
         self.mapper.SetOutputFormatToRGB()
-        self.mapper.SetLookupTable(ctf)
+            
+        self.mapper.SetLookupTable(self.palette)
         self.mapper.AddInput(image)
         
         if update:
             self.mapper.Update()
         data=self.mapper.GetOutput()            
-            
+        print "scalar type now=",image.GetScalarTypeAsString()
+        print "got from mapper",data
         return data
+
+class MeasureVolumeFilter(ManipulationFilter):
+    """
+    Class: MeasureVolumeFilter
+    Created: 15.05.2006, KP
+    Description: 
+    """     
+    name = "Measure Segmented Volumes"
+    category = MEASUREMENT
+    
+    def __init__(self,inputs=(1,1)):
+        """
+        Method: __init__()
+        Created: 13.04.2006, KP
+        Description: Initialization
+        """        
+        ManipulationFilter.__init__(self,inputs)
+        
+        self.descs = {}        
+
+            
+    def getDefaultValue(self,parameter):
+        """
+        Method: getDefaultValue
+        Created: 15.04.2006, KP
+        Description: Return the default value of a parameter
+        """    
+        return 0
+        
+    def getType(self,parameter):
+        """
+        Method: getType
+        Created: 13.04.2006, KP
+        Description: Return the type of the parameter
+        """    
+        return types.IntType
+        
+        
+    def getParameters(self):
+        """
+        Method: getParameters
+        Created: 15.04.2006, KP
+        Description: Return the list of parameters needed for configuring this GUI
+        """            
+        return []
+
+
+    def execute(self,inputs,update=0,last=0):
+        """
+        Method: execute
+        Created: 15.04.2006, KP
+        Description: Execute the filter with given inputs and return the output
+        """                    
+        if not ManipulationFilter.execute(self,inputs):
+            return None
+            
+        image = self.getInput(1)
+        
+        
+        if self.prevFilter and self.prevFilter.getITK():
+            image = self.convertITKtoVTK(image,imagetype=self.prevFilter.getImageType(),force=1)
+            image.Update()
+
+        x0,x1=image.GetScalarRange()
+        print "Scalar range of measured image=",x0,x1
+        print image.GetScalarTypeAsString()
+        accu = vtk.vtkImageAccumulate()
+        accu.SetInput(image)
+        accu.SetComponentExtent(0,x1,0,0,0,0)
+        accu.Update() 
+        data = accu.GetOutput()
+        
+        x,y,z = self.dataUnit.getVoxelSize()
+        x*=1000000
+        y*=1000000
+        z*=1000000
+        vol = x*y*z
+        
+        print "vol=",vol
+        print data.GetDimensions()
+        f = open("statistics.txt","w")
+        #minval = accu.GetMin()
+        #maxval = accu.GetMax()
+        #meanval = accu.GetMean()
+        
+        #print "minval=",minval
+        #print "maxval=",maxval
+        #print "meanval=",meanval
+        values=[]
+        x0,x1,y0,y1,z0,z1 = data.GetWholeExtent()
+        print x0,x1,y0,y1,z0,z1
+        
+        
+        for i in range(0,int(x1)):
+            c=data.GetScalarComponentAsDouble(i,0,0,0)
+            values.append(c)
+            
+        #f.write("Minimum object size: %.4f um"%(minval*vol))
+        #f.write("Maximum object size: %.4f um"%(maxval*vol))
+        #f.write("Mean object size: %.4f um"%(meanval*vol))
+        
+        for i,val in enumerate(values):
+            #if val*vol:print "size %d="%i,val*vol
+            f.write("Object %d size: %d voxels, %.4f um\n"%(i,val,val*vol))
+        f.close()
+        
+        return image
+
+class FilterObjectsFilter(ManipulationFilter):
+    """
+    Class: FilterObjects
+    Created: 16.05.2006, KP
+    Description: 
+    """     
+    name = "Filter Objects"
+    category = MEASUREMENT
+    
+    def __init__(self,inputs=(1,1)):
+        """
+        Method: __init__()
+        Created: 13.04.2006, KP
+        Description: Initialization
+        """        
+        ManipulationFilter.__init__(self,inputs)
+        
+        self.descs = {"Threshold":"Filter objects with fewer voxels than:"}        
+
+            
+    def getDefaultValue(self,parameter):
+        """
+        Method: getDefaultValue
+        Created: 15.04.2006, KP
+        Description: Return the default value of a parameter
+        """    
+        return 0
+        
+    def getType(self,parameter):
+        """
+        Method: getType
+        Created: 13.04.2006, KP
+        Description: Return the type of the parameter
+        """    
+        return types.IntType
+        
+        
+    def getParameters(self):
+        """
+        Method: getParameters
+        Created: 15.04.2006, KP
+        Description: Return the list of parameters needed for configuring this GUI
+        """            
+        return [["Filtering threshold",("Threshold",)]]
+
+
+    def execute(self,inputs,update=0,last=0):
+        """
+        Method: execute
+        Created: 15.04.2006, KP
+        Description: Execute the filter with given inputs and return the output
+        """                    
+        if not ManipulationFilter.execute(self,inputs):
+            return None
+            
+        image = self.getInput(1)
+        
+        
+        if self.prevFilter and self.prevFilter.getITK():
+            image = self.convertITKtoVTK(image,imagetype="UL3",force=1)
+            image.Update()
+
+        x0,x1=image.GetScalarRange()
+        print "Input to filter has scalar range",x0,x1
+        print image.GetScalarTypeAsString()
+        accu = vtk.vtkImageAccumulate()
+        accu.SetInput(image)
+        accu.SetComponentExtent(0,x1,0,0,0,0)
+        accu.Update() 
+        data = accu.GetOutput()
+        
+        x0,x1,y0,y1,z0,z1 = data.GetWholeExtent()
+        
+        th = self.parameters["Threshold"]
+        filterval=0
+        print "th=",th
+        for i in range(0,int(x1)):
+            c=data.GetScalarComponentAsDouble(i,0,0,0)
+            if th and c<th and i>0:
+                filterval=i
+                break
+
+        print image.GetScalarRange(),image.GetScalarTypeAsString()
+
+        print "Filtering from",filterval
+        self.threshold = vtk.vtkImageThreshold()
+        
+        self.threshold.ThresholdByLower(filterval)
+        
+        self.threshold.SetOutValue(0)
+        self.threshold.ReplaceOutOn()
+        self.threshold.SetInput(image)
+        self.threshold.SetOutputScalarTypeToUnsignedLong ()
+        self.threshold.Update()
+        data=self.threshold.GetOutput()
+        print data.GetScalarRange(),data.GetScalarTypeAsString()
+        return data
+        

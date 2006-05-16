@@ -32,6 +32,7 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 import vtk
 import wx
+import random
 import math
 import struct
 import Logging
@@ -54,18 +55,18 @@ def lcm(numbers):
     return reduce(lcm2,numbers)  
     
     
-def paintCTFValues(ctf,height=32):
+def paintCTFValues(ctf,height=32,width=256):
     """
     Method: paintCTFValues(ctf)
     Created: 18.04.2005, KP
     Description: Paint a bar representing a ctf
     """    
-    bmp = wx.EmptyBitmap(256,height,-1)
+    bmp = wx.EmptyBitmap(width,height,-1)
     dc = wx.MemoryDC()
     dc.SelectObject(bmp)
     dc.BeginDrawing()
         
-    for x1 in range(0,256):
+    for x1 in range(0,width):
         val=[0,0,0]
         ctf.GetColor(x1,val)
         r,g,b = val
@@ -415,27 +416,13 @@ def getPlane(data,plane,x,y,z):
 
 def watershedPalette(x0,x1):    
     ctf = vtk.vtkColorTransferFunction()
-    div=255.0/x1
-    for i in range(x0,x1):
-        bytes = struct.pack("L",i)
-        
-        print "byte 0=",ord(bytes[0])
-        print "byte 1=",ord(bytes[1])
-        print "byte 2=",ord(bytes[2])
-        r = 3*ord(bytes[0])
-        g = ord(bytes[0]) + 5*ord(bytes[1])
-        b = ord(bytes[0]) + ord(bytes[2]);
-        r%=256
-        g%=256
-        b%=256
-        print "r=",r
-        print "g=",g
-        print "b=",b
-        
-        r*= div
-        g*=div
-        b*=div
-        ctf.AddRGBPoint(float(i), r,g,b)
+    ctf.AddRGBPoint(1,0,0,0)
+    if x0<=1:x0=2
+    for i in range(int(x0),int(x1)):        
+        r = random.random()
+        g = random.random()
+        b = random.random()
+        ctf.AddRGBPoint(float(i), float(r),float(g),float(b))
         
     return ctf
         

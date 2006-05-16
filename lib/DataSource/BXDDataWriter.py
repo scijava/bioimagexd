@@ -118,7 +118,7 @@ class BXDDataWriter(DataWriter):
             fp=open(self.filename,"w")
         except IOError,ex:
             Logging.error("Failed to write settings",
-            "VTIDataSource Failed to open .du file %s for writing settings"%\
+            "BXDDataSource Failed to open .bxd file %s for writing settings"%\
             filename,ex)
             return
         parser.write(fp)
@@ -176,6 +176,7 @@ class BXDDataWriter(DataWriter):
         try:
             writer=vtk.vtkXMLImageDataWriter()
             writer.SetFileName(filename)
+            print "Writing ",imageData
             writer.SetInput(imageData)
             ret=writer.Write()
             if ret==0:

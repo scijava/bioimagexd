@@ -109,21 +109,27 @@ class BXDDataSource(DataSource):
         """
         data=self.loadVti(self.dataSets[i])
         data=self.getResampledData(data,i)
-        if data.GetScalarType()!=3 and not raw:
-            if not self.shift:
-                self.shift=vtk.vtkImageShiftScale()
-                self.shift.SetOutputScalarTypeToUnsignedChar()
-            self.shift.SetInput(data)
-            
-            x0,x1=data.GetScalarRange()
-            print "Scalar range=",x0,x1
-            if not x1:
-                x1=1
-            scale=255.0/x1
-            if scale:
-                self.shift.SetScale(scale)
-                self.shift.Update()
-                data=self.shift.GetOutput()
+##        if data.GetScalarType()!=3 and not raw:
+##            if not self.shift:
+##                self.shift=vtk.vtkImageShiftScale()
+##                self.shift.SetOutputScalarTypeToUnsignedChar()
+##            self.shift.SetInput(data)
+##            
+##            x0,x1=data.GetScalarRange()
+##            print "Scalar range=",x0,x1
+##            if not x1:
+##                x1=1
+##            scale=255.0/x1
+##            if scale:
+##                self.shift.SetScale(scale)
+##                self.shift.Update()
+##                data=self.shift.GetOutput()
+        
+        
+        if data.GetScalarType()!=3 and not raw and self.settings.getType()!="Manipulation":
+            print "Shifting and scaling..."
+            data=self.getIntensityScaledData(data)
+
         data.ReleaseDataFlagOff()
         return data
 

@@ -51,6 +51,7 @@ class DataUnit:
         self.dataSource=None
         self.color= None
         self.ctf = None
+        self.randomCTF = None
         self.settings = DataUnitSetting.DataUnitSettings()
         self.mip=None
         self.mipTimepoint=-1
@@ -89,6 +90,16 @@ class DataUnit:
         Created: 26.04.2005, KP
         Description: Returns the ctf of this object
         """
+        print "\n\n**** Getting ctf\n"
+        tp=self.getTimePoint(0)
+        x0,x1=tp.GetScalarRange()        
+        if tp.GetScalarType()==7 and not self.randomCTF:
+            print "Using random palette"
+            ctf = ImageOperations.watershedPalette(x0,x1)
+            self.randomCTF =ctf
+            self.settings.set("ColorTransferFunction",ctf)
+        elif self.randomCTF:
+            return self.randomCTF
         if not self.dataSource and not self.ctf:
             Logging.info("Using no ctf",kw="ctf")
             return None

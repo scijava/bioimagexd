@@ -1257,14 +1257,14 @@ class MainWindow(wx.Frame):
             needToRescale=0
             for i in dataunits:
                 bd=i.getBitDepth()
-                if bd not in [8,32]:
+                isManip = (i.getSettings().getType()=="Manipulation")
+                if not isManip and bd not in [8,32]:
                     needToRescale=1
             if needToRescale:
                 dlg = RescaleDialog.RescaleDialog(self)
                 dlg.setDataUnits(dataunits)
-                id = dlg.ShowModal()
-                if id != wx.ID_OK:
-                    print "Bad result"
+                wid = dlg.ShowModal()
+                if wid != wx.ID_OK:                    
                     del dataunits
                     dlg.Destroy()
                     return

@@ -192,7 +192,6 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         Created: 23.05.2005, KP
         Description: Size event handler
         """    
-        print "On size"
         InteractivePanel.InteractivePanel.OnSize(self,event)
         #self.gallerySize=event.GetSize()
         #Logging.info("Gallery size changed to ",self.gallerySize,kw="preview")

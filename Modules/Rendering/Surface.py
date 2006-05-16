@@ -130,10 +130,7 @@ class SurfaceModule(VisualizationModule):
         Description: Sets the dataunit this module uses for visualization
         """       
         VisualizationModule.setDataUnit(self,dataunit)
-        self.data=self.dataUnit.getTimePoint(0)
-        min,max=self.data.GetScalarRange()
-        self.setIsoValue((min+max)*0.5)
-        self.scalarRange=(min,max)
+#        self.data=self.dataUnit.getTimePoint(0)
             
     def setIsoValue(self,isovalue):
         """
@@ -173,9 +170,9 @@ class SurfaceModule(VisualizationModule):
         Description: Set the Rendering method used
         """             
         self.method=method
-        if method<2:
+        if method<3:
             #Ray Casting, RGBA Ray Casting, Texture Mapping, MIP
-            filters = [vtk.vtkContourFilter,vtk.vtkMarchingCubes]
+            filters = [vtk.vtkContourFilter,vtk.vtkMarchingCubes,vtk.vtkDiscreteMarchingCubes]
             Logging.info("Using ",filters[method],"as  contourer",kw="visualizer")
             self.contour = filters[method]()
             if self.volumeModule:
@@ -188,8 +185,7 @@ class SurfaceModule(VisualizationModule):
             self.volumeModule.setMethod(Volume.ISOSURFACE)
             self.volumeModule.setDataUnit(self.dataUnit)
             self.volumeModule.showTimepoint(self.timepoint)
-            
-                    
+
     def updateRendering(self):
         """
         Method: updateRendering()
@@ -207,6 +203,9 @@ class SurfaceModule(VisualizationModule):
         self.mapper.SetLookupTable(self.dataUnit.getColorTransferFunction())
         self.mapper.ScalarVisibilityOn()
         min,max=self.data.GetScalarRange()
+        print "Scalar range of data=",min,max
+        
+        
         self.mapper.SetScalarRange(min,max)
         self.mapper.SetColorModeToMapScalars()
         Logging.info("Using opacity ",self.opacity,kw="visualizer")
@@ -356,7 +355,7 @@ class SurfaceConfigurationPanel(ModuleConfigurationPanel):
         Description: Initialization
         """          
         self.methodLbl = wx.StaticText(self,-1,"Surface rendering method:")
-        self.moduleChoice = wx.Choice(self,-1,choices=["Contour Filter","Marching Cubes","Iso-Surface Volume Rendering"])
+        self.moduleChoice = wx.Choice(self,-1,choices=["Contour Filter","Marching Cubes","Discrete Marching Cubes","Iso-Surface Volume Rendering"])
         self.moduleChoice.SetSelection(1)
         self.moduleChoice.Bind(wx.EVT_CHOICE,self.onSelectMethod)
         n=0
@@ -430,6 +429,7 @@ class SurfaceConfigurationPanel(ModuleConfigurationPanel):
         self.isoRangeEnd.SetRange(0,255)
         self.isoRangeEnd.SetValue(255)
         
+        
         box=wx.BoxSizer(wx.HORIZONTAL)
         box.Add(self.isoRangeBegin)
         box.Add(self.isoRangeEnd)
@@ -487,6 +487,12 @@ class SurfaceConfigurationPanel(ModuleConfigurationPanel):
         self.module.updateData()
         self.module.updateRendering()
         
+        min,max=self.module.data.GetScalarRange()
+        self.isoSlider.SetRange(min,max)
+        self.isoRangeBegin.SetRange(min,max)
+        self.isoRangeEnd.SetRange(min,max)
+        self.isoRangeSurfaces.SetRange(min,max)
+        
     def onSelectMethod(self,event):
         """
         Method: onSelectMethod
@@ -494,7 +500,7 @@ class SurfaceConfigurationPanel(ModuleConfigurationPanel):
         Description: Select the surface rendering method
         """  
         self.method = self.moduleChoice.GetSelection()
-        flag=(self.method!=2)
+        flag=(self.method!=3)
         self.isoRangeBegin.Enable(flag)
         self.isoRangeEnd.Enable(flag)
         self.isoRangeSurfaces.Enable(flag)

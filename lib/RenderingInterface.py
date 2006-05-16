@@ -50,9 +50,11 @@ def getRenderingInterface(mayavi=0):
     global rendint,nonmayavi
     if mayavi:
         if not nonmayavi:
+            print "Creating light rendering"
             nonmayavi=LightRenderingInterface.LightRenderingInterface()
         return nonmayavi
     if not rendint:
+        print "Creating rendering interface"
         rendint=RenderingInterface()
     return rendint
 

@@ -84,14 +84,14 @@ int vtkImageSimpleMIP::RequestInformation (
   
     
   int numComponents = scalarInfo->Get(vtkDataObject::FIELD_NUMBER_OF_COMPONENTS());
-    
+  int scalarType = scalarInfo->Get(vtkDataObject::FIELD_ARRAY_TYPE());
   inInfo->Get(vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT(),ext);
   ext[5] = 0;
   outInfo->Set(vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT(),ext,6);
 
   if( numComponents > 3 ) numComponents = 3;
       
-  vtkDataObject::SetPointDataActiveScalarInfo(outInfo, VTK_UNSIGNED_CHAR, numComponents);
+  vtkDataObject::SetPointDataActiveScalarInfo(outInfo, scalarType, numComponents);
   return 1;
 }
 

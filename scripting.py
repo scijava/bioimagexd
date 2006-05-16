@@ -46,11 +46,11 @@ app = None
 mainwin = None
 
 memLimit = None
-ITKCommonA=None
-ITKIO=None
-ItkVtkGlue=None
-ITKBasicFiltersA=None
-ITKAlgorithms=None
+#ITKCommonA=None
+#ITKIO=None
+#ItkVtkGlue=None
+#ITKBasicFiltersA=None
+#ITKAlgorithms=None
 
 def execute_limited(pipeline):
     limit = get_memory_limit()
@@ -157,17 +157,17 @@ def get_module_dir():
     else:
         return "Modules"
         
-def loadITK(filters=0):
-    global ITKIO,ITKCommonA,ItkVtkGlue,ITKBasicFiltersA,ITKAlgorithms
-    import messenger
-    messenger.send(None,"update_progress",0.2,"Loading BioRad support.")        
-    import ITKIO
-    messenger.send(None,"update_progress",0.4,"Loading BioRad support..")  
-    import ITKCommonA
-    messenger.send(None,"update_progress",0.6,"Loading BioRad support...")        
-    import ItkVtkGlue
-    messenger.send(None,"update_progress",0.7,"Loading BioRad support....")       
-    if filters:
-        import ITKBasicFiltersA
-        import ITKAlgorithms
-    messenger.send(None,"update_progress",1.0,"BioRad support loaded.")           
+#def loadITK(filters=0):
+#    global ITKIO,ITKCommonA,ItkVtkGlue,ITKBasicFiltersA,ITKAlgorithms
+#    import messenger
+#    messenger.send(None,"update_progress",0.2,"Loading BioRad support.")        
+#    import ITKIO
+#    messenger.send(None,"update_progress",0.4,"Loading BioRad support..")  
+#    import ITKCommonA
+#    messenger.send(None,"update_progress",0.6,"Loading BioRad support...")        
+#    import ItkVtkGlue
+#    messenger.send(None,"update_progress",0.7,"Loading BioRad support....")       
+#    if filters:
+#        import ITKBasicFiltersA
+#        import ITKAlgorithms
+#    messenger.send(None,"update_progress",1.0,"BioRad support loaded.")           

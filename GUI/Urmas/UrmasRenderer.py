@@ -531,11 +531,13 @@ class UrmasRenderer:
                     point=self.lastpoint
 
         focal = self.splineEditor.getCameraFocalPointCenter()
+        
         Logging.info("focal=",focal,"pos=",pos,kw="animator")
         if not interpolated and pos:
             self.setCameraParameters(cam,ren, pos, focal)
             
         if (not preview) or use_cam:
+            print "Calling renderingInterface.render()"
             self.renderingInterface.render()     
         else:
             Logging.info("splineEditor.render()")

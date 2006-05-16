@@ -31,10 +31,11 @@ import ConfigParser
 import struct
 import re
 import messenger
+import itk
 
 import codecs
         
-import scripting
+
 import os.path
 from DataSource import *
 import DataUnit
@@ -60,13 +61,13 @@ class BioradDataSource(DataSource):
         """    
         
         DataSource.__init__(self)
-        scripting.loadITK()
+        
         name =os.path.basename(filename)
         name=name.split(".")
         name=".".join(name[:-1])
         self.name= name
-        self.io = ITKIO.BioRadImageIO.New()
-        self.reader = ITKIO.ImageFileReader[ITKCommonA.Image.UC3].New()
+        self.io = itk.BioRadImageIO.New()
+        self.reader = itk.ImageFileReader[itk.Image.UC3].New()
         self.reader.SetImageIO(self.io.GetPointer())
         
         self.filename=filename
@@ -157,7 +158,7 @@ class BioradDataSource(DataSource):
         self.reader.Update()
         
         if not self.itkToVtk:
-            self.itkToVtk = scripting.ItkVtkGlue.ImageToVTKImageFilter.IUC3.New()
+            self.itkToVtk = itk.ImageToVTKImageFilter.IUC3.New()
         data=self.reader.GetOutput()
         
         if not self.voxelsize:
