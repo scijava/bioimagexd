@@ -153,7 +153,7 @@ class ManipulationPanel(TaskPanel.TaskPanel):
 
         
         self.filterLbl=wx.StaticText(self.panel,-1,"Filter stack:")
-        self.filterListbox = wx.CheckListBox(self.panel,-1,size=(300,-1))
+        self.filterListbox = wx.CheckListBox(self.panel,-1,size=(300,300))
         self.filterListbox.Bind(wx.EVT_LISTBOX,self.onSelectFilter)
         self.filterListbox.Bind(wx.EVT_CHECKLISTBOX,self.onCheckFilter)        
         self.addBtn = wx.Button(self.panel,-1,u"Add \u00BB")
