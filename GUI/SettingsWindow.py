@@ -54,9 +54,9 @@ class GeneralSettings(wx.Panel):
         askOnQuit=conf.getConfigItem("AskOnQuit","General")
         
         #print "showTip=",showTip
-        if showTips:
+        if showTips and type(showTips)==type(""):
             showTips = eval(showTips)
-        if askOnQuit:
+        if askOnQuit and type(askOnQuit)==type(""):
             askOnQuit = eval(askOnQuit)
             
         self.imageBox=wx.StaticBox(self,-1,"Image Format",size=(600,150))
@@ -308,23 +308,28 @@ class SettingsWindow(wx.Dialog):
         self.listbook=wx.Listbook(self,-1,style=wx.LB_LEFT)
         self.listbook.SetSize((640,480))
         self.sizer=wx.BoxSizer(wx.VERTICAL)
-        
-        self.imagelist=wx.ImageList(32,32)
-        self.listbook.AssignImageList(self.imagelist)
-        imgpath = scripting.get_icon_dir()
-        for i in ["General.gif","Paths.gif","Performance.gif","Video.gif"]:
-            icon=os.path.join(imgpath,i)
-            print "icon=",icon
-            bmp=wx.Bitmap(icon,wx.BITMAP_TYPE_GIF)
-            self.imagelist.Add(bmp)
+        try:
+            self.imagelist=wx.ImageList(32,32)
+            self.listbook.AssignImageList(self.imagelist)
+            imgpath = scripting.get_icon_dir()
+            for i in ["General.gif","Paths.gif","Performance.gif","Video.gif"]:
+                icon=os.path.join(imgpath,i)
+                print "icon=",icon
+                bmp=wx.Bitmap(icon,wx.BITMAP_TYPE_GIF)
+                self.imagelist.Add(bmp)
+        except:
+            pass
         self.generalPanel=GeneralSettings(self.listbook)
         self.pathsPanel=PathSettings(self.listbook)
         self.performancePanel = PerformanceSettings(self.listbook)
         #self.moviePanel=MovieSettings(self.listbook)
         
-        self.listbook.AddPage(self.generalPanel,"General",imageId=0)
-        self.listbook.AddPage(self.pathsPanel,"Paths",imageId=1)
-        self.listbook.AddPage(self.performancePanel,"Performance",imageId=2)
+#        self.listbook.AddPage(self.generalPanel,"General",imageId=0)
+#        self.listbook.AddPage(self.pathsPanel,"Paths",imageId=1)
+#        self.listbook.AddPage(self.performancePanel,"Performance",imageId=2)
+        self.listbook.AddPage(self.generalPanel,"General")
+        self.listbook.AddPage(self.pathsPanel,"Paths")
+        self.listbook.AddPage(self.performancePanel,"Performance")
         #self.listbook.AddPage(self.moviePanel,"Video Output",imageId=2)
 
         self.sizer.Add(self.listbook,flag=wx.EXPAND|wx.ALL)

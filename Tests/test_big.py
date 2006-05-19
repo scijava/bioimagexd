@@ -1,7 +1,8 @@
 #! /usr/bin/env python
 import vtk
 import time
-D="/media/sda12/Data/selli/Selli_BIG.lsm"
+#D="/media/sda12/Data/selli/Selli_BIG.lsm"
+D="/home/heuuksul/data/Selli_BIG.lsm"
 #D="/media/sda12/Data/selli/selli_coloc1_8-bit.lsm"
 #D="/media/sda12/Data/sample2.lsm"
 t=time.time()
@@ -47,14 +48,14 @@ mip=vtk.vtkImageSimpleMIP()
 print "Feeding merge to MIP",elapsed()
 mip.SetInput(merge.GetOutput())
 
-#streamer  = vtk.vtkMemoryLimitImageDataStreamer()
-#streamer.SetMemoryLimit(100*1024)
-#streamer.SetInput(mip.GetOutput())
+streamer  = vtk.vtkMemoryLimitImageDataStreamer()
+streamer.SetMemoryLimit(300*1024)
+streamer.SetInput(mip.GetOutput())
 
 writer=vtk.vtkPNGWriter()
 writer.SetFileName("Selli_BIG.png")
-#writer.SetInput(streamer.GetOutput())
-writer.SetInput(mip.GetOutput())
+writer.SetInput(streamer.GetOutput())
+#writer.SetInput(mip.GetOutput())
 print "Feeding MIP to writer ",elapsed()
 writer.Update()
 writer.Write()

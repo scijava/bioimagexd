@@ -31,7 +31,10 @@ import ConfigParser
 import struct
 import re
 import messenger
-import itk
+try:
+    import itk
+except:
+    pass
 
 import codecs
         

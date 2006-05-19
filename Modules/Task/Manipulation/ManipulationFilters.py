@@ -33,7 +33,10 @@ __date__ = "$Date: 2005/01/13 14:52:39 $"
 import wx
 import types
 import vtk
-import itk
+try:
+    import itk
+except:
+    pass
 import messenger
 import scripting
 
