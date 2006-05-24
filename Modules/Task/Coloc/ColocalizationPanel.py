@@ -466,8 +466,9 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
         """
         TaskPanel.TaskPanel.createButtonBox(self)
         #self.processButton.SetLabel("Do Colocalization")
-        self.processButton.Bind(wx.EVT_BUTTON,self.doColocalizationCallback)
- 
+        #self.processButton.Bind(wx.EVT_BUTTON,self.doColocalizationCallback)
+        messenger.connect(None,"process_dataset",self.doColocalizationCallback)        
+
     def createOptionsFrame(self):
         """
         Method: createOptionsFrame()
@@ -832,11 +833,10 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
                 self.colorBtn.setColorTransferFunction(ctf)
                 self.colorBtn.Refresh()
 
-    def doColocalizationCallback(self,event):
+    def doColocalizationCallback(self,*args):
         """
         Method: doColocalizationCallback()
-        Created: 03.11.2004
-        Creator: KP
+        Created: 03.11.2004, KP
         Description: A callback for the button "Do colocalization"
         """
         self.updateBitDepth()

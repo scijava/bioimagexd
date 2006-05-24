@@ -134,7 +134,8 @@ class ManipulationPanel(TaskPanel.TaskPanel):
         TaskPanel.TaskPanel.createButtonBox(self)
         
         #self.ManipulationButton.SetLabel("Manipulation Dataset Series")
-        self.processButton.Bind(wx.EVT_BUTTON,self.doManipulationingCallback)
+        
+        messenger.connect(None,"process_dataset",self.doProcessingCallback)        
 
     def createOptionsFrame(self):
         """
@@ -413,9 +414,9 @@ class ManipulationPanel(TaskPanel.TaskPanel):
         """
         self.settings.set("FilterList",self.filters)
         
-    def doManipulationingCallback(self,event=None):
+    def doProcessingCallback(self,*args):
         """
-        Method: doManipulationingCallback()
+        Method: doProcessingCallback()
         Created: 03.11.2004, KP
         Description: A callback for the button "Manipulation Dataset Series"
         """

@@ -85,7 +85,9 @@ class MergingPanel(TaskPanel.TaskPanel):
         """
         TaskPanel.TaskPanel.createButtonBox(self)
         #self.processButton.SetLabel("Do Color Merging")
-        self.processButton.Bind(wx.EVT_BUTTON,self.doColorMergingCallback)
+        #self.processButton.Bind(wx.EVT_BUTTON,self.doColorMergingCallback)
+        messenger.connect(None,"process_dataset",self.doColorMergingCallback)        
+
         
     def createOptionsFrame(self):
         """
@@ -202,7 +204,7 @@ class MergingPanel(TaskPanel.TaskPanel):
             self.intensityTransferEditor.setIntensityTransferFunction(tf)
 
 
-    def doColorMergingCallback(self,event):
+    def doColorMergingCallback(self,*args):
         """
         Method: doColorMergingCallback()
         Created: 10.11.2004, JV

@@ -229,7 +229,8 @@ class AdjustPanel(TaskPanel.TaskPanel):
         TaskPanel.TaskPanel.createButtonBox(self)
 
         #self.processButton.SetLabel("Process Dataset Series")
-        self.processButton.Bind(wx.EVT_BUTTON,self.doProcessingCallback)
+        #self.processButton.Bind(wx.EVT_BUTTON,self.doProcessingCallback)
+        messenger.connect(None,"process_dataset",self.doProcessingCallback)
 
     def createOptionsFrame(self):
         """
@@ -328,7 +329,7 @@ class AdjustPanel(TaskPanel.TaskPanel):
                 self.colorBtn.Refresh()
 
 
-    def doProcessingCallback(self,event=None):
+    def doProcessingCallback(self,*args):
         """
         Method: doProcessingCallback()
         Created: 03.11.2004, KP
