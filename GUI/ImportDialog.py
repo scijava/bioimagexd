@@ -64,7 +64,7 @@ class ImportDialog(wx.Dialog):
         #self.createVTIImport()
         self.imageInfo = None
         self.pattern=0
-        self.extMapping = {"tif":"TIFF","tiff":"TIFF","png":"PNG","jpg":"JPEG","jpeg":"JPEG","pnm":"PNM","vti":"XMLImageData","vtk":"DataSet"}
+        self.extMapping = {"tif":"TIFF","tiff":"TIFF","png":"PNG","jpg":"JPEG","jpeg":"JPEG","pnm":"PNM","vti":"XMLImageData","vtk":"DataSet","bmp":"BMP"}
         self.dimMapping={"tif":2,"tiff":2,"png":2,"jpg":2,"jpeg":2,"pnm":2,"vti":3,"vtk":3}
         
         self.notebook.AddPage(self.imagePanel,"Import dataset")
@@ -498,6 +498,7 @@ class ImportDialog(wx.Dialog):
         if self.pattern != ext:
             self.pattern=ext
             f0=os.path.basename(filename)
+            print "imagepattern=",f0
             self.setImagePattern(f0)
             
         # If the first choice ("All in directory") is selected
@@ -514,6 +515,7 @@ class ImportDialog(wx.Dialog):
             pat=dir+"/*.%s"%ext
         Logging.info("Pattern for all in directory is ",pat,kw="io")
         files=glob.glob(pat)
+        print "Got files=",files
         self.sourceListbox.Clear()
         files.sort(self.sortNumerically)
         n=0
@@ -525,7 +527,7 @@ class ImportDialog(wx.Dialog):
             filecount=len(files)
             nformat=pat.count("%")
             if nformat==1:
-                for i in range(filecount):
+                for i in range(filecount+1):
                     try:
                         filename=pat%i
                     except:
