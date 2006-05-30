@@ -426,7 +426,7 @@ class Visualizer:
         
         bmp = wx.ArtProvider_GetBitmap(wx.ART_DELETE,wx.ART_TOOLBAR, (32,32))
 	if not bmp:
-	    bmp = wx.Image(os.path.join(icondir,"delete_annotation.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(9
+	    bmp = wx.Image(os.path.join(icondir,"delete_annotation.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap()
 	self.tb.AddSimpleTool(MenuManager.ID_DEL_ANNOTATION,bmp,"Delete annotation","Delete an annotation")
         
         self.tb.AddSimpleTool(MenuManager.ID_ADD_SCALE,wx.Image(os.path.join(icondir,"scale.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Draw scale","Draw a scale bar on the image")
