@@ -30,12 +30,13 @@ __version__ = "$Revision: 1.9 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 import wx    
-from wx.lib.statbmp  import GenStaticBitmap as StaticBitmap
+
 import ImageOperations
 import Logging
-import Annotation
 import platform
+import wx.lib.ogl as ogl
 
+import math
 ZOOM_TO_BAND=1
 MANAGE_ANNOTATION=2
 ADD_ANNOTATION=3
@@ -43,7 +44,10 @@ ADD_ROI=4
 SET_THRESHOLD=5
 DELETE_ANNOTATION=6
 
-class InteractivePanel(wx.ScrolledWindow):
+from OGLAnnotations import *
+
+#class InteractivePanel(wx.ScrolledWindow):
+class InteractivePanel(ogl.ShapeCanvas):
     """
     Class: InteractivePanel
     Created: 03.07.2005, KP
@@ -69,6 +73,8 @@ class InteractivePanel(wx.ScrolledWindow):
             size=kws["size"]
         self.multiple=0
         self.dataUnit=None
+        ogl.OGLInitialize()
+        
         self.annotations=[]
         self.annotationClass=None
         self.currentAnnotation=None
@@ -85,19 +91,31 @@ class InteractivePanel(wx.ScrolledWindow):
         
         x,y=size
         self.buffer = wx.EmptyBitmap(x,y)
-        wx.ScrolledWindow.__init__(self,parent,-1,size=size)
+        #wx.ScrolledWindow.__init__(self,parent,-1,size=size)
+        ogl.ShapeCanvas.__init__(self,parent,-1,size=size)
+        
+        self.diagram = ogl.Diagram()
+        self.SetDiagram(self.diagram)
+        self.diagram.SetCanvas(self)
+        
         self.size=size
+
 
         self.zoomFactor=1
         
         self.paintPreview()
+        
+        self.Unbind(wx.EVT_PAINT)
         self.Bind(wx.EVT_PAINT,self.OnPaint)
+        
 
         self.Bind(wx.EVT_LEFT_DOWN,self.markActionStart)
         self.Bind(wx.EVT_MOTION,self.updateActionEnd)
+        
         self.Bind(wx.EVT_LEFT_UP,self.executeAction)
-        self.Bind(wx.EVT_RIGHT_UP,self.actionEnd)
+        #self.Bind(wx.EVT_RIGHT_UP,self.actionEnd)
         self.Bind(wx.EVT_SIZE,self.OnSize)
+        
         
     def OnSize(self,evt):
         """
@@ -134,13 +152,9 @@ class InteractivePanel(wx.ScrolledWindow):
         Created: 24.03.2005, KP
         Description: Sets the starting position of rubber band for zooming
         """    
-        if not self.action:
-            return False
+        event.Skip()
             
         pos=event.GetPosition()
-        if self.multiple and self.currentAnnotation:
-            self.currentAnnotation.addPosition(pos)
-            return
 
         x,y=pos
         foundDrawable=0
@@ -148,32 +162,31 @@ class InteractivePanel(wx.ScrolledWindow):
             if x>=x0 and x<=x1 and y>=y0 and y<=y1:
                 foundDrawable=1 
                 break
+        event.Skip()                    
         if not foundDrawable:
             Logging.info("Attempt to draw in non-drawable area: %d,%d"%(x,y),kw="iactivepanel")
             # we zero the action so nothing further will be done by updateActionEnd
             self.action=0
-            return
+            
+            return 1
             
         self.actionstart=pos
-        if self.action in [MANAGE_ANNOTATION,DELETE_ANNOTATION]:
-            self.findSelectedAnnotation()
-            
+        return 1
     def updateActionEnd(self,event):
         """
         Method: updateActionEnd
         Created: 24.03.2005, KP
         Description: Draws the rubber band to current mou        
         """
-        if not self.action:
-            return
         if event.LeftIsDown():
             self.actionend=event.GetPosition()
-            Logging.info("start=",self.actionstart,"end=",self.actionend,kw="iactivepanel")
-            if self.action == ADD_ANNOTATION:
-                self.updateObject(self.annotationClass,event)
-            elif self.action == MANAGE_ANNOTATION:
-                self.updateObject(self.annotationClass,event,moveOnly=1)
-        self.updatePreview()
+            #Logging.info("start=",self.actionstart,"end=",self.actionend,kw="iactivepanel")
+            #if self.action == ADD_ANNOTATION:
+            #    self.updateObject(self.annotationClass,event)
+            #elif self.action == MANAGE_ANNOTATION:
+            #    self.updateObject(self.annotationClass,event,moveOnly=1)
+        #self.updatePreview()
+        event.Skip()
             
     def actionEnd(self,event):
         """
@@ -193,10 +206,63 @@ class InteractivePanel(wx.ScrolledWindow):
         Description: Call the right callback depending on what we're doing
         """    
         #Logging.info("Executing action: ",self.action,kw="iactivepanel")
+        
         if self.action==ZOOM_TO_BAND:
             self.zoomToRubberband(event)
         elif self.action==ADD_ANNOTATION:
-            self.updateObject(self.annotationClass,event)
+            #self.updateObject(self.annotationClass,event
+            print "Adding annotation"
+            x,y=event.GetPosition()
+            ex,ey = self.actionstart
+            
+            if self.annotationClass == "CIRCLE":
+                
+                
+                diff = max(abs(x-ex),abs(y-ey))
+                if diff<2:diff=2
+                shape = MyCircle(2*diff)
+                print "start=",ex,ey
+                shape.SetX( ex )
+                shape.SetY( ey )
+
+            elif self.annotationClass == "RECTANGLE":
+                dx = abs(x-ex)
+                dy = abs(y-ey)
+                shape = MyRectangle(dx,dy)
+                shape.SetCentreResize(0)  
+                shape.SetX( ex+(x-ex)/2 )
+                shape.SetY( ey+(y-ey)/2 )
+  
+            elif self.annotationClass == "POLYGON":
+                #shape = MyPolygon()
+                shape = MyLine()
+                shape.MakeLineControlPoints(2)
+                
+                shape.SetEnds(ex,ey,x,y)
+                shape.FindConnectedLines(self.diagram)                               
+                
+                #shape.Create([(10.1,10.1),(10.1,100.1),(100.0,100.1),(100.0,10.1)])
+                shape.SetCentreResize(0)    
+                
+            
+            evthandler = MyEvtHandler(self)
+            evthandler.SetShape(shape)
+            evthandler.SetPreviousHandler(shape.GetEventHandler())
+            shape.SetEventHandler(evthandler)
+            shape.SetDraggable(True, True)
+            
+            shape.SetBrush(wx.TRANSPARENT_BRUSH)
+            shape.SetPen(wx.Pen((0,255,0),1))
+            print "Adding to ",event.GetPosition()
+            
+            self.AddShape( shape )                   
+            self.diagram.ShowAll( 1 )           
+            self.Refresh()
+            
+            self.action = None
+            self.actionstart = (0,0)
+            self.actionend = (0,0)
+            return 1
         elif self.action==SET_THRESHOLD:
             self.setThreshold()
         elif self.action==DELETE_ANNOTATION:
@@ -209,10 +275,9 @@ class InteractivePanel(wx.ScrolledWindow):
         if not self.multiple:
             self.currentAnnotation=None
             self.action=0
-        self.annotationClass=None
-        
-            
-                
+        self.annotationClass=None                    
+        #ogl.ShapeCanvas.OnMouseEvent(self,event)
+        event.Skip()
     def updateAnnotations(self):
         """
         Method: updateAnnotations()
@@ -231,18 +296,21 @@ class InteractivePanel(wx.ScrolledWindow):
         currobject=self.currentAnnotation  
         if not currobject:
             x0,y0=self.actionstart
-            currobject=annotationClass(x0,y0,self.voxelSize,self.zoomFactor,bgColor=self.bgColor)
-            self.annotations.append(currobject)
-            self.currentAnnotation=currobject
+            #currobject=annotationClass(x0,y0,self.voxelSize,self.zoomFactor,bgColor=self.bgColor)
+            #self.annotations.append(currobject)
+            #self.currentAnnotation=currobject
             self.dataUnit.getSettings().set("Annotations",self.annotations)
-
+            
         if not moveOnly:
             #Logging.info("Setting ",currobject,"to end at ",self.actionend,kw="iactivepanel")            Logging.info("Re-defining start ",self.actionstart,"and end ",self.actionend,"positions",kw="iactivepanel")
-            currobject.setPosition(self.actionstart)
-            currobject.setEndPosition(self.actionend)
+            #currobject.setPosition(self.actionstart)
+            #currobject.setEndPosition(self.actionend)
+            pass
         else:
             Logging.info("Moving annotation to ",self.actionend,kw="iactivepanel")
-            currobject.setPosition(self.actionend)
+            #currobject.setPosition(self.actionend)
+            pass
+        
                         
 
     def findSelectedAnnotation(self):
@@ -307,6 +375,7 @@ class InteractivePanel(wx.ScrolledWindow):
         self.multiple=multiple
         self.action=ADD_ANNOTATION
         self.annotationClass=annClass
+        
         
     def zoomToRubberband(self,event):
         """
@@ -400,12 +469,17 @@ class InteractivePanel(wx.ScrolledWindow):
             if x or y:
                 #Logging.info("Resorting to unbuffered drawing because of scrolling",kw="iactivepanel")
                 dc=wx.PaintDC(self)
+                
                 self.PrepareDC(dc)
                 dc.BeginDrawing()
                 dc.DrawBitmap(self.buffer,0,0,False)
+                self.diagram.Redraw(dc)                
                 dc.EndDrawing()
                 return
+
+        self.bgbuffer = self.buffer.GetSubBitmap(wx.Rect(0,0,self.buffer.GetWidth(),self.buffer.GetHeight()))
         dc=wx.BufferedPaintDC(self,self.buffer)#,self.buffer)
+        self.diagram.Redraw(dc)
 
 
     def paintPreview(self):
@@ -414,6 +488,7 @@ class InteractivePanel(wx.ScrolledWindow):
         Created: 24.03.2005, KP
         Description: Paints the image to a DC
         """
+                     
         dc=self.dc
         bmp=self.bmp
         
@@ -439,11 +514,11 @@ class InteractivePanel(wx.ScrolledWindow):
                 dc.DrawRectangle(x1,y1,d1,d2)
 
         #Logging.info("%d annotations to paint"%len(self.annotations),kw="iactivepanel")
-        for i in self.annotations:
-            i.drawToDC(dc)
+        #for i in self.annotations:
+        #    i.drawToDC(dc)
         
-        dc.EndDrawing()
-        self.dc = None
+        #dc.EndDrawing()
+        #self.dc = None
         
     def setScrollbars(self,xdim,ydim):
         """

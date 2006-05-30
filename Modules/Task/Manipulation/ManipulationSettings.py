@@ -52,7 +52,7 @@ class ManipulationSettings(DataUnitSettings):
         Description: Constructor
         """
         DataUnitSettings.__init__(self,n)
-        self.set("Type","Manipulation")
+        self.set("Type","Process")
         
         self.registerPrivate("ColorTransferFunction",1)        
         self.registerCounted("Source")

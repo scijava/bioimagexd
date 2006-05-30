@@ -34,9 +34,12 @@ import wx
 import types
 import Histogram
 import wx.lib.buttons as buttons
+import messenger
 
 RADIO_CHOICE="RADIO_CHOICE"
 THRESHOLD="THRESHOLD"
+PIXEL="PIXEL"
+PIXELS="PIXELS"
 
 class GUIBuilder(wx.Panel):
     """
@@ -121,6 +124,44 @@ class GUIBuilder(wx.Panel):
                             box.Bind(wx.EVT_RADIOBOX,func)
                             sboxname=""
                             itemsizer.Add(box,(0,0))
+                        elif currentFilter.getType(item[0]) == PIXEL:
+                            print "Creating pixel selection"
+                            lbl = wx.StaticText(self,-1,"(%d,%d,%d)"%(0,0,0),size=(80,-1))
+                            btn = wx.Button(self,-1,"Set seed")
+                            def f(l):
+                                l.selectPixel=1
+                            func=lambda evt,l=lbl:f(l)
+                            btn.Bind(wx.EVT_BUTTON,func)
+                            box=wx.BoxSizer(wx.HORIZONTAL)
+                            box.Add(lbl)
+                            box.Add(btn)
+                            itemsizer.Add(box,(0,0))
+                            func = lambda obj,evt,rx,ry,rz,r,g,b,alpha,currentCt,its=item,f=currentFilter:self.onSetPixel(obj,evt,rx,ry,rz,r,g,b,alpha,currentCt,its,f,lbl)
+                            messenger.connect(None,"get_voxel_at",func)
+                            
+                        elif currentFilter.getType(item[0]) == PIXELS:
+                            print "Creating multiple pixels selection"
+                            pixelsizer = wx.GridBagSizer()
+                            seedbox = wx.ListBox(self,-1,size=(100,150))
+                            pixelsizer.Add(seedbox,(0,0),span=(2,1))
+                            
+                            addbtn = wx.Button(self,-1,"Add seed")
+                            def f(l):
+                                l.selectPixel=1
+                            func=lambda evt,l=seedbox:f(l)
+                            addbtn.Bind(wx.EVT_BUTTON,func)
+                            pixelsizer.Add(addbtn,(0,1))
+                            print "ITEM=",item
+                            rmbtn = wx.Button(self,-1,"Remove")
+                            seedbox.itemName = item
+                            func=lambda evt,its=item,f=currentFilter:self.removeSeed(seedbox,f)
+                            rmbtn.Bind(wx.EVT_BUTTON,func)
+                            pixelsizer.Add(rmbtn,(1,1))
+                            
+                            func = lambda obj,evt,rx,ry,rz,r,g,b,alpha,currentCt,its=item,f=currentFilter:self.onAddPixel(obj,evt,rx,ry,rz,r,g,b,alpha,currentCt,its,f,seedbox)
+                            messenger.connect(None,"get_voxel_at",func)
+                            itemsizer.Add(pixelsizer,(0,0))
+                            
                         elif currentFilter.getType(item[0]) == THRESHOLD:
                             print "Creating threshold selection"
                             histogram = Histogram.Histogram(self)
@@ -212,6 +253,8 @@ class GUIBuilder(wx.Panel):
             input = self.createNumberInput(currentFilter, item, itemType, defaultValue, desc)
         elif itemType == types.BooleanType:
             input = self.createBooleanInput(currentFilter, item, itemType, defaultValue, desc)
+        else:
+            raise "Unrecognized input type: %s"%str(itemType)
         txt = currentFilter.getLongDesc(item)
         if txt:
             input.SetHelpText(txt)
@@ -246,6 +289,59 @@ class GUIBuilder(wx.Panel):
         valid=lambda evt,f=currentFilter,p=item,t=itemType,i=input:self.validateAndPassOn(evt,i,p,itemType,f)
         input.Bind(wx.EVT_CHECKBOX,valid)
         return input
+        
+    def removeSeed(self,listbox,currFilter):
+        """
+        Method: removeSeed
+        Created: 29.05.2007, KP
+        Description: Remove a seed from filter
+        """         
+        item=listbox.itemName
+        print "item in removeSeed=",item
+        n = listbox.GetSelection()
+        if n != wx.NOT_FOUND:
+            s = listbox.GetString(n)
+            seedpt = eval(s)
+            listbox.Delete(n)
+            
+        print "Getting parameter",item[0]
+        seeds = currFilter.getParameter(item[0])   
+        print "Removing ",seedpt,"from ",seeds
+        seeds.remove(seedpt)
+        currFilter.setParameter(item[0],seeds)
+
+    def onAddPixel(self,obj,evt,rx,ry,rz,r,g,b,alpha,ctf,item,currFilter,listbox):
+        """
+        Method: onAddPixel
+        Created: 29.05.2007, KP
+        Description: Add a value to the pixel listbox
+        """             
+        #print "Set pixel",obj,evt,rx,ry,rz,r,g,b,alpha,item,currFilter
+        print "item=",item
+        if listbox.selectPixel:
+            seeds = currFilter.getParameter(item[0])
+            seeds.append((rx,ry,rz))
+            print "Settng parameter",item,"to",seeds            
+            
+            currFilter.setParameter(item[0],seeds)
+            listbox.Append("(%d, %d, %d)"%(rx, ry, rz))            
+            listbox.selectPixel = 0
+
+            
+    def onSetPixel(self,obj,evt,rx,ry,rz,r,g,b,alpha,ctf,item,currFilter,valuelbl):
+        """
+        Method: onSetPixel
+        Created: 26.05.2007, KP
+        Description: Set the value of the pixel label
+        """             
+        #print "Set pixel",obj,evt,rx,ry,rz,r,g,b,alpha,item,currFilter
+        if valuelbl.selectPixel:
+            print "Settng parameter",item,"to",rx,ry,rz
+            
+            currFilter.setParameter(item[0],(rx,ry,rz))
+            valuelbl.SetLabel("(%d,%d,%d)"%(rx,ry,rz))
+            valuelbl.selectPixel = 0
+        
             
     def onSetThreshold(self,evt,items,currentFilter):
         """

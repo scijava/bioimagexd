@@ -137,19 +137,8 @@ class SlicesMode(VisualizationMode):
         if self.init:
             self.iactivePanel.setPreviewType("")
             self.init=0
-        if not self.visualizer.getProcessedMode():
-            Logging.info("Using ProcessDataUnit for slices preview")
-            unitclass=self.modules["Process"][2].getDataUnit()
-            unit=unitclass("Slices preview")
-            unit.addSourceDataUnit(dataUnit)
-            
-            taskclass=self.modules["Process"][0]                
-            unit.setModule(taskclass())
-            
-        else:
-            Logging.info("Using dataunit",dataUnit,kw="visualizer")
-            unit=dataUnit
-        self.iactivePanel.setDataUnit(unit,0)
+
+        self.iactivePanel.setDataUnit(dataUnit,0)
         
     def setTimepoint(self,tp):
         """

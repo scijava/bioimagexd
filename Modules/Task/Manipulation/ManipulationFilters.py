@@ -50,10 +50,12 @@ def getFilterList():
             DivideFilter,SinFilter,CosFilter,LogFilter,ExpFilter,SQRTFilter,
             GradientFilter,GradientMagnitudeFilter,
             AndFilter,OrFilter,XorFilter,NotFilter,NandFilter,NorFilter,
-            ThresholdFilter,VarianceFilter,HybridMedianFilter,MaskFilter,
+            ThresholdFilter,VarianceFilter,HybridMedianFilter,
             ITKAnisotropicDiffusionFilter,ITKGradientMagnitudeFilter,
             ITKWatershedSegmentationFilter,MapToRGBFilter,MeasureVolumeFilter,
-            ITKRelabelImageFilter,FilterObjectsFilter]
+            ITKRelabelImageFilter,FilterObjectsFilter,ITKConnectedThresholdFilter,ITKNeighborhoodConnectedThresholdFilter,
+            ITKLocalMaximumFilter,ITKOtsuThresholdFilter,ITKConfidenceConnectedFilter,
+            MaskFilter,ITKSigmoidFilter]
             
 MORPHOLOGICAL="Morphological"
 MATH="Math"
@@ -62,6 +64,7 @@ FILTERING="Filtering"
 LOGIC="Logic"
 ITK="ITK"
 MEASUREMENT="Measurements"
+REGION_GROWING="Region Growing"
    
 class ManipulationFilter:
     """
@@ -132,7 +135,7 @@ class ManipulationFilter:
             messenger.send(None,"show_error","Non-ITK filter tries to convert to ITK","A non-ITK filter %s tried to convert data to ITK image data"%self.name)
             return image
         if not self.vtkToItk:            
-            ImageType = itk.ImageToVTKImageFilter.IUC3
+            ImageType = itk.VTKImageToImageFilter.IUC3
             if cast==types.FloatType:
                 ImageType = itk.VTKImageToImageFilter.IF3
 
@@ -145,6 +148,7 @@ class ManipulationFilter:
                 icast.SetOutputScalarTypeToFloat()
             icast.SetInput(image)
             image = icast.GetOutput()
+        print "vtkToItk=",self.vtkToItk,"image=",image
         self.vtkToItk.SetInput(image)
         return self.vtkToItk.GetOutput()
             
@@ -342,7 +346,18 @@ class ManipulationFilter:
         self.parameters[parameter]=value
         if self.taskPanel:
             self.taskPanel.filterModified(self)
-        
+
+    def getParameter(self,parameter):
+        """
+        Method: getParameter
+        Created: 29.05.2006, KP
+        Description: Get a value for the parameter
+        """    
+        if parameter in self.parameters:
+            return self.parameters[parameter]
+        return None
+
+
     def execute(self,inputs):
         """
         Method: execute
@@ -1703,6 +1718,83 @@ class ITKGradientMagnitudeFilter(ManipulationFilter):
         #    print "data=",data
         return data            
 
+class ITKSigmoidFilter(ManipulationFilter):
+    """
+    Class: ITKSigmoidFilter
+    Created: 29.05.2006, KP
+    Description: A class for mapping an image data thru sigmoid image filter
+    """     
+    name = "ITK Sigmoid Filter"
+    category = FILTERING
+    
+    def __init__(self,inputs=(1,1)):
+        """
+        Method: __init__()
+        Created: 13.04.2006, KP
+        Description: Initialization
+        """        
+        ManipulationFilter.__init__(self,inputs)
+        self.itkFlag = 1
+        self.descs = {"Minimum":"Minimum output value","Maximum":"Maximum Output Value","Alpha":"Alpha","Beta":"Beta"}
+        f3=itk.Image.F3
+        self.itkfilter = itk.SigmoidImageFilter[f3,f3].New()
+        
+        
+    def getParameters(self):
+        """
+        Method: getParameters
+        Created: 15.04.2006, KP
+        Description: Return the list of parameters needed for configuring this GUI
+        """            
+        return [["Data range",("Minimum","Maximum")],
+        ]        
+    def getDefaultValue(self,parameter):
+        """
+        Method: getDefaultValue
+        Created: 15.04.2006, KP
+        Description: Return the default value of a parameter
+        """    
+        if parameter == "Minimum":
+            return 0.0
+        if parameter == "Maximum":
+            return 1.0
+        if parameter== "Alpha":
+            return 
+        return 0
+        
+    def getType(self,parameter):
+        """
+        Method: getType
+        Created: 13.04.2006, KP
+        Description: Return the type of the parameter
+        """    
+        return types.FloatType
+
+
+    def execute(self,inputs,update=0,last=0):
+        """
+        Method: execute
+        Created: 15.04.2006, KP
+        Description: Execute the filter with given inputs and return the output
+        """                    
+        if not ManipulationFilter.execute(self,inputs):
+            return None
+            
+        image = self.getInput(1)
+        image = self.convertVTKtoITK(image,cast=types.FloatType)
+        self.itkfilter.SetInput(image)
+        
+        self.setImageType("F3")
+        
+        if update:
+            self.itkfilter.Update()
+        data = self.itkfilter.GetOutput()
+        #if last or self.nextFilter and not self.nextFilter.getITK():            
+        #    print "Converting to VTK"
+        #    data=self.convertITKtoVTK(data,imagetype="F3")
+        #    print "data=",data
+        return data            
+
 
 class ITKWatershedSegmentationFilter(ManipulationFilter):
     """
@@ -2157,3 +2249,482 @@ class FilterObjectsFilter(ManipulationFilter):
         print data.GetScalarRange(),data.GetScalarTypeAsString()
         return data
         
+class ITKConfidenceConnectedFilter(ManipulationFilter):
+    """
+    Class: ITKConfidenceConnectedThresholdFilter
+    Created: 29.05.2006, KP
+    Description: A class for doing confidence connected segmentation
+    """     
+    name = "Confidence Connected"
+    category = SEGMENTATION
+    
+    def __init__(self,inputs=(1,1)):
+        """
+        Method: __init__()
+        Created: 26.05.2006, KP
+        Description: Initialization
+        """
+        ManipulationFilter.__init__(self,inputs)
+        
+        
+        self.descs = {"Seed":"Seed voxel","Neighborhood":"Initial Neighborhood Size",
+            "Multiplier":"Range relaxation","Iterations":"Iterations"}
+        self.itkFlag = 1
+        
+        uc3 = itk.Image.UC3
+        self.itkfilter = itk.ConfidenceConnectedImageFilter[uc3,uc3].New()
+
+            
+    def getDefaultValue(self,parameter):
+        """
+        Method: getDefaultValue
+        Created: 26.05.2006, KP
+        Description: Return the default value of a parameter
+        """    
+        if parameter == "Seed":
+            return []
+        elif parameter=="Multiplier":
+            return 2.5
+        elif parameter == "Iterations":
+            return 5
+        elif parameter == "Neighborhood":
+            return 2
+            
+        
+    def getType(self,parameter):
+        """
+        Method: getType
+        Created: 26.05.2006, KP
+        Description: Return the type of the parameter
+        """    
+        if parameter == "Seed":
+            return ManipulationGUI.PIXELS
+        elif parameter == "Multiplier":
+            return types.FloatType
+        elif parameter == "Iterations":
+            return types.IntType
+        elif parameter=="Neighborhood":
+            return types.IntType
+            
+            
+    def getParameters(self):
+        """
+        Method: getParameters
+        Created: 15.04.2006, KP
+        Description: Return the list of parameters needed for configuring this GUI
+        """            
+        return [["Seed",(("Seed",),)],
+        ["Segmentation",("Neighborhood","Multiplier","Iterations")]]
+
+
+    def execute(self,inputs,update=0,last=0):
+        """
+        Method: execute
+        Created: 15.04.2006, KP
+        Description: Execute the filter with given inputs and return the output
+        """                    
+        if not ManipulationFilter.execute(self,inputs):
+            return None
+            
+        image = self.getInput(1)
+#        print "Using as input",image
+        image = self.convertVTKtoITK(image)
+        self.itkfilter.SetInput(image)
+        
+        pixelidx = itk.Index[3]()
+        for (x,y,z) in self.parameters["Seed"]:
+            pixelidx.SetElement(0,x)
+            pixelidx.SetElement(1,y)
+            pixelidx.SetElement(2,z)
+            print "Using as seed",x,y,z,pixelidx
+            self.itkfilter.AddSeed(pixelidx)    
+            
+        iters = self.parameters["Iterations"]
+        self.itkfilter.SetNumberOfIterations(iters)
+        
+        mult = self.parameters["Multiplier"]
+        print "mult=",mult
+        self.itkfilter.SetMultiplier(mult)
+        rad = self.parameters["Neighborhood"]
+        self.itkfilter.SetInitialNeighborhoodRadius(rad)
+        
+        self.itkfilter.SetReplaceValue(255)
+        if update:
+            self.itkfilter.Update()
+            
+        data = self.itkfilter.GetOutput()
+        if last:
+            return self.convertITKtoVTK(data,imagetype="UC3")
+            
+        return data            
+
+class ITKConnectedThresholdFilter(ManipulationFilter):
+    """
+    Class: ITKConnectedThresholdFilter
+    Created: 26.05.2006, KP
+    Description: A class for doing confidence connected segmentation
+    """     
+    name = "Connected Threshold"
+    category = SEGMENTATION
+    
+    def __init__(self,inputs=(1,1)):
+        """
+        Method: __init__()
+        Created: 26.05.2006, KP
+        Description: Initialization
+        """        
+        ManipulationFilter.__init__(self,inputs)
+        
+        
+        self.descs = {"Seed":"Seed voxel","Upper":"Upper threshold","Lower":"Lower threshold"}
+        self.itkFlag = 1
+        
+        uc3 = itk.Image.UC3
+        self.itkfilter = itk.ConnectedThresholdImageFilter[uc3,uc3].New()
+
+            
+    def getDefaultValue(self,parameter):
+        """
+        Method: getDefaultValue
+        Created: 26.05.2006, KP
+        Description: Return the default value of a parameter
+        """    
+        if parameter == "Seed":
+            return []
+        elif parameter == "Upper":
+            return 255
+        elif parameter == "Lower":
+            return 128
+        
+    def getType(self,parameter):
+        """
+        Method: getType
+        Created: 26.05.2006, KP
+        Description: Return the type of the parameter
+        """    
+        if parameter in ["Lower","Upper"]:
+            return ManipulationGUI.THRESHOLD
+        return ManipulationGUI.PIXELS
+                
+    def getParameters(self):
+        """
+        Method: getParameters
+        Created: 15.04.2006, KP
+        Description: Return the list of parameters needed for configuring this GUI
+        """            
+        return [["Seed",(("Seed",),)],
+        ["Threshold",(("Lower","Upper"),)]]
+
+
+    def execute(self,inputs,update=0,last=0):
+        """
+        Method: execute
+        Created: 15.04.2006, KP
+        Description: Execute the filter with given inputs and return the output
+        """                    
+        if not ManipulationFilter.execute(self,inputs):
+            return None
+            
+        image = self.getInput(1)
+#        print "Using as input",image
+        image = self.convertVTKtoITK(image)
+        self.itkfilter.SetInput(image)
+        self.itkfilter.SetLower(self.parameters["Lower"])
+        self.itkfilter.SetUpper(self.parameters["Upper"])
+        
+        pixelidx = itk.Index[3]()
+        for (x,y,z) in self.parameters["Seed"]:
+            pixelidx.SetElement(0,x)
+            pixelidx.SetElement(1,y)
+            pixelidx.SetElement(2,z)
+            print "Using as seed",x,y,z,pixelidx
+            self.itkfilter.AddSeed(pixelidx)    
+        print "Threshold=",self.parameters["Lower"],self.parameters["Upper"]
+        
+        
+        self.itkfilter.SetReplaceValue(255)
+        if update:
+            self.itkfilter.Update()
+            
+        data = self.itkfilter.GetOutput()
+        if last:
+            return self.convertITKtoVTK(data,imagetype="UC3")
+            
+        return data      
+        
+class ITKNeighborhoodConnectedThresholdFilter(ManipulationFilter):
+    """
+    Class: ITKNeighborhoodConnectedThresholdFilter
+    Created: 29.05.2006, KP
+    Description: A class for doing connected threshold segmentation 
+    """     
+    name = "Neighborhood Connected Threshold"
+    category = SEGMENTATION
+    
+    def __init__(self,inputs=(1,1)):
+        """
+        Method: __init__()
+        Created: 29.05.2006, KP
+        Description: Initialization
+        """        
+        ManipulationFilter.__init__(self,inputs)
+        
+        
+        self.descs = {"Seed":"Seed voxel","Upper":"Upper threshold","Lower":"Lower threshold",
+            "RadiusX":"X Neighborhood Size",
+            "RadiusY":"Y Neighborhood Size",
+            "RadiusZ":"Z Neighborhood Size"}
+        self.itkFlag = 1
+        
+        uc3 = itk.Image.UC3
+        self.itkfilter = itk.NeighborhoodConnectedImageFilter[uc3,uc3].New()
+
+            
+    def getDefaultValue(self,parameter):
+        """
+        Method: getDefaultValue
+        Created: 29.05.2006, KP
+        Description: Return the default value of a parameter
+        """    
+        if parameter == "Seed":
+            return []
+        elif parameter == "Upper":
+            return 255
+        elif parameter == "Lower":
+            return 128
+        elif parameter in ["RadiusX","RadiusY"]:
+            return 2
+        return 1
+            
+        
+    def getType(self,parameter):
+        """
+        Method: getType
+        Created: 29.05.2006, KP
+        Description: Return the type of the parameter
+        """    
+        if parameter in ["Lower","Upper"]:
+            return ManipulationGUI.THRESHOLD
+        elif "Radius" in parameter:
+            return types.IntType
+        return ManipulationGUI.PIXELS
+                
+    def getParameters(self):
+        """
+        Method: getParameters
+        Created: 29.05.2006, KP
+        Description: Return the list of parameters needed for configuring this GUI
+        """            
+        return [["Seed",(("Seed",),)],
+        ["Threshold",(("Lower","Upper"),)],
+        ["Neighborhood",("RadiusX","RadiusY","RadiusZ")]]
+
+
+    def execute(self,inputs,update=0,last=0):
+        """
+        Method: execute
+        Created: 29.05.2006, KP
+        Description: Execute the filter with given inputs and return the output
+        """                    
+        if not ManipulationFilter.execute(self,inputs):
+            return None
+            
+        image = self.getInput(1)
+#        print "Using as input",image
+        image = self.convertVTKtoITK(image)
+        self.itkfilter.SetInput(image)
+        self.itkfilter.SetLower(self.parameters["Lower"])
+        self.itkfilter.SetUpper(self.parameters["Upper"])
+        
+        pixelidx = itk.Index[3]()
+        for (x,y,z) in self.parameters["Seed"]:
+            pixelidx.SetElement(0,x)
+            pixelidx.SetElement(1,y)
+            pixelidx.SetElement(2,z)
+            print "Using as seed",x,y,z,pixelidx
+            self.itkfilter.AddSeed(pixelidx)    
+        print "Threshold=",self.parameters["Lower"],self.parameters["Upper"]
+        
+        rx,ry,rz = self.parameters["RadiusX"],self.parameters["RadiusY"],self.parameters["RadiusZ"]
+        
+        size = itk.Size[3]()
+        size.SetElement(0,rx)
+        size.SetElement(0,ry)
+        size.SetElement(0,rz)
+        print "size=",size
+        self.itkfilter.SetRadius(size)
+        print "Using a radius of ",rx,ry
+        self.itkfilter.SetReplaceValue(255)
+        if update:
+            self.itkfilter.Update()
+            
+        data = self.itkfilter.GetOutput()
+        if last:
+            return self.convertITKtoVTK(data,imagetype="UC3")
+            
+        return data            
+
+class ITKOtsuThresholdFilter(ManipulationFilter):
+    """
+    Class: ITKOtsuThresholdFilter
+    Created: 26.05.2006, KP
+    Description: A class for thresholding the image using the otsu thresholding
+    """     
+    name = "Otsu Threshold"
+    category = SEGMENTATION
+    
+    def __init__(self,inputs=(1,1)):
+        """
+        Method: __init__()
+        Created: 26.05.2006, KP
+        Description: Initialization
+        """        
+        ManipulationFilter.__init__(self,inputs)
+        
+        
+        self.descs = {"Upper":"Upper threshold","Lower":"Lower threshold"}
+        self.itkFlag = 1
+        
+        uc3 = itk.Image.UC3
+        self.itkfilter = itk.OtsuThresholdImageFilter[uc3,uc3].New()
+
+            
+    def getDefaultValue(self,parameter):
+        """
+        Method: getDefaultValue
+        Created: 26.05.2006, KP
+        Description: Return the default value of a parameter
+        """    
+        return 0
+        
+    def getType(self,parameter):
+        """
+        Method: getType
+        Created: 26.05.2006, KP
+        Description: Return the type of the parameter
+        """    
+        if parameter in ["Lower","Upper"]:
+            return ManipulationGUI.THRESHOLD
+                
+    def getParameters(self):
+        """
+        Method: getParameters
+        Created: 15.04.2006, KP
+        Description: Return the list of parameters needed for configuring this GUI
+        """            
+        return [["Threshold",(("Lower","Upper"),)]]
+
+
+    def execute(self,inputs,update=0,last=0):
+        """
+        Method: execute
+        Created: 15.04.2006, KP
+        Description: Execute the filter with given inputs and return the output
+        """                    
+        if not ManipulationFilter.execute(self,inputs):
+            return None
+            
+        image = self.getInput(1)
+#        print "Using as input",image
+        image = self.convertVTKtoITK(image)
+        self.itkfilter.SetInput(image)
+        
+        self.itkfilter.SetInsideValue(0)
+        self.itkfilter.SetOutsideValue(255)
+        self.itkfilter.SetNumberOfHistogramBins(255)
+        if update:
+            self.itkfilter.Update()
+        
+        print "OTSU THRESHOLD=",self.itkfilter.GetThreshold()
+            
+        data = self.itkfilter.GetOutput()
+        if last:
+            return self.convertITKtoVTK(data,imagetype="UC3")
+            
+        return data            
+
+
+class ITKLocalMaximumFilter(ManipulationFilter):
+    """
+    Class: ITKLocalMaximumFilter
+    Created: 29.05.2006, KP
+    Description: A class for finding the local maxima in an image
+    """     
+    name = "Find Local Maxima"
+    category = SEGMENTATION
+    
+    def __init__(self,inputs=(1,1)):
+        """
+        Method: __init__()
+        Created: 26.05.2006, KP
+        Description: Initialization
+        """        
+        ManipulationFilter.__init__(self,inputs)
+        
+        
+        self.descs = {"Connectivity":"Use 8 neighbors for connectivity"}
+        self.itkFlag = 1
+        
+
+            
+    def getDefaultValue(self,parameter):
+        """
+        Method: getDefaultValue
+        Created: 26.05.2006, KP
+        Description: Return the default value of a parameter
+        """   
+        if parameter == "Connectivity":
+            return 1
+        return 0
+    def getType(self,parameter):
+        """
+        Method: getType
+        Created: 26.05.2006, KP
+        Description: Return the type of the parameter
+        """    
+        if parameter in ["Connectivity"]:
+            return types.BooleanType
+                
+    def getParameters(self):
+        """
+        Method: getParameters
+        Created: 15.04.2006, KP
+        Description: Return the list of parameters needed for configuring this GUI
+        """            
+        return [["",("Connectivity",)]]
+
+    def execute(self,inputs,update=0,last=0):
+        """
+        Method: execute
+        Created: 15.04.2006, KP
+        Description: Execute the filter with given inputs and return the output
+        """                    
+        if not ManipulationFilter.execute(self,inputs):
+            return None
+            
+        image = self.getInput(1)
+#        print "Using as input",image
+        image = self.convertVTKtoITK(image)
+        
+        
+        uc3 = itk.Image.UC3
+        shift = itk.ShiftScaleImageFilter[uc3,uc3].New()
+        recons = itk.ReconstructionByDilationImageFilter[uc3,uc3].New()
+        subst = itk.SubtractImageFilter[uc3,uc3,uc3].New()
+        shift.SetInput(image)
+        shift.SetShift(-1)
+        recons.SetMaskImage(image)
+        recons.SetMarkerImage(shift.GetOutput())
+        recons.SetFullyConnected(self.parameters["Connectivity"])
+        
+        subst.SetInput1(image)
+        subst.SetInput2(recons.GetOutput())
+        
+        if update:
+            subst.Update()
+            
+        data = subst.GetOutput()
+        if last:
+            return self.convertITKtoVTK(data,imagetype="UC3")
+            
+        return data            

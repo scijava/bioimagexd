@@ -569,8 +569,12 @@ class MainWindow(wx.Frame):
         wx.EVT_TOOL(self,MenuManager.ID_OPEN,self.onMenuOpen)
 
         bmp = wx.Image(os.path.join(iconpath,"save_snapshot.jpg"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
+        tb.DoAddTool(MenuManager.ID_SAVE_DATASET,"Save dataset",bmp,shortHelp="Write the processed dataset to disk")
+        wx.EVT_TOOL(self,MenuManager.ID_SAVE_DATASET,self.onSaveDataset)
+
+        bmp = wx.Image(os.path.join(iconpath,"camera.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap()
         tb.DoAddTool(MenuManager.ID_SAVE_SNAPSHOT,"Save rendered image",bmp,shortHelp="Save a snapshot of the rendered scene")
-    
+
         
         bmp = wx.Image(os.path.join(iconpath,"open_settings.jpg"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
         tb.DoAddTool(MenuManager.ID_OPEN_SETTINGS,"Open settings",bmp,shortHelp="Open settings")
@@ -636,7 +640,15 @@ class MainWindow(wx.Frame):
         self.visIds.append(MenuManager.ID_VIS_ANIMATOR)
         tb.Realize()
         self.menuManager.setMainToolbar(tb)
-        
+
+    def onSaveDataset(self,evt):
+        """
+        Method: onSaveDataset
+        Created: 24.05.2006, KP
+        Description: Process the dataset
+        """
+        messenger.send(None,"process_dataset")
+
     def onContextHelp(self,evt):
         """
         Method: onContexHelp
@@ -1235,7 +1247,7 @@ class MainWindow(wx.Frame):
         try:
         #    Logging.info("Loading from data source ",datasource,kw="io")
             dataunits = datasource.loadFromFile(path)
-        except GUIError,ex:
+        except Logging.GUIError,ex:
             ex.show()
 
         #print dataunits[0].getSettings().get("Type")
@@ -1421,6 +1433,7 @@ class MainWindow(wx.Frame):
         if not self.visualizer:
             self.visPanel = wx.SashLayoutWindow(self.visWin,-1)
             self.visualizer=Visualizer.Visualizer(self.visPanel,self.menuManager,self)
+            scripting.visualizer = self.visualizer
             self.menuManager.setVisualizer(self.visualizer)
             self.visualizer.setProcessedMode(processed)
         self.visualizer.enable(0)

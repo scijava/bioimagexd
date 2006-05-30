@@ -173,6 +173,7 @@ class LsmDataSource(DataSource.DataSource):
             "%d, but no channel number has been specified"%(i))
             return None
     
+        #Logging.backtrace()
         self.timepoint=i
         self.reader.SetUpdateTimePoint(i)
         self.reader.SetUpdateChannel(self.channelNum)

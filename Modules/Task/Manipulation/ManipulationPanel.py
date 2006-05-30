@@ -72,6 +72,7 @@ class ManipulationPanel(TaskPanel.TaskPanel):
         self.menu = None
         self.currentGUI = None
 
+        self.onByDefault = 0
         self.Show()
         self.filters = []
         self.currentSelected = -1
@@ -376,15 +377,6 @@ class ManipulationPanel(TaskPanel.TaskPanel):
             self.menu = menu
         self.addBtn.PopupMenu(self.menu,event.GetPosition())
         
-    def updateTimepoint(self,event):
-        """
-        Method: updateTimepoint(event)
-        Created: 04.04.2005, KP
-        Description: A callback function called when the timepoint is changed
-        """
-        timePoint=event.getValue()
-        self.timePoint=timePoint
- 
 
     def doFilterCheckCallback(self,event=None):
         """
@@ -442,6 +434,11 @@ class ManipulationPanel(TaskPanel.TaskPanel):
         # Pass flag force which indicates that we do want an item toolbar
         # although we only have one input channel
         n=TaskPanel.TaskPanel.createItemToolbar(self,force=1)
+        for i,tid in enumerate(self.toolIds):
+            self.dataUnit.setOutputChannel(i,0)
+            self.toolMgr.toggleTool(tid,0)
+        
+        
         ctf=vtk.vtkColorTransferFunction()
         ctf.AddRGBPoint(0,0,0,0)
         ctf.AddRGBPoint(255,1,1,1)
@@ -470,9 +467,6 @@ class ManipulationPanel(TaskPanel.TaskPanel):
         name="Manipulation"
         self.toolMgr.addItem(name,bmp,toolid,lambda e,x=n,s=self:s.setPreviewedData(e,x))        
         
-        for i,tid in enumerate(self.toolIds):
-            self.dataUnit.setOutputChannel(i,0)
-            self.toolMgr.toggleTool(tid,0)
         self.toolIds.append(toolid)
         self.dataUnit.setOutputChannel(len(self.toolIds),1)
         self.toolMgr.toggleTool(toolid,1)
@@ -490,8 +484,7 @@ class ManipulationPanel(TaskPanel.TaskPanel):
         TaskPanel.TaskPanel.setCombinedDataUnit(self,dataUnit)
         n=0
         for i,dataunit in enumerate(dataUnit.getSourceDataUnits()):
-            print "Setting channel ",i,"on"
-            dataUnit.setOutputChannel(i,1)
+            dataUnit.setOutputChannel(i,0)
             n=i
         self.dataUnit.setOutputChannel(n+1,1)
         self.updateSettings()

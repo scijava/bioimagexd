@@ -78,6 +78,7 @@ class TaskPanel(scrolled.ScrolledPanel):
         self.buttonPanel = wx.Panel(self,-1)
         self.root=root
         self.preview=None
+        self.onByDefault = 1
 
         #self.Bind(wx.EVT_CLOSE,self.closeWindowCallback)
         self.mainsizer=wx.GridBagSizer()
@@ -203,8 +204,8 @@ class TaskPanel(scrolled.ScrolledPanel):
             toolid=wx.NewId()
             self.toolIds.append(toolid)
             self.toolMgr.addItem(name,bmp,toolid,lambda e,x=n,s=self:s.setPreviewedData(e,x))
-            self.toolMgr.toggleTool(toolid,1)
-            self.dataUnit.setOutputChannel(i,1)
+            self.toolMgr.toggleTool(toolid,self.onByDefault)
+            self.dataUnit.setOutputChannel(i,self.onByDefault)
             n=n+1
         if self.channelBox:
             self.channelBox.SetSelection(0)
@@ -229,8 +230,8 @@ class TaskPanel(scrolled.ScrolledPanel):
         self.previewButton.Bind(wx.EVT_BUTTON,self.doPreviewCallback)
         self.buttonsSizer2.Add(self.previewButton,1,wx.RIGHT|wx.TOP|wx.ALIGN_CENTER,10)
         
-        self.processButton=wx.Button(self.buttonPanel,-1,"Process")
-        self.buttonsSizer2.Add(self.processButton,1,wx.RIGHT|wx.TOP|wx.ALIGN_CENTER,10)
+        #self.processButton=wx.Button(self.buttonPanel,-1,"Process")
+        #self.buttonsSizer2.Add(self.processButton,1,wx.RIGHT|wx.TOP|wx.ALIGN_CENTER,10)
 
         self.helpButton=wx.Button(self.buttonPanel,-1,"Help")
         self.helpButton.Bind(wx.EVT_BUTTON,self.onHelp)

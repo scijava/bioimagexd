@@ -213,8 +213,11 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         """
         Logging.info("Selected item "+str(item),kw="preview")
         self.selectedItem = item
-        self.settings = self.dataUnit.getSourceDataUnits()[item].getSettings()
-        self.settings.set("PreviewedDataset",item)
+        if scripting.visualizer.getProcessedMode():
+            self.settings = self.dataUnit.getSourceDataUnits()[item].getSettings()
+            self.settings.set("PreviewedDataset",item)
+        else:
+            self.settings = self.dataUnit.getSettings()
         if update:
             self.updatePreview(1)
         
@@ -252,8 +255,13 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         Created: 02.04.2005, KP
         Description: Method that is called when the right mouse button is
                      pressed down on this item
-        """      
-        self.PopupMenu(self.menu,event.GetPosition())
+        """ 
+        x,y=event.GetPosition()
+        shape=self.FindShape(x,y)
+        if shape:
+            event.Skip()
+        else:
+            self.PopupMenu(self.menu,event.GetPosition())
                 
         
     def getVoxelValue(self,event):
@@ -308,6 +316,7 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         Parameters:
                 tp      The timepoint to show
         """
+        print "Setting timepoint for preview frame=",tp
         timePoint=tp
         if self.timePoint!=timePoint:
             self.timePoint=timePoint
@@ -391,7 +400,8 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         if not self.running:
             renew=1
             self.running=1
-        if isinstance(self.dataUnit,CombinedDataUnit):
+        #if isinstance(self.dataUnit,CombinedDataUnit):
+        if scripting.visualizer.getProcessedMode():
             try:
                 z=self.z
                 # if we're doing a MIP, we need to set z to -1
@@ -410,7 +420,10 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         if not preview:
             Logging.info("Creating black preview",kw="preview")
             if not self.blackImage:
-                data=self.dataUnit.getSourceDataUnits()[0].getTimePoint(0)
+                if scripting.visualizer.getProcessedMode():
+                    data=self.dataUnit.getSourceDataUnits()[0].getTimePoint(0)
+                else:
+                    data = self.dataUnit.getTimePoint(0)
                 extent=data.GetExtent()
                 dims=data.GetDimensions()
                 self.blackImage=vtk.vtkImageData()
@@ -567,7 +580,9 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         Parameters:
         """
         if self.dataUnit:
-            ct = self.settings.get("ColorTransferFunction")
+            #ct = self.settings.get("ColorTransferFunction")
+            ct = self.dataUnit.getColorTransferFunction()
+                
             #print "Mapping through",ct
             val=[0,0,0]
             if self.selectedItem != -1:
@@ -698,15 +713,19 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
             self.Scroll(sx,sy)
             self.scrollTo=None
 
-    def paintPreview(self):
+    def paintPreview(self, clientdc = None):
         """
         Method: paintPreview()
         Created: 24.03.2005, KP
         Description: Paints the image to a DC
-        """
+        """        
+        if not clientdc:
+            clientdc = wx.ClientDC(self)
+        else:
+            print "USING CLIENTDC=",clientdc
         if not self.slice:
             Logging.info("Black preview",kw="preview")
-            dc = self.dc = wx.BufferedDC(wx.ClientDC(self),self.buffer)
+            dc = self.dc = wx.BufferedDC(clientdc,self.buffer)
             dc.BeginDrawing()
             dc.SetBackground(wx.Brush(wx.Colour(0,0,0)))
             dc.SetPen(wx.Pen(wx.Colour(0,0,0),0))
@@ -744,7 +763,7 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
             self.setScrollbars(w,h)
 
         Logging.info("Buffer for drawing=",self.buffer.GetWidth(),self.buffer.GetHeight(),kw="preview")
-        dc = self.dc = wx.BufferedDC(wx.ClientDC(self),self.buffer)
+        dc = self.dc = wx.BufferedDC(clientdc,self.buffer)
         
         if self.zoomx!=1 or self.zoomy!=1:
             w,h=bmp.GetWidth(),bmp.GetHeight()

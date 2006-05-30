@@ -294,7 +294,10 @@ class CombinedDataUnit(DataUnit.DataUnit):
             #self.sourceunits.append(unit)
         for i in self.sourceunits:
             i.getSettings().set("ColorTransferFunction",i.getColorTransferFunction())
-        
+
+    def getColorTransferFunction(self):
+        return self.sourceunit[0].getColorTransferFunction()
+
     def doPreview(self, depth,renew,timePoint=0):
         """
         Method: doPreview
@@ -367,7 +370,7 @@ class CombinedDataUnit(DataUnit.DataUnit):
                 merged.append((preview,self.getColorTransferFunction()))
            
             if len(merged)>1:
-                print "Merging..."
+                #print "Merging..."
                 #createalpha=vtk.vtkImageAlphaFilter()
                 #createalpha.GetOutput().ReleaseDataFlagOn()                
                 #createalpha.MaximumModeOn()
@@ -377,7 +380,7 @@ class CombinedDataUnit(DataUnit.DataUnit):
                     merge.AddInput(data)
                     merge.AddLookupTable(ctf)
                     #createalpha.AddInput(data)
-                print "Update..."
+                #print "Update..."
                 merge.Update()
                 preview=merge.GetOutput()
             elif len(merged)==1:
