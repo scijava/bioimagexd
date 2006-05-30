@@ -425,9 +425,11 @@ class Visualizer:
         self.tb.AddSimpleTool(MenuManager.ID_DRAG_ANNOTATION,wx.Image(os.path.join(icondir,"arrow.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Manage annotations","Manage annotations on the image")
         
         bmp = wx.ArtProvider_GetBitmap(wx.ART_DELETE,wx.ART_TOOLBAR, (32,32))
-	if not bmp:
-	    bmp = wx.Image(os.path.join(icondir,"delete_annotation.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap()
-	self.tb.AddSimpleTool(MenuManager.ID_DEL_ANNOTATION,bmp,"Delete annotation","Delete an annotation")
+
+        if not bmp:
+            bmp = wx.Image(os.path.join(icondir,"delete_annotation.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap()
+        self.tb.AddSimpleTool(MenuManager.ID_DEL_ANNOTATION,bmp,"Delete annotation","Delete an annotation")
+
         
         self.tb.AddSimpleTool(MenuManager.ID_ADD_SCALE,wx.Image(os.path.join(icondir,"scale.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Draw scale","Draw a scale bar on the image")
         
@@ -439,9 +441,9 @@ class Visualizer:
         
         self.tb.AddControl(self.origBtn)
         
- #       self.tb.AddSimpleTool(MenuManager.ID_ROI_CIRCLE,wx.Image(os.path.join(icondir,"circle.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Select circle","Select a circular area of the image")
- #       self.tb.AddSimpleTool(MenuManager.ID_ROI_RECTANGLE,wx.Image(os.path.join(icondir,"rectangle.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Select rectangle","Select a rectangular area of the image")
- #       self.tb.AddSimpleTool(MenuManager.ID_ROI_POLYGON,wx.Image(os.path.join(icondir,"polygon.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Select polygon","Select a polygonal area of the image")
+        self.tb.AddSimpleTool(MenuManager.ID_ROI_CIRCLE,wx.Image(os.path.join(icondir,"circle.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Select circle","Select a circular area of the image")
+        self.tb.AddSimpleTool(MenuManager.ID_ROI_RECTANGLE,wx.Image(os.path.join(icondir,"rectangle.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Select rectangle","Select a rectangular area of the image")
+        self.tb.AddSimpleTool(MenuManager.ID_ROI_POLYGON,wx.Image(os.path.join(icondir,"polygon.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Select polygon","Select a polygonal area of the image")
 
     
         self.pitch=wx.SpinButton(self.tb, MenuManager.PITCH,style=wx.SP_VERTICAL)
@@ -469,9 +471,9 @@ class Visualizer:
         wx.EVT_TOOL(self.parent,MenuManager.ID_ADD_SCALE,self.addAnnotation)
         wx.EVT_TOOL(self.parent,MenuManager.ID_DRAG_ANNOTATION,self.manageAnnotation)
         wx.EVT_TOOL(self.parent,MenuManager.ID_DEL_ANNOTATION,self.deleteAnnotation)
-#        wx.EVT_TOOL(self.parent,MenuManager.ID_ROI_CIRCLE,self.addAnnotation)
-#        wx.EVT_TOOL(self.parent,MenuManager.ID_ROI_RECTANGLE,self.addAnnotation)
-#        wx.EVT_TOOL(self.parent,MenuManager.ID_ROI_POLYGON,self.addAnnotation)
+        wx.EVT_TOOL(self.parent,MenuManager.ID_ROI_CIRCLE,self.addAnnotation)
+        wx.EVT_TOOL(self.parent,MenuManager.ID_ROI_RECTANGLE,self.addAnnotation)
+        wx.EVT_TOOL(self.parent,MenuManager.ID_ROI_POLYGON,self.addAnnotation)
         
         self.zoomCombo.Bind(wx.EVT_COMBOBOX,self.zoomToComboSelection)
         self.tb1.Realize()     
@@ -562,13 +564,13 @@ class Visualizer:
         eid=event.GetId()
         multiple=0
         if eid==MenuManager.ID_ADD_SCALE:
-            annclass=Annotation.ScaleBar
+            annclass="SCALEBAR"
         if eid == MenuManager.ID_ROI_CIRCLE:
-            annclass=Annotation.Circle
+            annclass="CIRCLE"
         elif eid==MenuManager.ID_ROI_RECTANGLE:
-            annclass=Annotation.Rectangle
+            annclass="RECTANGLE"
         elif eid==MenuManager.ID_ROI_POLYGON:
-            annclass=Annotation.Polygon
+            annclass="POLYGON"
             multiple=1
         else:
             Logging.info("BOGUS ANNOTATION SELECTED!",kw="visualizer")
@@ -1144,6 +1146,7 @@ class Visualizer:
         Description: Update the timepoint according to an event
         """
         #tp=event.getValue()
+        
         self.setTimepoint(tp)
 
     def onSetTimeslider(self,obj,event,tp):
@@ -1302,6 +1305,7 @@ class Visualizer:
         Created: 28.04.2005, KP
         Description: Set the timepoint to be shown
         """  
+        print "blockTpUpdate=",self.blockTpUpdate
         if self.blockTpUpdate:return
 
         Logging.info("setTimepoint(%d)"%timepoint,kw="visualizer")
