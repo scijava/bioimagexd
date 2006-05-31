@@ -66,7 +66,7 @@ class WarpScalarModule(VisualizationModule):
         #DataGeometry filter, image to polygons
         self.geometry = vtk.vtkImageDataGeometryFilter()
         
-        
+        self.colorMapper = None
         #warp scalars!
         self.warp = vtk.vtkWarpScalar()
         self.warp.SetScaleFactor(-0.1)
@@ -77,10 +77,7 @@ class WarpScalarModule(VisualizationModule):
         self.normals = vtk.vtkPolyDataNormals()        
         self.normals.SetFeatureAngle (90)
         #first the mapper
-        self.mapper = vtk.vtkDataSetMapper()
-        
-        self.mapper.SetScalarRange(0,255)
-        self.mapper.ImmediateModeRenderingOff()
+        self.mapper = vtk.vtkPolyDataMapper()
         
         #make the actor from the mapper
         self.actor = vtk.vtkActor()
@@ -190,23 +187,50 @@ class WarpScalarModule(VisualizationModule):
         dims = self.data.GetDimensions()
         x,y,z=dims
         z = self.parameters["Slice"]
-        self.geometry.SetInput(data)
         ext=(0,x-1,0,y-1,z,z)
+
+        voi = vtk.vtkExtractVOI()
+        voi.SetVOI(ext)
+        voi.SetInput(data)
+        slice = voi.GetOutput()
+        self.geometry.SetInput(slice)         
         
-        self.geometry.SetExtent(ext)
         self.warp.SetInput(self.geometry.GetOutput())
-        self.warp.SetScaleFactor(self.parameters["Scale"])
+        self.warp.SetScaleFactor(self.parameters["Scale"])        
+        
         self.merge.SetGeometry(self.warp.GetOutput())
-        self.merge.SetScalars(self.data)
+
+        
+        if slice.GetNumberOfScalarComponents()==1:
+            maptocol=vtk.vtkImageMapToColors()
+            ctf = self.dataUnit.getColorTransferFunction()
+            print "Mapping through..."
+            maptocol.SetInput(slice)
+            maptocol.SetLookupTable(ctf)
+            maptocol.Update()
+            scalars = maptocol.GetOutput()
+            w=vtk.vtkPNGWriter()
+            w.SetInput(scalars)
+            w.SetFileName("foo.png")
+            w.Write()
+        else:
+            scalars = slice
+            
+        self.merge.SetScalars(scalars)
+        
         data = self.merge.GetOutput()
+        
         if self.parameters["Normals"]:
-            self.normals.SetInput(self.merge.GetOutput())
+            self.normals.SetInput(data)
             self.normals.SetFeatureAngle(self.parameters["FeatureAngle"])
-            print "Feature angle=",self.parameters["FeatureAngle"]
+            print "Feature angle=",self.parameters["FeatureAngle"]            
             data = self.normals.GetOutput()
+        
+        
         self.mapper.SetInput(data)
-                
-        #self.mapper.Update()
+
+        
+        self.mapper.Update()
         VisualizationModule.updateRendering(self)
         self.parent.Render()    
 
