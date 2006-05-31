@@ -56,6 +56,15 @@ class DataUnit:
         self.mip=None
         self.mipTimepoint=-1
 
+    def isProcessed(self):
+        """
+        Method: isProcessed
+        Created: 31.05.2005, KP
+        Description: A method for querying whether this dataset is a processed one
+        """    
+        return 0
+
+
     def getDataSource(self):
         """
         Method: getDataSet
@@ -182,6 +191,7 @@ class DataUnit:
                 n       The timepoint we need to return
         """
         if not self.dataSource:
+            print self,self.name
             raise "No datasource specified"
             Logging.error("No datasource specified",
             "No datasource specified for DataUnit, unable to get timepoint!")
@@ -293,17 +303,9 @@ class DataUnit:
 
     def getFileName(self):
         """
-        Method: __str__
+        Method: getFileNam()
         Created: 21.03.2006, KP
         Description: Return the path to the file this dataunit represents
         """
         return self.dataSource.getFileName()
         
-        
-    def __str__(self):
-        """
-        Method: __str__
-        Created: 27.03.2005, KP
-        Description: Return the path to the file this dataunit represents
-        """
-        return str(self.dataSource)

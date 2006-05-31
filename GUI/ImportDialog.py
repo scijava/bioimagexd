@@ -65,7 +65,7 @@ class ImportDialog(wx.Dialog):
         self.imageInfo = None
         self.pattern=0
         self.extMapping = {"tif":"TIFF","tiff":"TIFF","png":"PNG","jpg":"JPEG","jpeg":"JPEG","pnm":"PNM","vti":"XMLImageData","vtk":"DataSet","bmp":"BMP"}
-        self.dimMapping={"tif":2,"tiff":2,"png":2,"jpg":2,"jpeg":2,"pnm":2,"vti":3,"vtk":3}
+        self.dimMapping={"bmp":2,"tif":2,"tiff":2,"png":2,"jpg":2,"jpeg":2,"pnm":2,"vti":3,"vtk":3}
         
         self.notebook.AddPage(self.imagePanel,"Import dataset")
 
@@ -125,6 +125,9 @@ class ImportDialog(wx.Dialog):
             style = wx.PD_ELAPSED_TIME|wx.PD_REMAINING_TIME)        
             for i,file in enumerate(files):   
                 rdr = eval(self.rdrstr)
+                if ext =="bmp":
+                    rdr.Allow8BitBMPOn()
+                    
                 # This is not required for VTK dataset readers, so 
                 # we ignore any errors 0
                 Logging.info("Reading ",file,kw="io")
@@ -160,6 +163,9 @@ class ImportDialog(wx.Dialog):
                     
                 for i in range(start,imgAmnt+start,self.z):
                     rdr = eval(self.rdrstr)
+                    if ext =="bmp":
+                        rdr.Allow8BitBMPOn()
+
                     rdr.SetDataExtent(0,self.x-1,0,self.y-1,0,self.z-1)
                     rdr.SetDataSpacing(self.spacing)
                     rdr.SetDataOrigin(0,0,0)
@@ -179,6 +185,9 @@ class ImportDialog(wx.Dialog):
                 tps = imgAmnt / self.z
                 for i in range(tps):
                     rdr = eval(self.rdrstr)
+                    if ext =="bmp":
+                        rdr.Allow8BitBMPOn()
+
                     rdr.SetDataExtent(0,self.x-1,0,self.y-1,0,self.z-1)
                     rdr.SetDataSpacing(self.spacing)
                     rdr.SetDataOrigin(0,0,0)
@@ -571,7 +580,11 @@ class ImportDialog(wx.Dialog):
         """        
         ext=filename.split(".")[-1].lower()
         rdr = "vtk.vtk%sReader()"%self.extMapping[ext]
+        
         rdr=eval(rdr)
+        if ext =="bmp":
+            rdr.Allow8BitBMPOn()
+        
         rdr.SetFileName(filename)
         rdr.Update()
         data=rdr.GetOutput()

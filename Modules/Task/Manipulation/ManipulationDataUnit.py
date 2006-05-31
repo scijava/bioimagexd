@@ -90,10 +90,3 @@ class ManipulationDataUnit(CombinedDataUnit):
         return ManipulationSettings.ManipulationSettings
 
         
-    def __str__(self):
-        """
-        Method: __str__
-        Created: 02.06.2005, KP
-        Description: Return string representation of self
-        """
-        return str(self.__class__)

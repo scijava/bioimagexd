@@ -213,7 +213,8 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         """
         Logging.info("Selected item "+str(item),kw="preview")
         self.selectedItem = item
-        if scripting.visualizer.getProcessedMode():
+        print "dataunit=",self.dataUnit
+        if self.dataUnit.isProcessed():
             self.settings = self.dataUnit.getSourceDataUnits()[item].getSettings()
             self.settings.set("PreviewedDataset",item)
         else:
@@ -401,7 +402,7 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
             renew=1
             self.running=1
         #if isinstance(self.dataUnit,CombinedDataUnit):
-        if scripting.visualizer.getProcessedMode():
+        if self.dataUnit.isProcessed():
             try:
                 z=self.z
                 # if we're doing a MIP, we need to set z to -1
@@ -420,7 +421,7 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         if not preview:
             Logging.info("Creating black preview",kw="preview")
             if not self.blackImage:
-                if scripting.visualizer.getProcessedMode():
+                if self.dataUnit.isProcessed():
                     data=self.dataUnit.getSourceDataUnits()[0].getTimePoint(0)
                 else:
                     data = self.dataUnit.getTimePoint(0)

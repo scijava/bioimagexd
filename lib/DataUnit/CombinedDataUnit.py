@@ -58,6 +58,14 @@ class CombinedDataUnit(DataUnit.DataUnit):
         self.module = None
         self.outputChls={}
         
+    def isProcessed(self):
+        """
+        Method: isProcessed
+        Created: 31.05.2005, KP
+        Description: A method for querying whether this dataset is a processed one
+        """    
+        return 1
+        
     def setOutputChannel(self,ch,flag):
         """
         Method: setOutputChannel(ch,flag)
@@ -296,7 +304,7 @@ class CombinedDataUnit(DataUnit.DataUnit):
             i.getSettings().set("ColorTransferFunction",i.getColorTransferFunction())
 
     def getColorTransferFunction(self):
-        return self.sourceunit[0].getColorTransferFunction()
+        return self.sourceunits[0].getColorTransferFunction()
 
     def doPreview(self, depth,renew,timePoint=0):
         """
@@ -368,7 +376,7 @@ class CombinedDataUnit(DataUnit.DataUnit):
         if self.outputChls:
             if preview:
                 merged.append((preview,self.getColorTransferFunction()))
-           
+            
             if len(merged)>1:
                 #print "Merging..."
                 #createalpha=vtk.vtkImageAlphaFilter()
@@ -407,17 +415,6 @@ class CombinedDataUnit(DataUnit.DataUnit):
         """
         return 8
 
-
-    def getColor(self):
-        """
-        Method: getColor()
-        Created: 27.03.2005, KP
-        Description: An "approximation" of getColor(), since this is
-                     for simple use only.
-        """
-        if not len(self.sourceunits):
-            return (0,0,0)
-        return self.sourceunits[0].getColor()
         
     def getSettingsClass(self):
         """

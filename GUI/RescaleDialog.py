@@ -150,7 +150,6 @@ color depth. Use the histograms below to the select how the intensities in your 
         moduletype = self.taskPanels["Merging"][0]
         module=moduletype()
         self.mergeUnit.setModule(module)
-        
         self.preview.setDataUnit(self.mergeUnit)
         self.preview.updatePreview()
         self.sizer.Fit(self)
