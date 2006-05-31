@@ -257,8 +257,7 @@ class GUIBuilder(wx.Panel):
                             val = currentFilter.getDefaultValue(itemName)
                             minval,maxval = currentFilter.getRange(itemName)
                             print "Value for ",itemName,"=",val,"range=",minval,maxval
-                            x=maxval*3
-                            if x>200:x=200
+                            x=200
                             slider = wx.Slider(self,-1, value=val, minValue=minval, maxValue=maxval,
                             style = wx.SL_HORIZONTAL|wx.SL_LABELS|wx.SL_AUTOTICKS,
                             size=(x,-1))
