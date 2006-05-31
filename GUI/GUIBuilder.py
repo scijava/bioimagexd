@@ -35,11 +35,129 @@ import types
 import Histogram
 import wx.lib.buttons as buttons
 import messenger
+import RangedSlider
 
 RADIO_CHOICE="RADIO_CHOICE"
 THRESHOLD="THRESHOLD"
 PIXEL="PIXEL"
 PIXELS="PIXELS"
+SLICE="SLICE"
+
+class GUIBuilderBaseModule:
+    """
+    Class: GUIBuilderBaseModule
+    Created: 31.05.2006, KP
+    Description: A base class for modules that intend to use GUI builder
+    """ 
+    def __init__(self, changeCallback):
+        """
+        Method: __init__()
+        Created: 13.04.2006, KP
+        Description: Initialization
+        """
+        self.parameters = {}
+        self.gui = None
+        self.modCallback = changeCallback
+        for item in self.getPlainParameters():
+            self.setParameter(item,self.getDefaultValue(item))
+    
+    def canSelectChannels(self):
+        """
+        Method: canSelectChannels
+        Created: 31.05.2006, KP
+        Description: Should it be possible to select the channel
+        """          
+        return 1
+    
+    def getParameters(self):
+        """
+        Method: getParameters
+        Created: 13.04.2006, KP
+        Description: Return the list of parameters needed for configuring this GUI
+        """  
+        return []
+    
+    def getPlainParameters(self):
+        """
+        Method: getPlainParameters
+        Created: 15.04.2006, KP
+        Description: Return whether this filter is enabled or not
+        """
+        ret=[]
+        for item in self.getParameters():
+            # If it's a label
+            if type(item)==types.StringType:
+                continue
+            elif type(item)==types.ListType:
+                title,items=item
+                if type(items[0]) == types.TupleType:
+                    items=items[0]
+                ret.extend(items)
+        return ret
+        
+    def setParameter(self,parameter,value):
+        """
+        Method: setParameter
+        Created: 13.04.2006, KP
+        Description: Set a value for the parameter
+        """    
+        self.parameters[parameter]=value
+        if self.modCallback:
+            self.modCallback(self)
+#
+    def getParameter(self,parameter):
+        """
+        Method: getParameter
+        Created: 29.05.2006, KP
+        Description: Get a value for the parameter
+        """    
+        if parameter in self.parameters:
+            return self.parameters[parameter]
+        return None
+        
+    def getDesc(self,parameter):
+        """
+        Method: getDesc
+        Created: 13.04.2006, KP
+        Description: Return the description of the parameter
+        """    
+        try:
+            return self.descs[parameter]
+        except:            
+            return ""
+        
+    def getLongDesc(self,parameter):
+        """
+        Method: getLongDesc
+        Created: 13.04.2006, KP
+        Description: Return the long description of the parameter
+        """    
+        return ""
+        
+    def getType(self,parameter):
+        """
+        Method: getType
+        Created: 13.04.2006, KP
+        Description: Return the type of the parameter
+        """    
+        return types.IntType
+        
+    def getRange(self, parameter):
+        """
+        Method: getRange
+        Created: 31.05.2006, KP
+        Description: If a parameter has a certain range of valid values, the values can be queried with this function
+        """           
+        return -1,-1
+        
+    def getDefaultValue(self,parameter):
+        """
+        Method: getDefaultValue
+        Created: 13.04.2006, KP
+        Description: Return the default value of a parameter
+        """           
+        return 0
+
 
 class GUIBuilder(wx.Panel):
     """
@@ -50,7 +168,7 @@ class GUIBuilder(wx.Panel):
     def __init__(self,parent,myfilter):
         """
         Method: __init__()
-        Created: 13.04.2007, KP
+        Created: 13.04.2006, KP
         Description: Initialization
         """ 
         wx.Panel.__init__(self,parent,-1)
@@ -67,7 +185,7 @@ class GUIBuilder(wx.Panel):
     def buildGUI(self,currentFilter):
         """
         Method: buildGUI
-        Created: 13.04.2007, KP
+        Created: 13.04.2006, KP
         Description: Build the GUI for a given filter
         """ 
         self.currentFilter = currentFilter
@@ -80,11 +198,12 @@ class GUIBuilder(wx.Panel):
         sizer=wx.GridBagSizer()
         sboxsizer.Add(sizer)
         
-        chlSel = self.buildChannelSelection()
+        if currentFilter.canSelectChannels():
+            chlSel = self.buildChannelSelection()
         
-        sizer.Add(chlSel,(gy,0),span=(1,2))
+            sizer.Add(chlSel,(gy,0),span=(1,2))
         
-        gy+=1
+            gy+=1
         
         for param in parameters:
             # If it's a list with header name and items
@@ -98,13 +217,18 @@ class GUIBuilder(wx.Panel):
                     if skip:
                         skip-=1
                         continue
-                    if type(item) != types.TupleType:
+                    itemName=item
+                    if type(item)==types.TupleType:
+                        itemType = currentFilter.getType(item[0])
+                        itemName=item[0]
+                    else:
+                        itemType = currentFilter.getType(item)
+                    if itemType not in [RADIO_CHOICE, SLICE, PIXEL, PIXELS, THRESHOLD]:
                         self.processItem(currentFilter,itemsizer,item,x=0,y=y)
                         y+=1
                     else: # Items that are contained in a tuple ask to be grouped
                           # together
-                        print "Handling ",item,"as a group"
-                        if currentFilter.getType(item[0]) == RADIO_CHOICE:
+                        if itemType == RADIO_CHOICE:
                             # Indicate that we need to skip next item
                             skip=1
                             print item
@@ -124,7 +248,26 @@ class GUIBuilder(wx.Panel):
                             box.Bind(wx.EVT_RADIOBOX,func)
                             sboxname=""
                             itemsizer.Add(box,(0,0))
-                        elif currentFilter.getType(item[0]) == PIXEL:
+                        elif itemType == SLICE:
+                            text = currentFilter.getDesc(itemName)
+                            box = wx.BoxSizer(wx.VERTICAL)
+                            lbl = wx.StaticText(self,-1,text)
+                            box.Add(lbl)
+                            
+                            val = currentFilter.getDefaultValue(itemName)
+                            minval,maxval = currentFilter.getRange(itemName)
+                            print "Value for ",itemName,"=",val,"range=",minval,maxval
+                            x=maxval*3
+                            if x>200:x=200
+                            slider = wx.Slider(self,-1, value=val, minValue=minval, maxValue=maxval,
+                            style = wx.SL_HORIZONTAL|wx.SL_LABELS|wx.SL_AUTOTICKS,
+                            size=(x,-1))
+                            func = lambda evt, its=item, f=currentFilter:self.onSetSliderValue(evt,its,f)
+                            slider.Bind(wx.EVT_SCROLL,func)
+                            box.Add(slider,1)
+                            itemsizer.Add(box,(y,0),flag=wx.EXPAND|wx.HORIZONTAL)
+                            y+=1
+                        elif itemType == PIXEL:
                             print "Creating pixel selection"
                             lbl = wx.StaticText(self,-1,"(%d,%d,%d)"%(0,0,0),size=(80,-1))
                             btn = wx.Button(self,-1,"Set seed")
@@ -139,7 +282,7 @@ class GUIBuilder(wx.Panel):
                             func = lambda obj,evt,rx,ry,rz,r,g,b,alpha,currentCt,its=item,f=currentFilter:self.onSetPixel(obj,evt,rx,ry,rz,r,g,b,alpha,currentCt,its,f,lbl)
                             messenger.connect(None,"get_voxel_at",func)
                             
-                        elif currentFilter.getType(item[0]) == PIXELS:
+                        elif itemType == PIXELS:
                             print "Creating multiple pixels selection"
                             pixelsizer = wx.GridBagSizer()
                             seedbox = wx.ListBox(self,-1,size=(100,150))
@@ -162,7 +305,7 @@ class GUIBuilder(wx.Panel):
                             messenger.connect(None,"get_voxel_at",func)
                             itemsizer.Add(pixelsizer,(0,0))
                             
-                        elif currentFilter.getType(item[0]) == THRESHOLD:
+                        elif itemType == THRESHOLD:
                             print "Creating threshold selection"
                             histogram = Histogram.Histogram(self)
                             self.histograms.append(histogram)
@@ -202,7 +345,7 @@ class GUIBuilder(wx.Panel):
     def buildChannelSelection(self):
         """
         Method: buildChannelSelection
-        Created: 17.04.2007, KP
+        Created: 17.04.2006, KP
         Description: Build a GUI for selecting the source channels
         """                     
         chmin,chmax = self.currentFilter.getNumberOfInputs()
@@ -228,7 +371,7 @@ class GUIBuilder(wx.Panel):
     def onSetInputChannel(self,currentFilter,inputNum,evt):
         """
         Method: onSetInputChannel
-        Created: 17.04.2007, KP
+        Created: 17.04.2006, KP
         Description: Set the input channel number #inputNum
         """              
         n = evt.GetSelection()
@@ -237,7 +380,7 @@ class GUIBuilder(wx.Panel):
     def processItem(self,currentFilter, itemsizer, item, x,y):
         """
         Method: processItem
-        Created: 15.04.2007, KP
+        Created: 15.04.2006, KP
         Description: Build the GUI related to one specific item
         """              
         desc = currentFilter.getDesc(item)
@@ -264,13 +407,11 @@ class GUIBuilder(wx.Panel):
             itemsizer.Add(lbl,(y,x))
             x2+=1
         itemsizer.Add(input,(y,x2))
-    
-        
                         
     def createNumberInput(self,currentFilter,item,itemType,defaultValue,label = ""):
         """
         Method: createIntInput
-        Created: 15.04.2007, KP
+        Created: 15.04.2006, KP
         Description: Return the input for int type
         """        
         input = wx.TextCtrl(self,-1,str(defaultValue))
@@ -281,7 +422,7 @@ class GUIBuilder(wx.Panel):
     def createBooleanInput(self,currentFilter,item,itemType,defaultValue, label = ""):
         """
         Method: createBooleanInput
-        Created: 15.04.2007, KP
+        Created: 15.04.2006, KP
         Description: Return the input for boolean type
         """        
         input = wx.CheckBox(self,-1,label)
@@ -293,7 +434,7 @@ class GUIBuilder(wx.Panel):
     def removeSeed(self,listbox,currFilter):
         """
         Method: removeSeed
-        Created: 29.05.2007, KP
+        Created: 29.05.2006, KP
         Description: Remove a seed from filter
         """         
         item=listbox.itemName
@@ -313,7 +454,7 @@ class GUIBuilder(wx.Panel):
     def onAddPixel(self,obj,evt,rx,ry,rz,r,g,b,alpha,ctf,item,currFilter,listbox):
         """
         Method: onAddPixel
-        Created: 29.05.2007, KP
+        Created: 29.05.2006, KP
         Description: Add a value to the pixel listbox
         """             
         #print "Set pixel",obj,evt,rx,ry,rz,r,g,b,alpha,item,currFilter
@@ -331,7 +472,7 @@ class GUIBuilder(wx.Panel):
     def onSetPixel(self,obj,evt,rx,ry,rz,r,g,b,alpha,ctf,item,currFilter,valuelbl):
         """
         Method: onSetPixel
-        Created: 26.05.2007, KP
+        Created: 26.05.2006, KP
         Description: Set the value of the pixel label
         """             
         #print "Set pixel",obj,evt,rx,ry,rz,r,g,b,alpha,item,currFilter
@@ -346,17 +487,27 @@ class GUIBuilder(wx.Panel):
     def onSetThreshold(self,evt,items,currentFilter):
         """
         Method: onSelectRadioBox
-        Created: 15.04.2007, KP
+        Created: 15.04.2006, KP
         Description: Process an event from a radio box
         """      
         thresholds = evt.getThresholds()
         for i,item in enumerate(items):
             currentFilter.setParameter(item,thresholds[i])            
             
+    def onSetSliderValue(self,evt,items,currentFilter):
+        """
+        Method: onSetSliderValue
+        Created: 31.05.2006, KP
+        Description: Set the slider value
+        """      
+        value = evt.GetPosition()
+        currentFilter.setParameter(items, value)
+            
+            
     def onSelectRadioBox(self,evt,items,currentFilter):
         """
         Method: onSelectRadioBox
-        Created: 15.04.2007, KP
+        Created: 15.04.2006, KP
         Description: Process an event from a radio box
         """      
         sel = evt.GetSelection()
@@ -368,7 +519,7 @@ class GUIBuilder(wx.Panel):
     def validateAndPassOn(self,event,input,parameter,itemType,currentFilter):
         """
         Method: buildGUI
-        Created: 13.04.2007, KP
+        Created: 13.04.2006, KP
         Description: Build the GUI for a given filter
         """
         if itemType == types.IntType:

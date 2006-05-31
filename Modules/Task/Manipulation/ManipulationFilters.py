@@ -40,7 +40,7 @@ except:
 import messenger
 import scripting
 
-import ManipulationGUI
+import GUIBuilder
 import ImageOperations
 
 def getFilterList():
@@ -66,7 +66,7 @@ ITK="ITK"
 MEASUREMENT="Measurements"
 REGION_GROWING="Region Growing"
    
-class ManipulationFilter:
+class ManipulationFilter(GUIBuilder.GUIBuilderBaseModule):
     """
     Class: ManipulationFilter
     Created: 13.04.2006, KP
@@ -80,6 +80,7 @@ class ManipulationFilter:
         Created: 13.04.2006, KP
         Description: Initialization
         """
+        GUIBuilder.GUIBuilderBaseModule.__init__(changeCallback = self.notifyTaskPanel)
         self.numberOfInputs = numberOfInputs
         self.taskPanel = None
         self.parameters = {}
@@ -100,6 +101,16 @@ class ManipulationFilter:
         self.vtkToItk = None
         self.itkToVtk = None
         self.imageType = "UC3"
+        
+    def notifyTaskPanel(self, module):
+        """
+        Method: notifyTaskPanel
+        Created: 31.05.2006, KP
+        Description: Notify the task panel that filter has changed
+        """                     
+        if self.taskPanel:
+            self.taskPanel.filterModified(self)
+
         
     def setImageType(self,it):
         """
@@ -205,24 +216,6 @@ class ManipulationFilter:
         """
         return self.itkFlag
         
-    def getPlainParameters(self):
-        """
-        Method: getPlainParameters
-        Created: 15.04.2006, KP
-        Description: Return whether this filter is enabled or not
-        """
-        ret=[]
-        for item in self.getParameters():
-            # If it's a label
-            if type(item)==types.StringType:
-                continue
-            elif type(item)==types.ListType:
-                title,items=item
-                if type(items[0]) == types.TupleType:
-                    items=items[0]
-                ret.extend(items)
-        return ret
-        
     def getInput(self,n):
         """
         Method: getInput
@@ -316,7 +309,7 @@ class ManipulationFilter:
         """              
         self.taskPanel = taskPanel
         if not self.gui:
-            self.gui = ManipulationGUI.GUIBuilder(parent,self)
+            self.gui = GUIBuilder.GUIBuilder(parent,self)
         return self.gui
             
     @classmethod            
@@ -337,26 +330,6 @@ class ManipulationFilter:
         """                
         return s.category
         
-    def setParameter(self,parameter,value):
-        """
-        Method: setParameter
-        Created: 13.04.2006, KP
-        Description: Set a value for the parameter
-        """    
-        self.parameters[parameter]=value
-        if self.taskPanel:
-            self.taskPanel.filterModified(self)
-
-    def getParameter(self,parameter):
-        """
-        Method: getParameter
-        Created: 29.05.2006, KP
-        Description: Get a value for the parameter
-        """    
-        if parameter in self.parameters:
-            return self.parameters[parameter]
-        return None
-
 
     def execute(self,inputs):
         """
@@ -372,42 +345,6 @@ class ManipulationFilter:
             messenger.send(None,"show_error","Bad number of inputs to filter","Filter %s was given a wrong number of inputs"%self.name)
             return 0
         return 1
-        
-    def getDesc(self,parameter):
-        """
-        Method: getDesc
-        Created: 13.04.2006, KP
-        Description: Return the description of the parameter
-        """    
-        try:
-            return self.descs[parameter]
-        except:            
-            return ""
-        
-    def getLongDesc(self,parameter):
-        """
-        Method: getLongDesc
-        Created: 13.04.2006, KP
-        Description: Return the long description of the parameter
-        """    
-        return ""
-        
-    def getType(self,parameter):
-        """
-        Method: getType
-        Created: 13.04.2006, KP
-        Description: Return the type of the parameter
-        """    
-        return types.IntType
-        
-    def getDefaultValue(self,parameter):
-        """
-        Method: getDefaultValue
-        Created: 13.04.2006, KP
-        Description: Return the default value of a parameter
-        """           
-        return 0
-        
         
 class MorphologicalFilter(ManipulationFilter):
     """
@@ -716,7 +653,7 @@ class AnisotropicDiffusionFilter(ManipulationFilter):
         if parameter in ["Faces","Edges","Corners"]:
             return types.BooleanType
         elif parameter in ["CentralDiff","Gradient"]:
-            return ManipulationGUI.RADIO_CHOICE
+            return GUIBuilder.RADIO_CHOICE
         return types.FloatType
         
     def getDefaultValue(self,parameter):
@@ -1008,7 +945,7 @@ class ThresholdFilter(ManipulationFilter):
         Description: Return the type of the parameter
         """    
         if parameter in ["LowerThreshold","UpperThreshold"]:
-            return ManipulationGUI.THRESHOLD
+            return GUIBuilder.THRESHOLD
         elif parameter in ["ReplaceIn","ReplaceOut","Demonstrate"]:
             return types.BooleanType
         return types.IntType
@@ -2298,7 +2235,7 @@ class ITKConfidenceConnectedFilter(ManipulationFilter):
         Description: Return the type of the parameter
         """    
         if parameter == "Seed":
-            return ManipulationGUI.PIXELS
+            return GUIBuilder.PIXELS
         elif parameter == "Multiplier":
             return types.FloatType
         elif parameter == "Iterations":
@@ -2403,8 +2340,8 @@ class ITKConnectedThresholdFilter(ManipulationFilter):
         Description: Return the type of the parameter
         """    
         if parameter in ["Lower","Upper"]:
-            return ManipulationGUI.THRESHOLD
-        return ManipulationGUI.PIXELS
+            return GUIBuilder.THRESHOLD
+        return GUIBuilder.PIXELS
                 
     def getParameters(self):
         """
@@ -2504,10 +2441,10 @@ class ITKNeighborhoodConnectedThresholdFilter(ManipulationFilter):
         Description: Return the type of the parameter
         """    
         if parameter in ["Lower","Upper"]:
-            return ManipulationGUI.THRESHOLD
+            return GUIBuilder.THRESHOLD
         elif "Radius" in parameter:
             return types.IntType
-        return ManipulationGUI.PIXELS
+        return GUIBuilder.PIXELS
                 
     def getParameters(self):
         """
@@ -2604,7 +2541,7 @@ class ITKOtsuThresholdFilter(ManipulationFilter):
         Description: Return the type of the parameter
         """    
         if parameter in ["Lower","Upper"]:
-            return ManipulationGUI.THRESHOLD
+            return GUIBuilder.THRESHOLD
                 
     def getParameters(self):
         """

@@ -35,6 +35,8 @@ import vtk
 import ColorTransferEditor
 import Dialogs
 
+import GUIBuilder
+import types
 from Visualizer.VisualizationModules import *
 
 def getClass():return WarpScalarModule
@@ -54,24 +56,83 @@ class WarpScalarModule(VisualizationModule):
         Created: 03.05.2005, KP
         Description: Initialization
         """     
-        self.x,self.y,self.z=-1,-1,-1
         VisualizationModule.__init__(self,parent,visualizer,**kws)   
-        #self.name = "Clipping Plane"
-        self.on = 0
-        self.renew = 1
-        self.currentPlane=None
-        self.clipped = 0
-        self.planeWidget = vtk.vtkPlaneWidget()
-        self.planeWidget.AddObserver("InteractionEvent",self.clipVolumeRendering)
-        self.planeWidget.SetResolution(20)
-        self.planeWidget.SetRepresentationToOutline()
-        self.planeWidget.NormalToXAxisOn()
+
+        self.descs = {"Normals":"Smooth surface with Normals","FeatureAngle":"Feature Angle of Normals",
+        "Slice":"Select slice to be warped","Scale":"Scale factor for warping"}
+
+        self.luminance = vtk.vtkImageLuminance()
+        
+        #DataGeometry filter, image to polygons
+        self.geometry = vtk.vtkImageDataGeometryFilter()
+        
+        
+        #warp scalars!
+        self.warp = vtk.vtkWarpScalar()
+        self.warp.SetScaleFactor(-0.1)
+        
+        #merge image and new warped data
+        self.merge = vtk.vtkMergeFilter()
+        
+        self.normals = vtk.vtkPolyDataNormals()        
+        self.normals.SetFeatureAngle (90)
+        #first the mapper
+        self.mapper = vtk.vtkDataSetMapper()
+        
+        self.mapper.SetScalarRange(0,255)
+        self.mapper.ImmediateModeRenderingOff()
+        
+        #make the actor from the mapper
+        self.actor = vtk.vtkActor()
+        self.actor.SetMapper(self.mapper)
+
         self.renderer = self.parent.getRenderer()
-        self.plane=vtk.vtkPlane()
-        iactor = self.wxrenwin.GetRenderWindow().GetInteractor()
-        self.planeWidget.SetInteractor(iactor)
-        print "adding actor"
-        #self.updateRendering()
+        self.renderer.AddActor(self.actor)
+
+#        iactor = self.wxrenwin.GetRenderWindow().GetInteractor()
+        
+    def getParameters(self):
+        """
+        Method: getParameters
+        Created: 31.05.2006, KP
+        Description: Return the list of parameters needed for configuring this GUI
+        """            
+        return [ ["Smoothing",("Normals","FeatureAngle")],
+       ["Warping",("Slice","Scale")] ]
+        
+    def getDefaultValue(self,parameter):
+        """
+        Method: getDefaultValue
+        Created: 13.04.2006, KP
+        Description: Return the default value of a parameter
+        """           
+        if parameter == "Slice":return 0
+        if parameter=="Normals":return 1
+        if parameter=="FeatureAngle":return 90
+        if parameter=="Scale":return -0.2
+            
+    def getRange(self, parameter):
+        """
+        Method: getRange
+        Created: 31.05.2006, KP
+        Description: If a parameter has a certain range of valid values, the values can be queried with this function
+        """     
+        if parameter=="Slice":
+            x,y=(0,self.dataUnit.getDimensions()[2])
+            print "Range of slice=",x,y 
+            return x,y
+        return -1,-1
+        
+    def getType(self,parameter):
+        """
+        Method: getType
+        Created: 13.04.2006, KP
+        Description: Return the type of the parameter
+        """    
+        if parameter == "Slice":return GUIBuilder.SLICE
+        if parameter=="Normals":return types.BooleanType
+        if parameter=="FeatureAngle":return types.IntType
+        if parameter=="Scale":return types.FloatType
         
     def __getstate__(self):
         """
@@ -80,11 +141,7 @@ class WarpScalarModule(VisualizationModule):
         Description: A getstate method that saves the lights
         """            
         odict=VisualizationModule.__getstate__(self)
-        odict.update({"planeWidget":self.getVTKState(self.planeWidget)})
-        odict.update({"currentPlane":self.getVTKState(self.currentPlane)})
-        odict.update({"renderer":self.getVTKState(self.renderer)})
-        odict.update({"camera":self.getVTKState(self.renderer.GetActiveCamera())})
-        odict.update({"clipped":self.clipped})
+
         return odict
         
     def __set_pure_state__(self,state):
@@ -93,44 +150,9 @@ class WarpScalarModule(VisualizationModule):
         Created: 02.08.2005, KP
         Description: Set the state of the light
         """        
-        self.setVTKState(self.planeWidget,state.planeWidget)
-        self.setVTKState(self.currentPlane,state.currentPlane)
-        self.setVTKState(self.renderer,state.renderer)
-        self.setVTKState(self.renderer.GetActiveCamera(),state.camera)
-
-        self.clipped = state.clipped
-        if self.clipped:
-            self.clipVolumeRendering(self.planeWidget,None)
         VisualizationModule.__set_pure_state__(self,state)
                 
-        
-    def removeWarpScalar(self,plane):
-        """
-        Method: removeWarpScalar(plane)
-        Created: 24.06.2005, KP
-        Description: Remove a clipping plane
-        """       
-        for module in self.parent.getModules():
-            if hasattr(module,"mapper") and hasattr(module.mapper,"SetWarpScalars"):
-                module.mapper.RemoveWarpScalar(plane)
-                self.clipped = 0
-        
-    def clipVolumeRendering(self,object,event):
-        """
-        Method: clipVolumeRendering(object,event)
-        Created: 24.06.2005, KP
-        Description: Called when the plane is interacted with
-        """       
-        if self.currentPlane:
-            self.removeWarpScalar(self.currentPlane)
-            self.currentPlane=None
-        object.GetPlane(self.plane)
-        for module in self.parent.getModules():
-            if hasattr(module,"mapper") and hasattr(module.mapper,"SetWarpScalars"):
-                module.mapper.AddWarpScalar(self.plane)
-                self.currentPlane=self.plane
-                self.clipped = 1
-        
+                
     def setDataUnit(self,dataunit):
         """
         Method: setDataUnit(self)
@@ -138,23 +160,6 @@ class WarpScalarModule(VisualizationModule):
         Description: Sets the dataunit this module uses for visualization
         """       
         VisualizationModule.setDataUnit(self,dataunit)
-        print "got dataunit",dataunit
-        if self.visualizer.getProcessedMode():
-            data=self.dataUnit.getSourceDataUnits()[0].getTimePoint(0)
-        else:
-            data=self.dataUnit.getTimePoint(0)
-        self.origin = data.GetOrigin()
-        self.spacing = data.GetSpacing()
-        self.extent = data.GetWholeExtent()
-        
-        y=self.extent[3]
-        x=self.extent[1]
-        
-        self.planeWidget.SetInput(data)
-        self.planeWidget.SetOrigin(-32,-32,-32)
-        self.planeWidget.SetPoint1(0,y+32,0)
-        self.planeWidget.SetPoint2(x+32,0,0)
-        self.planeWidget.PlaceWidget()
 
     def showTimepoint(self,value):
         """
@@ -172,55 +177,39 @@ class WarpScalarModule(VisualizationModule):
         Created: 03.05.2005, KP
         Description: Update the Rendering of this module
         """             
-        #self.outline.SetInput(self.data)
-        #self.outlineMapper.SetInput(self.outline.GetOutput())
+        data = self.data
+        if data.GetNumberOfScalarComponents()>3:
+            extract = vtk.vtkImageExtractComponents()
+            extract.SetInput(data)
+            extract.SetComponents(1,1,1)
+            data = extract.GetOutput()
+        if data.GetNumberOfScalarComponents()>1:
+            self.luminance.SetInput(data)
+            data = self.luminance.GetOutput()
+            
+        dims = self.data.GetDimensions()
+        x,y,z=dims
+        z = self.parameters["Slice"]
+        self.geometry.SetInput(data)
+        ext=(0,x-1,0,y-1,z,z)
         
-        #self.outlineMapper.Update()
-
-        if self.renew:
-
-            self.planeWidget.SetInput(self.data)
-            self.renew=0
-        
-        if not self.on:
-            self.planeWidget.On()
-            self.on = 1
-        
+        self.geometry.SetExtent(ext)
+        self.warp.SetInput(self.geometry.GetOutput())
+        self.warp.SetScaleFactor(self.parameters["Scale"])
+        self.merge.SetGeometry(self.warp.GetOutput())
+        self.merge.SetScalars(self.data)
+        data = self.merge.GetOutput()
+        if self.parameters["Normals"]:
+            self.normals.SetInput(self.merge.GetOutput())
+            self.normals.SetFeatureAngle(self.parameters["FeatureAngle"])
+            print "Feature angle=",self.parameters["FeatureAngle"]
+            data = self.normals.GetOutput()
+        self.mapper.SetInput(data)
+                
         #self.mapper.Update()
-        VisualizationModule.updateRendering(self,input)
+        VisualizationModule.updateRendering(self)
         self.parent.Render()    
 
-    def disableRendering(self):
-        """
-        Method: disableRendering()
-        Created: 15.05.2005, KP
-        Description: Disable the Rendering of this module
-        """          
-        if self.currentPlane:
-            self.removeWarpScalar(self.currentPlane)        
-        self.planeWidget.Off()
-        self.wxrenwin.Render()
-        
-    def showPlane(self,flag):
-        """
-        Method: showPlane
-        Created: 24.06.2005, KP
-        Description: Show / hide the plane controls
-        """          
-        if flag:
-            self.planeWidget.On()
-        else:
-            self.planeWidget.Off()
-        
-        
-    def enableRendering(self):
-        """
-        Method: enableRendering()
-        Created: 24.06.2005, KP
-        Description: Enable the Rendering of this module
-        """          
-        self.planeWidget.On()
-        self.wxrenwin.Render()
         
     def setProperties(self,ambient,diffuse,specular,specularpower):
         """
@@ -262,13 +251,8 @@ class WarpScalarConfigurationPanel(ModuleConfigurationPanel):
         Method: initializeGUI()
         Created: 28.04.2005, KP
         Description: Initialization
-        """  
-        self.scaleLbl = wx.StaticText(self,-1,"Scale factor:")
-        self.scale = wx.TextCtrl(self,-1,"-0.3")
-        box = wx.BoxSizer(wx.HORIZONTAL)
-        box.Add(self.scaleLbl)
-        box.Add(self.scale)
-        self.contentSizer.Add(box,(0,0))
+        """          
+        pass
         
     def setModule(self,module):
         """
@@ -279,11 +263,14 @@ class WarpScalarConfigurationPanel(ModuleConfigurationPanel):
         ModuleConfigurationPanel.setModule(self,module)
         print "module=",module
         self.module=module
-        
+        self.gui = GUIBuilder.GUIBuilder(self, self.module)
+        self.contentSizer.Add(self.gui,(0,0))
+
     def onApply(self,event):
         """
         Method: onApply()
         Created: 28.04.2005, KP
         Description: Apply the changes
         """     
-        self.module.setScale(scale)
+        self.module.updateRendering()
+        pass

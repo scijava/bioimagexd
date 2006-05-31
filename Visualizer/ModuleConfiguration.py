@@ -130,13 +130,16 @@ class ModuleConfigurationPanel(wx.ScrolledWindow):
         self.sizer.Add(self.buttonBox,(4,0))
         
         self.sizer.Show(self.lightBoxSizer,0)
+        
+        
         self.initializeGUI()
+        self.findModule()
         
         self.SetSizer(self.sizer)
         self.SetAutoLayout(1)
         self.sizer.Fit(self)
         
-        self.findModule()
+        
         messenger.connect(None,"update_module_settings",self.updateModuleSettings)
 
     def updateModuleSettings(self,obj,evt,*args):

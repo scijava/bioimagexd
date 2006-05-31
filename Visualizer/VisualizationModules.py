@@ -42,7 +42,8 @@ import messenger
 import glob
 import os,sys
 import GUI.Urmas.UrmasPersist
-class VisualizationModule:
+import GUIBuilder
+class VisualizationModule(GUIBuilder.GUIBuilderBaseModule):
     """
     Class: VisualizationModule
     Created: 28.04.2005, KP
@@ -55,6 +56,8 @@ class VisualizationModule:
         Description: Initialization
         """    
         #self.name="Module"
+        GUIBuilder.GUIBuilderBaseModule.__init__(self,changeCallback = self.parameterChanged)
+        
         self.moduleName=kws["moduleName"]
         self.name=kws["label"]
         self.timepoint = -1
@@ -69,6 +72,22 @@ class VisualizationModule:
         self.setVTKState = GUI.Urmas.UrmasPersist.setVTKState
         self.getVTKState = GUI.Urmas.UrmasPersist.getVTKState
     
+    def parameterChanged(self,module):
+        """
+        Method: parameterChanged
+        Created: 31.05.2006, KP
+        Description: Callback for notifying when parameter ha changed
+        """
+        pass
+        
+    def canSelectChannels(self):
+        """
+        Method: canSelectChannels
+        Created: 31.05.2006, KP
+        Description: Should it be possible to select the channel
+        """          
+        return 0        
+
     def setView(self,view):
         """
         Method: setView(view)
