@@ -26,6 +26,7 @@ then
   do
     echo "Copying $i.cxx..."
     cp $CPPDIR/$i.cxx $IMAGING
+    cp $CPPDIR/$i.h $IMAGING
     if [ "`grep $i $IMAGING/CMakeLists.txt`" = "" ]; then
        echo "Inserting $i.cxx to CMakeLists.txt"
        insert_to_cmakelists $i.cxx $IMAGING
@@ -41,6 +42,7 @@ if [ "`echo $INSTALL|grep Filtering`" ]
   do
     echo "Copying $i.cxx..."
     cp $CPPDIR/$i.cxx $FILTERING
+    cp $CPPDIR/$i.h $FILTERING
     if [ "`grep $i $FILTERING/CMakeLists.txt`" = "" ]; then
        echo "Inserting $i.cxx to CMakeLists.txt"
        insert_to_cmakelists $i.cxx $FILTERING
@@ -56,6 +58,7 @@ then
   do
     echo "Copying $i.cxx..."
     cp $CPPDIR/$i.cxx $WIDGETS
+    cp $CPPDIR/$i.h $WIDGETS
     if [ "`grep $i $WIDGETS/CMakeLists.txt`" = "" ]; then
        echo "Inserting $i.cxx to CMakeLists.txt"
        insert_to_cmakelists $i.cxx $WIDGETS
@@ -71,6 +74,7 @@ then
   do
     echo "Copying $i.cxx..."
     cp $CPPDIR/$i.cxx $IO
+    cp $CPPDIR/$i.h $IO
     if [ "`grep $i $IO/CMakeLists.txt`" = "" ]; then
        echo "Inserting $i.cxx to CMakeLists.txt"
        insert_to_cmakelists $i.cxx $IO
