@@ -67,7 +67,7 @@ void vtkImageColocalizationFilter::SetColocalizationLowerThreshold(int dataset, 
 void vtkImageColocalizationFilter::SetColocalizationUpperThreshold(int dataset, int threshold) {
     int *NewThresholds;
     if (this->NumberOfDatasets < dataset) {
-            
+
             NewThresholds = new int[this->NumberOfDatasets *2];
             
             for(int i = 0; i< this->NumberOfDatasets ; i++) {
@@ -120,7 +120,7 @@ void vtkImageColocalizationFilterExecute(vtkImageColocalizationFilter *self, int
     vtkIdType outIncX,outIncY,outIncZ;
     int maxX,maxY,maxZ;
     int idxX,idxY,idxZ;
-    double mul = 0, ColocalizationScalar=0;
+    double ColocalizationScalar=0;
     T currScalar = 0;
     char colocFlag = 0;
 
@@ -149,7 +149,7 @@ void vtkImageColocalizationFilterExecute(vtkImageColocalizationFilter *self, int
     maxY = outExt[3] - outExt[2];
     maxZ = outExt[5] - outExt[4];
 
-    maxval=int(pow(2,8*sizeof(T)))-1;
+    maxval=int(pow(2.0f,8.0f*sizeof(T)))-1;
     if(OutputScalar < 0)OutputScalar = maxval;
 
     char progressText[200];

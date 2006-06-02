@@ -99,15 +99,15 @@ void vtkImageMapToIntensitiesExecute(vtkImageMapToIntensities *self, int id,int 
   maxY = outExt[3] - outExt[2];
   maxZ = outExt[5] - outExt[4];
   maxC = inData[0]->GetNumberOfScalarComponents();
-  
-  
+
+
   #define GET_AT(x,y,z,c,ptr) *(ptr+(z)*inIncZ+(y)*inIncY+(x)*inIncX+c)
   #define SET_AT(x,y,z,c,ptr,val) *(ptr+(z)*outIncZ+(y)*outIncY+(x)*outIncX+c)=val
 
-  char progressText[200];  
+  char progressText[200];
   for(idxZ = 0; idxZ <= maxZ; idxZ++ ) {
     self->UpdateProgress(idxZ/float(maxZ));
-    sprintf(progressText,"Applying intensity transfer function (slice %d / %d)",idxX,maxZ);
+    sprintf(progressText,"Applying intensity transfer function (slice %d / %d)",idxZ,maxZ);
     self->SetProgressText(progressText);
 
     for(idxY = 0; idxY <= maxY; idxY++ ) {

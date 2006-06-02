@@ -150,29 +150,29 @@ void vtkImageColorMergeExecute(vtkImageColorMerge *self, int id,int NumberOfInpu
     unsigned char currScalar = 0;
     double alphaScalar; 
     int maxval = 0, n = 0;
-    maxval=int(pow(2,8*sizeof(T)))-1;
+    maxval=int(pow(2.0f,8.0f*sizeof(T)))-1;
     T val;
     //maxX *= (inData[0]->GetNumberOfScalarComponents());
     char progressText[200];
     
-    double r,g,b;
+    double r = 0,g = 0,b = 0;
     T ir,ig,ib;
     //printf("Processing data...\n");
     for(idxZ = 0; idxZ <= maxZ; idxZ++ ) {
         self->UpdateProgress(idxZ/float(maxZ));
         sprintf(progressText,"Merging channels (slice %d / %d)",idxZ,maxZ);
         self->SetProgressText(progressText);
-        
+
         for(idxY = 0; idxY <= maxY; idxY++ ) {
           for(idxX = 0; idxX <= maxX; idxX++ ) {
-              
+
             alphaScalar =  currScalar = n = 0;
-  
+
             for(i=0; i < NumberOfInputs; i++ ) {
                 currScalar = (unsigned char)*inPtrs[i];
-    
+
                 if(BuildAlpha) {
-                    
+
                   if(MaxMode) {
                         if(alphaScalar < currScalar) {
                             alphaScalar = currScalar;
@@ -183,7 +183,7 @@ void vtkImageColorMergeExecute(vtkImageColorMerge *self, int id,int NumberOfInpu
                   } else if(AvgMode && currScalar > AvgThreshold) {
                         n++;
                         alphaScalar += currScalar;
-                  }              
+                  }
                 }
                 if(inData[i]->GetNumberOfScalarComponents()>1) {
                     //printf("Reading components straight from data, ncomps=%d\n",inData[i]->GetNumberOfScalarComponents());
@@ -192,9 +192,9 @@ void vtkImageColorMergeExecute(vtkImageColorMerge *self, int id,int NumberOfInpu
                     g += *inPtrs[i];
                     inPtrs[i]++;
                     b += *inPtrs[i];
-                    
+
                 } else {
-                
+
                     r += ctfs[i][3*currScalar];
                     g += ctfs[i][3*currScalar+1];
                     b += ctfs[i][3*currScalar+2];

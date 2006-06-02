@@ -28,6 +28,8 @@
 #include "vtkObjectFactory.h"
 #include "vtkImageProgressIterator.h"
 #include "vtkPointData.h"
+#include <math.h>
+#include "vtkMath.h"
 
 #define GET_AT(x,y,z,ptr) *(ptr+(z)*inIncZ+(y)*inIncY+(x)*inIncX)
 #define SET_AT(x,y,z,ptr,val) *(ptr+(z)*outIncZ+(y)*outIncY+(x)*outIncX)=val
@@ -211,7 +213,7 @@ template < class T >
     pd->GetScalars()->SetName("Colocalization map");
 
 	 
-    int maxval=pow(2,sizeof(T)*8)-1;
+    int maxval=pow(2.0f,sizeof(T)*8.0f)-1;
     maxX = outExt[1] - outExt[0];
     maxY = outExt[3] - outExt[2];
     maxZ = outExt[5] - outExt[4];
@@ -276,7 +278,7 @@ template < class T >
     pearsons1 = sumXY - (sumX * sumY / N);
     pearsons2 = sumXX - (sumX * sumX / N);
     pearsons3 = sumYY - (sumY * sumY / N);
-    double rTotal = pearsons1 / (sqrt(pearsons2 * pearsons3));
+    double rTotal = pearsons1 / (sqrt(float(pearsons2) * float(pearsons3)));
 
     //http://mathworld.wolfram.com/Covariance.html
     //?2 = X2?(X)2 
@@ -296,7 +298,7 @@ template < class T >
     double denom = 2 * ch1ch2covar;
     double num =
         ch2Var - ch1Var +
-        sqrt((ch2Var - ch1Var) * (ch2Var - ch1Var) +
+        sqrt((  ch2Var - ch1Var) * (ch2Var - ch1Var) +
          (4 * ch1ch2covar * ch1ch2covar));
 
     double m = num / denom;
@@ -321,10 +323,10 @@ template < class T >
             return;
         }
         
-        ch1threshmax = round(newMax);
+        ch1threshmax = vtkMath::Round(newMax);
         //printf("Setting ch1threshmax to %f\n", ch1threshmax);
         ch2threshmax =
-            round(((double) ch1threshmax * (double) m) +
+            vtkMath::Round(((double) ch1threshmax * (double) m) +
               (double) b);
 	
 	printf("ch1thresmax=%f, ch2thresmax=%f\n",ch1threshmax,ch2threshmax);
@@ -417,7 +419,7 @@ template < class T >
             thresholdFound = true;
         }
         //if we've reached ch1 =1 then we've exhausted posibilities
-        if (round(ch1threshmax) == 0)
+        if (vtkMath::Round(ch1threshmax) == 0)
             thresholdFound = true;
 
         oldMax = newMax;
@@ -435,9 +437,9 @@ template < class T >
 
     }
 
-    ch1threshmax = round((ch1BestThresh));
+    ch1threshmax = vtkMath::Round((ch1BestThresh));
     ch2threshmax =
-        round(((double) ch1BestThresh * (double) m) + (double) b);
+        vtkMath::Round(((double) ch1BestThresh * (double) m) + (double) b);
     
     // If the user has specified the thresholds, then simply use them
     if(LowerThresholdCh1 >= 0) {
@@ -556,7 +558,7 @@ template < class T >
                         self->GetConstantVoxelValue();
                     if (!colocInt) {
                         colocInt =
-                            (int) sqrt(ch1 * ch2);
+                            (int) sqrt(float(ch1) * float(ch2));
                     }
                     SET_AT_OUT(idxX, idxY, idxZ,
                            outPtr, colocInt);

@@ -32,6 +32,7 @@
 #include "vtkSource.h"
 #include "vtkPointData.h"
 #include "vtkByteSwap.h"
+#include <time.h>
 
 vtkStandardNewMacro(vtkLSMReader);
 

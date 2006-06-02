@@ -31,7 +31,8 @@
 #include "vtkMath.h"
 #include "vtkExtractVOI.h"
 #include "vtkPNGWriter.h"
-
+#include <math.h>
+#include <time.h>
 #define GET_AT(x,y,z,ptr) *(ptr+(z)*inIncZ+(y)*inIncY+(x)*inIncX)
 #define SET_AT(x,y,z,ptr,val) *(ptr+(z)*outIncZ+(y)*outIncY+(x)*outIncX)=val
 #define SET_AT_COMP(x,y,z,c,ptr,val) *(ptr+(int)((z)*outIncZ)+(int)((y)*outIncY)+(int)((x)*outIncX)+(c))=val
@@ -258,7 +259,7 @@ void smooth_old(OUT_T* inPtr,OUT_T*outPtr,int psf,int ext[6],float*kernel,double
     int yedge = height - vc;
     int offset,i=0;
     OUT_T val;
-    int maxval=int(pow(2,8*sizeof(OUT_T)))-1;    
+    int maxval=int(pow(2.0f,8.0f*sizeof(OUT_T)))-1;
     
 //    printf("maxval=%d\n",maxval);
     for(int y=ymin; y<=ymax; y++) {
@@ -308,7 +309,7 @@ template < class T >
     bool Costes = false, Fay = false, vanS = false;
 
     bool randZ = self->GetRandomizeZ();
-    bool ignoreZeroZero = self->GetIgnoreZeroPixels();
+    bool ignoreZeroZero = (bool)self->GetIgnoreZeroPixels();
     // printf("Randomizing in Z: %s\n",randZ?"yes":"no");
          
     switch(self->GetMethod()) {
@@ -819,8 +820,8 @@ template < class T >
     //code from:
     //http://www.cs.princeton.edu/introcs/26function/MyMath.java.html
     //Thanks to Bob Dougherty
-    //50*{1 + erf[(V -mean)/(sqrt(2)*sdev)]
-    double fx = 0.5 * (1 + erf(r - r2mean) / (sqrt(2) * r2sd));
+    //50*{1 + erf[(V -mean)/(sqrt(2.0f)*sdev)]
+    double fx = 0.5 * (1 + erf(r - r2mean) / (sqrt(2.0f) * r2sd));
     printf("fx=%f\n",fx);
     if (fx >= 1.0)
         fx = 1.0;

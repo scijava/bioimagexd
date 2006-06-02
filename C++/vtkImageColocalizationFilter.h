@@ -26,7 +26,7 @@
 // vtkImageColocalizationFilter takes as input multiple vtkImageData datasets and calculates the
 // colocalized voxels in those datasets based on a lower and upper threshold that is defined for
 // each of the input datasets.
-// 
+//
 // A voxel is considered colocalized if in every input dataset the intensity of the voxel I_v
 // is between the lower and upper thresholds (T_l and T_u respectively).
 //
@@ -41,7 +41,7 @@
 
 // VTK_IMAGING_EXPORT declares that this class is part of the Imaging kit. If the code was placed
 // in the Filtering- directory, it would say VTK_FILTERING_EXPORT
-class VTK_FILTERING_EXPORT vtkImageColocalizationFilter : public vtkThreadedImageAlgorithm
+class VTK_IMAGING_EXPORT vtkImageColocalizationFilter : public vtkThreadedImageAlgorithm
 {
 public:
   // These are required for the object factory scheme VTK uses to construct the objects.
@@ -57,9 +57,9 @@ public:
   // 1 - produce a 8-bit dataset that is conceptually 1-bit, that is, set to the specified scalar value
   vtkSetMacro(OutputDepth,int);
   vtkGetMacro(OutputDepth,int);
-  void SetOutputDepthTo24Bit() { this->SetOutputDepth(24); }
-  void SetOutputDepthTo8Bit() { this->SetOutputDepth(8); }
-  void SetOutputDepthTo1Bit() { this->SetOutputDepth(1); }
+  void SetOutputDepthTo24Bit() { this->OutputDepth = 24; this->Modified(); }
+  void SetOutputDepthTo8Bit() { this->OutputDepth = 8; this->Modified(); }
+  void SetOutputDepthTo1Bit() { this->OutputDepth = 1; this->Modified(); }
 
   // Description:
   // Voxels in the specified dataset that have a scalar value above
@@ -79,12 +79,12 @@ public:
   }
   int* GetColocalizationLowerThresholds() { return this->ColocalizationLowerThresholds; }
   int* GetColocalizationUpperThresholds() { return this->ColocalizationUpperThresholds; }
- 
+
   // Description:
   // Set / Get the constant scalar used for colocalized voxels.
   // Defaults to 2**sizeof(datatype)
   vtkGetMacro(OutputScalarValue,double);
-  vtkSetMacro(OutputScalarValue,double);   
+  vtkSetMacro(OutputScalarValue,double);
 
 protected:
   vtkImageColocalizationFilter();
@@ -93,7 +93,7 @@ protected:
   // Method that is used to retrieve information about the resulting output dataset
   virtual int RequestInformation (vtkInformation *, vtkInformationVector **,
                                   vtkInformationVector *);
-  
+
   // Method that can be called by multiple threads that is given the input data and an input extent
   // and is responsible for producing the matching output data.
   void ThreadedRequestData (vtkInformation* request,

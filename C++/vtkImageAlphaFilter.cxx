@@ -92,7 +92,7 @@ void vtkImageAlphaFilterExecute(vtkImageAlphaFilter *self, int id,int NumberOfIn
         
     T currScalar = 0;
     int maxval = 0, n = 0;
-    maxval=int(pow(2,8*sizeof(T)))-1;
+    maxval=int(pow(2.0f,8.0f*sizeof(T)))-1;
 //    vtkDebugMacro("Maximum value="<<maxval<<"\n");
     T val;
     
