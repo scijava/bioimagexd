@@ -38,7 +38,10 @@ import os.path
 import Logging
 import DataUnit
 
-
+class MyConfigParser(RawConfigParser):
+    def optionxform(self, optionstr):
+        return optionstr
+        
 class BXDDataWriter(DataWriter):
     """
     Class: BXDDataWriter
@@ -76,7 +79,7 @@ class BXDDataWriter(DataWriter):
         Description: Returns the parser that is used to read the .du file
         """
         if not self.parser:
-            self.parser = ConfigParser()
+            self.parser = MyConfigParser()
         return self.parser
         
 
@@ -172,11 +175,11 @@ class BXDDataWriter(DataWriter):
         Parameters:   imageData  vtkImageData-instance to be written
                       filename  filename to be used
         """
-        print "Writing image data to %s"%filename
+        #print "Writing image data to %s"%filename
         try:
             writer=vtk.vtkXMLImageDataWriter()
             writer.SetFileName(filename)
-            print "Writing ",imageData
+            #print "Writing ",imageData
             writer.SetInput(imageData)
             ret=writer.Write()
             if ret==0:

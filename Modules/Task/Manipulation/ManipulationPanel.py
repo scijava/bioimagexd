@@ -46,6 +46,7 @@ from GUI import TaskPanel
 import UIElements
 import string
 import scripting
+import types
 
 import ManipulationFilters
 
@@ -71,7 +72,7 @@ class ManipulationPanel(TaskPanel.TaskPanel):
         self.timePoint = 0
         self.menu = None
         self.currentGUI = None
-
+        self.parser = None
         self.onByDefault = 0
         self.Show()
         self.filters = []
@@ -327,6 +328,7 @@ class ManipulationPanel(TaskPanel.TaskPanel):
         
         currfilter = self.filters[self.selected]
         self.currentGUI = currfilter.getGUI(self.panel,self)
+        currfilter.sendUpdateGUI()
         
         self.panelsizer.Add(self.currentGUI,(1,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
         self.currentGUI.Show(1)
@@ -353,6 +355,7 @@ class ManipulationPanel(TaskPanel.TaskPanel):
         
         self.filters.append(addfilter)
         self.setModified(1)
+        self.updateFilterData()
         
 
     def onShowAddMenu(self,event):
@@ -396,6 +399,29 @@ class ManipulationPanel(TaskPanel.TaskPanel):
         if self.dataUnit:
             get=self.settings.get
             set=self.settings.set
+        flist = self.settings.get("FilterList")
+        self.settings.set("FilterList",[])
+        if flist and len(flist):
+            
+            if type(flist[0]) == types.ClassType:
+                for i in flist:
+                    print "Adding filter of class",i
+                    self.addFilter(None,i)
+            for currfilter in self.filters:
+                name = currfilter.getName()
+                #parser = self.dataUnit.getParser()    
+                parser = self.dataUnit.parser
+                
+                if parser:
+                    items = parser.items(name)
+                    
+                    for item,value in items:            
+                        #value=parser.get(name,item)
+                        print "Setting",item,"to",value
+                        value = eval(value)
+                        currfilter.setParameter(item, value)
+                    currfilter.sendUpdateGUI()
+                    self.parser = None
                 
     def updateFilterData(self):
         """
@@ -404,6 +430,7 @@ class ManipulationPanel(TaskPanel.TaskPanel):
         Description: A method used to set the right values in dataset
                      from filter GUI widgets
         """
+        print "Setting filterlist to",self.filters
         self.settings.set("FilterList",self.filters)
         
     def doProcessingCallback(self,*args):

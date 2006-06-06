@@ -126,6 +126,7 @@ class Manipulation(Module):
             del self.cached
             self.cached = None
         filterlist = self.settings.get("FilterList")
+        print "Filters in filterlist=",filterlist
         
         if type(filterlist)==type(""):
             filterlist=[]

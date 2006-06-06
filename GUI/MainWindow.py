@@ -1140,9 +1140,12 @@ class MainWindow(wx.Frame):
                     return
                 Logging.info("Loading settings for dataset",name," from ",filenames,kw="dataunit")
                 parser = RawConfigParser()
+                parser.optionxform = str
                 parser.read(filenames)
                 dataunit.getSettings().readFrom(parser)
-                self.visualizer.setDataUnit(dataunit)
+                print "Setting parser of ",dataunit
+                dataunit.parser = parser
+                #self.visualizer.setDataUnit(dataunit)
                 messenger.send(None,"update_settings_gui")
             else:
                 Logging.info("No dataunit, cannot load settings")

@@ -294,8 +294,9 @@ class TaskPanel(scrolled.ScrolledPanel):
         if index==-1:       
             raise "No index given"
 
-        self.settings = self.dataUnit.getSourceDataUnits()[index].getSettings()
-        
+        sunit = self.dataUnit.getSourceDataUnits()[index]
+        self.settings = sunit.getSettings()
+            
         #self.preview.setSelectedItem(index)
         
         self.updateSettings()
@@ -349,24 +350,6 @@ class TaskPanel(scrolled.ScrolledPanel):
         messenger.send(None,"data_changed",-1)
 
 
-    def loadSettingsCallback(self,event):
-        """
-        Method: loadSettingsCallback()
-        Created: 30.11.2004, KP
-        Description: A callback to load the settings for this operation from a
-                     du file
-        """
-        wc="Dataset Settings(*.bxd)|*.bxd"
-        dlg=wx.FileDialog(self,"Load dataset settings from file",wildcard=wc,style=wx.OPEN)
-        filename=None
-        if dlg.ShowModal()==wx.ID_OK:
-            filename=dlg.GetPath()
-        
-        dlg.Destroy()
-        if not filename:
-            return
-        self.dataUnit.loadSettings(filename)
-        self.updateSettings()
 
 
     def saveSettingsCallback(self,event):

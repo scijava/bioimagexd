@@ -60,6 +60,18 @@ class GUIBuilderBaseModule:
         self.modCallback = changeCallback
         for item in self.getPlainParameters():
             self.setParameter(item,self.getDefaultValue(item))
+            
+    def sendUpdateGUI(self):
+        """
+        Method: sendUpdateGUI
+        Created: 05.06.2006, KP
+        Description: Method to update the GUI for this filter
+        """          
+        for item in self.getPlainParameters():
+            value = self.getParameter(item)
+            print "set_parameter",item,value
+            messenger.send(self,"set_%s"%item,value)
+
     
     def canSelectChannels(self):
         """
@@ -218,12 +230,16 @@ class GUIBuilder(wx.Panel):
                         skip-=1
                         continue
                     itemName=item
+                    isTuple=0
                     if type(item)==types.TupleType:
                         itemType = currentFilter.getType(item[0])
                         itemName=item[0]
+                        isTuple=1
                     else:
                         itemType = currentFilter.getType(item)
-                    if itemType not in [RADIO_CHOICE, SLICE, PIXEL, PIXELS, THRESHOLD]:
+                    print "itemtype=",itemType,"istuple=",isTuple
+                    
+                    if not (isTuple and itemType == types.BooleanType) and itemType not in [RADIO_CHOICE, SLICE, PIXEL, PIXELS, THRESHOLD]:
                         self.processItem(currentFilter,itemsizer,item,x=0,y=y)
                         y+=1
                     else: # Items that are contained in a tuple ask to be grouped
@@ -239,12 +255,26 @@ class GUIBuilder(wx.Panel):
                                 majordim=wx.RA_SPECIFY_ROWS
                             
                             choices=[]
+                            itemToDesc={}
+                            funcs=[]
                             for i in item:
                                 d = currentFilter.getDesc(i)
+                                itemToDesc[i]=d
                                 choices.append(d)
+                                f=lambda obj,evt,arg, box, i=i, s=self: s.onSetRadioBox(box,i,arg)
+                                funcs.append(("set_%s"%i,f))
+                                
+
+                            
                             box = wx.RadioBox(self,-1,sboxname,choices=choices,
                             majorDimension = items[n+1][1],style=majordim)
+                            for funcname,f in funcs:
+                                f2=lambda obj,evt,arg,box=box:f(obj,evt,arg,box)
+                                messenger.connect(currentFilter,funcname,f2)
+                            box.itemToDesc=itemToDesc
                             func=lambda evt,its=item,f=currentFilter:self.onSelectRadioBox(evt,its,f)
+                                
+                                
                             box.Bind(wx.EVT_RADIOBOX,func)
                             sboxname=""
                             itemsizer.Add(box,(0,0))
@@ -263,6 +293,10 @@ class GUIBuilder(wx.Panel):
                             size=(x,-1))
                             func = lambda evt, its=item, f=currentFilter:self.onSetSliderValue(evt,its,f)
                             slider.Bind(wx.EVT_SCROLL,func)
+                            f=lambda obj,evt,arg, slider=slider, i=itemName, s=self: s.onSetSlice(slider,i,arg)
+                            messenger.connect(currentFilter,"set_%s"%itemName,f)
+                            
+                            
                             box.Add(slider,1)
                             itemsizer.Add(box,(y,0),flag=wx.EXPAND|wx.HORIZONTAL)
                             y+=1
@@ -367,6 +401,25 @@ class GUIBuilder(wx.Panel):
             y+=1
         return sizer
         
+    def onSetRadioBox(self,box,item,value):
+        """
+        Method: onSetRadioBox
+        Created: 05.06.2006, KP
+        Description: Set the value for the GUI item 
+        """         
+        sval = box.itemToDesc[item]
+        print "setradiobox",item,value
+        if value:
+            box.SetStringSelection(sval)
+        
+    def onSetSlice(self,slider,item,value):
+        """
+        Method: onSetSlice
+        Created: 05.06.2006, KP
+        Description: Set the value for the GUI item 
+        """                 
+        slider.SetValue(value)
+                    
     def onSetInputChannel(self,currentFilter,inputNum,evt):
         """
         Method: onSetInputChannel
@@ -416,8 +469,28 @@ class GUIBuilder(wx.Panel):
         input = wx.TextCtrl(self,-1,str(defaultValue))
         valid=lambda evt,f=currentFilter,p=item,t=itemType,i=input:self.validateAndPassOn(evt,i,p,itemType,f)
         input.Bind(wx.EVT_TEXT,valid)
+        f=lambda obj,evt,arg, input=input, it=item, s=self: s.onSetNumber(input,it,arg)
+        messenger.connect(currentFilter,"set_%s"%item,f)
+
         return input
-                    
+        
+    def onSetNumber(self, input, item, value):
+        """
+        Method: onSetNumber
+        Created: 05.06.2006, KP
+        Description: Set the value for the GUI item
+        """             
+        #print input,item,value
+        input.SetValue(str(value))
+    def onSetBool(self, input, item, value):
+        """
+        Method: onSetBool
+        Created: 05.06.2006, KP
+        Description: Set the value for the GUI item
+        """             
+        #print input,item,value
+        input.SetValue(value)
+    
     def createBooleanInput(self,currentFilter,item,itemType,defaultValue, label = ""):
         """
         Method: createBooleanInput
@@ -428,6 +501,8 @@ class GUIBuilder(wx.Panel):
         input.SetValue(defaultValue)
         valid=lambda evt,f=currentFilter,p=item,t=itemType,i=input:self.validateAndPassOn(evt,i,p,itemType,f)
         input.Bind(wx.EVT_CHECKBOX,valid)
+        f=lambda obj,evt,arg, input=input, i=item, s=self: s.onSetBool(input,i,arg)
+        messenger.connect(currentFilter,"set_%s"%item,f)       
         return input
         
     def removeSeed(self,listbox,currFilter):

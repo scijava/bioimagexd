@@ -80,9 +80,10 @@ class ManipulationFilter(GUIBuilder.GUIBuilderBaseModule):
         Created: 13.04.2006, KP
         Description: Initialization
         """
-        GUIBuilder.GUIBuilderBaseModule.__init__(changeCallback = self.notifyTaskPanel)
-        self.numberOfInputs = numberOfInputs
         self.taskPanel = None
+        GUIBuilder.GUIBuilderBaseModule.__init__(self, changeCallback = self.notifyTaskPanel)
+        self.numberOfInputs = numberOfInputs
+        
         self.parameters = {}
         self.gui = None
         self.dataUnit = None
@@ -345,6 +346,7 @@ class ManipulationFilter(GUIBuilder.GUIBuilderBaseModule):
             messenger.send(None,"show_error","Bad number of inputs to filter","Filter %s was given a wrong number of inputs"%self.name)
             return 0
         return 1
+
         
 class MorphologicalFilter(ManipulationFilter):
     """
@@ -412,7 +414,7 @@ class MorphologicalFilter(ManipulationFilter):
         
         image = self.getInput(1)
           
-        print "Setting input=",image  
+        #print "Setting input=",image  
         self.vtkfilter.SetInput(image)
         if update:
             self.vtkfilter.Update()

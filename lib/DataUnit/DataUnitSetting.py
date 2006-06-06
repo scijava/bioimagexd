@@ -178,6 +178,7 @@ class DataUnitSettings:
         Description: Attempt to read all registered keys from a parser
         """    
         if not self.get("Type"):
+            self.parser = parser
             type=parser.get("Type","Type")
             settingsclass=self.modules[type][2].getSettingsClass()
             Logging.info("Settings class=",settingsclass,kw="processing")

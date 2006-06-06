@@ -38,6 +38,7 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 import vtk
 from DataUnit import DataUnitSettings
+import ManipulationFilters
 
 class ManipulationSettings(DataUnitSettings):
     """
@@ -56,7 +57,7 @@ class ManipulationSettings(DataUnitSettings):
         
         self.registerPrivate("ColorTransferFunction",1)        
         self.registerCounted("Source")
-        self.register("FilterList")
+        self.register("FilterList", serialize = 1)
         self.register("VoxelSize")
         self.register("Spacing")
         #self.register("Origin")
@@ -78,3 +79,62 @@ class ManipulationSettings(DataUnitSettings):
         """
         DataUnitSettings.initialize(self,dataunit,channels,timepoints)
         ctf = self.get("ColorTransferFunction")
+        
+    def writeTo(self,parser):
+        """
+        Method: writeTo(parser)
+        Created: 05.06.2005
+        Description: Attempt to write all keys to a parser
+        """    
+        DataUnitSettings.writeTo(self, parser)
+        lst = self.get("FilterList")
+        print "Filter list to write=",lst
+        flist = eval(self.serialize("FilterList",lst))
+        print "Got serialized=",flist
+        for i,fname in enumerate(flist):
+            currfilter = lst[i]
+            keys = currfilter.getPlainParameters()
+            for key in keys:
+                if not parser.has_section(fname):
+                    parser.add_section(fname)
+                print "writing ",key,"to",fname
+                parser.set(fname,key,currfilter.getParameter(key))
+
+    def deserialize(self,name,value):
+        """
+        Method: deserialize(name,value)
+        Created: 05.06.2005
+        Description: Returns the value of a given key
+        """
+        if name=="FilterList":
+            fnames = eval(value)
+            flist=[]
+            filters = ManipulationFilters.getFilterList()
+            nametof={}
+            for f in filters:
+                nametof[f.getName()] = f
+            for name in fnames:
+                fclass = nametof[name]
+                flist.append(fclass)
+            return flist
+                
+        else:
+            DataUnitSettings.deserialize(self, name, value)
+        
+        
+    def serialize(self,name,value):
+        """
+        Method: serialize(name,value)
+        Created: 05.06.2005
+        Description: Returns the value of a given key in a format
+                     that can be written to disk.
+        """
+        if name=="FilterList":
+            print "Serializing",value
+            filterlist = value
+            names=[]
+            for filter in filterlist:
+                names.append(filter.getName())
+            return str(names)
+        else:
+            return DataUnitSettings.serialize(self,name,value)

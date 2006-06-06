@@ -38,6 +38,10 @@ import os.path
 import Logging
 import DataUnit
 
+class MyConfigParser(RawConfigParser):
+    def optionxform(self, optionstr):
+        return optionstr
+
 def getExtensions(): return ["bxd"]
 def getFileType(): return "BioImageXD datasets (*.bxd)"
 def getClass(): return BXDDataSource
@@ -232,7 +236,7 @@ class BXDDataSource(DataSource):
         Logging.info("Trying to open %s"%filename,kw="datasource")
         try:
             # A SafeConfigParser is used to parse the .du-file
-            self.parser = RawConfigParser()
+            self.parser = MyConfigParser()
             self.parser.read([filename])
             # First, the DataUnit format is checked
             dataUnitFormat = self.parser.get("Type", "Type")
