@@ -314,6 +314,10 @@ class GUIBuilder(wx.Panel):
                             itemsizer.Add(box,(0,0))
                             func = lambda obj,evt,rx,ry,rz,r,g,b,alpha,currentCt,its=item,f=currentFilter:self.onSetPixel(obj,evt,rx,ry,rz,r,g,b,alpha,currentCt,its,f,lbl)
                             messenger.connect(None,"get_voxel_at",func)
+
+                            f=lambda obj,evt,arg, lbl=lbl, i=itemName, s=self: s.onSetPixelFromFilter(lbl,i,arg)
+                            messenger.connect(currentFilter,"set_%s"%itemName,f)
+
                             
                         elif itemType == PIXELS:
                             print "Creating multiple pixels selection"
@@ -336,7 +340,9 @@ class GUIBuilder(wx.Panel):
                             
                             func = lambda obj,evt,rx,ry,rz,r,g,b,alpha,currentCt,its=item,f=currentFilter:self.onAddPixel(obj,evt,rx,ry,rz,r,g,b,alpha,currentCt,its,f,seedbox)
                             messenger.connect(None,"get_voxel_at",func)
-                            itemsizer.Add(pixelsizer,(0,0))
+                            itemsizer.Add(pixelsizer,(0,0))                            
+                            f=lambda obj,evt,arg, seedbox=seedbox, i=itemName, s=self: s.onSetPixelsFromFilter(seedbox,i,arg)
+                            messenger.connect(currentFilter,"set_%s"%itemName,f)                                                        
                             
                         elif itemType == THRESHOLD:
                             print "Creating threshold selection"
@@ -347,8 +353,13 @@ class GUIBuilder(wx.Panel):
                             
                             histogram.setThresholdMode(1)
                             du=self.filter.getDataUnit().getSourceDataUnits()[0]
+                            print "Connecting",item[0],item[1]
+                            flo=lambda obj,evt,arg, histogram=histogram, i=item[0], s=self: s.onSetHistogramValues(histogram,i,arg,valuetype="Lower")
+                            messenger.connect(currentFilter,"set_%s"%item[0],flo)
+                            fhi=lambda obj,evt,arg, histogram=histogram, i=item[1], s=self: s.onSetHistogramValues(histogram,i,arg,valuetype="Upper")
+                            messenger.connect(currentFilter,"set_%s"%item[1],fhi)
+                            
                             histogram.setDataUnit(du,noupdate=1)
-
                             itemsizer.Add(histogram,(0,0))
                         else:
                             groupsizer=wx.GridBagSizer()
@@ -554,9 +565,38 @@ class GUIBuilder(wx.Panel):
             print "Settng parameter",item,"to",rx,ry,rz
             
             currFilter.setParameter(item[0],(rx,ry,rz))
-            valuelbl.SetLabel("(%d,%d,%d)"%(rx,ry,rz))
+            valuelbl.SetLabel("(%d, %d, %d)"%(rx,ry,rz))
             valuelbl.selectPixel = 0
-        
+            
+    def onSetPixelFromFilter(self,label, item, value):
+        """
+        Method: onSetPixelFromFilter
+        Created: 06.06.2006, KP
+        Description: Set the value of the pixel label from a variable
+        """             
+        rx,ry,rz = value
+        #print "Set pixel",obj,evt,rx,ry,rz,r,g,b,alpha,item,currFilter
+        label.SetLabel("(%d, %d, %d)"%(rx,ry,rz))
+
+    def onSetPixelsFromFilter(self,listbox, item, value):
+        """
+        Method: onSetPixelsFromFilter
+        Created: 06.06.2006, KP
+        Description: Set the value of the pixel label from a variable
+        """     
+        listbox.Clear()
+        print value
+        for rx,ry,rz in value:
+            listbox.Append("(%d, %d, %d)"%(rx,ry,rz))            
+
+    def onSetHistogramValues(self,histogram, item, value,valuetype="Lower"):
+        """
+        Method: onSetHistogramValues
+        Created: 06.06.2006, KP
+        Description: Set the lower and upper threshold for histogram
+        """             
+        eval("histogram.set%sThreshold(value)"%valuetype)
+
             
     def onSetThreshold(self,evt,items,currentFilter):
         """

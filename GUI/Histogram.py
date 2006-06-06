@@ -121,6 +121,30 @@ class Histogram(wx.Panel):
         self.replaceCTF = ctf
         self.ctf = ctf
         
+    def setLowerThreshold(self,lth):
+        """
+        Method: setLowerThreshold
+        Created: 06.06.2006, KP
+        Description: Set the lower threshold showin with this widget
+        """                    
+        self.lowerThreshold = lth
+        #self.actionstart=(self.lowerThreshold,0)
+        #self.setThreshold(None)
+        self.actionstart=None
+        self.updatePreview(renew=1)
+        self.Refresh()
+    def setUpperThreshold(self,uth):
+        """
+        Method: setUpperThreshold
+        Created: 06.06.2006, KP
+        Description: Set the upper threshold showin with this widget
+        """                    
+        self.upperThreshold = uth
+        #self.actionstart=(self.upperThreshold,0)
+        self.actionstart=None
+        #self.setThreshold(None)
+        self.updatePreview(renew=1)
+        self.Refresh()
     def getLowerThreshold(self):
         """
         Method: getLowerThreshold
@@ -174,10 +198,7 @@ class Histogram(wx.Panel):
         
         ldiff = abs(x-self.lowerThreshold)
         udiff = abs(x-self.upperThreshold)
-        print "ldiff=",ldiff
-        print "udiff=",udiff
         if ldiff>30 and udiff>30:
-            print "MIDDLE MODE"
             self.mode="middle"
             self.middleStart = x
         else:            
@@ -210,7 +231,7 @@ class Histogram(wx.Panel):
         Created: 24.03.2005, KP
         Description: Sets the thresholds based on user's selection
         """
-        print "setThreshold",self.actionstart
+        
         if not self.actionstart:return
         x1,y1=self.actionstart
         
@@ -326,8 +347,12 @@ class Histogram(wx.Panel):
         Description: Update the histogram
         """
         get=self.dataUnit.getSettings().get
-        lower=get("ColocalizationLowerThreshold")
-        upper=get("ColocalizationUpperThreshold")
+        if not self.thresholdMode:
+            lower=get("ColocalizationLowerThreshold")
+            upper=get("ColocalizationUpperThreshold")
+        else:
+            lower=self.lowerThreshold
+            upper=self.upperThreshold
                 
         if "renew" in kws:
             self.renew=kws["renew"]
@@ -339,7 +364,8 @@ class Histogram(wx.Panel):
             if self.replaceCTF:
                 self.ctf = self.replaceCTF
             self.bg=self.parent.GetBackgroundColour()
-                
+            
+            
             
             histogram,self.percent,self.values,xoffset = ImageOperations.histogram(self.data,bg=self.bg,ctf=self.ctf,
                              logarithmic=self.logarithmic,
@@ -355,6 +381,7 @@ class Histogram(wx.Panel):
             self.parent.Layout()
             self.renew=0
             
+        
         self.paintPreview()
         
         # Commented because in windows looks bad and not needed
@@ -366,22 +393,23 @@ class Histogram(wx.Panel):
         Created: 12.07.2005, KP
         Description: Paints the scatterplot
         """
+        
         dc = wx.BufferedDC(wx.ClientDC(self),self.buffer)
         dc.BeginDrawing()
-        
         dc.DrawBitmap(self.histogram,0,0,1)
         get=self.dataUnit.getSettings().get
         set=self.dataUnit.getSettings().set
         if not self.thresholdMode and get("ColocalizationLowerThreshold")==None:
             return
         colocMode=get("ColocalizationLowerThreshold")!=None
+        if colocMode:
+            lower1=int(get("ColocalizationLowerThreshold"))
+            upper1=int(get("ColocalizationUpperThreshold"))
+        else:
+            lower1=self.lowerThreshold
+            upper1=self.upperThreshold
+
         if self.actionstart or colocMode:
-            if colocMode:
-                lower1=int(get("ColocalizationLowerThreshold"))
-                upper1=int(get("ColocalizationUpperThreshold"))
-            else:
-                lower1=self.lowerThreshold
-                upper1=self.upperThreshold
             
             if self.actionstart:
                 x1,y1=self.actionstart
@@ -424,37 +452,26 @@ class Histogram(wx.Panel):
                         set("ColocalizationUpperThreshold",upper1)
                     self.lowerThreshold=lower1
                     self.upperThreshold=upper1                        
-                    
-
-            print "upper1=",upper1,"lower1=",lower1
+                
+    
+        borders = ImageOperations.getOverlayBorders(upper1-lower1+1,150,(255,255,0),128)
+        borders=borders.ConvertToBitmap()
+        dc.DrawBitmap(borders,self.xoffset+lower1,0,1)
         
-            #dc.SetPen(wx.Pen(wx.Colour(255,255,0),2))
-            # vertical line 
-            #dc.DrawLine(self.xoffset+lower1,0,self.xoffset+lower1,150)
-            # horizontal line
-            #dc.DrawLine(lower1,255,upper1,255)
-            # vertical line 2 
-            #dc.DrawLine(self.xoffset+upper1,0,self.xoffset+upper1,150)
-            # horizontal line 2
-            #dc.DrawLine(lower1,0,upper1,0)
-            borders = ImageOperations.getOverlayBorders(upper1-lower1+1,150,(255,255,0),128)
-            borders=borders.ConvertToBitmap()
-            dc.DrawBitmap(borders,self.xoffset+lower1,0,1)
-            
-            overlay=ImageOperations.getOverlay(upper1-lower1,150,(255,255,0),32)
-            overlay=overlay.ConvertToBitmap()
-            dc.DrawBitmap(overlay,self.xoffset+lower1,0,1)
-            if self.values:
-                tot=0
-                totth=0
-                for i,val in enumerate(self.values):
-                    tot+=val
-                    if i>=lower1 and i<=upper1:totth+=val
-                self.percent=totth/float(tot)
-            
-            if self.percent:
-                dc.SetFont(wx.Font(8,wx.SWISS,wx.NORMAL,wx.NORMAL))
-                dc.DrawText("%.2f%% of data selected (range %d-%d)"%(100*self.percent,self.scale*self.lowerThreshold,self.scale*self.upperThreshold),10,182)
+        overlay=ImageOperations.getOverlay(upper1-lower1,150,(255,255,0),32)
+        overlay=overlay.ConvertToBitmap()
+        dc.DrawBitmap(overlay,self.xoffset+lower1,0,1)
+        if self.values:
+            tot=0
+            totth=0
+            for i,val in enumerate(self.values):
+                tot+=val
+                if i>=lower1 and i<=upper1:totth+=val
+            self.percent=totth/float(tot)
+        
+        if self.percent:
+            dc.SetFont(wx.Font(8,wx.SWISS,wx.NORMAL,wx.NORMAL))
+            dc.DrawText("%.2f%% of data selected (range %d-%d)"%(100*self.percent,self.scale*self.lowerThreshold,self.scale*self.upperThreshold),10,182)
                 
         
         dc.EndDrawing()
