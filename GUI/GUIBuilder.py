@@ -429,6 +429,7 @@ class GUIBuilder(wx.Panel):
         Created: 05.06.2006, KP
         Description: Set the value for the GUI item 
         """                 
+        
         slider.SetValue(value)
                     
     def onSetInputChannel(self,currentFilter,inputNum,evt):

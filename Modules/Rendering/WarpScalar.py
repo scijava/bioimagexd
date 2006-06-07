@@ -138,7 +138,9 @@ class WarpScalarModule(VisualizationModule):
         Description: A getstate method that saves the lights
         """            
         odict=VisualizationModule.__getstate__(self)
-
+        #print "Saving Slice =" ,self.parameters["Slice"]
+        #print "Returning",odict
+        odict["parameters"] = self.parameters
         return odict
         
     def __set_pure_state__(self,state):
@@ -148,7 +150,8 @@ class WarpScalarModule(VisualizationModule):
         Description: Set the state of the light
         """        
         VisualizationModule.__set_pure_state__(self,state)
-                
+        self.parameters = state.parameters
+        self.sendUpdateGUI()
                 
     def setDataUnit(self,dataunit):
         """
@@ -204,15 +207,10 @@ class WarpScalarModule(VisualizationModule):
         if slice.GetNumberOfScalarComponents()==1:
             maptocol=vtk.vtkImageMapToColors()
             ctf = self.dataUnit.getColorTransferFunction()
-            print "Mapping through..."
             maptocol.SetInput(slice)
             maptocol.SetLookupTable(ctf)
             maptocol.Update()
             scalars = maptocol.GetOutput()
-            w=vtk.vtkPNGWriter()
-            w.SetInput(scalars)
-            w.SetFileName("foo.png")
-            w.Write()
         else:
             scalars = slice
             
@@ -288,6 +286,7 @@ class WarpScalarConfigurationPanel(ModuleConfigurationPanel):
         print "module=",module
         self.module=module
         self.gui = GUIBuilder.GUIBuilder(self, self.module)
+        self.module.sendUpdateGUI()
         self.contentSizer.Add(self.gui,(0,0))
 
     def onApply(self,event):
