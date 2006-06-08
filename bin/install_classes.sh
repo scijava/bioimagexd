@@ -16,8 +16,15 @@ IO=$2/IO
 function insert_to_cmakelists {
   cxxfile=$1
   cmakefile=$2/CMakeLists.txt
-  cat $cmakefile|sed 1s/"SET.*Kit_SRCS"/"SET( Kit_SRCS\n$cxxfile"/ > CMakeLists.new
+ 
+ awk '{print} 
+ /^SET.*Kit_SRCS/ && already == 0 {
+ print cxxfile
+ already=1
+ }' cxxfile="$cxxfile" < $cmakefile > CMakeLists.new
+
   mv -f CMakeLists.new $cmakefile
+
 }
 
 if [ "`echo $INSTALL|grep Imaging`" ]
