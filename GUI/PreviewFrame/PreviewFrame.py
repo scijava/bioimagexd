@@ -271,6 +271,7 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         Created: 23.05.2005, KP
         Description: Send an event containing the current voxel position
         """
+        self.onLeftDown(event)
         if not self.currentImage:
             return
         x,y=event.GetPosition()

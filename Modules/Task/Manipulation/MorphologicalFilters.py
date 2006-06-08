@@ -31,9 +31,10 @@ __version__ = "$Revision: 1.42 $"
 __date__ = "$Date: 2005/01/13 14:52:39 $"
 
 import ManipulationFilters
-
+import vtk
 MORPHOLOGICAL="Morphological"
 
+FILTERING="Filtering"
 class MorphologicalFilter(ManipulationFilters.ManipulationFilter):
     """
     Class: ManipulationFilter
@@ -92,7 +93,7 @@ class MorphologicalFilter(ManipulationFilters.ManipulationFilter):
         Created: 13.04.2006, KP
         Description: Execute the filter with given inputs and return the output
         """            
-        if not ManipulationFilter.execute(self,inputs):
+        if not ManipulationFilters.ManipulationFilter.execute(self,inputs):
             return None
         
         x,y,z=self.parameters["KernelX"],self.parameters["KernelY"],self.parameters["KernelZ"]
@@ -210,7 +211,7 @@ class SobelFilter(MorphologicalFilter):
         Created: 13.04.2006, KP
         Description: Execute the filter with given inputs and return the output
         """            
-        if not ManipulationFilter.execute(self,inputs):
+        if not ManipulationFilters.ManipulationFilter.execute(self,inputs):
             return None        
         image = self.getInput(1)
         self.vtkfilter.SetInput(image)
@@ -250,7 +251,7 @@ class HybridMedianFilter(MorphologicalFilter):
         Created: 13.04.2006, KP
         Description: Execute the filter with given inputs and return the output
         """            
-        if not ManipulationFilter.execute(self,inputs):
+        if not ManipulationFilters.ManipulationFilter.execute(self,inputs):
             return None        
         image = self.getInput(1)
         self.vtkfilter.SetInput(image)

@@ -30,6 +30,98 @@ __author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.42 $"
 __date__ = "$Date: 2005/01/13 14:52:39 $"
 import ManipulationFilters
+import wx
+import itk
+import types
+
+SEGMENTATION="Segmentation"
+ITK="ITK"
+
+MEASUREMENT="Measurements"
+
+
+class WatershedObjectList(wx.ListCtrl):
+    def __init__(self, parent, log):
+        wx.ListCtrl.__init__(
+            self, parent, -1, 
+            size = (200,100),
+            style=wx.LC_REPORT|wx.LC_VIRTUAL|wx.LC_HRULES|wx.LC_VRULES,
+            
+            )
+
+#        self.il = wx.ImageList(16, 16)
+#        self.idx1 = self.il.Add(images.getSmilesBitmap())
+#        self.SetImageList(self.il, wx.IMAGE_LIST_SMALL)
+
+
+
+        self.InsertColumn(0, "Object #")
+        self.InsertColumn(1, "Volume")
+        #self.InsertColumn(2, "")
+        self.SetColumnWidth(0, 175)
+        self.SetColumnWidth(1, 175)
+        #self.SetColumnWidth(2, 175)
+
+        self.SetItemCount(1000)
+
+        self.attr1 = wx.ListItemAttr()
+        self.attr1.SetBackgroundColour("white")
+
+        self.attr2 = wx.ListItemAttr()
+        self.attr2.SetBackgroundColour("light blue")
+        self.volumeList = {}
+
+        self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.OnItemSelected)
+        self.Bind(wx.EVT_LIST_ITEM_ACTIVATED, self.OnItemActivated)
+        self.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.OnItemDeselected)
+
+    
+
+    def setVolumes(self,volumeList):
+        self.volumes = volumeList
+
+    def OnItemSelected(self, event):
+        self.currentItem = event.m_itemIndex
+        print ('OnItemSelected: "%s", "%s", "%s", "%s"\n' %
+                           (self.currentItem,
+                            self.GetItemText(self.currentItem),
+                            self.getColumnText(self.currentItem, 1),
+                            self.getColumnText(self.currentItem, 2)))
+
+    def OnItemActivated(self, event):
+        self.currentItem = event.m_itemIndex
+        print ("OnItemActivated: %s\nTopItem: %s\n" %
+                           (self.GetItemText(self.currentItem), self.GetTopItem()))
+
+    def getColumnText(self, index, col):
+        item = self.GetItem(index, col)
+        return item.GetText()
+
+    def OnItemDeselected(self, evt):
+        print ("OnItemDeselected: %s" % evt.m_itemIndex)
+
+    def OnGetItemText(self, item, col):
+        if item>len(self.volumeList):
+            return ""
+        if col==0:
+            return "#%d"%item
+        else:
+            return u"%d \u03BCm"%self.volumeList[item]
+
+    def OnGetItemImage(self, item):
+#        if item % 3 == 0:
+#            return self.idx1
+#        else:
+         return -1
+
+    def OnGetItemAttr(self, item):
+        if item % 2 == 1:
+            return self.attr1
+        elif item % 2 == 0:
+            return self.attr2
+        else:
+            return None
+
 
 class ThresholdFilter(ManipulationFilters.ManipulationFilter):
     """
@@ -251,7 +343,7 @@ class ITKWatershedSegmentationFilter(ManipulationFilters.ManipulationFilter):
     Description: A class for doing anisotropic diffusion on ITK
     """     
     name = "Watershed Segmentation"
-    category = ITK
+    category = SEGMENTATION
     
     def __init__(self,inputs=(1,1)):
         """
@@ -268,7 +360,8 @@ class ITKWatershedSegmentationFilter(ManipulationFilters.ManipulationFilter):
         #scripting.loadITK(filters=1)
         f3 = itk.Image.F3
         self.itkfilter = itk.WatershedImageFilter[f3].New()
-
+            
+        
             
     def getDefaultValue(self,parameter):
         """
@@ -510,6 +603,19 @@ class MeasureVolumeFilter(ManipulationFilters.ManipulationFilter):
         ManipulationFilters.ManipulationFilter.__init__(self,inputs)
         
         self.descs = {}        
+        self.reportGUI = None
+
+    def getGUI(self,parent,taskPanel):
+        """
+        Method: getGUI
+        Created: 13.04.2006, KP
+        Description: Return the GUI for this filter
+        """              
+        gui = ManipulationFilters.ManipulationFilter.getGUI(self,parent,taskPanel)
+        if not self.reportGUI:
+            self.reportGUI = WatershedObjectList(self.gui,-1)
+            gui.sizer.Add(self.reportGUI,(1,0),flag=wx.EXPAND|wx.ALL)
+        return gui
 
             
     def getDefaultValue(self,parameter):
@@ -569,9 +675,9 @@ class MeasureVolumeFilter(ManipulationFilters.ManipulationFilter):
         z*=1000000
         vol = x*y*z
         
-        print "vol=",vol
-        print data.GetDimensions()
-        f = open("statistics.txt","w")
+        #print "vol=",vol
+        #print data.GetDimensions()
+        #f = open("statistics.txt","w")
         #minval = accu.GetMin()
         #maxval = accu.GetMax()
         #meanval = accu.GetMean()
@@ -592,10 +698,7 @@ class MeasureVolumeFilter(ManipulationFilters.ManipulationFilter):
         #f.write("Maximum object size: %.4f um"%(maxval*vol))
         #f.write("Mean object size: %.4f um"%(meanval*vol))
         
-        for i,val in enumerate(values):
-            #if val*vol:print "size %d="%i,val*vol
-            f.write("Object %d size: %d voxels, %.4f um\n"%(i,val,val*vol))
-        f.close()
+        self.reportGUI.setVolumes(values)
         
         return image
 

@@ -330,7 +330,7 @@ class ManipulationPanel(TaskPanel.TaskPanel):
         self.currentGUI = currfilter.getGUI(self.panel,self)
         currfilter.sendUpdateGUI()
         
-        self.panelsizer.Add(self.currentGUI,(1,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
+        self.panelsizer.Add(self.currentGUI,(1,0),flag=wx.EXPAND|wx.ALL)
         self.currentGUI.Show(1)
         self.panel.Layout()
         self.Layout()

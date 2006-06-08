@@ -35,6 +35,7 @@ import ImageOperations
 import Logging
 import platform
 import wx.lib.ogl as ogl
+import messenger
 
 import math
 ZOOM_TO_BAND=1
@@ -116,7 +117,51 @@ class InteractivePanel(ogl.ShapeCanvas):
         #self.Bind(wx.EVT_RIGHT_UP,self.actionEnd)
         self.Bind(wx.EVT_SIZE,self.OnSize)
         
-        
+        messenger.connect(None,"create_polygon",self.onCreatePolygon)
+        messenger.connect(None,"erase_lines",self.onEraseLines)
+    
+    def onEraseLines(self,obj,evt,lines):
+        """
+        Method: onEraseLines
+        Created: 08.06.2006, KP
+        Description: Erase the given lines from this canvas
+        """            
+        for line in lines:
+            print "Deleting",line
+            self.RemoveShape(line)
+            line.Delete()
+            del line
+        shapelist=self.diagram.GetShapeList()
+        shape=self.FindShape(0,0)
+        print "SHAPELIST=",shapelist
+        for shape in shapelist:
+            print shape
+    
+    
+    def onCreatePolygon(self,obj,evt,points):
+        """
+        Method: onCreatePolygon
+        Created: 07.05.2006, KP
+        Description: Create a polygon
+        """            
+        shape = MyPolygon()
+        #shape.SetCentreResize(0)
+        mx=9999999999
+        my=9999999999
+        for x,y in points:
+            if x<mx:mx=x
+            if y<my:my=y
+        pts=[]
+        print "mx=",mx,"my=",my
+        for x,y in points:
+            pts.append(((x-mx),(y-my)))
+        shape.Create(pts)
+        shape.SetX(mx)
+        shape.SetY(my)
+        self.addNewShape(shape)
+        print "Added",shape,pts
+                    
+
     def OnSize(self,evt):
         """
         Method: OnSize
@@ -146,6 +191,9 @@ class InteractivePanel(ogl.ShapeCanvas):
         h=self.buffer.GetHeight()
         return [(0,w,0,h)]
         
+    def onLeftDown(self,event):
+        return self.markActionStart(event)
+        
     def markActionStart(self,event):
         """
         Method: markActionStart
@@ -153,6 +201,7 @@ class InteractivePanel(ogl.ShapeCanvas):
         Description: Sets the starting position of rubber band for zooming
         """    
         event.Skip()
+        print "MARK ACTION START"
             
         pos=event.GetPosition()
 
@@ -236,6 +285,7 @@ class InteractivePanel(ogl.ShapeCanvas):
             elif self.annotationClass == "POLYGON":
                 #shape = MyPolygon()
                 shape = MyLine()
+                
                 shape.MakeLineControlPoints(2)
                 
                 shape.SetEnds(ex,ey,x,y)
@@ -244,20 +294,12 @@ class InteractivePanel(ogl.ShapeCanvas):
                 #shape.Create([(10.1,10.1),(10.1,100.1),(100.0,100.1),(100.0,10.1)])
                 shape.SetCentreResize(0)    
                 
-            
-            evthandler = MyEvtHandler(self)
-            evthandler.SetShape(shape)
-            evthandler.SetPreviousHandler(shape.GetEventHandler())
-            shape.SetEventHandler(evthandler)
-            shape.SetDraggable(True, True)
-            
-            shape.SetBrush(wx.TRANSPARENT_BRUSH)
-            shape.SetPen(wx.Pen((0,255,0),1))
-            print "Adding to ",event.GetPosition()
-            
-            self.AddShape( shape )                   
-            self.diagram.ShowAll( 1 )           
-            self.Refresh()
+            self.addNewShape(shape)
+            if self.annotationClass == "POLYGON":
+                points,lines = shape.CheckIfPolygon()
+                if lines and points:
+                    messenger.send(None,"erase_lines",lines)
+                    messenger.send(None,"create_polygon",points)            
             
             self.action = None
             self.actionstart = (0,0)
@@ -278,6 +320,26 @@ class InteractivePanel(ogl.ShapeCanvas):
         self.annotationClass=None                    
         #ogl.ShapeCanvas.OnMouseEvent(self,event)
         event.Skip()
+    
+    def addNewShape(self, shape):
+        """
+        Method: addNewShape
+        Created: 07.05.2005, KP
+        Description: Add a new shape to the canvas
+        """        
+        evthandler = MyEvtHandler(self)
+        evthandler.SetShape(shape)
+        evthandler.SetPreviousHandler(shape.GetEventHandler())
+        shape.SetEventHandler(evthandler)
+        shape.SetDraggable(True, True)
+        shape.SetCanvas(self)
+        shape.SetBrush(wx.TRANSPARENT_BRUSH)
+        shape.SetPen(wx.Pen((0,255,0),1))
+        
+        self.AddShape( shape )                   
+        self.diagram.ShowAll( 1 )           
+        self.Refresh()        
+        
     def updateAnnotations(self):
         """
         Method: updateAnnotations()

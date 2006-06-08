@@ -1248,7 +1248,7 @@ class MainWindow(wx.Frame):
             return
         dataunits=[]
         try:
-        #    Logging.info("Loading from data source ",datasource,kw="io")
+            Logging.info("Loading from data source ",datasource,kw="io")
             dataunits = datasource.loadFromFile(path)
         except Logging.GUIError,ex:
             ex.show()

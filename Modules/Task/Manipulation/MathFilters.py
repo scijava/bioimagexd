@@ -31,6 +31,9 @@ __version__ = "$Revision: 1.42 $"
 __date__ = "$Date: 2005/01/13 14:52:39 $"
 
 import ManipulationFilters
+MATH="Math"
+LOGIC="Logic"
+
 
 class MathFilter(ManipulationFilters.ManipulationFilter):
     """

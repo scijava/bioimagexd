@@ -38,8 +38,10 @@ import sys
 
 outfile=sys.stdout
 #HIDE_DEBUG=[]
-HIDE_DEBUG=["visualizer","init","!io","scale","!preview","trivial",
-            "modules","imageop","ctf","iactivepanel"]
+HIDE_DEBUG=["visualizer","main","init","animator","io","task","preview","scale",
+     "imageop","modules","trivial","ctf","dataunit","event","processing",
+     "!datasource","iactivepanel","annotation","ui","rendering"]
+
 KWS=["visualizer","main","init","animator","io","task","preview","scale",
      "imageop","modules","trivial","ctf","dataunit","event","processing",
      "datasource","iactivepanel","annotation","ui","rendering"]
@@ -121,6 +123,7 @@ class GUIError:
         Created: 13.12.2004, KP
         Description: Displays the error message in a tkMessageBox.
         """
+        import wx
         dlg=self.wx.MessageDialog(None,self.msg,self.title,wx.OK|wx.ICON_ERROR)
         dlg.ShowModal()
         dlg.Destroy()

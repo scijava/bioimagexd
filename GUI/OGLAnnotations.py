@@ -33,6 +33,7 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 import wx
 import Logging
 import wx.lib.ogl as ogl
+import messenger
 class MyRectangle(ogl.RectangleShape):    
     def OnDrawControlPoints(self, dc):
         if not self._drawHandles:
@@ -159,7 +160,7 @@ class MyLine(ogl.LineShape):
 
     def SetEndConnected(self,shape,end):
         self.endConnections[end] = shape
-        
+            
     def GetEndConnected(self,end):
         if end in self.endConnections:            
             return self.endConnections[end]
@@ -232,7 +233,7 @@ class MyLine(ogl.LineShape):
         #self.FindConnectedLines()        
         self.GetEventHandler().OnDraw(dc)
         
-        self.CheckIfPolygon()
+        
     
     def CheckShape(self):
         if self.checked:
@@ -250,22 +251,36 @@ class MyLine(ogl.LineShape):
             return 0
         if not shape2.CheckShape():
             return 0
+            
         return 1
+        
+    def getPointList(self):
+        ret=[]
+        lines=[]
+        shape = self
+        end=0
+        while 1:
+            shape2, end = shape.GetEndConnected(not end)
+            x=(not end)*2
+            x2=x+2
+            pts=shape.GetEnds()
+            a,b=pts[x:x2]
+            if (a,b) in ret:
+                return ret,lines
+            if shape not in lines:
+                lines.append(shape)
+            ret.append((a,b))
+            shape=shape2
+        
         
     def CheckIfPolygon(self):
         found=1
         found = self.CheckShape()
         
-        if found:
-            print "WE ARE FAMILY!"
-            print "I GOT ALL MY LINES WITH ME"
-            
-        points = []
+        if found:            
+            return self.getPointList()
+        return None,None
         
-            
-            
-        
-    
         
     def ResetControlPoints(self):
         for i in range(min(len(self._lineControlPoints), len(self._controlPoints))):

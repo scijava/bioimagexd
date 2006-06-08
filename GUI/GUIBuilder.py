@@ -194,6 +194,13 @@ class GUIBuilder(wx.Panel):
         self.SetSizer(self.sizer)
         self.SetAutoLayout(1)
         
+    def getSizerPosition(self):
+        """
+        Method: getSizerPosition
+        Created: 07.06.2006, KP
+        Description: Return the position in the sizer where the user can add more stuff
+        """ 
+        return (1,0)
     def buildGUI(self,currentFilter):
         """
         Method: buildGUI

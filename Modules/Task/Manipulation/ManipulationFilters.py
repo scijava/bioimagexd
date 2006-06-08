@@ -43,8 +43,6 @@ import scripting
 import GUIBuilder
 import ImageOperations
 
-from MorphologicalFilters import *
-from SegmentationFilters import *
 
 def getFilterList():
     return [ErodeFilter,DilateFilter,RangeFilter,SobelFilter,
@@ -60,11 +58,9 @@ def getFilterList():
             ITKLocalMaximumFilter,ITKOtsuThresholdFilter,ITKConfidenceConnectedFilter,
             MaskFilter,ITKSigmoidFilter]
             
-
 MATH="Math"
 SEGMENTATION="Segmentation"
 FILTERING="Filtering"
-LOGIC="Logic"
 ITK="ITK"
 MEASUREMENT="Measurements"
 REGION_GROWING="Region Growing"
@@ -958,7 +954,7 @@ class ITKLocalMaximumFilter(ManipulationFilter):
     Description: A class for finding the local maxima in an image
     """     
     name = "Find Local Maxima"
-    category = SEGMENTATION
+    category = ITK
     
     def __init__(self,inputs=(1,1)):
         """
@@ -1035,3 +1031,7 @@ class ITKLocalMaximumFilter(ManipulationFilter):
             return self.convertITKtoVTK(data,imagetype="UC3")
             
         return data            
+
+from MathFilters import *
+from SegmentationFilters import *
+from MorphologicalFilters import *

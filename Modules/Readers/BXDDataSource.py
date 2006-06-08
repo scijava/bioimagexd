@@ -240,9 +240,9 @@ class BXDDataSource(DataSource):
             self.parser.read([filename])
             # First, the DataUnit format is checked
             dataUnitFormat = self.parser.get("Type", "Type")
-        except:
+        except Exception, ex:
             Logging.error("Failed to open file for reading",
-            "DUDataSource failed to open %s for reading."%(filename))
+            "DUDataSource failed to open %s for reading. Reason: %s"%(filename,str(ex)))
             return [None]
         return dataUnitFormat
 
@@ -263,6 +263,7 @@ class BXDDataSource(DataSource):
         Logging.info("format of unit=",dataUnitFormat,kw="datasource")
 
         if (not dataUnitFormat) or (not self.parser):
+            Logging.info("No dataUnitFormat or parser: %s and %s"%(dataUnitFormat,self.parser),kw="datasource")
             return None
 
         # Then, the number of datasets/timepoints that belong to this dataset

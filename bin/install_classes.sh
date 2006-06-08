@@ -5,6 +5,7 @@ exit
 fi
 
 INSTALL="IO Imaging Filtering Widgets"
+CP_CMD="cp"
 
 CPPDIR=$1/C++
 IMAGING=$2/Imaging
@@ -15,7 +16,7 @@ IO=$2/IO
 function insert_to_cmakelists {
   cxxfile=$1
   cmakefile=$2/CMakeLists.txt
-  cat $cmakefile|sed s/"SET.*Kit_SRCS"/"SET( Kit_SRCS\n$cxxfile"/ > CMakeLists.new
+  cat $cmakefile|sed 1s/"SET.*Kit_SRCS"/"SET( Kit_SRCS\n$cxxfile"/ > CMakeLists.new
   mv -f CMakeLists.new $cmakefile
 }
 
@@ -25,8 +26,8 @@ then
   vtkImageMapToIntensities vtkImageSimpleMIP vtkImageSolitaryFilter
   do
     echo "Copying $i.cxx..."
-    cp $CPPDIR/$i.cxx $IMAGING
-    cp $CPPDIR/$i.h $IMAGING
+    $CP_CMD $CPPDIR/$i.cxx $IMAGING
+    $CP_CMD $CPPDIR/$i.h $IMAGING
     if [ "`grep $i $IMAGING/CMakeLists.txt`" = "" ]; then
        echo "Inserting $i.cxx to CMakeLists.txt"
        insert_to_cmakelists $i.cxx $IMAGING
@@ -41,8 +42,8 @@ if [ "`echo $INSTALL|grep Filtering`" ]
   for i in vtkIntensityTransferFunction vtkImageAutoThresholdColocalization
   do
     echo "Copying $i.cxx..."
-    cp $CPPDIR/$i.cxx $FILTERING
-    cp $CPPDIR/$i.h $FILTERING
+    $CP_CMD $CPPDIR/$i.cxx $FILTERING
+    $CP_CMD $CPPDIR/$i.h $FILTERING
     if [ "`grep $i $FILTERING/CMakeLists.txt`" = "" ]; then
        echo "Inserting $i.cxx to CMakeLists.txt"
        insert_to_cmakelists $i.cxx $FILTERING
@@ -57,8 +58,8 @@ then
   for i in vtkDistanceRepresentationScaled2D
   do
     echo "Copying $i.cxx..."
-    cp $CPPDIR/$i.cxx $WIDGETS
-    cp $CPPDIR/$i.h $WIDGETS
+    $CP_CMD $CPPDIR/$i.cxx $WIDGETS
+    $CP_CMD $CPPDIR/$i.h $WIDGETS
     if [ "`grep $i $WIDGETS/CMakeLists.txt`" = "" ]; then
        echo "Inserting $i.cxx to CMakeLists.txt"
        insert_to_cmakelists $i.cxx $WIDGETS
@@ -73,8 +74,8 @@ then
   for i in vtkExtTIFFReader vtkLSMReader
   do
     echo "Copying $i.cxx..."
-    cp $CPPDIR/$i.cxx $IO
-    cp $CPPDIR/$i.h $IO
+    $CP_CMD $CPPDIR/$i.cxx $IO
+    $CP_CMD $CPPDIR/$i.h $IO
     if [ "`grep $i $IO/CMakeLists.txt`" = "" ]; then
        echo "Inserting $i.cxx to CMakeLists.txt"
        insert_to_cmakelists $i.cxx $IO
