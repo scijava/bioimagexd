@@ -454,16 +454,24 @@ class SplineEditor:
         
         #volumeMapper = vtk.vtkVolumeTextureMapper2D()
         
-        volumeMapper = vtk.vtkVolumeTextureMapper3D()
+#        volumeMapper = vtk.vtkVolumeTextureMapper3D()
         
         data.Update()
-        ncomps=data.GetNumberOfScalarComponents()
-        if ncomps>1:
-            volumeProperty.IndependentComponentsOff()
-        else:
-            volumeProperty.IndependentComponentsOn()                    
-        volumeMapper.SetInput(self.data)
-        
+#        ncomps=data.GetNumberOfScalarComponents()
+#        if ncomps>1:
+#            volumeProperty.IndependentComponentsOff()
+#        else:
+#            volumeProperty.IndependentComponentsOn()                    
+#        volumeMapper.SetInput(self.data)
+
+        self.volumeMapper =  vtk.vtkFixedPointVolumeRayCastMapper()
+        self.volumeMapper.SetIntermixIntersectingGeometry(1)
+        self.volumeMapper.SetSampleDistance(2)
+        self.volumeMapper.SetBlendModeToComposite()
+        #volume.SetMapper(self.volumeMapper)
+        self.volumeMapper.SetInput(self.data)
+        volumeMapper = self.volumeMapper
+
         volume = vtk.vtkVolume()
         print "Adding volume"
         # temporary
@@ -497,13 +505,13 @@ class SplineEditor:
         self.volumeMapper = volumeMapper
         self.volumeProperty = volumeProperty
         self.wxrenwin.Render()
-        if not self.volumeMapper.IsRenderSupported(self.volumeProperty):
-            self.volumeMapper =  vtk.vtkFixedPointVolumeRayCastMapper()
-            self.volumeMapper.SetIntermixIntersectingGeometry(1)
-            self.volumeMapper.SetSampleDistance(2)
-            self.volumeMapper.SetBlendModeToComposite()
-            volume.SetMapper(self.volumeMapper)
-            self.volumeMapper.SetInput(self.data)
+        #if not self.volumeMapper.IsRenderSupported(self.volumeProperty):
+#            self.volumeMapper =  vtk.vtkFixedPointVolumeRayCastMapper()
+#            self.volumeMapper.SetIntermixIntersectingGeometry(1)
+#            self.volumeMapper.SetSampleDistance(2)
+#            self.volumeMapper.SetBlendModeToComposite()
+#            volume.SetMapper(self.volumeMapper)
+#            self.volumeMapper.SetInput(self.data)
             
             
     def setCamera(self,cam):
