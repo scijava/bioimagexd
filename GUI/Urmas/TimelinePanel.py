@@ -109,11 +109,13 @@ class TimelinePanel(wx.Panel):
         self.control.setSplineEditor(self.splineEditor)        
 
 
-        self.sbox=wx.StaticBox(self,-1,"Rendering preview")
-        self.sboxsizer=wx.StaticBoxSizer(self.sbox,wx.VERTICAL)                
-        self.sboxsizer.Add(self.wxrenwin)
+        # Try to shallow the hierarchy
+        #self.sbox=wx.StaticBox(self,-1,"Rendering preview")
+        #self.sboxsizer=wx.StaticBoxSizer(self.sbox,wx.VERTICAL)                
+        #self.sboxsizer.Add(self.wxrenwin)
         
-        self.sizer.Add(self.sboxsizer,(0,1))#,flag=wx.EXPAND|wx.ALL) 
+        #self.sizer.Add(self.sboxsizer,(0,1))#,flag=wx.EXPAND|wx.ALL) 
+        self.sizer.Add(self.wxrenwin,(0,1))#,flag=wx.EXPAND|wx.ALL) 
         
         self.SetSizer(self.sizer)
         self.SetAutoLayout(1)
@@ -146,8 +148,9 @@ class TimelinePanel(wx.Panel):
         print "Setting size of renderwindow to ",(x,y)
         
         self.wxrenwin.Update()
-        self.sboxsizer.SetMinSize((x+10,y+25))
-        self.sbox.SetSize((x+10,y+25))
+        #self.sboxsizer.SetMinSize((x+10,y+25))
+        #self.wxrenwin.SetMinSize((x+10,y+25))
+        #self.sbox.SetSize((x+10,y+25))
         
         self.wxrenwin.Render()
         
