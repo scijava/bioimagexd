@@ -439,18 +439,18 @@ class VideoGeneration(wx.Panel):
             video=os.path.join(path,"video.avi")
         self.rendir=wx.TextCtrl(self,-1,path,size=(150,-1))#,size=(350,-1))
         self.rendirLbl=wx.StaticText(self,
-        -1,"Directory for rendered frames:")
+        -1,"Save frames in directory:")
         
         self.dirBtn=wx.Button(self,-1,"...")
         self.dirBtn.Bind(wx.EVT_BUTTON,self.onSelectDirectory)
         
         self.renderingsizer=wx.GridBagSizer(5,5)
-        box=wx.StaticBox(self,wx.HORIZONTAL,"Output")
-        self.renderstaticbox=wx.StaticBoxSizer(box,wx.VERTICAL)
-        self.renderstaticbox.Add(self.renderingsizer)
+        #box=wx.StaticBox(self,wx.HORIZONTAL,"Output")
+        #self.renderstaticbox=wx.StaticBoxSizer(box,wx.VERTICAL)
+        #self.renderstaticbox.Add(self.renderingsizer)
         
-        self.renderingsizer.Add(self.rendirLbl,(0,0))
-        self.renderingsizer.Add(self.rendir,(1,0))
+        self.renderingsizer.Add(self.rendirLbl,(0,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
+        self.renderingsizer.Add(self.rendir,(1,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
         self.renderingsizer.Add(self.dirBtn,(1,1))
         
         self.videofile=wx.TextCtrl(self,-1,video,size=(150,-1))
@@ -458,12 +458,13 @@ class VideoGeneration(wx.Panel):
         self.videofileBtn=wx.Button(self,-1,"...")
         self.videofileBtn.Bind(wx.EVT_BUTTON,self.onSelectOutputFile)
         
-        self.renderingsizer.Add(self.videofileLbl,(2,0))
-        self.renderingsizer.Add(self.videofile,(3,0))
-        self.renderingsizer.Add(self.videofileBtn,(3,1))
+        self.renderingsizer.Add(self.videofileLbl,(2,0),flag=wx.EXPAND|wx.ALL)
+        self.renderingsizer.Add(self.videofile,(3,0),flag=wx.EXPAND|wx.ALL)
+        self.renderingsizer.Add(self.videofileBtn,(3,1),flag=wx.EXPAND|wx.ALL)
 
         
-        self.mainsizer.Add(self.renderstaticbox,(1,0))
+        #self.mainsizer.Add(self.renderstaticbox,(1,0))
+        self.mainsizer.Add(self.renderingsizer,(1,0),flag=wx.EXPAND|wx.ALL)
 
     def onSelectDirectory(self,event=None):
         """
