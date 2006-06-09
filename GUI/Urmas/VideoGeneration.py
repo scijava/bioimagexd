@@ -259,7 +259,7 @@ class VideoGeneration(wx.Panel):
             target=self.targets[sel]
             (x,y),fps,br=self.presets[sel]
         for i in ffmpegs.keys():
-            if i in sys.platform:
+            if i == sys.platform:
                 ffmpeg=ffmpegs[i]
                 break
         if not target:
