@@ -88,9 +88,11 @@ class TimelinePanel(wx.Panel):
         # add the sizer 
         self.confSizer.Add(self.timelineConfig.sizer,(0,0),flag=wx.EXPAND|wx.ALL)
         
-        sbox=wx.StaticBox(self,-1,"Animator configuration")
-        sboxsizer=wx.StaticBoxSizer(sbox,wx.HORIZONTAL)
-        sboxsizer.Add(self.confSizer)
+        #sbox=wx.StaticBox(self,-1,"Animator configuration")
+        #sboxsizer=wx.StaticBoxSizer(sbox,wx.HORIZONTAL)
+        #sboxsizer.Add(self.confSizer)
+        
+        sboxsizer = self.confSizer
     
         self.useButton=wx.Button(self,-1,"Use settings")
 
