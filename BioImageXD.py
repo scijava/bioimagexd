@@ -9,7 +9,7 @@
 
  BioImageXD main program
 
- Copyright (C) 2005  BioImageXD Project
+ Copyright (C) 2005, 2006  BioImageXD Project
  See CREDITS.txt for details
 
  This program is free software; you can redistribute it and/or modify
