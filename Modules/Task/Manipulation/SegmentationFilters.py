@@ -31,7 +31,10 @@ __version__ = "$Revision: 1.42 $"
 __date__ = "$Date: 2005/01/13 14:52:39 $"
 import ManipulationFilters
 import wx
-import itk
+try:
+ import itk
+except:
+ pass
 import types
 
 SEGMENTATION="Segmentation"
