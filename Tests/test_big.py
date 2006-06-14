@@ -1,10 +1,8 @@
 #! /usr/bin/env python
 import vtk
 import time
-#D="/media/sda12/Data/selli/Selli_BIG.lsm"
-D="/home/heuuksul/data/Selli_BIG.lsm"
-#D="/media/sda12/Data/selli/selli_coloc1_8-bit.lsm"
-#D="/media/sda12/Data/sample2.lsm"
+
+D="<ENTER FILE NAME HERE>"
 t=time.time()
 def elapsed():
     global t
@@ -18,6 +16,11 @@ r1.SetUpdateChannel(0)
 r2.SetUpdateChannel(1)
 d1=r1.GetOutput()
 d2=r2.GetOutput()
+
+print "Reading data"
+r1.Update()
+r2.Update()
+
 
 itf1=vtk.vtkIntensityTransferFunction()
 itf2=vtk.vtkIntensityTransferFunction()
@@ -42,21 +45,21 @@ merge.AddLookupTable(ctf2)
 merge.AddIntensityTransferFunction(itf1)
 merge.AddIntensityTransferFunction(itf2)
 
+merge.Update()
+print "Merging done",elapsed()
 
 mip=vtk.vtkImageSimpleMIP()
 #mip.DebugOn()
 print "Feeding merge to MIP",elapsed()
 mip.SetInput(merge.GetOutput())
+mip.Update()
 
-streamer  = vtk.vtkMemoryLimitImageDataStreamer()
-streamer.SetMemoryLimit(300*1024)
-streamer.SetInput(mip.GetOutput())
-
+print "Writing MIP out...",elapsed()
 writer=vtk.vtkPNGWriter()
 writer.SetFileName("Selli_BIG.png")
-writer.SetInput(streamer.GetOutput())
+writer.SetInput(mip.GetOutput())
 #writer.SetInput(mip.GetOutput())
-print "Feeding MIP to writer ",elapsed()
+
 writer.Update()
 writer.Write()
 print "Wrote PNG ",elapsed()
