@@ -60,10 +60,10 @@ class Module:
         # Gracefully handle lack of vtkParallel kit
         try:
             self.streamer = vtk.vtkMemoryLimitImageDataStreamer()
-        except:
-            self.streamer = None
             if self.limit:
                 self.streamer.SetMemoryLimit(1024*self.limit)
+        except:
+            self.streamer = None
         self.eventDesc="Processing data"
         
     def updateProgress(self,obj,evt):
