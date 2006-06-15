@@ -2,7 +2,7 @@
 import vtk
 import time
 
-D="<ENTER FILE NAME HERE>"
+D="/Users/dan/Documents/volumerender/colocsample/colocsample1b.lsm"
 t=time.time()
 def elapsed():
     global t

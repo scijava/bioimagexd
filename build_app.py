@@ -114,7 +114,13 @@ def build():
             packages = ["encodings"]
             )
             DATA_FILES.append( ('../Frameworks', [
-            '/usr/local/lib/wxPython-unicode-2.5.5.1/lib/libwx_macud-2.5.5.rsrc',
+            #'/usr/local/lib/wxPython-unicode-2.5.5.1/lib/libwx_macud-2.5.5.rsrc',
+            #appending the .rsrc file no longer needed in wx2.6
+            #'/opt/intel/cc/9.1.024/lib/libguide.dylib',
+            #this get the libguide.dylib into Frameworks but the app doenst see it.
+            #sometihng to do with DLYD env vars set by intel script at 
+            #/opt/intel/cc/9.1.024/bin/iccvars.sh which must be sourced before
+            #using intel compilers, and before python2.4 BioImageXD.py works
             ]))
             setup(
                 app=['BioImageXD.py'],
