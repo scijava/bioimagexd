@@ -179,7 +179,10 @@ class DataUnitSettings:
         """    
         if not self.get("Type"):
             self.parser = parser
-            type=parser.get("Type","Type")
+            try:
+                type=parser.get("Type","Type")
+            except ConfigParser.NoOptionError:
+                type = parser.get("Type","type")
             settingsclass=self.modules[type][2].getSettingsClass()
             Logging.info("Settings class=",settingsclass,kw="processing")
             #obj=eval(type)(self.n)
@@ -195,8 +198,11 @@ class DataUnitSettings:
                 try:
                     n=parser.get("Count",key)
                 except:
-                    Logging.info("Got no key count for %s"%key,kw="dataunit")
-                    continue
+                    try:
+                        n = parser.get("Count",key.lower())
+                    except:
+                        Logging.info("Got no key count for %s"%key,kw="dataunit")
+                        continue
                 n=int(n)
                 Logging.info("Got %d keys for %s"%(n,key),kw="dataunit")
                 
@@ -204,7 +210,10 @@ class DataUnitSettings:
                     ckey="%s[%d]"%(key,i)
                     #try:
                     try:
-                        value=parser.get(key,ckey)
+                        try:
+                            value=parser.get(key,ckey)
+                        except ConfigParser.NoOptionError:
+                            value = parser.get(key,ckey.lower())
                         if ser:
                             value=self.deserialize(key,value)
                             #Logging.info("Deserialized ",key,"=",value,kw="dataunit")
@@ -215,7 +224,10 @@ class DataUnitSettings:
             else:
                 #value=parser.get("ColorTransferFunction","ColorTransferFunction")
                 try:
-                    value=parser.get(key,key)
+                    try:
+                        value=parser.get(key,key)
+                    except ConfigParser.NoOptionError:
+                        value = parser.get(key,key.lower())
                     
                     if ser:
                         #Logging.info("Trying to deserialize ",key,value,kw="dataunit")

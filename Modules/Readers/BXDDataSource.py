@@ -196,7 +196,10 @@ class BXDDataSource(DataSource):
         Description: Returns the spacing of the datasets this 
                      dataunit contains
         """
-        vsiz=self.parser.get("VoxelSize","VoxelSize")
+        try:
+            vsiz=self.parser.get("VoxelSize","VoxelSize")
+        except:
+            vsiz = self.parser.get("VoxelSize","voxelsize")
         if type(vsiz)==type(""):            
             return eval(vsiz)
         return vsiz
@@ -239,7 +242,10 @@ class BXDDataSource(DataSource):
             self.parser = MyConfigParser()
             self.parser.read([filename])
             # First, the DataUnit format is checked
-            dataUnitFormat = self.parser.get("Type", "Type")
+            try:
+                dataUnitFormat = self.parser.get("Type", "Type")
+            except:
+                dataUnitFormat = self.parser.get("Type","type")
         except Exception, ex:
             Logging.error("Failed to open file for reading",
             "DUDataSource failed to open %s for reading. Reason: %s"%(filename,str(ex)))
@@ -268,7 +274,11 @@ class BXDDataSource(DataSource):
 
         # Then, the number of datasets/timepoints that belong to this dataset
         # series
-        count = self.parser.get("ImageData", "numberOfFiles")
+        try:
+            count = self.parser.get("ImageData", "numberOfFiles")
+        except:
+            count = self.parser.get("ImageData","numberoffiles")
+            
         Logging.info("format=",dataUnitFormat,"count=",count,kw="datasource")
 
 
