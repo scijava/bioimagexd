@@ -275,8 +275,7 @@ class MyLine(ogl.LineShape):
         
     def CheckIfPolygon(self):
         found=1
-        found = self.CheckShape()
-        
+        found = self.CheckShape()        
         if found:            
             return self.getPointList()
         return None,None

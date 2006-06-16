@@ -100,7 +100,9 @@ class InteractivePanel(ogl.ShapeCanvas):
         self.diagram.SetCanvas(self)
         
         self.size=size
-
+    
+        self.lines = []
+        
 
         self.zoomFactor=1
         
@@ -112,15 +114,15 @@ class InteractivePanel(ogl.ShapeCanvas):
 
         self.Bind(wx.EVT_LEFT_DOWN,self.markActionStart)
         self.Bind(wx.EVT_MOTION,self.updateActionEnd)
-        
+        self.Bind(wx.EVT_RIGHT_UP,self.onCheckPolygon)
         self.Bind(wx.EVT_LEFT_UP,self.executeAction)
         #self.Bind(wx.EVT_RIGHT_UP,self.actionEnd)
         self.Bind(wx.EVT_SIZE,self.OnSize)
         
-        messenger.connect(None,"create_polygon",self.onCreatePolygon)
-        messenger.connect(None,"erase_lines",self.onEraseLines)
+        #messenger.connect(None,"create_polygon",self.onCreatePolygon)
+        
     
-    def onEraseLines(self,obj,evt,lines):
+    def deleteLines(self,lines):
         """
         Method: onEraseLines
         Created: 08.06.2006, KP
@@ -130,35 +132,60 @@ class InteractivePanel(ogl.ShapeCanvas):
             print "Deleting",line
             self.RemoveShape(line)
             line.Delete()
+            self.lines.remove(line)
             del line
+            
         shapelist=self.diagram.GetShapeList()
         shape=self.FindShape(0,0)
         print "SHAPELIST=",shapelist
         for shape in shapelist:
             print shape
     
-    
-    def onCreatePolygon(self,obj,evt,points):
+    def polyCenter(self,points):
         """
-        Method: onCreatePolygon
+        Method: polyCenter
+        Created: 16.06.2006, KP
+        Description: Calculte the center of mass of polygon
+        """          
+        A=0
+        for i,pt in enumerate(points[:-1]):
+            
+            x,y=pt
+            A+=(x*points[i+1][1]-points[i+1][0]*y)
+        A/=2.0
+        
+        cx = 0
+        cy = 0
+        
+        for i,pt in enumerate(points[:-1]):
+            x,y=pt
+            cx+=(x+points[i+1][0])*(x*points[i+1][1]-points[i+1][0]*y)
+            cy+=(y+points[i+1][1])*(x*points[i+1][1]-points[i+1][0]*y)
+        cx /= 6.0*A
+        cy /= 6.0*A
+        return (cx,cy)
+        
+    def createPolygon(self,points):
+        """
+        Method: createPolygon
         Created: 07.05.2006, KP
         Description: Create a polygon
         """            
         shape = MyPolygon()
-        #shape.SetCentreResize(0)
-        mx=9999999999
-        my=9999999999
-        for x,y in points:
-            if x<mx:mx=x
-            if y<my:my=y
         pts=[]
-        print "mx=",mx,"my=",my
+        print "points=",points
+        #shape.SetCentreResize(0)
+        mx,my= self.polyCenter(points)
+        print "Center of polygon=",mx,my
+        
         for x,y in points:
-            pts.append(((x-mx),(y-my)))
+            pts.append((((x-mx)),((y-my))))
         shape.Create(pts)
         shape.SetX(mx)
         shape.SetY(my)
         self.addNewShape(shape)
+        self.paintPreview()
+        self.Refresh()
         print "Added",shape,pts
                     
 
@@ -194,6 +221,18 @@ class InteractivePanel(ogl.ShapeCanvas):
     def onLeftDown(self,event):
         return self.markActionStart(event)
         
+    def onCheckPolygon(self,event):
+        lst=self.lines
+        lst.reverse()
+        for shape in lst:
+            points,lines = shape.CheckIfPolygon()
+            if points:
+                print "got",points,lines
+                print "Is a polygon, deleting lines..."
+                self.deleteLines(lines)
+                self.createPolygon(points)
+        del lst
+        
     def markActionStart(self,event):
         """
         Method: markActionStart
@@ -201,7 +240,7 @@ class InteractivePanel(ogl.ShapeCanvas):
         Description: Sets the starting position of rubber band for zooming
         """    
         event.Skip()
-        print "MARK ACTION START"
+        
             
         pos=event.GetPosition()
 
@@ -293,13 +332,8 @@ class InteractivePanel(ogl.ShapeCanvas):
                 
                 #shape.Create([(10.1,10.1),(10.1,100.1),(100.0,100.1),(100.0,10.1)])
                 shape.SetCentreResize(0)    
-                
+                self.lines.append(shape)
             self.addNewShape(shape)
-            if self.annotationClass == "POLYGON":
-                points,lines = shape.CheckIfPolygon()
-                if lines and points:
-                    messenger.send(None,"erase_lines",lines)
-                    messenger.send(None,"create_polygon",points)            
             
             self.action = None
             self.actionstart = (0,0)
