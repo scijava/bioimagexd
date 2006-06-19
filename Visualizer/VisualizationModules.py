@@ -42,8 +42,8 @@ import messenger
 import glob
 import os,sys
 import GUI.Urmas.UrmasPersist
-import GUIBuilder
-class VisualizationModule(GUIBuilder.GUIBuilderBaseModule):
+import GUI.GUIBuilder as GUIBuilder
+class VisualizationModule(GUIBuilder.GUIBuilderBase):
     """
     Class: VisualizationModule
     Created: 28.04.2005, KP
@@ -56,7 +56,7 @@ class VisualizationModule(GUIBuilder.GUIBuilderBaseModule):
         Description: Initialization
         """    
         #self.name="Module"
-        GUIBuilder.GUIBuilderBaseModule.__init__(self,changeCallback = self.parameterChanged)
+        GUIBuilder.GUIBuilderBase.__init__(self,changeCallback = self.parameterChanged)
         
         self.moduleName=kws["moduleName"]
         self.name=kws["label"]

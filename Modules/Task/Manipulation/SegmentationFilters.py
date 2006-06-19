@@ -32,10 +32,13 @@ __date__ = "$Date: 2005/01/13 14:52:39 $"
 import ManipulationFilters
 import wx
 try:
- import itk
+    import itk
 except:
- pass
+    pass
+import vtk
 import types
+
+import GUI.GUIBuilder as GUIBuilder
 
 SEGMENTATION="Segmentation"
 ITK="ITK"
@@ -248,24 +251,28 @@ class ThresholdFilter(ManipulationFilters.ManipulationFilter):
             lower = self.parameters["LowerThreshold"]
             upper = self.parameters["UpperThreshold"]
             origCtf = self.dataUnit.getSourceDataUnits()[0].getColorTransferFunction()
-            self.origCtf = self.dataUnit.getColorTransferFunction()
+            self.origCtf = origCtf
             ctf = vtk.vtkColorTransferFunction()
             ctf.AddRGBPoint(0,0,0,0.0)
-            ctf.AddRGBPoint(lower,0, 0, 1.0)
-            ctf.AddRGBPoint(lower+1, 0, 0, 0)
+            if lower>0:
+                ctf.AddRGBPoint(lower,0, 0, 1.0)
+                ctf.AddRGBPoint(lower+1, 0, 0, 0)
+            
+            
             val=[0,0,0]
             origCtf.GetColor(255,val)
             r,g,b=val
             ctf.AddRGBPoint(upper, r, g, b)
-            ctf.AddRGBPoint(upper+1,0, 0, 0)
-            ctf.AddRGBPoint(255, 1.0, 0, 0)
+            if upper<255:
+                ctf.AddRGBPoint(upper+1,0,0,0)
+                ctf.AddRGBPoint(255, 1.0, 0, 0)
             self.dataUnit.getSettings().set("ColorTransferFunction",ctf)
             if self.gui:
                 print "Replacing CTF"
                 self.gui.histograms[0].setReplacementCTF(ctf)
                 self.gui.histograms[0].updatePreview(renew=1)
                 self.gui.histograms[0].Refresh()
-            self.dataUnit
+            
             return image
 class MaskFilter(ManipulationFilters.ManipulationFilter):
     """
@@ -413,11 +420,15 @@ class ITKWatershedSegmentationFilter(ManipulationFilters.ManipulationFilter):
 
         self.setImageType("UL3")
 
+        x0,x1=tp.GetScalarRange()        
+        ctf = ImageOperations.watershedPalette(x0,x1)
+        self.dataUnit.getSettings().set("ColorTransferFunction",ctf)
+        
         if update:
             self.itkfilter.Update()
         data=self.itkfilter.GetOutput()            
-        if last:
-            return self.convertITKtoVTK(data,imagetype="UL3")
+        #if last:
+        #    return self.convertITKtoVTK(data,imagetype="UL3")
         return data
         
         
@@ -494,8 +505,8 @@ class ITKRelabelImageFilter(ManipulationFilters.ManipulationFilter):
         if update:
             self.itkfilter.Update()
         
-        if last:
-            return self.convertITKtoVTK(data,imagetype="UL3")
+        #if last:
+        #    return self.convertITKtoVTK(data,imagetype="UL3")
         return data
 
 
@@ -907,8 +918,8 @@ class ITKConfidenceConnectedFilter(ManipulationFilters.ManipulationFilter):
             self.itkfilter.Update()
             
         data = self.itkfilter.GetOutput()
-        if last:
-            return self.convertITKtoVTK(data,imagetype="UC3")
+        #if last:
+        #    return self.convertITKtoVTK(data,imagetype="UC3")
             
         return data            
 
@@ -927,8 +938,7 @@ class ITKConnectedThresholdFilter(ManipulationFilters.ManipulationFilter):
         Created: 26.05.2006, KP
         Description: Initialization
         """        
-        ManipulationFilters.ManipulationFilter.__init__(self,inputs)
-        
+        ManipulationFilters.ManipulationFilter.__init__(self,inputs)        
         
         self.descs = {"Seed":"Seed voxel","Upper":"Upper threshold","Lower":"Lower threshold"}
         self.itkFlag = 1
@@ -1001,8 +1011,8 @@ class ITKConnectedThresholdFilter(ManipulationFilters.ManipulationFilter):
             self.itkfilter.Update()
             
         data = self.itkfilter.GetOutput()
-        if last:
-            return self.convertITKtoVTK(data,imagetype="UC3")
+        #if last:
+        #    return self.convertITKtoVTK(data,imagetype="UC3")
             
         return data      
         
@@ -1113,8 +1123,8 @@ class ITKNeighborhoodConnectedThresholdFilter(ManipulationFilters.ManipulationFi
             self.itkfilter.Update()
             
         data = self.itkfilter.GetOutput()
-        if last:
-            return self.convertITKtoVTK(data,imagetype="UC3")
+        #if last:
+        #    return self.convertITKtoVTK(data,imagetype="UC3")
             
         return data            
 
@@ -1192,8 +1202,8 @@ class ITKOtsuThresholdFilter(ManipulationFilters.ManipulationFilter):
         print "OTSU THRESHOLD=",self.itkfilter.GetThreshold()
             
         data = self.itkfilter.GetOutput()
-        if last:
-            return self.convertITKtoVTK(data,imagetype="UC3")
+        #if last:
+        #    return self.convertITKtoVTK(data,imagetype="UC3")
             
         return data            
         

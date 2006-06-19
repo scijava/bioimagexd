@@ -65,7 +65,7 @@ class ManipulationPanel(TaskPanel.TaskPanel):
                 root    Is the parent widget of this window
         """
         self.timePoint = 0
-        self.operationName="Manipulation"
+        self.operationName="Process"
         TaskPanel.TaskPanel.__init__(self,parent,tb)
         # Preview has to be generated here
         # self.colorChooser=None

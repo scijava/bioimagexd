@@ -40,7 +40,7 @@ except:
 import messenger
 import scripting
 
-import GUIBuilder
+import GUI.GUIBuilder as GUIBuilder
 import ImageOperations
 
 
@@ -65,7 +65,7 @@ ITK="ITK"
 MEASUREMENT="Measurements"
 REGION_GROWING="Region Growing"
    
-class ManipulationFilter(GUIBuilder.GUIBuilderBaseModule):
+class ManipulationFilter(GUIBuilder.GUIBuilderBase):
     """
     Class: ManipulationFilter
     Created: 13.04.2006, KP
@@ -80,7 +80,11 @@ class ManipulationFilter(GUIBuilder.GUIBuilderBaseModule):
         Description: Initialization
         """
         self.taskPanel = None
-        GUIBuilder.GUIBuilderBaseModule.__init__(self, changeCallback = self.notifyTaskPanel)
+        print self
+        
+        
+        GUIBuilder.GUIBuilderBase.__init__(self, changeCallback = self.notifyTaskPanel)
+
         self.numberOfInputs = numberOfInputs
         
         self.parameters = {}
@@ -100,7 +104,7 @@ class ManipulationFilter(GUIBuilder.GUIBuilderBaseModule):
         
         self.vtkToItk = None
         self.itkToVtk = None
-        self.imageType = "UC3"
+        self.G = "UC3"
         
     def notifyTaskPanel(self, module):
         """
@@ -159,7 +163,6 @@ class ManipulationFilter(GUIBuilder.GUIBuilderBaseModule):
                 icast.SetOutputScalarTypeToFloat()
             icast.SetInput(image)
             image = icast.GetOutput()
-        print "vtkToItk=",self.vtkToItk,"image=",image
         self.vtkToItk.SetInput(image)
         return self.vtkToItk.GetOutput()
             
@@ -171,13 +174,11 @@ class ManipulationFilter(GUIBuilder.GUIBuilderBaseModule):
         Description: Convert the image data to ITK image
         """  
         # For non-ITK images, do nothing
-        if not force and self.prevFilter and not self.prevFilter.getITK() and not self.getITK():
-            print self.prevFilter,"DIs not itk"
+        if image.__class__ == vtk.vtkImageData:
+#        if not force and self.prevFilter and not self.prevFilter.getITK() and not self.getITK():
             return image
         
         if not self.itkToVtk:            
-            
-            
             c=eval("itk.Image.%s"%imagetype)
             self.itkToVtk = itk.ImageToVTKImageFilter[c].New()
         # If the next filter is also an ITK filter, then won't
@@ -186,7 +187,6 @@ class ManipulationFilter(GUIBuilder.GUIBuilderBaseModule):
             print "NEXT FILTER IS ITK"
             return image
         self.itkToVtk.SetInput(image)
-        print "Returning itktovtk..."
         return self.itkToVtk.GetOutput()
         
         
@@ -1027,8 +1027,8 @@ class ITKLocalMaximumFilter(ManipulationFilter):
             subst.Update()
             
         data = subst.GetOutput()
-        if last:
-            return self.convertITKtoVTK(data,imagetype="UC3")
+#        if last:
+#            return self.convertITKtoVTK(data,imagetype="UC3")
             
         return data            
 

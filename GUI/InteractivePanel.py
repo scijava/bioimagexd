@@ -89,6 +89,7 @@ class InteractivePanel(ogl.ShapeCanvas):
         
         self.actionstart=(0,0)
         self.actionend=(0,0)
+        self.prevPolyEnd=None
         
         x,y=size
         self.buffer = wx.EmptyBitmap(x,y)
@@ -231,6 +232,11 @@ class InteractivePanel(ogl.ShapeCanvas):
                 print "Is a polygon, deleting lines..."
                 self.deleteLines(lines)
                 self.createPolygon(points)
+                self.action = None
+                self.actionstart = (0,0)
+                self.actionend = (0,0)
+                self.prevPolyEnd = None
+
         del lst
         
     def markActionStart(self,event):
@@ -326,7 +332,8 @@ class InteractivePanel(ogl.ShapeCanvas):
                 shape = MyLine()
                 
                 shape.MakeLineControlPoints(2)
-                
+                if self.prevPolyEnd:
+                    ex,ey = self.prevPolyEnd
                 shape.SetEnds(ex,ey,x,y)
                 shape.FindConnectedLines(self.diagram)                               
                 
@@ -335,9 +342,16 @@ class InteractivePanel(ogl.ShapeCanvas):
                 self.lines.append(shape)
             self.addNewShape(shape)
             
-            self.action = None
-            self.actionstart = (0,0)
-            self.actionend = (0,0)
+            if self.annotationClass=="POLYGON":
+                self.actionstart=self.actionend   
+                self.prevPolyEnd = self.actionend
+            else:
+                self.action = None
+                self.actionstart = (0,0)
+                self.actionend = (0,0)
+                self.prevPolyEnd=None
+
+            
             return 1
         elif self.action==SET_THRESHOLD:
             self.setThreshold()

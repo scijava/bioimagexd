@@ -137,7 +137,8 @@ class Manipulation(Module):
         filterlist=filter(lambda x:x.getEnabled(),filterlist)
         n=len(filterlist)-1
         
-        
+        lastfilter = None
+        lasttype = "UC3"
         for i,currfilter in enumerate(filterlist):
                 flag=(i==n)
                 if i>0:
@@ -149,7 +150,10 @@ class Manipulation(Module):
                 else:
                     currfilter.setNextFilter(None)
                 data = currfilter.execute(data,update=flag,last=flag)
-                #print "Got",data,"from",currfilter
+                lastfilter = currfilter
+                lasttype = currfilter.getImageType()
+                
+                
                 data=[data]
                 if not data:
                     print "GOT NO DATA"
@@ -157,6 +161,10 @@ class Manipulation(Module):
                     return None                
         
         data = data[0]
+        if data.__class__ != vtk.vtkImageData:
+            
+            data = lastfilter.convertITKtoVTK(data,imagetype=lasttype)
+
         data.ReleaseDataFlagOff()
         self.cached = data
         return data

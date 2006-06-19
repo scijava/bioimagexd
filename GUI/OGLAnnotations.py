@@ -34,6 +34,8 @@ import wx
 import Logging
 import wx.lib.ogl as ogl
 import messenger
+import math
+
 class MyRectangle(ogl.RectangleShape):    
     def OnDrawControlPoints(self, dc):
         if not self._drawHandles:
@@ -132,6 +134,7 @@ class MyLine(ogl.LineShape):
         ex,ey,x,y = self.GetEnds()
         if not diagram:
             diagram = self.GetCanvas().GetDiagram()
+        found=0
         for i in diagram.GetShapeList():
             if isinstance(i,MyLine):
                 x0,y0,x1,y1 = i.GetEnds()
@@ -147,6 +150,7 @@ class MyLine(ogl.LineShape):
                         print "Connecting end ",p,"of ",i,"to end 1 of ",self
                         i.SetEndConnected((self,1),p)
                         self.SetEndConnected((i,p),1)
+                        found=1
                 if p2 or p3:
                     if p2:p=0
                     if p3:p=1
@@ -155,11 +159,13 @@ class MyLine(ogl.LineShape):
                         print "Connecting end ",p,"of ",i,"to end 0 of ",self
                         i.SetEndConnected((self,0),p)
                         self.SetEndConnected((i,p),0)
-                    break
-            
+                        found=1
+                        
+                    break            
 
     def SetEndConnected(self,shape,end):
         self.endConnections[end] = shape
+            
             
     def GetEndConnected(self,end):
         if end in self.endConnections:            
@@ -254,6 +260,34 @@ class MyLine(ogl.LineShape):
             
         return 1
         
+    def getPointList2(self,lines):
+        pts=[]
+        for i in lines:
+            a,b,c,d = i.GetEnds()
+            pts.append((a,b))
+            pts.append((c,d))
+            
+        
+        print "Orig list=",pts
+        pts2=pts[:]
+        i=0
+        j=0
+        ret=[]
+        for x0,y0 in pts:
+            dontadd=0
+            for x1,y1 in ret:
+                if (x0!=x1 and y0!=y1) and abs(math.sqrt((x1-x0)**2+(y1-y0)**2))<10:
+                    dontadd=1
+            if not dontadd:                
+                ret.append((x0,y0))
+                
+        ret2=[]
+        for i,pt in enumerate(ret):
+            if not pt in ret[i+1:]:
+                ret2.append(pt)
+        print "Points=",ret2
+        return ret2
+        
     def getPointList(self):
         ret=[]
         lines=[]
@@ -265,13 +299,19 @@ class MyLine(ogl.LineShape):
             x2=x+2
             pts=shape.GetEnds()
             a,b=pts[x:x2]
-            if (a,b) in ret:
-                return ret,lines
+        
+            if shape in lines:
+#            if (a,b) in ret:
+                ptlst=self.getPointList2(lines)
+                return ptlst,lines
+                #return ret,lines
             if shape not in lines:
                 lines.append(shape)
             ret.append((a,b))
             shape=shape2
         
+    def __str__(self):
+        return str(ogl.LineShape)+" "+str(self.GetEnds())
         
     def CheckIfPolygon(self):
         found=1

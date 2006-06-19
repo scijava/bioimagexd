@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 # -*- coding: iso-8859-1 -*-
 """
- Unit: ManipulationFilterGUI
+ Unit: GUIBuilder
  Project: BioImageXD
  Created: 15.04.2006, KP
  Description:
@@ -35,7 +35,6 @@ import types
 import Histogram
 import wx.lib.buttons as buttons
 import messenger
-import RangedSlider
 
 RADIO_CHOICE="RADIO_CHOICE"
 THRESHOLD="THRESHOLD"
@@ -43,9 +42,9 @@ PIXEL="PIXEL"
 PIXELS="PIXELS"
 SLICE="SLICE"
 
-class GUIBuilderBaseModule:
+class GUIBuilderBase:
     """
-    Class: GUIBuilderBaseModule
+    Class: GUIBuilderBase
     Created: 31.05.2006, KP
     Description: A base class for modules that intend to use GUI builder
     """ 
@@ -329,13 +328,13 @@ class GUIBuilder(wx.Panel):
                         elif itemType == PIXELS:
                             print "Creating multiple pixels selection"
                             pixelsizer = wx.GridBagSizer()
-                            seedbox = wx.ListBox(self,-1,size=(100,150))
+                            seedbox = wx.ListBox(self,-1,size=(150,150))
                             pixelsizer.Add(seedbox,(0,0),span=(2,1))
                             
                             addbtn = wx.Button(self,-1,"Add seed")
-                            def f(l):
+                            def f2(l):
                                 l.selectPixel=1
-                            func=lambda evt,l=seedbox:f(l)
+                            func=lambda evt,l=seedbox:f2(l)
                             addbtn.Bind(wx.EVT_BUTTON,func)
                             pixelsizer.Add(addbtn,(0,1))
                             print "ITEM=",item

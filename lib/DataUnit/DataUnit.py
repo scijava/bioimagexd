@@ -100,16 +100,7 @@ class DataUnit:
         Description: Returns the ctf of this object
         """
         print "\n\n**** Getting ctf\n"
-            
-        if 0 and tp.GetScalarType()==7 and not self.randomCTF:
-            tp=self.getTimePoint(0)
-            x0,x1=tp.GetScalarRange()        
-            print "Using random palette"
-            ctf = ImageOperations.watershedPalette(x0,x1)
-            self.randomCTF =ctf
-            self.settings.set("ColorTransferFunction",ctf)
-        elif 0 and tp.GetScalarType()==7 and self.randomCTF:
-            return self.randomCTF
+        
         if not self.dataSource and not self.ctf:
             Logging.info("Using no ctf",kw="ctf")
             return None
