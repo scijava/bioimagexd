@@ -1,15 +1,15 @@
-from Manipulation import *
-from ManipulationPanel import *
+from Segmentation import *
+from SegmentationPanel import *
 from DataUnit import CombinedDataUnit
-from ManipulationDataUnit import *
-import ManipulationSettings
+from SegmentationDataUnit import *
+import SegmentationSettings
 
-def getClass(): return Manipulation
-def getConfigPanel(): return ManipulationPanel
-def getName(): return "Process"
-def getDesc(): return "Process datasets with multiple filters"
-def getIcon(): return "task_process.jpg"
+def getClass(): return Segmentation
+def getConfigPanel(): return SegmentationPanel
+def getName(): return "Segmentation"
+def getDesc(): return "Segment individual objects from images"
+def getIcon(): return "task_measure.jpg"
 def getInputLimits(): return (1,-1)    
 def getToolbarPos(): return 999
-def getDataUnit(): return ManipulationDataUnit
-def getSettingsClass(): return ManipulationSettings.ManipulationSettings
+def getDataUnit(): return SegmentationDataUnit
+def getSettingsClass(): return SegmentationSettings.SegmentationSettings
