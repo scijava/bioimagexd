@@ -981,13 +981,12 @@ class MainWindow(wx.Frame):
         """
         if not "show_import" in self.commands:
             import_code="""
-    importdlg = ImportDialog.ImportDialog(scripting.mainwin)
+    importdlg = GUI.ImportDialog.ImportDialog(scripting.mainwin)
     importdlg.ShowModal()
     """
             
-            #import_code=import_code.replace("self","scripting.mainwin")
         
-            command = Command.Command(Command.MENU_CMD,None,None,import_code,"",imports=["ImportDialog"],desc="Show import dialog")
+            command = Command.Command(Command.MENU_CMD,None,None,import_code,"",imports=["GUI.ImportDialog"],desc="Show import dialog")
             self.commands["show_import"]=command
         self.commands["show_import"].run()
         #self.importdlg=ImportDialog.ImportDialog(self)
