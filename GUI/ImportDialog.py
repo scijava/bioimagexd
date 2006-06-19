@@ -73,7 +73,8 @@ class ImportDialog(wx.Dialog):
         self.sizer.Add(self.btnsizer,(5,0),flag=wx.EXPAND|wx.RIGHT|wx.LEFT)
     
         wx.EVT_BUTTON(self,wx.ID_OK,self.onOkButton)
-        self.spacing = None
+        self.spacing = (1.0, 1.0, 1.0)
+        self.voxelSize = (1.0, 1.0, 1.0)
         
         self.SetSizer(self.sizer)
         self.SetAutoLayout(1)
@@ -93,6 +94,7 @@ class ImportDialog(wx.Dialog):
         name=name.replace(" ","_")
         filename=Dialogs.askSaveAsFileName(self,"Save imported dataset as","%s.bxd"%name,"BioImageXD Dataset (*.bxd)|*.bxd")
         self.Close()
+        
 
         self.convertFiles(filename)
 
@@ -101,16 +103,19 @@ class ImportDialog(wx.Dialog):
         Method: convertFiles()
         Created: 21.04.2005, KP
         Description: Method that reads the files that user has selected
-        """                   
+        """          
+        print "convertFiles",outname
         idxs = self.sourceListbox.GetSelections()
         files=[]
         
         if not idxs:
             n = self.sourceListbox.GetCount()
             idxs=range(n)
+        print "idxs=",idxs
         for i in idxs:
             files.append(self.sourceListbox.GetString(i))
-        dir=os.path.dirname(files[0])
+        print "files=",files
+        dirn=os.path.dirname(files[0])
         self.z=int(self.depthEdit.GetValue())
         ext=files[0].split(".")[-1].lower()
         self.rdrstr = "vtk.vtk%sReader()"%(self.extMapping[ext])
@@ -137,24 +142,42 @@ class ImportDialog(wx.Dialog):
                 self.dlg.Update(i,"Reading dataset %d / %d"%(i+1,self.tot))
 #                self.writeData(outname,data,i,len(files))
         else:
+            print "IMPORTING..."
             self.tot = len(files) / self.z
+            
             self.dlg = wx.ProgressDialog("Importing","Reading dataset %d / %d"%(0,0),maximum = 2*self.tot, parent = self,
             style = wx.PD_ELAPSED_TIME|wx.PD_REMAINING_TIME)
             #rdr.SetFileDimensionality(dim)
             pattern = self.patternEdit.GetValue()
             n=pattern.count("%")
+            
             Logging.info("Number of %s=",n,kw="io")
             imgAmnt=len(files)
             if n==0 and imgAmnt>1:
+                print "FOO"
                 Dialogs.showerror(self,"You are trying to import multiple files but have not defined a proper pattern for the files to be imported","Bad pattern")
                 return
+            elif n==0:
+                rdr = eval(self.rdrstr)
+                if ext=="bmp":
+                    rdr.Allow8BitBMPOn()
+                rdr.SetDataExtent(0,self.x-1,0,self.y-1,0,self.z-1)
+                rdr.SetDataSpacing(self.spacing)
+                rdr.SetDataOrigin(0,0,0)
+                
+                rdr.SetFileName(files[0])
+                rdr.Update()
+                Logging.info("Reader = ",rdr,kw="io")
+                self.dlg.Update(0,"Reading dataset 1")
+                self.readers.append(rdr)
+                #self.writeData(outname,data,j,len(files))
             elif n==1:
                 j=0
                 Logging.info("self.z=%d",self.z,kw="io")
                 start=0
                 for i in range(0,imgAmnt):
                     
-                    file=dir+os.path.sep+pattern%i
+                    file=dirn+os.path.sep+pattern%i
                     print "CHecking ",file
                     if os.path.exists(file):
                         start=i
@@ -173,7 +196,7 @@ class ImportDialog(wx.Dialog):
                     if i:
                         Logging.info("Setting slice offset to ",i,kw="io")
                         rdr.SetFileNameSliceOffset(i)
-                    rdr.SetFilePrefix(dir+os.path.sep)
+                    rdr.SetFilePrefix(dirn+os.path.sep)
                     rdr.SetFilePattern("%s"+pattern)
                     rdr.Update()
                     Logging.info("Reader = ",rdr,kw="io")
@@ -198,7 +221,7 @@ class ImportDialog(wx.Dialog):
                     currpat=begin%i+end
                     Logging.info("Pattern for timepoint %d is "%i,currpat,kw="io")
                                      
-                    rdr.SetFilePrefix(dir+os.path.sep)
+                    rdr.SetFilePrefix(dirn+os.path.sep)
                     rdr.SetFilePattern("%s"+currpat)
                     Logging.info("Reader = ",rdr,kw="io")
                     rdr.Update()
@@ -318,7 +341,7 @@ class ImportDialog(wx.Dialog):
         self.nameEdit = wx.TextCtrl(self.imagePanel,-1,"",size=(220,-1))
 
         self.nlbl=wx.StaticText(self.imagePanel,-1,"Number of datasets:")
-        self.imageAmountLbl=wx.StaticText(self.imagePanel,-1,"0")
+        self.imageAmountLbl=wx.StaticText(self.imagePanel,-1,"1")
  
         
         self.dimlbl=wx.StaticText(self.imagePanel,-1,"Dimension of single slice:")
@@ -326,12 +349,12 @@ class ImportDialog(wx.Dialog):
     
         
         self.depthlbl=wx.StaticText(self.imagePanel,-1,"Depth of Stack:")
-        self.depthEdit=wx.TextCtrl(self.imagePanel,-1,"")
+        self.depthEdit=wx.TextCtrl(self.imagePanel,-1,"1")
         self.depthEdit.Bind(wx.EVT_TEXT,self.setNumberOfImages)
         
 
         self.tpLbl=wx.StaticText(self.imagePanel,-1,"Number of Timepoints:")
-        self.timepointLbl=wx.StaticText(self.imagePanel,-1,"0")
+        self.timepointLbl=wx.StaticText(self.imagePanel,-1,"1")
         
         self.voxelSizeLbl=wx.StaticText(self.imagePanel,-1,u"Voxel size")
         #self.voxelSizeEdit=wx.TextCtrl(self.imagePanel,-1,"0, 0, 0")
@@ -339,9 +362,9 @@ class ImportDialog(wx.Dialog):
         #mask = u"#{3}.#{4} \u03BCm x #{3}.#{4}\u03BCm x #{3}.#{4}\u03BCm",
         #formatcodes="F-_.")
         box=wx.BoxSizer(wx.HORIZONTAL)
-        self.voxelX=wx.TextCtrl(self.imagePanel,-1,"0")
-        self.voxelY=wx.TextCtrl(self.imagePanel,-1,"0")
-        self.voxelZ=wx.TextCtrl(self.imagePanel,-1,"0")
+        self.voxelX=wx.TextCtrl(self.imagePanel,-1,"1.0")
+        self.voxelY=wx.TextCtrl(self.imagePanel,-1,"1.0")
+        self.voxelZ=wx.TextCtrl(self.imagePanel,-1,"1.0")
         
         self.voxelX.Bind(wx.EVT_TEXT,self.onUpdateVoxelSize)
         self.voxelZ.Bind(wx.EVT_TEXT,self.onUpdateVoxelSize)
@@ -425,8 +448,10 @@ class ImportDialog(wx.Dialog):
         """                 
         r=re.compile("[0-9]+")
         items=r.findall(filename)
-        s="%%.%dd"%len(items[-1])
-        filename=filename.replace(items[-1],s)
+        if items:
+            s="%%.%dd"%len(items[-1])
+            filename=filename.replace(items[-1],s)
+        
             
         self.patternEdit.SetValue(filename)
  
@@ -519,9 +544,9 @@ class ImportDialog(wx.Dialog):
             pat=r.sub("[0-9]*",os.path.basename(filename))
             
             dir=os.path.dirname(filename)
-            pat=dir+"/%s"%(pat)
+            pat=dir+os.path.sep+"%s"%(pat)
         else:
-            pat=dir+"/*.%s"%ext
+            pat=dir+os.path.sep+"*.%s"%ext
         Logging.info("Pattern for all in directory is ",pat,kw="io")
         files=glob.glob(pat)
         print "Got files=",files

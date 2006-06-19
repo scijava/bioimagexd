@@ -185,8 +185,6 @@ class OlympusDataSource(DataSource):
 #        print "Scalar range for data=",self.reader.GetOutput().GetScalarRange()
         return self.reader.GetOutput()
         
-
-        return self.reader.GetOutput()
         
     def getDimensions(self):
         """
