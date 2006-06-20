@@ -618,6 +618,36 @@ def histogram(imagedata,ctf=None,bg=(200,200,200),logarithmic=1,ignore_border=0,
     dc = None    
     return bmp,percent,retvals,xoffset
 
+def getMaskFromPoints(points,mx,my,mz):
+    
+    siz = mx*my
+    fs="%dB"%siz    
+
+    data=[255*((i / mx,i % my) in points) for i in range(0,mx*my)]
+    ss = struct.pack(fs,*data)
+    
+    importer=vtk.vtkImageImport()
+    importer.CopyImportVoidPointer(ss,mx*my)
+    importer.SetDataScalarTypeToUnsignedChar()
+    importer.SetNumberOfScalarComponents(1)
+    importer.SetDataExtent(0,mx-1,0,my-1,0,0)
+    importer.SetWholeExtent(0,mx-1,0,my-1,0,0)
+    importer.Update()
+    image = importer.GetOutput()
+    writer = vtk.vtkPNGWriter()
+    writer.SetFileName("foo.png")
+    writer.SetInput(image)
+    writer.Write()
+    
+    append = vtk.vtkImageAppend()
+    append.SetAppendAxis(2)
+    for z in range(0,mz):
+        append.SetInput(z,image)
+    append.Update()
+    image2 = append.GetOutput()
+    #print "Image2=",image2
+    return image2
+    
 
 def equalize(imagedata):
     accu=vtk.vtkImageAccumulate()

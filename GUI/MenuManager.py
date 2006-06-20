@@ -173,6 +173,9 @@ ID_IMMEDIATE_RENDER =31216
 ID_MANIPULATE       =31217
 ID_SAVE_DATASET      =31218
 
+ID_VIEW_MASKSEL     =31219
+ID_ROI_TO_MASK      =31220
+
 class MenuManager:
     """
     Class: MenuManager

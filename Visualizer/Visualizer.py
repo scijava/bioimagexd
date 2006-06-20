@@ -52,6 +52,8 @@ import PreviewFrame
 import os.path
 import sys
 
+import MaskTray
+
 import Modules
 import Annotation
 import Configuration
@@ -80,6 +82,8 @@ class Visualizer:
         """
         global visualizerInstance
         visualizerInstance=self
+        self.masks = []
+        self.currentMask = None
         self.currSliderPanel = None
         self.delayed=0
         self.immediateRender=1
@@ -208,8 +212,24 @@ class Visualizer:
         
         #wx.FutureCall(50,self.createToolbar)
         self.createToolbar()
-        
+    
+    def getMasks(self):
+        """
+        Method: getMasks
+        Created: 20.06.2006, KP
+        Description: Get all the masks
+        """   
+        return self.masks
 
+    def setMask(self, mask):
+        """
+        Method: setMask
+        Created: 20.06.2006, KP
+        Description: Set the current mask
+        """   
+        self.masks.insert(0,mask)
+        self.currentMask = mask
+        self.dataUnit.setMask(mask)
         
     def createSliders(self):
         """
@@ -444,7 +464,7 @@ class Visualizer:
         self.tb.AddSimpleTool(MenuManager.ID_ROI_CIRCLE,wx.Image(os.path.join(icondir,"circle.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Select circle","Select a circular area of the image")
         self.tb.AddSimpleTool(MenuManager.ID_ROI_RECTANGLE,wx.Image(os.path.join(icondir,"rectangle.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Select rectangle","Select a rectangular area of the image")
         self.tb.AddSimpleTool(MenuManager.ID_ROI_POLYGON,wx.Image(os.path.join(icondir,"polygon.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Select polygon","Select a polygonal area of the image")
-
+        self.tb.AddSimpleTool(MenuManager.ID_ROI_TO_MASK,wx.Image(os.path.join(icondir,"roitomask.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"ROI to Mask","Convert the selected Region of Interest to a Mask")
     
         self.pitch=wx.SpinButton(self.tb, MenuManager.PITCH,style=wx.SP_VERTICAL)
         self.tb.AddControl(self.pitch)
@@ -474,11 +494,25 @@ class Visualizer:
         wx.EVT_TOOL(self.parent,MenuManager.ID_ROI_CIRCLE,self.addAnnotation)
         wx.EVT_TOOL(self.parent,MenuManager.ID_ROI_RECTANGLE,self.addAnnotation)
         wx.EVT_TOOL(self.parent,MenuManager.ID_ROI_POLYGON,self.addAnnotation)
+        wx.EVT_TOOL(self.parent,MenuManager.ID_ROI_TO_MASK, self.roiToMask)
         
         self.zoomCombo.Bind(wx.EVT_COMBOBOX,self.zoomToComboSelection)
         self.tb1.Realize()     
             
         self.viewCombo.Enable(0)
+        
+    def roiToMask(self, evt):
+        """
+        Method: roiToMask
+        Created: 20.06.2006, KP
+        Description: Convert the selected ROI to mask
+        """
+        if hasattr(self.currentWindow, "roiToMask"):
+            imagedata=self.currentWindow.roiToMask()
+            name = self.dataUnit.getName()
+            dims = self.dataUnit.getDimensions()
+            mask = MaskTray.Mask(name,dims,imagedata)
+            self.setMask(mask)
         
     def onElevationUp(self,evt):
         if self.mode=="3d":

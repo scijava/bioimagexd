@@ -55,6 +55,14 @@ class DataUnit:
         self.settings = DataUnitSetting.DataUnitSettings()
         self.mip=None
         self.mipTimepoint=-1
+        
+    def setMask(self, mask):
+        """
+        Method: setMask
+        Created: 20.06.2006, KP
+        Description: Set the mask applied to this dataunit
+        """   
+        print "Set mask to ",mask
 
     def isProcessed(self):
         """

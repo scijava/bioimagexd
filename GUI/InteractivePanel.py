@@ -136,12 +136,39 @@ class InteractivePanel(ogl.ShapeCanvas):
             self.lines.remove(line)
             del line
             
-        shapelist=self.diagram.GetShapeList()
-        shape=self.FindShape(0,0)
-        print "SHAPELIST=",shapelist
+    def roiToMask(self):
+        """
+        Method: roiToMask
+        Created: 20.06.2006, KP
+        Description: Convert the selected ROI to mask
+        """
+        shapelist = self.diagram.GetShapeList()
+        insideMap={}
+        mx,my,mz = self.dataUnit.getDimensions()
         for shape in shapelist:
-            print shape
-    
+            if hasattr(shape,"isROI") and shape.isROI():
+                w, h = shape.GetBoundingBoxMax()
+                print "bounding box of",shape,"=",w,h,"pos=",shape.GetX(),shape.GetY()
+                
+
+                sx = shape.GetX()- (w/2) -5
+                sy = shape.GetY()- (h/2) -5
+                if sx<0:sx=0
+                if sy<0:sy=0
+                ex = shape.GetX()+ (w/2) +5
+                ey = shape.GetY()+ (h/2) +5
+                if ex>mx:ex=mx
+                if ey>my:ey=my    
+                #print "Looping from",sx,sy,"to",ex,ey
+                sy=int(sy)
+                sx=int(sx)
+                ex=int(ex)
+                ey=int(ey)
+                insideMap.update(shape.getCoveredPoints())
+                
+        print "insideMap=",insideMap
+        maskImage = ImageOperations.getMaskFromPoints(insideMap,mx,my,mz)
+        return maskImage
     def polyCenter(self,points):
         """
         Method: polyCenter

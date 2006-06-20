@@ -36,7 +36,8 @@ import wx.lib.ogl as ogl
 import messenger
 import math
 
-class MyRectangle(ogl.RectangleShape):    
+class MyRectangle(ogl.RectangleShape):   
+    def isROI(self): return 1
     def OnDrawControlPoints(self, dc):
         if not self._drawHandles:
             return
@@ -48,6 +49,17 @@ class MyRectangle(ogl.RectangleShape):
             control.SetPen(wx.WHITE_PEN)
             control.SetBrush(wx.WHITE_BRUSH)
             control.Draw(dc)
+
+    def getCoveredPoints(self):
+        cx, cy = self.GetX(), self.GetY()
+        w, h = self._width, self._height
+        
+        pts={}
+        for x in range(cx-w/2,cx+w/2):
+           for y in range(cy-h/2,cy+h/2):
+               pts[(x,y)] = 1
+        return pts
+               
 
     def OnErase(self,dc):
         bg = self.GetCanvas().bgbuffer
@@ -75,6 +87,25 @@ class MyRectangle(ogl.RectangleShape):
        
 
 class MyCircle(ogl.CircleShape):    
+    def isROI(self): return 1    
+    def getCoveredPoints(self):
+        cx, cy = self.GetX(), self.GetY()
+        print "cx,cy=",cx,cy
+        w = self._width
+        h = self._height
+        print "w,h=",w,h
+        a = max(w,h)
+        b = min(w,h)
+
+        pts={}
+        for x in range(cx-w/2,cx+w/2):
+            for y in range(cy-w/2,cy+w/2):
+                
+                if math.sqrt((cx-x)*(cx-x)+(cy-y)*(cy-y))<w:
+                        pts[(x,y)]=1
+                
+        return pts
+        
     def OnDrawControlPoints(self, dc):
         if not self._drawHandles:
             return
@@ -335,6 +366,37 @@ class MyLine(ogl.LineShape):
             #print "Resetting point",i,"to",point[0]-xoff,point[1]-yoff
             
 class MyPolygon(ogl.PolygonShape):    
+    def isROI(self): return 1    
+    def getCoveredPoints(self):
+        cx, cy = self.GetX(), self.GetY()
+        
+        w,h = self.GetBoundingBoxMax()
+        
+        pts={}
+        for x in range(cx-w/2,cx+w/2):
+            for y in range(cy-h/2,cy+h/2):
+                if self.collidepoint((x,y)):                    
+                    pts[(x,y)] = 1
+        return pts
+
+    def collidepoint(self,point):
+        """collidepoint(point) -> Whether the point is inside this polygon"""
+        i,j,c=0,0,0
+        poly=self._points
+        x,y=point
+        x-=self.GetX()
+        y-=self.GetY()
+        l=len(poly)
+        for i in range(0,l):
+            j+=1
+            if j==l:j=0
+            if (((poly[i][1]<=y) and (y<poly[j][1])) or\
+            ((poly[j][1]<=y) and (y<poly[i][1]))) and\
+            (x<(poly[j][0]-poly[i][0])*(y-poly[i][1])/(poly[j][1]-poly[i][1])+poly[i][0]):
+                c=not c
+        return c
+       
+        
     def OnDrawControlPoints(self, dc):
         if not self._drawHandles:
             return

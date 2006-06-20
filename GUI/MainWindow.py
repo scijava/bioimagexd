@@ -76,6 +76,8 @@ import Modules
 import Urmas # The animator, Unified Rendering / Animator
 import UIElements
 
+import MaskTray
+
 import scripting
 
 
@@ -761,6 +763,7 @@ class MainWindow(wx.Frame):
 
         mgr.addMenuItem("view",MenuManager.ID_VIEW_TOOLBAR,"T&oolbar","Show or hide toolbar",self.onMenuToggleVisibility,check=1,checked=1)
         mgr.addMenuItem("view",MenuManager.ID_VIEW_HISTOGRAM,"&Histograms","Show or hide channel histograms",self.onMenuToggleVisibility,check=1,checked=0)
+        
         mgr.addMenuItem("view",MenuManager.ID_VIEW_INFO,"&Dataset info","Show or hide information about the dataset",self.onMenuToggleVisibility,check=1,checked=1)
         mgr.addMenuItem("view",MenuManager.ID_HIDE_INFO,"&Hide info windows\tAlt-Enter","Hide all info windows, giving visualizer maximum screen space",self.onMenuHideInfo)
         mgr.addSeparator("view")
@@ -768,6 +771,7 @@ class MainWindow(wx.Frame):
         mgr.addSeparator("view")
         mgr.addMenuItem("view",MenuManager.ID_VIEW_SHELL,"Show Python &Shell","Show a python interpreter",self.onMenuToggleVisibility,check=1,checked=0)
         mgr.addMenuItem("view",MenuManager.ID_VIEW_SCRIPTEDIT,"Show Script &Editor","Show the script editor",self.onMenuShowScriptEditor)
+        mgr.addMenuItem("view",MenuManager.ID_VIEW_MASKSEL,"&Mask selection","Show mask selection dialog",self.onMenuToggleVisibility)        
         mgr.disable(MenuManager.ID_VIEW_TOOLBAR)
         mgr.disable(MenuManager.ID_VIEW_HISTOGRAM)
 
@@ -912,6 +916,15 @@ class MainWindow(wx.Frame):
         if evt.IsChecked():cmd="show"
         if eid==MenuManager.ID_VIEW_CONFIG:
             obj="config"
+        elif eid==MenuManager.ID_VIEW_MASKSEL:
+            if self.visualizer:
+                masksel = MaskTray.MaskTray(self)
+                dataUnit=self.visualizer.getDataUnit()
+                for i in self.visualizer.getMasks():
+                    masksel.addMask(mask = i)
+                masksel.setDataUnit(dataUnit)
+                masksel.Show()
+                return
         elif eid==MenuManager.ID_VIEW_TOOLBAR:
             obj="toolbar"
         elif eid==MenuManager.ID_VIEW_HISTOGRAM:

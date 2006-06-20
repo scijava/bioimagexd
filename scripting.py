@@ -46,11 +46,7 @@ app = None
 mainwin = None
 
 memLimit = None
-#ITKCommonA=None
-#ITKIO=None
-#ItkVtkGlue=None
-#ITKBasicFiltersA=None
-#ITKAlgorithms=None
+
 
 def execute_limited(pipeline):
     limit = get_memory_limit()
