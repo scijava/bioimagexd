@@ -130,9 +130,9 @@ class InteractivePanel(ogl.ShapeCanvas):
         Description: Erase the given lines from this canvas
         """            
         for line in lines:
-            print "Deleting",line
-            self.RemoveShape(line)
+            print "Deleting",line            
             line.Delete()
+            self.RemoveShape(line)
             self.lines.remove(line)
             del line
             
@@ -147,27 +147,34 @@ class InteractivePanel(ogl.ShapeCanvas):
         mx,my,mz = self.dataUnit.getDimensions()
         for shape in shapelist:
             if hasattr(shape,"isROI") and shape.isROI():
-                w, h = shape.GetBoundingBoxMax()
-                print "bounding box of",shape,"=",w,h,"pos=",shape.GetX(),shape.GetY()
+                #w, h = shape.GetBoundingBoxMax()
+                #print "bounding box of",shape,"=",w,h,"pos=",shape.GetX(),shape.GetY()
                 
 
-                sx = shape.GetX()- (w/2) -5
-                sy = shape.GetY()- (h/2) -5
-                if sx<0:sx=0
-                if sy<0:sy=0
-                ex = shape.GetX()+ (w/2) +5
-                ey = shape.GetY()+ (h/2) +5
-                if ex>mx:ex=mx
-                if ey>my:ey=my    
+                #sx = shape.GetX()- (w/2) -5
+                #sy = shape.GetY()- (h/2) -5
+                #if sx<0:sx=0
+                #if sy<0:sy=0
+                #ex = shape.GetX()+ (w/2) +5
+                #ey = shape.GetY()+ (h/2) +5
+                #if ex>mx:ex=mx
+                #if ey>my:ey=my    
                 #print "Looping from",sx,sy,"to",ex,ey
-                sy=int(sy)
-                sx=int(sx)
-                ex=int(ex)
-                ey=int(ey)
+                #sy=int(sy)
+                #sx=int(sx)
+                #ex=int(ex)
+                #ey=int(ey)
                 insideMap.update(shape.getCoveredPoints())
-                
-        print "insideMap=",insideMap
-        maskImage = ImageOperations.getMaskFromPoints(insideMap,mx,my,mz)
+            
+        insMap={}
+        print "zoomFactor=",self.zoomFactor
+        for x,y in insideMap.keys():
+            x//=self.zoomFactor
+            y//=self.zoomFactor
+            y=my-y
+            insMap[(y,x)]=1
+        print "insMap=",insMap
+        maskImage = ImageOperations.getMaskFromPoints(insMap,mx,my,mz)
         return maskImage
     def polyCenter(self,points):
         """
@@ -253,7 +260,8 @@ class InteractivePanel(ogl.ShapeCanvas):
         lst=self.lines
         lst.reverse()
         for shape in lst:
-            points,lines = shape.CheckIfPolygon()
+            #points,lines = shape.CheckIfPolygon()
+            points, lines = shape.getPointList()
             if points:
                 print "got",points,lines
                 print "Is a polygon, deleting lines..."

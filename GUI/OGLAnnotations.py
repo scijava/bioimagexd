@@ -94,16 +94,26 @@ class MyCircle(ogl.CircleShape):
         w = self._width
         h = self._height
         print "w,h=",w,h
-        a = max(w,h)
-        b = min(w,h)
+        a = max(w,h)/2
+        b = min(w,h)/2
+        
+        c = math.sqrt(a**2-b**2)
+        if w>h:
+            f1 = (cx-c,cy)
+            f2 = (cx+c,cy)
+        else:
+            f1 = (cx,cy-c)
+            f2 = (cx,cy+c)
+            
 
         pts={}
+        def d(x,y):
+            return math.sqrt((x[0]-y[0])**2+((x[1]-y[1])**2))
         for x in range(cx-w/2,cx+w/2):
-            for y in range(cy-w/2,cy+w/2):
-                
-                if math.sqrt((cx-x)*(cx-x)+(cy-y)*(cy-y))<w:
-                        pts[(x,y)]=1
-                
+            for y in range(cy-h/2,cy+h/2):
+                #print "d=",(d((x,y),f1)+d((x,y),f2)),"2a=",2*a
+                if (d((x,y),f1)+d((x,y),f2)) < a*2:
+                    pts[(x,y)] = 1
         return pts
         
     def OnDrawControlPoints(self, dc):
@@ -325,7 +335,12 @@ class MyLine(ogl.LineShape):
         shape = self
         end=0
         while 1:
-            shape2, end = shape.GetEndConnected(not end)
+            if not shape:
+                print "Didn't get shape, returning",lines
+                ptlst=self.getPointList2(lines)
+                return ptlst,lines
+
+            shape2, end = shape.GetEndConnected(not end)            
             x=(not end)*2
             x2=x+2
             pts=shape.GetEnds()
@@ -335,6 +350,7 @@ class MyLine(ogl.LineShape):
 #            if (a,b) in ret:
                 ptlst=self.getPointList2(lines)
                 return ptlst,lines
+
                 #return ret,lines
             if shape not in lines:
                 lines.append(shape)
@@ -366,15 +382,26 @@ class MyLine(ogl.LineShape):
             #print "Resetting point",i,"to",point[0]-xoff,point[1]-yoff
             
 class MyPolygon(ogl.PolygonShape):    
-    def isROI(self): return 1    
+    def isROI(self): return 1
+    def getMinMaxXY(self):
+        my,mx=10000,10000
+        Mx,My=0,0
+        for x,y in self._points:
+            if x<mx:mx=x
+            if y<my:my=y
+            if x>Mx:Mx=x
+            if y>My:My=y
+        return mx,my,Mx,My
     def getCoveredPoints(self):
-        cx, cy = self.GetX(), self.GetY()
-        
-        w,h = self.GetBoundingBoxMax()
-        
+        x0,y0,x1,y1=self.getMinMaxXY()
         pts={}
-        for x in range(cx-w/2,cx+w/2):
-            for y in range(cy-h/2,cy+h/2):
+        cx,cy = self.GetX(),self.GetY()
+        x0+=cx
+        y0+=cy
+        x1+=cx
+        y1+=cy
+        for x in range(x0,x1):
+            for y in range(y0,y1):
                 if self.collidepoint((x,y)):                    
                     pts[(x,y)] = 1
         return pts
