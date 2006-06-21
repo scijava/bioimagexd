@@ -37,10 +37,10 @@ import sys
 
 
 outfile=sys.stdout
-#HIDE_DEBUG=[]
-HIDE_DEBUG=["visualizer","main","init","animator","io","task","preview","scale",
-     "imageop","modules","trivial","ctf","dataunit","event","processing",
-     "!datasource","iactivepanel","annotation","ui","rendering"]
+HIDE_DEBUG=[]
+#HIDE_DEBUG=["visualizer","main","init","animator","io","task","preview","scale",
+#     "imageop","modules","trivial","ctf","dataunit","event","processing",
+#     "!datasource","iactivepanel","annotation","ui","rendering"]
 
 KWS=["visualizer","main","init","animator","io","task","preview","scale",
      "imageop","modules","trivial","ctf","dataunit","event","processing",

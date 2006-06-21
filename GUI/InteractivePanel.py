@@ -309,12 +309,6 @@ class InteractivePanel(ogl.ShapeCanvas):
         """
         if event.LeftIsDown():
             self.actionend=event.GetPosition()
-            #Logging.info("start=",self.actionstart,"end=",self.actionend,kw="iactivepanel")
-            #if self.action == ADD_ANNOTATION:
-            #    self.updateObject(self.annotationClass,event)
-            #elif self.action == MANAGE_ANNOTATION:
-            #    self.updateObject(self.annotationClass,event,moveOnly=1)
-        #self.updatePreview()
         event.Skip()
             
     def actionEnd(self,event):
@@ -375,6 +369,14 @@ class InteractivePanel(ogl.ShapeCanvas):
                 #shape.Create([(10.1,10.1),(10.1,100.1),(100.0,100.1),(100.0,10.1)])
                 shape.SetCentreResize(0)    
                 self.lines.append(shape)
+            elif self.annotationClass == "SCALEBAR":
+                dx = abs(x-ex)
+                dy = abs(y-ey)
+                shape = MyScalebar(dx,dy)
+                shape.SetCentreResize(0)  
+                shape.SetX( ex+(x-ex)/2 )
+                shape.SetY( ey+(y-ey)/2 )
+            
             self.addNewShape(shape)
             
             if self.annotationClass=="POLYGON":
@@ -390,13 +392,18 @@ class InteractivePanel(ogl.ShapeCanvas):
             return 1
         elif self.action==SET_THRESHOLD:
             self.setThreshold()
-        elif self.action==DELETE_ANNOTATION:
-            ann=self.currentAnnotation
-            print "Deleting",ann
-            self.annotations.remove(ann)
-            self.action=0
-            self.currentAnnotation=None
-            self.updatePreview()
+        elif self.action==DELETE_ANNOTATION:            
+            x,y = self.actionstart
+            
+            print "Deleting annotation at",x,y
+            obj,attach = self.FindShape(x,y)
+            if obj:
+                print "Deleting",obj
+                self.RemoveShape(obj)
+                obj.Delete()            
+                self.paintPreview()
+                self.Refresh()
+                
         if not self.multiple:
             self.currentAnnotation=None
             self.action=0
@@ -429,51 +436,9 @@ class InteractivePanel(ogl.ShapeCanvas):
         Created: 04.07.2005, KP
         Description: Update all the annotations
         """
-        for i in self.annotations:
-            i.setScaleFactor(self.zoomFactor)
-                
-    def updateObject(self,annotationClass,event=None,moveOnly=0):
-        """
-        Method: updateObject
-        Created: 05.06.2005, KP
-        Description: Draw a scale bar of given size
-        """
-        currobject=self.currentAnnotation  
-        if not currobject:
-            x0,y0=self.actionstart
-            #currobject=annotationClass(x0,y0,self.voxelSize,self.zoomFactor,bgColor=self.bgColor)
-            #self.annotations.append(currobject)
-            #self.currentAnnotation=currobject
-            self.dataUnit.getSettings().set("Annotations",self.annotations)
-            
-        if not moveOnly:
-            #Logging.info("Setting ",currobject,"to end at ",self.actionend,kw="iactivepanel")            Logging.info("Re-defining start ",self.actionstart,"and end ",self.actionend,"positions",kw="iactivepanel")
-            #currobject.setPosition(self.actionstart)
-            #currobject.setEndPosition(self.actionend)
-            pass
-        else:
-            Logging.info("Moving annotation to ",self.actionend,kw="iactivepanel")
-            #currobject.setPosition(self.actionend)
-            pass
-        
-                        
-
-    def findSelectedAnnotation(self):
-        """
-        Method: findSelectedAnnotation(self)
-        Created: 04.07.2005, KP
-        Description: Find the annotation selected by clicking
-        """
-        x,y=self.actionstart
-        for i in self.annotations:
-            bmp=i.getAsBitmap()
-            w,h=bmp.GetWidth(),bmp.GetHeight()
-            x0,y0=i.getScaledPosition()
-            if x>=x0 and y>=y0 and x<=x0+w and y<=y0+h:
-                Logging.info("Annotation at %d,%d = %s"%(x,y,str(i.__class__)),kw="iactivepanel")
-                self.currentAnnotation=i
-                self.annotationClass=self.currentAnnotation.__class__
-                break
+        pass
+#        for i in self.annotations:
+#            i.setScaleFactor(self.zoomFactor)
         
     def markROI(self,roitype):
         """

@@ -442,14 +442,8 @@ class Visualizer:
         self.tb.AddSeparator()
         
         
-        self.tb.AddSimpleTool(MenuManager.ID_DRAG_ANNOTATION,wx.Image(os.path.join(icondir,"arrow.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Manage annotations","Manage annotations on the image")
+#        self.tb.AddSimpleTool(MenuManager.ID_DRAG_ANNOTATION,wx.Image(os.path.join(icondir,"arrow.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Manage annotations","Manage annotations on the image")
         
-        bmp = wx.ArtProvider_GetBitmap(wx.ART_DELETE,wx.ART_TOOLBAR, (32,32))
-
-        if not bmp:
-            bmp = wx.Image(os.path.join(icondir,"delete_annotation.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap()
-        self.tb.AddSimpleTool(MenuManager.ID_DEL_ANNOTATION,bmp,"Delete annotation","Delete an annotation")
-
         
         self.tb.AddSimpleTool(MenuManager.ID_ADD_SCALE,wx.Image(os.path.join(icondir,"scale.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Draw scale","Draw a scale bar on the image")
         
@@ -465,6 +459,10 @@ class Visualizer:
         self.tb.AddSimpleTool(MenuManager.ID_ROI_RECTANGLE,wx.Image(os.path.join(icondir,"rectangle.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Select rectangle","Select a rectangular area of the image")
         self.tb.AddSimpleTool(MenuManager.ID_ROI_POLYGON,wx.Image(os.path.join(icondir,"polygon.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Select polygon","Select a polygonal area of the image")
         self.tb.AddSimpleTool(MenuManager.ID_ROI_TO_MASK,wx.Image(os.path.join(icondir,"roitomask.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"ROI to Mask","Convert the selected Region of Interest to a Mask")
+    
+        bmp = wx.Image(os.path.join(icondir,"delete_annotation.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap()
+        self.tb.AddSimpleTool(MenuManager.ID_DEL_ANNOTATION,bmp,"Delete annotation","Delete an annotation")
+    
     
         self.pitch=wx.SpinButton(self.tb, MenuManager.PITCH,style=wx.SP_VERTICAL)
         self.tb.AddControl(self.pitch)

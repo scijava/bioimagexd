@@ -36,6 +36,160 @@ import wx.lib.ogl as ogl
 import messenger
 import math
 
+class MyScalebar(ogl.RectangleShape):
+    def __init__(self, w, h):
+        ogl.RectangleShape.__init__(self, w, h)
+        self.bgColor = (127,127,127)
+        self.voxelSize=(1e-7,1e-7,1e-7)
+        self.createSnapToList()
+        self.widthMicro = -0
+        self.vertical = 0
+        self.scaleFactor =1
+        
+    def createSnapToList(self):
+        """
+        Method: createSnapToList(self)
+        Created: 04.07.2005, KP
+        Description: Create the list of micrometer lengths to snap to
+        """   
+        self.snapToMicro=[0.5,1.0,2.0,5.0,7.5,10.0,12.5,15.0,17.5]
+        for i in range(40,10000,5):
+            i/=2.0
+            self.snapToMicro.append(float(i))
+        self.snapToMicro.sort()
+        
+        
+    def snapToRoundLength(self):
+        """
+        Method: snapToRoundLength()
+        Created: 04.07.2005, KP
+        Description: Snap the length in pixels to a round number of micrometers
+        """   
+        vx = self.voxelSize[0]
+        vx*=1000000
+        
+        maxsize = self._width
+        if self.vertical:
+            maxsize=self._height
+        
+        
+        if self.widthMicro and maxsize:
+            if self.widthMicro in self.snapToMicro:
+                return
+            if int(self.widthMicro)==self.widthMicro:
+                return
+        if maxsize:
+            self.widthMicro=maxsize*vx
+            #print "width in micro=",self.widthMicro
+            if int(self.widthMicro)!=self.widthMicro:
+                for i,micro in enumerate(self.snapToMicro[:-1]):
+                    
+                    if micro<=self.widthMicro and (self.snapToMicro[i+1]-self.widthMicro)>0.1:
+                        #print "micro=",micro,"<",self.widthMicro,"next=",self.snapToMicro[i+1],">",self.widthMicro
+                        Logging.info("Pixel width %.4f equals %.4f um. Snapped to %.4fum (%.5fpx)"%(self._width,self.widthMicro,micro,micro/vx),kw="annotation")
+                        self.widthMicro=micro
+                # when we set widthPx to 0 it will be recalculated below
+                maxsize=0
+                
+        if self.widthMicro and not maxsize:
+            w=self.widthMicro/vx
+            if self.vertical:
+                self.SetHeight(int(w))
+            else:
+                self.SetWidth(int(w))
+            #Logging.info("%f micrometers is %f pixels"%(self.widthMicro,self.widthPx),kw="annotation")
+            #self.widthPx=int(self.widthPx)
+            
+        
+    def OnDraw(self, dc):
+        #print "OnDraw"
+        x1 = self._xpos - self._width / 2.0
+        y1 = self._ypos - self._height / 2.0
+        
+        if self._width<self._height:
+            self.vertical = 1
+        else:
+            self.vertical = 0
+        self.widthMicro = 0
+        self.snapToRoundLength()
+
+        bg=self.bgColor
+        vx = self.voxelSize[0]
+        vx*=1000000
+        Logging.info("voxel width=%d, scale=%f, scaled %.4f"%(vx,self.scaleFactor,vx/self.scaleFactor),kw="annotation")
+        # as the widths and positions are already scaled back, 
+        # we don't need to scale the voxel size
+        #vx/=float(self.scaleFactor)
+ 
+        #if not self.vertical:
+        #    heightPx=32
+        #    widthPx=self.widthPx
+        #else:
+        #    heightPx=self.widthPx
+        #    widthPx=32
+            
+        #widthPx*=self.scaleFactor
+        #heightPx*=self.scaleFactor
+        
+        # Set the font for the label and calculate the extent
+        # so we know if we need to create a bitmap larger than 
+        # the width of the scalebar
+        if not self.vertical:
+            dc.SetFont(wx.Font(8,wx.SWISS,wx.NORMAL,wx.NORMAL))
+        else:
+            dc.SetFont(wx.Font(9,wx.SWISS,wx.NORMAL,wx.NORMAL))
+            
+        if int(self.widthMicro)==self.widthMicro:
+            text=u"%d\u03bcm"%self.widthMicro
+        else:
+            text=u"%.2f\u03bcm"%self.widthMicro
+        w,h=dc.GetTextExtent(text)
+            
+        bmpw=self._width
+        bmph=self._height
+        if w>bmpw:bmpw=w
+        if h>bmph:bmph=h
+        #bmp = wx.EmptyBitmap(bmpw,bmph)
+        
+        #dc.SelectObject(bmp)
+        #dc.BeginDrawing()
+        dc.SetBackground(wx.Brush(bg))
+        dc.SetBrush(wx.Brush(bg))
+        dc.SetPen(wx.Pen(bg,1))
+        #dc.DrawRectangle(x1+0,y1+0,x1+bmpw,y1+bmph)
+        
+        dc.SetPen(wx.Pen((255,255,255),2))
+        if not self.vertical:
+            dc.DrawLine(x1,y1+6,x1+self._width,y1+6)
+            dc.DrawLine(x1+1,y1+3,x1+1,y1+9)
+            dc.DrawLine(x1+self._width-1,y1+3,x1+self._width-1,y1+9)
+        else:
+            dc.DrawLine(x1+6,y1,x1+6,y1+self._height)
+            dc.DrawLine(x1+3,y1+1,x1+9,y1+1)
+            dc.DrawLine(x1+3,y1+self._height-1,x1+9,y1+self._height-1)
+            
+        dc.SetTextForeground((255,255,255))
+        if not self.vertical:
+            x=bmpw/2
+            x-=(w/2)
+            dc.DrawText(text,x1+x,y1+12)
+        else:
+            y=bmph/2
+            y-=(h/2)
+            dc.DrawRotatedText(text,x1+12,y1+y,90)
+
+    def OnDrawControlPoints(self, dc):
+        if not self._drawHandles:
+            return
+
+        dc.SetBrush(wx.BLACK_BRUSH)
+        dc.SetPen(wx.BLACK_PEN)
+
+        for control in self._controlPoints:
+            control.SetPen(wx.WHITE_PEN)
+            control.SetBrush(wx.WHITE_BRUSH)
+            control.Draw(dc)
+
 class MyRectangle(ogl.RectangleShape):   
     def isROI(self): return 1
     def OnDrawControlPoints(self, dc):
@@ -587,7 +741,7 @@ class MyEvtHandler(ogl.ShapeEvtHandler):
         
     def OnEndDragLeft(self, x, y, keys=0, attachment=0):
         shape = self.GetShape()
-        print "OnEndDragLeft"
+        #print "OnEndDragLeft"
         ogl.ShapeEvtHandler.OnEndDragLeft(self, x, y, keys, attachment)
 
         if not shape.Selected():
@@ -595,7 +749,7 @@ class MyEvtHandler(ogl.ShapeEvtHandler):
         self.parent.paintPreview()
         self.parent.Refresh()
     def OnSizingEndDragLeft(self, pt, x, y, keys, attch):
-        print "OnSizingEndDragLeft"
+        #print "OnSizingEndDragLeft"
         ogl.ShapeEvtHandler.OnSizingEndDragLeft(self, pt, x, y, keys, attch)
         
         self.parent.paintPreview()
