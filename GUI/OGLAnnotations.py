@@ -37,14 +37,58 @@ import messenger
 import math
 
 class MyScalebar(ogl.RectangleShape):
-    def __init__(self, w, h):
+    def __init__(self, w, h, voxelsize = (1e-7,1e-7,1e-7), zoomFactor = 1.0):
         ogl.RectangleShape.__init__(self, w, h)
         self.bgColor = (127,127,127)
-        self.voxelSize=(1e-7,1e-7,1e-7)
+        self.voxelSize=voxelsize
         self.createSnapToList()
         self.widthMicro = -0
+        self.oldMaxSize =0
         self.vertical = 0
-        self.scaleFactor =1
+        self.scaleFactor = zoomFactor
+        messenger.connect(None,"set_voxel_size",self.onSetVoxelSize)
+        
+    def onSetVoxelSize(self, obj, evt, arg):
+        """
+        Method: onSetVoxelSize
+        Created: 21.06.2006, KP
+        Description: onSetVoxelSize
+        """   
+        self.voxelSize = arg
+        
+        
+    def setScaleFactor(self,factor):
+        """
+        Method: setScaleFactor
+        Created: 21.06.2006, KP
+        Description: Set the scaling factor in use
+        """   
+        print "setScaleFactor",factor
+        w,h,x,y = self._width,self._height,self.GetX(),self.GetY()
+        w/=self.scaleFactor
+        h/=self.scaleFactor
+        x/=self.scaleFactor
+        y/=self.scaleFactor
+        self.scaleFactor = factor
+        w*=self.scaleFactor
+        h*=self.scaleFactor
+        x*=self.scaleFactor
+        y*=self.scaleFactor        
+        if self.vertical:
+            vx = self.voxelSize[1]*1000000
+            h = int(1+self.widthMicro / vx)
+            h*=self.scaleFactor
+            print "Keeping microwidth constant, size now",h
+        else:
+            vx = self.voxelSize[0]*1000000
+            w = int(1+self.widthMicro/vx)
+            w*=self.scaleFactor
+            print "Keeping microwidth constant, size now",w
+        
+        self.SetWidth(w)
+        self.SetHeight(h)
+        self.SetX(x)
+        self.SetY(y)
         
     def createSnapToList(self):
         """
@@ -67,36 +111,45 @@ class MyScalebar(ogl.RectangleShape):
         """   
         vx = self.voxelSize[0]
         vx*=1000000
-        
+       
         maxsize = self._width
         if self.vertical:
             maxsize=self._height
-        
-        
-        if self.widthMicro and maxsize:
-            if self.widthMicro in self.snapToMicro:
-                return
-            if int(self.widthMicro)==self.widthMicro:
-                return
-        if maxsize:
+        absMaxSize=maxsize
+        maxsize /= self.scaleFactor
+        #print "absMaxSize=",absMaxSize,"oldmaxsize=",self.oldMaxSize
+        if maxsize and absMaxSize != self.oldMaxSize:
             self.widthMicro=maxsize*vx
             #print "width in micro=",self.widthMicro
-            if int(self.widthMicro)!=self.widthMicro:
+            if int(self.widthMicro)!=self.widthMicro and self.widthMicro not in self.snapToMicro:
                 for i,micro in enumerate(self.snapToMicro[:-1]):
                     
-                    if micro<=self.widthMicro and (self.snapToMicro[i+1]-self.widthMicro)>0.1:
+                    if micro<=self.widthMicro and (self.snapToMicro[i+1]-self.widthMicro)>1e-6:
                         #print "micro=",micro,"<",self.widthMicro,"next=",self.snapToMicro[i+1],">",self.widthMicro
-                        Logging.info("Pixel width %.4f equals %.4f um. Snapped to %.4fum (%.5fpx)"%(self._width,self.widthMicro,micro,micro/vx),kw="annotation")
+                        Logging.info("Pixel width %.4f equals %.4f um. Snapped to %.4fum (%.5fpx)"%(maxsize,self.widthMicro,micro,micro/vx),kw="annotation")
                         self.widthMicro=micro
+                        print "set widthMicro to=",self.widthMicro
+
                 # when we set widthPx to 0 it will be recalculated below
                 maxsize=0
+            else:
+                print "An integer width micro",self.widthMicro,"is ok"
+        else:
+            return
                 
         if self.widthMicro and not maxsize:
             w=self.widthMicro/vx
+            w*= self.scaleFactor
+            
+
             if self.vertical:
+                print "Setting height to",w
                 self.SetHeight(int(w))
             else:
+                print "Setting width to",w
                 self.SetWidth(int(w))
+            self.oldMaxSize = int(w)
+            #print "widthmicro at end=",self.widthMicro
             #Logging.info("%f micrometers is %f pixels"%(self.widthMicro,self.widthPx),kw="annotation")
             #self.widthPx=int(self.widthPx)
             
@@ -110,23 +163,23 @@ class MyScalebar(ogl.RectangleShape):
             self.vertical = 1
         else:
             self.vertical = 0
-        self.widthMicro = 0
+        
         self.snapToRoundLength()
+        #print "widthMicro now=",self.widthMicro
 
         bg=self.bgColor
         vx = self.voxelSize[0]
         vx*=1000000
-        Logging.info("voxel width=%d, scale=%f, scaled %.4f"%(vx,self.scaleFactor,vx/self.scaleFactor),kw="annotation")
+        #print "voxelsizes=",self.voxelSize
+        #Logging.info("voxel width=%d, scale=%f, scaled %.4f"%(vx,self.scaleFactor,vx/self.scaleFactor),kw="annotation")
         # as the widths and positions are already scaled back, 
         # we don't need to scale the voxel size
         #vx/=float(self.scaleFactor)
  
-        #if not self.vertical:
-        #    heightPx=32
-        #    widthPx=self.widthPx
-        #else:
-        #    heightPx=self.widthPx
-        #    widthPx=32
+        if not self.vertical:
+            self.SetHeight(32)
+        else:
+            self.SetWidth(32)
             
         #widthPx*=self.scaleFactor
         #heightPx*=self.scaleFactor
@@ -138,7 +191,7 @@ class MyScalebar(ogl.RectangleShape):
             dc.SetFont(wx.Font(8,wx.SWISS,wx.NORMAL,wx.NORMAL))
         else:
             dc.SetFont(wx.Font(9,wx.SWISS,wx.NORMAL,wx.NORMAL))
-            
+        print "widthMicro=",self.widthMicro
         if int(self.widthMicro)==self.widthMicro:
             text=u"%d\u03bcm"%self.widthMicro
         else:

@@ -343,7 +343,7 @@ class InteractivePanel(ogl.ShapeCanvas):
                 
                 diff = max(abs(x-ex),abs(y-ey))
                 if diff<2:diff=2
-                shape = MyCircle(2*diff)
+                shape = MyCircle(2*diff,zoomFactor = self.zoomFactor)
                 print "start=",ex,ey
                 shape.SetX( ex )
                 shape.SetY( ey )
@@ -351,14 +351,14 @@ class InteractivePanel(ogl.ShapeCanvas):
             elif self.annotationClass == "RECTANGLE":
                 dx = abs(x-ex)
                 dy = abs(y-ey)
-                shape = MyRectangle(dx,dy)
+                shape = MyRectangle(dx,dy, zoomFactor = self.zoomFactor)
                 shape.SetCentreResize(0)  
                 shape.SetX( ex+(x-ex)/2 )
                 shape.SetY( ey+(y-ey)/2 )
   
             elif self.annotationClass == "POLYGON":
                 #shape = MyPolygon()
-                shape = MyLine()
+                shape = MyLine(zoomFactor = self.zoomFactor)
                 
                 shape.MakeLineControlPoints(2)
                 if self.prevPolyEnd:
@@ -372,7 +372,7 @@ class InteractivePanel(ogl.ShapeCanvas):
             elif self.annotationClass == "SCALEBAR":
                 dx = abs(x-ex)
                 dy = abs(y-ey)
-                shape = MyScalebar(dx,dy)
+                shape = MyScalebar(dx,dy, voxelsize = self.voxelSize, zoomFactor = self.zoomFactor)
                 shape.SetCentreResize(0)  
                 shape.SetX( ex+(x-ex)/2 )
                 shape.SetY( ey+(y-ey)/2 )
@@ -388,7 +388,7 @@ class InteractivePanel(ogl.ShapeCanvas):
                 self.actionend = (0,0)
                 self.prevPolyEnd=None
 
-            
+            #self.updateAnnotations()
             return 1
         elif self.action==SET_THRESHOLD:
             self.setThreshold()
@@ -436,9 +436,9 @@ class InteractivePanel(ogl.ShapeCanvas):
         Created: 04.07.2005, KP
         Description: Update all the annotations
         """
-        pass
-#        for i in self.annotations:
-#            i.setScaleFactor(self.zoomFactor)
+        for i in self.diagram.GetShapeList():
+            if hasattr(i,"setScaleFactor"):
+                i.setScaleFactor(self.zoomFactor)
         
     def markROI(self,roitype):
         """
