@@ -57,6 +57,14 @@ class Mask:
         self.ctf.AddRGBPoint(0,0,0,0)
         self.ctf.AddRGBPoint(255,1.0,1.0,1.0)
         
+    def getMaskImage(self):
+        """
+        Method: getMaskImage
+        Created: 26.06.2006, KP
+        Description: Return the mask image
+        """   
+        return self.image
+        
     def getAsBitmap(self, bg = wx.Colour(255,255,255)):
         """
         Method: getAsBitmap
@@ -113,6 +121,7 @@ class MaskTray(wx.MiniFrame):
         
         self.masks = []
         self.buttons = []
+        self.selectedMask=None
         
         self.scrollSizer = wx.GridBagSizer()
         self.scroll = scrolled.ScrolledPanel(self.panel, -1,size=(400,150))
@@ -125,13 +134,16 @@ class MaskTray(wx.MiniFrame):
         
         self.buttonSizer = wx.BoxSizer(wx.HORIZONTAL)
         self.okButton = wx.Button(self.panel, -1, "Select")
+        self.nomaskButton = wx.Button(self.panel, -1, "No mask")
         self.cancelButton = wx.Button(self.panel, -1, "Cancel")
         
         self.okButton.Bind(wx.EVT_BUTTON,self.onSelectMask)
-        
+        self.nomaskButton.Bind(wx.EVT_BUTTON,self.onSetNoMask)
         self.cancelButton.Bind(wx.EVT_BUTTON,self.onCancel)
         
         self.buttonSizer.Add(self.cancelButton,0,wx.ALIGN_RIGHT)
+        self.buttonSizer.Add((20,20),0,wx.EXPAND)
+        self.buttonSizer.Add(self.nomaskButton,0,wx.ALIGN_RIGHT)
         self.buttonSizer.Add((20,20),0,wx.EXPAND)
         self.buttonSizer.Add(self.okButton,0,wx.ALIGN_RIGHT)
         
@@ -139,6 +151,15 @@ class MaskTray(wx.MiniFrame):
         self.sizer.Add(self.buttonSizer,(1,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT|wx.ALIGN_CENTER)
         
         self.panel.Fit()
+        
+    def onSetNoMask(self,evt):
+        """
+        Method: onSetNoMask
+        Created: 26.06.2006, KP
+        Description: Disable the use of masks
+        """   
+        self.dataUnit.setMask(None)
+        self.Close(True)
         
     def addMask(self, mask = None, name = "Mask", imagedata = None):
         """
@@ -163,7 +184,7 @@ class MaskTray(wx.MiniFrame):
     
         n = len(self.masks)
         
-        self.scrollSizer.Add(b, (n-1,0))        
+        self.scrollSizer.Add(b, (0,n-1))        
         self.scroll.SetupScrolling()
         self.Layout()
         
@@ -174,8 +195,10 @@ class MaskTray(wx.MiniFrame):
         Description: A callback for when the user toggles a button
         """   
         for i,btn in enumerate(self.buttons):
+            print "btn.GetId()=",btn.GetId(),"evt.GetId()=",evt.GetId()
             if btn.GetId() != evt.GetId():
                 btn.SetValue(0)
+            else:
                 self.selectedMask = self.masks[i]
                 
     def setDataUnit(self,dataUnit):
@@ -192,7 +215,8 @@ class MaskTray(wx.MiniFrame):
         Created: 20.06.2006, KP
         Description: A callback for when the user has selected a mask
         """   
-        self.dataUnit.setMask(self.selectedMask)
+        if self.selectedMask:
+            self.dataUnit.setMask(self.selectedMask)
         self.Close(True)
         
     def onCancel(self, evt):

@@ -623,7 +623,7 @@ def getMaskFromPoints(points,mx,my,mz):
     siz = mx*my
     fs="%dB"%siz    
 
-    data=[255*((i / mx,i % my) in points) for i in range(0,mx*my)]
+    data=[255*((i % my,i / mx) in points) for i in range(0,mx*my)]
     ss = struct.pack(fs,*data)
     
     importer=vtk.vtkImageImport()

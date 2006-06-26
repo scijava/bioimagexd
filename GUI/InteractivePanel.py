@@ -167,13 +167,13 @@ class InteractivePanel(ogl.ShapeCanvas):
                 insideMap.update(shape.getCoveredPoints())
             
         insMap={}
-        print "zoomFactor=",self.zoomFactor
+        #print "zoomFactor=",self.zoomFactor
         for x,y in insideMap.keys():
             x//=self.zoomFactor
             y//=self.zoomFactor
-            y=my-y
-            insMap[(y,x)]=1
-        print "insMap=",insMap
+            #y=my-y
+            insMap[(x,y)]=1
+        #print "insMap=",insMap
         maskImage = ImageOperations.getMaskFromPoints(insMap,mx,my,mz)
         return maskImage
     def polyCenter(self,points):

@@ -62,7 +62,7 @@ class DataUnit:
         Created: 20.06.2006, KP
         Description: Set the mask applied to this dataunit
         """   
-        print "Set mask to ",mask
+        self.dataSource.setMask(mask)
 
     def isProcessed(self):
         """

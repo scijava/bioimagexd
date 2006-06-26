@@ -100,6 +100,8 @@ class DataSource:
         self.ctf = None
         self.bitdepth=0
         self.resample=None
+        self.mask = None
+        self.maskImg = None
         self.mipData = None
         self.resampleDims=None
         self.resampleTp=-1
@@ -125,6 +127,15 @@ class DataSource:
             self.toDims = eval(conf.getConfigItem("ResampleTo","Performance"))
 
 
+        
+    def setMask(self, mask):
+        """
+        Method: setMask
+        Created: 20.06.2006, KP
+        Description: Set the mask applied to this dataunit
+        """   
+        self.mask = mask
+        
     def setResampleDimensions(self,dims):
         """
         Method: setResampleDimensions
@@ -255,34 +266,46 @@ class DataSource:
         Description: Return the data resampled to given dimensions
         """
         #print "getResampledData",data
-        if not tmpDims and not self.resampleDims and not self.limitDims:return data
-        
-        useDims = self.getResampleDimensions()
-        if tmpDims:
-            useDims = tmpDims
-        
-        if n==self.resampleTp and self.resample and not useDims:
-            return self.resample.GetOutput()
-        else:
-            Logging.info("Resampling data to ",self.resampleDims,kw="dataunit")
-            self.resample=vtk.vtkImageResample()
-            self.resample.SetInput(data)
-            # Release the memory used by source data
+        if not (not tmpDims and not self.resampleDims and not self.limitDims):
             
-            x,y,z=data.GetDimensions()
-            print "got dims=",x,y,z
-            self.originalDimensions=(x,y,z)
-            rx,ry,rz=useDims
-            xf=rx/float(x)
-            yf=ry/float(y)
-            zf=rz/float(z)
+            useDims = self.getResampleDimensions()
+            if tmpDims:
+                useDims = tmpDims
             
-            self.resample.SetAxisMagnificationFactor(0,xf)
-            self.resample.SetAxisMagnificationFactor(1,yf)
-            self.resample.SetAxisMagnificationFactor(2,zf)
-            self.resample.Update()
-            #data.ReleaseDataFlagOn()
-            return self.resample.GetOutput()        
+            if n==self.resampleTp and self.resample and not useDims:
+                data = self.resample.GetOutput()
+            else:
+                Logging.info("Resampling data to ",self.resampleDims,kw="dataunit")
+                self.resample=vtk.vtkImageResample()
+                self.resample.SetInput(data)
+                # Release the memory used by source data
+                
+                x,y,z=data.GetDimensions()
+                print "got dims=",x,y,z
+                self.originalDimensions=(x,y,z)
+                rx,ry,rz=useDims
+                xf=rx/float(x)
+                yf=ry/float(y)
+                zf=rz/float(z)
+                
+                self.resample.SetAxisMagnificationFactor(0,xf)
+                self.resample.SetAxisMagnificationFactor(1,yf)
+                self.resample.SetAxisMagnificationFactor(2,zf)
+                self.resample.Update()
+                #data.ReleaseDataFlagOn()
+                data= self.resample.GetOutput()        
+        if self.mask:
+            if not self.maskImg:
+                self.maskImg = vtk.vtkImageMask()
+                self.maskImg.SetMaskedOutputValue(0)
+            else:
+                self.maskImg.RemoveAllInputs()
+            self.maskImg.SetImageInput(data)
+            self.maskImg.SetMaskInput(self.mask.getMaskImage())
+            self.maskImg.Update()
+            return self.maskImg.GetOutput()
+            
+        return data
 
     def getEmissionWavelength(self):
         """

@@ -63,7 +63,6 @@ class MyScalebar(ogl.RectangleShape):
         Created: 21.06.2006, KP
         Description: Set the scaling factor in use
         """   
-        print "setScaleFactor",factor
         w,h,x,y = self._width,self._height,self.GetX(),self.GetY()
         w/=self.scaleFactor
         h/=self.scaleFactor
@@ -89,6 +88,7 @@ class MyScalebar(ogl.RectangleShape):
         self.SetHeight(h)
         self.SetX(x)
         self.SetY(y)
+        self.ResetControlPoints()
         
     def createSnapToList(self):
         """
@@ -244,6 +244,38 @@ class MyScalebar(ogl.RectangleShape):
             control.Draw(dc)
 
 class MyRectangle(ogl.RectangleShape):   
+    def __init__(self, w, h, zoomFactor = 1.0):
+        """
+        Method: __init__
+        Created: 26.06.2006, KP
+        Description: Initialization
+        """   
+        ogl.RectangleShape.__init__(self, w,h)
+        self.scaleFactor = zoomFactor
+        
+    def setScaleFactor(self,factor):
+        """
+        Method: setScaleFactor
+        Created: 21.06.2006, KP
+        Description: Set the scaling factor in use
+        """   
+        w,h,x,y = self._width,self._height,self.GetX(),self.GetY()
+        w/=self.scaleFactor
+        h/=self.scaleFactor
+        x/=self.scaleFactor
+        y/=self.scaleFactor
+        self.scaleFactor = factor
+        w*=self.scaleFactor
+        h*=self.scaleFactor
+        x*=self.scaleFactor
+        y*=self.scaleFactor        
+        
+        self.SetWidth(w)
+        self.SetHeight(h)
+        self.SetX(x)
+        self.SetY(y)    
+        self.ResetControlPoints()
+        
     def isROI(self): return 1
     def OnDrawControlPoints(self, dc):
         if not self._drawHandles:
@@ -294,6 +326,38 @@ class MyRectangle(ogl.RectangleShape):
        
 
 class MyCircle(ogl.CircleShape):    
+    def __init__(self, diam, zoomFactor = 1.0):
+        """
+        Method: __init__
+        Created: 26.06.2006, KP
+        Description: Initialization
+        """   
+        ogl.CircleShape.__init__(self, diam)
+        self.scaleFactor = zoomFactor
+        
+    def setScaleFactor(self,factor):
+        """
+        Method: setScaleFactor
+        Created: 21.06.2006, KP
+        Description: Set the scaling factor in use
+        """   
+        w,h,x,y = self._width,self._height,self.GetX(),self.GetY()
+        w/=self.scaleFactor
+        h/=self.scaleFactor
+        x/=self.scaleFactor
+        y/=self.scaleFactor
+        self.scaleFactor = factor
+        w*=self.scaleFactor
+        h*=self.scaleFactor
+        x*=self.scaleFactor
+        y*=self.scaleFactor        
+        
+        self.SetWidth(w)
+        self.SetHeight(h)
+        self.SetX(x)
+        self.SetY(y)    
+        self.ResetControlPoints()        
+     
     def isROI(self): return 1    
     def getCoveredPoints(self):
         cx, cy = self.GetX(), self.GetY()
@@ -361,10 +425,37 @@ class MyCircle(ogl.CircleShape):
 
 
 class MyLine(ogl.LineShape):    
-    def __init__(self):
+    def __init__(self, zoomFactor = 1.0):
+        """
+        Method: __init__
+        Created: 26.06.2006, KP
+        Description: Initialization
+        """   
         ogl.LineShape.__init__(self)
         self.endConnections = {0:(None,None),1:(None,None)}
         self.checked = 0
+        self.scaleFactor = zoomFactor
+        
+    def setScaleFactor(self,factor):
+        """
+        Method: setScaleFactor
+        Created: 21.06.2006, KP
+        Description: Set the scaling factor in use
+        """   
+        w,h,x,y = self.GetEnds()
+        
+        w/=self.scaleFactor
+        h/=self.scaleFactor
+        x/=self.scaleFactor
+        y/=self.scaleFactor
+        self.scaleFactor = factor
+        w*=self.scaleFactor
+        h*=self.scaleFactor
+        x*=self.scaleFactor
+        y*=self.scaleFactor        
+        self.SetEnds(w,h,x,y)
+        self.ResetControlPoints() 
+        
     def OnDrawControlPoints(self, dc):
         if not self._drawHandles:
             return
@@ -589,6 +680,41 @@ class MyLine(ogl.LineShape):
             #print "Resetting point",i,"to",point[0]-xoff,point[1]-yoff
             
 class MyPolygon(ogl.PolygonShape):    
+    def __init__(self, zoomFactor = 1.0):
+        """
+        Method: __init__
+        Created: 26.06.2006, KP
+        Description: Initialization
+        """   
+        ogl.PolygonShape.__init__(self)
+        self.scaleFactor = zoomFactor
+        
+    def setScaleFactor(self,factor):
+        """
+        Method: setScaleFactor
+        Created: 21.06.2006, KP
+        Description: Set the scaling factor in use
+        """   
+        pts = []
+        
+        for x,y in self._points:
+            x/=self.scaleFactor
+            y/=self.scaleFactor
+            x*=factor
+            y*=factor
+            pts.append((x,y))
+        self._points = pts
+        x/= self.scaleFactor
+        y/=self.scaleFactor
+        x*=factor
+        y*=factor
+        x,y = self.GetX(),self.GetY()
+        self.SetX(x)
+        self.SetY(y)
+        self.UpdateOriginalPoints()
+        self.scaleFactor = factor
+        self.ResetControlPoints()    
+        
     def isROI(self): return 1
     def getMinMaxXY(self):
         my,mx=10000,10000

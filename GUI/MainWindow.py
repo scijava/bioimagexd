@@ -921,6 +921,7 @@ class MainWindow(wx.Frame):
                 masksel = MaskTray.MaskTray(self)
                 dataUnit=self.visualizer.getDataUnit()
                 for i in self.visualizer.getMasks():
+                    print "Adding ",i,"to masksel"
                     masksel.addMask(mask = i)
                 masksel.setDataUnit(dataUnit)
                 masksel.Show()
