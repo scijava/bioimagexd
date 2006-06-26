@@ -169,8 +169,8 @@ class InteractivePanel(ogl.ShapeCanvas):
         insMap={}
         #print "zoomFactor=",self.zoomFactor
         for x,y in insideMap.keys():
-            x//=self.zoomFactor
-            y//=self.zoomFactor
+            #x//=self.zoomFactor
+            #y//=self.zoomFactor
             #y=my-y
             insMap[(x,y)]=1
         #print "insMap=",insMap
@@ -206,7 +206,7 @@ class InteractivePanel(ogl.ShapeCanvas):
         Created: 07.05.2006, KP
         Description: Create a polygon
         """            
-        shape = MyPolygon()
+        shape = MyPolygon(zoomFactor = self.zoomFactor)
         pts=[]
         print "points=",points
         #shape.SetCentreResize(0)
@@ -219,6 +219,7 @@ class InteractivePanel(ogl.ShapeCanvas):
         shape.SetX(mx)
         shape.SetY(my)
         self.addNewShape(shape)
+        
         self.paintPreview()
         self.Refresh()
         print "Added",shape,pts

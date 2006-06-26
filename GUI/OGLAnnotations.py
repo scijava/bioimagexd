@@ -292,10 +292,13 @@ class MyRectangle(ogl.RectangleShape):
     def getCoveredPoints(self):
         cx, cy = self.GetX(), self.GetY()
         w, h = self._width, self._height
-        
+        cx //= self.scaleFactor
+        cy //=self.scaleFactor
+        w //=self.scaleFactor
+        h //=self.scaleFactor
         pts={}
-        for x in range(cx-w/2,cx+w/2):
-           for y in range(cy-h/2,cy+h/2):
+        for x in range(cx-w//2,cx+w//2):
+           for y in range(cy-h//2,cy+h//2):
                pts[(x,y)] = 1
         return pts
                
@@ -361,10 +364,14 @@ class MyCircle(ogl.CircleShape):
     def isROI(self): return 1    
     def getCoveredPoints(self):
         cx, cy = self.GetX(), self.GetY()
-        print "cx,cy=",cx,cy
+        cx//=self.scaleFactor
+        cy//=self.scaleFactor
+        
         w = self._width
         h = self._height
-        print "w,h=",w,h
+        w//=self.scaleFactor
+        h//=self.scaleFactor
+        
         a = max(w,h)/2
         b = min(w,h)/2
         
@@ -380,7 +387,7 @@ class MyCircle(ogl.CircleShape):
         pts={}
         def d(x,y):
             return math.sqrt((x[0]-y[0])**2+((x[1]-y[1])**2))
-        for x in range(cx-w/2,cx+w/2):
+        for x in range(cx-w//2,cx+w//2):
             for y in range(cy-h/2,cy+h/2):
                 #print "d=",(d((x,y),f1)+d((x,y),f2)),"2a=",2*a
                 if (d((x,y),f1)+d((x,y),f2)) < a*2:
@@ -733,19 +740,31 @@ class MyPolygon(ogl.PolygonShape):
         y0+=cy
         x1+=cx
         y1+=cy
+        x0//=self.scaleFactor
+        y0//=self.scaleFactor
+        x1//=self.scaleFactor
+        y1//=self.scaleFactor        
+        cx//=self.scaleFactor
+        cy//=self.scaleFactor
+        
+        poly = [(x//self.scaleFactor,y//self.scaleFactor) for x,y in self._points] 
+        #poly = self._points
+        #tot = (x1-x0)*(y1-y0)
         for x in range(x0,x1):
             for y in range(y0,y1):
-                if self.collidepoint((x,y)):                    
+                if self.collidepoint(poly,(x,y),cx,cy):                    
                     pts[(x,y)] = 1
+                
         return pts
 
-    def collidepoint(self,point):
+    def collidepoint(self,poly,point,cx,cy):
         """collidepoint(point) -> Whether the point is inside this polygon"""
         i,j,c=0,0,0
-        poly=self._points
+        #poly=self._points
+        
         x,y=point
-        x-=self.GetX()
-        y-=self.GetY()
+        x-=cx
+        y-=cy
         l=len(poly)
         for i in range(0,l):
             j+=1
