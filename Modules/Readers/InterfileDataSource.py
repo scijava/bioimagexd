@@ -1,9 +1,9 @@
 # -*- coding: iso-8859-1 -*-
 """
- Unit: BioradDataSource
+ Unit: InterfileDataSource
  Project: BioImageXD
  Created: 29.03.2006, KP
- Description: A datasource for reading Biorad .PIC files
+ Description: A datasource for reading Interfile .PIC files
 
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
@@ -31,6 +31,7 @@ import ConfigParser
 import struct
 import re
 import messenger
+import re
 try:
     import itk
 except:
@@ -45,14 +46,14 @@ import DataUnit
 
 import glob
 
-def getExtensions(): return ["pic"]
-def getFileType(): return "BioRad PIC datasets (*.pic)"
-def getClass(): return BioradDataSource    
+def getExtensions(): return ["hdr"]
+def getFileType(): return "Interfile files (*.hdr)"
+def getClass(): return InterfileDataSource    
     
 
-class BioradDataSource(DataSource):
+class InterfileDataSource(DataSource):
     """
-    Class: BioradDataSource
+    Class: InterfileDataSource
     Created: 12.04.2005, KP
     Description: Olympus OIF files datasource
     """
@@ -69,26 +70,60 @@ class BioradDataSource(DataSource):
         name=name.split(".")
         name=".".join(name[:-1])
         self.name= name
-        self.io = itk.BioRadImageIO.New()
-        self.reader = itk.ImageFileReader[itk.Image.UC3].New()
-        self.reader.SetImageIO(self.io.GetPointer())
         
         self.filename=filename
+        
+        f=open(filename,"r")
+        self.readInfo(f)
+        f.close()
         
         self.dimensions = None
         self.voxelsize = (1,1,1)
         self.spacing = None
-        self.itkToVtk = None
         self.color = None
         self.shift = None
         self.tps=-1
         if filename:
             self.path=os.path.dirname(filename)
-            self.getDataSetCount()
+            self.getDataSetCount()            
         
+    def readInfo(self, file):
+        """
+        Method: readInfo
+        Created: 28.06.2006, KP
+        Description: Read the header info from file
+        """   
+        lines=file.readlines()
+        dimre=re.compile("matrix size.*\[(\d)\].*:=(\d+)")
+        spacere=re.compile("scaling factor.*\[(\d)\].*:=(\d+)")
+        formatre = re.compile("!number format.*:=(.*)")
+        self.dimensions = [0,0,0]
+        self.spacing = [0,0,0]
         
-        
-        
+        for line in lines:
+            line.strip()
+            m=dimre.search(line)
+            if m:
+                n = m.groups(1)
+                x = m.groups(2)
+                print "Dimension %d = %d"%(n,x)
+                self.dimensions[int(n)] = int(x)
+            m = spacere.search(line)
+            if m:
+                n = m.groups(1)
+                x = m.groups(2)
+                print "Spacing %d = %d"%(n,x)
+                self.voxelSize[int(n)] = float(x)                    
+            m = formatre.search(line)
+            if m:
+                s = m.groups(1)
+                if s=="short float":
+                    self.datatype = "Float"
+                elif s=="long float":
+                    self.datatype = "Double"
+                
+        x = self.voxelSize[0]
+        self.spacing = [1, self.voxelSize[1] / x, self.voxelSize[2] / x]
     def getDataSetCount(self):
         """
         Method: getDataSetCount
@@ -98,6 +133,9 @@ class BioradDataSource(DataSource):
         """
         if self.tps<0:
             f=self.filename[:]
+            f.replace(".hdr",".img")
+            f.replace(".HDR",".IMG")
+            
             r=re.compile("(\d+)....$")
             
             m=r.search(f)
@@ -120,9 +158,7 @@ class BioradDataSource(DataSource):
         Description: Return the file name
         """    
         return self.filename
-        
-
-    
+            
     def getDataSet(self, i,raw=0):
         """
         Method: getDataSet
@@ -156,30 +192,16 @@ class BioradDataSource(DataSource):
         Created: 16.02.2006, KP
         Description: Return the nth timepoint
         """        
+        if not self.reader:
+            self.reader = vtk.vtkImageReader2()
+            eval("self.reader.SetDataTypeTo%s()"%self.dataype)
+            
+            
         print "Switching to dataset ",self.filepattern%(n+1)
         self.reader.SetFileName(self.filepattern%(n+1))
         self.reader.Update()
         
-        if not self.itkToVtk:
-            self.itkToVtk = itk.ImageToVTKImageFilter.IUC3.New()
-        data=self.reader.GetOutput()
-        
-        if not self.voxelsize:
-            size=data.GetSpacing()
-            x,y,z=[size.GetElement(x) for x in range(0,3)]
-            self.voxelsize=(x,y,z)
-            print "Read voxel size",self.voxelsize
-        if not self.dimensions:
-            reg=data.GetLargestPossibleRegion()
-            size=reg.GetSize()
-            x,y,z=[size.GetElement(x) for x in range(0,3)]
-            self.dimensions = (x,y,z)
-            print "Read dimensions",self.dimensions
-        if onlyDims:
-            return
-        self.itkToVtk.SetInput(data)
-        self.itkToVtk.Update()
-        return self.itkToVtk.GetOutput()
+        return self.reader.GetOutput()
         
     def getDimensions(self):
         """
@@ -190,7 +212,7 @@ class BioradDataSource(DataSource):
         """
         if self.resampleDims:
             return self.resampleDims
-        if not self.dimensions:            
+        if not self.dimensions:                           
             self.getVoxelSize()
             #print "Got dimensions=",self.dimensions                
         return self.dimensions
@@ -203,9 +225,6 @@ class BioradDataSource(DataSource):
         Description: Returns the spacing of the datasets this 
                      dataunit contains
         """
-        if not self.spacing:
-            a,b,c = self.getVoxelSize()
-            self.spacing=[1,b/a,c/a]
         return self.spacing
         
     def getVoxelSize(self):
@@ -215,13 +234,7 @@ class BioradDataSource(DataSource):
         Description: Returns the voxel size of the datasets this 
                      dataunit contains
         """
-        if not self.voxelsize:
-            self.getTimepoint(0,onlyDims=1)
-
         return self.voxelsize
-  
- 
-            
             
     def loadFromFile(self, filename):
         """
@@ -231,7 +244,7 @@ class BioradDataSource(DataSource):
         Parameters:   filename  The .oif-file to be loaded
         """
         dataunit=DataUnit.DataUnit()
-        datasource = BioradDataSource(filename)
+        datasource = InterfileDataSource(filename)
         dataunit.setDataSource(datasource)
         return [dataunit]
         

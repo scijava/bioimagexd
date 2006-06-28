@@ -695,7 +695,7 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
             Logging.info("Got no name for coloc statistics",kw="processing")
             return
 #        f=open(filename,"wb")
-	f=codecs.open(filename,"wb","latin1")
+        f=codecs.open(filename,"wb","latin1")
         w=csv.writer(f,dialect="excel",delimiter=";")
         get1=sources[0].getSettings().get
         get2=sources[1].getSettings().get
@@ -710,10 +710,9 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
                 w.writerow([header,val1,val2])
             else:
                 w.writerow([header,val1])
-        
-
         f.close()
-
+        del w
+        
 
         
     def populateListCtrl(self):

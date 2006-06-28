@@ -200,9 +200,8 @@ class LsmDataSource(DataSource.DataSource):
         return self.filename
     def loadFromFile(self,filename):
         """
-        Method: loadFromLsmFile(filename)
-        Created: 18.11.2004
-        Creator: KP
+        Method: loadFromFile(filename)
+        Created: 18.11.2004, KP
         Description: Loads all channels from a specified LSM file to DataUnit-
                      instances and returns them as a list.
         Parameters:   filename  The .lsm-file to be loaded

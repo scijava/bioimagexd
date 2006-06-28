@@ -189,17 +189,6 @@ class LeicaDataSource(DataSource):
         """
         return "Ch%.2d"%self.channel
 
-    def getColor(self):
-        """
-        Method: getColor()
-        Created: 27.03.2005, KP
-        Description: Returns the color of the dataset series which this datasource
-                     operates on
-        """
-        raise "DO NOT CALL GETCOLOR!"
-        if not self.color:
-            self.color=self.reader.GetColor(self.experiment,self.channel)
-        return self.color
         
     def getColorTransferFunction(self):
         """

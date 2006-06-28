@@ -323,15 +323,6 @@ class BXDDataSource(DataSource):
         """
         return self.settings.get("Name")
 
-    def getColor(self):
-        """
-        Method: getColor()
-        Created: 27.03.2005, KP
-        Description: Returns the color of the dataset series which this datasource
-                     operates on
-        """
-        raise "NEVER EVER CALL GETCOLOR AGAIN!!!"
-        
     def getColorTransferFunction(self):
         """
         Method: getColorTransferFunction()

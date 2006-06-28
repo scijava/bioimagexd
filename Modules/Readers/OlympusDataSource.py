@@ -287,10 +287,14 @@ class OlympusDataSource(DataSource):
             n = timepoints = int(parser.get(sect,"MaxSize"))
             unit = parser.get(sect,"UnitName")
             unit=unit.replace('"',"")
+            sp = parser.get(sect,"StartPosition")
+            ep = parser.get(sect,"EndPosition")
+            sp = sp.replace('"','')
+            ep = ep.replace('"','')
             
-            startpos=float(parser.get(sect,"StartPosition"))
-            endpos = float(parser.get(sect,"EndPosition"))
-        
+            startpos=float(sp)
+            endpos = float(ep)
+            
             
             if endpos<startpos:
                 self.reverseSlices=1
@@ -399,15 +403,6 @@ class OlympusDataSource(DataSource):
                      operates on
         """
         return self.name
-
-    def getColor(self):
-        """
-        Method: getColor()
-        Created: 27.03.2005, KP
-        Description: Returns the color of the dataset series which this datasource
-                     operates on
-        """
-        raise "DO NOT CALL GETCOLOR!"
 
         
     def getColorTransferFunction(self):
