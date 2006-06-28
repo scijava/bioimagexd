@@ -32,12 +32,6 @@ import struct
 import re
 import messenger
 import re
-try:
-    import itk
-except:
-    pass
-
-import codecs
         
 
 import os.path
@@ -55,7 +49,7 @@ class InterfileDataSource(DataSource):
     """
     Class: InterfileDataSource
     Created: 12.04.2005, KP
-    Description: Olympus OIF files datasource
+    Description: Interfile datasource
     """
     def __init__(self,filename=""):
         """
@@ -72,10 +66,9 @@ class InterfileDataSource(DataSource):
         self.name= name
         
         self.filename=filename
-        
-        f=open(filename,"r")
-        self.readInfo(f)
-        f.close()
+        self.reader = None
+
+        self.datatype = "Float"
         
         self.dimensions = None
         self.voxelsize = (1,1,1)
@@ -86,6 +79,9 @@ class InterfileDataSource(DataSource):
         if filename:
             self.path=os.path.dirname(filename)
             self.getDataSetCount()            
+            f=open(filename,"r")
+            self.readInfo(f)
+            f.close()
         
     def readInfo(self, file):
         """
@@ -95,35 +91,41 @@ class InterfileDataSource(DataSource):
         """   
         lines=file.readlines()
         dimre=re.compile("matrix size.*\[(\d)\].*:=(\d+)")
-        spacere=re.compile("scaling factor.*\[(\d)\].*:=(\d+)")
+        spacere=re.compile("scaling factor.*\[(\d)\].*:=(\d*.\d*)")
         formatre = re.compile("!number format.*:=(.*)")
         self.dimensions = [0,0,0]
+        self.voxelsize = [0,0,0]
         self.spacing = [0,0,0]
         
         for line in lines:
             line.strip()
             m=dimre.search(line)
+            if line.find("byte order"):
+                if line.find("LITTLEENDIAN"):
+                    self.endianness = "LittleEndian"
+                else:
+                    self.endianness = "BigEndian"
             if m:
-                n = m.groups(1)
-                x = m.groups(2)
-                print "Dimension %d = %d"%(n,x)
-                self.dimensions[int(n)] = int(x)
+                n,x = m.groups()
+                print "Dimension",n,"=",x
+                self.dimensions[int(n)-1] = int(x)
             m = spacere.search(line)
             if m:
-                n = m.groups(1)
-                x = m.groups(2)
-                print "Spacing %d = %d"%(n,x)
-                self.voxelSize[int(n)] = float(x)                    
+                n,x = m.groups()
+                print "Spacing ",n,"=",x
+                self.voxelsize[int(n)-1] = float(x)                    
             m = formatre.search(line)
             if m:
-                s = m.groups(1)
+                print "Found",m.groups()
+                s = m.groups()[0]
                 if s=="short float":
                     self.datatype = "Float"
                 elif s=="long float":
                     self.datatype = "Double"
                 
-        x = self.voxelSize[0]
-        self.spacing = [1, self.voxelSize[1] / x, self.voxelSize[2] / x]
+        print "dims=",self.dimensions
+        x = self.voxelsize[0]
+        self.spacing = [1, self.voxelsize[1] / x, self.voxelsize[2] / x]
     def getDataSetCount(self):
         """
         Method: getDataSetCount
@@ -133,22 +135,27 @@ class InterfileDataSource(DataSource):
         """
         if self.tps<0:
             f=self.filename[:]
-            f.replace(".hdr",".img")
-            f.replace(".HDR",".IMG")
+            f= f.replace(".hdr",".img")
+            f=f.replace(".HDR",".IMG")
             
             r=re.compile("(\d+)....$")
             
             m=r.search(f)
-            d=m.groups(0)
-            print d
-            f=f.replace(d[0],"%d")
-            n=1
-            self.filepattern = f
-            for i in range(1,99999):
-                if os.path.exists(f%i):
-                    n=i
-            print "Dataset has",n,"timepoints"
-            self.tps=n
+            if m:
+                d=m.groups(0)
+                print d
+                f=f.replace(d[0],"%d")
+                n=1
+                self.filepattern = f
+                for i in range(1,99999):
+                    if os.path.exists(f%i):
+                        n=i
+                self.tps=n
+                if n==1:
+                    self.imgfile=self.filepattern%1
+            else:
+                self.tps=1
+                self.imgfile = f
         return self.tps
         
     def getFileName(self):
@@ -194,12 +201,21 @@ class InterfileDataSource(DataSource):
         """        
         if not self.reader:
             self.reader = vtk.vtkImageReader2()
-            eval("self.reader.SetDataTypeTo%s()"%self.dataype)
+            eval("self.reader.SetDataScalarTypeTo%s()"%self.datatype)
+            x,y,z = self.dimensions
+            self.reader.SetDataExtent(0,x-1,0,y-1,0,z-1)
+            self.reader.SetFileDimensionality(3)
+            self.reader.SetDataSpacing(self.spacing)
+            eval("self.reader.SetDataByteOrderTo%s()"%self.endianness)
             
-            
-        print "Switching to dataset ",self.filepattern%(n+1)
-        self.reader.SetFileName(self.filepattern%(n+1))
+        if self.tps == 1:
+            self.reader.SetFileName(self.imgfile)
+        else:
+            print "Switching to dataset ",self.filepattern%(n+1)
+            self.reader.SetFileName(self.filepattern%(n+1))
+        
         self.reader.Update()
+        print self.reader.GetOutput()
         
         return self.reader.GetOutput()
         
@@ -212,9 +228,6 @@ class InterfileDataSource(DataSource):
         """
         if self.resampleDims:
             return self.resampleDims
-        if not self.dimensions:                           
-            self.getVoxelSize()
-            #print "Got dimensions=",self.dimensions                
         return self.dimensions
 
         

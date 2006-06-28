@@ -81,6 +81,7 @@ class TreeWidget(wx.SashLayoutWindow):
         self.bxdfiles=None
         self.oiffiles=None
         self.bioradfiles=None
+        self.interfilefiles=None
         
         self.itemColor=(0,0,0)
         
@@ -296,6 +297,14 @@ class TreeWidget(wx.SashLayoutWindow):
                 self.tree.SetItemImage(self.bioradfiles,fldridx,which=wx.TreeItemIcon_Normal)
                 self.tree.SetItemImage(self.bioradfiles,fldropenidx,which=wx.TreeItemIcon_Expanded)
             item=self.bioradfiles
+            self.tree.Expand(item)
+        elif objtype == "hdr":
+            if not self.interfilefiles:
+                self.interfilefiles = self.tree.AppendItem(self.root, "Interfile files")
+                self.tree.SetPyData(self.interfilefiles, "1")
+                self.tree.SetItemImage(self.interfilefiles, fldridx, which=wx.TreeItemIcon_Normal)
+                self.tree.SetItemImage(self.interfilefiles,fldropenidx,which=wx.TreeItemIcon_Expanded)
+            item = self.interfilefiles
             self.tree.Expand(item)
         elif objtype=="bxd":
             if not self.bxdfiles:

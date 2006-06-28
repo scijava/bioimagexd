@@ -150,6 +150,7 @@ class InfoWidget(wx.Panel):
             emission="n/a"
         else:
             dims=dataunit.getDimensions()
+            print "Got dims=",dims
             resampledims=dataunit.dataSource.getResampleDimensions()
             spacing=dataunit.getSpacing()
             voxelsize=dataunit.getVoxelSize()
