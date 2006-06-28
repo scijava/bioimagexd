@@ -246,7 +246,10 @@ class DataSource:
             
         else:
             x0,x1=data.GetScalarRange()
-            scale=255.0/x1
+            if x1==0:
+                scale=1.0
+            else:
+                scale=255.0/x1
             self.shift.SetScale(scale)
         
         self.shift.SetShift(self.intensityShift)

@@ -3,7 +3,7 @@
 
 [Setup]
 AppName=BioImageXD
-AppVerName=BioImageXD prebeta 0.9.1-8
+AppVerName=BioImageXD prebeta 0.9.1-10
 AppPublisher=BioImageXD development team
 AppPublisherURL=http://www.bioimagexd.org/
 AppSupportURL=http://www.bioimagexd.org/
@@ -143,6 +143,7 @@ Source: "C:\BioImageXD\trunk\dist\Icons\play.gif"; DestDir: "{app}\Icons";  Flag
 Source: "C:\BioImageXD\trunk\dist\Icons\polygon.gif"; DestDir: "{app}\Icons";  Flags: ignoreversion
 Source: "C:\BioImageXD\trunk\dist\Icons\rectangle.gif"; DestDir: "{app}\Icons";  Flags: ignoreversion
 Source: "C:\BioImageXD\trunk\dist\Icons\rightarrow.gif"; DestDir: "{app}\Icons";  Flags: ignoreversion
+Source: "C:\BioImageXD\trunk\dist\Icons\roitomask.gif"; DestDir: "{app}\Icons";  Flags: ignoreversion
 Source: "C:\BioImageXD\trunk\dist\Icons\save.gif"; DestDir: "{app}\Icons";  Flags: ignoreversion
 Source: "C:\BioImageXD\trunk\dist\Icons\save_settings.jpg"; DestDir: "{app}\Icons";  Flags: ignoreversion
 Source: "C:\BioImageXD\trunk\dist\Icons\save_snapshot.jpg"; DestDir: "{app}\Icons";  Flags: ignoreversion
@@ -208,7 +209,11 @@ Source: "C:\BioImageXD\trunk\dist\Modules\Task\Manipulation\ManipulationPanel.py
 Source: "C:\BioImageXD\trunk\dist\Modules\Task\Manipulation\ManipulationSettings.py"; DestDir: "{app}\Modules\Task\Manipulation";  Flags: ignoreversion
 Source: "C:\BioImageXD\trunk\dist\Modules\Task\Manipulation\MathFilters.py"; DestDir: "{app}\Modules\Task\Manipulation";  Flags: ignoreversion
 Source: "C:\BioImageXD\trunk\dist\Modules\Task\Manipulation\MorphologicalFilters.py"; DestDir: "{app}\Modules\Task\Manipulation";  Flags: ignoreversion
+Source: "C:\BioImageXD\trunk\dist\Modules\Task\Manipulation\Segmentation.py"; DestDir: "{app}\Modules\Task\Manipulation";  Flags: ignoreversion
+Source: "C:\BioImageXD\trunk\dist\Modules\Task\Manipulation\SegmentationDataUnit.py"; DestDir: "{app}\Modules\Task\Manipulation";  Flags: ignoreversion
 Source: "C:\BioImageXD\trunk\dist\Modules\Task\Manipulation\SegmentationFilters.py"; DestDir: "{app}\Modules\Task\Manipulation";  Flags: ignoreversion
+Source: "C:\BioImageXD\trunk\dist\Modules\Task\Manipulation\SegmentationPanel.py"; DestDir: "{app}\Modules\Task\Manipulation";  Flags: ignoreversion
+Source: "C:\BioImageXD\trunk\dist\Modules\Task\Manipulation\SegmentationSettings.py"; DestDir: "{app}\Modules\Task\Manipulation";  Flags: ignoreversion
 Source: "C:\BioImageXD\trunk\dist\Modules\Task\Manipulation\__init__.py"; DestDir: "{app}\Modules\Task\Manipulation";  Flags: ignoreversion
 Source: "C:\BioImageXD\trunk\dist\Modules\Task\Merging\Merging.py"; DestDir: "{app}\Modules\Task\Merging";  Flags: ignoreversion
 Source: "C:\BioImageXD\trunk\dist\Modules\Task\Merging\MergingDataUnit.py"; DestDir: "{app}\Modules\Task\Merging";  Flags: ignoreversion

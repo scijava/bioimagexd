@@ -884,7 +884,7 @@ class MainWindow(wx.Frame):
         Created: 1.09.2005, KP
         Description: Resize data to be smaller or larger
         """
-        print "onMenuResampleData"
+
         #selectedFiles=self.tree.getSelectedDataUnits()
         selectedFiles,items = self.tree.getSelectionContainer()
         print selectedFiles
@@ -892,7 +892,6 @@ class MainWindow(wx.Frame):
             return
         dlg=ResampleDialog.ResampleDialog(self)
         dlg.setDataUnits(selectedFiles)
-        print "Showing dialog with ",selectedFiles
         dlg.ShowModal()
         if dlg.result==1:
             self.tree.markRed(items,"*")
