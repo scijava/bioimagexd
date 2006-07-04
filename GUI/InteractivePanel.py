@@ -107,6 +107,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 
         self.zoomFactor=1
         
+        
         self.paintPreview()
         
         self.Unbind(wx.EVT_PAINT)
@@ -122,7 +123,6 @@ class InteractivePanel(ogl.ShapeCanvas):
         
         #messenger.connect(None,"create_polygon",self.onCreatePolygon)
         
-    
     def deleteLines(self,lines):
         """
         Method: onEraseLines
@@ -169,9 +169,6 @@ class InteractivePanel(ogl.ShapeCanvas):
         insMap={}
         #print "zoomFactor=",self.zoomFactor
         for x,y in insideMap.keys():
-            #x//=self.zoomFactor
-            #y//=self.zoomFactor
-            #y=my-y
             insMap[(x,y)]=1
         #print "insMap=",insMap
         maskImage = ImageOperations.getMaskFromPoints(insMap,mx,my,mz)

@@ -343,7 +343,9 @@ class BXDDataSource(DataSource):
                 return None
             if not ctf:
                 Logging.info("Will return no CTF",kw="ctf")
-                return None
+                ctf = vtk.vtkColorTransferFunction()
+                ctf.AddRGBPoint(0,0,0,0)
+                ctf.AddRGBPoint(255,1,1,1)                
             else:
                 Logging.info("Using CTF read from dataset",ctf,kw="ctf")
             self.ctf = ctf

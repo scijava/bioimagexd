@@ -75,6 +75,7 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         self.selectedItem=-1
         self.show={"SCROLL":0}
         size=(1024,1024)
+        self.centroid = None
         self.oldx,self.oldy=0,0
         self.zoomx,self.zoomy=1,1
         Logging.info("kws=",kws,kw="preview")
@@ -185,6 +186,19 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         self.SetHelpText("This window displays the selected dataset slice by slice.")
 #    def __del__(self):        
 #        PreviewFrame.count-=1
+
+        messenger.connect(None,"show_centroid",self.onShowCentroid)
+    
+    def onShowCentroid(self, obj, evt, label, centroid):
+        """
+        Method: onShowCentroid
+        Created: 04.07.2006, KP
+        Description: Show the given centroid
+        """            
+        self.centroid = (label, centroid)
+        print "Got centroid=",self.centroid
+        self.updatePreview()
+    
 
     def onSize(self,event):
         """
@@ -418,6 +432,7 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         else:
             preview = self.dataUnit.getTimePoint(self.timePoint)
             Logging.info("Using timepoint %d as preview"%self.timePoint,kw="preview")
+        
         black=0
         if not preview:
             Logging.info("Creating black preview",kw="preview")
@@ -779,6 +794,24 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         bmp=bmp.ConvertToBitmap()
 
         dc.DrawBitmap(bmp,0,0,True)
+        
+        if self.centroid:
+            label, (x,y,z) = self.centroid
+            
+            print "Painting centroid at ",x,y
+            
+            x*= self.zoomFactor
+            y*= self.zoomFactor
+            if z == self.z:
+                dc.SetBrush(wx.Brush((0,255,0)))
+                dc.SetPen(wx.Pen((255,255,255),1))
+                dc.DrawCircle(x,y,10)
+                dc.SetTextForeground((0,0,0))
+                dc.SetFont(wx.Font(9,wx.SWISS,wx.NORMAL,wx.BOLD))
+                dc.DrawText("%d"%label,x-5,y-5)
+                
+ 
+            
         self.bmp=self.buffer
         
         InteractivePanel.InteractivePanel.paintPreview(self)

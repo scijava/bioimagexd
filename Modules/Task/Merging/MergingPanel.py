@@ -184,7 +184,7 @@ class MergingPanel(TaskPanel.TaskPanel):
             setting.set("IntensityTransferFunction",itf)
 
 
-    def updateSettings(self):
+    def updateSettings(self, force=0):
         """
         Method: updateSettings()
         Created: 10.11.2004, JV

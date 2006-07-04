@@ -1285,7 +1285,7 @@ class MainWindow(wx.Frame):
             for i in dataunits:
                 bd=i.getBitDepth()
                 print "bd=",bd
-                isManip = (i.getSettings().getType()=="Manipulation")
+                isManip = (i.getSettings().getType()=="Process")
                 if not isManip and bd not in [8,32]:
                     needToRescale=1
             if needToRescale:

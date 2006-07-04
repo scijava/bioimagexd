@@ -30,6 +30,7 @@ __author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.42 $"
 __date__ = "$Date: 2005/01/13 14:52:39 $"
 import ManipulationFilters
+import ImageOperations
 import wx
 try:
     import itk
@@ -39,6 +40,7 @@ import vtk
 import types
 
 import GUI.GUIBuilder as GUIBuilder
+import messenger
 
 SEGMENTATION="Segmentation"
 ITK="ITK"
@@ -50,7 +52,7 @@ class WatershedObjectList(wx.ListCtrl):
     def __init__(self, parent, log):
         wx.ListCtrl.__init__(
             self, parent, -1, 
-            size = (200,100),
+            size = (350,250),
             style=wx.LC_REPORT|wx.LC_VIRTUAL|wx.LC_HRULES|wx.LC_VRULES,
             
             )
@@ -62,11 +64,14 @@ class WatershedObjectList(wx.ListCtrl):
 
 
         self.InsertColumn(0, "Object #")
-        self.InsertColumn(1, "Volume")
+        self.InsertColumn(1, u"Volume (\u03BCm)")
+        self.InsertColumn(2, u"Volume (px)")
+        self.InsertColumn(3,"Centroid")
         #self.InsertColumn(2, "")
-        self.SetColumnWidth(0, 175)
-        self.SetColumnWidth(1, 175)
-        #self.SetColumnWidth(2, 175)
+        self.SetColumnWidth(0, 50)
+        self.SetColumnWidth(1, 100)
+        self.SetColumnWidth(2, 100)
+        self.SetColumnWidth(3, 100)
 
         self.SetItemCount(1000)
 
@@ -75,27 +80,43 @@ class WatershedObjectList(wx.ListCtrl):
 
         self.attr2 = wx.ListItemAttr()
         self.attr2.SetBackgroundColour("light blue")
-        self.volumeList = {}
-
+        self.volumeList = []
+        self.centroidList = []
+        
         self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.OnItemSelected)
         self.Bind(wx.EVT_LIST_ITEM_ACTIVATED, self.OnItemActivated)
         self.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.OnItemDeselected)
 
     
+    def setCentroids(self, centroidList):
+        self.centroidList = centroidList
 
     def setVolumes(self,volumeList):
-        self.volumes = volumeList
-
+#        print "Set volumes",volumeList
+        self.volumeList = volumeList
+        self.SetItemCount(len(volumeList))
+        self.Refresh()
+        
     def OnItemSelected(self, event):
         self.currentItem = event.m_itemIndex
-        print ('OnItemSelected: "%s", "%s", "%s", "%s"\n' %
-                           (self.currentItem,
-                            self.GetItemText(self.currentItem),
-                            self.getColumnText(self.currentItem, 1),
-                            self.getColumnText(self.currentItem, 2)))
+        #print ('OnItemSelected: "%s", "%s", "%s", "%s"\n' %
+        #                   (self.currentItem,
+        #                    self.GetItemText(self.currentItem),
+        #                    self.getColumnText(self.currentItem, 1),
+        #                    self.getColumnText(self.currentItem, 2)))
 
     def OnItemActivated(self, event):
         self.currentItem = event.m_itemIndex
+        print "item=",self.currentItem,"number of centroids=",len(self.centroidList)
+        if len(self.centroidList)>=self.currentItem:            
+            centroid = self.centroidList[self.currentItem]
+            x,y,z = centroid
+            print "Sending zslice change to ",z
+            
+            messenger.send(None,"zslice_changed",z)
+            print "Sending show centroid",centroid
+            messenger.send(None,"show_centroid",self.currentItem,centroid)
+        
         print ("OnItemActivated: %s\nTopItem: %s\n" %
                            (self.GetItemText(self.currentItem), self.GetTopItem()))
 
@@ -107,12 +128,17 @@ class WatershedObjectList(wx.ListCtrl):
         print ("OnItemDeselected: %s" % evt.m_itemIndex)
 
     def OnGetItemText(self, item, col):
-        if item>len(self.volumeList):
-            return ""
+        
+        if item>=len(self.volumeList):
+            return "No item %d at col %d"%(item,col)
         if col==0:
             return "#%d"%item
+        elif col==1:
+            return u"%.3f \u03BCm"%self.volumeList[item][1]
+        elif col==2:
+            return "%d px"%self.volumeList[item][0]
         else:
-            return u"%d \u03BCm"%self.volumeList[item]
+            return "(%d, %d, %d)"%self.centroidList[item]
 
     def OnGetItemImage(self, item):
 #        if item % 3 == 0:
@@ -414,19 +440,18 @@ class ITKWatershedSegmentationFilter(ManipulationFilters.ManipulationFilter):
             
         image = self.getInput(1)
         image = self.convertVTKtoITK(image,cast=types.FloatType)
+        print "Feeding to watershed",image
+        print "parameters=",self.parameters["Threshold"],self.parameters["Level"]
         self.itkfilter.SetInput(image)
         self.itkfilter.SetThreshold(self.parameters["Threshold"])
         self.itkfilter.SetLevel(self.parameters["Level"])
-
+                
         self.setImageType("UL3")
-
-        x0,x1=tp.GetScalarRange()        
-        ctf = ImageOperations.watershedPalette(x0,x1)
-        self.dataUnit.getSettings().set("ColorTransferFunction",ctf)
-        
         if update:
             self.itkfilter.Update()
+            print "Updating..." 
         data=self.itkfilter.GetOutput()            
+        print "Returning ",data
         #if last:
         #    return self.convertITKtoVTK(data,imagetype="UL3")
         return data
@@ -510,94 +535,6 @@ class ITKRelabelImageFilter(ManipulationFilters.ManipulationFilter):
         return data
 
 
-class MapToRGBFilter(ManipulationFilters.ManipulationFilter):
-    """
-    Class: MapToRGBFilter
-    Created: 13.05.2006, KP
-    Description: 
-    """     
-    name = "Map To RGB"
-    category = ITK
-    
-    def __init__(self,inputs=(1,1)):
-        """
-        Method: __init__()
-        Created: 13.04.2006, KP
-        Description: Initialization
-        """        
-        ManipulationFilters.ManipulationFilter.__init__(self,inputs)
-        
-        self.palette = None
-        self.paletteRange = (0,0)
-        self.descs = {}
-        self.itkFlag = 1
-
-            
-    def getDefaultValue(self,parameter):
-        """
-        Method: getDefaultValue
-        Created: 15.04.2006, KP
-        Description: Return the default value of a parameter
-        """    
-        return 0
-        
-    def getType(self,parameter):
-        """
-        Method: getType
-        Created: 13.04.2006, KP
-        Description: Return the type of the parameter
-        """    
-        return types.IntType
-        
-        
-    def getParameters(self):
-        """
-        Method: getParameters
-        Created: 15.04.2006, KP
-        Description: Return the list of parameters needed for configuring this GUI
-        """            
-        return []
-
-
-    def execute(self,inputs,update=0,last=0):
-        """
-        Method: execute
-        Created: 15.04.2006, KP
-        Description: Execute the filter with given inputs and return the output
-        """                    
-        if not ManipulationFilters.ManipulationFilter.execute(self,inputs):
-            return None
-            
-        image = self.getInput(1)
-        
-        if self.prevFilter and self.prevFilter.getITK():
-            image = self.convertITKtoVTK(image,imagetype=self.prevFilter.getImageType())
-            image.Update()
-        x0,x1 = image.GetScalarRange()
-        print "scalar type now=",image.GetScalarTypeAsString()
-        
-        if not self.palette or self.paletteRange != (x0,x1):
-            print "Generating palette from ",x0,"to",x1
-            
-            ctf = ImageOperations.watershedPalette(x0,x1)
-            
-            self.palette = ctf
-            self.paletteRange = (x0,x1)
-            bmp = ImageOperations.paintCTFValues(ctf,height=256,width=x1)
-            img = bmp.ConvertToImage()
-            img.SaveMimeFile("foo.png","image/png")
-        self.mapper = vtk.vtkImageMapToColors()
-        self.mapper.SetOutputFormatToRGB()
-            
-        self.mapper.SetLookupTable(self.palette)
-        self.mapper.AddInput(image)
-        
-        if update:
-            self.mapper.Update()
-        data=self.mapper.GetOutput()            
-        print "scalar type now=",image.GetScalarTypeAsString()
-        print "got from mapper",data
-        return data
 
 class MeasureVolumeFilter(ManipulationFilters.ManipulationFilter):
     """
@@ -615,9 +552,14 @@ class MeasureVolumeFilter(ManipulationFilters.ManipulationFilter):
         Description: Initialization
         """        
         ManipulationFilters.ManipulationFilter.__init__(self,inputs)
-        
-        self.descs = {}        
+        self.itkFlag = 1
+        self.descs = {}      
+        self.values = None
+        self.centroids = None
         self.reportGUI = None
+        self.itkfilter = None
+        import labelShape
+        self.labelShape = labelShape
 
     def getGUI(self,parent,taskPanel):
         """
@@ -628,6 +570,9 @@ class MeasureVolumeFilter(ManipulationFilters.ManipulationFilter):
         gui = ManipulationFilters.ManipulationFilter.getGUI(self,parent,taskPanel)
         if not self.reportGUI:
             self.reportGUI = WatershedObjectList(self.gui,-1)
+            if self.values:
+                self.reportGUI.setVolumes(self.values)
+                self.reportGUI.setCentroids(self.centroids)
             gui.sizer.Add(self.reportGUI,(1,0),flag=wx.EXPAND|wx.ALL)
         return gui
 
@@ -668,52 +613,75 @@ class MeasureVolumeFilter(ManipulationFilters.ManipulationFilter):
             return None
             
         image = self.getInput(1)
+        image = self.convertVTKtoITK(image)
         
         
-        if self.prevFilter and self.prevFilter.getITK():
-            image = self.convertITKtoVTK(image,imagetype=self.prevFilter.getImageType(),force=1)
-            image.Update()
+        if not self.itkfilter:
+            
+            #ul3 = itk.Image.UL3
+            self.itkfilter = self.labelShape.LabelShapeImageFilter[image].New()
 
-        x0,x1=image.GetScalarRange()
-        print "Scalar range of measured image=",x0,x1
-        print image.GetScalarTypeAsString()
-        accu = vtk.vtkImageAccumulate()
-        accu.SetInput(image)
-        accu.SetComponentExtent(0,x1,0,0,0,0)
-        accu.Update() 
-        data = accu.GetOutput()
+        self.itkfilter.SetInput(image)
         
+        self.setImageType("UL3")
+
+        data=self.itkfilter.GetOutput()            
+                   
+            
         x,y,z = self.dataUnit.getVoxelSize()
         x*=1000000
         y*=1000000
         z*=1000000
         vol = x*y*z
         
-        #print "vol=",vol
-        #print data.GetDimensions()
-        #f = open("statistics.txt","w")
-        #minval = accu.GetMin()
-        #maxval = accu.GetMax()
-        #meanval = accu.GetMean()
+    
+        self.itkfilter.Update()
+        n = self.itkfilter.GetNumberOfLabels()
+        values = []
+        centroids = []
+        for i in range(0,n):
+            volume = self.itkfilter.GetVolume(i)
+            centroid = self.itkfilter.GetCenterOfGravity(i)
+            c = []
+            for i in range(0,3):
+                c.append(centroid.GetElement(i))
+            centroids.append(tuple(c))
+            values.append((volume,volume*vol))
+        print "volumes=",values
+        print "centroids=",centroids
         
-        #print "minval=",minval
-        #print "maxval=",maxval
-        #print "meanval=",meanval
-        values=[]
-        x0,x1,y0,y1,z0,z1 = data.GetWholeExtent()
-        print x0,x1,y0,y1,z0,z1
-        
-        
-        for i in range(0,int(x1)):
-            c=data.GetScalarComponentAsDouble(i,0,0,0)
-            values.append(c)
             
-        #f.write("Minimum object size: %.4f um"%(minval*vol))
-        #f.write("Maximum object size: %.4f um"%(maxval*vol))
-        #f.write("Mean object size: %.4f um"%(meanval*vol))
+        #if self.prevFilter and self.prevFilter.getITK():
+        #    image = self.convertITKtoVTK(image,imagetype=self.prevFilter.getImageType(),force=1)
+        #    image.Update()
+            
+
+        #x0,x1=image.GetScalarRange()
+        #print "Scalar range of measured image=",x0,x1
+        ctf = ImageOperations.watershedPalette(0, n)
+        self.dataUnit.getSettings().set("ColorTransferFunction",ctf)        
         
-        self.reportGUI.setVolumes(values)
+        #print image.GetScalarTypeAsString()
+        #accu = vtk.vtkImageAccumulate()
+        #accu.SetInput(image)
+        #accu.SetComponentExtent(0,x1,0,0,0,0)
+        #accu.Update() 
+        #data = accu.GetOutput()
         
+        
+#        values=[]
+#        x0,x1,y0,y1,z0,z1 = data.GetWholeExtent()
+#        print x0,x1,y0,y1,z0,z1
+        
+#        for i in range(0,int(x1)):
+#            c=data.GetScalarComponentAsDouble(i,0,0,0)
+#            values.append(c)
+        
+        self.values = values
+        self.centroids = centroids
+        if self.reportGUI:
+            self.reportGUI.setVolumes(values)
+            self.reportGUI.setCentroids(centroids)
         return image
 
 class FilterObjectsFilter(ManipulationFilters.ManipulationFilter):
@@ -942,6 +910,7 @@ class ITKConnectedThresholdFilter(ManipulationFilters.ManipulationFilter):
         
         self.descs = {"Seed":"Seed voxel","Upper":"Upper threshold","Lower":"Lower threshold"}
         self.itkFlag = 1
+        self.setImageType("UC3")
         
         uc3 = itk.Image.UC3
         self.itkfilter = itk.ConnectedThresholdImageFilter[uc3,uc3].New()
@@ -1032,7 +1001,7 @@ class ITKNeighborhoodConnectedThresholdFilter(ManipulationFilters.ManipulationFi
         Description: Initialization
         """        
         ManipulationFilters.ManipulationFilter.__init__(self,inputs)
-        
+        self.setImageType("UC3")
         
         self.descs = {"Seed":"Seed voxel","Upper":"Upper threshold","Lower":"Lower threshold",
             "RadiusX":"X Neighborhood Size",

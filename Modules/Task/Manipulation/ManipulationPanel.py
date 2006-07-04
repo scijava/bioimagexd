@@ -337,7 +337,6 @@ class ManipulationPanel(TaskPanel.TaskPanel):
         self.panelsizer.Fit(self.panel)
         
         
-        
     def addFilter(self,event,filterclass):
         """
         Method: addFilter
@@ -389,18 +388,20 @@ class ManipulationPanel(TaskPanel.TaskPanel):
                      filtering checkbox changes state
         """
 
-    def updateSettings(self):
+    def updateSettings(self,force=0):
         """
         Method: updateSettings()
         Created: 03.11.2004, KP
         Description: A method used to set the GUI widgets to their proper values
         """
-
+        if not force:
+            self.settings.set("FilterList",[])
+            return
         if self.dataUnit:
             get=self.settings.get
             set=self.settings.set
         flist = self.settings.get("FilterList")
-        self.settings.set("FilterList",[])
+        
         if flist and len(flist):
             
             if type(flist[0]) == types.ClassType:

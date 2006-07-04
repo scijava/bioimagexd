@@ -53,7 +53,7 @@ def getFilterList():
             AndFilter,OrFilter,XorFilter,NotFilter,NandFilter,NorFilter,
             ThresholdFilter,VarianceFilter,HybridMedianFilter,
             ITKAnisotropicDiffusionFilter,ITKGradientMagnitudeFilter,
-            ITKWatershedSegmentationFilter,MapToRGBFilter,MeasureVolumeFilter,
+            ITKWatershedSegmentationFilter,MeasureVolumeFilter,
             ITKRelabelImageFilter,FilterObjectsFilter,ITKConnectedThresholdFilter,ITKNeighborhoodConnectedThresholdFilter,
             ITKLocalMaximumFilter,ITKOtsuThresholdFilter,ITKConfidenceConnectedFilter,
             MaskFilter,ITKSigmoidFilter]
@@ -98,6 +98,7 @@ class ManipulationFilter(GUIBuilder.GUIBuilderBase):
         self.enabled = 1
         self.itkFlag = 0
         self.inputIndex=0
+        self.imageType = "UC3"
         self.inputMapping = {}
         for item in self.getPlainParameters():
             self.setParameter(item,self.getDefaultValue(item))
@@ -178,9 +179,10 @@ class ManipulationFilter(GUIBuilder.GUIBuilderBase):
 #        if not force and self.prevFilter and not self.prevFilter.getITK() and not self.getITK():
             return image
         
-        if not self.itkToVtk:            
-            c=eval("itk.Image.%s"%imagetype)
-            self.itkToVtk = itk.ImageToVTKImageFilter[c].New()
+        #if not self.itkToVtk:            
+        #    c=eval("itk.Image.%s"%imagetype)
+        #    self.itkToVtk = itk.ImageToVTKImageFilter[c].New()
+        self.itkToVtk = itk.ImageToVTKImageFilter[image].New()
         # If the next filter is also an ITK filter, then won't
         # convert
         if not force and self.nextFilter and self.nextFilter.getITK():

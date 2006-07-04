@@ -116,6 +116,7 @@ class Visualizer:
         #messenger.connect(None,"set_timeslider_value",self.onSetTimeslider)
         #messenger.connect(None,"set_time_range",self.onSetTimeRange)
         messenger.connect(None,"timepoint_changed",self.onSetTimepoint)
+        
         messenger.connect(None,"data_changed",self.updateRendering)
         messenger.connect(None,"itf_update",self.updateRendering)
         self.closed = 0
@@ -1171,6 +1172,8 @@ class Visualizer:
         self.timeslider.SetRange(r1,r2)
         self.timeslider.Refresh()
         
+        
+        
     def onSetTimepoint(self,obj,event,tp):
         """
         Method: onSetTimepoint
@@ -1235,6 +1238,7 @@ class Visualizer:
         self.depthT=time.time()
         if arg:
             newz=arg
+            self.zslider.SetValue(arg+1)
         else:
             newz=self.zslider.GetValue()-1
         if self.z != newz:

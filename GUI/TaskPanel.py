@@ -135,7 +135,7 @@ class TaskPanel(scrolled.ScrolledPanel):
         Created: 07.02.2006, KP
         Description: A callback for updating the GUI when settings have been changed
         """         
-        self.updateSettings()
+        self.updateSettings(1)
         
     def onSwitchDatasets(self,obj,evt,args):
         """
@@ -301,7 +301,7 @@ class TaskPanel(scrolled.ScrolledPanel):
         
         self.updateSettings()
 
-    def updateSettings(self):
+    def updateSettings(self,force=0):
         """
         Method: updateSettings()
         Created: 03.11.2004, KP

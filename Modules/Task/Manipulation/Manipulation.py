@@ -151,6 +151,7 @@ class Manipulation(Module):
                     currfilter.setNextFilter(None)
                 data = currfilter.execute(data,update=flag,last=flag)
                 lastfilter = currfilter
+                
                 lasttype = currfilter.getImageType()
                 
                 

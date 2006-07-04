@@ -301,7 +301,7 @@ class AdjustPanel(TaskPanel.TaskPanel):
 
 
 
-    def updateSettings(self):
+    def updateSettings(self,force=0):
         """
         Method: updateSettings()
         Created: 03.11.2004, KP
