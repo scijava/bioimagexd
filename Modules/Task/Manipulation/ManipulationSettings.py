@@ -119,7 +119,7 @@ class ManipulationSettings(DataUnitSettings):
             return flist
                 
         else:
-            DataUnitSettings.deserialize(self, name, value)
+            return DataUnitSettings.deserialize(self, name, value)
         
         
     def serialize(self,name,value):

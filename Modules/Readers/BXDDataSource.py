@@ -113,25 +113,9 @@ class BXDDataSource(DataSource):
         """
         data=self.loadVti(self.dataSets[i])
         data=self.getResampledData(data,i)
-##        if data.GetScalarType()!=3 and not raw:
-##            if not self.shift:
-##                self.shift=vtk.vtkImageShiftScale()
-##                self.shift.SetOutputScalarTypeToUnsignedChar()
-##            self.shift.SetInput(data)
-##            
-##            x0,x1=data.GetScalarRange()
-##            print "Scalar range=",x0,x1
-##            if not x1:
-##                x1=1
-##            scale=255.0/x1
-##            if scale:
-##                self.shift.SetScale(scale)
-##                self.shift.Update()
-##                data=self.shift.GetOutput()
         
         
-        if data.GetScalarType()!=3 and not raw and self.settings.getType()!="Manipulation":
-            print "Shifting and scaling..."
+        if data.GetScalarType()!=3 and not raw and self.settings.getType()!="Process":
             data=self.getIntensityScaledData(data)
 
         data.ReleaseDataFlagOff()
@@ -310,8 +294,9 @@ class BXDDataSource(DataSource):
         #settings = eval(settingsclass)
         settings = settings.readFrom(self.parser)
         self.settings = settings
-        dataunit.setSettings(settings)
         dataunit.setDataSource(self)
+        dataunit.setSettings(settings)
+        
         return [dataunit]
 
     def getName(self):
@@ -330,15 +315,16 @@ class BXDDataSource(DataSource):
         Description: Returns the ctf of the dataset series which this datasource
                      operates on
         """
+        Logging.info("Getting colortransferfunction from settings",kw="ctf")
+        print self.settings
         if not self.ctf:
-            Logging.info("settings.ctf=",self.settings.get("ColorTransferFunction"),kw="ctf")
+            ctf = self.settings.get("ColorTransferFunction")
+            #Logging.info("settings.ctf=",ctf,kw="ctf")
             try:
                 #ctf=self.parser.get("ColorTransferFunction","ColorTransferFunction")
-                ctf=self.settings.get("ColorTransferFunction")
-                
+                ctf=self.settings.get("ColorTransferFunction")                
                 if not ctf:
                     ctf=self.settings.get("ColocalizationColorTransferFunction")
-                    print "ctf=",ctf
             except:
                 return None
             if not ctf:
@@ -347,6 +333,7 @@ class BXDDataSource(DataSource):
                 ctf.AddRGBPoint(0,0,0,0)
                 ctf.AddRGBPoint(255,1,1,1)                
             else:
-                Logging.info("Using CTF read from dataset",ctf,kw="ctf")
+                #Logging.info("Using CTF read from dataset",ctf,kw="ctf")
+                pass
             self.ctf = ctf
         return self.ctf

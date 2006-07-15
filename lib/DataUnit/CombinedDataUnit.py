@@ -195,6 +195,7 @@ class CombinedDataUnit(DataUnit.DataUnit):
         imageList=[]
         self.n=1
         self.guicallback=callback
+        self.module.setControlDataUnit(self)
         if not settings_only:
             for timePoint in timepoints:
                 # First we reset the module, so that we can start the operation
@@ -219,7 +220,6 @@ class CombinedDataUnit(DataUnit.DataUnit):
 
         if settings_only:
             self.settings.set("SettingsOnly","True")
-        print "Processing done."
         self.createDataUnitFile(self.dataWriter)
 
     def createDataUnitFile(self,writer):

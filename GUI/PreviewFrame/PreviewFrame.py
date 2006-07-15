@@ -74,8 +74,10 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         self.zoomFactor=1
         self.selectedItem=-1
         self.show={"SCROLL":0}
+        
+        self.rawImages = []
         size=(1024,1024)
-        self.centroid = None
+        self.centerOfMass = None
         self.oldx,self.oldy=0,0
         self.zoomx,self.zoomy=1,1
         Logging.info("kws=",kws,kw="preview")
@@ -187,16 +189,15 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
 #    def __del__(self):        
 #        PreviewFrame.count-=1
 
-        messenger.connect(None,"show_centroid",self.onShowCentroid)
+        messenger.connect(None,"show_centerofmass",self.onShowCenterOfMass)
     
-    def onShowCentroid(self, obj, evt, label, centroid):
+    def onShowCenterOfMass(self, obj, evt, label, centerofmass):
         """
-        Method: onShowCentroid
+        Method: onShowCenterOfMass
         Created: 04.07.2006, KP
-        Description: Show the given centroid
+        Description: Show the given center of mass
         """            
-        self.centroid = (label, centroid)
-        print "Got centroid=",self.centroid
+        self.centerOfMass = (label, centerofmass)
         self.updatePreview()
     
 
@@ -286,7 +287,7 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         Description: Send an event containing the current voxel position
         """
         self.onLeftDown(event)
-        if not self.currentImage:
+        if not self.rawImages:
             return
         x,y=event.GetPosition()
         x,y=self.getScrolledXY(x,y)
@@ -294,21 +295,34 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         dims=[x,y,z]
         rx,ry,rz=dims
         Logging.info("Returning x,y,z=(%d,%d,%d)"%(rx,ry,rz),kw="preview")
-        ncomps=self.currentImage.GetNumberOfScalarComponents()
+        ncomps=self.rawImages[0].GetNumberOfScalarComponents()
         if ncomps==1:
-            r=self.currentImage.GetScalarComponentAsDouble(x,y,self.z,0)
-            g=-1
-            b=-1
+            rv= -1
+            gv=-1
+            bv=-1
             alpha=-1
+            if len(self.rawImages) == 1:
+                scalar = self.rawImages[0].GetScalarComponentAsDouble(x,y,self.z,0)
+            else:
+                scalar = []
+                for i in self.rawImages:
+                    scalar.append(i.GetScalarComponentAsDouble(x,y,self.z,0))
+                scalar = tuple(scalar)
+                
         else:
-            r=self.currentImage.GetScalarComponentAsDouble(x,y,self.z,0)
-            g=self.currentImage.GetScalarComponentAsDouble(x,y,self.z,1)
-            b=self.currentImage.GetScalarComponentAsDouble(x,y,self.z,2)
-            alpha=-1
-            if ncomps>3:
-                alpha=self.currentImage.GetScalarComponentAsDouble(x,y,self.z,3)
+            rv=self.rawImage.GetScalarComponentAsDouble(x,y,self.z,0)
+            gv=self.rawImage.GetScalarComponentAsDouble(x,y,self.z,1)
+            bv=self.rawImage.GetScalarComponentAsDouble(x,y,self.z,2)
+            scalar = 0xdeadbeef
+            
+        r=self.currentImage.GetScalarComponentAsDouble(x,y,self.z,0)
+        g=self.currentImage.GetScalarComponentAsDouble(x,y,self.z,1)
+        b=self.currentImage.GetScalarComponentAsDouble(x,y,self.z,2)            
+        alpha=-1
+        if ncomps>3:
+            alpha=self.currentImage.GetScalarComponentAsDouble(x,y,self.z,3)
     
-        messenger.send(None,"get_voxel_at",rx,ry,rz,r,g,b,alpha,self.currentCt)
+        messenger.send(None,"get_voxel_at",rx,ry,rz, scalar, rx,gv,bv,r,g,b,alpha,self.currentCt)
         event.Skip()
     
             
@@ -371,28 +385,30 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         x*=self.zoomx
         y*=self.zoomy
         Logging.info("Setting preview to %d,%d"%(x,y),kw="preview")
-        self.SetSize((x,y))
+        if self.enabled:
+            self.SetSize((x,y))
         
-
         if selectedItem!=-1:
             self.setSelectedItem(selectedItem,update=0)
 
         updated=0
-        if self.zoomFactor:
-            if self.zoomFactor == ZOOM_TO_FIT:
-                Logging.info("Factor = zoom to fit",kw="preview")
-                self.zoomToFit()
-                self.updatePreview(1)
-                updated=1
-            else:
-                self.setZoomFactor(self.zoomFactor)
-                self.updatePreview(1)
-                updated=1
+        Logging.info("zoomFactor = ",self.zoomFactor,kw="preview")
+#        if self.zoomFactor:
+#            if self.fitLater or self.zoomFactor == ZOOM_TO_FIT:
+#                Logging.info("Factor = zoom to fit",kw="preview")
+#                self.zoomToFit()
+#                self.updatePreview(1)
+#                updated=1
+#            else:
+#                self.setZoomFactor(self.zoomFactor)
+#                self.updatePreview(1)
+#                updated=1
         
-        self.Layout()
-        self.parent.Layout()
-        if not updated:
-            self.updatePreview(1)
+        if self.enabled:
+            self.Layout()
+            self.parent.Layout()
+            if not updated:
+                self.updatePreview(1)
 
 
     def updatePreview(self,renew=1):
@@ -424,13 +440,16 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
                 # to indicate we want the whole volume
                 if self.mip:z=-1
                 preview=self.dataUnit.doPreview(z,renew,self.timePoint)
-                
+                self.rawImages=[]
+                for source in self.dataUnit.getSourceDataUnits():
+                    self.rawImages.append(source.getTimePoint(self.timePoint))
                 #Logging.info("Got preview",preview.GetDimensions(),kw="preview")
             except Logging.GUIError, ex:
                 ex.show()
                 return
         else:
             preview = self.dataUnit.getTimePoint(self.timePoint)
+            self.rawImage = preview
             Logging.info("Using timepoint %d as preview"%self.timePoint,kw="preview")
         
         black=0
@@ -651,15 +670,6 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         if y2<y:
             y=y2
         
-        #Logging.info("Setting scrollbars for size %d,%d"%(x,y),kw="preview")
-        #self.setScrollbars(x,y)
-        #if x==x2 or y==y2:
-        #    if x==x2:s="x"
-        #    if y==y2:
-        #        if s:s+=" and "
-        #        s+="y"
-        #    Logging.info("Using smaller %s for size"%s,kw="preview")            
-        #self.Layout()
         if self.fitLater:
             self.fitLater=0
             print "\n\n*** Zooming to fit"
@@ -692,8 +702,8 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         Created: 25.03.2005, KP
         Description: Sets the zoom factor so that the image will fit into the screen
         """
-        print "\n\n**** ZOOM TO FIT\n"
         #if self.imagedata:
+        Logging.backtrace()
         if self.dataUnit:
             #x,y,z=self.imagedata.GetDimensions()
             x,y,z=self.dataUnit.getDimensions()
@@ -795,18 +805,19 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
 
         dc.DrawBitmap(bmp,0,0,True)
         
-        if self.centroid:
-            label, (x,y,z) = self.centroid
+        if self.centerOfMass:
+            label, (x,y,z) = self.centerOfMass
             
-            print "Painting centroid at ",x,y
-            
+            print "Painting center of Mass at ",x,y
+            #x=self.xdim - x 
+            #y = self.ydim - y
             x*= self.zoomFactor
             y*= self.zoomFactor
             if z == self.z:
-                dc.SetBrush(wx.Brush((0,255,0)))
-                dc.SetPen(wx.Pen((255,255,255),1))
+                dc.SetBrush(wx.TRANSPARENT_BRUSH)
+                dc.SetPen(wx.Pen((255,255,255),2))
                 dc.DrawCircle(x,y,10)
-                dc.SetTextForeground((0,0,0))
+                dc.SetTextForeground((255,255,255))
                 dc.SetFont(wx.Font(9,wx.SWISS,wx.NORMAL,wx.BOLD))
                 dc.DrawText("%d"%label,x-5,y-5)
                 

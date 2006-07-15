@@ -1,4 +1,4 @@
-4#! /usr/bin/env python
+4#! /usr/bin/env pythonG
 # -*- coding: iso-8859-1 -*-
 """
  Unit: ImportDialog
@@ -517,6 +517,7 @@ class ImportDialog(wx.Dialog):
                 if len(s[i])<len(s2[i]):return -1
                 c=i1.__cmp__(i2)
                 if c!=0:return c
+        return item1.__cmp__(item2)
         
     
     def loadListOfImages(self,event=None):
@@ -560,7 +561,10 @@ class ImportDialog(wx.Dialog):
             pat=self.patternEdit.GetValue()
             filecount=len(files)
             nformat=pat.count("%")
-            if nformat==1:
+            if nformat == 0:
+                self.sourceListbox.InsertItems(files,0)
+                n=len(files)
+            elif nformat==1:
                 for i in range(filecount+1):
                     try:
                         filename=pat%i

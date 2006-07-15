@@ -232,6 +232,8 @@ class DataSource:
         Created: 12.04.2006, KP
         Description: Return the data shifted and scaled to appropriate intensity range
         """            
+        if self.intensityScale == -1:
+            return data
         if not self.shift:
             self.shift=vtk.vtkImageShiftScale()
             self.shift.SetOutputScalarTypeToUnsignedChar()

@@ -107,14 +107,14 @@ class DataUnit:
         Created: 26.04.2005, KP
         Description: Returns the ctf of this object
         """
-        print "\n\n**** Getting ctf\n"
         
         if not self.dataSource and not self.ctf:
-            Logging.info("Using no ctf",kw="ctf")
+            Logging.backtrace()
+            Logging.info("Using no ctf because datasource=",self.dataSource,kw="ctf")
             return None
         if not self.ctf:
             self.ctf=self.dataSource.getColorTransferFunction()
-            Logging.info("Ctf from datasource=",self.ctf,kw="ctf")
+            #Logging.info("Ctf from datasource=",self.ctf,kw="ctf")
         return self.ctf
     
     
@@ -277,7 +277,6 @@ class DataUnit:
 
         if settings_only:
             self.settings.set("SettingsOnly","True")
-        print "Processing done."
         self.createDataUnitFile(self.dataWriter)
 
     def createDataUnitFile(self,writer):
@@ -296,7 +295,6 @@ class DataUnit:
         value=str(self)
         self.settings.setCounted(key,0,value)
     
-        print "Writing settings",self.settings
         self.settings.writeTo(parser)
         writer.write()
 

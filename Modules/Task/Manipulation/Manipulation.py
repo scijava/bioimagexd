@@ -53,6 +53,7 @@ class Manipulation(Module):
 
         # TODO: remove attributes that already exist in base class!
         self.images=[]
+        self.cachedTimepoint = -1
         self.x,self.y,self.z=0,0,0
         self.extent=None
         self.running=0
@@ -108,19 +109,20 @@ class Manipulation(Module):
                 self.extent=(0,dims[0]-1,0,dims[1]-1,z,z)
             else:
                 self.extent=None
-            self.preview=self.doOperation()
+            self.preview=self.doOperation(preview=1)
             self.extent=None
         return self.zoomDataset(self.preview)
 
 
-    def doOperation(self):
+    def doOperation(self,preview=0):
         """
         Method: doOperation
         Created: 04.04.2006, KP
         Description: Manipulationes the dataset in specified ways
         """
-        if not self.modified and self.cached:
-            print "Returning cached data"
+        
+        if preview and not self.modified and self.cached and self.timepoint == self.cachedTimepoint:
+            print "\n\n***** Returning cached data, timepoint=",self.timepoint,"cached timepoint=",self.cachedTimepoint,"\n\n******"
             return self.cached
         else:
             del self.cached
@@ -152,6 +154,8 @@ class Manipulation(Module):
                 data = currfilter.execute(data,update=flag,last=flag)
                 lastfilter = currfilter
                 
+                if not preview:
+                    currfilter.writeOutput(self.controlUnit, self.timepoint)
                 lasttype = currfilter.getImageType()
                 
                 
@@ -167,5 +171,7 @@ class Manipulation(Module):
             data = lastfilter.convertITKtoVTK(data,imagetype=lasttype)
 
         data.ReleaseDataFlagOff()
-        self.cached = data
+        #self.cached = data
+        #self.cachedTimepoint = self.timepoint
+        self.modified = 0
         return data

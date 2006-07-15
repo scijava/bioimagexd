@@ -34,13 +34,18 @@ import wx
 import types
 import Histogram
 import wx.lib.buttons as buttons
+import  wx.lib.filebrowsebutton as filebrowse
+
 import messenger
+
 
 RADIO_CHOICE="RADIO_CHOICE"
 THRESHOLD="THRESHOLD"
 PIXEL="PIXEL"
 PIXELS="PIXELS"
 SLICE="SLICE"
+FILENAME="FILENAME"
+
 
 class GUIBuilderBase:
     """
@@ -243,9 +248,10 @@ class GUIBuilder(wx.Panel):
                         isTuple=1
                     else:
                         itemType = currentFilter.getType(item)
-                    print "itemtype=",itemType,"istuple=",isTuple
                     
-                    if not (isTuple and itemType == types.BooleanType) and itemType not in [RADIO_CHOICE, SLICE, PIXEL, PIXELS, THRESHOLD]:
+                    print "itemType=",itemType,"isTuple=",isTuple
+                    print "items=",items
+                    if not (isTuple and itemType == types.BooleanType) and itemType not in [RADIO_CHOICE, SLICE, PIXEL, PIXELS, THRESHOLD, FILENAME]:
                         self.processItem(currentFilter,itemsizer,item,x=0,y=y)
                         y+=1
                     else: # Items that are contained in a tuple ask to be grouped
@@ -300,12 +306,43 @@ class GUIBuilder(wx.Panel):
                             func = lambda evt, its=item, f=currentFilter:self.onSetSliderValue(evt,its,f)
                             slider.Bind(wx.EVT_SCROLL,func)
                             f=lambda obj,evt,arg, slider=slider, i=itemName, s=self: s.onSetSlice(slider,i,arg)
+                                
+
                             messenger.connect(currentFilter,"set_%s"%itemName,f)
+
+                            def updateRange(currentFilter,itemName, slider):
+                                minval,maxval = currentFilter.getRange(itemName)
+                                slider.SetRange(minval,maxval)
+
                             
+                            f = lambda obj,evt, slider=slider, i=itemName,fi=currentFilter,s=self: updateRange(fi,i,slider)
+                            messenger.connect(currentFilter,"update_%s"%itemName,f)
                             
                             box.Add(slider,1)
                             itemsizer.Add(box,(y,0),flag=wx.EXPAND|wx.HORIZONTAL)
                             y+=1
+                        elif itemType == FILENAME:
+                            # Indicate that we need to skip next item
+                            skip=2
+                        
+                            box = wx.BoxSizer(wx.VERTICAL)
+                            text = currentFilter.getDesc(itemName)
+                            val = currentFilter.getDefaultValue(itemName)
+                    
+                            func = lambda evt, its=item,f=currentFilter, i = itemName, s = self: s.onSetFileName(f, i, evt)
+
+                            browse = filebrowse.FileBrowseButton(self, -1, size=(400,-1),
+                            labelText = text, fileMask = items[n][2],
+                            dialogTitle = items[n][1],
+                            changeCallback = func)
+                            browse.SetValue(val)
+                            f=lambda obj,evt,arg, b=browse, i=itemName, s=self: s.onSetFileNameFromFilter(b,i,arg)
+                            messenger.connect(currentFilter,"set_%s"%itemName,f) 
+                            
+                            box.Add(browse,1)                            
+                            itemsizer.Add(box,(y,0),flag = wx.EXPAND|wx.HORIZONTAL)
+                            y+=1
+                            
                         elif itemType == PIXEL:
                             print "Creating pixel selection"
                             lbl = wx.StaticText(self,-1,"(%d,%d,%d)"%(0,0,0),size=(80,-1))
@@ -417,6 +454,25 @@ class GUIBuilder(wx.Panel):
 
             y+=1
         return sizer
+        
+    def onSetFileName(self, filter, item, evt):
+        """
+        Method: onSetFileName
+        Created: 12.07.2006, KP
+        Description: Set the file name
+        """           
+        filename= evt.GetString()
+        print "Setting parameter",item,"to",filename
+        filter.setParameter(item, filename)
+
+    def onSetFileNameFromFilter(self, bb, itemName, value):
+        """
+        Method: onSetFileName
+        Created: 12.07.2006, KP
+        Description: Set the file name
+        """           
+        bb.SetValue(value)
+        print "Setting value of filebrowse to",value
         
     def onSetRadioBox(self,box,item,value):
         """

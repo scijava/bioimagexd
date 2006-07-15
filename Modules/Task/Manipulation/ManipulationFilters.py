@@ -53,10 +53,11 @@ def getFilterList():
             AndFilter,OrFilter,XorFilter,NotFilter,NandFilter,NorFilter,
             ThresholdFilter,VarianceFilter,HybridMedianFilter,
             ITKAnisotropicDiffusionFilter,ITKGradientMagnitudeFilter,
-            ITKWatershedSegmentationFilter,MeasureVolumeFilter,
+            ITKWatershedSegmentationFilter, MorphologicalWatershedSegmentationFilter,MeasureVolumeFilter,
             ITKRelabelImageFilter,FilterObjectsFilter,ITKConnectedThresholdFilter,ITKNeighborhoodConnectedThresholdFilter,
             ITKLocalMaximumFilter,ITKOtsuThresholdFilter,ITKConfidenceConnectedFilter,
-            MaskFilter,ITKSigmoidFilter]
+            MaskFilter,ITKSigmoidFilter, ITKInvertIntensityFilter, ConnectedComponentFilter,
+            MaximumObjectsFilter]
             
 MATH="Math"
 SEGMENTATION="Segmentation"
@@ -107,6 +108,15 @@ class ManipulationFilter(GUIBuilder.GUIBuilderBase):
         self.itkToVtk = None
         self.G = "UC3"
         
+    def writeOutput(self, dataUnit, timePoint):
+        """
+        Method: writeOutput
+        Created: 09.07.2006, KP
+        Description: Optionally write the output of this module during the processing
+        """   
+        pass
+        
+        
     def notifyTaskPanel(self, module):
         """
         Method: notifyTaskPanel
@@ -147,15 +157,32 @@ class ManipulationFilter(GUIBuilder.GUIBuilderBase):
         Created: 18.04.2006, KP
         Description: Convert the image data to ITK image
         """         
+        if "itkImage" in str(image.__class__):
+            return image
         if not self.itkFlag:
             messenger.send(None,"show_error","Non-ITK filter tries to convert to ITK","A non-ITK filter %s tried to convert data to ITK image data"%self.name)
             return image
-        if not self.vtkToItk:            
-            ImageType = itk.VTKImageToImageFilter.IUC3
-            if cast==types.FloatType:
-                ImageType = itk.VTKImageToImageFilter.IF3
 
-            self.vtkToItk = ImageType.New()
+        #if not self.vtkToItk:            
+        ImageType = itk.VTKImageToImageFilter.IUC3
+            
+        if cast==types.FloatType:
+            ImageType = itk.VTKImageToImageFilter.IF3
+        
+            
+        scalarType = image.GetScalarTypeAsString()
+        
+        if scalarType=="unsigned char":
+            ImageType = itk.VTKImageToImageFilter.IUC3
+        elif scalarType == "unsigned int":
+            conv = vtk.vtkImageCast()
+            conv.SetInput(image)        
+            ImageType = itk.VTKImageToImageFilter.IUL3
+            conv.SetOutputScalarTypeToUnsignedLong ()
+            image = conv.GetOutput()
+        
+        self.vtkToItk = ImageType.New()
+        
         if self.prevFilter and self.prevFilter.getITK():
             return image
         if cast:            
@@ -756,9 +783,7 @@ class ITKAnisotropicDiffusionFilter(ManipulationFilter):
         self.descs = {"TimeStep":"Time step for iterations","Conductance":"Conductance parameter",
             "Iterations":"Number of iterations"}
         self.itkFlag = 1
-        
-        f3 = itk.Image.F3
-        self.itkfilter = itk.GradientAnisotropicDiffusionImageFilter[f3,f3].New()
+        self.itkfilter = None
 
             
     def getDefaultValue(self,parameter):
@@ -806,6 +831,9 @@ class ITKAnisotropicDiffusionFilter(ManipulationFilter):
             
         image = self.getInput(1)
         image = self.convertVTKtoITK(image,cast=types.FloatType)
+        
+        self.itkfilter = itk.GradientAnisotropicDiffusionImageFilter[f3,f3].New()
+
         self.itkfilter.SetInput(image)
         self.itkfilter.SetTimeStep(self.parameters["TimeStep"])
         self.itkfilter.SetConductanceParameter(self.parameters["Conductance"])
@@ -832,9 +860,7 @@ class ITKGradientMagnitudeFilter(ManipulationFilter):
         """        
         ManipulationFilter.__init__(self,inputs)
         self.itkFlag = 1
-        
-        f3=itk.Image.F3
-        self.itkfilter = itk.GradientMagnitudeImageFilter[f3,f3].New()
+        self.itkfilter = None
         
         
     def getParameters(self):
@@ -855,10 +881,13 @@ class ITKGradientMagnitudeFilter(ManipulationFilter):
             return None
             
         image = self.getInput(1)
-        image = self.convertVTKtoITK(image,cast=types.FloatType)
+        image = self.convertVTKtoITK(image)
+        if not self.itkfilter:
+            self.itkfilter = itk.GradientMagnitudeImageFilter[image, image].New()
+
         self.itkfilter.SetInput(image)
         
-        self.setImageType("F3")
+        #self.setImageType("F3")
         
         if update:
             self.itkfilter.Update()

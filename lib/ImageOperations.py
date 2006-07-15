@@ -416,6 +416,9 @@ def getPlane(data,plane,x,y,z):
 
 def watershedPalette(x0,x1):    
     ctf = vtk.vtkColorTransferFunction()
+#    ctf.AddRGBPoint(0,1,1,1)
+#    ctf.AddRGBPoint(1,0,0,0)
+    ctf.AddRGBPoint(0,0,0,0)
     ctf.AddRGBPoint(1,0,0,0)
     if x0<=1:x0=2
     for i in range(int(x0),int(x1)):        

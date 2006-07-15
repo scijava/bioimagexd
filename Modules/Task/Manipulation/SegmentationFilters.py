@@ -32,6 +32,9 @@ __date__ = "$Date: 2005/01/13 14:52:39 $"
 import ManipulationFilters
 import ImageOperations
 import wx
+import time
+import csv
+import codecs
 try:
     import itk
 except:
@@ -66,7 +69,7 @@ class WatershedObjectList(wx.ListCtrl):
         self.InsertColumn(0, "Object #")
         self.InsertColumn(1, u"Volume (\u03BCm)")
         self.InsertColumn(2, u"Volume (px)")
-        self.InsertColumn(3,"Centroid")
+        self.InsertColumn(3,"Center Of Mass")
         #self.InsertColumn(2, "")
         self.SetColumnWidth(0, 50)
         self.SetColumnWidth(1, 100)
@@ -81,15 +84,15 @@ class WatershedObjectList(wx.ListCtrl):
         self.attr2 = wx.ListItemAttr()
         self.attr2.SetBackgroundColour("light blue")
         self.volumeList = []
-        self.centroidList = []
+        self.centersOfMassList = []
         
         self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.OnItemSelected)
         self.Bind(wx.EVT_LIST_ITEM_ACTIVATED, self.OnItemActivated)
         self.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.OnItemDeselected)
 
     
-    def setCentroids(self, centroidList):
-        self.centroidList = centroidList
+    def setCentersOfMass(self, centersofmassList):
+        self.centersOfMassList = centersofmassList
 
     def setVolumes(self,volumeList):
 #        print "Set volumes",volumeList
@@ -107,15 +110,14 @@ class WatershedObjectList(wx.ListCtrl):
 
     def OnItemActivated(self, event):
         self.currentItem = event.m_itemIndex
-        print "item=",self.currentItem,"number of centroids=",len(self.centroidList)
-        if len(self.centroidList)>=self.currentItem:            
-            centroid = self.centroidList[self.currentItem]
-            x,y,z = centroid
-            print "Sending zslice change to ",z
+        
+        if len(self.centersOfMassList)>=self.currentItem:            
+            centerofmass = self.centersOfMassList[self.currentItem]
+            x,y,z = centerofmass
             
             messenger.send(None,"zslice_changed",z)
-            print "Sending show centroid",centroid
-            messenger.send(None,"show_centroid",self.currentItem,centroid)
+            
+            messenger.send(None,"show_centerofmass",self.currentItem,centerofmass)
         
         print ("OnItemActivated: %s\nTopItem: %s\n" %
                            (self.GetItemText(self.currentItem), self.GetTopItem()))
@@ -130,7 +132,7 @@ class WatershedObjectList(wx.ListCtrl):
     def OnGetItemText(self, item, col):
         
         if item>=len(self.volumeList):
-            return "No item %d at col %d"%(item,col)
+            return ""
         if col==0:
             return "#%d"%item
         elif col==1:
@@ -138,7 +140,7 @@ class WatershedObjectList(wx.ListCtrl):
         elif col==2:
             return "%d px"%self.volumeList[item][0]
         else:
-            return "(%d, %d, %d)"%self.centroidList[item]
+            return "(%d, %d, %d)"%self.centersOfMassList[item]
 
     def OnGetItemImage(self, item):
 #        if item % 3 == 0:
@@ -374,9 +376,9 @@ class MaskFilter(ManipulationFilters.ManipulationFilter):
 
 class ITKWatershedSegmentationFilter(ManipulationFilters.ManipulationFilter):
     """
-    Class: ITKAnisotropicDiffusionFilterFilter
+    Class: ITKWatershedSegmentationFilter
     Created: 13.04.2006, KP
-    Description: A class for doing anisotropic diffusion on ITK
+    Description: A filter for doing watershed segmentation
     """     
     name = "Watershed Segmentation"
     category = SEGMENTATION
@@ -455,7 +457,247 @@ class ITKWatershedSegmentationFilter(ManipulationFilters.ManipulationFilter):
         #if last:
         #    return self.convertITKtoVTK(data,imagetype="UL3")
         return data
+
+class MorphologicalWatershedSegmentationFilter(ManipulationFilters.ManipulationFilter):
+    """
+    Class: MorphologicalWatershedSegmentationFilter
+    Created: 05.07.2006, KP
+    Description: A filter for doing morphological watershed segmentation
+    """     
+    name = "Morphological Watershed Segmentation"
+    category = SEGMENTATION
+    
+    def __init__(self,inputs=(1,1)):
+        """
+        Method: __init__()
+        Created: 13.04.2006, KP
+        Description: Initialization
+        """        
+        ManipulationFilters.ManipulationFilter.__init__(self,inputs)
         
+        
+        self.descs = {"Level":"Segmentation Level"}
+        self.itkFlag = 1
+        
+        self.watershed = None
+        #scripting.loadITK(filters=1)            
+        
+            
+    def getDefaultValue(self,parameter):
+        """
+        Method: getDefaultValue
+        Created: 15.04.2006, KP
+        Description: Return the default value of a parameter
+        """    
+        if parameter == "Level":
+            return 5
+        return 0
+        
+    def getType(self,parameter):
+        """
+        Method: getType
+        Created: 13.04.2006, KP
+        Description: Return the type of the parameter
+        """    
+        return types.IntType
+        
+        
+    def getParameters(self):
+        """
+        Method: getParameters
+        Created: 15.04.2006, KP
+        Description: Return the list of parameters needed for configuring this GUI
+        """            
+        return [["",("Level",)]]
+
+
+    def execute(self,inputs,update=0,last=0):
+        """
+        Method: execute
+        Created: 15.04.2006, KP
+        Description: Execute the filter with given inputs and return the output
+        """                    
+        if not ManipulationFilters.ManipulationFilter.execute(self,inputs):
+            return None
+            
+        image = self.getInput(1)
+        image = self.convertVTKtoITK(image)
+        if not self.watershed:
+            import watershed
+            self.watershed = watershed        
+            ul3 = itk.Image.UL3
+            self.itkfilter = watershed.MorphologicalWatershedImageFilter[image, ul3].New()
+            self.itkfilter.SetMarkWatershedLine(0)
+
+        t =time.time()
+        print "Feeding to watershed",image
+        print "Level=",self.parameters["Level"]
+        self.itkfilter.SetInput(image)
+        self.itkfilter.SetLevel(self.parameters["Level"])
+                
+        self.setImageType("UL3")
+        self.itkfilter.Update()
+        print "Morphological watershed took",time.time()-t,"seconds"
+        data=self.itkfilter.GetOutput()            
+        print "Returning ",data
+        return data
+
+class ConnectedComponentFilter(ManipulationFilters.ManipulationFilter):
+    """
+    Class: ConnectedComponentFilter
+    Created: 12.07.2006, KP
+    Description: A filter for labeling all separate objects in an image
+    """     
+    name = "Separate Objects"
+    category = SEGMENTATION
+    
+    def __init__(self,inputs=(1,1)):
+        """
+        Method: __init__()
+        Created: 13.04.2006, KP
+        Description: Initialization
+        """        
+        ManipulationFilters.ManipulationFilter.__init__(self,inputs)
+        
+        
+        self.descs = {}
+        self.itkFlag = 1
+        
+        self.itkfilter = None
+        #scripting.loadITK(filters=1)            
+        
+            
+    def getDefaultValue(self,parameter):
+        """
+        Method: getDefaultValue
+        Created: 15.04.2006, KP
+        Description: Return the default value of a parameter
+        """    
+        return 0
+        
+    def getType(self,parameter):
+        """
+        Method: getType
+        Created: 13.04.2006, KP
+        Description: Return the type of the parameter
+        """    
+        return types.IntType
+        
+        
+    def getParameters(self):
+        """
+        Method: getParameters
+        Created: 15.04.2006, KP
+        Description: Return the list of parameters needed for configuring this GUI
+        """            
+        #return [["",("Level",)]]
+        return []
+
+
+    def execute(self,inputs,update=0,last=0):
+        """
+        Method: execute
+        Created: 15.04.2006, KP
+        Description: Execute the filter with given inputs and return the output
+        """                    
+        if not ManipulationFilters.ManipulationFilter.execute(self,inputs):
+            return None
+            
+        image = self.getInput(1)
+        image = self.convertVTKtoITK(image)
+        if not self.itkfilter:            
+            self.itkfilter = itk.ConnectedComponentImageFilter[image, itk.Image.UL3].New()
+
+        self.itkfilter.SetInput(image)
+        #self.itkfilter.SetLevel(self.parameters["Level"])
+                
+        self.setImageType("UL3")
+        self.itkfilter.Update()
+        #print "Morphological watershed took",time.time()-t,"seconds"
+        data=self.itkfilter.GetOutput()            
+        #print "Returning ",data
+        return data
+
+class MaximumObjectsFilter(ManipulationFilters.ManipulationFilter):
+    """
+    Class: ConnectedComponentFilter
+    Created: 12.07.2006, KP
+    Description: A filter for labeling all separate objects in an image
+    """     
+    name = "Threshold for Maximum Object Number"
+    category = SEGMENTATION
+    
+    def __init__(self,inputs=(1,1)):
+        """
+        Method: __init__()
+        Created: 13.04.2006, KP
+        Description: Initialization
+        """        
+        ManipulationFilters.ManipulationFilter.__init__(self,inputs)
+        
+        
+        self.descs = {"MinSize":"Minimum Object Size in Pixels"}
+        self.itkFlag = 1
+        
+        self.itkfilter = None
+        #scripting.loadITK(filters=1)            
+        
+            
+    def getDefaultValue(self,parameter):
+        """
+        Method: getDefaultValue
+        Created: 15.04.2006, KP
+        Description: Return the default value of a parameter
+        """    
+        if parameter == "MinSize":
+            return 15
+        return 0
+        
+    def getType(self,parameter):
+        """
+        Method: getType
+        Created: 13.04.2006, KP
+        Description: Return the type of the parameter
+        """    
+        return types.IntType
+        
+        
+    def getParameters(self):
+        """
+        Method: getParameters
+        Created: 15.04.2006, KP
+        Description: Return the list of parameters needed for configuring this GUI
+        """            
+        return [["",("MinSize",)]]
+        
+
+
+    def execute(self,inputs,update=0,last=0):
+        """
+        Method: execute
+        Created: 15.04.2006, KP
+        Description: Execute the filter with given inputs and return the output
+        """                    
+        if not ManipulationFilters.ManipulationFilter.execute(self,inputs):
+            return None
+            
+        image = self.getInput(1)
+        image = self.convertVTKtoITK(image)
+        if not self.itkfilter:            
+            self.itkfilter = itk.ThresholdMaximumConnectedComponentsImageFilter[image].New()
+
+        self.itkfilter.SetOutsideValue(0)
+        self.itkfilter.SetInsideValue(255)
+        self.itkfilter.SetInput(image)
+        self.itkfilter.SetMinimumObjectSizeInPixels(self.parameters["MinSize"])
+                
+        self.setImageType("UL3")
+        self.itkfilter.Update()
+        #print "Morphological watershed took",time.time()-t,"seconds"
+        data=self.itkfilter.GetOutput()            
+        #print "Returning ",data
+        return data
+
         
 class ITKRelabelImageFilter(ManipulationFilters.ManipulationFilter):
     """
@@ -479,9 +721,92 @@ class ITKRelabelImageFilter(ManipulationFilters.ManipulationFilter):
         self.itkFlag = 1
 
         #scripting.loadITK(filters=1)
-        f3 = itk.Image.UL3
-        self.itkfilter = itk.RelabelComponentImageFilter[itk.Image.UL3,itk.Image.UL3].New()
+        #f3 = itk.Image.UL3
+        self.itkfilter = None
 
+            
+    def getDefaultValue(self,parameter):
+        """
+        Method: getDefaultValue
+        Created: 15.04.2006, KP
+        Description: Return the default value of a parameter
+        """    
+
+        return 0
+        
+    def getType(self,parameter):
+        """
+        Method: getType
+        Created: 13.04.2006, KP
+        Description: Return the type of the parameter
+        """    
+        return types.IntType
+        
+        
+    def getParameters(self):
+        """
+        Method: getParameters
+        Created: 15.04.2006, KP
+        Description: Return the list of parameters needed for configuring this GUI
+        """            
+        return [["Minimum object size (in pixels)",("Threshold",)]]
+
+
+    def execute(self,inputs,update=0,last=0):
+        """
+        Method: execute
+        Created: 15.04.2006, KP
+        Description: Execute the filter with given inputs and return the output
+        """                    
+        if not ManipulationFilters.ManipulationFilter.execute(self,inputs):
+            return None
+            
+        image = self.getInput(1)
+        image = self.convertVTKtoITK(image)
+        if not self.itkfilter:
+            self.itkfilter = itk.RelabelComponentImageFilter[image,image].New()
+        self.itkfilter.SetInput(image)
+        th = self.parameters["Threshold"]
+        self.itkfilter.SetMinimumObjectSize(th)
+
+        
+        #self.setImageType("UL3")
+
+        data=self.itkfilter.GetOutput()            
+        
+        
+        self.itkfilter.Update()
+        n = self.itkfilter.GetNumberOfObjects()
+        ctf = ImageOperations.watershedPalette(0, n)
+        self.dataUnit.getSettings().set("ColorTransferFunction",ctf)
+        
+        #if last:
+        #    return self.convertITKtoVTK(data,imagetype="UL3")
+        return data
+
+class ITKInvertIntensityFilter(ManipulationFilters.ManipulationFilter):
+    """
+    Class: ITKInvertIntensityFilter
+    Created: 05.07.2006, KP
+    Description: Invert the intensity of the image
+    """     
+    name = "Invert intensity"
+    category = ITK
+    
+    def __init__(self,inputs=(1,1)):
+        """
+        Method: __init__()
+        Created: 13.04.2006, KP
+        Description: Initialization
+        """        
+        ManipulationFilters.ManipulationFilter.__init__(self,inputs)
+        
+        
+        self.descs = {}
+        self.itkFlag = 1
+        self.itkfilter = None
+        import watershed
+        self.watershed = watershed
             
     def getDefaultValue(self,parameter):
         """
@@ -520,18 +845,20 @@ class ITKRelabelImageFilter(ManipulationFilters.ManipulationFilter):
             return None
             
         image = self.getInput(1)
+        image = self.convertVTKtoITK(image)
+
+        if not self.itkfilter:
+            self.itkfilter = self.watershed.InvertIntensityImageFilter[image, image].New()
+            
         self.itkfilter.SetInput(image)
         
-        self.setImageType("UL3")
+        #self.setImageType("UL3")
 
         data=self.itkfilter.GetOutput()            
-                   
         
-        if update:
-            self.itkfilter.Update()
         
-        #if last:
-        #    return self.convertITKtoVTK(data,imagetype="UL3")
+        self.itkfilter.Update()
+        
         return data
 
 
@@ -555,11 +882,27 @@ class MeasureVolumeFilter(ManipulationFilters.ManipulationFilter):
         self.itkFlag = 1
         self.descs = {}      
         self.values = None
-        self.centroids = None
+        self.centersofmass = None
         self.reportGUI = None
         self.itkfilter = None
         import labelShape
         self.labelShape = labelShape
+        
+    def writeOutput(self, dataUnit, timepoint):
+        """
+        Method: writeOutput
+        Created: 09.07.2006, KP
+        Description: Optionally write the output of this module during the processing
+        """   
+        filename = "%s_%d.csv"%(dataUnit.getName(),timepoint)
+        f=codecs.open(filename,"wb","latin1")
+        
+        w=csv.writer(f,dialect="excel",delimiter=";")
+        w.writerow(["Object #","Volume (micrometers)","Volume (pixels)","Center of Mass"])
+        for i,(volume,volumeum) in enumerate(self.values):
+            cog = self.centersofmass[i]
+            w.writerow([str(i),str(volumeum),str(volume),str(cog)])
+        f.close()
 
     def getGUI(self,parent,taskPanel):
         """
@@ -572,7 +915,7 @@ class MeasureVolumeFilter(ManipulationFilters.ManipulationFilter):
             self.reportGUI = WatershedObjectList(self.gui,-1)
             if self.values:
                 self.reportGUI.setVolumes(self.values)
-                self.reportGUI.setCentroids(self.centroids)
+                self.reportGUI.setCentersOfMass(self.centersofmass)
             gui.sizer.Add(self.reportGUI,(1,0),flag=wx.EXPAND|wx.ALL)
         return gui
 
@@ -623,7 +966,7 @@ class MeasureVolumeFilter(ManipulationFilters.ManipulationFilter):
 
         self.itkfilter.SetInput(image)
         
-        self.setImageType("UL3")
+        #self.setImageType("UL3")
 
         data=self.itkfilter.GetOutput()            
                    
@@ -638,17 +981,21 @@ class MeasureVolumeFilter(ManipulationFilters.ManipulationFilter):
         self.itkfilter.Update()
         n = self.itkfilter.GetNumberOfLabels()
         values = []
-        centroids = []
+        centersofmass = []
         for i in range(0,n):
             volume = self.itkfilter.GetVolume(i)
-            centroid = self.itkfilter.GetCenterOfGravity(i)
-            c = []
-            for i in range(0,3):
-                c.append(centroid.GetElement(i))
-            centroids.append(tuple(c))
-            values.append((volume,volume*vol))
+            centerOfMass = self.itkfilter.GetCenterOfGravity(i)
+            if not self.itkfilter.HasLabel(i):
+                centersofmass.append((0,0,0))
+                values.append((0,0))
+            else:
+                c = []
+                for i in range(0,3):
+                    c.append(centerOfMass.GetElement(i))
+                centersofmass.append(tuple(c))
+                values.append((volume,volume*vol))
         print "volumes=",values
-        print "centroids=",centroids
+        print "centers of mass=",centersofmass
         
             
         #if self.prevFilter and self.prevFilter.getITK():
@@ -658,8 +1005,9 @@ class MeasureVolumeFilter(ManipulationFilters.ManipulationFilter):
 
         #x0,x1=image.GetScalarRange()
         #print "Scalar range of measured image=",x0,x1
-        ctf = ImageOperations.watershedPalette(0, n)
-        self.dataUnit.getSettings().set("ColorTransferFunction",ctf)        
+        #if parameters["Palette"]:
+        #    ctf = ImageOperations.watershedPalette(0, n)
+        #    self.dataUnit.getSettings().set("ColorTransferFunction",ctf)        
         
         #print image.GetScalarTypeAsString()
         #accu = vtk.vtkImageAccumulate()
@@ -678,10 +1026,10 @@ class MeasureVolumeFilter(ManipulationFilters.ManipulationFilter):
 #            values.append(c)
         
         self.values = values
-        self.centroids = centroids
+        self.centersofmass = centersofmass
         if self.reportGUI:
             self.reportGUI.setVolumes(values)
-            self.reportGUI.setCentroids(centroids)
+            self.reportGUI.setCentersOfMass(centersofmass)
         return image
 
 class FilterObjectsFilter(ManipulationFilters.ManipulationFilter):

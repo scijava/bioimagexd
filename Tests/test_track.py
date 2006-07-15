@@ -3,7 +3,8 @@ import sys
 import math
 import psyco
 import time
-
+import os.path
+import codecs
 class ParticleReader:
     def __init__(self,filename, timepoint = 0, filterObjectSize = 2):
         self.rdr = csv.reader(open(filename), dialect="excel",delimiter=";")
@@ -16,6 +17,8 @@ class ParticleReader:
                 size = int(size)
             except:
                 continue
+            
+            if int(obj)==0:continue
             if size >= self.filterObjectSize:
                 cog = eval(cog)
                 p = Particle(cog, self.timepoint)
@@ -31,12 +34,18 @@ class Particle:
         self.trackNum = -1
         
     def distance(self, p):       
-        return math.sqrt(sum([x+y for x in self.pos for y in p.pos]))
+        x,y,z=p.pos
+        x2,y2,z2=self.pos
+        dx=x-x2
+        dy=y-y2
+        dz=z-z2
+        return math.sqrt(dx*dx+dy*dy+dz*dz)
         
     def copy(self, p):
         self.pos = p.pos
         self.inTrack = p.inTrack
         self.flag = p.flag
+        self.tp = p.tp
         
     def __str__(self):
         try:
@@ -121,16 +130,17 @@ def get_tracks(particles, maxVelocity = 5):
                 tracks.append(track)
     return tracks
 
-def main(fileprefix,n):
+def main(fileprefix,n, maxvel = 15):
     particles=[]
-    for i in range(1,n+1):
+    for i in range(0,n+1):
         file="%s_%d.csv"%(fileprefix,i)
-        rdr = ParticleReader(file, i-1, filterObjectSize = 4)
-        particles.append(rdr.read())
+        if os.path.exists(file):
+            rdr = ParticleReader(file, i-1, filterObjectSize = 10)
+            particles.append(rdr.read())
     for i,list in enumerate(particles):
         print "In timepoint %d, there are %d particles"%(i,len(list))
     t = time.time()
-    tracks = get_tracks(particles, maxVelocity = 50)
+    tracks = get_tracks(particles, maxVelocity = maxvel)
     print "Found", len(tracks),"tracks in ",time.time()-t,"seconds"
     for i,track in enumerate(tracks):
         print "There are %d particles in track %d"%(len(track),i)
@@ -140,6 +150,7 @@ def main(fileprefix,n):
     w=csv.writer(f,dialect="excel",delimiter=";")
     w.writerow(["Track #","Timepoint","X","Y","Z"])
     for i,track in enumerate(tracks):
+        if len(track)<3:continue
         for particle in track:
             x,y,z=particle.pos
             w.writerow([str(i),str(particle.tp), str(x),str(y),str(z)])        
@@ -148,9 +159,14 @@ def main(fileprefix,n):
 
 if __name__ == '__main__':
     if len(sys.argv) <3:
-        print "Usage: track <file prefix> <number of timepoints>"
+        print "Usage: track <file prefix> <number of timepoints> [max velocity = 15]"
         print "Track files are assumed to be named <file prefix>_<timepoint>.csv"
         sys.exit(1)
+        
+    if len(sys.argv)>3:
+        maxvel = int(sys.argv[3])
+    else:
+        maxvel = 15
     n=int(sys.argv[2])
     psyco.full()
-    main(sys.argv[1], n)
+    main(sys.argv[1], n, maxvel)

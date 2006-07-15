@@ -79,11 +79,31 @@ color depth. Use the histograms below to the select how the intensities in your 
         self.sizer.Add(self.btnsizer,(3,0),flag=wx.EXPAND|wx.RIGHT|wx.LEFT)
         wx.EVT_BUTTON(self,wx.ID_OK,self.onOkButton)
         wx.EVT_BUTTON(self,wx.ID_CANCEL,self.onCancelButton)
+        
+        self.noScalingButton = wx.Button(self,-1,"No mapping")
+        self.noScalingButton.Bind(wx.EVT_BUTTON, self.onNoScaling)
+        self.btnsizer.Add(self.noScalingButton)
         self.result=0
         
         self.SetSizer(self.sizer)
         self.SetAutoLayout(1)
         self.sizer.Fit(self)
+     
+    def onNoScaling(self,event):
+        """
+        Method: onNoScaling
+        Created: 11.07.2006, KP
+        Description: Do not use any intensity scaling
+        """        
+        self.result = 1
+        for i,dataUnit in enumerate(self.dataUnits):
+            ds=dataUnit.getDataSource()
+            ds.setResampleDimensions(self.resampleDims[i])
+            ds.setIntensityScale(-1,-1)
+        self.EndModal(wx.ID_OK)
+        
+        
+
         
     def onCancelButton(self,event):
         """

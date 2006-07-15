@@ -65,7 +65,26 @@ class Module:
         except:
             self.streamer = None
         self.eventDesc="Processing data"
+        self.controlUnit = None
+     
+    def setControlDataUnit(self, dataunit):
+        """
+        Method: setControlDataUnit
+        Created: 10.07.2006, KP
+        Description: Set the dataunit that is controlling the execution of this module
+        """
+        self.controlUnit = dataunit
         
+    def getControlDataUnit(self):
+        """
+        Method: getControlDataUnit
+        Created: 10.07.2006, KP
+        Description: Set the dataunit that is controlling the execution of this module
+        """
+        return self.controlUnit
+    
+ 
+
     def updateProgress(self,obj,evt):
         """
         Method: updateProgress

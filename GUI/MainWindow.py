@@ -520,24 +520,31 @@ class MainWindow(wx.Frame):
                 self.visualizer.in_vtk=1        
             wx.SafeYield(None,1)
             
-    def updateVoxelInfo(self,obj,event,x,y,z,r,g,b,a,ctf):
+    def updateVoxelInfo(self,obj,event,x,y,z,scalar,rval,gval,bval,r,g,b,a,ctf):
         """
         Method: updateVoxelInfo
         Created: 22.07.2004, KP
         Description: Update the voxel info in status bar
         """
         #print x,y,z,r,g,b,a
-        if g==-1:
-            val=[0,0,0]
-            scalar=r
-            ctf.GetColor(scalar,val)
-            r,g,b=val
-            r*=255
-            g*=255
-            b*=255
-            text="Scalar %d at (%d,%d,%d) maps to (%d,%d,%d)"%(scalar,x,y,z,r,g,b)
+        if scalar!=0xdeadbeef:
+            #val=[0,0,0]
+            #scalar=r
+            #ctf.GetColor(scalar,val)
+            #r,g,b=val
+            #r*=255
+            #g*=255
+            #b*=255
+            if type(scalar)==types.TupleType:
+                lst = map(str,scalar)
+                
+                scalartxt=", ".join(lst[:-1])
+                scalartxt+=" and "+lst[-1]
+                text="Scalars %s at (%d,%d,%d) map to (%d,%d,%d)"%(scalartxt,x,y,z,r,g,b)
+            else:
+                text="Scalar %f at (%d,%d,%d) maps to (%d,%d,%d)"%(scalar,x,y,z,r,g,b)
         else:
-            text="Color at (%d,%d,%d) is (%d,%d,%d)"%(x,y,z,r,g,b)
+            text="Color (%s,%s,%s) at (%d,%d,%d) is (%d,%d,%d)"%(rval,gval,bval,x,y,z,r,g,b)
             if a!=-1:
                 text+=" with alpha %d"%a
         self.colorLbl.setLabel(text)
@@ -1288,6 +1295,7 @@ class MainWindow(wx.Frame):
                 isManip = (i.getSettings().getType()=="Process")
                 if not isManip and bd not in [8,32]:
                     needToRescale=1
+            print "Dataset is ",bd,"isManip=",isManip,"need to rescale=",needToRescale
             if needToRescale:
                 dlg = RescaleDialog.RescaleDialog(self)
                 dlg.setDataUnits(dataunits)

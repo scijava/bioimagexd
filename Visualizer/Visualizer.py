@@ -633,7 +633,6 @@ class Visualizer:
         Description: Makes the zoom factor smaller
         """
         f=self.currMode.getZoomFactor()
-        
         n=len(self.zoomLevels)
         for i in range(n-1,0,-1):
             if self.zoomLevels[i]>0 and self.zoomLevels[i]<f:
@@ -672,6 +671,7 @@ class Visualizer:
         Created: 21.02.2005, KP
         Description: Makes the zoom factor larger/smaller based on values in the zoom combobox
         """
+        
         pos=self.zoomCombo.GetSelection()
         s=self.zoomCombo.GetString(pos)
         if dir>0 and pos >= self.zoomCombo.GetCount():
@@ -688,6 +688,8 @@ class Visualizer:
         self.currMode.setZoomFactor(factor)
         if factor==-1:
             self.currMode.zoomToFit()
+        else:
+            self.zoomToFitFlag=0
         self.zoomFactor=self.currMode.getZoomFactor()    
         self.currMode.Render()
         
@@ -1090,12 +1092,14 @@ class Visualizer:
             
         if self.enabled and self.currMode:           
             Logging.info("Setting dataunit to current mode",kw="visualizer")
-            self.currMode.setDataUnit(self.dataUnit)
+            
             if self.zoomToFitFlag:
                 self.currMode.zoomToFit()
             else:
-                self.currMode.setZoomFactor(self.zoomFactor)             
-
+                self.currMode.setZoomFactor(self.zoomFactor)    
+                
+            self.currMode.setDataUnit(self.dataUnit)
+            
             self.currMode.setTimepoint(self.timepoint)
         if self.histogramIsShowing:
             self.createHistogram()             
