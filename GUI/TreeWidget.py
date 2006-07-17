@@ -33,6 +33,8 @@ import Logging
 import types
 import messenger
 import time
+import scripting as bxd
+import Command
 
 
 class TreeWidget(wx.SashLayoutWindow):
@@ -61,6 +63,7 @@ class TreeWidget(wx.SashLayoutWindow):
         self.items={}
         self.greenitems=[]
         self.yellowitems=[]
+        self.dataUnitToPath={}
         
         isz = (16,16)
         il = wx.ImageList(isz[0], isz[1])
@@ -82,6 +85,8 @@ class TreeWidget(wx.SashLayoutWindow):
         self.oiffiles=None
         self.bioradfiles=None
         self.interfilefiles=None
+        
+        self.dataUnitItems=[]
         
         self.itemColor=(0,0,0)
         
@@ -247,6 +252,9 @@ class TreeWidget(wx.SashLayoutWindow):
 
         self.items[path]=1
         
+        for i in objs:
+            self.dataUnitToPath[i]=path
+
         if objtype=="lsm":
         
             if not self.lsmfiles:
@@ -320,10 +328,15 @@ class TreeWidget(wx.SashLayoutWindow):
         for obj in objs:
             added=self.tree.AppendItem(item,obj.getName())
 
+            resampledims=obj.dataSource.getResampleDimensions()
+            if resampledims and resampledims != (0,0,0):
+                self.markRed([item],"*")
             self.tree.SetPyData(added,obj)        
             self.tree.SetItemImage(added,fileidx,which=wx.TreeItemIcon_Normal)
             #self.tree.SetItemImage(added,fldropenidx,which=wx.TreeItemIcon_Expanded)
             self.tree.EnsureVisible(added)
+            self.dataUnitItems.append(added)
+            
         self.tree.Expand(self.root)
 
     def getSelectedDataUnits(self):
@@ -364,6 +377,8 @@ class TreeWidget(wx.SashLayoutWindow):
         #item=items[-1]
         if not item.IsOk():
             return
+
+      
         
         obj=self.tree.GetPyData(item)
         self.item=item
@@ -375,3 +390,22 @@ class TreeWidget(wx.SashLayoutWindow):
                 self.markGreen([item])        
                 self.lastobj = obj
         #event.Skip()
+
+    def unselectAll(self):
+        """
+        Method: unselectAll
+        Created: 16.07.2006, KP
+        Description: Unselect everything in the tree
+        """
+        self.tree.UnselectAll()
+        
+    def selectByName(self, unit, channels):
+        """
+        Method: selectByName
+        Created: 16.07.2006, KP
+        Description: Select items in the tree by their names
+        """   
+        for item in self.dataUnitItems:
+            obj = self.tree.GetPyData(item)
+            if obj.getName() in channels and unit == self.dataUnitToPath[obj]:
+                self.tree.SelectItem(item)

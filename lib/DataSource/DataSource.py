@@ -117,6 +117,7 @@ class DataSource:
         conf = Configuration.getConfiguration()
         self.limitDims = None
         self.toDims = None
+        self.filePath=""
         val=None
         try:
             val=eval(conf.getConfigItem("DoResample","Performance"))
@@ -126,6 +127,22 @@ class DataSource:
             self.limitDims = eval(conf.getConfigItem("ResampleDims","Performance"))
             self.toDims = eval(conf.getConfigItem("ResampleTo","Performance"))
 
+    def setPath(self,path):
+        """
+        Method: setPath
+        Created: 17.07.2006, KP
+        Description: Set the path this datasource was created from
+        """   
+        self.filePath = path
+
+    def getPath(self):
+        """
+        Method: getPath
+        Created: 17.07.2006, KP
+        Description: Return the path this datasource was created from
+        """   
+        return self.filePath
+        
 
         
     def setMask(self, mask):
@@ -276,7 +293,8 @@ class DataSource:
             useDims = self.getResampleDimensions()
             if tmpDims:
                 useDims = tmpDims
-            
+            if not useDims:
+                return data
             if n==self.resampleTp and self.resample and not useDims:
                 data = self.resample.GetOutput()
             else:
@@ -288,6 +306,7 @@ class DataSource:
                 x,y,z=data.GetDimensions()
                 print "got dims=",x,y,z
                 self.originalDimensions=(x,y,z)
+                
                 rx,ry,rz=useDims
                 xf=rx/float(x)
                 yf=ry/float(y)

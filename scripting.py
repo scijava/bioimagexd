@@ -43,7 +43,7 @@ record = 0
 conf = None
 
 app = None
-mainwin = None
+mainWindow = None
 
 memLimit = None
 

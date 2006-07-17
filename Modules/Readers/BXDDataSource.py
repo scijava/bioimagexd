@@ -66,6 +66,7 @@ class BXDDataSource(DataSource):
         self.dataSets = []
         # filename of the .du-file
         self.filename = filename
+        self.setPath(filename)
         # path to the .du-file and .vti-file(s)
         self.path=""
         self.reader=None

@@ -70,6 +70,7 @@ class LeicaDataSource(DataSource):
         self.spacing = None
         self.color = None
         self.ctf = None
+        self.setPath(filename)
         
     def getDataSetCount(self):
         """

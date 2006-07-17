@@ -36,7 +36,8 @@ import os
 import sys
 import imp
 import platform
-import scripting
+import scripting as bxd
+import getopt
 
 try:
     import profile
@@ -50,7 +51,7 @@ if "check" in sys.argv:
 
     
 
-todir=scripting.get_main_dir()
+todir=bxd.get_main_dir()
 
 #todir=os.path.dirname(__file__)
 #todir=os.path.join(os.getcwd(),todir)
@@ -65,7 +66,7 @@ import Configuration
 # This will fix the VTK paths using either values from the
 # configuration file, or sensible defaults
 
-conffile = os.path.join(scripting.get_config_dir(),"BioImageXD.ini")
+conffile = os.path.join(bxd.get_config_dir(),"BioImageXD.ini")
 cfg=Configuration.Configuration(conffile)
 
 # We need to import VTK here so that it is imported before wxpython.
@@ -98,7 +99,7 @@ class LSMApplication(wx.App):
         Created: 10.1.2005, KP
         Description: Create the application's main window
         """
-        iconpath = scripting.get_icon_dir()
+        iconpath = bxd.get_icon_dir()
         bmp = wx.Image(os.path.join(iconpath,"splash2.jpg"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
 
         splash=wx.SplashScreen(bmp,
@@ -121,45 +122,89 @@ class LSMApplication(wx.App):
         self.mainwin=GUI.MainWindow.MainWindow(None,-1,self,splash)
         self.mainwin.config=wx.Config("BioImageXD", style=wx.CONFIG_USE_LOCAL_FILE)        
         
-        scripting.app = self
-        scripting.mainwin = self.mainwin
+        bxd.app = self
+        bxd.mainWindow = self.mainwin
         
         self.mainwin.Show(True)
         self.SetTopWindow(self.mainwin)
-    
+        
     
         return True
 
-    def run(self):
+    def run(self, scriptfile):
         """
         Method: run
         Created: 03.11.2004, KP
         Description: Run the wxPython main loop
         """
+        if scriptfile:
+            self.mainwin.loadScript(scriptfile)
         self.MainLoop()
 
+
+def usage():
+    print "Usage: BioImageXD [-h|--help] | [-x script.bxs|--execute=script.bxs] [-i file|--input=file] [-d directory|--directory=directory]"
+    print ""
+    print "-x | --execute\tExecute the given script file"
+    print "-i | --input\tLoad the given file as default input"
+    print "-d | --directory\tLoad all files from given directory"
+    print "-t | --tofile\tLog all messages to a log file"
+    print "-l | --logfile\tLog all messages to given file"
+    print "-p | --profile\tProfile the execution of the program"
+    print "-P | --interpret\tInterpret the results of the profiling"
+    
+    sys.exit(2)
+    
 
 if __name__=='__main__':
     if "py2exe" in sys.argv or "py2app" in sys.argv:
         from build_app import *
         build()
     else:
-
-
+        try:
+            opts, args = getopt.getopt(sys.argv[1:], 'hx:i:d:tpPl', ["help","execute=","input=","directory=","tofile","profile","interpret","logfile"])
+        except getopt.GetoptError:
+            usage()
+        
+        toFile = 0
+        doProfile = 0
+        doInterpret=0
+        scriptFile = ""
+        logfile=""
+        logdir=""
+        for opt,arg in opts:
+            if opt in ["-h","--help"]:
+                usage()
+            elif opt in ["-x","--execute"]:
+                scriptFile = arg
+            elif opt in ["-d"-"--directory"]:
+                dataFiles = glob.glob(os.path.join(arg,"*"))
+            elif opt in ["-i","--input"]:
+                dataFiles = [arg]
+            elif opt in ["-t","--tofile"]:
+                toFile = 1
+            elif opt in ["-p","--profile"]:
+                doProfile = 1
+            elif opt in ["-P","--interpret"]:
+                doInterpret=1
+            elif opt in ["-l","--logfile"]:
+                logfile=arg
         # If the main application is frozen, then we redirect logging
         # to  a log file
-        if "tofile" in sys.argv or scripting.main_is_frozen():
+        if toFile or bxd.main_is_frozen():
             import time
-            logfile=time.strftime("output_%d.%m.%y@%H%M.log")
-            
-            logdir=scripting.get_log_dir()
-            if not os.path.exists(logdir):
-                os.mkdir(logdir)
-            logfile=os.path.join(logdir,logfile)
+            if not logfile:
+                logfile=time.strftime("output_%d.%m.%y@%H%M.log")
+                
+                logdir=bxd.get_log_dir()
+                if not os.path.exists(logdir):
+                    os.mkdir(logdir)
+                logfile=os.path.join(logdir,logfile)
             f1=open(logfile,"w")
-            logfile2=os.path.join(logdir,"latest.log")
-            f2=open(logfile2,"w")
-            f = Logging.Tee(f1,f2)
+            if logdir:
+                logfile2=os.path.join(logdir,"latest.log")
+                f2=open(logfile2,"w")
+                f = Logging.Tee(f1,f2)
             import atexit
             atexit.register(f.flush)
             sys.stdout = f 
@@ -167,14 +212,15 @@ if __name__=='__main__':
             Logging.outfile = f
             Logging.enableFull()
         
-        if "profint" in sys.argv:
+        if doInterpret:
             import pstats
             p = pstats.Stats('prof.log')
             p.sort_stats('time', 'cum').print_stats(.5, 'init')
             sys.exit(0)
         
         app=LSMApplication(0)    
-        if "profile" in sys.argv and profile:
+        
+        if doProfile and profile:
             profile.run('app.run()', 'prof.log')
         else:
-            app.run()
+            app.run(scriptFile)

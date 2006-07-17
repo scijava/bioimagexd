@@ -159,7 +159,7 @@ class Configuration:
             for name in names:
                 if i.find(name) != -1:
                     removethese.append(i)
-        Logging.info("Removing following path entries: ",", ".join(removethese),kw="init")
+#        Logging.info("Removing following path entries: ",", ".join(removethese),kw="init")
         for i in removethese:
             try:
                 sys.path.remove(i)

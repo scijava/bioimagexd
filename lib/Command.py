@@ -39,11 +39,12 @@ import wx
 import Logging
 import inspect
 import messenger
-import scripting
+import scripting as bxd
 
 MENU_CMD="Menu command"
 OPEN_CMD="Load file"
-
+TASK_CMD="Load task"
+MGMT_CMD="File management"
 
 def functionize(code,imports):
         lines=code.split("\n")
@@ -110,16 +111,18 @@ class Command:
         return not(not self.undocmd)
         
 
-    def run(self):
+    def run(self, recordOnly = 0):
         """
         Method: run()
         Created: 13.02.2006, KP
         Description: Execute the action associated with this command
         """ 
-        self.do(self)
-        self._undoed=0
-        messenger.send(None,"execute_command",self)
-        if scripting.record:
+        if not recordOnly:
+            self.do(self)
+            self._undoed=0
+            messenger.send(None,"execute_command",self)
+        
+        if bxd.record:
             if not self.do_code:
                 code = inspect.getsource(self.undo)
             else:
@@ -136,7 +139,7 @@ class Command:
         self.undocmd(self)
         self._undoed=1
         messenger.send(None,"execute_command",self,1)
-        if scripting.record:
+        if bxd.record:
             if not self.undo_code:
                 code = inspect.getsource(self.undo)
             else:

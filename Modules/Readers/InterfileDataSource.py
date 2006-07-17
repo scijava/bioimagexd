@@ -64,7 +64,7 @@ class InterfileDataSource(DataSource):
         name=name.split(".")
         name=".".join(name[:-1])
         self.name= name
-        
+        self.setPath(filename)
         self.filename=filename
         self.reader = None
 

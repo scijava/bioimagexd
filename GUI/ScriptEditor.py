@@ -213,8 +213,7 @@ class ScriptEditorFrame(wx.Frame):
         Description: Read a script from file
         """
         f=open(file,"r")
-        data=f.read()
-        lines=data.split("\n")
+        data=f.readlines()
         imports=[]
         r1=re.compile("import (\S+)")
         r2=re.compile("from (\S+) import (\S+)")
@@ -285,6 +284,7 @@ class ScriptEditorFrame(wx.Frame):
         self.script.Enable(MenuManager.ID_STOP_RECORD,1)
         self.script.Enable(MenuManager.ID_RECORD_SCRIPT,0)
         scripting.record = 1
+        self.Show(0)
     
     def onStopRecord(self,evt):
         """

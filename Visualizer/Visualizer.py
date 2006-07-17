@@ -664,6 +664,7 @@ class Visualizer:
         self.zoomCombo.SetSelection(pos)
         self.currMode.setZoomFactor(self.zoomLevels[pos])
         self.zoomFactor=self.currMode.getZoomFactor()
+        
             
     def zoomComboDirection(self,dir):
         """

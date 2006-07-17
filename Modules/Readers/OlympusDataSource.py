@@ -74,7 +74,7 @@ class OlympusDataSource(DataSource):
             self.path=os.path.dirname(filename)
         if channel>=0:
             self.ctf = self.readLUT()
-        
+        self.setPath(filename)
         
         self.unit_coeffs={"nm":1e-9,"um":1e-6,"mm":0.001}
         

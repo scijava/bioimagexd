@@ -66,7 +66,7 @@ class LsmDataSource(DataSource.DataSource):
         # handles one channel. The following attribute indicates, which channel
         # within the lsm-file is hadled by this LsmDataSource instance.
         self.channelNum=channelNum
-
+        self.setPath(filename)
         self.dataUnitSettings={}
         # TODO: what is this?
         self.count=0
@@ -229,6 +229,7 @@ class LsmDataSource(DataSource.DataSource):
             # We create a datasource with specific channel number that
             #  we can associate with the dataunit
             datasource=LsmDataSource(filename,i)
+            datasource.setPath(filename)
             dataunit=DataUnit.DataUnit()
             dataunit.setDataSource(datasource)
             dataunits.append(dataunit)

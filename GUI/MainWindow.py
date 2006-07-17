@@ -39,6 +39,7 @@ import types
 import vtk
 import random
 import time
+import imp
 import sys
 
 import messenger
@@ -78,7 +79,7 @@ import UIElements
 
 import MaskTray
 
-import scripting
+import scripting as bxd
 
 
 class MainWindow(wx.Frame):
@@ -232,7 +233,7 @@ class MainWindow(wx.Frame):
         
         
         # Icon for the window
-        ico=reduce(os.path.join,[scripting.get_icon_dir(),"logo.ico"])
+        ico=reduce(os.path.join,[bxd.get_icon_dir(),"logo.ico"])
         self.icon = wx.Icon(ico,wx.BITMAP_TYPE_ICO)
         self.SetIcon(self.icon)
         
@@ -253,6 +254,10 @@ class MainWindow(wx.Frame):
         
         # Create the file tree
         self.tree=TreeWidget.TreeWidget(self.treeWin)
+        
+        # Alias for scripting
+        self.fileTree = self.tree
+        
 
         self.loadVisualizer(None,"slices",init=1)
         self.onMenuShowTree(None,1)
@@ -275,6 +280,19 @@ class MainWindow(wx.Frame):
         messenger.connect(None,"show_error",self.onShowError)
         wx.CallAfter(self.showTip)
         
+    def loadScript(self, filename):
+        """
+        Method: loadScript
+        Created: 17.07.2006, KP
+        Description: Load a given script file
+        """   
+        print "Loading script...",filename
+        f=open(filename)
+        module = imp.load_module("script",f,filename,('.py','r',1))
+        f.close()
+        module.bxd = bxd
+        module.run()
+
     def onMenuUndo(self,evt):
         """
         Method: onMenuUndo
@@ -372,6 +390,23 @@ class MainWindow(wx.Frame):
         Created: 22.07.2005, KP
         Description: A method for updating the dataset based on tree selection
         """
+        selected = self.tree.getSelectedDataUnits()
+        dataunits={}
+        for i in selected:
+            pth = i.dataSource.getPath()
+            if pth in dataunits:
+                dataunits[pth].append(i)
+            else:
+                dataunits[pth]=[i]
+        names = [i.getName() for i in selected]
+        do_cmd="bxd.mainWindow.fileTree.unselectAll()"
+        for i in dataunits.keys():
+            names = [x.getName() for x in dataunits[i]]
+            do_cmd+="\n"+"bxd.mainWindow.fileTree.selectByName('%s', %s)"%(i,str(names))
+        undo_cmd=""
+        cmd=Command.Command(Command.MGMT_CMD,None,None,do_cmd,undo_cmd,desc="Unselect all in file tree")
+        cmd.run(recordOnly = 1)          
+        
         # If no task window has been loaded, then we will update the visualizer
         # with the selected dataset
         if not self.currentTaskWindow:
@@ -563,7 +598,7 @@ class MainWindow(wx.Frame):
         Created: 03.11.2004, KP
         Description: Creates a tool bar for the window
         """
-        iconpath=scripting.get_icon_dir()
+        iconpath=bxd.get_icon_dir()
         flags=wx.NO_BORDER|wx.TB_HORIZONTAL
         if self.showToolNames:
             flags|=wx.TB_TEXT
@@ -840,8 +875,8 @@ class MainWindow(wx.Frame):
         # empty argument that will trigger the actual dialog to show
         if evt:
             if "show_history" not in self.commands:
-                do_cmd = "scripting.mainwin.onShowCommandHistory(None)"
-                undo_cmd="scripting.mainwin.cmdhistory.Destroy()\nscripting.mainwin.cmdhistory=None"
+                do_cmd = "bxd.mainWindow.onShowCommandHistory(None)"
+                undo_cmd="bxd.mainWindow.cmdhistory.Destroy()\nbxd.mainWindow.cmdhistory=None"
                 
                 cmd=Command.Command(Command.MENU_CMD,None,None,do_cmd,undo_cmd,desc="Show command history")
                 self.commands["show_history"]=cmd
@@ -868,8 +903,11 @@ class MainWindow(wx.Frame):
         Created: 13.02.2006, KP
         Description: Show the script editor
         """                
-        self.scriptEditor = ScriptEditor.ScriptEditorFrame(self)
-        self.scriptEditor.Show()
+        if bxd.record:
+            self.scriptEditor.Show()
+        else:
+            self.scriptEditor = ScriptEditor.ScriptEditorFrame(self)
+            self.scriptEditor.Show()
         
         
     def onMenuHideInfo(self,evt):
@@ -1001,7 +1039,7 @@ class MainWindow(wx.Frame):
         """
         if not "show_import" in self.commands:
             import_code="""
-    importdlg = GUI.ImportDialog.ImportDialog(scripting.mainwin)
+    importdlg = GUI.ImportDialog.ImportDialog(bxd.mainWindow)
     importdlg.ShowModal()
     """
             
@@ -1208,7 +1246,7 @@ class MainWindow(wx.Frame):
             fname=os.path.split(askfile)[-1]
             self.SetStatusText("Loading "+fname+"...")
             askfile=askfile.replace("\\","\\\\")
-            do_cmd="scripting.mainwin.createDataUnit(\"%s\",\"%s\")"%(fname,askfile)
+            do_cmd="bxd.mainWindow.createDataUnit(\"%s\",\"%s\")"%(fname,askfile)
             
             cmd=Command.Command(Command.OPEN_CMD,None,None,do_cmd,"",desc="Load dataset %s"%fname)
             cmd.run()
@@ -1325,18 +1363,43 @@ class MainWindow(wx.Frame):
                 break
         if not taskname:
             raise "Couldn't find a task corresponding to id ",eid
+
+        if taskname==self.currentTaskWindowName:
+            Logging.info("Task",taskname,"already showing, will close",kw="task")
+            tb.ToggleTool(eid,0)
+            self.onCloseTaskPanel(None)            
+            return
+        
+
+        do_cmd = 'bxd.mainWindow.loadTask("%s")'%(taskname)
+        if self.currentTaskWindowName:
+            undo_cmd = 'bxd.mainWindow.loadTask("%s")'%(self.currentTaskWindowName)
+        else:
+            undo_cmd = 'bxd.mainWindow.closeTask()'
+        cmd=Command.Command(Command.TASK_CMD,None,None,do_cmd,undo_cmd,desc="Load task %s"%taskname)
+        cmd.run()
+        
+    def closeTask(self):
+        """
+        Method: closeTask
+        Created: 16.07.2006, KP
+        Description: Close the current task window
+        """   
+        self.onCloseTaskPanel(None)
+        self.onMenuShowTree(None,1)
+
             
+    def loadTask(self, taskname):
+        """
+        Method: loadTask
+        Created: 16.07.2006, KP
+        Description: Load the task with the given name
+        """   
         moduletype,windowtype,mod=self.taskPanels[taskname]
         filesAtLeast,filesAtMost = mod.getInputLimits()
         unittype = mod.getDataUnit()
         action = mod.getName()
         Logging.info("Module type for taskwindow: ",moduletype,kw="task")
-        
-        if windowtype==self.currentTaskWindowType:
-            Logging.info("Window of type ",windowtype,"already showing, will close",kw="task")
-            tb.ToggleTool(eid,0)
-            self.onCloseTaskPanel(None)            
-            return
         
         selectedFiles=self.tree.getSelectedDataUnits()
         if filesAtLeast!=-1 and len(selectedFiles)<filesAtLeast:
@@ -1385,8 +1448,7 @@ class MainWindow(wx.Frame):
                 Logging.info("ctf of source=",dataunit.getSettings().get("ColorTransferFunction"),kw="ctf")
         except Logging.GUIError,ex:
             ex.show()
-            self.onCloseTaskPanel(None)
-            self.onMenuShowTree(None,1)
+            self.closeTask()
             return
         messenger.send(None,"update_progress",0.3,"Loading task %s..."%action)
         Logging.info("Moduletype=",moduletype,kw="dataunit")
@@ -1395,8 +1457,13 @@ class MainWindow(wx.Frame):
 
         
         window.setCombinedDataUnit(unit)
+        
+        for name,taskid in self.taskToId.items():
+            if name == taskname:
+                self.setButtonSelection(taskid)
+                break        
 
-        self.setButtonSelection(event.GetId())
+#        self.setButtonSelection(event.GetId())
 
         # If visualizer has not been loaded, load it now
         # This is a high time to have a visualization loaded
@@ -1457,7 +1524,7 @@ class MainWindow(wx.Frame):
         if not self.visualizer:
             self.visPanel = wx.SashLayoutWindow(self.visWin,-1)
             self.visualizer=Visualizer.Visualizer(self.visPanel,self.menuManager,self)
-            scripting.visualizer = self.visualizer
+            bxd.visualizer = self.visualizer
             self.menuManager.setVisualizer(self.visualizer)
             self.visualizer.setProcessedMode(processed)
         self.visualizer.enable(0)

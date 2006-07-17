@@ -64,7 +64,7 @@ class BioradDataSource(DataSource):
         """    
         
         DataSource.__init__(self)
-        
+        self.setPath(filename)
         name =os.path.basename(filename)
         name=name.split(".")
         name=".".join(name[:-1])
