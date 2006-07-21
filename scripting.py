@@ -44,7 +44,7 @@ conf = None
 
 app = None
 mainWindow = None
-
+processingManager = None
 memLimit = None
 
 

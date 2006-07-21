@@ -54,6 +54,8 @@ import sys
 
 import MaskTray
 
+import Command
+
 import Modules
 import Annotation
 import Configuration
@@ -338,24 +340,55 @@ class Visualizer:
         """ 
         return self.dataUnit
         
-    def onNextTimepoint(self,evt):
+    def nextTimepoint(self):
         """
-        Method: onNextTimepoint
-        Created: 26.06.2005, KP
+        Method: nextTimepoint
+        Created: 18.07.2005, KP
         Description: Go to next timepoint
-        """ 
+        """                 
         if self.timepoint<self.maxTimepoint:
             Logging.info("Setting timepoint to ",self.timepoint+1,kw="visualizer")
             self.setTimepoint(self.timepoint+1)
             self.blockTpUpdate=1
             messenger.send(None,"timepoint_changed",self.timepoint)        
             self.blockTpUpdate=0
+
+    def getNumberOfTimepoints(self):
+        """
+        Method: getNumberOfTimepoints
+        Created: 18.07.2006, KP
+        Description: Return the number of timepoints
+        """   
+        return self.maxTimepoint
+
+    def onNextTimepoint(self,evt):
+        """
+        Method: onNextTimepoint
+        Created: 26.06.2005, KP
+        Description: Go to next timepoint
+        """ 
+        undo_cmd = "bxd.visualizer.prevTimepoint()"
+        do_cmd = "bxd.visualizer.nextTimepoint()"
+        cmd = Command.Command(Command.GUI_CMD,None,None,do_cmd,undo_cmd,desc="Switch to next timepoint")
+        cmd.run()
+        
     def onPrevTimepoint(self,evt):
         """
         Method: onPrevTimepoint
         Created: 26.06.2005, KP
         Description: Go to previous timepoint
-        """        
+        """
+        undo_cmd = "bxd.visualizer.nextTimepoint()"
+        do_cmd = "bxd.visualizer.prevTimepoint()"
+        cmd = Command.Command(Command.GUI_CMD,None,None,do_cmd,undo_cmd,desc="Switch to previous timepoint")
+        cmd.run()
+
+    def prevTimepoint(self):
+        """
+        Method: prevTimepoint
+        Created: 18.07.2006, KP
+        Description: Switch to previous timepoint
+        """   
         if self.timepoint>=1:
             self.setTimepoint(self.timepoint-1)
             self.blockTpUpdate=1
@@ -561,6 +594,7 @@ class Visualizer:
             self.dataUnit.getSettings().set("ShowOriginal",flag)
         self.updateRendering()
         evt.Skip()
+        
     def onSetView(self,evt):
         """
         Method: onSetView
@@ -1196,6 +1230,7 @@ class Visualizer:
         Description: Update the timeslider according to an event
         """
         self.timeslider.SetValue(tp)
+        
     def onUpdateTimepoint(self,evt=None):
         """
         Method: onUpdateTimepoint
@@ -1220,7 +1255,12 @@ class Visualizer:
             self.blockTpUpdate=1
             messenger.send(None,"timepoint_changed",tp)
             self.blockTpUpdate=0
-            self.setTimepoint(tp)
+            
+            do_cmd = "bxd.visualizer.setTimepoint(%d)"%tp
+            undo_cmd = "bxd.visualizer.setTimepoint(%d)"%self.timepoint
+            cmd = Command.Command(Command.GUI_CMD,None,None,do_cmd,undo_cmd,desc="Switch to timepoint %d"%tp)
+            cmd.run()
+#            self.setTimepoint(tp)
             
             
     def delayedTimesliderEvent(self,event):

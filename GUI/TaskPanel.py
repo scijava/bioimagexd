@@ -47,7 +47,7 @@ import sys
 import ImageOperations
 import ColorTransferEditor
 import ChannelListBox
-
+import scripting as bxd
 
 class TaskPanel(scrolled.ScrolledPanel):
     """
@@ -319,12 +319,14 @@ class TaskPanel(scrolled.ScrolledPanel):
                      dataset
         """        
         mgr=ProcessingManager(self,self.operationName)
+        bxd.processingManager = mgr
         mgr.setDataUnit(self.dataUnit)
         self.grayOut()
 
         mgr.ShowModal()
         mgr.Destroy()
         self.grayOut(1)
+        bxd.processingManager = None
 
     def grayOut(self,enable=0):
         """

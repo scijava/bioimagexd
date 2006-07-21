@@ -131,7 +131,7 @@ class LSMApplication(wx.App):
     
         return True
 
-    def run(self, scriptfile):
+    def run(self, files, scriptfile):
         """
         Method: run
         Created: 03.11.2004, KP
@@ -139,6 +139,8 @@ class LSMApplication(wx.App):
         """
         if scriptfile:
             self.mainwin.loadScript(scriptfile)
+        if files:
+            self.mainwin.loadFiles(files)
         self.MainLoop()
 
 
@@ -172,12 +174,13 @@ if __name__=='__main__':
         scriptFile = ""
         logfile=""
         logdir=""
+        dataFiles=[]
         for opt,arg in opts:
             if opt in ["-h","--help"]:
                 usage()
             elif opt in ["-x","--execute"]:
                 scriptFile = arg
-            elif opt in ["-d"-"--directory"]:
+            elif opt in ["-d","--directory"]:
                 dataFiles = glob.glob(os.path.join(arg,"*"))
             elif opt in ["-i","--input"]:
                 dataFiles = [arg]
@@ -221,6 +224,6 @@ if __name__=='__main__':
         app=LSMApplication(0)    
         
         if doProfile and profile:
-            profile.run('app.run()', 'prof.log')
+            profile.run('app.run(dataFiles, scriptFile)', 'prof.log')
         else:
-            app.run(scriptFile)
+            app.run(dataFiles, scriptFile)

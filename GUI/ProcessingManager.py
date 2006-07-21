@@ -79,7 +79,7 @@ class ProcessingManager(TimepointSelection):
         TimepointSelection.createButtonBox(self)
 
         self.actionBtn.SetLabel("Process Time Points")
-        self.actionBtn.Bind(wx.EVT_BUTTON,self.doProcessing)
+        self.actionBtn.Bind(wx.EVT_BUTTON,self.onDoProcessing)
     
     def updateProgressMeter(self,obj,eventt,tp,nth,total):
         """
@@ -110,11 +110,26 @@ class ProcessingManager(TimepointSelection):
             self.progressDialog.Destroy()
             
         wx.GetApp().Yield(1)
-    
-    def doProcessing(self,event):
+        
+    def onDoProcessing(self, event):
+        """
+        Method: onDoProcessing()
+        Created: 09.02.2005, KP
+        Description: A method that tells the dataunit to process the selected timepoints
+        """          
+        name=self.dataUnit.getName()
+
+        filename=Dialogs.askSaveAsFileName(self,"Save %s dataset as"%self.operationName,"%s.bxd"%name,"BioImageXD Dataset (*.bxd)|*.bxd")
+        do_cmd = "bxd.processingManager.doProcessing('%s')"%filename
+        undo_cmd = ""
+        
+        cmd=Command.Command(Command.GUI_CMD,None,None,do_cmd,undo_cmd,desc="Process the selected timepoints")
+        cmd.run()        
+        
+    def doProcessing(self,filename):
         """
         Method: doProcessing()
-        Created: 09.02.2005, KP
+        Created: 18.07.2006, KP
         Description: A method that tells the dataunit to process the selected timepoints
         """    
         self.status=wx.ID_CANCEL
@@ -122,9 +137,8 @@ class ProcessingManager(TimepointSelection):
         #name=self.operationName+" ("
         #name+=", ".join([x.getName() for x in self.dataUnit.getSourceDataUnits()])
         #name+=")"
-        name=self.dataUnit.getName()
         
-        filename=Dialogs.askSaveAsFileName(self,"Save %s dataset as"%self.operationName,"%s.bxd"%name,"BioImageXD Dataset (*.bxd)|*.bxd")
+        
         name=os.path.basename(filename)
         name=".".join(name.split(".")[:-1])
         self.dataUnit.setName(name)

@@ -142,9 +142,10 @@ class BXDDataSource(DataSource):
         if self.resampleDims:
             return self.resampleDims        
         if not self.dimensions:
-            data=self.getDataSet(0)
-            self.readInfo(data)
-
+            #data=self.getDataSet(0)
+            #self.readInfo(data)
+            self.dimensions = eval(self.settings.get("Dimensions"))
+            
         return self.dimensions
     def updateProgress(self,obj,evt):
         """
@@ -169,9 +170,9 @@ class BXDDataSource(DataSource):
                      dataunit contains
         """
         if not self.spacing:
-            data=self.getDataSet(0)
-            self.readInfo(data)
-
+            #data=self.getDataSet(0)
+            #self.readInfo(data)
+            self.spacing = eval(self.settings.get("Spacing"))
         return self.spacing
         
     def getVoxelSize(self):

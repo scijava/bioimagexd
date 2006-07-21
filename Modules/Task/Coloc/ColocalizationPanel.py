@@ -43,12 +43,13 @@ from Logging import *
 from GUI import Scatterplot
 from lib import ImageOperations
 import sys
+import types
 import Colocalization
 import time
 
 import string
 import UIElements
-
+import Command
 
 import  wx.lib.mixins.listctrl  as  listmix
 
@@ -365,50 +366,93 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
             self.headervals[index][2]=val2
             self.listctrl.SetStringItem(index,col,format%val)
             
-
+    def autoThreshold(self):
+        """
+        Method: autoThreshold
+        Created: 11.07.2004, KP
+        Description: Use vtkAutoThresholdColocalization to determine thresholds
+                     for colocalization and calculate statistics
+        """
+        self.dataUnit.getSourceDataUnits()[0].getSettings().set("CalculateThresholds",1)        
+        self.eventDesc="Calculating thresholds"
+        
+        self.doPreviewCallback(None)
+        self.dataUnit.getSourceDataUnits()[0].getSettings().set("CalculateThresholds",0) 
+        messenger.send(None,"threshold_changed")
+        
     def getAutoThreshold(self,event=None):
         """
         Method: getAutoThreshold
         Created: 11.07.2004, KP
-        Description: Use vtkAutoThresholdColocalization to determine thresholds
-                     for colocalization and calculate statistics
+        Description: Calculate the automatic threshold for colocalization
         """
-        self.dataUnit.getSourceDataUnits()[0].getSettings().set("CalculateThresholds",1)
-        self.eventDesc="Calculating thresholds"
+        do_cmd="""bxd.mainWindow.tasks['Colocalization'].autoThreshold()"""
+        cmd = Command.Command(Command.GUI_CMD,None,None,do_cmd,"",desc="Calculate automatic threshold")
+        cmd.run()
         
-        self.doPreviewCallback(event)
+    def statistics(self):
+        """
+        Method: statistics
+        Created: 17.07.2006, KP
+        Description: Calculate the statistics
+        """
+        self.dataUnit.getSourceDataUnits()[0].getSettings().set("CalculateThresholds",2)
+        self.eventDesc="Calculating statistics"
+        self.doPreviewCallback(None)
         self.dataUnit.getSourceDataUnits()[0].getSettings().set("CalculateThresholds",0) 
-        messenger.send(None,"threshold_changed")
-            
+                
+        
+        
     def getStatistics(self, event=None):
         """
-        Method: getAutoThreshold
+        Method: getStatistics
         Created: 11.07.2004, KP
         Description: Use vtkAutoThresholdColocalization to determine thresholds
                      for colocalization and calculate statistics
         """
-        self.dataUnit.getSourceDataUnits()[0].getSettings().set("CalculateThresholds",2)
-        self.eventDesc="Calculating statistics"
-        self.doPreviewCallback(event)
-        self.dataUnit.getSourceDataUnits()[0].getSettings().set("CalculateThresholds",0) 
-        
+        do_cmd="""bxd.mainWindow.tasks['Colocalization'].statistics()"""
+        cmd = Command.Command(Command.GUI_CMD,None,None,do_cmd,"",desc="Calculate colocalization statistics")
+        cmd.run()
         pos=self.radiobox.GetSelection()
         if pos:
             map=[1,0,2]
             method=map[pos-1]
-            self.getPValue(method)        
+            smethod=""
+            if method==0:smethod="Fay"
+            if method==1:smethod="Costes"
+            if method==2:smethod="van Steensel"
+            
+            try:
+                n = int(self.iterations.GetValue())
+                iterations=", iterations = %d"%n
+            except:
+                pass
+            if method!=1:
+                iterations=""
+            do_cmd="bxd.mainWindow.tasks['Colocalization'].getPValue('%s'%s)"%(smethod, iterations)
+            cmd = Command.Command(Command.GUI_CMD,None,None,do_cmd,"",desc="Calculate P-Value of colocalization")
+            cmd.run()
         
-    def getPValue(self,method=1):
+    def getPValue(self,method=1, iterations = 100):
         """
         Method: getPValue
         Created: 13.07.2005, KP
         Description: Get the P value for colocalization
         """
+        try:
+            n = int(self.iterations.GetValue())
+            if n != iterations:
+                self.iterations.SetValue("%d"%iterations)
+        except:
+            pass
         coloctest=vtk.vtkImageColocalizationTest()
         #coloctest.SetRandomizeZ(1)
         sources=self.dataUnit.getSourceDataUnits()
         self.eventDesc="Calculating P-Value"
         methods=["Fay","Costes","van Steensel"]
+        if type(method) == types.StringType:
+            method = methods.index(method)
+        
         Logging.info("Using %s method (%d)"%(methods[method],method),kw="processing")
         t=time.time()
         
@@ -421,13 +465,9 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
             messenger.send(None,"show_error","Bad PSF width","The given width for point spread function is invalid.")
             return
         print "Setting PSF width",int(n)
-        coloctest.SetManualPSFSize(int(n))
-        n=100
-        try:
-            n=int(self.iterations.GetValue())
-        except:
-            pass
-        coloctest.SetNumIterations(n)
+        coloctest.SetManualPSFSize(int(n))        
+
+        coloctest.SetNumIterations(iterations)
         
         for i in sources:
             data=i.getTimePoint(self.timePoint)
@@ -671,6 +711,20 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
         """
         
         name=self.dataUnit.getName()
+        filename=Dialogs.askSaveAsFileName(self,"Save colocalization statistics as","%s.csv"%name,"CSV File (*.csv)|*.csv")
+        if filename:
+            do_cmd="bxd.mainWindow.tasks['Colocalization'].exportStatistics('%s')"%filename
+            cmd = Command.Command(Command.GUI_CMD,None,None,do_cmd,"",desc="Export colocalization statistics")
+            cmd.run()
+        
+        
+    def exportStatistics(self, filename):
+        """
+        Method: exportStatistics
+        Created: 18.07.2006, KP
+        Description: Export the colocalization stats
+        """   
+        name=self.dataUnit.getName()        
         sources=self.dataUnit.getSourceDataUnits()
         names=[]
         names2=[]
@@ -689,7 +743,6 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
         if len(names3)>1:
             leadstr="From files "
         namestr2=leadstr+" and ".join(names3)
-        filename=Dialogs.askSaveAsFileName(self,"Save colocalization statistics as","%s.csv"%name,"CSV File (*.csv)|*.csv")
 
         if not filename:
             Logging.info("Got no name for coloc statistics",kw="processing")
@@ -712,6 +765,7 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
                 w.writerow([header,val1])
         f.close()
         del w
+        del f
         
 
         

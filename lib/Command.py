@@ -45,6 +45,7 @@ MENU_CMD="Menu command"
 OPEN_CMD="Load file"
 TASK_CMD="Load task"
 MGMT_CMD="File management"
+GUI_CMD="User interface command" 
 
 def functionize(code,imports):
         lines=code.split("\n")
@@ -117,17 +118,18 @@ class Command:
         Created: 13.02.2006, KP
         Description: Execute the action associated with this command
         """ 
-        if not recordOnly:
-            self.do(self)
-            self._undoed=0
-            messenger.send(None,"execute_command",self)
-        
         if bxd.record:
             if not self.do_code:
                 code = inspect.getsource(self.undo)
             else:
                 code=self.do_code
             messenger.send(None,"record_code",code,self.imports)
+        
+        if not recordOnly:
+            self.do(self)
+            self._undoed=0
+            messenger.send(None,"execute_command",self)
+        
             
     def undo(self):
         """

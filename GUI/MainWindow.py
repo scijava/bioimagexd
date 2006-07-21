@@ -118,6 +118,7 @@ class MainWindow(wx.Frame):
         
         self.commands={}
         
+        self.tasks={}
         self.help=None
         self.statusbar=None
         self.progress=None
@@ -125,7 +126,7 @@ class MainWindow(wx.Frame):
         self.visualizer=None
         self.nodes_to_be_added=[]
         self.app=app
-        self.cmdhistory = None
+        self.commandHistory = None
         self.dataunits={}
         self.paths={}
         self.currentVisualizationWindow=None
@@ -165,6 +166,7 @@ class MainWindow(wx.Frame):
         
         for i in self.taskPanels.keys():
             self.taskToId[i] = wx.NewId()
+            
         for i in self.visualizationModes.keys():
                 self.visToId[i] = wx.NewId()
         
@@ -292,6 +294,16 @@ class MainWindow(wx.Frame):
         f.close()
         module.bxd = bxd
         module.run()
+        
+    def loadFiles(self,files):
+        """
+        Method: loadFiles
+        Created: 17.07.2006, KP
+        Description: Load the given data files
+        """         
+        for file in files:
+            name = os.path.basename(file)
+            self.createDataUnit(name, file)
 
     def onMenuUndo(self,evt):
         """
@@ -685,12 +697,17 @@ class MainWindow(wx.Frame):
         tb.Realize()
         self.menuManager.setMainToolbar(tb)
 
-    def onSaveDataset(self,evt):
+    def onSaveDataset(self,*args):
         """
         Method: onSaveDataset
         Created: 24.05.2006, KP
         Description: Process the dataset
         """
+        do_cmd = "bxd.mainWindow.processDataset()"
+        cmd = Command.Command(Command.GUI_CMD,None,None,do_cmd,"",desc="Process the dataset with the current task")
+        cmd.run()
+
+    def processDataset(self,*args):
         messenger.send(None,"process_dataset")
 
     def onContextHelp(self,evt):
@@ -864,7 +881,7 @@ class MainWindow(wx.Frame):
         self.GetToolBar().Destroy()
         self.createToolBar()
   
-    def onShowCommandHistory(self,evt):
+    def onShowCommandHistory(self,evt=None):
         """
         Method: onShowCommandHistory
         Created: 13.02.2006, KP
@@ -875,18 +892,18 @@ class MainWindow(wx.Frame):
         # empty argument that will trigger the actual dialog to show
         if evt:
             if "show_history" not in self.commands:
-                do_cmd = "bxd.mainWindow.onShowCommandHistory(None)"
-                undo_cmd="bxd.mainWindow.cmdhistory.Destroy()\nbxd.mainWindow.cmdhistory=None"
+                do_cmd = "bxd.mainWindow.onShowCommandHistory()"
+                undo_cmd="bxd.mainWindow.commandHistory.Destroy()\nbxd.mainWindow.commandHistory=None"
                 
                 cmd=Command.Command(Command.MENU_CMD,None,None,do_cmd,undo_cmd,desc="Show command history")
                 self.commands["show_history"]=cmd
             self.commands["show_history"].run()
         else:
-            if not self.cmdhistory:
-                self.cmdhistory=UndoListBox.CommandHistory(self,self.menuManager)
+            if not self.commandHistory:
+                self.commandHistory=UndoListBox.CommandHistory(self,self.menuManager)
             
-            self.cmdhistory.update()
-            self.cmdhistory.Show()
+            self.commandHistory.update()
+            self.commandHistory.Show()
             
     def onMenuImmediateRender(self,evt):
         """
@@ -1397,6 +1414,7 @@ class MainWindow(wx.Frame):
         """   
         moduletype,windowtype,mod=self.taskPanels[taskname]
         filesAtLeast,filesAtMost = mod.getInputLimits()
+        
         unittype = mod.getDataUnit()
         action = mod.getName()
         Logging.info("Module type for taskwindow: ",moduletype,kw="task")
@@ -1429,6 +1447,7 @@ class MainWindow(wx.Frame):
         
         self.currentTaskWindowName=taskname
         self.currentTaskWindow=window
+        self.tasks[taskname] = window
         w,h=self.taskWin.GetSize()
         w,h2=self.taskWin.origSize
         self.taskWin.SetDefaultSize((w,h))

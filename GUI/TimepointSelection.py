@@ -47,8 +47,8 @@ import wx.lib.scrolledpanel as scrolled
 import wx.lib.buttons as buttons
 import vtk
 
-import scripting
-
+import scripting as bxd
+import Command
 
 class TimepointSelectionPanel(scrolled.ScrolledPanel):
     """
@@ -128,8 +128,7 @@ class TimepointSelectionPanel(scrolled.ScrolledPanel):
     def updateSelection(self,event=None):
         """
         Method: updateSelection(event)
-        Created: 17.11.2004
-        Creator: KP
+        Created: 17.11.2004, KP
         Description: A callback that is used to select every nth button, where
                      N is the value of the nthEntry entry
         """
@@ -137,6 +136,17 @@ class TimepointSelectionPanel(scrolled.ScrolledPanel):
             n=int(self.nthEntry.GetValue())
         except:
             n=1
+        do_cmd = "bxd.processingManager.timepointSelection.selectEveryNth(%d)"%n
+        undo_cmd = ""
+        cmd=Command.Command(Command.GUI_CMD,None,None,do_cmd,undo_cmd,desc="Select every Nth timepoint for processing")
+        cmd.run()        
+        
+    def selectEveryNth(self, n):
+        """
+        Method: selectEveryNth(n)
+        Created: 18.07.2006, KP
+        Description: Select every nth button
+        """        
         if not n:
             for i in range(len(self.buttonList)):
                 self.selectedFrames[i]=0
@@ -184,9 +194,29 @@ class TimepointSelectionPanel(scrolled.ScrolledPanel):
         Description: A method called when user clicks a button representing 
                      a time point
         """
+        flag = False
+        if number in self.selectedFrames:
+            flag = not self.selectedFrames[number]
+        do_cmd = "bxd.processingManager.timepointSelection.setTimepoint(%d, %s)"%(number,str(flag))
+        undo_cmd = "bxd.processingManager.timepointSelection.setTimepoint(%d, %s)"%(number,str(not flag))
+        
+        if flag:
+            descstr="Select timepoint %d for processing"%number
+        else:
+            descstr="Unselect timepoint %d for processing"%number
+        cmd=Command.Command(Command.GUI_CMD,None,None,do_cmd,undo_cmd,desc=descstr)
+        cmd.run()
+
+    def setTimepoint(self, number, flag):
+        """
+        Method: setTimepoint
+        Created: 18.07.2006, KP
+        Description: Set the given timepoint on or off
+        """   
         if not self.selectedFrames.has_key(number):
             self.selectedFrames[number]=0
-
+        button = self.buttonList[number]
+        
         if self.selectedFrames[number]:
             self.selectedFrames[number]=0
             self.setButtonState(button,0)
@@ -251,11 +281,12 @@ class TimepointSelection(wx.Dialog):
 
         self.rendering=0
         self.SetTitle("Timepoint Selection")
-        ico=reduce(os.path.join,[scripting.get_icon_dir(),"logo.ico"])
+        ico=reduce(os.path.join,[bxd.get_icon_dir(),"logo.ico"])
         self.icon = wx.Icon(ico,wx.BITMAP_TYPE_ICO)
         self.SetIcon(self.icon)
 
         self.panel=TimepointSelectionPanel(self)
+        self.timepointSelection = self.panel
         
         self.mainsizer.Add(self.panel,(0,0),flag=wx.EXPAND|wx.ALL)
         
@@ -303,7 +334,30 @@ class TimepointSelection(wx.Dialog):
         Created: 13.04.2005, KP
         Description: A callback that sets the status of this dialog
         """
+        do_cmd = "bxd.processingManager.process()"
+        undo_cmd = ""
+        
+        cmd=Command.Command(Command.GUI_CMD,None,None,do_cmd,undo_cmd,desc="Process the selected timepoints")
+        cmd.run()        
+
+    
+    def process(self):
+        """
+        Method: process
+        Created: 20.07.2006, KP
+        Description: Set the status so that the processing will continue and close the window
+        """   
         self.status=wx.ID_OK
+        self.Close()
+        
+
+    def cancel(self):
+        """
+        Method: cancel
+        Created: 20.07.2006, KP
+        Description: Set the status so that the processing will cancel and close the window
+        """
+        self.status=wx.ID_CANCEL
         self.Close()
 
     def closeWindowCallback(self,event):
@@ -313,8 +367,6 @@ class TimepointSelection(wx.Dialog):
         Description: A callback that is used to close this window
         """
         self.EndModal(self.status)
-
-        
             
     def setDataUnit(self,dataUnit):
         """
