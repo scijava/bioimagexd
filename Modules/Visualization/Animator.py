@@ -122,6 +122,8 @@ class AnimatorMode(VisualizationMode):
         self.menuManager.mainToolbar.EnableTool(MenuManager.ID_COLOCALIZATION,0)
         self.menuManager.mainToolbar.EnableTool(MenuManager.ID_COLORMERGING,0)
         self.visualizer.sliderPanel.Show(0)
+        self.origSliderWinSize = self.visualizer.sliderWin.GetSize()
+        self.visualizer.sliderWin.SetDefaultSize((-1,64))
         if not self.urmaswin:
             # Ugly hack
             self.urmaswin=Urmas.UrmasWindow(self.parent,self.visualizer.menuManager,self.visualizer.mainwin.taskWin,self.visualizer)
@@ -177,6 +179,8 @@ class AnimatorMode(VisualizationMode):
         self.urmaswin.Show(0) 
         self.urmaswin.enableRendering(0)   
         self.urmaswin.controlpanel.Show(0)
+        self.visualizer.sliderWin.SetDefaultSize(self.origSliderWinSize)
+
         if not self.doLockSliderPanel and newmode!="3d":
             print "\n\n*** DEACTIVATING ANIMATOR\n"
             self.visualizer.setCurrentSliderPanel(self.visualizer.sliderPanel)        

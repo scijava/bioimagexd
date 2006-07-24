@@ -46,6 +46,7 @@ OPEN_CMD="Load file"
 TASK_CMD="Load task"
 MGMT_CMD="File management"
 GUI_CMD="User interface command" 
+PARAM_CMD="Parameter change"
 
 def functionize(code,imports):
         lines=code.split("\n")
@@ -128,7 +129,7 @@ class Command:
         if not recordOnly:
             self.do(self)
             self._undoed=0
-            messenger.send(None,"execute_command",self)
+        messenger.send(None,"execute_command",self)
         
             
     def undo(self):

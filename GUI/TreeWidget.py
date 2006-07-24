@@ -326,11 +326,12 @@ class TreeWidget(wx.SashLayoutWindow):
         
         self.tree.Expand(item)
         for obj in objs:
+            
             added=self.tree.AppendItem(item,obj.getName())
 
             resampledims=obj.dataSource.getResampleDimensions()
             if resampledims and resampledims != (0,0,0):
-                self.markRed([item],"*")
+                self.markRed([added],"*")
             self.tree.SetPyData(added,obj)        
             self.tree.SetItemImage(added,fileidx,which=wx.TreeItemIcon_Normal)
             #self.tree.SetItemImage(added,fldropenidx,which=wx.TreeItemIcon_Expanded)

@@ -483,6 +483,7 @@ class Visualizer:
         
         self.tb.AddSeparator()
         self.origBtn=wx.Button(self.tb,MenuManager.ORIG_BUTTON,"Original")
+
         self.origBtn.SetHelpText("Use this button to show how the unprocessed dataset looks like.")
         self.origBtn.Bind(wx.EVT_LEFT_DOWN,lambda x:self.onShowOriginal(x,1))
         self.origBtn.Bind(wx.EVT_LEFT_UP,lambda x:self.onShowOriginal(x,0))
@@ -584,7 +585,6 @@ class Visualizer:
 
     def onShowOriginal(self,evt,flag=1):
         """
-        Method: onShowOriginal
         Created: 27.07.2005, KP
         Description: Show the original datasets instead of processed ones
         """
@@ -1094,6 +1094,17 @@ class Visualizer:
         """
         return self.closed
         
+    def toggleTimeSlider(self, flag):
+        """
+        Method: toggleTimeSlider
+        Created: 23.07.2006, KP
+        Description: Toggle the time slider on or off
+        """   
+        if not flag:
+            self.sliderWin.SetDefaultSize((0,0))
+        else:
+            self.sliderWin.SetDefaultSize(self.sliderWin.origSize)         
+        
     def setDataUnit(self,dataunit):
         """
         Method: setDataUnit(self)
@@ -1108,9 +1119,9 @@ class Visualizer:
         Logging.info("Setting range to %d"%count,kw="visualizer")
         self.maxTimepoint=count-1
         if count==1:
-            self.sliderWin.SetDefaultSize((0,0))
+            self.toggleTimeSlider(0)
         else:
-            self.sliderWin.SetDefaultSize(self.sliderWin.origSize)        
+            self.toggleTimeSlider(1)
         self.timeslider.SetRange(1,count)
         
         x,y,z=dataunit.getDimensions()

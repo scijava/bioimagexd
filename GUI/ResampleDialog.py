@@ -59,6 +59,8 @@ class ResampleDialog(wx.Dialog):
         self.currSize=(512,512,25)
         self.SetSizer(self.sizer)
         self.SetAutoLayout(1)
+        self.blockDimUpdate=0
+        self.blockFactorUpdate=0
         self.sizer.Fit(self)
         
     def onOkButton(self,event):
@@ -81,9 +83,12 @@ class ResampleDialog(wx.Dialog):
         Description: Set the dataunits to be resampled
         """        
         self.dataUnits=dataunits
-        x,y,z=dataunits[0].getDimensions()
         
+        x,y,z=self.dataUnits[0].getDimensions()
         self.dims=(x,y,z)       
+        self.newDimX.SetValue("%d"%x)
+        self.newDimY.SetValue("%d"%y)
+        self.newDimZ.SetValue("%d"%z)
         self.dimsLbl.SetLabel(self.currDimText%(x,y,z))
         self.onUpdateDims(None)
         
@@ -93,6 +98,8 @@ class ResampleDialog(wx.Dialog):
         Created: 1.09.2005, KP
         Description: Update the dimensions
         """
+        if self.blockDimUpdate:
+            return        
         rx,ry,rz=self.dims
         try:
             rx=int(self.newDimX.GetValue())
@@ -101,12 +108,44 @@ class ResampleDialog(wx.Dialog):
         except:
             pass
         self.currSize=(rx,ry,rz)
-        x,y,z=self.dataUnits[0].getDimensions()
+        x,y,z=self.dataUnits[0].dataSource.getOriginalDimensions()
         xf=rx/float(x)
         yf=ry/float(y)
         zf=rz/float(z)
-        self.factorsLbl.SetLabel(self.currFactorText%(xf,yf,zf))
-        
+        #self.factorsLbl.SetLabel(self.currFactorText%(xf,yf,zf))
+        self.blockFactorUpdate=1
+        self.factorX.SetValue("%.2f"%xf)
+        self.factorY.SetValue("%.2f"%yf)
+        self.factorZ.SetValue("%.2f"%zf)
+        self.blockFactorUpdate=0
+    def onUpdateFactors(self,evt):
+        """
+        Created: 23.07.2006, KP
+        Description: Update the factors, resulting in change in the dimensions
+        """
+        if self.blockFactorUpdate:
+            return
+        x,y,z=self.dataUnits[0].dataSource.getOriginalDimensions()
+        fx=1
+        fy=1
+        fz=1
+        try:
+            fx=int(self.factorX.GetValue())
+            fy=int(self.factorY.GetValue())
+            fz=int(self.factorZ.GetValue())
+        except:
+            pass
+        x*=fx
+        y*=fy
+        z*=fz
+        #self.factorsLbl.SetLabel(self.currFactorText%(xf,yf,zf))
+        self.blockDimUpdate=1
+        self.newDimX.SetValue("%d"%x)
+        self.newDimY.SetValue("%d"%y)
+        self.newDimZ.SetValue("%d"%z)
+        self.blockDimUpdate=0
+
+
     def createResample(self):
         """
         Method: createResample()
@@ -124,14 +163,29 @@ class ResampleDialog(wx.Dialog):
         n=0
         sizer.Add(self.dimsLbl,(n,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
         n+=1
-        self.currFactorText=u"Scale factors: %.2f x %.2f x %.2f"
-        self.factorsLbl=wx.StaticText(panel,-1,self.currFactorText%(1,1,1))
-        sizer.Add(self.factorsLbl,(n,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
+        #self.currFactorText=u"Scale factors: %.2f x %.2f x %.2f"
+        #self.factorsLbl=wx.StaticText(panel,-1,self.currFactorText%(1,1,1))
+        #sizer.Add(self.factorsLbl,(n,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
+        self.factorBox = wx.BoxSizer(wx.HORIZONTAL)
+        factorLabel=wx.StaticText(panel,-1,"Scale factors:")
+        self.factorBox.Add(factorLabel)
+        self.factorX = wx.TextCtrl(panel,-1,"%.2f"%1,size=(50,-1))
+        self.factorBox.Add(self.factorX)    
+        x1=wx.StaticText(panel,-1,"x")
+        self.factorBox.Add(x1)
+        self.factorY = wx.TextCtrl(panel,-1,"%.2f"%1,size=(50,-1))
+        self.factorBox.Add(self.factorY)    
+        x2=wx.StaticText(panel,-1,"x")
+        self.factorBox.Add(x2)
+        self.factorZ = wx.TextCtrl(panel,-1,"%.2f"%1,size=(50,-1))
+        self.factorBox.Add(self.factorZ)    
+
+        sizer.Add(self.factorBox, (n,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
         n+=1
         
-        newDimXLbl=wx.StaticText(panel,-1,"New X:")
-        newDimYLbl=wx.StaticText(panel,-1,"New Y:")
-        newDimZLbl=wx.StaticText(panel,-1,"New Z:")
+        newDimXLbl=wx.StaticText(panel,-1,"New X dimension: ")
+        newDimYLbl=wx.StaticText(panel,-1,"New Y dimension: ")
+        newDimZLbl=wx.StaticText(panel,-1,"New Z dimension: ")
         val=UIElements.AcceptedValidator
         self.newDimX=wx.TextCtrl(panel,-1,"512",validator=val(string.digits))
         self.newDimY=wx.TextCtrl(panel,-1,"512",validator=val(string.digits))
@@ -140,6 +194,9 @@ class ResampleDialog(wx.Dialog):
         self.newDimX.Bind(wx.EVT_TEXT,self.onUpdateDims)
         self.newDimY.Bind(wx.EVT_TEXT,self.onUpdateDims)
         self.newDimZ.Bind(wx.EVT_TEXT,self.onUpdateDims)
+        self.factorX.Bind(wx.EVT_TEXT,self.onUpdateFactors)
+        self.factorY.Bind(wx.EVT_TEXT,self.onUpdateFactors)
+        self.factorZ.Bind(wx.EVT_TEXT,self.onUpdateFactors)
         
         
         sizer.Add(newDimXLbl,(n,0))

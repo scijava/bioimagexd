@@ -6,7 +6,7 @@
  Created: 10.04.2005, KP
  Description:
 
- A task window for manipulating the dataset with various filters.
+ A task that allows the user to process the input data through a chain of different filters.
                             
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
@@ -40,25 +40,23 @@ from Logging import *
 
 import sys
 import time
-from GUI import ColorTransferEditor
 
-from GUI import TaskPanel
+import TaskPanel
 import UIElements
 import string
 import scripting
 import types
+import Command
 
 import ManipulationFilters
 
 class ManipulationPanel(TaskPanel.TaskPanel):
     """
-    Class: ManipulationPanel
     Created: 03.11.2004, KP
     Description: A window for restoring a single dataunit
     """
     def __init__(self,parent,tb):
         """
-        Method: __init__(parent)
         Created: 03.11.2004, KP
         Description: Initialization
         Parameters:
@@ -80,9 +78,11 @@ class ManipulationPanel(TaskPanel.TaskPanel):
         
 
         self.filtersByCategory={}
+        self.filtersByName={}
         self.categories=[]
 
         for currfilter in ManipulationFilters.getFilterList():
+            self.filtersByName[currfilter.getName()] = currfilter
             self.registerFilter(currfilter.getCategory(),currfilter)
       
         self.mainsizer.Layout()
@@ -92,7 +92,6 @@ class ManipulationPanel(TaskPanel.TaskPanel):
         
     def updateTimepoint(self,obj,event,timePoint):
         """
-        Method: updateTimepoint(event)
         Created: 27.04.2006, KP
         Description: A callback function called when the timepoint is changed
         """
@@ -100,7 +99,6 @@ class ManipulationPanel(TaskPanel.TaskPanel):
         
     def filterModified(self,filter):
         """
-        Method: filterModified
         Created: 14.05.2006, KP
         Description: A callback for when filter parameters change
         """
@@ -108,7 +106,6 @@ class ManipulationPanel(TaskPanel.TaskPanel):
         
     def setModified(self,flag):
         """
-        Method: setModified
         Created: 14.05.2006, KP
         Description: A callback for when filter parameters change
         """
@@ -116,7 +113,6 @@ class ManipulationPanel(TaskPanel.TaskPanel):
 
     def registerFilter(self,category,currfilter):
         """
-        Method: createButtonBox()
         Created: 03.11.2004, KP
         Description: Creates a button box containing the buttons Render,
         """
@@ -128,7 +124,6 @@ class ManipulationPanel(TaskPanel.TaskPanel):
         
     def createButtonBox(self):
         """
-        Method: createButtonBox()
         Created: 03.11.2004, KP
         Description: Creates a button box containing the buttons Render,
                      Preview and Close
@@ -141,9 +136,7 @@ class ManipulationPanel(TaskPanel.TaskPanel):
 
     def createOptionsFrame(self):
         """
-        Method: createOptionsFrame()
-        Created: 03.11.2004
-        Creator: KP
+        Created: 03.11.2004, KP
         Description: Creates a frame that contains the various widgets
                      used to control the colocalization settings
         """
@@ -191,7 +184,6 @@ class ManipulationPanel(TaskPanel.TaskPanel):
    
     def onReloadModules(self,event):
         """
-        Method: onReloadModules
         Created: 18.04.2006, KP
         Description: Reload the filtering modules
         """
@@ -210,7 +202,7 @@ class ManipulationPanel(TaskPanel.TaskPanel):
             print "Reloading",f
             filterclass=str(f.__class__)
             c=filterclass.split(".")[-1]
-            filterclass="ManipulationFilters.%s"%c
+            filterclass="%s"%c
             print "filter class=",filterclass
             filterclass=eval(filterclass)
             
@@ -224,12 +216,25 @@ class ManipulationPanel(TaskPanel.TaskPanel):
         del self.filters
         self.filters=copyfilters
             
-            
+    def getFilters(self, name):
+        """
+        Created: 21.07.2006, KP
+        Description: Retrieve the filters with the given name
+        """   
+                
+        func=lambda f, n=name:f.getName() == n
+        return filter(func, self.filters)
         
+    def getFilter(self, name, index=0):
+        """
+        Created: 21.07.2006, KP
+        Description: Retrieve the filter with the given name, using optionally an index 
+                     if there are more than one filter with the same name
+        """   
+        return self.getFilters(name)[index]
         
     def onMoveFilterDown(self,event):
         """
-        Method: onMoveFilterDown
         Created: 13.04.2006, KP
         Description: Move a filter down in the list
         """
@@ -253,7 +258,6 @@ class ManipulationPanel(TaskPanel.TaskPanel):
         
     def onMoveFilterUp(self,event):
         """
-        Method: onMoveFilterUp
         Created: 13.04.2006, KP
         Description: Move a filter up in the list
         """
@@ -276,36 +280,53 @@ class ManipulationPanel(TaskPanel.TaskPanel):
         
     def onRemoveFilter(self,event):
         """
-        Method: onRemoveFilter
         Created: 13.04.2006, KP
         Description: Remove a filter from the list
         """
         index = self.filterListbox.GetSelection()
         if index == -1:
             Dialogs.showerror(self,"You have to select a filter to be removed","No filter selected")
-            return        
+            return 
+        name = self.filters[index].getName()
+        undo_cmd=""
+        do_cmd="bxd.mainWindow.tasks['Process'].deleteFilter(index=%d, name='%s', %s)"%(index,name)
+        cmd=Command.Command(Command.GUI_CMD,None,None,do_cmd,undo_cmd,desc="Remove filter '%s'"%(name))
+        cmd.run()
+            
 
-        self.filterListbox.Delete(index)
-        del self.filters[index]
-        self.currentSelected=-1
-        self.removeGUI()
-        self.currentGUI=None
-        self.setModified(1)
         
     def onCheckFilter(self,event):
         """
-        Method: onCheckFilter
         Created: 13.04.2006, KP
         Description: Event handler called when user toggles filter on or off
         """
         index = event.GetSelection()
+        name = self.filters[index].getName()
         status=self.filterListbox.IsChecked(index)
+        cmd="Enable"
+        if not status:cmd="Disable"
+        undo_cmd="bxd.mainWindow.tasks['Process'].setFilter(index=%d, name='%s', %s)"%(index,name,str(not status))
+        do_cmd="bxd.mainWindow.tasks['Process'].setFilter(index=%d, name='%s', %s)"%(index,name,str(not not status))
+        cmd=Command.Command(Command.GUI_CMD,None,None,do_cmd,undo_cmd,desc="%s filter '%s'"%(cmd,name))
+        cmd.run()
+        
+    def setFilter(self, status, index = -1, name=""):
+        """
+        Created: 21.07.2006, KP
+        Description: Set the status of a given filter by either it's index, or
+                     if index is not given, it's name
+        """        
+        if index==-1:
+            for i in self.filters:
+                if i.getName()==name:
+                    index=i
+                    break
+        if index==-1:return False
         self.filters[index].setEnabled(status)
         self.setModified(1)
         
     def removeGUI(self):
         """
-        Method: removeGUI
         Created: 18.04.2006, KP
         Description: Remove the GUI
         """        
@@ -316,7 +337,6 @@ class ManipulationPanel(TaskPanel.TaskPanel):
         
     def onSelectFilter(self,event):
         """
-        Method: onSelectFilter
         Created: 13.04.2006, KP
         Description: Event handler called when user selects a filter in the listbox
         """
@@ -336,14 +356,41 @@ class ManipulationPanel(TaskPanel.TaskPanel):
         self.Layout()
         self.panelsizer.Fit(self.panel)
         
+    def loadFilter(self, className):
+        """
+        Created: 21.07.2006, KP
+        Description: Add a filter with the given name to the stack
+        """
+        filterclass = self.filtersByName[className]
+        return self.addFilter(None,filterclass)
+        
+    def deleteFilter(self, index=-1, name=""):
+        """
+        Created: 21.07.2006, KP
+        Description: Delete a filter by either it's index, or
+                     if index is not given, it's name
+        """           
+        if index==-1:
+            for i in self.filters:
+                if i.getName()==name:
+                    index=i
+                    break
+        if index==-1:return False
+            
+        self.filterListbox.Delete(index)
+        del self.filters[index]
+        self.currentSelected=-1
+        self.removeGUI()
+        self.currentGUI=None
+        self.setModified(1)
+        
+            
         
     def addFilter(self,event,filterclass):
         """
-        Method: addFilter
         Created: 13.04.2006, KP
         Description: Add a filter to the stack
-        """
-        print "Request to add filter",filterclass
+        """        
         addfilter = filterclass()
         addfilter.setTaskPanel(self)
         addfilter.setDataUnit(self.dataUnit)
@@ -359,7 +406,6 @@ class ManipulationPanel(TaskPanel.TaskPanel):
 
     def onShowAddMenu(self,event):
         """
-        Method: onShowAddMenu
         Created: 13.04.2006, KP
         Description: Show a menu for adding filters to the stack
         """
@@ -372,8 +418,14 @@ class ManipulationPanel(TaskPanel.TaskPanel):
                 for currfilter in self.filtersByCategory[i]:
                     menuid = wx.NewId()
                     name = currfilter.getName()
+                    
                     submenu.Append(menuid,name)
-                    f=lambda evt, x=currfilter: self.addFilter(evt,x)
+                    n = len(self.filters)
+                    undo_cmd="bxd.mainWindow.tasks['Process'].deleteFilter(index=%d, name = '%s')"%(n,name)
+                    do_cmd="bxd.mainWindow.tasks['Process'].loadFilter('%s')"%name
+                    cmd=Command.Command(Command.GUI_CMD,None,None,do_cmd,undo_cmd,desc="Load filter %s"%name)
+                    
+                    f=lambda evt, c=cmd: c.run()
                     self.Bind(wx.EVT_MENU,f,id=menuid)
                 menu.AppendMenu(-1,i,submenu)
             self.menu = menu
@@ -382,7 +434,6 @@ class ManipulationPanel(TaskPanel.TaskPanel):
 
     def doFilterCheckCallback(self,event=None):
         """
-        Method: doFilterCheckCallback(self)
         Created: 14.12.2004, JV
         Description: A callback function called when the neither of the
                      filtering checkbox changes state
@@ -390,7 +441,6 @@ class ManipulationPanel(TaskPanel.TaskPanel):
 
     def updateSettings(self,force=0):
         """
-        Method: updateSettings()
         Created: 03.11.2004, KP
         Description: A method used to set the GUI widgets to their proper values
         """
@@ -426,7 +476,6 @@ class ManipulationPanel(TaskPanel.TaskPanel):
                 
     def updateFilterData(self):
         """
-        Method: updateFilterData()
         Created: 13.12.2004, JV
         Description: A method used to set the right values in dataset
                      from filter GUI widgets
@@ -436,7 +485,6 @@ class ManipulationPanel(TaskPanel.TaskPanel):
         
     def doProcessingCallback(self,*args):
         """
-        Method: doProcessingCallback()
         Created: 03.11.2004, KP
         Description: A callback for the button "Manipulation Dataset Series"
         """
@@ -445,7 +493,6 @@ class ManipulationPanel(TaskPanel.TaskPanel):
 
     def doPreviewCallback(self,event=None,*args):
         """
-        Method: doPreviewCallback()
         Created: 03.11.2004, KP
         Description: A callback for the button "Preview" and other events
                      that wish to update the preview
@@ -455,7 +502,6 @@ class ManipulationPanel(TaskPanel.TaskPanel):
 
     def createItemToolbar(self):
         """
-        Method: createItemToolbar()
         Created: 16.04.2006, KP
         Description: Method to create a toolbar for the window that allows use to select processed channel
         """      
@@ -501,7 +547,6 @@ class ManipulationPanel(TaskPanel.TaskPanel):
 
     def setCombinedDataUnit(self,dataUnit):
         """
-        Method: setCombinedDataUnit(dataUnit)
         Created: 23.11.2004, KP
         Description: Sets the Manipulationed dataunit that is to be Manipulationed.
                      It is then used to get the names of all the source data

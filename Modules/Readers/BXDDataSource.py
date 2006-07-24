@@ -146,6 +146,7 @@ class BXDDataSource(DataSource):
             #self.readInfo(data)
             self.dimensions = eval(self.settings.get("Dimensions"))
             
+            
         return self.dimensions
     def updateProgress(self,obj,evt):
         """
@@ -295,6 +296,7 @@ class BXDDataSource(DataSource):
         settings = DataUnit.DataUnitSettings()
         #settings = eval(settingsclass)
         settings = settings.readFrom(self.parser)
+        self.originalDimensions = eval(settings.get("Dimensions"))
         self.settings = settings
         dataunit.setDataSource(self)
         dataunit.setSettings(settings)

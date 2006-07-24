@@ -64,6 +64,7 @@ class LeicaDataSource(DataSource):
         self.filename=filename
         self.reader = LeicaExperiment(filename)
         self.experiment = experiment
+        self.originalDimensions=self.reader.GetDimensions(self.experiment)
         self.channel = channel
         self.dimensions = None
         self.voxelsize = None
@@ -110,7 +111,7 @@ class LeicaDataSource(DataSource):
         if self.resampleDims:
             return self.resampleDims
         if not self.dimensions:
-            self.dimensions=self.reader.GetDimensions(self.experiment)
+            self.dimensions=self.reader.GetDimensions(self.experiment)            
             #print "Got dimensions=",self.dimensions
         return self.dimensions
 

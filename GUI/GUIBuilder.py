@@ -37,7 +37,7 @@ import wx.lib.buttons as buttons
 import  wx.lib.filebrowsebutton as filebrowse
 
 import messenger
-
+import Logging
 
 RADIO_CHOICE="RADIO_CHOICE"
 THRESHOLD="THRESHOLD"
@@ -45,7 +45,10 @@ PIXEL="PIXEL"
 PIXELS="PIXELS"
 SLICE="SLICE"
 FILENAME="FILENAME"
-
+CHOICE="CHOICE"
+SPINCTRL="SPINCTRL"
+NOBR="NOBR"
+BR="BR"
 
 class GUIBuilderBase:
     """
@@ -73,7 +76,7 @@ class GUIBuilderBase:
         """          
         for item in self.getPlainParameters():
             value = self.getParameter(item)
-            print "set_parameter",item,value
+#            print "set_parameter",item,value
             messenger.send(self,"set_%s"%item,value)
 
     
@@ -95,7 +98,6 @@ class GUIBuilderBase:
     
     def getPlainParameters(self):
         """
-        Method: getPlainParameters
         Created: 15.04.2006, KP
         Description: Return whether this filter is enabled or not
         """
@@ -113,7 +115,6 @@ class GUIBuilderBase:
         
     def setParameter(self,parameter,value):
         """
-        Method: setParameter
         Created: 13.04.2006, KP
         Description: Set a value for the parameter
         """    
@@ -227,16 +228,22 @@ class GUIBuilder(wx.Panel):
             sizer.Add(chlSel,(gy,0),span=(1,2))
         
             gy+=1
-        
+        nobr = 0
+        cx=0
         for param in parameters:
+
             # If it's a list with header name and items
             if type(param) == types.ListType:
                 sboxname,items = param
                 itemsizer = wx.GridBagSizer()
 
-                y=0                
+                y=-1
                 skip=0
                 for n,item in enumerate(items):
+                    if item == NOBR:
+                        nobr = 1
+                        continue
+
                     if skip:
                         skip-=1
                         continue
@@ -248,14 +255,25 @@ class GUIBuilder(wx.Panel):
                         isTuple=1
                     else:
                         itemType = currentFilter.getType(item)
-                    
+                    print "item=",item,"param=",param
                     print "itemType=",itemType,"isTuple=",isTuple
+                    
                     print "items=",items
-                    if not (isTuple and itemType == types.BooleanType) and itemType not in [RADIO_CHOICE, SLICE, PIXEL, PIXELS, THRESHOLD, FILENAME]:
-                        self.processItem(currentFilter,itemsizer,item,x=0,y=y)
-                        y+=1
+                    
+                    if not (isTuple and itemType == types.BooleanType) and itemType not in [RADIO_CHOICE, SLICE, PIXEL, PIXELS, THRESHOLD, FILENAME, CHOICE]:
+                        if not nobr:
+                            y+=1
+                            cx=0
+                        else:
+                            nobr = 0
+                            cx+=1
+                        cx, y = self.processItem(currentFilter,itemsizer,item,x=cx,y=y)
+                        
                     else: # Items that are contained in a tuple ask to be grouped
                           # together
+                        if not nobr:
+                            y+=1
+                        print "cx=",cx,"y=",y
                         if itemType == RADIO_CHOICE:
                             # Indicate that we need to skip next item
                             skip=1
@@ -319,6 +337,7 @@ class GUIBuilder(wx.Panel):
                             messenger.connect(currentFilter,"update_%s"%itemName,f)
                             
                             box.Add(slider,1)
+                            print "Adding box to ",y,0
                             itemsizer.Add(box,(y,0),flag=wx.EXPAND|wx.HORIZONTAL)
                             y+=1
                         elif itemType == FILENAME:
@@ -342,7 +361,28 @@ class GUIBuilder(wx.Panel):
                             box.Add(browse,1)                            
                             itemsizer.Add(box,(y,0),flag = wx.EXPAND|wx.HORIZONTAL)
                             y+=1
+                        elif itemType == CHOICE:
+                            box = wx.BoxSizer(wx.VERTICAL)
+                            text = currentFilter.getDesc(itemName)
+                            val = currentFilter.getDefaultValue(itemName)
                             
+                            lbl = wx.StaticText(self,-1,text)
+                            box.Add(lbl)
+
+                            choices = currentFilter.getRange(itemName)
+                            func = lambda evt, its=item,f=currentFilter, i = itemName, s = self: s.onSetChoice(f, i, evt)
+                            choice = wx.Choice(self,-1,choices=choices)
+                            
+                            choice.SetSelection(val)
+                            choice.Bind(wx.EVT_CHOICE,func)
+                            
+                            f=lambda obj,evt,arg, c=choice, i=itemName, s=self: s.onSetChoiceFromFilter(c,i,arg)
+                            messenger.connect(currentFilter,"set_%s"%itemName,f) 
+                            
+                            
+                            box.Add(choice,1)
+                            itemsizer.Add(box,(y,0),flag=wx.EXPAND|wx.HORIZONTAL)
+                            y+=1
                         elif itemType == PIXEL:
                             print "Creating pixel selection"
                             lbl = wx.StaticText(self,-1,"(%d,%d,%d)"%(0,0,0),size=(80,-1))
@@ -455,6 +495,16 @@ class GUIBuilder(wx.Panel):
             y+=1
         return sizer
         
+    def onSetChoice(self, filter, item, evt):
+        """
+        Method: onSetChoice
+        Created: 20.07.2006, KP
+        Description: Set the parameter to the value of the choice widget
+        """           
+        value = evt.GetSelection()
+        print "Setting parameter",item,"to",value
+        filter.setParameter(item, value)        
+        
     def onSetFileName(self, filter, item, evt):
         """
         Method: onSetFileName
@@ -464,6 +514,16 @@ class GUIBuilder(wx.Panel):
         filename= evt.GetString()
         print "Setting parameter",item,"to",filename
         filter.setParameter(item, filename)
+        
+    def onSetChoiceFromFilter(self, cc, itemName, value):
+        """
+        Method: onSetChoiceFromFilter
+        Created: 12.07.2006, KP
+        Description: Set the file name
+        """           
+        cc.SetSelection(value)
+    
+        
 
     def onSetFileNameFromFilter(self, bb, itemName, value):
         """
@@ -493,7 +553,15 @@ class GUIBuilder(wx.Panel):
         """                 
         
         slider.SetValue(value)
-                    
+
+    def onSetSpinFromFilter(self,spin,item,value):
+        """
+        Method: onSetSpinFromFilter
+        Created: 21.06.2006, KP
+        Description: Set the value for the GUI item 
+        """                         
+        spin.SetValue(value)
+
     def onSetInputChannel(self,currentFilter,inputNum,evt):
         """
         Method: onSetInputChannel
@@ -512,7 +580,11 @@ class GUIBuilder(wx.Panel):
         desc = currentFilter.getDesc(item)
         
         itemType = currentFilter.getType(item)
-        if itemType not in [types.BooleanType]:
+        br = 0        
+        if desc and desc[-1]=='\n':
+            desc=desc[:-1]
+            br = 1
+        if  desc and itemType not in [types.BooleanType]:
             lbl = wx.StaticText(self,-1,desc)
         else:
             lbl = None
@@ -522,6 +594,8 @@ class GUIBuilder(wx.Panel):
             input = self.createNumberInput(currentFilter, item, itemType, defaultValue, desc)
         elif itemType == types.BooleanType:
             input = self.createBooleanInput(currentFilter, item, itemType, defaultValue, desc)
+        elif itemType == SPINCTRL:
+            input  = self.createSpinInput(currentFilter, item, itemType, defaultValue, desc)
         else:
             raise "Unrecognized input type: %s"%str(itemType)
         txt = currentFilter.getLongDesc(item)
@@ -530,9 +604,17 @@ class GUIBuilder(wx.Panel):
 
         x2=x
         if lbl:
+            print "Adding label",desc," to ",(x,y)
             itemsizer.Add(lbl,(y,x))
-            x2+=1
+            if not br:
+                x2+=1
+            else:
+                y+=1
+        print "Adding input to",x2,y
         itemsizer.Add(input,(y,x2))
+        if br:
+            y+=1
+        return (x,y)
                         
     def createNumberInput(self,currentFilter,item,itemType,defaultValue,label = ""):
         """
@@ -547,6 +629,34 @@ class GUIBuilder(wx.Panel):
         messenger.connect(currentFilter,"set_%s"%item,f)
 
         return input
+        
+                        
+    def createSpinInput(self,currentFilter,itemName,itemType,defaultValue,label = ""):
+        """
+        Created: 15.04.2006, KP
+        Description: Return the input for int type
+        """        
+        minval,maxval = currentFilter.getRange(itemName)
+        
+        spin = wx.SpinCtrl(self,-1, style=wx.SP_VERTICAL)
+        func = lambda evt, its=itemName, sp=spin, f=currentFilter:self.onSetSpinValue(evt,sp,its,f)
+        spin.Bind(wx.EVT_SPINCTRL,func)
+        spin.Bind(wx.EVT_TEXT,func)
+        
+        f=lambda obj,evt,arg, spin=spin, i=itemName, s=self: s.onSetSpinFromFilter(spin,i,arg)
+            
+        messenger.connect(currentFilter,"set_%s"%itemName,f)
+
+        def updateRange(currentFilter,itemName, spin):
+            minval,maxval = currentFilter.getRange(itemName)
+            Logging.backtrace()
+            print "\n\n\n**** SET SPIN RANGE",minval,maxval
+            spin.SetRange(minval,maxval)
+        
+        f = lambda obj,evt, spin=spin, i=itemName,fi=currentFilter,s=self: updateRange(fi,i,spin)
+        messenger.connect(currentFilter,"update_%s"%itemName,f)
+        
+        return spin
         
     def onSetNumber(self, input, item, value):
         """
@@ -679,7 +789,18 @@ class GUIBuilder(wx.Panel):
         """      
         value = evt.GetPosition()
         currentFilter.setParameter(items, value)
+
+    def onSetSpinValue(self,evt,spinbox,itemName,currentFilter):
+        """
+        Method: onSetSpinValue
+        Created: 31.05.2006, KP
+        Description: Set the spin value
+        """      
+        value = spinbox.GetValue()
+        value = int(value)
+        currentFilter.setParameter(itemName, value)
             
+
             
     def onSelectRadioBox(self,evt,items,currentFilter):
         """

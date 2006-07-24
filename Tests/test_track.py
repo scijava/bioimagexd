@@ -5,11 +5,15 @@ import psyco
 import time
 import os.path
 import codecs
+
+
+
 class ParticleReader:
-    def __init__(self,filename, timepoint = 0, filterObjectSize = 2):
+    def __init__(self,filename, timepoint = 0, filterObjectSize = 2, spacing=(1,1,1)):
         self.rdr = csv.reader(open(filename), dialect="excel",delimiter=";")
         self.filterObjectSize = filterObjectSize
         self.timepoint = timepoint
+        self.spacing = spacing
     def read(self):
         ret=[]
         for obj, sizemicro,size,cog in self.rdr:
@@ -20,18 +24,25 @@ class ParticleReader:
             
             if int(obj)==0:continue
             if size >= self.filterObjectSize:
-                cog = eval(cog)
-                p = Particle(cog, self.timepoint)
+                x,y,z = eval(cog)
+                intpos=x,y,z
+                x*=self.spacing[0]
+                y*=self.spacing[1]
+                z*=self.spacing[2]
+                cog = (x,y,z)
+                p = Particle(cog, intpos, self.timepoint, size)
                 ret.append(p)
         return ret
 
 class Particle:
-    def __init__(self, pos = (0,0,0), tp = 0):
+    def __init__(self, pos = (0,0,0),intpos=(0,0,0), tp = 0, size=1):
         self.pos = pos
         self.tp = tp
+        self.size = size
         self.inTrack = 0
         self.flag = 0
         self.trackNum = -1
+        self.posInPixels=intpos
         
     def distance(self, p):       
         x,y,z=p.pos
@@ -39,10 +50,13 @@ class Particle:
         dx=x-x2
         dy=y-y2
         dz=z-z2
-        return math.sqrt(dx*dx+dy*dy+dz*dz)
+        dsize = p.size-self.size
+        return math.sqrt(dx*dx+dy*dy+dz*dz+dsize*dsize)
         
     def copy(self, p):
+        self.size = p.size
         self.pos = p.pos
+        self.posInPixels = p.posInPixels
         self.inTrack = p.inTrack
         self.flag = p.flag
         self.tp = p.tp
@@ -130,12 +144,12 @@ def get_tracks(particles, maxVelocity = 5):
                 tracks.append(track)
     return tracks
 
-def main(fileprefix,n, maxvel = 15):
+def main(fileprefix,n, maxvel = 15, vx=1.0,vy=1.0,vz=1.0):
     particles=[]
     for i in range(0,n+1):
         file="%s_%d.csv"%(fileprefix,i)
         if os.path.exists(file):
-            rdr = ParticleReader(file, i-1, filterObjectSize = 10)
+            rdr = ParticleReader(file, i-1, filterObjectSize = 10, spacing = (vx,vy,vz))
             particles.append(rdr.read())
     for i,list in enumerate(particles):
         print "In timepoint %d, there are %d particles"%(i,len(list))
@@ -152,14 +166,14 @@ def main(fileprefix,n, maxvel = 15):
     for i,track in enumerate(tracks):
         if len(track)<3:continue
         for particle in track:
-            x,y,z=particle.pos
+            x,y,z=particle.posInPixels
             w.writerow([str(i),str(particle.tp), str(x),str(y),str(z)])        
     f.close()
     
 
 if __name__ == '__main__':
     if len(sys.argv) <3:
-        print "Usage: track <file prefix> <number of timepoints> [max velocity = 15]"
+        print "Usage: track <file prefix> <number of timepoints> [max velocity = 15] [voxel size x] [voxel size y] [voxel size z]"
         print "Track files are assumed to be named <file prefix>_<timepoint>.csv"
         sys.exit(1)
         
@@ -167,6 +181,8 @@ if __name__ == '__main__':
         maxvel = int(sys.argv[3])
     else:
         maxvel = 15
+    if len(sys.argv)>5:
+        vx, vy, vz = map(float,sys.argv[4:7])
     n=int(sys.argv[2])
     psyco.full()
-    main(sys.argv[1], n, maxvel)
+    main(sys.argv[1], n, maxvel, vx,vy,vz)

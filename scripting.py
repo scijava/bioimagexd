@@ -46,6 +46,7 @@ app = None
 mainWindow = None
 processingManager = None
 memLimit = None
+resamplingDisabled = 0
 
 
 def execute_limited(pipeline):

@@ -125,6 +125,7 @@ class InterfileDataSource(DataSource):
                 
         print "dims=",self.dimensions
         x = self.voxelsize[0]
+        self.originalDimensions = self.dimensions
         self.spacing = [1, self.voxelsize[1] / x, self.voxelsize[2] / x]
     def getDataSetCount(self):
         """

@@ -336,12 +336,12 @@ class MainWindow(wx.Frame):
         """    
         if not undo:
             if command.canUndo():
-                undolbl="Undo %s..."%command.getCategory()
+                undolbl="Undo: %s...\tCtrl-Z"%command.getDesc()
                 self.menuManager.menus["edit"].SetLabel(MenuManager.ID_UNDO,undolbl)
         else:
-            redolbl="Redo %s..."%command.getCategory()
+            redolbl="Redo: %s...\tShift-Ctrl-Z"%command.getCategory()
             self.menuManager.menus["edit"].SetLabel(MenuManager.ID_REDO,redolbl)
-            self.menuManager.menus["edit"].SetLabel(MenuManager.ID_UNDO,"Undo...")
+            self.menuManager.menus["edit"].SetLabel(MenuManager.ID_UNDO,"Undo...\tCtrl-Z")
         self.menuManager.addCommand(command)
         
     def onDeleteDataset(self,obj,evt,arg):
@@ -689,6 +689,15 @@ class MainWindow(wx.Frame):
                 
         
         tb.AddSeparator()
+        
+        self.resampleBtn = wx.Button(tb, -1,"Resampling")
+        self.resampleBtn.SetHelpText("Use this button to enable or disable the resampling of data.")
+        self.resampleBtn.Bind(wx.EVT_LEFT_DOWN,lambda x:self.onResampleData(x,0))
+        self.resampleBtn.Bind(wx.EVT_LEFT_UP,lambda x:self.onResampleData(x,1))
+        
+        tb.AddControl(self.resampleBtn)
+        
+        
         self.cBtn = wx.ContextHelpButton(tb,MenuManager.CONTEXT_HELP)
         tb.AddControl(self.cBtn)
         self.cBtn.Bind(wx.EVT_BUTTON,self.onContextHelp)
@@ -880,10 +889,19 @@ class MainWindow(wx.Frame):
         self.showToolNames=evt.IsChecked() 
         self.GetToolBar().Destroy()
         self.createToolBar()
-  
+
+    def onResampleData(self,evt, flag):
+        """
+        Created: 23.07.2006, KP
+        Description: Toggle the resampling on / off
+        """
+        bxd.resamplingDisabled = (not flag)
+        self.visualizer.updateRendering()
+        evt.Skip()
+
+
     def onShowCommandHistory(self,evt=None):
         """
-        Method: onShowCommandHistory
         Created: 13.02.2006, KP
         Description: Show the command history
         """
@@ -1019,7 +1037,6 @@ class MainWindow(wx.Frame):
         
     def onCloseTaskPanel(self,event):
         """
-        Method: onCloseTaskPanel(event)
         Created: 14.07.2005, KP
         Description: Called when the user wants to close the task panel
         """
@@ -1038,6 +1055,9 @@ class MainWindow(wx.Frame):
         self.menuManager.disable(MenuManager.ID_CLOSE_TASKWIN)            
         self.taskWin.SetDefaultSize((0,0))
         
+        tb = self.GetToolBar()
+        for eid in self.taskIds:
+            tb.ToggleTool(eid,0)
         #self.onMenuShowTree(None,1)
         # Set the dataunit used by visualizer to one of the source units
         
@@ -1387,7 +1407,6 @@ class MainWindow(wx.Frame):
             self.onCloseTaskPanel(None)            
             return
         
-
         do_cmd = 'bxd.mainWindow.loadTask("%s")'%(taskname)
         if self.currentTaskWindowName:
             undo_cmd = 'bxd.mainWindow.loadTask("%s")'%(self.currentTaskWindowName)
@@ -1398,7 +1417,6 @@ class MainWindow(wx.Frame):
         
     def closeTask(self):
         """
-        Method: closeTask
         Created: 16.07.2006, KP
         Description: Close the current task window
         """   

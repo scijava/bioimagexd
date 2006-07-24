@@ -35,6 +35,7 @@ import os.path
 import Configuration
 import Logging
 from DataUnit import *
+import scripting
 
 class DataWriter:
     """
@@ -158,16 +159,22 @@ class DataSource:
         Method: setResampleDimensions
         Created: 1.09.2005, KP
         Description: Set the resample dimensions
-        """    
+        """
         self.resampleDims=dims
         
     def getOriginalScalarRange(self):
         """
-        Method: getOriginalScalarRange
         Created: 12.04.2006, KP
         Description: Return the original scalar range for this dataset
         """                
         return self.originalScalarRange
+        
+    def getOriginalDimensions(self):
+        """
+        Created: 12.04.2006, KP
+        Description: Return the original scalar range for this dataset
+        """             
+        return self.originalDimensions
         
     def getResampleFactors(self):
         """
@@ -179,7 +186,6 @@ class DataSource:
             if not self.originalDimensions:
                 rd=self.resampleDims
                 self.resampleDims=None
-                self.originalDimensions = self.getDimensions()
                 self.resampleDims=rd
             
             x,y,z=self.originalDimensions
@@ -197,7 +203,8 @@ class DataSource:
             
             vx,vy,vz=self.getVoxelSize()
         
-            rx,ry,rz=self.getResampleFactors()           
+            rx,ry,rz=self.getResampleFactors()        
+            print "\n\n****resample factors=",rx,ry,rz
             self.resampledVoxelSize=(vx/rx,vy/ry,vz/rz)
         return self.resampledVoxelSize
 
@@ -210,7 +217,8 @@ class DataSource:
         """
         if self.limitDims:
             dims=self.getDimensions()
-            print dims,self.limitDims
+            #self.originalDimensions = dims
+            #print dims,self.limitDims
             if dims[0]*dims[1] > self.limitDims[0]*self.limitDims[1]:
                 x,y=self.toDims
                 print "Setting resample dims",(x,y,dims[2])
@@ -288,7 +296,8 @@ class DataSource:
         Description: Return the data resampled to given dimensions
         """
         #print "getResampledData",data
-        if not (not tmpDims and not self.resampleDims and not self.limitDims):
+
+        if not scripting.resamplingDisabled and not (not tmpDims and not self.resampleDims and not self.limitDims):
             
             useDims = self.getResampleDimensions()
             if tmpDims:

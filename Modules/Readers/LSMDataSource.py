@@ -93,6 +93,7 @@ class LsmDataSource(DataSource.DataSource):
                 return
             self.reader.SetFileName(self.filename)
             self.reader.Update()
+            self.originalDimensions = self.reader.GetDimensions()[0:3]
             if self.reader.IsCompressed():
                 raise Logging.GUIError("Cannot handle compressed dataset","The dataset you've selected (%s) is compressed. The LSM reader cannot currently read compressed data."%filename)
             self.updateProgress(None,None)

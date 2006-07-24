@@ -63,6 +63,7 @@ infoString="""<html><body bgcolor=%(bgcolor)s">
 infoStringResample="""<html><body bgcolor=%(bgcolor)s">
 <table>
 <tr><td>Resampled Dimensions:</td><td>%(xdim)d %(smX)s %(ydim)d %(smX)s %(zdim)d (%(nf)s%(xdimm).2f%(fe)s&mu;m %(smX)s %(nf)s%(ydimm).2f%(fe)s&mu;m %(smX)s %(nf)s%(zdimm).2f%(fe)s&mu;m)</td></tr>
+<tr><td>Original Dimensions::</td><td>%(oxdim)d %(smX)s %(oydim)d %(smX)s %(ozdim)d (%(nf)s%(oxdimm).2f%(fe)s&mu;m %(smX)s %(nf)s%(oydimm).2f%(fe)s&mu;m %(smX)s %(nf)s%(ozdimm).2f%(fe)s&mu;m)</td></tr>
 <tr><td>Time Points:</td><td>%(tps)d</td></tr>
 <tr><td>Resampled Voxel Size:</td><td>%(nf)s%(voxelX).3f%(fe)s&mu;m %(smX)s %(nf)s%(voxelY).3f%(fe)s&mu;m %(smX)s %(nf)s%(voxelZ).3f%(fe)s&mu;m</td></tr>
 <tr><td>Excitation wavelength:</td><td>%(excitation)s</td></tr>
@@ -141,6 +142,7 @@ class InfoWidget(wx.Panel):
             resampledims=(0,0,0)
             rsVoxelsize=(0,0,0)
             spacing=(0,0,0)
+            odims=(0,0,0)
             voxelsize=(0,0,0)
             bitdepth=8
             intlower=0
@@ -150,8 +152,13 @@ class InfoWidget(wx.Panel):
             emission="n/a"
         else:
             dims=dataunit.getDimensions()
+            odims=(0,0,0)
             print "Got dims=",dims
             resampledims=dataunit.dataSource.getResampleDimensions()
+            if resampledims:
+               odims=dataunit.dataSource.getOriginalDimensions()
+               print "original dimensions=",odims
+
             spacing=dataunit.getSpacing()
             voxelsize=dataunit.getVoxelSize()
             rsVoxelsize=dataunit.getResampledVoxelSize()
@@ -187,13 +194,23 @@ class InfoWidget(wx.Panel):
         
         if not resampledims:
             voxelX,voxelY,voxelZ=voxelsize
+            ovoxelX,ovoxelY,ovoxelZ=voxelsize
             xdim,ydim,zdim=dims
+            oxdim,oydim,ozdim = odims
+            
         else:
             voxelX,voxelY,voxelZ=rsVoxelsize
+            ovoxelX,ovoxelY,ovoxelZ=voxelsize
             xdim,ydim,zdim = resampledims
+            oxdim,oydim,ozdim = odims
+        
         voxelX*=1000000
         voxelY*=1000000
         voxelZ*=1000000
+        ovoxelX*=1000000
+        ovoxelY*=1000000
+        ovoxelZ*=1000000
+        
         spX,spY,spZ=spacing
             
         if resampledims:
@@ -209,7 +226,8 @@ class InfoWidget(wx.Panel):
         "rxdim":rxdim,"rydim":rydim,"rzdim":rzdim,
         "rxdimm":rxdim*voxelX,"rydimm":rydim*voxelY,"rzdimm":rzdim*voxelZ,
         "spX":spX,"spY":spY,"spZ":spZ,"xdimm":xdim*voxelX,
-        "ydimm":ydim*voxelY,"zdimm":zdim*voxelZ,"bgcolor":bgcol,
+        "ydimm":ydim*voxelY,"zdimm":zdim*voxelZ,"oydim":oydim,"oxdim":oxdim,"ozdim":ozdim,
+        "oxdimm":oxdim*ovoxelX,"oydimm":oydim*ovoxelY,"ozdimm":ozdim*ovoxelZ,"bgcolor":bgcol,
         "fe":"</font>","nf":"<font size=\"normal\">",
         "tps":tps,"bitdepth":bitdepth,"intlower":intlower,"intupper":intupper,
         "excitation":excitation,"emission":emission}

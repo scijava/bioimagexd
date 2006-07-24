@@ -33,6 +33,7 @@ __date__ = "$Date: 2005/01/13 14:52:39 $"
 import wx
 import types
 import vtk
+import Command
 try:
     import itk
 except:
@@ -80,10 +81,7 @@ class ManipulationFilter(GUIBuilder.GUIBuilderBase):
         Created: 13.04.2006, KP
         Description: Initialization
         """
-        self.taskPanel = None
-        print self
-        
-        
+        self.taskPanel = None                
         GUIBuilder.GUIBuilderBase.__init__(self, changeCallback = self.notifyTaskPanel)
 
         self.numberOfInputs = numberOfInputs
@@ -107,6 +105,38 @@ class ManipulationFilter(GUIBuilder.GUIBuilderBase):
         self.vtkToItk = None
         self.itkToVtk = None
         self.G = "UC3"
+        
+    def set(self, parameter, value):
+        """
+        Method: set
+        Created: 21.07.2006, KP
+        Description: Set the given parameter to given value
+        """   
+        GUIBuilder.GUIBuilder.setParameter(self, parameter, value)
+        # Send a message that will update the GUI
+        messenger.send(self,"set_%s"%parameter,value)
+
+        
+    def setParameter(self,parameter,value):
+        """
+        Method: setParameter
+        Created: 13.04.2006, KP
+        Description: Set a value for the parameter
+        """ 
+        if self.taskPanel:                
+            lst = self.taskPanel.getFilters(self.name)
+            i = lst.index(self)
+            if len(lst)==1:
+                func="getFilter('%s')"%self.name
+            else:
+                func="getFilter('%s', %d)"%(self.name,i)        
+            oldval = self.parameters[parameter]
+            do_cmd="bxd.mainWindow.tasks['Process'].%s.set('%s',%s)"%(func,parameter,str(value))
+            undo_cmd="bxd.mainWindow.tasks['Process'].%s.set('%s',%s)"%(func,parameter,str(oldval))
+            cmd=Command.Command(Command.PARAM_CMD,None,None,do_cmd,undo_cmd,desc="Change parameter '%s' of filter '%s'"%(parameter,self.name))
+            cmd.run(recordOnly = 1)          
+            
+        GUIBuilder.GUIBuilderBase.setParameter(self, parameter, value)
         
     def writeOutput(self, dataUnit, timePoint):
         """

@@ -325,6 +325,7 @@ class OlympusDataSource(DataSource):
         vy/=float(y)
         if z>1:
             vz/=float(z-1)
+        self.originalDimensions = (x,y,z)
         return x,y,z,timepoints,channels,vx,vy,vz
                 
                 
