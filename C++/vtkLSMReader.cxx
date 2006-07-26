@@ -1033,9 +1033,15 @@ void vtkLSMReader::CalculateExtentAndSpacing(int extent[6],double spacing[3])
   extent[3] = this->Dimensions[1]-1;
   extent[5] = this->Dimensions[2]-1;
 
-  spacing[0] = 1;
-  spacing[1] = this->VoxelSizes[1]/this->VoxelSizes[0];
-  spacing[2] = this->VoxelSizes[2]/this->VoxelSizes[0];
+  // Instead of normalized spacing, return the real voxel sizes, only scaled to micrometer range.
+  // This is so that the physical information is carried to the ITK side as well, when doing 
+  // calculations
+  //spacing[0] = 1;
+  //spacing[1] = this->VoxelSizes[1]/this->VoxelSizes[0];
+  //spacing[2] = this->VoxelSizes[2]/this->VoxelSizes[0];
+  spacing[0] = this->VoxelSizes[0]*1000000;
+  spacing[1] = this->VoxelSizes[1]*1000000;
+  spacing[2] = this->VoxelSizes[2]*1000000;    
 }
 
 //----------------------------------------------------------------------------
