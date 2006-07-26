@@ -213,7 +213,7 @@ template < class T >
     pd->GetScalars()->SetName("Colocalization map");
 
 	 
-    int maxval=pow(2.0f,sizeof(T)*8.0f)-1;
+    int maxval=(int)pow(2.0f,sizeof(T)*8.0f)-1;
     maxX = outExt[1] - outExt[0];
     maxY = outExt[3] - outExt[2];
     maxZ = outExt[5] - outExt[4];
@@ -598,7 +598,7 @@ template < class T >
 
 
     //Mander's original
-    //[i.e. E(ch1if ch2>0) ÷ E(ch1total)]
+    //[i.e. E(ch1if ch2>0) Ã· E(ch1total)]
     double M1 = mCh1coloc / sumCh1total;
     double M2 = mCh2coloc / sumCh2total;
 
@@ -613,14 +613,14 @@ template < class T >
     self->SetK1(K1);
     self->SetK2(K2);
     //Manders using threshold
-    //[i.e. E(ch1 if ch2>ch2threshold) ÷ (Ech1total)]
+    //[i.e. E(ch1 if ch2>ch2threshold) Ã· (Ech1total)]
     double colocM1 = (double) colocX / (double) sumCh1total;
     double colocM2 = (double) colocY / (double) sumCh2total;
     self->SetThresholdM1(colocM1);
     self->SetThresholdM2(colocM2);
 
     //as in Coste's paper
-    //[i.e. E(ch1>ch1threshold) ÷ E(ch1total)]
+    //[i.e. E(ch1>ch1threshold) Ã· E(ch1total)]
 
     double colocC1 = (double) sumCh1gtT / (double) sumCh1total;
     double colocC2 = (double) sumCh2gtT / (double) sumCh2total;
