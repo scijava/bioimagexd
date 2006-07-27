@@ -3,7 +3,7 @@
 
 [Setup]
 AppName=BioImageXD
-AppVerName=BioImageXD prebeta 0.9.1-10
+AppVerName=BioImageXD prebeta 0.9.1-16
 AppPublisher=BioImageXD development team
 AppPublisherURL=http://www.bioimagexd.org/
 AppSupportURL=http://www.bioimagexd.org/
@@ -179,6 +179,7 @@ Source: "C:\BioImageXD\trunk\dist\Modules\DynamicLoader.py"; DestDir: "{app}\Mod
 Source: "C:\BioImageXD\trunk\dist\Modules\__init__.py"; DestDir: "{app}\Modules";  Flags: ignoreversion
 Source: "C:\BioImageXD\trunk\dist\Modules\Readers\BioradDataSource.py"; DestDir: "{app}\Modules\Readers";  Flags: ignoreversion
 Source: "C:\BioImageXD\trunk\dist\Modules\Readers\BXDDataSource.py"; DestDir: "{app}\Modules\Readers";  Flags: ignoreversion
+Source: "C:\BioImageXD\trunk\dist\Modules\Readers\InterfileDataSource.py"; DestDir: "{app}\Modules\Readers";  Flags: ignoreversion
 Source: "C:\BioImageXD\trunk\dist\Modules\Readers\LeicaDataSource.py"; DestDir: "{app}\Modules\Readers";  Flags: ignoreversion
 Source: "C:\BioImageXD\trunk\dist\Modules\Readers\LSMDataSource.py"; DestDir: "{app}\Modules\Readers";  Flags: ignoreversion
 Source: "C:\BioImageXD\trunk\dist\Modules\Readers\OlympusDataSource.py"; DestDir: "{app}\Modules\Readers";  Flags: ignoreversion

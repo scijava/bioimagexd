@@ -35,13 +35,13 @@ import vtk
 import ColorTransferEditor
 import Dialogs
 
-import GUIBuilder
+from GUI import GUIBuilder
 import types
 from Visualizer.VisualizationModules import *
 
 def getClass():return WarpScalarModule
 def getConfigPanel():return WarpScalarConfigurationPanel
-def getName():return "WarpScalar"
+def getName():return "Warp Scalar"
 
 
 class WarpScalarModule(VisualizationModule):

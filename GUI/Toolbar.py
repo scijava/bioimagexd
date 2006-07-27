@@ -80,7 +80,7 @@ class Toolbar(wx.Panel):
         Description: Event handler for size events
         """ 
         
-        if not self.final or (self.minSize > evt.GetSize()[0]):
+        if self.y > 0 or self.minSize > evt.GetSize()[0]:
             
             self.ReOrderItems(evt.GetSize()[0])            
             x=self.GetSize()[0]            
