@@ -58,14 +58,12 @@ class Toolbar(wx.Panel):
         #self.SetBackgroundColour((255,255,0))
         self.toolSize = (32,32)
         self.parent = parent
+        self.x=0
         self.toolSeparation = 4
         self.sizer = wx.GridBagSizer(self.toolSeparation,self.toolSeparation)
-        self.x=0
         self.sizes=[]
         self.rowsizers=[]
-        self.ctrlToRow={}
-        self.y=0
-        self.final = 0
+        self.oldLayout=[]
         self.ctrls = []
         self.idToTool={}
         self.minSize = 999999
@@ -75,24 +73,49 @@ class Toolbar(wx.Panel):
         
     def OnSize(self,evt):
         """
-        Method: OnSize
         Created: 27.04.2006, KP
         Description: Event handler for size events
         """ 
-        
-        if self.y > 0 or self.minSize > evt.GetSize()[0]:
+        size = evt.GetSize()
+        layout = self.getLayout(size[0])
+        self.createRows(layout)
+
+        #print "curr layout=",len(layout),"old=",len(self.oldLayout)
+        if layout != self.oldLayout:            
+            self.ReOrderItems2(layout, size[0])            
+            self.oldLayout = layout
             
-            self.ReOrderItems(evt.GetSize()[0])            
-            x=self.GetSize()[0]            
-            if self.y==1:
-                self.final = 1
-            n=self.y+1
-            y=44*n
+            x=self.GetSize()[0] 
+            y=44*len(layout)
+            print "x=",x,"y=",y
             self.parent.SetDefaultSize((x,y))
+            self.sizer.Fit(self)                
             self.Layout()
-            self.sizer.Fit(self)
+            self.parent.Layout()
             
-    def ReOrderItems(self,tgtsize=None):
+        
+            
+    def ReOrderItems2(self, layout, width):
+        """
+        Created: 28.07.2006, KP
+        Description: Re-order the items based on a given layout
+        """ 
+        for sizer in self.rowsizers:
+            while sizer.GetItem(0):
+                sizer.Detach(0)
+        ms = 0
+        for y,row in enumerate(layout):
+            self.x =0
+            for i,ctrl in enumerate(row):            
+                self.rowsizers[y].Add(ctrl)
+                self.rowsizers[y].AddSpacer((self.toolSeparation,0))                
+                ms += self.sizes[i] + self.toolSeparation
+        self.minSize = ms
+        
+        
+            
+            
+    def ReOrderItems(self,tgtsize=0):
         """
         Method: ReOrderItems
         Created: 27.04.2006, KP
@@ -114,6 +137,7 @@ class Toolbar(wx.Panel):
         if not tgtsize:
             tgtsize = self.parent.GetSize()
             
+        self.inFirstRow=0
         self.x=0
         self.y=0
         tgs=tgtsize
@@ -132,6 +156,7 @@ class Toolbar(wx.Panel):
                 self.sizer.Add(rowsizer,(self.y,0))                
                 self.rowsizers.append(rowsizer)
             
+            if self.y == 0:self.inFirstRow+=1
             rowsizer.Add(ctrl)
             rowsizer.AddSpacer((self.toolSeparation,0))
             #rowsizer.Insert(self.toolSeparation,self.toolSeparation,0)
@@ -142,13 +167,52 @@ class Toolbar(wx.Panel):
         
         #self.sizer.Fit(self)
         
+    def getLayout(self, width):
+        """
+        Created: 28.07.2006, KP
+        Description: Get the optimal layout for current controls and given width
+        """   
+        ctrls=[]
+        curr=[]
+        ms=0
+        #print "getting layout for width=",width
+        
+        for i,ctrl in enumerate(self.ctrls):            
+            #print "ms=",ms,"size=",self.sizes[i],"tgtsize=",tgtsize            
+            if ms+self.toolSeparation+self.sizes[i] > width:
+                ctrls.append(curr)        
+                curr=[]
+                ms = 0
+            curr.append(ctrl)
+            ms += self.sizes[i] + self.toolSeparation
+        if curr not in ctrls:
+            ctrls.append(curr)
+        n=0
+        for i in ctrls:
+            n+=len(i)
+        if n!=len(self.ctrls):
+            print "\n\n\n****** Lengths do not match, only ",n,"controls placed, there are",len(self.ctrls)
+        return ctrls
+        
+        
     def EnableTool(self,toolid,flag):
         """
-        Method: EnableTool
         Created: 27.04.2006, KP
         Description: Enable / Disable a tool
         """       
         self.idToTool[toolid].Enable(flag)
+        
+    def createRows(self, layout):
+        """
+        Created: 28.07.2006, KP
+        Description: Create enough rows to fit a given layout
+        """   
+        for y in range(len(layout)):
+            if len(self.rowsizers) <=y:
+                rowsizer = wx.BoxSizer(wx.HORIZONTAL)            
+                self.rowsizers.append(rowsizer)
+                print "Adding rowsizer to",y,0
+                self.sizer.Add(rowsizer,(y,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
         
     def Realize(self):
         """
@@ -156,7 +220,12 @@ class Toolbar(wx.Panel):
         Created: 27.04.2006, KP
         Description: Render the toolbar
         """          
-        self.ReOrderItems()
+        w=self.GetSize()[0]
+        layout = self.getLayout(w)
+        self.createRows(layout)
+        
+        self.ReOrderItems2(layout, w)            
+#        self.ReOrderItems()
         self.Refresh()
         
     def DeleteTool(self,toolid):
