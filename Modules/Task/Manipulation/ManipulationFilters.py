@@ -58,7 +58,7 @@ def getFilterList():
             ITKRelabelImageFilter,FilterObjectsFilter,ITKConnectedThresholdFilter,ITKNeighborhoodConnectedThresholdFilter,
             ITKLocalMaximumFilter,ITKOtsuThresholdFilter,ITKConfidenceConnectedFilter,
             MaskFilter,ITKSigmoidFilter, ITKInvertIntensityFilter, ConnectedComponentFilter,
-            MaximumObjectsFilter]
+            MaximumObjectsFilter,TimepointCorrelationFilter]
             
 MATH="Math"
 SEGMENTATION="Segmentation"
@@ -704,7 +704,123 @@ class ShiftScaleFilter(ManipulationFilter):
         
         
         
+
+class TimepointCorrelationFilter(ManipulationFilter):
+    """
+    Created: 31.07.2006, KP
+    Description: A filter for calculating the correlation between two timepoints
+    """     
+    name = "Timepoint Correlation"
+    category = MEASUREMENT
+    
+    def __init__(self):
+        """
+        Method: __init__()
+        Created: 13.04.2006, KP
+        Description: Initialization
+        """        
+        ManipulationFilter.__init__(self,(1,1))
+        self.vtkfilter = vtk.vtkImageAutoThresholdColocalization()
+        self.box=None
+        self.descs={"Timepoint1":"First timepoint:","Timepoint2":"Second timepoint:"}
+    
+    def getParameters(self):
+        """
+        Method: getParameters
+        Created: 15.04.2006, KP
+        Description: Return the list of parameters needed for configuring this GUI
+        """            
+        return [["",("Timepoint1","Timepoint2")]]
         
+    def getGUI(self,parent,taskPanel):
+        """
+        Created: 31.07.2006, KP
+        Description: Return the GUI for this filter
+        """              
+        gui = ManipulationFilters.ManipulationFilter.getGUI(self,parent,taskPanel)
+        if not self.box:
+            
+            self.corrLbl=wx.StaticText(gui,-1,"Correlation:")
+            self.corrLbl2 = wx.StaticText(gui,-1,"0.0")
+            box=wx.BoxSizer(wx.HORIZONTAL)
+            box.Add(self.corrLbl)
+            box.Add(self.corrLbl2)
+            self.box=box
+            gui.sizer.Add(box,(1,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
+        return gui
+        
+        
+    def getType(self,parameter):
+        """
+        Method: getType
+        Created: 15.04.2006, KP
+        Description: Return the type of the parameter
+        """    
+        return GUIBuilder.SLICE
+        
+    def getDefaultValue(self,parameter):
+        """
+        Created: 15.04.2006, KP
+        Description: Return the default value of a parameter
+        """     
+        if parameter=="Timepoint1":
+            return 0
+        return 1
+        
+        
+    def getRange(self, parameter):
+        """
+        Created: 31.07.2006, KP
+        Description: Return the range for the parameter
+        """             
+        return (0,self.dataUnit.getLength())
+
+    def execute(self,inputs,update=0,last=0):
+        """
+        Created: 15.04.2006, KP
+        Description: Execute the filter with given inputs and return the output
+        """            
+        if not ManipulationFilter.execute(self,inputs):
+            return None
+        tp1=self.parameters["Timepoint1"]
+        tp2=self.parameters["Timepoint2"]
+        units=self.dataUnit.getSourceDataUnits()
+        data1=units[0].getTimePoint(tp1)
+        tp = vtk.vtkImageData()
+        tp.DeepCopy(data1)
+        data2=units[0].getTimePoint(tp2)
+        data1=tp
+        print "data is timepoints",tp1,tp2
+        
+
+        mip=vtk.vtkImageSimpleMIP()
+        mip.SetInput(data1)
+        writer=vtk.vtkPNGWriter()
+        writer.SetFileName("img1.png")
+        writer.SetInput(mip.GetOutput())
+        writer.Write()
+        writer.SetFileName("img2.png")
+        mip.SetInput(data2)
+        writer.SetInput(mip.GetOutput())
+        writer.Write()
+
+        self.vtkfilter.AddInput(data1)
+        self.vtkfilter.AddInput(data2)
+        self.vtkfilter.SetLowerThresholdCh1(0)
+        self.vtkfilter.SetLowerThresholdCh2(0)
+        self.vtkfilter.SetUpperThresholdCh1(255)
+        self.vtkfilter.SetUpperThresholdCh2(255)
+       
+        #print "Using ",image
+        
+        
+        self.vtkfilter.Update()
+        self.corrLbl2.SetLabel("%.5f"%self.vtkfilter.GetPearsonWholeImage())
+        return self.getInput(1)
+        
+        
+        
+
         
 class GradientFilter(ManipulationFilter):
     """

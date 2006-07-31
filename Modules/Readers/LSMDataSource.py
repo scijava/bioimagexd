@@ -177,11 +177,9 @@ class LsmDataSource(DataSource.DataSource):
     
         #Logging.backtrace()
         self.timepoint=i
-        self.reader.SetUpdateTimePoint(i)
-        self.reader.SetUpdateChannel(self.channelNum)
-    
+        data=self.reader.GetTimePointOutput(i, self.channelNum)
         self.reader.Update()
-        data=self.reader.GetOutput()
+
         self.originalScalarRange=data.GetScalarRange()
         if raw:
             return data

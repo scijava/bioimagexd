@@ -906,7 +906,6 @@ class MeasureVolumeFilter(ManipulationFilters.ManipulationFilter):
 
     def getGUI(self,parent,taskPanel):
         """
-        Method: getGUI
         Created: 13.04.2006, KP
         Description: Return the GUI for this filter
         """              
