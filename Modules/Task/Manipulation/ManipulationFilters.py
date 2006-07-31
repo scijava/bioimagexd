@@ -786,26 +786,17 @@ class TimepointCorrelationFilter(ManipulationFilter):
         tp2=self.parameters["Timepoint2"]
         units=self.dataUnit.getSourceDataUnits()
         data1=units[0].getTimePoint(tp1)
+        # We need to prepare a copy of the data since
+        # when we get the next timepoint, the data we got earlier will reference the
+        # new data
         tp = vtk.vtkImageData()
         tp.DeepCopy(data1)
         data2=units[0].getTimePoint(tp2)
         data1=tp
-        print "data is timepoints",tp1,tp2
         
-
-        mip=vtk.vtkImageSimpleMIP()
-        mip.SetInput(data1)
-        writer=vtk.vtkPNGWriter()
-        writer.SetFileName("img1.png")
-        writer.SetInput(mip.GetOutput())
-        writer.Write()
-        writer.SetFileName("img2.png")
-        mip.SetInput(data2)
-        writer.SetInput(mip.GetOutput())
-        writer.Write()
-
         self.vtkfilter.AddInput(data1)
         self.vtkfilter.AddInput(data2)
+        # Set the thresholds so they won't be calculated
         self.vtkfilter.SetLowerThresholdCh1(0)
         self.vtkfilter.SetLowerThresholdCh2(0)
         self.vtkfilter.SetUpperThresholdCh1(255)
@@ -824,7 +815,6 @@ class TimepointCorrelationFilter(ManipulationFilter):
         
 class GradientFilter(ManipulationFilter):
     """
-    Class: GradientFilter
     Created: 13.04.2006, KP
     Description: A class for calculating the gradient of the image
     """     
@@ -833,7 +823,6 @@ class GradientFilter(ManipulationFilter):
     
     def __init__(self,inputs=(1,1)):
         """
-        Method: __init__()
         Created: 13.04.2006, KP
         Description: Initialization
         """        
@@ -851,7 +840,6 @@ class GradientFilter(ManipulationFilter):
 
     def execute(self,inputs,update=0,last=0):
         """
-        Method: execute
         Created: 15.04.2006, KP
         Description: Execute the filter with given inputs and return the output
         """            
@@ -866,7 +854,6 @@ class GradientFilter(ManipulationFilter):
 
 class GradientMagnitudeFilter(ManipulationFilter):
     """
-    Class: GradientMagnitudeFilter
     Created: 13.04.2006, KP
     Description: A class for calculating the gradient magnitude of the image
     """     
