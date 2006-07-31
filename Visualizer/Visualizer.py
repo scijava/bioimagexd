@@ -255,7 +255,7 @@ class Visualizer:
         self.next.Bind(wx.EVT_BUTTON,self.onNextTimepoint)
         
         self.timeslider=wx.Slider(self.sliderPanel,value=1,minValue=1,maxValue=1,
-        style=wx.SL_HORIZONTAL|wx.SL_LABELS|wx.SL_AUTOTICKS)
+        style=wx.SL_HORIZONTAL|wx.SL_LABELS)
         self.timeslider.SetHelpText("Use this slider to select the displayed timepoint.")
         self.bindTimeslider(self.onUpdateTimepoint)
 

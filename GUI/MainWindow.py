@@ -690,11 +690,10 @@ class MainWindow(wx.Frame):
         
         tb.AddSeparator()
         
-        self.resampleBtn = wx.Button(tb, -1,"Resampling")
+        self.resampleBtn = wx.ToggleButton(tb, -1,"Resampling")
+        self.resampleBtn.SetValue(1)
         self.resampleBtn.SetHelpText("Use this button to enable or disable the resampling of data.")
-        self.resampleBtn.Bind(wx.EVT_LEFT_DOWN,lambda x:self.onResampleData(x,0))
-        self.resampleBtn.Bind(wx.EVT_LEFT_UP,lambda x:self.onResampleData(x,1))
-        
+        self.resampleBtn.Bind(wx.EVT_TOGGLEBUTTON, self.onResampleData)
         tb.AddControl(self.resampleBtn)
         
         
@@ -890,14 +889,14 @@ class MainWindow(wx.Frame):
         self.GetToolBar().Destroy()
         self.createToolBar()
 
-    def onResampleData(self,evt, flag):
+    def onResampleData(self,evt):
         """
         Created: 23.07.2006, KP
         Description: Toggle the resampling on / off
         """
-        bxd.resamplingDisabled = (not flag)
+        flag=self.resampleBtn.GetValue()
+        bxd.resamplingDisabled = not flag
         self.visualizer.updateRendering()
-        evt.Skip()
 
 
     def onShowCommandHistory(self,evt=None):

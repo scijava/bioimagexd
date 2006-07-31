@@ -101,8 +101,11 @@ class Toolbar(wx.Panel):
         Description: Re-order the items based on a given layout
         """ 
         for sizer in self.rowsizers:
-            while sizer.GetItem(0):
-                sizer.Detach(0)
+            try:
+                while sizer.GetItem(0):
+                    sizer.Detach(0)
+            except:
+                pass
         ms = 0
         for y,row in enumerate(layout):
             self.x =0
@@ -222,6 +225,7 @@ class Toolbar(wx.Panel):
         """          
         w=self.GetSize()[0]
         layout = self.getLayout(w)
+        print "Layout for width",w,"has",len(layout),"rows"
         self.createRows(layout)
         
         self.ReOrderItems2(layout, w)            
