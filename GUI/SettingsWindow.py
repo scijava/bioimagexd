@@ -312,9 +312,8 @@ class SettingsWindow(wx.Dialog):
             self.imagelist=wx.ImageList(32,32)
             self.listbook.AssignImageList(self.imagelist)
             imgpath = scripting.get_icon_dir()
-            for i in ["General.gif","Paths.gif","Performance.gif","Video.gif"]:
+            for i in ["general.gif","paths.gif","performance.gif"]:
                 icon=os.path.join(imgpath,i)
-                print "icon=",icon
                 bmp=wx.Bitmap(icon,wx.BITMAP_TYPE_GIF)
                 self.imagelist.Add(bmp)
         except:
@@ -324,13 +323,9 @@ class SettingsWindow(wx.Dialog):
         self.performancePanel = PerformanceSettings(self.listbook)
         #self.moviePanel=MovieSettings(self.listbook)
         
-#        self.listbook.AddPage(self.generalPanel,"General",imageId=0)
-#        self.listbook.AddPage(self.pathsPanel,"Paths",imageId=1)
-#        self.listbook.AddPage(self.performancePanel,"Performance",imageId=2)
-        self.listbook.AddPage(self.generalPanel,"General")
-        self.listbook.AddPage(self.pathsPanel,"Paths")
-        self.listbook.AddPage(self.performancePanel,"Performance")
-        #self.listbook.AddPage(self.moviePanel,"Video Output",imageId=2)
+        self.listbook.AddPage(self.generalPanel,"General",imageId=0)
+        self.listbook.AddPage(self.pathsPanel,"Paths",imageId=1)
+        self.listbook.AddPage(self.performancePanel,"Performance",imageId=2)
 
         self.sizer.Add(self.listbook,flag=wx.EXPAND|wx.ALL)
         
