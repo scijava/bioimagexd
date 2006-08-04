@@ -1,7 +1,7 @@
 # -*- coding: iso-8859-1 -*-
 
 """
- Unit: ManipulationSetting
+ Unit: SegmentationSetting
  Project: BioImageXD
  Created: 26.03.2005, KP
  Description:
@@ -38,13 +38,12 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 import vtk
 from DataUnit import DataUnitSettings
-import ManipulationFilters
 
-class ManipulationSettings(DataUnitSettings):
+class SegmentationSettings(DataUnitSettings):
     """
-    Class: ManipulationSettings
+    Class: SegmentationSettings
     Created: 27.03.2005, KP
-    Description: Stores settings related to single unit Manipulationing
+    Description: Stores settings related to single unit Segmentationing
     """
     def __init__(self,n=-1):
         """
@@ -109,7 +108,7 @@ class ManipulationSettings(DataUnitSettings):
         if name=="FilterList":
             fnames = eval(value)
             flist=[]
-            filters = ManipulationFilters.getFilterList()
+            filters = SegmentationFilters.getFilterList()
             nametof={}
             for f in filters:
                 nametof[f.getName()] = f

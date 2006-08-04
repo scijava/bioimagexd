@@ -1,11 +1,11 @@
 # -*- coding: iso-8859-1 -*-
 """
- Unit: Manipulation
+ Unit: Segmentation
  Project: BioImageXD
  Created: 04.04.2006, KP
  
  Description:
- A module for various data manipulation purposes
+ A module for various data Segmentation purposes
 
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
@@ -36,11 +36,11 @@ import Logging
 import lib.Module
 from lib.Module import *
 
-class Manipulation(Module):
+class Segmentation(Module):
     """
-    Class: Manipulation
+    Class: Segmentation
     Created: 04.04.2006, KP
-    Description: Manipulationes a single dataunit in specified ways
+    Description: Segmentationes a single dataunit in specified ways
     """
 
     def __init__(self,**kws):
@@ -88,7 +88,7 @@ class Manipulation(Module):
         """
         Method: addInput(data)
         Created: 04.04.2006, KP
-        Description: Adds an input for the single dataunit Manipulationing filter
+        Description: Adds an input for the single dataunit Segmentationing filter
         """
         Module.addInput(self,dataunit,data)
         settings = dataunit.getSettings()
@@ -117,46 +117,6 @@ class Manipulation(Module):
         """
         Method: doOperation
         Created: 04.04.2006, KP
-        Description: Manipulationes the dataset in specified ways
+        Description: Segmentationes the dataset in specified ways
         """
-        if not self.modified and self.cached:
-            print "Returning cached data"
-            return self.cached
-        else:
-            del self.cached
-            self.cached = None
-        filterlist = self.settings.get("FilterList")
-        print "Filters in filterlist=",filterlist
-        
-        if type(filterlist)==type(""):
-            filterlist=[]
-        self.settings.set("FilterList",filterlist)
-        data = self.images
-        if not filterlist:
-            return self.images[0]
-        filterlist=filter(lambda x:x.getEnabled(),filterlist)
-        n=len(filterlist)-1
-        
-        
-        for i,currfilter in enumerate(filterlist):
-                flag=(i==n)
-                if i>0:
-                    currfilter.setPrevFilter(filterlist[i-1])
-                else:
-                    currfilter.setPrevFilter(None)
-                if not flag:
-                    currfilter.setNextFilter(filterlist[i+1])
-                else:
-                    currfilter.setNextFilter(None)
-                data = currfilter.execute(data,update=flag,last=flag)
-                #print "Got",data,"from",currfilter
-                data=[data]
-                if not data:
-                    print "GOT NO DATA"
-                    self.cached = None
-                    return None                
-        
-        data = data[0]
-        data.ReleaseDataFlagOff()
-        self.cached = data
-        return data
+        return self.images[0]

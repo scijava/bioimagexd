@@ -1,6 +1,6 @@
 # -*- coding: iso-8859-1 -*-
 """
- Unit: ManipulationDataUnit
+ Unit: SegmentationDataUnit
  Project: BioImageXD
  Created: 01.01.2004, KP
  Description: A dataunit class that represents a data unit Manipulated through filters
@@ -31,11 +31,11 @@ __date__ = "$Date: 2005/01/13 14:09:15 $"
 import Logging
 
 from DataUnit import CombinedDataUnit
-import ManipulationSettings
+import SegmentationSettings
 
-class ManipulationDataUnit(CombinedDataUnit):
+class SegmentationDataUnit(CombinedDataUnit):
     """
-    Class: ManipulationDataUnit
+    Class: SegmentationDataUnit
     Created: 24.11.2004, JM, JV
     Description: Class for an adjusted single-channel 4D DataUnit
     """
@@ -53,7 +53,7 @@ class ManipulationDataUnit(CombinedDataUnit):
         """
         Method: setOriginal
         Created: 14.12.2004, JM, JV
-        Description: Sets the original DataUnit for this ManipulationedSourceDataUnit
+        Description: Sets the original DataUnit for this SegmentationedSourceDataUnit
         Parameters: dataUnit  The original unmodified DataUnit
         """
         self.original = dataUnit
@@ -87,6 +87,6 @@ class ManipulationDataUnit(CombinedDataUnit):
         Created: 02.04.2005, KP
         Description: Return the class that represents settings for this dataunit
         """
-        return ManipulationSettings.ManipulationSettings
+        return SegmentationSettings.SegmentationSettings
 
         

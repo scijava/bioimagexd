@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 # -*- coding: iso-8859-1 -*-
 """
- Unit: ManipulationPanel
+ Unit: SegmentationPanel
  Project: BioImageXD
  Created: 10.04.2005, KP
  Description:
@@ -48,11 +48,10 @@ import string
 import scripting
 import types
 
-import ManipulationFilters
 
-class ManipulationPanel(TaskPanel.TaskPanel):
+class SegmentationPanel(TaskPanel.TaskPanel):
     """
-    Class: ManipulationPanel
+    Class: SegmentationPanel
     Created: 03.11.2004, KP
     Description: A window for restoring a single dataunit
     """
@@ -65,7 +64,7 @@ class ManipulationPanel(TaskPanel.TaskPanel):
                 root    Is the parent widget of this window
         """
         self.timePoint = 0
-        self.operationName="Manipulation"
+        self.operationName="Segmentation"
         TaskPanel.TaskPanel.__init__(self,parent,tb)
         # Preview has to be generated here
         # self.colorChooser=None
@@ -75,16 +74,9 @@ class ManipulationPanel(TaskPanel.TaskPanel):
         self.parser = None
         self.onByDefault = 0
         self.Show()
-        self.filters = []
+        
         self.currentSelected = -1
         
-
-        self.filtersByCategory={}
-        self.categories=[]
-
-        for currfilter in ManipulationFilters.getFilterList():
-            self.registerFilter(currfilter.getCategory(),currfilter)
-      
         self.mainsizer.Layout()
         self.mainsizer.Fit(self)
         
@@ -98,34 +90,6 @@ class ManipulationPanel(TaskPanel.TaskPanel):
         """
         self.timePoint=timePoint
         
-    def filterModified(self,filter):
-        """
-        Method: filterModified
-        Created: 14.05.2006, KP
-        Description: A callback for when filter parameters change
-        """
-        self.setModified(1)
-        
-    def setModified(self,flag):
-        """
-        Method: setModified
-        Created: 14.05.2006, KP
-        Description: A callback for when filter parameters change
-        """
-        self.dataUnit.module.setModified(1)
-
-    def registerFilter(self,category,currfilter):
-        """
-        Method: createButtonBox()
-        Created: 03.11.2004, KP
-        Description: Creates a button box containing the buttons Render,
-        """
-        if category not in self.categories:
-            self.categories.append(category)
-        if not category in self.filtersByCategory:
-            self.filtersByCategory[category]=[]
-        self.filtersByCategory[category].append(currfilter)
-        
     def createButtonBox(self):
         """
         Method: createButtonBox()
@@ -135,251 +99,70 @@ class ManipulationPanel(TaskPanel.TaskPanel):
         """
         TaskPanel.TaskPanel.createButtonBox(self)
         
-        #self.ManipulationButton.SetLabel("Manipulation Dataset Series")
+        #self.SegmentationButton.SetLabel("Segmentation Dataset Series")
         
-        messenger.connect(None,"process_dataset",self.doProcessingCallback)        
+        messenger.connect(None,"process_dataset",self.doProcessingCallback)       
+        
+    def createThresholdPanel(self):
+        """
+        Method: createThresholdPanel
+        Created: 19.06.2004, KP
+        Description: Creates a panel that contains the thresholding tool
+        """
+        panel = wx.Panel(self.settingsNotebook,-1,size=(200,200))
+        sizer = wx.GridBagSizer()
+        panel.SetSizer(sizer)
+        
+        panel.SetAutoLayout(1)
+        
+        return panel
+        
+        
+
+    def createRegionGrowingPanel(self):
+        """
+        Method: createRegionGrowingPanelPanel
+        Created: 19.06.2004, KP
+        Description: Creates a panel that contains the thresholding tool
+        """
+        panel = wx.Panel(self.settingsNotebook,-1,size=(200,200))
+        sizer = wx.GridBagSizer()
+        panel.SetSizer(sizer)
+        panel.SetAutoLayout(1)
+        return panel
+
+
+    def createWatershedPanel(self):
+        """
+        Method: createThresholdPanel
+        Created: 19.06.2004, KP
+        Description: Creates a panel that contains the thresholding tool
+        """
+        panel = wx.Panel(self.settingsNotebook,-1,size=(200,200))
+        sizer = wx.GridBagSizer()
+        panel.SetSizer(sizer)
+        panel.SetAutoLayout(1)
+        return panel
+
 
     def createOptionsFrame(self):
         """
         Method: createOptionsFrame()
-        Created: 03.11.2004
-        Creator: KP
+        Created: 03.11.2004, KP
         Description: Creates a frame that contains the various widgets
                      used to control the colocalization settings
         """
         TaskPanel.TaskPanel.createOptionsFrame(self)
 
-        self.panel=wx.Panel(self.settingsNotebook,-1)
-        self.panelsizer=wx.GridBagSizer()
-    
-        self.filtersizer=wx.GridBagSizer()
-
+        self.thresholdPanel = self.createThresholdPanel()
+        self.regionPanel = self.createRegionGrowingPanel()
+        self.watershedPanel = self.createWatershedPanel()
         
-        self.filterLbl=wx.StaticText(self.panel,-1,"Filter stack:")
-        self.filterListbox = wx.CheckListBox(self.panel,-1,size=(300,300))
-        self.filterListbox.Bind(wx.EVT_LISTBOX,self.onSelectFilter)
-        self.filterListbox.Bind(wx.EVT_CHECKLISTBOX,self.onCheckFilter)        
-        self.addBtn = wx.Button(self.panel,-1,u"Add \u00BB")
-        self.addBtn.Bind(wx.EVT_LEFT_DOWN,self.onShowAddMenu)
-
-        self.reloadBtn = wx.Button(self.panel,-1,"Reload")
-        self.reloadBtn.Bind(wx.EVT_BUTTON,self.onReloadModules)
-
-        btnBox=wx.BoxSizer(wx.HORIZONTAL)
-        self.remove = wx.Button(self.panel,-1,"Remove")
-        self.remove.Bind(wx.EVT_BUTTON,self.onRemoveFilter)
-        self.up = wx.Button(self.panel,-1,"Up")
-        self.up.Bind(wx.EVT_BUTTON,self.onMoveFilterUp)
-        self.down = wx.Button(self.panel,-1,"Down")
-        self.down.Bind(wx.EVT_BUTTON,self.onMoveFilterDown)
-        btnBox.Add(self.remove)
-        btnBox.Add(self.up)
-        btnBox.Add(self.down)
-        btnBox.Add(self.addBtn)
-        btnBox.Add(self.reloadBtn)
-
-        self.filtersizer.Add(self.filterLbl,(0,0))
-        self.filtersizer.Add(self.filterListbox,(1,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
-        self.filtersizer.Add(btnBox,(2,0))
-        
-        self.panelsizer.Add(self.filtersizer,(0,0))
-
-        self.panel.SetSizer(self.panelsizer)
-        self.panel.SetAutoLayout(1)
-        self.settingsNotebook.AddPage(self.panel,"Filter stack")
+        self.settingsNotebook.AddPage(self.thresholdPanel,"Thresholding")
+        self.settingsNotebook.AddPage(self.regionPanel,"Region Growing")
+        self.settingsNotebook.AddPage(self.watershedPanel,"Multi-object Segmentation")
    
-   
-    def onReloadModules(self,event):
-        """
-        Method: onReloadModules
-        Created: 18.04.2006, KP
-        Description: Reload the filtering modules
-        """
-        global ManipulationFilters
-        f = reload(ManipulationFilters)
-        ManipulationFilters = f
-        copyfilters = []
-        self.filtersByCategory={}
-        self.categories=[]
 
-        for currfilter in ManipulationFilters.getFilterList():
-            self.registerFilter(currfilter.getCategory(),currfilter)
-      
-        
-        for f in self.filters:
-            print "Reloading",f
-            filterclass=str(f.__class__)
-            c=filterclass.split(".")[-1]
-            filterclass="ManipulationFilters.%s"%c
-            print "filter class=",filterclass
-            filterclass=eval(filterclass)
-            
-            addfilter = filterclass()
-            addfilter.setDataUnit(self.dataUnit)
-            addfilter.parameters = f.parameters
-            copyfilters.append(addfilter)
-        self.removeGUI()
-        self.currentSelected=-1
-        self.currentGUI=None
-        del self.filters
-        self.filters=copyfilters
-            
-            
-        
-        
-    def onMoveFilterDown(self,event):
-        """
-        Method: onMoveFilterDown
-        Created: 13.04.2006, KP
-        Description: Move a filter down in the list
-        """
-        index = self.filterListbox.GetSelection()
-        if index == -1:
-            Dialogs.showerror(self,"You have to select a filter to be moved","No filter selected")
-            return 
-        n = self.filterListbox.GetCount()
-        if index==n-1:
-            Dialogs.showerror(self,"Cannot move last filter down","Cannot move filter")
-            return
-            
-        lbl=self.filterListbox.GetString(index)
-        chk = self.filterListbox.IsChecked(index)
-        self.filterListbox.InsertItems([lbl],index+2)
-        self.filterListbox.Check(index+2,chk)
-        self.filterListbox.Delete(index)
-        
-        self.filters[index+1],self.filters[index]=self.filters[index],self.filters[index+1]
-        self.setModified(1)
-        
-    def onMoveFilterUp(self,event):
-        """
-        Method: onMoveFilterUp
-        Created: 13.04.2006, KP
-        Description: Move a filter up in the list
-        """
-        index = self.filterListbox.GetSelection()
-        if index == -1:
-            Dialogs.showerror(self,"You have to select a filter to be moved","No filter selected")
-            return        
-        if index==0:
-            Dialogs.showerror(self,"Cannot move first filter up","Cannot move filter")
-            return
-            
-        lbl=self.filterListbox.GetString(index)
-        chk = self.filterListbox.IsChecked(index)
-        self.filterListbox.InsertItems([lbl],index-1)
-        self.filterListbox.Check(index-1,chk)
-        self.filterListbox.Delete(index+1)
-        
-        self.filters[index-1],self.filters[index]=self.filters[index],self.filters[index-1]
-        self.setModified(1)
-        
-    def onRemoveFilter(self,event):
-        """
-        Method: onRemoveFilter
-        Created: 13.04.2006, KP
-        Description: Remove a filter from the list
-        """
-        index = self.filterListbox.GetSelection()
-        if index == -1:
-            Dialogs.showerror(self,"You have to select a filter to be removed","No filter selected")
-            return        
-
-        self.filterListbox.Delete(index)
-        del self.filters[index]
-        self.currentSelected=-1
-        self.removeGUI()
-        self.currentGUI=None
-        self.setModified(1)
-        
-    def onCheckFilter(self,event):
-        """
-        Method: onCheckFilter
-        Created: 13.04.2006, KP
-        Description: Event handler called when user toggles filter on or off
-        """
-        index = event.GetSelection()
-        status=self.filterListbox.IsChecked(index)
-        self.filters[index].setEnabled(status)
-        self.setModified(1)
-        
-    def removeGUI(self):
-        """
-        Method: removeGUI
-        Created: 18.04.2006, KP
-        Description: Remove the GUI
-        """        
-        if self.currentGUI:
-            self.panelsizer.Detach(self.currentGUI)
-            self.currentGUI.Show(0)
-
-        
-    def onSelectFilter(self,event):
-        """
-        Method: onSelectFilter
-        Created: 13.04.2006, KP
-        Description: Event handler called when user selects a filter in the listbox
-        """
-        self.selected = event.GetSelection()
-        if self.selected == self.currentSelected:
-            return
-        self.currentSelected = self.selected
-        self.removeGUI()
-        
-        currfilter = self.filters[self.selected]
-        self.currentGUI = currfilter.getGUI(self.panel,self)
-        currfilter.sendUpdateGUI()
-        
-        self.panelsizer.Add(self.currentGUI,(1,0),flag=wx.EXPAND|wx.ALL)
-        self.currentGUI.Show(1)
-        self.panel.Layout()
-        self.Layout()
-        self.panelsizer.Fit(self.panel)
-        
-        
-        
-    def addFilter(self,event,filterclass):
-        """
-        Method: addFilter
-        Created: 13.04.2006, KP
-        Description: Add a filter to the stack
-        """
-        print "Request to add filter",filterclass
-        addfilter = filterclass()
-        addfilter.setTaskPanel(self)
-        addfilter.setDataUnit(self.dataUnit)
-        name = addfilter.getName()
-        n=self.filterListbox.GetCount()
-        self.filterListbox.InsertItems([name],n)
-        self.filterListbox.Check(n)
-        
-        self.filters.append(addfilter)
-        self.setModified(1)
-        self.updateFilterData()
-        
-
-    def onShowAddMenu(self,event):
-        """
-        Method: onShowAddMenu
-        Created: 13.04.2006, KP
-        Description: Show a menu for adding filters to the stack
-        """
-        if not self.menu:
-            menu=wx.Menu()
-            for i in self.categories:
-                submenu = wx.Menu()
-                if i not in self.filtersByCategory:
-                    self.filtersByCategory[i]=[]
-                for currfilter in self.filtersByCategory[i]:
-                    menuid = wx.NewId()
-                    name = currfilter.getName()
-                    submenu.Append(menuid,name)
-                    f=lambda evt, x=currfilter: self.addFilter(evt,x)
-                    self.Bind(wx.EVT_MENU,f,id=menuid)
-                menu.AppendMenu(-1,i,submenu)
-            self.menu = menu
-        self.addBtn.PopupMenu(self.menu,event.GetPosition())
-        
 
     def doFilterCheckCallback(self,event=None):
         """
@@ -388,56 +171,22 @@ class ManipulationPanel(TaskPanel.TaskPanel):
         Description: A callback function called when the neither of the
                      filtering checkbox changes state
         """
-
-    def updateSettings(self):
+        pass
+        
+    def updateSettings(self,force=0):
         """
         Method: updateSettings()
         Created: 03.11.2004, KP
         Description: A method used to set the GUI widgets to their proper values
         """
-
-        if self.dataUnit:
-            get=self.settings.get
-            set=self.settings.set
-        flist = self.settings.get("FilterList")
-        self.settings.set("FilterList",[])
-        if flist and len(flist):
-            
-            if type(flist[0]) == types.ClassType:
-                for i in flist:
-                    print "Adding filter of class",i
-                    self.addFilter(None,i)
-            for currfilter in self.filters:
-                name = currfilter.getName()
-                #parser = self.dataUnit.getParser()    
-                parser = self.dataUnit.parser
-                
-                if parser:
-                    items = parser.items(name)
-                    
-                    for item,value in items:            
-                        #value=parser.get(name,item)
-                        print "Setting",item,"to",value
-                        value = eval(value)
-                        currfilter.setParameter(item, value)
-                    currfilter.sendUpdateGUI()
-                    self.parser = None
-                
-    def updateFilterData(self):
-        """
-        Method: updateFilterData()
-        Created: 13.12.2004, JV
-        Description: A method used to set the right values in dataset
-                     from filter GUI widgets
-        """
-        print "Setting filterlist to",self.filters
-        self.settings.set("FilterList",self.filters)
+        pass
+        
         
     def doProcessingCallback(self,*args):
         """
         Method: doProcessingCallback()
         Created: 03.11.2004, KP
-        Description: A callback for the button "Manipulation Dataset Series"
+        Description: A callback for the button "Segmentation Dataset Series"
         """
         self.updateFilterData()
         TaskPanel.TaskPanel.doOperation(self)
@@ -491,7 +240,7 @@ class ManipulationPanel(TaskPanel.TaskPanel):
         dc.SelectObject(wx.NullBitmap)
         toolid=wx.NewId()
         #n=n+1
-        name="Manipulation"
+        name="Segmentation"
         self.toolMgr.addItem(name,bmp,toolid,lambda e,x=n,s=self:s.setPreviewedData(e,x))        
         
         self.toolIds.append(toolid)
@@ -502,10 +251,10 @@ class ManipulationPanel(TaskPanel.TaskPanel):
         """
         Method: setCombinedDataUnit(dataUnit)
         Created: 23.11.2004, KP
-        Description: Sets the Manipulationed dataunit that is to be Manipulationed.
+        Description: Sets the Segmentationed dataunit that is to be Segmentationed.
                      It is then used to get the names of all the source data
                      units and they are added to the menu.
-                     This is overwritten from TaskPanel since we only Manipulation
+                     This is overwritten from TaskPanel since we only Segmentation
                      one dataunit here, not multiple source data units
         """
         TaskPanel.TaskPanel.setCombinedDataUnit(self,dataUnit)
