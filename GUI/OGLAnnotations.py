@@ -36,7 +36,42 @@ import wx.lib.ogl as ogl
 import messenger
 import math
 
-class MyScalebar(ogl.RectangleShape):
+class OGLAnnotation:
+    def OnDrawControlPoints(self, dc):
+        if not self._drawHandles:
+            return
+
+        dc.SetBrush(wx.BLACK_BRUSH)
+        dc.SetPen(wx.BLACK_PEN)
+
+        for control in self._controlPoints:
+            control.SetPen(wx.WHITE_PEN)
+            control.SetBrush(wx.WHITE_BRUSH)
+            control.Draw(dc)
+    def setName(self, name):
+        """
+        Created: 04.08.2006, KP
+        Description: Set the name of this annotation
+        """
+        self._name = name
+        self.SetTextColour("#00ff00")
+        self.AddText(name)
+        
+    def getName(self):
+        """
+        Created: 04.08.2006
+        Description: return the name of this annotation
+        """
+        if not hasattr(self,"name"):
+            self.name=""
+        return self.name
+    def isROI(self):
+        if not hasattr(self,"_isROI"):
+            self._isROI=0
+        return self._isROI
+        
+
+class MyScalebar(ogl.RectangleShape, OGLAnnotation):
     def __init__(self, w, h, voxelsize = (1e-7,1e-7,1e-7), zoomFactor = 1.0):
         ogl.RectangleShape.__init__(self, w, h)
         self.bgColor = (127,127,127)
@@ -50,7 +85,6 @@ class MyScalebar(ogl.RectangleShape):
         
     def onSetVoxelSize(self, obj, evt, arg):
         """
-        Method: onSetVoxelSize
         Created: 21.06.2006, KP
         Description: onSetVoxelSize
         """   
@@ -231,19 +265,8 @@ class MyScalebar(ogl.RectangleShape):
             y-=(h/2)
             dc.DrawRotatedText(text,x1+12,y1+y,90)
 
-    def OnDrawControlPoints(self, dc):
-        if not self._drawHandles:
-            return
 
-        dc.SetBrush(wx.BLACK_BRUSH)
-        dc.SetPen(wx.BLACK_PEN)
-
-        for control in self._controlPoints:
-            control.SetPen(wx.WHITE_PEN)
-            control.SetBrush(wx.WHITE_BRUSH)
-            control.Draw(dc)
-
-class MyRectangle(ogl.RectangleShape):   
+class MyRectangle(ogl.RectangleShape, OGLAnnotation):   
     def __init__(self, w, h, zoomFactor = 1.0):
         """
         Method: __init__
@@ -252,7 +275,9 @@ class MyRectangle(ogl.RectangleShape):
         """   
         ogl.RectangleShape.__init__(self, w,h)
         self.scaleFactor = zoomFactor
+        self._isROI=1
         
+
     def setScaleFactor(self,factor):
         """
         Method: setScaleFactor
@@ -276,7 +301,6 @@ class MyRectangle(ogl.RectangleShape):
         self.SetY(y)    
         self.ResetControlPoints()
         
-    def isROI(self): return 1
     def OnDrawControlPoints(self, dc):
         if not self._drawHandles:
             return
@@ -328,7 +352,7 @@ class MyRectangle(ogl.RectangleShape):
 
        
 
-class MyCircle(ogl.CircleShape):    
+class MyCircle(ogl.CircleShape, OGLAnnotation):    
     def __init__(self, diam, zoomFactor = 1.0):
         """
         Method: __init__
@@ -337,7 +361,7 @@ class MyCircle(ogl.CircleShape):
         """   
         ogl.CircleShape.__init__(self, diam)
         self.scaleFactor = zoomFactor
-        
+        self._isROI=1
     def setScaleFactor(self,factor):
         """
         Method: setScaleFactor
@@ -361,7 +385,6 @@ class MyCircle(ogl.CircleShape):
         self.SetY(y)    
         self.ResetControlPoints()        
      
-    def isROI(self): return 1    
     def getCoveredPoints(self):
         cx, cy = self.GetX(), self.GetY()
         cx//=self.scaleFactor
@@ -394,17 +417,6 @@ class MyCircle(ogl.CircleShape):
                     pts[(x,y)] = 1
         return pts
         
-    def OnDrawControlPoints(self, dc):
-        if not self._drawHandles:
-            return
-
-        dc.SetBrush(wx.BLACK_BRUSH)
-        dc.SetPen(wx.BLACK_PEN)
-
-        for control in self._controlPoints:
-            control.SetPen(wx.WHITE_PEN)
-            control.SetBrush(wx.WHITE_BRUSH)
-            control.Draw(dc)
     
     def OnErase(self,dc):
         bg = self.GetCanvas().bgbuffer
@@ -431,7 +443,7 @@ class MyCircle(ogl.CircleShape):
 
 
 
-class MyLine(ogl.LineShape):    
+class MyLine(ogl.LineShape, OGLAnnotation):    
     def __init__(self, zoomFactor = 1.0):
         """
         Method: __init__
@@ -462,20 +474,7 @@ class MyLine(ogl.LineShape):
         y*=self.scaleFactor        
         self.SetEnds(w,h,x,y)
         self.ResetControlPoints() 
-        
-    def OnDrawControlPoints(self, dc):
-        if not self._drawHandles:
-            return
-
-        dc.SetBrush(wx.BLACK_BRUSH)
-        dc.SetPen(wx.BLACK_PEN)
-
-        for control in self._controlPoints:
-            control.SetPen(wx.WHITE_PEN)
-            control.SetBrush(wx.WHITE_BRUSH)
-            control.Draw(dc)
-            
-            
+                    
     def FindConnectedLines(self,diagram = None):        
         ex,ey,x,y = self.GetEnds()
         if not diagram:
@@ -686,19 +685,18 @@ class MyLine(ogl.LineShape):
             
             #print "Resetting point",i,"to",point[0]-xoff,point[1]-yoff
             
-class MyPolygon(ogl.PolygonShape):    
+class MyPolygon(ogl.PolygonShape, OGLAnnotation):    
     def __init__(self, zoomFactor = 1.0):
         """
-        Method: __init__
         Created: 26.06.2006, KP
         Description: Initialization
         """   
         ogl.PolygonShape.__init__(self)
         self.scaleFactor = zoomFactor
+        self._isROI=1
         
     def setScaleFactor(self,factor):
         """
-        Method: setScaleFactor
         Created: 21.06.2006, KP
         Description: Set the scaling factor in use
         """   
@@ -722,7 +720,7 @@ class MyPolygon(ogl.PolygonShape):
         self.scaleFactor = factor
         self.ResetControlPoints()    
         
-    def isROI(self): return 1
+    
     def getMinMaxXY(self):
         my,mx=10000,10000
         Mx,My=0,0
@@ -775,19 +773,6 @@ class MyPolygon(ogl.PolygonShape):
                 c=not c
         return c
        
-        
-    def OnDrawControlPoints(self, dc):
-        if not self._drawHandles:
-            return
-
-        dc.SetBrush(wx.BLACK_BRUSH)
-        dc.SetPen(wx.BLACK_PEN)
-
-        for control in self._controlPoints:
-            control.SetPen(wx.WHITE_PEN)
-            control.SetBrush(wx.WHITE_BRUSH)
-            control.Draw(dc)
-
     def OnErase(self,dc):
         bg = self.GetCanvas().bgbuffer
         if not self._visible:
@@ -884,7 +869,6 @@ class MyPolygonControlPoint(ogl.PolygonControlPoint):
         
         self.SetX(x)
         self.SetY(y)
-        print "Setting x,y to",x,y
         self._shape.SetPointsFromControl(self) 
     def OnEndDragLeft(self, x, y, keys = 0, attachment = 0):
         #self._shape.GetEventHandler().OnSizingEndDragLeft(self, x, y, keys, attachment)
@@ -896,13 +880,29 @@ class MyPolygonControlPoint(ogl.PolygonControlPoint):
         #self.SetX(x)
         #self.SetY(y)
         #self._shape.SetPointsFromControl(self, end = 1) 
-        
 
+
+        
 
 class MyEvtHandler(ogl.ShapeEvtHandler):
     def __init__(self,parent):
         self.parent = parent
         ogl.ShapeEvtHandler.__init__(self)
+    def OnLeftDoubleClick(self, x, y, keys = 0, attachment = 0):
+        
+        shape = self.GetShape()
+        if shape.isROI():
+            dlg = wx.TextEntryDialog(self.parent,
+                    'What is the name of this Region of Interest',
+                    'Name of the Region of Interest', '')
+    
+            dlg.SetValue("")
+    
+            if dlg.ShowModal() == wx.ID_OK:
+                value = dlg.GetValue()
+                shape.setName(value)
+    
+            dlg.Destroy()        
 
     def OnLeftClick(self, x, y, keys=0, attachment=0):
         shape = self.GetShape()

@@ -75,13 +75,7 @@ class KeyframeTrack(SplineTrack):
         self.paintOverlay=1
         self.overlayColor = ((0,255,0),25)        
         
-        #self.namePanel.setColor((0,0,0),self.nameColor)
-        if "item" in kws:
-            self.itemClass=kws["item"]
-        else:
-            self.itemClass=KeyframePoint
-        #if "closed" in kws:
-        #    self.closed = kws["closed"]
+        self.itemClass = kws.get("item",KeyframePoint)
         dt = UrmasPalette.UrmasDropTarget(self,"Keyframe")
         self.SetDropTarget(dt)
         messenger.connect(None,"set_camera",self.onSetCamera)

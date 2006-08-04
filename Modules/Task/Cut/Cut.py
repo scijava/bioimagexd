@@ -1,11 +1,11 @@
 # -*- coding: iso-8859-1 -*-
 """
- Unit: Segmentation
+ Unit: Cut
  Project: BioImageXD
  Created: 04.04.2006, KP
  
  Description:
- A module for various data Segmentation purposes
+ A module for cutting a dataset to a smaller size purposes
 
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
@@ -36,11 +36,10 @@ import Logging
 import lib.Module
 from lib.Module import *
 
-class Segmentation(Module):
+class Cut(Module):
     """
-    Class: Segmentation
-    Created: 04.04.2006, KP
-    Description: Segmentationes a single dataunit in specified ways
+    Created: 01.08.2006, KP
+    Description: A module that is used to cut the dataset to a smaller size
     """
 
     def __init__(self,**kws):
@@ -88,7 +87,7 @@ class Segmentation(Module):
         """
         Method: addInput(data)
         Created: 04.04.2006, KP
-        Description: Adds an input for the single dataunit Segmentationing filter
+        Description: Adds an input for the single dataunit Cuting filter
         """
         Module.addInput(self,dataunit,data)
         settings = dataunit.getSettings()
@@ -117,6 +116,6 @@ class Segmentation(Module):
         """
         Method: doOperation
         Created: 04.04.2006, KP
-        Description: Segmentationes the dataset in specified ways
+        Description: Cutes the dataset in specified ways
         """
         return self.images[0]

@@ -1571,9 +1571,7 @@ class MainWindow(wx.Frame):
 
         if not "init" in kws and dataunit:
             self.visualizer.setDataUnit(dataunit)
-        reload=0
-        if "reload" in kws:
-            reload=kws["reload"]
+        reload=kws.get("reload",0)
         
         self.visualizer.setVisualizationMode(mode,reload=reload)
         # handle icons

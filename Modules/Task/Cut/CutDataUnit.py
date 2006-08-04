@@ -1,10 +1,10 @@
 # -*- coding: iso-8859-1 -*-
 """
- Unit: SegmentationDataUnit
+ Unit: CutDataUnit
  Project: BioImageXD
- Created: 01.01.2004, KP
- Description: A dataunit class that represents a data unit Manipulated through filters
-
+ Created: 01.08.2004, KP
+ Description: A dataunit class that represents a data unit thas has been cut to a smaller size
+ 
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
 
@@ -31,11 +31,11 @@ __date__ = "$Date: 2005/01/13 14:09:15 $"
 import Logging
 
 from DataUnit import CombinedDataUnit
-import SegmentationSettings
+import CutSettings
 
-class SegmentationDataUnit(CombinedDataUnit):
+class CutDataUnit(CombinedDataUnit):
     """
-    Class: SegmentationDataUnit
+    Class: CutDataUnit
     Created: 24.11.2004, JM, JV
     Description: Class for an adjusted single-channel 4D DataUnit
     """
@@ -53,7 +53,7 @@ class SegmentationDataUnit(CombinedDataUnit):
         """
         Method: setOriginal
         Created: 14.12.2004, JM, JV
-        Description: Sets the original DataUnit for this SegmentationedSourceDataUnit
+        Description: Sets the original DataUnit for this CutedSourceDataUnit
         Parameters: dataUnit  The original unmodified DataUnit
         """
         self.original = dataUnit
@@ -75,7 +75,7 @@ class SegmentationDataUnit(CombinedDataUnit):
         """
         self.setOriginal(dataUnit)    
         CombinedDataUnit.addSourceDataUnit(self,dataUnit,**args)
-        self.name = "Manipulated %s"%dataUnit.getName()
+        self.name = "Cut %s"%dataUnit.getName()
         #print dataUnit.getColorTransferFunction()
         self.updateSettings()
         #print self.settings.get("ColorTransferFunction")
@@ -87,6 +87,6 @@ class SegmentationDataUnit(CombinedDataUnit):
         Created: 02.04.2005, KP
         Description: Return the class that represents settings for this dataunit
         """
-        return SegmentationSettings.SegmentationSettings
+        return CutSettings.CutSettings
 
         

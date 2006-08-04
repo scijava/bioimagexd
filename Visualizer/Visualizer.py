@@ -536,13 +536,13 @@ class Visualizer:
         
     def roiToMask(self, evt):
         """
-        Method: roiToMask
         Created: 20.06.2006, KP
         Description: Convert the selected ROI to mask
         """
         if hasattr(self.currentWindow, "roiToMask"):
-            imagedata=self.currentWindow.roiToMask()
-            name = self.dataUnit.getName()
+            imagedata, names=self.currentWindow.roiToMask()
+            #name = self.dataUnit.getName()
+            name=",".join(names)
             dims = self.dataUnit.getDimensions()
             mask = MaskTray.Mask(name,dims,imagedata)
             self.setMask(mask)

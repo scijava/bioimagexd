@@ -550,7 +550,7 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
         
         sbox=wx.StaticBox(self.colocalizationPanel,-1,"2D histogram")
         box=wx.StaticBoxSizer(sbox,wx.VERTICAL)
-        self.scatterPlot=Scatterplot.Scatterplot(self.colocalizationPanel,size=(256,256))
+        self.scatterPlot=Scatterplot.Scatterplot(self.colocalizationPanel,drawLegend = 1)
         box.Add(self.scatterPlot)
         self.colocalizationSizer.Add(box,(n,0))
         n+=1
@@ -818,7 +818,6 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
             
     def updateZSlice(self,obj,event,zslice):
         """
-        Method: updateZSlice(event)
         Created: 25.03.2005, KP
         Description: A callback function called when the zslice is changed
         """
@@ -829,9 +828,8 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
 
     def updateTimepoint(self,obj,event,timePoint):
         """
-        Method: updateTimepoint(event)
         Created: 25.03.2005, KP
-        Description: A callback function called when the zslice is changed
+        Description: A callback function called when the timepoint is changed
         """
         self.timePoint=timePoint
         if self.scatterPlot:
@@ -840,7 +838,6 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
 
     def updateThreshold(self,event):
         """
-        Method: updateThreshold(event)
         Created: 03.11.2004, KP
         Description: A callback function called when the threshold is configured via the slider
         """
@@ -882,13 +879,11 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
         if self.dataUnit and self.settings:
             ctf = self.dataUnit.getSettings().get("ColorTransferFunction")
             if ctf and self.colorBtn:
-                Logging.info("Setting colorBtn.ctf=",ctf,kw="ctf")
                 self.colorBtn.setColorTransferFunction(ctf)
                 self.colorBtn.Refresh()
 
     def doColocalizationCallback(self,*args):
         """
-        Method: doColocalizationCallback()
         Created: 03.11.2004, KP
         Description: A callback for the button "Do colocalization"
         """
@@ -897,7 +892,6 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
 
     def updateBitDepth(self,event=None):
         """
-        Method: updateBitDepth(event)
         Created: 17.11.2004, KP
         Description: Updates the preview to be done at the selected depth
         """
@@ -916,7 +910,6 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
 
     def doPreviewCallback(self,event=None,*args):
         """
-        Method: doPreviewCallback()
         Created: 03.11.2004, KP
         Description: A callback for the button "Preview" and other events
                      that wish to update the preview
@@ -934,9 +927,8 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
         
     def setCombinedDataUnit(self,dataUnit):
         """
-        Method: setCombinedDataUnit(dataUnit)
         Created: 25.03.2005, KP
-        Description: Set the dataunit used by scatterplot
+        Description: Set the dataunit used for the colocalization 
         """
         TaskPanel.TaskPanel.setCombinedDataUnit(self,dataUnit)
         #self.scatterPlot.setDataunit(dataUnit)
@@ -976,11 +968,16 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
         if self.colorBtn:
             self.colorBtn.setColorTransferFunction(ctf)
         self.scatterPlot.setDataUnit(dataUnit)
+        if self.scatterPlot:
+            #self.scatterPlot.setZSlice(self.preview.z)
+            self.scatterPlot.setZSlice(0)
+            self.scatterPlot.setTimepoint(self.timePoint)
+            self.scatterPlot.updatePreview()        
+        
         self.colocalizationPanel.Layout()
         
     def createItemToolbar(self):
         """
-        Method: createItemToolbar()
         Created: 31.03.2005, KP
         Description: Method to create a toolbar for the window that allows use to select processed channel
         """      

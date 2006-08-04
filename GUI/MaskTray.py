@@ -195,7 +195,6 @@ class MaskTray(wx.MiniFrame):
         Description: A callback for when the user toggles a button
         """   
         for i,btn in enumerate(self.buttons):
-            print "btn.GetId()=",btn.GetId(),"evt.GetId()=",evt.GetId()
             if btn.GetId() != evt.GetId():
                 btn.SetValue(0)
             else:

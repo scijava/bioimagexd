@@ -7,9 +7,8 @@ Created: 25.03.2005, KP
 Description:
 
 A module that displays a scatterplot and allows the user
-select the colocalization threshold based on the plot. Uses the information
-acquired from vtkImageAutoThresholdColocalization. For a scattergram calculated
-from two images, see Scattergram.py
+select the colocalization threshold based on the plot. Uses the vtkImageAcculat 
+to calculate the scatterplot
 
 BioImageXD includes the following persons:
 
@@ -45,24 +44,40 @@ import sys
 import wx
 
 from GUI import Events
-
+    
 class Scatterplot(InteractivePanel.InteractivePanel):
     """
-    Class: Scattergram
     Created: 25.03.2005, KP
     Description: A panel showing the scattergram
     """
     def __init__(self,parent,size=(256,256),**kws):
         """
-        Method: __init__(parent)
         Created: 03.11.2004, KP
         Description: Initialization
         """
         #wx.Panel.__init__(self,parent,-1,size=size,**kws)
+        self.parent = parent
         self.size=size
         self.slice=None
+        # Empty space is the space between the legends and the scatterplot
+        self.emptySpace = 4
         self.z = 0
         self.timepoint=0
+        self.drawLegend = kws.get("drawLegend")
+        # Legend width is the width / height of the scalar colorbar
+        self.legendWidth = 16       
+        if self.drawLegend:
+            w, h = self.size
+            h+=self.legendWidth+self.emptySpace
+            w+=self.legendWidth*2+self.emptySpace*4+10
+            self.size = (w,h)
+            size = (w,h)
+        self.xoffset = 0
+        if self.drawLegend:
+            self.xoffset = self.legendWidth+self.emptySpace
+            
+        self.scatterCTF = None
+            
         self.zoomx=1
         self.zoomy=1
         self.action = 5
@@ -88,14 +103,7 @@ class Scatterplot(InteractivePanel.InteractivePanel):
         self.SetScrollbars(0,0,0,0)        
         messenger.connect(None,"threshold_changed",self.updatePreview)
         
-#        item = wx.MenuItem(self.menu,self.ID_COUNTVOXELS,"Show frequency",kind=wx.ITEM_CHECK)
-#        self.Bind(wx.EVT_MENU,self.setVoxelCount,id=self.ID_COUNTVOXELS)
-#        self.menu.AppendItem(item)
-#        self.menu.Check(self.ID_COUNTVOXELS,1)
-#        item = wx.MenuItem(self.menu,self.ID_WHOLEVOLUME,"Show scattergram of whole volume",kind=wx.ITEM_CHECK)
-#        self.Bind(wx.EVT_MENU,self.setWholeVolume,id=self.ID_WHOLEVOLUME)
-#        self.menu.AppendItem(item)
-#        self.menu.Check(self.ID_WHOLEVOLUME,1)
+
         item = wx.MenuItem(self.menu,self.ID_LOGARITHMIC,"Logarithmic scale",kind=wx.ITEM_CHECK)
         self.Bind(wx.EVT_MENU,self.onSetLogarithmic,id=self.ID_LOGARITHMIC)
         self.menu.AppendItem(item)
@@ -120,16 +128,16 @@ class Scatterplot(InteractivePanel.InteractivePanel):
         print "Setting timepoint to ",args[0]
         self.setTimepoint(args[0])
         self.updatePreview()
+        
     def setScrollbars(self,xdim,ydim):
         """
-        Method: setScrollbars(x,y)
         Created: 24.03.2005, KP
         Description: Configures scroll bar behavior depending on the
                      size of the dataset, which is given as parameters.
         """
-        self.SetSize((256,256))
-        self.SetVirtualSize((256,256))
-        self.buffer = wx.EmptyBitmap(256,256)
+        self.SetSize(self.size)
+        self.SetVirtualSize(self.size)
+        self.buffer = wx.EmptyBitmap(*self.size)
         
     def onRightClick(self,event):
         """
@@ -162,7 +170,9 @@ class Scatterplot(InteractivePanel.InteractivePanel):
         """    
         pos=event.GetPosition()
         x,y=pos
-        y=255-y
+        y=self.size[1]-y
+        x -= self.xoffset
+        
         if x>255:x=255
         if y>255:y=255
         if x<0:x=0
@@ -177,7 +187,9 @@ class Scatterplot(InteractivePanel.InteractivePanel):
         """
         if event.LeftIsDown():
             x,y=event.GetPosition()
-            y=255-y
+            y=self.size[1]-y
+            x -= self.xoffset
+            
             if x>255:x=255
             if y>255:y=255
             if x<0:x=0
@@ -283,31 +295,27 @@ class Scatterplot(InteractivePanel.InteractivePanel):
         
     def updatePreview(self,*args):
         """
-        Method: updatePreview()
         Created: 25.03.2005, KP
         Description: A method that draws the scattergram
         """
+        width, height = self.size
         if self.renew and self.dataUnit:
-            self.buffer = wx.EmptyBitmap(256,256)
+            self.buffer = wx.EmptyBitmap(width, height)
             Logging.info("Generating scatterplot of timepoint",self.timepoint)
-            t1=self.sources[0].getTimePoint(self.timepoint)
-            t2=self.sources[1].getTimePoint(self.timepoint)            
-            self.scatter = ImageOperations.scatterPlot(t1,t2,-1,self.countVoxels,self.wholeVolume,logarithmic=self.logarithmic)
-            #self.scatter=self.scatter.Rotate90()
+            # Red on the vertical and green on the horizontal axis
+            t1=self.sources[1].getTimePoint(self.timepoint)
+            t2=self.sources[0].getTimePoint(self.timepoint)            
+            self.scatter, ctf = ImageOperations.scatterPlot(t1,t2,-1,self.countVoxels,self.wholeVolume,logarithmic=self.logarithmic)
             self.scatter=self.scatter.Mirror(0)
-            #self.scatter=self.scatter.Mirror(0)
             
-            #print "scatter=",self.scatter.GetWidth(),self.scatter.GetHeight()
-            #print "buffer=",self.buffer.GetWidth(),self.buffer.GetHeight()
+            
+            self.scatterCTF = ctf
+            
             self.renew=0
         self.paintPreview()
-#        wx.GetApp().Yield(1)
-        # Commented for windows' sake
-        #self.Refresh()
 
     def OnPaint(self,event):
         """
-        Method: OnPaint()
         Created: 25.03.2005, KP
         Description: Does the actual blitting of the bitmap
         """
@@ -319,16 +327,18 @@ class Scatterplot(InteractivePanel.InteractivePanel):
         Created: 25.03.2005, KP
         Description: Paints the scattergram
         """
-#        dc = wx.PaintDC(self)
-        #self.DoPrepareDC(dc)
         dc = wx.BufferedDC(wx.ClientDC(self),self.buffer)
         dc.BeginDrawing()
 
+        colour = self.parent.GetBackgroundColour()
+        
+        dc.SetBackground(wx.Brush(colour))
+        dc.SetPen(wx.Pen(colour,0))
+        dc.SetBrush(wx.Brush(colour))
+        dc.DrawRectangle(0,0,self.size[0],self.size[1])
         if not self.scatter:
-            dc.SetBackground(wx.Brush(wx.Colour(0,0,0)))
-            dc.SetPen(wx.Pen(wx.Colour(0,0,0),0))
-            dc.SetBrush(wx.Brush(wx.Color(0,0,0)))
-            dc.DrawRectangle(0,0,self.size[0],self.size[1])
+            dc.EndDrawing()
+            dc = None
             return
 
         lower1=int(self.sources[0].getSettings().get("ColocalizationLowerThreshold"))
@@ -347,8 +357,15 @@ class Scatterplot(InteractivePanel.InteractivePanel):
             lower2,upper2=y1,y2
 
         bmp=self.scatter.ConvertToBitmap()
+        
+        verticalLegend = ImageOperations.paintCTFValues(self.sources[1].getColorTransferFunction(), height = 256, width=self.legendWidth)
+        horizontalLegend = ImageOperations.paintCTFValues(self.sources[0].getColorTransferFunction(), width= 256, height=self.legendWidth)
+        
     
-        dc.DrawBitmap(bmp,0,0,True)
+        dc.DrawBitmap(verticalLegend, 0, 0)
+        dc.DrawBitmap(horizontalLegend, self.xoffset, bmp.GetHeight()+self.emptySpace)
+        dc.DrawBitmap(bmp, self.xoffset, 0, True)
+        
         self.bmp=self.buffer
 
         slope=self.settings.get("Slope")
@@ -359,31 +376,37 @@ class Scatterplot(InteractivePanel.InteractivePanel):
             x=255
             y=255-(255*slope+intercept)
             
-            dc.DrawLine(0,255,x,y)
+            dc.DrawLine(self.xoffset,255,self.xoffset+x,y)
         
+        #ymax = self.size[1]
+        ymax=255
         # These are the threshold lines
-        dc.DrawLine(lower1,0,lower1,255)
-        dc.DrawLine(0,255-lower2,255,255-lower2)
-        dc.DrawLine(upper1,0,upper1,255)
-        dc.DrawLine(0,255-upper2,255,255-upper2)
+        dc.DrawLine(self.xoffset+lower1,0,self.xoffset+lower1,255)
+        dc.DrawLine(self.xoffset,ymax-lower2,self.xoffset+255,ymax-lower2)
+        dc.DrawLine(self.xoffset+upper1,0,self.xoffset+upper1,255)
+        dc.DrawLine(self.xoffset,ymax-upper2,self.xoffset+255,ymax-upper2)
         
         dc.SetPen(wx.Pen(wx.Colour(255,255,0),2))
         # vertical line 
-        dc.DrawLine(lower1,255-upper2,lower1,255-lower2)
+        dc.DrawLine(self.xoffset+lower1,ymax-upper2,self.xoffset+lower1,ymax-lower2)
         # horizontal line
-        dc.DrawLine(lower1,255-lower2,upper1,255-lower2)
+        dc.DrawLine(self.xoffset+lower1,ymax-lower2,self.xoffset+upper1,ymax-lower2)
         # vertical line 2 
-        dc.DrawLine(upper1,255-upper2,upper1,255-lower2)
+        dc.DrawLine(self.xoffset+upper1,ymax-upper2,self.xoffset+upper1,ymax-lower2)
         # horizontal line 2
-        dc.DrawLine(lower1,255-upper2,upper1,255-upper2)
+        dc.DrawLine(self.xoffset+lower1,ymax-upper2,self.xoffset+upper1,ymax-upper2)
         
         overlay=ImageOperations.getOverlay(upper1-lower1,upper2-lower2,(255,255,0),64)
         overlay=overlay.ConvertToBitmap()
-        dc.DrawBitmap(overlay,lower1,255-upper2,1)
+        dc.DrawBitmap(overlay,self.xoffset+lower1,ymax-upper2,1)
         
+        
+        scatterLegend = ImageOperations.paintCTFValues(self.scatterCTF, width=self.legendWidth,height=256, paintScale = 1)
+
+        dc.DrawBitmap(scatterLegend, self.xoffset+255+2*self.emptySpace,0)
         
         self.dc=dc
-#        InteractivePanel.InteractivePanel.paintPreview(self)
+
         del self.dc
         dc.EndDrawing()
         dc = None

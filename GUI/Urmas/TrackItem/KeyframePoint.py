@@ -66,9 +66,7 @@ class KeyframePoint(TrackItem):
         Description: Initialize the keyframe item
         """ 
         self.point=(0,0,0)
-        self.itemnum=0
-        if "itemnum" in kws:
-            self.itemnum=kws["itemnum"]
+        self.itemnum=kws.get("itemnum",0)
         self.image=None
         self.cam=None
         TrackItem.__init__(self,parent,text,size,**kws)

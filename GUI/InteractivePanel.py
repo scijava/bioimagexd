@@ -63,15 +63,13 @@ class InteractivePanel(ogl.ShapeCanvas):
         """    
         self.parent=parent
         self.is_windows=1#=platform.system()=="Windows"
-        size=(512,512)
         self.maxX=512
         self.maxY=512
         self.maxSizeX=512
         self.maxSizeY=512
         self.origX = 512
         self.origY = 512
-        if "size" in kws:
-            size=kws["size"]
+        size=kws.get("size",(512,512))
         self.multiple=0
         self.dataUnit=None
         ogl.OGLInitialize()
@@ -80,9 +78,7 @@ class InteractivePanel(ogl.ShapeCanvas):
         self.annotationClass=None
         self.currentAnnotation=None
         self.voxelSize=(1,1,1)
-        self.bgColor=(0,0,0)
-        if "bgColor" in kws:
-            self.bgColor=kws["bgColor"]
+        self.bgColor = kws.get("bgColor",(0,0,0))
         self.action=0
         self.imagedata=None
         self.bmp=None
@@ -138,41 +134,25 @@ class InteractivePanel(ogl.ShapeCanvas):
             
     def roiToMask(self):
         """
-        Method: roiToMask
         Created: 20.06.2006, KP
         Description: Convert the selected ROI to mask
         """
         shapelist = self.diagram.GetShapeList()
         insideMap={}
         mx,my,mz = self.dataUnit.getDimensions()
+        names = []
         for shape in shapelist:
-            if hasattr(shape,"isROI") and shape.isROI():
-                #w, h = shape.GetBoundingBoxMax()
-                #print "bounding box of",shape,"=",w,h,"pos=",shape.GetX(),shape.GetY()
-                
-
-                #sx = shape.GetX()- (w/2) -5
-                #sy = shape.GetY()- (h/2) -5
-                #if sx<0:sx=0
-                #if sy<0:sy=0
-                #ex = shape.GetX()+ (w/2) +5
-                #ey = shape.GetY()+ (h/2) +5
-                #if ex>mx:ex=mx
-                #if ey>my:ey=my    
-                #print "Looping from",sx,sy,"to",ex,ey
-                #sy=int(sy)
-                #sx=int(sx)
-                #ex=int(ex)
-                #ey=int(ey)
+            if isinstance(shape,OGLAnnotations.OGLAnnotation) and shape.isROI():
                 insideMap.update(shape.getCoveredPoints())
-            
+                names.append(shape.getName())
         insMap={}
         #print "zoomFactor=",self.zoomFactor
         for x,y in insideMap.keys():
             insMap[(x,y)]=1
         #print "insMap=",insMap
         maskImage = ImageOperations.getMaskFromPoints(insMap,mx,my,mz)
-        return maskImage
+        
+        return maskImage,names
     def polyCenter(self,points):
         """
         Method: polyCenter
@@ -477,10 +457,7 @@ class InteractivePanel(ogl.ShapeCanvas):
         Created: 04.07.2005, KP
         Description: Add an annotation to the scene
         """
-        multiple=0
-        if "multiple" in kws:
-            multiple=kws["multiple"]
-        self.multiple=multiple
+        self.multiple = kws.get("multiple",0)
         self.action=ADD_ANNOTATION
         self.annotationClass=annClass
         

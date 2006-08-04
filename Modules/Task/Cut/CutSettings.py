@@ -1,7 +1,7 @@
 # -*- coding: iso-8859-1 -*-
 
 """
- Unit: SegmentationSetting
+ Unit: CutSetting
  Project: BioImageXD
  Created: 26.03.2005, KP
  Description:
@@ -10,11 +10,7 @@
  setting object is the only thing differentiating it from another
  dataunit.
  
- This code was re-written for clarity. The code produced by the
- Selli-project was used as a starting point for producing this code.
- http://sovellusprojektit.it.jyu.fi/selli/ 
-
- Copyright (C) 2005  BioImageXD Project
+ Copyright (C) 2006  BioImageXD Project
  See CREDITS.txt for details
 
  This program is free software; you can redistribute it and/or modify
@@ -39,11 +35,11 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 import vtk
 from DataUnit import DataUnitSettings
 
-class SegmentationSettings(DataUnitSettings):
+class CutSettings(DataUnitSettings):
     """
-    Class: SegmentationSettings
+    Class: CutSettings
     Created: 27.03.2005, KP
-    Description: Stores settings related to single unit Segmentationing
+    Description: Stores settings related to single unit Cuting
     """
     def __init__(self,n=-1):
         """
@@ -56,7 +52,6 @@ class SegmentationSettings(DataUnitSettings):
         
         self.registerPrivate("ColorTransferFunction",1)        
         self.registerCounted("Source")
-        self.register("FilterList", serialize = 1)
         self.register("VoxelSize")
         self.register("Spacing")
         #self.register("Origin")
@@ -79,61 +74,3 @@ class SegmentationSettings(DataUnitSettings):
         DataUnitSettings.initialize(self,dataunit,channels,timepoints)
         ctf = self.get("ColorTransferFunction")
         
-    def writeTo(self,parser):
-        """
-        Method: writeTo(parser)
-        Created: 05.06.2005
-        Description: Attempt to write all keys to a parser
-        """    
-        DataUnitSettings.writeTo(self, parser)
-        lst = self.get("FilterList")
-        print "Filter list to write=",lst
-        flist = eval(self.serialize("FilterList",lst))
-        print "Got serialized=",flist
-        for i,fname in enumerate(flist):
-            currfilter = lst[i]
-            keys = currfilter.getPlainParameters()
-            for key in keys:
-                if not parser.has_section(fname):
-                    parser.add_section(fname)
-                print "writing ",key,"to",fname
-                parser.set(fname,key,currfilter.getParameter(key))
-
-    def deserialize(self,name,value):
-        """
-        Method: deserialize(name,value)
-        Created: 05.06.2005
-        Description: Returns the value of a given key
-        """
-        if name=="FilterList":
-            fnames = eval(value)
-            flist=[]
-            filters = SegmentationFilters.getFilterList()
-            nametof={}
-            for f in filters:
-                nametof[f.getName()] = f
-            for name in fnames:
-                fclass = nametof[name]
-                flist.append(fclass)
-            return flist
-                
-        else:
-            DataUnitSettings.deserialize(self, name, value)
-        
-        
-    def serialize(self,name,value):
-        """
-        Method: serialize(name,value)
-        Created: 05.06.2005
-        Description: Returns the value of a given key in a format
-                     that can be written to disk.
-        """
-        if name=="FilterList":
-            print "Serializing",value
-            filterlist = value
-            names=[]
-            for filter in filterlist:
-                names.append(filter.getName())
-            return str(names)
-        else:
-            return DataUnitSettings.serialize(self,name,value)

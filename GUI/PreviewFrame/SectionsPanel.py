@@ -40,7 +40,6 @@ import messenger
 
 class SectionsPanel(InteractivePanel.InteractivePanel):
     """
-    Class: SectionsPanel
     Created: 23.05.2005, KP
     Description: A widget that previews the xy,xz and yz planes of a dataset
     """
@@ -98,7 +97,6 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
         
     def getDrawableRectangles(self):
         """
-        Method: getDrawableRectangles()
         Created: 04.07.2005, KP
         Description: Return the rectangles can be drawn on as four-tuples
         """    
@@ -106,7 +104,6 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
         
     def setZoomFactor(self,factor):
         """
-        Method: setZoomFactor(factor)
         Created: 05.06.2005, KP
         Description: Set the factor by which the image is zoomed
         """
@@ -128,7 +125,6 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
         
     def onSetZSlice(self,obj,event,arg):
         """
-        Method: onSetZSlice
         Created: 1.08.2005, KP
         Description: Set the shown zslice
         """    
@@ -141,7 +137,6 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
         
     def onLeftDown(self,event):
         """
-        Method: onLeftDown
         Created: 06.06.2005, KP
         Description: Handler for mouse clicks
         """    
@@ -242,7 +237,6 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
         
     def onSize(self,event):
         """
-        Method: onSize
         Created: 23.05.2005, KP
         Description: Size event handler
         """    

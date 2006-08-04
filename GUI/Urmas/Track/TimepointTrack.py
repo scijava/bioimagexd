@@ -67,10 +67,9 @@ class TimepointTrack(Track):
         # camera path track in that it defines the camera movement
         self.trackType = "DEFINE_TIMEPOINT"        
         Track.__init__(self,name,parent,**kws)
-        if "item" in kws:
-            self.itemClass=kws["item"]
-        else:
-            self.itemClass=TrackItem
+        
+        
+        self.itemClass=kws.get("item",TrackItem)
 
         self.paintOverlay=1
         self.overlayColor = ((255,255,255),25)                

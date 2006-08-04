@@ -57,7 +57,6 @@ class TrackItem:
     def __init__(self,parent,text,size,**kws):
         #wx.Panel.__init__(self,parent,-1)#,style=wx.SIMPLE_BORDER)
         self.text=text
-        self.editable=1
         self.parent=parent
         self.minSize=5
         self.position=(0,0)
@@ -71,13 +70,10 @@ class TrackItem:
         self.labelheight=15
         self.volume = None
         self.thumbtimepoint=-1
-        self.timepoint = -1
-        if "timepoint" in kws:
-            self.timepoint = kws["timepoint"]
-        if kws.has_key("editable"):
-            self.editable=kws["editable"]
-        if kws.has_key("dataunit"):
-            self.dataUnit=kws["dataunit"]
+        self.timepoint = kws.get("timepoint",-1)
+        self.editable = kws.get("editable",1)
+        self.dataUnit = kws.get("dataunit",None)
+        
         if kws.has_key("thumbnail"):
             self.thumbtimepoint=kws["thumbnail"]
             #self.setThumbnailDataunit(self.dataUnit)

@@ -70,15 +70,11 @@ class SplineTrack(Track):
         self.paintOverlay=1
         self.overlayColor = ((0,0,255),25)                
         
-        self.closed = 0
         self.maintainUpDirection=0
         #self.namePanel.setColor((0,0,0),self.nameColor)
-        if "item" in kws:
-            self.itemClass=kws["item"]
-        else:
-            self.itemClass=SplinePoint
-        if "closed" in kws:
-            self.closed = kws["closed"]
+        
+        self.itemClass=kws.get("item",SplinePoint)
+        self.closed = kws.get("closed",0)
         dt = UrmasPalette.UrmasDropTarget(self,"Spline")
         self.SetDropTarget(dt)
             

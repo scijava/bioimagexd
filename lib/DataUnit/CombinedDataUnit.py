@@ -179,15 +179,11 @@ class CombinedDataUnit(DataUnit.DataUnit):
                                 files.
                 timepoints      The timepoints that should be processed
         """
-        settings_only=0
         callback=None
-        timepoints=range(self.getLength())
-        if "settings_only" in kws:
-            settings_only=kws["settings_only"]
-        if "callback" in kws:
-            callback=kws["callback"]
-        if "timepoints" in kws:
-            timepoints=kws["timepoints"]
+        
+        settings_only = kws.get("settings_only",0)
+        callback = kws.get("callback",None)
+        timepoints=kws.get("timepoints",range(self.getLength()))
         # We create the vtidatasource with the name of the dataunit file
         # so it knows where to store the vtkImageData objects
         self.dataWriter=DataSource.BXDDataWriter(duFile)

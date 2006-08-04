@@ -703,7 +703,7 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         Description: Sets the zoom factor so that the image will fit into the screen
         """
         #if self.imagedata:
-        Logging.backtrace()
+        
         if self.dataUnit:
             #x,y,z=self.imagedata.GetDimensions()
             x,y,z=self.dataUnit.getDimensions()

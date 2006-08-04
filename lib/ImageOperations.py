@@ -53,20 +53,80 @@ def gcd(numbers):
     
 def lcm(numbers):
     return reduce(lcm2,numbers)  
-    
-    
-def paintCTFValues(ctf,height=32,width=256):
+
+def paintLogarithmicScale(ctfbmp, ctf, vertical=1):
     """
-    Method: paintCTFValues(ctf)
+    Created: 04.08.2006
+    Description: Paint a logarithmic scale on a bitmap that represents the given ctf
+    """
+    minval,maxval=ctf.GetRange()
+    #print "\n\n*** CTF has range",min,max
+    #mmin,mmax = int(unmap(min)),int(unmap(max))
+    #print "\n\n*** MAPPED TO ORIG VALUES=",mmin,mmax
+    width, height = ctfbmp.GetWidth(),ctfbmp.GetHeight()
+    
+    bmp = wx.EmptyBitmap(width+10,height)
+    
+    
+    
+    dc = wx.MemoryDC()
+    dc.SelectObject(bmp)
+    dc.BeginDrawing()
+    colour=wx.Colour(255,255,255)
+    dc.SetBackground(wx.Brush(colour))
+    dc.SetPen(wx.Pen(colour,0))
+    dc.SetBrush(wx.Brush(colour))
+    dc.DrawRectangle(0,0,width+16,height)
+   
+    dc.SetPen(wx.Pen(wx.Colour(0,0,0),1))
+    dc.DrawBitmap(ctfbmp,5,0)
+    
+    size=max(width,height)
+    maxval = max(ctf.originalRange)
+    print "\n\n*** MAXIMUM VALUE=",maxval
+    l=math.log(maxval)
+    scale = size/float(maxval)
+    print "Scale = ",scale
+    for i in range(3*int(l)+1,1,-1):
+        i/=3.0
+        x1 = int(math.exp(i)*scale)
+        print "\n\n*** PAINTING AT ",i,"=",x1
+        if not vertical:
+            dc.DrawLine(x1,0,x1,8)
+            
+        else:
+            dc.DrawLine(0,x1,4,x1)
+            dc.DrawLine(width+6,x1,width+10,x1)
+#    dc.SetFont(wx.Font(8,wx.SWISS,wx.NORMAL,wx.NORMAL))
+#    dc.DrawText("%d"%mmin,2,height-10)
+#    dc.DrawText("%d"%mmax,2,10)
+
+        
+    dc.EndDrawing()
+    dc.SelectObject(wx.NullBitmap)
+    dc = None    
+    return bmp    
+    
+    
+    
+def paintCTFValues(ctf,width=256,height=32, paintScale = 0):
+    """
     Created: 18.04.2005, KP
     Description: Paint a bar representing a ctf
     """    
+    vertical=0
+    if height>width:
+        vertical=1
     bmp = wx.EmptyBitmap(width,height,-1)
     dc = wx.MemoryDC()
     dc.SelectObject(bmp)
     dc.BeginDrawing()
         
-    for x1 in range(0,width):
+        
+    size = width
+    if vertical:size=height
+    
+    for x1 in range(0,size):
         val=[0,0,0]
         ctf.GetColor(x1,val)
         r,g,b = val
@@ -78,11 +138,16 @@ def paintCTFValues(ctf,height=32,width=256):
         b=int(b)
         
         dc.SetPen(wx.Pen((r,g,b)))
-        dc.DrawLine(x1,0,x1,height)
+        if not vertical:
+            dc.DrawLine(x1,0,x1,height)
+        else:
+            dc.DrawLine(0,height-x1,width,height-x1)
                     
     dc.EndDrawing()
     dc.SelectObject(wx.NullBitmap)
     dc = None    
+    if paintScale:
+        bmp = paintLogarithmicScale(bmp, ctf)
     return bmp
 
 
@@ -676,26 +741,13 @@ def equalize(imagedata):
     print "LUT=",sum
     
     
-def scatterPlot(imagedata1,imagedata2,z,countVoxels, wholeVolume,logarithmic=1):
+def scatterPlot(imagedata1,imagedata2,z,countVoxels, wholeVolume=1,logarithmic=1):
     """
-    Method: scatterPlot(imageData,imageData2,z,countVoxels,wholeVolume)
     Created: 25.03.2005, KP
     Description: Create scatterplot
     """       
-    #Logging.info("extents of source data=",imagedata1.GetExtent(),imagedata2.GetExtent())
-    #scatter=vtk.vtkImageScatterPlot()
-    if not wholeVolume:
-        Logging.info("Using slice ",z," for scatterplot")
-        scatter.SetZSlice(z)
-    if countVoxels:
-        Logging.info("Counting voxels")
-        #scatter.CountVoxelsOn()
     imagedata1.SetUpdateExtent(imagedata1.GetWholeExtent())
     imagedata2.SetUpdateExtent(imagedata1.GetWholeExtent())
-    #scatter.AddInput(imagedata1)
-    #scatter.AddInput(imagedata2)
-    #scatter.Update()
-    #data=scatter.GetOutput()
     app=vtk.vtkImageAppendComponents()
     app.AddInput(imagedata1)
     app.AddInput(imagedata2)
@@ -706,20 +758,22 @@ def scatterPlot(imagedata1,imagedata2,z,countVoxels, wholeVolume,logarithmic=1):
     acc.SetInput(app.GetOutput())
     acc.Update()
     data=acc.GetOutput()
+    #print "\n\n\n***** SCATTERPLOT RANGE=",data.GetScalarRange()
     
-#    Logging.info("Scatterplot has dimensions:",data.GetDimensions(),kw="imageop")
+    originalRange = data.GetScalarRange()
+    
+    
     if logarithmic:
         Logging.info("Scaling scatterplot logarithmically",kw="imageop")
         logscale=vtk.vtkImageLogarithmicScale()
         logscale.SetInput(data)
         logscale.Update()
         data=logscale.GetOutput()
-#    Logging.info("Logarithmic has dimensions:",data.GetDimensions(),kw="imageop")        
+        
     x0,x1=data.GetScalarRange()
-    #print "max=",x1
     scale=255.0/x1
+    descale=1.0/scale
     
-    #print "scale=",scale
     shiftscale=vtk.vtkImageShiftScale()
     shiftscale.SetOutputScalarTypeToUnsignedChar()
     shiftscale.SetScale(scale)
@@ -727,9 +781,10 @@ def scatterPlot(imagedata1,imagedata2,z,countVoxels, wholeVolume,logarithmic=1):
     shiftscale.SetInput(data)
     shiftscale.Update()
     data=shiftscale.GetOutput()
-    #data = equalize(data)
-    #equalize(data)
-#    Logging.info("Shift scale has dimensions:",data.GetDimensions(),kw="imageop")            
+    
+            #c=logscale.GetConstant()
+        #c*math.log(1+x)
+
     if countVoxels:
         x0,x1=data.GetScalarRange()
         Logging.info("Scalar range of scatterplot=",x0,x1,kw="imageop")
@@ -742,16 +797,14 @@ def scatterPlot(imagedata1,imagedata2,z,countVoxels, wholeVolume,logarithmic=1):
         maptocolor.SetOutputFormatToRGB()
         maptocolor.Update()
         data=maptocolor.GetOutput()
+        ctf.originalRange = originalRange
     Logging.info("Scatterplot has dimensions:",data.GetDimensions(),data.GetExtent(),kw="imageop")                        
     data.SetWholeExtent(data.GetExtent())
     #print "data.GetWholeExtent()=",data.GetWholeExtent()
-    image=vtkImageDataToWxImage(data)
-    
-    return image
+    return vtkImageDataToWxImage(data),ctf
     
 def getZoomFactor(x1,y1,x2,y2):
     """
-    Method: getZoomFactor(x1,y1,x2,y2)
     Created: KP
     Description: Calculate a zoom factor so that the image
                  will be zoomed to be as large as possible
@@ -764,11 +817,9 @@ def getZoomFactor(x1,y1,x2,y2):
     
 def vtkZoomImage(image,f):
     """
-    Method: vtkZoomImage()
     Created: KP
     Description: Zoom a volume
-    """       
-    
+    """           
     f=1.0/f
     reslice=vtk.vtkImageReslice()
     reslice.SetInput(image)
@@ -797,16 +848,13 @@ def vtkZoomImage(image,f):
     
 def zoomImageToSize(image,x,y):
     """
-    Method: zoomImagetoSize()
     Created: KP
     Description: Scale an image to a given size
-    """       
-    
+    """           
     return image.Scale(x,y)
     
 def zoomImageByFactor(image,f):
     """
-    Method: zoomImageByFactor()
     Created: KP
     Description: Scale an image by a given factor
     """       
@@ -816,7 +864,6 @@ def zoomImageByFactor(image,f):
 
 def getSlice(volume,zslice,startpos=None,endpos=None):
     """
-    Method: getSlice
     Created: KP
     Description: Extract a given slice from a volume
     """           

@@ -259,7 +259,7 @@ class CTFValuePanel(CTFPaintPanel):
         self.dc.SetBackground(wx.Brush(self.GetBackgroundColour()))
         self.dc.Clear()
         self.dc.BeginDrawing()
-        bmp = ImageOperations.paintCTFValues(ctf,self.lineheight)
+        bmp = ImageOperations.paintCTFValues(ctf,height = self.lineheight)
         self.dc.DrawBitmap(bmp,self.xoffset,0)
         self.dc.EndDrawing()
         self.dc = None

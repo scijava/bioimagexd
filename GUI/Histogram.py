@@ -64,11 +64,8 @@ class Histogram(wx.Panel):
         Created: 24.03.2005, KP
         Description: Initialization
         """    
-        if "scale" in kws:
-            self.scale = kws["scale"]
-            del kws["scale"]
-        else:
-            self.scale = 1        
+        self.scale = kws.get("scale",1)
+        if "scale" in kws:del kws["scale"]
         
         wx.Panel.__init__(self,parent,-1,**kws)
         self.parent=parent
@@ -354,8 +351,7 @@ class Histogram(wx.Panel):
             lower=self.lowerThreshold
             upper=self.upperThreshold
                 
-        if "renew" in kws:
-            self.renew=kws["renew"]
+        self.renew = kws.get("renew",self.renew)
         if self.renew:
             if not self.noupdate or not self.data:
                 self.data=self.dataUnit.getTimePoint(self.timePoint)

@@ -56,7 +56,6 @@ def execute_limited(pipeline):
         return pipeline.GetOutput()
     
     try:
-        raise "foo"
         streamer = vtk.vtkMemoryLimitImageDataStreamer()
         streamer.SetMemoryLimit(1024*limit)
         streamer.SetInput(pipeline.GetOutput())

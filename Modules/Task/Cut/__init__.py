@@ -1,15 +1,15 @@
-from Segmentation import *
-from SegmentationPanel import *
+from Cut import *
+from CutPanel import *
 from DataUnit import CombinedDataUnit
-from SegmentationDataUnit import *
-import SegmentationSettings
+from CutDataUnit import *
+import CutSettings
 
-def getClass(): return Segmentation
-def getConfigPanel(): return SegmentationPanel
-def getName(): return "Segmentation"
-def getDesc(): return "Segment individual objects from images"
-def getIcon(): return "task_measure.jpg"
-def getInputLimits(): return (1,-1)    
+def getClass(): return Cut
+def getConfigPanel(): return CutPanel
+def getName(): return "Cut"
+def getDesc(): return "Cut the dataset to a smaller size"
+def getIcon(): return "task_cut.gif"
+def getInputLimits(): return (1,1)    
 def getToolbarPos(): return 999
-def getDataUnit(): return SegmentationDataUnit
-def getSettingsClass(): return SegmentationSettings.SegmentationSettings
+def getDataUnit(): return CutDataUnit
+def getSettingsClass(): return CutSettings.CutSettings

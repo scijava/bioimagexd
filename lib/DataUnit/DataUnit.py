@@ -249,13 +249,10 @@ class DataUnit:
                                 files.
                 timepoints      The timepoints that should be processed
         """
-        settings_only=0
         callback=None
-        timepoints=range(self.getLength())
-        if "settings_only" in kws:
-            settings_only=kws["settings_only"]
-        if "timepoints" in kws:
-            timepoints=kws["timepoints"]
+        timepoints=kws.get("timepoints",range(self.getLength()))
+        
+        settings_only=kws.get("settings_only",0)
         # We create the vtidatasource with the name of the dataunit file
         # so it knows where to store the vtkImageData objects
         import DataSource
