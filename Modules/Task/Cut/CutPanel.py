@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 # -*- coding: iso-8859-1 -*-
 """
- Unit: SegmentationPanel
+ Unit: CutPanel
  Project: BioImageXD
  Created: 10.04.2005, KP
  Description:
@@ -49,9 +49,9 @@ import scripting
 import types
 
 
-class SegmentationPanel(TaskPanel.TaskPanel):
+class CutPanel(TaskPanel.TaskPanel):
     """
-    Class: SegmentationPanel
+    Class: CutPanel
     Created: 03.11.2004, KP
     Description: A window for restoring a single dataunit
     """
@@ -64,7 +64,7 @@ class SegmentationPanel(TaskPanel.TaskPanel):
                 root    Is the parent widget of this window
         """
         self.timePoint = 0
-        self.operationName="Segmentation"
+        self.operationName="Cut"
         TaskPanel.TaskPanel.__init__(self,parent,tb)
         # Preview has to be generated here
         # self.colorChooser=None
@@ -99,7 +99,7 @@ class SegmentationPanel(TaskPanel.TaskPanel):
         """
         TaskPanel.TaskPanel.createButtonBox(self)
         
-        #self.SegmentationButton.SetLabel("Segmentation Dataset Series")
+        #self.CutButton.SetLabel("Cut Dataset Series")
         
         messenger.connect(None,"process_dataset",self.doProcessingCallback)       
         
@@ -160,7 +160,7 @@ class SegmentationPanel(TaskPanel.TaskPanel):
         
         self.settingsNotebook.AddPage(self.thresholdPanel,"Thresholding")
         self.settingsNotebook.AddPage(self.regionPanel,"Region Growing")
-        self.settingsNotebook.AddPage(self.watershedPanel,"Multi-object Segmentation")
+        self.settingsNotebook.AddPage(self.watershedPanel,"Multi-object Cut")
    
 
 
@@ -186,7 +186,7 @@ class SegmentationPanel(TaskPanel.TaskPanel):
         """
         Method: doProcessingCallback()
         Created: 03.11.2004, KP
-        Description: A callback for the button "Segmentation Dataset Series"
+        Description: A callback for the button "Cut Dataset Series"
         """
         self.updateFilterData()
         TaskPanel.TaskPanel.doOperation(self)
@@ -240,7 +240,7 @@ class SegmentationPanel(TaskPanel.TaskPanel):
         dc.SelectObject(wx.NullBitmap)
         toolid=wx.NewId()
         #n=n+1
-        name="Segmentation"
+        name="Cut"
         self.toolMgr.addItem(name,bmp,toolid,lambda e,x=n,s=self:s.setPreviewedData(e,x))        
         
         self.toolIds.append(toolid)
@@ -251,10 +251,10 @@ class SegmentationPanel(TaskPanel.TaskPanel):
         """
         Method: setCombinedDataUnit(dataUnit)
         Created: 23.11.2004, KP
-        Description: Sets the Segmentationed dataunit that is to be Segmentationed.
+        Description: Sets the Cuted dataunit that is to be Cuted.
                      It is then used to get the names of all the source data
                      units and they are added to the menu.
-                     This is overwritten from TaskPanel since we only Segmentation
+                     This is overwritten from TaskPanel since we only Cut
                      one dataunit here, not multiple source data units
         """
         TaskPanel.TaskPanel.setCombinedDataUnit(self,dataUnit)
