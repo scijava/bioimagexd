@@ -38,6 +38,7 @@ import  wx.lib.filebrowsebutton as filebrowse
 
 import messenger
 import Logging
+import scripting as bxd
 
 RADIO_CHOICE="RADIO_CHOICE"
 THRESHOLD="THRESHOLD"
@@ -49,6 +50,7 @@ CHOICE="CHOICE"
 SPINCTRL="SPINCTRL"
 NOBR="NOBR"
 BR="BR"
+ROISELECTION="ROISELECTION"
 
 class GUIBuilderBase:
     """
@@ -260,7 +262,7 @@ class GUIBuilder(wx.Panel):
                     
                     print "items=",items
                     
-                    if not (isTuple and itemType == types.BooleanType) and itemType not in [RADIO_CHOICE, SLICE, PIXEL, PIXELS, THRESHOLD, FILENAME, CHOICE]:
+                    if not (isTuple and itemType == types.BooleanType) and itemType not in [RADIO_CHOICE, SLICE, PIXEL, PIXELS, THRESHOLD, FILENAME, CHOICE, ROISELECTION]:
                         if not nobr:
                             y+=1
                             cx=0
@@ -383,6 +385,32 @@ class GUIBuilder(wx.Panel):
                             box.Add(choice,1)
                             itemsizer.Add(box,(y,0),flag=wx.EXPAND|wx.HORIZONTAL)
                             y+=1
+                        elif itemType == ROISELECTION:
+                            box = wx.BoxSizer(wx.VERTICAL)
+                            text = currentFilter.getDesc(itemName)
+                            val = 0
+                            
+                            lbl = wx.StaticText(self,-1,text)
+                            box.Add(lbl)
+
+                            rois = bxd.visualizer.getRegionsOfInterest()
+                            choices = [x.getName() for x in rois]
+                            
+                            
+                            func = lambda evt, its=item,f=currentFilter, i = itemName, r = rois, s = self: s.onSetROI(r,f, i, evt)
+                            choice = wx.Choice(self,-1,choices=choices)
+                            
+                            choice.SetSelection(val)
+                            choice.Bind(wx.EVT_CHOICE,func)
+                            
+                            #f=lambda obj,evt,arg, c=choice, i=itemName, s=self: s.onSetROIFromFilter(c,i,arg)
+                            #messenger.connect(currentFilter,"set_%s"%itemName,f) 
+                            
+                            
+                            box.Add(choice,1)
+                            itemsizer.Add(box,(y,0),flag=wx.EXPAND|wx.HORIZONTAL)
+                            y+=1
+                            
                         elif itemType == PIXEL:
                             print "Creating pixel selection"
                             lbl = wx.StaticText(self,-1,"(%d,%d,%d)"%(0,0,0),size=(80,-1))
@@ -497,13 +525,21 @@ class GUIBuilder(wx.Panel):
         
     def onSetChoice(self, filter, item, evt):
         """
-        Method: onSetChoice
         Created: 20.07.2006, KP
         Description: Set the parameter to the value of the choice widget
         """           
         value = evt.GetSelection()
         print "Setting parameter",item,"to",value
         filter.setParameter(item, value)        
+        
+    def onSetROI(self, rois, filter, item, evt):
+        """
+        Created: 20.07.2006, KP
+        Description: Set the parameter to the ROI corresponding to the value of the choice widget
+        """           
+        value = evt.GetSelection()
+        filter.setParameter(item, (value,rois[value]))        
+                
         
     def onSetFileName(self, filter, item, evt):
         """

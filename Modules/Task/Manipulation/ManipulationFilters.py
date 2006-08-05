@@ -39,10 +39,72 @@ try:
 except:
     pass
 import messenger
-import scripting
+import scripting as bxd
 
 import GUI.GUIBuilder as GUIBuilder
 import ImageOperations
+
+class IntensityMeasurementList(wx.ListCtrl):
+    def __init__(self, parent, log):
+        wx.ListCtrl.__init__(
+            self, parent, -1, 
+            size = (350,250),
+            style=wx.LC_REPORT|wx.LC_VIRTUAL|wx.LC_HRULES|wx.LC_VRULES,
+            
+            )
+
+        self.measurements =[]
+        self.InsertColumn(0, "ROI")
+        self.InsertColumn(1, "# of voxels")
+        self.InsertColumn(2, "Tot. int.")
+        self.InsertColumn(3,"Avg. int.")
+        #self.InsertColumn(2, "")
+        self.SetColumnWidth(0, 50)
+        self.SetColumnWidth(1, 100)
+        self.SetColumnWidth(2, 100)
+        self.SetColumnWidth(3, 100)
+
+        self.SetItemCount(1000)
+
+        self.attr1 = wx.ListItemAttr()
+        self.attr1.SetBackgroundColour("white")
+
+        self.attr2 = wx.ListItemAttr()
+        self.attr2.SetBackgroundColour("light blue")
+        
+        self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.OnItemSelected)
+#        self.Bind(wx.EVT_LIST_ITEM_ACTIVATED, self.OnItemActivated)
+        #self.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.OnItemDeselected)
+
+    def setMeasurements(self, measurements):
+        self.measurements = measurements
+        
+    def OnItemSelected(self, event):
+        self.currentItem = event.m_itemIndex
+
+        
+    def getColumnText(self, index, col):
+        item = self.GetItem(index, col)
+        return item.GetText()
+
+    def OnGetItemText(self, item, col):
+        
+        if item>=len(self.measurements):
+            return ""
+        if col==0:
+            return "%s"%self.measurements[0]
+        return "%d"%self.measurements[col]
+
+    def OnGetItemImage(self, item):
+         return -1
+
+    def OnGetItemAttr(self, item):
+        if item % 2 == 1:
+            return self.attr1
+        elif item % 2 == 0:
+            return self.attr2
+        else:
+            return None
 
 
 def getFilterList():
@@ -58,7 +120,8 @@ def getFilterList():
             ITKRelabelImageFilter,FilterObjectsFilter,ITKConnectedThresholdFilter,ITKNeighborhoodConnectedThresholdFilter,
             ITKLocalMaximumFilter,ITKOtsuThresholdFilter,ITKConfidenceConnectedFilter,
             MaskFilter,ITKSigmoidFilter, ITKInvertIntensityFilter, ConnectedComponentFilter,
-            MaximumObjectsFilter,TimepointCorrelationFilter]
+            MaximumObjectsFilter,TimepointCorrelationFilter,
+            ROIIntensityFilter]
             
 MATH="Math"
 SEGMENTATION="Segmentation"
@@ -119,10 +182,10 @@ class ManipulationFilter(GUIBuilder.GUIBuilderBase):
         
     def setParameter(self,parameter,value):
         """
-        Method: setParameter
         Created: 13.04.2006, KP
         Description: Set a value for the parameter
         """ 
+        
         if self.taskPanel:                
             lst = self.taskPanel.getFilters(self.name)
             i = lst.index(self)
@@ -131,8 +194,19 @@ class ManipulationFilter(GUIBuilder.GUIBuilderBase):
             else:
                 func="getFilter('%s', %d)"%(self.name,i)        
             oldval = self.parameters[parameter]
-            do_cmd="bxd.mainWindow.tasks['Process'].%s.set('%s',%s)"%(func,parameter,str(value))
-            undo_cmd="bxd.mainWindow.tasks['Process'].%s.set('%s',%s)"%(func,parameter,str(oldval))
+            if self.getType(parameter)==GUIBuilder.ROISELECTION:
+                i,roi = value
+                setval="bxd.visualizer.getRegionsOfInterest()[%d]"%i
+                rois = bxd.visualizer.getRegionsOfInterest()
+                n = rois.index(oldval)
+                setoldval="bxd.visualizer.getRegionsOfInterest()[%d]"%n
+                # First record the proper value
+                value = roi
+            else:
+                setval=str(value)
+                setoldval=str(oldval)
+            do_cmd="bxd.mainWindow.tasks['Process'].%s.set('%s',%s)"%(func,parameter,setval)
+            undo_cmd="bxd.mainWindow.tasks['Process'].%s.set('%s',%s)"%(func,parameter,setoldval)
             cmd=Command.Command(Command.PARAM_CMD,None,None,do_cmd,undo_cmd,desc="Change parameter '%s' of filter '%s'"%(parameter,self.name))
             cmd.run(recordOnly = 1)          
             
@@ -716,7 +790,7 @@ class TimepointCorrelationFilter(ManipulationFilter):
     def __init__(self):
         """
         Method: __init__()
-        Created: 13.04.2006, KP
+        Created: 31.07.2006, KP
         Description: Initialization
         """        
         ManipulationFilter.__init__(self,(1,1))
@@ -727,7 +801,7 @@ class TimepointCorrelationFilter(ManipulationFilter):
     def getParameters(self):
         """
         Method: getParameters
-        Created: 15.04.2006, KP
+        Created: 31.07.2006, KP
         Description: Return the list of parameters needed for configuring this GUI
         """            
         return [["",("Timepoint1","Timepoint2")]]
@@ -753,14 +827,14 @@ class TimepointCorrelationFilter(ManipulationFilter):
     def getType(self,parameter):
         """
         Method: getType
-        Created: 15.04.2006, KP
+        Created: 31.07.2006, KP
         Description: Return the type of the parameter
         """    
         return GUIBuilder.SLICE
         
     def getDefaultValue(self,parameter):
         """
-        Created: 15.04.2006, KP
+        Created: 31.07.2006, KP
         Description: Return the default value of a parameter
         """     
         if parameter=="Timepoint1":
@@ -777,7 +851,7 @@ class TimepointCorrelationFilter(ManipulationFilter):
 
     def execute(self,inputs,update=0,last=0):
         """
-        Created: 15.04.2006, KP
+        Created: 31.07.2006, KP
         Description: Execute the filter with given inputs and return the output
         """            
         if not ManipulationFilter.execute(self,inputs):
@@ -810,7 +884,83 @@ class TimepointCorrelationFilter(ManipulationFilter):
         return self.getInput(1)
         
         
+class ROIIntensityFilter(ManipulationFilter):
+    """
+    Created: 04.08.2006, KP
+    Description: A filter for calculating the volume, total and average intensity of a ROI
+    """     
+    name = "ROI Measurements"
+    category = MEASUREMENT
+    
+    def __init__(self):
+        """
+        Method: __init__()
+        Created: 31.07.2006, KP
+        Description: Initialization
+        """        
+        ManipulationFilter.__init__(self,(1,1))
+        self.vtkfilter = vtk.vtkImageAutoThresholdColocalization()
+        self.reportGUI=None
+        self.measurements =[]
+        self.descs={"ROI":"Region of Interest","AllROIs":"Measure all ROIs"}
+    
+    def getParameters(self):
+        """
+        Method: getParameters
+        Created: 31.07.2006, KP
+        Description: Return the list of parameters needed for configuring this GUI
+        """            
+        return [["",("ROI","AllROIs")]]
         
+        
+    def getGUI(self,parent,taskPanel):
+        """
+        Created: 31.07.2006, KP
+        Description: Return the GUI for this filter
+        """              
+        gui = ManipulationFilters.ManipulationFilter.getGUI(self,parent,taskPanel)
+        if not self.reportGUI:
+            self.reportGUI = IntensityMeasurementList(self.gui,-1)
+            if self.measurements:
+                self.reportGUI.setMeasurements(self.measurements)
+            gui.sizer.Add(self.reportGUI,(1,0),flag=wx.EXPAND|wx.ALL)
+            
+        return gui
+        
+        
+    def getType(self,parameter):
+        """
+        Created: 31.07.2006, KP
+        Description: Return the type of the parameter
+        """    
+        if parameter=="ROI":
+            return GUIBuilder.ROISELECTION
+        return types.BooleanType
+        
+    def getDefaultValue(self,parameter):
+        """
+        Created: 31.07.2006, KP
+        Description: Return the default value of a parameter
+        """     
+        return 0
+        
+    def execute(self,inputs,update=0,last=0):
+        """
+        Created: 31.07.2006, KP
+        Description: Execute the filter with given inputs and return the output
+        """            
+        if not ManipulationFilter.execute(self,inputs):
+            return None
+            
+        if not self.parameters["AllROIs"]:
+            roi = self.parameters["ROI"]
+            print "Roi=",roi,roi.getName()
+        else:
+            print "All ROIS="
+            rois=bxd.visualizer.getRegionsOfInterest()
+            print rois
+        
+        return self.getInput(1)
 
         
 class GradientFilter(ManipulationFilter):

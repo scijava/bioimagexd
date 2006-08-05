@@ -132,6 +132,18 @@ class InteractivePanel(ogl.ShapeCanvas):
             self.lines.remove(line)
             del line
             
+    def getRegionsOfInterest(self):
+        """
+        Created: 04.08.2006
+        Description: Return all the regions of interest draw in this panel    
+        """
+        shapelist = self.diagram.GetShapeList()
+        rois=[]
+        for shape in shapelist:
+            if isinstance(shape,OGLAnnotation) and shape.isROI():
+                rois.append(shape)
+        return rois
+        
     def roiToMask(self):
         """
         Created: 20.06.2006, KP

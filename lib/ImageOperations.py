@@ -83,14 +83,14 @@ def paintLogarithmicScale(ctfbmp, ctf, vertical=1):
     
     size=max(width,height)
     maxval = max(ctf.originalRange)
-    print "\n\n*** MAXIMUM VALUE=",maxval
+#    print "\n\n*** MAXIMUM VALUE=",maxval
     l=math.log(maxval)
     scale = size/float(maxval)
-    print "Scale = ",scale
+#    print "Scale = ",scale
     for i in range(3*int(l)+1,1,-1):
-        i/=3.0
+        i/=3.0  
         x1 = int(math.exp(i)*scale)
-        print "\n\n*** PAINTING AT ",i,"=",x1
+#        print "\n\n*** PAINTING AT ",i,"=",x1
         if not vertical:
             dc.DrawLine(x1,0,x1,8)
             

@@ -534,6 +534,18 @@ class Visualizer:
             
         self.viewCombo.Enable(0)
         
+        
+    def getRegionsOfInterest(self):
+        """
+        Created: 04.08.2006, KP
+        Description: Return all the regions of interest
+        """
+        if hasattr(self.currentWindow, "getRegionsOfInterest"):
+            return self.currentWindow.getRegionsOfInterest()
+        print "NO regions of interest"
+        return []
+        
+        
     def roiToMask(self, evt):
         """
         Created: 20.06.2006, KP

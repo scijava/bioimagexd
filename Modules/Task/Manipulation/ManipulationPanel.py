@@ -289,7 +289,7 @@ class ManipulationPanel(TaskPanel.TaskPanel):
             return 
         name = self.filters[index].getName()
         undo_cmd=""
-        do_cmd="bxd.mainWindow.tasks['Process'].deleteFilter(index=%d, name='%s', %s)"%(index,name)
+        do_cmd="bxd.mainWindow.tasks['Process'].deleteFilter(index=%d, name='%s')"%(index,name)
         cmd=Command.Command(Command.GUI_CMD,None,None,do_cmd,undo_cmd,desc="Remove filter '%s'"%(name))
         cmd.run()
             

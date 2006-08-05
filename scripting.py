@@ -44,6 +44,7 @@ conf = None
 
 app = None
 mainWindow = None
+visualizer = None
 processingManager = None
 memLimit = None
 resamplingDisabled = 0

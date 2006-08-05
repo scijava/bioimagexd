@@ -36,6 +36,8 @@ import wx.lib.ogl as ogl
 import messenger
 import math
 
+count={}
+
 class OGLAnnotation:
     def OnDrawControlPoints(self, dc):
         if not self._drawHandles:
@@ -48,12 +50,30 @@ class OGLAnnotation:
             control.SetPen(wx.WHITE_PEN)
             control.SetBrush(wx.WHITE_BRUSH)
             control.Draw(dc)
+            
+    def getAsMaskImage(self):
+        """
+        Created: 04.08.2006
+        Description: Return a mask image representing this region of interest
+        """
+        if not self.isROI():
+            return None
+        insideMap={}
+        insideMap.update(self.getCoveredPoints())
+        insMap={}
+        for x,y in insideMap.keys():
+            insMap[(x,y)]=1
+        parent = self.GetCanvas()
+        mx, my, mz = parent.dataUnit.getDimensions()
+        return ImageOperations.getMaskFromPoints(insMap,mx,my,mz)        
+            
     def setName(self, name):
         """
         Created: 04.08.2006, KP
         Description: Set the name of this annotation
         """
         self._name = name
+        self.ClearText()
         self.SetTextColour("#00ff00")
         self.AddText(name)
         
@@ -62,9 +82,9 @@ class OGLAnnotation:
         Created: 04.08.2006
         Description: return the name of this annotation
         """
-        if not hasattr(self,"name"):
-            self.name=""
-        return self.name
+        if not hasattr(self,"_name"):
+            self._name=""
+        return self._name
     def isROI(self):
         if not hasattr(self,"_isROI"):
             self._isROI=0
@@ -72,12 +92,14 @@ class OGLAnnotation:
         
 
 class MyScalebar(ogl.RectangleShape, OGLAnnotation):
+    
     def __init__(self, w, h, voxelsize = (1e-7,1e-7,1e-7), zoomFactor = 1.0):
         ogl.RectangleShape.__init__(self, w, h)
         self.bgColor = (127,127,127)
         self.voxelSize=voxelsize
         self.createSnapToList()
         self.widthMicro = -0
+        
         self.oldMaxSize =0
         self.vertical = 0
         self.scaleFactor = zoomFactor
@@ -269,13 +291,17 @@ class MyScalebar(ogl.RectangleShape, OGLAnnotation):
 class MyRectangle(ogl.RectangleShape, OGLAnnotation):   
     def __init__(self, w, h, zoomFactor = 1.0):
         """
-        Method: __init__
         Created: 26.06.2006, KP
         Description: Initialization
         """   
         ogl.RectangleShape.__init__(self, w,h)
         self.scaleFactor = zoomFactor
         self._isROI=1
+        global count
+        if not self.__class__ in count:
+            count[self.__class__]=1
+        self.setName("Rectangle #%d"%count[self.__class__])
+        count[self.__class__]+=1
         
 
     def setScaleFactor(self,factor):
@@ -355,13 +381,18 @@ class MyRectangle(ogl.RectangleShape, OGLAnnotation):
 class MyCircle(ogl.CircleShape, OGLAnnotation):    
     def __init__(self, diam, zoomFactor = 1.0):
         """
-        Method: __init__
         Created: 26.06.2006, KP
         Description: Initialization
         """   
         ogl.CircleShape.__init__(self, diam)
         self.scaleFactor = zoomFactor
         self._isROI=1
+        global count
+        if not self.__class__ in count:
+            count[self.__class__]=1
+        self.setName("Circle #%d"%count[self.__class__])
+        count[self.__class__]+=1
+        
     def setScaleFactor(self,factor):
         """
         Method: setScaleFactor
@@ -694,6 +725,11 @@ class MyPolygon(ogl.PolygonShape, OGLAnnotation):
         ogl.PolygonShape.__init__(self)
         self.scaleFactor = zoomFactor
         self._isROI=1
+        global count
+        if not self.__class__ in count:
+            count[self.__class__]=1
+        self.setName("Polygon #%d"%count[self.__class__])
+        count[self.__class__]+=1
         
     def setScaleFactor(self,factor):
         """
@@ -892,16 +928,18 @@ class MyEvtHandler(ogl.ShapeEvtHandler):
         
         shape = self.GetShape()
         if shape.isROI():
+            print "Name of shape=",shape.getName()
             dlg = wx.TextEntryDialog(self.parent,
                     'What is the name of this Region of Interest',
-                    'Name of the Region of Interest', '')
+                    'Name of the Region of Interest', shape.getName())
     
-            dlg.SetValue("")
+            dlg.SetValue(shape.getName())
     
             if dlg.ShowModal() == wx.ID_OK:
                 value = dlg.GetValue()
                 shape.setName(value)
-    
+                self.parent.paintPreview()
+                self.parent.Refresh()
             dlg.Destroy()        
 
     def OnLeftClick(self, x, y, keys=0, attachment=0):

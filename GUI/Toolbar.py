@@ -59,6 +59,7 @@ class Toolbar(wx.Panel):
         self.toolSize = (32,32)
         self.parent = parent
         self.x=0
+        self.ctrlToRow={}
         self.toolSeparation = 4
         self.sizer = wx.GridBagSizer(self.toolSeparation,self.toolSeparation)
         self.sizes=[]
@@ -234,7 +235,6 @@ class Toolbar(wx.Panel):
         
     def DeleteTool(self,toolid):
         """
-        Method: DeleteTool
         Created: 27.04.2006, KP
         Description: Delete a tool 
         """          

@@ -60,12 +60,6 @@ class WatershedObjectList(wx.ListCtrl):
             
             )
 
-#        self.il = wx.ImageList(16, 16)
-#        self.idx1 = self.il.Add(images.getSmilesBitmap())
-#        self.SetImageList(self.il, wx.IMAGE_LIST_SMALL)
-
-
-
         self.InsertColumn(0, "Object #")
         self.InsertColumn(1, u"Volume (\u03BCm)")
         self.InsertColumn(2, u"Volume (px)")
@@ -95,18 +89,12 @@ class WatershedObjectList(wx.ListCtrl):
         self.centersOfMassList = centersofmassList
 
     def setVolumes(self,volumeList):
-#        print "Set volumes",volumeList
         self.volumeList = volumeList
         self.SetItemCount(len(volumeList))
         self.Refresh()
         
     def OnItemSelected(self, event):
         self.currentItem = event.m_itemIndex
-        #print ('OnItemSelected: "%s", "%s", "%s", "%s"\n' %
-        #                   (self.currentItem,
-        #                    self.GetItemText(self.currentItem),
-        #                    self.getColumnText(self.currentItem, 1),
-        #                    self.getColumnText(self.currentItem, 2)))
 
     def OnItemActivated(self, event):
         self.currentItem = event.m_itemIndex
@@ -119,9 +107,6 @@ class WatershedObjectList(wx.ListCtrl):
             
             messenger.send(None,"show_centerofmass",self.currentItem,centerofmass)
         
-        print ("OnItemActivated: %s\nTopItem: %s\n" %
-                           (self.GetItemText(self.currentItem), self.GetTopItem()))
-
     def getColumnText(self, index, col):
         item = self.GetItem(index, col)
         return item.GetText()
