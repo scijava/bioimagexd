@@ -267,17 +267,16 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         
     def onRightClick(self,event):
         """
-        Method: onRightClick
         Created: 02.04.2005, KP
         Description: Method that is called when the right mouse button is
                      pressed down on this item
         """ 
+        print "\n\n\n*** ON RIHG TCLICK"
         x,y=event.GetPosition()
         shape=self.FindShape(x,y)
         if shape:
             event.Skip()
-        else:
-            self.PopupMenu(self.menu,event.GetPosition())
+        self.PopupMenu(self.menu,event.GetPosition())
                 
         
     def getVoxelValue(self,event):

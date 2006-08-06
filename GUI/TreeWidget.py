@@ -325,10 +325,11 @@ class TreeWidget(wx.SashLayoutWindow):
             self.tree.Expand(item)
         
         self.tree.Expand(item)
+        selected=0
         for obj in objs:
             
             added=self.tree.AppendItem(item,obj.getName())
-
+                
             resampledims=obj.dataSource.getResampleDimensions()
             if resampledims and resampledims != (0,0,0):
                 self.markRed([added],"*")
@@ -337,6 +338,12 @@ class TreeWidget(wx.SashLayoutWindow):
             #self.tree.SetItemImage(added,fldropenidx,which=wx.TreeItemIcon_Expanded)
             self.tree.EnsureVisible(added)
             self.dataUnitItems.append(added)
+            
+            if len(self.items.keys())==1 and not selected:
+                self.tree.SelectItem(added,1)
+                selected=1
+                print "obj=",obj
+                messenger.send(None,"tree_selection_changed",obj)            
             
         self.tree.Expand(self.root)
 

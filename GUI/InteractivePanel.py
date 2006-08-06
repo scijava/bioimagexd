@@ -256,7 +256,7 @@ class InteractivePanel(ogl.ShapeCanvas):
                 self.prevPolyEnd = None
 
         del lst
-        
+        event.Skip()        
     def markActionStart(self,event):
         """
         Method: markActionStart
