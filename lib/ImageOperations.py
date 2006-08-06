@@ -567,26 +567,43 @@ def getOverlayBorders(width,height,color,alpha):
     return img    
     
     
+def get_histogram(image):
+    """
+    Created: 06.08.2006, KP
+    Description: Return the histogrm of the image as a list of floats
+    """
+    accu = vtk.vtkImageAccumulate()
+    accu.SetInput(image)
+    x0,x1 = image.GetScalarRange()
+    accu.SetComponentExtent(0,x1,0,0,0,0)
+    accu.Update() 
+    data = accu.GetOutput()
+    
+    
+    values=[]
+    x0,x1,y0,y1,z0,z1 = data.GetWholeExtent()
+
+    for i in range(0,int(x1)+1):
+        c=data.GetScalarComponentAsDouble(i,0,0,0)
+        values.append(c)
+    return values
+
+    
 def histogram(imagedata,ctf=None,bg=(200,200,200),logarithmic=1,ignore_border=0,lower=0,upper=0,percent_only=0,maxval=255):
     """
-    Method: histogram(imagedata)
     Created: 11.07.2005, KP
     Description: Draw a histogram of a volume
     """       
-    accu=vtk.vtkImageAccumulate()
-    accu.SetInput(imagedata)
-    accu.Update()
-
-    data=accu.GetOutput()
-    values=[]
+    values = get_histogram(imagedata)
     sum=0
     xoffset=10
     sumth=0
     percent=0
     Logging.info("lower=",lower,"upper=",upper,kw="imageop")
+    print "values=",len(values),values
     for i in range(0,256):
-        c=data.GetScalarComponentAsDouble(i,0,0,0)
-        values.append(c)
+        print "Getting values[%d]"%i
+        c = values[i]
         sum+=c
         if (lower or upper):
             if i>=lower and i<=upper:
@@ -686,12 +703,32 @@ def histogram(imagedata,ctf=None,bg=(200,200,200),logarithmic=1,ignore_border=0,
     dc = None    
     return bmp,percent,retvals,xoffset
 
-def getMaskFromPoints(points,mx,my,mz):
+def getMaskFromROIs(rois, mx, my, mz):
+    """
+    Created: 06.08.2006, KP
+    Description: Create a mask that contains all given Regions of Interest
+    """
+    insideMap={}
+    for shape in rois:
+        insideMap.update(shape.getCoveredPoints())
+    insMap={}
+    for x,y in insideMap.keys():
+        insMap[(x,y)]=1    
+    return getMaskFromPoints(insMap,mx,my,mz)
     
+def getMaskFromPoints(points,mx,my,mz):
+    """
+    Created: KP
+    Description: Create a mask where all given points are set to 255
+    """
     siz = mx*my
     fs="%dB"%siz    
-
-    data=[255*((i % my,i / mx) in points) for i in range(0,mx*my)]
+    #data=[255*((i % mx,i / my) in points) for i in range(0,mx*my)]
+    #data = [255*((x,y) in points) for x in range(0,mx) for y in range(0,my)]
+    data=[]
+    for y in range(0,my):
+        for x in range(0,mx):
+            data.append(255*points.get((x,y),0))
     ss = struct.pack(fs,*data)
     
     importer=vtk.vtkImageImport()
@@ -700,6 +737,7 @@ def getMaskFromPoints(points,mx,my,mz):
     importer.SetNumberOfScalarComponents(1)
     importer.SetDataExtent(0,mx-1,0,my-1,0,0)
     importer.SetWholeExtent(0,mx-1,0,my-1,0,0)
+
     importer.Update()
     image = importer.GetOutput()
     writer = vtk.vtkPNGWriter()

@@ -149,22 +149,15 @@ class InteractivePanel(ogl.ShapeCanvas):
         Created: 20.06.2006, KP
         Description: Convert the selected ROI to mask
         """
-        shapelist = self.diagram.GetShapeList()
-        insideMap={}
         mx,my,mz = self.dataUnit.getDimensions()
-        names = []
-        for shape in shapelist:
-            if isinstance(shape,OGLAnnotations.OGLAnnotation) and shape.isROI():
-                insideMap.update(shape.getCoveredPoints())
-                names.append(shape.getName())
-        insMap={}
-        #print "zoomFactor=",self.zoomFactor
-        for x,y in insideMap.keys():
-            insMap[(x,y)]=1
-        #print "insMap=",insMap
-        maskImage = ImageOperations.getMaskFromPoints(insMap,mx,my,mz)
+        rois=self.getRegionsOfInterest()
+        names=[roi.getName() for roi in rois]
+        print "Dimensions=",mx,my,mz
+        print "Rois=",rois
+        maskImage = ImageOperations.getMaskFromROIs(rois,mx,my,mz)
         
         return maskImage,names
+        
     def polyCenter(self,points):
         """
         Method: polyCenter

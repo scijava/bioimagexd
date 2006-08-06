@@ -89,11 +89,16 @@ class IntensityMeasurementList(wx.ListCtrl):
 
     def OnGetItemText(self, item, col):
         
+        
         if item>=len(self.measurements):
             return ""
+        m = self.measurements[item]
+        
         if col==0:
-            return "%s"%self.measurements[0]
-        return "%d"%self.measurements[col]
+            return "%s"%m[0]
+        elif col==3:
+            return "%.2f"%m[3]
+        return "%d"%m[col]
 
     def OnGetItemImage(self, item):
          return -1
@@ -140,7 +145,6 @@ class ManipulationFilter(GUIBuilder.GUIBuilderBase):
     name = "Generic Filter"
     def __init__(self,numberOfInputs=(1,1)):
         """
-        Method: __init__()
         Created: 13.04.2006, KP
         Description: Initialization
         """
@@ -171,7 +175,6 @@ class ManipulationFilter(GUIBuilder.GUIBuilderBase):
         
     def set(self, parameter, value):
         """
-        Method: set
         Created: 21.07.2006, KP
         Description: Set the given parameter to given value
         """   
@@ -198,23 +201,29 @@ class ManipulationFilter(GUIBuilder.GUIBuilderBase):
                 i,roi = value
                 setval="bxd.visualizer.getRegionsOfInterest()[%d]"%i
                 rois = bxd.visualizer.getRegionsOfInterest()
-                n = rois.index(oldval)
-                setoldval="bxd.visualizer.getRegionsOfInterest()[%d]"%n
+                if oldval in rois:
+                    n = rois.index(oldval)
+                    setoldval="bxd.visualizer.getRegionsOfInterest()[%d]"%n
+                else:
+                    setoldval=""
                 # First record the proper value
                 value = roi
             else:
                 setval=str(value)
                 setoldval=str(oldval)
             do_cmd="bxd.mainWindow.tasks['Process'].%s.set('%s',%s)"%(func,parameter,setval)
-            undo_cmd="bxd.mainWindow.tasks['Process'].%s.set('%s',%s)"%(func,parameter,setoldval)
+            if setoldval:
+                undo_cmd="bxd.mainWindow.tasks['Process'].%s.set('%s',%s)"%(func,parameter,setoldval)
+            else:
+                undo_cmd=""
             cmd=Command.Command(Command.PARAM_CMD,None,None,do_cmd,undo_cmd,desc="Change parameter '%s' of filter '%s'"%(parameter,self.name))
             cmd.run(recordOnly = 1)          
             
+        print "\n\nSetting ",parameter,"to",value
         GUIBuilder.GUIBuilderBase.setParameter(self, parameter, value)
         
     def writeOutput(self, dataUnit, timePoint):
         """
-        Method: writeOutput
         Created: 09.07.2006, KP
         Description: Optionally write the output of this module during the processing
         """   
@@ -223,7 +232,6 @@ class ManipulationFilter(GUIBuilder.GUIBuilderBase):
         
     def notifyTaskPanel(self, module):
         """
-        Method: notifyTaskPanel
         Created: 31.05.2006, KP
         Description: Notify the task panel that filter has changed
         """                     
@@ -233,7 +241,6 @@ class ManipulationFilter(GUIBuilder.GUIBuilderBase):
         
     def setImageType(self,it):
         """
-        Method: setImageType
         Created: 15.05.2006, KP
         Description: Set the image type of the ITK image
         """             
@@ -241,7 +248,6 @@ class ManipulationFilter(GUIBuilder.GUIBuilderBase):
         
     def getImageType(self):
         """
-        Method: getImageType
         Created: 15.05.2006, KP
         Description: Get the image type of the ITK image
         """                 
@@ -249,7 +255,6 @@ class ManipulationFilter(GUIBuilder.GUIBuilderBase):
         
     def setTaskPanel(self,p):
         """
-        Method: setTaskPanel
         Created: 14.05.2006, KP
         Description: Set the task panel that controsl this filter
         """
@@ -257,7 +262,6 @@ class ManipulationFilter(GUIBuilder.GUIBuilderBase):
         
     def convertVTKtoITK(self,image,cast=None):
         """
-        Method: convertVTKtoITK
         Created: 18.04.2006, KP
         Description: Convert the image data to ITK image
         """         
@@ -301,7 +305,6 @@ class ManipulationFilter(GUIBuilder.GUIBuilderBase):
             
     def convertITKtoVTK(self,image,cast=None,imagetype = "UC3",force=0):
         """
-        Method: convertITKtoVTK
         Created: 18.04.2006, KP
         Description: Convert the image data to ITK image
         """  
@@ -327,7 +330,6 @@ class ManipulationFilter(GUIBuilder.GUIBuilderBase):
         
     def setNextFilter(self,nfilter):
         """
-        Method: setNextFilter
         Created: 18.04.2006, KP
         Description: Set the next filter in the chain
         """        
@@ -335,7 +337,6 @@ class ManipulationFilter(GUIBuilder.GUIBuilderBase):
     
     def setPrevFilter(self,pfilter):
         """
-        Method: setNextFilter
         Created: 18.04.2006, KP
         Description: Set the previous filter in the chain
         """        
@@ -343,7 +344,6 @@ class ManipulationFilter(GUIBuilder.GUIBuilderBase):
         
     def getITK(self):
         """
-        Method: isInITK
         Created: 18.04.2006, KP
         Description: Return whether this filter is working on ITK side of the pipeline
         """
@@ -351,7 +351,6 @@ class ManipulationFilter(GUIBuilder.GUIBuilderBase):
         
     def getInput(self,n):
         """
-        Method: getInput
         Created: 17.04.2006, KP
         Description: Return the input imagedata #n
         """             
@@ -368,7 +367,6 @@ class ManipulationFilter(GUIBuilder.GUIBuilderBase):
         
     def getInputFromChannel(self,n):
         """
-        Method: getInputFromChannel
         Created: 17.04.2006, KP
         Description: Return an imagedata object that is the current timepoint for channel #n
         """             
@@ -378,7 +376,6 @@ class ManipulationFilter(GUIBuilder.GUIBuilderBase):
         
     def getNumberOfInputs(self):
         """
-        Method: getNumberOfInputs
         Created: 17.04.2006, KP
         Description: Return the number of inputs required for this filter
         """             
@@ -386,7 +383,6 @@ class ManipulationFilter(GUIBuilder.GUIBuilderBase):
         
     def setInputChannel(self,inputNum,chl):
         """
-        Method: setInputChannel
         Created: 17.04.2006, KP
         Description: Set the input channel for input #inputNum
         """            
@@ -394,7 +390,6 @@ class ManipulationFilter(GUIBuilder.GUIBuilderBase):
         
     def getInputName(self,n):
         """
-        Method: getInputName
         Created: 17.04.2006, KP
         Description: Return the name of the input #n
         """          
@@ -402,7 +397,6 @@ class ManipulationFilter(GUIBuilder.GUIBuilderBase):
         
     def getEnabled(self):
         """
-        Method: getEnabled
         Created: 13.04.2006, KP
         Description: Return whether this filter is enabled or not
         """                   
@@ -410,7 +404,6 @@ class ManipulationFilter(GUIBuilder.GUIBuilderBase):
         
     def setDataUnit(self,du):
         """
-        Method: setDataUnit
         Created: 15.04.2006, KP
         Description: Set the dataunit that is the input of this filter
         """                   
@@ -418,7 +411,6 @@ class ManipulationFilter(GUIBuilder.GUIBuilderBase):
         
     def getDataUnit(self):
         """
-        Method: getDataUnit
         Created: 15.04.2006, KP
         Description: return the dataunit
         """                           
@@ -426,7 +418,6 @@ class ManipulationFilter(GUIBuilder.GUIBuilderBase):
 
     def setEnabled(self,flag):
         """
-        Method: setEnabled
         Created: 13.04.2006, KP
         Description: Set whether this filter is enabled or not
         """                   
@@ -436,7 +427,6 @@ class ManipulationFilter(GUIBuilder.GUIBuilderBase):
         
     def getGUI(self,parent,taskPanel):
         """
-        Method: getGUI
         Created: 13.04.2006, KP
         Description: Return the GUI for this filter
         """              
@@ -448,7 +438,6 @@ class ManipulationFilter(GUIBuilder.GUIBuilderBase):
     @classmethod            
     def getName(s):
         """
-        Method: getName
         Created: 13.04.2006, KP
         Description: Return the name of the filter
         """        
@@ -457,7 +446,6 @@ class ManipulationFilter(GUIBuilder.GUIBuilderBase):
     @classmethod
     def getCategory(s):
         """
-        Method: getCategory
         Created: 13.04.2006, KP
         Description: Return the category this filter should be classified to 
         """                
@@ -466,7 +454,6 @@ class ManipulationFilter(GUIBuilder.GUIBuilderBase):
 
     def execute(self,inputs):
         """
-        Method: execute
         Created: 13.04.2006, KP
         Description: Execute the filter with given inputs and return the output
         """          
@@ -492,7 +479,6 @@ class AnisotropicDiffusionFilter(ManipulationFilter):
     
     def __init__(self):
         """
-        Method: __init__()
         Created: 13.04.2006, KP
         Description: Initialization
         """        
@@ -504,7 +490,6 @@ class AnisotropicDiffusionFilter(ManipulationFilter):
     
     def getParameters(self):
         """
-        Method: getParameters
         Created: 15.04.2006, KP
         Description: Return the list of parameters needed for configuring this GUI
         """            
@@ -516,7 +501,6 @@ class AnisotropicDiffusionFilter(ManipulationFilter):
         
     def getDesc(self,parameter):
         """
-        Method: getDesc
         Created: 15.04.2006, KP
         Description: Return the description of the parameter
         """    
@@ -524,7 +508,6 @@ class AnisotropicDiffusionFilter(ManipulationFilter):
         
     def getLongDesc(self,parameter):
         """
-        Method: getLongDesc
         Created: 15.04.2006, KP
         Description: Return a long description of the parameter
         """     
@@ -538,7 +521,6 @@ class AnisotropicDiffusionFilter(ManipulationFilter):
         
     def getType(self,parameter):
         """
-        Method: getType
         Created: 15.04.2006, KP
         Description: Return the type of the parameter
         """    
@@ -550,7 +532,6 @@ class AnisotropicDiffusionFilter(ManipulationFilter):
         
     def getDefaultValue(self,parameter):
         """
-        Method: getDefaultValue
         Created: 15.04.2006, KP
         Description: Return the default value of a parameter
         """     
@@ -565,7 +546,6 @@ class AnisotropicDiffusionFilter(ManipulationFilter):
 
     def execute(self,inputs,update=0,last=0):
         """
-        Method: execute
         Created: 15.04.2006, KP
         Description: Execute the filter with given inputs and return the output
         """            
@@ -588,7 +568,6 @@ class AnisotropicDiffusionFilter(ManipulationFilter):
 
 class SolitaryFilter(ManipulationFilter):
     """
-    Class: SolitaryFilter
     Created: 13.04.2006, KP
     Description: A filter for removing solitary noise pixels
     """     
@@ -597,7 +576,6 @@ class SolitaryFilter(ManipulationFilter):
     
     def __init__(self):
         """
-        Method: __init__()
         Created: 13.04.2006, KP
         Description: Initialization
         """        
@@ -607,7 +585,6 @@ class SolitaryFilter(ManipulationFilter):
     
     def getParameters(self):
         """
-        Method: getParameters
         Created: 15.04.2006, KP
         Description: Return the list of parameters needed for configuring this GUI
         """            
@@ -615,7 +592,6 @@ class SolitaryFilter(ManipulationFilter):
         
     def getDesc(self,parameter):
         """
-        Method: getDesc
         Created: 15.04.2006, KP
         Description: Return the description of the parameter
         """    
@@ -623,7 +599,6 @@ class SolitaryFilter(ManipulationFilter):
         
     def getLongDesc(self,parameter):
         """
-        Method: getLongDesc
         Created: 15.04.2006, KP
         Description: Return a long description of the parameter
         """ 
@@ -642,7 +617,6 @@ class SolitaryFilter(ManipulationFilter):
         
     def getType(self,parameter):
         """
-        Method: getType
         Created: 15.04.2006, KP
         Description: Return the type of the parameter
         """    
@@ -651,7 +625,6 @@ class SolitaryFilter(ManipulationFilter):
         
     def getDefaultValue(self,parameter):
         """
-        Method: getDefaultValue
         Created: 15.04.2006, KP
         Description: Return the default value of a parameter
         """     
@@ -660,7 +633,6 @@ class SolitaryFilter(ManipulationFilter):
 
     def execute(self,inputs,update=0,last=0):
         """
-        Method: execute
         Created: 15.04.2006, KP
         Description: Execute the filter with given inputs and return the output
         """            
@@ -689,7 +661,6 @@ class ShiftScaleFilter(ManipulationFilter):
     
     def __init__(self):
         """
-        Method: __init__()
         Created: 13.04.2006, KP
         Description: Initialization
         """        
@@ -699,7 +670,6 @@ class ShiftScaleFilter(ManipulationFilter):
     
     def getParameters(self):
         """
-        Method: getParameters
         Created: 15.04.2006, KP
         Description: Return the list of parameters needed for configuring this GUI
         """            
@@ -707,7 +677,6 @@ class ShiftScaleFilter(ManipulationFilter):
         
     def getDesc(self,parameter):
         """
-        Method: getDesc
         Created: 15.04.2006, KP
         Description: Return the description of the parameter
         """    
@@ -715,7 +684,6 @@ class ShiftScaleFilter(ManipulationFilter):
         
     def getLongDesc(self,parameter):
         """
-        Method: getLongDesc
         Created: 15.04.2006, KP
         Description: Return a long description of the parameter
         """ 
@@ -724,7 +692,6 @@ class ShiftScaleFilter(ManipulationFilter):
         
     def getType(self,parameter):
         """
-        Method: getType
         Created: 15.04.2006, KP
         Description: Return the type of the parameter
         """    
@@ -735,7 +702,6 @@ class ShiftScaleFilter(ManipulationFilter):
         
     def getDefaultValue(self,parameter):
         """
-        Method: getDefaultValue
         Created: 15.04.2006, KP
         Description: Return the default value of a parameter
         """     
@@ -746,7 +712,6 @@ class ShiftScaleFilter(ManipulationFilter):
 
     def execute(self,inputs,update=0,last=0):
         """
-        Method: execute
         Created: 15.04.2006, KP
         Description: Execute the filter with given inputs and return the output
         """            
@@ -789,7 +754,6 @@ class TimepointCorrelationFilter(ManipulationFilter):
     
     def __init__(self):
         """
-        Method: __init__()
         Created: 31.07.2006, KP
         Description: Initialization
         """        
@@ -800,7 +764,6 @@ class TimepointCorrelationFilter(ManipulationFilter):
     
     def getParameters(self):
         """
-        Method: getParameters
         Created: 31.07.2006, KP
         Description: Return the list of parameters needed for configuring this GUI
         """            
@@ -826,7 +789,6 @@ class TimepointCorrelationFilter(ManipulationFilter):
         
     def getType(self,parameter):
         """
-        Method: getType
         Created: 31.07.2006, KP
         Description: Return the type of the parameter
         """    
@@ -894,7 +856,6 @@ class ROIIntensityFilter(ManipulationFilter):
     
     def __init__(self):
         """
-        Method: __init__()
         Created: 31.07.2006, KP
         Description: Initialization
         """        
@@ -906,7 +867,6 @@ class ROIIntensityFilter(ManipulationFilter):
     
     def getParameters(self):
         """
-        Method: getParameters
         Created: 31.07.2006, KP
         Description: Return the list of parameters needed for configuring this GUI
         """            
@@ -942,6 +902,10 @@ class ROIIntensityFilter(ManipulationFilter):
         Created: 31.07.2006, KP
         Description: Return the default value of a parameter
         """     
+        if parameter=="ROI":
+            n=bxd.visualizer.getRegionsOfInterest()
+            if n:return n[0]
+            return 0
         return 0
         
     def execute(self,inputs,update=0,last=0):
@@ -952,16 +916,49 @@ class ROIIntensityFilter(ManipulationFilter):
         if not ManipulationFilter.execute(self,inputs):
             return None
             
+        
         if not self.parameters["AllROIs"]:
-            roi = self.parameters["ROI"]
-            print "Roi=",roi,roi.getName()
+            rois = [self.parameters["ROI"]]
         else:
-            print "All ROIS="
             rois=bxd.visualizer.getRegionsOfInterest()
             print rois
-        
-        return self.getInput(1)
+        imagedata =  self.getInput(1)
 
+        
+        mx, my, mz = self.dataUnit.getDimensions()
+        values = []
+        for mask in rois:
+            if not mask:
+                print "No mask"
+                return imagedata
+            print "Processing mask=",mask
+            maskImage = ImageOperations.getMaskFromROIs([mask],mx,my,mz)
+            maskhistogram = ImageOperations.get_histogram(maskImage)
+            
+            maskFilter = vtk.vtkImageMask()
+            maskFilter.SetMaskedOutputValue(0)
+            maskFilter.SetMaskInput(maskImage)
+            maskFilter.SetImageInput(imagedata)
+            maskFilter.Update()
+            data = maskFilter.GetOutput()
+            mip=vtk.vtkImageSimpleMIP()
+            mip.SetInput(data)
+            w=vtk.vtkPNGWriter()
+            w.SetFileName("%s.png"%mask.getName())
+            w.SetInput(mip.GetOutput())
+            w.Write()
+            histogram = ImageOperations.get_histogram(data)
+            n = sum(histogram)
+            totint=0
+            for i,x in enumerate(histogram):
+                totint+=i*x
+            
+            avgint = totint/float(n)
+            values.append((mask.getName(),n,totint,avgint))
+        if self.reportGUI:
+            self.reportGUI.setMeasurements(values)
+        self.measurements = values
+        return imagedata
         
 class GradientFilter(ManipulationFilter):
     """
@@ -982,7 +979,6 @@ class GradientFilter(ManipulationFilter):
     
     def getParameters(self):
         """
-        Method: getParameters
         Created: 15.04.2006, KP
         Description: Return the list of parameters needed for configuring this GUI
         """            
@@ -1012,7 +1008,6 @@ class GradientMagnitudeFilter(ManipulationFilter):
     
     def __init__(self,inputs=(1,1)):
         """
-        Method: __init__()
         Created: 13.04.2006, KP
         Description: Initialization
         """        
@@ -1022,7 +1017,6 @@ class GradientMagnitudeFilter(ManipulationFilter):
     
     def getParameters(self):
         """
-        Method: getParameters
         Created: 15.04.2006, KP
         Description: Return the list of parameters needed for configuring this GUI
         """            
@@ -1030,7 +1024,6 @@ class GradientMagnitudeFilter(ManipulationFilter):
 
     def execute(self,inputs,update=0,last=0):
         """
-        Method: execute
         Created: 15.04.2006, KP
         Description: Execute the filter with given inputs and return the output
         """            
@@ -1056,7 +1049,7 @@ class ITKAnisotropicDiffusionFilter(ManipulationFilter):
     
     def __init__(self,inputs=(1,1)):
         """
-        Method: __init__()
+
         Created: 13.04.2006, KP
         Description: Initialization
         """        
@@ -1071,7 +1064,6 @@ class ITKAnisotropicDiffusionFilter(ManipulationFilter):
             
     def getDefaultValue(self,parameter):
         """
-        Method: getDefaultValue
         Created: 15.04.2006, KP
         Description: Return the default value of a parameter
         """    
@@ -1085,7 +1077,6 @@ class ITKAnisotropicDiffusionFilter(ManipulationFilter):
         
     def getType(self,parameter):
         """
-        Method: getType
         Created: 13.04.2006, KP
         Description: Return the type of the parameter
         """    
@@ -1096,7 +1087,6 @@ class ITKAnisotropicDiffusionFilter(ManipulationFilter):
         
     def getParameters(self):
         """
-        Method: getParameters
         Created: 15.04.2006, KP
         Description: Return the list of parameters needed for configuring this GUI
         """            
@@ -1105,7 +1095,6 @@ class ITKAnisotropicDiffusionFilter(ManipulationFilter):
 
     def execute(self,inputs,update=0,last=0):
         """
-        Method: execute
         Created: 15.04.2006, KP
         Description: Execute the filter with given inputs and return the output
         """                    
@@ -1137,7 +1126,6 @@ class ITKGradientMagnitudeFilter(ManipulationFilter):
     
     def __init__(self,inputs=(1,1)):
         """
-        Method: __init__()
         Created: 13.04.2006, KP
         Description: Initialization
         """        
@@ -1148,7 +1136,6 @@ class ITKGradientMagnitudeFilter(ManipulationFilter):
         
     def getParameters(self):
         """
-        Method: getParameters
         Created: 15.04.2006, KP
         Description: Return the list of parameters needed for configuring this GUI
         """            
@@ -1156,7 +1143,6 @@ class ITKGradientMagnitudeFilter(ManipulationFilter):
 
     def execute(self,inputs,update=0,last=0):
         """
-        Method: execute
         Created: 15.04.2006, KP
         Description: Execute the filter with given inputs and return the output
         """                    
@@ -1192,7 +1178,6 @@ class ITKSigmoidFilter(ManipulationFilter):
     
     def __init__(self,inputs=(1,1)):
         """
-        Method: __init__()
         Created: 13.04.2006, KP
         Description: Initialization
         """        
@@ -1205,7 +1190,6 @@ class ITKSigmoidFilter(ManipulationFilter):
         
     def getParameters(self):
         """
-        Method: getParameters
         Created: 15.04.2006, KP
         Description: Return the list of parameters needed for configuring this GUI
         """            
@@ -1213,7 +1197,6 @@ class ITKSigmoidFilter(ManipulationFilter):
         ]        
     def getDefaultValue(self,parameter):
         """
-        Method: getDefaultValue
         Created: 15.04.2006, KP
         Description: Return the default value of a parameter
         """    
@@ -1227,7 +1210,6 @@ class ITKSigmoidFilter(ManipulationFilter):
         
     def getType(self,parameter):
         """
-        Method: getType
         Created: 13.04.2006, KP
         Description: Return the type of the parameter
         """    
@@ -1236,7 +1218,6 @@ class ITKSigmoidFilter(ManipulationFilter):
 
     def execute(self,inputs,update=0,last=0):
         """
-        Method: execute
         Created: 15.04.2006, KP
         Description: Execute the filter with given inputs and return the output
         """                    
@@ -1272,7 +1253,6 @@ class ITKLocalMaximumFilter(ManipulationFilter):
     
     def __init__(self,inputs=(1,1)):
         """
-        Method: __init__()
         Created: 26.05.2006, KP
         Description: Initialization
         """        
@@ -1286,7 +1266,6 @@ class ITKLocalMaximumFilter(ManipulationFilter):
             
     def getDefaultValue(self,parameter):
         """
-        Method: getDefaultValue
         Created: 26.05.2006, KP
         Description: Return the default value of a parameter
         """   
@@ -1295,7 +1274,6 @@ class ITKLocalMaximumFilter(ManipulationFilter):
         return 0
     def getType(self,parameter):
         """
-        Method: getType
         Created: 26.05.2006, KP
         Description: Return the type of the parameter
         """    
@@ -1304,7 +1282,6 @@ class ITKLocalMaximumFilter(ManipulationFilter):
                 
     def getParameters(self):
         """
-        Method: getParameters
         Created: 15.04.2006, KP
         Description: Return the list of parameters needed for configuring this GUI
         """            
@@ -1312,7 +1289,6 @@ class ITKLocalMaximumFilter(ManipulationFilter):
 
     def execute(self,inputs,update=0,last=0):
         """
-        Method: execute
         Created: 15.04.2006, KP
         Description: Execute the filter with given inputs and return the output
         """                    

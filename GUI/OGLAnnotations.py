@@ -306,7 +306,6 @@ class MyRectangle(ogl.RectangleShape, OGLAnnotation):
 
     def setScaleFactor(self,factor):
         """
-        Method: setScaleFactor
         Created: 21.06.2006, KP
         Description: Set the scaling factor in use
         """   
@@ -321,6 +320,7 @@ class MyRectangle(ogl.RectangleShape, OGLAnnotation):
         x*=self.scaleFactor
         y*=self.scaleFactor        
         
+        print "Size of rectangle=",w,"x",h,"at",x,y
         self.SetWidth(w)
         self.SetHeight(h)
         self.SetX(x)
@@ -342,13 +342,22 @@ class MyRectangle(ogl.RectangleShape, OGLAnnotation):
     def getCoveredPoints(self):
         cx, cy = self.GetX(), self.GetY()
         w, h = self._width, self._height
-        cx //= self.scaleFactor
-        cy //=self.scaleFactor
-        w //=self.scaleFactor
-        h //=self.scaleFactor
+        cx /= self.scaleFactor
+        cy /=self.scaleFactor
+        w /=self.scaleFactor
+        h /=self.scaleFactor
         pts={}
-        for x in range(cx-w//2,cx+w//2):
-           for y in range(cy-h//2,cy+h//2):
+        w/=2.0
+        h/=2.0
+        print "Looping from ",cx-w,"to",cx+w
+        print "Looping from ",cy-h,"to",cy+h
+        print "Points tot",(2*w)*(2*h)
+        fromx=int(math.ceil(cx-w))
+        tox=int(math.floor(cx+w))
+        fromy = int(math.ceil(cy-h))
+        toy=int(math.floor(cy+h))
+        for x in range(fromx,tox):
+           for y in range(fromy,toy):
                pts[(x,y)] = 1
         return pts
                

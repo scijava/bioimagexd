@@ -982,33 +982,7 @@ class MeasureVolumeFilter(ManipulationFilters.ManipulationFilter):
         print "centers of mass=",centersofmass
         
             
-        #if self.prevFilter and self.prevFilter.getITK():
-        #    image = self.convertITKtoVTK(image,imagetype=self.prevFilter.getImageType(),force=1)
-        #    image.Update()
-            
 
-        #x0,x1=image.GetScalarRange()
-        #print "Scalar range of measured image=",x0,x1
-        #if parameters["Palette"]:
-        #    ctf = ImageOperations.watershedPalette(0, n)
-        #    self.dataUnit.getSettings().set("ColorTransferFunction",ctf)        
-        
-        #print image.GetScalarTypeAsString()
-        #accu = vtk.vtkImageAccumulate()
-        #accu.SetInput(image)
-        #accu.SetComponentExtent(0,x1,0,0,0,0)
-        #accu.Update() 
-        #data = accu.GetOutput()
-        
-        
-#        values=[]
-#        x0,x1,y0,y1,z0,z1 = data.GetWholeExtent()
-#        print x0,x1,y0,y1,z0,z1
-        
-#        for i in range(0,int(x1)):
-#            c=data.GetScalarComponentAsDouble(i,0,0,0)
-#            values.append(c)
-        
         self.values = values
         self.centersofmass = centersofmass
         if self.reportGUI:
