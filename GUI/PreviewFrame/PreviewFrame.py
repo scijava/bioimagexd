@@ -76,6 +76,7 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         self.show={"SCROLL":0}
         
         self.rawImages = []
+        self.rawImage = None
         size=(1024,1024)
         self.centerOfMass = None
         self.oldx,self.oldy=0,0
@@ -281,39 +282,50 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         
     def getVoxelValue(self,event):
         """
-        Method: getVoxelValue(event)
         Created: 23.05.2005, KP
         Description: Send an event containing the current voxel position
         """
         self.onLeftDown(event)
-        if not self.rawImages:
+        event.Skip()    
+        if not self.rawImage and not self.rawImages:
             return
+            
+        if self.rawImages:
+            self.rawImage = self.rawImages[0]
+        elif self.rawImage and not self.rawImages:
+            self.rawImages=[self.rawImage]
         x,y=event.GetPosition()
         x,y=self.getScrolledXY(x,y)
         z=self.z
         dims=[x,y,z]
         rx,ry,rz=dims
+
         Logging.info("Returning x,y,z=(%d,%d,%d)"%(rx,ry,rz),kw="preview")
-        ncomps=self.rawImages[0].GetNumberOfScalarComponents()
+        ncomps=self.rawImage.GetNumberOfScalarComponents()
         if ncomps==1:
+            Logging.info("One component in raw image",kw="preview")
             rv= -1
             gv=-1
             bv=-1
             alpha=-1
-            if len(self.rawImages) == 1:
+            if len(self.rawImages) <2:
                 scalar = self.rawImages[0].GetScalarComponentAsDouble(x,y,self.z,0)
+                print "Scalar =",scalar
             else:
                 scalar = []
                 for i in self.rawImages:
                     scalar.append(i.GetScalarComponentAsDouble(x,y,self.z,0))
                 scalar = tuple(scalar)
+                print "Scalar is tuple=",scalar
                 
         else:
+            Logging.info("%d components in raw image"%ncomps,kw="preview")
             rv=self.rawImage.GetScalarComponentAsDouble(x,y,self.z,0)
             gv=self.rawImage.GetScalarComponentAsDouble(x,y,self.z,1)
             bv=self.rawImage.GetScalarComponentAsDouble(x,y,self.z,2)
             scalar = 0xdeadbeef
             
+        Logging.info("# of comps in image: %d"%self.currentImage.GetNumberOfScalarComponents(),kw="preview")
         r=self.currentImage.GetScalarComponentAsDouble(x,y,self.z,0)
         g=self.currentImage.GetScalarComponentAsDouble(x,y,self.z,1)
         b=self.currentImage.GetScalarComponentAsDouble(x,y,self.z,2)            
@@ -322,7 +334,7 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
             alpha=self.currentImage.GetScalarComponentAsDouble(x,y,self.z,3)
     
         messenger.send(None,"get_voxel_at",rx,ry,rz, scalar, rx,gv,bv,r,g,b,alpha,self.currentCt)
-        event.Skip()
+        
     
             
     def setPreviewedSlice(self,obj,event,val=-1):
@@ -412,7 +424,6 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
 
     def updatePreview(self,renew=1):
         """
-        Method: updatePreview(renew=1)
         Created: 03.04.2005, KP
         Description: Update the preview
         Parameters:
@@ -470,7 +481,6 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
             #print "preview=",self.blackImage
             preview=self.blackImage
             black=1
-        self.currentImage=preview
         
         if not black:
             #print "Processing preview=",preview.GetDimensions()
@@ -478,6 +488,7 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         else:
             colorImage=preview
         
+        self.currentImage=colorImage
                     
         x,y,z=colorImage.GetDimensions()
         #print "Preview dims=",preview.GetDimensions()

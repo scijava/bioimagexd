@@ -43,6 +43,8 @@ import Logging
 import sys
 import wx
 
+import math
+
 from GUI import Events
     
 class Scatterplot(InteractivePanel.InteractivePanel):
@@ -65,7 +67,7 @@ class Scatterplot(InteractivePanel.InteractivePanel):
         self.timepoint=0
         self.drawLegend = kws.get("drawLegend")
         # Legend width is the width / height of the scalar colorbar
-        self.legendWidth = 16       
+        self.legendWidth = 24
         if self.drawLegend:
             w, h = self.size
             h+=self.legendWidth+self.emptySpace
@@ -77,7 +79,15 @@ class Scatterplot(InteractivePanel.InteractivePanel):
             self.xoffset = self.legendWidth+self.emptySpace
             
         self.scatterCTF = None
+        self.mode=(1,2)
+        
             
+        self.lower1=127
+        self.upper1=255
+        self.lower2=127
+        self.upper2=255
+        
+        self.middlestart = [0,0]    
         self.zoomx=1
         self.zoomy=1
         self.action = 5
@@ -164,7 +174,6 @@ class Scatterplot(InteractivePanel.InteractivePanel):
         
     def markActionStart(self,event):
         """
-        Method: markActionStart
         Created: 12.07.2005, KP
         Description: Sets the starting position of rubber band for zooming
         """    
@@ -178,10 +187,40 @@ class Scatterplot(InteractivePanel.InteractivePanel):
         if x<0:x=0
         if y<0:y=0        
         self.actionstart=(x,y)
+
+        l1diff = abs(x-self.lower1)
+        l2diff = abs(y-self.lower2)
+        u1diff = abs(x-self.upper1)
+        u2diff = abs(y-self.upper2)
+        xmode=0
+        ymode=0
+        if l1diff<45:
+            xmode=1
+        if l2diff<45:
+            ymode=2
             
+        if l1diff>u1diff and u1diff<45:
+            # But if the user clicked closer to the upper threshold move that
+            xmode=3
+        if l2diff>u2diff and u2diff<45:
+            # Same in y dir
+            ymode=4
+        # If the user clicked "In the middle" (further than 30 pixels away from border)
+        # Then just slide the thresholds
+        
+        print "DIFFS=",(l1diff,u1diff),(l2diff,u2diff)
+        if l2diff > 45 and u2diff>45 and l1diff > 45 and l2diff > 45:
+            ymode=5
+            xmode=5
+            self.middlestart[1] = y
+            self.middlestart[0] = x
+            print "MODIFYING ALL"
+        
+        self.mode=(xmode,ymode)
+        print "MODE=",self.mode
+        
     def updateActionEnd(self,event):
         """
-        Method: updateActionEnd
         Created: 12.07.2005, KP
         Description: Draws the rubber band to current mouse pos       
         """
@@ -194,13 +233,89 @@ class Scatterplot(InteractivePanel.InteractivePanel):
             if y>255:y=255
             if x<0:x=0
             if y<0:y=0            
+                
             self.actionend=(x,y)
+            
+            x1,y1=self.actionstart
+            x2,y2=self.actionend
+            #if x2<x1:
+            #    x1,x2=x2,x1
+            #if y2<y1:
+            #    y1,y2=y2,y1
+            reds=self.sources[0].getSettings()
+            greens=self.sources[1].getSettings()
+            
+            gl,gu = greens.get("ColocalizationLowerThreshold"),greens.get("ColocalizationUpperThreshold")
+            rl,ru = reds.get("ColocalizationLowerThreshold"),reds.get("ColocalizationUpperThreshold")
+            
+            print "Greens now=",gl,gu
+            print "Reds now=",rl,ru
+            
+            print "mode=",self.mode
+            if self.mode[0] == 1:
+                greens.set("ColocalizationLowerThreshold",x1)
+                gl = x1
+                if gl>gu:
+                    gu,gl=gl,gu
+                self.lower1=gl
+                print "Setting lower of green to ",x1
+            if self.mode[0] == 3:
+                greens.set("ColocalizationUpperThreshold",x2)
+                gu = x2
+                if gl>gu:
+                    gu,gl=gl,gu                
+                print "Setting upper of green to ",x2
+                self.lower2=x2
+            if self.mode[1] == 2:
+                reds.set("ColocalizationLowerThreshold",y1)
+                rl = y1
+                if rl>ru:
+                    ru,rl=rl,ru                
+                self.upper1=y1
+                print "Setting lower of red to",y1
+            elif self.mode[1] == 4:
+                reds.set("ColocalizationUpperThreshold",y2)
+                ru = y2
+                if rl>ru:
+                    ru,rl=rl,ru                                
+                self.upper2= y2
+                print "Setting upper of red to",y2
+            if 0 and self.mode[0] == 5:
+                print "Setting lower and upper of greens"
+                xdiff = x1-self.middlestart[0]
+                if x1+xdiff<0:
+                    xdiff=-x1
+                if x2+xdiff>255:
+                    xdiff=255-x2
+                x1+=xdiff
+                x2+=xdiff
+                gl = x1
+                gu = x2
+                self.middlestart[0] = x1
+            if 0 and self.mode[1] == 5:
+                print "Setting lower and upper of reds"
+                ydiff = y1-self.middlestart[1]
+                if y1+ydiff<0:
+                    ydiff=-y1
+                if y2+ydiff>255:
+                    ydiff=255-y2
+                y1+=xdiff
+                y2+=xdiff
+                rl = y1
+                ru = y2
+                self.middlestart[1] = y1
+                
+            self.actionstart=(gl,rl)
+            self.actionend=(gu,ru)
+ 
+            #messenger.send(None,"threshold_changed",(y1,y2),(x1,x2))
+            #
+
             self.updatePreview()
             
         
     def setDataUnit(self,dataUnit):
         """
-        Method: setDataUnit(self,dataUnit)
         Created: 04.07.2005, KP
         Description: Sets the data unit that is displayed
         """            
@@ -211,7 +326,6 @@ class Scatterplot(InteractivePanel.InteractivePanel):
         
     def setVoxelCount(self,event):
         """
-        Method: setVoxelCount()
         Created: 02.04.2005, KP
         Description: Method to set on / off the voxel counting mode of scattergram
         """       
@@ -222,7 +336,6 @@ class Scatterplot(InteractivePanel.InteractivePanel):
             
     def setWholeVolume(self,event):
         """
-        Method: setWholeVolume()
         Created: 02.04.2005, KP
         Description: Method to set on / off the construction of scattergram from 
                      the whole volume
@@ -233,7 +346,6 @@ class Scatterplot(InteractivePanel.InteractivePanel):
         
     def setThreshold(self,event=None):
         """
-        Method: setThreshold(event)
         Created: 24.03.2005, KP
         Description: Sets the thresholds based on user's selection
         """
@@ -243,18 +355,23 @@ class Scatterplot(InteractivePanel.InteractivePanel):
             x1,x2=x2,x1
         if y2<y1:
             y1,y2=y2,y1
+
+        minval,maxval = self.sources[0].getScalarRange()
+        c = maxval/255.0
+        x1=int(x1*c)
+        x2=int(x2*c)
+        y1=int(y1*c)
+        y2=int(y2*c)
         
         print "Using %d-%d as green and %d-%d as red range"%(x1,x2,y1,y2)
         reds=self.sources[0].getSettings()
         greens=self.sources[1].getSettings()
         
-#        print "reds.n=",reds.n,"greens.n=",greens.n
-        greens.set("ColocalizationLowerThreshold",y1)
-        greens.set("ColocalizationUpperThreshold",y2)
-        reds.set("ColocalizationLowerThreshold",x1)
-        reds.set("ColocalizationUpperThreshold",x2)
-
-        messenger.send(None,"threshold_changed",(y1,y2),(x1,x2))
+        gl,gu = x1,x2
+        rl,ru = y1,y2
+        
+        messenger.send(None,"threshold_changed",(gl,gu),(rl,ru))
+        
         messenger.send(None,"data_changed",1)
 
         self.renew=1
@@ -263,6 +380,7 @@ class Scatterplot(InteractivePanel.InteractivePanel):
         #self.Refresh()
         self.actionstart = None
         self.actionend = None
+        self.mode=(0,0)
         
     def setTimepoint(self,tp):
         """
@@ -307,8 +425,7 @@ class Scatterplot(InteractivePanel.InteractivePanel):
             t2=self.sources[0].getTimePoint(self.timepoint)            
             self.scatter, ctf = ImageOperations.scatterPlot(t1,t2,-1,self.countVoxels,self.wholeVolume,logarithmic=self.logarithmic)
             self.scatter=self.scatter.Mirror(0)
-            
-            
+                        
             self.scatterCTF = ctf
             
             self.renew=0
@@ -323,7 +440,6 @@ class Scatterplot(InteractivePanel.InteractivePanel):
 
     def paintPreview(self):
         """
-        Method: paintPreview
         Created: 25.03.2005, KP
         Description: Paints the scattergram
         """
@@ -345,7 +461,10 @@ class Scatterplot(InteractivePanel.InteractivePanel):
         lower2=int(self.sources[1].getSettings().get("ColocalizationLowerThreshold"))           
         upper1=int(self.sources[0].getSettings().get("ColocalizationUpperThreshold"))
         upper2=int(self.sources[1].getSettings().get("ColocalizationUpperThreshold"))
-
+    
+        minval,maxval = self.sources[0].getScalarRange()
+        c = 255.0 / maxval
+        #print "COEFF=",c
         if self.actionstart and self.actionend:
             x1,y1=self.actionstart
             x2,y2=self.actionend
@@ -355,11 +474,18 @@ class Scatterplot(InteractivePanel.InteractivePanel):
                 y1,y2=y2,y1
             lower1,upper1=x1,x2
             lower2,upper2=y1,y2
+            lower1=int(lower1*(1.0/c))
+            lower2=int(lower2*(1.0/c))
+            upper1=int(upper1*(1.0/c))
+            upper2=int(upper2*(1.0/c))
+            
+            
 
+        #print "Thresholds=",lower1,upper1,lower2,upper2
         bmp=self.scatter.ConvertToBitmap()
         
-        verticalLegend = ImageOperations.paintCTFValues(self.sources[1].getColorTransferFunction(), height = 256, width=self.legendWidth)
-        horizontalLegend = ImageOperations.paintCTFValues(self.sources[0].getColorTransferFunction(), width= 256, height=self.legendWidth)
+        verticalLegend = ImageOperations.paintCTFValues(self.sources[1].getColorTransferFunction(), height = 256, width=self.legendWidth, paintScalars = 1)
+        horizontalLegend = ImageOperations.paintCTFValues(self.sources[0].getColorTransferFunction(), width= 256, height=self.legendWidth, paintScalars = 1)
         
     
         dc.DrawBitmap(verticalLegend, 0, 0)
@@ -381,29 +507,34 @@ class Scatterplot(InteractivePanel.InteractivePanel):
         #ymax = self.size[1]
         ymax=255
         # These are the threshold lines
-        dc.DrawLine(self.xoffset+lower1,0,self.xoffset+lower1,255)
-        dc.DrawLine(self.xoffset,ymax-lower2,self.xoffset+255,ymax-lower2)
-        dc.DrawLine(self.xoffset+upper1,0,self.xoffset+upper1,255)
-        dc.DrawLine(self.xoffset,ymax-upper2,self.xoffset+255,ymax-upper2)
+        dc.DrawLine(self.xoffset+lower1*c,0,self.xoffset+lower1*c,255)
+        dc.DrawLine(self.xoffset,ymax-lower2*c,self.xoffset+255,ymax-lower2*c)
+        dc.DrawLine(self.xoffset+upper1*c,0,self.xoffset+upper1*c,255)
+        dc.DrawLine(self.xoffset,ymax-upper2*c,self.xoffset+255,ymax-upper2*c)
         
         dc.SetPen(wx.Pen(wx.Colour(255,255,0),2))
         # vertical line 
-        dc.DrawLine(self.xoffset+lower1,ymax-upper2,self.xoffset+lower1,ymax-lower2)
+        dc.DrawLine(self.xoffset+lower1*c,ymax-upper2*c,self.xoffset+lower1*c,ymax-lower2*c)
         # horizontal line
-        dc.DrawLine(self.xoffset+lower1,ymax-lower2,self.xoffset+upper1,ymax-lower2)
+        dc.DrawLine(self.xoffset+lower1*c,ymax-lower2*c,self.xoffset+upper1*c,ymax-lower2*c)
         # vertical line 2 
-        dc.DrawLine(self.xoffset+upper1,ymax-upper2,self.xoffset+upper1,ymax-lower2)
+        dc.DrawLine(self.xoffset+upper1*c,ymax-upper2*c,self.xoffset+upper1*c,ymax-lower2*c)
         # horizontal line 2
-        dc.DrawLine(self.xoffset+lower1,ymax-upper2,self.xoffset+upper1,ymax-upper2)
+        dc.DrawLine(self.xoffset+lower1*c,ymax-upper2*c,self.xoffset+upper1*c,ymax-upper2*c)
         
-        overlay=ImageOperations.getOverlay(upper1-lower1,upper2-lower2,(255,255,0),64)
+        overlay=ImageOperations.getOverlay(int((upper1-lower1)*c),int((upper2-lower2)*c),(255,255,0),64)
         overlay=overlay.ConvertToBitmap()
-        dc.DrawBitmap(overlay,self.xoffset+lower1,ymax-upper2,1)
-        
+        dc.DrawBitmap(overlay,self.xoffset+lower1*c,ymax-upper2*c,1)
         
         scatterLegend = ImageOperations.paintCTFValues(self.scatterCTF, width=self.legendWidth,height=256, paintScale = 1)
 
         dc.DrawBitmap(scatterLegend, self.xoffset+255+2*self.emptySpace,0)
+        
+        self.lower1=lower1*c
+        self.lower2=lower2*c
+        self.upper1=upper1*c
+        self.upper2=upper2*c
+        
         
         self.dc=dc
 

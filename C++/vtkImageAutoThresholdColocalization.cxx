@@ -90,7 +90,7 @@ ExecuteInformation(vtkImageData ** inputs, vtkImageData ** outputs)
     vtkImageMultipleInputOutputFilter::ExecuteInformation(inputs,
                                   outputs);
 
-    int wholeExt[6];
+    /*int wholeExt[6];
 
     wholeExt[1] = wholeExt[3] = 255;
     wholeExt[0] = wholeExt[2] = 0;
@@ -99,7 +99,7 @@ ExecuteInformation(vtkImageData ** inputs, vtkImageData ** outputs)
     outputs[1]->SetWholeExtent(wholeExt);
     outputs[1]->RequestExactExtentOff();
     outputs[1]->SetUpdateExtent(wholeExt);
-
+*/
 
 }
 
@@ -159,17 +159,21 @@ template < class T >
 
     double range[2];
     inData[0]->GetScalarRange(range);
-    int ch1Max = 255;
+//    int ch1Max = 255;
+    int ch1Max = (int)range[1];
+    
     int ch1Min = 0;
     inData[1]->GetScalarRange(range);
-    int ch2Max = 255;
+//    int ch2Max = 255;
+    int ch2Max = (int)range[1];
     int ch2Min = 0;
     int scaledXvalue = 0, scaledYvalue = 0;
 
+    
     double ch1threshmin = 0;
-    double ch1threshmax = 255;
+    double ch1threshmax = ch1Max;
     double ch2threshmin = 0;
-    double ch2threshmax = 255;
+    double ch2threshmax = ch2Max;
     int Nnonzeroch1 = 0, Nnonzeroch2 = 0;
         
     
@@ -197,19 +201,9 @@ template < class T >
     inData[0]->GetContinuousIncrements(outExt, inIncX, inIncY, inIncZ);
     outData[0]->GetIncrements(outIncX, outIncY,
                         outIncZ);
-    int plotExt[] = { 0, 255, 0, 255, 0, 0 };
-    vtkImageData *plotData = outData[1];
-    plotData->SetWholeExtent(plotExt);
-    plotData->SetUpdateExtent(plotExt);
-    plotData->SetExtent(plotExt);
-    plotData->SetScalarTypeToUnsignedInt();
-    plotData->AllocateScalars();
-    outData[1]->GetIncrements(plotIncX, plotIncY,
-                      plotIncZ);
-    vtkPointData *pd;
-    pd = plotData->GetPointData();
-    pd->GetScalars()->SetName("Scatter plot");
-    pd = outData[0]->GetPointData();
+    
+    
+    vtkPointData* pd = outData[0]->GetPointData();
     pd->GetScalars()->SetName("Colocalization map");
 
 	 
@@ -488,7 +482,7 @@ template < class T >
     //printf("Acquiring plot and output pointers.\n");
 
     T *plotPtr, *outPtr;
-    plotPtr = (T *) plotData->GetScalarPointerForExtent(plotExt);
+    /*plotPtr = (T *) plotData->GetScalarPointerForExtent(plotExt);*/
     outPtr = (T *) outData[0]->GetScalarPointerForExtent(outExt);
 
 
@@ -520,12 +514,10 @@ template < class T >
                    ch2Scaling); */
 
                 //printf("Reading count from plot at (%d,%d)\n",ch1,ch2);
-                count = (int)
+                /*count = (int)
                     GET_AT_PLOT(ch1, ch2, 0, plotPtr);
                 count++;
-         //if(count>200)
-                //printf("at %d,%d count now =%d\n",ch1,ch2,count);
-                SET_AT_PLOT(ch1, ch2, 0, plotPtr, count);
+                SET_AT_PLOT(ch1, ch2, 0, plotPtr, count); */
 
                 if (ch1 + ch2 == 0)
                     Nzero++;

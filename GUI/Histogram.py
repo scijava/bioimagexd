@@ -152,7 +152,6 @@ class Histogram(wx.Panel):
         
     def getUpperThreshold(self):
         """
-        Method: getUpperThreshold
         Created: 12.04.2006, KP
         Description: Return the upper threshold selected with this widget
         """                 
@@ -160,7 +159,6 @@ class Histogram(wx.Panel):
         
     def setThresholdMode(self,flag):
         """
-        Method: setThresholdMode
         Created: 12.04.2006, KP
         Description: Sets the flag indicating that the threshold selectors need to be
                      activated even if the dataset is not colocalization dataset
@@ -171,7 +169,6 @@ class Histogram(wx.Panel):
 
     def markActionStart(self,event):
         """
-        Method: markActionStart
         Created: 12.07.2005, KP
         Description: Sets the starting position of rubber band for zooming
         """    
@@ -207,7 +204,6 @@ class Histogram(wx.Panel):
             
     def updateActionEnd(self,event):
         """
-        Method: updateActionEnd
         Created: 12.07.2005, KP
         Description: Draws the rubber band to current mouse pos       
         """
@@ -224,7 +220,6 @@ class Histogram(wx.Panel):
             
     def setThreshold(self,event=None):
         """
-        Method: setThreshold(event)
         Created: 24.03.2005, KP
         Description: Sets the thresholds based on user's selection
         """
@@ -282,7 +277,6 @@ class Histogram(wx.Panel):
         
     def onRightClick(self,event):
         """
-        Method: onRightClick
         Created: 02.04.2005, KP
         Description: Method that is called when the right mouse button is
                      pressed down on this item
@@ -291,7 +285,6 @@ class Histogram(wx.Panel):
 
     def onSetLogarithmic(self,evt):
         """
-        Method: onSetLogarithmic
         Created: 12.07.2005, KP
         Description: Set the scale to logarithmic
         """
@@ -314,7 +307,6 @@ class Histogram(wx.Panel):
         
     def onSetTimepoint(self,obj,evt,timepoint):
         """
-        Method: onSetTimepoint(obj,evt,timepoint)
         Created: 12.07.2005, KP
         Description: Set the timepoint to be shown
         """
@@ -324,7 +316,6 @@ class Histogram(wx.Panel):
         
     def setDataUnit(self,dataUnit,noupdate=0):
         """
-        Method: setDataUnit
         Created: 28.04.2005, KP
         Description: Does the actual blitting of the bitmap
         Parameters:
@@ -339,7 +330,6 @@ class Histogram(wx.Panel):
         
     def updatePreview(self,*args,**kws):
         """
-        Method: updatePreview()
         Created: 12.07.2005, KP
         Description: Update the histogram
         """
@@ -385,7 +375,6 @@ class Histogram(wx.Panel):
         
     def paintPreview(self):
         """
-        Method: paintPreview
         Created: 12.07.2005, KP
         Description: Paints the scatterplot
         """

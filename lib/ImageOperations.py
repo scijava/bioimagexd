@@ -60,9 +60,6 @@ def paintLogarithmicScale(ctfbmp, ctf, vertical=1):
     Description: Paint a logarithmic scale on a bitmap that represents the given ctf
     """
     minval,maxval=ctf.GetRange()
-    #print "\n\n*** CTF has range",min,max
-    #mmin,mmax = int(unmap(min)),int(unmap(max))
-    #print "\n\n*** MAPPED TO ORIG VALUES=",mmin,mmax
     width, height = ctfbmp.GetWidth(),ctfbmp.GetHeight()
     
     bmp = wx.EmptyBitmap(width+10,height)
@@ -83,10 +80,8 @@ def paintLogarithmicScale(ctfbmp, ctf, vertical=1):
     
     size=max(width,height)
     maxval = max(ctf.originalRange)
-#    print "\n\n*** MAXIMUM VALUE=",maxval
     l=math.log(maxval)
     scale = size/float(maxval)
-#    print "Scale = ",scale
     for i in range(3*int(l)+1,1,-1):
         i/=3.0  
         x1 = int(math.exp(i)*scale)
@@ -109,7 +104,7 @@ def paintLogarithmicScale(ctfbmp, ctf, vertical=1):
     
     
     
-def paintCTFValues(ctf,width=256,height=32, paintScale = 0):
+def paintCTFValues(ctf,width=256,height=32, paintScale = 0, paintScalars = 0):
     """
     Created: 18.04.2005, KP
     Description: Paint a bar representing a ctf
@@ -126,9 +121,11 @@ def paintCTFValues(ctf,width=256,height=32, paintScale = 0):
     size = width
     if vertical:size=height
     
+    minval,maxval=ctf.GetRange()
+    d = float(maxval)/size
     for x1 in range(0,size):
         val=[0,0,0]
-        ctf.GetColor(x1,val)
+        ctf.GetColor(x1*d,val)
         r,g,b = val
         r*=255
         g*=255
@@ -142,6 +139,23 @@ def paintCTFValues(ctf,width=256,height=32, paintScale = 0):
             dc.DrawLine(x1,0,x1,height)
         else:
             dc.DrawLine(0,height-x1,width,height-x1)
+            
+    if paintScalars:
+        mmin, mmax  = ctf.GetRange()
+        #dc.SetBrush(wx.Brush((255,255,255)))
+        dc.SetTextForeground(wx.Colour(255,255,255))
+        dc.SetFont(wx.Font(9,wx.SWISS,wx.NORMAL,wx.NORMAL))
+        if vertical:
+                        
+            dc.SetFont(wx.Font(9,wx.SWISS,wx.NORMAL,wx.NORMAL))
+            dc.DrawText("%d"%mmin,8,height-20)
+            dc.SetFont(wx.Font(6,wx.SWISS,wx.NORMAL,wx.NORMAL))
+            dc.SetTextForeground(wx.Colour(0,0,0))
+            dc.DrawText("%d"%mmax,1,10)
+        else:
+            dc.DrawText("%d"%mmin,5,6)
+            dc.SetTextForeground(wx.Colour(0,0,0))
+            dc.DrawText("%d"%mmax,width-35,6)
                     
     dc.EndDrawing()
     dc.SelectObject(wx.NullBitmap)
@@ -272,13 +286,14 @@ def saveLUT(ctf,filename):
     
 def lutToString(ctf):
     """
-    Method: lutToString()
     Created: 18.04.2005, KP
     Description: Write a lut to a string
     """    
     s=""
+    minval,maxval=ctf.GetRange()
+    d=maxval/255.0
     for col in range(0,3):
-        for i in range(0,256):
+        for i in range(0,maxval,d):
             val=[0,0,0]
             ctf.GetColor(i,val)
             r,g,b = val
@@ -517,6 +532,7 @@ def getOverlay(width,height,color,alpha):
     Created: 11.07.2005, KP
     Description: Create an overlay of given color with given alpha
     """       
+    #print "\n\nGetting overlay",width,height
     siz=width*height*3
     fs="%ds"%siz    
     r,g,b=color
@@ -595,15 +611,15 @@ def histogram(imagedata,ctf=None,bg=(200,200,200),logarithmic=1,ignore_border=0,
     Description: Draw a histogram of a volume
     """       
     values = get_histogram(imagedata)
+    print "\n\n*** HISTOGRAM HAS ",len(values),"values"
     sum=0
     xoffset=10
     sumth=0
     percent=0
     Logging.info("lower=",lower,"upper=",upper,kw="imageop")
     print "values=",len(values),values
-    for i in range(0,256):
+    for i,c in enumerate(values):
         print "Getting values[%d]"%i
-        c = values[i]
         sum+=c
         if (lower or upper):
             if i>=lower and i<=upper:
@@ -614,10 +630,11 @@ def histogram(imagedata,ctf=None,bg=(200,200,200),logarithmic=1,ignore_border=0,
         #Logging.info("percent=",percent,kw="imageop")
     if ignore_border:
         ma=max(values[5:])
-        mi=min(values[0:250])
+        mi=min(values[:-5])
+        n = len(values)
         for i in range(0,5):
             values[i]=ma
-        for i in range(250,255):
+        for i in range(n-5,n):
             values[i]=mi
             
     for i,value in enumerate(values):
@@ -671,9 +688,11 @@ def histogram(imagedata,ctf=None,bg=(200,200,200),logarithmic=1,ignore_border=0,
         dc.DrawLine(0,y-1,5,y-1)
     
     
+    d=(len(values)-1)/255.0
     for i in range(0,255):
-        c=values[i]
-        c2=values[i+1]
+        c=values[int(i*d)]
+        #print "i=",i,"d=",d,"i*d=",i*d,"i*d+d=",int((i*d)+d)
+        c2=values[int((i*d)+d)]
         dc.SetPen(graypen)
         dc.DrawLine(xoffset+i,x1,xoffset+i,x1-c)
         dc.SetPen(blackpen)
@@ -685,7 +704,7 @@ def histogram(imagedata,ctf=None,bg=(200,200,200),logarithmic=1,ignore_border=0,
         Logging.info("Painting ctf",kw="imageop")
         for i in range(0,256):
             val=[0,0,0]
-            ctf.GetColor(i,val)
+            ctf.GetColor(i*d,val)
             r,g,b = val
             r=int(r*255)
             b=int(b*255)
@@ -740,10 +759,10 @@ def getMaskFromPoints(points,mx,my,mz):
 
     importer.Update()
     image = importer.GetOutput()
-    writer = vtk.vtkPNGWriter()
-    writer.SetFileName("foo.png")
-    writer.SetInput(image)
-    writer.Write()
+    #writer = vtk.vtkPNGWriter()
+    #writer.SetFileName("foo.png")
+    #writer.SetInput(image)
+    #writer.Write()
     
     append = vtk.vtkImageAppend()
     append.SetAppendAxis(2)
@@ -786,17 +805,37 @@ def scatterPlot(imagedata1,imagedata2,z,countVoxels, wholeVolume=1,logarithmic=1
     """       
     imagedata1.SetUpdateExtent(imagedata1.GetWholeExtent())
     imagedata2.SetUpdateExtent(imagedata1.GetWholeExtent())
+    
+    x0,x1 = imagedata1.GetScalarRange()
+    d = 255.0/ x1
+    shiftscale=vtk.vtkImageShiftScale()
+    shiftscale.SetOutputScalarTypeToUnsignedChar()
+    shiftscale.SetScale(d)
+    shiftscale.SetInput(imagedata1)
+    imagedata1 = shiftscale.GetOutput()
+
+    x0,x1 = imagedata2.GetScalarRange()
+    d = 255.0/ x1
+    shiftscale=vtk.vtkImageShiftScale()
+    shiftscale.SetOutputScalarTypeToUnsignedChar()
+    shiftscale.SetScale(d)
+    shiftscale.SetInput(imagedata2)
+    imagedata2 = shiftscale.GetOutput()
+    
     app=vtk.vtkImageAppendComponents()
     app.AddInput(imagedata1)
     app.AddInput(imagedata2)
     #app.Update()
     acc=vtk.vtkImageAccumulate()
     
-    acc.SetComponentExtent(0,255,0,255,0,0)
+    #n = max(imagedata1.GetScalarRange())
+    #n2 = max(max(imagedata2.GetScalarRange()),n)
+    #print "n=",n
+    n=255
+    acc.SetComponentExtent(0,n,0,n,0,0)
     acc.SetInput(app.GetOutput())
     acc.Update()
     data=acc.GetOutput()
-    #print "\n\n\n***** SCATTERPLOT RANGE=",data.GetScalarRange()
     
     originalRange = data.GetScalarRange()
     
@@ -809,20 +848,8 @@ def scatterPlot(imagedata1,imagedata2,z,countVoxels, wholeVolume=1,logarithmic=1
         data=logscale.GetOutput()
         
     x0,x1=data.GetScalarRange()
-    scale=255.0/x1
-    descale=1.0/scale
+    print "Scalar range of logarithmic scatterplot=",x0,x1
     
-    shiftscale=vtk.vtkImageShiftScale()
-    shiftscale.SetOutputScalarTypeToUnsignedChar()
-    shiftscale.SetScale(scale)
-    
-    shiftscale.SetInput(data)
-    shiftscale.Update()
-    data=shiftscale.GetOutput()
-    
-            #c=logscale.GetConstant()
-        #c*math.log(1+x)
-
     if countVoxels:
         x0,x1=data.GetScalarRange()
         Logging.info("Scalar range of scatterplot=",x0,x1,kw="imageop")
@@ -839,7 +866,11 @@ def scatterPlot(imagedata1,imagedata2,z,countVoxels, wholeVolume=1,logarithmic=1
     Logging.info("Scatterplot has dimensions:",data.GetDimensions(),data.GetExtent(),kw="imageop")                        
     data.SetWholeExtent(data.GetExtent())
     #print "data.GetWholeExtent()=",data.GetWholeExtent()
-    return vtkImageDataToWxImage(data),ctf
+    img = vtkImageDataToWxImage(data)
+    #if img.GetWidth()>255:
+    #    
+    #    img.Rescale(255,255)
+    return img,ctf
     
 def getZoomFactor(x1,y1,x2,y2):
     """

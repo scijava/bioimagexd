@@ -91,7 +91,7 @@ class OGLAnnotation:
         return self._isROI
         
 
-class MyScalebar(ogl.RectangleShape, OGLAnnotation):
+class MyScalebar(OGLAnnotation, ogl.RectangleShape):
     
     def __init__(self, w, h, voxelsize = (1e-7,1e-7,1e-7), zoomFactor = 1.0):
         ogl.RectangleShape.__init__(self, w, h)
@@ -288,7 +288,7 @@ class MyScalebar(ogl.RectangleShape, OGLAnnotation):
             dc.DrawRotatedText(text,x1+12,y1+y,90)
 
 
-class MyRectangle(ogl.RectangleShape, OGLAnnotation):   
+class MyRectangle(OGLAnnotation, ogl.RectangleShape):   
     def __init__(self, w, h, zoomFactor = 1.0):
         """
         Created: 26.06.2006, KP
@@ -387,7 +387,7 @@ class MyRectangle(ogl.RectangleShape, OGLAnnotation):
 
        
 
-class MyCircle(ogl.CircleShape, OGLAnnotation):    
+class MyCircle(OGLAnnotation, ogl.CircleShape):    
     def __init__(self, diam, zoomFactor = 1.0):
         """
         Created: 26.06.2006, KP
@@ -424,6 +424,8 @@ class MyCircle(ogl.CircleShape, OGLAnnotation):
         self.SetX(x)
         self.SetY(y)    
         self.ResetControlPoints()        
+     
+     
      
     def getCoveredPoints(self):
         cx, cy = self.GetX(), self.GetY()
@@ -483,7 +485,7 @@ class MyCircle(ogl.CircleShape, OGLAnnotation):
 
 
 
-class MyLine(ogl.LineShape, OGLAnnotation):    
+class MyLine(OGLAnnotation, ogl.LineShape):    
     def __init__(self, zoomFactor = 1.0):
         """
         Method: __init__
@@ -725,7 +727,7 @@ class MyLine(ogl.LineShape, OGLAnnotation):
             
             #print "Resetting point",i,"to",point[0]-xoff,point[1]-yoff
             
-class MyPolygon(ogl.PolygonShape, OGLAnnotation):    
+class MyPolygon(OGLAnnotation, ogl.PolygonShape):    
     def __init__(self, zoomFactor = 1.0):
         """
         Created: 26.06.2006, KP

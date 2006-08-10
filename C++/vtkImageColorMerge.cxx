@@ -68,8 +68,7 @@ void vtkImageColorMergeExecute(vtkImageColorMerge *self, int id,int NumberOfInpu
     int maxX,maxY,maxZ;
     int idxX,idxY,idxZ;
 
-    double **ctfs;
-        
+    double **ctfs;        
     int **itfs;
     int itfCount = self->GetITFCount();
     
@@ -112,9 +111,13 @@ void vtkImageColorMergeExecute(vtkImageColorMerge *self, int id,int NumberOfInpu
         
         isIdentical = 1;
         ctf = self->GetColorTransferFunction(i);
-        map = ctf->GetTable(0,256,256);
+        double range[2];
+        ctf->GetRange(range);
+        int n = int(range[2]-range[1]);
+        n++;
+        map = ctf->GetTable(range[0],range[1],n);
         //ctfs[i] = self->GetColorTransferFunction(i)->GetTable(0,255,256);
-        ctfs[i] = new double[256*3];
+        ctfs[i] = new double[n*3];
 
         if( itfCount ) {
             itf = self->GetIntensityTransferFunction(i);
@@ -126,7 +129,7 @@ void vtkImageColorMergeExecute(vtkImageColorMerge *self, int id,int NumberOfInpu
             }
         }    
         
-        for(int x = 0; x < 256; x++) {
+        for(int x = 0; x < n; x++) {
                 if(!isIdentical) {
                     x=itfs[i][x];    
                 }
@@ -327,7 +330,8 @@ int vtkImageColorMerge::RequestInformation (
   int n = 4;
   if(!this->BuildAlpha) n = 3;
       
-  vtkDataObject::SetPointDataActiveScalarInfo(outInfo, VTK_UNSIGNED_CHAR,n);
+
+//  vtkDataObject::SetPointDataActiveScalarInfo(outInfo, scalarType,n);
   return 1;
 }
 

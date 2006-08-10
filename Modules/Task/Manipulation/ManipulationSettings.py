@@ -65,10 +65,6 @@ class ManipulationSettings(DataUnitSettings):
         self.register("Type")
         self.register("Name")
         self.register("BitDepth")
-        ctf = vtk.vtkColorTransferFunction()
-        ctf.AddRGBPoint(0,0,0,0)
-        ctf.AddRGBPoint(255, 1.0, 1.0, 1.0)
-        self.set("ColorTransferFunction",ctf)
         
     def initialize(self,dataunit,channels, timepoints):
         """
@@ -78,7 +74,15 @@ class ManipulationSettings(DataUnitSettings):
                      number of channels and timepoints
         """
         DataUnitSettings.initialize(self,dataunit,channels,timepoints)
-        ctf = self.get("ColorTransferFunction")
+        if hasattr(dataunit,"getScalarRange"):
+            minval,maxval = dataunit.getScalarRange()
+        else:
+            minval,maxval = dataunit.getSourceDataUnits()[0].getScalarRange()
+        ctf = vtk.vtkColorTransferFunction()
+        ctf.AddRGBPoint(minval,0,0,0)
+        ctf.AddRGBPoint(maxval, 1.0, 1.0, 1.0)
+        self.set("ColorTransferFunction",ctf)
+
         
     def writeTo(self,parser):
         """

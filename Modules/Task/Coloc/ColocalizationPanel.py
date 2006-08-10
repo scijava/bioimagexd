@@ -941,6 +941,12 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
         n1=sources[0].getName()
         n2=sources[1].getName()
 
+        minval,maxval = sources[0].getScalarRange()
+        self.lowerthreshold.SetRange(minval,maxval)
+        self.lowerthreshold.SetValue((maxval-minval)/2)
+        self.upperthreshold.SetRange(minval,maxval)
+        self.upperthreshold.SetValue(maxval)        
+        
         for i,val in enumerate(self.headervals):
             s=val[0]
             s=s.replace("%ch1%",n1)

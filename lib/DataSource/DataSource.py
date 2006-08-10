@@ -253,10 +253,10 @@ class DataSource:
     
     def getIntensityScaledData(self,data):
         """
-        Method: getIntensityScaledData
         Created: 12.04.2006, KP
         Description: Return the data shifted and scaled to appropriate intensity range
-        """            
+        """
+        return data
         if self.intensityScale == -1:
             return data
         if not self.shift:
@@ -414,7 +414,6 @@ class DataSource:
 
     def getScalarRange(self):
         """
-        Method: getScalarRange
         Created: 28.05.2005, KP
         Description: Return the bit depth of data
         """
@@ -423,7 +422,6 @@ class DataSource:
         
     def getBitDepth(self):
         """
-        Method: getBitDepth
         Created: 28.05.2005, KP
         Description: Return the bit depth of data
         """

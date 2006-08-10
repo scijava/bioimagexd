@@ -883,6 +883,7 @@ class ROIIntensityFilter(ManipulationFilter):
             self.reportGUI = IntensityMeasurementList(self.gui,-1)
             if self.measurements:
                 self.reportGUI.setMeasurements(self.measurements)
+                
             gui.sizer.Add(self.reportGUI,(1,0),flag=wx.EXPAND|wx.ALL)
             
         return gui
@@ -934,21 +935,21 @@ class ROIIntensityFilter(ManipulationFilter):
             print "Processing mask=",mask
             maskImage = ImageOperations.getMaskFromROIs([mask],mx,my,mz)
             maskhistogram = ImageOperations.get_histogram(maskImage)
-            
+            n = sum(maskhistogram[1:])
             maskFilter = vtk.vtkImageMask()
             maskFilter.SetMaskedOutputValue(0)
             maskFilter.SetMaskInput(maskImage)
             maskFilter.SetImageInput(imagedata)
             maskFilter.Update()
             data = maskFilter.GetOutput()
-            mip=vtk.vtkImageSimpleMIP()
-            mip.SetInput(data)
-            w=vtk.vtkPNGWriter()
-            w.SetFileName("%s.png"%mask.getName())
-            w.SetInput(mip.GetOutput())
-            w.Write()
+            #mip=vtk.vtkImageSimpleMIP()
+            #mip.SetInput(data)
+            #w=vtk.vtkPNGWriter()
+            #w.SetFileName("%s.png"%mask.getName())
+            #w.SetInput(mip.GetOutput())
+            #w.Write()
             histogram = ImageOperations.get_histogram(data)
-            n = sum(histogram)
+            #n = sum(histogram)
             totint=0
             for i,x in enumerate(histogram):
                 totint+=i*x
@@ -957,6 +958,7 @@ class ROIIntensityFilter(ManipulationFilter):
             values.append((mask.getName(),n,totint,avgint))
         if self.reportGUI:
             self.reportGUI.setMeasurements(values)
+            self.reportGUI.Refresh()
         self.measurements = values
         return imagedata
         

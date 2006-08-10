@@ -42,14 +42,6 @@ import scripting
 
 import messenger
 
-if __name__=='__main__':
-    import sys
-        
-    sys.path.append(os.path.normpath(os.path.join(os.getcwd(),"..")))
-    sys.path.append(os.path.normpath(os.path.join(os.getcwd(),"../lib")))
-    sys.path.insert(0,os.path.normpath(os.path.join(os.getcwd(),"../Libraries/VTK/bin")))
-    sys.path.insert(0,os.path.normpath(os.path.join(os.getcwd(),"../Libraries/VTK/Wrapping/Python")))
-
 import vtk
 import time
 import ImageOperations
@@ -57,7 +49,6 @@ import Dialogs
 
 class CTFPaintPanel(wx.Panel):
     """
-    Class: CTFPaintPanel
     Created: 16.04.2005, KP
     Description: A widget onto which the transfer function is painted
     """
@@ -89,15 +80,14 @@ class CTFPaintPanel(wx.Panel):
         
     def toGraphCoords(self,x,y):
         """
-        Method: toGraphCoords(x,y)
         Created: 16.04.2005, KP
         Description: Returns x and y of the graph for given coordinates
         """
-        rx,ry=x-self.xoffset,255-(y-self.yoffset)
+        rx,ry=x-self.xoffset,self.maxy-(y-self.yoffset)
         if rx<0:rx=0
         if ry<0:ry=0
-        if rx>255:rx=255
-        if ry>255:ry=255
+        if rx>self.maxx:rx=self.maxx
+        if ry>self.maxy:ry=self.maxy
         return (rx,ry)
         
     def onPaint(self,event):
@@ -105,7 +95,6 @@ class CTFPaintPanel(wx.Panel):
 
     def createLine(self,x1,y1,x2,y2,color="WHITE",brush=None,**kws):
         """
-        Method: createLine(x1,y1,x2,y2)
         Created: 30.10.2004, KP
         Description: Draws a line from (x1,y1) to (x2,y2). The method
                      takes into account the scale factor
@@ -139,7 +128,6 @@ class CTFPaintPanel(wx.Panel):
 
     def createOval(self,x,y,r,color="GREY"):
         """
-        Method: createOval(x,y,radius)
         Created: 30.10.2004, KP
         Description: Draws an oval at point (x,y) with given radius
         """
@@ -152,7 +140,6 @@ class CTFPaintPanel(wx.Panel):
 
     def createText(self,x,y,text,color="WHITE",**kws):
         """
-        Method: createText(x,y,text,font="Arial 6")
         Created: 30.10.2004, KP
         Description: Draws a text at point (x,y) using the given font
         """
@@ -173,10 +160,14 @@ class CTFPaintPanel(wx.Panel):
 
     def paintTransferFunction(self,ctf,pointlist,otf=None,alphaMode=None,selectedPoint=None):
         """
-        Method: paintTransferFunction()
         Created: 30.10.2004, KP
         Description: Paints the graph of the function specified by the six points
         """
+        minval,maxval = ctf.GetRange()
+        
+        d = maxval/float(self.maxx)
+        if d<1:d=1
+        print "maxval=",maxval,"self.maxx=",self.maxx,"d=",d
         self.dc = wx.BufferedDC(wx.ClientDC(self),self.buffer)
 
         self.dc.SetBackground(wx.Brush("BLACK"))
@@ -187,26 +178,36 @@ class CTFPaintPanel(wx.Panel):
         a0=0
         for point in pointlist:
             x,y=point
+            x/=d
             self.createOval(x,y,2)
         if selectedPoint:
             x,y=selectedPoint
             self.createOval(x,y,2,(255,255,255))
         
-        self.createLine(0,0,0,260,arrow="VERTICAL")
-        self.createLine(0,0,260,0,arrow="HORIZONTAL")
+        self.createLine(0,0,0,self.maxy+5,arrow="VERTICAL")
+        self.createLine(0,0,self.maxx+5,0,arrow="HORIZONTAL")
 
-        for i in range(32,255,32):
+        for i in range(32,self.maxx,32):
             # Color gray and stipple with gray50
-            self.createLine(i,0,i,255,'GREY',wx.LIGHT_GREY_BRUSH)
-            self.createLine(0,i,255,i,'GREY',wx.LIGHT_GREY_BRUSH)
+            self.createLine(i,0,i,self.maxy,'GREY',wx.LIGHT_GREY_BRUSH)
+            self.createLine(0,i,self.maxx,i,'GREY',wx.LIGHT_GREY_BRUSH)
     
-        for x1 in range(0,256):
+    
+        
+        
+        coeff = float(self.maxx)/maxval
+        for x1 in range(int(minval),int(maxval),int(d)):
             val=[0,0,0]
+
             ctf.GetColor(x1,val)
+            #print "Color",val,"corresponds to",x1
             r,g,b = val
             r*=255
             g*=255
             b*=255
+    
+            x1*=coeff
+
             if otf:
                 a=otf.GetValue(x1)
                 a*=255
@@ -217,6 +218,7 @@ class CTFPaintPanel(wx.Panel):
             g=int(g)
             b=int(b)
             if not alphaMode:
+                #print "Painting from ",x0,g0,"to",x1,g
                 self.createLine(x0,r0,x1,r,'#ff0000')
                 self.createLine(x0,g0,x1,g,'#00ff00')
                 self.createLine(x0,b0,x1,b,'#0000ff')
@@ -226,11 +228,13 @@ class CTFPaintPanel(wx.Panel):
 
         textcol="GREEN"
         self.createText(0,-5,"0",textcol)
-        self.createText(127,-5,"127",textcol)
-        self.createText(255,-5,"255",textcol)
+        
+        halfval = int((maxval-minval)/2)
+        self.createText(self.maxx/2,-5,"%d"%halfval,textcol)
+        self.createText(self.maxx,-12,"%d"%maxval,textcol)
 
-        self.createText(-10,127,"127",textcol)
-        self.createText(-10,255,"255",textcol)
+        self.createText(-10,self.maxy/2,"127",textcol)
+        self.createText(-10,self.maxy,"255",textcol)
         self.dc.EndDrawing()
         self.dc = None
 
@@ -238,7 +242,6 @@ class CTFPaintPanel(wx.Panel):
 
 class CTFValuePanel(CTFPaintPanel):
     """
-    Class: CTFValuePanel
     Created: 17.04.2005, KP
     Description: A widget onto which the colors transfer function is painted
     """
@@ -250,7 +253,6 @@ class CTFValuePanel(CTFPaintPanel):
 
     def paintTransferFunction(self,ctf,pointlist=[]):
         """
-        Method: paintTransferFunction()
         Created: 30.10.2004, KP
         Description: Paints the graph of the function specified by the six points
         """
@@ -266,14 +268,12 @@ class CTFValuePanel(CTFPaintPanel):
         
 class CTFButton(wx.BitmapButton):
     """
-    Class: CTFButton
     Created: 18.04.2005, KP
     Description: A button that shows a ctf as a palette and lets the user modify it
                  by clicking on the button
     """    
     def __init__(self,parent,alpha=0):
         """
-        Method: __init__
         Created: 18.04.2005, KP
         Description: Initialization
         """    
@@ -289,7 +289,6 @@ class CTFButton(wx.BitmapButton):
         
     def isChanged(self):
         """
-        Method: isChanged
         Created: 28.04.2005, KP
         Description: Was the ctf or otf changed
         """        
@@ -297,17 +296,16 @@ class CTFButton(wx.BitmapButton):
         
     def setColorTransferFunction(self,ctf):
         """
-        Method: setColorTransferFunction
         Created: 18.04.2005, KP
         Description: Set the color transfer function that is edited
         """   
         self.ctf = ctf
+        self.minval,self.maxval = ctf.GetRange()
         self.bmp = ImageOperations.paintCTFValues(self.ctf)
         self.SetBitmapLabel(self.bmp)
         
     def getColorTransferFunction(self):
         """
-        Method: getColorTransferFunction
         Created: 25.04.2005, KP
         Description: Return the color transfer function that is edited
         """        
@@ -315,7 +313,6 @@ class CTFButton(wx.BitmapButton):
         
     def onModifyCTF(self,event):
         """
-        Method: onModifyCTF
         Created: 18.04.2005, KP
         Description: Modify the color transfer function
         """        
@@ -336,7 +333,6 @@ class CTFButton(wx.BitmapButton):
         
     def getOpacityTransferFunction(self):
         """
-        Method: getOpacityTransferFunction()
         Created: 28.04.2005, KP
         Description: Returns the opacity function
         """
@@ -344,7 +340,6 @@ class CTFButton(wx.BitmapButton):
         
     def setOpacityTransferFunction(self,otf):
         """
-        Method: setOpacityTransferFunction()
         Created: 25.07.2005, KP
         Description: Returns the opacity function
         """
@@ -354,13 +349,11 @@ class CTFButton(wx.BitmapButton):
         
 class ColorTransferEditor(wx.Panel):
     """
-    Class: ColorTransferEditor
     Created: 30.10.2004, KP
     Description: A widget used to view and modify an intensity transfer function
     """
     def __init__(self,parent,**kws):
         """
-        Method: __init__
         Created: 30.10.2004, KP
         Description: Initialization
         """
@@ -379,6 +372,9 @@ class ColorTransferEditor(wx.Panel):
         self.selectThreshold=5.0
         self.ptThreshold=0.0
         self.color = 0
+        
+        self.minval = 0
+        self.maxval = 255
         self.otf = vtk.vtkPiecewiseFunction()
         self.restoreDefaults(None)
         self.mainsizer=wx.BoxSizer(wx.VERTICAL)
@@ -467,7 +463,6 @@ class ColorTransferEditor(wx.Panel):
         
     def onSetMaxNodes(self,evt):
         """
-        Method: onSetMaxNodes
         Created: 08.08.2005, KP
         Description: Sets the maximum number of nodes
         """                
@@ -510,7 +505,6 @@ class ColorTransferEditor(wx.Panel):
         
     def onDeletePoint(self,event):
         """
-        Method: onDeletePoint
         Created: 08.08.2005, KP
         Description: Delete the selected point
         """        
@@ -523,7 +517,6 @@ class ColorTransferEditor(wx.Panel):
             
     def setAlphaMode(self,flag):
         """
-        Method: setAlphaMode
         Created: 29.05.2005, KP
         Description: Show only alpha channel
         """
@@ -537,7 +530,6 @@ class ColorTransferEditor(wx.Panel):
         
     def onSaveLut(self,event):
         """
-        Method: onSaveLut
         Created: 17.04.2005, KP
         Description: Save a lut file
         """    
@@ -550,7 +542,6 @@ class ColorTransferEditor(wx.Panel):
 
     def onOpenLut(self,event):
         """
-        Method: onOpenLut
         Created: 17.04.2005, KP
         Description: Load a lut file
         """    
@@ -566,7 +557,6 @@ class ColorTransferEditor(wx.Panel):
         
     def onSetToColor(self,event):
         """
-        Method: onSetToColor
         Created: 17.04.2005, KP
         Description: Set the ctf to be a specific color
         """    
@@ -588,9 +578,10 @@ class ColorTransferEditor(wx.Panel):
             dlg.Destroy()
             color = ncolor
         r,g,b=color
-        self.redpoints=[(0,0),(255,r)]
-        self.greenpoints=[(0,0),(255,g)]
-        self.bluepoints=[(0,0),(255,b)]
+        
+        self.redpoints=[(0,0),(self.maxval,r)]
+        self.greenpoints=[(0,0),(self.maxval,g)]
+        self.bluepoints=[(0,0),(self.maxval,b)]
         #self.alphapoints=[(0,0),(255,51)]
         self.points=[self.redpoints,self.greenpoints,self.bluepoints,self.alphapoints]
         self.freeMode = 0
@@ -599,11 +590,8 @@ class ColorTransferEditor(wx.Panel):
         self.colorBtn.SetColour(col)
         
         
-        
-        
     def onCreatePoint(self,event):
         """
-        Method: onCreatePoint
         Created: 16.04.2005, KP
         Description: Add a point to the function
         """    
@@ -611,7 +599,7 @@ class ColorTransferEditor(wx.Panel):
         x,y=self.canvas.toGraphCoords(x,y)
         if not self.freeMode:
             d=10
-            currd=255
+            currd=self.maxval
             hasx=0
             pt=(x,y)
             self.points[self.color].append(pt)
@@ -622,7 +610,6 @@ class ColorTransferEditor(wx.Panel):
 
     def onEditFunction(self,event):
         """
-        Method: onEditFunction
         Created: 16.04.2005, KP
         Description: Edit the function
         """    
@@ -632,7 +619,7 @@ class ColorTransferEditor(wx.Panel):
             self.pos = (x,y)
         else:
             d=10
-            currd=255
+            currd=self.maxval
             hasx=0
             Logging.info("points for color %d = "%self.color,self.points[self.color])
             for pt in self.points[self.color]:
@@ -645,7 +632,6 @@ class ColorTransferEditor(wx.Panel):
                 
     def dist(self,p1,p2):
         """
-        Method: dist(p1,p2)
         Created: 16.04.2005, KP
         Description: Return the distance between points p1 and p2
         """        
@@ -654,7 +640,6 @@ class ColorTransferEditor(wx.Panel):
         
     def onDrawFunction(self,event):
         """
-        Method: onDrawFunction
         Created: 16.04.2005, KP
         Description: Draw the function
         """        
@@ -664,7 +649,7 @@ class ColorTransferEditor(wx.Panel):
             if y<=0:y=0
             if y>=255:y=255
             if x<=0:x=0
-            if x>=255:x=255
+            if x>=self.maxval:x=self.maxval
             if self.freeMode:
                 if self.pos[0]:
                     x0=min(self.pos[0],x)
@@ -699,7 +684,6 @@ class ColorTransferEditor(wx.Panel):
             wx.FutureCall(500,self.updatePreview)
     def updatePreview(self):
         """
-        Method: updatePreview
         Created: 08.08.2005, KP
         Description: Send an event updating the preview
         """            
@@ -709,7 +693,6 @@ class ColorTransferEditor(wx.Panel):
     
     def onFreeMode(self,event):
         """
-        Method: onFreeMode
         Created: 16.04.2005, KP
         Description: Toggle free mode on / off
         """
@@ -724,13 +707,20 @@ class ColorTransferEditor(wx.Panel):
         if not self.freeMode and was:
             Logging.info("Analyzing free mode for points",kw="ctf")
             self.getPointsFromFree()
+            n=len(self.points)
+            tot=0
+            for i,pts in enumerate(self.points):
+                tot+=len(pts)
+            
+            maxpts=self.maxNodes.GetValue()
+            if maxpts<tot:
+                self.onSetMaxNodes(None)
         Logging.info("Points after=",self.points,kw="ctf")      
 
         self.updateGraph()
                 
     def onEditRed(self,event):
         """
-        Method: onEditRed
         Created: 16.04.2005, KP
         Description: Edit the red channel
         """
@@ -742,7 +732,6 @@ class ColorTransferEditor(wx.Panel):
 
     def onEditAlpha(self,event):
         """
-        Method: onEditAlpha
         Created: 28.04.2005, KP
         Description: Edit the alpha channel
         """
@@ -755,7 +744,6 @@ class ColorTransferEditor(wx.Panel):
         
     def onEditGreen(self,event):
         """
-        Method: onEditRed
         Created: 16.04.2005, KP
         Description: Edit the red channel
         """
@@ -767,7 +755,6 @@ class ColorTransferEditor(wx.Panel):
 
     def onEditBlue(self,event):
         """
-        Method: onEditRed
         Created: 16.04.2005, KP
         Description: Edit the red channel
         """
@@ -780,22 +767,21 @@ class ColorTransferEditor(wx.Panel):
 
     def restoreDefaults(self,event):
         """
-        Method: restoreDefaults()
         Created: 8.12.2004, KP
         Description: Restores the default settings for this widget
         """
-        self.redfunc=[0]*256
-        self.greenfunc=[0]*256
-        self.bluefunc=[0]*256
-        self.alphafunc=[0]*256
+        self.redfunc=[0]*(self.maxval+1)
+        self.greenfunc=[0]*(self.maxval+1)
+        self.bluefunc=[0]*(self.maxval+1)
+        self.alphafunc=[0]*(self.maxval+1)
         self.funcs=[self.redfunc,self.greenfunc,self.bluefunc,self.alphafunc]
         
-        self.redpoints=[(0,0),(255,255)]
-        self.greenpoints=[(0,0),(255,255)]
-        self.bluepoints=[(0,0),(255,255)]
-        self.alphapoints=[(0,0),(255,51)]
+        self.redpoints=[(0,0),(self.maxval,255)]
+        self.greenpoints=[(0,0),(self.maxval,255)]
+        self.bluepoints=[(0,0),(self.maxval,255)]
+        self.alphapoints=[(0,0),(self.maxval,51)]
         self.points=[self.redpoints,self.greenpoints,self.bluepoints,self.alphapoints]
-        for i in xrange(256):
+        for i in xrange(0,self.maxval):
             self.redfunc[i]=i
             self.greenfunc[i]=i
             self.bluefunc[i]=i
@@ -805,13 +791,12 @@ class ColorTransferEditor(wx.Panel):
             
     def updateGraph(self):
         """
-        Method: updateGraph()
         Created: 30.10.2004, KP
         Description: Clears the canvas and repaints the function
         """
         self.ctf.RemoveAllPoints()
         if self.freeMode:
-            for i in xrange(256):
+            for i in xrange(0,self.maxval):
                 r,g,b=self.redfunc[i],self.greenfunc[i],self.bluefunc[i]
                 r/=255.0
                 g/=255.0
@@ -823,7 +808,8 @@ class ColorTransferEditor(wx.Panel):
                     self.otf.AddPoint(i,a)
         else:
             func=[]
-            for i in range(256):func.append([0,0,0,0])
+            for i in range(int(self.maxval+1)):
+                func.append([0,0,0,0])
             for col,pointlist in enumerate(self.points):
                 pointlist.sort()
                 for i in xrange(1,len(pointlist)):
@@ -834,15 +820,16 @@ class ColorTransferEditor(wx.Panel):
                     if dx and (y2!=y1):
                         dy=(y2-y1)/float(dx)
                     else:dy=0
-                    if x2>255:
-                        x2=255
+                    if x2>self.maxval:
+                        x2=self.maxval
                         x1=x1-1
                         
-                    for x in range(x1,x2+1):
+                    for x in range(int(x1),int(x2+1)):
+                        #print "len=",len(func),"x=",x,"max=",self.maxval
                         func[x][col]=y1+(x-x1)*dy
                         
                         
-            for i in xrange(256):
+            for i in xrange(int(self.maxval+1)):
                 r,g,b,a=func[i]
                 r/=255.0
                 g/=255.0
@@ -868,7 +855,6 @@ class ColorTransferEditor(wx.Panel):
         
     def getColorTransferFunction(self):
         """
-        Method: getColorTransferFunction()
         Created: 11.11.2004, JV
         Description: Returns the color transfer function
         """
@@ -876,11 +862,12 @@ class ColorTransferEditor(wx.Panel):
         
     def setFromColorTransferFunction(self,TF):
         """
-        Method: setFromColorTransferFunction(TF)
         Created: 17.04.2005, KP
         Description: Sets the colors of this graph
         """
-        for i in range(256):
+        self.minval,self.maxval = TF.GetRange()
+
+        for i in range(self.maxval+1):
             val = [0,0,0]
             TF.GetColor(i,val)
             r,g,b = val
@@ -896,7 +883,6 @@ class ColorTransferEditor(wx.Panel):
 
     def getPointsFromFree(self):
         """
-        Method: getPointsFromFree
         Created: 18.04.2005, KP
         Description: Method that analyzes the color transfer function to
                      determine where to insert control points for the user
@@ -912,7 +898,7 @@ class ColorTransferEditor(wx.Panel):
         self.greenpoints=[]
         self.bluepoints=[]
         self.alphapoints=[]
-        for x in range(256):
+        for x in range(self.maxval+1):
             if self.alpha:
                 a=self.otf.GetValue(x)
                 a*=255
@@ -934,7 +920,7 @@ class ColorTransferEditor(wx.Panel):
             dg = g-g2
             db = b-b2
             
-            if x in [0,255]:
+            if x in [0,self.maxval]:
                 self.redpoints.append((x,r))
                 self.greenpoints.append((x,g))
                 self.bluepoints.append((x,b))
@@ -961,17 +947,18 @@ class ColorTransferEditor(wx.Panel):
             
     def setColorTransferFunction(self,TF):
         """
-        Method: setColorTransferFunction(TF)
         Created: 24.11.2004, KP
         Description: Sets the color transfer function that is configured
                      by this widget
         """
         self.ctf=TF
+        self.minval,self.maxval = TF.GetRange()
+
         self.getPointsFromFree()
-        self.alphapoints=[(0,0),(255,51)]
+        self.alphapoints=[(0,0),(self.maxval,51)]
         self.points=[self.redpoints,self.greenpoints,self.bluepoints,self.alphapoints]
         val=[0,0,0]
-        self.ctf.GetColor(255,val)
+        self.ctf.GetColor(self.maxval,val)
         r,g,b=val
         r*=255
         g*=255
@@ -986,7 +973,6 @@ class ColorTransferEditor(wx.Panel):
         
     def getOpacityTransferFunction(self):
         """
-        Method: getOpacityTransferFunction()
         Created: 28.04.2005, KP
         Description: Returns the opacity function
         """
@@ -994,28 +980,11 @@ class ColorTransferEditor(wx.Panel):
         
     def setOpacityTransferFunction(self,otf):
         """
-        Method: getOpacityTransferFunction()
         Created: 28.04.2005, KP
         Description: Returns the opacity function
         """
         self.otf=otf
-        print "\n\n\nSetting otf to ",otf.GetValue(255)
+        print "\n\n\nSetting otf to ",otf.GetValue(self.maxval)
         self.getPointsFromFree()
         self.updateGraph()        
-
-if __name__=='__main__':
- 
-    class MyApp(wx.App):
-        def OnInit(self):
-            frame=wx.Frame(None,size=(400,400))
-            alpha=("alpha" in sys.argv)
-            self.panel=ColorTransferEditor(frame,alpha=alpha)
-            
-            self.SetTopWindow(frame)
-            frame.Show(True)
-            return True
-
-    app = MyApp()
-    app.MainLoop()
-
 

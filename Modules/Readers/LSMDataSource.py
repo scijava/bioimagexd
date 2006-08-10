@@ -45,15 +45,13 @@ def getClass(): return LsmDataSource
 
 class LsmDataSource(DataSource.DataSource):
     """
-    Class: LsmDataSource
     Created: 18.11.2004, KP
     Description: Manages 4D data stored in an lsm-file
     """
     def __init__(self,filename="",channelNum=-1):
         """
         Method: __init__
-        Created: 18.11.2004
-        Creator: KP
+        Created: 18.11.2004, KP
         Description: Constructor
         """
         DataSource.DataSource.__init__(self)
@@ -100,7 +98,6 @@ class LsmDataSource(DataSource.DataSource):
             
     def updateProgress(self,obj,evt):
         """
-        Method: updateProgress
         Created: 13.07.2004, KP
         Description: Sends progress update event
         """        
@@ -122,7 +119,6 @@ class LsmDataSource(DataSource.DataSource):
 
     def getDataSetCount(self):
         """
-        Method: getDataSetCount
         Created: 03.11.2004, JM
         Description: Returns the number of individual DataSets (=time points)
         managed by this DataSource
@@ -131,9 +127,31 @@ class LsmDataSource(DataSource.DataSource):
             self.getDimensions()
         return self.dimensions[3]
 
+    def getBitDepth(self):
+        """
+        Created: 07.08.2006, KP
+        Description: Return the bit depth of data
+        """
+        if not self.bitdepth:
+            d = self.reader.GetDataType()
+            if d==1:
+                self.bitdepth = 8
+            if d==2:
+                self.bitdepth = 16
+        return self.bitdepth
+        
+    def getScalarRange(self):
+        """
+        Created: 28.05.2005, KP
+        Description: Return the bit depth of data
+        """        
+        if not self.scalarRange:            
+            data=self.getDataSet(0,raw=1)
+            self.scalarRange=data.GetScalarRange()        
+        return self.scalarRange
+
     def getDimensions(self):
         """
-        Method: getDimensions()
         Created: 14.12.2004, KP
         Description: Returns the (x,y,z) dimensions of the datasets this 
                      dataunit contains
@@ -162,10 +180,10 @@ class LsmDataSource(DataSource.DataSource):
         
     def getDataSet(self, i,raw=0):
         """
-        Method: getDataSet
         Created: 18.11.2004, KP
         Description: Returns the timepoint at the specified index
-        Parameters:   i       The index
+        Parameters:   i       The timepoint to retrieve
+                      raw     A flag indicating that the data is not to be processed in any way
         """
         # No timepoint can be returned, if this LsmDataSource instance does not
         #  know what channel it is supposed to handle within the lsm-file.
@@ -178,6 +196,8 @@ class LsmDataSource(DataSource.DataSource):
         #Logging.backtrace()
         self.timepoint=i
         data=self.reader.GetTimePointOutput(i, self.channelNum)
+        if not self.scalarRange:
+            self.scalarRange = data.GetScalarRange()
         self.reader.Update()
 
         self.originalScalarRange=data.GetScalarRange()
@@ -193,14 +213,13 @@ class LsmDataSource(DataSource.DataSource):
         
     def getFileName(self):
         """
-        Method: getFileName()
         Created: 21.07.2005
         Description: Return the file name
         """    
         return self.filename
+        
     def loadFromFile(self,filename):
         """
-        Method: loadFromFile(filename)
         Created: 18.11.2004, KP
         Description: Loads all channels from a specified LSM file to DataUnit-
                      instances and returns them as a list.
@@ -239,14 +258,8 @@ class LsmDataSource(DataSource.DataSource):
 
     def writeToDuFile(self):
         """
-        Method: writeToDuFile
-        Created: 10.11.2004
-        Creator: KP
-        Description: Writes the given datasets and their information to a 
-                     .du file
-
-        TODO: check if this method could use self.parser!
-        TODO: comments...
+        Created: 10.11.2004, KP
+        Description: Writes the given datasets and their information to a BXD file
         """
         parser=ConfigParser()
         for sectionName in self.dataUnitSettings.keys():
@@ -273,9 +286,7 @@ class LsmDataSource(DataSource.DataSource):
 
     def addDataUnitSettings(self,section,settingDict):
         """
-        Method: getSetting
-        Created: 18.11.2004
-        Creator: KP
+        Created: 18.11.2004, KP
         Description: This adds a pair of setting keys and their values to an 
                      internal dictionary that are written to the .du file when 
                      it is written out.
@@ -286,7 +297,6 @@ class LsmDataSource(DataSource.DataSource):
 
     def getColorTransferFunction(self):
         """
-        Method: getColorTransferFunction()
         Created: 26.04.2005, KP
         Description: Returns the ctf of the dataset series which this datasource
                      operates on
@@ -301,14 +311,16 @@ class LsmDataSource(DataSource.DataSource):
             r/=255.0
             g/=255.0
             b/=255.0
+            maxval=255
+            if self.getBitDepth()==16:
+                maxval=4096
             ctf.AddRGBPoint(0,0,0,0)
-            ctf.AddRGBPoint(255,r,g,b)
+            ctf.AddRGBPoint(maxval,r,g,b)
             self.ctf = ctf
         return self.ctf
         
     def getName(self):
         """
-        Method: getName()
         Created: 18.11.2004, KP
         Description: Returns the name of the dataset series which this datasource
                      operates on
@@ -322,12 +334,8 @@ class LsmDataSource(DataSource.DataSource):
 
     def __str__(self):
         """
-        Method: __str__
-        Created: 18.11.2004
-        Creator: KP
+        Created: 18.11.2004, KP
         Description: Returns the basic information of this instance as a string
-                     The info should be accurate enough that this instance can
-                     be reconstructed using only it.
         """
-        return "lsm|%s|%d"%(self.filename,self.channelNum)
+        return "LSM DataSource (%s, channel %d)"%(self.filename, self.channelNum)
 

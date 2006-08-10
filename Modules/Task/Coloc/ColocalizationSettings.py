@@ -84,7 +84,6 @@ class ColocalizationSettings(DataUnitSettings):
 
     def initialize(self,dataunit,channels, timepoints):
         """
-        Method: initialize(dataunit,channels, timepoints)
         Created: 27.03.2005
         Description: Set initial values for settings based on 
                      number of channels and timepoints
@@ -92,7 +91,11 @@ class ColocalizationSettings(DataUnitSettings):
         DataUnitSettings.initialize(self,dataunit,channels,timepoints)
         print "Initializing colocaliztion for %d channels"%channels
         self.set("ColocalizationDepth",8)
+        if hasattr(dataunit,"getScalarRange"):
+            minval,maxval = dataunit.getScalarRange()
+        else:
+            minval,maxval = dataunit.getSourceDataUnits()[0].getScalarRange()
         for i in range(channels):
-            self.setCounted("ColocalizationLowerThreshold",i,128,0)
-            self.setCounted("ColocalizationUpperThreshold",i,255,0)    
-        self.set("OutputScalar",255)
+            self.setCounted("ColocalizationLowerThreshold",i,maxval/2,0)
+            self.setCounted("ColocalizationUpperThreshold",i,maxval,0)    
+        self.set("OutputScalar",maxval)

@@ -569,7 +569,6 @@ class MainWindow(wx.Frame):
             
     def updateVoxelInfo(self,obj,event,x,y,z,scalar,rval,gval,bval,r,g,b,a,ctf):
         """
-        Method: updateVoxelInfo
         Created: 22.07.2004, KP
         Description: Update the voxel info in status bar
         """
@@ -582,9 +581,10 @@ class MainWindow(wx.Frame):
             #r*=255
             #g*=255
             #b*=255
+            print "scalar=",scalar
             if type(scalar)==types.TupleType:
                 lst = map(str,scalar)
-                
+                print "lst=",lst
                 scalartxt=", ".join(lst[:-1])
                 scalartxt+=" and "+lst[-1]
                 text="Scalars %s at (%d,%d,%d) map to (%d,%d,%d)"%(scalartxt,x,y,z,r,g,b)
@@ -1370,7 +1370,7 @@ class MainWindow(wx.Frame):
                 if not isManip and bd not in [8,32]:
                     needToRescale=1
             print "Dataset is ",bd,"isManip=",isManip,"need to rescale=",needToRescale
-            if needToRescale:
+            if 0 and needToRescale:
                 dlg = RescaleDialog.RescaleDialog(self)
                 dlg.setDataUnits(dataunits)
                 wid = dlg.ShowModal()
