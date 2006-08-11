@@ -126,7 +126,7 @@ def getFilterList():
             ITKLocalMaximumFilter,ITKOtsuThresholdFilter,ITKConfidenceConnectedFilter,
             MaskFilter,ITKSigmoidFilter, ITKInvertIntensityFilter, ConnectedComponentFilter,
             MaximumObjectsFilter,TimepointCorrelationFilter,
-            ROIIntensityFilter]
+            ROIIntensityFilter,CutDataFilter]
             
 MATH="Math"
 SEGMENTATION="Segmentation"
@@ -149,13 +149,14 @@ class ManipulationFilter(GUIBuilder.GUIBuilderBase):
         Description: Initialization
         """
         self.taskPanel = None                
+        self.dataUnit = None
         GUIBuilder.GUIBuilderBase.__init__(self, changeCallback = self.notifyTaskPanel)
 
         self.numberOfInputs = numberOfInputs
         
         self.parameters = {}
         self.gui = None
-        self.dataUnit = None
+        
         self.sourceUnits = []
         self.inputs =[]
         self.nextFilter = None
@@ -845,7 +846,8 @@ class TimepointCorrelationFilter(ManipulationFilter):
         self.corrLbl2.SetLabel("%.5f"%self.vtkfilter.GetPearsonWholeImage())
         return self.getInput(1)
         
-        
+
+
 class ROIIntensityFilter(ManipulationFilter):
     """
     Created: 04.08.2006, KP
@@ -961,7 +963,123 @@ class ROIIntensityFilter(ManipulationFilter):
             self.reportGUI.Refresh()
         self.measurements = values
         return imagedata
+
+
+
+class CutDataFilter(ManipulationFilter):
+    """
+    Created: 04.08.2006, KP
+    Description: A filter for cutting the data to a smaller size
+    """     
+    name = "Cut data"
+    category = FILTERING
+    
+    def __init__(self):
+        """
+        Created: 10.08.2006, KP
+        Description: Initialization
+        """        
+        ManipulationFilter.__init__(self,(1,1))
+        self.reportGUI=None
+        self.measurements =[]
+        self.descs={"UseROI":"Use Region of Interest to define resulting region","ROI":"Region of Interest Used in Cutting","StartingSlice":"First Slice in Resulting Stack",
+            "EndingSlice":"Last Slice in Resulting Stack"}
+    
+    def getParameters(self):
+        """
+        Created: 31.07.2006, KP
+        Description: Return the list of parameters needed for configuring this GUI
+        """            
+        return [["Region of Interest",("UseROI","ROI")],["Slices",("FirstSlice","LastSlice")]]
         
+
+    def getRange(self, parameter):
+        """
+        Created: 31.07.2006, KP
+        Description: Return the range for the parameter
+        """       
+        if self.dataUnit:
+            x,y,z=self.dataUnit.getDimensions()
+        else:
+            z=0
+        return (1,z+1)
+        
+        
+    def getType(self,parameter):
+        """
+        Created: 31.07.2006, KP
+        Description: Return the type of the parameter
+        """    
+        if parameter=="ROI":
+            return GUIBuilder.ROISELECTION
+        if parameter=="UseROI":
+            return types.BooleanType
+        return GUIBuilder.SLICE
+        
+    def getDefaultValue(self,parameter):
+        """
+        Created: 31.07.2006, KP
+        Description: Return the default value of a parameter
+        """     
+        if parameter=="UseROI":
+            return 0
+        if parameter=="ROI":
+            n=bxd.visualizer.getRegionsOfInterest()
+            if n:return n[0]
+            return 0
+        if parameter=="LastSlice":
+            if self.dataUnit:
+                x,y,z=self.dataUnit.getDimensions()
+            else:
+                z=1
+            return z
+            
+        return 1
+        
+    def execute(self,inputs,update=0,last=0):
+        """
+        Created: 31.07.2006, KP
+        Description: Execute the filter with given inputs and return the output
+        """            
+        if not ManipulationFilter.execute(self,inputs):
+            return None
+            
+        
+        
+
+        maxx,maxy,maxz = self.dataUnit.getDimensions()
+        minx = 0
+        miny = 0
+        minz = 0
+        if self.parameters["UseROI"]:
+            minx,maxx=99999,0
+            miny,maxy=99999,0            
+            roi = self.parameters["ROI"]
+            pts = roi.getCoveredPoints()
+            for (x,y) in pts:
+                if minx>x:minx=x
+                if x>maxx:maxx=x
+                if miny>y:miny=y
+                if y>maxy:maxy=y
+  
+        minz = self.parameters["FirstSlice"]
+        maxz = self.parameters["LastSlice"]
+        minz-=1
+        maxz-=1
+        
+        print "VOI=",minx,maxx,miny,maxy,minz,maxz
+        voi = vtk.vtkExtractVOI()
+        imagedata =  self.getInput(1)
+    
+        voi.SetInput(imagedata)
+        voi.SetVOI(minx,maxx,miny,maxy,minz,maxz)
+        voi.Update()
+        data = voi.GetOutput()
+        data.SetWholeExtent(0,(maxx-minx)-1,0,(maxy-miny)-1,0,(maxz-minz)-1)
+        data.SetExtent(0,(maxx-minx)-1,0,(maxy-miny)-1,0,(maxz-minz)-1)
+        return  data
+
+
 class GradientFilter(ManipulationFilter):
     """
     Created: 13.04.2006, KP

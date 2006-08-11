@@ -207,6 +207,7 @@ class CombinedDataUnit(DataUnit.DataUnit):
                 # Get the vtkImageData containing the results of the operation 
                 # for this time point
                 imageData=self.module.doOperation()
+                self.settings.set("Dimensions",str(imageData.GetDimensions()))
                 messenger.send(None,"update_processing_progress",timePoint,self.n,len(timepoints))
                 self.n+=1
                 # Write the image data to disk
@@ -220,7 +221,6 @@ class CombinedDataUnit(DataUnit.DataUnit):
 
     def createDataUnitFile(self,writer):
         """
-        Method: createDataUnitFile
         Created: 1.12.2004, KP, JM
         Description: Writes a du file to disk
         """

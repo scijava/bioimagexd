@@ -392,16 +392,25 @@ class GUIBuilder(wx.Panel):
                             
                             lbl = wx.StaticText(self,-1,text)
                             box.Add(lbl)
-
                             rois = bxd.visualizer.getRegionsOfInterest()
                             choices = [x.getName() for x in rois]
                             
+                            def updateROIs(currentFilter,itemName, choice):
+                                rois = bxd.visualizer.getRegionsOfInterest()
+                                choices = [x.getName() for x in rois]       
+                                choice.Clear()                            
+                                
+                                choice.AppendItems(choices)
                             
                             func = lambda evt, its=item,f=currentFilter, i = itemName, r = rois, s = self: s.onSetROI(r,f, i, evt)
                             choice = wx.Choice(self,-1,choices=choices)
                             
                             choice.SetSelection(val)
                             choice.Bind(wx.EVT_CHOICE,func)
+                            
+                            f = lambda obj,evt, choice=choice, i=itemName,fi=currentFilter,s=self: updateROIs(fi,i,choice)
+                            messenger.connect(currentFilter,"update_%s"%itemName,f)                            
+                            messenger.connect(None,"update_annotations",f)
                             
                             #f=lambda obj,evt,arg, c=choice, i=itemName, s=self: s.onSetROIFromFilter(c,i,arg)
                             #messenger.connect(currentFilter,"set_%s"%itemName,f) 
@@ -538,6 +547,7 @@ class GUIBuilder(wx.Panel):
         Description: Set the parameter to the ROI corresponding to the value of the choice widget
         """           
         value = evt.GetSelection()
+        rois = bxd.visualizer.getRegionsOfInterest()
         filter.setParameter(item, (value,rois[value]))        
                 
         

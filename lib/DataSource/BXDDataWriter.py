@@ -74,7 +74,6 @@ class BXDDataWriter(DataWriter):
         
     def getParser(self):
         """
-        Method: getParser()
         Created: 27.03.2005, KP
         Description: Returns the parser that is used to read the .du file
         """
@@ -85,7 +84,6 @@ class BXDDataWriter(DataWriter):
 
     def sync(self,n=-1):
         """
-        Method: sync
         Created: 26.03.2005, KP
         Description: Writes all datasets pending a write to disk
         """
@@ -105,7 +103,6 @@ class BXDDataWriter(DataWriter):
         
     def write(self):
         """
-        Method: write
         Created: 26.03.2005, KP
         Description: Writes the given datasets and their information to a du file
         """
@@ -117,6 +114,7 @@ class BXDDataWriter(DataWriter):
         parser.set("ImageData","numberOfFiles","%d"%n)
         for i in range(n):
             parser.set("ImageData","file_%d"%i,self.dataSets[i])
+                    
         try:
             fp=open(self.filename,"w")
         except IOError,ex:
@@ -130,7 +128,6 @@ class BXDDataWriter(DataWriter):
 
     def addImageData(self,imageData):
         """
-        Method: addImageData(imageData)
         Created: 1.12.2004,KP
         Description: Add a vtkImageData object to be written to the disk.
         """
@@ -158,7 +155,6 @@ class BXDDataWriter(DataWriter):
 
     def addImageDataObjects(self,imageDataList):
         """
-        Method: addImageDataObjects(imageDataList)
         Created: 10.11.2004, KP
         Description: Adds a list of vtkImageData objects to be written to the
                       disk. Uses addVtiObject to do all the dirty work
@@ -168,7 +164,6 @@ class BXDDataWriter(DataWriter):
 
     def writeImageData(self,imageData,filename):
         """
-        Method: writeImageData
         Created: 09.11.2004, JM
         Description: Writes the given vtkImageData-instance to disk
                      as .vti-file with the given filename

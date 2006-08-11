@@ -72,7 +72,6 @@ def getVisualizer():
 
 class Visualizer:
     """
-    Class: Visualizer
     Created: 05.04.2005, KP
     Description: A class that is the controller for the visualization
     """
@@ -98,10 +97,7 @@ class Visualizer:
         self.tb1=None
         self.tb=None
         self.z=0
-        self.PitchStep=2
-        self.YawStep=2
-        self.RollStep=2
-        self.ElevationStep=5
+        self.PitchStep, self.YawStep, self.RollStep, self.ElevationStep = 2, 2, 2, 5
         self.viewCombo = None
         self.histogramIsShowing=0
         self.blockTpUpdate=0
@@ -1108,7 +1104,6 @@ class Visualizer:
         
     def toggleTimeSlider(self, flag):
         """
-        Method: toggleTimeSlider
         Created: 23.07.2006, KP
         Description: Toggle the time slider on or off
         """   
@@ -1119,7 +1114,6 @@ class Visualizer:
         
     def setDataUnit(self,dataunit):
         """
-        Method: setDataUnit(self)
         Created: 28.04.2005, KP
         Description: Sets the dataunit this module uses for visualization
         """
@@ -1166,7 +1160,6 @@ class Visualizer:
             
     def setImmediateRender(self,flag):
         """
-        Method: setImmediateRender
         Created: 14.02.2006, KP
         Description: Toggle immediate rendering on or off
         """
@@ -1174,7 +1167,6 @@ class Visualizer:
             
     def updateRendering(self,event=None,object=None,delay=0):
         """
-        Method: updateRendering
         Created: 25.05.2005, KP
         Description: Update the rendering
         """
@@ -1218,7 +1210,6 @@ class Visualizer:
                         
     def Render(self,evt=None):
         """
-        Method: Render()
         Created: 28.04.2005, KP
         Description: Render the scene
         """
@@ -1227,7 +1218,6 @@ class Visualizer:
             
     def onSetTimeRange(self,obj,event,r1,r2):
         """
-        Method: onSetTimeRange
         Created: 15.08.2005, KP
         Description: Set the range that the time slider shows
         """        
@@ -1238,7 +1228,6 @@ class Visualizer:
         
     def onSetTimepoint(self,obj,event,tp):
         """
-        Method: onSetTimepoint
         Created: 21.06.2005, KP
         Description: Update the timepoint according to an event
         """
@@ -1248,7 +1237,6 @@ class Visualizer:
 
     def onSetTimeslider(self,obj,event,tp):
         """
-        Method: onSetTimeslider
         Created: 21.08.2005, KP
         Description: Update the timeslider according to an event
         """
@@ -1256,7 +1244,6 @@ class Visualizer:
         
     def onUpdateTimepoint(self,evt=None):
         """
-        Method: onUpdateTimepoint
         Created: 31.07.2005, KP
         Description: Set the timepoint to be shown
         """    
@@ -1288,7 +1275,6 @@ class Visualizer:
             
     def delayedTimesliderEvent(self,event):
         """
-        Method: delayedTimesliderEvent
         Created: 28.04.2005, KP
         Description: Set the timepoint to be shown
         """
@@ -1297,7 +1283,6 @@ class Visualizer:
         
     def onChangeZSlice(self,obj,event=None,arg=None):
         """
-        Method: onChangeZSlice
         Created: 1.08.2005, KP
         Description: Set the z slice to be shown
         """        
@@ -1316,7 +1301,6 @@ class Visualizer:
         
     def onSnapshot(self,event):
         """
-        Method: onSnapshot
         Created: 05.06.2005, KP
         Description: Save a snapshot of current visualization
         """  
@@ -1331,7 +1315,6 @@ class Visualizer:
         
     def restoreWindowSizes(self):
         """
-        Method: restoreWindowSizes
         Created: 15.08.2005, KP
         Description: Restores the window sizes that may be changed by setRenderWIndowSize
         """  
@@ -1343,7 +1326,6 @@ class Visualizer:
         
     def setRenderWindowSize(self,size,taskwin):
         """
-        Method: setRenderWindowSize(size)
         Created: 28.04.2005, KP
         Description: Set the render window size
         """  
@@ -1405,7 +1387,6 @@ class Visualizer:
         
     def setTimepoint(self,timepoint):
         """
-        Method: setTimepoint(timepoint)
         Created: 28.04.2005, KP
         Description: Set the timepoint to be shown
         """  

@@ -38,22 +38,21 @@ import ImageOperations
 import time
 
 import Logging
-import scripting
+import scripting as bxd
 import Modules
 from DataUnit import CombinedDataUnit
 import InteractivePanel
 import vtk
 import wx
 
+
 ZOOM_TO_FIT=-1
 import sys
 
 class PreviewFrame(InteractivePanel.InteractivePanel):
     """
-    Class: PreviewFrame
     Created: 03.11.2004, KP
-    Description: A widget that uses the wxVTKRenderWidget to display a preview
-                 of operations done by a subclass of Module
+    Description: A widget that shows a single optical slice of a volume dataset
     """
     count=0
     def __init__(self,parent,**kws):
@@ -240,7 +239,6 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         
     def onSetInterpolation(self,event):
         """
-        Method: onSetInterpolation
         Created: 01.08.2005, KP
         Description: Set the inteprolation method
         """      
@@ -350,8 +348,7 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
             self.updatePreview(0)
 
     def setTimepoint(self,tp):
-        """
-        Method: setTimepoint(tp)
+        """        
         Created: 09.12.2004, KP
         Description: The previewed timepoint is set to the given timepoint
         Parameters:
@@ -365,7 +362,6 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
                 
     def setDataUnit(self,dataUnit,selectedItem=-1):
         """
-        Method: setDataUnit(dataUnit)
         Created: 04.11.2004, KP
         Description: Set the dataunit used for preview. Should be a combined 
                      data unit, the source units of which we can get and read 
@@ -404,16 +400,6 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
 
         updated=0
         Logging.info("zoomFactor = ",self.zoomFactor,kw="preview")
-#        if self.zoomFactor:
-#            if self.fitLater or self.zoomFactor == ZOOM_TO_FIT:
-#                Logging.info("Factor = zoom to fit",kw="preview")
-#                self.zoomToFit()
-#                self.updatePreview(1)
-#                updated=1
-#            else:
-#                self.setZoomFactor(self.zoomFactor)
-#                self.updatePreview(1)
-#                updated=1
         
         if self.enabled:
             self.Layout()
@@ -491,7 +477,9 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         self.currentImage=colorImage
                     
         x,y,z=colorImage.GetDimensions()
+        print "\n\nIMAGE DIMENSIONS=",x,y,z,"EXTENT=",colorImage.GetWholeExtent()
         #print "Preview dims=",preview.GetDimensions()
+        bxd.visualizer.zslider.SetRange(1,z)
         if x!=self.oldx or y!=self.oldy:
             #self.resetScroll()
             self.setScrollbars(x,y)
@@ -545,7 +533,7 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
             mip=vtk.vtkImageSimpleMIP()
             mip.SetInput(data)
             data.ReleaseDataFlagOn()
-            data = scripting.execute_limited(mip)
+            data = bxd.execute_limited(mip)
           
             Logging.info("Got MIP with extent=",data.GetWholeExtent(),kw="preview")
             data.SetUpdateExtent(data.GetWholeExtent())
@@ -565,7 +553,7 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
             #print "upadte extent=",data.GetExtent()
             
             #print "colorImage=",colorImage.GetDimensions()
-            data = scripting.execute_limited(self.mapToColors)
+            data = bxd.execute_limited(self.mapToColors)
             #data.ReleaseDataFlagOn()
           
 #            data=self.mapToColors.GetOutput()

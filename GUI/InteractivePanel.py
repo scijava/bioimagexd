@@ -370,6 +370,8 @@ class InteractivePanel(ogl.ShapeCanvas):
                 self.actionstart = (0,0)
                 self.actionend = (0,0)
                 self.prevPolyEnd=None
+                
+            messenger.send(None,"update_annotations")
 
             #self.updateAnnotations()
             return 1
@@ -458,7 +460,6 @@ class InteractivePanel(ogl.ShapeCanvas):
         
     def addAnnotation(self,annClass,**kws):
         """
-        Method: addAnnotation(annotationClass)
         Created: 04.07.2005, KP
         Description: Add an annotation to the scene
         """

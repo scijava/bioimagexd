@@ -233,11 +233,10 @@ class DataUnit:
         #self.updateSettings()
     def doProcessing(self,duFile,**kws):
         """
-        Method: doProcessing(duFile, callback)
         Created: 14.07.2005, KP
         Description: Executes the module's operation using the current settings
         Parameters:
-                duFile      The name of the created .DU file
+                duFile      The name of the created .bxd file
         Keywords:
                 callback    The callback used to give progress info to the GUI
                             The callback is a method that takes two arguments:
@@ -278,7 +277,6 @@ class DataUnit:
 
     def createDataUnitFile(self,writer):
         """
-        Method: createDataUnitFile
         Created: 1.12.2004, KP, JM
         Description: Writes a du file to disk
         """
@@ -297,7 +295,6 @@ class DataUnit:
 
     def getFileName(self):
         """
-        Method: getFileNam()
         Created: 21.03.2006, KP
         Description: Return the path to the file this dataunit represents
         """

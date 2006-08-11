@@ -204,7 +204,6 @@ def scaleImage(data,factor=1.0,z=-1,interpolation=1,xfactor=0.0,yfactor=0.0):
     
 def loadNIHLut(data):
     """
-    Method: loadNIHLut(data)
     Created: 17.04.2005, KP
     Description: Load an NIH Image LUT and return it as CTF
     """    
@@ -250,7 +249,12 @@ def loadLUTFromString(lut,ctf,ctfrange=(0,256)):
     Method: loadLUTFromString(binarystring,ctf,range)
     Created: 18.04.2005, KP
     Description: Load an ImageJ binary LUT from string
+    Parameters:
+        lut      A binary string representing the lookup table
+        ctf      The CTF to modify
+        ctfrange The range to which construct the CTF
     """        
+    print "\n\nlen(lut)=",len(lut)
     if len(lut)!=768:
         reds,greens,blues=loadNIHLut(lut)
     else:
@@ -293,7 +297,7 @@ def lutToString(ctf):
     minval,maxval=ctf.GetRange()
     d=maxval/255.0
     for col in range(0,3):
-        for i in range(0,maxval,d):
+        for i in range(0,maxval+1,d):
             val=[0,0,0]
             ctf.GetColor(i,val)
             r,g,b = val
