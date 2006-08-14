@@ -29,7 +29,8 @@
 __author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.42 $"
 __date__ = "$Date: 2005/01/13 14:52:39 $"
-import ManipulationFilters
+#import ManipulationFilters
+import ProcessingFilter
 import ImageOperations
 import wx
 import time
@@ -142,7 +143,7 @@ class WatershedObjectList(wx.ListCtrl):
             return None
 
 
-class ThresholdFilter(ManipulationFilters.ManipulationFilter):
+class ThresholdFilter(ProcessingFilter.ProcessingFilter):
     """
     Class: ThresholdFilter
     Created: 15.04.2006, KP
@@ -157,7 +158,7 @@ class ThresholdFilter(ManipulationFilters.ManipulationFilter):
         Created: 13.04.2006, KP
         Description: Initialization
         """        
-        ManipulationFilters.ManipulationFilter.__init__(self,(1,1))
+        ProcessingFilter.ProcessingFilter.__init__(self,(1,1))
         self.vtkfilter = vtk.vtkImageThreshold()
         self.origCtf = None
         self.descs={"ReplaceInValue":"Value for voxels inside thresholds",
@@ -233,7 +234,7 @@ class ThresholdFilter(ManipulationFilters.ManipulationFilter):
         Created: 15.04.2006, KP
         Description: Execute the filter with given inputs and return the output
         """            
-        if not ManipulationFilters.ManipulationFilter.execute(self,inputs):
+        if not ProcessingFilter.ProcessingFilter.execute(self,inputs):
             return None
         
         image = self.getInput(1)
@@ -287,7 +288,7 @@ class ThresholdFilter(ManipulationFilters.ManipulationFilter):
                 self.gui.histograms[0].Refresh()
             
             return image
-class MaskFilter(ManipulationFilters.ManipulationFilter):
+class MaskFilter(ProcessingFilter.ProcessingFilter):
     """
     Class: MaskFilter
     Created: 13.04.2006, KP
@@ -302,7 +303,7 @@ class MaskFilter(ManipulationFilters.ManipulationFilter):
         Created: 13.04.2006, KP
         Description: Initialization
         """        
-        ManipulationFilters.ManipulationFilter.__init__(self,inputs)
+        ProcessingFilter.ProcessingFilter.__init__(self,inputs)
         self.vtkfilter = vtk.vtkImageMask()
         
         self.descs = {"OutputValue":"Masked output value"}
@@ -348,7 +349,7 @@ class MaskFilter(ManipulationFilters.ManipulationFilter):
         Created: 15.04.2006, KP
         Description: Execute the filter with given inputs and return the output
         """                    
-        if not ManipulationFilters.ManipulationFilter.execute(self,inputs):
+        if not ProcessingFilter.ProcessingFilter.execute(self,inputs):
             return None
         self.vtkfilter.SetInput1(self.getInput(1))
         
@@ -359,7 +360,7 @@ class MaskFilter(ManipulationFilters.ManipulationFilter):
             self.vtkfilter.Update()
         return self.vtkfilter.GetOutput()   
 
-class ITKWatershedSegmentationFilter(ManipulationFilters.ManipulationFilter):
+class ITKWatershedSegmentationFilter(ProcessingFilter.ProcessingFilter):
     """
     Class: ITKWatershedSegmentationFilter
     Created: 13.04.2006, KP
@@ -374,7 +375,7 @@ class ITKWatershedSegmentationFilter(ManipulationFilters.ManipulationFilter):
         Created: 13.04.2006, KP
         Description: Initialization
         """        
-        ManipulationFilters.ManipulationFilter.__init__(self,inputs)
+        ProcessingFilter.ProcessingFilter.__init__(self,inputs)
         
         
         self.descs = {"Threshold":"Segmentation Threshold","Level":"Segmentation Level"}
@@ -422,7 +423,7 @@ class ITKWatershedSegmentationFilter(ManipulationFilters.ManipulationFilter):
         Created: 15.04.2006, KP
         Description: Execute the filter with given inputs and return the output
         """                    
-        if not ManipulationFilters.ManipulationFilter.execute(self,inputs):
+        if not ProcessingFilter.ProcessingFilter.execute(self,inputs):
             return None
             
         image = self.getInput(1)
@@ -443,7 +444,7 @@ class ITKWatershedSegmentationFilter(ManipulationFilters.ManipulationFilter):
         #    return self.convertITKtoVTK(data,imagetype="UL3")
         return data
 
-class MorphologicalWatershedSegmentationFilter(ManipulationFilters.ManipulationFilter):
+class MorphologicalWatershedSegmentationFilter(ProcessingFilter.ProcessingFilter):
     """
     Class: MorphologicalWatershedSegmentationFilter
     Created: 05.07.2006, KP
@@ -458,7 +459,7 @@ class MorphologicalWatershedSegmentationFilter(ManipulationFilters.ManipulationF
         Created: 13.04.2006, KP
         Description: Initialization
         """        
-        ManipulationFilters.ManipulationFilter.__init__(self,inputs)
+        ProcessingFilter.ProcessingFilter.__init__(self,inputs)
         
         
         self.descs = {"Level":"Segmentation Level"}
@@ -502,7 +503,7 @@ class MorphologicalWatershedSegmentationFilter(ManipulationFilters.ManipulationF
         Created: 15.04.2006, KP
         Description: Execute the filter with given inputs and return the output
         """                    
-        if not ManipulationFilters.ManipulationFilter.execute(self,inputs):
+        if not ProcessingFilter.ProcessingFilter.execute(self,inputs):
             return None
             
         image = self.getInput(1)
@@ -527,7 +528,7 @@ class MorphologicalWatershedSegmentationFilter(ManipulationFilters.ManipulationF
         print "Returning ",data
         return data
 
-class ConnectedComponentFilter(ManipulationFilters.ManipulationFilter):
+class ConnectedComponentFilter(ProcessingFilter.ProcessingFilter):
     """
     Class: ConnectedComponentFilter
     Created: 12.07.2006, KP
@@ -542,7 +543,7 @@ class ConnectedComponentFilter(ManipulationFilters.ManipulationFilter):
         Created: 13.04.2006, KP
         Description: Initialization
         """        
-        ManipulationFilters.ManipulationFilter.__init__(self,inputs)
+        ProcessingFilter.ProcessingFilter.__init__(self,inputs)
         
         
         self.descs = {}
@@ -585,7 +586,7 @@ class ConnectedComponentFilter(ManipulationFilters.ManipulationFilter):
         Created: 15.04.2006, KP
         Description: Execute the filter with given inputs and return the output
         """                    
-        if not ManipulationFilters.ManipulationFilter.execute(self,inputs):
+        if not ProcessingFilter.ProcessingFilter.execute(self,inputs):
             return None
             
         image = self.getInput(1)
@@ -603,7 +604,7 @@ class ConnectedComponentFilter(ManipulationFilters.ManipulationFilter):
         #print "Returning ",data
         return data
 
-class MaximumObjectsFilter(ManipulationFilters.ManipulationFilter):
+class MaximumObjectsFilter(ProcessingFilter.ProcessingFilter):
     """
     Class: ConnectedComponentFilter
     Created: 12.07.2006, KP
@@ -618,7 +619,7 @@ class MaximumObjectsFilter(ManipulationFilters.ManipulationFilter):
         Created: 13.04.2006, KP
         Description: Initialization
         """        
-        ManipulationFilters.ManipulationFilter.__init__(self,inputs)
+        ProcessingFilter.ProcessingFilter.__init__(self,inputs)
         
         
         self.descs = {"MinSize":"Minimum Object Size in Pixels"}
@@ -663,7 +664,7 @@ class MaximumObjectsFilter(ManipulationFilters.ManipulationFilter):
         Created: 15.04.2006, KP
         Description: Execute the filter with given inputs and return the output
         """                    
-        if not ManipulationFilters.ManipulationFilter.execute(self,inputs):
+        if not ProcessingFilter.ProcessingFilter.execute(self,inputs):
             return None
             
         image = self.getInput(1)
@@ -684,7 +685,7 @@ class MaximumObjectsFilter(ManipulationFilters.ManipulationFilter):
         return data
 
         
-class ITKRelabelImageFilter(ManipulationFilters.ManipulationFilter):
+class ITKRelabelImageFilter(ProcessingFilter.ProcessingFilter):
     """
     Class: ITKRelabelImageFilter
     Created: 13.04.2006, KP
@@ -699,7 +700,7 @@ class ITKRelabelImageFilter(ManipulationFilters.ManipulationFilter):
         Created: 13.04.2006, KP
         Description: Initialization
         """        
-        ManipulationFilters.ManipulationFilter.__init__(self,inputs)
+        ProcessingFilter.ProcessingFilter.__init__(self,inputs)
         
         
         self.descs = {"Threshold":"Remove objects with less voxels than:"}
@@ -743,7 +744,7 @@ class ITKRelabelImageFilter(ManipulationFilters.ManipulationFilter):
         Created: 15.04.2006, KP
         Description: Execute the filter with given inputs and return the output
         """                    
-        if not ManipulationFilters.ManipulationFilter.execute(self,inputs):
+        if not ProcessingFilter.ProcessingFilter.execute(self,inputs):
             return None
             
         image = self.getInput(1)
@@ -769,7 +770,7 @@ class ITKRelabelImageFilter(ManipulationFilters.ManipulationFilter):
         #    return self.convertITKtoVTK(data,imagetype="UL3")
         return data
 
-class ITKInvertIntensityFilter(ManipulationFilters.ManipulationFilter):
+class ITKInvertIntensityFilter(ProcessingFilter.ProcessingFilter):
     """
     Class: ITKInvertIntensityFilter
     Created: 05.07.2006, KP
@@ -784,7 +785,7 @@ class ITKInvertIntensityFilter(ManipulationFilters.ManipulationFilter):
         Created: 13.04.2006, KP
         Description: Initialization
         """        
-        ManipulationFilters.ManipulationFilter.__init__(self,inputs)
+        ProcessingFilter.ProcessingFilter.__init__(self,inputs)
         
         
         self.descs = {}
@@ -826,7 +827,7 @@ class ITKInvertIntensityFilter(ManipulationFilters.ManipulationFilter):
         Created: 15.04.2006, KP
         Description: Execute the filter with given inputs and return the output
         """                    
-        if not ManipulationFilters.ManipulationFilter.execute(self,inputs):
+        if not ProcessingFilter.ProcessingFilter.execute(self,inputs):
             return None
             
         image = self.getInput(1)
@@ -848,7 +849,7 @@ class ITKInvertIntensityFilter(ManipulationFilters.ManipulationFilter):
 
 
 
-class MeasureVolumeFilter(ManipulationFilters.ManipulationFilter):
+class MeasureVolumeFilter(ProcessingFilter.ProcessingFilter):
     """
     Class: MeasureVolumeFilter
     Created: 15.05.2006, KP
@@ -863,7 +864,7 @@ class MeasureVolumeFilter(ManipulationFilters.ManipulationFilter):
         Created: 13.04.2006, KP
         Description: Initialization
         """        
-        ManipulationFilters.ManipulationFilter.__init__(self,inputs)
+        ProcessingFilter.ProcessingFilter.__init__(self,inputs)
         self.itkFlag = 1
         self.descs = {}      
         self.values = None
@@ -894,7 +895,7 @@ class MeasureVolumeFilter(ManipulationFilters.ManipulationFilter):
         Created: 13.04.2006, KP
         Description: Return the GUI for this filter
         """              
-        gui = ManipulationFilters.ManipulationFilter.getGUI(self,parent,taskPanel)
+        gui = ProcessingFilter.ProcessingFilter.getGUI(self,parent,taskPanel)
         if not self.reportGUI:
             self.reportGUI = WatershedObjectList(self.gui,-1)
             if self.values:
@@ -936,7 +937,7 @@ class MeasureVolumeFilter(ManipulationFilters.ManipulationFilter):
         Created: 15.04.2006, KP
         Description: Execute the filter with given inputs and return the output
         """                    
-        if not ManipulationFilters.ManipulationFilter.execute(self,inputs):
+        if not ProcessingFilter.ProcessingFilter.execute(self,inputs):
             return None
             
         image = self.getInput(1)
@@ -990,7 +991,7 @@ class MeasureVolumeFilter(ManipulationFilters.ManipulationFilter):
             self.reportGUI.setCentersOfMass(centersofmass)
         return image
 
-class FilterObjectsFilter(ManipulationFilters.ManipulationFilter):
+class FilterObjectsFilter(ProcessingFilter.ProcessingFilter):
     """
     Class: FilterObjects
     Created: 16.05.2006, KP
@@ -1005,7 +1006,7 @@ class FilterObjectsFilter(ManipulationFilters.ManipulationFilter):
         Created: 13.04.2006, KP
         Description: Initialization
         """        
-        ManipulationFilters.ManipulationFilter.__init__(self,inputs)
+        ProcessingFilter.ProcessingFilter.__init__(self,inputs)
         
         self.descs = {"Threshold":"Filter objects with fewer voxels than:"}        
 
@@ -1042,7 +1043,7 @@ class FilterObjectsFilter(ManipulationFilters.ManipulationFilter):
         Created: 15.04.2006, KP
         Description: Execute the filter with given inputs and return the output
         """                    
-        if not ManipulationFilters.ManipulationFilter.execute(self,inputs):
+        if not ProcessingFilter.ProcessingFilter.execute(self,inputs):
             return None
             
         image = self.getInput(1)
@@ -1088,7 +1089,7 @@ class FilterObjectsFilter(ManipulationFilters.ManipulationFilter):
         print data.GetScalarRange(),data.GetScalarTypeAsString()
         return data
         
-class ITKConfidenceConnectedFilter(ManipulationFilters.ManipulationFilter):
+class ITKConfidenceConnectedFilter(ProcessingFilter.ProcessingFilter):
     """
     Class: ITKConfidenceConnectedThresholdFilter
     Created: 29.05.2006, KP
@@ -1103,7 +1104,7 @@ class ITKConfidenceConnectedFilter(ManipulationFilters.ManipulationFilter):
         Created: 26.05.2006, KP
         Description: Initialization
         """
-        ManipulationFilters.ManipulationFilter.__init__(self,inputs)
+        ProcessingFilter.ProcessingFilter.__init__(self,inputs)
         
         
         self.descs = {"Seed":"Seed voxel","Neighborhood":"Initial Neighborhood Size",
@@ -1162,7 +1163,7 @@ class ITKConfidenceConnectedFilter(ManipulationFilters.ManipulationFilter):
         Created: 15.04.2006, KP
         Description: Execute the filter with given inputs and return the output
         """                    
-        if not ManipulationFilters.ManipulationFilter.execute(self,inputs):
+        if not ProcessingFilter.ProcessingFilter.execute(self,inputs):
             return None
             
         image = self.getInput(1)
@@ -1197,7 +1198,7 @@ class ITKConfidenceConnectedFilter(ManipulationFilters.ManipulationFilter):
             
         return data            
 
-class ITKConnectedThresholdFilter(ManipulationFilters.ManipulationFilter):
+class ITKConnectedThresholdFilter(ProcessingFilter.ProcessingFilter):
     """
     Class: ITKConnectedThresholdFilter
     Created: 26.05.2006, KP
@@ -1212,7 +1213,7 @@ class ITKConnectedThresholdFilter(ManipulationFilters.ManipulationFilter):
         Created: 26.05.2006, KP
         Description: Initialization
         """        
-        ManipulationFilters.ManipulationFilter.__init__(self,inputs)        
+        ProcessingFilter.ProcessingFilter.__init__(self,inputs)        
         
         self.descs = {"Seed":"Seed voxel","Upper":"Upper threshold","Lower":"Lower threshold"}
         self.itkFlag = 1
@@ -1261,7 +1262,7 @@ class ITKConnectedThresholdFilter(ManipulationFilters.ManipulationFilter):
         Created: 15.04.2006, KP
         Description: Execute the filter with given inputs and return the output
         """                    
-        if not ManipulationFilters.ManipulationFilter.execute(self,inputs):
+        if not ProcessingFilter.ProcessingFilter.execute(self,inputs):
             return None
             
         image = self.getInput(1)
@@ -1291,7 +1292,7 @@ class ITKConnectedThresholdFilter(ManipulationFilters.ManipulationFilter):
             
         return data      
         
-class ITKNeighborhoodConnectedThresholdFilter(ManipulationFilters.ManipulationFilter):
+class ITKNeighborhoodConnectedThresholdFilter(ProcessingFilter.ProcessingFilter):
     """
     Class: ITKNeighborhoodConnectedThresholdFilter
     Created: 29.05.2006, KP
@@ -1306,7 +1307,7 @@ class ITKNeighborhoodConnectedThresholdFilter(ManipulationFilters.ManipulationFi
         Created: 29.05.2006, KP
         Description: Initialization
         """        
-        ManipulationFilters.ManipulationFilter.__init__(self,inputs)
+        ProcessingFilter.ProcessingFilter.__init__(self,inputs)
         self.setImageType("UC3")
         
         self.descs = {"Seed":"Seed voxel","Upper":"Upper threshold","Lower":"Lower threshold",
@@ -1365,7 +1366,7 @@ class ITKNeighborhoodConnectedThresholdFilter(ManipulationFilters.ManipulationFi
         Created: 29.05.2006, KP
         Description: Execute the filter with given inputs and return the output
         """                    
-        if not ManipulationFilters.ManipulationFilter.execute(self,inputs):
+        if not ProcessingFilter.ProcessingFilter.execute(self,inputs):
             return None
             
         image = self.getInput(1)
@@ -1403,7 +1404,7 @@ class ITKNeighborhoodConnectedThresholdFilter(ManipulationFilters.ManipulationFi
             
         return data            
 
-class ITKOtsuThresholdFilter(ManipulationFilters.ManipulationFilter):
+class ITKOtsuThresholdFilter(ProcessingFilter.ProcessingFilter):
     """
     Class: ITKOtsuThresholdFilter
     Created: 26.05.2006, KP
@@ -1418,7 +1419,7 @@ class ITKOtsuThresholdFilter(ManipulationFilters.ManipulationFilter):
         Created: 26.05.2006, KP
         Description: Initialization
         """        
-        ManipulationFilters.ManipulationFilter.__init__(self,inputs)
+        ProcessingFilter.ProcessingFilter.__init__(self,inputs)
         
         
         self.descs = {"Upper":"Upper threshold","Lower":"Lower threshold"}
@@ -1438,7 +1439,6 @@ class ITKOtsuThresholdFilter(ManipulationFilters.ManipulationFilter):
         
     def getType(self,parameter):
         """
-        Method: getType
         Created: 26.05.2006, KP
         Description: Return the type of the parameter
         """    
@@ -1447,7 +1447,6 @@ class ITKOtsuThresholdFilter(ManipulationFilters.ManipulationFilter):
                 
     def getParameters(self):
         """
-        Method: getParameters
         Created: 15.04.2006, KP
         Description: Return the list of parameters needed for configuring this GUI
         """            
@@ -1456,11 +1455,10 @@ class ITKOtsuThresholdFilter(ManipulationFilters.ManipulationFilter):
 
     def execute(self,inputs,update=0,last=0):
         """
-        Method: execute
         Created: 15.04.2006, KP
         Description: Execute the filter with given inputs and return the output
         """                    
-        if not ManipulationFilters.ManipulationFilter.execute(self,inputs):
+        if not ProcessingFilter.ProcessingFilter.execute(self,inputs):
             return None
             
         image = self.getInput(1)

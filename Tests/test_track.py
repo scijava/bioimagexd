@@ -22,7 +22,8 @@ class ParticleReader:
             except:
                 continue
             
-            if int(obj)==0:continue
+            obj = int(obj)
+            if obj==0:continue
             if size >= self.filterObjectSize:
                 x,y,z = eval(cog)
                 intpos=x,y,z
@@ -30,13 +31,14 @@ class ParticleReader:
                 y*=self.spacing[1]
                 z*=self.spacing[2]
                 cog = (x,y,z)
-                p = Particle(cog, intpos, self.timepoint, size)
+                p = Particle(cog, intpos, self.timepoint, size, obj)
                 ret.append(p)
         return ret
 
 class Particle:
-    def __init__(self, pos = (0,0,0),intpos=(0,0,0), tp = 0, size=1):
+    def __init__(self, pos = (0,0,0),intpos=(0,0,0), tp = 0, size=1, obj=-1):
         self.pos = pos
+	self.intval = obj
         self.tp = tp
         self.size = size
         self.inTrack = 0
@@ -60,11 +62,12 @@ class Particle:
         self.inTrack = p.inTrack
         self.flag = p.flag
         self.tp = p.tp
+	self.intval = p.intval
         
     def __str__(self):
         try:
             x,y,z = self.pos
-            return "(%.2f, %.2r, %.2f) at time %d, in track: %s"%(x,y,z,self.tp, not not self.inTrack)
+            return "#%d at (%.2f, %.2r, %.2f) at time %d, in track: %s"%(self.intval, x,y,z,self.tp, not not self.inTrack)
         except:
             raise "Bad pos",self.pos
     def __repr__(self):
@@ -162,12 +165,12 @@ def main(fileprefix,n, maxvel = 15, vx=1.0,vy=1.0,vz=1.0):
     f=codecs.open("tracks.csv","wb","latin1")
         
     w=csv.writer(f,dialect="excel",delimiter=";")
-    w.writerow(["Track #","Timepoint","X","Y","Z"])
+    w.writerow(["Track #","Object #","Timepoint","X","Y","Z"])
     for i,track in enumerate(tracks):
         if len(track)<3:continue
         for particle in track:
             x,y,z=particle.posInPixels
-            w.writerow([str(i),str(particle.tp), str(x),str(y),str(z)])        
+            w.writerow([str(i),str(particle.intval),str(particle.tp), str(x),str(y),str(z)])        
     f.close()
     
 

@@ -30,13 +30,13 @@ __author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.42 $"
 __date__ = "$Date: 2005/01/13 14:52:39 $"
 
-import ManipulationFilters
+import ProcessingFilter
 import types
 import vtk
 MORPHOLOGICAL="Morphological"
 
 FILTERING="Filtering"
-class MorphologicalFilter(ManipulationFilters.ManipulationFilter):
+class MorphologicalFilter(ProcessingFilter.ProcessingFilter):
     """
     Class: ManipulationFilter
     Created: 13.04.2006, KP
@@ -51,7 +51,7 @@ class MorphologicalFilter(ManipulationFilters.ManipulationFilter):
         Created: 13.04.2006, KP
         Description: Initialization
         """        
-        ManipulationFilters.ManipulationFilter.__init__(self,(1,1))
+        ProcessingFilter.ProcessingFilter.__init__(self,(1,1))
     
         self.descs={"KernelX":"X","KernelY":"Y","KernelZ":"Z"}
     
@@ -94,7 +94,7 @@ class MorphologicalFilter(ManipulationFilters.ManipulationFilter):
         Created: 13.04.2006, KP
         Description: Execute the filter with given inputs and return the output
         """            
-        if not ManipulationFilters.ManipulationFilter.execute(self,inputs):
+        if not ProcessingFilter.ProcessingFilter.execute(self,inputs):
             return None
         
         x,y,z=self.parameters["KernelX"],self.parameters["KernelY"],self.parameters["KernelZ"]
@@ -212,7 +212,7 @@ class SobelFilter(MorphologicalFilter):
         Created: 13.04.2006, KP
         Description: Execute the filter with given inputs and return the output
         """            
-        if not ManipulationFilters.ManipulationFilter.execute(self,inputs):
+        if not ProcessingFilter.ProcessingFilter.execute(self,inputs):
             return None        
         image = self.getInput(1)
         self.vtkfilter.SetInput(image)
@@ -231,7 +231,6 @@ class HybridMedianFilter(MorphologicalFilter):
     
     def __init__(self):
         """
-        Method: __init__()
         Created: 13.04.2006, KP
         Description: Initialization
         """        
@@ -240,7 +239,6 @@ class HybridMedianFilter(MorphologicalFilter):
         
     def getParameters(self):
         """
-        Method: getParameters
         Created: 13.04.2006, KP
         Description: Return the list of parameters needed for configuring this GUI
         """  
@@ -248,11 +246,10 @@ class HybridMedianFilter(MorphologicalFilter):
         
     def execute(self,inputs,update=0,last=0):
         """
-        Method: execute
         Created: 13.04.2006, KP
         Description: Execute the filter with given inputs and return the output
         """            
-        if not ManipulationFilters.ManipulationFilter.execute(self,inputs):
+        if not ProcessingFilter.ProcessingFilter.execute(self,inputs):
             return None        
         image = self.getInput(1)
         self.vtkfilter.SetInput(image)

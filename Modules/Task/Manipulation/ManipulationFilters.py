@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 # -*- coding: iso-8859-1 -*-
 """
- Unit: ManipulationFilters
+ Unit: ProcessingFilter.ProcessingFilters
  Project: BioImageXD
  Created: 13.04.2006, KP
  Description:
@@ -43,6 +43,8 @@ import scripting as bxd
 
 import GUI.GUIBuilder as GUIBuilder
 import ImageOperations
+
+import ProcessingFilter
 
 class IntensityMeasurementList(wx.ListCtrl):
     def __init__(self, parent, log):
@@ -135,341 +137,10 @@ ITK="ITK"
 MEASUREMENT="Measurements"
 REGION_GROWING="Region Growing"
    
-class ManipulationFilter(GUIBuilder.GUIBuilderBase):
-    """
-    Class: ManipulationFilter
-    Created: 13.04.2006, KP
-    Description: A base class for manipulation filters
-    """ 
-    category = "No category"
-    name = "Generic Filter"
-    def __init__(self,numberOfInputs=(1,1)):
-        """
-        Created: 13.04.2006, KP
-        Description: Initialization
-        """
-        self.taskPanel = None                
-        self.dataUnit = None
-        GUIBuilder.GUIBuilderBase.__init__(self, changeCallback = self.notifyTaskPanel)
-
-        self.numberOfInputs = numberOfInputs
-        
-        self.parameters = {}
-        self.gui = None
-        
-        self.sourceUnits = []
-        self.inputs =[]
-        self.nextFilter = None
-        self.prevFilter = None
-        self.itkToVtk = None
-        self.enabled = 1
-        self.itkFlag = 0
-        self.inputIndex=0
-        self.imageType = "UC3"
-        self.inputMapping = {}
-        for item in self.getPlainParameters():
-            self.setParameter(item,self.getDefaultValue(item))
-        
-        self.vtkToItk = None
-        self.itkToVtk = None
-        self.G = "UC3"
-        
-    def set(self, parameter, value):
-        """
-        Created: 21.07.2006, KP
-        Description: Set the given parameter to given value
-        """   
-        GUIBuilder.GUIBuilder.setParameter(self, parameter, value)
-        # Send a message that will update the GUI
-        messenger.send(self,"set_%s"%parameter,value)
-
-        
-    def setParameter(self,parameter,value):
-        """
-        Created: 13.04.2006, KP
-        Description: Set a value for the parameter
-        """ 
-        
-        if self.taskPanel:                
-            lst = self.taskPanel.getFilters(self.name)
-            i = lst.index(self)
-            if len(lst)==1:
-                func="getFilter('%s')"%self.name
-            else:
-                func="getFilter('%s', %d)"%(self.name,i)        
-            oldval = self.parameters[parameter]
-            if self.getType(parameter)==GUIBuilder.ROISELECTION:
-                i,roi = value
-                setval="bxd.visualizer.getRegionsOfInterest()[%d]"%i
-                rois = bxd.visualizer.getRegionsOfInterest()
-                if oldval in rois:
-                    n = rois.index(oldval)
-                    setoldval="bxd.visualizer.getRegionsOfInterest()[%d]"%n
-                else:
-                    setoldval=""
-                # First record the proper value
-                value = roi
-            else:
-                setval=str(value)
-                setoldval=str(oldval)
-            do_cmd="bxd.mainWindow.tasks['Process'].%s.set('%s',%s)"%(func,parameter,setval)
-            if setoldval:
-                undo_cmd="bxd.mainWindow.tasks['Process'].%s.set('%s',%s)"%(func,parameter,setoldval)
-            else:
-                undo_cmd=""
-            cmd=Command.Command(Command.PARAM_CMD,None,None,do_cmd,undo_cmd,desc="Change parameter '%s' of filter '%s'"%(parameter,self.name))
-            cmd.run(recordOnly = 1)          
-            
-        print "\n\nSetting ",parameter,"to",value
-        GUIBuilder.GUIBuilderBase.setParameter(self, parameter, value)
-        
-    def writeOutput(self, dataUnit, timePoint):
-        """
-        Created: 09.07.2006, KP
-        Description: Optionally write the output of this module during the processing
-        """   
-        pass
-        
-        
-    def notifyTaskPanel(self, module):
-        """
-        Created: 31.05.2006, KP
-        Description: Notify the task panel that filter has changed
-        """                     
-        if self.taskPanel:
-            self.taskPanel.filterModified(self)
-
-        
-    def setImageType(self,it):
-        """
-        Created: 15.05.2006, KP
-        Description: Set the image type of the ITK image
-        """             
-        self.imageType = it
-        
-    def getImageType(self):
-        """
-        Created: 15.05.2006, KP
-        Description: Get the image type of the ITK image
-        """                 
-        return self.imageType
-        
-    def setTaskPanel(self,p):
-        """
-        Created: 14.05.2006, KP
-        Description: Set the task panel that controsl this filter
-        """
-        self.taskPanel = p
-        
-    def convertVTKtoITK(self,image,cast=None):
-        """
-        Created: 18.04.2006, KP
-        Description: Convert the image data to ITK image
-        """         
-        if "itkImage" in str(image.__class__):
-            return image
-        if not self.itkFlag:
-            messenger.send(None,"show_error","Non-ITK filter tries to convert to ITK","A non-ITK filter %s tried to convert data to ITK image data"%self.name)
-            return image
-
-        #if not self.vtkToItk:            
-        ImageType = itk.VTKImageToImageFilter.IUC3
-            
-        if cast==types.FloatType:
-            ImageType = itk.VTKImageToImageFilter.IF3
-        
-            
-        scalarType = image.GetScalarTypeAsString()
-        
-        if scalarType=="unsigned char":
-            ImageType = itk.VTKImageToImageFilter.IUC3
-        elif scalarType == "unsigned int":
-            conv = vtk.vtkImageCast()
-            conv.SetInput(image)        
-            ImageType = itk.VTKImageToImageFilter.IUL3
-            conv.SetOutputScalarTypeToUnsignedLong ()
-            image = conv.GetOutput()
-        
-        self.vtkToItk = ImageType.New()
-        
-        if self.prevFilter and self.prevFilter.getITK():
-            return image
-        if cast:            
-            icast = vtk.vtkImageCast()
-            if cast==types.FloatType:
-                icast.SetOutputScalarTypeToFloat()
-            icast.SetInput(image)
-            image = icast.GetOutput()
-        self.vtkToItk.SetInput(image)
-        return self.vtkToItk.GetOutput()
-            
-            
-    def convertITKtoVTK(self,image,cast=None,imagetype = "UC3",force=0):
-        """
-        Created: 18.04.2006, KP
-        Description: Convert the image data to ITK image
-        """  
-        # For non-ITK images, do nothing
-        if image.__class__ == vtk.vtkImageData:
-#        if not force and self.prevFilter and not self.prevFilter.getITK() and not self.getITK():
-            return image
-        
-        #if not self.itkToVtk:            
-        #    c=eval("itk.Image.%s"%imagetype)
-        #    self.itkToVtk = itk.ImageToVTKImageFilter[c].New()
-        self.itkToVtk = itk.ImageToVTKImageFilter[image].New()
-        # If the next filter is also an ITK filter, then won't
-        # convert
-        if not force and self.nextFilter and self.nextFilter.getITK():
-            print "NEXT FILTER IS ITK"
-            return image
-        self.itkToVtk.SetInput(image)
-        return self.itkToVtk.GetOutput()
-        
-        
-        
-        
-    def setNextFilter(self,nfilter):
-        """
-        Created: 18.04.2006, KP
-        Description: Set the next filter in the chain
-        """        
-        self.nextFilter = nfilter        
-    
-    def setPrevFilter(self,pfilter):
-        """
-        Created: 18.04.2006, KP
-        Description: Set the previous filter in the chain
-        """        
-        self.prevFilter = pfilter
-        
-    def getITK(self):
-        """
-        Created: 18.04.2006, KP
-        Description: Return whether this filter is working on ITK side of the pipeline
-        """
-        return self.itkFlag
-        
-    def getInput(self,n):
-        """
-        Created: 17.04.2006, KP
-        Description: Return the input imagedata #n
-        """             
-        if n not in self.inputMapping:
-            self.inputMapping[n]=0
-        if self.inputMapping[n]==0:        
-            print "Using input%d from stack as input %d"%(n-1,n)
-            image = self.inputs[self.inputIndex]
-            self.inputIndex+=1
-        else:
-            print "Using input from channel %d as input %d"%(self.inputMapping[n]-1,n)
-            image = self.getInputFromChannel(self.inputMapping[n]-1)
-        return image
-        
-    def getInputFromChannel(self,n):
-        """
-        Created: 17.04.2006, KP
-        Description: Return an imagedata object that is the current timepoint for channel #n
-        """             
-        if not self.sourceUnits:
-            self.sourceUnits = self.dataUnit.getSourceDataUnits()
-        return self.sourceUnits[n].getTimePoint(self.taskPanel.timePoint)
-        
-    def getNumberOfInputs(self):
-        """
-        Created: 17.04.2006, KP
-        Description: Return the number of inputs required for this filter
-        """             
-        return self.numberOfInputs
-        
-    def setInputChannel(self,inputNum,chl):
-        """
-        Created: 17.04.2006, KP
-        Description: Set the input channel for input #inputNum
-        """            
-        self.inputMapping[inputNum] = chl
-        
-    def getInputName(self,n):
-        """
-        Created: 17.04.2006, KP
-        Description: Return the name of the input #n
-        """          
-        return "Source dataset %d"%n
-        
-    def getEnabled(self):
-        """
-        Created: 13.04.2006, KP
-        Description: Return whether this filter is enabled or not
-        """                   
-        return self.enabled
-        
-    def setDataUnit(self,du):
-        """
-        Created: 15.04.2006, KP
-        Description: Set the dataunit that is the input of this filter
-        """                   
-        self.dataUnit = du
-        
-    def getDataUnit(self):
-        """
-        Created: 15.04.2006, KP
-        Description: return the dataunit
-        """                           
-        return self.dataUnit
-
-    def setEnabled(self,flag):
-        """
-        Created: 13.04.2006, KP
-        Description: Set whether this filter is enabled or not
-        """                   
-        print "Setting ",self,"to enabled=",flag
-        self.enabled = flag     
-    
-        
-    def getGUI(self,parent,taskPanel):
-        """
-        Created: 13.04.2006, KP
-        Description: Return the GUI for this filter
-        """              
-        self.taskPanel = taskPanel
-        if not self.gui:
-            self.gui = GUIBuilder.GUIBuilder(parent,self)
-        return self.gui
-            
-    @classmethod            
-    def getName(s):
-        """
-        Created: 13.04.2006, KP
-        Description: Return the name of the filter
-        """        
-        return s.name
-        
-    @classmethod
-    def getCategory(s):
-        """
-        Created: 13.04.2006, KP
-        Description: Return the category this filter should be classified to 
-        """                
-        return s.category
-        
-
-    def execute(self,inputs):
-        """
-        Created: 13.04.2006, KP
-        Description: Execute the filter with given inputs and return the output
-        """          
-        self.inputIndex = 0
-        n=len(inputs)
-        self.inputs = inputs
-        return 1
-        if n< self.numberOfInputs[0] or (self.numberOfInputs[1]!=-1 and n>self.numberOfInputs[1]):
-            messenger.send(None,"show_error","Bad number of inputs to filter","Filter %s was given a wrong number of inputs"%self.name)
-            return 0
-        return 1
 
         
 
-class AnisotropicDiffusionFilter(ManipulationFilter):
+class AnisotropicDiffusionFilter(ProcessingFilter.ProcessingFilter):
     """
     Class: Anisotropic diffusion
     Created: 13.04.2006, KP
@@ -483,7 +154,7 @@ class AnisotropicDiffusionFilter(ManipulationFilter):
         Created: 13.04.2006, KP
         Description: Initialization
         """        
-        ManipulationFilter.__init__(self,(1,1))
+        ProcessingFilter.ProcessingFilter.__init__(self,(1,1))
         self.vtkfilter = vtk.vtkImageAnisotropicDiffusion3D()
         self.descs={"Faces":"Faces","Corners":"Corners","Edges":"Edges",
             "CentralDiff":"Central Difference","Gradient":"Gradient to Neighbor",
@@ -550,7 +221,7 @@ class AnisotropicDiffusionFilter(ManipulationFilter):
         Created: 15.04.2006, KP
         Description: Execute the filter with given inputs and return the output
         """            
-        if not ManipulationFilter.execute(self,inputs):
+        if not ProcessingFilter.ProcessingFilter.execute(self,inputs):
             return None
         
         image = self.getInput(1)
@@ -567,7 +238,7 @@ class AnisotropicDiffusionFilter(ManipulationFilter):
             self.vtkfilter.Update()
         return self.vtkfilter.GetOutput()      
 
-class SolitaryFilter(ManipulationFilter):
+class SolitaryFilter(ProcessingFilter.ProcessingFilter):
     """
     Created: 13.04.2006, KP
     Description: A filter for removing solitary noise pixels
@@ -580,7 +251,7 @@ class SolitaryFilter(ManipulationFilter):
         Created: 13.04.2006, KP
         Description: Initialization
         """        
-        ManipulationFilter.__init__(self,(1,1))
+        ProcessingFilter.ProcessingFilter.__init__(self,(1,1))
         self.vtkfilter = vtk.vtkImageSolitaryFilter()
         self.descs={"HorizontalThreshold":"X:","VerticalThreshold":"Y:","ProcessingThreshold":"Processing threshold:"}
     
@@ -637,7 +308,7 @@ class SolitaryFilter(ManipulationFilter):
         Created: 15.04.2006, KP
         Description: Execute the filter with given inputs and return the output
         """            
-        if not ManipulationFilter.execute(self,inputs):
+        if not ProcessingFilter.ProcessingFilter.execute(self,inputs):
             return None
         
         image = self.getInput(1)
@@ -651,7 +322,7 @@ class SolitaryFilter(ManipulationFilter):
             self.vtkfilter.Update()
         return self.vtkfilter.GetOutput()      
 
-class ShiftScaleFilter(ManipulationFilter):
+class ShiftScaleFilter(ProcessingFilter.ProcessingFilter):
     """
     Class: SolitaryFilter
     Created: 13.04.2006, KP
@@ -665,7 +336,7 @@ class ShiftScaleFilter(ManipulationFilter):
         Created: 13.04.2006, KP
         Description: Initialization
         """        
-        ManipulationFilter.__init__(self,(1,1))
+        ProcessingFilter.ProcessingFilter.__init__(self,(1,1))
         self.vtkfilter = vtk.vtkImageShiftScale()
         self.descs={"Shift":"Shift:","Scale":"Scale:","AutoScale":"Scale to range 0-255"}
     
@@ -716,7 +387,7 @@ class ShiftScaleFilter(ManipulationFilter):
         Created: 15.04.2006, KP
         Description: Execute the filter with given inputs and return the output
         """            
-        if not ManipulationFilter.execute(self,inputs):
+        if not ProcessingFilter.ProcessingFilter.execute(self,inputs):
             return None
         
         image = self.getInput(1)
@@ -745,7 +416,7 @@ class ShiftScaleFilter(ManipulationFilter):
         
         
 
-class TimepointCorrelationFilter(ManipulationFilter):
+class TimepointCorrelationFilter(ProcessingFilter.ProcessingFilter):
     """
     Created: 31.07.2006, KP
     Description: A filter for calculating the correlation between two timepoints
@@ -758,7 +429,7 @@ class TimepointCorrelationFilter(ManipulationFilter):
         Created: 31.07.2006, KP
         Description: Initialization
         """        
-        ManipulationFilter.__init__(self,(1,1))
+        ProcessingFilter.ProcessingFilter.__init__(self,(1,1))
         self.vtkfilter = vtk.vtkImageAutoThresholdColocalization()
         self.box=None
         self.descs={"Timepoint1":"First timepoint:","Timepoint2":"Second timepoint:"}
@@ -775,7 +446,7 @@ class TimepointCorrelationFilter(ManipulationFilter):
         Created: 31.07.2006, KP
         Description: Return the GUI for this filter
         """              
-        gui = ManipulationFilters.ManipulationFilter.getGUI(self,parent,taskPanel)
+        gui = ProcessingFilter.ProcessingFilters.ProcessingFilter.ProcessingFilter.getGUI(self,parent,taskPanel)
         if not self.box:
             
             self.corrLbl=wx.StaticText(gui,-1,"Correlation:")
@@ -817,7 +488,7 @@ class TimepointCorrelationFilter(ManipulationFilter):
         Created: 31.07.2006, KP
         Description: Execute the filter with given inputs and return the output
         """            
-        if not ManipulationFilter.execute(self,inputs):
+        if not ProcessingFilter.ProcessingFilter.execute(self,inputs):
             return None
         tp1=self.parameters["Timepoint1"]
         tp2=self.parameters["Timepoint2"]
@@ -848,7 +519,7 @@ class TimepointCorrelationFilter(ManipulationFilter):
         
 
 
-class ROIIntensityFilter(ManipulationFilter):
+class ROIIntensityFilter(ProcessingFilter.ProcessingFilter):
     """
     Created: 04.08.2006, KP
     Description: A filter for calculating the volume, total and average intensity of a ROI
@@ -861,7 +532,7 @@ class ROIIntensityFilter(ManipulationFilter):
         Created: 31.07.2006, KP
         Description: Initialization
         """        
-        ManipulationFilter.__init__(self,(1,1))
+        ProcessingFilter.ProcessingFilter.__init__(self,(1,1))
         self.vtkfilter = vtk.vtkImageAutoThresholdColocalization()
         self.reportGUI=None
         self.measurements =[]
@@ -880,7 +551,7 @@ class ROIIntensityFilter(ManipulationFilter):
         Created: 31.07.2006, KP
         Description: Return the GUI for this filter
         """              
-        gui = ManipulationFilters.ManipulationFilter.getGUI(self,parent,taskPanel)
+        gui = ProcessingFilter.ProcessingFilters.ProcessingFilter.ProcessingFilter.getGUI(self,parent,taskPanel)
         if not self.reportGUI:
             self.reportGUI = IntensityMeasurementList(self.gui,-1)
             if self.measurements:
@@ -916,7 +587,7 @@ class ROIIntensityFilter(ManipulationFilter):
         Created: 31.07.2006, KP
         Description: Execute the filter with given inputs and return the output
         """            
-        if not ManipulationFilter.execute(self,inputs):
+        if not ProcessingFilter.ProcessingFilter.execute(self,inputs):
             return None
             
         
@@ -966,7 +637,7 @@ class ROIIntensityFilter(ManipulationFilter):
 
 
 
-class CutDataFilter(ManipulationFilter):
+class CutDataFilter(ProcessingFilter.ProcessingFilter):
     """
     Created: 04.08.2006, KP
     Description: A filter for cutting the data to a smaller size
@@ -979,7 +650,7 @@ class CutDataFilter(ManipulationFilter):
         Created: 10.08.2006, KP
         Description: Initialization
         """        
-        ManipulationFilter.__init__(self,(1,1))
+        ProcessingFilter.ProcessingFilter.__init__(self,(1,1))
         self.reportGUI=None
         self.measurements =[]
         self.descs={"UseROI":"Use Region of Interest to define resulting region","ROI":"Region of Interest Used in Cutting","StartingSlice":"First Slice in Resulting Stack",
@@ -1041,7 +712,7 @@ class CutDataFilter(ManipulationFilter):
         Created: 31.07.2006, KP
         Description: Execute the filter with given inputs and return the output
         """            
-        if not ManipulationFilter.execute(self,inputs):
+        if not ProcessingFilter.ProcessingFilter.execute(self,inputs):
             return None
             
         
@@ -1080,7 +751,7 @@ class CutDataFilter(ManipulationFilter):
         return  data
 
 
-class GradientFilter(ManipulationFilter):
+class GradientFilter(ProcessingFilter.ProcessingFilter):
     """
     Created: 13.04.2006, KP
     Description: A class for calculating the gradient of the image
@@ -1093,7 +764,7 @@ class GradientFilter(ManipulationFilter):
         Created: 13.04.2006, KP
         Description: Initialization
         """        
-        ManipulationFilter.__init__(self,inputs)
+        ProcessingFilter.ProcessingFilter.__init__(self,inputs)
         self.vtkfilter = vtk.vtkImageGradient()
         self.vtkfilter.SetDimensionality(3)
     
@@ -1109,7 +780,7 @@ class GradientFilter(ManipulationFilter):
         Created: 15.04.2006, KP
         Description: Execute the filter with given inputs and return the output
         """            
-        if not ManipulationFilter.execute(self,inputs):
+        if not ProcessingFilter.ProcessingFilter.execute(self,inputs):
             return None
         
         self.vtkfilter.SetInput(self.getInput(1))
@@ -1118,7 +789,7 @@ class GradientFilter(ManipulationFilter):
             self.vtkfilter.Update()
         return self.vtkfilter.GetOutput()            
 
-class GradientMagnitudeFilter(ManipulationFilter):
+class GradientMagnitudeFilter(ProcessingFilter.ProcessingFilter):
     """
     Created: 13.04.2006, KP
     Description: A class for calculating the gradient magnitude of the image
@@ -1131,7 +802,7 @@ class GradientMagnitudeFilter(ManipulationFilter):
         Created: 13.04.2006, KP
         Description: Initialization
         """        
-        ManipulationFilter.__init__(self,inputs)
+        ProcessingFilter.ProcessingFilter.__init__(self,inputs)
         self.vtkfilter = vtk.vtkImageGradientMagnitude()
         self.vtkfilter.SetDimensionality(3)
     
@@ -1147,7 +818,7 @@ class GradientMagnitudeFilter(ManipulationFilter):
         Created: 15.04.2006, KP
         Description: Execute the filter with given inputs and return the output
         """            
-        if not ManipulationFilter.execute(self,inputs):
+        if not ProcessingFilter.ProcessingFilter.execute(self,inputs):
             return None
         
         self.vtkfilter.SetInput(self.getInput(1))
@@ -1158,7 +829,7 @@ class GradientMagnitudeFilter(ManipulationFilter):
 
 
         
-class ITKAnisotropicDiffusionFilter(ManipulationFilter):
+class ITKAnisotropicDiffusionFilter(ProcessingFilter.ProcessingFilter):
     """
     Class: ITKAnisotropicDiffusionFilterFilter
     Created: 13.04.2006, KP
@@ -1173,7 +844,7 @@ class ITKAnisotropicDiffusionFilter(ManipulationFilter):
         Created: 13.04.2006, KP
         Description: Initialization
         """        
-        ManipulationFilter.__init__(self,inputs)
+        ProcessingFilter.ProcessingFilter.__init__(self,inputs)
         
         
         self.descs = {"TimeStep":"Time step for iterations","Conductance":"Conductance parameter",
@@ -1218,7 +889,7 @@ class ITKAnisotropicDiffusionFilter(ManipulationFilter):
         Created: 15.04.2006, KP
         Description: Execute the filter with given inputs and return the output
         """                    
-        if not ManipulationFilter.execute(self,inputs):
+        if not ProcessingFilter.ProcessingFilter.execute(self,inputs):
             return None
             
         image = self.getInput(1)
@@ -1235,7 +906,7 @@ class ITKAnisotropicDiffusionFilter(ManipulationFilter):
             self.itkfilter.Update()
         return self.itkfilter.GetOutput()            
 
-class ITKGradientMagnitudeFilter(ManipulationFilter):
+class ITKGradientMagnitudeFilter(ProcessingFilter.ProcessingFilter):
     """
     Class: ITKGradientMagnitudeFilter
     Created: 13.04.2006, KP
@@ -1249,7 +920,7 @@ class ITKGradientMagnitudeFilter(ManipulationFilter):
         Created: 13.04.2006, KP
         Description: Initialization
         """        
-        ManipulationFilter.__init__(self,inputs)
+        ProcessingFilter.ProcessingFilter.__init__(self,inputs)
         self.itkFlag = 1
         self.itkfilter = None
         
@@ -1266,7 +937,7 @@ class ITKGradientMagnitudeFilter(ManipulationFilter):
         Created: 15.04.2006, KP
         Description: Execute the filter with given inputs and return the output
         """                    
-        if not ManipulationFilter.execute(self,inputs):
+        if not ProcessingFilter.ProcessingFilter.execute(self,inputs):
             return None
             
         image = self.getInput(1)
@@ -1287,7 +958,7 @@ class ITKGradientMagnitudeFilter(ManipulationFilter):
         #    print "data=",data
         return data            
 
-class ITKSigmoidFilter(ManipulationFilter):
+class ITKSigmoidFilter(ProcessingFilter.ProcessingFilter):
     """
     Class: ITKSigmoidFilter
     Created: 29.05.2006, KP
@@ -1301,7 +972,7 @@ class ITKSigmoidFilter(ManipulationFilter):
         Created: 13.04.2006, KP
         Description: Initialization
         """        
-        ManipulationFilter.__init__(self,inputs)
+        ProcessingFilter.ProcessingFilter.__init__(self,inputs)
         self.itkFlag = 1
         self.descs = {"Minimum":"Minimum output value","Maximum":"Maximum Output Value","Alpha":"Alpha","Beta":"Beta"}
         f3=itk.Image.F3
@@ -1341,7 +1012,7 @@ class ITKSigmoidFilter(ManipulationFilter):
         Created: 15.04.2006, KP
         Description: Execute the filter with given inputs and return the output
         """                    
-        if not ManipulationFilter.execute(self,inputs):
+        if not ProcessingFilter.ProcessingFilter.execute(self,inputs):
             return None
             
         image = self.getInput(1)
@@ -1362,7 +1033,7 @@ class ITKSigmoidFilter(ManipulationFilter):
 
 
 
-class ITKLocalMaximumFilter(ManipulationFilter):
+class ITKLocalMaximumFilter(ProcessingFilter.ProcessingFilter):
     """
     Class: ITKLocalMaximumFilter
     Created: 29.05.2006, KP
@@ -1376,7 +1047,7 @@ class ITKLocalMaximumFilter(ManipulationFilter):
         Created: 26.05.2006, KP
         Description: Initialization
         """        
-        ManipulationFilter.__init__(self,inputs)
+        ProcessingFilter.ProcessingFilter.__init__(self,inputs)
         
         
         self.descs = {"Connectivity":"Use 8 neighbors for connectivity"}
@@ -1412,7 +1083,7 @@ class ITKLocalMaximumFilter(ManipulationFilter):
         Created: 15.04.2006, KP
         Description: Execute the filter with given inputs and return the output
         """                    
-        if not ManipulationFilter.execute(self,inputs):
+        if not ProcessingFilter.ProcessingFilter.execute(self,inputs):
             return None
             
         image = self.getInput(1)

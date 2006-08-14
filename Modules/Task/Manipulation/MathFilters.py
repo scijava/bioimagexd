@@ -30,12 +30,12 @@ __author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.42 $"
 __date__ = "$Date: 2005/01/13 14:52:39 $"
 
-import ManipulationFilters
+import ProcessingFilter
 MATH="Math"
 LOGIC="Logic"
 
 
-class MathFilter(ManipulationFilters.ManipulationFilter):
+class MathFilter(ProcessingFilter.ProcessingFilter):
     """
     Class: MathFilter
     Created: 13.04.2006, KP
@@ -50,7 +50,7 @@ class MathFilter(ManipulationFilters.ManipulationFilter):
         Created: 13.04.2006, KP
         Description: Initialization
         """        
-        ManipulationFilters.ManipulationFilter.__init__(self,inputs)
+        ProcessingFilter.ProcessingFilter.__init__(self,inputs)
         self.vtkfilter = vtk.vtkImageMathematics()
     
     def getParameters(self):

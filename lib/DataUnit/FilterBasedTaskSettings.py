@@ -1,18 +1,12 @@
 # -*- coding: iso-8859-1 -*-
 
 """
- Unit: SegmentationSetting
+ Unit: FilterBasedTaskSettings
  Project: BioImageXD
  Created: 26.03.2005, KP
  Description:
 
- This is a class that holds all settings of a dataunit. A dataunit's 
- setting object is the only thing differentiating it from another
- dataunit.
- 
- This code was re-written for clarity. The code produced by the
- Selli-project was used as a starting point for producing this code.
- http://sovellusprojektit.it.jyu.fi/selli/ 
+ This is a base class for all tasks that are based on the notion of a list of filters
 
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
@@ -37,13 +31,13 @@ __version__ = "$Revision: 1.21 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 import vtk
-from DataUnit import DataUnitSettings
+from DataUnitSetting import DataUnitSettings
+#import ManipulationFilters
 
-class SegmentationSettings(DataUnitSettings):
+class FilterBasedTaskSettings(DataUnitSettings):
     """
-    Class: SegmentationSettings
     Created: 27.03.2005, KP
-    Description: Stores settings related to single unit Segmentationing
+    Description: Stores settings related to single unit Manipulationing
     """
     def __init__(self,n=-1):
         """
@@ -52,7 +46,7 @@ class SegmentationSettings(DataUnitSettings):
         Description: Constructor
         """
         DataUnitSettings.__init__(self,n)
-        self.set("Type","Process")
+        self.set("Type","No Type Set")
         
         self.registerPrivate("ColorTransferFunction",1)        
         self.registerCounted("Source")
@@ -64,10 +58,6 @@ class SegmentationSettings(DataUnitSettings):
         self.register("Type")
         self.register("Name")
         self.register("BitDepth")
-        ctf = vtk.vtkColorTransferFunction()
-        ctf.AddRGBPoint(0,0,0,0)
-        ctf.AddRGBPoint(255, 1.0, 1.0, 1.0)
-        self.set("ColorTransferFunction",ctf)
         
     def initialize(self,dataunit,channels, timepoints):
         """
@@ -77,11 +67,18 @@ class SegmentationSettings(DataUnitSettings):
                      number of channels and timepoints
         """
         DataUnitSettings.initialize(self,dataunit,channels,timepoints)
-        ctf = self.get("ColorTransferFunction")
+        if hasattr(dataunit,"getScalarRange"):
+            minval,maxval = dataunit.getScalarRange()
+        else:
+            minval,maxval = dataunit.getSourceDataUnits()[0].getScalarRange()
+        ctf = vtk.vtkColorTransferFunction()
+        ctf.AddRGBPoint(minval,0,0,0)
+        ctf.AddRGBPoint(maxval, 1.0, 1.0, 1.0)
+        self.set("ColorTransferFunction",ctf)
+
         
     def writeTo(self,parser):
         """
-        Method: writeTo(parser)
         Created: 05.06.2005
         Description: Attempt to write all keys to a parser
         """    
@@ -101,14 +98,13 @@ class SegmentationSettings(DataUnitSettings):
 
     def deserialize(self,name,value):
         """
-        Method: deserialize(name,value)
         Created: 05.06.2005
         Description: Returns the value of a given key
         """
         if name=="FilterList":
             fnames = eval(value)
             flist=[]
-            filters = SegmentationFilters.getFilterList()
+            filters = self.filterModule.getFilterList()
             nametof={}
             for f in filters:
                 nametof[f.getName()] = f
@@ -118,12 +114,11 @@ class SegmentationSettings(DataUnitSettings):
             return flist
                 
         else:
-            DataUnitSettings.deserialize(self, name, value)
+            return DataUnitSettings.deserialize(self, name, value)
         
         
     def serialize(self,name,value):
         """
-        Method: serialize(name,value)
         Created: 05.06.2005
         Description: Returns the value of a given key in a format
                      that can be written to disk.
