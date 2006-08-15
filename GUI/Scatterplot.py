@@ -238,10 +238,10 @@ class Scatterplot(InteractivePanel.InteractivePanel):
             
             x1,y1=self.actionstart
             x2,y2=self.actionend
-            #if x2<x1:
-            #    x1,x2=x2,x1
-            #if y2<y1:
-            #    y1,y2=y2,y1
+            if x2<x1:
+                x1,x2=x2,x1
+            if y2<y1:
+                y1,y2=y2,y1
             reds=self.sources[0].getSettings()
             greens=self.sources[1].getSettings()
             
@@ -400,7 +400,6 @@ class Scatterplot(InteractivePanel.InteractivePanel):
         
     def setScatterplot(self,plot):
         """
-        Method: setScatterplot(plot)
         Created: 11.07.2005, KP
         Description: Sets the scatterplot as vtkImageData
         """    
@@ -423,7 +422,7 @@ class Scatterplot(InteractivePanel.InteractivePanel):
             # Red on the vertical and green on the horizontal axis
             t1=self.sources[1].getTimePoint(self.timepoint)
             t2=self.sources[0].getTimePoint(self.timepoint)            
-            self.scatter, ctf = ImageOperations.scatterPlot(t1,t2,-1,self.countVoxels,self.wholeVolume,logarithmic=self.logarithmic)
+            self.scatter, ctf = ImageOperations.scatterPlot(t2,t1,-1,self.countVoxels,self.wholeVolume,logarithmic=self.logarithmic)
             self.scatter=self.scatter.Mirror(0)
                         
             self.scatterCTF = ctf

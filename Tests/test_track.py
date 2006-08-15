@@ -38,7 +38,7 @@ class ParticleReader:
 class Particle:
     def __init__(self, pos = (0,0,0),intpos=(0,0,0), tp = 0, size=1, obj=-1):
         self.pos = pos
-	self.intval = obj
+        self.intval = obj
         self.tp = tp
         self.size = size
         self.inTrack = 0
@@ -62,7 +62,7 @@ class Particle:
         self.inTrack = p.inTrack
         self.flag = p.flag
         self.tp = p.tp
-	self.intval = p.intval
+        self.intval = p.intval
         
     def __str__(self):
         try:

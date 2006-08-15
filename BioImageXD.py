@@ -132,14 +132,14 @@ class LSMApplication(wx.App):
 
     def run(self, files, scriptfile):
         """
-        Method: run
         Created: 03.11.2004, KP
         Description: Run the wxPython main loop
         """
-        if scriptfile:
-            self.mainwin.loadScript(scriptfile)
         if files:
             self.mainwin.loadFiles(files)
+        
+        if scriptfile:
+            self.mainwin.loadScript(scriptfile)
         self.MainLoop()
 
 

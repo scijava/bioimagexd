@@ -121,7 +121,6 @@ class Toolbar(wx.Panel):
             
     def ReOrderItems(self,tgtsize=0):
         """
-        Method: ReOrderItems
         Created: 27.04.2006, KP
         Description: A method for re-ordering the toolbar items to rows
         """          
@@ -220,7 +219,6 @@ class Toolbar(wx.Panel):
         
     def Realize(self):
         """
-        Method: Realize
         Created: 27.04.2006, KP
         Description: Render the toolbar
         """          
@@ -240,9 +238,15 @@ class Toolbar(wx.Panel):
         """          
         ctrl = self.idToTool[toolid]
         self.ctrls.remove(ctrl)
-        sizer = self.ctrlToRow[ctrl]
-        sizer.Detach(ctrl)
-        self.ReOrderItems()
+        if ctrl in self.ctrlToRow:
+            sizer = self.ctrlToRow[ctrl]
+            sizer.Detach(ctrl)
+            
+        w=self.GetSize()[0]
+        layout = self.getLayout(w)        
+        self.ReOrderItems2(layout, w)            
+            
+        #self.ReOrderItems()
         
         
     def AddControl(self,ctrl):

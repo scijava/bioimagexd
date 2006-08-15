@@ -39,13 +39,11 @@ import Command
 
 class TreeWidget(wx.SashLayoutWindow):
     """
-    Class: TreeWidget
     Created: 10.01.2005, KP
     Description: A panel containing thre tree
     """
     def __init__(self,parent):
         """
-        Method: __init__
         Created: 10.01.2005, KP
         Description: Initialization
         """        
@@ -112,7 +110,6 @@ class TreeWidget(wx.SashLayoutWindow):
             
     def onRightClick(self,event):
         """
-        Method: onRightClick
         Created: 21.07.2005
         Description: Method that is called when the right mouse button is
                      pressed down on this item
@@ -128,7 +125,6 @@ class TreeWidget(wx.SashLayoutWindow):
  
     def onCloseDataset(self,event):
         """
-        Method: onCloseDataset
         Created: 21.07.2005, KP
         Description: Method to close a dataset
         """        
@@ -143,7 +139,6 @@ class TreeWidget(wx.SashLayoutWindow):
             
     def onSize(self, event):
         """
-        Method: onSize()
         Created: 10.01.2005, KP
         Description: Callback that modifies the tree size according to
                      own changes in size
@@ -153,7 +148,6 @@ class TreeWidget(wx.SashLayoutWindow):
         
     def getSelectionContainer(self):
         """
-        Method: getSelectionContainer
         Created: 11.09.2005, KP
         Description: Return the dataset that contains a channel
         """         
@@ -179,7 +173,6 @@ class TreeWidget(wx.SashLayoutWindow):
         
     def markGreen(self,items):
         """
-        Method: markGreen(items)
         Created: 16.09.2005, KP
         Description: Mark given items green and set the old green item to default color
         """                    
@@ -196,7 +189,6 @@ class TreeWidget(wx.SashLayoutWindow):
             
     def markYellow(self,items):
         """
-        Method: markYellow(items)
         Created: 16.09.2005, KP
         Description: Mark given items yellow and set the old yellow item to default color
         """        
@@ -225,15 +217,20 @@ class TreeWidget(wx.SashLayoutWindow):
         
     def hasItem(self,path):
         """
-        Method: hasItem(path)
         Created: 10.01.2005, KP
         Description: Returns whether the tree has a specified item
         """            
         return path in self.items
+        
+    def getItemNames(self):
+        """
+        Created: 15.08.2006, KP
+        Description: Return the names of the dataunits in the tree
+        """
+        return self.items.keys()
     
     def addToTree(self,name,path,objtype,objs):
         """
-        Method: addToTree(name, path, objectype, objs)
         Created: 10.01.2005, KP
         Description: Add item to the tree
         Parameters:
@@ -407,13 +404,26 @@ class TreeWidget(wx.SashLayoutWindow):
         """
         self.tree.UnselectAll()
         
-    def selectByName(self, unit, channels):
+    def getChannelsByName(self, unit, channels):
         """
-        Method: selectByName
+        Created: 16.07.2006, KP
+        Description: Return items in the tree by their names
+        """   
+        return self.selectByName(unit, channels, dontSelect=1)
+        
+    def selectByName(self, unit, channels, dontSelect=0):
+        """
         Created: 16.07.2006, KP
         Description: Select items in the tree by their names
         """   
+        ret=[]
         for item in self.dataUnitItems:
             obj = self.tree.GetPyData(item)
+            #print "obj=",obj.getName(),"in channels=",(obj.getName() in channels)
             if obj.getName() in channels and unit == self.dataUnitToPath[obj]:
-                self.tree.SelectItem(item)
+                if not dontSelect:
+                    self.tree.SelectItem(item)
+                #print "FOUND",obj
+                ret.append(obj)
+        #print "RETURNING",ret
+        return ret

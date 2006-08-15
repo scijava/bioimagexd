@@ -324,7 +324,6 @@ class SolitaryFilter(ProcessingFilter.ProcessingFilter):
 
 class ShiftScaleFilter(ProcessingFilter.ProcessingFilter):
     """
-    Class: SolitaryFilter
     Created: 13.04.2006, KP
     Description: A filter for shifting the values of dataset by constant and scaling by a constant
     """     

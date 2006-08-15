@@ -261,9 +261,7 @@ class TimepointSelectionPanel(scrolled.ScrolledPanel):
 
 class TimepointSelection(wx.Dialog):
     """
-    Class: TimepointSelection
-    Created: 10.11.2004
-    Creator: KP
+    Created: 10.11.2004, KP
     Description: A base class for creating windows where the user can select        
                  the timepoints that should be operated upon.
     """

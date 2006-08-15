@@ -33,6 +33,7 @@ __date__ = "$Date: 2005/01/13 14:52:39 $"
 import os.path
 import csv
 import time
+import cStringIO
 import messenger
 import Dialogs
 import codecs
@@ -56,6 +57,7 @@ import  wx.lib.mixins.listctrl  as  listmix
 from GUI import ColorTransferEditor
 
 from GUI import TaskPanel
+
 
 class MyListCtrl(wx.ListCtrl, listmix.TextEditMixin):
     def __init__(self, parent, ID, pos=wx.DefaultPosition,
@@ -718,6 +720,15 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
             cmd.run()
         
         
+    def decode(self, d):
+        """
+        Created: 15.08.2006, KP
+        Description: Replace any unicode characeters with their ascii counterparts
+        """
+        d=d.replace(u"\u00B1","+-")
+        #d=d.replace("")
+        return d
+        
     def exportStatistics(self, filename):
         """
         Method: exportStatistics
@@ -748,8 +759,9 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
             Logging.info("Got no name for coloc statistics",kw="processing")
             return
 #        f=open(filename,"wb")
-        f=codecs.open(filename,"wb","latin1")
-        w=csv.writer(f,dialect="excel",delimiter=";")
+        f=codecs.open(filename,"wb","latin-1")
+        
+        w = csv.writer(f, dialect="excel",delimiter=";")
         get1=sources[0].getSettings().get
         get2=sources[1].getSettings().get
 
@@ -757,9 +769,16 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
         w.writerow([namestr2])
         w.writerow([time.ctime()])
         for item in self.headervals:
-            print item
+            #print item
             header,val1,val2,col=item
+            header = self.decode(header)
+            if type(val1)==types.UnicodeType:
+                val1=self.decode(val1)
+                
             if val2:
+                if type(val2)==types.UnicodeType:   
+                    val2=self.decode(val2)
+                
                 w.writerow([header,val1,val2])
             else:
                 w.writerow([header,val1])

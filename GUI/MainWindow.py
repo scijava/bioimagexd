@@ -84,7 +84,6 @@ import scripting as bxd
 
 class MainWindow(wx.Frame):
     """
-    Class: MainWindow
     Created: 03.11.2004, KP
     Description: The main window for the LSM module
     """
@@ -99,7 +98,9 @@ class MainWindow(wx.Frame):
             app     LSMApplication object
         """
         conf = Configuration.getConfiguration()
-
+        
+        Command.mainWindow = self
+        
         size=conf.getConfigItem("WindowSize","Sizes")
         if size:
             size=eval(size)
@@ -284,7 +285,6 @@ class MainWindow(wx.Frame):
         
     def loadScript(self, filename):
         """
-        Method: loadScript
         Created: 17.07.2006, KP
         Description: Load a given script file
         """   
@@ -293,6 +293,8 @@ class MainWindow(wx.Frame):
         module = imp.load_module("script",f,filename,('.py','r',1))
         f.close()
         module.bxd = bxd
+        module.mainWindow = self
+        module.visualizer = self.visualizer
         module.run()
         
     def loadFiles(self,files):
@@ -303,7 +305,7 @@ class MainWindow(wx.Frame):
         """         
         for file in files:
             name = os.path.basename(file)
-            self.createDataUnit(name, file)
+            self.createDataUnit(name, file)            
 
     def onMenuUndo(self,evt):
         """
@@ -411,10 +413,10 @@ class MainWindow(wx.Frame):
             else:
                 dataunits[pth]=[i]
         names = [i.getName() for i in selected]
-        do_cmd="bxd.mainWindow.fileTree.unselectAll()"
+        do_cmd="mainWindow.fileTree.unselectAll()"
         for i in dataunits.keys():
             names = [x.getName() for x in dataunits[i]]
-            do_cmd+="\n"+"bxd.mainWindow.fileTree.selectByName('%s', %s)"%(i,str(names))
+            do_cmd+="\n"+"mainWindow.fileTree.selectByName('%s', %s)"%(i,str(names))
         undo_cmd=""
         cmd=Command.Command(Command.MGMT_CMD,None,None,do_cmd,undo_cmd,desc="Unselect all in file tree")
         cmd.run(recordOnly = 1)          
@@ -707,15 +709,16 @@ class MainWindow(wx.Frame):
 
     def onSaveDataset(self,*args):
         """
-        Method: onSaveDataset
         Created: 24.05.2006, KP
         Description: Process the dataset
         """
-        do_cmd = "bxd.mainWindow.processDataset()"
+        do_cmd = "mainWindow.processDataset(modal=0)"
         cmd = Command.Command(Command.GUI_CMD,None,None,do_cmd,"",desc="Process the dataset with the current task")
-        cmd.run()
+        cmd.run(recordOnly=1)
+        self.processDataset()
 
-    def processDataset(self,*args):
+    def processDataset(self, modal=1):
+        bxd.modal = modal
         messenger.send(None,"process_dataset")
 
     def onContextHelp(self,evt):
@@ -909,8 +912,8 @@ class MainWindow(wx.Frame):
         # empty argument that will trigger the actual dialog to show
         if evt:
             if "show_history" not in self.commands:
-                do_cmd = "bxd.mainWindow.onShowCommandHistory()"
-                undo_cmd="bxd.mainWindow.commandHistory.Destroy()\nbxd.mainWindow.commandHistory=None"
+                do_cmd = "mainWindow.onShowCommandHistory()"
+                undo_cmd="mainWindow.commandHistory.Destroy()\nmainWindow.commandHistory=None"
                 
                 cmd=Command.Command(Command.MENU_CMD,None,None,do_cmd,undo_cmd,desc="Show command history")
                 self.commands["show_history"]=cmd
@@ -1039,6 +1042,17 @@ class MainWindow(wx.Frame):
         Created: 14.07.2005, KP
         Description: Called when the user wants to close the task panel
         """
+        undo_cmd=""
+        do_cmd="mainWindow.closeTaskPanel()"
+        cmd=Command.Command(Command.MGMT_CMD,None,None,do_cmd,undo_cmd,desc="Close the current task panel")
+        cmd.run()          
+        
+           
+    def closeTaskPanel(self):
+        """
+        Created: 15.08.2006, KP
+        Description: A method that actually clsoes the task panel
+        """
         selectedUnits=self.tree.getSelectedDataUnits()
         self.visualizer.setProcessedMode(0)
         self.visualizer.setDataUnit(selectedUnits[0])        
@@ -1075,7 +1089,7 @@ class MainWindow(wx.Frame):
         """
         if not "show_import" in self.commands:
             import_code="""
-    importdlg = GUI.ImportDialog.ImportDialog(bxd.mainWindow)
+    importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
     importdlg.ShowModal()
     """
             
@@ -1282,7 +1296,7 @@ class MainWindow(wx.Frame):
             fname=os.path.split(askfile)[-1]
             self.SetStatusText("Loading "+fname+"...")
             askfile=askfile.replace("\\","\\\\")
-            do_cmd="bxd.mainWindow.createDataUnit(\"%s\",\"%s\")"%(fname,askfile)
+            do_cmd="mainWindow.createDataUnit(\"%s\",\"%s\")"%(fname,askfile)
             
             cmd=Command.Command(Command.OPEN_CMD,None,None,do_cmd,"",desc="Load dataset %s"%fname)
             cmd.run()
@@ -1406,11 +1420,11 @@ class MainWindow(wx.Frame):
             self.onCloseTaskPanel(None)            
             return
         
-        do_cmd = 'bxd.mainWindow.loadTask("%s")'%(taskname)
+        do_cmd = 'mainWindow.loadTask("%s")'%(taskname)
         if self.currentTaskWindowName:
-            undo_cmd = 'bxd.mainWindow.loadTask("%s")'%(self.currentTaskWindowName)
+            undo_cmd = 'mainWindow.loadTask("%s")'%(self.currentTaskWindowName)
         else:
-            undo_cmd = 'bxd.mainWindow.closeTask()'
+            undo_cmd = 'mainWindow.closeTask()'
         cmd=Command.Command(Command.TASK_CMD,None,None,do_cmd,undo_cmd,desc="Load task %s"%taskname)
         cmd.run()
         
@@ -1561,6 +1575,7 @@ class MainWindow(wx.Frame):
             self.visPanel = wx.SashLayoutWindow(self.visWin,-1)
             self.visualizer=Visualizer.Visualizer(self.visPanel,self.menuManager,self)
             bxd.visualizer = self.visualizer
+            Command.visualizer = self.visualizer
             self.menuManager.setVisualizer(self.visualizer)
             self.visualizer.setProcessedMode(processed)
         self.visualizer.enable(0)

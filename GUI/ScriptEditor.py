@@ -38,17 +38,19 @@ import inspect
 import os
 import messenger
 import Dialogs
-import scripting
+import scripting as bxd
 import re
 import types
 import MenuManager
-import scripting
+import StringIO
+import imp
+import tempfile
 
 intro="""Welcome to BioImageXD Script Editor"""
 
 class ScriptEditor(editor.Editor):
     """
-    Class: ScriptEditor
+
     Created: 13.02.2006, KP
     Description: A class that implements a script editor for BioImageXD
     """ 
@@ -90,7 +92,6 @@ class ScriptEditor(editor.Editor):
         
     def setScript(self,lines,imports):
         """
-        Method: setScript(lines,imports)
         Created: 13.02.2006, KP
         Description: Sets the script in the editor to the given list of lines. Also sets the imports required for the current script to work
         """        
@@ -109,7 +110,6 @@ class ScriptEditor(editor.Editor):
         
 class ScriptEditorFrame(wx.Frame):
     """
-    Class: ScriptEditorFrame
     Created: 13.02.2006, KP
     Description: A class that implements a script editor for BioImageXD
     """ 
@@ -132,9 +132,10 @@ class ScriptEditorFrame(wx.Frame):
         self.createMenubar()
         self.createToolbar()
         
+        self.Layout()
+        
     def createMenubar(self):
         """
-        Method: createMenubar()
         Created: 13.02.2006, KP
         Description: Creates the menubar for the script editor
         """
@@ -173,7 +174,6 @@ class ScriptEditorFrame(wx.Frame):
    
     def onClose(self,evt):
         """
-        Method: onClose
         Created: 13.02.2006, KP
         Description: Close the script editor
         """   
@@ -181,20 +181,35 @@ class ScriptEditorFrame(wx.Frame):
         
     def onSaveScript(self,evt):
         """
-        Method: onSaveScript
         Created: 13.02.2006, KP
         Description: Save the script to a file
         """
         filename=Dialogs.askSaveAsFileName(self,"Save script file","script.bxs",self.wc)
+        self.writeScript(filename)
+    def writeScript(self, filename):
+        """
+        Created: 15.08.2006, KP
+        Description: Actually write the script out
+        """
+        
         try:
             f=open(filename,"w")
-            f.write("\n".join(self.editor.GetText()))
+            ind=""
+            lines = self.editor.GetText()
+                
+            s="\n".join(lines)
+            if "def run" not in s:
+                ind="    "                
+                f.write("def run():\n")
+            for i,line in enumerate(lines):
+                
+                lines[i]=ind+lines[i].rstrip()
+            f.write("\n".join(lines))
         except:
             pass
         
     def onLoadScript(self,evt):
         """
-        Method: onLoadScript
         Created: 13.02.2006, KP
         Description: Load a script from file
         """
@@ -208,16 +223,16 @@ class ScriptEditorFrame(wx.Frame):
     
     def readFile(self,file):
         """
-        Method: readFile(file)
         Created: 13.02.2006, KP
         Description: Read a script from file
         """
         f=open(file,"r")
-        data=f.readlines()
+        lines=f.readlines()
         imports=[]
         r1=re.compile("import (\S+)")
         r2=re.compile("from (\S+) import (\S+)")
         remove=[]
+        
         for line in lines:
             l=line.strip()
             m=r1.match(l)
@@ -239,7 +254,6 @@ class ScriptEditorFrame(wx.Frame):
         
     def createToolbar(self):
         """
-        Method: createToolbar()
         Created: 13.02.2006, KP
         Description: Creates the toolbar for the script editor
         """
@@ -248,7 +262,7 @@ class ScriptEditorFrame(wx.Frame):
         tb=self.GetToolBar()            
         tb.SetToolBitmapSize((32,32))
         
-        iconpath=scripting.get_icon_dir()
+        iconpath=bxd.get_icon_dir()
         bmp = wx.Image(os.path.join(iconpath,"record.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap()
         tb.DoAddTool(MenuManager.ID_RECORD_SCRIPT,"Record",bmp,shortHelp="Record script")
         wx.EVT_TOOL(self,MenuManager.ID_RECORD_SCRIPT,self.onRecordScript)
@@ -267,11 +281,18 @@ class ScriptEditorFrame(wx.Frame):
         
     def onRunScript(self,evt):
         """
-        Method: onRunScript
         Created: 13.02.2006, KP
         Description: Run the recorded script
         """         
-        pass
+        x,filename = tempfile.mkstemp(".py","BioImageXD")
+        
+        self.writeScript(filename)
+        
+        self.parent.loadScript(filename)
+        os.remove(filename)
+        #os.remove(filename)
+        
+        
         
     def onRecordScript(self,evt):
         """
@@ -283,7 +304,7 @@ class ScriptEditorFrame(wx.Frame):
         self.tb.EnableTool(MenuManager.ID_RECORD_SCRIPT,0)
         self.script.Enable(MenuManager.ID_STOP_RECORD,1)
         self.script.Enable(MenuManager.ID_RECORD_SCRIPT,0)
-        scripting.record = 1
+        bxd.record = 1
         self.Show(0)
     
     def onStopRecord(self,evt):
@@ -296,4 +317,4 @@ class ScriptEditorFrame(wx.Frame):
         self.tb.EnableTool(MenuManager.ID_RECORD_SCRIPT,1)
         self.script.Enable(MenuManager.ID_STOP_RECORD,0)
         self.script.Enable(MenuManager.ID_RECORD_SCRIPT,1)        
-        scripting.record = 0
+        bxd.record = 0

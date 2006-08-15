@@ -47,11 +47,10 @@ class ManipulationSettings(FilterBasedTaskSettings.FilterBasedTaskSettings):
     """
     def __init__(self,n=-1):
         """
-        Method: __init__
         Created: 27.03.2005, KP
         Description: Constructor
         """
-        FilterBasedTaskSettings.__init__(self, n)
-        DataUnitSettings.__init__(self,n)
+        FilterBasedTaskSettings.FilterBasedTaskSettings.__init__(self, n)
+    
         self.set("Type","Process")
         self.filterModule = ManipulationFilters

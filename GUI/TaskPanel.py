@@ -313,7 +313,6 @@ class TaskPanel(scrolled.ScrolledPanel):
 
     def doOperation(self):
         """
-        Method: doOperation()
         Created: 03.2.2005, KP
         Description: A method that executes the operation on the selected
                      dataset
@@ -323,14 +322,17 @@ class TaskPanel(scrolled.ScrolledPanel):
         mgr.setDataUnit(self.dataUnit)
         self.grayOut()
 
-        mgr.ShowModal()
-        mgr.Destroy()
-        self.grayOut(1)
-        bxd.processingManager = None
+        if bxd.modal:
+            mgr.ShowModal()
+            mgr.Destroy()
+           
+            bxd.processingManager = None            
+        else:
+            mgr.Show()
+        self.grayOut(1)            
 
     def grayOut(self,enable=0):
         """
-        Method: grayOut(enable=0)
         Created: 16.11.2004, KP
         Description: Grays out the widget while doing colocalization
         Parameters:

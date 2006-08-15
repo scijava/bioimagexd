@@ -178,7 +178,6 @@ ID_ROI_TO_MASK      =31220
 
 class MenuManager:
     """
-    Class: MenuManager
     Created: 29.05.2005, KP
     Description: A class for managing the menu
     """
@@ -212,7 +211,6 @@ class MenuManager:
         
     def getCommands(self):
         """
-        Method: getCommands
         Created: 13.02.2006, KP
         Description: Return the list of commands
         """     
@@ -360,7 +358,6 @@ class MenuManager:
             
     def setVisualizer(self,visualizer):
         """
-        Method: setVisualizer
         Created: 01.06.2005, KP
         Description: Set the visualizer instance managed by this class
         """
@@ -368,7 +365,6 @@ class MenuManager:
         
     def clearItemsBar(self):
         """
-        Method: clearItemsBar()
         Created: 01.06.2005, KP
         Description: Clear items bar
         """
@@ -381,7 +377,6 @@ class MenuManager:
 
     def addItem(self,name,bitmap,toolid,func):
         """
-        Method: addItem
         Created: 01.06.2005, KP
         Description: Add a toolbar item
         """
@@ -396,7 +391,6 @@ class MenuManager:
     
     def toggleTool(self,toolid,flag):
         """
-        Method: toggleTool(toolid,flag)
         Created: 22.07.2005, KP
         Description: Toggle a toolbar item
         """

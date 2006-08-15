@@ -778,29 +778,44 @@ def getMaskFromPoints(points,mx,my,mz):
     return image2
     
 
-def equalize(imagedata):
-    accu=vtk.vtkImageAccumulate()
-    accu.SetInput(imagedata)
-    accu.Update()
-
-    data=accu.GetOutput()
-    print "data=",data
-    histogram=[]
-    sum=[]
-    tot=0
-    for i in range(0,256):
-        c=data.GetScalarComponentAsDouble(i,0,0,0)
-        histogram.append(c)
-        tot+=c
-        sum.append(tot)
-    x,y,z=imagedata.GetDimensions()
-    print "sum=",sum,"histogram=",histogram
-    n=255.0/x*y*z
-    print "N=",n
-    f=lambda x:x*n
-    sum=map(f,sum)
-    print "LUT=",sum
     
+def equalize(imagedata, ctf):
+    histogram = get_histogram(imagedata)
+    maxval = len(histogram)
+    
+    def weightedValue(x):
+        if x<2:return x
+        return math.sqrt(x)
+    
+    intsum = weightedValue(histogram[0])
+    for i in range(1,maxval):
+        intsum+=2*weightedValue(histogram[i])
+    intsum+=weightedValue(histogram[-1])
+    
+    scale = maxval / float(intsum)
+    lut=[0]*(maxval+1)
+    intsum = weightedValue(histogram[0])
+    for i in range(1,maxval):
+        delta = weightedValue(histogram[i])
+        intsum += delta
+        c = math.ceil(intsum*scale)
+        f = math.floor(intsum*scale)
+        a=f
+        if abs(c-intsum*scale)<abs(f-intsum*scale):
+            a=c
+        lut[i] = a
+        intsum += delta
+        
+    lut[-1]=maxval
+    
+    ctf2 = vtk.vtkColorTransferFunction()
+    for i,value in enumerate(lut):
+        val=[0,0,0]
+        ctf.GetColor(value, val)
+        ctf2.AddRGBPoint(i, *val)
+        
+    return ctf2
+        
     
 def scatterPlot(imagedata1,imagedata2,z,countVoxels, wholeVolume=1,logarithmic=1):
     """
@@ -858,6 +873,7 @@ def scatterPlot(imagedata1,imagedata2,z,countVoxels, wholeVolume=1,logarithmic=1
         x0,x1=data.GetScalarRange()
         Logging.info("Scalar range of scatterplot=",x0,x1,kw="imageop")
         ctf=fire(x0,x1)
+        ctf = equalize(data, ctf)
         #n = scatter.GetNumberOfPairs()
         #Logging.info("Number of pairs=%d"%n,kw="imageop")
         maptocolor=vtk.vtkImageMapToColors()

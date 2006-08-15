@@ -41,7 +41,8 @@ from Logging import *
 import sys
 import time
 
-import TaskPanel
+#import FilterBasedTaskPanel
+from GUI import FilterBasedTaskPanel
 import UIElements
 import string
 import scripting
@@ -50,7 +51,7 @@ import Command
 
 import ManipulationFilters
 
-class ManipulationPanel(TaskPanel.TaskPanel):
+class ManipulationPanel(FilterBasedTaskPanel.FilterBasedTaskPanel):
     """
     Created: 03.11.2004, KP
     Description: A window for restoring a single dataunit
@@ -64,7 +65,7 @@ class ManipulationPanel(TaskPanel.TaskPanel):
         """
         self.timePoint = 0
         self.operationName="Process"
-        TaskPanel.TaskPanel.__init__(self,parent,tb)
+        FilterBasedTaskPanel.FilterBasedTaskPanel.__init__(self,parent,tb)
         # Preview has to be generated here
         # self.colorChooser=None
         self.timePoint = 0
@@ -128,7 +129,7 @@ class ManipulationPanel(TaskPanel.TaskPanel):
         Description: Creates a button box containing the buttons Render,
                      Preview and Close
         """
-        TaskPanel.TaskPanel.createButtonBox(self)
+        FilterBasedTaskPanel.FilterBasedTaskPanel.createButtonBox(self)
         
         #self.ManipulationButton.SetLabel("Manipulation Dataset Series")
         
@@ -140,7 +141,7 @@ class ManipulationPanel(TaskPanel.TaskPanel):
         Description: Creates a frame that contains the various widgets
                      used to control the colocalization settings
         """
-        TaskPanel.TaskPanel.createOptionsFrame(self)
+        FilterBasedTaskPanel.FilterBasedTaskPanel.createOptionsFrame(self)
 
         self.panel=wx.Panel(self.settingsNotebook,-1)
         self.panelsizer=wx.GridBagSizer()
@@ -392,7 +393,7 @@ class ManipulationPanel(TaskPanel.TaskPanel):
         Description: Add a filter to the stack
         """        
         addfilter = filterclass()
-        addfilter.setTaskPanel(self)
+        addfilter.setFilterBasedTaskPanel(self)
         addfilter.setDataUnit(self.dataUnit)
         name = addfilter.getName()
         n=self.filterListbox.GetCount()
@@ -489,7 +490,7 @@ class ManipulationPanel(TaskPanel.TaskPanel):
         Description: A callback for the button "Manipulation Dataset Series"
         """
         self.updateFilterData()
-        TaskPanel.TaskPanel.doOperation(self)
+        FilterBasedTaskPanel.FilterBasedTaskPanel.doOperation(self)
 
     def doPreviewCallback(self,event=None,*args):
         """
@@ -498,7 +499,7 @@ class ManipulationPanel(TaskPanel.TaskPanel):
                      that wish to update the preview
         """
         self.updateFilterData()
-        TaskPanel.TaskPanel.doPreviewCallback(self,event)
+        FilterBasedTaskPanel.FilterBasedTaskPanel.doPreviewCallback(self,event)
 
     def createItemToolbar(self):
         """
@@ -507,7 +508,7 @@ class ManipulationPanel(TaskPanel.TaskPanel):
         """      
         # Pass flag force which indicates that we do want an item toolbar
         # although we only have one input channel
-        n=TaskPanel.TaskPanel.createItemToolbar(self,force=1)
+        n=FilterBasedTaskPanel.FilterBasedTaskPanel.createItemToolbar(self,force=1)
         for i,tid in enumerate(self.toolIds):
             self.dataUnit.setOutputChannel(i,0)
             self.toolMgr.toggleTool(tid,0)
@@ -551,10 +552,10 @@ class ManipulationPanel(TaskPanel.TaskPanel):
         Description: Sets the Manipulationed dataunit that is to be Manipulationed.
                      It is then used to get the names of all the source data
                      units and they are added to the menu.
-                     This is overwritten from TaskPanel since we only Manipulation
+                     This is overwritten from FilterBasedTaskPanel since we only Manipulation
                      one dataunit here, not multiple source data units
         """
-        TaskPanel.TaskPanel.setCombinedDataUnit(self,dataUnit)
+        FilterBasedTaskPanel.FilterBasedTaskPanel.setCombinedDataUnit(self,dataUnit)
         n=0
         for i,dataunit in enumerate(dataUnit.getSourceDataUnits()):
             dataUnit.setOutputChannel(i,0)

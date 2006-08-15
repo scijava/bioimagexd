@@ -48,7 +48,6 @@ def getName():return "Visualize Track"
 
 class VisualizeTrackModule(VisualizationModule):
     """
-    Class: VisualizeTrackModule
     Created: 24.06.2005, KP
     Description: A module for clipping the dataset
     """    
@@ -75,7 +74,6 @@ class VisualizeTrackModule(VisualizationModule):
 
     def setParameter(self,parameter,value):
         """
-        Method: setParameter
         Created: 13.04.2006, KP
         Description: Set a value for the parameter
         """    
@@ -84,14 +82,12 @@ class VisualizeTrackModule(VisualizationModule):
             print "Creating track with filename",value
             self.track = Track.Track(value)
             messenger.send(self,"update_MinLength")
-            messenger.send(self,"update_Track")
-            
+            messenger.send(self,"update_Track")            
         if parameter=="MinLength":
             messenger.send(self,"update_Track")
         
     def getParameters(self):
         """
-        Method: getParametersit 
         Created: 31.05.2006, KP
         Description: Return the list of parameters needed for configuring this GUI
         """            

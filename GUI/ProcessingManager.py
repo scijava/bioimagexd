@@ -40,7 +40,6 @@ from Logging import *
 
 class ProcessingManager(TimepointSelection):
     """
-    Class: ProcessingManager
     Created: 03.11.2004, KP
     Description: A dialog for selecting timepoints for processing
     """
@@ -48,7 +47,6 @@ class ProcessingManager(TimepointSelection):
         """
         Method: __init__
         Created: 10.11.2004
-        Creator: KP
         Description: Initialization
         """
         TimepointSelection.__init__(self,parent)
@@ -63,7 +61,6 @@ class ProcessingManager(TimepointSelection):
 
     def updateOutputFormat(self,event):
         """
-        Method: updateOutputFormat
         Created: 16.03.2005, KP
         Description: A method to enable/disable the image format drop down menu
         """
@@ -72,7 +69,6 @@ class ProcessingManager(TimepointSelection):
         
     def createButtonBox(self):
         """
-        Method: createButtonBox()
         Created: 03.2.2005, KP
         Description: Creates the standard control buttons
         """
@@ -83,7 +79,6 @@ class ProcessingManager(TimepointSelection):
     
     def updateProgressMeter(self,obj,eventt,tp,nth,total):
         """
-        Method: updateProgressMeter(tp,nth,total)
         Created: 15.11.2004, KP
         Description: A callback for the dataunit to give info on the
                      progress of the task
@@ -113,7 +108,6 @@ class ProcessingManager(TimepointSelection):
         
     def onDoProcessing(self, event):
         """
-        Method: onDoProcessing()
         Created: 09.02.2005, KP
         Description: A method that tells the dataunit to process the selected timepoints
         """          
@@ -128,7 +122,6 @@ class ProcessingManager(TimepointSelection):
         
     def doProcessing(self,filename):
         """
-        Method: doProcessing()
         Created: 18.07.2006, KP
         Description: A method that tells the dataunit to process the selected timepoints
         """    
