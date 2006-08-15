@@ -13,7 +13,7 @@ FILTERING=$2/Filtering
 WIDGETS=$2/Widgets
 IO=$2/IO
 
-insert_to_cmakelists {
+insert_to_cmakelists() {
   cxxfile=$1
   cmakefile=$2/CMakeLists.txt
  
