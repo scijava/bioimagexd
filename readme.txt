@@ -1,10 +1,11 @@
-Selli - A post processing program for LSCM data
+BioImageXD - A post processing program, analysis and 3D visualisation program for LSCM data
 
-This software requires Python, VTK, Numeric Python and Tkinter to function properly.
-To run the software, execute the LSM/Main.py
+This software requires Python, wxPython, VTK and ffmpeg to function properly.
+To run the software, execute the BioImageXD.py
 
+The following may be out of date, look at the sources and you can easily see the structure:
 
-The layout of the Selli source tree:
+The layout of the BioImageXD source tree:
 |
 |_ Module.py    - The base class for all modules
 |
