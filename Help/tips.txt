@@ -2,9 +2,9 @@ If volume rendering is slow, you can use nearest neighbor interpolation when you
 You can switch the interpolation type used by slices view by right-clicking on the picture.
 If volume rendering is slow, use texture mapping or 3D texture mapping for speed, then ray casting for the final image.
 You can toggle logarithmic scaling of channel histograms by right-clicking on the histogram.
-If volume rendering is slow, move the quality slider towards the left. This computes fewer rays for a lower resolution image in ray casting, or in texture mapping renders fewer slices on your graphics card.
-You should report any problems you have to the BioImageXD Bug Tracking System at http://www.bioimagexd.org/
-You can download the latest release of BioImageXD at http://www.bioimagexd.org/
+If volume rendering is slow, click on the volume rendering in the rendering module list to activate the controls, then move the rendering quality slider towards the left. This computes fewer rays for a lower resolution image in ray casting, or in texture mapping renders fewer transparent planes on your graphics card.
+You should report any problems you have to bugs@bioimagexd.org
+You can download the latest public beta release of BioImageXD at http://www.bioimagexd.org/
 You can use the Control-key to select or de-select multiple datasets in the file tree.
 You can resample datasets to a smaller size if you do not have enough memory to open them. Resampled datasets are marked with red color and an asterisk (*) in the file tree.
 When starting to work on the animator, you need to interact with the rendering preview to enable it.
