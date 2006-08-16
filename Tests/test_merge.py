@@ -2,8 +2,8 @@
 import vtk
 import time
 
-#D="/Users/dan/Documents/volumerender/colocsample/colocsample1b.lsm"
-D="/home/kalpaha/BioImageXD/Datasets/sample2.lsm"
+D="/Users/dan/Documents/volumerender/colocsample/colocsample1b.lsm"
+#D="/home/kalpaha/BioImageXD/Datasets/sample2.lsm"
 t=time.time()
 def elapsed():
     global t

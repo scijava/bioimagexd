@@ -97,11 +97,11 @@ public:
   void ExecuteInformation(vtkImageData **inputs, vtkImageData *output);
   void ComputeInputUpdateExtent(int inExt[6], int outExt[6]);
   void ExecuteInformation(){this->vtkImageMultipleInputFilter::ExecuteInformation();};
-  
+ 
   void ThreadedExecute(vtkImageData **inDatas, vtkImageData *outData,
                        int extent[6], int id);
+*/ 
 
-*/
   // Method that is used to retrieve information about the resulting output dataset
   virtual int RequestInformation (vtkInformation *, vtkInformationVector **,
                                   vtkInformationVector *);
