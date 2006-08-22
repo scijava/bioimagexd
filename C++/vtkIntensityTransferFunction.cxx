@@ -265,7 +265,7 @@ void vtkIntensityTransferFunction::IncreaseArraySize()
 }
 
 int vtkIntensityTransferFunction::GammaValue(int x0,int y0, int x1,int y1,int x, double g) {
-    return int( ( (y1-y0)/ ( pow((x1-x0),g)) )* ( pow((x-x0),g) ) + y0 );
+    return int( ( (y1-y0)/ ( pow((double)(x1-x0),g)) )* ( pow((double)(x-x0),g) ) + y0 );
 }
 
 
@@ -346,8 +346,8 @@ void vtkIntensityTransferFunction::ComputeFunction(void) {
     }
 
 
-    #define powsg(x) double(pow((x),this->SmoothStartGamma))
-    #define poweg(x) double(pow((x),this->SmoothEndGamma))
+    #define powsg(x) double(pow((double)(x),this->SmoothStartGamma))
+    #define poweg(x) double(pow((double)(x),this->SmoothEndGamma))
     for(int x=0; x <= 255; x++) {
 
         y = f4(x,gx1,gy1,gx2,gy2);

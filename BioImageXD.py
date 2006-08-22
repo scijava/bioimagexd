@@ -61,6 +61,9 @@ if todir:
 import csv
 
 import Configuration
+sys.path.insert(0,"H:\\InsightToolkit\\bin")
+sys.path.insert(0,"H:\\WrapItk-bin\\Python")
+sys.path.insert(0,"H:\\WrapItk-bin\\lib")
 #sys.path.insert(0,"C:\\Mingw\\lib")
 # This will fix the VTK paths using either values from the
 # configuration file, or sensible defaults
@@ -87,14 +90,12 @@ import wx
 
 class LSMApplication(wx.App):
     """
-    Class: LSMApplication
     Created: 03.11.2004, KP
     Description: Encapsulates the wxPython initialization and mainwindow creation
     """
 
     def OnInit(self):
         """
-        Method: OnInit
         Created: 10.1.2005, KP
         Description: Create the application's main window
         """

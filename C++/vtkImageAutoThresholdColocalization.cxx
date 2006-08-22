@@ -131,11 +131,11 @@ template < class T >
     int ch1, ch2, ch3;
     double pearsons1, pearsons2, pearsons3;
     double r2 = 1;
-    double sumX, sumY, sumXY, sumXX, sumYY, sumXYm;
-    double countX, countY;
-    int count;
-    double colocX, colocY;
-    int Nch1, Nch2;
+    double sumX = 0, sumY = 0, sumXY = 0, sumXX = 0, sumYY = 0, sumXYm = 0;
+    double countX = 0, countY = 0;
+    int count = 0;
+    double colocX = 0, colocY = 0;
+    int Nch1 = 0, Nch2 =0;
 
     double oldMax = 0;
     int sumCh2gtT = 0;
@@ -206,7 +206,7 @@ template < class T >
     vtkPointData* pd = outData[0]->GetPointData();
     pd->GetScalars()->SetName("Colocalization map");
 
-	 
+     
     int maxval=(int)pow(2.0f,sizeof(T)*8.0f)-1;
     maxX = outExt[1] - outExt[0];
     maxY = outExt[3] - outExt[2];
@@ -322,14 +322,14 @@ template < class T >
         ch2threshmax =
             vtkMath::Round(((double) ch1threshmax * (double) m) +
               (double) b);
-	
-	printf("ch1thresmax=%f, ch2thresmax=%f\n",ch1threshmax,ch2threshmax);
-	// If a user specified threshold has been given, then it will be used
-	// instead of the calculated threshold
+    
+    printf("ch1thresmax=%f, ch2thresmax=%f\n",ch1threshmax,ch2threshmax);
+    // If a user specified threshold has been given, then it will be used
+    // instead of the calculated threshold
         if(LowerThresholdCh1 >= 0) ch1threshmax = LowerThresholdCh1;
         if(LowerThresholdCh2 >= 0) ch2threshmax = LowerThresholdCh2;
-	
-	
+    
+    
         //printf
         //    ("2/3: Calculating Threshold. i = %d.\n",
         //     iteration);
