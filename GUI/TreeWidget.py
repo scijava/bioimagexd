@@ -203,7 +203,6 @@ class TreeWidget(wx.SashLayoutWindow):
         
     def markRed(self,items,appendchar=""):
         """
-        Method: markRed(items)
         Created: 11.09.2005, KP
         Description: Mark given items red
         """                
@@ -213,7 +212,19 @@ class TreeWidget(wx.SashLayoutWindow):
                 if txt[-len(appendchar):]!=appendchar:
                     self.tree.SetItemText(item,txt+appendchar)
             self.tree.SetItemTextColour(item,(255,0,0))
-        
+
+    def markBlue(self,items,appendchar=""):
+        """
+        Created: 15.08.2006, KP
+        Description: Mark given items blue
+        """                
+        for item in items:
+            if appendchar!="":
+                txt=self.tree.GetItemText(item)
+                if txt[-len(appendchar):]!=appendchar:
+                    self.tree.SetItemText(item,txt+appendchar)
+            self.tree.SetItemTextColour(item,(0,0,255))
+
         
     def hasItem(self,path):
         """

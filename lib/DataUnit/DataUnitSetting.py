@@ -177,6 +177,7 @@ class DataUnitSettings:
         Created: 26.03.2005
         Description: Attempt to read all registered keys from a parser
         """    
+        self.parser = parser
         if not self.get("Type"):
             self.parser = parser
             try:
@@ -389,9 +390,13 @@ class DataUnitSettings:
         """
         #print "deserialize",name
         if "ColorTransferFunction" in name:
+ #           try:
             data=eval(value)            
             ctf=vtk.vtkColorTransferFunction()
-            ImageOperations.loadLUTFromString(data,ctf)
+            try:
+                ImageOperations.loadLUTFromString(data,ctf)
+            except:
+                pass
             return ctf
         # Annotations is a list of classes that can easily be
         # pickled / unpickled

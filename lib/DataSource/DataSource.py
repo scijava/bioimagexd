@@ -109,6 +109,7 @@ class DataSource:
         self.intensityScale = 0
         self.intensityShift = 0
         self.scalarRange=None
+        self.explicitScale = 0
         self.originalScalarRange=(0,255)
         self.shift = None
         self.originalDimensions=None
@@ -241,12 +242,12 @@ class DataSource:
         
     def setIntensityScale(self,shift,scale):
         """
-        Method: setIntensityScale
         Created: 12.04.2006, KP
         Description: Set the factors for scaling and shifting the intensity of
                      the data. Used for emphasizing certain range of intensities
                      in > 8-bit data.
         """                    
+        self.explicitScale = 1
         self.intensityScale = scale
         self.intensityShift = shift
         
@@ -256,7 +257,8 @@ class DataSource:
         Created: 12.04.2006, KP
         Description: Return the data shifted and scaled to appropriate intensity range
         """
-        return data
+        if not self.explicitScale:
+            return data
         if self.intensityScale == -1:
             return data
         if not self.shift:

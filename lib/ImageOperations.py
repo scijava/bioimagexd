@@ -209,12 +209,13 @@ def loadNIHLut(data):
     """    
     if not len(data):
         raise "loadNIHLut got no data"
-    n=256
+    #n=256
     d=len(data)-32
-    
+    n=d
     s="4s2s2s2s2s8s8si%ds"%d
     Logging.info("Unpacking ",s,"d=",d,"len(data)=",len(data))#,kw="imageop")
     header,version,ncolors,start,end,fill1,fill2,filler,lut = struct.unpack(s,data)
+
     if header!="ICOL":
         raise "Did not get NIH header!"
     ncolors=ord(ncolors[0])*(2**8)+ord(ncolors[1])
@@ -246,7 +247,6 @@ def loadLUT(filename,ctf=None,ctfrange=(0,256)):
     
 def loadLUTFromString(lut,ctf,ctfrange=(0,256)):
     """
-    Method: loadLUTFromString(binarystring,ctf,range)
     Created: 18.04.2005, KP
     Description: Load an ImageJ binary LUT from string
     Parameters:
@@ -255,15 +255,25 @@ def loadLUTFromString(lut,ctf,ctfrange=(0,256)):
         ctfrange The range to which construct the CTF
     """        
     print "\n\nlen(lut)=",len(lut)
+    failed=1
     if len(lut)!=768:
-        reds,greens,blues=loadNIHLut(lut)
-    else:
-        reds=lut[0:256]
-        greens=lut[256:512]
-        blues=lut[512:768]
-    n=len(reds)
+        try:
+            reds,greens,blues=loadNIHLut(lut)
+            failed=0
+        except:
+            failed=1
     
-    step=int(math.ceil(ctfrange[1]/256.0))
+    if failed:
+        n = len(lut)
+        k = n/3
+        reds=lut[0:k-1]        
+        greens=lut[k-1:2*(k-1)]
+        blues=lut[2*(k-1):3*(k-1)]
+    n=len(reds)    
+    #print k,ctfrange
+    step=int(math.ceil(ctfrange[1]/k))
+    if step==0:
+        return vtk.vtkColorTransferFunction()
     j=0
     Logging.info("Ctf range = ",ctfrange[0]," - ",ctfrange[1],"step=",step)
     for i in range(int(ctfrange[0]),int(ctfrange[1]),int(step)):
@@ -615,15 +625,12 @@ def histogram(imagedata,ctf=None,bg=(200,200,200),logarithmic=1,ignore_border=0,
     Description: Draw a histogram of a volume
     """       
     values = get_histogram(imagedata)
-    print "\n\n*** HISTOGRAM HAS ",len(values),"values"
     sum=0
     xoffset=10
     sumth=0
     percent=0
     Logging.info("lower=",lower,"upper=",upper,kw="imageop")
-    print "values=",len(values),values
     for i,c in enumerate(values):
-        print "Getting values[%d]"%i
         sum+=c
         if (lower or upper):
             if i>=lower and i<=upper:

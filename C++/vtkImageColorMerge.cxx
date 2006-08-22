@@ -68,6 +68,7 @@ void vtkImageColorMergeExecute(vtkImageColorMerge *self, int id,int NumberOfInpu
     int maxX,maxY,maxZ;
     int idxX,idxY,idxZ;
 
+    printf("Executing...\n");
     double **ctfs;        
     int **itfs;
     int itfCount = self->GetITFCount();
@@ -113,9 +114,10 @@ void vtkImageColorMergeExecute(vtkImageColorMerge *self, int id,int NumberOfInpu
         ctf = self->GetColorTransferFunction(i);
         double range[2];
         ctf->GetRange(range);
-        int n = int(range[2]-range[1]);
-        n++;
-        map = ctf->GetTable(range[0],range[1],n);
+        int n = int(range[1]-range[0]);
+	n++;
+        printf("Getting table with range %d,%d with %d values\n",(int)range[0],(int)range[1]-1,n);
+        map = ctf->GetTable(range[0],range[1]-1,n);
         //ctfs[i] = self->GetColorTransferFunction(i)->GetTable(0,255,256);
         ctfs[i] = new double[n*3];
 
@@ -269,12 +271,13 @@ void vtkImageColorMerge::ThreadedRequestData (
   vtkImageData **outData,
   int outExt[6], int id)
 {
+    printf("ThreadedRequestData\n");
   if (inData[0][0] == NULL)
     {
     vtkErrorMacro(<< "Input " << 0 << " must be specified.");
     return;
     }
-
+/*
   // this filter expects that input is the same type as output.
   if (inData[0][0]->GetScalarType() != outData[0]->GetScalarType())
     {
@@ -284,7 +287,7 @@ void vtkImageColorMerge::ThreadedRequestData (
                   << outData[0]->GetScalarType());
     return;
     }
-
+*/
 //  printf("Number of connections=%d, outExt=%d,%d,%d,%d,%d,%d\n",this->GetNumberOfInputConnections(0),
 //                 outExt[0],outExt[1],outExt[2],outExt[3],outExt[4],outExt[5]);
 
@@ -331,7 +334,7 @@ int vtkImageColorMerge::RequestInformation (
   if(!this->BuildAlpha) n = 3;
       
 
-//  vtkDataObject::SetPointDataActiveScalarInfo(outInfo, scalarType,n);
+  vtkDataObject::SetPointDataActiveScalarInfo(outInfo, VTK_UNSIGNED_CHAR,n);
   return 1;
 }
 

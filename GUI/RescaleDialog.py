@@ -91,14 +91,13 @@ color depth. Use the histograms below to the select how the intensities in your 
      
     def onNoScaling(self,event):
         """
-        Method: onNoScaling
         Created: 11.07.2006, KP
         Description: Do not use any intensity scaling
         """        
         self.result = 1
         for i,dataUnit in enumerate(self.dataUnits):
             ds=dataUnit.getDataSource()
-            ds.setResampleDimensions(self.resampleDims[i])
+            #ds.setResampleDimensions(self.resampleDims[i])
             ds.setIntensityScale(-1,-1)
         self.EndModal(wx.ID_OK)
         
@@ -107,14 +106,13 @@ color depth. Use the histograms below to the select how the intensities in your 
         
     def onCancelButton(self,event):
         """
-        Method: onCancelButton
         Created: 12.04.2006, KP
         Description: Cancel the procedure
         """        
         for i,dataUnit in enumerate(self.dataUnits):
             ds=dataUnit.getDataSource()
             ds.setIntensityScale(0,0)
-            ds.setResampleDimensions(self.resampleDims[i])
+            #ds.setResampleDimensions(self.resampleDims[i])
             
         self.result=0
         self.EndModal(wx.ID_CANCEL)   
@@ -128,7 +126,7 @@ color depth. Use the histograms below to the select how the intensities in your 
         for i,dataUnit in enumerate(self.dataUnits):
             ds=dataUnit.getDataSource()
             ds.setIntensityScale(self.shift,self.scale)
-            ds.setResampleDimensions(self.resampleDims[i])
+            #ds.setResampleDimensions(self.resampleDims[i])
             
         self.result=1
         #self.Close()    
@@ -138,7 +136,6 @@ color depth. Use the histograms below to the select how the intensities in your 
         
     def setDataUnits(self,dataunits):
         """
-        Method: setDataUnits
         Created: 1.09.2005, KP
         Description: Set the dataunits to be resampled
         """        
@@ -148,14 +145,15 @@ color depth. Use the histograms below to the select how the intensities in your 
         
         
         for dataUnit in dataunits:
+            print "Creating histogram for ",dataUnit
             self.mergeUnit.addSourceDataUnit(dataUnit)
             x,y,z=dataUnit.getDimensions()
             
             ds=dataUnit.getDataSource()
             minval,maxval = ds.getOriginalScalarRange()
             self.resampleDims.append(ds.getResampleDimensions())
-            if x>512 or y>512:
-                ds.setResampleDimensions((512,512,z))
+#            if x>512 or y>512:
+#                ds.setResampleDimensions((512,512,z))
                 
             scale = maxval / 255.0
             histogram = Histogram.Histogram(self,scale=scale)

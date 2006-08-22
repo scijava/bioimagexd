@@ -429,7 +429,7 @@ class TimepointCorrelationFilter(ProcessingFilter.ProcessingFilter):
         Description: Initialization
         """        
         ProcessingFilter.ProcessingFilter.__init__(self,(1,1))
-        self.vtkfilter = vtk.vtkImageAutoThresholdColocalization()
+        
         self.box=None
         self.descs={"Timepoint1":"First timepoint:","Timepoint2":"Second timepoint:"}
     
@@ -445,7 +445,7 @@ class TimepointCorrelationFilter(ProcessingFilter.ProcessingFilter):
         Created: 31.07.2006, KP
         Description: Return the GUI for this filter
         """              
-        gui = ProcessingFilter.ProcessingFilters.ProcessingFilter.ProcessingFilter.getGUI(self,parent,taskPanel)
+        gui = ProcessingFilter.ProcessingFilter.getGUI(self,parent,taskPanel)
         if not self.box:
             
             self.corrLbl=wx.StaticText(gui,-1,"Correlation:")
@@ -491,6 +491,7 @@ class TimepointCorrelationFilter(ProcessingFilter.ProcessingFilter):
             return None
         tp1=self.parameters["Timepoint1"]
         tp2=self.parameters["Timepoint2"]
+        self.vtkfilter = vtk.vtkImageAutoThresholdColocalization()
         units=self.dataUnit.getSourceDataUnits()
         data1=units[0].getTimePoint(tp1)
         # We need to prepare a copy of the data since
@@ -550,7 +551,7 @@ class ROIIntensityFilter(ProcessingFilter.ProcessingFilter):
         Created: 31.07.2006, KP
         Description: Return the GUI for this filter
         """              
-        gui = ProcessingFilter.ProcessingFilters.ProcessingFilter.ProcessingFilter.getGUI(self,parent,taskPanel)
+        gui = ProcessingFilter.ProcessingFilter.getGUI(self,parent,taskPanel)
         if not self.reportGUI:
             self.reportGUI = IntensityMeasurementList(self.gui,-1)
             if self.measurements:

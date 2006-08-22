@@ -796,7 +796,8 @@ class MainWindow(wx.Frame):
             #wx.EVT_TOOL(self,tid,self.onMenuShowTaskWindow)
             
         mgr.addSeparator("processing")
-        mgr.addMenuItem("processing",MenuManager.ID_RESAMPLE,"Re&sample data...","Resample data to be smaller or larger",self.onMenuResampleData)
+        mgr.addMenuItem("processing",MenuManager.ID_RESAMPLE,"Re&sample dataset...","Resample data to a different resolution",self.onMenuResampleData)
+        mgr.addMenuItem("processing",MenuManager.ID_RESCALE,"Res&cale dataset...","Rescale data to 8-bit intensity range",self.onMenuRescaleData)        
         
         modes = self.visualizationModes.values()
         modes.sort(self.sortModes)
@@ -962,7 +963,6 @@ class MainWindow(wx.Frame):
         
     def onMenuResampleData(self,evt):
         """
-        Method: onMenuResampleData
         Created: 1.09.2005, KP
         Description: Resize data to be smaller or larger
         """
@@ -984,7 +984,33 @@ class MainWindow(wx.Frame):
             self.loadVisualizer(unit,mode)
 #            self.loadVisualizer(None,self.visualizer.mode,reload=1)        
         
+    def onMenuRescaleData(self,evt):
+        """
+        Created: 1.09.2005, KP
+        Description: Rescale data to 8-bit intensity range
+        """
+
+        #selectedFiles=self.tree.getSelectedDataUnits()
+        selectedFiles,items = self.tree.getSelectionContainer()
+        print selectedFiles
+        if not selectedFiles:
+            return
+            
+        dlg = RescaleDialog.RescaleDialog(self)
+        dlg.setDataUnits(selectedFiles)
+        wid = dlg.ShowModal()
+        dlg.Destroy()
         
+        if wid == wx.ID_OK:                    
+            self.tree.markBlue(items,"#")
+            self.infoWidget.updateInfo(None,None,None)
+            mode=self.visualizer.mode
+            unit=self.visualizer.dataUnit
+            self.visualizer.closeVisualizer()
+            self.loadVisualizer(unit,mode)
+#            self.loadVisualizer(None,self.visualizer.mode,reload=1)        
+
+
 
     def onMenuToggleVisibility(self,evt):
         """

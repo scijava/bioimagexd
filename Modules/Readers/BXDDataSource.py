@@ -34,6 +34,7 @@ import messenger
 import DataUnit
 import vtk
 import os.path
+import ImageOperations
 
 import Logging
 import DataUnit
@@ -214,7 +215,6 @@ class BXDDataSource(DataSource):
 
     def loadDuFile(self, filename):
         """
-        Method: loadDuFile
         Created: 15.12.2004, JM, JV
         Description: Loads the specified .du-file, the checks the format
                      of the loaded dataunit and returns it
@@ -241,7 +241,6 @@ class BXDDataSource(DataSource):
 
     def loadFromFile(self, filename):
         """
-        Method: loadFromFile
         Created: 09.11.2004, JM
         Description: Loads the specified .du-file and imports data from it.
                      Also returns a DataUnit of the type stored in the loaded
@@ -314,13 +313,31 @@ class BXDDataSource(DataSource):
 
     def getColorTransferFunction(self):
         """
-        Method: getColorTransferFunction()
         Created: 26.04.2005, KP
         Description: Returns the ctf of the dataset series which this datasource
                      operates on
         """
         Logging.info("Getting colortransferfunction from settings",kw="ctf")
-        print self.settings
+        
+
+        print "TRYING TO GET MORPHOLOGICAL"
+        k=0
+        try:
+            k = self.parser.get("Morphological Watershed Segmentation","Level")
+        except:
+            pass
+        if k:
+            n = self.getScalarRange()
+            palette = ImageOperations.watershedPalette(0,n[1])
+            
+            print "Setting palette to random in range 0,",n
+            return palette
+        #self.settings.set("ColorTransferFunction",palette)
+#            except:
+#                raise "FOO"
+#                pass
+        
+        
         if not self.ctf:
             ctf = self.settings.get("ColorTransferFunction")
             #Logging.info("settings.ctf=",ctf,kw="ctf")

@@ -65,6 +65,7 @@ class ManipulationPanel(FilterBasedTaskPanel.FilterBasedTaskPanel):
         """
         self.timePoint = 0
         self.operationName="Process"
+        self.filtersModule = ManipulationFilters
         FilterBasedTaskPanel.FilterBasedTaskPanel.__init__(self,parent,tb)
         # Preview has to be generated here
         # self.colorChooser=None
@@ -393,7 +394,7 @@ class ManipulationPanel(FilterBasedTaskPanel.FilterBasedTaskPanel):
         Description: Add a filter to the stack
         """        
         addfilter = filterclass()
-        addfilter.setFilterBasedTaskPanel(self)
+        addfilter.setTaskPanel(self)
         addfilter.setDataUnit(self.dataUnit)
         name = addfilter.getName()
         n=self.filterListbox.GetCount()

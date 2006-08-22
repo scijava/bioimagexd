@@ -432,7 +432,7 @@ class GUIBuilder(wx.Panel):
                             box.Add(lbl)
                             box.Add(btn)
                             itemsizer.Add(box,(0,0))
-                            func = lambda obj,evt,rx,ry,rz,r,g,b,alpha,currentCt,its=item,f=currentFilter:self.onSetPixel(obj,evt,rx,ry,rz,r,g,b,alpha,currentCt,its,f,lbl)
+                            func = lambda obj,evt,rx,ry,rz,scalar,rval,gval,bval,r,g,b,alpha,currentCt,its=item,f=currentFilter:self.onSetPixel(obj,evt,rx,ry,rz,r,g,b,alpha,currentCt,its,f,lbl)
                             messenger.connect(None,"get_voxel_at",func)
 
                             f=lambda obj,evt,arg, lbl=lbl, i=itemName, s=self: s.onSetPixelFromFilter(lbl,i,arg)
@@ -458,7 +458,8 @@ class GUIBuilder(wx.Panel):
                             rmbtn.Bind(wx.EVT_BUTTON,func)
                             pixelsizer.Add(rmbtn,(1,1))
                             
-                            func = lambda obj,evt,rx,ry,rz,r,g,b,alpha,currentCt,its=item,f=currentFilter:self.onAddPixel(obj,evt,rx,ry,rz,r,g,b,alpha,currentCt,its,f,seedbox)
+                            #obj,event,x,y,z,scalar,rval,gval,bval,r,g,b,a,ctf)
+                            func = lambda obj,evt,rx,ry,rz,scalar,rval,gval,bval,r,g,b,alpha,currentCt,its=item,f=currentFilter:self.onAddPixel(obj,evt,rx,ry,rz,r,g,b,alpha,currentCt,its,f,seedbox)
                             messenger.connect(None,"get_voxel_at",func)
                             itemsizer.Add(pixelsizer,(0,0))                            
                             f=lambda obj,evt,arg, seedbox=seedbox, i=itemName, s=self: s.onSetPixelsFromFilter(seedbox,i,arg)
