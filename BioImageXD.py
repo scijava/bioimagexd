@@ -58,13 +58,25 @@ if todir:
     os.chdir(todir)
         
 
+# Insert the path for the ITK libraries
+if not todir:
+    todir=os.getcwd()
+itklibdir=os.path.join(todir,os.path.join("ITK-pkg","lib"))
+itkbindir=os.path.join(todir,os.path.join("ITK-pkg","bin"))
+itkpythondir=os.path.join(todir,os.path.join("ITK-pkg","Python"))
+sys.path.insert(0,itklibdir)
+sys.path.insert(0,itkbindir)
+sys.path.insert(0,itkpythondir)
+PATH=os.getenv("PATH")
+PATH=PATH+os.path.pathsep+itklibdir+os.path.pathsep+itkbindir+os.path.pathsep+itkpythondir
+os.putenv("PATH",PATH)
+print PATH
+print itklibdir,itkbindir,itkpythondir
+    
+        
 import csv
 
 import Configuration
-sys.path.insert(0,"H:\\InsightToolkit\\bin")
-sys.path.insert(0,"H:\\WrapItk-bin\\Python")
-sys.path.insert(0,"H:\\WrapItk-bin\\lib")
-#sys.path.insert(0,"C:\\Mingw\\lib")
 # This will fix the VTK paths using either values from the
 # configuration file, or sensible defaults
 
