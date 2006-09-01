@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 # -*- coding: iso-8859-1 -*-
 """
- Unit: ProcessingFilter.ProcessingFilters
+ Unit: ManipulationFilters
  Project: BioImageXD
  Created: 13.04.2006, KP
  Description:
@@ -44,7 +44,7 @@ import scripting as bxd
 import GUI.GUIBuilder as GUIBuilder
 import ImageOperations
 
-import ProcessingFilter
+from lib import ProcessingFilter
 
 class IntensityMeasurementList(wx.ListCtrl):
     def __init__(self, parent, log):

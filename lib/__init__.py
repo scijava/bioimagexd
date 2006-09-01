@@ -5,6 +5,7 @@ import LightRenderingInterface
 import Annotation
 import Module
 import messenger
+import ProcessingFilter
 
 import DataUnit
 import DataSource

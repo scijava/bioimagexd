@@ -71,7 +71,7 @@ def build():
         EXCLUDES=['PyShell', 'dl', 'dotblas', 'hexdump', 'mx', 'win32com.gen_py',
         "pywin", "pywin.debugger", "pywin.debugger.dbgcon",
             "pywin.dialogs", "pywin.dialogs.list",
-            "Tkconstants","Tkinter","tcl"
+            "Tkconstants","Tkinter","tcl","tcl84","tk84","qt-mt3"
         ]
         # Exclude the sources because they will be packaged as plain python files
         #SOURCES=["GUI","Modules","Visualizer"]

@@ -3,7 +3,7 @@
 
 [Setup]
 AppName=BioImageXD
-AppVerName=BioImageXD prebeta 0.9.1-16
+AppVerName=BioImageXD prebeta r809
 AppPublisher=BioImageXD development team
 AppPublisherURL=http://www.bioimagexd.org/
 AppSupportURL=http://www.bioimagexd.org/
@@ -16,7 +16,8 @@ LicenseFile=C:\BioImageXD\GPL.txt
 OutputDir=C:\temp
 OutputBaseFilename=setup
 SetupIconFile=C:\BioImageXD\trunk\Icons\logo.ico
-Compression=lzma/max
+;Compression=lzma/max
+Compression=lzma/normal
 SolidCompression=yes
 
 [Languages]
@@ -34,10 +35,6 @@ Source: "C:\BioImageXD\trunk\dist\py2exe_util.pyd"; DestDir: "{app}";  Flags: ig
 Source: "C:\BioImageXD\trunk\dist\pyexpat.pyd"; DestDir: "{app}";  Flags: ignoreversion
 Source: "C:\BioImageXD\trunk\dist\python24.dll"; DestDir: "{app}";  Flags: ignoreversion
 Source: "C:\BioImageXD\trunk\dist\python_libs.zip"; DestDir: "{app}";  Flags: ignoreversion
-Source: "C:\BioImageXD\trunk\dist\qt-mt3.dll"; DestDir: "{app}";  Flags: ignoreversion
-Source: "C:\BioImageXD\trunk\dist\qt.pyd"; DestDir: "{app}";  Flags: ignoreversion
-Source: "C:\BioImageXD\trunk\dist\tcl84.dll"; DestDir: "{app}";  Flags: ignoreversion
-Source: "C:\BioImageXD\trunk\dist\tk84.dll"; DestDir: "{app}";  Flags: ignoreversion
 Source: "C:\BioImageXD\trunk\dist\umath.pyd"; DestDir: "{app}";  Flags: ignoreversion
 Source: "C:\BioImageXD\trunk\dist\unicodedata.pyd"; DestDir: "{app}";  Flags: ignoreversion
 Source: "C:\BioImageXD\trunk\dist\vtkCommon.dll"; DestDir: "{app}";  Flags: ignoreversion
@@ -905,7 +902,7 @@ Source: "C:\BioImageXD\trunk\ITK-pkg\Python\itkExtras\__init__.pyc"; DestDir: "{
 ;Source: "C:\BioImageXD\trunk\bin\BioImageXD.exe.manifest"; DestDir: "{app}";  Flags: ignoreversion
 
 [Code]
-function InitializeSetup: Boolean;
+function DontRunInitializeSetup: Boolean;
 var
   ResultCode: Integer;
 begin
