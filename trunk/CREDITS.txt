@@ -1,0 +1,25 @@
+The BioImageXD Project:
+
+BioImageXD Copyright (C) 2004, 2005 The development team
+
+The development team:
+
+Pasi Kankaanpää
+Kalle Pahajoki
+Varpu Marjomäki
+Jyrki Heino
+Daniel White
+
+Former member of the main development team (and the developer of the Zeiss LSM file format reader and the rendering animator):
+Heikki Uuksulainen
+
+BioImageXD is largely based on the work of the Selli project, which included the following people:
+Juha Hyytiäinen
+Jaakko Mäntymaa
+Kalle Pahajoki
+Jukka Varsaluoma
+
+The following people have significantly contributed to the development of BioImageXD:
+Jorma Virtanen
+
+The following companies have supported the development of BioImageXD:
