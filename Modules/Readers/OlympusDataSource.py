@@ -203,7 +203,6 @@ class OlympusDataSource(DataSource):
 
     def readLUT(self):
         """
-        Method: readLUT
         Created: 16.02.2006, KP
         Description: Read the LUT for this dataset
         """
@@ -228,14 +227,14 @@ class OlympusDataSource(DataSource):
         ctf=vtk.vtkColorTransferFunction()
         #print values
         vals=[( ((x>>16)&0xff)/255.0,((x>>8)&0xff)/255.0,(x&0xff)/255.0) for x in values]
-        print max(vals)
+        
         #def f(x):( (x>>16)&0xff
         i=0
         r2,g2,b2=-1,-1,-1
         for i,(r,g,b) in enumerate(vals):
-            
+            #print "value for ",i,"is ",(r,g,b)
             if r!=r2 or g!=g2 or b!=b2:
-                ctf.AddRGBPoint(i/255.0,r,g,b)
+                ctf.AddRGBPoint(i/16.0,r,g,b)
             r2,g2,b2=r,g,b
         #print "read CTF",ctf
         return ctf
@@ -243,7 +242,6 @@ class OlympusDataSource(DataSource):
         
     def getSpacing(self):
         """
-        Method: getSpacing()
         Created: 12.04.2005, KP
         Description: Returns the spacing of the datasets this 
                      dataunit contains
@@ -255,7 +253,6 @@ class OlympusDataSource(DataSource):
         
     def getVoxelSize(self):
         """
-        Method: getVoxelSize()
         Created: 12.04.2005, KP
         Description: Returns the voxel size of the datasets this 
                      dataunit contains
@@ -270,7 +267,6 @@ class OlympusDataSource(DataSource):
     
     def getAllDimensions(self,parser):
         """
-        Method: getAllDimensions
         Created: 16.02.2006, KP
         Description: Read the number of timepoints, channels and XYZ from the OIF file
         """    
