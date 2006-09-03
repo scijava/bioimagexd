@@ -89,10 +89,11 @@ void vtkImageColorMergeExecute(vtkImageColorMerge *self, int id,int NumberOfInpu
     }
     
     T** inPtrs;
-    T* outPtr;
+    unsigned char* outPtr;
     itfs = new int*[NumberOfInputs];
     
     ctfs = new double*[NumberOfInputs];
+    
     
     inPtrs=new T*[NumberOfInputs];
     int allIdentical = 1;
@@ -115,7 +116,7 @@ void vtkImageColorMergeExecute(vtkImageColorMerge *self, int id,int NumberOfInpu
         double range[2];
         ctf->GetRange(range);
         int n = int(range[1]-range[0]);
-	n++;
+//	n++;
         printf("Getting table with range %d,%d with %d values\n",(int)range[0],(int)range[1]-1,n);
         map = ctf->GetTable(range[0],range[1]-1,n);
         //ctfs[i] = self->GetColorTransferFunction(i)->GetTable(0,255,256);
@@ -143,7 +144,7 @@ void vtkImageColorMergeExecute(vtkImageColorMerge *self, int id,int NumberOfInpu
         } 
     }
     
-    outPtr=(T*)outData->GetScalarPointerForExtent(outExt);
+    outPtr=(unsigned char*)outData->GetScalarPointerForExtent(outExt);
     
     
     inData[0]->GetContinuousIncrements(outExt,inIncX, inIncY, inIncZ);
@@ -152,16 +153,16 @@ void vtkImageColorMergeExecute(vtkImageColorMerge *self, int id,int NumberOfInpu
     maxY = outExt[3] - outExt[2];
     maxZ = outExt[5] - outExt[4];
     
-    unsigned char currScalar = 0;
+    T currScalar = 0;
     double alphaScalar; 
     int maxval = 0, n = 0;
-    maxval=int(pow(2.0f,8.0f*sizeof(T)))-1;
+    maxval=int(pow(2.0f,8.0f*sizeof(unsigned char)))-1;
     T val;
     //maxX *= (inData[0]->GetNumberOfScalarComponents());
     char progressText[200];
     
     double r = 0,g = 0,b = 0;
-    T ir,ig,ib;
+    unsigned char ir,ig,ib;
     //printf("Processing data...\n");
     for(idxZ = 0; idxZ <= maxZ; idxZ++ ) {
         self->UpdateProgress(idxZ/float(maxZ));
@@ -174,7 +175,7 @@ void vtkImageColorMergeExecute(vtkImageColorMerge *self, int id,int NumberOfInpu
             alphaScalar =  currScalar = n = 0;
 
             for(i=0; i < NumberOfInputs; i++ ) {
-                currScalar = (unsigned char)*inPtrs[i];
+                currScalar = (T)*inPtrs[i];
 
                 if(BuildAlpha) {
 
@@ -200,18 +201,18 @@ void vtkImageColorMergeExecute(vtkImageColorMerge *self, int id,int NumberOfInpu
 
                 } else {
 
-                    r += ctfs[i][3*currScalar];
-                    g += ctfs[i][3*currScalar+1];
-                    b += ctfs[i][3*currScalar+2];
+                    r += ctfs[i][int(3*currScalar)];
+                    g += ctfs[i][int(3*currScalar+1)];
+                    b += ctfs[i][int(3*currScalar+2)];
                 }
                 
                 //scalar += currScalar;
                 inPtrs[i]++;
             }
 
-            ir = (T)((r>maxval)?maxval:r);
-            ig = (T)((g>maxval)?maxval:g);
-            ib = (T)((b>maxval)?maxval:b);
+            ir = (unsigned char)((r>maxval)?maxval:r);
+            ig = (unsigned char)((g>maxval)?maxval:g);
+            ib = (unsigned char)((b>maxval)?maxval:b);
             *outPtr++ = ir;
             *outPtr++ = ig;
             *outPtr++ = ib;
@@ -223,7 +224,7 @@ void vtkImageColorMergeExecute(vtkImageColorMerge *self, int id,int NumberOfInpu
                 }   
                     
                 if(alphaScalar > maxval)alphaScalar=maxval;
-                *outPtr++ = (T)alphaScalar;
+                *outPtr++ = (unsigned char)alphaScalar;
             }
           }
             
