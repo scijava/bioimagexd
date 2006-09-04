@@ -35,11 +35,11 @@ import vtk
 import ColorTransferEditor
 import Dialogs
 
-import GUIBuilder
+from GUI import GUIBuilder
 import types
 from Visualizer.VisualizationModules import *
 
-import Track
+from lib import Track
 
 def getClass():return VisualizeTrackModule
 def getConfigPanel():return VisualizeTrackConfigurationPanel
