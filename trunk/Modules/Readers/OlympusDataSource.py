@@ -41,13 +41,11 @@ def getClass(): return OlympusDataSource
     
 class OlympusDataSource(DataSource):
     """
-    Class: OlympusDataSource
     Created: 12.04.2005, KP
     Description: Olympus OIF files datasource
     """
-    def __init__(self,filename="",channel=-1,basename="",name="",dims=(0,0,0),t=0,voxelsize=(1,1,1),reverse=0, emission = 0, excitation = 0):
+    def __init__(self,filename="",channel=-1,basename="", lutname="",name="",dims=(0,0,0),t=0,voxelsize=(1,1,1),reverse=0, emission = 0, excitation = 0):
         """
-        Method: __init__
         Created: 12.04.2005, KP
         Description: Constructor
         """    
@@ -55,6 +53,7 @@ class OlympusDataSource(DataSource):
         if not name:name="Ch%d"%channel
         self.name= name
         self.basename = basename
+        self.lutname = lutname
         self.tps = t
         self.filename=filename
         self.parser = RawConfigParser()
@@ -81,7 +80,6 @@ class OlympusDataSource(DataSource):
         
     def getDataSetCount(self):
         """
-        Method: getDataSetCount
         Created: 12.04.2005, KP
         Description: Returns the number of individual DataSets (=time points)
         managed by this DataSource
@@ -91,7 +89,6 @@ class OlympusDataSource(DataSource):
         
     def getEmissionWavelength(self):
         """
-        Method: getEmissionWavelength
         Created: 07.04.2006, KP
         Description: Returns the emission wavelength used to image this channel
         managed by this DataSource
@@ -100,7 +97,6 @@ class OlympusDataSource(DataSource):
             
     def getExcitationWavelength(self):
         """
-        Method: getEmissionWavelength
         Created: 07.04.2006, KP
         Description: Returns the excitation wavelength used to image this channel
         managed by this DataSource
@@ -112,7 +108,6 @@ class OlympusDataSource(DataSource):
         
     def getFileName(self):
         """
-        Method: getFileName()
         Created: 21.07.2005
         Description: Return the file name
         """    
@@ -122,7 +117,6 @@ class OlympusDataSource(DataSource):
     
     def getDataSet(self, i,raw=0):
         """
-        Method: getDataSet
         Created: 12.04.2005, KP
         Description: Returns the DataSet at the specified index
         Parameters:   i       The index
@@ -145,7 +139,6 @@ class OlympusDataSource(DataSource):
         
     def getTimepoint(self,n):
         """
-        Method: getTimepoint
         Created: 16.02.2006, KP
         Description: Return the nth timepoint
         """        
@@ -160,7 +153,7 @@ class OlympusDataSource(DataSource):
         
         zpat=""
         tpat=""
-        cpat=os.path.sep+"%s_C%.3d"%(self.basename,self.channel)
+        cpat=os.path.sep+"%s_C%.3d"%(self.lutname,self.channel)
         path+=cpat
         #self.reader.SetFilePrefix(path)
         if self.dimensions[2]>1:
@@ -168,7 +161,6 @@ class OlympusDataSource(DataSource):
         if self.tps > 0:
             tpat="T%.3d"
         pat=path+zpat+tpat+".tif"
-#        print "pattern='"+pat+"'"
         
         self.reader.SetFilePattern(pat)
         if self.reverseSlices and 0:
@@ -188,7 +180,6 @@ class OlympusDataSource(DataSource):
         
     def getDimensions(self):
         """
-        Method: getDimensions()
         Created: 12.04.2005, KP
         Description: Returns the (x,y,z) dimensions of the datasets this 
                      dataunit contains
@@ -206,7 +197,7 @@ class OlympusDataSource(DataSource):
         Created: 16.02.2006, KP
         Description: Read the LUT for this dataset
         """
-        lutpath = os.path.join(self.path,"%s.oif.files"%self.basename,"%s_LUT%d.lut"%(self.basename,self.channel))
+        lutpath = os.path.join(self.path,"%s.oif.files"%self.basename,"%s_LUT%d.lut"%(self.lutname,self.channel))
         f=codecs.open(lutpath,"r","utf-16")
         #print "Reading lut from %s..."%lutpath
         while 1:
@@ -325,11 +316,21 @@ class OlympusDataSource(DataSource):
         return x,y,z,timepoints,channels,vx,vy,vz
                 
                 
-                
+    def getLUTPath(self, parser):
+        """
+        Created: 05.09.2006, KP
+        Description: Read the base name for the LUT file which can also be used
+                     for the paths of the TIFF files
+        """
+        path = parser.get("ProfileSaveInfo","LutFileName0")
+        path = os.path.basename(path)
+        path = path.split("\\")[-1]
+        parts = path.split("_")
+        path = "_".join(parts[:-1])
+        return path
                 
     def getDyes(self,parser,n):
         """
-        Method: getDyes
         Created: 16.02.2006, KP
         Description: Read the dye names for n channels
         """ 
@@ -350,7 +351,6 @@ class OlympusDataSource(DataSource):
             
     def loadFromFile(self, filename):
         """
-        Method: loadFromFile
         Created: 12.04.2005, KP
         Description: Loads the specified .oif-file and imports data from it.
         Parameters:   filename  The .oif-file to be loaded
@@ -375,12 +375,15 @@ class OlympusDataSource(DataSource):
         voxsiz=(vx,vy,vz)
         names,(excitations,emissions)=self.getDyes(self.parser,chs)
         
+        lutpath = self.getLUTPath(self.parser)
+        
         dataunits=[]
         for ch in range(1,chs+1):
             name=names[ch-1]    
             excitation = excitations[ch-1]
             emission = emissions[ch-1]
             datasource=OlympusDataSource(filename,ch,name=name,basename=basefile,
+                                        lutname = lutpath,
                                         dims=(x,y,z),t=tps,voxelsize=voxsiz,
                                         reverse=self.reverseSlices,
                                         emission = emission,
