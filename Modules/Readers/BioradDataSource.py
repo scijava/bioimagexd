@@ -52,13 +52,11 @@ def getClass(): return BioradDataSource
 
 class BioradDataSource(DataSource):
     """
-    Class: BioradDataSource
     Created: 12.04.2005, KP
     Description: Olympus OIF files datasource
     """
     def __init__(self,filename=""):
         """
-        Method: __init__
         Created: 12.04.2005, KP
         Description: Constructor
         """    
