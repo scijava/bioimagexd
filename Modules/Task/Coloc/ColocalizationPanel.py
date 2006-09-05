@@ -370,7 +370,6 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
             
     def autoThreshold(self):
         """
-        Method: autoThreshold
         Created: 11.07.2004, KP
         Description: Use vtkAutoThresholdColocalization to determine thresholds
                      for colocalization and calculate statistics
@@ -380,11 +379,11 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
         
         self.doPreviewCallback(None)
         self.dataUnit.getSourceDataUnits()[0].getSettings().set("CalculateThresholds",0) 
-        messenger.send(None,"threshold_changed")
+        
+        messenger.send(None,"threshold_changed")    
         
     def getAutoThreshold(self,event=None):
         """
-        Method: getAutoThreshold
         Created: 11.07.2004, KP
         Description: Calculate the automatic threshold for colocalization
         """
@@ -394,7 +393,6 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
         
     def statistics(self):
         """
-        Method: statistics
         Created: 17.07.2006, KP
         Description: Calculate the statistics
         """
