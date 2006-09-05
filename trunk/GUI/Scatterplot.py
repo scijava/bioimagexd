@@ -461,6 +461,8 @@ class Scatterplot(InteractivePanel.InteractivePanel):
         upper1=int(self.sources[0].getSettings().get("ColocalizationUpperThreshold"))
         upper2=int(self.sources[1].getSettings().get("ColocalizationUpperThreshold"))
     
+        print "Painting preview, hresholds=",lower1,upper1,lower2,upper2
+    
         minval,maxval = self.sources[0].getScalarRange()
         c = 255.0 / maxval
         #print "COEFF=",c

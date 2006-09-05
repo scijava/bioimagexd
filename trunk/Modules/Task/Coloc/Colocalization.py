@@ -40,7 +40,6 @@ from lib.Module import *
 
 class Colocalization(Module):
     """
-    Class: Colocalization
     Created: 03.11.2004, KP
     Description: Creates a colocalization map
     """
@@ -63,7 +62,6 @@ class Colocalization(Module):
 
     def reset(self):
         """
-        Method: reset()
         Created: 04.11.2004, KP
         Description: Resets the module to initial state. This method is
                      used mainly when doing previews, when the parameters
@@ -86,7 +84,6 @@ class Colocalization(Module):
 
     def addInput(self,dataunit,data):
         """
-        Method: addInput(data)
         Created: 03.11.2004, KP
         Description: Adds an input for the colocalization filter
         """
@@ -102,7 +99,6 @@ class Colocalization(Module):
 
     def getPreview(self,z):
         """
-        Method: getPreview(z)
         Created: 03.11.2004, KP
         Description: Does a preview calculation for the x-y plane at depth z
         """
@@ -112,10 +108,8 @@ class Colocalization(Module):
 
     def doOperation(self):
         """
-        Method: doOperation
         Created: 10.11.2004, KP
-        Description: Does colocalization for the whole dataset
-                     using doColocalizationXBit() where X is user defined
+        Description: Calculates the colocalization map and optionally the thresholds used
         """
 
         Logging.info("Doing ",self.depth,"-bit colocalization",kw="processing")
@@ -123,6 +117,10 @@ class Colocalization(Module):
 #        self.colocFilter.AddObserver("ProgressEvent",self.updateProgress)
         self.colocFilter.SetOutputDepth(self.depth)
 
+        maxval=0
+        for i in self.images:
+            maxval = max(i.GetScalarRange()[1],maxval)
+            
 
         settings = self.settingsLst[0]
         calcVal=settings.get("CalculateThresholds")
@@ -158,7 +156,7 @@ class Colocalization(Module):
                 settings.set(i,val)
             t1=settings.get("Ch1ThresholdMax")
             t2=settings.get("Ch2ThresholdMax")
-            l=[(t1,255),(t2,255)]
+            l=[(t1,maxval),(t2,maxval)]
             # if CalculateThresholds == 1, then set the calculated thresholds
             # if it's 2 then only the statistics need to be calculated
             if calcVal==1:
@@ -166,7 +164,7 @@ class Colocalization(Module):
                     self.settingsLst[i].set("ColocalizationLowerThreshold",l[i][0])
                     self.settingsLst[i].set("ColocalizationUpperThreshold",l[i][1])
                 Logging.info("Threshold for Ch1 =",t1," and Ch2 =",t2,kw="processing")
-                self.thresholds=[(t1,255),(t2,255)]
+                self.thresholds=[(t1,maxval),(t2,maxval)]
             self.settings.set("CalculateThresholds",0)
             #settings.set("ColocalizationScatterplot",self.colocFilter.GetOutput(1))
         self.eventDesc="Calculating colocalization..."
