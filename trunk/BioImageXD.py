@@ -97,8 +97,11 @@ import glob
 import lib
 
 import GUI
+from GUI import SplashScreen
 import Visualizer
 import wx
+
+
 
 class LSMApplication(wx.App):
     """
@@ -112,12 +115,12 @@ class LSMApplication(wx.App):
         Description: Create the application's main window
         """
         iconpath = bxd.get_icon_dir()
-        bmp = wx.Image(os.path.join(iconpath,"splash2.jpg"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
-
-        splash=wx.SplashScreen(bmp,
-                                 wx.SPLASH_CENTRE_ON_SCREEN | wx.SPLASH_TIMEOUT,
-                                 3000, None, -1)
+        
+        splashfile = os.path.join(iconpath,"splash2.jpg")
+        splash=SplashScreen.SplashScreen(None, duration=99000,bitmapfile = splashfile)
         splash.Show()
+        splash.SetMessage("Loading BioImageXD...")
+        self.splash = splash
          # Import Psyco if available
         try:
             pass
@@ -152,6 +155,7 @@ class LSMApplication(wx.App):
             self.mainwin.loadFiles(files)
         
         if scriptfile:
+            self.splash.SetMessage("Loading script file %s..."%scriptfile)
             self.mainwin.loadScript(scriptfile)
         self.MainLoop()
 
