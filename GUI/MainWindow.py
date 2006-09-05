@@ -89,7 +89,6 @@ class MainWindow(wx.Frame):
     """
     def __init__(self,parent,id,app,splash):
         """
-        Method: __init__(parent,id,app)
         Created: 03.11.2004, KP
         Description: Initialization
         Parameters:
@@ -100,6 +99,7 @@ class MainWindow(wx.Frame):
         conf = Configuration.getConfiguration()
         
         Command.mainWindow = self
+        self.splash = splash
         
         size=conf.getConfigItem("WindowSize","Sizes")
         if size:
@@ -143,15 +143,17 @@ class MainWindow(wx.Frame):
         self.progressShift=0.0
         self.taskToId={}
         self.visToId={}
-        
+        self.splash.SetMessage("Loading task modules...")
         self.taskPanels = Modules.DynamicLoader.getTaskModules()
+        self.splash.SetMessage("Loading visualization modes...")
         self.visualizationModes=Modules.DynamicLoader.getVisualizationModes()
+        self.splash.SetMessage("Loading image readers...")
         self.readers = Modules.DynamicLoader.getReaders()
         self.extToSource = {}
         self.datasetWildcards="Volume datasets|"
         
         descs=[]
-        
+        self.splash.SetMessage("Initializing application...")
         for modeclass,ign,module in self.readers.values():
             exts = module.getExtensions()
             wcs=""
@@ -171,6 +173,7 @@ class MainWindow(wx.Frame):
         for i in self.visualizationModes.keys():
                 self.visToId[i] = wx.NewId()
         
+        self.splash.SetMessage("Initializing layout...")
         self.menuManager=MenuManager.MenuManager(self,text=0)
         
         # A window for the file tree
@@ -246,9 +249,10 @@ class MainWindow(wx.Frame):
         # Create Menu, ToolBar and Tree
         self.createStatusBar()
         messenger.send(None,"update_progress",0.3,"Creating menus...")        
-
+        self.splash.SetMessage("Creating menus...")
         self.createMenu()
         messenger.send(None,"update_progress",0.6,"Creating toolbars...")        
+        self.splash.SetMessage("Creating tool bar...")
         self.createToolBar()
  
         
@@ -261,7 +265,7 @@ class MainWindow(wx.Frame):
         # Alias for scripting
         self.fileTree = self.tree
         
-
+        self.splash.SetMessage("Loading default visualization mode...")
         self.loadVisualizer(None,"slices",init=1)
         self.onMenuShowTree(None,1)
         try:
@@ -282,6 +286,7 @@ class MainWindow(wx.Frame):
         messenger.connect(None,"execute_command",self.onExecuteCommand)        
         messenger.connect(None,"show_error",self.onShowError)
         wx.CallAfter(self.showTip)
+        
         
     def loadScript(self, filename):
         """
