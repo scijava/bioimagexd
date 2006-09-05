@@ -144,11 +144,11 @@ class MainWindow(wx.Frame):
         self.taskToId={}
         self.visToId={}
         self.splash.SetMessage("Loading task modules...")
-        self.taskPanels = Modules.DynamicLoader.getTaskModules()
+        self.taskPanels = Modules.DynamicLoader.getTaskModules(callback = self.splash.SetMessage)
         self.splash.SetMessage("Loading visualization modes...")
-        self.visualizationModes=Modules.DynamicLoader.getVisualizationModes()
+        self.visualizationModes=Modules.DynamicLoader.getVisualizationModes(callback = self.splash.SetMessage)
         self.splash.SetMessage("Loading image readers...")
-        self.readers = Modules.DynamicLoader.getReaders()
+        self.readers = Modules.DynamicLoader.getReaders(callback = self.splash.SetMessage)
         self.extToSource = {}
         self.datasetWildcards="Volume datasets|"
         

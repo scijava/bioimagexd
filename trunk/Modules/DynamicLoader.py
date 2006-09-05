@@ -39,15 +39,15 @@ import scripting
 import os.path
 import sys
 
-def getRenderingModules(): return getModules("Rendering")
-def getVisualizationModes(): return getModules("Visualization")
-def getReaders(): return getModules("Readers")
-def getTaskModules(): return getModules("Task","*")
+def getRenderingModules(callback=None): return getModules("Rendering",callback=callback,moduleType="3D rendering module")
+def getVisualizationModes(callback=None): return getModules("Visualization",callback=callback,moduleType="")
+def getReaders(callback=None): return getModules("Readers",callback=callback,moduleType="Image format reader")
+def getTaskModules(callback=None): return getModules("Task","*",callback=callback,moduleType="Task module")
+    
 IGNORE=["ScaleBar","Spline","Arbitrary","SurfaceConstruction","Reslice","Segment"]
 
-def getModules(name,flag="*.py"):
+def getModules(name,flag="*.py",callback=None,moduleType="Module"):
     """
-    Function: getModules()
     Created: 02.07.2005, KP
     Description: Loads dynamically classes in a directory
                  and returns a dictionary that contains 
@@ -83,11 +83,23 @@ def getModules(name,flag="*.py"):
         frompath=mod.split(".")[:-1]
         frompath=".".join(frompath)
         mod=mod.split(".")[-1]
+        
+        
         Logging.info("Importing %s from %s"%(mod,frompath),kw="modules")
         module = __import__(mod,globals(),locals(),mod)
+        if hasattr(module,"getShortDesc"):
+            name = module.getShortDesc()
+        else:
+            try:
+                name = module.getName()
+            except:
+                name = mod
+        if callback:
+            callback("Loading %s %s..."%(moduleType,name))
         Logging.info("Module=%s"%module,kw="modules")
+
         if hasattr(module,"getName"):
-            name=module.getName()
+            name = module.getName()
         else:
             name = mod
         modclass=module.getClass()    
