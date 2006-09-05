@@ -142,7 +142,7 @@ class ScriptEditorFrame(wx.Frame):
         self.menu = wx.MenuBar()
         self.SetMenuBar(self.menu)
         
-        self.wc = "BioImageXD Script (*.bxs)|*.bxs"
+        self.wc = "BioImageXD Script (*.bxs)|*.bxs;*.BXS;"
         
         self.file = wx.Menu()
         self.script = wx.Menu()
