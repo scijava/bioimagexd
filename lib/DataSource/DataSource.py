@@ -39,13 +39,11 @@ import scripting
 
 class DataWriter:
     """
-    Class: DataWriter
     Created: 26.03.2005
     Description: A base class for different kinds of DataWriters
     """
     def __init__(self):
         """
-        Method: __init__
         Created: 26.03.2005
         Description: Constructor
         """    
@@ -53,7 +51,6 @@ class DataWriter:
         
     def sync(self):
         """
-        Method: sync()
         Created: 26.03.2005
         Description: Write pending imagedata to disk
         """    
@@ -61,7 +58,6 @@ class DataWriter:
     
     def write(self):
         """
-        Method: write()
         Created: 26.03.2005
         Description: Write the data to disk
         """    
@@ -69,7 +65,6 @@ class DataWriter:
         
     def addImageData(self,imageData):
         """
-        Method: addImageData(imageData)
         Created: 26.03.2005,KP
         Description: Add a vtkImageData object to be written to the disk.
         """    
@@ -87,14 +82,11 @@ class DataWriter:
         
 class DataSource:
     """
-    Class: DataSource
     Created: 03.11.2004, JM
     Description: A base class for different kinds of DataSources
     """
-
     def __init__(self):
         """
-        Method: __init__()
         Created: 17.11.2004, KP
         Description: Initialization
         """
@@ -131,7 +123,6 @@ class DataSource:
 
     def setPath(self,path):
         """
-        Method: setPath
         Created: 17.07.2006, KP
         Description: Set the path this datasource was created from
         """   
@@ -139,7 +130,6 @@ class DataSource:
 
     def getPath(self):
         """
-        Method: getPath
         Created: 17.07.2006, KP
         Description: Return the path this datasource was created from
         """   
@@ -149,7 +139,6 @@ class DataSource:
         
     def setMask(self, mask):
         """
-        Method: setMask
         Created: 20.06.2006, KP
         Description: Set the mask applied to this dataunit
         """   
@@ -157,7 +146,6 @@ class DataSource:
         
     def setResampleDimensions(self,dims):
         """
-        Method: setResampleDimensions
         Created: 1.09.2005, KP
         Description: Set the resample dimensions
         """
@@ -179,7 +167,6 @@ class DataSource:
         
     def getResampleFactors(self):
         """
-        Method: getResampleFactors
         Created: 07.04.2006, KP
         Description: Return the factors for the resampling
         """        
@@ -212,7 +199,6 @@ class DataSource:
         
     def getResampleDimensions(self):
         """
-        Method: getResampleDimensions
         Created: 11.09.2005, KP
         Description: Get the resample dimensions
         """
@@ -229,7 +215,6 @@ class DataSource:
     
     def getMIPdata(self,n):
         """
-        Method: getMIPdata
         Created: 05.06.2006, KP
         Description: Return a small resampled dataset of which a small
                      MIP can be created.
@@ -441,10 +426,10 @@ class DataSource:
                 self.bitdepth=16
             elif scalartype==5:
                 self.bitdepth=16
-#                if max(self.scalarRange)>4096:
-#                    self.bitdepth=16
-#                else:
-#                    self.bitdepth=12
+                if max(self.scalarRange)>4096:
+                    self.bitdepth=16
+                else:
+                    self.bitdepth=12
             elif scalartype==3:
                 self.bitdepth=8
             elif scalartype==7:
