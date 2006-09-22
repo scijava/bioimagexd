@@ -82,7 +82,7 @@ void vtkImageLabelAverageExecute(vtkImageLabelAverage *self, int id,int NumberOf
   
   outData->SetExtent(outData->GetWholeExtent());
   outData->AllocateScalars();
-  printf("Copying indata to outdata...\n");
+  //printf("Copying indata to outdata...\n");
   outData->DeepCopy(inData[0]);
   //input->GetIncrements(inIncX, inIncY, inIncZ);
   //output->GetIncrements(outIncX, outIncY, outIncZ);
@@ -109,7 +109,7 @@ void vtkImageLabelAverageExecute(vtkImageLabelAverage *self, int id,int NumberOf
       numArray->SetValue(i,0);
   }
   
-  printf("About to process...\n");
+  //printf("About to process...\n");
   for(idxZ = 0; idxZ <= maxZ; idxZ++ ) {
     self->UpdateProgress(idxZ/float(maxZ));
     sprintf(progressText,"Calculating average intensity of objects (slice %d / %d)",idxZ,maxZ);
@@ -144,11 +144,11 @@ void vtkImageLabelAverageExecute(vtkImageLabelAverage *self, int id,int NumberOf
     maskPtr += maskIncZ;
   }
   
-  printf("done\n");
+  //printf("done\n");
   for(int i=0;i<n;i++) {
      avg = avgArray->GetValue(i);
      numberOfValues = numArray -> GetValue(i);
-     printf("Setting value %d to %f / %d = %f",i,avg,numberOfValues,avg / numberOfValues);
+     //printf("Setting value %d to %f / %d = %f",i,avg,numberOfValues,avg / numberOfValues);
      avg /= numberOfValues;     
      avgArray -> SetValue(i,avg);
   }

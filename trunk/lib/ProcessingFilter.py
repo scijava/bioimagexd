@@ -262,7 +262,7 @@ class ProcessingFilter(GUIBuilder.GUIBuilderBase):
         Description: Return the input imagedata #n
         """             
         if n not in self.inputMapping:
-            self.inputMapping[n]=0
+            self.inputMapping[n]=n-1
         if self.inputMapping[n]==0:        
             print "Using input%d from stack as input %d"%(n-1,n)
             image = self.inputs[self.inputIndex]

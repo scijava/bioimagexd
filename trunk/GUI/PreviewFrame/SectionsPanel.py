@@ -45,7 +45,6 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
     """
     def __init__(self,parent,visualizer,size=(512,512),**kws):
         """
-        Method: __init__(parent)
         Created: 24.03.2005, KP
         Description: Initialization
         """    
@@ -216,20 +215,30 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
                 
         ncomps=self.imagedata.GetNumberOfScalarComponents()
         if ncomps==1:
-            r=self.imagedata.GetScalarComponentAsDouble(self.x,self.y,self.z,0)
-            g=-1
-            b=-1
+            scalar=self.imagedata.GetScalarComponentAsDouble(self.x,self.y,self.z,0)
+            rv=-1
+            gv=-1
+            bv=-1
             alpha=-1
+            val=[0,0,0]
+            self.ctf.GetColor(scalar, val)
+            r,g,b = val
+
         else:
-            r=self.imagedata.GetScalarComponentAsDouble(self.x,self.y,self.z,0)
-            g=self.imagedata.GetScalarComponentAsDouble(self.x,self.y,self.z,1)
-            b=self.imagedata.GetScalarComponentAsDouble(self.x,self.y,self.z,2)
+            rv=self.imagedata.GetScalarComponentAsDouble(self.x,self.y,self.z,0)
+            gv=self.imagedata.GetScalarComponentAsDouble(self.x,self.y,self.z,1)
+            bv=self.imagedata.GetScalarComponentAsDouble(self.x,self.y,self.z,2)
+            r,g,b = rv,gv,bv
+            scalar=0xdeadbeef
             alpha=-1
             if ncomps>3:
                 alpha=self.imagedata.GetScalarComponentAsDouble(self.x,self.y,self.z,3)
+        
+        rx, ry, rz = self.x, self.y, self.z
     
-        messenger.send(None,"get_voxel_at",self.x,self.y,self.z,r,g,b,alpha,self.ctf)
-        event.Skip()
+    
+        messenger.send(None,"get_voxel_at",rx,ry,rz, scalar, rv,gv,bv,r,g,b,alpha,self.ctf)
+
         
         event.Skip()
             
@@ -247,7 +256,6 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
         
     def setBackground(self,r,g,b):
         """
-        Method: setBackground(r,g,b)
         Created: 24.05.2005, KP
         Description: Set the background color
         """        
@@ -255,7 +263,6 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
         
     def setDataUnit(self,dataUnit,selectedItem=-1):
         """
-        Method: setDataUnit(dataUnit)
         Created: 23.05.2005, KP
         Description: Set the dataunit used for preview. 
         """
@@ -281,7 +288,6 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
         self.Refresh()
     def setTimepoint(self,tp):
         """
-        Method: setTimepoint(dataUnit)
         Created: 23.05.2005, KP
         Description: Set the timepoint
         """
@@ -331,7 +337,6 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
     
     def calculateBuffer(self):
         """
-        Method: calculateBuffer()
         Created: 23.05.2005, KP
         Description: Calculate the drawing buffer required
         """    
@@ -358,7 +363,6 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
         
     def enable(self,flag):
         """
-        Method: enable(flag)
         Created: 02.06.2005, KP
         Description: Enable/Disable updates
         """
@@ -367,7 +371,6 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
 
     def updatePreview(self):
         """
-        Method: updatePreview()
         Created: 24.03.2005, KP
         Description: Updates the viewed image
         """
@@ -381,7 +384,6 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
 
     def OnPaint(self,event):
         """
-        Method: paintPreview()
         Created: 28.04.2005, KP
         Description: Does the actual blitting of the bitmap
         """
@@ -395,7 +397,6 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
     
     def paintPreview(self):
         """
-        Method: paintPreview()
         Created: 24.03.2005, KP
         Description: Paints the image to a DC
         """
@@ -461,7 +462,6 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
         
     def saveSnapshot(self,filename):
         """
-        Method: saveSnapshot(filename)
         Created: 05.06.2005, KP
         Description: Save a snapshot of the scene
         """      
@@ -474,9 +474,9 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
         
     def zoomToFit(self):
         """
-        Method: zoomToFit()
         Created: 14.08.2005, KP
-        Description: Zoom the dataset to fit the available screen space
+        Description: Calculate and set the zoom factor so that the dataset
+                     fits in the available screen space
         """
         if not self.imagedata:
             self.fitLater = 1

@@ -36,7 +36,6 @@ LOGIC="Logic"
 
 class MathFilter(ProcessingFilter.ProcessingFilter):
     """
-    Class: MathFilter
     Created: 13.04.2006, KP
     Description: A base class for image mathematics filters
     """     
@@ -45,7 +44,6 @@ class MathFilter(ProcessingFilter.ProcessingFilter):
     
     def __init__(self,inputs=(2,2)):
         """
-        Method: __init__()
         Created: 13.04.2006, KP
         Description: Initialization
         """        
@@ -54,7 +52,6 @@ class MathFilter(ProcessingFilter.ProcessingFilter):
     
     def getParameters(self):
         """
-        Method: getParameters
         Created: 15.04.2006, KP
         Description: Return the list of parameters needed for configuring this GUI
         """            
@@ -62,7 +59,6 @@ class MathFilter(ProcessingFilter.ProcessingFilter):
 
     def execute(self,inputs,update=0,last=0):
         """
-        Method: execute
         Created: 15.04.2006, KP
         Description: Execute the filter with given inputs and return the output
         """                    
@@ -88,7 +84,6 @@ class MathFilter(ProcessingFilter.ProcessingFilter):
         
 class LogicFilter(MathFilter):
     """
-    Class: MathFilter
     Created: 13.04.2006, KP
     Description: A base class for image mathematics filters
     """     
@@ -108,7 +103,6 @@ class LogicFilter(MathFilter):
         
 class AndFilter(LogicFilter):
     """
-    Class: AndFilter
     Created: 15.04.2006, KP
     Description: A filter for calculating logical and
     """     
@@ -116,7 +110,6 @@ class AndFilter(LogicFilter):
    
     def __init__(self):
         """
-        Method: __init__()
         Created: 15.04.2006, KP
         Description: Initialization
         """        
@@ -125,7 +118,6 @@ class AndFilter(LogicFilter):
         
 class OrFilter(LogicFilter):
     """
-    Class: OrFilter
     Created: 15.04.2006, KP
     Description: A filter for calculating logical or
     """     
@@ -133,7 +125,6 @@ class OrFilter(LogicFilter):
    
     def __init__(self):
         """
-        Method: __init__()
         Created: 15.04.2006, KP
         Description: Initialization
         """        
@@ -141,7 +132,6 @@ class OrFilter(LogicFilter):
         self.operation = "Or"    
 class XorFilter(LogicFilter):
     """
-    Class: XorFilter
     Created: 15.04.2006, KP
     Description: A filter for calculating logical xor
     """     
@@ -158,7 +148,6 @@ class XorFilter(LogicFilter):
        
 class NotFilter(LogicFilter):
     """
-    Class: XorFilter
     Created: 15.04.2006, KP
     Description: A filter for calculating logical not
     """     
@@ -166,7 +155,6 @@ class NotFilter(LogicFilter):
                 
     def __init__(self):
         """
-        Method: __init__()
         Created: 15.04.2006, KP
         Description: Initialization
         """        
@@ -175,7 +163,6 @@ class NotFilter(LogicFilter):
         
 class NorFilter(LogicFilter):
     """
-    Class: NorFilter
     Created: 15.04.2006, KP
     Description: A filter for calculating logical nor
     """     
@@ -183,7 +170,6 @@ class NorFilter(LogicFilter):
    
     def __init__(self):
         """
-        Method: __init__()
         Created: 15.04.2006, KP
         Description: Initialization
         """        
@@ -192,7 +178,6 @@ class NorFilter(LogicFilter):
         
 class NandFilter(LogicFilter):
     """
-    Class: NandFilter
     Created: 15.04.2006, KP
     Description: A filter for calculating logical nand
     """     
@@ -200,7 +185,6 @@ class NandFilter(LogicFilter):
    
     def __init__(self):
         """
-        Method: __init__()
         Created: 15.04.2006, KP
         Description: Initialization
         """        
@@ -209,7 +193,6 @@ class NandFilter(LogicFilter):
         
 class SubtractFilter(MathFilter):
     """
-    Class: SubtractFilter
     Created: 15.04.2006, KP
     Description: A filter for subtracting two channels
     """     
@@ -218,7 +201,6 @@ class SubtractFilter(MathFilter):
     
     def __init__(self):
         """
-        Method: __init__()
         Created: 15.04.2006, KP
         Description: Initialization
         """        
@@ -227,7 +209,6 @@ class SubtractFilter(MathFilter):
 
 class AddFilter(MathFilter):
     """
-    Class: AddFilter
     Created: 15.04.2006, KP
     Description: A filter for adding two channels
     """     

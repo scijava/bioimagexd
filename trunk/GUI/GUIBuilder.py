@@ -54,7 +54,6 @@ ROISELECTION="ROISELECTION"
 
 class GUIBuilderBase:
     """
-    Class: GUIBuilderBase
     Created: 31.05.2006, KP
     Description: A base class for modules that intend to use GUI builder
     """ 
@@ -72,7 +71,6 @@ class GUIBuilderBase:
             
     def sendUpdateGUI(self):
         """
-        Method: sendUpdateGUI
         Created: 05.06.2006, KP
         Description: Method to update the GUI for this filter
         """          
@@ -84,7 +82,6 @@ class GUIBuilderBase:
     
     def canSelectChannels(self):
         """
-        Method: canSelectChannels
         Created: 31.05.2006, KP
         Description: Should it be possible to select the channel
         """          
@@ -92,7 +89,6 @@ class GUIBuilderBase:
     
     def getParameters(self):
         """
-        Method: getParameters
         Created: 13.04.2006, KP
         Description: Return the list of parameters needed for configuring this GUI
         """  
@@ -126,7 +122,6 @@ class GUIBuilderBase:
 #
     def getParameter(self,parameter):
         """
-        Method: getParameter
         Created: 29.05.2006, KP
         Description: Get a value for the parameter
         """    
@@ -136,7 +131,6 @@ class GUIBuilderBase:
         
     def getDesc(self,parameter):
         """
-        Method: getDesc
         Created: 13.04.2006, KP
         Description: Return the description of the parameter
         """    
@@ -147,7 +141,6 @@ class GUIBuilderBase:
         
     def getLongDesc(self,parameter):
         """
-        Method: getLongDesc
         Created: 13.04.2006, KP
         Description: Return the long description of the parameter
         """    
@@ -155,7 +148,6 @@ class GUIBuilderBase:
         
     def getType(self,parameter):
         """
-        Method: getType
         Created: 13.04.2006, KP
         Description: Return the type of the parameter
         """    
@@ -163,7 +155,6 @@ class GUIBuilderBase:
         
     def getRange(self, parameter):
         """
-        Method: getRange
         Created: 31.05.2006, KP
         Description: If a parameter has a certain range of valid values, the values can be queried with this function
         """           
@@ -171,7 +162,6 @@ class GUIBuilderBase:
         
     def getDefaultValue(self,parameter):
         """
-        Method: getDefaultValue
         Created: 13.04.2006, KP
         Description: Return the default value of a parameter
         """           
@@ -180,13 +170,11 @@ class GUIBuilderBase:
 
 class GUIBuilder(wx.Panel):
     """
-    Class: GUIBuilder
     Created: 13.04.2006, KP
     Description: A GUI builder for the manipulation filters
     """      
     def __init__(self,parent,myfilter):
         """
-        Method: __init__()
         Created: 13.04.2006, KP
         Description: Initialization
         """ 
@@ -203,14 +191,13 @@ class GUIBuilder(wx.Panel):
         
     def getSizerPosition(self):
         """
-        Method: getSizerPosition
         Created: 07.06.2006, KP
         Description: Return the position in the sizer where the user can add more stuff
         """ 
         return (1,0)
+        
     def buildGUI(self,currentFilter):
         """
-        Method: buildGUI
         Created: 13.04.2006, KP
         Description: Build the GUI for a given filter
         """ 
@@ -509,7 +496,6 @@ class GUIBuilder(wx.Panel):
         
     def buildChannelSelection(self):
         """
-        Method: buildChannelSelection
         Created: 17.04.2006, KP
         Description: Build a GUI for selecting the source channels
         """                     
@@ -526,7 +512,9 @@ class GUIBuilder(wx.Panel):
             sizer.Add(lbl,(y,0))
             chlChoice = wx.Choice(self,-1,choices=choices)
             sizer.Add(chlChoice,(y,1))
-            chlChoice.SetSelection(0)
+            chlChoice.SetSelection(i-1)
+            self.currentFilter.setInputChannel(i,i-1)
+            
             func=lambda evt,f=self.currentFilter,n=i: self.onSetInputChannel(f,n,evt)
             chlChoice.Bind(wx.EVT_CHOICE,func)
 
@@ -611,7 +599,6 @@ class GUIBuilder(wx.Panel):
 
     def onSetInputChannel(self,currentFilter,inputNum,evt):
         """
-        Method: onSetInputChannel
         Created: 17.04.2006, KP
         Description: Set the input channel number #inputNum
         """              

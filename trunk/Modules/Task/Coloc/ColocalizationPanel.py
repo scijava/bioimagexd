@@ -72,16 +72,13 @@ class MyListCtrl(wx.ListCtrl, listmix.TextEditMixin):
         
 class ColocalizationPanel(TaskPanel.TaskPanel):
     """
-    Class: ColocalizationPanel
     Created: 03.11.2004, KP
     Description: A window for controlling the settings of the
                  colocalization module
     """
     def __init__(self,root,tb):
         """
-        Method: __init__(root)
-        Created: 03.11.2004
-        Creator: KP
+        Created: 03.11.2004, KP
         Description: Initialization
         Parameters:
                 root    Is the parent widget of this window
@@ -112,7 +109,6 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
         
     def updateListCtrl(self):
         """
-        Method: updateListCtrl
         Created: 12.07.2005, KP
         Description: Updates the list ctrl
         """
@@ -705,7 +701,6 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
 
     def onExportStatistics(self,event):
         """
-        Method: onExportStatistics
         Created: 13.07.2005, KP
         Description: Export colocalization statistics to file
         """
@@ -765,6 +760,7 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
 
         w.writerow(["Statistics for colocalization of channels %s"%namestr])
         w.writerow([namestr2])
+        w.writerow(["Timepoint",self.timePoint])
         w.writerow([time.ctime()])
         for item in self.headervals:
             #print item

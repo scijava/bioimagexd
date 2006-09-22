@@ -422,7 +422,21 @@ class TreeWidget(wx.SashLayoutWindow):
         """   
         return self.selectByName(unit, channels, dontSelect=1)
         
-    def selectByName(self, unit, channels, dontSelect=0):
+    def selectChannelsByNumber(self, unit, numbers):
+        """
+        Created: 06.09.2006, KP
+        Description: Select channels with the given numhers
+        """
+        n=-1
+        ret=[]
+        for item in self.dataUnitItems:
+            obj = self.tree.GetPyData(item)
+            if unit == self.dataUnitToPath[obj]:
+                n+=1
+            if n in numbers:
+                ret.append(obj)
+        return ret
+    def selectChannelsByName(self, unit, channels, dontSelect=0):
         """
         Created: 16.07.2006, KP
         Description: Select items in the tree by their names
