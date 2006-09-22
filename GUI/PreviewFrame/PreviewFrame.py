@@ -331,7 +331,7 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         if ncomps>3:
             alpha=self.currentImage.GetScalarComponentAsDouble(x,y,self.z,3)
     
-        messenger.send(None,"get_voxel_at",rx,ry,rz, scalar, rx,gv,bv,r,g,b,alpha,self.currentCt)
+        messenger.send(None,"get_voxel_at",rx,ry,rz, scalar, rv,gv,bv,r,g,b,alpha,self.currentCt)
         
     
             

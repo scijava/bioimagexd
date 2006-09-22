@@ -223,7 +223,7 @@ class OlympusDataSource(DataSource):
         i=0
         r2,g2,b2=-1,-1,-1
         for i,(r,g,b) in enumerate(vals):
-            print "value for ",i,"is ",(r,g,b)
+            #print "value for ",i,"is ",(r,g,b)
             if r!=r2 or g!=g2 or b!=b2:
                 ctf.AddRGBPoint(i/16.0,r,g,b)
             r2,g2,b2=r,g,b

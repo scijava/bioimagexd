@@ -330,7 +330,6 @@ class Visualizer:
         
     def getDataUnit(self):
         """
-        Method: getDataUnit()
         Created: 09.07.2005, KP
         Description: Return the dataunit that is currently shown
         """ 
@@ -338,7 +337,6 @@ class Visualizer:
         
     def nextTimepoint(self):
         """
-        Method: nextTimepoint
         Created: 18.07.2005, KP
         Description: Go to next timepoint
         """                 
@@ -349,9 +347,15 @@ class Visualizer:
             messenger.send(None,"timepoint_changed",self.timepoint)        
             self.blockTpUpdate=0
 
+    def getTimepoint(self):
+        """
+        Created: 06.09.2006, KP
+        Description: return the current timepoint
+        """
+        return self.timepoint
+
     def getNumberOfTimepoints(self):
         """
-        Method: getNumberOfTimepoints
         Created: 18.07.2006, KP
         Description: Return the number of timepoints
         """   
@@ -359,7 +363,6 @@ class Visualizer:
 
     def onNextTimepoint(self,evt):
         """
-        Method: onNextTimepoint
         Created: 26.06.2005, KP
         Description: Go to next timepoint
         """ 
@@ -370,7 +373,6 @@ class Visualizer:
         
     def onPrevTimepoint(self,evt):
         """
-        Method: onPrevTimepoint
         Created: 26.06.2005, KP
         Description: Go to previous timepoint
         """
@@ -381,7 +383,6 @@ class Visualizer:
 
     def prevTimepoint(self):
         """
-        Method: prevTimepoint
         Created: 18.07.2006, KP
         Description: Switch to previous timepoint
         """   

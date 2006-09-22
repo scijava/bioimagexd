@@ -482,7 +482,6 @@ def vtkImageDataToPreviewBitmap(dataunit,timepoint,color,width=0,height=0,bgcolo
     
 def getPlane(data,plane,x,y,z):
     """
-    Method: getPlane(data,plane,coord)
     Created: 06.06.2005, KP
     Description: Get a plane from given the volume
     """   

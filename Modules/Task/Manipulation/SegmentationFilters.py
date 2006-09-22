@@ -65,11 +65,13 @@ class WatershedObjectList(wx.ListCtrl):
         self.InsertColumn(1, u"Volume (\u03BCm)")
         self.InsertColumn(2, u"Volume (px)")
         self.InsertColumn(3,"Center Of Mass")
+        self.InsertColumn(4,"Avg. intensity")
         #self.InsertColumn(2, "")
         self.SetColumnWidth(0, 50)
-        self.SetColumnWidth(1, 100)
-        self.SetColumnWidth(2, 100)
-        self.SetColumnWidth(3, 100)
+        self.SetColumnWidth(1, 70)
+        self.SetColumnWidth(2, 70)
+        self.SetColumnWidth(3, 70)
+        self.SetColumnWidth(4, 70)
 
         self.SetItemCount(1000)
 
@@ -80,6 +82,7 @@ class WatershedObjectList(wx.ListCtrl):
         self.attr2.SetBackgroundColour("light blue")
         self.volumeList = []
         self.centersOfMassList = []
+        self.avgIntList=[]
         
         self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.OnItemSelected)
         self.Bind(wx.EVT_LIST_ITEM_ACTIVATED, self.OnItemActivated)
@@ -93,6 +96,9 @@ class WatershedObjectList(wx.ListCtrl):
         self.volumeList = volumeList
         self.SetItemCount(len(volumeList))
         self.Refresh()
+        
+    def setAverageIntensities(self, avgIntList):
+        self.avgIntList= avgIntList
         
     def OnItemSelected(self, event):
         self.currentItem = event.m_itemIndex
@@ -125,6 +131,8 @@ class WatershedObjectList(wx.ListCtrl):
             return u"%.3f \u03BCm"%self.volumeList[item][1]
         elif col==2:
             return "%d px"%self.volumeList[item][0]
+        elif col==4:
+            return "%.3f"%self.avgIntList[item]
         else:
             return "(%d, %d, %d)"%self.centersOfMassList[item]
 
@@ -362,7 +370,6 @@ class MaskFilter(ProcessingFilter.ProcessingFilter):
 
 class ITKWatershedSegmentationFilter(ProcessingFilter.ProcessingFilter):
     """
-    Class: ITKWatershedSegmentationFilter
     Created: 13.04.2006, KP
     Description: A filter for doing watershed segmentation
     """     
@@ -410,7 +417,6 @@ class ITKWatershedSegmentationFilter(ProcessingFilter.ProcessingFilter):
         
     def getParameters(self):
         """
-        Method: getParameters
         Created: 15.04.2006, KP
         Description: Return the list of parameters needed for configuring this GUI
         """            
@@ -419,7 +425,6 @@ class ITKWatershedSegmentationFilter(ProcessingFilter.ProcessingFilter):
 
     def execute(self,inputs,update=0,last=0):
         """
-        Method: execute
         Created: 15.04.2006, KP
         Description: Execute the filter with given inputs and return the output
         """                    
@@ -446,7 +451,6 @@ class ITKWatershedSegmentationFilter(ProcessingFilter.ProcessingFilter):
 
 class MorphologicalWatershedSegmentationFilter(ProcessingFilter.ProcessingFilter):
     """
-    Class: MorphologicalWatershedSegmentationFilter
     Created: 05.07.2006, KP
     Description: A filter for doing morphological watershed segmentation
     """     
@@ -471,7 +475,6 @@ class MorphologicalWatershedSegmentationFilter(ProcessingFilter.ProcessingFilter
             
     def getDefaultValue(self,parameter):
         """
-        Method: getDefaultValue
         Created: 15.04.2006, KP
         Description: Return the default value of a parameter
         """    
@@ -481,7 +484,6 @@ class MorphologicalWatershedSegmentationFilter(ProcessingFilter.ProcessingFilter
         
     def getType(self,parameter):
         """
-        Method: getType
         Created: 13.04.2006, KP
         Description: Return the type of the parameter
         """    
@@ -490,7 +492,6 @@ class MorphologicalWatershedSegmentationFilter(ProcessingFilter.ProcessingFilter
         
     def getParameters(self):
         """
-        Method: getParameters
         Created: 15.04.2006, KP
         Description: Return the list of parameters needed for configuring this GUI
         """            
@@ -499,7 +500,6 @@ class MorphologicalWatershedSegmentationFilter(ProcessingFilter.ProcessingFilter
 
     def execute(self,inputs,update=0,last=0):
         """
-        Method: execute
         Created: 15.04.2006, KP
         Description: Execute the filter with given inputs and return the output
         """                    
@@ -530,7 +530,6 @@ class MorphologicalWatershedSegmentationFilter(ProcessingFilter.ProcessingFilter
 
 class ConnectedComponentFilter(ProcessingFilter.ProcessingFilter):
     """
-    Class: ConnectedComponentFilter
     Created: 12.07.2006, KP
     Description: A filter for labeling all separate objects in an image
     """     
@@ -555,7 +554,6 @@ class ConnectedComponentFilter(ProcessingFilter.ProcessingFilter):
             
     def getDefaultValue(self,parameter):
         """
-        Method: getDefaultValue
         Created: 15.04.2006, KP
         Description: Return the default value of a parameter
         """    
@@ -563,7 +561,6 @@ class ConnectedComponentFilter(ProcessingFilter.ProcessingFilter):
         
     def getType(self,parameter):
         """
-        Method: getType
         Created: 13.04.2006, KP
         Description: Return the type of the parameter
         """    
@@ -572,7 +569,6 @@ class ConnectedComponentFilter(ProcessingFilter.ProcessingFilter):
         
     def getParameters(self):
         """
-        Method: getParameters
         Created: 15.04.2006, KP
         Description: Return the list of parameters needed for configuring this GUI
         """            
@@ -582,7 +578,6 @@ class ConnectedComponentFilter(ProcessingFilter.ProcessingFilter):
 
     def execute(self,inputs,update=0,last=0):
         """
-        Method: execute
         Created: 15.04.2006, KP
         Description: Execute the filter with given inputs and return the output
         """                    
@@ -606,7 +601,6 @@ class ConnectedComponentFilter(ProcessingFilter.ProcessingFilter):
 
 class MaximumObjectsFilter(ProcessingFilter.ProcessingFilter):
     """
-    Class: ConnectedComponentFilter
     Created: 12.07.2006, KP
     Description: A filter for labeling all separate objects in an image
     """     
@@ -631,7 +625,6 @@ class MaximumObjectsFilter(ProcessingFilter.ProcessingFilter):
             
     def getDefaultValue(self,parameter):
         """
-        Method: getDefaultValue
         Created: 15.04.2006, KP
         Description: Return the default value of a parameter
         """    
@@ -641,7 +634,6 @@ class MaximumObjectsFilter(ProcessingFilter.ProcessingFilter):
         
     def getType(self,parameter):
         """
-        Method: getType
         Created: 13.04.2006, KP
         Description: Return the type of the parameter
         """    
@@ -650,7 +642,6 @@ class MaximumObjectsFilter(ProcessingFilter.ProcessingFilter):
         
     def getParameters(self):
         """
-        Method: getParameters
         Created: 15.04.2006, KP
         Description: Return the list of parameters needed for configuring this GUI
         """            
@@ -660,7 +651,6 @@ class MaximumObjectsFilter(ProcessingFilter.ProcessingFilter):
 
     def execute(self,inputs,update=0,last=0):
         """
-        Method: execute
         Created: 15.04.2006, KP
         Description: Execute the filter with given inputs and return the output
         """                    
@@ -687,7 +677,6 @@ class MaximumObjectsFilter(ProcessingFilter.ProcessingFilter):
         
 class ITKRelabelImageFilter(ProcessingFilter.ProcessingFilter):
     """
-    Class: ITKRelabelImageFilter
     Created: 13.04.2006, KP
     Description: Re-label an image produced by watershed segmentation
     """     
@@ -713,7 +702,6 @@ class ITKRelabelImageFilter(ProcessingFilter.ProcessingFilter):
             
     def getDefaultValue(self,parameter):
         """
-        Method: getDefaultValue
         Created: 15.04.2006, KP
         Description: Return the default value of a parameter
         """    
@@ -722,7 +710,6 @@ class ITKRelabelImageFilter(ProcessingFilter.ProcessingFilter):
         
     def getType(self,parameter):
         """
-        Method: getType
         Created: 13.04.2006, KP
         Description: Return the type of the parameter
         """    
@@ -740,7 +727,6 @@ class ITKRelabelImageFilter(ProcessingFilter.ProcessingFilter):
 
     def execute(self,inputs,update=0,last=0):
         """
-        Method: execute
         Created: 15.04.2006, KP
         Description: Execute the filter with given inputs and return the output
         """                    
@@ -750,6 +736,7 @@ class ITKRelabelImageFilter(ProcessingFilter.ProcessingFilter):
         image = self.getInput(1)
         image = self.convertVTKtoITK(image)
         if not self.itkfilter:
+            print "Image=",image
             self.itkfilter = itk.RelabelComponentImageFilter[image,image].New()
         self.itkfilter.SetInput(image)
         th = self.parameters["Threshold"]
@@ -772,7 +759,6 @@ class ITKRelabelImageFilter(ProcessingFilter.ProcessingFilter):
 
 class ITKInvertIntensityFilter(ProcessingFilter.ProcessingFilter):
     """
-    Class: ITKInvertIntensityFilter
     Created: 05.07.2006, KP
     Description: Invert the intensity of the image
     """     
@@ -851,16 +837,14 @@ class ITKInvertIntensityFilter(ProcessingFilter.ProcessingFilter):
 
 class MeasureVolumeFilter(ProcessingFilter.ProcessingFilter):
     """
-    Class: MeasureVolumeFilter
     Created: 15.05.2006, KP
     Description: 
     """     
-    name = "Measure Segmented Volumes"
+    name = "Measure Object Statistics"
     category = MEASUREMENT
     
-    def __init__(self,inputs=(1,1)):
+    def __init__(self,inputs=(2,2)):
         """
-        Method: __init__()
         Created: 13.04.2006, KP
         Description: Initialization
         """        
@@ -869,14 +853,14 @@ class MeasureVolumeFilter(ProcessingFilter.ProcessingFilter):
         self.descs = {}      
         self.values = None
         self.centersofmass = None
+        self.umcentersofmass = None
+        self.avgIntList = None
         self.reportGUI = None
         self.itkfilter = None
-        import labelShape
-        self.labelShape = labelShape
+        self.labelShape = None
         
     def writeOutput(self, dataUnit, timepoint):
         """
-        Method: writeOutput
         Created: 09.07.2006, KP
         Description: Optionally write the output of this module during the processing
         """   
@@ -884,10 +868,12 @@ class MeasureVolumeFilter(ProcessingFilter.ProcessingFilter):
         f=codecs.open(filename,"wb","latin1")
         
         w=csv.writer(f,dialect="excel",delimiter=";")
-        w.writerow(["Object #","Volume (micrometers)","Volume (pixels)","Center of Mass"])
+        w.writerow(["Object #","Volume (micrometers)","Volume (pixels)","Center of Mass","Center of Mass (micrometers)","Avg. Intensity"])
         for i,(volume,volumeum) in enumerate(self.values):
             cog = self.centersofmass[i]
-            w.writerow([str(i),str(volumeum),str(volume),str(cog)])
+            umcog = self.umcentersofmass[i]
+            avgint = self.avgIntList[i]
+            w.writerow([str(i),str(volumeum),str(volume),str(cog),str(umcog),str(avgint)])
         f.close()
 
     def getGUI(self,parent,taskPanel):
@@ -901,13 +887,13 @@ class MeasureVolumeFilter(ProcessingFilter.ProcessingFilter):
             if self.values:
                 self.reportGUI.setVolumes(self.values)
                 self.reportGUI.setCentersOfMass(self.centersofmass)
+                self.reportGUI.setAverageIntensities(self.avgIntList)
             gui.sizer.Add(self.reportGUI,(1,0),flag=wx.EXPAND|wx.ALL)
         return gui
 
             
     def getDefaultValue(self,parameter):
         """
-        Method: getDefaultValue
         Created: 15.04.2006, KP
         Description: Return the default value of a parameter
         """    
@@ -915,7 +901,6 @@ class MeasureVolumeFilter(ProcessingFilter.ProcessingFilter):
         
     def getType(self,parameter):
         """
-        Method: getType
         Created: 13.04.2006, KP
         Description: Return the type of the parameter
         """    
@@ -924,7 +909,6 @@ class MeasureVolumeFilter(ProcessingFilter.ProcessingFilter):
         
     def getParameters(self):
         """
-        Method: getParameters
         Created: 15.04.2006, KP
         Description: Return the list of parameters needed for configuring this GUI
         """            
@@ -933,7 +917,6 @@ class MeasureVolumeFilter(ProcessingFilter.ProcessingFilter):
 
     def execute(self,inputs,update=0,last=0):
         """
-        Method: execute
         Created: 15.04.2006, KP
         Description: Execute the filter with given inputs and return the output
         """                    
@@ -941,11 +924,17 @@ class MeasureVolumeFilter(ProcessingFilter.ProcessingFilter):
             return None
             
         image = self.getInput(1)
-        image = self.convertVTKtoITK(image)
+        
+        #print "converting to ITK, image=",image
+        #image = self.convertVTKtoITK(image)
+        #print "image now=",image
         
         
         if not self.itkfilter:
-            
+            if not self.labelShape:
+                import labelShape
+                self.labelShape = labelShape
+
             #ul3 = itk.Image.UL3
             self.itkfilter = self.labelShape.LabelShapeImageFilter[image].New()
 
@@ -962,38 +951,66 @@ class MeasureVolumeFilter(ProcessingFilter.ProcessingFilter):
         z*=1000000
         vol = x*y*z
         
+        voxelSizes=[x,y,z]
     
         self.itkfilter.Update()
         n = self.itkfilter.GetNumberOfLabels()
         values = []
         centersofmass = []
+        umcentersofmass = []
+        avgints=[]
+        print "Converting to VTK"
+        image = self.convertITKtoVTK(image)
+        
+        origInput = self.getInput(2)
+        
+        avgintCalc = vtk.vtkImageLabelAverage()
+        #avgintCalc.DebugOn()
+
+        avgintCalc.AddInput(origInput)
+        avgintCalc.AddInput(image)
+        print "Calculating..."
+        avgintCalc.Update()
+        print "done"
+
+
         for i in range(0,n):
             volume = self.itkfilter.GetVolume(i)
             centerOfMass = self.itkfilter.GetCenterOfGravity(i)
+            avgInt = avgintCalc.GetAverage(i)
             if not self.itkfilter.HasLabel(i):
                 centersofmass.append((0,0,0))
                 values.append((0,0))
+                avgints.append(0.0)
+                umcentersofmass.append((0,0,0))
             else:
                 c = []
+                c2 = []
                 for i in range(0,3):
-                    c.append(centerOfMass.GetElement(i))
+                    v = centerOfMass.GetElement(i)
+                    c.append(v)
+                    c2.append(v*voxelSizes[i])
                 centersofmass.append(tuple(c))
+                umcentersofmass.append(tuple(c2))
                 values.append((volume,volume*vol))
-        print "volumes=",values
-        print "centers of mass=",centersofmass
-        
+                avgints.append(avgInt)
+#        print "volumes=",values
+#        print "centers of mass=",centersofmass
+        #print "avg. ints=",avgints
             
 
         self.values = values
         self.centersofmass = centersofmass
+        self.umcentersofmass = umcentersofmass
+        self.avgIntList = avgints
         if self.reportGUI:
             self.reportGUI.setVolumes(values)
             self.reportGUI.setCentersOfMass(centersofmass)
+            self.reportGUI.setAverageIntensities(self.avgIntList)
         return image
 
 class FilterObjectsFilter(ProcessingFilter.ProcessingFilter):
     """
-    Class: FilterObjects
     Created: 16.05.2006, KP
     Description: 
     """     
@@ -1002,7 +1019,6 @@ class FilterObjectsFilter(ProcessingFilter.ProcessingFilter):
     
     def __init__(self,inputs=(1,1)):
         """
-        Method: __init__()
         Created: 13.04.2006, KP
         Description: Initialization
         """        
@@ -1013,7 +1029,6 @@ class FilterObjectsFilter(ProcessingFilter.ProcessingFilter):
             
     def getDefaultValue(self,parameter):
         """
-        Method: getDefaultValue
         Created: 15.04.2006, KP
         Description: Return the default value of a parameter
         """    
@@ -1021,7 +1036,6 @@ class FilterObjectsFilter(ProcessingFilter.ProcessingFilter):
         
     def getType(self,parameter):
         """
-        Method: getType
         Created: 13.04.2006, KP
         Description: Return the type of the parameter
         """    
@@ -1030,7 +1044,6 @@ class FilterObjectsFilter(ProcessingFilter.ProcessingFilter):
         
     def getParameters(self):
         """
-        Method: getParameters
         Created: 15.04.2006, KP
         Description: Return the list of parameters needed for configuring this GUI
         """            
@@ -1039,7 +1052,6 @@ class FilterObjectsFilter(ProcessingFilter.ProcessingFilter):
 
     def execute(self,inputs,update=0,last=0):
         """
-        Method: execute
         Created: 15.04.2006, KP
         Description: Execute the filter with given inputs and return the output
         """                    
@@ -1091,7 +1103,6 @@ class FilterObjectsFilter(ProcessingFilter.ProcessingFilter):
         
 class ITKConfidenceConnectedFilter(ProcessingFilter.ProcessingFilter):
     """
-    Class: ITKConfidenceConnectedThresholdFilter
     Created: 29.05.2006, KP
     Description: A class for doing confidence connected segmentation
     """     
@@ -1100,7 +1111,6 @@ class ITKConfidenceConnectedFilter(ProcessingFilter.ProcessingFilter):
     
     def __init__(self,inputs=(1,1)):
         """
-        Method: __init__()
         Created: 26.05.2006, KP
         Description: Initialization
         """
@@ -1117,7 +1127,6 @@ class ITKConfidenceConnectedFilter(ProcessingFilter.ProcessingFilter):
             
     def getDefaultValue(self,parameter):
         """
-        Method: getDefaultValue
         Created: 26.05.2006, KP
         Description: Return the default value of a parameter
         """    
@@ -1133,7 +1142,6 @@ class ITKConfidenceConnectedFilter(ProcessingFilter.ProcessingFilter):
         
     def getType(self,parameter):
         """
-        Method: getType
         Created: 26.05.2006, KP
         Description: Return the type of the parameter
         """    
@@ -1149,7 +1157,6 @@ class ITKConfidenceConnectedFilter(ProcessingFilter.ProcessingFilter):
             
     def getParameters(self):
         """
-        Method: getParameters
         Created: 15.04.2006, KP
         Description: Return the list of parameters needed for configuring this GUI
         """            
