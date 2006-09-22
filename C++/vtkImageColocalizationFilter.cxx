@@ -148,9 +148,14 @@ void vtkImageColocalizationFilterExecute(vtkImageColocalizationFilter *self, int
     maxX = outExt[1] - outExt[0];
     maxY = outExt[3] - outExt[2];
     maxZ = outExt[5] - outExt[4];
+    
 
     maxval=int(pow(2.0f,8.0f*sizeof(T)))-1;
-    if(OutputScalar < 0)OutputScalar = maxval;
+    
+    if(OutputScalar < 0) {
+        OutputScalar = maxval;
+        
+    }
 
     char progressText[200];
 
@@ -186,6 +191,7 @@ void vtkImageColocalizationFilterExecute(vtkImageColocalizationFilter *self, int
 
             } else ColocalizationScalar = 0;
 
+            
             *outPtr = (T)ColocalizationScalar;
             outPtr++;
             ColocalizationScalar = 0;
