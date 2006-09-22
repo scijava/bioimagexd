@@ -46,6 +46,8 @@ import ImageOperations
 
 from lib import ProcessingFilter
 
+
+
 class IntensityMeasurementList(wx.ListCtrl):
     def __init__(self, parent, log):
         wx.ListCtrl.__init__(
@@ -122,21 +124,21 @@ def getFilterList():
             GradientFilter,GradientMagnitudeFilter,
             AndFilter,OrFilter,XorFilter,NotFilter,NandFilter,NorFilter,
             ThresholdFilter,VarianceFilter,HybridMedianFilter,
-            ITKAnisotropicDiffusionFilter,ITKGradientMagnitudeFilter,
+            ITKAnisotropicDiffusionFilter,ITKGradientMagnitudeFilter,ITKCannyEdgeFilter,
             ITKWatershedSegmentationFilter, MorphologicalWatershedSegmentationFilter,MeasureVolumeFilter,
-            ITKRelabelImageFilter,FilterObjectsFilter,ITKConnectedThresholdFilter,ITKNeighborhoodConnectedThresholdFilter,
+            ITKRelabelImageFilter,ITKConnectedThresholdFilter,ITKNeighborhoodConnectedThresholdFilter,
             ITKLocalMaximumFilter,ITKOtsuThresholdFilter,ITKConfidenceConnectedFilter,
             MaskFilter,ITKSigmoidFilter, ITKInvertIntensityFilter, ConnectedComponentFilter,
             MaximumObjectsFilter,TimepointCorrelationFilter,
             ROIIntensityFilter,CutDataFilter]
             
-MATH="Math"
+MATH="Image Arithmetic"
 SEGMENTATION="Segmentation"
 FILTERING="Filtering"
 ITK="ITK"
 MEASUREMENT="Measurements"
 REGION_GROWING="Region Growing"
-   
+FEATUREDETECTION="Feature Detection"
 
         
 
@@ -795,7 +797,7 @@ class GradientMagnitudeFilter(ProcessingFilter.ProcessingFilter):
     Description: A class for calculating the gradient magnitude of the image
     """     
     name = "Gradient Magnitude"
-    category = MATH
+    category = FEATUREDETECTION
     
     def __init__(self,inputs=(1,1)):
         """
@@ -831,16 +833,14 @@ class GradientMagnitudeFilter(ProcessingFilter.ProcessingFilter):
         
 class ITKAnisotropicDiffusionFilter(ProcessingFilter.ProcessingFilter):
     """
-    Class: ITKAnisotropicDiffusionFilterFilter
     Created: 13.04.2006, KP
     Description: A class for doing anisotropic diffusion on ITK
     """     
-    name = "Gradient Anisotropic Diffusion"
-    category = ITK
+    name = "Gradient Anisotropic Diffusion (ITK)"
+    category = FILTERING
     
     def __init__(self,inputs=(1,1)):
         """
-
         Created: 13.04.2006, KP
         Description: Initialization
         """        
@@ -908,12 +908,11 @@ class ITKAnisotropicDiffusionFilter(ProcessingFilter.ProcessingFilter):
 
 class ITKGradientMagnitudeFilter(ProcessingFilter.ProcessingFilter):
     """
-    Class: ITKGradientMagnitudeFilter
     Created: 13.04.2006, KP
     Description: A class for calculating gradient magnitude on ITK
     """     
-    name = "ITK Gradient Magnitude"
-    category = ITK
+    name = "Gradient Magnitude (ITK)"
+    category = FEATUREDETECTION
     
     def __init__(self,inputs=(1,1)):
         """
@@ -958,13 +957,65 @@ class ITKGradientMagnitudeFilter(ProcessingFilter.ProcessingFilter):
         #    print "data=",data
         return data            
 
+class ITKCannyEdgeFilter(ProcessingFilter.ProcessingFilter):
+    """
+    Created: 13.04.2006, KP
+    Description: A class that uses the ITK canny edge detection filter
+    """     
+    name = "Canny Edge Detection"
+    category = FEATUREDETECTION
+    
+    def __init__(self,inputs=(1,1)):
+        """
+        Created: 13.04.2006, KP
+        Description: Initialization
+        """        
+        ProcessingFilter.ProcessingFilter.__init__(self,inputs)
+        self.itkFlag = 1
+        self.itkfilter = None
+        
+        
+    def getParameters(self):
+        """
+        Created: 15.04.2006, KP
+        Description: Return the list of parameters needed for configuring this GUI
+        """            
+        return []        
+
+    def execute(self,inputs,update=0,last=0):
+        """
+        Created: 15.04.2006, KP
+        Description: Execute the filter with given inputs and return the output
+        """                    
+        if not ProcessingFilter.ProcessingFilter.execute(self,inputs):
+            return None
+            
+        image = self.getInput(1)
+        image = self.convertVTKtoITK(image)
+        if not self.itkfilter:
+            self.itkfilter = itk.CannyEdgeDetectionImageFilter[image, image].New()
+
+        self.itkfilter.SetInput(image)
+        
+        #self.setImageType("F3")
+        
+        if update:
+            self.itkfilter.Update()
+        data = self.itkfilter.GetOutput()
+        #if last or self.nextFilter and not self.nextFilter.getITK():            
+        #    print "Converting to VTK"
+        #    data=self.convertITKtoVTK(data,imagetype="F3")
+        #    print "data=",data
+        return data            
+
+
 class ITKSigmoidFilter(ProcessingFilter.ProcessingFilter):
     """
     Class: ITKSigmoidFilter
     Created: 29.05.2006, KP
     Description: A class for mapping an image data thru sigmoid image filter
     """     
-    name = "ITK Sigmoid Filter"
+    name = "Sigmoid Filter (ITK)" 
     category = FILTERING
     
     def __init__(self,inputs=(1,1)):
@@ -1035,12 +1086,11 @@ class ITKSigmoidFilter(ProcessingFilter.ProcessingFilter):
 
 class ITKLocalMaximumFilter(ProcessingFilter.ProcessingFilter):
     """
-    Class: ITKLocalMaximumFilter
     Created: 29.05.2006, KP
     Description: A class for finding the local maxima in an image
     """     
     name = "Find Local Maxima"
-    category = ITK
+    category = FEATUREDETECTION
     
     def __init__(self,inputs=(1,1)):
         """

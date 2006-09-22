@@ -33,12 +33,15 @@ __date__ = "$Date: 2005/01/13 14:52:39 $"
 from lib import ProcessingFilter
 import types
 import vtk
-MORPHOLOGICAL="Morphological"
+MORPHOLOGICAL="Morphological operations"
 
+FEATUREDETECTION="Feature Detection"
 FILTERING="Filtering"
+
+from ProcessingFilter import FILTER_BEGINNER
+
 class MorphologicalFilter(ProcessingFilter.ProcessingFilter):
     """
-    Class: ManipulationFilter
     Created: 13.04.2006, KP
     Description: A base class for manipulation filters
     """     
@@ -110,7 +113,6 @@ class MorphologicalFilter(ProcessingFilter.ProcessingFilter):
         
 class ErodeFilter(MorphologicalFilter):
     """
-    Class: ErodeFilter
     Created: 13.04.2006, KP
     Description: An erosion filter
     """     
@@ -126,9 +128,9 @@ class ErodeFilter(MorphologicalFilter):
         MorphologicalFilter.__init__(self)
         self.vtkfilter = vtk.vtkImageContinuousErode3D()
         
+        
 class VarianceFilter(MorphologicalFilter):
     """
-    Class: VarianceFilter
     Created: 13.04.2006, KP
     Description: An erosion filter
     """     
@@ -146,7 +148,6 @@ class VarianceFilter(MorphologicalFilter):
         
 class DilateFilter(MorphologicalFilter):
     """
-    Class: DilateFilter
     Created: 13.04.2006, KP
     Description: A dilation filter
     """      
@@ -164,7 +165,6 @@ class DilateFilter(MorphologicalFilter):
   
 class RangeFilter(MorphologicalFilter):
     """
-    Class: RangeFilter
     Created: 13.04.2006, KP
     Description: A filter that sets the value of the neighborhood to be the max-min of that nbh
     """     
@@ -182,16 +182,14 @@ class RangeFilter(MorphologicalFilter):
         
 class SobelFilter(MorphologicalFilter):
     """
-    Class: MedianFilter
     Created: 13.04.2006, KP
-    Description: A median filter
+    Description: A sobel filter in 3D
     """     
     name = "Sobel 3D"
-    category = MORPHOLOGICAL
+    category = FEATUREDETECTION
     
     def __init__(self):
         """
-        Method: __init__()
         Created: 13.04.2006, KP
         Description: Initialization
         """        
@@ -228,6 +226,7 @@ class HybridMedianFilter(MorphologicalFilter):
     """     
     name = "Hybrid Median 2D"
     category = FILTERING
+    level = FILTER_BEGINNER
     
     def __init__(self):
         """
@@ -260,12 +259,12 @@ class HybridMedianFilter(MorphologicalFilter):
         
 class MedianFilter(MorphologicalFilter):
     """
-    Class: MedianFilter
     Created: 13.04.2006, KP
     Description: A median filter
     """     
     name = "Median 3D"
     category = FILTERING
+    level = FILTER_BEGINNER
     
     def __init__(self):
         """
