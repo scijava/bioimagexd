@@ -30,7 +30,7 @@ insert_to_cmakelists() {
 if [ "`echo $INSTALL|grep Imaging`" ]
 then
   for i in vtkImageColorMerge vtkImageAlphaFilter vtkImageColocalizationFilter vtkImageColocalizationTest \
-  vtkImageMapToIntensities vtkImageSimpleMIP vtkImageSolitaryFilter
+  vtkImageMapToIntensities vtkImageSimpleMIP vtkImageSolitaryFilter vtkImageLabelAverage
   do
     echo "Copying $i.cxx..."
     $CP_CMD $CPPDIR/$i.cxx $IMAGING
