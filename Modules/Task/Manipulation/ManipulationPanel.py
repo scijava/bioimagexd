@@ -421,7 +421,10 @@ class ManipulationPanel(FilterBasedTaskPanel.FilterBasedTaskPanel):
                     menuid = wx.NewId()
                     name = currfilter.getName()
                     
-                    submenu.Append(menuid,name)
+                    newitem = wx.MenuItem(submenu, menuid, name)
+                    newitem.SetBackgroundColour(wx.Colour(*currfilter.level))
+                    submenu.AppendItem(newitem)
+#                    submenu.Append(menuid,name)
                     n = len(self.filters)
                     undo_cmd="bxd.mainWindow.tasks['Process'].deleteFilter(index=%d, name = '%s')"%(n,name)
                     do_cmd="bxd.mainWindow.tasks['Process'].loadFilter('%s')"%name

@@ -45,6 +45,10 @@ import scripting as bxd
 import GUI.GUIBuilder as GUIBuilder
 import ImageOperations
    
+FILTER_BEGINNER=(180,255,180)
+FILTER_INTERMEDIATE=(255,255,180)
+FILTER_EXPERIENCED=(0,180,255)
+   
 class ProcessingFilter(GUIBuilder.GUIBuilderBase):
     """
     Created: 13.04.2006, KP
@@ -52,6 +56,7 @@ class ProcessingFilter(GUIBuilder.GUIBuilderBase):
     """ 
     category = "No category"
     name = "Generic Filter"
+    level = FILTER_EXPERIENCED
     def __init__(self,numberOfInputs=(1,1)):
         """
         Created: 13.04.2006, KP
@@ -82,7 +87,8 @@ class ProcessingFilter(GUIBuilder.GUIBuilderBase):
         self.vtkToItk = None
         self.itkToVtk = None
         self.G = "UC3"
-        
+
+
     def set(self, parameter, value):
         """
         Created: 21.07.2006, KP

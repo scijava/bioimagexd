@@ -43,13 +43,18 @@ except:
 import vtk
 import types
 
+import MathFilters
 import GUI.GUIBuilder as GUIBuilder
 import messenger
 
+from ProcessingFilter import FILTER_BEGINNER
+
 SEGMENTATION="Segmentation"
-ITK="ITK"
+#ITK="ITK"
 
 MEASUREMENT="Measurements"
+WATERSHED="Watershed Segmentation"
+REGIONGROWING="Region Growing"
 
 
 class WatershedObjectList(wx.ListCtrl):
@@ -153,12 +158,12 @@ class WatershedObjectList(wx.ListCtrl):
 
 class ThresholdFilter(ProcessingFilter.ProcessingFilter):
     """
-    Class: ThresholdFilter
     Created: 15.04.2006, KP
     Description: A thresholding filter
     """     
     name = "Threshold"
     category = SEGMENTATION
+    level = FILTER_BEGINNER
     
     def __init__(self):
         """
@@ -296,15 +301,15 @@ class ThresholdFilter(ProcessingFilter.ProcessingFilter):
                 self.gui.histograms[0].Refresh()
             
             return image
+            
 class MaskFilter(ProcessingFilter.ProcessingFilter):
     """
-    Class: MaskFilter
     Created: 13.04.2006, KP
     Description: A base class for image mathematics filters
     """     
     name = "Mask"
     category = SEGMENTATION
-    
+    level = FILTER_BEGINNER
     def __init__(self,inputs=(2,2)):
         """
         Method: __init__()
@@ -373,8 +378,8 @@ class ITKWatershedSegmentationFilter(ProcessingFilter.ProcessingFilter):
     Created: 13.04.2006, KP
     Description: A filter for doing watershed segmentation
     """     
-    name = "Watershed Segmentation"
-    category = SEGMENTATION
+    name = "Watershed Segmentation (old)"
+    category = WATERSHED
     
     def __init__(self,inputs=(1,1)):
         """
@@ -455,8 +460,8 @@ class MorphologicalWatershedSegmentationFilter(ProcessingFilter.ProcessingFilter
     Description: A filter for doing morphological watershed segmentation
     """     
     name = "Morphological Watershed Segmentation"
-    category = SEGMENTATION
-    
+    category = WATERSHED
+    level = FILTER_BEGINNER
     def __init__(self,inputs=(1,1)):
         """
         Method: __init__()
@@ -533,7 +538,7 @@ class ConnectedComponentFilter(ProcessingFilter.ProcessingFilter):
     Created: 12.07.2006, KP
     Description: A filter for labeling all separate objects in an image
     """     
-    name = "Separate Objects"
+    name = "Connected Component Labeling"
     category = SEGMENTATION
     
     def __init__(self,inputs=(1,1)):
@@ -681,11 +686,10 @@ class ITKRelabelImageFilter(ProcessingFilter.ProcessingFilter):
     Description: Re-label an image produced by watershed segmentation
     """     
     name = "Re-Label Image"
-    category = ITK
-    
+    category = WATERSHED
+    level = FILTER_BEGINNER
     def __init__(self,inputs=(1,1)):
         """
-        Method: __init__()
         Created: 13.04.2006, KP
         Description: Initialization
         """        
@@ -763,7 +767,7 @@ class ITKInvertIntensityFilter(ProcessingFilter.ProcessingFilter):
     Description: Invert the intensity of the image
     """     
     name = "Invert intensity"
-    category = ITK
+    category = WATERSHED
     
     def __init__(self,inputs=(1,1)):
         """
@@ -772,8 +776,7 @@ class ITKInvertIntensityFilter(ProcessingFilter.ProcessingFilter):
         Description: Initialization
         """        
         ProcessingFilter.ProcessingFilter.__init__(self,inputs)
-        
-        
+                
         self.descs = {}
         self.itkFlag = 1
         self.itkfilter = None
@@ -782,7 +785,6 @@ class ITKInvertIntensityFilter(ProcessingFilter.ProcessingFilter):
             
     def getDefaultValue(self,parameter):
         """
-        Method: getDefaultValue
         Created: 15.04.2006, KP
         Description: Return the default value of a parameter
         """    
@@ -791,7 +793,6 @@ class ITKInvertIntensityFilter(ProcessingFilter.ProcessingFilter):
         
     def getType(self,parameter):
         """
-        Method: getType
         Created: 13.04.2006, KP
         Description: Return the type of the parameter
         """    
@@ -840,9 +841,9 @@ class MeasureVolumeFilter(ProcessingFilter.ProcessingFilter):
     Created: 15.05.2006, KP
     Description: 
     """     
-    name = "Measure Object Statistics"
+    name = "Calculate Object Statistics"
     category = MEASUREMENT
-    
+    level = FILTER_BEGINNER
     def __init__(self,inputs=(2,2)):
         """
         Created: 13.04.2006, KP
@@ -1009,97 +1010,6 @@ class MeasureVolumeFilter(ProcessingFilter.ProcessingFilter):
             self.reportGUI.setAverageIntensities(self.avgIntList)
         return image
 
-class FilterObjectsFilter(ProcessingFilter.ProcessingFilter):
-    """
-    Created: 16.05.2006, KP
-    Description: 
-    """     
-    name = "Filter Objects"
-    category = MEASUREMENT
-    
-    def __init__(self,inputs=(1,1)):
-        """
-        Created: 13.04.2006, KP
-        Description: Initialization
-        """        
-        ProcessingFilter.ProcessingFilter.__init__(self,inputs)
-        
-        self.descs = {"Threshold":"Filter objects with fewer voxels than:"}        
-
-            
-    def getDefaultValue(self,parameter):
-        """
-        Created: 15.04.2006, KP
-        Description: Return the default value of a parameter
-        """    
-        return 0
-        
-    def getType(self,parameter):
-        """
-        Created: 13.04.2006, KP
-        Description: Return the type of the parameter
-        """    
-        return types.IntType
-        
-        
-    def getParameters(self):
-        """
-        Created: 15.04.2006, KP
-        Description: Return the list of parameters needed for configuring this GUI
-        """            
-        return [["Filtering threshold",("Threshold",)]]
-
-
-    def execute(self,inputs,update=0,last=0):
-        """
-        Created: 15.04.2006, KP
-        Description: Execute the filter with given inputs and return the output
-        """                    
-        if not ProcessingFilter.ProcessingFilter.execute(self,inputs):
-            return None
-            
-        image = self.getInput(1)
-        
-        
-        if self.prevFilter and self.prevFilter.getITK():
-            image = self.convertITKtoVTK(image,imagetype="UL3",force=1)
-            image.Update()
-
-        x0,x1=image.GetScalarRange()
-        print "Input to filter has scalar range",x0,x1
-        print image.GetScalarTypeAsString()
-        accu = vtk.vtkImageAccumulate()
-        accu.SetInput(image)
-        accu.SetComponentExtent(0,x1,0,0,0,0)
-        accu.Update() 
-        data = accu.GetOutput()
-        
-        x0,x1,y0,y1,z0,z1 = data.GetWholeExtent()
-        
-        th = self.parameters["Threshold"]
-        filterval=0
-        print "th=",th
-        for i in range(0,int(x1)):
-            c=data.GetScalarComponentAsDouble(i,0,0,0)
-            if th and c<th and i>0:
-                filterval=i
-                break
-
-        print image.GetScalarRange(),image.GetScalarTypeAsString()
-
-        print "Filtering from",filterval
-        self.threshold = vtk.vtkImageThreshold()
-        
-        self.threshold.ThresholdByLower(filterval)
-        
-        self.threshold.SetOutValue(0)
-        self.threshold.ReplaceOutOn()
-        self.threshold.SetInput(image)
-        self.threshold.SetOutputScalarTypeToUnsignedLong ()
-        self.threshold.Update()
-        data=self.threshold.GetOutput()
-        print data.GetScalarRange(),data.GetScalarTypeAsString()
-        return data
         
 class ITKConfidenceConnectedFilter(ProcessingFilter.ProcessingFilter):
     """
@@ -1107,7 +1017,7 @@ class ITKConfidenceConnectedFilter(ProcessingFilter.ProcessingFilter):
     Description: A class for doing confidence connected segmentation
     """     
     name = "Confidence Connected"
-    category = SEGMENTATION
+    category = REGIONGROWING
     
     def __init__(self,inputs=(1,1)):
         """
@@ -1207,13 +1117,12 @@ class ITKConfidenceConnectedFilter(ProcessingFilter.ProcessingFilter):
 
 class ITKConnectedThresholdFilter(ProcessingFilter.ProcessingFilter):
     """
-    Class: ITKConnectedThresholdFilter
     Created: 26.05.2006, KP
     Description: A class for doing confidence connected segmentation
     """     
     name = "Connected Threshold"
-    category = SEGMENTATION
-    
+    category = REGIONGROWING
+    level = FILTER_BEGINNER
     def __init__(self,inputs=(1,1)):
         """
         Method: __init__()
@@ -1301,12 +1210,11 @@ class ITKConnectedThresholdFilter(ProcessingFilter.ProcessingFilter):
         
 class ITKNeighborhoodConnectedThresholdFilter(ProcessingFilter.ProcessingFilter):
     """
-    Class: ITKNeighborhoodConnectedThresholdFilter
     Created: 29.05.2006, KP
     Description: A class for doing connected threshold segmentation 
     """     
     name = "Neighborhood Connected Threshold"
-    category = SEGMENTATION
+    category = REGIONGROWING
     
     def __init__(self,inputs=(1,1)):
         """
@@ -1329,7 +1237,6 @@ class ITKNeighborhoodConnectedThresholdFilter(ProcessingFilter.ProcessingFilter)
             
     def getDefaultValue(self,parameter):
         """
-        Method: getDefaultValue
         Created: 29.05.2006, KP
         Description: Return the default value of a parameter
         """    
@@ -1346,7 +1253,6 @@ class ITKNeighborhoodConnectedThresholdFilter(ProcessingFilter.ProcessingFilter)
         
     def getType(self,parameter):
         """
-        Method: getType
         Created: 29.05.2006, KP
         Description: Return the type of the parameter
         """    
@@ -1358,7 +1264,6 @@ class ITKNeighborhoodConnectedThresholdFilter(ProcessingFilter.ProcessingFilter)
                 
     def getParameters(self):
         """
-        Method: getParameters
         Created: 29.05.2006, KP
         Description: Return the list of parameters needed for configuring this GUI
         """            
@@ -1369,7 +1274,6 @@ class ITKNeighborhoodConnectedThresholdFilter(ProcessingFilter.ProcessingFilter)
 
     def execute(self,inputs,update=0,last=0):
         """
-        Method: execute
         Created: 29.05.2006, KP
         Description: Execute the filter with given inputs and return the output
         """                    
@@ -1413,7 +1317,6 @@ class ITKNeighborhoodConnectedThresholdFilter(ProcessingFilter.ProcessingFilter)
 
 class ITKOtsuThresholdFilter(ProcessingFilter.ProcessingFilter):
     """
-    Class: ITKOtsuThresholdFilter
     Created: 26.05.2006, KP
     Description: A class for thresholding the image using the otsu thresholding
     """     
