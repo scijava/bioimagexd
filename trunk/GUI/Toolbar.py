@@ -113,62 +113,9 @@ class Toolbar(wx.Panel):
             for i,ctrl in enumerate(row):            
                 self.rowsizers[y].Add(ctrl)
                 self.rowsizers[y].AddSpacer((self.toolSeparation,0))                
+                self.ctrlToRow[ctrl] = self.rowsizers[y]
                 ms += self.sizes[i] + self.toolSeparation
         self.minSize = ms
-        
-        
-            
-            
-    def ReOrderItems(self,tgtsize=0):
-        """
-        Created: 27.04.2006, KP
-        Description: A method for re-ordering the toolbar items to rows
-        """          
-        for ctrl in self.ctrls:
-            if ctrl in self.ctrlToRow:
-                sizer = self.ctrlToRow[ctrl]
-                if sizer:
-                    if sizer in self.rowsizers:
-                        #print "Detaching rowsizer..."
-                        self.sizer.Detach(sizer)
-                        self.rowsizers.remove(sizer)
-                    #print "Detaching ",ctrl
-                    sizer.Detach(ctrl)
-                    self.ctrlToRow[ctrl]=None
-        self.rowsizers = []
-
-        if not tgtsize:
-            tgtsize = self.parent.GetSize()
-            
-        self.inFirstRow=0
-        self.x=0
-        self.y=0
-        tgs=tgtsize
-        ms  = 0
-        rowsizer = wx.BoxSizer(wx.HORIZONTAL)
-        self.sizer.Add(rowsizer,(self.y,0))                
-
-        self.rowsizers.append(rowsizer)
-        for i,ctrl in enumerate(self.ctrls):            
-            #print "ms=",ms,"size=",self.sizes[i],"tgtsize=",tgtsize
-            if ms+self.sizes[i] > tgtsize:
-                self.x=0                
-                self.y+=1
-                tgtsize=(self.y+1)*tgs
-                rowsizer = wx.BoxSizer(wx.HORIZONTAL)
-                self.sizer.Add(rowsizer,(self.y,0))                
-                self.rowsizers.append(rowsizer)
-            
-            if self.y == 0:self.inFirstRow+=1
-            rowsizer.Add(ctrl)
-            rowsizer.AddSpacer((self.toolSeparation,0))
-            #rowsizer.Insert(self.toolSeparation,self.toolSeparation,0)
-            self.ctrlToRow[ctrl] = rowsizer
-            self.x+=1
-            ms += self.sizes[i] + self.toolSeparation
-        self.minSize = ms
-        
-        #self.sizer.Fit(self)
         
     def getLayout(self, width):
         """
@@ -225,8 +172,7 @@ class Toolbar(wx.Panel):
         w=self.GetSize()[0]
         layout = self.getLayout(w)
         print "Layout for width",w,"has",len(layout),"rows"
-        self.createRows(layout)
-        
+        self.createRows(layout)        
         self.ReOrderItems2(layout, w)            
 #        self.ReOrderItems()
         self.Refresh()
@@ -235,12 +181,15 @@ class Toolbar(wx.Panel):
         """
         Created: 27.04.2006, KP
         Description: Delete a tool 
-        """          
+        """
         ctrl = self.idToTool[toolid]
         self.ctrls.remove(ctrl)
+        del self.idToTool[toolid]
         if ctrl in self.ctrlToRow:
             sizer = self.ctrlToRow[ctrl]
             sizer.Detach(ctrl)
+            ctrl.Show(0)
+            sizer.Remove(ctrl) 
             
         w=self.GetSize()[0]
         layout = self.getLayout(w)        
@@ -251,7 +200,6 @@ class Toolbar(wx.Panel):
         
     def AddControl(self,ctrl):
         """
-        Method: AddControl
         Created: 27.04.2006, KP
         Description: Add a control to the toolbar
         """          
@@ -292,7 +240,6 @@ class Toolbar(wx.Panel):
         
     def ToggleTool(self,toolid,flag):
         """
-        Method: ToggleTool
         Created: 27.04.2006, KP
         Description: A method for toggling a togglebutton on or off
         """      
@@ -312,7 +259,6 @@ class Toolbar(wx.Panel):
         
     def AddSeparator(self):
         """
-        Method: AddSeparator
         Created: 27.04.2006, KP
         Description: A method for adding a separator to the toolbar
         """          
@@ -325,7 +271,6 @@ class Toolbar(wx.Panel):
 
     def GetToolSeparation(self):
         """
-        Method: GetToolSeparation
         Created: 27.04.2006, KP
         Description: Return the width between tools
         """          
@@ -335,7 +280,6 @@ class Toolbar(wx.Panel):
         
     def GetToolSize(self):
         """
-        Method: GetToolSize
         Created: 27.04.2006, KP
         Description: Return the size of a toolbar item
         """          
@@ -343,7 +287,6 @@ class Toolbar(wx.Panel):
         
     def SetToolBitmapSize(self,size):
         """
-        Method: SetToolBitmapSize
         Created: 27.04.2006, KP
         Description: Set the bitmap size of the toolbar
         """          
