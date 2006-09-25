@@ -66,6 +66,9 @@ class VisualizerWindow(wxVTKRenderWindowInteractor):
         self.controlled="Camera"
         self.control="Joystick"
         self.enabled = 1
+        self.origParallelScale = None
+        self.origViewAngle = None
+        
     def enable(self,flag):
         """
         Method: enable(flag)
@@ -135,7 +138,6 @@ class VisualizerWindow(wxVTKRenderWindowInteractor):
         
     def getZoomFactor(self):
         """
-        Method: getZoomFactor
         Created: 22.07.2005
         Description: Set the view according to given params
         """
@@ -143,13 +145,13 @@ class VisualizerWindow(wxVTKRenderWindowInteractor):
         
     def setZoomFactor(self,factor):
         """
-        Method: setZoomFactor
         Created: 22.07.2005
         Description: Set the view according to given params
         """
         cam=self.renderer.GetActiveCamera()
-        cam.SetParallelScale(self.origParallelScale)
-        cam.SetViewAngle(self.origViewAngle)
+        if self.origParallelScale != None:            
+            cam.SetParallelScale(self.origParallelScale)
+            cam.SetViewAngle(self.origViewAngle)
         self.zoomFactor=factor
         print "Setting zoom factor to",factor
         self.renderer.GetActiveCamera().Zoom(factor)
@@ -158,7 +160,6 @@ class VisualizerWindow(wxVTKRenderWindowInteractor):
         
     def setView(self,params):
         """
-        Method: setView
         Created: 22.07.2005
         Description: Set the view according to given params
         """
