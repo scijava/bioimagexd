@@ -118,21 +118,23 @@ class ResampleDialog(wx.Dialog):
         self.factorY.SetValue("%.2f"%yf)
         self.factorZ.SetValue("%.2f"%zf)
         self.blockFactorUpdate=0
+        
     def onUpdateFactors(self,evt):
         """
         Created: 23.07.2006, KP
         Description: Update the factors, resulting in change in the dimensions
         """
         if self.blockFactorUpdate:
+            print "Blocking factor update"
             return
         x,y,z=self.dataUnits[0].dataSource.getOriginalDimensions()
         fx=1
         fy=1
         fz=1
         try:
-            fx=int(self.factorX.GetValue())
-            fy=int(self.factorY.GetValue())
-            fz=int(self.factorZ.GetValue())
+            fx=float(self.factorX.GetValue())
+            fy=float(self.factorY.GetValue())
+            fz=float(self.factorZ.GetValue())
         except:
             pass
         x*=fx
