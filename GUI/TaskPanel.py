@@ -51,14 +51,12 @@ import scripting as bxd
 
 class TaskPanel(scrolled.ScrolledPanel):
     """
-    Class: TaskPanel
     Created: 23.11.2004, KP
     Description: A baseclass for a panel for controlling the settings of the 
                  various task modules
     """
     def __init__(self,root,tb):
         """
-        Method: __init__(root,title)
         Created: 03.11.2004, KP
         Description: Initialization
         Parameters:
@@ -131,7 +129,6 @@ class TaskPanel(scrolled.ScrolledPanel):
         
     def onUpdateGUI(self,*arg):
         """
-        Method: onUpdateGUI
         Created: 07.02.2006, KP
         Description: A callback for updating the GUI when settings have been changed
         """         
@@ -139,7 +136,6 @@ class TaskPanel(scrolled.ScrolledPanel):
         
     def onSwitchDatasets(self,obj,evt,args):
         """
-        Method: onSwitchDatasets(obj,args)
         Created: 11.08.2005, KP
         Description: Switch the used source datasets
         """     
@@ -151,7 +147,6 @@ class TaskPanel(scrolled.ScrolledPanel):
         
     def createItemToolbar(self,force=0):
         """
-        Method: createItemToolbar()
         Created: 31.03.2005, KP
         Description: Method to create a toolbar for the window that allows use to select processed channel
         """      

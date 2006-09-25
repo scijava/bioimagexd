@@ -48,7 +48,6 @@ from wx.lib.statbmp  import GenStaticBitmap as StaticBitmap
 
 class UrmasDropTarget(wx.PyDropTarget):
     """
-    Class: UrmasDropTarget
     Created: 12.04.2005, KP
     Description: A drop target for dragging from the palette to timeline
     """
@@ -66,7 +65,6 @@ class UrmasDropTarget(wx.PyDropTarget):
 
     def OnLeave(self):
         """
-        Method: OnLeave
         Created: 13.04.2005, KP
         Description: Track mouse movement for reporting to target
         """
@@ -75,7 +73,6 @@ class UrmasDropTarget(wx.PyDropTarget):
         
     def OnDrop(self,x,y):
         """
-        Method: OnDrop(x,y)
         Created: 12.04.2005, KP
         Description: Return true to accept drop
         """
@@ -85,7 +82,6 @@ class UrmasDropTarget(wx.PyDropTarget):
         
     def OnDragOver(self,x,y,d):
         """
-        Method: OnDragOver(x,y,d)
         Created: 12.04.2005, KP
         Description: 
         """
@@ -95,7 +91,6 @@ class UrmasDropTarget(wx.PyDropTarget):
         
     def OnData(self,x,y,d):
         """
-        Method: OnData(x,y,d)
         Created: 12.04.2005, KP
         Description: Get the dropped data
         """
@@ -109,13 +104,11 @@ class UrmasDropTarget(wx.PyDropTarget):
 
 class UrmasPalette(wx.Panel):
     """
-    Class: UrmasPalette
     Created: 12.04.2005, KP
     Description: A palette from which items can be dragged to the timeline
     """
     def __init__(self,parent,control):
         """
-        Method: __init__
         Created: 12.04.2005, KP
         Description: Initialization
         Parameters:
@@ -203,7 +196,6 @@ class UrmasPalette(wx.Panel):
         
     def zoomToComboSelection(self,event):
         """
-        Method: zoomToComboSelection
         Created: 15.12.2005, KP
         Description: Set the zoom level of the tracks
         """        
@@ -214,7 +206,6 @@ class UrmasPalette(wx.Panel):
         
     def addDragDropItem(self,newid,icon,dragCallback,toolTip):        
         """
-        Method: addDragDropItem
         Created: 12.12.2005, KP
         Description: Add an item to the toolbar
         """
@@ -236,7 +227,6 @@ class UrmasPalette(wx.Panel):
         
     def onToolClick(self,event):
         """
-        Method: onToolNewPerpendicular
         Created: 07.08.2005, KP
         Description: A method that displays instructions if the user clicks on the palette
         """
@@ -244,7 +234,6 @@ class UrmasPalette(wx.Panel):
         
     def onToolNewPerpendicular(self,event):
         """
-        Method: onToolNewPerpendicular
         Created: 20.04.2005, KP
         Description: A method for dragging a spline from palette
         """
@@ -254,7 +243,6 @@ class UrmasPalette(wx.Panel):
 
     def onToolNewKeyframe(self,event):
         """
-        Method: onToolNewKeyframe
         Created: 20.04.2005, KP
         Description: A method for dragging a spline from palette
         """
@@ -264,7 +252,6 @@ class UrmasPalette(wx.Panel):
         
     def onToolNewKeyframeTrack(self,event):
         """
-        Method: onToolNewKeyframeTrack
         Created: 2.09.2005, KP
         Description: A method for dragging a keyframe track from palette
         """
@@ -275,7 +262,6 @@ class UrmasPalette(wx.Panel):
 
     def onToolNewSplineTrack(self,event):
         """
-        Method: onToolNewSplineTrack
         Created: 2.09.2005, KP
         Description: A method for dragging a spline track from palette
         """
@@ -286,7 +272,6 @@ class UrmasPalette(wx.Panel):
         
     def onToolNewTimepointTrack(self,event):
         """
-        Method: onToolNewTimepointTrack
         Created: 2.09.2005, KP
         Description: A method for dragging a timepoint track from palette
         """
@@ -298,7 +283,6 @@ class UrmasPalette(wx.Panel):
         
     def onToolNewStop(self,event):
         """
-        Method: onToolNewStop
         Created: 06.04.2005, KP
         Description: A method for dragging a spline from palette
         """
@@ -308,7 +292,6 @@ class UrmasPalette(wx.Panel):
 
     def onToolNewCircular(self,event):
         """
-        Method: onToolNewCircular
         Created: 06.04.2005, KP
         Description: A method for dragging a spline from palette
         """
@@ -318,7 +301,6 @@ class UrmasPalette(wx.Panel):
         
     def onToolNewSpline(self,event):
         """
-        Method: onToolNewSpline
         Created: 06.04.2005, KP
         Description: A method for dragging a spline from palette
         """
@@ -329,7 +311,6 @@ class UrmasPalette(wx.Panel):
         
     def onToolNewTimepoint(self,event):
         """
-        Method: onToolNewTimepoint
         Created: 06.04.2005, KP
         Description: A method for dragging a spline from palette
         """
@@ -340,7 +321,6 @@ class UrmasPalette(wx.Panel):
         
     def dropItem(self,datatype,indata="Hello, World!"):
         """
-        Method: dropItem
         Created: 06.04.2005, KP
         Description: A method that creates a DnD of specified type
         """

@@ -630,9 +630,6 @@ class MainWindow(wx.Frame):
         tb.DoAddTool(MenuManager.ID_SAVE_DATASET,"Save dataset",bmp,shortHelp="Write the processed dataset to disk")
         wx.EVT_TOOL(self,MenuManager.ID_SAVE_DATASET,self.onSaveDataset)
 
-        bmp = wx.Image(os.path.join(iconpath,"camera.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap()
-        tb.DoAddTool(MenuManager.ID_SAVE_SNAPSHOT,"Save rendered image",bmp,shortHelp="Save a snapshot of the rendered scene")
-
         
         bmp = wx.Image(os.path.join(iconpath,"open_settings.jpg"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
         tb.DoAddTool(MenuManager.ID_OPEN_SETTINGS,"Open settings",bmp,shortHelp="Open settings")
@@ -640,6 +637,9 @@ class MainWindow(wx.Frame):
         bmp = wx.Image(os.path.join(iconpath,"save_settings.jpg"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
         tb.DoAddTool(MenuManager.ID_SAVE_SETTINGS,"Save settings",bmp,shortHelp="Save settings")
         wx.EVT_TOOL(self,MenuManager.ID_SAVE_SETTINGS,self.onMenuSaveSettings)
+
+        bmp = wx.Image(os.path.join(iconpath,"camera.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap()
+        tb.DoAddTool(MenuManager.ID_SAVE_SNAPSHOT,"Save rendered image",bmp,shortHelp="Save a snapshot of the rendered scene")
 
         bmp = wx.Image(os.path.join(iconpath,"tree.jpg"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
         tb.DoAddTool(MenuManager.ID_SHOW_TREE,"File manager",bmp,kind=wx.ITEM_CHECK,shortHelp="Show file management tree")
