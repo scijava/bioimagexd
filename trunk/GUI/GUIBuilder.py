@@ -683,8 +683,7 @@ class GUIBuilder(wx.Panel):
 
         def updateRange(currentFilter,itemName, spin):
             minval,maxval = currentFilter.getRange(itemName)
-            Logging.backtrace()
-            print "\n\n\n**** SET SPIN RANGE",minval,maxval
+            
             spin.SetRange(minval,maxval)
         
         f = lambda obj,evt, spin=spin, i=itemName,fi=currentFilter,s=self: updateRange(fi,i,spin)

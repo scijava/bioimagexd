@@ -176,6 +176,7 @@ ID_SAVE_DATASET      =31218
 ID_VIEW_MASKSEL     =31219
 ID_ROI_TO_MASK      =31220
 ID_RESCALE          =31221
+ID_RESAMPLING       =31222
 
 class MenuManager:
     """
@@ -310,7 +311,6 @@ class MenuManager:
 
     def check(self,itemid,flag):
         """
-        Method: check(itemid,flag)
         Created: 25.06.2005, KP
         Description: Check / uncheck a menu item
         """
@@ -440,7 +440,6 @@ class MenuManager:
         
     def disable(self,itemid):
         """
-        Method: disable(itemid)
         Created: 29.05.2005, KP
         Description: Disable a menu item
         """
@@ -448,7 +447,6 @@ class MenuManager:
         
     def enable(self,itemid,callback=None):
         """
-        Method: enable(itemid)
         Created: 29.05.2005, KP
         Description: Enable a menu item
         """

@@ -42,6 +42,8 @@ import time
 import imp
 import sys
 
+import wx.lib.buttons as buttons
+
 import messenger
 
 from ConfigParser import *
@@ -418,10 +420,11 @@ class MainWindow(wx.Frame):
         cmd=Command.Command(Command.MGMT_CMD,None,None,do_cmd,undo_cmd,desc="Unselect all in file tree")
         cmd.run(recordOnly = 1)          
         
-        if data.dataSource.getResampleDimensions() != None:
-            self.resampleBtn.Enable(1)
+        tb = self.GetToolBar()
+        if data.dataSource.getResampleDimensions() != None:            
+            tb.EnableTool(MenuManager.ID_RESAMPLING,1)            
         else:
-            self.resampleBtn.Enable(0)
+            tb.EnableTool(MenuManager.ID_RESAMPLING,0) 
         # If no task window has been loaded, then we will update the visualizer
         # with the selected dataset
         if not self.currentTaskWindow:
@@ -521,7 +524,6 @@ class MainWindow(wx.Frame):
 
     def onSetStatus(self,obj,event,arg):
         """
-        Method: onSetStatus
         Created: 04.04.2006, KP
         Description: Set the status text
         """
@@ -529,7 +531,6 @@ class MainWindow(wx.Frame):
     
     def onShowError(self,obj,event,title,msg):
         """
-        Method: onShowError
         Created: 04.04.2006, KP
         Description: Show an error message
         """
@@ -537,7 +538,6 @@ class MainWindow(wx.Frame):
 
     def updateProgressBar(self,obj,event,arg,text=None,allow_gui=1):
         """
-        Method: updateProgressBar()
         Created: 03.11.2004, KP
         Description: Updates the progress bar
         """
@@ -609,7 +609,6 @@ class MainWindow(wx.Frame):
         
     def createToolBar(self):
         """
-        Method: createToolBar()
         Created: 03.11.2004, KP
         Description: Creates a tool bar for the window
         """
@@ -641,6 +640,7 @@ class MainWindow(wx.Frame):
         bmp = wx.Image(os.path.join(iconpath,"save_settings.jpg"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
         tb.DoAddTool(MenuManager.ID_SAVE_SETTINGS,"Save settings",bmp,shortHelp="Save settings")
         wx.EVT_TOOL(self,MenuManager.ID_SAVE_SETTINGS,self.onMenuSaveSettings)
+
         bmp = wx.Image(os.path.join(iconpath,"tree.jpg"),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
         tb.DoAddTool(MenuManager.ID_SHOW_TREE,"File manager",bmp,kind=wx.ITEM_CHECK,shortHelp="Show file management tree")
         wx.EVT_TOOL(self,MenuManager.ID_SHOW_TREE,self.onMenuShowTree)
@@ -691,16 +691,24 @@ class MainWindow(wx.Frame):
                 tb.ToggleTool(vid,1)
                 
         
-        tb.AddSeparator()
+#        tb.AddSeparator()
         
-        self.resampleBtn = wx.ToggleButton(tb, -1,"Resampling")
-        self.resampleBtn.SetValue(1)
-        self.resampleBtn.SetHelpText("Use this button to enable or disable the resampling of data.")
-        self.resampleBtn.Bind(wx.EVT_TOGGLEBUTTON, self.onResampleData)
-        tb.AddControl(self.resampleBtn)
+        bmp = wx.Image(os.path.join(iconpath,"resample.gif")).ConvertToBitmap()
+        tb.DoAddTool(MenuManager.ID_RESAMPLING,"Resampling",bmp,kind=wx.ITEM_CHECK,shortHelp="Enable or disable the resampling of image data")
+        wx.EVT_TOOL(self,MenuManager.ID_RESAMPLING,self.onResampleData)
+        tb.EnableTool(MenuManager.ID_RESAMPLING,0)
+        tb.ToggleTool(MenuManager.ID_RESAMPLING,1)
+        
+        #self.resampleBtn = buttons.GenBitmapToggleButton(tb,-1,bitmap,size=(32,32))
+        #self.resampleBtn = wx.ToggleButton(tb, -1,"Resampling")
+        #self.resampleBtn.SetValue(1)
+        #self.resampleBtn.SetHelpText("Use this button to enable or disable the resampling of data.")
+        #self.resampleBtn.Bind(wx.EVT_TOGGLEBUTTON, self.onResampleData)
+        #tb.AddControl(self.resampleBtn)
         
         
         self.cBtn = wx.ContextHelpButton(tb,MenuManager.CONTEXT_HELP)
+        self.cBtn.SetSize((32,32))
         tb.AddControl(self.cBtn)
         self.cBtn.Bind(wx.EVT_BUTTON,self.onContextHelp)
         
@@ -899,7 +907,10 @@ class MainWindow(wx.Frame):
         Created: 23.07.2006, KP
         Description: Toggle the resampling on / off
         """
-        flag=self.resampleBtn.GetValue()
+#        flag=self.resampleBtn.GetValue()
+        tb=self.GetToolBar()                    
+        flag=tb.GetToolState(MenuManager.ID_RESAMPLING)
+        print "SETTING RESAMPLING TO ",flag
         bxd.resamplingDisabled = not flag
         self.visualizer.updateRendering()
 
@@ -983,7 +994,9 @@ class MainWindow(wx.Frame):
             unit=self.visualizer.dataUnit
             self.visualizer.closeVisualizer()
             self.loadVisualizer(unit,mode)
-            self.resampleBtn.Enable(1)
+            tb = self.GetToolBar()
+            tb.EnableTool(MenuManager.ID_RESAMPLING,1)             
+            #self.resampleBtn.Enable(1)
 #            self.loadVisualizer(None,self.visualizer.mode,reload=1)        
         
     def onMenuRescaleData(self,evt):

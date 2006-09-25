@@ -263,7 +263,6 @@ class Toolbar(wx.Panel):
         
     def onToolButton(self,evt):
         """
-        Method: onToolButton
         Created: 27.04.2006, KP
         Description: A method for passing the events forward in event chain
         """        
@@ -274,7 +273,6 @@ class Toolbar(wx.Panel):
         
     def AddSimpleTool(self, wid, bitmap, shortHelpString = '',longHelpString = '', isToggle = 0):
         """
-        Method: AddSimpleTool
         Created: 27.04.2006, KP
         Description: A method for adding a tool to the toolbar
         """                            
@@ -304,7 +302,6 @@ class Toolbar(wx.Panel):
     def DoAddTool(self, wid, label, bitmap, bmpDisabled=None,
         kind=wx.ITEM_NORMAL, shortHelp='',longHelp = '',clientData = None):
         """
-        Method: DoAddTool
         Created: 27.04.2006, KP
         Description: A method for adding a tool to the toolbar
         """     
