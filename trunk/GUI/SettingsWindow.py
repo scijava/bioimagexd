@@ -41,7 +41,6 @@ import scripting
 
 class GeneralSettings(wx.Panel):
     """
-    Class: GeneralSettings
     Created: 09.02.2005, KP
     Description: A window for controlling the general settings of the application
     """ 
@@ -99,7 +98,6 @@ class GeneralSettings(wx.Panel):
         
     def writeSettings(self,conf):
         """
-        Method: writeSettings(config)
         Created: 05.04.2005, KP
         Description: A method that writes out the settings that have been modified
                      in this window.
@@ -115,7 +113,6 @@ class GeneralSettings(wx.Panel):
         
 class PathSettings(wx.Panel):
     """
-    Class: PathSettings
     Created: 09.02.2005, KP
     Description: A window for controlling the path settings of the application
     """ 
@@ -157,7 +154,6 @@ class PathSettings(wx.Panel):
         
     def writeSettings(self,conf):
         """
-        Method: writeSettings(config)
         Created: 12.03.2005, KP
         Description: A method that writes out the settings that have been modified
                      in this window.
@@ -177,7 +173,6 @@ class PathSettings(wx.Panel):
 
 class PerformanceSettings(wx.Panel):
     """
-    Class: PathSettings
     Created: 27.04.2006, KP
     Description: A window for controlling the performance settings of the application
     """ 
@@ -196,7 +191,14 @@ class PerformanceSettings(wx.Panel):
         resampleLbl = wx.StaticText(self,-1,"Resample images larger than:")
         resample2Lbl = wx.StaticText(self,-1,"Resample to image size:")
         
-        val = not not conf.getConfigItem("DoResample","Performance")
+        
+        val = conf.getConfigItem("DoResample","Performance")
+        if val:
+            val = eval(val)
+        else:
+            val=False
+        #val = not (not doresample)
+        #print "Setting to value=",val
         self.resampleCheckbox.SetValue(val)
         try:
             rx,ry=eval(conf.getConfigItem("ResampleDims","Performance"))
@@ -261,7 +263,6 @@ class PerformanceSettings(wx.Panel):
         
     def writeSettings(self,conf):
         """
-        Method: writeSettings(config)
         Created: 12.03.2005, KP
         Description: A method that writes out the settings that have been modified
                      in this window.
@@ -287,7 +288,6 @@ class PerformanceSettings(wx.Panel):
 
 class MovieSettings(wx.Panel):
     """
-    Class: MovieSettings
     Created: 09.02.2005, KP
     Description: A window for controlling the movie generation settings of the application
     """ 
@@ -298,7 +298,6 @@ class MovieSettings(wx.Panel):
 
 class SettingsWindow(wx.Dialog):
     """
-    Class: SettingsWindow
     Created: 09.02.2005, KP
     Description: A window for controlling the settings of the application
     """ 

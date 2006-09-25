@@ -115,10 +115,10 @@ void vtkImageColorMergeExecute(vtkImageColorMerge *self, int id,int NumberOfInpu
         ctf = self->GetColorTransferFunction(i);
         double range[2];
         ctf->GetRange(range);
-        int n = int(range[1]-range[0]);
+        int n = int(range[1]-range[0])+1;
 //	n++;
-        printf("Getting table with range %d,%d with %d values\n",(int)range[0],(int)range[1]-1,n);
-        map = ctf->GetTable(range[0],range[1]-1,n);
+        printf("Getting table with range %d,%d with %d values\n",(int)range[0],(int)range[1],n);
+        map = ctf->GetTable(range[0],range[1],n);
         //ctfs[i] = self->GetColorTransferFunction(i)->GetTable(0,255,256);
         ctfs[i] = new double[n*3];
 

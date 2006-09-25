@@ -34,7 +34,7 @@ import os,os.path
 import csv
 import sys
 import math
-
+import codecs
 try:
     import psyco
 except:
