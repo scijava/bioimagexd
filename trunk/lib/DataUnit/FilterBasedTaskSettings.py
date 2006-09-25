@@ -109,8 +109,11 @@ class FilterBasedTaskSettings(DataUnitSettings):
             for f in filters:
                 nametof[f.getName()] = f
             for name in fnames:
-                fclass = nametof[name]
-                flist.append(fclass)
+                try:
+                    fclass = nametof[name]
+                    flist.append(fclass)
+                except:
+                    pass
             return flist
                 
         else:

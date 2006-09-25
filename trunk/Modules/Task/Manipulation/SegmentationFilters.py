@@ -869,7 +869,7 @@ class MeasureVolumeFilter(ProcessingFilter.ProcessingFilter):
         f=codecs.open(filename,"wb","latin1")
         
         w=csv.writer(f,dialect="excel",delimiter=";")
-        w.writerow(["Object #","Volume (micrometers)","Volume (pixels)","Center of Mass","Center of Mass (micrometers)","Avg. Intensity"])
+        #w.writerow(["Object #","Volume (micrometers)","Volume (pixels)","Center of Mass","Center of Mass (micrometers)","Avg. Intensity"])
         for i,(volume,volumeum) in enumerate(self.values):
             cog = self.centersofmass[i]
             umcog = self.umcentersofmass[i]

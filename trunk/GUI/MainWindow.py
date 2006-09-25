@@ -304,7 +304,6 @@ class MainWindow(wx.Frame):
         
     def loadFiles(self,files):
         """
-        Method: loadFiles
         Created: 17.07.2006, KP
         Description: Load the given data files
         """         
@@ -314,7 +313,6 @@ class MainWindow(wx.Frame):
 
     def onMenuUndo(self,evt):
         """
-        Method: onMenuUndo
         Created: 13.02.2006, KP
         Description: Undo a previous command
         """    
@@ -326,7 +324,6 @@ class MainWindow(wx.Frame):
         
     def onMenuRedo(self,evt):
         """
-        Method: onMenuRedo
         Created: 13.02.2006, KP
         Description: Redo a previously undo'd action
         """    
@@ -337,7 +334,6 @@ class MainWindow(wx.Frame):
         
     def onExecuteCommand(self,obj,evt,command,undo=0):
         """
-        Method: onExecuteCommand
         Created: 13.02.2006, KP
         Description: A command was executed
         """    
@@ -353,7 +349,6 @@ class MainWindow(wx.Frame):
         
     def onDeleteDataset(self,obj,evt,arg):
         """
-        Method: onDeleteDataset
         Created: 12.08.2005, KP
         Description: Remove a dataset from the program
         """        
@@ -372,7 +367,6 @@ class MainWindow(wx.Frame):
         
     def onSwitchDataset(self,evt):
         """
-        Method: onSwitchDataset
         Created: 11.08.2005, KP
         Description: Switch the datasets used by a task module
         """        
@@ -381,7 +375,6 @@ class MainWindow(wx.Frame):
         
     def showTip(self):
         """
-        Method: showTip
         Created: 08.08.2005, KP
         Description: Show a tip to the user
         """
@@ -405,7 +398,6 @@ class MainWindow(wx.Frame):
             
     def onTreeSelectionChanged(self,obj,evt,data):
         """
-        Method: onTreeSelectionChanged
         Created: 22.07.2005, KP
         Description: A method for updating the dataset based on tree selection
         """
@@ -426,6 +418,10 @@ class MainWindow(wx.Frame):
         cmd=Command.Command(Command.MGMT_CMD,None,None,do_cmd,undo_cmd,desc="Unselect all in file tree")
         cmd.run(recordOnly = 1)          
         
+        if data.dataSource.getResampleDimensions() != None:
+            self.resampleBtn.Enable(1)
+        else:
+            self.resampleBtn.Enable(0)
         # If no task window has been loaded, then we will update the visualizer
         # with the selected dataset
         if not self.currentTaskWindow:
@@ -987,6 +983,7 @@ class MainWindow(wx.Frame):
             unit=self.visualizer.dataUnit
             self.visualizer.closeVisualizer()
             self.loadVisualizer(unit,mode)
+            self.resampleBtn.Enable(1)
 #            self.loadVisualizer(None,self.visualizer.mode,reload=1)        
         
     def onMenuRescaleData(self,evt):
@@ -1114,7 +1111,6 @@ class MainWindow(wx.Frame):
     
     def onMenuImport(self,evt):
         """
-        Method: onMenuImport()
         Created: 16.03.2005, KP
         Description: Callback function for menu item "Import"
         """
@@ -1123,8 +1119,6 @@ class MainWindow(wx.Frame):
     importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
     importdlg.ShowModal()
     """
-            
-        
             command = Command.Command(Command.MENU_CMD,None,None,import_code,"",imports=["GUI.ImportDialog"],desc="Show import dialog")
             self.commands["show_import"]=command
         self.commands["show_import"].run()
@@ -1134,7 +1128,6 @@ class MainWindow(wx.Frame):
         
     def onMenuExport(self,evt):
         """
-        Method: onMenuExport()
         Created: 20.04.2005, KP
         Description: Callback function for menu item "Export"
         """
@@ -1156,7 +1149,6 @@ class MainWindow(wx.Frame):
     
     def onMenuPreferences(self,evt):
         """
-        Method: menuPreferences()
         Created: 09.02.2005, KP
         Description: Callback function for menu item "Preferences"
         """
@@ -1165,7 +1157,6 @@ class MainWindow(wx.Frame):
 
     def onMenuReload(self,evt):
         """
-        Method: onMenuReload()
         Created: 24.05.2005, KP
         Description: Callback function for reloading vis modules
         """
@@ -1173,7 +1164,6 @@ class MainWindow(wx.Frame):
 
     def onMenuVisualizer(self,evt):
         """
-        Method: onMenuVisualizer()
         Created: 26.04.2005, KP
         Description: Callback function for launching the visualizer
         """
@@ -1263,7 +1253,6 @@ class MainWindow(wx.Frame):
         
     def onMenuOpenSettings(self,event):
         """
-        Method: onMenuOpenSettings()
         Created: 03.11.2004, KP
         Description: Callback function for menu item "Load settings"
         """
@@ -1290,7 +1279,6 @@ class MainWindow(wx.Frame):
 
     def onMenuSaveSettings(self,event):
         """
-        Method: onMenuSaveSettings()
         Created: 03.11.2004, KP
         Description: Callback function for menu item "Save settings"
         """
@@ -1310,7 +1298,6 @@ class MainWindow(wx.Frame):
         
     def onMenuOpen(self,evt,evt2=None,*args):
         """
-        Method: onMenuOpen()
         Created: 03.11.2004, KP
         Description: Callback function for menu item "Open VTK File"
         """
@@ -1336,9 +1323,7 @@ class MainWindow(wx.Frame):
 
     def createDataUnit(self,name,path):
         """
-        Method: createDataUnit(name,path)
-        Created: 03.11.2004
-        Creator: KP
+        Created: 03.11.2004, KP
         Description: Creates a dataunit with the given name and path
         Parameters:
             name    Name used to identify this dataunit
@@ -1429,7 +1414,6 @@ class MainWindow(wx.Frame):
 
     def onMenuShowTaskWindow(self,event):
         """
-        Method: showTaskWindow
         Created: 11.1.2005, KP
         Description: A method that shows a taskwindow of given type
         """
@@ -1470,7 +1454,6 @@ class MainWindow(wx.Frame):
             
     def loadTask(self, taskname):
         """
-        Method: loadTask
         Created: 16.07.2006, KP
         Description: Load the task with the given name
         """   
@@ -1573,7 +1556,6 @@ class MainWindow(wx.Frame):
         
     def onMenuShowTree(self,event,show=-1):
         """
-        Method: showTree
         Created: 21.07.2005, KP
         Description: A method that shows the file management tree
         """
@@ -1598,7 +1580,6 @@ class MainWindow(wx.Frame):
 
     def loadVisualizer(self,dataunit,mode,processed=0,**kws):
         """
-        Method: loadVisualizer
         Created: 25.05.2005, KP
         Description: Load a dataunit and a given mode to visualizer
         """          
@@ -1634,7 +1615,6 @@ class MainWindow(wx.Frame):
 
     def setButtonSelection(self,eid,all=0):
         """
-        Method: showButtonSelection(eid)
         Created: 01.06.2005, KP
         Description: Select only the selected button
         """
@@ -1654,7 +1634,6 @@ class MainWindow(wx.Frame):
 
     def onMenuAbout(self,evt):
         """
-        Method: onMenuAbout()
         Created: 03.11.2004, KP
         Description: Callback function for menu item "About"
         """
@@ -1664,7 +1643,6 @@ class MainWindow(wx.Frame):
         
     def viewHelp(self,obj,evt,args):
         """
-        Method: viewHelp
         Created: 05.08.2004, KP
         Description: A method that shows a help of some item
         """
@@ -1679,7 +1657,6 @@ class MainWindow(wx.Frame):
             
     def onMenuHelp(self,evt):
         """
-        Method: onMenuHelp()
         Created: 02.08.2004, KP
         Description: Callback function for menu item "Help"
         """
@@ -1687,7 +1664,6 @@ class MainWindow(wx.Frame):
         
     def saveWindowSizes(self):
         """
-        Method: saveWindowSizes
         Created: 13.04.2006, KP
         Description: Save window sizes to the settings
         """        
@@ -1699,7 +1675,6 @@ class MainWindow(wx.Frame):
     
     def quitApp(self,evt):
         """
-        Method: quitApp()
         Created: 03.11.2004, KP
         Description: Possibly queries the user before quitting, then quits
         """

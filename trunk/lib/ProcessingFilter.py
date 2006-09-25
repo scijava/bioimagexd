@@ -125,11 +125,20 @@ class ProcessingFilter(GUIBuilder.GUIBuilderBase):
                 # First record the proper value
                 value = roi
             else:
-                setval=str(value)
-                setoldval=str(oldval)
-            do_cmd="bxd.mainWindow.tasks['Process'].%s.set('%s',%s)"%(func,parameter,setval)
+                if type(value) in [types.StringType,types.UnicodeType]:
+                    print "\n\n************ Is string"
+                    setval="'%s'"%value
+                    setoldval="'%s'"%oldval
+                else:
+                    print "Not string"
+                    setval=str(value)
+                    setoldval=str(oldval)
+            
+            print "setval=",setval,"oldval=",oldval
+            n = bxd.mainWindow.currentTaskWindowName
+            do_cmd="bxd.mainWindow.tasks['%s'].%s.set('%s',%s)"%(n,func,parameter,setval)
             if setoldval:
-                undo_cmd="bxd.mainWindow.tasks['Process'].%s.set('%s',%s)"%(func,parameter,setoldval)
+                undo_cmd="bxd.mainWindow.tasks['%s'].%s.set('%s',%s)"%(n,func,parameter,setoldval)
             else:
                 undo_cmd=""
             cmd=Command.Command(Command.PARAM_CMD,None,None,do_cmd,undo_cmd,desc="Change parameter '%s' of filter '%s'"%(parameter,self.name))
