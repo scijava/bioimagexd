@@ -473,6 +473,7 @@ class MorphologicalWatershedSegmentationFilter(ProcessingFilter.ProcessingFilter
         
         self.descs = {"Level":"Segmentation Level"}
         self.itkFlag = 1
+        self.n=0
         
         self.watershed = None
         #scripting.loadITK(filters=1)            
@@ -521,8 +522,8 @@ class MorphologicalWatershedSegmentationFilter(ProcessingFilter.ProcessingFilter
             self.itkfilter.SetMarkWatershedLine(0)
 
         t =time.time()
-        print "Feeding to watershed",image
-        print "Level=",self.parameters["Level"]
+        #print "Feeding to watershed",image
+        #print "Level=",self.parameters["Level"]
         self.itkfilter.SetInput(image)
         self.itkfilter.SetLevel(self.parameters["Level"])
                 
@@ -530,7 +531,7 @@ class MorphologicalWatershedSegmentationFilter(ProcessingFilter.ProcessingFilter
         self.itkfilter.Update()
         print "Morphological watershed took",time.time()-t,"seconds"
         data=self.itkfilter.GetOutput()            
-        print "Returning ",data
+        #print "Returning ",data
         return data
 
 class ConnectedComponentFilter(ProcessingFilter.ProcessingFilter):
@@ -834,8 +835,6 @@ class ITKInvertIntensityFilter(ProcessingFilter.ProcessingFilter):
         
         return data
 
-
-
 class MeasureVolumeFilter(ProcessingFilter.ProcessingFilter):
     """
     Created: 15.05.2006, KP
@@ -854,6 +853,7 @@ class MeasureVolumeFilter(ProcessingFilter.ProcessingFilter):
         self.descs = {}      
         self.values = None
         self.centersofmass = None
+        self.avgintCalc = None
         self.umcentersofmass = None
         self.avgIntList = None
         self.reportGUI = None
@@ -923,26 +923,22 @@ class MeasureVolumeFilter(ProcessingFilter.ProcessingFilter):
         """                    
         if not ProcessingFilter.ProcessingFilter.execute(self,inputs):
             return None
-            
         image = self.getInput(1)
-        
+        print "INPUT IMAGE FOR MEASUREMENT=",image
         #print "converting to ITK, image=",image
         #image = self.convertVTKtoITK(image)
         #print "image now=",image
         
         
-        if not self.itkfilter:
-            if not self.labelShape:
-                import labelShape
-                self.labelShape = labelShape
+        if not self.labelShape:
+            import labelShape
+            self.labelShape = labelShape
 
             #ul3 = itk.Image.UL3
-            self.itkfilter = self.labelShape.LabelShapeImageFilter[image].New()
-
+        self.itkfilter = self.labelShape.LabelShapeImageFilter[image].New()
         self.itkfilter.SetInput(image)
-        
+        self.itkfilter.Update()
         #self.setImageType("UL3")
-
         data=self.itkfilter.GetOutput()            
                    
             
@@ -953,27 +949,26 @@ class MeasureVolumeFilter(ProcessingFilter.ProcessingFilter):
         vol = x*y*z
         
         voxelSizes=[x,y,z]
-    
-        self.itkfilter.Update()
         n = self.itkfilter.GetNumberOfLabels()
         values = []
         centersofmass = []
         umcentersofmass = []
         avgints=[]
-        print "Converting to VTK"
-        image = self.convertITKtoVTK(image)
         
+        vtkimage = self.convertITKtoVTK(image)                
         origInput = self.getInput(2)
+        print "Converted to VTK",vtkimage
         
-        avgintCalc = vtk.vtkImageLabelAverage()
+        if self.avgintCalc:
+            del self.avgintCalc
+        self.avgintCalc = avgintCalc = vtk.vtkImageLabelAverage()
         #avgintCalc.DebugOn()
 
         avgintCalc.AddInput(origInput)
-        avgintCalc.AddInput(image)
+        avgintCalc.AddInput(vtkimage)
         print "Calculating..."
         avgintCalc.Update()
         print "done"
-
 
         for i in range(0,n):
             volume = self.itkfilter.GetVolume(i)
@@ -1008,8 +1003,7 @@ class MeasureVolumeFilter(ProcessingFilter.ProcessingFilter):
             self.reportGUI.setVolumes(values)
             self.reportGUI.setCentersOfMass(centersofmass)
             self.reportGUI.setAverageIntensities(self.avgIntList)
-        return image
-
+        return self.itkfilter.GetOutput()
         
 class ITKConfidenceConnectedFilter(ProcessingFilter.ProcessingFilter):
     """

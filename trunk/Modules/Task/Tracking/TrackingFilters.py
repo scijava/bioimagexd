@@ -32,6 +32,7 @@ __date__ = "$Date: 2005/01/13 14:52:39 $"
 
 import wx
 import types
+import os,os.path
 import vtk
 import Command
 import re
@@ -47,6 +48,10 @@ import GUI.GUIBuilder as GUIBuilder
 import ImageOperations
 
 import Particle
+
+from lib import Track
+
+import messenger
 
 import ProcessingFilter
 def getFilterList():
@@ -69,6 +74,10 @@ class CreateTracksFilter(ProcessingFilter.ProcessingFilter):
         Created: 13.04.2006, KP
         Description: Initialization
         """        
+        self.tracks = []
+        self.track = None
+        self.tracker = None
+
         ProcessingFilter.ProcessingFilter.__init__(self,(1,1))
         
         self.descs={
@@ -79,10 +88,12 @@ class CreateTracksFilter(ProcessingFilter.ProcessingFilter):
             "MinLength":"Minimum length of track (timepoints)",
             "MinSize":"Minimum size of tracked objects",
             "TrackFile":"First file of track",
-            "SizeWeight":"","DirectionWeight":"","IntensityWeight":""}
+            "SizeWeight":"","DirectionWeight":"","IntensityWeight":"",
+            "ResultsFile":"File containing the tracking results",
+            "Track":"Track to visualize"}
     
         self.numberOfPoints = None
-        self.tracker = None
+        
         self.particleFileBase = ""
     def setParameter(self,parameter,value):
         """
@@ -91,9 +102,20 @@ class CreateTracksFilter(ProcessingFilter.ProcessingFilter):
         """    
         ProcessingFilter.ProcessingFilter.setParameter(self, parameter, value)
         if parameter == "TrackFile":
-            self.particleFileBase = value.split("_")[0]
-                    
-        
+            parts = value.split("_")
+            self.particleFileBase = "_".join(parts[:-1])
+        elif parameter == "ResultsFile" and os.path.exists(value):
+            self.track = Track.Track(value)
+            self.tracks = self.track.getTracks(self.parameters["MinLength"])
+            print "Read %d tracks"%(len(self.tracks))
+            messenger.send(self,"update_Track")
+            if self.parameters.has_key("Track"):
+                messenger.send(None,"visualize_tracks",self.tracks,self.parameters["Track"])
+        elif parameter == "Track":
+            if self.tracks:
+                messenger.send(None,"visualize_tracks",self.tracks,self.parameters["Track"])            
+        if parameter=="MinLength":
+            messenger.send(self,"update_Track")
     
     def getParameters(self):
         """
@@ -102,7 +124,9 @@ class CreateTracksFilter(ProcessingFilter.ProcessingFilter):
         """            
         return [["Change between consecutive objects",("MaxVelocity","MaxSizeChange","MaxIntensityChange", "MaxDirectionChange")],
         ["Tracking",("MinLength","MinSize")],
-        ["Load track",(("TrackFile","Select track file to load","*.csv"),)]]
+        ["Load track",(("TrackFile","Select track file to load","*.csv"),)],
+        ["Tracking Results",(("ResultsFile","Select track file that contains the results","*.csv"),)],
+        ["Visualization",("Track",)]]
         
     def getDesc(self,parameter):
         """
@@ -130,6 +154,7 @@ class CreateTracksFilter(ProcessingFilter.ProcessingFilter):
             return GUIBuilder.SPINCTRL
         elif parameter in ["SizeWeight","DirectionWeight","IntensityWeight","MaxDirectionChange","MaxIntensityChange","MaxSizeChange"]:
             return GUIBuilder.SPINCTRL
+        if parameter=="Track":return GUIBuilder.SLICE            
         return GUIBuilder.FILENAME
         
     def getRange(self,parameter):
@@ -141,6 +166,10 @@ class CreateTracksFilter(ProcessingFilter.ProcessingFilter):
             return (0,999)
         if parameter=="MaxSizeChange":
             return (0,100)
+        if parameter=="Track":
+            if self.track:
+                minlength = self.parameters["MinLength"]
+                return 0,self.track.getNumberOfTracks(minlength)            
         if parameter=="MinLength":
             if self.numberOfPoints:
                 return 0,self.numberOfPoints
@@ -148,7 +177,7 @@ class CreateTracksFilter(ProcessingFilter.ProcessingFilter):
         if parameter=="MaxDirectionChange":
             return (0,360)
         return (0,100)
-        
+                
     def getDefaultValue(self,parameter):
         """
         Created: 14.08.2006, KP
@@ -172,6 +201,9 @@ class CreateTracksFilter(ProcessingFilter.ProcessingFilter):
             return 10
         if parameter == "MaxSizeChange":
             return 25
+        if parameter=="Track":return 0            
+        if parameter == "ResultsFile":
+            return "track_results.csv"
         return "tracks.csv"
         
     def execute(self,inputs,update=0,last=0):
@@ -188,19 +220,20 @@ class CreateTracksFilter(ProcessingFilter.ProcessingFilter):
         
         if not self.tracker:
             self.tracker = Particle.ParticleTracker()
-        
-        self.tracker.setFilterObjectSize(self.parameters["MinSize"])
-        self.tracker.readFromFile(self.particleFileBase)        
-        self.tracker.setMinimumTrackLength(self.parameters["MinLength"])
-        self.tracker.setDistanceChange(self.parameters["MaxVelocity"])
-        
-        self.tracker.setSizeChange(self.parameters["MaxSizeChange"])
-        self.tracker.setIntensityChange(self.parameters["MaxIntensityChange"])
-        self.tracker.setAngleChange(self.parameters["MaxDirectionChange"])
-        
-        self.tracker.track()
-        self.tracker.writeTracks("track_results.csv")
+        try:
+            self.tracker.setFilterObjectSize(self.parameters["MinSize"])
             
-        if update:
-            self.vtkfilter.Update()
-        return self.vtkfilter.GetOutput()    
+            self.tracker.readFromFile(self.particleFileBase)        
+            self.tracker.setMinimumTrackLength(self.parameters["MinLength"])
+            self.tracker.setDistanceChange(self.parameters["MaxVelocity"]/100.0)
+            self.tracker.setSizeChange(self.parameters["MaxSizeChange"]/100.0)
+            self.tracker.setIntensityChange(self.parameters["MaxIntensityChange"]/100.0)
+            self.tracker.setAngleChange(self.parameters["MaxDirectionChange"])
+            
+            self.tracker.track()
+            self.tracker.writeTracks(self.parameters["ResultsFile"])
+        except:
+            pass
+            
+        return image
+        

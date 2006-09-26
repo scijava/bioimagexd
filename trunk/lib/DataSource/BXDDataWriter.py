@@ -91,7 +91,6 @@ class BXDDataWriter(DataWriter):
         toremove=[]
         for item in self.imagesToWrite:
             imagedata,path=item
-            print "path=",path
             if n==0:break
             self.writeImageData(imagedata,path)
             toremove.append(item)
@@ -186,3 +185,4 @@ class BXDDataWriter(DataWriter):
             "Failed to write vtkImageData object to file %s"%filename,ex)
             return
         print "done"
+

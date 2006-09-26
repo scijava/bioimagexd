@@ -67,7 +67,7 @@ class ProcessingFilter(GUIBuilder.GUIBuilderBase):
         GUIBuilder.GUIBuilderBase.__init__(self, changeCallback = self.notifyTaskPanel)
 
         self.numberOfInputs = numberOfInputs
-        
+        self.noop = 0
         self.parameters = {}
         self.gui = None
         
@@ -216,8 +216,8 @@ class ProcessingFilter(GUIBuilder.GUIBuilderBase):
         
         self.vtkToItk = ImageType.New()
         
-        if self.prevFilter and self.prevFilter.getITK():
-            return image
+        #if self.prevFilter and self.prevFilter.getITK():
+        #    return image
         if cast:            
             icast = vtk.vtkImageCast()
             if cast==types.FloatType:
@@ -225,6 +225,7 @@ class ProcessingFilter(GUIBuilder.GUIBuilderBase):
             icast.SetInput(image)
             image = icast.GetOutput()
         self.vtkToItk.SetInput(image)
+        self.vtkToItk.Update()
         return self.vtkToItk.GetOutput()
             
             
@@ -241,6 +242,7 @@ class ProcessingFilter(GUIBuilder.GUIBuilderBase):
         #if not self.itkToVtk:            
         #    c=eval("itk.Image.%s"%imagetype)
         #    self.itkToVtk = itk.ImageToVTKImageFilter[c].New()
+        del self.itkToVtk
         self.itkToVtk = itk.ImageToVTKImageFilter[image].New()
         # If the next filter is also an ITK filter, then won't
         # convert
@@ -248,6 +250,7 @@ class ProcessingFilter(GUIBuilder.GUIBuilderBase):
             print "NEXT FILTER IS ITK"
             return image
         self.itkToVtk.SetInput(image)
+        self.itkToVtk.Update()
         return self.itkToVtk.GetOutput()        
         
     def setNextFilter(self,nfilter):
@@ -294,7 +297,11 @@ class ProcessingFilter(GUIBuilder.GUIBuilderBase):
         """             
         if not self.sourceUnits:
             self.sourceUnits = self.dataUnit.getSourceDataUnits()
-        return self.sourceUnits[n].getTimePoint(self.taskPanel.timePoint)
+        tp=self.taskPanel.timePoint
+        if bxd.processingTimepoint != -1:
+            tp = bxd.processingTimepoint
+        print "RETURNING TIMEPOINT %d AS SOURCE"%tp
+        return self.sourceUnits[n].getTimePoint(tp)
         
     def getNumberOfInputs(self):
         """

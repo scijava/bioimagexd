@@ -53,13 +53,13 @@ class VisualizeTrackModule(VisualizationModule):
     """    
     def __init__(self,parent,visualizer,**kws):
         """
-        Method: __init__(parent)
         Created: 03.05.2005, KP
         Description: Initialization
         """     
         VisualizationModule.__init__(self,parent,visualizer,**kws)   
 
-        self.descs = {"TrackFile":"Select the track file","AllTracks":"Show all tracks","Track":"Select the track to visualize","MinLength":"Minimum length of track"}
+        self.descs = {"TrackFile":"Select the track file","AllTracks":"Show all tracks","Track":"Select the track to visualize","MinLength":"Minimum length of track",
+                "ShowObject":"Show object using Surface Rendering"}
         
         self.track = None
         self.mapper = vtk.vtkDataSetMapper()
@@ -92,11 +92,10 @@ class VisualizeTrackModule(VisualizationModule):
         Description: Return the list of parameters needed for configuring this GUI
         """            
         return [ ["Load track",(("TrackFile","Select track file to load","*.csv"),)],
-       ["Visualized track",("AllTracks","Track","MinLength")] ]
+       ["Visualized track",("AllTracks","Track","MinLength","ShowObject")] ]
         
     def getDefaultValue(self,parameter):
         """
-        Method: getDefaultValue
         Created: 13.04.2006, KP
         Description: Return the default value of a parameter
         """           
@@ -104,10 +103,10 @@ class VisualizeTrackModule(VisualizationModule):
         if parameter=="Track":return 0
         if parameter=="MinLength":return 3
         if parameter=="AllTracks":return False
+        if parameter=="ShowObject":return False
             
     def getRange(self, parameter):
         """
-        Method: getRange
         Created: 31.05.2006, KP
         Description: If a parameter has a certain range of valid values, the values can be queried with this function
         """     
@@ -127,7 +126,6 @@ class VisualizeTrackModule(VisualizationModule):
         
     def getType(self,parameter):
         """
-        Method: getType
         Created: 13.04.2006, KP
         Description: Return the type of the parameter
         """    
@@ -137,7 +135,6 @@ class VisualizeTrackModule(VisualizationModule):
         if parameter=="AllTracks":return types.BooleanType
     def __getstate__(self):
         """
-        Method: __getstate__
         Created: 02.08.2005, KP
         Description: A getstate method that saves the lights
         """            
@@ -149,7 +146,6 @@ class VisualizeTrackModule(VisualizationModule):
         
     def __set_pure_state__(self,state):
         """
-        Method: __set_pure_state__()
         Created: 02.08.2005, KP
         Description: Set the state of the light
         """        
@@ -159,7 +155,6 @@ class VisualizeTrackModule(VisualizationModule):
                 
     def setDataUnit(self,dataunit):
         """
-        Method: setDataUnit(self)
         Created: 28.04.2005, KP
         Description: Sets the dataunit this module uses for visualization
         """       
@@ -167,7 +162,6 @@ class VisualizeTrackModule(VisualizationModule):
 
     def showTimepoint(self,value):
         """
-        Method: showTimepoint(tp)
         Created: 28.04.2005, KP
         Description: Set the timepoint to be displayed
         """          
@@ -177,7 +171,6 @@ class VisualizeTrackModule(VisualizationModule):
         
     def updateRendering(self):
         """
-        Method: updateRendering()
         Created: 03.05.2005, KP
         Description: Update the Rendering of this module
         """             
@@ -196,7 +189,7 @@ class VisualizeTrackModule(VisualizationModule):
             polyGrid.Allocate(len(tracks), 1)
                 
             for track in tracks:
-                print "Visualizing track=",track
+                #print "Visualizing track=",track
                 
                 npts = len(track)
                 polyLinePoints = vtk.vtkPoints()
@@ -221,14 +214,12 @@ class VisualizeTrackModule(VisualizationModule):
         
     def setProperties(self,ambient,diffuse,specular,specularpower):
         """
-        Method: setProperties(ambient,diffuse,specular,specularpower)
         Created: 16.05.2005, KP
         Description: Set the ambient, diffuse and specular lighting of this module
         """         
         pass
     def setShading(self,shading):
         """
-        Method: setShading(shading)
         Created: 16.05.2005, KP
         Description: Set shading on / off
         """          
@@ -238,7 +229,6 @@ class VisualizeTrackModule(VisualizationModule):
 class VisualizeTrackConfiguration(ModuleConfiguration):
     def __init__(self,parent,visualizer):
         """
-        Method: __init__(parent)
         Created: 29.05.2006, KP
         Description: Initialization
         """     
@@ -248,7 +238,6 @@ class VisualizeTrackConfiguration(ModuleConfiguration):
 class VisualizeTrackConfigurationPanel(ModuleConfigurationPanel):
     def __init__(self,parent,visualizer,name="VisualizeTrack",**kws):
         """
-        Method: __init__(parent)
         Created: 29.05.2006, KP
         Description: Initialization
         """     
@@ -256,7 +245,6 @@ class VisualizeTrackConfigurationPanel(ModuleConfigurationPanel):
     
     def initializeGUI(self):
         """
-        Method: initializeGUI()
         Created: 28.04.2005, KP
         Description: Initialization
         """          
@@ -264,7 +252,6 @@ class VisualizeTrackConfigurationPanel(ModuleConfigurationPanel):
         
     def setModule(self,module):
         """
-        Method: setModule(module)
         Created: 28.04.2005, KP
         Description: Set the module to be configured
         """  
@@ -276,7 +263,6 @@ class VisualizeTrackConfigurationPanel(ModuleConfigurationPanel):
 
     def onApply(self,event):
         """
-        Method: onApply()
         Created: 28.04.2005, KP
         Description: Apply the changes
         """     

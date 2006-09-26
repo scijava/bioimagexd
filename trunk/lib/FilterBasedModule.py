@@ -77,9 +77,13 @@ class FilterBasedModule(Module):
                      that control the processing are changed and the
                      preview data becomes invalid.
         """
+        self.images=[]
         Module.reset(self)
         self.preview=None
         self.extent=None
+        del self.cached
+        self.cached = None        
+        self.cachedTimepoint=-1
         self.n=-1
 
     def addInput(self,dataunit,data):
@@ -113,8 +117,7 @@ class FilterBasedModule(Module):
         """
         Created: 04.04.2006, KP
         Description: Manipulationes the dataset in specified ways
-        """
-        
+        """        
         if preview and not self.modified and self.cached and self.timepoint == self.cachedTimepoint:
             print "\n\n***** Returning cached data, timepoint=",self.timepoint,"cached timepoint=",self.cachedTimepoint,"\n\n******"
             return self.cached
@@ -148,7 +151,9 @@ class FilterBasedModule(Module):
                     currfilter.setNextFilter(filterlist[i+1])
                 else:
                     currfilter.setNextFilter(None)
+                
                 data = currfilter.execute(data,update=flag,last=flag)
+                
                 lastfilter = currfilter
                 
                 if not preview:
@@ -162,10 +167,11 @@ class FilterBasedModule(Module):
                     self.cached = None
                     return None                
         
+        print "DATA=",data
         data = data[0]
         if data.__class__ != vtk.vtkImageData:
             
-            data = lastfilter.convertITKtoVTK(data,imagetype=lasttype)
+            data = lastfilter.convertITKtoVTK(data)#,imagetype=lasttype)
 
         data.ReleaseDataFlagOff()
         #self.cached = data
