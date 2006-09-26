@@ -88,7 +88,7 @@ class Toolbar(wx.Panel):
             
             x=self.GetSize()[0] 
             y=44*len(layout)
-            print "x=",x,"y=",y
+            #print "x=",x,"y=",y
             self.parent.SetDefaultSize((x,y))
             self.sizer.Fit(self)                
             self.Layout()
@@ -161,7 +161,6 @@ class Toolbar(wx.Panel):
             if len(self.rowsizers) <=y:
                 rowsizer = wx.BoxSizer(wx.HORIZONTAL)            
                 self.rowsizers.append(rowsizer)
-                print "Adding rowsizer to",y,0
                 self.sizer.Add(rowsizer,(y,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
         
     def Realize(self):

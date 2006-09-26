@@ -38,13 +38,11 @@ import vtk
 
 class Track:
     """
-    Class: Track
     Created: 12.07.2006, KP
     Description: A class representing a track of a particle
     """
     def __init__(self,filename=""):
         """
-        Method: __init__(parent)
         Created: 12.07.2006, KP
         Description: Initialization
         """
@@ -54,22 +52,21 @@ class Track:
         
     def readFromFile(self,filename):
         """
-        Method: getNumberOfTracks
         Created: 12.07.2006, KP
         Description: Return the number of tracks
         """ 
         self.maxLength = -1        
         try:
-            self.reader = csv.reader(open(filename), dialect="excel",delimiter=";")
-            self.tracks = self.readTracks(self.reader)
-            self.getMaximumTrackLength()
+            self.reader = csv.reader(open(filename), dialect="excel",delimiter=";")            
         except:
             self.reader = None
             self.tracks = []
+        if self.reader:
+            self.tracks = self.readTracks(self.reader)
+            self.getMaximumTrackLength()
             
     def getTrack(self, n, minLength = 3):
         """
-        Method: methodName
         Created: 20.06.2006, KP
         Description: Method desc
         """   
@@ -79,7 +76,6 @@ class Track:
         
     def getMaximumTrackLength(self):
         """
-        Method: getMaximumTrackLength
         Created: 12.07.2006, KP
         Description: Return the maximum length of a track
         """           
@@ -92,7 +88,6 @@ class Track:
         
     def getNumberOfTracks(self, minLength = 3):
         """
-        Method: getNumberOfTracks
         Created: 12.07.2006, KP
         Description: Return the number of tracks
         """           
@@ -100,7 +95,6 @@ class Track:
         
     def getTracks(self, minLength = 3):
         """
-        Method: getTracks
         Created: 12.07.2006, KP
         Description: Return the tracks with length >= minLength
         """   
@@ -110,9 +104,9 @@ class Track:
         if not self.tracks:
             return []
         return filter(lambda x, m = minLength:f(x,m), self.tracks)
+            
     def readTracks(self, reader):
         """
-        Method: readTracks
         Created: 12.07.2006, KP
         Description: Read tracks from the given file
         """   
@@ -120,13 +114,16 @@ class Track:
         ctrack=[]
         
         currtrack=-1
-        for track, timepoint, x,y,z in reader:
+        print "Reading..."
+        
+        for track, objval,timepoint, x,y,z in reader:
             try:
                 tracknum=int(track)
             except:
                 continue
-            print "Got track",track,timepoint,x,y,z
+            
             timepoint = int(timepoint)
+            objval = int(objval)
             x = float(x)
             y = float(y)
             z = float(z)

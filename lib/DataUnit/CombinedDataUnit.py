@@ -34,6 +34,7 @@ import DataSource
 import vtk
 import Logging
 import messenger
+import scripting as bxd
 
 class CombinedDataUnit(DataUnit.DataUnit):
     """
@@ -142,9 +143,7 @@ class CombinedDataUnit(DataUnit.DataUnit):
         
     def getDimensions(self):
         """
-        Method: getDimensions()
-        Created: 10.11.2004
-        Creator: KP
+        Created: 10.11.2004, KP
         Description: Returns the (x,y,z) dimensions of the datasets this 
                      dataunit contains
         """
@@ -152,7 +151,6 @@ class CombinedDataUnit(DataUnit.DataUnit):
         
     def getDataUnitCount(self):
         """
-        Method: getDataUnitCount
         Created: 03.11.2004, JM
         Description: Returns the count of DataUnits
         """
@@ -160,7 +158,6 @@ class CombinedDataUnit(DataUnit.DataUnit):
 
     def getSourceDataUnits(self):
         """
-        Method: getSourceDataUnits
         Created: 03.11.2004, KP
         Description: Returns a list of references to the contained DataUnits
         """
@@ -168,7 +165,6 @@ class CombinedDataUnit(DataUnit.DataUnit):
 
     def doProcessing(self,duFile,**kws):
         """
-        Method: doProcessing(duFile)
         Created: 08.11.2004, JM
         Description: Executes the module's operation using the current settings
         Parameters:
@@ -196,13 +192,16 @@ class CombinedDataUnit(DataUnit.DataUnit):
             for timePoint in timepoints:
                 # First we reset the module, so that we can start the operation
                 # from clean slate
+                bxd.processingTimepoint = timePoint
                 self.module.reset()
                 # We get the processed timepoint from each of the source data 
                 # units
                 #self.module.setSettings(self.settings)
-                self.module.setTimepoint(timePoint)                
+                self.module.setTimepoint(timePoint)
+                
                 for dataunit in self.sourceunits:
                     image=dataunit.getTimePoint(timePoint)
+                
                     self.module.addInput(dataunit,image)
                 # Get the vtkImageData containing the results of the operation 
                 # for this time point
@@ -214,7 +213,7 @@ class CombinedDataUnit(DataUnit.DataUnit):
                 if not settings_only:
                     self.dataWriter.addImageData(imageData)
                     self.dataWriter.sync()
-
+        bxd.processingTimepoint = -1
         if settings_only:
             self.settings.set("SettingsOnly","True")
         self.createDataUnitFile(self.dataWriter)
@@ -234,8 +233,6 @@ class CombinedDataUnit(DataUnit.DataUnit):
             value=str(self.sourceunits[i])
             self.settings.setCounted(key,i,value)
         
-        print "Writing settings",self.settings
-        print "writing ctf=",self.settings.get("ColorTransferFunction")
         self.settings.writeTo(parser)
         writer.write()
 
@@ -304,7 +301,6 @@ class CombinedDataUnit(DataUnit.DataUnit):
 
     def doPreview(self, depth,renew,timePoint=0):
         """
-        Method: doPreview
         Created: 08.11.2004, JM
         Description: Makes a two-dimensional preview using the class-specific combination function
         Parameters: depth       The preview depth

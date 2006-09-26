@@ -41,13 +41,11 @@ import Logging
 
 class ExportDialog(wx.Dialog):
     """
-    Class: ExportDialog
     Created: 20.03.2005, KP
     Description: A dialog for export dataset to various formats
     """
     def __init__(self, parent,dataUnit,imageMode=1):
         """
-        Method: __init__
         Created: 17.03.2005, KP
         Description: Initialize the dialog
         """    
@@ -59,15 +57,19 @@ class ExportDialog(wx.Dialog):
         self.n = dataUnit.getLength()
         self.imageAmnt = z*self.n
         self.sizer=wx.GridBagSizer()
-        self.notebook = wx.Notebook(self,-1)
-        self.sizer.Add(self.notebook,(0,0),flag=wx.EXPAND|wx.ALL)
-        self.createImageExport()
-        self.createVTIExport()
-        
-        self.notebook.AddPage(self.imagePanel,"Stack of Images")
-        self.notebook.AddPage(self.vtkPanel,"VTK Dataset")
-        if not imageMode:
-            self.notebook.SetSelection(1)
+#        self.notebook = wx.Notebook(self,-1)
+#        self.sizer.Add(self.notebook,(0,0),flag=wx.EXPAND|wx.ALL)
+        if imageMode == 1:
+            self.createImageExport()
+            self.sizer.Add(self.imagePanel, (0,0),flag=wx.EXPAND|wx.ALL)
+        else:
+            self.createVTIExport()
+            self.sizer.Add(self.vtkPanel, (0,0),flag=wx.EXPAND|wx.ALL)
+        self.imageMode = imageMode
+#        self.notebook.AddPage(self.imagePanel,"Stack of Images")
+#        self.notebook.AddPage(self.vtkPanel,"VTK Dataset")
+        #if not imageMode:
+        #    self.notebook.SetSelection(1)
 
         self.btnsizer=self.CreateButtonSizer(wx.OK|wx.CANCEL)
         
@@ -82,11 +84,10 @@ class ExportDialog(wx.Dialog):
         
     def onOkButton(self,event):
         """
-        Method: onOkButton
         Created: 20.04.2005, KP
         Description: Executes the procedure
         """            
-        if self.notebook.GetSelection()==0:
+        if self.imageMode ==1:
             self.writeImages()
         else:
             self.writeDatasets()
@@ -94,7 +95,6 @@ class ExportDialog(wx.Dialog):
         
     def writeImages(self):
         """
-        Method: writeImages
         Created: 20.04.2005, KP
         Description: Writes out the images
         """            
@@ -146,7 +146,6 @@ class ExportDialog(wx.Dialog):
             
     def writeDatasets(self,event=None):
         """
-        Method: writeDatasets
         Created: 20.04.2005, KP
         Description: A method that writes the datasets
         """        
@@ -180,13 +179,12 @@ class ExportDialog(wx.Dialog):
         
     def createImageExport(self):
         """
-        Method: createImageExport()
         Created: 17.03.2005, KP
         Description: Creates a panel for importing of images as slices of a volume
         """            
-        self.imagePanel = wx.Panel(self.notebook,-1,size=(640,480))
+        self.imagePanel = wx.Panel(self,-1,size=(640,480))
         self.imageSizer=wx.GridBagSizer(5,5)
-        self.imageSourcebox=wx.StaticBox(self.imagePanel,-1,"Source of Images")
+        self.imageSourcebox=wx.StaticBox(self.imagePanel,-1,"Target Directory for Images")
         self.imageSourceboxsizer=wx.StaticBoxSizer(self.imageSourcebox,wx.VERTICAL)
         
         self.imageSourceboxsizer.SetMinSize((600,100))
@@ -273,11 +271,10 @@ class ExportDialog(wx.Dialog):
     
     def createVTIExport(self):
         """
-        Method: createVTIExport()
         Created: 20.04.2005, KP
         Description: Creates a panel for exporting data as vtk datasets
         """            
-        self.vtkPanel = wx.Panel(self.notebook,-1,size=(640,480))
+        self.vtkPanel = wx.Panel(self,-1,size=(640,480))
         self.vtkSizer=wx.GridBagSizer(5,5)
         self.vtkSourcebox=wx.StaticBox(self.vtkPanel,-1,"Source of Datasets")
         self.vtkSourceboxsizer=wx.StaticBoxSizer(self.vtkSourcebox,wx.VERTICAL)
@@ -352,7 +349,6 @@ class ExportDialog(wx.Dialog):
     
     def sortNumerically(self,item1,item2):
         """
-        Method: sortNumerically
         Created: 17.03.2005, KP
         Description: A method that compares two filenames and sorts them by the number in their filename
         """        
@@ -365,7 +361,6 @@ class ExportDialog(wx.Dialog):
     
     def updateListOfImages(self,event=None):
         """
-        Method: updateListOfImages
         Created: 20.04.2005, KP
         Description: A method that updates a list of images to a listbox based on the selected input type
         """        
@@ -397,7 +392,6 @@ class ExportDialog(wx.Dialog):
                     
     def updateListOfDatasets(self,event=None):
         """
-        Method: updateListOfDatasets
         Created: 20.04.2005, KP
         Description: A method that updates a list of datasets to a listbox based on the selected input type
         """        

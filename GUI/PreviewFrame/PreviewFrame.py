@@ -151,6 +151,8 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         self.scrollsize=32
         self.singleslice=0
         self.scrollTo=None
+        self.tracks = []
+        self.whichTrack = 0
         InteractivePanel.InteractivePanel.__init__(self,parent,size=size,**kws)
         
         
@@ -190,20 +192,31 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
 #        PreviewFrame.count-=1
 
         messenger.connect(None,"show_centerofmass",self.onShowCenterOfMass)
+        messenger.connect(None,"visualize_tracks",self.onShowTracks)
     
     def onShowCenterOfMass(self, obj, evt, label, centerofmass):
         """
-        Method: onShowCenterOfMass
         Created: 04.07.2006, KP
         Description: Show the given center of mass
         """            
         self.centerOfMass = (label, centerofmass)
         self.updatePreview()
     
+    def onShowTracks(self,obj, evt, tracks,which):
+        """
+        Created: 25.09.2006, KP
+        Description: Show all the tracks
+        """
+        if not tracks:
+            return
+        self.tracks = tracks
+        self.whichTrack = which
+        self.Refresh()
+            
+
 
     def onSize(self,event):
         """
-        Method: onSize
         Created: 23.05.2005, KP
         Description: Size event handler
         """    
@@ -819,7 +832,15 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
                 dc.SetFont(wx.Font(9,wx.SWISS,wx.NORMAL,wx.BOLD))
                 dc.DrawText("%d"%label,x-5,y-5)
                 
- 
+        if self.tracks:        
+            dc.SetPen(wx.Pen((255,255,255),2))
+            track=self.tracks[self.whichTrack]
+            x0,y0,z0 = track[0]
+            dc.DrawCircle(x0*self.zoomFactor, y0*self.zoomFactor,3)
+            for x1,y1,z1 in track[1:]:                
+                dc.DrawCircle(x1*self.zoomFactor, y1*self.zoomFactor,3)
+                dc.DrawLine(x0*self.zoomFactor,y0*self.zoomFactor,x1*self.zoomFactor,y1*self.zoomFactor)
+                x0,y0 = x1,y1
             
         self.bmp=self.buffer
         

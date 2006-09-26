@@ -38,6 +38,7 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 import vtk
 from DataUnit import FilterBasedTaskSettings
+import ImageOperations
 
 import TrackingFilters
 
@@ -54,3 +55,18 @@ class TrackingSettings(FilterBasedTaskSettings.FilterBasedTaskSettings):
         FilterBasedTaskSettings.FilterBasedTaskSettings.__init__(self,n)
         self.set("Type","Tracking")
         self.filterModule = TrackingFilters
+        
+    def initialize(self,dataunit,channels, timepoints):
+        """
+        Created: 27.03.2005
+        Description: Set initial values for settings based on 
+                     number of channels and timepoints
+        """
+        FilterBasedTaskSettings.FilterBasedTaskSettings.initialize(self,dataunit,channels,timepoints)
+        
+        if hasattr(dataunit,"getScalarRange"):
+            minval,maxval = dataunit.getScalarRange()
+        else:
+            minval,maxval = dataunit.getSourceDataUnits()[0].getScalarRange()
+        ctf = ImageOperations.watershedPalette(minval,maxval)
+        self.set("ColorTransferFunction",ctf)

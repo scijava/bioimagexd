@@ -148,6 +148,8 @@ class ParticleTracker:
         self.tracks = []
         if psyco:
             psyco.bind(self.getStats)
+            psyco.bind(self.angle)
+            psyco.bind(Particle.distance)
             psyco.bind(self.track)
         
     def setMinimumTrackLength(self, minlen):
@@ -322,7 +324,18 @@ class ParticleTracker:
         """
         x1,y1,z1 = p1.posInPixels
         x2,y2,z2 = p2.posInPixels
-        return math.atan2(y2 - y1, x2 - x1) * 180.0 / math.pi;
+        ang=math.atan2(y2 - y1, x2 - x1) * 180.0 / math.pi;
+        ang2=ang
+        if ang<0:ang2=180+ang
+        return ang,ang2
+        
+    def toScore(self, distFactor, sizeFactor, intFactor, angleFactor = 1):
+        """
+        Created: 25.09.2006, KP
+        Description: Return a score that unifies the different factors into a single score
+        """
+        #return 0.50*distFactor+0.2*angleFactor+0.15*sizeFactor+0.15*intFactor
+        return distFactor*angleFactor*sizeFactor*intFactor
     
     def track(self):
         """
@@ -380,17 +393,39 @@ class ParticleTracker:
                             # the previous particle  (= oldParticle)
                             distFactor, sizeFactor, intFactor = self.score(testParticle,oldParticle)
                             failed = (distFactor==None)    
+                            angleFactor = 0
+                            # If the particle being tested passed the previous tests
+                            # and there is already a particle before the current one,
+                            # then calculate the angle and see that it fits in the margin
+                            if not failed and len(track) >1:
+                                angle,absang = self.angle(track[-2],track[-1])
+                                angle2,absang2  = self.angle(track[-1],testParticle)
+                                
+                                angdiff=abs(absang-absang2)
+                                # If angle*angle2 < 0 then either (but not both) of the angles 
+                                # is negative, so the particle being tested is in wrong direction
+                                if angle*angle2<0:
+                                    failed=1                                                            
+                                elif  angdiff > self.angleChange:                                    
+                                    failed=1                            
+                                else:                                                                        
+                                    angleFactor = float(angdiff) / self.angleChange
+                                    
                             
+                            #if not failed:
+                            #    print "Factors = ",distFactor, sizeFactor, intFactor
+                         
                             # If we got a match between the previous particle (oldParticle)
                             # and the currently tested particle (testParticle) and testParticle
                             # is not in a track
                             if (not failed) and (not testParticle.inTrack):
+                                currScore = self.toScore(distFactor, sizeFactor, intFactor, angleFactor)
                                 # if there's no other particle that fits the criteria
                                 if not foundOne:
                                     # Mark the particle being tested as the current candidate
                                     currCandidate = testParticle
                                     testParticle.inTrack = True
-                                    testParticle.matchScore = distFactor * sizeFactor * intFactor
+                                    testParticle.matchScore = currScore
                                     testParticle.trackNum = trackCount
                                     currentMatch.copy(testParticle)
                                     foundOne = True
@@ -401,7 +436,8 @@ class ParticleTracker:
                                     testParticle.flag = True
                                     # Compare the distance calculated between the particle
                                     # that is currently being tested, and the old candidate particle
-                                    if (distFactor * sizeFactor * intFactor) < currentMatch.matchScore:
+                                    
+                                    if currScore < currentMatch.matchScore:
                                     #if dist < currentMatch.distance(oldParticle):
                                         testParticle.inTrack = True
                                         testParticle.trackNum = trackCount

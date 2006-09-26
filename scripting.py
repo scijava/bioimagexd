@@ -48,6 +48,7 @@ visualizer = None
 processingManager = None
 memLimit = None
 resamplingDisabled = 0
+processingTimepoint = -1
 
 
 def execute_limited(pipeline):
