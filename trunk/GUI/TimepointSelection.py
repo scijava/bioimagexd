@@ -127,7 +127,6 @@ class TimepointSelectionPanel(scrolled.ScrolledPanel):
         
     def updateSelection(self,event=None):
         """
-        Method: updateSelection(event)
         Created: 17.11.2004, KP
         Description: A callback that is used to select every nth button, where
                      N is the value of the nthEntry entry
@@ -136,11 +135,14 @@ class TimepointSelectionPanel(scrolled.ScrolledPanel):
             n=int(self.nthEntry.GetValue())
         except:
             n=1
-        do_cmd = "bxd.processingManager.timepointSelection.selectEveryNth(%d)"%n
-        undo_cmd = ""
-        cmd=Command.Command(Command.GUI_CMD,None,None,do_cmd,undo_cmd,desc="Select every Nth timepoint for processing")
-        cmd.run()        
-        
+        try:
+            do_cmd = "bxd.processingManager.timepointSelection.selectEveryNth(%d)"%n
+            undo_cmd = ""
+            cmd=Command.Command(Command.GUI_CMD,None,None,do_cmd,undo_cmd,desc="Select every Nth timepoint for processing")
+            cmd.run()
+        except:
+            self.selectEveryNth(n)
+
     def selectEveryNth(self, n):
         """
         Method: selectEveryNth(n)
