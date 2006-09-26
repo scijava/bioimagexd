@@ -23,7 +23,7 @@ do
 for file in `find $dir -type f -maxdepth 1`
 do
   FILE="`echo $file|sed s/"."/"$FROMDIR2"/|tr / '\\\\'`"
-  DIR="`echo $dir|sed s/"."/"{app}\\ITK-pkg"/|tr / '\\\\'`"
+  DIR="`echo $dir|sed s/"."/"{app}\\ITK-pkg\\"/|tr / '\\\\'`"
   if [ "$DIR" = "." ]; then
      TODIR="{app}"
   else

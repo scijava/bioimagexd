@@ -38,6 +38,7 @@ import UIElements
 import messenger
 from Logging import *
 
+
 class ProcessingManager(TimepointSelection):
     """
     Created: 03.11.2004, KP
@@ -45,7 +46,6 @@ class ProcessingManager(TimepointSelection):
     """
     def __init__(self,parent,operation):
         """
-        Method: __init__
         Created: 10.11.2004
         Description: Initialization
         """
