@@ -57,13 +57,19 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
     count=0
     def __init__(self,parent,**kws):
         """
-        Method: __init__(parent)
         Created: 03.11.2004, KP
         Description: Initialization
         """
         #PreviewFrame.count+=1
         #wx.Panel.__init__(self,parent,-1)
         xframe=sys._getframe(1)
+        self.graySize = (0,0)
+        self.bgcolor = (127,127,127)
+        self.maxSizeX, self.maxSizeY = 512, 512
+        self.maxX, self.maxY         = 512, 512
+        self.origX, self.origY       = 512 ,512
+        self.lastEventSize = None
+        self.paintSize = (512,512)
         self.creator=xframe.f_code.co_filename+": "+str(xframe.f_lineno)
         self.parent=parent
         self.blackImage=None
@@ -135,6 +141,7 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         
         x,y=size
         self.buffer = wx.EmptyBitmap(x,y)
+        
         if kws.has_key("zoomx"):
             self.zoomx=kws["zoomx"]
             del kws["zoomx"]
@@ -153,8 +160,9 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         self.scrollTo=None
         self.tracks = []
         self.whichTrack = 0
-        InteractivePanel.InteractivePanel.__init__(self,parent,size=size,**kws)
+        InteractivePanel.InteractivePanel.__init__(self,parent,size=size,bgColor = self.bgcolor,**kws)
         
+        self.calculateBuffer()
         
         self.paintPreview()
         
@@ -194,6 +202,7 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         messenger.connect(None,"show_centerofmass",self.onShowCenterOfMass)
         messenger.connect(None,"visualize_tracks",self.onShowTracks)
     
+    
     def onShowCenterOfMass(self, obj, evt, label, centerofmass):
         """
         Created: 04.07.2006, KP
@@ -214,20 +223,51 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         self.Refresh()
             
 
+    def calculateBuffer(self):
+        """
+        Created: 23.05.2005, KP
+        Description: Calculate the drawing buffer required
+        """    
+        if not self.enabled:
+            return
+        if not self.imagedata:
+            x,y = self.parent.GetClientSize()
+            maxX, maxY = x,y
+        else:
+            x,y,z=self.imagedata.GetDimensions()
+            maxX=self.maxX
+            maxY=self.maxY
+
+        if self.maxSizeX>maxX:maxX=self.maxSizeX
+        if self.maxSizeY>maxY:maxY=self.maxSizeY
+        x,y=maxX,maxY
+        if self.paintSize!=(x,y):    
+            self.paintSize=(x,y)            
+            self.setScrollbars(x,y)
+        Logging.info("paintSize=",self.paintSize,kw="preview")
+        if bxd.visualizer.zoomToFitFlag:
+            self.zoomToFit()
 
     def onSize(self,event):
         """
         Created: 23.05.2005, KP
         Description: Size event handler
         """    
+        if event.GetSize() == self.lastEventSize:
+            print "**** LAST SIZE THE SAME"
+            return
+        print "Last size=",self.lastEventSize, "new size=",event.GetSize()
+        self.lastEventSize = event.GetSize()
+        
         InteractivePanel.InteractivePanel.OnSize(self,event)
-        #self.gallerySize=event.GetSize()
-        #Logging.info("Gallery size changed to ",self.gallerySize,kw="preview")
         self.sizeChanged=1
-
+        if self.enabled:
+            self.calculateBuffer()
+            self.updatePreview()
+        event.Skip()
+        
     def setRenewFlag(self,obj,evt):
         """
-        Method: setRenewFlag
         Created: 12.08.2005, KP
         Description: Set the flag telling the preview to renew
         """        
@@ -235,7 +275,6 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         
     def setSelectedItem(self,item,update=1):
         """
-        Method: setSelectedItem(n)
         Created: 05.04.2005, KP
         Description: Set the item selected for configuration
         """
@@ -397,7 +436,8 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         
         if x>self.maxX or y>self.maxY:
             Logging.info("Setting scrollbars to %d,%d"%(x,y),kw="preview")
-            self.setScrollbars(x,y)
+            #self.setScrollbars(x,y)
+            #self.calculateBuffer()
         
         if x>self.maxX:x=self.maxX
         if y>self.maxY:y=self.maxY
@@ -405,8 +445,11 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         x*=self.zoomx
         y*=self.zoomy
         Logging.info("Setting preview to %d,%d"%(x,y),kw="preview")
-        if self.enabled:
-            self.SetSize((x,y))
+        #if self.enabled:
+        self.paintSize = (0,0)
+        self.calculateBuffer()
+        print "Calculating buffer size, it's now",self.buffer.GetWidth(),self.buffer.GetHeight()    
+        #    self.SetSize((x,y))
         
         if selectedItem!=-1:
             self.setSelectedItem(selectedItem,update=0)
@@ -428,11 +471,14 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         Parameters:
         renew    Whether the method should recalculate the images
         """
+        
         if self.renewNext:
             renew=1
             self.renewNext=0
         
         if not self.dataUnit:
+            print "No dataunit"
+            self.paintPreview()
             return
         if not self.enabled:
             Logging.info("Preview not enabled, won't render",kw="preview")
@@ -463,22 +509,23 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         
         black=0
         if not preview:
-            Logging.info("Creating black preview",kw="preview")
-            if not self.blackImage:
-                if self.dataUnit.isProcessed():
-                    data=self.dataUnit.getSourceDataUnits()[0].getTimePoint(0)
-                else:
-                    data = self.dataUnit.getTimePoint(0)
-                extent=data.GetExtent()
-                dims=data.GetDimensions()
-                self.blackImage=vtk.vtkImageData()
-                self.blackImage.SetDimensions(dims)
-                self.blackImage.SetScalarTypeToUnsignedChar()
-                self.blackImage.SetNumberOfScalarComponents(3)
-                self.blackImage.SetExtent(extent)       
-                #self.blackImage.AllocateScalars()
-            #print "preview=",self.blackImage
-            preview=self.blackImage
+            #Logging.info("Creating black preview",kw="preview")
+            #if not self.blackImage:
+            #    if self.dataUnit.isProcessed():
+            #        data=self.dataUnit.getSourceDataUnits()[0].getTimePoint(0)
+            #    else:
+            #        data = self.dataUnit.getTimePoint(0)
+            #    extent=data.GetExtent()
+            #    dims=data.GetDimensions()
+            #    self.blackImage=vtk.vtkImageData()
+            #    self.blackImage.SetDimensions(dims)
+            #    self.blackImage.SetScalarTypeToUnsignedChar()
+            #    self.blackImage.SetNumberOfScalarComponents(3)
+            #    self.blackImage.SetExtent(extent)       
+            #    #self.blackImage.AllocateScalars()
+            ##print "preview=",self.blackImage
+            #preview=self.blackImage
+            preview=None
             black=1
         
         if not black:
@@ -489,34 +536,37 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         
         self.currentImage=colorImage
                     
-        x,y,z=colorImage.GetDimensions()
-        print "\n\nIMAGE DIMENSIONS=",x,y,z,"EXTENT=",colorImage.GetWholeExtent()
-        #print "Preview dims=",preview.GetDimensions()
-        bxd.visualizer.zslider.SetRange(1,z)
-        if x!=self.oldx or y!=self.oldy:
-            #self.resetScroll()
-            self.setScrollbars(x,y)
-            self.oldx=x
-            self.oldy=y
-        #print "colorImage=",colorImage.GetDimensions()
-        Logging.info("Setting image (not null: %s)"%(not not colorImage),kw="preview")
-        self.setImage(colorImage)
-        self.setZSlice(self.z)
+        if colorImage:
+            x,y,z=colorImage.GetDimensions()
+            print "\n\nIMAGE DIMENSIONS=",x,y,z,"EXTENT=",colorImage.GetWholeExtent()
+            #print "Preview dims=",preview.GetDimensions()
+            bxd.visualizer.zslider.SetRange(1,z)
+            if x!=self.oldx or y!=self.oldy:
+                #self.resetScroll()
+                #self.setScrollbars(x,y)
+                self.oldx=x
+                self.oldy=y
+            #print "colorImage=",colorImage.GetDimensions()
+            Logging.info("Setting image (not null: %s)"%(not not colorImage),kw="preview")
+            self.setImage(colorImage)
+            self.setZSlice(self.z)
         
-        z=self.z
-        if self.singleslice:
-            Logging.info("Single slice, will use z=0",kw="preview")
-            z=0
+            z=self.z
+            if self.singleslice:
+                Logging.info("Single slice, will use z=0",kw="preview")
+                z=0
         if not self.imagedata:
             Logging.info("No imagedata to preview",kw="preview")
-            return
+#            return
+            self.slice = None
         else:
             self.slice=ImageOperations.vtkImageDataToWxImage(self.imagedata,z)
             
         Logging.info("Painting preview",kw="preview")
+        print "PAINT PREVIEW"
         self.paintPreview()
-        self.Refresh()
-        wx.GetApp().Yield(1)
+        #self.Refresh()
+        #wx.GetApp().Yield(1)
         #print "self.bmp=",self.bmp,self.bmp.GetWidth(),self.bmp.GetHeight()
         self.updateScrolling()
         
@@ -524,7 +574,6 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
 
     def processOutputData(self,data):
         """
-        Method: processOutputData()
         Created: 03.04.2005, KP
         Description: Process the data before it's send to the preview
         """            
@@ -583,7 +632,6 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
 
     def saveSnapshot(self,filename):
         """
-        Method: saveSnapshot(filename)
         Created: 05.06.2005, KP
         Description: Save a snapshot of the scene
         """      
@@ -601,10 +649,11 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         Description: Enable/Disable updates
         """
         self.enabled=flag
+        if flag:
+            self.calculateBuffer()
         
     def setPreviewType(self,event):
         """
-        Method: setPreviewType
         Created: 03.04.2005, KP
         Description: Method to set the proper previewtype
         """     
@@ -620,7 +669,6 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         
     def updateColor(self):
         """
-        Method: updateColor()
         Created: 20.11.2004, KP
         Description: Update the preview to use the selected color transfer 
                      function
@@ -653,7 +701,6 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
  
     def setSingleSliceMode(self,mode):
         """
-        Method: setSingleSliceMode()
         Created: 05.04.2005, KP
         Description: Sets this preview to only show a single slice
         """    
@@ -661,7 +708,6 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
                 
     def setZSlice(self,z):
         """
-        Method: setZSlice(z)
         Created: 24.03.2005, KP
         Description: Sets the optical slice to preview
         """    
@@ -669,7 +715,6 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         
     def setImage(self,image):
         """
-        Method: setImage(image)
         Created: 24.03.2005, KP
         Description: Sets the image to display
         """    
@@ -689,7 +734,6 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         
     def setZoomFactor(self,f):
         """
-        Method: setZoomFactor
         Created: 24.03.2005, KP
         Description: Sets the factor by which the image should be zoomed
         """
@@ -709,7 +753,6 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         
     def zoomToFit(self):
         """
-        Method: zoomToFit()
         Created: 25.03.2005, KP
         Description: Sets the zoom factor so that the image will fit into the screen
         """
@@ -720,6 +763,8 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
             x,y,z=self.dataUnit.getDimensions()
             maxX = self.maxSizeX
             maxY = self.maxSizeY
+            maxX-=10 # marginal
+            maxY-=10 #marginal
             #if self.maxSizeX<maxX:maxX=self.maxSizeX
             #if self.maxSizeY<maxY:maxY=self.maxSizeY
             
@@ -732,7 +777,6 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         
     def updateScrolling(self,event=None):
         """
-        Method: updateScrolling
         Created: 24.03.2005, KP
         Description: Updates the scroll settings
         """
@@ -740,7 +784,7 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
             return
         if self.bmp:
             Logging.info("Updating scroll settings (size %d,%d)"%(self.bmp.GetWidth(),self.bmp.GetHeight()),kw="preview")
-            self.setScrollbars(self.bmp.GetWidth()*self.zoomx,self.bmp.GetHeight()*self.zoomy)       
+            #self.setScrollbars(self.bmp.GetWidth()*self.zoomx,self.bmp.GetHeight()*self.zoomy)       
         if self.scrollTo:
             x,y=self.scrollTo
             Logging.info("Scrolling to %d,%d"%(x,y),kw="preview")
@@ -753,25 +797,28 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
 
     def paintPreview(self, clientdc = None):
         """
-        Method: paintPreview()
         Created: 24.03.2005, KP
         Description: Paints the image to a DC
         """        
+        if not self.slice and self.graySize == self.paintSize:
+            return
+        Logging.backtrace()        
         if not clientdc:
             clientdc = wx.ClientDC(self)
-        else:
-            print "USING CLIENTDC=",clientdc
+        dc = self.dc = wx.BufferedDC(clientdc,self.buffer)
+        dc.BeginDrawing()
+        
+        dc.SetBackground(wx.Brush(wx.Colour(*self.bgcolor)))
+        dc.SetPen(wx.Pen(wx.Colour(*self.bgcolor),0))
+        dc.SetBrush(wx.Brush(wx.Color(*self.bgcolor)))
+        dc.DrawRectangle(0,0,self.paintSize[0],self.paintSize[1])
+            
         if not self.slice:
-            Logging.info("Black preview",kw="preview")
-            dc = self.dc = wx.BufferedDC(clientdc,self.buffer)
-            dc.BeginDrawing()
-            dc.SetBackground(wx.Brush(wx.Colour(0,0,0)))
-            dc.SetPen(wx.Pen(wx.Colour(0,0,0),0))
-            dc.SetBrush(wx.Brush(wx.Color(0,0,0)))
-            dc.DrawRectangle(0,0,self.size[0],self.size[1])
+            self.graySize = self.paintSize
             dc.EndDrawing()
             self.dc = None
             return
+            
         bmp=self.slice
         Logging.info("Zoom factor for painting =",self.zoomFactor,kw="preview")
         if self.zoomFactor != 1 or self.zoomFactor!=self.oldZoomFactor:
@@ -797,11 +844,11 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
                 img=ImageOperations.scaleImage(self.imagedata,self.zoomFactor,self.z,interpolation)
                 bmp=ImageOperations.vtkImageDataToWxImage(img)
             w,h=bmp.GetWidth(),bmp.GetHeight()
-            Logging.info("Setting scrollbars (%d,%d) because of zooming"%(w,h),kw="preview")
-            self.setScrollbars(w,h)
+            #Logging.info("Setting scrollbars (%d,%d) because of zooming"%(w,h),kw="preview")
+            #self.setScrollbars(w,h)
 
         Logging.info("Buffer for drawing=",self.buffer.GetWidth(),self.buffer.GetHeight(),kw="preview")
-        dc = self.dc = wx.BufferedDC(clientdc,self.buffer)
+        #dc = self.dc = wx.BufferedDC(clientdc,self.buffer)
         
         if self.zoomx!=1 or self.zoomy!=1:
             w,h=bmp.GetWidth(),bmp.GetHeight()
@@ -809,12 +856,18 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
             h*=self.zoomy
             Logging.info("Scaling to ",w,h,kw="preview")
             bmp.Rescale(w,h)
-            
-            self.setScrollbars(w,h)
+            self.calculateBuffer()
+            #self.setScrollbars(w,h)
         
         bmp=bmp.ConvertToBitmap()
 
-        dc.DrawBitmap(bmp,0,0,True)
+        bw,bh = bmp.GetWidth(),bmp.GetHeight()
+        
+        tw,th = self.buffer.GetWidth(),self.buffer.GetHeight()
+        #print "BMP Size=",bw,bh,"buffer size=",tw,th
+        xoff = (tw-bw)/2
+        yoff = (th-bh)/2
+        dc.DrawBitmap(bmp,xoff,yoff,True)
         
         if self.centerOfMass:
             label, (x,y,z) = self.centerOfMass

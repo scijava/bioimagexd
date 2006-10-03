@@ -57,7 +57,6 @@ class InteractivePanel(ogl.ShapeCanvas):
     """
     def __init__(self,parent,**kws):
         """
-        Method: __init__(parent)
         Created: 24.03.2005, KP
         Description: Initialization
         """    
@@ -209,18 +208,14 @@ class InteractivePanel(ogl.ShapeCanvas):
 
     def OnSize(self,evt):
         """
-        Method: OnSize
         Created: 11.08.2005, KP
         Description: The size evet
         """            
-        #print "event size=",event.GetSize(),"client size=",self.parent.GetClientSize()
-        #self.maxSizeX,self.maxSizeY=evt.GetSize()
         self.maxSizeX,self.maxSizeY=self.parent.GetClientSize()
         evt.Skip()
         
     def setBackgroundColor(self,bg):
         """
-        Method: setBackgroundColor(color)
         Created: 04.07.2005, KP
         Description: Sets the background color
         """    
@@ -427,7 +422,6 @@ class InteractivePanel(ogl.ShapeCanvas):
         
     def markROI(self,roitype):
         """
-        Method: markROI(roitype)
         Created: 05.07.2005
         Description: Add a ROI to the panel
         """
@@ -436,7 +430,6 @@ class InteractivePanel(ogl.ShapeCanvas):
         
     def startRubberband(self):
         """
-        Method: startRubberband()
         Created: 03.07.2005
         Description: Start rubber band
         """
@@ -444,7 +437,6 @@ class InteractivePanel(ogl.ShapeCanvas):
         
     def manageAnnotation(self):
         """
-        Method: manageAnnotation()
         Created: 04.07.2005, KP
         Description: Manage annotations on the scene
         """
@@ -452,7 +444,6 @@ class InteractivePanel(ogl.ShapeCanvas):
         
     def deleteAnnotation(self):
         """
-        Method: deleteAnnotation()
         Created: 15.08.2005, KP
         Description: Delete annotations on the scene
         """
@@ -470,7 +461,6 @@ class InteractivePanel(ogl.ShapeCanvas):
         
     def zoomToRubberband(self,event):
         """
-        Method: zoomToRubberband()
         Created: 24.03.2005, KP
         Description: Zooms to the rubberband
         """ 
@@ -504,7 +494,6 @@ class InteractivePanel(ogl.ShapeCanvas):
         
     def getZoomFactor(self):
         """
-        Method: getZoomFactor()
         Created: 1.08.2005, KP
         Description: Return the zoom factor
         """        
@@ -512,7 +501,6 @@ class InteractivePanel(ogl.ShapeCanvas):
         
     def getScrolledXY(self,x,y):
         """
-        Method: getScrolledXY(x,y)
         Created: 24.03.2005, KP
         Description: Returns the x and y coordinates moved by the 
                      x and y scroll offset
@@ -525,7 +513,6 @@ class InteractivePanel(ogl.ShapeCanvas):
         
     def resetScroll(self):
         """
-        Method: resetScroll()
         Created: 24.03.2005, KP
         Description: Sets the scrollbars to their initial values
         """    
@@ -533,7 +520,6 @@ class InteractivePanel(ogl.ShapeCanvas):
         
     def setDataUnit(self,dataUnit):
         """
-        Method: setDataUnit(self,dataUnit)
         Created: 04.07.2005, KP
         Description: Sets the data unit that is displayed
         """    
@@ -550,7 +536,6 @@ class InteractivePanel(ogl.ShapeCanvas):
             
     def OnPaint(self,event):
         """
-        Method: paintPreview()
         Created: 28.04.2005, KP
         Description: Does the actual blitting of the bitmap
         """
@@ -574,7 +559,6 @@ class InteractivePanel(ogl.ShapeCanvas):
 
     def paintPreview(self):
         """
-        Method: paintPreview()
         Created: 24.03.2005, KP
         Description: Paints the image to a DC
         """
@@ -612,7 +596,6 @@ class InteractivePanel(ogl.ShapeCanvas):
         
     def setScrollbars(self,xdim,ydim):
         """
-        Method: setScrollbars(x,y)
         Created: 24.03.2005, KP
         Description: Configures scroll bar behavior depending on the
                      size of the dataset, which is given as parameters.
