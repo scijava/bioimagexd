@@ -93,7 +93,6 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
         
     def setShowTimepoints(self,showtps,slice):
         """
-        Method: setShowTimepoints
         Created: 21.07.2005, KP
         Description: Configure whether to show z slices or timepoints
         """    
@@ -105,7 +104,6 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
         
     def getDrawableRectangles(self):
         """
-        Method: getDrawableRectangles()
         Created: 04.07.2005, KP
         Description: Return the rectangles can be drawn on as four-tuples
         """    
@@ -113,7 +111,6 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
         
     def zoomToFit(self):
         """
-        Method: zoomToFit()
         Created: 05.06.2005, KP
         Description: Zoom the dataset to fit the available screen space
         """
@@ -122,7 +119,6 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
         
     def setZoomFactor(self,factor):
         """
-        Method: setZoomFactor(factor)
         Created: 05.06.2005, KP
         Description: Set the factor by which the image is zoomed
         """
@@ -141,7 +137,6 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
         
     def setBackground(self,r,g,b):
         """
-        Method: setBackground(r,g,b)
         Created: 24.05.2005, KP
         Description: Set the background color
         """        
@@ -149,7 +144,6 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
 
     def onSize(self,event):
         """
-        Method: onSize
         Created: 23.05.2005, KP
         Description: Size event handler
         """    
@@ -160,7 +154,6 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
 
     def setDataUnit(self,dataunit):
         """
-        Method: setDataUnit(dataunit)
         Created: 23.05.2005, KP
         Description: Sets the dataunit to display
         """    
@@ -177,7 +170,6 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
         
     def setTimepoint(self,timepoint):
         """
-        Method: setTimepoint(tp)
         Created: 23.05.2005, KP
         Description: Sets the timepoint to display
         """    
@@ -211,7 +203,6 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
         
     def setSlice(self,slice):
         """
-        Method: setSlice(tp)
         Created: 21.07.2005, KP
         Description: Sets the slice to show
         """    
@@ -245,7 +236,6 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
 
     def calculateBuffer(self):
         """
-        Method: calculateBuffer()
         Created: 23.05.2005, KP
         Description: Calculate the drawing buffer required
         """    
@@ -304,7 +294,6 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
 
     def resetScroll(self):
         """
-        Method: resetScroll()
         Created: 24.03.2005, KP
         Description: Sets the scrollbars to their initial values
         """    
@@ -313,7 +302,6 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
 
     def enable(self,flag):
         """
-        Method: enable(flag)
         Created: 02.06.2005, KP
         Description: Enable/Disable updates
         """
@@ -322,7 +310,6 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
 
     def updatePreview(self):
         """
-        Method: updatePreview()
         Created: 24.03.2005, KP
         Description: Updates the viewed image
         """
@@ -339,7 +326,6 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
         
     def updateScrolling(self,event=None):
         """
-        Method: updateScrolling
         Created: 24.03.2005, KP
         Description: Updates the scroll settings
         """
@@ -355,7 +341,6 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
 
     def OnPaint(self,event):
         """
-        Method: paintPreview()
         Created: 28.04.2005, KP
         Description: Does the actual blitting of the bitmap
         """
@@ -369,7 +354,6 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
 
     def paintPreview(self):
         """
-        Method: paintPreview()
         Created: 24.03.2005, KP
         Description: Paints the image to a DC
         """
