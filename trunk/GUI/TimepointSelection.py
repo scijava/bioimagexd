@@ -52,17 +52,18 @@ import Command
 
 class TimepointSelectionPanel(scrolled.ScrolledPanel):
     """
-    Class: TimepointSelectionPanel
     Created: 10.2.2005, KP
     Description: A class containing the basic timepoint selection functionality
                  in a panel. This is a class separete from TimepointSelection
                  so that this can be also embedded in any other dialog.
     """
-    def __init__(self,parent):
+    def __init__(self,parent, parentStr="bxd.processingManager"):
         #wx.Panel.__init__(self,parent,size=(640,480))
         scrolled.ScrolledPanel.__init__(self,parent,size=(640,300))
         self.mainsizer=wx.GridBagSizer(10,10)
         self.configFrame=None
+        
+        self.parentPath = parentStr
 
         self.timepointButtonSizer=wx.GridBagSizer()
         #,style=wx.RAISED_BORDER
@@ -102,7 +103,6 @@ class TimepointSelectionPanel(scrolled.ScrolledPanel):
         
     def createConfigFrame(self):
         """
-        Method: createConfigFrame(self)
         Created: 17.11.2004, KP
         Description: A callback that is used to close this window
         """
@@ -135,17 +135,13 @@ class TimepointSelectionPanel(scrolled.ScrolledPanel):
             n=int(self.nthEntry.GetValue())
         except:
             n=1
-        try:
-            do_cmd = "bxd.processingManager.timepointSelection.selectEveryNth(%d)"%n
-            undo_cmd = ""
-            cmd=Command.Command(Command.GUI_CMD,None,None,do_cmd,undo_cmd,desc="Select every Nth timepoint for processing")
-            cmd.run()
-        except:
-            self.selectEveryNth(n)
-
+        do_cmd = self.parentPath+".timepointSelection.selectEveryNth(%d)"%n
+        undo_cmd = ""
+        cmd=Command.Command(Command.GUI_CMD,None,None,do_cmd,undo_cmd,desc="Select every Nth timepoint for processing")
+        cmd.run()        
+        
     def selectEveryNth(self, n):
         """
-        Method: selectEveryNth(n)
         Created: 18.07.2006, KP
         Description: Select every nth button
         """        
@@ -164,9 +160,7 @@ class TimepointSelectionPanel(scrolled.ScrolledPanel):
         
     def createButtons(self):
         """
-        Method: createButtons()
-        Created: 10.11.2004
-        Creator: KP
+        Created: 10.11.2004, KP
         Description: A method that creates as many buttons as the dataunit
                  has timepoints, so that each button represent one time point
         """
@@ -190,17 +184,15 @@ class TimepointSelectionPanel(scrolled.ScrolledPanel):
 
     def buttonClickedCallback(self,button,number):
         """
-        Method: buttonClickedCallback(button,number)
-        Created: 10.11.2004
-        Creator: KP
+        Created: 10.11.2004, KP
         Description: A method called when user clicks a button representing 
                      a time point
         """
         flag = False
         if number in self.selectedFrames:
             flag = not self.selectedFrames[number]
-        do_cmd = "bxd.processingManager.timepointSelection.setTimepoint(%d, %s)"%(number,str(flag))
-        undo_cmd = "bxd.processingManager.timepointSelection.setTimepoint(%d, %s)"%(number,str(not flag))
+        do_cmd = self.parentPath+".timepointSelection.setTimepoint(%d, %s)"%(number,str(flag))
+        undo_cmd = self.parentPath+".timepointSelection.setTimepoint(%d, %s)"%(number,str(not flag))
         
         if flag:
             descstr="Select timepoint %d for processing"%number
@@ -211,7 +203,6 @@ class TimepointSelectionPanel(scrolled.ScrolledPanel):
 
     def setTimepoint(self, number, flag):
         """
-        Method: setTimepoint
         Created: 18.07.2006, KP
         Description: Set the given timepoint on or off
         """   
@@ -228,9 +219,7 @@ class TimepointSelectionPanel(scrolled.ScrolledPanel):
 
     def setButtonState(self,button,flag):
         """
-        Method: setButtonState(button,flag)
-        Created: 09.02.2005
-        Creator: KP
+        Created: 09.02.2005, KP
         Description: A method to set the state of a button to selected/deselected
         Paremeters:
                 button  The button to configure
@@ -246,7 +235,6 @@ class TimepointSelectionPanel(scrolled.ScrolledPanel):
             
     def setDataUnit(self,dataUnit):
         """
-        Method: setDataUnit(dataUnit)
         Created: 10.11.2004, KP
         Description: A method to set the data unit we use to do the
                      actual rendering
@@ -267,15 +255,17 @@ class TimepointSelection(wx.Dialog):
     Description: A base class for creating windows where the user can select        
                  the timepoints that should be operated upon.
     """
-    def __init__(self,parent):
+    def __init__(self,parent, name="Timepoint selection"):
         """
-        Method: __init__
-        Created: 10.11.2004
-        Creator: KP
+        Created: 10.11.2004, KP
         Description: Initialization
         """
-        wx.Dialog.__init__(self,parent,-1,"Timepoint selection",style=wx.CAPTION|wx.STAY_ON_TOP|wx.CLOSE_BOX|wx.MAXIMIZE_BOX|wx.MINIMIZE_BOX|wx.RESIZE_BORDER,size=(640,480))
+        wx.Dialog.__init__(self,parent,-1,name,style=wx.CAPTION|wx.STAY_ON_TOP|wx.CLOSE_BOX|wx.MAXIMIZE_BOX|wx.MINIMIZE_BOX|wx.RESIZE_BORDER,size=(640,480))
         self.parent=parent
+        
+        bxd.registerDialog(name, self)
+        
+        self.dialogName = name
         self.Bind(wx.EVT_CLOSE,self.closeWindowCallback)
         self.mainsizer=wx.GridBagSizer(10,10)
 
@@ -285,7 +275,7 @@ class TimepointSelection(wx.Dialog):
         self.icon = wx.Icon(ico,wx.BITMAP_TYPE_ICO)
         self.SetIcon(self.icon)
 
-        self.panel=TimepointSelectionPanel(self)
+        self.panel=TimepointSelectionPanel(self, parentStr = "bxd.dialogs['%s']"%self.dialogName)
         self.timepointSelection = self.panel
         
         self.mainsizer.Add(self.panel,(0,0),flag=wx.EXPAND|wx.ALL)
@@ -304,7 +294,6 @@ class TimepointSelection(wx.Dialog):
         
     def createButtonBox(self):
         """
-        Method: createButtonBox()
         Created: 31.1.2005, KP
         Description: Creates the standard control buttons
         """
@@ -330,11 +319,10 @@ class TimepointSelection(wx.Dialog):
         
     def onButtonOk(self,event):
         """
-        Method: onButtonOk
         Created: 13.04.2005, KP
         Description: A callback that sets the status of this dialog
         """
-        do_cmd = "bxd.processingManager.process()"
+        do_cmd = "bxd.dialogs['%s'].process()"%self.dialogName
         undo_cmd = ""
         
         cmd=Command.Command(Command.GUI_CMD,None,None,do_cmd,undo_cmd,desc="Process the selected timepoints")
@@ -343,26 +331,25 @@ class TimepointSelection(wx.Dialog):
     
     def process(self):
         """
-        Method: process
         Created: 20.07.2006, KP
         Description: Set the status so that the processing will continue and close the window
         """   
         self.status=wx.ID_OK
+        bxd.unregisterDialog(self.dialogName)
         self.Close()
         
 
     def cancel(self):
         """
-        Method: cancel
         Created: 20.07.2006, KP
         Description: Set the status so that the processing will cancel and close the window
         """
         self.status=wx.ID_CANCEL
+        bxd.unregisterDialog(self.dialogName)
         self.Close()
 
     def closeWindowCallback(self,event):
         """
-        Method: closeWindowCallback
         Created: 10.11.2004, KP
         Description: A callback that is used to close this window
         """
@@ -370,7 +357,6 @@ class TimepointSelection(wx.Dialog):
             
     def setDataUnit(self,dataUnit):
         """
-        Method: setDataUnit(dataUnit)
         Created: 10.11.2004, KP
         Description: A method to set the data unit we use to do the
                      actual rendering

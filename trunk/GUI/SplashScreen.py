@@ -79,7 +79,7 @@ class SplashScreen(wx.Frame):
         self.Show(False)
         self.timer.Stop()
         del self.timer
-        self.Destroy()
+#        self.Destroy()
 
     def SetMessage(self, message):
         self.message = message

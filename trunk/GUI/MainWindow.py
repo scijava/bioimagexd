@@ -271,7 +271,8 @@ class MainWindow(wx.Frame):
         self.loadVisualizer(None,"slices",init=1)
         self.onMenuShowTree(None,1)
         try:
-            splash.Show(False)
+            self.splash.Show(False)
+            del self.splash
         except:
             pass
         self.Show(True)       
