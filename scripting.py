@@ -50,6 +50,15 @@ memLimit = None
 resamplingDisabled = 0
 processingTimepoint = -1
 
+dialogs = {}
+
+def registerDialog(name, dlg):
+    global dialogs
+    dialogs[name]=dlg
+    
+def unregisterDialog(name):
+    del dialogs[name]
+
 
 def execute_limited(pipeline):
     limit = get_memory_limit()
