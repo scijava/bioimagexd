@@ -159,7 +159,6 @@ class InteractivePanel(ogl.ShapeCanvas):
         
     def polyCenter(self,points):
         """
-        Method: polyCenter
         Created: 16.06.2006, KP
         Description: Calculte the center of mass of polygon
         """          
@@ -183,7 +182,6 @@ class InteractivePanel(ogl.ShapeCanvas):
         
     def createPolygon(self,points):
         """
-        Method: createPolygon
         Created: 07.05.2006, KP
         Description: Create a polygon
         """            
@@ -302,7 +300,6 @@ class InteractivePanel(ogl.ShapeCanvas):
         
     def executeAction(self,event):
         """
-        Method: executeAction
         Created: 03.07.2005, KP
         Description: Call the right callback depending on what we're doing
         """    
@@ -354,7 +351,14 @@ class InteractivePanel(ogl.ShapeCanvas):
                 shape.SetCentreResize(0)  
                 shape.SetX( ex+(x-ex)/2 )
                 shape.SetY( ey+(y-ey)/2 )
-            
+            elif self.annotationClass == "TEXT":
+                dx = abs(x-ex)
+                dy = abs(y-ey)
+                shape = MyText(dx,dy, zoomFactor = self.zoomFactor)
+                shape.SetCentreResize(0)  
+                shape.SetX( ex+(x-ex)/2 )
+                shape.SetY( ey+(y-ey)/2 )                
+                
             self.addNewShape(shape)
             
             if self.annotationClass=="POLYGON":
@@ -366,6 +370,7 @@ class InteractivePanel(ogl.ShapeCanvas):
                 self.actionend = (0,0)
                 self.prevPolyEnd=None
                 
+
             messenger.send(None,"update_annotations")
 
             #self.updateAnnotations()
@@ -393,7 +398,6 @@ class InteractivePanel(ogl.ShapeCanvas):
     
     def addNewShape(self, shape):
         """
-        Method: addNewShape
         Created: 07.05.2005, KP
         Description: Add a new shape to the canvas
         """        
@@ -412,7 +416,6 @@ class InteractivePanel(ogl.ShapeCanvas):
         
     def updateAnnotations(self):
         """
-        Method: updateAnnotations()
         Created: 04.07.2005, KP
         Description: Update all the annotations
         """

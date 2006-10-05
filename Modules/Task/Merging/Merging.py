@@ -178,7 +178,6 @@ class Merging(Module):
             self.merge.AddLookupTable(self.ctfs[i])
             
             self.merge.AddIntensityTransferFunction(self.intensityTransferFunctions[i])
-        print "\nBefore update took ",time.time()-t1
         
         data = self.getLimitedOutput(self.merge)
         
