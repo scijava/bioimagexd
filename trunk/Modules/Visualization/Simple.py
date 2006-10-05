@@ -60,7 +60,6 @@ def showZoomToolbar(): return True
 class SimpleMode(VisualizationMode):
     def __init__(self,parent,visualizer):
         """
-        Method: __init__
         Created: 24.05.2005, KP
         Description: Initialization
         """
@@ -70,13 +69,10 @@ class SimpleMode(VisualizationMode):
         self.iactivePanel=None
         self.init=1
         self.dataUnit=None
-        self.modules=Modules.DynamicLoader.getTaskModules()
-
 
         
     def showSideBar(self):
         """
-        Method: showSideBar()
         Created: 24.05.2005, KP
         Description: Method that is queried to determine whether
                      to show the sidebar
@@ -85,7 +81,6 @@ class SimpleMode(VisualizationMode):
         
     def Render(self):
         """
-        Method: Render()
         Created: 24.05.2005, KP
         Description: Update the rendering
         """      
@@ -93,7 +88,6 @@ class SimpleMode(VisualizationMode):
         
     def updateRendering(self):
         """
-        Method: updateRendering
         Created: 26.05.2005, KP
         Description: Update the rendering
         """
@@ -102,7 +96,6 @@ class SimpleMode(VisualizationMode):
         
     def setBackground(self,r,g,b):
         """
-        Method: setBackground(r,g,b)
         Created: 24.05.2005, KP
         Description: Set the background color
         """      
@@ -111,14 +104,12 @@ class SimpleMode(VisualizationMode):
 
     def activate(self,sidebarwin):
         """
-        Method: activate()
         Created: 24.05.2005, KP
         Description: Set the mode of visualization
         """
         if not self.iactivePanel:
             Logging.info("Generating preview",kw="visualizer")
-            self.iactivePanel=PreviewFrame.PreviewFrame(self.parent,
-            previewsize=(512,512))
+            self.iactivePanel=PreviewFrame.PreviewFrame(self.parent)
             self.iactivePanel.setPreviewType("MIP")
         return self.iactivePanel
             
@@ -126,7 +117,6 @@ class SimpleMode(VisualizationMode):
         
     def setDataUnit(self,dataUnit):
         """
-        Method: setDataUnit
         Created: 25.05.2005, KP
         Description: Set the dataunit to be visualized
         """
@@ -142,7 +132,6 @@ class SimpleMode(VisualizationMode):
         
     def setTimepoint(self,tp):
         """
-        Method: setTimepoint
         Created: 25.05.2005, KP
         Description: Set the timepoint to be visualized
         """
@@ -151,7 +140,6 @@ class SimpleMode(VisualizationMode):
         
     def deactivate(self,newmode=None):
         """
-        Method: deactivate()
         Created: 24.05.2005, KP
         Description: Unset the mode of visualization
         """
@@ -161,7 +149,6 @@ class SimpleMode(VisualizationMode):
         
     def saveSnapshot(self,filename):
         """
-        Method: saveSnapshot(filename)
         Created: 05.06.2005, KP
         Description: Save a snapshot of the scene
         """      

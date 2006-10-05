@@ -75,7 +75,9 @@ class OGLAnnotation:
         self._name = name
         self.ClearText()
         self.SetTextColour("#00ff00")
-        self.AddText(name)
+        lines = name.split("\n")
+        for line in lines:
+            self.AddText(line)
         
     def getName(self):
         """
@@ -89,6 +91,15 @@ class OGLAnnotation:
         if not hasattr(self,"_isROI"):
             self._isROI=0
         return self._isROI
+        
+class MyText(OGLAnnotation, ogl.TextShape):
+    """
+    Created: 05.10.2006, KP
+    Description: A text annotation
+    """
+    def __init__(self, width, height):
+        ogl.TextShape.__init__(self,width,height)
+        self._isROI = 0
         
 
 class MyScalebar(OGLAnnotation, ogl.RectangleShape):
@@ -115,7 +126,6 @@ class MyScalebar(OGLAnnotation, ogl.RectangleShape):
         
     def setScaleFactor(self,factor):
         """
-        Method: setScaleFactor
         Created: 21.06.2006, KP
         Description: Set the scaling factor in use
         """   
@@ -148,7 +158,6 @@ class MyScalebar(OGLAnnotation, ogl.RectangleShape):
         
     def createSnapToList(self):
         """
-        Method: createSnapToList(self)
         Created: 04.07.2005, KP
         Description: Create the list of micrometer lengths to snap to
         """   
@@ -161,7 +170,6 @@ class MyScalebar(OGLAnnotation, ogl.RectangleShape):
         
     def snapToRoundLength(self):
         """
-        Method: snapToRoundLength()
         Created: 04.07.2005, KP
         Description: Snap the length in pixels to a round number of micrometers
         """   

@@ -56,7 +56,6 @@ def showZoomToolbar(): return True
 class SlicesMode(VisualizationMode):
     def __init__(self,parent,visualizer):
         """
-        Method: __init__
         Created: 24.05.2005, KP
         Description: Initialization
         """
@@ -65,11 +64,9 @@ class SlicesMode(VisualizationMode):
         self.visualizer=visualizer
         self.init=1
         self.dataUnit=None
-        self.modules=Modules.DynamicLoader.getTaskModules()
 
     def showSliceSlider(self):
         """
-        Method: showSliceSlider()
         Created: 07.08.2005, KP
         Description: Method that is queried to determine whether
                      to show the zslider
@@ -78,7 +75,6 @@ class SlicesMode(VisualizationMode):
         
     def showSideBar(self):
         """
-        Method: showSideBar()
         Created: 24.05.2005, KP
         Description: Method that is queried to determine whether
                      to show the sidebar
@@ -87,7 +83,6 @@ class SlicesMode(VisualizationMode):
         
     def Render(self):
         """
-        Method: Render()
         Created: 24.05.2005, KP
         Description: Update the rendering
         """      
@@ -95,7 +90,6 @@ class SlicesMode(VisualizationMode):
         
     def updateRendering(self):
         """
-        Method: updateRendering
         Created: 26.05.2005, KP
         Description: Update the rendering
         """
@@ -104,7 +98,6 @@ class SlicesMode(VisualizationMode):
         
     def setBackground(self,r,g,b):
         """
-        Method: setBackground(r,g,b)
         Created: 24.05.2005, KP
         Description: Set the background color
         """      
@@ -113,20 +106,18 @@ class SlicesMode(VisualizationMode):
 
     def activate(self,sidebarwin):
         """
-        Method: activate()
         Created: 24.05.2005, KP
         Description: Set the mode of visualization
         """
         if not self.iactivePanel:
             #Logging.info("Generating preview",kw="visualizer")
-            self.iactivePanel=PreviewFrame.PreviewFrame(self.parent,previewsize=(512,512),scrollbars=True)
+            self.iactivePanel=PreviewFrame.PreviewFrame(self.parent,scrollbars=True)
         return self.iactivePanel
             
         
         
     def setDataUnit(self,dataUnit):
         """
-        Method: setDataUnit
         Created: 25.05.2005, KP
         Description: Set the dataunit to be visualized
         """
@@ -142,7 +133,6 @@ class SlicesMode(VisualizationMode):
         
     def setTimepoint(self,tp):
         """
-        Method: setTimepoint
         Created: 25.05.2005, KP
         Description: Set the timepoint to be visualized
         """
@@ -151,7 +141,6 @@ class SlicesMode(VisualizationMode):
         
     def deactivate(self,newmode=None):
         """
-        Method: deactivate()
         Created: 24.05.2005, KP
         Description: Unset the mode of visualization
         """
@@ -159,7 +148,6 @@ class SlicesMode(VisualizationMode):
         
     def saveSnapshot(self,filename):
         """
-        Method: saveSnapshot(filename)
         Created: 05.06.2005, KP
         Description: Save a snapshot of the scene
         """      

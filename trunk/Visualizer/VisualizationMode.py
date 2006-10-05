@@ -45,13 +45,11 @@ import os,sys
 
 class VisualizationMode:
     """
-    Class: VisualizationMode
     Created: 21.07.2005, KP
     Description: A class representing a visualization mode
     """
     def __init__(self,parent,visualizer,**kws):
         """
-        Method: __init__(parent)
         Created: 28.04.2005, KP
         Description: Initialization
         """    
@@ -67,7 +65,6 @@ class VisualizationMode:
    
     def layoutTwice(self):
         """
-        Method: layoutTwice()
         Created: 20.12.2005, KP
         Description: Method that is queried for whether the mode needs to
                      be laid out twice
@@ -76,7 +73,6 @@ class VisualizationMode:
         
     def annotate(self,annclass,**kws):
         """
-        Method: annotate(annotationclass)
         Created: 04.07.2005, KP
         Description: Add an annotation to the scene
         """
@@ -85,7 +81,6 @@ class VisualizationMode:
         
     def manageAnnotation(self):
         """
-        Method: manageAnnotation()
         Created: 04.07.2005, KP
         Description: Manage annotations on the scene
         """
@@ -94,7 +89,6 @@ class VisualizationMode:
 
     def deleteAnnotation(self):
         """
-        Method: deleteAnnotation()
         Created: 15.08.2005, KP
         Description: Delete annotations on the scene
         """
@@ -103,7 +97,6 @@ class VisualizationMode:
             
     def zoomObject(self):
         """
-        Method: zoomObject()
         Created: 04.07.2005, KP
         Description: Zoom to a user selected portion of the image
         """
@@ -113,7 +106,6 @@ class VisualizationMode:
         
     def zoomToFit(self):
         """
-        Method: zoomToFit()
         Created: 05.06.2005, KP
         Description: Zoom the dataset to fit the available screen space
         """
@@ -123,7 +115,6 @@ class VisualizationMode:
     
     def setZoomFactor(self,factor):
         """
-        Method: setZoomFactor(factor)
         Created: 05.06.2005, KP
         Description: Set the factor by which the image is zoomed
         """
@@ -132,7 +123,6 @@ class VisualizationMode:
             
     def getZoomFactor(self):
         """
-        Method: getZoomFactor(factor)
         Created: 01.08.2005, KP
         Description: Get the zoom factor
         """
@@ -142,7 +132,6 @@ class VisualizationMode:
             
     def showSideBar(self):
         """
-        Method: showSideBar()
         Created: 24.05.2005, KP
         Description: Method that is queried to determine whether
                      to show the sidebar
@@ -151,7 +140,6 @@ class VisualizationMode:
         
     def showSliceSlider(self):
         """
-        Method: showSliceSlider()
         Created: 07.08.2005, KP
         Description: Method that is queried to determine whether
                      to show the zslider
@@ -160,7 +148,6 @@ class VisualizationMode:
    
     def showViewAngleCombo(self):
         """
-        Method: showViewAngleCombo()
         Created: 11.08.2005, KP
         Description: Method that is queried to determine whether
                      to show the view angle combo box in the toolbar
@@ -169,7 +156,6 @@ class VisualizationMode:
         
     def closeOnReload(self):
         """
-        Method: closeOnReload
         Created: 1.09.2005, KP
         Description: Method to determine whether the visualization mode
                      should be closed if the user clicks it again.
@@ -178,7 +164,6 @@ class VisualizationMode:
   
     def setBackground(self,r,g,b):
         """
-        Method: setBackground(r,g,b)
         Created: 24.05.2005, KP
         Description: Set the background color
         """        
@@ -186,7 +171,6 @@ class VisualizationMode:
 
     def setDataUnit(self,dataunit):
         """
-        Method: setDataUnit(self)
         Created: 28.04.2005, KP
         Description: Sets the dataunit this module uses for visualization
         """            
@@ -199,7 +183,6 @@ class VisualizationMode:
         
     def getDataUnit(self):
         """
-        Method: getDataUnit()
         Created: 28.04.2005, KP
         Description: Returns the dataunit this module uses for visualization
         """     
@@ -207,7 +190,6 @@ class VisualizationMode:
         
     def setTimepoint(self,tp):
         """
-        Method: setTimepoint
         Created: 25.05.2005, KP
         Description: Set the timepoint to be visualized
         """
@@ -216,7 +198,6 @@ class VisualizationMode:
 
     def saveSnapshot(self,filename):
         """
-        Method: saveSnapshot(filename)
         Created: 05.06.2005, KP
         Description: Save a snapshot of the scene
         """      
@@ -224,7 +205,6 @@ class VisualizationMode:
         
     def deactivate(self,newmode=None):
         """
-        Method: deactivate()
         Created: 24.05.2005, KP
         Description: Unset the mode of visualization
         """
@@ -232,7 +212,6 @@ class VisualizationMode:
         
     def Render(self):
         """
-        Method: Render()
         Created: 24.05.2005, KP
         Description: Update the rendering
         """      
@@ -240,7 +219,6 @@ class VisualizationMode:
                 
     def relayout(self):
         """
-        Method: relayout()
         Created: 07.08.2005, KP
         Description: Method called when the size of the window changes
         """    
@@ -248,7 +226,6 @@ class VisualizationMode:
         
     def reloadMode(self):
         """
-        Method: reloadMode()
         Created: 1.09.2005, KP
         Description: Method called when the user tries to reload the mode
         """    

@@ -62,6 +62,9 @@ import Configuration
 import scripting
 
 import GUI.Toolbar
+import wx.lib.buttons as buttons
+import  wx.lib.colourselect as  csel
+
 visualizerInstance=None
 
 
@@ -92,6 +95,7 @@ class Visualizer:
         self.updateFactor = 0.001
         self.depthT=0
         self.zoomToFitFlag=1
+        self.annotateColor = (0,255,0)
         self.conf = Configuration.getConfiguration()
         self.zoomFactor=1.0
         self.tb1=None
@@ -149,7 +153,7 @@ class Visualizer:
         self.sidebarWin.SetSashBorder(wx.SASH_RIGHT,True)
         self.sidebarWin.SetDefaultSize((200,768))
         self.sidebarWin.origSize=(200,768)
-
+        
         self.toolWin=wx.SashLayoutWindow(self.parent,MenuManager.ID_TOOL_WIN,style=wx.NO_BORDER)
         self.toolWin.SetOrientation(wx.LAYOUT_HORIZONTAL)
         self.toolWin.SetAlignment(wx.LAYOUT_TOP)
@@ -157,6 +161,22 @@ class Visualizer:
         self.toolWin.SetDefaultSize((500,44))
         self.toolWin.origSize=(500,44)
 
+        self.annotateBarWin=wx.SashLayoutWindow(self.parent,MenuManager.ID_ANNOTATION_WIN,style=wx.NO_BORDER)
+        self.annotateBarWin.SetOrientation(wx.LAYOUT_VERTICAL)
+        self.annotateBarWin.SetAlignment(wx.LAYOUT_RIGHT)
+        #self.annotateBarWin.SetSashVisible(wx.SASH_RIGHT,True)
+        #self.annotateBarWin.SetSashBorder(wx.SASH_RIGHT,True)
+        self.annotateBarWin.SetDefaultSize((70,768))
+        self.annotateBarWin.origSize=(70,768)
+        
+        self.annotateBar = wx.Window(self.annotateBarWin)
+        
+        self.annotateSizer = wx.GridBagSizer(2,2)
+        self.annotateBar.SetSizer(self.annotateSizer)
+        self.annotateBar.SetAutoLayout(1)
+        
+        self.createAnnotationToolbar()
+                
         self.histogramWin=wx.SashLayoutWindow(self.parent,MenuManager.ID_HISTOGRAM_WIN,style=wx.NO_BORDER)
         self.histogramWin.SetOrientation(wx.LAYOUT_HORIZONTAL)
         self.histogramWin.SetAlignment(wx.LAYOUT_TOP)
@@ -214,7 +234,6 @@ class Visualizer:
     
     def getMasks(self):
         """
-        Method: getMasks
         Created: 20.06.2006, KP
         Description: Get all the masks
         """   
@@ -222,7 +241,6 @@ class Visualizer:
 
     def setMask(self, mask):
         """
-        Method: setMask
         Created: 20.06.2006, KP
         Description: Set the current mask
         """   
@@ -232,7 +250,6 @@ class Visualizer:
         
     def createSliders(self):
         """
-        Method: createSliders
         Created: 1.08.2005, KP
         Description: Method that creates the sliders 
         """     
@@ -260,6 +277,7 @@ class Visualizer:
         self.zslider.SetHelpText("Use this slider to select the displayed optical slice.")
         self.zslider.Bind(wx.EVT_SCROLL,self.onChangeZSlice)
         messenger.connect(None,"zslice_changed",self.onChangeZSlice)
+        messenger.connect(None,"update_annotations",self.updateAnnotations)
         
         self.sliderbox.Add(self.prev)
         self.sliderbox.Add(self.timeslider,1)
@@ -270,7 +288,6 @@ class Visualizer:
 
     def bindTimeslider(self,method,all=0):
         """
-        Method: bindTimeslider
         Created: 15.08.2005, KP
         Description: Bind the timeslider to a method
         """     
@@ -286,7 +303,6 @@ class Visualizer:
         
     def onSetVisibility(self,obj,evt,arg):
         """
-        Method: onSetVisibility
         Created: 12.07.2005, KP
         Description: Set an object's visibility
         """ 
@@ -394,7 +410,6 @@ class Visualizer:
             
     def createHistogram(self):
         """
-        Method: createHistogram()
         Created: 28.05.2005, KP
         Description: Method to create histograms of the dataunit
         """        
@@ -425,11 +440,59 @@ class Visualizer:
         self.histogramPanel.Layout()
         self.OnSize(None)
             
+    def createAnnotationToolbar(self):
+        """
+        Created: 05.10.2006, KP
+        Description: Method to create a toolbar for the annotations
+        """        
+        def createBtn(bid, gifname, tooltip, btnclass = buttons.GenBitmapToggleButton):
+            icondir = scripting.get_icon_dir()  
+            btn = btnclass(self.annotateBar, bid, wx.Image(os.path.join(icondir,gifname),wx.BITMAP_TYPE_GIF).ConvertToBitmap())
+            btn.SetBestSize((32,32))
+            #btn.SetBitmapLabel()
+            btn.SetToolTipString(tooltip)
+            return btn
+        
+        self.circleBtn = createBtn(MenuManager.ID_ROI_CIRCLE,"circle.gif","Select a circular area of the image")
+        self.annotateSizer.Add(self.circleBtn, (0,0))
+        
+        self.rectangleBtn = createBtn(MenuManager.ID_ROI_RECTANGLE,"rectangle.gif","Select a circular area of the image")
+        self.annotateSizer.Add(self.rectangleBtn, (0,1))
+        
+        self.polygonBtn = createBtn(MenuManager.ID_ROI_POLYGON,"polygon.gif","Select a polygonal area of the image")
+        self.annotateSizer.Add(self.polygonBtn, (1,0))
+        
+        self.scaleBtn = createBtn(MenuManager.ID_ADD_SCALE,"scale.gif","Draw a scale bar on the image")
+        self.annotateSizer.Add(self.scaleBtn, (1,1))
+
+
+
+        self.textBtn = createBtn(MenuManager.ID_ANNOTATION_TEXT,"text.gif","Add a text annotation")
+        self.annotateSizer.Add(self.textBtn, (2,0))
+
+        self.deleteAnnotationBtn = createBtn(MenuManager.ID_DEL_ANNOTATION,"delete_annotation.gif","Delete an annotation")
+        self.annotateSizer.Add(self.deleteAnnotationBtn, (4,1))   
+
+        self.roiToMaskBtn = createBtn(MenuManager.ID_ROI_TO_MASK,"roitomask.gif","Convert the selected Region of Interest to a Mask", btnclass=buttons.GenBitmapButton)
+        self.annotateSizer.Add(self.roiToMaskBtn, (4,0))
+
+        #self.fontBtn = createBtn(MenuManager.ID_ANNOTATION_FONT,"fonts.gif","Set the font for annotations", btnclass=buttons.GenBitmapButton)
+        #self.annotateSizer.Add(self.fontBtn, (3,1))
+
+        self.colorSelect = csel.ColourSelect(self.annotateBar, -1, "", self.annotateColor, size = (65,-1))
+        self.annotateSizer.Add(self.colorSelect, (5,0),span=(1,2))
+
+        self.circleBtn.Bind(wx.EVT_BUTTON, self.addAnnotation)
+        self.rectangleBtn.Bind(wx.EVT_BUTTON, self.addAnnotation)
+        self.polygonBtn.Bind(wx.EVT_BUTTON, self.addAnnotation)
+        self.scaleBtn.Bind(wx.EVT_BUTTON, self.addAnnotation)
+        self.roiToMaskBtn.Bind(wx.EVT_BUTTON,self.roiToMask)
+        #wx.EVT_TOOL(self.parent,MenuManager.ID_ADD_SCALE,self.addAnnotation)
+        self.deleteAnnotationBtn.Bind(wx.EVT_BUTTON,self.deleteAnnotation)
 
     
     def createToolbar(self):
         """
-        Method: createToolBar()
         Created: 28.05.2005, KP
         Description: Method to create a toolbar for the window
         """        
@@ -446,7 +509,7 @@ class Visualizer:
         toolSize=self.tb.GetToolSize()[0]
         
         
-        self.viewCombo=wx.ComboBox(self.tb,MenuManager.ID_SET_VIEW,"Isometric",choices=["+X","-X","+Y","-Y","+Z","-Z","Isometric"],size=(100,-1),style=wx.CB_DROPDOWN)
+        self.viewCombo=wx.ComboBox(self.tb,MenuManager.ID_SET_VIEW,"Isometric",choices=["+X","-X","+Y","-Y","+Z","-Z","Isometric"],size=(130,-1),style=wx.CB_DROPDOWN)
         self.viewCombo.SetSelection(6)
         self.viewCombo.SetHelpText("This controls the view angle of 3D view mode.")
         self.tb.AddControl(self.viewCombo)
@@ -470,13 +533,9 @@ class Visualizer:
         
         self.tb.AddSimpleTool(MenuManager.ID_ZOOM_OBJECT,wx.Image(os.path.join(icondir,"zoom-object.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Zoom object","Zoom user selected portion of the slice")
         
-        self.tb.AddSeparator()
-        
-        
+                
 #        self.tb.AddSimpleTool(MenuManager.ID_DRAG_ANNOTATION,wx.Image(os.path.join(icondir,"arrow.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Manage annotations","Manage annotations on the image")
         
-        
-        self.tb.AddSimpleTool(MenuManager.ID_ADD_SCALE,wx.Image(os.path.join(icondir,"scale.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Draw scale","Draw a scale bar on the image")
         
         self.tb.AddSeparator()
         self.origBtn=wx.Button(self.tb,MenuManager.ORIG_BUTTON,"Original")
@@ -487,14 +546,7 @@ class Visualizer:
         
         self.tb.AddControl(self.origBtn)
         
-        self.tb.AddSimpleTool(MenuManager.ID_ROI_CIRCLE,wx.Image(os.path.join(icondir,"circle.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Select circle","Select a circular area of the image")
-        self.tb.AddSimpleTool(MenuManager.ID_ROI_RECTANGLE,wx.Image(os.path.join(icondir,"rectangle.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Select rectangle","Select a rectangular area of the image")
-        self.tb.AddSimpleTool(MenuManager.ID_ROI_POLYGON,wx.Image(os.path.join(icondir,"polygon.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Select polygon","Select a polygonal area of the image")
-        self.tb.AddSimpleTool(MenuManager.ID_ROI_TO_MASK,wx.Image(os.path.join(icondir,"roitomask.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"ROI to Mask","Convert the selected Region of Interest to a Mask")
-    
-        bmp = wx.Image(os.path.join(icondir,"delete_annotation.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap()
-        self.tb.AddSimpleTool(MenuManager.ID_DEL_ANNOTATION,bmp,"Delete annotation","Delete an annotation")
-    
+        
     
         self.pitch=wx.SpinButton(self.tb, MenuManager.PITCH,style=wx.SP_VERTICAL)
         self.tb.AddControl(self.pitch)
@@ -518,13 +570,6 @@ class Visualizer:
         wx.EVT_TOOL(self.parent,MenuManager.ID_ZOOM_OUT,self.zoomOut)
         wx.EVT_TOOL(self.parent,MenuManager.ID_ZOOM_TO_FIT,self.zoomToFit)
         wx.EVT_TOOL(self.parent,MenuManager.ID_ZOOM_OBJECT,self.zoomObject)
-        wx.EVT_TOOL(self.parent,MenuManager.ID_ADD_SCALE,self.addAnnotation)
-        wx.EVT_TOOL(self.parent,MenuManager.ID_DRAG_ANNOTATION,self.manageAnnotation)
-        wx.EVT_TOOL(self.parent,MenuManager.ID_DEL_ANNOTATION,self.deleteAnnotation)
-        wx.EVT_TOOL(self.parent,MenuManager.ID_ROI_CIRCLE,self.addAnnotation)
-        wx.EVT_TOOL(self.parent,MenuManager.ID_ROI_RECTANGLE,self.addAnnotation)
-        wx.EVT_TOOL(self.parent,MenuManager.ID_ROI_POLYGON,self.addAnnotation)
-        wx.EVT_TOOL(self.parent,MenuManager.ID_ROI_TO_MASK, self.roiToMask)
         
         self.zoomCombo.Bind(wx.EVT_COMBOBOX,self.zoomToComboSelection)
         self.tb1.Realize()     
@@ -622,7 +667,6 @@ class Visualizer:
             
     def zoomObject(self,evt):
         """
-        Method: zoomObject()
         Created: 19.03.2005, KP
         Description: Lets the user select the part of the object that is zoomed
         """
@@ -632,7 +676,6 @@ class Visualizer:
 
     def addAnnotation(self,event):
         """
-        Method: addAnnotation()
         Created: 03.07.2005, KP
         Description: Draw a scale to the visualization
         """
@@ -641,8 +684,11 @@ class Visualizer:
         multiple=0
         if eid==MenuManager.ID_ADD_SCALE:
             annclass="SCALEBAR"
-        if eid == MenuManager.ID_ROI_CIRCLE:
+        elif eid == MenuManager.ID_ANNOTATION_TEXT:
+            annclass="TEXT"
+        elif eid == MenuManager.ID_ROI_CIRCLE:
             annclass="CIRCLE"
+
         elif eid==MenuManager.ID_ROI_RECTANGLE:
             annclass="RECTANGLE"
         elif eid==MenuManager.ID_ROI_POLYGON:
@@ -655,7 +701,6 @@ class Visualizer:
         
     def manageAnnotation(self,event):
         """
-        Method: manageAnnotation()
         Created: 04.07.2005, KP
         Description: Manage annotations on the image
         """
@@ -663,15 +708,24 @@ class Visualizer:
         
     def deleteAnnotation(self,event):
         """
-        Method: deleteAnnotation()
         Created: 04.07.2005, KP
         Description: DElete annotations on the image
         """
         self.currMode.deleteAnnotation()
 
+    def updateAnnotations(self, *args):
+        """
+        Created: 05.10.2006, KP
+        Description: Untoggle the annotation buttons because an annotation was added
+        """
+        self.scaleBtn.SetToggle(False)
+        self.circleBtn.SetToggle(False)
+        self.rectangleBtn.SetToggle(False)
+        self.polygonBtn.SetToggle(False)
+        
+
     def zoomOut(self,evt):
         """
-        Method: zoomOut()
         Created: 19.03.2005, KP
         Description: Makes the zoom factor smaller
         """
@@ -687,7 +741,6 @@ class Visualizer:
         
     def zoomToComboSelection(self,evt):
         """
-        Method: zoomToComboSelection()
         Created: 19.03.2005, KP
         Description: Sets the zoom according to the combo selection
         """
@@ -695,7 +748,6 @@ class Visualizer:
         
     def setComboBoxToFactor(self,factor):
         """
-        Method: setComboBoxToFactor
         Created: 01.08.2005, KP
         Description: Set the value of the combobox to the correct zoom factor
         """     
@@ -711,7 +763,6 @@ class Visualizer:
             
     def zoomComboDirection(self,dir):
         """
-        Method: zoomComboDirection()
         Created: 21.02.2005, KP
         Description: Makes the zoom factor larger/smaller based on values in the zoom combobox
         """
@@ -740,7 +791,6 @@ class Visualizer:
         
     def zoomIn(self,evt,factor=-1):
         """
-        Method: zoomIn()
         Created: 21.02.2005, KP0
         Description: Makes the zoom factor larger 
         """
@@ -755,7 +805,6 @@ class Visualizer:
         
     def zoomToFit(self,evt):
         """
-        Method: zoomToFit()
         Created: 21.02.2005, KP
         Description: Sets the zoom factor to fit the image into the preview window
         """
@@ -766,7 +815,6 @@ class Visualizer:
         
     def onSashDrag(self, event=None):
         """
-        Method: onSashDrag
         Created: 24.5.2005, KP
         Description: A method for laying out the window
         """        
@@ -793,7 +841,6 @@ class Visualizer:
         
     def OnSize(self, event=None):
         """
-        Method: OnSize
         Created: 23.05.2005, KP
         Description: Handle size events
         """
@@ -805,9 +852,11 @@ class Visualizer:
         visSize=self.visWin.GetClientSize()
         # was here
         
+        self.annotateBar.Layout()
+        
         newsize=visSize[0]
-        if abs(newsize-self.oldClientSize)>10:
-            self.createToolbar()
+#        if abs(newsize-self.oldClientSize)>10:
+#            self.createToolbar()
         
         if self.currentWindow:            
             self.currentWindow.SetSize(visSize)
@@ -1044,7 +1093,6 @@ class Visualizer:
         
     def showItemToolbar(self,flag):
         """
-        Method: showItemToolbar()
         Created: 01.06.2005, KP
         Description: Show / hide item toolbar
         """
@@ -1056,7 +1104,6 @@ class Visualizer:
         
     def enable(self,flag,**kws):
         """
-        Method: enable(flag)
         Created: 23.05.2005, KP
         Description: Enable/Disable updates
         """

@@ -43,7 +43,6 @@ import  wx.lib.fancytext as fancytext
 
 class RescaleDialog(wx.Dialog):
     """
-    Class: RescaleDialog
     Created: 11.04.2006, KP
     Description: A dialog for rescaling a dataset to 8-bit
     """
@@ -169,13 +168,13 @@ color depth. Use the histograms below to the select how the intensities in your 
         module=moduletype()
         self.mergeUnit.setModule(module)
         self.preview.setDataUnit(self.mergeUnit)
+        self.preview.zoomToFit()
         self.preview.updatePreview()
         self.sizer.Fit(self)
         self.Layout()
         
     def onSetThreshold(self,obj,event,lower,upper):
         """
-        Method: onSetThreshold
         Created: 12.04.2006, KP
         Description: An event handler for updating the thresholds based on one of the histograms
         """            
@@ -211,8 +210,7 @@ color depth. Use the histograms below to the select how the intensities in your 
         previewBox=wx.StaticBoxSizer(box,wx.HORIZONTAL)
         self.preview = PreviewFrame.PreviewFrame(self,previewsize=(512,512),scrollbars=False)
         self.preview.setPreviewType("")
-        self.preview.zoomToFit()
-        
+                
         previewBox.Add(self.preview)
         
         self.zslider=wx.Slider(self,value=1,minValue=1,maxValue=1,
@@ -231,7 +229,6 @@ color depth. Use the histograms below to the select how the intensities in your 
         
     def onChangeZSlice(self,event):
         """
-        Method: onChangeZSlice
         Created: 12.04.2006, KP
         Description: Set the zslice displayed
         """             

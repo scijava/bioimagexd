@@ -79,16 +79,19 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         self.zoomFactor=1
         self.selectedItem=-1
         self.show={"SCROLL":0}
-        
+        self.xoffset = 0
+        self.yoffset = 0
         self.rawImages = []
         self.rawImage = None
         size=(1024,1024)
+        self.fixedSize = None
         self.centerOfMass = None
         self.oldx,self.oldy=0,0
         self.zoomx,self.zoomy=1,1
         Logging.info("kws=",kws,kw="preview")
         if kws.has_key("previewsize"):
             size=kws["previewsize"]
+            self.fixedSize  = size
             Logging.info("Got previewsize=",size,kw="preview")
         if kws.has_key("zoom_factor"):
             self.zoomFactor=kws["zoom_factor"]
@@ -241,12 +244,14 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         if self.maxSizeX>maxX:maxX=self.maxSizeX
         if self.maxSizeY>maxY:maxY=self.maxSizeY
         x,y=maxX,maxY
+        if self.fixedSize:
+            x,y = self.fixedSize
         if self.paintSize!=(x,y):    
             self.paintSize=(x,y)            
             self.setScrollbars(x,y)
         Logging.info("paintSize=",self.paintSize,kw="preview")
-        if bxd.visualizer.zoomToFitFlag:
-            self.zoomToFit()
+        #if bxd.visualizer.zoomToFitFlag:
+        #    self.zoomToFit()
 
     def onSize(self,event):
         """
@@ -254,9 +259,9 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         Description: Size event handler
         """    
         if event.GetSize() == self.lastEventSize:
-            print "**** LAST SIZE THE SAME"
+            #print "**** LAST SIZE THE SAME"
             return
-        print "Last size=",self.lastEventSize, "new size=",event.GetSize()
+        #print "Last size=",self.lastEventSize, "new size=",event.GetSize()
         self.lastEventSize = event.GetSize()
         
         InteractivePanel.InteractivePanel.OnSize(self,event)
@@ -322,7 +327,7 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         Description: Method that is called when the right mouse button is
                      pressed down on this item
         """ 
-        print "\n\n\n*** ON RIHG TCLICK"
+        #print "\n\n\n*** ON RIHG TCLICK"
         x,y=event.GetPosition()
         shape=self.FindShape(x,y)
         if shape:
@@ -345,11 +350,24 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         elif self.rawImage and not self.rawImages:
             self.rawImages=[self.rawImage]
         x,y=event.GetPosition()
+        x-=self.xoffset
+        y-=self.yoffset
+                
         x,y=self.getScrolledXY(x,y)
+        print "Scrolled xy=",x,y
         z=self.z
+        
+        print "event.getposition()=",event.GetPosition()
+        print "xoffset=",self.xoffset
+        print "Yoffset=",self.yoffset
+        
         dims=[x,y,z]
         rx,ry,rz=dims
-
+                   
+        if x<0:x=0
+        if y<0:y=0
+        if x>=self.xdim:x=self.xdim-1
+        if y>=self.ydim:y=self.ydim-1
         Logging.info("Returning x,y,z=(%d,%d,%d)"%(rx,ry,rz),kw="preview")
         ncomps=self.rawImage.GetNumberOfScalarComponents()
         if ncomps==1:
@@ -389,7 +407,6 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
             
     def setPreviewedSlice(self,obj,event,val=-1):
         """
-        Method: setPreviewedSlice()
         Created: 4.11.2004, KP
         Description: Sets the preview to display the selected z slice
         """
@@ -802,7 +819,7 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         """        
         if not self.slice and self.graySize == self.paintSize:
             return
-        Logging.backtrace()        
+        #Logging.backtrace()        
         if not clientdc:
             clientdc = wx.ClientDC(self)
         dc = self.dc = wx.BufferedDC(clientdc,self.buffer)
@@ -867,6 +884,8 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         #print "BMP Size=",bw,bh,"buffer size=",tw,th
         xoff = (tw-bw)/2
         yoff = (th-bh)/2
+        self.xoffset = xoff
+        self.yoffset = yoff
         dc.DrawBitmap(bmp,xoff,yoff,True)
         
         if self.centerOfMass:

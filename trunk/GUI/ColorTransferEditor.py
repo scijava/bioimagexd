@@ -46,6 +46,10 @@ import vtk
 import time
 import ImageOperations
 import Dialogs  
+try:
+    import psyco
+except:
+    psyco = None
 
 class CTFPaintPanel(wx.Panel):
     """
@@ -192,9 +196,6 @@ class CTFPaintPanel(wx.Panel):
             self.createLine(i,0,i,self.maxy,'GREY',wx.LIGHT_GREY_BRUSH)
             self.createLine(0,i,self.maxx,i,'GREY',wx.LIGHT_GREY_BRUSH)
     
-    
-        
-        
         coeff = float(self.maxx)/maxval
         for x1 in range(int(minval),int(maxval),int(d)):
             val=[0,0,0]
@@ -301,6 +302,8 @@ class CTFButton(wx.BitmapButton):
         """   
         self.ctf = ctf
         self.minval,self.maxval = ctf.GetRange()
+        self.minval = int(self.minval)
+        self.maxval = int(self.maxval)
         self.bmp = ImageOperations.paintCTFValues(self.ctf)
         self.SetBitmapLabel(self.bmp)
         
@@ -376,7 +379,7 @@ class ColorTransferEditor(wx.Panel):
         self.minval = 0
         self.maxval = 255
         self.otf = vtk.vtkPiecewiseFunction()
-        self.restoreDefaults(None)
+        self.restoreDefaults()
         self.mainsizer=wx.BoxSizer(wx.VERTICAL)
 
         self.canvasBox=wx.BoxSizer(wx.VERTICAL)
@@ -460,6 +463,13 @@ class ColorTransferEditor(wx.Panel):
         
         self.updateGraph()
         self.pos = (0,0)
+        
+        if psyco:
+            psyco.bind(self.onSetMaxNodes)
+            psyco.bind(self.onDrawFunction)
+            psyco.bind(self.updateGraph)
+            psyco.bind(self.setFromColorTransferFunction)
+            psyco.bind(self.getPointsFromFree)
         
     def onSetMaxNodes(self,evt):
         """
@@ -702,7 +712,7 @@ class ColorTransferEditor(wx.Panel):
             self.updateGraph()
             self.setFromColorTransferFunction(self.ctf)
         self.freeMode = event.GetIsDown()
-        Logging.info("Points before=",self.points,kw="ctf")
+        #Logging.info("Points before=",self.points,kw="ctf")
 
         if not self.freeMode and was:
             Logging.info("Analyzing free mode for points",kw="ctf")
@@ -715,7 +725,7 @@ class ColorTransferEditor(wx.Panel):
             maxpts=self.maxNodes.GetValue()
             if maxpts<tot:
                 self.onSetMaxNodes(None)
-        Logging.info("Points after=",self.points,kw="ctf")      
+        #Logging.info("Points after=",self.points,kw="ctf")      
 
         self.updateGraph()
                 
@@ -765,7 +775,7 @@ class ColorTransferEditor(wx.Panel):
         self.updateGraph()
 
 
-    def restoreDefaults(self,event):
+    def restoreDefaults(self,event = None):
         """
         Created: 8.12.2004, KP
         Description: Restores the default settings for this widget
@@ -866,7 +876,10 @@ class ColorTransferEditor(wx.Panel):
         Description: Sets the colors of this graph
         """
         self.minval,self.maxval = TF.GetRange()
-
+        self.minval = int(self.minval)
+        self.maxval = int(self.maxval)
+        self.restoreDefaults()
+        print "len(self.redfunc)=",len(self.redfunc),self.maxval
         for i in range(self.maxval+1):
             val = [0,0,0]
             TF.GetColor(i,val)
@@ -877,9 +890,10 @@ class ColorTransferEditor(wx.Panel):
             r=int(r)
             g=int(g)
             b=int(b)
+            
             self.redfunc[i]=r
             self.greenfunc[i]=g
-            self.bluefunc[i]=b
+            self.bluefunc[i]=b  
 
     def getPointsFromFree(self):
         """
@@ -898,7 +912,7 @@ class ColorTransferEditor(wx.Panel):
         self.greenpoints=[]
         self.bluepoints=[]
         self.alphapoints=[]
-        for x in range(self.maxval+1):
+        for x in range(int(self.maxval+1)):
             if self.alpha:
                 a=self.otf.GetValue(x)
                 a*=255
