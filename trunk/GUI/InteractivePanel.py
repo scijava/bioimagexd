@@ -47,12 +47,45 @@ DELETE_ANNOTATION=6
 
 from OGLAnnotations import *
 
+class PainterHelper:
+    """
+    Created: 06.10.2006, KP
+    Description: A base class for adding behaviour to the painting of the previews
+                 in a standard way, that can be used for example to implement different
+                 kinds of highlighting, annotations etc.
+    """
+    def __init__(self, parent):        
+        self.parent = parent
+        
+    def paintOnDC(self, dc):
+        """
+        Created: 06.10.2006, KP
+        Description: A method that is used to paint whatever this helper wishes to paint
+                     on the DC
+        """
+        pass
+        
+class AnnotationHelper(PainterHelper):
+    """
+    Created: 06.10.2006, KP
+    Description: A class that capsulates the behaviour of drawing the annotations
+    """
+    def __init__(self, parent):
+        PainterHelper.__init__(self, parent)
+                
+    def paintOnDC(self, dc):
+        """
+        Created: 06.10.2006, KP
+        Description: Paint the annotations on a DC
+        """
+        self.parent.diagram.Redraw(dc)
+        
+
 #class InteractivePanel(wx.ScrolledWindow):
 class InteractivePanel(ogl.ShapeCanvas):
     """
-    Class: InteractivePanel
     Created: 03.07.2005, KP
-    Description: A panel that can be used to select regions of interest, drawn
+    Description: A panel that can be used to select regions of interest, draw
                  annotations on etc.
     """
     def __init__(self,parent,**kws):
@@ -60,33 +93,34 @@ class InteractivePanel(ogl.ShapeCanvas):
         Created: 24.03.2005, KP
         Description: Initialization
         """    
-        self.parent=parent
-        self.is_windows=1#=platform.system()=="Windows"
-        self.maxX=512
-        self.maxY=512
-        self.maxSizeX=512
-        self.maxSizeY=512
+        self.parent = parent
+        self.is_windows = 1#=platform.system()=="Windows"
+        self.maxX = 512
+        self.maxY = 512
+        self.maxSizeX = 512
+        self.maxSizeY = 512
+        self.painterHelpers = []
         self.origX = 512
         self.origY = 512
         size=kws.get("size",(512,512))
-        self.multiple=0
-        self.dataUnit=None
+        self.multiple = 0
+        self.dataUnit = None
         ogl.OGLInitialize()
         
-        self.annotations=[]
-        self.annotationClass=None
-        self.currentAnnotation=None
-        self.voxelSize=(1,1,1)
+        self.annotations = []
+        self.annotationClass = None
+        self.currentAnnotation = None
+        self.voxelSize=(1,1,1) 
         self.bgColor = kws.get("bgColor",(0,0,0))
-        self.action=0
-        self.imagedata=None
-        self.bmp=None
+        self.action = 0
+        self.imagedata = None
+        self.bmp = None
         
-        self.actionstart=(0,0)
-        self.actionend=(0,0)
-        self.prevPolyEnd=None
+        self.actionstart = (0,0)
+        self.actionend = (0,0)
+        self.prevPolyEnd = None
         
-        x,y=size
+        x,y = size
         self.buffer = wx.EmptyBitmap(x,y)
         #wx.ScrolledWindow.__init__(self,parent,-1,size=size)
         ogl.ShapeCanvas.__init__(self,parent,-1,size=size)
@@ -99,6 +133,9 @@ class InteractivePanel(ogl.ShapeCanvas):
     
         self.lines = []
         
+        
+        
+        self.registerPainter( AnnotationHelper(self) )
 
         self.zoomFactor=1
         
@@ -118,9 +155,31 @@ class InteractivePanel(ogl.ShapeCanvas):
         
         #messenger.connect(None,"create_polygon",self.onCreatePolygon)
         
+    def registerPainter(self, painter):
+        """
+        Created: 06.10.2006, KP
+        Description: Add a painter helper that will be used to paint on the DC after everything else
+        """
+        self.painterHelpers.append(painter)      
+      
+    def repaintHelpers(self):
+        """
+        Created: 06.10.2006, KP
+        Description: Repaint the helpers but nothing else
+        """
+        print "repainting helpers"
+        w, h =self.buffer.GetWidth(),self.buffer.GetHeight()
+        self.buffer = wx.EmptyBitmap(w,h)
+        memdc = wx.MemoryDC()
+        memdc.SelectObject(self.buffer)
+        memdc.DrawBitmap(self.bgbuffer,0,0,False)
+        memdc.SelectObject(wx.NullBitmap)
+        
+        self.OnPaint(None)
+        
+        
     def deleteLines(self,lines):
         """
-        Method: onEraseLines
         Created: 08.06.2006, KP
         Description: Erase the given lines from this canvas
         """            
@@ -157,28 +216,6 @@ class InteractivePanel(ogl.ShapeCanvas):
         
         return maskImage,names
         
-    def polyCenter(self,points):
-        """
-        Created: 16.06.2006, KP
-        Description: Calculte the center of mass of polygon
-        """          
-        A=0
-        for i,pt in enumerate(points[:-1]):
-            
-            x,y=pt
-            A+=(x*points[i+1][1]-points[i+1][0]*y)
-        A/=2.0
-        
-        cx = 0
-        cy = 0
-        
-        for i,pt in enumerate(points[:-1]):
-            x,y=pt
-            cx+=(x+points[i+1][0])*(x*points[i+1][1]-points[i+1][0]*y)
-            cy+=(y+points[i+1][1])*(x*points[i+1][1]-points[i+1][0]*y)
-        cx /= 6.0*A
-        cy /= 6.0*A
-        return (cx,cy)
         
     def createPolygon(self,points):
         """
@@ -189,7 +226,7 @@ class InteractivePanel(ogl.ShapeCanvas):
         pts=[]
         print "points=",points
         #shape.SetCentreResize(0)
-        mx,my= self.polyCenter(points)
+        mx,my= shape.polyCenter(points)
         print "Center of polygon=",mx,my
         
         for x,y in points:
@@ -221,7 +258,6 @@ class InteractivePanel(ogl.ShapeCanvas):
         
     def getDrawableRectangles(self):
         """
-        Method: getDrawableRectangles()
         Created: 04.07.2005, KP
         Description: Return the rectangles can be drawn on as four-tuples
         """    
@@ -252,13 +288,11 @@ class InteractivePanel(ogl.ShapeCanvas):
         event.Skip()        
     def markActionStart(self,event):
         """
-        Method: markActionStart
         Created: 24.03.2005, KP
         Description: Sets the starting position of rubber band for zooming
         """    
         event.Skip()
-        
-            
+                   
         pos=event.GetPosition()
 
         x,y=pos
@@ -277,9 +311,9 @@ class InteractivePanel(ogl.ShapeCanvas):
             
         self.actionstart=pos
         return 1
+        
     def updateActionEnd(self,event):
         """
-        Method: updateActionEnd
         Created: 24.03.2005, KP
         Description: Draws the rubber band to current mou        
         """
@@ -289,7 +323,6 @@ class InteractivePanel(ogl.ShapeCanvas):
             
     def actionEnd(self,event):
         """
-        Method: actionEnd
         Created: 05.07.2005, KP
         Description: Unconditionally end the current action
         """    
@@ -542,22 +575,31 @@ class InteractivePanel(ogl.ShapeCanvas):
         Created: 28.04.2005, KP
         Description: Does the actual blitting of the bitmap
         """
+        scrolledWinDC=0
         if self.is_windows:
             x,y=self.GetViewStart()
             if x or y:
+                scrolledWinDC=1
                 #Logging.info("Resorting to unbuffered drawing because of scrolling",kw="iactivepanel")
                 dc=wx.PaintDC(self)
                 
                 self.PrepareDC(dc)
                 dc.BeginDrawing()
                 dc.DrawBitmap(self.buffer,0,0,False)
-                self.diagram.Redraw(dc)                
-                dc.EndDrawing()
-                return
+                #self.diagram.Redraw(dc)                
 
-        self.bgbuffer = self.buffer.GetSubBitmap(wx.Rect(0,0,self.buffer.GetWidth(),self.buffer.GetHeight()))
-        dc=wx.BufferedPaintDC(self,self.buffer)#,self.buffer)
-        self.diagram.Redraw(dc)
+        if not scrolledWinDC:
+            dc=wx.BufferedPaintDC(self,self.buffer)#,self.buffer)
+            
+        w, h =self.buffer.GetWidth(),self.buffer.GetHeight()
+        #self.bgbuffer = self.buffer.GetSubBitmap(wx.Rect(0,0,self.buffer.GetWidth(),self.buffer.GetHeight()))
+        
+        for helper in self.painterHelpers:
+            helper.paintOnDC(dc)
+        if scrolledWinDC:
+            dc.EndDrawing()
+
+#        self.diagram.Redraw(dc)
 
 
     def paintPreview(self):

@@ -832,8 +832,10 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
             
         if not self.slice:
             self.graySize = self.paintSize
+            self.makeBackgroundBuffer(dc)
             dc.EndDrawing()
             self.dc = None
+            
             return
             
         bmp=self.slice
@@ -918,6 +920,19 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         
         InteractivePanel.InteractivePanel.paintPreview(self)
 
+        self.makeBackgroundBuffer(dc)
         
         dc.EndDrawing()
         self.dc = None
+
+    def makeBackgroundBuffer(self, dc):
+        """
+        Created: 06.10.2006, KP
+        Description: Copy the current buffer to a background buffer
+        """
+        w,h = self.buffer.GetWidth(),self.buffer.GetHeight()
+        self.bgbuffer = wx.EmptyBitmap(w,h)
+        memdc = wx.MemoryDC()
+        memdc.SelectObject(self.bgbuffer)
+        memdc.Blit(0,0,w,h,dc,0,0)
+        memdc.SelectObject(wx.NullBitmap)
