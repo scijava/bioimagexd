@@ -43,7 +43,7 @@ except:
 import messenger
 import scripting as bxd
 
-import ProcessingFilter
+from lib import ProcessingFilter
 import GUI.GUIBuilder as GUIBuilder
 import ImageOperations
 
@@ -53,7 +53,6 @@ from lib import Track
 
 import messenger
 
-import ProcessingFilter
 def getFilterList():
     return [CreateTracksFilter]
             
