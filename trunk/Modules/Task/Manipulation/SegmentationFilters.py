@@ -47,7 +47,7 @@ import MathFilters
 import GUI.GUIBuilder as GUIBuilder
 import messenger
 
-from ProcessingFilter import FILTER_BEGINNER
+from lib.ProcessingFilter import FILTER_BEGINNER
 
 SEGMENTATION="Segmentation"
 #ITK="ITK"

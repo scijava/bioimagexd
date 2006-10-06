@@ -38,7 +38,7 @@ MORPHOLOGICAL="Morphological operations"
 FEATUREDETECTION="Feature Detection"
 FILTERING="Filtering"
 
-from ProcessingFilter import FILTER_BEGINNER
+from lib.ProcessingFilter import FILTER_BEGINNER
 
 class MorphologicalFilter(ProcessingFilter.ProcessingFilter):
     """
