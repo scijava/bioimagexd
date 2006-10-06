@@ -100,7 +100,7 @@ class ExportDialog(wx.Dialog):
         """            
         dirname=self.browsedir.GetValue()
         pattern=self.patternEdit.GetValue()
-        n=pattern.count("%d")
+        n=pattern.count("%d")        
         ext=self.outputFormat.menu.GetString(self.outputFormat.menu.GetSelection()).lower()
         writer="vtk.vtk%sWriter()"%(ext.upper())
         writer=eval(writer)
@@ -121,6 +121,7 @@ class ExportDialog(wx.Dialog):
                 begin=pattern.rfind("%")
                 
                 beginstr=pattern[:begin-1]
+                currpattern=beginstr%t+pattern[begin-1:]
                 Logging.info("beginstr=%s, currpattern=%s"%(beginstr,beginstr%t+pattern[begin-1:]),kw="io")
             else:
                 currpattern="_"+pattern
@@ -303,6 +304,7 @@ class ExportDialog(wx.Dialog):
         sizer.Add(lbl)
         formats=["XML Image Data","VTK Image Data"]
         self.vtkmenu=wx.Choice(self.vtkPanel,-1,choices=formats)
+        self.vtkmenu.SetSelection(0)
         sizer.Add(self.vtkmenu)
         
         self.vtkmenu.Bind(wx.EVT_CHOICE,self.updateListOfDatasets)
@@ -311,7 +313,7 @@ class ExportDialog(wx.Dialog):
         self.vtksourceListbox=wx.ListBox(self.vtkPanel,-1,size=(400,100),style=wx.LB_ALWAYS_SB|wx.LB_EXTENDED)
         self.vtklistlbl=wx.StaticText(self.vtkPanel,-1,"List of Datasets:")
         self.vtksourcesizer.Add(self.vtklistlbl)
-        self.sourcesizer.Add(self.vtksourceListbox)
+        self.vtksourcesizer.Add(self.vtksourceListbox)
         
         
         self.vtkSourceboxsizer.Add(self.vtksourcesizer,1,wx.EXPAND)
@@ -364,11 +366,26 @@ class ExportDialog(wx.Dialog):
         Created: 20.04.2005, KP
         Description: A method that updates a list of images to a listbox based on the selected input type
         """        
-        dirname=self.browsedir.GetValue()
-        pattern=self.patternEdit.GetValue()
-        self.sourceListbox.Clear()
+        if self.imageMode==1:
+            dirname=self.browsedir.GetValue()
+            pattern=self.patternEdit.GetValue()
+            self.sourceListbox.Clear()
+            lstbox=self.sourceListbox
+            ext=self.outputFormat.menu.GetString(self.outputFormat.menu.GetSelection()).lower()    
+        else:
+            lstbox=self.vtksourceListbox
+            dirname=self.vtkbrowsedir.GetValue()
+            pattern = self.vtkpatternEdit.GetValue()
+            self.vtksourceListbox.Clear()
+            fext=self.vtkmenu.GetString(self.vtkmenu.GetSelection())
+            if fext.find("XML")!=-1:
+                ext="vti"
+            else:
+                ext="vtk"
+        
         n=pattern.count("%")
-        ext=self.outputFormat.menu.GetString(self.outputFormat.menu.GetSelection()).lower()
+        
+        
         if n==0:
             pattern=pattern+"%d"
             n=1
@@ -383,12 +400,12 @@ class ExportDialog(wx.Dialog):
         if n==1:
             for i in range(self.imageAmnt):
                 file=os.path.join(dirname,pattern%i)+".%s"%ext
-                self.sourceListbox.Append(file)
+                lstbox.Append(file)
         else:
             for t in range(self.n):
                 for z in range(self.z):
                     file=os.path.join(dirname,pattern%(t,z))+".%s"%ext
-                    self.sourceListbox.Append(file)
+                    lstbox.Append(file)
                     
     def updateListOfDatasets(self,event=None):
         """

@@ -750,6 +750,30 @@ class MyPolygon(OGLAnnotation, ogl.PolygonShape):
         self.setName("Polygon #%d"%count[self.__class__])
         count[self.__class__]+=1
         
+    def polyCenter(self,points):
+        """
+        Created: 16.06.2006, KP
+        Description: Calculte the center of mass of polygon
+        """          
+        A=0
+        for i,pt in enumerate(points[:-1]):
+            
+            x,y=pt
+            A+=(x*points[i+1][1]-points[i+1][0]*y)
+        A/=2.0
+        
+        cx = 0
+        cy = 0
+        
+        for i,pt in enumerate(points[:-1]):
+            x,y=pt
+            cx+=(x+points[i+1][0])*(x*points[i+1][1]-points[i+1][0]*y)
+            cy+=(y+points[i+1][1])*(x*points[i+1][1]-points[i+1][0]*y)
+        cx /= 6.0*A
+        cy /= 6.0*A
+        return (cx,cy)
+        
+        
     def setScaleFactor(self,factor):
         """
         Created: 21.06.2006, KP
@@ -929,7 +953,8 @@ class MyPolygonControlPoint(ogl.PolygonControlPoint):
         #self._shape.GetEventHandler().OnSizingEndDragLeft(self, x, y, keys, attachment)
         self._shape.SetPointsFromControl(self)    
         self._shape.ResetControlPoints()
-        self.GetCanvas().paintPreview()
+        #self.GetCanvas().paintPreview()
+        self.GetCanvas().repaintHelpers()
         self.GetCanvas().Refresh()
         
         #self.SetX(x)
@@ -957,7 +982,7 @@ class MyEvtHandler(ogl.ShapeEvtHandler):
             if dlg.ShowModal() == wx.ID_OK:
                 value = dlg.GetValue()
                 shape.setName(value)
-                self.parent.paintPreview()
+                self.parent.repaintHelpers()
                 self.parent.Refresh()
             dlg.Destroy()        
 
@@ -994,6 +1019,16 @@ class MyEvtHandler(ogl.ShapeEvtHandler):
         self.parent.paintPreview(dc)
         self.parent.Refresh()
         
+    def OnDragLeft(self, draw, x, y, keys = 0, attachment = 0):
+        print "OnDragLeft"
+        ogl.ShapeEvtHandler.OnDragLeft(self, x, y, keys, attachment)
+        self.parent.repaintHelpers()
+        self.parent.Refresh()
+    #def OnDragRight(self, draw, x, y, keys = 0, attachment = 0):
+    #    print "OnDragRight"
+    #    ogl.ShapeEvtHandler.OnDragRight(self, x, y, keys, attachment)
+
+
     def OnEndDragLeft(self, x, y, keys=0, attachment=0):
         shape = self.GetShape()
         #print "OnEndDragLeft"
@@ -1001,23 +1036,25 @@ class MyEvtHandler(ogl.ShapeEvtHandler):
 
         if not shape.Selected():
             self.OnLeftClick(x, y, keys, attachment)
-        self.parent.paintPreview()
+        #self.parent.paintPreview()
+        self.parent.repaintHelpers()
         self.parent.Refresh()
     def OnSizingEndDragLeft(self, pt, x, y, keys, attch):
         #print "OnSizingEndDragLeft"
         ogl.ShapeEvtHandler.OnSizingEndDragLeft(self, pt, x, y, keys, attch)
         
-        self.parent.paintPreview()
+        #self.parent.paintPreview()
+        self.parent.repaintHelpers()
         self.parent.Refresh()
     def OnMovePost(self, dc, x, y, oldX, oldY, display):
         print "OnMovePost"
         ogl.ShapeEvtHandler.OnMovePost(self, dc, x, y, oldX, oldY, display)
         canvas = self.parent
-        shape = self.GetShape()
-        dc = wx.ClientDC(canvas)
-        canvas.PrepareDC(dc)
-        shape.Erase(dc)
-        
+        #shape = self.GetShape()
+        #dc = wx.ClientDC(canvas)
+        #canvas.PrepareDC(dc)
+        #shape.Erase(dc)
+    
 #        self.parent.paintPreview()
         self.parent.Refresh()
 

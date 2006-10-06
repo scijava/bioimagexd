@@ -40,13 +40,11 @@ import vtk
 
 class AdjustSettings(DataUnitSettings):
     """
-    Class: AdjustSettings
     Created: 27.03.2005, KP
     Description: Stores settings related to dataset adjustment
     """
     def __init__(self,n=-1):
         """
-        Method: __init__
         Created: 27.03.2005, KP
         Description: Constructor
         """
@@ -69,7 +67,6 @@ class AdjustSettings(DataUnitSettings):
         
     def initialize(self,dataunit,channels, timepoints):
         """
-        Method: initialize(dataunit,channels, timepoints)
         Created: 27.03.2005
         Description: Set initial values for settings based on 
                      number of channels and timepoints

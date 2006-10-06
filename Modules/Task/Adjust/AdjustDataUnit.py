@@ -35,14 +35,12 @@ from DataUnit import CombinedDataUnit
 
 class AdjustDataUnit(CombinedDataUnit):
     """
-    Class: AdjustDataUnit
     Created: 24.11.2004, JM, JV
     Description: Class for an adjusted single-channel 4D DataUnit
     """
 
     def __init__(self,name=""):
         """
-        Method: __init__
         Created: 27.03.2005 KP
         Description: Constructor
         """
@@ -51,14 +49,12 @@ class AdjustDataUnit(CombinedDataUnit):
         
     def setOutputChannel(self,ch,flag):
         """
-        Method: setOutputChannel(ch,flag)
         Created: 22.07.2005, KP
         Description: Mark a channel as being part of the output
         """
         pass
     def setOriginal(self, dataUnit):
         """
-        Method: setOriginal
         Created: 14.12.2004, JM, JV
         Description: Sets the original DataUnit for this ProcessedSourceDataUnit
         Parameters: dataUnit  The original unmodified DataUnit
@@ -68,7 +64,6 @@ class AdjustDataUnit(CombinedDataUnit):
 
     def interpolateIntensities(self):
         """
-        Method: interpolateIntensities()
         Created: 13.12.2004, KP
         Description: Interpolates intensity transfer functions for timepoints 
                      between a given list of timepoints
@@ -95,7 +90,6 @@ class AdjustDataUnit(CombinedDataUnit):
 
     def interpolateIntensitiesBetween(self,timepoint1,timepoint2):
         """
-        Method: interpolateIntensitiesBetween(timepoint1,timepoint2)
         Created: 09.12.2004, KP
         Description: Interpolates intensity transfer functions for timepoints 
                      between timepoint1 and timepoint2
@@ -121,7 +115,6 @@ class AdjustDataUnit(CombinedDataUnit):
 
     def getColorTransferFunction(self):
         """
-        Method: getColorTransferFunction()
         Created: 21.06.2005, KP
         Description: Returns the ctf of the source dataunit
         """
@@ -129,9 +122,7 @@ class AdjustDataUnit(CombinedDataUnit):
        
     def addSourceDataUnit(self,dataUnit,**args):
         """
-        Method: addSourceDataUnit
-        Created: 27.03.2005
-        Creator: KP
+        Created: 27.03.2005, KP
         Description: Adds a source data unit to this dataunit
         """
         self.setOriginal(dataUnit)    
@@ -144,9 +135,7 @@ class AdjustDataUnit(CombinedDataUnit):
   
     def copyIntensityTransferFunctionToAll(self,iTF):
         """
-        Method: copyIntensityTransferFunctionToAll(transferfunction)
-        Created: 13.1.2005
-        Creator: KP
+        Created: 13.1.2005, KP
         Description: Sets the IntensityTransferFunction instace for
                      all timePoints
         """
@@ -155,7 +144,6 @@ class AdjustDataUnit(CombinedDataUnit):
     
     def getSettingsClass(self):
         """
-        Method: getSettingsClass()
         Created: 02.04.2005, KP
         Description: Return the class that represents settings for this dataunit
         """

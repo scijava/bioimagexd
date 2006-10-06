@@ -38,7 +38,6 @@ import scripting as bxd
 
 class CombinedDataUnit(DataUnit.DataUnit):
     """
-    Class: CombinedDataUnit
     Created: 03.11.2004, JM
     Description: Base class for combined 4d data.
     """
@@ -61,7 +60,6 @@ class CombinedDataUnit(DataUnit.DataUnit):
         
     def isProcessed(self):
         """
-        Method: isProcessed
         Created: 31.05.2005, KP
         Description: A method for querying whether this dataset is a processed one
         """    
@@ -69,7 +67,6 @@ class CombinedDataUnit(DataUnit.DataUnit):
         
     def setOutputChannel(self,ch,flag):
         """
-        Method: setOutputChannel(ch,flag)
         Created: 22.07.2005, KP
         Description: Mark a channel as being part of the output
         """
@@ -102,7 +99,6 @@ class CombinedDataUnit(DataUnit.DataUnit):
 
     def getSettings(self):
         """
-        Method: getSettings
         Created: 27.03.2005, KP
         Description: Returns the settings object of this dataunit
         """
@@ -110,7 +106,6 @@ class CombinedDataUnit(DataUnit.DataUnit):
 
     def setSettings(self,settings):
         """
-        Method: setSettings
         Created: 27.03.2005, KP
         Description: Sets the settings object of this dataunit
         """
@@ -120,7 +115,6 @@ class CombinedDataUnit(DataUnit.DataUnit):
 
     def getSourceUnit(self,name):
         """
-        Method: getSourceUnit
         Created: 28.03.2005, KP
         Description: Returns a source unit of given name
         """
@@ -129,7 +123,6 @@ class CombinedDataUnit(DataUnit.DataUnit):
         
     def setDataSource(self, dataSource):
         """
-        Method: setDataSource
         Created: 17.11.2004, JM
         Description: Sets a DataSource for this CombinedDataUnit
         Parameters: dataSource  A DataSource to manage actual
@@ -238,7 +231,6 @@ class CombinedDataUnit(DataUnit.DataUnit):
 
     def addSourceDataUnit(self, dataUnit,no_init=0):
         """
-        Method: addSourceDataUnit
         Created: 03.11.2004, JM
         Description: Adds 4D data to the unit together with channel-specific
         settings.
@@ -401,7 +393,6 @@ class CombinedDataUnit(DataUnit.DataUnit):
 
     def getBitDepth(self):
         """
-        Method: getBitDepth()
         Created: 30.05.2005, KP
         Description: Return the bit depth of the combined dataunit
         """
@@ -410,10 +401,8 @@ class CombinedDataUnit(DataUnit.DataUnit):
         
     def getSettingsClass(self):
         """
-        Method: getSettingsClass()
         Created: 02.04.2005, KP
         Description: Return the class that represents settings for this dataunit
         """
         raise "Using bare DataUnitSettings"
-        return DataUnitSettings
-        
+ 
