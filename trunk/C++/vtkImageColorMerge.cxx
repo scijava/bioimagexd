@@ -131,28 +131,33 @@ void vtkImageColorMergeExecute(vtkImageColorMerge *self, int id,int NumberOfInpu
 
         
         if( itfCount ) {
+            printf("Got %d itfs\n",itfCount);
             itf = self->GetIntensityTransferFunction(i);
             
             itfs[i] = itf->GetDataPointer();
+            
             if( !itf->IsIdentical() ) {
                 isIdentical = 0;
                 allIdentical = 0;                
             }
         }    
         
+//        printf("Value of function 1 at 255=%d\n",itfs[0][255]);
+//        printf("Value of function 2 at 255=%d\n",itfs[1][255]);
         
-        for(int x = 0; x < n; x++) {
-                if(!isIdentical) {
-                    x=itfs[i][x];    
-                }
+        for(int x=0,xx = 0; xx < n; xx++) {
+                if(!isIdentical) {                    
+                    x=itfs[i][xx];
+                    printf("Mapping value %d for ch%d to %d\n",xx,i,x);    
+                } else x=xx;
 
-                ctfs[i][3*x] = map[3*x];
-                ctfs[i][3*x+1] = map[3*x+1];
-                ctfs[i][3*x+2] = map[3*x+2];
+                ctfs[i][3*xx] = map[3*x];
+                ctfs[i][3*xx+1] = map[3*x+1];
+                ctfs[i][3*xx+2] = map[3*x+2];
                 
         } 
     }
-    
+    printf("Created the ctfs\n");
     outPtr=(unsigned char*)outData->GetScalarPointerForExtent(outExt);
     
     
