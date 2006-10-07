@@ -328,19 +328,20 @@ def lutToString(ctf):
     return s
         
 def getAsParameterList(iTF):
-    lst=[]
-    lst.append(iTF.GetBrightness())
-    lst.append(iTF.GetContrast())
-    lst.append(iTF.GetGamma())
-    lst.append(iTF.GetMinimumThreshold())
-    lst.append(iTF.GetMinimumValue())
-    lst.append(iTF.GetMaximumThreshold())
-    lst.append(iTF.GetMaximumValue())
-    lst.append(iTF.GetProcessingThreshold())
+    lst=[   iTF.GetBrightness(),
+            iTF.GetContrast(),
+            iTF.GetGamma(),
+            iTF.GetMinimumThreshold(),
+            iTF.GetMinimumValue(),
+            iTF.GetMaximumThreshold(),
+            iTF.GetMaximumValue(),
+            iTF.GetProcessingThreshold(),
+            iTF.GetRangeMax()]
     return lst
     
 def setFromParameterList(iTF,list):
-    br,cr,g,mt,mv,mat,mav,mpt=list
+    br,cr,g,mt,mv,mat,mav,mpt,rangemax=list
+    iTF.SetRangeMax(rangemax)
     iTF.SetContrast(float(cr))
     iTF.SetGamma(float(g))
     iTF.SetMinimumThreshold(int(mt))

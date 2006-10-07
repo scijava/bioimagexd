@@ -65,20 +65,28 @@ class MergingSettings(DataUnitSettings):
 
     def initialize(self,dataunit,channels, timepoints):
         """
-        Method: initialize(dataunit,channels, timepoints)
         Created: 27.03.2005
         Description: Set initial values for settings based on 
                      number of channels and timepoints
         """
         DataUnitSettings.initialize(self,dataunit,channels,timepoints)
+        if hasattr(dataunit,"getScalarRange"):
+            minval,maxval = dataunit.getScalarRange()
+        else:
+            minval,maxval = dataunit.getSourceDataUnits()[0].getScalarRange()
+
+        tf=vtk.vtkIntensityTransferFunction()
+        tf.SetRangeMax(maxval)    
+        self.set("AlphaTransferFunction",tf)
+        
         for i in range(channels):
             tf=vtk.vtkIntensityTransferFunction()
+            tf.SetRangeMax(maxval)    
             self.setCounted("IntensityTransferFunction",i,tf,0)
         self.set("PreviewChannel",1)
             
     def get(self,name):
         """
-        Method: get(name)
         Created: 03.07.2005
         Description: Return the value of a key
         """

@@ -32,35 +32,26 @@ vtkStandardNewMacro(vtkIntensityTransferFunction);
 // Construct a new vtkIntensityTransferFunction with default values
 vtkIntensityTransferFunction::vtkIntensityTransferFunction()
 {
-  this->ArraySize        = 256;
-  this->Function         = new int[this->ArraySize];
-  this->FunctionRange[0] = 0;
-  this->FunctionRange[1] = 0;
-  this->SmoothStart=0;
-  this->SmoothStartGamma=1;
-  this->SmoothEnd=255;
-  this->SmoothEndGamma=1;
 
-  for (int i=0; i < this->ArraySize; i++)
-    {
-    this->Function[i] = 0;
-    }
-    this->Reset();
+  this->RangeMax = 255;
+  this->Function = 0;
+  this->Initialize();
+  this->Reset();
 }
 
 void vtkIntensityTransferFunction::Reset(void) {
 
     this->MinimumValue = 0;
-    this->MaximumValue = 255;
+    this->MaximumValue = this->RangeMax;
     this->MinimumThreshold = 0;
-    this->MaximumThreshold = 255;
+    this->MaximumThreshold = this->RangeMax;
     this->Gamma = 1;
     this->Contrast = 1;
     this->Brightness = 0;
     this->ProcessingThreshold = 0;
     this->SmoothStart=0;
     this->SmoothStartGamma=1;
-    this->SmoothEnd=255;
+    this->SmoothEnd=this->RangeMax;
     this->SmoothEndGamma=1;
     this->Modified();
 }
@@ -119,7 +110,9 @@ void vtkIntensityTransferFunction::Initialize()
     delete [] this->Function;
     }
 
-  this->ArraySize        = 256;
+  
+  this->ArraySize        = this->RangeMax+1;
+    printf("Initializing array to size %d\n",this->ArraySize);
   this->Function         = new int[this->ArraySize];
   this->FunctionRange[0] = 0;
   this->FunctionRange[1] = 0;
@@ -280,13 +273,13 @@ void vtkIntensityTransferFunction::ComputeFunction(void) {
     if(this->Brightness>0) {
         bx1 = 0;
         by1 = this->Brightness;
-        bx2 = 255 - this->Brightness;
-        by2 = 255;
+        bx2 = this->RangeMax - this->Brightness;
+        by2 = this->RangeMax;
     } else {
         bx1 = -this->Brightness;
         by1 = 0;
-        bx2 = 255;
-        by2 = 255 + this->Brightness;
+        bx2 = this->RangeMax;
+        by2 = this->RangeMax + this->Brightness;
     }
     if(bx1 < this->MinimumThreshold) {
         bx1 = this->MinimumThreshold;
@@ -313,21 +306,21 @@ void vtkIntensityTransferFunction::ComputeFunction(void) {
 
     int gx1,gx2,gy1,gy2;
 
-    if(d >= 0 && f2(255)<= 255) {
+    if(d >= 0 && f2(this->RangeMax) <= this->RangeMax) {
         gx1 = 0; gy1 = d;
-        gx2 = 255; gy2 = int(255*this->Contrast+d);
+        gx2 = this->RangeMax; gy2 = int(this->RangeMax*this->Contrast+d);
     }
-    if(d >= 0 && f2(255)>255) {
+    if(d >= 0 && f2(this->RangeMax) > this->RangeMax) {
         gx1 = 0; gy1 = d;
-        gx2 = int((255 -d)/float(this->Contrast)); gy2 = 255;
+        gx2 = int((this->RangeMax -d)/float(this->Contrast)); gy2 = this->RangeMax;
     }
-    if(d < 0 && f2(255)<= 255) {
+    if(d < 0 && f2(this->RangeMax)<= this->RangeMax) {
         gx1 = int((0-d)/float(this->Contrast)); gy1 = 0;
-        gx2 = int((255 -d)/float(this->Contrast)); gy2 = int(255*this->Contrast+d);
+        gx2 = int((this->RangeMax -d)/float(this->Contrast)); gy2 = int(this->RangeMax*this->Contrast+d);
     }
-    if(d < 0 && f2(255)> 255) {
+    if(d < 0 && f2(this->RangeMax)> this->RangeMax) {
         gx1 = int((0-d)/float(this->Contrast)); gy1 = 0;
-        gx2 = int((255 -d)/float(this->Contrast)); gy2 = 255;
+        gx2 = int((this->RangeMax -d)/float(this->Contrast)); gy2 = this->RangeMax;
     }
     if(gx1 < this->MinimumThreshold) {
         gx1 = this->MinimumThreshold;
@@ -349,7 +342,7 @@ void vtkIntensityTransferFunction::ComputeFunction(void) {
 
     #define powsg(x) double(pow((double)(x),this->SmoothStartGamma))
     #define poweg(x) double(pow((double)(x),this->SmoothEndGamma))
-    for(int x=0; x <= 255; x++) {
+    for(int x=0; x <= this->RangeMax; x++) {
 
         y = f4(x,gx1,gy1,gx2,gy2);
         if(x < this->SmoothStart) {
@@ -358,9 +351,9 @@ void vtkIntensityTransferFunction::ComputeFunction(void) {
         }
         if(x > this->SmoothEnd) {
             int f4val = f4(this->SmoothEnd,gx1,gy1,gx2,gy2);
-            y = int(poweg(x-SmoothEnd)*(-f4val/poweg(255-SmoothEnd)))+f4val;
+            y = int(poweg(x-SmoothEnd)*(-f4val/poweg(this->RangeMax-SmoothEnd)))+f4val;
         }
-        printf("Value at %d=%d\n",x,y);
+        //printf("Value at %d=%d\n",x,y);
         this->Function[x] = y;
     }
 
@@ -370,7 +363,7 @@ void vtkIntensityTransferFunction::ComputeFunction(void) {
 int vtkIntensityTransferFunction::f4(int x, int gx1,int gy1,int gx2,int gy2) {
     int y;
     if(gx2==0)gx2=-1;
-    printf("f4(%d,%d,%d,%d,%d)\n",x,gx1,gy1,gx2,gy2);
+    //printf("f4(%d,%d,%d,%d,%d)\n",x,gx1,gy1,gx2,gy2);
     if(x < gx1) {
         printf("x < gx1 (%d < %d), minval=%d\n",x,gx1,this->MinimumValue);
         y = this->MinimumValue;
@@ -378,15 +371,15 @@ int vtkIntensityTransferFunction::f4(int x, int gx1,int gy1,int gx2,int gy2) {
     if(x <= gx2 && x >= gx1) {
         
         y = GammaValue(gx1,gy1,gx2,gy2,x,this->Gamma);
-        printf("x %d between gx1=%d, gx2=%d, gammavalue=%d\n",x,gx1,gx2,y);
+        //printf("x %d between gx1=%d, gx2=%d, gammavalue=%d\n",x,gx1,gx2,y);
 
     }
     if(x > gx2 && x <= this->MaximumThreshold) {
         y = this->MaximumValue;
-        printf("x > gx2 (%d > %d), maxval=%d\n",x,gx2,this->MaximumValue);
+        //printf("x > gx2 (%d > %d), maxval=%d\n",x,gx2,this->MaximumValue);
     }
     if(x > this->MaximumThreshold) {
-        printf("x>max threshold=%d, minval=%d\n",x,this->MaximumThreshold,this->MinimumValue);
+        //printf("x>max threshold=%d, minval=%d\n",x,this->MaximumThreshold,this->MinimumValue);
         y = this->MinimumValue;
     }
     return y;
@@ -399,11 +392,11 @@ int vtkIntensityTransferFunction::IsIdentical() {
     if(this->MinimumValue != 0) {/*printf("minimumvalue != 0\n");*/return 0;}
     if(this->MaximumValue != 255) {/*printf("maximumvalue != 255\n");*/return 0;}
     if(this->MinimumThreshold != 0) {/*printf("minimumthreshold != 0\n");*/return 0;}
-    if(this->MaximumThreshold != 255) {/*printf("maximumthreshold != 255\n");*/return 0;}
+    if(this->MaximumThreshold != this->RangeMax) {/*printf("maximumthreshold != 255\n");*/return 0;}
     if(this->ProcessingThreshold != 0) {/*printf("processing threshold!=0\n");*/return 0;}
     if(this->SmoothStart != 0){/*printf("smooth start != 0\n");*/return 0;}
     if(this->SmoothStartGamma != 1) {/*printf("smooth start gamma != 1\n");*/return 0;}
-    if(this->SmoothEnd != 255){/*printf("smooth end!=0\n");*/return 0;}
+    if(this->SmoothEnd != this->RangeMax){/*printf("smooth end!=0\n");*/return 0;}
     if(this->SmoothEndGamma != 1){/*printf("smooth end gamma != 1\n");*/return 0;}
 
     return 1;
