@@ -265,6 +265,7 @@ void vtkIntensityTransferFunction::IncreaseArraySize()
 }
 
 int vtkIntensityTransferFunction::GammaValue(int x0,int y0, int x1,int y1,int x, double g) {
+    if(x0==x1)return 0;
     return int( ( (y1-y0)/ ( pow((double)(x1-x0),g)) )* ( pow((double)(x-x0),g) ) + y0 );
 }
 
@@ -359,6 +360,7 @@ void vtkIntensityTransferFunction::ComputeFunction(void) {
             int f4val = f4(this->SmoothEnd,gx1,gy1,gx2,gy2);
             y = int(poweg(x-SmoothEnd)*(-f4val/poweg(255-SmoothEnd)))+f4val;
         }
+        printf("Value at %d=%d\n",x,y);
         this->Function[x] = y;
     }
 
@@ -367,17 +369,24 @@ void vtkIntensityTransferFunction::ComputeFunction(void) {
 
 int vtkIntensityTransferFunction::f4(int x, int gx1,int gy1,int gx2,int gy2) {
     int y;
+    if(gx2==0)gx2=-1;
+    printf("f4(%d,%d,%d,%d,%d)\n",x,gx1,gy1,gx2,gy2);
     if(x < gx1) {
+        printf("x < gx1 (%d < %d), minval=%d\n",x,gx1,this->MinimumValue);
         y = this->MinimumValue;
     }
     if(x <= gx2 && x >= gx1) {
+        
         y = GammaValue(gx1,gy1,gx2,gy2,x,this->Gamma);
+        printf("x %d between gx1=%d, gx2=%d, gammavalue=%d\n",x,gx1,gx2,y);
 
     }
     if(x > gx2 && x <= this->MaximumThreshold) {
         y = this->MaximumValue;
+        printf("x > gx2 (%d > %d), maxval=%d\n",x,gx2,this->MaximumValue);
     }
     if(x > this->MaximumThreshold) {
+        printf("x>max threshold=%d, minval=%d\n",x,this->MaximumThreshold,this->MinimumValue);
         y = this->MinimumValue;
     }
     return y;
