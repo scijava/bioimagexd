@@ -269,8 +269,12 @@ class AdjustPanel(TaskPanel.TaskPanel):
         Description: A method to reset all the intensity transfer functions
         """
         l=self.dataUnit.getLength()
+        sources = self.dataUnit.getSourceDataUnits()
         for i in range(l):
+            minval,maxval = sources[i].getScalarRange()
             itf=vtk.vtkIntensityTransferFunction()
+            itf.SetRangeMax(maxval)
+            
             self.settings.setCounted("IntensityTransferFunctions",i,itf)
             
         itf=self.settings.getCounted("IntensityTransferFunctions",self.timePoint)

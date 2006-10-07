@@ -384,7 +384,6 @@ class DataUnitSettings:
         
     def deserialize(self,name,value):
         """
-        Method: deserialize(name,value)
         Created: 27.03.2005
         Description: Returns the value of a given key
         """

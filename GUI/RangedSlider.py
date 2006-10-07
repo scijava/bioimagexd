@@ -37,15 +37,12 @@ import wx
 import Logging
 import time
 class RangedSlider(wx.Slider):
-#class RangedSlider:
     """
-    Class: RangedSlider
     Created: 06.03.2005, KP
     Description: A slider that can map values of a certain range to certain values
     """
     def __init__(self, parent, id , numberOfPoints , **kws):
         """
-        Method: __init__
         Created: 06.03.2005, KP
         Description: Initialization
         Parameters:
@@ -59,9 +56,17 @@ class RangedSlider(wx.Slider):
         self.Bind(wx.EVT_SCROLL_ENDSCROLL,self.onEndScroll)
         self.Bind(wx.EVT_SCROLL_THUMBRELEASE,self.onEndScroll)
         
+    def reset(self):
+        """
+        Created: 07.10.2006, KP
+        Description: Reset the widget to default state
+        """
+        self.ranges=[]
+        self.SetRange(0, self.totalValues)        
+        self.snapPoints=[]
+                
     def onEndScroll(self,evt):
         """
-        Method: onEndScroll
         Created: 1.08.2005, KP
         Description: Callback called when the user ends scrolling
         """        
@@ -70,7 +75,6 @@ class RangedSlider(wx.Slider):
         
     def onEnableScroll(self):
         """
-        Method: onEnableScroll
         Created: 1.08.2005, KP
         Description: Callback called when the user ends scrolling
         """     
@@ -78,7 +82,6 @@ class RangedSlider(wx.Slider):
                 
     def setRange(self, startPercent, endPercent, rangeStart, rangeEnd):
         """
-        Method: setRange(startPercent, endPercent, rangeStart,rangeEnd)
         Created: 06.03.2005, KP
         Description: Set the range that the slider covers
         """        
@@ -88,7 +91,6 @@ class RangedSlider(wx.Slider):
     
     def setScaledValue(self,val):
         """
-        Method: setScaledValue(value)
         Created: 06.03.2005, KP
         Description: Set the value of the slider to the given value
         """            
@@ -96,7 +98,6 @@ class RangedSlider(wx.Slider):
         
     def setSnapPoint(self, snapValue, snapRange):
         """
-        Method: setSnapPoint(snapValue, snapRange)
         Created: 06.03.2005, KP
         Description: Add a snap point, i.e. a point to which all values
                      that are on the snapRange will be mapped. I.e.
@@ -107,7 +108,6 @@ class RangedSlider(wx.Slider):
 
     def getRealValue(self,val):
         """
-        Method: getRealValue(value)
         Created: 06.03.2005, KP
         Description: For a given scaled value, return the real slider position
         """            
@@ -143,7 +143,6 @@ class RangedSlider(wx.Slider):
 
     def getScaledValue(self,val=None):
         """
-        Method: getScaledValue()
         Created: 06.03.2005, KP
         Description: Return the scaled value of this slider
         """            
@@ -175,21 +174,3 @@ class RangedSlider(wx.Slider):
             if ret>= i[0] and ret<=i[2]:
                 return i[1]
         return ret
-
-
-
-if __name__=='__main__':
-   d=RangedSlider(0,0,0)
-   d.setRange(0,100,-255,255,2000)
-   for i in range(-255,265,10):
-       print "Real value for %d is %f"%(i,d.getRealValue(i))
-
-if __name__=='__main__2':
-    d=RangedSlider(0,0,0)
-    d.setRange(0,50,0,1.0,100)
-    d.setRange(51,100,1.0,20.0,100)
-    for i in range(0,210,10):
-        print "Scaled value for %d is %f"%(i,d.getScaledValue(i))
-    vals=[0.1,0.5,0.9,1.5,8.0,12.0,20.0]
-    for fl in vals:
-        print "Real value for %f is %d"%(fl,d.getRealValue(fl))

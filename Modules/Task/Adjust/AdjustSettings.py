@@ -74,7 +74,13 @@ class AdjustSettings(DataUnitSettings):
         DataUnitSettings.initialize(self,dataunit,channels,timepoints)
         ctf = self.get("ColorTransferFunction")
 
+        if hasattr(dataunit,"getScalarRange"):
+            minval,maxval = dataunit.getScalarRange()
+        else:
+            minval,maxval = dataunit.getSourceDataUnits()[0].getScalarRange()
+
         for i in range(timepoints):
             tf=vtk.vtkIntensityTransferFunction()
+            tf.SetRangeMax(maxval)
             self.setCounted("IntensityTransferFunctions",i,tf,0)
  

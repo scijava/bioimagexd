@@ -99,33 +99,48 @@ public:
 
   // Description:
   // Set / Get the minimum value of the function
-  vtkSetClampMacro(MinimumValue,int,0,255);
+  // Cannot clamp the value because the data might be 12- / 16-bit
+  //vtkSetClampMacro(MinimumValue,int,0,255);
+  vtkSetMacro(MinimumValue,int);
   vtkGetMacro(MinimumValue,int);
   // Description:
   // Set / Get the maximum value of the function
-  vtkSetClampMacro(MaximumValue,int,0,255);
+  //vtkSetClampMacro(MaximumValue,int,0,255);
+  vtkSetMacro(MaximumValue,int);
   vtkGetMacro(MaximumValue,int);
   // Description:
   // Set / Get the minimum threshold of the function
-  vtkSetClampMacro(MinimumThreshold,int,0,255);
+  //vtkSetClampMacro(MinimumThreshold,int,0,255);
+  vtkSetMacro(MinimumThreshold,int);
   vtkGetMacro(MinimumThreshold,int);
   
   // Description:
   // Set / Get the maximum threshold of the function
-  vtkSetClampMacro(MaximumThreshold,int,0,255);     
+  //vtkSetClampMacro(MaximumThreshold,int,0,255);     
+  vtkSetMacro(MaximumThreshold, int);
   vtkGetMacro(MaximumThreshold,int);
+  
+  void SetRangeMax(int rmx) {
+       this->RangeMax = rmx;
+       this->Reset();
+       this->Initialize();
+  }
+  vtkGetMacro(RangeMax,int);  
+  
   // Description:
   // Set / Get the processing threshold of the function, under which the function is identical
-  vtkSetClampMacro(ProcessingThreshold,int,0,255);          
+  //vtkSetClampMacro(ProcessingThreshold,int,0,255);          
+  vtkSetMacro(ProcessingThreshold,int);          
   vtkGetMacro(ProcessingThreshold,int);
   // Description:
   // Set / Get the contrast
-  vtkSetClampMacro(Contrast,double,0.0,255.0);     
+  vtkSetClampMacro(Contrast,double,0.0,255.0);         
   vtkGetMacro(Contrast,double);
   // Description:
   // Set / Get the brightness
-  vtkSetClampMacro(Brightness,int,-255,255);          
-  vtkGetMacro(Brightness,double);
+  //vtkSetClampMacro(Brightness,int,-255,255);          
+  vtkSetMacro(Brightness, int);
+  vtkGetMacro(Brightness,int);
   // Description:
   // Set / Get the gamma
   vtkSetClampMacro(Gamma,double,0.0,255.0);
@@ -231,6 +246,7 @@ protected:
   int GammaStart[2];
   int GammaEnd[2];
   int ReferencePoint[2];
+  int RangeMax;
   vtkTimeStamp BuildTime;
 private:
   vtkIntensityTransferFunction(const vtkIntensityTransferFunction&);  // Not implemented.

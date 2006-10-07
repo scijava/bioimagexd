@@ -52,14 +52,12 @@ import vtk
 
 class MergingPanel(TaskPanel.TaskPanel):
     """
-    Class: ColorMergingWindow
     Created: 10.11.2004, JV
     Description: A window for controlling the settings of the color
                  combination module
     """
     def __init__(self,parent,tb):
         """
-        Method: __init__(parent)
         Created: 10.11.2004, JV
         Description: Initialization
         Parameters:
@@ -78,7 +76,6 @@ class MergingPanel(TaskPanel.TaskPanel):
 
     def createButtonBox(self):
         """
-        Method: createButtonBox()
         Created: 10.11.2004, JV
         Description: Creates a button box containing the buttons Render,
                      Preview and Close
@@ -91,7 +88,6 @@ class MergingPanel(TaskPanel.TaskPanel):
         
     def createOptionsFrame(self):
         """
-        Method: createOptionsFrame()
         Created: 10.11.2004, JV
         Description: Creates a frame that contains the various widgets
                      used to control the colocalization settings
@@ -161,7 +157,6 @@ class MergingPanel(TaskPanel.TaskPanel):
 
     def modeSelect(self,event):
         """
-        Method: modeSelect(event)
         Created: 21.03.2005, KP
         Description: A method that is called when the selection of alpha mode is chan ged
         """
@@ -173,20 +168,21 @@ class MergingPanel(TaskPanel.TaskPanel):
 
     def resetTransferFunctions(self,event=None):
         """
-        Method: resetTransferFunctions()
         Created: 30.11.2004, KP
         Description: A method to reset all the intensity transfer functions
         """
         dataunits = self.dataUnit.getSourceDataUnits()
         for unit in dataunits:
             setting=unit.getSettings()
+            minval,maxval=unit.getScalarRange()
             itf = vtk.vtkIntensityTransferFunction()
+            itf.SetRangeMax(maxval)
+            self.alphaTF.SetRangeMax(maxval)
             setting.set("IntensityTransferFunction",itf)
 
 
     def updateSettings(self, force=0):
         """
-        Method: updateSettings()
         Created: 10.11.2004, JV
         Description: A method used to set the GUI widgets to their proper values
                      based on the selected channel, the settings of which are 
@@ -206,9 +202,8 @@ class MergingPanel(TaskPanel.TaskPanel):
 
     def doColorMergingCallback(self,*args):
         """
-        Method: doColorMergingCallback()
         Created: 10.11.2004, JV
-        Description: A callback for the button "Do color combination"
+        Description: A callback for the processing button
         """
         method=self.alphaModeBox.GetSelection()
         val=0
@@ -223,7 +218,6 @@ class MergingPanel(TaskPanel.TaskPanel):
         
     def createItemToolbar(self):
         """
-        Method: createItemToolbar()
         Created: 31.03.2005, KP
         Description: Method to create a toolbar for the window that allows use to select processed channel
         """      
@@ -232,7 +226,6 @@ class MergingPanel(TaskPanel.TaskPanel):
 
     def setCombinedDataUnit(self,dataUnit):
         """
-        Method: setCombinedDataUnit(dataUnit)
         Created: 23.11.2004, KP
         Description: Sets the combined dataunit that is to be processed.
                      It is then used to get the names of all the source 
@@ -247,7 +240,12 @@ class MergingPanel(TaskPanel.TaskPanel):
         tf = self.settings.get("IntensityTransferFunction")
         self.intensityTransferEditor.setIntensityTransferFunction(tf)
         
-        for i in range(len(dataUnit.getSourceDataUnits())):
+        sources =  dataUnit.getSourceDataUnits()
+        minval,maxval=sources[0].getScalarRange()
+        
+        self.alphaTF.SetRangeMax(maxval)
+        
+        for i in range(len(sources)):
             self.dataUnit.setOutputChannel(i,1)
         if self.colorBtn:
             Logging.info("Setting ctf of colorbutton to ",ctf,kw="ctf")
