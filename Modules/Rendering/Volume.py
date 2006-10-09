@@ -47,18 +47,16 @@ MIP=3
 ISOSURFACE=4
 def getClass():return VolumeModule
 def getConfigPanel():return VolumeConfigurationPanel
-def getName():return "Volume Rendering"
+def getName():return "Volume rendering"
 
 
 class VolumeModule(VisualizationModule):
     """
-    Class: VolumeModule
     Created: 28.04.2005, KP
     Description: A volume Rendering module
     """    
     def __init__(self,parent,visualizer,**kws):
         """
-        Method: __init__(parent)
         Created: 28.04.2005, KP
         Description: Initialization
         """     
@@ -101,7 +99,6 @@ class VolumeModule(VisualizationModule):
         
     def __getstate__(self):
         """
-        Method: __getstate__
         Created: 02.08.2005, KP
         Description: A getstate method that saves the lights
         """            
@@ -123,7 +120,6 @@ class VolumeModule(VisualizationModule):
         
     def __set_pure_state__(self,state):
         """
-        Method: __set_pure_state__()
         Created: 02.08.2005, KP
         Description: Set the state of the light
         """        
@@ -144,7 +140,6 @@ class VolumeModule(VisualizationModule):
         
     def setDataUnit(self,dataunit):
         """
-        Method: setDataUnit(self)
         Created: 28.04.2005, KP
         Description: Sets the dataunit this module uses for visualization
         """       
@@ -161,7 +156,6 @@ class VolumeModule(VisualizationModule):
         
     def setOpacityTransferFunction(self,otf,method):
         """
-        Method: setOpacityTransferFunction(otf)
         Created: 28.04.2005, KP
         Description: Set the opacity transfer function
         """
@@ -235,7 +229,6 @@ class VolumeModule(VisualizationModule):
         
     def setInterpolation(self,interpolation):
         """
-        Method: setInterpolation(self,interpolation)
         Created: 28.04.2005, KP
         Description: Set the interpolation method used
         """             
@@ -250,7 +243,6 @@ class VolumeModule(VisualizationModule):
 
     def setMethod(self,method):
         """
-        Method: setMethod(self,method)
         Created: 28.04.2005, KP
         Description: Set the Rendering method used
         """             
@@ -305,7 +297,6 @@ class VolumeModule(VisualizationModule):
 
     def updateRendering(self,input = None):
         """
-        Method: updateRendering()
         Created: 28.04.2005, KP
         Description: Update the Rendering of this module
         """             
@@ -336,7 +327,6 @@ class VolumeModule(VisualizationModule):
         
     def disableRendering(self):
         """
-        Method: disableRendering()
         Created: 30.04.2005, KP
         Description: Disable the Rendering of this module
         """          
@@ -345,7 +335,6 @@ class VolumeModule(VisualizationModule):
         
     def enableRendering(self):
         """
-        Method: enableRendering()
         Created: 15.05.2005, KP
         Description: Enable the Rendering of this module
         """          
@@ -356,19 +345,17 @@ class VolumeModule(VisualizationModule):
 class VolumeConfiguration(ModuleConfiguration):
     def __init__(self,parent,visualizer):
         """
-        Method: __init__(parent)
         Created: 28.04.2005, KP
         Description: Initialization
         """     
         
-        ModuleConfiguration.__init__(self,parent,"Volume Rendering")
+        ModuleConfiguration.__init__(self,parent,"Volume rendering")
         self.panel=VolumeConfigurationPanel(self,visualizer)
         
 
 class VolumeConfigurationPanel(ModuleConfigurationPanel):
-    def __init__(self,parent,visualizer,name="Volume Rendering",**kws):
+    def __init__(self,parent,visualizer,name="Volume rendering",**kws):
         """
-        Method: __init__(parent)
         Created: 28.04.2005, KP
         Description: Initialization
         """     
@@ -378,7 +365,6 @@ class VolumeConfigurationPanel(ModuleConfigurationPanel):
 
     def initializeGUI(self):
         """
-        Method: initializeGUI()
         Created: 28.04.2005, KP
         Description: Initialization
         """  
@@ -393,7 +379,7 @@ class VolumeConfigurationPanel(ModuleConfigurationPanel):
         self.contentSizer.Add(self.colorPanel,(n,0))
         n+=1
         
-        modes = ["Ray Casting","Texture Mapping","3D Texture Mapping","Maximum Intensity Projection"]
+        modes = ["Ray casting","Texture mapping","3D texture mapping","Maximum intensity projection"]
         try:
             volpro=vtk.vtkVolumeProMapper()
             self.haveVolpro=0
@@ -402,7 +388,7 @@ class VolumeConfigurationPanel(ModuleConfigurationPanel):
         except:
             self.haveVolpro=0
         if self.haveVolpro:
-            modes.append("Minimum Intensity Projection")
+            modes.append("Minimum intensity projection")
         
         #self.methodLbl = wx.StaticText(self,-1,"Volume rendering method:")
         
@@ -424,7 +410,7 @@ class VolumeConfigurationPanel(ModuleConfigurationPanel):
         self.qualitySizer=wx.StaticBoxSizer(self.qualityBox,wx.VERTICAL)
         self.interpolationBox = wx.RadioBox(
                 self, -1, "Interpolation", wx.DefaultPosition, wx.DefaultSize,
-                ["Nearest Neighbor","Linear"], 2, wx.RA_SPECIFY_COLS
+                ["Nearest neighbor","Linear"], 2, wx.RA_SPECIFY_COLS
                 )
         s="""Set the type of interpolation used in rendering.
 Nearest Neighbor interpolation is faster than Linear interpolation, 
@@ -465,7 +451,6 @@ but using linear interpolation yields a better rendering quality."""
         
     def onSetInterpolation(self,event):
         """
-        Method: onSetInterpolation
         Created: 08.08.2005, KP
         Description: Set the interpolation used
         """  
@@ -473,7 +458,6 @@ but using linear interpolation yields a better rendering quality."""
         
     def onCheckShading(self,event):
         """
-        Method: onCheckShading
         Created: 16.05.2005, KP
         Description: Toggle use of shading
         """  
@@ -482,7 +466,6 @@ but using linear interpolation yields a better rendering quality."""
 
     def onEditQuality(self,event):
         """
-        Method: onEditQuality
         Created: 15.05.2005, KP
         Description: Set the quality
         """  
@@ -490,7 +473,6 @@ but using linear interpolation yields a better rendering quality."""
         
     def onSetQuality(self,event):
         """
-        Method: onSetQuality
         Created: 15.05.2005, KP
         Description: Set the quality
         """  
@@ -517,7 +499,6 @@ but using linear interpolation yields a better rendering quality."""
         
     def onSelectMethod(self,event):
         """
-        Method: onSelectMethod
         Created: 28.04.2005, KP
         Description: Select the volume rendering method
         """  
@@ -532,11 +513,10 @@ but using linear interpolation yields a better rendering quality."""
         if self.method == TEXTURE_MAPPING:
             self.settingLbl.SetLabel("Maximum number of planes:")
         else:
-            self.settingLbl.SetLabel("Sample Distance:")            
+            self.settingLbl.SetLabel("Sample distance:")            
       
     def setModule(self,module):
         """
-        Method: setModule(module)
         Created: 28.04.2005, KP
         Description: Set the module to be configured
         """  
@@ -562,7 +542,6 @@ but using linear interpolation yields a better rendering quality."""
         
     def onApply(self,event):
         """
-        Method: onApply()
         Created: 28.04.2005, KP
         Description: Apply the changes
         """     

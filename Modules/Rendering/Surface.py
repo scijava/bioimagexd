@@ -41,7 +41,7 @@ from Visualizer.VisualizationModules import *
 
 def getClass():return SurfaceModule
 def getConfigPanel():return SurfaceConfigurationPanel
-def getName():return "Surface Rendering"
+def getName():return "Surface Rendering (old)"
 
     
 class SurfaceModule(VisualizationModule):

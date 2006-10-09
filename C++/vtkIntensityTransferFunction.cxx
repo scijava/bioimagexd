@@ -365,7 +365,7 @@ int vtkIntensityTransferFunction::f4(int x, int gx1,int gy1,int gx2,int gy2) {
     if(gx2==0)gx2=-1;
     //printf("f4(%d,%d,%d,%d,%d)\n",x,gx1,gy1,gx2,gy2);
     if(x < gx1) {
-        printf("x < gx1 (%d < %d), minval=%d\n",x,gx1,this->MinimumValue);
+        //printf("x < gx1 (%d < %d), minval=%d\n",x,gx1,this->MinimumValue);
         y = this->MinimumValue;
     }
     if(x <= gx2 && x >= gx1) {

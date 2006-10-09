@@ -56,6 +56,65 @@ MEASUREMENT="Measurements"
 WATERSHED="Watershed Segmentation"
 REGIONGROWING="Region Growing"
 
+class WatershedTotalsList(wx.ListCtrl):
+    def __init__(self, parent, log):
+        wx.ListCtrl.__init__(
+            self, parent, -1, 
+            size = (350,60),
+            style=wx.LC_REPORT|wx.LC_VIRTUAL|wx.LC_HRULES|wx.LC_VRULES,
+            
+            )
+
+        self.InsertColumn(0, "# of objects")
+        self.InsertColumn(1, u"Avg. Volume (\u03BCm)")
+        self.InsertColumn(2, u"Avg. Volume (px)")
+        self.InsertColumn(3,"Avg. intensity")
+        #self.InsertColumn(2, "")
+        self.SetColumnWidth(0, 50)
+        self.SetColumnWidth(1, 70)
+        self.SetColumnWidth(2, 105)
+        self.SetColumnWidth(3, 105)
+        self.stats= []
+    
+
+        self.SetItemCount(1)
+
+        self.attr1 = wx.ListItemAttr()
+        self.attr1.SetBackgroundColour("white")
+
+        self.attr2 = wx.ListItemAttr()
+        self.attr2.SetBackgroundColour("light blue")
+
+    def setStats(self,stats):
+        self.stats = stats
+        
+    def getColumnText(self, index, col):
+        item = self.GetItem(index, col)
+        return item.GetText()
+
+    def OnGetItemText(self, item, col):
+        if col>len(self.stats):
+            return ""
+        if col==0:
+            return "%d"%self.stats[0]
+        elif col==1:
+            return u"%.3f \u03BCm"%self.stats[1]
+        elif col==2:
+            return "%d px"%self.stats[2]
+        elif col==3:
+            return "%.3f"%self.stats[3]
+ 
+    def OnGetItemImage(self, item):
+        return -1
+
+    def OnGetItemAttr(self, item):
+        if item % 2 == 1:
+            return self.attr1
+        elif item % 2 == 0:
+            return self.attr2
+        else:
+            return None
+
 
 class WatershedObjectList(wx.ListCtrl):
     def __init__(self, parent, log):
@@ -176,8 +235,8 @@ class ThresholdFilter(ProcessingFilter.ProcessingFilter):
         self.origCtf = None
         self.descs={"ReplaceInValue":"Value for voxels inside thresholds",
             "ReplaceOutValue":"Value for voxels outside thresholds",
-            "ReplaceIn":"Inside Thresholds","ReplaceOut":"Outside Thresholds",
-            "LowerThreshold":"Lower Threshold","UpperThreshold":"Upper Threshold",
+            "ReplaceIn":"Inside thresholds","ReplaceOut":"Outside thresholds",
+            "LowerThreshold":"Lower Threshold","UpperThreshold":"Upper threshold",
             "Demonstrate":"Use lookup table to demonstrate effect"}
     
     def getParameters(self):
@@ -378,12 +437,11 @@ class ITKWatershedSegmentationFilter(ProcessingFilter.ProcessingFilter):
     Created: 13.04.2006, KP
     Description: A filter for doing watershed segmentation
     """     
-    name = "Watershed Segmentation (old)"
+    name = "Watershed segmentation (old)"
     category = WATERSHED
     
     def __init__(self,inputs=(1,1)):
         """
-        Method: __init__()
         Created: 13.04.2006, KP
         Description: Initialization
         """        
@@ -401,7 +459,6 @@ class ITKWatershedSegmentationFilter(ProcessingFilter.ProcessingFilter):
             
     def getDefaultValue(self,parameter):
         """
-        Method: getDefaultValue
         Created: 15.04.2006, KP
         Description: Return the default value of a parameter
         """    
@@ -413,7 +470,6 @@ class ITKWatershedSegmentationFilter(ProcessingFilter.ProcessingFilter):
         
     def getType(self,parameter):
         """
-        Method: getType
         Created: 13.04.2006, KP
         Description: Return the type of the parameter
         """    
@@ -459,12 +515,11 @@ class MorphologicalWatershedSegmentationFilter(ProcessingFilter.ProcessingFilter
     Created: 05.07.2006, KP
     Description: A filter for doing morphological watershed segmentation
     """     
-    name = "Morphological Watershed Segmentation"
+    name = "Morphological watershed segmentation"
     category = WATERSHED
     level = FILTER_BEGINNER
     def __init__(self,inputs=(1,1)):
         """
-        Method: __init__()
         Created: 13.04.2006, KP
         Description: Initialization
         """        
@@ -539,7 +594,7 @@ class ConnectedComponentFilter(ProcessingFilter.ProcessingFilter):
     Created: 12.07.2006, KP
     Description: A filter for labeling all separate objects in an image
     """     
-    name = "Connected Component Labeling"
+    name = "Connected component labeling"
     category = SEGMENTATION
     
     def __init__(self,inputs=(1,1)):
@@ -610,7 +665,7 @@ class MaximumObjectsFilter(ProcessingFilter.ProcessingFilter):
     Created: 12.07.2006, KP
     Description: A filter for labeling all separate objects in an image
     """     
-    name = "Threshold for Maximum Object Number"
+    name = "Threshold for maximum object number"
     category = SEGMENTATION
     
     def __init__(self,inputs=(1,1)):
@@ -622,7 +677,7 @@ class MaximumObjectsFilter(ProcessingFilter.ProcessingFilter):
         ProcessingFilter.ProcessingFilter.__init__(self,inputs)
         
         
-        self.descs = {"MinSize":"Minimum Object Size in Pixels"}
+        self.descs = {"MinSize":"Minimum object size in pixels"}
         self.itkFlag = 1
         
         self.itkfilter = None
@@ -686,7 +741,7 @@ class ITKRelabelImageFilter(ProcessingFilter.ProcessingFilter):
     Created: 13.04.2006, KP
     Description: Re-label an image produced by watershed segmentation
     """     
-    name = "Re-Label Image"
+    name = "Re-label image"
     category = WATERSHED
     level = FILTER_BEGINNER
     def __init__(self,inputs=(1,1)):
@@ -840,7 +895,7 @@ class MeasureVolumeFilter(ProcessingFilter.ProcessingFilter):
     Created: 15.05.2006, KP
     Description: 
     """     
-    name = "Calculate Object Statistics"
+    name = "Calculate object statistics"
     category = MEASUREMENT
     level = FILTER_BEGINNER
     def __init__(self,inputs=(2,2)):
@@ -885,11 +940,25 @@ class MeasureVolumeFilter(ProcessingFilter.ProcessingFilter):
         gui = ProcessingFilter.ProcessingFilter.getGUI(self,parent,taskPanel)
         if not self.reportGUI:
             self.reportGUI = WatershedObjectList(self.gui,-1)
+            self.totalGUI = WatershedTotalsList(self.gui,-1)
             if self.values:
+                def avg(lst):
+                    return sum(lst)/len(lst)
+                n = len(self.values)
+                avgints = avg(self.avgIntList)
+                ums = [x[0] for x in self.values]
+                avgums = avg(ums)
+                pxs = [x[1] for x in self.values]
+                avgpxs = avg(pxs)
+                
+                self.totalGUI.setStats([n,avgums,avgpxs,avgints])
                 self.reportGUI.setVolumes(self.values)
                 self.reportGUI.setCentersOfMass(self.centersofmass)
                 self.reportGUI.setAverageIntensities(self.avgIntList)
-            gui.sizer.Add(self.reportGUI,(1,0),flag=wx.EXPAND|wx.ALL)
+            sizer = wx.BoxSizer(wx.VERTICAL)
+            sizer.Add(self.reportGUI,1)
+            sizer.Add(self.totalGUI)
+            gui.sizer.Add(sizer,(1,0),flag=wx.EXPAND|wx.ALL)
         return gui
 
             
@@ -924,9 +993,9 @@ class MeasureVolumeFilter(ProcessingFilter.ProcessingFilter):
         if not ProcessingFilter.ProcessingFilter.execute(self,inputs):
             return None
         image = self.getInput(1)
-        print "INPUT IMAGE FOR MEASUREMENT=",image
+        #print "INPUT IMAGE FOR MEASUREMENT=",image
         #print "converting to ITK, image=",image
-        #image = self.convertVTKtoITK(image)
+        image = self.convertVTKtoITK(image)
         #print "image now=",image
         
         
@@ -1003,6 +1072,17 @@ class MeasureVolumeFilter(ProcessingFilter.ProcessingFilter):
             self.reportGUI.setVolumes(values)
             self.reportGUI.setCentersOfMass(centersofmass)
             self.reportGUI.setAverageIntensities(self.avgIntList)
+            def avg(lst):
+                return sum(lst)/len(lst)
+            n = len(self.values)
+            avgints = avg(self.avgIntList)
+            ums = [x[0] for x in values]
+            avgums = avg(ums)
+            pxs = [x[1] for x in values]
+            avgpxs = avg(pxs)
+            
+            self.totalGUI.setStats([n,avgums,avgpxs,avgints])
+            
         return self.itkfilter.GetOutput()
         
 class ITKConfidenceConnectedFilter(ProcessingFilter.ProcessingFilter):
@@ -1010,7 +1090,7 @@ class ITKConfidenceConnectedFilter(ProcessingFilter.ProcessingFilter):
     Created: 29.05.2006, KP
     Description: A class for doing confidence connected segmentation
     """     
-    name = "Confidence Connected"
+    name = "Confidence connected threshold"
     category = REGIONGROWING
     
     def __init__(self,inputs=(1,1)):
@@ -1021,7 +1101,7 @@ class ITKConfidenceConnectedFilter(ProcessingFilter.ProcessingFilter):
         ProcessingFilter.ProcessingFilter.__init__(self,inputs)
         
         
-        self.descs = {"Seed":"Seed voxel","Neighborhood":"Initial Neighborhood Size",
+        self.descs = {"Seed":"Seed voxel","Neighborhood":"Initial neighborhood size",
             "Multiplier":"Range relaxation","Iterations":"Iterations"}
         self.itkFlag = 1
         
@@ -1114,7 +1194,7 @@ class ITKConnectedThresholdFilter(ProcessingFilter.ProcessingFilter):
     Created: 26.05.2006, KP
     Description: A class for doing confidence connected segmentation
     """     
-    name = "Connected Threshold"
+    name = "Connected threshold"
     category = REGIONGROWING
     level = FILTER_BEGINNER
     def __init__(self,inputs=(1,1)):
@@ -1135,7 +1215,6 @@ class ITKConnectedThresholdFilter(ProcessingFilter.ProcessingFilter):
             
     def getDefaultValue(self,parameter):
         """
-        Method: getDefaultValue
         Created: 26.05.2006, KP
         Description: Return the default value of a parameter
         """    
@@ -1148,7 +1227,6 @@ class ITKConnectedThresholdFilter(ProcessingFilter.ProcessingFilter):
         
     def getType(self,parameter):
         """
-        Method: getType
         Created: 26.05.2006, KP
         Description: Return the type of the parameter
         """    
@@ -1158,7 +1236,6 @@ class ITKConnectedThresholdFilter(ProcessingFilter.ProcessingFilter):
                 
     def getParameters(self):
         """
-        Method: getParameters
         Created: 15.04.2006, KP
         Description: Return the list of parameters needed for configuring this GUI
         """            
@@ -1168,7 +1245,6 @@ class ITKConnectedThresholdFilter(ProcessingFilter.ProcessingFilter):
 
     def execute(self,inputs,update=0,last=0):
         """
-        Method: execute
         Created: 15.04.2006, KP
         Description: Execute the filter with given inputs and return the output
         """                    
@@ -1207,12 +1283,11 @@ class ITKNeighborhoodConnectedThresholdFilter(ProcessingFilter.ProcessingFilter)
     Created: 29.05.2006, KP
     Description: A class for doing connected threshold segmentation 
     """     
-    name = "Neighborhood Connected Threshold"
+    name = "Neighborhood connected threshold"
     category = REGIONGROWING
     
     def __init__(self,inputs=(1,1)):
         """
-        Method: __init__()
         Created: 29.05.2006, KP
         Description: Initialization
         """        
@@ -1220,9 +1295,9 @@ class ITKNeighborhoodConnectedThresholdFilter(ProcessingFilter.ProcessingFilter)
         self.setImageType("UC3")
         
         self.descs = {"Seed":"Seed voxel","Upper":"Upper threshold","Lower":"Lower threshold",
-            "RadiusX":"X Neighborhood Size",
-            "RadiusY":"Y Neighborhood Size",
-            "RadiusZ":"Z Neighborhood Size"}
+            "RadiusX":"X neighborhood size",
+            "RadiusY":"Y neighborhood size",
+            "RadiusZ":"Z neighborhood size"}
         self.itkFlag = 1
         
         uc3 = itk.Image.UC3
@@ -1314,7 +1389,7 @@ class ITKOtsuThresholdFilter(ProcessingFilter.ProcessingFilter):
     Created: 26.05.2006, KP
     Description: A class for thresholding the image using the otsu thresholding
     """     
-    name = "Otsu Threshold"
+    name = "Otsu threshold"
     category = SEGMENTATION
     
     def __init__(self,inputs=(1,1)):

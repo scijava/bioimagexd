@@ -40,12 +40,11 @@ from Visualizer.VisualizationModules import *
 
 def getClass():return OrthogonalPlaneModule
 def getConfigPanel():return OrthogonalPlaneConfigurationPanel
-def getName():return "Orthogonal Slices"
+def getName():return "Orthogonal slices"
 
 
 class OrthogonalPlaneModule(VisualizationModule):
     """
-    Class: OrthogonalPlaneModule
     Created: 03.05.2005, KP
     Description: A module for slicing the dataset
     """    
@@ -114,7 +113,6 @@ class OrthogonalPlaneModule(VisualizationModule):
        
     def __getstate__(self):
         """
-        Method: __getstate__
         Created: 02.08.2005, KP
         Description: A getstate method that saves the lights
         """            
@@ -134,7 +132,6 @@ class OrthogonalPlaneModule(VisualizationModule):
         
     def __set_pure_state__(self,state):
         """
-        Method: __set_pure_state__()
         Created: 02.08.2005, KP
         Description: Set the state of the light
         """        
@@ -155,7 +152,6 @@ class OrthogonalPlaneModule(VisualizationModule):
         
     def setDataUnit(self,dataunit):
         """
-        Method: setDataUnit(self)
         Created: 28.04.2005, KP
         Description: Sets the dataunit this module uses for visualization
         """       
@@ -185,7 +181,6 @@ class OrthogonalPlaneModule(VisualizationModule):
     
     def setZ(self,obj,evt,arg):
         """
-        Method: setZ
         Created: 04.05.2005, KP
         Description: Set the slices to display
         """         
@@ -195,7 +190,6 @@ class OrthogonalPlaneModule(VisualizationModule):
     
     def setDisplaySlice(self,x,y,z):
         """
-        Method: setDisplaySlice
         Created: 04.05.2005, KP
         Description: Set the slices to display
         """           
@@ -206,7 +200,6 @@ class OrthogonalPlaneModule(VisualizationModule):
 
     def showTimepoint(self,value):
         """
-        Method: showTimepoint(tp)
         Created: 28.04.2005, KP
         Description: Set the timepoint to be displayed
         """          
@@ -215,7 +208,6 @@ class OrthogonalPlaneModule(VisualizationModule):
         
     def alignCamera(self,widget):
         """
-        Method: alignCamera(widget)
         Created: 15.05.2005, KP
         Description: Align the camera so that it shows a given widget
         """          
@@ -262,7 +254,6 @@ class OrthogonalPlaneModule(VisualizationModule):
         
     def updateRendering(self):
         """
-        Method: updateRendering()
         Created: 03.05.2005, KP
         Description: Update the Rendering of this module
         """             
@@ -294,7 +285,6 @@ class OrthogonalPlaneModule(VisualizationModule):
 
     def disableRendering(self):
         """
-        Method: disableRendering()
         Created: 15.05.2005, KP
         Description: Disable the Rendering of this module
         """          
@@ -306,7 +296,6 @@ class OrthogonalPlaneModule(VisualizationModule):
         
     def enableRendering(self):
         """
-        Method: enableRendering()
         Created: 15.05.2005, KP
         Description: Enable the Rendering of this module
         """          
@@ -318,7 +307,6 @@ class OrthogonalPlaneModule(VisualizationModule):
         
     def setProperties(self,ambient,diffuse,specular,specularpower):
         """
-        Method: setProperties(ambient,diffuse,specular,specularpower)
         Created: 16.05.2005, KP
         Description: Set the ambient, diffuse and specular lighting of this module
         """         
@@ -331,7 +319,6 @@ class OrthogonalPlaneModule(VisualizationModule):
         
     def setShading(self,shading):
         """
-        Method: setShading(shading)
         Created: 16.05.2005, KP
         Description: Set shading on / off
         """          
@@ -347,7 +334,6 @@ class OrthogonalPlaneModule(VisualizationModule):
 class OrthogonalPlaneConfiguration(ModuleConfiguration):
     def __init__(self,parent,visualizer):
         """
-        Method: __init__(parent)
         Created: 04.05.2005, KP
         Description: Initialization
         """     
@@ -357,7 +343,6 @@ class OrthogonalPlaneConfiguration(ModuleConfiguration):
 class OrthogonalPlaneConfigurationPanel(ModuleConfigurationPanel):
     def __init__(self,parent,visualizer,name="Orthogonal Slices",**kws):
         """
-        Method: __init__(parent)
         Created: 04.05.2005, KP
         Description: Initialization
         """     
@@ -365,7 +350,6 @@ class OrthogonalPlaneConfigurationPanel(ModuleConfigurationPanel):
     
     def initializeGUI(self):
         """
-        Method: initializeGUI()
         Created: 28.04.2005, KP
         Description: Initialization
         """  
@@ -421,7 +405,6 @@ class OrthogonalPlaneConfigurationPanel(ModuleConfigurationPanel):
         
     def onCheckShading(self,event):
         """
-        Method: onCheckShading
         Created: 16.05.2005, KP
         Description: Toggle use of shading
         """  
@@ -430,7 +413,6 @@ class OrthogonalPlaneConfigurationPanel(ModuleConfigurationPanel):
         
     def alignCamera(self,event):
         """
-        Method: alignCamera
         Created: 15.05.2005, KP
         Description: Align the camera to face a certain plane
         """  
@@ -446,7 +428,6 @@ class OrthogonalPlaneConfigurationPanel(ModuleConfigurationPanel):
         
     def setModule(self,module):
         """
-        Method: setModule(module)
         Created: 28.04.2005, KP
         Description: Set the module to be configured
         """  
@@ -466,7 +447,6 @@ class OrthogonalPlaneConfigurationPanel(ModuleConfigurationPanel):
         
     def onUpdateSlice(self,event):
         """
-        Method: onUpdateSlice(self,event):
         Created: 04.05.2005, KP
         Description: Update the slice to be displayed
         """  
@@ -479,7 +459,6 @@ class OrthogonalPlaneConfigurationPanel(ModuleConfigurationPanel):
         
     def onApply(self,event):
         """
-        Method: onApply()
         Created: 28.04.2005, KP
         Description: Apply the changes
         """     

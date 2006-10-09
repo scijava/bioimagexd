@@ -140,7 +140,6 @@ class MainWindow(wx.Frame):
         self.currentTask=""
         self.currentFile=""
         self.mode=""
-        self.showToolNames=0
         self.progressCoeff=1.0
         self.progressShift=0.0
         self.taskToId={}
@@ -614,10 +613,7 @@ class MainWindow(wx.Frame):
         Description: Creates a tool bar for the window
         """
         iconpath=bxd.get_icon_dir()
-        flags=wx.NO_BORDER|wx.TB_HORIZONTAL
-        if self.showToolNames:
-            flags|=wx.TB_TEXT
-        self.CreateToolBar(flags)
+        self.CreateToolBar(wx.NO_BORDER|wx.TB_HORIZONTAL)
         tb=self.GetToolBar()            
         tb.SetToolBitmapSize((32,32))
         self.taskIds=[]
@@ -733,7 +729,6 @@ class MainWindow(wx.Frame):
 
     def onContextHelp(self,evt):
         """
-        Method: onContexHelp
         Created: 02.11.2005, KP
         Description: Put the app in a context help mode
         """
@@ -741,7 +736,6 @@ class MainWindow(wx.Frame):
         
     def createMenu(self):
         """
-        Method: createMenu()
         Created: 03.11.2004, KP
         Description: Creates a menu for the window
         """
@@ -770,11 +764,11 @@ class MainWindow(wx.Frame):
         mgr.createMenu("import","&Import",place=0)
         mgr.createMenu("export","&Export",place=0)
         
-        mgr.addMenuItem("import",MenuManager.ID_IMPORT_VTIFILES,"&VTK Dataset Series",self.onMenuImport)
-        mgr.addMenuItem("import",MenuManager.ID_IMPORT_IMAGES,"&Stack of Images",self.onMenuImport)
+        mgr.addMenuItem("import",MenuManager.ID_IMPORT_VTIFILES,"&VTK dataset series",self.onMenuImport)
+        mgr.addMenuItem("import",MenuManager.ID_IMPORT_IMAGES,"&Stack of images",self.onMenuImport)
    
-        mgr.addMenuItem("export",MenuManager.ID_EXPORT_VTIFILES,"&VTK Dataset Series",self.onMenuExport)
-        mgr.addMenuItem("export",MenuManager.ID_EXPORT_IMAGES,"&Stack of Images",self.onMenuExport)
+        mgr.addMenuItem("export",MenuManager.ID_EXPORT_VTIFILES,"&VTK dataset series",self.onMenuExport)
+        mgr.addMenuItem("export",MenuManager.ID_EXPORT_IMAGES,"&Stack of images",self.onMenuExport)
 
         mgr.addMenuItem("file",MenuManager.ID_OPEN,"&Open...\tCtrl-O",self.onMenuOpen)
 
@@ -790,7 +784,7 @@ class MainWindow(wx.Frame):
         mgr.addMenuItem("file",MenuManager.ID_CLOSE_TASKWIN,"&Close task panel\tCtrl-W","Close the task panel",self.onCloseTaskPanel)
         mgr.disable(MenuManager.ID_CLOSE_TASKWIN)
         mgr.addSeparator("file")
-        mgr.addMenuItem("file",MenuManager.ID_QUIT,"&Quit\tCtrl-Q","Quit the application",self.quitApp)
+        mgr.addMenuItem("file",MenuManager.ID_QUIT,"&Quit\tCtrl-Q","Quit BioImageXD",self.quitApp)
 
 
         modules = self.taskPanels.values()
@@ -838,21 +832,25 @@ class MainWindow(wx.Frame):
         
         #wx.EVT_MENU(self,MenuManager.ID_RELOAD,self.onMenuReload)
 
-        mgr.addMenuItem("view",MenuManager.ID_VIEW_CONFIG,"&Configuration Panel","Show or hide the configuration panel",self.onMenuToggleVisibility,check=1,checked=1)
-        mgr.addMenuItem("view",MenuManager.ID_VIEW_TASKPANEL,"&Task Panel","Show or hide task panel",self.onMenuToggleVisibility,check=1,checked=1)
+        mgr.addMenuItem("view",MenuManager.ID_VIEW_TREE,"&File tree","Show or hide the file tree",self.onMenuToggleVisibility,check=1,checked=1)
+        mgr.addMenuItem("view",MenuManager.ID_VIEW_CONFIG,"&Configuration panel","Show or hide the configuration panel",self.onMenuToggleVisibility,check=1,checked=1)
+        mgr.addMenuItem("view",MenuManager.ID_VIEW_TASKPANEL,"&Task panel","Show or hide task panel",self.onMenuToggleVisibility,check=1,checked=1)
         mgr.disable(MenuManager.ID_VIEW_TASKPANEL)
 
         mgr.addMenuItem("view",MenuManager.ID_VIEW_TOOLBAR,"T&oolbar","Show or hide toolbar",self.onMenuToggleVisibility,check=1,checked=1)
         mgr.addMenuItem("view",MenuManager.ID_VIEW_HISTOGRAM,"&Histograms","Show or hide channel histograms",self.onMenuToggleVisibility,check=1,checked=0)
         
         mgr.addMenuItem("view",MenuManager.ID_VIEW_INFO,"&Dataset info","Show or hide information about the dataset",self.onMenuToggleVisibility,check=1,checked=1)
-        mgr.addMenuItem("view",MenuManager.ID_HIDE_INFO,"&Hide info windows\tAlt-Enter","Hide all info windows, giving visualizer maximum screen space",self.onMenuHideInfo)
+        mgr.addMenuItem("view",MenuManager.ID_VIEW_SHELL,"Python &shell","Show a python interpreter",self.onMenuToggleVisibility,check=1,checked=0)
         mgr.addSeparator("view")
-        mgr.addMenuItem("view",MenuManager.ID_VIEW_TOOL_NAMES,"&Show tool names","Show or hide the names of the items on the toolbar",self.toggleToolNames,check=1)
-        mgr.addSeparator("view")
-        mgr.addMenuItem("view",MenuManager.ID_VIEW_SHELL,"Show Python &Shell","Show a python interpreter",self.onMenuToggleVisibility,check=1,checked=0)
-        mgr.addMenuItem("view",MenuManager.ID_VIEW_SCRIPTEDIT,"Show Script &Editor","Show the script editor",self.onMenuShowScriptEditor)
+
+        mgr.addMenuItem("view",MenuManager.ID_VIEW_SCRIPTEDIT,"Script &editor","Show the script editor",self.onMenuShowScriptEditor)
+
         mgr.addMenuItem("view",MenuManager.ID_VIEW_MASKSEL,"&Mask selection","Show mask selection dialog",self.onMenuToggleVisibility)        
+        mgr.addSeparator("view")
+
+        mgr.addMenuItem("view",MenuManager.ID_HIDE_INFO,"&Hide info windows\tAlt-Enter","Hide all info windows, giving visualizer maximum screen space",self.onMenuHideInfo)
+
         mgr.disable(MenuManager.ID_VIEW_TOOLBAR)
         mgr.disable(MenuManager.ID_VIEW_HISTOGRAM)
 
@@ -862,7 +860,6 @@ class MainWindow(wx.Frame):
     
     def createStatusBar(self):
         """
-        Method: createStatusBar()
         Created: 13.7.2006, KP
         Description: Creates a status bar for the window
         """
@@ -884,7 +881,6 @@ class MainWindow(wx.Frame):
         
     def onSetProgressObject(self,obj,evt,arg):
         """
-        Method: onSetProgressObject
         Created: 14.12.2005, KP
         Description: Set the object that is allowed to send progress updates
         """
@@ -893,16 +889,6 @@ class MainWindow(wx.Frame):
         self.progressObject=arg
         messenger.connect(self.progressObject,"update_progress",self.updateProgressBar)
         
-    def toggleToolNames(self,evt):
-        """
-        Method: toggleToolNames
-        Created: 22.07.2005, KP
-        Description: Toggle the showing of tool names
-        """
-        self.showToolNames=evt.IsChecked() 
-        self.GetToolBar().Destroy()
-        self.createToolBar()
-
     def onResampleData(self,evt):
         """
         Created: 23.07.2006, KP
@@ -1030,15 +1016,19 @@ class MainWindow(wx.Frame):
 
     def onMenuToggleVisibility(self,evt):
         """
-        Method: onMenuToggleVisibility()
         Created: 16.03.2005, KP
         Description: Callback function for menu item "Import"
         """
         eid=evt.GetId()
+        flag=evt.IsChecked()
         cmd="hide"
-        if evt.IsChecked():cmd="show"
+        if flag:cmd="show"
         if eid==MenuManager.ID_VIEW_CONFIG:
             obj="config"
+        elif eid==MenuManager.ID_VIEW_TREE:
+            print "SHOWING TREE=",flag
+            self.onMenuShowTree(None,flag)
+            return
         elif eid==MenuManager.ID_VIEW_MASKSEL:
             if self.visualizer:
                 masksel = MaskTray.MaskTray(self)

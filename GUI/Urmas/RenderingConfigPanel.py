@@ -57,7 +57,6 @@ import CameraView
 #class RenderingConfigPanel(wx.Panel):
 class RenderingConfigPanel:
     """
-    Class: TimelineConfig
     Created: 04.02.2005, KP
     Description: Contains configuration options for the timeline
     """    
@@ -155,7 +154,6 @@ be the same size as the final frame.""")
         
     def onUpdateFrameSize(self,evt):
         """
-        Method: onUpdateFrameSize
         Created: 06.02.2005, KP
         Description: A callback for when the user changes the frame size
         """     
@@ -166,7 +164,6 @@ be the same size as the final frame.""")
         evt.Skip()
     def getFrameAmount(self):
         """
-        Method: getFrameAmount
         Created: 15.08.2005, KP
         Description: Return the number of frames selected
         """     
@@ -178,7 +175,6 @@ be the same size as the final frame.""")
 
     def setFrames(self,n):
         """
-        Method: setFrames
         Created: N/A, KP
         Description: Set the number of frames in the GUI
         """        
@@ -187,7 +183,6 @@ be the same size as the final frame.""")
         
     def setDuration(self,t):
         """
-        Method: setDuration
         Created: N/A, KP
         Description: Set the duration in the GUI
         """            
@@ -201,7 +196,6 @@ be the same size as the final frame.""")
     
     def useSettings(self,event=None):
         """
-        Method: useSettings
         Created: N/A, KP
         Description: Use the GUI settings
         """        

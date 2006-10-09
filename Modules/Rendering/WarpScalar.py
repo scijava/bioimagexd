@@ -41,24 +41,22 @@ from Visualizer.VisualizationModules import *
 
 def getClass():return WarpScalarModule
 def getConfigPanel():return WarpScalarConfigurationPanel
-def getName():return "Warp Scalar"
+def getName():return "Warp scalar"
 
 
 class WarpScalarModule(VisualizationModule):
     """
-    Class: WarpScalarModule
     Created: 24.06.2005, KP
     Description: A module for clipping the dataset
     """    
     def __init__(self,parent,visualizer,**kws):
         """
-        Method: __init__(parent)
         Created: 03.05.2005, KP
         Description: Initialization
         """     
         VisualizationModule.__init__(self,parent,visualizer,**kws)   
 
-        self.descs = {"Normals":"Smooth surface with Normals","FeatureAngle":"Feature Angle of Normals",
+        self.descs = {"Normals":"Smooth surface with normals","FeatureAngle":"Feature angle of normals",
         "Slice":"Select slice to be warped","Scale":"Scale factor for warping"}
 
         self.luminance = vtk.vtkImageLuminance()
@@ -90,7 +88,6 @@ class WarpScalarModule(VisualizationModule):
         
     def getParameters(self):
         """
-        Method: getParameters
         Created: 31.05.2006, KP
         Description: Return the list of parameters needed for configuring this GUI
         """            
@@ -99,7 +96,6 @@ class WarpScalarModule(VisualizationModule):
         
     def getDefaultValue(self,parameter):
         """
-        Method: getDefaultValue
         Created: 13.04.2006, KP
         Description: Return the default value of a parameter
         """           
@@ -110,7 +106,6 @@ class WarpScalarModule(VisualizationModule):
             
     def getRange(self, parameter):
         """
-        Method: getRange
         Created: 31.05.2006, KP
         Description: If a parameter has a certain range of valid values, the values can be queried with this function
         """     
@@ -122,7 +117,6 @@ class WarpScalarModule(VisualizationModule):
         
     def getType(self,parameter):
         """
-        Method: getType
         Created: 13.04.2006, KP
         Description: Return the type of the parameter
         """    
@@ -133,7 +127,6 @@ class WarpScalarModule(VisualizationModule):
         
     def __getstate__(self):
         """
-        Method: __getstate__
         Created: 02.08.2005, KP
         Description: A getstate method that saves the lights
         """            
@@ -145,7 +138,6 @@ class WarpScalarModule(VisualizationModule):
         
     def __set_pure_state__(self,state):
         """
-        Method: __set_pure_state__()
         Created: 02.08.2005, KP
         Description: Set the state of the light
         """        
@@ -155,7 +147,6 @@ class WarpScalarModule(VisualizationModule):
                 
     def setDataUnit(self,dataunit):
         """
-        Method: setDataUnit(self)
         Created: 28.04.2005, KP
         Description: Sets the dataunit this module uses for visualization
         """       
@@ -163,7 +154,6 @@ class WarpScalarModule(VisualizationModule):
 
     def showTimepoint(self,value):
         """
-        Method: showTimepoint(tp)
         Created: 28.04.2005, KP
         Description: Set the timepoint to be displayed
         """          
@@ -173,7 +163,6 @@ class WarpScalarModule(VisualizationModule):
         
     def updateRendering(self):
         """
-        Method: updateRendering()
         Created: 03.05.2005, KP
         Description: Update the Rendering of this module
         """             
@@ -235,14 +224,12 @@ class WarpScalarModule(VisualizationModule):
         
     def setProperties(self,ambient,diffuse,specular,specularpower):
         """
-        Method: setProperties(ambient,diffuse,specular,specularpower)
         Created: 16.05.2005, KP
         Description: Set the ambient, diffuse and specular lighting of this module
         """         
         pass
     def setShading(self,shading):
         """
-        Method: setShading(shading)
         Created: 16.05.2005, KP
         Description: Set shading on / off
         """          
@@ -252,7 +239,6 @@ class WarpScalarModule(VisualizationModule):
 class WarpScalarConfiguration(ModuleConfiguration):
     def __init__(self,parent,visualizer):
         """
-        Method: __init__(parent)
         Created: 29.05.2006, KP
         Description: Initialization
         """     
@@ -262,7 +248,6 @@ class WarpScalarConfiguration(ModuleConfiguration):
 class WarpScalarConfigurationPanel(ModuleConfigurationPanel):
     def __init__(self,parent,visualizer,name="WarpScalar",**kws):
         """
-        Method: __init__(parent)
         Created: 29.05.2006, KP
         Description: Initialization
         """     
@@ -270,7 +255,6 @@ class WarpScalarConfigurationPanel(ModuleConfigurationPanel):
     
     def initializeGUI(self):
         """
-        Method: initializeGUI()
         Created: 28.04.2005, KP
         Description: Initialization
         """          
@@ -278,7 +262,6 @@ class WarpScalarConfigurationPanel(ModuleConfigurationPanel):
         
     def setModule(self,module):
         """
-        Method: setModule(module)
         Created: 28.04.2005, KP
         Description: Set the module to be configured
         """  
@@ -291,9 +274,7 @@ class WarpScalarConfigurationPanel(ModuleConfigurationPanel):
 
     def onApply(self,event):
         """
-        Method: onApply()
         Created: 28.04.2005, KP
         Description: Apply the changes
         """     
         self.module.updateRendering()
-        pass

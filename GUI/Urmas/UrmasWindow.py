@@ -57,9 +57,7 @@ import time
 
 
 class UrmasWindow(scrolled.ScrolledPanel):
-#class UrmasWindow(wx.Panel):
     """
-    Class: UrmasWindow
     Created: 10.02.2005, KP
     Description: A window for controlling the rendering/animation/movie generation.
                  The window has a notebook with different pages for rendering and
@@ -116,7 +114,7 @@ class UrmasWindow(scrolled.ScrolledPanel):
         s=self.visualizer.sliderWin.GetSize()
         self.visualizer.setCurrentSliderPanel(self.controlpanel)
         self.controlpanel.SetSize(s)
-        messenger.send(None,"set_time_range",1,n*10)
+        #messenger.send(None,"set_time_range",1,n*10)
         
         messenger.connect(None,"video_generation_close",self.onVideoGenerationClose)
         self.SetSizer(self.sizer)
@@ -132,7 +130,6 @@ class UrmasWindow(scrolled.ScrolledPanel):
         
     def enable(self,flag):
         """
-        Method: enable
         Created: 26.04.2006, KP
         Description: Enable / Disable rendering of this window    
         """
@@ -148,7 +145,6 @@ class UrmasWindow(scrolled.ScrolledPanel):
             self.timelinePanel.splineEditor.iren.Disable()
     def updateRenderWindow(self,*args):
         """
-        Method: updateRenderWindow
         Created: 15.12.2005, KP
         Description: Updates the render window camera settings
                      after all initialization is done. For some
@@ -159,7 +155,6 @@ class UrmasWindow(scrolled.ScrolledPanel):
         
     def onShowFrame(self,evt=None):
         """
-        Method: onShowFrame
         Created: 15.08.2005, KP
         Description: Sets the frame to be shown
         """
@@ -168,15 +163,18 @@ class UrmasWindow(scrolled.ScrolledPanel):
         if t-self.lastFrameTime<0.2:
             return
         self.lastFrameTime = t
-        tp=self.controlpanel.timeslider.GetValue()
-        tp/=10.0
-        messenger.send(None,"show_time_pos",tp-0.1)
-        messenger.send(None,"render_time_pos",tp-0.1)
+        frame = self.controlpanel.timeslider.GetValue()
+        
+        spf = self.control.getSecondsPerFrame()
+        tp = int(frame*spf)
+        print "Showing time pos ",tp,"frame=",frame,"seconds per frame=",spf
+        #tp/=10.0
+        messenger.send(None,"show_time_pos",tp)
+        messenger.send(None,"render_time_pos",tp)
         self.timelinePanel.timeline.Refresh()
         
     def cleanMenu(self):
         """
-        Method: createMenu()
         Created: 06.04.2005, KP
         Description: Removes the menu items from menu
         """
@@ -209,7 +207,6 @@ class UrmasWindow(scrolled.ScrolledPanel):
 
     def createMenu(self,mgr):
         """
-        Method: createMenu()
         Created: 06.04.2005, KP
         Description: Creates a menu for the window
         """
@@ -225,14 +222,14 @@ class UrmasWindow(scrolled.ScrolledPanel):
         
         mgr.createMenu("addtrack","&Add Track",place=0)
         
-        mgr.addMenuItem("addtrack",MenuManager.ID_ADD_TIMEPOINT,"Timepoint Track","Add a timepoint track to the timeline",self.onMenuAddTimepointTrack)
-        mgr.addMenuItem("addtrack",MenuManager.ID_ADD_SPLINE,"Camera Path Track","Add a camera path track to the timeline",self.onMenuAddSplineTrack)
-        mgr.addMenuItem("addtrack",MenuManager.ID_ADD_KEYFRAME,"Keyframe Track","Add a keyframe track to the timeline",self.onMenuAddKeyframeTrack)        
-        mgr.addSubMenu("track","addtrack","&Add Track",MenuManager.ID_ADD_TRACK)
+        mgr.addMenuItem("addtrack",MenuManager.ID_ADD_TIMEPOINT,"Timepoint track","Add a timepoint track to the timeline",self.onMenuAddTimepointTrack)
+        mgr.addMenuItem("addtrack",MenuManager.ID_ADD_SPLINE,"Camera path track","Add a camera path track to the timeline",self.onMenuAddSplineTrack)
+        mgr.addMenuItem("addtrack",MenuManager.ID_ADD_KEYFRAME,"Keyframe track","Add a keyframe track to the timeline",self.onMenuAddKeyframeTrack)        
+        mgr.addSubMenu("track","addtrack","&Add track",MenuManager.ID_ADD_TRACK)
         #mgr.addSeparator("track")
         
-        mgr.createMenu("sizetrack","&Item Sizes",place=0)
-        mgr.addSubMenu("track","sizetrack","&Item Sizes",MenuManager.ID_ITEM_SIZES)
+        mgr.createMenu("sizetrack","&Item sizes",place=0)
+        mgr.addSubMenu("track","sizetrack","&Item sizes",MenuManager.ID_ITEM_SIZES)
         
         mgr.addMenuItem("sizetrack",MenuManager.ID_FIT_TRACK,"Expand to maximum","Expand the track to encompass the whole timeline",self.onMaxTrack)
         mgr.addMenuItem("sizetrack",MenuManager.ID_FIT_TRACK_RATIO,"Expand to track length (keep ratio)","Expand the track to encompass the whole timeline while retainining the relative sizes of each item.",self.onMaxTrackRatio)        
@@ -245,7 +242,7 @@ class UrmasWindow(scrolled.ScrolledPanel):
         mgr.createMenu("shuffle","&Shift items",place=0)
         mgr.addSubMenu("track","shuffle","Shift items",MenuManager.ID_ITEM_ORDER)
         mgr.addMenuItem("shuffle",MenuManager.ID_ITEM_ROTATE_CW,"&Clockwise",self.onShiftClockwise)
-        mgr.addMenuItem("shuffle",MenuManager.ID_ITEM_ROTATE_CCW,"C&ounter-Clockwise",self.onShiftCounterClockwise)
+        mgr.addMenuItem("shuffle",MenuManager.ID_ITEM_ROTATE_CCW,"C&ounter-clockwise",self.onShiftCounterClockwise)
 
         mgr.addSeparator("track")
         mgr.addMenuItem("track",MenuManager.ID_DELETE_TRACK,"&Remove track","Remove the track from timeline",self.onMenuRemoveTrack)
@@ -255,7 +252,7 @@ class UrmasWindow(scrolled.ScrolledPanel):
 #        mgr.addMenuItem("rendering",MenuManager.ID_RENDER_PREVIEW,"Rendering &Preview","Preview rendering",self.onMenuRender)
         mgr.addMenuItem("rendering",MenuManager.ID_RENDER_PROJECT,"&Render project","Render this project",self.onMenuRender)
     
-        mgr.addMenuItem("camera",MenuManager.ID_SPLINE_CLOSED,"&Closed Path","Set the camera path to open / closed.",self.onMenuClosedSpline,check=1)
+        mgr.addMenuItem("camera",MenuManager.ID_SPLINE_CLOSED,"&Closed path","Set the camera path to open / closed.",self.onMenuClosedSpline,check=1)
         mgr.addMenuItem("camera",MenuManager.ID_SPLINE_SET_BEGIN,"&Begin at the end of previous path","Set this camera path to begin where the previous path ends",self.onMenuSetBegin)
         mgr.addMenuItem("camera",MenuManager.ID_SPLINE_SET_END,"&End at the beginning of next path","Set this camera path to end where the next path starts",self.onMenuSetEnd)
         mgr.addSeparator("camera")
@@ -266,7 +263,6 @@ class UrmasWindow(scrolled.ScrolledPanel):
 
     def updateMenus(self):
         """
-        Method: updateMenus()
         Created: 18.04.2005, KP
         Description: A method to update the state of menu items
         """
@@ -281,7 +277,6 @@ class UrmasWindow(scrolled.ScrolledPanel):
  
     def onShiftClockwise(self,event):
         """
-        Method: onShiftClockwise()
         Created: 15.12.2005, KP
         Description: Shift items in current track one step clockwise
         """
@@ -293,7 +288,6 @@ class UrmasWindow(scrolled.ScrolledPanel):
         
     def onShiftCounterClockwise(self,event):
         """
-        Method: onShiftCounterClockwise()
         Created: 15.12.2005, KP
         Description: Shift items in current track one step counter clockwise
         """
@@ -305,7 +299,6 @@ class UrmasWindow(scrolled.ScrolledPanel):
     
     def onMenuRender(self,event):
         """
-        Method: onMenuRender()
         Created: 19.04.2005, KP
         Description: Render this project
         """
@@ -326,7 +319,6 @@ class UrmasWindow(scrolled.ScrolledPanel):
             
     def onVideoGenerationClose(self,obj, evt, *args):
         """
-        Method: onVideoGenerationClose
         Created: 15.12.2005, KP
         Description: Callback for closing the video generation
         """ 
@@ -352,7 +344,6 @@ class UrmasWindow(scrolled.ScrolledPanel):
         
     def onMinTrack(self,evt):
         """
-        Method: onMinTrack
         Created: 19.04.2005, KP
         Description: Callback function for menu item minimize track
         """
@@ -364,7 +355,6 @@ class UrmasWindow(scrolled.ScrolledPanel):
 
     def onSetTrack(self,evt):
         """
-        Method: onMinTrack
         Created: 19.04.2005, KP
         Description: Callback function for menu item minimize track
         """
@@ -387,7 +377,6 @@ class UrmasWindow(scrolled.ScrolledPanel):
         
     def onSetTrackRelative(self,evt):
         """
-        Method: onSetTrackTotal
         Created: 25.06.2005, KP
         Description: Set the length of items in a track relative to their physical size
         """
@@ -411,7 +400,6 @@ class UrmasWindow(scrolled.ScrolledPanel):
 
     def onSetTrackTotal(self,evt):
         """
-        Method: onSetTrackTotal
         Created: 23.06.2005, KP
         Description: Set the total length of items in a track
         """
@@ -435,7 +423,6 @@ class UrmasWindow(scrolled.ScrolledPanel):
 
     def onMaxTrack(self,evt):
         """
-        Method: onMinTrack
         Created: 19.04.2005, KP
         Description: Callback function for menu item minimize track
         """
@@ -447,7 +434,6 @@ class UrmasWindow(scrolled.ScrolledPanel):
     
     def onMaxTrackRatio(self,evt):
         """
-        Method: onMinTrack
         Created: 19.04.2005, KP
         Description: Callback function for menu item minimize track
         """
@@ -459,7 +445,6 @@ class UrmasWindow(scrolled.ScrolledPanel):
         
     def onMenuSetBegin(self,evt):
         """
-        Method: onMenuSetBegin
         Created: 18.04.2005, KP
         Description: Callback function for menu item begin at end of previous
         """
@@ -468,7 +453,6 @@ class UrmasWindow(scrolled.ScrolledPanel):
         
     def onMenuSetEnd(self,evt):
         """
-        Method: onMenuSetEnd
         Created: 18.04.2005, KP
         Description: Callback function for menu item end at beginning of next
         """
@@ -477,7 +461,6 @@ class UrmasWindow(scrolled.ScrolledPanel):
         
     def onMenuSetMaintainUp(self,evt):
         """
-        Method: onMenuSetMaintainUp
         Created: 18.04.2005, KP
         Description: Set the track to maintain up direction
         """
@@ -490,7 +473,6 @@ class UrmasWindow(scrolled.ScrolledPanel):
         
     def onMenuClosedSpline(self,evt):
         """
-        Method: onMenuClosedSpline
         Created: 14.04.2005, KP
         Description: Callback function for menu item camera path is closed
         """
@@ -500,7 +482,6 @@ class UrmasWindow(scrolled.ScrolledPanel):
         
     def onMenuAnimate(self,evt):
         """
-        Method: onMenuAnimate
         Created: 14.04.2005, KP
         Description: Callback function for menu item animated rendering
         """
@@ -510,7 +491,6 @@ class UrmasWindow(scrolled.ScrolledPanel):
         
     def onMenuRemoveTrack(self,evt):
         """
-        Method: onMenuRemoveTrack
         Created: 18.07.2005, KP
         Description: Callback function for removing a track
         """
@@ -521,7 +501,6 @@ class UrmasWindow(scrolled.ScrolledPanel):
 
     def onMenuRemoveTrackItem(self,evt):
         """
-        Method: onMenuRemoveTrack
         Created: 31.01.2006, KP
         Description: Callback function for removing an item from a track
         """
@@ -532,7 +511,6 @@ class UrmasWindow(scrolled.ScrolledPanel):
         
     def onMenuAddSplineTrack(self,evt):
         """
-        Method: onMenuAddSplineTrack
         Created: 13.04.2005, KP
         Description: Callback function for adding camera path track
         """
@@ -540,7 +518,6 @@ class UrmasWindow(scrolled.ScrolledPanel):
 
     def onMenuAddKeyframeTrack(self,evt):
         """
-        Method: onMenuAddKeyframeTrack
         Created: 18.04.2005, KP
         Description: Callback function for adding keyframe track
         """
@@ -548,7 +525,6 @@ class UrmasWindow(scrolled.ScrolledPanel):
         
     def onMenuAddTimepointTrack(self,evt):
         """
-        Method: onMenuAddTimepointTrack
         Created: 13.04.2005, KP
         Description: Callback function for adding timepoint track
         """
@@ -556,7 +532,6 @@ class UrmasWindow(scrolled.ScrolledPanel):
                 
     def onMenuCloseProject(self,event):
         """
-        Method: onMenuCloseProject(self,event)
         Created: 24.06.2005, KP
         Description: Reset the animator
         """
@@ -565,24 +540,22 @@ class UrmasWindow(scrolled.ScrolledPanel):
 
     def onMenuOpenProject(self,event):
         """
-        Method: onMenuOpenProject(self,event)
         Created: 06.04.2005, KP
         Description: Callback function for opening a project
         """
-        wc="Rendering Project (*.rxd)|*.rxd"
-        name=Dialogs.askOpenFileName(self,"Open Rendering Project",wc,0)
+        wc="Rendering project (*.rxd)|*.rxd"
+        name=Dialogs.askOpenFileName(self,"Open rendering project",wc,0)
         if name:
             self.control.readFromDisk(name[0])
         
     def onMenuSaveProject(self,event):
         """
-        Method: onMenuSaveProject(self,event)
         Created: 06.04.2005, KP
         Description: Callback function for saving a project
         """
         wc="Rendering Project (*.rxd)|*.rxd"
         name=None
-        dlg=wx.FileDialog(self,"Save Rendering Project as...",defaultFile="project.rxd",wildcard=wc,style=wx.SAVE)
+        dlg=wx.FileDialog(self,"Save rendering project as...",defaultFile="project.rxd",wildcard=wc,style=wx.SAVE)
         if dlg.ShowModal()==wx.ID_OK:
             name=dlg.GetPath()
         if name:
@@ -590,13 +563,10 @@ class UrmasWindow(scrolled.ScrolledPanel):
 
     def setDataUnit(self,dataUnit):
         """
-        Method: setDataUnit(dataUnit)
         Created: 10.2.2005, KP
         Description: Method used to set the dataunit we're processing
         """
         #self.timepointSelection.setDataUnit(dataUnit)
         #self.timelinePanel.setDataUnit(dataUnit)
         self.control.setDataUnit(dataUnit)
-
         
-# safeguard        

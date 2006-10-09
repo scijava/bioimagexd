@@ -38,12 +38,11 @@ from Visualizer.VisualizationModules import *
 
 def getClass():return AngleModule
 def getConfigPanel():return AngleConfigurationPanel
-def getName():return "Angle"
+def getName():return "Angle measurement"
 
 
 class AngleModule(VisualizationModule):
     """
-    Class: angleModule
     Created: 03.04.2005, KP
     Description: A module for measuring the angle between two points
     """    

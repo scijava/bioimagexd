@@ -39,18 +39,16 @@ from Visualizer.VisualizationModules import *
 
 def getClass():return DistanceModule
 def getConfigPanel():return DistanceConfigurationPanel
-def getName():return "Distance"
+def getName():return "Distance measurement"
 
 
 class DistanceModule(VisualizationModule):
     """
-    Class: DistanceModule
     Created: 03.04.2005, KP
     Description: A module for measuring the distance between two points
     """    
     def __init__(self,parent,visualizer,**kws):
         """
-        Method: __init__(parent)
         Created: 03.05.2005, KP
         Description: Initialization
         """     
@@ -76,7 +74,6 @@ class DistanceModule(VisualizationModule):
       
     def onPlacePoint(self,obj,event):
         """
-        Method: onPlacePoint
         Created: 15.04.2006, KP
         Description: onPlacePoint
         """        
@@ -106,7 +103,6 @@ class DistanceModule(VisualizationModule):
         
     def __getstate__(self):
         """
-        Method: __getstate__
         Created: 02.08.2005, KP
         Description: A getstate method that saves the lights
         """            
@@ -119,7 +115,6 @@ class DistanceModule(VisualizationModule):
         
     def __set_pure_state__(self,state):
         """
-        Method: __set_pure_state__()
         Created: 02.08.2005, KP
         Description: Set the state of the light
         """        
@@ -134,7 +129,6 @@ class DistanceModule(VisualizationModule):
         
     def setDataUnit(self,dataunit):
         """
-        Method: setDataUnit(self)
         Created: 28.04.2005, KP
         Description: Sets the dataunit this module uses for visualization
         """       
@@ -156,7 +150,6 @@ class DistanceModule(VisualizationModule):
 
     def showTimepoint(self,value):
         """
-        Method: showTimepoint(tp)
         Created: 28.04.2005, KP
         Description: Set the timepoint to be displayed
         """          
@@ -166,7 +159,6 @@ class DistanceModule(VisualizationModule):
         
     def updateRendering(self):
         """
-        Method: updateRendering()
         Created: 03.05.2005, KP
         Description: Update the Rendering of this module
         """             
@@ -207,7 +199,6 @@ class DistanceModule(VisualizationModule):
         
     def enableRendering(self):
         """
-        Method: enableRendering()
         Created: 24.06.2005, KP
         Description: Enable the Rendering of this module
         """          
@@ -216,14 +207,12 @@ class DistanceModule(VisualizationModule):
         
     def setProperties(self,ambient,diffuse,specular,specularpower):
         """
-        Method: setProperties(ambient,diffuse,specular,specularpower)
         Created: 16.05.2005, KP
         Description: Set the ambient, diffuse and specular lighting of this module
         """         
         pass
     def setShading(self,shading):
         """
-        Method: setShading(shading)
         Created: 16.05.2005, KP
         Description: Set shading on / off
         """          
@@ -233,7 +222,6 @@ class DistanceModule(VisualizationModule):
 class DistanceConfiguration(ModuleConfiguration):
     def __init__(self,parent,visualizer):
         """
-        Method: __init__(parent)
         Created: 04.05.2005, KP
         Description: Initialization
         """     
@@ -243,7 +231,6 @@ class DistanceConfiguration(ModuleConfiguration):
 class DistanceConfigurationPanel(ModuleConfigurationPanel):
     def __init__(self,parent,visualizer,name="Distance",**kws):
         """
-        Method: __init__(parent)
         Created: 04.05.2005, KP
         Description: Initialization
         """     
@@ -251,14 +238,12 @@ class DistanceConfigurationPanel(ModuleConfigurationPanel):
     
     def initializeGUI(self):
         """
-        Method: initializeGUI()
         Created: 28.04.2005, KP
         Description: Initialization
         """  
         pass
     def setModule(self,module):
         """
-        Method: setModule(module)
         Created: 28.04.2005, KP
         Description: Set the module to be configured
         """  
@@ -268,7 +253,6 @@ class DistanceConfigurationPanel(ModuleConfigurationPanel):
         
     def onApply(self,event):
         """
-        Method: onApply()
         Created: 28.04.2005, KP
         Description: Apply the changes
         """     

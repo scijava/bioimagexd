@@ -39,7 +39,7 @@ from Visualizer.VisualizationModules import *
 
 def getClass():return ArbitrarySliceModule
 def getConfigPanel():return ArbitrarySliceConfigurationPanel
-def getName():return "Arbitrary Slices"
+def getName():return "Arbitrary slices"
 
 class ArbitrarySliceModule(VisualizationModule):
     """

@@ -39,7 +39,7 @@ from Visualizer.VisualizationModules import *
 
 def getClass():return ClippingPlaneModule
 def getConfigPanel():return ClippingPlaneConfigurationPanel
-def getName():return "Clipping Plane"
+def getName():return "Clipping plane"
 
 
 class ClippingPlaneModule(VisualizationModule):
