@@ -83,7 +83,6 @@ class UrmasControl:
         
     def getFrameSize(self):
         """
-        Method: setFrameSize
         Created: 19.12.2005, KP
         Description: Get the frame size of the rendered images
         """    
@@ -91,7 +90,6 @@ class UrmasControl:
         
     def writeToDisk(self,filename):
         """
-        Method: writeToDisk(filename)
         Created: 06.04.2005, KP
         Description: Writes the whole control datastructures to disk by way of
                      pickling
@@ -104,7 +102,6 @@ class UrmasControl:
     def getViewMode(self):return self.viewMode    
     def setViewMode(self,mode):
         """
-        Method: setViewMode(mode)
         Created: 17.08.2005, KP
         Description: Set the view mode of spline editor
         """    
@@ -114,7 +111,6 @@ class UrmasControl:
         
     def resetAnimator(self):
         """
-        Method: resetAnimator()
         Created: 24.06.2005, KP
         Description: Reset the animator
         """    
@@ -123,7 +119,6 @@ class UrmasControl:
 
     def readFromDisk(self,filename):
         """
-        Method: readFromDisk(filename)
         Created: 06.04.2005, KP
         Description: Read the whole control datastructures from disk by way of
                      pickling
@@ -144,7 +139,6 @@ class UrmasControl:
         
     def clearGUI(self):
         """
-        Method: clearGUI()
         Created: 06.04.2005, KP
         Description: Clear the GUI
         """    
@@ -152,7 +146,6 @@ class UrmasControl:
         
     def updateGUI(self):
         """
-        Method: updateGUI()
         Created: 06.04.2005, KP
         Description: Update the GUI to match the data structures
         """    
@@ -162,7 +155,6 @@ class UrmasControl:
         
     def __set_pure_state__(self,state):
         """
-        Method: __set_pure_state__()
         Created: 11.04.2005, KP
         Description: Update the GUI to match the data structures
         """    
@@ -174,15 +166,27 @@ class UrmasControl:
         
     def getFrames(self):
         """
-        Method: getFrames()
         Created: 04.04.2005, KP
         Description: Return the number of frames
         """    
         return self.frames
         
+    def getFramesPerSecond(self):
+        """
+        Creted: 09.10.2006, KP
+        Description: Return the frames per second
+        """
+        return self.frames / float(self.duration)
+        
+    def getSecondsPerFrame(self):
+        """
+        Creted: 09.10.2006, KP
+        Description: Return the seconds per frame
+        """
+        return float(self.duration) / self.frames
+        
     def getDuration(self):
         """
-        Method: getDuration()
         Created: 20.03.2005, KP
         Description: Return the duration of the timeline
         """    
@@ -190,7 +194,6 @@ class UrmasControl:
         
     def getPixelsPerSecond(self):
         """
-        Method: getPixelsPerSecond()
         Created: 20.03.2005, KP
         Description: Return how many pixels there are per second on the timescale
         """    
@@ -198,7 +201,6 @@ class UrmasControl:
 
     def setAnimator(self,animator):
         """
-        Method: setAnimator(animator)
         Created: 20.03.2005, KP
         Description: Sets the animator controlled by this
         """    
@@ -206,7 +208,6 @@ class UrmasControl:
 
     def setTimelinePanel(self,timelinepanel):
         """
-        Method: setTimelinePanel(tpl)
         Created: 20.03.2005, KP
         Description: Sets the timeline panel controlled by this
         """    
@@ -215,7 +216,6 @@ class UrmasControl:
 
     def renderProject(self,preview,**kws):
         """
-        Method: renderProject(preview)
         Created: 19.04.2005, KP
         Description: Render this project
         """            
@@ -224,7 +224,6 @@ class UrmasControl:
         
     def getDataUnit(self):
         """
-        Method: getDataUnit()
         Created: 20.03.2005, KP
         Description: Returns the dataunit
         """            
@@ -232,7 +231,6 @@ class UrmasControl:
         
     def setDataUnit(self,dataunit):
         """
-        Method: setDataUnit(dataunit)
         Created: 20.03.2005, KP
         Description: Sets the dataunit used as a source of data
         """    
@@ -264,7 +262,6 @@ class UrmasControl:
         
     def updateLayouts(self):
         """
-        Method: updateLayouts()
         Created: 20.03.2005, KP
         Description: Update various parts of the window as the layout changes
         """    
@@ -279,7 +276,6 @@ class UrmasControl:
         
     def getSplineEditor(self):
         """
-        Method: getSplineEditor
         Created: 14.04.2005, KP
         Description: Return the spline editor instance
         """        
@@ -287,7 +283,6 @@ class UrmasControl:
         
     def setAnimationMode(self,mode):
         """
-        Method: setAnimationMode()
         Created: 12.03.2005, KP
         Description: Method used to either show or hide the animator
         """        
@@ -298,7 +293,6 @@ class UrmasControl:
         
     def setTimeline(self,timeline):
         """
-        Method: setTimeline(timeline)
         Created: 20.03.2005, KP
         Description: Sets the timeline controlled by this
         """    
@@ -308,7 +302,6 @@ class UrmasControl:
         
     def setTimelineConfig(self,config):
         """
-        Method: setTimelienConfig(panel)
         Created: 20.03.2005, KP
         Description: Sets the timeline config panel controlled by this
         """    
@@ -317,7 +310,6 @@ class UrmasControl:
         
     def setSplineInteractionCallback(self,cb):
         """
-        Method: setSplineInteractionCallback
         Created: 19.03.2005, KP
         Description: Method to set a callback that is called when interaction
                      with the spline editor ends
@@ -327,7 +319,6 @@ class UrmasControl:
         
     def configureTimeline(self,seconds,frames):
         """
-        Method: configureTimeline(seconds, frames)
         Created: 20.03.2005, KP
         Description: Set the duration and frames of the movie
         """    
@@ -339,7 +330,6 @@ class UrmasControl:
 
     def setSplineEditor(self,spe):
         """
-        Method: setSplineEditor
         Created: 19.03.2005, KP
         Description: Method used to set the spline editor
         """        
@@ -347,7 +337,6 @@ class UrmasControl:
         
     def __str__(self):
         """
-        Method: __str__
         Created: 05.04.2005, KP
         Description: Return string representation of self
         """        
@@ -357,7 +346,6 @@ class UrmasControl:
         
     def __getstate__(self):
         """
-        Method: __getstate__
         Created: 06.04.2005, KP
         Description: Return the dict that is to be pickled to disk
         """      

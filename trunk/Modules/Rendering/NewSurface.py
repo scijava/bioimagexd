@@ -42,12 +42,11 @@ from Visualizer.VisualizationModules import *
 
 def getClass():return SurfaceModule
 def getConfigPanel():return SurfaceConfigurationPanel
-def getName():return "Surface Rendering 2"
+def getName():return "Surface rendering"
 
     
 class SurfaceModule(VisualizationModule):
     """
-    Class: SurfaceModule
     Created: 28.04.2005, KP
     Description: A surface Rendering module
     """    
@@ -70,12 +69,12 @@ class SurfaceModule(VisualizationModule):
         self.init=0
         self.mapper = vtk.vtkPolyDataMapper()
         
-        self.descs = {"Method":"Surface Rendering Method","Gaussian":"Smooth Surface with Gaussian Smoothing",
-            "Normals":"Smooth Surface with Normals","FeatureAngle":"Feature Angle of Normals\n",
+        self.descs = {"Method":"Surface rendering method","Gaussian":"Smooth surface with gaussian smoothing",
+            "Normals":"Smooth surface with normals","FeatureAngle":"Feature angle of normals\n",
             "Simplify":"Simplify surface","PreserveTopology":"Preserve topology",
-            "IsoValue":"Iso value","SurfaceRangeBegin":"Generate Surfaces in Range:\n",
-            "SurfaceAmnt":"Number of surfaces","Transparency":"Surface Transparency",
-            "MultipleSurfaces":"Visualize Multiple Surfaces"}
+            "IsoValue":"Iso value","SurfaceRangeBegin":"Generate surfaces in range:\n",
+            "SurfaceAmnt":"Number of surfaces","Transparency":"Surface transparency",
+            "MultipleSurfaces":"Visualize multiple surfaces"}
         
         self.actor = self.lodActor = vtk.vtkLODActor()
         self.lodActor.SetMapper(self.mapper)

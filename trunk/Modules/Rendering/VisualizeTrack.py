@@ -43,7 +43,7 @@ from lib import Track
 
 def getClass():return VisualizeTrackModule
 def getConfigPanel():return VisualizeTrackConfigurationPanel
-def getName():return "Visualize Track"
+def getName():return "Visualize tracks"
 
 
 class VisualizeTrackModule(VisualizationModule):
@@ -59,7 +59,7 @@ class VisualizeTrackModule(VisualizationModule):
         VisualizationModule.__init__(self,parent,visualizer,**kws)   
 
         self.descs = {"TrackFile":"Select the track file","AllTracks":"Show all tracks","Track":"Select the track to visualize","MinLength":"Minimum length of track",
-                "ShowObject":"Show object using Surface Rendering"}
+                "ShowObject":"Show object using surface rendering"}
         
         self.track = None
         self.mapper = vtk.vtkDataSetMapper()

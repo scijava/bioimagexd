@@ -132,13 +132,13 @@ def getFilterList():
             MaximumObjectsFilter,TimepointCorrelationFilter,
             ROIIntensityFilter,CutDataFilter]
             
-MATH="Image Arithmetic"
+MATH="Image arithmetic"
 SEGMENTATION="Segmentation"
 FILTERING="Filtering"
 ITK="ITK"
 MEASUREMENT="Measurements"
-REGION_GROWING="Region Growing"
-FEATUREDETECTION="Feature Detection"
+REGION_GROWING="Region growing"
+FEATUREDETECTION="Feature detection"
 
         
 
@@ -148,7 +148,7 @@ class AnisotropicDiffusionFilter(ProcessingFilter.ProcessingFilter):
     Created: 13.04.2006, KP
     Description: An edge preserving smoothing filter
     """     
-    name = "Anisotropic Diffusion 3D"
+    name = "Anisotropic diffusion 3D"
     category = FILTERING
     
     def __init__(self):
@@ -159,8 +159,8 @@ class AnisotropicDiffusionFilter(ProcessingFilter.ProcessingFilter):
         ProcessingFilter.ProcessingFilter.__init__(self,(1,1))
         self.vtkfilter = vtk.vtkImageAnisotropicDiffusion3D()
         self.descs={"Faces":"Faces","Corners":"Corners","Edges":"Edges",
-            "CentralDiff":"Central Difference","Gradient":"Gradient to Neighbor",
-                "DiffThreshold":"Diffusion Threshold:","DiffFactor":"Diffusion Factor:"}
+            "CentralDiff":"Central difference","Gradient":"Gradient to neighbor",
+                "DiffThreshold":"Diffusion threshold:","DiffFactor":"Diffusion factor:"}
     
     def getParameters(self):
         """
@@ -422,7 +422,7 @@ class TimepointCorrelationFilter(ProcessingFilter.ProcessingFilter):
     Created: 31.07.2006, KP
     Description: A filter for calculating the correlation between two timepoints
     """     
-    name = "Timepoint Correlation"
+    name = "Timepoint correlation"
     category = MEASUREMENT
     
     def __init__(self):
@@ -526,7 +526,7 @@ class ROIIntensityFilter(ProcessingFilter.ProcessingFilter):
     Created: 04.08.2006, KP
     Description: A filter for calculating the volume, total and average intensity of a ROI
     """     
-    name = "ROI Measurements"
+    name = "ROI measurements"
     category = MEASUREMENT
     
     def __init__(self):
@@ -617,12 +617,7 @@ class ROIIntensityFilter(ProcessingFilter.ProcessingFilter):
             maskFilter.SetImageInput(imagedata)
             maskFilter.Update()
             data = maskFilter.GetOutput()
-            #mip=vtk.vtkImageSimpleMIP()
-            #mip.SetInput(data)
-            #w=vtk.vtkPNGWriter()
-            #w.SetFileName("%s.png"%mask.getName())
-            #w.SetInput(mip.GetOutput())
-            #w.Write()
+     
             histogram = ImageOperations.get_histogram(data)
             #n = sum(histogram)
             totint=0
@@ -644,7 +639,7 @@ class CutDataFilter(ProcessingFilter.ProcessingFilter):
     Created: 04.08.2006, KP
     Description: A filter for cutting the data to a smaller size
     """     
-    name = "Cut data"
+    name = "Extract a subset"
     category = FILTERING
     
     def __init__(self):
@@ -796,7 +791,7 @@ class GradientMagnitudeFilter(ProcessingFilter.ProcessingFilter):
     Created: 13.04.2006, KP
     Description: A class for calculating the gradient magnitude of the image
     """     
-    name = "Gradient Magnitude"
+    name = "Gradient magnitude"
     category = FEATUREDETECTION
     
     def __init__(self,inputs=(1,1)):
@@ -836,7 +831,7 @@ class ITKAnisotropicDiffusionFilter(ProcessingFilter.ProcessingFilter):
     Created: 13.04.2006, KP
     Description: A class for doing anisotropic diffusion on ITK
     """     
-    name = "Gradient Anisotropic Diffusion (ITK)"
+    name = "Gradient anisotropic diffusion (ITK)"
     category = FILTERING
     
     def __init__(self,inputs=(1,1)):
@@ -911,7 +906,7 @@ class ITKGradientMagnitudeFilter(ProcessingFilter.ProcessingFilter):
     Created: 13.04.2006, KP
     Description: A class for calculating gradient magnitude on ITK
     """     
-    name = "Gradient Magnitude (ITK)"
+    name = "Gradient magnitude (ITK)"
     category = FEATUREDETECTION
     
     def __init__(self,inputs=(1,1)):
@@ -962,7 +957,7 @@ class ITKCannyEdgeFilter(ProcessingFilter.ProcessingFilter):
     Created: 13.04.2006, KP
     Description: A class that uses the ITK canny edge detection filter
     """     
-    name = "Canny Edge Detection"
+    name = "Canny edge detection"
     category = FEATUREDETECTION
     
     def __init__(self,inputs=(1,1)):
@@ -1015,7 +1010,7 @@ class ITKSigmoidFilter(ProcessingFilter.ProcessingFilter):
     Created: 29.05.2006, KP
     Description: A class for mapping an image data thru sigmoid image filter
     """     
-    name = "Sigmoid Filter (ITK)" 
+    name = "Sigmoid filter (ITK)" 
     category = FILTERING
     
     def __init__(self,inputs=(1,1)):
@@ -1089,7 +1084,7 @@ class ITKLocalMaximumFilter(ProcessingFilter.ProcessingFilter):
     Created: 29.05.2006, KP
     Description: A class for finding the local maxima in an image
     """     
-    name = "Find Local Maxima"
+    name = "Find local maxima"
     category = FEATUREDETECTION
     
     def __init__(self,inputs=(1,1)):

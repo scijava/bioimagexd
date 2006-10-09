@@ -274,7 +274,7 @@ class UrmasRenderer:
                 self.pauseFrame = n
                 self.pausedRendering = 1
                 return
-            messenger.send(None,"set_timeslider_value",(n+1)*self.spf*10.0)
+            messenger.send(None,"set_timeslider_value",(n+1))
             self.renderFrame(n,(n+1)*self.spf,self.spf,preview=preview)            
             messenger.send(self,"update_progress",(n+1)/float(self.frames+1),"Rendering frame %d / %d. Time: %.1fs"%(n,self.frames,(n+1)*self.spf))        
         self.rendering=0

@@ -173,7 +173,6 @@ class RangeFilter(MorphologicalFilter):
     
     def __init__(self):
         """
-        Method: __init__()
         Created: 13.04.2006, KP
         Description: Initialization
         """        
@@ -198,7 +197,6 @@ class SobelFilter(MorphologicalFilter):
         
     def getParameters(self):
         """
-        Method: getParameters
         Created: 13.04.2006, KP
         Description: Return the list of parameters needed for configuring this GUI
         """  
@@ -206,7 +204,6 @@ class SobelFilter(MorphologicalFilter):
         
     def execute(self,inputs,update=0,last=0):
         """
-        Method: execute
         Created: 13.04.2006, KP
         Description: Execute the filter with given inputs and return the output
         """            
@@ -220,11 +217,10 @@ class SobelFilter(MorphologicalFilter):
         
 class HybridMedianFilter(MorphologicalFilter):
     """
-    Class: HybridMedianFilter
     Created: 13.04.2006, KP
     Description: A 2D median filter that preserves edges and corners
     """     
-    name = "Hybrid Median 2D"
+    name = "Hybrid median 2D"
     category = FILTERING
     level = FILTER_BEGINNER
     

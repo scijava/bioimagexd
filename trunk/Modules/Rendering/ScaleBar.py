@@ -41,13 +41,11 @@ def getName():return "Scale bar"
 
 class ScaleBarModule(VisualizationModule):
     """
-    Class: ScaleBarModule
     Created: 05.06.2005, KP
     Description: A module for showing a scale bar
     """    
     def __init__(self,parent,visualizer,**kws):
         """
-        Method: __init__(parent)
         Created: 03.05.2005, KP
         Description: Initialization
         """     
@@ -84,7 +82,6 @@ class ScaleBarModule(VisualizationModule):
         
     def setDataUnit(self,dataunit):
         """
-        Method: setDataUnit(self)
         Created: 28.04.2005, KP
         Description: Sets the dataunit this module uses for visualization
         """       
@@ -98,7 +95,6 @@ class ScaleBarModule(VisualizationModule):
       
     def pointsToPolyline(self,pts,rawmode=0):
         """
-        Method: pointsToPolyline
         Created: 06.05.2005, KP
         Description: Make a set of 2D points into a 3D polyline
         """      
@@ -123,7 +119,6 @@ class ScaleBarModule(VisualizationModule):
 
     def updateLine(self):
         """
-        Method: updateLine
         Created: 06.05.2005, KP
         Description: Update the line to be near the selected point
         """          
@@ -176,7 +171,6 @@ class ScaleBarModule(VisualizationModule):
 
     def showTimepoint(self,value):
         """
-        Method: showTimepoint(tp)
         Created: 28.04.2005, KP
         Description: Set the timepoint to be displayed
         """          
@@ -184,7 +178,6 @@ class ScaleBarModule(VisualizationModule):
         
     def updateRendering(self,e1=None,e2=None):
         """
-        Method: updateRendering()
         Created: 03.05.2005, KP
         Description: Update the Rendering of this module
         """             
@@ -194,7 +187,6 @@ class ScaleBarModule(VisualizationModule):
 
     def disableRendering(self):
         """
-        Method: disableRendering()
         Created: 15.05.2005, KP
         Description: Disable the Rendering of this module
         """          
@@ -206,7 +198,6 @@ class ScaleBarModule(VisualizationModule):
         
     def enableRendering(self):
         """
-        Method: enableRendering()
         Created: 15.05.2005, KP
         Description: Enable the Rendering of this module
         """          
@@ -218,7 +209,6 @@ class ScaleBarModule(VisualizationModule):
 class ScaleBarConfiguration(ModuleConfiguration):
     def __init__(self,parent,visualizer):
         """
-        Method: __init__(parent)
         Created: 04.05.2005, KP
         Description: Initialization
         """     
@@ -228,7 +218,6 @@ class ScaleBarConfiguration(ModuleConfiguration):
 class ScaleBarConfigurationPanel(ModuleConfigurationPanel):
     def __init__(self,parent,visualizer,name="Scale bar",**kws):
         """
-        Method: __init__(parent)
         Created: 04.05.2005, KP
         Description: Initialization
         """     
@@ -236,7 +225,6 @@ class ScaleBarConfigurationPanel(ModuleConfigurationPanel):
     
     def initializeGUI(self):
         """
-        Method: initializeGUI()
         Created: 28.04.2005, KP
         Description: Initialization
         """  
@@ -248,7 +236,6 @@ class ScaleBarConfigurationPanel(ModuleConfigurationPanel):
 
     def setModule(self,module):
         """
-        Method: setModule(module)
         Created: 28.04.2005, KP
         Description: Set the module to be configured
         """  

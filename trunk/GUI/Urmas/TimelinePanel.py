@@ -57,7 +57,6 @@ import RenderingConfigPanel
 
 class SplitPanel(wx.SplitterWindow):
     """
-    Class: SplitPanel
     Created: 25.01.2006, KP
     Description: A splitterwindow containing the timeline and it's configuration
     """    
@@ -67,7 +66,6 @@ class SplitPanel(wx.SplitterWindow):
                                    )        
 class TimelinePanel(wx.Panel):
     """
-    Class: TimelinePanel
     Created: 04.02.2005, KP
     Description: Contains the timescale and the different "tracks"
     """    
@@ -124,14 +122,14 @@ class TimelinePanel(wx.Panel):
         
         self.Refresh()
         
+        n = self.timelineConfig.getFrameAmount()
         
-        messenger.send(None,"set_time_range",1,600)
+        messenger.send(None,"set_frames",n)
         messenger.connect(None,"set_frame_size",self.onSetFrameSize)
         messenger.connect(None,"set_keyframe_mode",self.onSetKeyframeMode)
 
     def onSetFrameSize(self,obj,evt,size,onlyAspect):
         """
-        Method: onSetFrameSize
         Created: 19.12.2005, KP
         Description: Event to change the size of the rendering preview
                      based on the size of the actual rendered frames
@@ -171,8 +169,12 @@ class TimelinePanel(wx.Panel):
         Description: Use the configured settings
         """    
         self.timelineConfig.useSettings(evt)
-        n=self.control.getDuration()
-        messenger.send(None,"set_time_range",1,n*10)
+#        n=self.control.getDuration()
+        n = self.timelineConfig.getFrameAmount()
+        
+        messenger.send(None,"set_frames",n)
+        
+        #Qmessenger.send(None,"set_time_range",1,n*10)
         #keyframeMode=self.modeBox.GetSelection()
         #self.control.setViewMode(keyframeMode)
         
