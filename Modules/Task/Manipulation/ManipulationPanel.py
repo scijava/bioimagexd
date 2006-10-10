@@ -45,7 +45,7 @@ import time
 from GUI import FilterBasedTaskPanel
 import UIElements
 import string
-import scripting
+import scripting as bxd
 import types
 import Command
 
@@ -357,6 +357,7 @@ class ManipulationPanel(FilterBasedTaskPanel.FilterBasedTaskPanel):
         self.panel.Layout()
         self.Layout()
         self.panelsizer.Fit(self.panel)
+        bxd.visualizer.OnSize(None)
         
     def loadFilter(self, className):
         """

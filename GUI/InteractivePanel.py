@@ -97,15 +97,17 @@ class InteractivePanel(ogl.ShapeCanvas):
         self.is_windows = 1#=platform.system()=="Windows"
         self.maxX = 512
         self.maxY = 512
+        self.currentSketch = None
         self.maxSizeX = 512
         self.maxSizeY = 512
         self.painterHelpers = []
         self.origX = 512
         self.origY = 512
         size=kws.get("size",(512,512))
-        self.multiple = 0
+        
         self.dataUnit = None
         ogl.OGLInitialize()
+        self.listeners = {}
         
         self.annotations = []
         self.annotationClass = None
@@ -138,7 +140,7 @@ class InteractivePanel(ogl.ShapeCanvas):
         self.registerPainter( AnnotationHelper(self) )
 
         self.zoomFactor=1
-        
+        self.addListener(wx.EVT_RIGHT_DOWN, self.onFinishPolygon)
         
         self.paintPreview()
         
@@ -148,12 +150,24 @@ class InteractivePanel(ogl.ShapeCanvas):
 
         self.Bind(wx.EVT_LEFT_DOWN,self.markActionStart)
         self.Bind(wx.EVT_MOTION,self.updateActionEnd)
-        self.Bind(wx.EVT_RIGHT_UP,self.onCheckPolygon)
+        self.Bind(wx.EVT_RIGHT_DOWN,self.onRightDown)
         self.Bind(wx.EVT_LEFT_UP,self.executeAction)
         #self.Bind(wx.EVT_RIGHT_UP,self.actionEnd)
         self.Bind(wx.EVT_SIZE,self.OnSize)
         
-        #messenger.connect(None,"create_polygon",self.onCreatePolygon)
+    
+        
+    def addListener(self, evt, func):
+        """
+        Created: 10.10.2006, KP
+        Description: Add a listener to an event
+        """
+        
+        if not self.listeners.has_key(evt):
+            self.listeners [evt] = [func]
+        else:
+            self.listeners [evt].append(func)
+
         
     def registerPainter(self, painter):
         """
@@ -167,7 +181,7 @@ class InteractivePanel(ogl.ShapeCanvas):
         Created: 06.10.2006, KP
         Description: Repaint the helpers but nothing else
         """
-        print "repainting helpers"
+        
         w, h =self.buffer.GetWidth(),self.buffer.GetHeight()
         self.buffer = wx.EmptyBitmap(w,h)
         memdc = wx.MemoryDC()
@@ -267,25 +281,42 @@ class InteractivePanel(ogl.ShapeCanvas):
         
     def onLeftDown(self,event):
         return self.markActionStart(event)
-        
-    def onCheckPolygon(self,event):
-        lst=self.lines
-        lst.reverse()
-        for shape in lst:
-            #points,lines = shape.CheckIfPolygon()
-            points, lines = shape.getPointList()
-            if points:
-                print "got",points,lines
-                print "Is a polygon, deleting lines..."
-                self.deleteLines(lines)
-                self.createPolygon(points)
-                self.action = None
-                self.actionstart = (0,0)
-                self.actionend = (0,0)
-                self.prevPolyEnd = None
 
-        del lst
-        event.Skip()        
+    def onRightDown(self, event):
+        """
+        Created: 10.10.2006, KP
+        Description: An event handler for when the right button is clicked down
+        """
+        if wx.EVT_RIGHT_DOWN in self.listeners:
+            for method in self.listeners[wx.EVT_RIGHT_DOWN]:
+                method(event)
+                flag = event.GetSkipped()
+                if not flag:
+                    return
+        event.Skip()
+
+    def onFinishPolygon(self, event):
+        """
+        Created: 10.10.2006, KP
+        Description: Turn the sketch polygon into a real polygon
+        """
+        if self.currentSketch:
+            pts = self.currentSketch.getPoints()
+            self.currentSketch.Delete()
+            self.RemoveShape(self.currentSketch)
+            del self.currentSketch
+            self.currentSketch = None
+            self.createPolygon(pts)
+            self.repaintHelpers()
+            self.Refresh()
+            self.action = 0
+            self.actionstart = (0,0)
+            self.actionend = (0,0)
+        else:
+            event.Skip()
+        return 1
+
+
     def markActionStart(self,event):
         """
         Created: 24.03.2005, KP
@@ -293,6 +324,7 @@ class InteractivePanel(ogl.ShapeCanvas):
         """    
         event.Skip()
                    
+                
         pos=event.GetPosition()
 
         x,y=pos
@@ -305,10 +337,12 @@ class InteractivePanel(ogl.ShapeCanvas):
         if not foundDrawable:
             Logging.info("Attempt to draw in non-drawable area: %d,%d"%(x,y),kw="iactivepanel")
             # we zero the action so nothing further will be done by updateActionEnd
-            self.action=0
+            self.action = 0
             
             return 1
             
+        if self.currentSketch:
+            self.currentSketch.AddPoint(pos)            
         self.actionstart=pos
         return 1
         
@@ -319,6 +353,12 @@ class InteractivePanel(ogl.ShapeCanvas):
         """
         if event.LeftIsDown():
             self.actionend=event.GetPosition()
+        pos = event.GetPosition()
+        if self.currentSketch:
+            self.actionend=event.GetPosition()
+            self.currentSketch.setTentativePoint(pos)
+            self.repaintHelpers()
+            self.Refresh()
         event.Skip()
             
     def actionEnd(self,event):
@@ -327,8 +367,12 @@ class InteractivePanel(ogl.ShapeCanvas):
         Description: Unconditionally end the current action
         """    
         self.currentAnnotation=None
-        self.action=0
+        self.action = 0
         self.annotationClass=None
+
+        self.actionstart = (0,0)
+        self.actionend = (0,0)
+        
         event.Skip()
         
     def executeAction(self,event):
@@ -363,20 +407,20 @@ class InteractivePanel(ogl.ShapeCanvas):
                 shape.SetCentreResize(0)  
                 shape.SetX( ex+(x-ex)/2 )
                 shape.SetY( ey+(y-ey)/2 )
-  
             elif self.annotationClass == "POLYGON":
-                #shape = MyPolygon()
-                shape = MyLine(zoomFactor = self.zoomFactor)
-                
-                shape.MakeLineControlPoints(2)
-                if self.prevPolyEnd:
-                    ex,ey = self.prevPolyEnd
-                shape.SetEnds(ex,ey,x,y)
-                shape.FindConnectedLines(self.diagram)                               
-                
-                #shape.Create([(10.1,10.1),(10.1,100.1),(100.0,100.1),(100.0,10.1)])
-                shape.SetCentreResize(0)    
-                self.lines.append(shape)
+                if not self.currentSketch:
+                    shape = MyPolygonSketch(zoomFactor = self.zoomFactor)
+                    shape.SetCentreResize(0)
+                    shape.SetX( ex+(x-ex)/2 )
+                    shape.SetY( ey+(y-ey)/2 )
+                    if self.actionstart!=(0,0):
+                        shape.AddPoint(self.actionstart)                    
+                    self.currentSketch = shape
+                else:
+                    shape = None
+                if self.actionend!=(0,0):                    
+                    self.currentSketch.AddPoint(self.actionend)      
+
             elif self.annotationClass == "SCALEBAR":
                 dx = abs(x-ex)
                 dy = abs(y-ey)
@@ -391,8 +435,9 @@ class InteractivePanel(ogl.ShapeCanvas):
                 shape.SetCentreResize(0)  
                 shape.SetX( ex+(x-ex)/2 )
                 shape.SetY( ey+(y-ey)/2 )                
-                
-            self.addNewShape(shape)
+            
+            if shape:    
+                self.addNewShape(shape)
             
             if self.annotationClass=="POLYGON":
                 self.actionstart=self.actionend   
@@ -422,9 +467,10 @@ class InteractivePanel(ogl.ShapeCanvas):
                 self.paintPreview()
                 self.Refresh()
                 
-        if not self.multiple:
-            self.currentAnnotation=None
-            self.action=0
+        self.currentAnnotation=None
+        self.action = 0
+        self.actionstart = (0,0)
+        self.actionend = (0,0)
         self.annotationClass=None                    
         #ogl.ShapeCanvas.OnMouseEvent(self,event)
         event.Skip()
@@ -490,7 +536,6 @@ class InteractivePanel(ogl.ShapeCanvas):
         Created: 04.07.2005, KP
         Description: Add an annotation to the scene
         """
-        self.multiple = kws.get("multiple",0)
         self.action=ADD_ANNOTATION
         self.annotationClass=annClass
         

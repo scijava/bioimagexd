@@ -51,6 +51,9 @@ class OGLAnnotation:
             control.SetBrush(wx.WHITE_BRUSH)
             control.Draw(dc)
             
+#    def OnDrawOutline(self, dc,x,y,w,h):
+#        print "Draw outline to ",x,y,"width=",w,"height=",h
+            
     def getAsMaskImage(self):
         """
         Created: 04.08.2006
@@ -294,7 +297,82 @@ class MyScalebar(OGLAnnotation, ogl.RectangleShape):
             y=bmph/2
             y-=(h/2)
             dc.DrawRotatedText(text,x1+12,y1+y,90)
+            
+class MyPolygonSketch(OGLAnnotation, ogl.Shape):   
+    def __init__(self,zoomFactor = 1.0):
+        """
+        Created: 26.06.2006, KP
+        Description: Initialization
+        """   
+        ogl.Shape.__init__(self)
+        self.scaleFactor = zoomFactor
+        self._isROI=1
+        global count
+        if not self.__class__ in count:
+            count[self.__class__]=1
+        self.setName("Polygon #%d"%count[self.__class__])
+        count[self.__class__]+=1
+        self.points = []
+        self.tentativePoint = None
+        
+    def getPoints(self):
+        return self.points
+    
+    
+    def setTentativePoint(self, pt):
+        self.tentativePoint = pt
+        
+    def AddPoint(self, pt):
+        self.points.append(pt)
+        
+    def OnDraw(self, dc):
+        brush = wx.TRANSPARENT_BRUSH
+        dc.SetBrush(brush)
+        pen = wx.Pen(wx.Colour(255,0,0),1)
+        dc.SetPen(pen)
+        
+        
+        pts = self.points[:]
+        if self.tentativePoint:
+            pts.append(self.tentativePoint)
+        dc.DrawPolygon(pts)
+        del pts
 
+    def setScaleFactor(self,factor):
+        """
+        Created: 21.06.2006, KP
+        Description: Set the scaling factor in use
+        """   
+        pass
+        
+
+    def getCoveredPoints(self):
+        return []
+
+    def OnErase(self,dc):
+        bg = self.GetCanvas().bgbuffer
+        if not self._visible:
+            return
+
+        xp, yp = self.GetX(), self.GetY()
+        minX, minY = self.GetBoundingBoxMin()
+        maxX, maxY = self.GetBoundingBoxMax()
+
+        topLeftX = xp - maxX / 2.0 - 2
+        topLeftY = yp - maxY / 2.0 - 2
+
+        penWidth = 0
+        if self._pen:
+            penWidth = self._pen.GetWidth()
+
+        dc.SetPen(self.GetBackgroundPen())
+        dc.SetBrush(self.GetBackgroundBrush())
+        
+        dc.SetClippingRegion(topLeftX-penWidth,topLeftY-penWidth,maxX+penWidth*2+4, maxY + penWidth * 2 + 4)
+        dc.DrawBitmap(bg,0,0)
+        dc.DestroyClippingRegion()
+        
+    
 
 class MyRectangle(OGLAnnotation, ogl.RectangleShape):   
     def __init__(self, w, h, zoomFactor = 1.0):
@@ -335,17 +413,6 @@ class MyRectangle(OGLAnnotation, ogl.RectangleShape):
         self.SetY(y)    
         self.ResetControlPoints()
         
-    def OnDrawControlPoints(self, dc):
-        if not self._drawHandles:
-            return
-
-        dc.SetBrush(wx.BLACK_BRUSH)
-        dc.SetPen(wx.BLACK_PEN)
-
-        for control in self._controlPoints:
-            control.SetPen(wx.WHITE_PEN)
-            control.SetBrush(wx.WHITE_BRUSH)
-            control.Draw(dc)
 
     def getCoveredPoints(self):
         cx, cy = self.GetX(), self.GetY()
@@ -491,250 +558,6 @@ class MyCircle(OGLAnnotation, ogl.CircleShape):
         dc.DrawBitmap(bg,0,0)
         dc.DestroyClippingRegion()
 
-
-
-class MyLine(OGLAnnotation, ogl.LineShape):    
-    def __init__(self, zoomFactor = 1.0):
-        """
-        Method: __init__
-        Created: 26.06.2006, KP
-        Description: Initialization
-        """   
-        ogl.LineShape.__init__(self)
-        self.endConnections = {0:(None,None),1:(None,None)}
-        self.checked = 0
-        self.scaleFactor = zoomFactor
-        
-    def setScaleFactor(self,factor):
-        """
-        Method: setScaleFactor
-        Created: 21.06.2006, KP
-        Description: Set the scaling factor in use
-        """   
-        w,h,x,y = self.GetEnds()
-        
-        w/=self.scaleFactor
-        h/=self.scaleFactor
-        x/=self.scaleFactor
-        y/=self.scaleFactor
-        self.scaleFactor = factor
-        w*=self.scaleFactor
-        h*=self.scaleFactor
-        x*=self.scaleFactor
-        y*=self.scaleFactor        
-        self.SetEnds(w,h,x,y)
-        self.ResetControlPoints() 
-                    
-    def FindConnectedLines(self,diagram = None):        
-        ex,ey,x,y = self.GetEnds()
-        if not diagram:
-            diagram = self.GetCanvas().GetDiagram()
-        found=0
-        for i in diagram.GetShapeList():
-            if isinstance(i,MyLine):
-                x0,y0,x1,y1 = i.GetEnds()
-                p0 = (abs(x0-x)<15 and abs(y0-y)<15)
-                p1 = (abs(x1-x)<15 and abs(y1-y)<15)                        
-                p2 = (abs(x0-ex)<15 and abs(y0-ey)<15)
-                p3 = (abs(x1-ex)<15 and abs(y1-ey)<15)                        
-                
-                if p0 or p1:
-                    if p0:p=0
-                    if p1:p=1
-                    if not (i.GetEndConnected(p)[0] or self.GetEndConnected(1)[0]):
-                        print "Connecting end ",p,"of ",i,"to end 1 of ",self
-                        i.SetEndConnected((self,1),p)
-                        self.SetEndConnected((i,p),1)
-                        found=1
-                if p2 or p3:
-                    if p2:p=0
-                    if p3:p=1
-                    
-                    if not (self.GetEndConnected(0)[0] or i.GetEndConnected(p)[0]):
-                        print "Connecting end ",p,"of ",i,"to end 0 of ",self
-                        i.SetEndConnected((self,0),p)
-                        self.SetEndConnected((i,p),0)
-                        found=1
-                        
-                    break            
-
-    def SetEndConnected(self,shape,end):
-        self.endConnections[end] = shape
-            
-            
-    def GetEndConnected(self,end):
-        if end in self.endConnections:            
-            return self.endConnections[end]
-        return None,None
-                        
-    def MakeControlPoints(self):
-        for point in self._lineControlPoints:            
-            print "Creating control point at ",point
-            x,y=point
-            x-=self._lineControlPoints[0][0]
-            y-=self._lineControlPoints[0][1]
-            control = MyPolygonControlPoint(self._canvas, self, ogl.CONTROL_POINT_SIZE, point, x,y)
-            self._canvas.AddShape(control)
-            self._controlPoints.append(control)
-            
-        self.ResetControlPoints()
-    def OnErase(self,dc):
-        bg = self.GetCanvas().bgbuffer
-        if not self._visible:
-            return
-
-        xp, yp = self.GetX(), self.GetY()
-        minX, minY = self.GetBoundingBoxMin()
-        maxX, maxY = self.GetBoundingBoxMax()
-
-        topLeftX = xp - maxX / 2.0 - 2
-        topLeftY = yp - maxY / 2.0 - 2
-
-        penWidth = 0
-        if self._pen:
-            penWidth = self._pen.GetWidth()
-
-        dc.SetPen(self.GetBackgroundPen())
-        dc.SetBrush(self.GetBackgroundBrush())
-        
-        dc.SetClippingRegion(topLeftX-penWidth,topLeftY-penWidth,maxX+penWidth*2+4, maxY + penWidth * 2 + 4)
-        dc.DrawBitmap(bg,0,0)
-        dc.DestroyClippingRegion()
-        
-    def SetPointsFromControl(self,pt, end = 0):
-        dc = wx.ClientDC(self.GetCanvas())
-        self.GetCanvas().PrepareDC(dc)
-        
-        self.Erase(dc)
-        #xoff=self._controlPoints[0][0]
-        #yoff=self._controlPoints[0][1]        
-        xoff=self._xpos
-        yoff=self._ypos
-
-        
-        for i,control in enumerate(self._controlPoints):
-            x,y = control.GetX(),control.GetY()
-            self._lineControlPoints[i] = wx.RealPoint(x,y)
-            #print self.endConnections
-            if self.endConnections[i][0]:
-                #print "Fixing connection ",i,"to",x,y
-                shape,end = self.endConnections[i]
-                #print "connected to end",end
-                x0,y0,x1,y1 = shape.GetEnds()
-                if end:
-                    x1,y1=x,y
-                else:
-                    x0,y0=x,y
-                shape.Erase(dc)
-                shape.GetEventHandler().OnDraw(dc)
-                
-                shape.SetEnds(x0,y0,x1,y1)
-                shape.ResetControlPoints()
-                
-        #self.FindConnectedLines()        
-        self.GetEventHandler().OnDraw(dc)
-        
-        
-    
-    def CheckShape(self):
-        if self.checked:
-            return self.checked
-        shape,end = self.GetEndConnected(0)
-        shape2,end = self.GetEndConnected(1)
-        
-        
-        if not shape or not shape2:
-            self.checked = 0
-            return 0
-        print "Have both connections",self
-        self.checked = 1
-        if not shape.CheckShape():
-            return 0
-        if not shape2.CheckShape():
-            return 0
-            
-        return 1
-        
-    def getPointList2(self,lines):
-        pts=[]
-        for i in lines:
-            a,b,c,d = i.GetEnds()
-            pts.append((a,b))
-            pts.append((c,d))
-            
-        
-        print "Orig list=",pts
-        pts2=pts[:]
-        i=0
-        j=0
-        ret=[]
-        for x0,y0 in pts:
-            dontadd=0
-            for x1,y1 in ret:
-                if (x0!=x1 and y0!=y1) and abs(math.sqrt((x1-x0)**2+(y1-y0)**2))<10:
-                    dontadd=1
-            if not dontadd:                
-                ret.append((x0,y0))
-                
-        ret2=[]
-        for i,pt in enumerate(ret):
-            if not pt in ret[i+1:]:
-                ret2.append(pt)
-        print "Points=",ret2
-        return ret2
-        
-    def getPointList(self):
-        ret=[]
-        lines=[]
-        shape = self
-        end=0
-        while 1:
-            if not shape:
-                print "Didn't get shape, returning",lines
-                ptlst=self.getPointList2(lines)
-                return ptlst,lines
-
-            shape2, end = shape.GetEndConnected(not end)            
-            x=(not end)*2
-            x2=x+2
-            pts=shape.GetEnds()
-            a,b=pts[x:x2]
-        
-            if shape in lines:
-#            if (a,b) in ret:
-                ptlst=self.getPointList2(lines)
-                return ptlst,lines
-
-                #return ret,lines
-            if shape not in lines:
-                lines.append(shape)
-            ret.append((a,b))
-            shape=shape2
-        
-    def __str__(self):
-        return str(ogl.LineShape)+" "+str(self.GetEnds())
-        
-    def CheckIfPolygon(self):
-        found=1
-        found = self.CheckShape()        
-        if found:            
-            return self.getPointList()
-        return None,None
-        
-        
-    def ResetControlPoints(self):
-        for i in range(min(len(self._lineControlPoints), len(self._controlPoints))):
-            point = self._lineControlPoints[i]
-#            xoff=self._lineControlPoints[0][0]
-#            yoff=self._lineControlPoints[0][1]
-            xoff=self._xpos
-            yoff=self._ypos
-
-            self._controlPoints[i]._xoffset = point[0]-xoff
-            self._controlPoints[i]._yoffset = point[1]-yoff
-            
-            #print "Resetting point",i,"to",point[0]-xoff,point[1]-yoff
-            
 class MyPolygon(OGLAnnotation, ogl.PolygonShape):    
     def __init__(self, zoomFactor = 1.0):
         """
@@ -971,7 +794,11 @@ class MyEvtHandler(ogl.ShapeEvtHandler):
     def OnLeftDoubleClick(self, x, y, keys = 0, attachment = 0):
         
         shape = self.GetShape()
-        if shape.isROI():
+        flag=1
+        if hasattr(shape,"OnDoubleClick"):
+            flag=shape.OnDoubleClick(x,y)
+            
+        if flag and shape.isROI():
             print "Name of shape=",shape.getName()
             dlg = wx.TextEntryDialog(self.parent,
                     'What is the name of this Region of Interest',
@@ -1020,9 +847,10 @@ class MyEvtHandler(ogl.ShapeEvtHandler):
         self.parent.Refresh()
         
     def OnDragLeft(self, draw, x, y, keys = 0, attachment = 0):
-        print "OnDragLeft"
-        ogl.ShapeEvtHandler.OnDragLeft(self, x, y, keys, attachment)
-        self.parent.repaintHelpers()
+        print "OnDragLeft",x,y
+        ogl.ShapeEvtHandler.OnDragLeft(self, draw, x,y, keys, attachment)
+    
+        self.parent.repaintHelpers()       
         self.parent.Refresh()
     #def OnDragRight(self, draw, x, y, keys = 0, attachment = 0):
     #    print "OnDragRight"
@@ -1031,7 +859,7 @@ class MyEvtHandler(ogl.ShapeEvtHandler):
 
     def OnEndDragLeft(self, x, y, keys=0, attachment=0):
         shape = self.GetShape()
-        #print "OnEndDragLeft"
+        print "OnEndDragLeft",x,y
         ogl.ShapeEvtHandler.OnEndDragLeft(self, x, y, keys, attachment)
 
         if not shape.Selected():
@@ -1040,7 +868,7 @@ class MyEvtHandler(ogl.ShapeEvtHandler):
         self.parent.repaintHelpers()
         self.parent.Refresh()
     def OnSizingEndDragLeft(self, pt, x, y, keys, attch):
-        #print "OnSizingEndDragLeft"
+        print "OnSizingEndDragLeft",x,y
         ogl.ShapeEvtHandler.OnSizingEndDragLeft(self, pt, x, y, keys, attch)
         
         #self.parent.paintPreview()
@@ -1049,14 +877,9 @@ class MyEvtHandler(ogl.ShapeEvtHandler):
     def OnMovePost(self, dc, x, y, oldX, oldY, display):
         print "OnMovePost"
         ogl.ShapeEvtHandler.OnMovePost(self, dc, x, y, oldX, oldY, display)
-        canvas = self.parent
-        #shape = self.GetShape()
-        #dc = wx.ClientDC(canvas)
-        #canvas.PrepareDC(dc)
-        #shape.Erase(dc)
-    
+
 #        self.parent.paintPreview()
-        self.parent.Refresh()
+        #self.parent.Refresh()
 
     def OnRightClick(self, *args):
         shape = self.GetShape()

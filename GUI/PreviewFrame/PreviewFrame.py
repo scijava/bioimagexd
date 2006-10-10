@@ -169,7 +169,9 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         
         self.paintPreview()
         
-        self.Bind(wx.EVT_RIGHT_DOWN,self.onRightClick)
+        
+        self.addListener(wx.EVT_RIGHT_DOWN, self.onRightClick)
+        #self.Bind(wx.EVT_RIGHT_DOWN,self.onRightClick)
         
         self.ID_VARY=wx.NewId()
         self.ID_NONE=wx.NewId()
