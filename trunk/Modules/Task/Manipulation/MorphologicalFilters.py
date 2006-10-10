@@ -35,7 +35,7 @@ import types
 import vtk
 MORPHOLOGICAL="Morphological operations"
 
-FEATUREDETECTION="Feature Detection"
+FEATUREDETECTION="Feature detection"
 FILTERING="Filtering"
 
 from lib.ProcessingFilter import FILTER_BEGINNER

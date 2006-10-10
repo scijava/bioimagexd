@@ -53,8 +53,8 @@ SEGMENTATION="Segmentation"
 #ITK="ITK"
 
 MEASUREMENT="Measurements"
-WATERSHED="Watershed Segmentation"
-REGIONGROWING="Region Growing"
+WATERSHED="Watershed segmentation"
+REGIONGROWING="Region growing"
 
 class WatershedTotalsList(wx.ListCtrl):
     def __init__(self, parent, log):
