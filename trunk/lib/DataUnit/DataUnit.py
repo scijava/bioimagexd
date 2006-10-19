@@ -34,14 +34,12 @@ import ImageOperations
 import DataUnitSetting
 class DataUnit:
     """
-    Class: DataUnit
     Created: 03.11.2004, JM
     Description: A class representing a timeseries of 3D data
     """
 
     def __init__(self, name=""):
         """
-        Method: __init__
         Created: 03.11.2004, JM
         Description: Constructor
         Parameters: name    Name for the DataUnit, default to ""
@@ -58,7 +56,6 @@ class DataUnit:
         
     def setMask(self, mask):
         """
-        Method: setMask
         Created: 20.06.2006, KP
         Description: Set the mask applied to this dataunit
         """   
@@ -66,7 +63,6 @@ class DataUnit:
 
     def isProcessed(self):
         """
-        Method: isProcessed
         Created: 31.05.2005, KP
         Description: A method for querying whether this dataset is a processed one
         """    
@@ -75,7 +71,6 @@ class DataUnit:
 
     def getDataSource(self):
         """
-        Method: getDataSet
         Created: 12.04.2006, KP
         Description: Returns the data source of this dataset
         """        
@@ -83,7 +78,6 @@ class DataUnit:
         
     def getMIP(self,tp,color,small=0):
         """
-        Method: getMIP
         Created: 01.09.2005, KP
         Description: Returns MIP of the given timepoint
         """        
@@ -101,9 +95,20 @@ class DataUnit:
             self.mip=ImageOperations.getMIP(imagedata,color)
             return self.mip
 
+    def resetColorTransferFunction(self):
+        """
+        Created: 12.10.2006, KP
+        Description: A method that will reset the CTF from the datasource.
+                     This is useful e.g. when scaling the intensities of the    
+                     dataset
+        """
+        self.ctf = None
+        self.dataSource.resetColorTransferFunction()
+        ctf = self.getColorTransferFunction()
+        self.settings.set("ColorTransferFunction",ctf)
+
     def getColorTransferFunction(self):
         """
-        Method: getColorTransferFunction()
         Created: 26.04.2005, KP
         Description: Returns the ctf of this object
         """
@@ -120,7 +125,6 @@ class DataUnit:
     
     def setSettings(self,settings):
         """
-        Method: setSettings
         Created: 27.03.2005, KP
         Description: Sets the settings object of this dataunit
         """
@@ -129,7 +133,6 @@ class DataUnit:
     
     def updateSettings(self):
         """
-        Method: updateSettings()
         Created: 28.03.2005, KP
         Description: Sets the settings of this object based on the datasource
         """
@@ -157,7 +160,6 @@ class DataUnit:
             
     def getSettings(self):
         """
-        Method: getSettings
         Created: 27.03.2005, KP
         Description: Returns the settings object of this dataunit
         """
@@ -165,7 +167,6 @@ class DataUnit:
         
     def getName(self):
         """
-        Method: getName
         Created: 03.11.2004, JM
         Description: Returns the name of this DataUnit
         """
@@ -173,7 +174,6 @@ class DataUnit:
 
     def setName(self,name):
         """
-        Method: setName(name)
         Created: 8.12.2004, JM
         Description: Sets the name of this dataunit
         """
@@ -183,7 +183,6 @@ class DataUnit:
  
     def getTimePoint(self,n):
         """
-        Method: getTimePoint(n)
         Created: 17.11.2004, KP
         Description: Returns the requested time point
         Parameters:
@@ -200,7 +199,6 @@ class DataUnit:
 
     def getLength(self):
         """
-        Method: getLength
         Created: 10.11.2004, JM
         Description: Returns the length of this DataUnit
         """
@@ -208,7 +206,6 @@ class DataUnit:
 
     def setDataSource(self, dataSource):
         """
-        Method: setDataSource
         Created: 09.11.2004, JM
         Description: Sets a DataSource for this SourceDataUnit
         Parameters: dataSource  A DataSource to manage actual

@@ -342,6 +342,8 @@ void vtkIntensityTransferFunction::ComputeFunction(void) {
 
     #define powsg(x) double(pow((double)(x),this->SmoothStartGamma))
     #define poweg(x) double(pow((double)(x),this->SmoothEndGamma))
+    
+    printf("Generating function for values 0-%d\n",RangeMax);
     for(int x=0; x <= this->RangeMax; x++) {
 
         y = f4(x,gx1,gy1,gx2,gy2);

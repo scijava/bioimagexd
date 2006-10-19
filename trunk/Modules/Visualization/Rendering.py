@@ -73,7 +73,6 @@ def showZoomToolbar(): return True
 class RenderingMode(VisualizationMode):
     def __init__(self,parent,visualizer):
         """
-        Method: __init__
         Created: 24.05.2005, KP
         Description: Initialization
         """
@@ -89,12 +88,11 @@ class RenderingMode(VisualizationMode):
         self.configPanel=None
         self.dataUnit=None
         
-        self.defaultModule = "Volume Rendering"
+        self.defaultModule = "Volume rendering"
         self.modules = []
         
     def reloadModules(self):
         """
-        Method: reloadModules()
         Created: 24.05.2005, KP
         Description: Reload all the visualization modules.
         """
@@ -107,14 +105,12 @@ class RenderingMode(VisualizationMode):
 
     def zoomObject(self):
         """
-        Method: zoomObject()
         Created: 04.07.2005, KP
         Description: Zoom to a user selected portion of the image
         """            
         self.wxrenwin.zoomToRubberband()        
     def showSideBar(self):
         """
-        Method: showSideBar()
         Created: 24.05.2005, KP
         Description: Method that is queried to determine whether
                      to show the sidebar
@@ -122,7 +118,6 @@ class RenderingMode(VisualizationMode):
         return True
     def showViewAngleCombo(self):
         """
-        Method: showViewAngleCombo()
         Created: 11.08.2005, KP
         Description: Method that is queried to determine whether
                      to show the view angle combo box in the toolbar
@@ -130,7 +125,6 @@ class RenderingMode(VisualizationMode):
         return True        
     def setStereoMode(self,mode):
         """
-        Method: setStereoMode()
         Created: 16.05.2005, KP
         Description: Set the stereo rendering mode
         """
@@ -143,7 +137,6 @@ class RenderingMode(VisualizationMode):
   
     def activate(self,sidebarwin):
         """
-        Method: activate()
         Created: 24.05.2005, KP
         Description: Set the mode of visualization
         """
@@ -186,7 +179,6 @@ class RenderingMode(VisualizationMode):
         
     def saveSnapshot(self,filename):
         """
-        Method: saveSnapshot(filename)
         Created: 05.06.2005, KP
         Description: Save a snapshot of the scene
         """      
@@ -194,7 +186,6 @@ class RenderingMode(VisualizationMode):
         
     def Render(self):
         """
-        Method: Render()
         Created: 24.05.2005, KP
         Description: Update the rendering
         """    
@@ -203,7 +194,6 @@ class RenderingMode(VisualizationMode):
         
     def setBackground(self,r,g,b):
         """
-        Method: setBackground(r,g,b)
         Created: 24.05.2005, KP
         Description: Set the background color
         """        
@@ -215,7 +205,6 @@ class RenderingMode(VisualizationMode):
         
     def updateRendering(self):
         """
-        Method: updateRendering
         Created: 26.05.2005, KP
         Description: Update the rendering
         """      
@@ -230,7 +219,6 @@ class RenderingMode(VisualizationMode):
         
     def deactivate(self,newmode=None):
         """
-        Method: deactivate()
         Created: 24.05.2005, KP
         Description: Unset the mode of visualization
         """
@@ -254,7 +242,6 @@ class RenderingMode(VisualizationMode):
         
     def setDataUnit(self,dataUnit):
         """
-        Method: setDataUnit
         Created: 25.05.2005, KP
         Description: Set the dataunit to be visualized
         """
@@ -273,7 +260,6 @@ class RenderingMode(VisualizationMode):
             
     def getConfigurationPanel(self,name):
         """
-        Method: getConfigurationPanel(name)
         Created: 23.05.2005, KP
         Description: Return the configuration panel of a module
         """
@@ -282,7 +268,6 @@ class RenderingMode(VisualizationMode):
 
     def removeModule(self,name):
         """
-        Method: removeModule(name)
         Created: 28.04.2005, KP
         Description: Remove a visualization module
         """
@@ -298,7 +283,6 @@ class RenderingMode(VisualizationMode):
 
     def setRenderingStatus(self,name,status):
         """
-        Method: setRenderingStatus(name,status)
         Created: 15.05.2005, KP
         Description: Enable / disable rendering of a module
         """
@@ -311,7 +295,6 @@ class RenderingMode(VisualizationMode):
 
     def loadModule(self,name,lbl=None,render=1):
         """
-        Method: loadModule(name,lbl)
         Created: 28.04.2005, KP
         Description: Load a visualization module
         """
@@ -329,7 +312,6 @@ class RenderingMode(VisualizationMode):
             
     def getModules(self):
         """
-        Method: getModules()
         Created: 28.04.2005, KP
         Description: Return the modules
         """  
@@ -337,7 +319,6 @@ class RenderingMode(VisualizationMode):
         
     def setTimepoint(self,tp):
         """
-        Method: setTimepoint
         Created: 25.05.2005, KP
         Description: Set the timepoint to be visualized
         """
@@ -348,7 +329,6 @@ class RenderingMode(VisualizationMode):
 
     def __getstate__(self):
         """
-        Method: __getstate__
         Created: 02.08.2005, KP
         Description: A getstate method that saves the lights
         """            
@@ -359,7 +339,6 @@ class RenderingMode(VisualizationMode):
         
     def __set_pure_state__(self,state):
         """
-        Method: __set_pure_state__()
         Created: 02.08.2005, KP
         Description: Set the state of the light
         """
@@ -375,7 +354,6 @@ class RenderingMode(VisualizationMode):
             mod.__set_pure_state__(module)
     def zoomToFit(self):
         """
-        Method: zoomToFit()
         Created: 05.06.2005, KP
         Description: Zoom the dataset to fit the available screen space
         """

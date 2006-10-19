@@ -41,13 +41,11 @@ import Logging
         
 class MergingSettings(DataUnitSettings):
     """
-    Class: MergingSettings
     Created: 27.03.2005, KP
     Description: Stores color merging related settings
     """
     def __init__(self,n=-1):
         """
-        Method: __init__
         Created: 27.03.2005, KP
         Description: Constructor
         """
@@ -70,18 +68,15 @@ class MergingSettings(DataUnitSettings):
                      number of channels and timepoints
         """
         DataUnitSettings.initialize(self,dataunit,channels,timepoints)
-        if hasattr(dataunit,"getScalarRange"):
-            minval,maxval = dataunit.getScalarRange()
-        else:
-            minval,maxval = dataunit.getSourceDataUnits()[0].getScalarRange()
 
-        tf=vtk.vtkIntensityTransferFunction()
-        tf.SetRangeMax(maxval)    
-        self.set("AlphaTransferFunction",tf)
+        #tf=vtk.vtkIntensityTransferFunction()
+        #print "\n\n****' SETING RANGE OF ALPHA TF =",maxval
+        #tf.SetRangeMax(maxval)    
+        #self.set("AlphaTransferFunction",tf)
+        
         
         for i in range(channels):
             tf=vtk.vtkIntensityTransferFunction()
-            tf.SetRangeMax(maxval)    
             self.setCounted("IntensityTransferFunction",i,tf,0)
         self.set("PreviewChannel",1)
             

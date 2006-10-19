@@ -77,14 +77,12 @@ infoStringResample="""<html><body bgcolor=%(bgcolor)s">
 #"
 class InfoWidget(wx.Panel):
     """
-    Class: InfoWidget
     Created: 03.11.2004, KP
     Description: A class for displaying information about selected datasets
                  of given type
     """
     def __init__(self,master,**kws):
         """
-        Method: __init__
         Created: 03.11.2004, KP
         Description: Initialization for the Info node
         """
@@ -106,10 +104,8 @@ class InfoWidget(wx.Panel):
         messenger.connect(None,"tree_selection_changed",self.showInfo) 
         self.SetHelpText("This window shows you information about the selected dataset.")
         self.htmlpage.SetHelpText("This window shows you information about the selected dataset.")
-        #messenger.connect(None,"tree_selection_changed",self.updateInfo)
     def enable(self,flag):
         """
-        Method: enable(flag)
         Created: 05.06.2005, KP
         Description: Enable/disable widget
         """
@@ -117,23 +113,16 @@ class InfoWidget(wx.Panel):
  
     def setTree(self,tree):
         """
-        Method: setTree(tree)
         Created: 3.04.2005, KP
         Description: Sets the tree widget
         """
         self.tree=tree
         
-    def updateInfo(self,obj,evt,*args):
-        """
-        Method: updateInfo(obj,evt,args)
-        Created: 21.07.2005, KP
-        Description: Update the rendering of the MIP
-        """
-        self.showInfo(None,None,self.dataUnit)
+    def updateInfo(self, *args):
+        self.showInfo()
         
     def showInfo(self,obj=None,evt=None,dataunit=None):
         """
-        Method: showInfo(object, event, dataunit)
         Created: 21.02.2005, KP
         Description: Sets the infowidget to show info on a given dataunit
         """
@@ -239,9 +228,7 @@ class InfoWidget(wx.Panel):
     
     def createInfoNotebook(self):
         """
-        Method: createInfoNotebook()
-        Created: 21.02.2005
-        Creator: KP
+        Created: 21.02.2005, KP
         Description: Creates the fields for showing information about the
                      dataunit
         """

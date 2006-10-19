@@ -98,7 +98,7 @@ class OlympusDataSource(DataSource):
     def getExcitationWavelength(self):
         """
         Created: 07.04.2006, KP
-        Description: Returns the excitation wavelength used to image this channel
+        Description: Returns the excitation wavelength used to image the channel
         managed by this DataSource
         """
         return self.excitation
@@ -118,8 +118,7 @@ class OlympusDataSource(DataSource):
     def getDataSet(self, i,raw=0):
         """
         Created: 12.04.2005, KP
-        Description: Returns the DataSet at the specified index
-        Parameters:   i       The index
+        Description: Returns the image data for timepoint i
         """
         data=self.getTimepoint(i)        
         if raw:
@@ -192,7 +191,7 @@ class OlympusDataSource(DataSource):
             #print "Got dimensions=",self.dimensions
         return self.dimensions
 
-    def readLUT(self):
+    def readLUT(self): 
         """
         Created: 16.02.2006, KP
         Description: Read the LUT for this dataset
@@ -222,12 +221,29 @@ class OlympusDataSource(DataSource):
         #def f(x):( (x>>16)&0xff
         i=0
         r2,g2,b2=-1,-1,-1
-        for i,(r,g,b) in enumerate(vals):
-            #print "value for ",i,"is ",(r,g,b)
-            if r!=r2 or g!=g2 or b!=b2:
-                ctf.AddRGBPoint(i/16.0,r,g,b)
-            r2,g2,b2=r,g,b
-        #print "read CTF",ctf
+        coeff = 16.0
+        minval,maxval = self.getScalarRange()
+        
+        if self.explicitScale:
+            shift = self.intensityShift
+            if self.intensityShift:
+                maxval+=self.intensityShift
+                #print "Maximum value after being shifted=",maxval
+            scale = self.intensityScale
+            if not scale:
+                scale = 255.0 / maxval
+            maxval*=scale
+            #print "Maximum value after being scaled=",maxval
+            
+        coeff = 65536.0 / (maxval+1)
+        #coeff=int(coeff)
+#        print "coeff=",coeff
+#        print "Largest value=",len(vals)/coeff
+        
+        for i in range(0, maxval+1):
+            r,g,b = vals[int(i*coeff)]
+            ctf.AddRGBPoint(i, r,g,b)
+            
         return ctf
         
         
@@ -397,21 +413,28 @@ class OlympusDataSource(DataSource):
 
     def getName(self):
         """
-        Method: getName
         Created: 18.11.2005, KP
         Description: Returns the name of the dataset series which this datasource
                      operates on
         """
         return self.name
 
-        
+    def resetColorTransferFunction(self):
+        """
+        Created: 12.10.2006, KP
+        Description: A method that will reset the CTF from the datasource.
+                     This is useful e.g. when scaling the intensities of the    
+                     dataset
+        """
+        self.ctf = None
+        return self.getColorTransferFunction()
+    
     def getColorTransferFunction(self):
         """
-        Method: getColorTransferFunction()
         Created: 26.04.2005, KP
         Description: Returns the ctf of the dataset series which this datasource
                      operates on
         """
         if not self.ctf:
-            self.ctf = self.getLUT()
+            self.ctf = self.readLUT()
         return self.ctf        

@@ -1,7 +1,7 @@
 import  wx
 
 class SplashScreen(wx.Frame):
-    def __init__(self, parent, ID=-1, title="SplashScreen",
+    def __init__(self, parent, ID=-1, title="Loading BioImageXD...",
                  style=wx.SIMPLE_BORDER|wx.STAY_ON_TOP,
                  duration=1500, bitmapfile="bitmaps/splashscreen.bmp",
                  bitmap = None,

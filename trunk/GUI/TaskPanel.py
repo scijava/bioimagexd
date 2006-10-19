@@ -268,19 +268,16 @@ class TaskPanel(scrolled.ScrolledPanel):
 
     def setPreviewedData(self,event,index=-1):
         """
-        Method: setPreviewedData
         Created: 22.07.2005, KP
         Description: A callback function for marking channels to be rendered
                      in the preview.
         """
         flag=event.IsChecked()
-        print "Is checked=",flag,event
         self.dataUnit.setOutputChannel(index,flag)
         self.doPreviewCallback(None)
         
     def selectItem(self,obj,event,index=-1):
         """
-        Method: selectItem(event)
         Created: 03.11.2004, KP
         Description: A callback function called when a channel is selected in
                      the menu
@@ -298,7 +295,6 @@ class TaskPanel(scrolled.ScrolledPanel):
 
     def updateSettings(self,force=0):
         """
-        Method: updateSettings()
         Created: 03.11.2004, KP
         Description: A method used to set the GUI widgets to their proper values
                      based on the selected channel, the settings of which are
@@ -340,7 +336,6 @@ class TaskPanel(scrolled.ScrolledPanel):
 
     def doPreviewCallback(self,*args):
         """
-        Method: doPreviewCallback()
         Created: 03.11.2004, KP
         Description: A callback for the button "Preview" and other events
                      that wish to update the preview
@@ -353,12 +348,11 @@ class TaskPanel(scrolled.ScrolledPanel):
 
     def saveSettingsCallback(self,event):
         """
-        Method: saveSettingsCallback()
         Created: 30.11.2004, KP
         Description: A callback to save the settings for this operation to a 
                      du file
         """
-        wc="Dataset Settings(*.bxd)|*.bxd"
+        wc="Dataset settings(*.bxd)|*.bxd"
         dlg=wx.FileDialog(self,"Save dataset settings to file",wildcard=wc,style=wx.SAVE)
         filename=None
         if dlg.ShowModal()==wx.ID_OK:
@@ -378,15 +372,13 @@ class TaskPanel(scrolled.ScrolledPanel):
 
     def setCombinedDataUnit(self,dataUnit):
         """
-        Method: setCombinedDataUnit(dataUnit)
         Created: 23.11.2004, KP
         Description: Sets the combined dataunit that is to be processed.
                      It is then used to get the names of all the source data
                      units and they are added to the menu.
         """
         messenger.send(None,"current_task",self.operationName)
-        
-        
+                
         self.dataUnit=dataUnit
         name=dataUnit.getName()
         Logging.info("Name of dataunit is ",name,kw="dataunit")

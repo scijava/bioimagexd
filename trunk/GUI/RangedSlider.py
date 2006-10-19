@@ -129,9 +129,9 @@ class RangedSlider(wx.Slider):
         else:
             val+=abs(currRange[2])
         percent = float(val) / distance
-        Logging.info("percent = ",percent,"mytot=",mytot,"distance=",distance,kw="trivial")
+        #Logging.info("percent = ",percent,"mytot=",mytot,"distance=",distance,kw="trivial")
         n = self.totalValues / len(self.ranges)
-        Logging.info("Returning %d + %f * %d = "%(mytot,percent,n),mytot+percent*n,kw="trivial")
+        #Logging.info("Returning %d + %f * %d = "%(mytot,percent,n),mytot+percent*n,kw="trivial")
         if currRange[3]<currRange[2]:
             offset=self.totalValues
             op=-1
@@ -168,7 +168,7 @@ class RangedSlider(wx.Slider):
         #distance=(currRange[3]-currRange[2])
         # This tells us how far in percent we are along the current range
         percentOfRange = (percent-currRange[mini2])/(currRange[maxi2]-currRange[mini2])
-        Logging.info("distance = ",distance," percentsOfRange=",percentOfRange,kw="trivial")
+        #Logging.info("distance = ",distance," percentsOfRange=",percentOfRange,kw="trivial")
         ret=currRange[mini]+distance * percentOfRange
         for i in self.snapPoints:
             if ret>= i[0] and ret<=i[2]:

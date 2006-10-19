@@ -81,7 +81,6 @@ class Merging(Module):
         
     def addInput(self,dataunit,data):
         """
-        Method: addInput(dataunit,data)
         Created: 24.11.2004, JV
         Description: Adds an input for the color merging filter
         """
@@ -114,7 +113,6 @@ class Merging(Module):
 
     def getPreview(self,z):
         """
-        Method: getPreview(z)
         Created: 24.11.2004, JV
         Description: Does a preview calculation for the x-y plane at depth z
         """
@@ -134,7 +132,6 @@ class Merging(Module):
 
     def doOperation(self):
         """
-        Method: doOperation
         Created: 24.11.2004, JV
         Description: Does color merging for the dataset
         """
@@ -172,7 +169,10 @@ class Merging(Module):
         else:
             self.merge.BuildAlphaOff()
         
-        
+        print "itfs=",self.intensityTransferFunctions
+        for i,itf in enumerate(self.intensityTransferFunctions):
+            print "range max of itf %d=%d"%(i,itf.GetRangeMax())
+
         for i,image in enumerate(self.images):
             self.merge.AddInput(image)
             self.merge.AddLookupTable(self.ctfs[i])
