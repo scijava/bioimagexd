@@ -237,18 +237,29 @@ class MergingPanel(TaskPanel.TaskPanel):
         #self.dataUnit.setOpacityTransfer(self.alphaTF)
         self.settings.set("AlphaTransferFunction",self.alphaTF)
         ctf = self.settings.get("ColorTransferFunction")
-        tf = self.settings.get("IntensityTransferFunction")
-        self.intensityTransferEditor.setIntensityTransferFunction(tf)
         
         sources =  dataUnit.getSourceDataUnits()
-        minval,maxval=sources[0].getScalarRange()
+        totmax=0
         
-        self.alphaTF.SetRangeMax(maxval)
+        for i in sources:
+            minval,maxval=i.getScalarRange()
+            if maxval>totmax:totmax=maxval
+        self.alphaTF.SetRangeMax(int(totmax))
         
+        for i in range(len(sources)):
+            tf=vtk.vtkIntensityTransferFunction()
+            tf.SetRangeMax(int(totmax))
+            #self.settings.setCounted("IntensityTransferFunction",i,tf,0)
+            sources[i].getSettings().set("IntensityTransferFunction",tf)
+
+        tf = sources[0].getSettings().get("IntensityTransferFunction")
+        self.intensityTransferEditor.setIntensityTransferFunction(tf)
+
+
         for i in range(len(sources)):
             self.dataUnit.setOutputChannel(i,1)
         if self.colorBtn:
-            Logging.info("Setting ctf of colorbutton to ",ctf,kw="ctf")
+            #Logging.info("Setting ctf of colorbutton to ",ctf,kw="ctf")
             self.colorBtn.setColorTransferFunction(ctf)
         else:
             Logging.info("No color button to set ctf to ",kw="ctf")

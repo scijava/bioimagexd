@@ -696,14 +696,6 @@ class MainWindow(wx.Frame):
         tb.EnableTool(MenuManager.ID_RESAMPLING,0)
         tb.ToggleTool(MenuManager.ID_RESAMPLING,1)
         
-        #self.resampleBtn = buttons.GenBitmapToggleButton(tb,-1,bitmap,size=(32,32))
-        #self.resampleBtn = wx.ToggleButton(tb, -1,"Resampling")
-        #self.resampleBtn.SetValue(1)
-        #self.resampleBtn.SetHelpText("Use this button to enable or disable the resampling of data.")
-        #self.resampleBtn.Bind(wx.EVT_TOGGLEBUTTON, self.onResampleData)
-        #tb.AddControl(self.resampleBtn)
-        
-        
         self.cBtn = wx.ContextHelpButton(tb,MenuManager.CONTEXT_HELP)
         self.cBtn.SetSize((32,32))
         tb.AddControl(self.cBtn)
@@ -897,10 +889,8 @@ class MainWindow(wx.Frame):
 #        flag=self.resampleBtn.GetValue()
         tb=self.GetToolBar()                    
         flag=tb.GetToolState(MenuManager.ID_RESAMPLING)
-        print "SETTING RESAMPLING TO ",flag
         bxd.resamplingDisabled = not flag
         self.visualizer.updateRendering()
-
 
     def onShowCommandHistory(self,evt=None):
         """
@@ -994,7 +984,7 @@ class MainWindow(wx.Frame):
 
         #selectedFiles=self.tree.getSelectedDataUnits()
         selectedFiles,items = self.tree.getSelectionContainer()
-        print selectedFiles
+        #print selectedFiles
         if not selectedFiles:
             return
             
@@ -1010,6 +1000,7 @@ class MainWindow(wx.Frame):
             unit=self.visualizer.dataUnit
             self.visualizer.closeVisualizer()
             self.loadVisualizer(unit,mode)
+            self.infoWidget.showInfo(selectedFiles[0])
 #            self.loadVisualizer(None,self.visualizer.mode,reload=1)        
 
 
@@ -1514,7 +1505,7 @@ class MainWindow(wx.Frame):
         try:
             for dataunit in selectedFiles:
                 unit.addSourceDataUnit(dataunit)
-                Logging.info("ctf of source=",dataunit.getSettings().get("ColorTransferFunction"),kw="ctf")
+                #Logging.info("ctf of source=",dataunit.getSettings().get("ColorTransferFunction"),kw="ctf")
         except Logging.GUIError,ex:
             ex.show()
             self.closeTask()

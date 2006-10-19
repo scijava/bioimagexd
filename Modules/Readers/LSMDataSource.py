@@ -206,6 +206,7 @@ class LsmDataSource(DataSource.DataSource):
         data=self.getResampledData(data,i)            
         if data.GetScalarType()!=3 and not raw:
             data=self.getIntensityScaledData(data)
+            
         
         
         data.ReleaseDataFlagOff()
@@ -311,13 +312,34 @@ class LsmDataSource(DataSource.DataSource):
             r/=255.0
             g/=255.0
             b/=255.0
-            maxval=255
-            if self.getBitDepth()==16:
-                maxval=4096
+            minval,maxval = self.getScalarRange()
+            
+            if self.explicitScale:
+                shift = self.intensityShift
+                if self.intensityShift:
+                    maxval+=self.intensityShift
+                    #print "Maximum value after being shifted=",maxval
+                scale = self.intensityScale
+                if not scale:
+                    scale = 255.0 / maxval
+                maxval*=scale
+                #print "Maximum value after being scaled=",maxval
             ctf.AddRGBPoint(0,0,0,0)
             ctf.AddRGBPoint(maxval,r,g,b)
             self.ctf = ctf
         return self.ctf
+        
+    def resetColorTransferFunction(self):
+        """
+        Created: 12.10.2006, KP
+        Description: A method that will reset the CTF from the datasource.
+                     This is useful e.g. when scaling the intensities of the    
+                     dataset
+        """
+        self.scalarRange = None
+        self.ctf = None
+        return self.getColorTransferFunction()
+        
         
     def getName(self):
         """

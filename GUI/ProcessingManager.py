@@ -37,6 +37,7 @@ import time
 import UIElements
 import messenger
 from Logging import *
+import scripting as bxd
 
 
 class ProcessingManager(TimepointSelection):
@@ -52,6 +53,7 @@ class ProcessingManager(TimepointSelection):
         TimepointSelection.__init__(self,parent)
         self.progressDialog=None
         self.operationName=operation
+        bxd.processingManager = self
         
         #self.timepointLbl.SetLabel("Select Time Points to be Processed")
         self.SetTitle("Processing - %s"%operation)

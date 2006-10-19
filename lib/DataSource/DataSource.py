@@ -251,6 +251,7 @@ class DataSource:
             self.shift.SetOutputScalarTypeToUnsignedChar()
             self.shift.SetClampOverflow(1)
         
+        print "\n\nInput to shiftscale=",data.GetScalarRange()
         self.shift.SetInput(data)
         # Need to call this or it will remember the whole extent it got from resampling
         self.shift.UpdateWholeExtent()
@@ -278,7 +279,6 @@ class DataSource:
     
     def getResampledData(self,data,n,tmpDims=None):
         """
-        Method: getResampledData
         Created: 1.09.2005, KP
         Description: Return the data resampled to given dimensions
         """
@@ -329,7 +329,6 @@ class DataSource:
 
     def getEmissionWavelength(self):
         """
-        Method: getEmissionWavelength
         Created: 07.04.2006, KP
         Description: Returns the emission wavelength used to image this channel
         managed by this DataSource
@@ -338,7 +337,6 @@ class DataSource:
             
     def getExcitationWavelength(self):
         """
-        Method: getEmissionWavelength
         Created: 07.04.2006, KP
         Description: Returns the excitation wavelength used to image this channel
         managed by this DataSource
@@ -347,7 +345,6 @@ class DataSource:
         
     def getNumericalAperture(self):
         """
-        Method: getNumericalAperture
         Created: 07.04.2006, KP
         Description: Returns the numerical aperture used to image this channel
         managed by this DataSource
@@ -356,17 +353,14 @@ class DataSource:
         
     def getDataSetCount(self):
         """
-        Method: getDataSetCount
         Created: 03.11.2004, JM
         Description: Returns the number of individual DataSets (=time points)
         managed by this DataSource
-        NOT IMPLEMENTED HERE
         """
         raise "Abstract method getDataSetCount() in DataSource called"
 
     def getFileName(self):
         """
-        Method: getFileName()
         Created: 21.07.2005
         Description: Return the file name
         """    
@@ -374,7 +368,6 @@ class DataSource:
 
     def getDataSet(self, i,raw=0):
         """
-        Method: getDataSet
         Created: 03.11.2004, JM
         Description: Returns the DataSet at the specified index
         Parameters:   i       The index
@@ -383,7 +376,6 @@ class DataSource:
 
     def getName(self):
         """
-        Method: getName()
         Created: 18.11.2004, KP
         Description: Returns the name of the dataset series which this datasource
                      operates on
@@ -392,7 +384,6 @@ class DataSource:
         
     def getDimensions(self):
         """
-        Method: getDimensions()
         Created: 14.12.2004, KP
         Description: Returns the (x,y,z) dimensions of the datasets this 
                      dataunit contains

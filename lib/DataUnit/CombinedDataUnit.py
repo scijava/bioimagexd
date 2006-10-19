@@ -271,7 +271,6 @@ class CombinedDataUnit(DataUnit.DataUnit):
         
     def switchSourceDataUnits(self,units):
         """
-        Method: switchSourceDataUnits
         Created: 11.08.2005, KP
         Description: Switch the source data units used
         """

@@ -118,13 +118,15 @@ color depth. Use the histograms below to the select how the intensities in your 
         
     def onOkButton(self,event):
         """
-        Method: onOkButton
         Created: 21.04.2005, KP
         Description: Executes the procedure
         """
         for i,dataUnit in enumerate(self.dataUnits):
             ds=dataUnit.getDataSource()
+            print "Setting shift and scale to ",self.shift, self.scale
             ds.setIntensityScale(self.shift,self.scale)
+            ds.resetColorTransferFunction()
+            dataUnit.resetColorTransferFunction()
             #ds.setResampleDimensions(self.resampleDims[i])
             
         self.result=1

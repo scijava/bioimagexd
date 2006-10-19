@@ -287,7 +287,7 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         """
         Logging.info("Selected item "+str(item),kw="preview")
         self.selectedItem = item
-        print "dataunit=",self.dataUnit
+#        print "dataunit=",self.dataUnit
         if self.dataUnit.isProcessed():
             self.settings = self.dataUnit.getSourceDataUnits()[item].getSettings()
             self.settings.set("PreviewedDataset",item)
@@ -350,6 +350,9 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         if self.rawImages:
             self.rawImage = self.rawImages[0]
         elif self.rawImage and not self.rawImages:
+            self.rawImages=[self.rawImage]
+        if self.mip:
+            self.rawImage = self.currentImage            
             self.rawImages=[self.rawImage]
         x,y=event.GetPosition()
         x-=self.xoffset
@@ -609,13 +612,16 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
             extract.Update()
             
         if self.mip:
-            Logging.info("Doing mip",data.GetWholeExtent(),kw="preview")
-            #data.SetUpdateExtent(data.GetWholeExtent())
+            Logging.info("Doing mip",data,kw="preview")
+            
+            data.SetUpdateExtent(data.GetWholeExtent())
             mip=vtk.vtkImageSimpleMIP()
             mip.SetInput(data)
+            
+            ret = bxd.execute_limited(mip)
             data.ReleaseDataFlagOn()
-            data = bxd.execute_limited(mip)
-          
+            data = ret
+            #data = mip.GetOutput()
             Logging.info("Got MIP with extent=",data.GetWholeExtent(),kw="preview")
             data.SetUpdateExtent(data.GetWholeExtent())
             
@@ -691,7 +697,6 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         Created: 20.11.2004, KP
         Description: Update the preview to use the selected color transfer 
                      function
-        Parameters:
         """
         if self.dataUnit:
             #ct = self.settings.get("ColorTransferFunction")
@@ -709,6 +714,8 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
                     Logging.info("Using item %d (counted)"%self.selectedItem,kw="preview")
                     ct=ctc
             
+     
+        #print "Using ctf",ct
         self.currentCt = ct
         
         #ct.GetColor(255,val)
