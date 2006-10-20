@@ -39,6 +39,8 @@ import scripting
 import os.path
 import sys
 
+mcache={}
+
 def getRenderingModules(callback=None): return getModules("Rendering",callback=callback,moduleType="3D rendering module")
 def getVisualizationModes(callback=None): return getModules("Visualization",callback=callback,moduleType="")
 def getReaders(callback=None): return getModules("Readers",callback=callback,moduleType="Image format reader")
@@ -53,12 +55,16 @@ def getModules(name,flag="*.py",callback=None,moduleType="Module"):
                  and returns a dictionary that contains 
                  information about them
     """    
+    global mcache
+    cname=name
+    if name in mcache:
+        return mcache[name]
     modpath=scripting.get_module_dir()
     pathlst=[modpath,name]
     if flag:pathlst.append(flag)
     path=reduce(os.path.join,pathlst)
     spath=reduce(os.path.join,[modpath,name])
-    
+    Logging.backtrace()
     Logging.info("Path to modes: %s"%spath,kw="modules")
     sys.path=sys.path+[spath]
     
@@ -107,5 +113,7 @@ def getModules(name,flag="*.py",callback=None,moduleType="Module"):
         if hasattr(module,"getConfigPanel"):
             settingclass=module.getConfigPanel()
         moddict[name]=(modclass,settingclass,module)
+        
+    mcache[cname]=moddict
     return moddict
     

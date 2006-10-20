@@ -1388,15 +1388,14 @@ class MainWindow(wx.Frame):
         else:
             # If we got data, add corresponding nodes to tree
             #Logging.info("Adding to tree ",name,path,ext,dataunits,kw="io")
-            needToRescale=0
-            for i in dataunits:
-                bd=i.getBitDepth()
-                print "bd=",bd
-                isManip = (i.getSettings().getType()=="Process")
-                if not isManip and bd not in [8,32]:
-                    needToRescale=1
-            print "Dataset is ",bd,"isManip=",isManip,"need to rescale=",needToRescale
-            if 0 and needToRescale:
+            conf = Configuration.getConfiguration()
+            needToRescale = conf.getConfigItem("RescaleOnLoading","Performance")
+            print "\n\n***** Need to rescale=",needToRescale
+            if needToRescale:
+                needToRescale = eval(needToRescale)
+
+            
+            if needToRescale:
                 dlg = RescaleDialog.RescaleDialog(self)
                 dlg.setDataUnits(dataunits)
                 wid = dlg.ShowModal()

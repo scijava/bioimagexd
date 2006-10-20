@@ -226,6 +226,7 @@ class PerformanceSettings(wx.Panel):
         resampleGrid.Add(self.resampleToY,(1,3))        
         self.resampleBoxSizer.Add(resampleGrid)
         
+        
         self.memoryBox=wx.StaticBox(self,-1,"Memory usage",size=(600,150))
         self.memoryBoxSizer=wx.StaticBoxSizer(self.memoryBox,wx.VERTICAL)
         self.memoryBoxSizer.SetMinSize(self.memoryBox.GetSize())
@@ -251,10 +252,23 @@ class PerformanceSettings(wx.Panel):
         memgrid.Add(mblbl,(0,2))
         self.memoryBoxSizer.Add(memgrid)
 
-    
         
-        self.sizer.Add(self.memoryBoxSizer,(0,0),flag=wx.EXPAND|wx.ALL)        
-        self.sizer.Add(self.resampleBoxSizer,(1,0),flag=wx.EXPAND|wx.ALL)        
+        self.rescaleBox = wx.StaticBox(self,-1,"Intensity rescaling",size=(600,100))
+        self.rescaleBoxSizer = wx.StaticBoxSizer(self.rescaleBox, wx.VERTICAL)
+        self.rescaleBoxSizer.SetMinSize(self.rescaleBox.GetSize())
+        
+        self.rescaleCheckbox = wx.CheckBox(self,-1,"Rescale 12- and 16-bit datasets to 8-bit when loading")
+        self.rescaleBoxSizer.Add(self.rescaleCheckbox)
+        val = conf.getConfigItem("RescaleOnLoading","Performance")
+        if val:
+            val = eval(val)
+        else:
+            val=0
+        self.rescaleCheckbox.SetValue(val)
+    
+        self.sizer.Add(self.rescaleBoxSizer,(0,0),flag=wx.EXPAND|wx.ALL)        
+        self.sizer.Add(self.memoryBoxSizer,(1,0),flag=wx.EXPAND|wx.ALL)        
+        self.sizer.Add(self.resampleBoxSizer,(2,0),flag=wx.EXPAND|wx.ALL)        
         
         self.SetAutoLayout(1)
         self.SetSizer(self.sizer)
@@ -280,6 +294,9 @@ class PerformanceSettings(wx.Panel):
             conf.setConfigItem("ResampleDims","Performance",str((rx,ry)))
             conf.setConfigItem("ResampleTo","Performance",str((rtx,rty)))
         
+        rescaleOnLoad=self.rescaleCheckbox.GetValue()
+        print "Setting rescale on load to ",rescaleOnLoad
+        conf.setConfigItem("RescaleOnLoading","Performance",str(rescaleOnLoad))        
         limitMem = self.limitMemoryCheckbox.GetValue()
         limitTo = self.memoryLimit.GetValue()
         

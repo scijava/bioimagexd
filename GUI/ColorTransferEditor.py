@@ -220,7 +220,6 @@ class CTFPaintPanel(wx.Panel):
         self.dc = wx.MemoryDC()
         self.dc.SelectObject(self.buffer)
 
-        print "got alphafunc=",alphafunc
         d = self.maxx / float(maximumValue)
         if d<1:d=1
         if not self.background:
