@@ -189,7 +189,8 @@ class InteractivePanel(ogl.ShapeCanvas):
         memdc.DrawBitmap(self.bgbuffer,0,0,False)
         memdc.SelectObject(wx.NullBitmap)
         
-        self.OnPaint(None)
+        self.Update()
+        #self.OnPaint(None)
         
         
     def deleteLines(self,lines):
