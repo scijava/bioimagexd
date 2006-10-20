@@ -126,10 +126,11 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
                
         self.mip = 0
         self.previewtype=""
-        self.modules=Modules.DynamicLoader.getTaskModules()
-        self.modules[""]=self.modules["Process"]
-        for key in self.modules:
-            self.modules[key]=self.modules[key][0]
+        self.tmodules=Modules.DynamicLoader.getTaskModules()
+        self.tmodules[""]=self.tmodules["Process"]
+        self.modules={}
+        for key in self.tmodules:
+            self.modules[key]=self.tmodules[key][0]
             
         self.renewNext=0
         messenger.connect(None,"zslice_changed",self.setPreviewedSlice)

@@ -43,7 +43,6 @@ def getConfiguration():
 
 class Configuration:
     """
-    Class: Configuration
     Created: 23.02.2005, KP
     Description: A module that handles the configuration file 
     """
@@ -69,6 +68,7 @@ class Configuration:
         self.readConfigItem("ShowTip","General")
         self.readConfigItem("TipNumber","General")
         self.readConfigItem("AskOnQuit","General")
+        self.readConfigItem("RescaleOnLoading","Performance")
         
         self.setConfigItem("RemoveOldVTK","VTK",1,0);
         self.setConfigItem("VTKPath","VTK",vtkpath,0)
@@ -90,7 +90,6 @@ class Configuration:
 
     def writeSettings(self):
         """
-        Method: writeSettings()
         Created: 12.03.2005, KP
         Description: A method to write out the settings
         """ 

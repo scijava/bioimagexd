@@ -31,7 +31,9 @@ import ConfigParser
 import struct
 
 import codecs
-        
+
+import math
+    
 from DataSource import *
 import DataUnit
         
@@ -233,6 +235,9 @@ class OlympusDataSource(DataSource):
             if not scale:
                 scale = 255.0 / maxval
             maxval*=scale
+            
+            self.scalarRange = (0,maxval)
+            self.bitdepth = int(math.log(maxval+1,2))
             #print "Maximum value after being scaled=",maxval
             
         coeff = 65536.0 / (maxval+1)
