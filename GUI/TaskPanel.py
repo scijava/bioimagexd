@@ -134,6 +134,21 @@ class TaskPanel(scrolled.ScrolledPanel):
         """         
         self.updateSettings(1)
         
+    def cacheSettings(self):
+        """
+        Created: 23.10.2006, KP
+        Description: Store the settings of the dataunit in a cache from which they can be
+                     later retrieved at will
+        """
+        sources=self.dataUnit.getSourceDataUnits()
+        print "SOURCES=",sources
+        settings = [x.getSettings() for x in sources]
+        settings.insert(0, self.dataUnit.getSettings())
+        bxd.storeSettingsToCache(self.dataUnit.getCacheKey(),settings)
+        for i in sources:
+            print "\n\nRESETTING SETTINGS OF ",i
+            i.resetSettings()
+        
     def onSwitchDatasets(self,obj,evt,args):
         """
         Created: 11.08.2005, KP
@@ -273,6 +288,7 @@ class TaskPanel(scrolled.ScrolledPanel):
                      in the preview.
         """
         flag=event.IsChecked()
+        print "\n\n\n*** Setting chl",self.dataUnit
         self.dataUnit.setOutputChannel(index,flag)
         self.doPreviewCallback(None)
         

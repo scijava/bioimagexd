@@ -80,6 +80,7 @@ class AdjustSettings(DataUnitSettings):
             minval,maxval = dataunit.getSourceDataUnits()[0].getScalarRange()
 
         for i in range(timepoints):
+            print "\n\nInitializing ITF"
             tf=vtk.vtkIntensityTransferFunction()
             tf.SetRangeMax(maxval)
             self.setCounted("IntensityTransferFunctions",i,tf,0)

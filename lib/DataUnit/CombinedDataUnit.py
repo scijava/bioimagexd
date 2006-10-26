@@ -44,7 +44,6 @@ class CombinedDataUnit(DataUnit.DataUnit):
 
     def __init__(self, name=""):
         """
-        Method: __init__
         Created: 03.11.2004, JM
         Description: Constructor
         """
@@ -57,6 +56,21 @@ class CombinedDataUnit(DataUnit.DataUnit):
         self.byName={}
         self.module = None
         self.outputChls={}
+        self.cacheKey = None
+        
+    def setCacheKey(self,key):
+        """
+        Created: 23.10.2006, KP
+        Description: Set the key under which this dataunit is stored in the cache
+        """
+        self.cacheKey = key
+        
+    def getCacheKey(self):
+        """
+        Created: 23.10.2006, KP
+        Description: Get the key under which this dataunit is stored in the cache
+        """
+        return self.cacheKey
         
     def isProcessed(self):
         """
@@ -73,6 +87,13 @@ class CombinedDataUnit(DataUnit.DataUnit):
         self.outputChls[ch]=flag
         Logging.info("output channels now=",self.outputChls,kw="dataunit")
         
+    def getOutputChannel(self, ch):
+        """
+        Created: 23.10.2006, KP
+        Description: Return the status of the given output channel
+        """
+        print "getting",ch,"from",self.outputChls
+        return self.outputChls.get(ch,1)
     def getDimensions(self): 
         if self.sourceunits:
             return self.sourceunits[0].getDimensions()
@@ -90,7 +111,6 @@ class CombinedDataUnit(DataUnit.DataUnit):
     
     def setModule(self,module):
         """
-        Method: setModule(module)
         Created: 27.03.2005, KP
         Description: Sets the module that does the calculations for
                      this dataunit
