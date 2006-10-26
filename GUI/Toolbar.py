@@ -83,7 +83,7 @@ class Toolbar(wx.Panel):
 
         #print "curr layout=",len(layout),"old=",len(self.oldLayout)
         if layout != self.oldLayout:   
-            print "\n\n\n+++ NOT SAME LAYOUT"        
+            #print "\n\n\n+++ NOT SAME LAYOUT"        
             self.ReOrderItems(layout, size[0])            
             self.oldLayout = layout
             
@@ -95,8 +95,8 @@ class Toolbar(wx.Panel):
             self.Layout()
             self.parent.Layout()
             
-        else:
-            print "\n\n\n*** SAME LAYOUT"
+        #else:
+        #    print "\n\n\n*** SAME LAYOUT"
             
     def ReOrderItems(self, layout, width):
         """

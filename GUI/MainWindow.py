@@ -1365,10 +1365,12 @@ class MainWindow(wx.Frame):
         # We try to load the actual data
         Logging.info("Loading dataset with extension %s, path=%s"%(ext,path),kw="io")
     
-            
+        
+        datasource=self.extToSource[ext]()
         try:
             datasource=self.extToSource[ext]()
-        except KeyError,ex:
+        except KeyError:
+#            print self.extToSource.keys()
             Dialogs.showerror(self,"Failed to load file %s: Unrecognized extension %s"%(name,ext),"Unrecognized extension")
             return
         dataunits=[]

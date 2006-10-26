@@ -381,7 +381,6 @@ def vtkImageDataToWxImage(data,slice=-1,startpos=None,endpos=None):
     
 def vtkImageDataToPngString(data,slice=-1,startpos=None,endpos=None):
     """
-    Method: vtkImageDataToPngString()
     Created: 26.07.2005, KP
     Description: A function that returns a vtkImageData object as png
                  data in a string
