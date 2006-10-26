@@ -210,8 +210,8 @@ class Visualizer:
         self.zsliderWin.SetAlignment(wx.LAYOUT_RIGHT)
         self.zsliderWin.SetSashVisible(wx.SASH_RIGHT,False)
         self.zsliderWin.SetSashVisible(wx.SASH_LEFT,False)
-        self.zsliderWin.SetDefaultSize((32,768)) 
-        w=32
+        self.zsliderWin.SetDefaultSize((64,768)) 
+        w=64
         if platform.system() =='Darwin':
             w=44
         self.zsliderWin.origSize=(w,768)
@@ -274,8 +274,11 @@ class Visualizer:
 
         self.zslider=wx.Slider(self.zsliderWin,value=1,minValue=1,maxValue=1,
         style=wx.SL_VERTICAL|wx.SL_LABELS|wx.SL_AUTOTICKS)
+        
         self.zslider.SetHelpText("Use this slider to select the displayed optical slice.")
         self.zslider.Bind(wx.EVT_SCROLL,self.onChangeZSlice)
+        self.zslider.Bind(wx.EVT_SCROLL_PAGEDOWN,self.onZPageDown)
+        self.zslider.Bind(wx.EVT_SCROLL_PAGEUP,self.onZPageUp)
         messenger.connect(None,"zslice_changed",self.onChangeZSlice)
         messenger.connect(None,"update_annotations",self.updateAnnotations)
         
@@ -1329,19 +1332,42 @@ class Visualizer:
         self.changing=time.time()
         wx.FutureCall(200,lambda e=event,s=self:s.timesliderMethod(e))
         
+    def onZPageDown(self, evt):
+        """
+        Created: 26.10.2006, KP
+        Description: Callback for when the z slider is "paged down"
+        """
+        newpos = self.zslider.GetValue()-1
+        newpos+=10
+        self.zslider.SetValue(newpos)
+        
+    def onZPageUp(self, evt):
+        """
+        Created: 26.10.2006, KP
+        Description: Callback for when the z slider is "paged up"
+        """
+        newpos = self.zslider.GetValue()-1
+        newpos-=10
+        self.zslider.SetValue(newpos)        
+        
     def onChangeZSlice(self,obj,event=None,arg=None):
         """
         Created: 1.08.2005, KP
         Description: Set the z slice to be shown
-        """        
+        """                
         t=time.time()
         if abs(self.depthT-t) < self.updateFactor: return
         self.depthT=time.time()
+        
         if arg:
             newz=arg
             self.zslider.SetValue(arg+1)
+        elif (not event and not arg) and obj:
+            newz=obj.GetPosition()-1
+            print "Using ",newz
         else:
             newz=self.zslider.GetValue()-1
+            
         if self.z != newz:
             self.z=newz
 #            print "Sending zslice changed event"

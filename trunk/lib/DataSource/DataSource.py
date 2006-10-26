@@ -176,6 +176,7 @@ class DataSource:
                 self.resampleDims=None
                 self.resampleDims=rd
             
+            print "Original dimensions=",self.originalDimensions
             x,y,z=self.originalDimensions
             rx,ry,rz=self.resampleDims
             xf=rx/float(x)
@@ -185,6 +186,10 @@ class DataSource:
         return self.resampleFactors
         
     def getResampledVoxelSize(self):
+        """
+        Created: KP
+        Description: Return the voxel size for the data after resampling has taken place
+        """
         if not self.resampleDims:
             return None
         if not self.resampledVoxelSize:
@@ -192,7 +197,7 @@ class DataSource:
             vx,vy,vz=self.getVoxelSize()
         
             rx,ry,rz=self.getResampleFactors()        
-            print "\n\n****resample factors=",rx,ry,rz
+            #print "\n\n****resample factors=",rx,ry,rz
             self.resampledVoxelSize=(vx/rx,vy/ry,vz/rz)
         return self.resampledVoxelSize
 
@@ -208,9 +213,9 @@ class DataSource:
             #print dims,self.limitDims
             if dims[0]*dims[1] > self.limitDims[0]*self.limitDims[1]:
                 x,y=self.toDims
-                print "Setting resample dims",(x,y,dims[2])
+                #print "Setting resample dims",(x,y,dims[2])
                 self.resampleDims=(x,y,dims[2])
-        print "Returning ",self.resampleDims
+        #print "Returning ",self.resampleDims
         return self.resampleDims
     
     def getMIPdata(self,n):
@@ -251,7 +256,7 @@ class DataSource:
             self.shift.SetOutputScalarTypeToUnsignedChar()
             self.shift.SetClampOverflow(1)
         
-        print "\n\nInput to shiftscale=",data.GetScalarRange()
+        #print "\n\nInput to shiftscale=",data.GetScalarRange()
         self.shift.SetInput(data)
         # Need to call this or it will remember the whole extent it got from resampling
         self.shift.UpdateWholeExtent()
@@ -272,9 +277,7 @@ class DataSource:
         self.shift.Update()
         # Release the memory used by the non-shifted data
         data.ReleaseDataFlagOn()
-        data=self.shift.GetOutput()
-        
-        return data
+        return self.shift.GetOutput()
 
     
     def getResampledData(self,data,n,tmpDims=None):
@@ -300,7 +303,7 @@ class DataSource:
                 # Release the memory used by source data
                 
                 x,y,z=data.GetDimensions()
-                print "got dims=",x,y,z
+                #print "got dims=",x,y,z
                 self.originalDimensions=(x,y,z)
                 
                 rx,ry,rz=useDims
@@ -312,7 +315,7 @@ class DataSource:
                 self.resample.SetAxisMagnificationFactor(1,yf)
                 self.resample.SetAxisMagnificationFactor(2,zf)
                 self.resample.Update()
-                #data.ReleaseDataFlagOn()
+                data.ReleaseDataFlagOn()
                 data= self.resample.GetOutput()        
         if self.mask:
             if not self.maskImg:
@@ -323,6 +326,8 @@ class DataSource:
             self.maskImg.SetImageInput(data)
             self.maskImg.SetMaskInput(self.mask.getMaskImage())
             self.maskImg.Update()
+            # XXX: Might cause instability
+            data.ReleaseDataFlagOn()
             return self.maskImg.GetOutput()
             
         return data

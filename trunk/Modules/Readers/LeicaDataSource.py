@@ -64,7 +64,8 @@ class LeicaDataSource(DataSource):
         self.filename=filename
         self.reader = LeicaExperiment(filename)
         self.experiment = experiment
-        self.originalDimensions=self.reader.GetDimensions(self.experiment)
+        if experiment:
+            self.originalDimensions=self.reader.GetDimensions(self.experiment)
         self.channel = channel
         self.dimensions = None
         self.voxelsize = None
@@ -698,7 +699,7 @@ class LeicaExperiment:
                 print "Num_Chan=",Num_Chan
                 Channels=[]
                 for b in xrange(Num_Chan):
-                    Fuile_List=[]
+                    File_List=[]
                     if 1 or Num_Chan>1:
                         CH_Name=('_ch'+str((b%100)//10)+str((b%10)//1))
                     else:
@@ -706,15 +707,26 @@ class LeicaExperiment:
                         CH_Name=("")
                     Num_Z_Sec=Series_Info['Number_Sections']
                     for c in xrange(Num_Z_Sec):
-                        if Num_Z_Sec!=1:
-                            Z_Name=str('_z'+str((c%1000)//100)+str((c%100)//10)+str((c%10)//1))
-                        else:
-                            Z_Name=""
+                        #if Num_Z_Sec!=1:
+                        Z_Name=str('_z'+str((c%1000)//100)+str((c%100)//10)+str((c%10)//1))
+                        #Z_Name="_z%.3d"%c
+                        #print "ZName=",Z_Name
+                        #else:
+                        #    print "NO Z since only one section"
+                        #    Z_Name=""
+                        
                         if Num_T_Points > 1:
-                            Slice_Name = self.ExpName + '_' + Series_Name + TP_Name + Z_Name + CH_Name + '.tif'
+                            Slice_Name_With_Z = self.ExpName + '_' + Series_Name + TP_Name + Z_Name + CH_Name + '.tif'
+                            Slice_Name_No_Z = self.ExpName + '_' + Series_Name + TP_Name + CH_Name + '.tif'
                         else:
-                            Slice_Name = self.ExpName + '_' + Series_Name + Z_Name + CH_Name + '.tif'
-                        File_List.append(Slice_Name)
+                            Slice_Name_With_Z = self.ExpName + '_' + Series_Name + Z_Name + CH_Name + '.tif'
+                            Slice_Name_No_Z = self.ExpName + '_' + Series_Name  + CH_Name + '.tif'
+                        if os.path.exists(os.path.join(self.path,Slice_Name_With_Z)):
+                            File_List.append(Slice_Name_With_Z)
+                            print "Using with Z"
+                        elif os.path.exists(os.path.join(self.path,Slice_Name_No_Z)):
+                            print "Using no z"
+                            File_List.append(Slice_Name_No_Z)
                         
                     Channels.append(File_List)
                 TimePoints.append(Channels)
@@ -726,7 +738,7 @@ class LeicaExperiment:
         self.Extract_Series_Info()
         self.Create_Tiff_Lists()
             
-    def ReadLeicaVolData(self,Series_Name):
+    def ReadLeicaVolDataOld(self,Series_Name):
         #os.chdir(self.ExpPath)#needed for Tkinter file select
         global TP_CH_VolDataList
         Series_Info=self.SeriesDict[Series_Name]
@@ -740,11 +752,12 @@ class LeicaExperiment:
         for TimePoint in TiffList:
             ChnlVolDataLst=[] #contains the volumetric datasets for each channel w/in each timepoint
             for Channel in TimePoint:
-                ImageReader=vtk.vtkImageReader()
+                
                 TIFFReader=vtk.vtkExtTIFFReader()
                 if Series_Info['Pixel_Size'] !=3:
                     TIFFReader.RawModeOn()
                 #First read the images for a particular channel
+                print "Image list=",Channel
                 ImageName=Channel[0] #Take the first tif name
                 print "Image name='%s'"%ImageName
                 # Check to see whether the image name contains either
@@ -806,7 +819,7 @@ class LeicaExperiment:
                         ImagePrefix.encode("latin-1")
                         #print "Using image# prefix='%s'"%ImagePrefix
     
-                        #ImageReader.SetFilePrefix(ImagePrefix)
+                        
                         TIFFReader.SetFilePrefix(ImagePrefix) 
                     #if FilePostfixSearch != None:
                     if ImagePattern:
@@ -826,25 +839,65 @@ class LeicaExperiment:
                     TIFFReader.SetDataScalarTypeToUnsignedChar()
                 else:
                     raise "Only 8-bit data supported"
-                #print ImageReader
-                #ImageReader.SetDataByteOrderToLittleEndian()
-                #ImageReader.FileLowerLeftOff()
                 TIFFReader.FileLowerLeftOff()
-                #ImageReader.SetDataOrigin(0.0,0.0,0.0)
-                #ImageReader.SetNumberOfScalarComponents(1)
-                #TIFFReader.SetNumberOfScalarComponents(1)
-                #ImageReader.SetDataScalarTypeToUnsignedChar()
-                #ImageReader.SetDataExtent(0,XYDim,0,XYDim,0,NumSect)
                 TIFFReader.SetDataExtent(0,XYDim,0,XYDim,0,NumSect)
-                #ImageReader.SetDataSpacing(XSpace,YSpace,ZSpace)
                 TIFFReader.SetDataSpacing(XSpace,YSpace,ZSpace)
                 
                 TIFFReader.Update()
-                #ImageReader.Update()
                 
                 
-                #ImageReader.Update() #necessary--used when incremental changes are made to ImageReader properties
+                
                 ChnlVolDataLst.append(TIFFReader)#now we have a list with the imported volume data for each channel
             self.TP_CH_VolDataList.append(ChnlVolDataLst)   
             
  
+    def ReadLeicaVolData(self,Series_Name):
+        #os.chdir(self.ExpPath)#needed for Tkinter file select
+        global TP_CH_VolDataList
+        Series_Info=self.SeriesDict[Series_Name]
+        TiffList=Series_Info['TiffList']
+        XYDim=Series_Info['Resolution_X']-1
+        NumSect=Series_Info['Number_Sections']-1
+        XSpace=Series_Info['Voxel_Width_X']
+        YSpace=Series_Info['Voxel_Height_Y']
+        ZSpace=Series_Info['Voxel_Depth_Z']
+        self.TP_CH_VolDataList=[] #contains the vol data for each timepoint, each channel
+        for TimePoint in TiffList:
+            ChnlVolDataLst=[] #contains the volumetric datasets for each channel w/in each timepoint
+            for Channel in TimePoint:
+                
+                TIFFReader=vtk.vtkExtTIFFReader()
+                if Series_Info['Pixel_Size'] !=3:
+                    TIFFReader.RawModeOn()
+                    
+                arr = vtk.vtkStringArray()
+                for i in Channel:
+                    arr.InsertNextValue(os.path.join(self.path,i))
+                TIFFReader.SetFileNames(arr)
+                #First read the images for a particular channel
+                #print "Image list=",Channel
+                #ImageName=Channel[0] #Take the first tif name
+                #print "Image name='%s'"%ImageName
+                # Check to see whether the image name contains either
+                # channels or z slices at all. If not, then we can just you
+                # the filename and skip a whole bunch of processing
+                
+                print "Bit depth of image=",Series_Info["Bit_Depth"]
+                    
+                if Series_Info['Bit_Depth']==8:
+                    #ImageReader.SetDataScalarTypeToUnsignedChar()
+                    TIFFReader.SetDataScalarTypeToUnsignedChar()
+                else:
+                    raise "Only 8-bit data supported"
+                TIFFReader.FileLowerLeftOff()
+                TIFFReader.SetDataExtent(0,XYDim,0,XYDim,0,NumSect)
+                TIFFReader.SetDataSpacing(XSpace,YSpace,ZSpace)
+                
+                TIFFReader.Update()
+                
+                
+                
+                ChnlVolDataLst.append(TIFFReader)#now we have a list with the imported volume data for each channel
+            self.TP_CH_VolDataList.append(ChnlVolDataLst)   
+            
+

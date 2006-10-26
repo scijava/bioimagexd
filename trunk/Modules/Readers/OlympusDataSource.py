@@ -333,6 +333,7 @@ class OlympusDataSource(DataSource):
         vy/=float(y)
         if z>1:
             vz/=float(z-1)
+        #print "\n\n\n *** SETTING ORIGINAL DIMS TO ",(x,y,z)
         self.originalDimensions = (x,y,z)
         return x,y,z,timepoints,channels,vx,vy,vz
                 
@@ -409,6 +410,7 @@ class OlympusDataSource(DataSource):
                                         reverse=self.reverseSlices,
                                         emission = emission,
                                         excitation = excitation)
+            datasource.originalDimensions = (x,y,z)
             dataunit=DataUnit.DataUnit()
             dataunit.setDataSource(datasource)
             dataunits.append(dataunit)
