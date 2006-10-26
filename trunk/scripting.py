@@ -39,6 +39,38 @@ import vtk
 
 import Configuration
 
+settingsCache = {}
+
+def getCacheKey(paths, names, taskname):
+    """
+    Created: 23.10.2006, KP
+    Description: Return a key for caching of settings data based on the task name and the filepaths
+    """
+    lst=paths[:]
+    lst.append(taskname)
+    lst.extend(names)
+    return tuple(lst)
+
+def getSettingsFromCache(key):
+    """
+    Created: 23.10.2006, KP
+    Description: Return the settings stored under a given key in the cache
+    """
+    global settingsCache
+    return settingsCache.get(tuple(key),None)
+    
+def storeSettingsToCache(key, settingsList):
+    """
+    Created: 23.10.2006, KP
+    Description: Store the given settings to cache
+    """
+    global settingsCache
+    print "Storing settings for",key
+    print settingsList
+    key=tuple(key)
+    settingsCache[key] = settingsList
+    
+
 record = 0
 conf = None
 

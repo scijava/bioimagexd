@@ -357,7 +357,6 @@ class TreeWidget(wx.SashLayoutWindow):
 
     def getSelectedDataUnits(self):
         """
-        Method: getSelectedDataUnits()
         Created: 10.01.2005, KP
         Description: Returns the selected dataunits
         """            
@@ -365,10 +364,18 @@ class TreeWidget(wx.SashLayoutWindow):
         objs=[self.tree.GetPyData(x) for x in items]
         return objs
         
+    def getSelectedPaths(self):
+        """
+        Created: 23.10.2006, KP
+        Description: Return the paths of the selected dataunits
+        """
+        
+        objs = self.getSelectedDataUnits()
+        return [self.dataUnitToPath[x] for x in objs]
+        
 
     def onActivateItem(self,event=None):
         """
-        Method: onActivateItem
         Created: 03.04.2006, KP
         Description: A event handler called when user double clicks an item
         """      

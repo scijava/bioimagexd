@@ -54,6 +54,13 @@ class DataUnit:
         self.mip=None
         self.mipTimepoint=-1
         
+    def resetSettings(self):
+        """
+        Created: 23.10.2006, KP
+        Description: Reset the settings of this dataunit
+        """
+        self.settings = DataUnitSetting.DataUnitSettings()
+        
     def setMask(self, mask):
         """
         Created: 20.06.2006, KP

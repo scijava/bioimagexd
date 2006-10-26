@@ -82,8 +82,9 @@ class Toolbar(wx.Panel):
         self.createRows(layout)
 
         #print "curr layout=",len(layout),"old=",len(self.oldLayout)
-        if layout != self.oldLayout:            
-            self.ReOrderItems2(layout, size[0])            
+        if layout != self.oldLayout:   
+            print "\n\n\n+++ NOT SAME LAYOUT"        
+            self.ReOrderItems(layout, size[0])            
             self.oldLayout = layout
             
             x=self.GetSize()[0] 
@@ -94,9 +95,10 @@ class Toolbar(wx.Panel):
             self.Layout()
             self.parent.Layout()
             
-        
+        else:
+            print "\n\n\n*** SAME LAYOUT"
             
-    def ReOrderItems2(self, layout, width):
+    def ReOrderItems(self, layout, width):
         """
         Created: 28.07.2006, KP
         Description: Re-order the items based on a given layout
@@ -170,11 +172,12 @@ class Toolbar(wx.Panel):
         """          
         w=self.GetSize()[0]
         layout = self.getLayout(w)
-        print "Layout for width",w,"has",len(layout),"rows"
+        print "\n\n\n**** Layout for width",w,"has",len(layout),"rows"
         self.createRows(layout)        
-        self.ReOrderItems2(layout, w)            
-#        self.ReOrderItems()
-        self.Refresh()
+        self.ReOrderItems(layout, w)            
+    
+        self.Layout()
+        #self.Refresh()
         
     def DeleteTool(self,toolid):
         """
@@ -192,10 +195,8 @@ class Toolbar(wx.Panel):
             
         w=self.GetSize()[0]
         layout = self.getLayout(w)        
-        self.ReOrderItems2(layout, w)            
-            
-        #self.ReOrderItems()
-        
+        self.ReOrderItems(layout, w)            
+                   
         
     def AddControl(self,ctrl):
         """
@@ -251,10 +252,7 @@ class Toolbar(wx.Panel):
         Created: 27.04.2006, KP
         Description: A method for adding a tool to the toolbar
         """     
-        if kind == wx.ITEM_NORMAL:
-            self.AddSimpleTool(wid,bitmap,shortHelp,longHelp,0)
-        elif kind == wx.ITEM_CHECK:
-            self.AddSimpleTool(wid,bitmap,shortHelp,longHelp,1)
+        self.AddSimpleTool(wid,bitmap,shortHelp,longHelp,(kind == wx.ITEM_CHECK))
         
     def AddSeparator(self):
         """

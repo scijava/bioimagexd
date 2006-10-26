@@ -126,7 +126,7 @@ class ChannelListBox(wx.HtmlListBox):
         if len(self.units)<=n:return ""
         data=self.units[n]
         
-        print "data=",data
+        #print "data=",data
         return """<table>
 <tr><td valign="top">
 <img align="left" src="memory:%d.png" width="64" height="64"></td>

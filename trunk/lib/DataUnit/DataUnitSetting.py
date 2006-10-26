@@ -46,7 +46,6 @@ import ConfigParser
 
 class DataUnitSettings:
     """
-    Class: DataUnitSetting
     Created: 26.03.2005, KP
     Description: This is a class that holds all settings of a dataunit
     """    
@@ -57,7 +56,6 @@ class DataUnitSettings:
     
     def __init__(self,n=-1,**kws):
         """
-        Method: __init__
         Created: 26.03.2005
         Description: Constructor
         Parameters:
@@ -100,7 +98,6 @@ class DataUnitSettings:
         
     def asType(self,newtype):
         """
-        Method: asType(type)
         Created: 3.04.2005
         Description: Return this setting as given type
         """
@@ -112,7 +109,6 @@ class DataUnitSettings:
         
     def setType(self,newtype):
         """
-        Method: setType(type)
         Created: 2.04.2005
         Description: Set the type of this dataunit
         """
@@ -121,7 +117,6 @@ class DataUnitSettings:
         
     def getType(self):
         """
-        Method: getType()
         Created: 2.04.2005
         Description: Set the type of this dataunit
         """
@@ -131,7 +126,6 @@ class DataUnitSettings:
         
     def register(self,name,serialize=0):
         """
-        Method: register
         Created: 26.03.2005
         Description: Register a name as valid key. 
         Parameters:
@@ -145,7 +139,6 @@ class DataUnitSettings:
 
     def registerPrivate(self,name,serialize=0):
         """
-        Method: register
         Created: 26.03.2005
         Description: Register a name as valid key. 
         Parameters:
@@ -158,7 +151,6 @@ class DataUnitSettings:
         
     def registerCounted(self,name,serialize=0):
         """
-        Method: registerCounted(name)
         Created: 26.03.2005
         Description: Register a name as valid key that is counted
         Parameters:
@@ -173,7 +165,6 @@ class DataUnitSettings:
         
     def readFrom(self,parser):
         """
-        Method: readFrom(parser)
         Created: 26.03.2005
         Description: Attempt to read all registered keys from a parser
         """    
@@ -184,13 +175,15 @@ class DataUnitSettings:
                 type=parser.get("Type","Type")
             except ConfigParser.NoOptionError:
                 type = parser.get("Type","type")
-            settingsclass=self.modules[type][2].getSettingsClass()
-            Logging.info("Settings class=",settingsclass,kw="processing")
-            #obj=eval(type)(self.n)
-            obj=settingsclass(self.n)
-            obj.setType(type)
-            return obj.readFrom(parser)
-        
+            
+                settingsclass=self.modules[type][2].getSettingsClass()
+                Logging.info("Settings class=",settingsclass,kw="processing")
+                #obj=eval(type)(self.n)
+                obj=settingsclass(self.n)
+                obj.setType(type)
+                return obj.readFrom(parser)
+            except ConfigParser.NoSectionError:
+                pass
         for key in self.registered.keys():
             ser=self.serialized[key]
             if ser:
@@ -241,7 +234,6 @@ class DataUnitSettings:
                 
     def writeKey(self,key,parser,n=-1):
         """
-        Method: writeKey(key,parser)
         Created: 27.03.2005
         Description: Write a key and it's value to parser
         """    
@@ -265,7 +257,6 @@ class DataUnitSettings:
                 
     def writeTo(self,parser):
         """
-        Method: writeTo(parser)
         Created: 26.03.2005
         Description: Attempt to write all keys to a parser
         """    
@@ -290,7 +281,6 @@ class DataUnitSettings:
             
     def set(self,name,value,overwrite=1):
         """
-        Method: set(name,value)
         Created: 26.03.2005
         Description: Sets the value of a key
         """
@@ -310,7 +300,6 @@ class DataUnitSettings:
         
     def setCounted(self,name,count,value,overwrite=1):
         """
-        Method: setCounted(name,count,value)
         Created: 26.03.2005
         Description: If there are more than one setting associated,
                      for example, with different channels, then this
@@ -329,7 +318,6 @@ class DataUnitSettings:
         
     def get(self,name):
         """
-        Method: get(name)
         Created: 26.03.2005
         Description: Return the value of a key
         """
@@ -343,7 +331,6 @@ class DataUnitSettings:
     
     def getCounted(self,name,count):
         """
-        Method: getCounted(name,count)
         Created: 26.03.2005
         Description: Return the value of a key
         """
@@ -356,7 +343,6 @@ class DataUnitSettings:
         
     def serialize(self,name,value):
         """
-        Method: serialize(name,value)
         Created: 27.03.2005
         Description: Returns the value of a given key in a format
                      that can be written to disk.
@@ -373,7 +359,7 @@ class DataUnitSettings:
         if "Annotations" in name:
             Logging.info("Pickling %d annotations"%len(value),kw="dataunit")
             s=pickle.dumps(value,protocol=pickle.HIGHEST_PROTOCOL)
-            s=zlib.compress(s)
+            #s=zlib.compress(s)
             return s
             
         if name not in ["IntensityTransferFunction","IntensityTransferFunctions","AlphaTransferFunction"]:
@@ -401,8 +387,8 @@ class DataUnitSettings:
         # pickled / unpickled
         if "Annotations" in name:
             Logging.info("deserializing Annotations",kw="dataunit")
-            val=zlib.decompress(value)
-            val=pickle.loads(val)
+            #val=zlib.decompress(value)
+            val=pickle.loads(value)
             Logging.info("unpickled %d annotations"%len(val),kw="dataunit")
             return val
         if name not in ["IntensityTransferFunction","IntensityTransferFunctions","AlphaTransferFunction"]:
@@ -414,7 +400,6 @@ class DataUnitSettings:
         
     def __str__(self):
         """
-        Method: __str__
         Created: 30.03.2005
         Description: Returns the string representation of this class
         """

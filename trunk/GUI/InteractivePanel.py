@@ -95,6 +95,8 @@ class InteractivePanel(ogl.ShapeCanvas):
         """    
         self.parent = parent
         self.is_windows = 1#=platform.system()=="Windows"
+        self.xoffset = 0
+        self.yoffset = 0        
         self.maxX = 512
         self.maxY = 512
         self.currentSketch = None
@@ -109,9 +111,8 @@ class InteractivePanel(ogl.ShapeCanvas):
         ogl.OGLInitialize()
         self.listeners = {}
         
-        self.annotations = []
         self.annotationClass = None
-        self.currentAnnotation = None
+        
         self.voxelSize=(1,1,1) 
         self.bgColor = kws.get("bgColor",(0,0,0))
         self.action = 0
@@ -156,6 +157,44 @@ class InteractivePanel(ogl.ShapeCanvas):
         self.Bind(wx.EVT_SIZE,self.OnSize)
         
     
+    def setOffset(self, x,y):
+        """
+        Created: 24.10.2006, KP
+        Description: Set the offset of this interactive panel. The offset is variable
+                     based on the size of the screen vs. the dataset size.
+        """
+        xdiff=x-self.xoffset
+        ydiff=y-self.yoffset
+        shapelist = self.diagram.GetShapeList()
+        
+        for shape in shapelist:        
+            sx,sy=shape.GetX(),shape.GetY()
+            #shape.Move(x+xdiff,y+ydiff, display=False)
+            #print "Setting pos to ",sx+xdiff,sy+ydiff
+            shape.SetX(sx+xdiff)
+            shape.SetY(sy+ydiff)
+        self.repaintHelpers()
+
+        self.xoffset, self.yoffset = x,y
+        
+        
+        
+    def unOffset(self, *args):
+        """
+        Created: 24.10.2006, KP
+        Description: Return a coordinate from which the offsets have been subtracted
+        """
+        if type(args[0])==types.TupleType:
+            return (args[0][0]-self.xoffset,args[0][1]-self.yoffset)
+        else:
+            return (args[0]-self.xoffset,args[1]-self.yoffset)
+        
+    def getOffset(self):
+        """
+        Created: 24.10.2006, KP
+        Description: Return the offset
+        """
+        return self.xoffset,self.yoffset
         
     def addListener(self, evt, func):
         """
@@ -176,7 +215,7 @@ class InteractivePanel(ogl.ShapeCanvas):
         """
         self.painterHelpers.append(painter)      
       
-    def repaintHelpers(self):
+    def repaintHelpers(self, update=1):
         """
         Created: 06.10.2006, KP
         Description: Repaint the helpers but nothing else
@@ -187,9 +226,13 @@ class InteractivePanel(ogl.ShapeCanvas):
         memdc = wx.MemoryDC()
         memdc.SelectObject(self.buffer)
         memdc.DrawBitmap(self.bgbuffer,0,0,False)
-        memdc.SelectObject(wx.NullBitmap)
         
-        self.Update()
+        for helper in self.painterHelpers:
+            helper.paintOnDC(memdc)
+        memdc.SelectObject(wx.NullBitmap)        
+        #print "\nREPAINTED HELKPERS WITH UPDATE=",update
+        if update:
+            self.Update()
         #self.OnPaint(None)
         
         
@@ -313,6 +356,7 @@ class InteractivePanel(ogl.ShapeCanvas):
             self.action = 0
             self.actionstart = (0,0)
             self.actionend = (0,0)
+            self.saveAnnotations()
         else:
             event.Skip()
         return 1
@@ -356,10 +400,19 @@ class InteractivePanel(ogl.ShapeCanvas):
             self.actionend=event.GetPosition()
         pos = event.GetPosition()
         if self.currentSketch:
-            self.actionend=event.GetPosition()
+            self.actionend=pos
+            
             self.currentSketch.setTentativePoint(pos)
-            self.repaintHelpers()
-            self.Refresh()
+            #self.currentSketch.Erase()
+            dc = wx.ClientDC(self)
+            self.PrepareDC(dc)
+            self.currentSketch.Erase(dc)
+            
+            self.currentSketch.Draw(dc)            
+            dc.EndDrawing()
+            #self.repaintHelpers()
+            #self.Refresh()
+            #self.Update()
         event.Skip()
             
     def actionEnd(self,event):
@@ -367,7 +420,7 @@ class InteractivePanel(ogl.ShapeCanvas):
         Created: 05.07.2005, KP
         Description: Unconditionally end the current action
         """    
-        self.currentAnnotation=None
+        
         self.action = 0
         self.annotationClass=None
 
@@ -449,7 +502,7 @@ class InteractivePanel(ogl.ShapeCanvas):
                 self.actionend = (0,0)
                 self.prevPolyEnd=None
                 
-
+            self.saveAnnotations()
             messenger.send(None,"update_annotations")
 
             #self.updateAnnotations()
@@ -468,13 +521,26 @@ class InteractivePanel(ogl.ShapeCanvas):
                 self.paintPreview()
                 self.Refresh()
                 
-        self.currentAnnotation=None
+        
         self.action = 0
         self.actionstart = (0,0)
         self.actionend = (0,0)
         self.annotationClass=None                    
         #ogl.ShapeCanvas.OnMouseEvent(self,event)
         event.Skip()
+        
+    def saveAnnotations(self):
+        """
+        Created: 25.10.2006, KP
+        Description: Save the annotations to the settings
+        """
+        annotations = self.diagram.GetShapeList()
+            
+        annotations=filter(lambda x:isinstance(x,OGLAnnotation),annotations)
+        annotations=filter(lambda x:not isinstance(x,MyPolygonSketch),annotations)
+            
+        self.dataUnit.getSettings().set("Annotations",annotations)
+                        
     
     def addNewShape(self, shape):
         """
@@ -491,7 +557,10 @@ class InteractivePanel(ogl.ShapeCanvas):
         shape.SetPen(wx.Pen((0,255,0),1))
         
         self.AddShape( shape )                   
-        self.diagram.ShowAll( 1 )           
+                
+        self.diagram.ShowAll(1)
+                
+        self.repaintHelpers()
         self.Refresh()        
         
     def updateAnnotations(self):
@@ -517,13 +586,6 @@ class InteractivePanel(ogl.ShapeCanvas):
         Description: Start rubber band
         """
         self.action=ZOOM_TO_BAND
-        
-    def manageAnnotation(self):
-        """
-        Created: 04.07.2005, KP
-        Description: Manage annotations on the scene
-        """
-        self.action=MANAGE_ANNOTATION
         
     def deleteAnnotation(self):
         """
@@ -614,18 +676,22 @@ class InteractivePanel(ogl.ShapeCanvas):
         ann=dataUnit.getSettings().get("Annotations")
         if ann:
             Logging.info("Got %d annotations"%len(ann),kw="iactivepanel")
-            self.annotations=ann
+            for shape in ann:
+                self.addNewShape(shape)
             
     def OnPaint(self,event):
         """
         Created: 28.04.2005, KP
         Description: Does the actual blitting of the bitmap
         """
+        #print "\n\ONPAINT"
+        
         scrolledWinDC=0
         if self.is_windows:
             x,y=self.GetViewStart()
             if x or y:
                 scrolledWinDC=1
+                print "\n\nUNBUFFERED PAINTING"
                 #Logging.info("Resorting to unbuffered drawing because of scrolling",kw="iactivepanel")
                 dc=wx.PaintDC(self)
                 
@@ -635,16 +701,15 @@ class InteractivePanel(ogl.ShapeCanvas):
                 #self.diagram.Redraw(dc)                
 
         if not scrolledWinDC:
+            
             dc=wx.BufferedPaintDC(self,self.buffer)#,self.buffer)
             
-        w, h =self.buffer.GetWidth(),self.buffer.GetHeight()
-        #self.bgbuffer = self.buffer.GetSubBitmap(wx.Rect(0,0,self.buffer.GetWidth(),self.buffer.GetHeight()))
-        
-        for helper in self.painterHelpers:
-            helper.paintOnDC(dc)
         if scrolledWinDC:
             dc.EndDrawing()
-
+                    
+        #w, h =self.buffer.GetWidth(),self.buffer.GetHeight()
+        #self.bgbuffer = self.buffer.GetSubBitmap(wx.Rect(0,0,self.buffer.GetWidth(),self.buffer.GetHeight()))
+        
 #        self.diagram.Redraw(dc)
 
 
@@ -677,10 +742,8 @@ class InteractivePanel(ogl.ShapeCanvas):
                 dc.SetPen(wx.Pen(wx.Colour(255,0,0),2))
                 dc.SetBrush(wx.TRANSPARENT_BRUSH)
                 dc.DrawRectangle(x1,y1,d1,d2)
-
-        #Logging.info("%d annotations to paint"%len(self.annotations),kw="iactivepanel")
-        #for i in self.annotations:
-        #    i.drawToDC(dc)
+        
+        
         
         #dc.EndDrawing()
         #self.dc = None

@@ -35,13 +35,11 @@ import MergingSettings
 
 class MergingDataUnit(CombinedDataUnit):
     """
-    Class: MergingDataUnit
     Created: 03.07.2005, KP
     Description: Class for an merged channels dataset
     """
     def __init__(self, name=""):
         """
-        Method: __init__
         Created: 03.11.2004, JM
         Description: Constructor
         """
@@ -70,4 +68,5 @@ class MergingDataUnit(CombinedDataUnit):
         # with this, but because they need to function differently, it
         # is easier than to duplicate the doPreview() function
         self.sourceunits[ch].getSettings().set("PreviewChannel",flag)
+        CombinedDataUnit.setOutputChannel(self,ch, flag)
         

@@ -42,7 +42,6 @@ class ManipulationDataUnit(CombinedDataUnit):
 
     def __init__(self,name=""):
         """
-        Method: __init__
         Created: 27.03.2005 KP
         Description: Constructor
         """

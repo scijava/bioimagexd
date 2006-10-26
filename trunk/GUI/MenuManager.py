@@ -393,7 +393,9 @@ class MenuManager:
     
         self.tools[toolid]=(name,bitmap,func)
         self.itemBar.DoAddTool(toolid,name,bitmap,kind=wx.ITEM_CHECK)
+        
         self.itemBar.Realize()
+        
     
     def toggleTool(self,toolid,flag):
         """

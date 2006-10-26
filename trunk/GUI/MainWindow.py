@@ -434,7 +434,6 @@ class MainWindow(wx.Frame):
         
     def updateTitle(self,obj,evt,data):
         """
-        Method: updateTitle
         Created: 22.07.2005, KP
         Description: A method for updating the title of this window
         """
@@ -448,7 +447,6 @@ class MainWindow(wx.Frame):
         
     def onSashDrag(self, event):
         """
-        Method: onSashDrag
         Created: 24.5.2005, KP
         Description: A method for laying out the window
         """
@@ -500,7 +498,6 @@ class MainWindow(wx.Frame):
 
     def showVisualization(self,window):
         """
-        Method: showVisualization
         Created: 20.5.2005, KP
         Description: Changes the window to show in the split window
         """
@@ -576,6 +573,7 @@ class MainWindow(wx.Frame):
         Description: Update the voxel info in status bar
         """
         #print x,y,z,r,g,b,a
+        z+=1
         if scalar!=0xdeadbeef:
             #val=[0,0,0]
             #scalar=r
@@ -584,20 +582,26 @@ class MainWindow(wx.Frame):
             #r*=255
             #g*=255
             #b*=255
-            print "scalar=",scalar
+            
             if type(scalar)==types.TupleType:
-                lst = map(str,scalar)
-                print "lst=",lst
-                scalartxt=", ".join(lst[:-1])
-                scalartxt+=" and "+lst[-1]
-                text="Scalars %s at (%d,%d,%d) map to (%d,%d,%d)"%(scalartxt,x,y,z,r,g,b)
+                if len(scalar)>1:
+                    lst = map(str,map(int,scalar))
+                    
+                    scalartxt=", ".join(lst[:-1])
+                    scalartxt+=" and "+lst[-1]
+                    text="Scalars %s at (%d,%d,%d) map to (%d,%d,%d)"%(scalartxt,x,y,z,r,g,b)
+                else:
+                    scalar = int(scalar[0])
+                    text="Scalar %d at (%d,%d,%d) maps to (%d,%d,%d)"%(scalar,x,y,z,r,g,b)
             else:
-                text="Scalar %f at (%d,%d,%d) maps to (%d,%d,%d)"%(scalar,x,y,z,r,g,b)
+                scalar = int(scalar)
+                text="Scalar %d at (%d,%d,%d) maps to (%d,%d,%d)"%(scalar,x,y,z,r,g,b)
         else:
             text="Color (%s,%s,%s) at (%d,%d,%d) is (%d,%d,%d)"%(rval,gval,bval,x,y,z,r,g,b)
             if a!=-1:
                 text+=" with alpha %d"%a
         self.colorLbl.setLabel(text)
+        self.colorLbl.SetToolTip(wx.ToolTip(text))
         fg=255-r,255-g,255-b
             
         bg=r,g,b
@@ -1076,12 +1080,14 @@ class MainWindow(wx.Frame):
         Created: 15.08.2006, KP
         Description: A method that actually clsoes the task panel
         """
+        if self.currentTaskWindow:
+            self.currentTaskWindow.cacheSettings()
         selectedUnits=self.tree.getSelectedDataUnits()
         self.visualizer.setProcessedMode(0)
         self.visualizer.setDataUnit(selectedUnits[0])        
-        print selectedUnits[0].getSettings().registered
+        #print selectedUnits[0].getSettings().registered
         self.menuManager.clearItemsBar()
-        if self.currentTaskWindow: 
+        if self.currentTaskWindow:             
             self.currentTaskWindow.Show(0)
             self.currentTaskWindow.Destroy()
             del self.currentTaskWindow
@@ -1390,7 +1396,7 @@ class MainWindow(wx.Frame):
             #Logging.info("Adding to tree ",name,path,ext,dataunits,kw="io")
             conf = Configuration.getConfiguration()
             needToRescale = conf.getConfigItem("RescaleOnLoading","Performance")
-            print "\n\n***** Need to rescale=",needToRescale
+            #print "\n\n***** Need to rescale=",needToRescale
             if needToRescale:
                 needToRescale = eval(needToRescale)
 
@@ -1459,14 +1465,17 @@ class MainWindow(wx.Frame):
         action = mod.getName()
         Logging.info("Module type for taskwindow: ",moduletype,kw="task")
         
-        selectedFiles=self.tree.getSelectedDataUnits()
+        selectedFiles = self.tree.getSelectedDataUnits()
+        selectedPaths = self.tree.getSelectedPaths()
         if filesAtLeast!=-1 and len(selectedFiles)<filesAtLeast:
             Dialogs.showerror(self,
             "You need to select at least %d source datasets for the task: %s"%(filesAtLeast,action),"Need more source datasets")
+            self.setButtonSelection(-1)
             return            
         elif filesAtMost!=-1 and len(selectedFiles)>filesAtMost:
             Dialogs.showerror(self,
             "You can select at most %d source datasets for %s"%(filesAtMost,action),"Too many source datasets")
+            self.setButtonSelection(-1)
             return
         self.visualizer.enable(0)
         messenger.send(None,"update_progress",0.1,"Loading task %s..."%action)
@@ -1474,13 +1483,16 @@ class MainWindow(wx.Frame):
         # Hide the infowin and toggle the menu item accordingly
         self.infoWin.SetDefaultSize((0,0))
         self.menuManager.check(MenuManager.ID_VIEW_INFO,0)
-        self.currentTaskWindowType=windowtype
-        window=windowtype(self.taskWin,self.menuManager)
+        self.currentTaskWindowType = windowtype
+        
+        window = windowtype(self.taskWin,self.menuManager)
+        
         messenger.send(None,"update_progress",0.2,"Loading task %s..."%action)
         window.Show()
         
         self.switchBtn.Enable(1)
-        if self.currentTaskWindow:          
+        if self.currentTaskWindow:
+            self.currentTaskWindow.cacheSettings()
             self.currentTaskWindow.Show(0)
             self.currentTaskWindow.Destroy()
             del self.currentTaskWindow                
@@ -1495,10 +1507,14 @@ class MainWindow(wx.Frame):
         wx.LayoutAlgorithm().LayoutWindow(self, self.visWin)
         
         names=[i.getName() for i in selectedFiles]
+        
+        cacheKey = bxd.getCacheKey(selectedPaths, names, taskname)
+        cachedSettings = bxd.getSettingsFromCache(cacheKey)
+
         # Sets name for new dataset series
         name="%s (%s)"%(action,", ".join(names))
 
-        Logging.info(unittype,name,kw="task")
+        #Logging.info(unittype,name,kw="task")
         unit = unittype(name)
         Logging.info("unit = %s(%s)=%s"%(unittype,name,unit),kw="task")
         try:
@@ -1513,9 +1529,20 @@ class MainWindow(wx.Frame):
         Logging.info("Moduletype=",moduletype,kw="dataunit")
         module=moduletype()
         unit.setModule(module)
-
+        unit.setCacheKey(cacheKey)
         
         window.setCombinedDataUnit(unit)
+        
+        #if cachedSettings:
+        #    print "\n\n\n ****** GOT SETTINGS FROM CACHE"
+        #    # Load the cached settings
+        #    combined = cachedSettings[0]
+        #    print "Setting settings of combined",combined
+        #    unit.setSettings(combined)
+        #    sources=unit.getSourceDataUnits()
+        #    for i,setting in enumerate(cachedSettings[1:]):
+        #        print "Setting settings of source %d"%i,setting
+        #        sources[i].setSettings(setting)
         
         for name,taskid in self.taskToId.items():
             if name == taskname:
