@@ -347,6 +347,7 @@ class DataUnitSettings:
         Description: Returns the value of a given key in a format
                      that can be written to disk.
         """
+
         Logging.info("Serializing name ",name,kw="dataunit")
         if "ColorTransferFunction" in name:
             s=ImageOperations.lutToString(value)
@@ -407,7 +408,6 @@ class DataUnitSettings:
 
     def initialize(self,dataunit,channels, timepoints):
         """
-        Method: initialize(dataunit,channels, timepoints)
         Created: 03.04.2005
         Description: Set initial values for settings based on 
                      number of channels and timepoints
@@ -415,3 +415,27 @@ class DataUnitSettings:
         self.channels = channels
         self.timepoints = timepoints
         self.dataunit = dataunit            
+        
+    def __getstate__(self):
+        ret={}
+        ret["counted"] = self.counted
+        ret["registered"] = self.registered
+        ret["private"] = self.private
+        ret["isPrivate"] = self.isPrivate
+        ret["type"] = self.type
+        ret["channels"] = self.channels
+        ret["timepoints"] = self.timepoints
+        ret["n"] = self.n
+        ret["serialized"] = self.serialized
+        return ret
+    def __setstate__(self,state):
+        print "state=",state
+        self.counted = state["counted"]
+        self.registered = state["registered"]
+        self.private = state["private"] 
+        self.isPrivate = state["isPrivate"] 
+        self.type = state["type"] 
+        self.channels = state["channels"] 
+        self.timepoints = state["timepoints"] 
+        self.n = state["n"] 
+        self.serialized  = state["serialized"] 

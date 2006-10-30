@@ -45,6 +45,7 @@ class MergingDataUnit(CombinedDataUnit):
         """
         CombinedDataUnit.__init__(self,name)
         self.handleOriginal=0
+        self.merging = 1
     
 
     def getBitDepth(self):

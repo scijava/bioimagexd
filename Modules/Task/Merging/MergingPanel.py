@@ -197,6 +197,8 @@ class MergingPanel(TaskPanel.TaskPanel):
     
             Logging.info("settings=",self.settings,kw="task")
             tf = self.settings.get("IntensityTransferFunction")
+            print "\n\nGot itf with 255=",tf.GetValue(255)
+            #print "\n\nSetting itf to ",repr(tf),tf.
             self.intensityTransferEditor.setIntensityTransferFunction(tf)
 
 
@@ -205,6 +207,7 @@ class MergingPanel(TaskPanel.TaskPanel):
         Created: 10.11.2004, JV
         Description: A callback for the processing button
         """
+        #print "\n\n\n\n\nDO COLOR MERGING"
         method=self.alphaModeBox.GetSelection()
         val=0
         if method == 1:

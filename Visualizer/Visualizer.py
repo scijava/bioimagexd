@@ -1364,7 +1364,7 @@ class Visualizer:
             self.zslider.SetValue(arg+1)
         elif (not event and not arg) and obj:
             newz=obj.GetPosition()-1
-            print "Using ",newz
+            
         else:
             newz=self.zslider.GetValue()-1
             

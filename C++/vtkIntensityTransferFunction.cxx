@@ -112,7 +112,7 @@ void vtkIntensityTransferFunction::Initialize()
 
   
   this->ArraySize        = this->RangeMax+1;
-    printf("Initializing array to size %d\n",this->ArraySize);
+    //printf("Initializing array to size %d\n",this->ArraySize);
   this->Function         = new int[this->ArraySize];
   this->FunctionRange[0] = 0;
   this->FunctionRange[1] = 0;
@@ -343,7 +343,7 @@ void vtkIntensityTransferFunction::ComputeFunction(void) {
     #define powsg(x) double(pow((double)(x),this->SmoothStartGamma))
     #define poweg(x) double(pow((double)(x),this->SmoothEndGamma))
     
-    printf("Generating function for values 0-%d\n",RangeMax);
+    //printf("Generating function for values 0-%d\n",RangeMax);
     for(int x=0; x <= this->RangeMax; x++) {
 
         y = f4(x,gx1,gy1,gx2,gy2);
