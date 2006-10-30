@@ -403,7 +403,6 @@ def vtkImageDataToPngString(data,slice=-1,startpos=None,endpos=None):
     
 def getMIP(imageData,color):
     """
-    Method: getMIP
     Created: 1.9.2005, KP
     Description: A function that will take a volume and do a simple
                  maximum intensity projection that will be converted to a
@@ -422,7 +421,7 @@ def getMIP(imageData,color):
     x,y,z=imageData.GetDimensions()
     
     output=mip.GetOutput()
-    Logging.info("Got MIP",kw="imageop")
+    #Logging.info("Got MIP",kw="imageop")
     if output.GetNumberOfScalarComponents()==1:
         if type(color)==type( (0,0,0)) :
             ctf=vtk.vtkColorTransferFunction()
@@ -437,7 +436,7 @@ def getMIP(imageData,color):
         else:
             ctf=color
     
-        Logging.info("Mapping MIP through ctf",kw="imageop")
+#        Logging.info("Mapping MIP through ctf",kw="imageop")
         maptocolor=vtk.vtkImageMapToColors()
         maptocolor.SetInput(output)
         maptocolor.SetLookupTable(ctf)
@@ -450,7 +449,6 @@ def getMIP(imageData,color):
     
 def vtkImageDataToPreviewBitmap(dataunit,timepoint,color,width=0,height=0,bgcolor=(0,0,0),getpng=0):
     """
-    Method: vtkImageDataToPreviewBitmap
     Created: KP
     Description: A function that will take a volume and do a simple
                  maximum intensity projection that will be converted to a

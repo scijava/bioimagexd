@@ -1535,17 +1535,7 @@ class MainWindow(wx.Frame):
         
         window.setCombinedDataUnit(unit)
         
-        #if cachedSettings:
-        #    print "\n\n\n ****** GOT SETTINGS FROM CACHE"
-        #    # Load the cached settings
-        #    combined = cachedSettings[0]
-        #    print "Setting settings of combined",combined
-        #    unit.setSettings(combined)
-        #    sources=unit.getSourceDataUnits()
-        #    for i,setting in enumerate(cachedSettings[1:]):
-        #        print "Setting settings of source %d"%i,setting
-        #        sources[i].setSettings(setting)
-        
+
         for name,taskid in self.taskToId.items():
             if name == taskname:
                 self.setButtonSelection(taskid)
@@ -1577,6 +1567,10 @@ class MainWindow(wx.Frame):
         self.menuManager.enable(MenuManager.ID_CLOSE_TASKWIN)
         self.menuManager.enable(MenuManager.ID_VIEW_TASKPANEL)
         messenger.send(None,"update_progress",1.0,"Loading task %s... done"%action)
+        if cachedSettings:
+            print "\n\n\n ****** GOT SETTINGS FROM CACHE"
+            self.currentTaskWindow.restoreFromCache(cachedSettings)
+                    
         
     def onMenuShowTree(self,event,show=-1):
         """

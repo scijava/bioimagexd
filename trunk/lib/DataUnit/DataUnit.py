@@ -59,6 +59,7 @@ class DataUnit:
         Created: 23.10.2006, KP
         Description: Reset the settings of this dataunit
         """
+        print "\n\n\n\n***** RESET SETTINGS"
         self.settings = DataUnitSetting.DataUnitSettings()
         
     def setMask(self, mask):

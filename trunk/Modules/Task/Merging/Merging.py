@@ -39,13 +39,11 @@ from lib.Module import *
 
 class Merging(Module):
     """
-    Class: ColorMerging
     Created: 24.11.2004, JV
     Description: Merges two or more datasets to one
     """
     def __init__(self,**kws):
         """
-        Method: __init__(**keywords)
         Created: 24.11.2004, JV
         Description: Initialization
         """
@@ -61,7 +59,6 @@ class Merging(Module):
 
     def reset(self):
         """
-        Method: reset()
         Created: 24.11.2004, JV
         Description: Resets the module to initial state. This method is
                      used mainly when doing previews, when the parameters
@@ -105,7 +102,9 @@ class Merging(Module):
         self.alphaMode=settings.get("AlphaMode")
         #print "n=",self.n,"self.settings=",self.settings
         #itf=self.settings.getCounted("IntensityTransferFunction",self.n)
+        
         itf=settings.get("IntensityTransferFunction")
+        
         if not itf:
             Logging.info("Didn't get iTF",kw="processing")
         self.intensityTransferFunctions.append(itf)
@@ -138,7 +137,7 @@ class Merging(Module):
         t1=time.time()
         datasets=[]
         alphas=[]
-
+        
         Logging.info("Merging channels...",kw="processing")
         processed=[]
         imagelen=len(self.images)
@@ -169,7 +168,7 @@ class Merging(Module):
         else:
             self.merge.BuildAlphaOff()
         
-        print "itfs=",self.intensityTransferFunctions
+        #print "\n\n\nUsing itfs=",self.intensityTransferFunctions
         for i,itf in enumerate(self.intensityTransferFunctions):
             print "range max of itf %d=%d"%(i,itf.GetRangeMax())
 

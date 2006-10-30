@@ -172,7 +172,7 @@ class Toolbar(wx.Panel):
         """          
         w=self.GetSize()[0]
         layout = self.getLayout(w)
-        print "\n\n\n**** Layout for width",w,"has",len(layout),"rows"
+        #print "\n\n\n**** Layout for width",w,"has",len(layout),"rows"
         self.createRows(layout)        
         self.ReOrderItems(layout, w)            
     

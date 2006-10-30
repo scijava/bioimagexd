@@ -32,7 +32,7 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 import wx
 
 import vtk
-import ColorTransferEditor
+from GUI import ColorTransferEditor
 from ModuleConfiguration import *
 import Dialogs
 import Logging

@@ -50,6 +50,7 @@ class CombinedDataUnit(DataUnit.DataUnit):
         DataUnit.DataUnit.__init__(self, name)
         self.sourceunits=[]
         self.doOrig=0
+        self.merging = 0
         settingclass=self.getSettingsClass()
         Logging.info("Settings class =",settingclass,kw="dataunit")
         self.settings = settingclass()
@@ -354,8 +355,10 @@ class CombinedDataUnit(DataUnit.DataUnit):
         # If either no output channels have been specified (in which case
         # we return just the normal preview) or the combined result
         # (n = last chl+1) has  been requested
-        if not self.outputChls or self.outputChls[n]:
+        print "outputChls=",self.outputChls,"renew=",renew,"n=",n
+        if self.merging or self.outputChls or self.outputChls[n]:
             #Logging.info("outputChls=",self.outputChls,"n=",n)
+            
             # If the renew flag is true, we need to regenerate the preview
             if renew:                
                 # We then tell the module to reset itself and
@@ -376,7 +379,7 @@ class CombinedDataUnit(DataUnit.DataUnit):
 #            if not self.outputChls:
 #                print "Returning preview",preview.GetDimensions()
 #                return preview
-        if self.outputChls:
+        if not self.merging and self.outputChls:
             if preview:
                 merged.append((preview,self.getColorTransferFunction()))
             

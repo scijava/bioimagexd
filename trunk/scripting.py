@@ -35,9 +35,14 @@ import imp
 import platform
 import getpass
 import vtk
-
-
+import pickle
+import ConfigParser
+from lib import DataUnit
 import Configuration
+
+class MyConfigParser(ConfigParser.RawConfigParser):
+    def optionxform(self, optionstr):
+        return optionstr
 
 settingsCache = {}
 
@@ -57,7 +62,19 @@ def getSettingsFromCache(key):
     Description: Return the settings stored under a given key in the cache
     """
     global settingsCache
-    return settingsCache.get(tuple(key),None)
+    data=settingsCache.get(tuple(key),None)
+    value=None
+    if data:
+        value=[]
+        for cp in data:
+        
+            #value=pickle.loads(data)
+            settings = DataUnit.DataUnitSettings()
+            #settings = eval(settingsclass)
+            settings = settings.readFrom(cp)
+            value.append(settings)
+    return value
+    
     
 def storeSettingsToCache(key, settingsList):
     """
@@ -65,10 +82,19 @@ def storeSettingsToCache(key, settingsList):
     Description: Store the given settings to cache
     """
     global settingsCache
-    print "Storing settings for",key
-    print settingsList
+    #print "Storing settings for",key
+    #print settingsList
     key=tuple(key)
-    settingsCache[key] = settingsList
+    print "Asked to pickle",settingsList
+    #value=pickle.dumps(settingsList,protocol=pickle.HIGHEST_PROTOCOL)
+    value=[]
+    for setting in settingsList:
+        cp = MyConfigParser()
+        setting.writeTo(cp)
+        value.append(cp)
+    
+    
+    settingsCache[key] = value
     
 
 record = 0

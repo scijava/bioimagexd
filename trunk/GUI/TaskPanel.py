@@ -35,7 +35,6 @@ __date__ = "$Date: 2005/01/13 14:36:20 $"
 import wx
 import wx.lib.scrolledpanel as scrolled
 
-
 import os.path
 
 from DataUnit import *
@@ -111,6 +110,7 @@ class TaskPanel(scrolled.ScrolledPanel):
         self.filePath=None
         self.dataUnit=None
         self.settings = None
+        self.settingsIndex = -1
         self.cancelled=0
 
         self.createButtonBox()
@@ -134,6 +134,25 @@ class TaskPanel(scrolled.ScrolledPanel):
         """         
         self.updateSettings(1)
         
+    def restoreFromCache(self,cachedSettings):
+        """
+        Created: 30.10.2006, KP
+        Description: Restore settings for the dataunit and source dataunits from a cache entry
+        """
+        # Load the cached settings
+        combined = cachedSettings[0]
+        print "Setting settings of combined"
+        self.dataUnit.setSettings(combined)
+        sources=self.dataUnit.getSourceDataUnits()
+        for i,setting in enumerate(cachedSettings[1:]):
+            print "Setting settings of source %d"%i
+            DataUnitSetting.initialize(setting,sources[i],len(sources),sources[i].getLength())
+            sources[i].setSettings(setting)
+            tf=setting.get("IntensityTransferFunction")
+            print "\n\nSetting itf %d= itf with 255="%i,tf.GetValue(255)
+        self.settings = sources[self.settingsIndex].getSettings()
+        self.updateSettings()
+        
     def cacheSettings(self):
         """
         Created: 23.10.2006, KP
@@ -141,9 +160,14 @@ class TaskPanel(scrolled.ScrolledPanel):
                      later retrieved at will
         """
         sources=self.dataUnit.getSourceDataUnits()
-        print "SOURCES=",sources
+        #print "SOURCES=",sources
         settings = [x.getSettings() for x in sources]
         settings.insert(0, self.dataUnit.getSettings())
+        #for i,settingx in enumerate(settings[1:]):
+        #    
+        #    
+        #    tf=settingx.get("IntensityTransferFunction")
+        #    print "\n\nStoring itf %d= itf with 255="%i,tf.GetValue(255)        
         bxd.storeSettingsToCache(self.dataUnit.getCacheKey(),settings)
         for i in sources:
             print "\n\nRESETTING SETTINGS OF ",i
@@ -304,6 +328,7 @@ class TaskPanel(scrolled.ScrolledPanel):
 
         sunit = self.dataUnit.getSourceDataUnits()[index]
         self.settings = sunit.getSettings()
+        self.settingsIndex = index
             
         #self.preview.setSelectedItem(index)
         
@@ -358,8 +383,6 @@ class TaskPanel(scrolled.ScrolledPanel):
         """
         Logging.info("Sending preview update event",kw="event")
         messenger.send(None,"data_changed",-1)
-
-
 
 
     def saveSettingsCallback(self,event):
