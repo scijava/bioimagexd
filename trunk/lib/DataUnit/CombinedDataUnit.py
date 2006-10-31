@@ -86,7 +86,7 @@ class CombinedDataUnit(DataUnit.DataUnit):
         Description: Mark a channel as being part of the output
         """
         self.outputChls[ch]=flag
-        Logging.info("output channels now=",self.outputChls,kw="dataunit")
+        #Logging.info("output channels now=",self.outputChls,kw="dataunit")
         
     def getOutputChannel(self, ch):
         """
@@ -355,7 +355,7 @@ class CombinedDataUnit(DataUnit.DataUnit):
         # If either no output channels have been specified (in which case
         # we return just the normal preview) or the combined result
         # (n = last chl+1) has  been requested
-        print "outputChls=",self.outputChls,"renew=",renew,"n=",n
+        #print "outputChls=",self.outputChls,"renew=",renew,"n=",n
         if self.merging or self.outputChls or self.outputChls[n]:
             #Logging.info("outputChls=",self.outputChls,"n=",n)
             

@@ -76,6 +76,7 @@ class TaskPanel(scrolled.ScrolledPanel):
         self.root=root
         self.preview=None
         self.onByDefault = 1
+        self.cacheKey = None
 
         #self.Bind(wx.EVT_CLOSE,self.closeWindowCallback)
         self.mainsizer=wx.GridBagSizer()
@@ -127,6 +128,15 @@ class TaskPanel(scrolled.ScrolledPanel):
         messenger.connect(None,"switch_datasets",self.onSwitchDatasets)
         messenger.connect(None,"update_settings_gui",self.onUpdateGUI)
         
+        
+    def setCacheKey(self,key):
+        """
+        Created: 30.10.2006, KP
+        Description: Set the cached settings for this task, so that they can be restored later on
+        """
+        self.cacheKey = key
+        
+        
     def onUpdateGUI(self,*arg):
         """
         Created: 07.02.2006, KP
@@ -134,23 +144,34 @@ class TaskPanel(scrolled.ScrolledPanel):
         """         
         self.updateSettings(1)
         
-    def restoreFromCache(self,cachedSettings):
+    def restoreFromCache(self,cachedSettings = None):
         """
         Created: 30.10.2006, KP
         Description: Restore settings for the dataunit and source dataunits from a cache entry
         """
         # Load the cached settings
+        
+        if not cachedSettings:
+            if self.cacheKey:
+                cachedSettings = bxd.getSettingsFromCache(self.cacheKey)
+            
+        if not cachedSettings:
+            print "\n\n\n*** NO CACHE DSETTINGS"
+            return
+        print "\n\n\n*** RESTORING FROM CACHE"
         combined = cachedSettings[0]
         print "Setting settings of combined"
         self.dataUnit.setSettings(combined)
         sources=self.dataUnit.getSourceDataUnits()
         for i,setting in enumerate(cachedSettings[1:]):
             print "Setting settings of source %d"%i
-            DataUnitSetting.initialize(setting,sources[i],len(sources),sources[i].getLength())
+            #DataUnitSetting.DataUnitSettings.initialize(setting,sources[i],len(sources),sources[i].getLength())
             sources[i].setSettings(setting)
             tf=setting.get("IntensityTransferFunction")
-            print "\n\nSetting itf %d= itf with 255="%i,tf.GetValue(255)
+            #print setting,tf
+            print "\n\nSetting itf ",i,"= itf with 0=",tf.GetValue(0),"and 255=",tf.GetValue(255)
         self.settings = sources[self.settingsIndex].getSettings()
+        
         self.updateSettings()
         
     def cacheSettings(self):
@@ -163,14 +184,14 @@ class TaskPanel(scrolled.ScrolledPanel):
         #print "SOURCES=",sources
         settings = [x.getSettings() for x in sources]
         settings.insert(0, self.dataUnit.getSettings())
-        #for i,settingx in enumerate(settings[1:]):
-        #    
-        #    
-        #    tf=settingx.get("IntensityTransferFunction")
-        #    print "\n\nStoring itf %d= itf with 255="%i,tf.GetValue(255)        
+        for i,settingx in enumerate(settings[1:]):
+            
+            tf=settingx.get("IntensityTransferFunction")
+            print "\n\nStoring itf ",i,"with 0=",tf.GetValue(0),"and 255=",tf.GetValue(255)        
+        print "Storing settings=",repr(settings)
         bxd.storeSettingsToCache(self.dataUnit.getCacheKey(),settings)
         for i in sources:
-            print "\n\nRESETTING SETTINGS OF ",i
+            #print "\n\nRESETTING SETTINGS OF ",i
             i.resetSettings()
         
     def onSwitchDatasets(self,obj,evt,args):
@@ -190,7 +211,7 @@ class TaskPanel(scrolled.ScrolledPanel):
         Description: Method to create a toolbar for the window that allows use to select processed channel
         """      
         self.toolMgr.clearItemsBar()
-        Logging.info("Creating item toolbar",kw="init")
+        #Logging.info("Creating item toolbar",kw="init")
         #self.tb2 = wx.ToolBar(self,-1,style=wx.TB_VERTICAL|wx.TB_TEXT)
         #self.tb2.SetToolBitmapSize((32,32))# this required for non-standard size buttons on MSW
         #self.tb2 = self.toolbar
@@ -443,3 +464,8 @@ class TaskPanel(scrolled.ScrolledPanel):
         # Delay the call, maybe it will make it work on mac
         wx.FutureCall(100,self.createItemToolbar)
 #        self.createItemToolbar()
+        #if self.cachedSettings:
+        #    print "\n\n\n ****** GOT SETTINGS FROM CACHE"
+        #    self.restoreFromCache(self.cachedSettings)
+        #else:
+        #    print "\n\n\n*** NO CACHED SETTINGS"

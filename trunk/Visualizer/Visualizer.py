@@ -1114,7 +1114,7 @@ class Visualizer:
         if kws.has_key("preload"):
             self.preload=kws["preload"]
         
-        Logging.info("\nenable(%s)\n"%(not not flag),kw="visualizer")
+        #Logging.info("\nenable(%s)\n"%(not not flag),kw="visualizer")
         self.enabled=flag
         if self.currentWindow:
             try:

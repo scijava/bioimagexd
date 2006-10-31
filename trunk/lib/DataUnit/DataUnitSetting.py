@@ -169,21 +169,26 @@ class DataUnitSettings:
         Description: Attempt to read all registered keys from a parser
         """    
         self.parser = parser
+        print "self.type=",self.get("Type"),repr(self)
         if not self.get("Type"):
+            print "Got parser",parser
             self.parser = parser
             try:
                 type=parser.get("Type","Type")
             except ConfigParser.NoOptionError:
-                type = parser.get("Type","type")
-            
+                type = parser.get("Type","type")            
+            except ConfigParser.NoSectionError:
+                pass
+            else:
+                print "GOT TYPE=",type
                 settingsclass=self.modules[type][2].getSettingsClass()
                 Logging.info("Settings class=",settingsclass,kw="processing")
                 #obj=eval(type)(self.n)
                 obj=settingsclass(self.n)
                 obj.setType(type)
-                return obj.readFrom(parser)
-            except ConfigParser.NoSectionError:
-                pass
+                #print "Returning object of class",settingsclass
+                return obj.readFrom(parser)                
+        
         for key in self.registered.keys():
             ser=self.serialized[key]
             if ser:
@@ -200,7 +205,7 @@ class DataUnitSettings:
                 n=int(n)
                 Logging.info("Got %d keys for %s"%(n,key),kw="dataunit")
                 
-                for i in range(n):
+                for i in range(n+1):
                     ckey="%s[%d]"%(key,i)
                     #try:
                     try:
@@ -239,7 +244,7 @@ class DataUnitSettings:
         """    
         nkey="%s[%d]"%(key,n)
         if not (key in self.settings or nkey in self.settings) and not (key in self.private or nkey in self.private):
-            Logging.info("neither ",key,"nor",nkey,"in ",self.settings.keys(),kw="dataunit")
+            #Logging.info("neither ",key,"nor",nkey,"in ",self.settings.keys(),kw="dataunit")
             return
         okey=key
         if n!=-1:
@@ -321,6 +326,8 @@ class DataUnitSettings:
         Created: 26.03.2005
         Description: Return the value of a key
         """
+        #print "is counted=",(name in self.counted)
+        #print "self.n=",self.n
         if self.n != -1 and name in self.counted:
             name="%s[%d]"%(name,self.n)
         if name in self.private:
@@ -383,6 +390,9 @@ class DataUnitSettings:
                 ImageOperations.loadLUTFromString(data,ctf)
             except:
                 pass
+            #bmp = ImageOperations.paintCTFValues(ctf)
+            #img = bmp.ConvertToImage()
+            #img.SaveMimeFile("ctf.png","image/png")
             return ctf
         # Annotations is a list of classes that can easily be
         # pickled / unpickled

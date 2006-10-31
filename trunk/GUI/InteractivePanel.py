@@ -672,7 +672,7 @@ class InteractivePanel(ogl.ShapeCanvas):
         x,y,z=self.dataUnit.getDimensions()
         self.buffer = wx.EmptyBitmap(x,y)
         self.origX, self.origY = x,y
-        Logging.info("Got dataunit, voxelSize=",self.voxelSize,kw="iactivepanel")
+        #Logging.info("Got dataunit, voxelSize=",self.voxelSize,kw="iactivepanel")
         ann=dataUnit.getSettings().get("Annotations")
         if ann:
             Logging.info("Got %d annotations"%len(ann),kw="iactivepanel")

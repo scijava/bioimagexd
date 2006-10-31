@@ -254,7 +254,7 @@ def loadLUTFromString(lut,ctf,ctfrange=(0,256)):
         ctf      The CTF to modify
         ctfrange The range to which construct the CTF
     """        
-    print "\n\nlen(lut)=",len(lut)
+    #print "\n\nlen(lut)=",len(lut)
     failed=1
     if len(lut)!=768:
         try:
@@ -266,23 +266,30 @@ def loadLUTFromString(lut,ctf,ctfrange=(0,256)):
     if failed:
         n = len(lut)
         k = n/3
-        reds=lut[0:k-1]        
-        greens=lut[k-1:2*(k-1)]
-        blues=lut[2*(k-1):3*(k-1)]
+        k=k-1
+        #print "k=",k
+        reds=lut[0:k+1]
+        #print "len(reds)=",len(reds)
+        #print "reds[0]=",ord(reds[0]),"reds[255]=",ord(reds[255])
+        greens=lut[k+1:2*k+2]
+        #print "greens[0]=",ord(greens[0]),"greens[255]=",ord(greens[255])
+        #print "len(greens)=",len(greens)
+        blues=lut[(2*k)+2:3*k+3]
+        #print "len(blues)=",len(blues)
     n=len(reds)    
     #print k,ctfrange
     step=int(math.ceil(ctfrange[1]/k))
     if step==0:
         return vtk.vtkColorTransferFunction()
     j=0
-    Logging.info("Ctf range = ",ctfrange[0]," - ",ctfrange[1],"step=",step)
+    #Logging.info("Ctf range = ",ctfrange[0]," - ",ctfrange[1],"step=",step)
     for i in range(int(ctfrange[0]),int(ctfrange[1]),int(step)):
         r=ord(reds[j])
         g=ord(greens[j])
         b=ord(blues[j])
         r/=255.0
         g/=255.0
-        b/=255.0
+        b/=255.0        
         ctf.AddRGBPoint(i,r,g,b)
         j+=1
     
@@ -357,7 +364,7 @@ def vtkImageDataToWxImage(data,slice=-1,startpos=None,endpos=None):
         #Logging.info("Getting slice %d"%slice,kw="imageop")
         data=getSlice(data,slice,startpos,endpos)
     exporter=vtk.vtkImageExport()
-    Logging.info("Setting update extent to ",data.GetWholeExtent(),kw="imageop")
+    #Logging.info("Setting update extent to ",data.GetWholeExtent(),kw="imageop")
     data.SetUpdateExtent(data.GetWholeExtent())
     data.Update()
     
@@ -458,7 +465,7 @@ def vtkImageDataToPreviewBitmap(dataunit,timepoint,color,width=0,height=0,bgcolo
 
     #imagedata=getMIP(imageData,color)
     if getpng:
-        Logging.info("Getting PNG string",kw="imageop")
+        #Logging.info("Getting PNG string",kw="imageop")
         pngstr=vtkImageDataToPngString(imagedata)
     image = vtkImageDataToWxImage(imagedata)
     x,y=image.GetWidth(),image.GetHeight()
@@ -470,7 +477,7 @@ def vtkImageDataToPreviewBitmap(dataunit,timepoint,color,width=0,height=0,bgcolo
         height=aspect*width
     if not width and not height:
         width=height=64
-    Logging.info("Scaling to %dx%d"%(width,height),kw="imageop")
+    #Logging.info("Scaling to %dx%d"%(width,height),kw="imageop")
     image.Rescale(width,height)
     bitmap=image.ConvertToBitmap()
     if getpng:

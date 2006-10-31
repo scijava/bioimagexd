@@ -56,7 +56,6 @@ public:
   }
   
   void AddIntensityTransferFunction(vtkIntensityTransferFunction* itf) { 
-        printf("\n\nGot ITF %d with intensity range %d\n",ITFCount,itf->GetRangeMax());
         IntensityTransferFunctions[ITFCount++] = itf;
         this->Modified();
   }
