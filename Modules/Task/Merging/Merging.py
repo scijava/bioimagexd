@@ -169,8 +169,8 @@ class Merging(Module):
             self.merge.BuildAlphaOff()
         
         #print "\n\n\nUsing itfs=",self.intensityTransferFunctions
-        for i,itf in enumerate(self.intensityTransferFunctions):
-            print "range max of itf %d=%d"%(i,itf.GetRangeMax())
+        #for i,itf in enumerate(self.intensityTransferFunctions):
+        ##print "range max of itf %d=%d"%(i,itf.GetRangeMax())
 
         for i,image in enumerate(self.images):
             self.merge.AddInput(image)

@@ -37,7 +37,7 @@ import getpass
 import vtk
 import pickle
 import ConfigParser
-from lib import DataUnit
+
 import Configuration
 
 class MyConfigParser(ConfigParser.RawConfigParser):
@@ -62,16 +62,22 @@ def getSettingsFromCache(key):
     Description: Return the settings stored under a given key in the cache
     """
     global settingsCache
+    from lib import DataUnit
     data=settingsCache.get(tuple(key),None)
     value=None
     if data:
         value=[]
-        for cp in data:
+        for (n,cp) in data:
+            
+            #print "\n\n\n******* TYPE = ",cp.get("Type","Type")
         
             #value=pickle.loads(data)
-            settings = DataUnit.DataUnitSettings()
+            
+            settings = DataUnit.DataUnitSettings(n)            
+            settings.set("Type",None)
             #settings = eval(settingsclass)
             settings = settings.readFrom(cp)
+            #print "Got ",repr(settings),"from cp"
             value.append(settings)
     return value
     
@@ -85,13 +91,18 @@ def storeSettingsToCache(key, settingsList):
     #print "Storing settings for",key
     #print settingsList
     key=tuple(key)
-    print "Asked to pickle",settingsList
+    if key in settingsCache:
+        del settingsCache[key]
+    #print "Asked to pickle",settingsList
     #value=pickle.dumps(settingsList,protocol=pickle.HIGHEST_PROTOCOL)
     value=[]
-    for setting in settingsList:
+    for i,setting in enumerate(settingsList):
         cp = MyConfigParser()
+        print "Writing ",repr(setting)
         setting.writeTo(cp)
-        value.append(cp)
+        #print "\n\nStroing Type of setting=",setting.get("Type")
+        value.append((setting.n,cp))
+        cp.write(open("setting_%d.txt"%i,"w"))
     
     
     settingsCache[key] = value

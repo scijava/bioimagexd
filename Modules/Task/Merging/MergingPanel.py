@@ -195,10 +195,13 @@ class MergingPanel(TaskPanel.TaskPanel):
                 self.colorBtn.setColorTransferFunction(ctf)
                 self.colorBtn.Refresh()
     
-            Logging.info("settings=",self.settings,kw="task")
+            #Logging.info("settings=",self.settings,kw="task")
+            print self.settings.settings.keys()
             tf = self.settings.get("IntensityTransferFunction")
-            print "\n\nGot itf with 255=",tf.GetValue(255)
-            #print "\n\nSetting itf to ",repr(tf),tf.
+            #if tf:
+            #    #print "\n\n\nGot itf with 0=",tf.GetValue(0)," 255=",tf.GetValue(255)
+            #else:
+            #    print "\n\n\n*** WTF NO ITF"
             self.intensityTransferEditor.setIntensityTransferFunction(tf)
 
 
@@ -256,6 +259,7 @@ class MergingPanel(TaskPanel.TaskPanel):
             sources[i].getSettings().set("IntensityTransferFunction",tf)
 
         tf = sources[0].getSettings().get("IntensityTransferFunction")
+        #print "\n\nSETTING ITF EDITOR FUNCTION"
         self.intensityTransferEditor.setIntensityTransferFunction(tf)
 
 
@@ -266,3 +270,5 @@ class MergingPanel(TaskPanel.TaskPanel):
             self.colorBtn.setColorTransferFunction(ctf)
         else:
             Logging.info("No color button to set ctf to ",kw="ctf")
+        self.restoreFromCache()
+        

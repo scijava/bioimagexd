@@ -90,10 +90,10 @@ class DataUnit:
         Description: Returns MIP of the given timepoint
         """        
         if self.mip and self.mipTimepoint==tp:
-            Logging.info("Using existing MIP")
+            #Logging.info("Using existing MIP")
             return self.mip
         else:
-            Logging.info("Generating MIP of tp=",tp)
+            #Logging.info("Generating MIP of tp=",tp)
             if not small:
                 imagedata=self.getTimePoint(tp)
             else:

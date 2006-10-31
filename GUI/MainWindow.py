@@ -1511,8 +1511,9 @@ class MainWindow(wx.Frame):
         names=[i.getName() for i in selectedFiles]
         
         cacheKey = bxd.getCacheKey(selectedPaths, names, taskname)
-        cachedSettings = bxd.getSettingsFromCache(cacheKey)
-
+        
+        
+        self.currentTaskWindow.setCacheKey(cacheKey)
         # Sets name for new dataset series
         name="%s (%s)"%(action,", ".join(names))
 
@@ -1567,9 +1568,6 @@ class MainWindow(wx.Frame):
         self.menuManager.enable(MenuManager.ID_CLOSE_TASKWIN)
         self.menuManager.enable(MenuManager.ID_VIEW_TASKPANEL)
         messenger.send(None,"update_progress",1.0,"Loading task %s... done"%action)
-        if cachedSettings:
-            print "\n\n\n ****** GOT SETTINGS FROM CACHE"
-            self.currentTaskWindow.restoreFromCache(cachedSettings)
                     
         
     def onMenuShowTree(self,event,show=-1):
