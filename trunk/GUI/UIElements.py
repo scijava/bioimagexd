@@ -84,24 +84,104 @@ class AcceptedValidator(wx.PyValidator):
         # gets to the text control
         return
 
+class MyStaticBox(wx.StaticBox):
+    """
+    Created: 1.11.2006, KP
+    Description: A static box replacement that allows us to control how it is painted
+    """
+    def __init__(self, parent, wid, label, pos = wx.DefaultPosition, size  = wx.DefaultSize, style = 0, name="MyStaticBox"):
+        wx.StaticBox.__init__(self,parent,wid,label,pos,size,style,name)
+        self.parent = parent
+        self.label = label
+        self.Bind(wx.EVT_PAINT,self.onPaint)
+        self.Bind(wx.EVT_SIZE,self.onSize)
+        w,h = size
+        self.buffer = wx.EmptyBitmap(w,h,-1)
+        self.owncol = (255,255,255)
+        self.paintSelf()
+        self.Raise()
+        
+        
+    def SetOwnBackgroundColour(self,col):
+        self.owncol=col
+        
+    def onPaint(self, evt):
+        """
+        Created: 1.11.2006, KP
+        Description: Paint the static box
+        """
+        dc=wx.BufferedPaintDC(self,self.buffer)#,self.buffer)
 
+    def onSize(self,evt):
+        """
+        Created: 1.11.2006, KP
+        Description: Repaint self when size changes
+        """
+        w,h=evt.GetSize()
+        self.buffer = wx.EmptyBitmap(w,h,-1)
+        
+        self.paintSelf()
+        self.Raise()
+    def paintSelf(self):
+        """
+        Created: 05.05.2005, KP
+        Description: Paints the label
+        """
+        
+        #self.dc = wx.BufferedDC(wx.ClientDC(self),self.buffer)        
+        self.dc = wx.MemoryDC()
+        self.dc.SelectObject(self.buffer)
+               
+        self.dc.BeginDrawing()
+        #self.SetBackgroundColour(self.parent.GetBackgroundColour())
+        self.dc.SetBackground(wx.Brush(self.parent.GetBackgroundColour()))
+        self.dc.Clear()
+        
+        
+            #self.dc.SetBackground(wx.Brush(self.bg))
+        self.dc.SetBrush(wx.Brush(self.owncol))
+        
+        #self.dc.SetBrush(wx.TRANSPARENT_BRUSH)
+        self.dc.SetPen(wx.Pen((208,208,191), 1))
+        
+        w,h = self.buffer.GetWidth(),self.buffer.GetHeight()
+        self.dc.DrawRoundedRectangle(0,7,w,h-4,5)
+            
+        self.dc.SetTextForeground((0,70,213))
+        weight=wx.NORMAL
+        self.dc.SetBrush(wx.Brush(self.parent.GetBackgroundColour()))
+        self.dc.SetPen(wx.Pen(self.parent.GetBackgroundColour(),1))
+        
+        font = wx.Font(8,wx.SWISS,wx.NORMAL,weight)
+        
+        self.dc.SetFont(font)
+        w,h = self.dc.GetTextExtent(self.label)
+        
+        self.dc.DrawRectangle(8,0,w+4,h)
+        self.dc.DrawText(self.label,10,0)
+            
+
+        self.dc.EndDrawing()
+        self.dc.SelectObject(wx.NullBitmap)
+        self.dc = None
+    
 
 class NamePanel(wx.Panel):
     """
-    Class: NamePanel
     Created: 05.05.2005, KP
     Description: A panel that paints a string it's given
     """
     def __init__(self,parent,label,color,**kws):
         size=kws["size"]
+        self.parent=parent
         wx.Panel.__init__(self,parent,-1,size=size)
         self.label=label
-        self.xoff,self.yoff=0,0
+        self.xoff,self.yoff=8,0
         if kws.has_key("xoffset"):self.xoff=kws["xoffset"]
         if kws.has_key("yoffset"):self.yoff=kws["yoffset"]
         self.size=size
         self.origsize=size
-        self.bold=0
+        self.bold=1
         w,h=self.size
         #print "Height of track=",h
         self.btn = None
@@ -114,7 +194,8 @@ class NamePanel(wx.Panel):
             self.btn = wx.ToggleButton(self,-1,"<<",(w-32,self.bh),(24,24))
             self.btn.SetValue(1)
             self.btn.SetBackgroundColour(self.fg)
-            self.btn.SetForegroundColour(self.bg)
+            if self.bg:
+                self.btn.SetForegroundColour(self.bg)
             font=self.btn.GetFont()
             font.SetPointSize(6)
             self.btn.SetFont(font)
@@ -124,7 +205,6 @@ class NamePanel(wx.Panel):
             
     def onToggle(self,event):
         """
-        Method: onToggle
         Created: 26.05.2005, KP
         Description: Handle toggle events
         """
@@ -137,7 +217,6 @@ class NamePanel(wx.Panel):
         
     def onSize(self,event):
         """
-        Method: onSize
         Created: 26.05.2005, KP
         Description: Size event handler
         """
@@ -155,7 +234,6 @@ class NamePanel(wx.Panel):
                          
     def setWeight(self,bold):
         """
-        Method: setWeight(self,bold)
         Created: 05.05.2005, KP
         Description: Set the weight of the font
         """
@@ -164,7 +242,6 @@ class NamePanel(wx.Panel):
 
     def setLabel(self,label):
         """
-        Method: setLabel(self,label)
         Created: 05.05.2005, KP
         Description: Set the label
         """
@@ -174,7 +251,6 @@ class NamePanel(wx.Panel):
 
     def setColor(self,fg,bg):
         """
-        Method: setColor
         Created: 05.05.2005, KP
         Description: Set the color to use
         """
@@ -182,7 +258,8 @@ class NamePanel(wx.Panel):
         self.bg=bg
         if self.btn:
             self.btn.SetBackgroundColour(self.fg)
-            self.btn.SetForegroundColour(self.bg)
+            if self.bg:
+                self.btn.SetForegroundColour(self.bg)
         self.paintLabel()
 
     def onPaint(self,event):
@@ -190,15 +267,24 @@ class NamePanel(wx.Panel):
 
     def paintLabel(self,bold=None):
         """
-        Method: paintLabel
         Created: 05.05.2005, KP
         Description: Paints the label
         """
         self.dc = wx.BufferedDC(wx.ClientDC(self),self.buffer)
-
-        self.dc.SetBackground(wx.Brush(self.bg))
-        self.dc.Clear()
+        
+        
+        
         self.dc.BeginDrawing()
+        self.SetBackgroundColour(self.parent.GetBackgroundColour())
+        self.dc.SetBackground(wx.Brush(self.parent.GetBackgroundColour()))
+        self.dc.Clear()
+        if self.bg:
+            #self.dc.SetBackground(wx.Brush(self.bg))
+            self.dc.SetBrush(wx.Brush(self.bg))
+            self.dc.SetPen(wx.Pen(self.bg, 1))
+            w,h = self.buffer.GetWidth(),self.buffer.GetHeight()
+            self.dc.DrawRoundedRectangle(0,0,w,h,5)
+            
         self.dc.SetTextForeground(self.fg)
         weight=wx.NORMAL
         if self.bold:

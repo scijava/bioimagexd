@@ -154,27 +154,45 @@ class ManipulationPanel(FilterBasedTaskPanel.FilterBasedTaskPanel):
         self.filterListbox = wx.CheckListBox(self.panel,-1,size=(300,300))
         self.filterListbox.Bind(wx.EVT_LISTBOX,self.onSelectFilter)
         self.filterListbox.Bind(wx.EVT_CHECKLISTBOX,self.onCheckFilter)        
-        self.addBtn = wx.Button(self.panel,-1,u"Add \u00BB")
-        self.addBtn.Bind(wx.EVT_LEFT_DOWN,self.onShowAddMenu)
+        self.addFilteringBtn = wx.Button(self.panel,-1,u"Filtering \u00BB")
+        self.addArithmeticsBtn = wx.Button(self.panel,-1,u"Arithmetics \u00BB")
+        self.addSegmentationBtn = wx.Button(self.panel,-1,u"Segmentation \u00BB")
+        self.addTrackingBtn = wx.Button(self.panel,-1,u"Tracking \u00BB")
+        self.addFilteringBtn.Bind(wx.EVT_LEFT_DOWN,self.onShowAddMenu)
 
-        self.reloadBtn = wx.Button(self.panel,-1,"Reload")
-        self.reloadBtn.Bind(wx.EVT_BUTTON,self.onReloadModules)
+        #self.reloadBtn = wx.Button(self.panel,-1,"Reload")
+        #self.reloadBtn.Bind(wx.EVT_BUTTON,self.onReloadModules)
 
-        btnBox=wx.BoxSizer(wx.HORIZONTAL)
-        self.remove = wx.Button(self.panel,-1,"Remove")
+        vertbtnBox=wx.BoxSizer(wx.VERTICAL)
+        
+
+        bmp = wx.ArtProvider_GetBitmap(wx.ART_DELETE, wx.ART_TOOLBAR, (16,16))        
+        self.remove = wx.BitmapButton(self.panel,-1,bmp)
         self.remove.Bind(wx.EVT_BUTTON,self.onRemoveFilter)
-        self.up = wx.Button(self.panel,-1,"Up")
+        
+        bmp = wx.ArtProvider_GetBitmap(wx.ART_GO_UP, wx.ART_TOOLBAR, (16,16))        
+        self.up = wx.BitmapButton(self.panel,-1,bmp)
+        bmp = wx.ArtProvider_GetBitmap(wx.ART_GO_DOWN, wx.ART_TOOLBAR, (16,16))        
         self.up.Bind(wx.EVT_BUTTON,self.onMoveFilterUp)
-        self.down = wx.Button(self.panel,-1,"Down")
+        self.down = wx.BitmapButton(self.panel,-1,bmp)
         self.down.Bind(wx.EVT_BUTTON,self.onMoveFilterDown)
-        btnBox.Add(self.remove)
-        btnBox.Add(self.up)
-        btnBox.Add(self.down)
-        btnBox.Add(self.addBtn)
-        btnBox.Add(self.reloadBtn)
-
+        vertbtnBox.Add(self.remove)
+        vertbtnBox.Add(self.up)
+        vertbtnBox.Add(self.down)
+        btnBox=wx.BoxSizer(wx.HORIZONTAL)
+        btnBox.Add(self.addFilteringBtn)
+        btnBox.Add(self.addArithmeticsBtn)
+        btnBox.Add(self.addSegmentationBtn)
+        btnBox.Add(self.addTrackingBtn)
+        
+        #btnBox.Add(self.reloadBtn)
+    
+        box=wx.BoxSizer(wx.HORIZONTAL)
+        box.Add(self.filterListbox)
+        box.Add(vertbtnBox)
         self.filtersizer.Add(self.filterLbl,(0,0))
-        self.filtersizer.Add(self.filterListbox,(1,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
+        #self.filtersizer.Add(self.filterListbox,(1,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
+        self.filtersizer.Add(box,(1,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
         self.filtersizer.Add(btnBox,(2,0))
         
         self.panelsizer.Add(self.filtersizer,(0,0))
@@ -435,7 +453,7 @@ class ManipulationPanel(FilterBasedTaskPanel.FilterBasedTaskPanel):
                     self.Bind(wx.EVT_MENU,f,id=menuid)
                 menu.AppendMenu(-1,i,submenu)
             self.menu = menu
-        self.addBtn.PopupMenu(self.menu,event.GetPosition())
+        self.addFilteringBtn.PopupMenu(self.menu,event.GetPosition())
         
 
     def doFilterCheckCallback(self,event=None):

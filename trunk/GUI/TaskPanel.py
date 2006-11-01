@@ -288,14 +288,9 @@ class TaskPanel(scrolled.ScrolledPanel):
         #self.processButton=wx.Button(self.buttonPanel,-1,"Process")
         #self.buttonsSizer2.Add(self.processButton,1,wx.RIGHT|wx.TOP|wx.ALIGN_CENTER,10)
 
-        self.helpButton=wx.Button(self.buttonPanel,-1,"Help")
-        self.helpButton.Bind(wx.EVT_BUTTON,self.onHelp)
-        self.buttonsSizer2.Add(self.helpButton,1,wx.RIGHT|wx.TOP|wx.ALIGN_CENTER,10)        
-        self.buttonSizer.Add(self.buttonsSizer2)  
 
     def onHelp(self,evt):
         """
-        Method: onHelp
         Created: 03.11.2004, KP
         Description: Shows a help for this task panel
         """

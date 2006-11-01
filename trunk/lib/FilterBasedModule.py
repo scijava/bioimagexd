@@ -44,7 +44,6 @@ class FilterBasedModule(Module):
 
     def __init__(self,**kws):
         """
-        Method: __init__(**keywords)
         Created: 25.11.2004, KP
         Description: Initialization
         """

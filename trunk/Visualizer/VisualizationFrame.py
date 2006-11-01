@@ -50,13 +50,11 @@ from UIElements import NamePanel
 
 class TitledPanel(wx.Panel):
     """
-    Class: TitledPanel
     Created: 26.05.2005, KP
     Description: A frame that has a title and can be collapsed
     """    
     def __init__(self,parent,title,expand):
         """
-        Method: __init__(parent)
         Created: 26.05.2005, KP
         Description: Initialization
         """     
@@ -64,15 +62,17 @@ class TitledPanel(wx.Panel):
         self.parent=parent
         self.sizer = wx.GridBagSizer()
         if expand:            
-            self.namePanel = NamePanel(self,title,(0,0,0),
+            self.namePanel = NamePanel(self,title,None,
             size=(200,25),
-            xoffset=5,yoffset=1)
+            xoffset=8,yoffset=1)
         else:
-            self.namePanel = NamePanel(self,title,(0,0,0),
+            self.namePanel = NamePanel(self,title,None,
             size=(200,25),
-            xoffset=5,yoffset=1)
+            xoffset=8,yoffset=1)
         
-        self.namePanel.setColor((255,255,255),(0,0,0))
+        #self.namePanel.setColor((255,255,255),(0,0,0))
+        self.namePanel.setColor((0,0,0),None)
+        self.namePanel.setWeight(1)
         
         self.sizer.Add(self.namePanel,(0,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
         self.value=1
@@ -82,7 +82,6 @@ class TitledPanel(wx.Panel):
         
     def setLabel(self,label):
         """
-        Method: setLabel(label)
         Created: 26.05.2005, KP
         Description: Set label
         """             
@@ -90,7 +89,6 @@ class TitledPanel(wx.Panel):
     
     def expand(self,value):
         """
-        Method: expand(value)
         Created: 26.05.2005, KP
         Description: Expand / collapse managed widget
         """             
@@ -106,7 +104,6 @@ class TitledPanel(wx.Panel):
     
     def add(self,widget):
         """
-        Method: add(widget)
         Created: 26.05.2005, KP
         Description: Add a widget managed by this panel
         """             
@@ -116,13 +113,11 @@ class TitledPanel(wx.Panel):
     
 class RendererConfiguration(wx.MiniFrame):
     """
-    Class: RendererConfiguration
     Created: 16.05.2005, KP
     Description: A frame for configuring the renderer
     """    
     def __init__(self,parent,visualizer):
         """
-        Method: __init__(parent)
         Created: 28.04.2005, KP
         Description: Initialization
         """     
@@ -170,7 +165,6 @@ class RendererConfiguration(wx.MiniFrame):
         
     def initializeGUI(self):
         """
-        Method: initializeGUI()
         Created: 16.05.2005, KPself.mode
         Description: Build up the configuration GUI
         """             
@@ -199,7 +193,6 @@ class RendererConfiguration(wx.MiniFrame):
         
     def onApply(self,event):
         """
-        Method: onApply
         Created: 16.05.2005, KP
         Description: Apply the changes
         """           
@@ -220,7 +213,6 @@ class RendererConfiguration(wx.MiniFrame):
         
     def onCancel(self,event):
         """
-        Method: onCancel()
         Created: 28.04.2005, KP
         Description: Close this dialog
         """     
@@ -228,7 +220,6 @@ class RendererConfiguration(wx.MiniFrame):
         
     def onOk(self,event):
         """
-        Method: onApply()
         Created: 28.04.2005, KP
         Description: Apply changes and close
         """ 
@@ -237,7 +228,6 @@ class RendererConfiguration(wx.MiniFrame):
         
     def onSelectColor(self,event):
         """
-        Method: onSelectColor
         Created: 16.05.2005, KP
         Description: Select the background color for render window
         """             
@@ -246,26 +236,23 @@ class RendererConfiguration(wx.MiniFrame):
         
     def onSetStereoMode(self,event):
         """
-        Method: onSetStereoMode
         Created: 16.05.2005, KP
         Description: Set the stereo mode
         """             
         index=event.GetSelection()
         mode=self.modes[index]
-	print "Setting stereo mode ",index,mode
+    
         self.stereoMode=mode
             
     
 
 class ConfigurationPanel(scrolled.ScrolledPanel):
     """
-    Class: ConfigurationPanel
     Created: 28.04.2005, KP
     Description: A panel that can be used to configure the rendering
     """
     def __init__(self,parent,visualizer,mode,**kws):
         """
-        Method: __init__(parent)
         Created: 28.04.2005, KP
         Description: Initialization
         """
@@ -286,10 +273,10 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
         self.count={}
         self.currentConfMode=""
         #self.titlePanel = TitledPanel(self,"Visualizer",1)
-        self.namePanel = NamePanel(self,"Visualizer",(0,0,0),
-            size=(200,25),
-            xoffset=5,yoffset=1)
-        self.namePanel.setColor((255,255,255),(0,0,0))
+        self.namePanel = NamePanel(self,"Visualizer",(0,128,255),
+            size=(-1,25),
+            xoffset=8,yoffset=1)
+        self.namePanel.setColor((0,0,0),(0,128,255))
                 
         self.moduleLbl = wx.StaticText(self,-1,"Rendering module:")
         modules=self.mode.mapping.keys()
@@ -337,7 +324,6 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
         
     def onConfigureRenderwindow(self,event):
         """
-        Method: onConfigureRenderwindow
         Created: 15.05.2005, KP
         Description: Configure the render window
         """
@@ -347,7 +333,6 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
         
     def onSelectItem(self,event):
         """
-        Method: onSelectItem
         Created: 15.05.2005, KP
         Description: Select a module
         """
@@ -357,7 +342,6 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
         
     def showConfiguration(self,n):
         """
-        Method: showConfiguration
         Created: 23.05.2005, KP
         Description: showConfiguration
         """
@@ -373,10 +357,10 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
         w,h=self.moduleListbox.GetSize()
         
         if not self.confPanel:
-            self.confPanel = NamePanel(self,"Configure %s"%lbl,(0,0,0),size=(200,25))
+            self.confPanel = NamePanel(self,"Configure %s"%lbl,None,size=(200,25))
             self.sizer.Add(self.confPanel,(5,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
         self.confPanel.setLabel("Configure %s"%lbl)
-        self.confPanel.setColor((255,255,255),(0,0,0))
+        self.confPanel.setColor((0,0,0),(180,255,180))
         
         print "panel=",panel
         self.currentConf=panel(self,self.visualizer,lbl)#,mode=self.mode)
@@ -390,7 +374,6 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
                 
     def onCheckItem(self,event):
         """
-        Method: onCheckItem
         Created: 15.05.2005, KP
         Description: Enable / Disable a module
         """
@@ -402,7 +385,6 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
 
     def onConfigureLights(self,event):
         """
-        Method: onConfigureLights
         Created: 29.04.2005, KP
         Description: Configure the lights
         """
@@ -412,7 +394,6 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
 
     def onLoadModule(self,event):
         """
-        Method: onLoadModule
         Created: 28.04.2005, KP
         Description: Load the selected module
         """
@@ -430,7 +411,6 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
         
     def appendModuleToList(self,module):
         """
-        Method: appendModuleToList
         Created: 16.05.2005, KP
         Description: Append a module to the list
         """
@@ -440,7 +420,6 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
 
     def onRemoveModule(self,event):
         """
-        Method: onRemoveModule
         Created: 03.05.2005, KP
         Description: Remove the selected module
         """
@@ -464,7 +443,6 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
 
     def onOpenScene(self,event):
         """
-        Method: onLoadScene
         Created: 02.08.2005, KP
         Description: Load a scene from file
         """    
@@ -479,7 +457,6 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
     
     def onSaveScene(self,event):
         """
-        Method: onSaveScene
         Created: 02.08.2005, KP
         Description: Save a scene to file
         """    
@@ -493,13 +470,11 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
         
 class VisualizationFrame(wx.Frame):
     """
-    Class: VisualizationFrame
     Created: 28.04.2005, KP
     Description: A window for showing 3D visualizations
     """
     def __init__(self,parent,**kws):
         """
-        Method: __init__(parent)
         Created: 28.04.2005, KP
         Description: Initialization
         """

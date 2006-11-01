@@ -139,7 +139,7 @@ class MainWindow(wx.Frame):
 
         self.currentTask=""
         self.currentFile=""
-        self.mode=""
+        self.currentVisualizationModeName=""
         self.progressCoeff=1.0
         self.progressShift=0.0
         self.taskToId={}
@@ -283,7 +283,7 @@ class MainWindow(wx.Frame):
         messenger.connect(None,"tree_selection_changed",self.onTreeSelectionChanged)
         messenger.connect(None,"get_voxel_at",self.updateVoxelInfo)
         messenger.connect(None,"load_dataunit",self.onMenuOpen)
-        messenger.connect(None,"view_help",self.viewHelp)
+        messenger.connect(None,"view_help",self.onViewHelp)
         messenger.connect(None,"delete_dataset",self.onDeleteDataset)
         messenger.connect(None,"execute_command",self.onExecuteCommand)        
         messenger.connect(None,"show_error",self.onShowError)
@@ -699,16 +699,30 @@ class MainWindow(wx.Frame):
         wx.EVT_TOOL(self,MenuManager.ID_RESAMPLING,self.onResampleData)
         tb.EnableTool(MenuManager.ID_RESAMPLING,0)
         tb.ToggleTool(MenuManager.ID_RESAMPLING,1)
-        
-        self.cBtn = wx.ContextHelpButton(tb,MenuManager.CONTEXT_HELP)
-        self.cBtn.SetSize((32,32))
-        tb.AddControl(self.cBtn)
-        self.cBtn.Bind(wx.EVT_BUTTON,self.onContextHelp)
+
+        bmp = wx.ArtProvider_GetBitmap(wx.ART_QUESTION, wx.ART_TOOLBAR, (32,32))        
+        tb.DoAddTool(MenuManager.ID_TOOLBAR_HELP,"Help",bmp,shortHelp="Get help for current task / visualization")
+        wx.EVT_TOOL(self, MenuManager.ID_TOOLBAR_HELP, self.onToolbarHelp)
+        #self.cBtn = wx.ContextHelpButton(tb,MenuManager.CONTEXT_HELP)
+        #self.cBtn.SetSize((32,32))
+        #tb.AddControl(self.cBtn)
+        #self.cBtn.Bind(wx.EVT_BUTTON,self.onContextHelp)
         
         self.visIds.append(MenuManager.ID_VIS_ANIMATOR)
         tb.Realize()
         self.menuManager.setMainToolbar(tb)
 
+    def onToolbarHelp(self, evt):
+        """
+        Created: 1.11.2006, KP
+        Description: An event handler for the toolbar help button that will launch a help
+                     page that depends on what task or visualization mode the user is currently using
+                     
+        """
+        if self.currentTaskWindow:
+            messenger.send(None,"view_help",self.currentTaskWindowName)
+        else:
+            messenger.send(None,"view_help",self.currentVisualizationModeName)
     def onSaveDataset(self,*args):
         """
         Created: 24.05.2006, KP
@@ -820,7 +834,7 @@ class MainWindow(wx.Frame):
         
         mgr.addSeparator("visualization")
         mgr.addMenuItem("visualization",MenuManager.ID_IMMEDIATE_RENDER,"&Immediate updating","Toggle immediate updating of rendering (when settings that affect the visualization change) on or off.",self.onMenuImmediateRender,check=1,checked=1)
-        
+        mgr.addMenuItem("visualization",MenuManager.ID_NO_RENDER,"&No updating","Toggle rendering on or off.",self.onMenuNoRender,check=1,checked=0)        
         mgr.disable(MenuManager.ID_LIGHTS)
         mgr.disable(MenuManager.ID_RENDERWIN)
         #mgr.disable(MenuManager.ID_RELOAD)
@@ -852,6 +866,7 @@ class MainWindow(wx.Frame):
 
         mgr.addMenuItem("help",MenuManager.ID_ABOUT,"&About BioImageXD","About BioImageXD",self.onMenuAbout)
         mgr.addSeparator("help")
+        mgr.addMenuItem("help",MenuManager.ID_CONTEXT_HELP,"&Context help\tF1","Show help on current task or visualization mode",self.onToolbarHelp)        
         mgr.addMenuItem("help",MenuManager.ID_HELP,"&Help\tCtrl-H","Online Help",self.onMenuHelp)        
     
     def createStatusBar(self):
@@ -921,16 +936,22 @@ class MainWindow(wx.Frame):
             
     def onMenuImmediateRender(self,evt):
         """
-        Method: onMenuImmediateRender
         Created: 14.02.2006, KP
         Description: Toggle immediate render updates on or off
         """                        
         flag=evt.IsChecked()
         self.visualizer.setImmediateRender(flag)
+
+    def onMenuNoRender(self,evt):
+        """
+        Created: 14.02.2006, KP
+        Description: Toggle immediate render updates on or off
+        """                        
+        flag=evt.IsChecked()
+        self.visualizer.setNoRendering(flag)
         
     def onMenuShowScriptEditor(self,evt):
         """
-        Method: onMenuShowScriptEditor
         Created: 13.02.2006, KP
         Description: Show the script editor
         """                
@@ -1182,9 +1203,9 @@ class MainWindow(wx.Frame):
         if not name:
             raise "Did not find a visualization mode corresponding to id ",eid
         reload=0
-        if self.mode==mode:
+        if self.currentVisualizationModeName==mode:
             reload=1
-        self.mode=mode
+        self.currentVisualizationModeName=mode
         messenger.send(None,"update_progress",0.1,"Loading %s view..."%mode)
 
         modeclass,settingclass,module=self.visualizationModes[mode]
@@ -1511,7 +1532,6 @@ class MainWindow(wx.Frame):
         names=[i.getName() for i in selectedFiles]
         
         cacheKey = bxd.getCacheKey(selectedPaths, names, taskname)
-        print "CACHE KEY=",str(cacheKey)
         
         self.currentTaskWindow.setCacheKey(cacheKey)
         # Sets name for new dataset series
@@ -1657,7 +1677,7 @@ class MainWindow(wx.Frame):
         about.ShowModal()
         about.Destroy()
         
-    def viewHelp(self,obj,evt,args):
+    def onViewHelp(self,obj,evt,args):
         """
         Created: 05.08.2004, KP
         Description: A method that shows a help of some item
@@ -1676,7 +1696,7 @@ class MainWindow(wx.Frame):
         Created: 02.08.2004, KP
         Description: Callback function for menu item "Help"
         """
-        self.viewHelp(None,None,None)
+        self.onViewHelp(None,None,None)
         
     def saveWindowSizes(self):
         """

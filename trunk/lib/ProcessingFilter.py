@@ -45,10 +45,8 @@ import scripting as bxd
 import GUI.GUIBuilder as GUIBuilder
 import ImageOperations
 
+from GUI.GUIBuilder import FILTER_EXPERIENCED, FILTER_BEGINNER, FILTER_INTERMEDIATE
 
-FILTER_BEGINNER=(180,255,180)
-FILTER_INTERMEDIATE=(255,255,180)
-FILTER_EXPERIENCED=(0,180,255)
 
 
 class ProcessingFilter(GUIBuilder.GUIBuilderBase):

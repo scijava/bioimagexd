@@ -91,6 +91,8 @@ class Visualizer:
         self.currSliderPanel = None
         self.delayed=0
         self.immediateRender=1
+        self.oldEnabled = 1
+        self.noRender = 0
         self.oldClientSize=0
         self.updateFactor = 0.001
         self.depthT=0
@@ -654,7 +656,6 @@ class Visualizer:
         
     def onSetView(self,evt):
         """
-        Method: onSetView
         Created: 22.07.2005, KP
         Description: Set view mode
         """
@@ -702,12 +703,6 @@ class Visualizer:
                         
         self.currMode.annotate(annclass,multiple=multiple)
         
-    def manageAnnotation(self,event):
-        """
-        Created: 04.07.2005, KP
-        Description: Manage annotations on the image
-        """
-        self.currMode.manageAnnotation()
         
     def deleteAnnotation(self,event):
         """
@@ -875,7 +870,6 @@ class Visualizer:
             
     def restoreWindowSizesFromSettings(self):
         """
-        Method: restoreWindowSizesFromSettings
         Created: 13.04.2006, KP
         Description: Restore the window sizes from settings
         """        
@@ -891,7 +885,6 @@ class Visualizer:
         
     def saveWindowSizes(self):
         """
-        Method: saveWindowSizes
         Created: 13.04.2006, KP
         Description: Save window sizes to the settings
         """
@@ -901,7 +894,6 @@ class Visualizer:
         
     def setCurrentSliderPanel(self,p):
         """
-        Method: setCurrentSliderPanel
         Created: 26.01.2006, KP
         Description: Set the currently visible timeslider panel
         """    
@@ -913,7 +905,6 @@ class Visualizer:
         
     def reloadModules(self):
         """
-        Method: reloadModules()
         Created: 24.05.2005, KP
         Description: Reload all the visualization modules.
         """
@@ -940,7 +931,6 @@ class Visualizer:
    
     def setProcessedMode(self,mode):
         """
-        Method: setProcessedMode
         Created: 25.05.2005, KP
         Description: Set the visualizer to processed/unprocessed mode
         """
@@ -948,7 +938,6 @@ class Visualizer:
         
     def getProcessedMode(self):
         """
-        Method: setProcessedMode
         Created: 25.05.2005, KP
         Description: Return whether visualizer is in processed/unprocessed mode
         """
@@ -956,7 +945,6 @@ class Visualizer:
         
     def getCurrentMode(self):
         """
-        Method: setCurrentMode
         Created: 20.06.2005, KP
         Description: Return the current visualization mode
         """
@@ -964,7 +952,6 @@ class Visualizer:
         
     def getCurrentModeName(self):
         """
-        Method: setCurrentModeName
         Created: 20.06.2005, KP
         Description: Return the current visualization mode
         """
@@ -972,7 +959,6 @@ class Visualizer:
         
     def closeVisualizer(self):
         """
-        Method: closeVisualizer
         Created: 12.08.2005, KP
         Description: Close the visualizer
         """
@@ -990,7 +976,6 @@ class Visualizer:
         
     def setVisualizationMode(self,mode,reload=0):
         """
-        Method: setVisualizationMode
         Created: 23.05.2005, KP
         Description: Set the mode of visualization
         """
@@ -1035,7 +1020,7 @@ class Visualizer:
         self.currModeModule=module
         
         self.currentWindow = modeinst.activate(self.sidebarWin)        
-        
+      
         self.sidebarWin.SetDefaultSize((0,1024))
         wx.LayoutAlgorithm().LayoutWindow(self.parent, self.visWin)
         if not modeinst.showSliceSlider():
@@ -1084,7 +1069,7 @@ class Visualizer:
         modeinst.setTimepoint(self.timepoint)
         self.currentWindow.Show()
         if hasattr(self.currentWindow,"enable"):
-            self.currentWindow.enable(1)
+            self.currentWindow.enable(self.enabled)
 #        if self.zoomToFitFlag:
 #            self.currMode.zoomToFit()
 #        else:
@@ -1100,10 +1085,6 @@ class Visualizer:
         Description: Show / hide item toolbar
         """
         pass
-        #if flag:
-        #    self.itemWin.SetDefaultSize((500,64))
-        #else:
-        #    self.itemWin.SetDefaultSize((500,0))
         
     def enable(self,flag,**kws):
         """
@@ -1114,6 +1095,9 @@ class Visualizer:
         if kws.has_key("preload"):
             self.preload=kws["preload"]
         
+        if self.noRender:
+            self.oldEnabled = flag
+            return
         #Logging.info("\nenable(%s)\n"%(not not flag),kw="visualizer")
         self.enabled=flag
         if self.currentWindow:
@@ -1143,7 +1127,7 @@ class Visualizer:
         Created: 28.04.2005, KP
         Description: Called when this window is closed
         """
-        self.closed = 1l
+        self.closed = 1
 
     def isClosed(self):
         """
@@ -1215,7 +1199,23 @@ class Visualizer:
         Description: Toggle immediate rendering on or off
         """
         self.immediateRender = flag
+
+    def setNoRendering(self,flag):
+        """
+        Created: 14.02.2006, KP
+        Description: Toggle rendering on or off
+        """        
+        if not flag:
+            self.noRender = flag
+            self.enable(self.oldEnabled)
             
+        else:
+            self.oldEnabled = self.enabled
+            print "\nDisabling rendering...\n"
+            self.enable(0)
+            self.noRender = flag
+            
+        
     def updateRendering(self,event=None,object=None,delay=0):
         """
         Created: 25.05.2005, KP
@@ -1225,7 +1225,7 @@ class Visualizer:
             Logging.info("Disabled, will not update rendering",kw="visualizer")
             return
             
-        print "immediate render=",self.immediateRender,"delay=",delay
+        print "\n\n\n\nimmediate render=",self.immediateRender,"delay=",delay
         if not self.immediateRender and delay>=0:
             Logging.info("Will not update rendering on other than apply button",kw="visualizer")
             return
