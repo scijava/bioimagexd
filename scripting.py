@@ -98,11 +98,11 @@ def storeSettingsToCache(key, settingsList):
     value=[]
     for i,setting in enumerate(settingsList):
         cp = MyConfigParser()
-        print "Writing ",repr(setting)
+        #print "Writing ",repr(setting)
         setting.writeTo(cp)
         #print "\n\nStroing Type of setting=",setting.get("Type")
         value.append((setting.n,cp))
-        cp.write(open("setting_%d.txt"%i,"w"))
+        #cp.write(open("setting_%d.txt"%i,"w"))
     
     
     settingsCache[key] = value

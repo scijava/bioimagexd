@@ -1511,7 +1511,7 @@ class MainWindow(wx.Frame):
         names=[i.getName() for i in selectedFiles]
         
         cacheKey = bxd.getCacheKey(selectedPaths, names, taskname)
-        
+        print "CACHE KEY=",str(cacheKey)
         
         self.currentTaskWindow.setCacheKey(cacheKey)
         # Sets name for new dataset series

@@ -1045,3 +1045,4 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
         self.dataUnit.setOutputChannel(len(self.toolIds),1)
         self.toolIds.append(toolid)
         self.toolMgr.toggleTool(toolid,1)
+        self.restoreFromCache()
