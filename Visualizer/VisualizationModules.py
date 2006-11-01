@@ -45,13 +45,11 @@ import GUI.Urmas.UrmasPersist
 import GUI.GUIBuilder as GUIBuilder
 class VisualizationModule(GUIBuilder.GUIBuilderBase):
     """
-    Class: VisualizationModule
     Created: 28.04.2005, KP
     Description: A class representing a visualization module
     """
     def __init__(self,parent,visualizer,**kws):
         """
-        Method: __init__(parent)
         Created: 28.04.2005, KP
         Description: Initialization
         """    
@@ -74,7 +72,6 @@ class VisualizationModule(GUIBuilder.GUIBuilderBase):
     
     def parameterChanged(self,module):
         """
-        Method: parameterChanged
         Created: 31.05.2006, KP
         Description: Callback for notifying when parameter ha changed
         """
@@ -82,7 +79,6 @@ class VisualizationModule(GUIBuilder.GUIBuilderBase):
         
     def canSelectChannels(self):
         """
-        Method: canSelectChannels
         Created: 31.05.2006, KP
         Description: Should it be possible to select the channel
         """          
@@ -90,7 +86,6 @@ class VisualizationModule(GUIBuilder.GUIBuilderBase):
 
     def setView(self,view):
         """
-        Method: setView(view)
         Created: 11.08.2005, KP
         Description: Set the view that is to be set for the render window before
                      first render.
@@ -99,7 +94,6 @@ class VisualizationModule(GUIBuilder.GUIBuilderBase):
     
     def updateProgress(self,obj,event):
         """
-        Method: updateProgress(object,event)
         Created: 13.07.2005, KP
         Description: Update the progress information
         """            
@@ -110,7 +104,6 @@ class VisualizationModule(GUIBuilder.GUIBuilderBase):
     
     def getName(self):
         """
-        Method: getName()
         Created: 28.04.2005, KP
         Description: Return the name of this module
         """            
@@ -118,7 +111,6 @@ class VisualizationModule(GUIBuilder.GUIBuilderBase):
         
     def setDataUnit(self,dataunit):
         """
-        Method: setDataUnit(self)
         Created: 28.04.2005, KP
         Description: Sets the dataunit this module uses for visualization
         """            
@@ -126,7 +118,6 @@ class VisualizationModule(GUIBuilder.GUIBuilderBase):
         
     def getDataUnit(self):
         """
-        Method: getDataUnit()
         Created: 28.04.2005, KP
         Description: Returns the dataunit this module uses for visualization
         """     
@@ -134,7 +125,6 @@ class VisualizationModule(GUIBuilder.GUIBuilderBase):
 
     def updateData(self):
         """
-        Method: updateData()
         Created: 26.05.2005, KP
         Description:"OK Update the data that is displayed
         """          
@@ -142,7 +132,6 @@ class VisualizationModule(GUIBuilder.GUIBuilderBase):
 
     def showTimepoint(self,value,update=1):
         """
-        Method: showTimepoint(tp)
         Created: 28.04.2005, KP
         Description: Set the timepoint to be displayed
         """          
@@ -159,7 +148,6 @@ class VisualizationModule(GUIBuilder.GUIBuilderBase):
         
     def updateRendering(self,input=None):
         """
-        Method: updateRendering()
         Created: 11.08.2005, KP
         Description: Update the Rendering of this module
         """              
@@ -169,7 +157,6 @@ class VisualizationModule(GUIBuilder.GUIBuilderBase):
         
     def disableRendering(self):
         """
-        Method: disableRendering()
         Created: 30.04.2005, KP
         Description: Disable the Rendering of this module
         """          
@@ -179,7 +166,6 @@ class VisualizationModule(GUIBuilder.GUIBuilderBase):
         
     def enableRendering(self):
         """
-        Method: enableRendering()
         Created: 15.05.2005, KP
         Description: Enable the Rendering of this module
         """          
@@ -188,7 +174,6 @@ class VisualizationModule(GUIBuilder.GUIBuilderBase):
         
     def setProperties(self, ambient,diffuse,specular,specularpower):
         """
-        Method: setProperties(ambient,diffuse,specular,specularpower)
         Created: 16.05.2005, KP
         Description: Set the ambient, diffuse and specular lighting of this module
         """          
@@ -200,7 +185,6 @@ class VisualizationModule(GUIBuilder.GUIBuilderBase):
         
     def setShading(self,shading):
         """
-        Method: setShading(shading)
         Created: 16.05.2005, KP
         Description: Set shading on / off
         """          
@@ -214,7 +198,6 @@ class VisualizationModule(GUIBuilder.GUIBuilderBase):
 
     def __getstate__(self):
         """
-        Method: __getstate__
         Created: 02.08.2005, KP
         Description: A getstate method that saves the lights
         """            
@@ -229,7 +212,6 @@ class VisualizationModule(GUIBuilder.GUIBuilderBase):
         
 ##    def getVTKState(self,obj):
 ##        """
-##        Method: getVTKState()
 ##        Created: 02.08.2005, KP
 ##        Description: Get state of vtk object
 ##        """     
@@ -248,7 +230,6 @@ class VisualizationModule(GUIBuilder.GUIBuilderBase):
 ##        return state
 ##    def setVTKState(self,obj,state):
 ##        """
-##        Method: setVTKState()
 ##        Created: 02.08.2005, KP
 ##        Description: Set state of vtk object
 ##        """     
@@ -263,7 +244,6 @@ class VisualizationModule(GUIBuilder.GUIBuilderBase):
             
     def __set_pure_state__(self,state):
         """
-        Method: __set_pure_state__()
         Created: 02.08.2005, KP
         Description: Set the state of the light
         """

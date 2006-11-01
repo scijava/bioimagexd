@@ -232,8 +232,8 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         Created: 23.05.2005, KP
         Description: Calculate the drawing buffer required
         """    
-        if not self.enabled:
-            return
+        #if not self.enabled:
+        #    return
         if not self.imagedata:
             x,y = self.parent.GetClientSize()
             maxX, maxY = x,y
@@ -824,7 +824,7 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         dc.SetBrush(wx.Brush(wx.Color(*self.bgcolor)))
         dc.DrawRectangle(0,0,self.paintSize[0],self.paintSize[1])
             
-        if not self.slice:
+        if not self.slice or not self.enabled:
             self.graySize = self.paintSize
             self.makeBackgroundBuffer(dc)
             dc.EndDrawing()

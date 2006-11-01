@@ -39,7 +39,7 @@ import  wx.lib.filebrowsebutton as filebrowse
 import messenger
 import Logging
 import scripting as bxd
-
+import UIElements
 RADIO_CHOICE="RADIO_CHOICE"
 THRESHOLD="THRESHOLD"
 PIXEL="PIXEL"
@@ -51,6 +51,11 @@ SPINCTRL="SPINCTRL"
 NOBR="NOBR"
 BR="BR"
 ROISELECTION="ROISELECTION"
+
+FILTER_BEGINNER=(180,255,180)
+FILTER_INTERMEDIATE=(255,255,180)
+FILTER_EXPERIENCED=(0,180,255)
+
 
 class GUIBuilderBase:
     """
@@ -68,6 +73,14 @@ class GUIBuilderBase:
         self.modCallback = changeCallback
         for item in self.getPlainParameters():
             self.setParameter(item,self.getDefaultValue(item))
+            
+
+    def getParameterLevel(self, parameter):
+        """
+        Created: 1.11.2006, KP
+        Description: Return the level of the given parameter
+        """
+        return FILTER_BEGINNER            
             
     def sendUpdateGUI(self):
         """
@@ -205,7 +218,9 @@ class GUIBuilder(wx.Panel):
         parameters = currentFilter.getParameters()
         gy=0
             
-        sbox=wx.StaticBox(self,-1,currentFilter.getName())
+        #sbox=UIElements.MyStaticBox(self,-1,currentFilter.getName())
+        sbox = wx.StaticBox(self,-1, currentFilter.getName())
+        #sbox.SetOwnBackgroundColour((0,255,0))
         sboxsizer=wx.StaticBoxSizer(sbox,wx.VERTICAL)
         self.sizer.Add(sboxsizer,(0,0))
         sizer=wx.GridBagSizer()
@@ -304,12 +319,16 @@ class GUIBuilder(wx.Panel):
                             box.Add(lbl)
                             
                             val = currentFilter.getDefaultValue(itemName)
+                            lvl = currentFilter.getParameterLevel(itemName)
                             minval,maxval = currentFilter.getRange(itemName)
                             print "Value for ",itemName,"=",val,"range=",minval,maxval
                             x=200
+                            
                             slider = wx.Slider(self,-1, value=val, minValue=minval, maxValue=maxval,
                             style = wx.SL_HORIZONTAL|wx.SL_LABELS|wx.SL_AUTOTICKS,
                             size=(x,-1))
+                            #slider.SetBackgroundColour(lvl)
+                            #lbl.SetBackgroundColour(lvl)
                             func = lambda evt, its=item, f=currentFilter:self.onSetSliderValue(evt,its,f)
                             slider.Bind(wx.EVT_SCROLL,func)
                             f=lambda obj,evt,arg, slider=slider, i=itemName, s=self: s.onSetSlice(slider,i,arg)
@@ -354,6 +373,8 @@ class GUIBuilder(wx.Panel):
                             box = wx.BoxSizer(wx.VERTICAL)
                             text = currentFilter.getDesc(itemName)
                             val = currentFilter.getDefaultValue(itemName)
+                            lvl = currentFilter.getParameterLevel(itemName)
+                            
                             
                             lbl = wx.StaticText(self,-1,text)
                             box.Add(lbl)
@@ -363,6 +384,8 @@ class GUIBuilder(wx.Panel):
                             choice = wx.Choice(self,-1,choices=choices)
                             
                             choice.SetSelection(val)
+                            #choice.SetBackgroundColour(lvl)
+                            #lbl.SetBackgroundColour(lvl)
                             choice.Bind(wx.EVT_CHOICE,func)
                             
                             f=lambda obj,evt,arg, c=choice, i=itemName, s=self: s.onSetChoiceFromFilter(c,i,arg)
@@ -482,6 +505,10 @@ class GUIBuilder(wx.Panel):
                 # the items
                 if sboxname:
                     sbox = wx.StaticBox(self,-1,sboxname)
+                    #sbox=UIElements.MyStaticBox(self,-1,sboxname)
+                    #sbox = wx.StaticBox(self,-1, currentFilter.getName())
+                    #sbox.SetOwnBackgroundColour((0,255,0))
+                    
                     sboxsizer=wx.StaticBoxSizer(sbox,wx.VERTICAL)
                 
                     sizer.Add(sboxsizer,(gy,0),flag=wx.EXPAND)
@@ -623,7 +650,7 @@ class GUIBuilder(wx.Panel):
         else:
             lbl = None
         defaultValue = currentFilter.getDefaultValue(item)
-        
+        lvl = currentFilter.getParameterLevel(item)
         if itemType in [types.IntType,types.FloatType]:
             input = self.createNumberInput(currentFilter, item, itemType, defaultValue, desc)
         elif itemType == types.BooleanType:
@@ -632,6 +659,7 @@ class GUIBuilder(wx.Panel):
             input  = self.createSpinInput(currentFilter, item, itemType, defaultValue, desc)
         else:
             raise "Unrecognized input type: %s"%str(itemType)
+        #input.SetBackgroundColour(lvl)
         txt = currentFilter.getLongDesc(item)
         if txt:
             input.SetHelpText(txt)
