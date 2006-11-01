@@ -167,9 +167,9 @@ class TaskPanel(scrolled.ScrolledPanel):
             print "Setting settings of source %d"%i
             #DataUnitSetting.DataUnitSettings.initialize(setting,sources[i],len(sources),sources[i].getLength())
             sources[i].setSettings(setting)
-            tf=setting.get("IntensityTransferFunction")
+            #tf=setting.get("IntensityTransferFunction")
             #print setting,tf
-            print "\n\nSetting itf ",i,"= itf with 0=",tf.GetValue(0),"and 255=",tf.GetValue(255)
+            #print "\n\nSetting itf ",i,"= itf with 0=",tf.GetValue(0),"and 255=",tf.GetValue(255)
         self.settings = sources[self.settingsIndex].getSettings()
         
         self.updateSettings()
@@ -184,14 +184,14 @@ class TaskPanel(scrolled.ScrolledPanel):
         #print "SOURCES=",sources
         settings = [x.getSettings() for x in sources]
         settings.insert(0, self.dataUnit.getSettings())
-        for i,settingx in enumerate(settings[1:]):
-            
-            tf=settingx.get("IntensityTransferFunction")
-            print "\n\nStoring itf ",i,"with 0=",tf.GetValue(0),"and 255=",tf.GetValue(255)        
-        print "Storing settings=",repr(settings)
+        #for i,settingx in enumerate(settings[1:]):
+        #    
+        #    tf=settingx.get("IntensityTransferFunction")
+        #    print "\n\nStoring itf ",i,"with 0=",tf.GetValue(0),"and 255=",tf.GetValue(255)        
+        #print "Storing settings=",repr(settings)
         bxd.storeSettingsToCache(self.dataUnit.getCacheKey(),settings)
         for i in sources:
-            #print "\n\nRESETTING SETTINGS OF ",i
+            print "\n\nRESETTING SETTINGS OF ",i
             i.resetSettings()
         
     def onSwitchDatasets(self,obj,evt,args):

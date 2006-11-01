@@ -95,6 +95,20 @@ class DataUnitSettings:
         self.register("Name")
         self.register("BitDepth")
         
+    def resetSettings(self):
+        """
+        Created: 31.10.2006, KP
+        Description: Reset the settings
+        """
+        # Delete keys that have not been registered. This is to ensure
+        # nothing added by tasks is retained after the task has been closed
+        
+        for i in self.private.keys():
+            if i not in self.registered:
+                del self.private[i]
+        for i in self.settings.keys():
+            if i not in self.registered:
+                del self.settings[i]
         
     def asType(self,newtype):
         """

@@ -57,9 +57,10 @@ class DataUnit:
     def resetSettings(self):
         """
         Created: 23.10.2006, KP
-        Description: Reset the settings of this dataunit
+        Description: Reset the settings of this dataunit. This is done for example after a task
+                     has been closed to reset the dataunit back to it's original state
         """
-        print "\n\n\n\n***** RESET SETTINGS"
+        self.settings.resetSettings()
         self.settings = DataUnitSetting.DataUnitSettings()
         
     def setMask(self, mask):

@@ -264,4 +264,5 @@ class TrackingPanel(FilterBasedTaskPanel.FilterBasedTaskPanel):
 
         print "Adding GUI",gui
         self.Layout()
+        self.restoreFromCache()
         

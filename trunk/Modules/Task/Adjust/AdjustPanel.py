@@ -348,5 +348,5 @@ class AdjustPanel(TaskPanel.TaskPanel):
         tf=self.settings.getCounted("IntensityTransferFunctions",self.timePoint)
         self.iTFEditor.setIntensityTransferFunction(tf)
         self.iTFEditor.updateCallback=self.doPreviewCallback
-
+        self.restoreFromCache()
         self.updateSettings()

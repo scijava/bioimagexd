@@ -566,4 +566,5 @@ class ManipulationPanel(FilterBasedTaskPanel.FilterBasedTaskPanel):
             dataUnit.setOutputChannel(i,0)
             n=i
         self.dataUnit.setOutputChannel(n+1,1)
+        self.restoreFromCache()        
         self.updateSettings()
