@@ -103,7 +103,7 @@ class GeneralSettings(wx.Panel):
                      in this window.
         """     
         format=self.choice.GetStringSelection()
-        print "Setting format to ",format.lower()
+        #print "Setting format to ",format.lower()
         conf.setConfigItem("ImageFormat","Output",format.lower())
         showTip=self.tipCheckbox.GetValue()
         conf.setConfigItem("ShowTip","General",str(showTip))

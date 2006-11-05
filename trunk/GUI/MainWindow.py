@@ -1202,9 +1202,12 @@ class MainWindow(wx.Frame):
                 break
         if not name:
             raise "Did not find a visualization mode corresponding to id ",eid
-        reload=0
+            
+        #reload=0
         if self.currentVisualizationModeName==mode:
-            reload=1
+            # Why would we want to reload?
+            #reload=1
+            return
         self.currentVisualizationModeName=mode
         messenger.send(None,"update_progress",0.1,"Loading %s view..."%mode)
 

@@ -67,8 +67,8 @@ itkpythondir=os.path.join(todir,os.path.join("ITK-pkg","Python"))
 sys.path.insert(0,itklibdir)
 sys.path.insert(0,itkbindir)
 sys.path.insert(0,itkpythondir)
-sys.path.insert(0,map(os.path.join,["vtkBXD","Wrapping","Python"]))
-sys.path.insert(0,map(os.path.join,["vtkBXD","bin"]))
+sys.path.insert(0,reduce(os.path.join,["vtkBXD","Wrapping","Python"]))
+sys.path.insert(0,reduce(os.path.join,["vtkBXD","bin"]))
 sys.path.insert(0,"H:\\vtkBXD\\bin")
 PATH=os.getenv("PATH")
 PATH=PATH+os.path.pathsep+itklibdir+os.path.pathsep+itkbindir+os.path.pathsep+itkpythondir
@@ -87,10 +87,10 @@ cfg=Configuration.Configuration(conffile)
 # We need to import VTK here so that it is imported before wxpython.
 # if wxpython gets imported before vtk, the vtkExtTIFFReader will not read the olympus files
 # DO NOT ask me why that is!
-try:
-    import vtkbxd
-except:
-    pass
+#try:
+import vtkbxd
+#except:
+#    pass
 
 import vtk
 

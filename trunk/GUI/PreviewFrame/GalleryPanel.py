@@ -41,13 +41,11 @@ import InteractivePanel
 
 class GalleryPanel(InteractivePanel.InteractivePanel):
     """
-    Class: GalleryPanel
     Created: 23.05.2005, KP
     Description: A panel that can be used to preview volume data several slice at a time
     """
     def __init__(self,parent,visualizer,size=(512,512),**kws):
         """
-        Method: __init__(parent)
         Created: 24.03.2005, KP
         Description: Initialization
         """    
@@ -400,7 +398,6 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
         
     def saveSnapshot(self,filename):
         """
-        Method: saveSnapshot(filename)
         Created: 05.06.2005, KP
         Description: Save a snapshot of the scene
         """      

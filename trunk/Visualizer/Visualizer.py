@@ -1379,13 +1379,32 @@ class Visualizer:
         Description: Save a snapshot of current visualization
         """  
         if self.currMode and self.dataUnit:
-            wc="PNG file|*.png|JPEG file|*.jpeg|TIFF file|*.tiff|BMP file|*.bmp"
-            initFile="%s.png"%(self.dataUnit.getName())
-            dlg=wx.FileDialog(self.parent,"Save snapshot of rendered scene",defaultFile=initFile,wildcard=wc,style=wx.SAVE)
-            filename=None
-            if dlg.ShowModal()==wx.ID_OK:
-                filename=dlg.GetPath()
-            self.currMode.saveSnapshot(filename)
+            wcDict={"png":"Portable Network Graphics Image (*.png)","jpeg":"JPEG Image (*.jpeg)",
+            "tiff":"TIFF Image (*.tiff)","bmp":"Bitmap Image (*.bmp)"}
+            #wc="PNG file|*.png|JPEG file|*.jpeg|TIFF file|*.tiff|BMP file|*.bmp"
+            
+            defaultExt = self.conf.getConfigItem("ImageFormat","Output")
+            if defaultExt=="jpg":
+                defaultExt="jpeg"
+            if defaultExt=="tif":
+                defaultExt="tiff"
+            initFile="%s.%s"%(self.dataUnit.getName(),defaultExt)
+            if defaultExt not in wcDict:
+                defaultExt = "png"
+            wc=wcDict[defaultExt]+"|*.%s"%defaultExt
+            del wcDict[defaultExt]
+            
+            for key in wcDict.keys():
+                wc+="|%s|*.%s"%(wcDict[key],key)
+            print "wc=",wc
+            filename = Dialogs.askSaveAsFileName(self.parent,"Save snapshot of rendered scene",initFile, wc, "snapshotImage")
+            #dlg=wx.FileDialog(self.parent,,defaultFile=initFile,wildcard=wc,style=wx.SAVE)
+            #filename=None
+            #if dlg.ShowModal()==wx.ID_OK:
+            #    filename=dlg.GetPath()
+            if filename:
+                
+                self.currMode.saveSnapshot(filename)
         
     def restoreWindowSizes(self):
         """

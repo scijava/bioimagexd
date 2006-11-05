@@ -789,3 +789,16 @@ class InteractivePanel(ogl.ShapeCanvas):
        
         self.SetScrollRate(xrate,yrate)
         
+    def saveSnapshot(self,filename):
+        """
+        Created: 05.06.2005, KP
+        Description: Save a snapshot of the scene
+        """      
+        ext=filename.split(".")[-1].lower()
+        if ext=="jpg":ext="jpeg"
+        if ext=="tif":ext="tiff"
+        mime="image/%s"%ext
+        img=self.buffer.ConvertToImage()
+        #print "Saving mimefile ",filename,mime
+        img.SaveMimeFile(filename,mime)
+        

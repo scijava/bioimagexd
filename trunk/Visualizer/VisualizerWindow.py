@@ -43,8 +43,6 @@ from ModuleConfiguration import *
 from Lights import *
 
         
-
-
 class VisualizerWindow(wxVTKRenderWindowInteractor):
     """
     Class: VisualizationWindow
@@ -71,7 +69,6 @@ class VisualizerWindow(wxVTKRenderWindowInteractor):
         
     def enable(self,flag):
         """
-        Method: enable(flag)
         Created: 02.06.2005, KP
         Description: Enable/Disable updates
         """
@@ -82,7 +79,6 @@ class VisualizerWindow(wxVTKRenderWindowInteractor):
         
     def Render(self):
         """
-        Method: Render()
         Created: 05.06.2005, KP
         Description: If this windows is enabled, call the super class Render()
         """
@@ -91,7 +87,6 @@ class VisualizerWindow(wxVTKRenderWindowInteractor):
 
     def initializeVTK(self):
         """
-        Method: initializeVTK
         Created: 29.04.2005, KP
         Description: initialize the vtk renderer
         """
@@ -114,13 +109,12 @@ class VisualizerWindow(wxVTKRenderWindowInteractor):
         self.renderer.AddObserver("EndEvent",self.onRenderEnd)
     
     def onKeypress(self,obj,evt):
-        """
-        Method: onKeypress
+        """        
         Created: 02.11.2005
         Description: Catch keypresses from the window and do actions
         """    
         key=obj.GetKeyCode()
-        print "Key event",key
+        #print "Key event",key
         words={"j":"Joystick","a":"Actor","c":"Camera","t":"Trackball"}
         if key in ["a","c"]:
             self.controlled=words[key]
@@ -177,7 +171,6 @@ class VisualizerWindow(wxVTKRenderWindowInteractor):
 
     def zoomToRubberband(self):        
         """
-        Method: zoomToRubberband
         Created: 30.04.2005, KP
         Description: Zoom to rubberband
         """
@@ -187,7 +180,6 @@ class VisualizerWindow(wxVTKRenderWindowInteractor):
     
     def onRenderBegin(self,event=None,e2=None):
         """
-        Method: onRenderBegin
         Created: 30.04.2005, KP
         Description: Called when rendering begins
         """
@@ -195,7 +187,6 @@ class VisualizerWindow(wxVTKRenderWindowInteractor):
 
     def onRenderEnd(self,event=None,e2=None):
         """
-        Method: onRenderEnd
         Created: 30.04.2005, KP
         Description: Called when rendering begins
         """
@@ -206,15 +197,6 @@ class VisualizerWindow(wxVTKRenderWindowInteractor):
         
     def save_png(self,filename):
         """
-        Method: save_png(self,filename)
-        Created: 28.04.2005, KP
-        Description: Save the rendered screen as png
-        """            
-        self.saveScreen(vtk.vtkPNGWriter(),filename)
-
-    def save_png(self,filename):
-        """
-        Method: save_png(self,filename)
         Created: 28.04.2005, KP
         Description: Save the rendered screen as png
         """            
@@ -222,7 +204,6 @@ class VisualizerWindow(wxVTKRenderWindowInteractor):
         
     def save_pnm(self,filename):
         """
-        Method: save_pnm(self,filename)
         Created: 28.04.2005, KP
         Description: Save the rendered screen as png
         """
@@ -238,12 +219,10 @@ class VisualizerWindow(wxVTKRenderWindowInteractor):
 
     def save_jpg(self,filename):
         return self.save_jpeg(filename)
-        
     
         
     def save_jpeg(self,filename):
         """
-        Method: save_jpeg(self,filename)
         Created: 28.04.2005, KP
         Description: Save the rendered screen as jpeg
         """            
@@ -251,7 +230,6 @@ class VisualizerWindow(wxVTKRenderWindowInteractor):
         
     def save_screen(self,filename):
         """
-        Method: save_tiff(self,filename)
         Created: 28.04.2005, KP
         Description: Save the rendered screen as image the format of which
                      is determined by the file extension
@@ -265,15 +243,13 @@ class VisualizerWindow(wxVTKRenderWindowInteractor):
         
     def save_tiff(self,filename):
         """
-        Method: save_tiff(self,filename)
         Created: 28.04.2005, KP
-        Description: Save the rendered screen as jpeg
+        Description: Save the rendered screen as TIFF
         """
         self.saveScreen(vtk.vtkTIFFWriter(),filename)
         
     def saveScreen(self,writer,filename):
         """
-        Method: saveScreen(writer,filename)
         Created: 28.04.2005, KP
         Description: Writes the screen to disk
         """
@@ -288,7 +264,6 @@ class VisualizerWindow(wxVTKRenderWindowInteractor):
 
     def getRenderer(self):
         """
-        Method: getRenderer
         Created: 28.04.2005, KP
         Description: Return the renderer
         """
