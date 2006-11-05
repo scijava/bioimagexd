@@ -20,7 +20,7 @@
 #ifndef __vtkBXDProcessingWin32Header_h
 #define __vtkBXDProcessingWin32Header_h
 
-#include <vtkBXDConfigure.h>
+#include <VTKBXDConfigure.h>
 
 #if defined(WIN32) && !defined(VTKBXD_STATIC)
 #if defined(vtkBXDProcessing_EXPORTS)
