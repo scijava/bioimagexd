@@ -488,10 +488,11 @@ class Scatterplot(InteractivePanel.InteractivePanel):
         verticalLegend = ImageOperations.paintCTFValues(self.sources[1].getColorTransferFunction(), height = 256, width=self.legendWidth, paintScalars = 1)
         horizontalLegend = ImageOperations.paintCTFValues(self.sources[0].getColorTransferFunction(), width= 256, height=self.legendWidth, paintScalars = 1)
         
+        hzlw = verticalLegend.GetWidth()+2*self.emptySpace
     
         dc.DrawBitmap(verticalLegend, 0, 0)
-        dc.DrawBitmap(horizontalLegend, self.xoffset, bmp.GetHeight()+self.emptySpace)
-        dc.DrawBitmap(bmp, self.xoffset, 0, True)
+        dc.DrawBitmap(horizontalLegend, self.xoffset+hzlw, bmp.GetHeight()+self.emptySpace)
+        dc.DrawBitmap(bmp, self.xoffset+hzlw, 0, True)
         
         self.bmp=self.buffer
 
@@ -503,33 +504,33 @@ class Scatterplot(InteractivePanel.InteractivePanel):
             x=255
             y=255-(255*slope+intercept)
             
-            dc.DrawLine(self.xoffset,255,self.xoffset+x,y)
+            dc.DrawLine(self.xoffset+hzlw,255,self.xoffset+hzlw+x,y)
         
         #ymax = self.size[1]
         ymax=255
         # These are the threshold lines
-        dc.DrawLine(self.xoffset+lower1*c,0,self.xoffset+lower1*c,255)
-        dc.DrawLine(self.xoffset,ymax-lower2*c,self.xoffset+255,ymax-lower2*c)
-        dc.DrawLine(self.xoffset+upper1*c,0,self.xoffset+upper1*c,255)
-        dc.DrawLine(self.xoffset,ymax-upper2*c,self.xoffset+255,ymax-upper2*c)
+        dc.DrawLine(self.xoffset+hzlw+lower1*c,0,self.xoffset+hzlw+lower1*c,255)
+        dc.DrawLine(self.xoffset+hzlw,ymax-lower2*c,self.xoffset+255+hzlw,ymax-lower2*c)
+        dc.DrawLine(self.xoffset+hzlw+upper1*c,0,self.xoffset+hzlw+upper1*c,255)
+        dc.DrawLine(self.xoffset+hzlw,ymax-upper2*c,self.xoffset+hzlw+255,ymax-upper2*c)
         
         dc.SetPen(wx.Pen(wx.Colour(255,255,0),2))
         # vertical line 
-        dc.DrawLine(self.xoffset+lower1*c,ymax-upper2*c,self.xoffset+lower1*c,ymax-lower2*c)
+        dc.DrawLine(self.xoffset+hzlw+lower1*c,ymax-upper2*c,self.xoffset+hzlw+lower1*c,ymax-lower2*c)
         # horizontal line
-        dc.DrawLine(self.xoffset+lower1*c,ymax-lower2*c,self.xoffset+upper1*c,ymax-lower2*c)
+        dc.DrawLine(self.xoffset+hzlw+lower1*c,ymax-lower2*c,self.xoffset+hzlw+upper1*c,ymax-lower2*c)
         # vertical line 2 
-        dc.DrawLine(self.xoffset+upper1*c,ymax-upper2*c,self.xoffset+upper1*c,ymax-lower2*c)
+        dc.DrawLine(self.xoffset+hzlw+upper1*c,ymax-upper2*c,self.xoffset+hzlw+upper1*c,ymax-lower2*c)
         # horizontal line 2
-        dc.DrawLine(self.xoffset+lower1*c,ymax-upper2*c,self.xoffset+upper1*c,ymax-upper2*c)
+        dc.DrawLine(self.xoffset+hzlw+lower1*c,ymax-upper2*c,self.xoffset+hzlw+upper1*c,ymax-upper2*c)
         
         overlay=ImageOperations.getOverlay(int((upper1-lower1)*c),int((upper2-lower2)*c),(255,255,0),64)
         overlay=overlay.ConvertToBitmap()
-        dc.DrawBitmap(overlay,self.xoffset+lower1*c,ymax-upper2*c,1)
+        dc.DrawBitmap(overlay,self.xoffset+hzlw+lower1*c,ymax-upper2*c,1)
         
         scatterLegend = ImageOperations.paintCTFValues(self.scatterCTF, width=self.legendWidth,height=256, paintScale = 1)
 
-        dc.DrawBitmap(scatterLegend, self.xoffset+255+2*self.emptySpace,0)
+        dc.DrawBitmap(scatterLegend, self.xoffset+hzlw+255+2*self.emptySpace,0)
         
         self.lower1=lower1*c
         self.lower2=lower2*c
