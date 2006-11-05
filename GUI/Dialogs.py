@@ -37,7 +37,6 @@ import os.path
 
 def showmessage(parent,message,title,flags=wx.OK):
     """
-    Method: showMessage(parent,message,title)
     Created: 28.01.2005, KP
     Description: A method to show a message
     """
@@ -47,7 +46,6 @@ def showmessage(parent,message,title,flags=wx.OK):
 
 def showwarning(parent,message,title,flags=wx.OK|wx.ICON_WARNING):
     """
-    Method: showwarning(parent,message,title)
     Created: 28.01.2005, KP
     Description: A method to show a warning
     """    
@@ -55,7 +53,6 @@ def showwarning(parent,message,title,flags=wx.OK|wx.ICON_WARNING):
     
 def showerror(parent,message,title,flags=wx.OK|wx.ICON_ERROR):
     """
-    Method: showerror(parent,message,title)
     Created: 28.01.2005, KP
     Description: A method to show an error message
     """    
@@ -64,7 +61,6 @@ def showerror(parent,message,title,flags=wx.OK|wx.ICON_ERROR):
     
 def askcolor(*args,**kws):
     """
-    Method: askcolor()
     Created: 28.01.2005, KP
     Description: A method to input a color from user
     """    
@@ -94,7 +90,6 @@ def askcolor(*args,**kws):
 
 def askDirectory(parent,title,initialDir=None):
     """
-    Method: askDirectory(parent, title, initialDir)
     Created: 28.01.2005, KP
     Description: A method for showing a directory selection dialog
     """    
@@ -119,7 +114,6 @@ def askDirectory(parent,title,initialDir=None):
 
 def askOpenFileName(parent,title,wc,remember=-1):
     """
-    Method: menuOpen()
     Created: 12.03.2005, KP
     Description: A method to show a open file dialog that supports multiple files
     """
@@ -144,17 +138,17 @@ def askOpenFileName(parent,title,wc,remember=-1):
     dlg.Destroy()
     return asklist
     
-def askSaveAsFileName(parent,title,initFile,wc):
+def askSaveAsFileName(parent,title,initFile,wc, type=None):
     """
-    Method: askSaveAsFileName(parent,operation,name)
     Created: 28.01.2005, KP
     Description: A method to show a save as dialog
     """    
     initialDir=None
     conf=Configuration.getConfiguration()
     remember=conf.getConfigItem("RememberPath","Paths")
-    type=wc.split("|")[1]
-    type=type.split(".")[1]
+    if not type:
+        type=wc.split("|")[1]
+        type=type.split(".")[1]
 
     if not initialDir:
         if remember:
@@ -174,9 +168,9 @@ def askSaveAsFileName(parent,title,initFile,wc):
                     
     dlg.Destroy()
     if filename:
+        currExt =filename.split(".")[-1].lower()
         ext=wc.split(".")[-1]
-        d=len(ext)
-        if filename[-d:].lower()!=ext.lower():
+        if wc.count("*.")<=2 and wc.find("*.%s"%currExt)==-1:        
             filename+=".%s"%ext 
 
     return filename

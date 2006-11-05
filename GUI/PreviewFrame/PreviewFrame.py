@@ -649,6 +649,7 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         if ext=="tif":ext="tiff"
         mime="image/%s"%ext
         img=self.buffer.ConvertToImage()
+        #print "Saving mimefile ",filename,mime
         img.SaveMimeFile(filename,mime)
         
     def enable(self,flag):

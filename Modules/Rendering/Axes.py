@@ -41,13 +41,11 @@ def getName():return "Axes"
 
 class AxesModule(VisualizationModule):
     """
-    Class: ScaleBarModule
     Created: 05.06.2005, KP
     Description: A module for showing a scale bar
     """    
     def __init__(self,parent,visualizer,**kws):
         """
-        Method: __init__(parent)
         Created: 03.05.2005, KP
         Description: Initialization
         """     
@@ -56,18 +54,10 @@ class AxesModule(VisualizationModule):
         #self.name = "Axes"
         self.renew = 1
         self.mapper = vtk.vtkPolyDataMapper()
-        
-        #self.axes = vtk.vtkAxes()
-        #self.axesTubes = vtk.vtkTubeFilter()
-        #self.axesTubes.SetNumberOfSides(6)
-        
-        #self.mapper.SetInput(self.axesTubes.GetOutput())
                 
-        #self.actor = vtk.vtkActor()
-        #self.actor.SetMapper(self.mapper)
         iactor = self.wxrenwin.GetRenderWindow().GetInteractor()
 
-        axes = vtk.vtkAxesActor()
+        self.axes = axes = vtk.vtkAxesActor()
         axes.SetShaftTypeToCylinder()
         axes.SetXAxisLabelText("X")
         axes.SetYAxisLabelText("Y")
@@ -85,7 +75,7 @@ class AxesModule(VisualizationModule):
         tprop3.ShallowCopy(tprop)
         axes.GetZAxisCaptionActor2D().SetCaptionTextProperty(tprop3)  
         self.renderer = self.parent.getRenderer()
-        
+        self.actor = self.axes
         self.marker = vtk.vtkOrientationMarkerWidget()
         self.marker.SetOutlineColor(0.93,0.57,0.13)
         self.marker.SetOrientationMarker(axes)
@@ -94,11 +84,9 @@ class AxesModule(VisualizationModule):
         self.marker.SetInteractor(iactor)
         self.marker.SetEnabled(1)
         self.marker.InteractiveOff()
-        #self.renderer.AddActor(self.actor)
         
     def setDataUnit(self,dataunit):
         """
-        Method: setDataUnit(self)
         Created: 28.04.2005, KP
         Description: Sets the dataunit this module uses for visualization
         """       
@@ -108,7 +96,6 @@ class AxesModule(VisualizationModule):
     
     def showTimepoint(self,value):
         """
-        Method: showTimepoint(tp)
         Created: 28.04.2005, KP
         Description: Set the timepoint to be displayed
         """          
@@ -117,7 +104,6 @@ class AxesModule(VisualizationModule):
         
     def updateRendering(self,e1=None,e2=None):
         """
-        Method: updateRendering()
         Created: 03.05.2005, KP
         Description: Update the Rendering of this module
         """             
@@ -127,7 +113,6 @@ class AxesModule(VisualizationModule):
 
     def disableRendering(self):
         """
-        Method: disableRendering()
         Created: 15.05.2005, KP
         Description: Disable the Rendering of this module
         """          
@@ -138,7 +123,6 @@ class AxesModule(VisualizationModule):
         
     def enableRendering(self):
         """
-        Method: enableRendering()
         Created: 15.05.2005, KP
         Description: Enable the Rendering of this module
         """          
@@ -146,11 +130,18 @@ class AxesModule(VisualizationModule):
         self.marker.On()
         self.wxrenwin.Render()
         
+    def setProperties(self, ambient,diffuse,specular,specularpower):
+        """
+        Created: 5.11.2006, KP
+        Description: A dummy method that captures the call for setting the
+                     different properties
+        """
+        pass
+        
 
 class AxesConfiguration(ModuleConfiguration):
     def __init__(self,parent,visualizer):
         """
-        Method: __init__(parent)
         Created: 04.05.2005, KP
         Description: Initialization
         """     
@@ -159,8 +150,7 @@ class AxesConfiguration(ModuleConfiguration):
         
 class AxesConfigurationPanel(ModuleConfigurationPanel):
     def __init__(self,parent,visualizer,name="Axes",**kws):
-        """Scale bar
-        Method: __init__(parent)
+        """
         Created: 04.05.2005, KP
         Description: Initialization
         """     
@@ -168,15 +158,10 @@ class AxesConfigurationPanel(ModuleConfigurationPanel):
     
     def initializeGUI(self):
         """
-        Method: initializeGUI()
         Created: 28.04.2005, KP
         Description: Initialization
         """  
-#        self.addButton=wx.Button(self,-1,"Add plane")
-#        self.addButton.Bind(wx.EVT_BUTTON,self.onAddPlane)
-#        self.contentSizer.Add(self.addButton,(0,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
-        
-        
+        pass
 
     def setModule(self,module):
         """
