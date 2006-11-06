@@ -251,7 +251,7 @@ class CTFPaintPanel(wx.Panel):
         Created: 30.10.2004, KP
         Description: Paints the graph of the function specified by points in the graph
         """
-        print "Got ",red,green,blue,alpha
+        #print "Got ",red,green,blue,alpha
         (r,rv),(g,gv),(b,bv) = red[-1], green[-1], blue[-1]
         a=0
         if alpha and drawAlpha:
@@ -1117,7 +1117,7 @@ class ColorTransferEditor(wx.Panel):
         self.greenpoints=[]
         self.bluepoints=[]
         self.alphapoints=[]
-        print "GOING THROUGH RANGE",self.maxval+1
+        #print "GOING THROUGH RANGE",self.maxval+1
         # Go through each intensity value
         for x in range(int(self.maxval+1)):
             if self.alpha:

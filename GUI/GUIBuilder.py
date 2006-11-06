@@ -64,7 +64,6 @@ class GUIBuilderBase:
     """ 
     def __init__(self, changeCallback):
         """
-        Method: __init__()
         Created: 13.04.2006, KP
         Description: Initialization
         """
@@ -259,20 +258,26 @@ class GUIBuilder(wx.Panel):
                         isTuple=1
                     else:
                         itemType = currentFilter.getType(item)
-                    print "item=",item,"param=",param
-                    print "itemType=",itemType,"isTuple=",isTuple
+                    #print "item=",item,"param=",param
+                    #print "itemType=",itemType,"isTuple=",isTuple
                     
-                    print "items=",items
+                    #print "items=",items
                     
                     if not (isTuple and itemType == types.BooleanType) and itemType not in [RADIO_CHOICE, SLICE, PIXEL, PIXELS, THRESHOLD, FILENAME, CHOICE, ROISELECTION]:
+                        print "NOBR=",nobr,"processing item",item
                         if not nobr:
                             y+=1
                             cx=0
                         else:
                             nobr = 0
                             cx+=1
+                        print "x=",cx,"y=",y
+                        oldy=y
                         cx, y = self.processItem(currentFilter,itemsizer,item,x=cx,y=y)
-                        
+                        if n>0:
+                            if items[n-1]==NOBR and y!=oldy:
+                                y-=1
+                        print "ndxt y=",y
                     else: # Items that are contained in a tuple ask to be grouped
                           # together
                         if not nobr:
@@ -345,7 +350,7 @@ class GUIBuilder(wx.Panel):
                             messenger.connect(currentFilter,"update_%s"%itemName,f)
                             
                             box.Add(slider,1)
-                            print "Adding box to ",y,0
+                            #print "Adding box to ",y,0
                             itemsizer.Add(box,(y,0),flag=wx.EXPAND|wx.HORIZONTAL)
                             y+=1
                         elif itemType == FILENAME:
@@ -496,6 +501,7 @@ class GUIBuilder(wx.Panel):
                             groupsizer=wx.GridBagSizer()
                             x=0
                             for it in item:
+                                print "PROCESSING ITEM",it
                                 self.processItem(currentFilter, groupsizer, it, x=x,y=0)
                                 x+=1
                             span=(1,x)
@@ -569,7 +575,6 @@ class GUIBuilder(wx.Panel):
         
     def onSetFileName(self, filter, item, evt):
         """
-        Method: onSetFileName
         Created: 12.07.2006, KP
         Description: Set the file name
         """           
@@ -579,7 +584,6 @@ class GUIBuilder(wx.Panel):
         
     def onSetChoiceFromFilter(self, cc, itemName, value):
         """
-        Method: onSetChoiceFromFilter
         Created: 12.07.2006, KP
         Description: Set the file name
         """           
@@ -589,7 +593,6 @@ class GUIBuilder(wx.Panel):
 
     def onSetFileNameFromFilter(self, bb, itemName, value):
         """
-        Method: onSetFileName
         Created: 12.07.2006, KP
         Description: Set the file name
         """           
@@ -598,7 +601,6 @@ class GUIBuilder(wx.Panel):
         
     def onSetRadioBox(self,box,item,value):
         """
-        Method: onSetRadioBox
         Created: 05.06.2006, KP
         Description: Set the value for the GUI item 
         """         
@@ -609,7 +611,6 @@ class GUIBuilder(wx.Panel):
         
     def onSetSlice(self,slider,item,value):
         """
-        Method: onSetSlice
         Created: 05.06.2006, KP
         Description: Set the value for the GUI item 
         """                 
@@ -618,7 +619,6 @@ class GUIBuilder(wx.Panel):
 
     def onSetSpinFromFilter(self,spin,item,value):
         """
-        Method: onSetSpinFromFilter
         Created: 21.06.2006, KP
         Description: Set the value for the GUI item 
         """                         
@@ -634,7 +634,6 @@ class GUIBuilder(wx.Panel):
         
     def processItem(self,currentFilter, itemsizer, item, x,y):
         """
-        Method: processItem
         Created: 15.04.2006, KP
         Description: Build the GUI related to one specific item
         """              
@@ -674,13 +673,12 @@ class GUIBuilder(wx.Panel):
                 y+=1
         print "Adding input to",x2,y
         itemsizer.Add(input,(y,x2))
-        if br:
-            y+=1
+        #if br:
+        #    y+=1
         return (x,y)
                         
     def createNumberInput(self,currentFilter,item,itemType,defaultValue,label = ""):
         """
-        Method: createIntInput
         Created: 15.04.2006, KP
         Description: Return the input for int type
         """        
@@ -721,7 +719,6 @@ class GUIBuilder(wx.Panel):
         
     def onSetNumber(self, input, item, value):
         """
-        Method: onSetNumber
         Created: 05.06.2006, KP
         Description: Set the value for the GUI item
         """             
@@ -729,7 +726,6 @@ class GUIBuilder(wx.Panel):
         input.SetValue(str(value))
     def onSetBool(self, input, item, value):
         """
-        Method: onSetBool
         Created: 05.06.2006, KP
         Description: Set the value for the GUI item
         """             
@@ -738,7 +734,6 @@ class GUIBuilder(wx.Panel):
     
     def createBooleanInput(self,currentFilter,item,itemType,defaultValue, label = ""):
         """
-        Method: createBooleanInput
         Created: 15.04.2006, KP
         Description: Return the input for boolean type
         """        
@@ -752,7 +747,6 @@ class GUIBuilder(wx.Panel):
         
     def removeSeed(self,listbox,currFilter):
         """
-        Method: removeSeed
         Created: 29.05.2006, KP
         Description: Remove a seed from filter
         """         
@@ -772,7 +766,6 @@ class GUIBuilder(wx.Panel):
 
     def onAddPixel(self,obj,evt,rx,ry,rz,r,g,b,alpha,ctf,item,currFilter,listbox):
         """
-        Method: onAddPixel
         Created: 29.05.2006, KP
         Description: Add a value to the pixel listbox
         """             
@@ -790,7 +783,6 @@ class GUIBuilder(wx.Panel):
             
     def onSetPixel(self,obj,evt,rx,ry,rz,r,g,b,alpha,ctf,item,currFilter,valuelbl):
         """
-        Method: onSetPixel
         Created: 26.05.2006, KP
         Description: Set the value of the pixel label
         """             
@@ -804,7 +796,6 @@ class GUIBuilder(wx.Panel):
             
     def onSetPixelFromFilter(self,label, item, value):
         """
-        Method: onSetPixelFromFilter
         Created: 06.06.2006, KP
         Description: Set the value of the pixel label from a variable
         """             
@@ -814,7 +805,6 @@ class GUIBuilder(wx.Panel):
 
     def onSetPixelsFromFilter(self,listbox, item, value):
         """
-        Method: onSetPixelsFromFilter
         Created: 06.06.2006, KP
         Description: Set the value of the pixel label from a variable
         """     
@@ -825,7 +815,6 @@ class GUIBuilder(wx.Panel):
 
     def onSetHistogramValues(self,histogram, item, value,valuetype="Lower"):
         """
-        Method: onSetHistogramValues
         Created: 06.06.2006, KP
         Description: Set the lower and upper threshold for histogram
         """             
@@ -834,7 +823,6 @@ class GUIBuilder(wx.Panel):
             
     def onSetThreshold(self,evt,items,currentFilter):
         """
-        Method: onSelectRadioBox
         Created: 15.04.2006, KP
         Description: Process an event from a radio box
         """      
@@ -844,7 +832,6 @@ class GUIBuilder(wx.Panel):
             
     def onSetSliderValue(self,evt,items,currentFilter):
         """
-        Method: onSetSliderValue
         Created: 31.05.2006, KP
         Description: Set the slider value
         """      
@@ -853,7 +840,6 @@ class GUIBuilder(wx.Panel):
 
     def onSetSpinValue(self,evt,spinbox,itemName,currentFilter):
         """
-        Method: onSetSpinValue
         Created: 31.05.2006, KP
         Description: Set the spin value
         """      
@@ -865,7 +851,6 @@ class GUIBuilder(wx.Panel):
             
     def onSelectRadioBox(self,evt,items,currentFilter):
         """
-        Method: onSelectRadioBox
         Created: 15.04.2006, KP
         Description: Process an event from a radio box
         """      
@@ -877,7 +862,6 @@ class GUIBuilder(wx.Panel):
         
     def validateAndPassOn(self,event,input,parameter,itemType,currentFilter):
         """
-        Method: buildGUI
         Created: 13.04.2006, KP
         Description: Build the GUI for a given filter
         """
