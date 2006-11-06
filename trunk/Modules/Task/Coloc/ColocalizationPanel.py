@@ -1002,41 +1002,51 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
         """      
         n=TaskPanel.TaskPanel.createItemToolbar(self)
         #self.toolMgr.clearItemsBar()
+        
+        
         coloc=vtk.vtkImageColocalizationFilter()
         coloc.SetOutputDepth(8)
         i=0
-        for dataunit in self.dataUnit.getSourceDataUnits():
-            coloc.AddInput(dataunit.getTimePoint(0))
-            coloc.SetColocalizationLowerThreshold(i,10)
+        #for dataunit in self.dataUnit.getSourceDataUnits():
+        for data in self.itemMips:
+            coloc.AddInput(data)
+            coloc.SetColocalizationLowerThreshold(i,100)
             coloc.SetColocalizationUpperThreshold(i,255)
             i=i+1
         coloc.Update()
         ctf=vtk.vtkColorTransferFunction()
         ctf.AddRGBPoint(0,0,0,0)
         ctf.AddRGBPoint(255,1,1,1)
-        imagedata=ImageOperations.getMIP(coloc.GetOutput(),ctf)
+        #imagedata=ImageOperations.getMIP(coloc.GetOutput(),ctf)
+        maptocolor=vtk.vtkImageMapToColors()
+        maptocolor.SetInput(coloc.GetOutput())
+        maptocolor.SetLookupTable(ctf)
+        maptocolor.SetOutputFormatToRGB()
+        maptocolor.Update()
+        imagedata=maptocolor.GetOutput()
         bmp=ImageOperations.vtkImageDataToWxImage(imagedata)
-        bmp=bmp.Rescale(30,30).ConvertToBitmap()
-        dc= wx.MemoryDC()
-
+        
+        bmp=bmp.Rescale(TaskPanel.TOOL_W+4,TaskPanel.TOOL_H+4).ConvertToBitmap()
+        #print "BMP=",bmp.GetWidth(),bmp.GetHeight()
+            
+        dc = wx.MemoryDC()
         dc.SelectObject(bmp)
-        dc.BeginDrawing()
-        val=[0,0,0]
-        ctf.GetColor(255,val)
+        #val=[0,0,0]
+        #ctf.GetColor(255,val)
         dc.SetBrush(wx.TRANSPARENT_BRUSH)
-        r,g,b=val
-        r*=255
-        g*=255
-        b*=255
-        dc.SetPen(wx.Pen(wx.Colour(r,g,b),4))
-        dc.DrawRectangle(0,0,32,32)
+        #r,g,b=val
+        #r*=255
+        #g*=255
+        #b*=255
+        dc.SetPen(wx.Pen(wx.Colour(255,255,255),4))
+        dc.DrawRectangle(0,0,TaskPanel.TOOL_W+4,TaskPanel.TOOL_H+4)
         dc.EndDrawing()
         #dc.SelectObject(wx.EmptyBitmap(0,0))
         dc.SelectObject(wx.NullBitmap)
         toolid=wx.NewId()
         #n=n+1
         name="Colocalization"
-        self.toolMgr.addItem(name,bmp,toolid,lambda e,x=n,s=self:s.setPreviewedData(e,x))        
+        self.toolMgr.addChannelItem(name,bmp,toolid,lambda e,x=n,s=self:s.setPreviewedData(e,x))        
         
         for i,tid in enumerate(self.toolIds):
             self.dataUnit.setOutputChannel(i,0)

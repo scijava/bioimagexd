@@ -445,12 +445,12 @@ class InteractivePanel(ogl.ShapeCanvas):
             ex,ey = self.actionstart
             
             if self.annotationClass == "CIRCLE":
-                
-                
                 diff = max(abs(x-ex),abs(y-ey))
                 if diff<2:diff=2
+                
                 shape = MyCircle(2*diff,zoomFactor = self.zoomFactor)
-                print "start=",ex,ey
+                shape.SetCentreResize(0)
+                
                 shape.SetX( ex )
                 shape.SetY( ey )
 
@@ -538,8 +538,9 @@ class InteractivePanel(ogl.ShapeCanvas):
             
         annotations=filter(lambda x:isinstance(x,OGLAnnotation),annotations)
         annotations=filter(lambda x:not isinstance(x,MyPolygonSketch),annotations)
-            
-        self.dataUnit.getSettings().set("Annotations",annotations)
+        
+        if self.dataUnit:
+            self.dataUnit.getSettings().set("Annotations",annotations)
                         
     
     def addNewShape(self, shape):

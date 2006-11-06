@@ -45,6 +45,7 @@ import Logging
 import DataUnit
 import MenuManager
 import Histogram
+import AnnotationToolbar
 
 import platform
 
@@ -63,11 +64,9 @@ import scripting
 
 import GUI.Toolbar
 import wx.lib.buttons as buttons
-import  wx.lib.colourselect as  csel
+
 
 visualizerInstance=None
-
-
 
 def getVisualizer():
     global visualizerInstance
@@ -97,7 +96,7 @@ class Visualizer:
         self.updateFactor = 0.001
         self.depthT=0
         self.zoomToFitFlag=1
-        self.annotateColor = (0,255,0)
+        
         self.conf = Configuration.getConfiguration()
         self.zoomFactor=1.0
         self.tb1=None
@@ -171,13 +170,8 @@ class Visualizer:
         self.annotateBarWin.SetDefaultSize((70,768))
         self.annotateBarWin.origSize=(70,768)
         
-        self.annotateBar = wx.Window(self.annotateBarWin)
+        self.annotateBar = AnnotationToolbar.AnnotationToolbar(self.annotateBarWin, self)
         
-        self.annotateSizer = wx.GridBagSizer(2,2)
-        self.annotateBar.SetSizer(self.annotateSizer)
-        self.annotateBar.SetAutoLayout(1)
-        
-        self.createAnnotationToolbar()
                 
         self.histogramWin=wx.SashLayoutWindow(self.parent,MenuManager.ID_HISTOGRAM_WIN,style=wx.NO_BORDER)
         self.histogramWin.SetOrientation(wx.LAYOUT_HORIZONTAL)
@@ -282,7 +276,7 @@ class Visualizer:
         self.zslider.Bind(wx.EVT_SCROLL_PAGEDOWN,self.onZPageDown)
         self.zslider.Bind(wx.EVT_SCROLL_PAGEUP,self.onZPageUp)
         messenger.connect(None,"zslice_changed",self.onChangeZSlice)
-        messenger.connect(None,"update_annotations",self.updateAnnotations)
+        
         
         self.sliderbox.Add(self.prev)
         self.sliderbox.Add(self.timeslider,1)
@@ -445,55 +439,6 @@ class Visualizer:
         self.histogramPanel.Layout()
         self.OnSize(None)
             
-    def createAnnotationToolbar(self):
-        """
-        Created: 05.10.2006, KP
-        Description: Method to create a toolbar for the annotations
-        """        
-        def createBtn(bid, gifname, tooltip, btnclass = buttons.GenBitmapToggleButton):
-            icondir = scripting.get_icon_dir()  
-            btn = btnclass(self.annotateBar, bid, wx.Image(os.path.join(icondir,gifname),wx.BITMAP_TYPE_GIF).ConvertToBitmap())
-            btn.SetBestSize((32,32))
-            #btn.SetBitmapLabel()
-            btn.SetToolTipString(tooltip)
-            return btn
-        
-        self.circleBtn = createBtn(MenuManager.ID_ROI_CIRCLE,"circle.gif","Select a circular area of the image")
-        self.annotateSizer.Add(self.circleBtn, (0,0))
-        
-        self.rectangleBtn = createBtn(MenuManager.ID_ROI_RECTANGLE,"rectangle.gif","Select a circular area of the image")
-        self.annotateSizer.Add(self.rectangleBtn, (0,1))
-        
-        self.polygonBtn = createBtn(MenuManager.ID_ROI_POLYGON,"polygon.gif","Select a polygonal area of the image")
-        self.annotateSizer.Add(self.polygonBtn, (1,0))
-        
-        self.scaleBtn = createBtn(MenuManager.ID_ADD_SCALE,"scale.gif","Draw a scale bar on the image")
-        self.annotateSizer.Add(self.scaleBtn, (1,1))
-
-
-
-        self.textBtn = createBtn(MenuManager.ID_ANNOTATION_TEXT,"text.gif","Add a text annotation")
-        self.annotateSizer.Add(self.textBtn, (2,0))
-
-        self.deleteAnnotationBtn = createBtn(MenuManager.ID_DEL_ANNOTATION,"delete_annotation.gif","Delete an annotation")
-        self.annotateSizer.Add(self.deleteAnnotationBtn, (4,1))   
-
-        self.roiToMaskBtn = createBtn(MenuManager.ID_ROI_TO_MASK,"roitomask.gif","Convert the selected Region of Interest to a Mask", btnclass=buttons.GenBitmapButton)
-        self.annotateSizer.Add(self.roiToMaskBtn, (4,0))
-
-        #self.fontBtn = createBtn(MenuManager.ID_ANNOTATION_FONT,"fonts.gif","Set the font for annotations", btnclass=buttons.GenBitmapButton)
-        #self.annotateSizer.Add(self.fontBtn, (3,1))
-
-        self.colorSelect = csel.ColourSelect(self.annotateBar, -1, "", self.annotateColor, size = (65,-1))
-        self.annotateSizer.Add(self.colorSelect, (5,0),span=(1,2))
-
-        self.circleBtn.Bind(wx.EVT_BUTTON, self.addAnnotation)
-        self.rectangleBtn.Bind(wx.EVT_BUTTON, self.addAnnotation)
-        self.polygonBtn.Bind(wx.EVT_BUTTON, self.addAnnotation)
-        self.scaleBtn.Bind(wx.EVT_BUTTON, self.addAnnotation)
-        self.roiToMaskBtn.Bind(wx.EVT_BUTTON,self.roiToMask)
-        #wx.EVT_TOOL(self.parent,MenuManager.ID_ADD_SCALE,self.addAnnotation)
-        self.deleteAnnotationBtn.Bind(wx.EVT_BUTTON,self.deleteAnnotation)
 
     
     def createToolbar(self):
@@ -592,20 +537,7 @@ class Visualizer:
         print "NO regions of interest"
         return []
         
-        
-    def roiToMask(self, evt):
-        """
-        Created: 20.06.2006, KP
-        Description: Convert the selected ROI to mask
-        """
-        if hasattr(self.currentWindow, "roiToMask"):
-            imagedata, names=self.currentWindow.roiToMask()
-            #name = self.dataUnit.getName()
-            name=",".join(names)
-            dims = self.dataUnit.getDimensions()
-            mask = MaskTray.Mask(name,dims,imagedata)
-            self.setMask(mask)
-        
+                
     def onElevationUp(self,evt):
         if self.mode=="3d":
             self.currMode.getRenderer().GetActiveCamera().Elevation(self.ElevationStep)
@@ -677,50 +609,6 @@ class Visualizer:
         self.zoomToFitFlag=0
         self.currMode.zoomObject()
         #self.zoomFactor=self.currMode.getZoomFactor()
-
-    def addAnnotation(self,event):
-        """
-        Created: 03.07.2005, KP
-        Description: Draw a scale to the visualization
-        """
-        annclass=None
-        eid=event.GetId()
-        multiple=0
-        if eid==MenuManager.ID_ADD_SCALE:
-            annclass="SCALEBAR"
-        elif eid == MenuManager.ID_ANNOTATION_TEXT:
-            annclass="TEXT"
-        elif eid == MenuManager.ID_ROI_CIRCLE:
-            annclass="CIRCLE"
-
-        elif eid==MenuManager.ID_ROI_RECTANGLE:
-            annclass="RECTANGLE"
-        elif eid==MenuManager.ID_ROI_POLYGON:
-            annclass="POLYGON"
-            multiple=1
-        else:
-            Logging.info("BOGUS ANNOTATION SELECTED!",kw="visualizer")
-                        
-        self.currMode.annotate(annclass,multiple=multiple)
-        
-        
-    def deleteAnnotation(self,event):
-        """
-        Created: 04.07.2005, KP
-        Description: DElete annotations on the image
-        """
-        self.currMode.deleteAnnotation()
-
-    def updateAnnotations(self, *args):
-        """
-        Created: 05.10.2006, KP
-        Description: Untoggle the annotation buttons because an annotation was added
-        """
-        self.scaleBtn.SetToggle(False)
-        self.circleBtn.SetToggle(False)
-        self.rectangleBtn.SetToggle(False)
-        self.polygonBtn.SetToggle(False)
-        
 
     def zoomOut(self,evt):
         """

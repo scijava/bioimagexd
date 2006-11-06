@@ -1141,6 +1141,8 @@ class MainWindow(wx.Frame):
             import_code="""
     importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
     importdlg.ShowModal()
+    datasetName = importdlg.getDatasetName()
+    mainWindow.openFile(datasetName)
     """
             command = Command.Command(Command.MENU_CMD,None,None,import_code,"",imports=["GUI.ImportDialog"],desc="Show import dialog")
             self.commands["show_import"]=command
@@ -1347,6 +1349,13 @@ class MainWindow(wx.Frame):
             #self.createDataUnit(fname,askfile)
         self.SetStatusText("Done.")
 
+    def openFile(self, filepath):
+        """
+        Created: 06.11.2006, KP
+        Description: Open a file extracting the dataset name from the filename
+        """
+        self.createDataUnit(os.path.basename(filepath),filepath)
+        
     def createDataUnit(self,name,path):
         """
         Created: 03.11.2004, KP

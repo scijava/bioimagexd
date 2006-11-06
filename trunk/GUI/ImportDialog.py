@@ -45,13 +45,11 @@ import DataSource
 
 class ImportDialog(wx.Dialog):
     """
-    Class: ImportDialog
     Created: 16.03.2005, KP
     Description: A dialog for importing various forms of data to create a .bxd file
     """
     def __init__(self, parent,imageMode=1):
         """
-        Method: __init__
         Created: 17.03.2005, KP
         Description: Initialize the dialog
         """    
@@ -64,6 +62,7 @@ class ImportDialog(wx.Dialog):
         #self.createVTIImport()
         self.imageInfo = None
         self.pattern=0
+        self.resultDataset = None
         self.extMapping = {"tif":"TIFF","tiff":"TIFF","png":"PNG","jpg":"JPEG","jpeg":"JPEG","pnm":"PNM","vti":"XMLImageData","vtk":"DataSet","bmp":"BMP"}
         self.dimMapping={"bmp":2,"tif":2,"tiff":2,"png":2,"jpg":2,"jpeg":2,"pnm":2,"vti":3,"vtk":3}
         
@@ -80,9 +79,15 @@ class ImportDialog(wx.Dialog):
         self.SetAutoLayout(1)
         self.sizer.Fit(self)
         
+    def getDatasetName(self):
+        """
+        Created: 6.11.2006, KP
+        Description: Return the name of the resultant dataset
+        """
+        return self.resultDataset
+        
     def onOkButton(self,event):
         """
-        Method: onOkButton
         Created: 21.04.2005, KP
         Description: Executes the procedure
         """
@@ -95,12 +100,11 @@ class ImportDialog(wx.Dialog):
         filename=Dialogs.askSaveAsFileName(self,"Save imported dataset as","%s.bxd"%name,"BioImageXD Dataset (*.bxd)|*.bxd")
         self.Close()
         
-
+        self.resultDataset = filename
         self.convertFiles(filename)
 
     def convertFiles(self,outname):
         """
-        Method: convertFiles()
         Created: 21.04.2005, KP
         Description: Method that reads the files that user has selected
         """          
@@ -142,7 +146,7 @@ class ImportDialog(wx.Dialog):
                 self.dlg.Update(i,"Reading dataset %d / %d"%(i+1,self.tot))
 #                self.writeData(outname,data,i,len(files))
         else:
-            print "IMPORTING..."
+            #print "IMPORTING..."
             self.tot = len(files) / self.z
             
             self.dlg = wx.ProgressDialog("Importing","Reading dataset %d / %d"%(0,0),maximum = 2*self.tot, parent = self,
@@ -154,7 +158,7 @@ class ImportDialog(wx.Dialog):
             Logging.info("Number of %s=",n,kw="io")
             imgAmnt=len(files)
             if n==0 and imgAmnt>1:
-                print "FOO"
+                #print "FOO"
                 Dialogs.showerror(self,"You are trying to import multiple files but have not defined a proper pattern for the files to be imported","Bad pattern")
                 return
             elif n==0:
@@ -178,7 +182,7 @@ class ImportDialog(wx.Dialog):
                 for i in range(0,imgAmnt):
                     
                     file=dirn+os.path.sep+pattern%i
-                    print "CHecking ",file
+                    #print "CHecking ",file
                     if os.path.exists(file):
                         start=i
                         Logging.info("Files start at %d"%i)
@@ -235,7 +239,6 @@ class ImportDialog(wx.Dialog):
         
     def writeDataUnitFile(self):
         """
-        Method: writeDataUnitFile
         Created: 25.04.2005, KP
         Description: Writes a .bxd file
         """ 
@@ -277,7 +280,6 @@ class ImportDialog(wx.Dialog):
     
     def writeData(self,outname,data,n,total):
         """
-        Method: writeData
         Created: 21.04.2005, KP
         Description: Writes a data out
         """
@@ -286,7 +288,6 @@ class ImportDialog(wx.Dialog):
         
     def createImageImport(self):
         """
-        Method: createImageImport()
         Created: 17.03.2005, KP
         Description: Creates a panel for importing of images as slices of a volume
         """            
@@ -422,7 +423,6 @@ class ImportDialog(wx.Dialog):
         
     def onUpdateVoxelSize(self,filename):
         """
-        Method: onUpdateVoxelSize
         Created: 21.04.2005, KP
         Description: A method to update the spacing depending on the voxel size
         """                       
@@ -442,7 +442,6 @@ class ImportDialog(wx.Dialog):
         
     def setImagePattern(self,filename):
         """
-        Method: setImagePattern
         Created: 17.03.2005, KP
         Description: A method called when a file is loaded in the filebrowsebutton
         """                 
@@ -469,7 +468,6 @@ class ImportDialog(wx.Dialog):
      
     def updateSelection(self,event):
         """
-        Method: updateSelection
         Created: 17.03.2005, KP
         Description: This method is called when user selects items in the listbox
         """           
@@ -478,7 +476,6 @@ class ImportDialog(wx.Dialog):
     
     def setNumberOfImages(self,n=-1):
         """
-        Method: setNumberOfImages(n)
         Created: 17.03.2005, KP
         Description: Sets the number of images we're reading
         """        
@@ -497,7 +494,6 @@ class ImportDialog(wx.Dialog):
     
     def sortNumerically(self,item1,item2):
         """
-        Method: sortNumerically
         Created: 17.03.2005, KP
         Description: A method that compares two filenames and sorts them by the number in their filename
         """        
@@ -603,7 +599,6 @@ class ImportDialog(wx.Dialog):
             
     def retrieveImageInfo(self,filename):
         """
-        Method: retrieveImageInfo
         Created: 21.04.2005, KP
         Description: A method that reads information from an image
         """        

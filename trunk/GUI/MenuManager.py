@@ -215,7 +215,7 @@ class MenuManager:
         self.mainToolbar=None
         self.toolIds=[]
         self.tools={}
-        
+        self.channelIds=[]
         
         self.commands = []
         
@@ -379,27 +379,29 @@ class MenuManager:
         Created: 01.06.2005, KP
         Description: Clear items bar
         """
-        if not self.itemBar:return
-        for i in self.toolIds:
-            self.itemBar.DeleteTool(i)
-        self.toolIds=[]
-        self.itemBar.Realize()
+        self.visualizer.annotateBar.clearChannelItems()
+        #if not self.itemBar:return
+        #for i in self.toolIds:
+        #    self.itemBar.DeleteTool(i)
+        #self.toolIds=[]
+        #self.itemBar.Realize()
         
 
-    def addItem(self,name,bitmap,toolid,func):
+    def addChannelItem(self,name,bitmap,toolid,func):
         """
         Created: 01.06.2005, KP
         Description: Add a toolbar item
         """
-        self.toolIds.append(toolid)
+        self.channelIds.append(toolid)
 
-        self.itemBar=self.visualizer.tb
-        self.visualizer.tb.Bind(wx.EVT_TOOL,func,id=toolid)
+        #self.itemBar=self.visualizer.tb
+        #self.visualizer.tb.Bind(wx.EVT_TOOL,func,id=toolid)
     
-        self.tools[toolid]=(name,bitmap,func)
-        self.itemBar.DoAddTool(toolid,name,bitmap,kind=wx.ITEM_CHECK)
+        #self.tools[toolid]=(name,bitmap,func)
+        #self.itemBar.DoAddTool(toolid,name,bitmap,kind=wx.ITEM_CHECK)
         
-        self.itemBar.Realize()
+        #self.itemBar.Realize()
+        self.visualizer.annotateBar.addChannelItem(name, bitmap, toolid, func)
         
     
     def toggleTool(self,toolid,flag):
@@ -407,6 +409,9 @@ class MenuManager:
         Created: 22.07.2005, KP
         Description: Toggle a toolbar item
         """
+        if toolid in self.channelIds:
+            self.visualizer.annotateBar.toggleChannelItem(toolid,flag)
+            return
         self.visualizer.tb.ToggleTool(toolid,flag)
 
     def addMenuItem(self,menu,menuid,name,hlp=None,callback=None,before=None,check=0,checked=1):

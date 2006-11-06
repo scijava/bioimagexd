@@ -383,6 +383,8 @@ class TreeWidget(wx.SashLayoutWindow):
         if not item.IsOk():
             return
         obj=self.tree.GetPyData(item)
+        if obj=="1":
+            return
         self.item = item
         messenger.send(None,"tree_selection_changed",obj)
         self.markGreen([item])
@@ -391,7 +393,6 @@ class TreeWidget(wx.SashLayoutWindow):
         
     def onSelectionChanged(self,event=None):
         """
-        Method: onSelectionChanged
         Created: 10.01.2005, KP
         Description: A event handler called when user selects and item.
         """      
@@ -400,10 +401,9 @@ class TreeWidget(wx.SashLayoutWindow):
         #item=items[-1]
         if not item.IsOk():
             return
-
-      
         
         obj=self.tree.GetPyData(item)
+
         self.item=item
         if obj and type(obj)!=types.StringType:
             if self.lastobj != obj:

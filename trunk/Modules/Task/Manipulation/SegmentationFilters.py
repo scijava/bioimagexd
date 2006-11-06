@@ -526,11 +526,13 @@ class MorphologicalWatershedSegmentationFilter(ProcessingFilter.ProcessingFilter
         ProcessingFilter.ProcessingFilter.__init__(self,inputs)
         
         
-        self.descs = {"Level":"Segmentation Level"}
+        self.descs = {"Level":"Segmentation Level","MarkWatershedLine":"Mark the watershed line",
+        "Threshold":"Remove objects with less voxels than:"}
         self.itkFlag = 1
         self.n=0
         
         self.watershed = None
+        self.relabelFilter  = None
         #scripting.loadITK(filters=1)            
         
             
@@ -541,6 +543,7 @@ class MorphologicalWatershedSegmentationFilter(ProcessingFilter.ProcessingFilter
         """    
         if parameter == "Level":
             return 5
+        
         return 0
         
     def getType(self,parameter):
@@ -548,15 +551,17 @@ class MorphologicalWatershedSegmentationFilter(ProcessingFilter.ProcessingFilter
         Created: 13.04.2006, KP
         Description: Return the type of the parameter
         """    
+        if parameter == "MarkWatershedLine":
+            return types.BooleanType
         return types.IntType
-        
+             
         
     def getParameters(self):
         """
         Created: 15.04.2006, KP
         Description: Return the list of parameters needed for configuring this GUI
         """            
-        return [["",("Level",)]]
+        return [["",("Level","MarkWatershedLine")],["Minimum object size (in pixels)",("Threshold",)]]
 
 
     def execute(self,inputs,update=0,last=0):
@@ -574,7 +579,9 @@ class MorphologicalWatershedSegmentationFilter(ProcessingFilter.ProcessingFilter
             self.watershed = watershed        
             ul3 = itk.Image.UL3
             self.itkfilter = watershed.MorphologicalWatershedImageFilter[image, ul3].New()
-            self.itkfilter.SetMarkWatershedLine(0)
+        
+        markWatershedLine = self.parameters["MarkWatershedLine"]
+        self.itkfilter.SetMarkWatershedLine(markWatershedLine)
 
         t =time.time()
         #print "Feeding to watershed",image
@@ -586,6 +593,26 @@ class MorphologicalWatershedSegmentationFilter(ProcessingFilter.ProcessingFilter
         self.itkfilter.Update()
         print "Morphological watershed took",time.time()-t,"seconds"
         data=self.itkfilter.GetOutput()            
+        if not self.relabelFilter:
+            
+            self.relabelFilter = itk.RelabelComponentImageFilter[data,data].New()
+        self.relabelFilter.SetInput(data)
+        th = self.parameters["Threshold"]
+        if th:
+            self.relabelFilter.SetMinimumObjectSize(th)
+                
+            #self.setImageType("UL3")
+    
+        data=self.relabelFilter.GetOutput()            
+                
+        self.relabelFilter.Update()
+        n = self.relabelFilter.GetNumberOfObjects()
+        
+        ctf = ImageOperations.watershedPalette(0, n)
+            
+        if markWatershedLine:
+            ctf.AddRGBPoint(0,1.0,1.0,1.0)
+        self.dataUnit.getSettings().set("ColorTransferFunction",ctf)    
         #print "Returning ",data
         return data
 
@@ -599,16 +626,15 @@ class ConnectedComponentFilter(ProcessingFilter.ProcessingFilter):
     
     def __init__(self,inputs=(1,1)):
         """
-        Method: __init__()
         Created: 13.04.2006, KP
         Description: Initialization
         """        
         ProcessingFilter.ProcessingFilter.__init__(self,inputs)
         
         
-        self.descs = {}
+        self.descs = {"Threshold":"Remove objects with less voxels than:"}        
         self.itkFlag = 1
-        
+        self.relabelFilter = None
         self.itkfilter = None
         #scripting.loadITK(filters=1)            
         
@@ -634,7 +660,7 @@ class ConnectedComponentFilter(ProcessingFilter.ProcessingFilter):
         Description: Return the list of parameters needed for configuring this GUI
         """            
         #return [["",("Level",)]]
-        return []
+        return [["Minimum object size (in pixels)",("Threshold",)]]
 
 
     def execute(self,inputs,update=0,last=0):
@@ -656,7 +682,26 @@ class ConnectedComponentFilter(ProcessingFilter.ProcessingFilter):
         self.setImageType("UL3")
         self.itkfilter.Update()
         #print "Morphological watershed took",time.time()-t,"seconds"
-        data=self.itkfilter.GetOutput()            
+        data=self.itkfilter.GetOutput()        
+    
+        if not self.relabelFilter:
+            
+            self.relabelFilter = itk.RelabelComponentImageFilter[data,data].New()
+        self.relabelFilter.SetInput(data)
+        th = self.parameters["Threshold"]
+        if th:
+            self.relabelFilter.SetMinimumObjectSize(th)
+                
+            #self.setImageType("UL3")
+    
+            data=self.relabelFilter.GetOutput()            
+                
+            self.relabelFilter.Update()
+            n = self.relabelFilter.GetNumberOfObjects()
+        
+            ctf = ImageOperations.watershedPalette(0, n)
+            
+            self.dataUnit.getSettings().set("ColorTransferFunction",ctf)    
         #print "Returning ",data
         return data
 
@@ -670,7 +715,6 @@ class MaximumObjectsFilter(ProcessingFilter.ProcessingFilter):
     
     def __init__(self,inputs=(1,1)):
         """
-        Method: __init__()
         Created: 13.04.2006, KP
         Description: Initialization
         """        
@@ -806,12 +850,8 @@ class ITKRelabelImageFilter(ProcessingFilter.ProcessingFilter):
         #self.setImageType("UL3")
 
         data=self.itkfilter.GetOutput()            
-        
-        
+                
         self.itkfilter.Update()
-        n = self.itkfilter.GetNumberOfObjects()
-        ctf = ImageOperations.watershedPalette(0, n)
-        self.dataUnit.getSettings().set("ColorTransferFunction",ctf)
         
         #if last:
         #    return self.convertITKtoVTK(data,imagetype="UL3")
@@ -827,7 +867,6 @@ class ITKInvertIntensityFilter(ProcessingFilter.ProcessingFilter):
     
     def __init__(self,inputs=(1,1)):
         """
-        Method: __init__()
         Created: 13.04.2006, KP
         Description: Initialization
         """        

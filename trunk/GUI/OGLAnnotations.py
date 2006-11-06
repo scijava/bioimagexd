@@ -124,6 +124,31 @@ class OGLAnnotation:
         """
         for key in state.keys():
             self.getAttr(state,key)
+            
+    def GetMaintainAspectRatio(self):
+        """
+        Created: 06.11.2006, KP
+        Description: Return a flag indicating whether we should maintain aspect ratio.
+                     This is changed dynamically based on whether the user is dragging
+                     from diagonal or non-diagonal handles
+        """
+        if not hasattr(self,"doMaintainAspect"):
+            return 0
+        return self.doMaintainAspect
+            
+    def OnSizingDragLeft(self, pt, draw, x, y, keys = 0, attachment = 0):            
+        """
+        Created: 06.11.2006, KP
+        Description: A handler for sizing events. This is overriden to manipulate
+                     the sizing behaviour so that the diagonal handles always
+                      maintain aspect ratio
+        """
+        if pt._type == ogl.CONTROL_POINT_DIAGONAL:
+            self.doMaintainAspect = 1
+        else:
+            self.doMaintainAspect = 0
+            
+        ogl.Shape.OnSizingDragLeft(self, pt, draw,x,y,keys,attachment)
         
 class MyText(OGLAnnotation, ogl.TextShape):
     """
@@ -330,8 +355,9 @@ class MyScalebar(OGLAnnotation, ogl.RectangleShape):
             dc.DrawText(text,x1+x,y1+12)
         else:
             y=bmph/2
-            y-=(h/2)
-            dc.DrawRotatedText(text,x1+12,y1+y,90)
+            y+=(w/2)
+            print "y1=",y1,"y=",y
+            dc.DrawRotatedText(text,x1+12,y+y1,90)
             
 class MyPolygonSketch(OGLAnnotation, ogl.Shape):   
     def __init__(self,zoomFactor = 1.0):

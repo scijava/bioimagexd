@@ -44,13 +44,11 @@ class ToolCommandEvent(wx.PyCommandEvent):
 
 class Toolbar(wx.Panel):
     """
-    Class: Toolbar
     Created: 27.04.2006, KP
     Description: A toolbar that can change it's amount of tool rows based on it's size
     """        
     def __init__(self,parent,wid, pos = wx.DefaultPosition, size = wx.DefaultSize,style = wx.TB_HORIZONTAL | wx.NO_BORDER, name = ""):
         """
-        Method: __init__
         Created: 27.04.2006, KP
         Description: Initialize the toolbar
         """    

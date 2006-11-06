@@ -428,20 +428,11 @@ def getMIP(imageData,color):
     x,y,z=imageData.GetDimensions()
     
     output=mip.GetOutput()
+    if color==None:
+        return output
     #Logging.info("Got MIP",kw="imageop")
     if output.GetNumberOfScalarComponents()==1:
-        if type(color)==type( (0,0,0)) :
-            ctf=vtk.vtkColorTransferFunction()
-            r,g,b=(0,0,0)
-            ctf.AddRGBPoint(0.0,r,g,b)
-            
-            r,g,b=color
-            r/=255
-            g/=255
-            b/=255
-            ctf.AddRGBPoint(255.0,r,g,b)
-        else:
-            ctf=color
+        ctf=getColorTransferFunction(color)
     
 #        Logging.info("Mapping MIP through ctf",kw="imageop")
         maptocolor=vtk.vtkImageMapToColors()
@@ -453,16 +444,46 @@ def getMIP(imageData,color):
     else:
         imagedata=output
     return imagedata
+
+def getColorTransferFunction(color):
+    """
+    Created: 06.11.2006, KP
+    Description: Convert a color to a ctf and pass a ctf through
+    """
+    if isinstance(color,vtk.vtkColorTransferFunction):
+        return color
+    print color
+    ctf=vtk.vtkColorTransferFunction()
+    r,g,b=(0,0,0)
+    ctf.AddRGBPoint(0.0,r,g,b)
     
-def vtkImageDataToPreviewBitmap(dataunit,timepoint,color,width=0,height=0,bgcolor=(0,0,0),getpng=0):
+    r,g,b=color
+    r/=255
+    g/=255
+    b/=255
+    ctf.AddRGBPoint(255.0,r,g,b)    
+    return ctf
+    
+    
+def vtkImageDataToPreviewBitmap(dataunit,timepoint,color,width=0,height=0,bgcolor=(0,0,0),getpng=0, getvtkImage = 0):
     """
     Created: KP
     Description: A function that will take a volume and do a simple
                  maximum intensity projection that will be converted to a
                  wxBitmap
     """   
-    imagedata=dataunit.getMIP(timepoint,color,small=1)
+    imagedata=dataunit.getMIP(timepoint,None,small=1,noColor = 1)
+    vtkImg = imagedata
 
+    if not color:
+        color=dataunit.getColorTransferFunction()
+    maptocolor=vtk.vtkImageMapToColors()
+    maptocolor.SetInput(imagedata)
+    maptocolor.SetLookupTable(getColorTransferFunction(color))
+    maptocolor.SetOutputFormatToRGB()
+    maptocolor.Update()
+    imagedata=maptocolor.GetOutput()    
+    
     #imagedata=getMIP(imageData,color)
     if getpng:
         #Logging.info("Getting PNG string",kw="imageop")
@@ -480,8 +501,13 @@ def vtkImageDataToPreviewBitmap(dataunit,timepoint,color,width=0,height=0,bgcolo
     #Logging.info("Scaling to %dx%d"%(width,height),kw="imageop")
     image.Rescale(width,height)
     bitmap=image.ConvertToBitmap()
+    ret=[bitmap]
     if getpng:
-        return bitmap,pngstr
+        ret.append(pngstr)        
+    if getvtkImage:
+        ret.append(vtkImg)
+    if getpng or getvtkImage:
+        return ret
     return bitmap
 
     
