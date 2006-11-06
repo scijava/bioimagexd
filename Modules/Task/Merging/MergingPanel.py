@@ -221,14 +221,6 @@ class MergingPanel(TaskPanel.TaskPanel):
         self.settings.set("AlphaMode",lst)
 
         TaskPanel.TaskPanel.doOperation(self)
-        
-    def createItemToolbar(self):
-        """
-        Created: 31.03.2005, KP
-        Description: Method to create a toolbar for the window that allows use to select processed channel
-        """      
-        n=TaskPanel.TaskPanel.createItemToolbar(self)
-                
 
     def setCombinedDataUnit(self,dataUnit):
         """

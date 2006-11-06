@@ -85,7 +85,7 @@ class DataUnit:
         """        
         return self.dataSource
         
-    def getMIP(self,tp,color,small=0):
+    def getMIP(self,tp,color,small=0,noColor=0):
         """
         Created: 01.09.2005, KP
         Description: Returns MIP of the given timepoint
@@ -99,7 +99,7 @@ class DataUnit:
                 imagedata=self.getTimePoint(tp)
             else:
                 imagedata = self.dataSource.getMIPdata(tp)
-            if not color:
+            if not color and not noColor:
                 color=self.getColorTransferFunction()
             self.mip=ImageOperations.getMIP(imagedata,color)
             return self.mip

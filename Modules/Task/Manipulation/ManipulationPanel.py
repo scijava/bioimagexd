@@ -70,7 +70,7 @@ class ManipulationPanel(FilterBasedTaskPanel.FilterBasedTaskPanel):
         # Preview has to be generated here
         # self.colorChooser=None
         self.timePoint = 0
-        self.menu = None
+        self.menus = {}
         self.currentGUI = None
         self.parser = None
         self.onByDefault = 0
@@ -150,7 +150,7 @@ class ManipulationPanel(FilterBasedTaskPanel.FilterBasedTaskPanel):
         self.filtersizer=wx.GridBagSizer()
 
         
-        self.filterLbl=wx.StaticText(self.panel,-1,"Filter stack:")
+        self.filterLbl=wx.StaticText(self.panel,-1,"Procedure list:")
         self.filterListbox = wx.CheckListBox(self.panel,-1,size=(300,300))
         self.filterListbox.Bind(wx.EVT_LISTBOX,self.onSelectFilter)
         self.filterListbox.Bind(wx.EVT_CHECKLISTBOX,self.onCheckFilter)        
@@ -158,8 +158,20 @@ class ManipulationPanel(FilterBasedTaskPanel.FilterBasedTaskPanel):
         self.addArithmeticsBtn = wx.Button(self.panel,-1,u"Arithmetics \u00BB")
         self.addSegmentationBtn = wx.Button(self.panel,-1,u"Segmentation \u00BB")
         self.addTrackingBtn = wx.Button(self.panel,-1,u"Tracking \u00BB")
-        self.addFilteringBtn.Bind(wx.EVT_LEFT_DOWN,self.onShowAddMenu)
 
+        from ManipulationFilters import FILTERING,FEATUREDETECTION,MATH,LOGIC,SEGMENTATION,REGION_GROWING,MEASUREMENT
+        
+        f=lambda evt, btn=self.addFilteringBtn, cats=(FILTERING,FEATUREDETECTION): self.onShowAddMenu(evt,btn,cats)
+        self.addFilteringBtn.Bind(wx.EVT_LEFT_DOWN,f)
+        
+        f=lambda evt, btn=self.addArithmeticsBtn, cats=(MATH, LOGIC): self.onShowAddMenu(evt,btn,cats)
+        self.addArithmeticsBtn.Bind(wx.EVT_LEFT_DOWN,f)
+        
+        f=lambda evt, btn=self.addSegmentationBtn, cats=(SEGMENTATION, REGION_GROWING,MEASUREMENT): self.onShowAddMenu(evt,btn,cats)
+        self.addSegmentationBtn.Bind(wx.EVT_LEFT_DOWN,f)
+        
+        self.addTrackingBtn.Bind(wx.EVT_LEFT_DOWN,self.onShowAddMenu)
+        
         #self.reloadBtn = wx.Button(self.panel,-1,"Reload")
         #self.reloadBtn.Bind(wx.EVT_BUTTON,self.onReloadModules)
 
@@ -199,7 +211,7 @@ class ManipulationPanel(FilterBasedTaskPanel.FilterBasedTaskPanel):
 
         self.panel.SetSizer(self.panelsizer)
         self.panel.SetAutoLayout(1)
-        self.settingsNotebook.AddPage(self.panel,"Filter stack")
+        self.settingsNotebook.AddPage(self.panel,"Procedure list")
    
    
     def onReloadModules(self,event):
@@ -425,14 +437,14 @@ class ManipulationPanel(FilterBasedTaskPanel.FilterBasedTaskPanel):
         self.updateFilterData()
         
 
-    def onShowAddMenu(self,event):
+    def onShowAddMenu(self,event,btn,categories=()):
         """
         Created: 13.04.2006, KP
         Description: Show a menu for adding filters to the stack
         """
-        if not self.menu:
+        if categories not in self.menus:
             menu=wx.Menu()
-            for i in self.categories:
+            for i in categories:
                 submenu = wx.Menu()
                 if i not in self.filtersByCategory:
                     self.filtersByCategory[i]=[]
@@ -452,8 +464,8 @@ class ManipulationPanel(FilterBasedTaskPanel.FilterBasedTaskPanel):
                     f=lambda evt, c=cmd: c.run()
                     self.Bind(wx.EVT_MENU,f,id=menuid)
                 menu.AppendMenu(-1,i,submenu)
-            self.menu = menu
-        self.addFilteringBtn.PopupMenu(self.menu,event.GetPosition())
+            self.menus[categories] = menu
+        btn.PopupMenu(self.menus[categories],event.GetPosition())
         
 
     def doFilterCheckCallback(self,event=None):
@@ -563,7 +575,7 @@ class ManipulationPanel(FilterBasedTaskPanel.FilterBasedTaskPanel):
         toolid=wx.NewId()
         #n=n+1
         name="Manipulation"
-        self.toolMgr.addItem(name,bmp,toolid,lambda e,x=n,s=self:s.setPreviewedData(e,x))        
+        self.toolMgr.addChannelItem(name,bmp,toolid,lambda e,x=n,s=self:s.setPreviewedData(e,x))        
         
         self.toolIds.append(toolid)
         self.dataUnit.setOutputChannel(len(self.toolIds),1)

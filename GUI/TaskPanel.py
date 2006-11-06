@@ -47,7 +47,8 @@ import ImageOperations
 import ColorTransferEditor
 import ChannelListBox
 import scripting as bxd
-
+TOOL_W=60
+TOOL_H=60
 class TaskPanel(scrolled.ScrolledPanel):
     """
     Created: 23.11.2004, KP
@@ -67,6 +68,7 @@ class TaskPanel(scrolled.ScrolledPanel):
         #size=(1024,768))
         scrolled.ScrolledPanel.__init__(self,root,-1,size=(200,-1))
         self.toolMgr = tb
+        self.itemBitmaps = []
         # Unbind to not get annoying behaviour of scrolling
         # when clicking on the panel
         self.Unbind(wx.EVT_CHILD_FOCUS)
@@ -112,7 +114,6 @@ class TaskPanel(scrolled.ScrolledPanel):
         self.dataUnit=None
         self.settings = None
         self.settingsIndex = -1
-        self.cancelled=0
 
         self.createButtonBox()
         self.createOptionsFrame()
@@ -211,33 +212,28 @@ class TaskPanel(scrolled.ScrolledPanel):
         Description: Method to create a toolbar for the window that allows use to select processed channel
         """      
         self.toolMgr.clearItemsBar()
-        #Logging.info("Creating item toolbar",kw="init")
-        #self.tb2 = wx.ToolBar(self,-1,style=wx.TB_VERTICAL|wx.TB_TEXT)
-        #self.tb2.SetToolBitmapSize((32,32))# this required for non-standard size buttons on MSW
-        #self.tb2 = self.toolbar
         n=0
-        #self.tb2.AddSeparator()
+
         self.toolIds=[]
         sourceUnits=self.dataUnit.getSourceDataUnits()
         if not force and len(sourceUnits)==1:
             return
+        merge = vtk.vtkImageColorMerge()
+        self.itemMips = []
         for i,dataunit in enumerate(sourceUnits):
             #color = dataunit.getColor()
             ctf = dataunit.getColorTransferFunction()
             name = dataunit.getName()
             dc= wx.MemoryDC()
-            bmp,pngstr=ImageOperations.vtkImageDataToPreviewBitmap(dataunit,0,None,30,30,getpng=1)
+            
+            bmp,pngstr, vtkimg=ImageOperations.vtkImageDataToPreviewBitmap(dataunit,0,None,TOOL_W,TOOL_H,getpng=1, getvtkImage=1)
+            self.itemMips.append(vtkimg)
+            
             if self.channelBox:
                 self.channelBox.setPreview(i,pngstr)
             dc.SelectObject(bmp)
             dc.BeginDrawing()
-            #dc.SetFont(wx.Font(8,wx.SWISS,wx.NORMAL,wx.BOLD))
-            #dc.SetTextForeground(wx.Colour(255,255,255))
-            #w,h=dc.GetTextExtent(name)
-            #d=(32-w)/2.0
-            #dy=(32-h)
-            #if d<0:d=0
-            #dc.DrawText(name,d,dy)
+            
             val=[0,0,0]
             dc.SetBrush(wx.TRANSPARENT_BRUSH)
             if ctf:
@@ -252,31 +248,20 @@ class TaskPanel(scrolled.ScrolledPanel):
                 g=255
                 b=255
             dc.SetPen(wx.Pen(wx.Colour(r,g,b),4))
-            dc.DrawRectangle(0,0,32,32)
+            dc.DrawRectangle(0,0,TOOL_W,TOOL_H)
             dc.EndDrawing()
             #dc.SelectObject(wx.EmptyBitmap(0,0))
             dc.SelectObject(wx.NullBitmap)
             toolid=wx.NewId()
             self.toolIds.append(toolid)
-            self.toolMgr.addItem(name,bmp,toolid,lambda e,x=n,s=self:s.setPreviewedData(e,x))
+            self.toolMgr.addChannelItem(name,bmp,toolid,lambda e,x=n,s=self:s.setPreviewedData(e,x))
             self.toolMgr.toggleTool(toolid,self.onByDefault)
             self.dataUnit.setOutputChannel(i,self.onByDefault)
             n=n+1
+        
         if self.channelBox:
             self.channelBox.SetSelection(0)
         return n
-        
-    def getResult(self):
-        """
-        Method: getResult()
-        Created: 15.11.2004, KP
-        Description: Method to get the results of this task window.
-                     If cancel was pressed, returns None, otherwise returns the
-                     new dataunit
-        """
-        if self.cancelled:
-            return None,None
-        return self.dataUnit,self.filePath
 
     def createButtonBox(self):
         self.buttonsSizer2=wx.BoxSizer(wx.HORIZONTAL)
@@ -284,10 +269,6 @@ class TaskPanel(scrolled.ScrolledPanel):
         self.previewButton=wx.Button(self.buttonPanel,-1,"Preview")
         self.previewButton.Bind(wx.EVT_BUTTON,self.doPreviewCallback)
         self.buttonsSizer2.Add(self.previewButton,1,wx.RIGHT|wx.TOP|wx.ALIGN_CENTER,10)
-        
-        #self.processButton=wx.Button(self.buttonPanel,-1,"Process")
-        #self.buttonsSizer2.Add(self.processButton,1,wx.RIGHT|wx.TOP|wx.ALIGN_CENTER,10)
-
 
     def onHelp(self,evt):
         """
@@ -303,20 +284,11 @@ class TaskPanel(scrolled.ScrolledPanel):
         Description: Creates a frame that contains the various widgets
                      used to control the colocalization settings
         """
-
-        #self.commonSettingsPanel=wx.Panel(self.settingsNotebook,-1)
-        #self.settingsNotebook.AddPage(self.commonSettingsPanel,"General")
-#        self.commonSettingsPanel.SetBackgroundColour(wx.Colour(255,0,0))
         self.commonSettingsSizer=wx.GridBagSizer()
 
         self.namesizer=wx.BoxSizer(wx.VERTICAL)
         self.commonSettingsSizer.Add(self.namesizer,(0,0))
-        
-
-        #self.commonSettingsPanel.SetSizer(self.commonSettingsSizer)
-        #self.commonSettingsPanel.SetAutoLayout(1)
-
-#        self.commonSettingsPanel.SetBackgroundColour(self.GetBackgroundColour())
+    
         self.settingsSizer.Add(self.commonSettingsSizer,(0,0),flag=wx.EXPAND|wx.ALL)
         self.settingsSizer.Add(self.settingsNotebook,(1,0),flag=wx.EXPAND|wx.ALL)
         self.Layout()
@@ -327,8 +299,18 @@ class TaskPanel(scrolled.ScrolledPanel):
         Description: A callback function for marking channels to be rendered
                      in the preview.
         """
-        flag=event.IsChecked()
-        print "\n\n\n*** Setting chl",self.dataUnit
+        flag0=0
+        flag1=0
+        try:
+            flag0=event.IsChecked()
+        except:
+            pass
+        try:
+            flag1=event.GetIsDown()
+        except:
+            flag1=0
+        flag=flag0 or flag1
+ #       print "\n\n\n*** Setting chl",self.dataUnit
         self.dataUnit.setOutputChannel(index,flag)
         self.doPreviewCallback(None)
         
@@ -458,9 +440,3 @@ class TaskPanel(scrolled.ScrolledPanel):
         self.selectItem(None,None,0)
         # Delay the call, maybe it will make it work on mac
         wx.FutureCall(100,self.createItemToolbar)
-#        self.createItemToolbar()
-        #if self.cachedSettings:
-        #    print "\n\n\n ****** GOT SETTINGS FROM CACHE"
-        #    self.restoreFromCache(self.cachedSettings)
-        #else:
-        #    print "\n\n\n*** NO CACHED SETTINGS"
