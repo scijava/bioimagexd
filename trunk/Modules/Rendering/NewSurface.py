@@ -93,7 +93,8 @@ class SurfaceModule(VisualizationModule):
         messenger.send(self,"update_SurfaceRangeEnd")
         messenger.send(self,"update_SurfaceAmnt")
         messenger.send(self,"update_IsoValue")
-
+        print "Scalar range of data=",min,max
+        
     def getParameters(self):
         """
         Created: 31.05.2006, KP
@@ -122,7 +123,6 @@ class SurfaceModule(VisualizationModule):
         
     def getDefaultValue(self,parameter):
         """
-        Method: getDefaultValue
         Created: 13.04.2006, KP
         Description: Return the default value of a parameter
         """           
@@ -141,7 +141,6 @@ class SurfaceModule(VisualizationModule):
             
     def getType(self,parameter):
         """
-        Method: getType
         Created: 20.07.2006, KP
         Description: Return the type of the parameter
         """   
@@ -154,17 +153,25 @@ class SurfaceModule(VisualizationModule):
         
     def setDataUnit(self,dataunit):
         """
-        Method: setDataUnit(self)
         Created: 28.04.2005, KP
         Description: Sets the dataunit this module uses for visualization
         """       
         VisualizationModule.setDataUnit(self,dataunit)
 #        self.data=self.dataUnit.getTimePoint(0)
-                    
+        
+    def showTimepoint(self, value, update=1):
+        """
+        Created: 06.11.2006, KP
+        Description: Show the given timepoint
+        """
+        VisualizationModule.showTimepoint(self,value,update)
+        min,max=self.data.GetScalarRange()
+        #if (min,max) != self.scalarRange:
+        self.setScalarRange(min,max)
+                
 
     def setMethod(self,method):
         """
-        Method: setMethod(self,method)
         Created: 28.04.2005, KP
         Description: Set the Rendering method used
         """             
@@ -209,7 +216,7 @@ class SurfaceModule(VisualizationModule):
         min,max=self.data.GetScalarRange()
         #if (min,max) != self.scalarRange:
         self.setScalarRange(min,max)
-        print "Scalar range of data=",min,max
+        
         
         self.mapper.SetScalarRange(min,max)
         self.mapper.SetColorModeToMapScalars()
@@ -297,7 +304,6 @@ class SurfaceModule(VisualizationModule):
         
     def __set_pure_state__(self,state):
         """
-        Method: __set_pure_state__()
         Created: 02.08.2005, KP
         Description: Set the state of the light
         """        
@@ -313,7 +319,6 @@ class SurfaceModule(VisualizationModule):
         
         self.contourRange = state.contourRange
         self.opacity = state.opacity
-        print "state.decimateLevel=",state.decimateLevel
         if state.decimateLevel:
             self.setDecimate(state.decimateLevel,state.preserveTopology)
         
@@ -323,18 +328,16 @@ class SurfaceModule(VisualizationModule):
 class SurfaceConfiguration(ModuleConfiguration):
     def __init__(self,parent,visualizer):
         """
-        Method: __init__(parent)
         Created: 28.04.2005, KP
         Description: Initialization
         """     
-        ModuleConfiguration.__init__(self,parent,"Surface Rendering 2")
+        ModuleConfiguration.__init__(self,parent,"Surface rendering")
         self.panel=SurfaceConfigurationPanel(self,visualizer)
         self.method=0
 
 class SurfaceConfigurationPanel(ModuleConfigurationPanel):
-    def __init__(self,parent,visualizer,name="Surface Rendering 2",**kws):
+    def __init__(self,parent,visualizer,name="Surface rendering",**kws):
         """
-        Method: __init__(parent)
         Created: 28.04.2005, KP
         Description: Initialization
         """     
@@ -343,15 +346,14 @@ class SurfaceConfigurationPanel(ModuleConfigurationPanel):
         
     def setModule(self,module):
         """
-        Method: setModule(module)
         Created: 28.04.2005, KP
         Description: Set the module to be configured
         """  
         ModuleConfigurationPanel.setModule(self,module)
-
+        self.module.sendUpdateGUI()
+        
     def onApply(self,event):
         """
-        Method: onApply()
         Created: 30.04.2005, KP
         Description: Apply the changes
         """     
@@ -362,7 +364,6 @@ class SurfaceConfigurationPanel(ModuleConfigurationPanel):
         
     def onSelectMethod(self,event):
         """
-        Method: onSelectMethod
         Created: 30.04.2005, KP
         Description: Select the surface rendering method
         """  
@@ -374,7 +375,6 @@ class SurfaceConfigurationPanel(ModuleConfigurationPanel):
 
     def initializeGUI(self):
         """
-        Method: initializeGUI()
         Created: 28.04.2005, KP
         Description: Initialization
         """          
@@ -382,14 +382,15 @@ class SurfaceConfigurationPanel(ModuleConfigurationPanel):
         
     def setModule(self,module):
         """
-        Method: setModule(module)
         Created: 28.04.2005, KP
         Description: Set the module to be configured
         """  
         ModuleConfigurationPanel.setModule(self,module)
-        print "module=",module
+        #print "module=",module
         self.module=module
         self.gui = GUIBuilder.GUIBuilder(self, self.module)
-        self.module.sendUpdateGUI()
+        
         self.contentSizer.Add(self.gui,(0,0))
-
+        
+        self.module.setScalarRange(*self.module.scalarRange)
+        self.module.sendUpdateGUI()
