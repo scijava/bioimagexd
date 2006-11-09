@@ -131,19 +131,19 @@ class UrmasPalette(wx.Panel):
         self.iconpath=scripting.get_icon_dir()
         
         self.ID_NEWTIMEPOINTTRACK=wx.NewId()
-        toolTip = wx.ToolTip("Drag this on to the timeline to add a track for controlling animated timepoints.")
-        self.addDragDropItem(self.ID_NEWTIMEPOINTTRACK,
+        toolTip = wx.ToolTip("Click to add a track for controlling animated timepoints.")
+        self.addNormalItem(self.ID_NEWTIMEPOINTTRACK,
         "timepoint_track.JPG",self.onToolNewTimepointTrack,toolTip)        
         
         self.ID_NEWSPLINETRACK=wx.NewId()
-        toolTip = wx.ToolTip("Drag this on to the timeline to add a track for controlling the camera movement using a spline curve.")
-        self.addDragDropItem(self.ID_NEWSPLINETRACK,
+        toolTip = wx.ToolTip("Click to add a track for controlling the camera movement using a spline curve.")
+        self.addNormalItem(self.ID_NEWSPLINETRACK,
         "spline_track.JPG",self.onToolNewSplineTrack,toolTip)        
 
         
         self.ID_NEWKEYFRAMETRACK=wx.NewId()
-        toolTip = wx.ToolTip("Drag this on to the timeline to add a track for controlling the camera movement by creating keyframes.")
-        self.addDragDropItem(self.ID_NEWKEYFRAMETRACK,
+        toolTip = wx.ToolTip("Click to the timeline to add a track for controlling the camera movement by creating keyframes.")
+        self.addNormalItem(self.ID_NEWKEYFRAMETRACK,
         "keyframe_track.JPG",self.onToolNewKeyframeTrack,toolTip)        
         
         p=wx.Panel(self,-1,size=(50,1))
@@ -172,13 +172,13 @@ class UrmasPalette(wx.Panel):
         self.ID_STOP_CAMERA=wx.NewId()        
         toolTip=wx.ToolTip("Drag this on to a camera path to add a pause in camera movement.")
         self.addDragDropItem(self.ID_STOP_CAMERA,
-        "spline_stop.jpg",self.onToolNewStop,toolTip)        
+        "spline_stop.gif",self.onToolNewStop,toolTip)        
         
         
         self.ID_ADD_KEYFRAME=wx.NewId()
         toolTip=wx.ToolTip("Drag this on to a keyframe track to add a keyframe at the current camera position.")        
         self.addDragDropItem(self.ID_ADD_KEYFRAME,
-        "add_keyframe.jpg",self.onToolNewKeyframe,toolTip)     
+        "add_keyframe.gif",self.onToolNewKeyframe,toolTip)     
         
         self.zoomLevels=[0.25,0.3333,0.5,0.6667,0.75,1.0, 1.25, 1.5, 2.0, 3.0, 4.0, 6.0]
         self.zoomCombo=wx.ComboBox(self,MenuManager.ID_ANIM_ZOOM_COMBO,
@@ -189,6 +189,10 @@ class UrmasPalette(wx.Panel):
         
         self.sizer.Add(self.zoomCombo,flag=wx.RIGHT,border=2)
         
+        self.ID_RENDER=wx.NewId()
+        toolTip = wx.ToolTip("Click to render the project.")
+        self.addNormalItem(self.ID_RENDER,
+        "render.gif",self.parent.onMenuRender,toolTip)         
         
         self.SetSizer(self.sizer)
         self.SetAutoLayout(1)
@@ -209,9 +213,32 @@ class UrmasPalette(wx.Panel):
         Created: 12.12.2005, KP
         Description: Add an item to the toolbar
         """
-        bmp=wx.Image(os.path.join(self.iconpath,icon),wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
-        self.icons[newid]=bmp
-        sbmp=StaticBitmap(self,newid,bmp,style=wx.RAISED_BORDER)
+        bmp=wx.Image(os.path.join(self.iconpath,icon),wx.BITMAP_TYPE_ANY).ConvertToBitmap()
+        bmp2=wx.EmptyBitmap(38,32)
+        dc = wx.MemoryDC()
+        dc.SelectObject(bmp2)
+        
+        #dc.SetPen(wx.Pen(self.GetBackgroundColour(),1))
+        #dc.SetBrush(wx.Brush(self.GetBackgroundColour()))
+        dc.SetPen(wx.Pen(wx.Colour(0,0,0),1))
+        dc.SetBrush(wx.Brush(wx.Colour(0,0,0)))
+        dc.DrawRectangle(0,0,38,32)
+        
+        x=1
+        y=0
+        dc.DrawBitmap(bmp,7,0)
+        for i in range(0,10):
+            dc.SetPen(wx.Pen(wx.Colour(135,135,135),1))
+            dc.DrawLine(x,y,x+6,y)           
+            y+=1
+            dc.SetPen(wx.Pen(wx.Colour(100,100,100),1))
+            dc.DrawLine(x,y,x+6,y)
+            y+=1
+            y+=2
+        
+        dc.SelectObject(wx.NullBitmap)
+        self.icons[newid]=bmp2
+        sbmp=StaticBitmap(self,newid,bmp,style=wx.RAISED_BORDER, size=(40,40))
         self.sbmps[newid]=sbmp
         sbmp.Bind(wx.EVT_MOTION,dragCallback)        
         #p.Bind(wx.EVT_MOTION,dragCallback)        
@@ -223,7 +250,27 @@ class UrmasPalette(wx.Panel):
         
         sbmp.SetHelpText(toolTip.GetTip())
         sbmp.SetToolTip(toolTip)        
-        #p.SetToolTip(toolTip)        
+        #p.SetToolTip(toolTip)      
+      
+    def addNormalItem(self,newid,icon,callback,toolTip):        
+        """
+        Created: 12.12.2005, KP
+        Description: Add an item to the toolbar
+        """
+        bmp=wx.Image(os.path.join(self.iconpath,icon),wx.BITMAP_TYPE_ANY).ConvertToBitmap()
+        self.icons[newid]=bmp
+        #sbmp=StaticBitmap(self,newid,bmp,style=wx.RAISED_BORDER)
+        #self.sbmps[newid]=sbmp
+        btn = wx.BitmapButton(self, newid, bmp)
+        #sbmp.Bind(wx.EVT_MOTION,dragCallback)        
+        btn.Bind(wx.EVT_BUTTON, callback)
+        #p.Bind(wx.EVT_MOTION,callback)        
+        #self.sizer.Add(p,flag=wx.RIGHT,border=2)
+        #p.Bind(               wx.EVT_LEFT_UP,self.onToolClick)
+        self.sizer.Add(btn,flag=wx.RIGHT,border=2)
+        
+        btn.SetHelpText(toolTip.GetTip())
+        btn.SetToolTip(toolTip)   
         
     def onToolClick(self,event):
         """
@@ -255,29 +302,21 @@ class UrmasPalette(wx.Panel):
         Created: 2.09.2005, KP
         Description: A method for dragging a keyframe track from palette
         """
+        self.control.timeline.addKeyframeTrack("")
         
-        if event.Dragging():
-            self.dropItem("Track","Keyframe")
-        event.Skip()
-
     def onToolNewSplineTrack(self,event):
         """
         Created: 2.09.2005, KP
         Description: A method for dragging a spline track from palette
         """
-        
-        if event.Dragging():
-            self.dropItem("Track","Spline")
-        event.Skip()
+        self.control.timeline.addSplinepointTrack("")
         
     def onToolNewTimepointTrack(self,event):
         """
         Created: 2.09.2005, KP
         Description: A method for dragging a timepoint track from palette
         """
-        if event.Dragging():
-            self.dropItem("Track","Timepoint")
-        event.Skip()
+        self.control.timeline.addTrack("")
         
 
         

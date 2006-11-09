@@ -47,8 +47,10 @@ import ImageOperations
 import ColorTransferEditor
 import ChannelListBox
 import scripting as bxd
-TOOL_W=60
-TOOL_H=60
+#TOOL_W=56
+#TOOL_H=56
+TOOL_W=50
+TOOL_H=50
 class TaskPanel(scrolled.ScrolledPanel):
     """
     Created: 23.11.2004, KP
@@ -206,6 +208,40 @@ class TaskPanel(scrolled.ScrolledPanel):
             err.show()
         self.doPreviewCallback()
         
+    def getChannelItemBitmap(self, chbmp, color=(255,255,255)):
+        """
+        Created: 7.11.2006, KP
+        Description: Draw a bitmap that can be used as a label for the channel selection buttonsSizer
+        """
+        if chbmp.GetWidth()!=TOOL_W or chbmp.GetHeight()!=TOOL_H:
+            chbmp=chbmp.ConvertToImage()
+            chbmp=chbmp.Rescale(TOOL_W,TOOL_H).ConvertToBitmap()
+        dc=wx.MemoryDC()
+        bmp2=wx.EmptyBitmap(60,60)
+        dc.SelectObject(bmp2)
+        dc.BeginDrawing()
+        
+        
+        val=[0,0,0]
+        #dc.SetBrush(wx.TRANSPARENT_BRUSH)
+        if isinstance(color,vtk.vtkColorTransferFunction):
+   
+            color.GetColor(255,val)
+
+            r,g,b=val
+            r*=255
+            g*=255
+            b*=255
+        else:
+            r,g,b=color
+        dc.SetPen(wx.Pen(wx.Colour(r,g,b),6))
+        dc.SetBrush(wx.Brush(wx.Colour(r,g,b)))
+        dc.DrawRectangle(0,0,60,60)
+        dc.DrawBitmap(chbmp,5,5)
+        dc.EndDrawing()
+        #dc.SelectObject(wx.EmptyBitmap(0,0))
+        dc.SelectObject(wx.NullBitmap)        
+        return bmp2
     def createItemToolbar(self,force=0):
         """
         Created: 31.03.2005, KP
@@ -231,30 +267,10 @@ class TaskPanel(scrolled.ScrolledPanel):
             
             if self.channelBox:
                 self.channelBox.setPreview(i,pngstr)
-            dc.SelectObject(bmp)
-            dc.BeginDrawing()
-            
-            val=[0,0,0]
-            dc.SetBrush(wx.TRANSPARENT_BRUSH)
-            if ctf:
-                ctf.GetColor(255,val)
-    
-                r,g,b=val
-                r*=255
-                g*=255
-                b*=255
-            else:
-                r=255
-                g=255
-                b=255
-            dc.SetPen(wx.Pen(wx.Colour(r,g,b),4))
-            dc.DrawRectangle(0,0,TOOL_W,TOOL_H)
-            dc.EndDrawing()
-            #dc.SelectObject(wx.EmptyBitmap(0,0))
-            dc.SelectObject(wx.NullBitmap)
+            bmp2 = self.getChannelItemBitmap(bmp, ctf)
             toolid=wx.NewId()
             self.toolIds.append(toolid)
-            self.toolMgr.addChannelItem(name,bmp,toolid,lambda e,x=n,s=self:s.setPreviewedData(e,x))
+            self.toolMgr.addChannelItem(name,bmp2,toolid,lambda e,x=n,s=self:s.setPreviewedData(e,x))
             self.toolMgr.toggleTool(toolid,self.onByDefault)
             self.dataUnit.setOutputChannel(i,self.onByDefault)
             n=n+1

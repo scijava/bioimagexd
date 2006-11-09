@@ -48,7 +48,6 @@ class AngleModule(VisualizationModule):
     """    
     def __init__(self,parent,visualizer,**kws):
         """
-        Method: __init__(parent)
         Created: 03.05.2005, KP
         Description: Initialization
         """     
@@ -59,7 +58,7 @@ class AngleModule(VisualizationModule):
         self.renew = 1
     
         self.angleWidget = vtk.vtkAngleWidget()
-        self.angleWidget.AddObserver("EndInteractionEvent",self.onPlacePoint)
+        self.obsTag = self.angleWidget.AddObserver("EndInteractionEvent",self.onPlacePoint)
         self.angleWidget.CreateDefaultRepresentation()
         self.representation = self.angleWidget.GetRepresentation()
         self.renderer = self.parent.getRenderer()
@@ -74,7 +73,6 @@ class AngleModule(VisualizationModule):
       
     def onPlacePoint(self,obj,event):
         """
-        Method: onPlacePoint
         Created: 15.04.2006, KP
         Description: onPlacePoint
         """        
@@ -113,10 +111,10 @@ class AngleModule(VisualizationModule):
             self.representation.GetArc().GetPositionCoordinate().SetValue(pos1)
             self.representation.GetArc().GetPosition2Coordinate().SetValue(pos2)
         self.representation.BuildRepresentation()
+        self.angleWidget.RemoveObserver(self.obsTag)
         
     def __getstate__(self):
         """
-        Method: __getstate__
         Created: 02.08.2005, KP
         Description: A getstate method that saves the lights
         """            
@@ -129,7 +127,6 @@ class AngleModule(VisualizationModule):
         
     def __set_pure_state__(self,state):
         """
-        Method: __set_pure_state__()
         Created: 02.08.2005, KP
         Description: Set the state of the light
         """        
@@ -144,7 +141,6 @@ class AngleModule(VisualizationModule):
         
     def setDataUnit(self,dataunit):
         """
-        Method: setDataUnit(self)
         Created: 28.04.2005, KP
         Description: Sets the dataunit this module uses for visualization
         """       
@@ -159,7 +155,6 @@ class AngleModule(VisualizationModule):
 
     def showTimepoint(self,value):
         """
-        Method: showTimepoint(tp)
         Created: 28.04.2005, KP
         Description: Set the timepoint to be displayed
         """          
@@ -169,14 +164,11 @@ class AngleModule(VisualizationModule):
         
     def updateRendering(self):
         """
-        Method: updateRendering()
         Created: 03.05.2005, KP
         Description: Update the Rendering of this module
         """             
         
         if self.renew:
-
-#            self.angleWidget.SetInput(self.data)
             self.renew=0
         
         if not self.on:
@@ -189,7 +181,6 @@ class AngleModule(VisualizationModule):
 
     def disableRendering(self):
         """
-        Method: disableRendering()
         Created: 15.05.2005, KP
         Description: Disable the Rendering of this module
         """          
@@ -198,7 +189,6 @@ class AngleModule(VisualizationModule):
         
     def showPlane(self,flag):
         """
-        Method: showPlane
         Created: 24.06.2005, KP
         Description: Show / hide the plane controls
         """          
@@ -210,7 +200,6 @@ class AngleModule(VisualizationModule):
         
     def enableRendering(self):
         """
-        Method: enableRendering()
         Created: 24.06.2005, KP
         Description: Enable the Rendering of this module
         """          
@@ -219,14 +208,12 @@ class AngleModule(VisualizationModule):
         
     def setProperties(self,ambient,diffuse,specular,specularpower):
         """
-        Method: setProperties(ambient,diffuse,specular,specularpower)
         Created: 16.05.2005, KP
         Description: Set the ambient, diffuse and specular lighting of this module
         """         
         pass
     def setShading(self,shading):
         """
-        Method: setShading(shading)
         Created: 16.05.2005, KP
         Description: Set shading on / off
         """          
@@ -236,7 +223,6 @@ class AngleModule(VisualizationModule):
 class AngleConfiguration(ModuleConfiguration):
     def __init__(self,parent,visualizer):
         """
-        Method: __init__(parent)
         Created: 04.05.2005, KP
         Description: Initialization
         """     
@@ -246,7 +232,6 @@ class AngleConfiguration(ModuleConfiguration):
 class AngleConfigurationPanel(ModuleConfigurationPanel):
     def __init__(self,parent,visualizer,name="Angle",**kws):
         """
-        Method: __init__(parent)
         Created: 04.05.2005, KP
         Description: Initialization
         """     
@@ -254,14 +239,12 @@ class AngleConfigurationPanel(ModuleConfigurationPanel):
     
     def initializeGUI(self):
         """
-        Method: initializeGUI()
         Created: 28.04.2005, KP
         Description: Initialization
         """  
         pass
     def setModule(self,module):
         """
-        Method: setModule(module)
         Created: 28.04.2005, KP
         Description: Set the module to be configured
         """  
@@ -271,7 +254,6 @@ class AngleConfigurationPanel(ModuleConfigurationPanel):
         
     def onApply(self,event):
         """
-        Method: onApply()
         Created: 28.04.2005, KP
         Description: Apply the changes
         """     

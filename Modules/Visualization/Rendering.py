@@ -49,6 +49,7 @@ from Visualizer.VisualizationMode import VisualizationMode
 import MenuManager
 import Visualizer.Lights as Lights
 
+import scripting as bxd
 import Modules
 
 import Dialogs
@@ -140,7 +141,7 @@ class RenderingMode(VisualizationMode):
         Created: 24.05.2005, KP
         Description: Set the mode of visualization
         """
-        
+        bxd.wantAlphaChannel = 1
         self.sidebarWin=sidebarwin
         # If we're preloading, don't create the render window
         # since it will mess up the rendering
@@ -189,7 +190,6 @@ class RenderingMode(VisualizationMode):
         Created: 24.05.2005, KP
         Description: Update the rendering
         """    
-        print "calling wxrenwin.render()"
         self.wxrenwin.Render()        
         
     def setBackground(self,r,g,b):

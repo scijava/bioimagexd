@@ -98,10 +98,16 @@ class DataUnit:
             if not small:
                 imagedata=self.getTimePoint(tp)
             else:
-                imagedata = self.dataSource.getMIPdata(tp)
-            if not color and not noColor:
-                color=self.getColorTransferFunction()
-            self.mip=ImageOperations.getMIP(imagedata,color)
+                cached = self.dataSource.getMipFromCache(self.getFileName(),self.getName())
+                if not cached:
+                    imagedata = self.dataSource.getMIPdata(tp)
+                    if not color and not noColor:
+                        color=self.getColorTransferFunction()
+                    self.mip=ImageOperations.getMIP(imagedata,color)
+                    self.dataSource.storeMipToCache(self.mip, self.getFileName(),self.getName())
+                else:
+                    self.mip = cached
+                    
             return self.mip
 
     def resetColorTransferFunction(self):

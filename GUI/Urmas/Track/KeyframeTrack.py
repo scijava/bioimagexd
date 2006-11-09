@@ -55,7 +55,6 @@ from SplineTrack import *
  
 class KeyframeTrack(SplineTrack):
     """
-    Class: KeyframeTrack
     Created: 17.08.2005, KP
     Description: A class representing a Keyframe track in the timeline
     """       
@@ -83,7 +82,6 @@ class KeyframeTrack(SplineTrack):
 
     def onDisableOverlay(self,obj,evt,*arg):
         """
-        Method: onDisableOverlay
         Created: 7.09.2005, KP
         Description: Disable the overlay when the user uses the timeslider
         """        
@@ -92,7 +90,6 @@ class KeyframeTrack(SplineTrack):
         
     def onDown(self,event):
         """
-        Method: onDown
         Created: 17.07.2005, KP
         Description: Item is clicked
         """
@@ -110,7 +107,6 @@ class KeyframeTrack(SplineTrack):
             
     def onSetCamera(self,obj,evt,cam):
         """
-        Method: onSetCamera
         Created: 18.08.2005, KP
         Description: Set the camera for the current item
         """             
@@ -123,7 +119,6 @@ class KeyframeTrack(SplineTrack):
             
     def AcceptDrop(self,x,y,data):
         """
-        Method: AcceptDrop
         Created: 12.04.2005, KP
         Description: Method called to indicate that a user is no longer dragging
                      something to this track
@@ -146,7 +141,6 @@ class KeyframeTrack(SplineTrack):
             
     def removeItem(self,position):
         """
-        Method: removeItem(position)
         Created: 14.04.2005, KP
         Description: Remove an item from this track
         """
@@ -157,7 +151,6 @@ class KeyframeTrack(SplineTrack):
         
     def addKeyframePoint(self,position,update=1,**kws):
         """
-        Method: addItem
         Created: 04.02.2005, KP
         Description: A method to add a new item to this track
         """
@@ -200,7 +193,6 @@ class KeyframeTrack(SplineTrack):
             
     def __getstate__(self):
         """
-        Method: __getstate__
         Created: 14.04.2005, KP
         Description: Return the dict that is to be pickled to disk
         """      
@@ -213,7 +205,6 @@ class KeyframeTrack(SplineTrack):
         
     def setSelected(self,event):
         """
-        Method: setSelected(event)
         Created: 14.04.2005, KP
         Description: Selects this track
         """ 
@@ -224,7 +215,6 @@ class KeyframeTrack(SplineTrack):
             
     def showKeyframe(self):
         """
-        Method: showKeyframe()
         Created: 18.04.2005, KP
         Description: Show Keyframe represented by this track
         """ 
@@ -234,7 +224,6 @@ class KeyframeTrack(SplineTrack):
             
     def __set_pure_state__(self,state):
         """
-        Method: __set_pure_state__()
         Created: 11.04.2005, KP
         Description: Method called by UrmasPersist to allow the object
                      to refresh before it's items are created

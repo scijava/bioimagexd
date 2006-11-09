@@ -45,13 +45,11 @@ from Lights import *
         
 class VisualizerWindow(wxVTKRenderWindowInteractor):
     """
-    Class: VisualizationWindow
     Created: 3.5.2005, KP
     Description: A window for showing 3D visualizations
     """
     def __init__(self,parent,**kws):
         """
-        Method: __init__(parent)
         Created: 3.05.2005, KP
         Description: Initialization
         """    
@@ -95,7 +93,7 @@ class VisualizerWindow(wxVTKRenderWindowInteractor):
         #self.iren.SetInteractorStyle(vtk.vtkInteractorStyleTrackballCamera())
 #        self.iren.SetInteractorStyle(vtk.vtkInteractorStyleTrackballActor())
         #self.irenStyle = vtk.vtkInteractorStyleSwitch()
-        self.irenStyle = vtk.vtkInteractorStyleJoystickCamera()
+        self.irenStyle = vtk.vtkInteractorStyleTrackballCamera()
         #self.irenStyle.SetCurrentStyleToJoystickActor()
         self.iren.SetInteractorStyle(self.irenStyle)
         
@@ -226,7 +224,9 @@ class VisualizerWindow(wxVTKRenderWindowInteractor):
         Created: 28.04.2005, KP
         Description: Save the rendered screen as jpeg
         """            
-        self.saveScreen(vtk.vtkJPEGWriter(),filename)
+        w = vtk.vtkJPEGWriter()
+        w.SetQuality(100)
+        self.saveScreen(w,filename)
         
     def save_screen(self,filename):
         """

@@ -202,8 +202,8 @@ class UrmasWindow(scrolled.ScrolledPanel):
         mgr.remove(MenuManager.ID_CLOSE_PROJECT)
 
         mgr.removeMenu("track")
-        mgr.removeMenu("rendering")
-        mgr.removeMenu("camera")
+        #mgr.removeMenu("rendering")
+        #mgr.removeMenu("camera")
 
     def createMenu(self,mgr):
         """
@@ -211,8 +211,8 @@ class UrmasWindow(scrolled.ScrolledPanel):
         Description: Creates a menu for the window
         """
         mgr.createMenu("track","&Track",before="help")
-        mgr.createMenu("rendering","&Rendering",before="help")
-        mgr.createMenu("camera","&Camera",before="help")
+        #mgr.createMenu("rendering","&Rendering",before="help")
+        #mgr.createMenu("camera","&Camera",before="help")
         
       
         mgr.addMenuItem("file",MenuManager.ID_OPEN_PROJECT,"Open project...","Open a BioImageXD Animator Project",self.onMenuOpenProject,before=MenuManager.ID_IMPORT)
@@ -241,25 +241,28 @@ class UrmasWindow(scrolled.ScrolledPanel):
 
         mgr.createMenu("shuffle","&Shift items",place=0)
         mgr.addSubMenu("track","shuffle","Shift items",MenuManager.ID_ITEM_ORDER)
-        mgr.addMenuItem("shuffle",MenuManager.ID_ITEM_ROTATE_CW,"&Clockwise",self.onShiftClockwise)
-        mgr.addMenuItem("shuffle",MenuManager.ID_ITEM_ROTATE_CCW,"C&ounter-clockwise",self.onShiftCounterClockwise)
+        mgr.addMenuItem("shuffle",MenuManager.ID_ITEM_ROTATE_CW,"&Left",self.onShiftClockwise)
+        mgr.addMenuItem("shuffle",MenuManager.ID_ITEM_ROTATE_CCW,"&Right",self.onShiftCounterClockwise)
 
         mgr.addSeparator("track")
         mgr.addMenuItem("track",MenuManager.ID_DELETE_TRACK,"&Remove track","Remove the track from timeline",self.onMenuRemoveTrack)
         mgr.addMenuItem("track",MenuManager.ID_DELETE_ITEM,"&Remove item","Remove the selected track item",self.onMenuRemoveTrackItem)
         
-        mgr.addSeparator("rendering")
+        #mgr.addSeparator("rendering")
 #        mgr.addMenuItem("rendering",MenuManager.ID_RENDER_PREVIEW,"Rendering &Preview","Preview rendering",self.onMenuRender)
-        mgr.addMenuItem("rendering",MenuManager.ID_RENDER_PROJECT,"&Render project","Render this project",self.onMenuRender)
+        #mgr.addMenuItem("rendering",MenuManager.ID_RENDER_PROJECT,"&Render project","Render this project",self.onMenuRender)
     
-        mgr.addMenuItem("camera",MenuManager.ID_SPLINE_CLOSED,"&Closed path","Set the camera path to open / closed.",self.onMenuClosedSpline,check=1)
-        mgr.addMenuItem("camera",MenuManager.ID_SPLINE_SET_BEGIN,"&Begin at the end of previous path","Set this camera path to begin where the previous path ends",self.onMenuSetBegin)
-        mgr.addMenuItem("camera",MenuManager.ID_SPLINE_SET_END,"&End at the beginning of next path","Set this camera path to end where the next path starts",self.onMenuSetEnd)
-        mgr.addSeparator("camera")
-        mgr.addMenuItem("camera",MenuManager.ID_MAINTAIN_UP,"&Maintain up direction",self.onMenuSetMaintainUp,check=1)
+        mgr.addSeparator("track")   
+        mgr.addMenuItem("track",MenuManager.ID_SPLINE_SET_BEGIN,"&Begin at the end of previous path","Set this camera path to begin where the previous path ends",self.onMenuSetBegin)
+        mgr.addMenuItem("track",MenuManager.ID_SPLINE_SET_END,"&End at the beginning of next path","Set this camera path to end where the next path starts",self.onMenuSetEnd)
+        mgr.addSeparator("track")
+        mgr.addMenuItem("track",MenuManager.ID_SPLINE_CLOSED,"&Closed path","Set the camera path to open / closed.",self.onMenuClosedSpline,check=1)
+        mgr.addMenuItem("track",MenuManager.ID_MAINTAIN_UP,"&Maintain up direction",self.onMenuSetMaintainUp,check=1)
             
         mgr.disable(MenuManager.ID_SPLINE_SET_BEGIN)
         mgr.disable(MenuManager.ID_SPLINE_SET_END)
+        mgr.disable(MenuManager.ID_ITEM_ROTATE_CCW)
+        mgr.disable(MenuManager.ID_ITEM_ROTATE_CW)
 
     def updateMenus(self):
         """
@@ -274,6 +277,16 @@ class UrmasWindow(scrolled.ScrolledPanel):
         active = self.control.getSelectedTrack()
         if active and hasattr(active,"maintainUpDirection"):
             self.menuManager.check(MenuManager.ID_MAINTAIN_UP,active.maintainUpDirection)
+            
+        
+        method=None
+        if active and active.getClosed():
+            method = self.menuManager.enable
+        elif active:
+            method = self.menuManager.disable
+        if method:   
+            method(MenuManager.ID_ITEM_ROTATE_CCW)
+            method(MenuManager.ID_ITEM_ROTATE_CW)
  
     def onShiftClockwise(self,event):
         """
@@ -302,21 +315,17 @@ class UrmasWindow(scrolled.ScrolledPanel):
         Created: 19.04.2005, KP
         Description: Render this project
         """
-        if event.GetId() == MenuManager.ID_RENDER_PROJECT:
-            w,h=self.taskWin.GetSize()
-            self.taskWin.SetDefaultSize((300,h))
-            self.videoGenerationPanel=VideoGeneration.VideoGeneration(self.taskWin,self.control,self.visualizer)
-            self.videoGenerationPanel.SetSize((300,h))
-            self.videoGenerationPanel.Show()
-            self.visualizer.mainwin.OnSize(None)
-            #print "Setting taskwin size to ",200,h
-
-            #self.control.renderProject(0)
-        else:
-            messenger.send(None,"set_preview_mode",1)
-            self.control.renderProject(1)
-            messenger.send(None,"set_preview_mode",0)
-            
+        w,h=self.taskWin.GetSize()
+        self.taskWin.SetDefaultSize((300,h))
+        self.videoGenerationPanel=VideoGeneration.VideoGeneration(self.taskWin,self.control,self.visualizer)
+        self.videoGenerationPanel.SetSize((300,h))
+        self.videoGenerationPanel.Show()
+        self.visualizer.mainwin.OnSize(None)
+        #else:
+        #    messenger.send(None,"set_preview_mode",1)
+        #    self.control.renderProject(1)
+        #    messenger.send(None,"set_preview_mode",0)
+        #    
     def onVideoGenerationClose(self,obj, evt, *args):
         """
         Created: 15.12.2005, KP

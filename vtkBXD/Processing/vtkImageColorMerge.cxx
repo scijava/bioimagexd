@@ -167,8 +167,8 @@ void vtkImageColorMergeExecute(vtkImageColorMerge *self, int id,int NumberOfInpu
     maxX = outExt[1] - outExt[0];
     maxY = outExt[3] - outExt[2];
     maxZ = outExt[5] - outExt[4];
-    //printf("inIncX, inIncY,inIncZ=%d,%d,%d\n",inIncX,inIncY,inIncZ);
-    //printf("outIncX, outIncY,outIncZ=%d,%d,%d\n",outIncX,outIncY,outIncZ);
+    printf("inIncX, inIncY,inIncZ=%d,%d,%d\n",inIncX,inIncY,inIncZ);
+    printf("outIncX, outIncY,outIncZ=%d,%d,%d\n",outIncX,outIncY,outIncZ);
     int currScalar = 0;
     int alphaScalar; 
     int n = 0;
@@ -244,16 +244,16 @@ void vtkImageColorMergeExecute(vtkImageColorMerge *self, int id,int NumberOfInpu
             
             
           
-          //for(i=0; i < NumberOfInputs; i++ ) {
-          //    inPtrs[i]+=inIncY;
-          //}
-          //outPtr += outIncY;
+          for(i=0; i < NumberOfInputs; i++ ) {
+              inPtrs[i]+=inIncY;
+          }
+          outPtr += outIncY;
         }  
         //printf("advancing to next slice\n");
-        //for(i=0; i < NumberOfInputs; i++ ) {
-        //  inPtrs[i]+=inIncZ;
-       // }
-       // outPtr += outIncZ;      
+        for(i=0; i < NumberOfInputs; i++ ) {
+          inPtrs[i]+=inIncZ;
+        }
+        outPtr += outIncZ;      
 //  printf("Processed slice %d\n",idxZ);
     }
   //printf("PRocessing done.\n");
@@ -287,7 +287,7 @@ void vtkImageColorMerge::ThreadedRequestData (
   vtkImageData **outData,
   int outExt[6], int id)
 {
-    printf("ThreadedRequestData\n");
+    printf("ThreadedRequestData outExt=%d,%d,%d,%d,%d,%d\n",outExt[0],outExt[1],outExt[2],outExt[3],outExt[4],outExt[5]);
   if (inData[0][0] == NULL)
     {
     vtkErrorMacro(<< "Input " << 0 << " must be specified.");

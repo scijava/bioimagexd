@@ -253,8 +253,7 @@ class CombinedDataUnit(DataUnit.DataUnit):
     def addSourceDataUnit(self, dataUnit,no_init=0):
         """
         Created: 03.11.2004, JM
-        Description: Adds 4D data to the unit together with channel-specific
-        settings.
+        Description: Adds 4D data to the unit together with channel-specific settings.
         Parameters: dataUnit    The SourceDataUnit to be added
         """
         # If one or more SourceDataUnits have already been added, check that the
@@ -323,10 +322,8 @@ class CombinedDataUnit(DataUnit.DataUnit):
         """
         
         preview=None
-        # If the given timepoint > number of timepoints,
-        # it is scaled to be in the range 0-getDataUnitCount()-1
-        # with the modulo operator
-        timePoint=timePoint%self.getLength()
+        if timePoint > self.getLength():
+            timepoint=self.getLength()-1
         
         # If the previously requested preview was a "show original" preview
         # then we can just restore the preview before that without any
@@ -373,21 +370,12 @@ class CombinedDataUnit(DataUnit.DataUnit):
                     self.module.addInput(dataunit,image)
 
             preview=self.module.getPreview(depth)
-            # If no output channels were requested, then just return the
-            # preview
-            
-#            if not self.outputChls:
-#                print "Returning preview",preview.GetDimensions()
-#                return preview
+
         if not self.merging and self.outputChls:
             if preview:
                 merged.append((preview,self.getColorTransferFunction()))
             
             if len(merged)>1:
-                #print "Merging..."
-                #createalpha=vtk.vtkImageAlphaFilter()
-                #createalpha.GetOutput().ReleaseDataFlagOn()                
-                #createalpha.MaximumModeOn()
                 merge=vtk.vtkImageColorMerge()
                 
                 for data,ctf in merged:                    
@@ -395,16 +383,18 @@ class CombinedDataUnit(DataUnit.DataUnit):
                     merge.AddLookupTable(ctf)
                     #createalpha.AddInput(data)
                 #print "Update..."
-                merge.Update()
-                preview=merge.GetOutput()
+                preview = bxd.execute_limited(merge)
+                #merge.Update()
+                #preview=merge.GetOutput()
             elif len(merged)==1:
                 print merged
                 data,ctf = merged[0]
                 maptocolor = vtk.vtkImageMapToColors()
                 maptocolor.SetInput(data)
                 maptocolor.SetLookupTable(ctf)
-                maptocolor.Update()
-                preview=maptocolor.GetOutput()
+                #maptocolor.Update()
+                #preview=maptocolor.GetOutput()
+                preview = bxd.execute_limited(maptocolor)
         
         if not showOrig and not self.doOrig:
             self.origPreview=preview

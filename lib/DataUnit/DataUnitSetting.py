@@ -205,8 +205,8 @@ class DataUnitSettings:
         
         for key in self.registered.keys():
             ser=self.serialized[key]
-            if ser:
-                Logging.info("is %s serialized: %s"%(key,ser),kw="dataunit")
+            #if ser:
+            #    #Logging.info("is %s serialized: %s"%(key,ser),kw="dataunit")
             if key in self.counted:
                 try:
                     n=parser.get("Count",key)
@@ -248,7 +248,8 @@ class DataUnitSettings:
                         #Logging.info("Deserialized ",key,"=",value,kw="dataunit")
                     self.set(key,value)
                 except ConfigParser.NoSectionError:
-                    Logging.info("Got no keys for section %s"%key,kw="dataunit")
+                    #Logging.info("Got no keys for section %s"%key,kw="dataunit")
+                    pass
         return self
                 
     def writeKey(self,key,parser,n=-1):

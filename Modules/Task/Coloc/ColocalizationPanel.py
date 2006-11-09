@@ -1024,25 +1024,12 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
         maptocolor.SetOutputFormatToRGB()
         maptocolor.Update()
         imagedata=maptocolor.GetOutput()
-        bmp=ImageOperations.vtkImageDataToWxImage(imagedata)
+        bmp=ImageOperations.vtkImageDataToWxImage(imagedata).ConvertToBitmap()
         
-        bmp=bmp.Rescale(TaskPanel.TOOL_W+4,TaskPanel.TOOL_H+4).ConvertToBitmap()
+        
         #print "BMP=",bmp.GetWidth(),bmp.GetHeight()
-            
-        dc = wx.MemoryDC()
-        dc.SelectObject(bmp)
-        #val=[0,0,0]
-        #ctf.GetColor(255,val)
-        dc.SetBrush(wx.TRANSPARENT_BRUSH)
-        #r,g,b=val
-        #r*=255
-        #g*=255
-        #b*=255
-        dc.SetPen(wx.Pen(wx.Colour(255,255,255),4))
-        dc.DrawRectangle(0,0,TaskPanel.TOOL_W+4,TaskPanel.TOOL_H+4)
-        dc.EndDrawing()
-        #dc.SelectObject(wx.EmptyBitmap(0,0))
-        dc.SelectObject(wx.NullBitmap)
+        
+        bmp = self.getChannelItemBitmap(bmp,(255,255,0))
         toolid=wx.NewId()
         #n=n+1
         name="Colocalization"

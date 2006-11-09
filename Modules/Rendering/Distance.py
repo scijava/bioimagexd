@@ -59,7 +59,7 @@ class DistanceModule(VisualizationModule):
         self.renew = 1
     
         self.distanceWidget = vtk.vtkDistanceWidget()
-        self.distanceWidget.AddObserver("EndInteractionEvent",self.onPlacePoint)
+        self.obsTag = self.distanceWidget.AddObserver("EndInteractionEvent",self.onPlacePoint)
         self.representation = vtk.vtkDistanceRepresentationScaled2D()
         self.representation.SetScaleX(1.0)
         self.representation.SetScaleZ(1.0)
@@ -99,7 +99,7 @@ class DistanceModule(VisualizationModule):
             self.representation.GetPoint2Representation().SetWorldPosition(pos2)
             self.representation.GetAxis().GetPoint2Coordinate().SetValue(pos2)
         self.representation.BuildRepresentation()
-        
+        self.distanceWidget.RemoveObserver(self.obsTag)
         
     def __getstate__(self):
         """
@@ -178,7 +178,6 @@ class DistanceModule(VisualizationModule):
 
     def disableRendering(self):
         """
-        Method: disableRendering()
         Created: 15.05.2005, KP
         Description: Disable the Rendering of this module
         """          
@@ -187,7 +186,6 @@ class DistanceModule(VisualizationModule):
         
     def showPlane(self,flag):
         """
-        Method: showPlane
         Created: 24.06.2005, KP
         Description: Show / hide the plane controls
         """          
