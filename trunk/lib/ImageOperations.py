@@ -38,6 +38,7 @@ import struct
 import Logging
 #from enthought.tvtk import messenger
 import messenger
+import scripting as bxd
 
 def gcd2(a, b):
     """Greatest common divisor using Euclid's algorithm."""
@@ -167,7 +168,6 @@ def paintCTFValues(ctf,width=256,height=32, paintScale = 0, paintScalars = 0):
 
 def scaleImage(data,factor=1.0,z=-1,interpolation=1,xfactor=0.0,yfactor=0.0):
     """
-    Method: scaleImage(data,factor)
     Created: 01.08.2005, KP
     Description: Scale an image with cubic interpolation
     """    
@@ -199,8 +199,9 @@ def scaleImage(data,factor=1.0,z=-1,interpolation=1,xfactor=0.0,yfactor=0.0):
         reslice.SetInterpolationModeToLinear()
     else:
         reslice.SetInterpolationModeToCubic()
-    reslice.Update() 
-    return reslice.GetOutput()
+    #reslice.Update() 
+    #return reslice.GetOutput()
+    return bxd.execute_limited(reslice)
     
 def loadNIHLut(data):
     """
@@ -422,13 +423,15 @@ def getMIP(imageData,color):
     #print "imageData.GetUpdateExtent()=",imageData.GetUpdateExtent()
     mip.SetInput(imageData)
     #mip.DebugOn()
-    mip.Update()
+    #mip.Update()
+    
     
     imageData.SetUpdateExtent(imageData.GetWholeExtent())        
     x,y,z=imageData.GetDimensions()
     
-    output=mip.GetOutput()
+    
     if color==None:
+        output=bxd.execute_limited(mip)
         return output
     #Logging.info("Got MIP",kw="imageop")
     if output.GetNumberOfScalarComponents()==1:
@@ -436,13 +439,14 @@ def getMIP(imageData,color):
     
 #        Logging.info("Mapping MIP through ctf",kw="imageop")
         maptocolor=vtk.vtkImageMapToColors()
-        maptocolor.SetInput(output)
+        maptocolor.SetInput(mip.GetOutput())
         maptocolor.SetLookupTable(ctf)
         maptocolor.SetOutputFormatToRGB()
-        maptocolor.Update()
-        imagedata=maptocolor.GetOutput()
+        #maptocolor.Update()
+        #imagedata=maptocolor.GetOutput()
+        imagedata=bxd.execute_limited(maptocolor)
     else:
-        imagedata=output
+        imagedata=output=bxd.execute_limited(mip)
     return imagedata
 
 def getColorTransferFunction(color):
@@ -481,9 +485,9 @@ def vtkImageDataToPreviewBitmap(dataunit,timepoint,color,width=0,height=0,bgcolo
     maptocolor.SetInput(imagedata)
     maptocolor.SetLookupTable(getColorTransferFunction(color))
     maptocolor.SetOutputFormatToRGB()
-    maptocolor.Update()
-    imagedata=maptocolor.GetOutput()    
-    
+    #maptocolor.Update()
+    #imagedata=maptocolor.GetOutput()    
+    imagedata = bxd.execute_limited(maptocolor)
     #imagedata=getMIP(imageData,color)
     if getpng:
         #Logging.info("Getting PNG string",kw="imageop")
@@ -535,8 +539,9 @@ def getPlane(data,plane,x,y,z):
         permute.SetFilteredAxes(X,Z,Y)
     #permute.SetInput(data)
     #return voi.GetOutput()    
-    permute.Update()
-    return permute.GetOutput()
+    #permute.Update()
+    #return permute.GetOutput()
+    return bxd.execute_limited(permute)
 
 def watershedPalette(x0,x1):    
     ctf = vtk.vtkColorTransferFunction()
@@ -969,8 +974,9 @@ def vtkZoomImage(image,f):
     # If we zoom in, use cubic interpolation
         reslice.SetInterpolationModeToCubic()
         reslice.InterpolateOn()
-    reslice.Update()
-    return reslice.GetOutput()
+    #reslice.Update()
+    #return reslice.GetOutput()
+    return bxd.execute_limited(reslice)
     
 def zoomImageToSize(image,x,y):
     """
@@ -1025,7 +1031,6 @@ def saveImageAs(imagedata,zslice,filename):
     
 def imageDataTo3Component(image,ctf):
     """
-    Method: imageDataTo3Component
     Created: 22.07.2005, KP
     Description: Processes image data to get it to proper 3 component RGB data
     """         
@@ -1036,15 +1041,17 @@ def imageDataTo3Component(image,ctf):
         maptocolor.SetInput(image)
         maptocolor.SetLookupTable(ctf)
         maptocolor.SetOutputFormatToRGB()
-        maptocolor.Update()
-        imagedata=maptocolor.GetOutput()
+        #maptocolor.Update()
+        #imagedata=maptocolor.GetOutput()
+        imagedata=bxd.execute_limited(maptocolor)
     elif ncomps>3:
         Logging.info("Data has %d components, extracting"%ncomps,kw="imageop")
         extract=vtk.vtkImageExtractComponents()
         extract.SetComponents(0,1,2)
         extract.SetInput(image)
-        extract.Update()
-        imagedata=extract.GetOutput()
+        #extract.Update()
+        #imagedata=extract.GetOutput()
+        imagedata=bxd.execute_limited(extract)
 
     else:
         imagedata=image

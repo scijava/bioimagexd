@@ -136,12 +136,13 @@ class AnnotationToolbar(wx.Window):
         icondir = scripting.get_icon_dir()         
         btn = buttons.GenBitmapToggleButton(self, toolid, bitmap)
         w,h = bitmap.GetWidth(),bitmap.GetHeight()
-        btn.SetBestSize((w,h))            
+        #btn.SetBestSize((w,h))            
+        btn.SetSize((64,64))
         btn.SetToolTipString(name)
         btn.Bind(wx.EVT_BUTTON,func)
         
         self.numberOfChannels+=1
-        self.sizer.Add(btn, (5+self.numberOfChannels,0))
+        self.sizer.Add(btn, (5+self.numberOfChannels,0),span=(1,2))
         self.channelButtons[toolid]=btn
         self.Layout()
         

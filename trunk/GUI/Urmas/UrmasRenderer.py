@@ -56,14 +56,12 @@ def distance(p1,p2):
 
 class UrmasRenderer:
     """
-    Class: UrmasRenderer
     Created: 04.04.2005, KP
     Description: This class takes a datastructure representation of the 
                  timeline and renders it to a movie or set of images.
     """
     def __init__(self,control):
         """
-        Class: __init__
         Created: 04.04.2005, KP
         Description: Initialization
         """    
@@ -102,7 +100,6 @@ class UrmasRenderer:
        
     def onStopPlayback(self,obj,evt,*args):
         """
-        Method: onStopPlayback
         Created: 30.1.2006, KP
         Description: A callback to stop rendering if it's currently underway
                      in a preview mode
@@ -116,7 +113,6 @@ class UrmasRenderer:
       
     def onPlayPlayback(self,obj,evt,*args):
         """
-        Method: onPlayPlayback
         Created: 30.1.2006, KP
         Description: A callback to resume rendering if it's currently underway
                      but paused
@@ -140,7 +136,6 @@ class UrmasRenderer:
             
     def onPausePlayback(self,obj,evt,*args):
         """
-        Method: onPausePlayback
         Created: 30.1.2006, KP
         Description: A callback to pause rendering if it's currently underway
         """  
@@ -149,7 +144,6 @@ class UrmasRenderer:
         
     def isPaused(self):
         """
-        Method: isPaused
         Created: 30.1.2006, KP
         Description: A query function that tells whether the rendering is paused
         """            
@@ -157,7 +151,6 @@ class UrmasRenderer:
         
     def onStopRendering(self,obj,evt,*args):
         """
-        Method: onStopRendering
         Created: 30.1.2006, KP
         Description: Stop any rendering we're doing and exit
         """        
@@ -168,7 +161,6 @@ class UrmasRenderer:
             
     def startAnimation(self,control):
         """
-        Method: startAnimation
         Created: 20.04.2005, KP
         Description: Initialize the rendering
         """
@@ -295,7 +287,6 @@ class UrmasRenderer:
         
     def initializeCameraInterpolator(self):
         """
-        Method: initializeCameraInterpolator
         Created: 18.08.2005, KP
         Description: Initialize the camera interpolator if there are keyframes
         """           
@@ -323,7 +314,6 @@ class UrmasRenderer:
         
     def renderPreviewAt(self,evt,obj,timepos):
         """
-        Method: renderPreviewAt
         Created: 15.08.2005, KP
         Description: Renders a preview at given time position
         """           
@@ -357,7 +347,6 @@ class UrmasRenderer:
          
     def getTimepointAt(self,time):
         """
-        Method: getTimepointAt(time)
         Created: 05.04.2005, KP
         Description: Returns the timepoint used at given time
         Parameters:
@@ -374,7 +363,6 @@ class UrmasRenderer:
         
     def getKeyframes(self):
         """
-        Method: getKeyframes
         Created: 18.08.2005, KP
         Description: Return the keyframes if there is a keyframe track
         """
@@ -383,7 +371,6 @@ class UrmasRenderer:
         
     def getSplinepointsAt(self,time,get_first = 0):
         """
-        Method: getSplinepointAt(time)
         Created: 05.04.2005, KP
         Description: Returns two splinepoints between wich the camera is located at this time
         Parameters:
@@ -418,7 +405,6 @@ class UrmasRenderer:
         
     def renderFrame(self,frame,timepos,spf,preview=0,use_cam=0):
         """
-        Method: renderFrame(frame,time)
         Created: 04.04.2005, KP
         Description: This renders a given frame
         Parameters:
@@ -553,7 +539,6 @@ class UrmasRenderer:
         
     def setCameraParameters(self,cam,renderer,point,focal):
         """
-        Method: setCameraParameters(camera,renderer, point, focal)
         Created: 04.04.2005, KP
         Description: Sets the camera parameters
         """

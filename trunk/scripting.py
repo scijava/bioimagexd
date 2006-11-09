@@ -118,6 +118,7 @@ processingManager = None
 memLimit = None
 resamplingDisabled = 0
 processingTimepoint = -1
+wantAlphaChannel=1
 
 dialogs = {}
 
@@ -130,16 +131,19 @@ def unregisterDialog(name):
 
 
 def execute_limited(pipeline):
-    limit = get_memory_limit()
-    if not limit:
+    global memLimit
+    if not memLimit:
+        get_memory_limit()
+    if not memLimit:
         pipeline.Update()
-        return pipeline.GetOutput()
-    
+        return pipeline.GetOutput()    
     try:
         streamer = vtk.vtkMemoryLimitImageDataStreamer()
         streamer.SetMemoryLimit(1024*limit)
         streamer.SetInput(pipeline.GetOutput())
+        print "Executing memory limited streamer, with limit=",memLimit,
         streamer.Update()
+        print "...done"        
         return streamer.GetOutput()
     except:
         pipeline.Update()
@@ -192,7 +196,48 @@ def get_log_dir():
         appdir=os.path.expanduser("~/.BioImageXD")
         if not os.path.exists(appdir):
             os.mkdir(appdir)
-        return os.path.join(appdir,"Logs")
+        appdir=os.path.join(appdir,"Logs")
+        if not os.path.exists(appdir):
+            os.mkdir(appdir)
+        return appdir
+    
+    
+def get_preview_dir():
+    """
+    Created: 7.11.2006, KP
+    Description: Return a directory where preview images can be stored
+    """
+    if platform.system()=="Darwin":
+        dirpath=os.path.expanduser("~/Library/Caches/BioImageXD")
+        if not os.path.exists(dirpath):
+            os.mkdir(dirpath)
+        return dirpath
+    elif platform.system() == "Windows":
+        appbase=os.path.join("C:\\","Documents and Settings",getpass.getuser(),"Application Data")
+        appdir=os.path.join(appbase,"BioImageXD")
+        if not os.access(appdir,os.F_OK):
+            try:
+                os.mkdir(appdir)
+            except:
+                pass
+            if not os.access(appdir,os.F_OK):
+                print "Cannot write to application data"
+                appdir="."
+        
+        if not os.path.exists(appdir):
+            os.mkdir(appdir)
+        appdir=os.path.join(appdir,"Previews")
+        if not os.path.exists(appdir):
+            os.mkdir(appdir)
+        return appdir
+    else:
+        appdir=os.path.expanduser("~/.BioImageXD")
+        if not os.path.exists(appdir):
+            os.mkdir(appdir)
+        appdir = os.path.join(appdir,"Previews")
+        if not os.path.exists(appdir):
+            os.mkdir(appdir)
+        return appdir
     
 def get_config_dir():
     if platform.system()=="Darwin":
@@ -233,18 +278,4 @@ def get_module_dir():
         return path
     else:
         return "Modules"
-        
-#def loadITK(filters=0):
-#    global ITKIO,ITKCommonA,ItkVtkGlue,ITKBasicFiltersA,ITKAlgorithms
-#    import messenger
-#    messenger.send(None,"update_progress",0.2,"Loading BioRad support.")        
-#    import ITKIO
-#    messenger.send(None,"update_progress",0.4,"Loading BioRad support..")  
-#    import ITKCommonA
-#    messenger.send(None,"update_progress",0.6,"Loading BioRad support...")        
-#    import ItkVtkGlue
-#    messenger.send(None,"update_progress",0.7,"Loading BioRad support....")       
-#    if filters:
-#        import ITKBasicFiltersA
-#        import ITKAlgorithms
-#    messenger.send(None,"update_progress",1.0,"BioRad support loaded.")           
+

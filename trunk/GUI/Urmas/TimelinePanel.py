@@ -101,7 +101,7 @@ class TimelinePanel(wx.Panel):
         self.sizer.Add(sboxsizer,(0,0),flag=wx.EXPAND|wx.ALL)
         #f=wx.Frame(self,-1)
         self.wxrenwin=VisualizerWindow.VisualizerWindow(self,size=(300,300))
-        
+        self.wxrenwin.initializeVTK()
         
         self.splineEditor=SplineEditor.SplineEditor(self,self.wxrenwin)
         self.control.setSplineEditor(self.splineEditor)        
@@ -121,6 +121,8 @@ class TimelinePanel(wx.Panel):
 
         
         self.Refresh()
+        
+        self.splineEditor.initializeVTK()
         
         n = self.timelineConfig.getFrameAmount()
         

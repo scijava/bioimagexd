@@ -82,6 +82,20 @@ class SurfaceModule(VisualizationModule):
         self.renderer = self.parent.getRenderer()
         self.renderer.AddActor(self.lodActor)
         #self.updateRendering()
+        
+    def getParameterLevel(self, parameter):
+        """
+        Created: 1.11.2006, KP
+        Description: Return the level of the given parameter
+        """
+        if parameter in ["FeatureAngle","Normals"]:
+            return GUIBuilder.FILTER_EXPERIENCED
+        if parameter == "PreserveTopology":
+            return GUIBuilder.FILTER_INTERMEDIATE
+        
+        
+        return GUIBuilder.FILTER_BEGINNER            
+        
 
     def setScalarRange(self, min,max):
         """

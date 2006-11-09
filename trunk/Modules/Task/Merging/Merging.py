@@ -36,6 +36,7 @@ import vtk
 import time
 import lib.Module
 from lib.Module import *
+import scripting as bxd
 
 class Merging(Module):
     """
@@ -118,8 +119,11 @@ class Merging(Module):
         if z!=-1:
             self.doAlpha=0
         else: # If the whole volume is requested, then we will also do alpha
-            Logging.info("Will create alpha channel, because whole volume requested",kw="processing")
+            #Logging.info("Will create alpha channel, because whole volume requested",kw="processing")
             self.doAlpha=1
+        if not bxd.wantAlphaChannel:
+            print "Won't create alpha, flag indicates not wanted"
+            self.doAlpha=0
         if self.settings.get("ShowOriginal"):
             ret=self.doOperation()      
             self.doAlpha=1

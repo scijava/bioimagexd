@@ -362,6 +362,7 @@ class TreeWidget(wx.SashLayoutWindow):
         """            
         items=self.tree.GetSelections()
         objs=[self.tree.GetPyData(x) for x in items]
+        objs=filter(lambda x:type(x)!=types.StringType,objs)
         return objs
         
     def getSelectedPaths(self):
@@ -403,7 +404,8 @@ class TreeWidget(wx.SashLayoutWindow):
             return
         
         obj=self.tree.GetPyData(item)
-
+        if obj == "1":
+            return
         self.item=item
         if obj and type(obj)!=types.StringType:
             if self.lastobj != obj:

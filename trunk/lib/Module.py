@@ -38,13 +38,11 @@ import scripting
 
 class Module:
     """
-    Class: Module
     Created: 03.11.2004, KP
     Description: A Base class for all data processing modules
     """
     def __init__(self,**kws):
         """
-        Method: __init__(**keywords)
         Created: 03.11.2004, KP
         Description: Initialization
         """
@@ -69,7 +67,6 @@ class Module:
      
     def setControlDataUnit(self, dataunit):
         """
-        Method: setControlDataUnit
         Created: 10.07.2006, KP
         Description: Set the dataunit that is controlling the execution of this module
         """
@@ -77,7 +74,6 @@ class Module:
         
     def getControlDataUnit(self):
         """
-        Method: getControlDataUnit
         Created: 10.07.2006, KP
         Description: Set the dataunit that is controlling the execution of this module
         """
@@ -87,7 +83,6 @@ class Module:
 
     def updateProgress(self,obj,evt):
         """
-        Method: updateProgress
         Created: 13.07.2004, KP
         Description: Sends progress update event
         """        
@@ -99,7 +94,6 @@ class Module:
         
     def setTimepoint(self,tp):
         """
-        Method: setTimepoint(tp)
         Created: 21.06.2005, KP
         Description: Sets the timepoint this module is processing
         """
@@ -107,7 +101,6 @@ class Module:
         
     def setSettings(self,settings):
         """
-        Method: setSettings(settings)
         Created: 27.03.2005, KP
         Description: Sets the settings object of this module
         """
@@ -115,7 +108,6 @@ class Module:
         
     def setZoomFactor(self,factor):
         """
-        Method: setZoomFactor(factor)
         Created: 23.02.2005, KP
         Description: Sets the zoom factor for the produced dataset.
                      This means that the preview dataset will be zoomed with
@@ -125,7 +117,6 @@ class Module:
             
     def zoomDataset(self,dataset):
         """
-        Method: setZoomFactor(factor)
         Created: 23.02.2004, KP
         Description: Returns the dataset zoomed with the zoom factor
         """
@@ -135,7 +126,6 @@ class Module:
             
     def getZoomFactor(self,factor):
         """
-        Method: setZoomFactor(factor)
         Created: 23.02.2004, KP
         Description: Returns the zoom factor
         """
@@ -143,7 +133,6 @@ class Module:
 
     def reset(self):
         """
-        Method: reset()
         Created: 04.11.2004, KP
         Description: Resets the module to initial state
         """
@@ -157,7 +146,6 @@ class Module:
 
     def addInput(self,dataunit,imageData):
         """
-         Method: addInput(imageData)
          Created: 03.11.2004, KP
          Description: Adds an input vtkImageData dataset for the module.
         """
@@ -181,7 +169,6 @@ class Module:
 
     def getPreview(self,z):
         """
-        Method: getPreview(z)
         Created: 03.11.2004, KP
         Description: Does a preview calculation for the x-y plane at depth z
         """
@@ -189,7 +176,6 @@ class Module:
 
     def processData(self,z,newData,toZ=None):
         """
-        Method: processData(z,newData,toZ)
         Created: 03.11.2004, KP
         Description: Processes the input data
         Parameters: z        The z coordinate of the plane to be processed
@@ -201,7 +187,6 @@ class Module:
 
     def doOperation(self):
         """
-        Method: doOperation()
         Created: 01.12.2004, KP
         Description: Does the operation for the specified datasets.
         """
@@ -209,7 +194,6 @@ class Module:
 
     def getLimitedOutput(self,filter):
         """
-        Method: getLimitedOutput
         Created: 27.04.2006, KP
         Description: Return the results of the pipeline possibly executed in chunks
         """

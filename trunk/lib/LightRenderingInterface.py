@@ -47,19 +47,17 @@ import Visualizer
 
 class LightRenderingInterface(RenderingInterface.RenderingInterface):
     """
-    Class: LightRenderingInterface
     Created: 28.04.2005, KP
     Description: The interface between LSM and BioImageXD Visualizer for rendering
     """
     def __init__(self,dataUnit=None,timePoints=[],**kws):
         """
-        Method: __init__
         Created: 17.11.2004, KP
         Description: Initialization
         """
         RenderingInterface.RenderingInterface.__init__(self,dataUnit,timePoints,**kws)
         self.visualizer=None
-        
+        self.frameList = []
     
     def runTk(self):pass
     def runTkinterGUI(self):pass
@@ -67,7 +65,6 @@ class LightRenderingInterface(RenderingInterface.RenderingInterface):
             
     def updateDataset(self):
         """
-        Method: updateDataset()
         Created: 28.04.2005, KP
         Description: Updates the dataset to the current timepoint
         """
@@ -76,7 +73,6 @@ class LightRenderingInterface(RenderingInterface.RenderingInterface):
         
     def setRenderWindowSize(self,size):
         """
-        Method: setRenderWindowSize()
         Created: 27.04.2005, KP
         Description: Sets the mayavi render window size
         """        
@@ -86,7 +82,6 @@ class LightRenderingInterface(RenderingInterface.RenderingInterface):
             
     def setParent(self,parent):
         """
-        Method: setParent(parent)
         Created: 28.04.2005, KP
         Description: Set the parent of this window
         """        
@@ -94,7 +89,6 @@ class LightRenderingInterface(RenderingInterface.RenderingInterface):
         
     def getRenderWindow(self):
         """
-        Method: getRenderWindow()
         Created: 22.02.2005, KP
         Description: Returns the mayavi's render window. Added for Animator compatibility
         """
@@ -109,7 +103,6 @@ class LightRenderingInterface(RenderingInterface.RenderingInterface):
 
     def getRenderer(self):
         """
-        Method: getRenderer
         Created: 28.04.2005, KP
         Description: Returns the renderer
         """        
@@ -117,15 +110,14 @@ class LightRenderingInterface(RenderingInterface.RenderingInterface):
         
     def setVisualizer(self,visualizer):
         """
-        Method: setVisualizer(visualizer)
         Created: 20.06.2005, KP
         Description: Set the visualizer instance to use
         """        
         self.visualizer=visualizer
+        self.frameList = []
 
     def createVisualizerWindow(self):
         """
-        Method: createVisualizerWindow()
         Created: 22.02.2005, KP
         Description: A method that creates an instance of mayavi
         """    
@@ -139,7 +131,6 @@ class LightRenderingInterface(RenderingInterface.RenderingInterface):
 
     def isVisualizationSoftwareRunning(self):
         """
-        Method: isVisualizationSoftwareRunning()
         Created: 11.1.2005, KP
         Description: A method that returns true if a mayavi window exists that
                      can be used for rendering
@@ -155,7 +146,6 @@ class LightRenderingInterface(RenderingInterface.RenderingInterface):
 
     def isVisualizationModuleLoaded(self):
         """
-        Method: isVisualizationModuleLoaded()
         Created: 22.02.2005, KP
         Description: A method that returns true if a visualizer has a visualization module loaded.
         """
@@ -164,7 +154,6 @@ class LightRenderingInterface(RenderingInterface.RenderingInterface):
         
     def doRendering(self,**kws):
         """
-        Method: doRendering()
         Created: 17.11.2004, KP
         Description: Sends each timepoint one at a time to be rendered in mayavi
         Parameters:
@@ -187,13 +176,20 @@ class LightRenderingInterface(RenderingInterface.RenderingInterface):
             Logging.info("Creating visualizer",kw="visualizer")
             self.createVisualizerWindow()
         self.visualizer.setTimepoint(self.currentTimePoint)
+        
+    def getFrameList(self):
+        """
+        Created: 07.11.2006, KP
+        Description: Return the list of the names of the frames that have been rendered
+        """
+        return self.frameList
 
     def saveFrame(self,filename):
         """
-        Method: saveFrame(filename)
         Created: 22.02.2005, KP
         Description: Saves a frame with a given name
         """
+        self.frameList.append(filename)
         visualizer=self.visualizer
         type=self.type
         Logging.info("Saving screenshot to ",filename,kw="visualizer")

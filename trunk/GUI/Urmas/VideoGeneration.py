@@ -49,13 +49,11 @@ import math
 
 class VideoGeneration(wx.Panel):
     """
-    Class: RenderingPage
     Created: 05.05.2005, KP
     Description: A page for controlling video generation
     """
     def __init__(self,parent,control,visualizer):
         """
-        Method: __init__
         Created: 05.05.2005, KP
         Description: Initialization
         """
@@ -109,7 +107,6 @@ class VideoGeneration(wx.Panel):
 
     def onCancel(self,*args):
         """
-        Method: onCancel()
         Created: 15.12.2005, KP
         Description: Close the video generation window
         """        
@@ -122,7 +119,6 @@ class VideoGeneration(wx.Panel):
         
     def onOk(self,event):
         """
-        Method: onOk()
         Created: 26.04.2005, KP
         Description: Render the whole damn thing
         """
@@ -176,13 +172,13 @@ class VideoGeneration(wx.Panel):
         self.rendering = 1
         messenger.connect(None,"rendering_done",self.cleanUp)
         flag=self.control.renderProject(0,renderpath=path)
+        self.frameList = renderingInterface.getFrameList()
         self.rendering = 0
         if flag==-1:
             return
             
     def cleanUp(self,*args):
         """
-        Method: cleanUp
         Created: 30.1.2006, KP
         Description: Method to clean up after rendering is done
         """     
@@ -209,7 +205,6 @@ class VideoGeneration(wx.Panel):
 
     def encodeVideo(self,path,file,size):
         """
-        Method: encodeVideo()
         Created: 27.04.2005, KP
         Description: Encode video from the frames produced
         """ 
@@ -271,22 +266,30 @@ class VideoGeneration(wx.Panel):
         os.system(commandLine)
         if os.path.exists(file):
             Dialogs.showmessage(self,"Encoding was successful!","Encoding done")
+            if self.delFramesBox.GetValue():
+                for file in self.frameList:
+                    print "Removing",file
+                    os.unlink(file)
         else:
             Dialogs.showmessage(self,"Encoding failed: File %s does not exist!"%file,"Encoding failed")
         
+        
     def onUpdateFormat(self,event):
         """
-        Method: onUpdateFormat
         Created: 26.04.2005, KP
         Description: Update the gui based on the selected output format
         """ 
         sel = self.formatMenu.GetSelection()
-        self.outputFormat.Clear()
+        
         if sel:
             self.outputFormatLbl.SetLabel("Video Codec:")
+            
         else:
             self.outputFormatLbl.SetLabel("Image Format:")
+        self.delFramesBox.Enable(sel)
+        self.qualitySlider.Enable(sel)
         self.videofile.Enable(sel)            
+        
         self.videofileBtn.Enable(sel)
         
         for i in self.outputFormats[sel]:
@@ -302,7 +305,6 @@ class VideoGeneration(wx.Panel):
     
     def onUpdateCodec(self,event):
         """
-        Method: onUpdateCodec
         Created: 26.04.2005, KP
         Description: Update the gui based on the selected output codec
         """ 
@@ -315,7 +317,6 @@ class VideoGeneration(wx.Panel):
             
     def onUpdatePreset(self,event):
         """
-        Method: onUpdatePreset
         Created: 07.02.2006, KP
         Description: Update the GUI based on the selected preset
         """ 
@@ -344,7 +345,6 @@ class VideoGeneration(wx.Panel):
             
     def generateGUI(self):
         """
-        Method: generateGUI
         Created: 26.04.2005, KP
         Description: Generate the GUI
         """ 
@@ -441,6 +441,9 @@ class VideoGeneration(wx.Panel):
         self.rendirLbl=wx.StaticText(self,
         -1,"Save frames in directory:")
         
+        self.delFramesBox = wx.CheckBox(self,-1,"Delete frames after encoding is ready")
+        self.delFramesBox.SetValue(1)
+        
         self.dirBtn=wx.Button(self,-1,"...")
         self.dirBtn.Bind(wx.EVT_BUTTON,self.onSelectDirectory)
         
@@ -452,15 +455,16 @@ class VideoGeneration(wx.Panel):
         self.renderingsizer.Add(self.rendirLbl,(0,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
         self.renderingsizer.Add(self.rendir,(1,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
         self.renderingsizer.Add(self.dirBtn,(1,1))
+        self.renderingsizer.Add(self.delFramesBox,(2,0))
         
         self.videofile=wx.TextCtrl(self,-1,video,size=(150,-1))
         self.videofileLbl=wx.StaticText(self,-1,"Output file name:")
         self.videofileBtn=wx.Button(self,-1,"...")
         self.videofileBtn.Bind(wx.EVT_BUTTON,self.onSelectOutputFile)
         
-        self.renderingsizer.Add(self.videofileLbl,(2,0),flag=wx.EXPAND|wx.ALL)
-        self.renderingsizer.Add(self.videofile,(3,0),flag=wx.EXPAND|wx.ALL)
-        self.renderingsizer.Add(self.videofileBtn,(3,1),flag=wx.EXPAND|wx.ALL)
+        self.renderingsizer.Add(self.videofileLbl,(3,0),flag=wx.EXPAND|wx.ALL)
+        self.renderingsizer.Add(self.videofile,(4,0),flag=wx.EXPAND|wx.ALL)
+        self.renderingsizer.Add(self.videofileBtn,(4,1),flag=wx.EXPAND|wx.ALL)
 
         
         #self.mainsizer.Add(self.renderstaticbox,(1,0))
@@ -468,7 +472,6 @@ class VideoGeneration(wx.Panel):
 
     def onSelectDirectory(self,event=None):
         """
-        Method: selectDirectory()
         Created: 10.11.2004, KP
         Description: A callback that is used to select the directory where
                      the rendered frames are stored
@@ -478,7 +481,6 @@ class VideoGeneration(wx.Panel):
         
     def onSelectOutputFile(self,event=None):
         """
-        Method: onSelectOutputFile
         Created: 26.04.2005, KP
         Description: A callback that is used to select the video file 
                      that is produced.
@@ -495,7 +497,6 @@ class VideoGeneration(wx.Panel):
 
     def onUpdateFrames(self,event):
         """
-        Method: onUpdateFrames
         Created: 26.04.2005, KP
         Description: Update the frame amount
         """ 
@@ -512,7 +513,6 @@ class VideoGeneration(wx.Panel):
         
     def onPadFrames(self,event):
         """
-        Method: onPadFrames
         Created: 26.04.2005, KP
         Description: Toggle padding of frames
         """     

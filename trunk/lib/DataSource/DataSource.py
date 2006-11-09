@@ -217,7 +217,55 @@ class DataSource:
                 self.resampleDims=(x,y,dims[2])
         #print "Returning ",self.resampleDims
         return self.resampleDims
-    
+        
+    def getMipCacheKey(self, datafilename, chName):
+        """
+        Created: 07.11.2006, KP
+        Description: Return a unique name based on a filename and channel name that can be used as 
+                     a filename for the MIP
+        """
+        
+        filename=datafilename.replace("\\","_")
+        filename=filename.replace("/","_")
+        filename=filename.replace(":","_")
+        
+        return filename+"_"+chName
+        
+    def getMipFromCache(self, datafilename, chName):
+        """
+        Created: 07.11.2006, KP
+        Description: Retrieve a MIP image from cache
+        """
+        key = self.getMipCacheKey(datafilename, chName)
+        #print "KEY=",key
+        directory = scripting.get_preview_dir()
+        #print "\n\nPREWVIEW DIR=",directory
+        filename="%s.png"%key
+        filepath = os.path.join(directory,filename)
+        if not os.path.exists(filepath):
+            #print "File ",filename,"ch",chName,"not in cache"
+            return None
+        #print "File ",filepath,"ch",chName,"IS in cache"
+        reader = vtk.vtkPNGReader()
+        reader.SetFileName(filepath)
+        reader.Update()
+        return reader.GetOutput()
+        
+    def storeMipToCache(self, imagedata,datafilename, chName):
+        """
+        Created: 07.11.2006, KP
+        Description: Store a MIP image to a cache
+        """
+        key = self.getMipCacheKey(datafilename, chName)
+        writer = vtk.vtkPNGWriter()
+        writer.SetInput(imagedata)
+        directory = scripting.get_preview_dir()
+        filename="%s.png"%key
+        filepath=os.path.join(directory,filename)
+        #print "Storing to cache",filepath
+        writer.SetFileName(filepath)
+        writer.Write()
+        
     def getMIPdata(self,n):
         """
         Created: 05.06.2006, KP
@@ -274,10 +322,11 @@ class DataSource:
         
         self.shift.SetShift(self.intensityShift)
             
-        self.shift.Update()
+        #self.shift.Update()
         # Release the memory used by the non-shifted data
         data.ReleaseDataFlagOn()
-        return self.shift.GetOutput()
+        #return self.shift.GetOutput()
+        return scripting.execute_limited(self.shift)
 
     
     def getResampledData(self,data,n,tmpDims=None):
@@ -314,9 +363,11 @@ class DataSource:
                 self.resample.SetAxisMagnificationFactor(0,xf)
                 self.resample.SetAxisMagnificationFactor(1,yf)
                 self.resample.SetAxisMagnificationFactor(2,zf)
-                self.resample.Update()
+                #self.resample.Update()                
+                newdata = scripting.execute_limited(self.resample)
                 data.ReleaseDataFlagOn()
-                data= self.resample.GetOutput()        
+                data = newdata
+                #data= self.resample.GetOutput()        
         if self.mask:
             if not self.maskImg:
                 self.maskImg = vtk.vtkImageMask()
@@ -325,10 +376,12 @@ class DataSource:
                 self.maskImg.RemoveAllInputs()
             self.maskImg.SetImageInput(data)
             self.maskImg.SetMaskInput(self.mask.getMaskImage())
-            self.maskImg.Update()
-            # XXX: Might cause instability
+            
+            
+            newdata = scripting.execute_limited(self.maskImg)
+
             data.ReleaseDataFlagOn()
-            return self.maskImg.GetOutput()
+            data = newdata
             
         return data
 

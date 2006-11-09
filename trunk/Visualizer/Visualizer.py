@@ -79,7 +79,6 @@ class Visualizer:
     """
     def __init__(self,parent,menuManager,mainwin,**kws):
         """
-        Method: __init__(parent)
         Created: 28.04.2005, KP
         Description: Initialization
         """
@@ -487,24 +486,28 @@ class Visualizer:
 #        self.tb.AddSimpleTool(MenuManager.ID_DRAG_ANNOTATION,wx.Image(os.path.join(icondir,"arrow.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Manage annotations","Manage annotations on the image")
         
         
+        icon = wx.Image(os.path.join(icondir,"original.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap()
         self.tb.AddSeparator()
-        self.origBtn=wx.Button(self.tb,MenuManager.ORIG_BUTTON,"Original")
+        self.origBtn=wx.BitmapButton(self.tb,MenuManager.ORIG_BUTTON,icon)
 
         self.origBtn.SetHelpText("Use this button to show how the unprocessed dataset looks like.")
         self.origBtn.Bind(wx.EVT_LEFT_DOWN,lambda x:self.onShowOriginal(x,1))
         self.origBtn.Bind(wx.EVT_LEFT_UP,lambda x:self.onShowOriginal(x,0))
         
         self.tb.AddControl(self.origBtn)
+        iconpath=scripting.get_icon_dir()
+        bmp = wx.Image(os.path.join(iconpath,"perspective.gif")).ConvertToBitmap()
+        self.tb.DoAddTool(MenuManager.ID_PERSPECTIVE,"Perspective rendering",bmp,kind=wx.ITEM_CHECK,shortHelp="Toggle between parallel and perspective projection")        
+        self.tb.ToggleTool(MenuManager.ID_PERSPECTIVE, 1)
+        wx.EVT_TOOL(self.tb,MenuManager.ID_PERSPECTIVE,self.onPerspectiveRendering)
         
-        
-    
-        self.pitch=wx.SpinButton(self.tb, MenuManager.PITCH,style=wx.SP_VERTICAL)
+        self.pitch=wx.SpinButton(self.tb, MenuManager.PITCH,style=wx.SP_VERTICAL,size=(-1,22))
         self.tb.AddControl(self.pitch)
-        self.yaw=wx.SpinButton(self.tb, MenuManager.YAW,style=wx.SP_VERTICAL)
+        self.yaw=wx.SpinButton(self.tb, MenuManager.YAW,style=wx.SP_VERTICAL,size=(-1,22))
         self.tb.AddControl(self.yaw)
-        self.roll=wx.SpinButton(self.tb, MenuManager.ROLL,style=wx.SP_VERTICAL)
+        self.roll=wx.SpinButton(self.tb, MenuManager.ROLL,style=wx.SP_VERTICAL,size=(-1,22))
         self.tb.AddControl(self.roll)
-        self.elevation=wx.SpinButton(self.tb, -1,style=wx.SP_VERTICAL)
+        self.elevation=wx.SpinButton(self.tb, -1,style=wx.SP_VERTICAL,size=(-1,22))
         self.tb.AddControl(self.elevation)
         
         self.pitch.Bind(wx.EVT_SPIN_UP, self.onPitchUp)
@@ -526,6 +529,16 @@ class Visualizer:
             
         self.viewCombo.Enable(0)
         
+    def onPerspectiveRendering(self, evt):
+        """
+        Created: 08.11.2006, KP
+        Description: Toggle perspective rendering on or off
+        """
+        flag=not evt.IsChecked()
+        if hasattr(self.currentWindow,"getRenderer"):
+            cam = self.currentWindow.getRenderer().GetActiveCamera()
+            cam.SetParallelProjection(flag)
+            self.currentWindow.Render()
         
     def getRegionsOfInterest(self):
         """
@@ -898,15 +911,21 @@ class Visualizer:
             
         if not module.showZoomToolbar():
             self.toolWin.SetDefaultSize((500,0))
+            self.annotateBarWin.SetDefaultSize((0,-1))
+            
         else:
             self.toolWin.SetDefaultSize((500,44))            
+            self.annotateBarWin.SetDefaultSize((70,-1))
 
         # dataunit might have been changed so set it every time a
         # mode is loaded
 
         self.currMode=modeinst
         self.currModeModule=module
-        
+
+        # Most visualization methods don't want alpha channel
+        # The ones that do, can change the flag from activate()
+        scripting.wantAlphaChannel = 0
         self.currentWindow = modeinst.activate(self.sidebarWin)        
       
         self.sidebarWin.SetDefaultSize((0,1024))

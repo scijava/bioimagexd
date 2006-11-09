@@ -39,7 +39,6 @@ import StringIO
 class ChannelListBox(wx.HtmlListBox):
     def __init__(self,parent,**kws):
         """
-        Method: __init__(parent,kws)
         Created: 26.07.2005, KP
         Description: Initialization
         """
@@ -52,7 +51,6 @@ class ChannelListBox(wx.HtmlListBox):
         
     def onSelectItem(self,event):
         """
-        Method: onSelectItem
         Created: 26.07.2005, KP
         Description: Callback called when a user selects a channel in this listbox
         """
@@ -62,7 +60,6 @@ class ChannelListBox(wx.HtmlListBox):
         
     def setDataUnit(self,dataunit):
         """
-        Method: setDataUnit()
         Created: 26.07.2005, KP
         Description: Set the dataunit to be listed
         """
@@ -95,7 +92,6 @@ class ChannelListBox(wx.HtmlListBox):
             
     def setPreview(self,n,image):
         """
-        Method: setPreview(n,image)
         Created: 26.07.2005, KP
         Description: Set the preview of a given channel to the given wxImage
         """    
@@ -110,7 +106,6 @@ class ChannelListBox(wx.HtmlListBox):
             
     def __del__(self):
         """
-        Method: __del__
         Created: 27.07.2005, KP
         Description: Destructor
         """        
@@ -119,7 +114,6 @@ class ChannelListBox(wx.HtmlListBox):
         
     def OnGetItem(self, n):
         """
-        Method: OnGetItem
         Created: 26.07.2005, KP
         Description: Return the HTML code for given item
         """        

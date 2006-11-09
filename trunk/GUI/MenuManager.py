@@ -188,6 +188,8 @@ ID_NO_RENDER        =31227
 
 ID_TOOLBAR_HELP     =31228
 ID_CONTEXT_HELP     =31229
+
+ID_PERSPECTIVE      =31230
 class MenuManager:
     """
     Created: 29.05.2005, KP

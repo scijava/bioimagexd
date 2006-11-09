@@ -52,10 +52,13 @@ NOBR="NOBR"
 BR="BR"
 ROISELECTION="ROISELECTION"
 
-FILTER_BEGINNER=(180,255,180)
-FILTER_INTERMEDIATE=(255,255,180)
-FILTER_EXPERIENCED=(0,180,255)
+#FILTER_BEGINNER=(180,255,180)
+#FILTER_INTERMEDIATE=(255,255,180)
+#FILTER_EXPERIENCED=(0,180,255)
 
+FILTER_BEGINNER=(200,200,200)
+FILTER_INTERMEDIATE=(202,202,226)
+FILTER_EXPERIENCED=(224,188,232)
 
 class GUIBuilderBase:
     """
@@ -196,6 +199,9 @@ class GUIBuilder(wx.Panel):
         # store the histograms so that the filters can access them if they need
         # to
         self.histograms=[]
+        self.currentBg = None
+        self.currentBgSizer = None
+        
         
         self.buildGUI(myfilter)
         self.SetSizer(self.sizer)
@@ -241,6 +247,7 @@ class GUIBuilder(wx.Panel):
                 itemsizer = wx.GridBagSizer()
 
                 y=-1
+                useOld = 0
                 skip=0
                 for n,item in enumerate(items):
                     if item == NOBR:
@@ -264,20 +271,24 @@ class GUIBuilder(wx.Panel):
                     #print "items=",items
                     
                     if not (isTuple and itemType == types.BooleanType) and itemType not in [RADIO_CHOICE, SLICE, PIXEL, PIXELS, THRESHOLD, FILENAME, CHOICE, ROISELECTION]:
-                        print "NOBR=",nobr,"processing item",item
+                        #print "NOBR=",nobr,"processing item",item
                         if not nobr:
                             y+=1
                             cx=0
                         else:
                             nobr = 0
                             cx+=1
+                            useOld = 1
                         print "x=",cx,"y=",y
                         oldy=y
-                        cx, y = self.processItem(currentFilter,itemsizer,item,x=cx,y=y)
+                        cx, y = self.processItem(currentFilter,itemsizer,item,x=cx,y=y, useOld = useOld)
                         if n>0:
                             if items[n-1]==NOBR and y!=oldy:
                                 y-=1
-                        print "ndxt y=",y
+                                
+                            else:
+                                useOld = 0
+                        #print "ndxt y=",y
                     else: # Items that are contained in a tuple ask to be grouped
                           # together
                         if not nobr:
@@ -326,14 +337,18 @@ class GUIBuilder(wx.Panel):
                             val = currentFilter.getDefaultValue(itemName)
                             lvl = currentFilter.getParameterLevel(itemName)
                             minval,maxval = currentFilter.getRange(itemName)
-                            print "Value for ",itemName,"=",val,"range=",minval,maxval
+                            #print "Value for ",itemName,"=",val,"range=",minval,maxval
                             x=200
                             
-                            slider = wx.Slider(self,-1, value=val, minValue=minval, maxValue=maxval,
+                            bg = wx.Window(self,-1)
+                            slider = wx.Slider(bg,-1, value=val, minValue=minval, maxValue=maxval,
                             style = wx.SL_HORIZONTAL|wx.SL_LABELS|wx.SL_AUTOTICKS,
                             size=(x,-1))
+                            
                             #slider.SetBackgroundColour(lvl)
-                            #lbl.SetBackgroundColour(lvl)
+                            if lvl:
+                                lbl.SetBackgroundColour(lvl)
+                                bg.SetBackgroundColour(lvl)
                             func = lambda evt, its=item, f=currentFilter:self.onSetSliderValue(evt,its,f)
                             slider.Bind(wx.EVT_SCROLL,func)
                             f=lambda obj,evt,arg, slider=slider, i=itemName, s=self: s.onSetSlice(slider,i,arg)
@@ -349,7 +364,7 @@ class GUIBuilder(wx.Panel):
                             f = lambda obj,evt, slider=slider, i=itemName,fi=currentFilter,s=self: updateRange(fi,i,slider)
                             messenger.connect(currentFilter,"update_%s"%itemName,f)
                             
-                            box.Add(slider,1)
+                            box.Add(bg,1)
                             #print "Adding box to ",y,0
                             itemsizer.Add(box,(y,0),flag=wx.EXPAND|wx.HORIZONTAL)
                             y+=1
@@ -384,20 +399,24 @@ class GUIBuilder(wx.Panel):
                             lbl = wx.StaticText(self,-1,text)
                             box.Add(lbl)
 
+                            
+                            bg = wx.Window(self,-1)
                             choices = currentFilter.getRange(itemName)
                             func = lambda evt, its=item,f=currentFilter, i = itemName, s = self: s.onSetChoice(f, i, evt)
-                            choice = wx.Choice(self,-1,choices=choices)
+                            choice = wx.Choice(bg,-1,choices=choices)
                             
                             choice.SetSelection(val)
-                            #choice.SetBackgroundColour(lvl)
-                            #lbl.SetBackgroundColour(lvl)
+                            if lvl:
+                                choice.SetBackgroundColour(lvl)
+                                lbl.SetBackgroundColour(lvl)
+                                bg.SetBackgroundColour(lvl)
                             choice.Bind(wx.EVT_CHOICE,func)
                             
                             f=lambda obj,evt,arg, c=choice, i=itemName, s=self: s.onSetChoiceFromFilter(c,i,arg)
                             messenger.connect(currentFilter,"set_%s"%itemName,f) 
                             
                             
-                            box.Add(choice,1)
+                            box.Add(bg,1)
                             itemsizer.Add(box,(y,0),flag=wx.EXPAND|wx.HORIZONTAL)
                             y+=1
                         elif itemType == ROISELECTION:
@@ -632,57 +651,107 @@ class GUIBuilder(wx.Panel):
         n = evt.GetSelection()
         self.currentFilter.setInputChannel(inputNum,n)
         
-    def processItem(self,currentFilter, itemsizer, item, x,y):
+    def processItem(self,currentFilter, itemsizer, item, x,y, useOld = 0):
         """
         Created: 15.04.2006, KP
         Description: Build the GUI related to one specific item
-        """              
+        """           
+        print "ITEM=",item,"UseOld=",useOld
         desc = currentFilter.getDesc(item)
+        if not useOld:
+            bg = wx.Window(self,-1)
+        else:
+            bg = self.currentBg
         
         itemType = currentFilter.getType(item)
         br = 0        
         if desc and desc[-1]=='\n':
             desc=desc[:-1]
             br = 1
+        if not useOld:
+            if br:
+                bgsizer = wx.BoxSizer(wx.VERTICAL)
+            else:
+                bgsizer = wx.BoxSizer(wx.HORIZONTAL)
+            bg.SetSizer(bgsizer)
+            bg.SetAutoLayout(1)
+                
+        else:
+            bgsizer = self.currentBgSizer
+            
+        
+        self.currentBgSizer = bgsizer
+        self.currentBg = bg
+
+        
         if  desc and itemType not in [types.BooleanType]:
-            lbl = wx.StaticText(self,-1,desc)
+            lbl = wx.StaticText(bg,-1,desc)
+            bgsizer.Add(lbl)
         else:
             lbl = None
+            
+        useOther = 0
+        if br and not useOld:
+            useOther = 1
+            newsizer = wx.BoxSizer(wx.HORIZONTAL)
+            self.newItemSizer = newsizer
+            
+            
         defaultValue = currentFilter.getDefaultValue(item)
+        
         lvl = currentFilter.getParameterLevel(item)
+        if lbl and lvl:lbl.SetBackgroundColour(lvl)
+        
+        
+        
+        if lvl:        
+            bg.SetBackgroundColour(lvl)
+        
+        
         if itemType in [types.IntType,types.FloatType]:
-            input = self.createNumberInput(currentFilter, item, itemType, defaultValue, desc)
+            input = self.createNumberInput(bg, currentFilter, item, itemType, defaultValue, desc)
         elif itemType == types.BooleanType:
-            input = self.createBooleanInput(currentFilter, item, itemType, defaultValue, desc)
+            input = self.createBooleanInput(bg, currentFilter, item, itemType, defaultValue, desc)
         elif itemType == SPINCTRL:
-            input  = self.createSpinInput(currentFilter, item, itemType, defaultValue, desc)
+            input  = self.createSpinInput(bg, currentFilter, item, itemType, defaultValue, desc)
         else:
             raise "Unrecognized input type: %s"%str(itemType)
-        #input.SetBackgroundColour(lvl)
+        input.SetBackgroundColour(lvl)
         txt = currentFilter.getLongDesc(item)
         if txt:
             input.SetHelpText(txt)
-
+            
+        if not useOther:
+            bgsizer.Add(input)
+        else:
+            self.newItemSizer.Add(input)
+            bgsizer.Add(self.newItemSizer)
+        #bgsizer.Fit(bg)
+        
         x2=x
-        if lbl:
-            print "Adding label",desc," to ",(x,y)
-            itemsizer.Add(lbl,(y,x))
-            if not br:
-                x2+=1
-            else:
-                y+=1
+        #if lbl:
+        #    print "Adding label",desc," to ",(x,y)
+        #    itemsizer.Add(lbl,(y,x))
+        #    if not br:
+        #        x2+=1
+        #    else:
+        #        y+=1
         print "Adding input to",x2,y
-        itemsizer.Add(input,(y,x2))
+        if not useOld:
+            itemsizer.Add(bg,(y,x2))
+        bg.Layout()
         #if br:
         #    y+=1
+        if useOther:
+            self.currentBgSizer  = self.newItemSizer
         return (x,y)
                         
-    def createNumberInput(self,currentFilter,item,itemType,defaultValue,label = ""):
+    def createNumberInput(self,parent, currentFilter,item,itemType,defaultValue,label = ""):
         """
         Created: 15.04.2006, KP
         Description: Return the input for int type
         """        
-        input = wx.TextCtrl(self,-1,str(defaultValue))
+        input = wx.TextCtrl(parent,-1,str(defaultValue))
         valid=lambda evt,f=currentFilter,p=item,t=itemType,i=input:self.validateAndPassOn(evt,i,p,itemType,f)
         input.Bind(wx.EVT_TEXT,valid)
         f=lambda obj,evt,arg, input=input, it=item, s=self: s.onSetNumber(input,it,arg)
@@ -691,14 +760,14 @@ class GUIBuilder(wx.Panel):
         return input
         
                         
-    def createSpinInput(self,currentFilter,itemName,itemType,defaultValue,label = ""):
+    def createSpinInput(self,parent,currentFilter,itemName,itemType,defaultValue,label = ""):
         """
         Created: 15.04.2006, KP
         Description: Return the input for int type
         """        
         minval,maxval = currentFilter.getRange(itemName)
         
-        spin = wx.SpinCtrl(self,-1, style=wx.SP_VERTICAL)
+        spin = wx.SpinCtrl(parent,-1, style=wx.SP_VERTICAL)
         func = lambda evt, its=itemName, sp=spin, f=currentFilter:self.onSetSpinValue(evt,sp,its,f)
         spin.Bind(wx.EVT_SPINCTRL,func)
         spin.Bind(wx.EVT_TEXT,func)
@@ -732,12 +801,12 @@ class GUIBuilder(wx.Panel):
         #print input,item,value
         input.SetValue(value)
     
-    def createBooleanInput(self,currentFilter,item,itemType,defaultValue, label = ""):
+    def createBooleanInput(self,parent,currentFilter,item,itemType,defaultValue, label = ""):
         """
         Created: 15.04.2006, KP
         Description: Return the input for boolean type
         """        
-        input = wx.CheckBox(self,-1,label)
+        input = wx.CheckBox(parent,-1,label)
         input.SetValue(defaultValue)
         valid=lambda evt,f=currentFilter,p=item,t=itemType,i=input:self.validateAndPassOn(evt,i,p,itemType,f)
         input.Bind(wx.EVT_CHECKBOX,valid)
@@ -751,16 +820,16 @@ class GUIBuilder(wx.Panel):
         Description: Remove a seed from filter
         """         
         item=listbox.itemName
-        print "item in removeSeed=",item
+        #print "item in removeSeed=",item
         n = listbox.GetSelection()
         if n != wx.NOT_FOUND:
             s = listbox.GetString(n)
             seedpt = eval(s)
             listbox.Delete(n)
             
-        print "Getting parameter",item[0]
+        #print "Getting parameter",item[0]
         seeds = currFilter.getParameter(item[0])   
-        print "Removing ",seedpt,"from ",seeds
+        #print "Removing ",seedpt,"from ",seeds
         seeds.remove(seedpt)
         currFilter.setParameter(item[0],seeds)
 

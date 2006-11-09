@@ -55,7 +55,6 @@ import messenger
 
 class Track(wx.Panel):
     """
-    Class: Track
     Created: 04.02.2005, KP
     Description: A class representing a track in the timeline
     """
@@ -65,6 +64,7 @@ class Track(wx.Panel):
         self.number=0
         self.duration=0
         self.frames=0
+        self.closed=0
         self.bold=0
         self.height=80
         self.startOfTrack=0
@@ -129,7 +129,6 @@ class Track(wx.Panel):
         
     def onShowTimePosition(self,obj,evt,arg):
         """
-        Method: onShowtimePosition
         Created: 15.08.2005, KP
         Description: Show the frame position
         """     
@@ -140,7 +139,6 @@ class Track(wx.Panel):
         
     def onPaint(self,event):
         """
-        Method: onPaint()
         Created: 17.07.2005, KP
         Description: Blit the buffer
         """ 
@@ -155,7 +153,6 @@ class Track(wx.Panel):
         
     def paintTrack(self):
         """
-        Method: paintTrack
         Created: 17.07.2005, KP
         Description: Paint the track
         """ 
@@ -173,7 +170,12 @@ class Track(wx.Panel):
             if self.bold:
                weight=wx.BOLD
             self.dc.SetFont(wx.Font(9,wx.SWISS,wx.NORMAL,weight))
-            self.dc.DrawText(self.label,0,0)
+            self.dc.DrawText(self.label,2,1)
+            
+            if self.closed:
+                self.dc.SetFont(wx.Font(8,wx.SWISS,wx.NORMAL,wx.NORMAL))
+                self.dc.DrawText("Closed track",2,15)
+            # IF CIRCULAR; DRAW TEXT
         
             x=self.startOfTrack+self.getLabelWidth()
             for item in self.items:

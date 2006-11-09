@@ -565,15 +565,11 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         else:
             self.slice=ImageOperations.vtkImageDataToWxImage(self.imagedata,z)
             
-        #Logging.info("Painting preview",kw="preview")
-        #print "PAINT PREVIEW"
         self.paintPreview()
-        #self.Refresh()
-        #wx.GetApp().Yield(1)
-        #print "self.bmp=",self.bmp,self.bmp.GetWidth(),self.bmp.GetHeight()
+        
+        
         self.updateScrolling()
                 
-#        self.Update()
         self.finalImage=colorImage
         
         self.Refresh()
@@ -588,12 +584,14 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         #Logging.backtrace()
         #Logging.info("Data has %d components"%ncomps,kw="preview")
         if ncomps>3:
-            #Logging.info("Previewed data has %d components, extracting"%ncomps,kw="preview")
+            
+            #Logging.info("\n\n\n*** Previewed data has %d components, extracting"%ncomps,kw="preview")
             extract=vtk.vtkImageExtractComponents()
             extract.SetComponents(0,1,2)
             extract.SetInput(data)
-            data=extract.GetOutput()
-            extract.Update()
+            #data=extract.GetOutput()
+            #extract.Update()
+            data = bxd.execute_limited(extract)
             
         if self.mip:
             #Logging.info("Doing mip",data,kw="preview")
@@ -605,15 +603,13 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
             ret = bxd.execute_limited(mip)
             data.ReleaseDataFlagOn()
             data = ret
-            #data = mip.GetOutput()
-            #Logging.info("Got MIP with extent=",data.GetWholeExtent(),kw="preview")
+            
             data.SetUpdateExtent(data.GetWholeExtent())
             
             #print "Output from mip:",data
         if ncomps == 1:            
             Logging.info("Mapping trough ctf",kw="preview")
-            #t=time.time()
-            #self.mapToColors.RemoveAllInputs()
+            
             self.mapToColors=vtk.vtkImageMapToColors()
             self.mapToColors.SetInput(data)
             
@@ -621,17 +617,13 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
 
             colorImage=self.mapToColors.GetOutput()
             colorImage.SetUpdateExtent(data.GetExtent())
-            #print "upadte extent=",data.GetExtent()
             
-            #print "colorImage=",colorImage.GetDimensions()
-            data = bxd.execute_limited(self.mapToColors)
-            #data.ReleaseDataFlagOn()
-          
-#            data=self.mapToColors.GetOutput()
-            #print "Mapping through took",time.time()-t
-            #data.ReleaseDataFlagOff()
-            return data
-            #print "data =",data.GetDimensions()
+            
+            outdata = bxd.execute_limited(self.mapToColors)
+            
+            outdata.ReleaseDataFlagOff()
+            return outdata
+            
         else:
             pass
             
@@ -654,7 +646,6 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         
     def enable(self,flag):
         """
-        Method: enable(flag)
         Created: 02.06.2005, KP
         Description: Enable/Disable updates
         """
@@ -812,6 +803,9 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         Created: 24.03.2005, KP
         Description: Paints the image to a DC
         """        
+        # Don't paint anything if there's going to be a redraw anyway
+        #if self.fitLater:
+        #    return
         if not self.slice and self.graySize == self.paintSize:
             return
         #Logging.backtrace()        
@@ -840,6 +834,7 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
             interpolation = self.interpolation
             if interpolation == -1:
                 x,y,z=self.imagedata.GetDimensions()
+                #print "\n\n\nIMAGE SIZE=",x,y,z
                 # if x*y < 512*512, cubic
                 pixels=(x*self.zoomFactor)*(y*self.zoomFactor)
                 if pixels<=1024*1024:
