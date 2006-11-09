@@ -226,7 +226,11 @@ class DataUnitSettings:
                         try:
                             value=parser.get(key,ckey)
                         except ConfigParser.NoOptionError:
-                            value = parser.get(key,ckey.lower())
+                            try:
+                                value = parser.get(key,ckey.lower())
+                            except ConfigParser.NoOptionError:
+                                continue
+                    
                         if ser:
                             value=self.deserialize(key,value)
                             #Logging.info("Deserialized ",key,"=",value,kw="dataunit")

@@ -85,6 +85,13 @@ class WarpScalarModule(VisualizationModule):
         self.renderer.AddActor(self.actor)
 
 #        iactor = self.wxrenwin.GetRenderWindow().GetInteractor()
+    def getParameterLevel(self, parameter):
+        """
+        Created: 9.11.2006, KP
+        Description: Return the level of the given parameter
+        """
+        if parameter in ["FeatureAngle","Scale"]:
+            return GUIBuilder.FILTER_INTERMEDIATE
         
     def getParameters(self):
         """

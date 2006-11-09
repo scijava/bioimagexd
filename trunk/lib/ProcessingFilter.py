@@ -125,15 +125,15 @@ class ProcessingFilter(GUIBuilder.GUIBuilderBase):
                 value = roi
             else:
                 if type(value) in [types.StringType,types.UnicodeType]:
-                    print "\n\n************ Is string"
+                    
                     setval="'%s'"%value
                     setoldval="'%s'"%oldval
                 else:
-                    print "Not string"
+                    #print "Not string"
                     setval=str(value)
                     setoldval=str(oldval)
             
-            print "setval=",setval,"oldval=",oldval
+            #print "setval=",setval,"oldval=",oldval
             n = bxd.mainWindow.currentTaskWindowName
             do_cmd="bxd.mainWindow.tasks['%s'].%s.set('%s',%s)"%(n,func,parameter,setval)
             if setoldval:
@@ -143,7 +143,7 @@ class ProcessingFilter(GUIBuilder.GUIBuilderBase):
             cmd=Command.Command(Command.PARAM_CMD,None,None,do_cmd,undo_cmd,desc="Change parameter '%s' of filter '%s'"%(parameter,self.name))
             cmd.run(recordOnly = 1)          
             
-        print "\n\nSetting ",parameter,"to",value
+        #print "\n\nSetting ",parameter,"to",value
         GUIBuilder.GUIBuilderBase.setParameter(self, parameter, value)
         
     def writeOutput(self, dataUnit, timePoint):
