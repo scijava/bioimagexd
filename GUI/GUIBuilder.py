@@ -57,6 +57,7 @@ ROISELECTION="ROISELECTION"
 #FILTER_EXPERIENCED=(0,180,255)
 
 FILTER_BEGINNER=(200,200,200)
+#FILTER_BEGINNER=None
 FILTER_INTERMEDIATE=(202,202,226)
 FILTER_EXPERIENCED=(224,188,232)
 
@@ -221,8 +222,10 @@ class GUIBuilder(wx.Panel):
         """ 
         self.currentFilter = currentFilter
         parameters = currentFilter.getParameters()
+        #print "Got params",parameters
         gy=0
             
+        #print "Building GUI"
         #sbox=UIElements.MyStaticBox(self,-1,currentFilter.getName())
         sbox = wx.StaticBox(self,-1, currentFilter.getName())
         #sbox.SetOwnBackgroundColour((0,255,0))
@@ -265,8 +268,8 @@ class GUIBuilder(wx.Panel):
                         isTuple=1
                     else:
                         itemType = currentFilter.getType(item)
-                    #print "item=",item,"param=",param
-                    #print "itemType=",itemType,"isTuple=",isTuple
+                    print "item=",item,"param=",param
+                    print "itemType=",itemType,"isTuple=",isTuple
                     
                     #print "items=",items
                     
@@ -369,6 +372,7 @@ class GUIBuilder(wx.Panel):
                             itemsizer.Add(box,(y,0),flag=wx.EXPAND|wx.HORIZONTAL)
                             y+=1
                         elif itemType == FILENAME:
+                            print "CREATING FILENAME"
                             # Indicate that we need to skip next item
                             skip=2
                         
@@ -407,7 +411,7 @@ class GUIBuilder(wx.Panel):
                             
                             choice.SetSelection(val)
                             if lvl:
-                                choice.SetBackgroundColour(lvl)
+                                #choice.SetBackgroundColour(lvl)
                                 lbl.SetBackgroundColour(lvl)
                                 bg.SetBackgroundColour(lvl)
                             choice.Bind(wx.EVT_CHOICE,func)
@@ -455,9 +459,14 @@ class GUIBuilder(wx.Panel):
                             y+=1
                             
                         elif itemType == PIXEL:
-                            print "Creating pixel selection"
-                            lbl = wx.StaticText(self,-1,"(%d,%d,%d)"%(0,0,0),size=(80,-1))
-                            btn = wx.Button(self,-1,"Set seed")
+                            #print "Creating pixel selection"
+                            bg = wx.Window(self,-1)
+                            lvl = currentFilter.getParameterLevel(itemName)
+                            if lvl:
+                                bg.SetBackgroundColour(lvl)
+                                
+                            lbl = wx.StaticText(bg,-1,"(%d,%d,%d)"%(0,0,0),size=(80,-1))
+                            btn = wx.Button(bg,-1,"Set seed")
                             def f(l):
                                 l.selectPixel=1
                             func=lambda evt,l=lbl:f(l)
@@ -465,7 +474,10 @@ class GUIBuilder(wx.Panel):
                             box=wx.BoxSizer(wx.HORIZONTAL)
                             box.Add(lbl)
                             box.Add(btn)
-                            itemsizer.Add(box,(0,0))
+                            bg.SetSizer(box)
+                            bg.SetAutoLayout(1)
+                            bg.Layout()
+                            itemsizer.Add(bg,(0,0))
                             func = lambda obj,evt,rx,ry,rz,scalar,rval,gval,bval,r,g,b,alpha,currentCt,its=item,f=currentFilter:self.onSetPixel(obj,evt,rx,ry,rz,r,g,b,alpha,currentCt,its,f,lbl)
                             messenger.connect(None,"get_voxel_at",func)
 
@@ -474,34 +486,48 @@ class GUIBuilder(wx.Panel):
 
                             
                         elif itemType == PIXELS:
-                            print "Creating multiple pixels selection"
+                            #print "Creating multiple pixels selection"
                             pixelsizer = wx.GridBagSizer()
-                            seedbox = wx.ListBox(self,-1,size=(150,150))
+                            bg = wx.Window(self,-1)
+                            
+                            lvl = currentFilter.getParameterLevel(itemName)
+                            if lvl:
+                                bg.SetBackgroundColour(lvl)
+                            
+                            seedbox = wx.ListBox(bg,-1,size=(150,150))
                             pixelsizer.Add(seedbox,(0,0),span=(2,1))
                             
-                            addbtn = wx.Button(self,-1,"Add seed")
+                            addbtn = wx.Button(bg,-1,"Add seed")
                             def f2(l):
                                 l.selectPixel=1
                             func=lambda evt,l=seedbox:f2(l)
                             addbtn.Bind(wx.EVT_BUTTON,func)
                             pixelsizer.Add(addbtn,(0,1))
-                            print "ITEM=",item
-                            rmbtn = wx.Button(self,-1,"Remove")
+                            #print "ITEM=",item
+                            rmbtn = wx.Button(bg,-1,"Remove")
                             seedbox.itemName = item
                             func=lambda evt,its=item,f=currentFilter:self.removeSeed(seedbox,f)
                             rmbtn.Bind(wx.EVT_BUTTON,func)
                             pixelsizer.Add(rmbtn,(1,1))
                             
+                            bg.SetSizer(pixelsizer)
+                            bg.SetAutoLayout(1)
+                            bg.Layout()
+                            
                             #obj,event,x,y,z,scalar,rval,gval,bval,r,g,b,a,ctf)
                             func = lambda obj,evt,rx,ry,rz,scalar,rval,gval,bval,r,g,b,alpha,currentCt,its=item,f=currentFilter:self.onAddPixel(obj,evt,rx,ry,rz,r,g,b,alpha,currentCt,its,f,seedbox)
                             messenger.connect(None,"get_voxel_at",func)
-                            itemsizer.Add(pixelsizer,(0,0))                            
+                            itemsizer.Add(bg,(0,0))                            
                             f=lambda obj,evt,arg, seedbox=seedbox, i=itemName, s=self: s.onSetPixelsFromFilter(seedbox,i,arg)
                             messenger.connect(currentFilter,"set_%s"%itemName,f)                                                        
                             
                         elif itemType == THRESHOLD:
-                            print "Creating threshold selection"
-                            histogram = Histogram.Histogram(self)
+                            bg = wx.Window(self,-1)
+                            lvl = currentFilter.getParameterLevel(itemName)
+                            if lvl:
+                                bg.SetBackgroundColour(lvl)
+                            #print "Creating threshold selection"
+                            histogram = Histogram.Histogram(bg)
                             self.histograms.append(histogram)
                             func=lambda evt,its=item,f=currentFilter:self.onSetThreshold(evt,its,f)
                             histogram.Bind(Histogram.EVT_SET_THRESHOLD,func)
@@ -515,7 +541,7 @@ class GUIBuilder(wx.Panel):
                             messenger.connect(currentFilter,"set_%s"%item[1],fhi)
                             
                             histogram.setDataUnit(du,noupdate=1)
-                            itemsizer.Add(histogram,(0,0))
+                            itemsizer.Add(bg,(0,0))
                         else:
                             groupsizer=wx.GridBagSizer()
                             x=0
@@ -579,7 +605,7 @@ class GUIBuilder(wx.Panel):
         Description: Set the parameter to the value of the choice widget
         """           
         value = evt.GetSelection()
-        print "Setting parameter",item,"to",value
+        #print "Setting parameter",item,"to",value
         filter.setParameter(item, value)        
         
     def onSetROI(self, rois, filter, item, evt):
@@ -598,7 +624,7 @@ class GUIBuilder(wx.Panel):
         Description: Set the file name
         """           
         filename= evt.GetString()
-        print "Setting parameter",item,"to",filename
+        #print "Setting parameter",item,"to",filename
         filter.setParameter(item, filename)
         
     def onSetChoiceFromFilter(self, cc, itemName, value):
@@ -616,7 +642,7 @@ class GUIBuilder(wx.Panel):
         Description: Set the file name
         """           
         bb.SetValue(value)
-        print "Setting value of filebrowse to",value
+        #print "Setting value of filebrowse to",value
         
     def onSetRadioBox(self,box,item,value):
         """
@@ -716,7 +742,7 @@ class GUIBuilder(wx.Panel):
             input  = self.createSpinInput(bg, currentFilter, item, itemType, defaultValue, desc)
         else:
             raise "Unrecognized input type: %s"%str(itemType)
-        input.SetBackgroundColour(lvl)
+        #input.SetBackgroundColour(lvl)
         txt = currentFilter.getLongDesc(item)
         if txt:
             input.SetHelpText(txt)

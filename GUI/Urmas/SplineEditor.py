@@ -714,13 +714,6 @@ class SplineEditor:
             #print "\n\n*** Calling interactionCallback\n\n"
             self.interactionCallback()
 
-    #def __del__(self):     
-    #    """
-    #    Created: Heikki Uuksulainen
-    #    Description: Destructs renderwindow
-    #    """           
-    #    #del self.renWin
-
     def getAsImage(self):
         """
         Created: 18.8.2005, KP

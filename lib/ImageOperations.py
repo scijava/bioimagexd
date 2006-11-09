@@ -434,7 +434,7 @@ def getMIP(imageData,color):
         output=bxd.execute_limited(mip)
         return output
     #Logging.info("Got MIP",kw="imageop")
-    if output.GetNumberOfScalarComponents()==1:
+    if mip.GetOutput().GetNumberOfScalarComponents()==1:
         ctf=getColorTransferFunction(color)
     
 #        Logging.info("Mapping MIP through ctf",kw="imageop")

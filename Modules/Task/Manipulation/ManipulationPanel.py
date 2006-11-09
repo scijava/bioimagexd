@@ -159,7 +159,7 @@ class ManipulationPanel(FilterBasedTaskPanel.FilterBasedTaskPanel):
         self.addSegmentationBtn = wx.Button(self.panel,-1,u"Segmentation \u00BB")
         self.addTrackingBtn = wx.Button(self.panel,-1,u"Tracking \u00BB")
 
-        from ManipulationFilters import FILTERING,FEATUREDETECTION,MATH,LOGIC,SEGMENTATION,REGION_GROWING,MEASUREMENT
+        from ManipulationFilters import FILTERING,FEATUREDETECTION,MATH,LOGIC,SEGMENTATION,WATERSHED,REGION_GROWING,MEASUREMENT
         
         f=lambda evt, btn=self.addFilteringBtn, cats=(FILTERING,FEATUREDETECTION): self.onShowAddMenu(evt,btn,cats)
         self.addFilteringBtn.Bind(wx.EVT_LEFT_DOWN,f)
@@ -167,7 +167,7 @@ class ManipulationPanel(FilterBasedTaskPanel.FilterBasedTaskPanel):
         f=lambda evt, btn=self.addArithmeticsBtn, cats=(MATH, LOGIC): self.onShowAddMenu(evt,btn,cats)
         self.addArithmeticsBtn.Bind(wx.EVT_LEFT_DOWN,f)
         
-        f=lambda evt, btn=self.addSegmentationBtn, cats=(SEGMENTATION, REGION_GROWING,MEASUREMENT): self.onShowAddMenu(evt,btn,cats)
+        f=lambda evt, btn=self.addSegmentationBtn, cats=(SEGMENTATION, REGION_GROWING,WATERSHED,MEASUREMENT): self.onShowAddMenu(evt,btn,cats)
         self.addSegmentationBtn.Bind(wx.EVT_LEFT_DOWN,f)
         
         self.addTrackingBtn.Bind(wx.EVT_LEFT_DOWN,self.onShowAddMenu)
@@ -453,7 +453,8 @@ class ManipulationPanel(FilterBasedTaskPanel.FilterBasedTaskPanel):
                     name = currfilter.getName()
                     
                     newitem = wx.MenuItem(submenu, menuid, name)
-                    newitem.SetBackgroundColour(wx.Colour(*currfilter.level))
+                    if currfilter.level:
+                        newitem.SetBackgroundColour(wx.Colour(*currfilter.level))
                     submenu.AppendItem(newitem)
 #                    submenu.Append(menuid,name)
                     n = len(self.filters)

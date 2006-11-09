@@ -794,7 +794,7 @@ class GradientMagnitudeFilter(ProcessingFilter.ProcessingFilter):
     """     
     name = "Gradient magnitude"
     category = FEATUREDETECTION
-    
+    level = GUIBuilder.FILTER_BEGINNER
     def __init__(self,inputs=(1,1)):
         """
         Created: 13.04.2006, KP
@@ -848,6 +848,12 @@ class ITKAnisotropicDiffusionFilter(ProcessingFilter.ProcessingFilter):
         self.itkFlag = 1
         self.itkfilter = None
 
+    def getParameterLevel(self, parameter):
+        """
+        Created: 9.11.2006, KP
+        Description: Return the level of the given parameter
+        """
+        return GUIBuilder.FILTER_INTERMEDIATE
             
     def getDefaultValue(self,parameter):
         """
@@ -970,6 +976,12 @@ class ITKCannyEdgeFilter(ProcessingFilter.ProcessingFilter):
         self.itkFlag = 1
         self.itkfilter = None
         
+    def getParameterLevel(self, parameter):
+        """
+        Created: 1.11.2006, KP
+        Description: Return the level of the given parameter
+        """
+        return GUIBuilder.FILTER_EXPERIENCED
         
     def getParameters(self):
         """
@@ -1007,7 +1019,6 @@ class ITKCannyEdgeFilter(ProcessingFilter.ProcessingFilter):
 
 class ITKSigmoidFilter(ProcessingFilter.ProcessingFilter):
     """
-    Class: ITKSigmoidFilter
     Created: 29.05.2006, KP
     Description: A class for mapping an image data thru sigmoid image filter
     """     
@@ -1025,6 +1036,12 @@ class ITKSigmoidFilter(ProcessingFilter.ProcessingFilter):
         f3=itk.Image.F3
         self.itkfilter = itk.SigmoidImageFilter[f3,f3].New()
         
+    def getParameterLevel(self, parameter):
+        """
+        Created: 9.11.2006, KP
+        Description: Return the level of the given parameter
+        """
+        return GUIBuilder.FILTER_EXPERIENCED                 
         
     def getParameters(self):
         """
@@ -1099,7 +1116,6 @@ class ITKLocalMaximumFilter(ProcessingFilter.ProcessingFilter):
         self.descs = {"Connectivity":"Use 8 neighbors for connectivity"}
         self.itkFlag = 1
         
-
             
     def getDefaultValue(self,parameter):
         """
