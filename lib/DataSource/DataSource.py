@@ -322,11 +322,12 @@ class DataSource:
         
         self.shift.SetShift(self.intensityShift)
             
-        #self.shift.Update()
+        self.shift.Update()
         # Release the memory used by the non-shifted data
-        data.ReleaseDataFlagOn()
-        #return self.shift.GetOutput()
-        return scripting.execute_limited(self.shift)
+        #data.ReleaseDataFlagOn()
+        data.ReleaseData()
+        return self.shift.GetOutput()
+        #return scripting.execute_limited(self.shift)
 
     
     def getResampledData(self,data,n,tmpDims=None):
@@ -363,11 +364,11 @@ class DataSource:
                 self.resample.SetAxisMagnificationFactor(0,xf)
                 self.resample.SetAxisMagnificationFactor(1,yf)
                 self.resample.SetAxisMagnificationFactor(2,zf)
-                #self.resample.Update()                
-                newdata = scripting.execute_limited(self.resample)
-                data.ReleaseDataFlagOn()
-                data = newdata
-                #data= self.resample.GetOutput()        
+                self.resample.Update()                
+                #newdata = scripting.execute_limited(self.resample)
+                data.ReleaseData()
+                #data = newdata
+                data= self.resample.GetOutput()        
         if self.mask:
             if not self.maskImg:
                 self.maskImg = vtk.vtkImageMask()
@@ -377,11 +378,11 @@ class DataSource:
             self.maskImg.SetImageInput(data)
             self.maskImg.SetMaskInput(self.mask.getMaskImage())
             
-            
-            newdata = scripting.execute_limited(self.maskImg)
+            self.maskImg.Update()
+            #newdata = scripting.execute_limited(self.maskImg)
 
-            data.ReleaseDataFlagOn()
-            data = newdata
+            data.ReleaseData()
+            data = self.maskImg.GetOutput()
             
         return data
 

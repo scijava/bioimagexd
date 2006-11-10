@@ -2,7 +2,15 @@
 import vtk
 import time
 
-D="/Users/dan/Documents/volumerender/colocsample/colocsample1b.lsm"
+import sys
+sys.path.insert(0,"H:\\vtkBXD\\bin")
+sys.path.insert(0,"..\\vtkBXD\\Wrapping\\Python")
+
+import vtkbxd
+
+#D="/Users/dan/Documents/volumerender/colocsample/colocsample1b.lsm"
+D="H:\\Data\\LSM\\Selli_noise2.lsm"
+#D="H:\\Data\\LSM\\sample1_series12.lsm"
 t=time.time()
 def elapsed():
     global t
@@ -14,52 +22,54 @@ r2=vtk.vtkLSMReader()
 r2.SetFileName(D)
 r1.SetUpdateChannel(0)
 r2.SetUpdateChannel(1)
+
+
 d1=r1.GetOutput()
 d2=r2.GetOutput()
 
+d1.GlobalReleaseDataFlagOn()
+
+
 print "Reading data"
-r1.Update()
-r2.Update()
-
-
-itf1=vtk.vtkIntensityTransferFunction()
-itf2=vtk.vtkIntensityTransferFunction()
 
 ctf1=vtk.vtkColorTransferFunction()
 ctf1.AddRGBPoint(0,0,0,0)
 ctf1.AddRGBPoint(255.0,0,1.0,0)
 
-
 ctf2=vtk.vtkColorTransferFunction()
 ctf2.AddRGBPoint(0,0,0,0)
 ctf2.AddRGBPoint(255.0,1.0,0,0)
 
+#mip1 = vtk.vtkImageSimpleMIP()
+#mip1.SetInput(d1)
+#mip2 = vtk.vtkImageSimpleMIP()
+#mip2.SetInput(d2)
+
+#mip1.Update()
+#mip2.Update()
 
 print "Feeding channels to merge ",elapsed()
 merge = vtk.vtkImageColorMerge()
-#merge.SetNumberOfThreads(5)
+#merge.AddInput(mip1.GetOutput())
+#merge.AddInput(mip2.GetOutput())
 merge.AddInput(d1)
 merge.AddInput(d2)
+merge.SetNumberOfThreads(4)
 merge.AddLookupTable(ctf1)
 merge.AddLookupTable(ctf2)
-merge.AddIntensityTransferFunction(itf1)
-merge.AddIntensityTransferFunction(itf2)
+#merge.DebugOn()
+#merge.AddIntensityTransferFunction(itf1)
+#merge.AddIntensityTransferFunction(itf2)
+#merge.GetOutput().ReleaseDataFlagOn()
 
-merge.Update()
-print "Merging done",elapsed()
+#merge.Update()
 
-mip=vtk.vtkImageSimpleMIP()
-#mip.DebugOn()
-print "Feeding merge to MIP",elapsed()
+mip = vtk.vtkImageSimpleMIP()
 mip.SetInput(merge.GetOutput())
-mip.Update()
 
-print "Writing MIP out...",elapsed()
+
 writer=vtk.vtkPNGWriter()
 writer.SetFileName("Selli_BIG.png")
 writer.SetInput(mip.GetOutput())
-#writer.SetInput(mip.GetOutput())
-
-writer.Update()
 writer.Write()
 print "Wrote PNG ",elapsed()

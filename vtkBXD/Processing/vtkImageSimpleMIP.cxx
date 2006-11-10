@@ -143,16 +143,16 @@ void vtkImageSimpleMIPExecute(vtkImageSimpleMIP *self, int id,int NumberOfInputs
   inData[0]->GetIncrements(inIncX, inIncY, inIncZ);
   outData->GetIncrements(outIncX, outIncY, outIncZ);
   
-  //printf("Out ext = %d,%d,%d,%d,%d,%d\n",PRT_EXT(outExt));
-//  printf("Update ext = %d,%d,%d,%d,%d,%d\n",PRT_EXT(uExt));
+  printf("Out ext = %d,%d,%d,%d,%d,%d\n",PRT_EXT(outExt));
+  printf("Update ext = %d,%d,%d,%d,%d,%d\n",PRT_EXT(uExt));
 
   #define GET_AT(x,y,z,c,ptr) *(ptr+(z)*inIncZ+(y)*inIncY+(x)*inIncX+c)
   #define GET_AT_OUT(x,y,z,c,ptr) *(ptr+(z)*outIncZ+(y)*outIncY+(x)*outIncX+c)
   #define SET_AT(x,y,z,c,ptr,val) *(ptr+(z)*outIncZ+(y)*outIncY+(x)*outIncX+c)=val
 
-  //printf("maxX=%d, maxY=%d, maxZ=%d, maxC=%d\n",maxX,maxY,maxZ,maxC);
-  //printf("inIncX=%d,inIncY=%d, inIncZ=%d\n",inIncX,inIncY,inIncZ);
-  //printf("outIncX=%d,outIncY=%d, outIncZ=%d\n",outIncX,outIncY,outIncZ);
+  printf("maxX=%d, maxY=%d, maxZ=%d, maxC=%d\n",maxX,maxY,maxZ,maxC);
+  printf("inIncX=%d,inIncY=%d, inIncZ=%d\n",inIncX,inIncY,inIncZ);
+  printf("outIncX=%d,outIncY=%d, outIncZ=%d\n",outIncX,outIncY,outIncZ);
   for(idxZ = 0; idxZ <= maxZ; idxZ++ ) {
     self->UpdateProgress(idxZ/float(maxZ));
     for(idxY = 0; idxY <= maxY; idxY++ ) {
@@ -240,6 +240,7 @@ void vtkImageSimpleMIP::ThreadedRequestData (
   vtkImageData **outData,
   int outExt[6], int id)
 {
+    printf("vtkImageSimpleMIP ThreadedRequestData outExt=%d,%d,%d,%d,%d,%d\n",outExt[0],outExt[1],outExt[2],outExt[3],outExt[4],outExt[5]);
   if (inData[0][0] == NULL)
     {
     vtkErrorMacro(<< "Input " << 0 << " must be specified.");
