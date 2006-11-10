@@ -167,24 +167,25 @@ void vtkImageColorMergeExecute(vtkImageColorMerge *self, int id,int NumberOfInpu
     maxX = outExt[1] - outExt[0];
     maxY = outExt[3] - outExt[2];
     maxZ = outExt[5] - outExt[4];
-    printf("inIncX, inIncY,inIncZ=%d,%d,%d\n",inIncX,inIncY,inIncZ);
-    printf("outIncX, outIncY,outIncZ=%d,%d,%d\n",outIncX,outIncY,outIncZ);
+    //printf("inIncX, inIncY,inIncZ=%d,%d,%d\n",inIncX,inIncY,inIncZ);
+    //printf("outIncX, outIncY,outIncZ=%d,%d,%d\n",outIncX,outIncY,outIncZ);
     int currScalar = 0;
     int alphaScalar; 
     int n = 0;
     //maxval=int(pow(2.0f,8.0f*sizeof(unsigned char)))-1;
     unsigned char maxval=255;
-    T val;
+    
     //maxX *= (inData[0]->GetNumberOfScalarComponents());
     char progressText[200];
     
     int r = 0,g = 0,b = 0;
-    unsigned char ir,ig,ib;
+    
     //printf("Processing data...\n");
     
     
     for(idxZ = 0; idxZ <= maxZ; idxZ++ ) {        
         sprintf(progressText,"Merging channels (slice %d / %d)\n",idxZ,maxZ);
+        //printf(progressText);
         self->SetProgressText(progressText);
         self->UpdateProgress(idxZ/float(maxZ));
         for(idxY = 0; idxY <= maxY; idxY++ ) {
@@ -287,7 +288,7 @@ void vtkImageColorMerge::ThreadedRequestData (
   vtkImageData **outData,
   int outExt[6], int id)
 {
-    printf("ThreadedRequestData outExt=%d,%d,%d,%d,%d,%d\n",outExt[0],outExt[1],outExt[2],outExt[3],outExt[4],outExt[5]);
+    printf("vtkImageColorMerge ThreadedRequestData outExt=%d,%d,%d,%d,%d,%d\n",outExt[0],outExt[1],outExt[2],outExt[3],outExt[4],outExt[5]);
   if (inData[0][0] == NULL)
     {
     vtkErrorMacro(<< "Input " << 0 << " must be specified.");

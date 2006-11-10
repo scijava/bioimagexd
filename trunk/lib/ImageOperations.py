@@ -1012,7 +1012,6 @@ def getSlice(volume,zslice,startpos=None,endpos=None):
     
 def saveImageAs(imagedata,zslice,filename):
     """
-    Method: saveImageAs
     Created: KP
     Description: Save a given slice of a volume
     """       
