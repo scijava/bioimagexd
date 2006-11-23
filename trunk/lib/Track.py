@@ -44,13 +44,38 @@ class Track:
     def __init__(self):
         self.points = {}
         self.values = {}
+        self.mintp, self.maxtp = 0,0
+    
+    def __len__(self):
+        return len(self.points.keys())
+        
     def addTrackPoint(self, timepoint, objval, position):
         """
         Created: 23.11.2006, KP
         Description: add a point to this track
         """
+        if timepoint < self.mintp:
+            self.mintp = timepoint
+        if timepoint > self.maxtp:
+            self.maxtp = timepoint
         self.points[timepoint] = position
         self.values[timepoint] = objval
+        
+    def getTimeRange(self):
+        """
+        Created: 23.11.2006, KP
+        Description: Return the range in time this track occupies
+        """
+        return self.mintp, self.maxtp
+    
+    def getObjectAtTime(self, t):
+        """
+        Created: 23.11.2006, KP
+        Description: Return the object value and position at timepoint t
+        """
+        if t not in self.points:
+            return -1,(-1,-1,-1)
+        return self.values[t],self.points[t]
 
 class TrackReader:
     """

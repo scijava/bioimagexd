@@ -443,9 +443,9 @@ class CreateTracksFilter(ProcessingFilter.ProcessingFilter):
         if parameter=="MinSize":
             return 6
         if parameter=="MaxVelocity":
-            return 30
+            return 5
         if parameter=="MaxSizeChange":
-            return 30
+            return 35
         if parameter=="MinLength":
             return 3
         if parameter in ["IntensityWeight","SizeWeight","DirectionWeight"]:
@@ -453,7 +453,7 @@ class CreateTracksFilter(ProcessingFilter.ProcessingFilter):
         if parameter == "MaxDirectionChange":
             return 45
         if parameter == "MaxIntensityChange":
-            return 10
+            return 40
         if parameter == "MaxSizeChange":
             return 25
         if parameter=="Track":return 0            

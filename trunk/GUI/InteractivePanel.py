@@ -100,24 +100,74 @@ class VisualizeTracksHelper(PainterHelper):
             dc.SetPen(wx.Pen((255,255,255),1))
             dc.SetBrush(wx.TRANSPARENT_BRUSH)
             for track in self.selectedTracks:
-                x0,y0,z0 = track[0]
-                x0*=self.parent.zoomFactor
-                y0*=self.parent.zoomFactor
-                x0+=self.parent.xoffset
-                y0+=self.parent.yoffset                    
-                for i,(x1,y1,z1) in enumerate(track): 
-                    x1*=self.parent.zoomFactor
-                    y1*=self.parent.zoomFactor
-                    x1+=self.parent.xoffset
-                    y1+=self.parent.yoffset                
-                    if bxd.visualizer.getTimepoint()==i:                
-                        dc.DrawCircle(x0, y0,6)                
-                    else:
-                        dc.DrawCircle(x0,y0,4)
+                mintp, maxtp = track.getTimeRange() 
+                val=-1
+                while val==-1 and mintp<=maxtp:
+                    val,(x0,y0,z0) = track.getObjectAtTime(mintp)
+                    print "Pos at time",mintp,"=",x0,y0,z0,"(val=",val,")"
+                    x0*=self.parent.zoomFactor
+                    y0*=self.parent.zoomFactor
+                    x0+=self.parent.xoffset
+                    y0+=self.parent.yoffset     
+                    mintp+=1
+                dc.SetTextForeground((255,255,255))
+                dc.SetFont(wx.Font(6,wx.SWISS,wx.NORMAL,wx.NORMAL))
+                dc.DrawText("%d"%(mintp-1),x0-10,y0-10)
+                
+                for i in range(mintp, maxtp+1):
+                    objectValue, pos = track.getObjectAtTime(i)
+                    print "Pos at time",i,"=",pos,"(val=",objectValue,")"
+                    if objectValue != -1:
+                        x1,y1,z1 = pos
                         
-                    if x0 != x1:
-                        dc.DrawLine(x0,y0,x1,y1)
-                    x0,y0 = x1,y1
+                        x1*=self.parent.zoomFactor
+                        y1*=self.parent.zoomFactor
+                        x1+=self.parent.xoffset
+                        y1+=self.parent.yoffset                
+                        
+                        dc.DrawText("%d"%i,x1-10,y1-10)
+                        #if bxd.visualizer.getTimepoint()==i:                
+                        #    #dc.DrawCircle(x0, y0,6)                
+                        #    pass
+                        #else:
+                        #    dc.DrawCircle(x0,y0,4)
+                        #    pass
+                            
+                        def angle(x1,y1,x2,y2):
+                            ang=math.atan2(y2 - y1, x2 - x1) * 180.0 / math.pi;
+                            ang2=ang
+                            if ang<0:ang=180+ang
+                            return ang
+                            
+                        if x0 != x1:
+                            dc.DrawLine(x0,y0,x1,y1)
+                            a1 = angle(x0,y0,x1,y1)
+                            print "Angle=",a1
+                            for ang in [45]:
+                                ang=ang*((2*math.pi)/360.0)
+                                #l=5*self.parent.zoomFactor
+                                xs=5
+                                ys=5
+                                xs*=self.parent.zoomFactor
+                                ys*=self.parent.zoomFactor
+                                x2 = math.cos(ang)*xs-math.sin(ang)*ys
+                                y2 = math.sin(ang)*xs+math.cos(ang)*ys
+                                x2+=x0
+                                y2+=y0
+                                dc.DrawLine(x1,y1,x2,y2)
+                                l=5*self.parent.zoomFactor
+                                xs=-5
+                                ys=5
+                                xs*=self.parent.zoomFactor
+                                ys*=self.parent.zoomFactor                                
+                                x2 = math.cos(ang)*xs-math.sin(ang)*ys
+                                y2 = math.sin(ang)*xs+math.cos(ang)*ys
+                                x2+=x0
+                                y2+=y0
+                                dc.DrawLine(x1,y1,x2,y2)                                
+                        
+                            
+                        x0,y0 = x1,y1
     
 class CenterOfMassHelper(PainterHelper):
     def __init__(self, parent):
