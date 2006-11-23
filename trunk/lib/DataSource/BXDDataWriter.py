@@ -44,14 +44,12 @@ class MyConfigParser(RawConfigParser):
         
 class BXDDataWriter(DataWriter):
     """
-    Class: BXDDataWriter
     Created: 26.03.2005, KP
     Description: A writer of BioImageXD data (.bxd) files
     """
 
     def __init__(self,filename):
         """
-        Method: __init__
         Created: 26.03.2005,KP
         Description: Constructor
         """
@@ -60,6 +58,7 @@ class BXDDataWriter(DataWriter):
         # vti-files
         self.dataSets = []
         # filename of the .du-file
+        
         self.filename = filename
         # path to the .du-file and .vti-file(s)
         self.path=""
@@ -115,11 +114,11 @@ class BXDDataWriter(DataWriter):
             parser.set("ImageData","file_%d"%i,self.dataSets[i])
                     
         try:
+            print "Trying to open",self.filename,repr(self.filename)
             fp=open(self.filename,"w")
         except IOError,ex:
             Logging.error("Failed to write settings",
-            "BXDDataSource Failed to open .bxd file %s for writing settings"%\
-            filename,ex)
+            "BXDDataSource Failed to open .bxd file %s for writing settings (%s)"%(self.filename,str(ex)))
             return
         parser.write(fp)
         fp.close()
@@ -136,14 +135,18 @@ class BXDDataWriter(DataWriter):
             # .du file this datasource has been loaded from
             self.path=os.path.dirname(self.filename)
 
+        print "filename=",self.filename,repr(self.filename)
+        print "Self.path=",self.path,repr(self.path)
         # Next we determine the name for the .vti file we are writing
         # We take the name of the .du file this datasource is associated with
         duFileName=os.path.basename(self.filename)
+        print "dufilename=",duFileName,repr(duFileName)
         # and strip the .du from the end
         i=duFileName.rfind(".")
         imageDataName=duFileName[:i]
         fileName="%s_%d.vti"%(imageDataName,self.counter)
         print "adding with filename",fileName
+        fileName=fileName.encode("ascii")
         self.counter+=1
         # Add the file name to our internal list of datasets
         self.dataSets.append(fileName)
@@ -178,11 +181,11 @@ class BXDDataWriter(DataWriter):
             ret=writer.Write()
             if ret==0:
                 Logging.error("Failed to write image data",
-                "Failed to write vtkImageData object to file %s"%filename)
+                "Failed to write vtkImageData object to file %s"%self.filename)
                 return
         except Exception, ex:
             Logging.error("Failed to write image data",
-            "Failed to write vtkImageData object to file %s"%filename,ex)
+            "Failed to write vtkImageData object to file %s"%self.filename,ex)
             return
         print "done"
 

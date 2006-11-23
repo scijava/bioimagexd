@@ -130,7 +130,7 @@ def getFilterList():
             ITKLocalMaximumFilter,ITKOtsuThresholdFilter,ITKConfidenceConnectedFilter,
             MaskFilter,ITKSigmoidFilter, ITKInvertIntensityFilter, ConnectedComponentFilter,
             MaximumObjectsFilter,TimepointCorrelationFilter,
-            ROIIntensityFilter,CutDataFilter]
+            ROIIntensityFilter,CutDataFilter,GaussianSmoothFilter,CreateTracksFilter]
             
 MATH="Image arithmetic"
 SEGMENTATION="Segmentation"
@@ -140,7 +140,7 @@ LOGIC="Logical operations"
 MEASUREMENT="Measurements"
 REGION_GROWING="Region growing"
 FEATUREDETECTION="Feature detection"
-
+TRACKING="Tracking"
         
 
 class AnisotropicDiffusionFilter(ProcessingFilter.ProcessingFilter):
@@ -325,6 +325,86 @@ class SolitaryFilter(ProcessingFilter.ProcessingFilter):
             self.vtkfilter.Update()
         return self.vtkfilter.GetOutput()      
 
+class GaussianSmoothFilter(ProcessingFilter.ProcessingFilter):
+    """
+    Created: 15.11.2006, KP
+    Description: A gaussian smoothing filter
+    """     
+    name = "Gaussian smooth"
+    category = FILTERING
+    
+    def __init__(self):
+        """
+        Created: 15.11.2006, KP
+        Description: Initialization
+        """        
+        ProcessingFilter.ProcessingFilter.__init__(self,(1,1))
+        self.vtkfilter = vtk.vtkImageGaussianSmooth()
+        self.descs={"RadiusX":"Radius factor X:","RadiusY":"Radius factor Y:","RadiusZ":"Radius factor Z:",
+            "Dimensionality":"Dimensionality"}
+    
+    def getParameters(self):
+        """
+        Created: 15.11.2006, KP
+        Description: Return the list of parameters needed for configuring this GUI
+        """            
+        return [ "Radius factor:",["",("RadiusX","RadiusY","RadiusZ")],
+        ["",("Dimensionality",)]
+        ]
+        
+    def getDesc(self,parameter):
+        """
+        Created: 15.11.2006, KP
+        Description: Return the description of the parameter
+        """    
+        return self.descs[parameter]
+ 
+        
+        
+    def getType(self,parameter):
+        """
+        Created: 15.11.2006, KP
+        Description: Return the type of the parameter
+        """    
+        if parameter in ["RadiusX","RadiusY","RadiusZ"]:
+            return types.FloatType
+        return GUIBuilder.SPINCTRL
+        
+    def getDefaultValue(self,parameter):
+        """
+        Created: 15.11.2006, KP
+        Description: Return the default value of a parameter
+        """     
+        if parameter=="Dimensionality":return 3
+        return 1.5
+        
+    def getRange(self, parameter):
+        """
+        Created: 15.11.2006, KP
+        Description: return the range of the parameter
+        """
+        return 1,3
+
+    def execute(self,inputs,update=0,last=0):
+        """
+        Created: 15.11.2006, KP
+        Description: Execute the filter with given inputs and return the output
+        """            
+        if not ProcessingFilter.ProcessingFilter.execute(self,inputs):
+            return None
+        
+        image = self.getInput(1)
+        self.vtkfilter.SetInput(image)
+        
+        x,y,z = self.parameters["RadiusX"],self.parameters["RadiusY"],self.parameters["RadiusZ"]
+        dims = self.parameters["Dimensionality"]
+        self.vtkfilter.SetRadiusFactors(x,y,z)
+        self.vtkfilter.SetDimensionality(dims)
+        
+        if update:
+            self.vtkfilter.Update()
+        return self.vtkfilter.GetOutput()              
+        
 class ShiftScaleFilter(ProcessingFilter.ProcessingFilter):
     """
     Created: 13.04.2006, KP
@@ -515,7 +595,7 @@ class TimepointCorrelationFilter(ProcessingFilter.ProcessingFilter):
        
         #print "Using ",image
         
-        
+
         self.vtkfilter.Update()
         self.corrLbl2.SetLabel("%.5f"%self.vtkfilter.GetPearsonWholeImage())
         return self.getInput(1)
@@ -742,7 +822,7 @@ class CutDataFilter(ProcessingFilter.ProcessingFilter):
     
         voi.SetInput(imagedata)
         voi.SetVOI(minx,maxx,miny,maxy,minz,maxz)
-        voi.Update()
+        #voi.Update()
         data = voi.GetOutput()
         data.SetWholeExtent(0,(maxx-minx)-1,0,(maxy-miny)-1,0,(maxz-minz)-1)
         data.SetExtent(0,(maxx-minx)-1,0,(maxy-miny)-1,0,(maxz-minz)-1)
@@ -1178,3 +1258,4 @@ class ITKLocalMaximumFilter(ProcessingFilter.ProcessingFilter):
 from MathFilters import *
 from SegmentationFilters import *
 from MorphologicalFilters import *
+from TrackingFilters import *

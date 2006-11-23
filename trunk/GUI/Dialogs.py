@@ -112,7 +112,7 @@ def askDirectory(parent,title,initialDir=None):
     dlg.Destroy()
     return filepath
 
-def askOpenFileName(parent,title,wc,remember=-1):
+def askOpenFileName(parent,title,wc,remember=-1,filetype=None):
     """
     Created: 12.03.2005, KP
     Description: A method to show a open file dialog that supports multiple files
@@ -122,10 +122,13 @@ def askOpenFileName(parent,title,wc,remember=-1):
         conf=Configuration.getConfiguration()
         remember=conf.getConfigItem("RememberPath","Paths")
     lastpath=""
-    filetype=wc.split("|")[1]
-    filetype=filetype.split(".")[1]
+    ftype=wc.split("|")[1]
+    ftype=ftype.split(".")[1]
+    if filetype!=None:
+        ftype = filetype
     if remember:
-        lastpath=conf.getConfigItem("LastPath_%s"%filetype,"Paths")
+        
+        lastpath=conf.getConfigItem("LastPath_%s"%ftype,"Paths")
         if not lastpath:lastpath="."
     dlg=wx.FileDialog(parent,title,lastpath,wildcard=wc,style=wx.OPEN|wx.MULTIPLE)
     if dlg.ShowModal()==wx.ID_OK:
@@ -133,12 +136,12 @@ def askOpenFileName(parent,title,wc,remember=-1):
         if not asklist:return asklist
         if remember:
             filepath=os.path.dirname(asklist[0])
-            conf.setConfigItem("LastPath_%s"%filetype,"Paths",filepath)
+            conf.setConfigItem("LastPath_%s"%ftype,"Paths",filepath)
         
-    dlg.Destroy()
+    dlg.Destroy()    
     return asklist
     
-def askSaveAsFileName(parent,title,initFile,wc, type=None):
+def askSaveAsFileName(parent,title,initFile,wc, ftype=None):
     """
     Created: 28.01.2005, KP
     Description: A method to show a save as dialog
@@ -146,13 +149,13 @@ def askSaveAsFileName(parent,title,initFile,wc, type=None):
     initialDir=None
     conf=Configuration.getConfiguration()
     remember=conf.getConfigItem("RememberPath","Paths")
-    if not type:
-        type=wc.split("|")[1]
-        type=type.split(".")[1]
+    if not ftype:
+        ftype=wc.split("|")[1]
+        ftype=ftype.split(".")[1]
 
     if not initialDir:
         if remember:
-            initialDir = conf.getConfigItem("LastPath_%s"%type,"Paths")
+            initialDir = conf.getConfigItem("LastPath_%s"%ftype,"Paths")
             if not initialDir:initialDir="."
         else:
             initialDir = conf.getConfigItem("DataPath","Paths")

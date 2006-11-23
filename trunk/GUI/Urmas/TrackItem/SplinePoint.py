@@ -54,13 +54,11 @@ from TrackItem import *
 
 class SplinePoint(TrackItem):
     """
-    Class: SplinePoint
     Created: 19.03.2005, KP
     Description: A class representing an item in a spline points track.
     """       
     def __init__(self,parent,text,size,**kws):
         """
-        Method: __init__
         Created: 20.03.2005, KP
         Description: Initialize the method
         """ 
@@ -75,7 +73,6 @@ class SplinePoint(TrackItem):
                 
     def getItemNumber(self):
         """
-        Method: getItemNumber()
         Created: 14.04.2005, KP
         Description: Return the item number of this item
         """       
@@ -84,7 +81,6 @@ class SplinePoint(TrackItem):
     def getPoint(self): return self.point
     def setPoint(self,pt):
         """
-        Method: setPoint(self)
         Created: 14.04.2005, KP
         Description: Return the point this spline point represents
         """      
@@ -92,7 +88,6 @@ class SplinePoint(TrackItem):
         
     def drawItem(self,hilight=-1):
         """
-        Method: drawItem()
         Created: 19.03.2005, KP
         Description: A method that draws the splinetrack item.
         """       
@@ -154,7 +149,6 @@ class SplinePoint(TrackItem):
     
     def updateItem(self):
         """
-        Method: updateItem()
         Created: 06.04.2005, KP
         Description: A method called when the item has been resized
         """     
@@ -164,7 +158,6 @@ class SplinePoint(TrackItem):
         
     def __set_pure_state__(self,state):
         """
-        Method: __set_pure_state__()
         Created: 11.04.2005, KP
         Description: Update the item
         """       
@@ -178,7 +171,6 @@ class SplinePoint(TrackItem):
         
     def __getstate__(self):
         """
-        Method: __getstate__
         Created: 11.04.2005, KP
         Description: Return the dict that is to be pickled to disk
         """     
@@ -189,7 +181,6 @@ class SplinePoint(TrackItem):
         
     def __str__(self):
         """
-        Method: __str__
         Created: 05.04.2005, KP
         Description: Return string representation of self
         """  
@@ -201,7 +192,6 @@ class SplinePoint(TrackItem):
 
     def onDown(self,event):
         """
-        Method: onDown(event)
         Created: 14.12.2005, KP
         Description: Event handler for when the mouse is pressed down over
                      this item. 
@@ -212,13 +202,11 @@ class SplinePoint(TrackItem):
         
 class SplineEndPoint(SplinePoint):
     """
-    Class: SplineEndPoint
     Created: 14.12.2005, KP
     Description: A class representing the last item in a spline track
     """       
     def __init__(self,parent,text,size,**kws):
         """
-        Method: __init__
         Created: 14.12.2005, KP
         Description: Initialize the item
         """
@@ -240,7 +228,6 @@ class SplineEndPoint(SplinePoint):
         KeyframePoint.setWidth(self,w)
     def setColor(self,col,headercolor):
         """
-        Method: setColor(color, headercolor)
         Created: 10.02.2005, KP
         Description: Set the color and header color for this item
         """       
@@ -248,7 +235,6 @@ class SplineEndPoint(SplinePoint):
         self.drawItem()        
     def setText(self,s):
         """
-        Method: setText
         Created: 14.04.2005, KP
         Description: Set the text number of this item
         """       

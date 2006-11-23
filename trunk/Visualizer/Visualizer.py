@@ -253,6 +253,9 @@ class Visualizer:
         iconpath=scripting.get_icon_dir()
         leftarrow = wx.Image(os.path.join(iconpath,"leftarrow.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap()
         rightarrow = wx.Image(os.path.join(iconpath,"rightarrow.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap()
+        uparrow = wx.Image(os.path.join(iconpath,"uparrow.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap()
+        downarrow = wx.Image(os.path.join(iconpath,"downarrow.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap()
+
         self.prev=wx.BitmapButton(self.sliderPanel,-1,leftarrow)
         self.prev.SetSize((64,64))
         self.next=wx.BitmapButton(self.sliderPanel,-1,rightarrow)
@@ -267,8 +270,24 @@ class Visualizer:
         self.timeslider.SetHelpText("Use this slider to select the displayed timepoint.")
         self.bindTimeslider(self.onUpdateTimepoint)
 
-        self.zslider=wx.Slider(self.zsliderWin,value=1,minValue=1,maxValue=1,
+        self.zsliderPanel = wx.Panel(self.zsliderWin)
+        boxsizer=wx.BoxSizer(wx.VERTICAL)
+        self.zslider=wx.Slider(self.zsliderPanel,value=1,minValue=1,maxValue=1,
         style=wx.SL_VERTICAL|wx.SL_LABELS|wx.SL_AUTOTICKS)
+        
+        self.upbtn = wx.BitmapButton(self.zsliderPanel, -1,uparrow)
+        self.downbtn = wx.BitmapButton(self.zsliderPanel, -1, downarrow)
+        
+        self.downbtn.Bind(wx.EVT_BUTTON, self.onSliceDown)
+        self.upbtn.Bind(wx.EVT_BUTTON, self.onSliceUp)
+        boxsizer.Add(self.upbtn)
+        boxsizer.Add(self.zslider,1)
+        boxsizer.Add(self.downbtn)
+        
+        self.zsliderPanel.SetSizer(boxsizer)
+        self.zsliderPanel.SetAutoLayout(1)
+        self.zsliderSizer = boxsizer
+        self.zsliderSizer.Fit(self.zsliderPanel)
         
         self.zslider.SetHelpText("Use this slider to select the displayed optical slice.")
         self.zslider.Bind(wx.EVT_SCROLL,self.onChangeZSlice)
@@ -277,13 +296,33 @@ class Visualizer:
         messenger.connect(None,"zslice_changed",self.onChangeZSlice)
         
         
-        self.sliderbox.Add(self.prev)
+        self.sliderbox.Add(self.prev,flag=wx.ALIGN_CENTER_VERTICAL)
         self.sliderbox.Add(self.timeslider,1)
-        self.sliderbox.Add(self.next)
+        self.sliderbox.Add(self.next,flag=wx.ALIGN_CENTER_VERTICAL)
         self.sliderPanel.SetSizer(self.sliderbox)
         self.sliderPanel.SetAutoLayout(1)
         self.sliderbox.Fit(self.sliderPanel)
 
+    def onSliceUp(self, evt):
+        """
+        Created: 15.11.2006, KP
+        Description: Move one slice up
+        """
+        z=self.zslider.GetValue()-1
+        if z<1:z=1
+        self.zslider.SetValue(z)
+        self.onChangeZSlice(None)
+    def onSliceDown(self, evt):
+        """
+        Created: 15.11.2006, KP
+        Description: Move one slice down
+        """
+        z=self.zslider.GetValue()+1
+        
+        self.zslider.SetValue(z)
+        self.onChangeZSlice(None)
+        
+        
     def bindTimeslider(self,method,all=0):
         """
         Created: 15.08.2005, KP
@@ -746,8 +785,11 @@ class Visualizer:
 #        if not self.enabled:return
         wx.LayoutAlgorithm().LayoutWindow(self.parent, self.visWin)
         x,y=self.zsliderWin.GetSize()
-        x,y2=self.zslider.GetSize()
-        self.zslider.SetSize((x,y))
+        print "Size of zsliderwin=",x,y
+        #x,y2=self.zslider.GetSize()
+        #self.zslider.SetSize((x,y))
+        self.zsliderPanel.SetSize((x,y))
+        
         visSize=self.visWin.GetClientSize()
         # was here
         
@@ -768,7 +810,8 @@ class Visualizer:
             self.currSliderPanel.SetSize(self.sliderWin.GetSize())        
         if time.time()-self.lastWinSaveTime > 5:
             self.saveWindowSizes()
-            
+        #print self.zsliderWin.GetSize()
+        #self.zsliderPanel.SetSize(self.zsliderWin.GetSize())    
     def restoreWindowSizesFromSettings(self):
         """
         Created: 13.04.2006, KP
@@ -843,6 +886,13 @@ class Visualizer:
         Description: Return whether visualizer is in processed/unprocessed mode
         """
         return self.processedMode
+
+    def getCurrentWindow(self):
+        """
+        Created: 23.11.2006, KP
+        Description: return the current visualizer window
+        """
+        return self.currentWindow
         
     def getCurrentMode(self):
         """

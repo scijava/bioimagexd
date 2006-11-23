@@ -83,7 +83,7 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         self.rawImage = None
         size=(1024,1024)
         self.fixedSize = None
-        self.centerOfMass = None
+        
         self.oldx,self.oldy=0,0
         self.zoomx,self.zoomy=1,1
         Logging.info("kws=",kws,kw="preview")
@@ -160,8 +160,7 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         self.scrollsize=32
         self.singleslice=0
         self.scrollTo=None
-        self.tracks = []
-        self.whichTrack = 0
+        
         InteractivePanel.InteractivePanel.__init__(self,parent,size=size,bgColor = self.bgcolor,**kws)
         
         self.calculateBuffer()
@@ -200,33 +199,14 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         #self.Bind(wx.EVT_PAINT,self.OnPaint)        
         self.Bind(wx.EVT_LEFT_DOWN,self.getVoxelValue)
         self.SetHelpText("This window displays the selected dataset slice by slice.")
-#    def __del__(self):        
-#        PreviewFrame.count-=1
-
-        messenger.connect(None,"show_centerofmass",self.onShowCenterOfMass)
-        messenger.connect(None,"visualize_tracks",self.onShowTracks)
-    
-    
-    def onShowCenterOfMass(self, obj, evt, label, centerofmass):
+        
+    def isMipMode(self):
         """
-        Created: 04.07.2006, KP
-        Description: Show the given center of mass
-        """            
-        self.centerOfMass = (label, centerofmass)
-        self.updatePreview()
-    
-    def onShowTracks(self,obj, evt, tracks,which):
+        Created: 23.11.2006, KP
+        Description: return the flag that indicates whether this window is in mip mode or not
         """
-        Created: 25.09.2006, KP
-        Description: Show all the tracks
-        """
-        if not tracks:
-            return
-        self.tracks = tracks
-        self.whichTrack = which
-        self.Refresh()
-            
-
+        return self.mip
+        
     def calculateBuffer(self):
         """
         Created: 23.05.2005, KP
@@ -269,7 +249,7 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         self.sizeChanged=1
         if self.enabled:
             self.calculateBuffer()
-            self.updatePreview()
+            self.updatePreview(renew=0)
         event.Skip()
         
     def setRenewFlag(self,obj,evt):
@@ -390,13 +370,13 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
                 print "Scalar is tuple=",scalar
                 
         else:
-            Logging.info("%d components in raw image"%ncomps,kw="preview")
+            #Logging.info("%d components in raw image"%ncomps,kw="preview")
             rv=self.rawImage.GetScalarComponentAsDouble(x,y,self.z,0)
             gv=self.rawImage.GetScalarComponentAsDouble(x,y,self.z,1)
             bv=self.rawImage.GetScalarComponentAsDouble(x,y,self.z,2)
             scalar = 0xdeadbeef
             
-        Logging.info("# of comps in image: %d"%self.currentImage.GetNumberOfScalarComponents(),kw="preview")
+        #Logging.info("# of comps in image: %d"%self.currentImage.GetNumberOfScalarComponents(),kw="preview")
         r=self.currentImage.GetScalarComponentAsDouble(x,y,self.z,0)
         g=self.currentImage.GetScalarComponentAsDouble(x,y,self.z,1)
         b=self.currentImage.GetScalarComponentAsDouble(x,y,self.z,2)            
@@ -507,21 +487,24 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
             renew=1
             self.running=1
         #if isinstance(self.dataUnit,CombinedDataUnit):
+        
         if self.dataUnit.isProcessed():
             try:
                 z=self.z
                 # if we're doing a MIP, we need to set z to -1
                 # to indicate we want the whole volume
                 if self.mip:z=-1
-                preview=self.dataUnit.doPreview(z,renew,self.timePoint)
                 self.rawImages=[]
                 for source in self.dataUnit.getSourceDataUnits():
-                    self.rawImages.append(source.getTimePoint(self.timePoint))
+                    self.rawImages.append(source.getTimePoint(self.timePoint))  
+                
+                preview=self.dataUnit.doPreview(z,renew,self.timePoint)
                 #Logging.info("Got preview",preview.GetDimensions(),kw="preview")
             except Logging.GUIError, ex:
                 ex.show()
                 return
         else:
+            
             preview = self.dataUnit.getTimePoint(self.timePoint)
             self.rawImage = preview
             Logging.info("Using timepoint %d as preview"%self.timePoint,kw="preview")
@@ -537,13 +520,35 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         else:
             colorImage=preview
         
+        
+        usedUpdateExt=0
+        print "self.z=",self.z,self.mip
+        uext=None
+        if self.z!=-1 and not self.mip:
+            x,y = self.xdim, self.ydim
+            print "\nSetting update extent to ",x,y,self.z
+            usedUpdateExt=1
+            #colorImage.SetUpdateExtent(0,x-1,0,y-1,self.z,self.z)
+            uext=(0,x-1,0,y-1,self.z,self.z)
+        
+        t=time.time()    
+        colorImage = bxd.mem.optimize(image = colorImage, updateExtent = uext)            
+        #colorImage.SetUpdateExtent(0,self.xdim-1,0,self.ydim-1,self.z,self.z)        
+        
+        
+        #colorImage.Update()
+        t2=time.time()
+        print "Executing pipeline took",t2-t,"seconds"            
+        
         self.currentImage=colorImage
                     
         if colorImage:
             x,y,z=colorImage.GetDimensions()
+            
             #print "\n\nIMAGE DIMENSIONS=",x,y,z,"EXTENT=",colorImage.GetWholeExtent()
             #print "Preview dims=",preview.GetDimensions()
-            bxd.visualizer.zslider.SetRange(1,z)
+            if not usedUpdateExt and not self.mip:
+                bxd.visualizer.zslider.SetRange(1,z)
             if x!=self.oldx or y!=self.oldy:
                 #self.resetScroll()
                 #self.setScrollbars(x,y)
@@ -579,6 +584,7 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         Created: 03.04.2005, KP
         Description: Process the data before it's send to the preview
         """            
+        data.UpdateInformation()
         ncomps = data.GetNumberOfScalarComponents()
         #Logging.info("I was created by: ",self.creator,"I am the ",PreviewFrame.count,"th instance")
         #Logging.backtrace()
@@ -589,20 +595,23 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
             extract=vtk.vtkImageExtractComponents()
             extract.SetComponents(0,1,2)
             extract.SetInput(data)
-            #data=extract.GetOutput()
+            data=extract.GetOutput()
             #extract.Update()
-            data = bxd.execute_limited(extract)
+            #data = bxd.execute_limited(extract)
+            
             
         if self.mip:
             #Logging.info("Doing mip",data,kw="preview")
-            
             data.SetUpdateExtent(data.GetWholeExtent())
             mip=vtk.vtkImageSimpleMIP()
             mip.SetInput(data)
             
-            ret = bxd.execute_limited(mip)
-            data.ReleaseDataFlagOn()
-            data = ret
+            data = mip.GetOutput()
+            
+            #ret = bxd.execute_limited(mip)
+            #data.ReleaseDataFlagOn()
+            #data.ReleaseData()
+            #data = ret
             
             data.SetUpdateExtent(data.GetWholeExtent())
             
@@ -613,15 +622,17 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
             self.mapToColors=vtk.vtkImageMapToColors()
             self.mapToColors.SetInput(data)
             
+            
             self.updateColor()
 
             colorImage=self.mapToColors.GetOutput()
-            colorImage.SetUpdateExtent(data.GetExtent())
+            #colorImage.SetUpdateExtent(data.GetExtent())
             
             
-            outdata = bxd.execute_limited(self.mapToColors)
+            outdata  = colorImage
+            #outdata = bxd.execute_limited(self.mapToColors)
             
-            outdata.ReleaseDataFlagOff()
+            #outdata.ReleaseDataFlagOff()
             return outdata
             
         else:
@@ -721,8 +732,11 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         Description: Sets the image to display
         """    
         self.imagedata=image
+        
         x,y=self.size
+        image.UpdateInformation()   
         x2,y2,z=image.GetDimensions()
+        #print "Set image=",repr(image),"with dims=",x2,y2,z
         if x2<x:
             x=x2
         if y2<y:
@@ -744,6 +758,7 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         Logging.info("Setting zoom factor to ",f,kw="preview")
         if f<self.zoomFactor:
             # black the preview
+            
             slice=self.slice
             self.slice=None
             self.paintPreview()
@@ -751,6 +766,7 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
             
         self.zoomFactor=f
         self.updateAnnotations()
+        
         #self.Scroll(0,0)
         
     def zoomToFit(self):
@@ -850,7 +866,9 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
             if interpolation == 0:
                 bmp=ImageOperations.zoomImageByFactor(self.slice,self.zoomFactor)                
             else:
+                #print "Scaling image",self.imagedata
                 img=ImageOperations.scaleImage(self.imagedata,self.zoomFactor,self.z,interpolation)
+                
                 bmp=ImageOperations.vtkImageDataToWxImage(img)
             w,h=bmp.GetWidth(),bmp.GetHeight()
             #Logging.info("Setting scrollbars (%d,%d) because of zooming"%(w,h),kw="preview")
@@ -878,32 +896,6 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         yoff = (th-bh)/2
         self.setOffset(xoff, yoff)
         dc.DrawBitmap(bmp,xoff,yoff,True)
-        
-        if self.centerOfMass:
-            label, (x,y,z) = self.centerOfMass
-            
-            print "Painting center of Mass at ",x,y
-            #x=self.xdim - x 
-            #y = self.ydim - y
-            x*= self.zoomFactor
-            y*= self.zoomFactor
-            if z == self.z:
-                dc.SetBrush(wx.TRANSPARENT_BRUSH)
-                dc.SetPen(wx.Pen((255,255,255),2))
-                dc.DrawCircle(x,y,10)
-                dc.SetTextForeground((255,255,255))
-                dc.SetFont(wx.Font(9,wx.SWISS,wx.NORMAL,wx.BOLD))
-                dc.DrawText("%d"%label,x-5,y-5)
-                
-        if self.tracks:        
-            dc.SetPen(wx.Pen((255,255,255),2))
-            track=self.tracks[self.whichTrack]
-            x0,y0,z0 = track[0]
-            dc.DrawCircle(x0*self.zoomFactor, y0*self.zoomFactor,3)
-            for x1,y1,z1 in track[1:]:                
-                dc.DrawCircle(x1*self.zoomFactor, y1*self.zoomFactor,3)
-                dc.DrawLine(x0*self.zoomFactor,y0*self.zoomFactor,x1*self.zoomFactor,y1*self.zoomFactor)
-                x0,y0 = x1,y1
             
         self.bmp=self.buffer
         

@@ -304,7 +304,6 @@ class BXDDataSource(DataSource):
 
     def getName(self):
         """
-        Method: getName
         Created: 18.11.2004, KPloadFrom
         Description: Returns the name of the dataset series which this datasource
                      operates on
@@ -319,19 +318,6 @@ class BXDDataSource(DataSource):
         """
         Logging.info("Getting colortransferfunction from settings",kw="ctf")
         
-
-        print "TRYING TO GET MORPHOLOGICAL"
-        k=0
-        try:
-            k = self.parser.get("Morphological Watershed Segmentation","Level")
-        except:
-            pass
-        if k:
-            n = self.getScalarRange()
-            palette = ImageOperations.watershedPalette(0,n[1])
-            
-            print "Setting palette to random in range 0,",n
-            return palette
         #self.settings.set("ColorTransferFunction",palette)
 #            except:
 #                raise "FOO"

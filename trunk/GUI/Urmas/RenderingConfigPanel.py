@@ -71,7 +71,8 @@ class RenderingConfigPanel:
         self.secs = 60
         self.parent=parent
         self.updated = 0
-        self.no_update=0
+        self.in_fps = 0
+        self.in_framecount = 0
         self.outputsizer=wx.GridBagSizer(5,5)
         box=wx.StaticBox(self.parent,wx.HORIZONTAL,"Rendering parameters")
         self.outputstaticbox=wx.StaticBoxSizer(box,wx.HORIZONTAL)
@@ -82,11 +83,12 @@ class RenderingConfigPanel:
         #self.fpsLabel=wx.StaticText(self,-1,"12 / second")
 
         self.totalFrames=wx.TextCtrl(self.parent,-1,"720",size=(50,-1),style=wx.TE_PROCESS_ENTER)
-        self.spin = wx.SpinButton( self.parent, -1,style=wx.SP_VERTICAL )
-        self.duration=masked.TimeCtrl(self.parent,-1,"00:01:00",fmt24hr=True,size=(50,-1),style=wx.TE_PROCESS_ENTER,spinButton=self.spin)
+        self.spin = wx.SpinButton( self.parent, -1,style=wx.SP_VERTICAL , size=(-1,25))
+        self.duration=masked.TimeCtrl(self.parent,-1,"00:01:00",fmt24hr=True,size=(50,25),style=wx.TE_PROCESS_ENTER,spinButton=self.spin)
+        
         
         self.totalFrames.Bind(wx.EVT_TEXT,self.updateFrameCount)
-        self.duration.Bind(wx.EVT_TEXT,self.updateDuration)
+        #self.duration.Bind(wx.EVT_TEXT,self.updateDuration)
 
         self.followAspect=wx.CheckBox(self.parent, -1, "Don't resize preview, only use aspect ratio.")
         toolTip = wx.ToolTip("""If this box is checked, the rendering preview window
@@ -246,7 +248,7 @@ be the same size as the final frame.""")
         #self.parent.sizer.Fit(self.parent)
         
     def getDurationInSeconds(self):
-        print "getDurationInSeconds()"
+        #print "getDurationInSeconds()"
         if not self.updated:
             return self.secs
 
@@ -262,16 +264,22 @@ be the same size as the final frame.""")
         return secs
         
     def updateFPS(self,event):
-        print "updateFps()"
+        if self.in_framecount:
+            return
+        self.in_fps=1
+        #print "updateFps()"
         secs = self.getDurationInSeconds()
         try:
             fps = float(self.frameRate.GetValue())
         except:
+            self.in_fps=0
             return
         newframes = secs*fps
-        self.no_update=1
+        
         self.totalFrames.SetValue("%d"%newframes)
-        self.no_update=0
+        
+        self.in_fps = 0
+        
     def updateDuration(self,event):
         self.updated = 1
         secs = self.getDurationInSeconds()
@@ -282,16 +290,24 @@ be the same size as the final frame.""")
         #self.fpsLabel.SetLabel("%.2f / second"%newfps)
         
     def updateFrameCount(self,event):
-        if self.no_update:
+        if self.in_fps:
             return
+        self.in_framecount=1
         try:
             frameCount=int(self.totalFrames.GetValue())
+            print "Got frameCount=",frameCount
         except:
+            self.in_framecount = 0
             return
         if frameCount==0:
+            self.in_framecount = 0
             return
         secs = self.getDurationInSeconds()
-    
-        self.fps=frameCount/secs
+        
+        self.fps=frameCount/float(secs)
+        print "Setting frame rate to ",self.fps
         self.frameRate.SetValue("%.2f"%self.fps)
         #self.fpsLabel.SetLabel("%.2f / second"%newfps)
+        self.in_framecount = 0
+        
+        

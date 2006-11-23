@@ -56,7 +56,6 @@ class LeicaDataSource(DataSource):
     """
     def __init__(self,filename="",experiment="",channel=-1):
         """
-        Method: __init__
         Created: 12.04.2005, KP
         Description: Constructor
         """    
@@ -76,7 +75,6 @@ class LeicaDataSource(DataSource):
         
     def getDataSetCount(self):
         """
-        Method: getDataSetCount
         Created: 12.04.2005, KP
         Description: Returns the number of individual DataSets (=time points)
         managed by this DataSource
@@ -84,7 +82,6 @@ class LeicaDataSource(DataSource):
         return self.reader.GetNumberOfTimepoints(self.experiment)
     def getFileName(self):
         """
-        Method: getFileName()
         Created: 21.07.2005
         Description: Return the file name
         """    
@@ -94,7 +91,6 @@ class LeicaDataSource(DataSource):
     
     def getDataSet(self, i,raw=0):
         """
-        Method: getDataSet
         Created: 12.04.2005, KP
         Description: Returns the DataSet at the specified index
         Parameters:   i       The index
@@ -104,7 +100,6 @@ class LeicaDataSource(DataSource):
         
     def getDimensions(self):
         """
-        Method: getDimensions()
         Created: 12.04.2005, KP
         Description: Returns the (x,y,z) dimensions of the datasets this 
                      dataunit contains
@@ -120,7 +115,6 @@ class LeicaDataSource(DataSource):
         
     def getSpacing(self):
         """
-        Method: getSpacing()
         Created: 12.04.2005, KP
         Description: Returns the spacing of the datasets this 
                      dataunit contains
@@ -136,7 +130,6 @@ class LeicaDataSource(DataSource):
         
     def getVoxelSize(self):
         """
-        Method: getVoxelSize()
         Created: 12.04.2005, KP
         Description: Returns the voxel size of the datasets this 
                      dataunit contains
@@ -150,7 +143,6 @@ class LeicaDataSource(DataSource):
     
     def loadFromFile(self, filename):
         """
-        Method: loadFromFile
         Created: 12.04.2005, KP
         Description: Loads the specified .txt-file and imports data from it.
         Parameters:   filename  The .txt-file to be loaded
@@ -185,7 +177,6 @@ class LeicaDataSource(DataSource):
 
     def getName(self):
         """
-        Method: getName
         Created: 18.11.2005, KP
         Description: Returns the name of the dataset series which this datasource
                      operates on
@@ -195,7 +186,6 @@ class LeicaDataSource(DataSource):
         
     def getColorTransferFunction(self):
         """
-        Method: getColorTransferFunction()
         Created: 26.04.2005, KP
         Description: Returns the ctf of the dataset series which this datasource
                      operates on
@@ -251,7 +241,6 @@ class LeicaExperiment:
         
     def setFileName(self,filename):
         """
-        Method: setFileName()
         Created: 12.04.2005, KP
         Description: Sets the file name to be opened
         """
@@ -263,7 +252,6 @@ class LeicaExperiment:
     
     def Read(self):
         """
-        Method: Read()
         Created: 12.04.2005, KP
         Description: Read the given file
         """    
@@ -272,7 +260,6 @@ class LeicaExperiment:
         
     def GetExperiments(self):
         """
-        Method: Get_Experiments()
         Created: 12.04.2005, KP
         Description: Return the number of channels this dataset contains
         """    
@@ -280,7 +267,6 @@ class LeicaExperiment:
 
     def GetNumberOfChannels(self,experiment):
         """
-        Method: GetNumberOfChannels(experiment)
         Created: 12.04.2005, KP
         Description: Return the number of channels an experiment contains
         """    
@@ -288,7 +274,6 @@ class LeicaExperiment:
 
     def GetNumberOfTimepoints(self,experiment):
         """
-        Method: GetNumberOfTimepoints(experiment)
         Created: 12.04.2005, KP
         Description: Return the number of channels an experiment contains
         """        
@@ -297,7 +282,6 @@ class LeicaExperiment:
         
     def GetDimensions(self,experiment):
         """
-        Method: GetDimensions(experiment)
         Created: 12.04.2005, KP
         Description: Return dimensions of an experiment
         """    
@@ -308,7 +292,6 @@ class LeicaExperiment:
         
     def GetColor(self,experiment,channel):
         """
-        Method: GetColor(experiment,channel)
         Created: 12.04.2005, KP
         Description: Return the data for a given timepoint
         """    
@@ -339,7 +322,6 @@ class LeicaExperiment:
 
     def GetTimepoint(self,experiment,channel,timepoint):
         """
-        Method: GetTimepoint(experiment,channel,timepoint)
         Created: 12.04.2005, KP
         Description: Return the data for a given timepoint
         """    
@@ -348,12 +330,11 @@ class LeicaExperiment:
 
         channels=self.TP_CH_VolDataList[timepoint]
         rdr=channels[channel]
-        rdr.Update()
+        #rdr.Update()
         return rdr.GetOutput()
         
     def GetVoxelSize(self,experiment):
         """
-        Method: GetVoxelSize(experiment)
         Created: 12.04.2005, KP
         Description: Return voxel size of an experiment
         """    
@@ -386,7 +367,6 @@ class LeicaExperiment:
             
     def GetScanMode(self,Series_Data):
         """
-        Method: GetScanMode(data)
         Created: 15.04.2005, KP, based on Karl Garsha's code
         Description: Return the scan mode from given data
         """        
@@ -399,7 +379,6 @@ class LeicaExperiment:
 
     def GetSeriesName(self,Series_Data):
         """
-        Method: GetSeriesName(data)
         Created: 15.04.2005, KP, based on Karl Garsha's code
         Description: Return the series name from given data
         """               
@@ -418,7 +397,6 @@ class LeicaExperiment:
         
     def GetNumChan(self,Series_Data):
         """
-        Method: GetNumChan(data)
         Created: 15.04.2005, KP, based on Karl Garsha's code
         Description: Return the number of channels from given data
         """              
@@ -433,7 +411,6 @@ class LeicaExperiment:
         
     def GetZDimension(self,Series_Data):
         """
-        Method: GetZDimension(data)
         Created: 15.04.2005, KP, based on Karl Garsha's code
         Description: Return the z dimension from given data
         """              
@@ -453,7 +430,6 @@ class LeicaExperiment:
         
     def GetTimeDimension(self,Series_Data):
         """
-        Method: GetTimeDimension(data)
         Created: 15.04.2005, KP, based on Karl Garsha's code
         Description: Return the time dimension from given data
         """          
@@ -469,7 +445,6 @@ class LeicaExperiment:
         
     def GetWidth(self,Series_Data):
         """
-        Method: GetWidth(data)
         Created: 15.04.2005, KP, based on Karl Garsha's code
         Description: Return the width from given data
         """                  
@@ -482,7 +457,6 @@ class LeicaExperiment:
         
     def GetHeight(self,Series_Data):
         """
-        Method: GetHeight(data)
         Created: 15.04.2005, KP, based on Karl Garsha's code
         Description: Return the height from given data
         """                   
@@ -495,7 +469,6 @@ class LeicaExperiment:
         
     def GetDepth(self,Series_Data):
         """
-        Method: GetDepth(data)
         Created: 15.04.2005, KP, based on Karl Garsha's code
         Description: Return the depth from given data
         """ 
@@ -512,7 +485,6 @@ class LeicaExperiment:
         
     def GetVoxelWidth(self,Series_Data):
         """
-        Method: GetVoxelWidth(data)
         Created: 15.04.2005, KP, based on Karl Garsha's code
         Description: Return the voxel width from given data
         """ 
@@ -525,7 +497,6 @@ class LeicaExperiment:
         
     def GetVoxelHeight(self,Series_Data):
         """
-        Method: GetVoxelHeight(data)
         Created: 15.04.2005, KP, based on Karl Garsha's code
         Description: Return the voxel height from given data
         """             
@@ -538,7 +509,6 @@ class LeicaExperiment:
         
     def GetVoxelDepth(self,Series_Data):
         """
-        Method: GetVoxelDepth(data)
         Created: 15.04.2005, KP, based on Karl Garsha's code
         Description: Return the voxel depth from given data
         """                
@@ -551,7 +521,6 @@ class LeicaExperiment:
         
     def GetBitDepth(self,Series_Data):
         """
-        Method: GetBitDepth(data)
         Created: 15.04.2005, KP, based on Karl Garsha's code
         Description: Return the bit depth from given data
         """             
@@ -564,7 +533,6 @@ class LeicaExperiment:
 
     def GetNumberOfComponents(self,Series_Data):
         """
-        Method: GetNumberOfComponents(data)
         Created: 20.02.2006, KP
         Description: Return the number of components per pixel
         """             
@@ -580,7 +548,6 @@ class LeicaExperiment:
         
     def GetResolutionX(self,Series_Data):
         """
-        Method: GetResolutionX(data)
         Created: 15.04.2005, KP, based on Karl Garsha's code
         Description: Return the x resolution from given data
         """                                    

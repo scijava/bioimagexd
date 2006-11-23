@@ -50,7 +50,6 @@ class ManipulationDataUnit(CombinedDataUnit):
 
     def setOriginal(self, dataUnit):
         """
-        Method: setOriginal
         Created: 14.12.2004, JM, JV
         Description: Sets the original DataUnit for this ManipulationedSourceDataUnit
         Parameters: dataUnit  The original unmodified DataUnit
@@ -60,15 +59,23 @@ class ManipulationDataUnit(CombinedDataUnit):
 
     def getColorTransferFunction(self):
         """
-        Method: getColorTransferFunction()
         Created: 20.07.2005, KP
         Description: Returns the ctf of the source dataunit
         """
-        return self.settings.get("ColorTransferFunction")
+        sources=self.getSourceDataUnits()
+        if len(sources)==1:
+            return sources[0].getSettings().get("ColorTransferFunction")
+        else:
+            ctf=sources[0].getSettings().get("ColorTransferFunction")           
+            start,end=ctf.GetRange()
+            ctf = vtk.vtkColorTransferFunction()
+            ctf.AddRGBPoint(0,0,0,0)
+            ctf.AddRGBPoint(end, 1.0, 1.0, 1.0)
+            self.settings.set("ColorTransferFunction",ctf)
+            return ctf
        
     def addSourceDataUnit(self,dataUnit,**args):
         """
-        Method: addSourceDataUnit
         Created: 27.03.2005, KP
         Description: Adds a source data unit to this dataunit
         """
@@ -82,7 +89,6 @@ class ManipulationDataUnit(CombinedDataUnit):
 
     def getSettingsClass(self):
         """
-        Method: getSettingsClass()
         Created: 02.04.2005, KP
         Description: Return the class that represents settings for this dataunit
         """

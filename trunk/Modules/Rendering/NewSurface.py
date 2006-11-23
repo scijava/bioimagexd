@@ -38,6 +38,7 @@ import types
 import Logging
 import Volume
 
+import scripting as bxd
 from Visualizer.VisualizationModules import *
 
 def getClass():return SurfaceModule
@@ -251,9 +252,10 @@ class SurfaceModule(VisualizationModule):
             if not self.smooth:
                 self.smooth=vtk.vtkImageGaussianSmooth()
                 self.smooth.SetInput(input)
-                self.smooth.Update()
+                #self.smooth.Update()
             input=self.smooth.GetOutput()
         
+        input = bxd.mem.optimize(image = input)        
         self.contour.SetInput(input)
         input=self.contour.GetOutput()
         
@@ -289,6 +291,7 @@ class SurfaceModule(VisualizationModule):
             self.normals.SetFeatureAngle(angle)
             self.normals.SetInput(input)
             input=self.normals.GetOutput()
+
         
         self.mapper.SetInput(input)
         VisualizationModule.updateRendering(self,input)

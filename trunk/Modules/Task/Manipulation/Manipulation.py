@@ -33,6 +33,7 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 import vtk
 import time
 import Logging
+
 from lib import FilterBasedModule
 
 class Manipulation(FilterBasedModule.FilterBasedModule):

@@ -376,7 +376,7 @@ class DataUnitSettings:
 
         Logging.info("Serializing name ",name,kw="dataunit")
         if "ColorTransferFunction" in name:
-            s=ImageOperations.lutToString(value)
+            s=ImageOperations.lutToString(value,luttype="BioImageXD")
             s2=""
             for i in s:
                 s2+=repr(i)
@@ -405,13 +405,12 @@ class DataUnitSettings:
  #           try:
             data=eval(value)            
             ctf=vtk.vtkColorTransferFunction()
-            try:
-                ImageOperations.loadLUTFromString(data,ctf)
-            except:
-                pass
+            
+            ImageOperations.loadLUTFromString(data,ctf)
             #bmp = ImageOperations.paintCTFValues(ctf)
             #img = bmp.ConvertToImage()
             #img.SaveMimeFile("ctf.png","image/png")
+            #print "Got",ctf
             return ctf
         # Annotations is a list of classes that can easily be
         # pickled / unpickled

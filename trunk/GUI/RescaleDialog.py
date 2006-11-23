@@ -183,22 +183,23 @@ color depth. Use the histograms below to the select how the intensities in your 
         n=self.histograms.index(obj)
         dataUnit=self.dataUnits[n]
         minval,maxval = dataUnit.getDataSource().getOriginalScalarRange()
-        
+        print "Original scalar range=",minval,maxval
         if lower==0 and upper==255:
             self.shift=0
             self.scale=255.0 / maxval
-            print "Setting shift to ",self.shift,self.scale
+            print "\n\nSetting shift to ",self.shift,self.scale
             
         else:
             upper = upper * (maxval/255.0)
             lower = lower * (maxval/255.0)
             
-            #print "lower=",lower,"upper=",upper
+            print "lower=",lower,"upper=",upper
             self.shift = -int(lower)
-            #print "Calculating scale based on maxval",maxval
-            self.scale = 255.0 / (upper-lower)
-            #print "Setting shift and scale to ",self.shift,"and",self.scale
+            print "\nCalculating scale based on maxval",maxval
+            self.scale = 256.0 / ((upper-lower))
+            print "Setting shift and scale to ",self.shift,"and",self.scale
         dataUnit.getDataSource().setIntensityScale(self.shift,self.scale)
+        dataUnit.resetColorTransferFunction()
         self.preview.updatePreview(1)
         
         

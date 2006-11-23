@@ -38,6 +38,10 @@ import vtk
 import pickle
 import ConfigParser
 
+import bahama as mem
+
+from bahama import execute_limited
+
 import Configuration
 
 class MyConfigParser(ConfigParser.RawConfigParser):
@@ -115,7 +119,6 @@ app = None
 mainWindow = None
 visualizer = None
 processingManager = None
-memLimit = None
 resamplingDisabled = 0
 processingTimepoint = -1
 wantAlphaChannel=1
@@ -129,35 +132,6 @@ def registerDialog(name, dlg):
 def unregisterDialog(name):
     del dialogs[name]
 
-
-def execute_limited(pipeline):
-    global memLimit
-    if not memLimit:
-        get_memory_limit()
-    if not memLimit:
-        pipeline.Update()
-        return pipeline.GetOutput()    
-    try:
-        streamer = vtk.vtkMemoryLimitImageDataStreamer()
-        streamer.SetMemoryLimit(1024*limit)
-        streamer.SetInput(pipeline.GetOutput())
-        print "Executing memory limited streamer, with limit=",memLimit,
-        streamer.Update()
-        print "...done"        
-        return streamer.GetOutput()
-    except:
-        pipeline.Update()
-        return pipeline.GetOutput()
-
-def get_memory_limit():
-    global conf,memLimit
-    if memLimit:return memLimit
-    if not conf:
-        conf = Configuration.getConfiguration()
-    memLimit = conf.getConfigItem("LimitTo","Performance")
-    if memLimit:
-        memLimit = eval(memLimit)
-    return memLimit
 
 def main_is_frozen():
    return (hasattr(sys, "frozen") or # new py2exe

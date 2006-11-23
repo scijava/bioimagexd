@@ -44,13 +44,11 @@ def getName():return "Clipping plane"
 
 class ClippingPlaneModule(VisualizationModule):
     """
-    Class: ClippingPlaneModule
     Created: 24.06.2005, KP
     Description: A module for clipping the dataset
     """    
     def __init__(self,parent,visualizer,**kws):
         """
-        Method: __init__(parent)
         Created: 03.05.2005, KP
         Description: Initialization
         """     
@@ -75,7 +73,6 @@ class ClippingPlaneModule(VisualizationModule):
         
     def __getstate__(self):
         """
-        Method: __getstate__
         Created: 02.08.2005, KP
         Description: A getstate method that saves the lights
         """            
@@ -89,7 +86,6 @@ class ClippingPlaneModule(VisualizationModule):
         
     def __set_pure_state__(self,state):
         """
-        Method: __set_pure_state__()
         Created: 02.08.2005, KP
         Description: Set the state of the light
         """        
@@ -106,7 +102,6 @@ class ClippingPlaneModule(VisualizationModule):
         
     def removeClippingPlane(self,plane):
         """
-        Method: removeClippingPlane(plane)
         Created: 24.06.2005, KP
         Description: Remove a clipping plane
         """       
@@ -117,7 +112,6 @@ class ClippingPlaneModule(VisualizationModule):
         
     def clipVolumeRendering(self,object,event):
         """
-        Method: clipVolumeRendering(object,event)
         Created: 24.06.2005, KP
         Description: Called when the plane is interacted with
         """       
@@ -133,7 +127,6 @@ class ClippingPlaneModule(VisualizationModule):
         
     def setDataUnit(self,dataunit):
         """
-        Method: setDataUnit(self)
         Created: 28.04.2005, KP
         Description: Sets the dataunit this module uses for visualization
         """       
@@ -158,7 +151,6 @@ class ClippingPlaneModule(VisualizationModule):
 
     def showTimepoint(self,value):
         """
-        Method: showTimepoint(tp)
         Created: 28.04.2005, KP
         Description: Set the timepoint to be displayed
         """          
@@ -168,7 +160,6 @@ class ClippingPlaneModule(VisualizationModule):
         
     def updateRendering(self):
         """
-        Method: updateRendering()
         Created: 03.05.2005, KP
         Description: Update the Rendering of this module
         """             
@@ -192,7 +183,6 @@ class ClippingPlaneModule(VisualizationModule):
 
     def disableRendering(self):
         """
-        Method: disableRendering()
         Created: 15.05.2005, KP
         Description: Disable the Rendering of this module
         """          
@@ -203,7 +193,6 @@ class ClippingPlaneModule(VisualizationModule):
         
     def showPlane(self,flag):
         """
-        Method: showPlane
         Created: 24.06.2005, KP
         Description: Show / hide the plane controls
         """          
@@ -215,7 +204,6 @@ class ClippingPlaneModule(VisualizationModule):
         
     def enableRendering(self):
         """
-        Method: enableRendering()
         Created: 24.06.2005, KP
         Description: Enable the Rendering of this module
         """          
@@ -224,14 +212,12 @@ class ClippingPlaneModule(VisualizationModule):
         
     def setProperties(self,ambient,diffuse,specular,specularpower):
         """
-        Method: setProperties(ambient,diffuse,specular,specularpower)
         Created: 16.05.2005, KP
         Description: Set the ambient, diffuse and specular lighting of this module
         """         
         pass
     def setShading(self,shading):
         """
-        Method: setShading(shading)
         Created: 16.05.2005, KP
         Description: Set shading on / off
         """          
@@ -241,7 +227,6 @@ class ClippingPlaneModule(VisualizationModule):
 class ClippingPlaneConfiguration(ModuleConfiguration):
     def __init__(self,parent,visualizer):
         """
-        Method: __init__(parent)
         Created: 04.05.2005, KP
         Description: Initialization
         """     
@@ -251,7 +236,6 @@ class ClippingPlaneConfiguration(ModuleConfiguration):
 class ClippingPlaneConfigurationPanel(ModuleConfigurationPanel):
     def __init__(self,parent,visualizer,name="Clipping Plane",**kws):
         """
-        Method: __init__(parent)
         Created: 04.05.2005, KP
         Description: Initialization
         """     
@@ -259,7 +243,6 @@ class ClippingPlaneConfigurationPanel(ModuleConfigurationPanel):
     
     def initializeGUI(self):
         """
-        Method: initializeGUI()
         Created: 28.04.2005, KP
         Description: Initialization
         """  
@@ -268,7 +251,6 @@ class ClippingPlaneConfigurationPanel(ModuleConfigurationPanel):
         
     def setModule(self,module):
         """
-        Method: setModule(module)
         Created: 28.04.2005, KP
         Description: Set the module to be configured
         """  
@@ -278,7 +260,6 @@ class ClippingPlaneConfigurationPanel(ModuleConfigurationPanel):
         
     def onApply(self,event):
         """
-        Method: onApply()
         Created: 28.04.2005, KP
         Description: Apply the changes
         """     

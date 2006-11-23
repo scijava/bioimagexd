@@ -45,29 +45,6 @@ vtkImageSimpleMIP::vtkImageSimpleMIP()
 
 }
 
-int vtkImageSimpleMIP::RequestUpdateExtent (
-  vtkInformation* vtkNotUsed(request),
-  vtkInformationVector** inputVector,
-  vtkInformationVector* outputVector)
-{
-  int uext[6], ext[6];
-  vtkInformation* outInfo = outputVector->GetInformationObject(0);
-  vtkInformation *inInfo = inputVector[0]->GetInformationObject(0);
-
-  inInfo->Get(vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT(),ext);
-
-  // Get the requested update extent from the output.
-  outInfo->Get(vtkStreamingDemandDrivenPipeline::UPDATE_EXTENT(), uext);
-  //printf("uextent request %d,%d,%d,%d,%d,%d\n",PRT_EXT(uext));
-
-  // If they request an update extent that doesn't cover the whole z depth
-  // then modify the uextent 
-  if(uext[5] < ext[5] ) uext[5] = ext[5];
-  if(uext[4] > ext[4] ) uext[4] = ext[4];
-  //printf("Setting uextent to %d,%d,%d,%d,%d,%d\n",PRT_EXT(uext));
-  inInfo->Set(vtkStreamingDemandDrivenPipeline::UPDATE_EXTENT(), uext,6);
-  return 1;    
-}
 
 int vtkImageSimpleMIP::RequestInformation (
   vtkInformation * vtkNotUsed(request),
@@ -88,7 +65,7 @@ int vtkImageSimpleMIP::RequestInformation (
   inInfo->Get(vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT(),ext);
   ext[5] = 0;
   outInfo->Set(vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT(),ext,6);
-
+  //printf("Setting whole extent of output to %d,%d,%d,%d,%d,%d\n",PRT_EXT(ext));
   if( numComponents > 3 ) numComponents = 3;
       
   vtkDataObject::SetPointDataActiveScalarInfo(outInfo, scalarType, numComponents);
@@ -113,46 +90,62 @@ void vtkImageSimpleMIPExecute(vtkImageSimpleMIP *self, int id,int NumberOfInputs
                            vtkImageData **inData,vtkImageData*outData,int outExt[6],
                             T*)
 {    
+    
   vtkIdType inIncX,inIncY,inIncZ;
   vtkIdType outIncX,outIncY,outIncZ;
   int maxX,maxY,maxZ,maxC;
   int idxX,idxY,idxZ,idxC;
 
-  int uExt[6];
-  inData[0]->GetUpdateExtent(uExt);
-    
-    
+  int uExt[6],uExt2[6];
+  //inData[0]->GetUpdateExtent(uExt);
+  inData[0]->GetWholeExtent(uExt2);
+  //printf("whole extent of input=%d,%d,%d,%d,%d,%d\n",PRT_EXT(uExt2));
+  //printf("Using outext for output=%d,%d,%d,%d,%d,%d\n",PRT_EXT(outExt));
   T scalar,outScalar;
+    
+  
+  memcpy(uExt,outExt,6*sizeof(int));
+  uExt[5] = uExt2[5];
+    //printf("Using ext for processing=%d,%d,%d,%d,%d,%d\n",PRT_EXT(uExt));
+    //outData->ReleaseData();
+
+  //outData->SetWholeExtent(uExt2);
+  //outData->SetExtent(uExt2);
+  //outData->AllocateScalars();
 
   T* outPtr;
   T* inPtr;
-  
-  outPtr=(T*)outData->GetScalarPointerForExtent(uExt);
+  //printf("Getting pointers...\n");  
+  outPtr=(T*)outData->GetScalarPointerForExtent(outExt);
   inPtr=(T*)inData[0]->GetScalarPointerForExtent(uExt);
-
+ //printf("got\n");
   maxX = uExt[1] - uExt[0];
   maxY = uExt[3] - uExt[2];
   maxZ = uExt[5] - uExt[4];
+
   maxC = inData[0]->GetNumberOfScalarComponents();
   if(maxC>3)maxC=3;
 //  vtkDebugMacro(<<"maxC="<<maxC);
+  //printf("maxX=%d, maxY=%d, maxZ=%d\n",maxX,maxY,maxZ);
   for(int i=0;i<(maxX+1)*(maxY+1)*maxC;i++)*outPtr++=0;
 
+  //printf("Getting scalar pointer\n");
+  
   outPtr = (T*)outData->GetScalarPointerForExtent(outExt);
   
   inData[0]->GetIncrements(inIncX, inIncY, inIncZ);
   outData->GetIncrements(outIncX, outIncY, outIncZ);
   
-  printf("Out ext = %d,%d,%d,%d,%d,%d\n",PRT_EXT(outExt));
-  printf("Update ext = %d,%d,%d,%d,%d,%d\n",PRT_EXT(uExt));
+  //printf("Out ext = %d,%d,%d,%d,%d,%d\n",PRT_EXT(outExt));
+  //printf("Update ext = %d,%d,%d,%d,%d,%d\n",PRT_EXT(uExt));
 
   #define GET_AT(x,y,z,c,ptr) *(ptr+(z)*inIncZ+(y)*inIncY+(x)*inIncX+c)
   #define GET_AT_OUT(x,y,z,c,ptr) *(ptr+(z)*outIncZ+(y)*outIncY+(x)*outIncX+c)
   #define SET_AT(x,y,z,c,ptr,val) *(ptr+(z)*outIncZ+(y)*outIncY+(x)*outIncX+c)=val
 
-  printf("maxX=%d, maxY=%d, maxZ=%d, maxC=%d\n",maxX,maxY,maxZ,maxC);
-  printf("inIncX=%d,inIncY=%d, inIncZ=%d\n",inIncX,inIncY,inIncZ);
-  printf("outIncX=%d,outIncY=%d, outIncZ=%d\n",outIncX,outIncY,outIncZ);
+  //printf("maxX=%d, maxY=%d, maxZ=%d, maxC=%d\n",maxX,maxY,maxZ,maxC);
+  //printf("inIncX=%d,inIncY=%d, inIncZ=%d\n",inIncX,inIncY,inIncZ);
+  //printf("outIncX=%d,outIncY=%d, outIncZ=%d\n",outIncX,outIncY,outIncZ);
   for(idxZ = 0; idxZ <= maxZ; idxZ++ ) {
     self->UpdateProgress(idxZ/float(maxZ));
     for(idxY = 0; idxY <= maxY; idxY++ ) {
@@ -169,61 +162,29 @@ void vtkImageSimpleMIPExecute(vtkImageSimpleMIP *self, int id,int NumberOfInputs
     }
   }
 }
-
-int vtkImageSimpleMIP::SplitExtent(int splitExt[6],
-                                                int startExt[6],
-                                                int num, int total)
+int vtkImageSimpleMIP::RequestUpdateExtent (
+  vtkInformation* vtkNotUsed(request),
+  vtkInformationVector** inputVector,
+  vtkInformationVector* outputVector)
 {
-  int splitAxis;
-  int min, max;
+  int uext[6], ext[6];
+  //printf("\n\n\n+++++ REQUEST UPDATE EXTENT FOR SIMPLE MIP\n");
+  vtkInformation* outInfo = outputVector->GetInformationObject(0);
+  vtkInformation *inInfo = inputVector[0]->GetInformationObject(0);
 
-  vtkDebugMacro("SplitExtent: ( " << startExt[0] << ", " << startExt[1] << ", "
-                << startExt[2] << ", " << startExt[3] << ", "
-                << startExt[4] << ", " << startExt[5] << "), "
-                << num << " of " << total);
+  inInfo->Get(vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT(),ext);
+  // Get the requested update extent from the output.
+  outInfo->Get(vtkStreamingDemandDrivenPipeline::UPDATE_EXTENT(), uext);
+  
+    //printf("Whole extent is %d,%d,%d,%d,%d,%d\n",PRT_EXT(ext));
+    //printf("Update extent is %d,%d,%d,%d,%d,%d\n",PRT_EXT(uext));
 
-  // start with same extent
-  memcpy(splitExt, startExt, 6 * sizeof(int));
-
-  splitAxis = 0;
-  min = startExt[4];
-  max = startExt[5];
-  while (min >= max)
-    {
-    // empty extent so cannot split
-    if (min > max)
-      {
-      return 1;
-      }
-    --splitAxis;
-    if (splitAxis < 0)
-      { // cannot split
-      vtkDebugMacro("  Cannot Split");
-      return 1;
-      }
-    min = startExt[splitAxis*2];
-    max = startExt[splitAxis*2+1];
-    }
-
-  // determine the actual number of pieces that will be generated
-  int range = max - min + 1;
-  int valuesPerThread = (int)ceil(range/(double)total);
-  int maxThreadIdUsed = (int)ceil(range/(double)valuesPerThread) - 1;
-  if (num < maxThreadIdUsed)
-    {
-    splitExt[splitAxis*2] = splitExt[splitAxis*2] + num*valuesPerThread;
-    splitExt[splitAxis*2+1] = splitExt[splitAxis*2] + valuesPerThread - 1;
-    }
-  if (num == maxThreadIdUsed)
-    {
-    splitExt[splitAxis*2] = splitExt[splitAxis*2] + num*valuesPerThread;
-    }
-
-  vtkDebugMacro("  Split Piece: ( " <<splitExt[0]<< ", " <<splitExt[1]<< ", "
-                << splitExt[2] << ", " << splitExt[3] << ", "
-                << splitExt[4] << ", " << splitExt[5] << ")");
-
-  return maxThreadIdUsed + 1;
+  // If they request an update extent that doesn't cover the whole z-stack then modify it
+  if(uext[5] < ext[5] ) uext[5] = ext[5];
+  if(uext[4] > ext[4] ) uext[4] = ext[4];
+  printf("vtkImageSimpleMIP Setting uextent to %d,%d,%d,%d,%d,%d\n",PRT_EXT(uext));
+  inInfo->Set(vtkStreamingDemandDrivenPipeline::UPDATE_EXTENT(), uext,6);
+  return 1;    
 }
 
 
@@ -234,12 +195,16 @@ int vtkImageSimpleMIP::SplitExtent(int splitExt[6],
 // the regions data types.
 void vtkImageSimpleMIP::ThreadedRequestData (
   vtkInformation * vtkNotUsed( request ),
-  vtkInformationVector** vtkNotUsed( inputVector ),
+  vtkInformationVector**  inputVector ,
   vtkInformationVector * vtkNotUsed( outputVector ),
   vtkImageData ***inData,
   vtkImageData **outData,
   int outExt[6], int id)
 {
+    int uExt[6];
+  vtkInformation *inInfo = inputVector[0]->GetInformationObject(0);
+  inInfo->Get(vtkStreamingDemandDrivenPipeline::UPDATE_EXTENT(),uExt);
+    printf("Update extent=%d,%d,%d,%d,%d,%d\n",PRT_EXT(uExt));
     printf("vtkImageSimpleMIP ThreadedRequestData outExt=%d,%d,%d,%d,%d,%d\n",outExt[0],outExt[1],outExt[2],outExt[3],outExt[4],outExt[5]);
   if (inData[0][0] == NULL)
     {

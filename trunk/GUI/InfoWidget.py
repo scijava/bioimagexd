@@ -119,7 +119,7 @@ class InfoWidget(wx.Panel):
         self.tree=tree
         
     def updateInfo(self, *args):
-        self.showInfo()
+        self.showInfo(None,None,self.dataUnit)
         
     def showInfo(self,obj=None,evt=None,dataunit=None):
         """
@@ -144,12 +144,15 @@ class InfoWidget(wx.Panel):
             odims=(0,0,0)
             print "Got dims=",dims
             resampledims=dataunit.dataSource.getResampleDimensions()
+            
             if resampledims:
                odims=dataunit.dataSource.getOriginalDimensions()
                print "original dimensions=",odims
 
             spacing=dataunit.getSpacing()
+            print "Got spacing",spacing
             voxelsize=dataunit.getVoxelSize()
+            print "got voxel size",voxelsize
             rsVoxelsize=dataunit.getResampledVoxelSize()
             bitdepth=dataunit.getBitDepth()
             em = dataunit.getEmissionWavelength()
@@ -164,6 +167,7 @@ class InfoWidget(wx.Panel):
             else:
                 excitation="%d nm"%ex
             intlower,intupper=dataunit.getScalarRange()
+            print "got scalar range",intlower,intupper
             Logging.info("Dataset bit depth =",bitdepth,kw="trivial")
             unit = dataunit
             ctf = dataunit.getColorTransferFunction()

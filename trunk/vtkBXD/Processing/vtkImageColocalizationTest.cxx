@@ -111,7 +111,7 @@ float* makeKernel(double radius,int*ksize) {
 }
 
 void smooth(OUT_T* inPtr,OUT_T*outPtr,int,int ext[6],float*kernel,double scale,int size,
-	    int inIncX,int inIncY,int inIncZ,int outIncX,int outIncY,int outIncZ) {
+        int inIncX,int inIncY,int inIncZ,int outIncX,int outIncY,int outIncZ) {
         
         
   int uc,vc;
@@ -144,14 +144,14 @@ void smooth(OUT_T* inPtr,OUT_T*outPtr,int,int ext[6],float*kernel,double scale,i
       i=0;
       
       for(int v=-vc; v <= vc; v++) {
-	int ny=y+v;
+    int ny=y+v;
         for(int u = -uc; u <= uc; u++) {
           int nx;
           nx=x+u;
-	  if (nx<=0) nx = 0;
-	  else if (nx>xmax) nx = xmax;
-	  if (ny<=0) ny = 0;
-	  else if (ny>ymax) ny = ymax;
+      if (nx<=0) nx = 0;
+      else if (nx>xmax) nx = xmax;
+      if (ny<=0) ny = 0;
+      else if (ny>ymax) ny = ymax;
           val = GET_AT(nx,ny,z,inPtr);
           sum += val*kernel[i++];
         }
@@ -171,7 +171,7 @@ void smooth(OUT_T* inPtr,OUT_T*outPtr,int,int ext[6],float*kernel,double scale,i
       for(int ny=y-vc; ny <= y+vc; ny++) {
         for(int u = -uc; u <= uc; u++) {
           int nx = x+u;
-	  if (nx < xmin) nx = xmin;
+      if (nx < xmin) nx = xmin;
           val = GET_AT(nx,ny,z,inPtr);
           sum += val*kernel[i++];
         }
@@ -186,10 +186,10 @@ void smooth(OUT_T* inPtr,OUT_T*outPtr,int,int ext[6],float*kernel,double scale,i
       sum = 0.0; 
       i = 0;
       for(int ny=y-vc; ny <= y + vc; ny++) {
-	for(int nx = x - uc; nx <= x + uc; nx++) {
-	  val = GET_AT(nx,ny,z,inPtr);
-	  sum += val*kernel[i++];
-	}
+    for(int nx = x - uc; nx <= x + uc; nx++) {
+      val = GET_AT(nx,ny,z,inPtr);
+      sum += val*kernel[i++];
+    }
       }
       SET_AT_OUT(x,y,z,outPtr,(OUT_T)(scale*sum+0.5));  
     }
@@ -201,7 +201,7 @@ void smooth(OUT_T* inPtr,OUT_T*outPtr,int,int ext[6],float*kernel,double scale,i
       for(int ny=y-vc; ny <= y+vc; ny++) {
         for(int u = -uc; u <= uc; u++) {
           int nx = x+u;
-	  if (nx > xmax) nx = xmax;
+      if (nx > xmax) nx = xmax;
           val = GET_AT(nx,ny,z,inPtr);
           sum += val*kernel[i++];
         }
@@ -216,13 +216,13 @@ void smooth(OUT_T* inPtr,OUT_T*outPtr,int,int ext[6],float*kernel,double scale,i
       sum = 0.0;
       i = 0;
       for(int v=-vc; v <= vc; v++) {
-	int ny=y+v;
+    int ny=y+v;
         for(int u = -uc; u <= uc; u++) {
           int nx;
           nx=x+u;
-	  if (nx<=0) nx = 0;
-	  else if (nx>xmax) nx = xmax;
-	  if (ny>ymax) ny = ymax;
+      if (nx<=0) nx = 0;
+      else if (nx>xmax) nx = xmax;
+      if (ny>ymax) ny = ymax;
           val = GET_AT(nx,ny,z,inPtr);
           sum += val*kernel[i++];
         }
@@ -329,6 +329,7 @@ template < class T >
     outbuf->SetExtent(outData->GetExtent());
     outbuf->SetScalarType(outData->GetScalarType());
     outbuf->AllocateScalars();
+    vtkMath::RandomSeed(time(0));
     
     outPtr = (OUT_T *) outbuf->GetScalarPointer();
     int width = maxX, height = maxY;
@@ -381,7 +382,7 @@ template < class T >
             kernelsum += kernel[i];
         if(kernelsum)
             scale = 1.0 / kernelsum;
-	printf("Scale for smoothing=%f, kernelsize=%d\n",scale,size);
+    printf("Scale for smoothing=%f, kernelsize=%d\n",scale,size);
     }
 
     int iterations = self->GetNumIterations();
@@ -503,7 +504,7 @@ template < class T >
     bool ch3found = false;
     //do random localisations
     int rx = 0, ry = 0, rz = 0;
-    vtkMath::RandomSeed(time(0));
+    
     
     double r2mean = 0;
     int slicesDone = 0;
@@ -603,7 +604,7 @@ template < class T >
                 {
                     ch1 =(int) GET_AT(x + xOffset, y + yOffset, ch1z,inPtr1);
                     ch2 =(int) GET_AT(x + xOffset, y + yOffset, ch2z,inPtr2);
-                     
+
                     ch3 = 0;
                     if ((ignoreZeroZero))
                     {
@@ -635,7 +636,7 @@ template < class T >
                             SET_AT_OUT(x,y,chRandz,outPtr,ch3);
                         }
                         
-                        if ((Costes && !randZ) || (Costes && nslices < 1)) 
+                        if ((Costes && !randZ) || (Costes && nslices < 1))
                         {
                             int flag=1;
                             int nnn=0;
@@ -644,13 +645,12 @@ template < class T >
                                 rx = int(vtkMath::Random(0,width+1));
                                 ry = int(vtkMath::Random(0,height+1));
                                 //rx = (int) (vtkMath::Random() * (double) (width+1));
-                                //ry = (int) (vtkMath::Random() * (double) (height+1));                                
+                                //ry = (int) (vtkMath::Random() * (double) (height+1));
                                 flag = (int)GET_AT_OUT(rx,ry,chRandz,outPtr);
                                 //if(flag)printf("Got at %d,%d=%d\n",rx,ry,flag);
-                                if(nnn>99999) {
-                                    printf("In eternal loop, flag=%d rx=%d,ry=%d,z=%d\n",flag,rx,ry,chRandz);
-                                    
-                                }
+//                                if(nnn>99999&& (nnn%100000)==0) {
+//                                    printf("In eternal loop, flag=%d rx=%d,ry=%d,z=%d\n",flag,rx,ry,chRandz);
+//                                }
                             }
                             SET_AT_OUT(rx,ry,chRandz,outPtr,ch2);
                         }
@@ -852,7 +852,7 @@ template < class T >
     //}
     outbuf->Delete();
     if(kernel) {
-	delete[] kernel;
+    delete[] kernel;
     }
 }
 

@@ -36,6 +36,8 @@ import Logging
 import lib.Module
 from lib.Module import *
 
+import scripting as bxd
+
 class FilterBasedModule(Module):
     """
     Created: 04.04.2006, KP
@@ -151,7 +153,16 @@ class FilterBasedModule(Module):
                 else:
                     currfilter.setNextFilter(None)
                 
-                data = currfilter.execute(data,update=flag,last=flag)
+                #data = currfilter.execute(data,update=flag,last=flag)
+                data = currfilter.execute(data,update=0,last=flag)
+                
+                if not flag:
+                    nextfilter = filterlist[i+1]
+                    if not currfilter.itkFlag and nextfilter.itkFlag:
+                        print "Executing VTK side before switching to ITK"
+                        data = bxd.mem.optimize(image = data, releaseData = 1)
+                        data.Update()                
+                    
                 
                 lastfilter = currfilter
                 
@@ -162,11 +173,11 @@ class FilterBasedModule(Module):
                 
                 data=[data]
                 if not data:
-                    print "GOT NO DATA"
+                    #print "GOT NO DATA"
                     self.cached = None
                     return None                
         
-        print "DATA=",data
+        #print "DATA=",data
         data = data[0]
         if data.__class__ != vtk.vtkImageData:
             

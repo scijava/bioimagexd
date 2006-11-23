@@ -126,6 +126,12 @@ class Track(wx.Panel):
         self.paintTrack()
         messenger.connect(None,"show_time_pos",self.onShowTimePosition)
 
+    def getStartOfTrack(self):
+        """
+        Created: 15.11.2006, KP
+        Description: return the starting position of track, in pixels
+        """
+        return self.startOfTrack
         
     def onShowTimePosition(self,obj,evt,arg):
         """
@@ -215,7 +221,6 @@ class Track(wx.Panel):
 
     def onPaintOverlay(self):
         """
-        Method: onPaintOverlay(self)
         Created: 22.08.2005, KP
         Description: Called by Track so that track types can do their own painting
         """
@@ -267,7 +272,6 @@ class Track(wx.Panel):
        
     def updateItemSizes(self):
         """
-        Method: updateItemSizes
         Created: 15.12.2005, KP
         Description: Update each item's width based on it's position
         """       
@@ -278,7 +282,6 @@ class Track(wx.Panel):
         
     def updatePositions(self):
         """
-        Method: updatePositions()
         Created: 17.07.2005, KP
         Description: Update each item with new position
         """
@@ -291,7 +294,6 @@ class Track(wx.Panel):
         
     def onEvent(self,etype,event):
         """
-        Method: onEvent
         Created: 17.07.2005, KP
         Description: Item is dragged
         """    
@@ -307,7 +309,6 @@ class Track(wx.Panel):
                 
     def onDrag(self,event):
         """
-        Method: onDrag
         Created: 17.07.2005, KP
         Description: Item is clicked
         """
@@ -320,7 +321,6 @@ class Track(wx.Panel):
                 
     def onDown(self,event):
         """
-        Method: onDown
         Created: 17.07.2005, KP
         Description: Item is clicked
         """
@@ -350,7 +350,6 @@ class Track(wx.Panel):
 
     def removeActiveItem(self):
         """
-        Method: removeActiveItem
         Created: 31.01.2006, KP
         Description: Remove the currently selected item
         """        
@@ -366,7 +365,6 @@ class Track(wx.Panel):
             
     def onUp(self,event):
         """
-        Method: onUp
         Created: 17.07.2005, KP
         Description: Item is clicked
         """
@@ -378,7 +376,6 @@ class Track(wx.Panel):
                 
     def getItems(self):
         """
-        Method: getItems()
         Created: 19.04.2005, KP
         Description: Return items in this track
         """ 
@@ -386,7 +383,6 @@ class Track(wx.Panel):
         
     def setSelected(self,event):
         """
-        Method: setSelected(event)
         Created: 14.04.2005, KP
         Description: Selects this track
         """
@@ -408,7 +404,6 @@ class Track(wx.Panel):
             
     def setEnabled(self,flag):
         """
-        Method: setEnabled(flag)
         Created: 14.04.2005, KP
         Description: Enables / disables this track
         """ 
@@ -426,7 +421,6 @@ class Track(wx.Panel):
         
     def OnDragOver(self,x,y,d):
         """
-        Method: OnDragOver
         Created: 12.04.2005, KP
         Description: Method called to indicate that a user is dragging
                      something to this track
@@ -471,7 +465,6 @@ class Track(wx.Panel):
         
     def OnDragLeave(self):
         """
-        Method: OnDragLeave
         Created: 12.04.2005, KP
         Description: Method called to indicate that a user is no longer dragging
                      something to this track
@@ -484,7 +477,6 @@ class Track(wx.Panel):
 
     def __set_pure_state__(self,state):
         """
-        Method: __set_pure_state__()
         Created: 11.04.2005, KP
         Description: Method called by UrmasPersist to allow the object
                      to refresh before it's items are created
@@ -499,7 +491,6 @@ class Track(wx.Panel):
         
     def updateLabels(self):
         """
-        Method: updateLabels
         Created: 19.03.2005, KP
         Description: A method that updates all the items in this track
         """           
@@ -511,10 +502,20 @@ class Track(wx.Panel):
         self.paintTrack()
         self.Refresh()
 #        self.Layout()
+
+    def getMinItemSize(self):
+        """
+        Created: 15.11.2006, KP
+        Description: Return a minimal item size in pixels based on duration and amount of frames
+        """
+        
+        spf = self.control.getSecondsPerFrame()
+        pps = self.control.getPixelsPerSecond()
+        print "MINIMUM ITEM SIZE=",spf,"(IN PIXELS=",spf*pps,")"
+        return spf*pps
         
     def onDragItem(self,trackitem,event):
         """
-        Method: doDragItem
         Created: 16.07.2005, KP
         Description: Execute dragging of item
         """         
@@ -529,7 +530,8 @@ class Track(wx.Panel):
             self.Refresh()
             return
         
-        posx,posy=trackitem.GetPosition()            
+        posx,posy=trackitem.GetPosition()    
+        minItemSize = self.getMinItemSize()        
         
         # Dragged from the beginning
         if trackitem.dragMode == 3:
@@ -547,24 +549,43 @@ class Track(wx.Panel):
                 #trackitemdiff=abs(diff)
                 trackitemdiff=0
             #print "diff=",diff,"itemdiff=",itemdiff,"trackdiff=",trackitemdiff
-            if item.width+itemdiff<item.minSize:
+
+                
+            
+            itemNewWidth = item.width+itemdiff
+            print "item new width=",itemNewWidth,"minItemSize=",minItemSize
+            if itemNewWidth<item.minSize:
                 return
-            if trackitem.width+trackitemdiff<trackitem.minSize:
+            if itemNewWidth<minItemSize:
+                itemNewWidth = minItemSize
+                
+            
+            trackItemNewWidth = trackitem.width+trackitemdiff
+            #print "Trackitem New width=",trackItemNewWidth
+            
+            if trackItemNewWidth<trackitem.minSize:
                 return
-            item.setWidth(item.width+itemdiff)
-            trackitem.setWidth(trackitem.width+trackitemdiff)
+            if trackItemNewWidth<minItemSize:
+                trackItemNewWidth = minItemSize
+                
+            item.setWidth(itemNewWidth)
+            trackitem.setWidth(trackItemNewWidth)
             trackitem.beginX=x
     
         elif trackitem.dragMode == 1:
             diff=x-trackitem.beginX
             #print "beginX=",trackitem.beginX,"x=",x,"diff=",diff
-            if trackitem.width+diff<trackitem.minSize:
+            newTrackItemWidth = trackitem.width+diff
+            if newTrackItemWidth<trackitem.minSize:
                 return
+            if newTrackItemWidth<minItemSize:
+                newTrackItemWidth = minItemSize
+                
             if diff>0 and not self.itemCanResize(trackitem.width,trackitem.width+diff):
                 print "Would go over the timescale"
                 return
             trackitem.beginX=x
-            trackitem.setWidth(trackitem.width+diff)
+            trackitem.setWidth(newTrackItemWidth)
         #self.updatePositions()
         self.paintTrack()
         self.Refresh()
@@ -572,7 +593,6 @@ class Track(wx.Panel):
         
     def remove(self):
         """
-        Method: remove()
         Created: 06.04.2005, KP
         Description: Remove all items from self
         """               
@@ -581,7 +601,6 @@ class Track(wx.Panel):
         
     def removeItem(self,position):
         """
-        Method: removeItem(position)
         Created: 14.04.2005, KP
         Description: Remove an item from this track
         """              
@@ -591,7 +610,6 @@ class Track(wx.Panel):
         
     def setDataUnit(self,dataUnit):
         """
-        Method: setDataUnit
         Created: 04.02.2005, KP
         Description: A method to set the dataunit this track contains
         """           
@@ -599,7 +617,6 @@ class Track(wx.Panel):
         
     def getLength(self):
         """
-        Method: getLength()
         Created: 04.02.2005, KP
         Description: Return the number of items in this track
         """               
@@ -608,7 +625,6 @@ class Track(wx.Panel):
       
     def itemCanResize(self,fromWidth,toWidth):
         """
-        Method: itemCanResize(fromWidth,toWidth)
         Created: 04.02.2005, KP
         Description: A method that tells whether an item can change its size
                      from the specified size to a new size
@@ -624,7 +640,6 @@ class Track(wx.Panel):
         
     def initTrack(self):
         """
-        Method: initTrack
         Created: 11.04.2005, KP
         Description: Initialize the GUI portion of this track
         """
@@ -633,7 +648,6 @@ class Track(wx.Panel):
         
     def setDuration(self,seconds,frames,**kws):
         """
-        Method: setDuration
         Created: 04.02.2005, KP
         Description: A method to set the length of this track, affecting
                      size of its items
@@ -652,7 +666,6 @@ class Track(wx.Panel):
 
     def expandToMax(self,keep_ratio=0):
         """
-        Method: expandToMax()
         Created: 19.04.2005, KP
         Description: Expand this track to it's maximum size
         """              
@@ -664,7 +677,7 @@ class Track(wx.Panel):
         w*=self.timescale.getPixelsPerSecond()
         lastpos=self.items[-1].getPosition()[1]
         coeff = self.timescale.getDuration() / float(lastpos)
-        print "coeff=",coeff
+        #print "coeff=",coeff
         tot=0
         last=0
         for i in self.items:
@@ -684,7 +697,6 @@ class Track(wx.Panel):
         
     def setToSizeTotal(self,size):
         """
-        Method: setToSizeTotal(size)
         Created: 19.04.2005, KP
         Description: Set duration of all items in this track
         """              
@@ -693,7 +705,6 @@ class Track(wx.Panel):
 
     def setToSize(self,size=8):
         """
-        Method: setToSize(size)
         Created: 19.04.2005, KP
         Description: Set each item on this track to given size
         """              
@@ -712,7 +723,6 @@ class Track(wx.Panel):
 
     def setEmptySpace(self,space):
         """
-        Method: setEmptySpace(self,space)
         Created: 15.04.2005, KP
         Description: Sets the empty space at the beginning of a track
         """        
@@ -738,7 +748,6 @@ class Track(wx.Panel):
         
     def getLabelWidth(self):
         """
-        Method: getLabelWidth()
         Created: 04.02.2005, KP
         Description: A method that returns the width of the name panel
         """               
@@ -746,7 +755,6 @@ class Track(wx.Panel):
 
     def setColor(self,col):
         """
-        Method: setColor
         Created: 04.02.2005, KP
         Description: A method that sets the color of this track's items
         """               
@@ -758,7 +766,6 @@ class Track(wx.Panel):
             
     def updateLayout(self):
         """
-        Method: updateLayout
         Created: 04.02.2005, KP
         Description: A method that updates the layout of this track
         """               
@@ -771,7 +778,6 @@ class Track(wx.Panel):
 
     def shiftItems(self,direction):
         """
-        Method: shiftItems
         Created: 15.12.2005, KP
         Description: Shift items in the given direction
         """      
@@ -788,7 +794,6 @@ class Track(wx.Panel):
         
     def getDuration(self,pixels):
         """
-        Method: getDuration
         Created: 20.03.2005, KP
         Description: A method that returns the time the camera takes to travel
                      given part of the spline
@@ -797,7 +802,6 @@ class Track(wx.Panel):
         
     def getPixels(self,duration):
         """
-        Method: getPixels
         Created: 11.04.2005, KP
         Description: A method that returns the amount of pixels a given
                      number of seconds streches on the timeline
@@ -806,7 +810,6 @@ class Track(wx.Panel):
         
     def __str__(self):
         """
-        Method: __str__
         Created: 05.04.2005, KP
         Description: Return string representation of self
         """        
@@ -817,7 +820,6 @@ class Track(wx.Panel):
         
     def __getstate__(self):
         """
-        Method: __getstate__
         Created: 11.04.2005, KP
         Description: Return the dict that is to be pickled to disk
         """      

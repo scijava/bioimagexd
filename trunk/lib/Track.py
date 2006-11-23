@@ -38,8 +38,24 @@ import vtk
 
 class Track:
     """
+    Created: 23.11.2006, KP
+    Description: A class representing a track
+    """
+    def __init__(self):
+        self.points = {}
+        self.values = {}
+    def addTrackPoint(self, timepoint, objval, position):
+        """
+        Created: 23.11.2006, KP
+        Description: add a point to this track
+        """
+        self.points[timepoint] = position
+        self.values[timepoint] = objval
+
+class TrackReader:
+    """
     Created: 12.07.2006, KP
-    Description: A class representing a track of a particle
+    Description: A class for reading tracks from a file
     """
     def __init__(self,filename=""):
         """
@@ -111,7 +127,7 @@ class Track:
         Description: Read tracks from the given file
         """   
         tracks=[]
-        ctrack=[]
+        ctrack=Track()
         
         currtrack=-1
         print "Reading..."
@@ -131,9 +147,10 @@ class Track:
                 if ctrack:
                     #print "Adding track",ctrack
                     tracks.append(ctrack)
-                    ctrack=[]            
+                    ctrack=Track()          
                 currtrack = tracknum
-            ctrack.append((x,y,z))
+            ctrack.addTrackPoint(timepoint, objval, (x,y,z))
+            
         if ctrack and not tracks:
             tracks.append(ctrack)
         return tracks

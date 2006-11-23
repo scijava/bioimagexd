@@ -149,7 +149,8 @@ class DataSource:
         Created: 1.09.2005, KP
         Description: Set the resample dimensions
         """
-        self.resampleDims=dims
+        print "Setting resample dimensions to ",dims
+        self.resampleDims=map(int,dims)
         
     def getOriginalScalarRange(self):
         """
@@ -176,13 +177,15 @@ class DataSource:
                 self.resampleDims=None
                 self.resampleDims=rd
             
-            print "Original dimensions=",self.originalDimensions
+            #print "Original dimensions=",self.originalDimensions
             x,y,z=self.originalDimensions
             rx,ry,rz=self.resampleDims
+            #print "Reasmple dimensions=",self.resampleDims
             xf=rx/float(x)
             yf=ry/float(y)
             zf=rz/float(z)
             self.resampleFactors = (xf,yf,zf)
+            #print "Resample factors=",self.resampleFactors
         return self.resampleFactors
         
     def getResampledVoxelSize(self):
@@ -207,18 +210,19 @@ class DataSource:
         Created: 11.09.2005, KP
         Description: Get the resample dimensions
         """
-        if self.limitDims:
+        if self.limitDims and not self.resampleDims:
             dims=self.getDimensions()
             #self.originalDimensions = dims
             #print dims,self.limitDims
             if dims[0]*dims[1] > self.limitDims[0]*self.limitDims[1]:
                 x,y=self.toDims
                 #print "Setting resample dims",(x,y,dims[2])
-                self.resampleDims=(x,y,dims[2])
+                self.resampleDims=(int(x),int(y),int(dims[2]))
+                
         #print "Returning ",self.resampleDims
         return self.resampleDims
         
-    def getMipCacheKey(self, datafilename, chName):
+    def getCacheKey(self, datafilename, chName,purpose):
         """
         Created: 07.11.2006, KP
         Description: Return a unique name based on a filename and channel name that can be used as 
@@ -229,14 +233,14 @@ class DataSource:
         filename=filename.replace("/","_")
         filename=filename.replace(":","_")
         
-        return filename+"_"+chName
+        return filename+"_"+chName+"_"+purpose
         
-    def getMipFromCache(self, datafilename, chName):
+    def getFromCache(self, datafilename, chName,purpose):
         """
         Created: 07.11.2006, KP
         Description: Retrieve a MIP image from cache
         """
-        key = self.getMipCacheKey(datafilename, chName)
+        key = self.getCacheKey(datafilename, chName,purpose)
         #print "KEY=",key
         directory = scripting.get_preview_dir()
         #print "\n\nPREWVIEW DIR=",directory
@@ -251,12 +255,14 @@ class DataSource:
         reader.Update()
         return reader.GetOutput()
         
-    def storeMipToCache(self, imagedata,datafilename, chName):
+    def storeToCache(self, imagedata,datafilename, chName, purpose):
         """
         Created: 07.11.2006, KP
-        Description: Store a MIP image to a cache
+        Description: Store an image to a cache
         """
-        key = self.getMipCacheKey(datafilename, chName)
+        if imagedata.GetScalarType() not in [3,5]:
+            return
+        key = self.getCacheKey(datafilename, chName,purpose)
         writer = vtk.vtkPNGWriter()
         writer.SetInput(imagedata)
         directory = scripting.get_preview_dir()
@@ -310,22 +316,26 @@ class DataSource:
         self.shift.UpdateWholeExtent()
 
         if self.intensityScale:
+            print "Setting scale to ",self.intensityScale
             self.shift.SetScale(self.intensityScale)
             
         else:
-            x0,x1=data.GetScalarRange()
-            if x1==0:
-                scale=1.0
-            else:
-                scale=255.0/x1
+            #x0,x1=data.GetScalarRange()
+            #if x1==0:
+            #    scale=1.0
+            #else:
+            #    scale=255.0/x1
+            minval,maxval = self.originalScalarRange
+            #print "Calculating intensity scale based on bitdepth=",self.bitdepth
+            print "\n\nCalculating scale based on original scalar range",maxval
+            scale = 255.0 / maxval
+            print "Setting scale to",scale
             self.shift.SetScale(scale)
         
+        print "Setting shift to ",self.intensityShift
         self.shift.SetShift(self.intensityShift)
-            
-        self.shift.Update()
-        # Release the memory used by the non-shifted data
-        #data.ReleaseDataFlagOn()
-        data.ReleaseData()
+        
+        
         return self.shift.GetOutput()
         #return scripting.execute_limited(self.shift)
 
@@ -351,22 +361,26 @@ class DataSource:
                 self.resample=vtk.vtkImageResample()
                 self.resample.SetInput(data)
                 # Release the memory used by source data
+                #print "data=",data
                 
-                x,y,z=data.GetDimensions()
+                #x,y,z=data.GetDimensions()
                 #print "got dims=",x,y,z
-                self.originalDimensions=(x,y,z)
+                #self.originalDimensions=(x,y,z)
+                x,y,z = self.originalDimensions
                 
                 rx,ry,rz=useDims
                 xf=rx/float(x)
                 yf=ry/float(y)
                 zf=rz/float(z)
+                #print "origi dims=",x,y,z
+                #print "dism to resample to ",rx,ry,rz
                 
                 self.resample.SetAxisMagnificationFactor(0,xf)
                 self.resample.SetAxisMagnificationFactor(1,yf)
                 self.resample.SetAxisMagnificationFactor(2,zf)
-                self.resample.Update()                
+                #self.resample.Update()                
                 #newdata = scripting.execute_limited(self.resample)
-                data.ReleaseData()
+                #data.ReleaseData()
                 #data = newdata
                 data= self.resample.GetOutput()        
         if self.mask:
@@ -378,11 +392,13 @@ class DataSource:
             self.maskImg.SetImageInput(data)
             self.maskImg.SetMaskInput(self.mask.getMaskImage())
             
-            self.maskImg.Update()
+            
+            #self.maskImg.Update()
             #newdata = scripting.execute_limited(self.maskImg)
 
-            data.ReleaseData()
+            #data.ReleaseData()
             data = self.maskImg.GetOutput()
+            
             
         return data
 
@@ -467,10 +483,10 @@ class DataSource:
             data=self.getDataSet(0,raw=1)
             
             self.scalarRange=data.GetScalarRange()
-            print "Scalar range of data",self.scalarRange
+            #print "Scalar range of data",self.scalarRange
             scalartype=data.GetScalarType()
-            print "Scalar type",scalartype,data.GetScalarTypeAsString()
-            print "Number of scalar components",data.GetNumberOfScalarComponents()
+            #print "Scalar type",scalartype,data.GetScalarTypeAsString()
+            #print "Number of scalar components",data.GetNumberOfScalarComponents()
         
             if scalartype==4:
                 self.bitdepth=16

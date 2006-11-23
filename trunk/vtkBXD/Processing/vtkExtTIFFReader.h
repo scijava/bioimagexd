@@ -119,6 +119,10 @@ protected:
   unsigned int  GetFormat();
   virtual void ExecuteInformation();
   virtual void ExecuteData(vtkDataObject *out);
+int RequestUpdateExtent (
+  vtkInformation* vtkNotUsed(request),
+  vtkInformationVector** inputVector,
+  vtkInformationVector* outputVector);
 
   void ReadGenericImage( void *out, 
                          unsigned int width, unsigned int height,

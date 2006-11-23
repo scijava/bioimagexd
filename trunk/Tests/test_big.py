@@ -18,17 +18,13 @@ def elapsed():
 
 r1=vtk.vtkLSMReader()
 r1.SetFileName(D)
+r1.SetUpdateChannel(0)
+d1=r1.GetOutput()
+
 r2=vtk.vtkLSMReader()
 r2.SetFileName(D)
-r1.SetUpdateChannel(0)
 r2.SetUpdateChannel(1)
-
-
-d1=r1.GetOutput()
 d2=r2.GetOutput()
-
-d1.GlobalReleaseDataFlagOn()
-
 
 print "Reading data"
 
@@ -54,7 +50,7 @@ merge = vtk.vtkImageColorMerge()
 #merge.AddInput(mip2.GetOutput())
 merge.AddInput(d1)
 merge.AddInput(d2)
-merge.SetNumberOfThreads(4)
+
 merge.AddLookupTable(ctf1)
 merge.AddLookupTable(ctf2)
 #merge.DebugOn()
@@ -64,8 +60,15 @@ merge.AddLookupTable(ctf2)
 
 #merge.Update()
 
+streamer = vtk.vtkImageDataStreamer()
+streamer.SetNumberOfStreamDivisions(8)
+streamer.SetInput(merge.GetOutput())
+streamer.GetExtentTranslator().SetSplitModeToZSlab()
+streamer.Update()
+data = streamer.GetOutput()
+
 mip = vtk.vtkImageSimpleMIP()
-mip.SetInput(merge.GetOutput())
+mip.SetInput(data)
 
 
 writer=vtk.vtkPNGWriter()
