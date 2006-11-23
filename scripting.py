@@ -38,9 +38,9 @@ import vtk
 import pickle
 import ConfigParser
 
-import bahama as mem
+import optimize as mem
 
-from bahama import execute_limited
+from optimize import execute_limited
 
 import Configuration
 
