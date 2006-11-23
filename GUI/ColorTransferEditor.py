@@ -662,19 +662,19 @@ class ColorTransferEditor(wx.Panel):
         Created: 17.04.2005, KP
         Description: Save a lut file
         """    
-        
-        dlg=wx.FileDialog(self,"Save lookup table",wildcard="Lookup table (*.lut)|*.lut",style=wx.SAVE)
-        filename=None
-        if dlg.ShowModal()==wx.ID_OK:
-            filename=dlg.GetPath()
+        wc="BioImageXD lookup table (*.bxdlut)|*.bxdlut|ImageJ Lookup table (*.lut)|*.lut"
+        filename = Dialogs.askSaveAsFileName(self,"Save lookup table","palette.bxdlut", wc, "palette")
+    
+        if filename:
             ImageOperations.saveLUT(self.ctf,filename)
 
     def onOpenLut(self,event):
         """
         Created: 17.04.2005, KP
         Description: Load a lut file
-        """    
-        filename=Dialogs.askOpenFileName(self,"Load lookup table","Lookup table (*.lut)|*.lut")
+        """   
+        wc="BioImageXD lookup table (*.bxdlut)|*.bxdlut|ImageJ Lookup table (*.lut)|*.lut" 
+        filename=Dialogs.askOpenFileName(self,"Load lookup table",wc,filetype = "palette")
         if filename:
             filename=filename[0]
             Logging.info("Opening palette",filename,kw="ctf")
@@ -1159,7 +1159,7 @@ class ColorTransferEditor(wx.Panel):
                 if abs(dr - dr2)>self.ptThreshold:
                     self.redpoints.append((x,r))
                 if abs(dg - dg2)>self.ptThreshold:
-                    print "dg=",dg,"dg2=",dg2,"threshold=",self.ptThreshold
+                    #print "dg=",dg,"dg2=",dg2,"threshold=",self.ptThreshold
                     self.greenpoints.append((x,g))
                 if abs(db - db2)>self.ptThreshold:
                     self.bluepoints.append((x,b))

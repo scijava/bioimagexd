@@ -93,7 +93,12 @@ import vtkbxd
 #    pass
 
 import vtk
-
+w=vtk.vtkOutputWindow()
+i=w.GetInstance()
+def onWarning(obj,evt,*args):
+    print "VTK message:\n", evt
+w.AddObserver("WarningEvent",onWarning)
+w.AddObserver("ErrorEvent",onWarning)
 import Logging
 import scripting
 

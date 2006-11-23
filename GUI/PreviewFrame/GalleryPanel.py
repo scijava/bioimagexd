@@ -31,13 +31,15 @@ __version__ = "$Revision: 1.9 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 import wx    
-from wx.lib.statbmp  import GenStaticBitmap as StaticBitmap
+
 import ImageOperations
 import vtk
 
+import scripting as bxd
 import math
 import Logging
 import InteractivePanel
+import messenger
 
 class GalleryPanel(InteractivePanel.InteractivePanel):
     """
@@ -68,7 +70,8 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
         x,y=size
         self.paintSize=size
         self.buffer = wx.EmptyBitmap(x,y)
-        
+        self.oldBufferDims = None
+        self.oldBufferMaxXY = None
         #wx.ScrolledWindow.__init__(self,parent,-1,size=size,**kws)
         InteractivePanel.InteractivePanel.__init__(self,parent,size=size,**kws)
         
@@ -156,28 +159,33 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
         Description: Sets the dataunit to display
         """    
         self.dataUnit=dataunit
-        
+        print "\n\SWITCHED TO DATAUNIT",dataunit
         self.dims=dataunit.getDimensions()
         self.voxelSize=dataunit.getVoxelSize()
         InteractivePanel.InteractivePanel.setDataUnit(self,dataunit)
-        self.setTimepoint(self.timepoint)
+        tp = self.timepoint
+        self.timepoint = -1
+        self.setTimepoint(tp)
         x,y=self.paintSize
         self.setScrollbars(x,y)
         #self.imagedata=image
         
         
-    def setTimepoint(self,timepoint):
+    def setTimepoint(self,timepoint, update=1):
         """
         Created: 23.05.2005, KP
         Description: Sets the timepoint to display
         """    
         #self.scrollTo=self.getScrolledXY(0,0)
         #self.resetScroll()
+        if self.timepoint == timepoint and self.slices:
+            return
         self.timepoint=timepoint
-        # if we're showing one slice of each timepoint
+        # if we're showing one slice of each timepointh
         # instead of each slice of one timepoint, call the
         # appropriate function
         if self.showTimepoints:
+            print "SHOWING TIMEPOINTS"
             return self.setSlice(self.slice)
         if self.visualizer.getProcessedMode():
             image=self.dataUnit.doPreview(-2,1,self.timepoint)
@@ -187,16 +195,33 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
             image=self.dataUnit.getTimePoint(timepoint)
             ctf=self.dataUnit.getColorTransferFunction()
 
-        self.imagedata = ImageOperations.imageDataTo3Component(image,ctf)
+        #self.imagedata = ImageOperations.imageDataTo3Component(image,ctf)
+        self.imagedata =image
         
-        x,y,z=self.imagedata.GetDimensions()
+        #x,y,z=self.imagedata.GetDimensions()
+        x,y,z = self.dataUnit.getDimensions()
+        print "dims now=",x,y,z
+        #x,y,z=self.dataUnit.getDimensions()
         
         self.slices=[]
+        print "z=",z
+        
         for i in range(z):
-            slice=ImageOperations.vtkImageDataToWxImage(self.imagedata,i)    
+            #print "Using as update ext",(0,x-1,0,y-1,i,i)
+            image = bxd.mem.optimize(image = self.imagedata, updateExtent = (0,x-1,0,y-1,i,i))
+            #image.Update()
+            #self.imagedata.SetUpdateExtent((0,x-1,0,y-1,i,i))
+            #self.imagedata.Update()
+            image = ImageOperations.getSlice(image, i)
+            image = ImageOperations.imageDataTo3Component(image,ctf)
+            slice=ImageOperations.vtkImageDataToWxImage(image)    
+            messenger.send(None,"update_progress",i/float(z),"Loading slice %d / %d for Gallery view"%(i+1,z+1))        
+            #print "Adding slice",i
             self.slices.append(slice)
+        messenger.send(None,"update_progress",1.0,"All slices loaded.")  
         self.calculateBuffer()
-        self.updatePreview()
+        if update:
+            self.updatePreview()
         
         
     def setSlice(self,slice):
@@ -209,6 +234,7 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
         # instead of one slice of each timepoint, call the
         # appropriate function
         if not self.showTimepoints:
+            self.slices=[]
             return self.setTimepoint(self.timepoint)
         count=self.dataUnit.getLength()
         self.slices=[]
@@ -239,7 +265,15 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
         """    
         if not self.imagedata:
             return
-        x,y,z=self.imagedata.GetDimensions()
+        
+        #x,y,z=self.imagedata.GetDimensions()
+        x,y,z = self.dataUnit.getDimensions()
+        print "X,y,z,=",x,y,z
+        if (x,y,z) == self.oldBufferDims and self.oldBufferMaxXY == (self.maxSizeX, self.maxSizeY):
+            return
+        
+
+        yfromx = y/float(x)
         maxX=self.maxX
         maxY=self.maxY
         n=z
@@ -249,6 +283,9 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
 
         if self.maxSizeX>maxX:maxX=self.maxSizeX
         if self.maxSizeY>maxY:maxY=self.maxSizeY
+        self.oldBufferDims = (x,y,z)
+        self.oldBufferMaxXY = (maxX, maxY)        
+        
         if not self.zoomToFitFlag:
             w,h=self.sliceSize
             Logging.info("maxX=",maxX,"maxY=",maxY,kw="preview")
@@ -258,16 +295,16 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
             yreq=math.ceil(n/float(xreq))
         else:
             sizes=range(0,1024,8)
-            Logging.info("Searching for right gallery size...",kw="preview")
             for j in range(len(sizes)-1,0,-1):
                 i=sizes[j]
                 nx=maxX//(i+6)
+                
                 if not nx:continue
                 ny=math.ceil(n/float(nx))
-                if ny*i <maxY and (nx*ny)>n:
-                    Logging.info("Size %dx%d which takes %dx%d squares fits into %dx%d"%(i,i,nx,ny,maxX,maxY),kw="preview")
+                if ny*i*yfromx <maxY and (nx*ny)>n:
+                    #Logging.info("Size %dx%d which takes %dx%d squares fits into %dx%d"%(i,i,nx,ny,maxX,maxY),kw="preview")
                     w=i
-                    h=i
+                    h=i*yfromx
                     self.sliceSize=(w,h)
                     xreq=nx
                     yreq=ny
@@ -315,7 +352,7 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
            Logging.info("Won't draw gallery cause not enabled",kw="preview")
            return
         if not self.slices:
-            self.setTimepoint(self.timepoint)
+            self.setTimepoint(self.timepoint, update=0)
         self.paintPreview()
         self.updateScrolling()
         self.Refresh()
@@ -343,7 +380,7 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
         Description: Does the actual blitting of the bitmap
         """
         if self.sizeChanged:
-            Logging.info("size changed, calculating buffer",kw="preview")
+            #Logging.info("size changed, calculating buffer",kw="preview")
             self.calculateBuffer()
             self.updatePreview()
             self.sizeChanged=0

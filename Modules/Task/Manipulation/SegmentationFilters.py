@@ -176,9 +176,9 @@ class WatershedObjectList(wx.ListCtrl):
             centerofmass = self.centersOfMassList[self.currentItem]
             x,y,z = centerofmass
             
-            messenger.send(None,"zslice_changed",z)
-            
             messenger.send(None,"show_centerofmass",self.currentItem,centerofmass)
+            messenger.send(None,"zslice_changed",int(z))
+            messenger.send(None,"update_helpers",1)
         
     def getColumnText(self, index, col):
         item = self.GetItem(index, col)
@@ -624,11 +624,21 @@ class MorphologicalWatershedSegmentationFilter(ProcessingFilter.ProcessingFilter
         self.relabelFilter.Update()
         n = self.relabelFilter.GetNumberOfObjects()
         
-        ctf = ImageOperations.watershedPalette(0, n)
+        settings = self.dataUnit.getSettings()
+        ncolors = settings.get("PaletteColors")
+        if not ncolors or ncolors < n:
+            if not ncolors:ncolors=0
+            print "Creating new palette, old had ",ncolors,"colors, new will have",n
+            ctf = ImageOperations.watershedPalette(0, n)
             
-        if markWatershedLine:
-            ctf.AddRGBPoint(0,1.0,1.0,1.0)
-        self.dataUnit.getSettings().set("ColorTransferFunction",ctf)    
+            if markWatershedLine:
+                ctf.AddRGBPoint(0,1.0,1.0,1.0)
+            
+            self.dataUnit.getSettings().set("ColorTransferFunction",ctf)    
+            val=[0,0,0]
+            ctf.GetColor(1,val)
+            print "ctf value at 1=",val
+            settings.set("PaletteColors",n)
         #print "Returning ",data
         return data
 
@@ -721,10 +731,13 @@ class ConnectedComponentFilter(ProcessingFilter.ProcessingFilter):
             self.relabelFilter.Update()
             n = self.relabelFilter.GetNumberOfObjects()
         
-            ctf = ImageOperations.watershedPalette(0, n)
-            
-            self.dataUnit.getSettings().set("ColorTransferFunction",ctf)    
-        #print "Returning ",data
+            settings = self.dataUnit.getSettings()
+            ncolors = settings.get("PaletteColors")
+            if not ncolors or ncolors < n:
+                ctf = ImageOperations.watershedPalette(0, n)
+               
+                self.dataUnit.getSettings().set("ColorTransferFunction",ctf)    
+                settings.set("PaletteColors",n)
         return data
 
 class MaximumObjectsFilter(ProcessingFilter.ProcessingFilter):
@@ -1021,11 +1034,14 @@ class MeasureVolumeFilter(ProcessingFilter.ProcessingFilter):
         """   
         fileroot=self.parameters["StatisticsFile"].split(".")
         fileroot=".".join(fileroot[:-1])
-        filename = "%s_%d.csv"%(fileroot,timepoint)
-        f=codecs.open(filename,"wb","latin1")
+        #filename = "%s_%d.csv"%(fileroot,timepoint)
+        filename="%s.csv"%fileroot
+        f=codecs.open(filename,"awb","latin1")
         
         w=csv.writer(f,dialect="excel",delimiter=";")
-        #w.writerow(["Object #","Volume (micrometers)","Volume (pixels)","Center of Mass","Center of Mass (micrometers)","Avg. Intensity"])
+        
+        w.writerow(["Timepoint %d"%timepoint])
+        w.writerow(["Object #","Volume (micrometers)","Volume (pixels)","Center of Mass","Center of Mass (micrometers)","Avg. Intensity"])
         for i,(volume,volumeum) in enumerate(self.values):
             cog = self.centersofmass[i]
             umcog = self.umcentersofmass[i]
@@ -1038,20 +1054,26 @@ class MeasureVolumeFilter(ProcessingFilter.ProcessingFilter):
         Created: 13.04.2006, KP
         Description: Return the GUI for this filter
         """              
-        print "GETGUI"
         gui = ProcessingFilter.ProcessingFilter.getGUI(self,parent,taskPanel)
-        print "Got ",gui
+        
         if not self.reportGUI:
             self.reportGUI = WatershedObjectList(self.gui,-1)
             self.totalGUI = WatershedTotalsList(self.gui,-1)
             if self.values:
                 def avg(lst):
-                    return sum(lst)/len(lst)
+                    return sum(lst)/float(len(lst))
                 n = len(self.values)
                 avgints = avg(self.avgIntList)
-                ums = [x[0] for x in self.values]
+                ums = [x[1] for x in self.values]
+                print "Micrometer sizes=",ums[0:100]
+                # Remove the objects 0 and 1 because hey will distort the values
+                ums.pop(0)
+                ums.pop(0)
                 avgums = avg(ums)
-                pxs = [x[1] for x in self.values]
+                pxs = [x[0] for x in self.values]
+                print "Pixel sizes=",pxs[0:100]
+                pxs.pop(0)
+                pxs.pop(0)
                 avgpxs = avg(pxs)
                 
                 self.totalGUI.setStats([n,avgums,avgpxs,avgints])
@@ -1138,7 +1160,7 @@ class MeasureVolumeFilter(ProcessingFilter.ProcessingFilter):
                     c2.append(v*voxelSizes[i])
                 centersofmass.append(tuple(c))
                 umcentersofmass.append(tuple(c2))
-                values.append((volume,volume*vol))
+                values.append((volume,volume*vol))                
                 avgints.append(avgInt)
 #        print "volumes=",values
 #        print "centers of mass=",centersofmass

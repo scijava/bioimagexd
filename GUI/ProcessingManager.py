@@ -113,9 +113,11 @@ class ProcessingManager(TimepointSelection):
         Created: 09.02.2005, KP
         Description: A method that tells the dataunit to process the selected timepoints
         """          
+        self.Show(0)
         name=self.dataUnit.getName()
 
         filename=Dialogs.askSaveAsFileName(self,"Save %s dataset as"%self.operationName,"%s.bxd"%name,"BioImageXD Dataset (*.bxd)|*.bxd")
+        filename=filename.replace("\\","\\\\")
         do_cmd = "bxd.processingManager.doProcessing('%s')"%filename
         undo_cmd = ""
         

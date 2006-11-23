@@ -58,7 +58,8 @@
 #ifndef __vtkLSMReader_h
 #define __vtkLSMReader_h
 
-#include "vtkImageSource.h"
+//#include "vtkImageSource.h"
+#include "vtkImageAlgorithm.h"
 #include "vtkIntArray.h"
 #include "vtkUnsignedIntArray.h"
 #include "vtkDoubleArray.h"
@@ -80,12 +81,12 @@
 
 #include "vtkBXDProcessingWin32Header.h"                                            
 
-class VTK_BXD_PROCESSING_EXPORT vtkLSMReader : public vtkImageSource
+class VTK_BXD_PROCESSING_EXPORT vtkLSMReader : public vtkImageAlgorithm
 {
 public:
  
   static vtkLSMReader *New();
-  vtkTypeMacro(vtkLSMReader,vtkImageSource);
+  vtkTypeMacro(vtkLSMReader,vtkImageAlgorithm);
   virtual void PrintSelf(ostream& os, vtkIndent indent);
 
   // Description:
@@ -107,7 +108,11 @@ public:
   int GetChannelColorComponent(int,int);
   char* GetChannelName(int);
   void SetFileName(const char *);
-  void ExecuteInformation();
+  //void ExecuteInformation();
+  int RequestInformation (
+  vtkInformation       * vtkNotUsed( request ),
+  vtkInformationVector** vtkNotUsed( inputVector ),
+  vtkInformationVector * outputVector);    
   void SetUpdateTimePoint(int);
   void SetUpdateChannel(int);
 
@@ -127,6 +132,7 @@ public:
   vtkGetVector3Macro(VoxelSizes,double);
   vtkGetVectorMacro(Dimensions,int,5);
   vtkGetVectorMacro(NumberOfIntensityValues,int,4);
+  vtkGetVectorMacro(DataSpacing,double,3);
   vtkGetMacro(Identifier,unsigned short);
   vtkGetMacro(NewSubFileType,unsigned int);
   vtkGetMacro(Compression,unsigned int);
@@ -164,7 +170,18 @@ protected:
   unsigned long GetOffsetToImage(int, int);
   ifstream *GetFile();
 
-  void ExecuteData(vtkDataObject *out);
+  int RequestUpdateExtent (
+    vtkInformation* request,
+    vtkInformationVector** inputVector,
+    vtkInformationVector* outputVector);
+  
+int RequestData(
+  vtkInformation *vtkNotUsed(request),
+  vtkInformationVector **vtkNotUsed(inputVector),
+  vtkInformationVector *outputVector);
+
+  
+  //void ExecuteData(vtkDataObject *out);
   void CalculateExtentAndSpacing(int extent[6],double spacing[3]);
   //  void DecodeHorizontalDifferencing(unsigned char *,int);
   //  void DecodeLZWCompression(unsigned  char *,int);
@@ -173,7 +190,7 @@ protected:
 
   int SwapBytes;
 
-  int UpdateExtent[5];
+  int IntUpdateExtent[6];
   unsigned long OffsetToLastAccessedImage;
   int NumberOfLastAccessedImage;
   int FileNameChanged;
@@ -195,6 +212,11 @@ protected:
   unsigned short PlanarConfiguration;
   unsigned short Predictor;
   unsigned short ScanType;
+  int DataScalarType;
+  
+  double DataSpacing[3];
+  int DataExtent[6];
+  int NumberOfScalarComponents;
   int DataType;
   unsigned long ChannelInfoOffset;
   vtkIntArray *ChannelColors;

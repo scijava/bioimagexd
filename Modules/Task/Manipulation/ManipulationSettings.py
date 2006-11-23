@@ -53,4 +53,5 @@ class ManipulationSettings(FilterBasedTaskSettings.FilterBasedTaskSettings):
         FilterBasedTaskSettings.FilterBasedTaskSettings.__init__(self, n)
     
         self.set("Type","Process")
+        self.register("PaletteColors")
         self.filterModule = ManipulationFilters

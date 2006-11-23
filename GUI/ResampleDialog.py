@@ -37,13 +37,11 @@ import string
 
 class ResampleDialog(wx.Dialog):
     """
-    Class: ResampleDialog
     Created: 1.09.2005, KP
     Description: A dialog for resampling a dataset
     """
     def __init__(self, parent,imageMode=1):
         """
-        Method: __init__
         Created: 1.09.2005, KP
         Description: Initialize the dialog
         """    
@@ -65,11 +63,11 @@ class ResampleDialog(wx.Dialog):
         
     def onOkButton(self,event):
         """
-        Method: onOkButton
         Created: 21.04.2005, KP
         Description: Executes the procedure
         """
         for i in self.dataUnits:
+            print "\nSETTING RESAMPLE DIMS TO ",self.currSize
             i.dataSource.setResampleDimensions(self.currSize)
         
         self.result=1
@@ -78,7 +76,6 @@ class ResampleDialog(wx.Dialog):
         
     def setDataUnits(self,dataunits):
         """
-        Method: setDataUnits
         Created: 1.09.2005, KP
         Description: Set the dataunits to be resampled
         """        
@@ -94,7 +91,6 @@ class ResampleDialog(wx.Dialog):
         
     def onUpdateDims(self,evt):
         """
-        Method: onUpdateDims
         Created: 1.09.2005, KP
         Description: Update the dimensions
         """
@@ -145,12 +141,12 @@ class ResampleDialog(wx.Dialog):
         self.newDimX.SetValue("%d"%x)
         self.newDimY.SetValue("%d"%y)
         self.newDimZ.SetValue("%d"%z)
+        self.currSize = (x,y,z)
         self.blockDimUpdate=0
 
 
     def createResample(self):
         """
-        Method: createResample()
         Created: 1.09.2005, KP
         Description: Creates the GUI for setting the resampled size
         """            

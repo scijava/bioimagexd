@@ -82,6 +82,7 @@ class Merging(Module):
         Created: 24.11.2004, JV
         Description: Adds an input for the color merging filter
         """
+        
         settings = dataunit.getSettings()
         if not settings.get("PreviewChannel"):
             Logging.info("Not including ",dataunit,"in merging",kw="processing")
@@ -89,9 +90,7 @@ class Merging(Module):
         Module.addInput(self,dataunit,data)
 
         self.n+=1
-        # ugly
-        dims=data.GetDimensions()
-            
+                    
         ctf = settings.get("ColorTransferFunction")
         
         
@@ -177,16 +176,20 @@ class Merging(Module):
         ##print "range max of itf %d=%d"%(i,itf.GetRangeMax())
 
         for i,image in enumerate(self.images):
+            #print "Adding",image
             self.merge.AddInput(image)
             self.merge.AddLookupTable(self.ctfs[i])
             
             self.merge.AddIntensityTransferFunction(self.intensityTransferFunctions[i])
         
-        data = self.getLimitedOutput(self.merge)
+        #data = self.getLimitedOutput(self.merge)
+        
+        data = self.merge.GetOutput()
+        
         
 #        self.merge.Update()        
 #        data=self.merge.GetOutput()
-        Logging.info("Result with dims and type",data.GetDimensions(),data.GetScalarTypeAsString(),"components:",data.GetNumberOfScalarComponents(),"scalar range",data.GetScalarRange())
+        #Logging.info("Result with dims and type",data.GetDimensions(),data.GetScalarTypeAsString(),"components:",data.GetNumberOfScalarComponents(),"scalar range",data.GetScalarRange())
         
 
         t3=time.time()

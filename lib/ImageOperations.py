@@ -178,6 +178,10 @@ def scaleImage(data,factor=1.0,z=-1,interpolation=1,xfactor=0.0,yfactor=0.0):
     data.SetOrigin(x/2.0,y/2.0,0)
     transform=vtk.vtkTransform()
     x0,x1,y0,y1,z0,z1=data.GetExtent()
+    if xfactor or yfactor:
+        xfactor*=factor
+        yfactor*=factor
+        
     if not (xfactor or yfactor):
         transform.Scale(1/factor,1/factor,1)
     else:
@@ -201,7 +205,9 @@ def scaleImage(data,factor=1.0,z=-1,interpolation=1,xfactor=0.0,yfactor=0.0):
         reslice.SetInterpolationModeToCubic()
     #reslice.Update() 
     #return reslice.GetOutput()
-    return bxd.execute_limited(reslice)
+    data=bxd.execute_limited(reslice)
+    #data.Update()
+    return data
     
 def loadNIHLut(data):
     """
@@ -246,6 +252,45 @@ def loadLUT(filename,ctf=None,ctfrange=(0,256)):
     loadLUTFromString(lut,ctf,ctfrange)
     return ctf
     
+def loadBXDLutFromString(lut, ctf):
+    """
+    Created: 20.11.2006, KP
+    Description: Load a BXD format lut from a given string
+    """
+    lut=lut[6:]
+    start,end = struct.unpack("ff",lut[0:8])
+    lut=lut[8:]
+    
+    print "The palette is in range ",start,end
+    j=0
+    start=int(start)
+    end=int(end)
+    n = len(lut)
+    k = n/3
+    k=k-1
+    reds=lut[0:k+1]
+    greens=lut[k+1:2*k+2]
+    blues=lut[(2*k)+2:3*k+3]
+            
+    j=0
+    for i in range(start,end+1):
+        #print "j=",j,"n=",len(reds),len(greens),len(blues)
+        r=ord(reds[j])
+        
+        g=ord(greens[j])
+        
+        b=ord(blues[j])
+        if i<10:
+            print "got",r,g,b
+        
+        r/=255.0
+        g/=255.0
+        b/=255.0        
+        ctf.AddRGBPoint(i,r,g,b)
+        j+=1
+    return 
+            
+    
 def loadLUTFromString(lut,ctf,ctfrange=(0,256)):
     """
     Created: 18.04.2005, KP
@@ -256,6 +301,9 @@ def loadLUTFromString(lut,ctf,ctfrange=(0,256)):
         ctfrange The range to which construct the CTF
     """        
     #print "\n\nlen(lut)=",len(lut)
+    if lut[0:6]=="BXDLUT":
+        
+        return loadBXDLutFromString(lut,ctf)
     failed=1
     if len(lut)!=768:
         try:
@@ -268,15 +316,10 @@ def loadLUTFromString(lut,ctf,ctfrange=(0,256)):
         n = len(lut)
         k = n/3
         k=k-1
-        #print "k=",k
         reds=lut[0:k+1]
-        #print "len(reds)=",len(reds)
-        #print "reds[0]=",ord(reds[0]),"reds[255]=",ord(reds[255])
         greens=lut[k+1:2*k+2]
-        #print "greens[0]=",ord(greens[0]),"greens[255]=",ord(greens[255])
-        #print "len(greens)=",len(greens)
         blues=lut[(2*k)+2:3*k+3]
-        #print "len(blues)=",len(blues)
+        
     n=len(reds)    
     #print k,ctfrange
     step=int(math.ceil(ctfrange[1]/k))
@@ -297,26 +340,42 @@ def loadLUTFromString(lut,ctf,ctfrange=(0,256)):
     
 def saveLUT(ctf,filename):
     """
-    Method: saveLUT(ctf,filename)
     Created: 17.04.2005, KP
     Description: Save a CTF as ImageJ binary LUT
     """    
+    ext = filename.split(".")[-1]
+    ltype="ImageJ"
+    if ext.lower()=="bxdlut":
+        ltype="BioImageXD"
     f=open(filename,"wb")
-    s=lutToString(ctf)
+    s=lutToString(ctf, luttype= ltype)
     f.write(s)
     f.close()
     
-def lutToString(ctf):
+def lutToString(ctf, luttype = "ImageJ"):
     """
     Created: 18.04.2005, KP
     Description: Write a lut to a string
     """    
     s=""
     minval,maxval=ctf.GetRange()
-    d=maxval/255.0
+    if luttype=="ImageJ":
+        d=maxval/255.0
+    else:
+        d=1
+    if luttype=="BioImageXD":
+        s="BXDLUT"
+        print "Adding to struct minval",minval
+        
+        s+=struct.pack("f",minval)
+        print "Adding to struct maxval",maxval
+        s+=struct.pack("f",maxval)
+        
+    maxval=int(maxval)
     for col in range(0,3):
         for i in range(0,maxval+1,d):
             val=[0,0,0]
+            
             ctf.GetColor(i,val)
             r,g,b = val
             r*=255
@@ -432,6 +491,7 @@ def getMIP(imageData,color):
     
     if color==None:
         output=bxd.execute_limited(mip)
+        #output.Update()
         return output
     #Logging.info("Got MIP",kw="imageop")
     if mip.GetOutput().GetNumberOfScalarComponents()==1:
@@ -445,8 +505,10 @@ def getMIP(imageData,color):
         #maptocolor.Update()
         #imagedata=maptocolor.GetOutput()
         imagedata=bxd.execute_limited(maptocolor)
+        
     else:
         imagedata=output=bxd.execute_limited(mip)
+    #imagedata.Update()        
     return imagedata
 
 def getColorTransferFunction(color):
@@ -487,10 +549,14 @@ def vtkImageDataToPreviewBitmap(dataunit,timepoint,color,width=0,height=0,bgcolo
     maptocolor.SetOutputFormatToRGB()
     #maptocolor.Update()
     #imagedata=maptocolor.GetOutput()    
-    imagedata = bxd.execute_limited(maptocolor)
+    #imagedata = bxd.execute_limited(maptocolor)
+    imagedata = bxd.mem.optimize(vtkFilter = maptocolor)
+    imagedata.Update()
+    #imagedata.Update()
     #imagedata=getMIP(imageData,color)
     if getpng:
-        #Logging.info("Getting PNG string",kw="imageop")
+        
+        
         pngstr=vtkImageDataToPngString(imagedata)
     image = vtkImageDataToWxImage(imagedata)
     x,y=image.GetWidth(),image.GetHeight()
@@ -515,7 +581,7 @@ def vtkImageDataToPreviewBitmap(dataunit,timepoint,color,width=0,height=0,bgcolo
     return bitmap
 
     
-def getPlane(data,plane,x,y,z):
+def getPlane(data,plane,x,y,z, applyZScaling = 0):
     """
     Created: 06.06.2005, KP
     Description: Get a plane from given the volume
@@ -527,33 +593,58 @@ def getPlane(data,plane,x,y,z):
     #voi.SetInput(permute.GetOutput())
     voi.SetInput(data)
     permute.SetInput(voi.GetOutput())
+    spacing = data.GetSpacing()
+    xscale = 1
+    yscale = 1
     if plane=="zy":
         data.SetUpdateExtent(x,x,0,dy-1,0,dz-1)
         voi.SetVOI(x,x,0,dy-1,0,dz-1)
         permute.SetFilteredAxes(Z,Y,X)
+        xdim = dz
+        ydim = dy
+        
+        if applyZScaling: 
+            xdim*=spacing[2]
+            xscale = spacing[2]
         
     elif plane=="xz":
         data.SetUpdateExtent(0,dx-1,y,y,0,dz-1)
         #voi.SetVOI(0,dx-1,0,dz-1,y,y)
         voi.SetVOI(0,dx-1,y,y,0,dz-1)
         permute.SetFilteredAxes(X,Z,Y)
+        xdim = dx        
+        ydim = dz
+        if applyZScaling: 
+            ydim*=spacing[2]
+            yscale = 1
+        
+    vtkfilter = permute
+    if applyZScaling:
+        permute.Update()
+        return scaleImage(permute.GetOutput(),interpolation=2,xfactor = xscale, yfactor = yscale)
+        
     #permute.SetInput(data)
     #return voi.GetOutput()    
-    #permute.Update()
-    #return permute.GetOutput()
-    return bxd.execute_limited(permute)
-
+    vtkfilter.Update()
+    return vtkfilter.GetOutput()
+    
 def watershedPalette(x0,x1):    
     ctf = vtk.vtkColorTransferFunction()
 #    ctf.AddRGBPoint(0,1,1,1)
 #    ctf.AddRGBPoint(1,0,0,0)
     ctf.AddRGBPoint(0,0,0,0)
     ctf.AddRGBPoint(1,0,0,0)
+    
     if x0<=1:x0=2
     for i in range(int(x0),int(x1)):        
-        r = random.random()
-        g = random.random()
-        b = random.random()
+        r=0
+        g=0
+        b=0    
+        while r+g+b<1.5:
+            r = random.random()
+            g = random.random()
+            b = random.random()
+        
         ctf.AddRGBPoint(float(i), float(r),float(g),float(b))
         
     return ctf
@@ -599,9 +690,8 @@ def getOverlay(width,height,color,alpha):
         
     return img
     
-def getOverlayBorders(width,height,color,alpha):
+def getOverlayBorders(width,height,color,alpha,lineWidth=1):
     """
-    Method: getOverlayBorders(width,height,color,alpha)
     Created: 12.04.2005, KP
     Description: Create borders for an overlay that are only very little transparent
     """       
@@ -859,34 +949,53 @@ def equalize(imagedata, ctf):
     return ctf2
         
     
-def scatterPlot(imagedata1,imagedata2,z,countVoxels, wholeVolume=1,logarithmic=1):
+def scatterPlot(imagedata1,imagedata2,z,countVoxels, wholeVolume=1,logarithmic=1, dataunits=[], timepoint=0):
     """
     Created: 25.03.2005, KP
     Description: Create scatterplot
     """       
     imagedata1.SetUpdateExtent(imagedata1.GetWholeExtent())
     imagedata2.SetUpdateExtent(imagedata1.GetWholeExtent())
-    
+        
+    imagedata1.Update()
+    imagedata2.Update()
+    print "extent=",imagedata1.GetWholeExtent()
+    print "extent2=",imagedata2.GetWholeExtent()
+
     x0,x1 = imagedata1.GetScalarRange()
     d = 255.0/ x1
-    shiftscale=vtk.vtkImageShiftScale()
-    shiftscale.SetOutputScalarTypeToUnsignedChar()
-    shiftscale.SetScale(d)
-    shiftscale.SetInput(imagedata1)
-    imagedata1 = shiftscale.GetOutput()
+    print "Range of imagedata1=",x0,x1
+    #shiftscale=vtk.vtkImageShiftScale()
+    #shiftscale.SetOutputScalarTypeToUnsignedChar()
+    #shiftscale.SetScale(d)
+    #shiftscale.SetInput(imagedata1)
+    #imagedata1 = shiftscale.GetOutput()
 
     x0,x1 = imagedata2.GetScalarRange()
     d = 255.0/ x1
-    shiftscale=vtk.vtkImageShiftScale()
-    shiftscale.SetOutputScalarTypeToUnsignedChar()
-    shiftscale.SetScale(d)
-    shiftscale.SetInput(imagedata2)
-    imagedata2 = shiftscale.GetOutput()
+    print "Range of imagedata2=",x0,x1
+    #shiftscale=vtk.vtkImageShiftScale()
+    #shiftscale.SetOutputScalarTypeToUnsignedChar()
+    #shiftscale.SetScale(d)
+    #shiftscale.SetInput(imagedata2)
+    #imagedata2 = shiftscale.GetOutput()
     
     app=vtk.vtkImageAppendComponents()
     app.AddInput(imagedata1)
     app.AddInput(imagedata2)
     #app.Update()
+    print "Appending..."
+    
+    
+    print "shiftscaling..."
+    shiftscale = vtk.vtkImageShiftScale()
+    shiftscale.SetOutputScalarTypeToUnsignedChar();
+    shiftscale.SetScale(d)
+    shiftscale.SetInput(app.GetOutput())
+    #data = shiftscale.GetOutput()
+    
+    data = bxd.mem.optimize(vtkFilter = shiftscale)
+    print "accumulating..."
     acc=vtk.vtkImageAccumulate()
     
     #n = max(imagedata1.GetScalarRange())
@@ -894,12 +1003,13 @@ def scatterPlot(imagedata1,imagedata2,z,countVoxels, wholeVolume=1,logarithmic=1
     #print "n=",n
     n=255
     acc.SetComponentExtent(0,n,0,n,0,0)
-    acc.SetInput(app.GetOutput())
+    acc.SetInput(data)
     acc.Update()
+    
     data=acc.GetOutput()
     
     originalRange = data.GetScalarRange()
-    
+    print "Range of data=",originalRange
     
     if logarithmic:
         Logging.info("Scaling scatterplot logarithmically",kw="imageop")
@@ -927,6 +1037,8 @@ def scatterPlot(imagedata1,imagedata2,z,countVoxels, wholeVolume=1,logarithmic=1
         ctf.originalRange = originalRange
     Logging.info("Scatterplot has dimensions:",data.GetDimensions(),data.GetExtent(),kw="imageop")                        
     data.SetWholeExtent(data.GetExtent())
+    #if dataunits:
+    #    dataunits[0].storeToCache(data,timepoint,"scpt_%s"%dataunits[1])
     #print "data.GetWholeExtent()=",data.GetWholeExtent()
     img = vtkImageDataToWxImage(data)
     #if img.GetWidth()>255:
@@ -976,7 +1088,9 @@ def vtkZoomImage(image,f):
         reslice.InterpolateOn()
     #reslice.Update()
     #return reslice.GetOutput()
-    return bxd.execute_limited(reslice)
+    data=bxd.execute_limited(reslice)
+    data.Update()
+    return data
     
 def zoomImageToSize(image,x,y):
     """
@@ -1054,4 +1168,5 @@ def imageDataTo3Component(image,ctf):
 
     else:
         imagedata=image
+    imagedata.Update()
     return imagedata

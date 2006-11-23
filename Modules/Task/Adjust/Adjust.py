@@ -40,14 +40,12 @@ from lib.Module import *
 
 class Adjust(Module):
     """
-    Class: Adjust
     Created: 25.11.2004, KP
     Description: Processes a single dataunit in specified ways
     """
 
     def __init__(self,**kws):
         """
-        Method: __init__(**keywords)
         Created: 25.11.2004, KP
         Description: Initialization
         """
@@ -64,7 +62,6 @@ class Adjust(Module):
 
     def reset(self):
         """
-        Method: reset()
         Created: 25.11.2004, KP
         Description: Resets the module to initial state. This method is
                      used mainly when doing previews, when the parameters
@@ -79,7 +76,6 @@ class Adjust(Module):
 
     def addInput(self,dataunit,data):
         """
-        Method: addInput(data)
         Created: 1.12.2004, KP, JV
         Description: Adds an input for the single dataunit processing filter
         """
@@ -94,7 +90,6 @@ class Adjust(Module):
 
     def getPreview(self,z):
         """
-        Method: getPreview(z)
         Created: 1.12.2004, KP
         Description: Does a preview calculation for the x-y plane at depth z
         """
@@ -108,12 +103,11 @@ class Adjust(Module):
                 self.extent=None
             self.preview=self.doOperation(preview=1)
             self.extent=None
-        return self.zoomDataset(self.preview)
+        return self.preview
 
 
     def doOperation(self,preview=0):
         """
-        Method: doOperation
         Created: 1.12.2004, KP, JV
         Description: Processes the dataset in specified ways
         """
@@ -133,9 +127,10 @@ class Adjust(Module):
         mapIntensities.SetIntensityTransferFunction(self.intensityTransferFunctions[n])
         mapIntensities.SetInput(mapdata)
         
-        data = self.getLimitedOutput(mapIntensities)        
+        #data = self.getLimitedOutput(mapIntensities)        
+        data= mapIntensities.GetOutput()
             
         t2=time.time()
-        Logging.info("Processing took %.4f seconds"%(t2-t1))
+        #Logging.info("Processing took %.4f seconds"%(t2-t1))
         #data.ReleaseDataFlagOff()
         return data

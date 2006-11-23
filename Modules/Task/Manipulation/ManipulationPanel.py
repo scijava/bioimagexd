@@ -84,6 +84,7 @@ class ManipulationPanel(FilterBasedTaskPanel.FilterBasedTaskPanel):
         self.categories=[]
 
         for currfilter in ManipulationFilters.getFilterList():
+            print "Registering",currfilter.getName(),currfilter.getCategory()
             self.filtersByName[currfilter.getName()] = currfilter
             self.registerFilter(currfilter.getCategory(),currfilter)
       
@@ -159,7 +160,7 @@ class ManipulationPanel(FilterBasedTaskPanel.FilterBasedTaskPanel):
         self.addSegmentationBtn = wx.Button(self.panel,-1,u"Segmentation \u00BB")
         self.addTrackingBtn = wx.Button(self.panel,-1,u"Tracking \u00BB")
 
-        from ManipulationFilters import FILTERING,FEATUREDETECTION,MATH,LOGIC,SEGMENTATION,WATERSHED,REGION_GROWING,MEASUREMENT
+        from ManipulationFilters import FILTERING,FEATUREDETECTION,MATH,LOGIC,SEGMENTATION,WATERSHED,REGION_GROWING,MEASUREMENT,TRACKING
         
         f=lambda evt, btn=self.addFilteringBtn, cats=(FILTERING,FEATUREDETECTION): self.onShowAddMenu(evt,btn,cats)
         self.addFilteringBtn.Bind(wx.EVT_LEFT_DOWN,f)
@@ -170,11 +171,9 @@ class ManipulationPanel(FilterBasedTaskPanel.FilterBasedTaskPanel):
         f=lambda evt, btn=self.addSegmentationBtn, cats=(SEGMENTATION, REGION_GROWING,WATERSHED,MEASUREMENT): self.onShowAddMenu(evt,btn,cats)
         self.addSegmentationBtn.Bind(wx.EVT_LEFT_DOWN,f)
         
-        self.addTrackingBtn.Bind(wx.EVT_LEFT_DOWN,self.onShowAddMenu)
+        f=lambda evt, btn=self.addSegmentationBtn, cats=(TRACKING,): self.onShowAddMenu(evt,btn,cats)        
+        self.addTrackingBtn.Bind(wx.EVT_LEFT_DOWN,f)
         
-        #self.reloadBtn = wx.Button(self.panel,-1,"Reload")
-        #self.reloadBtn.Bind(wx.EVT_BUTTON,self.onReloadModules)
-
         vertbtnBox=wx.BoxSizer(wx.VERTICAL)
         
 
@@ -214,39 +213,7 @@ class ManipulationPanel(FilterBasedTaskPanel.FilterBasedTaskPanel):
         self.settingsNotebook.AddPage(self.panel,"Procedure list")
    
    
-    def onReloadModules(self,event):
-        """
-        Created: 18.04.2006, KP
-        Description: Reload the filtering modules
-        """
-        global ManipulationFilters
-        f = reload(ManipulationFilters)
-        ManipulationFilters = f
-        copyfilters = []
-        self.filtersByCategory={}
-        self.categories=[]
 
-        for currfilter in ManipulationFilters.getFilterList():
-            self.registerFilter(currfilter.getCategory(),currfilter)
-      
-        
-        for f in self.filters:
-            print "Reloading",f
-            filterclass=str(f.__class__)
-            c=filterclass.split(".")[-1]
-            filterclass="%s"%c
-            print "filter class=",filterclass
-            filterclass=eval(filterclass)
-            
-            addfilter = filterclass()
-            addfilter.setDataUnit(self.dataUnit)
-            addfilter.parameters = f.parameters
-            copyfilters.append(addfilter)
-        self.removeGUI()
-        self.currentSelected=-1
-        self.currentGUI=None
-        del self.filters
-        self.filters=copyfilters
             
     def getFilters(self, name):
         """
@@ -442,16 +409,19 @@ class ManipulationPanel(FilterBasedTaskPanel.FilterBasedTaskPanel):
         Created: 13.04.2006, KP
         Description: Show a menu for adding filters to the stack
         """
+        print "categories=",categories,"self.menus=",self.menus
+        print "Filters by category has keys=",self.filtersByCategory.keys()
         if categories not in self.menus:
             menu=wx.Menu()
             for i in categories:
                 submenu = wx.Menu()
                 if i not in self.filtersByCategory:
                     self.filtersByCategory[i]=[]
+                    
                 for currfilter in self.filtersByCategory[i]:
                     menuid = wx.NewId()
                     name = currfilter.getName()
-                    
+                    print "Adding item",menuid,name
                     newitem = wx.MenuItem(submenu, menuid, name)
                     if currfilter.level:
                         newitem.SetBackgroundColour(wx.Colour(*currfilter.level))
@@ -553,26 +523,24 @@ class ManipulationPanel(FilterBasedTaskPanel.FilterBasedTaskPanel):
         ctf=vtk.vtkColorTransferFunction()
         ctf.AddRGBPoint(0,0,0,0)
         ctf.AddRGBPoint(255,1,1,1)
-        imagedata=ImageOperations.getMIP(self.dataUnit.getSourceDataUnits()[0].getTimePoint(0),ctf)
-        bmp=ImageOperations.vtkImageDataToWxImage(imagedata)
-
-        bmp=bmp.Rescale(30,30).ConvertToBitmap()
-        dc= wx.MemoryDC()
-
-        dc.SelectObject(bmp)
-        dc.BeginDrawing()
-        val=[0,0,0]
-        ctf.GetColor(255,val)
-        dc.SetBrush(wx.TRANSPARENT_BRUSH)
-        r,g,b=val
-        r*=255
-        g*=255
-        b*=255
-        dc.SetPen(wx.Pen(wx.Colour(r,g,b),4))
-        dc.DrawRectangle(0,0,32,32)
-        dc.EndDrawing()
-        #dc.SelectObject(wx.EmptyBitmap(0,0))
-        dc.SelectObject(wx.NullBitmap)
+        #imagedata=ImageOperations.getMIP(self.dataUnit.getSourceDataUnits()[0].getTimePoint(0),ctf)
+        imagedata = self.itemMips[0]
+        
+        
+        ctf=vtk.vtkColorTransferFunction()
+        ctf.AddRGBPoint(0,0,0,0)
+        ctf.AddRGBPoint(255,1,1,1)
+        #imagedata=ImageOperations.getMIP(coloc.GetOutput(),ctf)
+        maptocolor=vtk.vtkImageMapToColors()
+        maptocolor.SetInput(imagedata)
+        maptocolor.SetLookupTable(ctf)
+        maptocolor.SetOutputFormatToRGB()
+        maptocolor.Update()
+        imagedata=maptocolor.GetOutput()
+        
+        bmp=ImageOperations.vtkImageDataToWxImage(imagedata).ConvertToBitmap()
+#        bmp=bmp.Rescale(30,30).ConvertToBitmap()
+        bmp = self.getChannelItemBitmap(bmp,(255,255,255))
         toolid=wx.NewId()
         #n=n+1
         name="Manipulation"

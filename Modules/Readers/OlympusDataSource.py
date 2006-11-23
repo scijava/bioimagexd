@@ -35,6 +35,7 @@ import codecs
 import math
     
 from DataSource import *
+import messenger
 import DataUnit
         
 def getExtensions(): return ["oif"]
@@ -46,21 +47,24 @@ class OlympusDataSource(DataSource):
     Created: 12.04.2005, KP
     Description: Olympus OIF files datasource
     """
-    def __init__(self,filename="",channel=-1,basename="", lutname="",name="",dims=(0,0,0),t=0,voxelsize=(1,1,1),reverse=0, emission = 0, excitation = 0):
+    def __init__(self,filename="",channel=-1,basename="", lutname="",name="",dims=(0,0,0),t=0,voxelsize=(1,1,1),reverse=0, emission = 0, excitation = 0, bitdepth=12):
         """
         Created: 12.04.2005, KP
         Description: Constructor
         """    
         DataSource.__init__(self)
         if not name:name="Ch%d"%channel
+        self.bitdepth = bitdepth
         self.name= name
         self.basename = basename
         self.lutname = lutname
+        self.timepoint = 0
         self.tps = t
         self.filename=filename
         self.parser = RawConfigParser()
         self.reader = None
         self.originalScalarRange = (0,4095)
+        self.scalarRange = 0, 2**self.bitdepth-1
         self.channel = channel
         self.dimensions = dims
         self.voxelsize = voxelsize
@@ -127,7 +131,11 @@ class OlympusDataSource(DataSource):
             return data
             
         
-        self.originalScalarRange=data.GetScalarRange()
+        #self.originalScalarRange=data.GetScalarRange()
+        #print "Setting original scalar range to ",2**self.getBitDepth()-1
+        
+        if not self.originalScalarRange:
+            self.originalScalarRange = 0,(2**self.getBitDepth())-1
         
         data=self.getResampledData(data,i)
         
@@ -135,17 +143,46 @@ class OlympusDataSource(DataSource):
         data=self.getIntensityScaledData(data)
         
         
-        data.ReleaseDataFlagOff()
+        #data.ReleaseDataFlagOff()
         return data
+        
+    def updateProgress(self,obj,evt):
+        """
+        Created: 12.11.2006, KP
+        Description: Sends progress update event
+        """        
+        if not obj:
+            progress=1.0
+        else:
+            progress=obj.GetProgress()
+        if self.channel>=0:
+            txt=obj.GetProgressText()
+            if not txt:txt=""
+
+            msg="Reading channel %d of %s"%(self.channel,self.basename)
+            if self.timepoint>=0:
+
+                msg+=" (timepoint %d / %d, %s)"%(self.timepoint+1,self.tps+1,txt)
+        else:
+            msg="Reading %s..."%self.shortname
+        notinvtk=0
+        
+        if progress==1.0:notinvtk=1
+        print msg
+        #messenger.send(None,"update_progress",progress,msg,notinvtk)
+            
         
     def getTimepoint(self,n):
         """
         Created: 16.02.2006, KP
         Description: Return the nth timepoint
         """        
+        self.timepoint = n
         path=os.path.join(self.path,"%s.oif.files"%self.basename)
         if not self.reader:
             self.reader = vtk.vtkExtTIFFReader()
+            self.reader.AddObserver("ProgressEvent",self.updateProgress)
+            #self.reader.DebugOn()
             #self.reader.RawModeOn()
             #self.reader=vtk.vtkImageReader()
             #self.reader.SetDataScalarTypeToUnsignedShort()
@@ -171,8 +208,9 @@ class OlympusDataSource(DataSource):
         else:
             self.reader.SetFileNameSliceOffset(1)
 
+        self.reader.UpdateInformation()
 #        print "pattern='"+self.reader.GetFilePattern()+"'"
-        self.reader.Update()
+        #self.reader.Update()
         #print self.reader
 #        print vtk,self.reader
 #        print "Scalar range for data=",self.reader.GetOutput().GetScalarRange()
@@ -224,9 +262,10 @@ class OlympusDataSource(DataSource):
         i=0
         r2,g2,b2=-1,-1,-1
         coeff = 16.0
-        minval,maxval = self.getScalarRange()
         
-        if self.explicitScale:
+        #print "CUrrent minval,maxval=",minval,maxval
+        if self.explicitScale == 1:
+            minval,maxval = self.originalScalarRange
             shift = self.intensityShift
             if self.intensityShift:
                 maxval+=self.intensityShift
@@ -237,18 +276,24 @@ class OlympusDataSource(DataSource):
             maxval*=scale
             
             self.scalarRange = (0,maxval)
+            #print "GOT MAXVAL=",0,maxval
             self.bitdepth = int(math.log(maxval+1,2))
+            #print "Set bitdepth to ",self.bitdepth
             #print "Maximum value after being scaled=",maxval
-            
+            self.explicitScale = 2
+        else:
+            minval, maxval = self.scalarRange
         coeff = 65536.0 / (maxval+1)
         #coeff=int(coeff)
-#        print "coeff=",coeff
+        #print "coeff=",coeff
 #        print "Largest value=",len(vals)/coeff
         
         for i in range(0, maxval+1):
             r,g,b = vals[int(i*coeff)]
             ctf.AddRGBPoint(i, r,g,b)
+            if i==maxval:print maxval,"maps to",r*255,g*255,b*255
             
+        
         return ctf
         
         
@@ -397,6 +442,9 @@ class OlympusDataSource(DataSource):
         voxsiz=(vx,vy,vz)
         names,(excitations,emissions)=self.getDyes(self.parser,chs)
         
+        
+        self.bitdepth = eval(self.parser.get("Reference Image Parameter","ValidBitCounts"))
+        print "GOT BIT PDETH ",self.bitdepth,"FROM DATAFILE"
         lutpath = self.getLUTPath(self.parser)
         
         dataunits=[]
@@ -409,7 +457,8 @@ class OlympusDataSource(DataSource):
                                         dims=(x,y,z),t=tps,voxelsize=voxsiz,
                                         reverse=self.reverseSlices,
                                         emission = emission,
-                                        excitation = excitation)
+                                        excitation = excitation, bitdepth = self.bitdepth)
+            #datasource.bitdepth = self.bitdepth
             datasource.originalDimensions = (x,y,z)
             dataunit=DataUnit.DataUnit()
             dataunit.setDataSource(datasource)

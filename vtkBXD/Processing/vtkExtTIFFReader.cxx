@@ -46,10 +46,15 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "vtkObjectFactory.h"
 
 #include <sys/stat.h>
+#include "vtkInformation.h"
+#include "vtkInformationVector.h"
+#include "vtkStreamingDemandDrivenPipeline.h"
 
 extern "C" {
 #include "vtk_tiff.h"
 }
+#define PRT_EXT(ext) ext[0],ext[1],ext[2],ext[3],ext[4],ext[5]
+#define PRT_EXT2(ext) ext[0]<<","<<ext[1]<<","<<ext[2]<<","<<ext[3]<<","<<ext[4]<<","<<ext[5]
 
 
 //-------------------------------------------------------------------------
@@ -241,7 +246,7 @@ void vtkExtTIFFReader::ExecuteInformation()
     default:
 //        printf("By default number of scalar components=4\n");
       this->SetNumberOfScalarComponents( 4 );
-    }
+    }   
 
   if ( !this->GetInternalImage()->CanRead() )
     {
@@ -267,15 +272,17 @@ void vtkExtTIFFReaderUpdate2(vtkExtTIFFReader *self, OT *outPtr,
     {
     return;
     }
+    //printf("Initializing colors\n");
   self->InitializeColors();
     
+//printf("Reading image...\n");
   self->ReadImageInternal(self->GetInternalImage()->Image, 
                           outPtr, outExt, sizeof(OT) );
 
   // close the file
-//    printf("Closing the file\n");
+    //printf("Closing the file\n");
   self->GetInternalImage()->Clean();
-//    printf("Done\n");
+    //printf("Done\n");
 }
 
 //----------------------------------------------------------------------------
@@ -285,24 +292,30 @@ template <class OT>
 void vtkExtTIFFReaderUpdate(vtkExtTIFFReader *self, vtkImageData *data, OT *outPtr)
 {
   vtkIdType outIncr[3];
-  int outExtent[6];
+  int outExtent[6],uExtent[6];
   OT *outPtr2;
 
   data->GetExtent(outExtent);
+    //data->GetUpdateExtent(uExtent);
   data->GetIncrements(outIncr);
-
+    //printf("out extent=%d,%d,%d,%d,%d,%d\n",outExtent[0],outExtent[1],outExtent[2],outExtent[3],outExtent[4],outExtent[5]);    
+   //printf("update extent=%d,%d,%d,%d,%d,%d\n",uExtent[0],uExtent[1],uExtent[2],uExtent[3],uExtent[4],uExtent[5]);
   long pixSize = data->GetNumberOfScalarComponents()*sizeof(OT);  
-  
+
+   //printf("out increments=%d,%d,%d\n",outIncr[0],outIncr[1],outIncr[2]);  
   outPtr2 = outPtr;
   int idx2;
+    char progressText[100];
   for (idx2 = outExtent[4]; idx2 <= outExtent[5]; ++idx2)
     {
     self->ComputeInternalFileName(idx2);
     // read in a TIFF file
-//    printf("Reading slice %d\n",idx2);
+    //printf("slice %d",idx2);
     vtkExtTIFFReaderUpdate2(self, outPtr2, outExtent, outIncr, pixSize);
     self->UpdateProgress((idx2 - outExtent[4])/
                          (outExtent[5] - outExtent[4] + 1.0));
+        sprintf(progressText,"slice %d",idx2);
+        self->SetProgressText(progressText);        
     outPtr2 += outIncr[2];
     }
 }
@@ -313,8 +326,10 @@ void vtkExtTIFFReaderUpdate(vtkExtTIFFReader *self, vtkImageData *data, OT *outP
 // are assumed to be the same as the file extent/order.
 void vtkExtTIFFReader::ExecuteData(vtkDataObject *output)
 {
+    
+  //printf("Allocating output data\n");
   vtkImageData *data = this->AllocateOutputData(output);
-
+  
 //    printf("data estimated size=%d\n",data->GetActualMemorySize());
   if (this->InternalFileName == NULL)
     {
@@ -323,7 +338,7 @@ void vtkExtTIFFReader::ExecuteData(vtkDataObject *output)
     }
 
   this->ComputeDataIncrements();
-  
+  //printf("Computed data increments\n");
   // Call the correct templated function for the output
   void *outPtr;
 
@@ -335,6 +350,34 @@ void vtkExtTIFFReader::ExecuteData(vtkDataObject *output)
     default:
       vtkErrorMacro("UpdateFromFile: Unknown data type");
     }   
+}
+
+int vtkExtTIFFReader::RequestUpdateExtent (
+  vtkInformation* request,
+  vtkInformationVector** inputVector,
+  vtkInformationVector* outputVector)
+{
+    //printf("\n\n\n****** REQUEST UPDATE EXTENT FOR TIFF READER\n");
+  int uext[6], ext[6];
+    
+  vtkInformation* outInfo = outputVector->GetInformationObject(0);
+  //vtkInformation *inInfo = inputVector[0]->GetInformationObject(0);
+
+  outInfo->Get(vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT(),ext);
+   //printf("extent request %d,%d,%d,%d,%d,%d\n",PRT_EXT(ext));
+  // Get the requested update extent from the output.
+  outInfo->Get(vtkStreamingDemandDrivenPipeline::UPDATE_EXTENT(), uext);
+  
+  //printf("uextent request %d,%d,%d,%d,%d,%d\n",PRT_EXT(uext));
+
+  // If they request an update extent that doesn't cover the whole slice
+  // then modify the uextent 
+  if(uext[1] < ext[1] ) uext[1] = ext[1];
+  if(uext[3] < ext[3] ) uext[3] = ext[3];
+  //printf("Setting uextent to %d,%d,%d,%d,%d,%d\n",PRT_EXT(uext));
+  outInfo->Set(vtkStreamingDemandDrivenPipeline::UPDATE_EXTENT(), uext,6);
+  //request->Set(vtkStreamingDemandDrivenPipeline::REQUEST_UPDATE_EXTENT(), uext,6);
+  return 1;    
 }
 
 unsigned int vtkExtTIFFReader::GetFormat( )
@@ -472,7 +515,7 @@ void vtkExtTIFFReader::ReadImageInternal( void* vtkNotUsed(in), void* outPtr,
     int height = this->GetInternalImage()->Height;
     this->InternalExtents = outExt;
     unsigned int isize = TIFFScanlineSize(this->GetInternalImage()->Image);
-//      printf("isize=%d, height=%d\n",isize,height);
+      //printf("isize=%d, height=%d\n",isize,height);
     unsigned int cc;
     int row, inc = 1;
     tdata_t buf = _TIFFmalloc(isize);      
@@ -487,13 +530,14 @@ void vtkExtTIFFReader::ReadImageInternal( void* vtkNotUsed(in), void* outPtr,
             
     if (InternalImage->PlanarConfig == PLANARCONFIG_CONTIG)
       {
-//          printf("Contig planes\n");
+          //printf("Contig planes\n");
           image = (unsigned short*)outPtr;
       for ( row = 0; row < (int)height; row ++ )
         {
+                //printf("Reading scanline %d\n",row);
         if (TIFFReadScanline(InternalImage->Image, buf, row, 0) <= 0)
           {
-	    vtkErrorMacro( << "Problem reading the row: " << row <<"of file"<<GetInternalFileName());
+        vtkErrorMacro( << "Problem reading the row: " << row <<"of file"<<GetInternalFileName());
           break;
           }
           unsigned short* buf2 = (unsigned short*)buf;
@@ -518,7 +562,7 @@ void vtkExtTIFFReader::ReadImageInternal( void* vtkNotUsed(in), void* outPtr,
           }*/
           
         }
-//        printf("Copied %d doublebytes\n",tot);
+        //printf("Copied %d doublebytes\n",tot);
           _TIFFfree(buf);
         return;
       }

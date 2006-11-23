@@ -43,6 +43,9 @@ import Logging
 import sys
 import wx
 
+import Dialogs
+import Configuration
+
 import math
 
 from GUI import Events
@@ -65,6 +68,7 @@ class Scatterplot(InteractivePanel.InteractivePanel):
         self.emptySpace = 4
         self.z = 0
         self.timepoint=0
+        self.scatterBitmap = None
         self.drawLegend = kws.get("drawLegend")
         # Legend width is the width / height of the scalar colorbar
         self.legendWidth = 24
@@ -109,6 +113,7 @@ class Scatterplot(InteractivePanel.InteractivePanel):
         self.ID_COUNTVOXELS=wx.NewId()
         self.ID_WHOLEVOLUME=wx.NewId()
         self.ID_LOGARITHMIC=wx.NewId()
+        self.ID_SAVE_AS=wx.NewId()
         self.menu=wx.Menu()
         self.SetScrollbars(0,0,0,0)        
         messenger.connect(None,"threshold_changed",self.updatePreview)
@@ -118,7 +123,13 @@ class Scatterplot(InteractivePanel.InteractivePanel):
         self.Bind(wx.EVT_MENU,self.onSetLogarithmic,id=self.ID_LOGARITHMIC)
         self.menu.AppendItem(item)
         self.menu.Check(self.ID_LOGARITHMIC,1)    
-
+        
+        self.menu.AppendSeparator()
+        item = wx.MenuItem(self.menu,self.ID_SAVE_AS,"Save as...")
+        self.Bind(wx.EVT_MENU,self.onSaveScatterplot,id=self.ID_SAVE_AS)
+        self.menu.AppendItem(item)
+        
+        
         self.Bind(wx.EVT_LEFT_DOWN,self.markActionStart)
         self.Bind(wx.EVT_MOTION,self.updateActionEnd)
         self.Bind(wx.EVT_LEFT_UP,self.setThreshold)
@@ -128,9 +139,45 @@ class Scatterplot(InteractivePanel.InteractivePanel):
         
         messenger.connect(None,"timepoint_changed",self.onUpdateScatterplot)
     
+    def onSaveScatterplot(self, event):
+        """
+        Created: 21.11.2006, KP
+        Description: Save the scatterplot to a file
+        """
+        if not self.scatterBitmap:
+            return
+        wcDict={"png":"Portable Network Graphics Image (*.png)","jpeg":"JPEG Image (*.jpeg)",
+        "tiff":"TIFF Image (*.tiff)","bmp":"Bitmap Image (*.bmp)"}
+        #wc="PNG file|*.png|JPEG file|*.jpeg|TIFF file|*.tiff|BMP file|*.bmp"
+    
+        conf = Configuration.getConfiguration()    
+        defaultExt = conf.getConfigItem("ImageFormat","Output")
+        if defaultExt=="jpg":
+            defaultExt="jpeg"
+        if defaultExt=="tif":
+            defaultExt="tiff"
+        
+        if defaultExt not in wcDict:
+            defaultExt = "png"
+        initFile="scatterplot.%s"%(defaultExt)            
+        wc=wcDict[defaultExt]+"|*.%s"%defaultExt
+        del wcDict[defaultExt]
+        
+        for key in wcDict.keys():
+            wc+="|%s|*.%s"%(wcDict[key],key)
+        print "wc=",wc
+        filename = Dialogs.askSaveAsFileName(self,"Save scatterplot",initFile, wc, "scatterImage")            
+            
+        ext=filename.split(".")[-1].lower()
+        if ext=="jpg":ext="jpeg"
+        if ext=="tif":ext="tiff"
+        mime="image/%s"%ext
+        img=self.scatterBitmap.ConvertToImage()
+        #print "Saving mimefile ",filename,mime
+        img.SaveMimeFile(filename,mime)        
+    
     def onUpdateScatterplot(self,evt,obj,*args):
         """
-        Method: onUpdateScatterplot
         Created: 9.09.2005, KP
         Description: Update the scatterplot when timepoint changes
         """        
@@ -151,7 +198,6 @@ class Scatterplot(InteractivePanel.InteractivePanel):
         
     def onRightClick(self,event):
         """
-        Method: onRightClick
         Created: 02.04.2005, KP
         Description: Method that is called when the right mouse button is
                      pressed down on this item
@@ -161,7 +207,6 @@ class Scatterplot(InteractivePanel.InteractivePanel):
         
     def onSetLogarithmic(self,evt):
         """
-        Method: onSetLogarithmic
         Created: 12.07.2005, KP
         Description: Set the scale to logarithmic
         """
@@ -208,16 +253,16 @@ class Scatterplot(InteractivePanel.InteractivePanel):
         # If the user clicked "In the middle" (further than 30 pixels away from border)
         # Then just slide the thresholds
         
-        print "DIFFS=",(l1diff,u1diff),(l2diff,u2diff)
+        #print "DIFFS=",(l1diff,u1diff),(l2diff,u2diff)
         if l2diff > 45 and u2diff>45 and l1diff > 45 and l2diff > 45:
             ymode=5
             xmode=5
             self.middlestart[1] = y
             self.middlestart[0] = x
-            print "MODIFYING ALL"
+            #print "MODIFYING ALL"
         
         self.mode=(xmode,ymode)
-        print "MODE=",self.mode
+        #print "MODE=",self.mode
         
     def updateActionEnd(self,event):
         """
@@ -323,6 +368,7 @@ class Scatterplot(InteractivePanel.InteractivePanel):
         self.sources=dataUnit.getSourceDataUnits()
         self.settings =self.sources[0].getSettings()
         self.buffer = wx.EmptyBitmap(256,256)
+        self.updatePreview()
         
     def setVoxelCount(self,event):
         """
@@ -384,7 +430,6 @@ class Scatterplot(InteractivePanel.InteractivePanel):
         
     def setTimepoint(self,tp):
         """
-        Method: setTimepoint
         Created: 11.07.2005, KP
         Description: Sets the timepoint to be shown
         """    
@@ -392,7 +437,6 @@ class Scatterplot(InteractivePanel.InteractivePanel):
         
     def setZSlice(self,z):
         """
-        Method: setTimepoint
         Created: 11.07.2005, KP
         Description: Sets the timepoint to be shown
         """    
@@ -422,13 +466,15 @@ class Scatterplot(InteractivePanel.InteractivePanel):
             # Red on the vertical and green on the horizontal axis
             t1=self.sources[1].getTimePoint(self.timepoint)
             t2=self.sources[0].getTimePoint(self.timepoint)            
-            self.scatter, ctf = ImageOperations.scatterPlot(t2,t1,-1,self.countVoxels,self.wholeVolume,logarithmic=self.logarithmic)
+            self.scatter, ctf = ImageOperations.scatterPlot(t2,t1,-1,self.countVoxels,
+            self.wholeVolume, dataunits = self.sources, logarithmic=self.logarithmic,timepoint = self.timepoint)
             self.scatter=self.scatter.Mirror(0)
                         
             self.scatterCTF = ctf
             
             self.renew=0
         self.paintPreview()
+        self.Refresh()
 
     def OnPaint(self,event):
         """
@@ -485,6 +531,8 @@ class Scatterplot(InteractivePanel.InteractivePanel):
         #print "Thresholds=",lower1,upper1,lower2,upper2
         bmp=self.scatter.ConvertToBitmap()
         
+        self.scatterBitmap = bmp
+        
         verticalLegend = ImageOperations.paintCTFValues(self.sources[1].getColorTransferFunction(), height = 256, width=self.legendWidth, paintScalars = 1)
         horizontalLegend = ImageOperations.paintCTFValues(self.sources[0].getColorTransferFunction(), width= 256, height=self.legendWidth, paintScalars = 1)
         
@@ -514,19 +562,23 @@ class Scatterplot(InteractivePanel.InteractivePanel):
         dc.DrawLine(self.xoffset+hzlw+upper1*c,0,self.xoffset+hzlw+upper1*c,255)
         dc.DrawLine(self.xoffset+hzlw,ymax-upper2*c,self.xoffset+hzlw+255,ymax-upper2*c)
         
-        dc.SetPen(wx.Pen(wx.Colour(255,255,0),2))
+        #dc.SetPen(wx.Pen(wx.Colour(0,0,255),2))
         # vertical line 
-        dc.DrawLine(self.xoffset+hzlw+lower1*c,ymax-upper2*c,self.xoffset+hzlw+lower1*c,ymax-lower2*c)
+        #dc.DrawLine(self.xoffset+hzlw+lower1*c,ymax-upper2*c,self.xoffset+hzlw+lower1*c,ymax-lower2*c)
         # horizontal line
-        dc.DrawLine(self.xoffset+hzlw+lower1*c,ymax-lower2*c,self.xoffset+hzlw+upper1*c,ymax-lower2*c)
+        #dc.DrawLine(self.xoffset+hzlw+lower1*c,ymax-lower2*c,self.xoffset+hzlw+upper1*c,ymax-lower2*c)
         # vertical line 2 
-        dc.DrawLine(self.xoffset+hzlw+upper1*c,ymax-upper2*c,self.xoffset+hzlw+upper1*c,ymax-lower2*c)
+        #dc.DrawLine(self.xoffset+hzlw+upper1*c,ymax-upper2*c,self.xoffset+hzlw+upper1*c,ymax-lower2*c)
         # horizontal line 2
-        dc.DrawLine(self.xoffset+hzlw+lower1*c,ymax-upper2*c,self.xoffset+hzlw+upper1*c,ymax-upper2*c)
+        #dc.DrawLine(self.xoffset+hzlw+lower1*c,ymax-upper2*c,self.xoffset+hzlw+upper1*c,ymax-upper2*c)
         
-        overlay=ImageOperations.getOverlay(int((upper1-lower1)*c),int((upper2-lower2)*c),(255,255,0),64)
+        borders = ImageOperations.getOverlayBorders(int((upper1-lower1)*c)+1,int((upper2-lower2)*c)+1,(0,0,255),90,lineWidth=2)
+        borders=borders.ConvertToBitmap()
+        
+        overlay=ImageOperations.getOverlay(int((upper1-lower1)*c),int((upper2-lower2)*c),(0,0,255),64)
         overlay=overlay.ConvertToBitmap()
         dc.DrawBitmap(overlay,self.xoffset+hzlw+lower1*c,ymax-upper2*c,1)
+        dc.DrawBitmap(borders, self.xoffset+hzlw+lower1*c,ymax-upper2*c,1)
         
         scatterLegend = ImageOperations.paintCTFValues(self.scatterCTF, width=self.legendWidth,height=256, paintScale = 1)
 

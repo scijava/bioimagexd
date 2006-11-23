@@ -54,9 +54,9 @@ public:
 protected:
   vtkImageSimpleMIP();
   ~vtkImageSimpleMIP() {};
-  int SplitExtent(int splitExt[6],
+  /*int SplitExtent(int splitExt[6],
                                  int startExt[6],
-                                 int num, int total);
+                                 int num, int total);*/
 
   // Method that is used to retrieve information about the resulting output dataset
   virtual int RequestInformation (vtkInformation *, vtkInformationVector **,

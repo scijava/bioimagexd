@@ -96,7 +96,6 @@ class TrackItem:
         
     def getTimepoint(self):
         """
-        Method: getTimepoint()
         Created: 19.04.2005, KP
         Description: Return the timepoint of this item
         """       
@@ -104,7 +103,6 @@ class TrackItem:
         
     def setItemNumber(self,n):
         """
-        Method: setItemNumber(m)
         Created: 14.04.2005, KP
         Description: Set the item number of this item
         """       
@@ -112,7 +110,6 @@ class TrackItem:
         
     def setText(self,s):
         """
-        Method: setText
         Created: 14.04.2005, KP
         Description: Set the text number of this item
         """       
@@ -120,7 +117,6 @@ class TrackItem:
 
     def OnDragOver(self,x,y):
         """
-        Method: OnDragOver(x,y)
         Created: 12.04.2005, KP
         Description: A method called when something is being dragged over this item
         """       
@@ -138,7 +134,6 @@ class TrackItem:
         
     def setThumbnailDataunit(self,dataunit):
         """
-        Method: setThumbnail
         Created: 06.05.2005, KP
         Description: Sets the setting for thumbnail generation
         """       
@@ -150,7 +145,6 @@ class TrackItem:
         
     def __set_pure_state__(self,state):
         """
-        Method: __set_pure_state__()
         Created: 11.04.2005, KP
         Description: Update the item
         """       
@@ -177,7 +171,6 @@ class TrackItem:
         
     def setColor(self,col,headercolor):
         """
-        Method: setColor(color, headercolor)
         Created: 10.02.2005, KP
         Description: Set the color and header color for this item
         """       
@@ -187,7 +180,6 @@ class TrackItem:
 
     def drawHeader(self,hilight=-1):
         """
-        Method: drawHeader()
         Created: 19.03.2005, KP
         Description: A method that draws the header of this item
         """       
@@ -216,7 +208,6 @@ class TrackItem:
         
     def drawItem(self,hilight=-1):
         """
-        Method: drawItem()
         Created: 10.02.2005, KP
         Description: A method that draws this track item
         """
@@ -257,7 +248,6 @@ class TrackItem:
 
     def hilight(self,h):
         """
-        Method: hilight
         Created: 12.04.2005, KP
         Description: A method to highlight the spot where a drop would occur
         """ 
@@ -266,7 +256,6 @@ class TrackItem:
         
     def drawThumbnail(self):
         """
-        Method: drawThumbnail()
         Created: 10.02.2005, KP
         Description: A method that draws a thumbnail on an item. If no thumbnail exists,
                      this will create one
@@ -288,7 +277,6 @@ class TrackItem:
         
     def setMinimumWidth(self,w):
         """
-        Method: setMinimumWidt(width)
         Created: 10.02.2005, KP
         Description: Set the minimum width for this item, below which it cannot
                      be resized
@@ -297,7 +285,6 @@ class TrackItem:
         
     def setWidth(self,w):
         """
-        Method: setWidth(width)
         Created: 10.02.2005, KP
         Description: Set the width of this item. Will allocate buffer for
                      drawing self.
@@ -311,7 +298,6 @@ class TrackItem:
         
     def onDown(self,event):
         """
-        Method: onDown(event)
         Created: 10.02.2005, KP
         Description: Event handler for when the mouse is pressed down over
                      this item. Will store the position in order to enable
@@ -341,7 +327,6 @@ class TrackItem:
             
     def canDrag(self,event):
         """
-        Method: canDrag(event)
         Created: 16.7.2005, KP
         Description: A method that tells whether a track item can be dragged
         """       
@@ -358,7 +343,6 @@ class TrackItem:
         
     def onUp(self,event):
         """
-        Method: onUp(event)
         Created: 10.02.2005, KP
         Description: Event handler for when mouse is released over this item.
                      Will store the position in order to enable dragging.
@@ -370,7 +354,6 @@ class TrackItem:
 
     def updateItem(self):
         """
-        Method: updateItem()
         Created: 06.04.2005, KP
         Description: A method called when the item has been resized
         """       
@@ -383,7 +366,6 @@ class TrackItem:
         
     def getPosition(self):
         """
-        Method: getPosition()
         Created: 11.04.2005, KP
         Description: Return the starting and ending position of this item
         """       
@@ -391,7 +373,6 @@ class TrackItem:
         
     def onDrag(self,event):
         """
-        Method: onDrag(event)
         Created: 10.02.2005, KP
         Description: Event handler for when the mouse is dragged on the item.
                      Will resize the item accordingly.
@@ -410,7 +391,6 @@ class TrackItem:
         
     def __getstate__(self):
         """
-        Method: __getstate__
         Created: 11.04.2005, KP
         Description: Return the dict that is to be pickled to disk
         """      
@@ -424,7 +404,6 @@ class TrackItem:
 
     def __str__(self):
         """
-        Method: __str__
         Created: 05.04.2005, KP
         Description: Return string representation of self
         """  
@@ -445,7 +424,6 @@ class EmptyItem(TrackItem):
     """       
     def __init__(self,parent,size,**kws):
         """
-        Method: __init__
         Created: 16.04.2005, KP
         Description: Initialize
         """       
@@ -453,7 +431,6 @@ class EmptyItem(TrackItem):
         
     def drawItem(self,hilight=-1):
         """
-        Method: drawItem()
         Created: 13.04.2005, KP
         Description: A method that draws the item.
         """
@@ -473,7 +450,6 @@ class EmptyItem(TrackItem):
         
     def __str__(self):
         """
-        Method: __str__
         Created: 13.04.2005, KP
         Description: Return string representation of self
         """  
@@ -488,7 +464,6 @@ class StopItem(TrackItem):
     """       
     def __init__(self,parent,size,**kws):
         """
-        Method: __init__
         Created: 24.06.2005, KP
         Description: Initialize
         """       
@@ -500,7 +475,6 @@ class StopItem(TrackItem):
         
     def drawItem(self,hilight=-1):
         """
-        Method: drawItem()
         Created: 24.06.2005, KP
         Description: A method that draws the item.
         """
@@ -545,7 +519,6 @@ class StopItem(TrackItem):
         
     def __str__(self):
         """
-        Method: __str__
         Created: 13.04.2005, KP
         Description: Return string representation of self
         """  
@@ -554,7 +527,6 @@ class StopItem(TrackItem):
         
     def __getstate__(self):
         """
-        Method: __getstate__
         Created: 11.04.2005, KP
         Description: Return the dict that is to be pickled to disk
         """      
@@ -567,7 +539,6 @@ class StopItem(TrackItem):
         
     def __set_pure_state__(self,state):
         """
-        Method: __set_pure_state__(state)
         Created: 17.07.2005, KP
         Description: Set the pure state of this item
         """      

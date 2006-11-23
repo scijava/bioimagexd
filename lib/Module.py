@@ -54,7 +54,7 @@ class Module:
         self.zoomFactor=1
         self.settings=None
         self.timepoint=-1
-        self.limit = scripting.get_memory_limit()
+        self.limit = scripting.mem.get_memory_limit()
         # Gracefully handle lack of vtkParallel kit
         try:
             self.streamer = vtk.vtkMemoryLimitImageDataStreamer()

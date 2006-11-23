@@ -345,13 +345,12 @@ class Histogram(wx.Panel):
         if self.renew:
             if not self.noupdate or not self.data:
                 self.data=self.dataUnit.getTimePoint(self.timePoint)
+                self.data.Update()
             self.ctf=self.dataUnit.getSettings().get("ColorTransferFunction")
             if not self.ctf:Logging.info("No ctf!")
             if self.replaceCTF:
                 self.ctf = self.replaceCTF
             self.bg=self.parent.GetBackgroundColour()
-            
-            
             
             histogram,self.percent,self.values,xoffset = ImageOperations.histogram(self.data,bg=self.bg,ctf=self.ctf,
                              logarithmic=self.logarithmic,
@@ -384,6 +383,10 @@ class Histogram(wx.Panel):
         dc.DrawBitmap(self.histogram,0,0,1)
         get=self.dataUnit.getSettings().get
         set=self.dataUnit.getSettings().set
+        ctf = self.dataUnit.getColorTransferFunction()
+        val=[0,0,0]
+        r1,r2 =ctf.GetRange()
+        ctf.GetColor(r2, val)
         if not self.thresholdMode and get("ColocalizationLowerThreshold")==None:
             return
         colocMode=get("ColocalizationLowerThreshold")!=None
@@ -438,12 +441,20 @@ class Histogram(wx.Panel):
                     self.lowerThreshold=lower1
                     self.upperThreshold=upper1                        
                 
+        r,g,b = val
+        r*=255
+        g*=255
+        b*=255
+        r=int(r)
+        g=int(g)
+        b=int(b)
     
-        borders = ImageOperations.getOverlayBorders(upper1-lower1+1,150,(255,255,0),128)
+        #borders = ImageOperations.getOverlayBorders(upper1-lower1+1,150,(r,g,b),128)
+        borders = ImageOperations.getOverlayBorders(upper1-lower1+1,150,(r,g,b),80)
         borders=borders.ConvertToBitmap()
         dc.DrawBitmap(borders,self.xoffset+lower1,0,1)
         
-        overlay=ImageOperations.getOverlay(upper1-lower1,150,(255,255,0),32)
+        overlay=ImageOperations.getOverlay(upper1-lower1,150,(r,g,b),32)
         overlay=overlay.ConvertToBitmap()
         dc.DrawBitmap(overlay,self.xoffset+lower1,0,1)
         if self.values:
@@ -466,7 +477,6 @@ class Histogram(wx.Panel):
         
     def OnPaint(self,event):
         """
-        Method: paintPreview()
         Created: 28.04.2005, KP
         Description: Does the actual blitting of the bitmap
         """

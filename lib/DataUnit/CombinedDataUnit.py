@@ -220,6 +220,7 @@ class CombinedDataUnit(DataUnit.DataUnit):
                 # Get the vtkImageData containing the results of the operation 
                 # for this time point
                 imageData=self.module.doOperation()
+                imageData = bxd.mem.optimize(image = imageData)
                 self.settings.set("Dimensions",str(imageData.GetDimensions()))
                 messenger.send(None,"update_processing_progress",timePoint,self.n,len(timepoints))
                 self.n+=1
@@ -364,6 +365,8 @@ class CombinedDataUnit(DataUnit.DataUnit):
                 # Go through all the source datasets for the module
                 self.module.setSettings(self.settings)
                 self.module.setTimepoint(timePoint)
+                images=[]
+                
                 for dataunit in self.sourceunits:
                     Logging.info("Adding source image data",kw="dataunit")
                     image=dataunit.getTimePoint(timePoint)
@@ -372,6 +375,7 @@ class CombinedDataUnit(DataUnit.DataUnit):
             preview=self.module.getPreview(depth)
 
         if not self.merging and self.outputChls:
+            print "Doing some stuff"
             if preview:
                 merged.append((preview,self.getColorTransferFunction()))
             
@@ -383,7 +387,9 @@ class CombinedDataUnit(DataUnit.DataUnit):
                     merge.AddLookupTable(ctf)
                     #createalpha.AddInput(data)
                 #print "Update..."
-                preview = bxd.execute_limited(merge)
+                #preview = bxd.execute_limited(merge)
+                
+                preview = merge.GetOutput()
                 #merge.Update()
                 #preview=merge.GetOutput()
             elif len(merged)==1:
@@ -393,13 +399,15 @@ class CombinedDataUnit(DataUnit.DataUnit):
                 maptocolor.SetInput(data)
                 maptocolor.SetLookupTable(ctf)
                 #maptocolor.Update()
-                #preview=maptocolor.GetOutput()
-                preview = bxd.execute_limited(maptocolor)
+                preview=maptocolor.GetOutput()
+                #preview = bxd.execute_limited(maptocolor)
+                
         
         if not showOrig and not self.doOrig:
             self.origPreview=preview
         elif showOrig:
             self.doOrig=1            
+        print "Returning",repr(preview)
         return preview
             
 

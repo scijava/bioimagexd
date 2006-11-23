@@ -64,7 +64,7 @@ def getModules(name,flag="*.py",callback=None,moduleType="Module"):
     if flag:pathlst.append(flag)
     path=reduce(os.path.join,pathlst)
     spath=reduce(os.path.join,[modpath,name])
-    Logging.backtrace()
+#    Logging.backtrace()
     Logging.info("Path to modes: %s"%spath,kw="modules")
     sys.path=sys.path+[spath]
     

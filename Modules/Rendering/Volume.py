@@ -40,6 +40,8 @@ import types
 from Visualizer.VisualizationModules import *
 import Logging
 
+import scripting as bxd
+
 TEXTURE_MAPPING=1
 TEXTURE_MAPPING_3D=2
 RAYCAST=0
@@ -212,6 +214,7 @@ class VolumeModule(VisualizationModule):
             if self.mapper:
                 if self.method not in [TEXTURE_MAPPING]:
                     self.mapper.SetSampleDistance(self.sampleDistance)
+                    #self.mapper.SetAutoAdjustSampleDistances(1)
                 else:
                     self.mapper.SetMaximumNumberOfPlanes(self.maxPlanes)
         #elif quality==9:
@@ -271,6 +274,7 @@ class VolumeModule(VisualizationModule):
             # Iso surfacing with fixedpoint mapper is not supported
             if self.vtkcvs and method!=ISOSURFACE:
                 self.mapper = vtk.vtkFixedPointVolumeRayCastMapper()
+                
                 #self.mapper.SetAutoAdjustSampleDistances(1)
                 self.sampleDistance = self.mapper.GetSampleDistance()
                 #self.volumeProperty.IndependentComponentsOff()
@@ -313,6 +317,9 @@ class VolumeModule(VisualizationModule):
             self.volumeProperty.IndependentComponentsOn()            
             
         Logging.info("Rendering using, ",self.mapper.__class__,kw="rendering")
+        
+        input = bxd.mem.optimize(image = input)
+        
         self.mapper.SetInput(input)
         #self.mapper.AddObserver("ProgressEvent",self.updateProgress)
 

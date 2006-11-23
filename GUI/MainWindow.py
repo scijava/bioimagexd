@@ -991,15 +991,14 @@ class MainWindow(wx.Frame):
         dlg.ShowModal()
         if dlg.result==1:
             self.tree.markRed(items,"*")
-            self.infoWidget.updateInfo(None,None,None)
             mode=self.visualizer.mode
             unit=self.visualizer.dataUnit
             self.visualizer.closeVisualizer()
             self.loadVisualizer(unit,mode)
             tb = self.GetToolBar()
-            tb.EnableTool(MenuManager.ID_RESAMPLING,1)             
-            #self.resampleBtn.Enable(1)
-#            self.loadVisualizer(None,self.visualizer.mode,reload=1)        
+            tb.EnableTool(MenuManager.ID_RESAMPLING,1)
+            
+            self.infoWidget.updateInfo(None,None,None)
         
     def onMenuRescaleData(self,evt):
         """
@@ -1408,8 +1407,9 @@ class MainWindow(wx.Frame):
             return
         dataunits=[]
         try:
-            Logging.info("Loading from data source ",datasource,kw="io")
+            Logging.info("\n\n\nLoading from data source ",datasource,kw="io")
             dataunits = datasource.loadFromFile(path)
+            print "\n\n\nLoaded from file",path
         except Logging.GUIError,ex:
             ex.show()
 

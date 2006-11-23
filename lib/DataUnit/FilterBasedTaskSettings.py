@@ -71,10 +71,10 @@ class FilterBasedTaskSettings(DataUnitSettings):
             minval,maxval = dataunit.getScalarRange()
         else:
             minval,maxval = dataunit.getSourceDataUnits()[0].getScalarRange()
-        ctf = vtk.vtkColorTransferFunction()
-        ctf.AddRGBPoint(minval,0,0,0)
-        ctf.AddRGBPoint(maxval, 1.0, 1.0, 1.0)
-        self.set("ColorTransferFunction",ctf)
+        #ctf = vtk.vtkColorTransferFunction()
+        #ctf.AddRGBPoint(minval,0,0,0)
+        #ctf.AddRGBPoint(maxval, 1.0, 1.0, 1.0)
+        #self.set("ColorTransferFunction",ctf)
 
         
     def writeTo(self,parser):
@@ -84,9 +84,9 @@ class FilterBasedTaskSettings(DataUnitSettings):
         """    
         DataUnitSettings.writeTo(self, parser)
         lst = self.get("FilterList")
-        print "Filter list to write=",lst
+        #print "Filter list to write=",lst
         flist = eval(self.serialize("FilterList",lst))
-        print "Got serialized=",flist
+        #print "Got serialized=",flist
         for i,fname in enumerate(flist):
             currfilter = lst[i]
             keys = currfilter.getPlainParameters()

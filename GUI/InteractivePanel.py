@@ -38,6 +38,7 @@ import wx.lib.ogl as ogl
 import messenger
 
 import math
+import scripting as bxd
 ZOOM_TO_BAND=1
 MANAGE_ANNOTATION=2
 ADD_ANNOTATION=3
@@ -65,6 +66,100 @@ class PainterHelper:
         """
         pass
         
+class VisualizeTracksHelper(PainterHelper):
+    """
+    Created: 21.11.2006, KP
+    Description: A helper for painting the tracks
+    """
+    def __init__(self, parent):
+        """
+        Created: 21.11.2006, KP
+        Description: Initialize the helper
+        """
+        PainterHelper.__init__(self, parent)
+        self.selectedTracks=[]
+        messenger.connect(None,"visualize_tracks",self.onShowTracks)        
+        
+    def onShowTracks(self,obj, evt, tracks):
+        """
+        Created: 25.09.2006, KP
+        Description: Show the selected tracks
+        """
+        print "OnShowTracks",obj,evt,tracks
+        if not tracks:
+            return
+        self.selectedTracks = tracks
+        
+                
+    def paintOnDC(self, dc):               
+        """
+        Created: 21.11.2006, KP
+        Description: Paint the selected tracks to the DC
+        """
+        if self.selectedTracks:
+            dc.SetPen(wx.Pen((255,255,255),1))
+            dc.SetBrush(wx.TRANSPARENT_BRUSH)
+            for track in self.selectedTracks:
+                x0,y0,z0 = track[0]
+                x0*=self.parent.zoomFactor
+                y0*=self.parent.zoomFactor
+                x0+=self.parent.xoffset
+                y0+=self.parent.yoffset                    
+                for i,(x1,y1,z1) in enumerate(track): 
+                    x1*=self.parent.zoomFactor
+                    y1*=self.parent.zoomFactor
+                    x1+=self.parent.xoffset
+                    y1+=self.parent.yoffset                
+                    if bxd.visualizer.getTimepoint()==i:                
+                        dc.DrawCircle(x0, y0,6)                
+                    else:
+                        dc.DrawCircle(x0,y0,4)
+                        
+                    if x0 != x1:
+                        dc.DrawLine(x0,y0,x1,y1)
+                    x0,y0 = x1,y1
+    
+class CenterOfMassHelper(PainterHelper):
+    def __init__(self, parent):
+        """
+        Created: 21.11.2006, KP
+        Description: Initialize the helper
+        """
+        PainterHelper.__init__(self,parent)
+        self.centerOfMass = None
+        messenger.connect(None,"show_centerofmass",self.onShowCenterOfMass)
+        
+    def onShowCenterOfMass(self, obj, evt, label, centerofmass):
+        """
+        Created: 04.07.2006, KP
+        Description: Show the given center of mass
+        """            
+        self.centerOfMass = (label, centerofmass)
+        
+        
+    def paintOnDC(self, dc):
+        """
+        Created: 21.11.2006, KP
+        Description: Paint the contents
+        """
+        if self.centerOfMass:
+            label, (x,y,z) = self.centerOfMass
+            
+            print "Painting center of Mass at ",x,y
+            #x=self.xdim - x 
+            #y = self.ydim - y
+            x*= self.parent.zoomFactor
+            y*= self.parent.zoomFactor
+            x+=self.parent.xoffset
+            y+=self.parent.yoffset
+            #if int(z) == self.parent.z:
+            dc.SetBrush(wx.TRANSPARENT_BRUSH)
+            dc.SetPen(wx.Pen((255,255,255),2))
+            dc.DrawCircle(x,y,10)
+            dc.SetTextForeground((255,255,255))
+            dc.SetFont(wx.Font(9,wx.SWISS,wx.NORMAL,wx.BOLD))
+            dc.DrawText("%d"%label,x-5,y-5)    
+    
 class AnnotationHelper(PainterHelper):
     """
     Created: 06.10.2006, KP
@@ -139,7 +234,9 @@ class InteractivePanel(ogl.ShapeCanvas):
         
         
         self.registerPainter( AnnotationHelper(self) )
-
+        self.registerPainter( CenterOfMassHelper(self) )
+        self.registerPainter( VisualizeTracksHelper(self) )
+        
         self.zoomFactor=1
         self.addListener(wx.EVT_RIGHT_DOWN, self.onFinishPolygon)
         
@@ -155,6 +252,8 @@ class InteractivePanel(ogl.ShapeCanvas):
         self.Bind(wx.EVT_LEFT_UP,self.executeAction)
         #self.Bind(wx.EVT_RIGHT_UP,self.actionEnd)
         self.Bind(wx.EVT_SIZE,self.OnSize)
+        
+        messenger.connect(None,"update_helpers",self.onUpdateHelpers)
         
     
     def setOffset(self, x,y):
@@ -214,6 +313,13 @@ class InteractivePanel(ogl.ShapeCanvas):
         Description: Add a painter helper that will be used to paint on the DC after everything else
         """
         self.painterHelpers.append(painter)      
+      
+    def onUpdateHelpers(self, obj,evt,update):
+        print "Update=",update
+        self.repaintHelpers(update)
+        if update:
+            self.Refresh()
+        
       
     def repaintHelpers(self, update=1):
         """

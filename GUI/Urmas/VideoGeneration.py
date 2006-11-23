@@ -46,6 +46,7 @@ import Logging
 import messenger
 import math
 
+import scripting as bxd
 
 class VideoGeneration(wx.Panel):
     """
@@ -241,7 +242,7 @@ class VideoGeneration(wx.Panel):
 #            x,y=512,512
 
         x,y=size
-        ffmpegs={"linux":"ffmpeg","win":"bin\\ffmpeg.exe","darwin":"bin/ffmpeg.osx"}
+        ffmpegs={"linux":"bin/ffmpeg","win32":"bin\\ffmpeg.exe","darwin":"bin/ffmpeg.osx"}
         ffmpeg="ffmpeg"
         quality=self.qualitySlider.GetValue()
         quality=11-quality
@@ -257,6 +258,9 @@ class VideoGeneration(wx.Panel):
             if i == sys.platform:
                 ffmpeg=ffmpegs[i]
                 break
+                
+        bindir = bxd.get_main_dir()
+        ffmpeg=os.path.join(bindir,ffmpeg)
         if not target:
             commandLine="%s -qscale %d -b 8192 -r %.2f -s %dx%d -i \"%s\" -vcodec %s \"%s\""%(ffmpeg,quality,frameRate,x,y,pattern,vcodec,file)
         else:

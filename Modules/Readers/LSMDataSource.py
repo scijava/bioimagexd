@@ -34,6 +34,7 @@ import DataSource
 import vtk
 import os.path
 
+import scripting
 import Logging
 import DataUnit
 import time
@@ -75,6 +76,7 @@ class LsmDataSource(DataSource.DataSource):
         self.voxelsize=None
         # vtkLSMReader is used to do the actual reading:
         self.reader=vtk.vtkLSMReader()
+        
         #self.reader.DebugOn()
         self.reader.AddObserver("ProgressEvent",self.updateProgress)
         # If a filename was specified, the file is loaded
@@ -89,8 +91,12 @@ class LsmDataSource(DataSource.DataSource):
                 Logging.error("Failed to open LSM File",
                 "Failed to open file %s for reading: %s"%(filename,str(ex)))
                 return
+                
             self.reader.SetFileName(self.filename)
-            self.reader.Update()
+            self.reader.SetUpdateChannel(channelNum)
+            #print "Update information..."
+            self.reader.UpdateInformation()
+            #print "done"
             self.originalDimensions = self.reader.GetDimensions()[0:3]
             if self.reader.IsCompressed():
                 raise Logging.GUIError("Cannot handle compressed dataset","The dataset you've selected (%s) is compressed. The LSM reader cannot currently read compressed data."%filename)
@@ -114,8 +120,8 @@ class LsmDataSource(DataSource.DataSource):
         notinvtk=0
         
         if progress==1.0:notinvtk=1
-        messenger.send(None,"update_progress",progress,msg,notinvtk)
-             
+        #messenger.send(None,"update_progress",progress,msg,notinvtk)
+        #print msg     
 
     def getDataSetCount(self):
         """
@@ -133,11 +139,17 @@ class LsmDataSource(DataSource.DataSource):
         Description: Return the bit depth of data
         """
         if not self.bitdepth:
-            d = self.reader.GetDataType()
-            if d==1:
+            #self.reader.DebugOn()
+            #self.reader.Update()
+            d=self.reader.GetOutput().GetScalarType()
+            #self.reader.ExecuteInformation()
+                        
+            #self.reader.DebugOff()
+            print "\n\n\n**** Datatype=",d
+            if d==3:
                 self.bitdepth = 8
-            if d==2:
-                self.bitdepth = 16
+            if d==5:
+                self.bitdepth = 12
         return self.bitdepth
         
     def getScalarRange(self):
@@ -146,8 +158,9 @@ class LsmDataSource(DataSource.DataSource):
         Description: Return the bit depth of data
         """        
         if not self.scalarRange:            
-            data=self.getDataSet(0,raw=1)
-            self.scalarRange=data.GetScalarRange()        
+            #data=self.getDataSet(0,raw=1)
+            #self.scalarRange=data.GetScalarRange()        
+            self.scalarRange = (0,2**self.bitdepth-1)
         return self.scalarRange
 
     def getDimensions(self):
@@ -158,8 +171,9 @@ class LsmDataSource(DataSource.DataSource):
         """
         if self.resampleDims:
             return self.resampleDims
-        if not self.dimensions:
+        if not self.dimensions or self.dimensions == (0,0,0,0,0):
             self.dimensions=self.reader.GetDimensions()
+            print "Got dimensions from LSM reader=",self.dimensions
             
         return self.dimensions[0:3]
 
@@ -195,21 +209,23 @@ class LsmDataSource(DataSource.DataSource):
     
         #Logging.backtrace()
         self.timepoint=i
-        data=self.reader.GetTimePointOutput(i, self.channelNum)
-        if not self.scalarRange:
-            self.scalarRange = data.GetScalarRange()
-        self.reader.Update()
+        #data=self.reader.GetTimePointOutput(i, self.channelNum)
+        self.reader.SetUpdateChannel(self.channelNum)
+        self.reader.SetUpdateTimePoint(i)
+        data = self.reader.GetOutput()
+        #if not self.scalarRange:
+        #    self.scalarRange = data.GetScalarRange()
+        #self.reader.Update()
 
-        self.originalScalarRange=data.GetScalarRange()
+        #self.originalScalarRange=data.GetScalarRange()
+        
         if raw:
             return data
         data=self.getResampledData(data,i)            
         if data.GetScalarType()!=3 and not raw:
             data=self.getIntensityScaledData(data)
             
-        
-        
-        data.ReleaseDataFlagOff()
+        #data.ReleaseDataFlagOff()
         return data
         
     def getFileName(self):
@@ -238,7 +254,8 @@ class LsmDataSource(DataSource.DataSource):
             Logging.error("Failed to open LSM File",
             "Failed to open file %s for reading: %s"%(filename,str(ex)))
 
-        self.reader.Update()
+        #self.reader.Update()
+        self.reader.UpdateInformation()
         if self.reader.IsCompressed():
             raise Logging.GUIError("Cannot handle compressed dataset","The dataset you've selected (%s) is compressed. The LSM reader cannot currently read compressed data."%filename)        
         dataunits=[]

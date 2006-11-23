@@ -227,14 +227,28 @@ class PerformanceSettings(wx.Panel):
         self.resampleBoxSizer.Add(resampleGrid)
         
         
-        self.memoryBox=wx.StaticBox(self,-1,"Memory usage",size=(600,150))
+        self.memoryBox=wx.StaticBox(self,-1,"Memory usage and threading",size=(600,150))
         self.memoryBoxSizer=wx.StaticBoxSizer(self.memoryBox,wx.VERTICAL)
         self.memoryBoxSizer.SetMinSize(self.memoryBox.GetSize())
         
-        self.limitMemoryCheckbox = wx.CheckBox(self,-1,"Limit memory used by a single operation")
+        self.limitMemoryCheckbox = wx.RadioButton(self,-1,"Limit memory used by a single operation", style = wx.RB_GROUP)
+        self.limitMemoryCheckbox.Bind(wx.EVT_RADIOBUTTON, self.onSelectLimitMemory)
+            
         
-        val = not not conf.getConfigItem("LimitMemory","Performance")
-        self.limitMemoryCheckbox.SetValue(val)
+        
+        self.splitToThreadsCheckbox = wx.RadioButton(self,-1,"Split processing to several threads")
+        self.splitToThreadsCheckbox.Bind(wx.EVT_RADIOBUTTON, self.onSelectSplitToThreads)
+        nthreadLbl = wx.StaticText(self,-1,"Number of threads:")
+        
+        numberOfDivisions = conf.getConfigItem("NumberOfDivisions","Performance")
+        
+        if numberOfDivisions:
+            numberOfDivisions = int(numberOfDivisions)        
+        else:
+            numberOfDivisions = 4
+        self.numberOfDivisions = wx.TextCtrl(self,-1,"%d"%numberOfDivisions)            
+        
+        
         
         try:
             limitval = eval(conf.getConfigItem("LimitTo","Performance"))
@@ -251,7 +265,29 @@ class PerformanceSettings(wx.Panel):
         memgrid.Add(self.memoryLimit,(0,1))
         memgrid.Add(mblbl,(0,2))
         self.memoryBoxSizer.Add(memgrid)
-
+        
+        limitMemory = conf.getConfigItem("LimitMemory","Performance")
+        if limitMemory:
+            limitMemory = eval(limitMemory)
+        else:
+            limitMemory = False
+        self.limitMemoryCheckbox.SetValue(limitMemory)        
+        alwaysSplit = conf.getConfigItem("AlwaysSplit","Performance")
+        if alwaysSplit:
+            alwaysSplit = eval(alwaysSplit)
+        else:
+            alwaysSplit = False
+        self.splitToThreadsCheckbox.SetValue(alwaysSplit)
+        if alwaysSplit:
+            self.onSelectSplitToThreads(None)
+        else:
+            self.onSelectLimitMemory(None)
+        #print "limit memory=",limitMemory,"alwaysSplit=",alwaysSplit
+        self.memoryBoxSizer.Add(self.splitToThreadsCheckbox)
+        threadgrid =wx.GridBagSizer()
+        threadgrid.Add(nthreadLbl, (0,0))
+        threadgrid.Add(self.numberOfDivisions,(0,1))
+        self.memoryBoxSizer.Add(threadgrid)
         
         self.rescaleBox = wx.StaticBox(self,-1,"Intensity rescaling",size=(600,100))
         self.rescaleBoxSizer = wx.StaticBoxSizer(self.rescaleBox, wx.VERTICAL)
@@ -274,6 +310,21 @@ class PerformanceSettings(wx.Panel):
         self.SetSizer(self.sizer)
         self.Layout()
         self.sizer.Fit(self)
+        
+    def onSelectLimitMemory(self, evt):
+        """
+        Created: 11.11.2006, KP
+        Description: Method called if the "limit memory" option is selected
+        """
+        self.memoryLimit.Enable(1)
+        self.numberOfDivisions.Enable(0)
+    def onSelectSplitToThreads(self, evt):
+        """
+        Created: 11.11.2006, KP
+        Description: Method called if the "split to threads" option is selected
+        """
+        self.memoryLimit.Enable(0)
+        self.numberOfDivisions.Enable(1)
         
     def writeSettings(self,conf):
         """
@@ -300,9 +351,15 @@ class PerformanceSettings(wx.Panel):
         limitMem = self.limitMemoryCheckbox.GetValue()
         limitTo = self.memoryLimit.GetValue()
         
+        alwaysSplit = self.splitToThreadsCheckbox.GetValue()
+        nthreads = self.numberOfDivisions.GetValue()
+                
         conf.setConfigItem("LimitMemory","Performance",str(not not limitMem))
         conf.setConfigItem("LimitTo","Performance",str(limitTo))
 
+        conf.setConfigItem("AlwaysSplit","Performance",str(not not alwaysSplit))
+        conf.setConfigItem("NumberOfDivisions","Performance",str(nthreads))
+        
 class MovieSettings(wx.Panel):
     """
     Created: 09.02.2005, KP

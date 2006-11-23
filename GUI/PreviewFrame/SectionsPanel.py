@@ -71,6 +71,7 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
         self.dataUnit=None
         
         self.drawableRects=[]
+        self.zspacing = 1
         
         self.zoomZ=1.0
         self.zoomx=1
@@ -131,6 +132,7 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
         nz=arg
         self.z=arg
         self.drawPos=[x*self.zoomFactor for x in (nx,ny,nz)]
+        
         self.setTimepoint(self.timepoint)
         self.updatePreview()        
         
@@ -156,7 +158,7 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
         
         x/=float(self.zoomFactor)
         y/=float(self.zoomFactor)
-            
+                
         dims=self.imagedata.GetDimensions()
         Logging.info("x,y=(%d,%d)"%(x,y),"dims=",dims,"margins=",self.xmargin,self.ymargin)
         #dims=(dims[0],dims[1],dims[2]*self.zoomZ)
@@ -167,13 +169,15 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
         # calculate scaled margins, because the click coordinates are scaled as well
         sxmargin=self.xmargin/self.zoomFactor
         symargin=self.ymargin/self.zoomFactor
-        if x>=dims[0]+sxmargin+dims[2]:
-            x=dims[0]+sxmargin+dims[2]-1
-        if y>=dims[1]+symargin+dims[2]:
-            y=dims[1]+symargin+dims[2]-1
-        if x>dims[0]+(sxmargin) and y>0 and y<dims[1] and x<dims[0]+sxmargin+dims[2]:
+        
+        if x>=dims[0]+sxmargin+dims[2]*self.zspacing:
+            x=dims[0]+sxmargin+dims[2]*self.zspacing-1
+        if y>=dims[1]+symargin+dims[2]*self.zspacing:
+            y=dims[1]+symargin+dims[2]*self.zspacing-1
+        if x>dims[0]+(sxmargin) and y>0 and y<dims[1] and x<dims[0]+sxmargin+dims[2]*self.zspacing:
             print "YZ plane"
             nz=x-dims[0]-sxmargin
+            nz/=self.zspacing
             ny=y#-self.ymargin
             nx=self.x
         # the xy plane
@@ -183,13 +187,14 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
             ny=y#+self.ymargin
             nz=self.z
         # the xz plane
-        elif x> 0 and x< dims[0] and y>dims[1]+symargin and y<dims[1]+symargin+dims[2]:
+        elif x> 0 and x< dims[0] and y>dims[1]+symargin and y<dims[1]+symargin+dims[2]*self.zspacing:
             print "XZ plane"
             nx=x#-self.xmargin
             nz=y-dims[1]-symargin
+            nz/=self.zspacing
             ny=self.y
         # the gray area
-        elif x>dims[0]+sxmargin and x<dims[0]+sxmargin+dims[2] and y>dims[1]+symargin and y<dims[1]+symargin+dims[2]:
+        elif x>dims[0]+sxmargin and x<dims[0]+sxmargin+dims[2]*self.zspacing and y>dims[1]+symargin and y<dims[1]+symargin+dims[2]*self.zspacing:
             print "Gray area"
             if y>x:
                 nz=y-dims[1]-symargin
@@ -299,7 +304,9 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
             image=self.dataUnit.getTimePoint(tp)
             self.ctf=self.dataUnit.getColorTransferFunction()
         
+        self.zspacing = image.GetSpacing()[2]
         self.imagedata = ImageOperations.imageDataTo3Component(image,self.ctf)
+        
         if self.fitLater:
             self.fitLater=0
             self.zoomToFit()        
@@ -315,21 +322,23 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
             slice=ImageOperations.vtkImageDataToWxImage(img)        
         else:
             slice=ImageOperations.vtkImageDataToWxImage(self.imagedata,z)
+        
         self.slices.append(slice)
+        
         slice=ImageOperations.getPlane(self.imagedata,"zy",self.x,self.y,z)
         #slice=ImageOperations.getPlane(self.imagedata,"xz",self.x,self.y,z)
         if self.zoomFactor != 1:
-            slice=ImageOperations.scaleImage(slice,self.zoomFactor)
-        if self.zoomZ != 1:
-            slice=ImageOperaations.scaleImage(slice,xfactor=self.zoomZ)
+            slice=ImageOperations.scaleImage(slice,self.zoomFactor, yfactor=1, xfactor=self.zspacing)
+        #if self.zoomZ != 1:
+        #    slice=ImageOperaations.scaleImage(slice,xfactor=self.zoomZ)
         slice=ImageOperations.vtkImageDataToWxImage(slice)
         self.slices.append(slice)
         slice=ImageOperations.getPlane(self.imagedata,"xz",self.x,self.y,z)
         #slice=ImageOperations.getPlane(self.imagedata,"zy",self.x,self.y,z)
         if self.zoomFactor != 1 or self.zoomZ != 1:
-            slice=ImageOperations.scaleImage(slice,self.zoomFactor)
-        if self.zoomZ != 1:
-            slice=ImageOperaations.scaleImage(slice,yfactor=self.zoomZ)        
+            slice=ImageOperations.scaleImage(slice,self.zoomFactor, yfactor=self.zspacing, xfactor=1)
+        #if self.zoomZ != 1:
+        #    slice=ImageOperaations.scaleImage(slice,yfactor=self.zoomZ)        
         slice=ImageOperations.vtkImageDataToWxImage(slice)
         self.slices.append(slice)        
 
@@ -415,19 +424,14 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
         row,col=0,0
 
         x,y,z=[i*self.zoomFactor for i in self.dims]
-        z*=self.zoomZ
+        z*=self.zoomZ*self.zspacing
 
         pos=[(self.xmargin,self.ymargin),(x+(2*self.xmargin),self.ymargin),(self.xmargin,y+(2*self.ymargin))]
         for i,slice in enumerate(self.slices):
-            w,h=slice.GetWidth(),slice.GetHeight()                        
-            #if i==1:
-            #    slice.Rescale(w*self.zoomZ,h)
-            #elif i==2:
-            #    slice.Rescale(w,h*self.zoomZ)
-#            if self.zoomFactor!=1:
-#                slice=ImageOperations.zoomImageByFactor(slice,self.zoomFactor)
-            
+                                  
+
             w,h=slice.GetWidth(),slice.GetHeight()
+            print "Widht, height of slice=",w,h
             #if i==2:
                 #slice=slice.Mirror(1)
             bmp=slice.ConvertToBitmap()
@@ -446,9 +450,10 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
             # vert across the xy
             dc.DrawLine(posx,0,posx,(2*self.ymargin)+y+z)
             # horiz across the lower
-            dc.DrawLine(0,y+(2*self.ymargin)+posz,(2*self.xmargin)+x+z,y+(2*self.ymargin)+posz)
+            dc.DrawLine(0,y+(2*self.ymargin)+posz*self.zspacing,(2*self.xmargin)+x+z,y+(2*self.ymargin)+posz*self.zspacing
+            )
             # vert across the right
-            dc.DrawLine((2*self.xmargin)+x+posz,0,(2*self.xmargin)+x+posz,y+(2*self.ymargin)+z)
+            dc.DrawLine((2*self.xmargin)+x+posz*self.zspacing,0,(2*self.xmargin)+x+posz*self.zspacing,y+(2*self.ymargin)+z)
             
         y=pos[-1][1]
             

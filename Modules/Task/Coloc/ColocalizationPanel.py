@@ -708,6 +708,7 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
         name=self.dataUnit.getName()
         filename=Dialogs.askSaveAsFileName(self,"Save colocalization statistics as","%s.csv"%name,"CSV File (*.csv)|*.csv")
         if filename:
+            filename=filename.replace("\\","\\\\")
             do_cmd="bxd.mainWindow.tasks['Colocalization'].exportStatistics('%s')"%filename
             cmd = Command.Command(Command.GUI_CMD,None,None,do_cmd,"",desc="Export colocalization statistics")
             cmd.run()

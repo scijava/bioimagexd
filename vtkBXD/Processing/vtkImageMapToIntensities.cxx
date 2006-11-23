@@ -149,6 +149,7 @@ void vtkImageMapToIntensities::ThreadedRequestData (
   vtkImageData **outData,
   int outExt[6], int id)
 {
+    printf("vtkImageMapToIntensities ThreadedRequestData outExt=%d,%d,%d,%d,%d,%d\n",outExt[0],outExt[1],outExt[2],outExt[3],outExt[4],outExt[5]);
   if (inData[0][0] == NULL)
     {
     vtkErrorMacro(<< "Input " << 0 << " must be specified.");

@@ -277,7 +277,8 @@ class UrmasWindow(scrolled.ScrolledPanel):
         active = self.control.getSelectedTrack()
         if active and hasattr(active,"maintainUpDirection"):
             self.menuManager.check(MenuManager.ID_MAINTAIN_UP,active.maintainUpDirection)
-            
+        if active and hasattr(active,"closed"):
+            self.menuManager.check(MenuManager.ID_SPLINE_CLOSED,active.closed)
         
         method=None
         if active and active.getClosed():
@@ -376,12 +377,32 @@ class UrmasWindow(scrolled.ScrolledPanel):
                 val=float(dlg.GetValue())
             except:
                 return
-        size=int(val*self.control.getPixelsPerSecond())
+        spf = self.control.getSecondsPerFrame()
+        # Make it so that you cant set the item smaller than a single frame
+        if val<spf:
+            val=spf
+                    
+        
         #print "Setting to size ",size,"(",val,"seconds)"
         active = self.control.getSelectedTrack()
         if not active:
             Dialogs.showwarning(self,"You need to select a track that you wish to perform the operation on.","No track selected")
             return        
+        # Make sure you cant use a value that would make the items expand beyond duration
+        n = active.getLength()
+        
+        pps = self.control.getPixelsPerSecond()
+        #w*=pps
+        startOfTrack = active.getStartOfTrack()
+        startOfTrack /= float(pps)
+        w=float(self.control.getDuration()-startOfTrack)/float(n)
+        
+    
+        if val>w:
+            val=w
+        
+        size=int(val*pps)        
+                    
         active.setToSize(size)
         
     def onSetTrackRelative(self,evt):
@@ -390,9 +411,19 @@ class UrmasWindow(scrolled.ScrolledPanel):
         Description: Set the length of items in a track relative to their physical size
         """
         active = self.control.getSelectedTrack()
+        if not active:
+            Dialogs.showwarning(self,"You need to select a track that you wish to perform the operation on.","No track selected")
+            return
+        
+        startOfTrack = active.getStartOfTrack()
+        pps = self.control.getPixelsPerSecond()
+        startOfTrack /= float(pps)
+        
+        duration = self.control.getDuration()
+        duration-=startOfTrack
         
         dlg = wx.TextEntryDialog(self,"Set total duration (seconds) of items in track:","Set track duration")
-        dlg.SetValue("30.0")
+        dlg.SetValue("%.2f"%duration)
         val=5
         if dlg.ShowModal()==wx.ID_OK:
             try:
@@ -401,9 +432,8 @@ class UrmasWindow(scrolled.ScrolledPanel):
                 return
         size=int(val*self.control.getPixelsPerSecond())
         #print "Setting to size ",size,"(",val,"seconds)"
-        if not active:
-            Dialogs.showwarning(self,"You need to select a track that you wish to perform the operation on.","No track selected")
-            return
+    
+            
         active.setToRelativeSize(size)
         
 
@@ -412,9 +442,14 @@ class UrmasWindow(scrolled.ScrolledPanel):
         Created: 23.06.2005, KP
         Description: Set the total length of items in a track
         """
+        active = self.control.getSelectedTrack()
+        if not active:
+            Dialogs.showwarning(self,"You need to select a track that you wish to perform the operation on.","No track selected")
+            return                
 
+        d = self.control.getDuration()
         dlg = wx.TextEntryDialog(self,"Set total duration (seconds) of items in track:","Set track duration")
-        dlg.SetValue("30")
+        dlg.SetValue("%.2f"%d)
         val=5
         if dlg.ShowModal()==wx.ID_OK:
             try:
@@ -423,10 +458,6 @@ class UrmasWindow(scrolled.ScrolledPanel):
                 return
         size=val*self.control.getPixelsPerSecond()
         #print "Setting to size ",size,"(",val,"seconds)"
-        active = self.control.getSelectedTrack()
-        if not active:
-            Dialogs.showwarning(self,"You need to select a track that you wish to perform the operation on.","No track selected")
-            return        
         active.setToSizeTotal(size)
 
 
