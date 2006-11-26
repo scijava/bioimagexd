@@ -130,7 +130,7 @@ def getFilterList():
             ITKLocalMaximumFilter,ITKOtsuThresholdFilter,ITKConfidenceConnectedFilter,
             MaskFilter,ITKSigmoidFilter, ITKInvertIntensityFilter, ConnectedComponentFilter,
             MaximumObjectsFilter,TimepointCorrelationFilter,
-            ROIIntensityFilter,CutDataFilter,GaussianSmoothFilter,CreateTracksFilter]
+            ROIIntensityFilter,CutDataFilter,GaussianSmoothFilter,CreateTracksFilter,ViewTracksFilter]
             
 MATH="Image arithmetic"
 SEGMENTATION="Segmentation"

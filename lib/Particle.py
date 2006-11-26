@@ -55,8 +55,40 @@ class ParticleReader:
         self.rdr = csv.reader(open(filename), dialect="excel",delimiter=";")
         self.filterObjectSize = filterObjectSize
         self.timepoint = -1  
+        self.volumes = []
+        self.cogs = []
+        self.avgints = []
+        self.objects = []
         
-    def read(self):
+    def getObjects(self):
+        """
+        Created: 25.11.2006, KP
+        Description: Return the list of object "intensity" values
+        """
+        return self.objects
+    
+    def getVolumes(self):
+        """
+        Created: 25.11.2006, KP
+        Description: return a list of the object volumes (sorted)
+        """
+        return self.volumes
+
+    def getCentersOfMass(self):
+        """
+        Created: 25.11.2006, KP
+        Description: return a list of the object volumes (sorted)
+        """
+        return self.cogs
+        
+    def getAverageIntensities(self):
+        """
+        Created: 25.11.2006, KP
+        Description: return a list of the object volumes (sorted)
+        """
+        return self.avgints     
+        
+    def read(self, statsTimepoint  = 0):
         """
         Created: KP
         Description: Read the particles from the filename and create corresponding instances of Particle class
@@ -83,18 +115,23 @@ class ParticleReader:
                 obj, sizemicro,size,cog,umcog,avgint = line
             try:
                 size = int(size)
+                sizemicro = float(sizemicro)
             except:
                 continue
             obj = int(obj)
-            if obj==0:continue
-            if size >= self.filterObjectSize:
-                cog=map(float,cog[1:-1].split(","))
-                #cog = eval(cog)
-                umcog=map(float,umcog[1:-1].split(","))
-                #umcog = eval(umcog)
-                avgint = float(avgint)
+            cog=map(float,cog[1:-1].split(","))
+            #cog = eval(cog)
+            umcog=map(float,umcog[1:-1].split(","))
+            #umcog = eval(umcog)
+            avgint = float(avgint)            
+            if size >= self.filterObjectSize and obj!=0:
                 p = Particle(umcog, cog, self.timepoint, size, avgint, obj)
                 curr.append(p)
+            if self.timepoint == statsTimepoint:
+                self.objects.append(obj)
+                self.cogs.append((int(cog[0]),int(cog[1]),int(cog[2])))
+                self.volumes.append((size,sizemicro))
+                self.avgints.append(avgint)
         return ret
 
 class Particle:
@@ -114,6 +151,13 @@ class Particle:
         self.trackNum = -1
         self.posInPixels=intpos
         self.matchScore = 99999999999999
+        
+    def getCenterOfMass(self):
+        """
+        Created: 26.11.2006, KP
+        Description: Return the center of mass component
+        """
+        return self.pos
         
     def objectNumber(self):
         return self.intval
@@ -162,8 +206,14 @@ class ParticleTracker:
                  classes to create tracks of a set of particles
     """
     def __init__(self):
-        self.particles = None       
+        self.particles = None    
+        self.velocityWeight = 0.25
+        self.intensityWeight = 0.25
+        self.directionWeight = 0.25
+        self.sizeWeight = 0.25
+        
         self.filterObjectSize = 2  
+        self.reader = None
         self.minimumTrackLength = 3
         self.tracks = []
         if psyco:
@@ -180,7 +230,24 @@ class ParticleTracker:
         """
         self.minimumTrackLength = minlen
         
-    def readFromFile(self, filename):
+    def setWeights(self, vw,sw,iw,dw):
+        """
+        Created: 25.11.2006, KP
+        Description: Set the weighting factors for velocity change, size change, intensity change and direction change
+        """
+        self.velocityWeight = vw
+        self.sizeWeight = sw
+        self.intensityWeight = iw
+        self.directionWeight = dw
+        
+    def getReader(self):
+        """
+        Created: 25.11.2006, KP
+        Description: Return the particle reader
+        """
+        return self.reader
+        
+    def readFromFile(self, filename, statsTimepoint = 0):
         """
         Created: 11.09.2006, KP
         Description: Read the particles from a given .CSV filename
@@ -192,9 +259,23 @@ class ParticleTracker:
         #    file="%s_%d.csv"%(filename,i)            
         if os.path.exists(filename):
             print "Reading from ",file
-            reader = ParticleReader(filename, filterObjectSize = self.filterObjectSize)
-            self.particles = reader.read()
+            self.reader = ParticleReader(filename, filterObjectSize = self.filterObjectSize)
+            self.particles = self.reader.read(statsTimepoint = statsTimepoint)
                 
+    def getParticles(self, timepoint, objs):
+        """
+        Created: 26.11.2006, KP
+        Description: return the particles in given timepoint with given int.values
+        """
+        print "getParticles",timepoint,objs
+        pts = self.particles[timepoint]
+        ret=[]
+        for i in pts:
+            if i.objectNumber() in objs:
+                ret.append(i)
+                
+        return ret
+        
     def writeTracks(self, filename):
         """
         Created: 11.09.2006, KP
@@ -353,7 +434,7 @@ class ParticleTracker:
         Description: Return a score that unifies the different factors into a single score
         """
         #return 0.50*distFactor+0.2*angleFactor+0.15*sizeFactor+0.15*intFactor
-        return distFactor*angleFactor*sizeFactor*intFactor
+        return self.velocityWeight*distFactor+self.directionWeight*angleFactor+self.sizeWeight*sizeFactor+self.intensityWeight*intFactor
     
     def track(self, fromTimepoint=0, seedParticles=[]):
         """
@@ -422,7 +503,7 @@ class ParticleTracker:
                         foundOne = False
                         currentMatch = Particle()
                         for testParticle in self.particles[search_tp]:
-                            print "Searching for match in timepoint %d"%search_tp
+                            #print "Searching for match in timepoint %d"%search_tp
                             # Calculate the factors between the particle that is being tested against
                             # the previous particle  (= oldParticle)
                             distFactor, sizeFactor, intFactor = self.score(testParticle,oldParticle)
