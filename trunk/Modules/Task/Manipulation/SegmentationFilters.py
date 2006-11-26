@@ -49,6 +49,7 @@ import messenger
 
 from lib.ProcessingFilter import FILTER_BEGINNER
 
+import  wx.lib.mixins.listctrl  as  listmix
 SEGMENTATION="Segmentation"
 #ITK="ITK"
 
@@ -118,15 +119,19 @@ class WatershedTotalsList(wx.ListCtrl):
             return None
 
 
-class WatershedObjectList(wx.ListCtrl):
-    def __init__(self, parent, log):
+class WatershedObjectList(wx.ListCtrl, listmix.ListCtrlSelectionManagerMix):
+    """
+    Created: KP
+    Description: A list control object that is used to display a list of the results of
+                 a watershed segmentation or a connected components analysis
+    """
+    def __init__(self, parent, wid, gsize=(350,250)):
         wx.ListCtrl.__init__(
-            self, parent, -1, 
-            size = (350,250),
-            style=wx.LC_REPORT|wx.LC_VIRTUAL|wx.LC_HRULES|wx.LC_VRULES,
-            
+            self, parent, wid, 
+            size = gsize,
+            style=wx.LC_REPORT|wx.LC_HRULES|wx.LC_VRULES,
             )
-
+        listmix.ListCtrlSelectionManagerMix.__init__(self)
         self.InsertColumn(0, "Object #")
         self.InsertColumn(1, u"Volume (\u03BCm)")
         self.InsertColumn(2, u"Volume (px)")
@@ -139,11 +144,13 @@ class WatershedObjectList(wx.ListCtrl):
         self.SetColumnWidth(3, 70)
         self.SetColumnWidth(4, 70)
 
-        self.SetItemCount(1000)
+        self.highlightSelected = 1
+        #self.SetItemCount(1000)
 
         self.attr1 = wx.ListItemAttr()
         self.attr1.SetBackgroundColour("white")
-
+        
+        self.counter = 0
         self.attr2 = wx.ListItemAttr()
         self.attr2.SetBackgroundColour("light blue")
         self.volumeList = []
@@ -151,24 +158,66 @@ class WatershedObjectList(wx.ListCtrl):
         self.avgIntList=[]
         
         self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.OnItemSelected)
+        self.Bind(wx.EVT_LIST_ITEM_FOCUSED, self.OnItemFocused)
         self.Bind(wx.EVT_LIST_ITEM_ACTIVATED, self.OnItemActivated)
         self.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.OnItemDeselected)
 
-    
+    def setSelectionHighlighting(self, flag):
+        """
+        Created: 26.11.2006, KP
+        Description: Set the flag indicating whether the selection of the objects will be highlighted
+        """
+        self.highlightSelected = flag
     def setCentersOfMass(self, centersofmassList):
         self.centersOfMassList = centersofmassList
-
+        for i,cog in enumerate(centersofmassList):
+            if self.GetItemCount()<i:
+                self.InsertStringItem(i,"")        
+            self.SetStringItem(i, 3,"(%d,%d,%d)"%(cog))
+        self.Refresh()
     def setVolumes(self,volumeList):
         self.volumeList = volumeList
-        self.SetItemCount(len(volumeList))
+#        self.SetItemCount(len(volumeList))
+        for i,(vol,volum) in enumerate(volumeList):
+            #print "vol=",vol,"volum=",volum
+            if self.GetItemCount()<=i:
+                self.InsertStringItem(i,"")
+            self.SetStringItem(i,0,"#%d"%i)
+            self.SetStringItem(i, 1,"%d px"%(vol))   
+            self.SetStringItem(i, 2,u"%.3f \u03BCm"%(volum))   
         self.Refresh()
         
     def setAverageIntensities(self, avgIntList):
         self.avgIntList= avgIntList
+        for i,avgint in enumerate(avgIntList):
+            if self.GetItemCount()<i:
+                self.InsertStringItem(i,"")        
+            self.SetStringItem(i, 4,"%.3f"%(avgint))
+        self.Refresh()
+        
+    def OnItemFocused(self, event):
+        event.Skip()
         
     def OnItemSelected(self, event):
         self.currentItem = event.m_itemIndex
-
+        item=-1
+        #print "Selected=",event.GetText()
+        
+        if self.highlightSelected:
+            self.counter+=1
+            
+            wx.FutureCall(200,self.sendHighlight)
+        event.Skip()
+    def sendHighlight(self):
+        """
+        Created: 26.11.2006, KP
+        Description: Send an event that will highlight the selected objects
+        """
+        
+        self.counter-=1
+        if self.counter<=0:
+            messenger.send(None,"selected_objects",self.getSelection())
+            self.counter=0
     def OnItemActivated(self, event):
         self.currentItem = event.m_itemIndex
         
@@ -180,28 +229,11 @@ class WatershedObjectList(wx.ListCtrl):
             messenger.send(None,"zslice_changed",int(z))
             messenger.send(None,"update_helpers",1)
         
-    def getColumnText(self, index, col):
-        item = self.GetItem(index, col)
-        return item.GetText()
 
     def OnItemDeselected(self, evt):
         print ("OnItemDeselected: %s" % evt.m_itemIndex)
 
-    def OnGetItemText(self, item, col):
-        
-        if item>=len(self.volumeList):
-            return ""
-        if col==0:
-            return "#%d"%item
-        elif col==1:
-            return u"%.3f \u03BCm"%self.volumeList[item][1]
-        elif col==2:
-            return "%d px"%self.volumeList[item][0]
-        elif col==4:
-            return "%.3f"%self.avgIntList[item]
-        else:
-            return "(%d, %d, %d)"%self.centersOfMassList[item]
-
+    
     def OnGetItemImage(self, item):
 #        if item % 3 == 0:
 #            return self.idx1
@@ -1058,6 +1090,7 @@ class MeasureVolumeFilter(ProcessingFilter.ProcessingFilter):
         
         if not self.reportGUI:
             self.reportGUI = WatershedObjectList(self.gui,-1)
+            
             self.totalGUI = WatershedTotalsList(self.gui,-1)
             if self.values:
                 def avg(lst):

@@ -47,6 +47,7 @@ class ManipulationDataUnit(CombinedDataUnit):
         """
         CombinedDataUnit.__init__(self,name)
         self.original = None
+        self.initialized = 0
 
     def setOriginal(self, dataUnit):
         """
@@ -63,16 +64,21 @@ class ManipulationDataUnit(CombinedDataUnit):
         Description: Returns the ctf of the source dataunit
         """
         sources=self.getSourceDataUnits()
-        if len(sources)==1:
-            return sources[0].getSettings().get("ColorTransferFunction")
-        else:
-            ctf=sources[0].getSettings().get("ColorTransferFunction")           
-            start,end=ctf.GetRange()
-            ctf = vtk.vtkColorTransferFunction()
-            ctf.AddRGBPoint(0,0,0,0)
-            ctf.AddRGBPoint(end, 1.0, 1.0, 1.0)
-            self.settings.set("ColorTransferFunction",ctf)
-            return ctf
+        if not self.initialized:
+            self.initialized=1
+            if len(sources)==1:        
+                ctf=sources[0].getSettings().get("ColorTransferFunction")
+                self.settings.set("ColorTransferFunction",ctf)
+                return ctf
+            else:
+                ctf=sources[0].getSettings().get("ColorTransferFunction")           
+                start,end=ctf.GetRange()
+                ctf = vtk.vtkColorTransferFunction()
+                ctf.AddRGBPoint(0,0,0,0)
+                ctf.AddRGBPoint(end, 1.0, 1.0, 1.0)
+                self.settings.set("ColorTransferFunction",ctf)
+                return ctf
+        return self.settings.get("ColorTransferFunction")
        
     def addSourceDataUnit(self,dataUnit,**args):
         """

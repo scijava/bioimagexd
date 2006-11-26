@@ -133,17 +133,19 @@ class VisualizeTracksHelper(PainterHelper):
                         #    dc.DrawCircle(x0,y0,4)
                         #    pass
                             
-                        def angle(x1,y1,x2,y2):
-                            ang=math.atan2(y2 - y1, x2 - x1) * 180.0 / math.pi;
+                        def angle(x_1,y_1,x_2,y_2):
+                            ang=math.atan2(y_2 - y_1, x_2 - x_1) * 180.0 / math.pi;
+                            ang=math.atan2(y_2 - y_1, x_2 - x_1) * 180.0 / math.pi;
                             ang2=ang
-                            if ang<0:ang=180+ang
+                            #if ang<0:ang=180+ang
                             return ang
                             
                         if x0 != x1:
                             dc.DrawLine(x0,y0,x1,y1)
                             a1 = angle(x0,y0,x1,y1)
                             print "Angle=",a1
-                            for ang in [45]:
+                            #for ang in [45]:
+                            if 0:
                                 ang=ang*((2*math.pi)/360.0)
                                 #l=5*self.parent.zoomFactor
                                 xs=5
@@ -154,7 +156,7 @@ class VisualizeTracksHelper(PainterHelper):
                                 y2 = math.sin(ang)*xs+math.cos(ang)*ys
                                 x2+=x0
                                 y2+=y0
-                                dc.DrawLine(x1,y1,x2,y2)
+                                dc.DrawLine(x0,y0,x2,y2)
                                 l=5*self.parent.zoomFactor
                                 xs=-5
                                 ys=5
@@ -164,7 +166,7 @@ class VisualizeTracksHelper(PainterHelper):
                                 y2 = math.sin(ang)*xs+math.cos(ang)*ys
                                 x2+=x0
                                 y2+=y0
-                                dc.DrawLine(x1,y1,x2,y2)                                
+                                dc.DrawLine(x0,y0,x2,y2)                                
                         
                             
                         x0,y0 = x1,y1
