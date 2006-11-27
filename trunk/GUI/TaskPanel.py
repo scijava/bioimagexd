@@ -1,4 +1,4 @@
-# -*- coding: iso-8859-1 -*-
+#-*- coding: iso-8859-1 -*-
 """
  Unit: TaskPanel
  Project: BioImageXD
@@ -52,6 +52,7 @@ import scripting as bxd
 TOOL_W=50
 TOOL_H=50
 class TaskPanel(scrolled.ScrolledPanel):
+
     """
     Created: 23.11.2004, KP
     Description: A baseclass for a panel for controlling the settings of the 
@@ -64,11 +65,10 @@ class TaskPanel(scrolled.ScrolledPanel):
         Parameters:
                 root    Is the parent widget of this window
         """
-        #wx.Dialog.__init__(self,root,-1,"Task Window",
-        #style=wx.CAPTION|wx.STAY_ON_TOP|wx.CLOSE_BOX|wx.MAXIMIZE_BOX|wx.MINIMIZE_BOX|wx.RESIZE_BORDER|wx.DIALOG_EX_CONTEXTHELP,
         #wx.Frame.__init__(self,root,-1,"Task Window",style=wx.DEFAULT_FRAME_STYLE, #|wx.NO_FULL_REPAINT_ON_RESIZE,
         #size=(1024,768))
         scrolled.ScrolledPanel.__init__(self,root,-1,size=(200,-1))
+        #wx.ScrolledWindow.__init__(self,root,-1,size=(200,-1))
         self.toolMgr = tb
         self.itemBitmaps = []
         # Unbind to not get annoying behaviour of scrolling
@@ -124,13 +124,22 @@ class TaskPanel(scrolled.ScrolledPanel):
         self.SetAutoLayout(True)
         
         self.SetupScrolling()
+        #self.SetScrollRate(20,20)
         #wx.FutureCall(500,self.doPreviewCallback)
         
         #messenger.connect(None,"itf_update",self.doPreviewCallback)
         messenger.connect(None,"channel_selected",self.selectItem)
         messenger.connect(None,"switch_datasets",self.onSwitchDatasets)
         messenger.connect(None,"update_settings_gui",self.onUpdateGUI)
+       
         
+#        self.Bind(wx.EVT_SIZE,self.onSize)
+        
+    def onSize(self,event):
+        print "\n\n\n\nOnSize",event.GetSize()
+        
+        self.FitInside()
+        event.Skip()
         
     def setCacheKey(self,key):
         """

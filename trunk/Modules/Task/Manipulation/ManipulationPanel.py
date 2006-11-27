@@ -354,7 +354,8 @@ class ManipulationPanel(FilterBasedTaskPanel.FilterBasedTaskPanel):
         self.panel.Layout()
         self.Layout()
         self.panelsizer.Fit(self.panel)
-        bxd.visualizer.OnSize(None)
+        self.FitInside()
+        
         
     def loadFilter(self, className):
         """

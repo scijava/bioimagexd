@@ -121,6 +121,14 @@ class TrackTable(gridlib.PyGridTableBase):
         Description: Return the number of rows
         """    
         return self.numberOfRows
+        
+    def Clear(self):
+        """
+        Created: 26.11.2006, KP
+        Description: clear the table
+        """
+        self.numberOfRows = 0
+        self.gridValues = {}
 
     def AppendRows(self, n = 1):
         """
@@ -152,24 +160,39 @@ class TrackTable(gridlib.PyGridTableBase):
         if (row,col) in self.gridValues:
             return "(%d,%d,%d)"%self.gridValues[(row,col)]
         return ""
-        
+
+    def getPointsAtRow(self, getrow):
+        """
+        Created: 26.11.2006, KP
+        Description: return the points at a given row
+        """
+        ret = []
+        for row,col in self.gridValues.keys():
+            if row==getrow:
+                ret.append(self.gridValues[(row,col)])
+        return ret        
     def getPointsAtColumn(self, getcol):
         """
         Created: 22.11.2006, KP
         Description: return the points at given columns
         """
         ret=[]
-        for row,col in self.gridValues.keys():
-            if col==getcol:
-                ret.append(self.gridValues[(row,col)])
+        #for row,col in self.gridValues.keys():
+        #    if col==getcol:
+        #        ret.append(self.gridValues[(row,col)])
+        for row in range(0,self.GetNumberRows()):
+            if (row,getcol) in self.gridValues:
+                ret.append((self.gridValues[(row,getcol)]))
+            else:
+                ret.append(None)
         return ret
 
-    def SetValue(self, row, col, value):
+    def SetValue(self, row, col, value, override = 0):
         """
         Created: 21.11.2006, KP
         Description: Set the value of a cell
         """                  
-        if col != self.enabledCol:
+        if col != self.enabledCol and not override:
             return
         print "Setting value at",row,col,"to",value
         self.gridValues[(row,col)]= tuple(map(int,value))
@@ -226,11 +249,14 @@ class TrackTableGrid(gridlib.Grid):
         Description: Store a coordinate in the cell
         """
         #print self.selectedCol,self.selectedRow,x,y,z
+        print "onUpdateCell",x,y,z
         currWin = bxd.visualizer.getCurrentWindow()
         if currWin.isMipMode():
              
-            image = self.trackFilter.getInput(1)
+            image = self.trackFilter.getInputFromChannel(0)
+            image.Update()
             xdim,ydim,zdim = image.GetDimensions()
+            
             possibleObjects=[]
             added=[]
             for zval in range(0,zdim):
@@ -301,9 +327,21 @@ class TrackTableGrid(gridlib.Grid):
         Created: 22.11.2006, KP
         Description: return the selected seed points
         """
-        if self.selectedCol!=None:            
-            return self.table.getPointsAtColumn(self.selectedCol)
-        return []
+        #rows=[]
+        cols=[]
+        #for i in range(0,self.table.GetNumberRows()):
+        #    rows.append(self.table.getPointsAtRow(i))
+        for i in range(0,self.table.GetNumberCols()):
+            pts = self.table.getPointsAtColumn(i)
+            while None in pts:pts.remove(None)
+            # If after removing all the empty cells there are no seed points in this 
+            # timepoint then return the current columns
+            if len(pts)==0:return cols
+            cols.append(pts)
+        return cols
+        #if self.selectedCol!=None:            
+        #    return self.table.getPointsAtColumn(self.selectedCol)
+        #return []
         
     def OnRightDown(self, event):
         """
@@ -338,6 +376,7 @@ class CreateTracksFilter(ProcessingFilter.ProcessingFilter):
         self.track = None
         self.tracker = None
         self.trackGrid = None
+        self.objectsReader = None
         self.ctf = None
         ProcessingFilter.ProcessingFilter.__init__(self,(1,1))
         
@@ -353,7 +392,8 @@ class CreateTracksFilter(ProcessingFilter.ProcessingFilter):
             "IntensityWeight":"Weight (0-100%):",
             "VelocityWeight":"Weight (0-100%):",
             "ResultsFile":"File to store the results:",
-            "Track":"Track to visualize"}
+            "Track":"Track to visualize",
+            "UseROI":"Select seed objects using ROI:","ROI":"ROI for tracking:"}
             
         messenger.connect(None,"selected_objects",self.onSetSelectedObjects)
     
@@ -395,8 +435,12 @@ class CreateTracksFilter(ProcessingFilter.ProcessingFilter):
         ctf.AddRGBPoint(2,hv, hv, hv)
         ctf.AddRGBPoint(maxval,hv, hv, hv)
         for obj in objects:
+            val=[0,0,0]
+            if obj-1 not in objects:
+                ctf.AddRGBPoint(obj-1,hv,hv,hv)
             ctf.AddRGBPoint(obj,0.0,1.0,0.0)
-            ctf.AddRGBPoint(obj+1,hv, hv, hv)
+            if obj+1 not in objects:
+                ctf.AddRGBPoint(obj+1,hv, hv, hv)
         print "Setting CTF where highlighted=",objects
         self.dataUnit.getSettings().set("ColorTransferFunction",ctf)
         messenger.send(None,"data_changed",0)
@@ -423,6 +467,12 @@ class CreateTracksFilter(ProcessingFilter.ProcessingFilter):
             if self.tracks:
                 messenger.send(None,"visualize_tracks",[self.tracks[self.parameters["Track"]]])            
                 messenger.send(None,"update_helpers",1)
+        elif parameter == "ROI":
+            roi = self.parameters["ROI"]
+            if roi and self.parameters["UseROI"]:
+                selections=self.getObjectsForROI(roi)
+                messenger.send(None,"selected_objects",selections)
+                
         if parameter=="MinLength":
             messenger.send(self,"update_Track")
     
@@ -436,6 +486,7 @@ class CreateTracksFilter(ProcessingFilter.ProcessingFilter):
         "MaxSizeChange","SizeWeight",
         "MaxIntensityChange", "IntensityWeight",
         "MaxDirectionChange","DirectionWeight")],
+        ["Region of Interest",("UseROI","ROI")],
         ["Tracking",("MinLength","MinSize")],
         ["Load object info",(("TrackFile","Select file with object statistics to load","*.csv"),)],
         ["Tracking Results",(("ResultsFile","Select track file that contains the results","*.csv"),)],
@@ -467,7 +518,11 @@ class CreateTracksFilter(ProcessingFilter.ProcessingFilter):
             return GUIBuilder.SPINCTRL
         elif parameter in ["SizeWeight","DirectionWeight","IntensityWeight","MaxDirectionChange","MaxIntensityChange","MaxSizeChange","VelocityWeight"]:
             return GUIBuilder.SPINCTRL
-        if parameter=="Track":return GUIBuilder.SLICE            
+        if parameter=="Track":return GUIBuilder.SLICE     
+        if parameter=="ROI":
+            return GUIBuilder.ROISELECTION
+        if parameter=="UseROI":
+            return types.BooleanType
         return GUIBuilder.FILENAME
         
     def getRange(self,parameter):
@@ -517,6 +572,12 @@ class CreateTracksFilter(ProcessingFilter.ProcessingFilter):
         #if parameter=="Track":return 0            
         if parameter == "ResultsFile":
             return "track_results.csv"
+        if parameter=="UseROI":
+            return 0
+        if parameter=="ROI":
+            n=bxd.visualizer.getRegionsOfInterest()
+            if n:return n[0]
+            return 0            
         return "statistics.csv"
         
         
@@ -585,17 +646,47 @@ class CreateTracksFilter(ProcessingFilter.ProcessingFilter):
             self.gui = gui
         return gui
         
+    def getObjectsForROI(self, roi):
+        """
+        Created: 26.11.2006, KP
+        Description: return the intensity values of objects in a given roi
+        """
+        
+        imagedata = self.getInputFromChannel(0)
+        mx, my, mz = self.dataUnit.getDimensions()
+        maskImage = ImageOperations.getMaskFromROIs([roi],mx,my,mz)
+        maskFilter = vtk.vtkImageMask()
+        maskFilter.SetMaskedOutputValue(0)
+        maskFilter.SetMaskInput(maskImage)
+        maskFilter.SetImageInput(imagedata)
+        maskFilter.Update()
+        data = maskFilter.GetOutput()
+        histogram = ImageOperations.get_histogram(data)
+        ret=[]
+        for i in range(2,len(histogram)):
+            if histogram[i]:
+                ret.append(i)
+        return ret
+        
     def onUseSelectedSeeds(self, event):
         """
         Created: 26.11.2006, KP
         Description: use the selected seed list
         """
-        selections = self.selections[:]
+        if self.parameters["UseROI"]:
+            roi = self.parameters["ROI"]
+            selections=[]
+            if roi:
+                selections=self.getObjectsForROI(roi)
+        else:
+            selections = self.selections[:]
         
         if self.ctf:
             self.dataUnit.getSettings().set("ColorTransferFunction",self.ctf)
+            self.ctf = None
             messenger.send(None,"data_changed",0)
-        
+            
+        print "Selected",len(selections),"objects"
         n = self.trackGrid.getTable().GetNumberRows()
         n2 = len(selections)
         if n2>n:
@@ -632,8 +723,7 @@ class CreateTracksFilter(ProcessingFilter.ProcessingFilter):
         """            
         if not ProcessingFilter.ProcessingFilter.execute(self,inputs):
             return None
-        
-        image = self.getInput(1)
+        image = self.getInputFromChannel(0)
         return image
     
     def onReadTracks(self, event):
@@ -651,7 +741,27 @@ class CreateTracksFilter(ProcessingFilter.ProcessingFilter):
         messenger.send(self,"update_Track")
         print "Read %d tracks"%(n)
         print self.tracks
-    
+        self.showTracks(self.tracks)
+        
+    def showTracks(self, tracks):
+        """
+        Created: 26.11.2006, KP
+        Description: show the given tracks in the track grid
+        """
+        table = self.trackGrid.getTable()
+        table.Clear()
+        table.AppendRows(len(tracks))
+        for i,track in enumerate(tracks):
+            mintp,maxtp = track.getTimeRange()
+            print "Track",i,"has time range",mintp,maxtp
+            for tp in range(mintp,maxtp+1):
+                val,pos = track.getObjectAtTime(tp)
+                print "    value at tp ",tp,"(pos ",pos,") is ",val
+                table.SetValue(i,tp,pos, override=1)
+        self.trackGrid.SetTable(table)
+        self.trackGrid.ForceRefresh()
+        
+        
     def onReadObjects(self, event):
         """
         Created: 22.11.2006, KP
@@ -684,14 +794,15 @@ class CreateTracksFilter(ProcessingFilter.ProcessingFilter):
             self.reportGUI.setCentersOfMass(rdr.getCentersOfMass())
             self.reportGUI.setAverageIntensities(rdr.getAverageIntensities())    
             
-    def getObjectFromCoord(self, pt):
+    def getObjectFromCoord(self, pt, timepoint=-1):
         """
         Created: 22.11.2006, KP
         Description: return an intensity value at given x,y,z
         """
+        if not pt:return None
         x,y,z = pt
         print "Getting from ",x,y,z
-        image = self.getInput(1)
+        image = self.getInputFromChannel(0, timepoint = timepoint)
         intensity = int(image.GetScalarComponentAsDouble(x,y,z,0))
         return intensity
         
@@ -703,6 +814,7 @@ class CreateTracksFilter(ProcessingFilter.ProcessingFilter):
         #print "Using ",image
         #self.vtkfilter.SetInput(image)
 
+                
         self.tracker.setMinimumTrackLength(self.parameters["MinLength"])
         self.tracker.setDistanceChange(self.parameters["MaxVelocity"]/100.0)
         self.tracker.setSizeChange(self.parameters["MaxSizeChange"]/100.0)
@@ -714,14 +826,22 @@ class CreateTracksFilter(ProcessingFilter.ProcessingFilter):
         w4 = self.parameters["DirectionWeight"]
         self.tracker.setWeights(w1,w2,w3,w4)
         
+        
+        objVals=[]
         pts = self.trackGrid.getSeedPoints()
         print "Seed points=",pts
-        its = map(self.getObjectFromCoord, pts)
-        print "Tracking objects with itensities=",its
+        
+        for i,col in enumerate(pts):
+            f=lambda coord,tp=i: self.getObjectFromCoord(coord, timepoint=tp)
+            its = map(f, col)
+            
+            objVals.append(its)
+        print "Objects=",objVals
+        #print "Tracking objects with itensities=",its
         
         fromTp = self.trackGrid.getTimepoint()
         print "Tracking from timepoint",fromTp,"forward"        
-        self.tracker.track(fromTimepoint = fromTp, seedParticles = its)
+        self.tracker.track(fromTimepoint = fromTp, seedParticles = objVals)
         self.tracker.writeTracks(self.parameters["ResultsFile"])
     
         self.onReadTracks(None)
@@ -879,7 +999,7 @@ class ViewTracksFilter(ProcessingFilter.ProcessingFilter):
         if not ProcessingFilter.ProcessingFilter.execute(self,inputs):
             return None
         
-        image = self.getInput(1)
+        image = self.getInputFromChannel(0)
         return image
     
     def onReadTracks(self, event):
@@ -897,4 +1017,22 @@ class ViewTracksFilter(ProcessingFilter.ProcessingFilter):
         messenger.send(self,"update_Track")
         print "Read %d tracks"%(n)
         print self.tracks
-    
+        self.showTracks(self.tracks)
+        
+    def showTracks(self, tracks):
+        """
+        Created: 26.11.2006, KP
+        Description: show the given tracks in the track grid
+        """
+        table = self.trackGrid.getTable()
+        table.Clear()
+        table.AppendRows(len(tracks))
+        for i,track in enumerate(tracks):
+            mintp,maxtp = track.getTimeRange()
+            print "Track",i,"has time range",mintp,maxtp
+            for tp in range(mintp,maxtp+1):
+                val,pos = track.getObjectAtTime(tp)
+                print "    value at tp ",tp,"(pos ",pos,") is ",val
+                table.SetValue(i,tp,pos, override=1)
+        self.trackGrid.SetTable(table)
+        self.trackGrid.ForceRefresh()    
