@@ -191,8 +191,8 @@ class Particle:
         
     def __str__(self):
         try:
-            x,y,z = self.pos
-            return "#%d at (%.2f, %.2r, %.2f) at time %d, in track: %s"%(self.intval, x,y,z,self.tp, not not self.inTrack)
+            x,y,z = self.posInPixels
+            return "<Obj#%d (%d,%d,%d) t=%d, inTrack=%s>"%(self.intval, x,y,z,self.tp, not not self.inTrack)
         except:
             raise "Bad pos",self.pos
     def __repr__(self):
@@ -275,6 +275,13 @@ class ParticleTracker:
                 ret.append(i)
                 
         return ret
+        
+    def getTracks(self):
+        """
+        Created: 27.11.2006, KP
+        Description: return the tracks
+        """
+        return self.tracks
         
     def writeTracks(self, filename):
         """
@@ -463,39 +470,82 @@ class ParticleTracker:
         print "Maximum change in intensity = ",self.maxIntensity
         
         
-        if seedParticles:
         
+        if seedParticles:
+            trackCount = len(seedParticles[0])
+            tracks=[[]*trackCount]
+            print "Track count=",trackCount
+            
             particleList = copy.deepcopy(self.particles)
             toRemove=[]
-            for i in particleList[fromTimepoint]:
-                if i.objectNumber() not in seedParticles:
-                    toRemove.append(i)
-            for i in toRemove:
-                particleList[fromTimepoint].remove(i)
+            
+            # First remove all particles in the seed timepoints
+            # that are not listed as seed points
+            for tp,col in enumerate(seedParticles):
+                fromTimepoint = tp
+                toRemove=[]
+                objToParticle={}
+                for i in particleList[tp]:
+                    objval = i.objectNumber()
+                    if objval not in col:
+                        toRemove.append(i)
+                    else:
+                        objToParticle[objval] = i
+                for i in toRemove:
+                    particleList[tp].remove(i)
+                for tracknum,objVal in enumerate(col):
+                    particle = objToParticle[objVal]
+                    particle.inTrack=1
+                    particle.trackNum = tracknum
+                    print "Adding particle",objVal,"to track",tracknum
+                    tracks[tracknum].append(particle)
+                           
+                    
         else:
             particleList = self.particles
+            
+        
+            
         # Iterate over all timepoints
-        #for tp in range(totalTimepoints):            
-        print "Tracking from %d particles"%len(particleList[fromTimepoint])
+        #for tp in range(totalTimepoints): 
+        
+        #print "Tracking from %d particles"%len(particleList[fromTimepoint])
+        print "Seed tracks=",tracks
         for tp in [fromTimepoint]:
             # Iterate over all particles in given timepoint
+                            
+            
             for i,particle in enumerate(particleList[tp]):
+                if not seedParticles and particle.inTrack:
                 # If particle is in track, just let the user know
-                if particle.inTrack:
+                    #if particle.inTrack:
                     print "\nParticle %d / %d in timepoint %d is already in track %d"%(i,len(particleList[tp]),tp,particle.trackNum)
                 else:
                     print "\nTracking particle %d / %d in timepoint %d"%(i,len(particleList[tp]),tp)
-                    # Create a new track that starts from this point
-                    track=[]
-                    trackCount+=1
-                    particle.inTrack = True
-                    particle.trackNum = trackCount
-                    track.append(particle)
                     
+                    # If we have seed particles, then the track has already been constructed to
+                    # this point and we can just search for the following particles
+
                     oldParticle = Particle()
                     currCandidate = Particle()
                     # Make a copy of the particle 
-                    oldParticle.copy(particle)
+                    oldParticle.copy(particle)                    
+                    if not seedParticles:
+                        # Create a new track that starts from this point
+                        track=[]
+                        trackCount+=1
+                        particle.inTrack = True
+                        particle.trackNum = trackCount
+                        track.append(particle)
+                        
+                    else:
+                        track=None
+                        for ctrack in tracks:
+                            if particle in ctrack:
+                                track=ctrack
+                        
+                        if not track:
+                            raise "Didin't find track for see dparticle",particle
                     searchOn = True
                     # Search the next timepoints for more particles
                     for search_tp in range(tp+1,totalTimepoints):

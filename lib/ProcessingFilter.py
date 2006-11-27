@@ -278,6 +278,8 @@ class ProcessingFilter(GUIBuilder.GUIBuilderBase):
         Created: 17.04.2006, KP
         Description: Return the input imagedata #n
         """             
+        print "input mapping=",self.inputMapping
+        print "n=",n
         if n not in self.inputMapping:
             self.inputMapping[n]=n-1
         if self.inputMapping[n]==0:        
@@ -289,16 +291,18 @@ class ProcessingFilter(GUIBuilder.GUIBuilderBase):
             image = self.getInputFromChannel(self.inputMapping[n]-1)
         return image
         
-    def getInputFromChannel(self,n):
+    def getInputFromChannel(self,n, timepoint=-1):
         """
         Created: 17.04.2006, KP
         Description: Return an imagedata object that is the current timepoint for channel #n
         """             
         if not self.sourceUnits:
             self.sourceUnits = self.dataUnit.getSourceDataUnits()
-        tp=self.taskPanel.timePoint
+        tp=bxd.visualizer.getTimepoint()
         if bxd.processingTimepoint != -1:
             tp = bxd.processingTimepoint
+        if timepoint!=-1:
+            tp=timepoint
         print "RETURNING TIMEPOINT %d AS SOURCE"%tp
         return self.sourceUnits[n].getTimePoint(tp)
         

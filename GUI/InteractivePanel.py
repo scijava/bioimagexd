@@ -111,8 +111,7 @@ class VisualizeTracksHelper(PainterHelper):
                     y0+=self.parent.yoffset     
                     mintp+=1
                 dc.SetTextForeground((255,255,255))
-                dc.SetFont(wx.Font(6,wx.SWISS,wx.NORMAL,wx.NORMAL))
-                dc.DrawText("%d"%(mintp-1),x0-10,y0-10)
+                self.drawTimepoint(dc,mintp-1,x0,y0)
                 
                 for i in range(mintp, maxtp+1):
                     objectValue, pos = track.getObjectAtTime(i)
@@ -125,13 +124,7 @@ class VisualizeTracksHelper(PainterHelper):
                         x1+=self.parent.xoffset
                         y1+=self.parent.yoffset                
                         
-                        dc.DrawText("%d"%i,x1-10,y1-10)
-                        #if bxd.visualizer.getTimepoint()==i:                
-                        #    #dc.DrawCircle(x0, y0,6)                
-                        #    pass
-                        #else:
-                        #    dc.DrawCircle(x0,y0,4)
-                        #    pass
+                        self.drawTimepoint(dc,i,x1,y1)                        
                             
                         def angle(x_1,y_1,x_2,y_2):
                             ang=math.atan2(y_2 - y_1, x_2 - x_1) * 180.0 / math.pi;
@@ -170,6 +163,19 @@ class VisualizeTracksHelper(PainterHelper):
                         
                             
                         x0,y0 = x1,y1
+                        
+    def drawTimepoint(self, dc, tp,x,y):
+        """
+        Created: 26.11.2006, KP
+        Description: Draw the text label for given timepoint
+        """
+        if tp != bxd.visualizer.getTimepoint():
+            dc.SetFont(wx.Font(7,wx.SWISS,wx.NORMAL,wx.NORMAL))
+            dc.DrawCircle(x,y,3)
+        else:
+            dc.SetFont(wx.Font(9,wx.SWISS,wx.NORMAL,wx.NORMAL))
+            dc.DrawCircle(x,y,5)
+        dc.DrawText("%d"%(tp),x-10,y)
     
 class CenterOfMassHelper(PainterHelper):
     def __init__(self, parent):
