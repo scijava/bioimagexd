@@ -157,7 +157,7 @@ class Particle:
         Created: 26.11.2006, KP
         Description: Return the center of mass component
         """
-        return self.pos
+        return self.posInPixels
         
     def objectNumber(self):
         return self.intval
@@ -473,7 +473,8 @@ class ParticleTracker:
         
         if seedParticles:
             trackCount = len(seedParticles[0])
-            tracks=[[]*trackCount]
+            tracks=[]
+            for i in range(trackCount):tracks.append([])
             print "Track count=",trackCount
             
             particleList = copy.deepcopy(self.particles)
