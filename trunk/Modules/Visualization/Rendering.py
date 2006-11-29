@@ -88,6 +88,7 @@ class RenderingMode(VisualizationMode):
         self.lightsManager=None
         self.configPanel=None
         self.dataUnit=None
+        self.initialized=False
         
         self.defaultModule = "Volume rendering"
         self.modules = []
@@ -302,7 +303,9 @@ class RenderingMode(VisualizationMode):
         if not self.dataUnit:
             Dialogs.showerror(self.parent,"No dataset has been loaded for visualization","Cannot load visualization module")
             return
-        self.wxrenwin.initializeVTK()
+        if not self.initialized:
+            self.wxrenwin.initializeVTK()
+            self.initialized=1
         module = self.mapping[name][0](self,self.visualizer,label=lbl,moduleName=name)
         self.modules.append(module)
         module.setDataUnit(self.dataUnit)
