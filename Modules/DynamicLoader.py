@@ -94,7 +94,7 @@ def getModules(name,flag="*.py",callback=None,moduleType="Module"):
         Logging.info("Importing %s from %s"%(mod,frompath),kw="modules")
         try:
             module = __import__(mod,globals(),locals(),mod)
-        except:
+        except ImportError:            
             continue
         if hasattr(module,"getShortDesc"):
             name = module.getShortDesc()

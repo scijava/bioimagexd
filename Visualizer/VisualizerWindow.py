@@ -64,7 +64,9 @@ class VisualizerWindow(wxVTKRenderWindowInteractor):
         self.enabled = 1
         self.origParallelScale = None
         self.origViewAngle = None
-        
+        self.showFPS = False
+        self.textActor = None
+        self.endTime = time.time()
     def enable(self,flag):
         """
         Created: 02.06.2005, KP
@@ -114,17 +116,29 @@ class VisualizerWindow(wxVTKRenderWindowInteractor):
         key=obj.GetKeyCode()
         #print "Key event",key
         words={"j":"Joystick","a":"Actor","c":"Camera","t":"Trackball"}
+        mod=0
         if key in ["a","c"]:
             self.controlled=words[key]
             messenger.send(None,"set_status","Now controlling %s"%words[key])
+            mod=1
         elif key in ["j","t"]:
             self.control=words[key]
             messenger.send(None,"set_status","Control style is %s"%words[key])
-        style="vtk.vtkInteractorStyle%s%s()"%(self.control,self.controlled)
-        
-        
-        self.irenStyle=eval(style)
-        self.iren.SetInteractorStyle(self.irenStyle)
+            mod=1
+        elif key == "i":
+            self.showFPS = not self.showFPS
+            if self.showFPS:
+                if self.textActor:
+                    self.renderer.AddActor(self.textActor)
+            else:
+                if self.textActor:
+                    self.renderer.RemoveActor(self.textActor)
+        if mod:
+            style="vtk.vtkInteractorStyle%s%s()"%(self.control,self.controlled)
+            
+            
+            self.irenStyle=eval(style)
+            self.iren.SetInteractorStyle(self.irenStyle)
         return 0
         
         
@@ -192,6 +206,29 @@ class VisualizerWindow(wxVTKRenderWindowInteractor):
         if self.rubberband:
             self.iren.SetInteractorStyle(self.oldStyle)
             self.rubberband=0
+
+        if self.showFPS:
+            if not self.textActor:
+                self.textActor = vtk.vtkTextActor()
+                prop =  self.textActor.GetTextProperty()                
+                prop.SetFontSize(14)
+                self.textActor.SetTextProperty(prop)
+                w,h = self.renderer.GetSize()
+                #self.textActor.ScaledTextOn()
+                
+                self.textActor.SetDisplayPosition(w-85,h-50)
+                self.renderer.AddActor(self.textActor)
+            t = time.time()-self.endTime
+            if not t:return
+            fps = 1.0 / t
+        
+            #self.timerLog.StartTimer()
+            self.endTime = time.time()
+            renderTime = self.renderer.GetLastRenderTimeInSeconds()
+            txt = "fps %.1f\ntime %.3fs"%(fps, renderTime) 
+            self.textActor.SetInput(txt)
+        
+        
         
     def save_png(self,filename):
         """
