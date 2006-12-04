@@ -108,7 +108,8 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
         Description: Set the factor by which the image is zoomed
         """
         self.zoomFactor=factor
-        self.setTimepoint(self.timepoint)
+        if self.dataUnit:
+            self.setTimepoint(self.timepoint)
         self.updateAnnotations()
         self.sizeChanged=1
 
@@ -291,6 +292,7 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
         self.calculateBuffer()
         self.updatePreview()
         self.Refresh()
+        
     def setTimepoint(self,tp):
         """
         Created: 23.05.2005, KP

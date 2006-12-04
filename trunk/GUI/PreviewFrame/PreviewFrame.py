@@ -165,7 +165,7 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         InteractivePanel.InteractivePanel.__init__(self,parent,size=size,bgColor = self.bgcolor,**kws)
         
         self.calculateBuffer()
-        
+        self.paintSize = self.GetSize()
         self.paintPreview()
         
         
@@ -229,8 +229,22 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         if self.fixedSize:
             x,y = self.fixedSize
         if self.paintSize!=(x,y):    
-            self.paintSize=(x,y)            
-            self.setScrollbars(x,y)
+            self.paintSize=(x,y)                        
+            #self.setScrollbars(x,y)
+            x2,y2 = self.xdim,self.ydim
+            x2*=self.zoomFactor
+            y2*=self.zoomFactor
+            
+            flag=0
+            if x2>x:
+                x=x2
+                flag=1
+            if y2>y:
+                y=y2
+                flag=1
+            if flag:                
+                self.buffer = wx.EmptyBitmap(x,y)
+                self.setScrollbars(x,y)
         Logging.info("paintSize=",self.paintSize,kw="preview")
         #if bxd.visualizer.zoomToFitFlag:
         #    self.zoomToFit()
@@ -757,6 +771,14 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         if f>10:
             f=10
         Logging.info("Setting zoom factor to ",f,kw="preview")
+        x,y = self.xdim,self.ydim
+        x*=f
+        y*=f
+        px,py = self.paintSize
+        if px>x:x=px
+        if py>y:y=py
+        self.buffer = wx.EmptyBitmap(x,y)
+        self.setScrollbars(x,y)
         if f<self.zoomFactor:
             # black the preview
             
@@ -897,7 +919,12 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         yoff = (th-bh)/2
         self.setOffset(xoff, yoff)
         dc.DrawBitmap(bmp,xoff,yoff,True)
-            
+
+#        if bw>tw or bh>th:
+#            self.setScrollbars(bw+xoff,bh+xoff)
+#        else:
+#            self.setScrollbars(tw,th)
+        
         self.bmp=self.buffer
         
         InteractivePanel.InteractivePanel.paintPreview(self)
