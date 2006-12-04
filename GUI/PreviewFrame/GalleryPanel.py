@@ -69,6 +69,7 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
         
         x,y=size
         self.paintSize=size
+        self.reqSize = size
         self.buffer = wx.EmptyBitmap(x,y)
         self.oldBufferDims = None
         self.oldBufferMaxXY = None
@@ -129,10 +130,12 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
         x,y=self.originalSliceSize
         x*=factor
         y*=factor
-        
+        self.sizeChanged=1
+        self.calculateBuffer()
 
         self.sliceSize=(x,y)
         self.slices=[]
+        
         self.updatePreview()
         self.Refresh()
         
@@ -149,6 +152,7 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
         Description: Size event handler
         """    
         InteractivePanel.InteractivePanel.OnSize(self,event)
+        self.paintSize = self.GetClientSize()
         #self.gallerySize=event.GetSize()
         #Logging.info("Gallery size changed to ",self.gallerySize,kw="preview")
         self.sizeChanged=1
@@ -159,7 +163,7 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
         Description: Sets the dataunit to display
         """    
         self.dataUnit=dataunit
-        print "\n\SWITCHED TO DATAUNIT",dataunit
+    
         self.dims=dataunit.getDimensions()
         self.voxelSize=dataunit.getVoxelSize()
         InteractivePanel.InteractivePanel.setDataUnit(self,dataunit)
@@ -200,11 +204,11 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
         
         #x,y,z=self.imagedata.GetDimensions()
         x,y,z = self.dataUnit.getDimensions()
-        print "dims now=",x,y,z
+        #print "dims now=",x,y,z
         #x,y,z=self.dataUnit.getDimensions()
         
         self.slices=[]
-        print "z=",z
+        #print "z=",z
         
         for i in range(z):
             #print "Using as update ext",(0,x-1,0,y-1,i,i)
@@ -268,8 +272,9 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
         
         #x,y,z=self.imagedata.GetDimensions()
         x,y,z = self.dataUnit.getDimensions()
-        print "X,y,z,=",x,y,z
-        if (x,y,z) == self.oldBufferDims and self.oldBufferMaxXY == (self.maxSizeX, self.maxSizeY):
+        
+        if not self.sizeChanged and (x,y,z) == self.oldBufferDims and self.oldBufferMaxXY == (self.maxSizeX, self.maxSizeY):
+            #print "No need to re-assess"
             return
         
 
@@ -321,10 +326,19 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
         
         self.rows=yreq
         self.cols=xreq
-        if self.paintSize!=(x,y):    
-            self.paintSize=(x,y)            
-            self.setScrollbars(x,y)
-        Logging.info("paintSize=",self.paintSize,kw="preview")
+        if self.reqSize!=(x,y):    
+            
+            self.reqSize=(x,y)            
+        x2,y2 = self.paintSize
+        flag=0
+        if x>x2:
+            x2=x
+        if y>y2:
+            y2=y
+        
+        self.buffer = wx.EmptyBitmap(x2,y2)
+        self.setScrollbars(x2,y2)
+        
 
 
     def resetScroll(self):
@@ -380,6 +394,7 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
         Description: Does the actual blitting of the bitmap
         """
         if self.sizeChanged:
+            
             #Logging.info("size changed, calculating buffer",kw="preview")
             self.calculateBuffer()
             self.updatePreview()
@@ -397,7 +412,9 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
         dc.SetBackground(wx.Brush(wx.Colour(*self.bgcolor)))
         dc.SetPen(wx.Pen(wx.Colour(*self.bgcolor),0))
         dc.SetBrush(wx.Brush(wx.Color(*self.bgcolor)))
-        dc.DrawRectangle(0,0,self.paintSize[0],self.paintSize[1])
+        w,h = self.buffer.GetWidth(), self.buffer.GetHeight()
+        #dc.DrawRectangle(0,0,self.paintSize[0],self.paintSize[1])
+        dc.DrawRectangle(0,0,w,h)
         
         if not self.slices:
             Logging.info("Haven't got any slices",kw="preview")

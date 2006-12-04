@@ -856,7 +856,7 @@ class InteractivePanel(ogl.ShapeCanvas):
             x,y=self.GetViewStart()
             if x or y:
                 scrolledWinDC=1
-                print "\n\nUNBUFFERED PAINTING"
+                #print "\n\nUNBUFFERED PAINTING"
                 #Logging.info("Resorting to unbuffered drawing because of scrolling",kw="iactivepanel")
                 dc=wx.PaintDC(self)
                 
@@ -921,8 +921,8 @@ class InteractivePanel(ogl.ShapeCanvas):
         """
         w,h=self.buffer.GetWidth(),self.buffer.GetHeight()
         
-        if w!=xdim or h!=ydim:
-            self.buffer = wx.EmptyBitmap(xdim,ydim)
+        #if w!=xdim or h!=ydim:
+        #    self.buffer = wx.EmptyBitmap(xdim,ydim)
 
         maxX=self.maxX
         maxY=self.maxY
