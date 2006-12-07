@@ -215,36 +215,37 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         """    
         #if not self.enabled:
         #    return
-        if not self.imagedata:
-            x,y = self.parent.GetClientSize()
-            maxX, maxY = x,y
-        else:
+        print "-->Calculate buffer"
+        cx,cy = self.parent.GetClientSize()        
+        maxX, maxY = cx,cy
+        if self.imagedata:
             x,y,z=self.imagedata.GetDimensions()
-            maxX=self.maxX
-            maxY=self.maxY
+            if self.maxX > maxX:maxX = self.maxX
+            if self.maxY > maxY:maxY = self.maxY
 
         if self.maxSizeX>maxX:maxX=self.maxSizeX
         if self.maxSizeY>maxY:maxY=self.maxSizeY
         x,y=maxX,maxY
+        
         if self.fixedSize:
             x,y = self.fixedSize
         if self.paintSize!=(x,y):    
+            print "Setting size to ",x,y
             self.paintSize=(x,y)                        
             #self.setScrollbars(x,y)
             x2,y2 = self.xdim,self.ydim
             x2*=self.zoomFactor
             y2*=self.zoomFactor
             
-            flag=0
             if x2>x:
                 x=x2
-                flag=1
             if y2>y:
                 y=y2
-                flag=1
-            if flag:                
+            if self.buffer.GetWidth()!=x or self.buffer.GetHeight()!=y:
                 self.buffer = wx.EmptyBitmap(x,y)
                 self.setScrollbars(x,y)
+        else:
+            print "Size already ",x,y
         Logging.info("paintSize=",self.paintSize,kw="preview")
         #if bxd.visualizer.zoomToFitFlag:
         #    self.zoomToFit()
