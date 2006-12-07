@@ -168,7 +168,8 @@ class OlympusDataSource(DataSource):
         notinvtk=0
         
         if progress==1.0:notinvtk=1
-        print msg
+        #print progress,msg
+        
         #messenger.send(None,"update_progress",progress,msg,notinvtk)
             
         
@@ -182,10 +183,6 @@ class OlympusDataSource(DataSource):
         if not self.reader:
             self.reader = vtk.vtkExtTIFFReader()
             self.reader.AddObserver("ProgressEvent",self.updateProgress)
-            #self.reader.DebugOn()
-            #self.reader.RawModeOn()
-            #self.reader=vtk.vtkImageReader()
-            #self.reader.SetDataScalarTypeToUnsignedShort()
             x,y,z=self.dimensions
             self.reader.SetDataExtent(0,x-1,0,y-1,0,z-1)
         
@@ -193,7 +190,7 @@ class OlympusDataSource(DataSource):
         tpat=""
         cpat=os.path.sep+"%s_C%.3d"%(self.lutname,self.channel)
         path+=cpat
-        #self.reader.SetFilePrefix(path)
+        
         if self.dimensions[2]>1:
             zpat="Z%.3d"
         if self.tps > 0:

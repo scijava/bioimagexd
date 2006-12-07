@@ -58,7 +58,7 @@ class TaskPanel(scrolled.ScrolledPanel):
     Description: A baseclass for a panel for controlling the settings of the 
                  various task modules
     """
-    def __init__(self,root,tb):
+    def __init__(self,root,tb, wantNotebook = 1):
         """
         Created: 03.11.2004, KP
         Description: Initialization
@@ -71,6 +71,7 @@ class TaskPanel(scrolled.ScrolledPanel):
         #wx.ScrolledWindow.__init__(self,root,-1,size=(200,-1))
         self.toolMgr = tb
         self.itemBitmaps = []
+        self.wantNotebook = wantNotebook
         # Unbind to not get annoying behaviour of scrolling
         # when clicking on the panel
         self.Unbind(wx.EVT_CHILD_FOCUS)
@@ -98,11 +99,12 @@ class TaskPanel(scrolled.ScrolledPanel):
         #self.mainsizer.Add(self.settingsSizer,(0,1),flag=wx.EXPAND|wx.ALL)
         self.mainsizer.Add(self.settingsSizer,(n,0),flag=wx.EXPAND|wx.ALL)
         n+=1
-        self.settingsNotebook=wx.Notebook(self,-1,style=wx.NB_MULTILINE)
-        
-        font=self.settingsNotebook.GetFont()
-        font.SetPointSize(font.GetPointSize()-1)
-        self.settingsNotebook.SetFont(font)
+        if wantNotebook:
+            self.settingsNotebook=wx.Notebook(self,-1,style=wx.NB_MULTILINE)
+            self.settingsNotebook.SetBackgroundColour(wx.Colour(255,0,0))
+            font=self.settingsNotebook.GetFont()
+            font.SetPointSize(font.GetPointSize()-1)
+            self.settingsNotebook.SetFont(font)
 
         #self.staticLine=wx.StaticLine(self)
         #self.mainsizer.Add(self.staticLine,(2,0),span=(1,1),flag=wx.EXPAND)
@@ -136,8 +138,6 @@ class TaskPanel(scrolled.ScrolledPanel):
 #        self.Bind(wx.EVT_SIZE,self.onSize)
         
     def onSize(self,event):
-        print "\n\n\n\nOnSize",event.GetSize()
-        
         self.FitInside()
         event.Skip()
         
@@ -203,7 +203,7 @@ class TaskPanel(scrolled.ScrolledPanel):
         #print "Storing settings=",repr(settings)
         bxd.storeSettingsToCache(self.dataUnit.getCacheKey(),settings)
         for i in sources:
-            print "\n\nRESETTING SETTINGS OF ",i
+            #print "\n\nRESETTING SETTINGS OF ",i
             i.resetSettings()
         
     def onSwitchDatasets(self,obj,evt,args):
@@ -291,7 +291,7 @@ class TaskPanel(scrolled.ScrolledPanel):
     def createButtonBox(self):
         self.buttonsSizer2=wx.BoxSizer(wx.HORIZONTAL)
 
-        self.previewButton=wx.Button(self.buttonPanel,-1,"Preview")
+        self.previewButton=wx.Button(self.buttonPanel,-1,"Apply")
         self.previewButton.Bind(wx.EVT_BUTTON,self.doPreviewCallback)
         self.buttonsSizer2.Add(self.previewButton,1,wx.RIGHT|wx.TOP|wx.ALIGN_CENTER,10)
 
@@ -304,7 +304,6 @@ class TaskPanel(scrolled.ScrolledPanel):
         
     def createOptionsFrame(self):
         """
-        Method: createOptionsFrame()
         Created: 03.11.2004, KP
         Description: Creates a frame that contains the various widgets
                      used to control the colocalization settings
@@ -315,7 +314,8 @@ class TaskPanel(scrolled.ScrolledPanel):
         self.commonSettingsSizer.Add(self.namesizer,(0,0))
     
         self.settingsSizer.Add(self.commonSettingsSizer,(0,0),flag=wx.EXPAND|wx.ALL)
-        self.settingsSizer.Add(self.settingsNotebook,(1,0),flag=wx.EXPAND|wx.ALL)
+        if self.wantNotebook:
+            self.settingsSizer.Add(self.settingsNotebook,(1,0),flag=wx.EXPAND|wx.ALL)
         self.Layout()
 
     def setPreviewedData(self,event,index=-1):

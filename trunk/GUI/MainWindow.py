@@ -562,7 +562,7 @@ class MainWindow(wx.Frame):
             if self.visualizer:
                 self.visualizer.in_vtk=0
             wx.GetApp().Yield(1)
-        else:
+        else:            
             if self.visualizer:
                 self.visualizer.in_vtk=1        
             wx.SafeYield(None,1)
