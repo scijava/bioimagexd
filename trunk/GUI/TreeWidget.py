@@ -133,10 +133,17 @@ class TreeWidget(wx.SashLayoutWindow):
     
         if obj in self.dataUnitToPath:
             unit = self.dataUnitToPath[obj]
-            del self.items[unit]
+            self.items[unit]-=1
+            print unit,self.items[unit]
+            if self.items[unit]<=0:
+                del self.items[unit]
+                parent=self.tree.GetItemParent(item)
+                self.tree.Delete(parent)
+            
         if obj!="1":
             messenger.send(None,"delete_dataset",obj)
             self.tree.Delete(item)
+            del obj
         else:
             Logging.info("Cannot delete top-level entry",kw="ui")
             
@@ -261,7 +268,11 @@ class TreeWidget(wx.SashLayoutWindow):
         fldropenidx = il.Add(wx.ArtProvider_GetBitmap(wx.ART_FILE_OPEN,   wx.ART_OTHER, isz))
         fileidx     = il.Add(wx.ArtProvider_GetBitmap(wx.ART_REPORT_VIEW, wx.ART_OTHER, isz))
 
-        self.items[path]=1
+        for i in range(0,len(objs)):
+            if not path in self.items:
+                self.items[path]=1
+            else:
+                self.items[path]+=1
         
         for i in objs:
             self.dataUnitToPath[i]=path
