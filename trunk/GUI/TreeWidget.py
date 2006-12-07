@@ -130,10 +130,13 @@ class TreeWidget(wx.SashLayoutWindow):
         """        
         item=self.selectedItem
         obj=self.tree.GetPyData(item)
+    
+        if obj in self.dataUnitToPath:
+            unit = self.dataUnitToPath[obj]
+            del self.items[unit]
         if obj!="1":
             messenger.send(None,"delete_dataset",obj)
             self.tree.Delete(item)
-            
         else:
             Logging.info("Cannot delete top-level entry",kw="ui")
             
