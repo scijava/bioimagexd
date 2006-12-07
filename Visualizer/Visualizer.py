@@ -1066,13 +1066,12 @@ class Visualizer:
            wx.LayoutAlgorithm().LayoutWindow(self.parent, self.visWin)
            Logging.info("Setting visualizer window to ",self.visWin.GetSize(),kw="visualizer")
            self.currentWindow.SetSize(self.visWin.GetClientSize())
-        if flag:        
-           wx.LayoutAlgorithm().LayoutWindow(self.parent, self.visWin)
-           self.currentWindow.SetSize(self.visWin.GetClientSize())
+#        if flag:        
+#           wx.LayoutAlgorithm().LayoutWindow(self.parent, self.visWin)
+#           self.currentWindow.SetSize(self.visWin.GetClientSize())
 
     def setBackground(self,r,g,b):
         """
-        Method: setBackground(r,g,b)
         Created: 16.05.2005, KP
         Description: Set the background color
         """
@@ -1080,7 +1079,6 @@ class Visualizer:
 
     def onClose(self,event):
         """
-        Method: onClose()
         Created: 28.04.2005, KP
         Description: Called when this window is closed
         """
@@ -1088,7 +1086,6 @@ class Visualizer:
 
     def isClosed(self):
         """
-        Method: isClosed()
         Created: 28.04.2005, KP
         Description: Returns flag indicating the closure of this window
         """
@@ -1109,7 +1106,7 @@ class Visualizer:
         Created: 28.04.2005, KP
         Description: Sets the dataunit this module uses for visualization
         """
-        Logging.info("visualizer.setDataUnit(%s)"%str(dataunit),kw="visualizer")
+        #Logging.info("visualizer.setDataUnit(%s)"%str(dataunit),kw="visualizer")
         self.dataUnit = dataunit
         count=dataunit.getLength()
         
@@ -1172,6 +1169,8 @@ class Visualizer:
             self.enable(0)
             self.noRender = flag
             
+    def isEnabled(self):
+        return self.enabled
         
     def updateRendering(self,event=None,object=None,delay=0):
         """
@@ -1182,7 +1181,7 @@ class Visualizer:
             Logging.info("Disabled, will not update rendering",kw="visualizer")
             return
             
-        print "\n\n\n\nimmediate render=",self.immediateRender,"delay=",delay
+        #print "\n\n\n\nimmediate render=",self.immediateRender,"delay=",delay
         if not self.immediateRender and delay>=0:
             Logging.info("Will not update rendering on other than apply button",kw="visualizer")
             return

@@ -362,6 +362,8 @@ class TreeWidget(wx.SashLayoutWindow):
             self.dataUnitItems.append(added)
             
             if len(self.items.keys())==1 and not selected:
+                print self.items
+                self.tree.UnselectAll()
                 self.tree.SelectItem(added,1)
                 selected=1
                 print "obj=",obj

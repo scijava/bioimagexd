@@ -53,14 +53,14 @@ class FilterBasedTaskPanel(TaskPanel.TaskPanel):
     Created: 14.08.2006, KP
     Description: A window for restoring a single dataunit
     """
-    def __init__(self,parent,tb):
+    def __init__(self,parent,tb, wantNotebook = 1):
         """
         Created: 14.08.2006, KP
         Description: Initialization
         Parameters:
                 root    Is the parent widget of this window
         """
-        TaskPanel.TaskPanel.__init__(self,parent,tb)
+        TaskPanel.TaskPanel.__init__(self,parent,tb, wantNotebook = wantNotebook)
 
         self.filters = []
         self.currentSelected = -1

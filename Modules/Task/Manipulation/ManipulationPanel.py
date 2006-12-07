@@ -66,7 +66,7 @@ class ManipulationPanel(FilterBasedTaskPanel.FilterBasedTaskPanel):
         self.timePoint = 0
         self.operationName="Process"
         self.filtersModule = ManipulationFilters
-        FilterBasedTaskPanel.FilterBasedTaskPanel.__init__(self,parent,tb)
+        FilterBasedTaskPanel.FilterBasedTaskPanel.__init__(self,parent,tb, wantNotebook  = 0)
         # Preview has to be generated here
         # self.colorChooser=None
         self.timePoint = 0
@@ -145,7 +145,8 @@ class ManipulationPanel(FilterBasedTaskPanel.FilterBasedTaskPanel):
         """
         FilterBasedTaskPanel.FilterBasedTaskPanel.createOptionsFrame(self)
 
-        self.panel=wx.Panel(self.settingsNotebook,-1)
+        #self.panel=wx.Panel(self.settingsNotebook,-1)
+        self.panel=wx.Panel(self,-1)
         self.panelsizer=wx.GridBagSizer()
     
         self.filtersizer=wx.GridBagSizer()
@@ -210,7 +211,9 @@ class ManipulationPanel(FilterBasedTaskPanel.FilterBasedTaskPanel):
 
         self.panel.SetSizer(self.panelsizer)
         self.panel.SetAutoLayout(1)
-        self.settingsNotebook.AddPage(self.panel,"Procedure list")
+        
+        self.settingsSizer.Add(self.panel,(1,0),flag=wx.EXPAND|wx.ALL)
+        #self.settingsNotebook.AddPage(self.panel,"Procedure list")
    
    
 
@@ -331,6 +334,7 @@ class ManipulationPanel(FilterBasedTaskPanel.FilterBasedTaskPanel):
         """        
         if self.currentGUI:
             self.panelsizer.Detach(self.currentGUI)
+            
             self.currentGUI.Show(0)
 
         
@@ -347,14 +351,24 @@ class ManipulationPanel(FilterBasedTaskPanel.FilterBasedTaskPanel):
         
         currfilter = self.filters[self.selected]
         self.currentGUI = currfilter.getGUI(self.panel,self)
+        
         currfilter.sendUpdateGUI()
         
+        self.currentGUI.Show(1)        
         self.panelsizer.Add(self.currentGUI,(1,0),flag=wx.EXPAND|wx.ALL)
-        self.currentGUI.Show(1)
+        
+        self.currentGUI.Layout()
+        
         self.panel.Layout()
-        self.Layout()
         self.panelsizer.Fit(self.panel)
+        
+
+        self.Layout()
+        print "panel size=",self.panel.GetSize()
+        print "self size=",self.GetSize()
+        #self.panelsizer.RecalcSizes()
         self.FitInside()
+        
         
         
     def loadFilter(self, className):
@@ -422,7 +436,7 @@ class ManipulationPanel(FilterBasedTaskPanel.FilterBasedTaskPanel):
                 for currfilter in self.filtersByCategory[i]:
                     menuid = wx.NewId()
                     name = currfilter.getName()
-                    print "Adding item",menuid,name
+                    
                     newitem = wx.MenuItem(submenu, menuid, name)
                     if currfilter.level:
                         newitem.SetBackgroundColour(wx.Colour(*currfilter.level))
