@@ -1368,6 +1368,7 @@ class MainWindow(wx.Frame):
         ext=path.split(".")[-1]
         dataunit=None
         if self.tree.hasItem(path):
+            print "Tree already has item"
             return
         ext=ext.lower()
         
@@ -1394,6 +1395,8 @@ class MainWindow(wx.Frame):
             #except:
             #    pass
 
+        if ext not in self.extToSource.keys():
+            return
         # We try to load the actual data
         Logging.info("Loading dataset with extension %s, path=%s"%(ext,path),kw="io")
     

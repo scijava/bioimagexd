@@ -249,6 +249,11 @@ if __name__=='__main__':
             sys.exit(0)
         
         app=LSMApplication(0)    
+        toRemove=[]
+        for file in dataFiles:
+            if os.path.isdir(file):
+                toRemove.append(file)
+        for file in toRemove: dataFiles.remove(file)
         
         if doProfile and profile:
             profile.run('app.run(dataFiles, scriptFile)', 'prof.log')
