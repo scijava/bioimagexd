@@ -67,8 +67,8 @@ class WatershedTotalsList(wx.ListCtrl):
             )
 
         self.InsertColumn(0, "# of objects")
-        self.InsertColumn(1, u"Avg. Volume (\u03BCm)")
-        self.InsertColumn(2, u"Avg. Volume (px)")
+        self.InsertColumn(1, u"Avg. Volume (px)")
+        self.InsertColumn(2, u"Avg. Volume (\u03BCm)")
         self.InsertColumn(3,"Avg. intensity")
         #self.InsertColumn(2, "")
         self.SetColumnWidth(0, 50)
@@ -100,9 +100,9 @@ class WatershedTotalsList(wx.ListCtrl):
             return ""
         if col==0:
             return "%d"%self.stats[0]
-        elif col==1:
-            return u"%.3f \u03BCm"%self.stats[1]
         elif col==2:
+            return u"%.3f \u03BCm"%self.stats[1]
+        elif col==1:
             return "%d px"%self.stats[2]
         elif col==3:
             return "%.3f"%self.stats[3]
@@ -133,8 +133,9 @@ class WatershedObjectList(wx.ListCtrl, listmix.ListCtrlSelectionManagerMix):
             )
         listmix.ListCtrlSelectionManagerMix.__init__(self)
         self.InsertColumn(0, "Object #")
-        self.InsertColumn(1, u"Volume (\u03BCm)")
-        self.InsertColumn(2, u"Volume (px)")
+        self.InsertColumn(1, u"Volume (px)")
+        self.InsertColumn(2, u"Volume (\u03BCm)")
+        
         self.InsertColumn(3,"Center Of Mass")
         self.InsertColumn(4,"Avg. intensity")
         #self.InsertColumn(2, "")
@@ -1098,13 +1099,13 @@ class MeasureVolumeFilter(ProcessingFilter.ProcessingFilter):
                 n = len(self.values)
                 avgints = avg(self.avgIntList)
                 ums = [x[1] for x in self.values]
-                print "Micrometer sizes=",ums[0:100]
+                
                 # Remove the objects 0 and 1 because hey will distort the values
                 ums.pop(0)
                 ums.pop(0)
                 avgums = avg(ums)
                 pxs = [x[0] for x in self.values]
-                print "Pixel sizes=",pxs[0:100]
+                
                 pxs.pop(0)
                 pxs.pop(0)
                 avgpxs = avg(pxs)
