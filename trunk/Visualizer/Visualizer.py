@@ -782,12 +782,8 @@ class Visualizer:
         Created: 23.05.2005, KP
         Description: Handle size events
         """
-#        if not self.enabled:return
         wx.LayoutAlgorithm().LayoutWindow(self.parent, self.visWin)
         x,y=self.zsliderWin.GetSize()
-        print "Size of zsliderwin=",x,y
-        #x,y2=self.zslider.GetSize()
-        #self.zslider.SetSize((x,y))
         self.zsliderPanel.SetSize((x,y))
         
         visSize=self.visWin.GetClientSize()
@@ -796,8 +792,6 @@ class Visualizer:
         self.annotateBar.Layout()
         
         newsize=visSize[0]
-#        if abs(newsize-self.oldClientSize)>10:
-#            self.createToolbar()
         
         if self.currentWindow:            
             self.currentWindow.SetSize(visSize)
