@@ -265,6 +265,10 @@ class PerformanceSettings(wx.Panel):
         memgrid.Add(self.memoryLimit,(0,1))
         memgrid.Add(mblbl,(0,2))
         self.memoryBoxSizer.Add(memgrid)
+  
+        self.noLimitsCheckbox = wx.RadioButton(self,-1,"Always process data in single piece")
+        self.noLimitsCheckbox.Bind(wx.EVT_RADIOBUTTON, self.onSelectNoLimits)
+     
         
         limitMemory = conf.getConfigItem("LimitMemory","Performance")
         if limitMemory:
@@ -277,18 +281,27 @@ class PerformanceSettings(wx.Panel):
             alwaysSplit = eval(alwaysSplit)
         else:
             alwaysSplit = False
+        noLimit = conf.getConfigItem("NoLimits","Performance")
+        if noLimit:
+            noLimit = eval(noLimit)
+        else:
+            noLimit = False            
+        self.noLimitsCheckbox.SetValue(noLimit)
         self.splitToThreadsCheckbox.SetValue(alwaysSplit)
         if alwaysSplit:
             self.onSelectSplitToThreads(None)
         else:
             self.onSelectLimitMemory(None)
+        if noLimit:
+            self.onSelectNoLimits()
+        
         #print "limit memory=",limitMemory,"alwaysSplit=",alwaysSplit
         self.memoryBoxSizer.Add(self.splitToThreadsCheckbox)
         threadgrid =wx.GridBagSizer()
         threadgrid.Add(nthreadLbl, (0,0))
         threadgrid.Add(self.numberOfDivisions,(0,1))
         self.memoryBoxSizer.Add(threadgrid)
-        
+        self.memoryBoxSizer.Add(self.noLimitsCheckbox)
         self.rescaleBox = wx.StaticBox(self,-1,"Intensity rescaling",size=(600,100))
         self.rescaleBoxSizer = wx.StaticBoxSizer(self.rescaleBox, wx.VERTICAL)
         self.rescaleBoxSizer.SetMinSize(self.rescaleBox.GetSize())
@@ -318,6 +331,15 @@ class PerformanceSettings(wx.Panel):
         """
         self.memoryLimit.Enable(1)
         self.numberOfDivisions.Enable(0)
+        
+    def onSelectNoLimits(self, evt=None):
+        """
+        Created: 14.12.2006, KP
+        Description: Method called if the no limit option is selected
+        """
+        self.memoryLimit.Enable(0)
+        self.numberOfDivisions.Enable(0)
+        
     def onSelectSplitToThreads(self, evt):
         """
         Created: 11.11.2006, KP
@@ -350,13 +372,13 @@ class PerformanceSettings(wx.Panel):
         conf.setConfigItem("RescaleOnLoading","Performance",str(rescaleOnLoad))        
         limitMem = self.limitMemoryCheckbox.GetValue()
         limitTo = self.memoryLimit.GetValue()
-        
+        noLimits = self.noLimitsCheckbox.GetValue()
         alwaysSplit = self.splitToThreadsCheckbox.GetValue()
         nthreads = self.numberOfDivisions.GetValue()
                 
         conf.setConfigItem("LimitMemory","Performance",str(not not limitMem))
         conf.setConfigItem("LimitTo","Performance",str(limitTo))
-
+        conf.setConfigItem("NoLimits","Performance",str(noLimits))
         conf.setConfigItem("AlwaysSplit","Performance",str(not not alwaysSplit))
         conf.setConfigItem("NumberOfDivisions","Performance",str(nthreads))
         

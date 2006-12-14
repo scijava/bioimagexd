@@ -37,6 +37,7 @@ currentPipeline = []
 memLimit = None
 numberOfDivisions=None
 alwaysSplit=0
+noLimits=0
 conf= None
 
 def optimize(image = None, vtkFilter = None, updateExtent = None, releaseData = 0):
@@ -69,12 +70,12 @@ def optimize(image = None, vtkFilter = None, updateExtent = None, releaseData = 
     return img
     
 def execute_limited(pipeline, updateExtent = None):
-    global memLimit
+    global memLimit,noLimits
     global numberOfDivisions
     
     if not memLimit:
         get_memory_limit()
-    if not memLimit and not alwaysSplit:
+    if noLimits or  (not memLimit and not alwaysSplit):
         pipeline.Update()
         return pipeline.GetOutput()   
     
@@ -105,7 +106,7 @@ def execute_limited(pipeline, updateExtent = None):
 #        return pipeline.GetOutput()
 
 def get_memory_limit():
-    global conf,memLimit,alwaysSplit, numberOfDivisions
+    global conf,memLimit,alwaysSplit, numberOfDivisions,noLimits
     if memLimit:return memLimit
     if not conf:
         conf = Configuration.getConfiguration()
@@ -113,6 +114,9 @@ def get_memory_limit():
     alwaysSplit = conf.getConfigItem("AlwaysSplit","Performance")
     if alwaysSplit!=None:
         alwaysSplit=eval(alwaysSplit)
+    noLimits = conf.getConfigItem("NoLimits","Performance")
+    if noLimits!=None:
+        noLimits=eval(alwaysSplit)        
     numberOfDivisions = conf.getConfigItem("NumberOfDivisions","Performance")
         
     if numberOfDivisions:
