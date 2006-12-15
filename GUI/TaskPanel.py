@@ -101,7 +101,7 @@ class TaskPanel(scrolled.ScrolledPanel):
         n+=1
         if wantNotebook:
             self.settingsNotebook=wx.Notebook(self,-1,style=wx.NB_MULTILINE)
-            self.settingsNotebook.SetBackgroundColour(wx.Colour(255,0,0))
+            
             font=self.settingsNotebook.GetFont()
             font.SetPointSize(font.GetPointSize()-1)
             self.settingsNotebook.SetFont(font)
