@@ -133,7 +133,8 @@ color depth. Use the histograms below to the select how the intensities in your 
         #self.Close()    
         self.EndModal(wx.ID_OK)
         
-
+    def zoomToFit(self):
+        self.preview.zoomToFit()
         
     def setDataUnits(self,dataunits):
         """
@@ -205,13 +206,12 @@ color depth. Use the histograms below to the select how the intensities in your 
         
     def createRescale(self):
         """
-        Method: createRecale()
         Created: 11.04.2006, KP
         Description: Creates the GUI for controlling the rescaling
         """            
         box=wx.StaticBox(self,-1,"Preview selected mapping")
         previewBox=wx.StaticBoxSizer(box,wx.HORIZONTAL)
-        self.preview = PreviewFrame.PreviewFrame(self,previewsize=(512,512),scrollbars=False)
+        self.preview = PreviewFrame.PreviewFrame(self,previewsize=(256,256),scrollbars=False)
         self.preview.setPreviewType("")
                 
         previewBox.Add(self.preview)

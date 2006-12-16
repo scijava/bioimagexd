@@ -116,7 +116,7 @@ def get_memory_limit():
         alwaysSplit=eval(alwaysSplit)
     noLimits = conf.getConfigItem("NoLimits","Performance")
     if noLimits!=None:
-        noLimits=eval(alwaysSplit)        
+        noLimits=eval(noLimits)        
     numberOfDivisions = conf.getConfigItem("NumberOfDivisions","Performance")
         
     if numberOfDivisions:
