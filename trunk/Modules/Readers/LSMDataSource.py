@@ -97,6 +97,8 @@ class LsmDataSource(DataSource.DataSource):
             #print "Update information..."
             self.reader.UpdateInformation()
             #print "done"
+            self.originalScalarRange = None
+            self.getBitDepth()
             self.originalDimensions = self.reader.GetDimensions()[0:3]
             if self.reader.IsCompressed():
                 raise Logging.GUIError("Cannot handle compressed dataset","The dataset you've selected (%s) is compressed. The LSM reader cannot currently read compressed data."%filename)
@@ -132,7 +134,13 @@ class LsmDataSource(DataSource.DataSource):
         if not self.dimensions:
             self.getDimensions()
         return self.dimensions[3]
-
+        
+    #def getOriginalScalarRange(self):
+    #    """
+    #    Created: 16.12.2006, KP
+    #    Description: return the original scalar range
+    #    """
+        
     def getBitDepth(self):
         """
         Created: 07.08.2006, KP
@@ -148,8 +156,12 @@ class LsmDataSource(DataSource.DataSource):
             print "\n\n\n**** Datatype=",d
             if d==3:
                 self.bitdepth = 8
+                if not self.originalScalarRange:
+                    self.originalScalarRange = (0,255)
             if d==5:
                 self.bitdepth = 12
+                if not self.originalScalarRange:
+                    self.originalScalarRange = (0,4095)
         return self.bitdepth
         
     def getScalarRange(self):
