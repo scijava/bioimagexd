@@ -48,7 +48,6 @@ class RescaleDialog(wx.Dialog):
     """
     def __init__(self, parent):
         """
-        Method: __init__
         Created: 1.09.2005, KP
         Description: Initialize the dialog
         """    
@@ -100,9 +99,6 @@ color depth. Use the histograms below to the select how the intensities in your 
             ds.setIntensityScale(-1,-1)
         self.EndModal(wx.ID_OK)
         
-        
-
-        
     def onCancelButton(self,event):
         """
         Created: 12.04.2006, KP
@@ -144,8 +140,7 @@ color depth. Use the histograms below to the select how the intensities in your 
         self.dataUnits=dataunits
         unitclass = self.taskPanels["Merging"][2].getDataUnit()
         self.mergeUnit = unitclass("Preview for scaling intensity")
-        
-        
+                
         for dataUnit in dataunits:
             print "Creating histogram for ",dataUnit
             self.mergeUnit.addSourceDataUnit(dataUnit)
@@ -153,11 +148,13 @@ color depth. Use the histograms below to the select how the intensities in your 
             
             ds=dataUnit.getDataSource()
             minval,maxval = ds.getOriginalScalarRange()
+            print "Original scalar range = ",minval,maxval
             self.resampleDims.append(ds.getResampleDimensions())
 #            if x>512 or y>512:
 #                ds.setResampleDimensions((512,512,z))
                 
             scale = maxval / 255.0
+            print "Using scale",scale
             histogram = Histogram.Histogram(self,scale=scale)
             self.histogramSizer.Add(histogram)
             self.histograms.append(histogram)
