@@ -90,13 +90,15 @@ class MyStaticBox(wx.StaticBox):
     Description: A static box replacement that allows us to control how it is painted
     """
     def __init__(self, parent, wid, label, pos = wx.DefaultPosition, size  = wx.DefaultSize, style = 0, name="MyStaticBox"):
+        self.buffer = wx.EmptyBitmap(w,h,-1)
         wx.StaticBox.__init__(self,parent,wid,label,pos,size,style,name)
+        
         self.parent = parent
         self.label = label
         self.Bind(wx.EVT_PAINT,self.onPaint)
         self.Bind(wx.EVT_SIZE,self.onSize)
         w,h = size
-        self.buffer = wx.EmptyBitmap(w,h,-1)
+        
         self.owncol = (255,255,255)
         self.paintSelf()
         self.Raise()
