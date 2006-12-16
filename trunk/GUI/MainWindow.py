@@ -1015,6 +1015,7 @@ class MainWindow(wx.Frame):
         dlg = RescaleDialog.RescaleDialog(self)
         dlg.setDataUnits(selectedFiles)
         wid = dlg.ShowModal()
+        dlg.zoomToFit()
         dlg.Destroy()
         
         if wid == wx.ID_OK:                    
@@ -1443,6 +1444,7 @@ class MainWindow(wx.Frame):
                 dlg = RescaleDialog.RescaleDialog(self)
                 dlg.setDataUnits(dataunits)
                 wid = dlg.ShowModal()
+                dlg.zoomToFit()
                 if wid != wx.ID_OK:                    
                     del dataunits
                     dlg.Destroy()

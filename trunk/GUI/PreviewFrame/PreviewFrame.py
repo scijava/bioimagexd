@@ -809,6 +809,8 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
             maxY-=10 #marginal
             #if self.maxSizeX<maxX:maxX=self.maxSizeX
             #if self.maxSizeY<maxY:maxY=self.maxSizeY
+            if self.fixedSize:
+                maxX, maxY = self.fixedSize
             
             Logging.info("Determining zoom factor from (%d,%d) to (%d,%d)"%(x,y,maxX,maxY),kw="preview")
             self.setZoomFactor(ImageOperations.getZoomFactor(x,y,maxX,maxY))
