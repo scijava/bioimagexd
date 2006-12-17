@@ -495,7 +495,6 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
         
     def createButtonBox(self):
         """
-        Method: createButtonBox()
         Created: 03.11.2004, KP
         Description: Creates a button box containing the buttons Render, 
                      Preview and Close
@@ -507,7 +506,6 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
 
     def createOptionsFrame(self):
         """
-        Method: createOptionsFrame()
         Created: 03.11.2004, KP
         Description: Creates a frame that contains the various widgets
                      used to control the colocalization settings
@@ -658,7 +656,6 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
     
     def onUpdatePSF(self,event):
         """
-        Method: onUpdatePSF
         Created: 06.04.2006, KP
         Description: Update the PSF based on the given NA and lambda
         """
@@ -687,7 +684,6 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
         
     def onSetTestMethod(self,event):
         """
-        Method: onSetTestMethod
         Created: 13.07.2005, KP
         Description: Set the method used for colocalisation test
         """
@@ -725,7 +721,6 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
         
     def exportStatistics(self, filename):
         """
-        Method: exportStatistics
         Created: 18.07.2006, KP
         Description: Export the colocalization stats
         """   
@@ -871,7 +866,6 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
 
     def updateSettings(self,*args):
         """
-        Method: updateSettings()
         Created: 03.11.2004, KP
         Description: A method used to set the GUI widgets to their proper values
                      based on the selected channel, the settings of which are 
@@ -889,7 +883,7 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
             th=self.settings.get("ColocalizationUpperThreshold")
             if th != None:
                 self.upperthreshold.SetValue(th)
-            
+        
         if self.dataUnit and self.settings:
             ctf = self.dataUnit.getSettings().get("ColorTransferFunction")
             if ctf and self.colorBtn:
@@ -956,10 +950,14 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
         n2=sources[1].getName()
 
         minval,maxval = sources[0].getScalarRange()
+        minval2,maxval2 = sources[1].getScalarRange()
+        if minval2<minval:minval=minval2
+        if maxval2>maxval:maxval=maxval2
         self.lowerthreshold.SetRange(minval,maxval)
         self.lowerthreshold.SetValue((maxval-minval)/2)
         self.upperthreshold.SetRange(minval,maxval)
         self.upperthreshold.SetValue(maxval)        
+        self.updateThreshold(None)
         
         for i,val in enumerate(self.headervals):
             s=val[0]

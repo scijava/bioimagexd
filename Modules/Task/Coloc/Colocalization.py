@@ -45,7 +45,6 @@ class Colocalization(Module):
     """
     def __init__(self,**kws):
         """
-        Method: __init__(**keywords)
         Created: 03.11.2004, KP
         Description: Initialization
         """
@@ -93,6 +92,7 @@ class Colocalization(Module):
         self.settingsLst.append(settings)
         th0=settings.get("ColocalizationLowerThreshold")
         th1=settings.get("ColocalizationUpperThreshold")
+        print "Thresholds for coloc=",th0,th1
         self.thresholds.append((th0,th1))
         self.depth = self.settings.get("ColocalizationDepth")
 
@@ -134,8 +134,9 @@ class Colocalization(Module):
                 Logging.info("Setting thresholds ",int(self.thresholds[0][0]),int(self.thresholds[1][0]),"for statistics")
                 self.colocAutoThreshold.SetLowerThresholdCh1(int(self.thresholds[0][0]))
                 self.colocAutoThreshold.SetLowerThresholdCh2(int(self.thresholds[1][0]))
-                self.colocAutoThreshold.SetUpperThresholdCh1(int(self.thresholds[0][1]))
-                self.colocAutoThreshold.SetUpperThresholdCh2(int(self.thresholds[1][1]))                
+            
+            self.colocAutoThreshold.SetUpperThresholdCh1(int(self.thresholds[0][1]))
+            self.colocAutoThreshold.SetUpperThresholdCh2(int(self.thresholds[1][1]))                
             self.colocAutoThreshold.Update()
             Logging.info("Done!",kw="processing")
             for i in ["Ch1ThresholdMax","Ch2ThresholdMax","PearsonImageAbove",
@@ -156,6 +157,7 @@ class Colocalization(Module):
                 settings.set(i,val)
             t1=settings.get("Ch1ThresholdMax")
             t2=settings.get("Ch2ThresholdMax")
+            print "\n\nGOT THRESHOLDS",t1,t2
             l=[(t1,maxval),(t2,maxval)]
             # if CalculateThresholds == 1, then set the calculated thresholds
             # if it's 2 then only the statistics need to be calculated
