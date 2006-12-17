@@ -41,7 +41,6 @@ from DataUnit import DataUnitSettings
         
 class ColocalizationSettings(DataUnitSettings):
     """
-    Class: ColocalizationSettings
     Created: 26.03.2005, KP
     Description: Registers keys related to colocalization in a dataunitsetting
     """
@@ -95,6 +94,7 @@ class ColocalizationSettings(DataUnitSettings):
             minval,maxval = dataunit.getScalarRange()
         else:
             minval,maxval = dataunit.getSourceDataUnits()[0].getScalarRange()
+        print "Initializing channels, maxval=",maxval
         for i in range(channels):
             self.setCounted("ColocalizationLowerThreshold",i,maxval/2,0)
             self.setCounted("ColocalizationUpperThreshold",i,maxval,0)    

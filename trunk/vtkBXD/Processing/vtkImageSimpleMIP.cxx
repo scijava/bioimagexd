@@ -180,6 +180,8 @@ int vtkImageSimpleMIP::RequestUpdateExtent (
     //printf("Update extent is %d,%d,%d,%d,%d,%d\n",PRT_EXT(uext));
 
   // If they request an update extent that doesn't cover the whole z-stack then modify it
+  if(uext[1]==-1) uext[1] = ext[1];
+  if(uext[3]==-1) uext[3] = ext[3];    
   if(uext[5] < ext[5] ) uext[5] = ext[5];
   if(uext[4] > ext[4] ) uext[4] = ext[4];
   printf("vtkImageSimpleMIP Setting uextent to %d,%d,%d,%d,%d,%d\n",PRT_EXT(uext));

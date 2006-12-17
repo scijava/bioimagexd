@@ -41,6 +41,12 @@
 #define SET_AT_PLOT(x,y,z,ptr,val) *(ptr+(z)*plotIncZ+(y)*plotIncY+(x)*plotIncX)=val
 
 
+void calculate_pearson(double* p1, double*p2, double*p3, double sumX, double sumY, double sumXX, double sumYY, double sumXY, double N) {
+    *p1 = sumXY - (sumX * sumY / N);
+    *p2 = sumXX - (sumX * sumX / N);
+    *p3 = sumYY - (sumY * sumY / N);
+}
+
 vtkCxxRevisionMacro(vtkImageAutoThresholdColocalization,
             "$Revision: 1.25 $");
 vtkStandardNewMacro(vtkImageAutoThresholdColocalization);
@@ -71,7 +77,7 @@ vtkImageAutoThresholdColocalization::~vtkImageAutoThresholdColocalization()
 void vtkImageAutoThresholdColocalization::
 ComputeInputUpdateExtents(vtkDataObject * output)
 {
-    int outExt[6], inExt[6];
+    int inExt[6];
     inExt[0] = inExt[1] = inExt[2] = inExt[3] = inExt[4] = inExt[5] =
         0;
 
@@ -103,7 +109,172 @@ ExecuteInformation(vtkImageData ** inputs, vtkImageData ** outputs)
 
 }
 
+template <class T> void calculateThreshold
+    (
+    vtkImageAutoThresholdColocalization * self,
+    vtkImageData ** inData, int outExt[6], 
+    int Ch1Th, int Ch2Th,
+    double*ch1BestThresh, double *m, double*b, double*best
+    )
+{
+    
+    bool thresholdFound = false, divByZero = false;
+    int iteration = 0;
+    int N = 0, N2 = 0, Nzero = 0;
+    int ch1 = 0, ch2 = 0;
+    double r2Prev = 0, r2Prev2 = 1;
+    
+    double oldMax = 0, newMax=0;
+    double range[2];
+    double pearsons1 = 0, pearsons2 = 0, pearsons3 = 0;
+    double sumX = 0, sumY = 0, sumXY = 0, sumXX = 0, sumYY = 0;    
+    double r2 = 1, bestr2 = -1;
+    double tolerance = 0.01;        
+    double ch1threshmax = 0, ch2threshmax = 0;
+    vtkIdType inIncX, inIncY, inIncZ;
+    
+    
+    vtkIdType maxX, maxY, maxZ;
+    vtkIdType idxX, idxY, idxZ;
+    
+    T* inPtr1, *inPtr2;
+    char progressText[200];
+    
+    
+    *ch1BestThresh = 0;
+    inData[0]->GetScalarRange(range);
+    int ch1Max = (int)range[1];
+    int ch1Min = 0;
+    
+    inData[1]->GetScalarRange(range); 
+    int ch2Max = (int)range[1];
+    int ch2Min = 0;
+    
+    newMax = ch1threshmax = ch1Max;
+    ch2threshmax = ch2Max;
+    
+    inData[0]->GetContinuousIncrements(outExt, inIncX, inIncY, inIncZ);
+    
+    maxX = outExt[1] - outExt[0];
+    maxY = outExt[3] - outExt[2];
+    maxZ = outExt[5] - outExt[4];    
+    
+    while ((thresholdFound == false) && iteration < 30) {
+        
+        if (iteration == 2 && r2 < 0) {
+           //vtkDebugMacro(<<"No positive correlations found. Ending\n");
+           printf("No positive correlations found. Ending\n");
+            return;
+        }
+            
+        ch1threshmax = vtkMath::Round(newMax);
+        //printf("Setting ch1threshmax to %f\n", ch1threshmax);
+        ch2threshmax =
+            vtkMath::Round(((double) ch1threshmax * (double) *m) +
+              (double) *b);
+        self->UpdateProgress(0.5*(iteration/30.0));
+        sprintf(progressText,"Calculating threshold (iteration %d) ch1 = %f, ch2 = %f",iteration,ch1threshmax, ch2threshmax);
+        self->SetProgressText(progressText);                  
 
+       // If a user specified threshold has been given, then it will be used
+       // instead of the calculated threshold        
+        if(Ch1Th >= 0 && Ch2Th >= 0) {
+            thresholdFound = 1;
+            
+            ch1threshmax = Ch1Th;
+            ch2threshmax = Ch2Th;
+        }
+        
+        // Zero the counters
+        sumX = sumXY = sumXX = sumYY = sumY = N2 = N = Nzero = 0;
+        
+        //printf("Acquiring input pointers\n");
+        inPtr1 =
+            (T *) inData[0]->GetScalarPointerForExtent(outExt);
+        inPtr2 =
+            (T *) inData[1]->GetScalarPointerForExtent(outExt);
+
+        for (idxZ = 0; idxZ <= maxZ; idxZ++) {
+            for (idxY = 0; idxY <= maxY; idxY++) {
+                for (idxX = 0; idxX <= maxX; idxX++) {
+                    ch1 = (int) *inPtr1++;
+                    ch2 = (int) *inPtr2++;
+
+                    // Calculate pearson's for voxels below
+                    // lower threshold
+                    if ((ch1 <= (ch1threshmax))
+                        || (ch2 <= (ch2threshmax))) {
+                        if (ch1 + ch2 == 0)
+                            Nzero++;
+                        //calc pearsons
+                        sumX = sumX + ch1;
+                        sumXY =
+                            sumXY + (ch1 * ch2);
+                        sumXX =
+                            sumXX + (ch1 * ch1);
+                        sumYY =
+                            sumYY + (ch2 * ch2);
+                        sumY = sumY + ch2;
+                        N++;
+
+                    }
+                    inPtr1 += inIncY;
+                    inPtr2 += inIncY;
+                }
+                inPtr1 += inIncZ;
+                inPtr2 += inIncZ;
+            }
+        }
+
+
+        if (!self->GetIncludeZeroPixels())
+            N = N - Nzero;
+        
+        calculate_pearson(&pearsons1, &pearsons2, &pearsons3,
+        sumX, sumY, sumXX,sumYY,sumXY,N);
+
+        r2Prev2 = r2Prev;
+        r2Prev = r2;
+        r2 = pearsons1 / (sqrt(pearsons2 * pearsons3));
+
+
+        //if r is not a number then set divide by zero to be true  
+        if (((sqrt(pearsons2 * pearsons3)) == 0) || N == 0)
+            divByZero = true;
+        else
+            divByZero = false;
+
+        //check to see if we're getting colser to zero for r                                               
+        if ((bestr2 * bestr2 > r2 * r2)) {
+            *ch1BestThresh = ch1threshmax;
+            bestr2 = r2;
+            *best = bestr2;
+        
+        }
+        //if our r is close to our level of tolerance then set threshold has been found
+        if ((r2 < tolerance) && (r2 > -tolerance)) {
+            
+            thresholdFound = true;
+        }
+        //if we've reached ch1 =1 then we've exhausted posibilities
+        if (vtkMath::Round(ch1threshmax) == 0) {
+            
+            thresholdFound = true;
+        }
+        oldMax = newMax;
+        //change threshold max
+        if (r2 >= 0) {
+            if ((r2 >= r2Prev) && (!divByZero))
+                newMax = newMax / 2;
+            if ((r2 < r2Prev) || (divByZero))
+                newMax = newMax + (newMax / 2);
+        }
+        if ((r2 < 0) || divByZero) {
+            newMax = newMax + (newMax / 2);
+        }
+        iteration++;
+    }
+}
 
 //----------------------------------------------------------------------------
 // This templated function executes the filter for any type of data.
@@ -113,82 +284,56 @@ template < class T >
     (vtkImageAutoThresholdColocalization * self, int id,
      int NumberOfInputs, vtkImageData ** inData, vtkImageData ** outData,
      int outExt[6], T *) {
-    int i;
+    char progressText[200];
     vtkIdType inIncX, inIncY, inIncZ;
     vtkIdType outIncX, outIncY, outIncZ;
-    vtkIdType plotIncX, plotIncY, plotIncZ;
+
     vtkIdType maxX, maxY, maxZ;
     vtkIdType idxX, idxY, idxZ;
-
-         
-    int LowerThresholdCh1 = self->GetLowerThresholdCh1();
-    int LowerThresholdCh2 = self->GetLowerThresholdCh2();
-         
-    int UpperThresholdCh1 = self->GetUpperThresholdCh1();
-    int UpperThresholdCh2 = self->GetUpperThresholdCh2();
     
+    double range[2];
+    
+    inData[0]->GetScalarRange(range);
+    int ch1Min = 0, ch1Max = (int)range[1];
+    
+    inData[1]->GetScalarRange(range); 
+    int ch2Min = 0, ch2Max = (int)range[1];
+    
+         
+    int LowerThresholdCh1 = self->GetLowerThresholdCh1(), LowerThresholdCh2 = self->GetLowerThresholdCh2();        
+    int UpperThresholdCh1 = self->GetUpperThresholdCh1(), UpperThresholdCh2 = self->GetUpperThresholdCh2();
          
     int ch1, ch2, ch3;
-    double pearsons1, pearsons2, pearsons3;
-    double r2 = 1;
-    double sumX = 0, sumY = 0, sumXY = 0, sumXX = 0, sumYY = 0, sumXYm = 0;
-    double countX = 0, countY = 0;
-    int count = 0;
-    double colocX = 0, colocY = 0;
-    int Nch1 = 0, Nch2 =0;
-
-    double oldMax = 0;
-    int sumCh2gtT = 0;
-    int sumCh1gtT = 0;
-    double sumCh1total = 0;
-    double sumCh2total = 0;
-    double mCh2coloc = 0;
-    double mCh1coloc = 0;
-
-    int Ncoloc = 0;
-    int sumColocCh1 = 0;
-    int sumColocCh2 = 0;
-
-    int N = 0;
-    int N2 = 0;
-    int Nzero = 0;
-    int Nch1gtT = 0;
-    int Nch2gtT = 0;
-
-    bool thresholdFound = 0, divByZero = 0;
-
-    double range[2];
-    inData[0]->GetScalarRange(range);
-//    int ch1Max = 255;
-    int ch1Max = (int)range[1];
+    double pearsons1, pearsons2, pearsons3, pearsonsBelowTh;
     
-    int ch1Min = 0;
-    inData[1]->GetScalarRange(range);
-//    int ch2Max = 255;
-    int ch2Max = (int)range[1];
-    int ch2Min = 0;
-    int scaledXvalue = 0, scaledYvalue = 0;
-
     
-    double ch1threshmin = 0;
-    double ch1threshmax = ch1Max;
-    double ch2threshmin = 0;
-    double ch2threshmax = ch2Max;
-    int Nnonzeroch1 = 0, Nnonzeroch2 = 0;
-        
+    double sumX = 0, sumY = 0, sumXY = 0, sumXX = 0, sumYY = 0;
+    double countX = 0, countY = 0, colocX = 0, colocY = 0;
+    int count = 0,Nch1 = 0, Nch2 =0;
+
+    int sumCh2gtT = 0, sumCh1gtT = 0;
+    double sumCh1total = 0, sumCh2total = 0;
+    
+    double mCh2coloc = 0, mCh1coloc = 0;
+    
+    
+    int Ncoloc = 0,sumColocCh1 = 0, sumColocCh2 = 0;
     
 
-    double bBest = 0;
-    double mBest = 0;
-    double bestr2 = 1;
+    int N = 0, N2 = 0, Nzero = 0;
+    int Nch1gtT = 0, Nch2gtT = 0;
+    
+    double ch1threshmin = 0, ch2threshmin = 0;
+    double ch1threshmax = ch1Max, ch2threshmax = ch2Max;
+    
+    int Nnonzeroch1 = 0, Nnonzeroch2 = 0;      
     double ch1BestThresh = 0;
-    double ch2BestThresh = 0;
+    
     //start regression
 //    vtkDebugMacro(<<"1/3: Performing regression\n");
 
-    int ch1Sum = 0;
-    int ch2Sum = 0;
-    int ch3Sum = 0;
+    int ch1Sum = 0, ch2Sum = 0, ch3Sum = 0;
+    
     double ch1mch1MeanSqSum = 0;
     double ch2mch2MeanSqSum = 0;
     double ch3mch3MeanSqSum = 0;
@@ -202,15 +347,16 @@ template < class T >
     outData[0]->GetIncrements(outIncX, outIncY,
                         outIncZ);
     
+    maxX = outExt[1] - outExt[0];
+    maxY = outExt[3] - outExt[2];
+    maxZ = outExt[5] - outExt[4];
     
     vtkPointData* pd = outData[0]->GetPointData();
     pd->GetScalars()->SetName("Colocalization map");
 
      
     int maxval=(int)pow(2.0f,sizeof(T)*8.0f)-1;
-    maxX = outExt[1] - outExt[0];
-    maxY = outExt[3] - outExt[2];
-    maxZ = outExt[5] - outExt[4];
+    
 
     for (idxZ = 0; idxZ <= maxZ; idxZ++) {
         for (idxY = 0; idxY <= maxY; idxY++) {
@@ -269,9 +415,8 @@ template < class T >
         inPtr2 += inIncZ;
     }
     N = N - Nzero;
-    pearsons1 = sumXY - (sumX * sumY / N);
-    pearsons2 = sumXX - (sumX * sumX / N);
-    pearsons3 = sumYY - (sumY * sumY / N);
+    calculate_pearson(&pearsons1, &pearsons2, &pearsons3,
+    sumX, sumY, sumXX,sumYY,sumXY,N);        
     double rTotal = pearsons1 / (sqrt(float(pearsons2) * float(pearsons3)));
 
     //http://mathworld.wolfram.com/Covariance.html
@@ -298,144 +443,14 @@ template < class T >
     double m = num / denom;
     double b = ch2Mean - m * ch1Mean;
 
-    bool prevDivByZero = false;
-    double newMax = ch1Max;
-    double r2Prev = 0;
-    double r2Prev2 = 1;
-    int iteration = 1;
-    r2 = 0;
-    bool prevByZero = false;
-    double tolerance = 0.01;
-
-  char progressText[200];
-    while ((thresholdFound == false) && iteration < 30) {
-    self->UpdateProgress(0.5*(iteration/30.0));
-    sprintf(progressText,"Calculating threshold (iteration %d)",iteration);
-    self->SetProgressText(progressText);
-        if (iteration == 2 && r2 < 0) {
-//           vtkDebugMacro(<<"No positive correlations found. Ending\n");
-            return;
-        }
-        
-        ch1threshmax = vtkMath::Round(newMax);
-        //printf("Setting ch1threshmax to %f\n", ch1threshmax);
-        ch2threshmax =
-            vtkMath::Round(((double) ch1threshmax * (double) m) +
-              (double) b);
+    // Calculate the thresholds 
+    calculateThreshold<T>(self,inData,outExt, LowerThresholdCh1, LowerThresholdCh2,&ch1BestThresh, &m, &b, &pearsonsBelowTh);
     
-    printf("ch1thresmax=%f, ch2thresmax=%f\n",ch1threshmax,ch2threshmax);
-    // If a user specified threshold has been given, then it will be used
-    // instead of the calculated threshold
-        if(LowerThresholdCh1 >= 0) ch1threshmax = LowerThresholdCh1;
-        if(LowerThresholdCh2 >= 0) ch2threshmax = LowerThresholdCh2;
-    
-    
-        //printf
-        //    ("2/3: Calculating Threshold. i = %d.\n",
-        //     iteration);
-        //reset values
-        sumX = 0;
-        sumXY = 0;
-        sumXX = 0;
-        sumYY = 0;
-        sumY = 0;
-        N2 = 0;
-        N = 0;
-        Nzero = 0;
-        //printf("Acquiring input pointers\n");
-        inPtr1 =
-            (T *) inData[0]->GetScalarPointerForExtent(outExt);
-        inPtr2 =
-            (T *) inData[1]->GetScalarPointerForExtent(outExt);
-
-        for (idxZ = 0; idxZ <= maxZ; idxZ++) {
-            for (idxY = 0; idxY <= maxY; idxY++) {
-                for (idxX = 0; idxX <= maxX; idxX++) {
-                    ch1 = (int) *inPtr1++;
-                    ch2 = (int) *inPtr2++;
-
-                    // Calculate pearson's for voxels below
-                    // lower threshold
-                    if ((ch1 <= (ch1threshmax))
-                        || (ch2 <= (ch2threshmax))) {
-                        if (ch1 + ch2 == 0)
-                            Nzero++;
-                        //calc pearsons
-                        sumX = sumX + ch1;
-                        sumXY =
-                            sumXY + (ch1 * ch2);
-                        sumXX =
-                            sumXX + (ch1 * ch1);
-                        sumYY =
-                            sumYY + (ch2 * ch2);
-                        sumY = sumY + ch2;
-                        N++;
-
-                    }
-                    inPtr1 += inIncY;
-                    inPtr2 += inIncY;
-                }
-                inPtr1 += inIncZ;
-                inPtr2 += inIncZ;
-            }
-        }
-
-
-        if (!self->GetIncludeZeroPixels())
-            N = N - Nzero;
-        pearsons1 = sumXY - (sumX * sumY / N);
-        pearsons2 = sumXX - (sumX * sumX / N);
-        pearsons3 = sumYY - (sumY * sumY / N);
-
-        r2Prev2 = r2Prev;
-        r2Prev = r2;
-        r2 = pearsons1 / (sqrt(pearsons2 * pearsons3));
-
-
-        //if r is not a number then set divide by zero to be true  
-        if (((sqrt(pearsons2 * pearsons3)) == 0) || N == 0)
-            divByZero = true;
-        else
-            divByZero = false;
-
-        //check to see if we're getting colser to zero for r                                               
-        if ((bestr2 * bestr2 > r2 * r2)) {
-            ch1BestThresh = ch1threshmax;
-            bestr2 = r2;
-        }
-        // If we're using user supplied thresholds, then just do one iteration
-        if(LowerThresholdCh1 >= 0) {
-            thresholdFound = 1;
-        }
-        //if our r is close to our level of tolerance then set threshold has been found
-        if ((r2 < tolerance) && (r2 > -tolerance)) {
-
-            thresholdFound = true;
-        }
-        //if we've reached ch1 =1 then we've exhausted posibilities
-        if (vtkMath::Round(ch1threshmax) == 0)
-            thresholdFound = true;
-
-        oldMax = newMax;
-        //change threshold max
-        if (r2 >= 0) {
-            if ((r2 >= r2Prev) && (!divByZero))
-                newMax = newMax / 2;
-            if ((r2 < r2Prev) || (divByZero))
-                newMax = newMax + (newMax / 2);
-        }
-        if ((r2 < 0) || divByZero) {
-            newMax = newMax + (newMax / 2);
-        }
-        iteration++;
-
-    }
-
     ch1threshmax = vtkMath::Round((ch1BestThresh));
-    ch2threshmax =
-        vtkMath::Round(((double) ch1BestThresh * (double) m) + (double) b);
-    
-    // If the user has specified the thresholds, then simply use them
+    ch2threshmax = vtkMath::Round(((double) ch1BestThresh * (double) m) + (double) b);
+        
+    // If the user has specified the thresholds, then simply use them.
+    // We still need to calculate them, to get the bestr2 value
     if(LowerThresholdCh1 >= 0) {
         ch1threshmax = LowerThresholdCh1;
     }
@@ -445,79 +460,33 @@ template < class T >
     
     if(ch1threshmax>maxval)ch1threshmax=maxval;
     if(ch2threshmax>maxval)ch2threshmax=maxval;
-    int colocInt = 255;
     
-    Nzero = 0;
-    sumColocCh1 = 0;
-    sumColocCh2 = 0;
-    Ncoloc = 0;
-    //imp1.setSlice(i);
-    //             imp2.setSlice(i);
-    sumXYm = 0;
-    sumCh1gtT = 0;
-    sumCh2gtT = 0;
+    Nzero = Ncoloc = 0;
+    sumColocCh1 = sumColocCh2 = 0;
+       
+    sumCh1gtT = sumCh2gtT = 0;
+    mCh1coloc = mCh2coloc = 0;    
+    sumCh1total = sumCh2total = 0;
 
-    mCh2coloc = 0;
-    mCh1coloc = 0;
-    sumCh1total = 0;
-    sumCh2total = 0;
-
-
-    //IJ.showMessage("thresholds "+ (int)ch1threshmax+ ";"+(int)ch2threshmax);
-
-    sumXYm = 0;
-    sumX = 0;
-    sumXY = 0;
-    sumXX = 0;
-    sumYY = 0;
-    sumY = 0;
-    N2 = 0;
-    N = 0;
-    Ncoloc = 0;
-
+    sumX = sumXY = sumXX = sumYY = sumY = N2 = N = Ncoloc = 0;
+    
     //printf("Acquiring input pointers again.\n");
     inPtr1 = (T *) inData[0]->GetScalarPointerForExtent(outExt);
     inPtr2 = (T *) inData[1]->GetScalarPointerForExtent(outExt);
-
-    //printf("Acquiring plot and output pointers.\n");
-
-    T *plotPtr, *outPtr;
-    /*plotPtr = (T *) plotData->GetScalarPointerForExtent(plotExt);*/
-    outPtr = (T *) outData[0]->GetScalarPointerForExtent(outExt);
-
-
+    
     for (idxZ = 0; idxZ <= maxZ; idxZ++) {
-    self->UpdateProgress(0.5+idxZ/float(maxZ));        
-    sprintf(progressText,"Performing final regression (slice %d / %d)",idxZ,maxZ);
-    self->SetProgressText(progressText);
+        self->UpdateProgress(0.5+idxZ/float(maxZ));        
+        sprintf(progressText,"Performing final regression (slice %d / %d)",idxZ,maxZ);
+        self->SetProgressText(progressText);
         
-        //printf
-        //    ("3/3: Performing final regression. Slice = %d.\n",
-        //     idxZ);
         for (idxY = 0; idxY <= maxY; idxY++) {
             for (idxX = 0; idxX <= maxX; idxX++) {
                 ch1 = (int) *inPtr1++;
                 ch2 = (int) *inPtr2++;
 
-                SET_AT_OUT(idxX, idxY, idxZ, outPtr, 0);
-
-
                 sumCh1total = sumCh1total + ch1;
                 sumCh2total = sumCh2total + ch2;
                 N++;
-                /*scaledXvalue =
-                   (int) ((double) ch1 *
-                   ch1Scaling);
-                   scaledYvalue =
-                   255 -
-                   (int) ((double) ch2 *
-                   ch2Scaling); */
-
-                //printf("Reading count from plot at (%d,%d)\n",ch1,ch2);
-                /*count = (int)
-                    GET_AT_PLOT(ch1, ch2, 0, plotPtr);
-                count++;
-                SET_AT_PLOT(ch1, ch2, 0, plotPtr, count); */
 
                 if (ch1 + ch2 == 0)
                     Nzero++;
@@ -540,20 +509,14 @@ template < class T >
                     sumCh1gtT = sumCh1gtT + ch1;
                     colocY = colocY + ch2;
                 }
+                //printf("upper=%d,%d\n",UpperThresholdCh1, UpperThresholdCh2);
                 //printf("ch1=%d,ch2=%d,ch1threshmax=%f,ch2threshmax=%f\n",ch1,ch2,ch1threshmax,ch2threshmax);
                 if (((double) ch1 >= ch1threshmax  && (double)ch1 <= UpperThresholdCh1)
                     && ((double) ch2 >= ch2threshmax)  && (double)ch2 <= UpperThresholdCh2) {
                     sumColocCh1 = sumColocCh1 + ch1;
                     sumColocCh2 = sumColocCh2 + ch2;
                     Ncoloc++;
-                    colocInt =
-                        self->GetConstantVoxelValue();
-                    if (!colocInt) {
-                        colocInt =
-                            (int) sqrt(float(ch1) * float(ch2));
-                    }
-                    SET_AT_OUT(idxX, idxY, idxZ,
-                           outPtr, colocInt);
+                    
                     //calc pearsons
                     sumX = sumX + ch1;
                     sumXY = sumXY + (ch1 * ch2);
@@ -572,21 +535,18 @@ template < class T >
 
 
 
-  self->SetSlope(m);
-  self->SetIntercept(b);
+    self->SetSlope(m);
+    self->SetIntercept(b);
 
-        
-    pearsons1 = sumXY - (sumX * sumY / N);
-    pearsons2 = sumXX - (sumX * sumX / N);
-    pearsons3 = sumYY - (sumY * sumY / N);
+    calculate_pearson(&pearsons1, &pearsons2, &pearsons3,
+    sumX, sumY, sumXX,sumYY,sumXY,N);   
 
-
-    //Pearsons for coloclaised volume
+    //Pearsons for colocalised volume
     double Rcoloc = pearsons1 / (sqrt(pearsons2 * pearsons3));
 
     self->SetPearsonWholeImage(rTotal);
     self->SetPearsonImageAbove(Rcoloc);
-    self->SetPearsonImageBelow(bestr2);
+    self->SetPearsonImageBelow(pearsonsBelowTh);
 
 
     //Mander's original
@@ -611,7 +571,7 @@ template < class T >
     self->SetThresholdM1(colocM1);
     self->SetThresholdM2(colocM2);
 
-    //as in Coste's paper
+    //as in Costes' paper
     //[i.e. E(ch1>ch1threshold) ÷ E(ch1total)]
 
     double colocC1 = (double) sumCh1gtT / (double) sumCh1total;
@@ -684,8 +644,6 @@ void vtkImageAutoThresholdColocalization::ThreadedExecute(vtkImageData **
                               int outExt[6],
                               int id)
 {
-    int idx1;
-    int inExt[6], cOutExt[6];
 
     switch (inData[0]->GetScalarType()) {
         vtkTemplateMacro7
