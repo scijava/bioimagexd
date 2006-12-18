@@ -1,34 +1,36 @@
 #! /bin/sh
 FROMDIR='C:\\BioImageXD\\trunk\\dist'
 cd dist
-for dir in `find . -type d`
-do
-for file in `find $dir -type f -maxdepth 1`
-do
-  FILE="`echo $file|sed s/"."/"$FROMDIR"/|tr / '\\\\'`"
-  DIR="`echo $dir|sed s/"."/"{app}"/|tr / '\\\\'`"
-  if [ "$DIR" = "." ]; then
-     TODIR="{app}"
-  else
-    TODIR=$DIR
-  fi
-  echo "Source: \"$FILE\"; DestDir: \"$TODIR\";  Flags: ignoreversion"
-done
-done
 
-FROMDIR2='C:\\BioImageXD\\trunk\\ITK-pkg'
-cd ../ITK-pkg
-for dir in `find . -type d`
-do
-for file in `find $dir -type f -maxdepth 1`
-do
-  FILE="`echo $file|sed s/"."/"$FROMDIR2"/|tr / '\\\\'`"
-  DIR="`echo $dir|sed s/"."/"{app}\\ITK-pkg"/|tr / '\\\\'`"
-  if [ "$DIR" = "." ]; then
-     TODIR="{app}"
-  else
-    TODIR="$DIR\\"
-  fi
-  echo "Source: \"$FILE\"; DestDir: \"$TODIR\";  Flags: ignoreversion"
-done
-done
+function add_files {
+    FILES=$*
+    for file in $FILES
+    do
+        if [ ! -d "$file" ]; then
+            DIR=`dirname $file`
+            echo "Source: \"$file\"; DestDir: \"$DIR\"; Flags: ignoreversion"
+        fi
+    done | sed s/'DestDir: ".'/'DestDir: "{app}'/g
+}
+
+function add_itk_files {
+    FILES=$*
+    for file in $FILES
+    do
+        if [ ! -d "$file" ]; then
+            DIR=`dirname $file`
+            echo "Source: \"$file\"; DestDir: \"$DIR\"; Flags: ignoreversion"
+        fi
+    done | sed s/'DestDir: ".'/'DestDir: "{app}\\ITK-pkg'/g
+}
+
+
+FILES=`find .`
+add_files $FILES|tr / '\\\\'|sed s/'Source: ".'/"Source: \"$FROMDIR"/g
+cd ..
+cd ITK-pkg
+
+FROMDIR='C:\\BioImageXD\\trunk\\ITK-pkg'
+FILES=`find .`
+add_itk_files  $FILES|tr / '\\\\'|sed s/'Source: ".'/"Source: \"$FROMDIR"/g
+
