@@ -109,7 +109,10 @@ class RenderingInterface:
                      This will also update relevant information about the dataset
         """        
         self.currentTimePoint = n
-        self.currentData = self.dataUnit.getTimePoint(n)
+        if self.dataUnit.isProcessed():
+            self.currentData = self.dataUnit.doPreview(-1,0,n)
+        else:
+            self.currentData = self.dataUnit.getTimePoint(n)
         self.dimensions = self.currentData.GetDimensions()
         
     def setRenderWindowSize(self,size):
