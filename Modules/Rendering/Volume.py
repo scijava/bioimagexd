@@ -166,7 +166,6 @@ class VolumeModule(VisualizationModule):
         
     def setVolumeProAcceleration(self,acc):
         """
-        Method: setVolumeProAcceleration(acceleration)
         Created: 15.05.2005, KP
         Description: Set volume pro acceleration
         """ 
@@ -188,7 +187,6 @@ class VolumeModule(VisualizationModule):
         
     def setQuality(self,quality,raw=0):
         """
-        Method: setQuality(self,quality)
         Created: 28.04.2005, KP
         Description: Set the quality of Rendering
         """ 
@@ -306,6 +304,8 @@ class VolumeModule(VisualizationModule):
         """             
         if not input:
             input=self.data
+        input = bxd.mem.optimize(image = input)
+                    
         ncomps=input.GetNumberOfScalarComponents()
         Logging.info("Number of comps=",ncomps,kw="rendering")
         if ncomps>1 and self.method == TEXTURE_MAPPING:
@@ -318,7 +318,6 @@ class VolumeModule(VisualizationModule):
             
         Logging.info("Rendering using, ",self.mapper.__class__,kw="rendering")
         
-        input = bxd.mem.optimize(image = input)
         
         self.mapper.SetInput(input)
         #self.mapper.AddObserver("ProgressEvent",self.updateProgress)

@@ -127,6 +127,7 @@ class Merging(Module):
             ret=self.doOperation()      
             self.doAlpha=1
             return ret
+        print "Doing alpha=",self.doAlpha
         if not self.preview:
             self.preview=self.doOperation()
         self.doAlpha=1

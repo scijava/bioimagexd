@@ -272,8 +272,7 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
         Created: 23.05.2005, KP
         Description: Set the dataunit used for preview. 
         """
-        self.dataUnit=dataUnit
-                
+        self.dataUnit=dataUnit                
         
         self.dims=dataUnit.getDimensions()
         
@@ -299,13 +298,16 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
         Description: Set the timepoint
         """
         self.timepoint=tp
-        if self.visualizer.getProcessedMode():
+        if self.dataUnit.isProcessed():
+            print "Sections view doing preview"
             image=self.dataUnit.doPreview(-2,1,self.timepoint)
+            
             self.ctf = self.dataUnit.getSourceDataUnits()[0].getColorTransferFunction()
         else:
             image=self.dataUnit.getTimePoint(tp)
             self.ctf=self.dataUnit.getColorTransferFunction()
         
+        image.Update()
         self.zspacing = image.GetSpacing()[2]
         self.imagedata = ImageOperations.imageDataTo3Component(image,self.ctf)
         
