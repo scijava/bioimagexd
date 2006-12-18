@@ -61,6 +61,7 @@ class VideoGeneration(wx.Panel):
         wx.Panel.__init__(self,parent,-1)
         self.control = control
         self.visualizer=visualizer
+        self.frameList = None
             
         # The slider panel will be unlocked by UrmasWindow, not 
         # VideoGeneration
@@ -173,7 +174,7 @@ class VideoGeneration(wx.Panel):
         self.rendering = 1
         messenger.connect(None,"rendering_done",self.cleanUp)
         flag=self.control.renderProject(0,renderpath=path)
-        self.frameList = renderingInterface.getFrameList()
+        
         self.rendering = 0
         if flag==-1:
             return
@@ -182,7 +183,8 @@ class VideoGeneration(wx.Panel):
         """
         Created: 30.1.2006, KP
         Description: Method to clean up after rendering is done
-        """     
+        """ 
+        self.frameList = renderingInterface.getFrameList()
         # if the rendering wasn't aborted, then restore the animator
         if not self.abort:
             self.visualizer.restoreWindowSizes()
@@ -193,7 +195,7 @@ class VideoGeneration(wx.Panel):
 
             Logging.info("Will produce video",kw="animator")
             self.encodeVideo(self.path,self.file,self.size)
-
+            
         # clear the flags so that urmaswindow will destroy as cleanly
         
         self.abort=0
@@ -209,7 +211,7 @@ class VideoGeneration(wx.Panel):
         Created: 27.04.2005, KP
         Description: Encode video from the frames produced
         """ 
-        renderingInterface=RenderingInterface.getRenderingInterface(1)
+        renderingInterface=RenderingInterface.getRenderingInterface()
         
         pattern=renderingInterface.getFilenamePattern()
         framename=renderingInterface.getFrameName()
