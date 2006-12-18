@@ -5,9 +5,6 @@
  Created: 17.11.2004, KP
  Description:
 
- The module used to render selected timepoints in a dataunit. Works as an 
- interface between LSM and MayaVi
-
            
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
@@ -42,40 +39,28 @@ import sys
 
 
 rendint=None
-nonmayavi=None
-
 
 
 def getRenderingInterface(mayavi=0):
-    global rendint,nonmayavi
-    if mayavi:
-        if not nonmayavi:
-            print "Creating light rendering"
-            nonmayavi=LightRenderingInterface.LightRenderingInterface()
-        return nonmayavi
+    global rendint
     if not rendint:
-        print "Creating rendering interface"
         rendint=RenderingInterface()
     return rendint
 
 class RenderingInterface:
     """
-    Class: RenderingInterface
     Created: 17.11.2004, KP
-    Description: The interface between LSM and MayaVi for rendering
+    Description: The interface to visualizer used for animator rendering
     """
     def __init__(self,dataUnit=None,timePoints=[],**kws):
         """
-        Method: __init__
         Created: 17.11.2004, KP
         Description: Initialization
         """
         self.dataUnit=dataUnit
         self.currentData=None
         self.timePoints=timePoints
-        self.mayavi=None
-        self.visualizationFile=None
-        self.surfcolor=None
+        
         self.settings_mode=0
         self.frameName=""
         self.thread = None
@@ -83,13 +68,15 @@ class RenderingInterface:
         self.currentTimePoint=-1
         # XXX: Make this configurable
         self.type=Configuration.getConfiguration().getConfigItem("ImageFormat","Output")
-        print "Got type ",self.type,"from configuration"
+        
         if not self.type:
             self.type="pnm"
             
+        self.visualizer = None
+        self.frameList = []
+        
     def setType(self,type):
         """
-        Method: getColorTransferFunction()
         Created: 13.12.2005, KP
         Description: Set the type of the rendered frame
         """            
@@ -97,7 +84,6 @@ class RenderingInterface:
         
     def getColorTransferFunction(self):
         """
-        Method: getColorTransferFunction()
         Created: 18.04.2005, KP
         Description: Return the current ctf
         """
@@ -106,7 +92,6 @@ class RenderingInterface:
         
     def getCurrentData(self):
         """
-        Method: getCurrentData()
         Created: n/a
         Description: Return the current timepoint
         """
@@ -119,7 +104,6 @@ class RenderingInterface:
         
     def setCurrentTimepoint(self,n):
         """
-        Method: setCurrentTimepoint(n)
         Created: 22.02.2005, KP
         Description: Sets the current timepoint to be the specified timepoint.
                      This will also update relevant information about the dataset
@@ -130,85 +114,47 @@ class RenderingInterface:
         
     def setRenderWindowSize(self,size):
         """
-        Method: setRenderWindowSize()
         Created: 27.04.2005, KP
         Description: Sets the mayavi render window size
         """        
         x,y=size
-        x+=150
-        y+=100
-        if self.mayavi:
-            self.mayavi.root.minsize(x,y)
-            renwin=self.mayavi.get_render_window()
-            x,y=size
-            #renwin.configure(width=x+10,height=y+10)
-            renwin.renwin.SetSize(x,y)
-        
+        if self.visualizer:
+            self.visualizer.setRenderWindowSize((x,y))
+            
     def getRenderWindow(self):
         """
-        Method: getRenderWindow()
         Created: 22.02.2005, KP
         Description: Returns the mayavi's render window. Added for Animator compatibility
+        """
+        return self.visualizer.getCurrentMode().GetRenderWindow()
+    
+    def setParent(self,parent):
+        """
+        Created: 28.04.2005, KP
+        Description: Set the parent of this window
         """        
-        return self.mayavi.get_render_window()
+        self.parent=parent
         
     def getRenderer(self):
         """
-        Method: getRenderer
         Created: 28.04.2005, KP
         Description: Returns the renderer
         """        
-        return self.mayavi.get_render_window().GetRenderer()
+        return self.visualizer.getCurrentMode().GetRenderer()
         
     def render(self):
-        self.mayavi.root.lift()
-        #return self.mayavi.Render()
-        
-    def runTk(self):
+        self.visualizer.currMode.Render()
+    
+    def setVisualizer(self,visualizer):
         """
-        Method: runTk
-        Created: 27.04.2005, KP
-        Description: Executes a Tkinter event loop in a thread
-        """ 
-        #if not self.thread:
-        #    self.thread=threading.Thread(None,self.runTkinterGUI)
-        #    self.thread.start()
-        self.calling = 0
-        self.runTkinterGUI()
+        Created: 20.06.2005, KP
+        Description: Set the visualizer instance to use
+        """        
+        self.visualizer=visualizer
+        self.frameList = []
         
-    def runTkinterGUI(self):
-        """
-        Method: runTkinterGUI()
-        Created: 15.01.2005, KP
-        Description: Executes a Tkinter event loop using wxWidget's wxFutureCall()
-                     that run every 100 ms. Will cease to execute when the flag
-                     self.stop is set
-        """ 
-        
-        if self.mayavi:
-            self.mayavi.root.update()
-        if not self.stop:            
-            wx.FutureCall(50, self.runTkinterGUI)
-            if not self.calling:
-                wx.FutureCall(5000,self.stopIfWindowClosed)
-                self.calling=1
-        else:
-            print "Won't update mayavi any longer"
-
-    def stopIfWindowClosed(self):
-        """
-        Method: stopIfWindowClosed
-        Created: 20.04.2005, KP
-        Description: Stop tkinter event loop if mayavi is closed
-        """
-        self.calling=0
-        if not self.isVisualizationSoftwareRunning():
-            self.stop=1
-        
-
     def setDataUnit(self,dataUnit):
         """
-        Method: setDataUnit(dataUnit)
         Created: 17.11.2004, KP
         Description: Set the dataunit from which the rendered datasets are read
         """
@@ -225,7 +171,6 @@ class RenderingInterface:
 
     def setTimePoints(self,timepoints):
         """
-        Method: setTimePoints(timepoints)
         Created: 17.11.2004, KP
         Description: Set the list of timepoints to be rendered
         """
@@ -233,7 +178,6 @@ class RenderingInterface:
 
     def createVisualization(self,filename):
         """
-        Method: createVisualization()
         Created: 14.12.2004, KP
         Description: Method for starting Mayavi with a datapoint for the
                      purpose of creating a .mv file to use in rendering.
@@ -253,127 +197,53 @@ class RenderingInterface:
 
     def isVisualizationSoftwareRunning(self):
         """
-        Method: isVisualizationSoftwareRunning()
         Created: 11.1.2005, KP
         Description: A method that returns true if a mayavi window exists that 
                      can be used for rendering
         """
-        #Logging.info("Is mayavi running: self.mayavi=",self.mayavi)
-        #if self.mayavi:
-        #    Logging.info("self.mayavi.root_winfo_exists()=",\
-        #        self.mayavi.root.winfo_exists())
-        return (self.mayavi and self.mayavi.root.winfo_exists())
-
-    def getModuleManager(self):
-        """
-        Method: getModuleManager()
-        Created: 22.02.2005, KP
-        Description: A method that returns a current module manager in MayaVi.
-                     If more than one module manager exists, it will return the
-                     "last" one.
-        """
-        dvms = self.mayavi.get_dvm_names()
-        if not self.mm:
-            # Get the last module manager
-            for i in dvms:
-                mm = i.get_current_module_mgr()
-                if self.mm and self.mm != mm:
-                    Logging.warning("Discarding module manager",self.mm)
-                self.mm=mm
-        return self.mm
-
+        return (self.visualizer and not self.visualizer.isClosed())
         
     def isVisualizationModuleLoaded(self):
         """
-        Method: isVisualizationModuleLoaded()
         Created: 22.02.2005, KP
-        Description: A method that returns true if a mayavi has a visualization module loaded.
+        Description: A method that returns true if the visualizer has a visualization module loaded.
         """
-        mm=self.getModuleManager()
-        if not mm.get_module(0):
-            return 0
-        return 1
-        
-    def createVisualizerWindow(self):
-        """
-        Method: createVisualizerWindow()
-        Created: 22.02.2005, KP
-        Description: A method that creates an instance of mayavi
-        """    
-        Logging.info("Creating new mayavi instance")
-        #del self.mayavi
-        self.mayavi = None
-        self.mayavi=mayavi.mayavi()
-        # set flag indicating this is the first run
-        self.not_loaded=1
-
+        return len(self.visualizer.getCurrentMode().getModules())        
         
     def doRendering(self,**kws):
         """
-        Method: doRendering()
         Created: 17.11.2004, KP
         Description: Sends each timepoint one at a time to be rendered in mayavi
         Parameters:
             preview     If this flag is true, the results are not rendered out
         """
-        self.showPreview=None
-        self.stop=0
-        self.runTk()#interGUI()
-
-        self.visualizationFile=None
-        self.ctf=None
-        self.showControlPanel=0
-        self.use_existing=0
-        if kws.has_key("use_existing"):
-            self.use_existing=kws["use_existing"]
-        self.module="Volume"
-        if kws.has_key("module"):
-            self.module=kws["module"]
         if kws.has_key("preview"):
-            self.showControlPanel=1
             self.showPreview=kws["preview"]
-        if kws.has_key("ctrl_panel"):
-            self.showControlPanel=kws["ctrl_panel"]
-        if kws.has_key("visualization"):
-            self.visualizationFile=kws["visualization"]
-        if kws.has_key("surface_color"):
-            self.surfcolor=kws["surface_color"]
         if kws.has_key("ctf"):
             self.ctf=kws["ctf"]
+
+        if not self.showPreview:
+            raise "Cannot handle non-previews"
 
         if not self.dataUnit or not self.timePoints:
             raise "No dataunit or timepoints defined"
 
-        # If there is no mayavi instance to do the rendering
+        # If there is no visualizer instance to do the rendering
         # create one
-        print "is mayavi running?",self.isVisualizationSoftwareRunning()
         if not self.isVisualizationSoftwareRunning():
-            print "Creating mayavi"
+            Logging.info("Creating visualizer",kw="visualizer")
             self.createVisualizerWindow()
-            
-        Logging.info("Mayavi exists:",self.mayavi.root.winfo_exists(), "it's state:",self.mayavi.root.state())
-
-        # If this is not preview, we disable the control panel
-        if not self.showControlPanel:
-            self.mayavi.show_ctrl_panel(0)
-
-
-        # If this is not preview
-        if not self.showPreview:
-            # Render every selected timepoint
-            for timepoint in self.timePoints:
-                # Set the current dataset to be timepoint 
-                self.setCurrentTimepoint(timepoint)
-                self.renderData(self.currentData,timepoint)
-
-        else:
-            Logging.info("Previewing data")
-            self.renderData(self.showPreview,0)
-#        self.stop=1
-
+        self.visualizer.setTimepoint(self.currentTimePoint)
+        
+    def getFrameList(self):
+        """
+        Created: 07.11.2006, KP
+        Description: Return the list of the names of the frames that have been rendered
+        """
+        return self.frameList
+        
     def setOutputPath(self,path):
         """
-        Method: setOutputPath(path)
         Created: 17.11.2004, KP
         Description: Sets the path where the rendered frames are stored.
         """
@@ -381,7 +251,6 @@ class RenderingInterface:
  
     def renderData(self,data,n):
         """
-        Method: renderData(data)
         Created: 17.11.2004, KP
         Description: Sends the specified timepoint to Mayavi to be rendered.
         Parameters:
@@ -457,19 +326,18 @@ class RenderingInterface:
             
     def saveFrame(self,filename):
         """
-        Method: saveFrame(filename)
         Created: 22.02.2005, KP
         Description: Saves a frame with a given name
         """
-        renwin=self.getRenderWindow()
+        self.frameList.append(filename)
+        visualizer=self.visualizer
         type=self.type
-        comm = "renwin.save_%s(filename)"
-        eval(eval("comm%type"))      
-        
+        Logging.info("Saving screenshot to ",filename,kw="visualizer")
+        comm = "visualizer.getCurrentMode().saveSnapshot(filename)"
+        eval(comm)
             
     def getFilenamePattern(self):
         """
-        Method: getFilenamePattern()
         Created: 27.04.2005, KP
         Description: Returns output filename pattern
         """
@@ -477,7 +345,6 @@ class RenderingInterface:
         
     def getFrameName(self):
         """
-        Method: getFrameName
         Created: 27.04.2005, KP
         Description: Returns name used to construct the filenames
         """
@@ -485,7 +352,6 @@ class RenderingInterface:
             
     def getFilename(self,frameNum):
         """
-        Method: getFilename()
         Created: 22.02.2005, KP
         Description: Returns output filename of the frame we're rendering
         """
@@ -493,7 +359,6 @@ class RenderingInterface:
 
     def getCenter(self,tp=-1):
         """
-        Method: getCenter()
         Created: 22.02.2005, KP
         Description: Returns the center of the requested dataset. If none is specified, the
                      center of the current dataset is returned
@@ -507,7 +372,6 @@ class RenderingInterface:
         
     def getDimensions(self,tp=-1):
         """
-        Method: getDimensions(timepoint)
         Created: 22.02.2005, KP
         Description: Returns the dimensions of the requested dataset. If none is specified, the
                      dimensions of the current dataset is returned
@@ -519,31 +383,13 @@ class RenderingInterface:
         else:
             return self.dataUnit.getTimePoint(tp).GetDimensions()
             
+            
     def updateDataset(self):
         """
-        Method: updateDataset()
-        Created: 20.04.2005, KP
+        Created: 28.04.2005, KP
         Description: Updates the dataset to the current timepoint
         """
-        self.setDataSet(self.getCurrentData())
+        if self.visualizer:
+            self.visualizer.setTimepoint(self.currentTimePoint)
             
-    def setDataSet(self,dataset):
-        """
-        Method: setDataSet(dataset)
-        Created: 22.02.2005, KP
-        Description: Sets the dataset that is rendered in MayaVi                
-        """
-        dvms = self.mayavi.get_dvm_names()
-        if len(dvms)> 1:
-            Logging.info("There is more than one datavizmgr")
-        for i in dvms:
-            self.mm = self.mayavi.mayavi.data_viz_mgr[i].get_current_module_mgr()
-            Logging.info("Substituting data to dvm %s"%i)
-            dvm=self.mayavi.mayavi.data_viz_mgr[i]
-            ds=dvm.get_data_source()
-            ds.data=dataset
-            self.mayavi.update_label ()
-            Logging.info("Updating datasource")
-            ds.Update()
-            ds.update_references()
-import LightRenderingInterface
+            
