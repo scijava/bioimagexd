@@ -37,6 +37,7 @@ import Logging
 from DataUnit import *
 import scripting
 
+import messenger
 class DataWriter:
     """
     Created: 26.03.2005
@@ -152,6 +153,7 @@ class DataSource:
         print "Setting resample dimensions to ",dims
         self.resampleDims=map(int,dims)
         
+        messenger.send(None,"set_resample_dims",dims, self.originalDimensions)
     def getOriginalScalarRange(self):
         """
         Created: 12.04.2006, KP

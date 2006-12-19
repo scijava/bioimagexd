@@ -38,6 +38,7 @@ import  wx.lib.colourselect as  csel
 import MenuManager
 import scripting
 import messenger
+import UIElements
 
 import os
 
@@ -105,7 +106,11 @@ class AnnotationToolbar(wx.Window):
 
         self.colorSelect = csel.ColourSelect(self, -1, "", self.annotateColor, size = (65,-1))
         self.sizer.Add(self.colorSelect, (5,0),span=(1,2))
-
+        
+        #self.dimInfo = UIElements.DimensionInfo(self,-1, size=(120,50))
+        #self.sizer.Add(self.dimInfo, (6,0), span=(1,2))
+    
+        self.sizerCount = 5
         self.circleBtn.Bind(wx.EVT_BUTTON, self.addAnnotation)
         self.rectangleBtn.Bind(wx.EVT_BUTTON, self.addAnnotation)
         self.polygonBtn.Bind(wx.EVT_BUTTON, self.addAnnotation)
@@ -142,7 +147,7 @@ class AnnotationToolbar(wx.Window):
         btn.Bind(wx.EVT_BUTTON,func)
         
         self.numberOfChannels+=1
-        self.sizer.Add(btn, (5+self.numberOfChannels,0),span=(1,2))
+        self.sizer.Add(btn, (self.sizerCount+self.numberOfChannels,0),span=(1,2))
         self.channelButtons[toolid]=btn
         self.Layout()
         
