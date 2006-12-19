@@ -63,6 +63,8 @@ import Configuration
 import scripting
 
 import GUI.Toolbar
+import UIElements
+
 import wx.lib.buttons as buttons
 
 
@@ -548,6 +550,10 @@ class Visualizer:
         self.tb.AddControl(self.roll)
         self.elevation=wx.SpinButton(self.tb, -1,style=wx.SP_VERTICAL,size=(-1,22))
         self.tb.AddControl(self.elevation)
+        
+        self.dimInfo = UIElements.DimensionInfo(self.tb,-1, size=(120,50))
+        self.tb.AddControl(self.dimInfo)
+            
         
         self.pitch.Bind(wx.EVT_SPIN_UP, self.onPitchUp)
         self.pitch.Bind(wx.EVT_SPIN_DOWN, self.onPitchDown)

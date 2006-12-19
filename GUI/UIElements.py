@@ -36,6 +36,7 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 import wx
 import  wx.lib.filebrowsebutton as filebrowse
 import Configuration
+import messenger
 
 class AcceptedValidator(wx.PyValidator):
     def __init__(self, accept,above=-1,below=-1):
@@ -166,7 +167,115 @@ class MyStaticBox(wx.StaticBox):
         self.dc.EndDrawing()
         self.dc.SelectObject(wx.NullBitmap)
         self.dc = None
-    
+
+class DimensionInfo(wx.Window):
+    """
+    Created: 1.11.2006, KP
+    Description: A static box replacement that allows us to control how it is painted
+    """
+    def __init__(self, parent, wid, pos = wx.DefaultPosition, size  = wx.DefaultSize, style = 0, name="Dims info"):
+        w,h = size
+        self.buffer = wx.EmptyBitmap(w,h,-1)
+        wx.Window.__init__(self,parent,wid,pos,size,style,name)
+        
+        self.parent = parent
+        
+        self.Bind(wx.EVT_PAINT,self.onPaint)
+        self.Bind(wx.EVT_SIZE,self.onSize)
+        w,h = size
+        self.origX, self.origY, self.origZ = 0,0,0
+        self.currX, self.currY, self.currZ = 0,0,0
+        
+        messenger.connect(None,"set_resample_dims", self.onSetResampleDims)
+        messenger.connect(None,"set_current_dims",self.onSetCurrentDims)
+        self.owncol = (255,255,255)
+        self.paintSelf()
+        self.Raise()
+        
+    def onSetResampleDims(self, obj, evt, dims, origDims):
+        """
+        Created: 19.12.2006, KP
+        Description: set the resampled dimensions to show
+        """
+        self.currX, self.currY, self.currZ = dims
+        self.origX, self.origY, self.origZ = origDims
+        self.paintSelf()
+        self.Refresh()
+
+    def onSetCurrentDims(self, obj, evt, dims):
+        """
+        Created: 19.12.2006, KP
+        Description: set the current dimensions to show
+        """
+        self.currX, self.currY, self.currZ = dims
+        self.origX, self.origY, self.origZ = dims
+        self.paintSelf()    
+        self.Refresh()
+        
+    def SetOwnBackgroundColour(self,col):
+        self.owncol=col
+        
+    def onPaint(self, evt):
+        """
+        Created: 1.11.2006, KP
+        Description: Paint the static box
+        """
+        dc=wx.BufferedPaintDC(self,self.buffer)#,self.buffer)
+
+    def onSize(self,evt):
+        """
+        Created: 1.11.2006, KP
+        Description: Repaint self when size changes
+        """
+        w,h=evt.GetSize()
+        self.buffer = wx.EmptyBitmap(w,h,-1)
+        
+        self.paintSelf()
+        
+    def paintSelf(self):
+        """
+        Created: 05.05.2005, KP
+        Description: Paints the label
+        """
+        
+        #self.dc = wx.BufferedDC(wx.ClientDC(self),self.buffer)        
+        self.dc = wx.MemoryDC()
+        self.dc.SelectObject(self.buffer)
+               
+        self.dc.BeginDrawing()
+        #self.SetBackgroundColour(self.parent.GetBackgroundColour())
+        self.dc.SetBackground(wx.Brush(self.parent.GetBackgroundColour()))
+        self.dc.Clear()
+        
+        
+            #self.dc.SetBackground(wx.Brush(self.bg))
+        #self.dc.SetBrush(wx.Brush(self.owncol))
+        
+        #self.dc.SetBrush(wx.TRANSPARENT_BRUSH)
+        self.dc.SetPen(wx.Pen((208,208,191), 1))
+        
+        w,h = self.buffer.GetWidth(),self.buffer.GetHeight()
+        #self.dc.DrawRoundedRectangle(0,7,w,h-4,5)
+            
+        
+        weight=wx.NORMAL
+        self.dc.SetBrush(wx.Brush(self.parent.GetBackgroundColour()))
+        self.dc.SetPen(wx.Pen(self.parent.GetBackgroundColour(),1))
+        
+        font = wx.Font(8,wx.SWISS,wx.NORMAL,weight)
+        self.dc.SetTextForeground((0,0,0))
+        self.dc.SetFont(font)
+        txt="%3d x %3d x %3d"%(self.currX, self.currY, self.currZ)
+        
+        self.dc.DrawText("Now:",1,0)
+        self.dc.DrawText(txt,45,0)
+        self.dc.SetTextForeground((80,80,80))
+        self.dc.DrawText("Original:",1,18)
+        txt="%3d x %3d x %3d"%(self.origX, self.origY, self.origZ)
+        self.dc.DrawText(txt, 45,18)
+        self.dc.EndDrawing()
+        self.dc.SelectObject(wx.NullBitmap)
+        self.dc = None    
 
 class NamePanel(wx.Panel):
     """

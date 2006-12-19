@@ -145,9 +145,13 @@ class InfoWidget(wx.Panel):
             print "Got dims=",dims
             resampledims=dataunit.dataSource.getResampleDimensions()
             
+            
             if resampledims:
-               odims=dataunit.dataSource.getOriginalDimensions()
-               print "original dimensions=",odims
+                odims=dataunit.dataSource.getOriginalDimensions()
+                print "original dimensions=",odims
+                messenger.send(None,"set_resample_dims",resampledims,odims)
+            else:
+                messenger.send(None,"set_current_dims",dims)
 
             spacing=dataunit.getSpacing()
             print "Got spacing",spacing
