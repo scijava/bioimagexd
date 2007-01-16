@@ -48,6 +48,8 @@ DELETE_ANNOTATION=6
 
 from OGLAnnotations import *
 
+
+
 class PainterHelper:
     """
     Created: 06.10.2006, KP
@@ -951,8 +953,9 @@ class InteractivePanel(ogl.ShapeCanvas):
             xrate=self.scrollsize
         if ydim>newy:
             yrate=self.scrollsize
-       
+        
         self.SetScrollRate(xrate,yrate)
+        
         
     def saveSnapshot(self,filename):
         """

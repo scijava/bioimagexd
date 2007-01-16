@@ -302,7 +302,7 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
             print "Sections view doing preview"
             image=self.dataUnit.doPreview(-2,1,self.timepoint)
             
-            self.ctf = self.dataUnit.getSourceDataUnits()[0].getColorTransferFunction()
+            self.ctf = self.dataUnit.getColorTransferFunction()
         else:
             image=self.dataUnit.getTimePoint(tp)
             self.ctf=self.dataUnit.getColorTransferFunction()

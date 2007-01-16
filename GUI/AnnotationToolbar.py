@@ -107,10 +107,37 @@ class AnnotationToolbar(wx.Window):
         self.colorSelect = csel.ColourSelect(self, -1, "", self.annotateColor, size = (65,-1))
         self.sizer.Add(self.colorSelect, (5,0),span=(1,2))
         
+        self.resamplingBtn = createBtn(MenuManager.ID_RESAMPLING, "resample.gif","Enable or disable the resampling of image data")
+
+        self.resampleToFitBtn = createBtn(MenuManager.ID_RESAMPLE_TO_FIT, "resample_tofit.gif","Enable or disable the resampling of image data")
+        
+        self.sizer.Add(self.resamplingBtn, (6,0))
+        self.sizer.Add(self.resampleToFitBtn, (6,1))
+        #bmp = wx.Image(os.path.join(iconpath,"resample.gif")).ConvertToBitmap()
+        #tb.DoAddTool(MenuManager.ID_RESAMPLING,"Resampling",bmp,kind=wx.ITEM_CHECK,shortHelp="Enable or disable the resampling of image data")
+        #wx.EVT_TOOL(self,MenuManager.ID_RESAMPLING,self.onResampleData)
+        #tb.EnableTool(MenuManager.ID_RESAMPLING,0)
+        #tb.ToggleTool(MenuManager.ID_RESAMPLING,1)
+        
+        #sbox = wx.StaticBox(self,-1,"Resampling")
+        #sboxsizer = wx.StaticBoxSizer(sbox, wx.VERTICAL)
+        #self.resamplingOff = wx.RadioButton(self,-1,"Disabled", style = wx.RB_GROUP)
+        #self.resamplingOn = wx.RadioButton(self,-1,"Enabled")
+        #self.resampleToFit = wx.RadioButton(self,-1,"To fit")
+        
+        #sboxsizer.Add(self.resamplingOn)
+        #sboxsizer.Add(self.resamplingOff)
+        #sboxsizer.Add(self.resampleToFit)
+        #self.sizer.Add(sboxsizer, (6,0),span=(1,2))
+        #self.sizer.Add(self.resamplingOn, (7,0),span=(1,2))
+        #self.sizer.Add(self.resampleToFit, (8,0),span=(1,2))
+        
         #self.dimInfo = UIElements.DimensionInfo(self,-1, size=(120,50))
         #self.sizer.Add(self.dimInfo, (6,0), span=(1,2))
     
-        self.sizerCount = 5
+        self.sizerCount = 8
+        self.resamplingBtn.Bind(wx.EVT_BUTTON, self.onResampleData)
+        self.resampleToFitBtn.Bind(wx.EVT_BUTTON, self.onResampleToFit)
         self.circleBtn.Bind(wx.EVT_BUTTON, self.addAnnotation)
         self.rectangleBtn.Bind(wx.EVT_BUTTON, self.addAnnotation)
         self.polygonBtn.Bind(wx.EVT_BUTTON, self.addAnnotation)
@@ -119,6 +146,27 @@ class AnnotationToolbar(wx.Window):
         #wx.EVT_TOOL(self.parent,MenuManager.ID_ADD_SCALE,self.addAnnotation)
         self.deleteAnnotationBtn.Bind(wx.EVT_BUTTON,self.deleteAnnotation)
 
+    def onResampleToFit(self,evt):
+        """
+        Created: 23.07.2006, KP
+        Description: Toggle the resampling on / off
+        """
+#        flag=self.resampleBtn.GetValue()
+        
+        flag=evt.GetIsDown()
+        scripting.resampleToFit = flag
+        self.visualizer.updateRendering()              
+    def onResampleData(self,evt):
+        """
+        Created: 23.07.2006, KP
+        Description: Toggle the resampling on / off
+        """
+#        flag=self.resampleBtn.GetValue()
+        
+        flag=evt.GetIsDown()
+        scripting.resamplingDisabled = not flag
+        self.visualizer.updateRendering()        
+        
     def clearChannelItems(self):
         """
         Created: 06.11.2006, KP

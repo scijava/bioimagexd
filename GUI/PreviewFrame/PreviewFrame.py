@@ -555,7 +555,7 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         #colorImage.Update()
         t2=time.time()
         print "Executing pipeline took",t2-t,"seconds"            
-        
+        print colorImage.GetDimensions(),colorImage.GetWholeExtent()
         self.currentImage=colorImage
                     
         if colorImage:
@@ -584,8 +584,11 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
 #            return
             self.slice = None
         else:
-            self.slice=ImageOperations.vtkImageDataToWxImage(self.imagedata,z)
+            print "Getting slice from imagedata, z=",z
             
+            self.slice=ImageOperations.vtkImageDataToWxImage(self.imagedata,z)
+            print "Done"
+        print "---> painting preview"
         self.paintPreview()
         
         
@@ -617,7 +620,7 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
             
             
         if self.mip:
-            #Logging.info("Doing mip",data,kw="preview")
+            Logging.info("-->Doing mip",data,kw="preview")
             data.SetUpdateExtent(data.GetWholeExtent())
             mip=vtk.vtkImageSimpleMIP()
             mip.SetInput(data)
@@ -631,7 +634,7 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
             
             data.SetUpdateExtent(data.GetWholeExtent())
             
-            #print "Output from mip:",data
+            
         if ncomps == 1:            
             Logging.info("Mapping trough ctf",kw="preview")
             
@@ -775,22 +778,25 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         x,y = self.xdim,self.ydim
         x*=f
         y*=f
+
+        if bxd.resampleToFit:
+            bxd.mem.set_target_size(x,y)
+            f = 1            
+                
         px,py = self.paintSize
         if px>x:x=px
         if py>y:y=py
+        
         self.buffer = wx.EmptyBitmap(x,y)
         self.setScrollbars(x,y)
         if f<self.zoomFactor:
             # black the preview
-            
             slice=self.slice
             self.slice=None
             self.paintPreview()
             self.slice=slice
-            
         self.zoomFactor=f
         self.updateAnnotations()
-        
         #self.Scroll(0,0)
         
     def zoomToFit(self):

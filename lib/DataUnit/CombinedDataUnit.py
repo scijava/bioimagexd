@@ -392,8 +392,7 @@ class CombinedDataUnit(DataUnit.DataUnit):
                 preview = merge.GetOutput()
                 #merge.Update()
                 #preview=merge.GetOutput()
-            elif len(merged)==1:
-                print merged
+            elif len(merged)==1 and bxd.preferRGB:                
                 data,ctf = merged[0]
                 maptocolor = vtk.vtkImageMapToColors()
                 maptocolor.SetInput(data)

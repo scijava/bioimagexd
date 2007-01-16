@@ -223,9 +223,52 @@ class PerformanceSettings(wx.Panel):
         resampleGrid.Add(self.resampleY,(0,3))
         resampleGrid.Add(self.resampleToX,(1,1))
         resampleGrid.Add(x2,(1,2))
-        resampleGrid.Add(self.resampleToY,(1,3))        
+        resampleGrid.Add(self.resampleToY,(1,3)) 
+
+        
+        try:
+            rx,ry,rz=eval(conf.getConfigItem("ResampleToFitDims","Performance"))
+            
+        except:
+            rx,ry,rz=1024,1024,40
+        resampleToFitOriginal = conf.getConfigItem("ResampleToFitOriginal","Performance")
+        if resampleToFitOriginal:
+            resampleToFitOriginal = eval(resampleToFitOriginal)
+        else:
+            resampleToFitOriginal = False
+            
         self.resampleBoxSizer.Add(resampleGrid)
         
+        grid = wx.GridBagSizer()
+        resampleToFitLbl = wx.StaticText(self, -1, "Maximum resample-to-fit dimensions")
+        grid.Add(resampleToFitLbl, (0,0),span=(1,2))
+        self.originalSize = wx.RadioButton(self,-1,"Original size", style = wx.RB_GROUP)
+        self.customSize = wx.RadioButton(self,-1,"Custom size:")
+        self.originalSize.SetValue(1)
+        self.originalSize.Bind(wx.EVT_RADIOBUTTON, self.onSetResampleToFitSizeToOriginal)
+        self.customSize.Bind(wx.EVT_RADIOBUTTON, self.onSetResampleToFitSizeToCustom)
+        grid.Add(self.originalSize, (1,0))
+        grid.Add(self.customSize,(2,0))
+        x1 = wx.StaticText(self,-1,"x")
+        x2 = wx.StaticText(self,-1,"x")
+        horizbox  =wx.BoxSizer(wx.HORIZONTAL )
+        self.resampleToFitX = wx.TextCtrl(self,-1,"%d"%rx)
+        self.resampleToFitY = wx.TextCtrl(self,-1,"%d"%ry)
+        self.resampleToFitZ = wx.TextCtrl(self,-1,"%d"%rz)
+        horizbox.Add(self.resampleToFitX)        
+        horizbox.Add(x1)
+        horizbox.Add(self.resampleToFitY)
+        horizbox.Add(x2)
+        horizbox.Add(self.resampleToFitZ)
+        grid.Add(horizbox, (2,1))
+        
+        if resampleToFitOriginal:
+            self.originalSize.SetValue(1)
+            self.onSetResampleToFitSizeToOriginal(None)
+        else:
+            self.customSize.SetValue(1)
+            self.onSetResampleToFitSizeToCustom(None)
+        self.resampleBoxSizer.Add(grid)
         
         self.memoryBox=wx.StaticBox(self,-1,"Memory usage and threading",size=(600,150))
         self.memoryBoxSizer=wx.StaticBoxSizer(self.memoryBox,wx.VERTICAL)
@@ -324,6 +367,24 @@ class PerformanceSettings(wx.Panel):
         self.Layout()
         self.sizer.Fit(self)
         
+    def onSetResampleToFitSizeToCustom(self, evt):
+        """
+        Created: 22.12.2006, KP
+        Description: Set the maximum size of resample-to-fit feature t a custom size
+        """
+        self.resampleToFitX.Enable(1)
+        self.resampleToFitY.Enable(1)
+        self.resampleToFitZ.Enable(1)
+        
+    def onSetResampleToFitSizeToOriginal(self, evt):
+        """
+        Created: 22.12.2006, KP
+        Description: Set the maximum size of resample-to-fit feature to the original size of the data
+        """
+        self.resampleToFitX.Enable(0)
+        self.resampleToFitY.Enable(0)
+        self.resampleToFitZ.Enable(0)
+        
     def onSelectLimitMemory(self, evt):
         """
         Created: 11.11.2006, KP
@@ -362,6 +423,20 @@ class PerformanceSettings(wx.Panel):
             rty = int(self.resampleToY.GetValue())
         except:
             forceResample=0
+        original = self.originalSize.GetValue()
+        try:
+            tofitx = int(self.resampleToFitX.GetValue())
+            tofity = int(self.resampleToFitY.GetValue())
+            tofitz = int(self.resampleToFitZ.GetValue())
+        except:
+            original = 1
+
+        if original:
+            conf.setConfigItem("ResampleToFitOriginal","Performance",str(True))
+        else:
+            conf.setConfigItem("ResampleToFitOriginal","Performance",str(False))
+            conf.setConfigItem("ResampleToFitDims","Performance",str((tofitx,tofity,tofitz)))
+            
         conf.setConfigItem("DoResample","Performance",str(not not forceResample))
         if forceResample:
             conf.setConfigItem("ResampleDims","Performance",str((rx,ry)))

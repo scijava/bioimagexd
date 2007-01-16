@@ -148,11 +148,11 @@ class VolumeModule(VisualizationModule):
         Logging.info("Dataunit for Volume Rendering:",dataunit,kw="rendering")
         VisualizationModule.setDataUnit(self,dataunit)
         # If 32 bit data, use method 1
-        if self.visualizer.getProcessedMode():
-            Logging.info("Processed mode, using ctf of first source",kw="rendering")
-            self.colorTransferFunction = self.dataUnit.getSourceDataUnits()[0].getColorTransferFunction()
-        else:    
-            self.colorTransferFunction = self.dataUnit.getColorTransferFunction()
+#        if self.visualizer.getProcessedMode():
+#            Logging.info("Processed mode, using ctf of first source",kw="rendering")
+#            self.colorTransferFunction = self.dataUnit.getSourceDataUnits()[0].getColorTransferFunction()
+#        else:    
+        self.colorTransferFunction = self.dataUnit.getColorTransferFunction()
         
         self.volumeProperty.SetColor(self.colorTransferFunction)
         

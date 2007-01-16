@@ -694,11 +694,11 @@ class MainWindow(wx.Frame):
         
 #        tb.AddSeparator()
         
-        bmp = wx.Image(os.path.join(iconpath,"resample.gif")).ConvertToBitmap()
-        tb.DoAddTool(MenuManager.ID_RESAMPLING,"Resampling",bmp,kind=wx.ITEM_CHECK,shortHelp="Enable or disable the resampling of image data")
-        wx.EVT_TOOL(self,MenuManager.ID_RESAMPLING,self.onResampleData)
-        tb.EnableTool(MenuManager.ID_RESAMPLING,0)
-        tb.ToggleTool(MenuManager.ID_RESAMPLING,1)
+#        bmp = wx.Image(os.path.join(iconpath,"resample.gif")).ConvertToBitmap()
+#        tb.DoAddTool(MenuManager.ID_RESAMPLING,"Resampling",bmp,kind=wx.ITEM_CHECK,shortHelp="Enable or disable the resampling of image data")
+#        wx.EVT_TOOL(self,MenuManager.ID_RESAMPLING,self.onResampleData)
+#        tb.EnableTool(MenuManager.ID_RESAMPLING,0)
+#        tb.ToggleTool(MenuManager.ID_RESAMPLING,1)
 
         bmp = wx.ArtProvider_GetBitmap(wx.ART_QUESTION, wx.ART_TOOLBAR, (32,32))        
         tb.DoAddTool(MenuManager.ID_TOOLBAR_HELP,"Help",bmp,shortHelp="Get help for current task / visualization")
@@ -900,17 +900,7 @@ class MainWindow(wx.Frame):
         self.progressObject=arg
         messenger.connect(self.progressObject,"update_progress",self.updateProgressBar)
         
-    def onResampleData(self,evt):
-        """
-        Created: 23.07.2006, KP
-        Description: Toggle the resampling on / off
-        """
-#        flag=self.resampleBtn.GetValue()
-        tb=self.GetToolBar()                    
-        flag=tb.GetToolState(MenuManager.ID_RESAMPLING)
-        bxd.resamplingDisabled = not flag
-        self.visualizer.updateRendering()
-
+    
     def onShowCommandHistory(self,evt=None):
         """
         Created: 13.02.2006, KP
