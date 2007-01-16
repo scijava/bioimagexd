@@ -61,7 +61,7 @@ merge.AddLookupTable(ctf2)
 #merge.Update()
 
 streamer = vtk.vtkImageDataStreamer()
-streamer.SetNumberOfStreamDivisions(8)
+streamer.SetNumberOfStreamDivisions(1)
 streamer.SetInput(merge.GetOutput())
 streamer.GetExtentTranslator().SetSplitModeToZSlab()
 streamer.Update()

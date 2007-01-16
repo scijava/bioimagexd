@@ -203,11 +203,12 @@ void vtkImageSimpleMIP::ThreadedRequestData (
   vtkImageData **outData,
   int outExt[6], int id)
 {
+    printf("vtkImageSimpleMIP ThreadedRequestData outExt=%d,%d,%d,%d,%d,%d\n",outExt[0],outExt[1],outExt[2],outExt[3],outExt[4],outExt[5]);
     int uExt[6];
   vtkInformation *inInfo = inputVector[0]->GetInformationObject(0);
   inInfo->Get(vtkStreamingDemandDrivenPipeline::UPDATE_EXTENT(),uExt);
     printf("Update extent=%d,%d,%d,%d,%d,%d\n",PRT_EXT(uExt));
-    printf("vtkImageSimpleMIP ThreadedRequestData outExt=%d,%d,%d,%d,%d,%d\n",outExt[0],outExt[1],outExt[2],outExt[3],outExt[4],outExt[5]);
+    
   if (inData[0][0] == NULL)
     {
     vtkErrorMacro(<< "Input " << 0 << " must be specified.");

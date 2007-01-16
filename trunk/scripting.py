@@ -120,8 +120,10 @@ mainWindow = None
 visualizer = None
 processingManager = None
 resamplingDisabled = 0
+resampleToFit = 0
 processingTimepoint = -1
 wantAlphaChannel=1
+preferRGB = 1
 
 dialogs = {}
 

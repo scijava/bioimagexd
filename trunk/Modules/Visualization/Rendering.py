@@ -142,6 +142,7 @@ class RenderingMode(VisualizationMode):
         Created: 24.05.2005, KP
         Description: Set the mode of visualization
         """
+        bxd.preferRGB = 0
         bxd.wantAlphaChannel = 1
         self.sidebarWin=sidebarwin
         # If we're preloading, don't create the render window

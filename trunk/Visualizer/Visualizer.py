@@ -976,6 +976,7 @@ class Visualizer:
         # Most visualization methods don't want alpha channel
         # The ones that do, can change the flag from activate()
         scripting.wantAlphaChannel = 0
+        scripting.preferRGB = 1
         self.currentWindow = modeinst.activate(self.sidebarWin)        
       
         self.sidebarWin.SetDefaultSize((0,1024))

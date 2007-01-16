@@ -420,11 +420,12 @@ def setFromParameterList(iTF,list):
     iTF.SetBrightness(int(br))
 
 def vtkImageDataToWxImage(data,slice=-1,startpos=None,endpos=None):
-    if slice>=0:
-        #Logging.info("Getting slice %d"%slice,kw="imageop")
+    if slice>=0:    
+        Logging.info("Getting slice %d"%slice,kw="imageop")
         data=getSlice(data,slice,startpos,endpos)
+    #print "data=",data
     exporter=vtk.vtkImageExport()
-    #Logging.info("Setting update extent to ",data.GetWholeExtent(),kw="imageop")
+    Logging.info("Setting update extent to ",data.GetWholeExtent(),kw="imageop")
     data.SetUpdateExtent(data.GetWholeExtent())
     data.Update()
     
@@ -1112,7 +1113,8 @@ def getSlice(volume,zslice,startpos=None,endpos=None):
     """
     Created: KP
     Description: Extract a given slice from a volume
-    """           
+    """         
+    Logging.backtrace()  
     voi=vtk.vtkExtractVOI()
     voi.SetInput(volume)
     x,y,z=volume.GetDimensions()
@@ -1120,6 +1122,7 @@ def getSlice(volume,zslice,startpos=None,endpos=None):
     if startpos:
         x0,y0=startpos
         x,y=endpos
+    print "voi = ",x0,x-1,y0,y-1,zslice,zslice
     voi.SetVOI(x0,x-1,y0,y-1,zslice,zslice)
     voi.Update()
     return voi.GetOutput()
