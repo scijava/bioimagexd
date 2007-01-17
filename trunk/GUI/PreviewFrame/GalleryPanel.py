@@ -189,7 +189,6 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
         # instead of each slice of one timepoint, call the
         # appropriate function
         if self.showTimepoints:
-            print "SHOWING TIMEPOINTS"
             return self.setSlice(self.slice)
         if self.visualizer.getProcessedMode():
             image=self.dataUnit.doPreview(-2,1,self.timepoint)
@@ -226,7 +225,19 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
         self.calculateBuffer()
         if update:
             self.updatePreview()
-        
+            self.Refresh()
+            
+    def forceUpdate(self):
+        """
+        Created: 17.1.2007, KP
+        Description: force update of the preview
+        """
+        tp = self.timepoint
+        self.slices=[]
+        self.timepoint = -1
+        self.setTimepoint(tp)
+#        self.updatePreview()
+#        self.Refresh()
         
     def setSlice(self,slice):
         """

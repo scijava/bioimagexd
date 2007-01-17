@@ -68,10 +68,14 @@ class Scatterplot(InteractivePanel.InteractivePanel):
         self.emptySpace = 4
         self.z = 0
         self.timepoint=0
+        self.scatterHeight = 255
         self.scatterBitmap = None
         self.drawLegend = kws.get("drawLegend")
         # Legend width is the width / height of the scalar colorbar
         self.legendWidth = 24
+        self.horizontalLegend = None
+        self.verticalLegend = None
+        self.scatterLegend = None
         if self.drawLegend:
             w, h = self.size
             h+=self.legendWidth+self.emptySpace
@@ -224,13 +228,15 @@ class Scatterplot(InteractivePanel.InteractivePanel):
         """    
         pos=event.GetPosition()
         x,y=pos
-        y=self.size[1]-y
+        y=self.scatterHeight-y
         x -= self.xoffset
+        x -= (self.verticalLegend.GetWidth()+2*self.emptySpace)
         
         if x>255:x=255
         if y>255:y=255
         if x<0:x=0
-        if y<0:y=0        
+        if y<0:y=0       
+        
         self.actionstart=(x,y)
 
         l1diff = abs(x-self.lower1)
@@ -271,9 +277,11 @@ class Scatterplot(InteractivePanel.InteractivePanel):
         """
         if event.LeftIsDown():
             x,y=event.GetPosition()
-            y=self.size[1]-y
-            x -= self.xoffset
             
+            y=self.scatterHeight-y
+#            x -= self.xoffset
+            x -= self.xoffset
+            x -= (self.verticalLegend.GetWidth()+2*self.emptySpace)            
             if x>255:x=255
             if y>255:y=255
             if x<0:x=0
@@ -301,6 +309,7 @@ class Scatterplot(InteractivePanel.InteractivePanel):
                 greens.set("ColocalizationLowerThreshold",x1)
                 gl = x1
                 if gl>gu:
+                    print "\n--->LOWER GREEN SWITCHING gl=",gl,"gu=",gu
                     gu,gl=gl,gu
                 self.lower1=gl
                 print "Setting lower of green to ",x1
@@ -310,13 +319,16 @@ class Scatterplot(InteractivePanel.InteractivePanel):
                 if gl>gu:
                     gu,gl=gl,gu                
                 print "Setting upper of green to ",x2
-                self.lower2=x2
+                #self.lower2=x2
+                self.upper1 = x2
             if self.mode[1] == 2:
                 reds.set("ColocalizationLowerThreshold",y1)
                 rl = y1
                 if rl>ru:
+                    print "\n--->LOWER RED SWITCHING rl=",rl,"ru=",ru                
                     ru,rl=rl,ru                
-                self.upper1=y1
+                #self.upper1=y1
+                self.lower2 = y1
                 print "Setting lower of red to",y1
             elif self.mode[1] == 4:
                 reds.set("ColocalizationUpperThreshold",y2)
@@ -325,33 +337,11 @@ class Scatterplot(InteractivePanel.InteractivePanel):
                     ru,rl=rl,ru                                
                 self.upper2= y2
                 print "Setting upper of red to",y2
-            if 0 and self.mode[0] == 5:
-                print "Setting lower and upper of greens"
-                xdiff = x1-self.middlestart[0]
-                if x1+xdiff<0:
-                    xdiff=-x1
-                if x2+xdiff>255:
-                    xdiff=255-x2
-                x1+=xdiff
-                x2+=xdiff
-                gl = x1
-                gu = x2
-                self.middlestart[0] = x1
-            if 0 and self.mode[1] == 5:
-                print "Setting lower and upper of reds"
-                ydiff = y1-self.middlestart[1]
-                if y1+ydiff<0:
-                    ydiff=-y1
-                if y2+ydiff>255:
-                    ydiff=255-y2
-                y1+=xdiff
-                y2+=xdiff
-                rl = y1
-                ru = y2
-                self.middlestart[1] = y1
                 
-            self.actionstart=(gl,rl)
-            self.actionend=(gu,ru)
+            #self.actionstart=(gl,rl)
+            #self.actionend=(gu,ru)
+            self.actionstart=(gu,ru)
+            self.actionend = (gl,rl)
  
             #messenger.send(None,"threshold_changed",(y1,y2),(x1,x2))
             #
@@ -462,14 +452,14 @@ class Scatterplot(InteractivePanel.InteractivePanel):
         width, height = self.size
         if self.renew and self.dataUnit:
             self.buffer = wx.EmptyBitmap(width, height)
-            Logging.info("Generating scatterplot of timepoint",self.timepoint)
+            #Logging.info("Generating scatterplot of timepoint",self.timepoint)
             # Red on the vertical and green on the horizontal axis
             t1=self.sources[1].getTimePoint(self.timepoint)
             t2=self.sources[0].getTimePoint(self.timepoint)            
             self.scatter, ctf = ImageOperations.scatterPlot(t2,t1,-1,self.countVoxels,
             self.wholeVolume, dataunits = self.sources, logarithmic=self.logarithmic,timepoint = self.timepoint)
             self.scatter=self.scatter.Mirror(0)
-                        
+            self.scatterHeight = self.scatter.GetHeight()
             self.scatterCTF = ctf
             
             self.renew=0
@@ -507,7 +497,7 @@ class Scatterplot(InteractivePanel.InteractivePanel):
         upper1=int(self.sources[0].getSettings().get("ColocalizationUpperThreshold"))
         upper2=int(self.sources[1].getSettings().get("ColocalizationUpperThreshold"))
     
-        print "Painting preview, hresholds=",lower1,upper1,lower2,upper2
+        #print "Painting preview, hresholds=",lower1,upper1,lower2,upper2
     
         minval,maxval = self.sources[0].getScalarRange()
         c = 255.0 / maxval
@@ -533,9 +523,16 @@ class Scatterplot(InteractivePanel.InteractivePanel):
         
         self.scatterBitmap = bmp
         
-        verticalLegend = ImageOperations.paintCTFValues(self.sources[1].getColorTransferFunction(), height = 256, width=self.legendWidth, paintScalars = 1)
-        horizontalLegend = ImageOperations.paintCTFValues(self.sources[0].getColorTransferFunction(), width= 256, height=self.legendWidth, paintScalars = 1)
-        
+        if not self.verticalLegend:
+            verticalLegend = ImageOperations.paintCTFValues(self.sources[1].getColorTransferFunction(), height = 256, width=self.legendWidth, paintScalars = 1)
+            self.verticalLegend = verticalLegend
+        else:
+            verticalLegend = self.verticalLegend
+        if not self.horizontalLegend:
+            horizontalLegend = ImageOperations.paintCTFValues(self.sources[0].getColorTransferFunction(), width= 256, height=self.legendWidth, paintScalars = 1)
+            self.horizontalLegend = horizontalLegend
+        else:
+            horizontalLegend = self.horizontalLegend
         hzlw = verticalLegend.GetWidth()+2*self.emptySpace
     
         dc.DrawBitmap(verticalLegend, 0, 0)
@@ -580,10 +577,17 @@ class Scatterplot(InteractivePanel.InteractivePanel):
         dc.DrawBitmap(overlay,self.xoffset+hzlw+lower1*c,ymax-upper2*c,1)
         dc.DrawBitmap(borders, self.xoffset+hzlw+lower1*c,ymax-upper2*c,1)
         
-        scatterLegend = ImageOperations.paintCTFValues(self.scatterCTF, width=self.legendWidth,height=256, paintScale = 1)
-
+        if not self.scatterLegend:
+            scatterLegend = ImageOperations.paintCTFValues(self.scatterCTF, width=self.legendWidth,height=256, paintScale = 1)
+            self.scatterLegend = scatterLegend
+        else:
+            scatterLegend = self.scatterLegend
         dc.DrawBitmap(scatterLegend, self.xoffset+hzlw+255+2*self.emptySpace,0)
         
+        dc.SetTextForeground(wx.Colour(255,255,255))
+        dc.SetFont(wx.Font(9,wx.SWISS,wx.NORMAL,wx.NORMAL))
+        dc.DrawText("%d"%lower2,3,ymax-lower2*c)
+        dc.DrawText("%d"%lower1,self.xoffset+hzlw+lower1*c,265)
         self.lower1=lower1*c
         self.lower2=lower2*c
         self.upper1=upper1*c

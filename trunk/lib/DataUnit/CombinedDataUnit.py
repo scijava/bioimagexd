@@ -54,11 +54,12 @@ class CombinedDataUnit(DataUnit.DataUnit):
         settingclass=self.getSettingsClass()
         Logging.info("Settings class =",settingclass,kw="dataunit")
         self.settings = settingclass()
-        self.byName={}
+        #self.byName={}
         self.module = None
         self.outputChls={}
         self.cacheKey = None
-        
+        self.checkDimensions = 1
+        self.currentDimensions = None
     def setCacheKey(self,key):
         """
         Created: 23.10.2006, KP
@@ -93,7 +94,6 @@ class CombinedDataUnit(DataUnit.DataUnit):
         Created: 23.10.2006, KP
         Description: Return the status of the given output channel
         """
-        print "getting",ch,"from",self.outputChls
         return self.outputChls.get(ch,1)
     def getDimensions(self): 
         if self.sourceunits:
@@ -134,12 +134,12 @@ class CombinedDataUnit(DataUnit.DataUnit):
         self.settings.initialize(self,len(self.sourceunits),self.length)
         
 
-    def getSourceUnit(self,name):
-        """
-        Created: 28.03.2005, KP
-        Description: Returns a source unit of given name
-        """
-        return self.sourceunits[self.byName[name]]
+#    def getSourceUnit(self,name):
+#        """
+#        Created: 28.03.2005, KP
+#        Description: Returns a source unit of given name
+#        """
+#        return self.sourceunits[self.byName[name]]#
 
         
     def setDataSource(self, dataSource):
@@ -265,15 +265,19 @@ class CombinedDataUnit(DataUnit.DataUnit):
             print "Given dataunit had wrong length (%d != %d)"%\
             (self.length,dataUnit.length)
 
+        if self.checkDimensions and self.currentDimensions and self.currentDimensions != dataUnit.getDimensions():
+            raise Logging.GUIError("Datasets have different dimensions","The dimensions of the datasets differ: %s and %s"%(self.currentDimensions,dataUnit.getDimensions()))
+        
+        self.currentDimensions = dataUnit.getDimensions()
         # The DataUnit to be added must have a different name than the
         # previously added, or the dictionary won't work:
         name = dataUnit.getName()
-        if name in self.byName:
-            raise Logging.GUIError("Datasets have the same name","Cannot load two datasets with the name %s"%name)
+        #if name in self.byName:
+        #    raise Logging.GUIError("Datasets have the same name","Cannot load two datasets with the name %s"%name)
         
         count = len(self.sourceunits)
         #count+=1
-        self.byName[name]=count
+        #self.byName[name]=count
         self.sourceunits.append(dataUnit)
 
         # Create a settings object of correct type for dataunit
@@ -299,7 +303,7 @@ class CombinedDataUnit(DataUnit.DataUnit):
             raise Logging.GUIError("Wrong number of dataunits","Cannot switch the processed datasets: you've selected a wrong number of source dataunits.")
         #oldsources=self.sourceunits
         self.sourceunits=[]
-        self.byName={}
+        #self.byName={}
         for i,unit in enumerate(units):
             #oldunit=oldsources[i]
             self.addSourceDataUnit(unit,no_init=1)

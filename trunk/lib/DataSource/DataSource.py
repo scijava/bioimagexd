@@ -113,6 +113,8 @@ class DataSource:
         self.limitDims = None
         self.toDims = None
         self.filePath=""
+        self.reader = None
+        self.vtkFilters = []
         val=None
         try:
             val=eval(conf.getConfigItem("DoResample","Performance"))
@@ -122,6 +124,17 @@ class DataSource:
             self.limitDims = eval(conf.getConfigItem("ResampleDims","Performance"))
             self.toDims = eval(conf.getConfigItem("ResampleTo","Performance"))
 
+            
+    def destroy(self):
+        """
+        Created: 27.1.2007, KP
+        Description: destroy self
+        """
+        del self.reader
+        for i in self.vtkFilters:
+            del i
+        self.vtkFilters = []
+            
     def setPath(self,path):
         """
         Created: 17.07.2006, KP

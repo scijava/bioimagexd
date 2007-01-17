@@ -121,7 +121,6 @@ class SlicesMode(VisualizationMode):
         Created: 25.05.2005, KP
         Description: Set the dataunit to be visualized
         """
-        Logging.info("setDataUnit(",dataUnit,")",kw="visualizer")
         if dataUnit == self.dataUnit:
             Logging.info("Same dataunit, not changing",kw="visualizer")
             return
@@ -129,6 +128,7 @@ class SlicesMode(VisualizationMode):
             self.iactivePanel.setPreviewType("")
             self.init=0
 
+        
         self.iactivePanel.setDataUnit(dataUnit,0)
         
     def setTimepoint(self,tp):
@@ -145,6 +145,7 @@ class SlicesMode(VisualizationMode):
         Description: Unset the mode of visualization
         """
         self.iactivePanel.Show(0)
+        self.iactivePanel.setDataUnit(None)
         
     def saveSnapshot(self,filename):
         """

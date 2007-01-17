@@ -152,7 +152,7 @@ def askSaveAsFileName(parent,title,initFile,wc, ftype=None):
     if not ftype:
         ftype=wc.split("|")[1]
         ftype=ftype.split(".")[1]
-
+    
     if not initialDir:
         if remember:
             initialDir = conf.getConfigItem("LastPath_%s"%ftype,"Paths")
@@ -167,7 +167,7 @@ def askSaveAsFileName(parent,title,initFile,wc, ftype=None):
         filename=dlg.GetPath()
     if remember and filename:
         filepath=os.path.dirname(filename)
-        conf.setConfigItem("LastPath_%s"%type,"Paths",filepath)
+        conf.setConfigItem("LastPath_%s"%ftype,"Paths",filepath)
                     
     dlg.Destroy()
     if filename:
