@@ -168,15 +168,15 @@ class TaskPanel(scrolled.ScrolledPanel):
                 cachedSettings = bxd.getSettingsFromCache(self.cacheKey)
             
         if not cachedSettings:
-            print "\n\n\n*** NO CACHE DSETTINGS"
+            #print "\n\n\n*** NO CACHE DSETTINGS"
             return
-        print "\n\n\n*** RESTORING FROM CACHE"
+        #print "\n\n\n*** RESTORING FROM CACHE"
         combined = cachedSettings[0]
-        print "Setting settings of combined"
+        #print "Setting settings of combined"
         self.dataUnit.setSettings(combined)
         sources=self.dataUnit.getSourceDataUnits()
         for i,setting in enumerate(cachedSettings[1:]):
-            print "Setting settings of source %d"%i
+            #print "Setting settings of source %d"%i
             #DataUnitSetting.DataUnitSettings.initialize(setting,sources[i],len(sources),sources[i].getLength())
             sources[i].setSettings(setting)
             #tf=setting.get("IntensityTransferFunction")
@@ -192,6 +192,10 @@ class TaskPanel(scrolled.ScrolledPanel):
         Description: Store the settings of the dataunit in a cache from which they can be
                      later retrieved at will
         """
+        # It is possible we do not have dataunit if the task was closed for example, because of
+        # different dimensions of the dataunits
+        if not self.dataUnit:
+            return
         sources=self.dataUnit.getSourceDataUnits()
         #print "SOURCES=",sources
         settings = [x.getSettings() for x in sources]
@@ -214,7 +218,8 @@ class TaskPanel(scrolled.ScrolledPanel):
         try:
             self.dataUnit.switchSourceDataUnits(args)
         except GUIError,err:
-            err.show()
+            err.show()            
+        self.createItemToolbar()
         self.doPreviewCallback()
         
     def getChannelItemBitmap(self, chbmp, color=(255,255,255)):

@@ -130,7 +130,7 @@ class MainWindow(wx.Frame):
         self.nodes_to_be_added=[]
         self.app=app
         self.commandHistory = None
-        self.dataunits={}
+        
         self.paths={}
         self.currentVisualizationWindow=None
         self.currentTaskWindow=None
@@ -363,7 +363,8 @@ class MainWindow(wx.Frame):
                 self.onCloseTaskPanel(None)
         if close:
             self.visualizer.closeVisualizer()
-            self.loadVisualizer(None,"slices",reload=1)
+            del self.currentVisualizationWindow
+            #self.loadVisualizer(None,"gallery",reload=1)
         
             
         

@@ -34,6 +34,7 @@ import os.path,sys
 import messenger
 
 import ImageOperations
+import weakref
 
 import time
 
@@ -435,7 +436,14 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
                      data unit, the source units of which we can get and read 
                      as ImageData
         """
-        self.dataUnit=dataUnit
+        if not dataUnit:
+            self.dataUnit = None
+            self.z = 0
+            self.slice = None
+            self.updatePreview()
+            self.Refresh()
+            return
+        self.dataUnit=weakref.proxy(dataUnit)
         self.settings = dataUnit.getSettings()
         self.updateColor()
         InteractivePanel.InteractivePanel.setDataUnit(self,self.dataUnit)
@@ -520,7 +528,6 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
                 ex.show()
                 return
         else:
-            
             preview = self.dataUnit.getTimePoint(self.timePoint)
             self.rawImage = preview
             Logging.info("Using timepoint %d as preview"%self.timePoint,kw="preview")
@@ -542,7 +549,7 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         uext=None
         if self.z!=-1 and not self.mip:
             x,y = self.xdim, self.ydim
-            print "\nSetting update extent to ",x,y,self.z
+            #print "\nSetting update extent to ",x,y,self.z
             usedUpdateExt=1
             #colorImage.SetUpdateExtent(0,x-1,0,y-1,self.z,self.z)
             uext=(0,x-1,0,y-1,self.z,self.z)
@@ -577,18 +584,18 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         
             z=self.z
             if self.singleslice:
-                Logging.info("Single slice, will use z=0",kw="preview")
+                #Logging.info("Single slice, will use z=0",kw="preview")
                 z=0
         if not self.imagedata:
             Logging.info("No imagedata to preview",kw="preview")
 #            return
             self.slice = None
         else:
-            print "Getting slice from imagedata, z=",z
+            #print "Getting slice from imagedata, z=",z
             
             self.slice=ImageOperations.vtkImageDataToWxImage(self.imagedata,z)
-            print "Done"
-        print "---> painting preview"
+            #print "Done"
+        #print "---> painting preview"
         self.paintPreview()
         
         
@@ -620,7 +627,7 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
             
             
         if self.mip:
-            Logging.info("-->Doing mip",data,kw="preview")
+
             data.SetUpdateExtent(data.GetWholeExtent())
             mip=vtk.vtkImageSimpleMIP()
             mip.SetInput(data)
@@ -670,7 +677,7 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         if ext=="jpg":ext="jpeg"
         if ext=="tif":ext="tiff"
         mime="image/%s"%ext
-        img=self.buffer.ConvertToImage()
+        img=self.snapshot.ConvertToImage()
         #print "Saving mimefile ",filename,mime
         img.SaveMimeFile(filename,mime)
         
@@ -920,6 +927,8 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         
         bmp=bmp.ConvertToBitmap()
 
+        
+        self.snapshot = bmp
         bw,bh = bmp.GetWidth(),bmp.GetHeight()
         
         tw,th = self.buffer.GetWidth(),self.buffer.GetHeight()

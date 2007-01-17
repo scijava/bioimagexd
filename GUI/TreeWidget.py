@@ -123,29 +123,51 @@ class TreeWidget(wx.SashLayoutWindow):
         self.selectedItem=item
         self.PopupMenu(self.menu,event.GetPosition())   
  
+    def closeItem(self, item, obj):
+        """
+        Created: 17.1.2007, KP
+        Description: close on item from the tree
+        """
+        unit = self.dataUnitToPath[obj]
+        self.items[unit]-=1
+        
+        if obj in self.dataUnitToPath:
+            del self.dataUnitToPath[obj]
+        if self.items[unit]<=0:            
+            del self.items[unit]
+            parent=self.tree.GetItemParent(item)
+            self.tree.Delete(parent)    
+        messenger.send(None,"delete_dataset",obj)
+        obj.destroySelf()            
+        del obj        
     def onCloseDataset(self,event):
         """
         Created: 21.07.2005, KP
         Description: Method to close a dataset
         """        
-        item=self.selectedItem
-        obj=self.tree.GetPyData(item)
-    
-        if obj in self.dataUnitToPath:
-            unit = self.dataUnitToPath[obj]
-            self.items[unit]-=1
-            print unit,self.items[unit]
-            if self.items[unit]<=0:
-                del self.items[unit]
-                parent=self.tree.GetItemParent(item)
-                self.tree.Delete(parent)
-            
-        if obj!="1":
-            messenger.send(None,"delete_dataset",obj)
-            self.tree.Delete(item)
-            del obj
-        else:
-            Logging.info("Cannot delete top-level entry",kw="ui")
+        for item in self.tree.GetSelections():
+            #item=self.selectedItem
+            obj=self.tree.GetPyData(item)
+                
+            if obj in self.dataUnitToPath:
+                self.closeItem(item, obj)
+            elif obj == "2":
+                citem,cookie=self.tree.GetFirstChild(item)
+                
+                while citem.IsOk():
+                    nitem=self.tree.GetNextSibling(citem)
+                    cobj = self.tree.GetPyData(citem)
+                    self.closeItem(citem, cobj)
+                    citem = nitem
+                    del cobj
+                    
+                
+            if obj!="1":
+                messenger.send(None,"delete_dataset",obj)
+                self.tree.Delete(item)
+                del obj
+            else:
+                Logging.info("Cannot delete top-level entry",kw="ui")
             
     def onSize(self, event):
         """
@@ -241,7 +263,9 @@ class TreeWidget(wx.SashLayoutWindow):
         Created: 10.01.2005, KP
         Description: Returns whether the tree has a specified item
         """            
-        return path in self.items
+        if path in self.items:
+            print self.items[path]
+        return (path in self.items and self.items[path])
         
     def getItemNames(self):
         """

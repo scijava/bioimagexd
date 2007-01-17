@@ -31,6 +31,7 @@ __date__ = "$Date: 2005/01/13 14:09:15 $"
 import Logging
 import vtk
 import ImageOperations
+import weakref
 import DataUnitSetting
 class DataUnit:
     """
@@ -53,7 +54,20 @@ class DataUnit:
         self.settings = DataUnitSetting.DataUnitSettings()
         self.mip=None
         self.mipTimepoint=-1
+        self.destroyed = 0
         
+        
+    def destroySelf(self):
+        """
+        Created: 27.1.2007, KP
+        Description: finalize self
+        """
+        self.dataSource.destroy()
+        del self.dataSource
+        del self.settings
+        self.dataSource =None
+        self.settings = None
+        self.destroyed = 1
     def resetSettings(self):
         """
         Created: 23.10.2006, KP
@@ -218,6 +232,9 @@ class DataUnit:
         Parameters:
                 n       The timepoint we need to return
         """
+        if self.destroyed:
+            print "I have been destroyed!"
+            print "There are ",weakref.getweakrefcount(self),"references to me"
         if not self.dataSource:
             print self,self.name
             raise "No datasource specified"

@@ -53,12 +53,11 @@ def showSeparator(): return (0,0)
 def getClass():return GalleryMode
 def getImmediateRendering(): return False
 def getConfigPanel(): return None
-def getRenderingDelay(): return 500
+def getRenderingDelay(): return 2000
 def showZoomToolbar(): return True
     
 class GalleryConfigurationPanel(scrolled.ScrolledPanel):
     """
-    Class: GalleryConfigurationPanel
     Created: 21.07.2005, KP
     Description: A panel that can be used to configure gallery view
     """
@@ -99,7 +98,6 @@ class GalleryConfigurationPanel(scrolled.ScrolledPanel):
         
     def setDataUnit(self,dataUnit):
         """
-        Method: setDataUnt
         Created: 21.07.2005, KP
         Description: Set the dataunit
         """       
@@ -112,7 +110,6 @@ class GalleryConfigurationPanel(scrolled.ScrolledPanel):
         
     def onSetViewMode(self,event):
         """
-        Method: onSetViewMode
         Created: 21.07.2005, KP
         Description: Configure whether to show timepoints or slices
         """       
@@ -125,7 +122,6 @@ class GalleryConfigurationPanel(scrolled.ScrolledPanel):
 class GalleryMode(VisualizationMode):
     def __init__(self,parent,visualizer):
         """
-        Method: __init__
         Created: 24.05.2005, KP
         Description: Initialization
         """
@@ -135,7 +131,6 @@ class GalleryMode(VisualizationMode):
         
     def updateRendering(self):
         """
-        Method: updateRendering
         Created: 26.05.2005, KP
         Description: Update the rendering
         """      
@@ -143,12 +138,13 @@ class GalleryMode(VisualizationMode):
             Logging.info("Visualizer is disabled, won't update gallery",kw="visualizer")
             return
         Logging.info("Updating gallery",kw="visualizer")
-        self.galleryPanel.setTimepoint(self.timepoint)
-        self.galleryPanel.updatePreview()
-        self.galleryPanel.Refresh()
+        #self.galleryPanel.setTimepoint(self.timepoint)
+        #self.galleryPanel.updatePreview()
+        #self.galleryPanel.Refresh()
+        self.galleryPanel.forceUpdate()
+        
     def showSideBar(self):
         """
-        Method: showSideBar()
         Created: 24.05.2005, KP
         Description: Method that is queried to determine whether
                      to show the sidebar
@@ -156,7 +152,6 @@ class GalleryMode(VisualizationMode):
         return True  
     def activate(self,sidebarwin):
         """
-        Method: activate()
         Created: 24.05.2005, KP
         Description: Set the mode of visualization
         """
@@ -184,7 +179,6 @@ class GalleryMode(VisualizationMode):
 
     def setDataUnit(self,dataUnit):
         """
-        Method: setDataUnit
         Created: 25.05.2005, KP
         Description: Set the dataunit to be visualized
         """
@@ -195,7 +189,6 @@ class GalleryMode(VisualizationMode):
         
     def deactivate(self,newmode=None):
         """
-        Method: deactivate()
         Created: 24.05.2005, KP
         Description: Unset the mode of visualization
         """

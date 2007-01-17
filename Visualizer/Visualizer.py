@@ -43,6 +43,7 @@ import Dialogs
 import Logging
 
 import DataUnit
+
 import MenuManager
 import Histogram
 import AnnotationToolbar
@@ -916,13 +917,18 @@ class Visualizer:
         if self.currMode:
             self.currMode.deactivate()
             self.currentWindow.Show(0)
-            self.currMode=None
-            self.currentWindow=None
-            self.mode=None
-            self.currModeModule=None
+            del self.currentWindow
+        self.currMode=None
+        self.currentWindow=None
+        self.mode=None
+        
+        self.currModeModule=None
+        self.dataUnit = None            
         self.sidebarWin.SetDefaultSize((0,1024))
+        self.zslider.SetRange(0,0)
         wx.LayoutAlgorithm().LayoutWindow(self.parent, self.visWin)
-        self.dataUnit=None
+        del self.dataUnit
+        self.dataUnit = None
         
         
     def setVisualizationMode(self,mode,reload=0):
@@ -936,6 +942,7 @@ class Visualizer:
             if self.dataUnit and self.currMode.dataUnit != self.dataUnit:
                 Logging.info("Re-setting dataunit",kw="visualizer")
                 self.currMode.setDataUnit(self.dataUnit)
+                
                 return
         self.mode=mode
 
@@ -1024,6 +1031,7 @@ class Visualizer:
         if self.dataUnit and modeinst.dataUnit != self.dataUnit:
             Logging.info("Re-setting dataunit",kw="visualizer")
             modeinst.setDataUnit(self.dataUnit)
+            
         modeinst.setTimepoint(self.timepoint)
         self.currentWindow.Show()
         if hasattr(self.currentWindow,"enable"):
@@ -1139,7 +1147,7 @@ class Visualizer:
                 self.currMode.zoomToFit()
             else:
                 self.currMode.setZoomFactor(self.zoomFactor)    
-                
+            
             self.currMode.setDataUnit(self.dataUnit)
             
             self.currMode.setTimepoint(self.timepoint)

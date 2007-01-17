@@ -70,6 +70,7 @@ class LsmDataSource(DataSource.DataSource):
         # TODO: what is this?
         self.count=0
 
+
         self.dimensions=None
         self.spacing=None
         self.origin=None
