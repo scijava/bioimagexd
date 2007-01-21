@@ -3,7 +3,7 @@
 
 [Setup]
 AppName=BioImageXD
-AppVerName=BioImageXD prebeta r883
+AppVerName=BioImageXD prebeta r889
 AppPublisher=BioImageXD development team
 AppPublisherURL=http://www.bioimagexd.org/
 AppSupportURL=http://www.bioimagexd.org/
@@ -30,7 +30,6 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 Source: "C:\BioImageXD\trunk\dist\Bin\BioImageXD.exe.manifest"; DestDir: "{app}\Bin"; Flags: ignoreversion
 Source: "C:\BioImageXD\trunk\dist\Bin\BioImageXD.iss"; DestDir: "{app}\Bin"; Flags: ignoreversion
 Source: "C:\BioImageXD\trunk\dist\Bin\build_innosetup.sh"; DestDir: "{app}\Bin"; Flags: ignoreversion
-Source: "C:\BioImageXD\trunk\dist\Bin\build_innosetup2.sh"; DestDir: "{app}\Bin"; Flags: ignoreversion
 Source: "C:\BioImageXD\trunk\dist\Bin\copy_code.sh"; DestDir: "{app}\Bin"; Flags: ignoreversion
 Source: "C:\BioImageXD\trunk\dist\Bin\ffmpeg.exe"; DestDir: "{app}\Bin"; Flags: ignoreversion
 Source: "C:\BioImageXD\trunk\dist\Bin\ffmpeg.osx"; DestDir: "{app}\Bin"; Flags: ignoreversion
@@ -89,6 +88,7 @@ Source: "C:\BioImageXD\trunk\dist\Icons\record.gif"; DestDir: "{app}\Icons"; Fla
 Source: "C:\BioImageXD\trunk\dist\Icons\rectangle.gif"; DestDir: "{app}\Icons"; Flags: ignoreversion
 Source: "C:\BioImageXD\trunk\dist\Icons\render.gif"; DestDir: "{app}\Icons"; Flags: ignoreversion
 Source: "C:\BioImageXD\trunk\dist\Icons\resample.gif"; DestDir: "{app}\Icons"; Flags: ignoreversion
+Source: "C:\BioImageXD\trunk\dist\Icons\resample_tofit.gif"; DestDir: "{app}\Icons"; Flags: ignoreversion
 Source: "C:\BioImageXD\trunk\dist\Icons\rightarrow.gif"; DestDir: "{app}\Icons"; Flags: ignoreversion
 Source: "C:\BioImageXD\trunk\dist\Icons\roitomask.gif"; DestDir: "{app}\Icons"; Flags: ignoreversion
 Source: "C:\BioImageXD\trunk\dist\Icons\save.gif"; DestDir: "{app}\Icons"; Flags: ignoreversion
@@ -184,6 +184,10 @@ Source: "C:\BioImageXD\trunk\dist\py2exe_util.pyd"; DestDir: "{app}"; Flags: ign
 Source: "C:\BioImageXD\trunk\dist\pyexpat.pyd"; DestDir: "{app}"; Flags: ignoreversion
 Source: "C:\BioImageXD\trunk\dist\python24.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "C:\BioImageXD\trunk\dist\python_libs.zip"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\BioImageXD\trunk\dist\qt-mt3.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\BioImageXD\trunk\dist\qt.pyd"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\BioImageXD\trunk\dist\tcl84.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\BioImageXD\trunk\dist\tk84.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "C:\BioImageXD\trunk\dist\umath.pyd"; DestDir: "{app}"; Flags: ignoreversion
 Source: "C:\BioImageXD\trunk\dist\unicodedata.pyd"; DestDir: "{app}"; Flags: ignoreversion
 Source: "C:\BioImageXD\trunk\dist\vtkBXDProcessing.dll"; DestDir: "{app}"; Flags: ignoreversion

@@ -73,6 +73,8 @@ class ProcessingFilter(GUIBuilder.GUIBuilderBase):
         
         self.sourceUnits = []
         self.inputs =[]
+        self.ignoreObjects =0
+        
         self.nextFilter = None
         self.prevFilter = None
         self.itkToVtk = None

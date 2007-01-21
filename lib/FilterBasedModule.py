@@ -145,14 +145,17 @@ class FilterBasedModule(Module):
         for i,currfilter in enumerate(filterlist):
                 flag=(i==n)
                 if i>0:
+                    print filterlist[i-1],"->",currfilter
                     currfilter.setPrevFilter(filterlist[i-1])
                 else:
+                    print "-> ",currfilter
                     currfilter.setPrevFilter(None)
                 if not flag:
                     currfilter.setNextFilter(filterlist[i+1])
+                    print currfilter,"->",filterlist[i+1]
                 else:
                     currfilter.setNextFilter(None)
-                
+                    print currfilter,"->|"
                 #data = currfilter.execute(data,update=flag,last=flag)
                 data = currfilter.execute(data,update=0,last=flag)
                 

@@ -130,7 +130,7 @@ def getFilterList():
             ITKLocalMaximumFilter,ITKOtsuThresholdFilter,ITKConfidenceConnectedFilter,
             MaskFilter,ITKSigmoidFilter, ITKInvertIntensityFilter, ConnectedComponentFilter,
             MaximumObjectsFilter,TimepointCorrelationFilter,
-            ROIIntensityFilter,CutDataFilter,GaussianSmoothFilter,CreateTracksFilter,ViewTracksFilter]
+            ROIIntensityFilter,CutDataFilter,GaussianSmoothFilter,CreateTracksFilter,ViewTracksFilter,ExtractComponentFilter]
             
 MATH="Image arithmetic"
 SEGMENTATION="Segmentation"
@@ -497,7 +497,99 @@ class ShiftScaleFilter(ProcessingFilter.ProcessingFilter):
         
         
         
+class ExtractComponentFilter(ProcessingFilter.ProcessingFilter):
+    """
+    Created: 21.01.2007, KP
+    Description: A filter for extracting component or components from a dataset
+    """     
+    name = "Extract components"
+    category = FILTERING
+    
+    def __init__(self):
+        """
+        Created: 21.01.2007, KP
+        Description: Initialization
+        """        
+        ProcessingFilter.ProcessingFilter.__init__(self,(1,1))
+        self.vtkfilter = vtk.vtkImageExtractComponents()
+        self.descs={"Component1":"Component #1","Component2":"Component #2","Component3":"Component #3"}
+    
+    def getParameters(self):
+        """
+        Created: 21.01.2007, KP
+        Description: Return the list of parameters needed for configuring this GUI
+        """            
+        return [["",("Component1","Component2","Component3")]]
+        
+    def getDesc(self,parameter):
+        """
+        Created: 21.01.2007, KP
+        Description: Return the description of the parameter
+        """    
+        return self.descs[parameter]
+        
+    def getLongDesc(self,parameter):
+        """
+        Created: 21.01.2007, KP
+        Description: Return a long description of the parameter
+        """ 
+        return ""
+        
+    def getRange(self, parameter):
+        """
+        Created: 21.01.2007, KP
+        Description: return the range of values for given parameter
+        """
+        return ["No output","R (component 1)","G (component 2)","B (component 3)"]
+        
+    def getType(self,parameter):
+        """
+        Created: 21.01.2007, KP
+        Description: Return the type of the parameter
+        """    
+        if parameter in ["Component1","Component2","Component3"]:
+            return GUIBuilder.CHOICE
+        
+    def getDefaultValue(self,parameter):
+        """
+        Created: 21.01.2007, KP
+        Description: Return the default value of a parameter
+        """     
+        if parameter=="Component1":return 1
+        if parameter=="Component2":return 2
+        if parameter=="Component3":return 3
+        
 
+    def execute(self,inputs,update=0,last=0):
+        """
+        Created: 15.04.2006, KP
+        Description: Execute the filter with given inputs and return the output
+        """            
+        if not ProcessingFilter.ProcessingFilter.execute(self,inputs):
+            return None
+        
+        image = self.getInput(1)
+        #print "Using ",image
+        self.vtkfilter.SetInput(image)
+        
+        cmps=[]
+        cmps.append(self.parameters["Component1"])
+        cmps.append(self.parameters["Component2"])
+        cmps.append(self.parameters["Component3"])
+        while 0 in cmps:
+            cmps.remove(0)
+        cmps=[x-1 for x in cmps]
+        t=tuple(cmps)
+        print "Extracting components",t
+        self.vtkfilter.SetComponents(*t)            
+        
+        if update:
+            self.vtkfilter.Update()
+        return self.vtkfilter.GetOutput()    
+        
+        
+        
+        
 class TimepointCorrelationFilter(ProcessingFilter.ProcessingFilter):
     """
     Created: 31.07.2006, KP

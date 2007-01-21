@@ -715,7 +715,9 @@ class ColorTransferEditor(wx.Panel):
         #self.alphapoints=[(0,0),(255,51)]
         self.points=[self.redpoints,self.greenpoints,self.bluepoints,self.alphapoints]
         self.freeMode = 0
+        self.upToDate=0
         self.updateGraph()
+        self.updateCTFView()
         messenger.send(None,"data_changed",0)
         self.colorBtn.SetColour(col)
         

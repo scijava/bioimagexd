@@ -479,7 +479,7 @@ class Visualizer:
             self.histograms.append((histogram,sbox,sboxsizer))
         self.histogramPanel.Layout()
         self.OnSize(None)
-            
+
 
     
     def createToolbar(self):
@@ -727,7 +727,8 @@ class Visualizer:
         self.zoomCombo.SetSelection(pos)
         self.currMode.setZoomFactor(factor)
         if factor==-1:
-            self.currMode.zoomToFit()
+            self.zoomToFitFlag=1
+            self.currMode.zoomToFit()                   
         else:
             self.zoomToFitFlag=0
         self.zoomFactor=self.currMode.getZoomFactor()    
@@ -748,7 +749,7 @@ class Visualizer:
                 break
         return self.zoomComboDirection(0)
         
-    def zoomToFit(self,evt):
+    def zoomToFit(self,evt = None):
         """
         Created: 21.02.2005, KP
         Description: Sets the zoom factor to fit the image into the preview window

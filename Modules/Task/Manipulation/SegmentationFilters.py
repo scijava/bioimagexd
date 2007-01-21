@@ -271,6 +271,7 @@ class ThresholdFilter(ProcessingFilter.ProcessingFilter):
         ProcessingFilter.ProcessingFilter.__init__(self,(1,1))
         self.vtkfilter = vtk.vtkImageThreshold()
         self.origCtf = None
+        self.ignoreObjects = 1
         self.descs={"ReplaceInValue":"Value for voxels inside thresholds",
             "ReplaceOutValue":"Value for voxels outside thresholds",
             "ReplaceIn":"Inside thresholds","ReplaceOut":"Outside thresholds",
@@ -288,6 +289,17 @@ class ThresholdFilter(ProcessingFilter.ProcessingFilter):
         
         return GUIBuilder.FILTER_BEGINNER                
     
+    def setParameter(self,parameter,value):
+        """
+        Created: 18.01.2007, KP
+        Description: Set a value for the parameter
+        """    
+        
+        oldval = self.parameters.get(parameter,"ThisIsABadValueThatNoOneWillEverUse")
+        ProcessingFilter.ProcessingFilter.setParameter(self, parameter, value)
+        if value != oldval:
+            messenger.send(None,"data_changed",0)
+        
     def getParameters(self):
         """
         Created: 15.04.2006, KP
@@ -573,7 +585,7 @@ class MorphologicalWatershedSegmentationFilter(ProcessingFilter.ProcessingFilter
         "Threshold":"Remove objects with less voxels than:"}
         self.itkFlag = 1
         self.n=0
-        
+        self.ignoreObjects = 2
         self.watershed = None
         self.relabelFilter  = None
         #scripting.loadITK(filters=1)            
@@ -693,7 +705,7 @@ class ConnectedComponentFilter(ProcessingFilter.ProcessingFilter):
         Description: Initialization
         """        
         ProcessingFilter.ProcessingFilter.__init__(self,inputs)
-        
+        self.ignoreObjects = 1
         
         self.descs = {"Threshold":"Remove objects with less voxels than:"}        
         self.itkFlag = 1
@@ -1105,13 +1117,13 @@ class MeasureVolumeFilter(ProcessingFilter.ProcessingFilter):
                 ums = [x[1] for x in self.values]
                 
                 # Remove the objects 0 and 1 because hey will distort the values
-                ums.pop(0)
-                ums.pop(0)
+                #ums.pop(0)
+                #ums.pop(0)
                 avgums = avg(ums)
                 pxs = [x[0] for x in self.values]
                 
-                pxs.pop(0)
-                pxs.pop(0)
+                #pxs.pop(0)
+                #pxs.pop(0)
                 avgpxs = avg(pxs)
                 
                 self.totalGUI.setStats([n,avgums,avgpxs,avgints])
@@ -1167,7 +1179,6 @@ class MeasureVolumeFilter(ProcessingFilter.ProcessingFilter):
         
         vtkimage = self.convertITKtoVTK(image)                
         origInput = self.getInput(2)
-        print "Converted to VTK",vtkimage
         
         if self.avgintCalc:
             del self.avgintCalc
@@ -1176,11 +1187,14 @@ class MeasureVolumeFilter(ProcessingFilter.ProcessingFilter):
 
         avgintCalc.AddInput(origInput)
         avgintCalc.AddInput(vtkimage)
-        print "Calculating..."
+        
         avgintCalc.Update()
-        print "done"
-
-        for i in range(0,n):
+                    
+        if self.prevFilter:        
+            startIntensity = self.prevFilter.ignoreObjects
+        else:
+            startIntensity=0
+        for i in range(startIntensity,n):
             volume = self.itkfilter.GetVolume(i)
             centerOfMass = self.itkfilter.GetCenterOfGravity(i)
             avgInt = avgintCalc.GetAverage(i)
