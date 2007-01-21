@@ -108,7 +108,8 @@ class AnnotationToolbar(wx.Window):
         self.sizer.Add(self.colorSelect, (5,0),span=(1,2))
         
         self.resamplingBtn = createBtn(MenuManager.ID_RESAMPLING, "resample.gif","Enable or disable the resampling of image data")
-
+        self.resamplingBtn.SetToggle(1)
+        
         self.resampleToFitBtn = createBtn(MenuManager.ID_RESAMPLE_TO_FIT, "resample_tofit.gif","Enable or disable the resampling of image data")
         
         self.sizer.Add(self.resamplingBtn, (6,0))
@@ -165,7 +166,9 @@ class AnnotationToolbar(wx.Window):
         
         flag=evt.GetIsDown()
         scripting.resamplingDisabled = not flag
-        self.visualizer.updateRendering()        
+        self.visualizer.updateRendering()              
+        if self.zoomToFitFlag:            
+            self.visualizer.zoomToFit(None)
         
     def clearChannelItems(self):
         """
