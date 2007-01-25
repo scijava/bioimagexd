@@ -3,7 +3,7 @@
 
 [Setup]
 AppName=BioImageXD
-AppVerName=BioImageXD prebeta r889
+AppVerName=BioImageXD prebeta r891
 AppPublisher=BioImageXD development team
 AppPublisherURL=http://www.bioimagexd.org/
 AppSupportURL=http://www.bioimagexd.org/
@@ -339,7 +339,6 @@ Source: "C:\BioImageXD\trunk\ITK-pkg\lib\FilteringPython.py"; DestDir: "{app}\IT
 Source: "C:\BioImageXD\trunk\ITK-pkg\lib\IntensityFiltersPython.py"; DestDir: "{app}\ITK-pkg\lib"; Flags: ignoreversion
 Source: "C:\BioImageXD\trunk\ITK-pkg\lib\InterpolatorsPython.py"; DestDir: "{app}\ITK-pkg\lib"; Flags: ignoreversion
 Source: "C:\BioImageXD\trunk\ITK-pkg\lib\IOPython.py"; DestDir: "{app}\ITK-pkg\lib"; Flags: ignoreversion
-Source: "C:\BioImageXD\trunk\ITK-pkg\lib\IOPython.pyc"; DestDir: "{app}\ITK-pkg\lib"; Flags: ignoreversion
 Source: "C:\BioImageXD\trunk\ITK-pkg\lib\IteratorsPython.py"; DestDir: "{app}\ITK-pkg\lib"; Flags: ignoreversion
 Source: "C:\BioImageXD\trunk\ITK-pkg\lib\itkAbsImageFilter.py"; DestDir: "{app}\ITK-pkg\lib"; Flags: ignoreversion
 Source: "C:\BioImageXD\trunk\ITK-pkg\lib\itkAbsoluteValueDifferenceImageFilter.py"; DestDir: "{app}\ITK-pkg\lib"; Flags: ignoreversion
@@ -494,17 +493,13 @@ Source: "C:\BioImageXD\trunk\ITK-pkg\lib\itkImageBoundaryCondition.pyc"; DestDir
 Source: "C:\BioImageXD\trunk\ITK-pkg\lib\itkImageDuplicator.py"; DestDir: "{app}\ITK-pkg\lib"; Flags: ignoreversion
 Source: "C:\BioImageXD\trunk\ITK-pkg\lib\itkImageDuplicator.pyc"; DestDir: "{app}\ITK-pkg\lib"; Flags: ignoreversion
 Source: "C:\BioImageXD\trunk\ITK-pkg\lib\itkImageFileReader.py"; DestDir: "{app}\ITK-pkg\lib"; Flags: ignoreversion
-Source: "C:\BioImageXD\trunk\ITK-pkg\lib\itkImageFileReader.pyc"; DestDir: "{app}\ITK-pkg\lib"; Flags: ignoreversion
 Source: "C:\BioImageXD\trunk\ITK-pkg\lib\itkImageFileWriter.py"; DestDir: "{app}\ITK-pkg\lib"; Flags: ignoreversion
-Source: "C:\BioImageXD\trunk\ITK-pkg\lib\itkImageFileWriter.pyc"; DestDir: "{app}\ITK-pkg\lib"; Flags: ignoreversion
 Source: "C:\BioImageXD\trunk\ITK-pkg\lib\itkImageFunction.py"; DestDir: "{app}\ITK-pkg\lib"; Flags: ignoreversion
 Source: "C:\BioImageXD\trunk\ITK-pkg\lib\itkImageFunction.pyc"; DestDir: "{app}\ITK-pkg\lib"; Flags: ignoreversion
 Source: "C:\BioImageXD\trunk\ITK-pkg\lib\itkImageMomentsCalculator.py"; DestDir: "{app}\ITK-pkg\lib"; Flags: ignoreversion
 Source: "C:\BioImageXD\trunk\ITK-pkg\lib\itkImageRegistrationMethod.py"; DestDir: "{app}\ITK-pkg\lib"; Flags: ignoreversion
 Source: "C:\BioImageXD\trunk\ITK-pkg\lib\itkImageSeriesReader.py"; DestDir: "{app}\ITK-pkg\lib"; Flags: ignoreversion
-Source: "C:\BioImageXD\trunk\ITK-pkg\lib\itkImageSeriesReader.pyc"; DestDir: "{app}\ITK-pkg\lib"; Flags: ignoreversion
 Source: "C:\BioImageXD\trunk\ITK-pkg\lib\itkImageSeriesWriter.py"; DestDir: "{app}\ITK-pkg\lib"; Flags: ignoreversion
-Source: "C:\BioImageXD\trunk\ITK-pkg\lib\itkImageSeriesWriter.pyc"; DestDir: "{app}\ITK-pkg\lib"; Flags: ignoreversion
 Source: "C:\BioImageXD\trunk\ITK-pkg\lib\itkImageSource.py"; DestDir: "{app}\ITK-pkg\lib"; Flags: ignoreversion
 Source: "C:\BioImageXD\trunk\ITK-pkg\lib\itkImageSource.pyc"; DestDir: "{app}\ITK-pkg\lib"; Flags: ignoreversion
 Source: "C:\BioImageXD\trunk\ITK-pkg\lib\itkImageToImageFilter.py"; DestDir: "{app}\ITK-pkg\lib"; Flags: ignoreversion
@@ -525,7 +520,6 @@ Source: "C:\BioImageXD\trunk\ITK-pkg\lib\itkInterpolateImageFunction.py"; DestDi
 Source: "C:\BioImageXD\trunk\ITK-pkg\lib\itkInterpolateImageFunction.pyc"; DestDir: "{app}\ITK-pkg\lib"; Flags: ignoreversion
 Source: "C:\BioImageXD\trunk\ITK-pkg\lib\itkInvertIntensityImageFilter.py"; DestDir: "{app}\ITK-pkg\lib"; Flags: ignoreversion
 Source: "C:\BioImageXD\trunk\ITK-pkg\lib\ITKIOBase.py"; DestDir: "{app}\ITK-pkg\lib"; Flags: ignoreversion
-Source: "C:\BioImageXD\trunk\ITK-pkg\lib\ITKIOBase.pyc"; DestDir: "{app}\ITK-pkg\lib"; Flags: ignoreversion
 Source: "C:\BioImageXD\trunk\ITK-pkg\lib\itkIsolatedConnectedImageFilter.py"; DestDir: "{app}\ITK-pkg\lib"; Flags: ignoreversion
 Source: "C:\BioImageXD\trunk\ITK-pkg\lib\itkIsolatedConnectedImageFilter.pyc"; DestDir: "{app}\ITK-pkg\lib"; Flags: ignoreversion
 Source: "C:\BioImageXD\trunk\ITK-pkg\lib\itkIsolatedWatershedImageFilter.py"; DestDir: "{app}\ITK-pkg\lib"; Flags: ignoreversion
@@ -1011,12 +1005,6 @@ Source: "C:\BioImageXD\trunk\ITK-pkg\Python\VXLNumerics.py"; DestDir: "{app}\ITK
 Source: "C:\BioImageXD\trunk\ITK-pkg\Python\watershed.py"; DestDir: "{app}\ITK-pkg\Python"; Flags: ignoreversion
 Source: "C:\BioImageXD\trunk\ITK-pkg\Python\watershed.pyc"; DestDir: "{app}\ITK-pkg\Python"; Flags: ignoreversion
 Source: "C:\BioImageXD\trunk\ITK-pkg\Python\WrapITK.pth"; DestDir: "{app}\ITK-pkg\Python"; Flags: ignoreversion
-; NOTE: Don't use "Flags: ignoreversion" on any shared system files
-;
-;
-; ALWAYS LEAVE THESE HERE
-
-
 
 
 ;;;;;; THESE ARE FOR VC++ 8.0

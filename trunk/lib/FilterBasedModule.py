@@ -134,6 +134,8 @@ class FilterBasedModule(Module):
         data = self.images
         if not filterlist:
             return self.images[0]
+        for f in filterlist:
+            print f,"is enabled:", f.getEnabled()
         try:
             filterlist=filter(lambda x:x.getEnabled(),filterlist)
         except:

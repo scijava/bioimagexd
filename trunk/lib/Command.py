@@ -59,13 +59,11 @@ def functionize(code,imports):
 
 class Command:
     """
-    Class: Command
     Created: 13.02.2006, KP
     Description: A class representing an executable action from menus etc.
     """ 
-    def __init__(self,category,do,undo,do_code="",undo_code="",imports=[],desc=""):
+    def __init__(self,category=None,do=None,undo=None,do_code="",undo_code="",imports=None, desc=""):
         """
-        Method: __init__
         Created: 13.02.2006, KP
         Description: Initialization 
         """     
@@ -73,6 +71,7 @@ class Command:
         self.undocmd=undo
         self.desc=desc
         self.category = category
+        if not imports:imports=[]
         self.imports = imports
         icode=""
         for i in imports:
@@ -106,7 +105,6 @@ class Command:
     
     def canUndo(self):
         """
-        Method: canUndo
         Created: 13.02.2006, KP
         Description: A get method indicating whether this command can be undoed
         """     
@@ -115,7 +113,6 @@ class Command:
 
     def run(self, recordOnly = 0):
         """
-        Method: run()
         Created: 13.02.2006, KP
         Description: Execute the action associated with this command
         """ 
@@ -134,7 +131,6 @@ class Command:
             
     def undo(self):
         """
-        Method: undo()
         Created: 13.02.2006, KP
         Description: Execute an action that cancels the action of this command
         """         

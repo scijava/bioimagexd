@@ -74,9 +74,10 @@ class GUIBuilderBase:
         self.parameters = {}
         self.gui = None
         self.modCallback = changeCallback
+        self.initDone = 0
         for item in self.getPlainParameters():
             self.setParameter(item,self.getDefaultValue(item))
-            
+        self.initDone = 1
 
     def getParameterLevel(self, parameter):
         """

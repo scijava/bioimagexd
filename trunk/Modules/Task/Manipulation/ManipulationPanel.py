@@ -302,14 +302,19 @@ class ManipulationPanel(FilterBasedTaskPanel.FilterBasedTaskPanel):
         Created: 13.04.2006, KP
         Description: Event handler called when user toggles filter on or off
         """
+        
         index = event.GetSelection()
         name = self.filters[index].getName()
         status=self.filterListbox.IsChecked(index)
+        print "\nSETTING FILTER",name,"to",status
         cmd="Enable"
         if not status:cmd="Disable"
-        undo_cmd="bxd.mainWindow.tasks['Process'].setFilter(index=%d, name='%s', %s)"%(index,name,str(not status))
-        do_cmd="bxd.mainWindow.tasks['Process'].setFilter(index=%d, name='%s', %s)"%(index,name,str(not not status))
-        cmd=Command.Command(Command.GUI_CMD,None,None,do_cmd,undo_cmd,desc="%s filter '%s'"%(cmd,name))
+        undo_cmd="bxd.mainWindow.tasks['Process'].setFilter(%s, index=%d, name='%s')"%(str(status),index,name)
+        do_cmd="bxd.mainWindow.tasks['Process'].setFilter(%s, index=%d, name='%s')"%(str(status),index,name)
+        descstr  = "%s filter '%s'"%(cmd,name)
+                
+        cmd=Command.Command(Command.GUI_CMD, None,None, do_cmd,
+        undo_cmd,None, descstr)
         cmd.run()
         
     def setFilter(self, status, index = -1, name=""):
@@ -318,6 +323,7 @@ class ManipulationPanel(FilterBasedTaskPanel.FilterBasedTaskPanel):
         Description: Set the status of a given filter by either it's index, or
                      if index is not given, it's name
         """        
+        print "Set filter",status,index,name
         if index==-1:
             for i in self.filters:
                 if i.getName()==name:
@@ -393,6 +399,7 @@ class ManipulationPanel(FilterBasedTaskPanel.FilterBasedTaskPanel):
         if index==-1:return False
             
         self.filterListbox.Delete(index)
+        self.filters[index].onRemove()
         del self.filters[index]
         self.currentSelected=-1
         self.removeGUI()

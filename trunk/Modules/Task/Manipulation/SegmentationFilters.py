@@ -43,6 +43,7 @@ except:
 import vtk
 import types
 
+import Logging
 import MathFilters
 import GUI.GUIBuilder as GUIBuilder
 import messenger
@@ -271,6 +272,7 @@ class ThresholdFilter(ProcessingFilter.ProcessingFilter):
         ProcessingFilter.ProcessingFilter.__init__(self,(1,1))
         self.vtkfilter = vtk.vtkImageThreshold()
         self.origCtf = None
+        
         self.ignoreObjects = 1
         self.descs={"ReplaceInValue":"Value for voxels inside thresholds",
             "ReplaceOutValue":"Value for voxels outside thresholds",
@@ -297,7 +299,7 @@ class ThresholdFilter(ProcessingFilter.ProcessingFilter):
         
         oldval = self.parameters.get(parameter,"ThisIsABadValueThatNoOneWillEverUse")
         ProcessingFilter.ProcessingFilter.setParameter(self, parameter, value)
-        if value != oldval:
+        if self.initDone and value != oldval:
             messenger.send(None,"data_changed",0)
         
     def getParameters(self):
@@ -344,9 +346,9 @@ class ThresholdFilter(ProcessingFilter.ProcessingFilter):
         Description: Return the default value of a parameter
         """     
         if parameter == "LowerThreshold":
-            return 0
-        if parameter == "UpperThreshold":
             return 128
+        if parameter == "UpperThreshold":
+            return 255
         if parameter == "ReplaceInValue":
             return 255
         if parameter == "ReplaceOutValue":
@@ -356,14 +358,22 @@ class ThresholdFilter(ProcessingFilter.ProcessingFilter):
         if parameter in ["ReplaceIn","ReplaceOut"]:
             return 1
 
+    def onRemove(self):
+        """
+        Created: 26.1.2006, KP
+        Description: Restore palette upon filter removal
+        """        
+        if self.origCtf:            
+            self.dataUnit.getSettings().set("ColorTransferFunction",self.origCtf)            
+            
     def execute(self,inputs,update=0,last=0):
         """
         Created: 15.04.2006, KP
         Description: Execute the filter with given inputs and return the output
         """            
+        
         if not ProcessingFilter.ProcessingFilter.execute(self,inputs):
             return None
-        
         image = self.getInput(1)
         if not self.parameters["Demonstrate"]:
             if self.origCtf:
@@ -584,6 +594,7 @@ class MorphologicalWatershedSegmentationFilter(ProcessingFilter.ProcessingFilter
         self.descs = {"Level":"Segmentation Level","MarkWatershedLine":"Mark the watershed line",
         "Threshold":"Remove objects with less voxels than:"}
         self.itkFlag = 1
+        self.origCtf = None
         self.n=0
         self.ignoreObjects = 2
         self.watershed = None
@@ -628,7 +639,15 @@ class MorphologicalWatershedSegmentationFilter(ProcessingFilter.ProcessingFilter
         """            
         return [["",("Level","MarkWatershedLine")],["Minimum object size (in pixels)",("Threshold",)]]
 
-
+    def onRemove(self):
+        """
+        Created: 26.1.2006, KP
+        Description: Restore palette upon filter removal
+        """        
+        if self.origCtf:            
+            self.dataUnit.getSettings().set("ColorTransferFunction",self.origCtf)            
+            
+    
     def execute(self,inputs,update=0,last=0):
         """
         Created: 15.04.2006, KP
@@ -682,7 +701,8 @@ class MorphologicalWatershedSegmentationFilter(ProcessingFilter.ProcessingFilter
             
             if markWatershedLine:
                 ctf.AddRGBPoint(0,1.0,1.0,1.0)
-            
+            if not self.origCtf:
+                self.origCtf = self.dataUnit.getColorTransferFunction()
             self.dataUnit.getSettings().set("ColorTransferFunction",ctf)    
             val=[0,0,0]
             ctf.GetColor(1,val)
@@ -709,6 +729,7 @@ class ConnectedComponentFilter(ProcessingFilter.ProcessingFilter):
         
         self.descs = {"Threshold":"Remove objects with less voxels than:"}        
         self.itkFlag = 1
+        self.origCtf = None
         self.relabelFilter = None
         self.itkfilter = None
         #scripting.loadITK(filters=1)            
@@ -743,13 +764,22 @@ class ConnectedComponentFilter(ProcessingFilter.ProcessingFilter):
         #return [["",("Level",)]]
         return [["Minimum object size (in pixels)",("Threshold",)]]
 
-
+    def onRemove(self):
+        """
+        Created: 26.1.2006, KP
+        Description: Restore palette upon filter removal
+        """        
+        if self.origCtf:            
+            self.dataUnit.getSettings().set("ColorTransferFunction",self.origCtf)            
+            
+    
     def execute(self,inputs,update=0,last=0):
         """
         Created: 15.04.2006, KP
         Description: Execute the filter with given inputs and return the output
         """                    
         if not ProcessingFilter.ProcessingFilter.execute(self,inputs):
+            print "\n\nFailed to execute"
             return None
             
         image = self.getInput(1)
@@ -775,18 +805,20 @@ class ConnectedComponentFilter(ProcessingFilter.ProcessingFilter):
                 
             #self.setImageType("UL3")
     
-            data=self.relabelFilter.GetOutput()            
-                
-            self.relabelFilter.Update()
-            n = self.relabelFilter.GetNumberOfObjects()
-        
-            settings = self.dataUnit.getSettings()
-            ncolors = settings.get("PaletteColors")
-            if not ncolors or ncolors < n:
-                ctf = ImageOperations.watershedPalette(0, n)
-               
-                self.dataUnit.getSettings().set("ColorTransferFunction",ctf)    
-                settings.set("PaletteColors",n)
+        data=self.relabelFilter.GetOutput()            
+            
+        self.relabelFilter.Update()
+        n = self.relabelFilter.GetNumberOfObjects()
+    
+        settings = self.dataUnit.getSettings()
+        ncolors = settings.get("PaletteColors")
+        print "NColors=",ncolors,"n=",n
+        if not ncolors or ncolors < n:
+            ctf = ImageOperations.watershedPalette(0, n)
+            if not self.origCtf:
+                self.origCtf = self.dataUnit.getColorTransferFunction()
+            self.dataUnit.getSettings().set("ColorTransferFunction",ctf)    
+            settings.set("PaletteColors",n)
         return data
 
 class MaximumObjectsFilter(ProcessingFilter.ProcessingFilter):
@@ -1157,9 +1189,11 @@ class MeasureVolumeFilter(ProcessingFilter.ProcessingFilter):
             self.labelShape = labelShape
 
             #ul3 = itk.Image.UL3
+        print "Setting as input to labelshape",image
         self.itkfilter = self.labelShape.LabelShapeImageFilter[image].New()
         self.itkfilter.SetInput(image)
         self.itkfilter.Update()
+        print "done"
         #self.setImageType("UL3")
         data=self.itkfilter.GetOutput()            
                    
@@ -1179,17 +1213,29 @@ class MeasureVolumeFilter(ProcessingFilter.ProcessingFilter):
         
         vtkimage = self.convertITKtoVTK(image)                
         origInput = self.getInput(2)
+        origInput.Update()
         
         if self.avgintCalc:
             del self.avgintCalc
+        print "Doing label average"
         self.avgintCalc = avgintCalc = vtk.vtkImageLabelAverage()
         #avgintCalc.DebugOn()
 
+        # We require unsigned long input data
+        if vtkimage.GetScalarType() != 9:
+            dt = vtkimage.GetScalarTypeAsString()
+            Logging.error("Wrong input type for Object Statistics",
+            "The calculate object statistics requires an input dataset of type unsigned long.\nA dataset of type %s was provided.\nTypically, you will use Calculate Object Statistics Filter after a Watershed filter, or Connected Component Labeling filter.\nThis error may be caused by not having either of those filters in the procedure list."%(dt))
+            return vtkimage
+        
+        print "Using as input",origInput
+        print "And",vtkimage
         avgintCalc.AddInput(origInput)
         avgintCalc.AddInput(vtkimage)
         
         avgintCalc.Update()
                     
+        print "done"
         if self.prevFilter:        
             startIntensity = self.prevFilter.ignoreObjects
         else:

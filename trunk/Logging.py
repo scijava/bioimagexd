@@ -56,33 +56,33 @@ class Tee:
     # creates a writable fileobject where the output is tee-ed to all of
     # the individual files. 
     def __init__( self, *optargs ):
-	self._files = []
-	for arg in optargs:
-	    self.addfile( arg )
+        self._files = []
+        for arg in optargs:
+            self.addfile( arg )
     def addfile( self, file ):
-	self._files.append( file  )
+        self._files.append( file  )
     def remfile( self, file ):
-	file.flush()
-	self._files.remove( file )
+        file.flush()
+        self._files.remove( file )
     def files( self ):
-	return self._files
+        return self._files
     def write( self, what ):
-	for eachfile in self._files: 
-	    eachfile.write( what )
+        for eachfile in self._files: 
+            eachfile.write( what )
     def writelines( self, lines ): 
-	for eachline in lines: self.write( eachline )
+        for eachline in lines: self.write( eachline )
     def flush( self ):
-	for eachfile in self._files:
-	    eachfile.flush()
+        for eachfile in self._files:
+            eachfile.flush()
     def close( self ):
-	for eachfile in self._files:
-	    self.remfile( eachfile ) # Don't CLOSE the real files.
+        for eachfile in self._files:
+            self.remfile( eachfile ) # Don't CLOSE the real files.
     def CLOSE( self ):
-	for eachfile in self._files:
-	    self.remfile( eachfile ) 
-	    self.eachfile.close() 
+        for eachfile in self._files:
+            self.remfile( eachfile ) 
+            self.eachfile.close() 
     def isatty( self ):
-	return 0
+        return 0
 
 def ignore_all(*args,**kws):
     pass
@@ -98,14 +98,11 @@ def enableFull():
 
 class GUIError:
     """
-    Class: GUIError
-    Created: 13.12.2004
-    Creator: KP
+    Created: 13.12.2004, KP
     Description: Displays an error message.
     """
     def __init__(self,title,msg):
         """
-        Method: __init__
         Created: 13.12.2004, KP
         Description: Constructor
         Parameters:
@@ -120,7 +117,6 @@ class GUIError:
 
     def show(self):
         """
-        Method: show
         Created: 13.12.2004, KP
         Description: Displays the error message in a tkMessageBox.
         """
@@ -131,7 +127,6 @@ class GUIError:
 
     def __str__(self):
         """
-        Method: __str__
         Created: 13.12.2004, KP
         Description: Returns the error message in a string.
         """
@@ -139,7 +134,6 @@ class GUIError:
 
     def __repr__(self):
         """
-        Method: __repr__
         Created: 13.12.2004, KP
         Description: Returns the error message in a string.
         """
@@ -148,7 +142,6 @@ class GUIError:
 #@possibly_ignore
 def error(title,msg,x=sys._getframe()):
     """
-    Function: error
     Created: 13.12.2004, KP
     Description: Raises an GuiError.
     Parameters:

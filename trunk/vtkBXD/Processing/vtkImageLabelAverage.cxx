@@ -100,6 +100,7 @@ void vtkImageLabelAverageExecute(vtkImageLabelAverage *self, int id,int NumberOf
 
   double range[2]; 
   inData[1]->GetScalarRange(range);
+  printf("Scalar range of data = %f\n",range[1]);
   avgArray -> SetNumberOfValues((unsigned long)range[1]+1);
   numArray -> SetNumberOfValues((unsigned long)range[1]+1);
   avgArray -> SetValue(0,0);
@@ -110,12 +111,12 @@ void vtkImageLabelAverageExecute(vtkImageLabelAverage *self, int id,int NumberOf
       numArray->SetValue(i,0);
   }
   
-  //printf("About to process...\n");
+  printf("About to process...\n");
   for(idxZ = 0; idxZ <= maxZ; idxZ++ ) {
     self->UpdateProgress(idxZ/float(maxZ));
     sprintf(progressText,"Calculating average intensity of objects (slice %d / %d)",idxZ,maxZ);
     self->SetProgressText(progressText);
-
+    printf("%s\n",progressText);
     for(idxY = 0; idxY <= maxY; idxY++ ) {
       for(idxX = 0; idxX <= maxX; idxX++ ) {
           for(idxC = 0; idxC < maxC; idxC++ ) {
