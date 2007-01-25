@@ -168,11 +168,11 @@ class TaskPanel(scrolled.ScrolledPanel):
                 cachedSettings = bxd.getSettingsFromCache(self.cacheKey)
             
         if not cachedSettings:
-            #print "\n\n\n*** NO CACHE DSETTINGS"
+            print "\n\n\n*** NO CACHE DSETTINGS"
             return
-        #print "\n\n\n*** RESTORING FROM CACHE"
+        print "\n\n\n*** RESTORING FROM CACHE"
         combined = cachedSettings[0]
-        #print "Setting settings of combined"
+        print "Setting settings of combined"
         self.dataUnit.setSettings(combined)
         sources=self.dataUnit.getSourceDataUnits()
         for i,setting in enumerate(cachedSettings[1:]):
@@ -184,7 +184,7 @@ class TaskPanel(scrolled.ScrolledPanel):
             #print "\n\nSetting itf ",i,"= itf with 0=",tf.GetValue(0),"and 255=",tf.GetValue(255)
         self.settings = sources[self.settingsIndex].getSettings()
         
-        self.updateSettings()
+        self.updateSettings(force=True)
         
     def cacheSettings(self):
         """
@@ -200,6 +200,7 @@ class TaskPanel(scrolled.ScrolledPanel):
         #print "SOURCES=",sources
         settings = [x.getSettings() for x in sources]
         settings.insert(0, self.dataUnit.getSettings())
+        print "storing",settings[0]
         #for i,settingx in enumerate(settings[1:]):
         #    
         #    tf=settingx.get("IntensityTransferFunction")

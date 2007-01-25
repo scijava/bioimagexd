@@ -89,6 +89,13 @@ class ProcessingFilter(GUIBuilder.GUIBuilderBase):
         self.vtkToItk = None
         self.itkToVtk = None
         self.G = "UC3"
+        
+    def onRemove(self):
+        """
+        Created: 25.1.2007, KP
+        Description: Callback for when the filter is removed
+        """
+        pass
 
     def set(self, parameter, value):
         """

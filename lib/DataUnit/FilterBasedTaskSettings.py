@@ -114,6 +114,7 @@ class FilterBasedTaskSettings(DataUnitSettings):
                     flist.append(fclass)
                 except:
                     pass
+            print "\n\n\nDeserialized flist=",flist
             return flist
                 
         else:
@@ -127,11 +128,12 @@ class FilterBasedTaskSettings(DataUnitSettings):
                      that can be written to disk.
         """
         if name=="FilterList":
-            print "Serializing",value
+            print "\n\nSerializing filterlist",value
             filterlist = value
             names=[]
             for filter in filterlist:
                 names.append(filter.getName())
+            print "Result",str(names)
             return str(names)
         else:
             return DataUnitSettings.serialize(self,name,value)

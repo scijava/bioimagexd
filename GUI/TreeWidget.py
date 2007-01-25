@@ -54,10 +54,12 @@ class TreeWidget(wx.SashLayoutWindow):
         self.treeId=wx.NewId()
         self.parent=parent
         self.tree = wx.TreeCtrl(self,self.treeId,style=wx.TR_HAS_BUTTONS|wx.TR_MULTIPLE)
-        
+        self.multiSelect = 0
         self.lastobj = None
         self.tree.Bind(wx.EVT_TREE_SEL_CHANGED,self.onSelectionChanged,id=self.tree.GetId())    
+        self.tree.Bind(wx.EVT_TREE_SEL_CHANGING, self.onSelectionChanging, id=self.tree.GetId())
         self.tree.Bind(wx.EVT_TREE_ITEM_ACTIVATED,self.onActivateItem,id=self.tree.GetId())
+        self.tree.Bind(wx.EVT_KEY_DOWN, self.onKeyDown, id = self.tree.GetId())
         self.items={}
         self.greenitems=[]
         self.yellowitems=[]
@@ -87,6 +89,7 @@ class TreeWidget(wx.SashLayoutWindow):
         self.dataUnitItems=[]
         
         self.itemColor=(0,0,0)
+        
         
         self.tree.Bind(wx.EVT_RIGHT_DOWN,self.onRightClick)
         self.Bind(wx.EVT_RIGHT_DOWN,self.onRightClick)
@@ -431,13 +434,58 @@ class TreeWidget(wx.SashLayoutWindow):
         self.markGreen([item])
         
         event.Skip()
+    def onSelectionChanging(self, event):
+        """
+        Created: 25.1.2007, KP
+        Description: An event handler called before the selection changes
+        """
         
+        
+        if not self.multiSelect:
+            self.tree.UnselectAll()            
+        item = event.GetItem()
+        #print "item=",item
+        if not item.IsOk():
+            return
+                
+        obj = self.tree.GetPyData(item)
+        #print "obj=",obj
+        if obj=="1":
+            self.tree.UnselectItem(item)
+            event.Veto()
+            return
+        elif obj=="2":
+            # Select it's children
+            self.tree.UnselectItem(item)
+            citem,cookie=self.tree.GetFirstChild(item)
+                
+            while citem.IsOk():
+                self.tree.SelectItem(citem)
+                citem=self.tree.GetNextSibling(citem)
+                                
+            event.Veto()
+    def onKeyDown(self, event):
+        """
+        Created: 25.1.2006, KP
+        Description: Akey event handler
+        """
+        #keyevent = event.GetKeyEvent()
+        keyevent = event
+        if keyevent.ControlDown() or keyevent.ShiftDown():
+            
+            self.multiSelect = 1
+        else:
+            
+            self.multiSelect = 0
+        event.Skip()
     def onSelectionChanged(self,event=None):
         """
         Created: 10.01.2005, KP
         Description: A event handler called when user selects and item.
         """      
         item=event.GetItem()
+    
+        
         #items=self.tree.GetSelections()
         #item=items[-1]
         if not item.IsOk():
@@ -449,11 +497,12 @@ class TreeWidget(wx.SashLayoutWindow):
         self.item=item
         if obj and type(obj)!=types.StringType:
             if self.lastobj != obj:
-                print "Last obj=",self.lastobj,"!=",obj
+                #print "Last obj=",self.lastobj,"!=",obj
                 Logging.info("Switching to ",obj)
                 messenger.send(None,"tree_selection_changed",obj)        
                 self.markGreen([item])        
                 self.lastobj = obj
+        self.multiSelect = 0                
         #event.Skip()
 
     def unselectAll(self):
