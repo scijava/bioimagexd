@@ -30,6 +30,9 @@ __author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.22 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
+import site
+site.addsitedir("/usr/local/lib/python2.4/site-packages/")
+
 import os.path
 import os
 import sys
@@ -64,8 +67,7 @@ if not todir:
 itklibdir=os.path.join(todir,os.path.join("ITK-pkg","lib"))
 itkbindir=os.path.join(todir,os.path.join("ITK-pkg","bin"))
 itkpythondir=os.path.join(todir,os.path.join("ITK-pkg","Python"))
-import site
-site.addsitedir("/usr/local/lib/python2.4/site-packages/")
+
 sys.path.insert(0,itklibdir)
 sys.path.insert(0,itkbindir)
 sys.path.insert(0,itkpythondir)

@@ -55,6 +55,7 @@ class TreeWidget(wx.SashLayoutWindow):
         self.parent=parent
         self.tree = wx.TreeCtrl(self,self.treeId,style=wx.TR_HAS_BUTTONS|wx.TR_MULTIPLE)
         self.multiSelect = 0
+        self.programmatic=0
         self.lastobj = None
         self.tree.Bind(wx.EVT_TREE_SEL_CHANGED,self.onSelectionChanged,id=self.tree.GetId())    
         self.tree.Bind(wx.EVT_TREE_SEL_CHANGING, self.onSelectionChanging, id=self.tree.GetId())
@@ -441,11 +442,13 @@ class TreeWidget(wx.SashLayoutWindow):
         """
         
         
-        if not self.multiSelect:
+        if not self.multiSelect and not self.programmatic:
+            print "\n\n\n\nUNSELECTING ALL"
             self.tree.UnselectAll()            
         item = event.GetItem()
         #print "item=",item
         if not item.IsOk():
+            print "\n\n\nITEM IS NOT OK",item
             return
                 
         obj = self.tree.GetPyData(item)
@@ -511,6 +514,7 @@ class TreeWidget(wx.SashLayoutWindow):
         Created: 16.07.2006, KP
         Description: Unselect everything in the tree
         """
+        print "\n\n\nUNSELECTING ALL at unselectAll()"
         self.tree.UnselectAll()
         
     def getChannelsByName(self, unit, channels):
@@ -520,28 +524,33 @@ class TreeWidget(wx.SashLayoutWindow):
         """   
         return self.selectByName(unit, channels, dontSelect=1)
         
-    def selectChannelsByNumber(self, unit, numbers):
+    def selectChannelsByNumber(self, unit, numbers, dontSelect=0):
         """
         Created: 06.09.2006, KP
         Description: Select channels with the given numhers
         """
         n=-1
         ret=[]
+        self.programmatic = 1
         for item in self.dataUnitItems:
             obj = self.tree.GetPyData(item)
             if unit == self.dataUnitToPath[obj]:
                 n+=1
-            if n in numbers:
-                ret.append(obj)
-            else:
-                ret.append(None)
+                if n in numbers:                    
+                    ret.append(obj)
+                    print "\n\n\n\nSELECTING ",item,obj
+                    if not dontSelect:
+                        self.tree.SelectItem(item)                    
+        self.programmatic = 0    
         return ret
+
     def selectChannelsByName(self, unit, channels, dontSelect=0):
         """
         Created: 16.07.2006, KP
         Description: Select items in the tree by their names
         """   
         ret=[]
+        self.programmatic = 1        
         for item in self.dataUnitItems:
             obj = self.tree.GetPyData(item)
             #print "obj=",obj.getName(),"in channels=",(obj.getName() in channels)
@@ -551,4 +560,5 @@ class TreeWidget(wx.SashLayoutWindow):
                 #print "FOUND",obj
                 ret.append(obj)
         #print "RETURNING",ret
+        self.programmatic = 0        
         return ret
