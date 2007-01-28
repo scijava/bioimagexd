@@ -64,6 +64,8 @@ if not todir:
 itklibdir=os.path.join(todir,os.path.join("ITK-pkg","lib"))
 itkbindir=os.path.join(todir,os.path.join("ITK-pkg","bin"))
 itkpythondir=os.path.join(todir,os.path.join("ITK-pkg","Python"))
+import site
+site.addsitedir("/usr/local/lib/python2.4")
 sys.path.insert(0,itklibdir)
 sys.path.insert(0,itkbindir)
 sys.path.insert(0,itkpythondir)
@@ -96,6 +98,7 @@ import vtk
 w=vtk.vtkOutputWindow()
 i=w.GetInstance()
 def onWarning(obj,evt,*args):
+    Logging.backtrace()
     print "VTK message:\n", evt
 w.AddObserver("WarningEvent",onWarning)
 w.AddObserver("ErrorEvent",onWarning)

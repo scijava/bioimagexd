@@ -2,8 +2,15 @@
 import vtk
 import time
 
-D="/Users/dan/Documents/volumerender/colocsample/colocsample1b.lsm"
+
+import sys
+sys.path.insert(0,"H:\\vtkBXD\\bin")
+sys.path.insert(0,"..\\vtkBXD\\Wrapping\\Python")
+
+import vtkbxd
+#D="/Users/dan/Documents/volumerender/colocsample/colocsample1b.lsm"
 #D="/home/kalpaha/BioImageXD/Datasets/sample2.lsm"
+D="H:\\Data\\lsm\\sample1_single.lsm"
 t=time.time()
 def elapsed():
     global t
