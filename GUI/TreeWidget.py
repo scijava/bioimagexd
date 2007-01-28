@@ -440,8 +440,6 @@ class TreeWidget(wx.SashLayoutWindow):
         Created: 25.1.2007, KP
         Description: An event handler called before the selection changes
         """
-        
-        
         if not self.multiSelect and not self.programmatic:
             print "\n\n\n\nUNSELECTING ALL"
             self.tree.UnselectAll()            
@@ -535,12 +533,13 @@ class TreeWidget(wx.SashLayoutWindow):
         for item in self.dataUnitItems:
             obj = self.tree.GetPyData(item)
             if unit == self.dataUnitToPath[obj]:
+                
                 n+=1
                 if n in numbers:                    
                     ret.append(obj)
                     print "\n\n\n\nSELECTING ",item,obj
-                    if not dontSelect:
-                        self.tree.SelectItem(item)                    
+                    if not dontSelect and not self.tree.IsSelected(item):                    
+                        self.tree.ToggleItemSelection(item)                    
         self.programmatic = 0    
         return ret
 
@@ -555,8 +554,8 @@ class TreeWidget(wx.SashLayoutWindow):
             obj = self.tree.GetPyData(item)
             #print "obj=",obj.getName(),"in channels=",(obj.getName() in channels)
             if obj.getName() in channels and unit == self.dataUnitToPath[obj]:
-                if not dontSelect:
-                    self.tree.SelectItem(item)
+                if not dontSelect and not self.tree.IsSelected(item):
+                    self.tree.ToggleItemSelection(item)
                 #print "FOUND",obj
                 ret.append(obj)
         #print "RETURNING",ret
