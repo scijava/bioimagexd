@@ -291,7 +291,28 @@ class InteractivePanel(ogl.ShapeCanvas):
     
         self.lines = []
         
+        self.ID_VARY=wx.NewId()
+        self.ID_NONE=wx.NewId()
+        self.ID_LINEAR=wx.NewId()
+        self.ID_CUBIC=wx.NewId()
+        self.interpolation=-1
+        self.renew=1
+        self.menu=wx.Menu()
         
+        item = wx.MenuItem(self.menu,self.ID_VARY,"Interpolation depends on size",kind=wx.ITEM_RADIO)
+        self.menu.AppendItem(item)
+        self.menu.Check(self.ID_VARY,1)
+        item = wx.MenuItem(self.menu,self.ID_NONE,"No interpolation",kind=wx.ITEM_RADIO)
+        self.menu.AppendItem(item)
+        item = wx.MenuItem(self.menu,self.ID_LINEAR,"Linear interpolation",kind=wx.ITEM_RADIO)
+        self.menu.AppendItem(item)
+        item = wx.MenuItem(self.menu,self.ID_CUBIC,"Cubic interpolation",kind=wx.ITEM_RADIO)
+        self.menu.AppendItem(item)
+        
+        self.Bind(wx.EVT_MENU,self.onSetInterpolation,id=self.ID_VARY)
+        self.Bind(wx.EVT_MENU,self.onSetInterpolation,id=self.ID_NONE)
+        self.Bind(wx.EVT_MENU,self.onSetInterpolation,id=self.ID_LINEAR)
+        self.Bind(wx.EVT_MENU,self.onSetInterpolation,id=self.ID_CUBIC)        
         
         self.registerPainter( AnnotationHelper(self) )
         self.registerPainter( CenterOfMassHelper(self) )
@@ -315,6 +336,32 @@ class InteractivePanel(ogl.ShapeCanvas):
         
         messenger.connect(None,"update_helpers",self.onUpdateHelpers)
         
+    def onSetInterpolation(self,event):
+        """
+        Created: 01.08.2005, KP
+        Description: Set the inteprolation method
+        """      
+        eID=event.GetId()
+        flags=(1,0,0,0)
+        interpolation=-1
+        if eID == self.ID_NONE:
+            flags=(0,1,0,0)
+            interpolation=0
+        elif eID == self.ID_LINEAR:
+            flags=(0,0,1,0)
+            interpolation=1
+        elif eID == self.ID_CUBIC:
+            flags=(0,0,0,1)
+            interpolation=2
+        
+        self.menu.Check(self.ID_VARY,flags[0])
+        self.menu.Check(self.ID_NONE,flags[1])
+        self.menu.Check(self.ID_LINEAR,flags[2])
+        self.menu.Check(self.ID_CUBIC,flags[3])
+        if self.interpolation != interpolation:
+            self.interpolation=interpolation
+            self.updatePreview()
+    
     
     def setOffset(self, x,y):
         """
@@ -504,6 +551,7 @@ class InteractivePanel(ogl.ShapeCanvas):
                 if not flag:
                     return
         event.Skip()
+        self.PopupMenu(self.menu,event.GetPosition())
 
     def onFinishPolygon(self, event):
         """

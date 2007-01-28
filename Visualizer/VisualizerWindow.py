@@ -40,7 +40,7 @@ from vtk.wx.wxVTKRenderWindowInteractor import wxVTKRenderWindowInteractor
 import Dialogs
 from VisualizationModules import *
 from ModuleConfiguration import *
-from Lights import *
+
 
         
 class VisualizerWindow(wxVTKRenderWindowInteractor):

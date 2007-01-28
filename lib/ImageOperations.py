@@ -420,6 +420,7 @@ def setFromParameterList(iTF,list):
     iTF.SetBrightness(int(br))
 
 def vtkImageDataToWxImage(data,slice=-1,startpos=None,endpos=None):
+    
     if slice>=0:    
         #Logging.info("Getting slice %d"%slice,kw="imageop")
         data=getSlice(data,slice,startpos,endpos)
@@ -441,10 +442,11 @@ def vtkImageDataToWxImage(data,slice=-1,startpos=None,endpos=None):
     
     exporter.Export()
     
-
+    
     x,y,z=data.GetDimensions()
     image=wx.EmptyImage(x,y)
     image.SetData(ss)
+    
     return image
     
 def vtkImageDataToPngString(data,slice=-1,startpos=None,endpos=None):
@@ -1121,10 +1123,12 @@ def getSlice(volume,zslice,startpos=None,endpos=None):
     if startpos:
         x0,y0=startpos
         x,y=endpos
-    print "voi = ",x0,x-1,y0,y-1,zslice,zslice
+    #print "voi = ",x0,x-1,y0,y-1,zslice,zslice
     voi.SetVOI(x0,x-1,y0,y-1,zslice,zslice)
     voi.Update()
-    return voi.GetOutput()
+    data=voi.GetOutput()
+    
+    return data
     
 def saveImageAs(imagedata,zslice,filename):
     """

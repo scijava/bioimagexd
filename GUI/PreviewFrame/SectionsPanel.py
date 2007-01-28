@@ -108,6 +108,7 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
         Description: Set the factor by which the image is zoomed
         """
         self.zoomFactor=factor
+        print "Setting zoom factor to ",factor
         if self.dataUnit:
             self.setTimepoint(self.timepoint)
         self.updateAnnotations()
@@ -309,6 +310,7 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
         
         image.Update()
         self.zspacing = image.GetSpacing()[2]
+        print "\n\nZ SPACING =",self.zspacing
         self.imagedata = ImageOperations.imageDataTo3Component(image,self.ctf)
         
         if self.fitLater:
@@ -324,22 +326,24 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
         if self.zoomFactor!=1:
             img=ImageOperations.scaleImage(self.imagedata,self.zoomFactor,z)
             slice=ImageOperations.vtkImageDataToWxImage(img)        
+            
         else:
             slice=ImageOperations.vtkImageDataToWxImage(self.imagedata,z)
-        
+            
         self.slices.append(slice)
         
         slice=ImageOperations.getPlane(self.imagedata,"zy",self.x,self.y,z)
         #slice=ImageOperations.getPlane(self.imagedata,"xz",self.x,self.y,z)
-        if self.zoomFactor != 1:
+        if self.zoomFactor != 1 or self.zspacing != 1:
             slice=ImageOperations.scaleImage(slice,self.zoomFactor, yfactor=1, xfactor=self.zspacing)
         #if self.zoomZ != 1:
         #    slice=ImageOperaations.scaleImage(slice,xfactor=self.zoomZ)
+        
         slice=ImageOperations.vtkImageDataToWxImage(slice)
         self.slices.append(slice)
         slice=ImageOperations.getPlane(self.imagedata,"xz",self.x,self.y,z)
         #slice=ImageOperations.getPlane(self.imagedata,"zy",self.x,self.y,z)
-        if self.zoomFactor != 1 or self.zoomZ != 1:
+        if self.zoomFactor != 1 or self.zoomZ != 1  or self.zspacing != 1:
             slice=ImageOperations.scaleImage(slice,self.zoomFactor, yfactor=self.zspacing, xfactor=1)
         #if self.zoomZ != 1:
         #    slice=ImageOperaations.scaleImage(slice,yfactor=self.zoomZ)        
@@ -347,6 +351,7 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
         self.slices.append(slice)        
 
         self.calculateBuffer()
+        self.updatePreview()
     
     def calculateBuffer(self):
         """
@@ -435,7 +440,7 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
                                   
 
             w,h=slice.GetWidth(),slice.GetHeight()
-            print "Widht, height of slice=",w,h
+            #print "Widht, height of slice=",w,h
             #if i==2:
                 #slice=slice.Mirror(1)
             bmp=slice.ConvertToBitmap()

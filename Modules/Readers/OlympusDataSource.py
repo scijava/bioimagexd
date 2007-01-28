@@ -185,6 +185,9 @@ class OlympusDataSource(DataSource):
             self.reader.AddObserver("ProgressEvent",self.updateProgress)
             x,y,z=self.dimensions
             self.reader.SetDataExtent(0,x-1,0,y-1,0,z-1)
+            
+            spacing = self.getSpacing()
+            self.reader.SetDataSpacing(*spacing)
         
         zpat=""
         tpat=""

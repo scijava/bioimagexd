@@ -725,12 +725,13 @@ class Visualizer:
         #factor = float(s[:-1])/100.0
         factor=self.zoomLevels[pos]
         self.zoomCombo.SetSelection(pos)
-        self.currMode.setZoomFactor(factor)
+        
         if factor==-1:
             self.zoomToFitFlag=1
             self.currMode.zoomToFit()                   
         else:
             self.zoomToFitFlag=0
+            self.currMode.setZoomFactor(factor)
         self.zoomFactor=self.currMode.getZoomFactor()    
         self.currMode.Render()
         

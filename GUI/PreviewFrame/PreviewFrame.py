@@ -173,28 +173,6 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         self.addListener(wx.EVT_RIGHT_DOWN, self.onRightClick)
         #self.Bind(wx.EVT_RIGHT_DOWN,self.onRightClick)
         
-        self.ID_VARY=wx.NewId()
-        self.ID_NONE=wx.NewId()
-        self.ID_LINEAR=wx.NewId()
-        self.ID_CUBIC=wx.NewId()
-        self.interpolation=-1
-        self.renew=1
-        self.menu=wx.Menu()
-        
-        item = wx.MenuItem(self.menu,self.ID_VARY,"Interpolation depends on size",kind=wx.ITEM_RADIO)
-        self.menu.AppendItem(item)
-        self.menu.Check(self.ID_VARY,1)
-        item = wx.MenuItem(self.menu,self.ID_NONE,"No interpolation",kind=wx.ITEM_RADIO)
-        self.menu.AppendItem(item)
-        item = wx.MenuItem(self.menu,self.ID_LINEAR,"Linear interpolation",kind=wx.ITEM_RADIO)
-        self.menu.AppendItem(item)
-        item = wx.MenuItem(self.menu,self.ID_CUBIC,"Cubic interpolation",kind=wx.ITEM_RADIO)
-        self.menu.AppendItem(item)
-        
-        self.Bind(wx.EVT_MENU,self.onSetInterpolation,id=self.ID_VARY)
-        self.Bind(wx.EVT_MENU,self.onSetInterpolation,id=self.ID_NONE)
-        self.Bind(wx.EVT_MENU,self.onSetInterpolation,id=self.ID_LINEAR)
-        self.Bind(wx.EVT_MENU,self.onSetInterpolation,id=self.ID_CUBIC)
 
         
         self.Bind(wx.EVT_SIZE,self.onSize)
@@ -292,31 +270,6 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         if update:
             self.updatePreview(1)
         
-    def onSetInterpolation(self,event):
-        """
-        Created: 01.08.2005, KP
-        Description: Set the inteprolation method
-        """      
-        eID=event.GetId()
-        flags=(1,0,0,0)
-        interpolation=-1
-        if eID == self.ID_NONE:
-            flags=(0,1,0,0)
-            interpolation=0
-        elif eID == self.ID_LINEAR:
-            flags=(0,0,1,0)
-            interpolation=1
-        elif eID == self.ID_CUBIC:
-            flags=(0,0,0,1)
-            interpolation=2
-        
-        self.menu.Check(self.ID_VARY,flags[0])
-        self.menu.Check(self.ID_NONE,flags[1])
-        self.menu.Check(self.ID_LINEAR,flags[2])
-        self.menu.Check(self.ID_CUBIC,flags[3])
-        if self.interpolation != interpolation:
-            self.interpolation=interpolation
-            self.updatePreview()
         
         
     def onRightClick(self,event):
@@ -330,7 +283,7 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         shape=self.FindShape(x,y)
         if shape:
             event.Skip()
-        self.PopupMenu(self.menu,event.GetPosition())
+        
                 
         
     def getVoxelValue(self,event):
@@ -367,6 +320,7 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         if y>=self.ydim:y=self.ydim-1
         Logging.info("Returning x,y,z=(%d,%d,%d)"%(rx,ry,rz),kw="preview")
         ncomps=self.rawImage.GetNumberOfScalarComponents()
+        self.rawImage.SetExtent(self.rawImage.GetWholeExtent())
         if ncomps==1:
             Logging.info("One component in raw image",kw="preview")
             rv= -1
@@ -379,6 +333,7 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
             else:
                 scalar = []
                 for i,img in enumerate(self.rawImages):
+                    img.SetExtent(img.GetWholeExtent())
                     if self.dataUnit.getOutputChannel(i):
                         scalar.append(img.GetScalarComponentAsDouble(x,y,self.z,0))
                     else:
@@ -542,7 +497,7 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
             colorImage = self.processOutputData(preview)
         else:
             colorImage=preview
-        
+    
         
         usedUpdateExt=0
         print "self.z=",self.z,self.mip
@@ -558,7 +513,8 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         colorImage = bxd.mem.optimize(image = colorImage, updateExtent = uext)            
         #colorImage.SetUpdateExtent(0,self.xdim-1,0,self.ydim-1,self.z,self.z)        
         
-        
+    
+      
         #colorImage.Update()
         t2=time.time()
         print "Executing pipeline took",t2-t,"seconds"            
@@ -592,9 +548,10 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
             self.slice = None
         else:
             #print "Getting slice from imagedata, z=",z
-            
+        
             self.slice=ImageOperations.vtkImageDataToWxImage(self.imagedata,z)
-            #print "Done"
+            
+        #print "Done"
         #print "---> painting preview"
         self.paintPreview()
         
@@ -882,6 +839,10 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
             self.repaintHelpers(update=0)
             return
             
+
+        
+        #print "Saving mimefile ",filename,mime
+        
         bmp=self.slice
         Logging.info("Zoom factor for painting =",self.zoomFactor,kw="preview")
         if self.zoomFactor != 1 or self.zoomFactor!=self.oldZoomFactor:
