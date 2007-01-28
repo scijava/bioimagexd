@@ -533,6 +533,8 @@ class TreeWidget(wx.SashLayoutWindow):
                 n+=1
             if n in numbers:
                 ret.append(obj)
+            else:
+                ret.append(None)
         return ret
     def selectChannelsByName(self, unit, channels, dontSelect=0):
         """
