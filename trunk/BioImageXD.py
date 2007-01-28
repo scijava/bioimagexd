@@ -65,7 +65,7 @@ itklibdir=os.path.join(todir,os.path.join("ITK-pkg","lib"))
 itkbindir=os.path.join(todir,os.path.join("ITK-pkg","bin"))
 itkpythondir=os.path.join(todir,os.path.join("ITK-pkg","Python"))
 import site
-site.addsitedir("/usr/local/lib/python2.4")
+site.addsitedir("/usr/local/lib/python2.4/site-packages/")
 sys.path.insert(0,itklibdir)
 sys.path.insert(0,itkbindir)
 sys.path.insert(0,itkpythondir)
