@@ -26,6 +26,11 @@ vtkLSMReader.cxx
 
 # Create the vtkBXDProcessing C++ library
 ADD_LIBRARY (vtkBXDProcessing ${Processing_SRCS})
+
+SET_TARGET_PROPERTIES (vtkBXDProcessing
+  PROPERTIES  INSTALL_NAME_DIR "${CMAKE_INSTALL_PREFIX}/lib"
+)
+
 TARGET_LINK_LIBRARIES(vtkBXDProcessing vtkImaging vtkCommon vtkIO vtkWidgets vtkFiltering  )
 
 # Create the vtkBXDBioImageXD Python library.
@@ -33,7 +38,27 @@ IF (VTK_WRAP_PYTHON AND VTKBXD_WRAP_PYTHON)
   VTK_WRAP_PYTHON3 (vtkBXDProcessingPython ProcessingPython_SRCS "${Processing_SRCS}")
   ADD_LIBRARY (vtkBXDProcessingPythonD ${ProcessingPython_SRCS})
   ADD_LIBRARY (vtkBXDProcessingPython MODULE vtkBXDProcessingPythonInit.cxx)
+
+SET_TARGET_PROPERTIES (vtkBXDProcessingPython
+  PROPERTIES  INSTALL_NAME_DIR "${CMAKE_INSTALL_PREFIX}/lib"
+)
+
+SET_TARGET_PROPERTIES (vtkBXDProcessingPythonD
+  PROPERTIES  INSTALL_NAME_DIR "${CMAKE_INSTALL_PREFIX}/lib"
+)
+
   TARGET_LINK_LIBRARIES(vtkBXDProcessingPythonD vtkBXDProcessing vtkImaging vtkImagingPythonD vtkCommon vtkCommonPythonD vtkIO vtkIOPythonD vtkWidgets vtkWidgetsPythonD vtkFiltering vtkFilteringPythonD)
   TARGET_LINK_LIBRARIES(vtkBXDProcessingPython vtkBXDProcessingPythonD)
+
+  INSTALL(TARGETS vtkBXDProcessing vtkBXDProcessingPythonD
+    RUNTIME DESTINATION bin 
+    LIBRARY DESTINATION lib 
+    ARCHIVE DESTINATION lib 
+  )
+  INSTALL(TARGETS vtkBXDProcessingPython
+    RUNTIME DESTINATION bin
+    LIBRARY DESTINATION lib/python2.5/site-packages/vtkbxd
+    ARCHIVE DESTINATION lib/python2.5/site-packages/vtkbxd
+  )
 ENDIF (VTK_WRAP_PYTHON AND VTKBXD_WRAP_PYTHON)
 
