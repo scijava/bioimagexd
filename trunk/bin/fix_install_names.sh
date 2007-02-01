@@ -1,7 +1,8 @@
 #! /bin/bash
-#LIBS="libvtkBXDProcessing.dylib libvtkBXDProcessingPythonD.dylib python2.5/site-packages/vtkbxd//libvtkBXDProcessingPython.so"
-#LIBS=".python2.5/site-packages/vtkbxd//libvtkBXDProcessingPython.so"
+VTK_SOURCE_DIR="/Users/kallepahajoki/VTK/bin/"
 cd /Library/Frameworks/Python.framework/Versions/2.5/lib
+
+
 LIBS="`echo *.dylib`"
 for lib in $LIBS
 do
@@ -23,4 +24,11 @@ do
     do
 	install_name_tool -change $dep /Library/Frameworks/Python.framework/Versions/2.5/lib/$dep $lib
     done
+    DEPS="`otool -L  $lib |grep $VTK_SOURCE_DIR|cut -d' ' -f1`"
+    for dep in $DEPS
+    do
+	ndep="`echo $dep | sed s,$VTK_SOURCE_DIR,,`"
+	install_name_tool -change $dep /Library/Frameworks/Python.framework/Versions/2.5/lib/$ndep $lib
+    done
+
 done
