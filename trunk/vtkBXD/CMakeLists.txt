@@ -21,13 +21,13 @@ INCLUDE (${VTKBXD_SOURCE_DIR}/CMakeOptions.cmake)
 
 SUBDIRS (
   Processing
+  Wrapping
 )
 
 #
 # You can put your include path(s) here
 #
 
-INCLUDE_DIRECTORIES(${VTKBXD_SOURCE_DIR}/Common)
 INCLUDE_DIRECTORIES (${VTKBXD_SOURCE_DIR}/Processing)
 
 #
