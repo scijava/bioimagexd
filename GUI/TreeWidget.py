@@ -441,8 +441,8 @@ class TreeWidget(wx.SashLayoutWindow):
         Description: An event handler called before the selection changes
         """
         if not self.multiSelect and not self.programmatic:
-            print "\n\n\n\nUNSELECTING ALL"
-            self.tree.UnselectAll()            
+	    if platform.system() not in ["Darwin","Linux"]: 
+	        self.tree.UnselectAll()            	
         item = event.GetItem()
         #print "item=",item
         if not item.IsOk():

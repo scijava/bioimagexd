@@ -277,7 +277,7 @@ class DimensionInfo(wx.Window):
         self.dc.SelectObject(wx.NullBitmap)
         self.dc = None    
 
-class NamePanel(wx.Panel):
+class NamePanel(wx.Window):
     """
     Created: 05.05.2005, KP
     Description: A panel that paints a string it's given
@@ -285,7 +285,7 @@ class NamePanel(wx.Panel):
     def __init__(self,parent,label,color,**kws):
         size=kws["size"]
         self.parent=parent
-        wx.Panel.__init__(self,parent,-1,size=size)
+        wx.Window.__init__(self,parent,-1,size=size)
         self.label=label
         self.xoff,self.yoff=8,0
         if kws.has_key("xoffset"):self.xoff=kws["xoffset"]
@@ -296,7 +296,14 @@ class NamePanel(wx.Panel):
         w,h=self.size
         #print "Height of track=",h
         self.btn = None
+        print "Creating buffer",w,h
+        cs = self.parent.GetClientSize()
+        if w<0:
+            w=cs[0]
+        if h<0:
+            h=cs[1]
         self.buffer = wx.EmptyBitmap(w,h,-1)
+        print "done"
         self.setColor((0,0,0),color)
         self.dc = None
         if kws.has_key("expand"):

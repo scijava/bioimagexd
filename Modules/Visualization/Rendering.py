@@ -158,12 +158,14 @@ class RenderingMode(VisualizationMode):
         else:
             self.wxrenwin.iren.Enable()
         #self.wxrenwin.Show()
+        print "creating config panel"
         if not self.configPanel:
             # When we embed the sidebar in a sashlayoutwindow, the size
             # is set correctly
             self.container = wx.SashLayoutWindow(self.sidebarWin)
             
             self.configPanel = VisualizationFrame.ConfigurationPanel(self.container,self.visualizer,self)
+        print "showing container.."
         self.container.Show()
         self.configPanel.Show()
         if not self.lightsManager:

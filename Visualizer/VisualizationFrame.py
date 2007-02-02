@@ -273,11 +273,12 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
         self.count={}
         self.currentConfMode=""
         #self.titlePanel = TitledPanel(self,"Visualizer",1)
+        print "creating name panel"
         self.namePanel = NamePanel(self,"Visualizer",(0,128,255),
             size=(-1,25),
             xoffset=8,yoffset=1)
         self.namePanel.setColor((0,0,0),(0,128,255))
-                
+        print "done"
         self.moduleLbl = wx.StaticText(self,-1,"Rendering module:")
         modules=self.mode.mapping.keys()
         modules.sort()
