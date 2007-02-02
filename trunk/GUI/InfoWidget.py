@@ -89,7 +89,7 @@ class InfoWidget(wx.Panel):
         wx.Panel.__init__(self,master,-1,style=wx.BORDER_RAISED,**kws)
         self.mainsizer=wx.GridBagSizer(5,5)
         
-        self.infoNotebook=wx.Notebook(self,-1,size=(280,300))        
+        self.infoNotebook=wx.Notebook(self,-1,size=(280,500))        
         self.mainsizer.Add(self.infoNotebook,(0,1),flag=wx.EXPAND|wx.ALL)
 
         self.modules=Modules.DynamicLoader.getTaskModules()
@@ -98,7 +98,7 @@ class InfoWidget(wx.Panel):
         
         self.SetAutoLayout(True)
         self.SetSizer(self.mainsizer)
-        self.mainsizer.Fit(self)
+        #self.mainsizer.Fit(self)
         self.mainsizer.SetSizeHints(self)
        
         messenger.connect(None,"tree_selection_changed",self.showInfo) 
@@ -244,7 +244,6 @@ class InfoWidget(wx.Panel):
         #self.infoPanel=wx.Panel(self,-1)
         self.infoSizer=wx.GridBagSizer(5,5)
 
-        self.infoNotebook.AddPage(self.infoPanel,"Channel info")
         
         #self.commonSettingsPanel=wx.Panel(self.infoNotebook,-1)
         #self.commonSettingsSizer=wx.GridBagSizer()
@@ -281,4 +280,6 @@ class InfoWidget(wx.Panel):
         
         self.infoPanel.SetSizer(self.infoSizer)
         self.infoPanel.SetAutoLayout(1)
+        self.infoNotebook.AddPage(self.infoPanel,"Channel info")
+        
         #self.mainsizer.Add(self.infoPanel,(0,1),flag=wx.EXPAND|wx.ALL)        

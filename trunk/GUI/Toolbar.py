@@ -33,6 +33,7 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 import  wx
 import wx.lib.buttons as buttons
+import platform
 
 class ToolCommandEvent(wx.PyCommandEvent):
     def __init__(self,eventType, eid, isdown):
@@ -63,6 +64,7 @@ class Toolbar(wx.Panel):
         self.sizes=[]
         self.rowsizers=[]
         self.oldLayout=[]
+        self.nondarwin = platform.system()!="Darwin"
         self.ctrls = []
         self.idToTool={}
         self.minSize = 999999
@@ -89,8 +91,9 @@ class Toolbar(wx.Panel):
             y=44*len(layout)
             #print "x=",x,"y=",y
             self.parent.SetDefaultSize((x,y))
-            self.sizer.Fit(self)                
-            self.Layout()
+            self.sizer.Fit(self)          
+            if self.nondarwin:
+	            self.Layout()
             self.parent.Layout()
             
         #else:
