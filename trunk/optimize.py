@@ -81,7 +81,7 @@ def optimize(image = None, vtkFilter = None, updateExtent = None, releaseData = 
         #print "-->Setting optimized update extent to ",updateExtent
         val.GetOutput().SetUpdateExtent(updateExtent)
         
-    #print "Executing limited..."
+    #print "Executing limited...",numFilters
     if numFilters!=0:
         img=execute_limited(val, updateExtent = updateExtent) 
     else:
@@ -120,12 +120,13 @@ def execute_limited(pipeline, updateExtent = None):
         #print "\n----> EXECUTING PIPELINE WITH MEMORY LIMITED TO %dMB"%memLimit
         streamer = vtk.vtkMemoryLimitImageDataStreamer()
         streamer.SetMemoryLimit(1024*memLimit)
-        
+        streamer.GetExtentTranslator().SetSplitModeToZSlab()
         
     streamer.SetInput(pipeline.GetOutput())
     retval = streamer.GetOutput()
     
     if updateExtent:
+        #print "Setting update extent to ",updateExtent
         retval.SetUpdateExtent(updateExtent)
     #print "Update extent=",retval.GetUpdateExtent()
     #print "Divisions=",streamer.GetNumberOfStreamDivisions()
@@ -165,7 +166,6 @@ def optimizeMipMerge(cfilter):
     filterStack=[]
     mergeSources=[]
     merge=None
-    print "OPtimizing merge from ",repr(cfilter)
     while 1:
         if isinstance(cfilter,vtk.vtkImageColorMerge):
             merge = cfilter

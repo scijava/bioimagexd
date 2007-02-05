@@ -510,11 +510,8 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
             uext=(0,x-1,0,y-1,self.z,self.z)
         
         t=time.time()    
-        colorImage = bxd.mem.optimize(image = colorImage, updateExtent = uext)            
-        #colorImage.SetUpdateExtent(0,self.xdim-1,0,self.ydim-1,self.z,self.z)        
-        
-    
-      
+        colorImage = bxd.mem.optimize(image = colorImage, updateExtent = uext)
+              
         #colorImage.Update()
         t2=time.time()
         print "Executing pipeline took",t2-t,"seconds"            

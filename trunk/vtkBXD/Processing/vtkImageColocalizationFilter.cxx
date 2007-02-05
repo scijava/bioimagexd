@@ -120,6 +120,8 @@ void vtkImageColocalizationFilterExecute(vtkImageColocalizationFilter *self, int
     vtkIdType outIncX,outIncY,outIncZ;
     int maxX,maxY,maxZ;
     int idxX,idxY,idxZ;
+    unsigned long count = 0;
+    unsigned long target;        
     double ColocalizationScalar=0;
     T currScalar = 0;
     char colocFlag = 0;
@@ -158,16 +160,25 @@ void vtkImageColocalizationFilterExecute(vtkImageColocalizationFilter *self, int
     }
 
     char progressText[200];
-
+    target = (unsigned long)((maxZ+1)*(maxY+1)/50.0);
+    target++;
 
 
     for(idxZ = 0; idxZ <= maxZ; idxZ++ ) {
 
         sprintf(progressText,"Calculating colocalization (slice %d / %d)",idxZ,maxZ);
         self->SetProgressText(progressText);
-        self->UpdateProgress(idxZ/float(maxZ));
 
         for(idxY = 0; idxY <= maxY; idxY++ ) {
+           if (!id)
+           {
+                if (!(count%target))
+                {
+                    self->UpdateProgress(count/(50.0*target));
+                }
+                count++;
+           }             
+            
           for(idxX = 0; idxX <= maxX; idxX++ ) {
             currScalar = n = 0;
             colocFlag = 1;

@@ -108,7 +108,9 @@ class PaintPanel(wx.Panel):
         y=self.maxy-y+self.yoffset
         ox=x/self.scale
         ox+=self.xoffset
-        self.dc.DrawCircle(ox,y/self.scale,r)
+        if ox <= self.w and y/self.scale <= self.h and ox>=0 and y>=0:
+	    	print "drawing circle",ox,y,self.scale,r
+    		self.dc.DrawCircle(ox,y/self.scale,r)
 
     def createText(self,x,y,text,color="WHITE",**kws):
         """

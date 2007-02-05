@@ -94,7 +94,6 @@ class TaskPanel(scrolled.ScrolledPanel):
             self.channelBox = ChannelListBox.ChannelListBox(self, size=(250, 72), style=wx.BORDER_SUNKEN|wx.LB_NEEDED_SB)
             self.mainsizer.Add(self.channelBox,(n,0))
             n+=1
-        
         self.settingsSizer=wx.GridBagSizer()
         #self.mainsizer.Add(self.settingsSizer,(0,1),flag=wx.EXPAND|wx.ALL)
         self.mainsizer.Add(self.settingsSizer,(n,0),flag=wx.EXPAND|wx.ALL)
@@ -108,7 +107,6 @@ class TaskPanel(scrolled.ScrolledPanel):
 
         #self.staticLine=wx.StaticLine(self)
         #self.mainsizer.Add(self.staticLine,(2,0),span=(1,1),flag=wx.EXPAND)
-
         self.buttonSizer=wx.BoxSizer(wx.HORIZONTAL)
         self.buttonPanel.SetSizer(self.buttonSizer)
         self.buttonPanel.SetAutoLayout(1)
@@ -124,6 +122,7 @@ class TaskPanel(scrolled.ScrolledPanel):
 
         self.SetSizer(self.mainsizer)
         self.SetAutoLayout(True)
+        print "Setup scrolling"
         
         self.SetupScrolling()
         #self.SetScrollRate(20,20)
