@@ -14,6 +14,7 @@ class SplashScreen(wx.Frame):
                     responsible for closing the splash screen
         '''
         ### Loading bitmap
+        self.message = ""
         if bitmapfile:
             self.bitmap = bmp = wx.Image(bitmapfile, wx.BITMAP_TYPE_ANY).ConvertToBitmap()
         else:

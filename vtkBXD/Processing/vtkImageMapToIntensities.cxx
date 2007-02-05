@@ -65,7 +65,11 @@ void vtkImageMapToIntensitiesExecute(vtkImageMapToIntensities *self, int id,int 
   int maxX,maxY,maxZ,maxC;
   int idxX,idxY,idxZ,idxC;
   T *inPtr, *outPtr;
-  int* table;
+  int* table;    
+  unsigned long count = 0;
+  unsigned long target;    
+
+  
     
   vtkIntensityTransferFunction * IntensityTransferFunction;
     
@@ -103,14 +107,23 @@ void vtkImageMapToIntensitiesExecute(vtkImageMapToIntensities *self, int id,int 
 
   #define GET_AT(x,y,z,c,ptr) *(ptr+(z)*inIncZ+(y)*inIncY+(x)*inIncX+c)
   #define SET_AT(x,y,z,c,ptr,val) *(ptr+(z)*outIncZ+(y)*outIncY+(x)*outIncX+c)=val
+  target = (unsigned long)((maxZ+1)*(maxY+1)/50.0);
+  target++;
 
   char progressText[200];
   for(idxZ = 0; idxZ <= maxZ; idxZ++ ) {
-    self->UpdateProgress(idxZ/float(maxZ));
     sprintf(progressText,"Applying intensity transfer function (slice %d / %d)",idxZ,maxZ);
     self->SetProgressText(progressText);
 
     for(idxY = 0; idxY <= maxY; idxY++ ) {
+        if (!id)
+        {
+            if (!(count%target))
+            {
+                self->UpdateProgress(count/(50.0*target));
+            }
+            count++;
+       }      
       for(idxX = 0; idxX <= maxX; idxX++ ) {
           for(idxC = 0; idxC < maxC; idxC++ ) {
             //scalar = *inPtr++;

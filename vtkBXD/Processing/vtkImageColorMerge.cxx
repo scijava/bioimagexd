@@ -66,9 +66,11 @@ void vtkImageColorMergeExecute(vtkImageColorMerge *self, int id,int NumberOfInpu
     vtkIdType inIncX,inIncY,inIncZ;
     vtkIdType outIncX,outIncY,outIncZ;
     int maxX,maxY,maxZ;
-    int idxX,idxY,idxZ;
+    int idxX = 0,idxY = 0,idxZ = 0;
+    unsigned long count = 0;
+    unsigned long target;    
 
-    //printf("Executing...\n");
+    printf("Executing colorMerging id=%d\n",id);
     unsigned char **ctfs;        
     int **itfs;
     int itfCount = self->GetITFCount();
@@ -158,6 +160,7 @@ void vtkImageColorMergeExecute(vtkImageColorMerge *self, int id,int NumberOfInpu
                 
         } 
     }
+    printf("Out extent=%d,%d,%d,%d,%d,%d\n", outExt[0], outExt[1], outExt[2], outExt[3], outExt[4], outExt[5]);
     //printf("Created the ctfs\n");
     outPtr=(unsigned char*)outData->GetScalarPointerForExtent(outExt);
     
@@ -167,8 +170,8 @@ void vtkImageColorMergeExecute(vtkImageColorMerge *self, int id,int NumberOfInpu
     maxX = outExt[1] - outExt[0];
     maxY = outExt[3] - outExt[2];
     maxZ = outExt[5] - outExt[4];
-    //printf("inIncX, inIncY,inIncZ=%d,%d,%d\n",inIncX,inIncY,inIncZ);
-    //printf("outIncX, outIncY,outIncZ=%d,%d,%d\n",outIncX,outIncY,outIncZ);
+    printf("inIncX, inIncY,inIncZ=%d,%d,%d\n",inIncX,inIncY,inIncZ);
+    printf("outIncX, outIncY,outIncZ=%d,%d,%d\n",outIncX,outIncY,outIncZ);
     int currScalar = 0;
     int alphaScalar; 
     int n = 0;
@@ -180,20 +183,35 @@ void vtkImageColorMergeExecute(vtkImageColorMerge *self, int id,int NumberOfInpu
     
     int r = 0,g = 0,b = 0;
     
-    //printf("Processing data...\n");
+    target = (unsigned long)((maxZ+1)*(maxY+1)/50.0);
+    target++;
+//    printf("Processing data... %d,%d,%d\n",maxX,maxY,maxZ   );
     
     
     for(idxZ = 0; idxZ <= maxZ; idxZ++ ) {        
-        sprintf(progressText,"Merging channels (slice %d / %d)\n",idxZ,maxZ);
-        //printf(progressText);
-        self->SetProgressText(progressText);
-        self->UpdateProgress(idxZ/float(maxZ));
+//        printf("id=%d Set progress text to %s\n",id, progressText);
+//        printf("id=%d, Setting progress to %d / %d = %f\n",id,idxZ+1,maxZ+1,(idxZ+1)/float(maxZ+1));
+         sprintf(progressText,"Merging channels (slice %d / %d)",idxZ+1,maxZ+1);
+         self->SetProgressText(progressText);
+
+        printf("id=%d Now processing X\n", id);
         for(idxY = 0; idxY <= maxY; idxY++ ) {
+            if (!id)
+            {
+                if (!(count%target))
+                {
+                    self->UpdateProgress(count/(50.0*target));
+                }
+                count++;
+           }  
           for(idxX = 0; idxX <= maxX; idxX++ ) {
             alphaScalar =  currScalar = n = 0;
+//            if(id==1)printf("idxX = %d, idxY = %d, idxZ = %d\n",idxX, idxY, idxZ);
 
             for(i=0; i < NumberOfInputs; i++ ) {
                 currScalar = (int)*inPtrs[i];
+//                if(id==1)printf("thread 1 got as input %d\n",currScalar);
+
 
                 
                 if(BuildAlpha) {
@@ -250,16 +268,12 @@ void vtkImageColorMergeExecute(vtkImageColorMerge *self, int id,int NumberOfInpu
           }
           outPtr += outIncY;
         }  
-        //printf("advancing to next slice\n");
         for(i=0; i < NumberOfInputs; i++ ) {
           inPtrs[i]+=inIncZ;
         }
         outPtr += outIncZ;      
-//  printf("Processed slice %d\n",idxZ);
     }
-  //printf("PRocessing done.\n");
     
-    //printf("Deleting individual..\n");
     for(int i = 0; i < NumberOfInputs; i++) {        
         if(ctfs[i])
             delete[] ctfs[i];
@@ -272,6 +286,7 @@ void vtkImageColorMergeExecute(vtkImageColorMerge *self, int id,int NumberOfInpu
     //printf("deleting inptrs\n");
     delete[] inPtrs;
     delete[] scalarComponents;
+    
 }
 
 
@@ -317,6 +332,7 @@ void vtkImageColorMerge::ThreadedRequestData (
     vtkErrorMacro(<< "Execute: Unknown ScalarType");
   return;
   }
+  printf("ThreadedRequestData done merging\n");
 
 }
 

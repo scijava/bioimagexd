@@ -89,21 +89,20 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
         self.beginner = wx.Colour(180,255,180)
         self.intermediate = wx.Colour(255,255,180)
         self.expert = wx.Colour(0,180,255)
-        
         TaskPanel.TaskPanel.__init__(self,root,tb)
+
         self.operationName="Colocalization"
         self.voxelSize=None
         
         
         
-        self.SetTitle("Colocalization")
+#        self.SetTitle("Colocalization")
     
         self.mainsizer.Layout()
         self.mainsizer.Fit(self)
         messenger.connect(None,"timepoint_changed",self.updateTimepoint)
         messenger.connect(None,"zslice_changed",self.updateZSlice)
         messenger.connect(None,"threshold_changed",self.updateSettings)
-        
         
         #wx.FutureCall(500,self.getAutoThreshold)
         

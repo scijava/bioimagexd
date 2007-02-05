@@ -95,7 +95,7 @@ void vtkImageSimpleMIPExecute(vtkImageSimpleMIP *self, int id,int NumberOfInputs
   vtkIdType outIncX,outIncY,outIncZ;
   int maxX,maxY,maxZ,maxC;
   int idxX,idxY,idxZ,idxC;
-
+  unsigned long target, count = 0;
   int uExt[6],uExt2[6];
   //inData[0]->GetUpdateExtent(uExt);
   inData[0]->GetWholeExtent(uExt2);
@@ -146,9 +146,19 @@ void vtkImageSimpleMIPExecute(vtkImageSimpleMIP *self, int id,int NumberOfInputs
   //printf("maxX=%d, maxY=%d, maxZ=%d, maxC=%d\n",maxX,maxY,maxZ,maxC);
   //printf("inIncX=%d,inIncY=%d, inIncZ=%d\n",inIncX,inIncY,inIncZ);
   //printf("outIncX=%d,outIncY=%d, outIncZ=%d\n",outIncX,outIncY,outIncZ);
+  char progressText[200];
   for(idxZ = 0; idxZ <= maxZ; idxZ++ ) {
-    self->UpdateProgress(idxZ/float(maxZ));
+    sprintf(progressText,"Creating Maximum Intensity Projection...");
+    self->SetProgressText(progressText);  
     for(idxY = 0; idxY <= maxY; idxY++ ) {
+        if (!id)
+        {
+            if (!(count%target))
+            {
+                self->UpdateProgress(count/(50.0*target));
+            }
+            count++;
+       }          
       for(idxX = 0; idxX <= maxX; idxX++ ) {
           for(idxC = 0; idxC < maxC; idxC++) {
               scalar = GET_AT(idxX,idxY,idxZ,idxC,inPtr);

@@ -45,31 +45,28 @@ merge = vtk.vtkImageColorMerge()
 merge.AddInput(d1)
 merge.AddInput(d2)
 
-print merge,ctf1
 
 merge.AddLookupTable(ctf1)
 merge.AddLookupTable(ctf2)
 
-merge.Update()
 print "Merging done",elapsed()
 
-mip=vtk.vtkImageSimpleMIP()
-#mip.DebugOn()
-print "Feeding merge to MIP",elapsed()
-mip.SetInput(merge.GetOutput())
+#mip=vtk.vtkImageSimpleMIP()
+#print "Feeding merge to MIP",elapsed()
+#mip.SetInput(merge.GetOutput())
 #mip.Update()
 
 
 streamer = vtk.vtkImageDataStreamer()
-streamer.SetNumberOfStreamDivisions(1)
-streamer.SetInput(mip.GetOutput())
+streamer.SetNumberOfStreamDivisions(4)
+streamer.SetInput(merge.GetOutput())
+#streamer.GetOutput().SetUpdateExtent(0,255,0,255,12,12)
 
 print "Writing MIP out...",elapsed()
 writer=vtk.vtkPNGWriter()
 writer.SetFileName("output.png")
 writer.SetInput(streamer.GetOutput())
 #writer.SetInput(mip.GetOutput())
-
 writer.Update()
 writer.Write()
 print "Wrote PNG ",elapsed()
