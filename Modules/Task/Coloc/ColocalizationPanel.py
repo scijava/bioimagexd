@@ -76,7 +76,7 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
     Description: A window for controlling the settings of the
                  colocalization module
     """
-    def __init__(self,root,tb):
+    def __init__(self,parent,tb):
         """
         Created: 03.11.2004, KP
         Description: Initialization
@@ -89,15 +89,11 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
         self.beginner = wx.Colour(180,255,180)
         self.intermediate = wx.Colour(255,255,180)
         self.expert = wx.Colour(0,180,255)
-        TaskPanel.TaskPanel.__init__(self,root,tb)
+        TaskPanel.TaskPanel.__init__(self,parent,tb, wantNotebook = 0)
 
         self.operationName="Colocalization"
         self.voxelSize=None
-        
-        
-        
-#        self.SetTitle("Colocalization")
-    
+            
         self.mainsizer.Layout()
         self.mainsizer.Fit(self)
         messenger.connect(None,"timepoint_changed",self.updateTimepoint)
@@ -499,8 +495,6 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
                      Preview and Close
         """
         TaskPanel.TaskPanel.createButtonBox(self)
-        #self.processButton.SetLabel("Do Colocalization")
-        #self.processButton.Bind(wx.EVT_BUTTON,self.doColocalizationCallback)
         messenger.connect(None,"process_dataset",self.doColocalizationCallback)        
 
     def createOptionsFrame(self):
@@ -510,18 +504,11 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
                      used to control the colocalization settings
         """
         TaskPanel.TaskPanel.createOptionsFrame(self)
-
-        self.colocalizationPanel=wx.Panel(self.settingsNotebook,-1)
+#        self.colocalizationPanel=wx.Panel(self.settingsNotebook,-1)
+        self.colocalizationPanel = wx.Panel(self,-1)
         self.colocalizationSizer=wx.GridBagSizer()
         n=0
-        #self.depthLbl=wx.StaticText(self.colocalizationPanel,-1,"Colocalization Depth:")
-        #self.colocalizationSizer.Add(self.depthLbl,(n,0))
-        #n+=1
-        #self.depthMenu=wx.Choice(self.colocalizationPanel,-1,choices=["1-bit","8-bit"])
-        #self.colocalizationSizer.Add(self.depthMenu,(n,0))
-        #n+=1
-        #self.depthMenu.Bind(wx.EVT_CHOICE,self.updateBitDepth)
-
+        
         self.lowerThresholdLbl=wx.StaticText(self.colocalizationPanel,-1,"Lower threshold:")
         self.upperThresholdLbl=wx.StaticText(self.colocalizationPanel,-1,"Upper threshold:")
         
@@ -540,7 +527,6 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
         n+=1
         self.colocalizationSizer.Add(self.upperthreshold,(n,0))
         n+=1
-        
         sbox=wx.StaticBox(self.colocalizationPanel,-1,"2D histogram")
         box=wx.StaticBoxSizer(sbox,wx.VERTICAL)
         self.scatterPlot=Scatterplot.Scatterplot(self.colocalizationPanel,drawLegend = 1)
@@ -550,6 +536,8 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
         
         sbox=wx.StaticBox(self.colocalizationPanel,-1,"Automatic threshold")
         box=wx.StaticBoxSizer(sbox,wx.VERTICAL)
+        self.automaticThresholdStaticBox = sbox
+        self.automaticThresholdSizer = box
         self.radiobox=wx.RadioBox(self.colocalizationPanel,-1,"Calculate P-Value",
         choices=["None","Costes","Fay","van Steensel"],majorDimension=2,
         style=wx.RA_SPECIFY_COLS
@@ -558,9 +546,6 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
         box.Add(self.radiobox)
         self.iterLbl=wx.StaticText(self.colocalizationPanel,-1,"Iterations:")
         self.iterations = wx.SpinCtrl(self.colocalizationPanel,-1,"100",min=2,max=999,initial=100)
-        
-        #self.costesBox=wx.StaticBox(self.colocalizationPanel,-1,"Costes' Point Spread Function")
-        #sboxsizer=wx.StaticBoxSizer(self.costesBox,wx.VERTICAL)
         
         fixedPSFLbl=wx.StaticText(self.colocalizationPanel,-1,"PSF radius (px):")
         self.fixedPSF = wx.TextCtrl(self.colocalizationPanel,-1,"")
@@ -584,20 +569,14 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
         self.NA.Bind(wx.EVT_TEXT,self.onUpdatePSF)
         self.Ch2Lambda.Bind(wx.EVT_TEXT,self.onUpdatePSF)
 
-        #self.colocalizationSizer.Add(sboxsizer,(n,0))
-        #n+=1
-        
                 
         self.iterations.Enable(0)
         self.NA.Enable(0)
         self.Ch2Lambda.Enable(0)
         self.fixedPSF.Enable(0)
-        
-        #iterbox=wx.BoxSizer(wx.HORIZONTAL)
-        #iterbox.Add(self.iterLbl)
-        #iterbox.Add(self.iterations)
-        #box.Add(iterbox)
+ 
         box.Add(costesgrid)
+        
         box2=wx.BoxSizer(wx.HORIZONTAL)
         self.statsButton=wx.Button(self.colocalizationPanel,-1,"Statistics")
         self.statsButton.Bind(wx.EVT_BUTTON,self.getStatistics)
@@ -605,15 +584,16 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
         self.thresholdButton=wx.Button(self.colocalizationPanel,-1,"Auto-Threshold")
         self.thresholdButton.Bind(wx.EVT_BUTTON,self.getAutoThreshold)
         box2.Add(self.thresholdButton) 
+        self.statsButtonSizer = box2
         box.Add(box2)
-
         self.colocalizationSizer.Add(box,(n,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
         n+=1
         
-
-        
         sbox=wx.StaticBox(self.colocalizationPanel,-1,"Coloc Volume Statistics")
         box=wx.StaticBoxSizer(sbox,wx.VERTICAL)
+        self.colocStatsStaticBox = sbox
+        self.colocStatsSizer = box
+        
         self.listctrl=MyListCtrl(self.colocalizationPanel,-1,size=(350,300),
         style=wx.BORDER_RAISED|wx.LC_REPORT)
         box.Add(self.listctrl)
@@ -628,6 +608,8 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
         n+=1
         sbox=wx.StaticBox(self.colocalizationPanel,-1,"Colocalization color")
         sboxsizer=wx.StaticBoxSizer(sbox,wx.VERTICAL)
+        self.colocColorBox = sbox
+        self.colocColorSizer = sboxsizer
         self.colorBtn = ColorTransferEditor.CTFButton(self.colocalizationPanel)
         sboxsizer.Add(self.colorBtn)
 
@@ -646,11 +628,12 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
         
         self.colocalizationSizer.Add(sboxsizer,(n,0))
         n+=1
-        
         self.colocalizationPanel.SetSizer(self.colocalizationSizer)
         self.colocalizationPanel.SetAutoLayout(1)
         
-        self.settingsNotebook.AddPage(self.colocalizationPanel,"Colocalization")
+        self.settingsSizer.Add(self.colocalizationPanel,(1,0),flag=wx.EXPAND|wx.ALL)
+        
+#        self.settingsNotebook.AddPage(self.colocalizationPanel,"Colocalization")
     
     
     def onUpdatePSF(self,event):
@@ -999,6 +982,7 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
         Description: Method to create a toolbar for the window that allows use to select processed channel
         """      
         n=TaskPanel.TaskPanel.createItemToolbar(self)
+        return
         #self.toolMgr.clearItemsBar()
         
         

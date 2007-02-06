@@ -39,6 +39,7 @@
 #include "vtkThreadedImageAlgorithm.h"
 #include "vtkIntensityTransferFunction.h"
 
+
 class VTK_BXD_PROCESSING_EXPORT vtkImageMapToIntensities : public vtkThreadedImageAlgorithm
 {
 public:

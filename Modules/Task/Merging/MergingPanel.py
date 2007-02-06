@@ -81,8 +81,6 @@ class MergingPanel(TaskPanel.TaskPanel):
                      Preview and Close
         """
         TaskPanel.TaskPanel.createButtonBox(self)
-        #self.processButton.SetLabel("Do Color Merging")
-        #self.processButton.Bind(wx.EVT_BUTTON,self.doColorMergingCallback)
         messenger.connect(None,"process_dataset",self.doColorMergingCallback)        
 
         
