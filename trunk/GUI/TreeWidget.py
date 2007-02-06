@@ -35,7 +35,7 @@ import messenger
 import time
 import scripting as bxd
 import Command
-
+import platform
 
 class TreeWidget(wx.SashLayoutWindow):
     """

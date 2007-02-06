@@ -78,7 +78,6 @@ def optimize(image = None, vtkFilter = None, updateExtent = None, releaseData = 
     
     #print "Got",repr(val),"numFilters=",numFilters
     if updateExtent:
-        #print "-->Setting optimized update extent to ",updateExtent
         val.GetOutput().SetUpdateExtent(updateExtent)
         
     #print "Executing limited...",numFilters
