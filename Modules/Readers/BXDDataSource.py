@@ -50,14 +50,11 @@ def getClass(): return BXDDataSource
 
 class BXDDataSource(DataSource):
     """
-    Class: DataSource
     Created: 03.11.2004, JM
     Description: Manages 4D data stored in du- and vti-files
     """
-
     def __init__(self,filename=""):
         """
-        Method: __init__
         Created: 03.11.2004, JM
         Description: Constructor
         """
@@ -84,14 +81,12 @@ class BXDDataSource(DataSource):
         
     def getFileName(self):
         """
-        Method: getFileName()
         Created: 21.07.2005
         Description: Return the file name
         """    
         return self.filename
     def getParser(self):
         """
-        Method: getParser()
         Created: 27.03.2005, KP
         Description: Returns the parser that is used to read the .du file
         """
@@ -99,7 +94,6 @@ class BXDDataSource(DataSource):
         
     def getDataSetCount(self):
         """
-        Method: getDataSetCount
         Created: 03.11.2004, JM
         Description: Returns the number of individual DataSets (=time points)
         managed by this DataSource
@@ -108,24 +102,23 @@ class BXDDataSource(DataSource):
 
     def getDataSet(self, i,raw=0):
         """
-        Method: getDataSet
         Created: 03.11.2004, JM
         Description: Returns the DataSet at the specified index
         Parameters:   i       The index
         """
         data=self.loadVti(self.dataSets[i])
+        if raw:
+            return data
         data=self.getResampledData(data,i)
-        
+   
         
         if data.GetScalarType()!=3 and not raw and self.settings.getType()!="Process":
             data=self.getIntensityScaledData(data)
-
-        data.ReleaseDataFlagOff()
+        
         return data
 
     def readInfo(self,data):
         """
-        Method: readInfo
         Created: 28.5.2005, KP
         Description: Read various bits of info from the dataset
         """
@@ -179,7 +172,6 @@ class BXDDataSource(DataSource):
         
     def getVoxelSize(self):
         """
-        Method: getVoxelSize()
         Created: 31.03.2005, KP
         Description: Returns the spacing of the datasets this 
                      dataunit contains
@@ -194,7 +186,6 @@ class BXDDataSource(DataSource):
     
     def loadVti(self, filename):
         """
-        Method: loadVti
         Created: 03.11.2004, JM
         Description: Loads the specified DataSet from disk and returns
                      it as vtkImageData
@@ -211,12 +202,13 @@ class BXDDataSource(DataSource):
             self.reader.SetFileName(filepath)
             self.reader.Update()
             self.updateProgress(None,None)
+        self.reader.Update()
         return self.reader.GetOutput()
 
-    def loadDuFile(self, filename):
+    def loadBxdFile(self, filename):
         """
         Created: 15.12.2004, JM, JV
-        Description: Loads the specified .du-file, the checks the format
+        Description: Loads the specified .bxd-file, the checks the format
                      of the loaded dataunit and returns it
 
         Parameters:   filename  The .du-file to be loaded
@@ -242,16 +234,14 @@ class BXDDataSource(DataSource):
     def loadFromFile(self, filename):
         """
         Created: 09.11.2004, JM
-        Description: Loads the specified .du-file and imports data from it.
+        Description: Loads the specified .bxd-file and imports data from it.
                      Also returns a DataUnit of the type stored in the loaded
-                     .du-file or None if something goes wrong. The dataunit is
+                     .bxd-file or None if something goes wrong. The dataunit is
                      returned in a list with one item for interoperability with
-                     LSM data source (ie. bad .du-file or wrong filename)
-
-        Parameters:   filename  The .du-file to be loaded
+                     LSM data source
         """
         self.shortname=os.path.basename(filename)
-        dataUnitFormat = self.loadDuFile(filename)
+        dataUnitFormat = self.loadBxdFile(filename)
         Logging.info("format of unit=",dataUnitFormat,kw="datasource")
 
         if (not dataUnitFormat) or (not self.parser):
@@ -281,7 +271,7 @@ class BXDDataSource(DataSource):
                 return
 
             self.dataSets.append(filename)
-            Logging.info("dataset[%d]=%s"%(i,self.dataSets[i]))
+            #Logging.info("dataset[%d]=%s"%(i,self.dataSets[i]))
 
         dataunitclass=DataUnit.DataUnit
 
@@ -293,14 +283,23 @@ class BXDDataSource(DataSource):
         #settingsclass = "DataUnit."+self.parser.get("Type","Type")+"()"
         
         settings = DataUnit.DataUnitSettings()
-        #settings = eval(settingsclass)
         settings = settings.readFrom(self.parser)
         self.originalDimensions = eval(settings.get("Dimensions"))
         self.settings = settings
         dataunit.setDataSource(self)
         dataunit.setSettings(settings)
-        
-        return [dataunit]
+        data = dataunit.getTimePoint(0)
+        dataunits = [dataunit]
+        if data.GetNumberOfScalarComponents()==3:
+            for i in range(0,3) :
+                ds = RGBComponentDataSource(self, i)
+                dataunit = dataunitclass()
+                dataunit.setDataSource(ds)
+                settings = DataUnit.DataUnitSettings()
+                settings = settings.readFrom(self.parser)
+                dataunit.setSettings(settings)
+                dataunits.append(dataunit)
+        return dataunits
 
     def getName(self):
         """

@@ -60,7 +60,6 @@ class BioradDataSource(DataSource):
         Created: 12.04.2005, KP
         Description: Constructor
         """    
-        
         DataSource.__init__(self)
         self.setPath(filename)
         name =os.path.basename(filename)

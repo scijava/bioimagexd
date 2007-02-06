@@ -149,6 +149,7 @@ class ImportDialog(wx.Dialog):
             #print "IMPORTING..."
             self.tot = len(files) / self.z
             
+            
             self.dlg = wx.ProgressDialog("Importing","Reading dataset %d / %d"%(0,0),maximum = 2*self.tot, parent = self,
             style = wx.PD_ELAPSED_TIME|wx.PD_REMAINING_TIME)
             #rdr.SetFileDimensionality(dim)
@@ -157,7 +158,20 @@ class ImportDialog(wx.Dialog):
             
             Logging.info("Number of %s=",n,kw="io")
             imgAmnt=len(files)
-            if n==0 and imgAmnt>1:
+            print "TOT=",self.tot
+            if self.tot == 1:
+                arr = vtk.vtkStringArray()
+                for i in files:
+                    arr.InsertNextValue(os.path.join(dirn,i))
+                rdr = eval(self.rdrstr)   
+                rdr.SetFileNames(arr)
+                if ext=="bmp":
+                    rdr.Allow8BitBMPOn()
+                rdr.SetDataExtent(0,self.x-1,0,self.y-1,0,self.z-1)
+                rdr.SetDataSpacing(self.spacing)
+                rdr.SetDataOrigin(0,0,0)
+                self.readers.append(rdr)
+            elif n==0 and imgAmnt>1:
                 #print "FOO"
                 Dialogs.showerror(self,"You are trying to import multiple files but have not defined a proper pattern for the files to be imported","Bad pattern")
                 return
