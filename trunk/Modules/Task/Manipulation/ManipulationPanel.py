@@ -132,9 +132,7 @@ class ManipulationPanel(FilterBasedTaskPanel.FilterBasedTaskPanel):
                      Preview and Close
         """
         FilterBasedTaskPanel.FilterBasedTaskPanel.createButtonBox(self)
-        
-        #self.ManipulationButton.SetLabel("Manipulation Dataset Series")
-        
+                
         messenger.connect(None,"process_dataset",self.doProcessingCallback)        
 
     def createOptionsFrame(self):
@@ -144,7 +142,6 @@ class ManipulationPanel(FilterBasedTaskPanel.FilterBasedTaskPanel):
                      used to control the colocalization settings
         """
         FilterBasedTaskPanel.FilterBasedTaskPanel.createOptionsFrame(self)
-
         #self.panel=wx.Panel(self.settingsNotebook,-1)
         self.panel=wx.Panel(self,-1)
         self.panelsizer=wx.GridBagSizer()

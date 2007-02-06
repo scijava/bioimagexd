@@ -96,6 +96,10 @@ class TaskPanel(scrolled.ScrolledPanel):
             n+=1
         self.settingsSizer=wx.GridBagSizer()
         #self.mainsizer.Add(self.settingsSizer,(0,1),flag=wx.EXPAND|wx.ALL)
+        
+        self.commonSettingsSizer=wx.GridBagSizer()
+        self.mainsizer.Add(self.commonSettingsSizer,(n,0),flag=wx.EXPAND|wx.ALL)
+        n+=1
         self.mainsizer.Add(self.settingsSizer,(n,0),flag=wx.EXPAND|wx.ALL)
         n+=1
         if wantNotebook:
@@ -107,10 +111,12 @@ class TaskPanel(scrolled.ScrolledPanel):
 
         #self.staticLine=wx.StaticLine(self)
         #self.mainsizer.Add(self.staticLine,(2,0),span=(1,1),flag=wx.EXPAND)
+        self.mainsizer.Add(self.buttonPanel,(n,0),span=(1,1),flag=wx.EXPAND)
+        
         self.buttonSizer=wx.BoxSizer(wx.HORIZONTAL)
         self.buttonPanel.SetSizer(self.buttonSizer)
         self.buttonPanel.SetAutoLayout(1)
-        self.mainsizer.Add(self.buttonPanel,(n,0),span=(1,1),flag=wx.EXPAND)
+
         n+=1
         self.filePath=None
         self.dataUnit=None
@@ -313,15 +319,14 @@ class TaskPanel(scrolled.ScrolledPanel):
         Description: Creates a frame that contains the various widgets
                      used to control the colocalization settings
         """
-        self.commonSettingsSizer=wx.GridBagSizer()
-
-        self.namesizer=wx.BoxSizer(wx.VERTICAL)
-        self.commonSettingsSizer.Add(self.namesizer,(0,0))
+        #self.namesizer=wx.BoxSizer(wx.VERTICAL)
+        #self.commonSettingsSizer.Add(self.namesizer,(0,0))
     
-        self.settingsSizer.Add(self.commonSettingsSizer,(0,0),flag=wx.EXPAND|wx.ALL)
+#        self.settingsSizer.Add(self.commonSettingsSizer,(0,0),flag=wx.EXPAND|wx.ALL)
         if self.wantNotebook:
+            print "\n\nAdding settings notebook"
             self.settingsSizer.Add(self.settingsNotebook,(1,0),flag=wx.EXPAND|wx.ALL)
-        self.Layout()
+        #self.Layout()
 
     def setPreviewedData(self,event,index=-1):
         """

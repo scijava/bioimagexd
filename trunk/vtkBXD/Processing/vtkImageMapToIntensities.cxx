@@ -52,6 +52,42 @@ int vtkImageMapToIntensities::FillInputPortInformation(
 
   return 1;
 }
+
+//----------------------------------------------------------------------------
+// This function simply does a copy (for the first input)
+//----------------------------------------------------------------------------
+void vtkImageMapToIntensitiesCopyData(vtkImageData *inData, vtkImageData *outData,
+                           int *ext)
+{
+  int idxY, idxZ, maxY, maxZ;
+  vtkIdType inIncX, inIncY, inIncZ;
+  int rowLength;
+  unsigned char *inPtr, *inPtr1, *outPtr;
+
+  inPtr = (unsigned char *) inData->GetScalarPointerForExtent(ext);
+  outPtr = (unsigned char *) outData->GetScalarPointerForExtent(ext);
+
+  // Get increments to march through inData
+  inData->GetIncrements(inIncX, inIncY, inIncZ);
+  // find the region to loop over
+  rowLength = (ext[1] - ext[0]+1)*inIncX*inData->GetScalarSize();
+  maxY = ext[3] - ext[2];
+  maxZ = ext[5] - ext[4];
+    inIncY *= inData->GetScalarSize();
+  inIncZ *= inData->GetScalarSize();
+
+  // Loop through outData pixels
+  for (idxZ = 0; idxZ <= maxZ; idxZ++)
+    {
+    inPtr1 = inPtr + idxZ*inIncZ;
+    for (idxY = 0; idxY <= maxY; idxY++)
+      {
+      memcpy(outPtr,inPtr1,rowLength);
+      inPtr1 += inIncY;
+      outPtr += rowLength;
+      }
+    }
+}
 //-----------------------------------------------------------------------------
 // This templated function executes the filter for any type of data.
 template <class T>
@@ -70,7 +106,7 @@ void vtkImageMapToIntensitiesExecute(vtkImageMapToIntensities *self, int id,int 
   unsigned long target;    
 
   
-    
+  printf("Getting ITF\n");  
   vtkIntensityTransferFunction * IntensityTransferFunction;
     
   IntensityTransferFunction = self->GetIntensityTransferFunction();
@@ -80,17 +116,20 @@ void vtkImageMapToIntensitiesExecute(vtkImageMapToIntensities *self, int id,int 
       vtkErrorWithObjectMacro(self,"No IntensityTransferFunction specified");
       return;
   }
+  printf("Getting data pointer\n");
   table = IntensityTransferFunction->GetDataPointer();
+  printf("Getting pointers for extent %d,%d,%d,%d,%d,%d\n",outExt[0],outExt[1],outExt[2],outExt[3],outExt[4],outExt[5]);
  
   inPtr = (T*) inData[0]->GetScalarPointerForExtent(outExt);
   
   outPtr = (T *) outData->GetScalarPointerForExtent(outExt);
     
-  
 //  output->SetExtent(output->GetWholeExtent());
 //  output->AllocateScalars();
   if (IntensityTransferFunction->IsIdentical()) {
-      outData->DeepCopy(inData[0]);
+      printf("Identical function, just copying\n");
+      //outData->DeepCopy(inData[0]);
+      vtkImageMapToIntensitiesCopyData(inData[0], outData, outExt);
       return;
   }
   //input->GetIncrements(inIncX, inIncY, inIncZ);
@@ -103,8 +142,7 @@ void vtkImageMapToIntensitiesExecute(vtkImageMapToIntensities *self, int id,int 
   maxY = outExt[3] - outExt[2];
   maxZ = outExt[5] - outExt[4];
   maxC = inData[0]->GetNumberOfScalarComponents();
-
-
+  printf("maxX=%d, maxY=%d, maxZ=%d\n",maxX,maxY,maxZ);
   #define GET_AT(x,y,z,c,ptr) *(ptr+(z)*inIncZ+(y)*inIncY+(x)*inIncX+c)
   #define SET_AT(x,y,z,c,ptr,val) *(ptr+(z)*outIncZ+(y)*outIncY+(x)*outIncX+c)=val
   target = (unsigned long)((maxZ+1)*(maxY+1)/50.0);
