@@ -1,6 +1,6 @@
 # -*- coding: iso-8859-1 -*-
 """
- Unit: DataSource.py
+ Unit: BXCDataSource
  Project: BioImageXD
  Created: 03.11.2004, JM
  Description: Classes for managing 4D data located on disk
@@ -43,12 +43,12 @@ class MyConfigParser(RawConfigParser):
     def optionxform(self, optionstr):
         return optionstr
 
-def getExtensions(): return ["bxd"]
-def getFileType(): return "BioImageXD datasets (*.bxd)"
-def getClass(): return BXDDataSource
+def getExtensions(): return ["bxc"]
+def getFileType(): return "BioImageXD dataset channel (*.bxc)"
+def getClass(): return BXDCataSource
 
 
-class BXDDataSource(DataSource):
+class BXCDataSource(DataSource):
     """
     Created: 03.11.2004, JM
     Description: Manages 4D data stored in du- and vti-files
@@ -208,7 +208,7 @@ class BXDDataSource(DataSource):
     def loadBxdFile(self, filename):
         """
         Created: 15.12.2004, JM, JV
-        Description: Loads the specified .bxd-file, the checks the format
+        Description: Loads the specified .bxc-file, the checks the format
                      of the loaded dataunit and returns it
 
         Parameters:   filename  The .du-file to be loaded
@@ -234,9 +234,9 @@ class BXDDataSource(DataSource):
     def loadFromFile(self, filename):
         """
         Created: 09.11.2004, JM
-        Description: Loads the specified .bxd-file and imports data from it.
+        Description: Loads the specified .bxc-file and imports data from it.
                      Also returns a DataUnit of the type stored in the loaded
-                     .bxd-file or None if something goes wrong. The dataunit is
+                     .bxc-file or None if something goes wrong. The dataunit is
                      returned in a list with one item for interoperability with
                      LSM data source
         """
