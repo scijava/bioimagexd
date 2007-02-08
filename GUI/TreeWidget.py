@@ -267,8 +267,6 @@ class TreeWidget(wx.SashLayoutWindow):
         Created: 10.01.2005, KP
         Description: Returns whether the tree has a specified item
         """            
-        if path in self.items:
-            print self.items[path]
         return (path in self.items and self.items[path])
         
     def getItemNames(self):
@@ -390,11 +388,11 @@ class TreeWidget(wx.SashLayoutWindow):
             self.dataUnitItems.append(added)
             
             if len(self.items.keys())==1 and not selected:
-                print self.items
+                #print self.items
                 self.tree.UnselectAll()
                 self.tree.SelectItem(added,1)
                 selected=1
-                print "obj=",obj
+                #print "obj=",obj
                 messenger.send(None,"tree_selection_changed",obj)            
             
         self.tree.Expand(self.root)
@@ -446,7 +444,8 @@ class TreeWidget(wx.SashLayoutWindow):
         item = event.GetItem()
         #print "item=",item
         if not item.IsOk():
-            print "\n\n\nITEM IS NOT OK",item
+            #print "\n\n\nITEM IS NOT OK",item
+            Logging.info("Item %s is not ok"%str(item),kw="io")
             return
                 
         obj = self.tree.GetPyData(item)
@@ -512,7 +511,7 @@ class TreeWidget(wx.SashLayoutWindow):
         Created: 16.07.2006, KP
         Description: Unselect everything in the tree
         """
-        print "\n\n\nUNSELECTING ALL at unselectAll()"
+        #print "\n\n\nUNSELECTING ALL at unselectAll()"
         self.tree.UnselectAll()
         
     def getChannelsByName(self, unit, channels):
@@ -537,7 +536,7 @@ class TreeWidget(wx.SashLayoutWindow):
                 n+=1
                 if n in numbers:                    
                     ret.append(obj)
-                    print "\n\n\n\nSELECTING ",item,obj
+                    #print "\n\n\n\nSELECTING ",item,obj
                     if not dontSelect and not self.tree.IsSelected(item):                    
                         self.tree.ToggleItemSelection(item)                    
         self.programmatic = 0    

@@ -46,7 +46,6 @@ class Mask:
     """
     def __init__(self,name, size, image):
         """
-        Method: __init__(parent)
         Created: 20.06.2006, KP
         Description: Initialization
         """
@@ -59,7 +58,6 @@ class Mask:
         
     def getMaskImage(self):
         """
-        Method: getMaskImage
         Created: 26.06.2006, KP
         Description: Return the mask image
         """   
@@ -67,7 +65,6 @@ class Mask:
         
     def getAsBitmap(self, bg = wx.Colour(255,255,255)):
         """
-        Method: getAsBitmap
         Created: 20.06.2006, KP
         Description: Return a preview bitmap of the mask
         """           
@@ -102,13 +99,11 @@ class Mask:
 
 class MaskTray(wx.MiniFrame):
     """
-    Class: MaskTray
     Created: 20.06.2006, KP
     Description: A frame used to let the user select from the different masks
     """
     def __init__(self,parent,**kws):
         """
-        Method: __init__(parent)
         Created: 20.06.2006, KP
         Description: Initialization
         """          
@@ -154,7 +149,6 @@ class MaskTray(wx.MiniFrame):
         
     def onSetNoMask(self,evt):
         """
-        Method: onSetNoMask
         Created: 26.06.2006, KP
         Description: Disable the use of masks
         """   
@@ -163,9 +157,8 @@ class MaskTray(wx.MiniFrame):
         
     def addMask(self, mask = None, name = "Mask", imagedata = None):
         """
-        Method: methodName
         Created: 20.06.2006, KP
-        Description: Method desc
+        Description: Add a mask to the tray
         """   
         if not mask and (name and imagedata):
             m = Mask(name, imagedata.GetDimensions(), imagedata)
@@ -190,7 +183,6 @@ class MaskTray(wx.MiniFrame):
         
     def onToggleButton(self,evt):
         """
-        Method: onToggleButton
         Created: 20.06.2006, KP
         Description: A callback for when the user toggles a button
         """   
@@ -202,7 +194,6 @@ class MaskTray(wx.MiniFrame):
                 
     def setDataUnit(self,dataUnit):
         """
-        Method: setDataUnit
         Created: 20.06.2006, KP
         Description: Set the dataunit to which the selected mask will be applied
         """   
@@ -210,7 +201,6 @@ class MaskTray(wx.MiniFrame):
         
     def onSelectMask(self, evt):
         """
-        Method: onSelectMask
         Created: 20.06.2006, KP
         Description: A callback for when the user has selected a mask
         """   
@@ -220,7 +210,6 @@ class MaskTray(wx.MiniFrame):
         
     def onCancel(self, evt):
         """
-        Method: onCancel
         Created: 20.06.2006, KP
         Description: A callback for when the user wishes to cancel the selection
         """   

@@ -45,7 +45,8 @@ import Dialogs
 import sys
 import ImageOperations
 import ColorTransferEditor
-import ChannelListBox
+#import ChannelListBox
+import ChannelTray
 import scripting as bxd
 #TOOL_W=56
 #TOOL_H=56
@@ -91,7 +92,7 @@ class TaskPanel(scrolled.ScrolledPanel):
         n=0
         self.channelBox=None
         if self.createItemSelection:
-            self.channelBox = ChannelListBox.ChannelListBox(self, size=(250, 72), style=wx.BORDER_SUNKEN|wx.LB_NEEDED_SB)
+            self.channelBox = ChannelTray.ChannelTray(self, size=(250, 72), style=wx.BORDER_SUNKEN)
             self.mainsizer.Add(self.channelBox,(n,0))
             n+=1
         self.settingsSizer=wx.GridBagSizer()
@@ -128,7 +129,6 @@ class TaskPanel(scrolled.ScrolledPanel):
 
         self.SetSizer(self.mainsizer)
         self.SetAutoLayout(True)
-        print "Setup scrolling"
         
         self.SetupScrolling()
         #self.SetScrollRate(20,20)
@@ -173,11 +173,10 @@ class TaskPanel(scrolled.ScrolledPanel):
                 cachedSettings = bxd.getSettingsFromCache(self.cacheKey)
             
         if not cachedSettings:
-            print "\n\n\n*** NO CACHE DSETTINGS"
+            Logging.info("No settings found in cache",kw="caching")
             return
-        print "\n\n\n*** RESTORING FROM CACHE"
+        Logging.info("Restoring settings with key %s from cache"%(self.cacheKey),kw="caching")
         combined = cachedSettings[0]
-        print "Setting settings of combined"
         self.dataUnit.setSettings(combined)
         sources=self.dataUnit.getSourceDataUnits()
         for i,setting in enumerate(cachedSettings[1:]):
@@ -205,15 +204,12 @@ class TaskPanel(scrolled.ScrolledPanel):
         #print "SOURCES=",sources
         settings = [x.getSettings() for x in sources]
         settings.insert(0, self.dataUnit.getSettings())
-        print "storing",settings[0]
+        Logging.info("Storing to cache with key %s"%self.dataUnit.getCacheKey(),kw="caching")
         #for i,settingx in enumerate(settings[1:]):
         #    
         #    tf=settingx.get("IntensityTransferFunction")
-        #    print "\n\nStoring itf ",i,"with 0=",tf.GetValue(0),"and 255=",tf.GetValue(255)        
-        #print "Storing settings=",repr(settings)
         bxd.storeSettingsToCache(self.dataUnit.getCacheKey(),settings)
         for i in sources:
-            #print "\n\nRESETTING SETTINGS OF ",i
             i.resetSettings()
         
     def onSwitchDatasets(self,obj,evt,args):
@@ -282,11 +278,11 @@ class TaskPanel(scrolled.ScrolledPanel):
             name = dataunit.getName()
             dc= wx.MemoryDC()
             
-            bmp,pngstr, vtkimg=ImageOperations.vtkImageDataToPreviewBitmap(dataunit,0,None,TOOL_W,TOOL_H,getpng=1, getvtkImage=1)
+            bmp, vtkimg=ImageOperations.vtkImageDataToPreviewBitmap(dataunit,0,None,TOOL_W,TOOL_H, getvtkImage=1)
             self.itemMips.append(vtkimg)
             
             if self.channelBox:
-                self.channelBox.setPreview(i,pngstr)
+                self.channelBox.setPreview(i,bmp)
             bmp2 = self.getChannelItemBitmap(bmp, ctf)
             toolid=wx.NewId()
             self.toolIds.append(toolid)
@@ -324,7 +320,6 @@ class TaskPanel(scrolled.ScrolledPanel):
     
 #        self.settingsSizer.Add(self.commonSettingsSizer,(0,0),flag=wx.EXPAND|wx.ALL)
         if self.wantNotebook:
-            print "\n\nAdding settings notebook"
             self.settingsSizer.Add(self.settingsNotebook,(1,0),flag=wx.EXPAND|wx.ALL)
         #self.Layout()
 
@@ -345,7 +340,6 @@ class TaskPanel(scrolled.ScrolledPanel):
         except:
             flag1=0
         flag=flag0 or flag1
- #       print "\n\n\n*** Setting chl",self.dataUnit
         self.dataUnit.setOutputChannel(index,flag)
         self.doPreviewCallback(None)
         
@@ -357,7 +351,7 @@ class TaskPanel(scrolled.ScrolledPanel):
         """
         Logging.info("Select item %d"%index, kw="dataunit")
         if index==-1:       
-            raise "No index given"
+            Logging.error("No index given","No index for selected dataunit given")
 
         sunit = self.dataUnit.getSourceDataUnits()[index]
         self.settings = sunit.getSettings()
@@ -468,8 +462,7 @@ class TaskPanel(scrolled.ScrolledPanel):
             if ds not in fileNames:
                 fileNames.append(ds)
         if self.channelBox:
-            self.channelBox.setDataUnit(dataUnit)
-        
+            self.channelBox.setDataUnit(dataUnit, toolImage = (TOOL_W,TOOL_H))
         messenger.send(None,"current_file",", ".join(fileNames))         
         
         self.selectItem(None,None,0)

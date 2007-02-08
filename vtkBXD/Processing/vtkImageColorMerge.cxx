@@ -194,7 +194,6 @@ void vtkImageColorMergeExecute(vtkImageColorMerge *self, int id,int NumberOfInpu
          sprintf(progressText,"Merging channels (slice %d / %d)",idxZ+1,maxZ+1);
          self->SetProgressText(progressText);
 
-        printf("id=%d Now processing X\n", id);
         for(idxY = 0; idxY <= maxY; idxY++ ) {
             if (!id)
             {

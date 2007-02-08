@@ -474,6 +474,13 @@ class OlympusDataSource(DataSource):
                      operates on
         """
         return self.name
+        
+    def uniqueId(self):
+        """
+        Created: 07.02.2007, KP
+        Description: return a string identifying the dataset
+        """
+        return self.getFileName()+"|"+str(self.channel) 
 
     def resetColorTransferFunction(self):
         """

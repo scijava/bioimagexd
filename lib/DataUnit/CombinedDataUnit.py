@@ -245,7 +245,7 @@ class CombinedDataUnit(DataUnit.DataUnit):
             key="Source"
             # Use the string representation of the dataunit to get the type 
             # and path of the dataunit
-            value=str(self.sourceunits[i])
+            value=self.sourceunits[i].getDataSource().uniqueId()
             self.settings.setCounted(key,i,value)
         
         self.settings.writeTo(parser)
@@ -379,7 +379,6 @@ class CombinedDataUnit(DataUnit.DataUnit):
             preview=self.module.getPreview(depth)
 
         if not self.merging and self.outputChls:
-            print "Doing some stuff"
             if preview:
                 merged.append((preview,self.getColorTransferFunction()))
             
@@ -410,7 +409,6 @@ class CombinedDataUnit(DataUnit.DataUnit):
             self.origPreview=preview
         elif showOrig:
             self.doOrig=1            
-        print "Returning",repr(preview)
         return preview
             
 

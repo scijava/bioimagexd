@@ -33,6 +33,7 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 import types
 import Configuration
 import vtk
+import Logging
 currentPipeline = []
 memLimit = None
 numberOfDivisions=None
@@ -58,7 +59,7 @@ def set_target_size(x,y,z=0):
     else:
         sources=[dataUnit]
     for du in sources:
-        #print "Setting resampledims of ",du,"to",x,y,z
+        Logging.info("Setting resample to fit dimensions to %d,%d,%d"%(x,y,z),kw="scale")
         du.dataSource.setResampleDimensions((x,y,z))
         
 
@@ -67,29 +68,23 @@ def optimize(image = None, vtkFilter = None, updateExtent = None, releaseData = 
     Created: 11.11.2006, KP
     Description: Execute a pipeline and optimize it
     """
-    #print "--> Optimizing pipeline"
     if image:
         pp = image.GetProducerPort().GetProducer()
-        #print "Producerport=",repr(pp)
     else:
         pp = vtkFilter
-    #print "Optimizing..."
     val,numFilters = optimizePipeline(pp, releaseData = releaseData)
     
-    #print "Got",repr(val),"numFilters=",numFilters
-    if updateExtent:
+    if updateExtent and not bxd.wantWholeDataset:
         val.GetOutput().SetUpdateExtent(updateExtent)
+    else:
+        val.GetOutput().SetUpdateExtent(val.GetOutput().GetWholeExtent())
         
-    #print "Executing limited...",numFilters
     if numFilters!=0:
         img=execute_limited(val, updateExtent = updateExtent) 
     else:
         img = val.GetOutput()
     
-    #if updateExtent:
-    #    #print "Setting update extent again"
-    #    img.SetUpdateExtent(updateExtent)
-    #print "returning ",repr(img)
+
     return img
     
 def execute_limited(pipeline, updateExtent = None):
@@ -99,24 +94,18 @@ def execute_limited(pipeline, updateExtent = None):
     if not memLimit:
         get_memory_limit()
     if noLimits or  (not memLimit and not alwaysSplit):
-        #print "\n----> EXECUTING PIPELINE AS IS"
-        #print repr(pipeline)
-        #pipeline.Update()
-        
-        #return pipeline.GetOutput()   
         streamer = vtk.vtkImageDataStreamer()
         streamer.SetNumberOfStreamDivisions(1)
         streamer.GetExtentTranslator().SetSplitModeToZSlab()        
         
     if alwaysSplit:
-        #print "Using vtkImageDataStreamer with ",numberOfDivisions,"divisions"
+        Logging.info("Using vtkImageDataStreamer with %d divisions"%numberOfDivisions,kw="pipeline")
         #print "\n----> EXECUTING PIPELINE WITH %d DIVISIONS"%numberOfDivisions
         streamer = vtk.vtkImageDataStreamer()
         streamer.SetNumberOfStreamDivisions(numberOfDivisions)
         streamer.GetExtentTranslator().SetSplitModeToZSlab()
     elif (memLimit and not noLimits):
-        #print "Using vtkMemoryLimitImageDataStreamer with with limit=%dMB"%memLimit
-        #print "\n----> EXECUTING PIPELINE WITH MEMORY LIMITED TO %dMB"%memLimit
+        Logging.info("Using vtkMemoryLimitImageDataStreamer with with limit=%dMB"%memLimit,kw="pipeline")
         streamer = vtk.vtkMemoryLimitImageDataStreamer()
         streamer.SetMemoryLimit(1024*memLimit)
         streamer.GetExtentTranslator().SetSplitModeToZSlab()
@@ -124,17 +113,14 @@ def execute_limited(pipeline, updateExtent = None):
     streamer.SetInput(pipeline.GetOutput())
     retval = streamer.GetOutput()
     
-    if updateExtent:
-        #print "Setting update extent to ",updateExtent
+    if updateExtent and not bxd.wantWholeDataset:
+        Logging.info("Setting update extent to ",updateExtent,kw="pipeline")
         retval.SetUpdateExtent(updateExtent)
-    #print "Update extent=",retval.GetUpdateExtent()
-    #print "Divisions=",streamer.GetNumberOfStreamDivisions()
+    else:
+        retval.SetUpdateExtent(retval.GetWholeExtent())
     streamer.Update()
     return retval
 
-#    print "Failed, will execute unstreamed"
-#        pipeline.Update()
-#        return pipeline.GetOutput()
 
 def get_memory_limit():
     global conf,memLimit,alwaysSplit, numberOfDivisions,noLimits
@@ -168,7 +154,6 @@ def optimizeMipMerge(cfilter):
     while 1:
         if isinstance(cfilter,vtk.vtkImageColorMerge):
             merge = cfilter
-            print "Found merge",repr(merge)
             for i in range(0,cfilter.GetNumberOfInputPorts()):
                 for j in range(0,cfilter.GetNumberOfInputConnections(i)):            
                     inp=cfilter.GetInputConnection(i,j).GetProducer()
@@ -219,10 +204,9 @@ def optimizePipeline(ifilter,n=0, releaseData = 0):
         except:
             break
         if hasParents and releaseData:
-            print repr(cfilter),"will release data"
             cfilter.GetOutput().ReleaseDataFlagOn() 
 
-    print "Stack=",stack
+    Logging.info("Filter stack now=",stack,kw="pipeline")
     nfilters=len(stack)
     #for i in stack:
     #    if isinstance(i,vtk.vtkImageColorMerge):

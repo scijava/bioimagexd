@@ -154,7 +154,7 @@ class LsmDataSource(DataSource.DataSource):
             #self.reader.ExecuteInformation()
                         
             #self.reader.DebugOff()
-            print "\n\n\n**** Datatype=",d
+            #print "\n\n\n**** Datatype=",d
             if d==3:
                 self.bitdepth = 8
                 if not self.originalScalarRange:
@@ -186,7 +186,7 @@ class LsmDataSource(DataSource.DataSource):
             return self.resampleDims
         if not self.dimensions or self.dimensions == (0,0,0,0,0):
             self.dimensions=self.reader.GetDimensions()
-            print "Got dimensions from LSM reader=",self.dimensions
+            #print "Got dimensions from LSM reader=",self.dimensions
             
         return self.dimensions[0:3]
 
@@ -338,7 +338,7 @@ class LsmDataSource(DataSource.DataSource):
             r=self.reader.GetChannelColorComponent(self.channelNum,0)
             g=self.reader.GetChannelColorComponent(self.channelNum,1)
             b=self.reader.GetChannelColorComponent(self.channelNum,2)
-            print "Got color components=",r,g,b
+            #print "Got color components=",r,g,b
             r/=255.0
             g/=255.0
             b/=255.0
@@ -383,6 +383,13 @@ class LsmDataSource(DataSource.DataSource):
             "but no channel number has been specified")
             return ""
         return self.reader.GetChannelName(self.channelNum)
+
+    def uniqueId(self):
+        """
+        Created: 07.02.2007, KP
+        Description: return a string identifying the dataset
+        """
+        return self.getFileName()+"|"+str(self.channelNum)
 
     def __str__(self):
         """

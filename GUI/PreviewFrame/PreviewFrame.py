@@ -126,7 +126,6 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         self.mip = 0
         self.previewtype=""
         self.tmodules=Modules.DynamicLoader.getTaskModules()
-        print self.tmodules,self.tmodules.keys()
         self.tmodules[""]=self.tmodules["Process"]
         self.modules={}
         for key in self.tmodules:
@@ -194,7 +193,6 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         """    
         #if not self.enabled:
         #    return
-        print "-->Calculate buffer"
         cx,cy = self.parent.GetClientSize()        
         maxX, maxY = cx,cy
         if self.imagedata:
@@ -209,7 +207,6 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         if self.fixedSize:
             x,y = self.fixedSize
         if self.paintSize!=(x,y):    
-            print "Setting size to ",x,y
             self.paintSize=(x,y)                        
             #self.setScrollbars(x,y)
             x2,y2 = self.xdim,self.ydim
@@ -223,8 +220,6 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
             if self.buffer.GetWidth()!=x or self.buffer.GetHeight()!=y:
                 self.buffer = wx.EmptyBitmap(x,y)
                 self.setScrollbars(x,y)
-        else:
-            print "Size already ",x,y
         Logging.info("paintSize=",self.paintSize,kw="preview")
         #if bxd.visualizer.zoomToFitFlag:
         #    self.zoomToFit()
@@ -235,9 +230,7 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         Description: Size event handler
         """    
         if event.GetSize() == self.lastEventSize:
-            #print "**** LAST SIZE THE SAME"
             return
-        #print "Last size=",self.lastEventSize, "new size=",event.GetSize()
         self.lastEventSize = event.GetSize()
         
         InteractivePanel.InteractivePanel.OnSize(self,event)
@@ -261,7 +254,6 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         """
         Logging.info("Selected item "+str(item),kw="preview")
         self.selectedItem = item
-#        print "dataunit=",self.dataUnit
         if self.dataUnit.isProcessed():
             self.settings = self.dataUnit.getSourceDataUnits()[item].getSettings()
             self.settings.set("PreviewedDataset",item)
@@ -278,7 +270,6 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         Description: Method that is called when the right mouse button is
                      pressed down on this item
         """ 
-        #print "\n\n\n*** ON RIHG TCLICK"
         x,y=event.GetPosition()
         shape=self.FindShape(x,y)
         if shape:
@@ -336,10 +327,7 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
                     img.SetExtent(img.GetWholeExtent())
                     if self.dataUnit.getOutputChannel(i):
                         scalar.append(img.GetScalarComponentAsDouble(x,y,self.z,0))
-                    else:
-                        print "OUTPUT CHANNEL %d NOT ON"%i
                 scalar = tuple(scalar)
-                print "Scalar is tuple=",scalar
                 
         else:
             #Logging.info("%d components in raw image"%ncomps,kw="preview")
@@ -378,7 +366,6 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         Parameters:
                 tp      The timepoint to show
         """
-        print "Setting timepoint for preview frame=",tp
         timePoint=tp
         if self.timePoint!=timePoint:
             self.timePoint=timePoint
@@ -427,7 +414,7 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         #if self.enabled:
         self.paintSize = (0,0)
         self.calculateBuffer()
-        print "Calculating buffer size, it's now",self.buffer.GetWidth(),self.buffer.GetHeight()    
+        #print "Calculating buffer size, it's now",self.buffer.GetWidth(),self.buffer.GetHeight()    
         #    self.SetSize((x,y))
         
         if selectedItem!=-1:
@@ -514,15 +501,12 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
               
         #colorImage.Update()
         t2=time.time()
-        print "Executing pipeline took",t2-t,"seconds"            
-        print colorImage.GetDimensions(),colorImage.GetWholeExtent()
+        Logging.info("Executing pipeline took %f seconds"%(t2-t),kw="pipeline")            
         self.currentImage=colorImage
                     
         if colorImage:
             x,y,z=colorImage.GetDimensions()
             
-            #print "\n\nIMAGE DIMENSIONS=",x,y,z,"EXTENT=",colorImage.GetWholeExtent()
-            #print "Preview dims=",preview.GetDimensions()
             if not usedUpdateExt and not self.mip:
                 bxd.visualizer.zslider.SetRange(1,z)
             if x!=self.oldx or y!=self.oldy:
@@ -530,8 +514,6 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
                 #self.setScrollbars(x,y)
                 self.oldx=x
                 self.oldy=y
-            #print "colorImage=",colorImage.GetDimensions()
-            #Logging.info("Setting image (not null: %s)"%(not not colorImage),kw="preview")
             self.setImage(colorImage)
             self.setZSlice(self.z)
         
@@ -544,12 +526,8 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
 #            return
             self.slice = None
         else:
-            #print "Getting slice from imagedata, z=",z
-        
             self.slice=ImageOperations.vtkImageDataToWxImage(self.imagedata,z)
             
-        #print "Done"
-        #print "---> painting preview"
         self.paintPreview()
         
         
@@ -618,7 +596,6 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         else:
             pass
             
-        #print "data =",data.GetDimensions()
         return data
        
 
@@ -632,7 +609,6 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         if ext=="tif":ext="tiff"
         mime="image/%s"%ext
         img=self.snapshot.ConvertToImage()
-        #print "Saving mimefile ",filename,mime
         img.SaveMimeFile(filename,mime)
         
     def enable(self,flag):
@@ -669,7 +645,6 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
             #ct = self.settings.get("ColorTransferFunction")
             ct = self.dataUnit.getColorTransferFunction()
                 
-            #print "Mapping through",ct
             val=[0,0,0]
             if self.selectedItem != -1:
                 ctc = self.settings.getCounted("ColorTransferFunction",self.selectedItem)            
@@ -682,7 +657,6 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
                     ct=ctc
             
      
-        #print "Using ctf",ct
         self.currentCt = ct
         
         #ct.GetColor(255,val)
@@ -716,7 +690,6 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         x,y=self.size
         image.UpdateInformation()   
         x2,y2,z=image.GetDimensions()
-        #print "Set image=",repr(image),"with dims=",x2,y2,z
         if x2<x:
             x=x2
         if y2<y:
@@ -724,7 +697,6 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         
         if self.fitLater:
             self.fitLater=0
-            print "\n\n*** Zooming to fit"
             self.zoomToFit()
         
         
@@ -838,7 +810,6 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
             
 
         
-        #print "Saving mimefile ",filename,mime
         
         bmp=self.slice
         Logging.info("Zoom factor for painting =",self.zoomFactor,kw="preview")
@@ -847,7 +818,6 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
             interpolation = self.interpolation
             if interpolation == -1:
                 x,y,z=self.imagedata.GetDimensions()
-                #print "\n\n\nIMAGE SIZE=",x,y,z
                 # if x*y < 512*512, cubic
                 pixels=(x*self.zoomFactor)*(y*self.zoomFactor)
                 if pixels<=1024*1024:
@@ -863,7 +833,6 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
             if interpolation == 0:
                 bmp=ImageOperations.zoomImageByFactor(self.slice,self.zoomFactor)                
             else:
-                #print "Scaling image",self.imagedata
                 img=ImageOperations.scaleImage(self.imagedata,self.zoomFactor,self.z,interpolation)
                 
                 bmp=ImageOperations.vtkImageDataToWxImage(img)
@@ -890,7 +859,6 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         bw,bh = bmp.GetWidth(),bmp.GetHeight()
         
         tw,th = self.buffer.GetWidth(),self.buffer.GetHeight()
-        #print "BMP Size=",bw,bh,"buffer size=",tw,th
         xoff = (tw-bw)/2
         yoff = (th-bh)/2
         self.setOffset(xoff, yoff)

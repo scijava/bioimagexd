@@ -522,3 +522,9 @@ class DataSource:
                 raise "Bad LSM bit depth, %d,%s"%(scalartype,data.GetScalarTypeAsString())
             self.bitdepth*=data.GetNumberOfScalarComponents()
         return self.bitdepth
+    def uniqueId(self):
+        """
+        Created: 07.02.2007, KP
+        Description: return a string identifying the dataset
+        """
+        return self.getFileName()

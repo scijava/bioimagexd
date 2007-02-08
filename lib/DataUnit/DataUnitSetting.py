@@ -183,9 +183,7 @@ class DataUnitSettings:
         Description: Attempt to read all registered keys from a parser
         """    
         self.parser = parser
-        print "self.type=",self.get("Type"),repr(self)
         if not self.get("Type"):
-            print "Got parser",parser
             self.parser = parser
             try:
                 type=parser.get("Type","Type")
@@ -194,9 +192,8 @@ class DataUnitSettings:
             except ConfigParser.NoSectionError:
                 pass
             else:
-                print "GOT TYPE=",type
                 settingsclass=self.modules[type][2].getSettingsClass()
-                Logging.info("Settings class=",settingsclass,kw="processing")
+                Logging.info("Type=%s, settings class=%s"(type,str(settingsclass)),kw="processing")
                 #obj=eval(type)(self.n)
                 obj=settingsclass(self.n)
                 obj.setType(type)

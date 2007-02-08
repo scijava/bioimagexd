@@ -169,7 +169,7 @@ class Scatterplot(InteractivePanel.InteractivePanel):
         
         for key in wcDict.keys():
             wc+="|%s|*.%s"%(wcDict[key],key)
-        print "wc=",wc
+        #print "wc=",wc
         filename = Dialogs.askSaveAsFileName(self,"Save scatterplot",initFile, wc, "scatterImage")            
             
         ext=filename.split(".")[-1].lower()
@@ -186,7 +186,7 @@ class Scatterplot(InteractivePanel.InteractivePanel):
         Description: Update the scatterplot when timepoint changes
         """        
         self.renew=1
-        print "Setting timepoint to ",args[0]
+#        print "Setting timepoint to ",args[0]
         self.setTimepoint(args[0])
         self.updatePreview()
         
@@ -301,42 +301,42 @@ class Scatterplot(InteractivePanel.InteractivePanel):
             gl,gu = greens.get("ColocalizationLowerThreshold"),greens.get("ColocalizationUpperThreshold")
             rl,ru = reds.get("ColocalizationLowerThreshold"),reds.get("ColocalizationUpperThreshold")
             
-            print "Greens now=",gl,gu
-            print "Reds now=",rl,ru
+            #print "Greens now=",gl,gu
+            #print "Reds now=",rl,ru
             
-            print "mode=",self.mode
+            #print "mode=",self.mode
             if self.mode[0] == 1:
                 greens.set("ColocalizationLowerThreshold",x1)
                 gl = x1
                 if gl>gu:
-                    print "\n--->LOWER GREEN SWITCHING gl=",gl,"gu=",gu
+                    #print "\n--->LOWER GREEN SWITCHING gl=",gl,"gu=",gu
                     gu,gl=gl,gu
                 self.lower1=gl
-                print "Setting lower of green to ",x1
+                #print "Setting lower of green to ",x1
             if self.mode[0] == 3:
                 greens.set("ColocalizationUpperThreshold",x2)
                 gu = x2
                 if gl>gu:
                     gu,gl=gl,gu                
-                print "Setting upper of green to ",x2
+                #print "Setting upper of green to ",x2
                 #self.lower2=x2
                 self.upper1 = x2
             if self.mode[1] == 2:
                 reds.set("ColocalizationLowerThreshold",y1)
                 rl = y1
                 if rl>ru:
-                    print "\n--->LOWER RED SWITCHING rl=",rl,"ru=",ru                
+                    #print "\n--->LOWER RED SWITCHING rl=",rl,"ru=",ru                
                     ru,rl=rl,ru                
                 #self.upper1=y1
                 self.lower2 = y1
-                print "Setting lower of red to",y1
+                #print "Setting lower of red to",y1
             elif self.mode[1] == 4:
                 reds.set("ColocalizationUpperThreshold",y2)
                 ru = y2
                 if rl>ru:
                     ru,rl=rl,ru                                
                 self.upper2= y2
-                print "Setting upper of red to",y2
+                #print "Setting upper of red to",y2
                 
             #self.actionstart=(gl,rl)
             #self.actionend=(gu,ru)
@@ -399,7 +399,7 @@ class Scatterplot(InteractivePanel.InteractivePanel):
         y1=int(y1*c)
         y2=int(y2*c)
         
-        print "Using %d-%d as green and %d-%d as red range"%(x1,x2,y1,y2)
+        #print "Using %d-%d as green and %d-%d as red range"%(x1,x2,y1,y2)
         reds=self.sources[0].getSettings()
         greens=self.sources[1].getSettings()
         

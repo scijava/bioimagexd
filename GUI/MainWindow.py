@@ -294,8 +294,8 @@ class MainWindow(wx.Frame):
         """
         Created: 17.07.2006, KP
         Description: Load a given script file
-        """   
-        print "Loading script...",filename
+        """
+        Logging.info("Loading script %s"%filename,kw="scripting")
         f=open(filename)
         module = imp.load_module("script",f,filename,('.py','r',1))
         f.close()
@@ -974,7 +974,6 @@ class MainWindow(wx.Frame):
 
         #selectedFiles=self.tree.getSelectedDataUnits()
         selectedFiles,items = self.tree.getSelectionContainer()
-        print selectedFiles
         if not selectedFiles:
             return
         dlg=ResampleDialog.ResampleDialog(self)
@@ -1033,7 +1032,6 @@ class MainWindow(wx.Frame):
         if eid==MenuManager.ID_VIEW_CONFIG:
             obj="config"
         elif eid==MenuManager.ID_VIEW_TREE:
-            print "SHOWING TREE=",flag
             self.onMenuShowTree(None,flag)
             return
         elif eid==MenuManager.ID_VIEW_MASKSEL:
@@ -1041,7 +1039,6 @@ class MainWindow(wx.Frame):
                 masksel = MaskTray.MaskTray(self)
                 dataUnit=self.visualizer.getDataUnit()
                 for i in self.visualizer.getMasks():
-                    print "Adding ",i,"to masksel"
                     masksel.addMask(mask = i)
                 masksel.setDataUnit(dataUnit)
                 masksel.Show()
@@ -1289,7 +1286,6 @@ class MainWindow(wx.Frame):
                 parser.optionxform = str
                 parser.read(filenames)
                 dataunit.getSettings().readFrom(parser)
-                print "Setting parser of ",dataunit
                 dataunit.parser = parser
                 #self.visualizer.setDataUnit(dataunit)
                 messenger.send(None,"update_settings_gui")
@@ -1360,7 +1356,6 @@ class MainWindow(wx.Frame):
         ext=path.split(".")[-1]
         dataunit=None
         if self.tree.hasItem(path):
-            print "Tree already has item"
             return
         ext=ext.lower()
         
@@ -1402,9 +1397,8 @@ class MainWindow(wx.Frame):
             return
         dataunits=[]
         try:
-            Logging.info("\n\n\nLoading from data source ",datasource,kw="io")
             dataunits = datasource.loadFromFile(path)
-            print "\n\n\nLoaded from file",path
+            Logging.info("Loaded from file %s %d dataunits"%(path,len(dataunits)),kw="io")
         except Logging.GUIError,ex:
             ex.show()
 
@@ -1427,7 +1421,6 @@ class MainWindow(wx.Frame):
             #Logging.info("Adding to tree ",name,path,ext,dataunits,kw="io")
             conf = Configuration.getConfiguration()
             needToRescale = conf.getConfigItem("RescaleOnLoading","Performance")
-            #print "\n\n***** Need to rescale=",needToRescale
             if needToRescale:
                 needToRescale = eval(needToRescale)
 

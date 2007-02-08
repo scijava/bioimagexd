@@ -90,11 +90,6 @@ class ChannelListBox(wx.HtmlListBox):
                 color="#000000"
             self.units.append((color,name,filename,dims))
             
-    def setPreview(self,n,image):
-        """
-        Created: 26.07.2005, KP
-        Description: Set the preview of a given channel to the given wxImage
-        """    
         if not n in self.previews:
             #s=wx.StringOutputStream()
             #image.SaveMimeFile(s,"image/png")

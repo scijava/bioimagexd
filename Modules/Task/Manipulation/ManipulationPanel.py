@@ -84,7 +84,7 @@ class ManipulationPanel(FilterBasedTaskPanel.FilterBasedTaskPanel):
         self.categories=[]
 
         for currfilter in ManipulationFilters.getFilterList():
-            print "Registering",currfilter.getName(),currfilter.getCategory()
+            #print "Registering",currfilter.getName(),currfilter.getCategory()
             self.filtersByName[currfilter.getName()] = currfilter
             self.registerFilter(currfilter.getCategory(),currfilter)
       

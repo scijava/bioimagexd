@@ -857,7 +857,7 @@ void vtkLSMReader::DecodeHorizontalDifferencing(unsigned char *buffer, int size)
       //printf("%d",*(buffer+i));
       *(buffer+i) = *(buffer+i) + *(buffer+i-1);
     }
-  printf("\n");
+//  printf("\n");
 }
 */
 
@@ -878,6 +878,7 @@ int vtkLSMReader::RequestData(
 
   
   // get the info object
+
   vtkInformation *outInfo = outputVector->GetInformationObject(0);
   //vtkImageData *data = vtkImageData::SafeDownCast(outInfo->Get(vtkDataObject::DATA_OBJECT()));
   vtkImageData *data = this->AllocateOutputData(outInfo->Get(vtkDataObject::DATA_OBJECT()));
@@ -988,11 +989,11 @@ int vtkLSMReader::RequestUpdateExtent (
   //vtkInformation *inInfo = inputVector[0]->GetInformationObject(0);
 
   outInfo->Get(vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT(),ext);
-   printf("extent request %d,%d,%d,%d,%d,%d\n",PRT_EXT(ext));
+   //printf("extent request %d,%d,%d,%d,%d,%d\n",PRT_EXT(ext));
   // Get the requested update extent from the output.
   outInfo->Get(vtkStreamingDemandDrivenPipeline::UPDATE_EXTENT(), uext);
   
-  printf("uextent request %d,%d,%d,%d,%d,%d\n",PRT_EXT(uext));
+  //printf("uextent request %d,%d,%d,%d,%d,%d\n",PRT_EXT(uext));
 
   // If they request an update extent that doesn't cover the whole slice
   // then modify the uextent 
@@ -1005,8 +1006,11 @@ int vtkLSMReader::RequestUpdateExtent (
 }
 
 int vtkLSMReader::RequestInformation (
+
   vtkInformation       * vtkNotUsed( request ),
+
   vtkInformationVector** vtkNotUsed( inputVector ),
+
   vtkInformationVector * outputVector)
 {
   unsigned long startPos;
@@ -1014,14 +1018,14 @@ int vtkLSMReader::RequestInformation (
 
   char buf[12];
   
-   printf("RequestInformation\n");
+   //printf("RequestInformation\n");
   vtkInformation* outInfo = outputVector->GetInformationObject(0);
    
   this->SetDataByteOrderToLittleEndian();
 
   if(!this->NeedToReadHeaderInformation())
     {
-         printf("Won't read info\n");
+         //printf("Won't read info\n");
     vtkDebugMacro(<<"Don't need to read header information");
     return 1;
     }
@@ -1037,7 +1041,7 @@ int vtkLSMReader::RequestInformation (
   startPos = 2;  // header identifier
 
   this->Identifier = this->ReadUnsignedShort(this->GetFile(),&startPos);
-  printf("Identifier=%d\n",Identifier);
+  //printf("Identifier=%d\n",Identifier);
   if(!this->IsValidLSMFile())
     {
     vtkErrorMacro("Given file is not a valid LSM-file.");
@@ -1052,12 +1056,12 @@ int vtkLSMReader::RequestInformation (
   if(this->LSMSpecificInfoOffset)
     {        
       ReadLSMSpecificInfo(this->GetFile(),(unsigned long)this->LSMSpecificInfoOffset);
-        printf("Got LSM specific info\n");
+        //printf("Got LSM specific info\n");
     }
   else
     {
       vtkErrorMacro("Did not found LSM specific info!");
-        printf("Failed to read info\n");
+        //printf("Failed to read info\n");
       return 0;
     }
   if( !(this->ScanType == 6 || this->ScanType == 0) )
@@ -1076,13 +1080,14 @@ int vtkLSMReader::RequestInformation (
 
     
   this->CalculateExtentAndSpacing(this->DataExtent,this->DataSpacing);
-  printf("%x Calculated extent of data, it is %d,%d,%d,%d,%d,%d\n",this,PRT_EXT(this->DataExtent));
-  printf("Spacing=%f,%f,%f\n",DataSpacing[0],DataSpacing[1],DataSpacing[2]);
+  //printf("%x Calculated extent of data, it is %d,%d,%d,%d,%d,%d\n",this,PRT_EXT(this->DataExtent));
+  //printf("Spacing=%f,%f,%f\n",DataSpacing[0],DataSpacing[1],DataSpacing[2]);
     outInfo->Set(vtkDataObject::SPACING(), this->DataSpacing, 3);
   
     
 //  this->GetOutput()->SetUpdateExtent(this->GetOutput()->GetWholeExtent());
     outInfo->Set(vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT(),
+
                this->DataExtent, 6);    
   
 //  this->GetOutput()->SetNumberOfScalarComponents(1);
@@ -1098,6 +1103,7 @@ int vtkLSMReader::RequestInformation (
       //this->GetOutput()->SetScalarType(VTK_UNSIGNED_CHAR);
     }
   vtkDataObject::SetPointDataActiveScalarInfo(outInfo, this->DataScalarType,
+
     this->NumberOfScalarComponents);
     
   this->NeedToReadHeaderInformationOff();
@@ -1132,10 +1138,10 @@ int vtkLSMReader::GetChannelColorComponent(int ch, int component)
 {
   if(ch < 0 || ch > this->GetNumberOfChannels()-1 || component < 0 || component > 2)
     {
-        printf("ch%d not in limits (%d)\n",ch,this->GetNumberOfChannels());
+        //printf("ch%d not in limits (%d)\n",ch,this->GetNumberOfChannels());
     return 0;
     }
-    printf("Returning component %d= %d\n",ch*3+component,*this->ChannelColors->GetPointer((ch*3)+component));
+    // printf("Returning component %d= %d\n",ch*3+component,*this->ChannelColors->GetPointer((ch*3)+component));
   
   //i+((colNum+1)*j  
   return *(this->ChannelColors->GetPointer((ch*3) + component));

@@ -89,13 +89,11 @@ class CTFPaintPanel(wx.Panel):
         Created: 16.04.2005, KP
         Description: Returns x and y of the graph for given coordinates
         """
-        #print "Converting canvas coords",x,y,"to graph coords"
         rx,ry=x-self.xoffset,self.maxy-(y-self.yoffset)
         
         
         xcoeff = maxval/self.maxx
         #ycoeff = maxval/self.maxy
-        #print "maxval=",maxval,"coeffs=",xcoeff,ycoeff
         rx*=xcoeff
         #ry*=ycoeff
         
@@ -103,7 +101,6 @@ class CTFPaintPanel(wx.Panel):
         if ry<0:ry=0
         #if rx>self.maxx:rx=self.maxx
         #if ry>self.maxy:ry=self.maxy
-        #print "returning",rx,ry
         return (rx,ry)
         
     def onPaint(self,event):
@@ -251,7 +248,6 @@ class CTFPaintPanel(wx.Panel):
         Created: 30.10.2004, KP
         Description: Paints the graph of the function specified by points in the graph
         """
-        #print "Got ",red,green,blue,alpha
         (r,rv),(g,gv),(b,bv) = red[-1], green[-1], blue[-1]
         a=0
         if alpha and drawAlpha:
@@ -262,12 +258,9 @@ class CTFPaintPanel(wx.Panel):
         if alpha and drawAlpha:
             (a,av)=alpha[0]
         minval = min(r,g,b,a)
-        
-        #print "Got maximum value from function points:",maxval,"minval=",minval
             
         d = maxval/float(self.maxx)
         if d<1:d=1
-        #print "maxval=",maxval,"self.maxx=",self.maxx,"d=",d
         #self.dc = wx.BufferedDC(wx.ClientDC(self),self.buffer)
         self.dc = wx.MemoryDC()
         self.dc.SelectObject(self.buffer)
@@ -318,13 +311,11 @@ class CTFPaintPanel(wx.Panel):
                 except:
                     a,ax=a0,ax0
             
-            #print "painting r at",rx,"is",r,", g at",gx,"is ",g,", b at ",bx," is",b        
-
+            
             if drawAlpha and alpha:
                 self.createLine(ax0,a0,ax,a,'#ffffff')
  
             if not alphaMode:
-                #print "Painting from ",x0,g0,"to",x1,g
                 self.createLine(rx0,r0,rx,r,'#ff0000')
                 self.createLine(gx0,g0,gx,g,'#00ff00')
                 self.createLine(bx0,b0,bx,b,'#0000ff')
@@ -610,7 +601,6 @@ class ColorTransferEditor(wx.Panel):
             for j,point in enumerate(pts):
                 firstOrLast=(j==0 or j==len(pts)-1)
                 n+=1
-                #print n,k,n%k,everyNth
                 if not firstOrLast and k<everyNth:
                     toRemove.append(point)
                     k+=1
@@ -749,7 +739,6 @@ class ColorTransferEditor(wx.Panel):
         x,y=event.GetPosition()
         x,y=self.canvas.toGraphCoords(x,y,self.maxval)
         if self.freeMode:
-            #print "pos=",x,y
             self.pos = (x,y)
         else:
             d=10
@@ -758,11 +747,11 @@ class ColorTransferEditor(wx.Panel):
             Logging.info("points for color %d = "%self.color,self.points[self.color])
             for pt in self.points[self.color]:
                 d=self.dist((x,y),pt)
-                print "distance between",(x,y),"and",pt,"=",d
+                #print "distance between",(x,y),"and",pt,"=",d
                 if pt[0]==x:hasx=1
                 if d<self.selectThreshold and d<currd:
                     self.selectedPoint=pt
-                    print "Selected point to edit=",pt
+                    #print "Selected point to edit=",pt
                     currd=d
                     self.upToDate=0
                     break
@@ -885,7 +874,7 @@ class ColorTransferEditor(wx.Panel):
                 tot+=len(pts)
             
             maxpts=self.maxNodes.GetValue()
-            print "MAXIMUM POINTS=",maxpts
+            #print "MAXIMUM POINTS=",maxpts
             if maxpts<tot:
                 self.onSetMaxNodes(None)
         #Logging.info("Points after=",self.points,kw="ctf")      
@@ -1202,9 +1191,7 @@ class ColorTransferEditor(wx.Panel):
         r*=255
         g*=255
         b*=255
-        print "r=",r,"g=",g,"b=",b
         col=wx.Colour(int(r),int(g),int(b))
-        print "Setting to ",(int(r),int(g),int(b))
         self.colorBtn.SetColour(((int(r),int(g),int(b))))
         self.colorBtn.Refresh()
 
@@ -1224,7 +1211,6 @@ class ColorTransferEditor(wx.Panel):
         Description: Returns the opacity function
         """
         self.otf=otf
-        print "\n\n\nSetting otf to ",otf.GetValue(self.maxval)
         self.getPointsFromFree()
         self.updateGraph()        
 
