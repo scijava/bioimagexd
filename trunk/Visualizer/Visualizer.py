@@ -986,6 +986,8 @@ class Visualizer:
         # The ones that do, can change the flag from activate()
         scripting.wantAlphaChannel = 0
         scripting.preferRGB = 1
+        scripting.wantWholedataset = 1
+
         self.currentWindow = modeinst.activate(self.sidebarWin)        
       
         self.sidebarWin.SetDefaultSize((0,1024))

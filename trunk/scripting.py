@@ -72,16 +72,13 @@ def getSettingsFromCache(key):
     if data:
         value=[]
         for (n,cp) in data:
-            
-            #print "\n\n\n******* TYPE = ",cp.get("Type","Type")
-        
+          
             #value=pickle.loads(data)
             
             settings = DataUnit.DataUnitSettings(n)            
             settings.set("Type",None)
             #settings = eval(settingsclass)
             settings = settings.readFrom(cp)
-            #print "Got ",repr(settings),"from cp"
             value.append(settings)
     return value
     
@@ -92,22 +89,15 @@ def storeSettingsToCache(key, settingsList):
     Description: Store the given settings to cache
     """
     global settingsCache
-    #print "Storing settings for",key
-    #print settingsList
     key=tuple(key)
     if key in settingsCache:
         del settingsCache[key]
-    #print "Asked to pickle",settingsList
-    #value=pickle.dumps(settingsList,protocol=pickle.HIGHEST_PROTOCOL)
     value=[]
     for i,setting in enumerate(settingsList):
         cp = MyConfigParser()
-        #print "Writing ",repr(setting)
         setting.writeTo(cp)
-        #print "\n\nStroing Type of setting=",setting.get("Type")
         value.append((setting.n,cp))
-        #cp.write(open("setting_%d.txt"%i,"w"))
-    
+        
     
     settingsCache[key] = value
     
@@ -124,6 +114,7 @@ resampleToFit = 0
 processingTimepoint = -1
 wantAlphaChannel=1
 preferRGB = 1
+wantWholeDataset = 0
 
 dialogs = {}
 
@@ -162,7 +153,7 @@ def get_log_dir():
             except:
                 pass
             if not os.access(appdir,os.F_OK):
-                print "Cannot write to application data"
+                Logging.info("Cannot write to log application data, using current directory",kw="io")
                 appdir="."
         
         if not os.path.exists(appdir):
@@ -197,8 +188,8 @@ def get_preview_dir():
             except:
                 pass
             if not os.access(appdir,os.F_OK):
-                print "Cannot write to application data"
-                appdir="."
+                 Logging.info("Cannot write preview to application data, using current directory",kw="io")
+                 appdir="."
         
         if not os.path.exists(appdir):
             os.mkdir(appdir)

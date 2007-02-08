@@ -260,8 +260,7 @@ def loadBXDLutFromString(lut, ctf):
     lut=lut[6:]
     start,end = struct.unpack("ff",lut[0:8])
     lut=lut[8:]
-    
-    print "The palette is in range ",start,end
+    Logging.info("The palette is in range %d-%d"%(start,end),kw="ctf")
     j=0
     start=int(start)
     end=int(end)
@@ -280,9 +279,7 @@ def loadBXDLutFromString(lut, ctf):
         g=ord(greens[j])
         
         b=ord(blues[j])
-        if i<10:
-            print "got",r,g,b
-        
+      
         r/=255.0
         g/=255.0
         b/=255.0        
@@ -365,10 +362,10 @@ def lutToString(ctf, luttype = "ImageJ"):
         d=1
     if luttype=="BioImageXD":
         s="BXDLUT"
-        print "Adding to struct minval",minval
+        Logging.info("Adding to BXDLUT structure the minval%=%d, maxval=%d"%(minval,maxval),kw="ctf")
         
         s+=struct.pack("f",minval)
-        print "Adding to struct maxval",maxval
+        
         s+=struct.pack("f",maxval)
         
     maxval=int(maxval)
@@ -521,7 +518,7 @@ def getColorTransferFunction(color):
     """
     if isinstance(color,vtk.vtkColorTransferFunction):
         return color
-    print color
+    #print color
     ctf=vtk.vtkColorTransferFunction()
     r,g,b=(0,0,0)
     ctf.AddRGBPoint(0.0,r,g,b)
@@ -534,7 +531,7 @@ def getColorTransferFunction(color):
     return ctf
     
     
-def vtkImageDataToPreviewBitmap(dataunit,timepoint,color,width=0,height=0,bgcolor=(0,0,0),getpng=0, getvtkImage = 0):
+def vtkImageDataToPreviewBitmap(dataunit,timepoint,color,width=0,height=0,bgcolor=(0,0,0), getvtkImage = 0):
     """
     Created: KP
     Description: A function that will take a volume and do a simple
@@ -557,10 +554,6 @@ def vtkImageDataToPreviewBitmap(dataunit,timepoint,color,width=0,height=0,bgcolo
     imagedata.Update()
     #imagedata.Update()
     #imagedata=getMIP(imageData,color)
-    if getpng:
-        
-        
-        pngstr=vtkImageDataToPngString(imagedata)
     image = vtkImageDataToWxImage(imagedata)
     x,y=image.GetWidth(),image.GetHeight()
     if not width and height:
@@ -575,11 +568,9 @@ def vtkImageDataToPreviewBitmap(dataunit,timepoint,color,width=0,height=0,bgcolo
     image.Rescale(width,height)
     bitmap=image.ConvertToBitmap()
     ret=[bitmap]
-    if getpng:
-        ret.append(pngstr)        
     if getvtkImage:
         ret.append(vtkImg)
-    if getpng or getvtkImage:
+    if getvtkImage:
         return ret
     return bitmap
 
@@ -962,12 +953,8 @@ def scatterPlot(imagedata1,imagedata2,z,countVoxels, wholeVolume=1,logarithmic=1
         
     imagedata1.Update()
     imagedata2.Update()
-    print "extent=",imagedata1.GetWholeExtent()
-    print "extent2=",imagedata2.GetWholeExtent()
-
     x0,x1 = imagedata1.GetScalarRange()
     d = 255.0/ x1
-    print "Range of imagedata1=",x0,x1
     #shiftscale=vtk.vtkImageShiftScale()
     #shiftscale.SetOutputScalarTypeToUnsignedChar()
     #shiftscale.SetScale(d)
@@ -976,7 +963,6 @@ def scatterPlot(imagedata1,imagedata2,z,countVoxels, wholeVolume=1,logarithmic=1
 
     x0,x1 = imagedata2.GetScalarRange()
     d = 255.0/ x1
-    print "Range of imagedata2=",x0,x1
     #shiftscale=vtk.vtkImageShiftScale()
     #shiftscale.SetOutputScalarTypeToUnsignedChar()
     #shiftscale.SetScale(d)
@@ -987,10 +973,7 @@ def scatterPlot(imagedata1,imagedata2,z,countVoxels, wholeVolume=1,logarithmic=1
     app.AddInput(imagedata1)
     app.AddInput(imagedata2)
     #app.Update()
-    print "Appending..."
     
-    
-    print "shiftscaling..."
     shiftscale = vtk.vtkImageShiftScale()
     shiftscale.SetOutputScalarTypeToUnsignedChar();
     shiftscale.SetScale(d)
@@ -998,7 +981,6 @@ def scatterPlot(imagedata1,imagedata2,z,countVoxels, wholeVolume=1,logarithmic=1
     #data = shiftscale.GetOutput()
     
     data = bxd.mem.optimize(vtkFilter = shiftscale)
-    print "accumulating..."
     acc=vtk.vtkImageAccumulate()
     
     #n = max(imagedata1.GetScalarRange())
@@ -1012,7 +994,6 @@ def scatterPlot(imagedata1,imagedata2,z,countVoxels, wholeVolume=1,logarithmic=1
     data=acc.GetOutput()
     
     originalRange = data.GetScalarRange()
-    print "Range of data=",originalRange
     
     if logarithmic:
         Logging.info("Scaling scatterplot logarithmically",kw="imageop")
@@ -1022,7 +1003,7 @@ def scatterPlot(imagedata1,imagedata2,z,countVoxels, wholeVolume=1,logarithmic=1
         data=logscale.GetOutput()
         
     x0,x1=data.GetScalarRange()
-    print "Scalar range of logarithmic scatterplot=",x0,x1
+    #print "Scalar range of logarithmic scatterplot=",x0,x1
     
     if countVoxels:
         x0,x1=data.GetScalarRange()
@@ -1123,7 +1104,7 @@ def getSlice(volume,zslice,startpos=None,endpos=None):
     if startpos:
         x0,y0=startpos
         x,y=endpos
-    #print "voi = ",x0,x-1,y0,y-1,zslice,zslice
+    Logging.info("VOI of dataset = (%d,%d,%d,%d,%d,%d)"%(x0,x-1,y0,y-1,zslice,zslice),kw="preview")
     voi.SetVOI(x0,x-1,y0,y-1,zslice,zslice)
     voi.Update()
     data=voi.GetOutput()

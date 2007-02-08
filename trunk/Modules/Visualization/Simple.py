@@ -40,6 +40,8 @@ import Visualizer.VisualizerWindow as VisualizerWindow
 import PreviewFrame
 import Modules
 
+import scripting as bxd
+
 def getName():return "MIP"
 def isDefaultMode(): return 0
 def showInfoWindow(): return 1
@@ -107,6 +109,8 @@ class SimpleMode(VisualizationMode):
         Created: 24.05.2005, KP
         Description: Set the mode of visualization
         """
+        bxd.wantWholeDataset = 1
+
         if not self.iactivePanel:
             Logging.info("Generating preview",kw="visualizer")
             self.iactivePanel=PreviewFrame.PreviewFrame(self.parent)

@@ -142,22 +142,18 @@ class InfoWidget(wx.Panel):
         else:
             dims=dataunit.getDimensions()
             odims=(0,0,0)
-            print "Got dims=",dims
             resampledims=dataunit.dataSource.getResampleDimensions()
             
             
             if resampledims:
                 odims=dataunit.dataSource.getOriginalDimensions()
-                print "original dimensions=",odims
                 messenger.send(None,"set_resample_dims",resampledims,odims)
             else:
                 messenger.send(None,"set_current_dims",dims)
 
             spacing=dataunit.getSpacing()
-            print "Got spacing",spacing
             voxelsize=dataunit.getVoxelSize()
-            print "got voxel size",voxelsize
-            rsVoxelsize=dataunit.getResampledVoxelSize()
+            lsize=dataunit.getResampledVoxelSize()
             bitdepth=dataunit.getBitDepth()
             em = dataunit.getEmissionWavelength()
             ex = dataunit.getExcitationWavelength()
@@ -171,7 +167,6 @@ class InfoWidget(wx.Panel):
             else:
                 excitation="%d nm"%ex
             intlower,intupper=dataunit.getScalarRange()
-            print "got scalar range",intlower,intupper
             Logging.info("Dataset bit depth =",bitdepth,kw="trivial")
             unit = dataunit
             ctf = dataunit.getColorTransferFunction()

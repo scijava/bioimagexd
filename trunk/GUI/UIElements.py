@@ -294,16 +294,14 @@ class NamePanel(wx.Window):
         self.origsize=size
         self.bold=1
         w,h=self.size
-        #print "Height of track=",h
         self.btn = None
-        print "Creating buffer",w,h
         cs = self.parent.GetClientSize()
         if w<0:
             w=cs[0]
         if h<0:
             h=cs[1]
         self.buffer = wx.EmptyBitmap(w,h,-1)
-        print "done"
+
         self.setColor((0,0,0),color)
         self.dc = None
         if kws.has_key("expand"):
@@ -311,8 +309,11 @@ class NamePanel(wx.Window):
             self.bh=1
             self.btn = wx.ToggleButton(self,-1,"<<",(w-32,self.bh),(24,24))
             self.btn.SetValue(1)
+            Logging.info("Setting background color to ",self.fg)
             self.btn.SetBackgroundColour(self.fg)
             if self.bg:
+                Logging.info("Setting foreground color to ",self.bg)
+
                 self.btn.SetForegroundColour(self.bg)
             font=self.btn.GetFont()
             font.SetPointSize(6)

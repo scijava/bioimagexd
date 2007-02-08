@@ -308,6 +308,8 @@ class BXDDataSource(DataSource):
                      operates on
         """
         return self.settings.get("Name")
+        
+        
 
     def getColorTransferFunction(self):
         """

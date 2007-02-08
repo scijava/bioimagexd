@@ -97,6 +97,8 @@ class SectionsMode(VisualizationMode):
         Created: 24.05.2005, KP
         Description: Set the mode of visualization
         """
+        bxd.wantWholeDataset = 1
+
         if not self.sectionsPanel:
             x,y=self.visualizer.visWin.GetSize()
             self.sectionsPanel=PreviewFrame.SectionsPanel(self.parent,self.visualizer,size=(x,y))

@@ -119,7 +119,7 @@ color depth. Use the histograms below to the select how the intensities in your 
         """
         for i,dataUnit in enumerate(self.dataUnits):
             ds=dataUnit.getDataSource()
-            print "Setting shift and scale to ",self.shift, self.scale
+            #print "Setting shift and scale to ",self.shift, self.scale
             ds.setIntensityScale(self.shift,self.scale)
             ds.resetColorTransferFunction()
             dataUnit.resetColorTransferFunction()
@@ -142,19 +142,19 @@ color depth. Use the histograms below to the select how the intensities in your 
         self.mergeUnit = unitclass("Preview for scaling intensity")
                 
         for dataUnit in dataunits:
-            print "Creating histogram for ",dataUnit
+            #print "Creating histogram for ",dataUnit
             self.mergeUnit.addSourceDataUnit(dataUnit)
             x,y,z=dataUnit.getDimensions()
             
             ds=dataUnit.getDataSource()
             minval,maxval = ds.getOriginalScalarRange()
-            print "Original scalar range = ",minval,maxval
+            #print "Original scalar range = ",minval,maxval
             self.resampleDims.append(ds.getResampleDimensions())
 #            if x>512 or y>512:
 #                ds.setResampleDimensions((512,512,z))
                 
             scale = maxval / 255.0
-            print "Using scale",scale
+            #"Using scale",scale
             histogram = Histogram.Histogram(self,scale=scale)
             self.histogramSizer.Add(histogram)
             self.histograms.append(histogram)
@@ -181,21 +181,21 @@ color depth. Use the histograms below to the select how the intensities in your 
         n=self.histograms.index(obj)
         dataUnit=self.dataUnits[n]
         minval,maxval = dataUnit.getDataSource().getOriginalScalarRange()
-        print "Original scalar range=",minval,maxval
+        #print "Original scalar range=",minval,maxval
         if lower==0 and upper==255:
             self.shift=0
             self.scale=255.0 / maxval
-            print "\n\nSetting shift to ",self.shift,self.scale
+            #print "\n\nSetting shift to ",self.shift,self.scale
             
         else:
             upper = upper * (maxval/255.0)
             lower = lower * (maxval/255.0)
             
-            print "lower=",lower,"upper=",upper
+            #print "lower=",lower,"upper=",upper
             self.shift = -int(lower)
-            print "\nCalculating scale based on maxval",maxval
+            #print "\nCalculating scale based on maxval",maxval
             self.scale = 256.0 / ((upper-lower))
-            print "Setting shift and scale to ",self.shift,"and",self.scale
+            #print "Setting shift and scale to ",self.shift,"and",self.scale
         dataUnit.getDataSource().setIntensityScale(self.shift,self.scale)
         dataUnit.resetColorTransferFunction()
         self.preview.updatePreview(1)
@@ -233,5 +233,5 @@ color depth. Use the histograms below to the select how the intensities in your 
         Description: Set the zslice displayed
         """             
         self.preview.setZSlice(self.zslider.GetValue()-1)
-        print "Setting preview to ",self.zslider.GetValue()-1
+        #print "Setting preview to ",self.zslider.GetValue()-1
         self.preview.updatePreview(0)

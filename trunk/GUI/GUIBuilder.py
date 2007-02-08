@@ -93,7 +93,6 @@ class GUIBuilderBase:
         """          
         for item in self.getPlainParameters():
             value = self.getParameter(item)
-#            print "set_parameter",item,value
             messenger.send(self,"set_%s"%item,value)
 
     
@@ -223,10 +222,8 @@ class GUIBuilder(wx.Panel):
         """ 
         self.currentFilter = currentFilter
         parameters = currentFilter.getParameters()
-        #print "Got params",parameters
         gy=0
             
-        #print "Building GUI"
         #sbox=UIElements.MyStaticBox(self,-1,currentFilter.getName())
         sbox = wx.StaticBox(self,-1, currentFilter.getName())
         #sbox.SetOwnBackgroundColour((0,255,0))
@@ -269,8 +266,8 @@ class GUIBuilder(wx.Panel):
                         isTuple=1
                     else:
                         itemType = currentFilter.getType(item)
-                    print "item=",item,"param=",param
-                    print "itemType=",itemType,"isTuple=",isTuple
+                    #print "item=",item,"param=",param
+                    #print "itemType=",itemType,"isTuple=",isTuple
                     
                     #print "items=",items
                     
@@ -283,7 +280,7 @@ class GUIBuilder(wx.Panel):
                             nobr = 0
                             cx+=1
                             useOld = 1
-                        print "x=",cx,"y=",y
+                        #print "x=",cx,"y=",y
                         oldy=y
                         cx, y = self.processItem(currentFilter,itemsizer,item,x=cx,y=y, useOld = useOld)
                         if n>0:
@@ -297,12 +294,12 @@ class GUIBuilder(wx.Panel):
                           # together
                         if not nobr:
                             y+=1
-                        print "cx=",cx,"y=",y
+                        #print "cx=",cx,"y=",y
                         if itemType == RADIO_CHOICE:
                             # Indicate that we need to skip next item
                             skip=1
-                            print item
-                            print "Creating radio choice"
+                            #print item
+                            #print "Creating radio choice"
                             if items[n+1][0] == "cols":
                                 majordim=wx.RA_SPECIFY_COLS
                             else:
@@ -373,7 +370,6 @@ class GUIBuilder(wx.Panel):
                             itemsizer.Add(box,(y,0),flag=wx.EXPAND|wx.HORIZONTAL)
                             y+=1
                         elif itemType == FILENAME:
-                            print "CREATING FILENAME"
                             # Indicate that we need to skip next item
                             skip=2
                         
@@ -535,7 +531,7 @@ class GUIBuilder(wx.Panel):
                             
                             histogram.setThresholdMode(1)
                             du=self.filter.getDataUnit().getSourceDataUnits()[0]
-                            print "Connecting",item[0],item[1]
+                            #print "Connecting",item[0],item[1]
                             flo=lambda obj,evt,arg, histogram=histogram, i=item[0], s=self: s.onSetHistogramValues(histogram,i,arg,valuetype="Lower")
                             messenger.connect(currentFilter,"set_%s"%item[0],flo)
                             fhi=lambda obj,evt,arg, histogram=histogram, i=item[1], s=self: s.onSetHistogramValues(histogram,i,arg,valuetype="Upper")
@@ -547,7 +543,6 @@ class GUIBuilder(wx.Panel):
                             groupsizer=wx.GridBagSizer()
                             x=0
                             for it in item:
-                                print "PROCESSING ITEM",it
                                 self.processItem(currentFilter, groupsizer, it, x=x,y=0)
                                 x+=1
                             span=(1,x)
@@ -651,7 +646,6 @@ class GUIBuilder(wx.Panel):
         Description: Set the value for the GUI item 
         """         
         sval = box.itemToDesc[item]
-        print "setradiobox",item,value
         if value:
             box.SetStringSelection(sval)
         
@@ -683,7 +677,6 @@ class GUIBuilder(wx.Panel):
         Created: 15.04.2006, KP
         Description: Build the GUI related to one specific item
         """           
-        print "ITEM=",item,"UseOld=",useOld
         desc = currentFilter.getDesc(item)
         if not useOld:
             bg = wx.Window(self,-1)
@@ -763,7 +756,7 @@ class GUIBuilder(wx.Panel):
         #        x2+=1
         #    else:
         #        y+=1
-        print "Adding input to",x2,y
+        #print "Adding input to",x2,y
         if not useOld:
             itemsizer.Add(bg,(y,x2))
         bg.Layout()
@@ -866,11 +859,11 @@ class GUIBuilder(wx.Panel):
         Description: Add a value to the pixel listbox
         """             
         #print "Set pixel",obj,evt,rx,ry,rz,r,g,b,alpha,item,currFilter
-        print "item=",item
+        #print "item=",item
         if listbox.selectPixel:
             seeds = currFilter.getParameter(item[0])
             seeds.append((rx,ry,rz))
-            print "Settng parameter",item,"to",seeds            
+            #print "Settng parameter",item,"to",seeds            
             
             currFilter.setParameter(item[0],seeds)
             listbox.Append("(%d, %d, %d)"%(rx, ry, rz))            
@@ -884,7 +877,7 @@ class GUIBuilder(wx.Panel):
         """             
         #print "Set pixel",obj,evt,rx,ry,rz,r,g,b,alpha,item,currFilter
         if valuelbl.selectPixel:
-            print "Settng parameter",item,"to",rx,ry,rz
+            #print "Settng parameter",item,"to",rx,ry,rz
             
             currFilter.setParameter(item[0],(rx,ry,rz))
             valuelbl.SetLabel("(%d, %d, %d)"%(rx,ry,rz))
@@ -905,7 +898,7 @@ class GUIBuilder(wx.Panel):
         Description: Set the value of the pixel label from a variable
         """     
         listbox.Clear()
-        print value
+        #print value
         for rx,ry,rz in value:
             listbox.Append("(%d, %d, %d)"%(rx,ry,rz))            
 

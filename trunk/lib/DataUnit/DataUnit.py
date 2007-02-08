@@ -272,7 +272,7 @@ class DataUnit:
         self.getEmissionWavelength = dataSource.getEmissionWavelength
         self.getExcitationWavelength = dataSource.getExcitationWavelength
         self.getNumericalAperture = dataSource.getNumericalAperture
-        Logging.info("Dataunit ",repr(self),"got datasource",repr(self.dataSource),kw="datasource")
+#        Logging.info("Dataunit ",repr(self),"got datasource",repr(self.dataSource),kw="datasource")
         
         #self.updateSettings()
     def doProcessing(self,duFile,**kws):
@@ -331,7 +331,7 @@ class DataUnit:
         key="Source"
         # Use the string representation of the dataunit to get the type 
         # and path of the dataunit
-        value=str(self)
+        value=self.dataSource.uniqueId()
         self.settings.setCounted(key,0,value)
     
         self.settings.writeTo(parser)
@@ -343,4 +343,5 @@ class DataUnit:
         Description: Return the path to the file this dataunit represents
         """
         return self.dataSource.getFileName()
+        
         

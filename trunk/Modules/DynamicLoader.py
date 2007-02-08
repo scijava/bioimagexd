@@ -78,7 +78,6 @@ def getModules(name,flag="*.py",callback=None,moduleType="Module"):
     for i in to_remove:
         modules.remove(i)
     for file in modules:
-        Logging.info("About to import ",file,kw="modules")
         if file.find(".") != -1:
             mod=file.split(".")[0:-1]
             mod=".".join(mod)
@@ -91,7 +90,7 @@ def getModules(name,flag="*.py",callback=None,moduleType="Module"):
         mod=mod.split(".")[-1]
         
         
-        Logging.info("Importing %s from %s"%(mod,frompath),kw="modules")
+        Logging.info("Importing %s = %s from %s"%(file, mod,frompath),kw="modules")
         try:
             module = __import__(mod,globals(),locals(),mod)
         except ImportError:            
@@ -105,7 +104,7 @@ def getModules(name,flag="*.py",callback=None,moduleType="Module"):
                 name = mod
         if callback:
             callback("Loading %s %s..."%(moduleType,name))
-        Logging.info("Module=%s"%module,kw="modules")
+#        Logging.info("Module=%s"%module,kw="modules")
 
         if hasattr(module,"getName"):
             name = module.getName()

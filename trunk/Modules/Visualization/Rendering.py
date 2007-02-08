@@ -31,18 +31,12 @@ __version__ = "$Revision: 1.9 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 import wx
-
 import DataUnit
-
 import Visualizer.VisualizationFrame as VisualizationFrame
-
 import Visualizer.VisualizerWindow as VisualizerWindow
 
 
-import PreviewFrame
-
 import Visualizer.VisualizationModules as vmods
-
 import Visualizer.ModuleConfiguration as ModuleConfiguration
 from Visualizer.VisualizationMode import VisualizationMode
 
@@ -144,6 +138,7 @@ class RenderingMode(VisualizationMode):
         """
         bxd.preferRGB = 0
         bxd.wantAlphaChannel = 1
+        bxd.wantWholeDataset = 1
         self.sidebarWin=sidebarwin
         # If we're preloading, don't create the render window
         # since it will mess up the rendering

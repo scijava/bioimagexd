@@ -82,7 +82,7 @@ class VisualizationModule(GUIBuilder.GUIBuilderBase):
         Created: 31.05.2006, KP
         Description: Should it be possible to select the channel
         """          
-        return 0        
+        return 1        
 
     def setView(self,view):
         """

@@ -87,7 +87,6 @@ class VisualizeTracksHelper(PainterHelper):
         Created: 25.09.2006, KP
         Description: Show the selected tracks
         """
-        print "OnShowTracks",obj,evt,tracks
         if not tracks:
             return
         self.selectedTracks = tracks
@@ -106,7 +105,6 @@ class VisualizeTracksHelper(PainterHelper):
                 val=-1
                 while val==-1 and mintp<=maxtp:
                     val,(x0,y0,z0) = track.getObjectAtTime(mintp)
-                    print "Pos at time",mintp,"=",x0,y0,z0,"(val=",val,")"
                     x0*=self.parent.zoomFactor
                     y0*=self.parent.zoomFactor
                     x0+=self.parent.xoffset
@@ -117,7 +115,6 @@ class VisualizeTracksHelper(PainterHelper):
                 
                 for i in range(mintp, maxtp+1):
                     objectValue, pos = track.getObjectAtTime(i)
-                    print "Pos at time",i,"=",pos,"(val=",objectValue,")"
                     if objectValue != -1:
                         x1,y1,z1 = pos
                         
@@ -138,7 +135,6 @@ class VisualizeTracksHelper(PainterHelper):
                         if x0 != x1:
                             dc.DrawLine(x0,y0,x1,y1)
                             a1 = angle(x0,y0,x1,y1)
-                            print "Angle=",a1
                             #for ang in [45]:
                             if 0:
                                 ang=ang*((2*math.pi)/360.0)
@@ -205,7 +201,6 @@ class CenterOfMassHelper(PainterHelper):
         if self.centerOfMass:
             label, (x,y,z) = self.centerOfMass
             
-            print "Painting center of Mass at ",x,y
             #x=self.xdim - x 
             #y = self.ydim - y
             x*= self.parent.zoomFactor
@@ -376,7 +371,6 @@ class InteractivePanel(ogl.ShapeCanvas):
         for shape in shapelist:        
             sx,sy=shape.GetX(),shape.GetY()
             #shape.Move(x+xdiff,y+ydiff, display=False)
-            #print "Setting pos to ",sx+xdiff,sy+ydiff
             shape.SetX(sx+xdiff)
             shape.SetY(sy+ydiff)
         self.repaintHelpers()
@@ -422,7 +416,6 @@ class InteractivePanel(ogl.ShapeCanvas):
         self.painterHelpers.append(painter)      
       
     def onUpdateHelpers(self, obj,evt,update):
-        print "Update=",update
         self.repaintHelpers(update)
         if update:
             self.Refresh()
@@ -443,7 +436,6 @@ class InteractivePanel(ogl.ShapeCanvas):
         for helper in self.painterHelpers:
             helper.paintOnDC(memdc)
         memdc.SelectObject(wx.NullBitmap)        
-        #print "\nREPAINTED HELKPERS WITH UPDATE=",update
         if update:
             self.Update()
         #self.OnPaint(None)
@@ -455,7 +447,6 @@ class InteractivePanel(ogl.ShapeCanvas):
         Description: Erase the given lines from this canvas
         """            
         for line in lines:
-            print "Deleting",line            
             line.Delete()
             self.RemoveShape(line)
             self.lines.remove(line)
@@ -481,8 +472,6 @@ class InteractivePanel(ogl.ShapeCanvas):
         mx,my,mz = self.dataUnit.getDimensions()
         rois=self.getRegionsOfInterest()
         names=[roi.getName() for roi in rois]
-        print "Dimensions=",mx,my,mz
-        print "Rois=",rois
         maskImage = ImageOperations.getMaskFromROIs(rois,mx,my,mz)
         
         return maskImage,names
@@ -495,10 +484,8 @@ class InteractivePanel(ogl.ShapeCanvas):
         """            
         shape = MyPolygon(zoomFactor = self.zoomFactor)
         pts=[]
-        print "points=",points
         #shape.SetCentreResize(0)
         mx,my= shape.polyCenter(points)
-        print "Center of polygon=",mx,my
         
         for x,y in points:
             pts.append((((x-mx)),((y-my))))
@@ -509,8 +496,8 @@ class InteractivePanel(ogl.ShapeCanvas):
         
         self.paintPreview()
         self.Refresh()
-        print "Added",shape,pts
-                    
+        
+       
 
     def OnSize(self,evt):
         """
@@ -654,7 +641,6 @@ class InteractivePanel(ogl.ShapeCanvas):
             self.zoomToRubberband(event)
         elif self.action==ADD_ANNOTATION:
             #self.updateObject(self.annotationClass,event
-            print "Adding annotation"
             x,y=event.GetPosition()
             ex,ey = self.actionstart
             
@@ -726,10 +712,8 @@ class InteractivePanel(ogl.ShapeCanvas):
         elif self.action==DELETE_ANNOTATION:            
             x,y = self.actionstart
             
-            print "Deleting annotation at",x,y
             obj,attach = self.FindShape(x,y)
             if obj:
-                print "Deleting",obj
                 self.RemoveShape(obj)
                 obj.Delete()            
                 self.paintPreview()
@@ -899,15 +883,12 @@ class InteractivePanel(ogl.ShapeCanvas):
         Created: 28.04.2005, KP
         Description: Does the actual blitting of the bitmap
         """
-        #print "\n\ONPAINT"
-        
         scrolledWinDC=0
         if self.is_windows:
             x,y=self.GetViewStart()
             if x or y:
                 scrolledWinDC=1
-                #print "\n\nUNBUFFERED PAINTING"
-                #Logging.info("Resorting to unbuffered drawing because of scrolling",kw="iactivepanel")
+                Logging.info("Resorting to unbuffered drawing because of scrolling",kw="iactivepanel")
                 dc=wx.PaintDC(self)
                 
                 self.PrepareDC(dc)
@@ -1015,6 +996,5 @@ class InteractivePanel(ogl.ShapeCanvas):
         if ext=="tif":ext="tiff"
         mime="image/%s"%ext
         img=self.buffer.ConvertToImage()
-        #print "Saving mimefile ",filename,mime
         img.SaveMimeFile(filename,mime)
         

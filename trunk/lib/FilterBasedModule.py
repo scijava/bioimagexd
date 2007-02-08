@@ -120,13 +120,12 @@ class FilterBasedModule(Module):
         Description: Manipulationes the dataset in specified ways
         """        
         if preview and not self.modified and self.cached and self.timepoint == self.cachedTimepoint:
-            print "\n\n***** Returning cached data, timepoint=",self.timepoint,"cached timepoint=",self.cachedTimepoint,"\n\n******"
+            Logging.info("--> Returning cached data, timepoint=%d, cached timepoint=%d"%(self.timepoint,self.cachedTimepoint),kw="pipeline")
             return self.cached
         else:
             del self.cached
             self.cached = None
         filterlist = self.settings.get("FilterList")
-        print "Filters in filterlist=",filterlist
         
         if type(filterlist)==type(""):
             filterlist=[]
@@ -134,8 +133,6 @@ class FilterBasedModule(Module):
         data = self.images
         if not filterlist:
             return self.images[0]
-        for f in filterlist:
-            print f,"is enabled:", f.getEnabled()
         try:
             filterlist=filter(lambda x:x.getEnabled(),filterlist)
         except:
@@ -164,7 +161,7 @@ class FilterBasedModule(Module):
                 if not flag:
                     nextfilter = filterlist[i+1]
                     if not currfilter.itkFlag and nextfilter.itkFlag:
-                        print "Executing VTK side before switching to ITK"
+                        Logging.info("Executing VTK side before switching to ITK",kw="pipeline")
                         data = bxd.mem.optimize(image = data, releaseData = 1)
                         data.Update()                
                     
