@@ -32,7 +32,9 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 import site
 site.addsitedir("/usr/local/lib/python2.4/site-packages/")
-
+site.addsitedir("/Library/Frameworks/Python.framework/Versions/2.5/lib/InsightToolkit/WrapITK/Python")
+site.addsitedir("/Library/Frameworks/Python.framework/Versions/2.5/lib/InsightToolkit/WrapITK/lib")
+import itk
 import os.path
 import os
 import sys

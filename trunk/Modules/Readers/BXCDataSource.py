@@ -45,7 +45,7 @@ class MyConfigParser(RawConfigParser):
 
 def getExtensions(): return ["bxc"]
 def getFileType(): return "BioImageXD dataset channel (*.bxc)"
-def getClass(): return BXDCataSource
+def getClass(): return BXCDataSource
 
 
 class BXCDataSource(DataSource):
@@ -226,9 +226,10 @@ class BXCDataSource(DataSource):
             except:
                 dataUnitFormat = self.parser.get("Type","type")
         except Exception, ex:
-            Logging.error("Failed to open file for reading",
-            "DUDataSource failed to open %s for reading. Reason: %s"%(filename,str(ex)))
-            return [None]
+            #Logging.error("Failed to open file for reading",
+            #"BXCDataSource failed to open %s for reading. Reason: %s"%(filename,str(ex)))
+            #return [None]
+            return "NOOP"
         return dataUnitFormat
 
     def loadFromFile(self, filename):
@@ -290,6 +291,7 @@ class BXCDataSource(DataSource):
         dataunit.setSettings(settings)
         data = dataunit.getTimePoint(0)
         dataunits = [dataunit]
+       
         if data.GetNumberOfScalarComponents()==3:
             for i in range(0,3) :
                 ds = RGBComponentDataSource(self, i)

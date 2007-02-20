@@ -80,7 +80,7 @@ import Urmas # The animator, Unified Rendering / Animator
 import UIElements
 
 import MaskTray
-
+import DataSource
 import scripting as bxd
 
 
@@ -729,12 +729,54 @@ class MainWindow(wx.Frame):
         Created: 24.05.2006, KP
         Description: Process the dataset
         """
-        do_cmd = "mainWindow.processDataset(modal=0)"
-        cmd = Command.Command(Command.GUI_CMD,None,None,do_cmd,"",desc="Process the dataset with the current task")
-        cmd.run(recordOnly=1)
-        self.processDataset()
+        if self.currentTaskWindow:
+            do_cmd = "mainWindow.processDataset(modal=0)"
+            cmd = Command.Command(Command.GUI_CMD,None,None,do_cmd,"",desc="Process the dataset with the current task")
+            cmd.run(recordOnly=1)
+            self.processDataset()
+        else:
+            filename=Dialogs.askSaveAsFileName(self,"Save dataset as","output.bxd","BioImageXD Dataset (*.bxd)|*.bxd")
+            filename=filename.replace("\\","\\\\")
+            
+            do_cmd = "mainWindow.saveSelectedDatasets('%s')"%filename
+            cmd = Command.Command(Command.GUI_CMD,None,None,do_cmd,"",desc="Save the selected datasets to a BXD file")
+            cmd.run()
+    def saveSelectedDatasets(self, filename):
+        """
+        Created: 08.02.2007, KP
+        Description: Save the selected datasets into a .bxd file
+        """
+        selectedUnits=self.tree.getSelectedDataUnits()
+        bxdwriter =  DataSource.BXDDataWriter(filename)
+        print "SELECTED UNITS=",selectedUnits
+        for dataUnit in selectedUnits:
+            chname = dataUnit.getName()
+            chname=chname.replace(" ","_")
+            filename= dataUnit.getDataSource().getFileName()
+            filebase = os.path.basename(".".join(filename.split(".")[:-1]))
+            bxcfilename = bxdwriter.getBXCFileName("%s_%s"%(filebase,chname))
+            writer = DataSource.BXCDataWriter(bxcfilename)
+            n = dataUnit.getLength()
+            for i in range(0,n):
+                print "\n\nADDING TIMEPOINT",i
+                data = dataUnit.getTimePoint(i)
+                writer.addImageData(data)
+            print "--> WRITING DAATA"
+            parser = writer.getParser()
 
+            dataUnit.getSettings().writeTo(parser)
+            writer.write()
+            writer.sync()
+            
+            bxdwriter.addChannelWriter(writer)
+        bxdwriter.write()
+            
+        
     def processDataset(self, modal=1):
+        """
+        Created: KP
+        Description: send the message to use the current task for processing the data
+        """
         bxd.modal = modal
         messenger.send(None,"process_dataset")
 
@@ -1359,7 +1401,8 @@ class MainWindow(wx.Frame):
             return
         ext=ext.lower()
         
-        if ext=='bxd':
+        # CANNOT READ SETTINGS FROM BXD ANYMORE
+        if 0 and ext=='bxd':
             # We check that the file is not merely a settings file
             #try:
             self.parser = SafeConfigParser()

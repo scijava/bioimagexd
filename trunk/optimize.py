@@ -41,7 +41,7 @@ alwaysSplit=0
 noLimits=0
 conf= None
 targetSize = None
-
+executing = 0
 
 def set_target_size(x,y,z=0):
     #print "\n\\nTARGET SIZE FOR RESAMPLE-TO-FIT ",x,y,z
@@ -90,6 +90,8 @@ def optimize(image = None, vtkFilter = None, updateExtent = None, releaseData = 
 def execute_limited(pipeline, updateExtent = None):
     global memLimit,noLimits,alwaysSplit
     global numberOfDivisions
+    global executing
+
     
     if not memLimit:
         get_memory_limit()
@@ -109,7 +111,11 @@ def execute_limited(pipeline, updateExtent = None):
         streamer = vtk.vtkMemoryLimitImageDataStreamer()
         streamer.SetMemoryLimit(1024*memLimit)
         streamer.GetExtentTranslator().SetSplitModeToZSlab()
-        
+    
+    while executing:
+        print "waiting for turn..."
+        time.sleep(0.01)
+    executing = 1
     streamer.SetInput(pipeline.GetOutput())
     retval = streamer.GetOutput()
     
@@ -119,6 +125,7 @@ def execute_limited(pipeline, updateExtent = None):
     else:
         retval.SetUpdateExtent(retval.GetWholeExtent())
     streamer.Update()
+    executing = 0
     return retval
 
 

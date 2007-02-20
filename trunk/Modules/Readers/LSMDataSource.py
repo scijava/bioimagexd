@@ -51,7 +51,6 @@ class LsmDataSource(DataSource.DataSource):
     """
     def __init__(self,filename="",channelNum=-1):
         """
-        Method: __init__
         Created: 18.11.2004, KP
         Description: Constructor
         """
@@ -84,7 +83,7 @@ class LsmDataSource(DataSource.DataSource):
         if self.filename:
             self.path=os.path.dirname(filename)
             Logging.info("LsmDataSource created with file %s and channelNum=%d"%\
-            (self.filename,channelNum),kw="datasource")
+            (self.filename,channelNum),kw="lsmreader")
             try:
                 f=open(filename)
                 f.close()
@@ -123,6 +122,7 @@ class LsmDataSource(DataSource.DataSource):
         notinvtk=0
         
         if progress==1.0:notinvtk=1
+        scripting.inIO = (progress < 1.0)
         #messenger.send(None,"update_progress",progress,msg,notinvtk)
         #print msg     
 
@@ -135,13 +135,7 @@ class LsmDataSource(DataSource.DataSource):
         if not self.dimensions:
             self.getDimensions()
         return self.dimensions[3]
-        
-    #def getOriginalScalarRange(self):
-    #    """
-    #    Created: 16.12.2006, KP
-    #    Description: return the original scalar range
-    #    """
-        
+  
     def getBitDepth(self):
         """
         Created: 07.08.2006, KP
@@ -194,7 +188,7 @@ class LsmDataSource(DataSource.DataSource):
         
         if not self.spacing:
             a,b,c=self.reader.GetVoxelSizes()
-            Logging.info("Voxel sizes = ",a,b,c,kw="datasource")
+            Logging.info("Voxel sizes = ",a,b,c,kw="lsmreader")
             self.spacing=[1,b/a,c/a]
         return self.spacing
         
@@ -274,7 +268,7 @@ class LsmDataSource(DataSource.DataSource):
         dataunits=[]
         channelNum=self.reader.GetNumberOfChannels()
         self.timepointAmnt=channelNum
-        Logging.info("There are %d channels"%channelNum,kw="datasource")
+        Logging.info("There are %d channels"%channelNum,kw="lsmreader")
         for i in range(channelNum):
             # We create a datasource with specific channel number that
             #  we can associate with the dataunit
@@ -287,45 +281,6 @@ class LsmDataSource(DataSource.DataSource):
         return dataunits
 
 
-    def writeToDuFile(self):
-        """
-        Created: 10.11.2004, KP
-        Description: Writes the given datasets and their information to a BXD file
-        """
-        parser=ConfigParser()
-        for sectionName in self.dataUnitSettings.keys():
-            if not parser.has_section(sectionName):
-                parser.add_section(sectionName)
-            for settingsDict in self.dataUnitSettings[sectionName]:
-                for key in settingsDict.keys():
-                    parser.set(sectionName,key,settingsDict[key])
-        parser.add_section("VTIFiles")
-        n=len(self.dataSets)
-        parser.set("VTIFiles","numberOfFiles","%d"%n)
-        for i in range(n):
-            parser.set("VTIFiles","file%d"%i,self.dataSets[i])
-        try:
-            fp=open(self.filename,"w")
-        except IOError,ex:
-            Logging.error("Failed to write settings",
-            "VTIDataSource Failed to open .du file %s for writing settings"%\
-            filename,ex)
-            return
-        parser.write(fp)
-        fp.close()
-
-
-    def addDataUnitSettings(self,section,settingDict):
-        """
-        Created: 18.11.2004, KP
-        Description: This adds a pair of setting keys and their values to an 
-                     internal dictionary that are written to the .du file when 
-                     it is written out.
-        """
-        if not self.dataUnitSettings.has_key(section):
-            self.dataUnitSettings[section]=[]
-        self.dataUnitSettings[section].append(settingDict)
-
     def getColorTransferFunction(self):
         """
         Created: 26.04.2005, KP
@@ -333,7 +288,7 @@ class LsmDataSource(DataSource.DataSource):
                      operates on
         """
         if not self.ctf:
-            Logging.info("Using ctf based on LSM Color",kw="datasource")
+            Logging.info("Using ctf based on LSM Color",kw="lsmreader")
             ctf = vtk.vtkColorTransferFunction()
             r=self.reader.GetChannelColorComponent(self.channelNum,0)
             g=self.reader.GetChannelColorComponent(self.channelNum,1)

@@ -437,7 +437,9 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         Parameters:
         renew    Whether the method should recalculate the images
         """
-        
+        if bxd.inIO:
+            Logging.info("\n\n\n------> STILL IN IO, WON'T UPDATE PREVIEW")
+            return
         if self.renewNext:
             renew=1
             self.renewNext=0
@@ -478,7 +480,6 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         if not preview:
             preview=None
             black=1
-        
         if not black:
             #print "Processing preview=",preview.GetDimensions()
             colorImage = self.processOutputData(preview)

@@ -193,7 +193,7 @@ class DataUnitSettings:
                 pass
             else:
                 settingsclass=self.modules[type][2].getSettingsClass()
-                Logging.info("Type=%s, settings class=%s"(type,str(settingsclass)),kw="processing")
+                Logging.info("Type=%s, settings class=%s"%(type,str(settingsclass)),kw="processing")
                 #obj=eval(type)(self.n)
                 obj=settingsclass(self.n)
                 obj.setType(type)

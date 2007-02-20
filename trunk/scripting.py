@@ -115,6 +115,7 @@ processingTimepoint = -1
 wantAlphaChannel=1
 preferRGB = 1
 wantWholeDataset = 0
+inIO = 0
 
 dialogs = {}
 

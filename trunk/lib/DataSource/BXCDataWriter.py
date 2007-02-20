@@ -1,12 +1,12 @@
 
 # -*- coding: iso-8859-1 -*-
 """
- Unit: BXDDataWriter
+ Unit: BXCDataWriter
  Project: BioImageXD
  Created: 22.02.2005, KP
  Description:
 
- A writer of BioImageXD .bxd files
+ A writer of BioImageXD .bxc channel files
  
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
@@ -42,10 +42,10 @@ class MyConfigParser(RawConfigParser):
     def optionxform(self, optionstr):
         return optionstr
         
-class BXDDataWriter(DataWriter):
+class BXCDataWriter(DataWriter):
     """
     Created: 26.03.2005, KP
-    Description: A writer of BioImageXD data (.bxd) files
+    Description: A writer of BioImageXD dataset channel (.bxc) files
     """
 
     def __init__(self,filename):
@@ -57,10 +57,10 @@ class BXDDataWriter(DataWriter):
         # list of references to individual datasets (= timepoints) stored in 
         # vti-files
         self.dataSets = []
-        # filename of the .du-file
+        # filename of the .bxc-file
         
         self.filename = filename
-        # path to the .du-file and .vti-file(s)
+        # path to the .bxc-file and .vti-file(s)
         self.path=""
         # List of images and their paths
         self.imagesToWrite=[]
@@ -70,6 +70,14 @@ class BXDDataWriter(DataWriter):
 
         self.dataUnitSettings={}
         self.parser = None
+        
+    def getFilename(self):
+        """
+        Created: 08.02.2007, KP
+        Description: return the filename
+        """
+        return self.filename
+        
         
     def getParser(self):
         """
@@ -177,6 +185,7 @@ class BXDDataWriter(DataWriter):
             writer=vtk.vtkXMLImageDataWriter()
             writer.SetFileName(filename)
             #print "Writing ",imageData
+            imageData.Update()
             writer.SetInput(imageData)
             ret=writer.Write()
             if ret==0:

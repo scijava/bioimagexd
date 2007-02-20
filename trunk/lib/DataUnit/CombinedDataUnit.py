@@ -177,7 +177,7 @@ class CombinedDataUnit(DataUnit.DataUnit):
         """
         return self.sourceunits
 
-    def doProcessing(self,duFile,**kws):
+    def doProcessing(self,bxdFile,**kws):
         """
         Created: 08.11.2004, JM
         Description: Executes the module's operation using the current settings
@@ -196,7 +196,13 @@ class CombinedDataUnit(DataUnit.DataUnit):
         timepoints=kws.get("timepoints",range(self.getLength()))
         # We create the vtidatasource with the name of the dataunit file
         # so it knows where to store the vtkImageData objects
-        self.dataWriter=DataSource.BXDDataWriter(duFile)
+        bxdwriter = DataSource.BXDDataWriter(bxdFile)
+
+        
+        bxcFile = bxdwriter.getBXCFileName(bxdFile)
+        bxcFile=bxcFile[:-1]+"p"
+        self.dataWriter=DataSource.BXCDataWriter(bxcFile)
+        bxdwriter.addChannelWriter(self.dataWriter)
 
         imageList=[]
         self.n=1
@@ -232,6 +238,8 @@ class CombinedDataUnit(DataUnit.DataUnit):
         if settings_only:
             self.settings.set("SettingsOnly","True")
         self.createDataUnitFile(self.dataWriter)
+        if not settings_only:
+            bxdwriter.write()
 
     def createDataUnitFile(self,writer):
         """

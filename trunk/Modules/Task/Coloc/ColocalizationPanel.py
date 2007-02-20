@@ -981,10 +981,7 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
         Created: 31.03.2005, KP
         Description: Method to create a toolbar for the window that allows use to select processed channel
         """      
-        n=TaskPanel.TaskPanel.createItemToolbar(self)
-        return
-        #self.toolMgr.clearItemsBar()
-        
+        n=TaskPanel.TaskPanel.createItemToolbar(self)        
         
         coloc=vtk.vtkImageColocalizationFilter()
         coloc.SetOutputDepth(8)

@@ -141,14 +141,13 @@ Jaakko Mäntymaa<br>
 Kalle Pahajoki<br>
 Jukka Varsaluoma<br>
 </p><p>
-<b>The following people have significantly contributed to the development of BioImageXD:</b></p><p>
+<b>The following people, organizations and companies have significantly contributed to the development of BioImageXD:</b></p><p>
 Jorma Virtanen<br>
 Mikko Huhtala<br>
 Pekka Neittaanmäki<br>
 Anna-Brita Öst<br>
 </p><p>
-<b>The following companies have supported the development of BioImageXD:</b></p><p>
-N / A
+ISB - National Graduate School in Informational and Structural Biology<br>
 </p>
 </body>
 </html>
