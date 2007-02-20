@@ -237,7 +237,6 @@ class DataUnit:
             print "There are ",weakref.getweakrefcount(self),"references to me"
         if not self.dataSource:
             print self,self.name
-            raise "No datasource specified"
             Logging.error("No datasource specified",
             "No datasource specified for DataUnit, unable to get timepoint!")
             return None
@@ -275,67 +274,7 @@ class DataUnit:
 #        Logging.info("Dataunit ",repr(self),"got datasource",repr(self.dataSource),kw="datasource")
         
         #self.updateSettings()
-    def doProcessing(self,duFile,**kws):
-        """
-        Created: 14.07.2005, KP
-        Description: Executes the module's operation using the current settings
-        Parameters:
-                duFile      The name of the created .bxd file
-        Keywords:
-                callback    The callback used to give progress info to the GUI
-                            The callback is a method that takes two arguments:
-                            timepoint     The timepoint we're processing now
-                            total         Total number of timepoints we're 
-                                           processing
-                settings_only   If this parameter is set, then only the 
-                                settings will be written out and not the VTI 
-                                files.
-                timepoints      The timepoints that should be processed
-        """
-        callback=None
-        timepoints=kws.get("timepoints",range(self.getLength()))
-        
-        settings_only=kws.get("settings_only",0)
-        # We create the vtidatasource with the name of the dataunit file
-        # so it knows where to store the vtkImageData objects
-        import DataSource
-        self.dataWriter=DataSource.BXDDataWriter(duFile)
-
-        imageList=[]
-        self.n=1
-        if not settings_only:
-            for timePoint in timepoints:
-                # We get the processed timepoint from each of the source data 
-                # units
-                #self.module.setSettings(self.settings)
-                imageData=dataunit.getTimePoint(timePoint)
-                self.n+=1
-                # Write the image data to disk
-                if not settings_only:
-                    self.dataWriter.addImageData(imageData)
-                    self.dataWriter.sync()
-
-        if settings_only:
-            self.settings.set("SettingsOnly","True")
-        self.createDataUnitFile(self.dataWriter)
-
-    def createDataUnitFile(self,writer):
-        """
-        Created: 1.12.2004, KP, JM
-        Description: Writes a du file to disk
-        """
-        parser=writer.getParser()
-        
-        # Write out the names of the datasets used for this operation
-    
-        key="Source"
-        # Use the string representation of the dataunit to get the type 
-        # and path of the dataunit
-        value=self.dataSource.uniqueId()
-        self.settings.setCounted(key,0,value)
-    
-        self.settings.writeTo(parser)
-        writer.write()
+   
 
     def getFileName(self):
         """

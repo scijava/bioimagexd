@@ -173,7 +173,7 @@ class Module:
         Created: 03.11.2004, KP
         Description: Does a preview calculation for the x-y plane at depth z
         """
-        raise "Abstract method getPreview() called"
+        return self.images[0]
 
     def processData(self,z,newData,toZ=None):
         """
@@ -184,25 +184,13 @@ class Module:
                     toZ      Optional parameter defining the z coordinate
                              where the colocalization data is written
         """
-        raise "Abstract method processData(z,data)"
+        return self.images[0]
 
     def doOperation(self):
         """
         Created: 01.12.2004, KP
         Description: Does the operation for the specified datasets.
         """
-        raise "Abstract method doOperation() called"
+        return self.images[0]
 
-    def getLimitedOutput(self,filter):
-        """
-        Created: 27.04.2006, KP
-        Description: Return the results of the pipeline possibly executed in chunks
-        """
-        if self.limit and self.streamer:
-            self.streamer.SetInput(filter.GetOutput())
-            self.streamer.Update()
-            print "Executing through streamer"
-            return self.streamer.GetOutput()
-        else:
-            filter.Update()
-            return filter.GetOutput()
+

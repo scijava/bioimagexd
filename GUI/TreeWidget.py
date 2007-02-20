@@ -363,6 +363,28 @@ class TreeWidget(wx.SashLayoutWindow):
             item = self.interfilefiles
             self.tree.Expand(item)
         elif objtype=="bxd":
+        
+        
+            if not self.bxdfiles:
+                self.bxdfiles=self.tree.AppendItem(self.root,"BioImageXD files")
+                self.tree.SetPyData(self.bxdfiles,"1")        
+                self.tree.SetItemImage(self.bxdfiles,fldridx,which=wx.TreeItemIcon_Normal)
+                self.tree.SetItemImage(self.bxdfiles,fldropenidx,which=wx.TreeItemIcon_Expanded)
+
+            item=self.bxdfiles
+            self.tree.Expand(item)            
+            item=self.tree.AppendItem(item,name)
+            self.tree.Expand(item)
+
+#            self.tree.Expand(item)
+            self.tree.SetPyData(item,"2")        
+            self.tree.SetItemImage(item,fldropenidx,which=wx.TreeItemIcon_Expanded)
+
+            #item=self.bxdfiles
+            #self.tree.Expand(item)
+        elif objtype=="bxc":
+        
+        
             if not self.bxdfiles:
                 self.bxdfiles=self.tree.AppendItem(self.root,"BioImageXD files")
                 self.tree.SetPyData(self.bxdfiles,"1")        
@@ -371,7 +393,7 @@ class TreeWidget(wx.SashLayoutWindow):
 
             item=self.bxdfiles
             self.tree.Expand(item)
-        
+            
         self.tree.Expand(item)
         selected=0
         for obj in objs:
@@ -557,6 +579,6 @@ class TreeWidget(wx.SashLayoutWindow):
                     self.tree.ToggleItemSelection(item)
                 #print "FOUND",obj
                 ret.append(obj)
-        #print "RETURNING",ret
+        #'"RETURNING",ret
         self.programmatic = 0        
         return ret

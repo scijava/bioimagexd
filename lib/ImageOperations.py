@@ -362,7 +362,7 @@ def lutToString(ctf, luttype = "ImageJ"):
         d=1
     if luttype=="BioImageXD":
         s="BXDLUT"
-        Logging.info("Adding to BXDLUT structure the minval%=%d, maxval=%d"%(minval,maxval),kw="ctf")
+        Logging.info("Adding to BXDLUT structure the minval=%d, maxval=%d"%(minval,maxval),kw="ctf")
         
         s+=struct.pack("f",minval)
         
@@ -550,7 +550,8 @@ def vtkImageDataToPreviewBitmap(dataunit,timepoint,color,width=0,height=0,bgcolo
     #maptocolor.Update()
     #imagedata=maptocolor.GetOutput()    
     #imagedata = bxd.execute_limited(maptocolor)
-    imagedata = bxd.mem.optimize(vtkFilter = maptocolor)
+    #imagedata = bxd.mem.optimize(vtkFilter = maptocolor)
+    imagedata = maptocolor.GetOutput()
     imagedata.Update()
     #imagedata.Update()
     #imagedata=getMIP(imageData,color)
@@ -978,9 +979,10 @@ def scatterPlot(imagedata1,imagedata2,z,countVoxels, wholeVolume=1,logarithmic=1
     shiftscale.SetOutputScalarTypeToUnsignedChar();
     shiftscale.SetScale(d)
     shiftscale.SetInput(app.GetOutput())
-    #data = shiftscale.GetOutput()
+    data = shiftscale.GetOutput()
+    data.Update()
+    #data = bxd.mem.optimize(vtkFilter = shiftscale)
     
-    data = bxd.mem.optimize(vtkFilter = shiftscale)
     acc=vtk.vtkImageAccumulate()
     
     #n = max(imagedata1.GetScalarRange())

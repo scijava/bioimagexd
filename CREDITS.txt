@@ -1,12 +1,12 @@
 The BioImageXD Project:
 
-BioImageXD Copyright (C) 2004, 2005 The development team
+BioImageXD Copyright (C) 2004-2007 The development team
 
 The development team:
 
-Pasi Kankaanpää
+Pasi Kankaanp‰‰
 Kalle Pahajoki
-Varpu Marjomäki
+Varpu Marjom‰ki
 Jyrki Heino
 Daniel White
 
@@ -14,8 +14,8 @@ Former member of the main development team (and the developer of the Zeiss LSM f
 Heikki Uuksulainen
 
 BioImageXD is largely based on the work of the Selli project, which included the following people:
-Juha Hyytiäinen
-Jaakko Mäntymaa
+Juha Hyyti‰inen
+Jaakko M‰ntymaa
 Kalle Pahajoki
 Jukka Varsaluoma
 

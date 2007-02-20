@@ -38,14 +38,14 @@ import sys
 
 outfile=sys.stdout
 HIDE_DEBUG=[]
-AHIDE_DEBUG=["visualizer","main","init","animator","io","task","preview","scale",
+HIDE_DEBUG=["visualizer","main","init","animator","io","task","preview","scale",
      "imageop","modules","trivial","ctf","dataunit","event","processing",
-     "datasource","iactivepanel","annotation","ui","rendering","caching","scripting"]
+     "datasource","iactivepanel","annotation","ui","rendering","caching","scripting","NOlsmreader"]
 
 
 KWS=["visualizer","main","init","animator","io","task","preview","scale",
      "imageop","modules","trivial","ctf","dataunit","event","processing",
-     "datasource","iactivepanel","annotation","ui","rendering","caching","pipeline","scripting"]
+     "datasource","iactivepanel","annotation","ui","rendering","caching","pipeline","scripting","lsmreader"]
 import sys
 
 DO_DEBUG=1

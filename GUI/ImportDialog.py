@@ -100,7 +100,6 @@ class ImportDialog(wx.Dialog):
         filename=Dialogs.askSaveAsFileName(self,"Save imported dataset as","%s.bxd"%name,"BioImageXD Dataset (*.bxd)|*.bxd")
         self.Close()
         
-        self.resultDataset = filename
         self.convertFiles(filename)
 
     def convertFiles(self,outname):
@@ -126,7 +125,13 @@ class ImportDialog(wx.Dialog):
         dim = self.dimMapping[ext]
         self.readers=[]
         
-        self.writer = DataSource.BXDDataWriter(outname)
+        bxdwriter =  DataSource.BXDDataWriter(outname)
+        self.resultDataset = bxdwriter.getFilename()
+
+        bxcfilename = bxdwriter.getBXCFileName(outname)
+        self.writer = DataSource.BXCDataWriter(bxcfilename)
+        bxdwriter.addChannelWriter(self.writer)
+        bxdwriter.write()
         
         if dim==3:
             self.tot = len(files)
@@ -257,7 +262,7 @@ class ImportDialog(wx.Dialog):
         Description: Writes a .bxd file
         """ 
         settings = DataUnit.DataUnitSettings()
-        settings.set("Type","Adjust")
+        settings.set("Type","NOOP")
         Logging.info("Spacing for dataset=",self.spacing,kw="io")
         settings.set("Spacing",self.spacing)
         x,y,z =self.voxelSize

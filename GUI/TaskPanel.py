@@ -418,7 +418,7 @@ class TaskPanel(scrolled.ScrolledPanel):
         Description: A callback to save the settings for this operation to a 
                      du file
         """
-        wc="Dataset settings(*.bxd)|*.bxd"
+        wc="Dataset settings (*.bxd)|*.bxd"
         dlg=wx.FileDialog(self,"Save dataset settings to file",wildcard=wc,style=wx.SAVE)
         filename=None
         if dlg.ShowModal()==wx.ID_OK:
