@@ -38,7 +38,14 @@ import itk
 import os.path
 import os
 import sys
+sys.path.append(r"C:\BioImageXD\VTK-CVS\Wrapping\Python")
+sys.path.append(r"C:\BioImageXD\VTK\bin")
+sys.path.append("./vtkBXD/bin")
+sys.path.append("./vtkBXD/Wrapping/Python")
+
+
 import imp
+
 import platform
 import scripting as bxd
 import getopt
@@ -69,6 +76,7 @@ if not todir:
 itklibdir=os.path.join(todir,os.path.join("ITK-pkg","lib"))
 itkbindir=os.path.join(todir,os.path.join("ITK-pkg","bin"))
 itkpythondir=os.path.join(todir,os.path.join("ITK-pkg","Python"))
+
 
 sys.path.insert(0,itklibdir)
 sys.path.insert(0,itkbindir)

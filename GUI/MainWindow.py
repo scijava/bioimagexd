@@ -1400,7 +1400,8 @@ class MainWindow(wx.Frame):
         if self.tree.hasItem(path):
             return
         ext=ext.lower()
-        
+
+
         # CANNOT READ SETTINGS FROM BXD ANYMORE
         if 0 and ext=='bxd':
             # We check that the file is not merely a settings file
@@ -1452,6 +1453,7 @@ class MainWindow(wx.Frame):
         
         # We might get tuples from leica
         d={}
+        self.visualizer.enable(0)
         if type(dataunits[0])==types.TupleType:
             for (name,unit) in dataunits:
                 if d.has_key(name):d[name].append(unit)
@@ -1480,7 +1482,7 @@ class MainWindow(wx.Frame):
                 dlg.Destroy()
             #print dataunits[0].getTimePoint(0).GetDimensions()
             self.tree.addToTree(name,path,ext,dataunits)
-
+        self.visualizer.enable(1)
     def onMenuShowTaskWindow(self,event):
         """
         Created: 11.1.2005, KP
