@@ -440,6 +440,7 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         if bxd.inIO:
             Logging.info("\n\n\n------> STILL IN IO, WON'T UPDATE PREVIEW")
             return
+        print "\n\nUPDATING PREVIEW..."
         if self.renewNext:
             renew=1
             self.renewNext=0
@@ -502,6 +503,7 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
               
         #colorImage.Update()
         t2=time.time()
+        #print "Got ",colorImage
         Logging.info("Executing pipeline took %f seconds"%(t2-t),kw="pipeline")            
         self.currentImage=colorImage
                     

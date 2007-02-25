@@ -205,8 +205,9 @@ def scaleImage(data,factor=1.0,z=-1,interpolation=1,xfactor=0.0,yfactor=0.0):
         reslice.SetInterpolationModeToCubic()
     #reslice.Update() 
     #return reslice.GetOutput()
-    data=bxd.execute_limited(reslice)
-    #data.Update()
+    # XXX: modified, try to get errors out
+    #data=bxd.execute_limited(reslice)
+    data.Update()
     return data
     
 def loadNIHLut(data):
