@@ -125,6 +125,7 @@ def execute_limited(pipeline, updateExtent = None):
     else:
         retval.SetUpdateExtent(retval.GetWholeExtent())
     streamer.Update()
+    print "Executed!"
     executing = 0
     return retval
 
