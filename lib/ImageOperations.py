@@ -207,6 +207,7 @@ def scaleImage(data,factor=1.0,z=-1,interpolation=1,xfactor=0.0,yfactor=0.0):
     #return reslice.GetOutput()
     # XXX: modified, try to get errors out
     #data=bxd.execute_limited(reslice)
+    data = reslice.GetOutput()
     data.Update()
     return data
     
