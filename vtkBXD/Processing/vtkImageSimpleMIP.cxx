@@ -147,6 +147,8 @@ void vtkImageSimpleMIPExecute(vtkImageSimpleMIP *self, int id,int NumberOfInputs
   //printf("inIncX=%d,inIncY=%d, inIncZ=%d\n",inIncX,inIncY,inIncZ);
   //printf("outIncX=%d,outIncY=%d, outIncZ=%d\n",outIncX,outIncY,outIncZ);
   char progressText[200];
+  target = (unsigned long)((maxZ+1)*(maxY+1)/50.0);
+    
   for(idxZ = 0; idxZ <= maxZ; idxZ++ ) {
     sprintf(progressText,"Creating Maximum Intensity Projection...");
     self->SetProgressText(progressText);  
