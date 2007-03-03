@@ -65,6 +65,7 @@ class DataUnitSettings:
         """
         self.counted={}
         self.registered={}
+        self.parser = None
         self.private={}
         self.isPrivate={}
         self.type=None

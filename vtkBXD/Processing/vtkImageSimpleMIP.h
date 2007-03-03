@@ -76,6 +76,9 @@ protected:
 
   // Implement methods required by vtkAlgorithm.
   virtual int FillInputPortInformation(int, vtkInformation*);  
+  int SplitExtent(int splitExt[6], 
+                                                int startExt[6], 
+                                                int num, int total);
 
 private:
   vtkImageSimpleMIP(const vtkImageSimpleMIP&);  // Not implemented.

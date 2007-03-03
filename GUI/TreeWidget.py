@@ -397,7 +397,7 @@ class TreeWidget(wx.SashLayoutWindow):
         self.tree.Expand(item)
         selected=0
         for obj in objs:
-            
+            print "obj=",obj,obj.getName()
             added=self.tree.AppendItem(item,obj.getName())
                 
             resampledims=obj.dataSource.getResampleDimensions()

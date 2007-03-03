@@ -48,6 +48,7 @@ import string
 import scripting as bxd
 import types
 import Command
+import ConfigParser
 
 import ManipulationFilters
 
@@ -487,15 +488,25 @@ class ManipulationPanel(FilterBasedTaskPanel.FilterBasedTaskPanel):
             for currfilter in self.filters:
                 name = currfilter.getName()
                 #parser = self.dataUnit.getParser()    
-                parser = self.dataUnit.parser
+                #parser = self.dataUnit.getDataSource().getParser()
+                cached=0
+                if self.cacheParser:
+                    parser = self.cacheParser
+                    cached=1
+                else:
+                    parser = self.settings.parser
                 
                 if parser:
-                    items = parser.items(name)
+                    try:
+                        items = parser.items(name)
+                    except ConfigParser.NoSectionError:
+                        continue
                     
                     for item,value in items:            
                         #value=parser.get(name,item)
                         print "Setting",item,"to",value
-                        value = eval(value)
+                        if not cached:
+                            value = eval(value)
                         currfilter.setParameter(item, value)
                     currfilter.sendUpdateGUI()
                     self.parser = None

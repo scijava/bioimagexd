@@ -237,6 +237,9 @@ class CombinedDataUnit(DataUnit.DataUnit):
         bxd.processingTimepoint = -1
         if settings_only:
             self.settings.set("SettingsOnly","True")
+        else:
+            self.settings.set("SettingsOnly","False")
+        
         self.createDataUnitFile(self.dataWriter)
         if not settings_only:
             bxdwriter.write()

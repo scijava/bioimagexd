@@ -33,6 +33,7 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 import DataUnit
 
+import scripting as bxd
 import PreviewFrame
 from Visualizer.VisualizationMode import VisualizationMode
 
@@ -56,7 +57,6 @@ def showZoomToolbar(): return True
 class SectionsMode(VisualizationMode):
     def __init__(self,parent,visualizer):
         """
-        Method: __init__
         Created: 24.05.2005, KP
         Description: Initialization
         """
@@ -65,7 +65,6 @@ class SectionsMode(VisualizationMode):
         
     def updateRendering(self):
         """
-        Method: updateRendering
         Created: 26.05.2005, KP
         Description: Update the rendering
         """      
@@ -75,7 +74,6 @@ class SectionsMode(VisualizationMode):
         
     def showSliceSlider(self):
         """
-        Method: showSliceSlider()
         Created: 07.08.2005, KP
         Description: Method that is queried to determine whether
                      to show the zslider
@@ -84,7 +82,6 @@ class SectionsMode(VisualizationMode):
         
     def showSideBar(self):
         """
-        Method: showSideBar()
         Created: 24.05.2005, KP
         Description: Method that is queried to determine whether
                      to show the sidebar
@@ -93,7 +90,6 @@ class SectionsMode(VisualizationMode):
   
     def activate(self,sidebarwin):
         """
-        Method: activate()
         Created: 24.05.2005, KP
         Description: Set the mode of visualization
         """

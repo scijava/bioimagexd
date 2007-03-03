@@ -53,6 +53,7 @@ int vtkImageSimpleMIP::RequestInformation (
 {
   int ext[6], ext2[6],idx;
   // get the info objects
+  printf("vtkImageSimpleMIP RequestInformation\n");
   vtkInformation* outInfo = outputVector->GetInformationObject(0);
   vtkInformation *inInfo = inputVector[0]->GetInformationObject(0);
      
@@ -69,6 +70,8 @@ int vtkImageSimpleMIP::RequestInformation (
   if( numComponents > 3 ) numComponents = 3;
       
   vtkDataObject::SetPointDataActiveScalarInfo(outInfo, scalarType, numComponents);
+    printf("vtkImageSimpleMIP RequestInformation DONE!\n");
+
   return 1;
 }
 
@@ -99,26 +102,20 @@ void vtkImageSimpleMIPExecute(vtkImageSimpleMIP *self, int id,int NumberOfInputs
   int uExt[6],uExt2[6];
   //inData[0]->GetUpdateExtent(uExt);
   inData[0]->GetWholeExtent(uExt2);
-  //printf("whole extent of input=%d,%d,%d,%d,%d,%d\n",PRT_EXT(uExt2));
-  //printf("Using outext for output=%d,%d,%d,%d,%d,%d\n",PRT_EXT(outExt));
+  printf("whole extent of input=%d,%d,%d,%d,%d,%d\n",PRT_EXT(uExt2));
   T scalar,outScalar;
     
   
   memcpy(uExt,outExt,6*sizeof(int));
   uExt[5] = uExt2[5];
-    //printf("Using ext for processing=%d,%d,%d,%d,%d,%d\n",PRT_EXT(uExt));
-    //outData->ReleaseData();
 
-  //outData->SetWholeExtent(uExt2);
-  //outData->SetExtent(uExt2);
-  //outData->AllocateScalars();
 
   T* outPtr;
   T* inPtr;
-  //printf("Getting pointers...\n");  
+  printf("Getting pointers...\n");  
   outPtr=(T*)outData->GetScalarPointerForExtent(outExt);
   inPtr=(T*)inData[0]->GetScalarPointerForExtent(uExt);
- //printf("got\n");
+ printf("got\n");
   maxX = uExt[1] - uExt[0];
   maxY = uExt[3] - uExt[2];
   maxZ = uExt[5] - uExt[4];
@@ -126,7 +123,7 @@ void vtkImageSimpleMIPExecute(vtkImageSimpleMIP *self, int id,int NumberOfInputs
   maxC = inData[0]->GetNumberOfScalarComponents();
   if(maxC>3)maxC=3;
 //  vtkDebugMacro(<<"maxC="<<maxC);
-  //printf("maxX=%d, maxY=%d, maxZ=%d\n",maxX,maxY,maxZ);
+  printf("maxX=%d, maxY=%d, maxZ=%d\n",maxX,maxY,maxZ);
   for(int i=0;i<(maxX+1)*(maxY+1)*maxC;i++)*outPtr++=0;
 
   //printf("Getting scalar pointer\n");
@@ -136,16 +133,16 @@ void vtkImageSimpleMIPExecute(vtkImageSimpleMIP *self, int id,int NumberOfInputs
   inData[0]->GetIncrements(inIncX, inIncY, inIncZ);
   outData->GetIncrements(outIncX, outIncY, outIncZ);
   
-  //printf("Out ext = %d,%d,%d,%d,%d,%d\n",PRT_EXT(outExt));
-  //printf("Update ext = %d,%d,%d,%d,%d,%d\n",PRT_EXT(uExt));
+  printf("Out ext = %d,%d,%d,%d,%d,%d\n",PRT_EXT(outExt));
+  printf("Update ext = %d,%d,%d,%d,%d,%d\n",PRT_EXT(uExt));
 
   #define GET_AT(x,y,z,c,ptr) *(ptr+(z)*inIncZ+(y)*inIncY+(x)*inIncX+c)
   #define GET_AT_OUT(x,y,z,c,ptr) *(ptr+(z)*outIncZ+(y)*outIncY+(x)*outIncX+c)
   #define SET_AT(x,y,z,c,ptr,val) *(ptr+(z)*outIncZ+(y)*outIncY+(x)*outIncX+c)=val
 
-  //printf("maxX=%d, maxY=%d, maxZ=%d, maxC=%d\n",maxX,maxY,maxZ,maxC);
-  //printf("inIncX=%d,inIncY=%d, inIncZ=%d\n",inIncX,inIncY,inIncZ);
-  //printf("outIncX=%d,outIncY=%d, outIncZ=%d\n",outIncX,outIncY,outIncZ);
+  printf("maxX=%d, maxY=%d, maxZ=%d, maxC=%d\n",maxX,maxY,maxZ,maxC);
+  printf("inIncX=%d,inIncY=%d, inIncZ=%d\n",inIncX,inIncY,inIncZ);
+  printf("outIncX=%d,outIncY=%d, outIncZ=%d\n",outIncX,outIncY,outIncZ);
   char progressText[200];
   target = (unsigned long)((maxZ+1)*(maxY+1)/50.0);
     
@@ -173,6 +170,7 @@ void vtkImageSimpleMIPExecute(vtkImageSimpleMIP *self, int id,int NumberOfInputs
       }
     }
   }
+  printf("MIP done\n");
 }
 int vtkImageSimpleMIP::RequestUpdateExtent (
   vtkInformation* vtkNotUsed(request),
@@ -180,7 +178,7 @@ int vtkImageSimpleMIP::RequestUpdateExtent (
   vtkInformationVector* outputVector)
 {
   int uext[6], ext[6];
-  //printf("\n\n\n+++++ REQUEST UPDATE EXTENT FOR SIMPLE MIP\n");
+  printf("\n\n\n+++++ REQUEST UPDATE EXTENT FOR SIMPLE MIP\n");
   vtkInformation* outInfo = outputVector->GetInformationObject(0);
   vtkInformation *inInfo = inputVector[0]->GetInformationObject(0);
 
@@ -197,6 +195,7 @@ int vtkImageSimpleMIP::RequestUpdateExtent (
   if(uext[5] < ext[5] ) uext[5] = ext[5];
   if(uext[4] > ext[4] ) uext[4] = ext[4];
   printf("vtkImageSimpleMIP Setting uextent to %d,%d,%d,%d,%d,%d\n",PRT_EXT(uext));
+  outInfo->Set(vtkStreamingDemandDrivenPipeline::UPDATE_EXTENT(), uext,6);
   inInfo->Set(vtkStreamingDemandDrivenPipeline::UPDATE_EXTENT(), uext,6);
   return 1;    
 }
@@ -210,16 +209,18 @@ int vtkImageSimpleMIP::RequestUpdateExtent (
 void vtkImageSimpleMIP::ThreadedRequestData (
   vtkInformation * vtkNotUsed( request ),
   vtkInformationVector**  inputVector ,
-  vtkInformationVector * vtkNotUsed( outputVector ),
+  vtkInformationVector *  outputVector ,
   vtkImageData ***inData,
   vtkImageData **outData,
   int outExt[6], int id)
 {
     printf("vtkImageSimpleMIP ThreadedRequestData outExt=%d,%d,%d,%d,%d,%d\n",outExt[0],outExt[1],outExt[2],outExt[3],outExt[4],outExt[5]);
-    int uExt[6];
+    int uExt[6],wholeExt[6];
   vtkInformation *inInfo = inputVector[0]->GetInformationObject(0);
+    vtkInformation* outInfo = outputVector->GetInformationObject(0);
   inInfo->Get(vtkStreamingDemandDrivenPipeline::UPDATE_EXTENT(),uExt);
     printf("Update extent=%d,%d,%d,%d,%d,%d\n",PRT_EXT(uExt));
+
     
   if (inData[0][0] == NULL)
     {
@@ -247,7 +248,74 @@ void vtkImageSimpleMIP::ThreadedRequestData (
     vtkErrorMacro(<< "Execute: Unknown ScalarType");
   return;
   }
+    memcpy(wholeExt,uExt,6*sizeof(int));
+    wholeExt[5]=0;
+    printf("Setting output update extent to %d,%d,%d,%d,%d,%d\n",PRT_EXT(wholeExt));
+      outInfo->Set(vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT(),wholeExt,6);
+      outInfo->Set(vtkStreamingDemandDrivenPipeline::UPDATE_EXTENT(),wholeExt,6);
 
+}
+//----------------------------------------------------------------------------
+// For streaming and threads.  Splits output update extent into num pieces.
+// This method needs to be called num times.  Results must not overlap for
+// consistent starting extent.  Subclass can override this method.
+// This method returns the number of peices resulting from a successful split.
+// This can be from 1 to "total".  
+// If 1 is returned, the extent cannot be split.
+int vtkImageSimpleMIP::SplitExtent(int splitExt[6], 
+                                                int startExt[6], 
+                                                int num, int total)
+{
+  int splitAxis;
+  int min, max;
+
+  vtkDebugMacro("SplitExtent: ( " << startExt[0] << ", " << startExt[1] << ", "
+                << startExt[2] << ", " << startExt[3] << ", "
+                << startExt[4] << ", " << startExt[5] << "), " 
+                << num << " of " << total);
+
+  // start with same extent
+  memcpy(splitExt, startExt, 6 * sizeof(int));
+
+  splitAxis = 0;
+  min = startExt[splitAxis*2];
+  max = startExt[splitAxis*2+1];
+  while (min >= max)
+    {
+    // empty extent so cannot split
+    if (min > max)
+      {
+      return 1;
+      }
+    --splitAxis;
+    if (splitAxis < 0)
+      { // cannot split
+      vtkDebugMacro("  Cannot Split");
+      return 1;
+      }
+    min = startExt[splitAxis*2];
+    max = startExt[splitAxis*2+1];
+    }
+
+  // determine the actual number of pieces that will be generated
+  int range = max - min + 1;
+  int valuesPerThread = (int)ceil(range/(double)total);
+  int maxThreadIdUsed = (int)ceil(range/(double)valuesPerThread) - 1;
+  if (num < maxThreadIdUsed)
+    {
+    splitExt[splitAxis*2] = splitExt[splitAxis*2] + num*valuesPerThread;
+    splitExt[splitAxis*2+1] = splitExt[splitAxis*2] + valuesPerThread - 1;
+    }
+  if (num == maxThreadIdUsed)
+    {
+    splitExt[splitAxis*2] = splitExt[splitAxis*2] + num*valuesPerThread;
+    }
+  
+  vtkDebugMacro("  Split Piece: ( " <<splitExt[0]<< ", " <<splitExt[1]<< ", "
+                << splitExt[2] << ", " << splitExt[3] << ", "
+                << splitExt[4] << ", " << splitExt[5] << ")");
+
+  return maxThreadIdUsed + 1;
 }
 
 //-----------------------------------------------------------------------------

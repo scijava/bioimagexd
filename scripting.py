@@ -69,6 +69,7 @@ def getSettingsFromCache(key):
     from lib import DataUnit
     data=settingsCache.get(tuple(key),None)
     value=None
+    parser=None
     if data:
         value=[]
         for (n,cp) in data:
@@ -80,7 +81,9 @@ def getSettingsFromCache(key):
             #settings = eval(settingsclass)
             settings = settings.readFrom(cp)
             value.append(settings)
-    return value
+            parser = cp
+    return value,parser
+   
     
     
 def storeSettingsToCache(key, settingsList):

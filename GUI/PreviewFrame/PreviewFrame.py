@@ -438,9 +438,9 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         renew    Whether the method should recalculate the images
         """
         if bxd.inIO:
-            Logging.info("\n\n\n------> STILL IN IO, WON'T UPDATE PREVIEW")
+            #Logging.info("\n\n\n------> STILL IN IO, WON'T UPDATE PREVIEW")
             return
-        print "\n\nUPDATING PREVIEW..."
+        #print "\n\nUPDATING PREVIEW..."
         if self.renewNext:
             renew=1
             self.renewNext=0
@@ -489,7 +489,7 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
     
         
         usedUpdateExt=0
-        print "self.z=",self.z,self.mip
+        print "self.z=",self.z,"is mip=",not (not self.mip)
         uext=None
         if self.z!=-1 and not self.mip:
             x,y = self.xdim, self.ydim
@@ -499,10 +499,12 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
             uext=(0,x-1,0,y-1,self.z,self.z)
         
         t=time.time()    
+        #print colorImage
         colorImage = bxd.mem.optimize(image = colorImage, updateExtent = uext)
               
         #colorImage.Update()
         t2=time.time()
+        #
         #print "Got ",colorImage
         Logging.info("Executing pipeline took %f seconds"%(t2-t),kw="pipeline")            
         self.currentImage=colorImage
@@ -562,19 +564,15 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
             
             
         if self.mip:
-
-            data.SetUpdateExtent(data.GetWholeExtent())
+            #data.SetUpdateExtent(data.GetWholeExtent())
             mip=vtk.vtkImageSimpleMIP()
             mip.SetInput(data)
             
             data = mip.GetOutput()
+         
             
-            #ret = bxd.execute_limited(mip)
-            #data.ReleaseDataFlagOn()
-            #data.ReleaseData()
-            #data = ret
-            
-            data.SetUpdateExtent(data.GetWholeExtent())
+            # THIS WAS COMMENTED TO FIND REASON FOR NOT WORKING
+            #data.SetUpdateExtent(data.GetWholeExtent())
             
             
         if ncomps == 1:            
