@@ -763,7 +763,10 @@ class MainWindow(wx.Frame):
                 writer.addImageData(data)
             print "--> WRITING DAATA"
             parser = writer.getParser()
-
+            
+            dataUnit.getSettings().set("Name",dataUnit.getName())
+            dataUnit.updateSettings()
+            print dataUnit.getSettings()
             dataUnit.getSettings().writeTo(parser)
             writer.write()
             writer.sync()
@@ -1318,7 +1321,7 @@ class MainWindow(wx.Frame):
             dataunit=self.visualizer.getDataUnit()
             if dataunit:
                 name=dataunit.getName()
-                filenames=Dialogs.askOpenFileName(self,"Open settings for %s"%name,"Settings (*.bxd)|*.bxd")
+                filenames=Dialogs.askOpenFileName(self,"Open settings for %s"%name,"Settings (*.bxp)|*.bxp")
         
                 if not filenames:
                     Logging.info("Got no name for settings file",kw="dataunit")
@@ -1343,7 +1346,7 @@ class MainWindow(wx.Frame):
             dataunit=self.visualizer.getDataUnit()
             if dataunit:
                 name=dataunit.getName()
-                filename=Dialogs.askSaveAsFileName(self,"Save settings of %s as"%name,"settings.bxd","Settings (*.bxd)|*.bxd")
+                filename=Dialogs.askSaveAsFileName(self,"Save settings of %s as"%name,"settings.bxp","Settings (*.bxd)|*.bxp")
         
                 if not filename:
                     Logging.info("Got no name for settings file",kw="dataunit")

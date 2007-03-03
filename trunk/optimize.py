@@ -72,16 +72,19 @@ def optimize(image = None, vtkFilter = None, updateExtent = None, releaseData = 
         pp = image.GetProducerPort().GetProducer()
     else:
         pp = vtkFilter
-    val,numFilters = optimizePipeline(pp, releaseData = releaseData)
     
+    val,numFilters = optimizePipeline(pp, releaseData = releaseData)
+
     if updateExtent and not bxd.wantWholeDataset:
         val.GetOutput().SetUpdateExtent(updateExtent)
-    else:
-        val.GetOutput().SetUpdateExtent(val.GetOutput().GetWholeExtent())
+    # COMMENTED TO SEE IF ANY EFFECT ON CRASHES
+    #else:
+    #    val.GetOutput().SetUpdateExtent(val.GetOutput().GetWholeExtent())
         
     if numFilters!=0:
         img=execute_limited(val, updateExtent = updateExtent) 
     else:
+        Logging.info("\n\nNo filters, returning output")
         img = val.GetOutput()
     
 
@@ -116,14 +119,16 @@ def execute_limited(pipeline, updateExtent = None):
         print "waiting for turn..."
         time.sleep(0.01)
     executing = 1
+#    pipeline.DebugOn()
     streamer.SetInput(pipeline.GetOutput())
     retval = streamer.GetOutput()
     
     if updateExtent and not bxd.wantWholeDataset:
         Logging.info("Setting update extent to ",updateExtent,kw="pipeline")
         retval.SetUpdateExtent(updateExtent)
-    else:
-        retval.SetUpdateExtent(retval.GetWholeExtent())
+    #else:
+    #    retval.SetUpdateExtent(retval.GetWholeExtent())
+    print "Updating streamer..."
     streamer.Update()
     print "Executed!"
     executing = 0
@@ -156,6 +161,7 @@ def optimizeMipMerge(cfilter):
     Created: 10.11.2006, KP
     Description: Optimize the order of mip and merge
     """    
+    raise "NEVER CALL ME AGAIN!"
     filterStack=[]
     mergeSources=[]
     merge=None
@@ -200,6 +206,7 @@ def optimizePipeline(ifilter,n=0, releaseData = 0):
     cfilter = ifilter
     while 1:
         hasParents=0
+#        cfilter.DebugOn()
         for i in range(0,cfilter.GetNumberOfInputPorts()):
             for j in range(0,cfilter.GetNumberOfInputConnections(i)):
                 inp=cfilter.GetInputConnection(i,j).GetProducer()

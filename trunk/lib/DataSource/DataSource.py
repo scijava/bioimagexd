@@ -124,6 +124,7 @@ class DataSource:
             self.limitDims = eval(conf.getConfigItem("ResampleDims","Performance"))
             self.toDims = eval(conf.getConfigItem("ResampleTo","Performance"))
 
+    def getParser():return None
             
     def destroy(self):
         """

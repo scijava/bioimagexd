@@ -878,7 +878,7 @@ int vtkLSMReader::RequestData(
 
   
   // get the info object
-
+  //printf("vtkLSMReader RequestData\n");
   vtkInformation *outInfo = outputVector->GetInformationObject(0);
   //vtkImageData *data = vtkImageData::SafeDownCast(outInfo->Get(vtkDataObject::DATA_OBJECT()));
   vtkImageData *data = this->AllocateOutputData(outInfo->Get(vtkDataObject::DATA_OBJECT()));
@@ -904,6 +904,7 @@ int vtkLSMReader::RequestData(
   int nSlices = (outExtent[5]-outExtent[4])+1;
     //printf("Allocating memory for %d slices\n",nSlices);
   numberOfPix = this->Dimensions[0]*this->Dimensions[1]*this->Dimensions[2];
+  //printf("Allocating %d bytes\n",numberOfPix);
   vtkDebugMacro(<<"Channel = "<<channel<<",numberOfPix="<<numberOfPix);
   size = numberOfPix*this->BYTES_BY_DATA_TYPE(this->DataType);
 
@@ -918,8 +919,8 @@ int vtkLSMReader::RequestData(
     {
     //UpdateProgress(i/float(this->Dimensions[2]));
        
-  UpdateProgress((i- outExtent[4])/
-                         (outExtent[5] - outExtent[4] + 1.0));        
+//  UpdateProgress((i- outExtent[4])/
+//                         (outExtent[5] - outExtent[4] + 1.0));        
     imageOffset = this->GetOffsetToImage(i,timepoint);
     vtkDebugMacro(<<"Offset to image "<<i<<"="<<imageOffset);
     this->ReadImageDirectory(this->GetFile(),imageOffset);
@@ -999,7 +1000,7 @@ int vtkLSMReader::RequestUpdateExtent (
   // then modify the uextent 
   if(uext[1] < ext[1] ) uext[1] = ext[1];
   if(uext[3] < ext[3] ) uext[3] = ext[3];
-  printf("vtkLSMReader Setting uextent to %d,%d,%d,%d,%d,%d\n",PRT_EXT(uext));
+  //printf("vtkLSMReader Setting uextent to %d,%d,%d,%d,%d,%d\n",PRT_EXT(uext));
   outInfo->Set(vtkStreamingDemandDrivenPipeline::UPDATE_EXTENT(), uext,6);
   //request->Set(vtkStreamingDemandDrivenPipeline::REQUEST_UPDATE_EXTENT(), uext,6);
   return 1;    

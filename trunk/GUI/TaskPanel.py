@@ -72,6 +72,7 @@ class TaskPanel(scrolled.ScrolledPanel):
         #wx.ScrolledWindow.__init__(self,root,-1,size=(200,-1))
         self.toolMgr = tb
         self.itemBitmaps = []
+        self.cacheParser = None
         self.wantNotebook = wantNotebook
         # Unbind to not get annoying behaviour of scrolling
         # when clicking on the panel
@@ -170,12 +171,12 @@ class TaskPanel(scrolled.ScrolledPanel):
         
         if not cachedSettings:
             if self.cacheKey:
-                cachedSettings = bxd.getSettingsFromCache(self.cacheKey)
+                cachedSettings, cacheParser = bxd.getSettingsFromCache(self.cacheKey)
             
         if not cachedSettings:
             Logging.info("No settings found in cache",kw="caching")
             return
-        Logging.info("Restoring settings with key %s from cache"%(self.cacheKey),kw="caching")
+        Logging.info("Restoring settings with key %s from cache"%(str(self.cacheKey)),kw="caching")
         combined = cachedSettings[0]
         self.dataUnit.setSettings(combined)
         sources=self.dataUnit.getSourceDataUnits()
@@ -187,7 +188,7 @@ class TaskPanel(scrolled.ScrolledPanel):
             #print setting,tf
             #print "\n\nSetting itf ",i,"= itf with 0=",tf.GetValue(0),"and 255=",tf.GetValue(255)
         self.settings = sources[self.settingsIndex].getSettings()
-        
+        self.cacheParser = cacheParser
         self.updateSettings(force=True)
         
     def cacheSettings(self):
@@ -204,7 +205,7 @@ class TaskPanel(scrolled.ScrolledPanel):
         #print "SOURCES=",sources
         settings = [x.getSettings() for x in sources]
         settings.insert(0, self.dataUnit.getSettings())
-        Logging.info("Storing to cache with key %s"%self.dataUnit.getCacheKey(),kw="caching")
+        Logging.info("Storing to cache with key %s"%str(self.dataUnit.getCacheKey()),kw="caching")
         #for i,settingx in enumerate(settings[1:]):
         #    
         #    tf=settingx.get("IntensityTransferFunction")
