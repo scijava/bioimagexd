@@ -196,13 +196,19 @@ class CombinedDataUnit(DataUnit.DataUnit):
         timepoints=kws.get("timepoints",range(self.getLength()))
         # We create the vtidatasource with the name of the dataunit file
         # so it knows where to store the vtkImageData objects
-        bxdwriter = DataSource.BXDDataWriter(bxdFile)
 
-        
-        bxcFile = bxdwriter.getBXCFileName(bxdFile)
+        if not settings_only:
+            bxcFile = bxdwriter.getBXCFileName(bxdFile)
+            bxdwriter = DataSource.BXDDataWriter(bxdFile)
+
+        else:
+            bxcFile = bxdFile
+            bxdwriter = None
         bxcFile=bxcFile[:-1]+"p"
         self.dataWriter=DataSource.BXCDataWriter(bxcFile)
-        bxdwriter.addChannelWriter(self.dataWriter)
+        
+        if bxdwriter:
+            bxdwriter.addChannelWriter(self.dataWriter)
 
         imageList=[]
         self.n=1

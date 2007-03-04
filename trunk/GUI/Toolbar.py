@@ -78,26 +78,31 @@ class Toolbar(wx.Panel):
         Description: Event handler for size events
         """ 
         size = evt.GetSize()
+        print "OnSize toolbar",size
         layout = self.getLayout(size[0])
         self.createRows(layout)
 
-        #print "curr layout=",len(layout),"old=",len(self.oldLayout)
         if layout != self.oldLayout:   
             #print "\n\n\n+++ NOT SAME LAYOUT"        
             self.ReOrderItems(layout, size[0])            
             self.oldLayout = layout
             
             x=self.GetSize()[0] 
-            y=44*len(layout)
+            if self.nondarwin:
+                y=44*len(layout)
+            else:
+                y = 50*len(layout)
             #print "x=",x,"y=",y
             self.parent.SetDefaultSize((x,y))
-            self.sizer.Fit(self)          
-            if self.nondarwin:
-	            self.Layout()
-            self.parent.Layout()
             
-        #else:
-        #    print "\n\n\n*** SAME LAYOUT"
+            if 1 or self.nondarwin:
+	            self.Layout()
+            self.sizer.Fit(self)          
+
+            self.parent.Layout()
+         
+            #self.Realize()
+
             
     def ReOrderItems(self, layout, width):
         """
@@ -173,12 +178,13 @@ class Toolbar(wx.Panel):
         """          
         w=self.GetSize()[0]
         layout = self.getLayout(w)
-        #print "\n\n\n**** Layout for width",w,"has",len(layout),"rows"
+#        print "\n\n\n**** Layout for width",w,"has",len(layout),"rows"
         self.createRows(layout)        
         self.ReOrderItems(layout, w)            
     
         self.Layout()
-        #self.Refresh()
+        self.Refresh()
+        print "Toolbar size now",self.GetSize()
         
     def DeleteTool(self,toolid):
         """

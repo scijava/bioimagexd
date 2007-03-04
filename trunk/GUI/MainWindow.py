@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+    #! /usr/bin/env python
 # -*- coding: iso-8859-1 -*-
 """
  Unit: MainWindow
@@ -1322,20 +1322,33 @@ class MainWindow(wx.Frame):
             if dataunit:
                 name=dataunit.getName()
                 filenames=Dialogs.askOpenFileName(self,"Open settings for %s"%name,"Settings (*.bxp)|*.bxp")
-        
                 if not filenames:
                     Logging.info("Got no name for settings file",kw="dataunit")
                     return
                 Logging.info("Loading settings for dataset",name," from ",filenames,kw="dataunit")
-                parser = RawConfigParser()
-                parser.optionxform = str
-                parser.read(filenames)
-                dataunit.getSettings().readFrom(parser)
-                dataunit.parser = parser
-                #self.visualizer.setDataUnit(dataunit)
-                messenger.send(None,"update_settings_gui")
+
+                do_cmd="mainWindow.loadSettings(\"%s\")"%filenames
+            
+                cmd=Command.Command(Command.OPEN_CMD,None,None,do_cmd,"",desc="Load settings file %s"%filenames)
+                cmd.run()
+                
             else:
                 Logging.info("No dataunit, cannot load settings")
+                
+    def loadSettings(self, filenames):
+        """
+        Created: 03.03.2007, KP
+        Description: Load settings from given filename
+        """
+        dataunit=self.visualizer.getDataUnit()
+        parser = RawConfigParser()
+        parser.optionxform = str
+        parser.read(filenames)
+        dataunit.getSettings().readFrom(parser)
+        dataunit.parser = parser
+        #self.visualizer.setDataUnit(dataunit)
+        messenger.send(None,"update_settings_gui")
+
 
     def onMenuSaveSettings(self,event):
         """
