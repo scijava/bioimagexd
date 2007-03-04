@@ -40,6 +40,7 @@ from Logging import *
 
 import sys
 import time
+import glob 
 
 #import FilterBasedTaskPanel
 from GUI import FilterBasedTaskPanel
@@ -73,6 +74,7 @@ class ManipulationPanel(FilterBasedTaskPanel.FilterBasedTaskPanel):
         self.timePoint = 0
         self.menus = {}
         self.currentGUI = None
+        self.presetMenu = None
         self.parser = None
         self.onByDefault = 0
         self.Show()
@@ -158,6 +160,8 @@ class ManipulationPanel(FilterBasedTaskPanel.FilterBasedTaskPanel):
         self.addArithmeticsBtn = wx.Button(self.panel,-1,u"Arithmetics \u00BB")
         self.addSegmentationBtn = wx.Button(self.panel,-1,u"Segmentation \u00BB")
         self.addTrackingBtn = wx.Button(self.panel,-1,u"Tracking \u00BB")
+        
+        self.presetBtn = wx.Button(self.panel,-1,u"Presets \u00BB")
 
         from ManipulationFilters import FILTERING,FEATUREDETECTION,MATH,LOGIC,SEGMENTATION,WATERSHED,REGION_GROWING,MEASUREMENT,TRACKING
         
@@ -172,6 +176,9 @@ class ManipulationPanel(FilterBasedTaskPanel.FilterBasedTaskPanel):
         
         f=lambda evt, btn=self.addSegmentationBtn, cats=(TRACKING,): self.onShowAddMenu(evt,btn,cats)        
         self.addTrackingBtn.Bind(wx.EVT_LEFT_DOWN,f)
+        
+        self.presetBtn.Bind(wx.EVT_LEFT_DOWN, self.onShowPresetsMenu)
+        
         
         vertbtnBox=wx.BoxSizer(wx.VERTICAL)
         
@@ -190,10 +197,12 @@ class ManipulationPanel(FilterBasedTaskPanel.FilterBasedTaskPanel):
         vertbtnBox.Add(self.up)
         vertbtnBox.Add(self.down)
         btnBox=wx.BoxSizer(wx.HORIZONTAL)
+        btnBox2=wx.BoxSizer(wx.HORIZONTAL)
         btnBox.Add(self.addFilteringBtn)
         btnBox.Add(self.addArithmeticsBtn)
         btnBox.Add(self.addSegmentationBtn)
-        btnBox.Add(self.addTrackingBtn)
+        btnBox2.Add(self.addTrackingBtn)
+        btnBox2.Add(self.presetBtn)
         
         #btnBox.Add(self.reloadBtn)
     
@@ -204,6 +213,7 @@ class ManipulationPanel(FilterBasedTaskPanel.FilterBasedTaskPanel):
         #self.filtersizer.Add(self.filterListbox,(1,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
         self.filtersizer.Add(box,(1,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
         self.filtersizer.Add(btnBox,(2,0))
+        self.filtersizer.Add(btnBox2,(3,0))
         
         self.panelsizer.Add(self.filtersizer,(0,0))
 
@@ -304,7 +314,7 @@ class ManipulationPanel(FilterBasedTaskPanel.FilterBasedTaskPanel):
         index = event.GetSelection()
         name = self.filters[index].getName()
         status=self.filterListbox.IsChecked(index)
-        print "\nSETTING FILTER",name,"to",status
+#        print "\nSETTING FILTER",name,"to",status
         cmd="Enable"
         if not status:cmd="Disable"
         undo_cmd="bxd.mainWindow.tasks['Process'].setFilter(%s, index=%d, name='%s')"%(str(status),index,name)
@@ -423,14 +433,76 @@ class ManipulationPanel(FilterBasedTaskPanel.FilterBasedTaskPanel):
         self.setModified(1)
         self.updateFilterData()
         
+    def onShowPresetsMenu(self, event):
+        """
+        Created: 03.03.2007, KP
+        Description: show a menu with preloaded presets for different tasks
+        """
+        if not self.presetMenu:
+            self.presetMenu = wx.Menu()
+            addId = wx.NewId()
+            addItem = wx.MenuItem(self.presetMenu,addId, "Save as preset...")
+            self.presetMenu.AppendItem(addItem)
+            self.presetMenu.AppendSeparator()
+            self.Bind(wx.EVT_MENU, self.onSavePreset, id=addId)
+            
+            files = glob.glob("Presets/*.bxp")
+            for file in files:
+                name = ".".join(os.path.basename(file).split(".")[:-1])
+                fileId = wx.NewId()
+                fileItem = wx.MenuItem(self.presetMenu, fileId, name)
+                do_cmd="bxd.mainWindow.tasks['Process'].loadPreset('%s')"%file
+               
+                cmd=Command.Command(Command.GUI_CMD,None,None,do_cmd,"",desc="Load preset %s"%name)
+                f=lambda evt, c=cmd: c.run()
+                self.Bind(wx.EVT_MENU, f, id=fileId)
+                self.presetMenu.AppendItem(fileItem)
+                
+        self.presetBtn.PopupMenu(self.presetMenu, event.GetPosition())
+                
+    def loadPreset(self, name):
+        """
+        Created: 03.03.2007, KP
+        Description: load the given preset
+        """
+        print "Loading file","'"+name+"'"
+        bxd.mainWindow.loadSettings(name)
+        
+    def saveAsPreset(self, name):
+        """
+        Created: 03.03.2007, KP
+        Description: save the procedure list as preset
+        """
+        filename=os.path.join("Presets",name+".bxp")
+        self.dataUnit.doProcessing(filename,settings_only=1)
+
+    def onSavePreset(self,evt):
+        """
+        Created: 03.03.2007, KP
+        Description: eventhandler called when the user selects save as preset
+        """
+        dlg = wx.TextEntryDialog(
+        self, 'Enter name for preset',
+                'Save preset as...', 'Preset')
+
+   
+
+        if dlg.ShowModal() == wx.ID_OK:
+            name = dlg.GetValue()
+            do_cmd="bxd.mainWindow.tasks['Process'].saveAsPreset('%s')"%name
+            cmd=Command.Command(Command.GUI_CMD,None,None,do_cmd,"",desc="Save procedure list as preset %s"%name)
+            cmd.run()
+            del self.presetMenu
+            self.presetMenu = None
+            
 
     def onShowAddMenu(self,event,btn,categories=()):
         """
         Created: 13.04.2006, KP
         Description: Show a menu for adding filters to the stack
         """
-        print "categories=",categories,"self.menus=",self.menus
-        print "Filters by category has keys=",self.filtersByCategory.keys()
+#        print "categories=",categories,"self.menus=",self.menus
+#        print "Filters by category has keys=",self.filtersByCategory.keys()
         if categories not in self.menus:
             menu=wx.Menu()
             for i in categories:

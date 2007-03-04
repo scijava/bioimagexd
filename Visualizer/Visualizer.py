@@ -488,15 +488,13 @@ class Visualizer:
         Description: Method to create a toolbar for the window
         """        
         icondir = scripting.get_icon_dir()
-        if self.tb1:
+        if self.tb:
             return
-        self.tb1 = GUI.Toolbar.Toolbar(self.toolWin,-1,style=wx.TB_HORIZONTAL)
-        #self.tb1 = wx.ToolBar(self.toolWin,-1,style=wx.TB_HORIZONTAL)
-        self.tb1.SetToolBitmapSize((32,32))
+        self.tb = GUI.Toolbar.Toolbar(self.toolWin,-1,style=wx.TB_HORIZONTAL)
+        self.tb.SetToolBitmapSize((32,32))
         
         self.maxWidth=self.parent.GetSize()[0]
         
-        self.tb = self.tb1
         toolSize=self.tb.GetToolSize()[0]
         
         
@@ -571,7 +569,7 @@ class Visualizer:
         wx.EVT_TOOL(self.parent,MenuManager.ID_ZOOM_OBJECT,self.zoomObject)
         
         self.zoomCombo.Bind(wx.EVT_COMBOBOX,self.zoomToComboSelection)
-        self.tb1.Realize()     
+        self.tb.Realize()     
             
         self.viewCombo.Enable(0)
         
