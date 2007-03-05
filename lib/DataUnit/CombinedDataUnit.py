@@ -248,7 +248,7 @@ class CombinedDataUnit(DataUnit.DataUnit):
         
         self.createDataUnitFile(self.dataWriter)
         if not settings_only:
-            bxdwriter.write()
+                bxdwriter.write()
 
     def createDataUnitFile(self,writer):
         """

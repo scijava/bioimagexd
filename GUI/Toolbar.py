@@ -59,8 +59,11 @@ class Toolbar(wx.Panel):
         self.parent = parent
         self.x=0
         self.ctrlToRow={}
-        self.toolSeparation = 4
+        self.toolSeparation = 5
+        self.totSizer = wx.BoxSizer(wx.VERTICAL)
         self.sizer = wx.GridBagSizer(self.toolSeparation,self.toolSeparation)
+        self.totSizer.AddSpacer(10)
+        self.totSizer.Add(self.sizer)
         self.sizes=[]
         self.rowsizers=[]
         self.oldLayout=[]
@@ -68,7 +71,7 @@ class Toolbar(wx.Panel):
         self.ctrls = []
         self.idToTool={}
         self.minSize = 999999
-        self.SetSizer(self.sizer)
+        self.SetSizer(self.totSizer)
         self.SetAutoLayout(1)
         self.Bind(wx.EVT_SIZE,self.OnSize)
         

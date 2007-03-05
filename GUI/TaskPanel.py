@@ -53,7 +53,6 @@ import scripting as bxd
 TOOL_W=50
 TOOL_H=50
 class TaskPanel(scrolled.ScrolledPanel):
-
     """
     Created: 23.11.2004, KP
     Description: A baseclass for a panel for controlling the settings of the 
@@ -66,10 +65,8 @@ class TaskPanel(scrolled.ScrolledPanel):
         Parameters:
                 root    Is the parent widget of this window
         """
-        #wx.Frame.__init__(self,root,-1,"Task Window",style=wx.DEFAULT_FRAME_STYLE, #|wx.NO_FULL_REPAINT_ON_RESIZE,
-        #size=(1024,768))
         scrolled.ScrolledPanel.__init__(self,root,-1,size=(200,-1))
-        #wx.ScrolledWindow.__init__(self,root,-1,size=(200,-1))
+        #wx.Panel.__init__(self, root, -1,size=(200,-1))
         self.toolMgr = tb
         self.itemBitmaps = []
         self.cacheParser = None
@@ -77,15 +74,13 @@ class TaskPanel(scrolled.ScrolledPanel):
         # Unbind to not get annoying behaviour of scrolling
         # when clicking on the panel
         self.Unbind(wx.EVT_CHILD_FOCUS)
-        
-        #self.panel=self#wx.Panel(self,-1)
         self.buttonPanel = wx.Panel(self,-1)
         self.root=root
         self.preview=None
         self.onByDefault = 1
         self.cacheKey = None
 
-        #self.Bind(wx.EVT_CLOSE,self.closeWindowCallback)
+    
         self.mainsizer=wx.GridBagSizer()
         if not hasattr(self,"createItemSelection"):
             self.createItemSelection=0
@@ -132,20 +127,13 @@ class TaskPanel(scrolled.ScrolledPanel):
         self.SetAutoLayout(True)
         
         self.SetupScrolling()
-        #self.SetScrollRate(20,20)
-        #wx.FutureCall(500,self.doPreviewCallback)
         
         #messenger.connect(None,"itf_update",self.doPreviewCallback)
         messenger.connect(None,"channel_selected",self.selectItem)
         messenger.connect(None,"switch_datasets",self.onSwitchDatasets)
         messenger.connect(None,"update_settings_gui",self.onUpdateGUI)
        
-        
-#        self.Bind(wx.EVT_SIZE,self.onSize)
-        
-    def onSize(self,event):
-        self.FitInside()
-        event.Skip()
+
         
     def setCacheKey(self,key):
         """

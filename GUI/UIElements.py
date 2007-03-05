@@ -244,8 +244,8 @@ class DimensionInfo(wx.Window):
                
         self.dc.BeginDrawing()
         #self.SetBackgroundColour(self.parent.GetBackgroundColour())
-        self.dc.SetBackground(wx.Brush(self.parent.GetBackgroundColour()))
-        self.dc.Clear()
+        #self.dc.SetBackground(wx.Brush(self.parent.GetBackgroundColour()))
+        #self.dc.Clear()
         
         
             #self.dc.SetBackground(wx.Brush(self.bg))

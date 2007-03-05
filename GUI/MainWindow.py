@@ -274,6 +274,8 @@ class MainWindow(wx.Frame):
             del self.splash
         except:
             pass
+        self.SetSize(size)
+
         self.Show(True)       
         # Start listening for messenger signals
         messenger.send(None,"update_progress",1.0,"Done.") 
