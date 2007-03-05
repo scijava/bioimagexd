@@ -63,6 +63,7 @@ class Timeline(scrolled.ScrolledPanel):
         
         if kws.has_key("size"):
             size=kws["size"]
+        print "Using size",size
         scrolled.ScrolledPanel.__init__(self,parent,-1,size=size)
         self.oldBgCol=self.GetBackgroundColour()
         self.control = control
@@ -108,7 +109,8 @@ class Timeline(scrolled.ScrolledPanel):
         
         self.SetSizer(self.sizer)
         self.SetAutoLayout(1)
-        self.SetupScrolling()
+        
+   
         
         
         #self.sizer.Fit(self)
@@ -119,7 +121,6 @@ class Timeline(scrolled.ScrolledPanel):
         
     def onUpdateTimeline(self,obj,evt,*args):
         """
-        Method: onUpdateTimeline
         Created: 15.12.2005, KP
         Description: Method to refresh the whole timeline
         """
@@ -145,7 +146,6 @@ class Timeline(scrolled.ScrolledPanel):
         
     def AcceptDrop(self,x,y,data):
         """
-        Method: AcceptDrop
         Created: 02.09.2005, KP
         Description: Method called to indicate that a user is no longer dragging
                      something to this track
@@ -160,7 +160,6 @@ class Timeline(scrolled.ScrolledPanel):
             
     def OnDragLeave(self):
         """
-        Method: OnDragLeave
         Created: 02.09.2005, KP
         Description: Method called to indicate that a user is no longer dragging
                      something to this track
@@ -172,7 +171,6 @@ class Timeline(scrolled.ScrolledPanel):
             
     def OnDragOver(self,x,y,d):
         """
-        Method: OnDragOver
         Created: 02.09.2005, KP
         Description: Method called to indicate that a user is dragging
                      something to this track
@@ -183,15 +181,14 @@ class Timeline(scrolled.ScrolledPanel):
         
     def setupScrolling(self,obj=None,evt=None,arg=None):
         """
-        Method: setupScrolling
         Created: 21.08.2005, KP
         Description: Set the scrollbars
         """         
+        print "my size now=",self.GetSize()
         self.SetupScrolling()
         
     def getSplineTracks(self):
         """
-        Method: getSplineTracks
         Created: 18.04.2005, KP
         Description: Return the camera path tracks
         """ 
@@ -199,7 +196,6 @@ class Timeline(scrolled.ScrolledPanel):
         
     def getTimepointTracks(self):
         """
-        Method: getTimepointTracks
         Created: 19.04.2005, KP
         Description: Return the timepoint tracks
         """ 
@@ -207,7 +203,6 @@ class Timeline(scrolled.ScrolledPanel):
         
     def getKeyframeTracks(self):
         """
-        Method: getKeyframeTracks
         Created: 18.08.2005, KP
         Description: Return the keyframe tracks
         """ 

@@ -89,7 +89,8 @@ class UrmasWindow(scrolled.ScrolledPanel):
 
         self.splitter = TimelinePanel.SplitPanel(self,-1)
         w=self.GetSize()[0]
-        self.timeline=Timeline(self.splitter,self.control,size=(w,50))
+        self.timeline=Timeline(self.splitter,self.control,size=(768,50))
+        self.timeline.Show()
         self.timelinePanel=TimelinePanel.TimelinePanel(self.splitter,self.control,size=(1024,500),p=self.parent)
         self.timelinePanel.timeline=self.timeline
         #self.splitter.SetMinimumPaneSize(10)

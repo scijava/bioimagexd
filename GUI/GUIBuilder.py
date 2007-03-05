@@ -226,10 +226,12 @@ class GUIBuilder(wx.Panel):
         parameters = currentFilter.getParameters()
         gy=0
             
-        #sbox=UIElements.MyStaticBox(self,-1,currentFilter.getName())
+        # XXX: CHANGED TO MAKE MAC WORK
         sbox = wx.StaticBox(self,-1, currentFilter.getName())
-        #sbox.SetOwnBackgroundColour((0,255,0))
         sboxsizer=wx.StaticBoxSizer(sbox,wx.VERTICAL)
+        sbox.Lower()
+        
+        
         self.sizer.Add(sboxsizer,(0,0))
         sizer=wx.GridBagSizer()
         sboxsizer.Add(sizer)
@@ -554,11 +556,13 @@ class GUIBuilder(wx.Panel):
                 # the items
                 if sboxname:
                     sbox = wx.StaticBox(self,-1,sboxname)
-                    #sbox=UIElements.MyStaticBox(self,-1,sboxname)
-                    #sbox = wx.StaticBox(self,-1, currentFilter.getName())
-                    #sbox.SetOwnBackgroundColour((0,255,0))
-                    
                     sboxsizer=wx.StaticBoxSizer(sbox,wx.VERTICAL)
+                    sbox.Lower()
+#                    sbox = wx.Panel(self,-1,style=wx.SUNKEN_BORDER)
+#                    sboxsizer = wx.BoxSizer(wx.VERTICAL)
+#                    sbox.SetSizer(sboxsizer)
+#                    sbox.SetAutoLayout(1)
+                    
                 
                     sizer.Add(sboxsizer,(gy,0),flag=wx.EXPAND)
                     sboxsizer.Add(itemsizer)
