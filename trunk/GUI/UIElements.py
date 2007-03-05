@@ -37,7 +37,7 @@ import wx
 import  wx.lib.filebrowsebutton as filebrowse
 import Configuration
 import messenger
-
+import platform
 class AcceptedValidator(wx.PyValidator):
     def __init__(self, accept,above=-1,below=-1):
         wx.PyValidator.__init__(self)
@@ -186,6 +186,8 @@ class DimensionInfo(wx.Window):
         self.origX, self.origY, self.origZ = 0,0,0
         self.currX, self.currY, self.currZ = 0,0,0
         
+        self.nondarwin = platform.system()!="Darwin"
+        
         messenger.connect(None,"set_resample_dims", self.onSetResampleDims)
         messenger.connect(None,"set_current_dims",self.onSetCurrentDims)
         self.owncol = (255,255,255)
@@ -244,8 +246,12 @@ class DimensionInfo(wx.Window):
                
         self.dc.BeginDrawing()
         #self.SetBackgroundColour(self.parent.GetBackgroundColour())
-        #self.dc.SetBackground(wx.Brush(self.parent.GetBackgroundColour()))
-        #self.dc.Clear()
+        # We don't clear the background on non-darwin to keep the striped 
+        # default look,but on windows we set it to parents background color
+        # because otherwise it would be black
+        if self.nondarwin:
+            self.dc.SetBackground(wx.Brush(self.parent.GetBackgroundColour()))
+            self.dc.Clear()
         
         
             #self.dc.SetBackground(wx.Brush(self.bg))
