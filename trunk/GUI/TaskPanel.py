@@ -132,8 +132,7 @@ class TaskPanel(scrolled.ScrolledPanel):
         messenger.connect(None,"channel_selected",self.selectItem)
         messenger.connect(None,"switch_datasets",self.onSwitchDatasets)
         messenger.connect(None,"update_settings_gui",self.onUpdateGUI)
-       
-
+  
         
     def setCacheKey(self,key):
         """
