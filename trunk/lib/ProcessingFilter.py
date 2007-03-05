@@ -334,7 +334,7 @@ class ProcessingFilter(GUIBuilder.GUIBuilderBase):
         Created: 17.04.2006, KP
         Description: Return the name of the input #n
         """          
-        return "Source dataset %d"%n
+        return "Source dataset %d"%n  
         
     def getEnabled(self):
         """

@@ -149,7 +149,7 @@ class ManipulationPanel(FilterBasedTaskPanel.FilterBasedTaskPanel):
         self.panel=wx.Panel(self,-1)
         self.panelsizer=wx.GridBagSizer()
     
-        self.filtersizer=wx.GridBagSizer()
+        self.filtersizer=wx.GridBagSizer(4,4)
 
         
         self.filterLbl=wx.StaticText(self.panel,-1,"Procedure list:")
@@ -199,9 +199,12 @@ class ManipulationPanel(FilterBasedTaskPanel.FilterBasedTaskPanel):
         btnBox=wx.BoxSizer(wx.HORIZONTAL)
         btnBox2=wx.BoxSizer(wx.HORIZONTAL)
         btnBox.Add(self.addFilteringBtn)
+        btnBox.AddSpacer(4)
         btnBox.Add(self.addArithmeticsBtn)
+        btnBox.AddSpacer(4)
         btnBox.Add(self.addSegmentationBtn)
         btnBox2.Add(self.addTrackingBtn)
+        btnBox2.AddSpacer(4)
         btnBox2.Add(self.presetBtn)
         
         #btnBox.Add(self.reloadBtn)

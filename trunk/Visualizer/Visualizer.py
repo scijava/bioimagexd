@@ -511,7 +511,7 @@ class Visualizer:
         
         self.zoomLevels=[0.125, 0.25, 0.3333, 0.5, 0.6667, 0.75, 1.0, 1.25, 1.5, 2.0, 3.0, 4.0, 6.0, 8.0,-1]
         self.zoomCombo=wx.ComboBox(self.tb,MenuManager.ID_ZOOM_COMBO,"Zoom to fit",
-                          choices=["12.5%","25%","33.33%","50%","66.67%","75%","100%","125%","150%","200%","300%","400%","600%","800%","Zoom to fit"],size=(100,-1),style=wx.CB_DROPDOWN)
+                          choices=["12.5%","25%","33.33%","50%","66.67%","75%","100%","125%","150%","200%","300%","400%","600%","800%","Zoom to fit"],size=(120,-1),style=wx.CB_DROPDOWN)
         self.zoomCombo.SetSelection(14)
         self.zoomCombo.SetHelpText("This controls the zoom level of visualization views.")        
         self.tb.AddControl(self.zoomCombo)

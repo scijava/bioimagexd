@@ -50,15 +50,12 @@ import operator
 import messenger    
         
 class Timeline(scrolled.ScrolledPanel):
-#class Timeline(wx.ScrolledWindow):
     """
-    Class: Timeline
     Created: 04.02.2005, KP
     Description: Class representing the timeline with different tracks
     """    
     def __init__(self,parent,control,**kws):
         """
-        Method: __init__
         Created: 04.02.2005, KP
         Description: Initialize
         """
@@ -68,7 +65,6 @@ class Timeline(scrolled.ScrolledPanel):
             size=kws["size"]
         scrolled.ScrolledPanel.__init__(self,parent,-1,size=size)
         self.oldBgCol=self.GetBackgroundColour()
-        #wx.ScrolledWindow.__init__(self,parent,-1,size=size)
         self.control = control
         self.parent = parent
         self.frames = 0

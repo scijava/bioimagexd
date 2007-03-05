@@ -78,6 +78,8 @@ class GUIBuilderBase:
         for item in self.getPlainParameters():
             self.setParameter(item,self.getDefaultValue(item))
         self.initDone = 1
+        
+      
 
     def getParameterLevel(self, parameter):
         """
