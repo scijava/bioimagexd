@@ -743,6 +743,7 @@ class GUIBuilder(wx.Panel):
         else:
             raise "Unrecognized input type: %s"%str(itemType)
         #input.SetBackgroundColour(lvl)
+       
         txt = currentFilter.getLongDesc(item)
         if txt:
             input.SetHelpText(txt)
@@ -755,19 +756,11 @@ class GUIBuilder(wx.Panel):
         #bgsizer.Fit(bg)
         
         x2=x
-        #if lbl:
-        #    print "Adding label",desc," to ",(x,y)
-        #    itemsizer.Add(lbl,(y,x))
-        #    if not br:
-        #        x2+=1
-        #    else:
-        #        y+=1
-        #print "Adding input to",x2,y
+
         if not useOld:
             itemsizer.Add(bg,(y,x2))
         bg.Layout()
-        #if br:
-        #    y+=1
+
         if useOther:
             self.currentBgSizer  = self.newItemSizer
         return (x,y)

@@ -31,13 +31,21 @@ __version__ = "$Revision: 1.22 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 import site
+import sys
+
 site.addsitedir("/usr/local/lib/python2.4/site-packages/")
-site.addsitedir("/Library/Frameworks/Python.framework/Versions/2.5/lib/InsightToolkit/WrapITK/Python")
-site.addsitedir("/Library/Frameworks/Python.framework/Versions/2.5/lib/InsightToolkit/WrapITK/lib")
+#site.addsitedir("/Library/Frameworks/Python.framework/Versions/2.5/lib/InsightToolkit/WrapITK/Python")
+#site.addsitedir("/Library/Frameworks/Python.framework/Versions/2.5/lib/InsightToolkit/WrapITK/lib")
+site.addsitedir("InsightToolkit/WrapITK/Python")
+site.addsitedir("InsightToolkit/WrapITK/lib")
+
+#site.addsitedir("/usr/lib/InsightToolkit/WrapITK/Python")
+#site.addsitedir("/usr/lib/InsightToolkit/WrapITK/lib")
+
+
 import itk
 import os.path
 import os
-import sys
 sys.path.append(r"C:\BioImageXD\VTK-CVS\Wrapping\Python")
 sys.path.append(r"C:\BioImageXD\VTK\bin")
 sys.path.append("./vtkBXD/bin")

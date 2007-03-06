@@ -60,6 +60,7 @@ def getModules(name,flag="*.py",callback=None,moduleType="Module"):
     if name in mcache:
         return mcache[name]
     modpath=scripting.get_module_dir()
+    Logging.info("Module dir=%s"%modpath,kw="modules")
     pathlst=[modpath,name]
     if flag:pathlst.append(flag)
     path=reduce(os.path.join,pathlst)
@@ -69,6 +70,7 @@ def getModules(name,flag="*.py",callback=None,moduleType="Module"):
     sys.path=sys.path+[spath]
     
     modules=glob.glob(path)
+    Logging.info("Modules from path %s are %s"%(path,str(modules)),kw="modules")
     moddict={}
     to_remove=[]
     for file in modules:
@@ -78,9 +80,11 @@ def getModules(name,flag="*.py",callback=None,moduleType="Module"):
     for i in to_remove:
         modules.remove(i)
     for file in modules:
-        if file.find(".") != -1:
+        if file.find(".py") != -1:
             mod=file.split(".")[0:-1]
             mod=".".join(mod)
+            Logging.info("mod %s corresponds to %s"%(mod,file),kw="modules")
+
         else:
             mod=file
         mod=mod.replace("/",".")

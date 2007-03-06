@@ -71,7 +71,7 @@ def build():
         EXCLUDES=['PyShell', 'dl', 'dotblas', 'hexdump', 'mx', 'win32com.gen_py',
         "pywin", "pywin.debugger", "pywin.debugger.dbgcon",
             "pywin.dialogs", "pywin.dialogs.list",
-            "Tkconstants","Tkinter","tcl","tcl84","tk84","qt-mt3"
+            "Tkconstants","Tkinter","tcl","tcl84","tk84","qt-mt3","itkExtras","itk","itkBase","itkConfig","itkLazy","itkTemplates","itkTypes"
         ]
         # Exclude the sources because they will be packaged as plain python files
         #SOURCES=["GUI","Modules","Visualizer"]
@@ -112,8 +112,9 @@ def build():
             iconfile='Icons/BioImageXD.icns',
             excludes = EXCLUDES,
             includes = incl_modules,
-            packages = ["encodings"]
+            packages = ["encodings"],
             )
+            DATA_FILES.append("/Library/Frameworks/Python.framework/Versions/2.5/lib/InsightToolkit")
             #DATA_FILES.append( ('../Frameworks', [
             #'/usr/local/lib/wxPython-unicode-2.5.5.1/lib/libwx_macud-2.5.5.rsrc',
             #appending the .rsrc file no longer needed in wx2.6

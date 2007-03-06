@@ -65,6 +65,7 @@ class Timeline(scrolled.ScrolledPanel):
             size=kws["size"]
         print "Using size",size
         scrolled.ScrolledPanel.__init__(self,parent,-1,size=size)
+        
         self.oldBgCol=self.GetBackgroundColour()
         self.control = control
         self.parent = parent
@@ -83,14 +84,10 @@ class Timeline(scrolled.ScrolledPanel):
 
         self.sizer.Add(self.timeScale,(0,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
         self.Unbind(wx.EVT_CHILD_FOCUS)
-
-        # Add the sizers to which the tracks will be added
-        # this way we don't need to for example shuffle
-        # spline and keyframe tracks if timepoint tracks need
-        # to be changed
-        self.sizer.Add(self.timepointSizer,(1,0),flag=wx.EXPAND|wx.ALL)
-        self.sizer.Add(self.splineSizer,(2,0),flag=wx.EXPAND|wx.ALL)
-        self.sizer.Add(self.keyframeSizer,(3,0),flag=wx.EXPAND|wx.ALL)
+        
+        self.haveTp = 0
+        self.haveSp = 0
+        self.haveKf = 0
    
         self.timepointTracks=[]
         self.splinepointTracks=[]
@@ -334,7 +331,13 @@ class Timeline(scrolled.ScrolledPanel):
         """    
         if label=="":
             label="Timepoints %d"%len(self.timepointTracks)
-        
+        if not self.haveTp:
+            # Add the sizers to which the tracks will be added
+            # this way we don't need to for example shuffle
+            # spline and keyframe tracks if timepoint tracks need
+            # to be changed
+            self.sizer.Add(self.timepointSizer,(1,0),flag=wx.EXPAND|wx.ALL)
+            self.haveTp = 1
         tr=TimepointTrack(label,self,number=1,timescale=self.timeScale,control=self.control,height=55)
         
         self.timeScale.setOffset(tr.getLabelWidth())
@@ -375,6 +378,14 @@ class Timeline(scrolled.ScrolledPanel):
         Created: 11.04.2005, KP
         Description:
         """
+        if not self.haveSp:
+            # Add the sizers to which the tracks will be added
+            # this way we don't need to for example shuffle
+            # spline and keyframe tracks if timepoint tracks need
+            # to be changed
+            self.sizer.Add(self.splineSizer,(2,0),flag=wx.EXPAND|wx.ALL)
+            self.havedSp = 1
+            
         if label=="":
             label="Camera Path %d"%len(self.splinepointTracks)
         tr=SplineTrack(label,self,number=1,timescale=self.timeScale,control=self.control,height=55)
@@ -402,6 +413,14 @@ class Timeline(scrolled.ScrolledPanel):
         Created: 18.08.2005, KP
         Description:
         """
+        if not self.haveKf:
+            # Add the sizers to which the tracks will be added
+            # this way we don't need to for example shuffle
+            # spline and keyframe tracks if timepoint tracks need
+            # to be changed
+            self.sizer.Add(self.keyframeSizer,(3,0),flag=wx.EXPAND|wx.ALL)
+            self.haveKf = 1
+
         if label=="":
             label="Keyframe %d"%len(self.keyframeTracks)
         tr=KeyframeTrack(label,self,number=1,timescale=self.timeScale,control=self.control,height=55)
