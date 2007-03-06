@@ -81,11 +81,12 @@ class Toolbar(wx.Panel):
         Description: Event handler for size events
         """ 
         size = evt.GetSize()
-        print "OnSize toolbar",size
+        print size
+        if size[0]==0: return
         layout = self.getLayout(size[0])
-        self.createRows(layout)
-
         if layout != self.oldLayout:   
+            self.createRows(layout)
+
             #print "\n\n\n+++ NOT SAME LAYOUT"        
             self.ReOrderItems(layout, size[0])            
             self.oldLayout = layout
@@ -98,8 +99,7 @@ class Toolbar(wx.Panel):
             #print "x=",x,"y=",y
             self.parent.SetDefaultSize((x,y))
             
-            if 1 or self.nondarwin:
-	            self.Layout()
+            self.Layout()
             self.sizer.Fit(self)          
 
             self.parent.Layout()
@@ -173,6 +173,7 @@ class Toolbar(wx.Panel):
                 rowsizer = wx.BoxSizer(wx.HORIZONTAL)            
                 self.rowsizers.append(rowsizer)
                 self.sizer.Add(rowsizer,(y,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
+                print "added rowsizer to row",y
         
     def Realize(self):
         """
@@ -180,8 +181,8 @@ class Toolbar(wx.Panel):
         Description: Render the toolbar
         """          
         w=self.GetSize()[0]
+        if not w: return
         layout = self.getLayout(w)
-#        print "\n\n\n**** Layout for width",w,"has",len(layout),"rows"
         self.createRows(layout)        
         self.ReOrderItems(layout, w)            
     
