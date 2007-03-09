@@ -378,6 +378,7 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
                      data unit, the source units of which we can get and read 
                      as ImageData
         """
+        print "\n\nPREVIERWFRAME GOT DATAUNIT",dataUnit
         if not dataUnit:
             self.dataUnit = None
             self.z = 0
@@ -438,14 +439,15 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         renew    Whether the method should recalculate the images
         """
         if bxd.inIO:
-            #Logging.info("\n\n\n------> STILL IN IO, WON'T UPDATE PREVIEW")
+            Logging.info("\n\n\n------> STILL IN IO, WON'T UPDATE PREVIEW")
             return
-        #print "\n\nUPDATING PREVIEW..."
+        print "\n\nUPDATING PREVIEW..."
         if self.renewNext:
             renew=1
             self.renewNext=0
         
         if not self.dataUnit:
+            print "No dataunit"
             self.paintPreview()
             return
         if not self.enabled:
