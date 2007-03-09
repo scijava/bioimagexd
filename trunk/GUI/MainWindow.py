@@ -407,6 +407,7 @@ class MainWindow(wx.Frame):
         Description: A method for updating the dataset based on tree selection
         """
         selected = self.tree.getSelectedDataUnits()
+        print "Selected units now",selected
         dataunits={}
         for i in selected:
             pth = i.dataSource.getPath()

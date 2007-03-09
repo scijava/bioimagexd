@@ -88,6 +88,7 @@ class Visualizer:
         global visualizerInstance
         visualizerInstance=self
         self.masks = []
+        self.setLater = 0
         self.currentMask = None
         self.currSliderPanel = None
         self.delayed=0
@@ -1073,6 +1074,9 @@ class Visualizer:
                 self.currentWindow.enable(flag)
             except:
                 pass
+        if self.setLater:
+            self.setupMode()
+            self.setLater = 0
         if flag:        
            wx.LayoutAlgorithm().LayoutWindow(self.parent, self.visWin)
            Logging.info("Setting visualizer window to ",self.visWin.GetSize(),kw="visualizer")
@@ -1121,7 +1125,6 @@ class Visualizer:
         self.dataUnit = dataunit
         count=dataunit.getLength()
         
-        
         Logging.info("Setting range to %d"%count,kw="visualizer")
         self.maxTimepoint=count-1
         if count==1:
@@ -1142,21 +1145,32 @@ class Visualizer:
                 showItems=1
         self.showItemToolbar(showItems)
             
-        if self.enabled and self.currMode:           
-            Logging.info("Setting dataunit to current mode",kw="visualizer")
-            
-            if self.zoomToFitFlag:
-                self.currMode.zoomToFit()
-            else:
-                self.currMode.setZoomFactor(self.zoomFactor)    
-            
-            self.currMode.setDataUnit(self.dataUnit)
-            
-            self.currMode.setTimepoint(self.timepoint)
+        print "enabled=",self.enabled,"currmode=",self.currMode
+        if self.enabled and self.currMode:      
+            self.setupMode()
+        else:
+            self.setLater = 1
         if self.histogramIsShowing:
             self.createHistogram()             
 
         self.OnSize(None)
+        
+    def setupMode(self):
+        """
+        Created: 09.03.2007, KP
+        Description: Setup the current mode
+        """
+        Logging.info("Setting dataunit to current mode",kw="visualizer")
+        
+        if self.zoomToFitFlag:
+            self.currMode.zoomToFit()
+        else:
+            self.currMode.setZoomFactor(self.zoomFactor)    
+        
+        self.currMode.setDataUnit(self.dataUnit)
+        
+        self.currMode.setTimepoint(self.timepoint)
+
             
     def setImmediateRender(self,flag):
         """
