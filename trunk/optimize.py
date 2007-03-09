@@ -43,6 +43,8 @@ conf= None
 targetSize = None
 executing = 0
 
+import time
+
 def set_target_size(x,y,z=0):
     #print "\n\\nTARGET SIZE FOR RESAMPLE-TO-FIT ",x,y,z
     global targetSize, conf
@@ -115,7 +117,7 @@ def execute_limited(pipeline, updateExtent = None):
         streamer.SetMemoryLimit(1024*memLimit)
         streamer.GetExtentTranslator().SetSplitModeToZSlab()
     
-    while executing:
+    while 0 and executing:
         print "waiting for turn..."
         time.sleep(0.01)
     executing = 1
