@@ -123,7 +123,7 @@ class LsmDataSource(DataSource.DataSource):
         
         if progress>=1.0:notinvtk=1
         scripting.inIO = (progress < 1.0)
-        messenger.send(None,"update_progress",progress,msg,notinvtk)
+#        messenger.send(None,"update_progress",progress,msg,notinvtk)
         #print msg     
 
     def getDataSetCount(self):
