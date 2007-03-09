@@ -36,28 +36,7 @@ import sys
 site.addsitedir("/usr/local/lib/python2.4/site-packages/")
 #site.addsitedir("/Library/Frameworks/Python.framework/Versions/2.5/lib/InsightToolkit/WrapITK/Python")
 #site.addsitedir("/Library/Frameworks/Python.framework/Versions/2.5/lib/InsightToolkit/WrapITK/lib")
-# For MacOS X
-site.addsitedir("InsightToolkit/WrapITK/Python")
-site.addsitedir("InsightToolkit/WrapITK/lib")
 
-# Insert the path for the ITK libraries
-if not todir:
-    todir=os.getcwd()
-itklibdir=os.path.join(todir,os.path.join("ITK-pkg","lib"))
-itkbindir=os.path.join(todir,os.path.join("ITK-pkg","bin"))
-itkpythondir=os.path.join(todir,os.path.join("ITK-pkg","Python"))
-
-
-sys.path.insert(0,itklibdir)
-sys.path.insert(0,itkbindir)
-sys.path.insert(0,itkpythondir)
-
-#site.addsitedir("/usr/lib/InsightToolkit/WrapITK/Python")
-#site.addsitedir("/usr/lib/InsightToolkit/WrapITK/lib")
-
-
-if "py2exe" not in sys.argv:
-    import itk
 import os.path
 import os
 sys.path.append(r"C:\BioImageXD\VTK-CVS\Wrapping\Python")
@@ -69,7 +48,6 @@ sys.path.append("./vtkBXD/Wrapping/Python")
 import imp
 
 import platform
-import scripting as bxd
 import getopt
 
 try:
@@ -82,16 +60,30 @@ if "check" in sys.argv:
     import Logging
     Logging.HIDE_DEBUG=Logging.KWS
 
-    
+   
+        
+# For MacOS X
+site.addsitedir("InsightToolkit/WrapITK/Python")
+site.addsitedir("InsightToolkit/WrapITK/lib")
+import scripting as bxd
 
 todir=bxd.get_main_dir()
-
-#todir=os.path.dirname(__file__)
-#todir=os.path.join(os.getcwd(),todir)
 if todir:
     os.chdir(todir)
-        
+# Insert the path for the ITK libraries
+if not todir:
+    todir=os.getcwd()
+itklibdir=os.path.join(todir,os.path.join("ITK-pkg","lib"))
+itkbindir=os.path.join(todir,os.path.join("ITK-pkg","bin"))
+itkpythondir=os.path.join(todir,os.path.join("ITK-pkg","Python"))
 
+
+sys.path.insert(0,itklibdir)
+sys.path.insert(0,itkbindir)
+sys.path.insert(0,itkpythondir)
+
+if "py2exe" not in sys.argv:
+    import itk
 
 #sys.path.insert(0,reduce(os.path.join,["vtkBXD","Wrapping","Python"]))
 #sys.path.insert(0,reduce(os.path.join,["vtkBXD","bin"]))
