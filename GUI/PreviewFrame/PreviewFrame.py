@@ -441,13 +441,13 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         if bxd.inIO:
             Logging.info("\n\n\n------> STILL IN IO, WON'T UPDATE PREVIEW")
             return
-        print "\n\nUPDATING PREVIEW..."
+        #print "\n\nUPDATING PREVIEW..."
         if self.renewNext:
             renew=1
             self.renewNext=0
         
         if not self.dataUnit:
-            print "No dataunit"
+            #print "No dataunit"
             self.paintPreview()
             return
         if not self.enabled:
@@ -491,7 +491,7 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
     
         
         usedUpdateExt=0
-        print "self.z=",self.z,"is mip=",not (not self.mip)
+        #print "self.z=",self.z,"is mip=",not (not self.mip)
         uext=None
         if self.z!=-1 and not self.mip:
             x,y = self.xdim, self.ydim

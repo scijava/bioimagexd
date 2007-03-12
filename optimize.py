@@ -117,9 +117,6 @@ def execute_limited(pipeline, updateExtent = None):
         streamer.SetMemoryLimit(1024*memLimit)
         streamer.GetExtentTranslator().SetSplitModeToZSlab()
     
-    while 0 and executing:
-        print "waiting for turn..."
-        time.sleep(0.01)
     executing = 1
 #    pipeline.DebugOn()
     streamer.SetInput(pipeline.GetOutput())
@@ -130,9 +127,9 @@ def execute_limited(pipeline, updateExtent = None):
         retval.SetUpdateExtent(updateExtent)
     #else:
     #    retval.SetUpdateExtent(retval.GetWholeExtent())
-    print "Updating streamer..."
+    #print "Updating streamer..."
     streamer.Update()
-    print "Executed!"
+    #print "Executed!"
     executing = 0
     return retval
 
