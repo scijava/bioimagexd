@@ -193,7 +193,10 @@ class DataUnitSettings:
             except ConfigParser.NoSectionError:
                 pass
             else:
-                settingsclass=self.modules[type][2].getSettingsClass()
+                if type in self.modules:
+                    settingsclass=self.modules[type][2].getSettingsClass()
+                else:
+                    settingsclass=self.__class__
                 Logging.info("Type=%s, settings class=%s"%(type,str(settingsclass)),kw="processing")
                 #obj=eval(type)(self.n)
                 obj=settingsclass(self.n)
