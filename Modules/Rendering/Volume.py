@@ -34,7 +34,6 @@ import wx
 import vtk
 import messenger
 
-import ColorTransferEditor
 import Dialogs
 import types
 from Visualizer.VisualizationModules import *
@@ -50,6 +49,7 @@ ISOSURFACE=4
 def getClass():return VolumeModule
 def getConfigPanel():return VolumeConfigurationPanel
 def getName():return "Volume rendering"
+def getQuickKeyCombo(): return "Shift-Ctrl-V"
 
 
 class VolumeModule(VisualizationModule):
@@ -62,42 +62,120 @@ class VolumeModule(VisualizationModule):
         Created: 28.04.2005, KP
         Description: Initialization
         """     
-        VisualizationModule.__init__(self,parent,visualizer,**kws)   
+        self.modes = ["Ray casting","Texture mapping","3D texture mapping","Maximum intensity projection"]
+        self.haveVolpro = 0
         self.mapper = None
-        #self.name = "Volume Rendering"
-        self.quality = 10
-        self.method=TEXTURE_MAPPING
-        self.otfs=[]
-        self.interpolation = 0
-        
-        # This is the MIP otf
-        otf2=vtk.vtkPiecewiseFunction()
-        otf2.AddPoint(0, 0.0)
-        otf2.AddPoint(255, 1.0)
-
-        # this is the normal otf
-        otf = vtk.vtkPiecewiseFunction()
-        otf.AddPoint(0, 0.0)
-        otf.AddPoint(255, 0.2)
-        self.otfs.append(otf) # ray cast
-        self.otfs.append(otf) # texture map
-        self.otfs.append(otf) # texture map 3d
-        self.otfs.append(otf2) #mip
-        self.otfs.append(otf) # isosurface
-        self.eventDesc="Rendering volume"
+        try:
+            volpro=vtk.vtkVolumeProMapper()
+            self.haveVolpro=0
+            if volpro.GetNumberOfBoards():
+                self.haveVolpro=1
+        except:
+            self.haveVolpro=0
+        if self.haveVolpro:
+            self.modes.append("Minimum intensity projection")
         self.colorTransferFunction = None
-
+        otf, otf2 = vtk.vtkPiecewiseFunction(), vtk.vtkPiecewiseFunction()
+        for f in [otf,otf2]:
+            f.AddPoint(0, 0.0)
+            f.AddPoint(255, 1.0)
+        self.otfs = [otf,otf,otf,otf2,otf]
+        
+        
         self.volumeProperty =  vtk.vtkVolumeProperty()
-        self.volumeProperty.SetScalarOpacity(self.otfs[self.method])
-        self.setQuality(10)
         self.volume = vtk.vtkVolume()
         self.actor = self.volume
         self.volume.SetProperty(self.volumeProperty)
-        self.setMethod(1)
+ 
+        
+        VisualizationModule.__init__(self,parent,visualizer,**kws)   
+        self.mapper = None
+        #self.name = "Volume Rendering"
+        self.setParameter("Quality",10)
+        self.parameters["Method"] = TEXTURE_MAPPING
+        self.volumeProperty.SetScalarOpacity(self.otfs[self.parameters["Method"]])
+        
+        self.descs={"Palette":"","Method":"","Interpolation":"Interpolation","NearestNeighbor":"Nearest Neighbour","Linear":"Linear",
+        "Quality":"","QualityValue":"Maximum number of planes:","UseVolumepro":"Use VolumePro acceleration"}
+        
+        
+        self.eventDesc="Rendering volume"
+        self.qualityRange = 0,10
+               
         self.parent.getRenderer().AddVolume(self.volume)
         self.setShading(0)
-        self.setInterpolation(0)
+
+
         #self.updateRendering()
+        
+        
+    def setParameter(self,parameter,value):
+        """
+        Created: 13.04.2006, KP
+        Description: Set a value for the parameter
+        """    
+        VisualizationModule.setParameter(self, parameter,value)
+        if parameter=="Method":
+            messenger.send(self,"set_Palette_otf",self.otfs[self.parameters["Method"]])
+            if value==1:
+                messenger.send(self,"update_QualityValue_label","Maximum number of planes:")
+            else:
+                messenger.send(self,"update_QualityValue_label","Sample distance:")
+        if parameter == "Quality":
+            self.parameters["QualityValue"] = None
+            self.updateQuality()
+            
+    def getParameters(self):
+        """
+        Created: 12.03.2007, KP
+        Description: Return the list of parameters needed for configuring this GUI
+        """            
+        params=[ ["Dataset palette", ("Palette",)],
+        ["Rendering method",("Method",) ],
+        ["Interpolation",( ("NearestNeighbor","Linear"),("cols",2))],
+        ["Rendering quality",("Quality","QualityValue")]]       
+        if self.haveVolpro:
+            params.insert(2,["",("UseVolumepro",)])
+        return params
+        
+    def getRange(self, parameter):
+        """
+        Created: 12.03.2007, KP
+        Description: If a parameter has a certain range of valid values, the values can be queried with this function
+        """     
+        if parameter=="Method":
+            return self.modes
+        if parameter=="Quality":
+            return 0,10        
+        if parameter == "QualityValue":
+            return self.qualityRange
+        return -1,-1
+    def getType(self,parameter):
+        """
+        Created: 12.03. 2007, KP
+        Description: Return the type of the parameter
+        """   
+        if parameter == "Method":return GUIBuilder.CHOICE
+        if parameter in ["NearestNeighbor","Linear"]: return GUIBuilder.RADIO_CHOICE
+        if parameter == "Quality": return GUIBuilder.SLICE
+        if parameter == "QualityValue": return types.FloatType
+        if parameter == "Palette": return GUIBuilder.CTF
+        if parameter == "UseVolumepro": return types.BooleanType
+        
+    def getDefaultValue(self,parameter):
+        """
+        Created: 12.03.2007, KP
+        Description: Return the default value of a parameter
+        """           
+        if parameter == "Method":
+            return 1
+        if parameter == "Quality": return 10
+        if parameter == "QualityValue": return 0
+        if parameter == "Linear": return 0
+        if parameter == "NearestNeighbor": return 1
+        if parameter == "UseVolumepro": return False
+        if parameter == "Palette":
+            return self.colorTransferFunction
         
     def __getstate__(self):
         """
@@ -147,102 +225,90 @@ class VolumeModule(VisualizationModule):
         """       
         Logging.info("Dataunit for Volume Rendering:",dataunit,kw="rendering")
         VisualizationModule.setDataUnit(self,dataunit)
-        # If 32 bit data, use method 1
-#        if self.visualizer.getProcessedMode():
-#            Logging.info("Processed mode, using ctf of first source",kw="rendering")
-#            self.colorTransferFunction = self.dataUnit.getSourceDataUnits()[0].getColorTransferFunction()
-#        else:    
         self.colorTransferFunction = self.dataUnit.getColorTransferFunction()
-        
+        messenger.send(self,"set_Palette_ctf",self.colorTransferFunction)
         self.volumeProperty.SetColor(self.colorTransferFunction)
         
-    def setOpacityTransferFunction(self,otf,method):
-        """
-        Created: 28.04.2005, KP
-        Description: Set the opacity transfer function
-        """
-        self.otfs[method]=otf
-        self.volumeProperty.SetScalarOpacity(otf)
+#    def setOpacityTransferFunction(self,otf,method):
+#        """
+#        Created: 28.04.2005, KP
+#        Description: Set the opacity transfer function
+#        """
+#        self.otfs[method]=otf
+#        self.volumeProperty.SetScalarOpacity(otf)
+
         
-    def setVolumeProAcceleration(self,acc):
+    def updateQuality(self):
         """
-        Created: 15.05.2005, KP
-        Description: Set volume pro acceleration
+        Created: 12.03.2006, KP
+        Description: Update the quality of rendering
         """ 
-        self.method=-1
-        try:
-            self.mapper = vtk.vtkVolumeProMapper()
-        except:
-            # no support for volumepro available
-            Logging.info("No support for VolumePro detected",kw="rendering")
-            self.haveVolpro=0
-            self.volpro.Enable(0)
-            self.volpro.SetValue(0)
-            return
-        cmd="self.mapper.SetBlendModeTo%s()"%acc
-        Logging.info("Setting blending mode to ",acc,kw="rendering")
-        eval(cmd)
-        Logging.info("Setting parallel projetion",kw="rendering")
-        self.renderer.GetActiveCamera().ParallelProjectionOn()
-        
-    def setQuality(self,quality,raw=0):
-        """
-        Created: 28.04.2005, KP
-        Description: Set the quality of Rendering
-        """ 
-        self.quality = quality
-        if self.method<0:return 0
-        if raw:
+        method = self.parameters["Method"]
+        if self.parameters["QualityValue"]: 
+            quality = self.parameters["QualityValue"]
             Logging.info("Setting quality to raw ",quality,kw="rendering")
-            if self.method in [TEXTURE_MAPPING]:
+            if method in [TEXTURE_MAPPING]:
                 Logging.info("Setting maximum number of planes to",quality,kw="rendering")
                 self.mapper.SetMaximumNumberOfPlanes(quality)
-            else:
-                
+            else:                
                 if quality<=0.00001:
                     toq=0.1
                     Dialogs.showwarning(None,"The selected sample distance (%f) is too small, %f will be used."%(quality,toq),"Too small sample distance")
                     quality=toq
                 Logging.info("Setting sample distance to ",quality,kw="rendering")                    
                 self.mapper.SetSampleDistance(quality)
-            return quality
         else:
-            Logging.info("Setting quality to",quality,kw="rendering")
-        if quality==10:
-            if self.mapper:
-                if self.method not in [TEXTURE_MAPPING]:
-                    self.mapper.SetSampleDistance(self.sampleDistance)
-                    #self.mapper.SetAutoAdjustSampleDistances(1)
+            quality = self.parameters["Quality"]
+            if quality==10:
+                if self.mapper:
+                    if method not in [TEXTURE_MAPPING]:
+                        self.mapper.SetSampleDistance(self.sampleDistance)
+                        messenger.send(self,"set_QualityValue",self.sampleDistance)
+                    else:
+                        self.mapper.SetMaximumNumberOfPlanes(self.maxPlanes)
+                        messenger.send(self,"set_QualityValue",self.maxPlanes)
+
+            elif quality<10:               
+                if method not in [TEXTURE_MAPPING]:
+                    self.mapper.SetSampleDistance(15-quality)
+                    messenger.send(self,"set_QualityValue",15-quality)
                 else:
-                    self.mapper.SetMaximumNumberOfPlanes(self.maxPlanes)
-        #elif quality==9:
-        #    self.volumeProperty.SetInterpolationTypeToNearest()
-        elif quality<10:
-           
-            if self.method not in [TEXTURE_MAPPING]:
-                self.mapper.SetSampleDistance(15-quality)
-                return 15-quality
-            else:
-                quality=10-quality
-                self.mapper.SetMaximumNumberOfPlanes(25-quality)
-                return 25-quality
-        return 0
+                    quality=10-quality
+                    self.mapper.SetMaximumNumberOfPlanes(25-quality)
+                    messenger.send(self,"set_QualityValue",25-quality)
+            return 0     
+            
         
-    def setInterpolation(self,interpolation):
+    def setInputChannel(self,inputNum,chl):
+        """
+        Created: 17.04.2006, KP
+        Description: Set the input channel for input #inputNum
+        """            
+        VisualizationModule.setInputChannel(self, inputNum, chl)
+        inputDataUnit = self.getInputDataUnit(1)
+        if not inputDataUnit:
+            inputDataUnit = self.dataUnit
+        self.colorTransferFunction =    ctf = inputDataUnit.getColorTransferFunction()
+        messenger.send(self,"set_Palette_ctf",self.colorTransferFunction)
+             
+        self.volumeProperty.SetColor(self.colorTransferFunction)
+
+        
+    def updateInterpolation(self):
         """
         Created: 28.04.2005, KP
         Description: Set the interpolation method used
         """             
-        self.interpolation=interpolation
-        ints=["nearest neighbor","linear"]
-        Logging.info("Using %s interpolation"%ints[self.interpolation],kw="rendering")
-        if self.interpolation==0:
-            self.volumeProperty.SetInterpolationTypeToNearest()
-        else:
+        
+        print "NN=",self.parameters["NearestNeighbor"]
+        print "Linear=",self.parameters["Linear"]
+        if self.parameters["Linear"]:
             self.volumeProperty.SetInterpolationTypeToLinear() 
+        elif self.parameters["NearestNeighbor"]:
+            self.volumeProperty.SetInterpolationTypeToNearest()
         self.volume.SetProperty(self.volumeProperty)
 
-    def setMethod(self,method):
+    def updateMethod(self):
         """
         Created: 28.04.2005, KP
         Description: Set the Rendering method used
@@ -254,8 +320,8 @@ class VolumeModule(VisualizationModule):
 
         except:
             pass
-        self.method=method
-        self.volumeProperty.SetScalarOpacity(self.otfs[self.method])
+        method = self.parameters["Method"]
+        self.volumeProperty.SetScalarOpacity(self.otfs[method])
         
         tbl=["Ray cast","Texture Map","3D texture map","MIP","Isosurface"]
         Logging.info("Volume rendering method: ",tbl[method],kw="rendering")
@@ -278,9 +344,7 @@ class VolumeModule(VisualizationModule):
                 #self.volumeProperty.IndependentComponentsOff()
                 mode=blendModes[method]
                 Logging.info("Setting fixed point rendering mode to ",mode,kw="rendering")
-                cmd="self.mapper.SetBlendModeTo%s()"%(mode)
-                #print cmd
-                eval(cmd)
+                eval("self.mapper.SetBlendModeTo%s()"%mode)
             else:
                 self.mapper = vtk.vtkVolumeRayCastMapper()
                 self.function = composites[method]()
@@ -293,23 +357,47 @@ class VolumeModule(VisualizationModule):
             self.mapper = vtk.vtkVolumeTextureMapper2D()
             self.maxPlanes = self.mapper.GetMaximumNumberOfPlanes()
         
-        self.volume.SetMapper(self.mapper)    
         
-#        self.renderer.GetActiveCamera().ParallelProjectionOff()
+        if self.haveVolpro and self.method in [RAYCAST,ISOSURFACE,MIP] and self.parameters["UseVolumepro"]:
+            # use volumepro accelerated rendering
+            self.mapper = vtk.vtkVolumeProMapper()
+
+            modes=["Composite",None,None,"MaximumIntensity","MinimumIntensity"]
+            acc = modes[method]
+            cmd="self.mapper.SetBlendModeTo%s()"%acc
+            Logging.info("Setting blending mode to ",acc,kw="rendering")
+            eval(cmd)
+            Logging.info("Setting parallel projetion",kw="rendering")
+            self.renderer.GetActiveCamera().ParallelProjectionOn()            
+            #self.settingEdit.Enable(0)
+            #self.qualitySlider.Enable(0)
+        else:
+            self.renderer.GetActiveCamera().ParallelProjectionOff()     
+            
+        self.volume.SetMapper(self.mapper)    
+
 
     def updateRendering(self,input = None):
         """
         Created: 28.04.2005, KP
         Description: Update the Rendering of this module
         """             
+        self.updateMethod()
+        self.updateQuality()
+        self.updateInterpolation()
+        
+        
         if not input:
-            input=self.data
-        input = bxd.mem.optimize(image = input)
+            input=self.getInput(1)
+        x,y,z = self.dataUnit.getDimensions()
+        
+        input = bxd.mem.optimize(image = input, updateExtent = (0,x-1,0,y-1,0,z-1))
+                    
                     
         ncomps=input.GetNumberOfScalarComponents()
         Logging.info("Number of comps=",ncomps,kw="rendering")
-        if ncomps>1 and self.method == TEXTURE_MAPPING:
-            self.setMethod(0)
+        if ncomps>1 and self.parameters["Method"] == TEXTURE_MAPPING:
+            self.setParameter("Method",0)
             messenger.send(None,"update_module_settings")
         if ncomps>1:
             self.volumeProperty.IndependentComponentsOff()
@@ -318,13 +406,11 @@ class VolumeModule(VisualizationModule):
             
         Logging.info("Rendering using, ",self.mapper.__class__,kw="rendering")
         
-        
         self.mapper.SetInput(input)
-        #self.mapper.AddObserver("ProgressEvent",self.updateProgress)
 
         VisualizationModule.updateRendering(self,input)
         self.parent.Render()
-        if self.method == TEXTURE_MAPPING_3D:
+        if self.parameters["Method"] == TEXTURE_MAPPING_3D:
             if not self.mapper.IsRenderSupported(self.volumeProperty):
                 messenger.send(None,"show_error","3D texture mapping not supported",
                 "Your graphics hardware does not support 3D accelerated texture mapping. Please use one of the other volume rendering methods.")
@@ -365,186 +451,45 @@ class VolumeConfigurationPanel(ModuleConfigurationPanel):
         Created: 28.04.2005, KP
         Description: Initialization
         """     
-        self.method=TEXTURE_MAPPING
         ModuleConfigurationPanel.__init__(self,parent,visualizer,name,**kws)
-        self.editFlag=0
 
     def initializeGUI(self):
         """
         Created: 28.04.2005, KP
         Description: Initialization
         """  
-        self.colorLbl = wx.StaticText(self,-1,"Dataset palette:")
-        #self.colorBtn = ColorTransferEditor.CTFButton(self,alpha=1)
-        self.colorPanel = ColorTransferEditor.ColorTransferEditor(self,alpha=1)
-        #self.colorPanel.setColorTransferFunction(self.ctf)
-
-        n=0
-        self.contentSizer.Add(self.colorLbl,(n,0))
-        n+=1
-        self.contentSizer.Add(self.colorPanel,(n,0))
-        n+=1
+        pass
         
-        modes = ["Ray casting","Texture mapping","3D texture mapping","Maximum intensity projection"]
-        try:
-            volpro=vtk.vtkVolumeProMapper()
-            self.haveVolpro=0
-            if volpro.GetNumberOfBoards():
-                self.haveVolpro=1
-        except:
-            self.haveVolpro=0
-        if self.haveVolpro:
-            modes.append("Minimum intensity projection")
-        
-        #self.methodLbl = wx.StaticText(self,-1,"Volume rendering method:")
-        
-        self.methodBox=wx.StaticBox(self,-1,"Volume rendering method")
-        self.methodSizer=wx.StaticBoxSizer(self.methodBox,wx.VERTICAL)
-        self.moduleChoice = wx.Choice(self,-1,choices = modes)
-    
-        self.moduleChoice.Bind(wx.EVT_CHOICE,self.onSelectMethod)
-        self.moduleChoice.SetSelection(self.method)
-        
-      
-        #self.contentSizer.Add(self.methodLbl,(n,0))
-        n+=1
-        self.methodSizer.Add(self.moduleChoice)
-        self.contentSizer.Add(self.methodSizer,(n,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
-        n+=1
-        
-        self.qualityBox=wx.StaticBox(self,-1,"Rendering quality")
-        self.qualitySizer=wx.StaticBoxSizer(self.qualityBox,wx.VERTICAL)
-        self.interpolationBox = wx.RadioBox(
-                self, -1, "Interpolation", wx.DefaultPosition, wx.DefaultSize,
-                ["Nearest neighbor","Linear"], 2, wx.RA_SPECIFY_COLS
-                )
-        s="""Set the type of interpolation used in rendering.
+    def getLongDesc(self, parameter):
+        """
+        Created: 12.03.2007, KP
+        Description: return a long desc for the given parameter
+        """
+        if parameter in ["NearestNeighbor","Linear"]:
+            return """Set the type of interpolation used in rendering.
 Nearest Neighbor interpolation is faster than Linear interpolation, 
 but using linear interpolation yields a better rendering quality."""
-        self.interpolationBox.SetToolTip(wx.ToolTip(s))
-        self.interpolationBox.SetHelpText(s)
-        self.interpolationBox.Bind(wx.EVT_RADIOBOX,self.onSetInterpolation)
-        self.contentSizer.Add(self.interpolationBox,(n,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
-        n+=1
-        #self.qualitySizer.Add(self.interpolationBox)
-                
-        if self.haveVolpro:
-            self.volpro=wx.CheckBox(self,-1,"Use VolumePro acceleration")
-            self.volpro.Enable(0)
-            self.contentSizer.Add(self.volpro,(n,0))
-            n+=1
-        
-        self.qualitySlider = wx.Slider(self,value=10, minValue=0,maxValue = 10,
-        style=wx.HORIZONTAL|wx.SL_AUTOTICKS|wx.SL_LABELS,size=(250,-1))
-        self.qualitySlider.Bind(wx.EVT_SCROLL,self.onSetQuality)
-        
-        self.qualitySizer.Add(self.qualitySlider)
-        self.contentSizer.Add(self.qualitySizer,(n,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
-        n+=1
-        
-        self.settingLbl=wx.StaticText(self,-1,"Maximum number of planes:")
-        self.settingEdit = wx.TextCtrl(self,-1,"")
-        self.settingEdit.Bind(wx.EVT_TEXT,self.onEditQuality)
-        self.qualitySizer.Add(self.settingLbl)
-        self.qualitySizer.Add(self.settingEdit)
-        
-        self.shadingBtn=wx.CheckBox(self.lightPanel,-1,"Use shading")
-        self.shadingBtn.SetValue(0)
-        self.shading=0
-        self.shadingBtn.Bind(wx.EVT_CHECKBOX,self.onCheckShading)
-        
-        self.lightSizer.Add(self.shadingBtn,(4,0))
-        
-    def onSetInterpolation(self,event):
-        """
-        Created: 08.08.2005, KP
-        Description: Set the interpolation used
-        """  
-        self.interpolation=self.interpolationBox.GetSelection()      
-        
-    def onCheckShading(self,event):
-        """
-        Created: 16.05.2005, KP
-        Description: Toggle use of shading
-        """  
-        self.shading=event.IsChecked()
-            
-
-    def onEditQuality(self,event):
-        """
-        Created: 15.05.2005, KP
-        Description: Set the quality
-        """  
-        self.editFlag=1
-        
-    def onSetQuality(self,event):
-        """
-        Created: 15.05.2005, KP
-        Description: Set the quality
-        """  
-        if event:
-            self.editFlag=0
-        if not self.editFlag:
-            q=self.qualitySlider.GetValue()
-        else:
-            try:
-                q=float(self.settingEdit.GetValue())
-            except:
-                q=self.qualitySlider.GetValue()
-        setting = self.module.setQuality(q,self.editFlag)
-        if setting:
-            if type(setting)==types.FloatType:
-                val="%f"%setting
-            else:
-                val="%d"%setting
-        else:val=""
-        flag=self.editFlag
-        self.settingEdit.SetValue(val)
-        self.editFlag=flag
-        
-        
-    def onSelectMethod(self,event):
-        """
-        Created: 28.04.2005, KP
-        Description: Select the volume rendering method
-        """  
-        self.method = self.moduleChoice.GetSelection()
-        if self.haveVolpro:
-            flag=(self.method in [RAYCASTING,MIP,ISOSURFACE])
-            self.volpro.Enable(flag)
-        if self.method==4:
-            self.volpro.SetValue(1)
-        Logging.info("Setting otf to ",self.method)
-        self.colorPanel.setOpacityTransferFunction(self.module.otfs[self.method])
-        if self.method == TEXTURE_MAPPING:
-            self.settingLbl.SetLabel("Maximum number of planes:")
-        else:
-            self.settingLbl.SetLabel("Sample distance:")            
-      
+                  
     def setModule(self,module):
         """
         Created: 28.04.2005, KP
         Description: Set the module to be configured
         """  
         ModuleConfigurationPanel.setModule(self,module)
-        unit=module.getDataUnit()
-        self.method=module.method
-        self.moduleChoice.SetSelection(self.method)
-        self.colorPanel.setOpacityTransferFunction(self.module.otfs[self.method])
-        self.interpolation=module.interpolation
-        self.interpolationBox.SetSelection(module.interpolation)
+        unit=module.getDataUnit()        
+        self.gui = GUIBuilder.GUIBuilder(self, self.module)
+        
+        self.contentSizer.Add(self.gui,(0,0))
+        
         if unit.getBitDepth()==32:
-            self.colorPanel.setAlphaMode(1)
-            
+            #self.colorPanel.setAlphaMode(1)
+            pass
         else:
             if module.visualizer.getProcessedMode():
                 ctf = module.getDataUnit().getSourceDataUnits()[0].getColorTransferFunction()
             else:
                 ctf= module.getDataUnit().getColorTransferFunction()
-            self.colorPanel.setColorTransferFunction(ctf)
-        self.qualitySlider.SetValue(module.quality)
-        self.shadingBtn.SetValue(module.shading)
-        
+            messenger.send(self,"set_Palette_ctf",ctf)
         
     def onApply(self,event):
         """
@@ -552,29 +497,10 @@ but using linear interpolation yields a better rendering quality."""
         Description: Apply the changes
         """     
         ModuleConfigurationPanel.onApply(self,event)
-        #if self.colorPanel.isChanged():
-        self.module.setShading(self.shading)
-        self.module.setInterpolation(self.interpolation)
         
-        otf = self.colorPanel.getOpacityTransferFunction()
-        self.module.setOpacityTransferFunction(otf,self.method)
-        if self.haveVolpro and self.method in [RAYCAST,ISOSURFACE,MIP] and self.volpro.GetValue():
-            # use volumepro accelerated rendering
-            modes=["Composite",None,None,"MaximumIntensity","MinimumIntensity"]
-            self.module.setVolumeProAcceleration(modes[self.method])
-            self.settingEdit.Enable(0)
-            self.qualitySlider.Enable(0)
-        else:
-            self.settingEdit.Enable(1)
-            self.qualitySlider.Enable(1)
-            self.module.setMethod(self.method)
-            if self.method==1:
-                self.settingLbl.SetLabel("Maximum number of planes:")
-            else:
-                self.settingLbl.SetLabel("Sample Distance:")
-            self.Layout()
+#        otf = self.colorPanel.getOpacityTransferFunction()
+#        self.module.setOpacityTransferFunction(otf,self.method)
 
-        self.onSetQuality(None)
         self.module.updateData()
         # module.updateData() will call updateRendering()
         #self.module.updateRendering()

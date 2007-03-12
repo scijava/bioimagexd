@@ -32,7 +32,7 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 import wx
 import time
-
+import platform
 import vtk
 from vtk.wx.wxVTKRenderWindowInteractor import wxVTKRenderWindowInteractor
 import Dialogs
@@ -273,7 +273,6 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
         self.count={}
         self.currentConfMode=""
         #self.titlePanel = TitledPanel(self,"Visualizer",1)
-        print "creating name panel"
         self.namePanel = NamePanel(self,"Visualizer",(0,128,255),
             size=(-1,25),
             xoffset=8,yoffset=1)
@@ -281,6 +280,7 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
         self.moduleLbl = wx.StaticText(self,-1,"Rendering module:")
         modules=self.mode.mapping.keys()
         modules.sort()
+
         self.moduleChoice = wx.Choice(self,-1,choices=modules)
         self.moduleChoice.SetSelection(0)
         
@@ -288,7 +288,11 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
         self.moduleListbox = wx.CheckListBox(self,-1)
         
         font=self.moduleListbox.GetFont()
-        font.SetPointSize(font.GetPointSize()-2)
+        if platform.system()!="Windows":
+            font.SetPointSize(font.GetPointSize()-2)
+        else:
+            font.SetPointSize(font.GetPointSize()-1)
+
         self.moduleListbox.SetFont(font)
 
         
@@ -336,7 +340,6 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
         Created: 15.05.2005, KP
         Description: Select a module
         """
-        print "Selected item=",event.GetSelection()
         self.selected = event.GetSelection()
         self.showConfiguration(self.selected)
         
@@ -362,7 +365,6 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
         self.confPanel.setLabel("Configure %s"%lbl)
         self.confPanel.setColor((0,0,0),(180,255,180))
         
-        print "panel=",panel
         self.currentConf=panel(self,self.visualizer,lbl)#,mode=self.mode)
      
         self.sizer.Add(self.currentConf,(6,0))
@@ -380,7 +382,7 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
         index = event.GetSelection()
         lbl = self.moduleListbox.GetString(index)
         status=self.moduleListbox.IsChecked(index)
-        print "Setting rendering of %s to %s"%(lbl,status)
+        #print "Setting rendering of %s to %s"%(lbl,status)
         self.mode.setRenderingStatus(lbl,status)
 
     def onConfigureLights(self,event):

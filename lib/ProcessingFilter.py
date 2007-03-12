@@ -64,6 +64,8 @@ class ProcessingFilter(GUIBuilder.GUIBuilderBase):
         """
         self.taskPanel = None                
         self.dataUnit = None
+        self.processInputText="Input from procedure list"
+        
         GUIBuilder.GUIBuilderBase.__init__(self, changeCallback = self.notifyTaskPanel)
 
         self.numberOfInputs = numberOfInputs
@@ -71,8 +73,6 @@ class ProcessingFilter(GUIBuilder.GUIBuilderBase):
         self.parameters = {}
         self.gui = None
         
-        self.sourceUnits = []
-        self.inputs =[]
         self.ignoreObjects =0
         
         self.nextFilter = None
@@ -82,7 +82,6 @@ class ProcessingFilter(GUIBuilder.GUIBuilderBase):
         self.itkFlag = 0
         self.inputIndex=0
         self.imageType = "UC3"
-        self.inputMapping = {}
         for item in self.getPlainParameters():
             self.setParameter(item,self.getDefaultValue(item))
         
@@ -282,59 +281,7 @@ class ProcessingFilter(GUIBuilder.GUIBuilderBase):
         """
         return self.itkFlag
         
-    def getInput(self,n):
-        """
-        Created: 17.04.2006, KP
-        Description: Return the input imagedata #n
-        """             
-        print "input mapping=",self.inputMapping
-        print "n=",n
-        if n not in self.inputMapping:
-            self.inputMapping[n]=n-1
-        if self.inputMapping[n]==0:        
-            print "Using input%d from stack as input %d"%(n-1,n)
-            image = self.inputs[self.inputIndex]
-            self.inputIndex+=1
-        else:
-            print "Using input from channel %d as input %d"%(self.inputMapping[n]-1,n)
-            image = self.getInputFromChannel(self.inputMapping[n]-1)
-        return image
-        
-    def getInputFromChannel(self,n, timepoint=-1):
-        """
-        Created: 17.04.2006, KP
-        Description: Return an imagedata object that is the current timepoint for channel #n
-        """             
-        if not self.sourceUnits:
-            self.sourceUnits = self.dataUnit.getSourceDataUnits()
-        tp=bxd.visualizer.getTimepoint()
-        if bxd.processingTimepoint != -1:
-            tp = bxd.processingTimepoint
-        if timepoint!=-1:
-            tp=timepoint
-        print "RETURNING TIMEPOINT %d AS SOURCE"%tp
-        return self.sourceUnits[n].getTimePoint(tp)
-        
-    def getNumberOfInputs(self):
-        """
-        Created: 17.04.2006, KP
-        Description: Return the number of inputs required for this filter
-        """             
-        return self.numberOfInputs
-        
-    def setInputChannel(self,inputNum,chl):
-        """
-        Created: 17.04.2006, KP
-        Description: Set the input channel for input #inputNum
-        """            
-        self.inputMapping[inputNum] = chl
-        
-    def getInputName(self,n):
-        """
-        Created: 17.04.2006, KP
-        Description: Return the name of the input #n
-        """          
-        return "Source dataset %d"%n  
+
         
     def getEnabled(self):
         """

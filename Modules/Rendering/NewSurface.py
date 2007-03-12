@@ -44,8 +44,8 @@ from Visualizer.VisualizationModules import *
 def getClass():return SurfaceModule
 def getConfigPanel():return SurfaceConfigurationPanel
 def getName():return "Surface rendering"
+def getQuickKeyCombo(): return "Shift-Ctrl-S"
 
-    
 class SurfaceModule(VisualizationModule):
     """
     Created: 28.04.2005, KP
@@ -53,7 +53,6 @@ class SurfaceModule(VisualizationModule):
     """    
     def __init__(self,parent,visualizer,**kws):
         """
-        Method: __init__(parent)
         Created: 28.04.2005, KP
         Description: Initialization
         """     
@@ -216,7 +215,7 @@ class SurfaceModule(VisualizationModule):
         """           
         method = self.parameters["Method"]
         self.setMethod(method)
-        print "Using method",method
+
         if self.volumeModule:
             self.volumeModule.function.SetIsoValue(self.parameters["IsoValue"])
             self.volumeModule.showTimepoint(self.timepoint)
@@ -225,7 +224,10 @@ class SurfaceModule(VisualizationModule):
             self.init=1
             self.mapper.ColorByArrayComponent(0,0)
         self.mapper.AddObserver("ProgressEvent",self.updateProgress)
-        self.mapper.SetLookupTable(self.dataUnit.getColorTransferFunction())
+        dataUnit = self.getInputDataUnit(1)
+        if not dataUnit:
+            dataUnit = self.dataUnit
+        self.mapper.SetLookupTable(dataUnit.getColorTransferFunction())
         self.mapper.ScalarVisibilityOn()
         
         min,max=self.data.GetScalarRange()
@@ -246,16 +248,16 @@ class SurfaceModule(VisualizationModule):
             culler.SetSortingStyleToBackToFront()
         
         self.actor.GetProperty().SetOpacity(opacity)
-        input=self.data
+        input = self.getInput(1)
         if self.parameters["Gaussian"]:
             Logging.info("Doing gaussian smoothing",kw="visualizer")
             if not self.smooth:
                 self.smooth=vtk.vtkImageGaussianSmooth()
-                self.smooth.SetInput(input)
-                #self.smooth.Update()
+            self.smooth.SetInput(input)
             input=self.smooth.GetOutput()
         
-        input = bxd.mem.optimize(image = input)        
+        x,y,z = self.dataUnit.getDimensions()
+        input = bxd.mem.optimize(image = input, updateExtent = (0,x-1,0,y-1,0,z-1))
         self.contour.SetInput(input)
         input=self.contour.GetOutput()
         

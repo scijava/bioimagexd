@@ -391,6 +391,10 @@ class CombinedDataUnit(DataUnit.DataUnit):
                 for dataunit in self.sourceunits:
                     Logging.info("Adding source image data",kw="dataunit")
                     image=dataunit.getTimePoint(timePoint)
+                    x,y,z = image.GetDimensions()
+                    if depth == -1 and z==1:
+                        image.SetUpdateExtent(image.GetWholeExtent())
+                        image.Update()
                     self.module.addInput(dataunit,image)
 
             preview=self.module.getPreview(depth)
