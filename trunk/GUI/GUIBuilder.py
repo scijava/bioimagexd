@@ -35,6 +35,7 @@ import types
 import Histogram
 import wx.lib.buttons as buttons
 import  wx.lib.filebrowsebutton as filebrowse
+import ColorTransferEditor
 
 import messenger
 import Logging
@@ -42,6 +43,7 @@ import scripting as bxd
 import UIElements
 RADIO_CHOICE="RADIO_CHOICE"
 THRESHOLD="THRESHOLD"
+CTF="CTF"
 PIXEL="PIXEL"
 PIXELS="PIXELS"
 SLICE="SLICE"
@@ -72,6 +74,10 @@ class GUIBuilderBase:
         Description: Initialization
         """
         self.parameters = {}
+        self.inputMapping = {}
+        self.sourceUnits = []
+        self.inputs =[]
+
         self.gui = None
         self.modCallback = changeCallback
         self.initDone = 0
@@ -79,7 +85,77 @@ class GUIBuilderBase:
             self.setParameter(item,self.getDefaultValue(item))
         self.initDone = 1
         
-      
+    def getInput(self,n):
+        """
+        Created: 17.04.2006, KP
+        Description: Return the input imagedata #n
+        """             
+        if n not in self.inputMapping:
+            self.inputMapping[n]=n-1
+        if self.inputMapping[n]==0 and self.dataUnit.isProcessed():        
+            print "Using input%d from stack as input %d"%(n-1,n)
+            image = self.inputs[self.inputIndex]
+            self.inputIndex+=1
+        else:
+            print "\nUsing input from channel %d as input %d"%(self.inputMapping[n]-1,n)
+            image = self.getInputFromChannel(self.inputMapping[n]-1)
+        return image
+        
+    def getInputDataUnit(self,n):
+        """
+        Created: 12.03.2007, KP
+        Description: Return the input dataunit for input #n
+        """   
+        if n not in self.inputMapping:
+            return None
+        if self.inputMapping[n]==0 and self.dataUnit.isProcessed():        
+            return self.dataUnit
+        else:
+            image = self.getInputFromChannel(self.inputMapping[n]-1, dataUnit = 1)
+        return image
+        
+    def getInputFromChannel(self,n, timepoint=-1, dataUnit = 0):
+        """
+        Created: 17.04.2006, KP
+        Description: Return an imagedata object that is the current timepoint for channel #n
+        """             
+        if self.dataUnit.isProcessed():
+            if not self.sourceUnits:
+                self.sourceUnits = self.dataUnit.getSourceDataUnits()
+        else:
+            self.sourceUnits = [self.dataUnit]
+                
+        tp=bxd.visualizer.getTimepoint()
+        if bxd.processingTimepoint != -1:
+            tp = bxd.processingTimepoint
+        if timepoint!=-1:
+            tp=timepoint
+        if dataUnit:
+            return self.sourceUnits[n]
+        print "RETURNING TIMEPOINT %d from SOURCEUNITS %d AS SOURCE"%(tp,n)
+        print "SOURCE UNIT IS =",self.sourceUnits[n]
+        return self.sourceUnits[n].getTimePoint(tp)
+        
+    def getNumberOfInputs(self):
+        """
+        Created: 17.04.2006, KP
+        Description: Return the number of inputs required for this filter
+        """             
+        return self.numberOfInputs
+        
+    def setInputChannel(self,inputNum,chl):
+        """
+        Created: 17.04.2006, KP
+        Description: Set the input channel for input #inputNum
+        """            
+        self.inputMapping[inputNum] = chl
+        
+    def getInputName(self,n):
+        """
+        Created: 17.04.2006, KP
+        Description: Return the name of the input #n
+        """          
+        return "Source dataset %d"%n        
 
     def getParameterLevel(self, parameter):
         """
@@ -275,7 +351,7 @@ class GUIBuilder(wx.Panel):
                     
                     #print "items=",items
                     
-                    if not (isTuple and itemType == types.BooleanType) and itemType not in [RADIO_CHOICE, SLICE, PIXEL, PIXELS, THRESHOLD, FILENAME, CHOICE, ROISELECTION]:
+                    if not (isTuple and itemType == types.BooleanType) and itemType not in [RADIO_CHOICE, SLICE, PIXEL, PIXELS, THRESHOLD, FILENAME, CHOICE, ROISELECTION,CTF]:
                         #print "NOBR=",nobr,"processing item",item
                         if not nobr:
                             y+=1
@@ -300,6 +376,7 @@ class GUIBuilder(wx.Panel):
                             y+=1
                         #print "cx=",cx,"y=",y
                         if itemType == RADIO_CHOICE:
+
                             # Indicate that we need to skip next item
                             skip=1
                             #print item
@@ -318,11 +395,15 @@ class GUIBuilder(wx.Panel):
                                 choices.append(d)
                                 f=lambda obj,evt,arg, box, i=i, s=self: s.onSetRadioBox(box,i,arg)
                                 funcs.append(("set_%s"%i,f))
+                                longDesc = currentFilter.getLongDesc(i)
                                 
 
                             
                             box = wx.RadioBox(self,-1,sboxname,choices=choices,
                             majorDimension = items[n+1][1],style=majordim)
+                            if longDesc:
+                                    box.SetToolTip(wx.ToolTip(s))
+
                             for funcname,f in funcs:
                                 f2=lambda obj,evt,arg,box=box:f(obj,evt,arg,box)
                                 messenger.connect(currentFilter,funcname,f2)
@@ -336,8 +417,9 @@ class GUIBuilder(wx.Panel):
                         elif itemType == SLICE:
                             text = currentFilter.getDesc(itemName)
                             box = wx.BoxSizer(wx.VERTICAL)
-                            lbl = wx.StaticText(self,-1,text)
-                            box.Add(lbl)
+                            if text:
+                                lbl = wx.StaticText(self,-1,text)
+                                box.Add(lbl)
                             
                             val = currentFilter.getDefaultValue(itemName)
                             lvl = currentFilter.getParameterLevel(itemName)
@@ -350,9 +432,14 @@ class GUIBuilder(wx.Panel):
                             style = wx.SL_HORIZONTAL|wx.SL_LABELS|wx.SL_AUTOTICKS,
                             size=(x,-1))
                             
+                            longDesc = currentFilter.getLongDesc(itemName)
+                            if longDesc:
+                                slider.SetToolTip(wx.ToolTip(s))
+
+                            
                             #slider.SetBackgroundColour(lvl)
                             if lvl:
-                                lbl.SetBackgroundColour(lvl)
+                                if text: lbl.SetBackgroundColour(lvl)
                                 bg.SetBackgroundColour(lvl)
                             func = lambda evt, its=item, f=currentFilter:self.onSetSliderValue(evt,its,f)
                             slider.Bind(wx.EVT_SCROLL,func)
@@ -390,7 +477,11 @@ class GUIBuilder(wx.Panel):
                             browse.SetValue(val)
                             f=lambda obj,evt,arg, b=browse, i=itemName, s=self: s.onSetFileNameFromFilter(b,i,arg)
                             messenger.connect(currentFilter,"set_%s"%itemName,f) 
-                            
+                                                        
+                            longDesc = currentFilter.getLongDesc(itemName)
+                            if longDesc:
+                                filebrowse.SetToolTip(wx.ToolTip(s))
+
                             box.Add(browse,1)                            
                             itemsizer.Add(box,(y,0),flag = wx.EXPAND|wx.HORIZONTAL)
                             y+=1
@@ -401,8 +492,9 @@ class GUIBuilder(wx.Panel):
                             lvl = currentFilter.getParameterLevel(itemName)
                             
                             
-                            lbl = wx.StaticText(self,-1,text)
-                            box.Add(lbl)
+                            if text:
+                                lbl = wx.StaticText(self,-1,text)
+                                box.Add(lbl)
 
                             
                             bg = wx.Window(self,-1)
@@ -413,10 +505,14 @@ class GUIBuilder(wx.Panel):
                             choice.SetSelection(val)
                             if lvl:
                                 #choice.SetBackgroundColour(lvl)
-                                lbl.SetBackgroundColour(lvl)
+                                if text: lbl.SetBackgroundColour(lvl)
                                 bg.SetBackgroundColour(lvl)
                             choice.Bind(wx.EVT_CHOICE,func)
-                            
+                                                        
+                            longDesc = currentFilter.getLongDesc(itemName)
+                            if longDesc:
+                                choice.SetToolTip(wx.ToolTip(s))
+
                             f=lambda obj,evt,arg, c=choice, i=itemName, s=self: s.onSetChoiceFromFilter(c,i,arg)
                             messenger.connect(currentFilter,"set_%s"%itemName,f) 
                             
@@ -424,6 +520,8 @@ class GUIBuilder(wx.Panel):
                             box.Add(bg,1)
                             itemsizer.Add(box,(y,0),flag=wx.EXPAND|wx.HORIZONTAL)
                             y+=1
+
+                        
                         elif itemType == ROISELECTION:
                             box = wx.BoxSizer(wx.VERTICAL)
                             text = currentFilter.getDesc(itemName)
@@ -440,6 +538,11 @@ class GUIBuilder(wx.Panel):
                                 choice.Clear()                            
                                 
                                 choice.AppendItems(choices)
+                                
+                            longDesc = currentFilter.getLongDesc(itemName)
+                            if longDesc:
+                                choice.SetToolTip(wx.ToolTip(s))
+
                             
                             func = lambda evt, its=item,f=currentFilter, i = itemName, r = rois, s = self: s.onSetROI(r,f, i, evt)
                             choice = wx.Choice(self,-1,choices=choices)
@@ -543,6 +646,29 @@ class GUIBuilder(wx.Panel):
                             
                             histogram.setDataUnit(du,noupdate=1)
                             itemsizer.Add(bg,(0,0))
+                        elif itemType == CTF:
+                            bg = wx.Window(self,-1)
+                            bgsizer = wx.BoxSizer(wx.VERTICAL)
+                            bg.SetSizer(bgsizer)
+                            bg.SetAutoLayout(1)
+                            lvl = currentFilter.getParameterLevel(itemName)
+                            if lvl:
+                                bg.SetBackgroundColour(lvl)
+                            wantAlpha = items[n][1]
+                            text = currentFilter.getDesc(itemName)
+                            if text:
+                                colorLbl = wx.StaticText(bg,-1,text)
+                                bgsizer.Add(colorLbl)
+    
+                            colorPanel = ColorTransferEditor.ColorTransferEditor(bg,alpha=wantAlpha)
+                            bgsizer.Add(colorPanel)
+                            itemsizer.Add(bg,(0,0))
+                            setctf=lambda obj,evt,arg, panel= colorPanel, i=item, s=self: s.onSetCtf(panel,i,arg)
+                          
+                            messenger.connect(currentFilter,"set_%s_ctf"%item,setctf)
+                            setotf=lambda obj,evt,arg, panel= colorPanel, i=item, s=self: s.onSetOtf(panel,i,arg)
+                            messenger.connect(currentFilter,"set_%s_otf"%item,setctf)
+                            
                         else:
                             groupsizer=wx.GridBagSizer()
                             x=0
@@ -582,17 +708,25 @@ class GUIBuilder(wx.Panel):
         chmin,chmax = self.currentFilter.getNumberOfInputs()
         sizer = wx.GridBagSizer()
         y=0
-        choices=["Input from filter stack"]
-        for i,dataunit in enumerate(self.currentFilter.dataUnit.getSourceDataUnits()):
-            choices.append(dataunit.getName())
+        choices=[self.currentFilter.processInputText]
+        # If the input is a processed dataunit, i.e. output from a task,
+        # then we offer both the task output and the individual channels
+        if self.currentFilter.dataUnit.isProcessed():
+            for i,dataunit in enumerate(self.currentFilter.dataUnit.getSourceDataUnits()):
+                choices.append(dataunit.getName())
+        else:
+            # If we have a non-processed dataunit (i.e. a single channel)
+            # as input, then we only offer that
+            choices=[self.currentFilter.dataUnit.getName()]       
         
-        
+        print "There are ",chmax,"channels"
         for i in range(1,chmax+1):
             lbl = wx.StaticText(self,-1,self.currentFilter.getInputName(i))
             sizer.Add(lbl,(y,0))
             chlChoice = wx.Choice(self,-1,choices=choices)
             sizer.Add(chlChoice,(y,1))
             chlChoice.SetSelection(i-1)
+            print "Setting input channel",i,"to ",i-1
             self.currentFilter.setInputChannel(i,i-1)
             
             func=lambda evt,f=self.currentFilter,n=i: self.onSetInputChannel(f,n,evt)
@@ -712,6 +846,9 @@ class GUIBuilder(wx.Panel):
         
         if  desc and itemType not in [types.BooleanType]:
             lbl = wx.StaticText(bg,-1,desc)
+            updatef=lambda obj,evt,arg, lbl = lbl, i=item, s=self: lbl.SetLabel(arg)
+                                        
+            messenger.connect(None,"update_%s_label"%item,updatef)
             bgsizer.Add(lbl)
         else:
             lbl = None
@@ -810,7 +947,6 @@ class GUIBuilder(wx.Panel):
         Created: 05.06.2006, KP
         Description: Set the value for the GUI item
         """             
-        #print input,item,value
         input.SetValue(str(value))
     def onSetBool(self, input, item, value):
         """
@@ -908,6 +1044,18 @@ class GUIBuilder(wx.Panel):
         """             
         eval("histogram.set%sThreshold(value)"%valuetype)
 
+    def onSetCtf(self, colorPanel, item, value):
+        """
+        Created: 12.03.2007, KP
+        Description: Set the color transfer function editor ctf
+        """
+        colorPanel.setColorTransferFunction(value)
+    def onSetOtf(self, colorPanel, item, value):
+        """
+        Created: 12.03.2007, KP
+        Description: Set the color transfer function editor otf
+        """
+        colorPanel.setOpacityTransferFunction(value)
             
     def onSetThreshold(self,evt,items,currentFilter):
         """

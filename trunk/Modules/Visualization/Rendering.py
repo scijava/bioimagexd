@@ -95,7 +95,7 @@ class RenderingMode(VisualizationMode):
         for key in self.mapping.keys():
             mod,conf,module=self.mapping[key]
             module=reload(module)
-            print "Reloaded visualization module",module
+            #print "Reloaded visualization module",module
             self.mapping[key]=(mod,conf,module)
             
 

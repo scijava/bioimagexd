@@ -211,6 +211,9 @@ class DimensionInfo(wx.Window):
         """
         self.currX, self.currY, self.currZ = dims
         self.origX, self.origY, self.origZ = dims
+        w,h=self.GetSize()
+        self.buffer = wx.EmptyBitmap(w,h,-1)
+        
         self.paintSelf()    
         self.Refresh()
         
@@ -252,6 +255,8 @@ class DimensionInfo(wx.Window):
         if self.nondarwin:
             self.dc.SetBackground(wx.Brush(self.parent.GetBackgroundColour()))
             self.dc.Clear()
+        else:
+            pass    
         
         
             #self.dc.SetBackground(wx.Brush(self.bg))
@@ -268,7 +273,7 @@ class DimensionInfo(wx.Window):
         self.dc.SetBrush(wx.Brush(self.parent.GetBackgroundColour()))
         self.dc.SetPen(wx.Pen(self.parent.GetBackgroundColour(),1))
         
-        font = wx.Font(8,wx.SWISS,wx.NORMAL,weight)
+        font = wx.Font(9,wx.SWISS,wx.NORMAL,weight)
         self.dc.SetTextForeground((0,0,0))
         self.dc.SetFont(font)
         txt="%3d x %3d x %3d"%(self.currX, self.currY, self.currZ)

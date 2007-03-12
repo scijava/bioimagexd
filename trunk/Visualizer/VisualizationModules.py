@@ -54,10 +54,13 @@ class VisualizationModule(GUIBuilder.GUIBuilderBase):
         Description: Initialization
         """    
         #self.name="Module"
+        self.processInputText="Task output"
+
         GUIBuilder.GUIBuilderBase.__init__(self,changeCallback = self.parameterChanged)
         
         self.moduleName=kws["moduleName"]
         self.name=kws["label"]
+        self.numberOfInputs = (1,1)
         self.timepoint = -1
         self.parent = parent
         self.shading=0
@@ -143,6 +146,12 @@ class VisualizationModule(GUIBuilder.GUIBuilderBase):
         else:
             Logging.info("Using timepoint data for tp",value,kw="rendering")
             self.data = self.dataUnit.getTimePoint(value)
+        
+        # We set this for the new style modules that are based on the GUI builder 
+        self.inputs=[self.data]
+        self.inputIndex = 0
+
+        
         if update:
             self.updateRendering()
         

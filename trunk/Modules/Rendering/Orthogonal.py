@@ -41,6 +41,7 @@ from Visualizer.VisualizationModules import *
 def getClass():return OrthogonalPlaneModule
 def getConfigPanel():return OrthogonalPlaneConfigurationPanel
 def getName():return "Orthogonal slices"
+def getQuickKeyCombo(): return "Shift-Ctrl-O"
 
 
 class OrthogonalPlaneModule(VisualizationModule):
