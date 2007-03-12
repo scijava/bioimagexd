@@ -42,6 +42,7 @@ import  wx.lib.masked as  masked
 import Logging
 import DataUnit
 import DataSource
+import Configuration
 
 class ImportDialog(wx.Dialog):
     """
@@ -97,7 +98,7 @@ class ImportDialog(wx.Dialog):
             
         name=self.nameEdit.GetValue()
         name=name.replace(" ","_")
-        filename=Dialogs.askSaveAsFileName(self,"Save imported dataset as","%s.bxd"%name,"BioImageXD Dataset (*.bxd)|*.bxd")
+        filename=Dialogs.askSaveAsFileName(self,"Save imported dataset as","%s.bxd"%name,"BioImageXD Dataset (*.bxd)|*.bxd","import_save")
         self.Close()
         
         self.convertFiles(filename)
@@ -317,8 +318,12 @@ class ImportDialog(wx.Dialog):
         
         self.imageSourceboxsizer.SetMinSize((600,100))
         
-        
-        self.browsedir=filebrowse.FileBrowseButton(self.imagePanel,-1,labelText="Source Directory: ",changeCallback=self.loadListOfImages)
+        conf = Configuration.getConfiguration()       
+        initialDir = conf.getConfigItem("ImportDirectory","Paths")
+        if not initialDir:
+            initialDir="."
+
+        self.browsedir=filebrowse.FileBrowseButton(self.imagePanel,-1,labelText="Source Directory: ",changeCallback=self.loadListOfImages,startDirectory=initialDir)
         
         self.sourcesizer=wx.BoxSizer(wx.VERTICAL)
         
@@ -537,11 +542,13 @@ class ImportDialog(wx.Dialog):
     
     def loadListOfImages(self,event=None):
         """
-        Method: loadListOfImages
         Created: 17.03.2005, KP
         Description: A method that loads a list of images to a listbox based on the selected input type
         """        
         filename=self.browsedir.GetValue()
+        conf = Configuration.getConfiguration()
+        conf.setConfigItem("ImportDirectory","Paths",os.path.dirname(filename))
+        conf.writeSettings()
         if not filename:
             return
         ext=filename.split(".")[-1]
@@ -622,6 +629,9 @@ class ImportDialog(wx.Dialog):
         Description: A method that reads information from an image
         """        
         ext=filename.split(".")[-1].lower()
+        if not ext in self.extMapping:
+            Dialogs.showerror(self,"Unrecognized file format for file %s"%filename,"Unrecognized file")
+            return
         rdr = "vtk.vtk%sReader()"%self.extMapping[ext]
         
         rdr=eval(rdr)
