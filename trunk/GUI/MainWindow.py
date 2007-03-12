@@ -39,6 +39,7 @@ import types
 import vtk
 import random
 import time
+import platform
 import imp
 import sys
 
@@ -115,10 +116,11 @@ class MainWindow(wx.Frame):
             wx.EVT_SASH_DRAGGED_RANGE, self.onSashDrag,
             id=MenuManager.ID_TREE_WIN, id2=MenuManager.ID_INFO_WIN,
         )
+        self.Bind(wx.EVT_MENU_RANGE, self.OnFileHistory, id=wx.ID_FILE1, id2=wx.ID_FILE9)    
         self.Bind(wx.EVT_CLOSE,self.quitApp)
         self.progressTimeStamp=0
         self.progressObject=None
-        
+        self.filehistory = wx.FileHistory()
         self.commands={}
         
         self.tasks={}
@@ -290,6 +292,44 @@ class MainWindow(wx.Frame):
         messenger.connect(None,"execute_command",self.onExecuteCommand)        
         messenger.connect(None,"show_error",self.onShowError)
         wx.CallAfter(self.showTip)
+        filelist=conf.getConfigItem("FileList","General")
+        if filelist:
+            filelist = eval(filelist)
+            self.loadFiles(filelist)
+                
+        
+        self.Bind(wx.EVT_WINDOW_DESTROY, self.Cleanup)
+
+        
+        lst = conf.getConfigItem("HistoryList","General")        
+        if lst:
+            lst = eval(lst)
+            for item in lst:
+                self.filehistory.AddFileToHistory(item)
+        #self.filehistory.AddFilesToMenu()
+
+
+
+    def Cleanup(self, *args):
+        """
+        Created: 29.1.2007, KP
+        Description: clean up the file history
+        """
+        # A little extra cleanup is required for the FileHistory control
+        del self.filehistory
+        self.menu.Destroy()
+    def OnFileHistory(self, evt):
+        """
+        Created: 29.1.2007, KP
+        Description: An event handler for when the user selects a history item from file menu
+        """
+        # get the file based on the menu ID
+
+        fileNum = evt.GetId() - wx.ID_FILE1
+
+        path = self.filehistory.GetHistoryFile(fileNum)
+
+        self.loadFiles([path])
         
         
     def loadScript(self, filename):
@@ -803,7 +843,9 @@ class MainWindow(wx.Frame):
         self.SetMenuBar(self.menu)
         mgr.setMenuBar(self.menu)
         # We create the menu objects
-        mgr.createMenu("file","&File")
+        menu = mgr.createMenu("file","&File")
+        self.filehistory.UseMenu(menu)
+
         mgr.createMenu("edit","&Edit")
         mgr.createMenu("settings","&Settings")
         mgr.createMenu("processing","&Tasks")
@@ -818,15 +860,19 @@ class MainWindow(wx.Frame):
         
         mgr.disable(MenuManager.ID_REDO)
       
-        mgr.addMenuItem("settings",MenuManager.ID_PREFERENCES,"&Preferences...",self.onMenuPreferences)
+        if platform.system()=="Darwin":
+            keyCombo="\tCtrl-,"
+        else:
+            keyCombo="\tCtrl-P"
+        mgr.addMenuItem("settings",MenuManager.ID_PREFERENCES,"&Preferences..."+keyCombo,self.onMenuPreferences)
     
         mgr.createMenu("import","&Import",place=0)
         mgr.createMenu("export","&Export",place=0)
         
         mgr.addMenuItem("import",MenuManager.ID_IMPORT_VTIFILES,"&VTK dataset series",self.onMenuImport)
-        mgr.addMenuItem("import",MenuManager.ID_IMPORT_IMAGES,"&Stack of images",self.onMenuImport)
+        mgr.addMenuItem("import",MenuManager.ID_IMPORT_IMAGES,"&Stack of images\tCtrl-I",self.onMenuImport)
    
-        mgr.addMenuItem("export",MenuManager.ID_EXPORT_VTIFILES,"&VTK dataset series",self.onMenuExport)
+        mgr.addMenuItem("export",MenuManager.ID_EXPORT_VTIFILES,"&VTK dataset series\tCtrl-E",self.onMenuExport)
         mgr.addMenuItem("export",MenuManager.ID_EXPORT_IMAGES,"&Stack of images",self.onMenuExport)
 
         mgr.addMenuItem("file",MenuManager.ID_OPEN,"&Open...\tCtrl-O",self.onMenuOpen)
@@ -1176,9 +1222,7 @@ class MainWindow(wx.Frame):
         if not "show_import" in self.commands:
             import_code="""
     importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
-    importdlg.ShowModal()
-    datasetName = importdlg.getDatasetName()
-    mainWindow.openFile(datasetName)
+    if importdlg.ShowModal() == wx.ID_OK: mainWindow.openFile( importdlg.getDatasetName() )
     """
             command = Command.Command(Command.MENU_CMD,None,None,import_code,"",imports=["GUI.ImportDialog"],desc="Show import dialog")
             self.commands["show_import"]=command
@@ -1415,6 +1459,7 @@ class MainWindow(wx.Frame):
         
         
         ext=path.split(".")[-1]
+        self.filehistory.AddFileToHistory(path)
         dataunit=None
         if self.tree.hasItem(path):
             return
@@ -1799,6 +1844,14 @@ class MainWindow(wx.Frame):
         self.visualizer.enable(0)        
         
         self.visualizer.closeVisualizer()
+        conf = Configuration.getConfiguration()
+        conf.setConfigItem("FileList","General","[]")
+        history=[]
+        for i in range(0,self.filehistory.GetCount()):
+            filepath = self.filehistory.GetHistoryFile(i)
+            history.append(filepath)
+        conf.setConfigItem("HistoryList","General",str(history))
+        conf.writeSettings()
         
         self.Destroy()
         sys.exit(0)

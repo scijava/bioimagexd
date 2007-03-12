@@ -353,7 +353,7 @@ class MenuManager:
         Created: 19.06.2005, KP
         Description: Create a menu with a given id and title
         """
-        self.menus[menuname]=wx.Menu()
+        ret = self.menus[menuname]=wx.Menu()
         if not place:
             return
         if not before:
@@ -369,6 +369,7 @@ class MenuManager:
             #pos=self.menubar.FindMenu(menu.GetTitle())
             
             self.menubar.Insert(pos,self.menus[menuname],menutitle)
+        return ret
             
     def setVisualizer(self,visualizer):
         """

@@ -36,7 +36,7 @@ import time
 import scripting as bxd
 import Command
 import platform
-
+import Configuration
 class TreeWidget(wx.SashLayoutWindow):
     """
     Created: 10.01.2005, KP
@@ -418,6 +418,9 @@ class TreeWidget(wx.SashLayoutWindow):
                 messenger.send(None,"tree_selection_changed",obj)            
             
         self.tree.Expand(self.root)
+        conf = Configuration.getConfiguration()
+        conf.setConfigItem("FileList","General",str(self.items.keys()))
+        conf.writeSettings()
 
     def getSelectedDataUnits(self):
         """
