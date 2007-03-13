@@ -149,6 +149,8 @@ class RenderingMode(VisualizationMode):
             self.renwin=self.wxrenwin.GetRenderWindow()
             self.wxrenwin.Render()
             self.iactivePanel=self.wxrenwin
+            bxd.renderWindow = self.renwin
+            bxd.renderer = self.wxrenwin.getRenderer()
             self.getRenderer=self.GetRenderer=self.wxrenwin.getRenderer
         else:
             self.wxrenwin.iren.Enable()
