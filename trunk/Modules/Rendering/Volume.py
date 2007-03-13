@@ -458,8 +458,19 @@ class VolumeConfigurationPanel(ModuleConfigurationPanel):
         Created: 28.04.2005, KP
         Description: Initialization
         """  
-        pass
+        self.shadingBtn=wx.CheckBox(self.lightPanel,-1,"Use shading")
+        self.shadingBtn.SetValue(0)
+        self.shading=0
+        self.shadingBtn.Bind(wx.EVT_CHECKBOX,self.onCheckShading)
         
+        self.lightSizer.Add(self.shadingBtn,(4,0))
+    def onCheckShading(self,event):
+        """
+        Created: 16.05.2005, KP
+        Description: Toggle use of shading
+        """  
+        self.shading=event.IsChecked()        
+        self.module.setShading(self.shading)
     def getLongDesc(self, parameter):
         """
         Created: 12.03.2007, KP

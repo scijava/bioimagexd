@@ -298,7 +298,7 @@ class MainWindow(wx.Frame):
             self.loadFiles(filelist)
                 
         
-        self.Bind(wx.EVT_WINDOW_DESTROY, self.Cleanup)
+        #self.Bind(wx.EVT_WINDOW_DESTROY, self.Cleanup)
 
         
         lst = conf.getConfigItem("HistoryList","General")        
@@ -315,9 +315,11 @@ class MainWindow(wx.Frame):
         Created: 29.1.2007, KP
         Description: clean up the file history
         """
+        print "\n\nCLEANUP"
         # A little extra cleanup is required for the FileHistory control
         del self.filehistory
         self.menu.Destroy()
+        
     def OnFileHistory(self, evt):
         """
         Created: 29.1.2007, KP
@@ -843,8 +845,8 @@ class MainWindow(wx.Frame):
         self.SetMenuBar(self.menu)
         mgr.setMenuBar(self.menu)
         # We create the menu objects
-        menu = mgr.createMenu("file","&File")
-        self.filehistory.UseMenu(menu)
+        self.fmenu = mgr.createMenu("file","&File")
+        self.filehistory.UseMenu(self.fmenu)
 
         mgr.createMenu("edit","&Edit")
         mgr.createMenu("settings","&Settings")
@@ -1825,6 +1827,7 @@ class MainWindow(wx.Frame):
         Created: 03.11.2004, KP
         Description: Possibly queries the user before quitting, then quits
         """
+        
         conf = Configuration.getConfiguration()
         
         askOnQuit = conf.getConfigItem("AskOnQuit","General")
@@ -1852,6 +1855,7 @@ class MainWindow(wx.Frame):
             history.append(filepath)
         conf.setConfigItem("HistoryList","General",str(history))
         conf.writeSettings()
+        self.Cleanup()
         
         self.Destroy()
         sys.exit(0)

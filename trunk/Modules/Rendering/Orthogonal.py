@@ -51,7 +51,6 @@ class OrthogonalPlaneModule(VisualizationModule):
     """    
     def __init__(self,parent,visualizer,**kws):
         """
-        Method: __init__(parent)
         Created: 03.05.2005, KP
         Description: Initialization
         """     

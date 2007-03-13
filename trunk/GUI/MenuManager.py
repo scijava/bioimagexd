@@ -349,7 +349,6 @@ class MenuManager:
         
     def createMenu(self,menuname,menutitle,place=1,before=None):
         """
-        Method: createMenu(name,title)
         Created: 19.06.2005, KP
         Description: Create a menu with a given id and title
         """
