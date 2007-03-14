@@ -95,6 +95,18 @@ def build():
 
         if platform.system() == "Darwin":
             import py2app
+            # A custom plist for letting it associate with all files.
+            Plist = dict(CFBundleDocumentTypes=[dict(CFBundleTypeExtensions=["lsm"],
+                                         CFBundleTypeName="Carl Zeiss LSM file",
+                                         CFBundleTypeRole="Viewer"),
+                                         dict(CFBundleTypeExtensions=["bxd"],
+                                         CFBundleTypeName="BioImageXD Data file",
+                                         CFBundleTypeRole="Editor"),
+                                         dict(CFBundleTypeExtensions=["oif"],
+                                         CFBundleTypeName="Olympus OIF file",
+                                         CFBundleTypeRole="Viewer"),
+                                    ]
+             )
             # Note that you must replace hypens '-' with underscores '_'
             # when converting option names from the command line to a script.
             # For example, the --argv-emulation option is passed as 
@@ -110,6 +122,7 @@ def build():
                 # in the Contents/Resources folder of the application bundle,
             # and make sure the CFBundleIcon plist key is set appropriately.
             iconfile='Icons/BioImageXD.icns',
+            plist=Plist, 
             excludes = EXCLUDES,
             includes = incl_modules,
             packages = ["encodings"],

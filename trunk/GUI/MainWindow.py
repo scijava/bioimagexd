@@ -244,6 +244,7 @@ class MainWindow(wx.Frame):
         # Icon for the window
         ico=reduce(os.path.join,[bxd.get_icon_dir(),"logo.ico"])
         self.icon = wx.Icon(ico,wx.BITMAP_TYPE_ICO)
+            
         self.SetIcon(self.icon)
         
         messenger.send(None,"update_progress",0.1,"Loading BioImageXD...")        
@@ -866,7 +867,7 @@ class MainWindow(wx.Frame):
             keyCombo="\tCtrl-,"
         else:
             keyCombo="\tCtrl-P"
-        mgr.addMenuItem("settings",MenuManager.ID_PREFERENCES,"&Preferences..."+keyCombo,self.onMenuPreferences)
+        mgr.addMenuItem("settings",wx.ID_PREFERENCES,"&Preferences..."+keyCombo,self.onMenuPreferences)
     
         mgr.createMenu("import","&Import",place=0)
         mgr.createMenu("export","&Export",place=0)
@@ -891,7 +892,7 @@ class MainWindow(wx.Frame):
         mgr.addMenuItem("file",MenuManager.ID_CLOSE_TASKWIN,"&Close task panel\tCtrl-W","Close the task panel",self.onCloseTaskPanel)
         mgr.disable(MenuManager.ID_CLOSE_TASKWIN)
         mgr.addSeparator("file")
-        mgr.addMenuItem("file",MenuManager.ID_QUIT,"&Quit\tCtrl-Q","Quit BioImageXD",self.quitApp)
+        mgr.addMenuItem("file",wx.ID_EXIT,"&Quit\tCtrl-Q","Quit BioImageXD",self.quitApp)
 
 
         modules = self.taskPanels.values()
@@ -961,11 +962,14 @@ class MainWindow(wx.Frame):
         mgr.disable(MenuManager.ID_VIEW_TOOLBAR)
         mgr.disable(MenuManager.ID_VIEW_HISTOGRAM)
 
-        mgr.addMenuItem("help",MenuManager.ID_ABOUT,"&About BioImageXD","About BioImageXD",self.onMenuAbout)
+        mgr.addMenuItem("help",wx.ID_ABOUT,"&About BioImageXD","About BioImageXD",self.onMenuAbout)
         mgr.addSeparator("help")
         mgr.addMenuItem("help",MenuManager.ID_CONTEXT_HELP,"&Context help\tF1","Show help on current task or visualization mode",self.onToolbarHelp)        
-        mgr.addMenuItem("help",MenuManager.ID_HELP,"&Help\tCtrl-H","Online Help",self.onMenuHelp)        
+        mgr.addMenuItem("help",wx.ID_HELP,"&Help\tCtrl-H","Online Help",self.onMenuHelp)        
     
+        if platform.system()=="Darwin":
+            wx.App_SetMacHelpMenuTitleName("&Help")
+            
     def createStatusBar(self):
         """
         Created: 13.7.2006, KP

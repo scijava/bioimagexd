@@ -114,6 +114,15 @@ class GUIBuilderBase:
             image = self.getInputFromChannel(self.inputMapping[n]-1, dataUnit = 1)
         return image
         
+    def getCurrentTimepoint(self):
+        """
+        Created: 14.03.2007, KP
+        Description: return the current timepoint 
+        """
+        tp=bxd.visualizer.getTimepoint()
+        if bxd.processingTimepoint != -1:
+            tp = bxd.processingTimepoint
+        
     def getInputFromChannel(self,n, timepoint=-1, dataUnit = 0):
         """
         Created: 17.04.2006, KP
@@ -132,8 +141,8 @@ class GUIBuilderBase:
             tp=timepoint
         if dataUnit:
             return self.sourceUnits[n]
-        print "RETURNING TIMEPOINT %d from SOURCEUNITS %d AS SOURCE"%(tp,n)
-        print "SOURCE UNIT IS =",self.sourceUnits[n]
+        #print "RETURNING TIMEPOINT %d from SOURCEUNITS %d AS SOURCE"%(tp,n)
+        #print "SOURCE UNIT IS =",self.sourceUnits[n]
         return self.sourceUnits[n].getTimePoint(tp)
         
     def getNumberOfInputs(self):

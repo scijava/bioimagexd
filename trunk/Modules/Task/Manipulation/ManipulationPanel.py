@@ -163,15 +163,14 @@ class ManipulationPanel(FilterBasedTaskPanel.FilterBasedTaskPanel):
         
         self.presetBtn = wx.Button(self.panel,-1,u"Presets \u00BB")
 
-        from ManipulationFilters import FILTERING,FEATUREDETECTION,MATH,LOGIC,SEGMENTATION,WATERSHED,REGION_GROWING,MEASUREMENT,TRACKING
-        
+        from ManipulationFilters import FILTERING,FEATUREDETECTION,MATH,LOGIC,SEGMENTATION,WATERSHED,REGION_GROWING,MEASUREMENT,TRACKING,REGISTRATION       
         f=lambda evt, btn=self.addFilteringBtn, cats=(FILTERING,FEATUREDETECTION): self.onShowAddMenu(evt,btn,cats)
         self.addFilteringBtn.Bind(wx.EVT_LEFT_DOWN,f)
         
         f=lambda evt, btn=self.addArithmeticsBtn, cats=(MATH, LOGIC): self.onShowAddMenu(evt,btn,cats)
         self.addArithmeticsBtn.Bind(wx.EVT_LEFT_DOWN,f)
         
-        f=lambda evt, btn=self.addSegmentationBtn, cats=(SEGMENTATION, REGION_GROWING,WATERSHED,MEASUREMENT): self.onShowAddMenu(evt,btn,cats)
+        f=lambda evt, btn=self.addSegmentationBtn, cats=(SEGMENTATION, REGION_GROWING,WATERSHED,MEASUREMENT,REGISTRATION): self.onShowAddMenu(evt,btn,cats)
         self.addSegmentationBtn.Bind(wx.EVT_LEFT_DOWN,f)
         
         f=lambda evt, btn=self.addSegmentationBtn, cats=(TRACKING,): self.onShowAddMenu(evt,btn,cats)        
