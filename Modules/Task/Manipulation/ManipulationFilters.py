@@ -130,7 +130,7 @@ def getFilterList():
             ITKLocalMaximumFilter,ITKOtsuThresholdFilter,ITKConfidenceConnectedFilter,
             MaskFilter,ITKSigmoidFilter, ITKInvertIntensityFilter, ConnectedComponentFilter,
             MaximumObjectsFilter,TimepointCorrelationFilter,
-            ROIIntensityFilter,CutDataFilter,GaussianSmoothFilter,CreateTracksFilter,ViewTracksFilter,ExtractComponentFilter]
+            ROIIntensityFilter,CutDataFilter,GaussianSmoothFilter,CreateTracksFilter,ViewTracksFilter,ExtractComponentFilter,RegistrationFilter]
             
 MATH="Image arithmetic"
 SEGMENTATION="Segmentation"
@@ -141,7 +141,7 @@ MEASUREMENT="Measurements"
 REGION_GROWING="Region growing"
 FEATUREDETECTION="Feature detection"
 TRACKING="Tracking"
-        
+REGISTRATION="Registration"
 
 class AnisotropicDiffusionFilter(ProcessingFilter.ProcessingFilter):
     """
@@ -1351,3 +1351,4 @@ from MathFilters import *
 from SegmentationFilters import *
 from MorphologicalFilters import *
 from TrackingFilters import *
+from RegistrationFilters import *

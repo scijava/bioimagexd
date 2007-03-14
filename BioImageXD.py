@@ -146,6 +146,7 @@ class LSMApplication(wx.App):
         Created: 10.1.2005, KP
         Description: Create the application's main window
         """
+        self.SetAppName("BioImageXD")
         iconpath = bxd.get_icon_dir()
         
         splashfile = os.path.join(iconpath,"splash2.jpg")
@@ -177,6 +178,13 @@ class LSMApplication(wx.App):
         
     
         return True
+        
+    def MacOpenFile(self, filename):
+        """
+        Created: 14.03.2007, KP
+        Description: open a file that was dragged on the app
+        """
+        self.mainwin.loadFiles([filename])
 
     def run(self, files, scriptfile):
         """
@@ -240,6 +248,7 @@ if __name__=='__main__':
                 doInterpret=1
             elif opt in ["-l","--logfile"]:
                 logfile=arg
+        dataFiles.extend(args)
         # If the main application is frozen, then we redirect logging
         # to  a log file
         if toFile or bxd.main_is_frozen():

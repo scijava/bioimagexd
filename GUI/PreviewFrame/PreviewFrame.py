@@ -126,6 +126,7 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         self.mip = 0
         self.previewtype=""
         self.tmodules=Modules.DynamicLoader.getTaskModules()
+        print self.tmodules.keys()
         self.tmodules[""]=self.tmodules["Process"]
         self.modules={}
         for key in self.tmodules:
