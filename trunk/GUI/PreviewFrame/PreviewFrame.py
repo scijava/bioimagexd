@@ -126,7 +126,6 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         self.mip = 0
         self.previewtype=""
         self.tmodules=Modules.DynamicLoader.getTaskModules()
-        print self.tmodules.keys()
         self.tmodules[""]=self.tmodules["Process"]
         self.modules={}
         for key in self.tmodules:
@@ -166,7 +165,7 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         InteractivePanel.InteractivePanel.__init__(self,parent,size=size,bgColor = self.bgcolor,**kws)
         
         self.calculateBuffer()
-        self.paintSize = self.GetSize()
+        self.paintSize = self.GetClientSize()
         self.paintPreview()
         
         
@@ -379,7 +378,6 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
                      data unit, the source units of which we can get and read 
                      as ImageData
         """
-        print "\n\nPREVIERWFRAME GOT DATAUNIT",dataUnit
         if not dataUnit:
             self.dataUnit = None
             self.z = 0
@@ -417,7 +415,7 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         self.paintSize = (0,0)
         self.calculateBuffer()
         #print "Calculating buffer size, it's now",self.buffer.GetWidth(),self.buffer.GetHeight()    
-        #    self.SetSize((x,y))
+        #       ((x,y))
         
         if selectedItem!=-1:
             self.setSelectedItem(selectedItem,update=0)
@@ -802,7 +800,8 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         dc.SetBackground(wx.Brush(wx.Colour(*self.bgcolor)))
         dc.SetPen(wx.Pen(wx.Colour(*self.bgcolor),0))
         dc.SetBrush(wx.Brush(wx.Color(*self.bgcolor)))
-        dc.DrawRectangle(0,0,self.paintSize[0],self.paintSize[1])
+        x0,y0,x1,y1 = self.GetClientRect()
+        dc.DrawRectangle(x0,y0,self.paintSize[0],self.paintSize[1])
             
         if not self.slice or not self.enabled:
             self.graySize = self.paintSize
@@ -865,8 +864,9 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         tw,th = self.buffer.GetWidth(),self.buffer.GetHeight()
         xoff = (tw-bw)/2
         yoff = (th-bh)/2
+        x0,y0,x1,y1 = self.GetClientRect()
         self.setOffset(xoff, yoff)
-        dc.DrawBitmap(bmp,xoff,yoff,True)
+        dc.DrawBitmap(bmp,xoff+x0,yoff+x0,True)
 
 #        if bw>tw or bh>th:
 #            self.setScrollbars(bw+xoff,bh+xoff)

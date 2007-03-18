@@ -332,11 +332,12 @@ class Visualizer:
         Created: 15.08.2005, KP
         Description: Bind the timeslider to a method
         """     
-        if not all and platform.system() in ["Windows","Darwin"]:
+        if not all and platform.system() == "Windows":
             self.timeslider.Unbind(wx.EVT_SCROLL_ENDSCROLL)
             #self.timeslider.Unbind(wx.EVT_SCROLL_THUMBRELEASE)
             self.timeslider.Bind(wx.EVT_SCROLL_ENDSCROLL,method)
-            #self.timeslider.Bind(wx.EVT_SCROLL_THUMBRELEASE,method)
+        elif not all and platform.system() == "Darwin":
+            self.timeslider.Bind(wx.EVT_SCROLL_THUMBRELEASE,method)
         else:
             self.timesliderMethod = method
             self.timeslider.Unbind(wx.EVT_SCROLL)
@@ -1135,7 +1136,10 @@ class Visualizer:
         
         x,y,z=dataunit.getDimensions()
         
+        print "SETTING RANGE",1,z
         self.zslider.SetRange(1,z)
+        if self.timepoint >=z:
+            self.setTimepoint(z)
 
         showItems=0
 
@@ -1151,7 +1155,11 @@ class Visualizer:
         else:
             self.setLater = 1
         if self.histogramIsShowing:
-            self.createHistogram()             
+            self.createHistogram()         
+        if self.zoomToFitFlag:
+            self.currMode.zoomToFit()
+        else:
+            self.currMode.setZoomFactor(self.zoomFactor) 
 
         self.OnSize(None)
         
@@ -1279,6 +1287,7 @@ class Visualizer:
         Created: 31.07.2005, KP
         Description: Set the timepoint to be shown
         """    
+        print "onUpdateTimepoint",evt
         if not evt:
             diff=abs(time.time()-self.changing)
             if diff < 0.01:

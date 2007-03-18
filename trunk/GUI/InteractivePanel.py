@@ -431,7 +431,9 @@ class InteractivePanel(ogl.ShapeCanvas):
         self.buffer = wx.EmptyBitmap(w,h)
         memdc = wx.MemoryDC()
         memdc.SelectObject(self.buffer)
-        memdc.DrawBitmap(self.bgbuffer,0,0,False)
+        
+        x0,y0,x1,y1 = self.GetClientRect()
+        memdc.DrawBitmap(self.bgbuffer,x0,y0,False)
         
         for helper in self.painterHelpers:
             helper.paintOnDC(memdc)
@@ -970,10 +972,10 @@ class InteractivePanel(ogl.ShapeCanvas):
             newx=self.origX
         if newy<=self.origY and self.origY<=self.maxSizeY:
             newy=self.origY
-        s=self.GetSize()
+        s=self.GetClientSize()
         #if s!=(newx,newy):
         Logging.info("Setting size of",self," to ",newx,newy,"virtual size to ",xdim,ydim,kw="iactivepanel")
-        self.SetSize((newx,newy))
+        self.SetClientSize((newx,newy))
         s=self.GetVirtualSize()
         #if s!=(xdim,ydim):
         self.SetVirtualSize((xdim,ydim))

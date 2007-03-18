@@ -659,8 +659,14 @@ class MorphologicalWatershedSegmentationFilter(ProcessingFilter.ProcessingFilter
         image = self.getInput(1)
         image = self.convertVTKtoITK(image)
         if not self.watershed:
-            import watershed
-            self.watershed = watershed        
+            try:
+                # For ITK versions below 3.2.0 we need to import the external project
+                import watershed
+                self.watershed = watershed       
+            except:
+                # For later ITK versions, we just use the ITK itself
+                import itk
+                self.watershed = itk
             ul3 = itk.Image.UL3
             self.itkfilter = watershed.MorphologicalWatershedImageFilter[image, ul3].New()
         

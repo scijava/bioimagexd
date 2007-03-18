@@ -76,9 +76,12 @@ class VolumeModule(VisualizationModule):
             self.modes.append("Minimum intensity projection")
         self.colorTransferFunction = None
         otf, otf2 = vtk.vtkPiecewiseFunction(), vtk.vtkPiecewiseFunction()
-        for f in [otf,otf2]:
-            f.AddPoint(0, 0.0)
-            f.AddPoint(255, 1.0)
+       
+        otf2.AddPoint(0, 0.0)
+        otf2.AddPoint(255, 1.0)
+        otf.AddPoint(0, 0.0)
+        otf.AddPoint(255, 0.2)
+        
         self.otfs = [otf,otf,otf,otf2,otf]
         
         
@@ -116,7 +119,7 @@ class VolumeModule(VisualizationModule):
         """    
         VisualizationModule.setParameter(self, parameter,value)
         if parameter=="Method":
-            messenger.send(self,"set_Palette_otf",self.otfs[self.parameters["Method"]])
+            self.updateOpacityTransferFunction()
             if value==1:
                 messenger.send(self,"update_QualityValue_label","Maximum number of planes:")
             else:
@@ -125,6 +128,15 @@ class VolumeModule(VisualizationModule):
             self.parameters["QualityValue"] = None
             self.updateQuality()
             
+            
+    def updateOpacityTransferFunction(self):
+        """
+        Created: 18.03.2007, KP
+        Description: Set the GUI OTF to it's correct value
+        """
+        messenger.send(self,"set_Palette_otf",self.otfs[self.parameters["Method"]])
+
+    
     def getParameters(self):
         """
         Created: 12.03.2007, KP
@@ -225,10 +237,11 @@ class VolumeModule(VisualizationModule):
         """       
         Logging.info("Dataunit for Volume Rendering:",dataunit,kw="rendering")
         VisualizationModule.setDataUnit(self,dataunit)
-        self.colorTransferFunction = self.dataUnit.getColorTransferFunction()
-        messenger.send(self,"set_Palette_ctf",self.colorTransferFunction)
-        self.volumeProperty.SetColor(self.colorTransferFunction)
-        
+        #self.colorTransferFunction = self.dataUnit.getColorTransferFunction()
+        #messenger.send(self,"set_Palette_ctf",self.colorTransferFunction)
+        #self.volumeProperty.SetColor(self.colorTransferFunction)
+        self.setInputChannel(1,0)
+        self.parameters["Palette"] = self.colorTransferFunction
 #    def setOpacityTransferFunction(self,otf,method):
 #        """
 #        Created: 28.04.2005, KP
@@ -300,8 +313,6 @@ class VolumeModule(VisualizationModule):
         Description: Set the interpolation method used
         """             
         
-        print "NN=",self.parameters["NearestNeighbor"]
-        print "Linear=",self.parameters["Linear"]
         if self.parameters["Linear"]:
             self.volumeProperty.SetInterpolationTypeToLinear() 
         elif self.parameters["NearestNeighbor"]:
@@ -322,6 +333,7 @@ class VolumeModule(VisualizationModule):
             pass
         method = self.parameters["Method"]
         self.volumeProperty.SetScalarOpacity(self.otfs[method])
+        self.updateOpacityTransferFunction()
         
         tbl=["Ray cast","Texture Map","3D texture map","MIP","Isosurface"]
         Logging.info("Volume rendering method: ",tbl[method],kw="rendering")
@@ -464,6 +476,7 @@ class VolumeConfigurationPanel(ModuleConfigurationPanel):
         self.shadingBtn.Bind(wx.EVT_CHECKBOX,self.onCheckShading)
         
         self.lightSizer.Add(self.shadingBtn,(4,0))
+        
     def onCheckShading(self,event):
         """
         Created: 16.05.2005, KP
@@ -486,11 +499,13 @@ but using linear interpolation yields a better rendering quality."""
         Created: 28.04.2005, KP
         Description: Set the module to be configured
         """  
+        self.module = module
         ModuleConfigurationPanel.setModule(self,module)
         unit=module.getDataUnit()        
         self.gui = GUIBuilder.GUIBuilder(self, self.module)
         
         self.contentSizer.Add(self.gui,(0,0))
+        module.updateOpacityTransferFunction()
         
         if unit.getBitDepth()==32:
             #self.colorPanel.setAlphaMode(1)
@@ -500,7 +515,8 @@ but using linear interpolation yields a better rendering quality."""
                 ctf = module.getDataUnit().getSourceDataUnits()[0].getColorTransferFunction()
             else:
                 ctf= module.getDataUnit().getColorTransferFunction()
-            messenger.send(self,"set_Palette_ctf",ctf)
+
+            messenger.send(module,"set_Palette_ctf",ctf)
         
     def onApply(self,event):
         """

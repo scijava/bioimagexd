@@ -417,6 +417,7 @@ class DataUnitSettings:
         # pickled / unpickled
         if "Annotations" in name:
             Logging.info("deserializing Annotations",kw="dataunit")
+            return
             #val=zlib.decompress(value)
             val=pickle.loads(value)
             Logging.info("unpickled %d annotations"%len(val),kw="dataunit")
