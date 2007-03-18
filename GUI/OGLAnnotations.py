@@ -814,6 +814,8 @@ class MyPolygon(OGLAnnotation, ogl.PolygonShape):
 
     # Make as many control points as there are vertices
     def MakeControlPoints(self):
+        if not hasattr(self,"_canvas"):
+            return
         for point in self._points:
             control = MyPolygonControlPoint(self._canvas, self, ogl.CONTROL_POINT_SIZE, point, point[0], point[1])
             self._canvas.AddShape(control)

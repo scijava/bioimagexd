@@ -13,27 +13,27 @@ do
   done
 done
 
-# cd /Library/Frameworks/Python.framework/Versions/2.5/lib/InsightToolkit/WrapITK/lib
-# LIBS="`echo *.so`"
-# for lib in $LIBS
-# do
-#   DEPS="`otool -L  $lib |grep /Users |grep -v vtk|cut -d' ' -f1`"
-#   for dep in $DEPS
-#   do
-#      ndep="`basename $dep`"
-#      install_name_tool -change $dep /Library/Frameworks/Python.framework/Versions/2.5/lib/InsightToolkit/$ndep $lib
-#   done
-# done
-# LIBS="`echo *.so`"
-# for lib in $LIBS
-# do
-#   DEPS="`otool -L  $lib |grep vtk|cut -d' ' -f1`"
-#   for dep in $DEPS
-#   do
-#      ndep="`basename $dep`"
-#      install_name_tool -change $dep /Library/Frameworks/Python.framework/Versions/2.5/lib/$ndep $lib
-#   done
-# done
+cd /Library/Frameworks/Python.framework/Versions/2.5/lib/InsightToolkit/WrapITK/lib
+LIBS="`echo _ItkVtkGluePython.so`"
+#for lib in $LIBS
+#do
+#  DEPS="`otool -L  $lib |grep /Users |grep -v vtk|cut -d' ' -f1`"
+#  for dep in $DEPS
+#  do
+#     ndep="`basename $dep`"
+#     install_name_tool -change $dep /Library/Frameworks/Python.framework/Versions/2.5/lib/InsightToolkit/$ndep $lib
+#  done
+#done
+LIBS="`echo _ItkVtkGluePython.so`"
+for lib in $LIBS
+do
+  DEPS="`otool -L  $lib |grep vtk|cut -d' ' -f1`"
+  for dep in $DEPS
+  do
+     ndep="`basename $dep`"
+     install_name_tool -change $dep /Library/Frameworks/Python.framework/Versions/2.5/lib/$ndep $lib
+  done
+done
 
 
 LIBS="/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/vtkbxd/libvtkBXDProcessingPython.so"

@@ -198,13 +198,13 @@ class CombinedDataUnit(DataUnit.DataUnit):
         # so it knows where to store the vtkImageData objects
 
         if not settings_only:
-            bxcFile = bxdwriter.getBXCFileName(bxdFile)
             bxdwriter = DataSource.BXDDataWriter(bxdFile)
+            bxcFile = bxdwriter.getBXCFileName(bxdFile)
 
         else:
             bxcFile = bxdFile
             bxdwriter = None
-        bxcFile=bxcFile[:-1]+"p"
+            bxcFile=bxcFile[:-1]+"p"
         self.dataWriter=DataSource.BXCDataWriter(bxcFile)
         
         if bxdwriter:

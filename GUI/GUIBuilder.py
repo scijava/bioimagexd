@@ -122,6 +122,7 @@ class GUIBuilderBase:
         tp=bxd.visualizer.getTimepoint()
         if bxd.processingTimepoint != -1:
             tp = bxd.processingTimepoint
+        return tp
         
     def getInputFromChannel(self,n, timepoint=-1, dataUnit = 0):
         """
@@ -676,7 +677,7 @@ class GUIBuilder(wx.Panel):
                           
                             messenger.connect(currentFilter,"set_%s_ctf"%item,setctf)
                             setotf=lambda obj,evt,arg, panel= colorPanel, i=item, s=self: s.onSetOtf(panel,i,arg)
-                            messenger.connect(currentFilter,"set_%s_otf"%item,setctf)
+                            messenger.connect(currentFilter,"set_%s_otf"%item,setotf)
                             
                         else:
                             groupsizer=wx.GridBagSizer()

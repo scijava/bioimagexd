@@ -892,7 +892,7 @@ class MainWindow(wx.Frame):
         mgr.addMenuItem("file",MenuManager.ID_CLOSE_TASKWIN,"&Close task panel\tCtrl-W","Close the task panel",self.onCloseTaskPanel)
         mgr.disable(MenuManager.ID_CLOSE_TASKWIN)
         mgr.addSeparator("file")
-        mgr.addMenuItem("file",wx.ID_EXIT,"&Quit\tCtrl-Q","Quit BioImageXD",self.quitApp)
+        mgr.addMenuItem("file",wx.ID_EXIT,"&Exit","Quit BioImageXD",self.quitApp)
 
 
         modules = self.taskPanels.values()
@@ -962,13 +962,13 @@ class MainWindow(wx.Frame):
         mgr.disable(MenuManager.ID_VIEW_TOOLBAR)
         mgr.disable(MenuManager.ID_VIEW_HISTOGRAM)
 
-        mgr.addMenuItem("help",wx.ID_ABOUT,"&About BioImageXD","About BioImageXD",self.onMenuAbout)
+        mgr.addMenuItem("help",wx.ID_ABOUT,"&About","About BioImageXD",self.onMenuAbout)
         mgr.addSeparator("help")
         mgr.addMenuItem("help",MenuManager.ID_CONTEXT_HELP,"&Context help\tF1","Show help on current task or visualization mode",self.onToolbarHelp)        
-        mgr.addMenuItem("help",wx.ID_HELP,"&Help\tCtrl-H","Online Help",self.onMenuHelp)        
+        mgr.addMenuItem("help",wx.ID_HELP,"&Help","Online Help",self.onMenuHelp)        
     
-        if platform.system()=="Darwin":
-            wx.App_SetMacHelpMenuTitleName("&Help")
+#        if platform.system()=="Darwin":
+#            wx.App_SetMacHelpMenuTitleName("&Help")
             
     def createStatusBar(self):
         """

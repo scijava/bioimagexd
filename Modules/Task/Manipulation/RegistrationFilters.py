@@ -64,8 +64,8 @@ class RegistrationFilter(ProcessingFilter.ProcessingFilter):
     Created: 14.03.2007, KP
     Description: A filter for doing registration
     """     
-    name = "Morphological watershed segmentation"
-    category = SEGMENTATION
+    name = "Versor Rigid 3D Registration"
+    category = REGISTRATION
     level = FILTER_EXPERIENCED
     def __init__(self,inputs=(1,1)):
         """
@@ -141,9 +141,10 @@ class RegistrationFilter(ProcessingFilter.ProcessingFilter):
             
         units=self.dataUnit.getSourceDataUnits()
         tp1 = self.parameters["FixedTimepoint"]
-        tp2 = self.getCurrentTimePoint()
+        tp2 = self.getCurrentTimepoint()
         if tp2 >=units[0].getLength():
             tp2 = units[0].getLength()-1
+        print "tp2=",tp2
         data1=units[0].getTimePoint(tp1)
         # We need to prepare a copy of the data since
         # when we get the next timepoint, the data we got earlier will reference the
@@ -176,15 +177,41 @@ class RegistrationFilter(ProcessingFilter.ProcessingFilter):
         self.registrationMethod.SetFixedImageRegion(fixed.GetBufferedRegion())
         
         initializer = itk.CenteredTransformInitializer[self.transform, fixed, moving].New()
-        initializer.SetTransform( transform )
+        initializer.SetTransform( self.transform )
         initializer.SetFixedImage( fixed )
         initializer.SetMovingImage( moving )
         initializer.MomentsOn()
         initializer.InitializeTransform()
         
-        self.transform.VersorR
+        rotation = itk.Versor.D()
+        axis = itk.Vector.D3()
+        axis.SetComponent(0,0)
+        axis.SetComponent(1,0)
+        axis.SetComponent(2,1)
+        angle = 0
+        rotation.Set(  axis, angle  )
+        self.transform.SetRotation( rotation )
+        self.registrationMethod.SetInitialTransformParameters( self.transform.GetParameters() )
+        
+        scales = self.optimizer.GetScales()
+        for i in range(0,6):
+            scales.SetElement(i,1.0)
+        self.optimizer.SetScales(scales)
+        self.optimizer.SetMaximumStepLength(20)
+        self.optimizer.SetMinimumStepLength(0.1)
+        self.optimizer.SetNumberOfIterations(200)
+        
         t =time.time()
+        self.registrationMethod.StartRegistration()
+
         print "Registration took",time.time()-t,"seconds"
+        
+        finalParameters = self.registrationMethod.GetLastTransformParameters()
+        vX, vY, vZ, tX, tY, tZ = [finalParameters.GetElement(i) for i in range(0,6)]
+        print "Versor = ",vX,vY, vZ
+        print "Translation=", tX, tY, tZ
+        print "Iterations = ",self.optimizer.GetCurrentIteration()
+        print "Metric value = ",self.optimizer.GetValue()
         return data
 
         
