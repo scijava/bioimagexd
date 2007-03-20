@@ -542,7 +542,9 @@ template < class T >
     
     for (int c = 1; c <= iterations; c++)
     {
-        self->UpdateProgress(float(c)/iterations);
+        if(!id) {
+            self->UpdateProgress(float(c)/iterations);
+        }
         sprintf(progressText,"Calculating P-Value (iteration %d / %d)",c,iterations);
         self->SetProgressText(progressText);
         
@@ -584,8 +586,9 @@ template < class T >
         {
             progress=float(c)/iterations;
             progress+=s/float(100*nslices);
-            self->UpdateProgress(progress);
-            
+            if(!id) {
+                self->UpdateProgress(progress);
+            }        
             slicesDone++;
             if (currentSliceNo>=0) {
                 s = currentSliceNo;
