@@ -111,13 +111,13 @@ ExecuteInformation(vtkImageData ** inputs, vtkImageData ** outputs)
 
 template <class T> void calculateThreshold
     (
-    vtkImageAutoThresholdColocalization * self,
+    vtkImageAutoThresholdColocalization * self,int id,
     vtkImageData ** inData, int outExt[6], 
     int Ch1Th, int Ch2Th,
     double*ch1BestThresh, double *m, double*b, double*best
     )
 {
-    
+    printf("Calculating threshold\n");
     bool thresholdFound = false, divByZero = false;
     int iteration = 0;
     int N = 0, N2 = 0, Nzero = 0;
@@ -172,7 +172,10 @@ template <class T> void calculateThreshold
         ch2threshmax =
             vtkMath::Round(((double) ch1threshmax * (double) *m) +
               (double) *b);
-        self->UpdateProgress(0.5*(iteration/30.0));
+        if(!id) {
+            self->UpdateProgress(0.5*(iteration/30.0));
+        }
+        
         sprintf(progressText,"Calculating threshold (iteration %d) ch1 = %f, ch2 = %f",iteration,ch1threshmax, ch2threshmax);
         self->SetProgressText(progressText);                  
 
@@ -444,7 +447,7 @@ template < class T >
     double b = ch2Mean - m * ch1Mean;
 
     // Calculate the thresholds 
-    calculateThreshold<T>(self,inData,outExt, LowerThresholdCh1, LowerThresholdCh2,&ch1BestThresh, &m, &b, &pearsonsBelowTh);
+    calculateThreshold<T>(self,id, inData,outExt, LowerThresholdCh1, LowerThresholdCh2,&ch1BestThresh, &m, &b, &pearsonsBelowTh);
     
     ch1threshmax = vtkMath::Round((ch1BestThresh));
     ch2threshmax = vtkMath::Round(((double) ch1BestThresh * (double) m) + (double) b);
@@ -475,9 +478,12 @@ template < class T >
     inPtr2 = (T *) inData[1]->GetScalarPointerForExtent(outExt);
     
     for (idxZ = 0; idxZ <= maxZ; idxZ++) {
-        self->UpdateProgress(0.5+idxZ/float(maxZ));        
-        sprintf(progressText,"Performing final regression (slice %d / %d)",idxZ,maxZ);
-        self->SetProgressText(progressText);
+        if(!id) {
+            sprintf(progressText,"Performing final regression (slice %d / %d)",idxZ,maxZ);
+            self->SetProgressText(progressText);
+
+            self->UpdateProgress(0.5+idxZ/float(maxZ));        
+        }
         
         for (idxY = 0; idxY <= maxY; idxY++) {
             for (idxX = 0; idxX <= maxX; idxX++) {

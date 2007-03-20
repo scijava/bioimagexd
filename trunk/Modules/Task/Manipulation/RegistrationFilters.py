@@ -155,8 +155,8 @@ class RegistrationFilter(ProcessingFilter.ProcessingFilter):
         data1=tp
         data1.Update()
         data2.Update()
-        fixed = self.convertVTKtoITK(data1,cast=types.FloatType)
-        moving = self.convertVTKtoITK(data2,cast=types.FloatType)
+        fixed = self.convertVTKtoITK(data1, cast = types.FloatType)
+        moving = self.convertVTKtoITK(data2, cast = types.FloatType)
         
         
         self.transform = itk.VersorRigid3DTransform.D.New()
@@ -165,10 +165,10 @@ class RegistrationFilter(ProcessingFilter.ProcessingFilter):
         self.interpolator = itk.LinearInterpolateImageFunction.IF3D.New()
         self.registrationMethod = itk.ImageRegistrationMethod.IF3IF3.New()
         
-        self.registrationMethod.SetMetric( self.metric )
-        self.registrationMethod.SetOptimizer( self.optimizer )
-        self.registrationMethod.SetInterpolator( self.interpolator )
-        self.registrationMethod.SetTransform (self.transform )
+        self.registrationMethod.SetMetric( self.metric.GetPointer() )
+        self.registrationMethod.SetOptimizer( self.optimizer.GetPointer() )
+        self.registrationMethod.SetInterpolator( self.interpolator.GetPointer() )
+        self.registrationMethod.SetTransform (self.transform.GetPointer() )
         
         
         self.registrationMethod.SetFixedImage(fixed)

@@ -206,20 +206,21 @@ class ProcessingFilter(GUIBuilder.GUIBuilderBase):
         #if not self.vtkToItk:            
         ImageType = itk.VTKImageToImageFilter.IUC3
             
+          
         if cast==types.FloatType:
             ImageType = itk.VTKImageToImageFilter.IF3
-        
+        elif not cast:    
+            scalarType = image.GetScalarTypeAsString()
             
-        scalarType = image.GetScalarTypeAsString()
+            if scalarType=="unsigned char":
+                ImageType = itk.VTKImageToImageFilter.IUC3
+            elif scalarType == "unsigned int":
+                conv = vtk.vtkImageCast()
+                conv.SetInput(image)        
+                ImageType = itk.VTKImageToImageFilter.IUL3
+                conv.SetOutputScalarTypeToUnsignedLong ()
+                image = conv.GetOutput()
         
-        if scalarType=="unsigned char":
-            ImageType = itk.VTKImageToImageFilter.IUC3
-        elif scalarType == "unsigned int":
-            conv = vtk.vtkImageCast()
-            conv.SetInput(image)        
-            ImageType = itk.VTKImageToImageFilter.IUL3
-            conv.SetOutputScalarTypeToUnsignedLong ()
-            image = conv.GetOutput()
         
         self.vtkToItk = ImageType.New()
         
