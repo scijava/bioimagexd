@@ -127,9 +127,11 @@ void vtkImageSolitaryFilterExecute(vtkImageSolitaryFilter *self, int id,int Numb
   //printf("Filtering Threshold=%d,Horizontal=%d, Vertical=%d\n",this->FilteringThreshold,this->HorizontalThreshold,this->VerticalThreshold);
   char progressText[200];
   for(idxZ = 0; idxZ <= maxZ; idxZ++ ) {
-    self->UpdateProgress(idxZ/float(maxZ));
-    sprintf(progressText,"Removing solitary noise voxels (slice %d / %d)",idxX,maxZ);
-    self->SetProgressText(progressText);
+    if(!id) {
+        sprintf(progressText,"Removing solitary noise voxels (slice %d / %d)",idxX,maxZ);
+        self->SetProgressText(progressText);
+       self->UpdateProgress(idxZ/float(maxZ));
+    }
 
     for(idxY = 0; idxY <= maxY; idxY++ ) {
       for(idxX = 0; idxX <= maxX; idxX++ ) {
