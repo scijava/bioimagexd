@@ -102,6 +102,8 @@ class Visualizer:
         
         self.conf = Configuration.getConfiguration()
         self.zoomFactor=1.0
+        scripting.zoomFactor = self.zoomFactor
+
         self.tb1=None
         self.tb=None
         self.z=0
@@ -704,7 +706,8 @@ class Visualizer:
         self.zoomCombo.SetSelection(pos)
         self.currMode.setZoomFactor(self.zoomLevels[pos])
         self.zoomFactor=self.currMode.getZoomFactor()
-        
+        scripting.zoomFactor = self.zoomFactor
+
             
     def zoomComboDirection(self,dir):
         """
@@ -733,6 +736,8 @@ class Visualizer:
             self.zoomToFitFlag=0
             self.currMode.setZoomFactor(factor)
         self.zoomFactor=self.currMode.getZoomFactor()    
+        scripting.zoomFactor = self.zoomFactor
+
         self.currMode.Render()
         
         
@@ -950,6 +955,8 @@ class Visualizer:
 
         if self.currMode:
             self.zoomFactor=self.currMode.getZoomFactor()
+            scripting.zoomFactor = self.zoomFactor
+
             self.currMode.deactivate(self.mode)
             if hasattr(self.currentWindow,"enable"):
                 self.currentWindow.enable(0)
@@ -1010,6 +1017,8 @@ class Visualizer:
             self.currMode.zoomToFit()
         else:
             self.currMode.setZoomFactor(self.zoomFactor)        
+            scripting.zoomFactor = self.zoomFactor
+
         if not self.zoomToFitFlag and hasattr(self.currMode,"getZoomFactor"):
             self.setComboBoxToFactor(self.currMode.getZoomFactor())        
             
@@ -1160,6 +1169,7 @@ class Visualizer:
             self.currMode.zoomToFit()
         else:
             self.currMode.setZoomFactor(self.zoomFactor) 
+            scripting.zoomFactor = self.zoomFactor
 
         self.OnSize(None)
         
@@ -1174,7 +1184,8 @@ class Visualizer:
             self.currMode.zoomToFit()
         else:
             self.currMode.setZoomFactor(self.zoomFactor)    
-        
+            scripting.zoomFactor = self.zoomFactor
+
         self.currMode.setDataUnit(self.dataUnit)
         
         self.currMode.setTimepoint(self.timepoint)

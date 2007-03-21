@@ -425,7 +425,8 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
         dc.SetBrush(wx.Brush(wx.Color(*self.bgcolor)))
         w,h = self.buffer.GetWidth(), self.buffer.GetHeight()
         #dc.DrawRectangle(0,0,self.paintSize[0],self.paintSize[1])
-        dc.DrawRectangle(0,0,w,h)
+        xs, ys,x1,y1 = self.GetClientRect()
+        dc.DrawRectangle(xs,ys,w,h)
         
         if not self.slices:
             Logging.info("Haven't got any slices",kw="preview")
@@ -434,13 +435,16 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
             return
         row,col=0,0
     
+        xs+=9
+        ys+=9
         for slice in self.slices:
             w,h=self.sliceSize
             slice.Rescale(w,h)
             bmp=slice.ConvertToBitmap()
 
-            x=9+col*(3+self.sliceSize[0])
-            y=9+row*(3+self.sliceSize[1])
+            x=xs+col*(3+self.sliceSize[0])
+            y=xs+row*(3+self.sliceSize[1])
+
             
             dc.DrawBitmap(bmp,x,y,False)
             col+=1

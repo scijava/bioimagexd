@@ -37,6 +37,7 @@ import vtk
 import Logging
 import InteractivePanel
 import messenger
+import math
 
 class SectionsPanel(InteractivePanel.InteractivePanel):
     """
@@ -51,9 +52,9 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
         self.imagedata=None
         self.fitLater =0
         self.visualizer=visualizer
+        self.noUpdate = 0
         self.bmp=None
         self.bgcolor=(127,127,127)
-        print "size=",size
         self.enabled=1
         self.slices=[]
             
@@ -108,7 +109,6 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
         Description: Set the factor by which the image is zoomed
         """
         self.zoomFactor=factor
-        print "Setting zoom factor to ",factor
         if self.dataUnit:
             self.setTimepoint(self.timepoint)
         self.updateAnnotations()
@@ -119,6 +119,9 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
         self.ymargin=int(self.ymargin_default*self.zoomFactor)
         if self.xmargin<3:self.xmargin=3
         if self.ymargin<3:self.ymargin=3
+        x0,y0,x1,y1 = self.GetClientRect()
+        self.xmargin += x0
+        self.ymargin += y0
 
         self.calculateBuffer()
             
@@ -130,6 +133,9 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
         Created: 1.08.2005, KP
         Description: Set the shown zslice
         """    
+        # A flag to indicate that we won't react on our own messages
+        if self.noUpdate:
+            return
         nx,ny=self.x,self.y
         nz=arg
         self.z=arg
@@ -156,13 +162,13 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
         #x,y=self.getScrolledXY(x,y)
         x-=self.xmargin
         y-=self.ymargin
-        Logging.info("x=%d,y=%d"%(x,y))
+        #Logging.info("x=%d,y=%d"%(x,y))
         
         x/=float(self.zoomFactor)
         y/=float(self.zoomFactor)
                 
         dims=self.imagedata.GetDimensions()
-        Logging.info("x,y=(%d,%d)"%(x,y),"dims=",dims,"margins=",self.xmargin,self.ymargin)
+        #Logging.info("x,y=(%d,%d)"%(x,y),"dims=",dims,"margins=",self.xmargin,self.ymargin)
         #dims=(dims[0],dims[1],dims[2]*self.zoomZ)
         #dims=[i*self.zoomFactor for i in dims]
         
@@ -176,28 +182,25 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
             x=dims[0]+sxmargin+dims[2]*self.zspacing-1
         if y>=dims[1]+symargin+dims[2]*self.zspacing:
             y=dims[1]+symargin+dims[2]*self.zspacing-1
+            
+            
         if x>dims[0]+(sxmargin) and y>0 and y<dims[1] and x<dims[0]+sxmargin+dims[2]*self.zspacing:
-            print "YZ plane"
             nz=x-dims[0]-sxmargin
             nz/=self.zspacing
             ny=y#-self.ymargin
             nx=self.x
-        # the xy plane
         elif x>0 and x<dims[0] and y>0 and y< dims[1]:
-            print "XY plane"
             nx=x#+self.xmargin
             ny=y#+self.ymargin
             nz=self.z
         # the xz plane
         elif x> 0 and x< dims[0] and y>dims[1]+symargin and y<dims[1]+symargin+dims[2]*self.zspacing:
-            print "XZ plane"
             nx=x#-self.xmargin
             nz=y-dims[1]-symargin
             nz/=self.zspacing
             ny=self.y
         # the gray area
         elif x>dims[0]+sxmargin and x<dims[0]+sxmargin+dims[2]*self.zspacing and y>dims[1]+symargin and y<dims[1]+symargin+dims[2]*self.zspacing:
-            print "Gray area"
             if y>x:
                 nz=y-dims[1]-symargin
             else:
@@ -210,16 +213,19 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
         #nz/=self.zoomFactor
         #print "showing ",nx,ny,nz
         
-        self.drawPos=[x*self.zoomFactor for x in (self.x,self.y,self.z)]
-        
-        Logging.info("drawPos=",self.drawPos,"zoomFactor=",self.zoomFactor,"nx=%d, ny=%d, nz=%d"%(nx,ny,nz))
+#        self.drawPos=[a*self.zoomFactor for a in (self.x,self.y,self.z)]
+    
+        self.drawPos=[math.ceil(a*self.zoomFactor) for a in (nx,ny,nz)]
+#        Logging.info("drawPos=",self.drawPos,"zoomFactor=",self.zoomFactor,"nx=%d, ny=%d, nz=%d"%(nx,ny,nz))
         if self.x!=nx or self.y!=ny or self.z!=nz:
             self.x,self.y,self.z=nx,ny,nz
+    
             #print "Redrawing slices"
             self.setTimepoint(self.timepoint)
         self.updatePreview()
+        self.noUpdate=1
         messenger.send(None,"zslice_changed",nz) 
-                
+        self.noUpdate = 0                
         ncomps=self.imagedata.GetNumberOfScalarComponents()
         if ncomps==1:
             scalar=self.imagedata.GetScalarComponentAsDouble(self.x,self.y,self.z,0)
@@ -310,7 +316,6 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
         
         image.Update()
         self.zspacing = image.GetSpacing()[2]
-        print "\n\nZ SPACING =",self.zspacing
         self.imagedata = ImageOperations.imageDataTo3Component(image,self.ctf)
         
         if self.fitLater:
@@ -423,7 +428,11 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
         dc.SetBackground(wx.Brush(wx.Colour(*self.bgcolor)))
         dc.SetPen(wx.Pen(wx.Colour(*self.bgcolor),0))
         dc.SetBrush(wx.Brush(wx.Color(*self.bgcolor)))
-        dc.DrawRectangle(0,0,self.paintSize[0],self.paintSize[1])
+        
+        x0,y0,x1,y1 = self.GetClientRect()
+
+        dc.DrawRectangle(x0,y0,self.paintSize[0],self.paintSize[1])
+        x0,y0=0,0
         
         if not self.slices:
             print "Haven't got any slices"
@@ -446,6 +455,8 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
             bmp=slice.ConvertToBitmap()
 
             sx,sy=pos[i]
+            sx+=x0
+            sy+=y0
             dc.DrawBitmap(bmp,sx,sy,False)
             self.drawableRects.append((sx,sx+w,sy,sy+h))
             
@@ -455,14 +466,14 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
             posy+=self.ymargin
             dc.SetPen(wx.Pen((255,255,255),1))
             # horiz across the xy
-            dc.DrawLine(0,posy,(2*self.xmargin)+x+z,posy)
+            dc.DrawLine(x0+0,y0+posy,(2*self.xmargin)+x+z,posy)
             # vert across the xy
-            dc.DrawLine(posx,0,posx,(2*self.ymargin)+y+z)
+            dc.DrawLine(x0+posx,y0,x0+posx,y0+(2*self.ymargin)+y+z)
             # horiz across the lower
-            dc.DrawLine(0,y+(2*self.ymargin)+posz*self.zspacing,(2*self.xmargin)+x+z,y+(2*self.ymargin)+posz*self.zspacing
+            dc.DrawLine(x0,y0+y+(2*self.ymargin)+posz*self.zspacing,x0+(2*self.xmargin)+x+z,y0+y+(2*self.ymargin)+posz*self.zspacing
             )
             # vert across the right
-            dc.DrawLine((2*self.xmargin)+x+posz*self.zspacing,0,(2*self.xmargin)+x+posz*self.zspacing,y+(2*self.ymargin)+z)
+            dc.DrawLine(x0+(2*self.xmargin)+x+posz*self.zspacing,y0,x0+(2*self.xmargin)+x+posz*self.zspacing,y0+y+(2*self.ymargin)+z)
             
         y=pos[-1][1]
             
