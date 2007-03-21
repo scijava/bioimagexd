@@ -731,6 +731,7 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
             self.paintPreview()
             self.slice=slice
         self.zoomFactor=f
+        bxd.zoomFactor = f
         self.updateAnnotations()
         #self.Scroll(0,0)
         
@@ -754,7 +755,9 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
                 maxX, maxY = self.fixedSize
             
             Logging.info("Determining zoom factor from (%d,%d) to (%d,%d)"%(x,y,maxX,maxY),kw="preview")
-            self.setZoomFactor(ImageOperations.getZoomFactor(x,y,maxX,maxY))
+            factor = ImageOperations.getZoomFactor(x,y,maxX,maxY)
+            self.setZoomFactor(factor)
+            bxd.zoomFactor = factor
         else:
             Logging.info("Will zoom to fit later",kw="preview")
             self.fitLater=1
