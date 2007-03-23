@@ -296,7 +296,7 @@ class MainWindow(wx.Frame):
         filelist=conf.getConfigItem("FileList","General")
         if filelist:
             filelist = eval(filelist)
-            self.loadFiles(filelist)
+            self.loadFiles(filelist, noWarn = 1)
                 
         
         #self.Bind(wx.EVT_WINDOW_DESTROY, self.Cleanup)
@@ -349,14 +349,14 @@ class MainWindow(wx.Frame):
         module.visualizer = self.visualizer
         module.run()
         
-    def loadFiles(self,files):
+    def loadFiles(self,files, noWarn = 0):
         """
         Created: 17.07.2006, KP
         Description: Load the given data files
         """         
         for file in files:
             name = os.path.basename(file)
-            self.createDataUnit(name, file)            
+            self.createDataUnit(name, file, noWarn = noWarn)            
 
     def onMenuUndo(self,evt):
         """
@@ -1454,7 +1454,7 @@ class MainWindow(wx.Frame):
         """
         self.createDataUnit(os.path.basename(filepath),filepath)
         
-    def createDataUnit(self,name,path):
+    def createDataUnit(self,name,path, noWarn = 0):
         """
         Created: 03.11.2004, KP
         Description: Creates a dataunit with the given name and path
@@ -1487,11 +1487,12 @@ class MainWindow(wx.Frame):
             if settingsOnly.lower()=="true":
                 # If this file contains only settings, then we report an 
                 # error and do not load it
-                Dialogs.showerror(self,
-                "The file you selected, %s, contains only settings "
-                "and cannot be loaded.\n"
-                "Use 'Load settings' from the File menu "
-                "to load it."%name,"Trying to load settings file")
+                if not noWarn:
+					Dialogs.showerror(self,
+					"The file you selected, %s, contains only settings "
+					"and cannot be loaded.\n"
+					"Use 'Load settings' from the File menu "
+					"to load it."%name,"Trying to load settings file")
                 return
             #except:
             #    pass
@@ -1507,7 +1508,8 @@ class MainWindow(wx.Frame):
             datasource=self.extToSource[ext]()
         except KeyError:
 #            print self.extToSource.keys()
-            Dialogs.showerror(self,"Failed to load file %s: Unrecognized extension %s"%(name,ext),"Unrecognized extension")
+			if not noWarn:
+	            Dialogs.showerror(self,"Failed to load file %s: Unrecognized extension %s"%(name,ext),"Unrecognized extension")
             return
         dataunits=[]
         try:
@@ -1518,7 +1520,8 @@ class MainWindow(wx.Frame):
 
         #print dataunits[0].getSettings().get("Type")
         if not dataunits:
-            Dialogs.showerror(self, "Failed to read dataset %s."%path,"Failed to read dataset")
+        	if not noWarn:
+	            Dialogs.showerror(self, "Failed to read dataset %s."%path,"Failed to read dataset")
             return
         
         # We might get tuples from leica
