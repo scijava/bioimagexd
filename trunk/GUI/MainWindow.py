@@ -1508,7 +1508,7 @@ class MainWindow(wx.Frame):
             datasource=self.extToSource[ext]()
         except KeyError:
 #            print self.extToSource.keys()
-			if not noWarn:
+            if not noWarn:
 	            Dialogs.showerror(self,"Failed to load file %s: Unrecognized extension %s"%(name,ext),"Unrecognized extension")
             return
         dataunits=[]
@@ -1516,11 +1516,13 @@ class MainWindow(wx.Frame):
             dataunits = datasource.loadFromFile(path)
             Logging.info("Loaded from file %s %d dataunits"%(path,len(dataunits)),kw="io")
         except Logging.GUIError,ex:
-            ex.show()
+            if not noWarn:
+                ex.show()
+            
 
         #print dataunits[0].getSettings().get("Type")
         if not dataunits:
-        	if not noWarn:
+            if not noWarn:
 	            Dialogs.showerror(self, "Failed to read dataset %s."%path,"Failed to read dataset")
             return
         
