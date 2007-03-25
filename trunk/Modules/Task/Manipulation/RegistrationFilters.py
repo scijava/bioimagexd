@@ -47,8 +47,8 @@ import Logging
 import MathFilters
 import GUI.GUIBuilder as GUIBuilder
 import messenger
+import scripting as bxd
 
-from lib.ProcessingFilter import FILTER_BEGINNER, FILTER_EXPERIENCED
 import  wx.lib.mixins.listctrl  as  listmix
 SEGMENTATION="Segmentation"
 #ITK="ITK"
@@ -66,7 +66,7 @@ class RegistrationFilter(ProcessingFilter.ProcessingFilter):
     """     
     name = "Versor Rigid 3D Registration"
     category = REGISTRATION
-    level = FILTER_EXPERIENCED
+    level = bxd.COLOR_EXPERIENCED
     def __init__(self,inputs=(1,1)):
         """
         Created: 14.03.2007, KP

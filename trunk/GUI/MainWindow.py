@@ -296,7 +296,11 @@ class MainWindow(wx.Frame):
         filelist=conf.getConfigItem("FileList","General")
         if filelist:
             filelist = eval(filelist)
-            self.loadFiles(filelist, noWarn = 1)
+            restoreFiles = conf.getConfigItem("RestoreFiles","General")
+            if restoreFiles and type(restoreFiles)==type(""):
+                restoreFiles = eval(restoreFiles)
+            if restoreFiles:    
+                self.loadFiles(filelist, noWarn = 1)
                 
         
         #self.Bind(wx.EVT_WINDOW_DESTROY, self.Cleanup)

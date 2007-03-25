@@ -966,7 +966,7 @@ class GradientMagnitudeFilter(ProcessingFilter.ProcessingFilter):
     """     
     name = "Gradient magnitude"
     category = FEATUREDETECTION
-    level = GUIBuilder.FILTER_BEGINNER
+    level = bxd.COLOR_BEGINNER
     def __init__(self,inputs=(1,1)):
         """
         Created: 13.04.2006, KP
@@ -1025,7 +1025,7 @@ class ITKAnisotropicDiffusionFilter(ProcessingFilter.ProcessingFilter):
         Created: 9.11.2006, KP
         Description: Return the level of the given parameter
         """
-        return GUIBuilder.FILTER_INTERMEDIATE
+        return bxd.COLOR_INTERMEDIATE
             
     def getDefaultValue(self,parameter):
         """
@@ -1153,7 +1153,7 @@ class ITKCannyEdgeFilter(ProcessingFilter.ProcessingFilter):
         Created: 1.11.2006, KP
         Description: Return the level of the given parameter
         """
-        return GUIBuilder.FILTER_EXPERIENCED
+        return bxd.COLOR_EXPERIENCED
         
     def getParameters(self):
         """
@@ -1213,7 +1213,7 @@ class ITKSigmoidFilter(ProcessingFilter.ProcessingFilter):
         Created: 9.11.2006, KP
         Description: Return the level of the given parameter
         """
-        return GUIBuilder.FILTER_EXPERIENCED                 
+        return bxd.COLOR_EXPERIENCED                 
         
     def getParameters(self):
         """

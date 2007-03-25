@@ -89,12 +89,12 @@ class SurfaceModule(VisualizationModule):
         Description: Return the level of the given parameter
         """
         if parameter in ["FeatureAngle","Normals"]:
-            return GUIBuilder.FILTER_EXPERIENCED
+            return bxd.COLOR_EXPERIENCED
         if parameter == "PreserveTopology":
-            return GUIBuilder.FILTER_INTERMEDIATE
+            return bxd.COLOR_INTERMEDIATE
         
         
-        return GUIBuilder.FILTER_BEGINNER            
+        return bxd.COLOR_BEGINNER            
         
 
     def setScalarRange(self, min,max):
