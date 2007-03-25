@@ -45,8 +45,6 @@ import scripting as bxd
 import GUI.GUIBuilder as GUIBuilder
 import ImageOperations
 
-from GUI.GUIBuilder import FILTER_EXPERIENCED, FILTER_BEGINNER, FILTER_INTERMEDIATE
-
 
 
 class ProcessingFilter(GUIBuilder.GUIBuilderBase):
@@ -56,7 +54,7 @@ class ProcessingFilter(GUIBuilder.GUIBuilderBase):
     """ 
     category = "No category"
     name = "Generic Filter"
-    level = FILTER_EXPERIENCED
+    level = bxd.COLOR_EXPERIENCED
     def __init__(self,numberOfInputs=(1,1)):
         """
         Created: 13.04.2006, KP

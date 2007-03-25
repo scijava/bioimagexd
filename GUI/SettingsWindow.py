@@ -51,8 +51,10 @@ class GeneralSettings(wx.Panel):
         format = conf.getConfigItem("ImageFormat","Output")
         showTips=conf.getConfigItem("ShowTip","General")
         askOnQuit=conf.getConfigItem("AskOnQuit","General")
-        
+        restoreFiles=conf.getConfigItem("RestoreFiles","General")
         #print "showTip=",showTip
+        if restoreFiles and type(restoreFiles)==type(""):
+            restoreFiles = eval(restoreFiles)
         if showTips and type(showTips)==type(""):
             showTips = eval(showTips)
         if askOnQuit and type(askOnQuit)==type(""):
@@ -72,11 +74,16 @@ class GeneralSettings(wx.Panel):
         
         self.sizer.Add(self.imageBoxSizer,(2,0))
 
-        self.tipBox=wx.StaticBox(self,-1,"Startup tips")
+        self.tipBox=wx.StaticBox(self,-1,"Startup options")
         self.tipBoxSizer=wx.StaticBoxSizer(self.tipBox,wx.VERTICAL)
         self.tipCheckbox=wx.CheckBox(self,-1,"Show tips at startup")
         self.tipCheckbox.SetValue(showTips)
         self.tipBoxSizer.Add(self.tipCheckbox)
+        
+        self.restoreCheckbox = wx.CheckBox(self,-1,"Restore files on abnormal shutdown")
+        self.restoreCheckbox.SetValue(restoreFiles)
+        
+        self.tipBoxSizer.Add(self.restoreCheckbox)
         
         self.sizer.Add(self.tipBoxSizer,(0,0))
 
@@ -107,6 +114,10 @@ class GeneralSettings(wx.Panel):
         conf.setConfigItem("ImageFormat","Output",format.lower())
         showTip=self.tipCheckbox.GetValue()
         conf.setConfigItem("ShowTip","General",str(showTip))
+        
+        restoreFiles = self.restoreCheckbox.GetValue()
+        print "Setting restoreFIles to ",str(restoreFiles)
+        conf.setConfigItem("RestoreFiles","General",str(restoreFiles))
 
         askOnQuit=self.askOnQuitCheckbox.GetValue()
         conf.setConfigItem("AskOnQuit","General",str(askOnQuit))

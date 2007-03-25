@@ -32,13 +32,12 @@ __date__ = "$Date: 2005/01/13 14:52:39 $"
 
 from lib import ProcessingFilter
 import types
+import scripting as bxd
 import vtk
 MORPHOLOGICAL="Morphological operations"
 
 FEATUREDETECTION="Feature detection"
 FILTERING="Filtering"
-
-from lib.ProcessingFilter import FILTER_BEGINNER
 
 class MorphologicalFilter(ProcessingFilter.ProcessingFilter):
     """
@@ -222,7 +221,7 @@ class HybridMedianFilter(MorphologicalFilter):
     """     
     name = "Hybrid median 2D"
     category = FILTERING
-    level = FILTER_BEGINNER
+    level = bxd.COLOR_BEGINNER
     
     def __init__(self):
         """
@@ -260,7 +259,7 @@ class MedianFilter(MorphologicalFilter):
     """     
     name = "Median 3D"
     category = FILTERING
-    level = FILTER_BEGINNER
+    level = bxd.COLOR_BEGINNER
     
     def __init__(self):
         """

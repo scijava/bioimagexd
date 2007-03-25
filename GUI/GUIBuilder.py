@@ -54,15 +54,6 @@ NOBR="NOBR"
 BR="BR"
 ROISELECTION="ROISELECTION"
 
-#FILTER_BEGINNER=(180,255,180)
-#FILTER_INTERMEDIATE=(255,255,180)
-#FILTER_EXPERIENCED=(0,180,255)
-
-FILTER_BEGINNER=(200,200,200)
-#FILTER_BEGINNER=None
-FILTER_INTERMEDIATE=(202,202,226)
-FILTER_EXPERIENCED=(224,188,232)
-
 class GUIBuilderBase:
     """
     Created: 31.05.2006, KP
@@ -172,7 +163,7 @@ class GUIBuilderBase:
         Created: 1.11.2006, KP
         Description: Return the level of the given parameter
         """
-        return FILTER_BEGINNER            
+        return bxd.COLOR_BEGINNER            
             
     def sendUpdateGUI(self):
         """

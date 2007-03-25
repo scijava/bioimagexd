@@ -34,6 +34,7 @@ from lib import ProcessingFilter
 import ImageOperations
 import wx
 import time
+import scripting as bxd
 import csv
 import codecs
 try:
@@ -48,7 +49,6 @@ import MathFilters
 import GUI.GUIBuilder as GUIBuilder
 import messenger
 
-from lib.ProcessingFilter import FILTER_BEGINNER
 
 import  wx.lib.mixins.listctrl  as  listmix
 SEGMENTATION="Segmentation"
@@ -262,7 +262,7 @@ class ThresholdFilter(ProcessingFilter.ProcessingFilter):
     """     
     name = "Threshold"
     category = SEGMENTATION
-    level = FILTER_BEGINNER
+    level = bxd.COLOR_BEGINNER
     
     def __init__(self):
         """
@@ -286,10 +286,10 @@ class ThresholdFilter(ProcessingFilter.ProcessingFilter):
         Description: Return the level of the given parameter
         """
         if parameter in ["ReplaceInValue","ReplaceOutValue"]:
-            return GUIBuilder.FILTER_INTERMEDIATE
+            return bxd.COLOR_INTERMEDIATE
         
         
-        return GUIBuilder.FILTER_BEGINNER                
+        return bxd.COLOR_BEGINNER                
     
     def setParameter(self,parameter,value):
         """
@@ -433,7 +433,7 @@ class MaskFilter(ProcessingFilter.ProcessingFilter):
     """     
     name = "Mask"
     category = SEGMENTATION
-    level = FILTER_BEGINNER
+    level = bxd.COLOR_BEGINNER
     def __init__(self,inputs=(2,2)):
         """
         Created: 13.04.2006, KP
@@ -519,7 +519,7 @@ class ITKWatershedSegmentationFilter(ProcessingFilter.ProcessingFilter):
         Created: 9.11.2006, KP
         Description: Return the level of the given parameter
         """
-        return GUIBuilder.FILTER_INTERMEDIATE
+        return bxd.COLOR_INTERMEDIATE
         
             
     def getDefaultValue(self,parameter):
@@ -582,7 +582,7 @@ class MorphologicalWatershedSegmentationFilter(ProcessingFilter.ProcessingFilter
     """     
     name = "Morphological watershed segmentation"
     category = WATERSHED
-    level = FILTER_BEGINNER
+    level = bxd.COLOR_BEGINNER
     def __init__(self,inputs=(1,1)):
         """
         Created: 13.04.2006, KP
@@ -597,8 +597,8 @@ class MorphologicalWatershedSegmentationFilter(ProcessingFilter.ProcessingFilter
         self.origCtf = None
         self.n=0
         self.ignoreObjects = 2
-        self.watershed = None
         self.relabelFilter  = None
+        self.itkfilter = None
         #scripting.loadITK(filters=1)            
 
     def getParameterLevel(self, parameter):
@@ -607,10 +607,10 @@ class MorphologicalWatershedSegmentationFilter(ProcessingFilter.ProcessingFilter
         Description: Return the level of the given parameter
         """
         if parameter in ["Leve","Threshold","Level"]:
-            return GUIBuilder.FILTER_INTERMEDIATE
+            return bxd.COLOR_INTERMEDIATE
         
         
-        return GUIBuilder.FILTER_BEGINNER                    
+        return bxd.COLOR_BEGINNER                    
             
     def getDefaultValue(self,parameter):
         """
@@ -658,17 +658,13 @@ class MorphologicalWatershedSegmentationFilter(ProcessingFilter.ProcessingFilter
             
         image = self.getInput(1)
         image = self.convertVTKtoITK(image)
-        if not self.watershed:
+        if not self.itkfilter:
             try:
-                # For ITK versions below 3.2.0 we need to import the external project
-                import watershed
-                self.watershed = watershed       
+                ul3 = itk.Image.UL3
+                self.itkfilter = itk.MorphologicalWatershedImageFilter[image, ul3].New()
             except:
-                # For later ITK versions, we just use the ITK itself
-                import itk
-                self.watershed = itk
-            ul3 = itk.Image.UL3
-            self.itkfilter = watershed.MorphologicalWatershedImageFilter[image, ul3].New()
+                import watershed
+                self.itkfilter = watershed.MorphologicalWatershedImageFilter[image, ul3].New()
         
         markWatershedLine = self.parameters["MarkWatershedLine"]
         self.itkfilter.SetMarkWatershedLine(markWatershedLine)
@@ -745,7 +741,7 @@ class ConnectedComponentFilter(ProcessingFilter.ProcessingFilter):
         Created: 9.11.2006, KP
         Description: Return the level of the given parameter
         """
-        return GUIBuilder.FILTER_INTERMEDIATE
+        return bxd.COLOR_INTERMEDIATE
             
     def getDefaultValue(self,parameter):
         """
@@ -854,7 +850,7 @@ class MaximumObjectsFilter(ProcessingFilter.ProcessingFilter):
         Created: 9.11.2006, KP
         Description: Return the level of the given parameter
         """
-        return GUIBuilder.FILTER_INTERMEDIATE
+        return bxd.COLOR_INTERMEDIATE
             
     def getDefaultValue(self,parameter):
         """
@@ -915,7 +911,7 @@ class ITKRelabelImageFilter(ProcessingFilter.ProcessingFilter):
     """     
     name = "Re-label image"
     category = WATERSHED
-    level = FILTER_BEGINNER
+    level = bxd.COLOR_BEGINNER
     def __init__(self,inputs=(1,1)):
         """
         Created: 13.04.2006, KP
@@ -936,7 +932,7 @@ class ITKRelabelImageFilter(ProcessingFilter.ProcessingFilter):
         Created: 9.11.2006, KP
         Description: Return the level of the given parameter
         """
-        return GUIBuilder.FILTER_INTERMEDIATE
+        return bxd.COLOR_INTERMEDIATE
 
             
     def getDefaultValue(self,parameter):
@@ -1008,8 +1004,6 @@ class ITKInvertIntensityFilter(ProcessingFilter.ProcessingFilter):
         self.descs = {}
         self.itkFlag = 1
         self.itkfilter = None
-        import watershed
-        self.watershed = watershed
             
     def getDefaultValue(self,parameter):
         """
@@ -1047,7 +1041,7 @@ class ITKInvertIntensityFilter(ProcessingFilter.ProcessingFilter):
         image = self.convertVTKtoITK(image)
 
         if not self.itkfilter:
-            self.itkfilter = self.watershed.InvertIntensityImageFilter[image, image].New()
+            self.itkfilter = itk.InvertIntensityImageFilter[image, image].New()
             
         self.itkfilter.SetInput(image)
         
@@ -1067,7 +1061,7 @@ class MeasureVolumeFilter(ProcessingFilter.ProcessingFilter):
     """     
     name = "Calculate object statistics"
     category = MEASUREMENT
-    level = FILTER_BEGINNER
+    level = bxd.COLOR_BEGINNER
     def __init__(self,inputs=(2,2)):
         """
         Created: 13.04.2006, KP
@@ -1321,12 +1315,12 @@ class ITKConfidenceConnectedFilter(ProcessingFilter.ProcessingFilter):
         Description: Return the level of the given parameter
         """
         if parameter in ["Multiplier","Iterations"]:
-            return GUIBuilder.FILTER_EXPERIENCED
+            return bxd.COLOR_EXPERIENCED
         if parameter == "Neighborhood":
-            return GUIBuilder.FILTER_INTERMEDIATE
+            return bxd.COLOR_INTERMEDIATE
         
         
-        return GUIBuilder.FILTER_BEGINNER            
+        return bxd.COLOR_BEGINNER            
             
     def getDefaultValue(self,parameter):
         """
@@ -1414,7 +1408,7 @@ class ITKConnectedThresholdFilter(ProcessingFilter.ProcessingFilter):
     """     
     name = "Connected threshold"
     category = REGIONGROWING
-    level = FILTER_BEGINNER
+    level = bxd.COLOR_BEGINNER
     def __init__(self,inputs=(1,1)):
         """
         Created: 26.05.2006, KP
@@ -1526,10 +1520,10 @@ class ITKNeighborhoodConnectedThresholdFilter(ProcessingFilter.ProcessingFilter)
         Description: Return the level of the given parameter
         """
         if parameter in ["RadiusX","RadiusY","RadiusZ"]:
-            return GUIBuilder.FILTER_INTERMEDIATE
+            return bxd.COLOR_INTERMEDIATE
         
         
-        return GUIBuilder.FILTER_BEGINNER                        
+        return bxd.COLOR_BEGINNER                        
         
     def getDefaultValue(self,parameter):
         """

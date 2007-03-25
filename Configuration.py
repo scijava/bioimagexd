@@ -38,6 +38,7 @@ import Logging
 conf=None
 import platform
 
+import scripting as bxd
 def getConfiguration():
     return conf
 
@@ -65,10 +66,27 @@ class Configuration:
         self.setConfigItem("ShowTip","General","True",0)
         self.setConfigItem("AskOnQuit","General","True",0)
         self.setConfigItem("TipNumber","General",0,0)
+        self.setConfigItem("RestoreFiles","General","True",0)
         self.readConfigItem("ShowTip","General")
+        self.readConfigItem("RestoreFiles","General")
         self.readConfigItem("TipNumber","General")
         self.readConfigItem("AskOnQuit","General")
         self.readConfigItem("RescaleOnLoading","Performance")
+        
+        self.readConfigItem("BeginnerColor","General")
+        self.readConfigItem("IntermediateColor","General")
+        self.readConfigItem("ExperiencedColor","General")
+        
+        c = self.getConfigItem("BeginnerColor","General")
+        if c:
+            bxd.COLOR_BEGINNER = eval(c)
+        c = self.getConfigItem("IntermediateColor","General")
+        if c:
+            bxd.COLOR_INTERMEDIATE =  eval(c)
+        c = self.getConfigItem("ExperiencedColor","General")
+        if c:
+            bxd.COLOR_EXPERIENCED = eval(c)
+        
         
         self.setConfigItem("RemoveOldVTK","VTK",1,0);
         self.setConfigItem("VTKPath","VTK",vtkpath,0)

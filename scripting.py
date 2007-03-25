@@ -120,6 +120,11 @@ preferRGB = 1
 wantWholeDataset = 0
 inIO = 0
 
+
+COLOR_BEGINNER=(200,200,200)
+COLOR_INTERMEDIATE=(202,202,226)
+COLOR_EXPERIENCED=(224,188,232)
+
 dialogs = {}
 
 def registerDialog(name, dlg):
