@@ -244,7 +244,8 @@ class InteractivePanel(ogl.ShapeCanvas):
         Description: Initialization
         """    
         self.parent = parent
-        self.is_windows = 1#=platform.system()=="Windows"
+        self.is_windows =platform.system()=="Windows"
+        self.is_mac = platform.system()=="Darwin"
         self.xoffset = 0
         self.yoffset = 0        
         self.maxX = 512
@@ -429,15 +430,26 @@ class InteractivePanel(ogl.ShapeCanvas):
         
         w, h =self.buffer.GetWidth(),self.buffer.GetHeight()
         self.buffer = wx.EmptyBitmap(w,h)
+        buffer = self.buffer
+                
+        x0,y0,w1,h1 = self.GetClientRect()
+
+        if self.is_mac:
+            buffer = wx.EmptyBitmap(w1,h1)
+            
         memdc = wx.MemoryDC()
-        memdc.SelectObject(self.buffer)
+        memdc.SelectObject(buffer)
         
-        x0,y0,x1,y1 = self.GetClientRect()
-        memdc.DrawBitmap(self.bgbuffer,x0,y0,False)
-        
+        memdc.DrawBitmap(self.bgbuffer,0,0,False)
+
         for helper in self.painterHelpers:
             helper.paintOnDC(memdc)
-        memdc.SelectObject(wx.NullBitmap)        
+        memdc.SelectObject(wx.NullBitmap)   
+        if self.is_mac:
+            memdc2 = wx.MemoryDC()
+            memdc2.SelectObject(self.buffer)
+            memdc2.DrawBitmap(buffer, x0, y0, False)
+            memdc2.SelectObject(wx.NullBitmap)
         if update:
             self.Update()
         #self.OnPaint(None)
@@ -607,12 +619,15 @@ class InteractivePanel(ogl.ShapeCanvas):
             
             self.currentSketch.setTentativePoint(pos)
             #self.currentSketch.Erase()
+            x0,y0, w,h = self.GetClientRect()
             dc = wx.ClientDC(self)
             self.PrepareDC(dc)
+
             self.currentSketch.Erase(dc)
-            
+             
             self.currentSketch.Draw(dc)            
             dc.EndDrawing()
+            dc.DestroyClientRegion()
             #self.repaintHelpers()
             #self.Refresh()
             #self.Update()

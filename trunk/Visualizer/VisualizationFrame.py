@@ -44,72 +44,6 @@ from lib.persistence import state_pickler
 from VisualizationModules import *
 from ModuleConfiguration import *
 from VisualizerWindow import *
-
-
-from UIElements import NamePanel
-
-class TitledPanel(wx.Panel):
-    """
-    Created: 26.05.2005, KP
-    Description: A frame that has a title and can be collapsed
-    """    
-    def __init__(self,parent,title,expand):
-        """
-        Created: 26.05.2005, KP
-        Description: Initialization
-        """     
-        wx.Panel.__init__(self,parent,-1)
-        self.parent=parent
-        self.sizer = wx.GridBagSizer()
-        if expand:            
-            self.namePanel = NamePanel(self,title,None,
-            size=(200,25),
-            xoffset=8,yoffset=1)
-        else:
-            self.namePanel = NamePanel(self,title,None,
-            size=(200,25),
-            xoffset=8,yoffset=1)
-        
-        #self.namePanel.setColor((255,255,255),(0,0,0))
-        self.namePanel.setColor((0,0,0),None)
-        self.namePanel.setWeight(1)
-        
-        self.sizer.Add(self.namePanel,(0,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
-        self.value=1
-        self.SetSizer(self.sizer)
-        self.SetAutoLayout(1)
-        self.sizer.Fit(self)
-        
-    def setLabel(self,label):
-        """
-        Created: 26.05.2005, KP
-        Description: Set label
-        """             
-        self.namePanel.setLabel(label)
-    
-    def expand(self,value):
-        """
-        Created: 26.05.2005, KP
-        Description: Expand / collapse managed widget
-        """             
-        if value and not self.value:
-            self.widget.Show()
-            self.sizer.Show(self.widget)
-        elif (not value) and self.value:
-            self.widget.Show(0)
-            self.sizer.Show(self.widget,0)
-        self.parent.SetupScrolling()
-        self.value=value
-            
-    
-    def add(self,widget):
-        """
-        Created: 26.05.2005, KP
-        Description: Add a widget managed by this panel
-        """             
-        self.widget = widget
-        self.sizer.Add(self.widget,(1,0),flag=wx.EXPAND|wx.ALL)
-    
     
 class RendererConfiguration(wx.MiniFrame):
     """
@@ -261,7 +195,9 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
         size=kws.get("size",(200,-1))
         scrolled.ScrolledPanel.__init__(self,parent,-1,size=size)
         
-        self.sizer = wx.GridBagSizer() 
+        self.tmpSizer = wx.GridBagSizer(5,5)
+        
+        self.sizer = wx.GridBagSizer(5,5) 
         # Unbind to not get annoying behaviour of scrolling
         # when clicking on the panel
         self.Unbind(wx.EVT_CHILD_FOCUS)
@@ -272,12 +208,16 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
         self.currentConf=None
         self.count={}
         self.currentConfMode=""
-        #self.titlePanel = TitledPanel(self,"Visualizer",1)
-        self.namePanel = NamePanel(self,"Visualizer",(0,128,255),
-            size=(-1,25),
-            xoffset=8,yoffset=1)
-        self.namePanel.setColor((0,0,0),(0,128,255))
-        self.moduleLbl = wx.StaticText(self,-1,"Rendering module:")
+        
+        self.visSbox = wx.StaticBox(self,-1,"3D mode")
+        self.visSizer = wx.StaticBoxSizer(self.visSbox)
+        self.tmpSizer.Add(self.sizer,(0,0))
+        self.visSizer.Add(self.tmpSizer)
+        
+        self.moduleLbl = wx.StaticText(self,-1,"3D rendering modules")
+        
+#        self.moduleBox = wx.StaticBox(self,-1,"Modules for 3D scene")
+#        self.moduleSizer = wx.StaticBoxSizer(self.moduleBox, wx.VERTICAL)
         modules=self.mode.mapping.keys()
         modules.sort()
 
@@ -285,7 +225,7 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
         self.moduleChoice.SetSelection(0)
         
         
-        self.moduleListbox = wx.CheckListBox(self,-1)
+        self.moduleListbox = wx.CheckListBox(self,-1,size=(250,80))
         
         font=self.moduleListbox.GetFont()
         if platform.system()!="Windows":
@@ -306,8 +246,8 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
         self.moduleRemove = wx.Button(self,-1,"Remove")
         self.moduleRemove.Bind(wx.EVT_BUTTON,self.onRemoveModule)        
         n=0
-        self.sizer.Add(self.namePanel,(n,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
-        n+=1
+#        self.sizer.Add(self.namePanel,(n,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
+#        n+=1
         self.sizer.Add(self.moduleLbl,(n,0))
         n+=1
         self.sizer.Add(self.moduleChoice,(n,0))
@@ -322,7 +262,7 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
         self.selected = -1
         self.confPanel = None
         
-        self.SetSizer(self.sizer)
+        self.SetSizer(self.visSizer)
         self.SetAutoLayout(1)
         self.SetupScrolling()
         
@@ -350,6 +290,8 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
         """
         if self.currentConf:
             self.sizer.Detach(self.currentConf)
+            #self.confSizer.Detach(self.currentConf)
+
             #del self.currentConf
             self.currentConf.Show(0)
         lbl = self.moduleListbox.GetString(n)
@@ -359,15 +301,18 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
         
         w,h=self.moduleListbox.GetSize()
         
-        if not self.confPanel:
-            self.confPanel = NamePanel(self,"Configure %s"%lbl,None,size=(200,25))
-            self.sizer.Add(self.confPanel,(5,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
-        self.confPanel.setLabel("Configure %s"%lbl)
-        self.confPanel.setColor((0,0,0),(180,255,180))
+#        if not self.confPanel:
+#            self.confPanel = wx.StaticBox(self,-1,"Configure %s"%lbl)
+#            self.confSizer = wx.StaticBoxSizer(self.confPanel,wx.VERTICAL)
+#            self.confPanel = NamePanel(self,"Configure %s"%lbl,None,size=(200,25))
+#            self.sizer.Add(self.confSizer,(5,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
+#        self.confPanel.SetLabel("Configure %s"%lbl)
+        #self.confPanel.setColor((0,0,0),(180,255,180))
         
         self.currentConf=panel(self,self.visualizer,lbl)#,mode=self.mode)
      
-        self.sizer.Add(self.currentConf,(6,0))
+        #self.confSizer.Add(self.currentConf)
+        self.sizer.Add(self.currentConf,(5,0))
         #self.currentConf.Layout()
         #self.Layout()
         #self.parent.Layout()
@@ -438,6 +383,7 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
         
         if self.currentConf and self.currentConfLbl == lbl:
             self.sizer.Detach(self.currentConf)
+            #self.confSizer.Detach(self.currentConf)
             self.currentConf.Show(0)
             del self.currentConf
             self.currentConf=None

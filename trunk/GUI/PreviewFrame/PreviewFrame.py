@@ -800,12 +800,16 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         dc = self.dc = wx.BufferedDC(clientdc,self.buffer)
         dc.BeginDrawing()
         
+        
         dc.SetBackground(wx.Brush(wx.Colour(*self.bgcolor)))
         dc.SetPen(wx.Pen(wx.Colour(*self.bgcolor),0))
         dc.SetBrush(wx.Brush(wx.Color(*self.bgcolor)))
-        x0,y0,x1,y1 = self.GetClientRect()
+        x0,y0,w,h = self.GetClientRect()
+        
+        dc.SetClippingRegion(x0,y0,w,h)
         dc.DrawRectangle(x0,y0,self.paintSize[0],self.paintSize[1])
             
+
         if not self.slice or not self.enabled:
             self.graySize = self.paintSize
             self.makeBackgroundBuffer(dc)
@@ -867,7 +871,7 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         tw,th = self.buffer.GetWidth(),self.buffer.GetHeight()
         xoff = (tw-bw)/2
         yoff = (th-bh)/2
-        x0,y0,x1,y1 = self.GetClientRect()
+        x0,y0,w,h = self.GetClientRect()
         self.setOffset(xoff, yoff)
         dc.DrawBitmap(bmp,xoff+x0,yoff+x0,True)
 
@@ -883,6 +887,7 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         self.makeBackgroundBuffer(dc)
         
         dc.EndDrawing()
+        dc.DestroyClippingRegion()
         self.dc = None
         self.repaintHelpers()
         

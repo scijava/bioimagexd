@@ -653,8 +653,8 @@ class GUIBuilder(wx.Panel):
                             bg.SetSizer(bgsizer)
                             bg.SetAutoLayout(1)
                             lvl = currentFilter.getParameterLevel(itemName)
-                            if lvl:
-                                bg.SetBackgroundColour(lvl)
+ #                           if lvl:
+ #                               bg.SetBackgroundColour(lvl)
                             wantAlpha = items[n][1]
                             text = currentFilter.getDesc(itemName)
                             if text:
