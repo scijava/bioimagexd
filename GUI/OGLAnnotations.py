@@ -825,6 +825,11 @@ class MyPolygon(OGLAnnotation, ogl.PolygonShape):
         dc = wx.ClientDC(self.GetCanvas())
         self.GetCanvas().PrepareDC(dc)
         
+        
+        x0,y0,w,h = self.GetCanvas().GetClientRect()
+        dc.SetDeviceOrigin(x0,y0)
+      
+        
         self.Erase(dc)
         
         for i,control in enumerate(self._controlPoints):
@@ -844,6 +849,9 @@ class MyPolygon(OGLAnnotation, ogl.PolygonShape):
             self.GetEventHandler().OnDrawOutline(dc, self.GetX(), self.GetY(), self._originalWidth,self._originalHeight)
         else:
             self.GetEventHandler().OnDraw(dc, self.GetX(), self.GetY())
+            
+        dc.DrawBitmap(self.GetCanvas().buffer,x0,y0)
+        
             
      
 class MyPolygonControlPoint(ogl.PolygonControlPoint):
@@ -936,6 +944,7 @@ class MyEvtHandler(ogl.ShapeEvtHandler):
         canvas = self.parent
         dc = wx.ClientDC(canvas)
         canvas.PrepareDC(dc)
+        x0,y0,w,h = canvas.GetClientRect()
         if shape.Selected():
             shape.Select(False, dc)
             

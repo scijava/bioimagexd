@@ -39,6 +39,7 @@ import MenuManager
 import scripting
 import messenger
 import UIElements
+import MaskTray
 
 import os
 
