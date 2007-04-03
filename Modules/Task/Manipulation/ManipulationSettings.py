@@ -43,12 +43,11 @@ import ManipulationFilters
 class ManipulationSettings(FilterBasedTaskSettings.FilterBasedTaskSettings):
     """
     Created: 27.03.2005, KP
-    Description: Stores settings related to single unit Manipulationing
+    Description: Stores settings related the process task
     """
     def __init__(self,n=-1):
         """
         Created: 27.03.2005, KP
-        Description: Constructor
         """
         FilterBasedTaskSettings.FilterBasedTaskSettings.__init__(self, n)
     
