@@ -151,7 +151,7 @@ class ProcessingManager(TimepointSelection):
         tps=self.getSelectedTimepoints()
         messenger.connect(None,"update_processing_progress",self.updateProgressMeter)
         try:
-            self.dataUnit.doProcessing(filename,timepoints=tps)
+            filename = self.dataUnit.doProcessing(filename,timepoints=tps)
         except GUIError,ex:
             ex.show()
         # then we close this window...

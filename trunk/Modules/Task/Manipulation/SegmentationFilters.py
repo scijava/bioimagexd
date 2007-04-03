@@ -37,6 +37,7 @@ import time
 import scripting as bxd
 import csv
 import codecs
+import os.path
 try:
     import itk
 except:
@@ -1080,7 +1081,13 @@ class MeasureVolumeFilter(ProcessingFilter.ProcessingFilter):
         self.itkfilter = None
         self.labelShape = None
         
-
+    def setDataUnit(self, dataUnit):
+        """
+        Created: 04.04.2007, KP
+        Description: a method to set the dataunit used by this filter
+        """
+        ProcessingFilter.ProcessingFilter.setDataUnit(self, dataUnit)
+        self.parameters["StatisticsFile"] = self.getDefaultValue("StatisticsFile")
             
     def getDefaultValue(self,parameter):
         """
@@ -1115,12 +1122,19 @@ class MeasureVolumeFilter(ProcessingFilter.ProcessingFilter):
         """   
         fileroot=self.parameters["StatisticsFile"].split(".")
         fileroot=".".join(fileroot[:-1])
+        dircomp = os.path.dirname(fileroot)
+        if not dircomp:
+            bxddir = dataUnit.getOutputDirectory()
+            fileroot = os.path.join(bxddir,fileroot)
         #filename = "%s_%d.csv"%(fileroot,timepoint)
         filename="%s.csv"%fileroot
         f=codecs.open(filename,"awb","latin1")
         
         w=csv.writer(f,dialect="excel",delimiter=";")
         
+        settings = dataUnit.getSettings()
+        settings.register("StatisticsFile")
+        settings.set("StatisticsFile",filename)
         w.writerow(["Timepoint %d"%timepoint])
         w.writerow(["Object #","Volume (micrometers)","Volume (pixels)","Center of Mass","Center of Mass (micrometers)","Avg. Intensity"])
         for i,(volume,volumeum) in enumerate(self.values):
@@ -1228,14 +1242,14 @@ class MeasureVolumeFilter(ProcessingFilter.ProcessingFilter):
             "The calculate object statistics requires an input dataset of type unsigned long.\nA dataset of type %s was provided.\nTypically, you will use Calculate Object Statistics Filter after a Watershed filter, or Connected Component Labeling filter.\nThis error may be caused by not having either of those filters in the procedure list."%(dt))
             return vtkimage
         
-        print "Using as input",origInput
-        print "And",vtkimage
+        #print "Using as input",origInput
+        #print "And",vtkimage
         avgintCalc.AddInput(origInput)
         avgintCalc.AddInput(vtkimage)
         
         avgintCalc.Update()
                     
-        print "done"
+        #print "done"
         if self.prevFilter:        
             startIntensity = self.prevFilter.ignoreObjects
         else:

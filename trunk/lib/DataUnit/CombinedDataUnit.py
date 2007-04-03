@@ -35,6 +35,7 @@ import vtk
 import Logging
 import messenger
 import scripting as bxd
+import os.path  
 
 class CombinedDataUnit(DataUnit.DataUnit):
     """
@@ -48,6 +49,7 @@ class CombinedDataUnit(DataUnit.DataUnit):
         Description: Constructor
         """
         DataUnit.DataUnit.__init__(self, name)
+        self.outputDirectory = ""
         self.sourceunits=[]
         self.doOrig=0
         self.merging = 0
@@ -60,6 +62,13 @@ class CombinedDataUnit(DataUnit.DataUnit):
         self.cacheKey = None
         self.checkDimensions = 1
         self.currentDimensions = None
+        
+    def getOutputDirectory(self):
+        """
+        Created: 04.04.2007, KP
+        Description: return the output directory where this dataunit will write it's output
+        """
+        return self.outputDirectory
     def setCacheKey(self,key):
         """
         Created: 23.10.2006, KP
@@ -205,6 +214,8 @@ class CombinedDataUnit(DataUnit.DataUnit):
             bxcFile = bxdFile
             bxdwriter = None
             bxcFile=bxcFile[:-1]+"p"
+            
+        self.outputDirectory = os.path.dirname(bxcFile)
         self.dataWriter=DataSource.BXCDataWriter(bxcFile)
         
         if bxdwriter:
@@ -249,6 +260,7 @@ class CombinedDataUnit(DataUnit.DataUnit):
         self.createDataUnitFile(self.dataWriter)
         if not settings_only:
                 bxdwriter.write()
+        return bxdwriter.getFilename()
 
     def createDataUnitFile(self,writer):
         """
