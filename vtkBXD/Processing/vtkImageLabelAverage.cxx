@@ -80,11 +80,7 @@ void vtkImageLabelAverageExecute(vtkImageLabelAverage *self, int id,int NumberOf
   inPtr = (T*) inData[0]->GetScalarPointerForExtent(outExt);
   maskPtr = (unsigned long*) inData[1]->GetScalarPointerForExtent(outExt);
   
-    
-  
-  outData->SetExtent(outData->GetWholeExtent());
-  outData->AllocateScalars();
-  //printf("Copying indata to outdata...\n");
+  int wext[6];
   outData->DeepCopy(inData[0]);
   //input->GetIncrements(inIncX, inIncY, inIncZ);
   //output->GetIncrements(outIncX, outIncY, outIncZ);
@@ -101,6 +97,7 @@ void vtkImageLabelAverageExecute(vtkImageLabelAverage *self, int id,int NumberOf
 
   double range[2]; 
   inData[1]->GetScalarRange(range);
+  printf("Range = %f,%f\n",range[0],range[1]);
   avgArray -> SetNumberOfValues((unsigned long)range[1]+1);
   numArray -> SetNumberOfValues((unsigned long)range[1]+1);
   avgArray -> SetValue(0,0);
@@ -165,6 +162,14 @@ void vtkImageLabelAverageExecute(vtkImageLabelAverage *self, int id,int NumberOf
   
 }
 
+int vtkImageLabelAverage::SplitExtent(int splitExt[6], 
+                                                int startExt[6], 
+                                                int num, int total)
+{
+  memcpy(splitExt, startExt, 6 * sizeof(int));
+  return 1;
+}
+
 //----------------------------------------------------------------------------
 // This method is passed a input and output regions, and executes the filter
 // algorithm to fill the output from the inputs.
@@ -194,8 +199,8 @@ void vtkImageLabelAverage::ThreadedRequestData (
     return;
     }
 
-//  printf("Number of connections=%d, outExt=%d,%d,%d,%d,%d,%d\n",this->GetNumberOfInputConnections(0),
-//                 outExt[0],outExt[1],outExt[2],outExt[3],outExt[4],outExt[5]);
+ printf("Number of connections=%d, outExt=%d,%d,%d,%d,%d,%d\n",this->GetNumberOfInputConnections(0),
+                 outExt[0],outExt[1],outExt[2],outExt[3],outExt[4],outExt[5]);
 
     switch (inData[0][0]->GetScalarType())
   {

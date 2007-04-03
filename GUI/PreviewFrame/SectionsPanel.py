@@ -256,7 +256,6 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
         event.Skip()
             
         
-        
     def onSize(self,event):
         """
         Created: 23.05.2005, KP
@@ -390,7 +389,8 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
         Description: Enable/Disable updates
         """
         self.enabled=flag
-        if flag:self.updatePreview()
+        if flag:
+            self.updatePreview()
 
     def updatePreview(self):
         """

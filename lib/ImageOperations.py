@@ -1146,18 +1146,18 @@ def imageDataTo3Component(image,ctf):
         maptocolor.SetLookupTable(ctf)
         maptocolor.SetOutputFormatToRGB()
         #maptocolor.Update()
-        #imagedata=maptocolor.GetOutput()
-        imagedata=bxd.execute_limited(maptocolor)
+        imagedata=maptocolor.GetOutput()
+        #imagedata=bxd.execute_limited(maptocolor)
     elif ncomps>3:
         Logging.info("Data has %d components, extracting"%ncomps,kw="imageop")
         extract=vtk.vtkImageExtractComponents()
         extract.SetComponents(0,1,2)
         extract.SetInput(image)
         #extract.Update()
-        #imagedata=extract.GetOutput()
-        imagedata=bxd.execute_limited(extract)
+        imagedata=extract.GetOutput()
+        #imagedata=bxd.execute_limited(extract)
 
     else:
         imagedata=image
-    imagedata.Update()
+    #imagedata.Update()
     return imagedata

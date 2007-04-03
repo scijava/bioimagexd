@@ -60,6 +60,10 @@ public:
   double GetAverage(int label) { return AverageArray->GetValue(label); }
   void SetAverage(int label, int value) { AverageArray->SetValue(label, value); }
   vtkDoubleArray* GetAverageArray() { return AverageArray; }
+  
+  int SplitExtent(int splitExt[6], 
+                                                int startExt[6], 
+                                                int num, int total);
 protected:
   vtkImageLabelAverage();
   ~vtkImageLabelAverage() {};

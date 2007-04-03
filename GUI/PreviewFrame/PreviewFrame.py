@@ -385,7 +385,7 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
             self.updatePreview()
             self.Refresh()
             return
-        self.dataUnit=weakref.proxy(dataUnit)
+        self.dataUnit=dataUnit
         self.settings = dataUnit.getSettings()
         self.updateColor()
         InteractivePanel.InteractivePanel.setDataUnit(self,self.dataUnit)
@@ -475,6 +475,7 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
                 return
         else:
             preview = self.dataUnit.getTimePoint(self.timePoint)
+#            print "GOt raw image",preview
             self.rawImage = preview
             Logging.info("Using timepoint %d as preview"%self.timePoint,kw="preview")
         
