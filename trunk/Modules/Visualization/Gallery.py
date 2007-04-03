@@ -160,7 +160,6 @@ class GalleryMode(VisualizationMode):
             x,y=self.visualizer.visWin.GetSize()
             self.galleryPanel=PreviewFrame.GalleryPanel(self.parent,self.visualizer,size=(x,y))
             self.iactivePanel=self.galleryPanel
-        print "configPanel=",self.configPanel
         if not self.configPanel:
             # When we embed the sidebar in a sashlayoutwindow, the size
             # is set correctly

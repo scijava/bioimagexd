@@ -172,6 +172,8 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
         self.setTimepoint(tp)
         x,y=self.paintSize
         self.setScrollbars(x,y)
+        self.calculateBuffer()
+        self.updatePreview()
         #self.imagedata=image
         
         
@@ -183,6 +185,7 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
         #self.scrollTo=self.getScrolledXY(0,0)
         #self.resetScroll()
         if self.timepoint == timepoint and self.slices:
+            print "TIMEPOINT IS SAME, NOT UPDATING"
             return
         self.timepoint=timepoint
         # if we're showing one slice of each timepointh
@@ -191,19 +194,27 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
         if self.showTimepoints:
             return self.setSlice(self.slice)
         if self.visualizer.getProcessedMode():
+            print "DOING PREVIEW"
             image=self.dataUnit.doPreview(-2,1,self.timepoint)
             ctf = self.dataUnit.getSourceDataUnits()[0].getColorTransferFunction()
             Logging.info("Using ",image,"for gallery",kw="preview")
         else:
+            print "GETTING TIMEPOINT",timepoint
             image=self.dataUnit.getTimePoint(timepoint)
             ctf=self.dataUnit.getColorTransferFunction()
+            print "USING CTF",ctf
 
         #self.imagedata = ImageOperations.imageDataTo3Component(image,ctf)
         self.imagedata =image
+        self.imagedata.SetUpdateExtent(self.imagedata.GetWholeExtent())
+        self.imagedata.Update()
+        print "imagedata=",self.imagedata
+        
         
         #x,y,z=self.imagedata.GetDimensions()
         x,y,z = self.dataUnit.getDimensions()
         #print "dims now=",x,y,z
+        print "Dimensions of image=",x,y,z
         #x,y,z=self.dataUnit.getDimensions()
         
         self.slices=[]
@@ -213,11 +224,14 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
             #print "Using as update ext",(0,x-1,0,y-1,i,i)
             image = bxd.mem.optimize(image = self.imagedata, updateExtent = (0,x-1,0,y-1,i,i))
             #image.Update()
-            #self.imagedata.SetUpdateExtent((0,x-1,0,y-1,i,i))
+            
             #self.imagedata.Update()
             image = ImageOperations.getSlice(image, i)
-            image = ImageOperations.imageDataTo3Component(image,ctf)
-            slice=ImageOperations.vtkImageDataToWxImage(image)    
+        
+            
+            slice = ImageOperations.imageDataTo3Component(image,ctf)
+            slice=ImageOperations.vtkImageDataToWxImage(image)
+
             messenger.send(None,"update_progress",i/float(z),"Loading slice %d / %d for Gallery view"%(i+1,z+1))        
             #print "Adding slice",i
             self.slices.append(slice)
@@ -377,6 +391,7 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
            Logging.info("Won't draw gallery cause not enabled",kw="preview")
            return
         if not self.slices:
+            print "Updating slices"
             self.setTimepoint(self.timepoint, update=0)
         self.paintPreview()
         self.updateScrolling()
