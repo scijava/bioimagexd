@@ -53,4 +53,6 @@ class ManipulationSettings(FilterBasedTaskSettings.FilterBasedTaskSettings):
     
         self.set("Type","Process")
         self.register("PaletteColors")
+        self.register("StatisticsFile")
+
         self.filterModule = ManipulationFilters

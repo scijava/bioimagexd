@@ -173,7 +173,7 @@ class ManipulationPanel(FilterBasedTaskPanel.FilterBasedTaskPanel):
         f=lambda evt, btn=self.addSegmentationBtn, cats=(SEGMENTATION, REGION_GROWING,WATERSHED,MEASUREMENT,REGISTRATION): self.onShowAddMenu(evt,btn,cats)
         self.addSegmentationBtn.Bind(wx.EVT_LEFT_DOWN,f)
         
-        f=lambda evt, btn=self.addSegmentationBtn, cats=(TRACKING,): self.onShowAddMenu(evt,btn,cats)        
+        f=lambda evt, btn=self.addTrackingBtn, cats=(TRACKING,): self.onShowAddMenu(evt,btn,cats)        
         self.addTrackingBtn.Bind(wx.EVT_LEFT_DOWN,f)
         
         self.presetBtn.Bind(wx.EVT_LEFT_DOWN, self.onShowPresetsMenu)

@@ -35,9 +35,8 @@ import ManipulationSettings
 
 class ManipulationDataUnit(CombinedDataUnit):
     """
-    Class: ManipulationDataUnit
     Created: 24.11.2004, JM, JV
-    Description: Class for an adjusted single-channel 4D DataUnit
+    Description: A class representing a dataunit manipulated with the process task
     """
 
     def __init__(self,name=""):

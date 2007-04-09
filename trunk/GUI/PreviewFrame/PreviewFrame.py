@@ -298,8 +298,11 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         x-=self.xoffset
         y-=self.yoffset
                 
-        x,y=self.getScrolledXY(x,y)
+        x0,y0,w,h = self.GetClientRect()
         
+        x,y=self.getScrolledXY(x,y)
+        x-=x0
+        y-=y0
         z=self.z
                 
         dims=[x,y,z]
@@ -798,17 +801,22 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         #Logging.backtrace()        
         if not clientdc:
             clientdc = wx.ClientDC(self)
-        dc = self.dc = wx.BufferedDC(clientdc,self.buffer)
+#        dc = self.dc = wx.BufferedDC(clientdc,self.buffer)
+        dc = wx.MemoryDC()
+        dc.SelectObject(self.buffer)
         dc.BeginDrawing()
         
         
         dc.SetBackground(wx.Brush(wx.Colour(*self.bgcolor)))
         dc.SetPen(wx.Pen(wx.Colour(*self.bgcolor),0))
         dc.SetBrush(wx.Brush(wx.Color(*self.bgcolor)))
-        x0,y0,w,h = self.GetClientRect()
+        #x0,y0,w,h = self.GetClientRect()
+        x0,y0=0,0
+        w,h = self.buffer.GetWidth(),self.buffer.GetHeight()
         
-        dc.SetClippingRegion(x0,y0,w,h)
-        dc.DrawRectangle(x0,y0,self.paintSize[0],self.paintSize[1])
+        #dc.SetClippingRegion(x0,y0,w,h)
+        print "paint size=",self.paintSize,"w,h=",w,h
+        dc.DrawRectangle(x0,y0,self.paintSize[0]+x0,self.paintSize[1]+x0)
             
 
         if not self.slice or not self.enabled:

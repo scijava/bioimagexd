@@ -231,6 +231,7 @@ class SurfaceModule(VisualizationModule):
         self.mapper.ScalarVisibilityOn()
         
         min,max=self.data.GetScalarRange()
+        
         #if (min,max) != self.scalarRange:
         self.setScalarRange(min,max)
         
@@ -255,6 +256,7 @@ class SurfaceModule(VisualizationModule):
                 self.smooth=vtk.vtkImageGaussianSmooth()
             self.smooth.SetInput(input)
             input=self.smooth.GetOutput()
+            
         
         x,y,z = self.dataUnit.getDimensions()
         input = bxd.mem.optimize(image = input, updateExtent = (0,x-1,0,y-1,0,z-1))
@@ -265,12 +267,16 @@ class SurfaceModule(VisualizationModule):
 
         
         if not multi:
+            Logging.info("Using single isovalue=%d"%int(self.parameters["IsoValue"]),kw="visualizer")
             self.contour.SetValue(0,self.parameters["IsoValue"])
         else:
             begin,end,n=self.parameters["SurfaceRangeBegin"], self.parameters["SurfaceRangeEnd"],self.parameters["SurfaceAmnt"]
             Logging.info("Generating %d values in range %d-%d"%(n,begin,end),kw="visualizer")            
             self.contour.GenerateValues(n,begin,end)
-        
+            n = self.contour.GetNumberOfContours()
+            for i in range(0,n):
+                self.contour.SetValue(i,int(self.contour.GetValue(i)))
+            print self.contour
         decimateLevel = self.parameters["Simplify"]
         preserveTopology = self.parameters["PreserveTopology"]
         if decimateLevel != 0:            

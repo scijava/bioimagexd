@@ -450,6 +450,7 @@ class ParticleTracker:
                      parameters.
         """
         tracks=[]
+        print "seedparticles=",seedParticles
         trackCount=0
         totalTimepoints = len(self.particles)
         searchOn = False
@@ -492,9 +493,17 @@ class ParticleTracker:
                         toRemove.append(i)
                     else:
                         objToParticle[objval] = i
+                        
+                # remove the non-seed objects from the timepoint tp
                 for i in toRemove:
                     particleList[tp].remove(i)
+                    
                 for tracknum,objVal in enumerate(col):
+                    if objVal not in objToParticle:
+                        print "Object",objVal,"not found"
+                        if objVal in toRemove:
+                            print objVal,"was removed"
+                        continue
                     particle = objToParticle[objVal]
                     particle.inTrack=1
                     particle.trackNum = tracknum
