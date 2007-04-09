@@ -377,7 +377,10 @@ class CreateTracksFilter(ProcessingFilter.ProcessingFilter):
         self.tracker = None
         self.trackGrid = None
         self.objectsReader = None
+        self.delayReading = 0
         self.ctf = None
+        self.particleFile = ""
+
         ProcessingFilter.ProcessingFilter.__init__(self,(1,1))
         
         self.descs={
@@ -399,7 +402,6 @@ class CreateTracksFilter(ProcessingFilter.ProcessingFilter):
     
         self.numberOfPoints = None
         self.selectedTimepoint = 0
-        self.particleFile = ""
         messenger.connect(None,"timepoint_changed",self.onSetTimepoint)
         
         
@@ -578,9 +580,25 @@ class CreateTracksFilter(ProcessingFilter.ProcessingFilter):
             n=bxd.visualizer.getRegionsOfInterest()
             if n:return n[0]
             return 0            
+        if parameter == "TrackFile":
+            if self.particleFile:
+                return self.particleFile
         return "statistics.csv"
         
-        
+    def setDataUnit(self, dataUnit):
+        """
+        Created: 04.04.2007, KP
+        Description: a method to set the dataunit used by this filter
+        """
+        ProcessingFilter.ProcessingFilter.setDataUnit(self, dataUnit)
+        tracksFile = dataUnit.getSettings().get("StatisticsFile")
+        print "GOT TRACKS FILE=",tracksFile
+        if tracksFile and os.path.exists(tracksFile):
+            print "ReaDING TRACKS FILE"
+            self.parameters["TrackFile"] = tracksFile
+            self.particleFile = tracksFile
+            self.delayReading = 1
+            
     def getGUI(self,parent,taskPanel):
         """
         Created: 21.11.2006, KP
@@ -644,6 +662,10 @@ class CreateTracksFilter(ProcessingFilter.ProcessingFilter):
             gui.sizer.Add(sizer,(0,0),flag=wx.EXPAND|wx.ALL)
             gui.sizer.Add(win,(1,0),flag=wx.EXPAND|wx.ALL)
             self.gui = gui
+            
+        if self.delayReading:
+            self.onReadObjects(None)
+            self.delayReading = 0
         return gui
         
     def getObjectsForROI(self, roi):
@@ -685,7 +707,7 @@ class CreateTracksFilter(ProcessingFilter.ProcessingFilter):
             self.dataUnit.getSettings().set("ColorTransferFunction",self.ctf)
             self.ctf = None
             messenger.send(None,"data_changed",0)
-            
+
         print "Selected",len(selections),"objects"
         n = self.trackGrid.getTable().GetNumberRows()
         n2 = len(selections)
@@ -801,7 +823,7 @@ class CreateTracksFilter(ProcessingFilter.ProcessingFilter):
         """
         if not pt:return None
         x,y,z = pt
-        print "Getting from ",x,y,z
+#        print "Getting from ",x,y,z
         image = self.getInputFromChannel(0, timepoint = timepoint)
         intensity = int(image.GetScalarComponentAsDouble(x,y,z,0))
         return intensity
@@ -837,6 +859,11 @@ class CreateTracksFilter(ProcessingFilter.ProcessingFilter):
             
             objVals.append(its)
         print "Objects=",objVals
+        while 0 in objVals:
+            objVals.remove(0)
+        while 1 in objVals:
+            objVals.remove(1)
+
         #print "Tracking objects with itensities=",its
         
         fromTp = self.trackGrid.getTimepoint()

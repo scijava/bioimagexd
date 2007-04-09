@@ -32,7 +32,8 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 import wx
 import Logging
-import wx.lib.ogl as ogl
+#import wx.lib.ogl as ogl
+import ogl
 import messenger
 import math
 
@@ -286,6 +287,11 @@ class MyScalebar(OGLAnnotation, ogl.RectangleShape):
         x1 = self._xpos - self._width / 2.0
         y1 = self._ypos - self._height / 2.0
         
+        x0,y0,w,h = self.GetCanvas().GetClientRect()
+        x1+=x0
+        y1+=y0
+        
+        
         if self._width<self._height:
             self.vertical = 1
         else:
@@ -375,7 +381,7 @@ class MyPolygonSketch(OGLAnnotation, ogl.Shape):
         count[self.__class__]+=1
         self.points = []
         self.tentativePoint = None
-        self.minx,self.maxx, self.miny,self.maxy=9999,0,9999,0
+        self.minx,self.maxx, self.miny,self.maxy=9900,0,9900,0
         
     def getTentativeBB(self):
         """
@@ -425,7 +431,9 @@ class MyPolygonSketch(OGLAnnotation, ogl.Shape):
         pts = self.points[:]
         if self.tentativePoint:
             pts.append(self.tentativePoint)
-        dc.DrawPolygon(pts)
+            
+        x0,y0,w,h = self.GetCanvas().GetClientRect()
+        dc.DrawPolygon(pts,x0,y0)
         del pts
 
     def setScaleFactor(self,factor):
@@ -458,10 +466,13 @@ class MyPolygonSketch(OGLAnnotation, ogl.Shape):
         dc.SetPen(self.GetBackgroundPen())
         dc.SetBrush(self.GetBackgroundBrush())
         
-        dc.SetClippingRegion(self.minx,self.miny,self.maxx,self.maxy)
-        #dc.SetClippingRegion(topLeftX-penWidth,topLeftY-penWidth,maxX+penWidth*2+4, maxY + penWidth * 2 + 4)
-        dc.DrawBitmap(bg,0,0)
-        dc.DestroyClippingRegion()
+        x0,y0,w,h = self.GetCanvas().GetClientRect()
+    
+        print "clipping rect=",self.minx,self.miny,self.maxx,self.maxy
+#        dc.SetClippingRegion(topLeftX-penWidth,topLeftY-penWidth,maxX+penWidth*2+4, maxY + penWidth * 2 + 4)
+
+        dc.DrawBitmap(bg,x0,0)
+#        dc.DestroyClippingRegion()
         
     
 
@@ -550,8 +561,12 @@ class MyRectangle(OGLAnnotation, ogl.RectangleShape):
         dc.SetPen(self.GetBackgroundPen())
         dc.SetBrush(self.GetBackgroundBrush())
         
-        dc.SetClippingRegion(topLeftX-penWidth,topLeftY-penWidth,maxX+penWidth*2+4, maxY + penWidth * 2 + 4)
-        dc.DrawBitmap(bg,0,0)
+        x0,y0,w,h = self.GetCanvas().GetClientRect()
+        dc.SetClippingRegion(x0+topLeftX-penWidth,
+                            y0+topLeftY-penWidth,
+                            x0+maxX+penWidth*2+4, 
+                            y0+maxY + penWidth * 2 + 4)
+        dc.DrawBitmap(bg,x0,y0)
         dc.DestroyClippingRegion()
 
        
@@ -653,8 +668,11 @@ class MyCircle(OGLAnnotation, ogl.CircleShape):
         dc.SetPen(self.GetBackgroundPen())
         dc.SetBrush(self.GetBackgroundBrush())
         
-        dc.SetClippingRegion(topLeftX-penWidth,topLeftY-penWidth,maxX+penWidth*2+4, maxY + penWidth * 2 + 4)
-        dc.DrawBitmap(bg,0,0)
+        
+        x0,y0,w,h = self.GetCanvas().GetClientRect()
+        
+        dc.SetClippingRegion(x0+topLeftX-penWidth,y0+topLeftY-penWidth,x0+maxX+penWidth*2+4, y0+maxY + penWidth * 2 + 4)
+        dc.DrawBitmap(bg,x0,y0)
         dc.DestroyClippingRegion()
 
 class MyPolygon(OGLAnnotation, ogl.PolygonShape):    
@@ -808,8 +826,11 @@ class MyPolygon(OGLAnnotation, ogl.PolygonShape):
         dc.SetPen(self.GetBackgroundPen())
         dc.SetBrush(self.GetBackgroundBrush())
         
-        dc.SetClippingRegion(topLeftX-penWidth-4,topLeftY-penWidth-4,maxX+penWidth*2+8, maxY + penWidth * 2 + 8)
-        dc.DrawBitmap(bg,0,0)
+        x0,y0,w,h = self.GetCanvas().GetClientRect()
+      
+        
+        dc.SetClippingRegion(x0+topLeftX-penWidth-4,y0+topLeftY-penWidth-4,x0+maxX+penWidth*2+8, y0+maxY + penWidth * 2 + 8)
+        dc.DrawBitmap(bg,x0,y0)
         dc.DestroyClippingRegion()
 
     # Make as many control points as there are vertices
@@ -827,7 +848,6 @@ class MyPolygon(OGLAnnotation, ogl.PolygonShape):
         
         
         x0,y0,w,h = self.GetCanvas().GetClientRect()
-        dc.SetDeviceOrigin(x0,y0)
       
         
         self.Erase(dc)
@@ -883,9 +903,11 @@ class MyPolygonControlPoint(ogl.PolygonControlPoint):
 
         dc.SetPen(self.GetBackgroundPen())
         dc.SetBrush(self.GetBackgroundBrush())
+                
+        x0,y0,w,h = self.GetCanvas().GetClientRect()
         
-        dc.SetClippingRegion(topLeftX-penWidth-4,topLeftY-penWidth-4,maxX+penWidth*2+8, maxY + penWidth * 2 + 8)
-        dc.DrawBitmap(bg,0,0)
+        dc.SetClippingRegion(x0+topLeftX-penWidth-4,y0+topLeftY-penWidth-4,x0+maxX+penWidth*2+8, y0+maxY + penWidth * 2 + 8)
+        dc.DrawBitmap(bg,x0,y0)
         dc.DestroyClippingRegion()
 
 

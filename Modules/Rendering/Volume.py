@@ -408,7 +408,8 @@ class VolumeModule(VisualizationModule):
                     
         ncomps=input.GetNumberOfScalarComponents()
         Logging.info("Number of comps=",ncomps,kw="rendering")
-        if ncomps>1 and self.parameters["Method"] == TEXTURE_MAPPING:
+        dataType = input.GetScalarType()
+        if (ncomps>1 or dataType not in [3,5]) and self.parameters["Method"] == TEXTURE_MAPPING:
             self.setParameter("Method",0)
             messenger.send(None,"update_module_settings")
         if ncomps>1:

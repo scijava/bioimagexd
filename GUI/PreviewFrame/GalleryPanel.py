@@ -230,7 +230,7 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
         
             
             slice = ImageOperations.imageDataTo3Component(image,ctf)
-            slice=ImageOperations.vtkImageDataToWxImage(image)
+            slice=ImageOperations.vtkImageDataToWxImage(slice)
 
             messenger.send(None,"update_progress",i/float(z),"Loading slice %d / %d for Gallery view"%(i+1,z+1))        
             #print "Adding slice",i
@@ -268,7 +268,7 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
         count=self.dataUnit.getLength()
         self.slices=[]
         for tp in range(0,count):
-            if self.visualizer.getProcessedMode():
+            if self.dataUnit.isProcessed():
                 image=self.dataUnit.doPreview(self.slice,1,tp)
                 ctf = self.dataUnit.getSourceDataUnits()[0].getColorTransferFunction()
                 Logging.info("Using ",image,"for gallery",kw="preview")

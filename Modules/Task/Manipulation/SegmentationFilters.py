@@ -420,7 +420,6 @@ class ThresholdFilter(ProcessingFilter.ProcessingFilter):
                 ctf.AddRGBPoint(255, 1.0, 0, 0)
             self.dataUnit.getSettings().set("ColorTransferFunction",ctf)
             if self.gui:
-                print "Replacing CTF"
                 self.gui.histograms[0].setReplacementCTF(ctf)
                 self.gui.histograms[0].updatePreview(renew=1)
                 self.gui.histograms[0].Refresh()
@@ -596,6 +595,7 @@ class MorphologicalWatershedSegmentationFilter(ProcessingFilter.ProcessingFilter
         "Threshold":"Remove objects with less voxels than:"}
         self.itkFlag = 1
         self.origCtf = None
+        self.segCtf = None
         self.n=0
         self.ignoreObjects = 2
         self.relabelFilter  = None
@@ -646,6 +646,7 @@ class MorphologicalWatershedSegmentationFilter(ProcessingFilter.ProcessingFilter
         Description: Restore palette upon filter removal
         """        
         if self.origCtf:            
+            print "\n\n\nRESTORING ORIGINAL CTF"
             self.dataUnit.getSettings().set("ColorTransferFunction",self.origCtf)            
             
     
@@ -698,10 +699,8 @@ class MorphologicalWatershedSegmentationFilter(ProcessingFilter.ProcessingFilter
         settings = self.dataUnit.getSettings()
         ncolors = settings.get("PaletteColors")
         if not ncolors or ncolors < n:
-            if not ncolors:ncolors=0
-            print "Creating new palette, old had ",ncolors,"colors, new will have",n
             ctf = ImageOperations.watershedPalette(0, n)
-            
+            self.segCtf = ctf
             if markWatershedLine:
                 ctf.AddRGBPoint(0,1.0,1.0,1.0)
             if not self.origCtf:
@@ -711,6 +710,10 @@ class MorphologicalWatershedSegmentationFilter(ProcessingFilter.ProcessingFilter
             ctf.GetColor(1,val)
             print "ctf value at 1=",val
             settings.set("PaletteColors",n)
+        else:
+            if self.segCtf:
+                self.dataUnit.getSettings().set("ColorTransferFunction",self.segCtf)    
+            
         #print "Returning ",data
         return data
 
@@ -1133,7 +1136,6 @@ class MeasureVolumeFilter(ProcessingFilter.ProcessingFilter):
         w=csv.writer(f,dialect="excel",delimiter=";")
         
         settings = dataUnit.getSettings()
-        settings.register("StatisticsFile")
         settings.set("StatisticsFile",filename)
         w.writerow(["Timepoint %d"%timepoint])
         w.writerow(["Object #","Volume (micrometers)","Volume (pixels)","Center of Mass","Center of Mass (micrometers)","Avg. Intensity"])
@@ -1203,11 +1205,9 @@ class MeasureVolumeFilter(ProcessingFilter.ProcessingFilter):
             self.labelShape = labelShape
 
             #ul3 = itk.Image.UL3
-        print "Setting as input to labelshape",image
         self.itkfilter = self.labelShape.LabelShapeImageFilter[image].New()
         self.itkfilter.SetInput(image)
         self.itkfilter.Update()
-        print "done"
         #self.setImageType("UL3")
         data=self.itkfilter.GetOutput()            
                    
@@ -1231,7 +1231,6 @@ class MeasureVolumeFilter(ProcessingFilter.ProcessingFilter):
         
         if self.avgintCalc:
             del self.avgintCalc
-        print "Doing label average"
         self.avgintCalc = avgintCalc = vtk.vtkImageLabelAverage()
         #avgintCalc.DebugOn()
 

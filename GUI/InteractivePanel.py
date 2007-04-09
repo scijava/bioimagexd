@@ -98,6 +98,7 @@ class VisualizeTracksHelper(PainterHelper):
         Description: Paint the selected tracks to the DC
         """
         if self.selectedTracks:
+            xc,yc,wc,hc = self.parent.GetClientRect()
             dc.SetPen(wx.Pen((255,255,255),1))
             dc.SetBrush(wx.TRANSPARENT_BRUSH)
             for track in self.selectedTracks:
@@ -109,6 +110,8 @@ class VisualizeTracksHelper(PainterHelper):
                     y0*=self.parent.zoomFactor
                     x0+=self.parent.xoffset
                     y0+=self.parent.yoffset     
+                    x0+=xc
+                    y0+=yc
                     mintp+=1
                 dc.SetTextForeground((255,255,255))
                 self.drawTimepoint(dc,mintp-1,x0,y0)
@@ -123,6 +126,8 @@ class VisualizeTracksHelper(PainterHelper):
                         x1+=self.parent.xoffset
                         y1+=self.parent.yoffset                
                         
+                        x1+=xc
+                        y1+=yc
                         self.drawTimepoint(dc,i,x1,y1)                        
                             
                         def angle(x_1,y_1,x_2,y_2):
@@ -207,6 +212,9 @@ class CenterOfMassHelper(PainterHelper):
             y*= self.parent.zoomFactor
             x+=self.parent.xoffset
             y+=self.parent.yoffset
+            x0,y0,w,h = self.parent.GetClientRect()
+            x+=x0
+            y+=y0
             #if int(z) == self.parent.z:
             dc.SetBrush(wx.TRANSPARENT_BRUSH)
             dc.SetPen(wx.Pen((255,255,255),2))
@@ -420,8 +428,6 @@ class InteractivePanel(ogl.ShapeCanvas):
         self.repaintHelpers(update)
         if update:
             self.Refresh()
-        
-      
     def repaintHelpers(self, update=1):
         """
         Created: 06.10.2006, KP
@@ -430,30 +436,19 @@ class InteractivePanel(ogl.ShapeCanvas):
         
         w, h =self.buffer.GetWidth(),self.buffer.GetHeight()
         self.buffer = wx.EmptyBitmap(w,h)
-        buffer = self.buffer
-                
-        x0,y0,w1,h1 = self.GetClientRect()
-
-        if self.is_mac:
-            buffer = wx.EmptyBitmap(w1,h1)
-            
         memdc = wx.MemoryDC()
-        memdc.SelectObject(buffer)
+        memdc.SelectObject(self.buffer)
         
-        memdc.DrawBitmap(self.bgbuffer,0,0,False)
-
+        x0,y0,x1,y1 = self.GetClientRect()
+        memdc.DrawBitmap(self.bgbuffer,x0,y0,False)
+        
         for helper in self.painterHelpers:
             helper.paintOnDC(memdc)
-        memdc.SelectObject(wx.NullBitmap)   
-        if self.is_mac:
-            memdc2 = wx.MemoryDC()
-            memdc2.SelectObject(self.buffer)
-            memdc2.DrawBitmap(buffer, x0, y0, False)
-            memdc2.SelectObject(wx.NullBitmap)
+        memdc.SelectObject(wx.NullBitmap)        
         if update:
             self.Update()
         #self.OnPaint(None)
-        
+ 
         
     def deleteLines(self,lines):
         """
@@ -617,22 +612,43 @@ class InteractivePanel(ogl.ShapeCanvas):
         if self.currentSketch:
             self.actionend=pos
             
-            self.currentSketch.setTentativePoint(pos)
+           
             #self.currentSketch.Erase()
             x0,y0, w,h = self.GetClientRect()
+            
+            self.currentSketch.setTentativePoint((pos))
             dc = wx.ClientDC(self)
             self.PrepareDC(dc)
 
+#            dupbuf = self.getDuplicateDC(dc)
+            
             self.currentSketch.Erase(dc)
              
             self.currentSketch.Draw(dc)            
+            
+            #dc.Blit(x0,y0,w,h,dupbuf,0,0)
             dc.EndDrawing()
-            dc.DestroyClientRegion()
+            #del dupbuf
             #self.repaintHelpers()
             #self.Refresh()
             #self.Update()
         event.Skip()
-            
+        
+        
+    def getDuplicateDC(self, dc):
+        """
+        Created: 04.04.2007, KP
+        Description: return a duplicate of the current client dc as a buffer
+        """
+        x0,y0,w,h = self.GetClientRect()
+        retbuf = wx.EmptyBitmap(w,h)
+        memdc = wx.MemoryDC()
+        memdc.SelectObject(retbuf)
+        memdc.Blit(0,0,w,h,dc,x0,y0)
+        #memdc.SelectObject(wx.NullBitmap)
+        #return retbuf
+        return memdc
+        
     def actionEnd(self,event):
         """
         Created: 05.07.2005, KP
@@ -920,10 +936,6 @@ class InteractivePanel(ogl.ShapeCanvas):
         if scrolledWinDC:
             dc.EndDrawing()
                     
-        #w, h =self.buffer.GetWidth(),self.buffer.GetHeight()
-        #self.bgbuffer = self.buffer.GetSubBitmap(wx.Rect(0,0,self.buffer.GetWidth(),self.buffer.GetHeight()))
-        
-#        self.diagram.Redraw(dc)
 
 
     def paintPreview(self):
@@ -1002,16 +1014,5 @@ class InteractivePanel(ogl.ShapeCanvas):
         
         self.SetScrollRate(xrate,yrate)
         
-        
-    def saveSnapshot(self,filename):
-        """
-        Created: 05.06.2005, KP
-        Description: Save a snapshot of the scene
-        """      
-        ext=filename.split(".")[-1].lower()
-        if ext=="jpg":ext="jpeg"
-        if ext=="tif":ext="tiff"
-        mime="image/%s"%ext
-        img=self.buffer.ConvertToImage()
-        img.SaveMimeFile(filename,mime)
+
         
