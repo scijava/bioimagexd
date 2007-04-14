@@ -411,10 +411,11 @@ class MainWindow(wx.Frame):
             if arg in self.visualizer.dataUnit.getSourceDataUnits():
                 self.onCloseTaskPanel(None)
         if close:
+            mode=self.visualizer.mode
+
             self.visualizer.closeVisualizer()
             del self.currentVisualizationWindow
             #self.loadVisualizer(None,"gallery",reload=1)
-            mode=self.visualizer.mode
             self.visualizer.closeVisualizer()
             self.loadVisualizer(None,mode)
 
