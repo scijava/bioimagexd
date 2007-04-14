@@ -1165,11 +1165,12 @@ class Visualizer:
             self.setLater = 1
         if self.histogramIsShowing:
             self.createHistogram()         
-        if self.zoomToFitFlag:
-            self.currMode.zoomToFit()
-        else:
-            self.currMode.setZoomFactor(self.zoomFactor) 
-            scripting.zoomFactor = self.zoomFactor
+        if self.currMode:
+            if self.zoomToFitFlag:
+                self.currMode.zoomToFit()
+            else:
+                self.currMode.setZoomFactor(self.zoomFactor) 
+                scripting.zoomFactor = self.zoomFactor
 
         self.OnSize(None)
         
