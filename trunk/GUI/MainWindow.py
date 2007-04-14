@@ -415,6 +415,7 @@ class MainWindow(wx.Frame):
 
             self.visualizer.closeVisualizer()
             del self.currentVisualizationWindow
+            self.currentVisualizationWindow = None
             #self.loadVisualizer(None,"gallery",reload=1)
             self.visualizer.closeVisualizer()
             self.loadVisualizer(None,mode)
