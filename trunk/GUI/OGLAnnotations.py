@@ -665,14 +665,35 @@ class MyCircle(OGLAnnotation, ogl.CircleShape):
         if self._pen:
             penWidth = self._pen.GetWidth()
 
+        
+#        dc.SetPen(wx.Pen(wx.Colour((255,0,0)),2))
+#        dc.DrawLine(1,1,500,1)
+        
         dc.SetPen(self.GetBackgroundPen())
         dc.SetBrush(self.GetBackgroundBrush())
         
         
+        
         x0,y0,w,h = self.GetCanvas().GetClientRect()
         
-        dc.SetClippingRegion(x0+topLeftX-penWidth,y0+topLeftY-penWidth,x0+maxX+penWidth*2+4, y0+maxY + penWidth * 2 + 4)
-        dc.DrawBitmap(bg,x0,y0)
+        cx0, cy0, cx1,cy1 = (x0+topLeftX-penWidth,y0+topLeftY-penWidth,x0+maxX+penWidth*2+4, y0+maxY + penWidth * 2 + 4)
+        
+        if cy0<0:cy0=0
+        if cx0<0:cx0=0
+ #       if cx0<x0:cx0=x0
+ #       if cy0<y0:cy0=y0
+ #       if cx1<x0:cx1=x0
+ #       if cy1<y0:cy1=y0
+        dc.SetClippingRegion(cx0,cy0,cx1,cy1)
+        
+        memdc = wx.MemoryDC()
+        memdc.SelectObject(bg)
+        print cx0,cy0,cx1,cy1
+        dc.Blit(cx0,cy0,(cx1-cx0),(cy1-cy0),memdc,cx0,cy0)
+        memdc.SelectObject(wx.NullBitmap)
+#        dc.DrawBitmap(bg,0,0)
+           
+        img=bg.ConvertToImage()
         dc.DestroyClippingRegion()
 
 class MyPolygon(OGLAnnotation, ogl.PolygonShape):    
