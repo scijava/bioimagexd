@@ -153,7 +153,7 @@ class InfoWidget(wx.Panel):
 
             spacing=dataunit.getSpacing()
             voxelsize=dataunit.getVoxelSize()
-            lsize=dataunit.getResampledVoxelSize()
+            rsVoxelsize = lsize=dataunit.getResampledVoxelSize()
             bitdepth=dataunit.getBitDepth()
             em = dataunit.getEmissionWavelength()
             ex = dataunit.getExcitationWavelength()
