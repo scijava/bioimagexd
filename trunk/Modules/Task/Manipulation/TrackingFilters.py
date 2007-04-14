@@ -418,7 +418,7 @@ class CreateTracksFilter(ProcessingFilter.ProcessingFilter):
         Created: 26.11.2006, KP
         Description: An event handler for highlighting selected objects
         """
-        #print "\n\nonSetSelectedObjects(",obj,event,objecs,")"
+        print "\n\nonSetSelectedObjects(",obj,event,objects,")"
         if not self.ctf:
             self.ctf = self.dataUnit.getColorTransferFunction()
         if not objects:
@@ -427,7 +427,10 @@ class CreateTracksFilter(ProcessingFilter.ProcessingFilter):
             messenger.send(None,"data_changed",0)
             return
 
-        
+        # Since these object id's come from the list indices, instead of being the actual
+        # intensity values, we need to add 2 to each object value to account for the
+        # pseudo objects 0 and 1 produced by the segmentation results
+        objects=[x+2 for x in objects]
         self.selections = objects
         ctf = vtk.vtkColorTransferFunction()
         minval,maxval=self.ctf.GetRange()
@@ -860,8 +863,10 @@ class CreateTracksFilter(ProcessingFilter.ProcessingFilter):
             objVals.append(its)
         print "Objects=",objVals
         while 0 in objVals:
+            print "Removing object 0"
             objVals.remove(0)
         while 1 in objVals:
+            print "Removing object 1"
             objVals.remove(1)
 
         #print "Tracking objects with itensities=",its
