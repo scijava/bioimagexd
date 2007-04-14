@@ -414,7 +414,10 @@ class MainWindow(wx.Frame):
             self.visualizer.closeVisualizer()
             del self.currentVisualizationWindow
             #self.loadVisualizer(None,"gallery",reload=1)
-        
+            mode=self.visualizer.mode
+            self.visualizer.closeVisualizer()
+            self.loadVisualizer(None,mode)
+
             
         
     def onSwitchDataset(self,evt):
