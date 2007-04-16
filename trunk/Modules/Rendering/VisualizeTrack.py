@@ -39,6 +39,8 @@ from GUI import GUIBuilder
 import types
 from Visualizer.VisualizationModules import *
 
+import scripting as bxd
+
 from lib import Track
 
 def getClass():return VisualizeTrackModule
@@ -61,16 +63,27 @@ class VisualizeTrackModule(VisualizationModule):
         self.descs = {"TrackFile":"Select the track file","AllTracks":"Show all tracks","Track":"Select the track to visualize","MinLength":"Minimum length of track",
                 "ShowObject":"Show object using surface rendering"}
         
-        self.track = None
-        self.mapper = vtk.vtkDataSetMapper()
-        self.actor = vtk.vtkActor()
-        self.actor.SetMapper(self.mapper)
-        self.actor.GetProperty().SetDiffuseColor(1,1,1)
+        self.showTracks=[]
+            
+        self.lineMapper = vtk.vtkPolyDataMapper()
+        self.sphereMapper = vtk.vtkPolyDataMapper()
+        self.firstMapper = vtk.vtkPolyDataMapper()
+        self.lastMapper = vtk.vtkPolyDataMapper()
+        self.currentMapper = vtk.vtkPolyDataMapper()
+        self.actors=[]
         self.renderer = self.parent.getRenderer()
-        self.renderer.AddActor(self.actor)
 
 #        iactor = self.wxrenwin.GetRenderWindow().GetInteractor()
+        messenger.connect(None,"visualize_tracks",self.onVisualizeTracks)
         
+    def onVisualizeTracks(self, obj, evt, tracks):
+        """
+        Created: 15.04.2007, KP
+        Description: visualize the tracks given as argument
+        """
+        self.showTracks = tracks
+        print "Got tracks=",tracks
+        self.updateRendering()
 
     def setParameter(self,parameter,value):
         """
@@ -78,21 +91,14 @@ class VisualizeTrackModule(VisualizationModule):
         Description: Set a value for the parameter
         """    
         VisualizationModule.setParameter(self, parameter, value)
-        if parameter == "TrackFile":
-            print "Creating track with filename",value
-            self.track = Track.Track(value)
-            messenger.send(self,"update_MinLength")
-            messenger.send(self,"update_Track")            
-        if parameter=="MinLength":
-            messenger.send(self,"update_Track")
+  
         
     def getParameters(self):
         """
         Created: 31.05.2006, KP
         Description: Return the list of parameters needed for configuring this GUI
         """            
-        return [ ["Load track",(("TrackFile","Select track file to load","*.csv"),)],
-       ["Visualized track",("AllTracks","Track","MinLength","ShowObject")] ]
+        return [  ]
         
     def getDefaultValue(self,parameter):
         """
@@ -168,6 +174,23 @@ class VisualizeTrackModule(VisualizationModule):
         self.renew=1
         VisualizationModule.showTimepoint(self,value)
 
+    def getPoints(self, tracks):
+        """
+        Created: 15.04.2007, KP
+        Description: adapt the track objects to straightforward point lists
+        """
+        ret=[]
+        xc,yc,zc = self.data.GetSpacing()
+        for track in tracks:
+            mintp, maxtp = track.getTimeRange() 
+            currtrack=[]
+            for t in range(mintp, maxtp+1):
+                val,(x,y,z) = track.getObjectAtTime(t)
+                if x>=0 and y>=0 and z>=0:
+                    currtrack.append((x*xc,y*yc,z*zc))
+                else:break
+            ret.append(currtrack)
+        return ret
         
     def updateRendering(self):
         """
@@ -176,38 +199,95 @@ class VisualizeTrackModule(VisualizationModule):
         """             
         #data = self.data
         #self.mapper.SetInput(data)
-        n, minLength = self.parameters["Track"],self.parameters["MinLength"]
-        allTracks=self.parameters["AllTracks"]
-        if self.track:
-            if not allTracks:
-                print "Getting track",n
-                track = self.track.getTrack(n,minLength)
-                tracks=[track]
-            else:
-                tracks = self.track.getTracks(minLength)
-            polyGrid = vtk.vtkUnstructuredGrid()
-            polyGrid.Allocate(len(tracks), 1)
-                
+        for actor in self.actors:
+            self.renderer.RemoveActor(actor)
+        if self.showTracks:
+            edges = vtk.vtkCellArray()
+
+            tracks = self.getPoints(self.showTracks)
+            appendLines  = vtk.vtkAppendPolyData()
+            appendSpheres = vtk.vtkAppendPolyData()
+            appendFirst = vtk.vtkAppendPolyData()
+            appendLast = vtk.vtkAppendPolyData()
+            appendCurrent = vtk.vtkAppendPolyData()
+            
+            lineactor = vtk.vtkActor()
+            lineactor.SetMapper(self.lineMapper)
+            lineactor.GetProperty().SetDiffuseColor(1,1,1)
+            spheresActor = vtk.vtkActor()
+            spheresActor.SetMapper(self.sphereMapper)
+            spheresActor.GetProperty().SetDiffuseColor(0,1,1)
+            
+            firstActor = vtk.vtkActor()
+            firstActor.SetMapper(self.firstMapper)
+            firstActor.GetProperty().SetDiffuseColor(0,1,0)
+            
+            lastActor = vtk.vtkActor()
+            lastActor.SetMapper(self.lastMapper)
+            lastActor.GetProperty().SetDiffuseColor(1,0,0)
+            
+            currentActor = vtk.vtkActor()
+            currentActor.SetMapper(self.currentMapper)
+            currentActor.GetProperty().SetDiffuseColor(0,0,1)
+            
+            self.actors.append(lineactor)
+            self.actors.append(spheresActor)
+            self.actors.append(firstActor)
+            self.actors.append(lastActor)
+            self.actors.append(currentActor)
+            for actor in self.actors:
+                self.renderer.AddActor(actor)
+
             for track in tracks:
-                #print "Visualizing track=",track
+                for i,(x,y,z) in enumerate(track[:-1]):
                 
-                npts = len(track)
-                polyLinePoints = vtk.vtkPoints()
-                polyLinePoints.SetNumberOfPoints(npts)
-                for i,point in enumerate(track):
-                    polyLinePoints.InsertPoint(i,*point)
+                    linesource = vtk.vtkLineSource()
+                    linesource.SetPoint1(x,y,z)
+                    linesource.SetPoint2(*track[i+1])
+                    tubeFilter = vtk.vtkTubeFilter()
+                    tubeFilter.SetRadius(1.5)
+                    tubeFilter.SetNumberOfSides(10)
+            
+                    tubeFilter.SetInput(linesource.GetOutput())
+                    appendLines.AddInput(tubeFilter.GetOutput())
+                    
+                    
+                    sph = vtk.vtkSphereSource()
+                    sph.SetPhiResolution(20)
+                    sph.SetThetaResolution(20)
+                    sph.SetCenter(x,y,z)
+
+                    sph.SetRadius(3)            
+
+                    if i == 0:
+                        appendFirst.AddInput(sph.GetOutput())
+                    elif i == bxd.visualizer.getTimepoint():
+                        appendCurrent.AddInput(sph.GetOutput())
+                    else:
+                        appendSpheres.AddInput(sph.GetOutput())
+                                        
+                sph = vtk.vtkSphereSource()
+                sph.SetPhiResolution(20)
+                sph.SetThetaResolution(20)
+                sph.SetCenter(*track[-1])
+                sph.SetRadius(3)         
+                appendLast.AddInput(sph.GetOutput())
+                #self.lastMapper.SetInput(sph.getOutput())                
                 
-                polyLine = vtk.vtkPolyLine()
-                polyLine.GetPointIds().SetNumberOfIds(npts)
-                for i in range(npts):
-                    polyLine.GetPointIds().SetId(i,i)
-                polyGrid.InsertNextCell(polyLine.GetCellType(),
-                                     polyLine.GetPointIds())
-                            
-                polyGrid.SetPoints(polyLinePoints)
-            self.mapper.SetInput(polyGrid)
+            
+            self.currentMapper.SetInput(appendCurrent.GetOutput())
+            self.sphereMapper.SetInput(appendSpheres.GetOutput())
+            self.lineMapper.SetInput(appendLines.GetOutput())
+            self.firstMapper.SetInput(appendFirst.GetOutput())
+            self.lastMapper.SetInput(appendLast.GetOutput())
+
+            #self.mapper.SetInput(append.GetOutput())
     
-            self.mapper.Update()
+            self.currentMapper.Update()
+            self.lineMapper.Update()
+            self.sphereMapper.Update()
+            self.firstMapper.Update()
+            self.lastMapper.Update()
             VisualizationModule.updateRendering(self)
             self.parent.Render()    
 

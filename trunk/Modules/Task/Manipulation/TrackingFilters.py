@@ -68,7 +68,7 @@ class TrackTable(gridlib.PyGridTableBase):
     Created: 21.11.2006, KP
     Description: A class representing the table containing the tracks
     """
-    def __init__(self, rows = 1, cols = 10):
+    def __init__(self, rows = 1, cols = 10, canEnable = 0):
         """
         Created: 21.11.2006, KP
         Description: Initialize the track table
@@ -76,6 +76,9 @@ class TrackTable(gridlib.PyGridTableBase):
         gridlib.PyGridTableBase.__init__(self)
     
         self.enabledCol = 0
+        self.canEnable = canEnable
+        if canEnable:
+            self.enabledCol = 1
         self.odd=gridlib.GridCellAttr()
         #self.odd.SetBackgroundColour("sky blue")
         self.even=gridlib.GridCellAttr()
@@ -87,12 +90,38 @@ class TrackTable(gridlib.PyGridTableBase):
         self.odd.SetReadOnly(1)
         self.even.SetReadOnly(1)
         self.gridValues={}
+        self.enabled = {}
+        
+    def getEnabled(self):
+        """
+        Created: 14.04.2007, KP
+        Description: return the rows that are enabled
+        """
+        ret=[]
+        for key,val in self.enabled.items():
+            print "value of ",key,"is",val
+            if val:
+                ret.append(key)
+        return ret
+
+    def GetTypeNameDISABLED(self, row, col):
+        """
+        Created: 14.04.2007, KP
+        Description: return the type of the given row and col
+        """
+        if not self.canEnable or col != 0:
+            return gridlib.PyGridTableBase.GetTypeName(self, row, col)
+        if col==0:
+            return gridlib.GRID_VALUE_BOOL
         
     def setEnabledColumn(self, col):
         """
         Created: 23.11.2006, KP
         Description: set the column that can be modified
         """
+        # if there is a column for enabling / disabling this row, then offset
+        # the column by one
+        if self.canEnable:col+=1
         self.enabledCol = col
         
     def GetColLabelValue(self, col):
@@ -100,7 +129,10 @@ class TrackTable(gridlib.PyGridTableBase):
         Created: 21.11.2006, KP
         Description: Return the labels of the columns
         """
-
+        if self.canEnable and col==0:
+            return ""
+        elif self.canEnable:
+            col-=1
         return "t%d"%(col+1)
 
     def GetAttr(self, row, col, kind):
@@ -157,6 +189,17 @@ class TrackTable(gridlib.PyGridTableBase):
         Created: 21.11.2006, KP
         Description: Return the value of a cell
         """                
+        if not self.canEnable:
+            if (row,col) in self.gridValues:
+                return "(%d,%d,%d)"%self.gridValues[(row,col)]
+            return ""
+        if col == 0:
+            val=self.enabled.get(row,False)
+            if val:
+                return "[x]"
+            else:
+                return "[  ]"
+            
         if (row,col) in self.gridValues:
             return "(%d,%d,%d)"%self.gridValues[(row,col)]
         return ""
@@ -186,12 +229,23 @@ class TrackTable(gridlib.PyGridTableBase):
             else:
                 ret.append(None)
         return ret
-
+    def CanGetValueAs(self, row, col, typeName):
+        return True
     def SetValue(self, row, col, value, override = 0):
         """
         Created: 21.11.2006, KP
         Description: Set the value of a cell
         """                  
+        print "SetValue",row,col,value,override
+        if self.canEnable:
+            if col==0:
+                print "Row",row,"has value=",value
+                self.enabled[row] = value
+                
+                messenger.send(None,"set_shown_tracks",self.getEnabled())
+                return
+            
+        
         if col != self.enabledCol and not override:
             return
         print "Setting value at",row,col,"to",value
@@ -203,7 +257,7 @@ class TrackTableGrid(gridlib.Grid):
     Created: 21.11.2006, KP
     Description: A grid widget containing the track table
     """
-    def __init__(self, parent, dataUnit, trackFilter):
+    def __init__(self, parent, dataUnit, trackFilter, canEnable = 0):
         """
         Created: 21.11.2006, KP
         Description: Initialize the grid
@@ -213,7 +267,8 @@ class TrackTableGrid(gridlib.Grid):
         self.dataUnit = dataUnit
         self.trackFilter = trackFilter
         n = dataUnit.getLength()
-        table = TrackTable(cols = n )
+        self.canEnable = canEnable
+        table = TrackTable(cols = n, canEnable = canEnable)
 
         # The second parameter means that the grid is to take ownership of the
         # table and will destroy it when done.  Otherwise you would need to keep
@@ -227,7 +282,9 @@ class TrackTableGrid(gridlib.Grid):
         for i in range(n):
             
             self.SetColSize(i, 60)        
-
+        
+        if canEnable:
+            self.SetColSize(0,25)
         self.Bind(gridlib.EVT_GRID_CELL_RIGHT_CLICK, self.OnRightDown)  
         self.Bind(gridlib.EVT_GRID_CELL_LEFT_CLICK, self.OnLeftDown) 
         messenger.connect(None,"get_voxel_at",self.onUpdateCell)
@@ -355,9 +412,17 @@ class TrackTableGrid(gridlib.Grid):
         Created: 21.11.2006, KP
         Description: An event handler for left clicking
         """
+        if event.GetCol()==0 and self.canEnable:
+            val = self.table.enabled.get(event.GetRow(),False)
+            val = not val
+            self.table.SetValue(event.GetRow(),event.GetCol(),val)
+            self.ForceRefresh()
+
+            return
         #print "Selected",event.GetRow(),event.GetCol()
         self.selectedRow = event.GetRow()
         self.selectedCol = event.GetCol()
+        
         
 class CreateTracksFilter(ProcessingFilter.ProcessingFilter):
     """
@@ -413,7 +478,7 @@ class CreateTracksFilter(ProcessingFilter.ProcessingFilter):
         self.selectedTimepoint = timepoint
         self.updateObjects()
         
-    def onSetSelectedObjects(self, obj, event, objects):
+    def onSetSelectedObjects(self, obj, event, objects, isROI = 0):
         """
         Created: 26.11.2006, KP
         Description: An event handler for highlighting selected objects
@@ -427,10 +492,11 @@ class CreateTracksFilter(ProcessingFilter.ProcessingFilter):
             messenger.send(None,"data_changed",0)
             return
 
-        # Since these object id's come from the list indices, instead of being the actual
-        # intensity values, we need to add 2 to each object value to account for the
-        # pseudo objects 0 and 1 produced by the segmentation results
-        objects=[x+2 for x in objects]
+        if not isROI:
+            # Since these object id's come from the list indices, instead of being the actual
+            # intensity values, we need to add 2 to each object value to account for the
+            # pseudo objects 0 and 1 produced by the segmentation results
+            objects=[x+2 for x in objects]
         self.selections = objects
         ctf = vtk.vtkColorTransferFunction()
         minval,maxval=self.ctf.GetRange()
@@ -476,7 +542,9 @@ class CreateTracksFilter(ProcessingFilter.ProcessingFilter):
             roi = self.parameters["ROI"]
             if roi and self.parameters["UseROI"]:
                 selections=self.getObjectsForROI(roi)
-                messenger.send(None,"selected_objects",selections)
+                # The last boolean is a flag indicating that this selection
+                # comes from a ROI
+                messenger.send(None,"selected_objects",selections, True)
                 
         if parameter=="MinLength":
             messenger.send(self,"update_Track")
@@ -904,6 +972,7 @@ class ViewTracksFilter(ProcessingFilter.ProcessingFilter):
             "Track":"Track to visualize"}
     
         self.numberOfPoints = None
+        messenger.connect(None,"set_shown_tracks",self.updateSelectedTracks)
         
         self.particleFile = ""
     def setParameter(self,parameter,value):
@@ -928,6 +997,19 @@ class ViewTracksFilter(ProcessingFilter.ProcessingFilter):
                 messenger.send(None,"update_helpers",1)
         if parameter=="MinLength":
             messenger.send(self,"update_Track")
+          
+    def updateSelectedTracks(self, obj, evt, tracks):
+        """
+        Created: 14.04.2007, KP
+        Description: show the given tracks
+        """
+        if self.tracks:
+            showtracks = []
+            for i in tracks:
+                showtracks.append(self.tracks[i])
+            messenger.send(None,"visualize_tracks",showtracks)            
+            messenger.send(None,"update_helpers",1)
+    
     
     def getParameters(self):
         """
@@ -995,7 +1077,7 @@ class ViewTracksFilter(ProcessingFilter.ProcessingFilter):
         
                 
         if not self.trackGrid:
-            self.trackGrid = TrackTableGrid(self.gui, self.dataUnit, self)
+            self.trackGrid = TrackTableGrid(self.gui, self.dataUnit, self, canEnable = 1)
             sizer = wx.BoxSizer(wx.VERTICAL)
             
             sizer.Add(self.trackGrid,1)
@@ -1065,6 +1147,8 @@ class ViewTracksFilter(ProcessingFilter.ProcessingFilter):
             for tp in range(mintp,maxtp+1):
                 val,pos = track.getObjectAtTime(tp)
                 print "    value at tp ",tp,"(pos ",pos,") is ",val
-                table.SetValue(i,tp,pos, override=1)
+                # Set the value at row i, column tp+1 (because there is the column for enabling
+                # this track)
+                table.SetValue(i,tp+1,pos, override=1)
         self.trackGrid.SetTable(table)
         self.trackGrid.ForceRefresh()    

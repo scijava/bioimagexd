@@ -559,7 +559,10 @@ class ParticleTracker:
                     searchOn = True
                     # Search the next timepoints for more particles
                     for search_tp in range(tp+1,totalTimepoints):
-                    
+                        # If no match was found, then this track is over
+                        if not searchOn:
+                            print "Track ",i,"is over"
+                            break
                         foundOne = False
                         currentMatch = Particle()
                         for testParticle in self.particles[search_tp]:

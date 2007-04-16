@@ -614,7 +614,19 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         if ext=="jpg":ext="jpeg"
         if ext=="tif":ext="tiff"
         mime="image/%s"%ext
-        img=self.snapshot.ConvertToImage()
+        #img=self.snapshot.ConvertToImage()
+        w,h = self.snapshotSize
+        x,y = self.snapshotPos
+        buff = wx.EmptyBitmap(w,h)
+        memdc = wx.MemoryDC()
+        memdc.SelectObject(buff)
+        bltdc = wx.MemoryDC()
+        bltdc.SelectObject(self.buffer)
+        memdc.Blit( 0,0,w,h,bltdc,x,y)
+        memdc.SelectObject(wx.NullBitmap)
+        bltdc.SelectObject(wx.NullBitmap)
+        img = buff.ConvertToImage()
+        
         img.SaveMimeFile(filename,mime)
         
     def enable(self,flag):
@@ -881,6 +893,10 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         xoff = (tw-bw)/2
         yoff = (th-bh)/2
         x0,y0,w,h = self.GetClientRect()
+        
+        self.snapshotPos = xoff+x0,yoff+x0
+        self.snapshotSize = bw,bh
+
         self.setOffset(xoff, yoff)
         dc.DrawBitmap(bmp,xoff+x0,yoff+x0,True)
 
