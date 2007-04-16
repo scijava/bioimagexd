@@ -39,6 +39,8 @@ from GUI import GUIBuilder
 import types
 from Visualizer.VisualizationModules import *
 
+import scripting as bxd
+
 def getClass():return WarpScalarModule
 def getConfigPanel():return WarpScalarConfigurationPanel
 def getName():return "Warp scalar"
@@ -91,7 +93,7 @@ class WarpScalarModule(VisualizationModule):
         Description: Return the level of the given parameter
         """
         if parameter in ["FeatureAngle","Scale"]:
-            return GUIBuilder.FILTER_INTERMEDIATE
+            return bxd.COLOR_INTERMEDIATE
         
     def getParameters(self):
         """
