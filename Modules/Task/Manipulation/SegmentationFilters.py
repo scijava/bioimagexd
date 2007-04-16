@@ -596,6 +596,7 @@ class MorphologicalWatershedSegmentationFilter(ProcessingFilter.ProcessingFilter
         self.itkFlag = 1
         self.origCtf = None
         self.segCtf = None
+        self.noPalette = 1
         self.n=0
         self.ignoreObjects = 2
         self.relabelFilter  = None
@@ -698,8 +699,9 @@ class MorphologicalWatershedSegmentationFilter(ProcessingFilter.ProcessingFilter
         
         settings = self.dataUnit.getSettings()
         ncolors = settings.get("PaletteColors")
-        if not ncolors or ncolors < n:
+        if self.noPalette or not ncolors or ncolors < n:
             ctf = ImageOperations.watershedPalette(0, n)
+            self.noPalette = 0
             self.segCtf = ctf
             if markWatershedLine:
                 ctf.AddRGBPoint(0,1.0,1.0,1.0)
@@ -1143,7 +1145,7 @@ class MeasureVolumeFilter(ProcessingFilter.ProcessingFilter):
             cog = self.centersofmass[i]
             umcog = self.umcentersofmass[i]
             avgint = self.avgIntList[i]
-            w.writerow([str(i),str(volumeum),str(volume),str(cog),str(umcog),str(avgint)])
+            w.writerow([str(i+2),str(volumeum),str(volume),str(cog),str(umcog),str(avgint)])
         f.close()
 
     def getGUI(self,parent,taskPanel):

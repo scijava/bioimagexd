@@ -156,7 +156,7 @@ class OrthogonalPlaneModule(VisualizationModule):
         Description: Sets the dataunit this module uses for visualization
         """       
         VisualizationModule.setDataUnit(self,dataunit)
-        if self.visualizer.getProcessedMode():
+        if self.dataUnit.isProcessed():
             data=self.dataUnit.getSourceDataUnits()[0].getTimePoint(0)
         else:
             data=self.dataUnit.getTimePoint(0)
@@ -432,7 +432,14 @@ class OrthogonalPlaneConfigurationPanel(ModuleConfigurationPanel):
         Description: Set the module to be configured
         """  
         ModuleConfigurationPanel.setModule(self,module)
-        ext=module.getDataUnit().getTimePoint(0).GetWholeExtent()
+        dataUnit = module.getDataUnit()
+        if dataUnit.isProcessed():
+            data=dataUnit.getSourceDataUnits()[0].getTimePoint(0)
+        else:
+            data=dataUnit.getTimePoint(0)
+
+#        ext=module.getDataUnit().getTimePoint(0).GetWholeExtent()
+        ext = data.GetWholeExtent()
         x,y,z=ext[1],ext[3],ext[5]
         Logging.info("x=%d, y=%d, z=%d"%(x,y,z),kw="rendering")
         self.xSlider.SetRange(0,x)
