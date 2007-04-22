@@ -311,17 +311,22 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
             self.ctf = self.dataUnit.getColorTransferFunction()
         else:
             image=self.dataUnit.getTimePoint(tp)
+            image.SetUpdateExtent(image.GetWholeExtent())
+
+            print "timepoint",tp,"is",image
             self.ctf=self.dataUnit.getColorTransferFunction()
+
         
-        image.Update()
         self.zspacing = image.GetSpacing()[2]
         self.imagedata = ImageOperations.imageDataTo3Component(image,self.ctf)
-        
+        self.imagedata.Update()
+
         if self.fitLater:
             self.fitLater=0
             self.zoomToFit()        
+        
         self.dims=self.imagedata.GetDimensions()
-            
+        print "Got dimensions=",self.dims    
         self.slices=[]
         # obtain the slices
 

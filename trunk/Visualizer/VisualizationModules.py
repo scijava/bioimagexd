@@ -118,6 +118,7 @@ class VisualizationModule(GUIBuilder.GUIBuilderBase):
         Description: Sets the dataunit this module uses for visualization
         """            
         self.dataUnit = dataunit
+        VisualizationModule.showTimepoint(self, self.visualizer.getTimepoint(),update=0)
         
     def getDataUnit(self):
         """

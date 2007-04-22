@@ -295,6 +295,8 @@ class InteractivePanel(ogl.ShapeCanvas):
     
         self.lines = []
         
+        self.subtractROI = None
+        
         self.ID_VARY=wx.NewId()
         self.ID_NONE=wx.NewId()
         self.ID_LINEAR=wx.NewId()
@@ -313,10 +315,17 @@ class InteractivePanel(ogl.ShapeCanvas):
         item = wx.MenuItem(self.menu,self.ID_CUBIC,"Cubic interpolation",kind=wx.ITEM_RADIO)
         self.menu.AppendItem(item)
         
+        self.subbgMenu = wx.Menu()
+        self.ID_SUB_BG = wx.NewId()
+        item = wx.MenuItem(self.subbgMenu, self.ID_SUB_BG, "Subtract background")
+        self.subbgMenu.AppendItem(item)
+        
         self.Bind(wx.EVT_MENU,self.onSetInterpolation,id=self.ID_VARY)
         self.Bind(wx.EVT_MENU,self.onSetInterpolation,id=self.ID_NONE)
         self.Bind(wx.EVT_MENU,self.onSetInterpolation,id=self.ID_LINEAR)
         self.Bind(wx.EVT_MENU,self.onSetInterpolation,id=self.ID_CUBIC)        
+        
+        self.Bind(wx.EVT_MENU, self.onSubtractBackground, id = self.ID_SUB_BG)
         
         self.registerPainter( AnnotationHelper(self) )
         self.registerPainter( CenterOfMassHelper(self) )
@@ -324,7 +333,7 @@ class InteractivePanel(ogl.ShapeCanvas):
         
         self.zoomFactor=1
         self.addListener(wx.EVT_RIGHT_DOWN, self.onFinishPolygon)
-        
+        self.addListener(wx.EVT_RIGHT_DOWN, self.onRightClickROI)
         self.paintPreview()
         
         self.Unbind(wx.EVT_PAINT)
@@ -339,6 +348,17 @@ class InteractivePanel(ogl.ShapeCanvas):
         self.Bind(wx.EVT_SIZE,self.OnSize)
         
         messenger.connect(None,"update_helpers",self.onUpdateHelpers)
+        
+    def onSubtractBackground(self, event):
+        """
+        Created: 20.04.2007, KP
+        Description: subtract a background using the given ROI
+        """
+        if not self.subtractROI: return
+        mx,my,mz = self.dataUnit.getDimensions()
+        rois=[self.subtractROI]
+        maskImage = ImageOperations.getMaskFromROIs(rois,mx,my,mz)
+        pass
         
     def onSetInterpolation(self,event):
         """
@@ -534,6 +554,20 @@ class InteractivePanel(ogl.ShapeCanvas):
         
     def onLeftDown(self,event):
         return self.markActionStart(event)
+
+    def onRightClickROI(self, event):
+        """
+        Created: 20.04.2007, KP
+        Description: a method that checks whether a right click event happens on a ROI
+                     and acts upon it
+        """
+        x,y = event.GetPosition()
+        obj,attach = self.FindShape(x,y)
+        if obj and obj.isROI():
+            self.subtractROI = obj
+            self.PopupMenu(self.subbgMenu, event.GetPosition())
+            event.Skip()
+        
 
     def onRightDown(self, event):
         """

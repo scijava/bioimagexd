@@ -584,6 +584,7 @@ def getPlane(data,plane,x,y,z, applyZScaling = 0):
     Description: Get a plane from given the volume
     """   
     X,Y,Z=0,1,2
+    print "getPlane",plane, x,y,z
     permute=vtk.vtkImagePermute()
     dx,dy,dz=data.GetDimensions()
     voi=vtk.vtkExtractVOI()
@@ -1101,9 +1102,12 @@ def getSlice(volume,zslice,startpos=None,endpos=None):
     Created: KP
     Description: Extract a given slice from a volume
     """        
+    Logging.backtrace()
     voi=vtk.vtkExtractVOI()
     voi.SetInput(volume)
     x,y,z=volume.GetDimensions()
+        
+    print volume.GetDimensions(), volume.GetExtent()
     x0,y0=0,0
     if startpos:
         x0,y0=startpos

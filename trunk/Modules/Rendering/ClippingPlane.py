@@ -30,7 +30,7 @@ __version__ = "$Revision: 1.9 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 import wx
-
+import types
 import vtk
 import ColorTransferEditor
 import Dialogs
@@ -53,12 +53,13 @@ class ClippingPlaneModule(VisualizationModule):
         Description: Initialization
         """     
         self.x,self.y,self.z=-1,-1,-1
-        VisualizationModule.__init__(self,parent,visualizer,**kws)   
         #self.name = "Clipping Plane"
+        self.parent = parent        
         self.on = 0
         self.renew = 1
         self.currentPlane=None
         self.clipped = 0
+        self.clippedModules = []
         self.planeWidget = vtk.vtkPlaneWidget()
         self.planeWidget.AddObserver("InteractionEvent",self.clipVolumeRendering)
         self.planeWidget.SetResolution(20)
@@ -66,10 +67,61 @@ class ClippingPlaneModule(VisualizationModule):
         self.planeWidget.NormalToXAxisOn()
         self.renderer = self.parent.getRenderer()
         self.plane=vtk.vtkPlane()
-        iactor = self.wxrenwin.GetRenderWindow().GetInteractor()
+        
+        
+        self.descs={"ShowControl":"Show plane controls","ClippedModule":"Clip the module","AllModules":"Clip all modules"}
+        iactor = parent.wxrenwin.GetRenderWindow().GetInteractor()
         self.planeWidget.SetInteractor(iactor)
-        print "adding actor"
+
+        VisualizationModule.__init__(self,parent,visualizer,**kws)   
+        
         #self.updateRendering()
+
+        
+    def getParameters(self):
+        """
+        Created: 18.04.2007, KP
+        Description: Return the list of parameters needed for configuring this GUI
+        """            
+        return [ ["",("ShowControl","ClippedModule","AllModules")] ]        
+
+    def getDefaultValue(self,parameter):
+        """
+        Created: 18.04.2007, KP
+        Description: Return the default value of a parameter
+        """           
+        if parameter == "ShowControl":return True
+        if parameter == "AllModules":return False
+        if parameter == "ClippedModule": return 0
+        
+    def setParameter(self, parameter, value):
+        """
+        Created: 18.04.2007, KP
+        Description: set the value of a parameter to value
+        """
+        VisualizationModule.setParameter(self, parameter, value)
+        if parameter== "ShowControl":
+            self.showPlane
+        if parameter in ["AllModules","ClippedModule"]:
+            self.clipWithCurrentPlane()
+
+        
+    def getType(self,parameter):
+        """
+        Created: 18.04.2007, KP
+        Description: Return the type of the parameter
+        """    
+        if parameter in ["ShowControl","AllModules"]:return types.BooleanType
+        if parameter=="ClippedModule": return GUIBuilder.CHOICE        
+
+    def getRange(self, parameter):
+        """
+        Created: 18.04.2007, KP
+        Description: If a parameter has a certain range of valid values, the values can be queried with this function
+        """     
+        names = [module.getName() for module in self.parent.getModules()]
+        names.remove(self.getName())
+        return names
         
     def __getstate__(self):
         """
@@ -105,10 +157,22 @@ class ClippingPlaneModule(VisualizationModule):
         Created: 24.06.2005, KP
         Description: Remove a clipping plane
         """       
-        for module in self.parent.getModules():
+        for module in self.clippedModules:
             if hasattr(module,"mapper") and hasattr(module.mapper,"SetClippingPlanes"):
                 module.mapper.RemoveClippingPlane(plane)
                 self.clipped = 0
+        
+    def getModulesToClip(self):
+        """
+        Created: 18.04.2007, KP
+        Description: return all the visualizer modules that are to be clipped based on user choices
+        """
+        if not self.parameters.get("AllModules",0):
+            modname = self.parent.getModules()[self.parameters["ClippedModule"]].getName()
+            modules = filter(lambda x, n = modname:x.getName()==n, self.parent.getModules())
+        else:
+            modules = self.parent.getModules()
+        return modules
         
     def clipVolumeRendering(self,object,event):
         """
@@ -119,7 +183,18 @@ class ClippingPlaneModule(VisualizationModule):
             self.removeClippingPlane(self.currentPlane)
             self.currentPlane=None
         object.GetPlane(self.plane)
-        for module in self.parent.getModules():
+        self.clipWithCurrentPlane()
+    def clipWithCurrentPlane(self):
+        """
+        Created: 18.04.2007, KP
+        Description: clip the selected mappers with the current clipping plane
+        """
+        if self.currentPlane:
+            self.removeClippingPlane(self.currentPlane)
+        
+        modules = self.getModulesToClip()
+        self.clippedModules = modules
+        for module in modules:
             if hasattr(module,"mapper") and hasattr(module.mapper,"SetClippingPlanes"):
                 module.mapper.AddClippingPlane(self.plane)
                 self.currentPlane=self.plane
@@ -130,12 +205,11 @@ class ClippingPlaneModule(VisualizationModule):
         Created: 28.04.2005, KP
         Description: Sets the dataunit this module uses for visualization
         """       
+
         VisualizationModule.setDataUnit(self,dataunit)
-        print "got dataunit",dataunit
-        if self.visualizer.getProcessedMode():
-            data=self.dataUnit.getSourceDataUnits()[0].getTimePoint(0)
-        else:
-            data=self.dataUnit.getTimePoint(0)
+            
+        data = self.getInput(1)
+
         self.origin = data.GetOrigin()
         self.spacing = data.GetSpacing()
         self.extent = data.GetWholeExtent()
@@ -169,8 +243,9 @@ class ClippingPlaneModule(VisualizationModule):
         #self.outlineMapper.Update()
 
         if self.renew:
+            data = self.getInput(1)
 
-            self.planeWidget.SetInput(self.data)
+            self.planeWidget.SetInput(data)
             self.renew=0
         
         if not self.on:
@@ -230,11 +305,11 @@ class ClippingPlaneConfiguration(ModuleConfiguration):
         Created: 04.05.2005, KP
         Description: Initialization
         """     
-        ModuleConfiguration.__init__(self,parent,"Clipping Plane")
+        ModuleConfiguration.__init__(self,parent,"Clipping plane")
         self.panel=ClippingPlaneConfigurationPanel(self,visualizer)
 
 class ClippingPlaneConfigurationPanel(ModuleConfigurationPanel):
-    def __init__(self,parent,visualizer,name="Clipping Plane",**kws):
+    def __init__(self,parent,visualizer,name="Clipping plane",**kws):
         """
         Created: 04.05.2005, KP
         Description: Initialization
@@ -246,8 +321,7 @@ class ClippingPlaneConfigurationPanel(ModuleConfigurationPanel):
         Created: 28.04.2005, KP
         Description: Initialization
         """  
-        self.visibleBox=wx.CheckBox(self,-1,"Show plane controls")
-        self.contentSizer.Add(self.visibleBox,(0,0))
+        pass
         
     def setModule(self,module):
         """
@@ -255,13 +329,14 @@ class ClippingPlaneConfigurationPanel(ModuleConfigurationPanel):
         Description: Set the module to be configured
         """  
         ModuleConfigurationPanel.setModule(self,module)
-        print "module=",module
         self.module=module
+        self.gui = GUIBuilder.GUIBuilder(self, self.module)
+        self.module.sendUpdateGUI()
+        self.contentSizer.Add(self.gui,(0,0))
         
     def onApply(self,event):
         """
         Created: 28.04.2005, KP
         Description: Apply the changes
         """     
-        visible=self.visibleBox.GetValue()
-        self.module.showPlane(visible)
+        self.module.updateRendering()
