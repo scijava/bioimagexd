@@ -88,7 +88,7 @@ class RenderingConfigPanel:
         
         
         self.totalFrames.Bind(wx.EVT_TEXT,self.updateFrameCount)
-        #self.duration.Bind(wx.EVT_TEXT,self.updateDuration)
+        self.duration.Bind(wx.EVT_TEXT,self.updateDuration)
 
         self.followAspect=wx.CheckBox(self.parent, -1, "Don't resize preview, only use aspect ratio.")
         toolTip = wx.ToolTip("""If this box is checked, the rendering preview window

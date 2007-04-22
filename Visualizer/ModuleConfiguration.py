@@ -60,13 +60,11 @@ class ModuleConfiguration(wx.MiniFrame):
         
 class ModuleConfigurationPanel(wx.ScrolledWindow):
     """
-    Class: ModuleConfigurationPanel
     Created: 23.05.2005, KP
     Description: A base class for module configuration dialogs
     """    
     def __init__(self,parent,visualizer,name,**kws):
         """
-        Method: __init__(parent).parent
         Created: 28.04.2005, KP
         Description: Initialization
         """
@@ -144,7 +142,6 @@ class ModuleConfigurationPanel(wx.ScrolledWindow):
 
     def updateModuleSettings(self,obj,evt,*args):
         """
-        Method: updateModuleSettings
         Created: 02.08.2005, KP
         Description: Signal for updating the module settings
         """     
@@ -152,7 +149,6 @@ class ModuleConfigurationPanel(wx.ScrolledWindow):
             self.setModule(self.module)
     def onMaterial(self,event):
         """
-        Method: onMaterial
         Created: 23.05.2005, KP
         Description: Toggle material configuration
         """     
@@ -166,7 +162,6 @@ class ModuleConfigurationPanel(wx.ScrolledWindow):
         
     def onApply(self,event):
         """
-        Method: onApply()
         Created: 16.05.2005, KP
         Description: Apply the changes
         """     
@@ -182,7 +177,6 @@ class ModuleConfigurationPanel(wx.ScrolledWindow):
         
     def findModule(self):
         """
-        Method: findModule()
         Created: 28.04.2005, KP
         Description: Refresh the modules affected by this configuration
         """     
@@ -195,10 +189,8 @@ class ModuleConfigurationPanel(wx.ScrolledWindow):
 
     def setModule(self,module):
         """
-        Method: setModule(module)
         Created: 28.04.2005, KP
         Description: Set the module to be configured
         """  
-        print "Module is",module
         self.module = module
 

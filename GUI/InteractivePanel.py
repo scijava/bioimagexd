@@ -37,6 +37,7 @@ import platform
 import wx.lib.ogl as ogl
 import messenger
 
+import vtk
 import math
 import scripting as bxd
 ZOOM_TO_BAND=1
@@ -358,7 +359,19 @@ class InteractivePanel(ogl.ShapeCanvas):
         mx,my,mz = self.dataUnit.getDimensions()
         rois=[self.subtractROI]
         maskImage = ImageOperations.getMaskFromROIs(rois,mx,my,mz)
-        pass
+        labelAvg = vtk.vtkImageLabelAverage()
+        
+        tp = bxd.visualizer.getTimepoint()
+        if self.dataUnit.isProcessed():
+            origImage=self.dataUnit.doPreview(z,renew,tp)
+        else:
+            origImage = self.dataUnit.getTimePoint(tp)
+        
+        labelAvg.AddInput(origImage)
+        labelAvg.AddInput(maskImage)
+        labelAvg.Update()
+        avg = labelAvg.GetAverage(255)
+        print "Average of the region is",avg
         
     def onSetInterpolation(self,event):
         """
@@ -566,7 +579,6 @@ class InteractivePanel(ogl.ShapeCanvas):
         if obj and obj.isROI():
             self.subtractROI = obj
             self.PopupMenu(self.subbgMenu, event.GetPosition())
-            event.Skip()
         
 
     def onRightDown(self, event):

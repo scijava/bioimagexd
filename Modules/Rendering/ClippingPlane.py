@@ -101,7 +101,7 @@ class ClippingPlaneModule(VisualizationModule):
         """
         VisualizationModule.setParameter(self, parameter, value)
         if parameter== "ShowControl":
-            self.showPlane
+            self.showPlane(value)
         if parameter in ["AllModules","ClippedModule"]:
             self.clipWithCurrentPlane()
 
@@ -184,6 +184,7 @@ class ClippingPlaneModule(VisualizationModule):
             self.currentPlane=None
         object.GetPlane(self.plane)
         self.clipWithCurrentPlane()
+        
     def clipWithCurrentPlane(self):
         """
         Created: 18.04.2007, KP

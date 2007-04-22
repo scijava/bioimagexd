@@ -874,8 +874,9 @@ def getMaskFromPoints(points,mx,my,mz):
     Created: KP
     Description: Create a mask where all given points are set to 255
     """
+    Logging.backtrace()
     siz = mx*my
-    fs="%dB"%siz    
+    fs="%dB"%siz
     #data=[255*((i % mx,i / my) in points) for i in range(0,mx*my)]
     #data = [255*((x,y) in points) for x in range(0,mx) for y in range(0,my)]
     data=[]
@@ -886,7 +887,7 @@ def getMaskFromPoints(points,mx,my,mz):
     
     importer=vtk.vtkImageImport()
     importer.CopyImportVoidPointer(ss,mx*my)
-    importer.SetDataScalarTypeToUnsignedChar()
+    eval("importer.SetDataScalarTypeTo%s()"%format)
     importer.SetNumberOfScalarComponents(1)
     importer.SetDataExtent(0,mx-1,0,my-1,0,0)
     importer.SetWholeExtent(0,mx-1,0,my-1,0,0)
@@ -1102,12 +1103,11 @@ def getSlice(volume,zslice,startpos=None,endpos=None):
     Created: KP
     Description: Extract a given slice from a volume
     """        
-    Logging.backtrace()
     voi=vtk.vtkExtractVOI()
     voi.SetInput(volume)
     x,y,z=volume.GetDimensions()
         
-    print volume.GetDimensions(), volume.GetExtent()
+    #print volume.GetDimensions(), volume.GetExtent()
     x0,y0=0,0
     if startpos:
         x0,y0=startpos
