@@ -68,6 +68,8 @@ class GUIBuilderBase:
         self.inputMapping = {}
         self.sourceUnits = []
         self.inputs =[]
+        self.inputIndex=0
+
 
         self.gui = None
         self.modCallback = changeCallback
@@ -75,6 +77,8 @@ class GUIBuilderBase:
         for item in self.getPlainParameters():
             self.setParameter(item,self.getDefaultValue(item))
         self.initDone = 1
+
+
         
     def getInput(self,n):
         """
@@ -700,6 +704,8 @@ class GUIBuilder(wx.Panel):
                 lbl = wx.StaticText(self,-1,param)
                 sizer.Add(lbl,(gy,0))
             gy+=1
+
+            
         
     def buildChannelSelection(self):
         """

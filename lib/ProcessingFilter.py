@@ -78,7 +78,6 @@ class ProcessingFilter(GUIBuilder.GUIBuilderBase):
         self.itkToVtk = None
         self.enabled = 1
         self.itkFlag = 0
-        self.inputIndex=0
         self.imageType = "UC3"
         for item in self.getPlainParameters():
             self.setParameter(item,self.getDefaultValue(item))
