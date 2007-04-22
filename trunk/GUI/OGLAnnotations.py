@@ -689,7 +689,7 @@ class MyCircle(OGLAnnotation, ogl.CircleShape):
         memdc = wx.MemoryDC()
         memdc.SelectObject(bg)
         print cx0,cy0,cx1,cy1
-        dc.Blit(cx0,cy0,(cx1-cx0),(cy1-cy0),memdc,cx0,cy0)
+        dc.Blit(cx0,cy0,abs(cx1-cx0),abs(cy1-cy0),memdc,cx0,cy0)
         memdc.SelectObject(wx.NullBitmap)
 #        dc.DrawBitmap(bg,0,0)
            

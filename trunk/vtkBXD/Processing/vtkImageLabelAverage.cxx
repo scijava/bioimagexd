@@ -111,6 +111,7 @@ void vtkImageLabelAverageExecute(vtkImageLabelAverage *self, int id,int NumberOf
   target = (unsigned long)((maxZ+1)*(maxY+1)/50.0);
   target++;
   for(idxZ = 0; idxZ <= maxZ; idxZ++ ) {
+
     sprintf(progressText,"Calculating average intensity of objects (slice %d / %d)",idxZ,maxZ);
     self->SetProgressText(progressText);
     for(idxY = 0; idxY <= maxY; idxY++ ) {

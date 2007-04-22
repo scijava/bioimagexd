@@ -499,7 +499,7 @@ class LightTool(wx.Frame):
             l.save()
         self.sizer = wx.GridBagSizer()
         
-        self.gfxwin = wxVTKRenderWindow(self.panel,-1,size=(220,200))
+        self.gfxwin = wxVTKRenderWindow(self.panel,-1,size=wx.Size(220,200))
         
         #self.gfxwin.Render()
         #self.gfxwin.Initialize()
