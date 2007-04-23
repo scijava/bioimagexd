@@ -184,6 +184,7 @@ class VideoGeneration(wx.Panel):
         Created: 30.1.2006, KP
         Description: Method to clean up after rendering is done
         """ 
+        renderingInterface=RenderingInterface.getRenderingInterface()        
         self.frameList = renderingInterface.getFrameList()
         # if the rendering wasn't aborted, then restore the animator
         if not self.abort:
