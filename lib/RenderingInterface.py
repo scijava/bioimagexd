@@ -67,10 +67,11 @@ class RenderingInterface:
         self.stop=0
         self.currentTimePoint=-1
         # XXX: Make this configurable
-        self.type=Configuration.getConfiguration().getConfigItem("ImageFormat","Output")
+        #self.type=Configuration.getConfiguration().getConfigItem("ImageFormat","Output")
         
-        if not self.type:
-            self.type="pnm"
+        #if not self.type:
+        #    self.type="pnm"
+        self.type = "jpg"
             
         self.visualizer = None
         self.frameList = []
