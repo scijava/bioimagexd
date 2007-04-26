@@ -465,7 +465,7 @@ int vtkLSMReader::ReadTimeStampInformation(ifstream *f,unsigned long offset)
   numOffStamps = this->ReadInt(f,&offset);
   if(numOffStamps != this->GetNumberOfTimePoints())
     {
-    vtkWarningMacro(<<"Number of time stamps does not correspond to the number off time points!");
+//    vtkWarningMacro(<<"Number of time stamps does not correspond to the number off time points!");
     }
   this->TimeStampInformation->Reset();
   this->TimeStampInformation->SetNumberOfTuples(numOffStamps);
@@ -1065,9 +1065,9 @@ int vtkLSMReader::RequestInformation (
         //printf("Failed to read info\n");
       return 0;
     }
-  if( !(this->ScanType == 6 || this->ScanType == 0) )
+  if( !(this->ScanType == 6 || this->ScanType == 0 || this->ScanType == 3) )
     {
-      vtkErrorMacro("Sorry! Your LSM-file must be of type 6 LSM-file (time series x-y-z) or type 0 (normal x-y-z). Type of this File is " <<this->ScanType);
+      vtkErrorMacro("Sorry! Your LSM-file must be of type 6 LSM-file (time series x-y-z) or type 0 (normal x-y-z) or type 3 (2D + time). Type of this File is " <<this->ScanType);
       return 0;
     }
   

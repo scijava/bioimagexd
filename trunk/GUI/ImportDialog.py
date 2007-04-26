@@ -43,6 +43,7 @@ import Logging
 import DataUnit
 import DataSource
 import Configuration
+import Image
 
 class ImportDialog(wx.Dialog):
     """
@@ -119,15 +120,31 @@ class ImportDialog(wx.Dialog):
         for i in idxs:
             files.append(self.sourceListbox.GetString(i))
         print "files=",files
+        
+        
+        isRGB = 1
+        ext = files[0].split(".")[-1].lower()
+        if ext in ["tif","tiff"]:
+            tiffimg = Image.open(files[0])
+            if tiffimg.palette:
+                print "HAS PALETTE, THEREFORE NOT RGB"
+                isRGB = 0
+            else:
+                print "NO PALETTE, IS AN RGB IMAGE"
         dirn=os.path.dirname(files[0])
         self.z=int(self.depthEdit.GetValue())
         ext=files[0].split(".")[-1].lower()
-        self.rdrstr = "vtk.vtk%sReader()"%(self.extMapping[ext])
+        mpr = self.extMapping[ext]
+        # If it's a tiff file, we use our own, extended TIFF reader
+        if self.extMapping[ext]=="TIFF":
+            mpr="ExtTIFF"
+        self.rdrstr = "vtk.vtk%sReader()"%mpr
         dim = self.dimMapping[ext]
         self.readers=[]
         
         bxdwriter =  DataSource.BXDDataWriter(outname)
         self.resultDataset = bxdwriter.getFilename()
+        print "Result dataset=",self.resultDataset
 
         bxcfilename = bxdwriter.getBXCFileName(outname)
         self.writer = DataSource.BXCDataWriter(bxcfilename)
@@ -148,6 +165,10 @@ class ImportDialog(wx.Dialog):
                 Logging.info("Reading ",file,kw="io")
                 rdr.SetFileName(file)
                 rdr.Update()
+                if mpr=="ExtTIFF" and not isRGB:
+                    rdr.RawModeOn()
+
+
                 self.readers.append(rdr)
                 self.dlg.Update(i,"Reading dataset %d / %d"%(i+1,self.tot))
 #                self.writeData(outname,data,i,len(files))
@@ -173,9 +194,14 @@ class ImportDialog(wx.Dialog):
                 rdr.SetFileNames(arr)
                 if ext=="bmp":
                     rdr.Allow8BitBMPOn()
+                
+                    
                 rdr.SetDataExtent(0,self.x-1,0,self.y-1,0,self.z-1)
                 rdr.SetDataSpacing(self.spacing)
                 rdr.SetDataOrigin(0,0,0)
+                if mpr=="ExtTIFF" and not isRGB:
+                    rdr.RawModeOn()
+                
                 self.readers.append(rdr)
             elif n==0 and imgAmnt>1:
                 #print "FOO"
@@ -185,12 +211,16 @@ class ImportDialog(wx.Dialog):
                 rdr = eval(self.rdrstr)
                 if ext=="bmp":
                     rdr.Allow8BitBMPOn()
+                if mpr=="ExtTIFF" and not isRGB:
+                    rdr.RawModeOn()
+                    
                 rdr.SetDataExtent(0,self.x-1,0,self.y-1,0,self.z-1)
                 rdr.SetDataSpacing(self.spacing)
                 rdr.SetDataOrigin(0,0,0)
                 
                 rdr.SetFileName(files[0])
                 rdr.Update()
+
                 Logging.info("Reader = ",rdr,kw="io")
                 self.dlg.Update(0,"Reading dataset 1")
                 self.readers.append(rdr)
@@ -575,19 +605,35 @@ class ImportDialog(wx.Dialog):
         print "Got files=",files
         self.sourceListbox.Clear()
         files.sort(self.sortNumerically)
+        r=re.compile("([0-9]+)")
+        
+ 
+        
+       
+        m = r.search(files[0])
+        if m:
+
+            startfrom = int(m.groups(1)[0])
+        else:
+            startfrom = 0
+        print "Starting from ",startfrom
         n=0
+        # If we're using all files in directory, just add them to the list
         if selection==1:
             self.sourceListbox.InsertItems(files,0)
             n=len(files)
+        # If we're using the pattern
         elif selection==0:
             pat=self.patternEdit.GetValue()
             filecount=len(files)
             nformat=pat.count("%")
+            # If there are no format specifiers, just use the files we found
             if nformat == 0:
                 self.sourceListbox.InsertItems(files,0)
                 n=len(files)
+            # If there is one specifier, then try to find files that correspond to that
             elif nformat==1:
-                for i in range(filecount+1):
+                for i in range(startfrom-1, startfrom+filecount+1):
                     try:
                         filename=pat%i
                     except:
