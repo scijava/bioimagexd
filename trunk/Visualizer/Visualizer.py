@@ -1049,6 +1049,8 @@ class Visualizer:
         self.currentWindow.Show()
         if hasattr(self.currentWindow,"enable"):
             self.currentWindow.enable(self.enabled)
+        messenger.send(None,"visualizer_mode_loading",modeinst)
+
 #        if self.zoomToFitFlag:
 #            self.currMode.zoomToFit()
 #        else:
@@ -1145,11 +1147,19 @@ class Visualizer:
         
         x,y,z=dataunit.getDimensions()
         
-        print "SETTING RANGE",1,z
+        #print "SETTING RANGE",1,z
+        currz = self.zslider.GetValue()
         self.zslider.SetRange(1,z)
-        if self.timepoint >=z:
-            self.setTimepoint(z)
+        if self.timepoint >=count:
+            self.setTimepoint(count)
 
+        if z<currz:
+            self.zslider.SetValue(0 )
+            self.onChangeZSlice(None)
+        if z<=1:
+            self.zsliderWin.SetDefaultSize((0,768)) 
+        else:
+            self.zsliderWin.SetDefaultSize(self.zsliderWin.origSize)
         showItems=0
 
         if self.processedMode:

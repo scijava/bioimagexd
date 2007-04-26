@@ -62,6 +62,12 @@ class VisualizationMode:
 
         self.visualizer=visualizer
         
+    def getRenderWindow(self):
+        """
+        Created: 24.04.2007, KP
+        Description: return a render window, if this mode uses one
+        """
+        return None
    
     def layoutTwice(self):
         """

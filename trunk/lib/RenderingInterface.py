@@ -71,7 +71,7 @@ class RenderingInterface:
         
         #if not self.type:
         #    self.type="pnm"
-        self.type = "jpg"
+        self.type = "tif"
             
         self.visualizer = None
         self.frameList = []

@@ -342,7 +342,7 @@ class ImportDialog(wx.Dialog):
         self.patternBox.Add(self.patternLbl)
         self.patternBox.Add(self.patternEdit,1)
 
-        self.sourceListbox=wx.ListBox(self.imagePanel,-1,size=(400,100),style=wx.LB_ALWAYS_SB|wx.LB_EXTENDED)
+        self.sourceListbox=wx.ListBox(self.imagePanel,-1,size=(550,100),style=wx.LB_ALWAYS_SB|wx.LB_HSCROLL|wx.LB_EXTENDED)
         self.sourceListbox.Bind(wx.EVT_LISTBOX,self.updateSelection)
         
         self.imageSourceboxsizer.Add(self.browsedir,0,wx.EXPAND)
