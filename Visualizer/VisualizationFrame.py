@@ -401,6 +401,7 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
             #state_pickler.set_state(self.mode,state)
             self.moduleListbox.Clear()
             self.mode.__set_pure_state__(state)
+            
             messenger.send(None,"update_module_settings")
     
     def onSaveScene(self,event):
