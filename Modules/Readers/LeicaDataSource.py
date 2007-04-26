@@ -813,7 +813,7 @@ class LeicaExperiment:
                 TIFFReader.Update()                              
                 
                 ChnlVolDataLst.append(TIFFReader)#now we have a list with the imported volume data for each channel
-                self.vtkFilters.append(TIFFReader)
+#                self.vtkFilters.append(TIFFReader)
             self.TP_CH_VolDataList.append(ChnlVolDataLst)   
             
  
@@ -864,7 +864,7 @@ class LeicaExperiment:
                 
                 
                 ChnlVolDataLst.append(TIFFReader)#now we have a list with the imported volume data for each channel
-                self.vtkFilters.append(TIFFReader)
+#                self.vtkFilters.append(TIFFReader)
             self.TP_CH_VolDataList.append(ChnlVolDataLst)   
             
 

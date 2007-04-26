@@ -67,6 +67,8 @@ class VideoGeneration(wx.Panel):
         # VideoGeneration
         self.visualizer.getCurrentMode().lockSliderPanel(1)
         
+        
+        self.oldSelection=0
         self.rendering = 0
         self.oldformat=None
         self.abort = 0
@@ -88,6 +90,13 @@ class VideoGeneration(wx.Panel):
         self.needpad=0
         self.mainsizer=wx.GridBagSizer()
         self.generateGUI()
+
+            
+        # Produce quicktime MPEG4 by default but MS MPEG4 v2 on windows
+        sel=6
+        if platform.system()=="Windows":
+            sel=5
+        self.outputFormat.SetSelection(sel)
         
         self.buttonBox = wx.BoxSizer(wx.HORIZONTAL)
         self.okButton = wx.Button(self,-1,"Ok")
@@ -229,20 +238,12 @@ class VideoGeneration(wx.Panel):
         frameRate=self.fps
         codec=self.outputFormat.GetSelection()    
         vcodec,ext = self.outputCodecs[codec]        
-        if self.needpad and frameRate not in [12.5,25]:
-            scodec=self.outputFormats[1][codec]
-            #if frameRate<12.5:frameRate=12
-            #else:frameRate=24
-            frameRate=25
-            Dialogs.showmessage(self,"For the code you've selected (%s), the target frame rate must be either 12.5 or 25. %d will be used."%(scodec,frameRate),"Bad framerate")
-#        try:
-#            x,y=self.visualizer.getCurrentMode().GetRenderWindow().GetSize()
-#            print "Render window size =",x,y
-#            if x%2:x-=(x%2)
-#            if y%2:y-=(y%2)
-#            print "x,y=",x,y
-#        except:
-#            x,y=512,512
+#        if self.needpad and frameRate not in [12.5,25]:
+#            scodec=self.outputFormats[1][codec]
+#            #if frameRate<12.5:frameRate=12
+#            #else:frameRate=24
+#            frameRate=25
+#            Dialogs.showmessage(self,"For the code you've selected (%s), the target frame rate must be either 12.5 or 25. %d will be used."%(scodec,frameRate),"Bad framerate")
 
         x,y=size
         ffmpegs={"linux":"bin/ffmpeg","win32":"bin\\ffmpeg.exe","darwin":"bin/ffmpeg.osx"}
@@ -299,15 +300,12 @@ class VideoGeneration(wx.Panel):
         
         self.videofileBtn.Enable(sel)
         
+        currentSelection = self.outputFormat.GetSelection()        
+        self.outputFormat.Clear()
         for i in self.outputFormats[sel]:
             self.outputFormat.Append(i)
-            
-        # Produce quicktime MPEG4 by default but MS MPEG4 v2 on windows
-        sel=6
-        if platform.system()=="Windows":
-            sel=5
-        self.outputFormat.SetSelection(sel)
-        
+        self.outputFormat.SetSelection(self.oldSelection)        
+        self.oldSelection = currentSelection
         
     
     def onUpdateCodec(self,event):
@@ -318,9 +316,9 @@ class VideoGeneration(wx.Panel):
         sel = self.formatMenu.GetSelection()
         if sel==1:
             codec=self.outputFormat.GetSelection()
-            self.needpad=self.padding[codec]
+            #self.needpad=self.padding[codec]
             #self.padFrames.Enable(self.needpad)
-            self.onPadFrames(None)
+#            self.onPadFrames(None)
             
     def onUpdatePreset(self,event):
         """
@@ -514,7 +512,7 @@ class VideoGeneration(wx.Panel):
             Logging.info("frames per second = ",self.fps,kw="animator")
             #self.fpsLabel.SetLabel("Rendered frames:\t%.3f / second"%self.fps)
             self.frameRate.SetLabel("%.2f"%self.fps)
-            self.onPadFrames(None)
+            #self.onPadFrames(None)
         except:
             return
         

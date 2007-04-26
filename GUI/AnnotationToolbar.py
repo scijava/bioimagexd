@@ -41,6 +41,8 @@ import messenger
 import UIElements
 import MaskTray
 
+import vtk
+
 import os
 
 class AnnotationToolbar(wx.Window):
@@ -53,16 +55,30 @@ class AnnotationToolbar(wx.Window):
         self.visualizer = visualizer
         self.channelButtons = {}
         self.annotateColor = (0,255,0)
+        self.interactor = None
         
         self.sizer = wx.GridBagSizer(2,2)
         self.SetSizer(self.sizer)
-        
+        self.eventRecorder = vtk.vtkInteractorEventRecorder()
         self.SetAutoLayout(1)
+        messenger.connect(None,"visualizer_mode_loading",self.onLoadMode)
         
         self.numberOfChannels = 0
         messenger.connect(None,"update_annotations",self.updateAnnotations)
         self.createAnnotationToolbar()        
         
+    def onLoadMode(self, obj, evt, vismode):
+        """
+        Created: 23.04.2007, KP
+        Description: an event handler for when visualizer is loading a mode
+        """
+        renwin = vismode.getRenderWindow()
+        if renwin:
+            self.interactor = renwin.GetInteractor()
+            self.eventRecorder.SetInteractor(self.interactor)
+        else:
+            self.interactor = None
+            
     def createAnnotationToolbar(self):
         """
         Created: 05.10.2006, KP
@@ -124,6 +140,9 @@ class AnnotationToolbar(wx.Window):
         self.sizer.Add(self.playBtn, (8,0))
         self.sizer.Add(self.stopBtn, (8,1))
         
+        self.playBtn.Bind(wx.EVT_BUTTON, self.onPlayRecording)
+        self.stopBtn.Bind(wx.EVT_BUTTON, self.onStopPlaying)
+        self.recordBtn.Bind(wx.EVT_BUTTON, self.onRecord)        
         
           #bmp = wx.Image(os.path.join(iconpath,"resample.gif")).ConvertToBitmap()
         #tb.DoAddTool(MenuManager.ID_RESAMPLING,"Resampling",bmp,kind=wx.ITEM_CHECK,shortHelp="Enable or disable the resampling of image data")
@@ -157,6 +176,37 @@ class AnnotationToolbar(wx.Window):
         self.roiToMaskBtn.Bind(wx.EVT_BUTTON,self.roiToMask)
         #wx.EVT_TOOL(self.parent,MenuManager.ID_ADD_SCALE,self.addAnnotation)
         self.deleteAnnotationBtn.Bind(wx.EVT_BUTTON,self.deleteAnnotation)
+        
+    def onRecord(self, evt):
+        """
+        Created: 23.04.2007, KP
+        Description: Start / stop recording events
+        """
+        flag = evt.GetIsDown()
+        self.playBtn.Enable(not flag)
+        self.stopBtn.Enable(not flag)
+        if flag:
+            self.eventRecorder.SetEnabled(1)
+            self.eventRecorder.SetFileName("events.log")
+            self.eventRecorder.Record()
+        else:
+            self.eventRecorder.Stop()
+            self.eventRecorder.SetEnabled(0)
+
+            print "Recorded",self.eventRecorder.GetInputString()
+            
+    def onPlayRecording(self, evt):
+        """
+        Created: 23.04.2007, KP
+        Description: play a recorded event sequence
+        """
+        self.eventRecorder.Play()
+    def onStopPlaying(self, evt):
+        """
+        Created: 23.04.2007, KP
+        Description: stop playing a recorded event sequence
+        """
+        self.eventRecorder.Stop()
 
     def onResampleToFit(self,evt):
         """

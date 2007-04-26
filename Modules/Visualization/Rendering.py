@@ -87,6 +87,13 @@ class RenderingMode(VisualizationMode):
         self.defaultModule = "Volume rendering"
         self.modules = []
         
+    def getRenderWindow(self):
+        """
+        Created: 24.04.2007, KP
+        Description: return a render window, if this mode uses one
+        """
+        return self.renwin      
+        
     def reloadModules(self):
         """
         Created: 24.05.2005, KP
