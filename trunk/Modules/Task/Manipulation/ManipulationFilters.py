@@ -708,11 +708,12 @@ class ROIIntensityFilter(ProcessingFilter.ProcessingFilter):
         Description: Initialization
         """        
         ProcessingFilter.ProcessingFilter.__init__(self,(1,1))
-        self.vtkfilter = vtk.vtkImageAutoThresholdColocalization()
+      
         self.reportGUI=None
         self.measurements =[]
         self.descs={"ROI":"Region of Interest","AllROIs":"Measure all ROIs"}
-    
+        self.itkFlag = 1
+
     def getParameters(self):
         """
         Created: 31.07.2006, KP
@@ -781,23 +782,21 @@ class ROIIntensityFilter(ProcessingFilter.ProcessingFilter):
                 print "No mask"
                 return imagedata
             print "Processing mask=",mask
-            maskImage = ImageOperations.getMaskFromROIs([mask],mx,my,mz)
-            maskhistogram = ImageOperations.get_histogram(maskImage)
-            n = sum(maskhistogram[1:])
-            maskFilter = vtk.vtkImageMask()
-            maskFilter.SetMaskedOutputValue(0)
-            maskFilter.SetMaskInput(maskImage)
-            maskFilter.SetImageInput(imagedata)
-            maskFilter.Update()
-            data = maskFilter.GetOutput()
-     
-            histogram = ImageOperations.get_histogram(data)
-            #n = sum(histogram)
-            totint=0
-            for i,x in enumerate(histogram):
-                totint+=i*x
+            n, maskImage = ImageOperations.getMaskFromROIs([mask],mx,my,mz)
+
+            itkLabel =  self.convertVTKtoITK(maskImage)
+            itkOrig = self.convertVTKtoITK(imagedata)
+
+            labelStats = itk.LabelStatisticsImageFilter[itkOrig, itkLabel].New()
             
-            avgint = totint/float(n)
+            
+            labelStats.SetInput(0, itkOrig)
+            labelStats.SetInput(1, itkLabel)
+            labelStats.Update()
+            
+            totint = labelStats.GetSum(255)
+            avgint = totint / float(n)
+            
             values.append((mask.getName(),n,totint,avgint))
         if self.reportGUI:
             self.reportGUI.setMeasurements(values)

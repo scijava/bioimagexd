@@ -217,6 +217,8 @@ class ProcessingFilter(GUIBuilder.GUIBuilderBase):
                 ImageType = itk.VTKImageToImageFilter.IUL3
                 conv.SetOutputScalarTypeToUnsignedLong ()
                 image = conv.GetOutput()
+            elif scalarType == "unsigned short":
+                ImageType = itk.VTKImageToImageFilter.IUS3
         
         
         self.vtkToItk = ImageType.New()

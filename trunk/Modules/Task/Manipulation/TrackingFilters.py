@@ -747,7 +747,7 @@ class CreateTracksFilter(ProcessingFilter.ProcessingFilter):
         
         imagedata = self.getInputFromChannel(0)
         mx, my, mz = self.dataUnit.getDimensions()
-        maskImage = ImageOperations.getMaskFromROIs([roi],mx,my,mz)
+        n, maskImage = ImageOperations.getMaskFromROIs([roi],mx,my,mz)
         maskFilter = vtk.vtkImageMask()
         maskFilter.SetMaskedOutputValue(0)
         maskFilter.SetMaskInput(maskImage)

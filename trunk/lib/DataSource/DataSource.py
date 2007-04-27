@@ -300,6 +300,14 @@ class DataSource:
             self.mipData = self.getResampledData(self.getDataSet(n),n,tmpDims = (128,128,z))
         return self.mipData
         
+        
+    def getIntensityScale(self):
+        """
+        Created: 27.04.2007, KP
+        Description: return the shift and scale applied to the data as tuple
+        """
+        return self.intensityShift, self.intensityScale
+        
     def setIntensityScale(self,shift,scale):
         """
         Created: 12.04.2006, KP

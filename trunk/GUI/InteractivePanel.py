@@ -358,20 +358,53 @@ class InteractivePanel(ogl.ShapeCanvas):
         if not self.subtractROI: return
         mx,my,mz = self.dataUnit.getDimensions()
         rois=[self.subtractROI]
-        maskImage = ImageOperations.getMaskFromROIs(rois,mx,my,mz)
-        labelAvg = vtk.vtkImageLabelAverage()
+        n, maskImage = ImageOperations.getMaskFromROIs(rois,mx,my,mz)
         
         tp = bxd.visualizer.getTimepoint()
         if self.dataUnit.isProcessed():
             origImage=self.dataUnit.doPreview(z,renew,tp)
         else:
             origImage = self.dataUnit.getTimePoint(tp)
+            
+        import itk
+        scalarType = origImage.GetScalarTypeAsString()        
+        if scalarType=="unsigned char":
+            ImageType = itk.VTKImageToImageFilter.IUC3
+        elif scalarType == "unsigned short":
+            ImageType = itk.VTKImageToImageFilter.IUS3
         
-        labelAvg.AddInput(origImage)
-        labelAvg.AddInput(maskImage)
-        labelAvg.Update()
-        avg = labelAvg.GetAverage(255)
-        print "Average of the region is",avg
+        
+        vtkToItk = ImageType.New()
+        vtkToItk.SetInput(origImage)
+        vtkToItk.Update()
+        
+        itkOrig= vtkToItk.GetOutput()
+        
+        vtkToItk2 = itk.VTKImageToImageFilter.IUC3.New()
+        vtkToItk2.SetInput(maskImage)
+        vtkToItk2.Update()
+        itkLabel = vtkToItk2.GetOutput()
+
+        labelStats = itk.LabelStatisticsImageFilter[itkOrig, itkLabel].New()        
+        labelStats.SetInput(0, itkOrig)
+        labelStats.SetInput(1, itkLabel)
+        labelStats.Update()
+        
+        totint = labelStats.GetSum(255)
+        avgint = totint / float(n)        
+        print "Average of the region is",avgint
+        ds = self.dataUnit.getDataSource()
+        shift, scale = ds.getIntensityScale()
+        if shift:
+            shift -= int(round(avgint))
+        else:
+            shift = -int(round(avgint))
+        if not scale:
+            scale = 1
+        print "Setting shift, scale to ",shift,scale
+        ds.setIntensityScale(shift, scale)
+        self.updatePreview(1)       
+ 
         
     def onSetInterpolation(self,event):
         """
@@ -514,7 +547,7 @@ class InteractivePanel(ogl.ShapeCanvas):
         mx,my,mz = self.dataUnit.getDimensions()
         rois=self.getRegionsOfInterest()
         names=[roi.getName() for roi in rois]
-        maskImage = ImageOperations.getMaskFromROIs(rois,mx,my,mz)
+        n, maskImage = ImageOperations.getMaskFromROIs(rois,mx,my,mz)
         
         return maskImage,names
         
