@@ -865,16 +865,16 @@ def getMaskFromROIs(rois, mx, my, mz):
     for shape in rois:
         insideMap.update(shape.getCoveredPoints())
     insMap={}
+    n=len(insideMap.keys())
     for x,y in insideMap.keys():
         insMap[(x,y)]=1    
-    return getMaskFromPoints(insMap,mx,my,mz)
+    return n, getMaskFromPoints(insMap,mx,my,mz)
     
 def getMaskFromPoints(points,mx,my,mz):
     """
     Created: KP
     Description: Create a mask where all given points are set to 255
     """
-    Logging.backtrace()
     siz = mx*my
     fs="%dB"%siz
     #data=[255*((i % mx,i / my) in points) for i in range(0,mx*my)]
@@ -887,6 +887,7 @@ def getMaskFromPoints(points,mx,my,mz):
     
     importer=vtk.vtkImageImport()
     importer.CopyImportVoidPointer(ss,mx*my)
+    format="UnsignedChar"
     eval("importer.SetDataScalarTypeTo%s()"%format)
     importer.SetNumberOfScalarComponents(1)
     importer.SetDataExtent(0,mx-1,0,my-1,0,0)
