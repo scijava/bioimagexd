@@ -52,21 +52,28 @@ class IntensityMeasurementList(wx.ListCtrl):
     def __init__(self, parent, log):
         wx.ListCtrl.__init__(
             self, parent, -1, 
-            size = (350,250),
+            size = (450,250),
             style=wx.LC_REPORT|wx.LC_VIRTUAL|wx.LC_HRULES|wx.LC_VRULES,
             
             )
 
         self.measurements =[]
         self.InsertColumn(0, "ROI")
-        self.InsertColumn(1, "# of voxels")
-        self.InsertColumn(2, "Tot. int.")
-        self.InsertColumn(3,"Avg. int.")
+        self.InsertColumn(1, "Voxel #")
+        self.InsertColumn(2, "Sum")
+        self.InsertColumn(3,"Avg")
+        self.InsertColumn(4, "Min")
+        self.InsertColumn(5, "Max")
+        self.InsertColumn(6, u"Mean\u00B1std.dev.")
+     
         #self.InsertColumn(2, "")
-        self.SetColumnWidth(0, 50)
-        self.SetColumnWidth(1, 100)
-        self.SetColumnWidth(2, 100)
-        self.SetColumnWidth(3, 100)
+        self.SetColumnWidth(0, 70)
+        self.SetColumnWidth(1, 60)
+        self.SetColumnWidth(2, 50)
+        self.SetColumnWidth(3, 50)
+        self.SetColumnWidth(4, 30)
+        self.SetColumnWidth(5, 40)
+        self.SetColumnWidth(6, 100)
 
         self.SetItemCount(1000)
 
@@ -97,11 +104,14 @@ class IntensityMeasurementList(wx.ListCtrl):
         if item>=len(self.measurements):
             return ""
         m = self.measurements[item]
+        #values.append((mask.getName(),n,totint,avgint, minval, maxval, mean, sigma))
         
         if col==0:
             return "%s"%m[0]
-        elif col==3:
+        elif col in [3]:
             return "%.2f"%m[3]
+        elif col == 6:
+            return u"%.2f\u00B1%.2f"%(m[6], m[7])
         return "%d"%m[col]
 
     def OnGetItemImage(self, item):
@@ -795,9 +805,15 @@ class ROIIntensityFilter(ProcessingFilter.ProcessingFilter):
             labelStats.Update()
             
             totint = labelStats.GetSum(255)
+            maxval = labelStats.GetMaximum(255)
+            minval = labelStats.GetMinimum(255)
+#            median = labelStats.GetMedian(255)
+#            variance = labelStats.GetVariance(255)
+            mean = labelStats.GetMean(255)
+            sigma = labelStats.GetSigma(255)
             avgint = totint / float(n)
             
-            values.append((mask.getName(),n,totint,avgint))
+            values.append((mask.getName(),n,totint,avgint, minval, maxval, mean, sigma))
         if self.reportGUI:
             self.reportGUI.setMeasurements(values)
             self.reportGUI.Refresh()
