@@ -53,6 +53,7 @@ class VisualizerWindow(wxVTKRenderWindowInteractor):
         Created: 3.05.2005, KP
         Description: Initialization
         """    
+        kws["stereo"]=1
         wxVTKRenderWindowInteractor.__init__(self,parent,-1,**kws)
         self.renderer=None
         self.doSave=0

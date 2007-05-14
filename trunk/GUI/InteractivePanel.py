@@ -240,7 +240,6 @@ class AnnotationHelper(PainterHelper):
         self.parent.diagram.Redraw(dc)
         
 
-#class InteractivePanel(wx.ScrolledWindow):
 class InteractivePanel(ogl.ShapeCanvas):
     """
     Created: 03.07.2005, KP

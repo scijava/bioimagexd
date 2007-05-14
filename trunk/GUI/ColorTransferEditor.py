@@ -178,7 +178,8 @@ class CTFPaintPanel(wx.Panel):
         olddc = self.dc
         dc = wx.MemoryDC()
         self.dc = dc
-        bmp = wx.EmptyBitmap(self.w, self.h)
+        x0, y0, w, h = self.GetClientRect()
+        bmp = wx.EmptyBitmap(w,h)
         dc.SelectObject(bmp)
         dc.SetBackground(wx.Brush("BLACK"))
         dc.Clear()
@@ -248,8 +249,11 @@ class CTFPaintPanel(wx.Panel):
         Created: 30.10.2004, KP
         Description: Paints the graph of the function specified by points in the graph
         """
+        Logging.backtrace()
+        print "Painting",red,green,blue
         (r,rv),(g,gv),(b,bv) = red[-1], green[-1], blue[-1]
         a=0
+        
         if alpha and drawAlpha:
             (a,av) =alpha[-1]
         maxval = max(r,g,b,a)
@@ -262,17 +266,27 @@ class CTFPaintPanel(wx.Panel):
         d = maxval/float(self.maxx)
         if d<1:d=1
         #self.dc = wx.BufferedDC(wx.ClientDC(self),self.buffer)
-        self.dc = wx.MemoryDC()
+        self.dc = wx.MemoryDC()        
+        print "Selecting object",self.buffer
         self.dc.SelectObject(self.buffer)
+        self.dc.BeginDrawing()
+
+        self.dc.Clear()
         
         if not self.background:
+            print "Drawing background",minval,maxval
             self.background = self.drawBackground(minval,maxval)
         
-        self.dc.BeginDrawing()
+        
+        print self.buffer.GetWidth(),self.buffer.GetHeight()
+        print "Blitting bg",self.background.GetWidth(),self.background.GetHeight()
+        x0, y0, w,h = self.GetClientRect()
         self.dc.DrawBitmap(self.background, 0,0)
+        print "done"
         ax0,rx0,gx0,bx0=0,0,0,0
         r0,g0,b0,a0=0,0,0,0
         coeff = float(self.maxx)/maxval
+        print "coeff=%f / %f = %f"%(self.maxx, maxval,coeff)
 
         if selectedPoint:
             x,y=selectedPoint
@@ -283,6 +297,7 @@ class CTFPaintPanel(wx.Panel):
         n=max(len(red),len(green),len(blue),len(alpha))
         
         for i in range(n):
+            print "Painting val",n
 #        for x1 in range(int(minval),int(maxval),int(d)):
 
             try:
@@ -568,10 +583,10 @@ class ColorTransferEditor(wx.Panel):
         self.canvas.Bind(wx.EVT_RIGHT_DOWN,self.onCreatePoint)
         self.canvas.Bind(wx.EVT_MOTION,self.onDrawFunction)
         
-        self.updateGraph()
+#        self.updateGraph()
         self.pos = (0,0)
         
-        if psyco:
+        if psyco and 0:
             psyco.bind(self.onSetMaxNodes)
             psyco.bind(self.onDrawFunction)
             psyco.bind(self.onEditFunction)
@@ -958,8 +973,10 @@ class ColorTransferEditor(wx.Panel):
         Description: Clears the canvas and repaints the function
         """       
         if self.freeMode:
+            print "Painting in free mode"
             self.canvas.paintFreeMode(self.redfunc, self.greenfunc, self.bluefunc, self.alphafunc,maximumValue = self.maxval)
         else:
+            print "Painting transfer function, selected point=",self.selectedPoint
             self.canvas.paintTransferFunction(self.alphaMode,self.selectedPoint, red=self.redpoints, green=self.greenpoints, blue=self.bluepoints, alpha = self.alphapoints,drawAlpha=self.alpha,maximumValue = self.maxval)
         self.canvas.Refresh()
         
@@ -1137,8 +1154,9 @@ class ColorTransferEditor(wx.Panel):
             dg = g-g2
             db = b-b2
             
-            if x in [0,self.maxval]:
-                print "X=%d in range 0,%d, adding %d,%d,%d"%(x,self.maxval,r,g,b)
+            if x in [0,int(self.maxval)]:
+            #if x in range(0,int(self.maxval)):
+                #print "X=%d in range 0,%d, adding %d,%d,%d"%(x,self.maxval,r,g,b)
                 self.redpoints.append((x,r))
                 self.greenpoints.append((x,g))
                 self.bluepoints.append((x,b))
@@ -1170,7 +1188,7 @@ class ColorTransferEditor(wx.Panel):
         self.bluepoints = [(x,coeff*y) for (x,y) in self.bluepoints]
         self.alphapoitns =[(x,coeff*y) for (x,y) in self.alphapoints]
         self.points=[self.redpoints,self.greenpoints,self.bluepoints,self.alphapoints]
-        
+        #print "Updating graph..."
         self.updateGraph()
             
     def setColorTransferFunction(self,TF):

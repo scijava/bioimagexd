@@ -195,6 +195,7 @@ void vtkExtTIFFReader::ExecuteInformation()
 {    
   this->InitializeColors();
 
+  printf("Computing Internal File Name for dataextent %d,%d,%d,%d,%d,%d\n", DataExtent[0], DataExtent[1], DataExtent[2], DataExtent[3], DataExtent[4], DataExtent[5]);
   this->ComputeInternalFileName(this->DataExtent[4]);
   if (this->InternalFileName == NULL)
     {

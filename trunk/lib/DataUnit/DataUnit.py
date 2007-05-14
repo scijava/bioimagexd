@@ -115,9 +115,14 @@ class DataUnit:
                 cached = self.dataSource.getFromCache(self.getFileName(),self.getName(),"MIP")
                 if not cached:
                     imagedata = self.dataSource.getMIPdata(tp)
+                    imagedata.Update()
+        
                     if not color and not noColor:
                         color=self.getColorTransferFunction()
+                    print "Getting MIP with color", color
                     self.mip=ImageOperations.getMIP(imagedata,color)
+                    print "Got mip, storing to cache",self.mip
+                
                     self.dataSource.storeToCache(self.mip, self.getFileName(),self.getName(),"MIP")
                 else:
                     self.mip = cached

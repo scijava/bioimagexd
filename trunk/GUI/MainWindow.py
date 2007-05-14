@@ -153,13 +153,17 @@ class MainWindow(wx.Frame):
         self.splash.SetMessage("Loading image readers...")
         self.readers = Modules.DynamicLoader.getReaders(callback = self.splash.SetMessage)
         self.extToSource = {}
-        self.datasetWildcards="Volume datasets|"
+        self.typeToSource = {}
+        self.datasetWildcards="Volume datasets|*.jpg;*.jpeg;*.tif;*.tiff;*.png;*.bmp;"
         
         descs=[]
         self.splash.SetMessage("Initializing application...")
         for modeclass,ign,module in self.readers.values():
+       
             exts = module.getExtensions()
             wcs=""
+            self.typeToSource[module.getFileType()] = modeclass
+
             for ext in exts:
                 self.extToSource[ext]=modeclass
                 wcs+="*.%s;"%ext
@@ -170,6 +174,10 @@ class MainWindow(wx.Frame):
         self.datasetWildcards+="|"
         self.datasetWildcards+= "|".join(descs)
         
+        self.datasetWildcards+="|JPEG image stack (*.jpg)|*.jpg"
+        self.datasetWildcards+="|TIFF image stack (*.tif)|*.tif;*.tiff"
+        self.datasetWildcards+="|PNG image stack (*.png)|*.png"
+        self.datasetWildcards+="|BMP image stack (*.bmp)|*.bmp"
         for i in self.taskPanels.keys():
             self.taskToId[i] = wx.NewId()
             
@@ -878,11 +886,10 @@ class MainWindow(wx.Frame):
             keyCombo="\tCtrl-P"
         mgr.addMenuItem("settings",wx.ID_PREFERENCES,"&Preferences..."+keyCombo,self.onMenuPreferences)
     
-        mgr.createMenu("import","&Import",place=0)
+#        mgr.createMenu("import","&Import",place=0)
         mgr.createMenu("export","&Export",place=0)
         
-        mgr.addMenuItem("import",MenuManager.ID_IMPORT_VTIFILES,"&VTK dataset series",self.onMenuImport)
-        mgr.addMenuItem("import",MenuManager.ID_IMPORT_IMAGES,"&Stack of images\tCtrl-I",self.onMenuImport)
+        #mgr.addMenuItem("import",MenuManager.ID_IMPORT_VTIFILES,"&VTK dataset series",self.onMenuImport)
    
         mgr.addMenuItem("export",MenuManager.ID_EXPORT_VTIFILES,"&VTK dataset series\tCtrl-E",self.onMenuExport)
         mgr.addMenuItem("export",MenuManager.ID_EXPORT_IMAGES,"&Stack of images",self.onMenuExport)
@@ -895,7 +902,9 @@ class MainWindow(wx.Frame):
 #        mgr.disable(MenuManager.ID_SAVE_SETTINGS)
         
         mgr.addSeparator("file")
-        mgr.addSubMenu("file","import","&Import",MenuManager.ID_IMPORT)
+#        mgr.addSubMenu("file","import","&Import",MenuManager.ID_IMPORT)
+        mgr.addMenuItem("file",MenuManager.ID_IMPORT_IMAGES,"&Import image stack\tCtrl-I",self.onMenuImport)
+
         mgr.addSubMenu("file","export","&Export",MenuManager.ID_EXPORT)
         mgr.addSeparator("file")
         mgr.addMenuItem("file",MenuManager.ID_CLOSE_TASKWIN,"&Close task panel\tCtrl-W","Close the task panel",self.onCloseTaskPanel)
@@ -1229,18 +1238,19 @@ class MainWindow(wx.Frame):
         self.visWin.Refresh()
         
     
-    def onMenuImport(self,evt):
+    def onMenuImport(self,evt, startFile = ""):
         """
         Created: 16.03.2005, KP
         Description: Callback function for menu item "Import"
+        """       
+        import_code="""
+importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
         """
-        if not "show_import" in self.commands:
-            import_code="""
-    importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
-    if importdlg.ShowModal() == wx.ID_OK: mainWindow.openFile( importdlg.getDatasetName() )
-    """
-            command = Command.Command(Command.MENU_CMD,None,None,import_code,"",imports=["GUI.ImportDialog"],desc="Show import dialog")
-            self.commands["show_import"]=command
+        if startFile:
+            import_code+="importdlg.setInputFile('%s')\n"%startFile
+        import_code+="if importdlg.ShowModal() == wx.ID_OK: mainWindow.openFile( importdlg.getDatasetName() )\n"
+        command = Command.Command(Command.MENU_CMD,None,None,import_code,"",imports=["GUI.ImportDialog"],desc="Show import dialog")
+        self.commands["show_import"]=command
         self.commands["show_import"].run()
         #self.importdlg=ImportDialog.ImportDialog(self)
         #self.importdlg.ShowModal()
@@ -1446,6 +1456,9 @@ class MainWindow(wx.Frame):
         for askfile in asklist:
             
             sep=askfile.split(".")[-1]
+            if sep.lower() in ["tif","tiff","jpg","jpeg","png"]:
+                self.onMenuImport(None, askfile)
+                return
             fname=os.path.split(askfile)[-1]
             self.SetStatusText("Loading "+fname+"...")
             askfile=askfile.replace("\\","\\\\")

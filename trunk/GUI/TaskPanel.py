@@ -266,11 +266,15 @@ class TaskPanel(scrolled.ScrolledPanel):
             name = dataunit.getName()
             dc= wx.MemoryDC()
             
+            print "Getting preview image..."
             bmp, vtkimg=ImageOperations.vtkImageDataToPreviewBitmap(dataunit,0,None,TOOL_W,TOOL_H, getvtkImage=1)
             self.itemMips.append(vtkimg)
+            print "got"
             
+            print "Setting preview",i,bmp,bmp.GetWidth(), bmp.GetHeight()
             if self.channelBox:
                 self.channelBox.setPreview(i,bmp)
+            print "Getting channel item bitmap"
             bmp2 = self.getChannelItemBitmap(bmp, ctf)
             toolid=wx.NewId()
             self.toolIds.append(toolid)

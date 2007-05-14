@@ -230,11 +230,7 @@ class LsmDataSource(DataSource.DataSource):
             return data
         data=self.getResampledData(data,i)            
         if self.explicitScale or (data.GetScalarType()!=3 and not raw):
-            print "\n\nGETTING INTENSITY SCALED DATA"
             data=self.getIntensityScaledData(data)
-        else:
-            print "\n\nNOT GETTING INTENSITY SCALING"
-            print "explicit=",self.explicitScale, self.intensityShift, self.intensityScale
         #data.ReleaseDataFlagOff()
         return data
         

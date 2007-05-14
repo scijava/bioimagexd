@@ -1,10 +1,9 @@
-4#! /usr/bin/env pythonG
+#! /usr/bin/env python
 # -*- coding: iso-8859-1 -*-
 """
  Unit: ImportDialog
  Project: BioImageXD
- Created: 16.03.2005
- Creator: KP
+ Created: 16.03.2005, KP
  Description:
 
  A dialog for importing different kinds of data to form a .bxd file
@@ -45,6 +44,10 @@ import DataSource
 import Configuration
 import Image
 
+import Dialogs
+
+import PreviewFrame
+
 class ImportDialog(wx.Dialog):
     """
     Created: 16.03.2005, KP
@@ -55,31 +58,47 @@ class ImportDialog(wx.Dialog):
         Created: 17.03.2005, KP
         Description: Initialize the dialog
         """    
-        wx.Dialog.__init__(self, parent, -1, 'Import Data')
+        self.dataUnit = DataUnit.DataUnit()
+
+        self.dataSource = parent.typeToSource["filelist"]()
+        self.dataUnit.setDataSource(self.dataSource)
+        self.settings = DataUnit.DataUnitSettings()
+        self.settings.set("Type","NOOP")
         
-        self.sizer=wx.GridBagSizer()
-        self.notebook = wx.Notebook(self,-1)
-        self.sizer.Add(self.notebook,(0,0),flag=wx.EXPAND|wx.ALL)
+        self.ctfInitialized = 0
+        
+        wx.Dialog.__init__(self, parent, -1, 'Import image stack', style = wx.RESIZE_BORDER|wx.CAPTION)
+        self.inputFile=""
+
+#        self.sizer=wx.GridBagSizer()
+        self.sizer = wx.BoxSizer(wx.VERTICAL)
         self.createImageImport()
         #self.createVTIImport()
         self.imageInfo = None
         self.pattern=0
         self.resultDataset = None
-        self.extMapping = {"tif":"TIFF","tiff":"TIFF","png":"PNG","jpg":"JPEG","jpeg":"JPEG","pnm":"PNM","vti":"XMLImageData","vtk":"DataSet","bmp":"BMP"}
-        self.dimMapping={"bmp":2,"tif":2,"tiff":2,"png":2,"jpg":2,"jpeg":2,"pnm":2,"vti":3,"vtk":3}
         
-        self.notebook.AddPage(self.imagePanel,"Import dataset")
-
         self.btnsizer=self.CreateButtonSizer(wx.OK|wx.CANCEL)
-        self.sizer.Add(self.btnsizer,(5,0),flag=wx.EXPAND|wx.RIGHT|wx.LEFT)
-    
+
+        self.sizer.Add(self.imageSizer, 1,wx.EXPAND)
+        self.sizer.Add(self.btnsizer, 0, wx.EXPAND)
         wx.EVT_BUTTON(self,wx.ID_OK,self.onOkButton)
         self.spacing = (1.0, 1.0, 1.0)
         self.voxelSize = (1.0, 1.0, 1.0)
         
         self.SetSizer(self.sizer)
+        self.sizer.SetSizeHints(self)
         self.SetAutoLayout(1)
         self.sizer.Fit(self)
+
+		
+    def setInputFile(self, filename):
+        """
+        Created: 07.05.2007, KP
+        Description: Set a file that is used as an initial input for the import
+        """        
+        self.inputFile = filename
+        self.browsedir.SetValue(filename)
         
     def getDatasetName(self):
         """
@@ -109,39 +128,20 @@ class ImportDialog(wx.Dialog):
         Created: 21.04.2005, KP
         Description: Method that reads the files that user has selected
         """          
-        print "convertFiles",outname
         idxs = self.sourceListbox.GetSelections()
         files=[]
         
         if not idxs:
             n = self.sourceListbox.GetCount()
             idxs=range(n)
-        print "idxs=",idxs
         for i in idxs:
             files.append(self.sourceListbox.GetString(i))
-        print "files=",files
-        
-        
-        isRGB = 1
-        ext = files[0].split(".")[-1].lower()
-        if ext in ["tif","tiff"]:
-            tiffimg = Image.open(files[0])
-            if tiffimg.palette:
-                print "HAS PALETTE, THEREFORE NOT RGB"
-                isRGB = 0
-            else:
-                print "NO PALETTE, IS AN RGB IMAGE"
-        dirn=os.path.dirname(files[0])
-        self.z=int(self.depthEdit.GetValue())
-        ext=files[0].split(".")[-1].lower()
-        mpr = self.extMapping[ext]
-        # If it's a tiff file, we use our own, extended TIFF reader
-        if self.extMapping[ext]=="TIFF":
-            mpr="ExtTIFF"
-        self.rdrstr = "vtk.vtk%sReader()"%mpr
-        dim = self.dimMapping[ext]
-        self.readers=[]
-        
+        try:
+            self.dataSource.setFilenames(files)
+        except Logging.GUIError, ex:
+            ex.show()
+            self.Close()
+            return
         bxdwriter =  DataSource.BXDDataWriter(outname)
         self.resultDataset = bxdwriter.getFilename()
         print "Result dataset=",self.resultDataset
@@ -150,140 +150,11 @@ class ImportDialog(wx.Dialog):
         self.writer = DataSource.BXCDataWriter(bxcfilename)
         bxdwriter.addChannelWriter(self.writer)
         bxdwriter.write()
+        self.dlg = wx.ProgressDialog("Importing","Reading dataset %d / %d"%(0,0),maximum = 2*self.tot, parent = self,
+        style = wx.PD_ELAPSED_TIME|wx.PD_REMAINING_TIME)   
         
-        if dim==3:
-            self.tot = len(files)
-            self.dlg = wx.ProgressDialog("Importing","Reading dataset %d / %d"%(0,0),maximum = 2*self.tot, parent = self,
-            style = wx.PD_ELAPSED_TIME|wx.PD_REMAINING_TIME)        
-            for i,file in enumerate(files):   
-                rdr = eval(self.rdrstr)
-                if ext =="bmp":
-                    rdr.Allow8BitBMPOn()
-                    
-                # This is not required for VTK dataset readers, so 
-                # we ignore any errors 0
-                Logging.info("Reading ",file,kw="io")
-                rdr.SetFileName(file)
-                rdr.Update()
-                if mpr=="ExtTIFF" and not isRGB:
-                    rdr.RawModeOn()
-
-
-                self.readers.append(rdr)
-                self.dlg.Update(i,"Reading dataset %d / %d"%(i+1,self.tot))
-#                self.writeData(outname,data,i,len(files))
-        else:
-            #print "IMPORTING..."
-            self.tot = len(files) / self.z
-            
-            
-            self.dlg = wx.ProgressDialog("Importing","Reading dataset %d / %d"%(0,0),maximum = 2*self.tot, parent = self,
-            style = wx.PD_ELAPSED_TIME|wx.PD_REMAINING_TIME)
-            #rdr.SetFileDimensionality(dim)
-            pattern = self.patternEdit.GetValue()
-            n=pattern.count("%")
-            
-            Logging.info("Number of %s=",n,kw="io")
-            imgAmnt=len(files)
-            print "TOT=",self.tot
-            if self.tot == 1:
-                arr = vtk.vtkStringArray()
-                for i in files:
-                    arr.InsertNextValue(os.path.join(dirn,i))
-                rdr = eval(self.rdrstr)   
-                rdr.SetFileNames(arr)
-                if ext=="bmp":
-                    rdr.Allow8BitBMPOn()
-                
-                    
-                rdr.SetDataExtent(0,self.x-1,0,self.y-1,0,self.z-1)
-                rdr.SetDataSpacing(self.spacing)
-                rdr.SetDataOrigin(0,0,0)
-                if mpr=="ExtTIFF" and not isRGB:
-                    rdr.RawModeOn()
-                
-                self.readers.append(rdr)
-            elif n==0 and imgAmnt>1:
-                #print "FOO"
-                Dialogs.showerror(self,"You are trying to import multiple files but have not defined a proper pattern for the files to be imported","Bad pattern")
-                return
-            elif n==0:
-                rdr = eval(self.rdrstr)
-                if ext=="bmp":
-                    rdr.Allow8BitBMPOn()
-                if mpr=="ExtTIFF" and not isRGB:
-                    rdr.RawModeOn()
-                    
-                rdr.SetDataExtent(0,self.x-1,0,self.y-1,0,self.z-1)
-                rdr.SetDataSpacing(self.spacing)
-                rdr.SetDataOrigin(0,0,0)
-                
-                rdr.SetFileName(files[0])
-                rdr.Update()
-
-                Logging.info("Reader = ",rdr,kw="io")
-                self.dlg.Update(0,"Reading dataset 1")
-                self.readers.append(rdr)
-                #self.writeData(outname,data,j,len(files))
-            elif n==1:
-                j=0
-                Logging.info("self.z=%d",self.z,kw="io")
-                start=0
-                for i in range(0,imgAmnt):
-                    
-                    file=dirn+os.path.sep+pattern%i
-                    #print "CHecking ",file
-                    if os.path.exists(file):
-                        start=i
-                        Logging.info("Files start at %d"%i)
-                        break
-                    
-                for i in range(start,imgAmnt+start,self.z):
-                    rdr = eval(self.rdrstr)
-                    if ext =="bmp":
-                        rdr.Allow8BitBMPOn()
-
-                    rdr.SetDataExtent(0,self.x-1,0,self.y-1,0,self.z-1)
-                    rdr.SetDataSpacing(self.spacing)
-                    rdr.SetDataOrigin(0,0,0)
-                    
-                    if i:
-                        Logging.info("Setting slice offset to ",i,kw="io")
-                        rdr.SetFileNameSliceOffset(i)
-                    rdr.SetFilePrefix(dirn+os.path.sep)
-                    rdr.SetFilePattern("%s"+pattern)
-                    rdr.Update()
-                    Logging.info("Reader = ",rdr,kw="io")
-                    self.dlg.Update(j,"Reading dataset %d / %d"%(j+1,self.tot))
-                    self.readers.append(rdr)
-                    #self.writeData(outname,data,j,len(files))
-                    j=j+1
-            elif n==2:
-                tps = imgAmnt / self.z
-                for i in range(tps):
-                    rdr = eval(self.rdrstr)
-                    if ext =="bmp":
-                        rdr.Allow8BitBMPOn()
-
-                    rdr.SetDataExtent(0,self.x-1,0,self.y-1,0,self.z-1)
-                    rdr.SetDataSpacing(self.spacing)
-                    rdr.SetDataOrigin(0,0,0)
-                    
-                    pos=pattern.rfind("%")
-                    begin=pattern[:pos-1]
-                    end=pattern[pos-1:]
-                    currpat=begin%i+end
-                    Logging.info("Pattern for timepoint %d is "%i,currpat,kw="io")
-                                     
-                    rdr.SetFilePrefix(dirn+os.path.sep)
-                    rdr.SetFilePattern("%s"+currpat)
-                    Logging.info("Reader = ",rdr,kw="io")
-                    rdr.Update()
-                    #data = rdr.GetOutput()
-                    #self.writeData(outname,data,i,len(files))
-                    self.readers.append(rdr)
-                    self.dlg.Update(i,"Reading dataset %d / %d"%(i+1,self.tot))
         
+          
         self.writeDataUnitFile()
         self.dlg.Destroy()
         
@@ -292,8 +163,8 @@ class ImportDialog(wx.Dialog):
         Created: 25.04.2005, KP
         Description: Writes a .bxd file
         """ 
-        settings = DataUnit.DataUnitSettings()
-        settings.set("Type","NOOP")
+        settings = self.dataUnit.getSettings()
+
         Logging.info("Spacing for dataset=",self.spacing,kw="io")
         settings.set("Spacing",self.spacing)
         x,y,z =self.voxelSize
@@ -304,20 +175,20 @@ class ImportDialog(wx.Dialog):
         settings.set("VoxelSize",(x,y,z))
         Logging.info("Writing dimensions as ",self.x,self.y,self.z,kw="io")
 
+
         settings.set("Dimensions",(self.x,self.y,self.z))
         name=self.nameEdit.GetValue()
         settings.set("Name",name)
-        
-        ctf = self.colorBtn.getColorTransferFunction()
-        settings.set("ColorTransferFunction",ctf)
+
         
         parser = self.writer.getParser()
         settings.writeTo(parser)
         i=0
         Logging.info("readers (%d)="%len(self.readers),self.readers,kw="io")
-        for rdr in self.readers:
-            rdr.Update()
-            image=rdr.GetOutput()
+        #for rdr in self.readers:
+        tot = self.dataSource.getDataSetCount()
+        for i in range(0, tot):
+            image = self.dataSource.getDataSet(i)
             #image.SetExtent(0,self.x-1,0,self.y-1,0,self.z-1)
             image.SetSpacing(self.spacing)
             image.SetOrigin(0,0,0)
@@ -327,52 +198,44 @@ class ImportDialog(wx.Dialog):
             i=i+1
         self.writer.write()
             
-    
-    def writeData(self,outname,data,n,total):
-        """
-        Created: 21.04.2005, KP
-        Description: Writes a data out
-        """
-        Logging.info("Adding dataset %d"%n,data,kw="io")
-        self.writer.addImageData(data)
-        
+            
     def createImageImport(self):
         """
         Created: 17.03.2005, KP
         Description: Creates a panel for importing of images as slices of a volume
         """            
-        self.imagePanel = wx.Panel(self.notebook,-1,size=(640,480))
         self.imageSizer=wx.GridBagSizer(5,5)
-        self.imageSourcebox=wx.StaticBox(self.imagePanel,-1,"Source file")
+        self.imageSourcebox=wx.StaticBox(self,-1,"Source file")
         self.imageSourceboxsizer=wx.StaticBoxSizer(self.imageSourcebox,wx.VERTICAL)
         
-        self.imageSourceboxsizer.SetMinSize((600,100))
+#        self.imageSourceboxsizer.SetMinSize((600,100))
         
         conf = Configuration.getConfiguration()       
         initialDir = conf.getConfigItem("ImportDirectory","Paths")
         if not initialDir:
             initialDir="."
-
-        self.browsedir=filebrowse.FileBrowseButton(self.imagePanel,-1,labelText="Source Directory: ",changeCallback=self.loadListOfImages,startDirectory=initialDir)
+        
+        mask = "Supported image files|*.jpg;*.png;*.tif;*.tiff;*.jpeg;*.vtk;*.vti;*.bmp"
+        self.browsedir=filebrowse.FileBrowseButton(self,-1,labelText="Source Directory: ",changeCallback=self.loadListOfImages,startDirectory=initialDir, initialValue = self.inputFile, fileMask = mask)
         
         self.sourcesizer=wx.BoxSizer(wx.VERTICAL)
         
-        self.sourcelbl=wx.StaticText(self.imagePanel,-1,"Imported dataset consists of:")
-        self.choice= wx.Choice(self.imagePanel,-1,choices=["Files following pattern","All files in same directory"],size=(200,-1))
-        self.choice.SetSelection(0)
+        self.sourcelbl=wx.StaticText(self,-1,"Imported dataset consists of:")
+        self.choice= wx.Choice(self,-1,choices=["Files following pattern","All files in same directory"],size=(200,-1))
+        self.choice.SetSelection(1)
         self.choice.Bind(wx.EVT_CHOICE,self.setInputType)
         
-        self.patternEdit=wx.TextCtrl(self.imagePanel,-1,"",style=wx.TE_PROCESS_ENTER)
+        self.patternEdit=wx.TextCtrl(self,-1,"",style=wx.TE_PROCESS_ENTER, size=(400,-1))
         self.patternEdit.Bind(wx.EVT_TEXT_ENTER,self.loadListOfImages)
         self.patternEdit.Bind(wx.EVT_TEXT,self.loadListOfImages)
         
         
-        self.patternLbl=wx.StaticText(self.imagePanel,-1,"Pattern:")
+        self.patternLbl=wx.StaticText(self,-1,"Pattern:")
         self.patternBox=wx.BoxSizer(wx.HORIZONTAL)
         self.patternBox.Add(self.patternLbl)
-        self.patternBox.Add(self.patternEdit,1)
+        self.patternBox.Add(self.patternEdit)
 
-        self.sourceListbox=wx.ListBox(self.imagePanel,-1,size=(550,100),style=wx.LB_ALWAYS_SB|wx.LB_HSCROLL|wx.LB_EXTENDED)
+        self.sourceListbox=wx.ListBox(self,-1,size=(600,100),style=wx.LB_ALWAYS_SB|wx.LB_HSCROLL|wx.LB_EXTENDED)
         self.sourceListbox.Bind(wx.EVT_LISTBOX,self.updateSelection)
         
         self.imageSourceboxsizer.Add(self.browsedir,0,wx.EXPAND)
@@ -381,53 +244,75 @@ class ImportDialog(wx.Dialog):
         self.sourcesizer.Add(self.choice,0)
         self.sourcesizer.Add(self.patternBox,0,wx.EXPAND)
 
-        self.listlbl=wx.StaticText(self.imagePanel,-1,"List of Input Data:")
+        self.listlbl=wx.StaticText(self,-1,"List of Input Data:")
         self.sourcesizer.Add(self.listlbl)
-        self.sourcesizer.Add(self.sourceListbox)
+        self.sourcesizer.Add(self.sourceListbox, 1, wx.EXPAND)
         
         self.imageSourceboxsizer.Add(self.sourcesizer,1,wx.EXPAND)
         
-        self.imageInfoBox=wx.StaticBox(self.imagePanel,-1,"Volume Information")
+        
+        self.previewBox = wx.StaticBox(self,-1,"Volume preview")
+        self.imageInfoBox=wx.StaticBox(self,-1,"Volume Information")
         self.imageInfoSizer=wx.StaticBoxSizer(self.imageInfoBox,wx.VERTICAL)
         
+        previewBox = wx.BoxSizer(wx.VERTICAL)
+        self.zslider = wx.Slider(self,value=1, minValue=1,maxValue=1, style=wx.SL_VERTICAL|wx.SL_LABELS|wx.SL_AUTOTICKS)
+        self.timeslider = wx.Slider(self,value=1, minValue=1,maxValue=1, style=wx.SL_LABELS|wx.SL_AUTOTICKS)
+
+        self.zslider.Bind(wx.EVT_SCROLL,self.onChangeZSlice)
+        self.timeslider.Bind(wx.EVT_SCROLL, self.onChangeTimepoint)
+                
+        self.preview = PreviewFrame.PreviewFrame(self,previewsize=(384,384),scrollbars=False)
+        self.preview.setPreviewType("")
+        
+        previewBox.Add(self.preview)
+        previewBox.Add(self.timeslider,1,wx.EXPAND)
+        
+        
+        self.previewSizer = wx.StaticBoxSizer(self.previewBox, wx.HORIZONTAL)
+        self.previewSizer.Add(previewBox)
+        self.previewSizer.Add(self.zslider,1,wx.EXPAND)        
+      
         self.infosizer=wx.GridBagSizer(5,5)
 
-        self.nameLbl=wx.StaticText(self.imagePanel,-1,"Dataset name:")
-        self.nameEdit = wx.TextCtrl(self.imagePanel,-1,"",size=(220,-1))
+        self.nameLbl=wx.StaticText(self,-1,"Dataset name:")
+        self.nameEdit = wx.TextCtrl(self,-1,"",size=(220,-1))
 
-        self.nlbl=wx.StaticText(self.imagePanel,-1,"Number of datasets:")
-        self.imageAmountLbl=wx.StaticText(self.imagePanel,-1,"1")
+        self.nlbl=wx.StaticText(self,-1,"Number of datasets:")
+        self.imageAmountLbl=wx.StaticText(self,-1,"1")
  
         
-        self.dimlbl=wx.StaticText(self.imagePanel,-1,"Dimension of single slice:")
-        self.dimensionLbl=wx.StaticText(self.imagePanel,-1,"0 x 0")
+        self.dimlbl=wx.StaticText(self,-1,"Dimension of single slice:")
+        self.dimensionLbl=wx.StaticText(self,-1,"")
     
         
-        self.depthlbl=wx.StaticText(self.imagePanel,-1,"Depth of Stack:")
-        self.depthEdit=wx.TextCtrl(self.imagePanel,-1,"1")
+        self.depthlbl=wx.StaticText(self,-1,"Depth of Stack:")
+        self.depthEdit=wx.TextCtrl(self,-1,"1")
         self.depthEdit.Bind(wx.EVT_TEXT,self.setNumberOfImages)
         
 
-        self.tpLbl=wx.StaticText(self.imagePanel,-1,"Number of Timepoints:")
-        self.timepointLbl=wx.StaticText(self.imagePanel,-1,"1")
+        self.tpLbl=wx.StaticText(self,-1,"Number of Timepoints:")
+        #self.timepointLbl=wx.StaticText(self,-1,"1")
+        self.timepointEdit = wx.TextCtrl(self,-1,"1")
+        self.timepointEdit.Bind(wx.EVT_TEXT, self.setNumberOfTimepoints)
         
-        self.voxelSizeLbl=wx.StaticText(self.imagePanel,-1,u"Voxel size")
-        #self.voxelSizeEdit=wx.TextCtrl(self.imagePanel,-1,"0, 0, 0")
+        self.voxelSizeLbl=wx.StaticText(self,-1,u"Voxel size")
+        #self.voxelSizeEdit=wx.TextCtrl(self,-1,"0, 0, 0")
         #self.voxelSizeEdit = masked.TextCtrl(self,-1,u"",
         #mask = u"#{3}.#{4} \u03BCm x #{3}.#{4}\u03BCm x #{3}.#{4}\u03BCm",
         #formatcodes="F-_.")
         box=wx.BoxSizer(wx.HORIZONTAL)
-        self.voxelX=wx.TextCtrl(self.imagePanel,-1,"1.0")
-        self.voxelY=wx.TextCtrl(self.imagePanel,-1,"1.0")
-        self.voxelZ=wx.TextCtrl(self.imagePanel,-1,"1.0")
+        self.voxelX=wx.TextCtrl(self,-1,"1.0",size=(50,-1))
+        self.voxelY=wx.TextCtrl(self,-1,"1.0",size=(50,-1))
+        self.voxelZ=wx.TextCtrl(self,-1,"1.0",size=(50,-1))
         
         self.voxelX.Bind(wx.EVT_TEXT,self.onUpdateVoxelSize)
         self.voxelZ.Bind(wx.EVT_TEXT,self.onUpdateVoxelSize)
         self.voxelY.Bind(wx.EVT_TEXT,self.onUpdateVoxelSize)
 
-        self.lblX=wx.StaticText(self.imagePanel,-1,u"\u03BCm x")
-        self.lblY=wx.StaticText(self.imagePanel,-1,u"\u03BCm x")
-        self.lblZ=wx.StaticText(self.imagePanel,-1,u"\u03BCm")
+        self.lblX=wx.StaticText(self,-1,u"\u03BCm x")
+        self.lblY=wx.StaticText(self,-1,u"\u03BCm x")
+        self.lblZ=wx.StaticText(self,-1,u"\u03BCm")
         box.Add(self.voxelX)
         box.Add(self.lblX)
         box.Add(self.voxelY)
@@ -435,10 +320,18 @@ class ImportDialog(wx.Dialog):
         box.Add(self.voxelZ)
         box.Add(self.lblZ)
 
-        self.spcLbl=wx.StaticText(self.imagePanel,-1,"Dataset Spacing:")
-        self.spacingLbl=wx.StaticText(self.imagePanel,-1,"0.00 x 0.00 x 0.00")
+        self.spcLbl=wx.StaticText(self,-1,"Dataset Spacing:")
+        self.spacingLbl=wx.StaticText(self,-1,"0.00 x 0.00 x 0.00")
         
         n=0
+        msglbl = wx.StaticText(self,-1,
+"""You are opening images from which we cannot read certain pieces of information,
+such as voxel sizing and number of slices in a single timepoint. This information 
+is important for the correct visualization and processing of the images. Please 
+enter the information below.""")
+        self.infosizer.Add(msglbl,(n,0),span=(1,2))
+        n+=1
+      
         self.infosizer.Add(self.nameLbl,(n,0))
         self.infosizer.Add(self.nameEdit,(n,1),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
         n+=1
@@ -449,7 +342,7 @@ class ImportDialog(wx.Dialog):
         self.infosizer.Add(self.imageAmountLbl,(n,1),flag=wx.EXPAND|wx.ALL)
         n+=1
         self.infosizer.Add(self.tpLbl,(n,0))
-        self.infosizer.Add(self.timepointLbl,(n,1),flag=wx.EXPAND|wx.ALL)
+        self.infosizer.Add(self.timepointEdit,(n,1),flag=wx.EXPAND|wx.ALL)
         n+=1
         self.infosizer.Add(self.voxelSizeLbl,(n,0))
         #self.infosizer.Add(self.voxelSizeEdit,(n,1),flag=wx.EXPAND|wx.ALL)
@@ -462,18 +355,37 @@ class ImportDialog(wx.Dialog):
         self.infosizer.Add(self.depthEdit,(n,1),flag=wx.EXPAND|wx.ALL)
         n+=1
         
-        self.colorBtn = ColorTransferEditor.CTFButton(self.imagePanel)
+        self.colorBtn = ColorTransferEditor.CTFButton(self)
         
-        self.infosizer.Add(self.colorBtn,(n,0),flag=wx.EXPAND|wx.ALL,span=(1,2))
+        self.infosizer.Add(self.colorBtn,(n,0),span=(1,2))
         
         self.imageInfoSizer.Add(self.infosizer,1,wx.EXPAND|wx.ALL)
         
-        self.imageSizer.Add(self.imageInfoSizer,(0,0),flag=wx.EXPAND|wx.ALL,border=5)
-        self.imageSizer.Add(self.imageSourceboxsizer,(1,0),flag=wx.EXPAND|wx.ALL,border=5)
         
-        self.imagePanel.SetSizer(self.imageSizer)
-        self.imagePanel.SetAutoLayout(1)
-        self.imageSizer.Fit(self.imagePanel)
+        self.imageSizer.Add(self.imageSourceboxsizer,(0,0),flag=wx.EXPAND|wx.ALL,border=5,span=(1,2) )
+        self.imageSizer.Add(self.imageInfoSizer,(1,0),flag=wx.EXPAND|wx.ALL,border=5)
+        self.imageSizer.Add(self.previewSizer,(1,1),border=5)
+        
+        if self.inputFile:
+            self.browsedir.SetValue(self.inputFile)
+            self.loadListOfFiles()
+            
+    def onChangeZSlice(self,event):
+        """
+        Created: 07.05.2007, KP
+        Description: Set the zslice displayed in the preview
+        """             
+        self.preview.setZSlice(self.zslider.GetValue()-1)
+        #print "Setting preview to ",self.zslider.GetValue()-1
+        self.preview.updatePreview(0)
+        
+    def onChangeTimepoint(self, event):
+        """
+        Created: 07.05.2007, KP
+        Description: Set the timepoint displayed in the preview
+        """
+        self.preview.setTimepoint(self.timeslider.GetValue()-1)
+        self.preview.updatePreview(0)
         
     def onUpdateVoxelSize(self,filename):
         """
@@ -489,6 +401,7 @@ class ImportDialog(wx.Dialog):
         Logging.info("Voxel sizes = ",vx,vy,vz,kw="io")
         self.voxelSize = (vx,vy,vz)
         self.spacing=(1.0,vy/vx,vz/vx)
+        self.dataSource.setVoxelSize(self.voxelSize)
         Logging.info("Setting spacing to ",self.spacing,kw="io")
         sx,sy,sz=self.spacing
         self.spacingLbl.SetLabel("%.2f x %.2f x %.2f"%(sx,sy,sz))
@@ -503,21 +416,15 @@ class ImportDialog(wx.Dialog):
         items=r.findall(filename)
         if items:
             s="%%.%dd"%len(items[-1])
-            filename=filename.replace(items[-1],s)
-        
-            
+            filename=filename.replace(items[-1],s)            
         self.patternEdit.SetValue(filename)
  
     def setInputType(self,event):
         """
-        Method: setInputType
         Created: 17.03.2005, KP
         Description: A method called when the input type is changed
         """        
-        if self.choice.GetSelection()!=0:
-            self.patternEdit.Enable(0)
-        else:
-            self.patternEdit.Enable(1)
+        self.patternEdit.Enable(self.choice.GetSelection()==0)
         self.loadListOfImages()
      
     def updateSelection(self,event):
@@ -525,9 +432,42 @@ class ImportDialog(wx.Dialog):
         Created: 17.03.2005, KP
         Description: This method is called when user selects items in the listbox
         """           
+        idxs = self.sourceListbox.GetSelections()
+        files=[]
+        
+        if not idxs:
+            n = self.sourceListbox.GetCount()
+            idxs=range(n)
+        for i in idxs:
+            files.append(self.sourceListbox.GetString(i))
+        try:
+            self.dataSource.setFilenames(files)
+        except Logging.GUIError, ex:
+            ex.show()
+            self.sourceListbox.Clear()
+            self.setNumberOfImages(0)
+            return
+        
         self.setNumberOfImages(len(self.sourceListbox.GetSelections()))
-    
-    
+        
+    def setNumberOfTimepoints(self, evt):
+        """
+        Created: 07.05.2007, KP
+        Description: set the number of timepoints, and adjust the number of slices per timepoint accordingly
+        """
+        n = int(float(self.timepointEdit.GetValue()))
+        self.timeslider.SetRange(1, n)
+        
+        totalAmnt = int(self.imageAmountLbl.GetLabel())
+        if n and totalAmnt:
+            slices = float(totalAmnt)/n
+            if self.dataSource.is3DImage():
+                x,y,slices = self.dataUnit.getDimensions()
+            
+            self.depthEdit.SetValue("%.2f"%slices)
+            self.dataSource.setSlicesPerTimepoint(slices)
+            self.zslider.SetRange(1,slices)
+        
     def setNumberOfImages(self,n=-1):
         """
         Created: 17.03.2005, KP
@@ -537,11 +477,16 @@ class ImportDialog(wx.Dialog):
             n=int(self.imageAmountLbl.GetLabel())
         Logging.info("n=",n,kw="io")
         self.imageAmountLbl.SetLabel("%d"%n)
+        
         val = self.depthEdit.GetValue()
         try:
-            val=int(val)
-            tps=float(n)/val
-            self.timepointLbl.SetLabel("%.2f"%tps)
+            if not self.dataSource.is3DImage():
+                val=int(val)
+                tps=float(n)/val
+            else:
+                tps = n
+            self.timepointEdit.SetValue("%.2f"%tps)
+            self.timeslider.SetRange(1,tps)
         except:
             pass
                 
@@ -590,26 +535,23 @@ class ImportDialog(wx.Dialog):
             
         # If the first choice ("All in directory") is selected
         selection=self.choice.GetSelection()
-        dir=os.path.dirname(filename)
+        dirn=os.path.dirname(filename)
         if selection==0:
             
             r=re.compile("[0-9]+")
             pat=r.sub("[0-9]*",os.path.basename(filename))
             
-            dir=os.path.dirname(filename)
-            pat=dir+os.path.sep+"%s"%(pat)
+            dirn=os.path.dirname(filename)
+            pat=dirn+os.path.sep+"%s"%(pat)
         else:
-            pat=dir+os.path.sep+"*.%s"%ext
+            pat=dirn+os.path.sep+"*.%s"%ext
         Logging.info("Pattern for all in directory is ",pat,kw="io")
         files=glob.glob(pat)
         print "Got files=",files
         self.sourceListbox.Clear()
         files.sort(self.sortNumerically)
         r=re.compile("([0-9]+)")
-        
- 
-        
-       
+         
         m = r.search(files[0])
         if m:
 
@@ -622,6 +564,12 @@ class ImportDialog(wx.Dialog):
         if selection==1:
             self.sourceListbox.InsertItems(files,0)
             n=len(files)
+            try:
+                self.dataSource.setFilenames(files, pattern="")
+            except Logging.GUIError, ex:
+                ex.show()
+                self.sourceListbox.Clear()
+                return
         # If we're using the pattern
         elif selection==0:
             pat=self.patternEdit.GetValue()
@@ -631,8 +579,15 @@ class ImportDialog(wx.Dialog):
             if nformat == 0:
                 self.sourceListbox.InsertItems(files,0)
                 n=len(files)
+                try:    
+                    self.dataSource.setFilenames(files, pattern = pat)
+                except Logging.GUIError, ex:
+                    ex.show()
+                    self.sourceListbox.Clear()            
+                    return
             # If there is one specifier, then try to find files that correspond to that
             elif nformat==1:
+                filelist=[]
                 for i in range(startfrom-1, startfrom+filecount+1):
                     try:
                         filename=pat%i
@@ -641,8 +596,16 @@ class ImportDialog(wx.Dialog):
                     for file in files:
                         if file.find(filename)!=-1:
                             self.sourceListbox.Append(file)
+                            filelist.append(file)
                             n+=1
+                try:
+                    self.dataSource.setFilenames(filelist)
+                except Logging.GUIError, ex:
+                    ex.show()
+                    self.sourceListbox.Clear()
+                    return
             else:
+                filelist=[]
                 everfound=0
                 for i in range(filecount):
                     foundone=0
@@ -654,42 +617,42 @@ class ImportDialog(wx.Dialog):
                         for file in files:
                             if file.find(filename)!=-1:
                                 self.sourceListbox.Append(file)
+                                filelist.append(file)
                                 n+=1
                                 foundone=1
                                 everfound=1
                     if everfound and not foundone:break
-                                
-            #r=re.compile(pat)
-            #for file in files:
-            #    if r.search(file):
-            #        self.sourceListbox.Append(file)
-            #        n+=1
-        if self.imageInfo != ext:
-            self.retrieveImageInfo(files[0])
-            self.imageInfo = ext
+                try:
+                    self.dataSource.setFilenames(filelist)                                
+                except Logging.GUIError, ex:
+                    ex.show()
+                    self.sourceListbox.Clear()
+                    return
+                    
         self.setNumberOfImages(n)
+        self.preview.setDataUnit(self.dataUnit)
+        self.preview.zoomToFit()
+        if self.imageInfo != ext:
+            self.retrieveImageInfo()
+            self.imageInfo = ext
             
-    def retrieveImageInfo(self,filename):
+    def retrieveImageInfo(self):
         """
         Created: 21.04.2005, KP
         Description: A method that reads information from an image
-        """        
-        ext=filename.split(".")[-1].lower()
-        if not ext in self.extMapping:
-            Dialogs.showerror(self,"Unrecognized file format for file %s"%filename,"Unrecognized file")
-            return
-        rdr = "vtk.vtk%sReader()"%self.extMapping[ext]
-        
-        rdr=eval(rdr)
-        if ext =="bmp":
-            rdr.Allow8BitBMPOn()
-        
-        rdr.SetFileName(filename)
-        rdr.Update()
-        data=rdr.GetOutput()
-        self.x,self.y,self.z=data.GetDimensions()
-        self.dimensionLbl.SetLabel("%d x %d"%(self.x,self.y))
-        if self.z>1:
-            self.depthEdit.SetValue("%d"%self.z)
-        
- 
+        """                
+        print "Getting dimensions..."
+        self.x,self.y,self.z=self.dataSource.getDimensions()
+        print "Got dims",self.x, self.y, self.z
+        self.dimensionLbl.SetLabel("%d x %d"%(self.x,self.y))                
+        self.depthEdit.SetValue("%.2f"%self.z)
+        self.zslider.SetRange(1,self.z) 
+        if not self.ctfInitialized:
+            x0,x1 = self.dataSource.getScalarRange()
+            self.ctf = vtk.vtkColorTransferFunction()
+            self.ctf.AddRGBPoint(0, 0, 0, 0)
+            self.ctf.AddRGBPoint(x1, 0, 1, 0)
+            self.colorBtn.setColorTransferFunction(self.ctf)
+            self.settings.set("ColorTransferFunction",self.ctf)
+            self.ctfInitialized = 1
+            self.dataUnit.setSettings(self.settings)
