@@ -280,24 +280,26 @@ class DataSource:
             return
         key = self.getCacheKey(datafilename, chName,purpose)
         writer = vtk.vtkPNGWriter()
-        writer.SetInput(imagedata)
+        writer.SetInputConnection(imagedata.GetProducerPort())
         directory = scripting.get_preview_dir()
         filename="%s.png"%key
         filepath=os.path.join(directory,filename)
         #print "Storing to cache",filepath
         writer.SetFileName(filepath)
         writer.Write()
+        print "Wrote ",purpose
+        Logging.backtrace()
         
     def getMIPdata(self,n):
         """
         Created: 05.06.2006, KP
         Description: Return a small resampled dataset of which a small
                      MIP can be created.
-        """                
+        """               
+        return self.getDataSet(n)
         if not self.mipData:
-            print "Resampling data to get fast MIP"
             x,y,z=self.getDimensions()
-            self.mipData = self.getResampledData(self.getDataSet(n),n,tmpDims = (128,128,z))
+            self.mipData = self.getResampledData(self.getDataSet(n, raw=1),n,tmpDims = (128,128,z))
         return self.mipData
         
         
@@ -335,7 +337,7 @@ class DataSource:
             self.shift.SetClampOverflow(1)
         
         #print "\n\nInput to shiftscale=",data.GetScalarRange()
-        self.shift.SetInput(data)
+        self.shift.SetInputConnection(data.GetProducerPort())
         # Need to call this or it will remember the whole extent it got from resampling
         self.shift.UpdateWholeExtent()
 
@@ -383,7 +385,7 @@ class DataSource:
             else:
                 Logging.info("Resampling data to ",self.resampleDims,kw="dataunit")
                 self.resample=vtk.vtkImageResample()
-                self.resample.SetInput(data)
+                self.resample.SetInputConnection(data.GetProducerPort())
                 # Release the memory used by source data
                 #print "data=",data
                 

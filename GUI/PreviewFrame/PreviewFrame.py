@@ -152,8 +152,6 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
             self.zoomy=kws["zoomy"]
             del kws["zoomy"]
         Logging.info("zoom xf=%f, yf=%f"%(self.zoomx,self.zoomy),kw="preview")
-        #if kws.has_key("scrollbars"):
-        #    self.scroll=kws["scrollbars"]
         self.size=size
         self.slice=None
         self.z = 0
@@ -178,6 +176,9 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         #self.Bind(wx.EVT_PAINT,self.OnPaint)        
         self.Bind(wx.EVT_LEFT_DOWN,self.getVoxelValue)
         self.SetHelpText("This window displays the selected dataset slice by slice.")
+        
+        if not self.show["SCROLL"]:
+            self.SetScrollbars(0,0,0,0)
         
     def isMipMode(self):
         """

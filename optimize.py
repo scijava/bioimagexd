@@ -119,7 +119,7 @@ def execute_limited(pipeline, updateExtent = None):
     
     executing = 1
 #    pipeline.DebugOn()
-    streamer.SetInput(pipeline.GetOutput())
+    streamer.SetInputConnection(pipeline.GetOutputPort())
     retval = streamer.GetOutput()
     
     if updateExtent and not bxd.wantWholeDataset:

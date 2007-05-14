@@ -181,9 +181,9 @@ class RenderingMode(VisualizationMode):
         
         mgr.enable(MenuManager.ID_LIGHTS,self.configPanel.onConfigureLights)
         mgr.enable(MenuManager.ID_RENDERWIN,self.configPanel.onConfigureRenderwindow)
-        mgr.addMenuItem("file",MenuManager.ID_LOAD_SCENE,"Open 3D view scene...","Open a 3D view scene file",self.configPanel.onOpenScene,before=MenuManager.ID_IMPORT)
-        mgr.addMenuItem("file",MenuManager.ID_SAVE_SCENE,"Save 3D view scene...","Save a 3D view scene",self.configPanel.onSaveScene,before=MenuManager.ID_IMPORT)                
-        mgr.addSeparator("file",sepid=MenuManager.ID_SEPARATOR,before=MenuManager.ID_IMPORT)
+        mgr.addMenuItem("file",MenuManager.ID_LOAD_SCENE,"Open 3D view scene...","Open a 3D view scene file",self.configPanel.onOpenScene,before=MenuManager.ID_IMPORT_IMAGES)
+        mgr.addMenuItem("file",MenuManager.ID_SAVE_SCENE,"Save 3D view scene...","Save a 3D view scene",self.configPanel.onSaveScene,before=MenuManager.ID_IMPORT_IMAGES)                
+        mgr.addSeparator("file",sepid=MenuManager.ID_SEPARATOR,before=MenuManager.ID_IMPORT_IMAGES)
         return self.wxrenwin
         
     def saveSnapshot(self,filename):

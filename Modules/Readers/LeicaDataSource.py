@@ -160,7 +160,13 @@ class LeicaDataSource(DataSource):
         self.reader.Read()
         dataunits=[]
         experiments = self.reader.GetExperiments()
+        print "Experiments=",experiments
         for experiment in experiments:
+            if experiment in self.reader.nonExistent:
+                print "Not reading ",experiment
+                continue
+            else:
+                print "Reading",experiment
             channelNum=self.reader.GetNumberOfChannels(experiment)
             #print "There are %d channels in %s"%(channelNum,filename)
             for i in range(channelNum):
@@ -213,6 +219,7 @@ class LeicaExperiment:
         # Store snapshots in a dict of it's own, so we can give them separately 
         # if requested
         self.SnapshotDict={}
+        self.nonExistent=[]
         self.path=""
 
         self.RE_ScanMode=re.compile(r'ScanMode.*',re.I)
@@ -472,7 +479,7 @@ class LeicaExperiment:
         Created: 15.04.2005, KP, based on Karl Garsha's code
         Description: Return the depth from given data
         """ 
-        print "Searching from",Series_Data
+#        print "Searching from",Series_Data
         SeriesDepthString=self.RE_Depth.search(Series_Data)
         SeriesDepthLine=SeriesDepthString.group(0)
         
@@ -651,7 +658,7 @@ class LeicaExperiment:
             print "Creating TIFF list"
             print "Num_T_Points=",Num_T_Points
             
-            
+            notFound = 0
             TimePoints=[]
             for a in xrange(Num_T_Points): #starts at 0 and counts up to (but not including) Num_T_Points.
                 n=int(math.log(Num_T_Points))
@@ -690,133 +697,27 @@ class LeicaExperiment:
                             Slice_Name_No_Z = self.ExpName + '_' + Series_Name  + CH_Name + '.tif'
                         if os.path.exists(os.path.join(self.path,Slice_Name_With_Z)):
                             File_List.append(Slice_Name_With_Z)
-                            print "Using with Z"
+                            #print "Using with Z"
                         elif os.path.exists(os.path.join(self.path,Slice_Name_No_Z)):
-                            print "Using no z"
+                            #print "Using no z"
                             File_List.append(Slice_Name_No_Z)
                         
                     Channels.append(File_List)
+                    if not File_List:
+                        notFound = 1
                 TimePoints.append(Channels)
-            Series_Info['TiffList']=TimePoints
-            self.SeriesDict[Series_Name]=Series_Info #puts modified Series_Info dictionary back into SeriesDict
+            if notFound:
+                self.nonExistent.append(Series_Name)
+            else:
+                Series_Info['TiffList']=TimePoints            
+                self.SeriesDict[Series_Name]=Series_Info #puts modified Series_Info dictionary back into SeriesDict
 
     def CreateExpDataStruct(self,ExpPathTxt):
         self.Sep_Series(ExpPathTxt)
         self.Extract_Series_Info()
         self.Create_Tiff_Lists()
             
-    def ReadLeicaVolDataOld(self,Series_Name):
-        #os.chdir(self.ExpPath)#needed for Tkinter file select
-        global TP_CH_VolDataList
-        Series_Info=self.SeriesDict[Series_Name]
-        TiffList=Series_Info['TiffList']
-        XYDim=Series_Info['Resolution_X']-1
-        NumSect=Series_Info['Number_Sections']-1
-        XSpace=Series_Info['Voxel_Width_X']
-        YSpace=Series_Info['Voxel_Height_Y']
-        ZSpace=Series_Info['Voxel_Depth_Z']
-        self.TP_CH_VolDataList=[] #contains the vol data for each timepoint, each channel
-        for TimePoint in TiffList:
-            ChnlVolDataLst=[] #contains the volumetric datasets for each channel w/in each timepoint
-            for Channel in TimePoint:
-                
-                TIFFReader=vtk.vtkExtTIFFReader()
-                if Series_Info['Pixel_Size'] !=3:
-                    TIFFReader.RawModeOn()
-                #First read the images for a particular channel
-                print "Image list=",Channel
-                ImageName=Channel[0] #Take the first tif name
-                print "Image name='%s'"%ImageName
-                # Check to see whether the image name contains either
-                # channels or z slices at all. If not, then we can just you
-                # the filename and skip a whole bunch of processing
-                if ("_ch" in ImageName) or ("_z" in ImageName):
-                    print "Has channels or is z stack"
-                    #RE_zsplit=re.compile(r'.+_z000.+',re.I)  #split the filename at the z position, exising the z-pos variable
-                    #match for the file prefix
-                    RE_FilePrefix=re.compile(r'.+_z',re.I) 
-                    # match for files that only have _chXXX
-                    RE_FileChPrefix=re.compile(r'(.+)_ch',re.I)
-                    #search for the end part of the file name
-                    RE_FilePostfix=re.compile(r'_ch\d+.tif',re.I) 
-                    FilePrefixMatch=re.match(RE_FilePrefix,ImageName)
-                    
-                    # Match the part before _z
-                    if FilePrefixMatch:
-                        ImagePrefix=string.strip(FilePrefixMatch.group(0))#we match the first part of the filename (above), then get the matched string
-                        print "ImagePrefix=",ImagePrefix
-                    else:
-                        print "No Z, Matching ch only"
-                        FilePrefixMatch=re.match(RE_FileChPrefix,ImageName)
-                        #raise "Got no ImagePrefix for ",ImageName
-                        #we match the first part of the filename (above), then get the matched string
-                        if FilePrefixMatch:
-                            ImagePrefix=string.strip(FilePrefixMatch.group(1))
-                        
-                            print FilePrefixMatch.groups()
-                            print "ImagePrefix (ch only)=",ImagePrefix                    
-                        else:
-                            print "No file prefix"
-                            ImagePrefix=""
-                    print "Image prefix=",ImagePrefix
-                    FilePostfixSearch=re.search(RE_FilePostfix,ImageName)
-                    if FilePostfixSearch:
-                        #this gives us the string found by the search
-                        FilePostfixGroup=FilePostfixSearch.group(0)                        
-                        print "FilePostfixGroup=",FilePostfixGroup
-                    else:
-                        print "No file postfix group"
-                        FilePostfixGroup=".tif"
-                    if Series_Info["Number_Sections"]>1:                
-                        #fsprint stuff--string+3 int spaces padded w/ zeros+last part of name eg. "_ch00.tif"
-                        print "Has z slices"
-                        z=Series_Info['Number_Sections']
-                        
-                        nzslices=int(math.ceil(math.log(z,10)))
-                        print "z=%d, log z=%d"%(z,nzslices)
-                        pat='%%s%%0%di'%nzslices
-                        ImagePattern=pat+str(FilePostfixGroup) 
-                    else:
-                        ImagePattern='%s'+str(FilePostfixGroup)
-                    print "ImagePattern=",ImagePattern
-                    if FilePrefixMatch != None:
-                        print "self.path=",self.path
-                        
-                        ImagePrefix=os.path.join(self.path,ImagePrefix)
-                        ImagePrefix.encode("latin-1")
-                        #print "Using image# prefix='%s'"%ImagePrefix
-    
-                        
-                        TIFFReader.SetFilePrefix(ImagePrefix) 
-                    #if FilePostfixSearch != None:
-                    if ImagePattern:
-                        ImagePattern.encode("latin-1")
-                        #ImageReader.SetFilePattern(ImagePattern)
-                        TIFFReader.SetFilePattern(ImagePattern)
-                else:
-                    print "Using simply the ImageName",ImageName
-                    name=os.path.join(self.path,ImageName)
-                    #ImageReader.SetFileName(name)
-                    TIFFReader.SetFileName(name)
-                
-                print "Bit depth of image=",Series_Info["Bit_Depth"]
-                    
-                if Series_Info['Bit_Depth']==8:
-                    #ImageReader.SetDataScalarTypeToUnsignedChar()
-                    TIFFReader.SetDataScalarTypeToUnsignedChar()
-                else:
-                    raise "Only 8-bit data supported"
-                TIFFReader.FileLowerLeftOff()
-                TIFFReader.SetDataExtent(0,XYDim,0,XYDim,0,NumSect)
-                TIFFReader.SetDataSpacing(XSpace,YSpace,ZSpace)
-                
-                TIFFReader.Update()                              
-                
-                ChnlVolDataLst.append(TIFFReader)#now we have a list with the imported volume data for each channel
-#                self.vtkFilters.append(TIFFReader)
-            self.TP_CH_VolDataList.append(ChnlVolDataLst)   
-            
- 
+
     def ReadLeicaVolData(self,Series_Name):
         #os.chdir(self.ExpPath)#needed for Tkinter file select
         global TP_CH_VolDataList
@@ -827,16 +728,17 @@ class LeicaExperiment:
         XSpace=Series_Info['Voxel_Width_X']
         YSpace=Series_Info['Voxel_Height_Y']
         ZSpace=Series_Info['Voxel_Depth_Z']
+        #print "Reading leica volume",Series_Name
         self.TP_CH_VolDataList=[] #contains the vol data for each timepoint, each channel
         for TimePoint in TiffList:
             ChnlVolDataLst=[] #contains the volumetric datasets for each channel w/in each timepoint
             for Channel in TimePoint:
-                
                 TIFFReader=vtk.vtkExtTIFFReader()
                 if Series_Info['Pixel_Size'] !=3:
                     TIFFReader.RawModeOn()
                     
                 arr = vtk.vtkStringArray()
+                #print "Channels=", Channel
                 for i in Channel:
                     arr.InsertNextValue(os.path.join(self.path,i))
                 TIFFReader.SetFileNames(arr)
@@ -848,7 +750,7 @@ class LeicaExperiment:
                 # channels or z slices at all. If not, then we can just you
                 # the filename and skip a whole bunch of processing
                 
-                print "Bit depth of image=",Series_Info["Bit_Depth"]
+#                print "Bit depth of image=",Series_Info["Bit_Depth"]
                     
                 if Series_Info['Bit_Depth']==8:
                     #ImageReader.SetDataScalarTypeToUnsignedChar()
