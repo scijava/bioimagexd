@@ -19,10 +19,13 @@ def elapsed():
 
 r1=vtk.vtkLSMReader()
 r1.SetFileName(D)
+
 r2=vtk.vtkLSMReader()
 r2.SetFileName(D)
+
 r1.SetUpdateChannel(0)
 r2.SetUpdateChannel(1)
+
 d1=r1.GetOutput()
 d2=r2.GetOutput()
 

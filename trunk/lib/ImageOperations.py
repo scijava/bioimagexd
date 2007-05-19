@@ -425,7 +425,7 @@ def vtkImageDataToWxImage(data,slice=-1,startpos=None,endpos=None):
         data=getSlice(data,slice,startpos,endpos)
     #print "data=",data
     exporter=vtk.vtkImageExport()
-    Logging.info("Setting update extent to ",data.GetWholeExtent(),kw="imageop")
+#    Logging.info("Setting update extent to ",data.GetWholeExtent(),kw="imageop")
     data.SetUpdateExtent(data.GetWholeExtent())
     data.Update()
     
@@ -1038,7 +1038,7 @@ def scatterPlot(imagedata1,imagedata2,z,countVoxels, wholeVolume=1,logarithmic=1
     if logarithmic:
         Logging.info("Scaling scatterplot logarithmically",kw="imageop")
         logscale=vtk.vtkImageLogarithmicScale()
-        logscale.SetInput(acc.GetOutputPort())
+        logscale.SetInputConnection(acc.GetOutputPort())
         logscale.Update()
         data=logscale.GetOutput()
         
@@ -1146,7 +1146,7 @@ def getSlice(volume,zslice,startpos=None,endpos=None):
     if startpos:
         x0,y0=startpos
         x,y=endpos
-    Logging.info("VOI of dataset = (%d,%d,%d,%d,%d,%d)"%(x0,x-1,y0,y-1,zslice,zslice),kw="preview")
+#    Logging.info("VOI of dataset = (%d,%d,%d,%d,%d,%d)"%(x0,x-1,y0,y-1,zslice,zslice),kw="preview")
     voi.SetVOI(x0,x-1,y0,y-1,zslice,zslice)
     voi.Update()
     data=voi.GetOutput()

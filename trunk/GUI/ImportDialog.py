@@ -216,7 +216,8 @@ class ImportDialog(wx.Dialog):
             initialDir="."
         
         mask = "Supported image files|*.jpg;*.png;*.tif;*.tiff;*.jpeg;*.vtk;*.vti;*.bmp"
-        self.browsedir=filebrowse.FileBrowseButton(self,-1,labelText="Source Directory: ",changeCallback=self.loadListOfImages,startDirectory=initialDir, initialValue = self.inputFile, fileMask = mask)
+        self.browsedir=filebrowse.FileBrowseButton(self,-1,labelText="Source Directory: ",changeCallback=self.loadListOfImages,
+        startDirectory=initialDir, initialValue = self.inputFile, fileMask = mask)
         
         self.sourcesizer=wx.BoxSizer(wx.VERTICAL)
         
@@ -519,7 +520,9 @@ enter the information below.""")
         """
         Created: 17.03.2005, KP
         Description: A method that loads a list of images to a listbox based on the selected input type
-        """        
+        """       
+        self.sourceListbox.Clear()
+        
         filename=self.browsedir.GetValue()
         conf = Configuration.getConfiguration()
         conf.setConfigItem("ImportDirectory","Paths",os.path.dirname(filename))
@@ -548,6 +551,11 @@ enter the information below.""")
         Logging.info("Pattern for all in directory is ",pat,kw="io")
         files=glob.glob(pat)
         print "Got files=",files
+        if not self.dataSource.checkImageDimensions(files):
+            Dialogs.showmessage(self, "Images have differing dimensions","Some of the selected images have differing dimensions. Therefor it is not possible to use the \"All files in directory\" selection.")
+            self.choice.SetSelection(0)
+            return
+            
         self.sourceListbox.Clear()
         files.sort(self.sortNumerically)
         r=re.compile("([0-9]+)")

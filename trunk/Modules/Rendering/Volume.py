@@ -150,6 +150,7 @@ class VolumeModule(VisualizationModule):
             params.insert(2,["",("UseVolumepro",)])
         return params
         
+        
     def getRange(self, parameter):
         """
         Created: 12.03.2007, KP
