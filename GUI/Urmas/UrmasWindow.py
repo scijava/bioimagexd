@@ -214,10 +214,10 @@ class UrmasWindow(scrolled.ScrolledPanel):
         #mgr.createMenu("camera","&Camera",before="help")
         
       
-        mgr.addMenuItem("file",MenuManager.ID_OPEN_PROJECT,"Open project...","Open a BioImageXD Animator Project",self.onMenuOpenProject,before=MenuManager.ID_IMPORT)
-        mgr.addMenuItem("file",MenuManager.ID_SAVE_PROJECT,"Save project as...","Save current BioImageXD Animator Project",self.onMenuSaveProject,before=MenuManager.ID_IMPORT)
-        mgr.addMenuItem("file",MenuManager.ID_CLOSE_PROJECT,"Close project","Close this Animator Project",self.onMenuCloseProject,before=MenuManager.ID_IMPORT)
-        mgr.addSeparator("file",before=MenuManager.ID_IMPORT)
+        mgr.addMenuItem("file",MenuManager.ID_OPEN_PROJECT,"Open project...","Open a BioImageXD Animator Project",self.onMenuOpenProject,before=MenuManager.ID_IMPORT_IMAGES)
+        mgr.addMenuItem("file",MenuManager.ID_SAVE_PROJECT,"Save project as...","Save current BioImageXD Animator Project",self.onMenuSaveProject,before=MenuManager.ID_IMPORT_IMAGES)
+        mgr.addMenuItem("file",MenuManager.ID_CLOSE_PROJECT,"Close project","Close this Animator Project",self.onMenuCloseProject,before=MenuManager.ID_IMPORT_IMAGES)
+        mgr.addSeparator("file",before=MenuManager.ID_IMPORT_IMAGES)
         
         mgr.createMenu("addtrack","&Add Track",place=0)
         

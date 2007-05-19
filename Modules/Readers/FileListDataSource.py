@@ -75,6 +75,7 @@ class FileListDataSource(DataSource):
             self.numberOfImages = len(filenames)
             self.getDataSetCount()
         
+        self.imageDims={}
         
         self.numberOfImages = 0
         self.readers = []
@@ -107,19 +108,28 @@ class FileListDataSource(DataSource):
             self.retrieveImageInfo(filenames[0])
         self.filenames = filenames
         self.numberOfImages = len(filenames)
+        if not self.checkImageDimensions(filenames):
+            raise Logging.GUIError("Image dimensions do not match","Some of the selected files have differing dimensions, and cannot be imported into the same dataset.")        
         self.getReadersFromFilenames()
+                
+        
+        
+    def checkImageDimensions(self, filenames):
+        """
+        Created: 16.05.2007, KP
+        Description: check that each image in the list has the same dimensions
+        """
         s = None
-        fn = None
         for file in filenames:
             i = Image.open(file)
+            self.imageDims[file] = i.size
             if s and i.size != s:
                 x0,y0 = s
                 x1,y1 = i.size
-                fn = os.path.basename(fn)
-                file = os.path.basename(file)
-                raise Logging.GUIError("Image sizes do not match","All the images in the series do not have the same dimensions (%s: %d,%d != %s: %d,%d)"%(fn, x0,y0,file, x1,y1))
+                return 0
             s = i.size        
-            fn = file
+            fn = file        
+        return 1
         
     def getReaderByExtension(self, ext, isRGB = 0):
         """

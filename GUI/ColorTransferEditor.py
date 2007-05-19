@@ -249,8 +249,6 @@ class CTFPaintPanel(wx.Panel):
         Created: 30.10.2004, KP
         Description: Paints the graph of the function specified by points in the graph
         """
-        Logging.backtrace()
-        print "Painting",red,green,blue
         (r,rv),(g,gv),(b,bv) = red[-1], green[-1], blue[-1]
         a=0
         
@@ -267,26 +265,19 @@ class CTFPaintPanel(wx.Panel):
         if d<1:d=1
         #self.dc = wx.BufferedDC(wx.ClientDC(self),self.buffer)
         self.dc = wx.MemoryDC()        
-        print "Selecting object",self.buffer
         self.dc.SelectObject(self.buffer)
         self.dc.BeginDrawing()
 
         self.dc.Clear()
         
         if not self.background:
-            print "Drawing background",minval,maxval
             self.background = self.drawBackground(minval,maxval)
-        
-        
-        print self.buffer.GetWidth(),self.buffer.GetHeight()
-        print "Blitting bg",self.background.GetWidth(),self.background.GetHeight()
+                
         x0, y0, w,h = self.GetClientRect()
         self.dc.DrawBitmap(self.background, 0,0)
-        print "done"
         ax0,rx0,gx0,bx0=0,0,0,0
         r0,g0,b0,a0=0,0,0,0
         coeff = float(self.maxx)/maxval
-        print "coeff=%f / %f = %f"%(self.maxx, maxval,coeff)
 
         if selectedPoint:
             x,y=selectedPoint
@@ -297,12 +288,10 @@ class CTFPaintPanel(wx.Panel):
         n=max(len(red),len(green),len(blue),len(alpha))
         
         for i in range(n):
-            print "Painting val",n
 #        for x1 in range(int(minval),int(maxval),int(d)):
-
             try:
-                rx,r = red[i]
-                rx*=coeff
+                rx,r = red[i]              
+                rx*=coeff                
                 self.createOval(rx,r,2)
             except:
                 r,rx=r0,rx0
@@ -482,6 +471,9 @@ class ColorTransferEditor(wx.Panel):
         """
         self.parent=parent
         self.selectedPoint = None
+        self.replacePoint = None
+        self.deletePoint = None
+        self.hasPainted = 0
         wx.Panel.__init__(self,parent,-1)
         self.updateT=0
         if kws.has_key("alpha"):
@@ -493,7 +485,7 @@ class ColorTransferEditor(wx.Panel):
         self.guiupdate=0
         self.freeMode = 0
         self.selectThreshold=35.0
-        self.ptThreshold=0.0
+        self.ptThreshold=0.1
         self.color = 0
         
         self.minval = 0
@@ -756,8 +748,8 @@ class ColorTransferEditor(wx.Panel):
         if self.freeMode:
             self.pos = (x,y)
         else:
-            d=10
-            currd=self.maxval
+            d=0
+            currd=99999999
             hasx=0
             Logging.info("points for color %d = "%self.color,self.points[self.color])
             for pt in self.points[self.color]:
@@ -766,7 +758,7 @@ class ColorTransferEditor(wx.Panel):
                 if pt[0]==x:hasx=1
                 if d<self.selectThreshold and d<currd:
                     self.selectedPoint=pt
-                    #print "Selected point to edit=",pt
+                    print "Selected point to edit=",pt
                     currd=d
                     self.upToDate=0
                     break
@@ -778,77 +770,129 @@ class ColorTransferEditor(wx.Panel):
         """        
         return math.sqrt( (p1[0]-p2[0])**2+(p1[1]-p2[1])**2)
     
+    def drawFreeMode(self, event):
+        """
+        Created: 19.05.2007, KP
+        """
+        x,y=event.GetPosition()
+        x,y=self.canvas.toGraphCoords(x,y, self.maxval)
+        if y<=0:y=0
+        if y>=255:y=255
+        if x<=0:x=0
+        if x>=self.maxval:x=self.maxval
         
+        self.hasPainted = 1
+        update=0
+        if self.pos[0]:
+            x0=min(self.pos[0],x)
+            x1=max(self.pos[0],x)
+            n=(x1-x0)
+            if n:
+                d=abs(y-self.pos[1])/float(n)
+                #Logging.info("Fixing range %d,%d,d=%f, steps = %d"%(x0,x1,d,n),kw="ctf")
+                if x>self.pos[0] and y<self.pos[1]:d*=-1
+                if x<self.pos[0] and y>self.pos[1]:d*=-1
+            
+                for i in range(x0,x1):
+                    ny=int(y+(i-x0)*d)
+                    if ny<0:ny=0
+                    if ny>=255:ny=255
+                    
+                    val = self.funcs[self.color][i]
+                    if val != ny:
+                        #print "Setting func at",i,"to",ny
+                        self.funcs[self.color][i]=ny
+                        update=1
+        
+        
+        val = self.funcs[self.color][x]
+        if val != y:
+            #print "Setting xfunc at",x,"to",y
+            self.funcs[self.color][x]=y
+            
+            update=1
+        if update:
+            self.updateGraph()     
+            self.upToDate=0
+            
+        self.pos = (x,y)
+        if not self.upToDate:
+            wx.FutureCall(250   ,self.updateCTFFromPoints)                
+        #    wx.FutureCall(500,self.updatePreview)      
+    
+    def modifyPoint(self, oldPoint, newPoint):
+        """
+        Created: 19.05.2007, KP
+        Description: move the given point to a new position
+        """
+        if oldPoint in self.points[self.color]:
+            self.points[self.color].remove(oldPoint)
+                    
+        for i, (x,y) in enumerate(self.points[self.color]):
+        
+            if x>newPoint[0] and self.points[self.color][i-1][0] < x:
+                k = i
+                print "Inserting ",newPoint,"at ",k
+                if k==0:k=1
+                
+                self.points[self.color].insert(k, newPoint)
+                self.selectedPoint = newPoint
+                break
+    
     def onDrawFunction(self,event):
         """
         Created: 16.04.2005, KP
         Description: Draw the function
         """        
         if event.Dragging():
-            x,y=event.GetPosition()
-            x,y=self.canvas.toGraphCoords(x,y, self.maxval)
-            if y<=0:y=0
-            if y>=255:y=255
-            if x<=0:x=0
-            if x>=self.maxval:x=self.maxval
-            
-            if self.freeMode:
-                update=0
-                if self.pos[0]:
-                    x0=min(self.pos[0],x)
-                    x1=max(self.pos[0],x)
-                    n=(x1-x0)
-                    if n:
-                        d=abs(y-self.pos[1])/float(n)
-                        #Logging.info("Fixing range %d,%d,d=%f, steps = %d"%(x0,x1,d,n),kw="ctf")
-                        if x>self.pos[0] and y<self.pos[1]:d*=-1
-                        if x<self.pos[0] and y>self.pos[1]:d*=-1
-                    
-                        for i in range(x0,x1):
-                            ny=int(y+(i-x0)*d)
-                            if ny<0:ny=0
-                            if ny>=255:ny=255
-                            
-                            val = self.funcs[self.color][i]
-                            if val != ny:
-                                #print "Setting func at",i,"to",ny
-                                self.funcs[self.color][i]=ny
-                                update=1
-                
-                
-                val = self.funcs[self.color][x]
-                if val != y:
-                    #print "Setting xfunc at",x,"to",y
-                    self.funcs[self.color][x]=y
-                    
-                    update=1
-                if update:
-                    self.updateGraph()     
-                    self.upToDate=0
-                    
-                self.pos = (x,y)
-                if not self.upToDate:
-                    wx.FutureCall(250   ,self.updateCTFFromPoints)                
-                #    wx.FutureCall(500,self.updatePreview)                
-                
+            if self.freeMode:        
+                self.drawFreeMode(event)
             else:
-                if self.selectedPoint and self.selectedPoint in self.points[self.color]:
-                    for point in self.points[self.color]:
-                        if point[0] == x:
-                            x=x+1
-                            break
-                    i=self.points[self.color].index(self.selectedPoint)
-
-                    self.points[self.color][i]=(x,y)
-                    
-                    # If we want the function to create a tent when the last point 
-                    # is moved, enable this part
-                    #lastpt=self.points[self.color][-1]
-                    #if lastpt[0]!=self.maxval:
-                    #    self.points[self.color].append((self.maxval,0))
-                    self.selectedPoint = (x,y)
+                x,y = event.GetPosition()
+                x,y=self.canvas.toGraphCoords(x,y,self.maxval)
+    
+                if self.selectedPoint:
+                    self.modifyPoint(self.selectedPoint, (x,y))
                     self.upToDate=0
-                    self.updateGraph()
+                    self.updateGraph()                    
+                return
+                
+                if self.deletePoint:
+                    c, p = self.deletePoint
+                    self.points[c].remove(p)
+                    self.deletePoint = None
+                if self.replacePoint:
+                    i, c, p = self.replacePoint
+                    self.points[c][i]=p
+                    self.replacePoint = None
+                found = 0
+                closest = -1
+                for i, point in enumerate(self.points[self.color]):
+                    if point[0] == x:
+                        x=x+1
+                        self.selectedPoint = point
+                        self.replacePoint = (i, self.color, point)                        
+                        found=1
+                        break
+                    if point[0]>x and closest < 0:
+                        closest = i
+                if not found and self.selectedPoint:
+                    self.points[self.color].insert(closest, (x,y))
+                    self.deletePoint = (self.color, (x,y))
+                    #self.selectedPoint = (x,y)
+                    self.points[self.color].remove(self.selectedPoint)
+                else:
+                    i=self.points[self.color].index(self.selectedPoint)
+                    self.points[self.color][i]=(x,y)
+                
+                # If we want the function to create a tent when the last point 
+                # is moved, enable this part
+                #lastpt=self.points[self.color][-1]
+                #if lastpt[0]!=self.maxval:
+                #    self.points[self.color].append((self.maxval,0))
+                self.selectedPoint = (x,y)
+                self.upToDate=0
+                self.updateGraph()
     def updatePreview(self):
         """
         Created: 08.08.2005, KP
@@ -879,7 +923,7 @@ class ColorTransferEditor(wx.Panel):
         self.freeMode = event.GetIsDown()
         #Logging.info("Points before=",self.points,kw="ctf")
 
-        if not self.freeMode and was:
+        if not self.freeMode and was and self.hasPainted:
             Logging.info("Analyzing free mode for points",kw="ctf")
             
             self.getPointsFromFree()
@@ -973,10 +1017,8 @@ class ColorTransferEditor(wx.Panel):
         Description: Clears the canvas and repaints the function
         """       
         if self.freeMode:
-            print "Painting in free mode"
             self.canvas.paintFreeMode(self.redfunc, self.greenfunc, self.bluefunc, self.alphafunc,maximumValue = self.maxval)
         else:
-            print "Painting transfer function, selected point=",self.selectedPoint
             self.canvas.paintTransferFunction(self.alphaMode,self.selectedPoint, red=self.redpoints, green=self.greenpoints, blue=self.bluepoints, alpha = self.alphapoints,drawAlpha=self.alpha,maximumValue = self.maxval)
         self.canvas.Refresh()
         
@@ -987,6 +1029,7 @@ class ColorTransferEditor(wx.Panel):
         Created: 20.10.2006, KP
         Description: Update the palette view of the ctf
         """
+        self.selectedPoint = None
         if self.upToDate:
             return
         if not self.freeMode:
@@ -1115,24 +1158,27 @@ class ColorTransferEditor(wx.Panel):
                      determine where to insert control points for the user
                      to edit
         """
-        dr,dg,db=0,0,0
-        dr2,dg2,db2=0,0,0
-        r2,g2,b2=0,0,0
-        da=0
-        da2=0
-        a2=0
+        
+        xr0, xg0, xb0, xa0 = 0,0,0,0
+        kr, kg, kb,ka = 1,1,1,1
+        yr0, yg0, yb0, ya0 = 0,0,0,0
+        r0, g0, b0,a0 = 0,0,0,0
         self.redpoints=[]
         self.greenpoints=[]
         self.bluepoints=[]
         self.alphapoints=[]
-        #print "GOING THROUGH RANGE",self.maxval+1
+        
+        
+        def slope(x0, y0, x1, y1):
+            return float((y1-y0)) / float((x1-x0))
+        
         # Go through each intensity value
         for x in range(int(self.maxval+1)):
             if self.alpha:
                 a=self.otf.GetValue(x)
                 a*=self.maxval
                 a=int(a)
-                da = a-a2
+
                 
             # Read the color from the CTF
             val = [0,0,0]
@@ -1148,12 +1194,17 @@ class ColorTransferEditor(wx.Panel):
             r=int(r)
             g=int(g)
             b=int(b)
-            # Calculate the difference between these R, G and B values and the
-            # previous ones
-            dr = r-r2
-            dg = g-g2
-            db = b-b2
-            
+            if x == 0:
+                r0, g0, b0 = r,g,b
+                if self.alpha:
+                    a0 = a
+            if x==1:
+                kr = slope(0,r0,1,r)
+                kg = slope(0,g0,1,g)
+                kb = slope(0,b0,1,b)
+                if self.alpha:
+                    ka = slope(0, a0, 1, a)
+                
             if x in [0,int(self.maxval)]:
             #if x in range(0,int(self.maxval)):
                 #print "X=%d in range 0,%d, adding %d,%d,%d"%(x,self.maxval,r,g,b)
@@ -1162,24 +1213,38 @@ class ColorTransferEditor(wx.Panel):
                 self.bluepoints.append((x,b))
                 if self.alpha:
                     self.alphapoints.append((x,a))
-            else:
+            elif x>1:
                 
-                
-                if abs(dr - dr2)>self.ptThreshold:
+                k = slope(xr0, r0, x, r)
+                if abs(k - kr)>self.ptThreshold and x>xr0+1:
                     self.redpoints.append((x,r))
-                if abs(dg - dg2)>self.ptThreshold:
-                    #print "dg=",dg,"dg2=",dg2,"threshold=",self.ptThreshold
+                    kr = k
+                    xr0 = x
+                    r0 = r
+                k = slope(xg0, g0, x, g)       
+                
+                if abs(k - kg) > self.ptThreshold and x>xg0+1:
+                    print "old kg = ",kg,"current=",k,"x0 = ",xg0,"x=",x                
                     self.greenpoints.append((x,g))
-                if abs(db - db2)>self.ptThreshold:
+                    kg = k
+                    xg0 = x
+                    g0 = g
+                k = slope(xb0, b0, x, b)                    
+                if abs(k - kb) > self.ptThreshold and x>xb0+1:
                     self.bluepoints.append((x,b))
+                    kb = k
+                    xb0 = x
+                    b0 = b
+                    
                 if self.alpha:
-                    if abs(da - da2)>self.ptThreshold:
+                    k = slope(xa0, a0, x, a)                    
+                    if abs(k-ka) > self.ptThreshold and x>xa0+1:
                         self.alphapoints.append((x,a))
-                    da2=da
-                    a2=a
-            dr2,dg2,db2=dr,dg,db
-            
-            r2,g2,b2=r,g,b
+                        ka = k
+                        xa0 = x
+                        a0 = a                
+       
+
         #print "greenpoints=",self.greenpoints
         coeff = 255.0 / self.maxval
         
