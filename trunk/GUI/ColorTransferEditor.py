@@ -1185,7 +1185,6 @@ class ColorTransferEditor(wx.Panel):
             self.ctf.GetColor(x,val)
             r,g,b=val
             
-            
             # Convert the value to range 0-255 (from 0.0 - 1.0)
             r*=self.maxval
             g*=self.maxval
@@ -1194,6 +1193,8 @@ class ColorTransferEditor(wx.Panel):
             r=int(r)
             g=int(g)
             b=int(b)
+            print "r,g,b = ",r,g,b
+            
             if x == 0:
                 r0, g0, b0 = r,g,b
                 if self.alpha:
@@ -1216,21 +1217,21 @@ class ColorTransferEditor(wx.Panel):
             elif x>1:
                 
                 k = slope(xr0, r0, x, r)
-                if abs(k - kr)>self.ptThreshold and x>xr0+1:
+                if abs(k - kr)>self.ptThreshold and x>xr0+1 and r != r0:
                     self.redpoints.append((x,r))
                     kr = k
                     xr0 = x
                     r0 = r
                 k = slope(xg0, g0, x, g)       
                 
-                if abs(k - kg) > self.ptThreshold and x>xg0+1:
+                if abs(k - kg) > self.ptThreshold and x>xg0+1 and g != g0:
                     print "old kg = ",kg,"current=",k,"x0 = ",xg0,"x=",x                
                     self.greenpoints.append((x,g))
                     kg = k
                     xg0 = x
                     g0 = g
                 k = slope(xb0, b0, x, b)                    
-                if abs(k - kb) > self.ptThreshold and x>xb0+1:
+                if abs(k - kb) > self.ptThreshold and x>xb0+1 and  b != b0:
                     self.bluepoints.append((x,b))
                     kb = k
                     xb0 = x
@@ -1238,7 +1239,7 @@ class ColorTransferEditor(wx.Panel):
                     
                 if self.alpha:
                     k = slope(xa0, a0, x, a)                    
-                    if abs(k-ka) > self.ptThreshold and x>xa0+1:
+                    if abs(k-ka) > self.ptThreshold and x>xa0+1 and a != a0:
                         self.alphapoints.append((x,a))
                         ka = k
                         xa0 = x
