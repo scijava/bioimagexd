@@ -256,7 +256,7 @@ class OlympusDataSource(DataSource):
         values=struct.unpack(format,data)
         ctf=vtk.vtkColorTransferFunction()
         #print values
-        vals=[( ((x>>16)&0xff)/255.0,((x>>8)&0xff)/255.0,(x&0xff)/255.0) for x in values]
+        vals=[( ((x>>16)&0xff),((x>>8)&0xff),(x&0xff)) for x in values]
         
         #def f(x):( (x>>16)&0xff
         i=0
@@ -287,10 +287,13 @@ class OlympusDataSource(DataSource):
         #coeff=int(coeff)
         #print "coeff=",coeff
 #        print "Largest value=",len(vals)/coeff
-        
+        r0, g0, b0 = -1,-1,-1
         for i in range(0, maxval+1):
             r,g,b = vals[int(i*coeff)]
-            ctf.AddRGBPoint(i, r,g,b)
+            if r != r0 or g!=g0 or b!=b0:
+                print "adding ",i,"=",r,g,b
+                ctf.AddRGBPoint(i, r/255.0,g/255.0,b/255.0)
+                r0,g0,b0 = r,g,b
             if i==maxval:print maxval,"maps to",r*255,g*255,b*255
             
         
@@ -444,7 +447,6 @@ class OlympusDataSource(DataSource):
         
         
         self.bitdepth = eval(self.parser.get("Reference Image Parameter","ValidBitCounts"))
-        print "GOT BIT PDETH ",self.bitdepth,"FROM DATAFILE"
         lutpath = self.getLUTPath(self.parser)
         
         dataunits=[]
