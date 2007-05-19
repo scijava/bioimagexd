@@ -39,6 +39,8 @@ import types
 from Visualizer.VisualizationModules import *
 import Logging
 
+import Configuration
+
 import scripting as bxd
 
 TEXTURE_MAPPING=1
@@ -65,6 +67,14 @@ class VolumeModule(VisualizationModule):
         self.modes = ["Ray casting","Texture mapping","3D texture mapping","Maximum intensity projection"]
         self.haveVolpro = 0
         self.mapper = None
+        conf=Configuration.getConfiguration()
+
+        self.defaultMode=conf.getConfigItem("DefaultVolumeMode","Rendering")
+        if self.defaultMode != None:
+            self.defaultMode = int(self.defaultMode)
+        else:
+            self.defaultMode = RAYCAST
+        
         try:
             volpro=vtk.vtkVolumeProMapper()
             self.haveVolpro=0
@@ -89,13 +99,19 @@ class VolumeModule(VisualizationModule):
         self.volume = vtk.vtkVolume()
         self.actor = self.volume
         self.volume.SetProperty(self.volumeProperty)
- 
+
         
         VisualizationModule.__init__(self,parent,visualizer,**kws)   
         self.mapper = None
         #self.name = "Volume Rendering"
         self.setParameter("Quality",10)
-        self.parameters["Method"] = TEXTURE_MAPPING
+        self.parameters["Method"] = RAYCAST
+
+        if self.defaultMode != None:
+            print "Setting default method to ",self.defaultMode
+            self.parameters["Method"] = int(self.defaultMode)
+ 
+                   
         self.volumeProperty.SetScalarOpacity(self.otfs[self.parameters["Method"]])
         
         self.descs={"Palette":"","Method":"","Interpolation":"Interpolation","NearestNeighbor":"Nearest Neighbour","Linear":"Linear",
@@ -117,8 +133,12 @@ class VolumeModule(VisualizationModule):
         Created: 13.04.2006, KP
         Description: Set a value for the parameter
         """    
+ 
         VisualizationModule.setParameter(self, parameter,value)
         if parameter=="Method":
+            conf=Configuration.getConfiguration()
+            conf.setConfigItem("DefaultVolumeMode","Rendering", value)
+            conf.writeSettings()
             self.updateOpacityTransferFunction()
             if value==1:
                 messenger.send(self,"update_QualityValue_label","Maximum number of planes:")
@@ -181,7 +201,7 @@ class VolumeModule(VisualizationModule):
         Description: Return the default value of a parameter
         """           
         if parameter == "Method":
-            return 1
+            return self.defaultMode
         if parameter == "Quality": return 10
         if parameter == "QualityValue": return 0
         if parameter == "Linear": return 0
@@ -325,13 +345,6 @@ class VolumeModule(VisualizationModule):
         Created: 28.04.2005, KP
         Description: Set the Rendering method used
         """             
-        self.vtkcvs=0
-        try:
-            from vtk import vtkFixedPointVolumeRayCastMapper
-            self.vtkcvs=1
-
-        except:
-            pass
         method = self.parameters["Method"]
         self.volumeProperty.SetScalarOpacity(self.otfs[method])
         self.updateOpacityTransferFunction()
@@ -349,7 +362,7 @@ class VolumeModule(VisualizationModule):
         blendModes=["Composite","Composite","Composite","MaximumIntensity","Composite"]
         if method in [RAYCAST,MIP,ISOSURFACE]:
             # Iso surfacing with fixedpoint mapper is not supported
-            if self.vtkcvs and method!=ISOSURFACE:
+            if method!=ISOSURFACE:
                 self.mapper = vtk.vtkFixedPointVolumeRayCastMapper()
                 
                 #self.mapper.SetAutoAdjustSampleDistances(1)
