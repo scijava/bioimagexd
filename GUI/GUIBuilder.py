@@ -1057,6 +1057,7 @@ class GUIBuilder(wx.Panel):
         Description: Set the color transfer function editor ctf
         """
         colorPanel.setColorTransferFunction(value)
+        
     def onSetOtf(self, colorPanel, item, value):
         """
         Created: 12.03.2007, KP

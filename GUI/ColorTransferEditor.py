@@ -51,6 +51,88 @@ try:
 except:
     psyco = None
 
+
+class CTFButton(wx.BitmapButton):
+    """
+    Created: 18.04.2005, KP
+    Description: A button that shows a ctf as a palette and lets the user modify it
+                 by clicking on the button
+    """    
+    def __init__(self,parent,alpha=0):
+        """
+        Created: 18.04.2005, KP
+        Description: Initialization
+        """    
+        wx.BitmapButton.__init__(self,parent,-1)
+        self.changed=0
+        self.alpha=alpha
+        self.ctf = vtk.vtkColorTransferFunction()
+        self.ctf.AddRGBPoint(0,0,0,0)
+        self.ctf.AddRGBPoint(255,1,1,1)
+        self.bmp = ImageOperations.paintCTFValues(self.ctf)
+        self.SetBitmapLabel(self.bmp)
+        self.Bind(wx.EVT_BUTTON,self.onModifyCTF)
+        
+    def isChanged(self):
+        """
+        Created: 28.04.2005, KP
+        Description: Was the ctf or otf changed
+        """        
+        return self.changed
+        
+    def setColorTransferFunction(self,ctf):
+        """
+        Created: 18.04.2005, KP
+        Description: Set the color transfer function that is edited
+        """   
+        self.ctf = ctf
+        self.minval,self.maxval = ctf.GetRange()
+        self.minval = int(self.minval)
+        self.maxval = int(self.maxval)
+        self.bmp = ImageOperations.paintCTFValues(self.ctf)
+        self.SetBitmapLabel(self.bmp)
+        
+    def getColorTransferFunction(self):
+        """
+        Created: 25.04.2005, KP
+        Description: Return the color transfer function that is edited
+        """        
+        return self.ctf
+        
+    def onModifyCTF(self,event):
+        """
+        Created: 18.04.2005, KP
+        Description: Modify the color transfer function
+        """        
+        dlg = wx.Dialog(self,-1,"Edit color transfer function")
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        panel = ColorTransferEditor(dlg,alpha=self.alpha)
+        panel.setColorTransferFunction(self.ctf)
+        self.panel = panel
+        sizer.Add(panel)
+        dlg.SetSizer(sizer)
+        dlg.SetAutoLayout(1)
+        self.changed=1
+        sizer.Fit(dlg)
+        dlg.ShowModal()
+        self.bmp = ImageOperations.paintCTFValues(self.ctf)
+        self.SetBitmapLabel(self.bmp)
+        messenger.send(None,"data_changed",0)
+        
+    def getOpacityTransferFunction(self):
+        """
+        Created: 28.04.2005, KP
+        Description: Returns the opacity function
+        """
+        return self.panel.getOpacityTransferFunction()
+        
+    def setOpacityTransferFunction(self,otf):
+        """
+        Created: 25.07.2005, KP
+        Description: Returns the opacity function
+        """
+        return self.panel.setOpacityTransferFunction(otf)
+
 class CTFPaintPanel(wx.Panel):
     """
     Created: 16.04.2005, KP
@@ -89,6 +171,7 @@ class CTFPaintPanel(wx.Panel):
         Created: 16.04.2005, KP
         Description: Returns x and y of the graph for given coordinates
         """
+        print "toGraphCoords",x,y,maxval
         rx,ry=x-self.xoffset,self.maxy-(y-self.yoffset)
         
         
@@ -99,8 +182,8 @@ class CTFPaintPanel(wx.Panel):
         
         if rx<0:rx=0
         if ry<0:ry=0
-        #if rx>self.maxx:rx=self.maxx
-        #if ry>self.maxy:ry=self.maxy
+        if rx>maxval:rx=maxval
+        if ry>maxval:ry=maxval
         return (rx,ry)
         
     def onPaint(self,event):
@@ -123,7 +206,6 @@ class CTFPaintPanel(wx.Panel):
         y12=self.maxy-y1+self.yoffset
         y22=self.maxy-y2+self.yoffset
         x22=x2+self.xoffset
-
         arr=None
         try:
             self.dc.DrawLine(x12/self.scale,y12/self.scale,
@@ -185,7 +267,6 @@ class CTFPaintPanel(wx.Panel):
         dc.Clear()
         
         dc.BeginDrawing()
-        
 
         self.createLine(0,0,0,self.maxy+5,arrow="VERTICAL")
         self.createLine(0,0,self.maxx+5,0,arrow="HORIZONTAL")
@@ -278,7 +359,7 @@ class CTFPaintPanel(wx.Panel):
         ax0,rx0,gx0,bx0=0,0,0,0
         r0,g0,b0,a0=0,0,0,0
         coeff = float(self.maxx)/maxval
-
+            
         if selectedPoint:
             x,y=selectedPoint
             x*=coeff
@@ -286,6 +367,8 @@ class CTFPaintPanel(wx.Panel):
 
         
         n=max(len(red),len(green),len(blue),len(alpha))
+        
+        print "alpha=",alpha
         
         for i in range(n):
 #        for x1 in range(int(minval),int(maxval),int(d)):
@@ -325,7 +408,8 @@ class CTFPaintPanel(wx.Panel):
                 self.createLine(bx0,b0,bx,b,'#0000ff')
             rx0,gx0,bx0=rx,gx,bx
             r0,g0,b0=r,g,b
-            
+            a0 = a
+            ax0 = ax
         if abs(rx0/coeff - maximumValue)>0.5:
             self.createLine(rx0,r0,self.maxx, 0,'#ff0000')
         if abs(gx0/coeff - maximumValue)>0.5:
@@ -347,11 +431,9 @@ class CTFValuePanel(wx.Panel):
     def __init__(self,parent):
         self.lineheight = 32
         w,h=(256+16,self.lineheight)
+        self.w, self.h = w,h
         wx.Panel.__init__(self, parent,-1,size=(w,h))
         self.buffer = wx.EmptyBitmap(w,h,-1)
-        self.w=w
-        self.h=h
-        self.dc = None
         self.Bind(wx.EVT_PAINT,self.onPaint)        
         self.xoffset = 16
         self.yoffset = 0
@@ -365,99 +447,16 @@ class CTFValuePanel(wx.Panel):
         Description: Paints the graph of the function specified by the six points
         """
         #self.dc = wx.BufferedDC(wx.ClientDC(self),self.buffer)
-        self.dc = wx.MemoryDC()
-        self.dc.SelectObject(self.buffer)
-        self.dc.SetBackground(wx.Brush(self.GetBackgroundColour()))
-        self.dc.Clear()
-        self.dc.BeginDrawing()
+        dc = wx.MemoryDC()
+        dc.SelectObject(self.buffer)
+        dc.SetBackground(wx.Brush(self.GetBackgroundColour()))
+        dc.Clear()
+        dc.BeginDrawing()
         bmp = ImageOperations.paintCTFValues(ctf,height = self.lineheight)
-        self.dc.DrawBitmap(bmp,self.xoffset,0)
-        self.dc.EndDrawing()
-        self.dc.SelectObject(wx.NullBitmap)
-        self.dc = None
-        
-class CTFButton(wx.BitmapButton):
-    """
-    Created: 18.04.2005, KP
-    Description: A button that shows a ctf as a palette and lets the user modify it
-                 by clicking on the button
-    """    
-    def __init__(self,parent,alpha=0):
-        """
-        Created: 18.04.2005, KP
-        Description: Initialization
-        """    
-        wx.BitmapButton.__init__(self,parent,-1)
-        self.changed=0
-        self.alpha=alpha
-        self.ctf = vtk.vtkColorTransferFunction()
-        self.ctf.AddRGBPoint(0,0,0,0)
-        self.ctf.AddRGBPoint(255,1,1,1)
-        self.bmp = ImageOperations.paintCTFValues(self.ctf)
-        self.SetBitmapLabel(self.bmp)
-        self.Bind(wx.EVT_BUTTON,self.onModifyCTF)
-        
-    def isChanged(self):
-        """
-        Created: 28.04.2005, KP
-        Description: Was the ctf or otf changed
-        """        
-        return self.changed
-        
-    def setColorTransferFunction(self,ctf):
-        """
-        Created: 18.04.2005, KP
-        Description: Set the color transfer function that is edited
-        """   
-        self.ctf = ctf
-        self.minval,self.maxval = ctf.GetRange()
-        self.minval = int(self.minval)
-        self.maxval = int(self.maxval)
-        self.bmp = ImageOperations.paintCTFValues(self.ctf)
-        self.SetBitmapLabel(self.bmp)
-        
-    def getColorTransferFunction(self):
-        """
-        Created: 25.04.2005, KP
-        Description: Return the color transfer function that is edited
-        """        
-        return self.ctf
-        
-    def onModifyCTF(self,event):
-        """
-        Created: 18.04.2005, KP
-        Description: Modify the color transfer function
-        """        
-        dlg = wx.Dialog(self,-1,"Edit color transfer function")
-        sizer = wx.BoxSizer(wx.VERTICAL)
-        panel = ColorTransferEditor(dlg,alpha=self.alpha)
-        panel.setColorTransferFunction(self.ctf)
-        self.panel = panel
-        sizer.Add(panel)
-        dlg.SetSizer(sizer)
-        dlg.SetAutoLayout(1)
-        self.changed=1
-        sizer.Fit(dlg)
-        dlg.ShowModal()
-        self.bmp = ImageOperations.paintCTFValues(self.ctf)
-        self.SetBitmapLabel(self.bmp)
-        messenger.send(None,"data_changed",0)
-        
-    def getOpacityTransferFunction(self):
-        """
-        Created: 28.04.2005, KP
-        Description: Returns the opacity function
-        """
-        return self.panel.getOpacityTransferFunction()
-        
-    def setOpacityTransferFunction(self,otf):
-        """
-        Created: 25.07.2005, KP
-        Description: Returns the opacity function
-        """
-        return self.panel.setOpacityTransferFunction(otf)
-        
-        
+        dc.DrawBitmap(bmp,self.xoffset,0)
+        dc.EndDrawing()
+        dc.SelectObject(wx.NullBitmap)
+               
         
 class ColorTransferEditor(wx.Panel):
     """
@@ -471,8 +470,6 @@ class ColorTransferEditor(wx.Panel):
         """
         self.parent=parent
         self.selectedPoint = None
-        self.replacePoint = None
-        self.deletePoint = None
         self.hasPainted = 0
         wx.Panel.__init__(self,parent,-1)
         self.updateT=0
@@ -487,7 +484,7 @@ class ColorTransferEditor(wx.Panel):
         self.selectThreshold=35.0
         self.ptThreshold=0.1
         self.color = 0
-        
+        self.modCount = 0
         self.minval = 0
         self.maxval = 255
         self.otf = vtk.vtkPiecewiseFunction()
@@ -825,7 +822,10 @@ class ColorTransferEditor(wx.Panel):
         Created: 19.05.2007, KP
         Description: move the given point to a new position
         """
+        removed=0
+        print "ModCount=",self.modCount
         if oldPoint in self.points[self.color]:
+            self.modCount-=1
             self.points[self.color].remove(oldPoint)
                     
         for i, (x,y) in enumerate(self.points[self.color]):
@@ -836,8 +836,14 @@ class ColorTransferEditor(wx.Panel):
                 if k==0:k=1
                 
                 self.points[self.color].insert(k, newPoint)
+                self.modCount+=1
                 self.selectedPoint = newPoint
-                break
+                return
+        self.points[self.color].append(newPoint)
+        self.selectedPoint = newPoint
+        self.modCount+=1
+         
+            
     
     def onDrawFunction(self,event):
         """
@@ -851,48 +857,14 @@ class ColorTransferEditor(wx.Panel):
                 x,y = event.GetPosition()
                 x,y=self.canvas.toGraphCoords(x,y,self.maxval)
     
+    
                 if self.selectedPoint:
+                    print "Modifying point",self.selectedPoint,"to",(x,y)
                     self.modifyPoint(self.selectedPoint, (x,y))
                     self.upToDate=0
                     self.updateGraph()                    
                 return
-                
-                if self.deletePoint:
-                    c, p = self.deletePoint
-                    self.points[c].remove(p)
-                    self.deletePoint = None
-                if self.replacePoint:
-                    i, c, p = self.replacePoint
-                    self.points[c][i]=p
-                    self.replacePoint = None
-                found = 0
-                closest = -1
-                for i, point in enumerate(self.points[self.color]):
-                    if point[0] == x:
-                        x=x+1
-                        self.selectedPoint = point
-                        self.replacePoint = (i, self.color, point)                        
-                        found=1
-                        break
-                    if point[0]>x and closest < 0:
-                        closest = i
-                if not found and self.selectedPoint:
-                    self.points[self.color].insert(closest, (x,y))
-                    self.deletePoint = (self.color, (x,y))
-                    #self.selectedPoint = (x,y)
-                    self.points[self.color].remove(self.selectedPoint)
-                else:
-                    i=self.points[self.color].index(self.selectedPoint)
-                    self.points[self.color][i]=(x,y)
-                
-                # If we want the function to create a tent when the last point 
-                # is moved, enable this part
-                #lastpt=self.points[self.color][-1]
-                #if lastpt[0]!=self.maxval:
-                #    self.points[self.color].append((self.maxval,0))
-                self.selectedPoint = (x,y)
-                self.upToDate=0
-                self.updateGraph()
+   
     def updatePreview(self):
         """
         Created: 08.08.2005, KP
@@ -1116,7 +1088,9 @@ class ColorTransferEditor(wx.Panel):
         Created: 17.04.2005, KP
         Description: Sets the colors of this graph
         """
+        
         self.minval,self.maxval = TF.GetRange()
+        self.background = None
         
         self.minval = int(self.minval)
         self.maxval = int(self.maxval)
@@ -1158,7 +1132,8 @@ class ColorTransferEditor(wx.Panel):
                      determine where to insert control points for the user
                      to edit
         """
-        
+        print "\n\nGETTING POINTS FROM FREE"
+        Logging.backtrace()
         xr0, xg0, xb0, xa0 = 0,0,0,0
         kr, kg, kb,ka = 1,1,1,1
         yr0, yg0, yb0, ya0 = 0,0,0,0
@@ -1178,7 +1153,6 @@ class ColorTransferEditor(wx.Panel):
                 a=self.otf.GetValue(x)
                 a*=self.maxval
                 a=int(a)
-
                 
             # Read the color from the CTF
             val = [0,0,0]
@@ -1193,8 +1167,6 @@ class ColorTransferEditor(wx.Panel):
             r=int(r)
             g=int(g)
             b=int(b)
-            print "r,g,b = ",r,g,b
-            
             if x == 0:
                 r0, g0, b0 = r,g,b
                 if self.alpha:
@@ -1225,7 +1197,6 @@ class ColorTransferEditor(wx.Panel):
                 k = slope(xg0, g0, x, g)       
                 
                 if abs(k - kg) > self.ptThreshold and x>xg0+1 and g != g0:
-                    print "old kg = ",kg,"current=",k,"x0 = ",xg0,"x=",x                
                     self.greenpoints.append((x,g))
                     kg = k
                     xg0 = x
@@ -1249,11 +1220,14 @@ class ColorTransferEditor(wx.Panel):
         #print "greenpoints=",self.greenpoints
         coeff = 255.0 / self.maxval
         
+        
         self.redpoints = [(x,coeff*y) for (x,y) in self.redpoints]
         self.greenpoints = [(x,coeff*y) for (x,y) in self.greenpoints]
         self.bluepoints = [(x,coeff*y) for (x,y) in self.bluepoints]
-        self.alphapoitns =[(x,coeff*y) for (x,y) in self.alphapoints]
+        self.alphapoints =[(x,coeff*y) for (x,y) in self.alphapoints]
         self.points=[self.redpoints,self.greenpoints,self.bluepoints,self.alphapoints]
+#        print "alphapoints=",self.alphapoints
+#        print "greenpoints=",self.greenpoints
         #print "Updating graph..."
         self.updateGraph()
             
@@ -1265,7 +1239,8 @@ class ColorTransferEditor(wx.Panel):
         """
         self.ctf=TF
         self.minval,self.maxval = TF.GetRange()
-
+        self.canvas.background = None
+        print "Got ctf=",TF
         self.getPointsFromFree()
         self.alphapoints=[(0,0),(self.maxval,51)]
         self.points=[self.redpoints,self.greenpoints,self.bluepoints,self.alphapoints]
@@ -1294,7 +1269,11 @@ class ColorTransferEditor(wx.Panel):
         Created: 28.04.2005, KP
         Description: Returns the opacity function
         """
+        if otf == self.otf:
+            print "Opacity function the same, not modifying"
+            return
         self.otf=otf
+#        print "Setting opacity transfer function",otf
         self.getPointsFromFree()
         self.updateGraph()        
 
