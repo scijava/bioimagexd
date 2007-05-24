@@ -290,11 +290,10 @@ class OlympusDataSource(DataSource):
         r0, g0, b0 = -1,-1,-1
         for i in range(0, maxval+1):
             r,g,b = vals[int(i*coeff)]
-            if r != r0 or g!=g0 or b!=b0:
-                print "adding ",i,"=",r,g,b
+            if i in [0,maxval] or (r != r0 or g!=g0 or b!=b0):
                 ctf.AddRGBPoint(i, r/255.0,g/255.0,b/255.0)
                 r0,g0,b0 = r,g,b
-            if i==maxval:print maxval,"maps to",r*255,g*255,b*255
+            if i==maxval:print "-->",i,maxval,"maps to",r,g,b
             
         
         return ctf

@@ -258,19 +258,23 @@ class VolumeModule(VisualizationModule):
         """       
         Logging.info("Dataunit for Volume Rendering:",dataunit,kw="rendering")
         VisualizationModule.setDataUnit(self,dataunit)
-        #self.colorTransferFunction = self.dataUnit.getColorTransferFunction()
-        #messenger.send(self,"set_Palette_ctf",self.colorTransferFunction)
-        #self.volumeProperty.SetColor(self.colorTransferFunction)
+
+        otf, otf2 = vtk.vtkPiecewiseFunction(), vtk.vtkPiecewiseFunction()
+        maxv = 2**dataunit.getBitDepth()
+            
+        print "Maximum value=",maxv
+        otf2.AddPoint(0, 0.0)
+        otf2.AddPoint(maxv, 1.0)
+        otf.AddPoint(0, 0.0)
+        otf.AddPoint(maxv, 0.2)
+        
+        self.otfs = [otf,otf,otf,otf2,otf]
+        
+        
+
         self.setInputChannel(1,0)
         self.parameters["Palette"] = self.colorTransferFunction
-#    def setOpacityTransferFunction(self,otf,method):
-#        """
-#        Created: 28.04.2005, KP
-#        Description: Set the opacity transfer function
-#        """
-#        self.otfs[method]=otf
-#        self.volumeProperty.SetScalarOpacity(otf)
-
+        
         
     def updateQuality(self):
         """
@@ -531,6 +535,7 @@ but using linear interpolation yields a better rendering quality."""
             else:
                 ctf= module.getDataUnit().getColorTransferFunction()
 
+        
             messenger.send(module,"set_Palette_ctf",ctf)
         
     def onApply(self,event):

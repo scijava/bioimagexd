@@ -71,6 +71,22 @@ vtkImageColocalizationTest::~vtkImageColocalizationTest()
 {
 }
 
+// Always request the whole input data
+//
+int vtkImageColocalizationTest::RequestUpdateExtent (
+  vtkInformation* vtkNotUsed(request),
+  vtkInformationVector** inputVector,
+  vtkInformationVector* outputVector)
+{
+  int uext[6], ext[6];
+  vtkInformation* outInfo = outputVector->GetInformationObject(0);
+  vtkInformation *inInfo = inputVector[0]->GetInformationObject(0);
+  inInfo->Get(vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT(),ext);
+  memcpy(uext, ext, 6*sizeof(int));
+  inInfo->Set(vtkStreamingDemandDrivenPipeline::UPDATE_EXTENT(), uext,6);
+  return 1;    
+}
+
 
 //----------------------------------------------------------------------------
 void vtkImageColocalizationTest::
@@ -232,64 +248,71 @@ void smooth(OUT_T* inPtr,OUT_T*outPtr,int,int ext[6],float*kernel,double scale,i
   }
 }
 
-void smooth_old(OUT_T* inPtr,OUT_T*outPtr,int psf,int ext[6],float*kernel,double scale,int size,
-    vtkIdType inIncX,int inIncY,int inIncZ,int outIncX,int outIncY,int outIncZ) {
-        
-        
-    int uc,vc;
-    uc = size / 2;
-    vc = size / 2;
-    
-    if ((size&1)!=1) {
-        printf("\n\n\n\n******* Error, convolution kernel size not odd *******\n\n\n");
-    }
-    int xmin,xmax,ymin,ymax;
-    int z = ext[4];
-    xmin=ext[0];
-    xmax=ext[1];
-    ymin=ext[2];
-    ymax=ext[3];
-    
-//    printf("smoothing data with psf=%d, z=%d, uc=%d, vc=%d\n",psf,z,uc,vc);
-    //for(int i=0;i<size*size;i++)printf("kernel[%d]=%f\n",i,kernel[i]);
-    bool edgePixel;
-    float sum;
-    int height = ymax, width = xmax;
-    int xedge = width - uc;
-    int yedge = height - vc;
-    int offset,i=0;
-    OUT_T val;
-    int maxval=int(pow(2.0f,8.0f*sizeof(OUT_T)))-1;
-    
-//    printf("maxval=%d\n",maxval);
-    for(int y=ymin; y<=ymax; y++) {
-            for(int x=xmin; x<=xmax; x++) {
-                sum = 0.0;
-                i = 0;
-                edgePixel = y<vc || y>=(ymax+1-vc) || x<uc || x>=(xmax+1+uc)||x>=xedge||y>=yedge;
-                
-                for(int v=-vc; v <= vc; v++) {
-                    for(int u = -uc; u <= uc; u++) {
-                        int nx,ny;
-                        nx=x+u;
-                        ny=y+v;
-                        if (edgePixel) {
-                            if (nx<0) nx = 0;
-                            if (nx>width) nx = width;
-                            if (ny<0) ny = 0;
-                            if (ny>height) ny = height;
-                        } 
-                        
-                        val = GET_AT(nx,ny,z,inPtr);
-                        //if(val)printf("val at %d,%d,%d=%d\n",nx,ny,z,(int)val);
-                        sum += val*kernel[i++];
-                        }
+
+ 
+ 
+ void CalculateStatisticsOfExistingImage(int rwidth, int rheight, int nslices) {
+    //calulate pearsons for existing image;
+    for (int s = 0; s < nslices; s++)
+    {
+        if (currentSliceNo>=0) {
+            s = currentSliceNo;
+            nslices = s;
+        }
+        for (int y = 0; y <= rheight; y++)
+        {
+            for (int x = 0; x <= rwidth; x++) 
+            {
+                ch1 = (int)GET_AT(x+xOffset,y+yOffset,s,inPtr1);
+                ch2 = (int)GET_AT(x+xOffset,y+yOffset,s,inPtr2);
+
+                if (ch1Max < ch1)
+                    ch1Max = ch1;
+                if (ch1Min > ch1)
+                    ch1Min = ch1;
+                if (ch2Max < ch2) {
+                    ch2Max = ch2;
+                    
                 }
-                
-                SET_AT_OUT(x,y,z,outPtr,(OUT_T)(scale*sum));
+                if (ch2Min > ch2)
+                    ch2Min = ch2;                
+                N++;
+                if (ch1 + ch2 != 0)
+                    N2++;
+                sumXtotal += ch1;
+                sumYtotal += ch2;
+                if (ch2 > 0)
+                    colocX += ch1;
+                if (ch1 > 0)
+                    colocY += ch2;
+                sumX += ch1;
+                sumXY += (ch1 * ch2);
+                sumXX += (ch1 * ch1);
+                sumYY += (ch2 * ch2);
+                sumY += ch2;
+                if (ch1 > 0)
+                    Nr++;
+                if (ch2 > 0)
+                    Ng++;
             }
         }
-     
+    }
+
+    if (ignoreZeroZero)
+        N = N2;
+
+    double ch1Mean = sumX / N;
+    double ch2Mean = sumY / N;
+    pearsons1 = sumXY - (sumX * sumY / N);
+    pearsons2 = sumXX - (sumX * sumX / N);
+    pearsons3 = sumYY - (sumY * sumY / N);
+    
+    // Pearson's correlation for existing channels
+    r = pearsons1 / (sqrt(pearsons2 * pearsons3));
+    //printf("R=%f\n",r);
+ 
+    double colocM1 = (double) (colocX / sumXtotal);
+    double colocM2 = (double) (colocY / sumYtotal); 
  }
 
 //----------------------------------------------------------------------------
@@ -306,6 +329,7 @@ template < class T >
     int idxX, idxY, idxZ;
     OUT_T* outPtr;
          
+                  
     bool Costes = false, Fay = false, vanS = false;
 
     bool randZ = self->GetRandomizeZ();
@@ -382,7 +406,7 @@ template < class T >
             kernelsum += kernel[i];
         if(kernelsum)
             scale = 1.0 / kernelsum;
-    printf("Scale for smoothing=%f, kernelsize=%d\n",scale,size);
+        printf("Scale for smoothing=%f, kernelsize=%d\n",scale,size);
     }
 
     int iterations = self->GetNumIterations();
@@ -400,67 +424,7 @@ template < class T >
     T* inPtr1 = (T *) inData[0]->GetScalarPointer();
     T* inPtr2 = (T *) inData[1]->GetScalarPointer();
   
-    //calulate pearsons for existing image;
-    for (int s = 0; s < nslices; s++)
-    {
-        if (currentSliceNo>=0) {
-            s = currentSliceNo;
-            nslices = s;
-        }
-        for (int y = 0; y <= rheight; y++)
-        {
-            for (int x = 0; x <= rwidth; x++) 
-            {
-                ch1 = (int)GET_AT(x+xOffset,y+yOffset,s,inPtr1);
-                ch2 = (int)GET_AT(x+xOffset,y+yOffset,s,inPtr2);
-
-                if (ch1Max < ch1)
-                    ch1Max = ch1;
-                if (ch1Min > ch1)
-                    ch1Min = ch1;
-                if (ch2Max < ch2) {
-                    ch2Max = ch2;
-                    
-                }
-                if (ch2Min > ch2)
-                    ch2Min = ch2;                
-                N++;
-                if (ch1 + ch2 != 0)
-                    N2++;
-                sumXtotal += ch1;
-                sumYtotal += ch2;
-                if (ch2 > 0)
-                    colocX += ch1;
-                if (ch1 > 0)
-                    colocY += ch2;
-                sumX += ch1;
-                sumXY += (ch1 * ch2);
-                sumXX += (ch1 * ch1);
-                sumYY += (ch2 * ch2);
-                sumY += ch2;
-                if (ch1 > 0)
-                    Nr++;
-                if (ch2 > 0)
-                    Ng++;
-            }
-        }
-    }
-
-    if (ignoreZeroZero)
-        N = N2;
-
-    double ch1Mean = sumX / N;
-    double ch2Mean = sumY / N;
-    pearsons1 = sumXY - (sumX * sumY / N);
-    pearsons2 = sumXX - (sumX * sumX / N);
-    pearsons3 = sumYY - (sumY * sumY / N);
-    
-    // Pearson's correlation for existing channels
-    r = pearsons1 / (sqrt(pearsons2 * pearsons3));
-    //printf("R=%f\n",r);
- 
-    double colocM1 = (double) (colocX / sumXtotal);
-    double colocM2 = (double) (colocY / sumYtotal);
+    CalculateStatisticsOfExistingImage(width, height, nslices);
 
     //calucalte ICQ
     int countAll = 0, countAll2 = 0, countPos = 0;
@@ -469,8 +433,6 @@ template < class T >
     double PDM = 0;
     double ICQ2;
     
-//    inPtr1 = (T *) inData[0]->GetScalarPointer();
-//    inPtr2 = (T *) inData[1]->GetScalarPointer();
     inPtr1 = (T *) inData[0]->GetScalarPointerForExtent(outExt);
     inPtr2 = (T *) inData[1]->GetScalarPointerForExtent(outExt);
 
@@ -537,9 +499,6 @@ template < class T >
     
     ch4 = 0;    
     
-    //stackRand = new ImageStack(rwidth,rheight);    
-    
-    
     for (int c = 1; c <= iterations; c++)
     {
         if(!id) {
@@ -557,11 +516,7 @@ template < class T >
         inPtr1 = (T *) inData[0]->GetScalarPointer();
         inPtr2 = (T *) inData[1]->GetScalarPointer();
         
-        // Clear the buffer
-//        for(int i=0;i<(maxX+1)*(maxY+1)*(maxZ+1);i++)*outPtr++=0;
-                
-//        outPtr = (OUT_T *) outbuf->GetScalarPointer();    
-        //      stackRand = new ImageStack(rwidth, rheight);
+
         if (Fay) {
             // At iterations 26 and 61 shift the parameters
             if (c == 26 || c == 51) {
@@ -738,14 +693,10 @@ template < class T >
                     //ch2 =(int) ip2.getPixel(x, y);
                     ch2 =(int) GET_AT_OUT(x,y,chRandz,outPtr);
                     
-                    if (ch1Max < ch1)
-                        ch1Max = ch1;
-                    if (ch1Min > ch1)
-                        ch1Min = ch1;
-                    if (ch2Max < ch2)
-                        ch2Max = ch2;
-                    if (ch2Min > ch2)
-                       ch2Min = ch2;
+                    if (ch1Max < ch1) ch1Max = ch1;
+                    if (ch1Min > ch1) ch1Min = ch1;
+                    if (ch2Max < ch2) ch2Max = ch2;
+                    if (ch2Min > ch2) ch2Min = ch2;
                     N++;
                     //Mander calc
                     sumXtotal = sumXtotal + ch1;
@@ -845,14 +796,7 @@ template < class T >
     self->SetNumIterations(iterations);
     self->SetPSF(psf);
     
-    //if (vanS) {
-    //  PlotWindow plot = new PlotWindow("CCF", "x-translation",
-    //                   "Pearsons", vSx, vSr);
-        //r2min = (1.05*r2min);
-        //r2max= (r2max*1.05);
-        //plot.setLimits(-20, 20, r2min, r2max);
-    //  plot.draw();
-    //}
+   
     outbuf->Delete();
     if(kernel) {
     delete[] kernel;
@@ -900,7 +844,7 @@ void vtkImageColocalizationTest::ThreadedExecute(vtkImageData **
 {
     int idx1;
     int inExt[6], cOutExt[6];
-
+    
     switch (inData[0]->GetScalarType()) {
     
         vtkTemplateMacro7
