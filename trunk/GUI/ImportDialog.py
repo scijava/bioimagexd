@@ -232,13 +232,15 @@ class ImportDialog(wx.Dialog):
         
         self.patternEdit.Enable(0)
         
-        
+        self.patternUpdateBtn = wx.Button(self,-1,"Update")
+        self.patternUpdateBtn.Bind(wx.EVT_BUTTON, self.loadListOfImages)
         
         self.patternLbl=wx.StaticText(self,-1,"Pattern:")
         self.patternBox=wx.BoxSizer(wx.HORIZONTAL)
         self.patternBox.Add(self.patternLbl)
         self.patternBox.Add(self.patternEdit)
-
+        self.patternBox.Add(self.patternUpdateBtn)
+        
         self.sourceListbox=wx.ListBox(self,-1,size=(600,100),style=wx.LB_ALWAYS_SB|wx.LB_HSCROLL|wx.LB_EXTENDED)
         self.sourceListbox.Bind(wx.EVT_LISTBOX,self.updateSelection)
         
