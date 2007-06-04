@@ -40,7 +40,6 @@ masks = []
 
 class Mask:
     """
-    Class: Mask
     Created: 20.06.2006, KP
     Description: A mask class
     """

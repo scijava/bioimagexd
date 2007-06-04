@@ -237,6 +237,7 @@ class AnnotationHelper(PainterHelper):
         Created: 06.10.2006, KP
         Description: Paint the annotations on a DC
         """
+        print "\nPARENT'S OFFSET = ",self.parent.xoffset,self.parent.yoffset
         self.parent.diagram.Redraw(dc)
         
 
@@ -438,12 +439,14 @@ class InteractivePanel(ogl.ShapeCanvas):
         Description: Set the offset of this interactive panel. The offset is variable
                      based on the size of the screen vs. the dataset size.
         """
-        xdiff=x-self.xoffset
-        ydiff=y-self.yoffset
         shapelist = self.diagram.GetShapeList()
         
         for shape in shapelist:        
             sx,sy=shape.GetX(),shape.GetY()
+            ox,oy = shape.getOffset()
+            xdiff = x-ox
+            ydiff = y-oy
+            shape._offset=(x,y)
             #shape.Move(x+xdiff,y+ydiff, display=False)
             shape.SetX(sx+xdiff)
             shape.SetY(sy+ydiff)
@@ -711,8 +714,24 @@ class InteractivePanel(ogl.ShapeCanvas):
             #self.Refresh()
             #self.Update()
         event.Skip()
+
+    def onDeactivate(self):
+        """
+        Created: 28.05.2007, KP
+        Description: event handler called when the visualization mode is about to be deactivated
+        """
+        shapelist = self.diagram.GetShapeList()
         
-        
+        for shape in shapelist:        
+            sx,sy=shape.GetX(),shape.GetY()
+            try:
+                ox,oy = shape._offset
+            except:
+                ox,oy=0,0
+            shape.SetX(sx-ox)
+            shape.SetY(sy-oy)
+            shape._offset = 0,0
+                       
     def getDuplicateDC(self, dc):
         """
         Created: 04.04.2007, KP
@@ -802,6 +821,8 @@ class InteractivePanel(ogl.ShapeCanvas):
                 shape.SetY( ey+(y-ey)/2 )                
             
             if shape:    
+                shape._offset = (self.xoffset,self.yoffset)
+            
                 self.addNewShape(shape)
             
             if self.annotationClass=="POLYGON":

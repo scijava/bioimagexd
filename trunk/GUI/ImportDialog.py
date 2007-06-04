@@ -227,8 +227,11 @@ class ImportDialog(wx.Dialog):
         self.choice.Bind(wx.EVT_CHOICE,self.setInputType)
         
         self.patternEdit=wx.TextCtrl(self,-1,"",style=wx.TE_PROCESS_ENTER, size=(400,-1))
-        self.patternEdit.Bind(wx.EVT_TEXT_ENTER,self.loadListOfImages)
-        self.patternEdit.Bind(wx.EVT_TEXT,self.loadListOfImages)
+        #self.patternEdit.Bind(wx.EVT_TEXT_ENTER,self.loadListOfImages)
+        #self.patternEdit.Bind(wx.EVT_TEXT,self.loadListOfImages)
+        
+        self.patternEdit.Enable(0)
+        
         
         
         self.patternLbl=wx.StaticText(self,-1,"Pattern:")
@@ -359,6 +362,12 @@ enter the information below.""")
         self.colorBtn = ColorTransferEditor.CTFButton(self)
         
         self.infosizer.Add(self.colorBtn,(n,0),span=(1,2))
+        n+=1
+        self.updateBtn = wx.Button(self, -1, "Update preview")
+        
+        self.infosizer.Add(self.updateBtn,(n,0),span=(1,2))
+        
+        self.updateBtn.Bind(wx.EVT_BUTTON, self.onUpdatePreview)
         
         self.imageInfoSizer.Add(self.infosizer,1,wx.EXPAND|wx.ALL)
         
@@ -371,6 +380,19 @@ enter the information below.""")
             self.browsedir.SetValue(self.inputFile)
             self.loadListOfFiles()
             
+    def onUpdatePreview(self, event):
+        """
+        Created: 04.07.2007, KP
+        Description: Update the preview based on the user input
+        """
+        self.updateSelection(None, updatePreview = 1)
+        try:
+            slices = int(self.depthEdit.GetValue())
+            self.dataSource.setSlicesPerTimepoint(slices)
+            self.zslider.SetRange(1,slices)
+        except:
+            pass
+        
     def onChangeZSlice(self,event):
         """
         Created: 07.05.2007, KP
@@ -416,7 +438,7 @@ enter the information below.""")
         r=re.compile("[0-9]+")
         items=r.findall(filename)
         if items:
-            s="%%.%dd"%len(items[-1])
+            s="%%.%dd"%len(items[-1])  #" the pattern is e.g. %.5d, but we need to use double %%
             filename=filename.replace(items[-1],s)            
         self.patternEdit.SetValue(filename)
  
@@ -428,7 +450,7 @@ enter the information below.""")
         self.patternEdit.Enable(self.choice.GetSelection()==0)
         self.loadListOfImages()
      
-    def updateSelection(self,event):
+    def updateSelection(self,event, updatePreview = 0):
         """
         Created: 17.03.2005, KP
         Description: This method is called when user selects items in the listbox
@@ -441,13 +463,14 @@ enter the information below.""")
             idxs=range(n)
         for i in idxs:
             files.append(self.sourceListbox.GetString(i))
-        try:
-            self.dataSource.setFilenames(files)
-        except Logging.GUIError, ex:
-            ex.show()
-            self.sourceListbox.Clear()
-            self.setNumberOfImages(0)
-            return
+        if updatePreview:
+            try:
+                self.dataSource.setFilenames(files)
+            except Logging.GUIError, ex:
+                ex.show()
+                self.sourceListbox.Clear()
+                self.setNumberOfImages(0)
+                return
         
         self.setNumberOfImages(len(self.sourceListbox.GetSelections()))
         
@@ -466,8 +489,8 @@ enter the information below.""")
                 x,y,slices = self.dataUnit.getDimensions()
             
             self.depthEdit.SetValue("%.2f"%slices)
-            self.dataSource.setSlicesPerTimepoint(slices)
-            self.zslider.SetRange(1,slices)
+#            self.dataSource.setSlicesPerTimepoint(slices)
+#            self.zslider.SetRange(1,slices)
         
     def setNumberOfImages(self,n=-1):
         """
@@ -477,7 +500,7 @@ enter the information below.""")
         if type(n)!=type(0):
             n=int(self.imageAmountLbl.GetLabel())
         Logging.info("n=",n,kw="io")
-        self.imageAmountLbl.SetLabel("%d"%n)
+        self.imageAmountLbl.SetLabel("%d"%n)#"
         
         val = self.depthEdit.GetValue()
         try:
@@ -547,7 +570,7 @@ enter the information below.""")
             dirn=os.path.dirname(filename)
             pat=dirn+os.path.sep+"%s"%(pat)
         else:
-            pat=dirn+os.path.sep+"*.%s"%ext
+            pat=dirn+os.path.sep+"*.%s"%ext #"
         Logging.info("Pattern for all in directory is ",pat,kw="io")
         files=glob.glob(pat)
         print "Got files=",files

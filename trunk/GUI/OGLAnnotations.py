@@ -41,6 +41,23 @@ count={}
 
 class OGLAnnotation:
 
+    def setOffset(self, x,y):
+        """
+        Created: 28.05.2007, KP
+        Description: Set the offset that this annotation has
+        """
+        self._offset = (x,y)
+
+    def getOffset(self):
+        """
+        Created: 28.05.2007, KP
+        Description: return the offset of the annotation
+        """
+        if not hasattr(self, "_offset"):
+            return 0,0
+        return self._offset
+        
+        
     def OnDrawControlPoints(self, dc):
         if not self._drawHandles:
             return
