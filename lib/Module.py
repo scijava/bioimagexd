@@ -151,10 +151,14 @@ class Module:
         """
         #imageData.SetScalarTypeToUnsignedChar()
         x,y,z=imageData.GetDimensions()
+        if not (x or y or z):
+            imageData.UpdateInformation()
+            x,y,z = imageData.GetDimensions()
         print "Current image data dimensions=",x,y,z
         print "self.x, self.y, self.z=",self.x,self.y,self.z
         if self.x and self.y and self.z:
             if x!=self.x or y!=self.y or z!=self.z:
+                print imageData
                 raise ("ERROR: Dimensions do not match: currently (%d,%d,%d), "
                 "new dimensions (%d,%d,%d)"%(self.x,self.y,self.z,x,y,z))
         else:            

@@ -148,6 +148,7 @@ class SimpleMode(VisualizationMode):
         Description: Unset the mode of visualization
         """
         self.iactivePanel.Show(0)
+        self.iactivePanel.onDeactivate()        
         del self.iactivePanel
         self.iactivePanel=None
         

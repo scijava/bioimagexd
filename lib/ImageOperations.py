@@ -588,7 +588,7 @@ def vtkImageDataToPreviewBitmap(dataunit,timepoint,color,width=0,height=0,bgcolo
     
     #imagedata.Update()
     #imagedata=getMIP(imageData,color)
-    print "Converting to wxImageData",imagedata
+#    print "Converting to wxImageData",imagedata
     image = vtkImageDataToWxImage(imagedata)
     #image.SaveMimeFile("mippi2.png","image/png")
     x,y=image.GetWidth(),image.GetHeight()
@@ -927,7 +927,6 @@ def getMaskFromPoints(points,mx,my,mz):
     importer.SetWholeExtent(0,mx-1,0,my-1,0,0)
 
     importer.Update()
-    image = importer.GetOutput()
     #writer = vtk.vtkPNGWriter()
     #writer.SetFileName("foo.png")
     #writer.SetInput(image)
@@ -936,7 +935,7 @@ def getMaskFromPoints(points,mx,my,mz):
     append = vtk.vtkImageAppend()
     append.SetAppendAxis(2)
     for z in range(0,mz):
-        append.SetInputConnection(z,image.GetProducerPort())
+        append.SetInput(z,importer.GetOutput())
     append.Update()
     image2 = append.GetOutput()
     #print "Image2=",image2

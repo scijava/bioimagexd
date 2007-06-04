@@ -145,7 +145,10 @@ class SlicesMode(VisualizationMode):
         Description: Unset the mode of visualization
         """
         self.iactivePanel.Show(0)
-        self.iactivePanel.setDataUnit(None)
+        self.iactivePanel.onDeactivate()
+#        self.iactivePanel.setDataUnit(None)
+        del self.iactivePanel
+        self.iactivePanel=None
         
     def saveSnapshot(self,filename):
         """

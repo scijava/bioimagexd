@@ -328,7 +328,6 @@ class MainWindow(wx.Frame):
         Created: 29.1.2007, KP
         Description: clean up the file history
         """
-        print "\n\nCLEANUP"
         # A little extra cleanup is required for the FileHistory control
         del self.filehistory
         self.menu.Destroy()

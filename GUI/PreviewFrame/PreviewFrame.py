@@ -179,6 +179,7 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         
         if not self.show["SCROLL"]:
             self.SetScrollbars(0,0,0,0)
+        self.updateAnnotations()
         
     def isMipMode(self):
         """
@@ -218,6 +219,9 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
                 x=x2
             if y2>y:
                 y=y2
+            m="SLICES"
+            if self.mip:m="MIP"
+            print "\n\n\n%s Setting buffer size to "%m,x,y
             if self.buffer.GetWidth()!=x or self.buffer.GetHeight()!=y:
                 self.buffer = wx.EmptyBitmap(x,y)
                 self.setScrollbars(x,y)
@@ -738,6 +742,9 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         px,py = self.paintSize
         if px>x:x=px
         if py>y:y=py
+        m="SLICES"
+        if self.mip:m="MIP"
+        print "\n\n\n%s Setting buffer size to "%m,x,y,"zoom factor=",f
         
         self.buffer = wx.EmptyBitmap(x,y)
         self.setScrollbars(x,y)
@@ -898,6 +905,8 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         self.snapshotPos = xoff+x0,yoff+x0
         self.snapshotSize = bw,bh
 
+        print "Buffer size=",tw,th
+        print "Setting offset to",xoff,yoff
         self.setOffset(xoff, yoff)
         dc.DrawBitmap(bmp,xoff+x0,yoff+x0,True)
 

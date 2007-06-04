@@ -31,22 +31,18 @@ __date__ = "$Date: 2004/11/03 12:51:36 $"
 
 class Example:
     """
-    Class: Example class
     Created: 00.00.2004, XX
     Description: This is an example class
     """
 
     def __init__(self):
         """
-        Method: __init__
-        Created: 00.00.2004
-        Creator:
+        Created: 00.00.2004, XX
         Description: Initialization
         """
 
     def method(self, x, y):
         """
-        Method: method(x, y)
         Created: 00.00.2004, XX
         Description:
         Parameters:   x       The x-coordinate

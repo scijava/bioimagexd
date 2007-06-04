@@ -262,6 +262,14 @@ class CombinedDataUnit(DataUnit.DataUnit):
                 bxdwriter.write()
         return bxdwriter.getFilename()
 
+    def setMask(self, mask):
+        """
+        Created: 25.05.2007, KP
+        Description: Set the mask applied to this dataunit
+        """   
+        for i in self.sourceunits:
+            i.setMask(mask)
+
     def createDataUnitFile(self,writer):
         """
         Created: 1.12.2004, KP, JM
@@ -404,8 +412,17 @@ class CombinedDataUnit(DataUnit.DataUnit):
                     Logging.info("Adding source image data",kw="dataunit")
                     image=dataunit.getTimePoint(timePoint)
                     x,y,z = image.GetDimensions()
+                    
+                    # If a whole volume is requested, but the data is acquired with an update
+                    # extent selecting only a single slice, then reset the update extent
                     if depth == -1 and z==1:
                         image.SetUpdateExtent(image.GetWholeExtent())
+                        image.Update()
+                    elif depth != -1 and not (x or y):
+                        # If a dataset has not been updated yet, then set the appropriate
+                        # update extent
+                        ex0,ex1,ey0,ey1,ez0,ez1 = image.GetWholeExtent()
+                        image.SetUpdateExtent(ex0,ex1,ey0,ey1,depth,depth)
                         image.Update()
                     self.module.addInput(dataunit,image)
 
