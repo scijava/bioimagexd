@@ -46,6 +46,8 @@ executing = 0
 import time
 
 def set_target_size(x,y,z=0):
+    assert x>0 and y>0 and z>0,"Target dimensions need to be >0"
+    
     #print "\n\\nTARGET SIZE FOR RESAMPLE-TO-FIT ",x,y,z
     global targetSize, conf
     dataUnit = bxd.visualizer.getDataUnit()

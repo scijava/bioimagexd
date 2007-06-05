@@ -67,7 +67,6 @@ class FileListDataSource(DataSource):
         self.voxelsize = (1,1,1)
         self.spacing = (1,1,1)
         self.pattern = ""
-        self.itkToVtk = None
         self.color = None
         self.shift = None
         self.tps=-1
@@ -81,6 +80,13 @@ class FileListDataSource(DataSource):
         self.readers = []
         self.slicesPerTimepoint = 1
         self.is3D = 0
+        
+    def setColorTransferFunction(self, ctf):
+        """
+        Created: 04.06.2007, KP
+        Description: Set the color transfer function
+        """
+        self.ctf = ctf
         
     def is3DImage(self):
         """
@@ -136,6 +142,7 @@ class FileListDataSource(DataSource):
         Created: 08.05.2007, KP
         Description: return a VTK image reader based on file extension
         """
+        assert ext in self.extMapping,"Extension not recognized: %s"%ext
         mpr = self.extMapping[ext]
         # If it's a tiff file, we use our own, extended TIFF reader
         if self.extMapping[ext]=="TIFF":
@@ -154,11 +161,20 @@ class FileListDataSource(DataSource):
         """
         Created: 07.05.2007, KP
         Description: create the reader list from a given set of file names and parameters
-        """
+        """        
+        self.z=int(self.slicesPerTimepoint)
+
+        assert self.z>0,"Number of slices per timepoint is greater than 0"
+        assert self.z <= len(self.filenames),"Number of timepoints cannot exceed number of files given"
+
         for i in self.readers:
             del i
         self.readers = []
+        
 
+        if not self.filenames:
+            raise Logging.GUIError("No files could be found","For some reason, no files were listed to be imported.")        
+                    
         files = self.filenames
         print "Determining readers from ",self.filenames
         
@@ -175,7 +191,6 @@ class FileListDataSource(DataSource):
         rdr = self.getReaderByExtension(ext, isRGB)
                 
         dirn=os.path.dirname(files[0])
-        self.z=int(self.slicesPerTimepoint)
         print "THERE ARE ",self.z,"SLICES PER TIMEPOINT"
         ext=files[0].split(".")[-1].lower()
 
@@ -226,7 +241,6 @@ class FileListDataSource(DataSource):
                         filelst = filelst[1:]
                     
                     rdr.SetFileNames(arr)
-                    print "\nSETTING DATAEXTENT TO",0,self.x-1, 0, self.y-1, 0,self.slicesPerTimepoint-1
                     rdr.SetDataExtent(0,self.x-1,0,self.y-1,0,self.z-1)
                     rdr.SetDataSpacing(self.spacing)
                     rdr.SetDataOrigin(0,0,0)
@@ -300,7 +314,7 @@ class FileListDataSource(DataSource):
         Created: 07.05.2007, KP
         Description: Set the number of slices that belong to a given timepoint
         """
-        Logging.backtrace()
+        assert n>0,"Slices per timepoint needs to be greater than 0"
         print "Setting slices per timepoint to ",n
         self.slicesPerTimepoint = n
         self.z = n
@@ -322,8 +336,6 @@ class FileListDataSource(DataSource):
         """    
         return self.filename
         
-
-    
     def getDataSet(self, i,raw=0):
         """
         Created: 12.04.2005, KP
@@ -355,6 +367,8 @@ class FileListDataSource(DataSource):
         Created: 21.04.2005, KP
         Description: A method that reads information from an image
         """        
+        assert filename,"Filename must be defined"
+        assert os.path.exists(filename),"File that we're retrieving information from (%s) needs to exist, but doesn't."%filename
         ext  = filename.split(".")[-1].lower()
         rdr = self.getReaderByExtension(ext)
         
@@ -380,7 +394,8 @@ class FileListDataSource(DataSource):
             self.getReadersFromFilenames()
             
         if n>= len(self.readers):
-            print "TRYING TO GET TIMEPOINT",n,"THERE ARE ",len(self.readers),"readers"
+            raise Logging.GUIError("Attempt to read bad timepoint","Timepoint %d is not defined by the given filenames"%n)
+            #print "TRYING TO GET TIMEPOINT",n,"THERE ARE ",len(self.readers),"readers"
             n=0
             
         self.reader = self.readers[n]
@@ -460,13 +475,8 @@ class FileListDataSource(DataSource):
         
     def getColorTransferFunction(self):
         """
-        Method: getColorTransferFunction()
         Created: 26.04.2005, KP
         Description: Returns the ctf of the dataset series which this datasource
                      operates on
         """
-        if not self.ctf:
-            self.ctf = vtk.vtkColorTransferFunction()
-            self.ctf.AddRGBPoint(0,0,0,0)
-            self.ctf.AddRGBPoint(255,0,1,0)
-        return self.ctf        
+        return self.ctf

@@ -46,11 +46,10 @@ class Light:
         self.az = 0
         self.saved=[]
         
-    def __getstate__(self):
+    def __getState__(self):
         """
-        Method: __getstate__
         Created: 02.08.2005, KP
-        Description: A getstate method that saves the lights
+        Description: A getState method that saves the lights
         """            
         self.save()
         odict={"saved":self.saved}
@@ -58,46 +57,45 @@ class Light:
         
     def __set_pure_state__(self,state):
         """
-        Method: __set_pure_state__()
         Created: 02.08.2005, KP
         Description: Set the state of the light
         """
         self.saved = state.saved
         self.restore()
         
-    def switchon(self):
+    def switchOn(self):
         self.source.SwitchOn()
         self.glyph.show()
 
-    def switchoff(self):
+    def switchOff(self):
         self.source.SwitchOff()
         self.glyph.hide()
         
-    def getstate(self):
-        return ['off','on'][self.source.GetSwitch()]
+    def getState(self):
+        return self.source.GetSwitch()
 
-    def addglyph(self, ren):
+    def addGlyph(self, ren):
         self.glyph.add(ren)
 
-    def moveto(self, el, az):
+    def moveTo(self, el, az):
         self.el = el
         self.az = az
-        self.glyph.moveto(el, az)
-        self.source.SetPosition(self.topos(el, az))
+        self.glyph.moveTo(el, az)
+        self.source.SetPosition(self.toPos(el, az))
 
-    def setelevation(self, el):
-        self.moveto(el, self.az)
+    def setElevation(self, el):
+        self.moveTo(el, self.az)
 
-    def getelevation(self):
+    def getElevation(self):
         return self.el
 
-    def setazmuth(self, az):
-        self.moveto(self.el, az)
+    def setAzimuth(self, az):
+        self.moveTo(self.el, az)
 
-    def getazmuth(self):
+    def getAzimuth(self):
         return self.az
 
-    def topos(self, el, az):
+    def toPos(self, el, az):
         theta = az*pi/180.0
         phi = (90.0-el)*pi/180.0
         x = sin(theta)*sin(phi)
@@ -105,30 +103,30 @@ class Light:
         z = cos(theta)*sin(phi)
         return x, y, z
 
-    def frompos(self, (x, y, z) ):
+    def fromPos(self, (x, y, z) ):
         theta = atan2(x, z)
         phi = atan2(sqrt(x**2+z**2), y)
         az = theta*180.0/pi
         el = 90.0 - phi*180.0/pi
         return el, az
 
-    def getcolor(self):
+    def getColor(self):
         rgb = self.source.GetColor()
         r = int(rgb[0]*255); g = int(rgb[1]*255); b = int(rgb[2]*255);
         return (r, g, b)
 
-    def setcolor(self, rgb):
+    def setColor(self, rgb):
         r = rgb[0] / 255.0; g = rgb[1] / 255.0; b = rgb[2] / 255.0
         self.source.SetColor((r, g, b))
 
-    def getintensity(self):
+    def getIntensity(self):
         return self.source.GetIntensity()
 
-    def setintensity(self, i):
+    def setIntensity(self, i):
         self.source.SetIntensity(i)
 
     def sync(self):
-        self.el, self.az = self.frompos(self.source.GetPosition())
+        self.el, self.az = self.fromPos(self.source.GetPosition())
         if self.source.GetSwitch() == 1:
             self.glyph.show()
         else:
@@ -152,7 +150,7 @@ class Light:
 
     def update(self):
         self.sync()
-        self.moveto(self.el, self.az)
+        self.moveTo(self.el, self.az)
 
 class LightGlyph:
 
@@ -211,7 +209,7 @@ class LightGlyph:
         ren.AddActor(self.coneActor)
         ren.AddActor(self.capActor)
 
-    def moveto(self, el=None, az = None):
+    def moveTo(self, el=None, az = None):
         self.coneActor.RotateZ(-self.el)
         self.coneActor.RotateY(-self.az)
         self.capActor.RotateZ(-self.el)
@@ -279,35 +277,30 @@ class LightSwitch(wx.CheckBox):
 
     def attach(self, light):
         self.light = light
-        self.setposition(light.getstate())
+        self.setState(light.getState())
         self.enable()
 
     def flip(self,event=None):
-        if self.light.getstate() == 'off':
-            self.setposition('on')
-            self.light.switchon()
+        if self.light.getState() == 0:
+            self.setState(1)
+            self.light.switchOn()
             if self.command != None:
-                self.command(self.id,'on')
+                self.command(self.id,1)
         else:
-            self.setposition('off')
-            self.light.switchoff()
+            self.setState(0)
+            self.light.switchOff()
             if self.command != None:
-                self.command(self.id,'off')
+                self.command(self.id,0)
 
-    def setposition(self, pos):
-        if pos == 'on' :
-            self.sw_state = 1
-            self.SetValue(1)
-        else:
-            self.sw_state = 0
-            self.SetValue(0)
+    def setState(self, pos):
+        self.sw_state = pos
+        self.SetValue(pos)
 
     def ledon(self):
-        print "ledon"
         pass
     def ledoff(self):
-        print "ledoff"
-
+        pass
+        
     def enable(self):
         self.Enable(1)
 
@@ -315,7 +308,7 @@ class LightSwitch(wx.CheckBox):
         self.Enable(0)
 
     def update(self):
-        self.setposition(self.light.getstate())
+        self.setState(self.light.getState())
 
 
 class ScrollScale(RangedSlider):
@@ -356,19 +349,19 @@ class ScrollScale(RangedSlider):
         pass
         
 class ElevationTool(ScrollScale):
-    def __init__(self, master, ren, rendercmd):
+    def __init__(self, master, ren, updateCallback):
         ScrollScale.__init__(self, master, fromValue=90 , to=-90,
                             orient='vertical', width=12,
                             command = self.apply)
-        self.rendercmd = rendercmd
+        self.updateCallback = updateCallback
         self.light = None
         self.axis = ArcActor(0.0, 360.0, axis='y', n = 61)
         self.axis.GetProperty().SetColor(0.0, 1.0,0.0)
         ren.AddActor(self.axis)
-        #self.bind("<<Update>>", lambda e, s=self, w='world': s.rendercmd(w))
+        #self.bind("<<Update>>", lambda e, s=self, w='world': s.updateCallback(w))
         
     def update_event(self):
-        self.rendercmd('world')
+        self.updateCallback('world')
 
     def apply(self, el, norender=0):
         offset = sin(el/180.0*pi)
@@ -376,89 +369,88 @@ class ElevationTool(ScrollScale):
         self.axis.SetScale(scale, 1.0, scale)
         self.axis.SetPosition(0.0, offset,0.0)
         if self.light != None:
-            self.light.setelevation(el)
+            self.light.setElevation(el)
         if norender == 0:
-            self.rendercmd('lights')
+            self.updateCallback('lights')
         
-    def setel(self, el, norender=0):
+    def setElevation(self, el, norender=0):
         if self.set(el) == 1:
             self.apply(el, norender=norender)
 
     def attach(self, light):
         self.light = light
-        self.setel(light.getelevation(), norender=1)
+        self.setElevation(light.getElevation(), norender=1)
 
     def update(self):
-        self.setel(self.light.getelevation())
+        self.setElevation(self.light.getElevation())
 
 
 class AzimuthTool(ScrollScale):
-    def __init__(self, master, ren, rendercmd):
+    def __init__(self, master, ren, updateCallback):
         ScrollScale.__init__(self, master, fromValue=-180, to=180,
                             orient='horizontal', width=12,
                             command = self.apply)
-        self.rendercmd = rendercmd
+        self.updateCallback = updateCallback
         self.light = None
         self.axis = ArcActor(0.0, 180.0, axis='x', n = 31)
         self.axis.GetProperty().SetColor(1.0,0.0,0.0)
         ren.AddActor(self.axis)
-        #self.bind("<<Update>>", lambda e, s=self, w='world': s.rendercmd(w))
+        #self.bind("<<Update>>", lambda e, s=self, w='world': s.updateCallback(w))
 
     def update_event(self):
-        self.rendercmd('world')
+        self.updateCallback('world')
 
     def apply(self, az, norender=0):
         self.axis.SetOrientation(0.0, az,0.0)
         if self.light != None:
-            self.light.setazmuth(az)
+            self.light.setAzimuth(az)
         if norender == 0:
-            self.rendercmd('lights')
+            self.updateCallback('lights')
 
-    def setaz(self, az, norender=0):
+    def setAzimuth(self, az, norender=0):
         if self.set(az) == 1:
             self.apply(az, norender=norender)
 
     def attach(self, light):
         self.light = light
-        self.setaz(light.getazmuth(), norender=1)
+        self.setAzimuth(light.getAzimuth(), norender=1)
 
     def update(self):
-        self.setaz(self.light.getazmuth())
+        self.setAzimuth(self.light.getAzimuth())
         
 
 class IntensityTool(RangedSlider):
-    def __init__(self, master, rendercmd):
+    def __init__(self, master, updateCallback):
         RangedSlider.__init__(self,master,-1,200,size=(300,-1))
         self.setRange(0,100,0.0,2.0)
         self.Bind(wx.EVT_SCROLL,self.handler)
         light =  None
-        self.rendercmd = rendercmd
+        self.updateCallback = updateCallback
 
     def handler(self, event):
         val=self.getScaledValue()
-        print "val=",val
         if self.light != None:
-            self.light.setintensity(val)
-            self.rendercmd('world')
+            self.light.setIntensity(val)
+            self.updateCallback('world')
 
     def attach(self, light):
         self.light = light
-        self.setScaledValue(light.getintensity())
+        self.setScaledValue(light.getIntensity())
 
     def update(self):
-        val=self.light.getintensity()
+        val=self.light.getIntensity()
         self.setScaledValue(val)
 
 
 class ColorTool(csel.ColourSelect):
 
-    def __init__(self, master, rendercmd):
+    def __init__(self, master, updateCallback):
         #wx.BitmapButton.__init__(self,master,-1,self.swatch,size=(32,32))
         csel.ColourSelect.__init__(self,master,-1,"",size=(32,32))
         #self.Bind(wx.EVT_COLOURSELECT,self.handler)
 
         self.light=None
-        self.rendercmd = rendercmd
+        self.updateCallback = updateCallback
         #self.configure(state='disabled')
         self.Enable(0)
     
@@ -466,23 +458,25 @@ class ColorTool(csel.ColourSelect):
         color=self.GetValue()
         r,g,b=color.Red(),color.Green(),color.Blue()
         print "Setting light color to ",(r,g,b)
-        self.light.setcolor((r,g,b))
-        self.rendercmd('world')
+        self.light.setColor((r,g,b))
+        self.updateCallback('world')
             
     def attach(self, light):
         self.light = light
         self.Enable(1)
-        r, g, b = self.light.getcolor()
+        r, g, b = self.light.getColor()
         self.SetColour((r,g,b))
 
     def update(self):
-        r, g, b = self.light.getcolor()
+        r, g, b = self.light.getColor()
         self.SetColour((r,g,b))
 
 
-class LightTool(wx.Frame):
+class LightTool(wx.Dialog):
     def __init__(self, master, lights, renwidget ):
-        wx.Frame.__init__(self,master,-1)
+        
+        wx.Dialog.__init__(self, master,-1,"Lights configuration")
+        #wx.Frame.__init__(self,master,-1)
         self.s=wx.BoxSizer(wx.VERTICAL)
         
         self.panel=wx.Panel(self,-1)
@@ -499,11 +493,6 @@ class LightTool(wx.Frame):
             l.save()
         self.sizer = wx.GridBagSizer()
         
-        self.gfxwin = wxVTKRenderWindow(self.panel,-1,size=wx.Size(220,200))
-        
-        #self.gfxwin.Render()
-        #self.gfxwin.Initialize()
-        #self.gfxwin.Start()
         self.ren = vtk.vtkRenderer()
 
         self.switchbank = wx.Panel(self.panel,-1,style=wx.RAISED_BORDER)
@@ -515,13 +504,13 @@ class LightTool(wx.Frame):
                                           command=self.switchhandler))
             self.switchsizer.Add(self.sw[i],(0,i+1))
             self.sw[i].attach(lights[i])
-            if lights[i].getstate() == 'on':
+            if lights[i].getState():
                 self.num_lights_on += 1
                 
 
         if self.num_lights_on == 1:
             for i in range(0, 8):
-                if lights[i].getstate() == 'on':
+                if lights[i].getState():
                     self.sw[i].disable()
        
         self.switchbank.SetSizer(self.switchsizer)
@@ -573,7 +562,7 @@ class LightTool(wx.Frame):
         self.f2sizer=wx.GridBagSizer()
         
         b = wx.Button(self.f2,-1,"OK")
-        b.Bind(wx.EVT_BUTTON,self.ok_handler)
+        b.Bind(wx.EVT_BUTTON,self.onOkBtn)
         self.f2sizer.Add(b,(0,0))
 
         b = wx.Button(self.f2,-1,"Apply")
@@ -582,13 +571,20 @@ class LightTool(wx.Frame):
 
 
         b = wx.Button(self.f2,-1,"Cancel")
-        b.Bind(wx.EVT_BUTTON,self.cancel_handler)
+        b.Bind(wx.EVT_BUTTON,self.onCancelBtn)
         self.f2sizer.Add(b,(0,2))
                 
         self.f2.SetSizer(self.f2sizer)
         self.f2.SetAutoLayout(1)
         self.f2sizer.Fit(self.f2)
 
+        
+        self.gfxwin = wxVTKRenderWindowInteractor(self.panel,-1,size=wx.Size(220,200))
+        #self.gfxwin.Initialize()
+        self.gfxwin.Render()
+        #self.gfxwin.Initialize()
+        #self.gfxwin.Start()
+        
         self.sizer.Add(self.gfxwin,(0,0))
         self.sizer.Add(self.elevationBar,(0,1),flag=wx.EXPAND|wx.TOP|wx.BOTTOM)
         self.sizer.Add(self.azimuthBar,(1,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
@@ -608,15 +604,10 @@ class LightTool(wx.Frame):
         self.gfxwin.Bind(wx.EVT_MOTION,lambda e:None)
 
         self.gfxwin.Bind(wx.EVT_LEFT_UP,lambda e,s=self,w='picked':s.connect(w,event=e))
-        #self.gfxwin.bind("<ButtonRelease>",
-        #                 lambda e, s=self, w='picked': s.connect(w, event=e))
-        #self.gfxwin.bind("<ButtonPress>", lambda e:None)
-        #self.gfxwin.bind("<B1-Motion>", lambda e:None)
-        #self.gfxwin.bind("<B2-Motion>", lambda e:None)
-        #self.gfxwin.bind("<B3-Motion>", lambda e:None)
+  
 
-        #self.protocol("WM_DELETE_WINDOW", self.cancel_handler)
-        self.Bind(wx.EVT_CLOSE,self.cancel_handler)
+        #self.protocol("WM_DELETE_WINDOW", self.onCancelBtn)
+        self.Bind(wx.EVT_CLOSE,self.onCancelBtn)
 
         self.gfxwin.GetRenderWindow().AddRenderer(self.ren)
 
@@ -633,7 +624,7 @@ class LightTool(wx.Frame):
         self.picker.SetTolerance(0.0005)
 
         for l in lights:
-            l.addglyph(self.ren)
+            l.addGlyph(self.ren)
 
         self.ren.GetActiveCamera().Zoom(1.6)
         self.connect('first')
@@ -647,7 +638,7 @@ class LightTool(wx.Frame):
         self.SetAutoLayout(1)        
 
     def switchhandler(self, which, state):
-        if state == 'on':
+        if state:
             if self.num_lights_on == 1: self.sw[self.connected].enable()
             self.num_lights_on += 1
             self.connect(which)
@@ -664,19 +655,19 @@ class LightTool(wx.Frame):
             i.update()
 
     def elazreset_handler(self,event):
-        self.elevationBar.setel(0.0, norender=1)
-        self.azimuthBar.setaz(0.0, norender=1)
+        self.elevationBar.setElevation(0.0, norender=1)
+        self.azimuthBar.setAzimuth(0.0, norender=1)
         self.redraw('all')
 
     def apply_handler(self, event=None):
         self.redraw('all')
     
-    def ok_handler(self, event=None):
+    def onOkBtn(self, event=None):
         self.redraw('world')
         self.gfxwin.Destroy()
         self.Destroy()
 
-    def cancel_handler(self, event=None):
+    def onCancelBtn(self, event=None):
         for l in self.lights:
             l.restore()
         self.redraw('world')
@@ -693,19 +684,19 @@ class LightTool(wx.Frame):
         if which == 'first':
             nn = -1
             for n in range(1, 9):
-                if self.lights[(nn+n)%8].getstate() == 'on':
+                if self.lights[(nn+n)%8].getState():
                     lnum = (nn+n)%8
                     break
         elif which == 'prev':
             nn = self.connected
             for n in range(1, 9):
-                if self.lights[(nn-n)%8].getstate() == 'on':
+                if self.lights[(nn-n)%8].getState() :
                     lnum = (nn-n)%8
                     break
         elif which == 'next':
             nn = self.connected
             for n in range(1, 9):
-                if self.lights[(nn+n)%8].getstate() == 'on':
+                if self.lights[(nn+n)%8].getState():
                     lnum = (nn+n)%8
                     break
         elif which == 'picked':
@@ -752,29 +743,29 @@ def init_lights(lights, mode='vtk'):
     if mode == 'raymond':
         for i in range(8):
             if i < 3 :
-                lights[i].switchon()
-                lights[i].setintensity(1.0)
-                lights[i].setcolor((255, 255, 255))
+                lights[i].switchOn()
+                lights[i].setIntensity(1.0)
+                lights[i].setColor((255, 255, 255))
             else:
-                lights[i].switchoff()
-                lights[i].moveto(0.0, 0.0)
-                lights[i].setintensity(1.0)
-                lights[i].setcolor((255, 255, 255))
+                lights[i].switchOff()
+                lights[i].moveTo(0.0, 0.0)
+                lights[i].setIntensity(1.0)
+                lights[i].setColor((255, 255, 255))
                 
-        lights[0].moveto(45.0, 45.0)
-        lights[1].moveto(-30.0,-60.0)
-        lights[1].setintensity(0.6)
-        lights[2].moveto(-30.0, 60.0)
-        lights[2].setintensity(0.5)
+        lights[0].moveTo(45.0, 45.0)
+        lights[1].moveTo(-30.0,-60.0)
+        lights[1].setIntensity(0.6)
+        lights[2].moveTo(-30.0, 60.0)
+        lights[2].setIntensity(0.5)
     else:
         for i in range(8):
             if i == 0 :
-                lights[i].switchon()
-                lights[i].moveto(0.0, 0.0)
-                lights[i].setintensity(1.0)
-                lights[i].setcolor((255, 255, 255))
+                lights[i].switchOn()
+                lights[i].moveTo(0.0, 0.0)
+                lights[i].setIntensity(1.0)
+                lights[i].setColor((255, 255, 255))
             else:
-                lights[i].switchoff()
+                lights[i].switchOff()
     
 
 class LightManager:
@@ -818,18 +809,16 @@ class LightManager:
     def init_lights(self, mode='vtk'):
         init_lights(self.lights, mode)
         
-    def __getstate__(self):
+    def __getState__(self):
         """
-        Method: __getstate__
         Created: 02.08.2005, KP
-        Description: A getstate method that saves the lights
+        Description: A getState method that saves the lights
         """            
         odict={"lights":self.lights}
         return odict
 
     def __set_pure_state__(self,state):
         """
-        Method: __set_pure_state__()
         Created: 11.04.2005, KP
         Description: Set the state of the light
         """
