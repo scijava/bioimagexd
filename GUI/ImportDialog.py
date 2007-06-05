@@ -44,6 +44,7 @@ import DataSource
 import Configuration
 import Image
 
+import scripting as bxd
 import Dialogs
 
 import PreviewFrame
@@ -58,6 +59,7 @@ class ImportDialog(wx.Dialog):
         Created: 17.03.2005, KP
         Description: Initialize the dialog
         """    
+        bxd.registerDialog("import", self)
         self.dataUnit = DataUnit.DataUnit()
 
         self.dataSource = parent.typeToSource["filelist"]()
@@ -97,6 +99,8 @@ class ImportDialog(wx.Dialog):
         Created: 07.05.2007, KP
         Description: Set a file that is used as an initial input for the import
         """        
+        assert os.path.exists(filename),"Filename needs to exist, but no file %s"%filename
+        
         self.inputFile = filename
         self.browsedir.SetValue(filename)
         
@@ -122,6 +126,7 @@ class ImportDialog(wx.Dialog):
         self.Close()
         
         self.convertFiles(filename)
+        bxd.unregisterDialog("import")
 
     def convertFiles(self,outname):
         """
@@ -153,8 +158,6 @@ class ImportDialog(wx.Dialog):
         self.dlg = wx.ProgressDialog("Importing","Reading dataset %d / %d"%(0,0),maximum = 2*self.tot, parent = self,
         style = wx.PD_ELAPSED_TIME|wx.PD_REMAINING_TIME)   
         
-        
-          
         self.writeDataUnitFile()
         self.dlg.Destroy()
         
@@ -382,24 +385,26 @@ enter the information below.""")
             self.browsedir.SetValue(self.inputFile)
             self.loadListOfFiles()
             
-    def onUpdatePreview(self, event):
+    def onUpdatePreview(self, event = None):
         """
         Created: 04.07.2007, KP
         Description: Update the preview based on the user input
         """
-        self.updateSelection(None, updatePreview = 1)
         try:
-            slices = int(self.depthEdit.GetValue())
-            self.dataSource.setSlicesPerTimepoint(slices)
-            self.zslider.SetRange(1,slices)
+            slices = int(float(self.depthEdit.GetValue()))
         except:
-            pass
+            Dialogs.showerror(self,"Could not get the number of slices","Malformed number of slices per timepoint")
+            return
+        self.dataSource.setSlicesPerTimepoint(slices)
+        self.zslider.SetRange(1,slices)
+        self.updateSelection(None, updatePreview = 1)
         
     def onChangeZSlice(self,event):
         """
         Created: 07.05.2007, KP
         Description: Set the zslice displayed in the preview
         """             
+        assert self.zslider.GetValue()>0,"Cannot set negative slide"
         self.preview.setZSlice(self.zslider.GetValue()-1)
         #print "Setting preview to ",self.zslider.GetValue()-1
         self.preview.updatePreview(0)
@@ -409,6 +414,7 @@ enter the information below.""")
         Created: 07.05.2007, KP
         Description: Set the timepoint displayed in the preview
         """
+        assert self.timeslider.GetValue()>0,"Cannot set negative timepoint"
         self.preview.setTimepoint(self.timeslider.GetValue()-1)
         self.preview.updatePreview(0)
         
@@ -422,6 +428,7 @@ enter the information below.""")
             vy = float(self.voxelY.GetValue())
             vz = float(self.voxelZ.GetValue())
         except:
+            Dialogs.showerror(self,"Bad voxel size","All voxel sizes were not valid.")
             return
         Logging.info("Voxel sizes = ",vx,vy,vz,kw="io")
         self.voxelSize = (vx,vy,vz)
@@ -436,12 +443,23 @@ enter the information below.""")
         """
         Created: 17.03.2005, KP
         Description: A method called when a file is loaded in the filebrowsebutton
-        """                 
-        r=re.compile("[0-9]+")
-        items=r.findall(filename)
+        """      
+        r=re.compile("z[0-9]+")
+        
+        if not r.search(filename):
+            r=re.compile("[0-9]+")
+            items=r.findall(filename)
+            n=len(items[-1])
+            s="%%.%dd"%n
+            print "s=",s
+        else:
+            items=r.findall(filename)
+            n=len(items[-1])-1                       
+            s="z%%.%dd"%n       
+            print "s=",s        
         if items:
-            s="%%.%dd"%len(items[-1])  #" the pattern is e.g. %.5d, but we need to use double %%
-            filename=filename.replace(items[-1],s)            
+            i = filename.rfind(items[-1])            
+            filename = filename[:i]+s+filename[i+1+n:]                    
         self.patternEdit.SetValue(filename)
  
     def setInputType(self,event):
@@ -450,7 +468,7 @@ enter the information below.""")
         Description: A method called when the input type is changed
         """        
         self.patternEdit.Enable(self.choice.GetSelection()==0)
-        self.loadListOfImages()
+        #self.loadListOfImages()
      
     def updateSelection(self,event, updatePreview = 0):
         """
@@ -482,6 +500,7 @@ enter the information below.""")
         Description: set the number of timepoints, and adjust the number of slices per timepoint accordingly
         """
         n = int(float(self.timepointEdit.GetValue()))
+        assert n>0,"There need to be at least one timepoint, %s is invalid"%(str(n))
         self.timeslider.SetRange(1, n)
         
         totalAmnt = int(self.imageAmountLbl.GetLabel())
@@ -489,10 +508,11 @@ enter the information below.""")
             slices = float(totalAmnt)/n
             if self.dataSource.is3DImage():
                 x,y,slices = self.dataUnit.getDimensions()
-            
+                            
             self.depthEdit.SetValue("%.2f"%slices)
 #            self.dataSource.setSlicesPerTimepoint(slices)
 #            self.zslider.SetRange(1,slices)
+        
         
     def setNumberOfImages(self,n=-1):
         """
@@ -547,7 +567,6 @@ enter the information below.""")
         Description: A method that loads a list of images to a listbox based on the selected input type
         """       
         self.sourceListbox.Clear()
-        
         filename=self.browsedir.GetValue()
         conf = Configuration.getConfiguration()
         conf.setConfigItem("ImportDirectory","Paths",os.path.dirname(filename))
@@ -581,49 +600,61 @@ enter the information below.""")
             self.choice.SetSelection(0)
             return
             
-        self.sourceListbox.Clear()
         files.sort(self.sortNumerically)
         r=re.compile("([0-9]+)")
          
         m = r.search(files[0])
         if m:
-
             startfrom = int(m.groups(1)[0])
         else:
             startfrom = 0
         print "Starting from ",startfrom
         n=0
+        pat=self.patternEdit.GetValue()
+        filecount=len(files)
+        nformat=pat.count("%")        
         # If we're using all files in directory, just add them to the list
-        if selection==1:
+        # Also, if there are no format specifiers (%) in the pattern, then
+        # just give the whole list
+        if selection==1 or nformat == 0:
             self.sourceListbox.InsertItems(files,0)
             n=len(files)
+            pat=""
             try:
-                self.dataSource.setFilenames(files, pattern="")
+                self.dataSource.setFilenames(files, pattern=pat)
             except Logging.GUIError, ex:
                 ex.show()
                 self.sourceListbox.Clear()
                 return
-        # If we're using the pattern
-        elif selection==0:
-            pat=self.patternEdit.GetValue()
-            filecount=len(files)
-            nformat=pat.count("%")
-            # If there are no format specifiers, just use the files we found
-            if nformat == 0:
-                self.sourceListbox.InsertItems(files,0)
-                n=len(files)
-                try:    
-                    self.dataSource.setFilenames(files, pattern = pat)
-                except Logging.GUIError, ex:
-                    ex.show()
-                    self.sourceListbox.Clear()            
+        # If there is one specifier, then try to find files that correspond to that
+        if nformat==1:
+            filelist=[]
+            print "trying range",startfrom-1,startfrom+filecount+1
+            for i in range(startfrom-1, startfrom+filecount+1):
+                try:
+                    filename=pat%i
+                except:
                     return
-            # If there is one specifier, then try to find files that correspond to that
-            elif nformat==1:
-                filelist=[]
-                for i in range(startfrom-1, startfrom+filecount+1):
+                for file in files:
+                    print "Matching",file,"to",filename
+                    if file.find(filename)!=-1:
+                        self.sourceListbox.Append(file)
+                        filelist.append(file)
+                        n+=1
+            try:
+                self.dataSource.setFilenames(filelist)
+            except Logging.GUIError, ex:
+                ex.show()
+                self.sourceListbox.Clear()
+                return
+        else:
+            filelist=[]
+            everfound=0
+            for i in range(filecount):
+                foundone=0
+                for j in range(filecount):
                     try:
-                        filename=pat%i
+                        filename=pat%(i,j)
                     except:
                         return
                     for file in files:
@@ -631,43 +662,23 @@ enter the information below.""")
                             self.sourceListbox.Append(file)
                             filelist.append(file)
                             n+=1
-                try:
-                    self.dataSource.setFilenames(filelist)
-                except Logging.GUIError, ex:
-                    ex.show()
-                    self.sourceListbox.Clear()
-                    return
-            else:
-                filelist=[]
-                everfound=0
-                for i in range(filecount):
-                    foundone=0
-                    for j in range(filecount):
-                        try:
-                            filename=pat%(i,j)
-                        except:
-                            return
-                        for file in files:
-                            if file.find(filename)!=-1:
-                                self.sourceListbox.Append(file)
-                                filelist.append(file)
-                                n+=1
-                                foundone=1
-                                everfound=1
-                    if everfound and not foundone:break
-                try:
-                    self.dataSource.setFilenames(filelist)                                
-                except Logging.GUIError, ex:
-                    ex.show()
-                    self.sourceListbox.Clear()
-                    return
+                            foundone=1
+                            everfound=1
+                if everfound and not foundone:break
+            try:
+                self.dataSource.setFilenames(filelist)                                
+            except Logging.GUIError, ex:
+                ex.show()
+                self.sourceListbox.Clear()
+                return
                     
         self.setNumberOfImages(n)
-        self.preview.setDataUnit(self.dataUnit)
-        self.preview.zoomToFit()
         if self.imageInfo != ext:
             self.retrieveImageInfo()
             self.imageInfo = ext
+        self.preview.setDataUnit(self.dataUnit)
+        self.preview.zoomToFit()
+
             
     def retrieveImageInfo(self):
         """
@@ -686,6 +697,7 @@ enter the information below.""")
             self.ctf.AddRGBPoint(0, 0, 0, 0)
             self.ctf.AddRGBPoint(x1, 0, 1, 0)
             self.colorBtn.setColorTransferFunction(self.ctf)
+            self.dataSource.setColorTransferFunction(self.ctf)
             self.settings.set("ColorTransferFunction",self.ctf)
             self.ctfInitialized = 1
             self.dataUnit.setSettings(self.settings)

@@ -39,7 +39,6 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 import wx
 import wx.lib.masked as masked
-#from vtk.wx.wxVTKRenderWindowInteractor import wxVTKRenderWindowInteractor
 from Visualizer import VisualizerWindow
 
 from Track import *

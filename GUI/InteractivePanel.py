@@ -439,6 +439,8 @@ class InteractivePanel(ogl.ShapeCanvas):
         Description: Set the offset of this interactive panel. The offset is variable
                      based on the size of the screen vs. the dataset size.
         """
+        assert x>=0,"Offset cannot be negative"
+        assert y>=0,"Offset cannot be negative"
         shapelist = self.diagram.GetShapeList()
         
         for shape in shapelist:        
@@ -453,8 +455,7 @@ class InteractivePanel(ogl.ShapeCanvas):
         self.repaintHelpers()
 
         self.xoffset, self.yoffset = x,y
-        
-        
+               
         
     def unOffset(self, *args):
         """
@@ -477,8 +478,7 @@ class InteractivePanel(ogl.ShapeCanvas):
         """
         Created: 10.10.2006, KP
         Description: Add a listener to an event
-        """
-        
+        """        
         if not self.listeners.has_key(evt):
             self.listeners [evt] = [func]
         else:
@@ -496,6 +496,7 @@ class InteractivePanel(ogl.ShapeCanvas):
         self.repaintHelpers(update)
         if update:
             self.Refresh()
+            
     def repaintHelpers(self, update=1):
         """
         Created: 06.10.2006, KP
@@ -516,18 +517,7 @@ class InteractivePanel(ogl.ShapeCanvas):
         if update:
             self.Update()
         #self.OnPaint(None)
- 
-        
-    def deleteLines(self,lines):
-        """
-        Created: 08.06.2006, KP
-        Description: Erase the given lines from this canvas
-        """            
-        for line in lines:
-            line.Delete()
-            self.RemoveShape(line)
-            self.lines.remove(line)
-            del line
+
             
     def getRegionsOfInterest(self):
         """
@@ -596,9 +586,7 @@ class InteractivePanel(ogl.ShapeCanvas):
         Created: 04.07.2005, KP
         Description: Return the rectangles can be drawn on as four-tuples
         """    
-        w=self.buffer.GetWidth()
-        h=self.buffer.GetHeight()
-        return [(0,w,0,h)]
+        return [self.GetClientRect()]
         
     def onLeftDown(self,event):
         return self.markActionStart(event)
