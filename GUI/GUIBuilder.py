@@ -215,6 +215,7 @@ class GUIBuilderBase:
         Created: 13.04.2006, KP
         Description: Set a value for the parameter
         """    
+#        assert self.checkRange(parameter, value),"Value %s of parameter %s doesn't fit within the range %s-%s"%()
         self.parameters[parameter]=value
         if self.modCallback:
             self.modCallback(self)

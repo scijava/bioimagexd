@@ -33,6 +33,7 @@ d2=r2.GetOutput()
 #r1.Update()
 #r2.Update()
 
+print vtk,vtkbxd
 
 ctf1=vtk.vtkColorTransferFunction()
 ctf1.AddRGBPoint(0,0,0,0)
@@ -48,6 +49,7 @@ merge = vtk.vtkImageColorMerge()
 merge.AddInput(d1)
 merge.AddInput(d2)
 
+print "ctf1=",ctf1
 
 merge.AddLookupTable(ctf1)
 merge.AddLookupTable(ctf2)
