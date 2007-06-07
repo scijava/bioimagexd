@@ -37,7 +37,7 @@ done
 
 
 LIBS="/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/vtkbxd/libvtkBXDProcessingPython.so"
-cd /Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/vtk
+cd /Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/VTK-*.egg/vtk
 LIBS="$LIBS `echo *.so`"
 for lib in $LIBS
 do

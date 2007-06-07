@@ -459,7 +459,6 @@ class FileListDataSource(DataSource):
         """
         Created: 12.04.2005, KP
         Description: Loads the specified .oif-file and imports data from it.
-        Parameters:   filename  The .oif-file to be loaded
         """
         return []
         

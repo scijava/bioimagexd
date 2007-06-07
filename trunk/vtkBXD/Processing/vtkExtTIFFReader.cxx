@@ -44,6 +44,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "vtkImageData.h"
 #include "vtkObjectFactory.h"
+#include "vtkPointData.h"   
 
 #include <sys/stat.h>
 #include "vtkInformation.h"
@@ -351,6 +352,8 @@ void vtkExtTIFFReader::ExecuteData(vtkDataObject *output)
     default:
       vtkErrorMacro("UpdateFromFile: Unknown data type");
     }   
+   data->GetPointData()->GetScalars()->SetName("Tiff Scalars");
+    
 }
 
 int vtkExtTIFFReader::RequestUpdateExtent (

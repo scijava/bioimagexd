@@ -395,6 +395,7 @@ enter the information below.""")
         except:
             Dialogs.showerror(self,"Could not get the number of slices","Malformed number of slices per timepoint")
             return
+        print "Setting slices per timepoint to ",slices
         self.dataSource.setSlicesPerTimepoint(slices)
         self.zslider.SetRange(1,slices)
         self.updateSelection(None, updatePreview = 1)
