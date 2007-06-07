@@ -59,7 +59,6 @@ import MaskTray
 import Command
 
 import Modules
-import Annotation
 import Configuration
 import scripting
 

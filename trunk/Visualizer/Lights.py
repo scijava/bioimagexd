@@ -479,8 +479,10 @@ class LightTool(wx.Dialog):
         #wx.Frame.__init__(self,master,-1)
         self.s=wx.BoxSizer(wx.VERTICAL)
         
-        self.panel=wx.Panel(self,-1)
-        self.s.Add(self.panel,1)
+        #self.panel=wx.Panel(self,-1)
+        #self.s.Add(self.panel,1)
+        self.panel = self
+        
         
         self.connected = None
         self.num_lights_on = 0
@@ -633,9 +635,9 @@ class LightTool(wx.Dialog):
         self.panel.SetAutoLayout(1)
         self.sizer.Fit(self.panel)
         
-        self.SetSizer(self.s)
-        self.s.Fit(self)
-        self.SetAutoLayout(1)        
+        #self.SetSizer(self.s)
+        #self.s.Fit(self)
+        #self.SetAutoLayout(1)        
 
     def switchhandler(self, which, state):
         if state:
