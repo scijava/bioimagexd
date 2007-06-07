@@ -39,7 +39,10 @@
 
 #include "vtkBXDProcessingWin32Header.h"
 #include "vtkImageMultipleInputFilter.h"
-
+#include "vtkStreamingDemandDrivenPipeline.h"
+#include "vtkImageAlgorithm.h"
+#include "vtkInformationVector.h"
+#include "vtkInformation.h"
 
 float* makeKernel(double radius);
         
@@ -135,7 +138,10 @@ protected:
   
   void ThreadedExecute(vtkImageData **inDatas, vtkImageData *outData,
                        int extent[6], int id);
-  
+int RequestUpdateExtent (
+  vtkInformation* vtkNotUsed(request),
+  vtkInformationVector** inputVector,
+  vtkInformationVector* outputVector);  
 
   void InitOutput(int outExt[6], vtkImageData *outData);
 private:

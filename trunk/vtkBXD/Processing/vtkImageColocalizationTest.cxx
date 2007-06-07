@@ -251,8 +251,38 @@ void smooth(OUT_T* inPtr,OUT_T*outPtr,int,int ext[6],float*kernel,double scale,i
 
  
  
- void CalculateStatisticsOfExistingImage(int rwidth, int rheight, int nslices) {
+template < class T >
+    void CalculateStatisticsOfExistingImage(vtkImageColocalizationTest * self,
+  vtkImageData ** inData,  int rwidth, int rheight, int nslices, double*ch1Mean, double*ch2Mean,double *r) {
+  
     //calulate pearsons for existing image;
+    int currentSliceNo = self->GetCurrentSlice();
+    vtkIdType inIncX, inIncY, inIncZ;
+    double pearsons1 = 0, pearsons2 = 0, pearsons3 = 0;
+    double ch1Max = 0, ch1Min = 255;
+    double ch2Max = 0, ch2Min = 255;
+    double r2 = 1;
+    int N = 0, N2 = 0, Nr = 0, Ng = 0;
+    double PDMobs = 0;
+/*    double ICQ2; 
+    double ICQ2mean = 0;
+    int countICQ = 0;
+       */
+    double ICQobs = 0;
+       
+
+    double sumX = 0, sumXY = 0, sumXX = 0, sumYY = 0, sumY = 0, sumXtotal =0,
+            sumYtotal = 0, colocX = 0, colocY = 0;
+            
+    //calucalte ICQ
+    int countAll = 0, countAll2 = 0, countPos = 0;
+    
+            
+    OUT_T ch1, ch2, ch3, ch4 = 0, count;
+    T* inPtr1 = (T *) inData[0]->GetScalarPointer();
+    T* inPtr2 = (T *) inData[1]->GetScalarPointer();
+    inData[0]->GetIncrements(inIncX, inIncY, inIncZ);
+
     for (int s = 0; s < nslices; s++)
     {
         if (currentSliceNo>=0) {
@@ -263,8 +293,8 @@ void smooth(OUT_T* inPtr,OUT_T*outPtr,int,int ext[6],float*kernel,double scale,i
         {
             for (int x = 0; x <= rwidth; x++) 
             {
-                ch1 = (int)GET_AT(x+xOffset,y+yOffset,s,inPtr1);
-                ch2 = (int)GET_AT(x+xOffset,y+yOffset,s,inPtr2);
+                ch1 = (int)GET_AT(x,y,s,inPtr1);
+                ch2 = (int)GET_AT(x,y,s,inPtr2);
 
                 if (ch1Max < ch1)
                     ch1Max = ch1;
@@ -298,21 +328,44 @@ void smooth(OUT_T* inPtr,OUT_T*outPtr,int,int ext[6],float*kernel,double scale,i
         }
     }
 
-    if (ignoreZeroZero)
+    if (self->GetIgnoreZeroPixels())
         N = N2;
 
-    double ch1Mean = sumX / N;
-    double ch2Mean = sumY / N;
+    *ch1Mean = sumX / N;
+    *ch2Mean = sumY / N;
     pearsons1 = sumXY - (sumX * sumY / N);
     pearsons2 = sumXX - (sumX * sumX / N);
     pearsons3 = sumYY - (sumY * sumY / N);
     
     // Pearson's correlation for existing channels
-    r = pearsons1 / (sqrt(pearsons2 * pearsons3));
-    //printf("R=%f\n",r);
- 
-    double colocM1 = (double) (colocX / sumXtotal);
-    double colocM2 = (double) (colocY / sumYtotal); 
+    *r = pearsons1 / (sqrt(pearsons2 * pearsons3));
+
+    for (int s = 0; s < nslices; s++)
+    {
+        if (currentSliceNo>=0) {
+            // printf("Only for slice %d\n",currentSliceNo);            
+            s = currentSliceNo;
+            nslices = s;
+        }
+        for (int y = 0; y <= rheight; y++)
+        {
+            //printf("Calculating r for original images.");
+            for (int x = 0; x <= rwidth; x++)
+            {
+                ch1 = (int)GET_AT(x,y,s,inPtr1);
+                ch2 = (int)GET_AT(x,y,s,inPtr2);
+                    
+                if (ch1 + ch2 != 0) {
+                    PDMobs = ((double) ch1 - (double)*ch1Mean) *
+                             ((double) ch2 - (double)*ch2Mean);
+                    if (PDMobs > 0)
+                        countPos++;
+                    countAll2++;
+                }                
+            }
+        }
+    }
+    ICQobs = ((double) countPos / (double) countAll2) - 0.5; 
  }
 
 //----------------------------------------------------------------------------
@@ -328,8 +381,12 @@ template < class T >
     int maxX, maxY, maxZ;
     int idxX, idxY, idxZ;
     OUT_T* outPtr;
+    double pearsons1 = 0, pearsons2 = 0, pearsons3 = 0;
          
-                  
+    double PDM = 0;
+
+    double ch1Mean, ch2Mean;                  
+    double r=1, r2 = 1;
     bool Costes = false, Fay = false, vanS = false;
 
     bool randZ = self->GetRandomizeZ();
@@ -364,9 +421,8 @@ template < class T >
     
     int rwidth, rheight, xOffset, yOffset, mask;
     double psf = 0;
-    double pearsons1 = 0, pearsons2 = 0, pearsons3 = 0;
-    double r2 = 1;
-    double r = 1;
+ 
+
     double ch1Max = 0, ch1Min = 255;
     double ch2Max = 0, ch2Min = 255;
         
@@ -384,13 +440,15 @@ template < class T >
     double r2sd = 0;
     double sumr2sqrd = 0;
     double sumr2 = 0;
-    double ICQ2mean = 0;
-    double sumICQ2sqrd = 0;
-    double sumICQ2 = 0;
-    double ICQobs = 0;
-    int countICQ = 0;
     int Nr = 0, Ng = 0;
     
+    double ICQ2; 
+    double ICQ2mean = 0;
+    double ICQobs = 0;
+    int countICQ = 0;
+    double sumICQ2sqrd = 0;
+    double sumICQ2 = 0;
+        
     char progressText[300];  
     psf = (0.61*self->GetCh2Lambda())/self->GetNumericalAperture();
     psf = (psf)/(self->GetPixelSize()*1000);
@@ -424,45 +482,11 @@ template < class T >
     T* inPtr1 = (T *) inData[0]->GetScalarPointer();
     T* inPtr2 = (T *) inData[1]->GetScalarPointer();
   
-    CalculateStatisticsOfExistingImage(width, height, nslices);
+    CalculateStatisticsOfExistingImage<T>(self, inData, width, height, nslices,&ch1Mean, &ch2Mean,&r);
 
-    //calucalte ICQ
-    int countAll = 0, countAll2 = 0, countPos = 0;
-    
-    double PDMobs = 0;
-    double PDM = 0;
-    double ICQ2;
-    
-    inPtr1 = (T *) inData[0]->GetScalarPointerForExtent(outExt);
-    inPtr2 = (T *) inData[1]->GetScalarPointerForExtent(outExt);
 
-    for (int s = 0; s < nslices; s++)
-    {
-        if (currentSliceNo>=0) {
-            // printf("Only for slice %d\n",currentSliceNo);            
-            s = currentSliceNo;
-            nslices = s;
-        }
-        for (int y = 0; y <= rheight; y++)
-        {
-            //printf("Calculating r for original images.");
-            for (int x = 0; x <= rwidth; x++)
-            {
-                ch1 = (int)GET_AT(x+xOffset,y+yOffset,s,inPtr1);
-                ch2 = (int)GET_AT(x+xOffset,y+yOffset,s,inPtr2);
-                    
-                if (ch1 + ch2 != 0) {
-                    PDMobs = ((double) ch1 - (double)ch1Mean) *
-                             ((double) ch2 - (double)ch2Mean);
-                    if (PDMobs > 0)
-                        countPos++;
-                    countAll2++;
-                }                
-            }
-        }
-    }
-    // printf("count+=%d CountNonZeropair=%d\n",countPos,countAll2);
-    ICQobs = ((double) countPos / (double) countAll2) - 0.5;
+    
+
     bool ch3found = false;
     //do random localisations
     int rx = 0, ry = 0, rz = 0;
@@ -665,7 +689,7 @@ template < class T >
         
         double ICQrand = 0;
         int countPos2 = 0;
-        countAll = 0;
+        int countAll = 0;
         
     
         for (int s = startSlice; s < nslices; s++) 
