@@ -62,7 +62,7 @@ class Toolbar(wx.Panel):
         self.toolSeparation = 5
         self.totSizer = wx.BoxSizer(wx.VERTICAL)
         self.sizer = wx.GridBagSizer(self.toolSeparation,self.toolSeparation)
-        self.totSizer.AddSpacer(10)
+        self.totSizer.AddSpacer((0,10))
         self.totSizer.Add(self.sizer)
         self.sizes=[]
         self.rowsizers=[]
