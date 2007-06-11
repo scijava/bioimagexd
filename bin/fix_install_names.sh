@@ -7,7 +7,7 @@ if [ "$1" != "" ]; then
 fi
 
 if [ ! -d $VTK_SOURCE_DIR ]; then
-    echo "The VTK source directory specified does not exist"
+    echo "The VTK source directory specified does not exist"    
     echo "Current VTK directory: $VTK_SOURCE_DIRECTORY"
     echo "You can either edit this script to change it permanently, or"
     echo "Give it as an argument ot this script."

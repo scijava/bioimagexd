@@ -296,14 +296,19 @@ class ImportDialog(wx.Dialog):
     
         
         self.depthlbl=wx.StaticText(self,-1,"Depth of Stack:")
-        self.depthEdit=wx.TextCtrl(self,-1,"1")
-        self.depthEdit.Bind(wx.EVT_TEXT,self.setNumberOfImages)
+        self.depthEdit=wx.TextCtrl(self,-1,"1", style = wx.TE_PROCESS_ENTER)
+#        self.depthEdit.Bind(wx.EVT_TEXT,self.setNumberOfImages)
+        self.depthEdit.Bind(wx.EVT_TEXT_ENTER, self.setNumberOfImages)
+        self.depthEdit.Bind(wx.EVT_KILL_FOCUS, self.setNumberOfImages)
         
 
         self.tpLbl=wx.StaticText(self,-1,"Number of Timepoints:")
         #self.timepointLbl=wx.StaticText(self,-1,"1")
-        self.timepointEdit = wx.TextCtrl(self,-1,"1")
+        self.timepointEdit = wx.TextCtrl(self,-1,"1", style = wx.TE_PROCESS_ENTER)
         self.timepointEdit.Bind(wx.EVT_TEXT, self.setNumberOfTimepoints)
+        self.timepointEdit.Bind(wx.EVT_TEXT_ENTER, self.setNumberOfTimepoints)
+        self.timepointEdit.Bind(wx.EVT_KILL_FOCUS, self.setNumberOfTimepoints)
+
         
         self.voxelSizeLbl=wx.StaticText(self,-1,u"Voxel size")
         #self.voxelSizeEdit=wx.TextCtrl(self,-1,"0, 0, 0")
@@ -597,18 +602,17 @@ enter the information below.""")
         files=glob.glob(pat)
         print "Got files=",files
         if not self.dataSource.checkImageDimensions(files):
-            Dialogs.showmessage(self, "Images have differing dimensions","Some of the selected images have differing dimensions. Therefor it is not possible to use the \"All files in directory\" selection.")
+            Dialogs.showmessage(self, "Images have differing dimensions","Some of the selected images have differing dimensions. Therefore it is not possible to use the \"All files in directory\" selection.")
             self.choice.SetSelection(0)
             return
             
         files.sort(self.sortNumerically)
         r=re.compile("([0-9]+)")
-         
-        m = r.search(files[0])
-        if m:
-            startfrom = int(m.groups(1)[0])
-        else:
-            startfrom = 0
+        
+        try:
+            startfrom=min(map(int, r.findall(files[0])))
+        except:
+            startfrom=0
         print "Starting from ",startfrom
         n=0
         pat=self.patternEdit.GetValue()
@@ -637,7 +641,7 @@ enter the information below.""")
                 except:
                     return
                 for file in files:
-                    print "Matching",file,"to",filename
+#                    print "Matching",file,"to",filename
                     if file.find(filename)!=-1:
                         self.sourceListbox.Append(file)
                         filelist.append(file)
