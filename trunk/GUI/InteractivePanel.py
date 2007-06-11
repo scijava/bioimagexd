@@ -439,8 +439,8 @@ class InteractivePanel(ogl.ShapeCanvas):
         Description: Set the offset of this interactive panel. The offset is variable
                      based on the size of the screen vs. the dataset size.
         """
-        assert x>=0,"Offset cannot be negative"
-        assert y>=0,"Offset cannot be negative"
+#        assert x>=0,"Offset cannot be negative"
+#        assert y>=0,"Offset cannot be negative"
         shapelist = self.diagram.GetShapeList()
         
         for shape in shapelist:        
