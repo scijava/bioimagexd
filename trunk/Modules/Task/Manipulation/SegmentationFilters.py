@@ -1065,7 +1065,7 @@ class MeasureVolumeFilter(ProcessingFilter.ProcessingFilter):
     Created: 15.05.2006, KP
     Description: 
     """     
-    name = "Calculate object statistics"
+    name = "Analyze objects"
     category = MEASUREMENT
     level = bxd.COLOR_BEGINNER
     def __init__(self,inputs=(2,2)):

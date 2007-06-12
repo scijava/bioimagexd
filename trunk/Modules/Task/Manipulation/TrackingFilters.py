@@ -964,11 +964,11 @@ class ViewTracksFilter(ProcessingFilter.ProcessingFilter):
         self.track = None
         self.tracker = None
         self.trackGrid = None
-        
+        self.fileUpdated = 0
         ProcessingFilter.ProcessingFilter.__init__(self,(1,1))
         
         self.descs={"MinLength":"Min. length of track (# of timepoints)",
-            "ResultsFile":"File to store the results:",
+            "ResultsFile":"Tracking results file:",
             "Track":"Track to visualize"}
     
         self.numberOfPoints = None
@@ -982,8 +982,9 @@ class ViewTracksFilter(ProcessingFilter.ProcessingFilter):
         """    
         ProcessingFilter.ProcessingFilter.setParameter(self, parameter, value)
 
-        if parameter == "ResultsFile" and os.path.exists(value):
-            pass
+        if parameter == "ResultsFile" and os.path.exists(value) and self.trackGrid:
+            self.fileUpdated = 1
+         
 #            self.track = Track.Track(value)
 #            self.tracks = self.track.getTracks(self.parameters["MinLength"])
 #            print "Read %d tracks"%(len(self.tracks))
@@ -1102,6 +1103,11 @@ class ViewTracksFilter(ProcessingFilter.ProcessingFilter):
             gui.sizer.Add(sizer,(0,0),flag=wx.EXPAND|wx.ALL)
             gui.sizer.Add(win,(1,0),flag=wx.EXPAND|wx.ALL)
             
+        if self.prevFilter:
+            filename = self.prevFilter.getParameter("ResultsFile")
+            if filename and os.path.exiss(filename):
+                self.setParameter("ResultsFile",filename)
+                self.onReadTracks(event = None)
         return gui
         
         

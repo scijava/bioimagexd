@@ -586,7 +586,9 @@ class InteractivePanel(ogl.ShapeCanvas):
         Created: 04.07.2005, KP
         Description: Return the rectangles can be drawn on as four-tuples
         """    
-        return [self.GetClientRect()]
+        a,b,c,d = self.GetClientRect()
+#        print "Drawable rect = ",a,b,c,d
+        return [(a,c,b,d)]
         
     def onLeftDown(self,event):
         return self.markActionStart(event)
@@ -661,6 +663,7 @@ class InteractivePanel(ogl.ShapeCanvas):
         if not foundDrawable:
             Logging.info("Attempt to draw in non-drawable area: %d,%d"%(x,y),kw="iactivepanel")
             # we zero the action so nothing further will be done by updateActionEnd
+            
             self.action = 0
             
             return 1
@@ -754,10 +757,11 @@ class InteractivePanel(ogl.ShapeCanvas):
         Description: Call the right callback depending on what we're doing
         """    
         #Logging.info("Executing action: ",self.action,kw="iactivepanel")
-        
+        print "EXECUTE ACTION",self.action
         if self.action==ZOOM_TO_BAND:
             self.zoomToRubberband(event)
         elif self.action==ADD_ANNOTATION:
+            print "\nADDING ANNOTATION"
             #self.updateObject(self.annotationClass,event
             x,y=event.GetPosition()
             ex,ey = self.actionstart
@@ -918,7 +922,9 @@ class InteractivePanel(ogl.ShapeCanvas):
         Created: 04.07.2005, KP
         Description: Add an annotation to the scene
         """
+        print "ADD ANNOTATION"
         self.action=ADD_ANNOTATION
+        print "action now=",self.action
         self.annotationClass=annClass
         
         

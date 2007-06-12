@@ -132,17 +132,17 @@ class AnnotationToolbar(wx.Window):
         self.sizer.Add(self.resamplingBtn, (6,0))
         self.sizer.Add(self.resampleToFitBtn, (6,1))
         
-        self.recordBtn = buttons.GenToggleButton(self, MenuManager.ID_RECORD_EVENTS, "Record", size=(64,-1))
-        self.sizer.Add(self.recordBtn, (7,0), span=(1,2))
+#        self.recordBtn = buttons.GenToggleButton(self, MenuManager.ID_RECORD_EVENTS, "Record", size=(64,-1))
+#        self.sizer.Add(self.recordBtn, (7,0), span=(1,2))
         
-        self.playBtn = createBtn(MenuManager.ID_PLAY_EVENTS,"player_play.gif","Play the recorded events", btnclass=buttons.GenBitmapButton)
-        self.stopBtn = createBtn(MenuManager.ID_PLAY_EVENTS,"player_pause.gif","Stop playing the recorded events", btnclass=buttons.GenBitmapButton)
-        self.sizer.Add(self.playBtn, (8,0))
-        self.sizer.Add(self.stopBtn, (8,1))
+#        self.playBtn = createBtn(MenuManager.ID_PLAY_EVENTS,"player_play.gif","Play the recorded events", btnclass=buttons.GenBitmapButton)
+#        self.stopBtn = createBtn(MenuManager.ID_PLAY_EVENTS,"player_pause.gif","Stop playing the recorded events", btnclass=buttons.GenBitmapButton)
+#        self.sizer.Add(self.playBtn, (8,0))
+#        self.sizer.Add(self.stopBtn, (8,1))
         
-        self.playBtn.Bind(wx.EVT_BUTTON, self.onPlayRecording)
-        self.stopBtn.Bind(wx.EVT_BUTTON, self.onStopPlaying)
-        self.recordBtn.Bind(wx.EVT_BUTTON, self.onRecord)        
+#        self.playBtn.Bind(wx.EVT_BUTTON, self.onPlayRecording)
+#        self.stopBtn.Bind(wx.EVT_BUTTON, self.onStopPlaying)
+#        self.recordBtn.Bind(wx.EVT_BUTTON, self.onRecord)        
         
           #bmp = wx.Image(os.path.join(iconpath,"resample.gif")).ConvertToBitmap()
         #tb.DoAddTool(MenuManager.ID_RESAMPLING,"Resampling",bmp,kind=wx.ITEM_CHECK,shortHelp="Enable or disable the resampling of image data")
