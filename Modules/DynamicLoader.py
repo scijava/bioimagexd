@@ -46,7 +46,7 @@ def getVisualizationModes(callback=None): return getModules("Visualization",call
 def getReaders(callback=None): return getModules("Readers",callback=callback,moduleType="Image format reader")
 def getTaskModules(callback=None): return getModules("Task","*",callback=callback,moduleType="Task module")
     
-IGNORE=["ScaleBar","Spline","Arbitrary","SurfaceConstruction","Reslice","Segment"]
+IGNORE=["ScaleBar.py","Spline.py","ArbitrarySlicer.py"]
 
 def getModules(name,flag="*.py",callback=None,moduleType="Module"):
     """
@@ -75,7 +75,7 @@ def getModules(name,flag="*.py",callback=None,moduleType="Module"):
     to_remove=[]
     for file in modules:
         for i in IGNORE:
-            if i in file:
+            if i == os.path.basename(file):
                 to_remove.append(file)
     for i in to_remove:
         modules.remove(i)
