@@ -98,6 +98,7 @@ class DataSource:
         self.maskImg = None
         self.mipData = None
         self.resampleDims=None
+        self.singleBitDepth = 8
         self.resampleTp=-1
         self.intensityScale = 0
         self.intensityShift = 0
@@ -531,8 +532,20 @@ class DataSource:
             else:
 
                 raise "Bad LSM bit depth, %d,%s"%(scalartype,data.GetScalarTypeAsString())
+            self.singleBitDepth = self.bitdepth
             self.bitdepth*=data.GetNumberOfScalarComponents()
         return self.bitdepth
+    
+    def getSingleComponentBitDepth(self):
+        """
+        Created: 13.06.2007, KP
+        Description: return the bit depth of single component of data
+        """
+        if not self.singleBitDepth:
+            self.getBitDepth()
+        return self.singleBitDepth
+        
+    
     def uniqueId(self):
         """
         Created: 07.02.2007, KP

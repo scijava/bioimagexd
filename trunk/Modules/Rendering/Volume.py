@@ -260,9 +260,10 @@ class VolumeModule(VisualizationModule):
         VisualizationModule.setDataUnit(self,dataunit)
 
         otf, otf2 = vtk.vtkPiecewiseFunction(), vtk.vtkPiecewiseFunction()
-        maxv = 2**dataunit.getBitDepth()
+        d = dataunit.getSingleComponentBitDepth()
+        maxv = 2**d
             
-        print "Maximum value=",maxv
+        print "\n\n\nMaximum value=",maxv
         otf2.AddPoint(0, 0.0)
         otf2.AddPoint(maxv, 1.0)
         otf.AddPoint(0, 0.0)

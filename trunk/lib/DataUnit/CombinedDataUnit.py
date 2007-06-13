@@ -469,14 +469,6 @@ class CombinedDataUnit(DataUnit.DataUnit):
             self.doOrig=1            
         return preview
             
-
-    def getBitDepth(self):
-        """
-        Created: 30.05.2005, KP
-        Description: Return the bit depth of the combined dataunit
-        """
-        return 8
-
         
     def getSettingsClass(self):
         """

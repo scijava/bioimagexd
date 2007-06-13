@@ -272,6 +272,7 @@ class DataUnit:
         self.getVoxelSize = dataSource.getVoxelSize
         self.getResampledVoxelSize = dataSource.getResampledVoxelSize
         self.getBitDepth = dataSource.getBitDepth
+        self.getSingleComponentBitDepth = dataSource.getSingleComponentBitDepth
         self.getScalarRange = dataSource.getScalarRange
         self.getEmissionWavelength = dataSource.getEmissionWavelength
         self.getExcitationWavelength = dataSource.getExcitationWavelength
