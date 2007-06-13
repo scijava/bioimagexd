@@ -367,6 +367,12 @@ class CombinedDataUnit(DataUnit.DataUnit):
         if timePoint > self.getLength():
             timepoint=self.getLength()-1
         
+        self.oldAlphaStatus = bxd.wantAlphaChannel
+        
+        print "DO PREVIEW"
+        
+        if depth == bxd.WHOLE_DATASET_NO_ALPHA:
+            bxd.wantAlphaChannel = 0
         # If the previously requested preview was a "show original" preview
         # then we can just restore the preview before that without any
         # processing
@@ -394,12 +400,12 @@ class CombinedDataUnit(DataUnit.DataUnit):
         # If either no output channels have been specified (in which case
         # we return just the normal preview) or the combined result
         # (n = last chl+1) has  been requested
-        #print "outputChls=",self.outputChls,"renew=",renew,"n=",n
         if self.merging or not self.outputChls or (n in self.outputChls and self.outputChls[n]):
             #Logging.info("outputChls=",self.outputChls,"n=",n)
             
             # If the renew flag is true, we need to regenerate the preview
             if renew:                
+                print "\n\n\nGENERATING PREVIEW"
                 # We then tell the module to reset itself and
                 # initialize it again
                 self.module.reset()
@@ -415,18 +421,21 @@ class CombinedDataUnit(DataUnit.DataUnit):
                     
                     # If a whole volume is requested, but the data is acquired with an update
                     # extent selecting only a single slice, then reset the update extent
-                    if depth == -1 and z==1:
+                    if depth <0 and z==1:
+                        print "Setting update extent to whole extent"
                         image.SetUpdateExtent(image.GetWholeExtent())
                         image.Update()
-                    elif depth != -1 and not (x or y):
+                    elif depth >=0 and not (x or y):
                         # If a dataset has not been updated yet, then set the appropriate
                         # update extent
                         ex0,ex1,ey0,ey1,ez0,ez1 = image.GetWholeExtent()
+                        print "Setting update extent to ",ex0,ex1,ey0,ey1,depth,depth
                         image.SetUpdateExtent(ex0,ex1,ey0,ey1,depth,depth)
                         image.Update()
                     self.module.addInput(dataunit,image)
 
             preview=self.module.getPreview(depth)
+
 
         if not self.merging and self.outputChls:
             if preview:
@@ -438,7 +447,6 @@ class CombinedDataUnit(DataUnit.DataUnit):
                 for data,ctf in merged:                    
                     merge.AddInput(data)
                     merge.AddLookupTable(ctf)
-                    #createalpha.AddInput(data)
                 #print "Update..."
                 #preview = bxd.execute_limited(merge)
                 
@@ -454,7 +462,7 @@ class CombinedDataUnit(DataUnit.DataUnit):
                 preview=maptocolor.GetOutput()
                 #preview = bxd.execute_limited(maptocolor)
                 
-        
+        bxd.wantAlphaChannel = self.oldAlphaStatus
         if not showOrig and not self.doOrig:
             self.origPreview=preview
         elif showOrig:

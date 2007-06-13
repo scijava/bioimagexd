@@ -32,6 +32,7 @@ import vtk
 import math
 import os.path
 import Logging
+import scripting as bxd
 import Configuration
 import wx
 import time
@@ -111,7 +112,7 @@ class RenderingInterface:
         """        
         self.currentTimePoint = n
         if self.dataUnit.isProcessed():
-            self.currentData = self.dataUnit.doPreview(-1,0,n)
+            self.currentData = self.dataUnit.doPreview(bxd.WHOLE_DATASET,0,n)
         else:
             self.currentData = self.dataUnit.getTimePoint(n)
         self.dimensions = self.currentData.GetDimensions()

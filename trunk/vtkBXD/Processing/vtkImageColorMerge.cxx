@@ -70,7 +70,7 @@ void vtkImageColorMergeExecute(vtkImageColorMerge *self, int id,int NumberOfInpu
     unsigned long count = 0;
     unsigned long target;    
 
-    printf("Executing colorMerging id=%d\n",id);
+//    printf("Executing colorMerging id=%d\n",id);
     unsigned char **ctfs;        
     int **itfs;
     int itfCount = self->GetITFCount();
@@ -160,7 +160,7 @@ void vtkImageColorMergeExecute(vtkImageColorMerge *self, int id,int NumberOfInpu
                 
         } 
     }
-    printf("Out extent=%d,%d,%d,%d,%d,%d\n", outExt[0], outExt[1], outExt[2], outExt[3], outExt[4], outExt[5]);
+//    printf("Out extent=%d,%d,%d,%d,%d,%d\n", outExt[0], outExt[1], outExt[2], outExt[3], outExt[4], outExt[5]);
     //printf("Created the ctfs\n");
     outPtr=(unsigned char*)outData->GetScalarPointerForExtent(outExt);
     
@@ -170,8 +170,8 @@ void vtkImageColorMergeExecute(vtkImageColorMerge *self, int id,int NumberOfInpu
     maxX = outExt[1] - outExt[0];
     maxY = outExt[3] - outExt[2];
     maxZ = outExt[5] - outExt[4];
-    printf("inIncX, inIncY,inIncZ=%d,%d,%d\n",inIncX,inIncY,inIncZ);
-    printf("outIncX, outIncY,outIncZ=%d,%d,%d\n",outIncX,outIncY,outIncZ);
+    //printf("inIncX, inIncY,inIncZ=%d,%d,%d\n",inIncX,inIncY,inIncZ);
+    //printf("outIncX, outIncY,outIncZ=%d,%d,%d\n",outIncX,outIncY,outIncZ);
     int currScalar = 0;
     int alphaScalar; 
     int n = 0;
@@ -302,7 +302,7 @@ void vtkImageColorMerge::ThreadedRequestData (
   vtkImageData **outData,
   int outExt[6], int id)
 {
-    printf("vtkImageColorMerge ThreadedRequestData outExt=%d,%d,%d,%d,%d,%d\n",outExt[0],outExt[1],outExt[2],outExt[3],outExt[4],outExt[5]);
+//    printf("vtkImageColorMerge ThreadedRequestData outExt=%d,%d,%d,%d,%d,%d\n",outExt[0],outExt[1],outExt[2],outExt[3],outExt[4],outExt[5]);
   if (inData[0][0] == NULL)
     {
     vtkErrorMacro(<< "Input " << 0 << " must be specified.");
@@ -331,7 +331,7 @@ void vtkImageColorMerge::ThreadedRequestData (
     vtkErrorMacro(<< "Execute: Unknown ScalarType");
   return;
   }
-  printf("ThreadedRequestData done merging\n");
+  //printf("ThreadedRequestData done merging\n");
 
 }
 
