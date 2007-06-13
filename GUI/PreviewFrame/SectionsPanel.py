@@ -35,6 +35,7 @@ from wx.lib.statbmp  import GenStaticBitmap as StaticBitmap
 import ImageOperations
 import vtk
 import Logging
+import scripting as bxd
 import InteractivePanel
 import messenger
 import math
@@ -306,8 +307,7 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
         self.timepoint=tp
         if self.dataUnit.isProcessed():
             print "Sections view doing preview"
-            image=self.dataUnit.doPreview(-2,1,self.timepoint)
-            
+            image=self.dataUnit.doPreview(bxd.WHOLE_DATASET_NO_ALPHA,1,self.timepoint)
             self.ctf = self.dataUnit.getColorTransferFunction()
         else:
             image=self.dataUnit.getTimePoint(tp)
@@ -318,6 +318,7 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
 
         
         self.zspacing = image.GetSpacing()[2]
+        #print "Got image data",image
         self.imagedata = ImageOperations.imageDataTo3Component(image,self.ctf)
         self.imagedata.Update()
 

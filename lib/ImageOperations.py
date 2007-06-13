@@ -1175,8 +1175,10 @@ def imageDataTo3Component(image,ctf):
     Created: 22.07.2005, KP
     Description: Processes image data to get it to proper 3 component RGB data
     """         
+    image.UpdateInformation()
     ncomps = image.GetNumberOfScalarComponents()
-        
+    print "ncomps=",ncomps
+    
     if ncomps==1:
         maptocolor=vtk.vtkImageMapToColors()
         maptocolor.SetInputConnection(image.GetProducerPort())

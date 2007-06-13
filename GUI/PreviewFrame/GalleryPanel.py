@@ -195,7 +195,7 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
             return self.setSlice(self.slice)
         if self.visualizer.getProcessedMode():
             print "DOING PREVIEW"
-            image=self.dataUnit.doPreview(-2,1,self.timepoint)
+            image=self.dataUnit.doPreview(bxd.WHOLE_DATASET_NO_ALPHA,1,self.timepoint)
             ctf = self.dataUnit.getSourceDataUnits()[0].getColorTransferFunction()
             Logging.info("Using ",image,"for gallery",kw="preview")
         else:

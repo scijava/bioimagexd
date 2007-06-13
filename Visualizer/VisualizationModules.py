@@ -43,6 +43,9 @@ import glob
 import os,sys
 import GUI.Urmas.UrmasPersist
 import GUI.GUIBuilder as GUIBuilder
+
+import scripting as bxd
+
 class VisualizationModule(GUIBuilder.GUIBuilderBase):
     """
     Created: 28.04.2005, KP
@@ -143,7 +146,7 @@ class VisualizationModule(GUIBuilder.GUIBuilderBase):
         
         if self.visualizer.getProcessedMode():
             Logging.info("Will render processed data instead",kw="rendering")
-            self.data = self.dataUnit.doPreview(-1,1,self.timepoint)
+            self.data = self.dataUnit.doPreview(bxd.WHOLE_DATASET,1,self.timepoint)
         else:
             Logging.info("Using timepoint data for tp",value,kw="rendering")
             self.data = self.dataUnit.getTimePoint(value)
