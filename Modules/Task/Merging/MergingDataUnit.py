@@ -32,11 +32,11 @@ import Logging
 
 from DataUnit import CombinedDataUnit
 import MergingSettings
-
+import scripting as bxd
 class MergingDataUnit(CombinedDataUnit):
     """
     Created: 03.07.2005, KP
-    Description: Class for an merged channels dataset
+    Description: Class for a merged channels dataset
     """
     def __init__(self, name=""):
         """
@@ -49,11 +49,19 @@ class MergingDataUnit(CombinedDataUnit):
     
 
     def getBitDepth(self):
-        return 32
+        if bxd.wantAlphaChannel:return 32
+        return 24
+        
+    def getSingleComponentBitDepth(self):
+        """
+        Created: 13.06.2007, KP
+        Description: return the bit depth of a single component"
+        """
+        # Merging will always create 8-bit data
+        return 8
         
     def getSettingsClass(self):
         """
-        Method: getSettingsClass()
         Created: 02.04.2005, KP
         Description: Return the class that represents settings for this dataunit
         """
@@ -61,7 +69,6 @@ class MergingDataUnit(CombinedDataUnit):
         
     def setOutputChannel(self,ch,flag):
         """
-        Method: setOutputChannel(ch,flag)
         Created: 22.07.2005, KP
         Description: Mark a channel as being part of the output
         """
