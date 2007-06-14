@@ -278,7 +278,8 @@ class MainWindow(wx.Frame):
         self.fileTree = self.tree
         
         self.splash.SetMessage("Loading default visualization mode...")
-        self.loadVisualizer(None,"slices",init=1)
+        self.loadVisualizer("slices",init=1)
+        
         self.onMenuShowTree(None,1)
         try:
             self.splash.Show(False)
@@ -423,9 +424,8 @@ class MainWindow(wx.Frame):
             self.visualizer.closeVisualizer()
             del self.currentVisualizationWindow
             self.currentVisualizationWindow = None
-            #self.loadVisualizer(None,"gallery",reload=1)
             self.visualizer.closeVisualizer()
-            self.loadVisualizer(None,mode)
+            self.loadVisualizer(mode)
 
             
         
@@ -793,7 +793,7 @@ class MainWindow(wx.Frame):
         """
         if self.currentTaskWindow:
             do_cmd = "mainWindow.processDataset(modal=0)"
-            cmd = Command.Command(Command.GUI_CMD,None,None,do_cmd,"",desc="Process the dataset with the current task")
+            cmd = Command.Command(Command.VISUALIZATION_CMD,None,None,do_cmd,"",desc="Process the dataset with the current task")
             cmd.run(recordOnly=1)
             self.processDataset()
         else:
@@ -803,6 +803,7 @@ class MainWindow(wx.Frame):
             do_cmd = "mainWindow.saveSelectedDatasets('%s')"%filename
             cmd = Command.Command(Command.GUI_CMD,None,None,do_cmd,"",desc="Save the selected datasets to a BXD file")
             cmd.run()
+            
     def saveSelectedDatasets(self, filename):
         """
         Created: 08.02.2007, KP
@@ -1101,7 +1102,7 @@ class MainWindow(wx.Frame):
             mode=self.visualizer.mode
             unit=self.visualizer.dataUnit
             self.visualizer.closeVisualizer()
-            self.loadVisualizer(unit,mode)
+            self.loadVisualizer(mode,dataunit=unit)
             tb = self.GetToolBar()
             tb.EnableTool(MenuManager.ID_RESAMPLING,1)
             
@@ -1131,7 +1132,7 @@ class MainWindow(wx.Frame):
             mode=self.visualizer.mode
             unit=self.visualizer.dataUnit
             self.visualizer.closeVisualizer()
-            self.loadVisualizer(unit,mode)
+            self.loadVisualizer(mode, dataunit = unit)
             self.infoWidget.showInfo(selectedFiles[0])
 #            self.loadVisualizer(None,self.visualizer.mode,reload=1)        
 
@@ -1309,7 +1310,22 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
         if not name:
             raise "Did not find a visualization mode corresponding to id ",eid
             
+            
+        do_cmd = "mainWindow.loadVisualizerMode('%s')"%(mode)
+        if self.currentVisualizationModeName in self.visToId:
+            undo_cmd = "mainWindow.loadVisualizerMode('%s')"%(self.currentVisualizationModeName)
+        else:
+            undo_cmd =""
+        cmd = Command.Command(Command.GUI_CMD,None,None,do_cmd,undo_cmd,desc="Switch to visualizer mode %s"%mode)
+        cmd.run()
+        
+    def loadVisualizerMode(self, mode):
+        """
+        Created: 14.06.2007, KP
+        Description: Load the visualizer mode with the given name
+        """
         #reload=0
+        eid = self.visToId[mode]
         if self.currentVisualizationModeName==mode:
             # Why would we want to reload?
             #reload=1
@@ -1329,9 +1345,6 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
         if needUpdate:
             self.OnSize(None)
             
-        
-        #self.onMenuShowTree(None,0)
-
         # If a visualizer is already running, just switch the mode
         selectedFiles=self.tree.getSelectedDataUnits()
         if not len(selectedFiles):
@@ -1351,7 +1364,7 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
                     #self.visualizer.currMode.reloadMode()
                     if self.visualizer.currMode.closeOnReload():
                         # close the mode
-                        self.loadVisualizer(None,"slices")
+                        self.loadVisualizer("slices")
                         return
             self.visualizer.setVisualizationMode(mode)
             messenger.send(None,"update_progress",0.3,"Loading %s view..."%mode)
@@ -1381,7 +1394,7 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
             
         dataunit = selectedFiles[0]
         messenger.send(None,"update_progress",0.5,"Loading %s view..."%mode)
-        self.loadVisualizer(dataunit,mode,0)
+        self.loadVisualizer(mode,0,dataunit = dataunit)
         
     def onMenuOpenSettings(self,event):
         """
@@ -1714,7 +1727,7 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
         self.visualizer.enable(1)
         if not self.visualizer:
             Logging.info("Loading slices view for ",unit,kw="task")
-            self.loadVisualizer(unit,"slices",1)
+            self.loadVisualizer("slices",1, dataunit = unit)
             self.setButtonSelection(MenuManager.ID_VIS_SLICES)
 
         else:
@@ -1757,11 +1770,13 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
         self.visualizer.OnSize(None)
         #self.visWin.Refresh()
 
-    def loadVisualizer(self,dataunit,mode,processed=0,**kws):
+    def loadVisualizer(self,mode,processed=0, dataunit = None,**kws):
         """
         Created: 25.05.2005, KP
         Description: Load a dataunit and a given mode to visualizer
-        """          
+        """              
+        self.currentVisualizationModeName=mode
+
         if not self.visualizer:
             self.visPanel = wx.SashLayoutWindow(self.visWin,-1)
             self.visualizer=Visualizer.Visualizer(self.visPanel,self.menuManager,self)
@@ -1777,6 +1792,7 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 
         if not "init" in kws and dataunit:
             self.visualizer.setDataUnit(dataunit)
+        
         reload=kws.get("reload",0)
         
         self.visualizer.setVisualizationMode(mode,reload=reload)
@@ -1827,7 +1843,8 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
         """
         if not self.help:
             self.help=wx.html.HtmlHelpController()
-            self.help.AddBook("Help\\help.hhp",1)
+            helppath = os.path.join(bxd.get_help_dir(),"help.hhp")
+            self.help.AddBook(helppath,1)
             self.help.SetTitleFormat("BioImageXD - %s")
         if not args:
             self.help.DisplayContents()

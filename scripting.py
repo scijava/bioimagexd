@@ -238,6 +238,16 @@ def get_config_dir():
         os.mkdir(confdir)
     return confdir
 #        return get_main_dir() 
+
+def get_help_dir():
+    if platform.system()=="Darwin" and main_is_frozen():
+        dir=os.environ['RESOURCEPATH']
+        path=os.path.join(dir,"Help")
+        return path
+    else:
+        return os.path.join(".","Help")
+        
+    
         
 def get_icon_dir():
     if platform.system()=="Darwin" and main_is_frozen():
