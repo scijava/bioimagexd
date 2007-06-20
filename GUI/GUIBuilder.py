@@ -39,6 +39,7 @@ import ColorTransferEditor
 
 import messenger
 import Logging
+import Command
 import scripting as bxd
 import UIElements
 RADIO_CHOICE="RADIO_CHOICE"
@@ -69,6 +70,7 @@ class GUIBuilderBase:
         self.sourceUnits = []
         self.inputs =[]
         self.inputIndex=0
+
 
 
         self.gui = None
@@ -210,6 +212,45 @@ class GUIBuilderBase:
                 ret.extend(items)
         return ret
         
+        
+    def recordParameterChange(self, parameter, value, modpath):
+        """
+        Created: 14.06.2007, KP
+        Description: record the change of a parameter along with information for how to undo it
+        """
+        
+        oldval = self.parameters.get(parameter,None)
+        if oldval == value:
+            return
+        if self.getType(parameter)==ROISELECTION:
+            i,roi = value
+            setval="bxd.visualizer.getRegionsOfInterest()[%d]"%i
+            rois = bxd.visualizer.getRegionsOfInterest()
+            if oldval in rois:
+                n = rois.index(oldval)
+                setoldval="bxd.visualizer.getRegionsOfInterest()[%d]"%n
+            else:
+                setoldval=""
+            # First record the proper value
+            value = roi
+        else:
+            if type(value) in [types.StringType,types.UnicodeType]:
+                
+                setval="'%s'"%value
+                setoldval="'%s'"%oldval
+            else:
+                #print "Not string"
+                setval=str(value)
+                setoldval=str(oldval)
+        #print "setval=",setval,"oldval=",oldval
+        n = bxd.mainWindow.currentTaskWindowName
+        do_cmd="%s.set('%s',%s)"%(modpath, parameter,setval)
+        if oldval and setoldval:
+            undo_cmd="%s.set('%s',%s)"%(modpath,parameter,setoldval)
+        else:
+            undo_cmd=""
+        cmd=Command.Command(Command.PARAM_CMD,None,None,do_cmd,undo_cmd,desc="Change parameter '%s' of filter '%s'"%(parameter,self.name))
+        cmd.run(recordOnly = 1)                
     def setParameter(self,parameter,value):
         """
         Created: 13.04.2006, KP
@@ -219,6 +260,9 @@ class GUIBuilderBase:
         self.parameters[parameter]=value
         if self.modCallback:
             self.modCallback(self)
+
+
+            
 #
     def getParameter(self,parameter):
         """
@@ -854,9 +898,9 @@ class GUIBuilder(wx.Panel):
         
         if  desc and itemType not in [types.BooleanType]:
             lbl = wx.StaticText(bg,-1,desc)
-            updatef=lambda obj,evt,arg, lbl = lbl, i=item, s=self: lbl.SetLabel(arg)
+            updatef=lambda obj,evt,arg, lbl = lbl, i=item, s=self: s.updateLabel(lbl, arg)
                                         
-            messenger.connect(None,"update_%s_label"%item,updatef)
+            messenger.connect(currentFilter,"update_%s_label"%item,updatef)
             bgsizer.Add(lbl)
         else:
             lbl = None
@@ -910,6 +954,7 @@ class GUIBuilder(wx.Panel):
             self.currentBgSizer  = self.newItemSizer
         return (x,y)
                         
+                        
     def createNumberInput(self,parent, currentFilter,item,itemType,defaultValue,label = ""):
         """
         Created: 15.04.2006, KP
@@ -949,6 +994,13 @@ class GUIBuilder(wx.Panel):
         messenger.connect(currentFilter,"update_%s"%itemName,f)
         
         return spin
+        
+    def updateLabel(self, obj, lbl):    
+        """
+        Created: 14.06.2007, KP
+        Description: update the label of an object
+        """
+        obj.SetLabel(lbl)
         
     def onSetNumber(self, input, item, value):
         """

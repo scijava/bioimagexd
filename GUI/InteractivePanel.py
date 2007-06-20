@@ -121,6 +121,7 @@ class VisualizeTracksHelper(PainterHelper):
                     objectValue, pos = track.getObjectAtTime(i)
                     if objectValue != -1:
                         x1,y1,z1 = pos
+                        print "Pos = ",pos
                         
                         x1*=self.parent.zoomFactor
                         y1*=self.parent.zoomFactor
@@ -444,6 +445,8 @@ class InteractivePanel(ogl.ShapeCanvas):
         shapelist = self.diagram.GetShapeList()
         
         for shape in shapelist:        
+            if not hasattr(shape,"getOffset"):
+                continue
             sx,sy=shape.GetX(),shape.GetY()
             ox,oy = shape.getOffset()
             xdiff = x-ox

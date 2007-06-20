@@ -709,7 +709,7 @@ class ROIIntensityFilter(ProcessingFilter.ProcessingFilter):
     Created: 04.08.2006, KP
     Description: A filter for calculating the volume, total and average intensity of a ROI
     """     
-    name = "ROI measurements"
+    name = "Analyze ROIs"
     category = MEASUREMENT
     
     def __init__(self):

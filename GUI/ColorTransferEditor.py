@@ -409,7 +409,8 @@ class CTFPaintPanel(wx.Panel):
             rx0,gx0,bx0=rx,gx,bx
             r0,g0,b0=r,g,b
             a0 = a
-            ax0 = ax
+            if alpha:
+                ax0 = ax
         if abs(rx0/coeff - maximumValue)>0.5:
             self.createLine(rx0,r0,self.maxx, 0,'#ff0000')
         if abs(gx0/coeff - maximumValue)>0.5:
@@ -1132,8 +1133,6 @@ class ColorTransferEditor(wx.Panel):
                      determine where to insert control points for the user
                      to edit
         """
-        print "\n\nGETTING POINTS FROM FREE"
-        Logging.backtrace()
         xr0, xg0, xb0, xa0 = 0,0,0,0
         kr, kg, kb,ka = 1,1,1,1
         yr0, yg0, yb0, ya0 = 0,0,0,0

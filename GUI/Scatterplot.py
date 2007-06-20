@@ -48,7 +48,6 @@ import Configuration
 
 import math
 
-from GUI import Events
     
 class Scatterplot(InteractivePanel.InteractivePanel):
     """

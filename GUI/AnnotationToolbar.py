@@ -228,7 +228,7 @@ class AnnotationToolbar(wx.Window):
         flag=evt.GetIsDown()
         scripting.resamplingDisabled = not flag
         self.visualizer.updateRendering()              
-        if self.zoomToFitFlag:            
+        if self.visualizer.zoomToFitFlag:            
             self.visualizer.zoomToFit(None)
         
     def clearChannelItems(self):

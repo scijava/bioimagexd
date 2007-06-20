@@ -238,7 +238,7 @@ class CombinedDataUnit(DataUnit.DataUnit):
                 
                 for dataunit in self.sourceunits:
                     image=dataunit.getTimePoint(timePoint)
-                
+                    
                     self.module.addInput(dataunit,image)
                 # Get the vtkImageData containing the results of the operation 
                 # for this time point
@@ -421,7 +421,7 @@ class CombinedDataUnit(DataUnit.DataUnit):
                     
                     # If a whole volume is requested, but the data is acquired with an update
                     # extent selecting only a single slice, then reset the update extent
-                    if depth <0 and z==1:
+                    if depth <0 and z<=1:
                         print "Setting update extent to whole extent"
                         image.SetUpdateExtent(image.GetWholeExtent())
                         image.Update()

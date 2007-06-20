@@ -107,8 +107,7 @@ class ProcessingFilter(GUIBuilder.GUIBuilderBase):
         """
         Created: 13.04.2006, KP
         Description: Set a value for the parameter
-        """ 
-        
+        """         
         if self.taskPanel:                
             lst = self.taskPanel.getFilters(self.name)
             i = lst.index(self)
@@ -116,38 +115,10 @@ class ProcessingFilter(GUIBuilder.GUIBuilderBase):
                 func="getFilter('%s')"%self.name
             else:
                 func="getFilter('%s', %d)"%(self.name,i)        
-            oldval = self.parameters[parameter]
-            if self.getType(parameter)==GUIBuilder.ROISELECTION:
-                i,roi = value
-                setval="bxd.visualizer.getRegionsOfInterest()[%d]"%i
-                rois = bxd.visualizer.getRegionsOfInterest()
-                if oldval in rois:
-                    n = rois.index(oldval)
-                    setoldval="bxd.visualizer.getRegionsOfInterest()[%d]"%n
-                else:
-                    setoldval=""
-                # First record the proper value
-                value = roi
-            else:
-                if type(value) in [types.StringType,types.UnicodeType]:
-                    
-                    setval="'%s'"%value
-                    setoldval="'%s'"%oldval
-                else:
-                    #print "Not string"
-                    setval=str(value)
-                    setoldval=str(oldval)
-            
-            #print "setval=",setval,"oldval=",oldval
             n = bxd.mainWindow.currentTaskWindowName
-            do_cmd="bxd.mainWindow.tasks['%s'].%s.set('%s',%s)"%(n,func,parameter,setval)
-            if setoldval:
-                undo_cmd="bxd.mainWindow.tasks['%s'].%s.set('%s',%s)"%(n,func,parameter,setoldval)
-            else:
-                undo_cmd=""
-            cmd=Command.Command(Command.PARAM_CMD,None,None,do_cmd,undo_cmd,desc="Change parameter '%s' of filter '%s'"%(parameter,self.name))
-            cmd.run(recordOnly = 1)          
-            
+  
+            method="bxd.mainWindow.tasks['%s'].%s.%s"%(n,func)
+            self.recordParameterChange(parameter, value, method)
         #print "\n\nSetting ",parameter,"to",value
         GUIBuilder.GUIBuilderBase.setParameter(self, parameter, value)
         

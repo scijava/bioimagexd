@@ -486,8 +486,7 @@ class TreeWidget(wx.SashLayoutWindow):
                 
             while citem.IsOk():
                 self.tree.SelectItem(citem)
-                citem=self.tree.GetNextSibling(citem)
-                                
+                citem=self.tree.GetNextSibling(citem)                                
             event.Veto()
     def onKeyDown(self, event):
         """

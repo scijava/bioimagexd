@@ -127,7 +127,10 @@ class FileListDataSource(DataSource):
         """
         s = None
         for file in filenames:
-            i = Image.open(file)
+            try:
+                i = Image.open(file)
+            except IOError, ex:
+                raise Logging.GUIError("Cannot open image file","Cannot open image file %s"%file)
             self.imageDims[file] = i.size
             if s and i.size != s:
                 x0,y0 = s
@@ -165,7 +168,7 @@ class FileListDataSource(DataSource):
         self.z=int(self.slicesPerTimepoint)
 
         assert self.z>0,"Number of slices per timepoint is greater than 0"
-        assert self.z <= len(self.filenames),"Number of timepoints cannot exceed number of files given"
+#        assert self.z <= len(self.filenames),"Number of timepoints %d cannot exceed number of files given %d"%(self.z, len(self.filenames))
 
         for i in self.readers:
             del i
@@ -176,7 +179,6 @@ class FileListDataSource(DataSource):
             raise Logging.GUIError("No files could be found","For some reason, no files were listed to be imported.")        
                     
         files = self.filenames
-        print "Determining readers from ",self.filenames
         
         isRGB = 1
         ext = files[0].split(".")[-1].lower()
@@ -343,7 +345,6 @@ class FileListDataSource(DataSource):
         Parameters:   i       The index
         """
         data=self.getTimepoint(i)
-        data=self.getResampledData(data,i)
         if not self.shift:
             self.shift=vtk.vtkImageShiftScale()
             self.shift.SetOutputScalarTypeToUnsignedChar()
@@ -418,12 +419,7 @@ class FileListDataSource(DataSource):
         Description: Returns the (x,y,z) dimensions of the datasets this 
                      dataunit contains
         """
-        if self.resampleDims:
-            return self.resampleDims
-        if not self.dimensions:            
-            self.getVoxelSize()
-            #print "Got dimensions=",self.dimensions                
-        return self.dimensions
+        return (self.x, self.y, self.z)
 
         
     def getSpacing(self):

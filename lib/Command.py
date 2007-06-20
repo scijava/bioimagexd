@@ -47,6 +47,7 @@ TASK_CMD="Load task"
 MGMT_CMD="File management"
 GUI_CMD="User interface command" 
 PARAM_CMD="Parameter change"
+VISUALIZATION_CMD="Visualizer action"
 
 def functionize(code,imports):
         lines=code.split("\n")

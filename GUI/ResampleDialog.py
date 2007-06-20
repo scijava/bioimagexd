@@ -34,6 +34,7 @@ import Logging
 import wx
 import UIElements
 import string
+import scripting as bxd
 
 class ResampleDialog(wx.Dialog):
     """
@@ -74,7 +75,7 @@ class ResampleDialog(wx.Dialog):
         for i in self.dataUnits:
             #print "\nSETTING RESAMPLE DIMS TO ",self.currSize
             i.dataSource.setResampleDimensions(self.currSize)
-        
+            i.dataSource.getDataSet(bxd.visualizer.getTimepoint()).SetUpdateExtent((0,-1,0,-1,0,-1))
         self.result=1
         self.Close()
 

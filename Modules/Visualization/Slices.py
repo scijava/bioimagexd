@@ -147,7 +147,9 @@ class SlicesMode(VisualizationMode):
         self.iactivePanel.Show(0)
         self.iactivePanel.onDeactivate()
 #        self.iactivePanel.setDataUnit(None)
+        self.iactivePanel.Destroy()
         del self.iactivePanel
+        
         self.iactivePanel=None
         
     def saveSnapshot(self,filename):
