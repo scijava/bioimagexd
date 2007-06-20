@@ -84,6 +84,8 @@ class RenderingMode(VisualizationMode):
         self.dataUnit=None
         self.initialized=False
         
+        self.nameToModule = {}
+        
         self.defaultModule = "Volume rendering"
         self.modules = []
         
@@ -280,6 +282,8 @@ class RenderingMode(VisualizationMode):
         Description: Remove a visualization module
         """
         to_be_removed=[]
+        if name in self.nameToModule:
+            del self.nameToModule[name]
         for module in self.modules:
             if module.getName()==name:
                 to_be_removed.append(module)
@@ -288,6 +292,8 @@ class RenderingMode(VisualizationMode):
             module.disableRendering()
             self.modules.remove(module)
             del module
+            
+        
 
     def setRenderingStatus(self,name,status):
         """
@@ -300,6 +306,14 @@ class RenderingMode(VisualizationMode):
                     module.disableRendering()
                 else:
                     module.enableRendering()
+                    
+    def getModule(self, name):
+        """
+        Created: 14.06.2007, KP
+        Description: return the module with the given name
+        """
+        
+        return self.nameToModule.get(name,None)
 
     def loadModule(self,name,lbl=None,render=1):
         """
@@ -315,6 +329,7 @@ class RenderingMode(VisualizationMode):
             self.initialized=1
         module = self.mapping[name][0](self,self.visualizer,label=lbl,moduleName=name)
         self.modules.append(module)
+        self.nameToModule[name]=module
         module.setDataUnit(self.dataUnit)
         if render:
             module.showTimepoint(self.timepoint)

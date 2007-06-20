@@ -507,7 +507,8 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
             usedUpdateExt=1
             #colorImage.SetUpdateExtent(0,x-1,0,y-1,self.z,self.z)
             uext=(0,x-1,0,y-1,self.z,self.z)
-        
+            print "Update extent = ",uext
+
         t=time.time()    
         #print colorImage
         colorImage = bxd.mem.optimize(image = colorImage, updateExtent = uext)

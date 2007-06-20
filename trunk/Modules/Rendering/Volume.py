@@ -133,16 +133,20 @@ class VolumeModule(VisualizationModule):
         Created: 13.04.2006, KP
         Description: Set a value for the parameter
         """    
- 
         VisualizationModule.setParameter(self, parameter,value)
         if parameter=="Method":
             conf=Configuration.getConfiguration()
             conf.setConfigItem("DefaultVolumeMode","Rendering", value)
             conf.writeSettings()
+            self.updateMethod()
+                    
             self.updateOpacityTransferFunction()
+            print "value=",value
             if value==1:
+                print "updating quality value label to max planes"
                 messenger.send(self,"update_QualityValue_label","Maximum number of planes:")
             else:
+                print "Updating qualityvalue label to sample distance"
                 messenger.send(self,"update_QualityValue_label","Sample distance:")
         if parameter == "Quality":
             self.parameters["QualityValue"] = None
@@ -262,17 +266,12 @@ class VolumeModule(VisualizationModule):
         otf, otf2 = vtk.vtkPiecewiseFunction(), vtk.vtkPiecewiseFunction()
         d = dataunit.getSingleComponentBitDepth()
         maxv = 2**d
-            
-        print "\n\n\nMaximum value=",maxv
         otf2.AddPoint(0, 0.0)
         otf2.AddPoint(maxv, 1.0)
         otf.AddPoint(0, 0.0)
         otf.AddPoint(maxv, 0.2)
         
         self.otfs = [otf,otf,otf,otf2,otf]
-        
-        
-
         self.setInputChannel(1,0)
         self.parameters["Palette"] = self.colorTransferFunction
         
@@ -350,6 +349,8 @@ class VolumeModule(VisualizationModule):
         Created: 28.04.2005, KP
         Description: Set the Rendering method used
         """             
+        if not self.initDone:
+            return
         method = self.parameters["Method"]
         self.volumeProperty.SetScalarOpacity(self.otfs[method])
         self.updateOpacityTransferFunction()

@@ -58,11 +58,11 @@ class VisualizationModule(GUIBuilder.GUIBuilderBase):
         """    
         #self.name="Module"
         self.processInputText="Task output"
+        self.name=kws["label"]
 
         GUIBuilder.GUIBuilderBase.__init__(self,changeCallback = self.parameterChanged)
         
         self.moduleName=kws["moduleName"]
-        self.name=kws["label"]
         self.numberOfInputs = (1,1)
         self.timepoint = -1
         self.parent = parent
@@ -75,6 +75,26 @@ class VisualizationModule(GUIBuilder.GUIBuilderBase):
         self.view=None
         self.setVTKState = GUI.Urmas.UrmasPersist.setVTKState
         self.getVTKState = GUI.Urmas.UrmasPersist.getVTKState
+
+    def set(self, parameter, value):
+        """
+        Created: 14.06.2007, KP
+        Description: Set the given parameter to given value
+        """   
+        GUIBuilder.GUIBuilder.setParameter(self, parameter, value)
+        # Send a message that will update the GUI
+        messenger.send(self,"set_%s"%parameter,value)
+
+    def setParameter(self,parameter,value):
+        """
+        Created: 13.04.2006, KP
+        Description: Set a value for the parameter
+        """         
+        if self.initDone:
+            method = "visualizer.getCurrentWindow().getModule('%s')"%self.name
+            self.recordParameterChange(parameter, value, method)
+        #print "\n\nSetting ",parameter,"to",value
+        GUIBuilder.GUIBuilderBase.setParameter(self, parameter, value)        
     
     def parameterChanged(self,module):
         """

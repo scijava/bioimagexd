@@ -539,10 +539,10 @@ class Visualizer:
         
         self.tb.AddControl(self.origBtn)
         iconpath=scripting.get_icon_dir()
-        bmp = wx.Image(os.path.join(iconpath,"perspective.gif")).ConvertToBitmap()
-        self.tb.DoAddTool(MenuManager.ID_PERSPECTIVE,"Perspective rendering",bmp,kind=wx.ITEM_CHECK,shortHelp="Toggle between parallel and perspective projection")        
-        self.tb.ToggleTool(MenuManager.ID_PERSPECTIVE, 1)
-        wx.EVT_TOOL(self.tb,MenuManager.ID_PERSPECTIVE,self.onPerspectiveRendering)
+        #bmp = wx.Image(os.path.join(iconpath,"perspective.gif")).ConvertToBitmap()
+        #self.tb.DoAddTool(MenuManager.ID_PERSPECTIVE,"Perspective rendering",bmp,kind=wx.ITEM_CHECK,shortHelp="Toggle between parallel and perspective projection")        
+        #self.tb.ToggleTool(MenuManager.ID_PERSPECTIVE, 1)
+        #wx.EVT_TOOL(self.tb,MenuManager.ID_PERSPECTIVE,self.onPerspectiveRendering)
         
         self.pitch=wx.SpinButton(self.tb, MenuManager.PITCH,style=wx.SP_VERTICAL,size=(-1,22))
         self.tb.AddControl(self.pitch)
@@ -921,8 +921,9 @@ class Visualizer:
         Description: Close the visualizer
         """
         if self.currMode:
-            self.currMode.deactivate()
             self.currentWindow.Show(0)
+        
+            self.currMode.deactivate()
             del self.currentWindow
         self.currMode=None
         self.currentWindow=None
@@ -955,11 +956,11 @@ class Visualizer:
         if self.currMode:
             self.zoomFactor=self.currMode.getZoomFactor()
             scripting.zoomFactor = self.zoomFactor
+            self.currentWindow.Show(0)
 
             self.currMode.deactivate(self.mode)
             if hasattr(self.currentWindow,"enable"):
                 self.currentWindow.enable(0)
-            self.currentWindow.Show(0)
         
         modeclass,settingclass,module=self.modes[mode]
         modeinst=self.instances[mode]
@@ -1142,13 +1143,18 @@ class Visualizer:
             self.toggleTimeSlider(0)
         else:
             self.toggleTimeSlider(1)
+        currT = self.timeslider.GetValue()
         self.timeslider.SetRange(1,count)
+        if currT<1:currT = 1
+        if currT>count:currT = count
+        self.timeslider.SetValue(currT)
         
         x,y,z=dataunit.getDimensions()
         
         #print "SETTING RANGE",1,z
         currz = self.zslider.GetValue()
         self.zslider.SetRange(1,z)
+        
         if self.timepoint >=count:
             self.setTimepoint(count)
 
@@ -1409,13 +1415,25 @@ class Visualizer:
                 wc+="|%s|*.%s"%(wcDict[key],key)
             print "wc=",wc
             filename = Dialogs.askSaveAsFileName(self.parent,"Save snapshot of rendered scene",initFile, wc, "snapshotImage")
-            #dlg=wx.FileDialog(self.parent,,defaultFile=initFile,wildcard=wc,style=wx.SAVE)
-            #filename=None
-            #if dlg.ShowModal()==wx.ID_OK:
-            #    filename=dlg.GetPath()
-            if filename:
-                
-                self.currMode.saveSnapshot(filename)
+            
+            
+            do_cmd = "bxd.visualizer.saveSnapshot('%s')"%filename
+            cmd = Command.Command(Command.GUI_CMD,None,None,do_cmd,"",desc="Save a snapshot of the visualizer")
+            cmd.run()
+            
+        
+    def saveSnapshot(self, filename):
+        """
+        Created: 14.06.2007, KP
+        Description save a snapshot with the given name
+        """
+        #dlg=wx.FileDialog(self.parent,,defaultFile=initFile,wildcard=wc,style=wx.SAVE)
+        #filename=None
+        #if dlg.ShowModal()==wx.ID_OK:
+        #    filename=dlg.GetPath()
+        if filename:
+            
+            self.currMode.saveSnapshot(filename)
         
     def restoreWindowSizes(self):
         """

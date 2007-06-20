@@ -41,7 +41,7 @@ import scripting as bxd
 class FilterBasedModule(Module):
     """
     Created: 04.04.2006, KP
-    Description: Manipulationes a single dataunit in specified ways
+    Description: Applies a stack of processing filters to a given input dataset
     """
 
     def __init__(self,**kws):

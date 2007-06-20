@@ -155,6 +155,8 @@ class ImportDialog(wx.Dialog):
         self.writer = DataSource.BXCDataWriter(bxcfilename)
         bxdwriter.addChannelWriter(self.writer)
         bxdwriter.write()
+        self.tot = self.dataSource.getDataSetCount()
+                
         self.dlg = wx.ProgressDialog("Importing","Reading dataset %d / %d"%(0,0),maximum = 2*self.tot, parent = self,
         style = wx.PD_ELAPSED_TIME|wx.PD_REMAINING_TIME)   
         
@@ -176,6 +178,9 @@ class ImportDialog(wx.Dialog):
         z/=1000000.0
         Logging.info("Writing voxel size as ",x,y,z,kw="io")
         settings.set("VoxelSize",(x,y,z))
+
+        self.x,self.y,self.z=self.dataSource.getDimensions()
+
         Logging.info("Writing dimensions as ",self.x,self.y,self.z,kw="io")
 
 
@@ -187,10 +192,8 @@ class ImportDialog(wx.Dialog):
         parser = self.writer.getParser()
         settings.writeTo(parser)
         i=0
-        Logging.info("readers (%d)="%len(self.readers),self.readers,kw="io")
         #for rdr in self.readers:
-        tot = self.dataSource.getDataSetCount()
-        for i in range(0, tot):
+        for i in range(0, self.tot):
             image = self.dataSource.getDataSet(i)
             #image.SetExtent(0,self.x-1,0,self.y-1,0,self.z-1)
             image.SetSpacing(self.spacing)
@@ -402,7 +405,14 @@ enter the information below.""")
             return
         print "Setting slices per timepoint to ",slices
         self.dataSource.setSlicesPerTimepoint(slices)
+        currentZ = self.zslider.GetValue()
         self.zslider.SetRange(1,slices)
+
+        if currentZ<1:currentZ=1
+        if currentZ>slices:currentZ = slices
+        self.zslider.SetValue(currentZ)
+
+
         self.updateSelection(None, updatePreview = 1)
         
     def onChangeZSlice(self,event):
@@ -450,22 +460,24 @@ enter the information below.""")
         Created: 17.03.2005, KP
         Description: A method called when a file is loaded in the filebrowsebutton
         """      
-        r=re.compile("z[0-9]+")
+        r=re.compile("z[0-9]+", re.IGNORECASE)
         
         if not r.search(filename):
             r=re.compile("[0-9]+")
             items=r.findall(filename)
             n=len(items[-1])
+            
             s="%%.%dd"%n
-            print "s=",s
+            print "s=",s,"n=",n
         else:
             items=r.findall(filename)
-            n=len(items[-1])-1                       
-            s="z%%.%dd"%n       
+            n=len(items[-1])                       
+            s="z%%.%dd"%(n-1)     
             print "s=",s        
         if items:
             i = filename.rfind(items[-1])            
-            filename = filename[:i]+s+filename[i+1+n:]                    
+#            print "filename = ",filename[:i],s,filename[i+1+n:]
+            filename = filename[:i]+s+filename[i+n:]                    
         self.patternEdit.SetValue(filename)
  
     def setInputType(self,event):
@@ -497,8 +509,12 @@ enter the information below.""")
                 self.sourceListbox.Clear()
                 self.setNumberOfImages(0)
                 return
+        if not self.sourceListbox.GetSelections():
+            n = self.sourceListbox.GetCount()    
+        else:   
+            n = len(self.sourceListbox.GetSelections())
         
-        self.setNumberOfImages(len(self.sourceListbox.GetSelections()))
+        self.setNumberOfImages(n)
         
     def setNumberOfTimepoints(self, evt):
         """
@@ -506,8 +522,12 @@ enter the information below.""")
         Description: set the number of timepoints, and adjust the number of slices per timepoint accordingly
         """
         n = int(float(self.timepointEdit.GetValue()))
-        assert n>0,"There need to be at least one timepoint, %s is invalid"%(str(n))
+        #assert n>0,"There need to be at least one timepoint, %s is invalid"%(str(n))
+        currentTime = self.timeslider.GetValue()
         self.timeslider.SetRange(1, n)
+        if currentTime <1:currentTime = 1
+        if currentTime > n:currentTime = n
+        self.timeslider.SetValue(currentTime)
         
         totalAmnt = int(self.imageAmountLbl.GetLabel())
         if n and totalAmnt:
@@ -525,6 +545,7 @@ enter the information below.""")
         Created: 17.03.2005, KP
         Description: Sets the number of images we're reading
         """        
+        Logging.backtrace()
         if type(n)!=type(0):
             n=int(self.imageAmountLbl.GetLabel())
         Logging.info("n=",n,kw="io")
@@ -534,11 +555,17 @@ enter the information below.""")
         try:
             if not self.dataSource.is3DImage():
                 val=int(val)
+                print "Setting number of timepoints to ",n,"/",val
                 tps=float(n)/val
             else:
                 tps = n
             self.timepointEdit.SetValue("%.2f"%tps)
+            
+            currentTime = self.timeslider.GetValue()
             self.timeslider.SetRange(1,tps)
+            if currentTime<1:currentTime = 1
+            if currentTime > tps:currentTime = tps
+            self.timeslider.SetValue(currentTime)
         except:
             pass
                 
@@ -600,10 +627,14 @@ enter the information below.""")
             pat=dirn+os.path.sep+"*.%s"%ext #"
         Logging.info("Pattern for all in directory is ",pat,kw="io")
         files=glob.glob(pat)
-        print "Got files=",files
-        if not self.dataSource.checkImageDimensions(files):
-            Dialogs.showmessage(self, "Images have differing dimensions","Some of the selected images have differing dimensions. Therefore it is not possible to use the \"All files in directory\" selection.")
-            self.choice.SetSelection(0)
+        try:
+            if not self.dataSource.checkImageDimensions(files):
+                Dialogs.showmessage(self, "Images have differing dimensions","Some of the selected images have differing dimensions. Therefore it is not possible to use the \"All files in directory\" selection.")
+                self.choice.SetSelection(0)
+                return
+        except Logging.GUIError, ex:
+            ex.show()
+            self.sourceListbox.Clear()
             return
             
         files.sort(self.sortNumerically)
@@ -634,14 +665,13 @@ enter the information below.""")
         # If there is one specifier, then try to find files that correspond to that
         if nformat==1:
             filelist=[]
-            print "trying range",startfrom-1,startfrom+filecount+1
-            for i in range(startfrom-1, startfrom+filecount+1):
+            print "trying range",startfrom,startfrom+filecount+1, "pattern=",pat
+            for i in range(startfrom, startfrom+filecount+1):
                 try:
                     filename=pat%i
                 except:
                     return
                 for file in files:
-#                    print "Matching",file,"to",filename
                     if file.find(filename)!=-1:
                         self.sourceListbox.Append(file)
                         filelist.append(file)
@@ -695,12 +725,19 @@ enter the information below.""")
         print "Got dims",self.x, self.y, self.z
         self.dimensionLbl.SetLabel("%d x %d"%(self.x,self.y))                
         self.depthEdit.SetValue("%.2f"%self.z)
+        currentZ = self.zslider.GetValue()
         self.zslider.SetRange(1,self.z) 
+        if currentZ<1:currentZ=1
+        if currentZ>self.z:currentZ = self.z
+        self.zslider.SetValue(currentZ)
+        
+        
         if not self.ctfInitialized:
             x0,x1 = self.dataSource.getScalarRange()
+            bd = self.dataSource.getSingleComponentBitDepth()
             self.ctf = vtk.vtkColorTransferFunction()
             self.ctf.AddRGBPoint(0, 0, 0, 0)
-            self.ctf.AddRGBPoint(x1, 0, 1, 0)
+            self.ctf.AddRGBPoint((2**bd)-1, 0, 1, 0)
             self.colorBtn.setColorTransferFunction(self.ctf)
             self.dataSource.setColorTransferFunction(self.ctf)
             self.settings.set("ColorTransferFunction",self.ctf)
