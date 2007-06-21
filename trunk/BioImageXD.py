@@ -104,7 +104,7 @@ import Configuration
 conffile = os.path.join(bxd.get_config_dir(),"BioImageXD.ini")
 cfg=Configuration.Configuration(conffile)
 
-# We need to import VTK here so that it is imported before wxpython.
+# We need to import VTK here so that it is imported before  python.
 # if wxpython gets imported before vtk, the vtkExtTIFFReader will not read the olympus files
 # DO NOT ask me why that is!
 #try:

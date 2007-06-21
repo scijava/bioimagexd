@@ -37,7 +37,6 @@ import  wx.lib.filebrowsebutton as filebrowse
 import vtk
 import Dialogs
 import ColorTransferEditor
-import  wx.lib.masked as  masked
 import Logging
 import DataUnit
 import DataSource
@@ -471,8 +470,9 @@ enter the information below.""")
             print "s=",s,"n=",n
         else:
             items=r.findall(filename)
-            n=len(items[-1])                       
-            s="z%%.%dd"%(n-1)     
+            n=len(items[-1])           
+            firstLetter = items[0][0]
+            s="%s%%.%dd"%(firstLetter, n-1)     
             print "s=",s        
         if items:
             i = filename.rfind(items[-1])            
@@ -663,7 +663,7 @@ enter the information below.""")
                 self.sourceListbox.Clear()
                 return
         # If there is one specifier, then try to find files that correspond to that
-        if nformat==1:
+        if selection == 0 and nformat==1:
             filelist=[]
             print "trying range",startfrom,startfrom+filecount+1, "pattern=",pat
             for i in range(startfrom, startfrom+filecount+1):
@@ -682,7 +682,7 @@ enter the information below.""")
                 ex.show()
                 self.sourceListbox.Clear()
                 return
-        else:
+        elif selection == 0:
             filelist=[]
             everfound=0
             for i in range(filecount):

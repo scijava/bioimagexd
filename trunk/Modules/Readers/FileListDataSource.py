@@ -111,6 +111,7 @@ class FileListDataSource(DataSource):
         if pattern != -1:
             self.pattern = pattern
         if not self.dimensions:
+            
             self.retrieveImageInfo(filenames[0])
         self.filenames = filenames
         self.numberOfImages = len(filenames)
@@ -371,12 +372,16 @@ class FileListDataSource(DataSource):
         assert filename,"Filename must be defined"
         assert os.path.exists(filename),"File that we're retrieving information from (%s) needs to exist, but doesn't."%filename
         ext  = filename.split(".")[-1].lower()
+        print "Retrieving image info with ext",ext
         rdr = self.getReaderByExtension(ext)
         
         if ext =="bmp":
             rdr.Allow8BitBMPOn()
         
+        print "filename=",filename
         rdr.SetFileName(filename)
+        rdr.UpdateInformation()
+        print rdr
         rdr.Update()
         data=rdr.GetOutput()
         self.x,self.y, z=data.GetDimensions()
