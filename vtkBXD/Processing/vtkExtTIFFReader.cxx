@@ -195,14 +195,13 @@ vtkExtTIFFReader::~vtkExtTIFFReader()
 void vtkExtTIFFReader::ExecuteInformation()
 {    
   this->InitializeColors();
-
-  printf("Computing Internal File Name for dataextent %d,%d,%d,%d,%d,%d\n", DataExtent[0], DataExtent[1], DataExtent[2], DataExtent[3], DataExtent[4], DataExtent[5]);
+  printf("vtkExtTIFFReader::ExecuteInformation()\n");
   this->ComputeInternalFileName(this->DataExtent[4]);
   if (this->InternalFileName == NULL)
     {
     return;
     }
-  
+  printf("Internal name=%s\n",this->InternalFileName);
   if ( !this->InternalImage->Open(this->InternalFileName) )
     {  
     vtkErrorMacro("Unable to open file " <<this->InternalFileName );
@@ -222,45 +221,42 @@ void vtkExtTIFFReader::ExecuteInformation()
   this->DataExtent[1] = this->GetInternalImage()->Width - 1;
   this->DataExtent[2] = 0;
   this->DataExtent[3] = this->GetInternalImage()->Height - 1;
+  printf("Computing Internal File Name for dataextent %d,%d,%d,%d,%d,%d\n", DataExtent[0], DataExtent[1], DataExtent[2], DataExtent[3], DataExtent[4], DataExtent[5]);
 
   if(this->GetInternalImage()->BitsPerSample==16) {
     this->SetDataScalarTypeToUnsignedShort();
   }  else this->SetDataScalarTypeToUnsignedChar();     
       
     
-//  printf("Image format = %d\n",this->GetFormat());
   switch ( this->GetFormat() )
     {
-    case vtkExtTIFFReader::RAW:
     case vtkExtTIFFReader::GRAYSCALE:
     case vtkExtTIFFReader::PALETTE_GRAYSCALE:
       this->SetNumberOfScalarComponents( 1 );
-//      printf("One scalarcomponent\n");
       break;
     case vtkExtTIFFReader::RGB:      
       this->SetNumberOfScalarComponents( 
         this->GetInternalImage()->SamplesPerPixel );
-//       printf("RGB, Number of scalar components = %d\n",this->GetInternalImage()->SamplesPerPixel);
       break;
     case vtkExtTIFFReader::PALETTE_RGB:      
       this->SetNumberOfScalarComponents( 3 );
       break;
     default:
-//        printf("By default number of scalar components=4\n");
       this->SetNumberOfScalarComponents( 4 );
     }   
 
   if ( !this->GetInternalImage()->CanRead() )
     {
-//        printf("Cannot read internal image\n");
         if(this->GetInternalImage()->BitsPerSample!=16) {
             this->SetNumberOfScalarComponents( 4 );
         }
     }
+    
+  printf("vtkImageReader2::ExecuteInformation()\n");
 
   this->vtkImageReader2::ExecuteInformation();
 
-    
+      
   // close the file
   this->GetInternalImage()->Clean();
 }
@@ -274,17 +270,17 @@ void vtkExtTIFFReaderUpdate2(vtkExtTIFFReader *self, OT *outPtr,
     {
     return;
     }
-    //printf("Initializing colors\n");
+    printf("Initializing colors\n");
   self->InitializeColors();
     
-//printf("Reading image...\n");
+printf("Reading image...\n");
   self->ReadImageInternal(self->GetInternalImage()->Image, 
                           outPtr, outExt, sizeof(OT) );
 
   // close the file
-    //printf("Closing the file\n");
+    printf("Closing the file\n");
   self->GetInternalImage()->Clean();
-    //printf("Done\n");
+    printf("Done\n");
 }
 
 //----------------------------------------------------------------------------
@@ -329,10 +325,16 @@ void vtkExtTIFFReaderUpdate(vtkExtTIFFReader *self, vtkImageData *data, OT *outP
 void vtkExtTIFFReader::ExecuteData(vtkDataObject *output)
 {
     
-  //printf("Allocating output data\n");
+  printf("Allocating output data\n");
   vtkImageData *data = this->AllocateOutputData(output);
+  int ext[6];
+  int dims[3];
+  data->GetDimensions(dims);
+  printf("Dims=%d,%d,%d\n",dims[0],dims[1],dims[2]);
   
-//    printf("data estimated size=%d\n",data->GetActualMemorySize());
+  output->GetWholeExtent(ext);
+  printf("Ext=%d,%d,%d,%d,%d,%d\n",PRT_EXT(ext));
+  printf("Data type=%s\n",data->GetScalarTypeAsString());
   if (this->InternalFileName == NULL)
     {
     vtkErrorMacro("Either a FileName or FilePrefix must be specified.");
@@ -365,7 +367,7 @@ int vtkExtTIFFReader::RequestUpdateExtent (
   int uext[6], ext[6];
     
   vtkInformation* outInfo = outputVector->GetInformationObject(0);
-  //vtkInformation *inInfo = inputVector[0]->GetInformationObject(0);
+ // vtkInformation *inInfo = inputVector[0]->GetInformationObject(0);
 
   outInfo->Get(vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT(),ext);
    //printf("extent request %d,%d,%d,%d,%d,%d\n",PRT_EXT(ext));
@@ -378,8 +380,12 @@ int vtkExtTIFFReader::RequestUpdateExtent (
   // then modify the uextent 
   if(uext[1] < ext[1] ) uext[1] = ext[1];
   if(uext[3] < ext[3] ) uext[3] = ext[3];
-  //printf("Setting uextent to %d,%d,%d,%d,%d,%d\n",PRT_EXT(uext));
+  if(uext[0] > ext[0]) uext[0] = ext[0];
+  if(uext[2] > ext[2]) uext[2] = ext[2];
+  printf("Setting uextent to %d,%d,%d,%d,%d,%d\n",PRT_EXT(uext));
   outInfo->Set(vtkStreamingDemandDrivenPipeline::UPDATE_EXTENT(), uext,6);
+  //inInfo->Set(vtkStreamingDemandDrivenPipeline::UPDATE_EXTENT(), uext,6);
+
   //request->Set(vtkStreamingDemandDrivenPipeline::REQUEST_UPDATE_EXTENT(), uext,6);
   return 1;    
 }
@@ -387,6 +393,7 @@ int vtkExtTIFFReader::RequestUpdateExtent (
 unsigned int vtkExtTIFFReader::GetFormat( )
 {
   unsigned int cc; 
+  if(this->RawMode) return vtkExtTIFFReader::GRAYSCALE;
   if ( this->ImageFormat != vtkExtTIFFReader::NOFORMAT )
     {
     return this->ImageFormat;
@@ -501,7 +508,7 @@ void vtkExtTIFFReader::InitializeColors()
   this->ColorGreen  = 0;
   this->ColorBlue   = 0;
   this->TotalColors = -1;  
-  if(RawMode) { this->ImageFormat = vtkExtTIFFReader::RAW; }
+  if(RawMode) { this->ImageFormat = vtkExtTIFFReader::GRAYSCALE; }
   else this->ImageFormat = vtkExtTIFFReader::NOFORMAT;
 }
 
@@ -517,9 +524,10 @@ void vtkExtTIFFReader::ReadImageInternal( void* vtkNotUsed(in), void* outPtr,
 
     int width  = this->GetInternalImage()->Width;
     int height = this->GetInternalImage()->Height;
+    printf("width=%d, height=%d, size=%d\n",width,height,size);
     this->InternalExtents = outExt;
     unsigned int isize = TIFFScanlineSize(this->GetInternalImage()->Image);
-      //printf("isize=%d, height=%d\n",isize,height);
+      printf("isize=%d, height=%d\n",isize,height);
     unsigned int cc;
     int row, inc = 1;
     tdata_t buf = _TIFFmalloc(isize);      
@@ -527,18 +535,18 @@ void vtkExtTIFFReader::ReadImageInternal( void* vtkNotUsed(in), void* outPtr,
      // special case for 16-bit grayscale
     if(this->GetInternalImage()->BitsPerSample==16 && this->GetFormat()== vtkExtTIFFReader::GRAYSCALE)
     {
-    isize /= 2;
-    unsigned short* image;
-    int tot=0;
+        isize /= 2;
+        unsigned short* image;
+        int tot=0;
         image = (unsigned short*)outPtr;
             
     if (InternalImage->PlanarConfig == PLANARCONFIG_CONTIG)
       {
-          //printf("Contig planes\n");
+          printf("Contig planes\n");
           image = (unsigned short*)outPtr;
       for ( row = 0; row < (int)height; row ++ )
         {
-                //printf("Reading scanline %d\n",row);
+                printf("Reading scanline %d\n",row);
         if (TIFFReadScanline(InternalImage->Image, buf, row, 0) <= 0)
           {
         vtkErrorMacro( << "Problem reading the row: " << row <<"of file"<<GetInternalFileName());
@@ -548,7 +556,7 @@ void vtkExtTIFFReader::ReadImageInternal( void* vtkNotUsed(in), void* outPtr,
           //image = reinterpret_cast<unsigned short*>(outPtr) + width * inc * (height - (row + 1));
 //          image = reinterpret_cast<unsigned short*>(outPtr) + row * width * inc;
 
-        //printf("Copying %d doublebytes\n",isize);
+        printf("Copying %d doublebytes, spp=%d\n",isize,InternalImage->SamplesPerPixel);
           
           for(cc = 0; cc < isize; cc += InternalImage->SamplesPerPixel) {
                     //image[cc]=((unsigned short*)buf)[cc];
@@ -566,7 +574,7 @@ void vtkExtTIFFReader::ReadImageInternal( void* vtkNotUsed(in), void* outPtr,
           }*/
           
         }
-        //printf("Copied %d doublebytes\n",tot);
+        printf("Copied %d doublebytes\n",tot);
           _TIFFfree(buf);
         return;
       }
@@ -678,7 +686,6 @@ void vtkExtTIFFReader::ReadImageInternal( void* vtkNotUsed(in), void* outPtr,
 
   switch ( format )
     {
-    case vtkExtTIFFReader::RAW:
     case vtkExtTIFFReader::GRAYSCALE:
     case vtkExtTIFFReader::RGB: 
     case vtkExtTIFFReader::PALETTE_RGB:
@@ -747,10 +754,6 @@ int vtkExtTIFFReader::EvaluateImageAt( void* out, void* in )
   unsigned short red, green, blue, alpha;
   switch ( this->GetFormat() )
     {
-    case vtkExtTIFFReader::RAW:
-    *image = *source;
-    increment = 1;
-    break;  
     case vtkExtTIFFReader::GRAYSCALE:
       if ( this->GetInternalImage()->Photometrics == 
            PHOTOMETRIC_MINISBLACK )
