@@ -221,7 +221,7 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
                 y=y2
             m="SLICES"
             if self.mip:m="MIP"
-            print "\n\n\n%s Setting buffer size to "%m,x,y
+            #print "\n\n\n%s Setting buffer size to "%m,x,y
             if self.buffer.GetWidth()!=x or self.buffer.GetHeight()!=y:
                 self.buffer = wx.EmptyBitmap(x,y)
                 self.setScrollbars(x,y)
@@ -745,7 +745,7 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         if py>y:y=py
         m="SLICES"
         if self.mip:m="MIP"
-        print "\n\n\n%s Setting buffer size to "%m,x,y,"zoom factor=",f
+        #print "\n\n\n%s Setting buffer size to "%m,x,y,"zoom factor=",f
         
         self.buffer = wx.EmptyBitmap(x,y)
         self.setScrollbars(x,y)
@@ -836,7 +836,7 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         w,h = self.buffer.GetWidth(),self.buffer.GetHeight()
         
         #dc.SetClippingRegion(x0,y0,w,h)
-        print "paint size=",self.paintSize,"w,h=",w,h
+#        print "paint size=",self.paintSize,"w,h=",w,h
         dc.DrawRectangle(x0,y0,self.paintSize[0]+x0,self.paintSize[1]+x0)
             
 
@@ -906,8 +906,8 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         self.snapshotPos = xoff+x0,yoff+x0
         self.snapshotSize = bw,bh
 
-        print "Buffer size=",tw,th
-        print "Setting offset to",xoff,yoff
+#        print "Buffer size=",tw,th
+#        print "Setting offset to",xoff,yoff
         self.setOffset(xoff, yoff)
         dc.DrawBitmap(bmp,xoff+x0,yoff+x0,True)
 

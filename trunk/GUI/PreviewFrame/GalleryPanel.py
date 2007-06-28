@@ -100,6 +100,7 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
         """    
         self.slice=slice
         self.showTimepoints=showtps
+        print "Showing slice ",slice
         self.setSlice(slice)
         self.updatePreview()
         self.Refresh()
@@ -267,6 +268,7 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
             return self.setTimepoint(self.timepoint)
         count=self.dataUnit.getLength()
         self.slices=[]
+        print "There are ",count,"tps"
         for tp in range(0,count):
             if self.dataUnit.isProcessed():
                 image=self.dataUnit.doPreview(self.slice,1,tp)
@@ -274,11 +276,19 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
                 Logging.info("Using ",image,"for gallery",kw="preview")
             else:
                 image=self.dataUnit.getTimePoint(tp)
+                x,y,z = self.dataUnit.getDimensions()
+                
+                image = bxd.mem.optimize(image, updateExtent = (0,x-1,0,y-1,self.slice, self.slice))
+
                 image=ImageOperations.getSlice(image,self.slice)
+                image.Update()
+                #print "Got slice=",image
                 ctf=self.dataUnit.getColorTransferFunction()
-    
-            self.imagedata = ImageOperations.imageDataTo3Component(image,ctf)
             
+            #print "tp=",tp
+            self.imagedata = ImageOperations.imageDataTo3Component(image,ctf)
+            self.imagedata.Update()
+            #print "Got ",self.imagedata
             slice=ImageOperations.vtkImageDataToWxImage(self.imagedata,self.slice)
             self.slices.append(slice)
             
@@ -433,7 +443,11 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
         Created: 24.03.2005, KP
         Description: Paints the image to a DC
         """
-        dc = self.dc = wx.BufferedDC(wx.ClientDC(self),self.buffer)
+        #dc = self.dc = wx.BufferedDC(wx.ClientDC(self),self.buffer)
+        dc = wx.MemoryDC()
+        dc.SelectObject(self.buffer)
+        dc.BeginDrawing()
+        
         dc.BeginDrawing()
         dc.SetBackground(wx.Brush(wx.Colour(*self.bgcolor)))
         dc.SetPen(wx.Pen(wx.Colour(*self.bgcolor),0))
