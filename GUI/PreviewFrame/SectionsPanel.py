@@ -294,12 +294,12 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
 
         self.voxelSize=dataUnit.getVoxelSize()
         InteractivePanel.InteractivePanel.setDataUnit(self,dataUnit)
-        self.setTimepoint(self.timepoint)
-        self.calculateBuffer()
-        self.updatePreview()
-        self.Refresh()
+#        self.setTimepoint(self.timepoint, update = 0 )
+#        self.calculateBuffer()
+#        self.updatePreview()
+#        self.Refresh()
         
-    def setTimepoint(self,tp):
+    def setTimepoint(self,tp, update = 1):
         """
         Created: 23.05.2005, KP
         Description: Set the timepoint
@@ -325,7 +325,7 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
         if self.fitLater:
             self.fitLater=0
             self.zoomToFit()        
-        
+            return
         self.dims=self.imagedata.GetDimensions()
        # print "Got dimensions=",self.dims    
         self.slices=[]
@@ -361,7 +361,8 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
         self.slices.append(slice)        
 
         self.calculateBuffer()
-        self.updatePreview()
+        if update:
+            self.updatePreview()
     
     def calculateBuffer(self):
         """
@@ -407,7 +408,7 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
            print "Won't draw sections cause not enabled"
            return
         if not self.slices:
-            self.setTimepoint(self.timepoint)
+            self.setTimepoint(self.timepoint, update = 0)
         self.paintPreview()
         wx.GetApp().Yield(1)
 
@@ -429,7 +430,11 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
         Created: 24.03.2005, KP
         Description: Paints the image to a DC
         """
-        dc = self.dc = wx.BufferedDC(wx.ClientDC(self),self.buffer)
+#        dc = self.dc = wx.BufferedDC(wx.ClientDC(self),self.buffer)
+        dc = wx.MemoryDC()
+        dc.SelectObject(self.buffer)
+        dc.BeginDrawing()
+
         dc.BeginDrawing()
         dc.SetBackground(wx.Brush(wx.Colour(*self.bgcolor)))
         dc.SetPen(wx.Pen(wx.Colour(*self.bgcolor),0))
