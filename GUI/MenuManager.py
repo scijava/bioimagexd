@@ -196,6 +196,9 @@ ID_RECORD_EVENTS    =31232
 ID_PLAY_EVENTS      =31233
 ID_STOP_EVENTS      =31234
 ID_REWIND_EVENTS           =31235
+
+ID_REPORT_BUG       =31236
+
 class MenuManager:
     """
     Created: 29.05.2005, KP
