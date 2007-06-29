@@ -195,13 +195,13 @@ vtkExtTIFFReader::~vtkExtTIFFReader()
 void vtkExtTIFFReader::ExecuteInformation()
 {    
   this->InitializeColors();
-  printf("vtkExtTIFFReader::ExecuteInformation()\n");
+  //printf("vtkExtTIFFReader::ExecuteInformation()\n");
   this->ComputeInternalFileName(this->DataExtent[4]);
   if (this->InternalFileName == NULL)
     {
     return;
     }
-  printf("Internal name=%s\n",this->InternalFileName);
+  //printf("Internal name=%s\n",this->InternalFileName);
   if ( !this->InternalImage->Open(this->InternalFileName) )
     {  
     vtkErrorMacro("Unable to open file " <<this->InternalFileName );
@@ -221,7 +221,7 @@ void vtkExtTIFFReader::ExecuteInformation()
   this->DataExtent[1] = this->GetInternalImage()->Width - 1;
   this->DataExtent[2] = 0;
   this->DataExtent[3] = this->GetInternalImage()->Height - 1;
-  printf("Computing Internal File Name for dataextent %d,%d,%d,%d,%d,%d\n", DataExtent[0], DataExtent[1], DataExtent[2], DataExtent[3], DataExtent[4], DataExtent[5]);
+  //printf("Computing Internal File Name for dataextent %d,%d,%d,%d,%d,%d\n", DataExtent[0], DataExtent[1], DataExtent[2], DataExtent[3], DataExtent[4], DataExtent[5]);
 
   if(this->GetInternalImage()->BitsPerSample==16) {
     this->SetDataScalarTypeToUnsignedShort();
@@ -252,7 +252,7 @@ void vtkExtTIFFReader::ExecuteInformation()
         }
     }
     
-  printf("vtkImageReader2::ExecuteInformation()\n");
+  //printf("vtkImageReader2::ExecuteInformation()\n");
 
   this->vtkImageReader2::ExecuteInformation();
 
@@ -270,17 +270,17 @@ void vtkExtTIFFReaderUpdate2(vtkExtTIFFReader *self, OT *outPtr,
     {
     return;
     }
-    printf("Initializing colors\n");
+    //printf("Initializing colors\n");
   self->InitializeColors();
     
-printf("Reading image...\n");
+//printf("Reading image...\n");
   self->ReadImageInternal(self->GetInternalImage()->Image, 
                           outPtr, outExt, sizeof(OT) );
 
   // close the file
-    printf("Closing the file\n");
+    //printf("Closing the file\n");
   self->GetInternalImage()->Clean();
-    printf("Done\n");
+    //printf("Done\n");
 }
 
 //----------------------------------------------------------------------------
@@ -325,16 +325,16 @@ void vtkExtTIFFReaderUpdate(vtkExtTIFFReader *self, vtkImageData *data, OT *outP
 void vtkExtTIFFReader::ExecuteData(vtkDataObject *output)
 {
     
-  printf("Allocating output data\n");
+  //printf("Allocating output data\n");
   vtkImageData *data = this->AllocateOutputData(output);
   int ext[6];
   int dims[3];
   data->GetDimensions(dims);
-  printf("Dims=%d,%d,%d\n",dims[0],dims[1],dims[2]);
+  //printf("Dims=%d,%d,%d\n",dims[0],dims[1],dims[2]);
   
   output->GetWholeExtent(ext);
-  printf("Ext=%d,%d,%d,%d,%d,%d\n",PRT_EXT(ext));
-  printf("Data type=%s\n",data->GetScalarTypeAsString());
+  //printf("Ext=%d,%d,%d,%d,%d,%d\n",PRT_EXT(ext));
+  //printf("Data type=%s\n",data->GetScalarTypeAsString());
   if (this->InternalFileName == NULL)
     {
     vtkErrorMacro("Either a FileName or FilePrefix must be specified.");
@@ -382,7 +382,7 @@ int vtkExtTIFFReader::RequestUpdateExtent (
   if(uext[3] < ext[3] ) uext[3] = ext[3];
   if(uext[0] > ext[0]) uext[0] = ext[0];
   if(uext[2] > ext[2]) uext[2] = ext[2];
-  printf("Setting uextent to %d,%d,%d,%d,%d,%d\n",PRT_EXT(uext));
+  //printf("Setting uextent to %d,%d,%d,%d,%d,%d\n",PRT_EXT(uext));
   outInfo->Set(vtkStreamingDemandDrivenPipeline::UPDATE_EXTENT(), uext,6);
   //inInfo->Set(vtkStreamingDemandDrivenPipeline::UPDATE_EXTENT(), uext,6);
 
@@ -524,10 +524,10 @@ void vtkExtTIFFReader::ReadImageInternal( void* vtkNotUsed(in), void* outPtr,
 
     int width  = this->GetInternalImage()->Width;
     int height = this->GetInternalImage()->Height;
-    printf("width=%d, height=%d, size=%d\n",width,height,size);
+    //printf("width=%d, height=%d, size=%d\n",width,height,size);
     this->InternalExtents = outExt;
     unsigned int isize = TIFFScanlineSize(this->GetInternalImage()->Image);
-      printf("isize=%d, height=%d\n",isize,height);
+      //printf("isize=%d, height=%d\n",isize,height);
     unsigned int cc;
     int row, inc = 1;
     tdata_t buf = _TIFFmalloc(isize);      
@@ -542,11 +542,11 @@ void vtkExtTIFFReader::ReadImageInternal( void* vtkNotUsed(in), void* outPtr,
             
     if (InternalImage->PlanarConfig == PLANARCONFIG_CONTIG)
       {
-          printf("Contig planes\n");
+          //printf("Contig planes\n");
           image = (unsigned short*)outPtr;
       for ( row = 0; row < (int)height; row ++ )
         {
-                printf("Reading scanline %d\n",row);
+                //printf("Reading scanline %d\n",row);
         if (TIFFReadScanline(InternalImage->Image, buf, row, 0) <= 0)
           {
         vtkErrorMacro( << "Problem reading the row: " << row <<"of file"<<GetInternalFileName());
@@ -556,7 +556,7 @@ void vtkExtTIFFReader::ReadImageInternal( void* vtkNotUsed(in), void* outPtr,
           //image = reinterpret_cast<unsigned short*>(outPtr) + width * inc * (height - (row + 1));
 //          image = reinterpret_cast<unsigned short*>(outPtr) + row * width * inc;
 
-        printf("Copying %d doublebytes, spp=%d\n",isize,InternalImage->SamplesPerPixel);
+        //printf("Copying %d doublebytes, spp=%d\n",isize,InternalImage->SamplesPerPixel);
           
           for(cc = 0; cc < isize; cc += InternalImage->SamplesPerPixel) {
                     //image[cc]=((unsigned short*)buf)[cc];
@@ -574,7 +574,7 @@ void vtkExtTIFFReader::ReadImageInternal( void* vtkNotUsed(in), void* outPtr,
           }*/
           
         }
-        printf("Copied %d doublebytes\n",tot);
+        //printf("Copied %d doublebytes\n",tot);
           _TIFFfree(buf);
         return;
       }

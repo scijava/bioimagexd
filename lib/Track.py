@@ -155,7 +155,6 @@ class TrackReader:
         ctrack=Track()
         
         currtrack=-1
-        print "Reading..."
         
         for track, objval,timepoint, x,y,z in reader:
             try:
@@ -176,6 +175,6 @@ class TrackReader:
                 currtrack = tracknum
             ctrack.addTrackPoint(timepoint, objval, (x,y,z))
             
-        if ctrack and not tracks:
+        if ctrack not in tracks:
             tracks.append(ctrack)
         return tracks
