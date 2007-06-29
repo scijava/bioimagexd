@@ -85,15 +85,16 @@ class VolumeModule(VisualizationModule):
         if self.haveVolpro:
             self.modes.append("Minimum intensity projection")
         self.colorTransferFunction = None
-        otf, otf2 = vtk.vtkPiecewiseFunction(), vtk.vtkPiecewiseFunction()
+        self.otf, self.otf2 = vtk.vtkPiecewiseFunction(), vtk.vtkPiecewiseFunction()
        
+        otf2 = self.otf2
+        otf = self.otf
         otf2.AddPoint(0, 0.0)
         otf2.AddPoint(255, 1.0)
         otf.AddPoint(0, 0.0)
         otf.AddPoint(255, 0.2)
         
-        self.otfs = [otf,otf,otf,otf2,otf]
-        
+        self.otfs = [self.otf,self.otf,self.otf,self.otf2,self.otf]        
         
         self.volumeProperty =  vtk.vtkVolumeProperty()
         self.volume = vtk.vtkVolume()
@@ -123,8 +124,9 @@ class VolumeModule(VisualizationModule):
                
         self.parent.getRenderer().AddVolume(self.volume)
         self.setShading(0)
-
-
+        
+        self.vtkObjects = ["otf", "otf2"]
+        
         #self.updateRendering()
         
         
@@ -158,6 +160,8 @@ class VolumeModule(VisualizationModule):
         Created: 18.03.2007, KP
         Description: Set the GUI OTF to it's correct value
         """
+        self.otfs = [self.otf,self.otf,self.otf,self.otf2,self.otf]
+        
         messenger.send(self,"set_Palette_otf",self.otfs[self.parameters["Method"]])
 
     
@@ -214,7 +218,7 @@ class VolumeModule(VisualizationModule):
         if parameter == "Palette":
             return self.colorTransferFunction
         
-    def __getstate__(self):
+    def OLD__getstate__(self):
         """
         Created: 02.08.2005, KP
         Description: A getstate method that saves the lights
@@ -235,7 +239,7 @@ class VolumeModule(VisualizationModule):
         odict.update({"method":self.method})
         return odict
         
-    def __set_pure_state__(self,state):
+    def OLD__set_pure_state__(self,state):
         """
         Created: 02.08.2005, KP
         Description: Set the state of the light
@@ -349,6 +353,7 @@ class VolumeModule(VisualizationModule):
         Created: 28.04.2005, KP
         Description: Set the Rendering method used
         """             
+        self.parameters["QualityValue"] = 0
         if not self.initDone:
             return
         method = self.parameters["Method"]
@@ -468,16 +473,6 @@ class VolumeModule(VisualizationModule):
         self.wxrenwin.Render()        
         
     
-class VolumeConfiguration(ModuleConfiguration):
-    def __init__(self,parent,visualizer):
-        """
-        Created: 28.04.2005, KP
-        Description: Initialization
-        """     
-        
-        ModuleConfiguration.__init__(self,parent,"Volume rendering")
-        self.panel=VolumeConfigurationPanel(self,visualizer)
-        
 
 class VolumeConfigurationPanel(ModuleConfigurationPanel):
     def __init__(self,parent,visualizer,name="Volume rendering",**kws):
@@ -540,6 +535,8 @@ but using linear interpolation yields a better rendering quality."""
 
         
             messenger.send(module,"set_Palette_ctf",ctf)
+
+        self.module.sendUpdateGUI()            
         
     def onApply(self,event):
         """

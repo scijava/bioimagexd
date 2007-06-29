@@ -245,15 +245,6 @@ class WarpScalarModule(VisualizationModule):
         pass
 
 
-class WarpScalarConfiguration(ModuleConfiguration):
-    def __init__(self,parent,visualizer):
-        """
-        Created: 29.05.2006, KP
-        Description: Initialization
-        """     
-        ModuleConfiguration.__init__(self,parent,"WarpScalar")
-        self.panel=WarpScalarConfigurationPanel(self,visualizer)
-
 class WarpScalarConfigurationPanel(ModuleConfigurationPanel):
     def __init__(self,parent,visualizer,name="WarpScalar",**kws):
         """

@@ -218,17 +218,6 @@ class ArbitrarySliceModule(VisualizationModule):
                 property.ShadeOn()
             else:
                 property.ShadeOff()        
-
-
-class ArbitrarySliceConfiguration(ModuleConfiguration):
-    def __init__(self,parent,visualizer):
-        """
-        Method: __init__(parent)
-        Created: 04.05.2005, KP
-        Description: Initialization
-        """     
-        ModuleConfiguration.__init__(self,parent,"Arbitrary Slices")
-        self.panel=ArbitrarySliceConfigurationPanel(self,visualizer)
         
 class ArbitrarySliceConfigurationPanel(ModuleConfigurationPanel):
     def __init__(self,parent,visualizer,name="Arbitrary Slices",**kws):

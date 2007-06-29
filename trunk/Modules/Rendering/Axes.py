@@ -139,14 +139,6 @@ class AxesModule(VisualizationModule):
         pass
         
 
-class AxesConfiguration(ModuleConfiguration):
-    def __init__(self,parent,visualizer):
-        """
-        Created: 04.05.2005, KP
-        Description: Initialization
-        """     
-        ModuleConfiguration.__init__(self,parent,"Axes")
-        self.panel=AxesConfigurationPanel(self,visualizer)
         
 class AxesConfigurationPanel(ModuleConfigurationPanel):
     def __init__(self,parent,visualizer,name="Axes",**kws):

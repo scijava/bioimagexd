@@ -306,14 +306,6 @@ class VisualizeTrackModule(VisualizationModule):
         pass
 
 
-class VisualizeTrackConfiguration(ModuleConfiguration):
-    def __init__(self,parent,visualizer):
-        """
-        Created: 29.05.2006, KP
-        Description: Initialization
-        """     
-        ModuleConfiguration.__init__(self,parent,"VisualizeTrack")
-        self.panel=VisualizeTrackConfigurationPanel(self,visualizer)
 
 class VisualizeTrackConfigurationPanel(ModuleConfigurationPanel):
     def __init__(self,parent,visualizer,name="VisualizeTrack",**kws):

@@ -271,14 +271,6 @@ class CutBoxModule(VisualizationModule):
             self.boxWidget.Off()
         
 
-class CutBoxConfiguration(ModuleConfiguration):
-    def __init__(self,parent,visualizer):
-        """
-        Created: 22.04.2007, KP
-        Description: Initialization
-        """     
-        ModuleConfiguration.__init__(self,parent,"CutBox")
-        self.panel=CutBoxConfigurationPanel(self,visualizer)
 
 class CutBoxConfigurationPanel(ModuleConfigurationPanel):
     def __init__(self,parent,visualizer,name="CutBox",**kws):

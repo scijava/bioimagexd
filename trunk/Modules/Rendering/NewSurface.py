@@ -350,15 +350,6 @@ class SurfaceModule(VisualizationModule):
         VisualizationModule.__set_pure_state__(self,state)        
 
 
-class SurfaceConfiguration(ModuleConfiguration):
-    def __init__(self,parent,visualizer):
-        """
-        Created: 28.04.2005, KP
-        Description: Initialization
-        """     
-        ModuleConfiguration.__init__(self,parent,"Surface rendering")
-        self.panel=SurfaceConfigurationPanel(self,visualizer)
-        self.method=0
 
 class SurfaceConfigurationPanel(ModuleConfigurationPanel):
     def __init__(self,parent,visualizer,name="Surface rendering",**kws):

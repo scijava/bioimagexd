@@ -220,14 +220,6 @@ class AngleModule(VisualizationModule):
         pass
 
 
-class AngleConfiguration(ModuleConfiguration):
-    def __init__(self,parent,visualizer):
-        """
-        Created: 04.05.2005, KP
-        Description: Initialization
-        """     
-        ModuleConfiguration.__init__(self,parent,"Angle")
-        self.panel=angleConfigurationPanel(self,visualizer)
 
 class AngleConfigurationPanel(ModuleConfigurationPanel):
     def __init__(self,parent,visualizer,name="Angle",**kws):
