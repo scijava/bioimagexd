@@ -58,6 +58,7 @@ import SettingsWindow
 import ImportDialog
 import ExportDialog
 import ScriptEditor
+import BugDialog
 import UndoListBox
 
 import RenderingInterface
@@ -103,7 +104,7 @@ class MainWindow(wx.Frame):
         
         Command.mainWindow = self
         self.splash = splash
-        
+        bxd.recorder = self.recorder = Command.ScriptRecorder()
         size=conf.getConfigItem("WindowSize","Sizes")
         if size:
             size=eval(size)
@@ -312,6 +313,11 @@ class MainWindow(wx.Frame):
                 self.loadFiles(filelist, noWarn = 1)
                 
         
+        reportCrash = conf.getConfigItem("ReportCrash","General")
+        if reportCrash and type(reportCrash) == type(""):
+            reportCrash = eval(reportCrash)
+        if reportCrash and bxd.uncleanLog:
+            self.reportCrash()
         #self.Bind(wx.EVT_WINDOW_DESTROY, self.Cleanup)
 
         
@@ -323,7 +329,22 @@ class MainWindow(wx.Frame):
         #self.filehistory.AddFilesToMenu()
 
 
-
+    def reportCrash(self):
+        """
+        Created: 25.06.2007, KP
+        Description: send a bug report reporting the latest crash
+        """
+        dlg = BugDialog.BugDialog(self, crashMode = 1)
+        dlg.crashModeOn(bxd.uncleanLog)
+        conf = Configuration.getConfiguration()
+        
+        try:
+            data = open(bxd.uncleanLog).read()
+        except:
+            return
+        dlg.setContent("User actions resulted a crash",data)
+        dlg.ShowModal()
+        
     def Cleanup(self, *args):
         """
         Created: 29.1.2007, KP
@@ -982,6 +1003,8 @@ class MainWindow(wx.Frame):
 
         mgr.addMenuItem("help",wx.ID_ABOUT,"&About","About BioImageXD",self.onMenuAbout)
         mgr.addSeparator("help")
+        mgr.addMenuItem("help",MenuManager.ID_REPORT_BUG,"&Report bug","Send a bug report",self.onMenuBugReport)
+        mgr.addSeparator("help")
         mgr.addMenuItem("help",MenuManager.ID_CONTEXT_HELP,"&Context help\tF1","Show help on current task or visualization mode",self.onToolbarHelp)        
         mgr.addMenuItem("help",wx.ID_HELP,"&Help","Online Help",self.onMenuHelp)        
     
@@ -1043,6 +1066,15 @@ class MainWindow(wx.Frame):
             self.commandHistory.update()
             self.commandHistory.Show()
             
+    def onMenuBugReport(self, evt):
+        """
+        Created: 25.06.2007, KP
+        Description: Show a dialog for sending a bug report to the developers
+        """
+        dlg = BugDialog.BugDialog(self)
+        dlg.ShowModal()
+        dlg.Destroy()
+            
     def onMenuImmediateRender(self,evt):
         """
         Created: 14.02.2006, KP
@@ -1073,16 +1105,22 @@ class MainWindow(wx.Frame):
         
     def onMenuHideInfo(self,evt):
         """
-        Method: onMenuHideInfo
         Created: 21.09.2005, KP
         Description: Hide info windows, giving visualizer maximum screen estate
         """        
-        self.GetToolBar().ToggleTool(MenuManager.ID_SHOW_TREE,0)
-        self.onMenuShowTree(None,0)
-        self.menuManager.check(MenuManager.ID_VIEW_INFO,0)
-        self.infoWin.SetDefaultSize((0,0))
-        self.OnSize(None)
-        self.visualizer.OnSize(None)        
+        gts = self.GetToolBar().GetToolState
+        status = not (gts(MenuManager.ID_SHOW_TREE) or self.menuManager.isChecked(MenuManager.ID_VIEW_INFO))
+
+        self.GetToolBar().ToggleTool(MenuManager.ID_SHOW_TREE, status)
+        self.menuManager.check(MenuManager.ID_VIEW_INFO, status)
+        if not status:
+            self.infoWin.SetDefaultSize((0,0))
+        else:
+            self.infoWin.SetDefaultSize(self.infoWin.origSize)
+
+        self.onMenuShowTree(status)
+#        self.OnSize(None)
+#        self.visualizer.OnSize(None)        
         
     def onMenuResampleData(self,evt):
         """
@@ -1896,6 +1934,7 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
         self.visualizer.closeVisualizer()
         conf = Configuration.getConfiguration()
         conf.setConfigItem("FileList","General","[]")
+        conf.setConfigItem("CleanExit","General","True")
         history=[]
         for i in range(0,self.filehistory.GetCount()):
             filepath = self.filehistory.GetHistoryFile(i)
