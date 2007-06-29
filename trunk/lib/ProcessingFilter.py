@@ -98,7 +98,7 @@ class ProcessingFilter(GUIBuilder.GUIBuilderBase):
         Created: 21.07.2006, KP
         Description: Set the given parameter to given value
         """   
-        GUIBuilder.GUIBuilder.setParameter(self, parameter, value)
+        GUIBuilder.GUIBuilderBase.setParameter(self, parameter, value)
         # Send a message that will update the GUI
         messenger.send(self,"set_%s"%parameter,value)
 
@@ -117,7 +117,7 @@ class ProcessingFilter(GUIBuilder.GUIBuilderBase):
                 func="getFilter('%s', %d)"%(self.name,i)        
             n = bxd.mainWindow.currentTaskWindowName
   
-            method="bxd.mainWindow.tasks['%s'].%s.%s"%(n,func)
+            method="bxd.mainWindow.tasks['%s'].%s"%(n,func)
             self.recordParameterChange(parameter, value, method)
         #print "\n\nSetting ",parameter,"to",value
         GUIBuilder.GUIBuilderBase.setParameter(self, parameter, value)
