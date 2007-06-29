@@ -114,7 +114,7 @@ class GalleryConfigurationPanel(scrolled.ScrolledPanel):
         Description: Configure whether to show timepoints or slices
         """       
         pos=self.radiobox.GetSelection()
-        print "Showing timepoints: %s,zslider=%d"%(not not pos,self.zslider.GetValue())
+#        print "Showing timepoints: %s,zslider=%d"%(not not pos,self.zslider.GetValue())
         self.mode.galleryPanel.setShowTimepoints(pos,self.zslider.GetValue())
 
 
