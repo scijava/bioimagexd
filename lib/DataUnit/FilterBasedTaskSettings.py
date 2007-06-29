@@ -93,7 +93,6 @@ class FilterBasedTaskSettings(DataUnitSettings):
             for key in keys:
                 if not parser.has_section(fname):
                     parser.add_section(fname)
-                print "writing ",key,"to",fname
                 parser.set(fname,key,currfilter.getParameter(key))
 
     def deserialize(self,name,value):
@@ -114,7 +113,6 @@ class FilterBasedTaskSettings(DataUnitSettings):
                     flist.append(fclass)
                 except:
                     pass
-            print "\n\n\nDeserialized flist=",flist
             return flist
                 
         else:
@@ -128,12 +126,10 @@ class FilterBasedTaskSettings(DataUnitSettings):
                      that can be written to disk.
         """
         if name=="FilterList":
-            print "\n\nSerializing filterlist",value
             filterlist = value
             names=[]
             for filter in filterlist:
                 names.append(filter.getName())
-            print "Result",str(names)
             return str(names)
         else:
             return DataUnitSettings.serialize(self,name,value)
