@@ -119,6 +119,7 @@ wantAlphaChannel=1
 preferRGB = 1
 wantWholeDataset = 0
 inIO = 0
+uncleanLog = None
 
 WHOLE_DATASET           = -1
 WHOLE_DATASET_NO_ALPHA  = -2
