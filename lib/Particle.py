@@ -132,6 +132,8 @@ class ParticleReader:
                 self.cogs.append((int(cog[0]),int(cog[1]),int(cog[2])))
                 self.volumes.append((size,sizemicro))
                 self.avgints.append(avgint)
+        
+        if curr: ret.append(curr)
         return ret
 
 class Particle:
