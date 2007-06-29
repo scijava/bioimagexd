@@ -56,38 +56,19 @@ class ScriptEditor(editor.Editor):
     """ 
     def __init__(self,parent):
         """
-        Method: __init__
         Created: 13.02.2006, KP
         Description: Initialize the editor component of script editor
         """    
         editor.Editor.__init__(self,parent,-1,style=wx.SUNKEN_BORDER)
-        self.imports=[]
-        messenger.connect(None,"record_code",self.onRecordCode)
-        self.code=[]
+        messenger.connect(None,"record_code",self.onUpdateText)
     
-    def onRecordCode(self,obj,evt,code, imports):
+    def onUpdateText(self,obj,evt,code, imports):
         """
-        Method: onRecordCode()
         Created: 13.02.2006, KP
-        Description: Record a piece of code to the script
+        Description: Update the gui
         """     
-        text=self.code
-        for i in imports:
-            if i not in self.imports:
-                self.imports.append(i.strip())
-                
-        lines=code.split("\n")
-        text+=lines
-        self.code=text
-        imports=[]
-        for i in self.imports:
-            if type(i)==types.TupleType:
-                m,f=i
-                imports.append("from %s import %s"%(m,f))
-            else:
-                imports.append("import %s"%i)
-        
-        self.SetText(imports+[]+text)
+        if bxd.record:
+            self.SetText(bxd.recorder.getText())
         
         
     def setScript(self,lines,imports):
@@ -115,7 +96,6 @@ class ScriptEditorFrame(wx.Frame):
     """ 
     def __init__(self,parent):
         """
-        Method: __init__
         Created: 13.02.2006, KP
         Description: Initialize the script editor frame
         """    
@@ -186,6 +166,7 @@ class ScriptEditorFrame(wx.Frame):
         """
         filename=Dialogs.askSaveAsFileName(self,"Save script file","script.bxs",self.wc)
         self.writeScript(filename)
+        
     def writeScript(self, filename):
         """
         Created: 15.08.2006, KP

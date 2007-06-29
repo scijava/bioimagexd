@@ -40,7 +40,7 @@ import Logging
 import inspect
 import messenger
 import scripting as bxd
-
+import types
 MENU_CMD="Menu command"
 OPEN_CMD="Load file"
 TASK_CMD="Load task"
@@ -56,8 +56,62 @@ def functionize(code,imports):
         code="\n".join(lines)
 
         return code
+        
+        
+class ScriptRecorder:
+    """
 
-
+    Created: 13.02.2006, KP
+    Description: A script recorder class
+    """ 
+    def __init__(self):
+        """
+        Created: 13.02.2006, KP
+        Description: Initialize the editor component of script editor
+        """    
+        self.imports=[]
+        messenger.connect(None,"record_code",self.onRecordCode)
+        self.code=[]
+        
+    def getText(self):
+        """
+        Created: 25.06.2007, KP
+        Description: return the recorded output
+        """
+        imports=[]
+        for i in self.imports:
+            if type(i)==types.TupleType:
+                m,f=i
+                imports.append("from %s import %s"%(m,f))
+            else:
+                imports.append("import %s"%i)
+        
+        return imports+[]+self.code
+    
+    def onRecordCode(self,obj,evt,code, imports):
+        """
+        Created: 13.02.2006, KP
+        Description: Record a piece of code to the script
+        """     
+        text=self.code
+        for i in imports:
+            if i not in self.imports:
+                self.imports.append(i.strip())
+                
+        for i in imports:
+            if type(i)==types.TupleType:
+                m,f = i
+                Logging.outfile.write(">>> from %s import %s\n"%(m,f))
+            else:
+                Logging.outfile.write(">>> import %s\n"%i)
+    
+                
+        lines=code.split("\n")
+        text+=lines
+        for line in lines:
+            Logging.outfile.write(">>> %s\n"%line)
+        self.code=text
+        
 class Command:
     """
     Created: 13.02.2006, KP
@@ -117,12 +171,11 @@ class Command:
         Created: 13.02.2006, KP
         Description: Execute the action associated with this command
         """ 
-        if bxd.record:
-            if not self.do_code:
-                code = inspect.getsource(self.undo)
-            else:
-                code=self.do_code
-            messenger.send(None,"record_code",code,self.imports)
+        if not self.do_code:
+            code = inspect.getsource(self.undo)
+        else:
+            code=self.do_code
+        messenger.send(None,"record_code",code,self.imports)
         
         if not recordOnly:
             self.do(self)
@@ -139,12 +192,11 @@ class Command:
         self.undocmd(self)
         self._undoed=1
         messenger.send(None,"execute_command",self,1)
-        if bxd.record:
-            if not self.undo_code:
-                code = inspect.getsource(self.undo)
-            else:
-                code=self.undo_code
-            messenger.send(None,"record_code",code,self.imports)
+        if not self.undo_code:
+            code = inspect.getsource(self.undo)
+        else:
+            code=self.undo_code
+        messenger.send(None,"record_code",code,self.imports)
             
     def getCategory(self):
         return self.category
