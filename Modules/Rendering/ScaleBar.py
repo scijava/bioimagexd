@@ -205,15 +205,6 @@ class ScaleBarModule(VisualizationModule):
         self.renderer.AddActor2D(self.textActor)
         self.wxrenwin.Render()
         
-
-class ScaleBarConfiguration(ModuleConfiguration):
-    def __init__(self,parent,visualizer):
-        """
-        Created: 04.05.2005, KP
-        Description: Initialization
-        """     
-        ModuleConfiguration.__init__(self,parent,"Scale bar")
-        self.panel=ScaleBarConfigurationPanel(self,visualizer)
         
 class ScaleBarConfigurationPanel(ModuleConfigurationPanel):
     def __init__(self,parent,visualizer,name="Scale bar",**kws):

@@ -300,14 +300,6 @@ class ClippingPlaneModule(VisualizationModule):
         pass
 
 
-class ClippingPlaneConfiguration(ModuleConfiguration):
-    def __init__(self,parent,visualizer):
-        """
-        Created: 04.05.2005, KP
-        Description: Initialization
-        """     
-        ModuleConfiguration.__init__(self,parent,"Clipping plane")
-        self.panel=ClippingPlaneConfigurationPanel(self,visualizer)
 
 class ClippingPlaneConfigurationPanel(ModuleConfigurationPanel):
     def __init__(self,parent,visualizer,name="Clipping plane",**kws):

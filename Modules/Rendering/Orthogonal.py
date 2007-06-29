@@ -331,14 +331,6 @@ class OrthogonalPlaneModule(VisualizationModule):
 
 
 
-class OrthogonalPlaneConfiguration(ModuleConfiguration):
-    def __init__(self,parent,visualizer):
-        """
-        Created: 04.05.2005, KP
-        Description: Initialization
-        """     
-        ModuleConfiguration.__init__(self,parent,"Orthogonal Slices")
-        self.panel=OrthogonalPlaneConfigurationPanel(self,visualizer)
 
 class OrthogonalPlaneConfigurationPanel(ModuleConfigurationPanel):
     def __init__(self,parent,visualizer,name="Orthogonal Slices",**kws):

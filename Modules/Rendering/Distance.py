@@ -217,14 +217,6 @@ class DistanceModule(VisualizationModule):
         pass
 
 
-class DistanceConfiguration(ModuleConfiguration):
-    def __init__(self,parent,visualizer):
-        """
-        Created: 04.05.2005, KP
-        Description: Initialization
-        """     
-        ModuleConfiguration.__init__(self,parent,"Distance")
-        self.panel=DistanceConfigurationPanel(self,visualizer)
 
 class DistanceConfigurationPanel(ModuleConfigurationPanel):
     def __init__(self,parent,visualizer,name="Distance",**kws):

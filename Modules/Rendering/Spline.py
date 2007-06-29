@@ -187,16 +187,6 @@ class SplineModule(VisualizationModule):
         """          
         pass
         
-class SplineConfiguration(ModuleConfiguration):
-    def __init__(self,parent,visualizer):
-        """
-        Method: __init__(parent)
-        Created: 04.05.2005, KP
-        Description: Initialization
-        """     
-        ModuleConfiguration.__init__(self,parent,"Camera Path")
-        self.panel=SplineConfigurationPanel(self,visualizer)
-
 class SplineConfigurationPanel(ModuleConfigurationPanel):
     def __init__(self,parent,visualizer,name="Camera Path",**kws):
         """
