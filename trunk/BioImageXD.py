@@ -32,6 +32,7 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 import site
 import sys
+import StringIO
 
 site.addsitedir("/usr/local/lib/python2.4/site-packages/")
 #site.addsitedir("/Library/Frameworks/Python.framework/Versions/2.5/lib/InsightToolkit/WrapITK/Python")
@@ -102,7 +103,7 @@ import Configuration
 # configuration file, or sensible defaults
 
 conffile = os.path.join(bxd.get_config_dir(),"BioImageXD.ini")
-cfg=Configuration.Configuration(conffile)
+conf=Configuration.Configuration(conffile)
 
 # We need to import VTK here so that it is imported before  python.
 # if wxpython gets imported before vtk, the vtkExtTIFFReader will not read the olympus files
@@ -251,6 +252,10 @@ if __name__=='__main__':
         dataFiles.extend(args)
         # If the main application is frozen, then we redirect logging
         # to  a log file
+        
+        captureOutput = StringIO.StringIO()
+        bxd.logFile = captureOutput
+        
         if toFile or bxd.main_is_frozen():
             import time
             if not logfile:
@@ -261,16 +266,30 @@ if __name__=='__main__':
                     os.mkdir(logdir)
                 logfile=os.path.join(logdir,logfile)
             f1=open(logfile,"w")
+            
             if logdir:
                 logfile2=os.path.join(logdir,"latest.log")
                 f2=open(logfile2,"w")
-                f = Logging.Tee(f1,f2)
+                f = Logging.Tee(f1,f2, captureOutput)
+            clean = eval(conf.getConfigItem("CleanExit","General"))
+            if not clean:
+                bxd.uncleanLog = conf.getConfigItem("LastLogFile","General")
+            else:
+                bxd.uncleanLog = None
+
+            conf.setConfigItem("LastLogFile","General",logfile)
             import atexit
             atexit.register(f.flush)
             sys.stdout = f 
             sys.stderr = f
             Logging.outfile = f
             Logging.enableFull()
+        else:
+            f = Logging.Tee(sys.stdout, captureOutput)
+            sys.stdout = f
+            sys.stderr = f
+            Logging.outfile = f
+           
         
         if doInterpret:
             import pstats
@@ -278,6 +297,8 @@ if __name__=='__main__':
             p.sort_stats('time', 'cum').print_stats(.5, 'init')
             sys.exit(0)
         
+        conf.setConfigItem("CleanExit","General","False")
+        conf.writeSettings()
         app=LSMApplication(0)    
         toRemove=[]
         for file in dataFiles:
