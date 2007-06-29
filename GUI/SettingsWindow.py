@@ -52,9 +52,12 @@ class GeneralSettings(wx.Panel):
         showTips=conf.getConfigItem("ShowTip","General")
         askOnQuit=conf.getConfigItem("AskOnQuit","General")
         restoreFiles=conf.getConfigItem("RestoreFiles","General")
+        reportCrash = conf.getConfigItem("ReportCrash","General")
         #print "showTip=",showTip
         if restoreFiles and type(restoreFiles)==type(""):
             restoreFiles = eval(restoreFiles)
+        if reportCrash and type(reportCrash)==type(""):
+            reportCrash = eval(reportCrash)
         if showTips and type(showTips)==type(""):
             showTips = eval(showTips)
         if askOnQuit and type(askOnQuit)==type(""):
@@ -82,8 +85,14 @@ class GeneralSettings(wx.Panel):
         
         self.restoreCheckbox = wx.CheckBox(self,-1,"Restore files on abnormal shutdown")
         self.restoreCheckbox.SetValue(restoreFiles)
-        
         self.tipBoxSizer.Add(self.restoreCheckbox)
+        
+        
+        self.reportCrashCheckbox = wx.CheckBox(self,-1,"Send bug report after abnormal program termination")
+        self.reportCrashCheckbox.SetValue(reportCrash)
+        self.tipBoxSizer.Add(self.reportCrashCheckbox)
+       
+
         
         self.sizer.Add(self.tipBoxSizer,(0,0))
 
@@ -116,8 +125,10 @@ class GeneralSettings(wx.Panel):
         conf.setConfigItem("ShowTip","General",str(showTip))
         
         restoreFiles = self.restoreCheckbox.GetValue()
-        print "Setting restoreFIles to ",str(restoreFiles)
+        reportCrash= self.reportCrashCheckbox.GetValue()
+
         conf.setConfigItem("RestoreFiles","General",str(restoreFiles))
+        conf.setConfigItem("ReportCrash","General",str(reportCrash))
 
         askOnQuit=self.askOnQuitCheckbox.GetValue()
         conf.setConfigItem("AskOnQuit","General",str(askOnQuit))

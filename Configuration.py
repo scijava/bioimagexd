@@ -67,11 +67,17 @@ class Configuration:
         self.setConfigItem("AskOnQuit","General","True",0)
         self.setConfigItem("TipNumber","General",0,0)
         self.setConfigItem("RestoreFiles","General","True",0)
+        self.setConfigItem("ReportCrash","General","True",0)
+        self.setConfigItem("CleanExit","General","True",0)
+        
         self.readConfigItem("ShowTip","General")
         self.readConfigItem("RestoreFiles","General")
         self.readConfigItem("TipNumber","General")
         self.readConfigItem("AskOnQuit","General")
         self.readConfigItem("RescaleOnLoading","Performance")
+        self.readConfigItem("RestoreFiles","General")
+        self.readConfigItem("ReportCrash","General")
+        self.readConfigItem("CleanExit","General")
         
         self.readConfigItem("BeginnerColor","General")
         self.readConfigItem("IntermediateColor","General")
