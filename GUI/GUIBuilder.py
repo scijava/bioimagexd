@@ -251,6 +251,7 @@ class GUIBuilderBase:
             undo_cmd=""
         cmd=Command.Command(Command.PARAM_CMD,None,None,do_cmd,undo_cmd,desc="Change parameter '%s' of filter '%s'"%(parameter,self.name))
         cmd.run(recordOnly = 1)                
+
     def setParameter(self,parameter,value):
         """
         Created: 13.04.2006, KP
@@ -443,25 +444,23 @@ class GUIBuilder(wx.Panel):
                                 d = currentFilter.getDesc(i)
                                 itemToDesc[i]=d
                                 choices.append(d)
-                                f=lambda obj,evt,arg, box, i=i, s=self: s.onSetRadioBox(box,i,arg)
-                                funcs.append(("set_%s"%i,f))
+                                setRadioFunc=lambda obj,evt,arg, box, i=i, s=self: s.onSetRadioBox(box,i,arg)
+                                funcs.append(("set_%s"%i,setRadioFunc))
                                 longDesc = currentFilter.getLongDesc(i)
-                                
-
-                            
+                                                            
                             box = wx.RadioBox(self,-1,sboxname,choices=choices,
                             majorDimension = items[n+1][1],style=majordim)
                             if longDesc:
                                     box.SetToolTip(wx.ToolTip(s))
 
                             for funcname,f in funcs:
-                                f2=lambda obj,evt,arg,box=box:f(obj,evt,arg,box)
-                                messenger.connect(currentFilter,funcname,f2)
+                                radioBoxF=lambda obj,evt,arg,box=box:f(obj,evt,arg,box)
+                                messenger.connect(currentFilter,funcname,radioBoxF)
                             box.itemToDesc=itemToDesc
-                            func=lambda evt,its=item,f=currentFilter:self.onSelectRadioBox(evt,its,f)
+                            onSelectRadioBox=lambda evt,its=item,f=currentFilter:self.onSelectRadioBox(evt,its,f)
                                 
                                 
-                            box.Bind(wx.EVT_RADIOBOX,func)
+                            box.Bind(wx.EVT_RADIOBOX,onSelectRadioBox)
                             sboxname=""
                             itemsizer.Add(box,(0,0))
                         elif itemType == SLICE:
@@ -491,20 +490,19 @@ class GUIBuilder(wx.Panel):
                             if lvl:
                                 if text: lbl.SetBackgroundColour(lvl)
                                 bg.SetBackgroundColour(lvl)
-                            func = lambda evt, its=item, f=currentFilter:self.onSetSliderValue(evt,its,f)
-                            slider.Bind(wx.EVT_SCROLL,func)
-                            f=lambda obj,evt,arg, slider=slider, i=itemName, s=self: s.onSetSlice(slider,i,arg)
+                            onSliderScroll = lambda evt, its=item, f=currentFilter:self.onSetSliderValue(evt,its,f)
+                            slider.Bind(wx.EVT_SCROLL,onSliderScroll)
+                            setSliderFunc=lambda obj,evt,arg, slider=slider, i=itemName, s=self: s.onSetSlice(slider,i,arg)
                                 
-
-                            messenger.connect(currentFilter,"set_%s"%itemName,f)
+                            messenger.connect(currentFilter,"set_%s"%itemName,setSliderFunc)
 
                             def updateRange(currentFilter,itemName, slider):
+                                print currentFilter, itemName,slider
                                 minval,maxval = currentFilter.getRange(itemName)
                                 slider.SetRange(minval,maxval)
-
                             
-                            f = lambda obj,evt, slider=slider, i=itemName,fi=currentFilter,s=self: updateRange(fi,i,slider)
-                            messenger.connect(currentFilter,"update_%s"%itemName,f)
+                            updateSliderFunc = lambda obj,evt, slider=slider, i=itemName,fi=currentFilter,s=self: updateRange(fi,i,slider)
+                            messenger.connect(currentFilter,"update_%s"%itemName,updateSliderFunc)
                             
                             box.Add(bg,1)
                             #print "Adding box to ",y,0
@@ -518,15 +516,15 @@ class GUIBuilder(wx.Panel):
                             text = currentFilter.getDesc(itemName)
                             val = currentFilter.getDefaultValue(itemName)
                     
-                            func = lambda evt, its=item,f=currentFilter, i = itemName, s = self: s.onSetFileName(f, i, evt)
+                            updateFilenameFunc = lambda evt, its=item,f=currentFilter, i = itemName, s = self: s.onSetFileName(f, i, evt)
 
                             browse = filebrowse.FileBrowseButton(self, -1, size=(400,-1),
                             labelText = text, fileMask = items[n][2],
                             dialogTitle = items[n][1],
-                            changeCallback = func)
+                            changeCallback = updateFilenameFunc)
                             browse.SetValue(val)
-                            f=lambda obj,evt,arg, b=browse, i=itemName, s=self: s.onSetFileNameFromFilter(b,i,arg)
-                            messenger.connect(currentFilter,"set_%s"%itemName,f) 
+                            setFilenameFunc=lambda obj,evt,arg, b=browse, i=itemName, s=self: s.onSetFileNameFromFilter(b,i,arg)
+                            messenger.connect(currentFilter,"set_%s"%itemName,setFilenameFunc) 
                                                         
                             longDesc = currentFilter.getLongDesc(itemName)
                             if longDesc:
@@ -549,7 +547,7 @@ class GUIBuilder(wx.Panel):
                             
                             bg = wx.Window(self,-1)
                             choices = currentFilter.getRange(itemName)
-                            func = lambda evt, its=item,f=currentFilter, i = itemName, s = self: s.onSetChoice(f, i, evt)
+                            updateChoiceFunc = lambda evt, its=item,f=currentFilter, i = itemName, s = self: s.onSetChoice(f, i, evt)
                             choice = wx.Choice(bg,-1,choices=choices)
                             
                             choice.SetSelection(val)
@@ -557,14 +555,14 @@ class GUIBuilder(wx.Panel):
                                 #choice.SetBackgroundColour(lvl)
                                 if text: lbl.SetBackgroundColour(lvl)
                                 bg.SetBackgroundColour(lvl)
-                            choice.Bind(wx.EVT_CHOICE,func)
+                            choice.Bind(wx.EVT_CHOICE,updateChoiceFunc)
                                                         
                             longDesc = currentFilter.getLongDesc(itemName)
                             if longDesc:
                                 choice.SetToolTip(wx.ToolTip(s))
 
-                            f=lambda obj,evt,arg, c=choice, i=itemName, s=self: s.onSetChoiceFromFilter(c,i,arg)
-                            messenger.connect(currentFilter,"set_%s"%itemName,f) 
+                            setChoiceFunc=lambda obj,evt,arg, c=choice, i=itemName, s=self: s.onSetChoiceFromFilter(c,i,arg)
+                            messenger.connect(currentFilter,"set_%s"%itemName,setChoiceFunc) 
                             
                             
                             box.Add(bg,1)
@@ -594,15 +592,15 @@ class GUIBuilder(wx.Panel):
                                 choice.SetToolTip(wx.ToolTip(s))
 
                             
-                            func = lambda evt, its=item,f=currentFilter, i = itemName, r = rois, s = self: s.onSetROI(r,f, i, evt)
+                            setRoiFunc = lambda evt, its=item,f=currentFilter, i = itemName, r = rois, s = self: s.onSetROI(r,f, i, evt)
                             choice = wx.Choice(self,-1,choices=choices)
                             
                             choice.SetSelection(val)
-                            choice.Bind(wx.EVT_CHOICE,func)
+                            choice.Bind(wx.EVT_CHOICE,setRoiFunc)
                             
-                            f = lambda obj,evt, choice=choice, i=itemName,fi=currentFilter,s=self: updateROIs(fi,i,choice)
-                            messenger.connect(currentFilter,"update_%s"%itemName,f)                            
-                            messenger.connect(None,"update_annotations",f)
+                            updateRoiFunc = lambda obj,evt, choice=choice, i=itemName,fi=currentFilter,s=self: updateROIs(fi,i,choice)
+                            messenger.connect(currentFilter,"update_%s"%itemName,updateRoiFunc)                            
+                            messenger.connect(None,"update_annotations",updateRoiFunc)
                             
                             #f=lambda obj,evt,arg, c=choice, i=itemName, s=self: s.onSetROIFromFilter(c,i,arg)
                             #messenger.connect(currentFilter,"set_%s"%itemName,f) 
@@ -621,10 +619,10 @@ class GUIBuilder(wx.Panel):
                                 
                             lbl = wx.StaticText(bg,-1,"(%d,%d,%d)"%(0,0,0),size=(80,-1))
                             btn = wx.Button(bg,-1,"Set seed")
-                            def f(l):
-                                l.selectPixel=1
-                            func=lambda evt,l=lbl:f(l)
-                            btn.Bind(wx.EVT_BUTTON,func)
+                            def f(listBox):
+                                listBox.selectPixel=1
+                            addPixelFunc=lambda evt,l=lbl:f(l)
+                            btn.Bind(wx.EVT_BUTTON,addPixelFunc)
                             box=wx.BoxSizer(wx.HORIZONTAL)
                             box.Add(lbl)
                             box.Add(btn)
@@ -632,11 +630,11 @@ class GUIBuilder(wx.Panel):
                             bg.SetAutoLayout(1)
                             bg.Layout()
                             itemsizer.Add(bg,(0,0))
-                            func = lambda obj,evt,rx,ry,rz,scalar,rval,gval,bval,r,g,b,alpha,currentCt,its=item,f=currentFilter:self.onSetPixel(obj,evt,rx,ry,rz,r,g,b,alpha,currentCt,its,f,lbl)
-                            messenger.connect(None,"get_voxel_at",func)
+                            getVoxelFunc = lambda obj,evt,rx,ry,rz,scalar,rval,gval,bval,r,g,b,alpha,currentCt,its=item,f=currentFilter:self.onSetPixel(obj,evt,rx,ry,rz,r,g,b,alpha,currentCt,its,f,lbl)
+                            messenger.connect(None,"get_voxel_at",getVoxelFunc)
 
-                            f=lambda obj,evt,arg, lbl=lbl, i=itemName, s=self: s.onSetPixelFromFilter(lbl,i,arg)
-                            messenger.connect(currentFilter,"set_%s"%itemName,f)
+                            onSetPixelFunc=lambda obj,evt,arg, lbl=lbl, i=itemName, s=self: s.onSetPixelFromFilter(lbl,i,arg)
+                            messenger.connect(currentFilter,"set_%s"%itemName,onSetPixelFunc)
 
                             
                         elif itemType == PIXELS:
@@ -652,16 +650,16 @@ class GUIBuilder(wx.Panel):
                             pixelsizer.Add(seedbox,(0,0),span=(2,1))
                             
                             addbtn = wx.Button(bg,-1,"Add seed")
-                            def f2(l):
-                                l.selectPixel=1
-                            func=lambda evt,l=seedbox:f2(l)
-                            addbtn.Bind(wx.EVT_BUTTON,func)
+                            def markListbox(listBox):
+                                listBox.selectPixel=1
+                            addPixelFunc=lambda evt,l=seedbox:markListbox(l)
+                            addbtn.Bind(wx.EVT_BUTTON,addPixelFunc)
                             pixelsizer.Add(addbtn,(0,1))
                             #print "ITEM=",item
                             rmbtn = wx.Button(bg,-1,"Remove")
                             seedbox.itemName = item
-                            func=lambda evt,its=item,f=currentFilter:self.removeSeed(seedbox,f)
-                            rmbtn.Bind(wx.EVT_BUTTON,func)
+                            removeSeedFunc=lambda evt,its=item,f=currentFilter:self.removeSeed(seedbox,f)
+                            rmbtn.Bind(wx.EVT_BUTTON,removeSeedFunc)
                             pixelsizer.Add(rmbtn,(1,1))
                             
                             bg.SetSizer(pixelsizer)
@@ -669,11 +667,11 @@ class GUIBuilder(wx.Panel):
                             bg.Layout()
                             
                             #obj,event,x,y,z,scalar,rval,gval,bval,r,g,b,a,ctf)
-                            func = lambda obj,evt,rx,ry,rz,scalar,rval,gval,bval,r,g,b,alpha,currentCt,its=item,f=currentFilter:self.onAddPixel(obj,evt,rx,ry,rz,r,g,b,alpha,currentCt,its,f,seedbox)
-                            messenger.connect(None,"get_voxel_at",func)
+                            getVoxelSeedFunc = lambda obj,evt,rx,ry,rz,scalar,rval,gval,bval,r,g,b,alpha,currentCt,its=item,f=currentFilter:self.onAddPixel(obj,evt,rx,ry,rz,r,g,b,alpha,currentCt,its,f,seedbox)
+                            messenger.connect(None,"get_voxel_at",getVoxelSeedFunc)
                             itemsizer.Add(bg,(0,0))                            
-                            f=lambda obj,evt,arg, seedbox=seedbox, i=itemName, s=self: s.onSetPixelsFromFilter(seedbox,i,arg)
-                            messenger.connect(currentFilter,"set_%s"%itemName,f)                                                        
+                            onSetPixelsFunc=lambda obj,evt,arg, seedbox=seedbox, i=itemName, s=self: s.onSetPixelsFromFilter(seedbox,i,arg)
+                            messenger.connect(currentFilter,"set_%s"%itemName,onSetPixelsFunc) 
                             
                         elif itemType == THRESHOLD:
                             bg = wx.Window(self,-1)

@@ -42,20 +42,6 @@ import  wx.lib.scrolledpanel as scrolled
 
 
 
-
-class ModuleConfiguration(wx.MiniFrame):
-    """
-    Class: ModuleConfiguration
-    Created: 28.04.2005, KP
-    Description: A base class for module configuration dialogs
-    """    
-    def __init__(self,parent,name):
-        """
-        Method: __init__(parent)
-        Created: 28.04.2005, KP
-        Description: Initialization
-        """     
-        wx.MiniFrame.__init__(self,parent.parent,-1,"Configure: %s"%name)
            
         
 class ModuleConfigurationPanel(wx.ScrolledWindow):

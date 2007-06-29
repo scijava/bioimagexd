@@ -75,13 +75,15 @@ class VisualizationModule(GUIBuilder.GUIBuilderBase):
         self.view=None
         self.setVTKState = GUI.Urmas.UrmasPersist.setVTKState
         self.getVTKState = GUI.Urmas.UrmasPersist.getVTKState
+        
+        self.vtkObjects = []
 
     def set(self, parameter, value):
         """
         Created: 14.06.2007, KP
         Description: Set the given parameter to given value
         """   
-        GUIBuilder.GUIBuilder.setParameter(self, parameter, value)
+        GUIBuilder.GUIBuilderBase.setParameter(self, parameter, value)
         # Send a message that will update the GUI
         messenger.send(self,"set_%s"%parameter,value)
 
@@ -234,45 +236,29 @@ class VisualizationModule(GUIBuilder.GUIBuilderBase):
         Created: 02.08.2005, KP
         Description: A getstate method that saves the lights
         """            
+        params={}
+        for key,val in self.parameters.items():
+            if hasattr(val,"GetClassName") and "vtk" in val.GetClassName():
+                params[key] = self.getVTKState(val)
+            else:
+                params[key] = val
         odict={"timepoint":self.timepoint,
                "name":self.name,
                "moduleName":self.moduleName,
-               "shading":self.shading
-        }
+               "shading":self.shading,
+               "parameters":params}
+        odict["vtkobjects"] = self.vtkObjects
+        for vtkobj in self.vtkObjects:
+            odict[vtkobj] = self.getVTKState(self.__dict__[vtkobj])
+            
         if hasattr(self,"actor"):
             odict.update({"actorProperty":self.getVTKState(self.actor.GetProperty())})
+            
+        if hasattr(self, "renderer"):
+            odict.update({"renderer":self.getVTKState(self.renderer)})
+            odict.update({"camera":self.getVTKState(self.renderer.GetActiveCamera())})            
         return odict
-        
-##    def getVTKState(self,obj):
-##        """
-##        Created: 02.08.2005, KP
-##        Description: Get state of vtk object
-##        """     
-##        state={}
-##        blocked=["GetOutput","GetReleaseDataFlag","GetOutputPort","GetViewPlaneNormal"]
-##        dirlist=dir(obj)
-##        for i in dirlist:
-##            if i not in blocked:                
-##                if i[0:3]=="Get":
-##                    setter=i.replace("Get","Set")
-##                    if setter in dirlist:
-##                        try:
-##                            state[i]=eval("obj.%s()"%i)
-##                        except:
-##                            pass
-##        return state
-##    def setVTKState(self,obj,state):
-##        """
-##        Created: 02.08.2005, KP
-##        Description: Set state of vtk object
-##        """     
-##        for key in state.keys():
-##            setfunc=key.replace("Get","Set")
-###            Logging.info("Setting %s of %s"%(setfunc,obj),kw="rendering")
-##            try:
-##                eval("obj.%s(state[\"%s\"])"%(setfunc,key))
-##            except:
-##                pass
+
             
             
     def __set_pure_state__(self,state):
@@ -286,4 +272,19 @@ class VisualizationModule(GUIBuilder.GUIBuilderBase):
         if hasattr(self,"actor"):
             self.setVTKState(self.actor.GetProperty(),state.actorProperty)
         self.setShading(state.shading)
+        for vtkobj in state.vtkobjects:
+            if hasattr(self, vtkobj):
+                self.setVTKState(self.__dict__[vtkobj], state.__dict__[vtkobj])
         
+        if hasattr(state,"renderer"):
+            self.setVTKState(self.renderer,state.renderer)
+            self.setVTKState(self.renderer.GetActiveCamera(),state.camera)
+        
+        for key,val in state.parameters.items():
+            print "Setting parameter",key,"to",val
+            if hasattr(val,"__metadata__") and "vtk" in val.__metadata__["class_name"]:
+                continue
+            self.set(key,val)
+            
+        self.sendUpdateGUI()
+        self.updateRendering()
