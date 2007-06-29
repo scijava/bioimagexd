@@ -380,8 +380,7 @@ class ManipulationPanel(FilterBasedTaskPanel.FilterBasedTaskPanel):
         
 
         self.Layout()
-        print "panel size=",self.panel.GetSize()
-        print "self size=",self.GetSize()
+
         #self.panelsizer.RecalcSizes()
         self.FitInside()
         
@@ -467,7 +466,6 @@ class ManipulationPanel(FilterBasedTaskPanel.FilterBasedTaskPanel):
         Created: 03.03.2007, KP
         Description: load the given preset
         """
-        print "Loading file","'"+name+"'"
         bxd.mainWindow.loadSettings(name)
         
     def saveAsPreset(self, name):
@@ -591,7 +589,6 @@ class ManipulationPanel(FilterBasedTaskPanel.FilterBasedTaskPanel):
         Description: A method used to set the right values in dataset
                      from filter GUI widgets
         """
-        print "Setting filterlist to",self.filters
         self.settings.set("FilterList",self.filters)
         
     def doProcessingCallback(self,*args):

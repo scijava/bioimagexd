@@ -846,7 +846,7 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
                 self.doPreviewCallback()
                 
 
-    def updateSettings(self,*args):
+    def updateSettings(self,force = 0):
         """
         Created: 03.11.2004, KP
         Description: A method used to set the GUI widgets to their proper values

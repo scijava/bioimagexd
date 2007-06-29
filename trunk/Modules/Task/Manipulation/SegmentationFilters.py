@@ -685,6 +685,8 @@ class MorphologicalWatershedSegmentationFilter(ProcessingFilter.ProcessingFilter
         if not self.relabelFilter:
             
             self.relabelFilter = itk.RelabelComponentImageFilter[data,data].New()
+        print "Relabeling..."
+
         self.relabelFilter.SetInput(data)
         th = self.parameters["Threshold"]
         if th:
@@ -695,8 +697,9 @@ class MorphologicalWatershedSegmentationFilter(ProcessingFilter.ProcessingFilter
         data=self.relabelFilter.GetOutput()            
                 
         self.relabelFilter.Update()
+        print "done"
         n = self.relabelFilter.GetNumberOfObjects()
-        
+        print "Got",n,"objects"
         settings = self.dataUnit.getSettings()
         ncolors = settings.get("PaletteColors")
         if self.noPalette or not ncolors or ncolors < n:
@@ -710,7 +713,7 @@ class MorphologicalWatershedSegmentationFilter(ProcessingFilter.ProcessingFilter
             self.dataUnit.getSettings().set("ColorTransferFunction",ctf)    
             val=[0,0,0]
             ctf.GetColor(1,val)
-            print "ctf value at 1=",val
+            print "ctf value at 1=",val,"n colors=",n
             settings.set("PaletteColors",n)
         else:
             if self.segCtf:
