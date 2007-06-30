@@ -88,7 +88,7 @@ def optimize(image = None, vtkFilter = None, updateExtent = None, releaseData = 
     if numFilters!=0:
         img=execute_limited(val, updateExtent = updateExtent) 
     else:
-        Logging.info("\n\nNo filters, returning output")
+#        Logging.info("\n\nNo filters, returning output")
         img = val.GetOutput()
     
 

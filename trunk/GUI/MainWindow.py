@@ -784,7 +784,8 @@ class MainWindow(wx.Frame):
 #        tb.EnableTool(MenuManager.ID_RESAMPLING,0)
 #        tb.ToggleTool(MenuManager.ID_RESAMPLING,1)
 
-        bmp = wx.ArtProvider_GetBitmap(wx.ART_QUESTION, wx.ART_TOOLBAR, (32,32))        
+        bmp = wx.Image(os.path.join(iconpath,"help.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap()
+
         tb.DoAddTool(MenuManager.ID_TOOLBAR_HELP,"Help",bmp,shortHelp="Get help for current task / visualization")
         wx.EVT_TOOL(self, MenuManager.ID_TOOLBAR_HELP, self.onToolbarHelp)
         #self.cBtn = wx.ContextHelpButton(tb,MenuManager.CONTEXT_HELP)

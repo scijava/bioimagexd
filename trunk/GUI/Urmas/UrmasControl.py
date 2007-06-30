@@ -64,6 +64,8 @@ class UrmasControl:
         self.timelinePanel = None
         self.timescale = None
         self.splineEditor = None
+        self.initSplineEditor = 0
+        
         self.splinePointAmount = 5
         self.duration = 60 # seconds
         self.frames = 12*self.duration # frames
@@ -248,17 +250,24 @@ class UrmasControl:
         self.updateGUI()
         self.updateLayouts()
         #self.animator.animator.initData()
-        data =self.renderingInterface.getCurrentData()
-#        print "updating spline editor with ",data
-        ctf=self.renderingInterface.getColorTransferFunction()
 #        print "ctf=",ctf
         
-        self.splineEditor.updateData(data,ctf)
-        
-        self.splineEditor.initCamera()
-        
-        self.splineEditor.render()
+        if self.splineEditor:
+            self.initializeSplineEditor()
+            
+    def initializeSplineEditor(self):
+        """
+        Created: 29.6.2007, KP
+        Description: initialize the spline editor if it has not been initialied yet
+        """
+        if not self.initSplineEditor:
+            data =self.renderingInterface.getCurrentData()
+            ctf=self.renderingInterface.getColorTransferFunction()
 
+            self.splineEditor.updateData(data,ctf)
+            self.splineEditor.initCamera()
+            self.splineEditor.render()
+            self.initSplineEditor = 1
         
     def updateLayouts(self):
         """
@@ -334,7 +343,8 @@ class UrmasControl:
         Description: Method used to set the spline editor
         """        
         self.splineEditor = spe
-        
+        self.initializeSplineEditor()
+                
     def __str__(self):
         """
         Created: 05.04.2005, KP

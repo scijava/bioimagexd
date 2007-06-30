@@ -480,8 +480,10 @@ class VolumeConfigurationPanel(ModuleConfigurationPanel):
         Created: 28.04.2005, KP
         Description: Initialization
         """     
+        self.gui = None
+        
         ModuleConfigurationPanel.__init__(self,parent,visualizer,name,**kws)
-
+        
     def initializeGUI(self):
         """
         Created: 28.04.2005, KP
@@ -519,9 +521,9 @@ but using linear interpolation yields a better rendering quality."""
         self.module = module
         ModuleConfigurationPanel.setModule(self,module)
         unit=module.getDataUnit()        
-        self.gui = GUIBuilder.GUIBuilder(self, self.module)
-        
-        self.contentSizer.Add(self.gui,(0,0))
+        if not self.gui:
+            self.gui = GUIBuilder.GUIBuilder(self, self.module)        
+            self.contentSizer.Add(self.gui,(0,0))
         module.updateOpacityTransferFunction()
         
         if unit.getBitDepth()==32:
