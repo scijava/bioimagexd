@@ -1177,7 +1177,7 @@ def imageDataTo3Component(image,ctf):
     """         
     image.UpdateInformation()
     ncomps = image.GetNumberOfScalarComponents()
-    print "ncomps=",ncomps
+#    print "ncomps=",ncomps
     
     if ncomps==1:
         maptocolor=vtk.vtkImageMapToColors()

@@ -74,6 +74,7 @@ class TimelinePanel(wx.Panel):
         self.control=control
         self.sizer=wx.GridBagSizer()        
         w=size[0]
+        self.wxrenwin = None
 
         self.confSizer=wx.GridBagSizer()
         
@@ -99,35 +100,48 @@ class TimelinePanel(wx.Panel):
         
         self.sizer.Add(sboxsizer,(0,0),flag=wx.EXPAND|wx.ALL)
         #f=wx.Frame(self,-1)
-        self.wxrenwin=VisualizerWindow.VisualizerWindow(self,size=(300,300))
-        self.wxrenwin.initializeVTK()
-        
-        self.splineEditor=SplineEditor.SplineEditor(self,self.wxrenwin)
-        self.control.setSplineEditor(self.splineEditor)        
 
 
-        # Try to shallow the hierarchy
-        #self.sbox=wx.StaticBox(self,-1,"Rendering preview")
-        #self.sboxsizer=wx.StaticBoxSizer(self.sbox,wx.VERTICAL)                
-        #self.sboxsizer.Add(self.wxrenwin)
-        
-        #self.sizer.Add(self.sboxsizer,(0,1))#,flag=wx.EXPAND|wx.ALL) 
-        self.sizer.Add(self.wxrenwin,(0,1))#,flag=wx.EXPAND|wx.ALL) 
+        #self.sizer.Add(self.wxrenwin,(0,1))#,flag=wx.EXPAND|wx.ALL) 
         
         self.SetSizer(self.sizer)
         self.SetAutoLayout(1)
         self.sizer.Fit(self)
 
         
-        self.Refresh()
-        
-        self.splineEditor.initializeVTK()
+#        self.Refresh()
+
         
         n = self.timelineConfig.getFrameAmount()
         
         messenger.send(None,"set_frames",n)
         messenger.connect(None,"set_frame_size",self.onSetFrameSize)
         messenger.connect(None,"set_keyframe_mode",self.onSetKeyframeMode)
+        
+        wx.CallAfter(self.create3DView)
+        
+    def create3DView(self):
+        """
+        Created: 29.6.2007, KP
+        Description: create the 3d view after the GUI has been initialized
+        """
+        # Try to shallow the hierarchy
+        self.sbox=wx.StaticBox(self,-1,"Rendering preview")
+        self.sboxsizer=wx.StaticBoxSizer(self.sbox,wx.VERTICAL)                
+        
+        self.sizer.Add(self.sboxsizer,(0,1))#,flag=wx.EXPAND|wx.ALL) 
+
+        self.wxrenwin=VisualizerWindow.VisualizerWindow(self,size=(300,300))
+        self.wxrenwin.initializeVTK()
+        
+        self.splineEditor=SplineEditor.SplineEditor(self,self.wxrenwin)
+
+        self.sboxsizer.Add(self.wxrenwin)
+
+        self.Layout()        
+        self.splineEditor.initializeVTK()
+        self.control.setSplineEditor(self.splineEditor)        
+        
 
     def onSetFrameSize(self,obj,evt,size,onlyAspect):
         """
@@ -135,6 +149,8 @@ class TimelinePanel(wx.Panel):
         Description: Event to change the size of the rendering preview
                      based on the size of the actual rendered frames
         """
+        if not self.wxrenwin:   
+            return
         x,y=size
         xtoy=float(x)/y
         if onlyAspect:
