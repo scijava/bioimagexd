@@ -1020,7 +1020,8 @@ class InteractivePanel(ogl.ShapeCanvas):
             Logging.info("Got %d annotations"%len(ann),kw="iactivepanel")
             for shape in ann:
                 self.addNewShape(shape)
-                shape.SetCanvas(self)
+                shape.SetCanvas(self)§
+                shape.GetEventHandler().SetParent(canvas)
             
     def OnPaint(self,event):
         """

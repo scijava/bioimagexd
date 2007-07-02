@@ -41,6 +41,7 @@ count={}
 
 class OGLAnnotation:
 
+
     def setOffset(self, x,y):
         """
         Created: 28.05.2007, KP
@@ -963,9 +964,19 @@ class MyPolygonControlPoint(ogl.PolygonControlPoint):
         
 
 class MyEvtHandler(ogl.ShapeEvtHandler):
+    """
+    Created: KP
+    Description: the event handler for the OGL based annotations
+    """
     def __init__(self,parent):
         self.parent = parent
         ogl.ShapeEvtHandler.__init__(self)
+    def SetParent(self, parent):
+        """
+        Created: 02.07.2007, Kp
+        Description: set the parent of the shape this handler works with
+        """
+        self.parent = parent
     def OnLeftDoubleClick(self, x, y, keys = 0, attachment = 0):
         
         shape = self.GetShape()
