@@ -884,7 +884,7 @@ class InteractivePanel(ogl.ShapeCanvas):
             self.dataUnit.getSettings().set("Annotations",annotations)
                         
     
-    def addNewShape(self, shape):
+    def addNewShape(self, shape, noUpdate = 0):
         """
         Created: 07.05.2005, KP
         Description: Add a new shape to the canvas
@@ -898,12 +898,12 @@ class InteractivePanel(ogl.ShapeCanvas):
         shape.SetBrush(wx.TRANSPARENT_BRUSH)
         shape.SetPen(wx.Pen((0,255,0),1))
         
-        self.AddShape( shape )                   
-                
-        self.diagram.ShowAll(1)
-                
-        self.repaintHelpers()
-        self.Refresh()        
+        self.AddShape( shape )                 
+        
+        if not noUpdate:
+            self.diagram.ShowAll(1)
+            self.repaintHelpers()
+            self.Refresh()        
         
     def updateAnnotations(self):
         """
@@ -1021,8 +1021,11 @@ class InteractivePanel(ogl.ShapeCanvas):
             for shape in ann:
                 shape.SetCanvas(self)
                 shape.GetEventHandler().SetParent(self)
-                self.addNewShape(shape)
-
+                self.addNewShape(shape, noUpdate = 1)
+            self.diagram.ShowAll(1)
+            self.repaintHelpers()
+            self.Refresh()        
+        
     def OnPaint(self,event):
         """
         Created: 28.04.2005, KP
