@@ -61,6 +61,13 @@ class PainterHelper:
     def __init__(self, parent):        
         self.parent = parent
         
+        
+    def setParent(self, parent):
+        """
+        Created: 02.07.2007, KP
+        Description: set the parent
+        """        
+        self.parent= parent
     def paintOnDC(self, dc):
         """
         Created: 06.10.2006, KP
@@ -241,6 +248,13 @@ class AnnotationHelper(PainterHelper):
 #        print "\nPARENT'S OFFSET = ",self.parent.xoffset,self.parent.yoffset
         self.parent.diagram.Redraw(dc)
         
+        
+    def setParent(self, parent):
+        """
+        Created: 02.07.2007, KP
+        Description: set the parent
+        """        
+        self.parent= parent        
 
 class InteractivePanel(ogl.ShapeCanvas):
     """
@@ -496,6 +510,10 @@ class InteractivePanel(ogl.ShapeCanvas):
         self.painterHelpers.append(painter)      
       
     def onUpdateHelpers(self, obj,evt,update):
+        """
+        Created: KP
+        Description: a callback for updating the helpers based on messenger messages
+        """
         self.repaintHelpers(update)
         if update:
             self.Refresh()
@@ -1002,6 +1020,7 @@ class InteractivePanel(ogl.ShapeCanvas):
             Logging.info("Got %d annotations"%len(ann),kw="iactivepanel")
             for shape in ann:
                 self.addNewShape(shape)
+                shape.SetCanvas(self)
             
     def OnPaint(self,event):
         """
