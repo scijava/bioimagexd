@@ -271,7 +271,7 @@ class AdjustPanel(TaskPanel.TaskPanel):
         l=self.dataUnit.getLength()
         sources = self.dataUnit.getSourceDataUnits()
         for i in range(l):
-            minval,maxval = sources[i].getScalarRange()
+            minval,maxval = min([a.getScalarRange()[0] for a in sources]), max([a.getScalarRange()[1] for a in sources])
             itf=vtk.vtkIntensityTransferFunction()
             itf.SetRangeMax(maxval)
             

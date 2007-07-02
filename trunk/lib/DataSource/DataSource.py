@@ -429,6 +429,13 @@ class DataSource:
             
         return data
 
+    def getTimeStamp(self, timepoint):
+        """
+        Created: 02.07.2007, KP
+        Description: return the timestamp for given timepoint
+        """
+        return timepoint
+
     def getEmissionWavelength(self):
         """
         Created: 07.04.2006, KP

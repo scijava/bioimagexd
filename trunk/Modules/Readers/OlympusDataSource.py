@@ -297,6 +297,11 @@ class OlympusDataSource(DataSource):
             
         
         return ctf
+    def getTimeStamp(self, timepoint):
+        """
+        Created: 02.07.2007, KP
+        Description: return the timestamp for given timepoint
+        """
         
         
     def getSpacing(self):

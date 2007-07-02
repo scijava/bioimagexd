@@ -218,7 +218,7 @@ class ParticleTracker:
         self.reader = None
         self.minimumTrackLength = 3
         self.tracks = []
-        if psyco:
+        if psyco and sys.platform != 'darwin':
             psyco.bind(self.getStats)
             psyco.bind(self.angle)
             psyco.bind(Particle.distance)
