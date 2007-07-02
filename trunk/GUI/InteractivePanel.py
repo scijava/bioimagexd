@@ -1017,9 +1017,11 @@ class InteractivePanel(ogl.ShapeCanvas):
         #Logging.info("Got dataunit, voxelSize=",self.voxelSize,kw="iactivepanel")
         ann=dataUnit.getSettings().get("Annotations")
         if ann:
+            for obj in self.diagram.GetShapeList():
+                obj.SetCanvas(self)
+            
             Logging.info("Got %d annotations"%len(ann),kw="iactivepanel")
             for shape in ann:
-                shape.SetCanvas(self)
                 shape.GetEventHandler().SetParent(self)
                 self.addNewShape(shape, noUpdate = 1)
             self.diagram.ShowAll(1)
