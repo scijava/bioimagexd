@@ -168,6 +168,49 @@ class OGLAnnotation:
             
         ogl.Shape.OnSizingDragLeft(self, pt, draw,x,y,keys,attachment)
         
+
+    def OnErase(self, dc):
+        """
+        Created: 02.07.2007, KP
+        Description: erase the rectangle
+        """
+        bg = self.GetCanvas().bgbuffer
+        if not self._visible:
+            return
+        
+        dc.SetPen(self.GetBackgroundPen())
+        dc.SetBrush(self.GetBackgroundBrush())
+        
+        srcdc = wx.MemoryDC()
+        srcdc.SelectObject(bg)
+        x0,y0,w,h = self.GetCanvas().GetClientRect()
+
+        if not hasattr(self,"eraseRect"):
+            xp, yp = self.GetX(), self.GetY()
+            minX, minY = self.GetBoundingBoxMin()
+            maxX, maxY = self.GetBoundingBoxMax()
+    
+            topLeftX = xp - maxX / 2.0 - 2
+            topLeftY = yp - maxY / 2.0 - 2
+    
+            penWidth = 0
+            if self._pen:
+                penWidth = self._pen.GetWidth()
+    
+       
+    
+            tox, toy = x0 + topLeftX, y0+topLeftY
+            tox -=  penWidth
+            toy -= penWidth
+            
+            dc.Blit(tox, toy, maxX+4+2*penWidth,maxY+4+2*penWidth,srcdc, tox, toy)
+        else:
+            x1,y1, x2, y2 = self.eraseRect
+            
+            dc.Blit(x1+x0,y1+y0, (x2-x1)+2,(y2-y1)+2,srcdc, x1+x0,y1+y0)
+        srcdc.SelectObject(wx.NullBitmap)        
+        
+        
 class MyText(OGLAnnotation, ogl.TextShape):
     """
     Created: 05.10.2006, KP
@@ -400,6 +443,14 @@ class MyPolygonSketch(OGLAnnotation, ogl.Shape):
         self.tentativePoint = None
         self.minx,self.maxx, self.miny,self.maxy=9900,0,9900,0
         
+    def GetBoundingBoxMin(self):
+        """
+        Created: 02.07.2007, KP
+        Description: reutrn the minimal bounding box
+        """
+        x0,y0,x1,y1 = self.getTentativeBB()
+        return (x1-x0),(y1-y0)
+        
     def getTentativeBB(self):
         """
         Created: 23.10.2006, KP
@@ -415,28 +466,20 @@ class MyPolygonSketch(OGLAnnotation, ogl.Shape):
     def setTentativePoint(self, pt):
         self.tentativePoint = pt
         x,y=pt
-        if x<self.minx:
-            self.minx=x
-        if x>self.maxx:
-            self.maxx=x
-        if y>self.maxy:
-            self.maxy=y
-        if y<self.miny:
-            self.miny=y
+        self.minx = min(self.minx, x)
+        self.miny = min(self.miny, y)
+        self.maxx = max(self.maxx, x)
+        self.maxy = max(self.maxy, y)
         
     def AddPoint(self, pt):
         if pt in self.points:
             return
         self.points.append(pt)
         x,y=pt
-        if x<self.minx:
-            self.minx=x
-        if x>self.maxx:
-            self.maxx=x
-        if y>self.maxy:
-            self.maxy=y
-        if y<self.miny:
-            self.miny=y        
+        self.minx = min(self.minx, x)
+        self.miny = min(self.miny, y)
+        self.maxx = max(self.maxx, x)
+        self.maxy = max(self.maxy, y)
         
     def OnDraw(self, dc):
         brush = wx.TRANSPARENT_BRUSH
@@ -444,13 +487,14 @@ class MyPolygonSketch(OGLAnnotation, ogl.Shape):
         pen = wx.Pen(wx.Colour(255,0,0),1)
         dc.SetPen(pen)
         
-        
         pts = self.points[:]
         if self.tentativePoint:
             pts.append(self.tentativePoint)
             
         x0,y0,w,h = self.GetCanvas().GetClientRect()
         dc.DrawPolygon(pts,x0,y0)
+        
+        self.eraseRect = self.getTentativeBB()
         del pts
 
     def setScaleFactor(self,factor):
@@ -460,37 +504,10 @@ class MyPolygonSketch(OGLAnnotation, ogl.Shape):
         """   
         pass
         
-
     def getCoveredPoints(self):
         return []
 
-    def OnErase(self,dc):
-        bg = self.GetCanvas().bgbuffer
-        if not self._visible:
-            return
-
-        xp, yp = self.GetX(), self.GetY()
-        minX, minY = self.GetBoundingBoxMin()
-        maxX, maxY = self.GetBoundingBoxMax()
-
-        topLeftX = xp - maxX / 2.0 - 2
-        topLeftY = yp - maxY / 2.0 - 2
-
-        penWidth = 0
-        if self._pen:
-            penWidth = self._pen.GetWidth()
-
-        dc.SetPen(self.GetBackgroundPen())
-        dc.SetBrush(self.GetBackgroundBrush())
-        
-        x0,y0,w,h = self.GetCanvas().GetClientRect()
-    
-        print "clipping rect=",self.minx,self.miny,self.maxx,self.maxy
-#        dc.SetClippingRegion(topLeftX-penWidth,topLeftY-penWidth,maxX+penWidth*2+4, maxY + penWidth * 2 + 4)
-
-        dc.DrawBitmap(bg,x0,0)
-#        dc.DestroyClippingRegion()
-        
+   
     
 
 class MyRectangle(OGLAnnotation, ogl.RectangleShape):   
@@ -557,35 +574,8 @@ class MyRectangle(OGLAnnotation, ogl.RectangleShape):
            for y in range(fromy,toy):
                pts[(x,y)] = 1
         return pts
-               
 
-    def OnErase(self,dc):
-        bg = self.GetCanvas().bgbuffer
-        if not self._visible:
-            return
-
-        xp, yp = self.GetX(), self.GetY()
-        minX, minY = self.GetBoundingBoxMin()
-        maxX, maxY = self.GetBoundingBoxMax()
-
-        topLeftX = xp - maxX / 2.0 - 2
-        topLeftY = yp - maxY / 2.0 - 2
-
-        penWidth = 0
-        if self._pen:
-            penWidth = self._pen.GetWidth()
-
-        dc.SetPen(self.GetBackgroundPen())
-        dc.SetBrush(self.GetBackgroundBrush())
         
-        x0,y0,w,h = self.GetCanvas().GetClientRect()
-        dc.SetClippingRegion(x0+topLeftX-penWidth,
-                            y0+topLeftY-penWidth,
-                            x0+maxX+penWidth*2+4, 
-                            y0+maxY + penWidth * 2 + 4)
-        dc.DrawBitmap(bg,x0,y0)
-        dc.DestroyClippingRegion()
-
        
 
 class MyCircle(OGLAnnotation, ogl.CircleShape):    
@@ -1034,7 +1024,6 @@ class MyEvtHandler(ogl.ShapeEvtHandler):
         self.parent.Refresh()
         
     def OnDragLeft(self, draw, x, y, keys = 0, attachment = 0):
-        print "OnDragLeft",x,y
         ogl.ShapeEvtHandler.OnDragLeft(self, draw, x,y, keys, attachment)
     
         self.parent.repaintHelpers()       
@@ -1051,9 +1040,9 @@ class MyEvtHandler(ogl.ShapeEvtHandler):
 
         if not shape.Selected():
             self.OnLeftClick(x, y, keys, attachment)
-        #self.parent.paintPreview()
         self.parent.repaintHelpers()
         self.parent.Refresh()
+        
     def OnSizingEndDragLeft(self, pt, x, y, keys, attch):
         print "OnSizingEndDragLeft",x,y
         ogl.ShapeEvtHandler.OnSizingEndDragLeft(self, pt, x, y, keys, attch)

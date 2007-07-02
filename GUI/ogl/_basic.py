@@ -1118,7 +1118,6 @@ class Shape(ShapeEvtHandler):
                 [x - w / 2.0, y + h / 2.0],
                 [x - w / 2.0, y - h / 2.0],
                 ]
-
         points=[(x+x0,y+y0) for (x,y) in points]
         dc.DrawLines(points)
         

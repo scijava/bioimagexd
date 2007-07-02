@@ -173,7 +173,7 @@ class BXCDataWriter(DataWriter):
             self.addImageData(imageDataList[i])
 
 
-    def writeImageData(self,imageData,filename):
+    def writeImageData(self,imageData,filename, callback = None):
         """
         Created: 09.11.2004, JM
         Description: Writes the given vtkImageData-instance to disk
@@ -190,12 +190,12 @@ class BXCDataWriter(DataWriter):
         x,y,z = imageData.GetDimensions()
         pieces = (x*y*z)/(1024*1024)
         if pieces<4:pieces = 4
-        print "Using ",pieces,"pieces"
+#        print "Using ",pieces,"pieces"
         writer.SetNumberOfPieces(pieces)
         writer.SetInput(imageData)
         def f(obj, evt):
-            if obj:
-                print "Progress=",obj.GetProgress()
+            if obj and callback:
+                callback(obj.GetProgress())
         writer.AddObserver("ProgressEvent",f)
         try:
             ret=writer.Write()

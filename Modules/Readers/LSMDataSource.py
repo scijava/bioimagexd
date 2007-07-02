@@ -68,7 +68,7 @@ class LsmDataSource(DataSource.DataSource):
         self.dataUnitSettings={}
         # TODO: what is this?
         self.count=0
-
+        self.timestamps = None
 
         self.dimensions=None
         self.spacing=None
@@ -125,7 +125,22 @@ class LsmDataSource(DataSource.DataSource):
         scripting.inIO = (progress < 1.0)
 #        messenger.send(None,"update_progress",progress,msg,notinvtk)
         #print msg     
-
+        
+    def getTimeStamp(self, timepoint):
+        """
+        Created: 02.07.2007, KP
+        Description: return the timestamp for given timepoint
+        """
+        if not self.reader:
+            return timepoint
+        if not self.timestamps:
+            self.timestamps = self.reader.GetTimeStampInformation()
+        if timepoint > self.timestamps.GetSize():
+            return 0
+        v = self.timestamps.GetValue(timepoint)
+        v0 = self.timestamps.GetValue(0)
+        return (v-v0)
+        
     def getDataSetCount(self):
         """
         Created: 03.11.2004, JM

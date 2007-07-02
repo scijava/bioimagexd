@@ -45,6 +45,7 @@ import scripting as bxd
 
 from lib import ProcessingFilter
 import GUI.GUIBuilder as GUIBuilder
+import GUI.CSVListView as CSVListView
 import ImageOperations
 
 from lib import Particle
@@ -1158,3 +1159,185 @@ class ViewTracksFilter(ProcessingFilter.ProcessingFilter):
                 table.SetValue(i,tp+1,pos, override=1)
         self.trackGrid.SetTable(table)
         self.trackGrid.ForceRefresh()    
+        
+
+class AnalyzeTracksFilter(ProcessingFilter.ProcessingFilter):
+    """
+    Created: 1.7.2007, KP
+    Description: A filter that calculates statistics from the tracks and allows them to be exported to csv
+    """     
+    name = "Analyze tracks"
+    category = TRACKING
+    
+    def __init__(self):
+        """
+        Created: 13.04.2006, KP
+        Description: Initialization
+        """        
+        self.tracks = []
+        self.track = None
+        self.tracker = None
+        self.trackListBox= None
+        self.fileUpdated = 0
+        ProcessingFilter.ProcessingFilter.__init__(self,(1,1))
+        
+        self.descs={"ResultsFile":"Tracking results file:"}
+    
+        self.numberOfPoints = None
+        
+        self.particleFile = ""
+    def setParameter(self,parameter,value):
+        """
+        Created: 13.04.2006, KP
+        Description: Set a value for the parameter
+        """    
+        ProcessingFilter.ProcessingFilter.setParameter(self, parameter, value)
+
+        if parameter == "ResultsFile" and os.path.exists(value) and self.trackListBox:
+            self.fileUpdated = 1
+
+    def getParameters(self):
+        """
+        Created: 14.08.2006, KP
+        Description: Return the list of parameters needed for configuring this GUI
+        """            
+        return [["Tracking Results",(("ResultsFile","Select track file that contains the results","*.csv"),)]]
+
+        
+    def getLongDesc(self,parameter):
+        """
+        Created: 14.08.2006, KP
+        Description: Return a long description of the parameter
+        """ 
+        return ""
+        
+        
+    def getType(self,parameter):
+        """
+        Created: 14.08.2006, KP
+        Description: Return the type of the parameter
+        """    
+       
+        return GUIBuilder.FILENAME
+        
+    def getRange(self,parameter):
+        """
+        Created: 14.08.2006, KP
+        Description: Return the range of given parameter
+        """
+        return 0,0
+                
+    def getDefaultValue(self,parameter):
+        """
+        Created: 14.08.2006, KP
+        Description: Return the default value of a parameter
+        """
+
+        if parameter == "ResultsFile":
+            return "track_results.csv"
+
+        
+        
+    def getGUI(self,parent,taskPanel):
+        """
+        Created: 21.11.2006, KP
+        Description: Return the GUI for this filter
+        """              
+        gui = ProcessingFilter.ProcessingFilter.getGUI(self,parent,taskPanel)
+        
+                
+        if not self.trackListBox:
+            self.trackListBox = CSVListView.CSVListView(self.gui)
+            sizer = wx.BoxSizer(wx.VERTICAL)
+            
+            sizer.Add(self.trackListBox,1)
+            box = wx.BoxSizer(wx.HORIZONTAL)
+            
+            self.readTracksBtn = wx.Button(self.gui, -1,"Read tracks")
+            box.Add(self.readTracksBtn)
+            
+            self.readTracksBtn.Bind(wx.EVT_BUTTON, self.onReadTracks)
+            
+            sizer.Add(box)
+            pos=(0,0)
+            item = gui.sizer.FindItemAtPosition(pos)
+            if item.IsWindow():
+                win = item.GetWindow()
+            elif item.IsSizer():
+                win = item.GetSizer()
+            elif item.IsSpacer():
+                win = item.GetSpacer()
+            
+            gui.sizer.Detach(win)            
+            gui.sizer.Add(sizer,(0,0),flag=wx.EXPAND|wx.ALL)
+            gui.sizer.Add(win,(1,0),flag=wx.EXPAND|wx.ALL)
+            
+        if self.prevFilter:
+            filename = self.prevFilter.getParameter("ResultsFile")
+            if filename and os.path.exiss(filename):
+                self.setParameter("ResultsFile",filename)
+                self.onReadTracks(event = None)
+        return gui
+        
+        
+    def execute(self,inputs,update=0,last=0):
+        """
+        Created: 14.08.2006, KP
+        Description: Execute the filter with given inputs and return the output
+        """            
+        if not ProcessingFilter.ProcessingFilter.execute(self,inputs):
+            return None
+        
+        image = self.getInputFromChannel(0)
+        return image
+    
+    def onReadTracks(self, event):
+        """
+        Created: 22.11.2006, KP
+        Description: Read tracks from a file instead of calculating them
+        """
+        filename = self.parameters["ResultsFile"]
+        if not os.path.exists(filename):
+            return
+        self.track = Track.TrackReader()
+        self.track.readFromFile(filename)
+        self.tracks = self.track.getTracks(0)
+        self.showTracks(self.tracks)
+        
+    def showTracks(self, tracks):
+        """
+        Created: 26.11.2006, KP
+        Description: show the given tracks in the track grid
+        """
+#track length
+#Directional persistance = path length / distance to starting point
+#speed
+#angle (avg of changes)
+        
+        rows=[["Length","Avg. speed", "Directional persistence","Avg. angle"]]
+        globalmin= 9999999999
+        globalmax = 0
+        for i,track in enumerate(tracks):
+            length = track.getLength()
+            speed = track.getSpeed()
+            dp = track.getDirectionalPersistence()
+            avgang = track.getAverageAngle()
+            row = [length, speed, dp, avgang]
+            mintp,maxtp = track.getTimeRange()
+            if mintp<globalmin:globalmin=mintp
+            if maxtp>globalmax:globalmax=maxtp
+            for tp in range(0,maxtp+1):
+                if tp< mintp:
+                    row.append("")
+                    continue
+                val,pos = track.getObjectAtTime(tp)
+                print "    value at tp ",tp,"(pos ",pos,") is ",val
+                # Set the value at row i, column tp+1 (because there is the column for enabling
+                # this track)
+                row.append(pos)
+            rows.append(row)
+            
+        for i in range(0, globalmax):
+            rows[0].append("T%d"%i)
+            
+        self.trackListBox.setContents(rows)
