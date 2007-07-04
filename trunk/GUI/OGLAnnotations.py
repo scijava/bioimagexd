@@ -46,7 +46,6 @@ class OGLAnnotation:
         Description: unoffset a given attribute
         """
         sf = self.GetCanvas().getZoomFactor()
-        print "Unoffsetting",attr,"scale factor=",sf
         if attr in ["_xpos"]:
             return (value-self._offset[0])/sf
         elif attr=="_ypos":
@@ -132,11 +131,9 @@ class OGLAnnotation:
     def addAttr(self, dicti, attr):
         val = self.__dict__[attr]
         newval = self.unoffset(attr, val)
-        print attr,"=",val,"after offset=",newval
         dicti[attr]=newval
         
     def getAttr(self,dicti,attr):
-        print "restoring attr",attr,"=",dicti[attr]
         self.__dict__[attr]=dicti[attr]
         
     def getName(self):
@@ -214,6 +211,8 @@ class OGLAnnotation:
             
         ogl.Shape.OnSizingDragLeft(self, pt, draw,x,y,keys,attachment)
         
+
+
 
     def OnErase(self, dc):
         """
@@ -471,7 +470,6 @@ class MyScalebar(OGLAnnotation, ogl.RectangleShape):
         else:
             y=bmph/2
             y+=(w/2)
-            print "y1=",y1,"y=",y
             dc.DrawRotatedText(text,x1+12,y+y1,90)
             
 class MyPolygonSketch(OGLAnnotation, ogl.Shape):   
@@ -591,7 +589,6 @@ class MyRectangle(OGLAnnotation, ogl.RectangleShape):
         Created: 21.06.2006, KP
         Description: Set the scaling factor in use
         """   
-        print "setScaleFactor(",factor,")"
         w,h,x,y = self._width,self._height,self.GetX(),self.GetY()
         x-= self._offset[0]
         y-= self._offset[1]
@@ -601,7 +598,6 @@ class MyRectangle(OGLAnnotation, ogl.RectangleShape):
         x/=self.scaleFactor
         y/=self.scaleFactor
 
-        print "Position without offset, scale = ",x,y
         
         self.scaleFactor = factor
         
@@ -612,7 +608,6 @@ class MyRectangle(OGLAnnotation, ogl.RectangleShape):
         x+= self._offset[0]
         y+= self._offset[1]
         
-        print "Size of rectangle=",w,"x",h,"at",x,y
         self.SetWidth(w)
         self.SetHeight(h)
         self.SetX(x)
@@ -633,9 +628,6 @@ class MyRectangle(OGLAnnotation, ogl.RectangleShape):
         pts={}
         w/=2.0
         h/=2.0
-        print "Looping from ",cx-w,"to",cx+w
-        print "Looping from ",cy-h,"to",cy+h
-        print "Points tot",(2*w)*(2*h)
         fromx=int(math.ceil(cx-w))
         tox=int(math.floor(cx+w))
         fromy = int(math.ceil(cy-h))
@@ -772,7 +764,6 @@ class MyCircle(OGLAnnotation, ogl.CircleShape):
         
         memdc = wx.MemoryDC()
         memdc.SelectObject(bg)
-        print cx0,cy0,cx1,cy1
         dc.Blit(cx0,cy0,abs(cx1-cx0),abs(cy1-cy0),memdc,cx0,cy0)
         memdc.SelectObject(wx.NullBitmap)
 #        dc.DrawBitmap(bg,0,0)
@@ -793,9 +784,18 @@ class MyPolygon(OGLAnnotation, ogl.PolygonShape):
         global count
         if not self.__class__ in count:
             count[self.__class__]=1
-        self.setName("Polygon #%d"%count[self.__class__])
+        self.name = "Polygon #%d"%count[self.__class__]
+        self.setName(self.name)
         count[self.__class__]+=1
         self.attrList = ["_points", "_xpos","_ypos"]
+    def OnDraw(self, dc):
+        """
+        Created: 04.07.2007, KP
+        Description: method for drawing the object
+        """
+        self.setName(self.name)
+        self.Recentre(dc)
+        ogl.PolygonShape.OnDraw(self, dc)
         
     def restoreFrom(self, annotation):
         """
@@ -807,7 +807,6 @@ class MyPolygon(OGLAnnotation, ogl.PolygonShape):
         points=[]
         pts=[]
         x0, y0 = self._xpos, self._ypos
-        print "Restoring polygon to pos",x0,y0
         for x,y in self._points:
             points.append((x+x0, y+y0))
             
@@ -819,7 +818,7 @@ class MyPolygon(OGLAnnotation, ogl.PolygonShape):
         self.SetX(mx)
         self.SetY(my)        
 #        self.CalculatePolygonCentre()
-#        self.CalculateBoundingBox()                
+        self.CalculateBoundingBox()                
         
     def __setstate__(self, state):
         """
@@ -859,7 +858,6 @@ class MyPolygon(OGLAnnotation, ogl.PolygonShape):
         Description: Set the scaling factor in use
         """   
         pts = []
-        print "Setting scale factor to",factor,"old factor=",self.scaleFactor
         
         for x,y in self._points:
             x/=self.scaleFactor
@@ -870,7 +868,6 @@ class MyPolygon(OGLAnnotation, ogl.PolygonShape):
         self._points = pts
         
         x, y = self.GetX(), self.GetY()
-        print "Current pos=",x,y,"offset=",self._offset
         x-= self._offset[0]
         y-= self._offset[1]
         x /= self.scaleFactor
@@ -885,6 +882,7 @@ class MyPolygon(OGLAnnotation, ogl.PolygonShape):
         self.UpdateOriginalPoints()
         self.scaleFactor = factor
         self.ResetControlPoints()    
+        self.CalculateBoundingBox()                        
         self.updateEraseRect()
     
     def updateEraseRect(self):
@@ -898,8 +896,9 @@ class MyPolygon(OGLAnnotation, ogl.PolygonShape):
         x1+=self._xpos
         y1+=self._ypos
         self.eraseRect=(x0,y0,x1,y1)
-        
-    
+        self.UpdateOriginalPoints()
+        self.CalculateBoundingBox()                        
+  
     def getMinMaxXY(self):
         my,mx=10000,10000
         Mx,My=0,0
@@ -995,14 +994,14 @@ class MyPolygon(OGLAnnotation, ogl.PolygonShape):
             self.GetEventHandler().OnDraw(dc, self.GetX(), self.GetY())
             
         dc.DrawBitmap(self.GetCanvas().buffer,x0,y0)
-        
+        self.UpdateOriginalPoints()
+
             
      
 class MyPolygonControlPoint(ogl.PolygonControlPoint):
     AnnotationType="POLYGONCONTROLPOINT"
     # Implement resizing polygon or moving the vertex
     def OnDragLeft(self, draw, x, y, keys = 0, attachment = 0):
-        print "OnDragLeft",x,y
         #self._shape.GetEventHandler().OnSizingDragLeft(self, draw, x, y, keys, attachment)
         #self.CalculateNewSize(x,y)
         self.SetX(x)
@@ -1016,7 +1015,6 @@ class MyPolygonControlPoint(ogl.PolygonControlPoint):
         Created: 04.07.2007, KP
         Description: an event handler for when the polygon is resized
         """
-        print "OnSizingDragLeft",x,y
         ogl.PolygonControlPoint.OnSizingDragLeft(self, pt,x,y,keys,attch)
         self._shape.SetPointsFromControl(self)
         self._shape.updateEraseRect()
@@ -1078,7 +1076,6 @@ class MyEvtHandler(ogl.ShapeEvtHandler):
             flag=shape.OnDoubleClick(x,y)
             
         if flag and shape.isROI():
-            print "Name of shape=",shape.getName()
             dlg = wx.TextEntryDialog(self.parent,
                     'What is the name of this Region of Interest',
                     'Name of the Region of Interest', shape.getName())
