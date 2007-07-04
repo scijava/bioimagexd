@@ -80,7 +80,7 @@ def build():
         incl_modules.extend(get_files("Visualizer",asmodule=1))
         incl_modules.extend(get_files("lib",asmodule=1))
         incl_modules.extend(["wx.lib.mixins.listctrl"])
-        incl_modules.extend(["wx.grid"])
+        incl_modules.extend(["wx.grid","email"])
         print "Included modules=",incl_modules
         modules = get_files("Modules")
         iconFiles = os.path.join("Icons","*.*")
