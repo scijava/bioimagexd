@@ -405,8 +405,9 @@ class InteractivePanel(ogl.ShapeCanvas):
         labelStats.SetInput(1, itkLabel)
         labelStats.Update()
         
-        totint = labelStats.GetSum(255)
-        avgint = totint / float(n)        
+#        totint = labelStats.GetSum(255)
+        
+        avgint = labelStats.GetMean(255)   
         print "Average of the region is",avgint
         ds = self.dataUnit.getDataSource()
         shift, scale = ds.getIntensityScale()
@@ -737,19 +738,8 @@ class InteractivePanel(ogl.ShapeCanvas):
         Created: 28.05.2007, KP
         Description: event handler called when the visualization mode is about to be deactivated
         """
-#        shapelist = self.diagram.GetShapeList()
-#        
-#        for shape in shapelist:        
-#            sx,sy=shape.GetX(),shape.GetY()
-#            try:
-#                ox,oy = shape._offset
-#            except:
-#                ox,oy=0,0
-#            shape.SetX(sx-ox)
-#            shape.SetY(sy-oy)
-#            shape._offset = 0,0
         settings = self.dataUnit.getSettings()
-        if self.dataUnit: 
+        if self.dataUnit and self.dataUnit.getDataSource(): 
             self.saveAnnotations()
             bxd.storeSettingsToCache(self.dataUnit.getFileName()+"_"+self.dataUnit.getName()+"_annotations",[settings])
             self.dataUnit.getSettings().set("Annotations",None)
@@ -1044,6 +1034,8 @@ class InteractivePanel(ogl.ShapeCanvas):
         Created: 04.07.2007, KP
         Description: a method that iwll read cached annotations and show them after the panel has bee initialized
         """
+        if not self.dataUnit.getDataSource():       
+            return
         cachedSettings, cacheParser = bxd.getSettingsFromCache(self.dataUnit.getFileName()+"_"+self.dataUnit.getName()+"_annotations")
 
         if cachedSettings:

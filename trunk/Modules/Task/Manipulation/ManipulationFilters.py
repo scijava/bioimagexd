@@ -61,19 +61,18 @@ class IntensityMeasurementList(wx.ListCtrl):
         self.InsertColumn(0, "ROI")
         self.InsertColumn(1, "Voxel #")
         self.InsertColumn(2, "Sum")
-        self.InsertColumn(3,"Avg")
-        self.InsertColumn(4, "Min")
-        self.InsertColumn(5, "Max")
-        self.InsertColumn(6, u"Mean\u00B1std.dev.")
+        self.InsertColumn(3, "Min")
+        self.InsertColumn(4, "Max")
+        self.InsertColumn(5, u"Mean\u00B1std.dev.")
      
         #self.InsertColumn(2, "")
         self.SetColumnWidth(0, 70)
         self.SetColumnWidth(1, 60)
-        self.SetColumnWidth(2, 50)
+        self.SetColumnWidth(2, 60)
+        #self.SetColumnWidth(3, 50)
         self.SetColumnWidth(3, 50)
-        self.SetColumnWidth(4, 30)
-        self.SetColumnWidth(5, 40)
-        self.SetColumnWidth(6, 100)
+        self.SetColumnWidth(4, 50)
+        self.SetColumnWidth(5, 100)
 
         self.SetItemCount(1000)
 
@@ -110,8 +109,8 @@ class IntensityMeasurementList(wx.ListCtrl):
             return "%s"%m[0]
         elif col in [3]:
             return "%.2f"%m[3]
-        elif col == 6:
-            return u"%.2f\u00B1%.2f"%(m[6], m[7])
+        elif col == 5:
+            return u"%.2f\u00B1%.2f"%(m[5], m[6])
         return "%d"%m[col]
 
     def OnGetItemImage(self, item):
@@ -765,7 +764,7 @@ class ROIIntensityFilter(ProcessingFilter.ProcessingFilter):
         """     
         if parameter=="ROI":
             n=bxd.visualizer.getRegionsOfInterest()
-            if n:return n[0]
+            if n:return (0,n[0])
             return 0
         return 0
         
@@ -779,10 +778,10 @@ class ROIIntensityFilter(ProcessingFilter.ProcessingFilter):
             
         
         if not self.parameters["AllROIs"]:
-            rois = [self.parameters["ROI"]]
+            rois = [self.parameters["ROI"][1]]
+            print "rois=",rois
         else:
             rois=bxd.visualizer.getRegionsOfInterest()
-            print rois
         imagedata =  self.getInput(1)
 
         
@@ -804,7 +803,7 @@ class ROIIntensityFilter(ProcessingFilter.ProcessingFilter):
             labelStats.SetInput(0, itkOrig)
             labelStats.SetInput(1, itkLabel)
             labelStats.Update()
-            
+            n = labelStats.GetCount(255)
             totint = labelStats.GetSum(255)
             maxval = labelStats.GetMaximum(255)
             minval = labelStats.GetMinimum(255)
@@ -812,9 +811,8 @@ class ROIIntensityFilter(ProcessingFilter.ProcessingFilter):
 #            variance = labelStats.GetVariance(255)
             mean = labelStats.GetMean(255)
             sigma = labelStats.GetSigma(255)
-            avgint = totint / float(n)
             
-            values.append((mask.getName(),n,totint,avgint, minval, maxval, mean, sigma))
+            values.append((mask.getName(),n,totint, minval, maxval, mean, sigma))
         if self.reportGUI:
             self.reportGUI.setMeasurements(values)
             self.reportGUI.Refresh()
