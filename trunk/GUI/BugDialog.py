@@ -36,11 +36,11 @@ import MainWindow
 import scripting as bxd
 import smtplib
 #import lib.ssmtplib as ssmtplib
-import email.Message
 
-from email.MIMEMultipart import MIMEMultipart
-from email.MIMEText import MIMEText
-from email.MIMEImage import MIMEImage
+import email.mime.multipart
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.mime.image import MIMEImage
 
 import Dialogs
 def mail(to='', senderName='', text=''):
@@ -111,7 +111,8 @@ class BugDialog(wx.Dialog):
 Carefully describe the steps you took and try to be as specific as possible. This helps
 the BioImageXD development team solve the problems as quickly as possible.  A log of your
 last usage of the software will be attached to the report to aid the developers in solving
-the error.
+the error. If you wish to be contacted regarding the error, you can fill in your name and
+email address. It is not required, however, and you can leave them empty if you wish.
 """)
         else:
             text = wx.StaticText(self,-1,"""The last execution of BioImageXD ended with an abnormal shutdown. Data from the last execution
