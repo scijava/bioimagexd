@@ -566,12 +566,16 @@ class InteractivePanel(ogl.ShapeCanvas):
         return maskImage,names
         
         
-    def createPolygon(self,points):
+    def createPolygon(self,points, zoomFactor = -1):
         """
         Created: 07.05.2006, KP
         Description: Create a polygon
         """            
+        if zoomFactor == -1:
+            zoomFactor = self.zoomFactor
         shape = MyPolygon(zoomFactor = self.zoomFactor)
+        shape._offset = (self.xoffset,self.yoffset)        
+        
         pts=[]
         #shape.SetCentreResize(0)
         mx,my= shape.polyCenter(points)
@@ -845,6 +849,9 @@ class InteractivePanel(ogl.ShapeCanvas):
             shape.SetCentreResize(0)  
             shape.SetX( ex+(x-ex)/2 )
             shape.SetY( ey+(y-ey)/2 )
+        elif annotationClass == "FINISHED_POLYGON":
+            shape = MyPolygon(zoomFactor = scaleFactor)
+            
         elif annotationClass == "POLYGON":
             if not self.currentSketch:
                 shape = MyPolygonSketch(zoomFactor = scaleFactor)
@@ -875,11 +882,8 @@ class InteractivePanel(ogl.ShapeCanvas):
             shape.SetY( ey+(y-ey)/2 )                
         
         if shape:    
-            shape._offset = (self.xoffset,self.yoffset)
-        
-            self.addNewShape(shape)
-
-
+            shape._offset = (self.xoffset,self.yoffset)        
+            self.addNewShape(shape, noUpdate = noUpdate)
             
         self.saveAnnotations()
         if not noUpdate:
@@ -926,7 +930,6 @@ class InteractivePanel(ogl.ShapeCanvas):
         Created: 04.07.2005, KP
         Description: Update all the annotations
         """
-        print "\n\nUPDATE ANNOTATIONS"
         for i in self.diagram.GetShapeList():
             if hasattr(i,"setScaleFactor"):
                 i.setScaleFactor(self.zoomFactor)
@@ -1057,6 +1060,7 @@ class InteractivePanel(ogl.ShapeCanvas):
         for obj in annotations:
             obj.SetEventHandler(obj)
             newobj = self.addNewAnnotation(obj.AnnotationType, 0,0, 10, 10, noUpdate=1, scaleFactor = 1)
+            print "Restoring from",obj
             newobj.restoreFrom(obj)
             newobj._offset = (0,0)
         self.setOffset(self.xoffset, self.yoffset)

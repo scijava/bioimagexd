@@ -40,7 +40,7 @@ import math
 count={}
 
 class OGLAnnotation:
-    def unoffset(self, attr, x):
+    def unoffset(self, attr, value):
         """
         Created: 04.07.2007, KP
         Description: unoffset a given attribute
@@ -48,19 +48,27 @@ class OGLAnnotation:
         sf = self.GetCanvas().getZoomFactor()
         print "Unoffsetting",attr,"scale factor=",sf
         if attr in ["_xpos"]:
-            return (x-self._offset[0])/sf
+            return (value-self._offset[0])/sf
         elif attr=="_ypos":
-            return (x-self._offset[1])/sf
+            return (value-self._offset[1])/sf
         elif attr in ["_width","_height"]:
-            return x / sf      
-        return x
-    def moveBy(self, x,y):
+            return value / sf      
+        elif attr in ["_points"]:
+            pts = []
+            for pt in value:
+                x,y = pt
+                pts.append((x / sf, y / sf))
+            return pts
+        return value
+        
+        
+    def updateEraseRect(self):
         """
         Created: 04.07.2007, KP
-        Description: move the annotaiton by given x,y
+        Description: if the annotation defines a rectangle that needs to be erased upon repaint, update that
         """
-        self.SetX(self._xpos+x)
-        self.SetY(self._ypos+y)
+        return
+
         
     def setOffset(self, x,y):
         """
@@ -170,7 +178,6 @@ class OGLAnnotation:
         Created: 04.07.2007, KP
         Description: copy attributes of given annotation
         """
-        print "annotation=",annotation.__dict__.keys()
         for i in self.attrList:
             self.__dict__[i] = annotation.__dict__[i]
 
@@ -243,7 +250,8 @@ class OGLAnnotation:
             dc.Blit(tox, toy, maxX+4+2*penWidth,maxY+4+2*penWidth,srcdc, tox, toy)
         else:
             x1,y1, x2, y2 = self.eraseRect
-            print "blitting ",x1+x0,y1+y0, (x2-x1)+2,(y2-y1)+2
+            if x1 <0:x1=0
+            if y1<0:y1=0
             dc.Blit(x1+x0,y1+y0, abs(x2-x1)+2,abs(y2-y1)+2,srcdc, x1+x0,y1+y0)
         srcdc.SelectObject(wx.NullBitmap)        
         
@@ -525,6 +533,14 @@ class MyPolygonSketch(OGLAnnotation, ogl.Shape):
         self.maxy = max(self.maxy, y)
         
     def OnDraw(self, dc):
+        """
+        Created: KP
+        Description: draw the sketch of the polygon
+        """
+        n = len(self.points)
+        if self.tentativePoint:n+=1
+        if n<2:return
+            
         brush = wx.TRANSPARENT_BRUSH
         dc.SetBrush(brush)
         pen = wx.Pen(wx.Colour(255,0,0),1)
@@ -765,7 +781,7 @@ class MyCircle(OGLAnnotation, ogl.CircleShape):
         dc.DestroyClippingRegion()
 
 class MyPolygon(OGLAnnotation, ogl.PolygonShape):    
-    AnnotationType = "POLYGON"
+    AnnotationType = "FINISHED_POLYGON"
     def __init__(self, zoomFactor = 1.0):
         """
         Created: 26.06.2006, KP
@@ -779,17 +795,40 @@ class MyPolygon(OGLAnnotation, ogl.PolygonShape):
             count[self.__class__]=1
         self.setName("Polygon #%d"%count[self.__class__])
         count[self.__class__]+=1
-        self.attrList = ["_points"]
+        self.attrList = ["_points", "_xpos","_ypos"]
+        
+    def restoreFrom(self, annotation):
+        """
+        Created: 04.07.2007, KP
+        Description: copy attributes of given annotation
+        """
+        self.ClearPoints()
+        OGLAnnotation.restoreFrom(self, annotation)
+        points=[]
+        pts=[]
+        x0, y0 = self._xpos, self._ypos
+        print "Restoring polygon to pos",x0,y0
+        for x,y in self._points:
+            points.append((x+x0, y+y0))
+            
+        mx,my= self.polyCenter(points)
+        
+        for x,y in points:
+            pts.append((((x-mx)),((y-my))))
+        self.Create(pts)
+        self.SetX(mx)
+        self.SetY(my)        
+#        self.CalculatePolygonCentre()
+#        self.CalculateBoundingBox()                
         
     def __setstate__(self, state):
         """
         Created: 24.10.2006, KP
         Description: Reconstruct state of this object from given dictionary
         """
-        for key in state.keys():
-            self.getAttr(state,key)
-        self.MakeControlPoints()
-        
+        OGLAnnotation.__setstate__(self, state)
+        self._originalPoints = self._points[:]
+                
     def polyCenter(self,points):
         """
         Created: 16.06.2006, KP
@@ -820,38 +859,45 @@ class MyPolygon(OGLAnnotation, ogl.PolygonShape):
         Description: Set the scaling factor in use
         """   
         pts = []
+        print "Setting scale factor to",factor,"old factor=",self.scaleFactor
         
         for x,y in self._points:
-            x-= self._offset[0]
-            y-= self._offset[1]
-
             x/=self.scaleFactor
             y/=self.scaleFactor
-            
             x*=factor
             y*=factor
-            x+= self._offset[0]
-            y+= self._offset[1]
-
             pts.append((x,y))
         self._points = pts
-
-
-        x,y = self.GetX(),self.GetY()
-        x-= self._offset[0]
-        y-= self._offset[1]        
-        x/= self.scaleFactor
-        y/=self.scaleFactor
         
-        x*=factor
-        y*=factor
+        x, y = self.GetX(), self.GetY()
+        print "Current pos=",x,y,"offset=",self._offset
+        x-= self._offset[0]
+        y-= self._offset[1]
+        x /= self.scaleFactor
+        y /= self.scaleFactor
+        x *= factor
+        y *= factor
         x+= self._offset[0]
-        y+= self._offset[1]        
+        y+= self._offset[1]
         self.SetX(x)
         self.SetY(y)
+
         self.UpdateOriginalPoints()
         self.scaleFactor = factor
         self.ResetControlPoints()    
+        self.updateEraseRect()
+    
+    def updateEraseRect(self):
+        """
+        Created: 04.07.2007, KP
+        Description: update the erase rect of this polygon
+        """
+        x0,y0, x1, y1 = self.getMinMaxXY() 
+        x0+=self._xpos
+        y0+=self._ypos
+        x1+=self._xpos
+        y1+=self._ypos
+        self.eraseRect=(x0,y0,x1,y1)
         
     
     def getMinMaxXY(self):
@@ -863,6 +909,7 @@ class MyPolygon(OGLAnnotation, ogl.PolygonShape):
             if x>Mx:Mx=x
             if y>My:My=y
         return mx,my,Mx,My
+        
     def getCoveredPoints(self):
         x0,y0,x1,y1=self.getMinMaxXY()
         pts={}
@@ -929,7 +976,7 @@ class MyPolygon(OGLAnnotation, ogl.PolygonShape):
         self.Erase(dc)
         
         for i,control in enumerate(self._controlPoints):
-            self._points[i] = wx.RealPoint(control.GetX()-self._xpos,control.GetY()-self._ypos)
+            self._points[i] =         wx.RealPoint(control.GetX()-self._xpos,control.GetY()-self._ypos)
             self._originalPoints[i] = wx.RealPoint(control.GetX()-self._xpos,control.GetY()-self._ypos)
         self.CalculatePolygonCentre()
         self.CalculateBoundingBox()        
@@ -940,6 +987,7 @@ class MyPolygon(OGLAnnotation, ogl.PolygonShape):
         dottedPen = wx.Pen(wx.Colour(0, 0, 0), 1, wx.DOT)
         dc.SetPen(dottedPen)
         dc.SetBrush(wx.TRANSPARENT_BRUSH)
+        self.updateEraseRect()
         
         if not end:
             self.GetEventHandler().OnDrawOutline(dc, self.GetX(), self.GetY(), self._originalWidth,self._originalHeight)
@@ -954,35 +1002,58 @@ class MyPolygonControlPoint(ogl.PolygonControlPoint):
     AnnotationType="POLYGONCONTROLPOINT"
     # Implement resizing polygon or moving the vertex
     def OnDragLeft(self, draw, x, y, keys = 0, attachment = 0):
+        print "OnDragLeft",x,y
         #self._shape.GetEventHandler().OnSizingDragLeft(self, draw, x, y, keys, attachment)
         #self.CalculateNewSize(x,y)
         self.SetX(x)
         self.SetY(y)
         #print "Setting x,y to",x,y
         self._shape.SetPointsFromControl(self)    
+        self._shape.updateEraseRect()
 
+    def OnSizingDragLeft(self, pt, x, y, keys, attch):
+        """
+        Created: 04.07.2007, KP
+        Description: an event handler for when the polygon is resized
+        """
+        print "OnSizingDragLeft",x,y
+        ogl.PolygonControlPoint.OnSizingDragLeft(self, pt,x,y,keys,attch)
+        self._shape.SetPointsFromControl(self)
+        self._shape.updateEraseRect()
 
-
+    def OnEndSizingDragLeft(self, pt, x, y, keys, attch):
+        """
+        Created: 04.07.2007, KP
+        Description: an event handler for when the polygon is resized
+        """
+        ogl.PolygonControlPoint.OnSizingDragLeft(self, pt,x,y,keys,attch)
+        self._shape.SetPointsFromControl(self)
+        self._shape.ResetControlPoints()
+        
+        self._shape.updateEraseRect()
+     
+        self.GetCanvas().repaintHelpers()
+        self.GetCanvas().Refresh()
+ 
+        
+        
     def OnBeginDragLeft(self, x, y, keys = 0, attachment = 0):
         #self._shape.GetEventHandler().OnSizingBeginDragLeft(self, x, y, keys, attachment)
         
         self.SetX(x)
         self.SetY(y)
         self._shape.SetPointsFromControl(self) 
+        self._shape.updateEraseRect()
+
     def OnEndDragLeft(self, x, y, keys = 0, attachment = 0):
         #self._shape.GetEventHandler().OnSizingEndDragLeft(self, x, y, keys, attachment)
         self._shape.SetPointsFromControl(self)    
         self._shape.ResetControlPoints()
-        #self.GetCanvas().paintPreview()
-        self.GetCanvas().repaintHelpers()
-        # Uncomment
-        self.GetCanvas().Refresh()
+        self._shape.updateEraseRect()
         
-        #self.SetX(x)
-        #self.SetY(y)
-        #self._shape.SetPointsFromControl(self, end = 1) 
-
-
+        self.GetCanvas().repaintHelpers()
+        self.GetCanvas().Refresh()
+ 
         
 
 class MyEvtHandler(ogl.ShapeEvtHandler):
@@ -1058,7 +1129,6 @@ class MyEvtHandler(ogl.ShapeEvtHandler):
         
     def OnDragLeft(self, draw, x, y, keys = 0, attachment = 0):
         ogl.ShapeEvtHandler.OnDragLeft(self, draw, x,y, keys, attachment)
-    
         self.parent.repaintHelpers()       
         #self.parent.Refresh()
     #def OnDragRight(self, draw, x, y, keys = 0, attachment = 0):
@@ -1068,23 +1138,22 @@ class MyEvtHandler(ogl.ShapeEvtHandler):
 
     def OnEndDragLeft(self, x, y, keys=0, attachment=0):
         shape = self.GetShape()
-        print "OnEndDragLeft",x,y
         ogl.ShapeEvtHandler.OnEndDragLeft(self, x, y, keys, attachment)
 
         if not shape.Selected():
             self.OnLeftClick(x, y, keys, attachment)
+            
+        self.GetShape().updateEraseRect()
         self.parent.repaintHelpers()
         self.parent.Refresh()
         
     def OnSizingEndDragLeft(self, pt, x, y, keys, attch):
-        print "OnSizingEndDragLeft",x,y
         ogl.ShapeEvtHandler.OnSizingEndDragLeft(self, pt, x, y, keys, attch)
         
         #self.parent.paintPreview()
         self.parent.repaintHelpers()
         self.parent.Refresh()
     def OnMovePost(self, dc, x, y, oldX, oldY, display):
-        print "OnMovePost"
         ogl.ShapeEvtHandler.OnMovePost(self, dc, x, y, oldX, oldY, display)
 
 #        self.parent.paintPreview()
