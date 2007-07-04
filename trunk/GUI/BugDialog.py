@@ -38,6 +38,19 @@ import smtplib
 #import lib.ssmtplib as ssmtplib
 
 import email.mime.multipart
+import email.Iterators
+import email.Charset
+import email.Encoders
+import email.Errors
+import email.FeedParser
+import email.Generator
+import email.Header
+import email.Iterators
+import email.Message
+import email.Parser
+import email.Utils
+import email.base64MIME
+import email.quopriMIME
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.image import MIMEImage
