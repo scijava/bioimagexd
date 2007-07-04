@@ -132,7 +132,7 @@ void vtkImageSimpleMIPExecute(vtkImageSimpleMIP *self, int id,int NumberOfInputs
   
   inData[0]->GetContinuousIncrements(uExt,inIncX, inIncY, inIncZ);
   outData->GetContinuousIncrements(outExt, outIncX, outIncY, outIncZ);
-  printf("Thread id = %d, uext=%d,%d,%d,%d,%d,%d inIncX=%d, inIncY=%d, inIncZ=%d\n",id,PRT_EXT(uExt), inIncX,inIncY,inIncZ);
+  //printf("Thread id = %d, uext=%d,%d,%d,%d,%d,%d inIncX=%d, inIncY=%d, inIncZ=%d\n",id,PRT_EXT(uExt), inIncX,inIncY,inIncZ);
 //  printf("Thread id = %d, outIncX=%d, outIncY=%d, outIncZ=%d\n",id, outIncX,outIncY,outIncZ);
   //printf("Thread id = %d, Out ext = %d,%d,%d,%d,%d,%d\n",id, PRT_EXT(outExt));
 //  printf("Thread id = %d Update ext = %d,%d,%d,%d,%d,%d\n",id, PRT_EXT(uExt));
@@ -189,7 +189,7 @@ void vtkImageSimpleMIPExecute(vtkImageSimpleMIP *self, int id,int NumberOfInputs
     inPtr+=inIncZ;
     
   }
-  printf("Thread id = %d MIP done\n", id);
+// printf("Thread id = %d MIP done\n", id);
 }
 int vtkImageSimpleMIP::RequestUpdateExtent (
   vtkInformation* vtkNotUsed(request),
@@ -213,7 +213,7 @@ int vtkImageSimpleMIP::RequestUpdateExtent (
   if(uext[3]==-1) uext[3] = ext[3];    
   if(uext[5] < ext[5] ) uext[5] = ext[5];
   if(uext[4] > ext[4] ) uext[4] = ext[4];
-  printf("vtkImageSimpleMIP Setting uextent to %d,%d,%d,%d,%d,%d\n",PRT_EXT(uext));
+  // printf("vtkImageSimpleMIP Setting uextent to %d,%d,%d,%d,%d,%d\n",PRT_EXT(uext));
  // outInfo->Set(vtkStreamingDemandDrivenPipeline::UPDATE_EXTENT(), uext,6);
   inInfo->Set(vtkStreamingDemandDrivenPipeline::UPDATE_EXTENT(), uext,6);
   return 1;    
@@ -233,7 +233,7 @@ void vtkImageSimpleMIP::ThreadedRequestData (
   vtkImageData **outData,
   int outExt[6], int id)
 {
-    printf("vtkImageSimpleMIP ThreadedRequestData outExt=%d,%d,%d,%d,%d,%d\n",outExt[0],outExt[1],outExt[2],outExt[3],outExt[4],outExt[5]);
+    // printf("vtkImageSimpleMIP ThreadedRequestData outExt=%d,%d,%d,%d,%d,%d\n",outExt[0],outExt[1],outExt[2],outExt[3],outExt[4],outExt[5]);
     int uExt[6],wholeExt[6];
   vtkInformation *inInfo = inputVector[0]->GetInformationObject(0);
     vtkInformation* outInfo = outputVector->GetInformationObject(0);
@@ -333,7 +333,7 @@ int vtkImageSimpleMIP::SplitExtent(int splitExt[6],
                 << splitExt[2] << ", " << splitExt[3] << ", "
                 << splitExt[4] << ", " << splitExt[5] << ")");
 
-  printf("Splitting into %d pieces\n",maxThreadIdUsed+1);
+  // printf("Splitting into %d pieces\n",maxThreadIdUsed+1);
   return maxThreadIdUsed + 1;
 }
 

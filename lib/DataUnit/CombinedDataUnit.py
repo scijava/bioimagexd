@@ -59,7 +59,6 @@ class CombinedDataUnit(DataUnit.DataUnit):
         #self.byName={}
         self.module = None
         self.outputChls={}
-        self.cacheKey = None
         self.checkDimensions = 1
         self.currentDimensions = None
         
@@ -69,19 +68,7 @@ class CombinedDataUnit(DataUnit.DataUnit):
         Description: return the output directory where this dataunit will write it's output
         """
         return self.outputDirectory
-    def setCacheKey(self,key):
-        """
-        Created: 23.10.2006, KP
-        Description: Set the key under which this dataunit is stored in the cache
-        """
-        self.cacheKey = key
-        
-    def getCacheKey(self):
-        """
-        Created: 23.10.2006, KP
-        Description: Get the key under which this dataunit is stored in the cache
-        """
-        return self.cacheKey
+
         
     def isProcessed(self):
         """

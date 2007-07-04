@@ -1082,10 +1082,8 @@ class Visualizer:
         #Logging.info("\nenable(%s)\n"%(not not flag),kw="visualizer")
         self.enabled=flag
         if self.currentWindow:
-            try:
-                self.currentWindow.enable(flag)
-            except:
-                pass
+                Logging.info("Setting enabled status of current window to %s"%(not not flag),kw="visualizer")
+                self.currentWindow.enable(flag)                
         if self.setLater:
             self.setupMode()
             self.setLater = 0
@@ -1173,7 +1171,6 @@ class Visualizer:
                 showItems=1
         self.showItemToolbar(showItems)
             
-        print "enabled=",self.enabled,"currmode=",self.currMode
         if self.enabled and self.currMode:      
             self.setupMode()
         else:
@@ -1225,7 +1222,6 @@ class Visualizer:
             
         else:
             self.oldEnabled = self.enabled
-            print "\nDisabling rendering...\n"
             self.enable(0)
             self.noRender = flag
             
@@ -1314,7 +1310,6 @@ class Visualizer:
         Created: 31.07.2005, KP
         Description: Set the timepoint to be shown
         """    
-        print "onUpdateTimepoint",evt
         if not evt:
             diff=abs(time.time()-self.changing)
             if diff < 0.01:
@@ -1413,7 +1408,6 @@ class Visualizer:
             
             for key in wcDict.keys():
                 wc+="|%s|*.%s"%(wcDict[key],key)
-            print "wc=",wc
             filename = Dialogs.askSaveAsFileName(self.parent,"Save snapshot of rendered scene",initFile, wc, "snapshotImage")
             
             
@@ -1512,7 +1506,6 @@ class Visualizer:
         Created: 28.04.2005, KP
         Description: Set the timepoint to be shown
         """  
-        print "blockTpUpdate=",self.blockTpUpdate
         if self.blockTpUpdate:return
 
         Logging.info("setTimepoint(%d)"%timepoint,kw="visualizer")

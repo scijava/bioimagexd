@@ -319,7 +319,7 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         if y>=self.ydim:y=self.ydim-1
         Logging.info("Returning x,y,z=(%d,%d,%d)"%(rx,ry,rz),kw="preview")
         ncomps=self.rawImage.GetNumberOfScalarComponents()
-        self.rawImage.SetExtent(self.rawImage.GetWholeExtent())
+        #self.rawImage.SetExtent(self.rawImage.GetWholeExtent())
         if ncomps==1:
             Logging.info("One component in raw image",kw="preview")
             rv= -1
@@ -332,7 +332,7 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
             else:
                 scalar = []
                 for i,img in enumerate(self.rawImages):
-                    img.SetExtent(img.GetWholeExtent())
+ #                   img.SetExtent(img.GetWholeExtent())
                     if self.dataUnit.getOutputChannel(i):
                         scalar.append(img.GetScalarComponentAsDouble(x,y,self.z,0))
                 scalar = tuple(scalar)
@@ -448,13 +448,11 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         if bxd.inIO:
             Logging.info("\n\n\n------> STILL IN IO, WON'T UPDATE PREVIEW")
             return
-        #print "\n\nUPDATING PREVIEW..."
         if self.renewNext:
             renew=1
             self.renewNext=0
         
         if not self.dataUnit:
-            #print "No dataunit"
             self.paintPreview()
             return
         if not self.enabled:
@@ -464,7 +462,6 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         if not self.running:
             renew=1
             self.running=1
-        #if isinstance(self.dataUnit,CombinedDataUnit):
         
         if self.dataUnit.isProcessed():
             try:
@@ -483,7 +480,6 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
                 return
         else:
             preview = self.dataUnit.getTimePoint(self.timePoint)
-#            print "GOt raw image",preview
             self.rawImage = preview
             Logging.info("Using timepoint %d as preview"%self.timePoint,kw="preview")
         
@@ -492,7 +488,6 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
             preview=None
             black=1
         if not black:
-            #print "Processing preview=",preview.GetDimensions()
             colorImage = self.processOutputData(preview)
         else:
             colorImage=preview
@@ -503,11 +498,9 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         uext=None
         if self.z!=-1 and not self.mip:
             x,y = self.xdim, self.ydim
-            #print "\nSetting update extent to ",x,y,self.z
             usedUpdateExt=1
             #colorImage.SetUpdateExtent(0,x-1,0,y-1,self.z,self.z)
             uext=(0,x-1,0,y-1,self.z,self.z)
-            print "Update extent = ",uext
 
         t=time.time()    
         #print colorImage
@@ -522,6 +515,7 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
                     
         if colorImage:
             x,y,z=colorImage.GetDimensions()
+
             
             if not usedUpdateExt and not self.mip:
                 bxd.visualizer.zslider.SetRange(1,z)
@@ -814,6 +808,7 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         Created: 24.03.2005, KP
         Description: Paints the image to a DC
         """        
+        Logging.info("PreviewFrame is enbled=",not not self.enabled,kw="preview")
         # Don't paint anything if there's going to be a redraw anyway
         #if self.fitLater:
         #    return

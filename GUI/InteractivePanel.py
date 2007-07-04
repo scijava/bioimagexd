@@ -457,7 +457,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 #        assert x>=0,"Offset cannot be negative"
 #        assert y>=0,"Offset cannot be negative"
         shapelist = self.diagram.GetShapeList()
-        
+        print "\n\nSET OFFSET",x,y
         for shape in shapelist:        
             if not hasattr(shape,"getOffset"):
                 continue
@@ -465,13 +465,14 @@ class InteractivePanel(ogl.ShapeCanvas):
             ox,oy = shape.getOffset()
             xdiff = x-ox
             ydiff = y-oy
+            print "Moving shape by ",xdiff,ydiff
             shape._offset=(x,y)
             #shape.Move(x+xdiff,y+ydiff, display=False)
             shape.SetX(sx+xdiff)
             shape.SetY(sy+ydiff)
-        self.repaintHelpers()
 
         self.xoffset, self.yoffset = x,y
+        self.repaintHelpers()
                
         
     def unOffset(self, *args):
@@ -732,17 +733,22 @@ class InteractivePanel(ogl.ShapeCanvas):
         Created: 28.05.2007, KP
         Description: event handler called when the visualization mode is about to be deactivated
         """
-        shapelist = self.diagram.GetShapeList()
-        
-        for shape in shapelist:        
-            sx,sy=shape.GetX(),shape.GetY()
-            try:
-                ox,oy = shape._offset
-            except:
-                ox,oy=0,0
-            shape.SetX(sx-ox)
-            shape.SetY(sy-oy)
-            shape._offset = 0,0
+#        shapelist = self.diagram.GetShapeList()
+#        
+#        for shape in shapelist:        
+#            sx,sy=shape.GetX(),shape.GetY()
+#            try:
+#                ox,oy = shape._offset
+#            except:
+#                ox,oy=0,0
+#            shape.SetX(sx-ox)
+#            shape.SetY(sy-oy)
+#            shape._offset = 0,0
+        settings = self.dataUnit.getSettings()
+        if self.dataUnit: 
+            self.saveAnnotations()
+            bxd.storeSettingsToCache(self.dataUnit.getFileName()+"_"+self.dataUnit.getName()+"_annotations",[settings])
+            self.dataUnit.getSettings().set("Annotations",None)
                        
     def getDuplicateDC(self, dc):
         """
@@ -781,61 +787,10 @@ class InteractivePanel(ogl.ShapeCanvas):
         if self.action==ZOOM_TO_BAND:
             self.zoomToRubberband(event)
         elif self.action==ADD_ANNOTATION:
-            #self.updateObject(self.annotationClass,event
             x,y=event.GetPosition()
             ex,ey = self.actionstart
-            
-            if self.annotationClass == "CIRCLE":
-                diff = max(abs(x-ex),abs(y-ey))
-                if diff<2:diff=2
-                
-                shape = MyCircle(2*diff,zoomFactor = self.zoomFactor)
-                shape.SetCentreResize(0)
-                
-                shape.SetX( ex )
-                shape.SetY( ey )
-
-            elif self.annotationClass == "RECTANGLE":
-                dx = abs(x-ex)
-                dy = abs(y-ey)
-                shape = MyRectangle(dx,dy, zoomFactor = self.zoomFactor)
-                shape.SetCentreResize(0)  
-                shape.SetX( ex+(x-ex)/2 )
-                shape.SetY( ey+(y-ey)/2 )
-            elif self.annotationClass == "POLYGON":
-                if not self.currentSketch:
-                    shape = MyPolygonSketch(zoomFactor = self.zoomFactor)
-                    shape.SetCentreResize(0)
-                    shape.SetX( ex+(x-ex)/2 )
-                    shape.SetY( ey+(y-ey)/2 )
-                    if self.actionstart!=(0,0):
-                        shape.AddPoint(self.actionstart)                    
-                    self.currentSketch = shape
-                else:
-                    shape = None
-                if self.actionend!=(0,0):                    
-                    self.currentSketch.AddPoint(self.actionend)      
-
-            elif self.annotationClass == "SCALEBAR":
-                dx = abs(x-ex)
-                dy = abs(y-ey)
-                shape = MyScalebar(dx,dy, voxelsize = self.voxelSize, zoomFactor = self.zoomFactor)
-                shape.SetCentreResize(0)  
-                shape.SetX( ex+(x-ex)/2 )
-                shape.SetY( ey+(y-ey)/2 )
-            elif self.annotationClass == "TEXT":
-                dx = abs(x-ex)
-                dy = abs(y-ey)
-                shape = MyText(dx,dy, zoomFactor = self.zoomFactor)
-                shape.SetCentreResize(0)  
-                shape.SetX( ex+(x-ex)/2 )
-                shape.SetY( ey+(y-ey)/2 )                
-            
-            if shape:    
-                shape._offset = (self.xoffset,self.yoffset)
-            
-                self.addNewShape(shape)
-            
+            self.addNewAnnotation(self.annotationClass, x,y, ex, ey)
+        
             if self.annotationClass=="POLYGON":
                 self.actionstart=self.actionend   
                 self.prevPolyEnd = self.actionend
@@ -844,12 +799,7 @@ class InteractivePanel(ogl.ShapeCanvas):
                 self.actionstart = (0,0)
                 self.actionend = (0,0)
                 self.prevPolyEnd=None
-                
-            self.saveAnnotations()
-            messenger.send(None,"update_annotations")
-
-            #self.updateAnnotations()
-            return 1
+                return 1
         elif self.action==SET_THRESHOLD:
             self.setThreshold()
         elif self.action==DELETE_ANNOTATION:            
@@ -869,6 +819,72 @@ class InteractivePanel(ogl.ShapeCanvas):
         self.annotationClass=None                    
         #ogl.ShapeCanvas.OnMouseEvent(self,event)
         event.Skip()
+
+
+    def addNewAnnotation(self, annotationClass, x,y,ex,ey, noUpdate = 0, scaleFactor = -1):
+        """
+        Created: 03.07.2007, KP
+        Description: add an annotaiton of given type
+        """
+        if scaleFactor == -1:
+            scaleFactor = self.zoomFactor
+        if annotationClass == "CIRCLE":
+            diff = max(abs(x-ex),abs(y-ey))
+            if diff<2:diff=2
+            
+            shape = MyCircle(2*diff,zoomFactor = scaleFactor)
+            shape.SetCentreResize(0)
+            
+            shape.SetX( ex )
+            shape.SetY( ey )
+
+        elif annotationClass == "RECTANGLE":
+            dx = abs(x-ex)
+            dy = abs(y-ey)
+            shape = MyRectangle(dx,dy, zoomFactor = scaleFactor)
+            shape.SetCentreResize(0)  
+            shape.SetX( ex+(x-ex)/2 )
+            shape.SetY( ey+(y-ey)/2 )
+        elif annotationClass == "POLYGON":
+            if not self.currentSketch:
+                shape = MyPolygonSketch(zoomFactor = scaleFactor)
+                shape.SetCentreResize(0)
+                shape.SetX( ex+(x-ex)/2 )
+                shape.SetY( ey+(y-ey)/2 )
+                if self.actionstart!=(0,0):
+                    shape.AddPoint(self.actionstart)                    
+                self.currentSketch = shape
+            else:
+                shape = None
+            if self.actionend!=(0,0):                    
+                self.currentSketch.AddPoint(self.actionend)      
+
+        elif annotationClass == "SCALEBAR":
+            dx = abs(x-ex)
+            dy = abs(y-ey)
+            shape = MyScalebar(dx,dy, voxelsize = self.voxelSize, zoomFactor = scaleFactor)
+            shape.SetCentreResize(0)  
+            shape.SetX( ex+(x-ex)/2 )
+            shape.SetY( ey+(y-ey)/2 )
+        elif annotationClass == "TEXT":
+            dx = abs(x-ex)
+            dy = abs(y-ey)
+            shape = MyText(dx,dy, zoomFactor = scaleFactor)
+            shape.SetCentreResize(0)  
+            shape.SetX( ex+(x-ex)/2 )
+            shape.SetY( ey+(y-ey)/2 )                
+        
+        if shape:    
+            shape._offset = (self.xoffset,self.yoffset)
+        
+            self.addNewShape(shape)
+
+
+            
+        self.saveAnnotations()
+        if not noUpdate:
+            messenger.send(None,"update_annotations")
+        return shape
         
     def saveAnnotations(self):
         """
@@ -910,6 +926,7 @@ class InteractivePanel(ogl.ShapeCanvas):
         Created: 04.07.2005, KP
         Description: Update all the annotations
         """
+        print "\n\nUPDATE ANNOTATIONS"
         for i in self.diagram.GetShapeList():
             if hasattr(i,"setScaleFactor"):
                 i.setScaleFactor(self.zoomFactor)
@@ -1015,18 +1032,40 @@ class InteractivePanel(ogl.ShapeCanvas):
         self.buffer = wx.EmptyBitmap(x,y)
         self.origX, self.origY = x,y
         #Logging.info("Got dataunit, voxelSize=",self.voxelSize,kw="iactivepanel")
-        ann=dataUnit.getSettings().get("Annotations")
-        if ann:
-            for obj in self.diagram.GetShapeList():
-                obj.SetCanvas(self)
-            
-            Logging.info("Got %d annotations"%len(ann),kw="iactivepanel")
-            for shape in ann:
-                shape.GetEventHandler().SetParent(self)
-                self.addNewShape(shape, noUpdate = 1)
-            self.diagram.ShowAll(1)
-            self.repaintHelpers()
-            self.Refresh()        
+#        ann=dataUnit.getSettings().get("Annotations")
+
+        wx.CallAfter(self.readAnnotationsFromCache)
+
+    def readAnnotationsFromCache(self):
+        """
+        Created: 04.07.2007, KP
+        Description: a method that iwll read cached annotations and show them after the panel has bee initialized
+        """
+        cachedSettings, cacheParser = bxd.getSettingsFromCache(self.dataUnit.getFileName()+"_"+self.dataUnit.getName()+"_annotations")
+
+        if cachedSettings:
+            self.restoreAnnotations(cachedSettings[0])
+
+    def restoreAnnotations(self, settings):
+        """
+        Created: 03.07.2007, KP
+        Description: restore annotations from cache
+        """
+        annotations = settings.get("Annotations")
+                
+        print "Got annotations from cache=",annotations
+        for obj in annotations:
+            obj.SetEventHandler(obj)
+            newobj = self.addNewAnnotation(obj.AnnotationType, 0,0, 10, 10, noUpdate=1, scaleFactor = 1)
+            newobj.restoreFrom(obj)
+            newobj._offset = (0,0)
+        self.setOffset(self.xoffset, self.yoffset)
+        self.updateAnnotations()
+
+        self.diagram.ShowAll(1)
+        self.repaintHelpers()
+        
+        self.Refresh()
         
     def OnPaint(self,event):
         """

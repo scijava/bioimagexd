@@ -51,11 +51,25 @@ class DataUnit:
         self.color= None
         self.ctf = None
         self.randomCTF = None
+        self.cacheKey = None
+        
         self.settings = DataUnitSetting.DataUnitSettings()
         self.mip=None
         self.mipTimepoint=-1
         self.destroyed = 0
+    def setCacheKey(self,key):
+        """
+        Created: 23.10.2006, KP
+        Description: Set the key under which this dataunit is stored in the cache
+        """
+        self.cacheKey = key
         
+    def getCacheKey(self):
+        """
+        Created: 23.10.2006, KP
+        Description: Get the key under which this dataunit is stored in the cache
+        """
+        return self.cacheKey        
         
     def destroySelf(self):
         """
