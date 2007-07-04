@@ -223,8 +223,6 @@ class AnnotationToolbar(wx.Window):
         Created: 23.07.2006, KP
         Description: Toggle the resampling on / off
         """
-#        flag=self.resampleBtn.GetValue()
-        
         flag=evt.GetIsDown()
         scripting.resamplingDisabled = not flag
         self.visualizer.updateRendering()              

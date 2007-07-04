@@ -475,6 +475,12 @@ class ParticleTracker:
         
         
         if seedParticles:
+            # The seed particles are organized as follows:
+            #[ [t1_p1, t1_p2, t1_p3], [t2_p1,t2_p2, t2_p3], ...]
+            # where t1_p1 = first particle in timepoint 1, 
+            # t1_p2 = second particle in timepoint 1 etc
+            # Therefore, we can determine e.g. how many tracks there are to be calculated
+            # by looking at how many seed particles we are given
             trackCount = len(seedParticles[0])
             tracks=[]
             for i in range(trackCount):tracks.append([])

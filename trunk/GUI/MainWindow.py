@@ -659,14 +659,6 @@ class MainWindow(wx.Frame):
         #print x,y,z,r,g,b,a
         z+=1
         if scalar!=0xdeadbeef:
-            #val=[0,0,0]
-            #scalar=r
-            #ctf.GetColor(scalar,val)
-            #r,g,b=val
-            #r*=255
-            #g*=255
-            #b*=255
-            
             if type(scalar)==types.TupleType:
                 if len(scalar)>1:
                     lst = map(str,map(int,scalar))
@@ -778,21 +770,11 @@ class MainWindow(wx.Frame):
         
 #        tb.AddSeparator()
         
-#        bmp = wx.Image(os.path.join(iconpath,"resample.gif")).ConvertToBitmap()
-#        tb.DoAddTool(MenuManager.ID_RESAMPLING,"Resampling",bmp,kind=wx.ITEM_CHECK,shortHelp="Enable or disable the resampling of image data")
-#        wx.EVT_TOOL(self,MenuManager.ID_RESAMPLING,self.onResampleData)
-#        tb.EnableTool(MenuManager.ID_RESAMPLING,0)
-#        tb.ToggleTool(MenuManager.ID_RESAMPLING,1)
-
         bmp = wx.Image(os.path.join(iconpath,"help.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap()
 
         tb.DoAddTool(MenuManager.ID_TOOLBAR_HELP,"Help",bmp,shortHelp="Get help for current task / visualization")
         wx.EVT_TOOL(self, MenuManager.ID_TOOLBAR_HELP, self.onToolbarHelp)
-        #self.cBtn = wx.ContextHelpButton(tb,MenuManager.CONTEXT_HELP)
-        #self.cBtn.SetSize((32,32))
-        #tb.AddControl(self.cBtn)
-        #self.cBtn.Bind(wx.EVT_BUTTON,self.onContextHelp)
-        
+
         self.visIds.append(MenuManager.ID_VIS_ANIMATOR)
         tb.Realize()
         self.menuManager.setMainToolbar(tb)
@@ -1488,7 +1470,8 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
                     Logging.info("Got no name for settings file",kw="dataunit")
                     return
                 Logging.info("Saving settings of dataset",name," to ",filename,kw="dataunit")
-                dataunit.doProcessing(filename,settings_only=1)
+                if dataunit.isProcessed():
+                    dataunit.doProcessing(filename,settings_only=1)
             else:
                 Logging.info("No dataunit, cannot save settings")
         

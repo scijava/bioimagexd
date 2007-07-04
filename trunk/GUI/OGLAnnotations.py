@@ -40,8 +40,28 @@ import math
 count={}
 
 class OGLAnnotation:
-
-
+    def unoffset(self, attr, x):
+        """
+        Created: 04.07.2007, KP
+        Description: unoffset a given attribute
+        """
+        sf = self.GetCanvas().getZoomFactor()
+        print "Unoffsetting",attr,"scale factor=",sf
+        if attr in ["_xpos"]:
+            return (x-self._offset[0])/sf
+        elif attr=="_ypos":
+            return (x-self._offset[1])/sf
+        elif attr in ["_width","_height"]:
+            return x / sf      
+        return x
+    def moveBy(self, x,y):
+        """
+        Created: 04.07.2007, KP
+        Description: move the annotaiton by given x,y
+        """
+        self.SetX(self._xpos+x)
+        self.SetY(self._ypos+y)
+        
     def setOffset(self, x,y):
         """
         Created: 28.05.2007, KP
@@ -101,10 +121,14 @@ class OGLAnnotation:
         lines = name.split("\n")
         for line in lines:
             self.AddText(line)
-    def addAttr(self, dicti, attr):        
-        dicti[attr]=self.__dict__[attr]
+    def addAttr(self, dicti, attr):
+        val = self.__dict__[attr]
+        newval = self.unoffset(attr, val)
+        print attr,"=",val,"after offset=",newval
+        dicti[attr]=newval
         
     def getAttr(self,dicti,attr):
+        print "restoring attr",attr,"=",dicti[attr]
         self.__dict__[attr]=dicti[attr]
         
     def getName(self):
@@ -128,21 +152,35 @@ class OGLAnnotation:
                      that it can later be reconstructed based on said dictionary
         """
         ret={}
+#        for i in self.__dict__.keys(): 
+#            print self.__dict__[i].__class__
+#            ret[i] = self.__dict__[i]
         if "_xpos" not in self.attrList:
             self.attrList.append("_xpos")
             self.attrList.append("_ypos")
+            self.attrList.append("scaleFactor")
         for attr in self.attrList:
             self.addAttr(ret,attr)
-        return ret
+#        print "Pickling contains=",ret
+        return {self.AnnotationType: ret}
 
-        
+
+    def restoreFrom(self, annotation):
+        """
+        Created: 04.07.2007, KP
+        Description: copy attributes of given annotation
+        """
+        print "annotation=",annotation.__dict__.keys()
+        for i in self.attrList:
+            self.__dict__[i] = annotation.__dict__[i]
+
     def __setstate__(self, state):
         """
         Created: 24.10.2006, KP
         Description: Reconstruct state of this object from given dictionary
         """
-        for key in state.keys():
-            self.getAttr(state,key)
+        for key in state[self.AnnotationType].keys():
+            self.getAttr(state[self.AnnotationType],key)
             
     def GetMaintainAspectRatio(self):
         """
@@ -198,8 +236,6 @@ class OGLAnnotation:
             if self._pen:
                 penWidth = self._pen.GetWidth()
     
-       
-    
             tox, toy = x0 + topLeftX, y0+topLeftY
             tox -=  penWidth
             toy -= penWidth
@@ -207,8 +243,8 @@ class OGLAnnotation:
             dc.Blit(tox, toy, maxX+4+2*penWidth,maxY+4+2*penWidth,srcdc, tox, toy)
         else:
             x1,y1, x2, y2 = self.eraseRect
-            
-            dc.Blit(x1+x0,y1+y0, (x2-x1)+2,(y2-y1)+2,srcdc, x1+x0,y1+y0)
+            print "blitting ",x1+x0,y1+y0, (x2-x1)+2,(y2-y1)+2
+            dc.Blit(x1+x0,y1+y0, abs(x2-x1)+2,abs(y2-y1)+2,srcdc, x1+x0,y1+y0)
         srcdc.SelectObject(wx.NullBitmap)        
         
         
@@ -217,13 +253,14 @@ class MyText(OGLAnnotation, ogl.TextShape):
     Created: 05.10.2006, KP
     Description: A text annotation
     """
+    AnnotationType = "TEXT"
     def __init__(self, width, height):
         ogl.TextShape.__init__(self,width,height)
         self._isROI = 0
         
 
 class MyScalebar(OGLAnnotation, ogl.RectangleShape):
-    
+    AnnotationType = "SCALEBAR"
     def __init__(self, w, h, voxelsize = (1e-7,1e-7,1e-7), zoomFactor = 1.0):
         ogl.RectangleShape.__init__(self, w, h)
         self.bgColor = (127,127,127)
@@ -237,13 +274,10 @@ class MyScalebar(OGLAnnotation, ogl.RectangleShape):
         messenger.connect(None,"set_voxel_size",self.onSetVoxelSize)
         self.attrList = ["vertical","voxelSize","widthMicro","oldMaxSize","_width","_height","_xpos","_ypos"]
     
-    
-
-        
     def onSetVoxelSize(self, obj, evt, arg):
         """
         Created: 21.06.2006, KP
-        Description: onSetVoxelSize
+        Description: Set the voxel size 
         """   
         self.voxelSize = arg
         
@@ -254,6 +288,9 @@ class MyScalebar(OGLAnnotation, ogl.RectangleShape):
         Description: Set the scaling factor in use
         """   
         w,h,x,y = self._width,self._height,self.GetX(),self.GetY()
+        x-= self._offset[0]
+        y-= self._offset[1]
+
         w/=self.scaleFactor
         h/=self.scaleFactor
         x/=self.scaleFactor
@@ -263,6 +300,9 @@ class MyScalebar(OGLAnnotation, ogl.RectangleShape):
         h*=self.scaleFactor
         x*=self.scaleFactor
         y*=self.scaleFactor        
+        x+= self._offset[0]
+        y+= self._offset[1]
+       
         if self.vertical:
             vx = self.voxelSize[1]*1000000
             h = int(1+self.widthMicro / vx)
@@ -427,6 +467,8 @@ class MyScalebar(OGLAnnotation, ogl.RectangleShape):
             dc.DrawRotatedText(text,x1+12,y+y1,90)
             
 class MyPolygonSketch(OGLAnnotation, ogl.Shape):   
+    AnnotationType = "POLYGONSKETCH"
+
     def __init__(self,zoomFactor = 1.0):
         """
         Created: 26.06.2006, KP
@@ -512,6 +554,7 @@ class MyPolygonSketch(OGLAnnotation, ogl.Shape):
     
 
 class MyRectangle(OGLAnnotation, ogl.RectangleShape):   
+    AnnotationType = "RECTANGLE"
     def __init__(self, w, h, zoomFactor = 1.0):
         """
         Created: 26.06.2006, KP
@@ -532,16 +575,26 @@ class MyRectangle(OGLAnnotation, ogl.RectangleShape):
         Created: 21.06.2006, KP
         Description: Set the scaling factor in use
         """   
+        print "setScaleFactor(",factor,")"
         w,h,x,y = self._width,self._height,self.GetX(),self.GetY()
+        x-= self._offset[0]
+        y-= self._offset[1]
+
         w/=self.scaleFactor
         h/=self.scaleFactor
         x/=self.scaleFactor
         y/=self.scaleFactor
+
+        print "Position without offset, scale = ",x,y
+        
         self.scaleFactor = factor
+        
         w*=self.scaleFactor
         h*=self.scaleFactor
         x*=self.scaleFactor
         y*=self.scaleFactor        
+        x+= self._offset[0]
+        y+= self._offset[1]
         
         print "Size of rectangle=",w,"x",h,"at",x,y
         self.SetWidth(w)
@@ -579,7 +632,8 @@ class MyRectangle(OGLAnnotation, ogl.RectangleShape):
         
        
 
-class MyCircle(OGLAnnotation, ogl.CircleShape):    
+class MyCircle(OGLAnnotation, ogl.CircleShape):
+    AnnotationType = "CIRCLE"
     def __init__(self, diam, zoomFactor = 1.0):
         """
         Created: 26.06.2006, KP
@@ -601,16 +655,22 @@ class MyCircle(OGLAnnotation, ogl.CircleShape):
         Description: Set the scaling factor in use
         """   
         w,h,x,y = self._width,self._height,self.GetX(),self.GetY()
+        x-= self._offset[0]
+        y-= self._offset[1]
         
         w/=self.scaleFactor
         h/=self.scaleFactor
         x/=self.scaleFactor
         y/=self.scaleFactor
+        
         self.scaleFactor = factor
         w*=self.scaleFactor
         h*=self.scaleFactor
         x*=self.scaleFactor
-        y*=self.scaleFactor        
+        y*=self.scaleFactor     
+        
+        x+= self._offset[0]
+        y+= self._offset[1]
         
         self.SetWidth(w)
         self.SetHeight(h)
@@ -657,7 +717,7 @@ class MyCircle(OGLAnnotation, ogl.CircleShape):
         return pts
         
     
-    def OnErase(self,dc):
+    def OnErasefoo(self,dc):
         bg = self.GetCanvas().bgbuffer
         if not self._visible:
             return
@@ -705,6 +765,7 @@ class MyCircle(OGLAnnotation, ogl.CircleShape):
         dc.DestroyClippingRegion()
 
 class MyPolygon(OGLAnnotation, ogl.PolygonShape):    
+    AnnotationType = "POLYGON"
     def __init__(self, zoomFactor = 1.0):
         """
         Created: 26.06.2006, KP
@@ -728,8 +789,6 @@ class MyPolygon(OGLAnnotation, ogl.PolygonShape):
         for key in state.keys():
             self.getAttr(state,key)
         self.MakeControlPoints()
-        
-    
         
     def polyCenter(self,points):
         """
@@ -763,17 +822,31 @@ class MyPolygon(OGLAnnotation, ogl.PolygonShape):
         pts = []
         
         for x,y in self._points:
+            x-= self._offset[0]
+            y-= self._offset[1]
+
             x/=self.scaleFactor
             y/=self.scaleFactor
+            
             x*=factor
             y*=factor
+            x+= self._offset[0]
+            y+= self._offset[1]
+
             pts.append((x,y))
         self._points = pts
+
+
+        x,y = self.GetX(),self.GetY()
+        x-= self._offset[0]
+        y-= self._offset[1]        
         x/= self.scaleFactor
         y/=self.scaleFactor
+        
         x*=factor
         y*=factor
-        x,y = self.GetX(),self.GetY()
+        x+= self._offset[0]
+        y+= self._offset[1]        
         self.SetX(x)
         self.SetY(y)
         self.UpdateOriginalPoints()
@@ -835,32 +908,6 @@ class MyPolygon(OGLAnnotation, ogl.PolygonShape):
             (x<(poly[j][0]-poly[i][0])*(y-poly[i][1])/(poly[j][1]-poly[i][1])+poly[i][0]):
                 c=not c
         return c
-       
-    def OnErase(self,dc):
-        bg = self.GetCanvas().bgbuffer
-        if not self._visible:
-            return
-
-        xp, yp = self.GetX(), self.GetY()
-        minX, minY = self.GetBoundingBoxMin()
-        maxX, maxY = self.GetBoundingBoxMax()
-
-        topLeftX = xp - maxX / 2.0 - 2
-        topLeftY = yp - maxY / 2.0 - 2
-
-        penWidth = 0
-        if self._pen:
-            penWidth = self._pen.GetWidth()
-
-        dc.SetPen(self.GetBackgroundPen())
-        dc.SetBrush(self.GetBackgroundBrush())
-        
-        x0,y0,w,h = self.GetCanvas().GetClientRect()
-      
-        
-        dc.SetClippingRegion(x0+topLeftX-penWidth-4,y0+topLeftY-penWidth-4,x0+maxX+penWidth*2+8, y0+maxY + penWidth * 2 + 8)
-        dc.DrawBitmap(bg,x0,y0)
-        dc.DestroyClippingRegion()
 
     # Make as many control points as there are vertices
     def MakeControlPoints(self):
@@ -904,7 +951,7 @@ class MyPolygon(OGLAnnotation, ogl.PolygonShape):
             
      
 class MyPolygonControlPoint(ogl.PolygonControlPoint):
-
+    AnnotationType="POLYGONCONTROLPOINT"
     # Implement resizing polygon or moving the vertex
     def OnDragLeft(self, draw, x, y, keys = 0, attachment = 0):
         #self._shape.GetEventHandler().OnSizingDragLeft(self, draw, x, y, keys, attachment)
@@ -913,31 +960,6 @@ class MyPolygonControlPoint(ogl.PolygonControlPoint):
         self.SetY(y)
         #print "Setting x,y to",x,y
         self._shape.SetPointsFromControl(self)    
-
-    def OnErase(self,dc):
-        bg = self.GetCanvas().bgbuffer
-        if not self._visible:
-            return
-
-        xp, yp = self.GetX(), self.GetY()
-        minX, minY = self.GetBoundingBoxMin()
-        maxX, maxY = self.GetBoundingBoxMax()
-
-        topLeftX = xp - maxX / 2.0 - 2
-        topLeftY = yp - maxY / 2.0 - 2
-
-        penWidth = 0
-        if self._pen:
-            penWidth = self._pen.GetWidth()
-
-        dc.SetPen(self.GetBackgroundPen())
-        dc.SetBrush(self.GetBackgroundBrush())
-                
-        x0,y0,w,h = self.GetCanvas().GetClientRect()
-        
-        dc.SetClippingRegion(x0+topLeftX-penWidth-4,y0+topLeftY-penWidth-4,x0+maxX+penWidth*2+8, y0+maxY + penWidth * 2 + 8)
-        dc.DrawBitmap(bg,x0,y0)
-        dc.DestroyClippingRegion()
 
 
 
