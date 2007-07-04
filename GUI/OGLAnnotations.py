@@ -564,9 +564,6 @@ class MyPolygonSketch(OGLAnnotation, ogl.Shape):
     def getCoveredPoints(self):
         return []
 
-   
-    
-
 class MyRectangle(OGLAnnotation, ogl.RectangleShape):   
     AnnotationType = "RECTANGLE"
     def __init__(self, w, h, zoomFactor = 1.0):
