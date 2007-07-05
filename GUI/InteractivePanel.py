@@ -738,8 +738,10 @@ class InteractivePanel(ogl.ShapeCanvas):
         Created: 28.05.2007, KP
         Description: event handler called when the visualization mode is about to be deactivated
         """
-        settings = self.dataUnit.getSettings()
+        if not self.dataUnit:
+            return
         if self.dataUnit and self.dataUnit.getDataSource(): 
+            settings = self.dataUnit.getSettings()
             self.saveAnnotations()
             bxd.storeSettingsToCache(self.dataUnit.getFileName()+"_"+self.dataUnit.getName()+"_annotations",[settings])
             self.dataUnit.getSettings().set("Annotations",None)
