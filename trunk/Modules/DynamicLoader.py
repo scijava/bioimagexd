@@ -33,7 +33,7 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 import os
 import glob
-
+import traceback
 import Logging
 import scripting
 import os.path
@@ -96,9 +96,10 @@ def getModules(name,flag="*.py",callback=None,moduleType="Module"):
         
         Logging.info("Importing %s = %s from %s"%(file, mod,frompath),kw="modules")
         try:
-            module = __import__(mod,globals(),locals(),[mod])
+            module = __import__(mod,globals(),locals(),[])
         except ImportError,ex:
             Logging.info("Failed to load module %s"%str(mod),kw="modules")    
+            traceback.print_exc()
             continue
         if hasattr(module,"getShortDesc"):
             name = module.getShortDesc()
