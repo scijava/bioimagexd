@@ -43,7 +43,6 @@ from GUI.IntensityTransferEditor import *
 import sys
 import time
 
-from GUI import Events
 
 from GUI import TaskPanel
 import ColorTransferEditor

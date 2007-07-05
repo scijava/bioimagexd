@@ -37,7 +37,6 @@ import cStringIO
 import messenger
 import Dialogs
 import codecs
-from GUI import Events
 from PreviewFrame import *
 
 from Logging import *

@@ -96,7 +96,7 @@ def getModules(name,flag="*.py",callback=None,moduleType="Module"):
         
         Logging.info("Importing %s = %s from %s"%(file, mod,frompath),kw="modules")
         try:
-            module = __import__(mod,globals(),locals(),[])
+            module = __import__(mod,globals(),locals(),[mod])
         except ImportError,ex:
             Logging.info("Failed to load module %s"%str(mod),kw="modules")    
             continue
