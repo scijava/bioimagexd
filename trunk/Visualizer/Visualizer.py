@@ -1411,7 +1411,7 @@ class Visualizer:
             filename = Dialogs.askSaveAsFileName(self.parent,"Save snapshot of rendered scene",initFile, wc, "snapshotImage")
             
             
-            do_cmd = "bxd.visualizer.saveSnapshot('%s')"%filename
+            do_cmd = "bxd.visualizer.saveSnapshot(r'%s')"%filename
             cmd = Command.Command(Command.GUI_CMD,None,None,do_cmd,"",desc="Save a snapshot of the visualizer")
             cmd.run()
             

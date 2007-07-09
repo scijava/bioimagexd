@@ -499,7 +499,7 @@ class MainWindow(wx.Frame):
         do_cmd="mainWindow.fileTree.unselectAll()"
         for i in dataunits.keys():
             names = [x.getName() for x in dataunits[i]]
-            do_cmd+="\n"+"mainWindow.fileTree.selectChannelsByName('%s', %s)"%(i,str(names))
+            do_cmd+="\n"+"mainWindow.fileTree.selectChannelsByName(r'%s', %s)"%(i,str(names))
         undo_cmd=""
         cmd=Command.Command(Command.MGMT_CMD,None,None,do_cmd,undo_cmd,desc="Unselect all in file tree")
         cmd.run(recordOnly = 1)          
