@@ -37,6 +37,8 @@ import wx.lib.buttons as buttons
 import  wx.lib.filebrowsebutton as filebrowse
 import ColorTransferEditor
 
+import traceback
+
 import messenger
 import Logging
 import Command
@@ -90,11 +92,16 @@ class GUIBuilderBase:
         if n not in self.inputMapping:
             self.inputMapping[n]=n-1
         if self.inputMapping[n]==0 and self.dataUnit.isProcessed():        
-            print "Using input%d from stack as input %d"%(n-1,n)
-            image = self.inputs[self.inputIndex]
+            print self.inputs
+            Logging.info("Using input%d from stack as input %d"%(n-1,n),kw="processing")
+            try:
+                image = self.inputs[self.inputIndex]
+            except:
+                traceback.print_exc()
+                Logging.info("No input with number %d"%self.inputIndex,self.inputs,kw="processing")
             self.inputIndex+=1
         else:
-            print "\nUsing input from channel %d as input %d"%(self.inputMapping[n]-1,n)
+            Logging.info("\nUsing input from channel %d as input %d"%(self.inputMapping[n]-1,n),kw="processing")
             image = self.getInputFromChannel(self.inputMapping[n]-1)
         return image
         

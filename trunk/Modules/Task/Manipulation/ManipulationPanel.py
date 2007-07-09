@@ -654,11 +654,7 @@ class ManipulationPanel(FilterBasedTaskPanel.FilterBasedTaskPanel):
     def setCombinedDataUnit(self,dataUnit):
         """
         Created: 23.11.2004, KP
-        Description: Sets the Manipulationed dataunit that is to be Manipulationed.
-                     It is then used to get the names of all the source data
-                     units and they are added to the menu.
-                     This is overwritten from FilterBasedTaskPanel since we only Manipulation
-                     one dataunit here, not multiple source data units
+        Description: Set the combined dataunit to be processed. Also initialize the output channels to be off by default
         """
         FilterBasedTaskPanel.FilterBasedTaskPanel.setCombinedDataUnit(self,dataUnit)
         n=0

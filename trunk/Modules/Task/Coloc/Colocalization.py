@@ -30,7 +30,8 @@ __author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.24 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
-
+STATISTICS_ONLY=2
+THRESHOLDS_ONLY=1
 import vtk
 import time
 #from enthought.tvtk import messenger
@@ -120,54 +121,77 @@ class Colocalization(Module):
         maxval=0
         for i in self.images:
             maxval = max(i.GetScalarRange()[1],maxval)
-            
+        maxval = int(maxval)
 
         settings = self.settingsLst[0]
         calcVal=settings.get("CalculateThresholds")
         if calcVal:
             self.eventDesc="Calculating thresholds"
-            Logging.info("Calculating thresholds...",kw="processing")
+            Logging.info("Calculating thresholds, calcval=%d"%calcVal,kw="processing")
 
             self.colocAutoThreshold.AddInput(self.images[0])
             self.colocAutoThreshold.AddInput(self.images[1])
-            if calcVal ==2:
-                Logging.info("Setting thresholds ",int(self.thresholds[0][0]),int(self.thresholds[1][0]),"for statistics")
+            if calcVal == STATISTICS_ONLY:
+                Logging.info("CALCULATING ONLY STATISTICS",kw="processing")
+                # When we set the lower thresholds, then the given thresholds will be used
+                Logging.info("Setting lower thresholds ",int(self.thresholds[0][0]),int(self.thresholds[1][0]),"for statistics")
                 self.colocAutoThreshold.SetLowerThresholdCh1(int(self.thresholds[0][0]))
                 self.colocAutoThreshold.SetLowerThresholdCh2(int(self.thresholds[1][0]))
-            
-            self.colocAutoThreshold.SetUpperThresholdCh1(int(self.thresholds[0][1]))
-            self.colocAutoThreshold.SetUpperThresholdCh2(int(self.thresholds[1][1]))                
-            self.colocAutoThreshold.Update()
-            Logging.info("Done!",kw="processing")
-            for i in ["Ch1ThresholdMax","Ch2ThresholdMax","PearsonImageAbove",
-                      "PearsonImageBelow","PearsonWholeImage","M1","M2",
-                      "K1","K2","DiffStainIntCh1","DiffStainIntCh2",
-                      "DiffStainVoxelsCh1","DiffStainVoxelsCh2",
-                      "ThresholdM1","ThresholdM2","Slope","Intercept",
-                      "ColocAmount","ColocPercent","PercentageVolumeCh1",
-                      "PercentageTotalCh1","PercentageTotalCh2",
-                      "PercentageVolumeCh2","PercentageMaterialCh1","PercentageMaterialCh2",
-                      "SumOverThresholdCh1","SumOverThresholdCh2","SumCh1","SumCh2",
-                      "NonZeroCh1","NonZeroCh2","OverThresholdCh2","OverThresholdCh1"]:
-                method="self.colocAutoThreshold.Get%s()"%i
 
-                val=eval(method)
-#                if "DiffStain" in i:
-#                    print i,val
-                settings.set(i,val)
+                print "Setting upper thresholds",self.thresholds[0][1], self.thresholds[1][1]            
+                self.colocAutoThreshold.SetUpperThresholdCh1(int(self.thresholds[0][1]))
+                self.colocAutoThreshold.SetUpperThresholdCh2(int(self.thresholds[1][1]))               
+            elif calcVal == THRESHOLDS_ONLY:
+                Logging.info("CALCULATING ONLY THRESHOLD",kw="processing")
+                Logging.info("Calculated thresholds, using %d as max"%maxval,kw="processing")
+                self.colocAutoThreshold.SetUpperThresholdCh1(maxval)
+                self.colocAutoThreshold.SetUpperThresholdCh2(maxval)
+
+                
+            self.colocAutoThreshold.Update()
+            
+            if calcVal == THRESHOLDS_ONLY:
+                self.settings.set("Ch1ThresholdMax", self.colocAutoThreshold.GetCh1ThresholdMax())
+                self.settings.set("Ch2ThresholdMax", self.colocAutoThreshold.GetCh2ThresholdMax())
+                self.settings.set("Slope", self.colocAutoThreshold.GetSlope())
+                self.settings.set("Intercept", self.colocAutoThreshold.GetIntercept())            
+            Logging.info("Done!",kw="processing")
+            
             t1=settings.get("Ch1ThresholdMax")
             t2=settings.get("Ch2ThresholdMax")
-            print "\n\nGOT THRESHOLDS",t1,t2
+            if t1 == None:t1=0
+            if t2 == None:t2=0
+            Logging.info("Got thresholds",t1,t2,kw="processing")
             l=[(t1,maxval),(t2,maxval)]
+            self.settings.set("CalculateThresholds",0)
+
+            
             # if CalculateThresholds == 1, then set the calculated thresholds
             # if it's 2 then only the statistics need to be calculated
-            if calcVal==1:
+            
+            if calcVal==THRESHOLDS_ONLY:
                 for i in range(0,2):
                     self.settingsLst[i].set("ColocalizationLowerThreshold",l[i][0])
                     self.settingsLst[i].set("ColocalizationUpperThreshold",l[i][1])
                 Logging.info("Threshold for Ch1 =",t1," and Ch2 =",t2,kw="processing")
                 self.thresholds=[(t1,maxval),(t2,maxval)]
-            self.settings.set("CalculateThresholds",0)
+            else:
+                for i in ["Ch1ThresholdMax","Ch2ThresholdMax","PearsonImageAbove",
+                          "PearsonImageBelow","PearsonWholeImage","M1","M2",
+                          "K1","K2","DiffStainIntCh1","DiffStainIntCh2",
+                          "DiffStainVoxelsCh1","DiffStainVoxelsCh2",
+                          "ThresholdM1","ThresholdM2",
+                          "ColocAmount","ColocPercent","PercentageVolumeCh1",
+                          "PercentageTotalCh1","PercentageTotalCh2",
+                          "PercentageVolumeCh2","PercentageMaterialCh1","PercentageMaterialCh2",
+                          "SumOverThresholdCh1","SumOverThresholdCh2","SumCh1","SumCh2",
+                          "NonZeroCh1","NonZeroCh2","OverThresholdCh2","OverThresholdCh1"]:
+                    method="self.colocAutoThreshold.Get%s()"%i
+    
+                    val=eval(method)
+    #                if "DiffStain" in i:
+    #                    print i,val
+                    settings.set(i,val)            
             #settings.set("ColocalizationScatterplot",self.colocFilter.GetOutput(1))
         self.eventDesc="Calculating colocalization..."
         outScalar=self.settings.get("OutputScalar")
@@ -175,6 +199,7 @@ class Colocalization(Module):
         self.colocFilter.SetOutputScalarValue(outScalar)
 
         for i in range(len(self.images)):
+            print self.thresholds[i]
             Logging.info("Using %d as lower and %d as upper threshold"%self.thresholds[i],kw="processing")
 
 #            print "Adding input %d"%i

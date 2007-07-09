@@ -182,6 +182,7 @@ template <class T> void calculateThreshold
        // If a user specified threshold has been given, then it will be used
        // instead of the calculated threshold        
         if(Ch1Th >= 0 && Ch2Th >= 0) {
+            printf("Using given thresholds %d and %d\n",Ch1Th, Ch2Th);
             thresholdFound = 1;
             
             ch1threshmax = Ch1Th;
@@ -447,11 +448,13 @@ template < class T >
     double b = ch2Mean - m * ch1Mean;
 
     // Calculate the thresholds 
+    printf("Calculating thresholds based on %d and %d\n",LowerThresholdCh1, LowerThresholdCh2);
     calculateThreshold<T>(self,id, inData,outExt, LowerThresholdCh1, LowerThresholdCh2,&ch1BestThresh, &m, &b, &pearsonsBelowTh);
+    
     
     ch1threshmax = vtkMath::Round((ch1BestThresh));
     ch2threshmax = vtkMath::Round(((double) ch1BestThresh * (double) m) + (double) b);
-        
+    printf("Calculated ch1 threshmax = %f, ch2Threshmax = %f\n",ch1threshmax, ch2threshmax);    
     // If the user has specified the thresholds, then simply use them.
     // We still need to calculate them, to get the bestr2 value
     if(LowerThresholdCh1 >= 0) {
