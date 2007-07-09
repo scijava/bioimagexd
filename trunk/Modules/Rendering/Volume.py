@@ -218,46 +218,7 @@ class VolumeModule(VisualizationModule):
         if parameter == "Palette":
             return self.colorTransferFunction
         
-    def OLD__getstate__(self):
-        """
-        Created: 02.08.2005, KP
-        Description: A getstate method that saves the lights
-        """            
-        odict=VisualizationModule.__getstate__(self)
-        odict.update({"mapper":self.getVTKState(self.mapper)})
-        odict.update({"volume":self.getVTKState(self.volume)})
-        odict.update({"volumeProperty":self.getVTKState(self.volumeProperty)})
-        odict.update({"actor":self.getVTKState(self.actor)})
-        odict.update({"otf0":self.getVTKState(self.otfs[0])})
-        odict.update({"otf1":self.getVTKState(self.otfs[1])})
-        odict.update({"otf2":self.getVTKState(self.otfs[2])})
-        odict.update({"otf3":self.getVTKState(self.otfs[3])})
-        odict.update({"otf4":self.getVTKState(self.otfs[4])})
-        odict.update({"renderer":self.getVTKState(self.renderer)})
-        odict.update({"camera":self.getVTKState(self.renderer.GetActiveCamera())})
-        odict.update({"quality":self.quality})
-        odict.update({"method":self.method})
-        return odict
-        
-    def OLD__set_pure_state__(self,state):
-        """
-        Created: 02.08.2005, KP
-        Description: Set the state of the light
-        """        
-        self.setVTKState(self.mapper,state.mapper)
-        self.setVTKState(self.volume,state.volume)
-        self.setVTKState(self.volumeProperty,state.volumeProperty)
-        self.setVTKState(self.actor,state.actor)
-        self.setVTKState(self.otfs[0],state.otf0)
-        self.setVTKState(self.otfs[1],state.otf1)        
-        self.setVTKState(self.otfs[2],state.otf2)       
-        self.setVTKState(self.otfs[3],state.otf3)       
-        self.setVTKState(self.otfs[4],state.otf4)    
-        self.setVTKState(self.renderer,state.renderer)
-        self.setVTKState(self.renderer.GetActiveCamera(),state.camera)
-        self.setMethod(state.method)
-        self.setQuality(state.quality)
-        VisualizationModule.__set_pure_state__(self,state)
+   
         
     def setDataUnit(self,dataunit):
         """
