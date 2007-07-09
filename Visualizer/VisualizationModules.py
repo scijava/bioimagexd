@@ -225,10 +225,11 @@ class VisualizationModule(GUIBuilder.GUIBuilderBase):
         """          
         self.shading=shading
         property=self.actor.GetProperty()
-        if shading:
-            property.ShadeOn()
-        else:
-            property.ShadeOff()
+        print property
+        if hasattr(property,"ShadeOn"):
+            property.SetShade(shading)
+        elif hasattr(property,"ShadingOn"):
+            property.SetShading(shading)
     
 
     def __getstate__(self):

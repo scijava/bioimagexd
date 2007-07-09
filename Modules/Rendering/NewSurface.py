@@ -306,50 +306,6 @@ class SurfaceModule(VisualizationModule):
         #self.mapper.Update()
         self.parent.Render()    
 
-    def __getstate__(self):
-        """
-        Method: __getstate__
-        Created: 02.08.2005, KP
-        Description: A getstate method that saves the lights
-        """            
-        odict=VisualizationModule.__getstate__(self)
-        odict.update({"mapper":self.getVTKState(self.mapper)})
-        odict.update({"actor":self.getVTKState(self.actor)})
-        odict.update({"renderer":self.getVTKState(self.renderer)})
-        odict.update({"camera":self.getVTKState(self.renderer.GetActiveCamera())})
-        odict.update({"method":self.method})
-        
-        odict.update({"generateNormals":self.generateNormals,
-                      "isoValue":self.isoValue,
-                      "contourRange":self.contourRange,
-                      "opacity":self.opacity,
-                      "decimateLevel":self.decimateLevel,
-                      "preserveTopology":self.preserveTopology})
-        return odict
-        
-    def __set_pure_state__(self,state):
-        """
-        Created: 02.08.2005, KP
-        Description: Set the state of the light
-        """        
-        #print "\n\n\n__set_pure_state__\n\n\n"
-        self.setVTKState(self.mapper,state.mapper)
-        self.setVTKState(self.actor,state.actor)
-        self.setVTKState(self.renderer,state.renderer)
-        self.setVTKState(self.renderer.GetActiveCamera(),state.camera)
-        self.setMethod(state.method)
-        self.generateNormals = state.generateNormals
-        print "state.isoValue=",state.isoValue
-        self.isoValue = state.isoValue
-        
-        self.contourRange = state.contourRange
-        self.opacity = state.opacity
-        if state.decimateLevel:
-            self.setDecimate(state.decimateLevel,state.preserveTopology)
-        
-        VisualizationModule.__set_pure_state__(self,state)        
-
-
 
 class SurfaceConfigurationPanel(ModuleConfigurationPanel):
     def __init__(self,parent,visualizer,name="Surface rendering",**kws):

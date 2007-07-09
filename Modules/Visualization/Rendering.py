@@ -357,6 +357,7 @@ class RenderingMode(VisualizationMode):
         Created: 02.08.2005, KP
         Description: A getstate method that saves the lights
         """            
+        print "Saving state, modules = ",self.modules
         odict={"lightsManager":self.lightsManager,
                "timepoint":self.timepoint,
                "modules":self.modules}
@@ -371,9 +372,11 @@ class RenderingMode(VisualizationMode):
         self.setTimepoint(state.timepoint)
         for module in self.modules:
             self.removeModule(module.getName())
+            print "removing module",module.getName()
         for module in state.modules:
             name=module.moduleName
             label=module.name
+            print "Loading module ",name,"with label",label
             mod=self.loadModule(name,label)
             self.configPanel.appendModuleToList(label)
             mod.__set_pure_state__(module)
