@@ -91,6 +91,15 @@ class CombinedDataUnit(DataUnit.DataUnit):
         Description: Return the status of the given output channel
         """
         return self.outputChls.get(ch,1)
+    def getSingleComponentBitDepth(self):
+        """
+        Created: 09.07.2007, KP
+        Description: return the bit depth of single component of data
+        """
+        if self.sourceunits:
+            return self.sourceunits[0].getSingleComponentBitDepth()
+        return 8
+        
     def getDimensions(self): 
         if self.sourceunits:
             return self.sourceunits[0].getDimensions()

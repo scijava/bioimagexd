@@ -257,7 +257,10 @@ class VisualizationModule(GUIBuilder.GUIBuilderBase):
             
         if hasattr(self, "renderer"):
             odict.update({"renderer":self.getVTKState(self.renderer)})
-            odict.update({"camera":self.getVTKState(self.renderer.GetActiveCamera())})            
+            odict.update({"camera":self.getVTKState(self.renderer.GetActiveCamera())})   
+            
+        odict["inputMapping"] = self.inputMapping
+        odict["inputIndex"] = self.inputIndex
         return odict
 
             
@@ -269,6 +272,8 @@ class VisualizationModule(GUIBuilder.GUIBuilderBase):
         """
         self.name = state.name
         self.moduleName = state.moduleName
+        self.inputMapping = state.inputMapping
+        self.inputIndex = state.inputIndex
         self.showTimepoint(state.timepoint)
         if hasattr(self,"actor"):
             self.setVTKState(self.actor.GetProperty(),state.actorProperty)
