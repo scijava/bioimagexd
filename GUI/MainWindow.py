@@ -823,12 +823,10 @@ class MainWindow(wx.Frame):
             filebase = os.path.basename(".".join(filename.split(".")[:-1]))
             bxcfilename = bxdwriter.getBXCFileName("%s_%s"%(filebase,chname))
             writer = DataSource.BXCDataWriter(bxcfilename)
-            n = dataUnit.getLength()
+            n = dataUnit.getNumberOfTimepoints()
             for i in range(0,n):
-                print "\n\nADDING TIMEPOINT",i
-                data = dataUnit.getTimePoint(i)
+                data = dataUnit.getTimepoint(i)
                 writer.addImageData(data)
-            print "--> WRITING DAATA"
             parser = writer.getParser()
             
             dataUnit.getSettings().set("Name",dataUnit.getName())
@@ -1611,7 +1609,7 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
                     dlg.Destroy()
                     return
                 dlg.Destroy()
-            #print dataunits[0].getTimePoint(0).GetDimensions()
+            #print dataunits[0].getTimepoint(0).GetDimensions()
             self.tree.addToTree(name,path,ext,dataunits)
         self.visualizer.enable(1)
     def onMenuShowTaskWindow(self,event):

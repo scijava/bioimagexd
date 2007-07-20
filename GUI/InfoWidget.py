@@ -180,7 +180,7 @@ class InfoWidget(wx.Panel):
             self.taskName.SetValue(dataunit.getName())
             # The 0 tells preview to view source dataunit 0
             #self.preview.setDataUnit(self.dataUnit,0)
-            tps=dataunit.getLength()
+            tps=dataunit.getNumberOfTimepoints()
         
         
         

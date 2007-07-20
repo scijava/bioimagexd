@@ -255,7 +255,7 @@ class AdjustPanel(TaskPanel.TaskPanel):
         Description: A method to copy this transfer function to all timepooints
         """
         itf=self.settings.getCounted("IntensityTransferFunctions",self.timePoint)
-        l=self.dataUnit.getLength()
+        l=self.dataUnit.getNumberOfTimepoints()
         for i in range(l):
             if i!=self.timePoint:
                 self.settings.setCounted("IntensityTransferFunctions",i,itf)
@@ -267,7 +267,7 @@ class AdjustPanel(TaskPanel.TaskPanel):
         Created: 30.11.2004, KP
         Description: A method to reset all the intensity transfer functions
         """
-        l=self.dataUnit.getLength()
+        l=self.dataUnit.getNumberOfTimepoints()
         sources = self.dataUnit.getSourceDataUnits()
         for i in range(l):
             minval,maxval = min([a.getScalarRange()[0] for a in sources]), max([a.getScalarRange()[1] for a in sources])

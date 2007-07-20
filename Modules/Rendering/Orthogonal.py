@@ -157,9 +157,9 @@ class OrthogonalPlaneModule(VisualizationModule):
         """       
         VisualizationModule.setDataUnit(self,dataunit)
         if self.dataUnit.isProcessed():
-            data=self.dataUnit.getSourceDataUnits()[0].getTimePoint(0)
+            data=self.dataUnit.getSourceDataUnits()[0].getTimepoint(0)
         else:
-            data=self.dataUnit.getTimePoint(0)
+            data=self.dataUnit.getTimepoint(0)
         self.origin = data.GetOrigin()
         self.spacing = data.GetSpacing()
         self.extent = data.GetWholeExtent()
@@ -426,11 +426,10 @@ class OrthogonalPlaneConfigurationPanel(ModuleConfigurationPanel):
         ModuleConfigurationPanel.setModule(self,module)
         dataUnit = module.getDataUnit()
         if dataUnit.isProcessed():
-            data=dataUnit.getSourceDataUnits()[0].getTimePoint(0)
+            data=dataUnit.getSourceDataUnits()[0].getTimepoint(0)
         else:
-            data=dataUnit.getTimePoint(0)
+            data=dataUnit.getTimepoint(0)
 
-#        ext=module.getDataUnit().getTimePoint(0).GetWholeExtent()
         ext = data.GetWholeExtent()
         x,y,z=ext[1],ext[3],ext[5]
         Logging.info("x=%d, y=%d, z=%d"%(x,y,z),kw="rendering")

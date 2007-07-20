@@ -140,7 +140,7 @@ class TrackItem:
         self.dataUnit=dataunit
         self.thumbtimepoint=self.timepoint
         #print "self.timepoint=",self.timepoint
-        #self.volume = self.dataUnit.getTimePoint(self.thumbtimepoint)
+        #self.volume = self.dataUnit.getTimepoint(self.thumbtimepoint)
         #print "release data=",self.volume.GetReleaseDataFlag()
         
     def __set_pure_state__(self,state):
@@ -262,7 +262,7 @@ class TrackItem:
         """   
         if not self.thumbnailbmp:
             if not self.volume:
-                self.volume = self.dataUnit.getTimePoint(self.thumbtimepoint)
+                self.volume = self.dataUnit.getTimepoint(self.thumbtimepoint)
             #self.volume.Update()
             vx,vy,vz=self.volume.GetDimensions()
             ctf=self.dataUnit.getSettings().get("ColorTransferFunction")

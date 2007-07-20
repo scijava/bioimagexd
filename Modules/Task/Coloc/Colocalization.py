@@ -50,12 +50,6 @@ class Colocalization(Module):
         Description: Initialization
         """
         Module.__init__(self,**kws)
-
-        # TODO: remove attributes that already exist in base class!
-        self.images=[]
-        self.doRGB=0
-        self.x,self.y,self.z=0,0,0
-        self.extent=None
         self.running=0
         self.depth=8
         self.reset()
@@ -93,7 +87,6 @@ class Colocalization(Module):
         self.settingsLst.append(settings)
         th0=settings.get("ColocalizationLowerThreshold")
         th1=settings.get("ColocalizationUpperThreshold")
-        print "Thresholds for coloc=",th0,th1
         self.thresholds.append((th0,th1))
         self.depth = self.settings.get("ColocalizationDepth")
 
@@ -105,7 +98,7 @@ class Colocalization(Module):
         """
         if not self.preview:
             self.preview=self.doOperation()
-        return self.zoomDataset(self.preview)
+        return self.preview
 
     def doOperation(self):
         """

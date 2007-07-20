@@ -399,7 +399,7 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         InteractivePanel.InteractivePanel.setDataUnit(self,self.dataUnit)
         
         try:
-            count=dataUnit.getLength()
+            count=dataUnit.getNumberOfTimepoints()
             x,y,z=dataUnit.getDimensions()
         except Logging.GUIError, ex:
             ex.show()
@@ -471,7 +471,7 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
                 if self.mip:z=-1
                 self.rawImages=[]
                 for source in self.dataUnit.getSourceDataUnits():
-                    self.rawImages.append(source.getTimePoint(self.timePoint))  
+                    self.rawImages.append(source.getTimepoint(self.timePoint))  
                 
                 preview=self.dataUnit.doPreview(z,renew,self.timePoint)
                 #Logging.info("Got preview",preview.GetDimensions(),kw="preview")
@@ -479,7 +479,7 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
                 ex.show()
                 return
         else:
-            preview = self.dataUnit.getTimePoint(self.timePoint)
+            preview = self.dataUnit.getTimepoint(self.timePoint)
             self.rawImage = preview
             Logging.info("Using timepoint %d as preview"%self.timePoint,kw="preview")
         

@@ -51,11 +51,7 @@ class FilterBasedModule(Module):
         """
         Module.__init__(self,**kws)
 
-        # TODO: remove attributes that already exist in base class!
-        self.images=[]
         self.cachedTimepoint = -1
-        self.x,self.y,self.z=0,0,0
-        self.extent=None
         self.running=0
         self.cached = None
         self.depth=8
@@ -78,10 +74,8 @@ class FilterBasedModule(Module):
                      that control the processing are changed and the
                      preview data becomes invalid.
         """
-        self.images=[]
         Module.reset(self)
         self.preview=None
-        self.extent=None
         del self.cached
         self.cached = None        
         self.cachedTimepoint=-1
@@ -90,11 +84,9 @@ class FilterBasedModule(Module):
     def addInput(self,dataunit,data):
         """
         Created: 04.04.2006, KP
-        Description: Adds an input for the single dataunit Manipulationing filter
+        Description: Adds a vtkImageData object as an input to the processing module
         """
         Module.addInput(self,dataunit,data)
-        settings = dataunit.getSettings()
-
 
     def getPreview(self,z):
         """
@@ -109,12 +101,12 @@ class FilterBasedModule(Module):
                 self.extent=(0,dims[0]-1,0,dims[1]-1,z,z)
             else:
                 self.extent=None
-            self.preview=self.doOperation(preview=1)
+            self.preview=self.doOperation(preview = 1)
             self.extent=None
-        return self.zoomDataset(self.preview)
+        return self.preview
 
 
-    def doOperation(self,preview=0):
+    def doOperation(self,preview = 0):
         """
         Created: 04.04.2006, KP
         Description: Manipulationes the dataset in specified ways
@@ -144,18 +136,13 @@ class FilterBasedModule(Module):
         for i,currfilter in enumerate(filterlist):
                 flag=(i==n)
                 if i>0:
-                    print filterlist[i-1],"->",currfilter
                     currfilter.setPrevFilter(filterlist[i-1])
                 else:
-                    print "-> ",currfilter
                     currfilter.setPrevFilter(None)
                 if not flag:
                     currfilter.setNextFilter(filterlist[i+1])
-                    print currfilter,"->",filterlist[i+1]
                 else:
                     currfilter.setNextFilter(None)
-                    print currfilter,"->|"
-                #data = currfilter.execute(data,update=flag,last=flag)
                 data = currfilter.execute(data,update=0,last=flag)
                 
                 if not flag:

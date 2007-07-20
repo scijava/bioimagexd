@@ -310,7 +310,7 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
             image=self.dataUnit.doPreview(bxd.WHOLE_DATASET_NO_ALPHA,1,self.timepoint)
             self.ctf = self.dataUnit.getColorTransferFunction()
         else:
-            image=self.dataUnit.getTimePoint(tp)
+            image=self.dataUnit.getTimepoint(tp)
             image.SetUpdateExtent(image.GetWholeExtent())
 
             #print "timepoint",tp,"is",image

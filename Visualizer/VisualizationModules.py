@@ -171,7 +171,7 @@ class VisualizationModule(GUIBuilder.GUIBuilderBase):
             self.data = self.dataUnit.doPreview(bxd.WHOLE_DATASET,1,self.timepoint)
         else:
             Logging.info("Using timepoint data for tp",value,kw="rendering")
-            self.data = self.dataUnit.getTimePoint(value)
+            self.data = self.dataUnit.getTimepoint(value)
         
         # We set this for the new style modules that are based on the GUI builder 
         self.inputs=[self.data]

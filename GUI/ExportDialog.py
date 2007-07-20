@@ -54,7 +54,7 @@ class ExportDialog(wx.Dialog):
         self.dataUnit = dataUnit
         x,y,z=dataUnit.getDimensions()
         self.x,self.y,self.z = x,y,z
-        self.n = dataUnit.getLength()
+        self.n = dataUnit.getNumberOfTimepoints()
         self.imageAmnt = z*self.n
         self.sizer=wx.GridBagSizer()
 #        self.notebook = wx.Notebook(self,-1)
@@ -129,7 +129,7 @@ class ExportDialog(wx.Dialog):
             currpattern="%s"+currpattern
             Logging.info("Setting pattern %s"%currpattern,kw="io")
             writer.SetFilePattern(currpattern)
-            data=self.dataUnit.getTimePoint(t)
+            data=self.dataUnit.getTimepoint(t)
             data.Update()
             writer.SetInput(data)
             writer.SetFileDimensionality(2)
@@ -172,7 +172,7 @@ class ExportDialog(wx.Dialog):
                 return
             self.dlg.Update(i,"Writing dataset %d / %d"%(i,self.n))
             writer.SetFileName(file)
-            data=self.dataUnit.getTimePoint(i)
+            data=self.dataUnit.getTimepoint(i)
             writer.SetInput(data)
             writer.Write()
         self.dlg.Destroy()

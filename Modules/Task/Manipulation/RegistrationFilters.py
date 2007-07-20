@@ -104,7 +104,7 @@ class RegistrationFilter(ProcessingFilter.ProcessingFilter):
         Description: return the range for a given parameter
         """
         if parameter == "FixedTimepoint":
-            return (0,self.dataUnit.getLength())
+            return (0,self.dataUnit.getNumberOfTimepoints())
     def getType(self,parameter):
         """
         Created: 14.03.2007, KP
@@ -142,16 +142,16 @@ class RegistrationFilter(ProcessingFilter.ProcessingFilter):
         units=self.dataUnit.getSourceDataUnits()
         tp1 = self.parameters["FixedTimepoint"]
         tp2 = self.getCurrentTimepoint()
-        if tp2 >=units[0].getLength():
-            tp2 = units[0].getLength()-1
+        if tp2 >=units[0].getNumberOfTimepoints():
+            tp2 = units[0].getNumberOfTimepoints()-1
         print "tp2=",tp2
-        data1=units[0].getTimePoint(tp1)
+        data1=units[0].getTimepoint(tp1)
         # We need to prepare a copy of the data since
         # when we get the next timepoint, the data we got earlier will reference the
         # new data
         tp = vtk.vtkImageData()
         tp.DeepCopy(data1)
-        data2=units[0].getTimePoint(tp2)
+        data2=units[0].getTimepoint(tp2)
         data1=tp
         data1.Update()
         data2.Update()

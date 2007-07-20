@@ -40,6 +40,9 @@ import platform
 
 import scripting as bxd
 def getConfiguration():
+    global conf
+    if not conf:
+        conf = Configuration()
     return conf
 
 class Configuration:
@@ -47,9 +50,11 @@ class Configuration:
     Created: 23.02.2005, KP
     Description: A module that handles the configuration file 
     """
-    def __init__(self,configFile):
+    def __init__(self,configFile = None):
         global conf
         conf=self
+        if not configFile:
+            configFile = os.path.join(bxd.get_config_dir(),"BioImageXD.ini")
         self.configItems={}
         self.installPath=os.getcwd()
         self.parser=ConfigParser.ConfigParser()

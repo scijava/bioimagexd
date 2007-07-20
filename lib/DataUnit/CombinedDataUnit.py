@@ -29,7 +29,7 @@ __version__ = "$Revision: 1.74 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 import DataUnit
-from DataUnitSetting import *
+import DataUnitSetting
 import DataSource
 import vtk
 import Logging
@@ -187,18 +187,20 @@ class CombinedDataUnit(DataUnit.DataUnit):
         Created: 08.11.2004, JM
         Description: Executes the module's operation using the current settings
         Parameters:
-                duFile      The name of the created .DU file
+                bxdFile      The name of the .bxd file to be created file
         Keywords:
                 settings_only   If this parameter is set, then only the 
                                 settings will be written out and not the VTI 
                                 files.
                 timepoints      The timepoints that should be processed
         """
+        if not self.module:
+            Logging.error("No module set","No module was set for the dataunit to do processing with")
         callback=None
         
         settings_only = kws.get("settings_only",0)
         callback = kws.get("callback",None)
-        timepoints=kws.get("timepoints",range(self.getLength()))
+        timepoints=kws.get("timepoints",range(self.getNumberOfTimepoints()))
         # We create the vtidatasource with the name of the dataunit file
         # so it knows where to store the vtkImageData objects
 
@@ -233,7 +235,7 @@ class CombinedDataUnit(DataUnit.DataUnit):
                 self.module.setTimepoint(timePoint)
                 
                 for dataunit in self.sourceunits:
-                    image=dataunit.getTimePoint(timePoint)
+                    image=dataunit.getTimepoint(timePoint)
                     
                     self.module.addInput(dataunit,image)
                 # Get the vtkImageData containing the results of the operation 
@@ -324,8 +326,8 @@ class CombinedDataUnit(DataUnit.DataUnit):
         self.length = dataUnit.length
         if not no_init:
             for unit in self.sourceunits:
-                unit.getSettings().initialize(unit,count+1,unit.getLength())        
-            self.settings.initialize(self,count,self.sourceunits[0].getLength())
+                unit.getSettings().initialize(unit,count+1,unit.getNumberOfTimepoints())        
+            self.settings.initialize(self,count,self.sourceunits[0].getNumberOfTimepoints())
         
     def switchSourceDataUnits(self,units):
         """
@@ -360,13 +362,11 @@ class CombinedDataUnit(DataUnit.DataUnit):
         """
         
         preview=None
-        if timePoint > self.getLength():
-            timepoint=self.getLength()-1
+        if timePoint > self.getNumberOfTimepoints():
+            timepoint=self.getNumberOfTimepoints()-1
         
         self.oldAlphaStatus = bxd.wantAlphaChannel
-        
-        print "DO PREVIEW"
-        
+                
         if depth == bxd.WHOLE_DATASET_NO_ALPHA:
             bxd.wantAlphaChannel = 0
         # If the previously requested preview was a "show original" preview
@@ -388,7 +388,7 @@ class CombinedDataUnit(DataUnit.DataUnit):
             
             for i,unit in enumerate(self.sourceunits):
                 if i in self.outputChls and self.outputChls[i]:
-                    data=unit.getTimePoint(timePoint)
+                    data=unit.getTimepoint(timePoint)
                     merged.append((data,unit.getColorTransferFunction()))
                     
             if n not in self.outputChls:
@@ -412,7 +412,7 @@ class CombinedDataUnit(DataUnit.DataUnit):
                 
                 for dataunit in self.sourceunits:
                     Logging.info("Adding source image data",kw="dataunit")
-                    image=dataunit.getTimePoint(timePoint)
+                    image=dataunit.getTimepoint(timePoint)
                     x,y,z = image.GetDimensions()
                     
                     # If a whole volume is requested, but the data is acquired with an update
@@ -471,5 +471,5 @@ class CombinedDataUnit(DataUnit.DataUnit):
         Created: 02.04.2005, KP
         Description: Return the class that represents settings for this dataunit
         """
-        raise "Using bare DataUnitSettings"
+        return DataUnitSetting.DataUnitSettings
  

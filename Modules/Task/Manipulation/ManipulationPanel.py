@@ -624,7 +624,7 @@ class ManipulationPanel(FilterBasedTaskPanel.FilterBasedTaskPanel):
         ctf=vtk.vtkColorTransferFunction()
         ctf.AddRGBPoint(0,0,0,0)
         ctf.AddRGBPoint(255,1,1,1)
-        #imagedata=ImageOperations.getMIP(self.dataUnit.getSourceDataUnits()[0].getTimePoint(0),ctf)
+        #imagedata=ImageOperations.getMIP(self.dataUnit.getSourceDataUnits()[0].getTimepoint(0),ctf)
         imagedata = self.itemMips[0]
         
         
