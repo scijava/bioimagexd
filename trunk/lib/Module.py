@@ -25,8 +25,8 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 """
-__author__ = "Selli Project <http://sovellusprojektit.it.jyu.fi/selli/>"
-__version__ = "$Revision: 1.19 $"
+__author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
+__version__ = "$Revision: 1.22 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 import vtk
@@ -47,21 +47,14 @@ class Module:
         Description: Initialization
         """
         self.images=[]
+        self.shift = 0
+        self.scale = 1
         self.dataunits=[]
-        self.doRGB=0
         self.x,self.y,self.z=0,0,0
         self.extent=None
-        self.zoomFactor=1
         self.settings=None
         self.timepoint=-1
-        self.limit = scripting.mem.get_memory_limit()
-        # Gracefully handle lack of vtkParallel kit
-        try:
-            self.streamer = vtk.vtkMemoryLimitImageDataStreamer()
-            if self.limit:
-                self.streamer.SetMemoryLimit(1024*self.limit)
-        except:
-            self.streamer = None
+
         self.eventDesc="Processing data"
         self.controlUnit = None
      
@@ -79,14 +72,15 @@ class Module:
         """
         return self.controlUnit
     
- 
-
     def updateProgress(self,obj,evt):
         """
         Created: 13.07.2004, KP
-        Description: Sends progress update event
+        Description: This listens to progress update events from VTK side, and sends them forward using the messenger
         """        
         progress=obj.GetProgress()
+        # The shift and scale variables allow the processing method to affect the reported progress
+        # since it may combine several different VTK classes that will each report progress from 
+        # 0% to 100%
         progress=self.shift+progress*self.scale
         txt=obj.GetProgressText()
         if not txt:txt=self.eventDesc
@@ -105,31 +99,6 @@ class Module:
         Description: Sets the settings object of this module
         """
         self.settings=settings
-        
-    def setZoomFactor(self,factor):
-        """
-        Created: 23.02.2005, KP
-        Description: Sets the zoom factor for the produced dataset.
-                     This means that the preview dataset will be zoomed with
-                     the specified zoom factor
-        """
-        self.zoomFactor=factor
-            
-    def zoomDataset(self,dataset):
-        """
-        Created: 23.02.2004, KP
-        Description: Returns the dataset zoomed with the zoom factor
-        """
-        if self.zoomFactor != 1:
-            return ImageOperations.vtkZoomImage(dataset,self.zoomFactor)
-        return dataset
-            
-    def getZoomFactor(self,factor):
-        """
-        Created: 23.02.2004, KP
-        Description: Returns the zoom factor
-        """
-        return self.zoomFactor
 
     def reset(self):
         """
@@ -137,8 +106,6 @@ class Module:
         Description: Resets the module to initial state
         """
         self.images=[]
-        for i in self.images:
-         del i
         self.extent=None
         self.x,self.y,self.z=0,0,0
         self.shift=0
@@ -147,19 +114,17 @@ class Module:
     def addInput(self,dataunit,imageData):
         """
          Created: 03.11.2004, KP
-         Description: Adds an input vtkImageData dataset for the module.
+         Description: Adds an input a vtkImageData object and the corresponding dataunit
         """
         #imageData.SetScalarTypeToUnsignedChar()
         x,y,z=imageData.GetDimensions()
         if not (x or y or z):
             imageData.UpdateInformation()
             x,y,z = imageData.GetDimensions()
-        print "Current image data dimensions=",x,y,z
-        print "self.x, self.y, self.z=",self.x,self.y,self.z
+        # If the dimensions of the input images do not match, then raise an exception
         if self.x and self.y and self.z:
             if x!=self.x or y!=self.y or z!=self.z:
-                print imageData
-                raise ("ERROR: Dimensions do not match: currently (%d,%d,%d), "
+                Logging.error("Dimensions do not match","ERROR: Dimensions do not match: currently (%d,%d,%d), "
                 "new dimensions (%d,%d,%d)"%(self.x,self.y,self.z,x,y,z))
         else:            
             self.x,self.y,self.z=imageData.GetDimensions()
@@ -178,17 +143,6 @@ class Module:
         """
         Created: 03.11.2004, KP
         Description: Does a preview calculation for the x-y plane at depth z
-        """
-        return self.images[0]
-
-    def processData(self,z,newData,toZ=None):
-        """
-        Created: 03.11.2004, KP
-        Description: Processes the input data
-        Parameters: z        The z coordinate of the plane to be processed
-                    newData  The output vtkImageData object
-                    toZ      Optional parameter defining the z coordinate
-                             where the colocalization data is written
         """
         return self.images[0]
 

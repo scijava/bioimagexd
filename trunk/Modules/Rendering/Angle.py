@@ -146,9 +146,9 @@ class AngleModule(VisualizationModule):
         """       
         VisualizationModule.setDataUnit(self,dataunit)
         if self.visualizer.getProcessedMode():
-            data=self.dataUnit.getSourceDataUnits()[0].getTimePoint(0)
+            data=self.dataUnit.getSourceDataUnits()[0].getTimepoint(0)
         else:
-            data=self.dataUnit.getTimePoint(0)
+            data=self.dataUnit.getTimepoint(0)
         sx,sy,sz = data.GetSpacing()
         
         

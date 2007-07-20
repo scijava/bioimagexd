@@ -169,7 +169,7 @@ class TaskPanel(scrolled.ScrolledPanel):
         sources=self.dataUnit.getSourceDataUnits()
         for i,setting in enumerate(cachedSettings[1:]):
             #print "Setting settings of source %d"%i
-            #DataUnitSetting.DataUnitSettings.initialize(setting,sources[i],len(sources),sources[i].getLength())
+            #DataUnitSetting.DataUnitSettings.initialize(setting,sources[i],len(sources),sources[i].getNumberOfTimepoints())
             sources[i].setSettings(setting)
             #tf=setting.get("IntensityTransferFunction")
             #print setting,tf

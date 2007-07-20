@@ -453,8 +453,8 @@ class Scatterplot(InteractivePanel.InteractivePanel):
             self.buffer = wx.EmptyBitmap(width, height)
             #Logging.info("Generating scatterplot of timepoint",self.timepoint)
             # Red on the vertical and green on the horizontal axis
-            t1=self.sources[1].getTimePoint(self.timepoint)
-            t2=self.sources[0].getTimePoint(self.timepoint)            
+            t1=self.sources[1].getTimepoint(self.timepoint)
+            t2=self.sources[0].getTimepoint(self.timepoint)            
             self.scatter, ctf = ImageOperations.scatterPlot(t2,t1,-1,self.countVoxels,
             self.wholeVolume, dataunits = self.sources, logarithmic=self.logarithmic,timepoint = self.timepoint)
             self.scatter=self.scatter.Mirror(0)

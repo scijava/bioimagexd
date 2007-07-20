@@ -460,7 +460,7 @@ class ColocalizationPanel(TaskPanel.TaskPanel):
         coloctest.SetNumIterations(iterations)
         
         for i in sources:
-            data=i.getTimePoint(self.timePoint)
+            data=i.getTimepoint(self.timePoint)
             coloctest.AddInput(data)
         coloctest.AddObserver("ProgressEvent",self.updateProgress)
         

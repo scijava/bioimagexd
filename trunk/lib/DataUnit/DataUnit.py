@@ -124,7 +124,7 @@ class DataUnit:
         else:
             #Logging.info("Generating MIP of tp=",tp)
             if not small:
-                imagedata=self.getTimePoint(tp)
+                imagedata=self.getTimepoint(tp)
             else:
                 cached = self.dataSource.getFromCache(self.getFileName(),self.getName(),"MIP")
                 if not cached:
@@ -244,7 +244,7 @@ class DataUnit:
         if self.settings:
             self.settings.set("Name",name)
  
-    def getTimePoint(self,n):
+    def getTimepoint(self,n):
         """
         Created: 17.11.2004, KP
         Description: Returns the requested time point
@@ -268,6 +268,13 @@ class DataUnit:
         Description: Returns the length of this DataUnit
         """
         return self.length
+
+    def getNumberOfTimepoints(self):
+        """
+        Created: 20.07.2007, KP
+        Description: return the number of timepoints
+        """
+        return self.getLength()
 
     def setDataSource(self, dataSource):
         """

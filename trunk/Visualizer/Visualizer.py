@@ -1133,7 +1133,7 @@ class Visualizer:
         """
         #Logging.info("visualizer.setDataUnit(%s)"%str(dataunit),kw="visualizer")
         self.dataUnit = dataunit
-        count=dataunit.getLength()
+        count=dataunit.getNumberOfTimepoints()
         
         Logging.info("Setting range to %d"%count,kw="visualizer")
         self.maxTimepoint=count-1

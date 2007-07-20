@@ -148,7 +148,7 @@ class GUIBuilderBase:
             return self.sourceUnits[n]
         #print "RETURNING TIMEPOINT %d from SOURCEUNITS %d AS SOURCE"%(tp,n)
         #print "SOURCE UNIT IS =",self.sourceUnits[n]
-        return self.sourceUnits[n].getTimePoint(tp)
+        return self.sourceUnits[n].getTimepoint(tp)
         
     def getNumberOfInputs(self):
         """

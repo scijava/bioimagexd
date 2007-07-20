@@ -171,7 +171,7 @@ class SurfaceModule(VisualizationModule):
         Description: Sets the dataunit this module uses for visualization
         """       
         VisualizationModule.setDataUnit(self,dataunit)
-#        self.data=self.dataUnit.getTimePoint(0)
+#        self.data=self.dataUnit.getTimepoint(0)
         
     def showTimepoint(self, value, update=1):
         """

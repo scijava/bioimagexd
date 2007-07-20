@@ -201,7 +201,7 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
             Logging.info("Using ",image,"for gallery",kw="preview")
         else:
             print "GETTING TIMEPOINT",timepoint
-            image=self.dataUnit.getTimePoint(timepoint)
+            image=self.dataUnit.getTimepoint(timepoint)
             ctf=self.dataUnit.getColorTransferFunction()
             print "USING CTF",ctf
 
@@ -266,7 +266,7 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
         if not self.showTimepoints:
             self.slices=[]
             return self.setTimepoint(self.timepoint)
-        count=self.dataUnit.getLength()
+        count=self.dataUnit.getNumberOfTimepoints()
         self.slices=[]
         print "There are ",count,"tps"
         for tp in range(0,count):
@@ -275,7 +275,7 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
                 ctf = self.dataUnit.getSourceDataUnits()[0].getColorTransferFunction()
                 Logging.info("Using ",image,"for gallery",kw="preview")
             else:
-                image=self.dataUnit.getTimePoint(tp)
+                image=self.dataUnit.getTimepoint(tp)
                 x,y,z = self.dataUnit.getDimensions()
                 
                 image = bxd.mem.optimize(image, updateExtent = (0,x-1,0,y-1,self.slice, self.slice))

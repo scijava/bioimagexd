@@ -114,7 +114,7 @@ class RenderingInterface:
         if self.dataUnit.isProcessed():
             self.currentData = self.dataUnit.doPreview(bxd.WHOLE_DATASET,0,n)
         else:
-            self.currentData = self.dataUnit.getTimePoint(n)
+            self.currentData = self.dataUnit.getTimepoint(n)
         self.dimensions = self.currentData.GetDimensions()
         
     def setRenderWindowSize(self,size):
@@ -166,7 +166,7 @@ class RenderingInterface:
         self.dataUnit=dataUnit
         # Calculate how many digits there will be in the rendered output
         # file names, with a running counter
-        ndigits=1+int(math.log(self.dataUnit.getLength(),10))
+        ndigits=1+int(math.log(self.dataUnit.getNumberOfTimepoints(),10))
         # Format, the format will be /path/to/data/image_001.png        
         self.format="%%s%s%%s_%%.%dd.%s"%(os.path.sep,ndigits,self.type)
         #Logging.info("File name format=",self.format)
@@ -280,7 +280,7 @@ class RenderingInterface:
         if tp<0:
             return self.currentData.GetCenter()
         else:
-            return self.dataUnit.getTimePoint(tp).GetCenter()
+            return self.dataUnit.getTimepoint(tp).GetCenter()
         
     def getDimensions(self,tp=-1):
         """
@@ -293,7 +293,7 @@ class RenderingInterface:
         if tp<0:
             return self.dimensions
         else:
-            return self.dataUnit.getTimePoint(tp).GetDimensions()
+            return self.dataUnit.getTimepoint(tp).GetDimensions()
             
             
     def updateDataset(self):

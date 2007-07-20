@@ -344,7 +344,7 @@ class Histogram(wx.Panel):
         self.renew = kws.get("renew",self.renew)
         if self.renew:
             if not self.noupdate or not self.data:
-                self.data=self.dataUnit.getTimePoint(self.timePoint)
+                self.data=self.dataUnit.getTimepoint(self.timePoint)
                 self.data.Update()
             self.ctf=self.dataUnit.getSettings().get("ColorTransferFunction")
             if not self.ctf:Logging.info("No ctf!")

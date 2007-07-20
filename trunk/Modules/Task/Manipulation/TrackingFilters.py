@@ -267,7 +267,7 @@ class TrackTableGrid(gridlib.Grid):
 
         self.dataUnit = dataUnit
         self.trackFilter = trackFilter
-        n = dataUnit.getLength()
+        n = dataUnit.getNumberOfTimepoints()
         self.canEnable = canEnable
         table = TrackTable(cols = n, canEnable = canEnable)
 

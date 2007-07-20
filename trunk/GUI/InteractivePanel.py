@@ -379,7 +379,7 @@ class InteractivePanel(ogl.ShapeCanvas):
         if self.dataUnit.isProcessed():
             origImage=self.dataUnit.doPreview(z,renew,tp)
         else:
-            origImage = self.dataUnit.getTimePoint(tp)
+            origImage = self.dataUnit.getTimepoint(tp)
             
         import itk
         scalarType = origImage.GetScalarTypeAsString()        

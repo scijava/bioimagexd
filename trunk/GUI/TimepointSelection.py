@@ -166,7 +166,7 @@ class TimepointSelectionPanel(scrolled.ScrolledPanel):
         """
         nrow=0
         ncol=0
-        for i in range(self.dataUnit.getLength()):
+        for i in range(self.dataUnit.getNumberOfTimepoints()):
             if ncol==30:
                 nrow+=1
                 ncol=0
@@ -244,7 +244,7 @@ class TimepointSelectionPanel(scrolled.ScrolledPanel):
         self.dataUnit=dataUnit
         self.createButtons()
         self.updateSelection()
-        #data=self.dataUnit.getTimePoint(0)
+        #data=self.dataUnit.getTimepoint(0)
         self.mainsizer.Fit(self)
         
         

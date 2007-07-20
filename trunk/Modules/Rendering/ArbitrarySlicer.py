@@ -107,7 +107,7 @@ class ArbitrarySliceModule(VisualizationModule):
         """       
         VisualizationModule.setDataUnit(self,dataunit)
         print "got dataunit",dataunit
-        data=self.dataUnit.getTimePoint(0)
+        data=self.dataUnit.getTimepoint(0)
         self.origin = data.GetOrigin()
         self.spacing = data.GetSpacing()
         self.extent = data.GetWholeExtent()

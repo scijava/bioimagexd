@@ -665,7 +665,7 @@ class TimepointCorrelationFilter(ProcessingFilter.ProcessingFilter):
         Created: 31.07.2006, KP
         Description: Return the range for the parameter
         """             
-        return (0,self.dataUnit.getLength())
+        return (0,self.dataUnit.getNumberOfTimepoints())
 
     def execute(self,inputs,update=0,last=0):
         """
@@ -678,13 +678,13 @@ class TimepointCorrelationFilter(ProcessingFilter.ProcessingFilter):
         tp2=self.parameters["Timepoint2"]
         self.vtkfilter = vtk.vtkImageAutoThresholdColocalization()
         units=self.dataUnit.getSourceDataUnits()
-        data1=units[0].getTimePoint(tp1)
+        data1=units[0].getTimepoint(tp1)
         # We need to prepare a copy of the data since
         # when we get the next timepoint, the data we got earlier will reference the
         # new data
         tp = vtk.vtkImageData()
         tp.DeepCopy(data1)
-        data2=units[0].getTimePoint(tp2)
+        data2=units[0].getTimepoint(tp2)
         data1=tp
         
         self.vtkfilter.AddInput(data1)

@@ -289,7 +289,7 @@ class BXCDataSource(DataSource):
         self.settings = settings
         dataunit.setDataSource(self)
         dataunit.setSettings(settings)
-        data = dataunit.getTimePoint(0)
+        data = dataunit.getTimepoint(0)
         dataunits = [dataunit]
        
         if data.GetNumberOfScalarComponents()==3:
