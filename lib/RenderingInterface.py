@@ -120,7 +120,7 @@ class RenderingInterface:
     def setRenderWindowSize(self,size):
         """
         Created: 27.04.2005, KP
-        Description: Sets the mayavi render window size
+        Description: Sets the visualizer's render window size
         """        
         x,y=size
         if self.visualizer:
@@ -129,7 +129,7 @@ class RenderingInterface:
     def getRenderWindow(self):
         """
         Created: 22.02.2005, KP
-        Description: Returns the mayavi's render window. Added for Animator compatibility
+        Description: Returns the visualizer's render window. Added for Animator compatibility
         """
         return self.visualizer.getCurrentMode().GetRenderWindow()
     
@@ -181,29 +181,11 @@ class RenderingInterface:
         """
         self.timePoints=timepoints
 
-    def createVisualization(self,filename):
-        """
-        Created: 14.12.2004, KP
-        Description: Method for starting Mayavi with a datapoint for the
-                     purpose of creating a .mv file to use in rendering.
-        """
-        self.stop=0
-        self.runTk()#interGUI()
-        data=self.dataUnit.getTimePoint(0)
-        self.settings_mode=1
-        self.doRendering(preview=data)
-        self.mayavi.master.wait_window()
-        self.mayavi.mayavi.save_visualization(filename)
-        Logging.info("createVisualization setting mayavi to None")
-        self.mayavi=None
-        self.not_loaded=1
-        self.settings_mode=0
-        self.stop=1
 
     def isVisualizationSoftwareRunning(self):
         """
         Created: 11.1.2005, KP
-        Description: A method that returns true if a mayavi window exists that 
+        Description: A method that returns true if a render window exists that 
                      can be used for rendering
         """
         return (self.visualizer and not self.visualizer.isClosed())
@@ -218,7 +200,7 @@ class RenderingInterface:
     def doRendering(self,**kws):
         """
         Created: 17.11.2004, KP
-        Description: Sends each timepoint one at a time to be rendered in mayavi
+        Description: Sends each timepoint one at a time to be rendered in the visualizer
         Parameters:
             preview     If this flag is true, the results are not rendered out
         """
@@ -253,82 +235,7 @@ class RenderingInterface:
         Description: Sets the path where the rendered frames are stored.
         """
         self.dirname=path
- 
-    def renderData(self,data,n):
-        """
-        Created: 17.11.2004, KP
-        Description: Sends the specified timepoint to Mayavi to be rendered.
-        Parameters:
-                data               The dataset to be rendered
-                n                  The timepoint
-        """
-#        self.mayavi.close_all()
- 
-        if not self.visualizationFile and self.not_loaded:
-            Logging.info("Loading data: self.mayavi.open_vtk_data(...)")
-            # If this is the first run and there is no visualization file
-            # Load the data
-            #print "Loading ",data
-            self.mayavi.open_vtk_data(data)
-            Logging.info("done")
-            # Set the first-run flag to 0
-            self.not_loaded=0
-
-            # If we were told to use the existing window, then we will not load 
-            # any modules since they're already loaded
-            if not self.use_existing:
-                Logging.info("Loading mayavi module ",self.module)
-                # Load volume module necesary for rendering
-                module=self.mayavi.load_module(self.module,0)
-                # And if a color transfer function has been specified, use that.
-                if self.ctf:
-                    Logging.info("Setting ctf",self.ctf)
-                    prop=module.actor.GetProperty()
-                    prop.SetColor(self.ctf)
-                    module.legend.update_lut(prop)
-                elif self.surfcolor:
-                    prop=module.actor.GetProperty()
-                    Logging.info("Setting color",self.surfcolor)
-                    prop.SetColor(self.surfcolor)
-        elif self.visualizationFile and self.not_loaded:
-            Logging.info("Loading visualization ",self.visualizationFile)
-            # If this is the first run, but use a visualization file
-            self.mayavi.load_visualization(self.visualizationFile)
-            self.not_loaded=0
-
-        # substitute just the data
-        self.setDataSet(data)
-
-
-        if not self.isVisualizationSoftwareRunning():
-            if self.settings_mode:
-                Logging.error("Failed to create settings file",
-                "The settings file could not be written, because "
-                "MayaVi appears to\n"
-                "have been shut down before the settings file could be written.")
-            Logging.error("Failed to render all datasets",
-            "All selected timepoints have not been rendered, "
-            "because Mayavi appears to\n"
-            "have been shut down before the rendering was finished.")
-            return
-        self.mayavi.root.lift()
-        #self.mayavi.root.focus_force()
-        self.mayavi.root.update()
-
-        # Don't need to call Render since lift will already do it
-        #self.mayavi.Render()
-
-        if self.isVisualizationSoftwareRunning():
-            #self.mayavi.root.update()
-            #self.mayavi.root.lift()
-            self.mayavi.root.focus_force()
-
-        if not self.showPreview:
-            filename=self.getFilename(n)
-            print "Rendering timepoint %d with filename %s"%(n,filename)
-            self.saveFrame(filename)
-        print "done!"
-            
+           
     def saveFrame(self,filename):
         """
         Created: 22.02.2005, KP

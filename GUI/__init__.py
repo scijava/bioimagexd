@@ -1,8 +1,8 @@
 #from InfoWidget import *
-from MainWindow import *
-from TreeWidget import *
+#from MainWindow import *
+#from TreeWidget import *
 import MenuManager
-import Urmas
+#import Urmas
 import PreviewFrame
 
 import AboutDialog
@@ -20,7 +20,6 @@ import MainWindow
 import MenuManager
 import ProcessingManager
 import RangedSlider
-import RenderingManager
 import Scatterplot
 import SettingsWindow
 import TaskPanel

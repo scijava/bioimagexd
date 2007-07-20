@@ -31,7 +31,7 @@ __version__ = "$Revision: 1.71 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 import wx
-import messenger
+import lib.messenger as messenger
 
 
 # We preface all ids with 31 so they won't overlap with ids returned by wx.NewId()    
