@@ -31,9 +31,9 @@ __version__ = "$Revision: 1.63 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 import os.path,sys
-import messenger
+import lib.messenger as messenger
 
-import ImageOperations
+import lib.ImageOperations as ImageOperations
 import weakref
 
 import time
