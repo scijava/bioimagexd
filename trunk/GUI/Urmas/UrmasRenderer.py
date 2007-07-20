@@ -172,13 +172,10 @@ class UrmasRenderer:
         self.renderingInterface.setCurrentTimepoint(0)
         self.renderingInterface.setTimePoints([0])
         settings = self.dataUnit.getSettings()
-#        ctf= settings.get("ColorTransferFunction")
-#        self.renderingInterface.doRendering(preview=data,ctf = ctf)
 
         
     def render(self,control,preview=0,**kws):
         """
-        Class: Render(control)
         Created: 04.04.2005, KP
         Description: Render the timeline
         """    
@@ -236,7 +233,6 @@ class UrmasRenderer:
         
     def doRenderFrames(self,preview):
         """
-        Class: doRenderFrames()
         Created: 31.01.2006, KP
         Description: Method that only does the rendering.
                      This is separate from render() to make it

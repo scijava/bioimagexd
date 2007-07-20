@@ -197,30 +197,7 @@ class RenderingInterface:
         """
         return len(self.visualizer.getCurrentMode().getModules())        
         
-    def doRendering(self,**kws):
-        """
-        Created: 17.11.2004, KP
-        Description: Sends each timepoint one at a time to be rendered in the visualizer
-        Parameters:
-            preview     If this flag is true, the results are not rendered out
-        """
-        if kws.has_key("preview"):
-            self.showPreview=kws["preview"]
-        if kws.has_key("ctf"):
-            self.ctf=kws["ctf"]
-
-        if not self.showPreview:
-            raise "Cannot handle non-previews"
-
-        if not self.dataUnit or not self.timePoints:
-            raise "No dataunit or timepoints defined"
-
-        # If there is no visualizer instance to do the rendering
-        # create one
-        if not self.isVisualizationSoftwareRunning():
-            Logging.info("Creating visualizer",kw="visualizer")
-            self.createVisualizerWindow()
-        self.visualizer.setTimepoint(self.currentTimePoint)
+    
         
     def getFrameList(self):
         """
