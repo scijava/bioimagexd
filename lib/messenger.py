@@ -57,6 +57,9 @@ import types
 import sys
 import weakref
 
+import Logging
+import traceback
+
 
 #################################################################
 # This code makes the module reload-safe.
@@ -233,17 +236,21 @@ class Messenger:
             if sigs.has_key(evt):
                 slots = sigs[evt]
                 remove = []
-                for key in slots:
-                    obj, meth = slots[key]
-                    if obj: # instance method
-                        inst = obj()
-                        if inst:
-                            getattr(inst, meth)(source, event, *args, **kw_args)
-                        else:
-                            # Oops, dead reference.
-                            remove.append(key)
-                    else: # normal function
-                        meth(source, event, *args, **kw_args)
+                try:
+                    for key in slots:
+                        obj, meth = slots[key]
+                        if obj: # instance method
+                            inst = obj()
+                            if inst:
+                                getattr(inst, meth)(source, event, *args, **kw_args)
+                            else:
+                                # Oops, dead reference.
+                                remove.append(key)
+                        else: # normal function
+                            meth(source, event, *args, **kw_args)
+                except:
+                    Logging.backtrace()
+                    traceback.print_exc()
                 for m in remove:
                     del slots[m]                    
 

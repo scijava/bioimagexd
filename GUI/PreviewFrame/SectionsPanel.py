@@ -133,17 +133,20 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
         """
         Created: 1.08.2005, KP
         Description: Set the shown zslice
-        """    
+        """   
+        Logging.info("Setting viewed slice of orthogonal view",obj,event,arg,kw="preview")
         # A flag to indicate that we won't react on our own messages
         if self.noUpdate:
+            Logging.info("Not updating")
             return
         nx,ny=self.x,self.y
         nz=arg
         self.z=arg
         self.drawPos=[x*self.zoomFactor for x in (nx,ny,nz)]
         
+        
         self.setTimepoint(self.timepoint)
-        self.updatePreview()        
+#        self.updatePreview()        
         
     def onLeftDown(self,event):
         """
@@ -223,10 +226,10 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
     
             #print "Redrawing slices"
             self.setTimepoint(self.timepoint)
-        self.updatePreview()
-        self.noUpdate=1
-        messenger.send(None,"zslice_changed",nz) 
-        self.noUpdate = 0                
+        else:
+            self.updatePreview()
+
+        
         ncomps=self.imagedata.GetNumberOfScalarComponents()
         if ncomps==1:
             scalar=self.imagedata.GetScalarComponentAsDouble(self.x,self.y,self.z,0)
@@ -253,9 +256,12 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
     
         messenger.send(None,"get_voxel_at",rx,ry,rz, scalar, rv,gv,bv,r,g,b,alpha,self.ctf)
 
+        self.noUpdate=1
+        messenger.send(None,"zslice_changed",nz) 
+        self.noUpdate = 0                
         
         event.Skip()
-            
+        
         
     def onSize(self,event):
         """
@@ -307,7 +313,6 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
         """
         self.timepoint=tp
         if self.dataUnit.isProcessed():
-            print "Sections view doing preview"
             image=self.dataUnit.doPreview(bxd.WHOLE_DATASET_NO_ALPHA,1,self.timepoint)
             self.ctf = self.dataUnit.getColorTransferFunction()
         else:
@@ -331,6 +336,7 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
        # print "Got dimensions=",self.dims    
         self.slices=[]
         # obtain the slices
+        Logging.info("Orthogonal view, getting slices, pos=%d,%d,%d\n"%(self.x, self.y, self.z),kw="preview")
 
         z=self.z/self.zoomZ
         #z/=self.zoomFactor
@@ -406,12 +412,13 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
         Description: Updates the viewed image
         """
         if not self.enabled:
-           print "Won't draw sections cause not enabled"
-           return
+            Logging.info("Not drawing orthogonal sections, panel not enabled", kw="preview")
+            return
         if not self.slices:
             self.setTimepoint(self.timepoint, update = 0)
         self.paintPreview()
-        wx.GetApp().Yield(1)
+        self.Refresh()
+#        wx.GetApp().Yield(1)
 
     def OnPaint(self,event):
         """
@@ -432,6 +439,7 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
         Description: Paints the image to a DC
         """
 #        dc = self.dc = wx.BufferedDC(wx.ClientDC(self),self.buffer)
+        Logging.info("Painting slices", kw="preview")
         dc = wx.MemoryDC()
         dc.SelectObject(self.buffer)
         dc.BeginDrawing()

@@ -52,8 +52,8 @@ class TestColoc(unittest.TestCase):
             resultrobs = coloctest.GetRObserved()
             resultpval = coloctest.GetPValue()
             
-            self.assertEqual(resultrobs, robs,"Our R(obs) (%f) differs from ImageJ's (%f)"%(resultrobs, robs))            
-            self.assertEqual(resultpval, pvalue,"Our P-value (%f) differs from ImageJ's (%f)"%(resultpval, pvalue))
+            self.assert_(abs(resultrobs-robs)<0.001,"Our R(obs) (%f) differs from ImageJ's (%f)"%(resultrobs, robs))            
+            self.assert_(abs(resultpval-pvalue)<0.001,"Our P-value (%f) differs from ImageJ's (%f)"%(resultpval, pvalue))
             if iterations > 10:
                 resultrrandmean = coloctest.GetRRandMean()
                 self.assert_(abs(resultrrandmean - rrandmean)<0.1,"Our R(rand) mean (%f) differs from ImageJ's (%f) by more than 0.1"%(resultrrandmean, rrandmean))

@@ -1383,8 +1383,9 @@ class Visualizer:
             
         if self.z != newz:
             self.z=newz
-            print "Sending zslice changed event"
-            messenger.send(None,"zslice_changed",newz)        
+            if event != "zslice_changed":
+                print "Sending zslice changed event"
+                messenger.send(None,"zslice_changed",newz)        
         
     def onSnapshot(self,event):
         """
