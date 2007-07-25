@@ -40,6 +40,10 @@
 
 #include "vtkBXDProcessingWin32Header.h"
 #include "vtkImageMultipleInputOutputFilter.h"
+#include "vtkImageAlgorithm.h"
+#include "vtkInformationVector.h"
+#include "vtkInformation.h"
+#include "vtkStreamingDemandDrivenPipeline.h"
 
 class VTK_BXD_PROCESSING_EXPORT vtkImageAutoThresholdColocalization : public vtkImageMultipleInputOutputFilter
 {
@@ -214,6 +218,10 @@ public:
 protected:
   vtkImageAutoThresholdColocalization();
   ~vtkImageAutoThresholdColocalization();
+int RequestUpdateExtent (
+  vtkInformation* vtkNotUsed(request),
+  vtkInformationVector** inputVector,
+  vtkInformationVector* outputVector);  
 
   void ComputeInputUpdateExtents( vtkDataObject*output );
 
@@ -224,6 +232,11 @@ protected:
                        int extent[6], int id);
   
 
+int SplitExtent(int splitExt[6],int startExt[6],int num, int total) {
+     memcpy(splitExt, startExt, 6 * sizeof(int));
+     return 1;                                             
+                                                
+   }
   void InitOutput(int outExt[6], vtkImageData *outData);
 private:
   vtkImageAutoThresholdColocalization(const vtkImageAutoThresholdColocalization&);  // Not implemented.

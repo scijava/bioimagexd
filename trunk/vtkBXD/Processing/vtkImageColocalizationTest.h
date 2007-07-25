@@ -132,7 +132,11 @@ protected:
   ~vtkImageColocalizationTest();
 
   //void ComputeInputUpdateExtents( vtkDataObject*output );
-
+int SplitExtent(int splitExt[6],int startExt[6],int num, int total) {
+     memcpy(splitExt, startExt, 6 * sizeof(int));
+     return 1;                                             
+                                                
+   }
   void ExecuteInformation(vtkImageData **inputs, vtkImageData *output);
   void ComputeInputUpdateExtent(int inExt[6], int outExt[6]);
   

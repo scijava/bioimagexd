@@ -73,6 +73,23 @@ vtkImageAutoThresholdColocalization::~vtkImageAutoThresholdColocalization()
 {
 }
 
+
+// Always request the whole input data
+//
+int vtkImageAutoThresholdColocalization::RequestUpdateExtent (
+  vtkInformation* vtkNotUsed(request),
+  vtkInformationVector** inputVector,
+  vtkInformationVector* outputVector)
+{
+  int uext[6], ext[6];
+  vtkInformation* outInfo = outputVector->GetInformationObject(0);
+  vtkInformation *inInfo = inputVector[0]->GetInformationObject(0);
+  inInfo->Get(vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT(),ext);
+  memcpy(uext, ext, 6*sizeof(int));
+  inInfo->Set(vtkStreamingDemandDrivenPipeline::UPDATE_EXTENT(), uext,6);
+  return 1;    
+}
+
 //----------------------------------------------------------------------------
 void vtkImageAutoThresholdColocalization::
 ComputeInputUpdateExtents(vtkDataObject * output)
@@ -117,7 +134,7 @@ template <class T> void calculateThreshold
     double*ch1BestThresh, double *m, double*b, double*best
     )
 {
-    printf("Calculating threshold\n");
+    printf("Calculating threshold, thread id=%d\n", id);
     bool thresholdFound = false, divByZero = false;
     int iteration = 0;
     int N = 0, N2 = 0, Nzero = 0;
