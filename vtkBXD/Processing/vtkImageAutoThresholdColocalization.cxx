@@ -170,7 +170,7 @@ template <class T> void calculateThreshold
         }
             
         ch1threshmax = vtkMath::Round(newMax);
-        //printf("Setting ch1threshmax to %f\n", ch1threshmax);
+        printf("Setting ch1threshmax to %f\n", ch1threshmax);
         ch2threshmax =
             vtkMath::Round(((double) ch1threshmax * (double) *m) +
               (double) *b);
@@ -235,14 +235,17 @@ template <class T> void calculateThreshold
 
         if (!self->GetIncludeZeroPixels())
             N = N - Nzero;
-        
+
+        printf("sumX=%d, sumY=%d\n", sumX, sumY);        
         calculate_pearson(&pearsons1, &pearsons2, &pearsons3,
         sumX, sumY, sumXX,sumYY,sumXY,N);
+        printf("pearson1=%f, pearson2=%f, pearson3=%f\n", pearson1, pearson2, pearson3);
 
         r2Prev2 = r2Prev;
         r2Prev = r2;
         r2 = pearsons1 / (sqrt(pearsons2 * pearsons3));
 
+        printf("r2=%f\n", r2);
 
         //if r is not a number then set divide by zero to be true  
         if (((sqrt(pearsons2 * pearsons3)) == 0) || N == 0)
@@ -255,7 +258,7 @@ template <class T> void calculateThreshold
             *ch1BestThresh = ch1threshmax;
             bestr2 = r2;
             *best = bestr2;
-        
+                
         }
         //if our r is close to our level of tolerance then set threshold has been found
         if ((r2 < tolerance) && (r2 > -tolerance)) {
