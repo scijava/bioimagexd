@@ -187,10 +187,10 @@ class FileListDataSource(DataSource):
         if ext in ["tif","tiff"]:
             tiffimg = Image.open(files[0])
             if tiffimg.palette:
-                print "HAS PALETTE, THEREFORE NOT RGB"
+                print files[0], "HAS PALETTE, THEREFORE NOT RGB"
                 isRGB = 0
             else:
-                print "NO PALETTE, IS AN RGB IMAGE"
+                print files[0], "NO PALETTE, IS AN RGB IMAGE"
         rdr = self.getReaderByExtension(ext, isRGB)
                 
         dirn=os.path.dirname(files[0])
@@ -346,22 +346,23 @@ class FileListDataSource(DataSource):
         Parameters:   i       The index
         """
         data=self.getTimepoint(i)
-        if not self.shift:
-            self.shift=vtk.vtkImageShiftScale()
-            self.shift.SetOutputScalarTypeToUnsignedChar()
-        self.shift.SetInput(data)
-            
-        x0,x1=data.GetScalarRange()
-        print "Scalar range=",x0,x1
-        if not x1:
-            x1=1
-        scale=255.0/x1
-        
-        if scale:
-            self.shift.SetScale(scale)
-        self.shift.Update()
-        data=self.shift.GetOutput()
-        data.ReleaseDataFlagOff()
+#         if self.explicitScale 
+#         if not self.shift:
+#             self.shift=vtk.vtkImageShiftScale()
+#             self.shift.SetOutputScalarTypeToUnsignedChar()
+#         self.shift.SetInput(data)
+#             
+#         x0,x1=data.GetScalarRange()
+#         print "Scalar range=",x0,x1
+#         if not x1:
+#             x1=1
+#         scale=255.0/x1
+#         
+#         if scale:
+#             self.shift.SetScale(scale)
+#         self.shift.Update()
+#         data=self.shift.GetOutput()
+#         data.ReleaseDataFlagOff()
         return data
         
     def retrieveImageInfo(self,filename):

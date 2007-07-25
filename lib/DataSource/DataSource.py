@@ -515,12 +515,12 @@ class DataSource:
         if not self.bitdepth:
             
             data=self.getDataSet(0,raw=1)
-            
+            data.UpdateInformation()
             self.scalarRange=data.GetScalarRange()
             #print "Scalar range of data",self.scalarRange
             scalartype=data.GetScalarType()
-            #print "Scalar type",scalartype,data.GetScalarTypeAsString()
-            #print "Number of scalar components",data.GetNumberOfScalarComponents()
+            print "Scalar type",scalartype,data.GetScalarTypeAsString()
+            print "Number of scalar components",data.GetNumberOfScalarComponents()
         
             if scalartype==4:
                 self.bitdepth=16

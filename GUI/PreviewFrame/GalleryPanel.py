@@ -397,6 +397,8 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
         if not self.enabled:
            Logging.info("Won't draw gallery cause not enabled",kw="preview")
            return
+        if not self.dataUnit:
+            return
         if not self.slices:
             print "Updating slices"
             self.setTimepoint(self.timepoint, update=0)

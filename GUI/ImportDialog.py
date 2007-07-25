@@ -100,6 +100,7 @@ class ImportDialog(wx.Dialog):
         """        
         assert os.path.exists(filename),"Filename needs to exist, but no file %s"%filename
         
+        self.filename = filename
         self.inputFile = filename
         self.browsedir.SetValue(filename)
         
@@ -148,6 +149,7 @@ class ImportDialog(wx.Dialog):
             ex.show()
             self.Close()
             return
+        print "ctf=",self.ctf
         bxdwriter =  DataSource.BXDDataWriter(outname)
         self.resultDataset = bxdwriter.getFilename()
         print "Result dataset=",self.resultDataset
@@ -277,6 +279,7 @@ class ImportDialog(wx.Dialog):
                 
         self.preview = PreviewFrame.PreviewFrame(self,previewsize=(384,384),scrollbars=False)
         self.preview.setPreviewType("")
+        self.preview.disableAnnotations()
         
         previewBox.Add(self.preview)
         previewBox.Add(self.timeslider,1,wx.EXPAND)
@@ -737,6 +740,7 @@ enter the information below.""")
         if not self.ctfInitialized:
             x0,x1 = self.dataSource.getScalarRange()
             bd = self.dataSource.getSingleComponentBitDepth()
+            print "Single component bit depth=",bd
             self.ctf = vtk.vtkColorTransferFunction()
             self.ctf.AddRGBPoint(0, 0, 0, 0)
             self.ctf.AddRGBPoint((2**bd)-1, 0, 1, 0)
