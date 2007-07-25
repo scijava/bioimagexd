@@ -145,8 +145,10 @@ template <class T> void calculateThreshold
     inData[0]->GetScalarRange(range);
     int ch1Max = (int)range[1];
     int ch1Min = 0;
+    printf("ch1Max = %d\n", (int)range[1]);
     
-    inData[1]->GetScalarRange(range); 
+    inData[1]->GetScalarRange(range);
+    printf("ch2Max = %d\n", (int)range[1]);
     int ch2Max = (int)range[1];
     int ch2Min = 0;
     

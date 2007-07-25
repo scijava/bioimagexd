@@ -900,7 +900,7 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         yoff = (th-bh)/2
         x0,y0,w,h = self.GetClientRect()
         
-        self.snapshotPos = xoff+x0,yoff+x0
+        self.snapshotPos = xoff+x0*2,yoff+y0*2
         self.snapshotSize = bw,bh
 
 #        print "Buffer size=",tw,th
