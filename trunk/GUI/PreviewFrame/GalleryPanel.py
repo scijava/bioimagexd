@@ -200,16 +200,13 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
             ctf = self.dataUnit.getSourceDataUnits()[0].getColorTransferFunction()
             Logging.info("Using ",image,"for gallery",kw="preview")
         else:
-            print "GETTING TIMEPOINT",timepoint
             image=self.dataUnit.getTimepoint(timepoint)
             ctf=self.dataUnit.getColorTransferFunction()
-            print "USING CTF",ctf
 
         #self.imagedata = ImageOperations.imageDataTo3Component(image,ctf)
         self.imagedata =image
         self.imagedata.SetUpdateExtent(self.imagedata.GetWholeExtent())
         self.imagedata.Update()
-        print "imagedata=",self.imagedata
         
         
         #x,y,z=self.imagedata.GetDimensions()
@@ -459,6 +456,8 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
         
         if not self.slices:
             Logging.info("Haven't got any slices",kw="preview")
+            self.makeBackgroundBuffer(dc)
+
             dc.EndDrawing()
             self.dc = None
             return
@@ -490,6 +489,8 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
         self.bmp=self.buffer
 
         InteractivePanel.InteractivePanel.paintPreview(self)
+        self.makeBackgroundBuffer(dc)
+        
 
         dc.EndDrawing()
         self.dc = None

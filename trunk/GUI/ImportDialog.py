@@ -126,7 +126,9 @@ class ImportDialog(wx.Dialog):
         
         self.convertFiles(filename)
         bxd.unregisterDialog("import")
-
+        self.EndModal(wx.ID_OK)
+        
+        
     def convertFiles(self,outname):
         """
         Created: 21.04.2005, KP

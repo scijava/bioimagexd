@@ -31,7 +31,8 @@ __version__ = "$Revision: 1.63 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 import os.path,sys
-import lib.messenger as messenger
+#import lib.messenger as messenger
+import messenger
 
 import lib.ImageOperations as ImageOperations
 import weakref
@@ -362,9 +363,10 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         Description: Sets the preview to display the selected z slice
         """
         newz=val
+        print "setPreviewedSlice",obj,event,val
         if self.z!=newz:
             self.z=newz
-            # was updatePreview(1)
+            print "updatePreview(0)"
             self.updatePreview(0)
 
     def setTimepoint(self,tp):
@@ -923,15 +925,3 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         self.repaintHelpers()
         
 
-        
-    def makeBackgroundBuffer(self, dc):
-        """
-        Created: 06.10.2006, KP
-        Description: Copy the current buffer to a background buffer
-        """
-        w,h = self.buffer.GetWidth(),self.buffer.GetHeight()
-        self.bgbuffer = wx.EmptyBitmap(w,h)
-        memdc = wx.MemoryDC()
-        memdc.SelectObject(self.bgbuffer)
-        memdc.Blit(0,0,w,h,dc,0,0)
-        memdc.SelectObject(wx.NullBitmap)
