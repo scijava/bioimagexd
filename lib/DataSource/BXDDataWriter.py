@@ -102,7 +102,6 @@ class BXDDataWriter(DataWriter):
         """
    
         try:
-            print "Trying to open",self.filename,repr(self.filename)
             fp=open(self.filename,"w")
         except IOError,ex:
             Logging.error("Failed to write settings",

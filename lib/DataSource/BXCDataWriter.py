@@ -119,10 +119,8 @@ class BXCDataWriter(DataWriter):
         n=len(self.dataSets)
         parser.set("ImageData","numberOfFiles","%d"%n)
         for i in range(n):
-            parser.set("ImageData","file_%d"%i,self.dataSets[i])
-                    
+            parser.set("ImageData","file_%d"%i,self.dataSets[i])                    
         try:
-            print "Trying to open",self.filename,repr(self.filename)
             fp=open(self.filename,"w")
         except IOError,ex:
             Logging.error("Failed to write settings",

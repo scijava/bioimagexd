@@ -1266,7 +1266,7 @@ class MainWindow(wx.Frame):
 importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
         """
         if startFile:
-            import_code+="importdlg.setInputFile('%s')\n"%startFile
+            import_code+="importdlg.setInputFile(r'%s')\n"%startFile
         import_code+="if importdlg.ShowModal() == wx.ID_OK: mainWindow.openFile( importdlg.getDatasetName() )\n"
         command = Command.Command(Command.MENU_CMD,None,None,import_code,"",imports=["GUI.ImportDialog"],desc="Show import dialog")
         self.commands["show_import"]=command

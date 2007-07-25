@@ -239,7 +239,7 @@ class UrmasControl:
         self.renderingInterface.setDataUnit(dataunit)
         self.renderingInterface.setVisualizer(self.visualizer)
         self.timelinePanel.setDataUnit(dataunit)
-        #n=10*self.dataUnit.getNumberOfTimePoints()
+        #n=10*self.dataUnit.getNumberOfTimepoints()
         #self.timelineConfig.setFrames(n)
         #self.timelineConfig.setDuration(n/2)
         

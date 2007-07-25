@@ -1167,6 +1167,15 @@ class InteractivePanel(ogl.ShapeCanvas):
             yrate=self.scrollsize
         
         self.SetScrollRate(xrate,yrate)
-        
-
-        
+                
+    def makeBackgroundBuffer(self, dc):
+        """
+        Created: 06.10.2006, KP
+        Description: Copy the current buffer to a background buffer
+        """
+        w,h = self.buffer.GetWidth(),self.buffer.GetHeight()
+        self.bgbuffer = wx.EmptyBitmap(w,h)
+        memdc = wx.MemoryDC()
+        memdc.SelectObject(self.bgbuffer)
+        memdc.Blit(0,0,w,h,dc,0,0)
+        memdc.SelectObject(wx.NullBitmap)

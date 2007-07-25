@@ -617,7 +617,6 @@ def getPlane(data,plane,x,y,z, applyZScaling = 0):
     Description: Get a plane from given the volume
     """   
     X,Y,Z=0,1,2
-    print "getPlane",plane, x,y,z
     permute=vtk.vtkImagePermute()
     dx,dy,dz=data.GetDimensions()
     voi=vtk.vtkExtractVOI()

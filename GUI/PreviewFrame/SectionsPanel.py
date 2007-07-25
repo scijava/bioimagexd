@@ -219,7 +219,7 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
         self.drawPos=[math.ceil(a*self.zoomFactor) for a in (nx,ny,nz)]
 #        Logging.info("drawPos=",self.drawPos,"zoomFactor=",self.zoomFactor,"nx=%d, ny=%d, nz=%d"%(nx,ny,nz))
         if self.x!=nx or self.y!=ny or self.z!=nz:
-            self.x,self.y,self.z=nx,ny,nz
+            self.x,self.y,self.z=int(nx),int(ny),int(nz)
     
             #print "Redrawing slices"
             self.setTimepoint(self.timepoint)
@@ -288,6 +288,7 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
         y/=2
         z/=2
         z*=self.zoomZ
+        x, y, z = int(x),int(y),int(z) 
         
         self.x,self.y,self.z=x,y,z
         self.drawPos=(x,y,z)
@@ -491,6 +492,7 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
             
         self.bmp=self.buffer
         InteractivePanel.InteractivePanel.paintPreview(self)
+        self.makeBackgroundBuffer(dc)
             
 
         dc.EndDrawing()

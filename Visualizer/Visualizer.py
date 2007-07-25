@@ -1366,9 +1366,11 @@ class Visualizer:
         """
         Created: 1.08.2005, KP
         Description: Set the z slice to be shown
-        """                
+        """       
+        print "onChangeZSlice",obj,event,arg
         t=time.time()
-        if abs(self.depthT-t) < self.updateFactor: return
+        if abs(self.depthT-t) < self.updateFactor:
+            return
         self.depthT=time.time()
         
         if arg:
@@ -1382,7 +1384,7 @@ class Visualizer:
             
         if self.z != newz:
             self.z=newz
-#            print "Sending zslice changed event"
+            print "Sending zslice changed event"
             messenger.send(None,"zslice_changed",newz)        
         
     def onSnapshot(self,event):
