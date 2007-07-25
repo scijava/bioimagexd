@@ -1367,7 +1367,6 @@ class Visualizer:
         Created: 1.08.2005, KP
         Description: Set the z slice to be shown
         """       
-        print "onChangeZSlice",obj,event,arg
         t=time.time()
         if abs(self.depthT-t) < self.updateFactor:
             return

@@ -38,7 +38,7 @@ import sys
 
 outfile=sys.stdout
 HIDE_DEBUG=[]
-AHIDE_DEBUG=["!visualizer","main","init","animator","io","task","!preview","scale",
+HIDE_DEBUG=["!visualizer","main","init","animator","io","task","!preview","scale",
      "imageop","modules","trivial","ctf","dataunit","event","processing",
      "datasource","iactivepanel","annotation","ui","rendering","caching","scripting","NOlsmreader",
      "pipeline"]

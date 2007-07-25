@@ -267,6 +267,7 @@ class InteractivePanel(ogl.ShapeCanvas):
         Created: 24.03.2005, KP
         Description: Initialization
         """    
+        self.annotationsEnabled = 1
         self.parent = parent
         self.is_windows =platform.system()=="Windows"
         self.is_mac = platform.system()=="Darwin"
@@ -364,6 +365,13 @@ class InteractivePanel(ogl.ShapeCanvas):
         self.Bind(wx.EVT_SIZE,self.OnSize)
         
         messenger.connect(None,"update_helpers",self.onUpdateHelpers)
+        
+    def disableAnnotations(self):
+        """
+        Created: 25.07.2007, KP
+        Description: disable the annotations
+        """
+        self.annotationsEnabled = 0
         
     def onSubtractBackground(self, event):
         """
@@ -742,9 +750,10 @@ class InteractivePanel(ogl.ShapeCanvas):
             return
         if self.dataUnit and self.dataUnit.getDataSource(): 
             settings = self.dataUnit.getSettings()
-            self.saveAnnotations()
-            bxd.storeSettingsToCache(self.dataUnit.getFileName()+"_"+self.dataUnit.getName()+"_annotations",[settings])
-            self.dataUnit.getSettings().set("Annotations",None)
+            if self.annotationsEnabled:
+                self.saveAnnotations()
+                bxd.storeSettingsToCache(self.dataUnit.getFileName()+"_"+self.dataUnit.getName()+"_annotations",[settings])
+                self.dataUnit.getSettings().set("Annotations",None)
                        
     def getDuplicateDC(self, dc):
         """
@@ -1036,6 +1045,8 @@ class InteractivePanel(ogl.ShapeCanvas):
         Created: 04.07.2007, KP
         Description: a method that iwll read cached annotations and show them after the panel has bee initialized
         """
+        if not self.annotationsEnabled:
+            return
         if not self.dataUnit.getDataSource():       
             return
         cachedSettings, cacheParser = bxd.getSettingsFromCache(self.dataUnit.getFileName()+"_"+self.dataUnit.getName()+"_annotations")
