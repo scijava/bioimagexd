@@ -239,7 +239,7 @@ template <class T> void calculateThreshold
         printf("sumX=%d, sumY=%d\n", sumX, sumY);        
         calculate_pearson(&pearsons1, &pearsons2, &pearsons3,
         sumX, sumY, sumXX,sumYY,sumXY,N);
-        printf("pearson1=%f, pearson2=%f, pearson3=%f\n", pearson1, pearson2, pearson3);
+        printf("pearson1=%f, pearson2=%f, pearson3=%f\n", pearsons1, pearsons2, pearsons3);
 
         r2Prev2 = r2Prev;
         r2Prev = r2;
