@@ -86,6 +86,7 @@ class TreeWidget(wx.SashLayoutWindow):
         self.oiffiles=None
         self.bioradfiles=None
         self.interfilefiles=None
+        self.liffiles=None
         
         self.dataUnitItems=[]
         
@@ -393,6 +394,21 @@ class TreeWidget(wx.SashLayoutWindow):
 
             item=self.bxdfiles
             self.tree.Expand(item)
+        elif objtype=="lif":
+            if not self.liffiles:
+                self.liffiles=self.tree.AppendItem(self.root,"LIF files")
+                self.tree.SetPyData(self.liffiles,"1")
+                self.tree.SetItemImage(self.liffiles,fldridx,which=wx.TreeItemIcon_Normal)
+                self.tree.SetItemImage(self.liffiles,fldropenidx,which=wx.TreeItemIcon_Expanded)
+
+            item=self.liffiles
+            self.tree.Expand(item)
+            item=self.tree.AppendItem(item,name)
+            self.tree.Expand(item)
+
+            self.tree.SetPyData(item,"2")
+            self.tree.SetItemImage(item,fldropenidx,which=wx.TreeItemIcon_Expanded)
+
             
         self.tree.Expand(item)
         selected=0

@@ -17,8 +17,8 @@ vtkImageLabelAverage.cxx
 vtkImageMapToIntensities.cxx
 vtkImageSimpleMIP.cxx
 vtkImageSolitaryFilter.cxx
-
 vtkLSMReader.cxx
+vtkLIFReader.cxx
 )
 
 # --------------------------------------------------------------------------
