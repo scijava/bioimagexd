@@ -36,15 +36,6 @@ __author__ = "BioImageXD Project"
 __version__ = "$Revision: 1.22 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
-#import Dialogs
-#import ImageOperations
-#import Logging
-#import math
-#import messenger
-#import os.path
-#import random
-#import sys
-
 from GUI.Urmas.TrackItem.TrackItem import TrackItem
 from GUI.Urmas.UrmasPalette import UrmasDropTarget
 from GUI.TimepointSelection import TimepointSelection

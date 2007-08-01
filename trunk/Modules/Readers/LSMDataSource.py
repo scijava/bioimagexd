@@ -127,8 +127,7 @@ class LsmDataSource(DataSource):
 		if progress >= 1.0:
 			notinvtk = 1
 		scripting.inIO = (progress < 1.0)
-		#messenger.send(None,"update_progress",progress,msg,notinvtk)
-		#print msg
+		#lib.messenger.send(None,"update_progress",progress,msg,notinvtk)
 
 	def getTimeStamp(self, timepoint):
 		"""

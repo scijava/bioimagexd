@@ -51,7 +51,7 @@ class CombinedDataUnit(DataUnit):
 		Created: 03.11.2004, JM
 		Description: Constructor
 		"""
-		DataUnit.__init__(self, name)
+		DataUnit.__init__(self, name, initToNone = 0)
 		self.outputDirectory = ""
 		self.sourceunits = []
 		self.doOrig = 0

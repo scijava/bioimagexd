@@ -29,7 +29,7 @@ __date__ = "$Date$"
 
 from lib.DataSource.DataSource import DataSource
 import Logging
-import DataUnit
+from lib.DataUnit import DataUnit
 import vtk
 import vtkbxd
 def getExtensions(): return ["lif"]

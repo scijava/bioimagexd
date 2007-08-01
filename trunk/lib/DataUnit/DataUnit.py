@@ -40,8 +40,7 @@ class DataUnit:
 	Created: 03.11.2004, JM
 	Description: A class representing a timeseries of 3D data
 	"""
-
-	def __init__(self, dataUnitName = ""):
+	def __init__(self, dataUnitName = "", initToNone = 1):
 		"""
 		Created: 03.11.2004, JM
 		Description: Constructor
@@ -60,18 +59,19 @@ class DataUnit:
 		self.mipTimepoint = -1
 		self.destroyed = 0
 
-		self.getResampledVoxelSize = None 
-		self.getVoxelSize = None
-		self.getScalarRange = None
-		self.getDimensions = None
-		self.getSpacing = None
-		self.getSingleComponentBitDepth = None
-		self.getNumericalAperture = None
-		self.getBitDepth = None
-		self.getExcitationWavelength = None
-		self.getEmissionWavelength = None
+		if initToNone:
+			self.getResampledVoxelSize = None 
+			self.getVoxelSize = None
+			self.getScalarRange = None
+			self.getDimensions = None
+			self.getSpacing = None
+			self.getSingleComponentBitDepth = None
+			self.getNumericalAperture = None
+			self.getBitDepth = None
+			self.getExcitationWavelength = None
+			self.getEmissionWavelength = None
 		
-	def setCacheKey(self,key):
+	def setCacheKey(self, key):
 		"""
 		Created: 23.10.2006, KP
 		Description: Set the key under which this dataunit is stored in the cache

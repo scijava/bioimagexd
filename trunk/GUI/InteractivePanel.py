@@ -1026,6 +1026,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 		Created: 04.07.2005, KP
 		Description: Sets the data unit that is displayed
 		"""    
+		print "Setting dataunit to",dataUnit
 		self.dataUnit = dataUnit
 		self.voxelSize = dataUnit.getVoxelSize()
 		x, y, z = self.dataUnit.getDimensions()

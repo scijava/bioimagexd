@@ -120,8 +120,6 @@ class PreviewFrame(InteractivePanel):
 		self.mip = 0
 		self.previewtype = ""
 		self.tmodules = Modules.DynamicLoader.getTaskModules()
-		for key, value in self.tmodules.iteritems():
-			print key, "\n\t", value
 		self.tmodules[""] = self.tmodules["Process"]
 		self.modules = {}
 		for key in self.tmodules:
@@ -219,7 +217,6 @@ class PreviewFrame(InteractivePanel):
 			m = "SLICES"
 			if self.mip:
 				m = "MIP"
-#			print "\n\n\n%s Setting buffer size to " % m, x, y
 			if self.buffer.GetWidth() != x or self.buffer.GetHeight() != y:
 				self.buffer = wx.EmptyBitmap(x, y)
 				self.setScrollbars(x, y)
@@ -420,8 +417,6 @@ class PreviewFrame(InteractivePanel):
 		#if self.enabled:
 		self.paintSize = (0, 0)
 		self.calculateBuffer()
-#		print "Calculating buffer size, it's now",self.buffer.GetWidth(),self.buffer.GetHeight()
-#			((x,y))
 		
 		if selectedItem != -1:
 			self.setSelectedItem(selectedItem, update = 0)
@@ -489,7 +484,6 @@ class PreviewFrame(InteractivePanel):
 			colorImage = preview
 		
 		usedUpdateExt = 0
-		#print "self.z=",self.z,"is mip=",not (not self.mip)
 		uext = None
 		if self.z != -1 and not self.mip:
 			x, y = self.xdim, self.ydim
@@ -498,13 +492,9 @@ class PreviewFrame(InteractivePanel):
 			uext = (0, x - 1, 0, y - 1, self.z, self.z)
 		
 		t = time.time()
-		#print colorImage
 		colorImage = optimize.optimize(image = colorImage, updateExtent = uext)
 
-		#colorImage.Update()
 		t2 = time.time()
-		#
-		#print "Got ",colorImage
 		Logging.info("Executing pipeline took %f seconds" % (t2 - t), kw = "pipeline")
 		self.currentImage = colorImage
 
@@ -723,7 +713,6 @@ class PreviewFrame(InteractivePanel):
 		m = "SLICES"
 		if self.mip:
 			m = "MIP"
-#		print "\n\n\n%s Setting buffer size to " % m, x, y, "zoom factor=", f
 		
 		self.buffer = wx.EmptyBitmap(x, y)
 		self.setScrollbars(x, y)
@@ -812,8 +801,6 @@ class PreviewFrame(InteractivePanel):
 		x0, y0 = 0, 0
 		w, h = self.buffer.GetWidth(), self.buffer.GetHeight()
 		
-#		dc.SetClippingRegion(x0,y0,w,h)
-#		print "paint size=", self.paintSize, "w,h=", w, h
 		dc.DrawRectangle(x0, y0, self.paintSize[0] + x0, self.paintSize[1] + x0)
 
 		if not self.slice or not self.enabled:
@@ -878,16 +865,9 @@ class PreviewFrame(InteractivePanel):
 		self.snapshotPos = xoff + x0 * 2, yoff + y0 * 2
 		self.snapshotSize = bw, bh
 
-#		print "Buffer size=", tw, th
-#		print "Setting offset to", xoff, yoff
 		self.setOffset(xoff, yoff)
 		dc.DrawBitmap(bmp, xoff + x0, yoff + x0, True)
 
-#		if bw>tw or bh>th:
-#			self.setScrollbars(bw+xoff,bh+xoff)
-#		else:
-#			self.setScrollbars(tw,th)
-		
 		self.bmp = self.buffer
 		
 		InteractivePanel.paintPreview(self)

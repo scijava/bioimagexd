@@ -439,11 +439,9 @@ class MainWindow(wx.Frame):
 		"""
 		conf = Configuration.getConfiguration()
 		showTip = conf.getConfigItem("ShowTip", "General")
-		#print "showTip = ", showTip
 		if showTip:
 			showTip = eval(showTip)
 		tipNumber = int(conf.getConfigItem("TipNumber", "General"))
-		#print "showtip = ", showTip, type(showTip)
 		if showTip:
 			f = open("Help/tips.txt", "r")
 			n = len(f.readlines())
@@ -461,7 +459,6 @@ class MainWindow(wx.Frame):
 		Description: A method for updating the dataset based on tree selection
 		"""
 		selected = self.tree.getSelectedDataUnits()
-		print "Selected units now", selected
 		dataunits = {}
 		for i in selected:
 			pth = i.dataSource.getPath()
@@ -633,7 +630,6 @@ class MainWindow(wx.Frame):
 		Created: 22.07.2004, KP
 		Description: Update the voxel info in status bar
 		"""
-		#print x, y, z, r, g, b, a
 		z += 1
 		if scalar != 0xdeadbeef:
 			if type(scalar) == types.TupleType:
@@ -799,7 +795,6 @@ class MainWindow(wx.Frame):
 		"""
 		selectedUnits = self.tree.getSelectedDataUnits()
 		bxdwriter =  lib.DataSource.BXDDataWriter.BXDDataWriter(filename)
-		print "SELECTED UNITS = ", selectedUnits
 		for dataUnit in selectedUnits:
 			chname = dataUnit.getName()
 			chname = chname.replace(" ", "_")
@@ -809,15 +804,12 @@ class MainWindow(wx.Frame):
 			writer = lib.DataSource.BXCDataWriter.BXCDataWriter(bxcfilename)
 			n = dataUnit.getNumberOfTimepoints()
 			for i in range(0, n):
-				print "\n\nADDING TIMEPOINT", i
 				data = dataUnit.getTimepoint(i)
 				writer.addImageData(data)
-			print "--> WRITING DAATA"
 			parser = writer.getParser()
 			
 			dataUnit.getSettings().set("Name", dataUnit.getName())
 			dataUnit.updateSettings()
-			print dataUnit.getSettings()
 			dataUnit.getSettings().writeTo(parser)
 			writer.write()
 			writer.sync()
@@ -1140,9 +1132,7 @@ class MainWindow(wx.Frame):
 		Description: Rescale data to 8-bit intensity range
 		"""
 
-		#selectedFiles = self.tree.getSelectedDataUnits()
 		selectedFiles, items = self.tree.getSelectionContainer()
-		#print selectedFiles
 		if not selectedFiles:
 			return
 			
@@ -1240,7 +1230,6 @@ class MainWindow(wx.Frame):
 		selectedUnits = self.tree.getSelectedDataUnits()
 		self.visualizer.setProcessedMode(0)
 		self.visualizer.setDataUnit(selectedUnits[0])
-		#print selectedUnits[0].getSettings().registered
 		self.menuManager.clearItemsBar()
 		if self.currentTaskWindow:
 			self.currentTaskWindow.Show(0)
@@ -1576,7 +1565,6 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 		try:
 			datasource = self.extToSource[ext]()
 		except KeyError:
-#            print self.extToSource.keys()
 			if not noWarn:
 				Dialogs.showerror(self, "Failed to load file %s: Unrecognized extension %s" % (name, ext), \
 									"Unrecognized extension")
@@ -1588,9 +1576,7 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 		except Logging.GUIError, ex:
 			if not noWarn:
 				ex.show()
-			
 
-		#print dataunits[0].getSettings().get("Type")
 		if not dataunits:
 			if not noWarn:
 				Dialogs.showerror(self, "Failed to read dataset %s." % path, "Failed to read dataset")
@@ -1614,11 +1600,11 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 			conf = Configuration.getConfiguration()
 			needToRescale = conf.getConfigItem("RescaleOnLoading", "Performance")
 			bitness = max([x.getSingleComponentBitDepth() for x in dataunits])
-			if needToRescale and bitness > 8:
+			if needToRescale:
 				needToRescale = eval(needToRescale)
 
 			
-			if needToRescale:
+			if needToRescale and bitness > 8:
 				dlg = RescaleDialog.RescaleDialog(self)
 				dlg.setDataUnits(dataunits)
 				wid = dlg.ShowModal()
@@ -1628,7 +1614,6 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 					dlg.Destroy()
 					return
 				dlg.Destroy()
-			#print dataunits[0].getTimepoint(0).GetDimensions()
 			self.tree.addToTree(name, path, ext, dataunits)
 		self.visualizer.enable(1)
 	def onMenuShowTaskWindow(self, event):
