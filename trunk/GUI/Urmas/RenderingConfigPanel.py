@@ -52,7 +52,7 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 
 import lib.messenger
-from wx.lib.masked.TimeCtrl import TimeCtrl
+from wx.lib.masked import TimeCtrl
 import types
 import wx
 

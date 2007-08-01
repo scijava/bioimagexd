@@ -38,6 +38,7 @@ __date__ = "$Date: 2005/01/13 14:52:39 $"
 #import sys
 
 import Dialogs
+import lib.email
 from lib.email.mime.multipart import MIMEMultipart
 from lib.email.mime.text import MIMEText
 import scripting
