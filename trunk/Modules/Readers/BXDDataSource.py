@@ -44,52 +44,52 @@ def getClass(): return BXDDataSource
 
 
 class BXDDataSource(DataSource):
-    """
-    Created: 08.02.2007, KP
-    Description: Manages .bxd files that list each individual .bxc channel. This datasource is a kind of a pseudo
-                 datasource in that it will return BXC datasources, and cannot in and of itself read anything
-    """
-    def __init__(self,filename=""):
-        """
-        Created: 08.2.2007, KP
-        Description: Constructor
-        """
-        DataSource.__init__(self)
-        self.sourceUnits = []  
+	"""
+	Created: 08.02.2007, KP
+	Description: Manages .bxd files that list each individual .bxc channel. This datasource is a kind of a pseudo
+				 datasource in that it will return BXC datasources, and cannot in and of itself read anything
+	"""
+	def __init__(self, filename = ""):
+		"""
+		Created: 08.2.2007, KP
+		Description: Constructor
+		"""
+		DataSource.__init__(self)
+		self.sourceUnits = []  
    
 
-    def loadFromFile(self, filename):
-        """
-        Created: 08.02.2007, KP
-        Description: Loads the specified .bxc-file and imports data from it.
-                     Also returns a DataUnit of the type stored in the loaded
-                     .bxc-file or None if something goes wrong. The dataunit is
-                     returned in a list with one item for interoperability with
-                     LSM data source
-        """
-        
-        
-        try:
-            f=open(filename,"r")
-        except IOError, ex:
-            Logging.error("Failed to open BXD File",
-            "Failed to open file %s for reading: %s"%(filename,str(ex)))
-        
-        filepath=os.path.dirname(filename)
-        lines = f.readlines()
-        f.close()
-        
-        dataunits=[]
-        
-        for i,line in enumerate(lines):
-            # We create a datasource with specific channel number that
-            #  we can associate with the dataunit
-            bxcfile = os.path.join(filepath,line.strip())
-            Logging.info("Reading file %s"%bxcfile,kw="lsmreader")
-            datasource=BXCDataSource.BXCDataSource()
-            bxcdataunits = datasource.loadFromFile(bxcfile)
+	def loadFromFile(self, filename):
+		"""
+		Created: 08.02.2007, KP
+		Description: Loads the specified .bxc-file and imports data from it.
+					 Also returns a DataUnit of the type stored in the loaded
+					 .bxc-file or None if something goes wrong. The dataunit is
+					 returned in a list with one item for interoperability with
+					 LSM data source
+		"""
+		
+		
+		try:
+			f = open(filename, "r")
+		except IOError, ex:
+			Logging.error("Failed to open BXD File",
+			"Failed to open file %s for reading: %s" % (filename, str(ex)))
+		
+		filepath = os.path.dirname(filename)
+		lines = f.readlines()
+		f.close()
+		
+		dataunits = []
+		
+		for i, line in enumerate(lines):
+			# We create a datasource with specific channel number that
+			#  we can associate with the dataunit
+			bxcfile = os.path.join(filepath, line.strip())
+			Logging.info("Reading file %s" % bxcfile, kw = "lsmreader")
+			datasource = BXCDataSource.BXCDataSource()
+			bxcdataunits = datasource.loadFromFile(bxcfile)
 #            dataunit=DataUnit.DataUnit()
 #            dataunit.setDataSource(datasource)
-            dataunits.extend(bxcdataunits)
-            
-        return dataunits
+			dataunits.extend(bxcdataunits)
+			
+		return dataunits

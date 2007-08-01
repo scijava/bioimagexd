@@ -32,40 +32,40 @@ __version__ = "$Revision: 1.3 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 
-def linearInterpolation(paramlist1,paramlist2,n):
-        """
-        Function: linearInterpolation(paramlist1,paramlist2,n)
-        Created: 09.12.2004, KP
-        Description: A function that interpolates n new parameter lists between 
-                     two given parameterlists
-        Parameters:
-            paramlist1      The starting parameters
-            paramlist2      The ending parameters
-            n               How many parameter lists are interpolated between 
-                            paramlist1 and paramlist2
-        """
-        paramlen=len(paramlist1)
-        if len(paramlist1) != len(paramlist2):
-            raise ("Length of parameter lists do no match: length of first "
-            "%d != length of second %d"%(len(paramlist1),len(paramlist2)))
-        diffs=[]
-        results=[]
-        # Calculate differences of each parameter
-        for i in range(paramlen):
-            p1,p2=paramlist1[i],paramlist2[i]
-            diff=p2-p1
-            diff/=float(n+1)
-            diffs.append(diff)
-        # Create new parameter lists with interpolated parameters
-        for newnumber in range(n):
-            newlist=[]
-            for i in range(paramlen):
-                p=paramlist1[i]
-                p=p+(newnumber+1)*diffs[i]
-                newlist.append(p)
-            results.append(newlist)
-        return results
+def linearInterpolation(paramlist1, paramlist2, n):
+		"""
+		Function: linearInterpolation(paramlist1,paramlist2,n)
+		Created: 09.12.2004, KP
+		Description: A function that interpolates n new parameter lists between 
+					 two given parameterlists
+		Parameters:
+			paramlist1      The starting parameters
+			paramlist2      The ending parameters
+			n               How many parameter lists are interpolated between 
+							paramlist1 and paramlist2
+		"""
+		paramlen = len(paramlist1)
+		if len(paramlist1) != len(paramlist2):
+			raise ("Length of parameter lists do no match: length of first "
+			"%d != length of second %d" % (len(paramlist1), len(paramlist2)))
+		diffs = []
+		results = []
+		# Calculate differences of each parameter
+		for i in range(paramlen):
+			p1, p2 = paramlist1[i], paramlist2[i]
+			diff = p2 - p1
+			diff /= float(n + 1)
+			diffs.append(diff)
+		# Create new parameter lists with interpolated parameters
+		for newnumber in range(n):
+			newlist = []
+			for i in range(paramlen):
+				p = paramlist1[i]
+				p = p + (newnumber + 1) * diffs[i]
+				newlist.append(p)
+			results.append(newlist)
+		return results
 
-interpolate=linearInterpolation
+interpolate = linearInterpolation
 
 

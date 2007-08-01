@@ -34,69 +34,69 @@ from DataUnit import CombinedDataUnit
 import ManipulationSettings
 
 class ManipulationDataUnit(CombinedDataUnit):
-    """
-    Created: 24.11.2004, JM, JV
-    Description: A class representing a dataunit manipulated with the process task
-    """
+	"""
+	Created: 24.11.2004, JM, JV
+	Description: A class representing a dataunit manipulated with the process task
+	"""
 
-    def __init__(self,name=""):
-        """
-        Created: 27.03.2005 KP
-        Description: Constructor
-        """
-        CombinedDataUnit.__init__(self,name)
-        self.original = None
-        self.initialized = 0
+	def __init__(self, name = ""):
+		"""
+		Created: 27.03.2005 KP
+		Description: Constructor
+		"""
+		CombinedDataUnit.__init__(self, name)
+		self.original = None
+		self.initialized = 0
 
-    def setOriginal(self, dataUnit):
-        """
-        Created: 14.12.2004, JM, JV
-        Description: Sets the original DataUnit for this ManipulationedSourceDataUnit
-        Parameters: dataUnit  The original unmodified DataUnit
-        """
-        self.original = dataUnit
-        self.length = dataUnit.length
+	def setOriginal(self, dataUnit):
+		"""
+		Created: 14.12.2004, JM, JV
+		Description: Sets the original DataUnit for this ManipulationedSourceDataUnit
+		Parameters: dataUnit  The original unmodified DataUnit
+		"""
+		self.original = dataUnit
+		self.length = dataUnit.length
 
-    def getColorTransferFunction(self):
-        """
-        Created: 20.07.2005, KP
-        Description: Returns the ctf of the source dataunit
-        """
-        sources=self.getSourceDataUnits()
-        if not self.initialized:
-            self.initialized=1
-            if len(sources)==1:        
-                ctf=sources[0].getSettings().get("ColorTransferFunction")
-                self.settings.set("ColorTransferFunction",ctf)
-                return ctf
-            else:
-                ctf=sources[0].getSettings().get("ColorTransferFunction")           
-                start,end=ctf.GetRange()
-                ctf = vtk.vtkColorTransferFunction()
-                ctf.AddRGBPoint(0,0,0,0)
-                ctf.AddRGBPoint(end, 1.0, 1.0, 1.0)
-                self.settings.set("ColorTransferFunction",ctf)
-                return ctf
-        return self.settings.get("ColorTransferFunction")
-       
-    def addSourceDataUnit(self,dataUnit,**args):
-        """
-        Created: 27.03.2005, KP
-        Description: Adds a source data unit to this dataunit
-        """
-        self.setOriginal(dataUnit)    
-        CombinedDataUnit.addSourceDataUnit(self,dataUnit,**args)
-        self.name = "Manipulated %s"%dataUnit.getName()
-        #print dataUnit.getColorTransferFunction()
-        self.updateSettings()
-        #print self.settings.get("ColorTransferFunction")
+	def getColorTransferFunction(self):
+		"""
+		Created: 20.07.2005, KP
+		Description: Returns the ctf of the source dataunit
+		"""
+		sources = self.getSourceDataUnits()
+		if not self.initialized:
+			self.initialized = 1
+			if len(sources) == 1:        
+				ctf = sources[0].getSettings().get("ColorTransferFunction")
+				self.settings.set("ColorTransferFunction", ctf)
+				return ctf
+			else:
+				ctf = sources[0].getSettings().get("ColorTransferFunction")           
+				start, end = ctf.GetRange()
+				ctf = vtk.vtkColorTransferFunction()
+				ctf.AddRGBPoint(0, 0, 0, 0)
+				ctf.AddRGBPoint(end, 1.0, 1.0, 1.0)
+				self.settings.set("ColorTransferFunction", ctf)
+				return ctf
+		return self.settings.get("ColorTransferFunction")
+	   
+	def addSourceDataUnit(self, dataUnit, **args):
+		"""
+		Created: 27.03.2005, KP
+		Description: Adds a source data unit to this dataunit
+		"""
+		self.setOriginal(dataUnit)    
+		CombinedDataUnit.addSourceDataUnit(self, dataUnit, **args)
+		self.name = "Manipulated %s" % dataUnit.getName()
+		#print dataUnit.getColorTransferFunction()
+		self.updateSettings()
+		#print self.settings.get("ColorTransferFunction")
   
 
-    def getSettingsClass(self):
-        """
-        Created: 02.04.2005, KP
-        Description: Return the class that represents settings for this dataunit
-        """
-        return ManipulationSettings.ManipulationSettings
+	def getSettingsClass(self):
+		"""
+		Created: 02.04.2005, KP
+		Description: Return the class that represents settings for this dataunit
+		"""
+		return ManipulationSettings.ManipulationSettings
 
-        
+		

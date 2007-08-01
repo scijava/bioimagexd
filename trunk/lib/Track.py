@@ -7,7 +7,7 @@
  Description:
 
  A module containing the classes for manipulating tracks
-           
+		   
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
 
@@ -37,202 +37,202 @@ import struct
 import vtk
 
 class Track:
-    """
-    Created: 23.11.2006, KP
-    Description: A class representing a track
-    """
-    def __init__(self):
-        self.points = {}
-        self.values = {}
-        self.mintp, self.maxtp = 0,0
-        self.length = -1
-       
-    
-    def __len__(self):
-        return len(self.points.keys())
-        
-    def distance(self, tp1, tp2):
-        """
-        Created: 01.07.2007, KP
-        Description: return the distance between objects at tp1 and tp2
-        """
-        if tp1 not in self.points:return 0
-        if tp2 not in self.points: return 0
-        pt = self.points[tp1]
-        pt2 = self.points[tp2]
-        dx,dy,dz = pt[0]-pt2[0],pt[1]-pt2[1],pt[2]-pt2[2]
-        return math.sqrt(dx*dx+dy*dy+dz*dz)        
-        
-    def getLength(self):
-        """
-        Created: 01.07.2007, KP
-        Description: return the length of this track
-        """
-        if self.length <0:
-            self.length = 0 
-            for i in range(self.mintp, self.maxtp):               
-                self.length += self.distance(i,i+1)
-        return self.length
-        
-    def getSpeed(self):
-        """
-        Created: 01.07.2007, KP
-        Description: return the speed
-        """
-        return self.getLength() / (self.maxtp - self.mintp)
-        
-    def getDirectionalPersistence(self):
-        """
-        Created: 01.07.2007, KP
-        Description: return the directional persistence of this track
-        """
-        return  self.distance(self.mintp, self.maxtp) / self.getLength()
-        
-    def getAverageAngle(self):
-        """
-        Created: 01.07.2007, KP
-        Description: return the average of the angle differences
-        """
-        tot = 0
-        n = 0
-        for i in range(self.mintp, self.maxtp):            
-            x1,y1 = self.points[i][0:2]
-            x2,y2 = self.points[i+1][0:2]
-            ang=math.atan2(y2 - y1, x2 - x1) * 180.0 / math.pi;
-            ang2=ang
-            if ang<0:ang2=180+ang
-            tot+=ang2
-            n+=1
-        return tot / float(n)
-        
-    def addTrackPoint(self, timepoint, objval, position):
-        """
-        Created: 23.11.2006, KP
-        Description: add a point to this track
-        """
-        if timepoint < self.mintp:
-            self.mintp = timepoint
-        if timepoint > self.maxtp:
-            self.maxtp = timepoint
-        self.points[timepoint] = position
-        self.values[timepoint] = objval
-        # Set the length to -1 so it will be re-calculated
-        self.length = -1
-        
-    def getTimeRange(self):
-        """
-        Created: 23.11.2006, KP
-        Description: Return the range in time this track occupies
-        """
-        return self.mintp, self.maxtp
-    
-    def getObjectAtTime(self, t):
-        """
-        Created: 23.11.2006, KP
-        Description: Return the object value and position at timepoint t
-        """
-        if t not in self.points:
-            return -1,(-1,-1,-1)
-        return self.values[t],self.points[t]
+	"""
+	Created: 23.11.2006, KP
+	Description: A class representing a track
+	"""
+	def __init__(self):
+		self.points = {}
+		self.values = {}
+		self.mintp, self.maxtp = 0, 0
+		self.length = -1
+	   
+	
+	def __len__(self):
+		return len(self.points.keys())
+		
+	def distance(self, tp1, tp2):
+		"""
+		Created: 01.07.2007, KP
+		Description: return the distance between objects at tp1 and tp2
+		"""
+		if tp1 not in self.points:return 0
+		if tp2 not in self.points: return 0
+		pt = self.points[tp1]
+		pt2 = self.points[tp2]
+		dx, dy, dz = pt[0] - pt2[0], pt[1] - pt2[1], pt[2] - pt2[2]
+		return math.sqrt(dx * dx + dy * dy + dz * dz)        
+		
+	def getLength(self):
+		"""
+		Created: 01.07.2007, KP
+		Description: return the length of this track
+		"""
+		if self.length < 0:
+			self.length = 0 
+			for i in range(self.mintp, self.maxtp):               
+				self.length += self.distance(i, i + 1)
+		return self.length
+		
+	def getSpeed(self):
+		"""
+		Created: 01.07.2007, KP
+		Description: return the speed
+		"""
+		return self.getLength() / (self.maxtp - self.mintp)
+		
+	def getDirectionalPersistence(self):
+		"""
+		Created: 01.07.2007, KP
+		Description: return the directional persistence of this track
+		"""
+		return  self.distance(self.mintp, self.maxtp) / self.getLength()
+		
+	def getAverageAngle(self):
+		"""
+		Created: 01.07.2007, KP
+		Description: return the average of the angle differences
+		"""
+		tot = 0
+		n = 0
+		for i in range(self.mintp, self.maxtp):            
+			x1, y1 = self.points[i][0:2]
+			x2, y2 = self.points[i + 1][0:2]
+			ang = math.atan2(y2 - y1, x2 - x1) * 180.0 / math.pi;
+			ang2 = ang
+			if ang < 0:ang2 = 180 + ang
+			tot += ang2
+			n += 1
+		return tot / float(n)
+		
+	def addTrackPoint(self, timepoint, objval, position):
+		"""
+		Created: 23.11.2006, KP
+		Description: add a point to this track
+		"""
+		if timepoint < self.mintp:
+			self.mintp = timepoint
+		if timepoint > self.maxtp:
+			self.maxtp = timepoint
+		self.points[timepoint] = position
+		self.values[timepoint] = objval
+		# Set the length to -1 so it will be re-calculated
+		self.length = -1
+		
+	def getTimeRange(self):
+		"""
+		Created: 23.11.2006, KP
+		Description: Return the range in time this track occupies
+		"""
+		return self.mintp, self.maxtp
+	
+	def getObjectAtTime(self, t):
+		"""
+		Created: 23.11.2006, KP
+		Description: Return the object value and position at timepoint t
+		"""
+		if t not in self.points:
+			return - 1, (-1, -1, -1)
+		return self.values[t], self.points[t]
 
 class TrackReader:
-    """
-    Created: 12.07.2006, KP
-    Description: A class for reading tracks from a file
-    """
-    def __init__(self,filename=""):
-        """
-        Created: 12.07.2006, KP
-        Description: Initialization
-        """
-        self.filename = filename
-        self.maxLength = -1
-        self.readFromFile(filename)        
-        
-    def readFromFile(self,filename):
-        """
-        Created: 12.07.2006, KP
-        Description: Return the number of tracks
-        """ 
-        self.maxLength = -1        
-        try:
-            self.reader = csv.reader(open(filename), dialect="excel",delimiter=";")            
-        except:
-            self.reader = None
-            self.tracks = []
-        if self.reader:
-            self.tracks = self.readTracks(self.reader)
-            self.getMaximumTrackLength()
-            
-    def getTrack(self, n, minLength = 3):
-        """
-        Created: 20.06.2006, KP
-        Description: Method desc
-        """   
-        tracks = self.getTracks(minLength)
-        print "Tracks with minlength=",minLength,"=",tracks
-        return tracks[n]
-        
-    def getMaximumTrackLength(self):
-        """
-        Created: 12.07.2006, KP
-        Description: Return the maximum length of a track
-        """           
-        if self.maxLength<=0:
-            for i in self.tracks:
-                n = len(i)
-                if n>self.maxLength:self.maxLength = n
-        return self.maxLength
-        
-        
-    def getNumberOfTracks(self, minLength = 3):
-        """
-        Created: 12.07.2006, KP
-        Description: Return the number of tracks
-        """           
-        return len(self.getTracks(minLength))
-        
-    def getTracks(self, minLength = 3):
-        """
-        Created: 12.07.2006, KP
-        Description: Return the tracks with length >= minLength
-        """   
-        def f(x,y):
-            return len(x)>y
-        print "number of tracks=",len(self.tracks)
-        if not self.tracks:
-            return []
-        return filter(lambda x, m = minLength:f(x,m), self.tracks)
-            
-    def readTracks(self, reader):
-        """
-        Created: 12.07.2006, KP
-        Description: Read tracks from the given file
-        """   
-        tracks=[]
-        ctrack=Track()
-        
-        currtrack=-1
-        
-        for track, objval,timepoint, x,y,z in reader:
-            try:
-                tracknum=int(track)
-            except:
-                continue
-            
-            timepoint = int(timepoint)
-            objval = int(objval)
-            x = float(x)
-            y = float(y)
-            z = float(z)
-            if tracknum != currtrack:
-                if ctrack:
-                    #print "Adding track",ctrack
-                    tracks.append(ctrack)
-                    ctrack=Track()          
-                currtrack = tracknum
-            ctrack.addTrackPoint(timepoint, objval, (x,y,z))
-            
-        if ctrack not in tracks:
-            tracks.append(ctrack)
-        return tracks
+	"""
+	Created: 12.07.2006, KP
+	Description: A class for reading tracks from a file
+	"""
+	def __init__(self, filename = ""):
+		"""
+		Created: 12.07.2006, KP
+		Description: Initialization
+		"""
+		self.filename = filename
+		self.maxLength = -1
+		self.readFromFile(filename)        
+		
+	def readFromFile(self, filename):
+		"""
+		Created: 12.07.2006, KP
+		Description: Return the number of tracks
+		""" 
+		self.maxLength = -1        
+		try:
+			self.reader = csv.reader(open(filename), dialect = "excel", delimiter = ";")            
+		except:
+			self.reader = None
+			self.tracks = []
+		if self.reader:
+			self.tracks = self.readTracks(self.reader)
+			self.getMaximumTrackLength()
+			
+	def getTrack(self, n, minLength = 3):
+		"""
+		Created: 20.06.2006, KP
+		Description: Method desc
+		"""   
+		tracks = self.getTracks(minLength)
+		print "Tracks with minlength=", minLength, "=", tracks
+		return tracks[n]
+		
+	def getMaximumTrackLength(self):
+		"""
+		Created: 12.07.2006, KP
+		Description: Return the maximum length of a track
+		"""           
+		if self.maxLength <= 0:
+			for i in self.tracks:
+				n = len(i)
+				if n > self.maxLength:self.maxLength = n
+		return self.maxLength
+		
+		
+	def getNumberOfTracks(self, minLength = 3):
+		"""
+		Created: 12.07.2006, KP
+		Description: Return the number of tracks
+		"""           
+		return len(self.getTracks(minLength))
+		
+	def getTracks(self, minLength = 3):
+		"""
+		Created: 12.07.2006, KP
+		Description: Return the tracks with length >= minLength
+		"""   
+		def f(x, y):
+			return len(x) > y
+		print "number of tracks=", len(self.tracks)
+		if not self.tracks:
+			return []
+		return filter(lambda x, m = minLength:f(x, m), self.tracks)
+			
+	def readTracks(self, reader):
+		"""
+		Created: 12.07.2006, KP
+		Description: Read tracks from the given file
+		"""   
+		tracks = []
+		ctrack = Track()
+		
+		currtrack = -1
+		
+		for track, objval, timepoint, x, y, z in reader:
+			try:
+				tracknum = int(track)
+			except:
+				continue
+			
+			timepoint = int(timepoint)
+			objval = int(objval)
+			x = float(x)
+			y = float(y)
+			z = float(z)
+			if tracknum != currtrack:
+				if ctrack:
+					#print "Adding track",ctrack
+					tracks.append(ctrack)
+					ctrack = Track()          
+				currtrack = tracknum
+			ctrack.addTrackPoint(timepoint, objval, (x, y, z))
+			
+		if ctrack not in tracks:
+			tracks.append(ctrack)
+		return tracks

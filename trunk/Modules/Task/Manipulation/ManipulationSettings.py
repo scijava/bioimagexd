@@ -41,18 +41,18 @@ from DataUnit import FilterBasedTaskSettings
 import ManipulationFilters
 
 class ManipulationSettings(FilterBasedTaskSettings.FilterBasedTaskSettings):
-    """
-    Created: 27.03.2005, KP
-    Description: Stores settings related the process task
-    """
-    def __init__(self,n=-1):
-        """
-        Created: 27.03.2005, KP
-        """
-        FilterBasedTaskSettings.FilterBasedTaskSettings.__init__(self, n)
-    
-        self.set("Type","Process")
-        self.register("PaletteColors")
-        self.register("StatisticsFile")
+	"""
+	Created: 27.03.2005, KP
+	Description: Stores settings related the process task
+	"""
+	def __init__(self, n = -1):
+		"""
+		Created: 27.03.2005, KP
+		"""
+		FilterBasedTaskSettings.FilterBasedTaskSettings.__init__(self, n)
+	
+		self.set("Type", "Process")
+		self.register("PaletteColors")
+		self.register("StatisticsFile")
 
-        self.filterModule = ManipulationFilters
+		self.filterModule = ManipulationFilters

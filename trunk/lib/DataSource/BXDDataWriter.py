@@ -37,85 +37,85 @@ import os.path
 
 import Logging
 import DataUnit
-        
+		
 class BXDDataWriter(DataWriter):
-    """
-    Created: 26.03.2005, KP
-    Description: A writer of BioImageXD data (.bxd) files
-    """
+	"""
+	Created: 26.03.2005, KP
+	Description: A writer of BioImageXD data (.bxd) files
+	"""
 
-    def __init__(self,filename):
-        """
-        Created: 26.03.2005,KP
-        Description: Constructor
-        """
-        DataWriter.__init__(self)
-        # list of references to individual channels (.bxc files)
-        self.writers = []
-        
-        # path to the .du-file and .vti-file(s)
-        self.path=os.path.dirname(filename)
-        bxdfile = os.path.basename(filename)
-        if bxdfile[-4:].lower()!=".bxd":
-            newdirname = bxdfile
-            bxdfile=bxdfile+".bxd"
-        else:
-            lst = bxdfile.split(".")
-            newdirname = ".".join(lst[:-1])
-        self.filedir = os.path.join(self.path,newdirname)
-        if not os.path.exists(self.filedir):
-            os.mkdir(self.filedir)
-        elif not os.path.isdir(self.filedir):
-            Logging.error("Not a directory","The selected path, %s exists and is not directory. Cannot write files"%(self.filedir))
-        self.filename = os.path.join(self.filedir,bxdfile)
-        
-    
-        
-    def getBXCFileName(self, bxdFile):
-        """
-        Created: 08.02.2007, KP
-        Description: return a corresponding .bxc filename when given a bxd file name
-        """
-        bxdFile = os.path.basename(bxdFile)
-        if bxdFile[-4:].lower()!=".bxd":
-            bxcFile = bxdFile+".bxc"
-        else:
-            bxcFile = bxdFile[:-4]+".bxc"
-        return os.path.join(self.getPath(),bxcFile)
-    def getPath(self):
-        """
-        Created: 08.02.2007, KP
-        Description: return the actual (created) path where the files should be written
-        """
-        return self.filedir
-        
-    def getFilename(self):
-        """
-        Created: 08.02.2007, KP
-        Descriptio: return the filename
-        """
-        return self.filename
-    def write(self):
-        """
-        Created: 08.0.2007, KP
-        Description: Writes the given datasets and their information to a du file
-        """
+	def __init__(self, filename):
+		"""
+		Created: 26.03.2005,KP
+		Description: Constructor
+		"""
+		DataWriter.__init__(self)
+		# list of references to individual channels (.bxc files)
+		self.writers = []
+		
+		# path to the .du-file and .vti-file(s)
+		self.path = os.path.dirname(filename)
+		bxdfile = os.path.basename(filename)
+		if bxdfile[-4:].lower() != ".bxd":
+			newdirname = bxdfile
+			bxdfile = bxdfile + ".bxd"
+		else:
+			lst = bxdfile.split(".")
+			newdirname = ".".join(lst[:-1])
+		self.filedir = os.path.join(self.path, newdirname)
+		if not os.path.exists(self.filedir):
+			os.mkdir(self.filedir)
+		elif not os.path.isdir(self.filedir):
+			Logging.error("Not a directory", "The selected path, %s exists and is not directory. Cannot write files" % (self.filedir))
+		self.filename = os.path.join(self.filedir, bxdfile)
+		
+	
+		
+	def getBXCFileName(self, bxdFile):
+		"""
+		Created: 08.02.2007, KP
+		Description: return a corresponding .bxc filename when given a bxd file name
+		"""
+		bxdFile = os.path.basename(bxdFile)
+		if bxdFile[-4:].lower() != ".bxd":
+			bxcFile = bxdFile + ".bxc"
+		else:
+			bxcFile = bxdFile[:-4] + ".bxc"
+		return os.path.join(self.getPath(), bxcFile)
+	def getPath(self):
+		"""
+		Created: 08.02.2007, KP
+		Description: return the actual (created) path where the files should be written
+		"""
+		return self.filedir
+		
+	def getFilename(self):
+		"""
+		Created: 08.02.2007, KP
+		Descriptio: return the filename
+		"""
+		return self.filename
+	def write(self):
+		"""
+		Created: 08.0.2007, KP
+		Description: Writes the given datasets and their information to a du file
+		"""
    
-        try:
-            fp=open(self.filename,"w")
-        except IOError,ex:
-            Logging.error("Failed to write settings",
-            "BXDDataSource Failed to open .bxd file %s for writing settings (%s)"%(self.filename,str(ex)))
-            return
-        for writer in self.writers:
-            filename = os.path.basename(writer.getFilename())
-            fp.write("%s\n"%filename)
-       
-        fp.close()
+		try:
+			fp = open(self.filename, "w")
+		except IOError, ex:
+			Logging.error("Failed to write settings",
+			"BXDDataSource Failed to open .bxd file %s for writing settings (%s)" % (self.filename, str(ex)))
+			return
+		for writer in self.writers:
+			filename = os.path.basename(writer.getFilename())
+			fp.write("%s\n" % filename)
+	   
+		fp.close()
 
-    def addChannelWriter(self,writer):
-        """
-        Created: 1.12.2004,KP
-        Description: Add a vtkImageData object to be written to the disk.
-        """
-        self.writers.append(writer)
+	def addChannelWriter(self, writer):
+		"""
+		Created: 1.12.2004,KP
+		Description: Add a vtkImageData object to be written to the disk.
+		"""
+		self.writers.append(writer)

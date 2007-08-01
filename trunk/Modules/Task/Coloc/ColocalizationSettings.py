@@ -38,68 +38,68 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 import vtk
 from DataUnit import DataUnitSettings
-        
+		
 class ColocalizationSettings(DataUnitSettings):
-    """
-    Created: 26.03.2005, KP
-    Description: Registers keys related to colocalization in a dataunitsetting
-    """
-    def __init__(self,n=-1):
-        """
-        Method: __init__
-        Created: 26.03.2005, KP
-        Description: Constructor
-        """
-        DataUnitSettings.__init__(self,n)
-        
-        self.set("Type","Colocalization")
-        self.registerCounted("ColocalizationLowerThreshold",1)
-        self.registerCounted("ColocalizationUpperThreshold",1)
-        self.register("ColocalizationDepth",1)
-        self.register("CalculateThresholds")
-        
-        for i in ["PValue","RObserved","RRandMean","RRandSD",
-                  "NumIterations","ColocCount","Method","PSF",
-                  "Ch1ThresholdMax","Ch2ThresholdMax","PearsonImageAbove",
-                  "PearsonImageBelow","PearsonWholeImage","M1","M2",
-                  "ThresholdM1","ThresholdM2","Slope","Intercept",
-                  "K1","K2","DiffStainIntCh1","DiffStainIntCh2",
-                      "DiffStainVoxelsCh1","DiffStainVoxelsCh2",
-                  "ColocAmount","ColocPercent","PercentageVolumeCh1",
-                  "PercentageTotalCh1","PercentageTotalCh2",
-                  "PercentageVolumeCh2","PercentageMaterialCh1","PercentageMaterialCh2",
-                  "SumOverThresholdCh1","SumOverThresholdCh2","SumCh1","SumCh2",
-                  "NonZeroCh1","NonZeroCh2","OverThresholdCh1","OverThresholdCh2"]:
-            self.register(i,1)
-        self.register("OutputScalar",1)
+	"""
+	Created: 26.03.2005, KP
+	Description: Registers keys related to colocalization in a dataunitsetting
+	"""
+	def __init__(self, n = -1):
+		"""
+		Method: __init__
+		Created: 26.03.2005, KP
+		Description: Constructor
+		"""
+		DataUnitSettings.__init__(self, n)
+		
+		self.set("Type", "Colocalization")
+		self.registerCounted("ColocalizationLowerThreshold", 1)
+		self.registerCounted("ColocalizationUpperThreshold", 1)
+		self.register("ColocalizationDepth", 1)
+		self.register("CalculateThresholds")
+		
+		for i in ["PValue", "RObserved", "RRandMean", "RRandSD",
+				  "NumIterations", "ColocCount", "Method", "PSF",
+				  "Ch1ThresholdMax", "Ch2ThresholdMax", "PearsonImageAbove",
+				  "PearsonImageBelow", "PearsonWholeImage", "M1", "M2",
+				  "ThresholdM1", "ThresholdM2", "Slope", "Intercept",
+				  "K1", "K2", "DiffStainIntCh1", "DiffStainIntCh2",
+					  "DiffStainVoxelsCh1", "DiffStainVoxelsCh2",
+				  "ColocAmount", "ColocPercent", "PercentageVolumeCh1",
+				  "PercentageTotalCh1", "PercentageTotalCh2",
+				  "PercentageVolumeCh2", "PercentageMaterialCh1", "PercentageMaterialCh2",
+				  "SumOverThresholdCh1", "SumOverThresholdCh2", "SumCh1", "SumCh2",
+				  "NonZeroCh1", "NonZeroCh2", "OverThresholdCh1", "OverThresholdCh2"]:
+			self.register(i, 1)
+		self.register("OutputScalar", 1)
 
-        #self.register("ColocalizationColorTransferFunction",1)
-        ctf = vtk.vtkColorTransferFunction()
-        ctf.AddRGBPoint(0,0,0,0)
-        ctf.AddRGBPoint(255, 1.0, 1.0, 1.0)
-        self.set("ColorTransferFunction",ctf)
-        # This is used purely for remembering the ctf the user has set
-        self.register("ColocalizationColorTransferFunction",1)
+		#self.register("ColocalizationColorTransferFunction",1)
+		ctf = vtk.vtkColorTransferFunction()
+		ctf.AddRGBPoint(0, 0, 0, 0)
+		ctf.AddRGBPoint(255, 1.0, 1.0, 1.0)
+		self.set("ColorTransferFunction", ctf)
+		# This is used purely for remembering the ctf the user has set
+		self.register("ColocalizationColorTransferFunction", 1)
 
-    def initialize(self,dataunit,channels, timepoints):
-        """
-        Created: 27.03.2005
-        Description: Set initial values for settings based on 
-                     number of channels and timepoints
-        """
-        DataUnitSettings.initialize(self,dataunit,channels,timepoints)
-        print "Initializing colocaliztion for %d channels"%channels
-        self.set("ColocalizationDepth",8)
-        if hasattr(dataunit,"getScalarRange"):
-            minval,maxval = dataunit.getScalarRange()
-        else:
-            minval,maxval = dataunit.getSourceDataUnits()[0].getScalarRange()
-        print "Initializing channels, maxval=",maxval
-        for i in range(channels):
-            self.setCounted("ColocalizationLowerThreshold",i,maxval/2,0)
-            self.setCounted("ColocalizationUpperThreshold",i,maxval,0)    
-            ctf = vtk.vtkColorTransferFunction()
-            ctf.AddRGBPoint(0,0,0,0)
-            ctf.AddRGBPoint(maxval, 1.0, 1.0, 1.0)
-            self.set("ColorTransferFunction",ctf)            
-        self.set("OutputScalar",maxval)
+	def initialize(self, dataunit, channels, timepoints):
+		"""
+		Created: 27.03.2005
+		Description: Set initial values for settings based on 
+					 number of channels and timepoints
+		"""
+		DataUnitSettings.initialize(self, dataunit, channels, timepoints)
+		print "Initializing colocaliztion for %d channels" % channels
+		self.set("ColocalizationDepth", 8)
+		if hasattr(dataunit, "getScalarRange"):
+			minval, maxval = dataunit.getScalarRange()
+		else:
+			minval, maxval = dataunit.getSourceDataUnits()[0].getScalarRange()
+		print "Initializing channels, maxval=", maxval
+		for i in range(channels):
+			self.setCounted("ColocalizationLowerThreshold", i, maxval / 2, 0)
+			self.setCounted("ColocalizationUpperThreshold", i, maxval, 0)    
+			ctf = vtk.vtkColorTransferFunction()
+			ctf.AddRGBPoint(0, 0, 0, 0)
+			ctf.AddRGBPoint(maxval, 1.0, 1.0, 1.0)
+			self.set("ColorTransferFunction", ctf)            
+		self.set("OutputScalar", maxval)

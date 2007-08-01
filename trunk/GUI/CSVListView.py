@@ -33,86 +33,86 @@ import wx
 import types
 
 class CSVListView(wx.ListCtrl):
-    """
-    Created: 30.6.2007, KP
-    Description: A list control that takes a list of lists and shows that
-    """
-    def __init__(self, parent, size = (350,200)):
-        wx.ListCtrl.__init__(
-            self, parent, -1, 
-            size = size,
-            style=wx.LC_REPORT|wx.LC_VIRTUAL|wx.LC_HRULES|wx.LC_VRULES,
-            
-            )
+	"""
+	Created: 30.6.2007, KP
+	Description: A list control that takes a list of lists and shows that
+	"""
+	def __init__(self, parent, size = (350, 200)):
+		wx.ListCtrl.__init__(
+			self, parent, -1, 
+			size = size,
+			style = wx.LC_REPORT | wx.LC_VIRTUAL | wx.LC_HRULES | wx.LC_VRULES,
+			
+			)
 
-        self.SetItemCount(1)
-        self.data = []
-        
-        self.attr1 = wx.ListItemAttr()
-        self.attr1.SetBackgroundColour("white")
+		self.SetItemCount(1)
+		self.data = []
+		
+		self.attr1 = wx.ListItemAttr()
+		self.attr1.SetBackgroundColour("white")
 
-        self.attr2 = wx.ListItemAttr()
-        self.attr2.SetBackgroundColour("light blue")
-        
-    def exportToCsv(self, filename, headers=[]):
-        """
-        Created: 30.6.2007, KP
-        Description: write out the data to a .csv file
-        """
-        f=codecs.open(filename,"wb","latin-1")
-        w = csv.writer(f, dialect="excel",delimiter=";")
-        for i in headers:
-            w.writerow([i])
-        for line in self.data:
-            w.writerow(line)
-        f.close()
-        
-    def importFromCsv(self, filename):
-        """
-        Created: 30.6.2007, KP
-        Description: read a .csv file and show it in the list box
-        """
-        pass
-        
-    def setContents(self, data):
-        """
-        Created: 30.6.2007, KP
-        Description: Set the contents of the list view
-        """    
-        assert type(data)==types.ListType
-        for i, headerName in enumerate(data[0]):
-            self.InsertColumn(i, headerName)
-        self.data = data[1:]
+		self.attr2 = wx.ListItemAttr()
+		self.attr2.SetBackgroundColour("light blue")
+		
+	def exportToCsv(self, filename, headers = []):
+		"""
+		Created: 30.6.2007, KP
+		Description: write out the data to a .csv file
+		"""
+		f = codecs.open(filename, "wb", "latin-1")
+		w = csv.writer(f, dialect = "excel", delimiter = ";")
+		for i in headers:
+			w.writerow([i])
+		for line in self.data:
+			w.writerow(line)
+		f.close()
+		
+	def importFromCsv(self, filename):
+		"""
+		Created: 30.6.2007, KP
+		Description: read a .csv file and show it in the list box
+		"""
+		pass
+		
+	def setContents(self, data):
+		"""
+		Created: 30.6.2007, KP
+		Description: Set the contents of the list view
+		"""    
+		assert type(data) == types.ListType
+		for i, headerName in enumerate(data[0]):
+			self.InsertColumn(i, headerName)
+		self.data = data[1:]
 #        print "There are ",len(data[1:]),"items"
-        self.SetItemCount(len(data[1:]))
+		self.SetItemCount(len(data[1:]))
 
-    def OnGetItemText(self, item, col):
-        """
-        Created: 30.6.2007, KP
-        Description: A method that returns the value of the given column of given row
-        """            
-        try:
-            print "Returning",self.data[item][col]
-            return str(self.data[item][col])
-        except:
-            return ""
+	def OnGetItemText(self, item, col):
+		"""
+		Created: 30.6.2007, KP
+		Description: A method that returns the value of the given column of given row
+		"""            
+		try:
+			print "Returning", self.data[item][col]
+			return str(self.data[item][col])
+		except:
+			return ""
  
-    def OnGetItemImage(self, item):
-        """
-        Created: 30.6.2007, KP
-        Description: Return an image for the item
-        """    
-        return -1
+	def OnGetItemImage(self, item):
+		"""
+		Created: 30.6.2007, KP
+		Description: Return an image for the item
+		"""    
+		return - 1
 
-    def OnGetItemAttr(self, item):
-        """
-        Created: 30.6.2007, KP
-        Description: Return the attribute for the given item
-        """    
-    
-        if item % 2 == 1:
-            return self.attr1
-        elif item % 2 == 0:
-            return self.attr2
-        else:
-            return None
+	def OnGetItemAttr(self, item):
+		"""
+		Created: 30.6.2007, KP
+		Description: Return the attribute for the given item
+		"""    
+	
+		if item % 2 == 1:
+			return self.attr1
+		elif item % 2 == 0:
+			return self.attr2
+		else:
+			return None

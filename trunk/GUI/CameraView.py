@@ -35,52 +35,52 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 import wx
 import messenger
-FIELDS=["ClippingRange","DirectionOfProjection","Distance","EyeAngle",
-"FocalDisk","FocalPoint","Orientation","ParallelProjection",
-"ParallelScale","Position","Roll","ViewAngle","ViewPlaneNormal","ViewShear",
-"ViewUp","WindowCenter"]
+FIELDS = ["ClippingRange", "DirectionOfProjection", "Distance", "EyeAngle",
+"FocalDisk", "FocalPoint", "Orientation", "ParallelProjection",
+"ParallelScale", "Position", "Roll", "ViewAngle", "ViewPlaneNormal", "ViewShear",
+"ViewUp", "WindowCenter"]
 
 import types
 
 class CameraView(wx.StaticText):
-    """
-    Class: CameraView
-    Created: 12.12.2005, KP
-    Description: A class for viewing a vtkCamera
-    """    
-    def __init__(self,parent,id):
-        wx.StaticText.__init__(self,parent,id)
-        self.str=""
-        lst=[]
-        for i in FIELDS:
-            self.str+=("%s: %%s\n"%i)
-            lst.append("n/a")
-        self.SetLabel(self.str%tuple(lst))
-        
-        messenger.connect(None,"view_camera",self.viewCamera)
-    
-    def getAsStr(self,val):
-        if type(val) in [types.ListType,types.TupleType]:
-            return map(self.getAsStr,val)
-        if type(val)==types.StringType:
-            return val
-        elif type(val)==types.FloatType:
-            return "%.4f"%val
-        return str(val)
-    
-    def viewCamera(self, obj, evt, args):
-        """
-        Method: viewCamera
-        Created: 12.12.2005, KP
-        Description: A method to update the displayed vtkCamera
-        """  
-        cam=args
-        lst=[]
-        for i in FIELDS:
-            val=eval("cam.Get%s()"%i)
-            val=self.getAsStr(val)
-            lst.append(val)
-                
-        self.SetLabel(self.str%tuple(lst))
-        
-        
+	"""
+	Class: CameraView
+	Created: 12.12.2005, KP
+	Description: A class for viewing a vtkCamera
+	"""    
+	def __init__(self, parent, id):
+		wx.StaticText.__init__(self, parent, id)
+		self.str = ""
+		lst = []
+		for i in FIELDS:
+			self.str += ("%s: %%s\n" % i)
+			lst.append("n/a")
+		self.SetLabel(self.str % tuple(lst))
+		
+		messenger.connect(None, "view_camera", self.viewCamera)
+	
+	def getAsStr(self, val):
+		if type(val) in [types.ListType, types.TupleType]:
+			return map(self.getAsStr, val)
+		if type(val) == types.StringType:
+			return val
+		elif type(val) == types.FloatType:
+			return "%.4f" % val
+		return str(val)
+	
+	def viewCamera(self, obj, evt, args):
+		"""
+		Method: viewCamera
+		Created: 12.12.2005, KP
+		Description: A method to update the displayed vtkCamera
+		"""  
+		cam = args
+		lst = []
+		for i in FIELDS:
+			val = eval("cam.Get%s()" % i)
+			val = self.getAsStr(val)
+			lst.append(val)
+				
+		self.SetLabel(self.str % tuple(lst))
+		
+		

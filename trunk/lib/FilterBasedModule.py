@@ -39,141 +39,141 @@ from lib.Module import *
 import scripting as bxd
 
 class FilterBasedModule(Module):
-    """
-    Created: 04.04.2006, KP
-    Description: Applies a stack of processing filters to a given input dataset
-    """
+	"""
+	Created: 04.04.2006, KP
+	Description: Applies a stack of processing filters to a given input dataset
+	"""
 
-    def __init__(self,**kws):
-        """
-        Created: 25.11.2004, KP
-        Description: Initialization
-        """
-        Module.__init__(self,**kws)
+	def __init__(self, **kws):
+		"""
+		Created: 25.11.2004, KP
+		Description: Initialization
+		"""
+		Module.__init__(self, **kws)
 
-        self.cachedTimepoint = -1
-        self.running=0
-        self.cached = None
-        self.depth=8
-        self.modified = 0
+		self.cachedTimepoint = -1
+		self.running = 0
+		self.cached = None
+		self.depth = 8
+		self.modified = 0
 
-        self.reset()
-        
-    def setModified(self,flag):
-        """
-        Created: 14.05.2006
-        Description: Set a flag indicating whether filter parameters have changed
-        """
-        self.modified = flag
+		self.reset()
+		
+	def setModified(self, flag):
+		"""
+		Created: 14.05.2006
+		Description: Set a flag indicating whether filter parameters have changed
+		"""
+		self.modified = flag
 
-    def reset(self):
-        """
-        Created: 25.11.2004, KP
-        Description: Resets the module to initial state. This method is
-                     used mainly when doing previews, when the parameters
-                     that control the processing are changed and the
-                     preview data becomes invalid.
-        """
-        Module.reset(self)
-        self.preview=None
-        del self.cached
-        self.cached = None        
-        self.cachedTimepoint=-1
-        self.n=-1
+	def reset(self):
+		"""
+		Created: 25.11.2004, KP
+		Description: Resets the module to initial state. This method is
+					 used mainly when doing previews, when the parameters
+					 that control the processing are changed and the
+					 preview data becomes invalid.
+		"""
+		Module.reset(self)
+		self.preview = None
+		del self.cached
+		self.cached = None        
+		self.cachedTimepoint = -1
+		self.n = -1
 
-    def addInput(self,dataunit,data):
-        """
-        Created: 04.04.2006, KP
-        Description: Adds a vtkImageData object as an input to the processing module
-        """
-        Module.addInput(self,dataunit,data)
+	def addInput(self, dataunit, data):
+		"""
+		Created: 04.04.2006, KP
+		Description: Adds a vtkImageData object as an input to the processing module
+		"""
+		Module.addInput(self, dataunit, data)
 
-    def getPreview(self,z):
-        """
-        Created: 04.04.2006, KP
-        Description: Does a preview calculation for the x-y plane at depth z
-        """
-        if self.settings.get("ShowOriginal"):
-            return self.images[0]        
-        if not self.preview:
-            dims=self.images[0].GetDimensions()
-            if z>=0:
-                self.extent=(0,dims[0]-1,0,dims[1]-1,z,z)
-            else:
-                self.extent=None
-            self.preview=self.doOperation(preview = 1)
-            self.extent=None
-        return self.preview
+	def getPreview(self, z):
+		"""
+		Created: 04.04.2006, KP
+		Description: Does a preview calculation for the x-y plane at depth z
+		"""
+		if self.settings.get("ShowOriginal"):
+			return self.images[0]        
+		if not self.preview:
+			dims = self.images[0].GetDimensions()
+			if z >= 0:
+				self.extent = (0, dims[0] - 1, 0, dims[1] - 1, z, z)
+			else:
+				self.extent = None
+			self.preview = self.doOperation(preview = 1)
+			self.extent = None
+		return self.preview
 
 
-    def doOperation(self,preview = 0):
-        """
-        Created: 04.04.2006, KP
-        Description: Manipulationes the dataset in specified ways
-        """        
-        if preview and not self.modified and self.cached and self.timepoint == self.cachedTimepoint:
-            Logging.info("--> Returning cached data, timepoint=%d, cached timepoint=%d"%(self.timepoint,self.cachedTimepoint),kw="pipeline")
-            return self.cached
-        else:
-            del self.cached
-            self.cached = None
-        filterlist = self.settings.get("FilterList")
-        
-        if type(filterlist)==type(""):
-            filterlist=[]
-        self.settings.set("FilterList",filterlist)
-        data = self.images
-        if not filterlist:
-            return self.images[0]
-        try:
-            filterlist=filter(lambda x:x.getEnabled(),filterlist)
-        except:
-            filterlist=[]
-        n=len(filterlist)-1
-        
-        lastfilter = None
-        lasttype = "UC3"
-        for i,currfilter in enumerate(filterlist):
-                flag=(i==n)
-                if i>0:
-                    currfilter.setPrevFilter(filterlist[i-1])
-                else:
-                    currfilter.setPrevFilter(None)
-                if not flag:
-                    currfilter.setNextFilter(filterlist[i+1])
-                else:
-                    currfilter.setNextFilter(None)
-                data = currfilter.execute(data,update=0,last=flag)
-                
-                if not flag:
-                    nextfilter = filterlist[i+1]
-                    if not currfilter.itkFlag and nextfilter.itkFlag:
-                        Logging.info("Executing VTK side before switching to ITK",kw="pipeline")
-                        data = bxd.mem.optimize(image = data, releaseData = 1)
-                        data.Update()                
-                    
-                
-                lastfilter = currfilter
-                
-                if not preview:
-                    currfilter.writeOutput(self.controlUnit, self.timepoint)
-                lasttype = currfilter.getImageType()
-                
-                
-                data=[data]
-                if not data:
-                    #print "GOT NO DATA"
-                    self.cached = None
-                    return None                
-        
-        #print "DATA=",data
-        data = data[0]
-        if data.__class__ != vtk.vtkImageData:
-            
-            data = lastfilter.convertITKtoVTK(data)#,imagetype=lasttype)
+	def doOperation(self, preview = 0):
+		"""
+		Created: 04.04.2006, KP
+		Description: Manipulationes the dataset in specified ways
+		"""        
+		if preview and not self.modified and self.cached and self.timepoint == self.cachedTimepoint:
+			Logging.info("--> Returning cached data, timepoint=%d, cached timepoint=%d" % (self.timepoint, self.cachedTimepoint), kw = "pipeline")
+			return self.cached
+		else:
+			del self.cached
+			self.cached = None
+		filterlist = self.settings.get("FilterList")
+		
+		if type(filterlist) == type(""):
+			filterlist = []
+		self.settings.set("FilterList", filterlist)
+		data = self.images
+		if not filterlist:
+			return self.images[0]
+		try:
+			filterlist = filter(lambda x:x.getEnabled(), filterlist)
+		except:
+			filterlist = []
+		n = len(filterlist) - 1
+		
+		lastfilter = None
+		lasttype = "UC3"
+		for i, currfilter in enumerate(filterlist):
+				flag = (i == n)
+				if i > 0:
+					currfilter.setPrevFilter(filterlist[i - 1])
+				else:
+					currfilter.setPrevFilter(None)
+				if not flag:
+					currfilter.setNextFilter(filterlist[i + 1])
+				else:
+					currfilter.setNextFilter(None)
+				data = currfilter.execute(data, update = 0, last = flag)
+				
+				if not flag:
+					nextfilter = filterlist[i + 1]
+					if not currfilter.itkFlag and nextfilter.itkFlag:
+						Logging.info("Executing VTK side before switching to ITK", kw = "pipeline")
+						data = bxd.mem.optimize(image = data, releaseData = 1)
+						data.Update()                
+					
+				
+				lastfilter = currfilter
+				
+				if not preview:
+					currfilter.writeOutput(self.controlUnit, self.timepoint)
+				lasttype = currfilter.getImageType()
+				
+				
+				data = [data]
+				if not data:
+					#print "GOT NO DATA"
+					self.cached = None
+					return None                
+		
+		#print "DATA=",data
+		data = data[0]
+		if data.__class__ != vtk.vtkImageData:
+			
+			data = lastfilter.convertITKtoVTK(data)#,imagetype=lasttype)
 
-        data.ReleaseDataFlagOff()
-        #self.cached = data
-        #self.cachedTimepoint = self.timepoint
-        self.modified = 0
-        return data
+		data.ReleaseDataFlagOff()
+		#self.cached = data
+		#self.cachedTimepoint = self.timepoint
+		self.modified = 0
+		return data

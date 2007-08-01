@@ -41,166 +41,166 @@ import inspect
 import messenger
 import scripting as bxd
 import types
-MENU_CMD="Menu command"
-OPEN_CMD="Load file"
-TASK_CMD="Load task"
-MGMT_CMD="File management"
-GUI_CMD="User interface command" 
-PARAM_CMD="Parameter change"
-VISUALIZATION_CMD="Visualizer action"
+MENU_CMD = "Menu command"
+OPEN_CMD = "Load file"
+TASK_CMD = "Load task"
+MGMT_CMD = "File management"
+GUI_CMD = "User interface command" 
+PARAM_CMD = "Parameter change"
+VISUALIZATION_CMD = "Visualizer action"
 
-def functionize(code,imports):
-        lines=code.split("\n")
-        for i,line in enumerate(lines):
-            lines[i]="    %s"%line.strip()
-        code="\n".join(lines)
+def functionize(code, imports):
+		lines = code.split("\n")
+		for i, line in enumerate(lines):
+			lines[i] = "    %s" % line.strip()
+		code = "\n".join(lines)
 
-        return code
-        
-        
+		return code
+		
+		
 class ScriptRecorder:
-    """
+	"""
 
-    Created: 13.02.2006, KP
-    Description: A script recorder class
-    """ 
-    def __init__(self):
-        """
-        Created: 13.02.2006, KP
-        Description: Initialize the editor component of script editor
-        """    
-        self.imports=[]
-        messenger.connect(None,"record_code",self.onRecordCode)
-        self.code=[]
-        
-    def getText(self):
-        """
-        Created: 25.06.2007, KP
-        Description: return the recorded output
-        """
-        imports=[]
-        for i in self.imports:
-            if type(i)==types.TupleType:
-                m,f=i
-                imports.append("from %s import %s"%(m,f))
-            else:
-                imports.append("import %s"%i)
-        
-        return imports+[]+self.code
-    
-    def onRecordCode(self,obj,evt,code, imports):
-        """
-        Created: 13.02.2006, KP
-        Description: Record a piece of code to the script
-        """     
-        text=self.code
-        for i in imports:
-            if i not in self.imports:
-                self.imports.append(i.strip())
-                
-        for i in imports:
-            if type(i)==types.TupleType:
-                m,f = i
-                Logging.outfile.write(">>> from %s import %s\n"%(m,f))
-            else:
-                Logging.outfile.write(">>> import %s\n"%i)
-    
-                
-        lines=code.split("\n")
-        text+=lines
-        for line in lines:
-            Logging.outfile.write(">>> %s\n"%line)
-        self.code=text
-        
+	Created: 13.02.2006, KP
+	Description: A script recorder class
+	""" 
+	def __init__(self):
+		"""
+		Created: 13.02.2006, KP
+		Description: Initialize the editor component of script editor
+		"""    
+		self.imports = []
+		messenger.connect(None, "record_code", self.onRecordCode)
+		self.code = []
+		
+	def getText(self):
+		"""
+		Created: 25.06.2007, KP
+		Description: return the recorded output
+		"""
+		imports = []
+		for i in self.imports:
+			if type(i) == types.TupleType:
+				m, f = i
+				imports.append("from %s import %s" % (m, f))
+			else:
+				imports.append("import %s" % i)
+		
+		return imports + [] + self.code
+	
+	def onRecordCode(self, obj, evt, code, imports):
+		"""
+		Created: 13.02.2006, KP
+		Description: Record a piece of code to the script
+		"""     
+		text = self.code
+		for i in imports:
+			if i not in self.imports:
+				self.imports.append(i.strip())
+				
+		for i in imports:
+			if type(i) == types.TupleType:
+				m, f = i
+				Logging.outfile.write(">>> from %s import %s\n" % (m, f))
+			else:
+				Logging.outfile.write(">>> import %s\n" % i)
+	
+				
+		lines = code.split("\n")
+		text += lines
+		for line in lines:
+			Logging.outfile.write(">>> %s\n" % line)
+		self.code = text
+		
 class Command:
-    """
-    Created: 13.02.2006, KP
-    Description: A class representing an executable action from menus etc.
-    """ 
-    def __init__(self,category=None,do=None,undo=None,do_code="",undo_code="",imports=None, desc=""):
-        """
-        Created: 13.02.2006, KP
-        Description: Initialization 
-        """     
-        self.do=do
-        self.undocmd=undo
-        self.desc=desc
-        self.category = category
-        if not imports:imports=[]
-        self.imports = imports
-        icode=""
-        for i in imports:
-            icode="    import %s\n%s"%(i,icode)
-        if not do and do_code:
-            #exec(do_code,self.globals,self.locals)
-            
-            ncode=functionize(do_code,imports)
-            
-            code="""def f(x):\n%s%s\n"""%(icode,ncode)
+	"""
+	Created: 13.02.2006, KP
+	Description: A class representing an executable action from menus etc.
+	""" 
+	def __init__(self, category = None, do = None, undo = None, do_code = "", undo_code = "", imports = None, desc = ""):
+		"""
+		Created: 13.02.2006, KP
+		Description: Initialization 
+		"""     
+		self.do = do
+		self.undocmd = undo
+		self.desc = desc
+		self.category = category
+		if not imports:imports = []
+		self.imports = imports
+		icode = ""
+		for i in imports:
+			icode = "    import %s\n%s" % (i, icode)
+		if not do and do_code:
+			#exec(do_code,self.globals,self.locals)
+			
+			ncode = functionize(do_code, imports)
+			
+			code = """def f(x):\n%s%s\n""" % (icode, ncode)
 
-            exec(code)
-            self.do=f
-        if not undo and undo_code:            
-            ncode=functionize(undo_code,imports)
-            code="""def f(x):\n%s%s\n"""%(icode,ncode)
-            exec(code)
-            self.undocmd=f
-            
-        self.do_code=do_code
-        self.undo_code=undo_code
-    
-        self._undoed=0
-        
-        
-    def getDesc(self):
-        return self.desc
-        
-    def isUndoed(self):
-        return self._undoed
-    
-    def canUndo(self):
-        """
-        Created: 13.02.2006, KP
-        Description: A get method indicating whether this command can be undoed
-        """     
-        return not(not self.undocmd)
-        
+			exec(code)
+			self.do = f
+		if not undo and undo_code:            
+			ncode = functionize(undo_code, imports)
+			code = """def f(x):\n%s%s\n""" % (icode, ncode)
+			exec(code)
+			self.undocmd = f
+			
+		self.do_code = do_code
+		self.undo_code = undo_code
+	
+		self._undoed = 0
+		
+		
+	def getDesc(self):
+		return self.desc
+		
+	def isUndoed(self):
+		return self._undoed
+	
+	def canUndo(self):
+		"""
+		Created: 13.02.2006, KP
+		Description: A get method indicating whether this command can be undoed
+		"""     
+		return not(not self.undocmd)
+		
 
-    def run(self, recordOnly = 0):
-        """
-        Created: 13.02.2006, KP
-        Description: Execute the action associated with this command
-        """ 
-        if not self.do_code:
-            code = inspect.getsource(self.undo)
-        else:
-            code=self.do_code
-        messenger.send(None,"record_code",code,self.imports)
-        
-        if not recordOnly:
-            self.do(self)
-            self._undoed=0
-        messenger.send(None,"execute_command",self)
-        
-            
-    def undo(self):
-        """
-        Created: 13.02.2006, KP
-        Description: Execute an action that cancels the action of this command
-        """         
-        print "Running",self.undocmd,"code=",self.undo_code
-        self.undocmd(self)
-        self._undoed=1
-        messenger.send(None,"execute_command",self,1)
-        if not self.undo_code:
-            code = inspect.getsource(self.undo)
-        else:
-            code=self.undo_code
-        messenger.send(None,"record_code",code,self.imports)
-            
-    def getCategory(self):
-        return self.category
-        
-    def __str__(self):
-        return "Command: %s (%s)"%(self.category,self.desc)
-        
+	def run(self, recordOnly = 0):
+		"""
+		Created: 13.02.2006, KP
+		Description: Execute the action associated with this command
+		""" 
+		if not self.do_code:
+			code = inspect.getsource(self.undo)
+		else:
+			code = self.do_code
+		messenger.send(None, "record_code", code, self.imports)
+		
+		if not recordOnly:
+			self.do(self)
+			self._undoed = 0
+		messenger.send(None, "execute_command", self)
+		
+			
+	def undo(self):
+		"""
+		Created: 13.02.2006, KP
+		Description: Execute an action that cancels the action of this command
+		"""         
+		print "Running", self.undocmd, "code=", self.undo_code
+		self.undocmd(self)
+		self._undoed = 1
+		messenger.send(None, "execute_command", self, 1)
+		if not self.undo_code:
+			code = inspect.getsource(self.undo)
+		else:
+			code = self.undo_code
+		messenger.send(None, "record_code", code, self.imports)
+			
+	def getCategory(self):
+		return self.category
+		
+	def __str__(self):
+		return "Command: %s (%s)" % (self.category, self.desc)
+		

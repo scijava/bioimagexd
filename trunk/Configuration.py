@@ -35,168 +35,168 @@ import os.path
 import sys, types
 import ConfigParser
 import Logging
-conf=None
+conf = None
 import platform
 
 import scripting as bxd
 def getConfiguration():
-    global conf
-    if not conf:
-        conf = Configuration()
-    return conf
+	global conf
+	if not conf:
+		conf = Configuration()
+	return conf
 
 class Configuration:
-    """
-    Created: 23.02.2005, KP
-    Description: A module that handles the configuration file 
-    """
-    def __init__(self,configFile = None):
-        global conf
-        conf=self
-        if not configFile:
-            configFile = os.path.join(bxd.get_config_dir(),"BioImageXD.ini")
-        self.configItems={}
-        self.installPath=os.getcwd()
-        self.parser=ConfigParser.ConfigParser()
-        cfgfile=self.getPath(configFile)
-        self.configFile=cfgfile
-        self.parser.read([cfgfile])    
-    
-        # Set the initial values
-        #vtkpath=self.getPath(["Libraries","VTK"])
-        if platform.system()=="Windows":
-            vtkpath=self.getPath(["C:\\VTK-build"])
-        else:
-            vtkpath="/home/kalpaha/BioImageXD/VTK-current"
-        self.setConfigItem("ShowTip","General","True",0)
-        self.setConfigItem("AskOnQuit","General","True",0)
-        self.setConfigItem("TipNumber","General",0,0)
-        self.setConfigItem("RestoreFiles","General","True",0)
-        self.setConfigItem("ReportCrash","General","True",0)
-        self.setConfigItem("CleanExit","General","True",0)
-        
-        self.readConfigItem("ShowTip","General")
-        self.readConfigItem("RestoreFiles","General")
-        self.readConfigItem("TipNumber","General")
-        self.readConfigItem("AskOnQuit","General")
-        self.readConfigItem("RescaleOnLoading","Performance")
-        self.readConfigItem("RestoreFiles","General")
-        self.readConfigItem("ReportCrash","General")
-        self.readConfigItem("CleanExit","General")
-        
-        self.readConfigItem("BeginnerColor","General")
-        self.readConfigItem("IntermediateColor","General")
-        self.readConfigItem("ExperiencedColor","General")
-        
-        c = self.getConfigItem("BeginnerColor","General")
-        if c:
-            bxd.COLOR_BEGINNER = eval(c)
-        c = self.getConfigItem("IntermediateColor","General")
-        if c:
-            bxd.COLOR_INTERMEDIATE =  eval(c)
-        c = self.getConfigItem("ExperiencedColor","General")
-        if c:
-            bxd.COLOR_EXPERIENCED = eval(c)
-        
-        
-        self.setConfigItem("RemoveOldVTK","VTK",1,0);
-        self.setConfigItem("VTKPath","VTK",vtkpath,0)
-        
-        self.setConfigItem("ImageFormat","Output","png",0)
-        fpath=os.path.expanduser("~")
-        self.setConfigItem("FramePath","Paths",fpath,0)
-        self.setConfigItem("VideoPath","Paths",os.path.join(fpath,"video.avi"),0)
+	"""
+	Created: 23.02.2005, KP
+	Description: A module that handles the configuration file 
+	"""
+	def __init__(self, configFile = None):
+		global conf
+		conf = self
+		if not configFile:
+			configFile = os.path.join(bxd.get_config_dir(), "BioImageXD.ini")
+		self.configItems = {}
+		self.installPath = os.getcwd()
+		self.parser = ConfigParser.ConfigParser()
+		cfgfile = self.getPath(configFile)
+		self.configFile = cfgfile
+		self.parser.read([cfgfile])    
+	
+		# Set the initial values
+		#vtkpath=self.getPath(["Libraries","VTK"])
+		if platform.system() == "Windows":
+			vtkpath = self.getPath(["C:\\VTK-build"])
+		else:
+			vtkpath = "/home/kalpaha/BioImageXD/VTK-current"
+		self.setConfigItem("ShowTip", "General", "True", 0)
+		self.setConfigItem("AskOnQuit", "General", "True", 0)
+		self.setConfigItem("TipNumber", "General", 0, 0)
+		self.setConfigItem("RestoreFiles", "General", "True", 0)
+		self.setConfigItem("ReportCrash", "General", "True", 0)
+		self.setConfigItem("CleanExit", "General", "True", 0)
+		
+		self.readConfigItem("ShowTip", "General")
+		self.readConfigItem("RestoreFiles", "General")
+		self.readConfigItem("TipNumber", "General")
+		self.readConfigItem("AskOnQuit", "General")
+		self.readConfigItem("RescaleOnLoading", "Performance")
+		self.readConfigItem("RestoreFiles", "General")
+		self.readConfigItem("ReportCrash", "General")
+		self.readConfigItem("CleanExit", "General")
+		
+		self.readConfigItem("BeginnerColor", "General")
+		self.readConfigItem("IntermediateColor", "General")
+		self.readConfigItem("ExperiencedColor", "General")
+		
+		c = self.getConfigItem("BeginnerColor", "General")
+		if c:
+			bxd.COLOR_BEGINNER = eval(c)
+		c = self.getConfigItem("IntermediateColor", "General")
+		if c:
+			bxd.COLOR_INTERMEDIATE =  eval(c)
+		c = self.getConfigItem("ExperiencedColor", "General")
+		if c:
+			bxd.COLOR_EXPERIENCED = eval(c)
+		
+		
+		self.setConfigItem("RemoveOldVTK", "VTK", 1, 0);
+		self.setConfigItem("VTKPath", "VTK", vtkpath, 0)
+		
+		self.setConfigItem("ImageFormat", "Output", "png", 0)
+		fpath = os.path.expanduser("~")
+		self.setConfigItem("FramePath", "Paths", fpath, 0)
+		self.setConfigItem("VideoPath", "Paths", os.path.join(fpath, "video.avi"), 0)
 
-        self.setConfigItem("DataPath","Paths","/home/kalpaha/BioImageXD/Data/",0)
-        self.setConfigItem("LastPath","Paths","/home/kalpaha/BioImageXD/Data/",0)
-        self.setConfigItem("RememberPath","Paths",1)
+		self.setConfigItem("DataPath", "Paths", "/home/kalpaha/BioImageXD/Data/", 0)
+		self.setConfigItem("LastPath", "Paths", "/home/kalpaha/BioImageXD/Data/", 0)
+		self.setConfigItem("RememberPath", "Paths", 1)
 
-        # Then read the settings file
-        self.readPathSettings()
+		# Then read the settings file
+		self.readPathSettings()
 
-        self.insertModuleDirectories()
-        self.processPathSettings()
+		self.insertModuleDirectories()
+		self.processPathSettings()
 
-    def writeSettings(self):
-        """
-        Created: 12.03.2005, KP
-        Description: A method to write out the settings
-        """ 
-        fp=open(self.configFile,"w")
-        self.parser.write(fp)
-        fp.close()
-        
-    def insertModuleDirectories(self):
-        self.insertPath(self.getPath("lib"))
-        self.insertPath(self.getPath("GUI"))
-        self.insertPath(self.getPath("Libraries"))
-        
-    def processPathSettings(self):
-        vtkdir=self.getConfigItem("VTKPath","VTK")
-        if self.getConfigItem("RemoveOldVTK","VTK") and os.path.isdir(vtkdir):
-            self.removeWithName(["vtk","VTK","vtk_python"])
-        bin=self.getPath([vtkdir,"bin"])
-        wrapping=self.getPath([vtkdir,"Wrapping","Python"])
-        self.insertPath(bin)
-        self.insertPath(wrapping)
-        
-        
-    def setConfigItem(self,configItem, section,value,write=1):
-        self.configItems[configItem]=value
-        if write:
-            if self.parser.has_section(section) == False:
-                self.parser.add_section(section)
-            self.parser.set(section,configItem,value)
-            self.writeSettings()
+	def writeSettings(self):
+		"""
+		Created: 12.03.2005, KP
+		Description: A method to write out the settings
+		""" 
+		fp = open(self.configFile, "w")
+		self.parser.write(fp)
+		fp.close()
+		
+	def insertModuleDirectories(self):
+		self.insertPath(self.getPath("lib"))
+		self.insertPath(self.getPath("GUI"))
+		self.insertPath(self.getPath("Libraries"))
+		
+	def processPathSettings(self):
+		vtkdir = self.getConfigItem("VTKPath", "VTK")
+		if self.getConfigItem("RemoveOldVTK", "VTK") and os.path.isdir(vtkdir):
+			self.removeWithName(["vtk", "VTK", "vtk_python"])
+		bin = self.getPath([vtkdir, "bin"])
+		wrapping = self.getPath([vtkdir, "Wrapping", "Python"])
+		self.insertPath(bin)
+		self.insertPath(wrapping)
+		
+		
+	def setConfigItem(self, configItem, section, value, write = 1):
+		self.configItems[configItem] = value
+		if write:
+			if self.parser.has_section(section) == False:
+				self.parser.add_section(section)
+			self.parser.set(section, configItem, value)
+			self.writeSettings()
 
-    def readConfigItem(self,configItem,section):
-        try:
-            configItemvalue=self.parser.get(section,configItem)
-            self.configItems[configItem]=configItemvalue
-        except:
-            return None
-        return configItemvalue
-        
-    def getConfigItem(self,configItem,section):
-        if not configItem in self.configItems:
-            self.readConfigItem(configItem,section)
-            
-        if not configItem in self.configItems:
-            return None
-            
-        return self.configItems[configItem]
-        
-    def readPathSettings(self):
-        self.readConfigItem("RemoveOldVTK","VTK")
-        self.readConfigItem("VTKPath","VTK")
-        self.readConfigItem("DataPath","Paths")
-        self.readConfigItem("ImageFormat","Output")
-        self.readConfigItem("FramePath","Paths")
-        self.readConfigItem("VideoPath","Paths")
-    def setCurrentDir(self,path):
-        self.installPath=path
+	def readConfigItem(self, configItem, section):
+		try:
+			configItemvalue = self.parser.get(section, configItem)
+			self.configItems[configItem] = configItemvalue
+		except:
+			return None
+		return configItemvalue
+		
+	def getConfigItem(self, configItem, section):
+		if not configItem in self.configItems:
+			self.readConfigItem(configItem, section)
+			
+		if not configItem in self.configItems:
+			return None
+			
+		return self.configItems[configItem]
+		
+	def readPathSettings(self):
+		self.readConfigItem("RemoveOldVTK", "VTK")
+		self.readConfigItem("VTKPath", "VTK")
+		self.readConfigItem("DataPath", "Paths")
+		self.readConfigItem("ImageFormat", "Output")
+		self.readConfigItem("FramePath", "Paths")
+		self.readConfigItem("VideoPath", "Paths")
+	def setCurrentDir(self, path):
+		self.installPath = path
 
-    def getPath(self,path):
-        if type(path)==types.StringType:
-            path=[path]
-        return os.path.normpath(os.path.join(self.installPath,reduce(os.path.join,path)))
-    
-    def removeWithName(self,names):
-        removethese=[]
-        for i in sys.path:
-            for name in names:
-                if i.find(name) != -1:
-                    removethese.append(i)
+	def getPath(self, path):
+		if type(path) == types.StringType:
+			path = [path]
+		return os.path.normpath(os.path.join(self.installPath, reduce(os.path.join, path)))
+	
+	def removeWithName(self, names):
+		removethese = []
+		for i in sys.path:
+			for name in names:
+				if i.find(name) != -1:
+					removethese.append(i)
 #        Logging.info("Removing following path entries: ",", ".join(removethese),kw="init")
-        for i in removethese:
-            try:
-                sys.path.remove(i)
-            except:
-                Logging.info("Failed to remove ",i,kw="init")
+		for i in removethese:
+			try:
+				sys.path.remove(i)
+			except:
+				Logging.info("Failed to remove ", i, kw = "init")
 
-            
-    def insertPath(self,path,n=0):
-        sys.path.insert(n,path)
-        
-    def appendPath(self,path):
-        sys.path.append(path)
+			
+	def insertPath(self, path, n = 0):
+		sys.path.insert(n, path)
+		
+	def appendPath(self, path):
+		sys.path.append(path)

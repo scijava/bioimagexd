@@ -35,101 +35,101 @@ from DataUnitSetting import DataUnitSettings
 #import ManipulationFilters
 
 class FilterBasedTaskSettings(DataUnitSettings):
-    """
-    Created: 27.03.2005, KP
-    Description: Stores settings related to single unit Manipulationing
-    """
-    def __init__(self,n=-1):
-        """
-        Method: __init__
-        Created: 27.03.2005, KP
-        Description: Constructor
-        """
-        DataUnitSettings.__init__(self,n)
-        self.set("Type","No Type Set")
-        
-        self.registerPrivate("ColorTransferFunction",1)        
-        self.registerCounted("Source")
-        self.register("FilterList", serialize = 1)
-        self.register("VoxelSize")
-        self.register("Spacing")
-        #self.register("Origin")
-        self.register("Dimensions")
-        self.register("Type")
-        self.register("Name")
-        self.register("BitDepth")
-        
-    def initialize(self,dataunit,channels, timepoints):
-        """
-        Method: initialize(dataunit,channels, timepoints)
-        Created: 27.03.2005
-        Description: Set initial values for settings based on 
-                     number of channels and timepoints
-        """
-        DataUnitSettings.initialize(self,dataunit,channels,timepoints)
-        if hasattr(dataunit,"getScalarRange"):
-            minval,maxval = dataunit.getScalarRange()
-        else:
-            minval,maxval = dataunit.getSourceDataUnits()[0].getScalarRange()
-        #ctf = vtk.vtkColorTransferFunction()
-        #ctf.AddRGBPoint(minval,0,0,0)
-        #ctf.AddRGBPoint(maxval, 1.0, 1.0, 1.0)
-        #self.set("ColorTransferFunction",ctf)
+	"""
+	Created: 27.03.2005, KP
+	Description: Stores settings related to single unit Manipulationing
+	"""
+	def __init__(self, n = -1):
+		"""
+		Method: __init__
+		Created: 27.03.2005, KP
+		Description: Constructor
+		"""
+		DataUnitSettings.__init__(self, n)
+		self.set("Type", "No Type Set")
+		
+		self.registerPrivate("ColorTransferFunction", 1)        
+		self.registerCounted("Source")
+		self.register("FilterList", serialize = 1)
+		self.register("VoxelSize")
+		self.register("Spacing")
+		#self.register("Origin")
+		self.register("Dimensions")
+		self.register("Type")
+		self.register("Name")
+		self.register("BitDepth")
+		
+	def initialize(self, dataunit, channels, timepoints):
+		"""
+		Method: initialize(dataunit,channels, timepoints)
+		Created: 27.03.2005
+		Description: Set initial values for settings based on 
+					 number of channels and timepoints
+		"""
+		DataUnitSettings.initialize(self, dataunit, channels, timepoints)
+		if hasattr(dataunit, "getScalarRange"):
+			minval, maxval = dataunit.getScalarRange()
+		else:
+			minval, maxval = dataunit.getSourceDataUnits()[0].getScalarRange()
+		#ctf = vtk.vtkColorTransferFunction()
+		#ctf.AddRGBPoint(minval,0,0,0)
+		#ctf.AddRGBPoint(maxval, 1.0, 1.0, 1.0)
+		#self.set("ColorTransferFunction",ctf)
 
-        
-    def writeTo(self,parser):
-        """
-        Created: 05.06.2005
-        Description: Attempt to write all keys to a parser
-        """    
-        DataUnitSettings.writeTo(self, parser)
-        lst = self.get("FilterList")
-        #print "Filter list to write=",lst
-        flist = eval(self.serialize("FilterList",lst))
-        #print "Got serialized=",flist
-        for i,fname in enumerate(flist):
-            currfilter = lst[i]
-            keys = currfilter.getPlainParameters()
-            for key in keys:
-                if not parser.has_section(fname):
-                    parser.add_section(fname)
-                parser.set(fname,key,currfilter.getParameter(key))
+		
+	def writeTo(self, parser):
+		"""
+		Created: 05.06.2005
+		Description: Attempt to write all keys to a parser
+		"""    
+		DataUnitSettings.writeTo(self, parser)
+		lst = self.get("FilterList")
+		#print "Filter list to write=",lst
+		flist = eval(self.serialize("FilterList", lst))
+		#print "Got serialized=",flist
+		for i, fname in enumerate(flist):
+			currfilter = lst[i]
+			keys = currfilter.getPlainParameters()
+			for key in keys:
+				if not parser.has_section(fname):
+					parser.add_section(fname)
+				parser.set(fname, key, currfilter.getParameter(key))
 
-    def deserialize(self,name,value):
-        """
-        Created: 05.06.2005
-        Description: Returns the value of a given key
-        """
-        if name=="FilterList":
-            fnames = eval(value)
-            flist=[]
-            filters = self.filterModule.getFilterList()
-            nametof={}
-            for f in filters:
-                nametof[f.getName()] = f
-            for name in fnames:
-                try:
-                    fclass = nametof[name]
-                    flist.append(fclass)
-                except:
-                    pass
-            return flist
-                
-        else:
-            return DataUnitSettings.deserialize(self, name, value)
-        
-        
-    def serialize(self,name,value):
-        """
-        Created: 05.06.2005
-        Description: Returns the value of a given key in a format
-                     that can be written to disk.
-        """
-        if name=="FilterList":
-            filterlist = value
-            names=[]
-            for filter in filterlist:
-                names.append(filter.getName())
-            return str(names)
-        else:
-            return DataUnitSettings.serialize(self,name,value)
+	def deserialize(self, name, value):
+		"""
+		Created: 05.06.2005
+		Description: Returns the value of a given key
+		"""
+		if name == "FilterList":
+			fnames = eval(value)
+			flist = []
+			filters = self.filterModule.getFilterList()
+			nametof = {}
+			for f in filters:
+				nametof[f.getName()] = f
+			for name in fnames:
+				try:
+					fclass = nametof[name]
+					flist.append(fclass)
+				except:
+					pass
+			return flist
+				
+		else:
+			return DataUnitSettings.deserialize(self, name, value)
+		
+		
+	def serialize(self, name, value):
+		"""
+		Created: 05.06.2005
+		Description: Returns the value of a given key in a format
+					 that can be written to disk.
+		"""
+		if name == "FilterList":
+			filterlist = value
+			names = []
+			for filter in filterlist:
+				names.append(filter.getName())
+			return str(names)
+		else:
+			return DataUnitSettings.serialize(self, name, value)

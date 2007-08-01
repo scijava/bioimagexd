@@ -5,7 +5,7 @@
  Created: 17.11.2004, KP
  Description:
 
-           
+		   
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
 
@@ -39,246 +39,246 @@ import time
 import sys
 
 
-rendint=None
+rendint = None
 
 
-def getRenderingInterface(mayavi=0):
-    global rendint
-    if not rendint:
-        rendint=RenderingInterface()
-    return rendint
+def getRenderingInterface(mayavi = 0):
+	global rendint
+	if not rendint:
+		rendint = RenderingInterface()
+	return rendint
 
 class RenderingInterface:
-    """
-    Created: 17.11.2004, KP
-    Description: The interface to visualizer used for animator rendering
-    """
-    def __init__(self,dataUnit=None,timePoints=[],**kws):
-        """
-        Created: 17.11.2004, KP
-        Description: Initialization
-        """
-        self.dataUnit=dataUnit
-        self.currentData=None
-        self.timePoints=timePoints
-        
-        self.settings_mode=0
-        self.frameName=""
-        self.thread = None
-        self.stop=0
-        self.currentTimePoint=-1
-        # XXX: Make this configurable
-        #self.type=Configuration.getConfiguration().getConfigItem("ImageFormat","Output")
-        
-        #if not self.type:
-        #    self.type="pnm"
-        self.type = "tif"
-            
-        self.visualizer = None
-        self.frameList = []
-        
-    def setType(self,type):
-        """
-        Created: 13.12.2005, KP
-        Description: Set the type of the rendered frame
-        """            
-        self.type = type
-        
-    def getColorTransferFunction(self):
-        """
-        Created: 18.04.2005, KP
-        Description: Return the current ctf
-        """
-        return self.ctf
+	"""
+	Created: 17.11.2004, KP
+	Description: The interface to visualizer used for animator rendering
+	"""
+	def __init__(self, dataUnit = None, timePoints = [], **kws):
+		"""
+		Created: 17.11.2004, KP
+		Description: Initialization
+		"""
+		self.dataUnit = dataUnit
+		self.currentData = None
+		self.timePoints = timePoints
+		
+		self.settings_mode = 0
+		self.frameName = ""
+		self.thread = None
+		self.stop = 0
+		self.currentTimePoint = -1
+		# XXX: Make this configurable
+		#self.type=Configuration.getConfiguration().getConfigItem("ImageFormat","Output")
+		
+		#if not self.type:
+		#    self.type="pnm"
+		self.type = "tif"
+			
+		self.visualizer = None
+		self.frameList = []
+		
+	def setType(self, type):
+		"""
+		Created: 13.12.2005, KP
+		Description: Set the type of the rendered frame
+		"""            
+		self.type = type
+		
+	def getColorTransferFunction(self):
+		"""
+		Created: 18.04.2005, KP
+		Description: Return the current ctf
+		"""
+		return self.ctf
 
-        
-    def getCurrentData(self):
-        """
-        Created: n/a
-        Description: Return the current timepoint
-        """
-    
-        if not self.currentData:
-            n=self.currentTimePoint
-            if n<0:n=0
-            self.setCurrentTimepoint(n)
-        return self.currentData
-        
-    def setCurrentTimepoint(self,n):
-        """
-        Created: 22.02.2005, KP
-        Description: Sets the current timepoint to be the specified timepoint.
-                     This will also update relevant information about the dataset
-        """        
-        self.currentTimePoint = n
-        if self.dataUnit.isProcessed():
-            self.currentData = self.dataUnit.doPreview(bxd.WHOLE_DATASET,0,n)
-        else:
-            self.currentData = self.dataUnit.getTimepoint(n)
-        self.dimensions = self.currentData.GetDimensions()
-        
-    def setRenderWindowSize(self,size):
-        """
-        Created: 27.04.2005, KP
-        Description: Sets the visualizer's render window size
-        """        
-        x,y=size
-        if self.visualizer:
-            self.visualizer.setRenderWindowSize((x,y))
-            
-    def getRenderWindow(self):
-        """
-        Created: 22.02.2005, KP
-        Description: Returns the visualizer's render window. Added for Animator compatibility
-        """
-        return self.visualizer.getCurrentMode().GetRenderWindow()
-    
-    def setParent(self,parent):
-        """
-        Created: 28.04.2005, KP
-        Description: Set the parent of this window
-        """        
-        self.parent=parent
-        
-    def getRenderer(self):
-        """
-        Created: 28.04.2005, KP
-        Description: Returns the renderer
-        """        
-        return self.visualizer.getCurrentMode().GetRenderer()
-        
-    def render(self):
-        self.visualizer.currMode.Render()
-    
-    def setVisualizer(self,visualizer):
-        """
-        Created: 20.06.2005, KP
-        Description: Set the visualizer instance to use
-        """        
-        self.visualizer=visualizer
-        self.frameList = []
-        
-    def setDataUnit(self,dataUnit):
-        """
-        Created: 17.11.2004, KP
-        Description: Set the dataunit from which the rendered datasets are read
-        """
-        self.dataUnit=dataUnit
-        # Calculate how many digits there will be in the rendered output
-        # file names, with a running counter
-        ndigits=1+int(math.log(self.dataUnit.getNumberOfTimepoints(),10))
-        # Format, the format will be /path/to/data/image_001.png        
-        self.format="%%s%s%%s_%%.%dd.%s"%(os.path.sep,ndigits,self.type)
-        #Logging.info("File name format=",self.format)
-        self.ctf=dataUnit.getColorTransferFunction()
-        #self.ctf = dataUnit.getSettings().get("ColorTransferFunction")
-        self.frameName=self.dataUnit.getName()
+		
+	def getCurrentData(self):
+		"""
+		Created: n/a
+		Description: Return the current timepoint
+		"""
+	
+		if not self.currentData:
+			n = self.currentTimePoint
+			if n < 0:n = 0
+			self.setCurrentTimepoint(n)
+		return self.currentData
+		
+	def setCurrentTimepoint(self, n):
+		"""
+		Created: 22.02.2005, KP
+		Description: Sets the current timepoint to be the specified timepoint.
+					 This will also update relevant information about the dataset
+		"""        
+		self.currentTimePoint = n
+		if self.dataUnit.isProcessed():
+			self.currentData = self.dataUnit.doPreview(bxd.WHOLE_DATASET, 0, n)
+		else:
+			self.currentData = self.dataUnit.getTimepoint(n)
+		self.dimensions = self.currentData.GetDimensions()
+		
+	def setRenderWindowSize(self, size):
+		"""
+		Created: 27.04.2005, KP
+		Description: Sets the visualizer's render window size
+		"""        
+		x, y = size
+		if self.visualizer:
+			self.visualizer.setRenderWindowSize((x, y))
+			
+	def getRenderWindow(self):
+		"""
+		Created: 22.02.2005, KP
+		Description: Returns the visualizer's render window. Added for Animator compatibility
+		"""
+		return self.visualizer.getCurrentMode().GetRenderWindow()
+	
+	def setParent(self, parent):
+		"""
+		Created: 28.04.2005, KP
+		Description: Set the parent of this window
+		"""        
+		self.parent = parent
+		
+	def getRenderer(self):
+		"""
+		Created: 28.04.2005, KP
+		Description: Returns the renderer
+		"""        
+		return self.visualizer.getCurrentMode().GetRenderer()
+		
+	def render(self):
+		self.visualizer.currMode.Render()
+	
+	def setVisualizer(self, visualizer):
+		"""
+		Created: 20.06.2005, KP
+		Description: Set the visualizer instance to use
+		"""        
+		self.visualizer = visualizer
+		self.frameList = []
+		
+	def setDataUnit(self, dataUnit):
+		"""
+		Created: 17.11.2004, KP
+		Description: Set the dataunit from which the rendered datasets are read
+		"""
+		self.dataUnit = dataUnit
+		# Calculate how many digits there will be in the rendered output
+		# file names, with a running counter
+		ndigits = 1 + int(math.log(self.dataUnit.getNumberOfTimepoints(), 10))
+		# Format, the format will be /path/to/data/image_001.png        
+		self.format = "%%s%s%%s_%%.%dd.%s" % (os.path.sep, ndigits, self.type)
+		#Logging.info("File name format=",self.format)
+		self.ctf = dataUnit.getColorTransferFunction()
+		#self.ctf = dataUnit.getSettings().get("ColorTransferFunction")
+		self.frameName = self.dataUnit.getName()
 
-    def setTimePoints(self,timepoints):
-        """
-        Created: 17.11.2004, KP
-        Description: Set the list of timepoints to be rendered
-        """
-        self.timePoints=timepoints
+	def setTimePoints(self, timepoints):
+		"""
+		Created: 17.11.2004, KP
+		Description: Set the list of timepoints to be rendered
+		"""
+		self.timePoints = timepoints
 
 
-    def isVisualizationSoftwareRunning(self):
-        """
-        Created: 11.1.2005, KP
-        Description: A method that returns true if a render window exists that 
-                     can be used for rendering
-        """
-        return (self.visualizer and not self.visualizer.isClosed())
-        
-    def isVisualizationModuleLoaded(self):
-        """
-        Created: 22.02.2005, KP
-        Description: A method that returns true if the visualizer has a visualization module loaded.
-        """
-        return len(self.visualizer.getCurrentMode().getModules())        
-        
-    
-        
-    def getFrameList(self):
-        """
-        Created: 07.11.2006, KP
-        Description: Return the list of the names of the frames that have been rendered
-        """
-        return self.frameList
-        
-    def setOutputPath(self,path):
-        """
-        Created: 17.11.2004, KP
-        Description: Sets the path where the rendered frames are stored.
-        """
-        self.dirname=path
-           
-    def saveFrame(self,filename):
-        """
-        Created: 22.02.2005, KP
-        Description: Saves a frame with a given name
-        """
-        self.frameList.append(filename)
-        visualizer=self.visualizer
-        type=self.type
-        Logging.info("Saving screenshot to ",filename,kw="visualizer")
-        comm = "visualizer.getCurrentMode().saveSnapshot(filename)"
-        eval(comm)
-            
-    def getFilenamePattern(self):
-        """
-        Created: 27.04.2005, KP
-        Description: Returns output filename pattern
-        """
-        return self.format
-        
-    def getFrameName(self):
-        """
-        Created: 27.04.2005, KP
-        Description: Returns name used to construct the filenames
-        """
-        return self.frameName
-            
-    def getFilename(self,frameNum):
-        """
-        Created: 22.02.2005, KP
-        Description: Returns output filename of the frame we're rendering
-        """
-        return self.format%(self.dirname,self.frameName,frameNum)
+	def isVisualizationSoftwareRunning(self):
+		"""
+		Created: 11.1.2005, KP
+		Description: A method that returns true if a render window exists that 
+					 can be used for rendering
+		"""
+		return (self.visualizer and not self.visualizer.isClosed())
+		
+	def isVisualizationModuleLoaded(self):
+		"""
+		Created: 22.02.2005, KP
+		Description: A method that returns true if the visualizer has a visualization module loaded.
+		"""
+		return len(self.visualizer.getCurrentMode().getModules())        
+		
+	
+		
+	def getFrameList(self):
+		"""
+		Created: 07.11.2006, KP
+		Description: Return the list of the names of the frames that have been rendered
+		"""
+		return self.frameList
+		
+	def setOutputPath(self, path):
+		"""
+		Created: 17.11.2004, KP
+		Description: Sets the path where the rendered frames are stored.
+		"""
+		self.dirname = path
+		   
+	def saveFrame(self, filename):
+		"""
+		Created: 22.02.2005, KP
+		Description: Saves a frame with a given name
+		"""
+		self.frameList.append(filename)
+		visualizer = self.visualizer
+		type = self.type
+		Logging.info("Saving screenshot to ", filename, kw = "visualizer")
+		comm = "visualizer.getCurrentMode().saveSnapshot(filename)"
+		eval(comm)
+			
+	def getFilenamePattern(self):
+		"""
+		Created: 27.04.2005, KP
+		Description: Returns output filename pattern
+		"""
+		return self.format
+		
+	def getFrameName(self):
+		"""
+		Created: 27.04.2005, KP
+		Description: Returns name used to construct the filenames
+		"""
+		return self.frameName
+			
+	def getFilename(self, frameNum):
+		"""
+		Created: 22.02.2005, KP
+		Description: Returns output filename of the frame we're rendering
+		"""
+		return self.format % (self.dirname, self.frameName, frameNum)
 
-    def getCenter(self,tp=-1):
-        """
-        Created: 22.02.2005, KP
-        Description: Returns the center of the requested dataset. If none is specified, the
-                     center of the current dataset is returned
-        """
-        if self.currentTimePoint<0 or not self.timePoints or tp>max(self.timePoints):
-            return (0,0,0)
-        if tp<0:
-            return self.currentData.GetCenter()
-        else:
-            return self.dataUnit.getTimepoint(tp).GetCenter()
-        
-    def getDimensions(self,tp=-1):
-        """
-        Created: 22.02.2005, KP
-        Description: Returns the dimensions of the requested dataset. If none is specified, the
-                     dimensions of the current dataset is returned
-        """    
-        if self.currentTimePoint<0 or not self.timePoints or tp>max(self.timePoints):
-            return (0,0,0)
-        if tp<0:
-            return self.dimensions
-        else:
-            return self.dataUnit.getTimepoint(tp).GetDimensions()
-            
-            
-    def updateDataset(self):
-        """
-        Created: 28.04.2005, KP
-        Description: Updates the dataset to the current timepoint
-        """
-        if self.visualizer:
-            self.visualizer.setTimepoint(self.currentTimePoint)
-            
-            
+	def getCenter(self, tp = -1):
+		"""
+		Created: 22.02.2005, KP
+		Description: Returns the center of the requested dataset. If none is specified, the
+					 center of the current dataset is returned
+		"""
+		if self.currentTimePoint < 0 or not self.timePoints or tp > max(self.timePoints):
+			return (0, 0, 0)
+		if tp < 0:
+			return self.currentData.GetCenter()
+		else:
+			return self.dataUnit.getTimepoint(tp).GetCenter()
+		
+	def getDimensions(self, tp = -1):
+		"""
+		Created: 22.02.2005, KP
+		Description: Returns the dimensions of the requested dataset. If none is specified, the
+					 dimensions of the current dataset is returned
+		"""    
+		if self.currentTimePoint < 0 or not self.timePoints or tp > max(self.timePoints):
+			return (0, 0, 0)
+		if tp < 0:
+			return self.dimensions
+		else:
+			return self.dataUnit.getTimepoint(tp).GetDimensions()
+			
+			
+	def updateDataset(self):
+		"""
+		Created: 28.04.2005, KP
+		Description: Updates the dataset to the current timepoint
+		"""
+		if self.visualizer:
+			self.visualizer.setTimepoint(self.currentTimePoint)
+			
+			

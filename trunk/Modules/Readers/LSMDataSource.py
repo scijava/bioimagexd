@@ -45,325 +45,325 @@ def getClass(): return LsmDataSource
 
 
 class LsmDataSource(DataSource.DataSource):
-    """
-    Created: 18.11.2004, KP
-    Description: Manages 4D data stored in an lsm-file
-    """
-    def __init__(self,filename="",channelNum=-1):
-        """
-        Created: 18.11.2004, KP
-        Description: Constructor
-        """
-        DataSource.DataSource.__init__(self)
-        # Name and path of the lsm-file:
-        self.filename = filename
-        self.timepoint=-1
-        self.shortname=os.path.basename(filename)
-        self.path=""
-        # An lsm-file may contain multiple channels. However, LsmDataSource only
-        # handles one channel. The following attribute indicates, which channel
-        # within the lsm-file is hadled by this LsmDataSource instance.
-        self.channelNum=channelNum
-        self.setPath(filename)
-        self.dataUnitSettings={}
-        # TODO: what is this?
-        self.count=0
-        self.timestamps = None
+	"""
+	Created: 18.11.2004, KP
+	Description: Manages 4D data stored in an lsm-file
+	"""
+	def __init__(self, filename = "", channelNum = -1):
+		"""
+		Created: 18.11.2004, KP
+		Description: Constructor
+		"""
+		DataSource.DataSource.__init__(self)
+		# Name and path of the lsm-file:
+		self.filename = filename
+		self.timepoint = -1
+		self.shortname = os.path.basename(filename)
+		self.path = ""
+		# An lsm-file may contain multiple channels. However, LsmDataSource only
+		# handles one channel. The following attribute indicates, which channel
+		# within the lsm-file is hadled by this LsmDataSource instance.
+		self.channelNum = channelNum
+		self.setPath(filename)
+		self.dataUnitSettings = {}
+		# TODO: what is this?
+		self.count = 0
+		self.timestamps = None
 
-        self.dimensions=None
-        self.spacing=None
-        self.origin=None
-        self.voxelsize=None
-        # vtkLSMReader is used to do the actual reading:
-        self.reader=vtk.vtkLSMReader()
-        
-        #self.reader.DebugOn()
-        self.reader.AddObserver("ProgressEvent",self.updateProgress)
-        # If a filename was specified, the file is loaded
-        if self.filename:
-            self.path=os.path.dirname(filename)
-            Logging.info("LsmDataSource created with file %s and channelNum=%d"%\
-            (self.filename,channelNum),kw="lsmreader")
-            try:
-                f=open(filename)
-                f.close()
-            except IOError, ex:
-                Logging.error("Failed to open LSM File",
-                "Failed to open file %s for reading: %s"%(filename,str(ex)))
-                return
-                
-            self.reader.SetFileName(self.filename)
-            self.reader.SetUpdateChannel(channelNum)
-            #print "Update information..."
-            self.reader.UpdateInformation()
-            #print "done"
-            self.originalScalarRange = None
-            self.getBitDepth()
-            self.originalDimensions = self.reader.GetDimensions()[0:3]
-            if self.reader.IsCompressed():
-                raise Logging.GUIError("Cannot handle compressed dataset","The dataset you've selected (%s) is compressed. The LSM reader cannot currently read compressed data."%filename)
-            self.updateProgress(None,None)
-            
-    def updateProgress(self,obj,evt):
-        """
-        Created: 13.07.2004, KP
-        Description: Sends progress update event
-        """        
-        if not obj:
-            progress=1.0
-        else:
-            progress=obj.GetProgress()
-        if self.channelNum>=0:
-            msg="Reading channel %d of %s"%(self.channelNum+1,self.shortname)
-            if self.timepoint>=0:
-                 msg+="(timepoint %d / %d)"%(self.timepoint+1,self.dimensions[3])
-        else:
-            msg="Reading %s..."%self.shortname
-        notinvtk=0
-        
-        if progress>=1.0:notinvtk=1
-        scripting.inIO = (progress < 1.0)
+		self.dimensions = None
+		self.spacing = None
+		self.origin = None
+		self.voxelsize = None
+		# vtkLSMReader is used to do the actual reading:
+		self.reader = vtk.vtkLSMReader()
+		
+		#self.reader.DebugOn()
+		self.reader.AddObserver("ProgressEvent", self.updateProgress)
+		# If a filename was specified, the file is loaded
+		if self.filename:
+			self.path = os.path.dirname(filename)
+			Logging.info("LsmDataSource created with file %s and channelNum=%d"%\
+			(self.filename, channelNum), kw = "lsmreader")
+			try:
+				f = open(filename)
+				f.close()
+			except IOError, ex:
+				Logging.error("Failed to open LSM File",
+				"Failed to open file %s for reading: %s" % (filename, str(ex)))
+				return
+				
+			self.reader.SetFileName(self.filename)
+			self.reader.SetUpdateChannel(channelNum)
+			#print "Update information..."
+			self.reader.UpdateInformation()
+			#print "done"
+			self.originalScalarRange = None
+			self.getBitDepth()
+			self.originalDimensions = self.reader.GetDimensions()[0:3]
+			if self.reader.IsCompressed():
+				raise Logging.GUIError("Cannot handle compressed dataset", "The dataset you've selected (%s) is compressed. The LSM reader cannot currently read compressed data." % filename)
+			self.updateProgress(None, None)
+			
+	def updateProgress(self, obj, evt):
+		"""
+		Created: 13.07.2004, KP
+		Description: Sends progress update event
+		"""        
+		if not obj:
+			progress = 1.0
+		else:
+			progress = obj.GetProgress()
+		if self.channelNum >= 0:
+			msg = "Reading channel %d of %s" % (self.channelNum + 1, self.shortname)
+			if self.timepoint >= 0:
+				 msg += "(timepoint %d / %d)" % (self.timepoint + 1, self.dimensions[3])
+		else:
+			msg = "Reading %s..." % self.shortname
+		notinvtk = 0
+		
+		if progress >= 1.0:notinvtk = 1
+		scripting.inIO = (progress < 1.0)
 #        messenger.send(None,"update_progress",progress,msg,notinvtk)
-        #print msg     
-        
-    def getTimeStamp(self, timepoint):
-        """
-        Created: 02.07.2007, KP
-        Description: return the timestamp for given timepoint
-        """
-        if not self.reader:
-            return timepoint
-        if not self.timestamps:
-            self.timestamps = self.reader.GetTimeStampInformation()
-        if timepoint > self.timestamps.GetSize():
-            return 0
-        v = self.timestamps.GetValue(timepoint)
-        v0 = self.timestamps.GetValue(0)
-        return (v-v0)
-        
-    def getDataSetCount(self):
-        """
-        Created: 03.11.2004, JM
-        Description: Returns the number of individual DataSets (=time points)
-        managed by this DataSource
-        """
-        if not self.dimensions:
-            self.getDimensions()
-        return self.dimensions[3]
+		#print msg     
+		
+	def getTimeStamp(self, timepoint):
+		"""
+		Created: 02.07.2007, KP
+		Description: return the timestamp for given timepoint
+		"""
+		if not self.reader:
+			return timepoint
+		if not self.timestamps:
+			self.timestamps = self.reader.GetTimeStampInformation()
+		if timepoint > self.timestamps.GetSize():
+			return 0
+		v = self.timestamps.GetValue(timepoint)
+		v0 = self.timestamps.GetValue(0)
+		return (v - v0)
+		
+	def getDataSetCount(self):
+		"""
+		Created: 03.11.2004, JM
+		Description: Returns the number of individual DataSets (=time points)
+		managed by this DataSource
+		"""
+		if not self.dimensions:
+			self.getDimensions()
+		return self.dimensions[3]
   
-    def getBitDepth(self):
-        """
-        Created: 07.08.2006, KP
-        Description: Return the bit depth of data
-        """
-        if not self.bitdepth:
-            #self.reader.DebugOn()
-            #self.reader.Update()
-            d=self.reader.GetOutput().GetScalarType()
-            #self.reader.ExecuteInformation()
-                        
-            #self.reader.DebugOff()
-            #print "\n\n\n**** Datatype=",d
-            if d==3:
-                self.bitdepth = 8
-                if not self.originalScalarRange:
-                    self.originalScalarRange = (0,255)
-            if d==5:
-                self.bitdepth = 12
-                if not self.originalScalarRange:
-                    self.originalScalarRange = (0,4095)
-        return self.bitdepth
-        
-    def getScalarRange(self):
-        """
-        Created: 28.05.2005, KP
-        Description: Return the bit depth of data
-        """        
-        if not self.scalarRange:            
-            #data=self.getDataSet(0,raw=1)
-            #self.scalarRange=data.GetScalarRange()        
-            self.scalarRange = (0,2**self.bitdepth-1)
-        return self.scalarRange
+	def getBitDepth(self):
+		"""
+		Created: 07.08.2006, KP
+		Description: Return the bit depth of data
+		"""
+		if not self.bitdepth:
+			#self.reader.DebugOn()
+			#self.reader.Update()
+			d = self.reader.GetOutput().GetScalarType()
+			#self.reader.ExecuteInformation()
+						
+			#self.reader.DebugOff()
+			#print "\n\n\n**** Datatype=",d
+			if d == 3:
+				self.bitdepth = 8
+				if not self.originalScalarRange:
+					self.originalScalarRange = (0, 255)
+			if d == 5:
+				self.bitdepth = 12
+				if not self.originalScalarRange:
+					self.originalScalarRange = (0, 4095)
+		return self.bitdepth
+		
+	def getScalarRange(self):
+		"""
+		Created: 28.05.2005, KP
+		Description: Return the bit depth of data
+		"""        
+		if not self.scalarRange:            
+			#data=self.getDataSet(0,raw=1)
+			#self.scalarRange=data.GetScalarRange()        
+			self.scalarRange = (0, 2 ** self.bitdepth - 1)
+		return self.scalarRange
 
-    def getDimensions(self):
-        """
-        Created: 14.12.2004, KP
-        Description: Returns the (x,y,z) dimensions of the datasets this 
-                     dataunit contains
-        """
-        if self.resampleDims:
-            return self.resampleDims
-        if not self.dimensions or self.dimensions == (0,0,0,0,0):
-            self.dimensions=self.reader.GetDimensions()
-            #print "Got dimensions from LSM reader=",self.dimensions
-            
-        return self.dimensions[0:3]
+	def getDimensions(self):
+		"""
+		Created: 14.12.2004, KP
+		Description: Returns the (x,y,z) dimensions of the datasets this 
+					 dataunit contains
+		"""
+		if self.resampleDims:
+			return self.resampleDims
+		if not self.dimensions or self.dimensions == (0, 0, 0, 0, 0):
+			self.dimensions = self.reader.GetDimensions()
+			#print "Got dimensions from LSM reader=",self.dimensions
+			
+		return self.dimensions[0:3]
 
-    def getSpacing(self):
-        
-        if not self.spacing:
-            a,b,c=self.reader.GetVoxelSizes()
-            Logging.info("Voxel sizes = ",a,b,c,kw="lsmreader")
-            self.spacing=[1,b/a,c/a]
-        return self.spacing
-        
-        
-    def getVoxelSize(self):
-        if not self.voxelsize:
-            self.voxelsize=self.reader.GetVoxelSizes()
-        return self.voxelsize
-            
-        
-    def getDataSet(self, i,raw=0):
-        """
-        Created: 18.11.2004, KP
-        Description: Returns the timepoint at the specified index
-        Parameters:   i       The timepoint to retrieve
-                      raw     A flag indicating that the data is not to be processed in any way
-        """
-        # No timepoint can be returned, if this LsmDataSource instance does not
-        #  know what channel it is supposed to handle within the lsm-file.
-        if self.channelNum==-1:
-            Logging.error("No channel number specified",
-            "LSM Data Source got a request for dataset from timepoint "
-            "%d, but no channel number has been specified"%(i))
-            return None
-    
-        #Logging.backtrace()
-        self.timepoint=i
-        #data=self.reader.GetTimePointOutput(i, self.channelNum)
-        self.reader.SetUpdateChannel(self.channelNum)
-        self.reader.SetUpdateTimePoint(i)
-        data = self.reader.GetOutput()
-        #if not self.scalarRange:
-        #    self.scalarRange = data.GetScalarRange()
-        #self.reader.Update()
+	def getSpacing(self):
+		
+		if not self.spacing:
+			a, b, c = self.reader.GetVoxelSizes()
+			Logging.info("Voxel sizes = ", a, b, c, kw = "lsmreader")
+			self.spacing = [1, b / a, c / a]
+		return self.spacing
+		
+		
+	def getVoxelSize(self):
+		if not self.voxelsize:
+			self.voxelsize = self.reader.GetVoxelSizes()
+		return self.voxelsize
+			
+		
+	def getDataSet(self, i, raw = 0):
+		"""
+		Created: 18.11.2004, KP
+		Description: Returns the timepoint at the specified index
+		Parameters:   i       The timepoint to retrieve
+					  raw     A flag indicating that the data is not to be processed in any way
+		"""
+		# No timepoint can be returned, if this LsmDataSource instance does not
+		#  know what channel it is supposed to handle within the lsm-file.
+		if self.channelNum == -1:
+			Logging.error("No channel number specified",
+			"LSM Data Source got a request for dataset from timepoint "
+			"%d, but no channel number has been specified" % (i))
+			return None
+	
+		#Logging.backtrace()
+		self.timepoint = i
+		#data=self.reader.GetTimePointOutput(i, self.channelNum)
+		self.reader.SetUpdateChannel(self.channelNum)
+		self.reader.SetUpdateTimePoint(i)
+		data = self.reader.GetOutput()
+		#if not self.scalarRange:
+		#    self.scalarRange = data.GetScalarRange()
+		#self.reader.Update()
 
-        #self.originalScalarRange=data.GetScalarRange()
-        
-        if raw:
-            return data
-        data=self.getResampledData(data,i)            
-        if self.explicitScale or (data.GetScalarType()!=3 and not raw):
-            data=self.getIntensityScaledData(data)
-        #data.ReleaseDataFlagOff()
-        return data
-        
-    def getFileName(self):
-        """
-        Created: 21.07.2005
-        Description: Return the file name
-        """    
-        return self.filename
-        
-    def loadFromFile(self,filename):
-        """
-        Created: 18.11.2004, KP
-        Description: Loads all channels from a specified LSM file to DataUnit-
-                     instances and returns them as a list.
-        Parameters:   filename  The .lsm-file to be loaded
-        """
-        self.filename=filename
-        self.shortname=os.path.basename(filename)
-        self.path=os.path.dirname(filename)
-        self.reader.SetFileName(filename)
-        
-        try:
-            f=open(filename)
-            f.close()
-        except IOError, ex:
-            Logging.error("Failed to open LSM File",
-            "Failed to open file %s for reading: %s"%(filename,str(ex)))
+		#self.originalScalarRange=data.GetScalarRange()
+		
+		if raw:
+			return data
+		data = self.getResampledData(data, i)            
+		if self.explicitScale or (data.GetScalarType() != 3 and not raw):
+			data = self.getIntensityScaledData(data)
+		#data.ReleaseDataFlagOff()
+		return data
+		
+	def getFileName(self):
+		"""
+		Created: 21.07.2005
+		Description: Return the file name
+		"""    
+		return self.filename
+		
+	def loadFromFile(self, filename):
+		"""
+		Created: 18.11.2004, KP
+		Description: Loads all channels from a specified LSM file to DataUnit-
+					 instances and returns them as a list.
+		Parameters:   filename  The .lsm-file to be loaded
+		"""
+		self.filename = filename
+		self.shortname = os.path.basename(filename)
+		self.path = os.path.dirname(filename)
+		self.reader.SetFileName(filename)
+		
+		try:
+			f = open(filename)
+			f.close()
+		except IOError, ex:
+			Logging.error("Failed to open LSM File",
+			"Failed to open file %s for reading: %s" % (filename, str(ex)))
 
-        #self.reader.Update()
-        self.reader.UpdateInformation()
-        if self.reader.IsCompressed():
-            raise Logging.GUIError("Cannot handle compressed dataset","The dataset you've selected (%s) is compressed. The LSM reader cannot currently read compressed data."%filename)        
-        dataunits=[]
-        channelNum=self.reader.GetNumberOfChannels()
-        self.timepointAmnt=channelNum
-        Logging.info("There are %d channels"%channelNum,kw="lsmreader")
-        for i in range(channelNum):
-            # We create a datasource with specific channel number that
-            #  we can associate with the dataunit
-            datasource=LsmDataSource(filename,i)
-            datasource.setPath(filename)
-            dataunit=DataUnit.DataUnit()
-            dataunit.setDataSource(datasource)
-            dataunits.append(dataunit)
-            
-        return dataunits
+		#self.reader.Update()
+		self.reader.UpdateInformation()
+		if self.reader.IsCompressed():
+			raise Logging.GUIError("Cannot handle compressed dataset", "The dataset you've selected (%s) is compressed. The LSM reader cannot currently read compressed data." % filename)        
+		dataunits = []
+		channelNum = self.reader.GetNumberOfChannels()
+		self.timepointAmnt = channelNum
+		Logging.info("There are %d channels" % channelNum, kw = "lsmreader")
+		for i in range(channelNum):
+			# We create a datasource with specific channel number that
+			#  we can associate with the dataunit
+			datasource = LsmDataSource(filename, i)
+			datasource.setPath(filename)
+			dataunit = DataUnit.DataUnit()
+			dataunit.setDataSource(datasource)
+			dataunits.append(dataunit)
+			
+		return dataunits
 
 
-    def getColorTransferFunction(self):
-        """
-        Created: 26.04.2005, KP
-        Description: Returns the ctf of the dataset series which this datasource
-                     operates on
-        """
-        if not self.ctf:
-            Logging.info("Using ctf based on LSM Color",kw="lsmreader")
-            ctf = vtk.vtkColorTransferFunction()
-            r=self.reader.GetChannelColorComponent(self.channelNum,0)
-            g=self.reader.GetChannelColorComponent(self.channelNum,1)
-            b=self.reader.GetChannelColorComponent(self.channelNum,2)
-            #print "Got color components=",r,g,b
-            r/=255.0
-            g/=255.0
-            b/=255.0
-            minval,maxval = self.getScalarRange()
-            
-            if self.explicitScale:
-                shift = self.intensityShift
-                if self.intensityShift:
-                    maxval+=self.intensityShift
-                    #print "Maximum value after being shifted=",maxval
-                scale = self.intensityScale
-                if not scale:
-                    scale = 255.0 / maxval
-                maxval*=scale
-                #print "Maximum value after being scaled=",maxval
-            ctf.AddRGBPoint(0,0,0,0)
-            ctf.AddRGBPoint(maxval,r,g,b)
-            self.ctf = ctf
-        return self.ctf
-        
-    def resetColorTransferFunction(self):
-        """
-        Created: 12.10.2006, KP
-        Description: A method that will reset the CTF from the datasource.
-                     This is useful e.g. when scaling the intensities of the    
-                     dataset
-        """
-        self.scalarRange = None
-        self.ctf = None
-        return self.getColorTransferFunction()
-        
-        
-    def getName(self):
-        """
-        Created: 18.11.2004, KP
-        Description: Returns the name of the dataset series which this datasource
-                     operates on
-        """
-        if self.channelNum<0:
-            Logging.error("No channel number specified",
-            "LSM Data Source got a request for the name of the channel, "
-            "but no channel number has been specified")
-            return ""
-        return self.reader.GetChannelName(self.channelNum)
+	def getColorTransferFunction(self):
+		"""
+		Created: 26.04.2005, KP
+		Description: Returns the ctf of the dataset series which this datasource
+					 operates on
+		"""
+		if not self.ctf:
+			Logging.info("Using ctf based on LSM Color", kw = "lsmreader")
+			ctf = vtk.vtkColorTransferFunction()
+			r = self.reader.GetChannelColorComponent(self.channelNum, 0)
+			g = self.reader.GetChannelColorComponent(self.channelNum, 1)
+			b = self.reader.GetChannelColorComponent(self.channelNum, 2)
+			#print "Got color components=",r,g,b
+			r /= 255.0
+			g /= 255.0
+			b /= 255.0
+			minval, maxval = self.getScalarRange()
+			
+			if self.explicitScale:
+				shift = self.intensityShift
+				if self.intensityShift:
+					maxval += self.intensityShift
+					#print "Maximum value after being shifted=",maxval
+				scale = self.intensityScale
+				if not scale:
+					scale = 255.0 / maxval
+				maxval *= scale
+				#print "Maximum value after being scaled=",maxval
+			ctf.AddRGBPoint(0, 0, 0, 0)
+			ctf.AddRGBPoint(maxval, r, g, b)
+			self.ctf = ctf
+		return self.ctf
+		
+	def resetColorTransferFunction(self):
+		"""
+		Created: 12.10.2006, KP
+		Description: A method that will reset the CTF from the datasource.
+					 This is useful e.g. when scaling the intensities of the    
+					 dataset
+		"""
+		self.scalarRange = None
+		self.ctf = None
+		return self.getColorTransferFunction()
+		
+		
+	def getName(self):
+		"""
+		Created: 18.11.2004, KP
+		Description: Returns the name of the dataset series which this datasource
+					 operates on
+		"""
+		if self.channelNum < 0:
+			Logging.error("No channel number specified",
+			"LSM Data Source got a request for the name of the channel, "
+			"but no channel number has been specified")
+			return ""
+		return self.reader.GetChannelName(self.channelNum)
 
-    def uniqueId(self):
-        """
-        Created: 07.02.2007, KP
-        Description: return a string identifying the dataset
-        """
-        return self.getFileName()+"|"+str(self.channelNum)
+	def uniqueId(self):
+		"""
+		Created: 07.02.2007, KP
+		Description: return a string identifying the dataset
+		"""
+		return self.getFileName() + "|" + str(self.channelNum)
 
-    def __str__(self):
-        """
-        Created: 18.11.2004, KP
-        Description: Returns the basic information of this instance as a string
-        """
-        return "LSM DataSource (%s, channel %d)"%(self.filename, self.channelNum)
+	def __str__(self):
+		"""
+		Created: 18.11.2004, KP
+		Description: Returns the basic information of this instance as a string
+		"""
+		return "LSM DataSource (%s, channel %d)" % (self.filename, self.channelNum)
 
