@@ -41,119 +41,119 @@ import scripting as bxd
 
 
 class ProcessingManager(TimepointSelection):
-    """
-    Created: 03.11.2004, KP
-    Description: A dialog for selecting timepoints for processing
-    """
-    def __init__(self,parent,operation):
-        """
-        Created: 10.11.2004
-        Description: Initialization
-        """
-        TimepointSelection.__init__(self,parent)
-        self.progressDialog=None
-        self.operationName=operation
-        bxd.processingManager = self
-        
-        #self.timepointLbl.SetLabel("Select Time Points to be Processed")
-        self.SetTitle("Processing - %s"%operation)
-        
-        self.Layout()
-        self.mainsizer.Fit(self)
+	"""
+	Created: 03.11.2004, KP
+	Description: A dialog for selecting timepoints for processing
+	"""
+	def __init__(self, parent, operation):
+		"""
+		Created: 10.11.2004
+		Description: Initialization
+		"""
+		TimepointSelection.__init__(self, parent)
+		self.progressDialog = None
+		self.operationName = operation
+		bxd.processingManager = self
+		
+		#self.timepointLbl.SetLabel("Select Time Points to be Processed")
+		self.SetTitle("Processing - %s" % operation)
+		
+		self.Layout()
+		self.mainsizer.Fit(self)
 
-    def updateOutputFormat(self,event):
-        """
-        Created: 16.03.2005, KP
-        Description: A method to enable/disable the image format drop down menu
-        """
-        self.outputFormat.menu.Enable(self.checkBox.GetValue())
-    
-        
-    def createButtonBox(self):
-        """
-        Created: 03.2.2005, KP
-        Description: Creates the standard control buttons
-        """
-        TimepointSelection.createButtonBox(self)
+	def updateOutputFormat(self, event):
+		"""
+		Created: 16.03.2005, KP
+		Description: A method to enable/disable the image format drop down menu
+		"""
+		self.outputFormat.menu.Enable(self.checkBox.GetValue())
+	
+		
+	def createButtonBox(self):
+		"""
+		Created: 03.2.2005, KP
+		Description: Creates the standard control buttons
+		"""
+		TimepointSelection.createButtonBox(self)
 
-        self.actionBtn.SetLabel("Process Time Points")
-        self.actionBtn.Bind(wx.EVT_BUTTON,self.onDoProcessing)
-    
-    def updateProgressMeter(self,obj,eventt,tp,nth,total):
-        """
-        Created: 15.11.2004, KP
-        Description: A callback for the dataunit to give info on the
-                     progress of the task
-        Parameters:
-                tp      The number of the timepoint the module is processing
-                nth     This is the Nth timepoint to be processed
-                total   There are a total of this many timepoints to be processed
-        """
-        if not self.progressDialog:
-            self.progressDialog=wx.ProgressDialog("Processing data","Timepoint   (  /  ) (0%) Time remaining:   mins   seconds",
-            maximum=total,parent=self,
-            style=wx.PD_ELAPSED_TIME|wx.PD_CAN_ABORT|wx.PD_APP_MODAL|wx.PD_AUTO_HIDE)
-            
-        t2=time.time()
-        diff=t2-self.t1
-        self.t1=t2
-        totsecs=diff*(total-nth)
-        print "Diff=%f, total=%d, n=%d, secs=%d"%(diff,total,nth,totsecs)
-        mins=totsecs/60
-        secs=totsecs%60
-        self.progressDialog.Update(nth,"Timepoint %d (%d/%d) (%d%%) Time remaining: "
-        "%d mins %d seconds"%(tp+1,nth,total,100*(1.0*nth)/total,mins,secs))
-        if nth==total:
-            self.progressDialog.Destroy()
-            
-        wx.GetApp().Yield(1)
-        
-    def onDoProcessing(self, event):
-        """
-        Created: 09.02.2005, KP
-        Description: A method that tells the dataunit to process the selected timepoints
-        """          
-        self.Show(0)
-        name=self.dataUnit.getName()
+		self.actionBtn.SetLabel("Process Time Points")
+		self.actionBtn.Bind(wx.EVT_BUTTON, self.onDoProcessing)
+	
+	def updateProgressMeter(self, obj, eventt, tp, nth, total):
+		"""
+		Created: 15.11.2004, KP
+		Description: A callback for the dataunit to give info on the
+					 progress of the task
+		Parameters:
+				tp      The number of the timepoint the module is processing
+				nth     This is the Nth timepoint to be processed
+				total   There are a total of this many timepoints to be processed
+		"""
+		if not self.progressDialog:
+			self.progressDialog = wx.ProgressDialog("Processing data", "Timepoint   (  /  ) (0%) Time remaining:   mins   seconds",
+			maximum = total, parent = self,
+			style = wx.PD_ELAPSED_TIME | wx.PD_CAN_ABORT | wx.PD_APP_MODAL | wx.PD_AUTO_HIDE)
+			
+		t2 = time.time()
+		diff = t2 - self.t1
+		self.t1 = t2
+		totsecs = diff * (total - nth)
+		print "Diff=%f, total=%d, n=%d, secs=%d" % (diff, total, nth, totsecs)
+		mins = totsecs / 60
+		secs = totsecs % 60
+		self.progressDialog.Update(nth, "Timepoint %d (%d/%d) (%d%%) Time remaining: "
+		"%d mins %d seconds" % (tp + 1, nth, total, 100 * (1.0 * nth) / total, mins, secs))
+		if nth == total:
+			self.progressDialog.Destroy()
+			
+		wx.GetApp().Yield(1)
+		
+	def onDoProcessing(self, event):
+		"""
+		Created: 09.02.2005, KP
+		Description: A method that tells the dataunit to process the selected timepoints
+		"""          
+		self.Show(0)
+		name = self.dataUnit.getName()
 
-        filename=Dialogs.askSaveAsFileName(self,"Save %s dataset as"%self.operationName,"%s.bxd"%name,"BioImageXD Dataset (*.bxd)|*.bxd")
-        filename=filename.replace("\\","\\\\")
-        do_cmd = "bxd.processingManager.doProcessing('%s')"%filename
-        undo_cmd = ""
-        
-        cmd=Command.Command(Command.GUI_CMD,None,None,do_cmd,undo_cmd,desc="Process the selected timepoints")
-        cmd.run()        
-        
-    def doProcessing(self,filename):
-        """
-        Created: 18.07.2006, KP
-        Description: A method that tells the dataunit to process the selected timepoints
-        """    
-        self.status=wx.ID_CANCEL
-                
-        #name=self.operationName+" ("
-        #name+=", ".join([x.getName() for x in self.dataUnit.getSourceDataUnits()])
-        #name+=")"
-        
-        
-        name=os.path.basename(filename)
-        name=".".join(name.split(".")[:-1])
-        self.dataUnit.setName(name)
-        
-        
-        if not filename:
-            return
-        self.status=wx.ID_OK
-        # Set file path for returning to the mainwindow
-        self.filePath=filename
-        self.t1=time.time()
-        
-        tps=self.getSelectedTimepoints()
-        messenger.connect(None,"update_processing_progress",self.updateProgressMeter)
-        try:
-            filename = self.dataUnit.doProcessing(filename,timepoints=tps)
-        except GUIError,ex:
-            ex.show()
-        # then we close this window...
-        messenger.send(None,"load_dataunit",filename)
-        self.Close()
+		filename = Dialogs.askSaveAsFileName(self, "Save %s dataset as" % self.operationName, "%s.bxd" % name, "BioImageXD Dataset (*.bxd)|*.bxd")
+		filename = filename.replace("\\", "\\\\")
+		do_cmd = "bxd.processingManager.doProcessing('%s')" % filename
+		undo_cmd = ""
+		
+		cmd = Command.Command(Command.GUI_CMD, None, None, do_cmd, undo_cmd, desc = "Process the selected timepoints")
+		cmd.run()        
+		
+	def doProcessing(self, filename):
+		"""
+		Created: 18.07.2006, KP
+		Description: A method that tells the dataunit to process the selected timepoints
+		"""    
+		self.status = wx.ID_CANCEL
+				
+		#name=self.operationName+" ("
+		#name+=", ".join([x.getName() for x in self.dataUnit.getSourceDataUnits()])
+		#name+=")"
+		
+		
+		name = os.path.basename(filename)
+		name = ".".join(name.split(".")[:-1])
+		self.dataUnit.setName(name)
+		
+		
+		if not filename:
+			return
+		self.status = wx.ID_OK
+		# Set file path for returning to the mainwindow
+		self.filePath = filename
+		self.t1 = time.time()
+		
+		tps = self.getSelectedTimepoints()
+		messenger.connect(None, "update_processing_progress", self.updateProgressMeter)
+		try:
+			filename = self.dataUnit.doProcessing(filename, timepoints = tps)
+		except GUIError, ex:
+			ex.show()
+		# then we close this window...
+		messenger.send(None, "load_dataunit", filename)
+		self.Close()

@@ -80,7 +80,7 @@ ID_ZOOM_OUT         =31138
 ID_ZOOM_IN          =31139
 ID_ZOOM_TO_FIT      =31140
 ID_ZOOM_OBJECT      =31141
-        
+		
 ID_PREFERENCES      =31142
 ID_ADD_SPLINE       =31143
 ID_ADD_TIMEPOINT    =31144
@@ -94,12 +94,12 @@ ID_RENDER_PREVIEW   =31151
 ID_SAVE_PROJECT     =31152
 ID_SET_TRACK        =31153
 ID_SPLINE_CLOSED    =31154
-ID_SPLINE_SET_BEGIN =31155
+ID_SPLINE_SET_BEGIN = 31155
 ID_SPLINE_SET_END   =31156
 ID_SET_TRACK_TOTAL  =31157
 ID_CLOSE_PROJECT    =31158
 ID_MAINTAIN_UP      =31159
-ID_SET_TRACK_RELATIVE=31160
+ID_SET_TRACK_RELATIVE = 31160
 ID_ADD_SCALE        =31161
 ID_DRAG_ANNOTATION  =31162
 ID_ROI_CIRCLE       =31163
@@ -154,7 +154,7 @@ ID_ITEM_ROTATE_CW   =31202
 ID_ITEM_ROTATE_CCW  =31203
 ID_FIT_TRACK_RATIO  =31204
 ID_DELETE_ITEM      =31205
-    
+	
 ID_VIEW_SCRIPTEDIT  =31206
 ID_RECORD_SCRIPT    =31207
 ID_STOP_RECORD      =31208
@@ -166,9 +166,9 @@ ID_COMMAND_HISTORY  =31212
 
 ID_SAVE_SCRIPT      =31213
 ID_LOAD_SCRIPT      =31214
-ID_CLOSE_SCRIPTEDITOR=31215
+ID_CLOSE_SCRIPTEDITOR = 31215
 
-ID_IMMEDIATE_RENDER =31216
+ID_IMMEDIATE_RENDER = 31216
 
 ID_MANIPULATE       =31217
 ID_SAVE_DATASET      =31218
@@ -200,308 +200,308 @@ ID_REWIND_EVENTS           =31235
 ID_REPORT_BUG       =31236
 
 class MenuManager:
-    """
-    Created: 29.05.2005, KP
-    Description: A class for managing the menu
-    """
-    instance=None
-    mainwin=None
-    mapping={}
-    def __init__(self,mainwin,**kws):
-        """
-        Method: __init__(parent,id,app)
-        Created: 03.11.2004, KP
-        Description: Initialization
-        """
-        self.text=1
-        self.separators={}
-        if kws.has_key("text"):
-           self.text=kws["text"]
-        self.mainwin=mainwin
-        # This is the menubar object that holds all the menus
-        self.mapping={}
-        self.menus={}
-        self.visualizer=None
-        self.itemBar = None
-        self.mainToolbar=None
-        self.toolIds=[]
-        self.tools={}
-        self.channelIds=[]
-        
-        self.commands = []
-        
-        self.showToolNames=0
-        
-    def getCommands(self):
-        """
-        Created: 13.02.2006, KP
-        Description: Return the list of commands
-        """     
-        return self.commands
-        
-        
-    def addCommand(self,cmd):
-        """
-        Method: addCommand
-        Created: 13.02.2006, KP
-        Description: Add a command to the list of executed commands
-        """    
-        if cmd not in self.commands:
-            self.commands.append(cmd)
-        
-    def getLastCommand(self):
-        """
-        Method: getLastCommand
-        Created: 13.02.2006, KP
-        Description: Return the last executed command
-        """        
-        return self.commands[-1]
-        
-    def setUndoedCommand(self,cmd):
-        """
-        Method: setUndoedCommand
-        Created: 13.02.2006, KP
-        Description: Set the last command that was undoed
-        """        
-        self.undoCmd=cmd
-    
-    def getUndoedCommand(self):
-        """
-        Method: getUndoedCommand
-        Created: 13.02.2006, KP
-        Description: Return the last undoed command
-        """        
-        return self.undoCmd
-        
-        
-    def setMenuBar(self,menubar):
-        """
-        Method: setMenuBar
-        Created: 19.06.2005, KP
-        Description: Set the menubar
-        """
-        self.menubar=menubar
+	"""
+	Created: 29.05.2005, KP
+	Description: A class for managing the menu
+	"""
+	instance = None
+	mainwin = None
+	mapping = {}
+	def __init__(self, mainwin, **kws):
+		"""
+		Method: __init__(parent,id,app)
+		Created: 03.11.2004, KP
+		Description: Initialization
+		"""
+		self.text = 1
+		self.separators = {}
+		if kws.has_key("text"):
+		   self.text = kws["text"]
+		self.mainwin = mainwin
+		# This is the menubar object that holds all the menus
+		self.mapping = {}
+		self.menus = {}
+		self.visualizer = None
+		self.itemBar = None
+		self.mainToolbar = None
+		self.toolIds = []
+		self.tools = {}
+		self.channelIds = []
+		
+		self.commands = []
+		
+		self.showToolNames = 0
+		
+	def getCommands(self):
+		"""
+		Created: 13.02.2006, KP
+		Description: Return the list of commands
+		"""     
+		return self.commands
+		
+		
+	def addCommand(self, cmd):
+		"""
+		Method: addCommand
+		Created: 13.02.2006, KP
+		Description: Add a command to the list of executed commands
+		"""    
+		if cmd not in self.commands:
+			self.commands.append(cmd)
+		
+	def getLastCommand(self):
+		"""
+		Method: getLastCommand
+		Created: 13.02.2006, KP
+		Description: Return the last executed command
+		"""        
+		return self.commands[-1]
+		
+	def setUndoedCommand(self, cmd):
+		"""
+		Method: setUndoedCommand
+		Created: 13.02.2006, KP
+		Description: Set the last command that was undoed
+		"""        
+		self.undoCmd = cmd
+	
+	def getUndoedCommand(self):
+		"""
+		Method: getUndoedCommand
+		Created: 13.02.2006, KP
+		Description: Return the last undoed command
+		"""        
+		return self.undoCmd
+		
+		
+	def setMenuBar(self, menubar):
+		"""
+		Method: setMenuBar
+		Created: 19.06.2005, KP
+		Description: Set the menubar
+		"""
+		self.menubar = menubar
 
-    def setMainToolbar(self,bar):
-        """
-        Method: setMenuBar
-        Created: 19.06.2005, KP
-        Description: Set the menubar
-        """
-        self.mainToolbar=bar       
-    def removeSeparator(self,sepid):
-        """
-        Method: removeSeparator
-        Created: 02.09.2005, KP
-        Description: delete a separator
-        """    
-        menu=self.menus[self.mapping[sepid]]
-        menu.RemoveItem(self.separators[sepid])
-        
-    def addSeparator(self,menuname,sepid=None,before=None):
-        """
-        Method: addSeparator(menuname)
-        Created: 19.06.2005, KP
-        Description: add a separator
-        """
-        if not before:
-            if not sepid:
-                self.menus[menuname].AppendSeparator()
-            else:
-                
-                item=wx.MenuItem(self.menus[menuname],wx.ID_SEPARATOR,kind=wx.ITEM_SEPARATOR)
-                self.separators[sepid]=item
-                self.menus[menuname].Append(item)
-                self.mapping[sepid]=menuname
-        else:
-            menu=self.menus[menuname]
-            # Find the position where the item belongs            
-            k=0
-            for i in range(0,319):
-                if menu.FindItemByPosition(i).GetId()==before:
-                    k=i
-                    break
-            if not sepid:
-                menu.InsertSeparator(k)
-            else:
-                item=wx.MenuItem(self.menus[menuname],wx.ID_SEPARATOR,kind=wx.ITEM_SEPARATOR)
-                self.separators[sepid]=item
-                
-                self.menus[menuname].InsertItem(k,item)
-                self.mapping[sepid]=menuname                
+	def setMainToolbar(self, bar):
+		"""
+		Method: setMenuBar
+		Created: 19.06.2005, KP
+		Description: Set the menubar
+		"""
+		self.mainToolbar = bar       
+	def removeSeparator(self, sepid):
+		"""
+		Method: removeSeparator
+		Created: 02.09.2005, KP
+		Description: delete a separator
+		"""    
+		menu = self.menus[self.mapping[sepid]]
+		menu.RemoveItem(self.separators[sepid])
+		
+	def addSeparator(self, menuname, sepid = None, before = None):
+		"""
+		Method: addSeparator(menuname)
+		Created: 19.06.2005, KP
+		Description: add a separator
+		"""
+		if not before:
+			if not sepid:
+				self.menus[menuname].AppendSeparator()
+			else:
+				
+				item = wx.MenuItem(self.menus[menuname], wx.ID_SEPARATOR, kind = wx.ITEM_SEPARATOR)
+				self.separators[sepid] = item
+				self.menus[menuname].Append(item)
+				self.mapping[sepid] = menuname
+		else:
+			menu = self.menus[menuname]
+			# Find the position where the item belongs            
+			k = 0
+			for i in range(0, 319):
+				if menu.FindItemByPosition(i).GetId() == before:
+					k = i
+					break
+			if not sepid:
+				menu.InsertSeparator(k)
+			else:
+				item = wx.MenuItem(self.menus[menuname], wx.ID_SEPARATOR, kind = wx.ITEM_SEPARATOR)
+				self.separators[sepid] = item
+				
+				self.menus[menuname].InsertItem(k, item)
+				self.mapping[sepid] = menuname                
 
-    def check(self,itemid,flag):
-        """
-        Created: 25.06.2005, KP
-        Description: Check / uncheck a menu item
-        """
-        menu=self.mapping[itemid]
-        self.menus[menu].Check(itemid,flag)
-        
-    def isChecked(self,itemid):
-        """
-        Method: isChecked(itemid)
-        Created: 21.07.2005, KP
-        Description: Return whether an item is checked
-        """
-        menu=self.mapping[itemid]
-        self.menus[menu].IsChecked(itemid)
-        
-    def addSubMenu(self,menuname,submenuname,title,menuid):
-        """
-        Method: addSubMenu(menuname,submenuname,title,menuid)
-        Created: 19.06.2005, KP
-        Description: make a menu a submenu of another
-        """
-        self.menus[menuname].AppendMenu(menuid,title,self.menus[submenuname])
-        
-    def createMenu(self,menuname,menutitle,place=1,before=None):
-        """
-        Created: 19.06.2005, KP
-        Description: Create a menu with a given id and title
-        """
-        ret = self.menus[menuname]=wx.Menu()
-        if not place:
-            return
-        if not before:
-            self.menubar.Append(self.menus[menuname],menutitle)
-        else:
-            menu=self.menus[before]
-            print "Searching for menu ",menu,   menu.GetTitle()
-            for i in range(0,self.menubar.GetMenuCount()):
-                gmenu=self.menubar.GetMenu(i)
-                if gmenu==menu:
-                    pos=i
-                    break
-            #pos=self.menubar.FindMenu(menu.GetTitle())
-            
-            self.menubar.Insert(pos,self.menus[menuname],menutitle)
-        return ret
-            
-    def setVisualizer(self,visualizer):
-        """
-        Created: 01.06.2005, KP
-        Description: Set the visualizer instance managed by this class
-        """
-        self.visualizer=visualizer
-        
-    def clearItemsBar(self):
-        """
-        Created: 01.06.2005, KP
-        Description: Clear items bar
-        """
-        self.visualizer.annotateBar.clearChannelItems()
-        #if not self.itemBar:return
-        #for i in self.toolIds:
-        #    self.itemBar.DeleteTool(i)
-        #self.toolIds=[]
-        #self.itemBar.Realize()
-        
+	def check(self, itemid, flag):
+		"""
+		Created: 25.06.2005, KP
+		Description: Check / uncheck a menu item
+		"""
+		menu = self.mapping[itemid]
+		self.menus[menu].Check(itemid, flag)
+		
+	def isChecked(self, itemid):
+		"""
+		Method: isChecked(itemid)
+		Created: 21.07.2005, KP
+		Description: Return whether an item is checked
+		"""
+		menu = self.mapping[itemid]
+		self.menus[menu].IsChecked(itemid)
+		
+	def addSubMenu(self, menuname, submenuname, title, menuid):
+		"""
+		Method: addSubMenu(menuname,submenuname,title,menuid)
+		Created: 19.06.2005, KP
+		Description: make a menu a submenu of another
+		"""
+		self.menus[menuname].AppendMenu(menuid, title, self.menus[submenuname])
+		
+	def createMenu(self, menuname, menutitle, place = 1, before = None):
+		"""
+		Created: 19.06.2005, KP
+		Description: Create a menu with a given id and title
+		"""
+		ret = self.menus[menuname] = wx.Menu()
+		if not place:
+			return
+		if not before:
+			self.menubar.Append(self.menus[menuname], menutitle)
+		else:
+			menu = self.menus[before]
+			print "Searching for menu ", menu,   menu.GetTitle()
+			for i in range(0, self.menubar.GetMenuCount()):
+				gmenu = self.menubar.GetMenu(i)
+				if gmenu == menu:
+					pos = i
+					break
+			#pos=self.menubar.FindMenu(menu.GetTitle())
+			
+			self.menubar.Insert(pos, self.menus[menuname], menutitle)
+		return ret
+			
+	def setVisualizer(self, visualizer):
+		"""
+		Created: 01.06.2005, KP
+		Description: Set the visualizer instance managed by this class
+		"""
+		self.visualizer = visualizer
+		
+	def clearItemsBar(self):
+		"""
+		Created: 01.06.2005, KP
+		Description: Clear items bar
+		"""
+		self.visualizer.annotateBar.clearChannelItems()
+		#if not self.itemBar:return
+		#for i in self.toolIds:
+		#    self.itemBar.DeleteTool(i)
+		#self.toolIds=[]
+		#self.itemBar.Realize()
+		
 
-    def addChannelItem(self,name,bitmap,toolid,func):
-        """
-        Created: 01.06.2005, KP
-        Description: Add a toolbar item
-        """
-        self.channelIds.append(toolid)
+	def addChannelItem(self, name, bitmap, toolid, func):
+		"""
+		Created: 01.06.2005, KP
+		Description: Add a toolbar item
+		"""
+		self.channelIds.append(toolid)
 
-        #self.itemBar=self.visualizer.tb
-        #self.visualizer.tb.Bind(wx.EVT_TOOL,func,id=toolid)
-    
-        #self.tools[toolid]=(name,bitmap,func)
-        #self.itemBar.DoAddTool(toolid,name,bitmap,kind=wx.ITEM_CHECK)
-        
-        #self.itemBar.Realize()
-        self.visualizer.annotateBar.addChannelItem(name, bitmap, toolid, func)
-        
-    
-    def toggleTool(self,toolid,flag):
-        """
-        Created: 22.07.2005, KP
-        Description: Toggle a toolbar item
-        """
-        if toolid in self.channelIds:
-            self.visualizer.annotateBar.toggleChannelItem(toolid,flag)
-            return
-        self.visualizer.tb.ToggleTool(toolid,flag)
+		#self.itemBar=self.visualizer.tb
+		#self.visualizer.tb.Bind(wx.EVT_TOOL,func,id=toolid)
+	
+		#self.tools[toolid]=(name,bitmap,func)
+		#self.itemBar.DoAddTool(toolid,name,bitmap,kind=wx.ITEM_CHECK)
+		
+		#self.itemBar.Realize()
+		self.visualizer.annotateBar.addChannelItem(name, bitmap, toolid, func)
+		
+	
+	def toggleTool(self, toolid, flag):
+		"""
+		Created: 22.07.2005, KP
+		Description: Toggle a toolbar item
+		"""
+		if toolid in self.channelIds:
+			self.visualizer.annotateBar.toggleChannelItem(toolid, flag)
+			return
+		self.visualizer.tb.ToggleTool(toolid, flag)
 
-    def addMenuItem(self,menu,menuid,name,hlp=None,callback=None,before=None,check=0,checked=1):
-        """
-        Method: addMenuItem
-        Created: 29.05.2005, KP
-        Description: Add a menu item
-        """
-        if not callback:
-            if hlp and type(hlp)!=type(""):
-                callback=hlp
-                hlp=None
-        self.mapping[menuid]=menu
-        menu=self.menus[menu]
-        if check:method=menu.AppendCheckItem
-        else:method=menu.Append
-        if not before:
-            if not hlp:
-                method(menuid,name)            # Find the position where the item belongs
-            else:
-                method(menuid,name,hlp)
-        else:
-            if check:method=menu.Insert
-            else:method=menu.InsertCheckItem
-            # Find the position where the item belongs
-            k=0
-            for i in range(0,999):
-                if menu.FindItemByPosition(i).GetId()==before:
-                    k=i
-                    break
-            if not hlp:
-                menu.Insert(k,menuid,name)
-            else:
-                menu.Insert(k,menuid,name,hlp)
-            
-            
-        if callback:
-            wx.EVT_MENU(self.mainwin,menuid,callback)
-        if check and checked:
-            self.check(menuid,1)
+	def addMenuItem(self, menu, menuid, name, hlp = None, callback = None, before = None, check = 0, checked = 1):
+		"""
+		Method: addMenuItem
+		Created: 29.05.2005, KP
+		Description: Add a menu item
+		"""
+		if not callback:
+			if hlp and type(hlp) != type(""):
+				callback = hlp
+				hlp = None
+		self.mapping[menuid] = menu
+		menu = self.menus[menu]
+		if check:method = menu.AppendCheckItem
+		else:method = menu.Append
+		if not before:
+			if not hlp:
+				method(menuid, name)            # Find the position where the item belongs
+			else:
+				method(menuid, name, hlp)
+		else:
+			if check:method = menu.Insert
+			else:method = menu.InsertCheckItem
+			# Find the position where the item belongs
+			k = 0
+			for i in range(0, 999):
+				if menu.FindItemByPosition(i).GetId() == before:
+					k = i
+					break
+			if not hlp:
+				menu.Insert(k, menuid, name)
+			else:
+				menu.Insert(k, menuid, name, hlp)
+			
+			
+		if callback:
+			wx.EVT_MENU(self.mainwin, menuid, callback)
+		if check and checked:
+			self.check(menuid, 1)
 
-        
-        
-    def disable(self,itemid):
-        """
-        Created: 29.05.2005, KP
-        Description: Disable a menu item
-        """
-        self.menus[self.mapping[itemid]].Enable(itemid,0)
-        
-    def enable(self,itemid,callback=None):
-        """
-        Created: 29.05.2005, KP
-        Description: Enable a menu item
-        """
-        self.menus[self.mapping[itemid]].Enable(itemid,1)
-        if callback:
-            wx.EVT_MENU(self.mainwin,itemid,callback)
-            
-    def removeMenu(self,menuname):
-        """
-        Method: removeMenu(menuname)
-        Created: 19.06.2005, KP
-        Description: Remove a menu
-        """
-        title=self.menus[menuname].GetTitle()
-        for i in range(self.menubar.GetMenuCount()):
-            menu=self.menubar.GetMenu(i)
-            if menu.GetTitle()==title:
-                self.menubar.Remove(i)
-                break
-        
-            
-    def remove(self,itemid):
-        """
-        Method: remove(itemid)
-        Created: 19.06.2005, KP
-        Description: Remove a menu item
-        """
-        menu=self.menus[self.mapping[itemid]]
-        menu.Delete(itemid)
-        self.mapping[itemid]=None
+		
+		
+	def disable(self, itemid):
+		"""
+		Created: 29.05.2005, KP
+		Description: Disable a menu item
+		"""
+		self.menus[self.mapping[itemid]].Enable(itemid, 0)
+		
+	def enable(self, itemid, callback = None):
+		"""
+		Created: 29.05.2005, KP
+		Description: Enable a menu item
+		"""
+		self.menus[self.mapping[itemid]].Enable(itemid, 1)
+		if callback:
+			wx.EVT_MENU(self.mainwin, itemid, callback)
+			
+	def removeMenu(self, menuname):
+		"""
+		Method: removeMenu(menuname)
+		Created: 19.06.2005, KP
+		Description: Remove a menu
+		"""
+		title = self.menus[menuname].GetTitle()
+		for i in range(self.menubar.GetMenuCount()):
+			menu = self.menubar.GetMenu(i)
+			if menu.GetTitle() == title:
+				self.menubar.Remove(i)
+				break
+		
+			
+	def remove(self, itemid):
+		"""
+		Method: remove(itemid)
+		Created: 19.06.2005, KP
+		Description: Remove a menu item
+		"""
+		menu = self.menus[self.mapping[itemid]]
+		menu.Delete(itemid)
+		self.mapping[itemid] = None

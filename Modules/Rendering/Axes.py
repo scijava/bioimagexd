@@ -40,125 +40,125 @@ def getConfigPanel():return AxesConfigurationPanel
 def getName():return "Axes"
 
 class AxesModule(VisualizationModule):
-    """
-    Created: 05.06.2005, KP
-    Description: A module for showing a scale bar
-    """    
-    def __init__(self,parent,visualizer,**kws):
-        """
-        Created: 03.05.2005, KP
-        Description: Initialization
-        """     
-        self.x,self.y,self.z=-1,-1,-1
-        VisualizationModule.__init__(self,parent,visualizer,**kws)   
-        #self.name = "Axes"
-        self.renew = 1
-        self.mapper = vtk.vtkPolyDataMapper()
-                
-        iactor = self.wxrenwin.GetRenderWindow().GetInteractor()
+	"""
+	Created: 05.06.2005, KP
+	Description: A module for showing a scale bar
+	"""    
+	def __init__(self, parent, visualizer, **kws):
+		"""
+		Created: 03.05.2005, KP
+		Description: Initialization
+		"""     
+		self.x, self.y, self.z = -1, -1, -1
+		VisualizationModule.__init__(self, parent, visualizer, **kws)   
+		#self.name = "Axes"
+		self.renew = 1
+		self.mapper = vtk.vtkPolyDataMapper()
+				
+		iactor = self.wxrenwin.GetRenderWindow().GetInteractor()
 
-        self.axes = axes = vtk.vtkAxesActor()
-        axes.SetShaftTypeToCylinder()
-        axes.SetXAxisLabelText("X")
-        axes.SetYAxisLabelText("Y")
-        axes.SetZAxisLabelText("Z")
-        axes.SetTotalLength(1.5, 1.5, 1.5)
-        tprop = vtk.vtkTextProperty()
-        tprop.ItalicOn()
-        tprop.ShadowOn()
-        tprop.SetFontFamilyToTimes()
-        axes.GetXAxisCaptionActor2D().SetCaptionTextProperty(tprop)
-        tprop2=vtk.vtkTextProperty()
-        tprop2.ShallowCopy(tprop)
-        axes.GetYAxisCaptionActor2D().SetCaptionTextProperty(tprop2)
-        tprop3=vtk.vtkTextProperty()
-        tprop3.ShallowCopy(tprop)
-        axes.GetZAxisCaptionActor2D().SetCaptionTextProperty(tprop3)  
-        self.renderer = self.parent.getRenderer()
-        self.actor = self.axes
-        self.marker = vtk.vtkOrientationMarkerWidget()
-        self.marker.SetOutlineColor(0.93,0.57,0.13)
-        self.marker.SetOrientationMarker(axes)
-        self.marker.SetViewport(0.0, 0.0, 0.15, 0.3)
-        
-        self.marker.SetInteractor(iactor)
-        self.marker.SetEnabled(1)
-        self.marker.InteractiveOff()
-        
-    def setDataUnit(self,dataunit):
-        """
-        Created: 28.04.2005, KP
-        Description: Sets the dataunit this module uses for visualization
-        """       
-        VisualizationModule.setDataUnit(self,dataunit)
-                
+		self.axes = axes = vtk.vtkAxesActor()
+		axes.SetShaftTypeToCylinder()
+		axes.SetXAxisLabelText("X")
+		axes.SetYAxisLabelText("Y")
+		axes.SetZAxisLabelText("Z")
+		axes.SetTotalLength(1.5, 1.5, 1.5)
+		tprop = vtk.vtkTextProperty()
+		tprop.ItalicOn()
+		tprop.ShadowOn()
+		tprop.SetFontFamilyToTimes()
+		axes.GetXAxisCaptionActor2D().SetCaptionTextProperty(tprop)
+		tprop2 = vtk.vtkTextProperty()
+		tprop2.ShallowCopy(tprop)
+		axes.GetYAxisCaptionActor2D().SetCaptionTextProperty(tprop2)
+		tprop3 = vtk.vtkTextProperty()
+		tprop3.ShallowCopy(tprop)
+		axes.GetZAxisCaptionActor2D().SetCaptionTextProperty(tprop3)  
+		self.renderer = self.parent.getRenderer()
+		self.actor = self.axes
+		self.marker = vtk.vtkOrientationMarkerWidget()
+		self.marker.SetOutlineColor(0.93, 0.57, 0.13)
+		self.marker.SetOrientationMarker(axes)
+		self.marker.SetViewport(0.0, 0.0, 0.15, 0.3)
+		
+		self.marker.SetInteractor(iactor)
+		self.marker.SetEnabled(1)
+		self.marker.InteractiveOff()
+		
+	def setDataUnit(self, dataunit):
+		"""
+		Created: 28.04.2005, KP
+		Description: Sets the dataunit this module uses for visualization
+		"""       
+		VisualizationModule.setDataUnit(self, dataunit)
+				
  
-    
-    def showTimepoint(self,value):
-        """
-        Created: 28.04.2005, KP
-        Description: Set the timepoint to be displayed
-        """          
-        self.updateRendering()
+	
+	def showTimepoint(self, value):
+		"""
+		Created: 28.04.2005, KP
+		Description: Set the timepoint to be displayed
+		"""          
+		self.updateRendering()
  
-        
-    def updateRendering(self,e1=None,e2=None):
-        """
-        Created: 03.05.2005, KP
-        Description: Update the Rendering of this module
-        """             
-        #self.mapper.Update()
-        VisualizationModule.updateRendering(self,input)
-        self.wxrenwin.Render()    
+		
+	def updateRendering(self, e1 = None, e2 = None):
+		"""
+		Created: 03.05.2005, KP
+		Description: Update the Rendering of this module
+		"""             
+		#self.mapper.Update()
+		VisualizationModule.updateRendering(self, input)
+		self.wxrenwin.Render()    
 
-    def disableRendering(self):
-        """
-        Created: 15.05.2005, KP
-        Description: Disable the Rendering of this module
-        """          
-        #self.renderer.RemoveActor(self.actor)
-        self.marker.Off()
-        self.wxrenwin.Render()
-        
-        
-    def enableRendering(self):
-        """
-        Created: 15.05.2005, KP
-        Description: Enable the Rendering of this module
-        """          
-        #self.renderer.AddActor(self.actor)
-        self.marker.On()
-        self.wxrenwin.Render()
-        
-    def setProperties(self, ambient,diffuse,specular,specularpower):
-        """
-        Created: 5.11.2006, KP
-        Description: A dummy method that captures the call for setting the
-                     different properties
-        """
-        pass
-        
+	def disableRendering(self):
+		"""
+		Created: 15.05.2005, KP
+		Description: Disable the Rendering of this module
+		"""          
+		#self.renderer.RemoveActor(self.actor)
+		self.marker.Off()
+		self.wxrenwin.Render()
+		
+		
+	def enableRendering(self):
+		"""
+		Created: 15.05.2005, KP
+		Description: Enable the Rendering of this module
+		"""          
+		#self.renderer.AddActor(self.actor)
+		self.marker.On()
+		self.wxrenwin.Render()
+		
+	def setProperties(self, ambient, diffuse, specular, specularpower):
+		"""
+		Created: 5.11.2006, KP
+		Description: A dummy method that captures the call for setting the
+					 different properties
+		"""
+		pass
+		
 
-        
+		
 class AxesConfigurationPanel(ModuleConfigurationPanel):
-    def __init__(self,parent,visualizer,name="Axes",**kws):
-        """
-        Created: 04.05.2005, KP
-        Description: Initialization
-        """     
-        ModuleConfigurationPanel.__init__(self,parent,visualizer,name,**kws)
-    
-    def initializeGUI(self):
-        """
-        Created: 28.04.2005, KP
-        Description: Initialization
-        """  
-        pass
+	def __init__(self, parent, visualizer, name = "Axes", **kws):
+		"""
+		Created: 04.05.2005, KP
+		Description: Initialization
+		"""     
+		ModuleConfigurationPanel.__init__(self, parent, visualizer, name, **kws)
+	
+	def initializeGUI(self):
+		"""
+		Created: 28.04.2005, KP
+		Description: Initialization
+		"""  
+		pass
 
-    def setModule(self,module):
-        """
-        Method: setModule(module)
-        Created: 28.04.2005, KP
-        Description: Set the module to be configured
-        """  
-        ModuleConfigurationPanel.setModule(self,module)
+	def setModule(self, module):
+		"""
+		Method: setModule(module)
+		Created: 28.04.2005, KP
+		Description: Set the module to be configured
+		"""  
+		ModuleConfigurationPanel.setModule(self, module)

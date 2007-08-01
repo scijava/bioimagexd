@@ -39,98 +39,98 @@ import lib.Module
 from lib.Module import *
 
 class Adjust(Module):
-    """
-    Created: 25.11.2004, KP
-    Description: Processes a single dataunit in specified ways
-    """
+	"""
+	Created: 25.11.2004, KP
+	Description: Processes a single dataunit in specified ways
+	"""
 
-    def __init__(self,**kws):
-        """
-        Created: 25.11.2004, KP
-        Description: Initialization
-        """
-        Module.__init__(self,**kws)
+	def __init__(self, **kws):
+		"""
+		Created: 25.11.2004, KP
+		Description: Initialization
+		"""
+		Module.__init__(self, **kws)
 
-        # TODO: remove attributes that already exist in base class!
-        self.images=[]
-        self.x,self.y,self.z=0,0,0
-        self.extent=None
-        self.running=0
-        self.depth=8
+		# TODO: remove attributes that already exist in base class!
+		self.images = []
+		self.x, self.y, self.z = 0, 0, 0
+		self.extent = None
+		self.running = 0
+		self.depth = 8
 
-        self.reset()
+		self.reset()
 
-    def reset(self):
-        """
-        Created: 25.11.2004, KP
-        Description: Resets the module to initial state. This method is
-                     used mainly when doing previews, when the parameters
-                     that control the colocalization are changed and the
-                     preview data becomes invalid.
-        """
-        Module.reset(self)
-        self.preview=None
-        self.intensityTransferFunctions = []
-        self.extent=None
-        self.n=-1
+	def reset(self):
+		"""
+		Created: 25.11.2004, KP
+		Description: Resets the module to initial state. This method is
+					 used mainly when doing previews, when the parameters
+					 that control the colocalization are changed and the
+					 preview data becomes invalid.
+		"""
+		Module.reset(self)
+		self.preview = None
+		self.intensityTransferFunctions = []
+		self.extent = None
+		self.n = -1
 
-    def addInput(self,dataunit,data):
-        """
-        Created: 1.12.2004, KP, JV
-        Description: Adds an input for the single dataunit processing filter
-        """
-        Module.addInput(self,dataunit,data)
-        settings = dataunit.getSettings()
-        tf = settings.getCounted("IntensityTransferFunctions",self.timepoint)
-        if not tf:            
-            raise ("No Intensity Transfer Function given for Single DataUnit "
-            "to be processed")
-        self.intensityTransferFunctions.append(tf)
-
-
-    def getPreview(self,z):
-        """
-        Created: 1.12.2004, KP
-        Description: Does a preview calculation for the x-y plane at depth z
-        """
-        if self.settings.get("ShowOriginal"):
-            return self.images[0]        
-        if not self.preview:
-            dims=self.images[0].GetDimensions()
-            if z>=0:
-                self.extent=(0,dims[0]-1,0,dims[1]-1,z,z)
-            else:
-                self.extent=None
-            self.preview=self.doOperation(preview=1)
-            self.extent=None
-        return self.preview
+	def addInput(self, dataunit, data):
+		"""
+		Created: 1.12.2004, KP, JV
+		Description: Adds an input for the single dataunit processing filter
+		"""
+		Module.addInput(self, dataunit, data)
+		settings = dataunit.getSettings()
+		tf = settings.getCounted("IntensityTransferFunctions", self.timepoint)
+		if not tf:            
+			raise ("No Intensity Transfer Function given for Single DataUnit "
+			"to be processed")
+		self.intensityTransferFunctions.append(tf)
 
 
-    def doOperation(self,preview=0):
-        """
-        Created: 1.12.2004, KP, JV
-        Description: Processes the dataset in specified ways
-        """
-        t1=time.time()
+	def getPreview(self, z):
+		"""
+		Created: 1.12.2004, KP
+		Description: Does a preview calculation for the x-y plane at depth z
+		"""
+		if self.settings.get("ShowOriginal"):
+			return self.images[0]        
+		if not self.preview:
+			dims = self.images[0].GetDimensions()
+			if z >= 0:
+				self.extent = (0, dims[0] - 1, 0, dims[1] - 1, z, z)
+			else:
+				self.extent = None
+			self.preview = self.doOperation(preview = 1)
+			self.extent = None
+		return self.preview
 
-        # Map scalars with intensity transfer list
-        n=0
-        if len(self.images)>1:
-            settings = self.dataunits[0].getSettings()
-            n=settings.get("PreviewedDataset")
-            Logging.info("More than one source dataset for data processing, using %dth"%n,kw="processing")
-            
-        mapdata=self.images[n]
-        mapIntensities=vtk.vtkImageMapToIntensities()
-        #mapIntensities.GetOutput().ReleaseDataFlagOn()
-        mapIntensities.AddObserver("ProgressEvent",self.updateProgress)
-        mapIntensities.SetIntensityTransferFunction(self.intensityTransferFunctions[n])
-        mapIntensities.SetInput(mapdata)
-        
-        #data = self.getLimitedOutput(mapIntensities)        
-        data= mapIntensities.GetOutput()
-            
-        t2=time.time()
-        #Logging.info("Processing took %.4f seconds"%(t2-t1))
-        #data.ReleaseDataFlagOff()
-        return data
+
+	def doOperation(self, preview = 0):
+		"""
+		Created: 1.12.2004, KP, JV
+		Description: Processes the dataset in specified ways
+		"""
+		t1 = time.time()
+
+		# Map scalars with intensity transfer list
+		n = 0
+		if len(self.images) > 1:
+			settings = self.dataunits[0].getSettings()
+			n = settings.get("PreviewedDataset")
+			Logging.info("More than one source dataset for data processing, using %dth" % n, kw = "processing")
+			
+		mapdata = self.images[n]
+		mapIntensities = vtk.vtkImageMapToIntensities()
+		#mapIntensities.GetOutput().ReleaseDataFlagOn()
+		mapIntensities.AddObserver("ProgressEvent", self.updateProgress)
+		mapIntensities.SetIntensityTransferFunction(self.intensityTransferFunctions[n])
+		mapIntensities.SetInput(mapdata)
+		
+		#data = self.getLimitedOutput(mapIntensities)        
+		data = mapIntensities.GetOutput()
+			
+		t2 = time.time()
+		#Logging.info("Processing took %.4f seconds"%(t2-t1))
+		#data.ReleaseDataFlagOff()
+		return data

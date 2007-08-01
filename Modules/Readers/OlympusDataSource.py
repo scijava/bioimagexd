@@ -33,477 +33,477 @@ import struct
 import codecs
 
 import math
-    
+	
 from DataSource import *
 import messenger
 import DataUnit
-        
+		
 def getExtensions(): return ["oif"]
 def getFileType(): return "Olympus Image Format datasets (*.oif)"        
 def getClass(): return OlympusDataSource
-    
+	
 class OlympusDataSource(DataSource):
-    """
-    Created: 12.04.2005, KP
-    Description: Olympus OIF files datasource
-    """
-    def __init__(self,filename="",channel=-1,basename="", lutname="",name="",dims=(0,0,0),t=0,voxelsize=(1,1,1),reverse=0, emission = 0, excitation = 0, bitdepth=12):
-        """
-        Created: 12.04.2005, KP
-        Description: Constructor
-        """    
-        DataSource.__init__(self)
-        if not name:name="Ch%d"%channel
-        self.bitdepth = bitdepth
-        self.name= name
-        self.basename = basename
-        self.lutname = lutname
-        self.timepoint = 0
-        self.tps = t
-        self.filename=filename
-        self.parser = RawConfigParser()
-        self.reader = None
-        self.originalScalarRange = (0,4095)
-        self.scalarRange = 0, 2**self.bitdepth-1
-        self.channel = channel
-        self.dimensions = dims
-        self.voxelsize = voxelsize
-        self.spacing = None
-        self.emission = emission
-        self.excitation = excitation
-        self.color = None
-        self.shift = None
-        self.noZ=0
-        self.reverseSlices=reverse
-        if filename:
-            self.path=os.path.dirname(filename)
-        if channel>=0:
-            self.ctf = self.readLUT()
-        self.setPath(filename)
-        
-        self.unit_coeffs={"nm":1e-9,"um":1e-6,"mm":0.001}
-        
-        
-    def getDataSetCount(self):
-        """
-        Created: 12.04.2005, KP
-        Description: Returns the number of individual DataSets (=time points)
-        managed by this DataSource
-        """
-        if not self.tps:return 1
-        return self.tps
-        
-    def getEmissionWavelength(self):
-        """
-        Created: 07.04.2006, KP
-        Description: Returns the emission wavelength used to image this channel
-        managed by this DataSource
-        """
-        return self.emission
-            
-    def getExcitationWavelength(self):
-        """
-        Created: 07.04.2006, KP
-        Description: Returns the excitation wavelength used to image the channel
-        managed by this DataSource
-        """
-        return self.excitation
+	"""
+	Created: 12.04.2005, KP
+	Description: Olympus OIF files datasource
+	"""
+	def __init__(self, filename = "", channel = -1, basename = "", lutname = "", name = "", dims = (0, 0, 0), t = 0, voxelsize = (1, 1, 1), reverse = 0, emission = 0, excitation = 0, bitdepth = 12):
+		"""
+		Created: 12.04.2005, KP
+		Description: Constructor
+		"""    
+		DataSource.__init__(self)
+		if not name:name = "Ch%d" % channel
+		self.bitdepth = bitdepth
+		self.name = name
+		self.basename = basename
+		self.lutname = lutname
+		self.timepoint = 0
+		self.tps = t
+		self.filename = filename
+		self.parser = RawConfigParser()
+		self.reader = None
+		self.originalScalarRange = (0, 4095)
+		self.scalarRange = 0, 2 ** self.bitdepth - 1
+		self.channel = channel
+		self.dimensions = dims
+		self.voxelsize = voxelsize
+		self.spacing = None
+		self.emission = emission
+		self.excitation = excitation
+		self.color = None
+		self.shift = None
+		self.noZ = 0
+		self.reverseSlices = reverse
+		if filename:
+			self.path = os.path.dirname(filename)
+		if channel >= 0:
+			self.ctf = self.readLUT()
+		self.setPath(filename)
+		
+		self.unit_coeffs = {"nm": 1e-9, "um": 1e-6, "mm":0.001}
+		
+		
+	def getDataSetCount(self):
+		"""
+		Created: 12.04.2005, KP
+		Description: Returns the number of individual DataSets (=time points)
+		managed by this DataSource
+		"""
+		if not self.tps:return 1
+		return self.tps
+		
+	def getEmissionWavelength(self):
+		"""
+		Created: 07.04.2006, KP
+		Description: Returns the emission wavelength used to image this channel
+		managed by this DataSource
+		"""
+		return self.emission
+			
+	def getExcitationWavelength(self):
+		"""
+		Created: 07.04.2006, KP
+		Description: Returns the excitation wavelength used to image the channel
+		managed by this DataSource
+		"""
+		return self.excitation
 
-        
-     
-        
-    def getFileName(self):
-        """
-        Created: 21.07.2005
-        Description: Return the file name
-        """    
-        return self.filename
-        
+		
+	 
+		
+	def getFileName(self):
+		"""
+		Created: 21.07.2005
+		Description: Return the file name
+		"""    
+		return self.filename
+		
 
-    
-    def getDataSet(self, i,raw=0):
-        """
-        Created: 12.04.2005, KP
-        Description: Returns the image data for timepoint i
-        """
-        data=self.getTimepoint(i)        
-        if raw:
-            return data
-            
-        
-        #self.originalScalarRange=data.GetScalarRange()
-        #print "Setting original scalar range to ",2**self.getBitDepth()-1
-        
-        if not self.originalScalarRange:
-            self.originalScalarRange = 0,(2**self.getBitDepth())-1
-        
-        data=self.getResampledData(data,i)
-        
-        
-        data=self.getIntensityScaledData(data)
-        
-        
-        #data.ReleaseDataFlagOff()
-        return data
-        
-    def updateProgress(self,obj,evt):
-        """
-        Created: 12.11.2006, KP
-        Description: Sends progress update event
-        """        
-        if not obj:
-            progress=1.0
-        else:
-            progress=obj.GetProgress()
-        if self.channel>=0:
-            txt=obj.GetProgressText()
-            if not txt:txt=""
+	
+	def getDataSet(self, i, raw = 0):
+		"""
+		Created: 12.04.2005, KP
+		Description: Returns the image data for timepoint i
+		"""
+		data = self.getTimepoint(i)        
+		if raw:
+			return data
+			
+		
+		#self.originalScalarRange=data.GetScalarRange()
+		#print "Setting original scalar range to ",2**self.getBitDepth()-1
+		
+		if not self.originalScalarRange:
+			self.originalScalarRange = 0, (2 ** self.getBitDepth()) - 1
+		
+		data = self.getResampledData(data, i)
+		
+		
+		data = self.getIntensityScaledData(data)
+		
+		
+		#data.ReleaseDataFlagOff()
+		return data
+		
+	def updateProgress(self, obj, evt):
+		"""
+		Created: 12.11.2006, KP
+		Description: Sends progress update event
+		"""        
+		if not obj:
+			progress = 1.0
+		else:
+			progress = obj.GetProgress()
+		if self.channel >= 0:
+			txt = obj.GetProgressText()
+			if not txt:txt = ""
 
-            msg="Reading channel %d of %s"%(self.channel,self.basename)
-            if self.timepoint>=0:
+			msg = "Reading channel %d of %s" % (self.channel, self.basename)
+			if self.timepoint >= 0:
 
-                msg+=" (timepoint %d / %d, %s)"%(self.timepoint+1,self.tps+1,txt)
-        else:
-            msg="Reading %s..."%self.shortname
-        notinvtk=0
-        
-        if progress==1.0:notinvtk=1
-        #print progress,msg
-        
-        #messenger.send(None,"update_progress",progress,msg,notinvtk)
-            
-        
-    def getTimepoint(self,n):
-        """
-        Created: 16.02.2006, KP
-        Description: Return the nth timepoint
-        """        
-        self.timepoint = n
-        path=os.path.join(self.path,"%s.oif.files"%self.basename)
-        if not self.reader:
-            self.reader = vtk.vtkExtTIFFReader()
-            self.reader.AddObserver("ProgressEvent",self.updateProgress)
-            x,y,z=self.dimensions
-            self.reader.SetDataExtent(0,x-1,0,y-1,0,z-1)
-            
-            spacing = self.getSpacing()
-            self.reader.SetDataSpacing(*spacing)
-        
-        zpat=""
-        tpat=""
-        cpat=os.path.sep+"%s_C%.3d"%(self.lutname,self.channel)
-        path+=cpat
-        
-        if self.dimensions[2]>1:
-            zpat="Z%.3d"
-        if self.tps > 0:
-            tpat="T%.3d"
-        pat=path+zpat+tpat+".tif"
-        
-        self.reader.SetFilePattern(pat)
-        if self.reverseSlices and 0:
-            #print "offset=",self.dimensions[2]
-            self.reader.SetFileNameSliceOffset(self.dimensions[2])
-            self.reader.SetFileNameSliceSpacing(-1)
-        else:
-            self.reader.SetFileNameSliceOffset(1)
+				msg += " (timepoint %d / %d, %s)" % (self.timepoint + 1, self.tps + 1, txt)
+		else:
+			msg = "Reading %s..." % self.shortname
+		notinvtk = 0
+		
+		if progress == 1.0:notinvtk = 1
+		#print progress,msg
+		
+		#messenger.send(None,"update_progress",progress,msg,notinvtk)
+			
+		
+	def getTimepoint(self, n):
+		"""
+		Created: 16.02.2006, KP
+		Description: Return the nth timepoint
+		"""        
+		self.timepoint = n
+		path = os.path.join(self.path, "%s.oif.files" % self.basename)
+		if not self.reader:
+			self.reader = vtk.vtkExtTIFFReader()
+			self.reader.AddObserver("ProgressEvent", self.updateProgress)
+			x, y, z = self.dimensions
+			self.reader.SetDataExtent(0, x - 1, 0, y - 1, 0, z - 1)
+			
+			spacing = self.getSpacing()
+			self.reader.SetDataSpacing(*spacing)
+		
+		zpat = ""
+		tpat = ""
+		cpat = os.path.sep + "%s_C%.3d" % (self.lutname, self.channel)
+		path += cpat
+		
+		if self.dimensions[2] > 1:
+			zpat = "Z%.3d"
+		if self.tps > 0:
+			tpat = "T%.3d"
+		pat = path + zpat + tpat + ".tif"
+		
+		self.reader.SetFilePattern(pat)
+		if self.reverseSlices and 0:
+			#print "offset=",self.dimensions[2]
+			self.reader.SetFileNameSliceOffset(self.dimensions[2])
+			self.reader.SetFileNameSliceSpacing(-1)
+		else:
+			self.reader.SetFileNameSliceOffset(1)
 
-        self.reader.UpdateInformation()
+		self.reader.UpdateInformation()
 #        print "pattern='"+self.reader.GetFilePattern()+"'"
-        #self.reader.Update()
-        #print self.reader
+		#self.reader.Update()
+		#print self.reader
 #        print vtk,self.reader
 #        print "Scalar range for data=",self.reader.GetOutput().GetScalarRange()
-        return self.reader.GetOutput()
-        
-        
-    def getDimensions(self):
-        """
-        Created: 12.04.2005, KP
-        Description: Returns the (x,y,z) dimensions of the datasets this 
-                     dataunit contains
-        """
-        if self.resampleDims:
-            
-            return self.resampleDims
-        if not self.dimensions:
-            raise "No dimensions given for ",str(self)
-            #print "Got dimensions=",self.dimensions
-        return self.dimensions
+		return self.reader.GetOutput()
+		
+		
+	def getDimensions(self):
+		"""
+		Created: 12.04.2005, KP
+		Description: Returns the (x,y,z) dimensions of the datasets this 
+					 dataunit contains
+		"""
+		if self.resampleDims:
+			
+			return self.resampleDims
+		if not self.dimensions:
+			raise "No dimensions given for ", str(self)
+			#print "Got dimensions=",self.dimensions
+		return self.dimensions
 
-    def readLUT(self): 
-        """
-        Created: 16.02.2006, KP
-        Description: Read the LUT for this dataset
-        """
-        lutpath = os.path.join(self.path,"%s.oif.files"%self.basename,"%s_LUT%d.lut"%(self.lutname,self.channel))
-        f=codecs.open(lutpath,"r","utf-16")
-        #print "Reading lut from %s..."%lutpath
-        while 1:
-            line=f.readline()
-            if "ColorLUTData" in line:
-                break
-        
-        
-        pos=f.tell()
-        f.close()
-        f=open(lutpath,"rb")
-        f.seek(-4*65536,2)
-        data=f.read()
-        #print "Got ",len(data),"bytes"
-        
-        format="i"*65536
-        values=struct.unpack(format,data)
-        ctf=vtk.vtkColorTransferFunction()
-        #print values
-        vals=[( ((x>>16)&0xff),((x>>8)&0xff),(x&0xff)) for x in values]
-        
-        #def f(x):( (x>>16)&0xff
-        i=0
-        r2,g2,b2=-1,-1,-1
-        coeff = 16.0
-        
-        #print "CUrrent minval,maxval=",minval,maxval
-        if self.explicitScale == 1:
-            minval,maxval = self.originalScalarRange
-            shift = self.intensityShift
-            if self.intensityShift:
-                maxval+=self.intensityShift
-                #print "Maximum value after being shifted=",maxval
-            scale = self.intensityScale
-            if not scale:
-                scale = 255.0 / maxval
-            maxval*=scale
-            
-            self.scalarRange = (0,maxval)
-            #print "GOT MAXVAL=",0,maxval
-            self.bitdepth = int(math.log(maxval+1,2))
-            #print "Set bitdepth to ",self.bitdepth
-            #print "Maximum value after being scaled=",maxval
-            self.explicitScale = 2
-        else:
-            minval, maxval = self.scalarRange
-        coeff = 65536.0 / (maxval+1)
-        #coeff=int(coeff)
-        #print "coeff=",coeff
+	def readLUT(self): 
+		"""
+		Created: 16.02.2006, KP
+		Description: Read the LUT for this dataset
+		"""
+		lutpath = os.path.join(self.path, "%s.oif.files" % self.basename, "%s_LUT%d.lut" % (self.lutname, self.channel))
+		f = codecs.open(lutpath, "r", "utf-16")
+		#print "Reading lut from %s..."%lutpath
+		while 1:
+			line = f.readline()
+			if "ColorLUTData" in line:
+				break
+		
+		
+		pos = f.tell()
+		f.close()
+		f = open(lutpath, "rb")
+		f.seek(-4 * 65536, 2)
+		data = f.read()
+		#print "Got ",len(data),"bytes"
+		
+		format = "i" * 65536
+		values = struct.unpack(format, data)
+		ctf = vtk.vtkColorTransferFunction()
+		#print values
+		vals = [( ((x >> 16) & 0xff), ((x >> 8) & 0xff), (x & 0xff)) for x in values]
+		
+		#def f(x):( (x>>16)&0xff
+		i = 0
+		r2, g2, b2 = -1, -1, -1
+		coeff = 16.0
+		
+		#print "CUrrent minval,maxval=",minval,maxval
+		if self.explicitScale == 1:
+			minval, maxval = self.originalScalarRange
+			shift = self.intensityShift
+			if self.intensityShift:
+				maxval += self.intensityShift
+				#print "Maximum value after being shifted=",maxval
+			scale = self.intensityScale
+			if not scale:
+				scale = 255.0 / maxval
+			maxval *= scale
+			
+			self.scalarRange = (0, maxval)
+			#print "GOT MAXVAL=",0,maxval
+			self.bitdepth = int(math.log(maxval + 1, 2))
+			#print "Set bitdepth to ",self.bitdepth
+			#print "Maximum value after being scaled=",maxval
+			self.explicitScale = 2
+		else:
+			minval, maxval = self.scalarRange
+		coeff = 65536.0 / (maxval + 1)
+		#coeff=int(coeff)
+		#print "coeff=",coeff
 #        print "Largest value=",len(vals)/coeff
-        r0, g0, b0 = -1,-1,-1
-        for i in range(0, maxval+1):
-            r,g,b = vals[int(i*coeff)]
-            if i in [0,maxval] or (r != r0 or g!=g0 or b!=b0):
-                ctf.AddRGBPoint(i, r/255.0,g/255.0,b/255.0)
-                r0,g0,b0 = r,g,b
-            if i==maxval:print "-->",i,maxval,"maps to",r,g,b
-            
-        
-        return ctf
-    def getTimeStamp(self, timepoint):
-        """
-        Created: 02.07.2007, KP
-        Description: return the timestamp for given timepoint
-        """
-        
-        
-    def getSpacing(self):
-        """
-        Created: 12.04.2005, KP
-        Description: Returns the spacing of the datasets this 
-                     dataunit contains
-        """
-        if not self.spacing:
-            a,b,c = self.getVoxelSize()
-            self.spacing=[1,b/a,c/a]
-        return self.spacing
-        
-    def getVoxelSize(self):
-        """
-        Created: 12.04.2005, KP
-        Description: Returns the voxel size of the datasets this 
-                     dataunit contains
-        """
-        if not self.voxelsize:
-            x,y,z,tp,ch,vx,vy,vz=self.getAllDimensions(self.parser)
-                         
-            self.voxelsize=(vx,vy,vz)
+		r0, g0, b0 = -1, -1, -1
+		for i in range(0, maxval + 1):
+			r, g, b = vals[int(i * coeff)]
+			if i in [0, maxval] or (r != r0 or g != g0 or b != b0):
+				ctf.AddRGBPoint(i, r / 255.0, g / 255.0, b / 255.0)
+				r0, g0, b0 = r, g, b
+			if i == maxval:print "-->", i, maxval, "maps to", r, g, b
+			
+		
+		return ctf
+	def getTimeStamp(self, timepoint):
+		"""
+		Created: 02.07.2007, KP
+		Description: return the timestamp for given timepoint
+		"""
+		
+		
+	def getSpacing(self):
+		"""
+		Created: 12.04.2005, KP
+		Description: Returns the spacing of the datasets this 
+					 dataunit contains
+		"""
+		if not self.spacing:
+			a, b, c = self.getVoxelSize()
+			self.spacing = [1, b / a, c / a]
+		return self.spacing
+		
+	def getVoxelSize(self):
+		"""
+		Created: 12.04.2005, KP
+		Description: Returns the voxel size of the datasets this 
+					 dataunit contains
+		"""
+		if not self.voxelsize:
+			x, y, z, tp, ch, vx, vy, vz = self.getAllDimensions(self.parser)
+						 
+			self.voxelsize = (vx, vy, vz)
 
-            #print "Got voxel size=",self.voxelsize
-        return self.voxelsize
-    
-    def getAllDimensions(self,parser):
-        """
-        Created: 16.02.2006, KP
-        Description: Read the number of timepoints, channels and XYZ from the OIF file
-        """    
-        timepoints = 0
-        channels = 0
-        x = 0
-        y = 0
-        z = 1
-        for i in range(0,7):
-            sect="Axis %d Parameters Common"%i
-            key = "AxisCode"
-            data = parser.get(sect,key)
-            # If Axis i is the time axis
-            n = timepoints = int(parser.get(sect,"MaxSize"))
-            unit = parser.get(sect,"UnitName")
-            unit=unit.replace('"',"")
-            sp = parser.get(sect,"StartPosition")
-            ep = parser.get(sect,"EndPosition")
-            sp = sp.replace('"','')
-            ep = ep.replace('"','')
-            
-            startpos=float(sp)
-            endpos = float(ep)
-            
-            
-            if endpos<startpos:
-                self.reverseSlices=1
-            
-            diff=abs(endpos-startpos)
-            if unit in self.unit_coeffs:
-                coeff=self.unit_coeffs[unit]
-            
-            diff*=coeff
-            if data == '"T"':
-                timepoints = n
-            elif data == '"C"':
-                channels = n
-            elif data == '"X"':
-                x = n
-                vx=diff
-            elif data == '"Y"':
-                y = n
-                vy=diff
-            elif data == '"Z"':
-                z = n
-                vz=diff
-        
-        if z==0:
-            z=1
-            self.noZ=1
-        vx/=float(x)
-        vy/=float(y)
-        if z>1:
-            vz/=float(z-1)
-        #print "\n\n\n *** SETTING ORIGINAL DIMS TO ",(x,y,z)
-        self.originalDimensions = (x,y,z)
-        return x,y,z,timepoints,channels,vx,vy,vz
-                
-                
-    def getLUTPath(self, parser):
-        """
-        Created: 05.09.2006, KP
-        Description: Read the base name for the LUT file which can also be used
-                     for the paths of the TIFF files
-        """
-        path = parser.get("ProfileSaveInfo","LutFileName0")
-        path = os.path.basename(path)
-        path = path.split("\\")[-1]
-        parts = path.split("_")
-        path = "_".join(parts[:-1])
-        return path
-                
-    def getDyes(self,parser,n):
-        """
-        Created: 16.02.2006, KP
-        Description: Read the dye names for n channels
-        """ 
-        names=[]
-        exs=[]
-        ems=[]
-        for i in range(1,n+1):
-            sect="Channel %d Parameters"%i
-            data = parser.get(sect,"DyeName")
-            data=data.replace('"',"")
-            emission = int(parser.get(sect,"EmissionWavelength"))
-            excitation = int(parser.get(sect,"ExcitationWavelength"))
-            names.append(data)
-            exs.append(excitation)
-            ems.append(emission)
-        return names,(exs,ems)
-            
-            
-    def loadFromFile(self, filename):
-        """
-        Created: 12.04.2005, KP
-        Description: Loads the specified .oif-file and imports data from it.
-        Parameters:   filename  The .oif-file to be loaded
-        """
-        self.filename=filename
-        self.path=os.path.dirname(filename)
-        
-        basefile=os.path.basename(filename)
-        basefile=basefile.replace(".oif","")
-        
-        try:
-            f=open(filename)
-            f.close()
-        except IOError, ex:
-            Logging.error("Failed to open Olympus OIF File",
-            "Failed to open file %s for reading: %s"%(filename,str(ex)))        
+			#print "Got voxel size=",self.voxelsize
+		return self.voxelsize
+	
+	def getAllDimensions(self, parser):
+		"""
+		Created: 16.02.2006, KP
+		Description: Read the number of timepoints, channels and XYZ from the OIF file
+		"""    
+		timepoints = 0
+		channels = 0
+		x = 0
+		y = 0
+		z = 1
+		for i in range(0, 7):
+			sect = "Axis %d Parameters Common" % i
+			key = "AxisCode"
+			data = parser.get(sect, key)
+			# If Axis i is the time axis
+			n = timepoints = int(parser.get(sect, "MaxSize"))
+			unit = parser.get(sect, "UnitName")
+			unit = unit.replace('"', "")
+			sp = parser.get(sect, "StartPosition")
+			ep = parser.get(sect, "EndPosition")
+			sp = sp.replace('"', '')
+			ep = ep.replace('"', '')
+			
+			startpos = float(sp)
+			endpos = float(ep)
+			
+			
+			if endpos < startpos:
+				self.reverseSlices = 1
+			
+			diff = abs(endpos - startpos)
+			if unit in self.unit_coeffs:
+				coeff = self.unit_coeffs[unit]
+			
+			diff *= coeff
+			if data == '"T"':
+				timepoints = n
+			elif data == '"C"':
+				channels = n
+			elif data == '"X"':
+				x = n
+				vx = diff
+			elif data == '"Y"':
+				y = n
+				vy = diff
+			elif data == '"Z"':
+				z = n
+				vz = diff
+		
+		if z == 0:
+			z = 1
+			self.noZ = 1
+		vx /= float(x)
+		vy /= float(y)
+		if z > 1:
+			vz /= float(z - 1)
+		#print "\n\n\n *** SETTING ORIGINAL DIMS TO ",(x,y,z)
+		self.originalDimensions = (x, y, z)
+		return x, y, z, timepoints, channels, vx, vy, vz
+				
+				
+	def getLUTPath(self, parser):
+		"""
+		Created: 05.09.2006, KP
+		Description: Read the base name for the LUT file which can also be used
+					 for the paths of the TIFF files
+		"""
+		path = parser.get("ProfileSaveInfo", "LutFileName0")
+		path = os.path.basename(path)
+		path = path.split("\\")[-1]
+		parts = path.split("_")
+		path = "_".join(parts[:-1])
+		return path
+				
+	def getDyes(self, parser, n):
+		"""
+		Created: 16.02.2006, KP
+		Description: Read the dye names for n channels
+		""" 
+		names = []
+		exs = []
+		ems = []
+		for i in range(1, n + 1):
+			sect = "Channel %d Parameters" % i
+			data = parser.get(sect, "DyeName")
+			data = data.replace('"', "")
+			emission = int(parser.get(sect, "EmissionWavelength"))
+			excitation = int(parser.get(sect, "ExcitationWavelength"))
+			names.append(data)
+			exs.append(excitation)
+			ems.append(emission)
+		return names, (exs, ems)
+			
+			
+	def loadFromFile(self, filename):
+		"""
+		Created: 12.04.2005, KP
+		Description: Loads the specified .oif-file and imports data from it.
+		Parameters:   filename  The .oif-file to be loaded
+		"""
+		self.filename = filename
+		self.path = os.path.dirname(filename)
+		
+		basefile = os.path.basename(filename)
+		basefile = basefile.replace(".oif", "")
+		
+		try:
+			f = open(filename)
+			f.close()
+		except IOError, ex:
+			Logging.error("Failed to open Olympus OIF File",
+			"Failed to open file %s for reading: %s" % (filename, str(ex)))        
 
-        fp = codecs.open(filename,"r","utf-16")
-        self.parser.readfp(fp)
-        x,y,z,tps,chs,vx,vy,vz = self.getAllDimensions(self.parser)
-        
-        voxsiz=(vx,vy,vz)
-        names,(excitations,emissions)=self.getDyes(self.parser,chs)
-        
-        
-        self.bitdepth = eval(self.parser.get("Reference Image Parameter","ValidBitCounts"))
-        lutpath = self.getLUTPath(self.parser)
-        
-        dataunits=[]
-        for ch in range(1,chs+1):
-            name=names[ch-1]    
-            excitation = excitations[ch-1]
-            emission = emissions[ch-1]
-            datasource=OlympusDataSource(filename,ch,name=name,basename=basefile,
-                                        lutname = lutpath,
-                                        dims=(x,y,z),t=tps,voxelsize=voxsiz,
-                                        reverse=self.reverseSlices,
-                                        emission = emission,
-                                        excitation = excitation, bitdepth = self.bitdepth)
-            #datasource.bitdepth = self.bitdepth
-            datasource.originalDimensions = (x,y,z)
-            dataunit=DataUnit.DataUnit()
-            dataunit.setDataSource(datasource)
-            dataunits.append(dataunit)
-            
-        return dataunits
+		fp = codecs.open(filename, "r", "utf-16")
+		self.parser.readfp(fp)
+		x, y, z, tps, chs, vx, vy, vz = self.getAllDimensions(self.parser)
+		
+		voxsiz = (vx, vy, vz)
+		names, (excitations, emissions) = self.getDyes(self.parser, chs)
+		
+		
+		self.bitdepth = eval(self.parser.get("Reference Image Parameter", "ValidBitCounts"))
+		lutpath = self.getLUTPath(self.parser)
+		
+		dataunits = []
+		for ch in range(1, chs + 1):
+			name = names[ch - 1]    
+			excitation = excitations[ch - 1]
+			emission = emissions[ch - 1]
+			datasource = OlympusDataSource(filename, ch, name = name, basename = basefile,
+										lutname = lutpath,
+										dims = (x, y, z), t = tps, voxelsize = voxsiz,
+										reverse = self.reverseSlices,
+										emission = emission,
+										excitation = excitation, bitdepth = self.bitdepth)
+			#datasource.bitdepth = self.bitdepth
+			datasource.originalDimensions = (x, y, z)
+			dataunit = DataUnit.DataUnit()
+			dataunit.setDataSource(datasource)
+			dataunits.append(dataunit)
+			
+		return dataunits
 
 
-    def getName(self):
-        """
-        Created: 18.11.2005, KP
-        Description: Returns the name of the dataset series which this datasource
-                     operates on
-        """
-        return self.name
-        
-    def uniqueId(self):
-        """
-        Created: 07.02.2007, KP
-        Description: return a string identifying the dataset
-        """
-        return self.getFileName()+"|"+str(self.channel) 
+	def getName(self):
+		"""
+		Created: 18.11.2005, KP
+		Description: Returns the name of the dataset series which this datasource
+					 operates on
+		"""
+		return self.name
+		
+	def uniqueId(self):
+		"""
+		Created: 07.02.2007, KP
+		Description: return a string identifying the dataset
+		"""
+		return self.getFileName() + "|" + str(self.channel) 
 
-    def resetColorTransferFunction(self):
-        """
-        Created: 12.10.2006, KP
-        Description: A method that will reset the CTF from the datasource.
-                     This is useful e.g. when scaling the intensities of the    
-                     dataset
-        """
-        self.ctf = None
-        return self.getColorTransferFunction()
-    
-    def getColorTransferFunction(self):
-        """
-        Created: 26.04.2005, KP
-        Description: Returns the ctf of the dataset series which this datasource
-                     operates on
-        """
-        if not self.ctf:
-            self.ctf = self.readLUT()
-        return self.ctf        
+	def resetColorTransferFunction(self):
+		"""
+		Created: 12.10.2006, KP
+		Description: A method that will reset the CTF from the datasource.
+					 This is useful e.g. when scaling the intensities of the    
+					 dataset
+		"""
+		self.ctf = None
+		return self.getColorTransferFunction()
+	
+	def getColorTransferFunction(self):
+		"""
+		Created: 26.04.2005, KP
+		Description: Returns the ctf of the dataset series which this datasource
+					 operates on
+		"""
+		if not self.ctf:
+			self.ctf = self.readLUT()
+		return self.ctf        

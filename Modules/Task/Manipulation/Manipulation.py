@@ -37,14 +37,14 @@ import Logging
 from lib import FilterBasedModule
 
 class Manipulation(FilterBasedModule.FilterBasedModule):
-    """
-    Created: 04.04.2006, KP
-    Description: Manipulationes a single dataunit in specified ways
-    """
+	"""
+	Created: 04.04.2006, KP
+	Description: Manipulationes a single dataunit in specified ways
+	"""
 
-    def __init__(self,**kws):
-        """
-        Created: 25.11.2004, KP
-        Description: Initialization
-        """
-        FilterBasedModule.FilterBasedModule.__init__(self,**kws)
+	def __init__(self, **kws):
+		"""
+		Created: 25.11.2004, KP
+		Description: Initialization
+		"""
+		FilterBasedModule.FilterBasedModule.__init__(self, **kws)

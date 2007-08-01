@@ -7,7 +7,7 @@
  Description:
 
  A module containing the morphological filters for the processing task.
-                            
+							
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
 
@@ -34,238 +34,238 @@ from lib import ProcessingFilter
 import types
 import scripting as bxd
 import vtk
-MORPHOLOGICAL="Morphological operations"
+MORPHOLOGICAL = "Morphological operations"
 
-FEATUREDETECTION="Feature detection"
-FILTERING="Filtering"
+FEATUREDETECTION = "Feature detection"
+FILTERING = "Filtering"
 
 class MorphologicalFilter(ProcessingFilter.ProcessingFilter):
-    """
-    Created: 13.04.2006, KP
-    Description: A base class for manipulation filters
-    """     
-    name = "Morphological filter"
-    category = MORPHOLOGICAL
-    
-    def __init__(self):
-        """
-        Method: __init__()
-        Created: 13.04.2006, KP
-        Description: Initialization
-        """        
-        ProcessingFilter.ProcessingFilter.__init__(self,(1,1))
-    
-        self.descs={"KernelX":"X","KernelY":"Y","KernelZ":"Z"}
-    
-    def getParameters(self):
-        """
-        Method: getParameters
-        Created: 13.04.2006, KP
-        Description: Return the list of parameters needed for configuring this GUI
-        """            
-        return [ ["Convolution kernel",("KernelX","KernelY","KernelZ")] ]
-        
-    def getDesc(self,parameter):
-        """
-        Method: getDesc
-        Created: 13.04.2006, KP
-        Description: Return the description of the parameter
-        """    
-        return self.descs[parameter]
-        
-    def getType(self,parameter):
-        """
-        Method: getType
-        Created: 13.04.2006, KP
-        Description: Return the type of the parameter
-        """    
-        return types.IntType
-        
-    def getDefaultValue(self,parameter):
-        """
-        Method: getDefaultValue
-        Created: 13.04.2006, KP
-        Description: Return the default value of a parameter
-        """           
-        return 2
-        
+	"""
+	Created: 13.04.2006, KP
+	Description: A base class for manipulation filters
+	"""     
+	name = "Morphological filter"
+	category = MORPHOLOGICAL
+	
+	def __init__(self):
+		"""
+		Method: __init__()
+		Created: 13.04.2006, KP
+		Description: Initialization
+		"""        
+		ProcessingFilter.ProcessingFilter.__init__(self, (1, 1))
+	
+		self.descs = {"KernelX": "X", "KernelY": "Y", "KernelZ": "Z"}
+	
+	def getParameters(self):
+		"""
+		Method: getParameters
+		Created: 13.04.2006, KP
+		Description: Return the list of parameters needed for configuring this GUI
+		"""            
+		return [ ["Convolution kernel", ("KernelX", "KernelY", "KernelZ")] ]
+		
+	def getDesc(self, parameter):
+		"""
+		Method: getDesc
+		Created: 13.04.2006, KP
+		Description: Return the description of the parameter
+		"""    
+		return self.descs[parameter]
+		
+	def getType(self, parameter):
+		"""
+		Method: getType
+		Created: 13.04.2006, KP
+		Description: Return the type of the parameter
+		"""    
+		return types.IntType
+		
+	def getDefaultValue(self, parameter):
+		"""
+		Method: getDefaultValue
+		Created: 13.04.2006, KP
+		Description: Return the default value of a parameter
+		"""           
+		return 2
+		
 
-    def execute(self,inputs,update=0,last=0):
-        """
-        Method: execute
-        Created: 13.04.2006, KP
-        Description: Execute the filter with given inputs and return the output
-        """            
-        if not ProcessingFilter.ProcessingFilter.execute(self,inputs):
-            return None
-        
-        x,y,z=self.parameters["KernelX"],self.parameters["KernelY"],self.parameters["KernelZ"]
-        self.vtkfilter.SetKernelSize(x,y,z)
-        
-        image = self.getInput(1)
-          
-        #print "Setting input=",image  
-        self.vtkfilter.SetInput(image)
-        if update:
-            self.vtkfilter.Update()
-        return self.vtkfilter.GetOutput()                
-        
+	def execute(self, inputs, update = 0, last = 0):
+		"""
+		Method: execute
+		Created: 13.04.2006, KP
+		Description: Execute the filter with given inputs and return the output
+		"""            
+		if not ProcessingFilter.ProcessingFilter.execute(self, inputs):
+			return None
+		
+		x, y, z = self.parameters["KernelX"], self.parameters["KernelY"], self.parameters["KernelZ"]
+		self.vtkfilter.SetKernelSize(x, y, z)
+		
+		image = self.getInput(1)
+		  
+		#print "Setting input=",image  
+		self.vtkfilter.SetInput(image)
+		if update:
+			self.vtkfilter.Update()
+		return self.vtkfilter.GetOutput()                
+		
 class ErodeFilter(MorphologicalFilter):
-    """
-    Created: 13.04.2006, KP
-    Description: An erosion filter
-    """     
-    name = "Erode 3D"
-    category = MORPHOLOGICAL
-    
-    def __init__(self):
-        """
-        Method: __init__()
-        Created: 13.04.2006, KP
-        Description: Initialization
-        """        
-        MorphologicalFilter.__init__(self)
-        self.vtkfilter = vtk.vtkImageContinuousErode3D()
-        
-        
+	"""
+	Created: 13.04.2006, KP
+	Description: An erosion filter
+	"""     
+	name = "Erode 3D"
+	category = MORPHOLOGICAL
+	
+	def __init__(self):
+		"""
+		Method: __init__()
+		Created: 13.04.2006, KP
+		Description: Initialization
+		"""        
+		MorphologicalFilter.__init__(self)
+		self.vtkfilter = vtk.vtkImageContinuousErode3D()
+		
+		
 class VarianceFilter(MorphologicalFilter):
-    """
-    Created: 13.04.2006, KP
-    Description: An erosion filter
-    """     
-    name = "Variance 3D"
-    category = MORPHOLOGICAL
-    
-    def __init__(self):
-        """
-        Method: __init__()
-        Created: 13.04.2006, KP
-        Description: Initialization
-        """        
-        MorphologicalFilter.__init__(self)
-        self.vtkfilter = vtk.vtkImageVariance3D()        
-        
+	"""
+	Created: 13.04.2006, KP
+	Description: An erosion filter
+	"""     
+	name = "Variance 3D"
+	category = MORPHOLOGICAL
+	
+	def __init__(self):
+		"""
+		Method: __init__()
+		Created: 13.04.2006, KP
+		Description: Initialization
+		"""        
+		MorphologicalFilter.__init__(self)
+		self.vtkfilter = vtk.vtkImageVariance3D()        
+		
 class DilateFilter(MorphologicalFilter):
-    """
-    Created: 13.04.2006, KP
-    Description: A dilation filter
-    """      
-    name = "Dilate 3D"
-    category = MORPHOLOGICAL
-    
-    def __init__(self):
-        """
-        Method: __init__()
-        Created: 13.04.2006, KP
-        Description: Initialization
-        """        
-        MorphologicalFilter.__init__(self)
-        self.vtkfilter = vtk.vtkImageContinuousDilate3D()  
+	"""
+	Created: 13.04.2006, KP
+	Description: A dilation filter
+	"""      
+	name = "Dilate 3D"
+	category = MORPHOLOGICAL
+	
+	def __init__(self):
+		"""
+		Method: __init__()
+		Created: 13.04.2006, KP
+		Description: Initialization
+		"""        
+		MorphologicalFilter.__init__(self)
+		self.vtkfilter = vtk.vtkImageContinuousDilate3D()  
   
 class RangeFilter(MorphologicalFilter):
-    """
-    Created: 13.04.2006, KP
-    Description: A filter that sets the value of the neighborhood to be the max-min of that nbh
-    """     
-    name = "Range 3D"
-    category = MORPHOLOGICAL
-    
-    def __init__(self):
-        """
-        Created: 13.04.2006, KP
-        Description: Initialization
-        """        
-        MorphologicalFilter.__init__(self)
-        self.vtkfilter = vtk.vtkImageRange3D()     
-        
+	"""
+	Created: 13.04.2006, KP
+	Description: A filter that sets the value of the neighborhood to be the max-min of that nbh
+	"""     
+	name = "Range 3D"
+	category = MORPHOLOGICAL
+	
+	def __init__(self):
+		"""
+		Created: 13.04.2006, KP
+		Description: Initialization
+		"""        
+		MorphologicalFilter.__init__(self)
+		self.vtkfilter = vtk.vtkImageRange3D()     
+		
 class SobelFilter(MorphologicalFilter):
-    """
-    Created: 13.04.2006, KP
-    Description: A sobel filter in 3D
-    """     
-    name = "Sobel 3D"
-    category = FEATUREDETECTION
-    
-    def __init__(self):
-        """
-        Created: 13.04.2006, KP
-        Description: Initialization
-        """        
-        MorphologicalFilter.__init__(self)
-        self.vtkfilter = vtk.vtkImageSobel3D()          
-        
-    def getParameters(self):
-        """
-        Created: 13.04.2006, KP
-        Description: Return the list of parameters needed for configuring this GUI
-        """  
-        return []
-        
-    def execute(self,inputs,update=0,last=0):
-        """
-        Created: 13.04.2006, KP
-        Description: Execute the filter with given inputs and return the output
-        """            
-        if not ProcessingFilter.ProcessingFilter.execute(self,inputs):
-            return None        
-        image = self.getInput(1)
-        self.vtkfilter.SetInput(image)
-        if update:
-            self.vtkfilter.Update()
-        return self.vtkfilter.GetOutput()         
-        
+	"""
+	Created: 13.04.2006, KP
+	Description: A sobel filter in 3D
+	"""     
+	name = "Sobel 3D"
+	category = FEATUREDETECTION
+	
+	def __init__(self):
+		"""
+		Created: 13.04.2006, KP
+		Description: Initialization
+		"""        
+		MorphologicalFilter.__init__(self)
+		self.vtkfilter = vtk.vtkImageSobel3D()          
+		
+	def getParameters(self):
+		"""
+		Created: 13.04.2006, KP
+		Description: Return the list of parameters needed for configuring this GUI
+		"""  
+		return []
+		
+	def execute(self, inputs, update = 0, last = 0):
+		"""
+		Created: 13.04.2006, KP
+		Description: Execute the filter with given inputs and return the output
+		"""            
+		if not ProcessingFilter.ProcessingFilter.execute(self, inputs):
+			return None        
+		image = self.getInput(1)
+		self.vtkfilter.SetInput(image)
+		if update:
+			self.vtkfilter.Update()
+		return self.vtkfilter.GetOutput()         
+		
 class HybridMedianFilter(MorphologicalFilter):
-    """
-    Created: 13.04.2006, KP
-    Description: A 2D median filter that preserves edges and corners
-    """     
-    name = "Hybrid median 2D"
-    category = FILTERING
-    level = bxd.COLOR_BEGINNER
-    
-    def __init__(self):
-        """
-        Created: 13.04.2006, KP
-        Description: Initialization
-        """        
-        MorphologicalFilter.__init__(self)
-        self.vtkfilter = vtk.vtkImageHybridMedian2D()        
-        
-    def getParameters(self):
-        """
-        Created: 13.04.2006, KP
-        Description: Return the list of parameters needed for configuring this GUI
-        """  
-        return []
-        
-    def execute(self,inputs,update=0,last=0):
-        """
-        Created: 13.04.2006, KP
-        Description: Execute the filter with given inputs and return the output
-        """            
-        if not ProcessingFilter.ProcessingFilter.execute(self,inputs):
-            return None        
-        image = self.getInput(1)
-        self.vtkfilter.SetInput(image)
-        if update:
-            self.vtkfilter.Update()
-        return self.vtkfilter.GetOutput()         
-        
-        
+	"""
+	Created: 13.04.2006, KP
+	Description: A 2D median filter that preserves edges and corners
+	"""     
+	name = "Hybrid median 2D"
+	category = FILTERING
+	level = bxd.COLOR_BEGINNER
+	
+	def __init__(self):
+		"""
+		Created: 13.04.2006, KP
+		Description: Initialization
+		"""        
+		MorphologicalFilter.__init__(self)
+		self.vtkfilter = vtk.vtkImageHybridMedian2D()        
+		
+	def getParameters(self):
+		"""
+		Created: 13.04.2006, KP
+		Description: Return the list of parameters needed for configuring this GUI
+		"""  
+		return []
+		
+	def execute(self, inputs, update = 0, last = 0):
+		"""
+		Created: 13.04.2006, KP
+		Description: Execute the filter with given inputs and return the output
+		"""            
+		if not ProcessingFilter.ProcessingFilter.execute(self, inputs):
+			return None        
+		image = self.getInput(1)
+		self.vtkfilter.SetInput(image)
+		if update:
+			self.vtkfilter.Update()
+		return self.vtkfilter.GetOutput()         
+		
+		
 class MedianFilter(MorphologicalFilter):
-    """
-    Created: 13.04.2006, KP
-    Description: A median filter
-    """     
-    name = "Median 3D"
-    category = FILTERING
-    level = bxd.COLOR_BEGINNER
-    
-    def __init__(self):
-        """
-        Method: __init__()
-        Created: 13.04.2006, KP
-        Description: Initialization
-        """        
-        MorphologicalFilter.__init__(self)
-        self.vtkfilter = vtk.vtkImageMedian3D()        
+	"""
+	Created: 13.04.2006, KP
+	Description: A median filter
+	"""     
+	name = "Median 3D"
+	category = FILTERING
+	level = bxd.COLOR_BEGINNER
+	
+	def __init__(self):
+		"""
+		Method: __init__()
+		Created: 13.04.2006, KP
+		Description: Initialization
+		"""        
+		MorphologicalFilter.__init__(self)
+		self.vtkfilter = vtk.vtkImageMedian3D()        

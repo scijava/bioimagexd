@@ -45,43 +45,43 @@ import wx.wizard
 import TimepointSelection
 
 class UrmasTimepointSelection(wx.wizard.PyWizardPage):
-    """
-    Class: UrmasTimepointSelection
-    Created: 12.03.2005, KP
-    Description: Implements selection of timepoints for Urmas
-    """     
-    def __init__(self,parent):
-        wx.wizard.PyWizardPage.__init__(self,parent)
-        self.sizer=wx.GridBagSizer()
-        
-        self.timepointSelection=TimepointSelection.TimepointSelectionPanel(self)
-        
-        self.sizer.Add(self.timepointSelection,(0,0))
-        
-        self.SetSizer(self.sizer)
-        self.SetAutoLayout(1)
-        self.sizer.Fit(self)
-        
-    def GetNext(self):
-        """
-        Method: GetNext()
-        Created: 14.03.2005, KP
-        Description: Returns the page that comes after this one
-        """          
-        return self.next
-        
-    def GetPrev(self):
-        """
-        Method: GetPrev()
-        Created: 14.03.2005, KP
-        Description: Returns the page that comes before this one
-        """              
-        return self.prev
-        
-    def setDataUnit(self,du):
-        """
-        Method: setDataUnit
-        Created: 12.03.2005, KP
-        Description: Sets the dataunit
-        """          
-        self.timepointSelection.setDataUnit(du)
+	"""
+	Class: UrmasTimepointSelection
+	Created: 12.03.2005, KP
+	Description: Implements selection of timepoints for Urmas
+	"""     
+	def __init__(self, parent):
+		wx.wizard.PyWizardPage.__init__(self, parent)
+		self.sizer = wx.GridBagSizer()
+		
+		self.timepointSelection = TimepointSelection.TimepointSelectionPanel(self)
+		
+		self.sizer.Add(self.timepointSelection, (0, 0))
+		
+		self.SetSizer(self.sizer)
+		self.SetAutoLayout(1)
+		self.sizer.Fit(self)
+		
+	def GetNext(self):
+		"""
+		Method: GetNext()
+		Created: 14.03.2005, KP
+		Description: Returns the page that comes after this one
+		"""          
+		return self.next
+		
+	def GetPrev(self):
+		"""
+		Method: GetPrev()
+		Created: 14.03.2005, KP
+		Description: Returns the page that comes before this one
+		"""              
+		return self.prev
+		
+	def setDataUnit(self, du):
+		"""
+		Method: setDataUnit
+		Created: 12.03.2005, KP
+		Description: Sets the dataunit
+		"""          
+		self.timepointSelection.setDataUnit(du)

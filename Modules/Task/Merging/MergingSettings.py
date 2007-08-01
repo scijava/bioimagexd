@@ -38,57 +38,57 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 import vtk
 from DataUnit import DataUnitSettings      
 import Logging
-        
+		
 class MergingSettings(DataUnitSettings):
-    """
-    Created: 27.03.2005, KP
-    Description: Stores color merging related settings
-    """
-    def __init__(self,n=-1):
-        """
-        Created: 27.03.2005, KP
-        Description: Constructor
-        """
-        DataUnitSettings.__init__(self,n)
-        #self.registerCounted("MergingColorTransferFunction",1)       
-        self.set("Type","Merging")
-        self.registerCounted("IntensityTransferFunction",1)
-        self.register("AlphaTransferFunction",1)
-        self.register("AlphaMode")
-        self.registerCounted("PreviewChannel")
-        
-        tf=vtk.vtkIntensityTransferFunction()
-        self.set("AlphaTransferFunction",tf)
-        self.set("AlphaMode",[0,0])
+	"""
+	Created: 27.03.2005, KP
+	Description: Stores color merging related settings
+	"""
+	def __init__(self, n = -1):
+		"""
+		Created: 27.03.2005, KP
+		Description: Constructor
+		"""
+		DataUnitSettings.__init__(self, n)
+		#self.registerCounted("MergingColorTransferFunction",1)       
+		self.set("Type", "Merging")
+		self.registerCounted("IntensityTransferFunction", 1)
+		self.register("AlphaTransferFunction", 1)
+		self.register("AlphaMode")
+		self.registerCounted("PreviewChannel")
+		
+		tf = vtk.vtkIntensityTransferFunction()
+		self.set("AlphaTransferFunction", tf)
+		self.set("AlphaMode", [0, 0])
 
-    def initialize(self,dataunit,channels, timepoints):
-        """
-        Created: 27.03.2005
-        Description: Set initial values for settings based on 
-                     number of channels and timepoints
-        """
-        DataUnitSettings.initialize(self,dataunit,channels,timepoints)
+	def initialize(self, dataunit, channels, timepoints):
+		"""
+		Created: 27.03.2005
+		Description: Set initial values for settings based on 
+					 number of channels and timepoints
+		"""
+		DataUnitSettings.initialize(self, dataunit, channels, timepoints)
 
-        #tf=vtk.vtkIntensityTransferFunction()
-        #print "\n\n****' SETING RANGE OF ALPHA TF =",maxval
-        #tf.SetRangeMax(maxval)    
-        #self.set("AlphaTransferFunction",tf)
-        
-        
-        for i in range(channels):
-            tf=vtk.vtkIntensityTransferFunction()
-            self.setCounted("IntensityTransferFunction",i,tf,0)
-        self.set("PreviewChannel",1)
-            
-    def get(self,name):
-        """
-        Created: 03.07.2005
-        Description: Return the value of a key
-        """
-        val=DataUnitSettings.get(self,name)
-        if name=="MergingColorTransferFunction" and not val:
-            val=DataUnitSettings.get(self,"ColorTransferFunction")
-            Logging.info("Returning proxyed ctf for merging",val,kw="ctf")
-            self.set("MergingColorTransferFunction",val)
-            return val
-        return val
+		#tf=vtk.vtkIntensityTransferFunction()
+		#print "\n\n****' SETING RANGE OF ALPHA TF =",maxval
+		#tf.SetRangeMax(maxval)    
+		#self.set("AlphaTransferFunction",tf)
+		
+		
+		for i in range(channels):
+			tf = vtk.vtkIntensityTransferFunction()
+			self.setCounted("IntensityTransferFunction", i, tf, 0)
+		self.set("PreviewChannel", 1)
+			
+	def get(self, name):
+		"""
+		Created: 03.07.2005
+		Description: Return the value of a key
+		"""
+		val = DataUnitSettings.get(self, name)
+		if name == "MergingColorTransferFunction" and not val:
+			val = DataUnitSettings.get(self, "ColorTransferFunction")
+			Logging.info("Returning proxyed ctf for merging", val, kw = "ctf")
+			self.set("MergingColorTransferFunction", val)
+			return val
+		return val

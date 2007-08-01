@@ -41,7 +41,7 @@ def getName():return "sections"
 def isDefaultMode(): return 0    
 def showInfoWindow(): return 1
 def showFileTree(): return 1
-def showSeparator(): return (0,0)
+def showSeparator(): return (0, 0)
 def getToolbarPos(): return 3
 
 
@@ -53,50 +53,50 @@ def getImmediateRendering(): return False
 def getConfigPanel(): return None
 def getRenderingDelay(): return 500
 def showZoomToolbar(): return True    
-        
+		
 class SectionsMode(VisualizationMode):
-    def __init__(self,parent,visualizer):
-        """
-        Created: 24.05.2005, KP
-        Description: Initialization
-        """
-        VisualizationMode.__init__(self,parent,visualizer)
-        self.sectionsPanel=None
-        
-    def updateRendering(self):
-        """
-        Created: 26.05.2005, KP
-        Description: Update the rendering
-        """      
-        self.sectionsPanel.setTimepoint(self.timepoint)
-        self.sectionsPanel.updatePreview()
-        self.sectionsPanel.Refresh()
-        
-    def showSliceSlider(self):
-        """
-        Created: 07.08.2005, KP
-        Description: Method that is queried to determine whether
-                     to show the zslider
-        """
-        return True
-        
-    def showSideBar(self):
-        """
-        Created: 24.05.2005, KP
-        Description: Method that is queried to determine whether
-                     to show the sidebar
-        """
-        return False
+	def __init__(self, parent, visualizer):
+		"""
+		Created: 24.05.2005, KP
+		Description: Initialization
+		"""
+		VisualizationMode.__init__(self, parent, visualizer)
+		self.sectionsPanel = None
+		
+	def updateRendering(self):
+		"""
+		Created: 26.05.2005, KP
+		Description: Update the rendering
+		"""      
+		self.sectionsPanel.setTimepoint(self.timepoint)
+		self.sectionsPanel.updatePreview()
+		self.sectionsPanel.Refresh()
+		
+	def showSliceSlider(self):
+		"""
+		Created: 07.08.2005, KP
+		Description: Method that is queried to determine whether
+					 to show the zslider
+		"""
+		return True
+		
+	def showSideBar(self):
+		"""
+		Created: 24.05.2005, KP
+		Description: Method that is queried to determine whether
+					 to show the sidebar
+		"""
+		return False
   
-    def activate(self,sidebarwin):
-        """
-        Created: 24.05.2005, KP
-        Description: Set the mode of visualization
-        """
-        bxd.wantWholeDataset = 1
+	def activate(self, sidebarwin):
+		"""
+		Created: 24.05.2005, KP
+		Description: Set the mode of visualization
+		"""
+		bxd.wantWholeDataset = 1
 
-        if not self.sectionsPanel:
-            x,y=self.visualizer.visWin.GetSize()
-            self.sectionsPanel=PreviewFrame.SectionsPanel(self.parent,self.visualizer,size=(x,y))
-            self.iactivePanel=self.sectionsPanel
-        return self.sectionsPanel
+		if not self.sectionsPanel:
+			x, y = self.visualizer.visWin.GetSize()
+			self.sectionsPanel = PreviewFrame.SectionsPanel(self.parent, self.visualizer, size = (x, y))
+			self.iactivePanel = self.sectionsPanel
+		return self.sectionsPanel

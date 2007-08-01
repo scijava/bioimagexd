@@ -8,7 +8,7 @@
 
  A module for managing the dynamic loading of various modules for
  BioImageXD
-           
+		   
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
 
@@ -39,90 +39,90 @@ import scripting
 import os.path
 import sys
 
-mcache={}
+mcache = {}
 
-def getRenderingModules(callback=None): return getModules("Rendering",callback=callback,moduleType="3D rendering module")
-def getVisualizationModes(callback=None): return getModules("Visualization",callback=callback,moduleType="")
-def getReaders(callback=None): return getModules("Readers",callback=callback,moduleType="Image format reader")
-def getTaskModules(callback=None): return getModules("Task","*",callback=callback,moduleType="Task module")
-    
-IGNORE=["ScaleBar.py","Spline.py","ArbitrarySlicer.py"]
+def getRenderingModules(callback = None): return getModules("Rendering", callback = callback, moduleType = "3D rendering module")
+def getVisualizationModes(callback = None): return getModules("Visualization", callback = callback, moduleType = "")
+def getReaders(callback = None): return getModules("Readers", callback = callback, moduleType = "Image format reader")
+def getTaskModules(callback = None): return getModules("Task", "*", callback = callback, moduleType = "Task module")
+	
+IGNORE = ["ScaleBar.py", "Spline.py", "ArbitrarySlicer.py"]
 
-def getModules(name,flag="*.py",callback=None,moduleType="Module"):
-    """
-    Created: 02.07.2005, KP
-    Description: Loads dynamically classes in a directory
-                 and returns a dictionary that contains 
-                 information about them
-    """    
-    global mcache
-    cname=name
-    if name in mcache:
-        return mcache[name]
-    modpath=scripting.get_module_dir()
-    Logging.info("Module dir=%s"%modpath,kw="modules")
-    pathlst=[modpath,name]
-    if flag:pathlst.append(flag)
-    path=reduce(os.path.join,pathlst)
-    spath=reduce(os.path.join,[modpath,name])
+def getModules(name, flag = "*.py", callback = None, moduleType = "Module"):
+	"""
+	Created: 02.07.2005, KP
+	Description: Loads dynamically classes in a directory
+				 and returns a dictionary that contains 
+				 information about them
+	"""    
+	global mcache
+	cname = name
+	if name in mcache:
+		return mcache[name]
+	modpath = scripting.get_module_dir()
+	Logging.info("Module dir=%s" % modpath, kw = "modules")
+	pathlst = [modpath, name]
+	if flag:pathlst.append(flag)
+	path = reduce(os.path.join, pathlst)
+	spath = reduce(os.path.join, [modpath, name])
 #    Logging.backtrace()
-    Logging.info("Path to modes: %s"%spath,kw="modules")
-    sys.path=sys.path+[spath]
-    
-    modules=glob.glob(path)
-    Logging.info("Modules from path %s are %s"%(path,str(modules)),kw="modules")
-    moddict={}
-    to_remove=[]
-    for file in modules:
-        for i in IGNORE:
-            if i == os.path.basename(file):
-                to_remove.append(file)
-    for i in to_remove:
-        modules.remove(i)
-    for file in modules:
-        if file.find(".py") != -1:
-            mod=file.split(".")[0:-1]
-            mod=".".join(mod)
-            Logging.info("mod %s corresponds to %s"%(mod,file),kw="modules")
+	Logging.info("Path to modes: %s" % spath, kw = "modules")
+	sys.path = sys.path + [spath]
+	
+	modules = glob.glob(path)
+	Logging.info("Modules from path %s are %s" % (path, str(modules)), kw = "modules")
+	moddict = {}
+	to_remove = []
+	for file in modules:
+		for i in IGNORE:
+			if i == os.path.basename(file):
+				to_remove.append(file)
+	for i in to_remove:
+		modules.remove(i)
+	for file in modules:
+		if file.find(".py") != -1:
+			mod = file.split(".")[0:-1]
+			mod = ".".join(mod)
+			Logging.info("mod %s corresponds to %s" % (mod, file), kw = "modules")
 
-        else:
-            mod=file
-        mod=mod.replace("/",".")
-        mod=mod.replace("\\",".")
-        frompath=mod.split(".")[:-1]
-        frompath=".".join(frompath)
-        mod=mod.split(".")[-1]
-        
-        
-        Logging.info("Importing %s = %s from %s"%(file, mod,frompath),kw="modules")
-        try:
-            module = __import__(mod,globals(),locals(),[])
-        except ImportError,ex:
-            Logging.info("Failed to load module %s"%str(mod),kw="modules")    
-            traceback.print_exc()
-            continue
-        if hasattr(module,"getShortDesc"):
-            name = module.getShortDesc()
-        else:
-            try:
-                name = module.getName()
-            except:
-                name = mod
-        if callback:
-            callback("Loading %s %s..."%(moduleType,name))
+		else:
+			mod = file
+		mod = mod.replace("/", ".")
+		mod = mod.replace("\\", ".")
+		frompath = mod.split(".")[:-1]
+		frompath = ".".join(frompath)
+		mod = mod.split(".")[-1]
+		
+		
+		Logging.info("Importing %s = %s from %s" % (file, mod, frompath), kw = "modules")
+		try:
+			module = __import__(mod, globals(), locals(), [])
+		except ImportError, ex:
+			Logging.info("Failed to load module %s" % str(mod), kw = "modules")    
+			traceback.print_exc()
+			continue
+		if hasattr(module, "getShortDesc"):
+			name = module.getShortDesc()
+		else:
+			try:
+				name = module.getName()
+			except:
+				name = mod
+		if callback:
+			callback("Loading %s %s..." % (moduleType, name))
 #        Logging.info("Module=%s"%module,kw="modules")
 
-        if hasattr(module,"getName"):
-            name = module.getName()
-        else:
-            print "Using",mod,"as name"
-            name = mod
-        modclass=module.getClass()    
-        settingclass=None
-        if hasattr(module,"getConfigPanel"):
-            settingclass=module.getConfigPanel()
-        moddict[name]=(modclass,settingclass,module)
-        
-    mcache[cname]=moddict
-    return moddict
-    
+		if hasattr(module, "getName"):
+			name = module.getName()
+		else:
+			print "Using", mod, "as name"
+			name = mod
+		modclass = module.getClass()    
+		settingclass = None
+		if hasattr(module, "getConfigPanel"):
+			settingclass = module.getConfigPanel()
+		moddict[name] = (modclass, settingclass, module)
+		
+	mcache[cname] = moddict
+	return moddict
+	

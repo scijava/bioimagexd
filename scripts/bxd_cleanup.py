@@ -1,5 +1,5 @@
 #!/usr/bin/python
-
+# -*- coding: iso-8859-1 -*-
 """
 bxd_cleanup.py - Python script for cleaning up python source code created for use with the BioImageXD
 project.
@@ -36,7 +36,9 @@ import re
 
 def printUsage():
 	print "bxd_cleanup.py - Cleans up python source files using regular expressions."
-	print "usage: bxd_cleanup.py source.py"
+	print "usage: bxd_cleanup.py [options] source.py"
+	print "available options:"
+	print "-r | --no-run		Do not try to execute the file with the python interpreter before cleanup"
 	print "The program will overwrite the old file, so make a backup copy if you're worried about"
 	print "your source file."
 
@@ -133,7 +135,7 @@ def substituteNonStrings(inFileName, outFileName):
 						stringBuffer = ""
 						inString = True
 						stringStartChar = char
-						if line[charIndex+1] == stringStartChar and line[charIndex+2] == stringStartChar:
+						if line[charIndex + 1] == stringStartChar and line[charIndex + 2] == stringStartChar:
 							inString = False
 							inTripleString = True
 					else:
@@ -161,21 +163,30 @@ addSpacesInDictDef = re.compile(r'":"')
 spaceToTabRe = re.compile('^(\\t*) {%d}' % tabsize)
 stringDelimiters = "\"'"
 
-if (len(sys.argv)) != 2:
+if (len(sys.argv)) < 2:
 	printUsage()
 	sys.exit()
 else:
-	fileName = sys.argv[1]
-	sourceFilePipe = os.popen('python %s' % fileName)
-	errors = sourceFilePipe.close()
-	if errors:
-		print "Errors found in the file, correct these and try again."
+	noRun = 0
+	args = sys.argv[1:]
+	for arg in args:
+		if arg[0]=='-' and arg not in ["-r", "--no-run"]:
+			printUsage()
+			sys.exit()
+		if arg in ["-r","--no-run"]:
+			noRun = 1
+		else:
+			fileName = arg
+	if not noRun:
+		sourceFilePipe = os.popen('python %s' % fileName)
+		errors = sourceFilePipe.close()
+		if errors:
+			print "Errors found in the file, correct these and try again."
+			sys.exit()
+	if not os.path.isfile(fileName):
+		print "File does not exist or is not a standard file."
 		sys.exit()
 	else:
-		if not os.path.isfile(fileName):
-			print "File does not exist or is not a standard file."
-			sys.exit()
-		else:
-			newFileName = fileName + ".backup"
-			shutil.copyfile(fileName, newFileName)
-			substituteNonStrings(newFileName, fileName)
+		newFileName = fileName + ".backup"
+		shutil.copyfile(fileName, newFileName)
+		substituteNonStrings(newFileName, fileName)

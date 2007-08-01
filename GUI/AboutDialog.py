@@ -39,79 +39,79 @@ import MainWindow
 import scripting
 
 class AboutDialog(wx.Dialog):
-    def __init__(self, parent):
-        wx.Dialog.__init__(self, parent, -1, 'About BioImageXD',size=(600,400))
-        self.sizer=wx.GridBagSizer(5,5)
-        x,y=(600,400)
-        
-        self.notebook = wx.Notebook(self,-1,size=(600,400))
-        
-        self.about = wx.html.HtmlWindow(self.notebook, -1, size=(420, 400))
-        if "gtk2" in wx.PlatformInfo:
-            self.about.SetStandardFonts()
-        col=self.GetBackgroundColour()
-        bgcol="#%2x%2x%2x"%(col.Red(),col.Green(),col.Blue())
-        dict={"bgcolor":bgcol,"version":MainWindow.VERSION,"icondir":scripting.get_icon_dir()}
-        self.about.SetPage(aboutText%dict)
-        ir = self.about.GetInternalRepresentation()
-        
-        #self.about.SetSize( (ir.GetWidth()+25, ir.GetHeight()+25) )
-        self.about.SetSize( (x,y) )
-        self.notebook.AddPage(self.about,"About BioImageXD")
-        
-        #self.gplPanel = scrolled.ScrolledPanel(self.notebook,-1,size=(x,y))
-        #box= wx.BoxSizer(wx.VERTICAL)
-        self.gpl = wx.html.HtmlWindow(self.notebook,-1,size=(420,400))
-        if "gtk2" in wx.PlatformInfo:
-            self.gpl.SetStandardFonts()
-        #box.Add(self.gpl)
-        #self.gplPanel.SetSizer(box)
-        #self.gplPanel.SetAutoLayout(1)
-        #self.gplPanel.SetupScrolling()
-        bgcol="#%2x%2x%2x"%(col.Red(),col.Green(),col.Blue())
-        dict={"bgcolor":bgcol}
-        self.gpl.SetPage(gplText%dict)
-        self.gpl.SetSize( (x,y) )        
-        self.notebook.AddPage(self.gpl,"BioImageXD License")
+	def __init__(self, parent):
+		wx.Dialog.__init__(self, parent, -1, 'About BioImageXD', size = (600, 400))
+		self.sizer = wx.GridBagSizer(5, 5)
+		x, y = (600, 400)
+		
+		self.notebook = wx.Notebook(self, -1, size = (600, 400))
+		
+		self.about = wx.html.HtmlWindow(self.notebook, -1, size = (420, 400))
+		if "gtk2" in wx.PlatformInfo:
+			self.about.SetStandardFonts()
+		col = self.GetBackgroundColour()
+		bgcol = "#%2x%2x%2x" % (col.Red(), col.Green(), col.Blue())
+		dict = {"bgcolor":bgcol, "version":MainWindow.VERSION, "icondir":scripting.get_icon_dir()}
+		self.about.SetPage(aboutText % dict)
+		ir = self.about.GetInternalRepresentation()
+		
+		#self.about.SetSize( (ir.GetWidth()+25, ir.GetHeight()+25) )
+		self.about.SetSize( (x, y) )
+		self.notebook.AddPage(self.about, "About BioImageXD")
+		
+		#self.gplPanel = scrolled.ScrolledPanel(self.notebook,-1,size=(x,y))
+		#box= wx.BoxSizer(wx.VERTICAL)
+		self.gpl = wx.html.HtmlWindow(self.notebook, -1, size = (420, 400))
+		if "gtk2" in wx.PlatformInfo:
+			self.gpl.SetStandardFonts()
+		#box.Add(self.gpl)
+		#self.gplPanel.SetSizer(box)
+		#self.gplPanel.SetAutoLayout(1)
+		#self.gplPanel.SetupScrolling()
+		bgcol = "#%2x%2x%2x" % (col.Red(), col.Green(), col.Blue())
+		dict = {"bgcolor":bgcol}
+		self.gpl.SetPage(gplText % dict)
+		self.gpl.SetSize( (x, y) )        
+		self.notebook.AddPage(self.gpl, "BioImageXD License")
 
-        
-        #self.licensingPanel = scrolled.ScrolledPanel(self.notebook,-1,size=(420,200))
-        #box=wx.BoxSizer(wx.VERTICAL)
-        self.licensing = wx.html.HtmlWindow(self.notebook, -1, size=(420, 400))
-        if "gtk2" in wx.PlatformInfo:
-            self.licensing.SetStandardFonts()
-        #box.Add(self.licensing)
-        #self.licensingPanel.SetSizer(box)
-        #self.licensingPanel.SetAutoLayout(1)
-        #self.licensingPanel.SetupScrolling()
-        col=self.GetBackgroundColour()
-        bgcol="#%2x%2x%2x"%(col.Red(),col.Green(),col.Blue())
-        dict={"bgcolor":bgcol}
-        self.licensing.SetPage(licensingText%dict)
-        
-        self.licensing.SetSize( (x,y) )        
-        self.notebook.AddPage(self.licensing,"Libraries")
+		
+		#self.licensingPanel = scrolled.ScrolledPanel(self.notebook,-1,size=(420,200))
+		#box=wx.BoxSizer(wx.VERTICAL)
+		self.licensing = wx.html.HtmlWindow(self.notebook, -1, size = (420, 400))
+		if "gtk2" in wx.PlatformInfo:
+			self.licensing.SetStandardFonts()
+		#box.Add(self.licensing)
+		#self.licensingPanel.SetSizer(box)
+		#self.licensingPanel.SetAutoLayout(1)
+		#self.licensingPanel.SetupScrolling()
+		col = self.GetBackgroundColour()
+		bgcol = "#%2x%2x%2x" % (col.Red(), col.Green(), col.Blue())
+		dict = {"bgcolor":bgcol}
+		self.licensing.SetPage(licensingText % dict)
+		
+		self.licensing.SetSize( (x, y) )        
+		self.notebook.AddPage(self.licensing, "Libraries")
 
 
-        self.sizer.Add(self.notebook,(0,0))
-               
-        #self.staticLine=wx.StaticLine(self)
-        #self.sizer.Add(self.staticLine,(1,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
-        self.ok=wx.Button(self,-1,"Ok")
-        self.ok.Bind(wx.EVT_BUTTON,self.closeWindow)
-        self.ok.SetDefault()
-        self.sizer.Add(self.ok,(2,0),flag=wx.ALIGN_CENTER)
-      
+		self.sizer.Add(self.notebook, (0, 0))
+			   
+		#self.staticLine=wx.StaticLine(self)
+		#self.sizer.Add(self.staticLine,(1,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
+		self.ok = wx.Button(self, -1, "Ok")
+		self.ok.Bind(wx.EVT_BUTTON, self.closeWindow)
+		self.ok.SetDefault()
+		self.sizer.Add(self.ok, (2, 0), flag = wx.ALIGN_CENTER)
+	  
 
-        self.SetSizer(self.sizer)
-        self.SetAutoLayout(1)
-        self.sizer.SetSizeHints(self)
-        self.sizer.Fit(self)
-        
-        self.CentreOnParent(wx.BOTH)
-        
-    def closeWindow(self,evt):
-        self.EndModal(wx.ID_OK)
+		self.SetSizer(self.sizer)
+		self.SetAutoLayout(1)
+		self.sizer.SetSizeHints(self)
+		self.sizer.Fit(self)
+		
+		self.CentreOnParent(wx.BOTH)
+		
+	def closeWindow(self, evt):
+		self.EndModal(wx.ID_OK)
 
 aboutText = u"""
 <html>
@@ -265,24 +265,24 @@ of it, thus forming a work based on the Program, and copy and
 distribute such modifications or work under the terms of Section 1
 above, provided that you also meet all of these conditions:
 </p><p>
-    a) You must cause the modified files to carry prominent notices
-    stating that you changed the files and the date of any change.
+	a) You must cause the modified files to carry prominent notices
+	stating that you changed the files and the date of any change.
 </p><p>
-    b) You must cause any work that you distribute or publish, that in
-    whole or in part contains or is derived from the Program or any
-    part thereof, to be licensed as a whole at no charge to all third
-    parties under the terms of this License.
+	b) You must cause any work that you distribute or publish, that in
+	whole or in part contains or is derived from the Program or any
+	part thereof, to be licensed as a whole at no charge to all third
+	parties under the terms of this License.
 </p><p>
-    c) If the modified program normally reads commands interactively
-    when run, you must cause it, when started running for such
-    interactive use in the most ordinary way, to print or display an
-    announcement including an appropriate copyright notice and a
-    notice that there is no warranty (or else, saying that you provide
-    a warranty) and that users may redistribute the program under
-    these conditions, and telling the user how to view a copy of this
-    License.  (Exception: if the Program itself is interactive but
-    does not normally print such an announcement, your work based on
-    the Program is not required to print an announcement.)
+	c) If the modified program normally reads commands interactively
+	when run, you must cause it, when started running for such
+	interactive use in the most ordinary way, to print or display an
+	announcement including an appropriate copyright notice and a
+	notice that there is no warranty (or else, saying that you provide
+	a warranty) and that users may redistribute the program under
+	these conditions, and telling the user how to view a copy of this
+	License.  (Exception: if the Program itself is interactive but
+	does not normally print such an announcement, your work based on
+	the Program is not required to print an announcement.)
 </p><p>
 These requirements apply to the modified work as a whole.  If
 identifiable sections of that work are not derived from the Program,
@@ -308,22 +308,22 @@ the scope of this License.
 under Section 2) in object code or executable form under the terms of
 Sections 1 and 2 above provided that you also do one of the following:
 </p><p>
-    a) Accompany it with the complete corresponding machine-readable
-    source code, which must be distributed under the terms of Sections
-    1 and 2 above on a medium customarily used for software interchange; or,
+	a) Accompany it with the complete corresponding machine-readable
+	source code, which must be distributed under the terms of Sections
+	1 and 2 above on a medium customarily used for software interchange; or,
 </p><p>
-    b) Accompany it with a written offer, valid for at least three
-    years, to give any third party, for a charge no more than your
-    cost of physically performing source distribution, a complete
-    machine-readable copy of the corresponding source code, to be
-    distributed under the terms of Sections 1 and 2 above on a medium
-    customarily used for software interchange; or,
+	b) Accompany it with a written offer, valid for at least three
+	years, to give any third party, for a charge no more than your
+	cost of physically performing source distribution, a complete
+	machine-readable copy of the corresponding source code, to be
+	distributed under the terms of Sections 1 and 2 above on a medium
+	customarily used for software interchange; or,
 </p><p>
-    c) Accompany it with the information you received as to the offer
-    to distribute corresponding source code.  (This alternative is
-    allowed only for noncommercial distribution and only if you
-    received the program in object code or executable form with such
-    an offer, in accord with Subsection b above.)
+	c) Accompany it with the information you received as to the offer
+	to distribute corresponding source code.  (This alternative is
+	allowed only for noncommercial distribution and only if you
+	received the program in object code or executable form with such
+	an offer, in accord with Subsection b above.)
 </p><p>
 The source code for a work means the preferred form of the work for
 making modifications to it.  For an executable work, complete source

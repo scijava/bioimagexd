@@ -4,6 +4,6 @@ its namespace.  This is a required module."""
 import os
 
 if os.name == 'posix':
-    from libvtkBXDProcessingPython import *
+	from libvtkBXDProcessingPython import *
 else:
-    from vtkBXDProcessingPython import *
+	from vtkBXDProcessingPython import *

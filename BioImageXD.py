@@ -52,58 +52,58 @@ import platform
 import getopt
 
 try:
-    import profile
+	import profile
 except:
-    profile=None
+	profile = None
 
 if "check" in sys.argv:
-    import pychecker.checker
-    import Logging
-    Logging.HIDE_DEBUG=Logging.KWS
+	import pychecker.checker
+	import Logging
+	Logging.HIDE_DEBUG = Logging.KWS
 
    
-        
+		
 # For MacOS X
 site.addsitedir("InsightToolkit/WrapITK/Python")
 site.addsitedir("InsightToolkit/WrapITK/lib")
 import scripting as bxd
 
-todir=bxd.get_main_dir()
+todir = bxd.get_main_dir()
 if todir:
-    os.chdir(todir)
+	os.chdir(todir)
 # Insert the path for the ITK libraries
 if not todir:
-    todir=os.getcwd()
-itklibdir=os.path.join(todir,os.path.join("ITK-pkg","lib"))
-itkbindir=os.path.join(todir,os.path.join("ITK-pkg","bin"))
-itkpythondir=os.path.join(todir,os.path.join("ITK-pkg","Python"))
+	todir = os.getcwd()
+itklibdir = os.path.join(todir, os.path.join("ITK-pkg", "lib"))
+itkbindir = os.path.join(todir, os.path.join("ITK-pkg", "bin"))
+itkpythondir = os.path.join(todir, os.path.join("ITK-pkg", "Python"))
 
 
-sys.path.insert(0,itklibdir)
-sys.path.insert(0,itkbindir)
-sys.path.insert(0,itkpythondir)
+sys.path.insert(0, itklibdir)
+sys.path.insert(0, itkbindir)
+sys.path.insert(0, itkpythondir)
 
 if "py2exe" not in sys.argv:
-    import itk
+	import itk
 
 #sys.path.insert(0,reduce(os.path.join,["vtkBXD","Wrapping","Python"]))
 #sys.path.insert(0,reduce(os.path.join,["vtkBXD","bin"]))
 #sys.path.insert(0,"H:\\vtkBXD\\bin")
-sys.path.insert(0,"/Users/kallepahajoki/VTK/bin")
-sys.path.insert(0,"/Users/kallepahajoki/VTK/Wrapping/Python")
-PATH=os.getenv("PATH")
-PATH=PATH+os.path.pathsep+itklibdir+os.path.pathsep+itkbindir+os.path.pathsep+itkpythondir
-os.putenv("PATH",PATH)
-    
-        
+sys.path.insert(0, "/Users/kallepahajoki/VTK/bin")
+sys.path.insert(0, "/Users/kallepahajoki/VTK/Wrapping/Python")
+PATH = os.getenv("PATH")
+PATH = PATH + os.path.pathsep + itklibdir + os.path.pathsep + itkbindir + os.path.pathsep + itkpythondir
+os.putenv("PATH", PATH)
+	
+		
 import csv
 
 import Configuration
 # This will fix the VTK paths using either values from the
 # configuration file, or sensible defaults
 
-conffile = os.path.join(bxd.get_config_dir(),"BioImageXD.ini")
-conf=Configuration.Configuration(conffile)
+conffile = os.path.join(bxd.get_config_dir(), "BioImageXD.ini")
+conf = Configuration.Configuration(conffile)
 
 # We need to import VTK here so that it is imported before  python.
 # if wxpython gets imported before vtk, the vtkExtTIFFReader will not read the olympus files
@@ -114,13 +114,13 @@ import vtkbxd
 #    pass
 
 import vtk
-w=vtk.vtkOutputWindow()
-i=w.GetInstance()
-def onWarning(obj,evt,*args):
-    Logging.backtrace()
-    print "VTK message:\n", evt
-w.AddObserver("WarningEvent",onWarning)
-w.AddObserver("ErrorEvent",onWarning)
+w = vtk.vtkOutputWindow()
+i = w.GetInstance()
+def onWarning(obj, evt, *args):
+	Logging.backtrace()
+	print "VTK message:\n", evt
+w.AddObserver("WarningEvent", onWarning)
+w.AddObserver("ErrorEvent", onWarning)
 import Logging
 import scripting
 
@@ -137,176 +137,176 @@ import wx
 
 
 class LSMApplication(wx.App):
-    """
-    Created: 03.11.2004, KP
-    Description: Encapsulates the wxPython initialization and mainwindow creation
-    """
+	"""
+	Created: 03.11.2004, KP
+	Description: Encapsulates the wxPython initialization and mainwindow creation
+	"""
 
-    def OnInit(self):
-        """
-        Created: 10.1.2005, KP
-        Description: Create the application's main window
-        """
-        self.SetAppName("BioImageXD")
-        iconpath = bxd.get_icon_dir()
-        
-        splashfile = os.path.join(iconpath,"splash2.jpg")
-        splash=SplashScreen.SplashScreen(None, duration=99000,bitmapfile = splashfile)
-        splash.Show()
-        splash.SetMessage("Loading BioImageXD...")
-        self.splash = splash
-         # Import Psyco if available
-        try:
-            pass
-            #import psyco
+	def OnInit(self):
+		"""
+		Created: 10.1.2005, KP
+		Description: Create the application's main window
+		"""
+		self.SetAppName("BioImageXD")
+		iconpath = bxd.get_icon_dir()
+		
+		splashfile = os.path.join(iconpath, "splash2.jpg")
+		splash = SplashScreen.SplashScreen(None, duration = 99000, bitmapfile = splashfile)
+		splash.Show()
+		splash.SetMessage("Loading BioImageXD...")
+		self.splash = splash
+		 # Import Psyco if available
+		try:
+			pass
+			#import psyco
 
-            #psyco.log()
-            #psyco.profile()
-            #psyco.full()
-        except ImportError:
-            pass        
-        provider = wx.SimpleHelpProvider()
-        wx.HelpProvider_Set(provider)
-        
-        self.mainwin=GUI.MainWindow.MainWindow(None,-1,self,splash)
-        self.mainwin.config=wx.Config("BioImageXD", style=wx.CONFIG_USE_LOCAL_FILE)        
-        
-        bxd.app = self
-        bxd.mainWindow = self.mainwin
-        
-        self.mainwin.Show(True)
-        self.SetTopWindow(self.mainwin)
-        
-    
-        return True
-        
-    def MacOpenFile(self, filename):
-        """
-        Created: 14.03.2007, KP
-        Description: open a file that was dragged on the app
-        """
-        self.mainwin.loadFiles([filename])
+			#psyco.log()
+			#psyco.profile()
+			#psyco.full()
+		except ImportError:
+			pass        
+		provider = wx.SimpleHelpProvider()
+		wx.HelpProvider_Set(provider)
+		
+		self.mainwin = GUI.MainWindow.MainWindow(None, -1, self, splash)
+		self.mainwin.config = wx.Config("BioImageXD", style = wx.CONFIG_USE_LOCAL_FILE)        
+		
+		bxd.app = self
+		bxd.mainWindow = self.mainwin
+		
+		self.mainwin.Show(True)
+		self.SetTopWindow(self.mainwin)
+		
+	
+		return True
+		
+	def MacOpenFile(self, filename):
+		"""
+		Created: 14.03.2007, KP
+		Description: open a file that was dragged on the app
+		"""
+		self.mainwin.loadFiles([filename])
 
-    def run(self, files, scriptfile):
-        """
-        Created: 03.11.2004, KP
-        Description: Run the wxPython main loop
-        """
-        if files:
-            self.mainwin.loadFiles(files)
-        
-        if scriptfile:
-            self.splash.SetMessage("Loading script file %s..."%scriptfile)
-            self.mainwin.loadScript(scriptfile)
-        self.MainLoop()
+	def run(self, files, scriptfile):
+		"""
+		Created: 03.11.2004, KP
+		Description: Run the wxPython main loop
+		"""
+		if files:
+			self.mainwin.loadFiles(files)
+		
+		if scriptfile:
+			self.splash.SetMessage("Loading script file %s..." % scriptfile)
+			self.mainwin.loadScript(scriptfile)
+		self.MainLoop()
 
 
 def usage():
-    print "Usage: BioImageXD [-h|--help] | [-x script.bxs|--execute=script.bxs] [-i file|--input=file] [-d directory|--directory=directory]"
-    print ""
-    print "-x | --execute\tExecute the given script file"
-    print "-i | --input\tLoad the given file as default input"
-    print "-d | --directory\tLoad all files from given directory"
-    print "-t | --tofile\tLog all messages to a log file"
-    print "-l | --logfile\tLog all messages to given file"
-    print "-p | --profile\tProfile the execution of the program"
-    print "-P | --interpret\tInterpret the results of the profiling"
-    
-    sys.exit(2)
-    
+	print "Usage: BioImageXD [-h|--help] | [-x script.bxs|--execute=script.bxs] [-i file|--input=file] [-d directory|--directory=directory]"
+	print ""
+	print "-x | --execute\tExecute the given script file"
+	print "-i | --input\tLoad the given file as default input"
+	print "-d | --directory\tLoad all files from given directory"
+	print "-t | --tofile\tLog all messages to a log file"
+	print "-l | --logfile\tLog all messages to given file"
+	print "-p | --profile\tProfile the execution of the program"
+	print "-P | --interpret\tInterpret the results of the profiling"
+	
+	sys.exit(2)
+	
 
-if __name__=='__main__':
-    if "py2exe" in sys.argv or "py2app" in sys.argv:
-        from build_app import *
-        build()
-    else:
-        try:
-            opts, args = getopt.getopt(sys.argv[1:], 'hx:i:d:tpPl', ["help","execute=","input=","directory=","tofile","profile","interpret","logfile"])
-        except getopt.GetoptError:
-            usage()
-        
-        toFile = 0
-        doProfile = 0
-        doInterpret=0
-        scriptFile = ""
-        logfile=""
-        logdir=""
-        dataFiles=[]
-        for opt,arg in opts:
-            if opt in ["-h","--help"]:
-                usage()
-            elif opt in ["-x","--execute"]:
-                scriptFile = arg
-            elif opt in ["-d","--directory"]:
-                dataFiles = glob.glob(os.path.join(arg,"*"))
-            elif opt in ["-i","--input"]:
-                dataFiles = [arg]
-            elif opt in ["-t","--tofile"]:
-                toFile = 1
-            elif opt in ["-p","--profile"]:
-                doProfile = 1
-            elif opt in ["-P","--interpret"]:
-                doInterpret=1
-            elif opt in ["-l","--logfile"]:
-                logfile=arg
-        dataFiles.extend(args)
-        # If the main application is frozen, then we redirect logging
-        # to  a log file
-        
-        captureOutput = StringIO.StringIO()
-        bxd.logFile = captureOutput
-        
-        if toFile or bxd.main_is_frozen():
-            import time
-            if not logfile:
-                logfile=time.strftime("output_%d.%m.%y@%H%M.log")
-                
-                logdir=bxd.get_log_dir()
-                if not os.path.exists(logdir):
-                    os.mkdir(logdir)
-                logfile=os.path.join(logdir,logfile)
-            f1=open(logfile,"w")
-            
-            if logdir:
-                logfile2=os.path.join(logdir,"latest.log")
-                f2=open(logfile2,"w")
-                f = Logging.Tee(f1,f2, captureOutput)
-            clean = eval(conf.getConfigItem("CleanExit","General"))
-            if not clean:
-                bxd.uncleanLog = conf.getConfigItem("LastLogFile","General")
-            else:
-                bxd.uncleanLog = None
+if __name__ == '__main__':
+	if "py2exe" in sys.argv or "py2app" in sys.argv:
+		from build_app import *
+		build()
+	else:
+		try:
+			opts, args = getopt.getopt(sys.argv[1:], 'hx:i:d:tpPl', ["help", "execute=", "input=", "directory=", "tofile", "profile", "interpret", "logfile"])
+		except getopt.GetoptError:
+			usage()
+		
+		toFile = 0
+		doProfile = 0
+		doInterpret = 0
+		scriptFile = ""
+		logfile = ""
+		logdir = ""
+		dataFiles = []
+		for opt, arg in opts:
+			if opt in ["-h", "--help"]:
+				usage()
+			elif opt in ["-x", "--execute"]:
+				scriptFile = arg
+			elif opt in ["-d", "--directory"]:
+				dataFiles = glob.glob(os.path.join(arg, "*"))
+			elif opt in ["-i", "--input"]:
+				dataFiles = [arg]
+			elif opt in ["-t", "--tofile"]:
+				toFile = 1
+			elif opt in ["-p", "--profile"]:
+				doProfile = 1
+			elif opt in ["-P", "--interpret"]:
+				doInterpret = 1
+			elif opt in ["-l", "--logfile"]:
+				logfile = arg
+		dataFiles.extend(args)
+		# If the main application is frozen, then we redirect logging
+		# to  a log file
+		
+		captureOutput = StringIO.StringIO()
+		bxd.logFile = captureOutput
+		
+		if toFile or bxd.main_is_frozen():
+			import time
+			if not logfile:
+				logfile = time.strftime("output_%d.%m.%y@%H%M.log")
+				
+				logdir = bxd.get_log_dir()
+				if not os.path.exists(logdir):
+					os.mkdir(logdir)
+				logfile = os.path.join(logdir, logfile)
+			f1 = open(logfile, "w")
+			
+			if logdir:
+				logfile2 = os.path.join(logdir, "latest.log")
+				f2 = open(logfile2, "w")
+				f = Logging.Tee(f1, f2, captureOutput)
+			clean = eval(conf.getConfigItem("CleanExit", "General"))
+			if not clean:
+				bxd.uncleanLog = conf.getConfigItem("LastLogFile", "General")
+			else:
+				bxd.uncleanLog = None
 
-            conf.setConfigItem("LastLogFile","General",logfile)
-            import atexit
-            atexit.register(f.flush)
-            sys.stdout = f 
-            sys.stderr = f
-            Logging.outfile = f
-            Logging.enableFull()
-        else:
-            f = Logging.Tee(sys.stdout, captureOutput)
-            sys.stdout = f
-            sys.stderr = f
-            Logging.outfile = f
-           
-        
-        if doInterpret:
-            import pstats
-            p = pstats.Stats('prof.log')
-            p.sort_stats('time', 'cum').print_stats(.5, 'init')
-            sys.exit(0)
-        
-        conf.setConfigItem("CleanExit","General","False")
-        conf.writeSettings()
-        app=LSMApplication(0)    
-        toRemove=[]
-        for file in dataFiles:
-            if os.path.isdir(file):
-                toRemove.append(file)
-        for file in toRemove: dataFiles.remove(file)
-        
-        if doProfile and profile:
-            profile.run('app.run(dataFiles, scriptFile)', 'prof.log')
-        else:
-            app.run(dataFiles, scriptFile)
+			conf.setConfigItem("LastLogFile", "General", logfile)
+			import atexit
+			atexit.register(f.flush)
+			sys.stdout = f 
+			sys.stderr = f
+			Logging.outfile = f
+			Logging.enableFull()
+		else:
+			f = Logging.Tee(sys.stdout, captureOutput)
+			sys.stdout = f
+			sys.stderr = f
+			Logging.outfile = f
+		   
+		
+		if doInterpret:
+			import pstats
+			p = pstats.Stats('prof.log')
+			p.sort_stats('time', 'cum').print_stats(.5, 'init')
+			sys.exit(0)
+		
+		conf.setConfigItem("CleanExit", "General", "False")
+		conf.writeSettings()
+		app = LSMApplication(0)    
+		toRemove = []
+		for file in dataFiles:
+			if os.path.isdir(file):
+				toRemove.append(file)
+		for file in toRemove: dataFiles.remove(file)
+		
+		if doProfile and profile:
+			profile.run('app.run(dataFiles, scriptFile)', 'prof.log')
+		else:
+			app.run(dataFiles, scriptFile)

@@ -24,7 +24,7 @@ def writeSvnDiffs(filelist, fromrev, torev, dirprefix):
 			print "PROCESSING", filename
 			svncommand = "svn diff -r %d:%d %s > %s/%s.diff" % (fromrev, torev, subpath, dirprefix, subpath)
 			print svncommand
-			diffFileDir = os.path.expanduser(os.path.join(dirprefix,subpathdir))
+			diffFileDir = os.path.expanduser(os.path.join(dirprefix, subpathdir))
 			if not os.path.exists(diffFileDir):
 				os.makedirs(diffFileDir)
 			os.system(svncommand)

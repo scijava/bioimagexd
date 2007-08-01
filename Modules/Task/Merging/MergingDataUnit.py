@@ -34,47 +34,47 @@ from DataUnit import CombinedDataUnit
 import MergingSettings
 import scripting as bxd
 class MergingDataUnit(CombinedDataUnit):
-    """
-    Created: 03.07.2005, KP
-    Description: Class for a merged channels dataset
-    """
-    def __init__(self, name=""):
-        """
-        Created: 03.11.2004, JM
-        Description: Constructor
-        """
-        CombinedDataUnit.__init__(self,name)
-        self.handleOriginal=0
-        self.merging = 1
-    
+	"""
+	Created: 03.07.2005, KP
+	Description: Class for a merged channels dataset
+	"""
+	def __init__(self, name = ""):
+		"""
+		Created: 03.11.2004, JM
+		Description: Constructor
+		"""
+		CombinedDataUnit.__init__(self, name)
+		self.handleOriginal = 0
+		self.merging = 1
+	
 
-    def getBitDepth(self):
-        if bxd.wantAlphaChannel:return 32
-        return 24
-        
-    def getSingleComponentBitDepth(self):
-        """
-        Created: 13.06.2007, KP
-        Description: return the bit depth of a single component"
-        """
-        # Merging will always create 8-bit data
-        return 8
-        
-    def getSettingsClass(self):
-        """
-        Created: 02.04.2005, KP
-        Description: Return the class that represents settings for this dataunit
-        """
-        return MergingSettings.MergingSettings
-        
-    def setOutputChannel(self,ch,flag):
-        """
-        Created: 22.07.2005, KP
-        Description: Mark a channel as being part of the output
-        """
-        # We duplicate a bit of functionality from combined data unit
-        # with this, but because they need to function differently, it
-        # is easier than to duplicate the doPreview() function
-        self.sourceunits[ch].getSettings().set("PreviewChannel",flag)
-        CombinedDataUnit.setOutputChannel(self,ch, flag)
-        
+	def getBitDepth(self):
+		if bxd.wantAlphaChannel:return 32
+		return 24
+		
+	def getSingleComponentBitDepth(self):
+		"""
+		Created: 13.06.2007, KP
+		Description: return the bit depth of a single component"
+		"""
+		# Merging will always create 8-bit data
+		return 8
+		
+	def getSettingsClass(self):
+		"""
+		Created: 02.04.2005, KP
+		Description: Return the class that represents settings for this dataunit
+		"""
+		return MergingSettings.MergingSettings
+		
+	def setOutputChannel(self, ch, flag):
+		"""
+		Created: 22.07.2005, KP
+		Description: Mark a channel as being part of the output
+		"""
+		# We duplicate a bit of functionality from combined data unit
+		# with this, but because they need to function differently, it
+		# is easier than to duplicate the doPreview() function
+		self.sourceunits[ch].getSettings().set("PreviewChannel", flag)
+		CombinedDataUnit.setOutputChannel(self, ch, flag)
+		

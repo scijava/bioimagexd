@@ -39,49 +39,49 @@ from DataUnit import DataUnitSettings
 import vtk
 
 class AdjustSettings(DataUnitSettings):
-    """
-    Created: 27.03.2005, KP
-    Description: Stores settings related to dataset adjustment
-    """
-    def __init__(self,n=-1):
-        """
-        Created: 27.03.2005, KP
-        Description: Constructor
-        """
-        DataUnitSettings.__init__(self,n)
-        self.registerCounted("IntensityTransferFunctions",1)
-        self.register("InterpolationTimepoints")
-        self.set("Type","Adjust")
-        
-        self.registerPrivate("ColorTransferFunction",1)        
-        self.registerCounted("Source")
-        self.register("VoxelSize")
-        self.register("Spacing")
-        #self.register("Origin")
-        self.register("Dimensions")
-        self.register("Type")
-        self.register("Name")
-        self.register("BitDepth")
-        
-        self.set("InterpolationTimepoints",[])
-        
-    def initialize(self,dataunit,channels, timepoints):
-        """
-        Created: 27.03.2005
-        Description: Set initial values for settings based on 
-                     number of channels and timepoints
-        """
-        DataUnitSettings.initialize(self,dataunit,channels,timepoints)
-        ctf = self.get("ColorTransferFunction")
+	"""
+	Created: 27.03.2005, KP
+	Description: Stores settings related to dataset adjustment
+	"""
+	def __init__(self, n = -1):
+		"""
+		Created: 27.03.2005, KP
+		Description: Constructor
+		"""
+		DataUnitSettings.__init__(self, n)
+		self.registerCounted("IntensityTransferFunctions", 1)
+		self.register("InterpolationTimepoints")
+		self.set("Type", "Adjust")
+		
+		self.registerPrivate("ColorTransferFunction", 1)        
+		self.registerCounted("Source")
+		self.register("VoxelSize")
+		self.register("Spacing")
+		#self.register("Origin")
+		self.register("Dimensions")
+		self.register("Type")
+		self.register("Name")
+		self.register("BitDepth")
+		
+		self.set("InterpolationTimepoints", [])
+		
+	def initialize(self, dataunit, channels, timepoints):
+		"""
+		Created: 27.03.2005
+		Description: Set initial values for settings based on 
+					 number of channels and timepoints
+		"""
+		DataUnitSettings.initialize(self, dataunit, channels, timepoints)
+		ctf = self.get("ColorTransferFunction")
 
-        if hasattr(dataunit,"getScalarRange"):
-            minval,maxval = dataunit.getScalarRange()
-        else:
-            minval,maxval = dataunit.getSourceDataUnits()[0].getScalarRange()
+		if hasattr(dataunit, "getScalarRange"):
+			minval, maxval = dataunit.getScalarRange()
+		else:
+			minval, maxval = dataunit.getSourceDataUnits()[0].getScalarRange()
 
-        for i in range(timepoints):
-            
-            tf=vtk.vtkIntensityTransferFunction()
-            tf.SetRangeMax(maxval)
-            self.setCounted("IntensityTransferFunctions",i,tf,0)
+		for i in range(timepoints):
+			
+			tf = vtk.vtkIntensityTransferFunction()
+			tf.SetRangeMax(maxval)
+			self.setCounted("IntensityTransferFunctions", i, tf, 0)
  
