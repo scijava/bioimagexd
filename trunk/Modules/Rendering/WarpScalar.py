@@ -29,22 +29,21 @@ __author__ = "BioImageXD Project"
 __version__ = "$Revision: 1.9 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
-import wx
-
-import vtk
-import ColorTransferEditor
-import Dialogs
-
-from GUI import GUIBuilder
-import types
-from Visualizer.VisualizationModules import *
-
 import scripting as bxd
+import GUI.GUIBuilder
+import types
+from Visualizer.VisualizationModules import VisualizationModule
+from Visualizer.ModuleConfiguration import ModuleConfigurationPanel
+import vtk
 
-def getClass():return WarpScalarModule
-def getConfigPanel():return WarpScalarConfigurationPanel
-def getName():return "Warp scalar"
+def getClass():
+	return WarpScalarModule
 
+def getConfigPanel():
+	return WarpScalarConfigurationPanel
+
+def getName():
+	return "Warp scalar"
 
 class WarpScalarModule(VisualizationModule):
 	"""
@@ -108,10 +107,14 @@ class WarpScalarModule(VisualizationModule):
 		Created: 13.04.2006, KP
 		Description: Return the default value of a parameter
 		"""           
-		if parameter == "Slice":return 0
-		if parameter == "Normals":return 1
-		if parameter == "FeatureAngle":return 90
-		if parameter == "Scale":return - 0.2
+		if parameter == "Slice":
+			return 0
+		if parameter == "Normals":
+			return 1
+		if parameter == "FeatureAngle":
+			return 90
+		if parameter == "Scale":
+			return - 0.2
 			
 	def getRange(self, parameter):
 		"""
@@ -129,10 +132,14 @@ class WarpScalarModule(VisualizationModule):
 		Created: 13.04.2006, KP
 		Description: Return the type of the parameter
 		"""    
-		if parameter == "Slice":return GUIBuilder.SLICE
-		if parameter == "Normals":return types.BooleanType
-		if parameter == "FeatureAngle":return types.IntType
-		if parameter == "Scale":return types.FloatType
+		if parameter == "Slice":
+			return GUI.GUIBuilder.SLICE
+		if parameter == "Normals":
+			return types.BooleanType
+		if parameter == "FeatureAngle":
+			return types.IntType
+		if parameter == "Scale":
+			return types.FloatType
 		
 	def __getstate__(self):
 		"""
@@ -244,8 +251,8 @@ class WarpScalarModule(VisualizationModule):
 		"""          
 		pass
 
-
 class WarpScalarConfigurationPanel(ModuleConfigurationPanel):
+
 	def __init__(self, parent, visualizer, name = "WarpScalar", **kws):
 		"""
 		Created: 29.05.2006, KP
@@ -268,7 +275,7 @@ class WarpScalarConfigurationPanel(ModuleConfigurationPanel):
 		ModuleConfigurationPanel.setModule(self, module)
 		print "module=", module
 		self.module = module
-		self.gui = GUIBuilder.GUIBuilder(self, self.module)
+		self.gui = GUI.GUIBuilder.GUIBuilder(self, self.module)
 		self.module.sendUpdateGUI()
 		self.contentSizer.Add(self.gui, (0, 0))
 

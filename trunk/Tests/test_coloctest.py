@@ -1,7 +1,8 @@
 #! /usr/bin/env python
 import vtk
-import sys,time
-import threading
+import sys
+#import time
+#import threading
 #FILE="/home/kalpaha/BioImageXD/Data/sample2B.lsm"
 FILE="K:\\Data\\tps.mdb\\coloc1_tp1.lsm"
 #FILE="K:\\Data\\tps.mdb\\coloc1_tp9.lsm"
@@ -13,7 +14,7 @@ FILE="K:\\Data\\tps.mdb\\coloc1_tp1.lsm"
 #FILE="/home/kalpaha/BioImageXD/Data/selli_noise9.lsm"
 sys.path.insert(0,"../lib")
 sys.path.insert(0,"..")
-import ImageOperations
+#import ImageOperations
 
 reader=vtk.vtkLSMReader()
 reader.SetFileName(FILE)

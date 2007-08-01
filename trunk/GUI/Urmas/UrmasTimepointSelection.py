@@ -42,7 +42,7 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 import wx
 import wx.wizard
-import TimepointSelection
+import GUI.TimepointSelection
 
 class UrmasTimepointSelection(wx.wizard.PyWizardPage):
 	"""
@@ -54,7 +54,7 @@ class UrmasTimepointSelection(wx.wizard.PyWizardPage):
 		wx.wizard.PyWizardPage.__init__(self, parent)
 		self.sizer = wx.GridBagSizer()
 		
-		self.timepointSelection = TimepointSelection.TimepointSelectionPanel(self)
+		self.timepointSelection = GUI.TimepointSelection.TimepointSelectionPanel(self)
 		
 		self.sizer.Add(self.timepointSelection, (0, 0))
 		

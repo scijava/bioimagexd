@@ -29,22 +29,28 @@ __author__ = "BioImageXD Project"
 __version__ = "$Revision: 1.9 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
-import wx
-
-import vtk
-import ColorTransferEditor
-import Dialogs
-import types
+import GUI.GUIBuilder
+import lib.messenger
 import Logging
-import Volume
-
+import optimize
 import scripting as bxd
-from Visualizer.VisualizationModules import *
+import types
+from Visualizer.VisualizationModules import VisualizationModule
+from Visualizer.ModuleConfiguration import ModuleConfigurationPanel
+import Volume
+import vtk
 
-def getClass():return SurfaceModule
-def getConfigPanel():return SurfaceConfigurationPanel
-def getName():return "Surface rendering"
-def getQuickKeyCombo(): return "Shift-Ctrl-S"
+def getClass():
+	return SurfaceModule
+
+def getConfigPanel():
+	return SurfaceConfigurationPanel
+
+def getName():
+	return "Surface rendering"
+
+def getQuickKeyCombo(): 
+	return "Shift-Ctrl-S"
 
 class SurfaceModule(VisualizationModule):
 	"""
@@ -103,10 +109,10 @@ class SurfaceModule(VisualizationModule):
 		Description: Set the scalar range of this module
 		"""   
 		self.scalarRange = (min, max)
-		messenger.send(self, "update_SurfaceRangeBegin")
-		messenger.send(self, "update_SurfaceRangeEnd")
-		messenger.send(self, "update_SurfaceAmnt")
-		messenger.send(self, "update_IsoValue")
+		lib.messenger.send(self, "update_SurfaceRangeBegin")
+		lib.messenger.send(self, "update_SurfaceRangeEnd")
+		lib.messenger.send(self, "update_SurfaceAmnt")
+		lib.messenger.send(self, "update_IsoValue")
 		print "Scalar range of data=", min, max
 		
 	def getParameters(self):
@@ -114,10 +120,13 @@ class SurfaceModule(VisualizationModule):
 		Created: 31.05.2006, KP
 		Description: Return the list of parameters needed for configuring this GUI
 		"""            
-		return [ ["", ("Method", )],
-	   ["Smoothing options", ("Gaussian", "Normals", "FeatureAngle", "Simplify", "PreserveTopology") ],
-	   ["Iso-Surface", ("IsoValue", )],
-	   ["Multiple Surfaces", ("MultipleSurfaces", "SurfaceRangeBegin", GUIBuilder.NOBR, "SurfaceRangeEnd", "SurfaceAmnt", "Transparency")]]
+		return [["", ("Method", )], \
+				["Smoothing options", \
+					("Gaussian", "Normals", "FeatureAngle", "Simplify", "PreserveTopology") ], \
+	   			["Iso-Surface", ("IsoValue", )], \
+				["Multiple Surfaces", \
+					("MultipleSurfaces", "SurfaceRangeBegin", GUI.GUIBuilder.NOBR, \
+					"SurfaceRangeEnd", "SurfaceAmnt", "Transparency")]]
 		
 	def getRange(self, parameter):
 		"""
@@ -140,30 +149,44 @@ class SurfaceModule(VisualizationModule):
 		Created: 13.04.2006, KP
 		Description: Return the default value of a parameter
 		"""           
-		if parameter == "Method":return 1
-		if parameter == "Gaussian": return 1
-		if parameter == "Normals": return 1
-		if parameter == "FeatureAngle": return 45   
-		if parameter == "Simplify": return 0
-		if parameter == "PreserveTopology": return 1
-		if parameter == "IsoValue": return 128
-		if parameter == "Transparency": return 0
-		if parameter == "SurfaceRangeBegin": return 1
-		if parameter == "SurfaceRangeEnd": return 255
-		if parameter == "SurfaceAmnt": return 1
-		if parameter == "MultipleSurfaces": return 0
+		if parameter == "Method":
+			return 1
+		if parameter == "Gaussian": 
+			return 1
+		if parameter == "Normals": 
+			return 1
+		if parameter == "FeatureAngle": 
+			return 45   
+		if parameter == "Simplify": 
+			return 0
+		if parameter == "PreserveTopology": 
+			return 1
+		if parameter == "IsoValue": 
+			return 128
+		if parameter == "Transparency": 
+			return 0
+		if parameter == "SurfaceRangeBegin": 
+			return 1
+		if parameter == "SurfaceRangeEnd": 
+			return 255
+		if parameter == "SurfaceAmnt": 
+			return 1
+		if parameter == "MultipleSurfaces": 
+			return 0
 			
 	def getType(self, parameter):
 		"""
 		Created: 20.07.2006, KP
 		Description: Return the type of the parameter
 		"""   
-		if parameter == "Method":return GUIBuilder.CHOICE
-		if parameter in ["Gaussian", "Normals", "PreserveTopology", "MultipleSurfaces"]: return types.BooleanType
-		if parameter in ["Simplify", "IsoValue", "Transparency"]: return GUIBuilder.SLICE
-		if parameter in ["SurfaceRangeBegin", "SurfaceRangeEnd", "SurfaceAmnt", "FeatureAngle"]: return GUIBuilder.SPINCTRL
-				
-
+		if parameter == "Method":
+			return GUI.GUIBuilder.CHOICE
+		if parameter in ["Gaussian", "Normals", "PreserveTopology", "MultipleSurfaces"]: 
+			return types.BooleanType
+		if parameter in ["Simplify", "IsoValue", "Transparency"]: 
+			return GUI.GUIBuilder.SLICE
+		if parameter in ["SurfaceRangeBegin", "SurfaceRangeEnd", "SurfaceAmnt", "FeatureAngle"]: 
+			return GUI.GUIBuilder.SPINCTRL
 		
 	def setDataUnit(self, dataunit):
 		"""
@@ -203,8 +226,9 @@ class SurfaceModule(VisualizationModule):
 			Logging.info("Using volume rendering for isosurface")
 			self.disableRendering()
 			if not self.volumeModule:
-				self.volumeModule = Volume.VolumeModule(self.parent, self.visualizer, moduleName = "Volume", label = "Volume")
-				self.volumeModule.setMethod(Volume.ISOSURFACE)
+				self.volumeModule = Volume.VolumeModule(self.parent, self.visualizer, \
+														moduleName = "Volume", label = "Volume")
+				#self.volumeModule.setMethod(Volume.ISOSURFACE) #TODO: no such method
 				self.volumeModule.setDataUnit(self.dataUnit)
 			self.volumeModule.showTimepoint(self.timepoint)
 
@@ -259,7 +283,7 @@ class SurfaceModule(VisualizationModule):
 			
 		
 		x, y, z = self.dataUnit.getDimensions()
-		input = bxd.mem.optimize(image = input, updateExtent = (0, x - 1, 0, y - 1, 0, z - 1))
+		input = optimize.optimize(image = input, updateExtent = (0, x - 1, 0, y - 1, 0, z - 1))
 		self.contour.SetInput(input)
 		input = self.contour.GetOutput()
 		
@@ -270,15 +294,19 @@ class SurfaceModule(VisualizationModule):
 			Logging.info("Using single isovalue=%d" % int(self.parameters["IsoValue"]), kw = "visualizer")
 			self.contour.SetValue(0, self.parameters["IsoValue"])
 		else:
-			begin, end, n = self.parameters["SurfaceRangeBegin"], self.parameters["SurfaceRangeEnd"], self.parameters["SurfaceAmnt"]
+			begin = self.parameters["SurfaceRangeBegin"]
+			end = self.parameters["SurfaceRangeEnd"]
+			n = self.parameters["SurfaceAmnt"]
 			Logging.info("Generating %d values in range %d-%d" % (n, begin, end), kw = "visualizer")            
 			self.contour.GenerateValues(n, begin, end)
 			n = self.contour.GetNumberOfContours()
 			for i in range(0, n):
 				self.contour.SetValue(i, int(self.contour.GetValue(i)))
 			print self.contour
-		decimateLevel = self.parameters["Simplify"]
-		preserveTopology = self.parameters["PreserveTopology"]
+
+		#TODO: should decimateLevel and preserveTopology be instance variables?
+		decimateLevel = self.parameters["Simplify"] 
+		preserveTopology = self.parameters["PreserveTopology"] 
 		if decimateLevel != 0:            
 			self.decimate.SetPreserveTopology(preserveTopology)
 			if not preserveTopology:
@@ -289,7 +317,8 @@ class SurfaceModule(VisualizationModule):
 				self.decimate.BoundaryVertexDeletionOff()
 			self.decimate.SetTargetReduction(decimateLevel / 100.0)
 			
-			Logging.info("Decimating %.2f%%, preserve topology: %s" % (decimateLevel, preserveTopology), kw = "visualizer")
+			Logging.info("Decimating %.2f%%, preserve topology: %s" \
+						% (decimateLevel, preserveTopology), kw = "visualizer")
 			self.decimate.SetInput(input)
 			input = self.decimate.GetOutput()
 		
@@ -306,7 +335,6 @@ class SurfaceModule(VisualizationModule):
 		#self.mapper.Update()
 		self.parent.Render()    
 
-
 class SurfaceConfigurationPanel(ModuleConfigurationPanel):
 	def __init__(self, parent, visualizer, name = "Surface rendering", **kws):
 		"""
@@ -316,13 +344,13 @@ class SurfaceConfigurationPanel(ModuleConfigurationPanel):
 		ModuleConfigurationPanel.__init__(self, parent, visualizer, name, **kws)
 		self.method = 0
 		
-	def setModule(self, module):
-		"""
-		Created: 28.04.2005, KP
-		Description: Set the module to be configured
-		"""  
-		ModuleConfigurationPanel.setModule(self, module)
-		self.module.sendUpdateGUI()
+#	def setModule(self, module): #TODO: why two modules named setModule() ?
+#		"""
+#		Created: 28.04.2005, KP
+#		Description: Set the module to be configured
+#		"""  
+#		ModuleConfigurationPanel.setModule(self, module)
+#		self.module.sendUpdateGUI()
 		
 	def onApply(self, event):
 		"""
@@ -339,11 +367,12 @@ class SurfaceConfigurationPanel(ModuleConfigurationPanel):
 		Created: 30.04.2005, KP
 		Description: Select the surface rendering method
 		"""  
-		self.method = self.moduleChoice.GetSelection()
+		self.method = self.moduleChoice.GetSelection() #TODO: no variable moduleChoice
 		flag = (self.method != 3)
-		self.isoRangeBegin.Enable(flag)
-		self.isoRangeEnd.Enable(flag)
-		self.isoRangeSurfaces.Enable(flag)
+
+		#self.isoRangeBegin.Enable(flag)
+		#self.isoRangeEnd.Enable(flag)
+		#self.isoRangeSurfaces.Enable(flag)
 
 	def initializeGUI(self):
 		"""
@@ -360,7 +389,7 @@ class SurfaceConfigurationPanel(ModuleConfigurationPanel):
 		ModuleConfigurationPanel.setModule(self, module)
 		#print "module=",module
 		self.module = module
-		self.gui = GUIBuilder.GUIBuilder(self, self.module)
+		self.gui = GUI.GUIBuilder.GUIBuilder(self, self.module)
 		
 		self.contentSizer.Add(self.gui, (0, 0))
 		

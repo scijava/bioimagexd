@@ -1,4 +1,4 @@
-4#! /usr/bin/env python
+#! /usr/bin/env python
 # -*- coding: iso-8859-1 -*-
 """
  Unit: ResampleDialog
@@ -29,12 +29,11 @@
 __author__ = "BioImageXD Project"
 __version__ = "$Revision: 1.40 $"
 __date__ = "$Date: 2005/01/13 14:52:39 $"
-import sys
-import Logging
-import wx
-import UIElements
-import string
+
 import scripting as bxd
+import string
+import UIElements
+import wx
 
 class ResampleDialog(wx.Dialog):
 	"""
@@ -45,7 +44,7 @@ class ResampleDialog(wx.Dialog):
 		"""
 		Created: 1.09.2005, KP
 		Description: Initialize the dialog
-		"""    
+		"""
 		wx.Dialog.__init__(self, parent, -1, 'Resample dataset', style = wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
 		self.dataUnits = []
 		self.sizer = wx.GridBagSizer(5, 0)
@@ -78,17 +77,16 @@ class ResampleDialog(wx.Dialog):
 			i.dataSource.getDataSet(bxd.visualizer.getTimepoint()).SetUpdateExtent((0, -1, 0, -1, 0, -1))
 		self.result = 1
 		self.Close()
-
 		
 	def setDataUnits(self, dataunits):
 		"""
 		Created: 1.09.2005, KP
 		Description: Set the dataunits to be resampled
-		"""        
+		"""
 		self.dataUnits = dataunits
 		
 		x, y, z = self.dataUnits[0].getDimensions()
-		self.dims = (x, y, z)       
+		self.dims = (x, y, z)
 		self.newDimX.SetValue("%d" % x)
 		self.newDimY.SetValue("%d" % y)
 		self.newDimZ.SetValue("%d" % z)
@@ -101,7 +99,7 @@ class ResampleDialog(wx.Dialog):
 		Description: Update the dimensions
 		"""
 		if self.blockDimUpdate:
-			return        
+			return
 		rx, ry, rz = self.dims
 		try:
 			rx = int(self.newDimX.GetValue())
@@ -155,7 +153,7 @@ class ResampleDialog(wx.Dialog):
 		"""
 		Created: 1.09.2005, KP
 		Description: Creates the GUI for setting the resampled size
-		"""            
+		"""
 		box = wx.StaticBox(self, -1, "Resample now to")
 		self.currDimText = u"Current dataset original dimensions: %d x %d x %d"
 		self.dimsLbl = wx.StaticText(self, -1, self.currDimText % (0, 0, 0))
@@ -174,15 +172,15 @@ class ResampleDialog(wx.Dialog):
 		self.factorLabel = factorLabel = wx.StaticText(panel, -1, "scale:")
 		#self.factorBox.Add(factorLabel,0,wx.ALIGN_CENTER_VERTICAL)
 		self.factorX = wx.TextCtrl(panel, -1, "%.2f" % 1, size = (50, -1))
-		self.factorBox.Add(self.factorX)    
+		self.factorBox.Add(self.factorX)
 		x1 = wx.StaticText(panel, -1, "x")
 		self.factorBox.Add(x1, 0, wx.ALIGN_CENTER_VERTICAL)
 		self.factorY = wx.TextCtrl(panel, -1, "%.2f" % 1, size = (50, -1))
-		self.factorBox.Add(self.factorY, 0, wx.ALIGN_CENTER_VERTICAL)    
+		self.factorBox.Add(self.factorY, 0, wx.ALIGN_CENTER_VERTICAL)
 		x2 = wx.StaticText(panel, -1, "x")
 		self.factorBox.Add(x2, 0, wx.ALIGN_CENTER_VERTICAL)
 		self.factorZ = wx.TextCtrl(panel, -1, "%.2f" % 1, size = (50, -1))
-		self.factorBox.Add(self.factorZ, 0, wx.ALIGN_CENTER_VERTICAL)    
+		self.factorBox.Add(self.factorZ, 0, wx.ALIGN_CENTER_VERTICAL)
 
 		
 		self.dimLabel = dimLabel = wx.StaticText(panel, -1, "dimensions: ")
@@ -240,14 +238,14 @@ class ResampleDialog(wx.Dialog):
 		
 		n = 0
 		custDimScaleSizer.Add(dimLabel, (n, 0))
-		custDimScaleSizer.Add(dimsizer, (n, 1))        
+		custDimScaleSizer.Add(dimsizer, (n, 1))
 		n += 1
 		custDimScaleSizer.Add(factorLabel, (n, 0))
 		custDimScaleSizer.Add(self.factorBox, (n, 1), flag = wx.EXPAND | wx.LEFT | wx.RIGHT)
 		
 		n = 0
 		sizer.Add(self.dimsLbl, (n, 0), flag = wx.EXPAND | wx.LEFT | wx.RIGHT, span = (1, 2))
-		n += 1        
+		n += 1
 		
 		sizer.Add(halfSize, (n, 0))
 		sizer.Add(halfSizeBox, (n, 1))
@@ -282,7 +280,7 @@ class ResampleDialog(wx.Dialog):
 			rx = int(self.newDimX.GetValue())
 			ry = int(self.newDimY.GetValue())
 			rz = int(self.newDimZ.GetValue())
-			self.currSize = (rx, ry, rz)        
+			self.currSize = (rx, ry, rz)
 		except:
 			pass
 		
@@ -303,7 +301,7 @@ class ResampleDialog(wx.Dialog):
 			print "Resampling in Z = ", zf
 		self.fourthResampleZ.Enable(0)
 		for obj in [self.factorLabel, self.dimLabel, self.newDimX, self.newDimY, self.newDimZ, self.factorX, self.factorY, self.factorZ]:
-			obj.Enable(0)        
+			obj.Enable(0)
 		
 	def onSetToFourthSize(self, evt):
 		"""
@@ -318,10 +316,8 @@ class ResampleDialog(wx.Dialog):
 			
 			if self.fourthResampleZ.GetValue():
 				zf = 0.25
-				
 			self.currSize = int(0.25 * x), int(0.25 * y), int(zf * z)   
 			print "Resampling in Z = ", zf
 		for obj in [self.factorLabel, self.dimLabel, self.newDimX, self.newDimY, self.newDimZ, self.factorX, self.factorY, self.factorZ]:
-			obj.Enable(0)        
-				
-		
+			obj.Enable(0)
+

@@ -37,9 +37,11 @@ __author__ = "BioImageXD Project"
 __version__ = "$Revision: 1.22 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
+#import Logging
+
 import wx
-import messenger
-import Logging
+import lib.messenger
+
 class TimeScale(wx.Panel):
 	"""
 	Class: TimeScale
@@ -56,8 +58,8 @@ class TimeScale(wx.Panel):
 		self.fgcolor = (0, 0, 0)
 
 		#self.setDuration(60)
-		messenger.connect(None, "set_duration", self.onSetDuration)
-		messenger.connect(None, "set_animator_zoom", self.onSetZoomLevel)
+		lib.messenger.connect(None, "set_duration", self.onSetDuration)
+		lib.messenger.connect(None, "set_animator_zoom", self.onSetZoomLevel)
 		self.Bind(wx.EVT_PAINT, self.onPaint)
 
 		
@@ -68,7 +70,7 @@ class TimeScale(wx.Panel):
 		Description: Sets the zoom level of the animator
 		"""            
 		self.setZoomLevel(level)
-		messenger.send(None, "update_timeline")
+		lib.messenger.send(None, "update_timeline")
 		
 	def onSetDuration(self, obj, evt, duration):
 		"""
@@ -158,7 +160,7 @@ class TimeScale(wx.Panel):
 		#print self.buffer.GetWidth(),self.buffer.GetHeight()
 		self.SetMinSize((self.width + 10, self.height))
 		#Logging.info("Set timescale size to %d,%d"%(self.width,self.height),kw="animator")
-		messenger.send(None, "set_timeline_size", (self.width, self.height))
+		lib.messenger.send(None, "set_timeline_size", (self.width, self.height))
 		self.paintScale()
 		self.Refresh()
 		

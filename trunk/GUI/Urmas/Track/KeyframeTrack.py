@@ -36,23 +36,24 @@ __author__ = "BioImageXD Project"
 __version__ = "$Revision: 1.22 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
-import wx
+#import GUI.Dialogs
+#import ImageOperations
+#import math
+#import os.path
+#import random
+#from SplineTrack import *
+#import sys
+#import threading
+#import TimepointSelection
+#import wx
+
+from GUI.Urmas.UrmasPalette import UrmasDropTarget
+from GUI.Urmas.TrackItem.KeyframePoint import KeyframePoint
+from GUI.Urmas.TrackItem.KeyframePoint import KeyframeEndPoint
+import lib.messenger
 import Logging
-import os.path
-import sys
-import math, random
-import threading
+from SplineTrack import SplineTrack
 
-from Urmas.TrackItem import *
-from Urmas import UrmasPalette
-import ImageOperations
-import Dialogs
-import TimepointSelection
-
-import messenger
-
-from SplineTrack import *
- 
 class KeyframeTrack(SplineTrack):
 	"""
 	Created: 17.08.2005, KP
@@ -69,16 +70,16 @@ class KeyframeTrack(SplineTrack):
 		
 		kws["height"] = 80
 
-		Track.__init__(self, name, parent, **kws)   
+		SplineTrack.__init__(self, name, parent, **kws)
 		
 		self.paintOverlay = 1
 		self.overlayColor = ((0, 255, 0), 25)        
 		
 		self.itemClass = kws.get("item", KeyframePoint)
-		dt = UrmasPalette.UrmasDropTarget(self, "Keyframe")
+		dt = UrmasDropTarget(self, "Keyframe")
 		self.SetDropTarget(dt)
-		messenger.connect(None, "set_camera", self.onSetCamera)
-		messenger.connect(None, "show_time_pos", self.onDisableOverlay)
+		lib.messenger.connect(None, "set_camera", self.onSetCamera)
+		lib.messenger.connect(None, "show_time_pos", self.onDisableOverlay)
 
 	def onDisableOverlay(self, obj, evt, *arg):
 		"""
@@ -93,10 +94,10 @@ class KeyframeTrack(SplineTrack):
 		Created: 17.07.2005, KP
 		Description: Item is clicked
 		"""
-		ret = Track.onDown(self, event)
+		ret = SplineTrack.onDown(self, event)
 		if self.overlayItem and self.overlayPos != -1:
-			messenger.send(None, "set_timeslider_value", self.overlayPos * 10.0)
-			messenger.send(None, "render_time_pos", self.overlayPos)
+			lib.messenger.send(None, "set_timeslider_value", self.overlayPos * 10.0)
+			lib.messenger.send(None, "render_time_pos", self.overlayPos)
 			self.paintTrack()
 			self.Refresh()
 			return ret
@@ -196,7 +197,7 @@ class KeyframeTrack(SplineTrack):
 		Created: 14.04.2005, KP
 		Description: Return the dict that is to be pickled to disk
 		"""      
-		odict = Track.__getstate__(self)
+		odict = SplineTrack.__getstate__(self)
 		#n=0
 		#pos=0
 		#for key in ["closed","maintainUpDirection"]:
@@ -208,7 +209,7 @@ class KeyframeTrack(SplineTrack):
 		Created: 14.04.2005, KP
 		Description: Selects this track
 		""" 
-		Track.setSelected(self, event)
+		SplineTrack.setSelected(self, event)
 		if event:
 			self.showKeyframe()
 			#self.control.setKeyframeInteractionCallback(self.updateLabels)        
@@ -218,7 +219,7 @@ class KeyframeTrack(SplineTrack):
 		Created: 18.04.2005, KP
 		Description: Show Keyframe represented by this track
 		""" 
-		messenger.send(None, "set_keyframe_mode", 1)
+		lib.messenger.send(None, "set_keyframe_mode", 1)
 		self.splineEditor.setViewMode(1)
 			
 			
@@ -228,7 +229,7 @@ class KeyframeTrack(SplineTrack):
 		Description: Method called by UrmasPersist to allow the object
 					 to refresh before it's items are created
 		""" 
-		Track.__set_pure_state__(self, state)
+		SplineTrack.__set_pure_state__(self, state)
 		
 		spc = 0
 		

@@ -1,4 +1,4 @@
-from PreviewFrame import *
+#from PreviewFrame import *
 
-from GalleryPanel import *
-from SectionsPanel import *
+#from GalleryPanel import *
+#from SectionsPanel import *

@@ -33,11 +33,14 @@ __author__ = "BioImageXD Project"
 __version__ = "$Revision: 1.22 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
+#import Configuration
+
+from wx.lib.filebrowsebutton import DirBrowseButton
 import wx
-import  wx.lib.filebrowsebutton as filebrowse
-import Configuration
-import messenger
+import lib.messenger
+import Logging
 import platform
+
 class AcceptedValidator(wx.PyValidator):
 	def __init__(self, accept, above = -1, below = -1):
 		wx.PyValidator.__init__(self)
@@ -57,8 +60,10 @@ class AcceptedValidator(wx.PyValidator):
 				ival = int(val)
 			except:
 				return False
-			if above != -1 and ival < above:return False
-			if below != -1 and ival > below:return False    
+			if self.above != -1 and ival < self.above:
+				return False
+			if self.below != -1 and ival > self.below:
+				return False    
 			
 
 		for x in val:
@@ -90,7 +95,10 @@ class MyStaticBox(wx.StaticBox):
 	Created: 1.11.2006, KP
 	Description: A static box replacement that allows us to control how it is painted
 	"""
-	def __init__(self, parent, wid, label, pos = wx.DefaultPosition, size  = wx.DefaultSize, style = 0, name = "MyStaticBox"):
+	def __init__(self, parent, wid, label, pos = wx.DefaultPosition, \
+					size  = wx.DefaultSize, style = 0, name = "MyStaticBox"):
+
+		w, h = size
 		self.buffer = wx.EmptyBitmap(w, h, -1)
 		wx.StaticBox.__init__(self, parent, wid, label, pos, size, style, name)
 		
@@ -98,7 +106,6 @@ class MyStaticBox(wx.StaticBox):
 		self.label = label
 		self.Bind(wx.EVT_PAINT, self.onPaint)
 		self.Bind(wx.EVT_SIZE, self.onSize)
-		w, h = size
 		
 		self.owncol = (255, 255, 255)
 		self.paintSelf()
@@ -173,7 +180,8 @@ class DimensionInfo(wx.Window):
 	Created: 1.11.2006, KP
 	Description: A static box replacement that allows us to control how it is painted
 	"""
-	def __init__(self, parent, wid, pos = wx.DefaultPosition, size  = wx.DefaultSize, style = 0, name = "Dims info"):
+	def __init__(self, parent, wid, pos = wx.DefaultPosition, \
+					size  = wx.DefaultSize, style = 0, name = "Dims info"):
 		w, h = size
 		self.buffer = wx.EmptyBitmap(w, h, -1)
 		wx.Window.__init__(self, parent, wid, pos, size, style, name)
@@ -188,8 +196,8 @@ class DimensionInfo(wx.Window):
 		
 		self.nondarwin = platform.system() != "Darwin"
 		
-		messenger.connect(None, "set_resample_dims", self.onSetResampleDims)
-		messenger.connect(None, "set_current_dims", self.onSetCurrentDims)
+		lib.messenger.connect(None, "set_resample_dims", self.onSetResampleDims)
+		lib.messenger.connect(None, "set_current_dims", self.onSetCurrentDims)
 		self.owncol = (255, 255, 255)
 		self.paintSelf()
 		self.Raise()
@@ -302,8 +310,10 @@ class NamePanel(wx.Window):
 		wx.Window.__init__(self, parent, -1, size = size)
 		self.label = label
 		self.xoff, self.yoff = 8, 0
-		if kws.has_key("xoffset"):self.xoff = kws["xoffset"]
-		if kws.has_key("yoffset"):self.yoff = kws["yoffset"]
+		if kws.has_key("xoffset"):
+			self.xoff = kws["xoffset"]
+		if kws.has_key("yoffset"):
+			self.yoff = kws["yoffset"]
 		self.size = size
 		self.origsize = size
 		self.bold = 1
@@ -421,7 +431,7 @@ class NamePanel(wx.Window):
 		self.dc.SetTextForeground(self.fg)
 		weight = wx.NORMAL
 		if self.bold:
-		   weight = wx.BOLD
+			weight = wx.BOLD
 		self.dc.SetFont(wx.Font(9, wx.SWISS, wx.NORMAL, weight))
 		self.dc.DrawText(self.label, self.xoff, self.yoff)
 
@@ -436,7 +446,7 @@ def createDirBrowseButton(parent, label, callback):
 	sizer.Add(lbl)
 	field = wx.TextCtrl(parent, -1, "")
 	sizer2.Add(field)
-	btn = filebrowse.DirBrowseButton(parent, -1, changeCallback = callback)
+	btn = DirBrowseButton(parent, -1, changeCallback = callback)
 	sizer2.Add(btn)
 	sizer.Add(sizer2)
 	return sizer

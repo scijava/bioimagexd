@@ -30,10 +30,10 @@ __author__ = "BioImageXD Project"
 __version__ = "$Revision: 1.21 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
-
-import  wx
-import wx.lib.buttons as buttons
+from wx.lib.buttons import GenBitmapButton
+from wx.lib.buttons import GenBitmapToggleButton
 import platform
+import wx
 
 class ToolCommandEvent(wx.PyCommandEvent):
 	def __init__(self, eventType, eid, isdown):
@@ -47,13 +47,14 @@ class Toolbar(wx.Panel):
 	"""
 	Created: 27.04.2006, KP
 	Description: A toolbar that can change it's amount of tool rows based on it's size
-	"""        
-	def __init__(self, parent, wid, pos = wx.DefaultPosition, size = wx.DefaultSize, style = wx.TB_HORIZONTAL | wx.NO_BORDER, name = ""):
+	"""
+	def __init__(self, parent, wid, pos = wx.DefaultPosition, size = wx.DefaultSize,
+			style = wx.TB_HORIZONTAL | wx.NO_BORDER, name = ""):
 		"""
 		Created: 27.04.2006, KP
 		Description: Initialize the toolbar
-		"""    
-		wx.Panel.__init__(self, parent, wid, pos, size, style)        
+		"""
+		wx.Panel.__init__(self, parent, wid, pos, size, style)
 		#self.SetBackgroundColour((255,255,0))
 		self.toolSize = (32, 32)
 		self.parent = parent
@@ -79,39 +80,37 @@ class Toolbar(wx.Panel):
 		"""
 		Created: 27.04.2006, KP
 		Description: Event handler for size events
-		""" 
+		"""
 		size = evt.GetSize()
 		print size
-		if size[0] == 0: return
+		if size[0] == 0:
+			return
 		layout = self.getLayout(size[0])
-		if layout != self.oldLayout:   
+		if layout != self.oldLayout:
 			self.createRows(layout)
 
-			#print "\n\n\n+++ NOT SAME LAYOUT"        
-			self.ReOrderItems(layout, size[0])            
+			#print "\n\n\n+++ NOT SAME LAYOUT"
+			self.ReOrderItems(layout, size[0])
 			self.oldLayout = layout
 			
-			x = self.GetSize()[0] 
+			x = self.GetSize()[0]
 			if self.nondarwin:
+				#TODO Magic numbers 44 and 50
 				y = 44 * len(layout)
 			else:
 				y = 50 * len(layout)
 			#print "x=",x,"y=",y
 			self.parent.SetDefaultSize((x, y))
-			
 			self.Layout()
-			self.sizer.Fit(self)          
-
+			self.sizer.Fit(self)
 			self.parent.Layout()
-		 
 			#self.Realize()
-
 			
 	def ReOrderItems(self, layout, width):
 		"""
 		Created: 28.07.2006, KP
 		Description: Re-order the items based on a given layout
-		""" 
+		"""
 		for sizer in self.rowsizers:
 			try:
 				while sizer.GetItem(0):
@@ -121,9 +120,9 @@ class Toolbar(wx.Panel):
 		ms = 0
 		for y, row in enumerate(layout):
 			self.x = 0
-			for i, ctrl in enumerate(row):            
+			for i, ctrl in enumerate(row):
 				self.rowsizers[y].Add(ctrl)
-				self.rowsizers[y].AddSpacer((self.toolSeparation, 0))                
+				self.rowsizers[y].AddSpacer((self.toolSeparation, 0))
 				self.ctrlToRow[ctrl] = self.rowsizers[y]
 				ms += self.sizes[i] + self.toolSeparation
 		self.minSize = ms
@@ -132,16 +131,16 @@ class Toolbar(wx.Panel):
 		"""
 		Created: 28.07.2006, KP
 		Description: Get the optimal layout for current controls and given width
-		"""   
+		"""
 		ctrls = []
 		curr = []
 		ms = 0
 		#print "getting layout for width=",width
 		
-		for i, ctrl in enumerate(self.ctrls):            
-			#print "ms=",ms,"size=",self.sizes[i],"tgtsize=",tgtsize            
+		for i, ctrl in enumerate(self.ctrls):
+			#print "ms=",ms,"size=",self.sizes[i],"tgtsize=",tgtsize
 			if ms + self.toolSeparation + self.sizes[i] > width:
-				ctrls.append(curr)        
+				ctrls.append(curr)
 				curr = []
 				ms = 0
 			curr.append(ctrl)
@@ -160,17 +159,17 @@ class Toolbar(wx.Panel):
 		"""
 		Created: 27.04.2006, KP
 		Description: Enable / Disable a tool
-		"""       
+		"""
 		self.idToTool[toolid].Enable(flag)
 		
 	def createRows(self, layout):
 		"""
 		Created: 28.07.2006, KP
 		Description: Create enough rows to fit a given layout
-		"""   
+		"""
 		for y in range(len(layout)):
 			if len(self.rowsizers) <= y:
-				rowsizer = wx.BoxSizer(wx.HORIZONTAL)            
+				rowsizer = wx.BoxSizer(wx.HORIZONTAL)
 				self.rowsizers.append(rowsizer)
 				self.sizer.Add(rowsizer, (y, 0), flag = wx.EXPAND | wx.LEFT | wx.RIGHT)
 				print "added rowsizer to row", y
@@ -179,12 +178,13 @@ class Toolbar(wx.Panel):
 		"""
 		Created: 27.04.2006, KP
 		Description: Render the toolbar
-		"""          
+		"""
 		w = self.GetSize()[0]
-		if not w: return
+		if not w:
+			return
 		layout = self.getLayout(w)
-		self.createRows(layout)        
-		self.ReOrderItems(layout, w)            
+		self.createRows(layout)
+		self.ReOrderItems(layout, w)
 	
 		self.Layout()
 		self.Refresh()
@@ -193,7 +193,7 @@ class Toolbar(wx.Panel):
 	def DeleteTool(self, toolid):
 		"""
 		Created: 27.04.2006, KP
-		Description: Delete a tool 
+		Description: Delete a tool
 		"""
 		ctrl = self.idToTool[toolid]
 		self.ctrls.remove(ctrl)
@@ -202,18 +202,18 @@ class Toolbar(wx.Panel):
 			sizer = self.ctrlToRow[ctrl]
 			sizer.Detach(ctrl)
 			ctrl.Show(0)
-			sizer.Remove(ctrl) 
+			sizer.Remove(ctrl)
 			
 		w = self.GetSize()[0]
-		layout = self.getLayout(w)        
-		self.ReOrderItems(layout, w)            
-				   
+		layout = self.getLayout(w)
+		self.ReOrderItems(layout, w)
+				
 		
 	def AddControl(self, ctrl):
 		"""
 		Created: 27.04.2006, KP
 		Description: Add a control to the toolbar
-		"""          
+		"""
 		self.ctrls.append(ctrl)
 		self.idToTool[ctrl.GetId()] = ctrl
 		self.sizes.append(ctrl.GetSize()[0])
@@ -224,25 +224,23 @@ class Toolbar(wx.Panel):
 		"""
 		Created: 27.04.2006, KP
 		Description: A method for passing the events forward in event chain
-		"""        
-		nevt = ToolCommandEvent(wx.EVT_TOOL.evtType[0], evt.GetId(), evt.GetIsDown())        
+		"""
+		nevt = ToolCommandEvent(wx.EVT_TOOL.evtType[0], evt.GetId(), evt.GetIsDown())
 		self.GetEventHandler().ProcessEvent(nevt)
-		
-		
 		
 	def AddSimpleTool(self, wid, bitmap, shortHelpString = '', longHelpString = '', isToggle = 0):
 		"""
 		Created: 27.04.2006, KP
 		Description: A method for adding a tool to the toolbar
-		"""                            
+		"""
 		if not isToggle:
 			#btn = wx.BitmapButton(self,id,bitmap,size=self.toolSize)
-			btn = buttons.GenBitmapButton(self, wid, bitmap, style = wx.BORDER_NONE, size = self.toolSize)            
+			btn = GenBitmapButton(self, wid, bitmap, style = wx.BORDER_NONE, size = self.toolSize)
 		else:
-			btn = buttons.GenBitmapToggleButton(self, wid, bitmap, size = (-1, self.toolSize[1]))
+			btn = GenBitmapToggleButton(self, wid, bitmap, size = (-1, self.toolSize[1]))
 		
 		btn.Bind(wx.EVT_BUTTON, self.onToolButton)
-		btn.SetToolTipString(longHelpString)            
+		btn.SetToolTipString(longHelpString)
 		#self.sizer.Add(btn,(self.y,self.x))
 		self.ctrls.append(btn)
 		self.idToTool[wid] = btn
@@ -253,23 +251,23 @@ class Toolbar(wx.Panel):
 		"""
 		Created: 27.04.2006, KP
 		Description: A method for toggling a togglebutton on or off
-		"""      
+		"""
 		ctrl = self.idToTool[toolid]
-		ctrl.SetToggle(flag)   
+		ctrl.SetToggle(flag)
 		
 	def DoAddTool(self, wid, label, bitmap, bmpDisabled = None,
 		kind = wx.ITEM_NORMAL, shortHelp = '', longHelp = '', clientData = None):
 		"""
 		Created: 27.04.2006, KP
 		Description: A method for adding a tool to the toolbar
-		"""     
+		"""
 		self.AddSimpleTool(wid, bitmap, shortHelp, longHelp, (kind == wx.ITEM_CHECK))
 		
 	def AddSeparator(self):
 		"""
 		Created: 27.04.2006, KP
 		Description: A method for adding a separator to the toolbar
-		"""          
+		"""
 		sep = wx.Panel(self, -1, size = (2, 32), style = wx.SUNKEN_BORDER)
 		#self.sizer.Add(sep, (self.y,self.x))
 		self.x += 1
@@ -281,21 +279,19 @@ class Toolbar(wx.Panel):
 		"""
 		Created: 27.04.2006, KP
 		Description: Return the width between tools
-		"""          
+		"""
 		return self.toolSeparation
-
-		
 		
 	def GetToolSize(self):
 		"""
 		Created: 27.04.2006, KP
 		Description: Return the size of a toolbar item
-		"""          
+		"""
 		return self.toolSize
 		
 	def SetToolBitmapSize(self, size):
 		"""
 		Created: 27.04.2006, KP
 		Description: Set the bitmap size of the toolbar
-		"""          
+		"""
 		self.toolSize = size

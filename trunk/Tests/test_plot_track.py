@@ -1,6 +1,6 @@
 import sys
 import csv
-import codecs
+#import codecs
 import struct
 import vtk
 

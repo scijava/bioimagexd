@@ -29,17 +29,18 @@ __author__ = "BioImageXD Project"
 __version__ = "$Revision: 1.9 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
-import wx
-
 import vtk
+from Visualizer.VisualizationModules import VisualizationModule
+from Visualizer.ModuleConfiguration import ModuleConfigurationPanel
 
+def getClass():
+	return AngleModule
 
-from Visualizer.VisualizationModules import *
+def getConfigPanel():
+	return AngleConfigurationPanel
 
-def getClass():return AngleModule
-def getConfigPanel():return AngleConfigurationPanel
-def getName():return "Angle measurement"
-
+def getName():
+	return "Angle measurement"
 
 class AngleModule(VisualizationModule):
 	"""
@@ -136,8 +137,6 @@ class AngleModule(VisualizationModule):
 		self.setVTKState(self.renderer.GetActiveCamera(), state.camera)
 
 		VisualizationModule.__set_pure_state__(self, state)
-				
-		
 		
 	def setDataUnit(self, dataunit):
 		"""
@@ -212,6 +211,7 @@ class AngleModule(VisualizationModule):
 		Description: Set the ambient, diffuse and specular lighting of this module
 		"""         
 		pass
+
 	def setShading(self, shading):
 		"""
 		Created: 16.05.2005, KP
@@ -219,14 +219,14 @@ class AngleModule(VisualizationModule):
 		"""          
 		pass
 
-
-
 class AngleConfigurationPanel(ModuleConfigurationPanel):
+
 	def __init__(self, parent, visualizer, name = "Angle", **kws):
 		"""
 		Created: 04.05.2005, KP
 		Description: Initialization
 		"""     
+
 		ModuleConfigurationPanel.__init__(self, parent, visualizer, name, **kws)
 	
 	def initializeGUI(self):
@@ -234,12 +234,15 @@ class AngleConfigurationPanel(ModuleConfigurationPanel):
 		Created: 28.04.2005, KP
 		Description: Initialization
 		"""  
+
 		pass
+
 	def setModule(self, module):
 		"""
 		Created: 28.04.2005, KP
 		Description: Set the module to be configured
 		"""  
+
 		ModuleConfigurationPanel.setModule(self, module)
 		print "module=", module
 		self.module = module
@@ -249,4 +252,5 @@ class AngleConfigurationPanel(ModuleConfigurationPanel):
 		Created: 28.04.2005, KP
 		Description: Apply the changes
 		"""     
+
 		pass

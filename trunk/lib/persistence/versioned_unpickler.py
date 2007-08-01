@@ -1,9 +1,9 @@
 from pickle import *
-import sys, new
-
+#import sys
+import new
 from enthought.logging import logger
 
-from enthought.persistence.updater import __replacement_setstate__
+#from enthought.persistence.updater import __replacement_setstate__
     
 
 class VersionedUnpickler(Unpickler):

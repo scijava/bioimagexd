@@ -30,13 +30,14 @@ __version__ = "$Revision: 1.40 $"
 __date__ = "$Date: 2005/01/13 14:52:39 $"
 
 
-from ConfigParser import *
-from DataSource import *
+from ConfigParser import RawConfigParser
+from DataSource import DataWriter
+#from DataSource import *
 import vtk
 import os.path
 
 import Logging
-import DataUnit
+#import DataUnit
 
 class MyConfigParser(RawConfigParser):
 	def optionxform(self, optionstr):
@@ -50,7 +51,7 @@ class BXCDataWriter(DataWriter):
 
 	def __init__(self, filename):
 		"""
-		Created: 26.03.2005,KP
+		Created: 26.03.2005, KP
 		Description: Constructor
 		"""
 		DataWriter.__init__(self)
@@ -95,15 +96,16 @@ class BXCDataWriter(DataWriter):
 		Description: Writes all datasets pending a write to disk
 		"""
 		ret = 0
-		toremove = []
+		toRemove = []
 		for item in self.imagesToWrite:
 			imagedata, path = item
-			if n == 0:break
+			if n == 0:
+				break
 			self.writeImageData(imagedata, path)
-			toremove.append(item)
+			toRemove.append(item)
 			n = n - 1
 			ret += 1
-		for item in toremove:
+		for item in toRemove:
 			self.imagesToWrite.remove(item)
 		return ret
 		
@@ -119,8 +121,10 @@ class BXCDataWriter(DataWriter):
 		n = len(self.dataSets)
 		parser.set("ImageData", "numberOfFiles", "%d" % n)
 		for i in range(n):
-			parser.set("ImageData", "file_%d" % i, self.dataSets[i])                    
+			parser.set("ImageData", "file_%d" % i, self.dataSets[i])
+					
 		try:
+			print "Trying to open", self.filename, repr(self.filename)
 			fp = open(self.filename, "w")
 		except IOError, ex:
 			Logging.error("Failed to write settings",
@@ -132,7 +136,7 @@ class BXCDataWriter(DataWriter):
 
 	def addImageData(self, imageData):
 		"""
-		Created: 1.12.2004,KP
+		Created: 1.12.2004, KP
 		Description: Add a vtkImageData object to be written to the disk.
 		"""
 		# We find out the path to the directory where the image data is written
@@ -141,12 +145,12 @@ class BXCDataWriter(DataWriter):
 			# .du file this datasource has been loaded from
 			self.path = os.path.dirname(self.filename)
 
-		print "filename=", self.filename, repr(self.filename)
-		print "Self.path=", self.path, repr(self.path)
+		print "filename = ", self.filename, repr(self.filename)
+		print "Self.path = ", self.path, repr(self.path)
 		# Next we determine the name for the .vti file we are writing
 		# We take the name of the .du file this datasource is associated with
 		duFileName = os.path.basename(self.filename)
-		print "dufilename=", duFileName, repr(duFileName)
+		print "dufilename = ", duFileName, repr(duFileName)
 		# and strip the .du from the end
 		i = duFileName.rfind(".")
 		imageDataName = duFileName[:i]
@@ -170,16 +174,15 @@ class BXCDataWriter(DataWriter):
 		for i in range(0, len(imageDataList)):
 			self.addImageData(imageDataList[i])
 
-
 	def writeImageData(self, imageData, filename, callback = None):
 		"""
 		Created: 09.11.2004, JM
 		Description: Writes the given vtkImageData-instance to disk
 					 as .vti-file with the given filename
 		Parameters:   imageData  vtkImageData-instance to be written
-					  filename  filename to be used
+					  filename	filename to be used
 		"""
-		#print "Writing image data to %s"%filename
+		#print "Writing image data to %s" %filename
 		writer = vtk.vtkXMLImageDataWriter()
 		writer.SetFileName(filename)
 		#print "Writing ",imageData
@@ -188,7 +191,8 @@ class BXCDataWriter(DataWriter):
 		x, y, z = imageData.GetDimensions()
 		pieces = (x * y * z) / (1024 * 1024)
 		if pieces < 4:pieces = 4
-#        writer.SetNumberOfPieces(pieces)
+#		print "Using ",pieces,"pieces"
+		writer.SetNumberOfPieces(pieces)
 		writer.SetInput(imageData)
 		def f(obj, evt):
 			if obj and callback:

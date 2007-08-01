@@ -32,14 +32,16 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 import wx
 import Logging
-#import wx.lib.ogl as ogl
 import ogl
-import messenger
+import lib.messenger
 import math
+import lib.ImageOperations
+import wx.lib.ogl
 
 count = {}
 
-class OGLAnnotation:
+class OGLAnnotation(wx.lib.ogl.Shape):
+
 	def unoffset(self, attr, value):
 		"""
 		Created: 04.07.2007, KP
@@ -51,7 +53,7 @@ class OGLAnnotation:
 		elif attr == "_ypos":
 			return (value - self._offset[1]) / sf
 		elif attr in ["_width", "_height"]:
-			return value / sf      
+			return value / sf
 		elif attr in ["_points"]:
 			pts = []
 			for pt in value:
@@ -59,8 +61,7 @@ class OGLAnnotation:
 				pts.append((x / sf, y / sf))
 			return pts
 		return value
-		
-		
+
 	def updateEraseRect(self):
 		"""
 		Created: 04.07.2007, KP
@@ -68,7 +69,6 @@ class OGLAnnotation:
 		"""
 		return
 
-		
 	def setOffset(self, x, y):
 		"""
 		Created: 28.05.2007, KP
@@ -87,8 +87,8 @@ class OGLAnnotation:
 		
 		
 	def OnDrawControlPoints(self, dc):
-		if not self._drawHandles:
-			return
+#		if not self._drawHandles:	19.7.07, MB
+#			return
 
 		dc.SetBrush(wx.BLACK_BRUSH)
 		dc.SetPen(wx.BLACK_PEN)
@@ -115,7 +115,7 @@ class OGLAnnotation:
 			insMap[(x, y)] = 1
 		parent = self.GetCanvas()
 		mx, my, mz = parent.dataUnit.getDimensions()
-		return ImageOperations.getMaskFromPoints(insMap, mx, my, mz)        
+		return lib.ImageOperations.getMaskFromPoints(insMap, mx, my, mz)        
 			
 	def setName(self, name):
 		"""
@@ -128,11 +128,12 @@ class OGLAnnotation:
 		lines = name.split("\n")
 		for line in lines:
 			self.AddText(line)
+
 	def addAttr(self, dicti, attr):
 		val = self.__dict__[attr]
 		newval = self.unoffset(attr, val)
 		dicti[attr] = newval
-		
+
 	def getAttr(self, dicti, attr):
 		self.__dict__[attr] = dicti[attr]
 		
@@ -157,18 +158,17 @@ class OGLAnnotation:
 					 that it can later be reconstructed based on said dictionary
 		"""
 		ret = {}
-#        for i in self.__dict__.keys(): 
-#            print self.__dict__[i].__class__
-#            ret[i] = self.__dict__[i]
+#		for i in self.__dict__.keys():
+#			print self.__dict__[i].__class__
+#			ret[i] = self.__dict__[i]
 		if "_xpos" not in self.attrList:
 			self.attrList.append("_xpos")
 			self.attrList.append("_ypos")
 			self.attrList.append("scaleFactor")
 		for attr in self.attrList:
 			self.addAttr(ret, attr)
-#        print "Pickling contains=",ret
+#		print "Pickling contains =", ret
 		return {self.AnnotationType: ret}
-
 
 	def restoreFrom(self, annotation):
 		"""
@@ -185,7 +185,7 @@ class OGLAnnotation:
 		"""
 		for key in state[self.AnnotationType].keys():
 			self.getAttr(state[self.AnnotationType], key)
-			
+
 	def GetMaintainAspectRatio(self):
 		"""
 		Created: 06.11.2006, KP
@@ -210,9 +210,6 @@ class OGLAnnotation:
 			self.doMaintainAspect = 0
 			
 		ogl.Shape.OnSizingDragLeft(self, pt, draw, x, y, keys, attachment)
-		
-
-
 
 	def OnErase(self, dc):
 		"""
@@ -222,10 +219,10 @@ class OGLAnnotation:
 		bg = self.GetCanvas().bgbuffer
 		if not self._visible:
 			return
-		
+
 		dc.SetPen(self.GetBackgroundPen())
 		dc.SetBrush(self.GetBackgroundBrush())
-		
+
 		srcdc = wx.MemoryDC()
 		srcdc.SelectObject(bg)
 		x0, y0, w, h = self.GetCanvas().GetClientRect()
@@ -234,27 +231,28 @@ class OGLAnnotation:
 			xp, yp = self.GetX(), self.GetY()
 			minX, minY = self.GetBoundingBoxMin()
 			maxX, maxY = self.GetBoundingBoxMax()
-	
+
 			topLeftX = xp - maxX / 2.0 - 2
 			topLeftY = yp - maxY / 2.0 - 2
-	
+
 			penWidth = 0
 			if self._pen:
 				penWidth = self._pen.GetWidth()
-	
+
 			tox, toy = x0 + topLeftX, y0 + topLeftY
 			tox -=  penWidth
 			toy -= penWidth
-			
+
 			dc.Blit(tox, toy, maxX + 4 + 2 * penWidth, maxY + 4 + 2 * penWidth, srcdc, tox, toy)
 		else:
 			x1, y1, x2, y2 = self.eraseRect
-			if x1 < 0:x1 = 0
-			if y1 < 0:y1 = 0
+			if x1 < 0:
+				x1 = 0
+			if y1 < 0:
+				y1 = 0
 			dc.Blit(x1 + x0, y1 + y0, abs(x2 - x1) + 2, abs(y2 - y1) + 2, srcdc, x1 + x0, y1 + y0)
-		srcdc.SelectObject(wx.NullBitmap)        
-		
-		
+		srcdc.SelectObject(wx.NullBitmap)
+
 class MyText(OGLAnnotation, ogl.TextShape):
 	"""
 	Created: 05.10.2006, KP
@@ -264,9 +262,9 @@ class MyText(OGLAnnotation, ogl.TextShape):
 	def __init__(self, width, height):
 		ogl.TextShape.__init__(self, width, height)
 		self._isROI = 0
-		
 
 class MyScalebar(OGLAnnotation, ogl.RectangleShape):
+
 	AnnotationType = "SCALEBAR"
 	def __init__(self, w, h, voxelsize = (1e-7, 1e-7, 1e-7), zoomFactor = 1.0):
 		ogl.RectangleShape.__init__(self, w, h)
@@ -278,23 +276,23 @@ class MyScalebar(OGLAnnotation, ogl.RectangleShape):
 		self.oldMaxSize = 0
 		self.vertical = 0
 		self.scaleFactor = zoomFactor
-		messenger.connect(None, "set_voxel_size", self.onSetVoxelSize)
+		lib.messenger.connect(None, "set_voxel_size", self.onSetVoxelSize)
 		self.attrList = ["vertical", "voxelSize", "widthMicro", "oldMaxSize", "_width", "_height", "_xpos", "_ypos"]
-	
+
 	def onSetVoxelSize(self, obj, evt, arg):
 		"""
 		Created: 21.06.2006, KP
-		Description: Set the voxel size 
-		"""   
+		Description: Set the voxel size
+		"""
 		self.voxelSize = arg
-		
-		
+
 	def setScaleFactor(self, factor):
 		"""
 		Created: 21.06.2006, KP
 		Description: Set the scaling factor in use
 		"""   
 		w, h, x, y = self._width, self._height, self.GetX(), self.GetY()
+
 		x -= self._offset[0]
 		y -= self._offset[1]
 
@@ -302,14 +300,17 @@ class MyScalebar(OGLAnnotation, ogl.RectangleShape):
 		h /= self.scaleFactor
 		x /= self.scaleFactor
 		y /= self.scaleFactor
+
 		self.scaleFactor = factor
+
 		w *= self.scaleFactor
 		h *= self.scaleFactor
 		x *= self.scaleFactor
 		y *= self.scaleFactor        
+
 		x += self._offset[0]
 		y += self._offset[1]
-	   
+
 		if self.vertical:
 			vx = self.voxelSize[1] * 1000000
 			h = int(1 + self.widthMicro / vx)
@@ -441,8 +442,10 @@ class MyScalebar(OGLAnnotation, ogl.RectangleShape):
 			
 		bmpw = self._width
 		bmph = self._height
-		if w > bmpw:bmpw = w
-		if h > bmph:bmph = h
+		if w > bmpw:
+			bmpw = w
+		if h > bmph:
+			bmph = h
 		#bmp = wx.EmptyBitmap(bmpw,bmph)
 		
 		#dc.SelectObject(bmp)
@@ -472,9 +475,9 @@ class MyScalebar(OGLAnnotation, ogl.RectangleShape):
 			y += (w / 2)
 			dc.DrawRotatedText(text, x1 + 12, y + y1, 90)
 			
-class MyPolygonSketch(OGLAnnotation, ogl.Shape):   
-	AnnotationType = "POLYGONSKETCH"
+class MyPolygonSketch(OGLAnnotation, ogl.Shape):
 
+	AnnotationType = "POLYGONSKETCH"
 	def __init__(self, zoomFactor = 1.0):
 		"""
 		Created: 26.06.2006, KP
@@ -491,15 +494,15 @@ class MyPolygonSketch(OGLAnnotation, ogl.Shape):
 		self.points = []
 		self.tentativePoint = None
 		self.minx, self.maxx, self.miny, self.maxy = 9900, 0, 9900, 0
-		
+
 	def GetBoundingBoxMin(self):
 		"""
 		Created: 02.07.2007, KP
-		Description: reutrn the minimal bounding box
+		Description: return the minimal bounding box
 		"""
 		x0, y0, x1, y1 = self.getTentativeBB()
 		return (x1 - x0), (y1 - y0)
-		
+
 	def getTentativeBB(self):
 		"""
 		Created: 23.10.2006, KP
@@ -519,7 +522,7 @@ class MyPolygonSketch(OGLAnnotation, ogl.Shape):
 		self.miny = min(self.miny, y)
 		self.maxx = max(self.maxx, x)
 		self.maxy = max(self.maxy, y)
-		
+
 	def AddPoint(self, pt):
 		if pt in self.points:
 			return
@@ -529,20 +532,23 @@ class MyPolygonSketch(OGLAnnotation, ogl.Shape):
 		self.miny = min(self.miny, y)
 		self.maxx = max(self.maxx, x)
 		self.maxy = max(self.maxy, y)
-		
+
 	def OnDraw(self, dc):
 		"""
 		Created: KP
 		Description: draw the sketch of the polygon
 		"""
 		n = len(self.points)
-		if self.tentativePoint:n += 1
-		if n < 2:return
-			
+		if self.tentativePoint:
+			n += 1
+		if n < 2:
+			return
+
 		brush = wx.TRANSPARENT_BRUSH
 		dc.SetBrush(brush)
 		pen = wx.Pen(wx.Colour(255, 0, 0), 1)
 		dc.SetPen(pen)
+		
 		
 		pts = self.points[:]
 		if self.tentativePoint:
@@ -550,7 +556,6 @@ class MyPolygonSketch(OGLAnnotation, ogl.Shape):
 			
 		x0, y0, w, h = self.GetCanvas().GetClientRect()
 		dc.DrawPolygon(pts, x0, y0)
-		
 		self.eraseRect = self.getTentativeBB()
 		del pts
 
@@ -565,6 +570,7 @@ class MyPolygonSketch(OGLAnnotation, ogl.Shape):
 		return []
 
 class MyRectangle(OGLAnnotation, ogl.RectangleShape):   
+
 	AnnotationType = "RECTANGLE"
 	def __init__(self, w, h, zoomFactor = 1.0):
 		"""
@@ -587,6 +593,7 @@ class MyRectangle(OGLAnnotation, ogl.RectangleShape):
 		Description: Set the scaling factor in use
 		"""   
 		w, h, x, y = self._width, self._height, self.GetX(), self.GetY()
+
 		x -= self._offset[0]
 		y -= self._offset[1]
 
@@ -595,13 +602,13 @@ class MyRectangle(OGLAnnotation, ogl.RectangleShape):
 		x /= self.scaleFactor
 		y /= self.scaleFactor
 
-		
 		self.scaleFactor = factor
-		
+
 		w *= self.scaleFactor
 		h *= self.scaleFactor
 		x *= self.scaleFactor
 		y *= self.scaleFactor        
+
 		x += self._offset[0]
 		y += self._offset[1]
 		
@@ -610,7 +617,6 @@ class MyRectangle(OGLAnnotation, ogl.RectangleShape):
 		self.SetX(x)
 		self.SetY(y)    
 		self.ResetControlPoints()
-		
 
 	def getCoveredPoints(self):
 		cx, cy = self.GetX(), self.GetY()
@@ -630,14 +636,12 @@ class MyRectangle(OGLAnnotation, ogl.RectangleShape):
 		fromy = int(math.ceil(cy - h))
 		toy = int(math.floor(cy + h))
 		for x in range(fromx, tox):
-		   for y in range(fromy, toy):
-			   pts[(x, y)] = 1
+			for y in range(fromy, toy):
+				pts[(x, y)] = 1
 		return pts
 
-		
-	   
+class MyCircle(OGLAnnotation, ogl.CircleShape):    
 
-class MyCircle(OGLAnnotation, ogl.CircleShape):
 	AnnotationType = "CIRCLE"
 	def __init__(self, diam, zoomFactor = 1.0):
 		"""
@@ -660,20 +664,22 @@ class MyCircle(OGLAnnotation, ogl.CircleShape):
 		Description: Set the scaling factor in use
 		"""   
 		w, h, x, y = self._width, self._height, self.GetX(), self.GetY()
+
 		x -= self._offset[0]
 		y -= self._offset[1]
-		
+
 		w /= self.scaleFactor
 		h /= self.scaleFactor
 		x /= self.scaleFactor
 		y /= self.scaleFactor
-		
+
 		self.scaleFactor = factor
+
 		w *= self.scaleFactor
 		h *= self.scaleFactor
 		x *= self.scaleFactor
-		y *= self.scaleFactor     
-		
+		y *= self.scaleFactor        
+
 		x += self._offset[0]
 		y += self._offset[1]
 		
@@ -682,22 +688,20 @@ class MyCircle(OGLAnnotation, ogl.CircleShape):
 		self.SetX(x)
 		self.SetY(y)    
 		self.ResetControlPoints()        
-	 
-	 
-	 
+
 	def getCoveredPoints(self):
 		cx, cy = self.GetX(), self.GetY()
 		ox, oy = self.GetCanvas().getOffset()
 		cx -= ox
 		cy -= oy        
 		
-		cx//=self.scaleFactor
-		cy//=self.scaleFactor
+		cx //= self.scaleFactor
+		cy //= self.scaleFactor
 		
 		w = self._width
 		h = self._height
-		w//=self.scaleFactor
-		h//=self.scaleFactor
+		w //= self.scaleFactor
+		h //= self.scaleFactor
 		
 		a = max(w, h) / 2
 		b = min(w, h) / 2
@@ -716,12 +720,11 @@ class MyCircle(OGLAnnotation, ogl.CircleShape):
 			return math.sqrt((x[0] - y[0]) ** 2 + ((x[1] - y[1]) ** 2))
 		for x in range(cx - w // 2, cx + w // 2):
 			for y in range(cy - h / 2, cy + h / 2):
-				#print "d=",(d((x,y),f1)+d((x,y),f2)),"2a=",2*a
+#				print "d=",(d((x,y),f1)+d((x,y),f2)),"2a=",2*a
 				if (d((x, y), f1) + d((x, y), f2)) < a * 2:
 					pts[(x, y)] = 1
 		return pts
-		
-	
+
 	def OnErasefoo(self, dc):
 		bg = self.GetCanvas().bgbuffer
 		if not self._visible:
@@ -744,19 +747,23 @@ class MyCircle(OGLAnnotation, ogl.CircleShape):
 		
 		dc.SetPen(self.GetBackgroundPen())
 		dc.SetBrush(self.GetBackgroundBrush())
-		
-		
-		
+
 		x0, y0, w, h = self.GetCanvas().GetClientRect()
 		
 		cx0, cy0, cx1, cy1 = (x0 + topLeftX - penWidth, y0 + topLeftY - penWidth, x0 + maxX + penWidth * 2 + 4, y0 + maxY + penWidth * 2 + 4)
 		
-		if cy0 < 0:cy0 = 0
-		if cx0 < 0:cx0 = 0
- #       if cx0<x0:cx0=x0
- #       if cy0<y0:cy0=y0
- #       if cx1<x0:cx1=x0
- #       if cy1<y0:cy1=y0
+		if cy0 < 0:
+			cy0 = 0
+		if cx0 < 0:
+			cx0 = 0
+#		if cx0<x0:
+#			cx0=x0
+#		if cy0<y0:
+#			cy0=y0
+#		if cx1<x0:
+#			cx1=x0
+#		if cy1<y0:
+#			cy1=y0
 		dc.SetClippingRegion(cx0, cy0, cx1, cy1)
 		
 		memdc = wx.MemoryDC()
@@ -769,6 +776,7 @@ class MyCircle(OGLAnnotation, ogl.CircleShape):
 		dc.DestroyClippingRegion()
 
 class MyPolygon(OGLAnnotation, ogl.PolygonShape):    
+
 	AnnotationType = "FINISHED_POLYGON"
 	def __init__(self, zoomFactor = 1.0):
 		"""
@@ -785,6 +793,7 @@ class MyPolygon(OGLAnnotation, ogl.PolygonShape):
 		self.setName(self.name)
 		count[self.__class__] += 1
 		self.attrList = ["_points", "_xpos", "_ypos"]
+
 	def OnDraw(self, dc):
 		"""
 		Created: 04.07.2007, KP
@@ -793,7 +802,7 @@ class MyPolygon(OGLAnnotation, ogl.PolygonShape):
 		self.setName(self.name)
 		self.Recentre(dc)
 		ogl.PolygonShape.OnDraw(self, dc)
-		
+
 	def restoreFrom(self, annotation):
 		"""
 		Created: 04.07.2007, KP
@@ -806,17 +815,17 @@ class MyPolygon(OGLAnnotation, ogl.PolygonShape):
 		x0, y0 = self._xpos, self._ypos
 		for x, y in self._points:
 			points.append((x + x0, y + y0))
-			
+
 		mx, my = self.polyCenter(points)
-		
+
 		for x, y in points:
 			pts.append((((x - mx)), ((y - my))))
 		self.Create(pts)
 		self.SetX(mx)
-		self.SetY(my)        
-#        self.CalculatePolygonCentre()
-		self.CalculateBoundingBox()                
-		
+		self.SetY(my)
+#		self.CalculatePolygonCentre()
+		self.CalculateBoundingBox()
+
 	def __setstate__(self, state):
 		"""
 		Created: 24.10.2006, KP
@@ -824,7 +833,7 @@ class MyPolygon(OGLAnnotation, ogl.PolygonShape):
 		"""
 		OGLAnnotation.__setstate__(self, state)
 		self._originalPoints = self._points[:]
-				
+
 	def polyCenter(self, points):
 		"""
 		Created: 16.06.2006, KP
@@ -863,7 +872,7 @@ class MyPolygon(OGLAnnotation, ogl.PolygonShape):
 			y *= factor
 			pts.append((x, y))
 		self._points = pts
-		
+
 		x, y = self.GetX(), self.GetY()
 		x -= self._offset[0]
 		y -= self._offset[1]
@@ -873,39 +882,44 @@ class MyPolygon(OGLAnnotation, ogl.PolygonShape):
 		y *= factor
 		x += self._offset[0]
 		y += self._offset[1]
+
 		self.SetX(x)
 		self.SetY(y)
-
 		self.UpdateOriginalPoints()
 		self.scaleFactor = factor
-		self.ResetControlPoints()    
-		self.CalculateBoundingBox()                        
+		self.ResetControlPoints()
+
+		self.CalculateBoundingBox()
 		self.updateEraseRect()
-	
+
 	def updateEraseRect(self):
 		"""
 		Created: 04.07.2007, KP
 		Description: update the erase rect of this polygon
 		"""
-		x0, y0, x1, y1 = self.getMinMaxXY() 
+		x0, y0, x1, y1 = self.getMinMaxXY()
 		x0 += self._xpos
 		y0 += self._ypos
 		x1 += self._xpos
 		y1 += self._ypos
 		self.eraseRect = (x0, y0, x1, y1)
 		self.UpdateOriginalPoints()
-		self.CalculateBoundingBox()                        
-  
+		self.CalculateBoundingBox()
+
 	def getMinMaxXY(self):
 		my, mx = 10000, 10000
 		Mx, My = 0, 0
 		for x, y in self._points:
-			if x < mx:mx = x
-			if y < my:my = y
-			if x > Mx:Mx = x
-			if y > My:My = y
+			if x < mx:
+				mx = x
+			if y < my:
+				my = y
+			if x > Mx:
+				Mx = x
+			if y > My:
+				My = y
 		return mx, my, Mx, My
-		
+
 	def getCoveredPoints(self):
 		x0, y0, x1, y1 = self.getMinMaxXY()
 		pts = {}
@@ -917,19 +931,19 @@ class MyPolygon(OGLAnnotation, ogl.PolygonShape):
 		y0 += cy
 		x1 += cx
 		y1 += cy
-		x0//=self.scaleFactor
-		y0//=self.scaleFactor
-		x1//=self.scaleFactor
-		y1//=self.scaleFactor        
-		cx//=self.scaleFactor
-		cy//=self.scaleFactor
+		x0 //= self.scaleFactor
+		y0 //= self.scaleFactor
+		x1 //= self.scaleFactor
+		y1 //= self.scaleFactor
+		cx //= self.scaleFactor
+		cy //= self.scaleFactor
 		
 		poly = [(x // self.scaleFactor, y // self.scaleFactor) for x, y in self._points] 
 		#poly = self._points
 		#tot = (x1-x0)*(y1-y0)
 		for x in range(x0, x1):
 			for y in range(y0, y1):
-				if self.collidepoint(poly, (x, y), cx, cy):                    
+				if self.collidepoint(poly, (x, y), cx, cy):
 					pts[(x, y)] = 1
 				
 		return pts
@@ -965,17 +979,15 @@ class MyPolygon(OGLAnnotation, ogl.PolygonShape):
 		dc = wx.ClientDC(self.GetCanvas())
 		self.GetCanvas().PrepareDC(dc)
 		
-		
 		x0, y0, w, h = self.GetCanvas().GetClientRect()
-	  
 		
 		self.Erase(dc)
 		
 		for i, control in enumerate(self._controlPoints):
-			self._points[i] =         wx.RealPoint(control.GetX() - self._xpos, control.GetY() - self._ypos)
+			self._points[i] = wx.RealPoint(control.GetX() - self._xpos, control.GetY() - self._ypos)
 			self._originalPoints[i] = wx.RealPoint(control.GetX() - self._xpos, control.GetY() - self._ypos)
 		self.CalculatePolygonCentre()
-		self.CalculateBoundingBox()        
+		self.CalculateBoundingBox()
 		
 		
 		dc.SetLogicalFunction(ogl.OGLRBLF)
@@ -983,19 +995,19 @@ class MyPolygon(OGLAnnotation, ogl.PolygonShape):
 		dottedPen = wx.Pen(wx.Colour(0, 0, 0), 1, wx.DOT)
 		dc.SetPen(dottedPen)
 		dc.SetBrush(wx.TRANSPARENT_BRUSH)
+
 		self.updateEraseRect()
-		
+
 		if not end:
 			self.GetEventHandler().OnDrawOutline(dc, self.GetX(), self.GetY(), self._originalWidth, self._originalHeight)
 		else:
 			self.GetEventHandler().OnDraw(dc, self.GetX(), self.GetY())
 			
 		dc.DrawBitmap(self.GetCanvas().buffer, x0, y0)
-		self.UpdateOriginalPoints()
-
-			
+		self.UpdateOriginalPoints()	
 	 
 class MyPolygonControlPoint(ogl.PolygonControlPoint):
+
 	AnnotationType = "POLYGONCONTROLPOINT"
 	# Implement resizing polygon or moving the vertex
 	def OnDragLeft(self, draw, x, y, keys = 0, attachment = 0):
@@ -1004,7 +1016,7 @@ class MyPolygonControlPoint(ogl.PolygonControlPoint):
 		self.SetX(x)
 		self.SetY(y)
 		#print "Setting x,y to",x,y
-		self._shape.SetPointsFromControl(self)    
+		self._shape.SetPointsFromControl(self)
 		self._shape.updateEraseRect()
 
 	def OnSizingDragLeft(self, pt, x, y, keys, attch):
@@ -1024,14 +1036,10 @@ class MyPolygonControlPoint(ogl.PolygonControlPoint):
 		ogl.PolygonControlPoint.OnSizingDragLeft(self, pt, x, y, keys, attch)
 		self._shape.SetPointsFromControl(self)
 		self._shape.ResetControlPoints()
-		
 		self._shape.updateEraseRect()
-	 
 		self.GetCanvas().repaintHelpers()
 		self.GetCanvas().Refresh()
- 
-		
-		
+
 	def OnBeginDragLeft(self, x, y, keys = 0, attachment = 0):
 		#self._shape.GetEventHandler().OnSizingBeginDragLeft(self, x, y, keys, attachment)
 		
@@ -1042,14 +1050,11 @@ class MyPolygonControlPoint(ogl.PolygonControlPoint):
 
 	def OnEndDragLeft(self, x, y, keys = 0, attachment = 0):
 		#self._shape.GetEventHandler().OnSizingEndDragLeft(self, x, y, keys, attachment)
-		self._shape.SetPointsFromControl(self)    
+		self._shape.SetPointsFromControl(self)
 		self._shape.ResetControlPoints()
 		self._shape.updateEraseRect()
-		
 		self.GetCanvas().repaintHelpers()
 		self.GetCanvas().Refresh()
- 
-		
 
 class MyEvtHandler(ogl.ShapeEvtHandler):
 	"""
@@ -1059,12 +1064,14 @@ class MyEvtHandler(ogl.ShapeEvtHandler):
 	def __init__(self, parent):
 		self.parent = parent
 		ogl.ShapeEvtHandler.__init__(self)
+
 	def SetParent(self, parent):
 		"""
 		Created: 02.07.2007, Kp
 		Description: set the parent of the shape this handler works with
 		"""
 		self.parent = parent
+
 	def OnLeftDoubleClick(self, x, y, keys = 0, attachment = 0):
 		
 		shape = self.GetShape()
@@ -1123,12 +1130,13 @@ class MyEvtHandler(ogl.ShapeEvtHandler):
 		
 	def OnDragLeft(self, draw, x, y, keys = 0, attachment = 0):
 		ogl.ShapeEvtHandler.OnDragLeft(self, draw, x, y, keys, attachment)
-		self.parent.repaintHelpers()       
-		#self.parent.Refresh()
-	#def OnDragRight(self, draw, x, y, keys = 0, attachment = 0):
-	#    print "OnDragRight"
-	#    ogl.ShapeEvtHandler.OnDragRight(self, x, y, keys, attachment)
-
+	
+		self.parent.repaintHelpers()
+#		self.parent.Refresh()
+#
+#	def OnDragRight(self, draw, x, y, keys = 0, attachment = 0):
+#		print "OnDragRight"
+#		ogl.ShapeEvtHandler.OnDragRight(self, x, y, keys, attachment)
 
 	def OnEndDragLeft(self, x, y, keys = 0, attachment = 0):
 		shape = self.GetShape()
@@ -1136,11 +1144,9 @@ class MyEvtHandler(ogl.ShapeEvtHandler):
 
 		if not shape.Selected():
 			self.OnLeftClick(x, y, keys, attachment)
-			
 		self.GetShape().updateEraseRect()
 		self.parent.repaintHelpers()
 		self.parent.Refresh()
-		
 	def OnSizingEndDragLeft(self, pt, x, y, keys, attch):
 		ogl.ShapeEvtHandler.OnSizingEndDragLeft(self, pt, x, y, keys, attch)
 		
@@ -1150,8 +1156,8 @@ class MyEvtHandler(ogl.ShapeEvtHandler):
 	def OnMovePost(self, dc, x, y, oldX, oldY, display):
 		ogl.ShapeEvtHandler.OnMovePost(self, dc, x, y, oldX, oldY, display)
 
-#        self.parent.paintPreview()
-		#self.parent.Refresh()
+#		self.parent.paintPreview()
+#		self.parent.Refresh()
 
 	def OnRightClick(self, *args):
 		shape = self.GetShape()

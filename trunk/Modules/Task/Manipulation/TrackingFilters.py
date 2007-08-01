@@ -30,37 +30,25 @@ __author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.42 $"
 __date__ = "$Date: 2005/01/13 14:52:39 $"
 
-import wx
-import types
-import os, os.path
-import vtk
-import Command
-import re
-try:
-	import itk
-except:
-	pass
-import messenger
+#import lib.Particle
+
 import scripting as bxd
-
-from lib import ProcessingFilter
-import GUI.GUIBuilder as GUIBuilder
 import GUI.CSVListView as CSVListView
-import ImageOperations
-
+import wx.grid as gridlib
+import GUI.GUIBuilder as GUIBuilder
+import lib.ImageOperations
+import lib.messenger
 from lib import Particle
-
-from lib import Track
-
+import lib.ProcessingFilter
+import lib.Track
+import os
+import os.path
 import SegmentationFilters
+import types
+import vtk
+import wx
 
-import messenger
-
-			
 TRACKING = "Tracking"
-
-import  wx
-import  wx.grid as  gridlib
 
 #---------------------------------------------------------------------------
 
@@ -122,7 +110,8 @@ class TrackTable(gridlib.PyGridTableBase):
 		"""
 		# if there is a column for enabling / disabling this row, then offset
 		# the column by one
-		if self.canEnable:col += 1
+		if self.canEnable:
+			col += 1
 		self.enabledCol = col
 		
 	def GetColLabelValue(self, col):
@@ -243,7 +232,7 @@ class TrackTable(gridlib.PyGridTableBase):
 				print "Row", row, "has value=", value
 				self.enabled[row] = value
 				
-				messenger.send(None, "set_shown_tracks", self.getEnabled())
+				lib.messenger.send(None, "set_shown_tracks", self.getEnabled())
 				return
 			
 		
@@ -288,10 +277,12 @@ class TrackTableGrid(gridlib.Grid):
 			self.SetColSize(0, 25)
 		self.Bind(gridlib.EVT_GRID_CELL_RIGHT_CLICK, self.OnRightDown)  
 		self.Bind(gridlib.EVT_GRID_CELL_LEFT_CLICK, self.OnLeftDown) 
-		messenger.connect(None, "get_voxel_at", self.onUpdateCell)
-		messenger.connect(None, "timepoint_changed", self.onSetTimepoint)
+		lib.messenger.connect(None, "get_voxel_at", self.onUpdateCell)
+		lib.messenger.connect(None, "timepoint_changed", self.onSetTimepoint)
 		
-	def getTable(self): return self.table
+	def getTable(self):
+
+		return self.table
 		
 	def onSetTimepoint(self, obj, event, timepoint):
 		"""
@@ -377,7 +368,8 @@ class TrackTableGrid(gridlib.Grid):
 		Created: 22.11.2006, KP
 		Description: return the last modified timepoint
 		"""
-		if not self.selectedCol:return 0
+		if not self.selectedCol:
+			return 0
 		return self.selectedCol
 		
 	def getSeedPoints(self):
@@ -391,10 +383,12 @@ class TrackTableGrid(gridlib.Grid):
 		#    rows.append(self.table.getPointsAtRow(i))
 		for i in range(0, self.table.GetNumberCols()):
 			pts = self.table.getPointsAtColumn(i)
-			while None in pts:pts.remove(None)
+			while None in pts:
+				pts.remove(None)
 			# If after removing all the empty cells there are no seed points in this 
 			# timepoint then return the current columns
-			if len(pts) == 0:return cols
+			if len(pts) == 0:
+				return cols
 			cols.append(pts)
 		return cols
 		#if self.selectedCol!=None:            
@@ -424,8 +418,7 @@ class TrackTableGrid(gridlib.Grid):
 		self.selectedRow = event.GetRow()
 		self.selectedCol = event.GetCol()
 		
-		
-class CreateTracksFilter(ProcessingFilter.ProcessingFilter):
+class CreateTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 	"""
 	Created: 13.04.2006, KP
 	Description: A filter for tracking objects in a segmented image
@@ -447,7 +440,7 @@ class CreateTracksFilter(ProcessingFilter.ProcessingFilter):
 		self.ctf = None
 		self.particleFile = ""
 
-		ProcessingFilter.ProcessingFilter.__init__(self, (1, 1))
+		lib.ProcessingFilter.ProcessingFilter.__init__(self, (1, 1))
 		
 		self.descs = {
 			"MaxVelocity": "Max. change in distance (% of max.movement)",
@@ -464,11 +457,11 @@ class CreateTracksFilter(ProcessingFilter.ProcessingFilter):
 			"Track": "Track to visualize",
 			"UseROI": "Select seed objects using ROI:", "ROI": "ROI for tracking:"}
 			
-		messenger.connect(None, "selected_objects", self.onSetSelectedObjects)
+		lib.messenger.connect(None, "selected_objects", self.onSetSelectedObjects)
 	
 		self.numberOfPoints = None
 		self.selectedTimepoint = 0
-		messenger.connect(None, "timepoint_changed", self.onSetTimepoint)
+		lib.messenger.connect(None, "timepoint_changed", self.onSetTimepoint)
 		
 		
 	def onSetTimepoint(self, obj, event, timepoint):
@@ -490,7 +483,7 @@ class CreateTracksFilter(ProcessingFilter.ProcessingFilter):
 		if not objects:
 			
 			self.dataUnit.getSettings().set("ColorTransferFunction", self.ctf)
-			messenger.send(None, "data_changed", 0)
+			lib.messenger.send(None, "data_changed", 0)
 			return
 
 		if not isROI:
@@ -515,7 +508,7 @@ class CreateTracksFilter(ProcessingFilter.ProcessingFilter):
 				ctf.AddRGBPoint(obj + 1, hv, hv, hv)
 		print "Setting CTF where highlighted=", objects
 		self.dataUnit.getSettings().set("ColorTransferFunction", ctf)
-		messenger.send(None, "data_changed", 0)
+		lib.messenger.send(None, "data_changed", 0)
 		
 		
 	def setParameter(self, parameter, value):
@@ -523,32 +516,32 @@ class CreateTracksFilter(ProcessingFilter.ProcessingFilter):
 		Created: 13.04.2006, KP
 		Description: Set a value for the parameter
 		"""    
-		ProcessingFilter.ProcessingFilter.setParameter(self, parameter, value)
+		lib.ProcessingFilter.ProcessingFilter.setParameter(self, parameter, value)
 		if parameter == "TrackFile":
 			self.particleFile = value
 		elif parameter == "ResultsFile" and os.path.exists(value):
 			pass
-#            self.track = Track.Track(value)
+#            self.track = lib.Track.Track(value)
 #            self.tracks = self.track.getTracks(self.parameters["MinLength"])
 #            print "Read %d tracks"%(len(self.tracks))
-#            messenger.send(self,"update_Track")
+#            lib.messenger.send(self,"update_Track")
 			#if self.parameters.has_key("Track") and self.tracks:
-			#    messenger.send(None,"visualize_tracks",[self.tracks[self.parameters["Track"]]])
-			#    messenger.send(None,"update_helpers",1)
+			#    lib.messenger.send(None,"visualize_tracks",[self.tracks[self.parameters["Track"]]])
+			#    lib.messenger.send(None,"update_helpers",1)
 		elif parameter == "Track":
 			if self.tracks:
-				messenger.send(None, "visualize_tracks", [self.tracks[self.parameters["Track"]]])            
-				messenger.send(None, "update_helpers", 1)
+				lib.messenger.send(None, "visualize_tracks", [self.tracks[self.parameters["Track"]]])            
+				lib.messenger.send(None, "update_helpers", 1)
 		elif parameter == "ROI":
 			roi = self.parameters["ROI"]
 			if roi and self.parameters["UseROI"]:
 				selections = self.getObjectsForROI(roi)
 				# The last boolean is a flag indicating that this selection
 				# comes from a ROI
-				messenger.send(None, "selected_objects", selections, True)
+				lib.messenger.send(None, "selected_objects", selections, True)
 				
 		if parameter == "MinLength":
-			messenger.send(self, "update_Track")
+			lib.messenger.send(self, "update_Track")
 	
 	def getParameters(self):
 		"""
@@ -590,9 +583,11 @@ class CreateTracksFilter(ProcessingFilter.ProcessingFilter):
 			return types.BooleanType
 		elif parameter in ["MaxVelocity", "MaxSizeChange", "MinLength", "MinSize"]:
 			return GUIBuilder.SPINCTRL
-		elif parameter in ["SizeWeight", "DirectionWeight", "IntensityWeight", "MaxDirectionChange", "MaxIntensityChange", "MaxSizeChange", "VelocityWeight"]:
+		elif parameter in ["SizeWeight", "DirectionWeight", "IntensityWeight", "MaxDirectionChange", \
+							"MaxIntensityChange", "MaxSizeChange", "VelocityWeight"]:
 			return GUIBuilder.SPINCTRL
-		if parameter == "Track":return GUIBuilder.SLICE     
+		if parameter == "Track":
+			return GUIBuilder.SLICE     
 		if parameter == "ROI":
 			return GUIBuilder.ROISELECTION
 		if parameter == "UseROI":
@@ -650,7 +645,8 @@ class CreateTracksFilter(ProcessingFilter.ProcessingFilter):
 			return 0
 		if parameter == "ROI":
 			n = bxd.visualizer.getRegionsOfInterest()
-			if n:return n[0]
+			if n:
+				return n[0]
 			return 0            
 		if parameter == "TrackFile":
 			if self.particleFile:
@@ -662,7 +658,7 @@ class CreateTracksFilter(ProcessingFilter.ProcessingFilter):
 		Created: 04.04.2007, KP
 		Description: a method to set the dataunit used by this filter
 		"""
-		ProcessingFilter.ProcessingFilter.setDataUnit(self, dataUnit)
+		lib.ProcessingFilter.ProcessingFilter.setDataUnit(self, dataUnit)
 		tracksFile = dataUnit.getSettings().get("StatisticsFile")
 		print "GOT TRACKS FILE=", tracksFile
 		if tracksFile and os.path.exists(tracksFile):
@@ -676,7 +672,7 @@ class CreateTracksFilter(ProcessingFilter.ProcessingFilter):
 		Created: 21.11.2006, KP
 		Description: Return the GUI for this filter
 		"""              
-		gui = ProcessingFilter.ProcessingFilter.getGUI(self, parent, taskPanel)
+		gui = lib.ProcessingFilter.ProcessingFilter.getGUI(self, parent, taskPanel)
 		
 				
 		if not self.trackGrid:
@@ -748,14 +744,14 @@ class CreateTracksFilter(ProcessingFilter.ProcessingFilter):
 		
 		imagedata = self.getInputFromChannel(0)
 		mx, my, mz = self.dataUnit.getDimensions()
-		n, maskImage = ImageOperations.getMaskFromROIs([roi], mx, my, mz)
+		n, maskImage = lib.ImageOperations.getMaskFromROIs([roi], mx, my, mz)
 		maskFilter = vtk.vtkImageMask()
 		maskFilter.SetMaskedOutputValue(0)
 		maskFilter.SetMaskInput(maskImage)
 		maskFilter.SetImageInput(imagedata)
 		maskFilter.Update()
 		data = maskFilter.GetOutput()
-		histogram = ImageOperations.get_histogram(data)
+		histogram = lib.ImageOperations.get_histogram(data)
 		ret = []
 		for i in range(2, len(histogram)):
 			if histogram[i]:
@@ -778,7 +774,7 @@ class CreateTracksFilter(ProcessingFilter.ProcessingFilter):
 		if self.ctf:
 			self.dataUnit.getSettings().set("ColorTransferFunction", self.ctf)
 			self.ctf = None
-			messenger.send(None, "data_changed", 0)
+			lib.messenger.send(None, "data_changed", 0)
 
 		print "Selected", len(selections), "objects"
 		n = self.trackGrid.getTable().GetNumberRows()
@@ -815,7 +811,7 @@ class CreateTracksFilter(ProcessingFilter.ProcessingFilter):
 		Created: 14.08.2006, KP
 		Description: Execute the filter with given inputs and return the output
 		"""            
-		if not ProcessingFilter.ProcessingFilter.execute(self, inputs):
+		if not lib.ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
 		image = self.getInputFromChannel(0)
 		return image
@@ -828,11 +824,11 @@ class CreateTracksFilter(ProcessingFilter.ProcessingFilter):
 		filename = self.parameters["ResultsFile"]
 		if not os.path.exists(filename):
 			return
-		self.track = Track.TrackReader()
+		self.track = lib.Track.TrackReader()
 		self.track.readFromFile(filename)
 		self.tracks = self.track.getTracks(self.parameters["MinLength"])
 		n = len(self.tracks)
-		messenger.send(self, "update_Track")
+		lib.messenger.send(self, "update_Track")
 		print "Read %d tracks" % (n)
 		print self.tracks
 		self.showTracks(self.tracks)
@@ -865,6 +861,7 @@ class CreateTracksFilter(ProcessingFilter.ProcessingFilter):
 			return
 		if not self.tracker:
 			self.tracker = Particle.ParticleTracker()
+			#self.tracker = lib.Particle.ParticleTracker()
 		self.tracker.setFilterObjectSize(self.parameters["MinSize"])
 
 		self.tracker.readFromFile(self.particleFile, statsTimepoint = self.selectedTimepoint)      
@@ -893,7 +890,8 @@ class CreateTracksFilter(ProcessingFilter.ProcessingFilter):
 		Created: 22.11.2006, KP
 		Description: return an intensity value at given x,y,z
 		"""
-		if not pt:return None
+		if not pt:
+			return None
 		x, y, z = pt
 #        print "Getting from ",x,y,z
 		image = self.getInputFromChannel(0, timepoint = timepoint)
@@ -947,8 +945,7 @@ class CreateTracksFilter(ProcessingFilter.ProcessingFilter):
 	
 		self.onReadTracks(None)
 		
-
-class ViewTracksFilter(ProcessingFilter.ProcessingFilter):
+class ViewTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 	"""
 	Created: 25.04.2006, KP
 	Description: A filter for controlling the visualization of the tracking results
@@ -966,14 +963,14 @@ class ViewTracksFilter(ProcessingFilter.ProcessingFilter):
 		self.tracker = None
 		self.trackGrid = None
 		self.fileUpdated = 0
-		ProcessingFilter.ProcessingFilter.__init__(self, (1, 1))
+		lib.ProcessingFilter.ProcessingFilter.__init__(self, (1, 1))
 		
 		self.descs = {"MinLength": "Min. length of track (# of timepoints)",
 			"ResultsFile": "Tracking results file:",
 			"Track": "Track to visualize"}
 	
 		self.numberOfPoints = None
-		messenger.connect(None, "set_shown_tracks", self.updateSelectedTracks)
+		lib.messenger.connect(None, "set_shown_tracks", self.updateSelectedTracks)
 		
 		self.particleFile = ""
 	def setParameter(self, parameter, value):
@@ -981,24 +978,24 @@ class ViewTracksFilter(ProcessingFilter.ProcessingFilter):
 		Created: 13.04.2006, KP
 		Description: Set a value for the parameter
 		"""    
-		ProcessingFilter.ProcessingFilter.setParameter(self, parameter, value)
+		lib.ProcessingFilter.ProcessingFilter.setParameter(self, parameter, value)
 
 		if parameter == "ResultsFile" and os.path.exists(value) and self.trackGrid:
 			self.fileUpdated = 1
 		 
-#            self.track = Track.Track(value)
+#            self.track = lib.Track.Track(value)
 #            self.tracks = self.track.getTracks(self.parameters["MinLength"])
 #            print "Read %d tracks"%(len(self.tracks))
-#            messenger.send(self,"update_Track")
+#            lib.messenger.send(self,"update_Track")
 			#if self.parameters.has_key("Track") and self.tracks:
-			#    messenger.send(None,"visualize_tracks",[self.tracks[self.parameters["Track"]]])
-			#    messenger.send(None,"update_helpers",1)
+			#    lib.messenger.send(None,"visualize_tracks",[self.tracks[self.parameters["Track"]]])
+			#    lib.messenger.send(None,"update_helpers",1)
 		elif parameter == "Track":
 			if self.tracks:
-				messenger.send(None, "visualize_tracks", [self.tracks[self.parameters["Track"]]])            
-				messenger.send(None, "update_helpers", 1)
+				lib.messenger.send(None, "visualize_tracks", [self.tracks[self.parameters["Track"]]])            
+				lib.messenger.send(None, "update_helpers", 1)
 		if parameter == "MinLength":
-			messenger.send(self, "update_Track")
+			lib.messenger.send(self, "update_Track")
 		  
 	def updateSelectedTracks(self, obj, evt, tracks):
 		"""
@@ -1009,8 +1006,8 @@ class ViewTracksFilter(ProcessingFilter.ProcessingFilter):
 			showtracks = []
 			for i in tracks:
 				showtracks.append(self.tracks[i])
-			messenger.send(None, "visualize_tracks", showtracks)            
-			messenger.send(None, "update_helpers", 1)
+			lib.messenger.send(None, "visualize_tracks", showtracks)            
+			lib.messenger.send(None, "update_helpers", 1)
 	
 	
 	def getParameters(self):
@@ -1038,7 +1035,8 @@ class ViewTracksFilter(ProcessingFilter.ProcessingFilter):
 		"""    
 		if parameter in ["MinLength"]:
 			return GUIBuilder.SPINCTRL
-		if parameter == "Track":return GUIBuilder.SLICE            
+		if parameter == "Track":
+			return GUIBuilder.SLICE            
 		return GUIBuilder.FILENAME
 		
 	def getRange(self, parameter):
@@ -1063,8 +1061,10 @@ class ViewTracksFilter(ProcessingFilter.ProcessingFilter):
 		Created: 14.08.2006, KP
 		Description: Return the default value of a parameter
 		"""
-		if parameter == "Track":return 0    
-		if parameter == "MinLength":return 3
+		if parameter == "Track":
+			return 0    
+		if parameter == "MinLength":
+			return 3
 		if parameter == "ResultsFile":
 			return "track_results.csv"
 		return "statistics.csv"
@@ -1075,7 +1075,7 @@ class ViewTracksFilter(ProcessingFilter.ProcessingFilter):
 		Created: 21.11.2006, KP
 		Description: Return the GUI for this filter
 		"""              
-		gui = ProcessingFilter.ProcessingFilter.getGUI(self, parent, taskPanel)
+		gui = lib.ProcessingFilter.ProcessingFilter.getGUI(self, parent, taskPanel)
 		
 				
 		if not self.trackGrid:
@@ -1106,7 +1106,7 @@ class ViewTracksFilter(ProcessingFilter.ProcessingFilter):
 			
 		if self.prevFilter:
 			filename = self.prevFilter.getParameter("ResultsFile")
-			if filename and os.path.exiss(filename):
+			if filename and os.path.exists(filename):
 				self.setParameter("ResultsFile", filename)
 				self.onReadTracks(event = None)
 		return gui
@@ -1117,7 +1117,7 @@ class ViewTracksFilter(ProcessingFilter.ProcessingFilter):
 		Created: 14.08.2006, KP
 		Description: Execute the filter with given inputs and return the output
 		"""            
-		if not ProcessingFilter.ProcessingFilter.execute(self, inputs):
+		if not lib.ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
 		
 		image = self.getInputFromChannel(0)
@@ -1131,11 +1131,11 @@ class ViewTracksFilter(ProcessingFilter.ProcessingFilter):
 		filename = self.parameters["ResultsFile"]
 		if not os.path.exists(filename):
 			return
-		self.track = Track.TrackReader()
+		self.track = lib.Track.TrackReader()
 		self.track.readFromFile(filename)
 		self.tracks = self.track.getTracks(self.parameters["MinLength"])
 		n = len(self.tracks)
-		messenger.send(self, "update_Track")
+		lib.messenger.send(self, "update_Track")
 		print "Read %d tracks" % (n)
 		print self.tracks
 		self.showTracks(self.tracks)
@@ -1158,40 +1158,38 @@ class ViewTracksFilter(ProcessingFilter.ProcessingFilter):
 				# this track)
 				table.SetValue(i, tp + 1, pos, override = 1)
 		self.trackGrid.SetTable(table)
-		self.trackGrid.ForceRefresh()    
-		
+		self.trackGrid.ForceRefresh()
 
-class AnalyzeTracksFilter(ProcessingFilter.ProcessingFilter):
+class AnalyzeTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 	"""
 	Created: 1.7.2007, KP
 	Description: A filter that calculates statistics from the tracks and allows them to be exported to csv
-	"""     
+	"""
 	name = "Analyze tracks"
 	category = TRACKING
-	
+
 	def __init__(self):
 		"""
 		Created: 13.04.2006, KP
 		Description: Initialization
-		"""        
+		"""
 		self.tracks = []
 		self.track = None
 		self.tracker = None
 		self.trackListBox = None
 		self.fileUpdated = 0
-		ProcessingFilter.ProcessingFilter.__init__(self, (1, 1))
-		
+		lib.ProcessingFilter.ProcessingFilter.__init__(self, (1, 1))
+
 		self.descs = {"ResultsFile": "Tracking results file:"}
-	
 		self.numberOfPoints = None
-		
 		self.particleFile = ""
+
 	def setParameter(self, parameter, value):
 		"""
 		Created: 13.04.2006, KP
 		Description: Set a value for the parameter
-		"""    
-		ProcessingFilter.ProcessingFilter.setParameter(self, parameter, value)
+		"""
+		lib.ProcessingFilter.ProcessingFilter.setParameter(self, parameter, value)
 
 		if parameter == "ResultsFile" and os.path.exists(value) and self.trackListBox:
 			self.fileUpdated = 1
@@ -1200,33 +1198,30 @@ class AnalyzeTracksFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 14.08.2006, KP
 		Description: Return the list of parameters needed for configuring this GUI
-		"""            
+		"""
 		return [["Tracking Results", (("ResultsFile", "Select track file that contains the results", "*.csv"), )]]
 
-		
 	def getLongDesc(self, parameter):
 		"""
 		Created: 14.08.2006, KP
 		Description: Return a long description of the parameter
-		""" 
+		"""
 		return ""
-		
-		
+
 	def getType(self, parameter):
 		"""
 		Created: 14.08.2006, KP
 		Description: Return the type of the parameter
-		"""    
-	   
+		"""
 		return GUIBuilder.FILENAME
-		
+
 	def getRange(self, parameter):
 		"""
 		Created: 14.08.2006, KP
 		Description: Return the range of given parameter
 		"""
 		return 0, 0
-				
+
 	def getDefaultValue(self, parameter):
 		"""
 		Created: 14.08.2006, KP
@@ -1236,28 +1231,25 @@ class AnalyzeTracksFilter(ProcessingFilter.ProcessingFilter):
 		if parameter == "ResultsFile":
 			return "track_results.csv"
 
-		
-		
 	def getGUI(self, parent, taskPanel):
 		"""
 		Created: 21.11.2006, KP
 		Description: Return the GUI for this filter
-		"""              
-		gui = ProcessingFilter.ProcessingFilter.getGUI(self, parent, taskPanel)
-		
-				
+		"""
+		gui = lib.ProcessingFilter.ProcessingFilter.getGUI(self, parent, taskPanel)
+
 		if not self.trackListBox:
 			self.trackListBox = CSVListView.CSVListView(self.gui)
 			sizer = wx.BoxSizer(wx.VERTICAL)
-			
+
 			sizer.Add(self.trackListBox, 1)
 			box = wx.BoxSizer(wx.HORIZONTAL)
-			
+
 			self.readTracksBtn = wx.Button(self.gui, -1, "Read tracks")
 			box.Add(self.readTracksBtn)
-			
+
 			self.readTracksBtn.Bind(wx.EVT_BUTTON, self.onReadTracks)
-			
+
 			sizer.Add(box)
 			pos = (0, 0)
 			item = gui.sizer.FindItemAtPosition(pos)
@@ -1267,30 +1259,29 @@ class AnalyzeTracksFilter(ProcessingFilter.ProcessingFilter):
 				win = item.GetSizer()
 			elif item.IsSpacer():
 				win = item.GetSpacer()
-			
-			gui.sizer.Detach(win)            
+
+			gui.sizer.Detach(win)
 			gui.sizer.Add(sizer, (0, 0), flag = wx.EXPAND | wx.ALL)
 			gui.sizer.Add(win, (1, 0), flag = wx.EXPAND | wx.ALL)
-			
+
 		if self.prevFilter:
 			filename = self.prevFilter.getParameter("ResultsFile")
-			if filename and os.path.exiss(filename):
+			if filename and os.path.exists(filename):
 				self.setParameter("ResultsFile", filename)
 				self.onReadTracks(event = None)
 		return gui
-		
-		
+
 	def execute(self, inputs, update = 0, last = 0):
 		"""
 		Created: 14.08.2006, KP
 		Description: Execute the filter with given inputs and return the output
-		"""            
-		if not ProcessingFilter.ProcessingFilter.execute(self, inputs):
+		"""
+		if not lib.ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
-		
+
 		image = self.getInputFromChannel(0)
 		return image
-	
+
 	def onReadTracks(self, event):
 		"""
 		Created: 22.11.2006, KP
@@ -1299,33 +1290,35 @@ class AnalyzeTracksFilter(ProcessingFilter.ProcessingFilter):
 		filename = self.parameters["ResultsFile"]
 		if not os.path.exists(filename):
 			return
-		self.track = Track.TrackReader()
+		self.track = lib.Track.TrackReader()
 		self.track.readFromFile(filename)
 		self.tracks = self.track.getTracks(0)
 		self.showTracks(self.tracks)
-		
+
 	def showTracks(self, tracks):
 		"""
 		Created: 26.11.2006, KP
 		Description: show the given tracks in the track grid
 		"""
-#track length
-#Directional persistance = path length / distance to starting point
-#speed
-#angle (avg of changes)
-		
+#		track length
+#		Directional persistance = path length / distance to starting point
+#		speed
+#		angle (avg of changes)
+
 		rows = [["Length", "Avg. speed", "Directional persistence", "Avg. angle"]]
 		globalmin = 9999999999
 		globalmax = 0
 		for i, track in enumerate(tracks):
-			length = track.getLength()
+			length = track.getNumberOfTimepoints()
 			speed = track.getSpeed()
 			dp = track.getDirectionalPersistence()
 			avgang = track.getAverageAngle()
 			row = [length, speed, dp, avgang]
 			mintp, maxtp = track.getTimeRange()
-			if mintp < globalmin:globalmin = mintp
-			if maxtp > globalmax:globalmax = maxtp
+			if mintp < globalmin:
+				globalmin = mintp
+			if maxtp > globalmax:
+				globalmax = maxtp
 			for tp in range(0, maxtp + 1):
 				if tp < mintp:
 					row.append("")
@@ -1336,8 +1329,8 @@ class AnalyzeTracksFilter(ProcessingFilter.ProcessingFilter):
 				# this track)
 				row.append(pos)
 			rows.append(row)
-			
+
 		for i in range(0, globalmax):
 			rows[0].append("T%d" % i)
-			
+
 		self.trackListBox.setContents(rows)

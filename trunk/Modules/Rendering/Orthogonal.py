@@ -30,19 +30,23 @@ __version__ = "$Revision: 1.9 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 import wx
-
 import vtk
-import messenger
-import ColorTransferEditor
-
+import lib.messenger
 import Logging
-from Visualizer.VisualizationModules import *
+from Visualizer.VisualizationModules import VisualizationModule
+from Visualizer.ModuleConfiguration import ModuleConfigurationPanel
 
-def getClass():return OrthogonalPlaneModule
-def getConfigPanel():return OrthogonalPlaneConfigurationPanel
-def getName():return "Orthogonal slices"
-def getQuickKeyCombo(): return "Shift-Ctrl-O"
+def getClass():
+	return OrthogonalPlaneModule
 
+def getConfigPanel():
+	return OrthogonalPlaneConfigurationPanel
+
+def getName():
+	return "Orthogonal slices"
+
+def getQuickKeyCombo():
+	return "Shift-Ctrl-O"
 
 class OrthogonalPlaneModule(VisualizationModule):
 	"""
@@ -107,7 +111,7 @@ class OrthogonalPlaneModule(VisualizationModule):
 		self.planeWidgetY.SetInteractor(iactor)
 		self.planeWidgetZ.SetInteractor(iactor)
 		
-		messenger.connect(None, "zslice_changed", self.setZ)
+		lib.messenger.connect(None, "zslice_changed", self.setZ)
 		#self.updateRendering()
 		
 	   
@@ -239,7 +243,8 @@ class OrthogonalPlaneModule(VisualizationModule):
 		px = cx + nx * 2
 		py = cy + ny * 2
 		d = float(xMax) / zMax
-		if d < 1:d = 1
+		if d < 1:
+			d = 1
 		pz = cz + nz * (3.0 + d)
 	
 		camera = self.renderer.GetActiveCamera()
@@ -328,9 +333,6 @@ class OrthogonalPlaneModule(VisualizationModule):
 			#    property.ShadeOn()
 			#else:
 			#    property.ShadeOff()        
-
-
-
 
 class OrthogonalPlaneConfigurationPanel(ModuleConfigurationPanel):
 	def __init__(self, parent, visualizer, name = "Orthogonal Slices", **kws):
@@ -430,6 +432,7 @@ class OrthogonalPlaneConfigurationPanel(ModuleConfigurationPanel):
 		else:
 			data = dataUnit.getTimepoint(0)
 
+#        ext=module.getDataUnit().getTimepoint(0).GetWholeExtent()
 		ext = data.GetWholeExtent()
 		x, y, z = ext[1], ext[3], ext[5]
 		Logging.info("x=%d, y=%d, z=%d" % (x, y, z), kw = "rendering")

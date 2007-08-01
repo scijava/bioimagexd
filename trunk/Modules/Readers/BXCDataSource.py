@@ -28,25 +28,38 @@ __author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.37 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
-from ConfigParser import *
-from DataSource import *
-import messenger
-import DataUnit
-import vtk
+import ConfigParser
+from lib.DataSource.DataSource import DataSource
+from lib.DataSource.RGBComponentDataSource import RGBComponentDataSource
+from lib.DataUnit.DataUnit import DataUnit
+from lib.DataUnit.DataUnitSetting import DataUnitSettings
+import lib.messenger
 import os.path
-import ImageOperations
-
 import Logging
-import DataUnit
+import vtk
 
-class MyConfigParser(RawConfigParser):
+class MyConfigParser(ConfigParser.RawConfigParser):
+	"""
+	Created: Unknown, KP
+	Description: Subclass of RawConfigParser that overrides optionxform to
+	allow for case-sensitive option strings.
+	"""
 	def optionxform(self, optionstr):
+		"""
+		Created: Unknown, KP
+		Description: This method converts option strings to be used as "keys"
+		to this parser.
+		"""
 		return optionstr
 
-def getExtensions(): return ["bxc"]
-def getFileType(): return "BioImageXD dataset channel (*.bxc)"
-def getClass(): return BXCDataSource
+def getExtensions():
+	return ["bxc"]
 
+def getFileType():
+	return "BioImageXD dataset channel (*.bxc)"
+
+def getClass():
+	return BXCDataSource
 
 class BXCDataSource(DataSource):
 	"""
@@ -72,9 +85,10 @@ class BXCDataSource(DataSource):
 		# Number of datasets added to this datasource
 		self.counter = 0
 		self.parser = None
-
+		self.ctf = None
 		# TODO: what is this?
-		self.dataUnitSettings = {}
+		# self.dataUnitSettings = {}
+		self.settings = None
 		self.dimensions = None
 		self.spacing = None
 		self.voxelsizes = None
@@ -95,7 +109,7 @@ class BXCDataSource(DataSource):
 	def getDataSetCount(self):
 		"""
 		Created: 03.11.2004, JM
-		Description: Returns the number of individual DataSets (=time points)
+		Description: Returns the number of individual DataSets (= time points)
 		managed by this DataSource
 		"""
 		return len(self.dataSets)
@@ -104,7 +118,7 @@ class BXCDataSource(DataSource):
 		"""
 		Created: 03.11.2004, JM
 		Description: Returns the DataSet at the specified index
-		Parameters:   i       The index
+		Parameters:   i		  The index
 		"""
 		data = self.loadVti(self.dataSets[i])
 		if raw:
@@ -124,38 +138,37 @@ class BXCDataSource(DataSource):
 		"""
 		self.dimensions = data.GetDimensions()
 		self.spacing = data.GetSpacing()
-		#self.bitdepth=8*data.GetNumberOfScalarComponents()
+		#self.bitdepth = 8*data.GetNumberOfScalarComponents()
 
 	def getDimensions(self):
 		"""
 		Method: getDimensions()
 		Created: 14.12.2004, KP
-		Description: Returns the (x,y,z) dimensions of the datasets this 
+		Description: Returns the (x, y, z) dimensions of the datasets this 
 					 dataunit contains
 		"""
 		if self.resampleDims:
-			return self.resampleDims        
+			return self.resampleDims		
 		if not self.dimensions:
-			#data=self.getDataSet(0)
+			#data = self.getDataSet(0)
 			#self.readInfo(data)
 			self.dimensions = eval(self.settings.get("Dimensions"))
-			
-			
 		return self.dimensions
+
 	def updateProgress(self, obj, evt):
 		"""
 		Method: updateProgress
 		Created: 13.07.2004, KP
 		Description: Sends progress update event
-		"""        
+		"""		   
 		if not obj:
 			progress = 1.0
 		else:
 			progress = obj.GetProgress()
 		notinvtk = 0
-		if progress == 1.0:notinvtk = 1
-		messenger.send(None, "update_progress", progress, "Reading %s..." % self.shortname, notinvtk)
-			 
+		if progress == 1.0:
+			notinvtk = 1
+		lib.messenger.send(None, "update_progress", progress, "Reading %s..."%self.shortname, notinvtk)
 		
 	def getSpacing(self):
 		"""
@@ -165,7 +178,7 @@ class BXCDataSource(DataSource):
 					 dataunit contains
 		"""
 		if not self.spacing:
-			#data=self.getDataSet(0)
+			#data = self.getDataSet(0)
 			#self.readInfo(data)
 			self.spacing = eval(self.settings.get("Spacing"))
 		return self.spacing
@@ -178,9 +191,9 @@ class BXCDataSource(DataSource):
 		"""
 		try:
 			vsiz = self.parser.get("VoxelSize", "VoxelSize")
-		except:
+		except ConfigParser.NoOptionError:
 			vsiz = self.parser.get("VoxelSize", "voxelsize")
-		if type(vsiz) == type(""):            
+		if type(vsiz) == type(""):			
 			return eval(vsiz)
 		return vsiz
 	
@@ -189,7 +202,7 @@ class BXCDataSource(DataSource):
 		Created: 03.11.2004, JM
 		Description: Loads the specified DataSet from disk and returns
 					 it as vtkImageData
-		Parameters:   filename  The file where Dataset is loaded from
+		Parameters:   filename	The file where Dataset is loaded from
 		"""
 		if not self.reader or self.filename != filename:
 			self.filename = filename
@@ -198,7 +211,7 @@ class BXCDataSource(DataSource):
 			filepath = os.path.join(self.path, filename)
 			if not self.reader.CanReadFile(filepath):
 				Logging.error("Cannot read file",
-				"Cannot read XML Image Data File %s" % filename)
+				"Cannot read XML Image Data File %s"%filename)
 			self.reader.SetFileName(filepath)
 			self.reader.Update()
 			self.updateProgress(None, None)
@@ -211,11 +224,11 @@ class BXCDataSource(DataSource):
 		Description: Loads the specified .bxc-file, the checks the format
 					 of the loaded dataunit and returns it
 
-		Parameters:   filename  The .du-file to be loaded
+		Parameters:   filename	The .du-file to be loaded
 		"""
 		self.filename = filename
 		self.path = os.path.dirname(filename)
-		Logging.info("Trying to open %s" % filename, kw = "datasource")
+		Logging.info("Trying to open %s"%filename, kw = "datasource")
 		try:
 			# A SafeConfigParser is used to parse the .du-file
 			self.parser = MyConfigParser()
@@ -223,11 +236,11 @@ class BXCDataSource(DataSource):
 			# First, the DataUnit format is checked
 			try:
 				dataUnitFormat = self.parser.get("Type", "Type")
-			except:
+			except ConfigParser.NoOptionError:
 				dataUnitFormat = self.parser.get("Type", "type")
-		except Exception, ex:
+		except ConfigParser.ParsingError, ex:
 			#Logging.error("Failed to open file for reading",
-			#"BXCDataSource failed to open %s for reading. Reason: %s"%(filename,str(ex)))
+			#"BXCDataSource failed to open %s for reading. Reason: %s"%(filename, str(ex)))
 			#return [None]
 			return "NOOP"
 		return dataUnitFormat
@@ -243,21 +256,19 @@ class BXCDataSource(DataSource):
 		"""
 		self.shortname = os.path.basename(filename)
 		dataUnitFormat = self.loadBxdFile(filename)
-		Logging.info("format of unit=", dataUnitFormat, kw = "datasource")
+		Logging.info("format of unit = ", dataUnitFormat, kw = "datasource")
 
 		if (not dataUnitFormat) or (not self.parser):
-			Logging.info("No dataUnitFormat or parser: %s and %s" % (dataUnitFormat, self.parser), kw = "datasource")
+			Logging.info("No dataUnitFormat or parser: %s and %s"%(dataUnitFormat, self.parser), kw = "datasource")
 			return None
 
 		# Then, the number of datasets/timepoints that belong to this dataset
 		# series
 		try:
 			count = self.parser.get("ImageData", "numberOfFiles")
-		except:
+		except ConfigParser.NoOptionError:
 			count = self.parser.get("ImageData", "numberoffiles")
-			
-		Logging.info("format=", dataUnitFormat, "count=", count, kw = "datasource")
-
+		Logging.info("format = ", dataUnitFormat, "count = ", count, kw = "datasource")
 
 		# Then read the .vti-filenames and store them in the dataSets-list:
 		filedir = os.path.dirname(filename)
@@ -268,22 +279,22 @@ class BXCDataSource(DataSource):
 			filepath = os.path.join(filedir, filename)
 			if not reader.CanReadFile(filepath):
 				Logging.error("Cannot read file",
-				"Cannot read source XML Image Data File %s" % filename)
+				"Cannot read source XML Image Data File %s"%filename)
 				return
 
 			self.dataSets.append(filename)
-			#Logging.info("dataset[%d]=%s"%(i,self.dataSets[i]))
+			#Logging.info("dataset[%d] = %s"%(i, self.dataSets[i]))
 
-		dataunitclass = DataUnit.DataUnit
+		dataunitclass = DataUnit
 
 		# If everything went well, we create a new DataUnit-instance of the
 		# correct subclass, so that the DataUnit-instace can take over and
 		# resume data processing. First, we return the DataUnit to the caller,
 		# so it can set a reference to it:
 		dataunit = dataunitclass()
-		#settingsclass = "DataUnit."+self.parser.get("Type","Type")+"()"
+		#settingsclass = "DataUnit."+self.parser.get("Type", "Type")+"()"
 		
-		settings = DataUnit.DataUnitSettings()
+		settings = DataUnitSettings()
 		settings = settings.readFrom(self.parser)
 		self.originalDimensions = eval(settings.get("Dimensions"))
 		self.settings = settings
@@ -294,10 +305,10 @@ class BXCDataSource(DataSource):
 	   
 		if data.GetNumberOfScalarComponents() == 3:
 			for i in range(0, 3) :
-				ds = RGBComponentDataSource(self, i)
+				dataSource = RGBComponentDataSource(self, i)
 				dataunit = dataunitclass()
-				dataunit.setDataSource(ds)
-				settings = DataUnit.DataUnitSettings()
+				dataunit.setDataSource(dataSource)
+				settings = DataUnitSettings()
 				settings = settings.readFrom(self.parser)
 				dataunit.setSettings(settings)
 				dataunits.append(dataunit)
@@ -321,18 +332,18 @@ class BXCDataSource(DataSource):
 		"""
 		Logging.info("Getting colortransferfunction from settings", kw = "ctf")
 		
-		#self.settings.set("ColorTransferFunction",palette)
-#            except:
-#                raise "FOO"
-#                pass
+		#self.settings.set("ColorTransferFunction", palette)
+#			 except:
+#				 raise "FOO"
+#				 pass
 		
 		
 		if not self.ctf:
 			ctf = self.settings.get("ColorTransferFunction")
-			#Logging.info("settings.ctf=",ctf,kw="ctf")
+			#Logging.info("settings.ctf = ", ctf, kw = "ctf")
 			try:
-				#ctf=self.parser.get("ColorTransferFunction","ColorTransferFunction")
-				ctf = self.settings.get("ColorTransferFunction")                
+				#ctf = self.parser.get("ColorTransferFunction", "ColorTransferFunction")
+				ctf = self.settings.get("ColorTransferFunction")				  
 				if not ctf:
 					ctf = self.settings.get("ColocalizationColorTransferFunction")
 			except:
@@ -341,9 +352,9 @@ class BXCDataSource(DataSource):
 				Logging.info("Will return no CTF", kw = "ctf")
 				ctf = vtk.vtkColorTransferFunction()
 				ctf.AddRGBPoint(0, 0, 0, 0)
-				ctf.AddRGBPoint(255, 1, 1, 1)                
+				ctf.AddRGBPoint(255, 1, 1, 1)				  
 			else:
-				#Logging.info("Using CTF read from dataset",ctf,kw="ctf")
+				#Logging.info("Using CTF read from dataset", ctf, kw = "ctf")
 				pass
 			self.ctf = ctf
 		return self.ctf

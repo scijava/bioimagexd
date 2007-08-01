@@ -32,11 +32,12 @@ __version__ = "$Revision: 1.18 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 
-import vtk
-import time
-import lib.Module
-from lib.Module import *
 import scripting as bxd
+import lib.messenger
+import Logging
+from lib.Module import Module
+import time
+import vtkbxd
 
 class Merging(Module):
 	"""
@@ -154,7 +155,7 @@ class Merging(Module):
 		luminance = 0
 		self.shift = 0
 		self.scale = 1
-		self.merge = vtk.vtkImageColorMerge()
+		self.merge = vtkbxd.vtkImageColorMerge()
 		self.merge.AddObserver("ProgressEvent", self.updateProgress)        
 		
 		if self.doAlpha:
@@ -190,12 +191,13 @@ class Merging(Module):
 		
 #        self.merge.Update()        
 #        data=self.merge.GetOutput()
-		#Logging.info("Result with dims and type",data.GetDimensions(),data.GetScalarTypeAsString(),"components:",data.GetNumberOfScalarComponents(),"scalar range",data.GetScalarRange())
+		#Logging.info("Result with dims and type",data.GetDimensions(),data.GetScalarTypeAsString(),\
+		#			"components:",data.GetNumberOfScalarComponents(),"scalar range",data.GetScalarRange())
 		
 
 		t3 = time.time()
 		Logging.info("Merging took %.4f seconds" % (t3 - t1), kw = "processing")
-		messenger.send(None, "update_progress", 100, "Done.")
+		lib.messenger.send(None, "update_progress", 100, "Done.")
 		
 		#data.GlobalReleaseDataFlagOn()
 		return data

@@ -27,23 +27,21 @@ __author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.37 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
-import ConfigParser
-import struct
-import re
-import messenger
-import re
-		
-
+from lib.DataSource.DataSource import DataSource
+from lib.DataUnit.DataUnit import DataUnit
 import os.path
-from DataSource import *
-import DataUnit
+import re
+import vtk
 
-import glob
 
-def getExtensions(): return ["hdr"]
-def getFileType(): return "Interfile files (*.hdr)"
-def getClass(): return InterfileDataSource    
-	
+def getExtensions(): 
+	return ["hdr"]
+
+def getFileType(): 
+	return "Interfile files (*.hdr)"
+
+def getClass(): 
+	return InterfileDataSource    	
 
 class InterfileDataSource(DataSource):
 	"""
@@ -127,6 +125,7 @@ class InterfileDataSource(DataSource):
 		x = self.voxelsize[0]
 		self.originalDimensions = self.dimensions
 		self.spacing = [1, self.voxelsize[1] / x, self.voxelsize[2] / x]
+
 	def getDataSetCount(self):
 		"""
 		Method: getDataSetCount
@@ -257,7 +256,7 @@ class InterfileDataSource(DataSource):
 		Description: Loads the specified .oif-file and imports data from it.
 		Parameters:   filename  The .oif-file to be loaded
 		"""
-		dataunit = DataUnit.DataUnit()
+		dataunit = DataUnit()
 		datasource = InterfileDataSource(filename)
 		dataunit.setDataSource(datasource)
 		return [dataunit]

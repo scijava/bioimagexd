@@ -29,12 +29,14 @@
 __author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.42 $"
 __date__ = "$Date: 2005/01/13 14:52:39 $"
-from lib import ProcessingFilter
+
+import lib.ProcessingFilter
+import vtk
+
 MATH = "Image arithmetic"
 LOGIC = "Logical operations"
 
-
-class MathFilter(ProcessingFilter.ProcessingFilter):
+class MathFilter(lib.ProcessingFilter.ProcessingFilter):
 	"""
 	Created: 13.04.2006, KP
 	Description: A base class for image mathematics filters
@@ -47,7 +49,7 @@ class MathFilter(ProcessingFilter.ProcessingFilter):
 		Created: 13.04.2006, KP
 		Description: Initialization
 		"""        
-		ProcessingFilter.ProcessingFilter.__init__(self, inputs)
+		lib.ProcessingFilter.ProcessingFilter.__init__(self, inputs)
 		self.vtkfilter = vtk.vtkImageMathematics()
 	
 	def getParameters(self):
@@ -62,8 +64,8 @@ class MathFilter(ProcessingFilter.ProcessingFilter):
 		Created: 15.04.2006, KP
 		Description: Execute the filter with given inputs and return the output
 		"""                    
+		#TODO: find out what ManipulationFilter.execute() should be: the nearest match is ManipulationFilters.*Filter.execute()
 		if not ManipulationFilter.execute(self, inputs):
-			
 			return None
 		
 		image = self.getInput(1)
@@ -129,7 +131,8 @@ class OrFilter(LogicFilter):
 		Description: Initialization
 		"""        
 		LogicFilter.__init__(self)
-		self.operation = "Or"    
+		self.operation = "Or"
+
 class XorFilter(LogicFilter):
 	"""
 	Created: 15.04.2006, KP

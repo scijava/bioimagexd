@@ -33,22 +33,18 @@ __author__ = "BioImageXD Project"
 __version__ = "$Revision: 1.21 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
+#import Dialogs
+#import Logging
+#import RenderingInterface
+#import sys
+#import vtk
 
-import wx
-import os.path
-
-import sys
-import RenderingInterface
-import Logging
-import Dialogs
-
-
-import wx.lib.scrolledpanel as scrolled
 import wx.lib.buttons as buttons
-import vtk
-
 import scripting as bxd
-import Command
+import lib.Command
+import os.path
+import wx.lib.scrolledpanel as scrolled
+import wx
 
 class TimepointSelectionPanel(scrolled.ScrolledPanel):
 	"""
@@ -137,7 +133,7 @@ class TimepointSelectionPanel(scrolled.ScrolledPanel):
 			n = 1
 		do_cmd = self.parentPath + ".timepointSelection.selectEveryNth(%d)" % n
 		undo_cmd = ""
-		cmd = Command.Command(Command.GUI_CMD, None, None, do_cmd, undo_cmd, desc = "Select every Nth timepoint for processing")
+		cmd = lib.Command.Command(lib.Command.GUI_CMD, None, None, do_cmd, undo_cmd, desc = "Select every Nth timepoint for processing")
 		cmd.run()        
 		
 	def selectEveryNth(self, n):
@@ -198,7 +194,7 @@ class TimepointSelectionPanel(scrolled.ScrolledPanel):
 			descstr = "Select timepoint %d for processing" % number
 		else:
 			descstr = "Unselect timepoint %d for processing" % number
-		cmd = Command.Command(Command.GUI_CMD, None, None, do_cmd, undo_cmd, desc = descstr)
+		cmd = lib.Command.Command(lib.Command.GUI_CMD, None, None, do_cmd, undo_cmd, desc = descstr)
 		cmd.run()
 
 	def setTimepoint(self, number, flag):
@@ -246,8 +242,6 @@ class TimepointSelectionPanel(scrolled.ScrolledPanel):
 		self.updateSelection()
 		#data=self.dataUnit.getTimepoint(0)
 		self.mainsizer.Fit(self)
-		
-		
 
 class TimepointSelection(wx.Dialog):
 	"""
@@ -290,6 +284,7 @@ class TimepointSelection(wx.Dialog):
 		#self.mainsizer.SetSizeHints(self)
 		
 	def setLabel(self, lbl):
+		#TODO: Commented out in the TimepointSelectionPanel __init__
 		self.panel.timepointLbl.SetLabel(lbl)
 		
 	def createButtonBox(self):
@@ -298,13 +293,10 @@ class TimepointSelection(wx.Dialog):
 		Description: Creates the standard control buttons
 		"""
 		self.buttonsSizer = wx.BoxSizer(wx.HORIZONTAL)
-		
 		self.buttonsSizer1 = wx.BoxSizer(wx.HORIZONTAL)
-		
 		self.actionBtn = wx.Button(self, -1, "Ok")
 		self.actionBtn.Bind(wx.EVT_BUTTON, self.onButtonOk)
 		self.buttonsSizer1.Add(self.actionBtn, flag = wx.ALIGN_LEFT)
-
 		self.closeBtn = wx.Button(self, -1, "Close")
 		self.closeBtn.Bind(wx.EVT_BUTTON, self.closeWindowCallback)
 		self.buttonsSizer1.Add(self.closeBtn, flag = wx.ALIGN_LEFT)
@@ -325,7 +317,7 @@ class TimepointSelection(wx.Dialog):
 		do_cmd = "bxd.dialogs['%s'].process()" % self.dialogName
 		undo_cmd = ""
 		
-		cmd = Command.Command(Command.GUI_CMD, None, None, do_cmd, undo_cmd, desc = "Process the selected timepoints")
+		cmd = lib.Command.Command(lib.Command.GUI_CMD, None, None, do_cmd, undo_cmd, desc = "Process the selected timepoints")
 		cmd.run()        
 
 	

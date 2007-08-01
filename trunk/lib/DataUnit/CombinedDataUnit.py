@@ -28,16 +28,19 @@ __author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.74 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
-import DataUnit
-import DataUnitSetting
-import DataSource
+from lib.DataUnit.DataUnit import DataUnit
+from lib.DataSource.BXDDataWriter import BXDDataWriter
+from lib.DataSource.BXCDataWriter import BXCDataWriter
+import lib.DataSource.DataSource
+import optimize
 import vtk
+import vtkbxd
 import Logging
-import messenger
+import lib.messenger
 import scripting as bxd
-import os.path  
+import os.path	
 
-class CombinedDataUnit(DataUnit.DataUnit):
+class CombinedDataUnit(DataUnit):
 	"""
 	Created: 03.11.2004, JM
 	Description: Base class for combined 4d data.
@@ -48,17 +51,17 @@ class CombinedDataUnit(DataUnit.DataUnit):
 		Created: 03.11.2004, JM
 		Description: Constructor
 		"""
-		DataUnit.DataUnit.__init__(self, name)
+		DataUnit.__init__(self, name)
 		self.outputDirectory = ""
 		self.sourceunits = []
 		self.doOrig = 0
 		self.merging = 0
 		settingclass = self.getSettingsClass()
-		Logging.info("Settings class =", settingclass, kw = "dataunit")
+		Logging.info("Settings class = ", settingclass, kw = "dataunit")
 		self.settings = settingclass()
-		#self.byName={}
+		#self.byName = {}
 		self.module = None
-		self.outputChls = {}
+		self.outputChannels = {}
 		self.checkDimensions = 1
 		self.currentDimensions = None
 		
@@ -68,7 +71,6 @@ class CombinedDataUnit(DataUnit.DataUnit):
 		Description: return the output directory where this dataunit will write it's output
 		"""
 		return self.outputDirectory
-
 		
 	def isProcessed(self):
 		"""
@@ -77,20 +79,21 @@ class CombinedDataUnit(DataUnit.DataUnit):
 		"""    
 		return 1
 		
-	def setOutputChannel(self, ch, flag):
+	def setOutputChannel(self, channel, flag):
 		"""
 		Created: 22.07.2005, KP
 		Description: Mark a channel as being part of the output
 		"""
-		self.outputChls[ch] = flag
-		#Logging.info("output channels now=",self.outputChls,kw="dataunit")
+		self.outputChannels[channel] = flag
+		#Logging.info("output channels now = ", self.outputChannels, kw = "dataunit")
 		
-	def getOutputChannel(self, ch):
+	def getOutputChannel(self, channel):
 		"""
 		Created: 23.10.2006, KP
 		Description: Return the status of the given output channel
 		"""
-		return self.outputChls.get(ch, 1)
+		return self.outputChannels.get(channel, 1)
+		
 	def getSingleComponentBitDepth(self):
 		"""
 		Created: 09.07.2007, KP
@@ -99,22 +102,23 @@ class CombinedDataUnit(DataUnit.DataUnit):
 		if self.sourceunits:
 			return self.sourceunits[0].getSingleComponentBitDepth()
 		return 8
-		
+
 	def getDimensions(self): 
 		if self.sourceunits:
 			return self.sourceunits[0].getDimensions()
+		
 	def getSpacing(self): 
 		if self.sourceunits:
 			return self.sourceunits[0].getSpacing()
+		
 	def getVoxelSize(self): 
 		if self.sourceunits:
 			return self.sourceunits[0].getVoxelSize()
+		
 	def getBitDepth(self): 
 		if self.sourceunits:
 			return self.sourceunits[0].getBitDepth()
 
-
-	
 	def setModule(self, module):
 		"""
 		Created: 27.03.2005, KP
@@ -138,35 +142,22 @@ class CombinedDataUnit(DataUnit.DataUnit):
 		self.settings = settings
 		self.settings.initialize(self, len(self.sourceunits), self.length)
 		
+#	 def getSourceUnit(self, name):
+#		 """
+#		 Created: 28.03.2005, KP
+#		 Description: Returns a source unit of given name
+#		 """
+#		 return self.sourceunits[self.byName[name]]#
 
-#    def getSourceUnit(self,name):
-#        """
-#        Created: 28.03.2005, KP
-#        Description: Returns a source unit of given name
-#        """
-#        return self.sourceunits[self.byName[name]]#
-
-		
 	def setDataSource(self, dataSource):
 		"""
 		Created: 17.11.2004, JM
 		Description: Sets a DataSource for this CombinedDataUnit
-		Parameters: dataSource  A DataSource to manage actual
+		Parameters: dataSource	A DataSource to manage actual
 								image data located on disk
 		"""
-		# A validity check for dataSource
-		if not isinstance(dataSource, DataSource.VtiDataSource):
-			raise "A CombinedDataUnit can only be loaded from a VtiDataSource"
-		# Call to base class, to run common setDataSource
-		DataUnit.DataUnit.setDataSource(self, dataSource)
+		DataUnit.setDataSource(self, dataSource)
 		
-	def getDimensions(self):
-		"""
-		Created: 10.11.2004, KP
-		Description: Returns the (x,y,z) dimensions of the datasets this 
-					 dataunit contains
-		"""
-		return self.sourceunits[0].getDimensions()
 		
 	def getDataUnitCount(self):
 		"""
@@ -187,15 +178,15 @@ class CombinedDataUnit(DataUnit.DataUnit):
 		Created: 08.11.2004, JM
 		Description: Executes the module's operation using the current settings
 		Parameters:
-				bxdFile      The name of the .bxd file to be created file
+				bxdFile		The name of the created .bxdfile
 		Keywords:
-				settings_only   If this parameter is set, then only the 
+				settings_only	If this parameter is set, then only the 
 								settings will be written out and not the VTI 
 								files.
-				timepoints      The timepoints that should be processed
+				timepoints		The timepoints that should be processed
 		"""
-		if not self.module:
-			Logging.error("No module set", "No module was set for the dataunit to do processing with")
+        if not self.module:
+        	Logging.error("No module set", "No module was set for the dataunit to do processing with")		
 		callback = None
 		
 		settings_only = kws.get("settings_only", 0)
@@ -205,7 +196,7 @@ class CombinedDataUnit(DataUnit.DataUnit):
 		# so it knows where to store the vtkImageData objects
 
 		if not settings_only:
-			bxdwriter = DataSource.BXDDataWriter(bxdFile)
+			bxdwriter = BXDDataWriter(bxdFile)
 			bxcFile = bxdwriter.getBXCFileName(bxdFile)
 
 		else:
@@ -214,12 +205,12 @@ class CombinedDataUnit(DataUnit.DataUnit):
 			bxcFile = bxcFile[:-1] + "p"
 			
 		self.outputDirectory = os.path.dirname(bxcFile)
-		self.dataWriter = DataSource.BXCDataWriter(bxcFile)
+		self.dataWriter = BXCDataWriter(bxcFile)
 		
 		if bxdwriter:
 			bxdwriter.addChannelWriter(self.dataWriter)
 
-		imageList = []
+		#imageList = []
 		self.n = 1
 		self.guicallback = callback
 		self.module.setControlDataUnit(self)
@@ -236,14 +227,14 @@ class CombinedDataUnit(DataUnit.DataUnit):
 				
 				for dataunit in self.sourceunits:
 					image = dataunit.getTimepoint(timePoint)
-					
+				
 					self.module.addInput(dataunit, image)
 				# Get the vtkImageData containing the results of the operation 
 				# for this time point
 				imageData = self.module.doOperation()
-				imageData = bxd.mem.optimize(image = imageData)
+				imageData = optimize.optimize(image = imageData)
 				self.settings.set("Dimensions", str(imageData.GetDimensions()))
-				messenger.send(None, "update_processing_progress", timePoint, self.n, len(timepoints))
+				lib.messenger.send(None, "update_processing_progress", timePoint, self.n, len(timepoints))
 				self.n += 1
 				# Write the image data to disk
 				if not settings_only:
@@ -257,7 +248,7 @@ class CombinedDataUnit(DataUnit.DataUnit):
 		
 		self.createDataUnitFile(self.dataWriter)
 		if not settings_only:
-				bxdwriter.write()
+			bxdwriter.write()
 		return bxdwriter.getFilename()
 
 	def setMask(self, mask):
@@ -290,29 +281,30 @@ class CombinedDataUnit(DataUnit.DataUnit):
 		"""
 		Created: 03.11.2004, JM
 		Description: Adds 4D data to the unit together with channel-specific settings.
-		Parameters: dataUnit    The SourceDataUnit to be added
+		Parameters: dataUnit	The SourceDataUnit to be added
 		"""
 		# If one or more SourceDataUnits have already been added, check that the
 		# new SourceDataUnit has the same length as the previously added one(s):
 		
 		if (self.length != 0) and (self.length != dataUnit.length):
 			# XXX: Raise
-			print "Given dataunit had wrong length (%d != %d)"%\
-			(self.length, dataUnit.length)
+			print "Given dataunit had wrong length (%d != %d)" % (self.length, dataUnit.length)
 
 		if self.checkDimensions and self.currentDimensions and self.currentDimensions != dataUnit.getDimensions():
-			raise Logging.GUIError("Datasets have different dimensions", "The dimensions of the datasets differ: %s and %s" % (self.currentDimensions, dataUnit.getDimensions()))
+			raise Logging.GUIError("Datasets have different dimensions", \
+									"The dimensions of the datasets differ: %s and %s" \
+									%(self.currentDimensions, dataUnit.getDimensions()))
 		
 		self.currentDimensions = dataUnit.getDimensions()
 		# The DataUnit to be added must have a different name than the
 		# previously added, or the dictionary won't work:
-		name = dataUnit.getName()
+		#name = dataUnit.getName()
 		#if name in self.byName:
-		#    raise Logging.GUIError("Datasets have the same name","Cannot load two datasets with the name %s"%name)
+		#	 raise Logging.GUIError("Datasets have the same name", "Cannot load two datasets with the name %s" %name)
 		
 		count = len(self.sourceunits)
-		#count+=1
-		#self.byName[name]=count
+		#count+ = 1
+		#self.byName[name] = count
 		self.sourceunits.append(dataUnit)
 
 		# Create a settings object of correct type for dataunit
@@ -326,7 +318,7 @@ class CombinedDataUnit(DataUnit.DataUnit):
 		self.length = dataUnit.length
 		if not no_init:
 			for unit in self.sourceunits:
-				unit.getSettings().initialize(unit, count + 1, unit.getNumberOfTimepoints())        
+				unit.getSettings().initialize(unit, count + 1, unit.getNumberOfTimepoints())		
 			self.settings.initialize(self, count, self.sourceunits[0].getNumberOfTimepoints())
 		
 	def switchSourceDataUnits(self, units):
@@ -335,12 +327,14 @@ class CombinedDataUnit(DataUnit.DataUnit):
 		Description: Switch the source data units used
 		"""
 		if len(units) != len(self.sourceunits):
-			raise Logging.GUIError("Wrong number of dataunits", "Cannot switch the processed datasets: you've selected a wrong number of source dataunits.")
-		#oldsources=self.sourceunits
+			raise Logging.GUIError("Wrong number of dataunits", \
+									"Cannot switch the processed datasets: \
+									you've selected a wrong number of source dataunits.")
+		#oldsources = self.sourceunits
 		self.sourceunits = []
-		#self.byName={}
+		#self.byName = {}
 		for i, unit in enumerate(units):
-			#oldunit=oldsources[i]
+			#oldunit = oldsources[i]
 			self.addSourceDataUnit(unit, no_init = 1)
 			#unit.getSettings().copySettings(oldunit.getSettings())
 			#self.sourceunits.append(unit)
@@ -354,10 +348,10 @@ class CombinedDataUnit(DataUnit.DataUnit):
 		"""
 		Created: 08.11.2004, JM
 		Description: Makes a two-dimensional preview using the class-specific combination function
-		Parameters: depth       The preview depth
-					renew       Flag indicating, whether the preview should be 
+		Parameters: depth		The preview depth
+					renew		Flag indicating, whether the preview should be 
 								regenerated or if a stored image can be reused
-					timePoint   The timepoint from which to generate the preview
+					timePoint	The timepoint from which to generate the preview
 								Defaults to 0
 		"""
 		
@@ -366,7 +360,9 @@ class CombinedDataUnit(DataUnit.DataUnit):
 			timepoint = self.getNumberOfTimepoints() - 1
 		
 		self.oldAlphaStatus = bxd.wantAlphaChannel
-				
+		
+		print "DO PREVIEW"
+		
 		if depth == bxd.WHOLE_DATASET_NO_ALPHA:
 			bxd.wantAlphaChannel = 0
 		# If the previously requested preview was a "show original" preview
@@ -383,24 +379,24 @@ class CombinedDataUnit(DataUnit.DataUnit):
 		# to be merged to the output
 		n = len(self.sourceunits)
 		merged = []
-		if self.outputChls:
+		if self.outputChannels:
 			merged = []
 			
 			for i, unit in enumerate(self.sourceunits):
-				if i in self.outputChls and self.outputChls[i]:
+				if i in self.outputChannels and self.outputChannels[i]:
 					data = unit.getTimepoint(timePoint)
 					merged.append((data, unit.getColorTransferFunction()))
 					
-			if n not in self.outputChls:
-				self.outputChls[n] = 0
+			if n not in self.outputChannels:
+				self.outputChannels[n] = 0
 		# If either no output channels have been specified (in which case
 		# we return just the normal preview) or the combined result
-		# (n = last chl+1) has  been requested
-		if self.merging or not self.outputChls or (n in self.outputChls and self.outputChls[n]):
-			#Logging.info("outputChls=",self.outputChls,"n=",n)
+		# (n = last chl+1) has	been requested
+		if self.merging or not self.outputChannels or (n in self.outputChannels and self.outputChannels[n]):
+			#Logging.info("outputChls = ", self.outputChannels, "n = ", n)
 			
 			# If the renew flag is true, we need to regenerate the preview
-			if renew:                
+			if renew:				 
 				print "\n\n\nGENERATING PREVIEW"
 				# We then tell the module to reset itself and
 				# initialize it again
@@ -433,14 +429,14 @@ class CombinedDataUnit(DataUnit.DataUnit):
 			preview = self.module.getPreview(depth)
 
 
-		if not self.merging and self.outputChls:
+		if not self.merging and self.outputChannels:
 			if preview:
 				merged.append((preview, self.getColorTransferFunction()))
 			
 			if len(merged) > 1:
-				merge = vtk.vtkImageColorMerge()
+				merge = vtkbxd.vtkImageColorMerge()
 				
-				for data, ctf in merged:                    
+				for data, ctf in merged:					   
 					merge.AddInput(data)
 					merge.AddLookupTable(ctf)
 				#print "Update..."
@@ -448,8 +444,8 @@ class CombinedDataUnit(DataUnit.DataUnit):
 				
 				preview = merge.GetOutput()
 				#merge.Update()
-				#preview=merge.GetOutput()
-			elif len(merged) == 1 and bxd.preferRGB:                
+				#preview = merge.GetOutput()
+			elif len(merged) == 1 and bxd.preferRGB:				  
 				data, ctf = merged[0]
 				maptocolor = vtk.vtkImageMapToColors()
 				maptocolor.SetInput(data)
@@ -462,7 +458,7 @@ class CombinedDataUnit(DataUnit.DataUnit):
 		if not showOrig and not self.doOrig:
 			self.origPreview = preview
 		elif showOrig:
-			self.doOrig = 1            
+			self.doOrig = 1			 
 		return preview
 			
 		
@@ -471,5 +467,5 @@ class CombinedDataUnit(DataUnit.DataUnit):
 		Created: 02.04.2005, KP
 		Description: Return the class that represents settings for this dataunit
 		"""
-		return DataUnitSetting.DataUnitSettings
+		raise "Using bare DataUnitSettings"
  

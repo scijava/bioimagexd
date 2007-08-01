@@ -11,7 +11,7 @@
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
 
- This program is free software; you can redistribute it and/or modify
+ This program is free software; you can redistribute it and / or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation; either version 2 of the License, or
  (at your option) any later version.
@@ -23,23 +23,23 @@
 
  You should have received a copy of the GNU General Public License
  along with this program; if not, write to the Free Software
- Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111 - 1307  USA
 
 """
-__author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
+__author__ = "BioImageXD Project < http: //www.bioimagexd.org/>"
 __version__ = "$Revision: 1.9 $"
-__date__ = "$Date: 2005/01/13 13:42:03 $"
+__date__ = "$Date: 2005 / 01 / 13 13: 42: 03 $"
 
-import wx
+#import wx
 import time
-
+import lib.messenger
 import vtk
 from vtk.wx.wxVTKRenderWindowInteractor import wxVTKRenderWindowInteractor
 
 
-import Dialogs
-from VisualizationModules import *
-from ModuleConfiguration import *
+#import Dialogs
+#import VisualizationModules
+#import ModuleConfiguration
 
 
 		
@@ -68,10 +68,15 @@ class VisualizerWindow(wxVTKRenderWindowInteractor):
 		self.showFPS = False
 		self.textActor = None
 		self.endTime = time.time()
+		self.irenStyle = None
+		self.oldStyle = None
+		self.keyPressEvents = None
+		self.iren = None
+
 	def enable(self, flag):
 		"""
 		Created: 02.06.2005, KP
-		Description: Enable/Disable updates
+		Description: Enable / Disable updates
 		"""
 		self.enabled = flag
 		
@@ -94,7 +99,7 @@ class VisualizerWindow(wxVTKRenderWindowInteractor):
 		self.keyPressEvents = []
 		self.iren = iren = self.GetRenderWindow().GetInteractor()
 		#self.iren.SetInteractorStyle(vtk.vtkInteractorStyleTrackballCamera())
-#        self.iren.SetInteractorStyle(vtk.vtkInteractorStyleTrackballActor())
+#		 self.iren.SetInteractorStyle(vtk.vtkInteractorStyleTrackballActor())
 		#self.irenStyle = vtk.vtkInteractorStyleSwitch()
 		self.irenStyle = vtk.vtkInteractorStyleTrackballCamera()
 		#self.irenStyle.SetCurrentStyleToJoystickActor()
@@ -110,21 +115,21 @@ class VisualizerWindow(wxVTKRenderWindowInteractor):
 		self.renderer.AddObserver("EndEvent", self.onRenderEnd)
 	
 	def onKeypress(self, obj, evt):
-		"""        
+		"""		   
 		Created: 02.11.2005
 		Description: Catch keypresses from the window and do actions
 		"""    
 		key = obj.GetKeyCode()
-		#print "Key event",key
+		#print "Key event", key
 		words = {"j": "Joystick", "a": "Actor", "c": "Camera", "t": "Trackball"}
 		mod = 0
 		if key in ["a", "c"]:
 			self.controlled = words[key]
-			messenger.send(None, "set_status", "Now controlling %s" % words[key])
+			lib.messenger.send(None, "set_status", "Now controlling %s" %words[key])
 			mod = 1
 		elif key in ["j", "t"]:
 			self.control = words[key]
-			messenger.send(None, "set_status", "Control style is %s" % words[key])
+			lib.messenger.send(None, "set_status", "Control style is %s" %words[key])
 			mod = 1
 		elif key == "i":
 			self.showFPS = not self.showFPS
@@ -156,7 +161,7 @@ class VisualizerWindow(wxVTKRenderWindowInteractor):
 		Description: Set the view according to given params
 		"""
 		cam = self.renderer.GetActiveCamera()
-		if self.origParallelScale != None:            
+		if self.origParallelScale != None:			  
 			cam.SetParallelScale(self.origParallelScale)
 			cam.SetViewAngle(self.origViewAngle)
 		self.zoomFactor = factor
@@ -182,14 +187,14 @@ class VisualizerWindow(wxVTKRenderWindowInteractor):
 
 		
 
-	def zoomToRubberband(self):        
+	def zoomToRubberband(self):		   
 		"""
 		Created: 30.04.2005, KP
 		Description: Zoom to rubberband
 		"""
 		self.rubberband = 1
 		self.oldStyle = self.iren.GetInteractorStyle()
-		self.iren.SetInteractorStyle(vtk.vtkInteractorStyleRubberBandZoom())    
+		self.iren.SetInteractorStyle(vtk.vtkInteractorStyleRubberBandZoom())	
 	
 	def onRenderBegin(self, event = None, e2 = None):
 		"""
@@ -211,18 +216,19 @@ class VisualizerWindow(wxVTKRenderWindowInteractor):
 		if self.showFPS:
 			if not self.textActor:
 				self.textActor = vtk.vtkTextActor()
-				prop =  self.textActor.GetTextProperty()                
+				prop =	self.textActor.GetTextProperty()				
 				prop.SetFontSize(14)
 				self.textActor.SetTextProperty(prop)
-				w, h = self.renderer.GetSize()
+				# changing w,h to width,height (SS 25.06.07)
+				width, height = self.renderer.GetSize()
 				#self.textActor.ScaledTextOn()
 				
-				self.textActor.SetDisplayPosition(w - 85, h - 50)
+				self.textActor.SetDisplayPosition(width - 85, height - 50)
 				self.renderer.AddActor(self.textActor)
 			t = time.time() - self.endTime
-			if not t:return
+			if not t:
+				return
 			fps = 1.0 / t
-		
 			#self.timerLog.StartTimer()
 			self.endTime = time.time()
 			renderTime = self.renderer.GetLastRenderTimeInSeconds()
@@ -235,7 +241,7 @@ class VisualizerWindow(wxVTKRenderWindowInteractor):
 		"""
 		Created: 28.04.2005, KP
 		Description: Save the rendered screen as png
-		"""            
+		"""			   
 		self.saveScreen(vtk.vtkPNGWriter(), filename)
 		
 	def save_pnm(self, filename):
@@ -247,11 +253,11 @@ class VisualizerWindow(wxVTKRenderWindowInteractor):
 		
 	def save_bmp(self, filename):
 		"""
-		Method: save_bmp(self,filename)
+		Method: save_bmp(self, filename)
 		Created: 28.04.2005, KP
 		Description: Save the rendered screen as bmp
 		"""
-		self.saveScreen(vtk.vtkBMPWriter(), filename)    
+		self.saveScreen(vtk.vtkBMPWriter(), filename)	
 
 	def save_jpg(self, filename):
 		return self.save_jpeg(filename)
@@ -261,10 +267,10 @@ class VisualizerWindow(wxVTKRenderWindowInteractor):
 		"""
 		Created: 28.04.2005, KP
 		Description: Save the rendered screen as jpeg
-		"""            
-		w = vtk.vtkJPEGWriter()
-		w.SetQuality(100)
-		self.saveScreen(w, filename)
+		"""			   
+		writer = vtk.vtkJPEGWriter()
+		writer.SetQuality(100)
+		self.saveScreen(writer, filename)
 		
 	def save_screen(self, filename):
 		"""
@@ -273,7 +279,7 @@ class VisualizerWindow(wxVTKRenderWindowInteractor):
 					 is determined by the file extension
 		"""
 		ext = filename.split(".")[-1].lower()
-		eval("self.save_%s(filename)" % ext)
+		eval("self.save_%s(filename)" %ext)
 		
 		
 	def save_tif(self, filename):

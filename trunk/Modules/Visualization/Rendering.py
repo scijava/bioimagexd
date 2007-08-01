@@ -30,42 +30,60 @@ __author__ = "BioImageXD Project"
 __version__ = "$Revision: 1.9 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
-import wx
-import DataUnit
-import Visualizer.VisualizationFrame as VisualizationFrame
-import Visualizer.VisualizerWindow as VisualizerWindow
-
-
-import Visualizer.VisualizationModules as vmods
-import Visualizer.ModuleConfiguration as ModuleConfiguration
-from Visualizer.VisualizationMode import VisualizationMode
-
-import MenuManager
-import Visualizer.Lights as Lights
-
 import scripting as bxd
+import GUI.Dialogs
+import GUI.MenuManager
 import Modules
+import Visualizer.Lights as Lights
+import Visualizer.VisualizationFrame as VisualizationFrame
+from Visualizer.VisualizationMode import VisualizationMode
+import Visualizer.VisualizerWindow as VisualizerWindow
+import wx
 
-import Dialogs
+def getName():
+	return "3d"
 
-def getName():return "3d"
-def isDefaultMode(): return 0
-def showInfoWindow(): return 1
-def showFileTree(): return 1
-def showSeparator(): return (0, 0)
-def getToolbarPos(): return 8
-	
-def getIcon(): return "view_rendering_3d.jpg"
-def getShortDesc(): return "3D view"
-def getDesc(): return "Render the dataset in three dimensions"    
-def getClass():return RenderingMode
-def getImmediateRendering(): return False
-def getConfigPanel(): return None
-def getRenderingDelay(): return 5000
-def showZoomToolbar(): return True
+def isDefaultMode():
+	return 0
 
+def showInfoWindow():
+	return 1
+
+def showFileTree():
+	return 1
+
+def showSeparator():
+	return (0, 0)
+
+def getToolbarPos():
+	return 8
+
+def getIcon():
+	return "view_rendering_3d.jpg"
+
+def getShortDesc():
+	return "3D view"
+
+def getDesc():
+	return "Render the dataset in three dimensions" 
+
+def getClass():
+	return RenderingMode
+
+def getImmediateRendering():
+	return False
+
+def getConfigPanel():
+	return None
+
+def getRenderingDelay():
+	return 5000
+
+def showZoomToolbar():
+	return True
 		
 class RenderingMode(VisualizationMode):
+
 	def __init__(self, parent, visualizer):
 		"""
 		Created: 24.05.2005, KP
@@ -83,9 +101,7 @@ class RenderingMode(VisualizationMode):
 		self.configPanel = None
 		self.dataUnit = None
 		self.initialized = False
-		
 		self.nameToModule = {}
-		
 		self.defaultModule = "Volume rendering"
 		self.modules = []
 		
@@ -94,7 +110,7 @@ class RenderingMode(VisualizationMode):
 		Created: 24.04.2007, KP
 		Description: return a render window, if this mode uses one
 		"""
-		return self.renwin      
+		return self.renwin
 		
 	def reloadModules(self):
 		"""
@@ -107,13 +123,13 @@ class RenderingMode(VisualizationMode):
 			#print "Reloaded visualization module",module
 			self.mapping[key] = (mod, conf, module)
 			
-
 	def zoomObject(self):
 		"""
 		Created: 04.07.2005, KP
 		Description: Zoom to a user selected portion of the image
-		"""            
-		self.wxrenwin.zoomToRubberband()        
+		"""
+		self.wxrenwin.zoomToRubberband()
+
 	def showSideBar(self):
 		"""
 		Created: 24.05.2005, KP
@@ -121,13 +137,15 @@ class RenderingMode(VisualizationMode):
 					 to show the sidebar
 		"""
 		return True
+
 	def showViewAngleCombo(self):
 		"""
 		Created: 11.08.2005, KP
 		Description: Method that is queried to determine whether
 					 to show the view angle combo box in the toolbar
 		"""
-		return True        
+		return True
+
 	def setStereoMode(self, mode):
 		"""
 		Created: 16.05.2005, KP
@@ -138,7 +156,7 @@ class RenderingMode(VisualizationMode):
 			cmd = "self.renwin.SetStereoTypeTo%s()" % mode
 			eval(cmd)
 		else:
-			self.renwin.StereoRenderOff()        
+			self.renwin.StereoRenderOff()
   
 	def activate(self, sidebarwin):
 		"""
@@ -151,6 +169,7 @@ class RenderingMode(VisualizationMode):
 		self.sidebarWin = sidebarwin
 		# If we're preloading, don't create the render window
 		# since it will mess up the rendering
+
 		if not self.wxrenwin and not self.visualizer.preload:
 			self.wxrenwin = VisualizerWindow.VisualizerWindow(self.parent, size = (512, 512))
 			self.wxrenwin.Render()
@@ -161,52 +180,62 @@ class RenderingMode(VisualizationMode):
 			bxd.renderWindow = self.renwin
 			bxd.renderer = self.wxrenwin.getRenderer()
 			self.getRenderer = self.GetRenderer = self.wxrenwin.getRenderer
+
 		else:
 			self.wxrenwin.iren.Enable()
+
 		#self.wxrenwin.Show()
 		print "creating config panel"
+
 		if not self.configPanel:
 			# When we embed the sidebar in a sashlayoutwindow, the size
 			# is set correctly
 			self.container = wx.SashLayoutWindow(self.sidebarWin)
 			
 			self.configPanel = VisualizationFrame.ConfigurationPanel(self.container, self.visualizer, self)
+
 		print "showing container.."
 		self.container.Show()
 		self.configPanel.Show()
+
 		if not self.lightsManager:
 			self.lightsManager = Lights.LightManager(self.parent, self.wxrenwin, self.getRenderer(), mode = 'raymond')
 
 		mgr = self.menuManager
 		
-		self.visualizer.tb.EnableTool(MenuManager.ID_ZOOM_TO_FIT, 0)
+		self.visualizer.tb.EnableTool(GUI.MenuManager.ID_ZOOM_TO_FIT, 0)
 		
-		mgr.enable(MenuManager.ID_LIGHTS, self.configPanel.onConfigureLights)
-		mgr.enable(MenuManager.ID_RENDERWIN, self.configPanel.onConfigureRenderwindow)
-		mgr.addMenuItem("file", MenuManager.ID_LOAD_SCENE, "Open 3D view scene...", "Open a 3D view scene file", self.configPanel.onOpenScene, before = MenuManager.ID_IMPORT_IMAGES)
-		mgr.addMenuItem("file", MenuManager.ID_SAVE_SCENE, "Save 3D view scene...", "Save a 3D view scene", self.configPanel.onSaveScene, before = MenuManager.ID_IMPORT_IMAGES)                
-		mgr.addSeparator("file", sepid = MenuManager.ID_SEPARATOR, before = MenuManager.ID_IMPORT_IMAGES)
+		mgr.enable(GUI.MenuManager.ID_LIGHTS, self.configPanel.onConfigureLights)
+		mgr.enable(GUI.MenuManager.ID_RENDERWIN, self.configPanel.onConfigureRenderwindow)
+		mgr.addMenuItem("file", GUI.MenuManager.ID_LOAD_SCENE, "Open 3D view scene...", \
+						"Open a 3D view scene file", self.configPanel.onOpenScene, \
+						before = GUI.MenuManager.ID_IMPORT_IMAGES)
+		mgr.addMenuItem("file", GUI.MenuManager.ID_SAVE_SCENE, "Save 3D view scene...", \
+						"Save a 3D view scene", self.configPanel.onSaveScene, \
+						before = GUI.MenuManager.ID_IMPORT_IMAGES)
+		mgr.addSeparator("file", sepid = GUI.MenuManager.ID_SEPARATOR, \
+							before = GUI.MenuManager.ID_IMPORT_IMAGES)
 		return self.wxrenwin
 		
 	def saveSnapshot(self, filename):
 		"""
 		Created: 05.06.2005, KP
 		Description: Save a snapshot of the scene
-		"""      
+		"""
 		self.wxrenwin.save_screen(filename)
 		
 	def Render(self):
 		"""
 		Created: 24.05.2005, KP
 		Description: Update the rendering
-		"""    
-		self.wxrenwin.Render()        
+		"""
+		self.wxrenwin.Render()
 		
 	def setBackground(self, r, g, b):
 		"""
 		Created: 24.05.2005, KP
 		Description: Set the background color
-		"""        
+		"""
 		ren = self.wxrenwin.getRenderer()
 		r /= 255.0
 		g /= 255.0
@@ -217,7 +246,7 @@ class RenderingMode(VisualizationMode):
 		"""
 		Created: 26.05.2005, KP
 		Description: Update the rendering
-		"""      
+		"""
 		if not self.wxrenwin.enabled:
 			print "Visualizer not enabled, won't render!"
 			return
@@ -233,21 +262,20 @@ class RenderingMode(VisualizationMode):
 		Description: Unset the mode of visualization
 		"""
 		mgr = self.menuManager
-		mgr.remove(MenuManager.ID_SAVE_SCENE)
-		mgr.remove(MenuManager.ID_LOAD_SCENE)
-		mgr.removeSeparator(MenuManager.ID_SEPARATOR)
+		mgr.remove(GUI.MenuManager.ID_SAVE_SCENE)
+		mgr.remove(GUI.MenuManager.ID_LOAD_SCENE)
+		mgr.removeSeparator(GUI.MenuManager.ID_SEPARATOR)
 		
 		
-		self.visualizer.tb.EnableTool(MenuManager.ID_ZOOM_TO_FIT, 1)
+		self.visualizer.tb.EnableTool(GUI.MenuManager.ID_ZOOM_TO_FIT, 1)
 		if self.wxrenwin:
-			self.wxrenwin.Show(0)       
+			self.wxrenwin.Show(0)
 			self.wxrenwin.iren.Disable()
 		self.container.Show(0)
 		self.configPanel.Show(0)
 		mgr = self.menuManager
-				
-		mgr.disable(MenuManager.ID_LIGHTS)
-		mgr.disable(MenuManager.ID_RENDERWIN)
+		mgr.disable(GUI.MenuManager.ID_LIGHTS)
+		mgr.disable(GUI.MenuManager.ID_RENDERWIN)
 		
 		
 	def setDataUnit(self, dataUnit):
@@ -292,8 +320,6 @@ class RenderingMode(VisualizationMode):
 			module.disableRendering()
 			self.modules.remove(module)
 			del module
-			
-		
 
 	def setRenderingStatus(self, name, status):
 		"""
@@ -306,23 +332,25 @@ class RenderingMode(VisualizationMode):
 					module.disableRendering()
 				else:
 					module.enableRendering()
-					
+
 	def getModule(self, name):
 		"""
 		Created: 14.06.2007, KP
 		Description: return the module with the given name
 		"""
-		
-		return self.nameToModule.get(name, None)
+		return self.nameToModule.get(name,None)
 
 	def loadModule(self, name, lbl = None, render = 1):
 		"""
 		Created: 28.04.2005, KP
 		Description: Load a visualization module
 		"""
-		if not lbl:lbl = name
+		if not lbl:
+			lbl = name
 		if not self.dataUnit:
-			Dialogs.showerror(self.parent, "No dataset has been loaded for visualization", "Cannot load visualization module")
+			GUI.Dialogs.showerror(self.parent, \
+									"No dataset has been loaded for visualization", \
+									"Cannot load visualization module")
 			return
 		if not self.initialized:
 			self.wxrenwin.initializeVTK()
@@ -351,13 +379,12 @@ class RenderingMode(VisualizationMode):
 		for module in self.modules:
 			module.showTimepoint(self.timepoint)
 
-
 	def __getstate__(self):
 		"""
 		Created: 02.08.2005, KP
 		Description: A getstate method that saves the lights
-		"""            
-		print "Saving state, modules = ", self.modules
+		"""
+		print "Saving state, modules = ",self.modules
 		odict = {"lightsManager":self.lightsManager,
 			   "timepoint":self.timepoint,
 			   "modules":self.modules}
@@ -380,6 +407,7 @@ class RenderingMode(VisualizationMode):
 			mod = self.loadModule(name, label)
 			self.configPanel.appendModuleToList(label)
 			mod.__set_pure_state__(module)
+
 	def zoomToFit(self):
 		"""
 		Created: 05.06.2005, KP

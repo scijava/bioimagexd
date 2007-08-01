@@ -30,14 +30,17 @@
 __author__ = "BioImageXD Project"
 __version__ = "$Revision: 1.40 $"
 __date__ = "$Date: 2005/01/13 14:52:39 $"
-import sys
-import os.path, glob
+
+#import glob
+#import sys
+
+import Logging
+import os.path
 import re
-import wx
-import  wx.lib.filebrowsebutton as filebrowse
 import UIElements
 import vtk
-import Logging
+import wx
+import  wx.lib.filebrowsebutton as filebrowse
 
 class ExportDialog(wx.Dialog):
 	"""

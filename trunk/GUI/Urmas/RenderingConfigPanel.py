@@ -37,22 +37,24 @@ __author__ = "BioImageXD Project"
 __version__ = "$Revision: 1.22 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
-import wx
-import wx.lib.masked as masked
-#from vtk.wx.wxVTKRenderWindowInteractor import wxVTKRenderWindowInteractor
-from Visualizer import VisualizerWindow
-
-from Track import *
-from Timeline import *
-import PreviewFrame
 #import Animator
-import SplineEditor
+#import CameraView
+#import wx.lib.masked as masked
+#import operator
+#import os.path
+#import PreviewFrame
+#import SplineEditor
+#import sys
+#import Timeline
+#import Track
+#from Visualizer import VisualizerWindow
+#from vtk.wx.wxVTKRenderWindowInteractor import wxVTKRenderWindowInteractor
 
-import os.path
-import sys, types
-import operator
-import messenger
-import CameraView
+
+import lib.messenger
+from wx.lib.masked.TimeCtrl import TimeCtrl
+import types
+import wx
 
 #class RenderingConfigPanel(wx.Panel):
 class RenderingConfigPanel:
@@ -84,7 +86,7 @@ class RenderingConfigPanel:
 
 		self.totalFrames = wx.TextCtrl(self.parent, -1, "720", size = (50, -1), style = wx.TE_PROCESS_ENTER)
 		self.spin = wx.SpinButton( self.parent, -1, style = wx.SP_VERTICAL , size = (-1, 25))
-		self.duration = masked.TimeCtrl(self.parent, -1, "00:01:00", fmt24hr = True, size = (50, 25), style = wx.TE_PROCESS_ENTER, spinButton = self.spin)
+		self.duration = TimeCtrl(self.parent, -1, "00:01:00", fmt24hr = True, size = (50, 25), style = wx.TE_PROCESS_ENTER, spinButton = self.spin)
 		
 		
 		self.totalFrames.Bind(wx.EVT_TEXT, self.updateFrameCount)
@@ -208,13 +210,13 @@ be the same size as the final frame.""")
 			hh, mm, ss = map(int, duration.split(":"))
 			print hh, mm, ss
 			secs = hh * 3600 + mm * 60 + ss
-			messenger.send(None, "set_duration", secs)
+			lib.messenger.send(None, "set_duration", secs)
 		except:
 			pass
 		try:
 			frameCount = self.totalFrames.GetValue()
 			frameCount = int(frameCount)
-			messenger.send(None, "set_frames", frameCount)
+			lib.messenger.send(None, "set_frames", frameCount)
 		except:
 			pass
 		if duration != -1 and frameCount != -1:
@@ -240,7 +242,7 @@ be the same size as the final frame.""")
 			pass            
 		if x != -1 and y != -1:
 			self.control.setFrameSize(x, y)
-			messenger.send(None, "set_frame_size", (x, y), keepAspect)
+			lib.messenger.send(None, "set_frame_size", (x, y), keepAspect)
 			
 			
 			#self.control.configureTimeline(secs,frameCount)

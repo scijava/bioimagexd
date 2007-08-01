@@ -27,46 +27,57 @@ __author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.37 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
-import ConfigParser
-import struct
+#import lib.messenger
 
 import codecs
-
+import ConfigParser
+from lib.DataSource.DataSource import DataSource
+from lib.DataUnit.DataUnit import DataUnit
+import Logging
 import math
-	
-from DataSource import *
-import messenger
-import DataUnit
+import os
+import os.path
+import struct
+import vtk
+import vtkbxd
 		
-def getExtensions(): return ["oif"]
-def getFileType(): return "Olympus Image Format datasets (*.oif)"        
-def getClass(): return OlympusDataSource
+def getExtensions(): 
+	return ["oif"]
+
+def getFileType(): 
+	return "Olympus Image Format datasets (*.oif)"        
+
+def getClass(): 
+	return OlympusDataSource
 	
 class OlympusDataSource(DataSource):
 	"""
 	Created: 12.04.2005, KP
 	Description: Olympus OIF files datasource
 	"""
-	def __init__(self, filename = "", channel = -1, basename = "", lutname = "", name = "", dims = (0, 0, 0), t = 0, voxelsize = (1, 1, 1), reverse = 0, emission = 0, excitation = 0, bitdepth = 12):
+	def __init__(self, filename = "", channel = -1, basename = "", lutname = "", \
+					name = "", dimensions = (0, 0, 0), time = 0, voxelsize = (1, 1, 1), \
+					reverse = 0, emission = 0, excitation = 0, bitdepth = 12):
 		"""
 		Created: 12.04.2005, KP
 		Description: Constructor
 		"""    
 		DataSource.__init__(self)
-		if not name:name = "Ch%d" % channel
+		if not name:
+			name = "Ch%d" % channel
 		self.bitdepth = bitdepth
 		self.name = name
 		self.basename = basename
 		self.lutname = lutname
 		self.timepoint = 0
-		self.tps = t
+		self.timepoints = time
 		self.filename = filename
-		self.parser = RawConfigParser()
+		self.parser = ConfigParser.RawConfigParser()
 		self.reader = None
 		self.originalScalarRange = (0, 4095)
 		self.scalarRange = 0, 2 ** self.bitdepth - 1
 		self.channel = channel
-		self.dimensions = dims
+		self.dimensions = dimensions
 		self.voxelsize = voxelsize
 		self.spacing = None
 		self.emission = emission
@@ -81,8 +92,9 @@ class OlympusDataSource(DataSource):
 			self.ctf = self.readLUT()
 		self.setPath(filename)
 		
-		self.unit_coeffs = {"nm": 1e-9, "um": 1e-6, "mm":0.001}
-		
+		# nm = nanometer, um = micrometer, mm = millimeter
+		self.unit_coeffs = {"nm":1e-9, "um":1e-6, "mm":0.001}
+		self.shortname = None
 		
 	def getDataSetCount(self):
 		"""
@@ -90,8 +102,9 @@ class OlympusDataSource(DataSource):
 		Description: Returns the number of individual DataSets (=time points)
 		managed by this DataSource
 		"""
-		if not self.tps:return 1
-		return self.tps
+		if not self.timepoints:
+			return 1
+		return self.timepoints
 		
 	def getEmissionWavelength(self):
 		"""
@@ -109,17 +122,12 @@ class OlympusDataSource(DataSource):
 		"""
 		return self.excitation
 
-		
-	 
-		
 	def getFileName(self):
 		"""
 		Created: 21.07.2005
 		Description: Return the file name
 		"""    
 		return self.filename
-		
-
 	
 	def getDataSet(self, i, raw = 0):
 		"""
@@ -129,7 +137,6 @@ class OlympusDataSource(DataSource):
 		data = self.getTimepoint(i)        
 		if raw:
 			return data
-			
 		
 		#self.originalScalarRange=data.GetScalarRange()
 		#print "Setting original scalar range to ",2**self.getBitDepth()-1
@@ -138,53 +145,51 @@ class OlympusDataSource(DataSource):
 			self.originalScalarRange = 0, (2 ** self.getBitDepth()) - 1
 		
 		data = self.getResampledData(data, i)
-		
-		
 		data = self.getIntensityScaledData(data)
-		
 		
 		#data.ReleaseDataFlagOff()
 		return data
 		
-	def updateProgress(self, obj, evt):
+	def updateProgress(self, object, event):
 		"""
 		Created: 12.11.2006, KP
 		Description: Sends progress update event
 		"""        
-		if not obj:
+		if not object:
 			progress = 1.0
 		else:
-			progress = obj.GetProgress()
+			progress = object.GetProgress()
 		if self.channel >= 0:
-			txt = obj.GetProgressText()
-			if not txt:txt = ""
+			txt = object.GetProgressText()
+			if not txt:
+				txt = ""
 
 			msg = "Reading channel %d of %s" % (self.channel, self.basename)
 			if self.timepoint >= 0:
 
-				msg += " (timepoint %d / %d, %s)" % (self.timepoint + 1, self.tps + 1, txt)
+				msg += " (timepoint %d / %d, %s)" % (self.timepoint + 1, self.timepoints + 1, txt)
 		else:
 			msg = "Reading %s..." % self.shortname
 		notinvtk = 0
 		
-		if progress == 1.0:notinvtk = 1
-		#print progress,msg
-		
-		#messenger.send(None,"update_progress",progress,msg,notinvtk)
+		if progress == 1.0:
+			notinvtk = 1
 			
+		#print progress,msg
+		#lib.messenger.send(None,"update_progress",progress,msg,notinvtk)
 		
-	def getTimepoint(self, n):
+	def getTimepoint(self, timepointIndex):
 		"""
 		Created: 16.02.2006, KP
-		Description: Return the nth timepoint
+		Description: Return the timepointIndexth timepoint
 		"""        
-		self.timepoint = n
+		self.timepoint = timepointIndex
 		path = os.path.join(self.path, "%s.oif.files" % self.basename)
 		if not self.reader:
-			self.reader = vtk.vtkExtTIFFReader()
+			self.reader = vtkbxd.vtkExtTIFFReader()
 			self.reader.AddObserver("ProgressEvent", self.updateProgress)
-			x, y, z = self.dimensions
-			self.reader.SetDataExtent(0, x - 1, 0, y - 1, 0, z - 1)
+			xDimension, yDimension, zDimension = self.dimensions
+			self.reader.SetDataExtent(0, xDimension - 1, 0, yDimension - 1, 0, zDimension - 1)
 			
 			spacing = self.getSpacing()
 			self.reader.SetDataSpacing(*spacing)
@@ -196,7 +201,7 @@ class OlympusDataSource(DataSource):
 		
 		if self.dimensions[2] > 1:
 			zpat = "Z%.3d"
-		if self.tps > 0:
+		if self.timepoints > 0:
 			tpat = "T%.3d"
 		pat = path + zpat + tpat + ".tif"
 		
@@ -215,7 +220,6 @@ class OlympusDataSource(DataSource):
 #        print vtk,self.reader
 #        print "Scalar range for data=",self.reader.GetOutput().GetScalarRange()
 		return self.reader.GetOutput()
-		
 		
 	def getDimensions(self):
 		"""
@@ -236,20 +240,20 @@ class OlympusDataSource(DataSource):
 		Created: 16.02.2006, KP
 		Description: Read the LUT for this dataset
 		"""
-		lutpath = os.path.join(self.path, "%s.oif.files" % self.basename, "%s_LUT%d.lut" % (self.lutname, self.channel))
-		f = codecs.open(lutpath, "r", "utf-16")
+		lutpath = os.path.join(self.path, "%s.oif.files" % self.basename, "%s_LUT%d.lut" \
+								% (self.lutname, self.channel))
+		file = codecs.open(lutpath, "r", "utf-16")
 		#print "Reading lut from %s..."%lutpath
 		while 1:
-			line = f.readline()
+			line = file.readline()
 			if "ColorLUTData" in line:
 				break
 		
-		
-		pos = f.tell()
-		f.close()
-		f = open(lutpath, "rb")
-		f.seek(-4 * 65536, 2)
-		data = f.read()
+		#pos = file.tell()
+		file.close()
+		file = open(lutpath, "rb")
+		file.seek(-4 * 65536, 2)
+		data = file.read()
 		#print "Got ",len(data),"bytes"
 		
 		format = "i" * 65536
@@ -260,13 +264,13 @@ class OlympusDataSource(DataSource):
 		
 		#def f(x):( (x>>16)&0xff
 		i = 0
-		r2, g2, b2 = -1, -1, -1
+		#red2, green2, blue2 = -1, -1, -1
 		coeff = 16.0
 		
 		#print "CUrrent minval,maxval=",minval,maxval
 		if self.explicitScale == 1:
 			minval, maxval = self.originalScalarRange
-			shift = self.intensityShift
+			#shift = self.intensityShift
 			if self.intensityShift:
 				maxval += self.intensityShift
 				#print "Maximum value after being shifted=",maxval
@@ -287,23 +291,25 @@ class OlympusDataSource(DataSource):
 		#coeff=int(coeff)
 		#print "coeff=",coeff
 #        print "Largest value=",len(vals)/coeff
-		r0, g0, b0 = -1, -1, -1
+		red0, green0, blue0 = -1, -1, -1
 		for i in range(0, maxval + 1):
-			r, g, b = vals[int(i * coeff)]
-			if i in [0, maxval] or (r != r0 or g != g0 or b != b0):
-				ctf.AddRGBPoint(i, r / 255.0, g / 255.0, b / 255.0)
-				r0, g0, b0 = r, g, b
-			if i == maxval:print "-->", i, maxval, "maps to", r, g, b
-			
+			red, green, blue = vals[int(i * coeff)]
+			if i in [0, maxval] or (red != red0 or green != green0 or blue != blue0):
+				ctf.AddRGBPoint(i, red / 255.0, green / 255.0, blue / 255.0)
+				red0, green0, blue0 = red, green, blue
+			if i == maxval:
+				print "-->", i, maxval, "maps to", red, green, blue
 		
 		return ctf
+	
 	def getTimeStamp(self, timepoint):
 		"""
 		Created: 02.07.2007, KP
 		Description: return the timestamp for given timepoint
 		"""
-		
-		
+		pass
+
+	
 	def getSpacing(self):
 		"""
 		Created: 12.04.2005, KP
@@ -311,8 +317,8 @@ class OlympusDataSource(DataSource):
 					 dataunit contains
 		"""
 		if not self.spacing:
-			a, b, c = self.getVoxelSize()
-			self.spacing = [1, b / a, c / a]
+			aDimension, bDimension, cDimension = self.getVoxelSize()
+			self.spacing = [1, bDimension / aDimension, cDimension / aDimension]
 		return self.spacing
 		
 	def getVoxelSize(self):
@@ -322,9 +328,10 @@ class OlympusDataSource(DataSource):
 					 dataunit contains
 		"""
 		if not self.voxelsize:
-			x, y, z, tp, ch, vx, vy, vz = self.getAllDimensions(self.parser)
+			xDimension, yDimension, zDimension, timepoint, channel, \
+			voxelXDimension, voxelYDimension, voxelZDimension = self.getAllDimensions(self.parser)
 						 
-			self.voxelsize = (vx, vy, vz)
+			self.voxelsize = (voxelXDimension, voxelYDimension, voxelZDimension)
 
 			#print "Got voxel size=",self.voxelsize
 		return self.voxelsize
@@ -336,25 +343,24 @@ class OlympusDataSource(DataSource):
 		"""    
 		timepoints = 0
 		channels = 0
-		x = 0
-		y = 0
-		z = 1
+		xDimension = 0
+		yDimension = 0
+		zDimension = 1
 		for i in range(0, 7):
 			sect = "Axis %d Parameters Common" % i
 			key = "AxisCode"
 			data = parser.get(sect, key)
 			# If Axis i is the time axis
-			n = timepoints = int(parser.get(sect, "MaxSize"))
+			n = timepoints = int(parser.get(sect, "MaxSize")) #TODO: why n = timepoints = .... ??
 			unit = parser.get(sect, "UnitName")
 			unit = unit.replace('"', "")
-			sp = parser.get(sect, "StartPosition")
-			ep = parser.get(sect, "EndPosition")
-			sp = sp.replace('"', '')
-			ep = ep.replace('"', '')
+			startPosition = parser.get(sect, "StartPosition")
+			endPosition = parser.get(sect, "EndPosition")
+			startPosition = startPosition.replace('"', '')
+			endPosition = endPosition.replace('"', '')
 			
-			startpos = float(sp)
-			endpos = float(ep)
-			
+			startpos = float(startPosition)
+			endpos = float(endPosition)
 			
 			if endpos < startpos:
 				self.reverseSlices = 1
@@ -369,26 +375,26 @@ class OlympusDataSource(DataSource):
 			elif data == '"C"':
 				channels = n
 			elif data == '"X"':
-				x = n
-				vx = diff
+				xDimension = n
+				voxelXDimension = diff
 			elif data == '"Y"':
-				y = n
-				vy = diff
+				yDimension = n
+				voxelYDimension = diff
 			elif data == '"Z"':
-				z = n
-				vz = diff
+				zDimension = n
+				voxelZDimension = diff
 		
-		if z == 0:
-			z = 1
+		if zDimension == 0:
+			zDimension = 1
 			self.noZ = 1
-		vx /= float(x)
-		vy /= float(y)
-		if z > 1:
-			vz /= float(z - 1)
-		#print "\n\n\n *** SETTING ORIGINAL DIMS TO ",(x,y,z)
-		self.originalDimensions = (x, y, z)
-		return x, y, z, timepoints, channels, vx, vy, vz
-				
+		voxelXDimension /= float(xDimension)
+		voxelYDimension /= float(yDimension)
+		if zDimension > 1:
+			voxelZDimension /= float(zDimension - 1)
+		#print "\n\n\n *** SETTING ORIGINAL DIMS TO ",( xDimension, yDimension, zDimension)
+		self.originalDimensions = (xDimension, yDimension, zDimension)
+		return xDimension, yDimension, zDimension, timepoints, channels, \
+				voxelXDimension, voxelYDimension, voxelZDimension
 				
 	def getLUTPath(self, parser):
 		"""
@@ -403,15 +409,15 @@ class OlympusDataSource(DataSource):
 		path = "_".join(parts[:-1])
 		return path
 				
-	def getDyes(self, parser, n):
+	def getDyes(self, parser, numberOfChannels):
 		"""
 		Created: 16.02.2006, KP
-		Description: Read the dye names for n channels
+		Description: Read the dye names for numberOfChannels channels
 		""" 
 		names = []
 		exs = []
 		ems = []
-		for i in range(1, n + 1):
+		for i in range(1, numberOfChannels + 1):
 			sect = "Channel %d Parameters" % i
 			data = parser.get(sect, "DyeName")
 			data = data.replace('"', "")
@@ -421,7 +427,6 @@ class OlympusDataSource(DataSource):
 			exs.append(excitation)
 			ems.append(emission)
 		return names, (exs, ems)
-			
 			
 	def loadFromFile(self, filename):
 		"""
@@ -436,42 +441,42 @@ class OlympusDataSource(DataSource):
 		basefile = basefile.replace(".oif", "")
 		
 		try:
-			f = open(filename)
-			f.close()
+			file = open(filename)
+			file.close()
 		except IOError, ex:
 			Logging.error("Failed to open Olympus OIF File",
 			"Failed to open file %s for reading: %s" % (filename, str(ex)))        
 
-		fp = codecs.open(filename, "r", "utf-16")
-		self.parser.readfp(fp)
-		x, y, z, tps, chs, vx, vy, vz = self.getAllDimensions(self.parser)
+		filepointer = codecs.open(filename, "r", "utf-16")
+		self.parser.readfp(filepointer)
+		xDimension, yDimension, zDimension, timepoints, \
+		channels, voxelXDimension, voxelYDimension, voxelZDimension = self.getAllDimensions(self.parser)
 		
-		voxsiz = (vx, vy, vz)
-		names, (excitations, emissions) = self.getDyes(self.parser, chs)
-		
+		voxsiz = (voxelXDimension, voxelYDimension, voxelZDimension)
+		names, (excitations, emissions) = self.getDyes(self.parser, channels)
 		
 		self.bitdepth = eval(self.parser.get("Reference Image Parameter", "ValidBitCounts"))
 		lutpath = self.getLUTPath(self.parser)
 		
 		dataunits = []
-		for ch in range(1, chs + 1):
-			name = names[ch - 1]    
-			excitation = excitations[ch - 1]
-			emission = emissions[ch - 1]
-			datasource = OlympusDataSource(filename, ch, name = name, basename = basefile,
+		for channel in range(1, channels + 1):
+			name = names[channel - 1]    
+			excitation = excitations[channel - 1]
+			emission = emissions[channel - 1]
+			datasource = OlympusDataSource(filename, channel, name = name, basename = basefile,
 										lutname = lutpath,
-										dims = (x, y, z), t = tps, voxelsize = voxsiz,
+										dimensions = (xDimension, yDimension, zDimension), 
+										time = timepoints, voxelsize = voxsiz,
 										reverse = self.reverseSlices,
 										emission = emission,
 										excitation = excitation, bitdepth = self.bitdepth)
 			#datasource.bitdepth = self.bitdepth
-			datasource.originalDimensions = (x, y, z)
-			dataunit = DataUnit.DataUnit()
+			datasource.originalDimensions = (xDimension, yDimension, zDimension)
+			dataunit = DataUnit()
 			dataunit.setDataSource(datasource)
 			dataunits.append(dataunit)
 			
 		return dataunits
-
 
 	def getName(self):
 		"""

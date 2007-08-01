@@ -29,22 +29,21 @@ __author__ = "BioImageXD Project"
 __version__ = "$Revision: 1.9 $"
 __date__ = "$Date: 2007/01/13 13:42:03 $"
 
-import wx
-
-import vtk
-import ColorTransferEditor
-import Dialogs
-
-from GUI import GUIBuilder
-import types
-from Visualizer.VisualizationModules import *
-
+import GUI.GUIBuilder
 import scripting as bxd
+import types
+from Visualizer.VisualizationModules import VisualizationModule
+from Visualizer.ModuleConfiguration import ModuleConfigurationPanel
+import vtk
 
-def getClass():return CutBoxModule
-def getConfigPanel():return CutBoxConfigurationPanel
-def getName():return "Cut with box"
+def getClass():
+	return CutBoxModule
 
+def getConfigPanel():
+	return CutBoxConfigurationPanel
+
+def getName():
+	return "Cut with box"
 
 class CutBoxModule(VisualizationModule):
 	"""
@@ -59,7 +58,8 @@ class CutBoxModule(VisualizationModule):
 		self.boxWidget = None
 		VisualizationModule.__init__(self, parent, visualizer, **kws)   
 
-		self.descs = {"ShowControls": "Show the controls", "ClippedModule": "Clip the module", "AllModules": "Clip all modules", "InsideOut": "Clip from the outside"}
+		self.descs = {"ShowControls": "Show the controls", "ClippedModule": "Clip the module", \
+						"AllModules": "Clip all modules", "InsideOut": "Clip from the outside"}
 		boxWidget = self.boxWidget = vtk.vtkBoxWidget()
 		self.cut = 0
 	  
@@ -83,6 +83,7 @@ class CutBoxModule(VisualizationModule):
 		selectedOutlineProperty.SetLineWidth(3)
 #        iactor = self.wxrenwin.GetRenderWindow().GetInteractor()
 		boxWidget.AddObserver("InteractionEvent", self.clipVolumeRender)
+		self.renew = 0
 
 	def getParameterLevel(self, parameter):
 		"""
@@ -128,10 +129,15 @@ class CutBoxModule(VisualizationModule):
 		Created: 22.04.2007, KP
 		Description: Return the default value of a parameter
 		"""           
-		if parameter == "ShowControls":return 1
-		if parameter == "AllModules":return False
-		if parameter == "ClippedModule": return 0
-		if parameter == "InsideOut": return 1
+		if parameter == "ShowControls":
+			return 1
+		if parameter == "AllModules":
+			return False
+		if parameter == "ClippedModule": 
+			return 0
+		if parameter == "InsideOut": 
+			return 1
+
 	def getRange(self, parameter):
 		"""
 		Created: 22.04.2007, KP
@@ -146,8 +152,10 @@ class CutBoxModule(VisualizationModule):
 		Created: 22.04.2007, KP
 		Description: Return the type of the parameter
 		"""    
-		if parameter in ["ShowControls", "AllModules", "InsideOut"]: return types.BooleanType
-		if parameter == "ClippedModule": return GUIBuilder.CHOICE      
+		if parameter in ["ShowControls", "AllModules", "InsideOut"]:
+			return types.BooleanType
+		if parameter == "ClippedModule":
+			return GUI.GUIBuilder.CHOICE      
 		
 	def __getstate__(self):
 		"""
@@ -269,10 +277,9 @@ class CutBoxModule(VisualizationModule):
 			self.boxWidget.On()
 		else:
 			self.boxWidget.Off()
-		
-
 
 class CutBoxConfigurationPanel(ModuleConfigurationPanel):
+		
 	def __init__(self, parent, visualizer, name = "CutBox", **kws):
 		"""
 		Created: 29.05.2007, KP
@@ -280,6 +287,7 @@ class CutBoxConfigurationPanel(ModuleConfigurationPanel):
 		"""     
 		self.cut = 0
 		ModuleConfigurationPanel.__init__(self, parent, visualizer, name, **kws)
+		self.gui = None
 	
 	def initializeGUI(self):
 		"""
@@ -295,7 +303,7 @@ class CutBoxConfigurationPanel(ModuleConfigurationPanel):
 		"""  
 		ModuleConfigurationPanel.setModule(self, module)
 		self.module = module
-		self.gui = GUIBuilder.GUIBuilder(self, self.module)
+		self.gui = GUI.GUIBuilder.GUIBuilder(self, self.module)
 		self.module.sendUpdateGUI()
 		self.contentSizer.Add(self.gui, (0, 0))
 

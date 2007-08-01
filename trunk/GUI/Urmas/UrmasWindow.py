@@ -38,25 +38,22 @@ __version__ = "$Revision: 1.22 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 import wx
-
-from Timeline import *
+import GUI.Urmas.Timeline
 import TimelinePanel
-import UrmasTimepointSelection
-import RenderingInterface
+#import UrmasTimepointSelection
+#import RenderingInterface
+import Logging
 import UrmasControl
 import VideoGeneration
-import  wx.lib.scrolledpanel as scrolled
-import Dialogs
-
+import wx.lib.scrolledpanel
+import GUI.Dialogs
 import UrmasPalette
 import PlaybackControl
-
 from GUI import MenuManager
-import messenger
+import lib.messenger
 import time
 
-
-class UrmasWindow(scrolled.ScrolledPanel):
+class UrmasWindow(wx.lib.scrolledpanel.ScrolledPanel):
 	"""
 	Created: 10.02.2005, KP
 	Description: A window for controlling the rendering/animation/movie generation.
@@ -67,7 +64,7 @@ class UrmasWindow(scrolled.ScrolledPanel):
 		#wx.Frame.__init__(self,parent,-1,"Rendering Manager / Animator",size=(1024,768))
 		#wx.SashLayoutWindow.__init__(self,parent,-1)
 		self.scrolled = 1
-		scrolled.ScrolledPanel.__init__(self, parent, -1)
+		wx.lib.scrolledpanel.ScrolledPanel.__init__(self, parent, -1)
 		#wx.ScrolledWindow.__init__(self,parent,-1)
 		#wx.Panel.__init__(self,parent,-1)
 		self.parent = parent
@@ -114,9 +111,9 @@ class UrmasWindow(scrolled.ScrolledPanel):
 		s = self.visualizer.sliderWin.GetSize()
 		self.visualizer.setCurrentSliderPanel(self.controlpanel)
 		self.controlpanel.SetSize(s)
-		#messenger.send(None,"set_time_range",1,n*10)
+		#lib.messenger.send(None,"set_time_range",1,n*10)
 		
-		messenger.connect(None, "video_generation_close", self.onVideoGenerationClose)
+		lib.messenger.connect(None, "video_generation_close", self.onVideoGenerationClose)
 		self.SetSizer(self.sizer)
 		self.SetAutoLayout(1)
 		if self.scrolled:
@@ -168,8 +165,8 @@ class UrmasWindow(scrolled.ScrolledPanel):
 		tp = int(frame * spf)
 		print "Showing time pos ", tp, "frame=", frame, "seconds per frame=", spf
 		#tp/=10.0
-		messenger.send(None, "show_time_pos", tp)
-		messenger.send(None, "render_time_pos", tp)
+		lib.messenger.send(None, "show_time_pos", tp)
+		lib.messenger.send(None, "render_time_pos", tp)
 		self.timelinePanel.timeline.Refresh()
 		
 	def cleanMenu(self):
@@ -191,7 +188,7 @@ class UrmasWindow(scrolled.ScrolledPanel):
 		mgr.remove(MenuManager.ID_OPEN_PROJECT)
 		mgr.remove(MenuManager.ID_RENDER_PROJECT)
 		mgr.remove(MenuManager.ID_RENDER_PREVIEW)
-		mgr.remove(MenuManager.ID_SAVE)
+#		mgr.remove(MenuManager.ID_SAVE)		No ID_SAVE in GUI.MenuManager.py
 		mgr.remove(MenuManager.ID_SET_TRACK)
 		mgr.remove(MenuManager.ID_SET_TRACK_RELATIVE)
 		mgr.remove(MenuManager.ID_MAINTAIN_UP)
@@ -295,7 +292,7 @@ class UrmasWindow(scrolled.ScrolledPanel):
 		"""
 		active = self.control.getSelectedTrack()
 		if not active:
-			Dialogs.showwarning(self, "You need to select a track that you wish to perform the operation on.", "No track selected")
+			GUI.Dialogs.showwarning(self, "You need to select a track that you wish to perform the operation on.", "No track selected")
 			return
 		active.shiftItems(1)
 		
@@ -306,7 +303,7 @@ class UrmasWindow(scrolled.ScrolledPanel):
 		"""
 		active = self.control.getSelectedTrack()
 		if not active:
-			Dialogs.showwarning(self, "You need to select a track that you wish to perform the operation on.", "No track selected")
+			GUI.Dialogs.showwarning(self, "You need to select a track that you wish to perform the operation on.", "No track selected")
 			return
 		active.shiftItems(-1)       
 	
@@ -322,9 +319,9 @@ class UrmasWindow(scrolled.ScrolledPanel):
 		self.videoGenerationPanel.Show()
 		self.visualizer.mainwin.OnSize(None)
 		#else:
-		#    messenger.send(None,"set_preview_mode",1)
+		#    lib.messenger.send(None,"set_preview_mode",1)
 		#    self.control.renderProject(1)
-		#    messenger.send(None,"set_preview_mode",0)
+		#    lib.messenger.send(None,"set_preview_mode",0)
 		#    
 	def onVideoGenerationClose(self, obj, evt, *args):
 		"""
@@ -358,7 +355,7 @@ class UrmasWindow(scrolled.ScrolledPanel):
 		"""
 		active = self.control.getSelectedTrack()
 		if not active:
-			Dialogs.showwarning(self, "You need to select a track that you wish to perform the operation on.", "No track selected")
+			GUI.Dialogs.showwarning(self, "You need to select a track that you wish to perform the operation on.", "No track selected")
 			return
 		active.setToSize()
 
@@ -385,10 +382,10 @@ class UrmasWindow(scrolled.ScrolledPanel):
 		#print "Setting to size ",size,"(",val,"seconds)"
 		active = self.control.getSelectedTrack()
 		if not active:
-			Dialogs.showwarning(self, "You need to select a track that you wish to perform the operation on.", "No track selected")
+			GUI.Dialogs.showwarning(self, "You need to select a track that you wish to perform the operation on.", "No track selected")
 			return        
 		# Make sure you cant use a value that would make the items expand beyond duration
-		n = active.getLength()
+		n = active.getNumberOfTimepoints()
 		
 		pps = self.control.getPixelsPerSecond()
 		#w*=pps
@@ -411,7 +408,7 @@ class UrmasWindow(scrolled.ScrolledPanel):
 		"""
 		active = self.control.getSelectedTrack()
 		if not active:
-			Dialogs.showwarning(self, "You need to select a track that you wish to perform the operation on.", "No track selected")
+			GUI.Dialogs.showwarning(self, "You need to select a track that you wish to perform the operation on.", "No track selected")
 			return
 		
 		startOfTrack = active.getStartOfTrack()
@@ -443,7 +440,7 @@ class UrmasWindow(scrolled.ScrolledPanel):
 		"""
 		active = self.control.getSelectedTrack()
 		if not active:
-			Dialogs.showwarning(self, "You need to select a track that you wish to perform the operation on.", "No track selected")
+			GUI.Dialogs.showwarning(self, "You need to select a track that you wish to perform the operation on.", "No track selected")
 			return                
 
 		d = self.control.getDuration()
@@ -467,7 +464,7 @@ class UrmasWindow(scrolled.ScrolledPanel):
 		"""
 		active = self.control.getSelectedTrack()
 		if not active:
-			Dialogs.showwarning(self, "You need to select a track that you wish to perform the operation on.", "No track selected")
+			GUI.Dialogs.showwarning(self, "You need to select a track that you wish to perform the operation on.", "No track selected")
 			return        
 		active.expandToMax()
 	
@@ -478,7 +475,7 @@ class UrmasWindow(scrolled.ScrolledPanel):
 		"""
 		active = self.control.getSelectedTrack()
 		if not active:
-			Dialogs.showwarning(self, "You need to select a track that you wish to perform the operation on.", "No track selected")
+			GUI.Dialogs.showwarning(self, "You need to select a track that you wish to perform the operation on.", "No track selected")
 			return        
 		active.expandToMax(keep_ratio = 1)
 		
@@ -505,7 +502,7 @@ class UrmasWindow(scrolled.ScrolledPanel):
 		"""
 		active = self.control.getSelectedTrack()
 		if not active:
-			Dialogs.showwarning(self, "You need to select a track that you wish to perform the operation on.", "No track selected")
+			GUI.Dialogs.showwarning(self, "You need to select a track that you wish to perform the operation on.", "No track selected")
 			return        
 		if hasattr(active, "setMaintainUpDirection"):
 			active.setMaintainUpDirection(evt.IsChecked())
@@ -583,7 +580,7 @@ class UrmasWindow(scrolled.ScrolledPanel):
 		Description: Callback function for opening a project
 		"""
 		wc = "Rendering project (*.rxd)|*.rxd"
-		name = Dialogs.askOpenFileName(self, "Open rendering project", wc, 0)
+		name = GUI.Dialogs.askOpenFileName(self, "Open rendering project", wc, 0)
 		if name:
 			self.control.readFromDisk(name[0])
 		

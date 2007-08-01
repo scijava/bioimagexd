@@ -38,12 +38,12 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 import wx
 
-import os.path
-import sys
-import math, random
+#import os.path
+#import sys
+#import math, random
 
-import ImageOperations
-from Urmas import UrmasControl
+import lib.ImageOperations
+#from Urmas import UrmasControl
 import Logging        
 DRAG_OFFSET = 15
 		
@@ -267,7 +267,7 @@ class TrackItem:
 			vx, vy, vz = self.volume.GetDimensions()
 			ctf = self.dataUnit.getSettings().get("ColorTransferFunction")
 			#print self.volume.GetUpdateExtent()
-			self.thumbnailbmp = ImageOperations.vtkImageDataToPreviewBitmap(self.dataUnit, self.thumbtimepoint, ctf, 0, self.height - self.labelheight)
+			self.thumbnailbmp = lib.ImageOperations.vtkImageDataToPreviewBitmap(self.dataUnit, self.thumbtimepoint, ctf, 0, self.height - self.labelheight)
 			
 		iw, ih = self.thumbnailbmp.GetSize()
 		#print "image size=",iw,ih

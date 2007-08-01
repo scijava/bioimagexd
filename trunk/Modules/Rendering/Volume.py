@@ -13,7 +13,7 @@
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
- the Free Software Foundation; either version 2 of the License, or
+
  (at your option) any later version.
 
  This program is distributed in the hope that it will be useful,
@@ -29,30 +29,35 @@ __author__ = "BioImageXD Project"
 __version__ = "$Revision: 1.9 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
-import wx
-
-import vtk
-import messenger
-
-import Dialogs
-import types
-from Visualizer.VisualizationModules import *
-import Logging
-
 import Configuration
-
-import scripting as bxd
+import GUI.Dialogs
+import GUI.GUIBuilder
+import Logging
+import lib.messenger
+import optimize
+import types
+from Visualizer.VisualizationModules import VisualizationModule
+from Visualizer.ModuleConfiguration import ModuleConfigurationPanel
+import vtk
+import wx
 
 TEXTURE_MAPPING = 1
 TEXTURE_MAPPING_3D = 2
 RAYCAST = 0
 MIP = 3
 ISOSURFACE = 4
-def getClass():return VolumeModule
-def getConfigPanel():return VolumeConfigurationPanel
-def getName():return "Volume rendering"
-def getQuickKeyCombo(): return "Shift-Ctrl-V"
 
+def getClass():
+	return VolumeModule
+
+def getConfigPanel():
+	return VolumeConfigurationPanel
+
+def getName():
+	return "Volume rendering"
+
+def getQuickKeyCombo():
+	return "Shift-Ctrl-V"
 
 class VolumeModule(VisualizationModule):
 	"""
@@ -89,12 +94,13 @@ class VolumeModule(VisualizationModule):
 	   
 		otf2 = self.otf2
 		otf = self.otf
+
 		otf2.AddPoint(0, 0.0)
 		otf2.AddPoint(255, 1.0)
 		otf.AddPoint(0, 0.0)
 		otf.AddPoint(255, 0.2)
 		
-		self.otfs = [self.otf, self.otf, self.otf, self.otf2, self.otf]        
+		self.otfs = [self.otf, self.otf, self.otf, self.otf2, self.otf]
 		
 		self.volumeProperty =  vtk.vtkVolumeProperty()
 		self.volume = vtk.vtkVolume()
@@ -115,8 +121,10 @@ class VolumeModule(VisualizationModule):
 				   
 		self.volumeProperty.SetScalarOpacity(self.otfs[self.parameters["Method"]])
 		
-		self.descs = {"Palette": "", "Method": "", "Interpolation": "Interpolation", "NearestNeighbor": "Nearest Neighbour", "Linear": "Linear",
-		"Quality": "", "QualityValue": "Maximum number of planes:", "UseVolumepro": "Use VolumePro acceleration"}
+		self.descs = {"Palette": "", "Method": "", "Interpolation": "Interpolation", \
+						"NearestNeighbor": "Nearest Neighbour", "Linear": "Linear", \
+						"Quality": "", "QualityValue": "Maximum number of planes:", \
+						"UseVolumepro": "Use VolumePro acceleration"}
 		
 		
 		self.eventDesc = "Rendering volume"
@@ -124,9 +132,9 @@ class VolumeModule(VisualizationModule):
 			   
 		self.parent.getRenderer().AddVolume(self.volume)
 		self.setShading(0)
-		
+
 		self.vtkObjects = ["otf", "otf2"]
-		
+
 		#self.updateRendering()
 		
 		
@@ -135,21 +143,21 @@ class VolumeModule(VisualizationModule):
 		Created: 13.04.2006, KP
 		Description: Set a value for the parameter
 		"""    
+ 
 		VisualizationModule.setParameter(self, parameter, value)
 		if parameter == "Method":
 			conf = Configuration.getConfiguration()
 			conf.setConfigItem("DefaultVolumeMode", "Rendering", value)
 			conf.writeSettings()
 			self.updateMethod()
-					
 			self.updateOpacityTransferFunction()
-			print "value=", value
+			print "value =", value
 			if value == 1:
-				print "updating quality value label to max planes"
-				messenger.send(self, "update_QualityValue_label", "Maximum number of planes:")
+				print "Updating QualityValue label to max planes"
+				lib.messenger.send(self, "update_QualityValue_label", "Maximum number of planes:")
 			else:
-				print "Updating qualityvalue label to sample distance"
-				messenger.send(self, "update_QualityValue_label", "Sample distance:")
+				print "Updating QualityValue label to sample distance"
+				lib.messenger.send(self, "update_QualityValue_label", "Sample distance:")
 		if parameter == "Quality":
 			self.parameters["QualityValue"] = None
 			self.updateQuality()
@@ -161,10 +169,8 @@ class VolumeModule(VisualizationModule):
 		Description: Set the GUI OTF to it's correct value
 		"""
 		self.otfs = [self.otf, self.otf, self.otf, self.otf2, self.otf]
-		
-		messenger.send(self, "set_Palette_otf", self.otfs[self.parameters["Method"]])
+		lib.messenger.send(self, "set_Palette_otf", self.otfs[self.parameters["Method"]])
 
-	
 	def getParameters(self):
 		"""
 		Created: 12.03.2007, KP
@@ -196,12 +202,18 @@ class VolumeModule(VisualizationModule):
 		Created: 12.03. 2007, KP
 		Description: Return the type of the parameter
 		"""   
-		if parameter == "Method":return GUIBuilder.CHOICE
-		if parameter in ["NearestNeighbor", "Linear"]: return GUIBuilder.RADIO_CHOICE
-		if parameter == "Quality": return GUIBuilder.SLICE
-		if parameter == "QualityValue": return types.FloatType
-		if parameter == "Palette": return GUIBuilder.CTF
-		if parameter == "UseVolumepro": return types.BooleanType
+		if parameter == "Method":
+			return GUI.GUIBuilder.CHOICE
+		if parameter in ["NearestNeighbor", "Linear"]:
+			return GUI.GUIBuilder.RADIO_CHOICE
+		if parameter == "Quality":
+			return GUI.GUIBuilder.SLICE
+		if parameter == "QualityValue":
+			return types.FloatType
+		if parameter == "Palette":
+			return GUI.GUIBuilder.CTF
+		if parameter == "UseVolumepro":
+			return types.BooleanType
 		
 	def getDefaultValue(self, parameter):
 		"""
@@ -210,15 +222,18 @@ class VolumeModule(VisualizationModule):
 		"""           
 		if parameter == "Method":
 			return self.defaultMode
-		if parameter == "Quality": return 10
-		if parameter == "QualityValue": return 0
-		if parameter == "Linear": return 0
-		if parameter == "NearestNeighbor": return 1
-		if parameter == "UseVolumepro": return False
+		if parameter == "Quality":
+			return 10
+		if parameter == "QualityValue":
+			return 0
+		if parameter == "Linear":
+			return 0
+		if parameter == "NearestNeighbor":
+			return 1
+		if parameter == "UseVolumepro":
+			return False
 		if parameter == "Palette":
 			return self.colorTransferFunction
-		
-   
 		
 	def setDataUnit(self, dataunit):
 		"""
@@ -231,15 +246,16 @@ class VolumeModule(VisualizationModule):
 		otf, otf2 = vtk.vtkPiecewiseFunction(), vtk.vtkPiecewiseFunction()
 		d = dataunit.getSingleComponentBitDepth()
 		maxv = 2 ** d
+			
 		otf2.AddPoint(0, 0.0)
 		otf2.AddPoint(maxv, 1.0)
 		otf.AddPoint(0, 0.0)
 		otf.AddPoint(maxv, 0.2)
 		
 		self.otfs = [otf, otf, otf, otf2, otf]
+		
 		self.setInputChannel(1, 0)
 		self.parameters["Palette"] = self.colorTransferFunction
-		
 		
 	def updateQuality(self):
 		"""
@@ -256,7 +272,9 @@ class VolumeModule(VisualizationModule):
 			else:                
 				if quality <= 0.00001:
 					toq = 0.1
-					Dialogs.showwarning(None, "The selected sample distance (%f) is too small, %f will be used." % (quality, toq), "Too small sample distance")
+					GUI.Dialogs.showwarning(None, \
+											"The selected sample distance (%f) is too small, %f will be used." \
+											% (quality, toq), "Too small sample distance")
 					quality = toq
 				Logging.info("Setting sample distance to ", quality, kw = "rendering")                    
 				self.mapper.SetSampleDistance(quality)
@@ -266,19 +284,19 @@ class VolumeModule(VisualizationModule):
 				if self.mapper:
 					if method not in [TEXTURE_MAPPING]:
 						self.mapper.SetSampleDistance(self.sampleDistance)
-						messenger.send(self, "set_QualityValue", self.sampleDistance)
+						lib.messenger.send(self, "set_QualityValue", self.sampleDistance)
 					else:
 						self.mapper.SetMaximumNumberOfPlanes(self.maxPlanes)
-						messenger.send(self, "set_QualityValue", self.maxPlanes)
+						lib.messenger.send(self, "set_QualityValue", self.maxPlanes)
 
 			elif quality < 10:               
 				if method not in [TEXTURE_MAPPING]:
 					self.mapper.SetSampleDistance(15 - quality)
-					messenger.send(self, "set_QualityValue", 15 - quality)
+					lib.messenger.send(self, "set_QualityValue", 15 - quality)
 				else:
 					quality = 10 - quality
 					self.mapper.SetMaximumNumberOfPlanes(25 - quality)
-					messenger.send(self, "set_QualityValue", 25 - quality)
+					lib.messenger.send(self, "set_QualityValue", 25 - quality)
 			return 0     
 			
 		
@@ -292,7 +310,7 @@ class VolumeModule(VisualizationModule):
 		if not inputDataUnit:
 			inputDataUnit = self.dataUnit
 		self.colorTransferFunction =    ctf = inputDataUnit.getColorTransferFunction()
-		messenger.send(self, "set_Palette_ctf", self.colorTransferFunction)
+		lib.messenger.send(self, "set_Palette_ctf", self.colorTransferFunction)
 			 
 		self.volumeProperty.SetColor(self.colorTransferFunction)
 
@@ -317,6 +335,7 @@ class VolumeModule(VisualizationModule):
 		self.parameters["QualityValue"] = 0
 		if not self.initDone:
 			return
+
 		method = self.parameters["Method"]
 		self.volumeProperty.SetScalarOpacity(self.otfs[method])
 		self.updateOpacityTransferFunction()
@@ -354,9 +373,10 @@ class VolumeModule(VisualizationModule):
 		elif method == TEXTURE_MAPPING: # texture mapping
 			self.mapper = vtk.vtkVolumeTextureMapper2D()
 			self.maxPlanes = self.mapper.GetMaximumNumberOfPlanes()
-		
-		
-		if self.haveVolpro and self.method in [RAYCAST, ISOSURFACE, MIP] and self.parameters["UseVolumepro"]:
+
+# changed following because seems like a mistake, 19.7.2007 SS
+#		if self.haveVolpro and self.method in [RAYCAST, ISOSURFACE, MIP] and self.parameters["UseVolumepro"]:
+		if self.haveVolpro and method in [RAYCAST, ISOSURFACE, MIP] and self.parameters["UseVolumepro"]:
 			# use volumepro accelerated rendering
 			self.mapper = vtk.vtkVolumeProMapper()
 
@@ -388,17 +408,16 @@ class VolumeModule(VisualizationModule):
 		if not input:
 			input = self.getInput(1)
 		x, y, z = self.dataUnit.getDimensions()
-		
-		input = bxd.mem.optimize(image = input, updateExtent = (0, x - 1, 0, y - 1, 0, z - 1))
-					
-					
+				
+		#input = bxd.mem.optimize(image = input, updateExtent = (0, x - 1, 0, y - 1, 0, z - 1))
+		input = optimize.optimize(image = input, updateExtent = (0, x - 1, 0, y - 1, 0, z - 1))
 					
 		ncomps = input.GetNumberOfScalarComponents()
 		Logging.info("Number of comps=", ncomps, kw = "rendering")
 		dataType = input.GetScalarType()
 		if (ncomps > 1 or dataType not in [3, 5]) and self.parameters["Method"] == TEXTURE_MAPPING:
 			self.setParameter("Method", 0)
-			messenger.send(None, "update_module_settings")
+			lib.messenger.send(None, "update_module_settings")
 		if ncomps > 1:
 			self.volumeProperty.IndependentComponentsOff()
 		else:
@@ -412,10 +431,11 @@ class VolumeModule(VisualizationModule):
 		self.parent.Render()
 		if self.parameters["Method"] == TEXTURE_MAPPING_3D:
 			if not self.mapper.IsRenderSupported(self.volumeProperty):
-				messenger.send(None, "show_error", "3D texture mapping not supported",
-				"Your graphics hardware does not support 3D accelerated texture mapping. Please use one of the other volume rendering methods.")
-				
-			
+				lib.messenger.send(None, \
+								"show_error", \
+								"3D texture mapping not supported", \
+								"Your graphics hardware does not support 3D accelerated texture mapping. \
+								Please use one of the other volume rendering methods.")
 		
 	def disableRendering(self):
 		"""
@@ -433,18 +453,16 @@ class VolumeModule(VisualizationModule):
 		self.renderer.AddVolume(self.volume)
 		self.wxrenwin.Render()        
 		
-	
-
 class VolumeConfigurationPanel(ModuleConfigurationPanel):
+
 	def __init__(self, parent, visualizer, name = "Volume rendering", **kws):
 		"""
 		Created: 28.04.2005, KP
 		Description: Initialization
-		"""     
+		"""
 		self.gui = None
-		
 		ModuleConfigurationPanel.__init__(self, parent, visualizer, name, **kws)
-		
+
 	def initializeGUI(self):
 		"""
 		Created: 28.04.2005, KP
@@ -464,16 +482,17 @@ class VolumeConfigurationPanel(ModuleConfigurationPanel):
 		"""  
 		self.shading = event.IsChecked()        
 		self.module.setShading(self.shading)
+
 	def getLongDesc(self, parameter):
 		"""
 		Created: 12.03.2007, KP
 		Description: return a long desc for the given parameter
 		"""
 		if parameter in ["NearestNeighbor", "Linear"]:
-			return """Set the type of interpolation used in rendering.
-Nearest Neighbor interpolation is faster than Linear interpolation, 
-but using linear interpolation yields a better rendering quality."""
-				  
+			return "Set the type of interpolation used in rendering. \
+					Nearest Neighbor interpolation is faster than Linear interpolation, \
+					but using linear interpolation yields a better rendering quality."
+
 	def setModule(self, module):
 		"""
 		Created: 28.04.2005, KP
@@ -483,7 +502,7 @@ but using linear interpolation yields a better rendering quality."""
 		ModuleConfigurationPanel.setModule(self, module)
 		unit = module.getDataUnit()        
 		if not self.gui:
-			self.gui = GUIBuilder.GUIBuilder(self, self.module)        
+			self.gui = GUI.GUIBuilder.GUIBuilder(self, self.module)
 			self.contentSizer.Add(self.gui, (0, 0))
 		module.updateOpacityTransferFunction()
 		
@@ -495,12 +514,9 @@ but using linear interpolation yields a better rendering quality."""
 				ctf = module.getDataUnit().getSourceDataUnits()[0].getColorTransferFunction()
 			else:
 				ctf = module.getDataUnit().getColorTransferFunction()
+			lib.messenger.send(module, "set_Palette_ctf", ctf)
+		self.module.sendUpdateGUI()
 
-		
-			messenger.send(module, "set_Palette_ctf", ctf)
-
-		self.module.sendUpdateGUI()            
-		
 	def onApply(self, event):
 		"""
 		Created: 28.04.2005, KP

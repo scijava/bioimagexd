@@ -26,13 +26,14 @@ class SplashScreen(wx.Frame):
 		size = (bmp.GetWidth(), bmp.GetHeight() + self.offset)
 	
 		# size of screen
+#TODO: Can't find this method in wxpython docs. only wx.SystemSettings.GetMetric
 		width = wx.SystemSettings_GetMetric(wx.SYS_SCREEN_X)
 		height = wx.SystemSettings_GetMetric(wx.SYS_SCREEN_Y)
 		pos = ((width - size[0]) / 2, (height - size[1]) / 2)
 
 		# check for overflow...
 		if pos[0] < 0:
-			size = (wx.SystemSettings_GetSystemMetric(wx.SYS_SCREEN_X), size[1])
+			size = (wx.SystemSettings.GetSystemMetric(wx.SYS_SCREEN_X), size[1])
 		if pos[1] < 0:
 			size = (size[0], wx.SystemSettings_GetSystemMetric(wx.SYS_SCREEN_Y))
 

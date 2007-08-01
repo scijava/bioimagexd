@@ -36,11 +36,10 @@ __author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.21 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
-import vtk
-from DataUnit import FilterBasedTaskSettings
+from lib.DataUnit.FilterBasedTaskSettings import FilterBasedTaskSettings
 import ManipulationFilters
 
-class ManipulationSettings(FilterBasedTaskSettings.FilterBasedTaskSettings):
+class ManipulationSettings(FilterBasedTaskSettings):
 	"""
 	Created: 27.03.2005, KP
 	Description: Stores settings related the process task
@@ -49,7 +48,7 @@ class ManipulationSettings(FilterBasedTaskSettings.FilterBasedTaskSettings):
 		"""
 		Created: 27.03.2005, KP
 		"""
-		FilterBasedTaskSettings.FilterBasedTaskSettings.__init__(self, n)
+		FilterBasedTaskSettings.__init__(self, n)
 	
 		self.set("Type", "Process")
 		self.register("PaletteColors")

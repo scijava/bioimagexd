@@ -29,15 +29,20 @@ __author__ = "BioImageXD Project"
 __version__ = "$Revision: 1.9 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
-import wx
+#import wx
 
+from Visualizer.VisualizationModules import VisualizationModule
+from Visualizer.ModuleConfiguration import ModuleConfigurationPanel
 import vtk
-from Visualizer.VisualizationModules import *
 
+def getClass():
+	return ScaleBarModule
 
-def getClass():return ScaleBarModule
-def getConfigPanel():return ScaleBarConfigurationPanel
-def getName():return "Scale bar"
+def getConfigPanel():
+	return ScaleBarConfigurationPanel
+
+def getName():
+	return "Scale bar"
 
 class ScaleBarModule(VisualizationModule):
 	"""
@@ -194,8 +199,6 @@ class ScaleBarModule(VisualizationModule):
 		self.renderer.RemoveActor2D(self.textActor)
 		self.wxrenwin.Render()
 		
-
-		
 	def enableRendering(self):
 		"""
 		Created: 15.05.2005, KP
@@ -204,9 +207,9 @@ class ScaleBarModule(VisualizationModule):
 		self.renderer.AddActor(self.actor)
 		self.renderer.AddActor2D(self.textActor)
 		self.wxrenwin.Render()
-		
-		
+
 class ScaleBarConfigurationPanel(ModuleConfigurationPanel):
+		
 	def __init__(self, parent, visualizer, name = "Scale bar", **kws):
 		"""
 		Created: 04.05.2005, KP
@@ -222,8 +225,6 @@ class ScaleBarConfigurationPanel(ModuleConfigurationPanel):
 #        self.addButton=wx.Button(self,-1,"Add plane")
 #        self.addButton.Bind(wx.EVT_BUTTON,self.onAddPlane)
 #        self.contentSizer.Add(self.addButton,(0,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
-		
-		
 
 	def setModule(self, module):
 		"""

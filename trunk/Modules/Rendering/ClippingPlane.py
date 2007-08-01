@@ -29,18 +29,20 @@ __author__ = "BioImageXD Project"
 __version__ = "$Revision: 1.9 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
-import wx
+import GUI.GUIBuilder
 import types
+from Visualizer.ModuleConfiguration import ModuleConfigurationPanel
+from Visualizer.VisualizationModules import VisualizationModule
 import vtk
-import ColorTransferEditor
-import Dialogs
 
-from Visualizer.VisualizationModules import *
+def getClass():
+	return ClippingPlaneModule
 
-def getClass():return ClippingPlaneModule
-def getConfigPanel():return ClippingPlaneConfigurationPanel
-def getName():return "Clipping plane"
+def getConfigPanel():
+	return ClippingPlaneConfigurationPanel
 
+def getName():
+	return "Clipping plane"
 
 class ClippingPlaneModule(VisualizationModule):
 	"""
@@ -69,7 +71,8 @@ class ClippingPlaneModule(VisualizationModule):
 		self.plane = vtk.vtkPlane()
 		
 		
-		self.descs = {"ShowControl": "Show plane controls", "ClippedModule": "Clip the module", "AllModules": "Clip all modules"}
+		self.descs = {"ShowControl": "Show plane controls", \
+					"ClippedModule": "Clip the module", "AllModules": "Clip all modules"}
 		iactor = parent.wxrenwin.GetRenderWindow().GetInteractor()
 		self.planeWidget.SetInteractor(iactor)
 
@@ -90,9 +93,14 @@ class ClippingPlaneModule(VisualizationModule):
 		Created: 18.04.2007, KP
 		Description: Return the default value of a parameter
 		"""           
-		if parameter == "ShowControl":return True
-		if parameter == "AllModules":return False
-		if parameter == "ClippedModule": return 0
+		if parameter == "ShowControl":
+			return True
+
+		if parameter == "AllModules":
+			return False
+
+		if parameter == "ClippedModule":
+			return 0
 		
 	def setParameter(self, parameter, value):
 		"""
@@ -111,8 +119,10 @@ class ClippingPlaneModule(VisualizationModule):
 		Created: 18.04.2007, KP
 		Description: Return the type of the parameter
 		"""    
-		if parameter in ["ShowControl", "AllModules"]:return types.BooleanType
-		if parameter == "ClippedModule": return GUIBuilder.CHOICE        
+		if parameter in ["ShowControl", "AllModules"]:
+			return types.BooleanType
+		if parameter == "ClippedModule":
+			return GUI.GUIBuilder.CHOICE        
 
 	def getRange(self, parameter):
 		"""
@@ -292,6 +302,7 @@ class ClippingPlaneModule(VisualizationModule):
 		Description: Set the ambient, diffuse and specular lighting of this module
 		"""         
 		pass
+
 	def setShading(self, shading):
 		"""
 		Created: 16.05.2005, KP
@@ -299,15 +310,15 @@ class ClippingPlaneModule(VisualizationModule):
 		"""          
 		pass
 
-
-
 class ClippingPlaneConfigurationPanel(ModuleConfigurationPanel):
+
 	def __init__(self, parent, visualizer, name = "Clipping plane", **kws):
 		"""
 		Created: 04.05.2005, KP
 		Description: Initialization
 		"""     
 		ModuleConfigurationPanel.__init__(self, parent, visualizer, name, **kws)
+		self.gui = None
 	
 	def initializeGUI(self):
 		"""
@@ -323,7 +334,7 @@ class ClippingPlaneConfigurationPanel(ModuleConfigurationPanel):
 		"""  
 		ModuleConfigurationPanel.setModule(self, module)
 		self.module = module
-		self.gui = GUIBuilder.GUIBuilder(self, self.module)
+		self.gui = GUI.GUIBuilder.GUIBuilder(self, self.module)
 		self.module.sendUpdateGUI()
 		self.contentSizer.Add(self.gui, (0, 0))
 		

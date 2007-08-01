@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 import vtk
-import sys
+#import sys
 reader=vtk.vtkLSMReader()
 reader.SetFileName("/home/dan/danielwh/stuff/volumerender/lsmfiles/selli_coloc1_8-bit.lsm")
 reader.SetUpdateChannel(1)

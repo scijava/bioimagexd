@@ -11,7 +11,7 @@
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
 
- This program is free software; you can redistribute it and/or modify
+ This program is free software; you can redistribute it and / or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation; either version 2 of the License, or
  (at your option) any later version.
@@ -23,50 +23,30 @@
 
  You should have received a copy of the GNU General Public License
  along with this program; if not, write to the Free Software
- Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-
+ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111 - 1307  USA
 """
 __author__ = "BioImageXD Project"
 __version__ = "$Revision: 1.9 $"
-__date__ = "$Date: 2005/01/13 13:42:03 $"
+__date__ = "$Date: 2005 / 01 / 13 13: 42: 03 $"
 
 import wx
 import time
-#from enthought.tvtk import messenger
-import messenger
-
-import vtk
+import lib.messenger
 import os
-import glob
-
-import Dialogs
+import GUI.Dialogs
 import Logging
-
-import DataUnit
-
-import MenuManager
-import Histogram
-import AnnotationToolbar
-
+import GUI.MenuManager
+import GUI.Histogram
+import GUI.AnnotationToolbar
 import platform
-
-import PreviewFrame
 import os.path
 import sys
-
-import MaskTray
-
-import Command
-
+import lib.Command
 import Modules
 import Configuration
 import scripting
-
 import GUI.Toolbar
-import UIElements
-
-import wx.lib.buttons as buttons
-
+import GUI.UIElements
 
 visualizerInstance = None
 
@@ -120,12 +100,12 @@ class Visualizer:
 		self.firstLoad = {}
 		self.in_vtk = 0
 		self.parent = parent
-		#messenger.connect(None,"set_timeslider_value",self.onSetTimeslider)
-		#messenger.connect(None,"set_time_range",self.onSetTimeRange)
-		messenger.connect(None, "timepoint_changed", self.onSetTimepoint)
+		#lib.messenger.connect(None, "set_timeslider_value", self.onSetTimeslider)
+		#lib.messenger.connect(None, "set_time_range", self.onSetTimeRange)
+		lib.messenger.connect(None, "timepoint_changed", self.onSetTimepoint)
 		
-		messenger.connect(None, "data_changed", self.updateRendering)
-		messenger.connect(None, "itf_update", self.updateRendering)
+		lib.messenger.connect(None, "data_changed", self.updateRendering)
+		lib.messenger.connect(None, "itf_update", self.updateRendering)
 		self.closed = 0
 		self.initialized = 0
 		self.renderer = None
@@ -140,18 +120,19 @@ class Visualizer:
 		for key in self.modes.keys():
 			self.instances[key] = None
 		
-		messenger.connect(None, "show", self.onSetVisibility)
-		messenger.connect(None, "hide", self.onSetVisibility)
+		lib.messenger.connect(None, "show", self.onSetVisibility)
+		lib.messenger.connect(None, "hide", self.onSetVisibility)
 		
 		self.sizes = {}
 		
 		self.parent.Bind(
 			wx.EVT_SASH_DRAGGED_RANGE, self.onSashDrag,
-			id = MenuManager.ID_TOOL_WIN, id2 = MenuManager.ID_HISTOGRAM_WIN,
+			id = GUI.MenuManager.ID_TOOL_WIN, id2 = GUI.MenuManager.ID_HISTOGRAM_WIN,
 		)
-
 		
-		self.sidebarWin = wx.SashLayoutWindow(self.parent, MenuManager.ID_VISTREE_WIN, style = wx.RAISED_BORDER | wx.SW_3D)
+		self.sidebarWin = wx.SashLayoutWindow(self.parent, \
+											GUI.MenuManager.ID_VISTREE_WIN, \
+											style = wx.RAISED_BORDER | wx.SW_3D)
 		self.sidebarWin.SetOrientation(wx.LAYOUT_VERTICAL)
 		self.sidebarWin.SetAlignment(wx.LAYOUT_LEFT)
 		self.sidebarWin.SetSashVisible(wx.SASH_RIGHT, True)
@@ -159,28 +140,30 @@ class Visualizer:
 		self.sidebarWin.SetDefaultSize((200, 768))
 		self.sidebarWin.origSize = (200, 768)
 		
-		self.toolWin = wx.SashLayoutWindow(self.parent, MenuManager.ID_TOOL_WIN, style = wx.NO_BORDER)
+		self.toolWin = wx.SashLayoutWindow(self.parent, GUI.MenuManager.ID_TOOL_WIN, style = wx.NO_BORDER)
 		self.toolWin.SetOrientation(wx.LAYOUT_HORIZONTAL)
 		self.toolWin.SetAlignment(wx.LAYOUT_TOP)
 		self.toolWin.SetSashVisible(wx.SASH_BOTTOM, False)
 		self.toolWin.SetDefaultSize((500, 44))
 		self.toolWin.origSize = (500, 44)
 
-		self.annotateBarWin = wx.SashLayoutWindow(self.parent, MenuManager.ID_ANNOTATION_WIN, style = wx.NO_BORDER)
+		self.annotateBarWin = wx.SashLayoutWindow(self.parent, \
+												GUI.MenuManager.ID_ANNOTATION_WIN, \
+												style = wx.NO_BORDER)
 		self.annotateBarWin.SetOrientation(wx.LAYOUT_VERTICAL)
 		self.annotateBarWin.SetAlignment(wx.LAYOUT_RIGHT)
-		#self.annotateBarWin.SetSashVisible(wx.SASH_RIGHT,True)
-		#self.annotateBarWin.SetSashBorder(wx.SASH_RIGHT,True)
+		#self.annotateBarWin.SetSashVisible(wx.SASH_RIGHT, True)
+		#self.annotateBarWin.SetSashBorder(wx.SASH_RIGHT, True)
 		self.annotateBarWin.SetDefaultSize((70, 768))
 		self.annotateBarWin.origSize = (70, 768)
 		
-		self.annotateBar = AnnotationToolbar.AnnotationToolbar(self.annotateBarWin, self)
-		
-				
-		self.histogramWin = wx.SashLayoutWindow(self.parent, MenuManager.ID_HISTOGRAM_WIN, style = wx.NO_BORDER)
+		self.annotateBar = GUI.AnnotationToolbar.AnnotationToolbar(self.annotateBarWin, self)
+		self.histogramWin = wx.SashLayoutWindow(self.parent, \
+												GUI.MenuManager.ID_HISTOGRAM_WIN, \
+												style = wx.NO_BORDER)
 		self.histogramWin.SetOrientation(wx.LAYOUT_HORIZONTAL)
 		self.histogramWin.SetAlignment(wx.LAYOUT_TOP)
-		#self.histogramWin.SetSashVisible(wx.SASH_BOTTOM,False)
+		#self.histogramWin.SetSashVisible(wx.SASH_BOTTOM, False)
 		self.histogramWin.SetDefaultSize((500, 0))
 		
 		self.histogramPanel = wx.Panel(self.histogramWin)
@@ -190,33 +173,51 @@ class Visualizer:
 		self.histogramPanel.SetAutoLayout(1)
 		self.histogramBox.Fit(self.histogramPanel)
 
-
-		self.visWin = wx.SashLayoutWindow(self.parent, MenuManager.ID_VISAREA_WIN, style = wx.NO_BORDER | wx.SW_3D)
+		self.visWin = wx.SashLayoutWindow(self.parent, \
+											GUI.MenuManager.ID_VISAREA_WIN, \
+											style = wx.NO_BORDER | wx.SW_3D)
 		self.visWin.SetOrientation(wx.LAYOUT_VERTICAL)
 		self.visWin.SetAlignment(wx.LAYOUT_LEFT)
 		self.visWin.SetSashVisible(wx.SASH_RIGHT, False)
 		self.visWin.SetSashVisible(wx.SASH_LEFT, False)
 		self.visWin.SetDefaultSize((512, 768))
 		
-		self.sliderWin = wx.SashLayoutWindow(self.parent, MenuManager.ID_VISSLIDER_WIN, style = wx.NO_BORDER)
+		self.sliderWin = wx.SashLayoutWindow(self.parent, \
+											GUI.MenuManager.ID_VISSLIDER_WIN, \
+											style = wx.NO_BORDER)
 		self.sliderWin.SetOrientation(wx.LAYOUT_HORIZONTAL)
 		self.sliderWin.SetAlignment(wx.LAYOUT_BOTTOM)
 		self.sliderWin.SetSashVisible(wx.SASH_TOP, False)
 		self.sliderWin.SetDefaultSize((500, 64))
 		self.sliderWin.origSize = (500, 64)
 		
-		self.zsliderWin = wx.SashLayoutWindow(self.parent, MenuManager.ID_ZSLIDER_WIN, style = wx.NO_BORDER | wx.SW_3D)
+		self.zsliderWin = wx.SashLayoutWindow(self.parent, \
+												GUI.MenuManager.ID_ZSLIDER_WIN, \
+												style = wx.NO_BORDER | wx.SW_3D)
 		self.zsliderWin.SetOrientation(wx.LAYOUT_VERTICAL)
 		self.zsliderWin.SetAlignment(wx.LAYOUT_RIGHT)
 		self.zsliderWin.SetSashVisible(wx.SASH_RIGHT, False)
 		self.zsliderWin.SetSashVisible(wx.SASH_LEFT, False)
 		self.zsliderWin.SetDefaultSize((64, 768)) 
-		w = 64
+		window = 64
 		if platform.system() == 'Darwin':
-			w = 44
-		self.zsliderWin.origSize = (w, 768)
-		#self.zText=wx.StaticText(self.zsliderWin,-1,"Z")
+			window = 44
+		self.zsliderWin.origSize = (window, 768)
+		#self.zText = wx.StaticText(self.zsliderWin, -1, "Z")
 		
+		self.sliderbox = None
+		self.zsliderPanel = None
+		self.sliderPanel = None
+		self.timeslider = None
+		self.timesliderMethod = None
+		self.upbtn = None
+		self.downbtn = None
+		self.next = None
+		self.zslider = None
+		self.zsliderSizer = None
+		self.prev = None
+		self.sliderbox = None
+
 		self.createSliders()
 
 		self.currMode = None
@@ -228,8 +229,17 @@ class Visualizer:
 		self.mode = None
 		
 		self.parent.Bind(wx.EVT_SIZE, self.OnSize)
+		self.dimInfo = None
+		self.yaw = None
+		self.elevation = None
+		self.zoomCombo = None
+		self.roll = None
+		self.pitch = None
+		self.zoomLevels = None
+		self.maxWidth = None
+		self.origBtn = None
 		
-		#wx.FutureCall(50,self.createToolbar)
+		#wx.FutureCall(50, self.createToolbar)
 		self.createToolbar()
 	
 	def getMasks(self):
@@ -252,7 +262,7 @@ class Visualizer:
 		"""
 		Created: 1.08.2005, KP
 		Description: Method that creates the sliders 
-		"""     
+		"""		
 		self.sliderPanel = wx.Panel(self.sliderWin, -1)
 		self.setCurrentSliderPanel(self.sliderPanel)
 		iconpath = scripting.get_icon_dir()
@@ -298,8 +308,7 @@ class Visualizer:
 		self.zslider.Bind(wx.EVT_SCROLL, self.onChangeZSlice)
 		self.zslider.Bind(wx.EVT_SCROLL_PAGEDOWN, self.onZPageDown)
 		self.zslider.Bind(wx.EVT_SCROLL_PAGEUP, self.onZPageUp)
-		messenger.connect(None, "zslice_changed", self.onChangeZSlice)
-		
+		lib.messenger.connect(None, "zslice_changed", self.onChangeZSlice)
 		
 		self.sliderbox.Add(self.prev, flag = wx.ALIGN_CENTER_VERTICAL)
 		self.sliderbox.Add(self.timeslider, 1)
@@ -313,26 +322,27 @@ class Visualizer:
 		Created: 15.11.2006, KP
 		Description: Move one slice up
 		"""
-		z = self.zslider.GetValue() - 1
-		if z < 1:z = 1
-		self.zslider.SetValue(z)
+		zslider = self.zslider.GetValue() - 1
+		if zslider < 1:
+			zslider = 1
+		self.zslider.SetValue(zslider)
 		self.onChangeZSlice(None)
+
 	def onSliceDown(self, evt):
 		"""
 		Created: 15.11.2006, KP
 		Description: Move one slice down
 		"""
-		z = self.zslider.GetValue() + 1
+		zslider = self.zslider.GetValue() + 1
 		
-		self.zslider.SetValue(z)
+		self.zslider.SetValue(zslider)
 		self.onChangeZSlice(None)
-		
 		
 	def bindTimeslider(self, method, all = 0):
 		"""
 		Created: 15.08.2005, KP
 		Description: Bind the timeslider to a method
-		"""     
+		"""		
 		if not all and platform.system() == "Windows":
 			self.timeslider.Unbind(wx.EVT_SCROLL_ENDSCROLL)
 			#self.timeslider.Unbind(wx.EVT_SCROLL_THUMBRELEASE)
@@ -342,7 +352,7 @@ class Visualizer:
 		else:
 			self.timesliderMethod = method
 			self.timeslider.Unbind(wx.EVT_SCROLL)
-			self.timeslider.Bind(wx.EVT_SCROLL, self.delayedTimesliderEvent)    
+			self.timeslider.Bind(wx.EVT_SCROLL, self.delayedTimesliderEvent)	
 		
 	def onSetVisibility(self, obj, evt, arg):
 		"""
@@ -350,24 +360,29 @@ class Visualizer:
 		Description: Set an object's visibility
 		""" 
 		obj = None
-		if arg == "toolbar":obj = self.toolWin
-		elif arg == "zslider":obj = self.zsliderWin
+		if arg == "toolbar":
+			obj = self.toolWin
+		elif arg == "zslider":
+			obj = self.zsliderWin
 		elif arg == "histogram":
 			obj = self.histogramWin
-			w, h = 0, 0
+			# width and height was previously w, h (SS 21.06.07)
+			width, height = 0, 0
 			for i in self.histograms:
-				w2, h2 = i[0].GetSize()
-				w = w2
-				if h < h2:h = h2
-			Logging.info("Got ", w, h, "for histogram size", kw = "visualizer")
-			if not h:h = 200
-			self.sizes["histogram"] = w, h
-		elif arg == "config":obj = self.sidebarWin
+				width2, height2 = i[0].GetSize()
+				width = width2
+				if height < height2:
+					height = height2
+			Logging.info("Got ", width, height, "for histogram size", kw = "visualizer")
+			if not height:
+				height = 200
+			self.sizes["histogram"] = width, height
+		elif arg == "config": obj = self.sidebarWin
 		if evt == "hide":
-			Logging.info("Hiding ", arg, "=", obj, kw = "visualizer")
+			Logging.info("Hiding ", arg, " = ", obj, kw = "visualizer")
 			if arg not in self.sizes:
-				w, h = obj.GetSize()
-				self.sizes[arg] = (w, h)
+				width, height = obj.GetSize()
+				self.sizes[arg] = (width, height)
 			obj.SetDefaultSize((0, 0))
 		else:
 			Logging.info("Showing ", arg)
@@ -385,7 +400,6 @@ class Visualizer:
 			self.histogramIsShowing = 0
 			
 		self.OnSize(None)
-			
 		
 	def getDataUnit(self):
 		"""
@@ -398,12 +412,12 @@ class Visualizer:
 		"""
 		Created: 18.07.2005, KP
 		Description: Go to next timepoint
-		"""                 
+		"""					
 		if self.timepoint < self.maxTimepoint:
 			Logging.info("Setting timepoint to ", self.timepoint + 1, kw = "visualizer")
 			self.setTimepoint(self.timepoint + 1)
 			self.blockTpUpdate = 1
-			messenger.send(None, "timepoint_changed", self.timepoint)        
+			lib.messenger.send(None, "timepoint_changed", self.timepoint)		   
 			self.blockTpUpdate = 0
 
 	def getTimepoint(self):
@@ -427,7 +441,7 @@ class Visualizer:
 		""" 
 		undo_cmd = "bxd.visualizer.prevTimepoint()"
 		do_cmd = "bxd.visualizer.nextTimepoint()"
-		cmd = Command.Command(Command.GUI_CMD, None, None, do_cmd, undo_cmd, desc = "Switch to next timepoint")
+		cmd = lib.Command.Command(lib.Command.GUI_CMD, None, None, do_cmd, undo_cmd, desc = "Switch to next timepoint")
 		cmd.run()
 		
 	def onPrevTimepoint(self, evt):
@@ -437,7 +451,7 @@ class Visualizer:
 		"""
 		undo_cmd = "bxd.visualizer.nextTimepoint()"
 		do_cmd = "bxd.visualizer.prevTimepoint()"
-		cmd = Command.Command(Command.GUI_CMD, None, None, do_cmd, undo_cmd, desc = "Switch to previous timepoint")
+		cmd = lib.Command.Command(lib.Command.GUI_CMD, None, None, do_cmd, undo_cmd, desc = "Switch to previous timepoint")
 		cmd.run()
 
 	def prevTimepoint(self):
@@ -448,14 +462,14 @@ class Visualizer:
 		if self.timepoint >= 1:
 			self.setTimepoint(self.timepoint - 1)
 			self.blockTpUpdate = 1
-			messenger.send(None, "timepoint_changed", self.timepoint)        
+			lib.messenger.send(None, "timepoint_changed", self.timepoint)		   
 			self.blockTpUpdate = 0
 			
 	def createHistogram(self):
 		"""
 		Created: 28.05.2005, KP
 		Description: Method to create histograms of the dataunit
-		"""        
+		"""		   
 		if self.dataUnit != self.histogramDataUnit:
 			self.histogramDataUnit = self.dataUnit
 		for histogram, sbox, sboxsizer in self.histograms:
@@ -472,9 +486,9 @@ class Visualizer:
 		else:
 			units = [self.dataUnit]
 		for unit in units:
-			histogram = Histogram.Histogram(self.histogramPanel)
-			name = unit.getName()
-			sbox = wx.StaticBox(self.histogramPanel, -1, "Channel %s" % name)
+			histogram = GUI.Histogram.Histogram(self.histogramPanel)
+			dataUnitName = unit.getName()
+			sbox = wx.StaticBox(self.histogramPanel, -1, "Channel %s" % dataUnitName)
 			sboxsizer = wx.StaticBoxSizer(sbox, wx.VERTICAL)
 			sboxsizer.Add(histogram)
 			self.histogramBox.Add(sboxsizer, 1, border = 10, flag = wx.BOTTOM)
@@ -489,7 +503,7 @@ class Visualizer:
 		"""
 		Created: 28.05.2005, KP
 		Description: Method to create a toolbar for the window
-		"""        
+		"""		   
 		icondir = scripting.get_icon_dir()
 		if self.tb:
 			return
@@ -498,62 +512,99 @@ class Visualizer:
 		
 		self.maxWidth = self.parent.GetSize()[0]
 		
-		toolSize = self.tb.GetToolSize()[0]
+		#toolSize = self.tb.GetToolSize()[0]
 		
-		
-		self.viewCombo = wx.ComboBox(self.tb, MenuManager.ID_SET_VIEW, "Isometric", choices = ["+X", "-X", "+Y", "-Y", "+Z", "-Z", "Isometric"], size = (130, -1), style = wx.CB_DROPDOWN)
+		self.viewCombo = wx.ComboBox(self.tb, 
+									GUI.MenuManager.ID_SET_VIEW, 
+									"Isometric", 
+									choices = ["+X", "-X", "+Y", "-Y", "+Z", "-Z", "Isometric"], 
+									size = (130, -1), 
+									style = wx.CB_DROPDOWN)
 		self.viewCombo.SetSelection(6)
 		self.viewCombo.SetHelpText("This controls the view angle of 3D view mode.")
 		self.tb.AddControl(self.viewCombo)
 		
-		wx.EVT_COMBOBOX(self.parent, MenuManager.ID_SET_VIEW, self.onSetView)
-		#self.tb.Realize()                
-		self.tb.AddSimpleTool(MenuManager.ID_ZOOM_OUT, wx.Image(os.path.join(icondir, "zoom-out.gif"), wx.BITMAP_TYPE_GIF).ConvertToBitmap(), "Zoom out", "Zoom out on the optical slice")
-		#EVT_TOOL(self,ID_OPEN,self.menuOpen)
+		wx.EVT_COMBOBOX(self.parent, GUI.MenuManager.ID_SET_VIEW, self.onSetView)
+		#self.tb.Realize()				  
+		self.tb.AddSimpleTool(GUI.MenuManager.ID_ZOOM_OUT, 
+							wx.Image(os.path.join(icondir, "zoom-out.gif"), 
+									wx.BITMAP_TYPE_GIF).ConvertToBitmap(), 
+							"Zoom out", 
+							"Zoom out on the optical slice")
+		#EVT_TOOL(self, ID_OPEN, self.menuOpen)
 		
 		
 		self.zoomLevels = [0.125, 0.25, 0.3333, 0.5, 0.6667, 0.75, 1.0, 1.25, 1.5, 2.0, 3.0, 4.0, 6.0, 8.0, -1]
-		self.zoomCombo = wx.ComboBox(self.tb, MenuManager.ID_ZOOM_COMBO, "Zoom to fit",
-						  choices = ["12.5%", "25%", "33.33%", "50%", "66.67%", "75%", "100%", "125%", "150%", "200%", "300%", "400%", "600%", "800%", "Zoom to fit"], size = (120, -1), style = wx.CB_DROPDOWN)
+		choices = ["12.5%", "25%", "33.33%", "50%", "66.67%", "75%", "100%", "125%", 
+					"150%", "200%", "300%", "400%", "600%", "800%", "Zoom to fit"]
+		
+		self.zoomCombo = wx.ComboBox(self.tb, 
+									GUI.MenuManager.ID_ZOOM_COMBO, 
+									"Zoom to fit", 
+									choices = choices, 
+									size = (120, -1), 
+									style = wx.CB_DROPDOWN)
 		self.zoomCombo.SetSelection(14)
-		self.zoomCombo.SetHelpText("This controls the zoom level of visualization views.")        
+		self.zoomCombo.SetHelpText("This controls the zoom level of visualization views.")		  
 		self.tb.AddControl(self.zoomCombo)
 
-		self.tb.AddSimpleTool(MenuManager.ID_ZOOM_IN, wx.Image(os.path.join(icondir, "zoom-in.gif"), wx.BITMAP_TYPE_GIF).ConvertToBitmap(), "Zoom in", "Zoom in on the slice")
+		self.tb.AddSimpleTool(GUI.MenuManager.ID_ZOOM_IN, \
+								wx.Image(os.path.join(icondir, "zoom-in.gif"), \
+										wx.BITMAP_TYPE_GIF).ConvertToBitmap(), \
+								"Zoom in", \
+								"Zoom in on the slice")
 		
-		self.tb.AddSimpleTool(MenuManager.ID_ZOOM_TO_FIT, wx.Image(os.path.join(icondir, "zoom-to-fit.gif"), wx.BITMAP_TYPE_GIF).ConvertToBitmap(), "Zoom to Fit", "Zoom the slice so that it fits in the window")
+		self.tb.AddSimpleTool(GUI.MenuManager.ID_ZOOM_TO_FIT, \
+								wx.Image(os.path.join(icondir, "zoom-to-fit.gif"), \
+											wx.BITMAP_TYPE_GIF).ConvertToBitmap(), \
+								"Zoom to Fit", \
+								"Zoom the slice so that it fits in the window")
 		
-		self.tb.AddSimpleTool(MenuManager.ID_ZOOM_OBJECT, wx.Image(os.path.join(icondir, "zoom-object.gif"), wx.BITMAP_TYPE_GIF).ConvertToBitmap(), "Zoom object", "Zoom user selected portion of the slice")
+		self.tb.AddSimpleTool(GUI.MenuManager.ID_ZOOM_OBJECT, \
+								wx.Image(os.path.join(icondir, "zoom-object.gif"), \
+											wx.BITMAP_TYPE_GIF).ConvertToBitmap(), \
+								"Zoom object", \
+								"Zoom user selected portion of the slice")
 		
 				
-#        self.tb.AddSimpleTool(MenuManager.ID_DRAG_ANNOTATION,wx.Image(os.path.join(icondir,"arrow.gif"),wx.BITMAP_TYPE_GIF).ConvertToBitmap(),"Manage annotations","Manage annotations on the image")
+#		 self.tb.AddSimpleTool(GUI.MenuManager.ID_DRAG_ANNOTATION, \
+#								wx.Image(os.path.join(icondir, "arrow.gif"), \
+#										wx.BITMAP_TYPE_GIF).ConvertToBitmap(), \
+#								"Manage annotations", \
+#								"Manage annotations on the image")
 		
 		
 		icon = wx.Image(os.path.join(icondir, "original.gif"), wx.BITMAP_TYPE_GIF).ConvertToBitmap()
 		self.tb.AddSeparator()
-		self.origBtn = wx.BitmapButton(self.tb, MenuManager.ORIG_BUTTON, icon)
+		self.origBtn = wx.BitmapButton(self.tb, GUI.MenuManager.ORIG_BUTTON, icon)
 
 		self.origBtn.SetHelpText("Use this button to show how the unprocessed dataset looks like.")
-		self.origBtn.Bind(wx.EVT_LEFT_DOWN, lambda x:self.onShowOriginal(x, 1))
-		self.origBtn.Bind(wx.EVT_LEFT_UP, lambda x:self.onShowOriginal(x, 0))
+		self.origBtn.Bind(wx.EVT_LEFT_DOWN, lambda x: self.onShowOriginal(x, 1))
+		self.origBtn.Bind(wx.EVT_LEFT_UP, lambda x: self.onShowOriginal(x, 0))
 		
 		self.tb.AddControl(self.origBtn)
 		iconpath = scripting.get_icon_dir()
-		#bmp = wx.Image(os.path.join(iconpath,"perspective.gif")).ConvertToBitmap()
-		#self.tb.DoAddTool(MenuManager.ID_PERSPECTIVE,"Perspective rendering",bmp,kind=wx.ITEM_CHECK,shortHelp="Toggle between parallel and perspective projection")        
-		#self.tb.ToggleTool(MenuManager.ID_PERSPECTIVE, 1)
-		#wx.EVT_TOOL(self.tb,MenuManager.ID_PERSPECTIVE,self.onPerspectiveRendering)
+#		bmp = wx.Image(os.path.join(iconpath, "perspective.gif")).ConvertToBitmap()
+
+#		self.tb.DoAddTool(GUI.MenuManager.ID_PERSPECTIVE, \
+#							"Perspective rendering", \
+#							bmp, \
+#							kind = wx.ITEM_CHECK, \
+#							shortHelp = "Toggle between parallel and perspective projection")		   
+
+#		self.tb.ToggleTool(GUI.MenuManager.ID_PERSPECTIVE, 1)
+#		wx.EVT_TOOL(self.tb, GUI.MenuManager.ID_PERSPECTIVE, self.onPerspectiveRendering)
 		
-		self.pitch = wx.SpinButton(self.tb, MenuManager.PITCH, style = wx.SP_VERTICAL, size = (-1, 22))
+		self.pitch = wx.SpinButton(self.tb, GUI.MenuManager.PITCH, style = wx.SP_VERTICAL, size = (-1, 22))
 		self.tb.AddControl(self.pitch)
-		self.yaw = wx.SpinButton(self.tb, MenuManager.YAW, style = wx.SP_VERTICAL, size = (-1, 22))
+		self.yaw = wx.SpinButton(self.tb, GUI.MenuManager.YAW, style = wx.SP_VERTICAL, size = (-1, 22))
 		self.tb.AddControl(self.yaw)
-		self.roll = wx.SpinButton(self.tb, MenuManager.ROLL, style = wx.SP_VERTICAL, size = (-1, 22))
+		self.roll = wx.SpinButton(self.tb, GUI.MenuManager.ROLL, style = wx.SP_VERTICAL, size = (-1, 22))
 		self.tb.AddControl(self.roll)
 		self.elevation = wx.SpinButton(self.tb, -1, style = wx.SP_VERTICAL, size = (-1, 22))
 		self.tb.AddControl(self.elevation)
 		
-		self.dimInfo = UIElements.DimensionInfo(self.tb, -1, size = (120, 50))
+		self.dimInfo = GUI.UIElements.DimensionInfo(self.tb, -1, size = (120, 50))
 		self.tb.AddControl(self.dimInfo)
 			
 		
@@ -562,17 +613,17 @@ class Visualizer:
 		self.yaw.Bind(wx.EVT_SPIN_UP, self.onYawUp)
 		self.yaw.Bind(wx.EVT_SPIN_DOWN, self.onYawDown)
 		self.roll.Bind(wx.EVT_SPIN_UP, self.onRollUp)
-		self.roll.Bind(wx.EVT_SPIN_DOWN, self.onRollDown)        
+		self.roll.Bind(wx.EVT_SPIN_DOWN, self.onRollDown)		 
 		self.elevation.Bind(wx.EVT_SPIN_UP, self.onElevationUp)
 		self.elevation.Bind(wx.EVT_SPIN_DOWN, self.onElevationDown)  
 		
-		wx.EVT_TOOL(self.parent, MenuManager.ID_ZOOM_IN, self.zoomIn)
-		wx.EVT_TOOL(self.parent, MenuManager.ID_ZOOM_OUT, self.zoomOut)
-		wx.EVT_TOOL(self.parent, MenuManager.ID_ZOOM_TO_FIT, self.zoomToFit)
-		wx.EVT_TOOL(self.parent, MenuManager.ID_ZOOM_OBJECT, self.zoomObject)
+		wx.EVT_TOOL(self.parent, GUI.MenuManager.ID_ZOOM_IN, self.zoomIn)
+		wx.EVT_TOOL(self.parent, GUI.MenuManager.ID_ZOOM_OUT, self.zoomOut)
+		wx.EVT_TOOL(self.parent, GUI.MenuManager.ID_ZOOM_TO_FIT, self.zoomToFit)
+		wx.EVT_TOOL(self.parent, GUI.MenuManager.ID_ZOOM_OBJECT, self.zoomObject)
 		
 		self.zoomCombo.Bind(wx.EVT_COMBOBOX, self.zoomToComboSelection)
-		self.tb.Realize()     
+		self.tb.Realize()	  
 			
 		self.viewCombo.Enable(0)
 		
@@ -596,25 +647,27 @@ class Visualizer:
 			return self.currentWindow.getRegionsOfInterest()
 		print "NO regions of interest"
 		return []
-		
 				
 	def onElevationUp(self, evt):
 		if self.mode == "3d":
 			self.currMode.getRenderer().GetActiveCamera().Elevation(self.ElevationStep)
 			self.currMode.Render()
+			
 	def onElevationDown(self, evt):
 		if self.mode == "3d":
 			self.currMode.getRenderer().GetActiveCamera().Elevation(-self.ElevationStep)
-			self.currMode.Render()        
+			self.currMode.Render()		  
 		
 	def onPitchUp(self, evt):
 		if self.mode == "3d":
 			self.currMode.getRenderer().GetActiveCamera().Pitch(self.PitchStep)
 			self.currMode.Render()
+			
 	def onPitchDown(self, evt):
 		if self.mode == "3d":
 			self.currMode.getRenderer().GetActiveCamera().Pitch(-self.PitchStep)
 			self.currMode.Render()
+			
 	def onRollUp(self, evt):
 		if self.mode == "3d":
 			self.currMode.getRenderer().GetActiveCamera().Roll(self.RollStep)
@@ -624,6 +677,7 @@ class Visualizer:
 		if self.mode == "3d":
 			self.currMode.getRenderer().GetActiveCamera().Roll(-self.RollStep)
 			self.currMode.Render()
+			
 	def onYawUp(self, evt):
 		if self.mode == "3d":
 			self.currMode.getRenderer().GetActiveCamera().Yaw(self.YawStep)    
@@ -631,7 +685,7 @@ class Visualizer:
 	
 	def onYawDown(self, evt):
 		if self.mode == "3d":
-			self.currMode.getRenderer().GetActiveCamera().Yaw(-self.YawStep)    
+			self.currMode.getRenderer().GetActiveCamera().Yaw(-self.YawStep)	
 			self.currMode.Render()
 
 	def onShowOriginal(self, evt, flag = 1):
@@ -640,7 +694,8 @@ class Visualizer:
 		Description: Show the original datasets instead of processed ones
 		"""
 		
-		if evt == "hide":flag = 0
+		if evt == "hide":
+			flag = 0
 		if self.dataUnit:
 			self.dataUnit.getSettings().set("ShowOriginal", flag)
 		self.updateRendering()
@@ -652,10 +707,10 @@ class Visualizer:
 		Description: Set view mode
 		"""
 		item = evt.GetString()
-		viewmapping = {"+X":(1, 0, 0, 0, 0, 1), "-X":(-1, 0, 0, 0, 0, 1),
-					 "+Y":(0, 1, 0, 1, 0, 0), "-Y":(0, -1, 0, 1, 0, 0),
-					 "+Z":(0, 0, 1, 0, 1, 0), "-Z":(0, 0, -1, 0, 1, 0),
-					 "Isometric":(1, 1, 1, 0, 0, 1)}
+		viewmapping = {" + X": (1, 0, 0, 0, 0, 1), " - X": (-1, 0, 0, 0, 0, 1),
+					 " + Y": (0, 1, 0, 1, 0, 0), " - Y": (0, -1, 0, 1, 0, 0),
+					 " + Z": (0, 0, 1, 0, 1, 0), " - Z": (0, 0, -1, 0, 1, 0),
+					 "Isometric": (1, 1, 1, 0, 0, 1)}
 
 		if hasattr(self.currMode, "wxrenwin"):
 			self.currMode.wxrenwin.setView(viewmapping[item])
@@ -668,19 +723,19 @@ class Visualizer:
 		"""
 		self.zoomToFitFlag = 0
 		self.currMode.zoomObject()
-		#self.zoomFactor=self.currMode.getZoomFactor()
+		#self.zoomFactor = self.currMode.getZoomFactor()
 
 	def zoomOut(self, evt):
 		"""
 		Created: 19.03.2005, KP
 		Description: Makes the zoom factor smaller
 		"""
-		f = self.currMode.getZoomFactor()
-		n = len(self.zoomLevels)
-		for i in range(n - 1, 0, -1):
-			if self.zoomLevels[i] > 0 and self.zoomLevels[i] < f:
+		zoomFactor = self.currMode.getZoomFactor()
+		numberOfZoomLevels = len(self.zoomLevels)
+		for i in range(numberOfZoomLevels - 1, 0, -1):
+			if self.zoomLevels[i] > 0 and self.zoomLevels[i] < zoomFactor:
 				level = self.zoomLevels[i]
-				Logging.info("Current zoom factor=", f, "setting to", level, kw = "visualizer")                
+				Logging.info("Current zoom factor = ", zoomFactor, "setting to", level, kw = "visualizer")				 
 				self.setComboBoxToFactor(level)
 				break
 		return self.zoomComboDirection(0)
@@ -690,16 +745,16 @@ class Visualizer:
 		Created: 19.03.2005, KP
 		Description: Sets the zoom according to the combo selection
 		"""
-		return self.zoomComboDirection(0)        
+		return self.zoomComboDirection(0)		 
 		
 	def setComboBoxToFactor(self, factor):
 		"""
 		Created: 01.08.2005, KP
 		Description: Set the value of the combobox to the correct zoom factor
-		"""     
+		"""		
 		pos = 6
-		for i, f in enumerate(self.zoomLevels):
-			if f == factor:
+		for i, zoomFactor in enumerate(self.zoomLevels):
+			if zoomFactor == factor:
 				pos = i
 				break
 		self.zoomCombo.SetSelection(pos)
@@ -711,30 +766,30 @@ class Visualizer:
 	def zoomComboDirection(self, dir):
 		"""
 		Created: 21.02.2005, KP
-		Description: Makes the zoom factor larger/smaller based on values in the zoom combobox
+		Description: Makes the zoom factor larger / smaller based on values in the zoom combobox
 		"""
 		
 		pos = self.zoomCombo.GetSelection()
-		s = self.zoomCombo.GetString(pos)
+		#zoomSize = self.zoomCombo.GetString(pos)
 		if dir > 0 and pos >= self.zoomCombo.GetCount():
-			#print "Zoom at max: ",s
+			#print "Zoom at max: ", zoomSize
 			return
 		if dir < 0 and pos == 0:
-			#print "Zoom at min: ",s
+			#print "Zoom at min: ", zoomSize
 			return
 		pos += dir
-		#s=self.zoomCombo.GetString(pos)
-		#factor = float(s[:-1])/100.0
+		#zoomSize = self.zoomCombo.GetString(pos)
+		#factor = float(zoomSize[:-1])/100.0
 		factor = self.zoomLevels[pos]
 		self.zoomCombo.SetSelection(pos)
 		
 		if factor == -1:
 			self.zoomToFitFlag = 1
-			self.currMode.zoomToFit()                   
+			self.currMode.zoomToFit()					
 		else:
 			self.zoomToFitFlag = 0
 			self.currMode.setZoomFactor(factor)
-		self.zoomFactor = self.currMode.getZoomFactor()    
+		self.zoomFactor = self.currMode.getZoomFactor()	 
 		scripting.zoomFactor = self.zoomFactor
 
 		self.currMode.Render()
@@ -745,10 +800,10 @@ class Visualizer:
 		Created: 21.02.2005, KP0
 		Description: Makes the zoom factor larger 
 		"""
-		f = self.currMode.getZoomFactor()
-		n = len(self.zoomLevels)
-		for i in range(0, n):
-			if self.zoomLevels[i] > f:
+		zoomFactor = self.currMode.getZoomFactor()
+		numberOfZoomLevels = len(self.zoomLevels)
+		for i in range(0, numberOfZoomLevels):
+			if self.zoomLevels[i] > zoomFactor:
 				level = self.zoomLevels[i]
 				self.setComboBoxToFactor(level)
 				break
@@ -768,27 +823,27 @@ class Visualizer:
 		"""
 		Created: 24.5.2005, KP
 		Description: A method for laying out the window
-		"""        
+		"""		   
 		
 		if event and event.GetDragStatus() == wx.SASH_STATUS_OUT_OF_RANGE:
 			Logging.info("Out of range", kw = "visualizer")
 			return
-		w, h = self.sidebarWin.GetSize()
+		width, height = self.sidebarWin.GetSize()
 		if event:
 			eID = event.GetId()
-			newsize = (event.GetDragRect().width, h)
+			newsize = (event.GetDragRect().width, height)
 		else:
-			eID = MenuManager.ID_VISTREE_WIN
+			eID = GUI.MenuManager.ID_VISTREE_WIN
 			newsize = self.sidebarWin.origSize
 
-		if eID == MenuManager.ID_VISTREE_WIN:
-			Logging.info("Sidebar window size = %d,%d" % newsize, kw = "visualizer")
+		if eID == GUI.MenuManager.ID_VISTREE_WIN:
+			Logging.info("Sidebar window size = %d, %d" % newsize, kw = "visualizer")
 			self.sidebarWin.SetDefaultSize(newsize)
 			
 			self.sidebarWin.origSize = newsize
 		
 		#wx.LayoutAlgorithm().LayoutWindow(self.parent, self.visWin)
-		self.OnSize(None)        
+		self.OnSize(None)		 
 		
 	def OnSize(self, event = None):
 		"""
@@ -806,31 +861,32 @@ class Visualizer:
 		
 		newsize = visSize[0]
 		
-		if self.currentWindow:            
+		if self.currentWindow:			  
 			self.currentWindow.SetSize(visSize)
 			self.currMode.relayout()
 			if self.currMode.layoutTwice() and event:
 				wx.CallAfter(self.OnSize)
 	
-		self.oldClientSize = newsize    
+		self.oldClientSize = newsize	  
 		if self.currSliderPanel:
-			self.currSliderPanel.SetSize(self.sliderWin.GetSize())        
+			self.currSliderPanel.SetSize(self.sliderWin.GetSize())		  
 		if time.time() - self.lastWinSaveTime > 5:
 			self.saveWindowSizes()
 		#print self.zsliderWin.GetSize()
-		#self.zsliderPanel.SetSize(self.zsliderWin.GetSize())    
+		#self.zsliderPanel.SetSize(self.zsliderWin.GetSize())	 
 	def restoreWindowSizesFromSettings(self):
 		"""
 		Created: 13.04.2006, KP
 		Description: Restore the window sizes from settings
-		"""        
+		"""		   
 		
 		item = "%s_SidebarSize" % self.mode
 		ssize = self.conf.getConfigItem(item, "Sizes")
-		#print "Restoring size from settings",item,ssize,self.mode
-		if not ssize:return 0
+		#print "Restoring size from settings", item, ssize, self.mode
+		if not ssize:
+			return 0
 		ssize = eval(ssize)
-		self.sidebarWin.SetDefaultSize(ssize)        
+		self.sidebarWin.SetDefaultSize(ssize)		 
 		return 1
 		
 		
@@ -843,12 +899,12 @@ class Visualizer:
 			ssize = str(self.sidebarWin.GetSize())
 			self.conf.setConfigItem("%s_SidebarSize" % self.mode, "Sizes", ssize)
 		
-	def setCurrentSliderPanel(self, p):
+	def setCurrentSliderPanel(self, panel):
 		"""
 		Created: 26.01.2006, KP
 		Description: Set the currently visible timeslider panel
 		"""    
-		self.currSliderPanel = p
+		self.currSliderPanel = panel
 		
 	def __del__(self):
 		global visualizerInstance
@@ -875,22 +931,22 @@ class Visualizer:
 			if key not in dont_load:
 				mod = sys.modules[key]
 				if mod and hasattr (mod, '__file__'):
-					p = os.path.abspath (mod.__file__)
-					if os.path.commonprefix ([p, my_dir]) == my_dir:
-						debug ("Reloading %s" % key)
-						reload (mod)
+					path = os.path.abspath (mod.__file__)
+					if os.path.commonprefix ([path, my_dir]) == my_dir:
+						Logging.info("Reloading %s" % key)
+						reload(mod)
    
 	def setProcessedMode(self, mode):
 		"""
 		Created: 25.05.2005, KP
-		Description: Set the visualizer to processed/unprocessed mode
+		Description: Set the visualizer to processed / unprocessed mode
 		"""
 		self.processedMode = mode
 		
 	def getProcessedMode(self):
 		"""
 		Created: 25.05.2005, KP
-		Description: Return whether visualizer is in processed/unprocessed mode
+		Description: Return whether visualizer is in processed / unprocessed mode
 		"""
 		return self.processedMode
 
@@ -922,7 +978,6 @@ class Visualizer:
 		"""
 		if self.currMode:
 			self.currentWindow.Show(0)
-		
 			self.currMode.deactivate()
 			del self.currentWindow
 		self.currMode = None
@@ -930,7 +985,7 @@ class Visualizer:
 		self.mode = None
 		
 		self.currModeModule = None
-		self.dataUnit = None            
+		self.dataUnit = None			
 		self.sidebarWin.SetDefaultSize((0, 1024))
 		self.zslider.SetRange(0, 0)
 		wx.LayoutAlgorithm().LayoutWindow(self.parent, self.visWin)
@@ -943,11 +998,11 @@ class Visualizer:
 		Created: 23.05.2005, KP
 		Description: Set the mode of visualization
 		"""
-		oldmode = self.mode
+		#oldmode = self.mode
 		if self.mode == mode:
 			Logging.info("Mode %s already selected" % mode, kw = "visualizer")
 			if self.dataUnit and self.currMode.dataUnit != self.dataUnit:
-				Logging.info("Re-setting dataunit", kw = "visualizer")
+				Logging.info("Re - setting dataunit", kw = "visualizer")
 				self.currMode.setDataUnit(self.dataUnit)
 				
 				return
@@ -964,7 +1019,7 @@ class Visualizer:
 		
 		modeclass, settingclass, module = self.modes[mode]
 		modeinst = self.instances[mode]
-		new = 0
+		#new = 0
 		if reload:
 			del self.instances[mode]
 			modeinst = None
@@ -973,14 +1028,14 @@ class Visualizer:
 			modeinst = modeclass(self.visWin, self)
 			self.instances[mode] = modeinst
 			self.currMode = modeinst
-			new = 1
+			#new = 1
 			
 		if not module.showZoomToolbar():
 			self.toolWin.SetDefaultSize((500, 0))
 			self.annotateBarWin.SetDefaultSize((0, -1))
 			
 		else:
-			self.toolWin.SetDefaultSize((500, 44))            
+			self.toolWin.SetDefaultSize((500, 44))			 
 			self.annotateBarWin.SetDefaultSize((70, -1))
 
 		# dataunit might have been changed so set it every time a
@@ -995,7 +1050,7 @@ class Visualizer:
 		scripting.preferRGB = 1
 		scripting.wantWholedataset = 1
 
-		self.currentWindow = modeinst.activate(self.sidebarWin)        
+		self.currentWindow = modeinst.activate(self.sidebarWin)		   
 	  
 		self.sidebarWin.SetDefaultSize((0, 1024))
 		wx.LayoutAlgorithm().LayoutWindow(self.parent, self.visWin)
@@ -1009,18 +1064,18 @@ class Visualizer:
 		
 		if modeinst.showViewAngleCombo():
 			self.viewCombo.Enable(1)
-#            self.tb.EnableTool(MenuManager.ID_SET_VIEW,1)
+#			 self.tb.EnableTool(GUI.MenuManager.ID_SET_VIEW, 1)
 		else:
 			self.viewCombo.Enable(0)
-#            self.tb.EnableTool(MenuManager.ID_SET_VIEW,0)
+#			 self.tb.EnableTool(GUI.MenuManager.ID_SET_VIEW, 0)
 		if self.zoomToFitFlag:
 			self.currMode.zoomToFit()
 		else:
-			self.currMode.setZoomFactor(self.zoomFactor)        
+			self.currMode.setZoomFactor(self.zoomFactor)		
 			scripting.zoomFactor = self.zoomFactor
 
 		if not self.zoomToFitFlag and hasattr(self.currMode, "getZoomFactor"):
-			self.setComboBoxToFactor(self.currMode.getZoomFactor())        
+			self.setComboBoxToFactor(self.currMode.getZoomFactor())		   
 			
 		if not modeinst.showSideBar():
 			if self.sidebarWin.GetSize()[0]:
@@ -1028,9 +1083,9 @@ class Visualizer:
 		else:
 			if self.sidebarWin.GetSize() != self.sidebarWin.origSize:
 				flag = 0
-				# If this is the first time we're loading a visualization mode,then restore the
+				# If this is the first time we're loading a visualization mode, then restore the
 				# size from settings
-				if not self.mode in self.firstLoad:            
+				if not self.mode in self.firstLoad:			   
 					flag = self.restoreWindowSizesFromSettings()
 					self.firstLoad[self.mode] = 1
 				if not flag:
@@ -1042,21 +1097,21 @@ class Visualizer:
 
 		self.currentWindow.enable(0)
 		if self.dataUnit and modeinst.dataUnit != self.dataUnit:
-			Logging.info("Re-setting dataunit", kw = "visualizer")
+			Logging.info("Re - setting dataunit", kw = "visualizer")
 			modeinst.setDataUnit(self.dataUnit)
 			
 		modeinst.setTimepoint(self.timepoint)
 		self.currentWindow.Show()
 		if hasattr(self.currentWindow, "enable"):
 			self.currentWindow.enable(self.enabled)
-		messenger.send(None, "visualizer_mode_loading", modeinst)
+		lib.messenger.send(None, "visualizer_mode_loading", modeinst)
 
-#        if self.zoomToFitFlag:
-#            self.currMode.zoomToFit()
-#        else:
-#            self.currMode.setZoomFactor(self.zoomFactor)        
-#        if not self.zoomToFitFlag and hasattr(self.currMode,"getZoomFactor"):
-#            self.setComboBoxToFactor(self.currMode.getZoomFactor())        
+#		 if self.zoomToFitFlag:
+#			 self.currMode.zoomToFit()
+#		 else:
+#			 self.currMode.setZoomFactor(self.zoomFactor)		 
+#		 if not self.zoomToFitFlag and hasattr(self.currMode, "getZoomFactor"):
+#			 self.setComboBoxToFactor(self.currMode.getZoomFactor())		
 		
 		
 		
@@ -1070,7 +1125,7 @@ class Visualizer:
 	def enable(self, flag, **kws):
 		"""
 		Created: 23.05.2005, KP
-		Description: Enable/Disable updates
+		Description: Enable / Disable updates
 		"""
 		self.preload = 0
 		if kws.has_key("preload"):
@@ -1079,21 +1134,21 @@ class Visualizer:
 		if self.noRender:
 			self.oldEnabled = flag
 			return
-		#Logging.info("\nenable(%s)\n"%(not not flag),kw="visualizer")
+		#Logging.info("\nenable(%s)\n" %(not not flag), kw = "visualizer")
 		self.enabled = flag
 		if self.currentWindow:
-				Logging.info("Setting enabled status of current window to %s" % (not not flag), kw = "visualizer")
-				self.currentWindow.enable(flag)                
+			Logging.info("Setting enabled status of current window to %s" % (not not flag), kw = "visualizer")
+			self.currentWindow.enable(flag)				   
 		if self.setLater:
 			self.setupMode()
 			self.setLater = 0
-		if flag:        
-		   wx.LayoutAlgorithm().LayoutWindow(self.parent, self.visWin)
-		   Logging.info("Setting visualizer window to ", self.visWin.GetSize(), kw = "visualizer")
-		   self.currentWindow.SetSize(self.visWin.GetClientSize())
-#        if flag:        
-#           wx.LayoutAlgorithm().LayoutWindow(self.parent, self.visWin)
-#           self.currentWindow.SetSize(self.visWin.GetClientSize())
+		if flag:		
+			wx.LayoutAlgorithm().LayoutWindow(self.parent, self.visWin)
+			Logging.info("Setting visualizer window to ", self.visWin.GetSize(), kw = "visualizer")
+			self.currentWindow.SetSize(self.visWin.GetClientSize())
+#		 if flag:		 
+#			wx.LayoutAlgorithm().LayoutWindow(self.parent, self.visWin)
+#			self.currentWindow.SetSize(self.visWin.GetClientSize())
 
 	def setBackground(self, r, g, b):
 		"""
@@ -1124,14 +1179,14 @@ class Visualizer:
 		if not flag:
 			self.sliderWin.SetDefaultSize((0, 0))
 		else:
-			self.sliderWin.SetDefaultSize(self.sliderWin.origSize)         
+			self.sliderWin.SetDefaultSize(self.sliderWin.origSize)		   
 		
 	def setDataUnit(self, dataunit):
 		"""
 		Created: 28.04.2005, KP
 		Description: Sets the dataunit this module uses for visualization
 		"""
-		#Logging.info("visualizer.setDataUnit(%s)"%str(dataunit),kw="visualizer")
+		#Logging.info("visualizer.setDataUnit(%s)" %str(dataunit), kw = "visualizer")
 		self.dataUnit = dataunit
 		count = dataunit.getNumberOfTimepoints()
 		
@@ -1149,10 +1204,10 @@ class Visualizer:
 		
 		x, y, z = dataunit.getDimensions()
 		
-		#print "SETTING RANGE",1,z
+		#print "SETTING RANGE", 1, z
 		currz = self.zslider.GetValue()
 		self.zslider.SetRange(1, z)
-		
+
 		if self.timepoint >= count:
 			self.setTimepoint(count)
 
@@ -1166,17 +1221,17 @@ class Visualizer:
 		showItems = 0
 
 		if self.processedMode:
-			n = len(dataunit.getSourceDataUnits())
-			if n > 1:
+			numberOfDataUnits = len(dataunit.getSourceDataUnits())
+			if numberOfDataUnits > 1:
 				showItems = 1
 		self.showItemToolbar(showItems)
 			
-		if self.enabled and self.currMode:      
+		if self.enabled and self.currMode:		
 			self.setupMode()
 		else:
 			self.setLater = 1
 		if self.histogramIsShowing:
-			self.createHistogram()         
+			self.createHistogram()		   
 		if self.currMode:
 			if self.zoomToFitFlag:
 				self.currMode.zoomToFit()
@@ -1196,7 +1251,7 @@ class Visualizer:
 		if self.zoomToFitFlag:
 			self.currMode.zoomToFit()
 		else:
-			self.currMode.setZoomFactor(self.zoomFactor)    
+			self.currMode.setZoomFactor(self.zoomFactor)	
 			scripting.zoomFactor = self.zoomFactor
 
 		self.currMode.setDataUnit(self.dataUnit)
@@ -1215,7 +1270,7 @@ class Visualizer:
 		"""
 		Created: 14.02.2006, KP
 		Description: Toggle rendering on or off
-		"""        
+		"""		   
 		if not flag:
 			self.noRender = flag
 			self.enable(self.oldEnabled)
@@ -1237,7 +1292,7 @@ class Visualizer:
 			Logging.info("Disabled, will not update rendering", kw = "visualizer")
 			return
 			
-		#print "\n\n\n\nimmediate render=",self.immediateRender,"delay=",delay
+		#print "\n\n\n\nimmediate render = ", self.immediateRender, "delay = ", delay
 		if not self.immediateRender and delay >= 0:
 			Logging.info("Will not update rendering on other than apply button", kw = "visualizer")
 			return
@@ -1250,24 +1305,24 @@ class Visualizer:
 		if delay >= 0:
 			imm = self.currModeModule.getImmediateRendering()
 		delay = self.currModeModule.getRenderingDelay()
-		Logging.info("Immediate rendering=", imm, "delay=", delay, kw = "visualizer")
+		Logging.info("Immediate rendering = ", imm, "delay = ", delay, kw = "visualizer")
 		if not imm:
 			t = time.time()
 			delay /= 1000.0
-			#Logging.info("diff=",self.renderingTime-t,"delay=",delay)
-			#print "self.renderingTime=",self.renderingTime,"t=",t
+			#Logging.info("diff = ", self.renderingTime - t, "delay = ", delay)
+			#print "self.renderingTime = ", self.renderingTime, "t = ", t
 			if not self.renderingTime:
 				self.renderingTime = t - (delay * 2)
 			diff = t - self.renderingTime
-			Logging.info("diff in renderTime=", diff, kw = "visualizer")
+			Logging.info("diff in renderTime = ", diff, kw = "visualizer")
 			if diff < delay and not self.delayed: 
 				diff = 200 + int(1000 * diff)
-				Logging.info("Delaying, delay=%f, diff=%d" % (delay, diff), kw = "visualizer")
+				Logging.info("Delaying, delay = %f, diff = %d" % (delay, diff), kw = "visualizer")
 				self.delayed = 1
 				wx.FutureCall(diff, self.updateRendering)
 				return
 		Logging.info("Updating rendering", kw = "visualizer")
-		self.renderingTime = time.time()                
+		self.renderingTime = time.time()				  
 		self.currMode.updateRendering()
 		self.delayed = 0
 						
@@ -1283,27 +1338,27 @@ class Visualizer:
 		"""
 		Created: 15.08.2005, KP
 		Description: Set the range that the time slider shows
-		"""        
+		"""		   
 		self.timeslider.SetRange(r1, r2)
 		self.timeslider.Refresh()
 		
 		
 		
-	def onSetTimepoint(self, obj, event, tp):
+	def onSetTimepoint(self, obj, event, timepoint):
 		"""
 		Created: 21.06.2005, KP
 		Description: Update the timepoint according to an event
 		"""
-		#tp=event.getValue()
+		#timepoint = event.getValue()
 		
-		self.setTimepoint(tp)
+		self.setTimepoint(timepoint)
 
-	def onSetTimeslider(self, obj, event, tp):
+	def onSetTimeslider(self, obj, event, timepoint):
 		"""
 		Created: 21.08.2005, KP
 		Description: Update the timeslider according to an event
 		"""
-		self.timeslider.SetValue(tp)
+		self.timeslider.SetValue(timepoint)
 		
 	def onUpdateTimepoint(self, evt = None):
 		"""
@@ -1319,21 +1374,26 @@ class Visualizer:
 				return
 		if self.in_vtk:
 			Logging.info("In vtk, delaying", kw = "visualizer")
-			wx.FutureCall(50, lambda e = evt:self.onUpdateTimepoint(evt))
+			wx.FutureCall(50, lambda e = evt: self.onUpdateTimepoint(evt))
 			return
-		tp = self.timeslider.GetValue()
-		tp -= 1 # slider starts from one
-		if self.timepoint != tp:
-			Logging.info("Sending timepoint change event (tp=%d)" % tp, kw = "visualizer")
+		timepoint = self.timeslider.GetValue()
+		timepoint -= 1 # slider starts from one
+		if self.timepoint != timepoint:
+			Logging.info("Sending timepoint change event (timepoint = %d)" % timepoint, kw = "visualizer")
 			self.blockTpUpdate = 1
-			messenger.send(None, "timepoint_changed", tp)
+			lib.messenger.send(None, "timepoint_changed", timepoint)
 			self.blockTpUpdate = 0
 			
-			do_cmd = "bxd.visualizer.setTimepoint(%d)" % tp
+			do_cmd = "bxd.visualizer.setTimepoint(%d)" % timepoint
 			undo_cmd = "bxd.visualizer.setTimepoint(%d)" % self.timepoint
-			cmd = Command.Command(Command.GUI_CMD, None, None, do_cmd, undo_cmd, desc = "Switch to timepoint %d" % tp)
+			cmd = lib.Command.Command(lib.Command.GUI_CMD, \
+									None, \
+									None, \
+									do_cmd, \
+									undo_cmd, \
+									desc = "Switch to timepoint %d" % timepoint)
 			cmd.run()
-#            self.setTimepoint(tp)
+#			 self.setTimepoint(timepoint)
 			
 			
 	def delayedTimesliderEvent(self, event):
@@ -1342,7 +1402,7 @@ class Visualizer:
 		Description: Set the timepoint to be shown
 		"""
 		self.changing = time.time()
-		wx.FutureCall(200, lambda e = event, s = self:s.timesliderMethod(e))
+		wx.FutureCall(200, lambda e = event, s = self: s.timesliderMethod(e))
 		
 	def onZPageDown(self, evt):
 		"""
@@ -1360,15 +1420,15 @@ class Visualizer:
 		"""
 		newpos = self.zslider.GetValue() - 1
 		newpos -= 10
-		self.zslider.SetValue(newpos)        
+		self.zslider.SetValue(newpos)		 
 		
 	def onChangeZSlice(self, obj, event = None, arg = None):
 		"""
 		Created: 1.08.2005, KP
 		Description: Set the z slice to be shown
-		"""       
-		t = time.time()
-		if abs(self.depthT - t) < self.updateFactor:
+		"""				   
+		timeValue = time.time()
+		if abs(self.depthT - timeValue) < self.updateFactor: 
 			return
 		self.depthT = time.time()
 		
@@ -1383,9 +1443,8 @@ class Visualizer:
 			
 		if self.z != newz:
 			self.z = newz
-			if event != "zslice_changed":
-				print "Sending zslice changed event"
-				messenger.send(None, "zslice_changed", newz)        
+#			 print "Sending zslice changed event"
+			lib.messenger.send(None, "zslice_changed", newz)		  
 		
 	def onSnapshot(self, event):
 		"""
@@ -1393,9 +1452,9 @@ class Visualizer:
 		Description: Save a snapshot of current visualization
 		"""  
 		if self.currMode and self.dataUnit:
-			wcDict = {"png": "Portable Network Graphics Image (*.png)", "jpeg": "JPEG Image (*.jpeg)",
+			wildCardDict = {"png": "Portable Network Graphics Image (*.png)", "jpeg": "JPEG Image (*.jpeg)",
 			"tiff": "TIFF Image (*.tiff)", "bmp": "Bitmap Image (*.bmp)"}
-			#wc="PNG file|*.png|JPEG file|*.jpeg|TIFF file|*.tiff|BMP file|*.bmp"
+			#wildCard = "PNG file|*.png|JPEG file|*.jpeg|TIFF file|*.tiff|BMP file|*.bmp"
 			
 			defaultExt = self.conf.getConfigItem("ImageFormat", "Output")
 			if defaultExt == "jpg":
@@ -1403,21 +1462,22 @@ class Visualizer:
 			if defaultExt == "tif":
 				defaultExt = "tiff"
 			initFile = "%s.%s" % (self.dataUnit.getName(), defaultExt)
-			if defaultExt not in wcDict:
+			if defaultExt not in wildCardDict:
 				defaultExt = "png"
-			wc = wcDict[defaultExt] + "|*.%s" % defaultExt
-			del wcDict[defaultExt]
+			wildCard = wildCardDict[defaultExt] + "|*.%s" % defaultExt
+			del wildCardDict[defaultExt]
 			
-			for key in wcDict.keys():
-				wc += "|%s|*.%s" % (wcDict[key], key)
-			filename = Dialogs.askSaveAsFileName(self.parent, "Save snapshot of rendered scene", initFile, wc, "snapshotImage")
-			
-			
+			for key in wildCardDict.keys():
+				wildCard += "|%s|*.%s" % (wildCardDict[key], key)
+			filename = GUI.Dialogs.askSaveAsFileName(self.parent,
+													"Save snapshot of rendered scene",
+													initFile,
+													wildCard,
+													"snapshotImage")
 			do_cmd = "bxd.visualizer.saveSnapshot(r'%s')" % filename
-			cmd = Command.Command(Command.GUI_CMD, None, None, do_cmd, "", desc = "Save a snapshot of the visualizer")
+			cmd = lib.Command.Command(lib.Command.GUI_CMD, None, None, do_cmd, "", desc = "Save a snapshot of the visualizer")
 			cmd.run()
-			
-		
+
 	def saveSnapshot(self, filename):
 		"""
 		Created: 14.06.2007, KP
@@ -1426,9 +1486,8 @@ class Visualizer:
 		#dlg=wx.FileDialog(self.parent,,defaultFile=initFile,wildcard=wc,style=wx.SAVE)
 		#filename=None
 		#if dlg.ShowModal()==wx.ID_OK:
-		#    filename=dlg.GetPath()
+		#	 filename=dlg.GetPath()
 		if filename:
-			
 			self.currMode.saveSnapshot(filename)
 		
 	def restoreWindowSizes(self):
@@ -1452,10 +1511,10 @@ class Visualizer:
 		
 		currx, curry = self.visWin.GetSize()
 		self.visWin.origSize = (currx, curry)
-		Logging.info("Current window size=", currx, curry)
+		Logging.info("Current window size = ", currx, curry)
 		diffx = currx - x
 		diffy = curry - y
-		Logging.info("Need to modify renderwindow size by ", diffx, ",", diffy)#,kw="visualizer")
+		Logging.info("Need to modify renderwindow size by ", diffx, ", ", diffy)#, kw = "visualizer")
 		sx, sy = self.sidebarWin.GetSize()
 		self.sidebarWin.origSize = (sx, sy)
 		sx2, sy2 = taskwin.GetSize()
@@ -1474,25 +1533,27 @@ class Visualizer:
 		if sx:
 			sx += diffx
 			self.sidebarWin.SetDefaultSize((sx, sy))
-			Logging.info("Size of siderbar window after modification=", sx, sy)
+			Logging.info("Size of siderbar window after modification = ", sx, sy)
 		slx, sly = self.sliderWin.GetSize()
 		self.sliderWin.origSize = (slx, sly)
 		
 		if diffy < 0 and abs(diffy) > abs(sly):
-			Logging.info("Hiding toolbar to get more space in y-direction")#,kw="visualizer")
+			Logging.info("Hiding toolbar to get more space in y - direction")#, kw = "visualizer")
 			tx, ty = self.toolWin.GetSize()
 			self.toolWin.origSize = (tx, ty)
 			self.toolWin.SetDefaultSize((0, 0))
 			diffy += ty
 		if diffy:
-			Logging.info("I'm told to set renderwindow size to %d,%d with a %d modification of y-size." % (x, y, diffy))#,kw="visualizer")
+			Logging.info("I'm told to set renderwindow size to %d, \
+							%d with a %d modification of y - size." \
+							%(x, y, diffy))#, kw = "visualizer")
 			
 			if diffy < 0 and sly < diffy:
-				Logging.info("Giving %d more to y-size is the best I can do" % sy)#,kw="visualizer")
+				Logging.info("Giving %d more to y - size is the best I can do" % sy)#, kw = "visualizer")
 				sly = 0
 			else:
 				sly += diffy
-				Logging.info("Size of slider win after modification=", sx, sy)
+				Logging.info("Size of slider win after modification = ", sx, sy)
 			
 			self.sliderWin.SetDefaultSize((slx, sly))
 		#self.wxrenwin.SetSize((size))
@@ -1508,7 +1569,8 @@ class Visualizer:
 		Created: 28.04.2005, KP
 		Description: Set the timepoint to be shown
 		"""  
-		if self.blockTpUpdate:return
+		if self.blockTpUpdate:
+			return
 
 		Logging.info("setTimepoint(%d)" % timepoint, kw = "visualizer")
 		curr = self.timeslider.GetValue()

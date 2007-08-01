@@ -29,24 +29,23 @@
 __author__ = "BioImageXD Project"
 __version__ = "$Revision: 1.40 $"
 __date__ = "$Date: 2005/01/13 14:52:39 $"
-import sys
-import os.path, glob
-import re, string
-import wx
-import  wx.lib.filebrowsebutton as filebrowse
-import vtk
-import Dialogs
-import ColorTransferEditor
-import Logging
-import DataUnit
-import DataSource
-import Configuration
-import Image
 
 import scripting as bxd
-import Dialogs
-
-import PreviewFrame
+from lib.DataSource.BXDDataWriter import BXDDataWriter
+from lib.DataSource.BXCDataWriter import BXCDataWriter
+import Configuration
+from lib.DataUnit.DataUnit import DataUnit
+from lib.DataUnit.DataUnitSetting import DataUnitSettings
+import wx.lib.filebrowsebutton as filebrowse
+import glob
+import GUI.ColorTransferEditor
+import GUI.Dialogs
+import Logging
+import os.path
+from GUI.PreviewFrame.PreviewFrame import PreviewFrame
+import re
+import vtk
+import wx
 
 class ImportDialog(wx.Dialog):
 	"""
@@ -59,11 +58,11 @@ class ImportDialog(wx.Dialog):
 		Description: Initialize the dialog
 		"""    
 		bxd.registerDialog("import", self)
-		self.dataUnit = DataUnit.DataUnit()
+		self.dataUnit = DataUnit()
 
 		self.dataSource = parent.typeToSource["filelist"]()
 		self.dataUnit.setDataSource(self.dataSource)
-		self.settings = DataUnit.DataUnitSettings()
+		self.settings = DataUnitSettings()
 		self.settings.set("Type", "NOOP")
 		
 		self.ctfInitialized = 0
@@ -100,7 +99,6 @@ class ImportDialog(wx.Dialog):
 		"""        
 		assert os.path.exists(filename), "Filename needs to exist, but no file %s" % filename
 		
-		self.filename = filename
 		self.inputFile = filename
 		self.browsedir.SetValue(filename)
 		
@@ -117,19 +115,19 @@ class ImportDialog(wx.Dialog):
 		Description: Executes the procedure
 		"""
 		if not self.spacing:
-			Dialogs.showerror(self, "Please define the size of the voxels in the dataset", "No voxel size defined")
+			GUI.Dialogs.showerror(self, "Please define the size of the voxels in the dataset", "No voxel size defined")
 			return
 			
 		name = self.nameEdit.GetValue()
 		name = name.replace(" ", "_")
-		filename = Dialogs.askSaveAsFileName(self, "Save imported dataset as", "%s.bxd" % name, "BioImageXD Dataset (*.bxd)|*.bxd", "import_save")
+		filename = GUI.Dialogs.askSaveAsFileName(self, "Save imported dataset as", "%s.bxd" \
+													% name, "BioImageXD Dataset (*.bxd)|*.bxd", "import_save")
 		self.Close()
 		
 		self.convertFiles(filename)
 		bxd.unregisterDialog("import")
 		self.EndModal(wx.ID_OK)
-		
-		
+
 	def convertFiles(self, outname):
 		"""
 		Created: 21.04.2005, KP
@@ -149,18 +147,17 @@ class ImportDialog(wx.Dialog):
 			ex.show()
 			self.Close()
 			return
-		print "ctf=", self.ctf
-		bxdwriter =  DataSource.BXDDataWriter(outname)
+		bxdwriter = BXDDataWriter(outname)
 		self.resultDataset = bxdwriter.getFilename()
 		print "Result dataset=", self.resultDataset
 
 		bxcfilename = bxdwriter.getBXCFileName(outname)
-		self.writer = DataSource.BXCDataWriter(bxcfilename)
+		self.writer = BXCDataWriter(bxcfilename)
 		bxdwriter.addChannelWriter(self.writer)
 		bxdwriter.write()
 		self.tot = self.dataSource.getDataSetCount()
-				
-		self.dlg = wx.ProgressDialog("Importing", "Reading dataset %d / %d" % (0, 0), maximum = 2 * self.tot, parent = self,
+		self.dlg = wx.ProgressDialog("Importing", "Reading dataset %d / %d" \
+										% (0, 0), maximum = 2 * self.tot, parent = self,
 		style = wx.PD_ELAPSED_TIME | wx.PD_REMAINING_TIME)   
 		
 		self.writeDataUnitFile()
@@ -182,8 +179,8 @@ class ImportDialog(wx.Dialog):
 		Logging.info("Writing voxel size as ", x, y, z, kw = "io")
 		settings.set("VoxelSize", (x, y, z))
 
-		self.x, self.y, self.z = self.dataSource.getDimensions()
-
+		
+		self.x, self.y, self.x = self.dataSource.GetDimensions()
 		Logging.info("Writing dimensions as ", self.x, self.y, self.z, kw = "io")
 
 
@@ -195,7 +192,9 @@ class ImportDialog(wx.Dialog):
 		parser = self.writer.getParser()
 		settings.writeTo(parser)
 		i = 0
+		#Logging.info("readers (%d)=" % len(self.readers), self.readers, kw = "io")
 		#for rdr in self.readers:
+		#tot = self.dataSource.getDataSetCount()
 		for i in range(0, self.tot):
 			image = self.dataSource.getDataSet(i)
 			#image.SetExtent(0,self.x-1,0,self.y-1,0,self.z-1)
@@ -225,13 +224,17 @@ class ImportDialog(wx.Dialog):
 			initialDir = "."
 		
 		mask = "Supported image files|*.jpg;*.png;*.tif;*.tiff;*.jpeg;*.vtk;*.vti;*.bmp"
-		self.browsedir = filebrowse.FileBrowseButton(self, -1, labelText = "Source Directory: ", changeCallback = self.loadListOfImages,
+		self.browsedir = filebrowse.FileBrowseButton(self, -1, labelText = "Source Directory: ", \
+														changeCallback = self.loadListOfImages,
 		startDirectory = initialDir, initialValue = self.inputFile, fileMask = mask)
 		
 		self.sourcesizer = wx.BoxSizer(wx.VERTICAL)
 		
 		self.sourcelbl = wx.StaticText(self, -1, "Imported dataset consists of:")
-		self.choice = wx.Choice(self, -1, choices = ["Files following pattern", "All files in same directory"], size = (200, -1))
+		self.choice = wx.Choice(self, \
+								-1, \
+								choices = ["Files following pattern", "All files in same directory"], \
+								size = (200, -1))
 		self.choice.SetSelection(1)
 		self.choice.Bind(wx.EVT_CHOICE, self.setInputType)
 		
@@ -250,7 +253,8 @@ class ImportDialog(wx.Dialog):
 		self.patternBox.Add(self.patternEdit)
 		self.patternBox.Add(self.patternUpdateBtn)
 		
-		self.sourceListbox = wx.ListBox(self, -1, size = (600, 100), style = wx.LB_ALWAYS_SB | wx.LB_HSCROLL | wx.LB_EXTENDED)
+		self.sourceListbox = wx.ListBox(self, -1, size = (600, 100), \
+										style = wx.LB_ALWAYS_SB | wx.LB_HSCROLL | wx.LB_EXTENDED)
 		self.sourceListbox.Bind(wx.EVT_LISTBOX, self.updateSelection)
 		
 		self.imageSourceboxsizer.Add(self.browsedir, 0, wx.EXPAND)
@@ -271,15 +275,16 @@ class ImportDialog(wx.Dialog):
 		self.imageInfoSizer = wx.StaticBoxSizer(self.imageInfoBox, wx.VERTICAL)
 		
 		previewBox = wx.BoxSizer(wx.VERTICAL)
-		self.zslider = wx.Slider(self, value = 1, minValue = 1, maxValue = 1, style = wx.SL_VERTICAL | wx.SL_LABELS | wx.SL_AUTOTICKS)
-		self.timeslider = wx.Slider(self, value = 1, minValue = 1, maxValue = 1, style = wx.SL_LABELS | wx.SL_AUTOTICKS)
+		self.zslider = wx.Slider(self, value = 1, minValue = 1, maxValue = 1, \
+									style = wx.SL_VERTICAL | wx.SL_LABELS | wx.SL_AUTOTICKS)
+		self.timeslider = wx.Slider(self, value = 1, minValue = 1, maxValue = 1, \
+									style = wx.SL_LABELS | wx.SL_AUTOTICKS)
 
 		self.zslider.Bind(wx.EVT_SCROLL, self.onChangeZSlice)
 		self.timeslider.Bind(wx.EVT_SCROLL, self.onChangeTimepoint)
 				
-		self.preview = PreviewFrame.PreviewFrame(self, previewsize = (384, 384), scrollbars = False)
+		self.preview = PreviewFrame(self, previewsize = (384, 384), scrollbars = False)
 		self.preview.setPreviewType("")
-		self.preview.disableAnnotations()
 		
 		previewBox.Add(self.preview)
 		previewBox.Add(self.timeslider, 1, wx.EXPAND)
@@ -376,7 +381,7 @@ enter the information below.""")
 		self.infosizer.Add(self.depthEdit, (n, 1), flag = wx.EXPAND | wx.ALL)
 		n += 1
 		
-		self.colorBtn = ColorTransferEditor.CTFButton(self)
+		self.colorBtn = GUI.ColorTransferEditor.CTFButton(self)
 		
 		self.infosizer.Add(self.colorBtn, (n, 0), span = (1, 2))
 		n += 1
@@ -395,7 +400,7 @@ enter the information below.""")
 		
 		if self.inputFile:
 			self.browsedir.SetValue(self.inputFile)
-			self.loadListOfFiles()
+#			self.loadListOfFiles()		20.7.07, MB
 			
 	def onUpdatePreview(self, event = None):
 		"""
@@ -405,20 +410,21 @@ enter the information below.""")
 		try:
 			slices = int(float(self.depthEdit.GetValue()))
 		except:
-			Dialogs.showerror(self, "Could not get the number of slices", "Malformed number of slices per timepoint")
+			GUI.Dialogs.showerror(self, "Could not get the number of slices", \
+									"Malformed number of slices per timepoint")
 			return
 		print "Setting slices per timepoint to ", slices
 		self.dataSource.setSlicesPerTimepoint(slices)
 		currentZ = self.zslider.GetValue()
 		self.zslider.SetRange(1, slices)
-
-		if currentZ < 1:currentZ = 1
-		if currentZ > slices:currentZ = slices
-		self.zslider.SetValue(currentZ)
-
-
 		self.updateSelection(None, updatePreview = 1)
 		
+		if currentZ < 1:
+			currentZ = 1
+		if currentZ > slices:
+			currentZ = slices
+		self.zslider.SetValue(currentZ)
+
 	def onChangeZSlice(self, event):
 		"""
 		Created: 07.05.2007, KP
@@ -448,7 +454,7 @@ enter the information below.""")
 			vy = float(self.voxelY.GetValue())
 			vz = float(self.voxelZ.GetValue())
 		except:
-			Dialogs.showerror(self, "Bad voxel size", "All voxel sizes were not valid.")
+			GUI.Dialogs.showerror(self, "Bad voxel size", "All voxel sizes were not valid.")
 			return
 		Logging.info("Voxel sizes = ", vx, vy, vz, kw = "io")
 		self.voxelSize = (vx, vy, vz)
@@ -470,19 +476,20 @@ enter the information below.""")
 			r = re.compile("[0-9]+")
 			items = r.findall(filename)
 			n = len(items[-1])
-			
 			s = "%%.%dd" % n
 			print "s=", s, "n=", n
 		else:
 			items = r.findall(filename)
-			n = len(items[-1])           
-			firstLetter = items[0][0]
-			s = "%s%%.%dd" % (firstLetter, n - 1)     
+			n = len(items[-1])
+			firstLetter = items[0][0]                       
+			s = "%s%%.%dd" % (firstLetter, n - 1)       
 			print "s=", s        
 		if items:
-			i = filename.rfind(items[-1])            
-#            print "filename = ",filename[:i],s,filename[i+1+n:]
-			filename = filename[:i] + s + filename[i + n:]                    
+			i = filename.rfind(items[-1])
+
+			#svn-1037 says: filename = filename[:i] + s + filename[i + n:] 
+			filename = filename[:i] + s + filename[i + n:]
+
 		self.patternEdit.SetValue(filename)
  
 	def setInputType(self, event):
@@ -514,12 +521,12 @@ enter the information below.""")
 				self.sourceListbox.Clear()
 				self.setNumberOfImages(0)
 				return
-		if not self.sourceListbox.GetSelections():
-			n = self.sourceListbox.GetCount()    
-		else:   
-			n = len(self.sourceListbox.GetSelections())
-		
-		self.setNumberOfImages(n)
+#		if not self.sourceListBox.GetSelections():	20.7.07, MB. Only used here
+#			n = self.sourceListBox.GetCount()
+#		else:
+#			n = len(self.sourceListBox.GetSelections())
+#	
+#		self.setNumberOfImages(n)
 		
 	def setNumberOfTimepoints(self, evt):
 		"""
@@ -527,13 +534,15 @@ enter the information below.""")
 		Description: set the number of timepoints, and adjust the number of slices per timepoint accordingly
 		"""
 		n = int(float(self.timepointEdit.GetValue()))
-		#assert n>0,"There need to be at least one timepoint, %s is invalid"%(str(n))
-		currentTime = self.timeslider.GetValue()
+		#assert n > 0, "There need to be at least one timepoint, %s is invalid" % (str(n))
+		currentTime = self.timepointEdit.GetValue()
 		self.timeslider.SetRange(1, n)
-		if currentTime < 1:currentTime = 1
-		if currentTime > n:currentTime = n
-		self.timeslider.SetValue(currentTime)
-		
+		if currentTime < 1:
+			currentTime = 1
+		if currentTime > 1:
+			currentTime = n
+		self.timeslider.SetValue(currentTime)		
+
 		totalAmnt = int(self.imageAmountLbl.GetLabel())
 		if n and totalAmnt:
 			slices = float(totalAmnt) / n
@@ -549,7 +558,7 @@ enter the information below.""")
 		"""
 		Created: 17.03.2005, KP
 		Description: Sets the number of images we're reading
-		"""        
+		"""
 		Logging.backtrace()
 		if type(n) != type(0):
 			n = int(self.imageAmountLbl.GetLabel())
@@ -565,12 +574,12 @@ enter the information below.""")
 			else:
 				tps = n
 			self.timepointEdit.SetValue("%.2f" % tps)
-			
 			currentTime = self.timeslider.GetValue()
 			self.timeslider.SetRange(1, tps)
-			if currentTime < 1:currentTime = 1
-			if currentTime > tps:currentTime = tps
-			self.timeslider.SetValue(currentTime)
+			if currentTime < 1:
+				currentTime = 1
+			if currentTime > tps:
+				currentTime = tps
 		except:
 			pass
 				
@@ -593,9 +602,11 @@ enter the information below.""")
 			for i in range(len(s)):
 				i1 = int(s[i])
 				i2 = int(s2[i])
-				if len(s[i]) < len(s2[i]):return - 1
+				if len(s[i]) < len(s2[i]):
+					return - 1
 				c = i1.__cmp__(i2)
-				if c != 0:return c
+				if c != 0:
+					return c
 		return item1.__cmp__(item2)
 		
 	
@@ -632,9 +643,13 @@ enter the information below.""")
 			pat = dirn + os.path.sep + "*.%s" % ext #"
 		Logging.info("Pattern for all in directory is ", pat, kw = "io")
 		files = glob.glob(pat)
+
 		try:
 			if not self.dataSource.checkImageDimensions(files):
-				Dialogs.showmessage(self, "Images have differing dimensions", "Some of the selected images have differing dimensions. Therefore it is not possible to use the \"All files in directory\" selection.")
+				GUI.Dialogs.showmessage(self, \
+										"Images have differing dimensions", \
+										"Some of the selected images have differing dimensions. \
+											Therefore it is not possible to use the \"All files in directory\" selection.")
 				self.choice.SetSelection(0)
 				return
 		except Logging.GUIError, ex:
@@ -668,6 +683,7 @@ enter the information below.""")
 				self.sourceListbox.Clear()
 				return
 		# If there is one specifier, then try to find files that correspond to that
+		#if nformat == 1:
 		if selection == 0 and nformat == 1:
 			filelist = []
 			print "trying range", startfrom, startfrom + filecount + 1, "pattern=", pat
@@ -677,6 +693,7 @@ enter the information below.""")
 				except:
 					return
 				for file in files:
+#                    print "Matching",file,"to",filename
 					if file.find(filename) != -1:
 						self.sourceListbox.Append(file)
 						filelist.append(file)
@@ -704,7 +721,8 @@ enter the information below.""")
 							n += 1
 							foundone = 1
 							everfound = 1
-				if everfound and not foundone:break
+				if everfound and not foundone:
+					break
 			try:
 				self.dataSource.setFilenames(filelist)                                
 			except Logging.GUIError, ex:
@@ -732,15 +750,15 @@ enter the information below.""")
 		self.depthEdit.SetValue("%.2f" % self.z)
 		currentZ = self.zslider.GetValue()
 		self.zslider.SetRange(1, self.z) 
-		if currentZ < 1:currentZ = 1
-		if currentZ > self.z:currentZ = self.z
+		if currentZ < 1:
+			currentZ = 1
+		if currentZ > self.z:
+			currentZ = self.z
 		self.zslider.SetValue(currentZ)
-		
-		
+
 		if not self.ctfInitialized:
 			x0, x1 = self.dataSource.getScalarRange()
 			bd = self.dataSource.getSingleComponentBitDepth()
-			print "Single component bit depth=", bd
 			self.ctf = vtk.vtkColorTransferFunction()
 			self.ctf.AddRGBPoint(0, 0, 0, 0)
 			self.ctf.AddRGBPoint((2 ** bd) - 1, 0, 1, 0)

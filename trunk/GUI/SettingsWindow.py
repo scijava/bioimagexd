@@ -31,13 +31,12 @@ __author__ = "BioImageXD Project"
 __version__ = "$Revision: 1.22 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
-import os.path
-
-import wx
-import  wx.lib.filebrowsebutton as filebrowse
-import  wx.lib.intctrl
 import Configuration
+import wx.lib.filebrowsebutton as filebrowse
+import os.path
 import scripting
+import wx
+import wx.lib.intctrl
 
 class GeneralSettings(wx.Panel):
 	"""
@@ -85,15 +84,13 @@ class GeneralSettings(wx.Panel):
 		
 		self.restoreCheckbox = wx.CheckBox(self, -1, "Restore files on abnormal shutdown")
 		self.restoreCheckbox.SetValue(restoreFiles)
-		self.tipBoxSizer.Add(self.restoreCheckbox)
 		
+		self.tipBoxSizer.Add(self.restoreCheckbox)
 		
 		self.reportCrashCheckbox = wx.CheckBox(self, -1, "Send bug report after abnormal program termination")
 		self.reportCrashCheckbox.SetValue(reportCrash)
 		self.tipBoxSizer.Add(self.reportCrashCheckbox)
-	   
 
-		
 		self.sizer.Add(self.tipBoxSizer, (0, 0))
 
 		self.quitBox = wx.StaticBox(self, -1, "Closing the application")
@@ -117,7 +114,7 @@ class GeneralSettings(wx.Panel):
 		Created: 05.04.2005, KP
 		Description: A method that writes out the settings that have been modified
 					 in this window.
-		"""     
+		""" 
 		format = self.choice.GetStringSelection()
 		#print "Setting format to ",format.lower()
 		conf.setConfigItem("ImageFormat", "Output", format.lower())
@@ -128,7 +125,7 @@ class GeneralSettings(wx.Panel):
 		reportCrash = self.reportCrashCheckbox.GetValue()
 
 		conf.setConfigItem("RestoreFiles", "General", str(restoreFiles))
-		conf.setConfigItem("ReportCrash", "General", str(reportCrash))
+		conf.setConfigItem("ReportCrash","General",str(reportCrash))
 
 		askOnQuit = self.askOnQuitCheckbox.GetValue()
 		conf.setConfigItem("AskOnQuit", "General", str(askOnQuit))
@@ -164,11 +161,11 @@ class PathSettings(wx.Panel):
 		if type(remember) == type(""):
 			remember = eval(remember)
 		self.useLastCheckbox.SetValue(remember)
-		self.dataBoxSizer.Add(self.useLastCheckbox)        
+		self.dataBoxSizer.Add(self.useLastCheckbox)
 		
 		
 		#self.sizer.Add(self.vtkBoxSizer, (0,0),flag=wx.EXPAND|wx.ALL)
-		self.sizer.Add(self.dataBoxSizer, (0, 0), flag = wx.EXPAND | wx.ALL)        
+		self.sizer.Add(self.dataBoxSizer, (0, 0), flag = wx.EXPAND | wx.ALL)
 		self.SetAutoLayout(1)
 		self.SetSizer(self.sizer)
 		self.Layout()
@@ -179,7 +176,7 @@ class PathSettings(wx.Panel):
 		Created: 12.03.2005, KP
 		Description: A method that writes out the settings that have been modified
 					 in this window.
-		"""     
+		"""
 		#vtkpath=self.vtkbrowse.GetValue()
 		
 		datapath = self.databrowse.GetValue()
@@ -190,7 +187,7 @@ class PathSettings(wx.Panel):
 		conf.setConfigItem("DataPath", "Paths", datapath)
 		
 		#conf.setConfigItem("RemoveOldVTK","VTK",removevtk)
-		conf.setConfigItem("RememberPath", "Paths", rememberlast)        
+		conf.setConfigItem("RememberPath", "Paths", rememberlast)
 
 
 class PerformanceSettings(wx.Panel):
@@ -273,11 +270,11 @@ class PerformanceSettings(wx.Panel):
 		grid.Add(self.customSize, (2, 0))
 		x1 = wx.StaticText(self, -1, "x")
 		x2 = wx.StaticText(self, -1, "x")
-		horizbox  =wx.BoxSizer(wx.HORIZONTAL )
+		horizbox = wx.BoxSizer(wx.HORIZONTAL)
 		self.resampleToFitX = wx.TextCtrl(self, -1, "%d" % rx)
 		self.resampleToFitY = wx.TextCtrl(self, -1, "%d" % ry)
 		self.resampleToFitZ = wx.TextCtrl(self, -1, "%d" % rz)
-		horizbox.Add(self.resampleToFitX)        
+		horizbox.Add(self.resampleToFitX)
 		horizbox.Add(x1)
 		horizbox.Add(self.resampleToFitY)
 		horizbox.Add(x2)
@@ -308,10 +305,10 @@ class PerformanceSettings(wx.Panel):
 		numberOfDivisions = conf.getConfigItem("NumberOfDivisions", "Performance")
 		
 		if numberOfDivisions:
-			numberOfDivisions = int(numberOfDivisions)        
+			numberOfDivisions = int(numberOfDivisions)
 		else:
 			numberOfDivisions = 4
-		self.numberOfDivisions = wx.TextCtrl(self, -1, "%d" % numberOfDivisions)            
+		self.numberOfDivisions = wx.TextCtrl(self, -1, "%d" % numberOfDivisions)
 		
 		
 		
@@ -340,7 +337,7 @@ class PerformanceSettings(wx.Panel):
 			limitMemory = eval(limitMemory)
 		else:
 			limitMemory = False
-		self.limitMemoryCheckbox.SetValue(limitMemory)        
+		self.limitMemoryCheckbox.SetValue(limitMemory)
 		alwaysSplit = conf.getConfigItem("AlwaysSplit", "Performance")
 		if alwaysSplit:
 			alwaysSplit = eval(alwaysSplit)
@@ -350,7 +347,7 @@ class PerformanceSettings(wx.Panel):
 		if noLimit:
 			noLimit = eval(noLimit)
 		else:
-			noLimit = False            
+			noLimit = False
 		self.noLimitsCheckbox.SetValue(noLimit)
 		self.splitToThreadsCheckbox.SetValue(alwaysSplit)
 		if alwaysSplit:
@@ -380,9 +377,9 @@ class PerformanceSettings(wx.Panel):
 			val = 0
 		self.rescaleCheckbox.SetValue(val)
 	
-		self.sizer.Add(self.rescaleBoxSizer, (0, 0), flag = wx.EXPAND | wx.ALL)        
-		self.sizer.Add(self.memoryBoxSizer, (1, 0), flag = wx.EXPAND | wx.ALL)        
-		self.sizer.Add(self.resampleBoxSizer, (2, 0), flag = wx.EXPAND | wx.ALL)        
+		self.sizer.Add(self.rescaleBoxSizer, (0, 0), flag = wx.EXPAND | wx.ALL)
+		self.sizer.Add(self.memoryBoxSizer, (1, 0), flag = wx.EXPAND | wx.ALL)
+		self.sizer.Add(self.resampleBoxSizer, (2, 0), flag = wx.EXPAND | wx.ALL)
 		
 		self.SetAutoLayout(1)
 		self.SetSizer(self.sizer)
@@ -436,7 +433,7 @@ class PerformanceSettings(wx.Panel):
 		Created: 12.03.2005, KP
 		Description: A method that writes out the settings that have been modified
 					 in this window.
-		"""     
+		""" 
 		forceResample = self.resampleCheckbox.GetValue()
 		try:
 			rx = int(self.resampleX.GetValue())
@@ -466,13 +463,13 @@ class PerformanceSettings(wx.Panel):
 		
 		rescaleOnLoad = self.rescaleCheckbox.GetValue()
 		print "Setting rescale on load to ", rescaleOnLoad
-		conf.setConfigItem("RescaleOnLoading", "Performance", str(rescaleOnLoad))        
+		conf.setConfigItem("RescaleOnLoading", "Performance", str(rescaleOnLoad))
 		limitMem = self.limitMemoryCheckbox.GetValue()
 		limitTo = self.memoryLimit.GetValue()
 		noLimits = self.noLimitsCheckbox.GetValue()
 		alwaysSplit = self.splitToThreadsCheckbox.GetValue()
 		nthreads = self.numberOfDivisions.GetValue()
-				
+
 		conf.setConfigItem("LimitMemory", "Performance", str(not not limitMem))
 		conf.setConfigItem("LimitTo", "Performance", str(limitTo))
 		conf.setConfigItem("NoLimits", "Performance", str(noLimits))

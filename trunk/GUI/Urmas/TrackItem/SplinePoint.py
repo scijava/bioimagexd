@@ -38,21 +38,21 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 import wx
 
-import os.path
-import sys
-import math, random
+#import os.path
+#import sys
+#import math, random
 
-import ImageOperations
-from Urmas import UrmasControl
-import Logging        
+#import ImageOperations
+#from Urmas import UrmasControl
+#import Logging        
 DRAG_OFFSET = 20
 
-import messenger
+import lib.messenger
+import KeyframePoint
+import TrackItem
 
-from TrackItem import *
 
-
-class SplinePoint(TrackItem):
+class SplinePoint(TrackItem.TrackItem):
 	"""
 	Created: 19.03.2005, KP
 	Description: A class representing an item in a spline points track.
@@ -66,7 +66,7 @@ class SplinePoint(TrackItem):
 		self.itemnum = kws.get("itemnum", 0)
 		self.focalPoint = (0, 0, 0)
 		self.orientation = (0, 0, 1), (0, 0, 0)
-		TrackItem.__init__(self, parent, text, size, **kws)
+		TrackItem.TrackItem.__init__(self, parent, text, size, **kws)
 		if kws.has_key("point"):
 			print "Got point", kws["point"]
 			self.setPoint(kws["point"])
@@ -113,7 +113,7 @@ class SplinePoint(TrackItem):
 		self.dc.SetBrush(wx.Brush(col))
 		#self.dc.SetBackground(wx.Brush(wx.BLACK))
 		self.dc.DrawRectangle(0, 0, self.width, self.height)        
-		TrackItem.drawHeader(self, hilight)
+		TrackItem.TrackItem.drawHeader(self, hilight)
 		
 		r, g, b = self.headercolor
 		self.dc.SetPen(wx.Pen(wx.Colour(r, g, b), 2))
@@ -152,7 +152,7 @@ class SplinePoint(TrackItem):
 		Created: 06.04.2005, KP
 		Description: A method called when the item has been resized
 		"""     
-		TrackItem.updateItem(self)  
+		TrackItem.TrackItem.updateItem(self)  
 		pos = self.parent.getSplinePoint(self.itemnum)
 		self.point = pos
 		
@@ -161,7 +161,7 @@ class SplinePoint(TrackItem):
 		Created: 11.04.2005, KP
 		Description: Update the item
 		"""       
-		TrackItem.__set_pure_state__(self, state)
+		TrackItem.TrackItem.__set_pure_state__(self, state)
 		self.point = state.point
 		try:
 			self.focalPoint = state.focalPoint
@@ -174,7 +174,7 @@ class SplinePoint(TrackItem):
 		Created: 11.04.2005, KP
 		Description: Return the dict that is to be pickled to disk
 		"""     
-		odict = TrackItem.__getstate__(self)
+		odict = TrackItem.TrackItem.__getstate__(self)
 		for key in ["point", "focalPoint"]:
 			odict[key] = self.__dict__[key]
 		return odict        
@@ -188,7 +188,8 @@ class SplinePoint(TrackItem):
 		desc = "SP%d(%d,%d,%d)" % (self.itemnum, self.point[0], self.point[1], self.point[2])
 		return "[%s %ds:%ds]" % (desc, start, end)      
 	
-	def isStopped(self):return 0
+	def isStopped(self):
+		return 0
 
 	def onDown(self, event):
 		"""
@@ -196,9 +197,9 @@ class SplinePoint(TrackItem):
 		Description: Event handler for when the mouse is pressed down over
 					 this item. 
 		"""      
-		TrackItem.onDown(self, event)
+		TrackItem.TrackItem.onDown(self, event)
 		
-		messenger.send(None, "show_arrow", self.point)    
+		lib.messenger.send(None, "show_arrow", self.point)    
 		
 class SplineEndPoint(SplinePoint):
 	"""
@@ -215,7 +216,7 @@ class SplineEndPoint(SplinePoint):
 		w, h = size
 		w = h
 		print "Creating keyframe endpoint with size=", w, h
-		KeyframePoint.__init__(self, parent, text, size, **kws)
+		KeyframePoint.KeyframePoint.__init__(self, parent, text, size, **kws)
 		self.headercolor = (80, 100, 200)
 		self.setWidth(w)
 		
@@ -225,7 +226,7 @@ class SplineEndPoint(SplinePoint):
 	def setWidth(self, w):
 		if self.init_done:
 			return
-		KeyframePoint.setWidth(self, w)
+		KeyframePoint.KeyframePoint.setWidth(self, w)
 	def setColor(self, col, headercolor):
 		"""
 		Created: 10.02.2005, KP

@@ -31,14 +31,15 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 
 import vtk
-import time
+#import time
 import Logging
 import lib.Module
-from lib.Module import *
+#from lib.Module import *
 
-import scripting as bxd
+#import scripting as bxd
+import optimize
 
-class FilterBasedModule(Module):
+class FilterBasedModule(lib.Module.Module):
 	"""
 	Created: 04.04.2006, KP
 	Description: Applies a stack of processing filters to a given input dataset
@@ -49,14 +50,20 @@ class FilterBasedModule(Module):
 		Created: 25.11.2004, KP
 		Description: Initialization
 		"""
-		Module.__init__(self, **kws)
+		lib.Module.Module.__init__(self, **kws)
 
-		self.cachedTimepoint = -1
-		self.running = 0
+		# TODO: remove attributes that already exist in base class!
 		self.cached = None
+		self.cachedTimepoint = -1
+		#self.x,self.y,self.z=0,0,0
 		self.depth = 8
+		self.extent = None
+		self.images = []
 		self.modified = 0
-
+		self.preview = None
+		self.running = 0
+		self.settings = None
+		
 		self.reset()
 		
 	def setModified(self, flag):
@@ -74,45 +81,49 @@ class FilterBasedModule(Module):
 					 that control the processing are changed and the
 					 preview data becomes invalid.
 		"""
-		Module.reset(self)
-		self.preview = None
+		#self.images = []
+		lib.Module.Module.reset(self)
+		#self.extent = None
 		del self.cached
-		self.cached = None        
+		self.cached = None		  
 		self.cachedTimepoint = -1
-		self.n = -1
+		#self.n=-1
 
-	def addInput(self, dataunit, data):
+	def addInput(self, dataunit, data):	#TODO: test
 		"""
 		Created: 04.04.2006, KP
-		Description: Adds a vtkImageData object as an input to the processing module
+		Description: Adds an input for the single dataunit Manipulationing filter
 		"""
-		Module.addInput(self, dataunit, data)
+		lib.Module.addInput(self, dataunit, data)
+		self.settings = dataunit.getSettings()
 
-	def getPreview(self, z):
+
+	def getPreview(self, depth):		#TODO: test
 		"""
 		Created: 04.04.2006, KP
-		Description: Does a preview calculation for the x-y plane at depth z
+		Description: Does a preview calculation for the x-y plane at depth depth
 		"""
 		if self.settings.get("ShowOriginal"):
-			return self.images[0]        
+			return self.images[0]		 
 		if not self.preview:
 			dims = self.images[0].GetDimensions()
-			if z >= 0:
-				self.extent = (0, dims[0] - 1, 0, dims[1] - 1, z, z)
+			if depth >= 0:
+				self.extent = (0, dims[0]-1, 0, dims[1]-1, depth, depth)
 			else:
 				self.extent = None
-			self.preview = self.doOperation(preview = 1)
+			self.preview = self.doOperation(preview=1)
 			self.extent = None
-		return self.preview
+		return self.zoomDataset(self.preview)
 
 
-	def doOperation(self, preview = 0):
+	def doOperation(self, preview=0):	#TODO:test
 		"""
 		Created: 04.04.2006, KP
 		Description: Manipulationes the dataset in specified ways
-		"""        
+		"""		   
 		if preview and not self.modified and self.cached and self.timepoint == self.cachedTimepoint:
-			Logging.info("--> Returning cached data, timepoint=%d, cached timepoint=%d" % (self.timepoint, self.cachedTimepoint), kw = "pipeline")
+			Logging.info("--> Returning cached data, timepoint=%d, cached timepoint=%d" % 
+				(self.timepoint, self.cachedTimepoint), kw = "pipeline")
 			return self.cached
 		else:
 			del self.cached
@@ -126,46 +137,52 @@ class FilterBasedModule(Module):
 		if not filterlist:
 			return self.images[0]
 		try:
-			filterlist = filter(lambda x:x.getEnabled(), filterlist)
-		except:
-			filterlist = []
-		n = len(filterlist) - 1
+			# enabledFilters = filter(lambda x:x.getEnabled(), filterlist)
+			enabledFilters = [filterModule for filterModule in filterlist if filterModule.getEnabled()]  
+		except AttributeError:
+			enabledFilters = []
+		highestFilterIndex = len(enabledFilters)-1
 		
 		lastfilter = None
-		lasttype = "UC3"
-		for i, currfilter in enumerate(filterlist):
-				flag = (i == n)
-				if i > 0:
-					currfilter.setPrevFilter(filterlist[i - 1])
-				else:
-					currfilter.setPrevFilter(None)
-				if not flag:
-					currfilter.setNextFilter(filterlist[i + 1])
-				else:
-					currfilter.setNextFilter(None)
-				data = currfilter.execute(data, update = 0, last = flag)
+		#lasttype = "UC3"
+		for i, currfilter in enumerate(enabledFilters):
+			flag = (i == highestFilterIndex)
+			if i > 0:
+				print enabledFilters[i-1], "->", currfilter
+				currfilter.setPrevFilter(enabledFilters[i-1])
+			else:
+				print "-> ", currfilter
+				currfilter.setPrevFilter(None)
+			if not flag:
+				currfilter.setNextFilter(enabledFilters[i+1])
+				print currfilter, "->", enabledFilters[i+1]
+			else:
+				currfilter.setNextFilter(None)
+				print currfilter, "->|"
+			#data = currfilter.execute(data,update=flag,last=flag)
+			data = currfilter.execute(data, update=0, last=flag)
+			
+			if not flag:
+				nextfilter = enabledFilters[i+1]
+				if not currfilter.itkFlag and nextfilter.itkFlag:
+					Logging.info("Executing VTK side before switching to ITK", kw="pipeline")
+					data = optimize.optimize(image = data, releaseData = 1)
+					data.Update()				 
 				
-				if not flag:
-					nextfilter = filterlist[i + 1]
-					if not currfilter.itkFlag and nextfilter.itkFlag:
-						Logging.info("Executing VTK side before switching to ITK", kw = "pipeline")
-						data = bxd.mem.optimize(image = data, releaseData = 1)
-						data.Update()                
-					
-				
-				lastfilter = currfilter
-				
-				if not preview:
-					currfilter.writeOutput(self.controlUnit, self.timepoint)
-				lasttype = currfilter.getImageType()
-				
-				
-				data = [data]
-				if not data:
-					#print "GOT NO DATA"
-					self.cached = None
-					return None                
-		
+			
+			lastfilter = currfilter
+			
+			if not preview:
+				currfilter.writeOutput(self.controlUnit, self.timepoint)
+			#lasttype = currfilter.getImageType()
+			
+			
+			data = [data]
+			if not data:
+				#print "GOT NO DATA"
+				self.cached = None
+				return None				   
+	
 		#print "DATA=",data
 		data = data[0]
 		if data.__class__ != vtk.vtkImageData:

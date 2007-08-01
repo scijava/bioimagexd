@@ -36,24 +36,23 @@ __author__ = "BioImageXD Project"
 __version__ = "$Revision: 1.22 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
+#import Logging        
+#import messenger
+#import os.path
+#import sys
+#import math
+#import random
+#from Urmas import UrmasControl
+
+import lib.ImageOperations
+import GUI.Urmas.UrmasPersist
+import TrackItem
+import vtk
 import wx
 
-import os.path
-import sys
-import math, random
-import vtk
-import messenger
-import ImageOperations
-from Urmas import UrmasControl
-from Urmas import UrmasPersist
-import Logging        
 DRAG_OFFSET = 20
 
-
-from TrackItem import *
-
-
-class KeyframePoint(TrackItem):
+class KeyframePoint(TrackItem.TrackItem):
 	"""
 	Class: KeyframePoint
 	Created: 18.03.2005, KP
@@ -69,7 +68,7 @@ class KeyframePoint(TrackItem):
 		self.itemnum = kws.get("itemnum", 0)
 		self.image = None
 		self.cam = None
-		TrackItem.__init__(self, parent, text, size, **kws)
+		TrackItem.TrackItem.__init__(self, parent, text, size, **kws)
 		if kws.has_key("point"):
 			print "Got point", kws["point"]
 			self.setPoint(kws["point"])
@@ -140,7 +139,7 @@ class KeyframePoint(TrackItem):
 		"""     
 		self.image = self.parent.splineEditor.getAsImage()        
 		vx, vy, vz = self.image.GetDimensions()
-		img = ImageOperations.vtkImageDataToWxImage(self.image)
+		img = lib.ImageOperations.vtkImageDataToWxImage(self.image)
 		f = (self.height - self.labelheight) / float(img.GetHeight())
 		img = img.Mirror(0)
 		self.thumbnailbmp = img.Scale(vx * f, self.height - self.labelheight).ConvertToBitmap()
@@ -185,7 +184,7 @@ class KeyframePoint(TrackItem):
 		Created: 06.04.2005, KP
 		Description: A method called when the item has been resized
 		"""     
-		TrackItem.updateItem(self)  
+		TrackItem.TrackItem.updateItem(self)  
 #        pos=self.parent.getSplinePoint(self.itemnum)
 #        self.point = pos
 		
@@ -195,11 +194,11 @@ class KeyframePoint(TrackItem):
 		Created: 11.04.2005, KP
 		Description: Update the item
 		"""       
-		TrackItem.__set_pure_state__(self, state)
+		TrackItem.TrackItem.__set_pure_state__(self, state)
 		self.point = state.point
 		self.cam = vtk.vtkCamera()
 		
-		UrmasPersist.setVTKState(self.cam, state.cam)
+		GUI.Urmas.UrmasPersist.setVTKState(self.cam, state.cam)
 		self.parent.setSplinePoint(self.itemnum, self.point)
 		
 	def __getstate__(self):
@@ -208,10 +207,10 @@ class KeyframePoint(TrackItem):
 		Created: 11.04.2005, KP
 		Description: Return the dict that is to be pickled to disk
 		"""     
-		odict = TrackItem.__getstate__(self)
+		odict = TrackItem.TrackItem.__getstate__(self)
 		for key in ["point"]:
 			odict[key] = self.__dict__[key]
-		odict.update({"cam":UrmasPersist.getVTKState(self.cam)})
+		odict.update({"cam":GUI.Urmas.UrmasPersist.getVTKState(self.cam)})
 		return odict        
 		
 	def __str__(self):

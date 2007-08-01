@@ -30,20 +30,18 @@ __author__ = "BioImageXD Project"
 __version__ = "$Revision: 1.21 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
+#import UIElements
 
-import  wx
 import wx.lib.buttons as buttons
 import  wx.lib.colourselect as  csel
-
-import MenuManager
-import scripting
-import messenger
-import UIElements
+import lib.messenger
+import Logging
 import MaskTray
-
-import vtk
-
+import MenuManager
 import os
+import scripting
+import vtk
+import  wx
 
 class AnnotationToolbar(wx.Window):
 	"""
@@ -61,10 +59,10 @@ class AnnotationToolbar(wx.Window):
 		self.SetSizer(self.sizer)
 		self.eventRecorder = vtk.vtkInteractorEventRecorder()
 		self.SetAutoLayout(1)
-		messenger.connect(None, "visualizer_mode_loading", self.onLoadMode)
+		lib.messenger.connect(None, "visualizer_mode_loading", self.onLoadMode)
 		
 		self.numberOfChannels = 0
-		messenger.connect(None, "update_annotations", self.updateAnnotations)
+		lib.messenger.connect(None, "update_annotations", self.updateAnnotations)
 		self.createAnnotationToolbar()        
 		
 	def onLoadMode(self, obj, evt, vismode):
@@ -98,10 +96,12 @@ class AnnotationToolbar(wx.Window):
 		self.circleBtn = createBtn(MenuManager.ID_ROI_CIRCLE, "circle.gif", "Select a circular area of the image")
 		self.sizer.Add(self.circleBtn, (0, 0))
 		
-		self.rectangleBtn = createBtn(MenuManager.ID_ROI_RECTANGLE, "rectangle.gif", "Select a circular area of the image")
+		self.rectangleBtn = createBtn(MenuManager.ID_ROI_RECTANGLE, "rectangle.gif", \
+										"Select a circular area of the image")
 		self.sizer.Add(self.rectangleBtn, (0, 1))
 		
-		self.polygonBtn = createBtn(MenuManager.ID_ROI_POLYGON, "polygon.gif", "Select a polygonal area of the image")
+		self.polygonBtn = createBtn(MenuManager.ID_ROI_POLYGON, "polygon.gif", \
+										"Select a polygonal area of the image")
 		self.sizer.Add(self.polygonBtn, (1, 0))
 		
 		self.scaleBtn = createBtn(MenuManager.ID_ADD_SCALE, "scale.gif", "Draw a scale bar on the image")
@@ -112,22 +112,28 @@ class AnnotationToolbar(wx.Window):
 		self.textBtn = createBtn(MenuManager.ID_ANNOTATION_TEXT, "text.gif", "Add a text annotation")
 		self.sizer.Add(self.textBtn, (2, 0))
 
-		self.deleteAnnotationBtn = createBtn(MenuManager.ID_DEL_ANNOTATION, "delete_annotation.gif", "Delete an annotation")
+		self.deleteAnnotationBtn = createBtn(MenuManager.ID_DEL_ANNOTATION, "delete_annotation.gif", \
+												"Delete an annotation")
 		self.sizer.Add(self.deleteAnnotationBtn, (4, 1))   
 
-		self.roiToMaskBtn = createBtn(MenuManager.ID_ROI_TO_MASK, "roitomask.gif", "Convert the selected Region of Interest to a Mask", btnclass = buttons.GenBitmapButton)
+		self.roiToMaskBtn = createBtn(MenuManager.ID_ROI_TO_MASK, "roitomask.gif", \
+										"Convert the selected Region of Interest to a Mask", \
+										btnclass = buttons.GenBitmapButton)
 		self.sizer.Add(self.roiToMaskBtn, (4, 0))
 
-		#self.fontBtn = createBtn(MenuManager.ID_ANNOTATION_FONT,"fonts.gif","Set the font for annotations", btnclass=buttons.GenBitmapButton)
+		#self.fontBtn = createBtn(MenuManager.ID_ANNOTATION_FONT,"fonts.gif",\
+		#							"Set the font for annotations", btnclass=buttons.GenBitmapButton)
 		#self.sizer.Add(self.fontBtn, (3,1))
 
 		self.colorSelect = csel.ColourSelect(self, -1, "", self.annotateColor, size = (65, -1))
 		self.sizer.Add(self.colorSelect, (5, 0), span = (1, 2))
 		
-		self.resamplingBtn = createBtn(MenuManager.ID_RESAMPLING, "resample.gif", "Enable or disable the resampling of image data")
+		self.resamplingBtn = createBtn(MenuManager.ID_RESAMPLING, "resample.gif", \
+										"Enable or disable the resampling of image data")
 		self.resamplingBtn.SetToggle(1)
 		
-		self.resampleToFitBtn = createBtn(MenuManager.ID_RESAMPLE_TO_FIT, "resample_tofit.gif", "Enable or disable the resampling of image data")
+		self.resampleToFitBtn = createBtn(MenuManager.ID_RESAMPLE_TO_FIT, "resample_tofit.gif", \
+											"Enable or disable the resampling of image data")
 		
 		self.sizer.Add(self.resamplingBtn, (6, 0))
 		self.sizer.Add(self.resampleToFitBtn, (6, 1))
@@ -135,8 +141,10 @@ class AnnotationToolbar(wx.Window):
 #        self.recordBtn = buttons.GenToggleButton(self, MenuManager.ID_RECORD_EVENTS, "Record", size=(64,-1))
 #        self.sizer.Add(self.recordBtn, (7,0), span=(1,2))
 		
-#        self.playBtn = createBtn(MenuManager.ID_PLAY_EVENTS,"player_play.gif","Play the recorded events", btnclass=buttons.GenBitmapButton)
-#        self.stopBtn = createBtn(MenuManager.ID_PLAY_EVENTS,"player_pause.gif","Stop playing the recorded events", btnclass=buttons.GenBitmapButton)
+#        self.playBtn = createBtn(MenuManager.ID_PLAY_EVENTS,"player_play.gif", \
+#									"Play the recorded events", btnclass=buttons.GenBitmapButton)
+#        self.stopBtn = createBtn(MenuManager.ID_PLAY_EVENTS,"player_pause.gif", \
+#									"Stop playing the recorded events", btnclass=buttons.GenBitmapButton)
 #        self.sizer.Add(self.playBtn, (8,0))
 #        self.sizer.Add(self.stopBtn, (8,1))
 		
@@ -144,27 +152,28 @@ class AnnotationToolbar(wx.Window):
 #        self.stopBtn.Bind(wx.EVT_BUTTON, self.onStopPlaying)
 #        self.recordBtn.Bind(wx.EVT_BUTTON, self.onRecord)        
 		
-		  #bmp = wx.Image(os.path.join(iconpath,"resample.gif")).ConvertToBitmap()
-		#tb.DoAddTool(MenuManager.ID_RESAMPLING,"Resampling",bmp,kind=wx.ITEM_CHECK,shortHelp="Enable or disable the resampling of image data")
-		#wx.EVT_TOOL(self,MenuManager.ID_RESAMPLING,self.onResampleData)
-		#tb.EnableTool(MenuManager.ID_RESAMPLING,0)
-		#tb.ToggleTool(MenuManager.ID_RESAMPLING,1)
+#		bmp = wx.Image(os.path.join(iconpath,"resample.gif")).ConvertToBitmap()
+#		tb.DoAddTool(MenuManager.ID_RESAMPLING, "Resampling", bmp, kind = wx.ITEM_CHECK, \
+#						shortHelp = "Enable or disable the resampling of image data")
+#		wx.EVT_TOOL(self,MenuManager.ID_RESAMPLING,self.onResampleData)
+#		tb.EnableTool(MenuManager.ID_RESAMPLING,0)
+#		tb.ToggleTool(MenuManager.ID_RESAMPLING,1)
 		
-		#sbox = wx.StaticBox(self,-1,"Resampling")
-		#sboxsizer = wx.StaticBoxSizer(sbox, wx.VERTICAL)
-		#self.resamplingOff = wx.RadioButton(self,-1,"Disabled", style = wx.RB_GROUP)
-		#self.resamplingOn = wx.RadioButton(self,-1,"Enabled")
-		#self.resampleToFit = wx.RadioButton(self,-1,"To fit")
+#		sbox = wx.StaticBox(self,-1,"Resampling")
+#		sboxsizer = wx.StaticBoxSizer(sbox, wx.VERTICAL)
+#		self.resamplingOff = wx.RadioButton(self,-1,"Disabled", style = wx.RB_GROUP)
+#		self.resamplingOn = wx.RadioButton(self,-1,"Enabled")
+#		self.resampleToFit = wx.RadioButton(self,-1,"To fit")
 		
-		#sboxsizer.Add(self.resamplingOn)
-		#sboxsizer.Add(self.resamplingOff)
-		#sboxsizer.Add(self.resampleToFit)
-		#self.sizer.Add(sboxsizer, (6,0),span=(1,2))
-		#self.sizer.Add(self.resamplingOn, (7,0),span=(1,2))
-		#self.sizer.Add(self.resampleToFit, (8,0),span=(1,2))
+#		sboxsizer.Add(self.resamplingOn)
+#		sboxsizer.Add(self.resamplingOff)
+#		sboxsizer.Add(self.resampleToFit)
+#		self.sizer.Add(sboxsizer, (6,0),span=(1,2))
+#		self.sizer.Add(self.resamplingOn, (7,0),span=(1,2))
+#		self.sizer.Add(self.resampleToFit, (8,0),span=(1,2))
 		
-		#self.dimInfo = UIElements.DimensionInfo(self,-1, size=(120,50))
-		#self.sizer.Add(self.dimInfo, (6,0), span=(1,2))
+#		self.dimInfo = UIElements.DimensionInfo(self,-1, size=(120,50))
+#		self.sizer.Add(self.dimInfo, (6,0), span=(1,2))
 	
 		self.sizerCount = 8
 		self.resamplingBtn.Bind(wx.EVT_BUTTON, self.onResampleData)
@@ -174,7 +183,7 @@ class AnnotationToolbar(wx.Window):
 		self.polygonBtn.Bind(wx.EVT_BUTTON, self.addAnnotation)
 		self.scaleBtn.Bind(wx.EVT_BUTTON, self.addAnnotation)
 		self.roiToMaskBtn.Bind(wx.EVT_BUTTON, self.roiToMask)
-		#wx.EVT_TOOL(self.parent,MenuManager.ID_ADD_SCALE,self.addAnnotation)
+#		wx.EVT_TOOL(self.parent,MenuManager.ID_ADD_SCALE,self.addAnnotation)
 		self.deleteAnnotationBtn.Bind(wx.EVT_BUTTON, self.deleteAnnotation)
 		
 	def onRecord(self, evt):
@@ -183,6 +192,7 @@ class AnnotationToolbar(wx.Window):
 		Description: Start / stop recording events
 		"""
 		flag = evt.GetIsDown()
+		#TODO: playBtn and stopBtn are defined in commented code and therefore not working
 		self.playBtn.Enable(not flag)
 		self.stopBtn.Enable(not flag)
 		if flag:
@@ -217,15 +227,20 @@ class AnnotationToolbar(wx.Window):
 		
 		flag = evt.GetIsDown()
 		scripting.resampleToFit = flag
-		self.visualizer.updateRendering()              
+		self.visualizer.updateRendering()          
+
+
 	def onResampleData(self, evt):
 		"""
 		Created: 23.07.2006, KP
 		Description: Toggle the resampling on / off
 		"""
+#        flag=self.resampleBtn.GetValue()
+		
 		flag = evt.GetIsDown()
 		scripting.resamplingDisabled = not flag
 		self.visualizer.updateRendering()              
+#		if self.zoomToFitFlag: # changed this so makes sense, 19.7.2007 SS
 		if self.visualizer.zoomToFitFlag:            
 			self.visualizer.zoomToFit(None)
 		

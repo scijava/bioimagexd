@@ -27,28 +27,24 @@ __author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.37 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
-import ConfigParser
-import struct
-import re
-import messenger
 try:
 	import itk
-except:
+except ImportError:
 	pass
-
-import codecs
-		
-
 import os.path
-from DataSource import *
-import DataUnit
+from lib.DataSource.DataSource import DataSource
+from lib.DataUnit.DataUnit import DataUnit
+import re
+import vtk
 
-import glob
+def getExtensions():
+	return ["pic"]
 
-def getExtensions(): return ["pic"]
-def getFileType(): return "BioRad PIC datasets (*.pic)"
-def getClass(): return BioradDataSource    
-	
+def getFileType():
+	return "BioRad PIC datasets (*.pic)"
+
+def getClass():
+	return BioradDataSource    
 
 class BioradDataSource(DataSource):
 	"""
@@ -62,16 +58,16 @@ class BioradDataSource(DataSource):
 		"""    
 		DataSource.__init__(self)
 		self.setPath(filename)
-		name = os.path.basename(filename)
-		name = name.split(".")
-		name = ".".join(name[:-1])
-		self.name = name
+		dataSetName = os.path.basename(filename)
+		dataSetName = dataSetName.split(".")
+		dataSetName = ".".join(dataSetName[:-1])
+		self.dataSetName = dataSetName
 		self.io = itk.BioRadImageIO.New()
 		self.reader = itk.ImageFileReader[itk.Image.UC3].New()
 		self.reader.SetImageIO(self.io.GetPointer())
-		
+		self.ctf = None
 		self.filename = filename
-		
+		self.filepattern = None
 		self.dimensions = None
 		self.voxelsize = (1, 1, 1)
 		self.spacing = None
@@ -83,9 +79,6 @@ class BioradDataSource(DataSource):
 			self.path = os.path.dirname(filename)
 			self.getDataSetCount()
 		
-		
-		
-		
 	def getDataSetCount(self):
 		"""
 		Method: getDataSetCount
@@ -93,39 +86,54 @@ class BioradDataSource(DataSource):
 		Description: Returns the number of individual DataSets (=time points)
 		managed by this DataSource
 		"""
+# This seems to rely on the fact that tps is set to -1 in the constructor
 		if self.tps < 0:
-			f = self.filename[:]
-			r = re.compile("(\d+)....$")
+			#f = self.filename[:]
+			#r = re.compile("(\d+)....$")
 			
-			m = r.search(f)
-			d = m.groups(0)
-			print d
-			f = f.replace(d[0], "%d")
-			n = 1
-			self.filepattern = f
+			#m = r.search(f)
+			#d = m.groups(0)
+			#print d
+			#f = f.replace(d[0], "%d")
+			#n = 1
+			#self.filepattern = f
+			#for i in range(1, 99999):
+			#	if os.path.exists(f%i):
+			#		n = i
+			#print "Dataset has", n, "timepoints"
+			#self.tps = n
+			filename = self.filename
+			numberBeforeExtensionRe = re.compile("(\d+)....$")
+			numberBeforeExtensionMatch = numberBeforeExtensionRe.search(filename)
+			numberBeforeExtension = numberBeforeExtensionMatch.group(1)
+			self.filepattern = filename.replace(numberBeforeExtension, "%d")
+			timePoints = 1
+# Try various filenames and see if they exist to determine amount of timepoint
+# this DataSource manages.
+# The filenames don't have zeroes in them? bxd00005.pic for example.
+# Shouldn't we break if a timepoint file doesn't exist.
+# TODO: Are we sure that 99999 is high enough?
 			for i in range(1, 99999):
-				if os.path.exists(f % i):
-					n = i
-			print "Dataset has", n, "timepoints"
-			self.tps = n
+				if os.path.exists(self.filepattern % i):
+					timePoints = i
+			print "Dataset has", timePoints, "timepoints"
+			self.tps = timePoints
 		return self.tps
-		
+
 	def getFileName(self):
 		"""
 		Method: getFileName()
 		Created: 21.07.2005
 		Description: Return the file name
-		"""    
+		"""
 		return self.filename
-		
 
-	
 	def getDataSet(self, i, raw = 0):
 		"""
 		Method: getDataSet
 		Created: 12.04.2005, KP
 		Description: Returns the DataSet at the specified index
-		Parameters:   i       The index
+		Parameters:   i		  The index
 		"""
 		data = self.getTimepoint(i)
 		data = self.getResampledData(data, i)
@@ -133,28 +141,28 @@ class BioradDataSource(DataSource):
 			self.shift = vtk.vtkImageShiftScale()
 			self.shift.SetOutputScalarTypeToUnsignedChar()
 		self.shift.SetInput(data)
-			
+
 		x0, x1 = data.GetScalarRange()
 		print "Scalar range=", x0, x1
 		if not x1:
 			x1 = 1
-		scale = 255.0 / x1
-		
+		scale = 255.0/x1
+
 		if scale:
 			self.shift.SetScale(scale)
 		self.shift.Update()
 		data = self.shift.GetOutput()
 		data.ReleaseDataFlagOff()
 		return data
-		
-	def getTimepoint(self, n, onlyDims = 0):
+
+	def getTimepoint(self, requestedTimePoint, onlyDims = 0):
 		"""
 		Method: getTimepoint
 		Created: 16.02.2006, KP
 		Description: Return the nth timepoint
-		"""        
-		print "Switching to dataset ", self.filepattern % (n + 1)
-		self.reader.SetFileName(self.filepattern % (n + 1))
+		"""		   
+		print "Switching to dataset ", self.filepattern % (requestedTimePoint + 1)
+		self.reader.SetFileName(self.filepattern % (requestedTimePoint + 1))
 		self.reader.Update()
 		
 		if not self.itkToVtk:
@@ -163,13 +171,13 @@ class BioradDataSource(DataSource):
 		
 		if not self.voxelsize:
 			size = data.GetSpacing()
-			x, y, z = [size.GetElement(x) for x in range(0, 3)]
+			x, y, z = [size.GetElement(i) for i in range(0, 3)]
 			self.voxelsize = (x, y, z)
 			print "Read voxel size", self.voxelsize
 		if not self.dimensions:
 			reg = data.GetLargestPossibleRegion()
 			size = reg.GetSize()
-			x, y, z = [size.GetElement(x) for x in range(0, 3)]
+			x, y, z = [size.GetElement(i) for i in range(0, 3)]
 			self.dimensions = (x, y, z)
 			print "Read dimensions", self.dimensions
 		if onlyDims:
@@ -182,14 +190,14 @@ class BioradDataSource(DataSource):
 		"""
 		Method: getDimensions()
 		Created: 12.04.2005, KP
-		Description: Returns the (x,y,z) dimensions of the datasets this 
+		Description: Returns the (x, y, z) dimensions of the datasets this 
 					 dataunit contains
 		"""
 		if self.resampleDims:
 			return self.resampleDims
-		if not self.dimensions:            
+		if not self.dimensions:			   
 			self.getVoxelSize()
-			#print "Got dimensions=",self.dimensions                
+			#print "Got dimensions=", self.dimensions
 		return self.dimensions
 
 		
@@ -202,7 +210,7 @@ class BioradDataSource(DataSource):
 		"""
 		if not self.spacing:
 			a, b, c = self.getVoxelSize()
-			self.spacing = [1, b / a, c / a]
+			self.spacing = [1, b/a, c/a]
 		return self.spacing
 		
 	def getVoxelSize(self):
@@ -214,33 +222,30 @@ class BioradDataSource(DataSource):
 		"""
 		if not self.voxelsize:
 			self.getTimepoint(0, onlyDims = 1)
-
 		return self.voxelsize
-  
- 
-			
-			
-	def loadFromFile(self, filename):
+
+	@staticmethod
+	def loadFromFile(filename):
 		"""
 		Method: loadFromFile
 		Created: 12.04.2005, KP
 		Description: Loads the specified .oif-file and imports data from it.
-		Parameters:   filename  The .oif-file to be loaded
+		Parameters:   filename	The .oif-file to be loaded
 		"""
-		dataunit = DataUnit.DataUnit()
+		dataunit = DataUnit()
 		datasource = BioradDataSource(filename)
 		dataunit.setDataSource(datasource)
 		return [dataunit]
 		
 
-	def getName(self):
+	def getDataSetName(self):
 		"""
-		Method: getName
+		Method: getDataSetName
 		Created: 18.11.2005, KP
 		Description: Returns the name of the dataset series which this datasource
 					 operates on
 		"""
-		return self.name
+		return self.dataSetName
 
 		
 	def getColorTransferFunction(self):
@@ -254,4 +259,4 @@ class BioradDataSource(DataSource):
 			self.ctf = vtk.vtkColorTransferFunction()
 			self.ctf.AddRGBPoint(0, 0, 0, 0)
 			self.ctf.AddRGBPoint(255, 0, 1, 0)
-		return self.ctf        
+		return self.ctf 

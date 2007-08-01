@@ -32,23 +32,15 @@ __author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.42 $"
 __date__ = "$Date: 2005/01/13 14:52:39 $"
 
-import wx
-import messenger
-import os.path
-import Dialogs
-
-from PreviewFrame import *
-from GUI.IntensityTransferEditor import *
-
-import sys
-import time
-
-
-from GUI import TaskPanel
-import ColorTransferEditor
+from GUI.ColorTransferEditor import CTFButton
+from GUI.IntensityTransferEditor import IntensityTransferEditor
+import lib.messenger
 import Logging
+from GUI.TaskPanel import TaskPanel
+import wx
+import vtkbxd
 
-class AdjustPanel(TaskPanel.TaskPanel):
+class AdjustPanel(TaskPanel):
 	"""
 	Created: 03.11.2004, KP
 	Description: A window for processing a single dataunit
@@ -65,11 +57,11 @@ class AdjustPanel(TaskPanel.TaskPanel):
 		self.btns = []
 		self.entries = []
 		self.timePoint = 0
-		TaskPanel.TaskPanel.__init__(self, parent, tb)
+		TaskPanel.__init__(self, parent, tb)
 		# Preview has to be generated heregoto
 		# self.colorChooser=None
 		self.createIntensityTransferPage()
-		messenger.connect(None, "timepoint_changed", self.updateTimepoint)
+		lib.messenger.connect(None, "timepoint_changed", self.updateTimepoint)
 		self.Show()
 
 		self.mainsizer.Layout()
@@ -137,7 +129,6 @@ class AdjustPanel(TaskPanel.TaskPanel):
 		#self.panel.Layout()
 		#self.mainsizer.Fit(self.panel)
 
-
 	def createIntensityTransferPage(self):
 		"""
 		Created: 09.12.2004, KP
@@ -194,7 +185,6 @@ class AdjustPanel(TaskPanel.TaskPanel):
 		#self.dataUnit.setInterpolationTimePoints(lst)
 		self.settings.set("InterpolationTimepoints", lst)
 
-
 	def gotoInterpolationTimePoint(self, entrynum):
 		"""
 		Created: 09.12.2004, KP
@@ -209,7 +199,7 @@ class AdjustPanel(TaskPanel.TaskPanel):
 			tp -= 1
 			Logging.info("Previewing timepoint ", tp, "(will send change event)", kw = "task")
 
-			messenger.send(None, "timepoint_changed", tp)
+			lib.messenger.send(None, "timepoint_changed", tp)
 			#self.updateTimepoint(evt)
 
 	def createButtonBox(self):
@@ -218,11 +208,11 @@ class AdjustPanel(TaskPanel.TaskPanel):
 		Description: Creates a button box containing the buttons Render,
 					 Preview and Close
 		"""
-		TaskPanel.TaskPanel.createButtonBox(self)
+		TaskPanel.createButtonBox(self)
 
 		#self.processButton.SetLabel("Process Dataset Series")
 		#self.processButton.Bind(wx.EVT_BUTTON,self.doProcessingCallback)
-		messenger.connect(None, "process_dataset", self.doProcessingCallback)
+		lib.messenger.connect(None, "process_dataset", self.doProcessingCallback)
 
 	def createOptionsFrame(self):
 		"""
@@ -230,11 +220,11 @@ class AdjustPanel(TaskPanel.TaskPanel):
 		Description: Creates a frame that contains the various widgets
 					 used to control the colocalization settings
 		"""
-		TaskPanel.TaskPanel.createOptionsFrame(self)
+		TaskPanel.createOptionsFrame(self)
 
 		self.paletteLbl = wx.StaticText(self, -1, "Channel palette:")
 		self.commonSettingsSizer.Add(self.paletteLbl, (1, 0))
-		self.colorBtn = ColorTransferEditor.CTFButton(self)
+		self.colorBtn = CTFButton(self)
 		self.commonSettingsSizer.Add(self.colorBtn, (2, 0))
 		self.Layout()
 
@@ -260,8 +250,6 @@ class AdjustPanel(TaskPanel.TaskPanel):
 			if i != self.timePoint:
 				self.settings.setCounted("IntensityTransferFunctions", i, itf)
 		
-				
-
 	def resetTransferFunctions(self, event = None):
 		"""
 		Created: 30.11.2004, KP
@@ -270,8 +258,9 @@ class AdjustPanel(TaskPanel.TaskPanel):
 		l = self.dataUnit.getNumberOfTimepoints()
 		sources = self.dataUnit.getSourceDataUnits()
 		for i in range(l):
-			minval, maxval = min([a.getScalarRange()[0] for a in sources]), max([a.getScalarRange()[1] for a in sources])
-			itf = vtk.vtkIntensityTransferFunction()
+			minval = min([a.getScalarRange()[0] for a in sources])
+			maxval = max([a.getScalarRange()[1] for a in sources])
+			itf = vtkbxd.vtkIntensityTransferFunction()
 			itf.SetRangeMax(maxval)
 			
 			self.settings.setCounted("IntensityTransferFunctions", i, itf)
@@ -288,8 +277,6 @@ class AdjustPanel(TaskPanel.TaskPanel):
 		"""
 		self.dataUnit.interpolateIntensities()
 #        self.doPreviewCallback()
-
-
 
 	def updateSettings(self, force = 0):
 		"""
@@ -317,13 +304,12 @@ class AdjustPanel(TaskPanel.TaskPanel):
 				self.colorBtn.setColorTransferFunction(ctf)
 				self.colorBtn.Refresh()
 
-
 	def doProcessingCallback(self, *args):
 		"""
 		Created: 03.11.2004, KP
 		Description: A callback for the button "Process Dataset Series"
 		"""
-		TaskPanel.TaskPanel.doOperation(self)
+		TaskPanel.doOperation(self)
 
 	def setCombinedDataUnit(self, dataUnit):
 		"""
@@ -334,7 +320,7 @@ class AdjustPanel(TaskPanel.TaskPanel):
 					 This is overwritten from TaskPanel since we only process
 					 one dataunit here, not multiple source data units
 		"""
-		TaskPanel.TaskPanel.setCombinedDataUnit(self, dataUnit)
+		TaskPanel.setCombinedDataUnit(self, dataUnit)
 	
 		ctf = self.settings.get("ColorTransferFunction")
 		if ctf and self.colorBtn:

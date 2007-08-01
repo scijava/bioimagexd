@@ -31,16 +31,19 @@ __author__ = "BioImageXD Project"
 __version__ = "$Revision: 1.28 $"
 __date__ = "$Date: 2005/01/13 14:52:39 $"
 
+import Logging
+import os.path
 import wx
-from TimepointSelection import *
+import TimepointSelection
 import time
-import UIElements
-import messenger
-from Logging import *
+#import UIElements
+import lib.messenger
+#import Logging
 import scripting as bxd
+import GUI.Dialogs
+import lib.Command
 
-
-class ProcessingManager(TimepointSelection):
+class ProcessingManager(TimepointSelection.TimepointSelection):
 	"""
 	Created: 03.11.2004, KP
 	Description: A dialog for selecting timepoints for processing
@@ -50,7 +53,7 @@ class ProcessingManager(TimepointSelection):
 		Created: 10.11.2004
 		Description: Initialization
 		"""
-		TimepointSelection.__init__(self, parent)
+		TimepointSelection.TimepointSelection.__init__(self, parent)
 		self.progressDialog = None
 		self.operationName = operation
 		bxd.processingManager = self
@@ -74,7 +77,7 @@ class ProcessingManager(TimepointSelection):
 		Created: 03.2.2005, KP
 		Description: Creates the standard control buttons
 		"""
-		TimepointSelection.createButtonBox(self)
+		TimepointSelection.TimepointSelection.createButtonBox(self)
 
 		self.actionBtn.SetLabel("Process Time Points")
 		self.actionBtn.Bind(wx.EVT_BUTTON, self.onDoProcessing)
@@ -116,12 +119,12 @@ class ProcessingManager(TimepointSelection):
 		self.Show(0)
 		name = self.dataUnit.getName()
 
-		filename = Dialogs.askSaveAsFileName(self, "Save %s dataset as" % self.operationName, "%s.bxd" % name, "BioImageXD Dataset (*.bxd)|*.bxd")
+		filename = GUI.Dialogs.askSaveAsFileName(self, "Save %s dataset as" % self.operationName, "%s.bxd" % name, "BioImageXD Dataset (*.bxd)|*.bxd")
 		filename = filename.replace("\\", "\\\\")
 		do_cmd = "bxd.processingManager.doProcessing('%s')" % filename
 		undo_cmd = ""
 		
-		cmd = Command.Command(Command.GUI_CMD, None, None, do_cmd, undo_cmd, desc = "Process the selected timepoints")
+		cmd = lib.Command.Command(lib.Command.GUI_CMD, None, None, do_cmd, undo_cmd, desc = "Process the selected timepoints")
 		cmd.run()        
 		
 	def doProcessing(self, filename):
@@ -134,7 +137,6 @@ class ProcessingManager(TimepointSelection):
 		#name=self.operationName+" ("
 		#name+=", ".join([x.getName() for x in self.dataUnit.getSourceDataUnits()])
 		#name+=")"
-		
 		
 		name = os.path.basename(filename)
 		name = ".".join(name.split(".")[:-1])
@@ -149,11 +151,11 @@ class ProcessingManager(TimepointSelection):
 		self.t1 = time.time()
 		
 		tps = self.getSelectedTimepoints()
-		messenger.connect(None, "update_processing_progress", self.updateProgressMeter)
+		lib.messenger.connect(None, "update_processing_progress", self.updateProgressMeter)
 		try:
 			filename = self.dataUnit.doProcessing(filename, timepoints = tps)
-		except GUIError, ex:
+		except Logging.GUIError, ex:
 			ex.show()
 		# then we close this window...
-		messenger.send(None, "load_dataunit", filename)
+		lib.messenger.send(None, "load_dataunit", filename)
 		self.Close()

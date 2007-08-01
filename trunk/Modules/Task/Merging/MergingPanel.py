@@ -32,23 +32,14 @@ __author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.28 $"
 __date__ = "$Date: 2005/01/13 14:52:39 $"
 
-import os.path
-
-
-from PreviewFrame import *
-
-import GUI.IntensityTransferEditor
-from GUI.IntensityTransferEditor import *
-from Logging import *
-
+from GUI.IntensityTransferEditor import IntensityTransferEditor
+import lib.messenger
+import Logging
 from GUI import TaskPanel
 from GUI import ColorTransferEditor
-import sys
-
-import Dialogs
-import time
 import vtk
-
+import vtkbxd
+import wx
 
 class MergingPanel(TaskPanel.TaskPanel):
 	"""
@@ -63,7 +54,7 @@ class MergingPanel(TaskPanel.TaskPanel):
 		Parameters:
 				parent    Is the parent widget of this window
 		"""
-		self.alphaTF = vtk.vtkIntensityTransferFunction()
+		self.alphaTF = vtkbxd.vtkIntensityTransferFunction()
 		self.operationName = "Merge"
 		self.createItemSelection = 1
 		TaskPanel.TaskPanel.__init__(self, parent, tb)
@@ -81,7 +72,7 @@ class MergingPanel(TaskPanel.TaskPanel):
 					 Preview and Close
 		"""
 		TaskPanel.TaskPanel.createButtonBox(self)
-		messenger.connect(None, "process_dataset", self.doColorMergingCallback)        
+		lib.messenger.connect(None, "process_dataset", self.doColorMergingCallback)        
 
 		
 	def createOptionsFrame(self):
@@ -114,17 +105,18 @@ class MergingPanel(TaskPanel.TaskPanel):
 		# The alpha function doesn't need to be edited
 		# Code left if futher need shows ups
 		
-		#self.editAlphaPanel=wx.Panel(self.settingsNotebook,-1)
+		#self.editAlphaPanel = wx.Panel(self.settingsNotebook,-1)
 		self.editAlphaPanel = wx.Panel(self.editIntensityPanel, -1)
 		self.editAlphaSizer = wx.GridBagSizer()
 		
-		#self.alphaEditor=IntensityTransferEditor(self.editAlphaPanel)
+		#self.alphaEditor = IntensityTransferEditor(self.editAlphaPanel)
 		#self.alphaEditor.setIntensityTransferFunction(self.alphaTF)
 		#self.alphaEditor.setAlphaMode(1)
 		#self.editAlphaSizer.Add(self.alphaEditor,(0,0),span=(1,2))        
 		
 		self.alphaModeBox = wx.RadioBox(self.editAlphaPanel, -1, "Alpha channel construction",
-		choices = ["Maximum Mode", "Average Mode", "Image Luminance"], majorDimension = 2, style = wx.RA_SPECIFY_COLS)
+		choices = ["Maximum Mode", "Average Mode", "Image Luminance"], \
+					majorDimension = 2, style = wx.RA_SPECIFY_COLS)
 		
 		
 		self.alphaModeBox.Bind(wx.EVT_RADIOBOX, self.modeSelect)
@@ -173,7 +165,7 @@ class MergingPanel(TaskPanel.TaskPanel):
 		for unit in dataunits:
 			setting = unit.getSettings()
 			minval, maxval = unit.getScalarRange()
-			itf = vtk.vtkIntensityTransferFunction()
+			itf = vtkbxd.vtkIntensityTransferFunction()
 			itf.SetRangeMax(maxval)
 			self.alphaTF.SetRangeMax(maxval)
 			setting.set("IntensityTransferFunction", itf)
@@ -239,11 +231,12 @@ class MergingPanel(TaskPanel.TaskPanel):
 		
 		for i in sources:
 			minval, maxval = i.getScalarRange()
-			if maxval > totmax:totmax = maxval
+			if maxval > totmax:
+				totmax = maxval
 		self.alphaTF.SetRangeMax(int(totmax))
 		
 		for i in range(len(sources)):
-			tf = vtk.vtkIntensityTransferFunction()
+			tf = vtkbxd.vtkIntensityTransferFunction()
 			tf.SetRangeMax(int(totmax))
 			#self.settings.setCounted("IntensityTransferFunction",i,tf,0)
 			sources[i].getSettings().set("IntensityTransferFunction", tf)

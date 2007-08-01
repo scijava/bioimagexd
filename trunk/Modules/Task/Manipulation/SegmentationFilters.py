@@ -29,37 +29,34 @@
 __author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.42 $"
 __date__ = "$Date: 2005/01/13 14:52:39 $"
-#import ManipulationFilters
-from lib import ProcessingFilter
-import ImageOperations
-import wx
-import time
+
+#import labelShape
+
 import scripting as bxd
-import csv
 import codecs
-import os.path
-try:
-	import itk
-except:
-	pass
-import vtk
-import types
-
-import Logging
-import MathFilters
+import csv
 import GUI.GUIBuilder as GUIBuilder
-import messenger
-
-
+import itk
+import lib.ImageOperations
+import lib.messenger
+import Logging
+import os.path
+from lib import ProcessingFilter
+import time
+import types
+import vtk
+import vtkbxd
+import wx
 import  wx.lib.mixins.listctrl  as  listmix
-SEGMENTATION = "Segmentation"
-#ITK="ITK"
 
+#ITK="ITK"
+SEGMENTATION = "Segmentation"
 MEASUREMENT = "Measurements"
 WATERSHED = "Watershed segmentation"
 REGIONGROWING = "Region growing"
 
 class WatershedTotalsList(wx.ListCtrl):
+
 	def __init__(self, parent, log):
 		wx.ListCtrl.__init__(
 			self, parent, -1, 
@@ -223,7 +220,7 @@ class WatershedObjectList(wx.ListCtrl, listmix.ListCtrlSelectionManagerMix):
 		
 		self.counter -= 1
 		if self.counter <= 0:
-			messenger.send(None, "selected_objects", self.getSelection())
+			lib.messenger.send(None, "selected_objects", self.getSelection())
 			self.counter = 0
 	def OnItemActivated(self, event):
 		self.currentItem = event.m_itemIndex
@@ -232,9 +229,9 @@ class WatershedObjectList(wx.ListCtrl, listmix.ListCtrlSelectionManagerMix):
 			centerofmass = self.centersOfMassList[self.currentItem]
 			x, y, z = centerofmass
 			
-			messenger.send(None, "show_centerofmass", self.currentItem, centerofmass)
-			messenger.send(None, "zslice_changed", int(z))
-			messenger.send(None, "update_helpers", 1)
+			lib.messenger.send(None, "show_centerofmass", self.currentItem, centerofmass)
+			lib.messenger.send(None, "zslice_changed", int(z))
+			lib.messenger.send(None, "update_helpers", 1)
 		
 
 	def OnItemDeselected(self, evt):
@@ -242,10 +239,10 @@ class WatershedObjectList(wx.ListCtrl, listmix.ListCtrlSelectionManagerMix):
 
 	
 	def OnGetItemImage(self, item):
-#        if item % 3 == 0:
-#            return self.idx1
-#        else:
-		 return - 1
+#		if item % 3 == 0:
+#			return self.idx1
+#		else:
+		return - 1
 
 	def OnGetItemAttr(self, item):
 		if item % 2 == 1:
@@ -301,7 +298,7 @@ class ThresholdFilter(ProcessingFilter.ProcessingFilter):
 		oldval = self.parameters.get(parameter, "ThisIsABadValueThatNoOneWillEverUse")
 		ProcessingFilter.ProcessingFilter.setParameter(self, parameter, value)
 		if self.initDone and value != oldval:
-			messenger.send(None, "data_changed", 0)
+			lib.messenger.send(None, "data_changed", 0)
 		
 	def getParameters(self):
 		"""
@@ -685,8 +682,8 @@ class MorphologicalWatershedSegmentationFilter(ProcessingFilter.ProcessingFilter
 		if not self.relabelFilter:
 			
 			self.relabelFilter = itk.RelabelComponentImageFilter[data, data].New()
-		print "Relabeling..."
 
+		print "Relabeling..."
 		self.relabelFilter.SetInput(data)
 		th = self.parameters["Threshold"]
 		if th:
@@ -703,7 +700,7 @@ class MorphologicalWatershedSegmentationFilter(ProcessingFilter.ProcessingFilter
 		settings = self.dataUnit.getSettings()
 		ncolors = settings.get("PaletteColors")
 		if self.noPalette or not ncolors or ncolors < n:
-			ctf = ImageOperations.watershedPalette(0, n)
+			ctf = lib.ImageOperations.watershedPalette(0, n)
 			self.noPalette = 0
 			self.segCtf = ctf
 			if markWatershedLine:
@@ -713,7 +710,7 @@ class MorphologicalWatershedSegmentationFilter(ProcessingFilter.ProcessingFilter
 			self.dataUnit.getSettings().set("ColorTransferFunction", ctf)    
 			val = [0, 0, 0]
 			ctf.GetColor(1, val)
-			print "ctf value at 1=", val, "n colors=", n
+			print "ctf value at 1 =", val, "n colors =", n
 			settings.set("PaletteColors", n)
 		else:
 			if self.segCtf:
@@ -825,7 +822,7 @@ class ConnectedComponentFilter(ProcessingFilter.ProcessingFilter):
 		ncolors = settings.get("PaletteColors")
 		print "NColors=", ncolors, "n=", n
 		if not ncolors or ncolors < n:
-			ctf = ImageOperations.watershedPalette(0, n)
+			ctf = lib.ImageOperations.watershedPalette(0, n)
 			if not self.origCtf:
 				self.origCtf = self.dataUnit.getColorTransferFunction()
 			self.dataUnit.getSettings().set("ColorTransferFunction", ctf)    
@@ -1087,7 +1084,7 @@ class MeasureVolumeFilter(ProcessingFilter.ProcessingFilter):
 		self.descs = {"StatisticsFile": "Results file:"}
 		self.reportGUI = None
 		self.itkfilter = None
-		self.labelShape = None
+		#self.labelShape = None
 		
 	def setDataUnit(self, dataUnit):
 		"""
@@ -1143,7 +1140,8 @@ class MeasureVolumeFilter(ProcessingFilter.ProcessingFilter):
 		settings = dataUnit.getSettings()
 		settings.set("StatisticsFile", filename)
 		w.writerow(["Timepoint %d" % timepoint])
-		w.writerow(["Object #", "Volume (micrometers)", "Volume (pixels)", "Center of Mass", "Center of Mass (micrometers)", "Avg. Intensity"])
+		w.writerow(["Object #", "Volume (micrometers)", "Volume (pixels)", "Center of Mass", \
+					"Center of Mass (micrometers)", "Avg. Intensity"])
 		for i, (volume, volumeum) in enumerate(self.values):
 			cog = self.centersofmass[i]
 			umcog = self.umcentersofmass[i]
@@ -1205,12 +1203,11 @@ class MeasureVolumeFilter(ProcessingFilter.ProcessingFilter):
 		#print "image now=",image
 		
 		
-		if not self.labelShape:
-			import labelShape
-			self.labelShape = labelShape
+		#if not self.labelShape:
+		#	self.labelShape = labelShape
 
 			#ul3 = itk.Image.UL3
-		self.itkfilter = self.labelShape.LabelShapeImageFilter[image].New()
+		self.itkfilter = itk.LabelShapeImageFilter[image].New()
 		self.itkfilter.SetInput(image)
 		self.itkfilter.Update()
 		#self.setImageType("UL3")
@@ -1236,14 +1233,20 @@ class MeasureVolumeFilter(ProcessingFilter.ProcessingFilter):
 		
 		if self.avgintCalc:
 			del self.avgintCalc
-		self.avgintCalc = avgintCalc = vtk.vtkImageLabelAverage()
+		self.avgintCalc = avgintCalc = vtkbxd.vtkImageLabelAverage()
 		#avgintCalc.DebugOn()
 
 		# We require unsigned long input data
 		if vtkimage.GetScalarType() != 9:
 			dt = vtkimage.GetScalarTypeAsString()
-			Logging.error("Wrong input type for Object Statistics",
-			"The calculate object statistics requires an input dataset of type unsigned long.\nA dataset of type %s was provided.\nTypically, you will use Calculate Object Statistics Filter after a Watershed filter, or Connected Component Labeling filter.\nThis error may be caused by not having either of those filters in the procedure list." % (dt))
+			Logging.error("Wrong input type for Object Statistics", \
+							"The calculate object statistics requires an input \
+								dataset of type unsigned long. \n\
+								A dataset of type %s was provided.\n\
+								Typically, you will use Calculate Object Statistics Filter \
+								after a Watershed filter, or Connected Component Labeling filter.\n\
+								This error may be caused by not having either \
+								of those filters in the procedure list." % (dt))
 			return vtkimage
 		
 		#print "Using as input",origInput

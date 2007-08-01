@@ -29,8 +29,11 @@
 __author__ = "BioImageXD Project"
 __version__ = "$Revision: 1.22 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
-import wx
+
+import codecs
+import csv
 import types
+import wx
 
 class CSVListView(wx.ListCtrl):
 	"""
@@ -42,7 +45,6 @@ class CSVListView(wx.ListCtrl):
 			self, parent, -1, 
 			size = size,
 			style = wx.LC_REPORT | wx.LC_VIRTUAL | wx.LC_HRULES | wx.LC_VRULES,
-			
 			)
 
 		self.SetItemCount(1)

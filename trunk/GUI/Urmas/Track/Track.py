@@ -38,20 +38,17 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 import wx
 import Logging
-import os.path
-import sys
-import math, random
-import threading
+#import os.path
+#import sys
+#import math, random
+#import threading
 
-from Urmas.TrackItem import *
-from Urmas import UrmasPalette
-import ImageOperations
-import Dialogs
-import TimepointSelection
-
-
-
-import messenger
+#from Urmas.TrackItem import *
+#from GUI.Urmas import UrmasPalette
+import lib.ImageOperations
+#import GUI.Dialogs
+#import GUI.TimepointSelection
+import lib.messenger
 
 class Track(wx.Panel):
 	"""
@@ -77,8 +74,8 @@ class Track(wx.Panel):
 		self.label = name
 		self.previtem = None
 		if kws.has_key("height"):
-		   #print "Setting height to ",kws["height"]
-		   self.height = kws["height"]
+			#print "Setting height to ",kws["height"]
+			self.height = kws["height"]
 		if kws.has_key("editable"):
 			self.editable = kws["editable"]
 		self.timescale = kws["timescale"]
@@ -124,7 +121,7 @@ class Track(wx.Panel):
 		#print "duration=",d,"frames=",s
 		self.setDuration(d, s)
 		self.paintTrack()
-		messenger.connect(None, "show_time_pos", self.onShowTimePosition)
+		lib.messenger.connect(None, "show_time_pos", self.onShowTimePosition)
 
 	def getStartOfTrack(self):
 		"""
@@ -174,7 +171,7 @@ class Track(wx.Panel):
 			self.dc.SetTextForeground(self.fg)
 			weight = wx.NORMAL
 			if self.bold:
-			   weight = wx.BOLD
+				weight = wx.BOLD
 			self.dc.SetFont(wx.Font(9, wx.SWISS, wx.NORMAL, weight))
 			self.dc.DrawText(self.label, 2, 1)
 			
@@ -251,7 +248,7 @@ class Track(wx.Panel):
 			#print "Painting overlay at ",self.overlayPos*pps
 			try:
 				color, percentage = self.overlayColor
-				overlay = ImageOperations.getOverlay(int(w), int(h), color, percentage)
+				overlay = lib.ImageOperations.getOverlay(int(w), int(h), color, percentage)
 			except Exception, e:
 				print "Failed to create overlay:", e
 				#sys.stdin.readline()
@@ -444,13 +441,15 @@ class Track(wx.Panel):
 			ix, iy = item.GetPosition()
 			w, h = item.GetSize()
 			#print "ix,iy=",ix,iy
-			if ix <= x:n += 1
+			if ix <= x:
+				n += 1
 			if ix <= x and ix + w >= x:
 				#print "Found item",item
 				curritem = item
 				self.dragEndPosition = self.items.index(item) + 1
 				d = abs(ix - x)
-				if d < w / 2:self.dragEndPosition -= 1
+				if d < w / 2:
+					self.dragEndPosition -= 1
 			if self.previtem and self.previtem != curritem:
 				self.previtem.drawItem()
 				#self.previtem.Refresh()
@@ -615,7 +614,7 @@ class Track(wx.Panel):
 		"""           
 		self.dataUnit = dataUnit
 		
-	def getLength(self):
+	def getNumberOfTimepoints(self):
 		"""
 		Created: 04.02.2005, KP
 		Description: Return the number of items in this track
@@ -834,8 +833,5 @@ class Track(wx.Panel):
 			
 
 		
-import KeyframeTrack
+#import KeyframeTrack
 		
-"""
-FOo
-"""

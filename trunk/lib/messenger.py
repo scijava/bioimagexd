@@ -1,10 +1,10 @@
 """
 Implements a simple, robust, safe, Messenger class that allows one to
-register callbacks for a signal/slot (or event/handler) kind of
+register callbacks for a signal / slot (or event / handler) kind of
 messaging system.  One can basically register a callback
-function/method to be called when an object sends a particular event.
+function / method to be called when an object sends a particular event.
 The Messenger class is Borg.  So it is easy to instantiate and use.
-This module is also reload-safe, so if the module is reloaded the
+This module is also reload - safe, so if the module is reloaded the
 callback information is not lost.  Method callbacks do not have a
 reference counting problem since weak references are used.
 
@@ -39,7 +39,7 @@ This approach is necessary if you don't want to be bitten by reference
 cycles.  If you have a Python object holding a reference to a VTK
 object and pass a method of the object to the AddObserver call, you
 will get a reference cycle that cannot be collected by the garbage
-collector.  Using this messenger module gets around the problem.
+collector.	Using this messenger module gets around the problem.
 
 Also note that adding a connection for 'AnyEvent' will trigger a
 callback no matter what event was generated.  The code above also
@@ -57,18 +57,15 @@ import types
 import sys
 import weakref
 
-import Logging
-import traceback
-
 
 #################################################################
 # This code makes the module reload-safe.
 #################################################################
 _saved = {}
 
-for name in ['messenger', 'enthought.tvtk.messenger']:
-	if sys.modules.has_key(name):
-		mod = sys.modules[name]
+for moduleName in ['messenger', 'enthought.tvtk.messenger']:
+	if sys.modules.has_key(moduleName):
+		mod = sys.modules[moduleName]
 		if hasattr(mod, 'Messenger'):
 			_saved = mod.Messenger._shared_data
 		del mod
@@ -80,6 +77,9 @@ for name in ['messenger', 'enthought.tvtk.messenger']:
 #################################################################
 
 class MessengerError(Exception):
+	"""
+	A stub class for MessengerErrors, might be expanded
+	"""
 	pass
 
 
@@ -91,10 +91,10 @@ class MessengerError(Exception):
 class Messenger:
 	
 	"""Implements a messenger class which deals with something like
-	signals and slots.  Basically, an object can register a signal
-	that it plans to emit.  Any other object can decide to handle that
+	signals and slots.	Basically, an object can register a signal
+	that it plans to emit.	Any other object can decide to handle that
 	signal (of that particular object) by registering itself with the
-	messenger.  When a signal is emitted the messenger calls all
+	messenger.	When a signal is emitted the messenger calls all
 	handlers.  This makes it totally easy to deal with communication
 	between objects.  The class is Borg.  Rather than use this class,
 	please use the 'connect' and 'disconnect' functions.
@@ -125,7 +125,7 @@ class Messenger:
 		into and also given a bound method in callback that should
 		have two arguments.  emit_signal will call the callback
 		with the object that emitted the signal and the actual
-		event/signal as arguments.
+		event / signal as arguments.
 		
 		Parameters
 		----------
@@ -162,8 +162,8 @@ class Messenger:
 			slots[callback_key] = (None, callback)
 		elif typ is types.MethodType:
 			obj = weakref.ref(callback.im_self)
-			name = callback.__name__
-			slots[callback_key] = (obj, name)
+			itemName = callback.__name__
+			slots[callback_key] = (obj, itemName)
 		else:
 			raise MessengerError, \
 				  "Callback must be a function or method. "\
@@ -187,7 +187,7 @@ class Messenger:
 
 		 If `event` and `callback` are None (the default) all the
 		 events and handlers for the object are removed.  If only
-		 `callback` is None, only this handler is removed.  If `obj`
+		 `callback` is None, only this handler is removed.	If `obj`
 		 and 'event' alone are specified, all handlers for the event
 		 are removed.
 
@@ -236,31 +236,28 @@ class Messenger:
 			if sigs.has_key(evt):
 				slots = sigs[evt]
 				remove = []
-				try:
-					for key in slots:
-						obj, meth = slots[key]
-						if obj: # instance method
-							inst = obj()
-							if inst:
-								getattr(inst, meth)(source, event, *args, **kw_args)
-							else:
-								# Oops, dead reference.
-								remove.append(key)
-						else: # normal function
-							meth(source, event, *args, **kw_args)
-				except:
-					Logging.backtrace()
-					traceback.print_exc()
-				for m in remove:
-					del slots[m]                    
+				for key in slots:
+					obj, meth = slots[key]
+					if obj: # instance method
+						inst = obj()
+						if inst:
+							getattr(inst, meth)(source, event, *args, **kw_args)
+						else:
+							# Oops, dead reference.
+							remove.append(key)
+					else: # normal function
+						meth(source, event, *args, **kw_args)
+				for itemToBeRemoved in remove:
+					del slots[itemToBeRemoved]					
 
-	def is_registered(self, obj):        
+	def is_registered(self, obj):		 
 		"""Returns if the given object has registered itself with the
 		messenger.
 
 		"""
 		try:
-			sigs = self._get_signals(obj)
+			self._get_signals(obj)
+			#sigs = self._get_signals(obj)
 		except MessengerError:
 			return 0
 		else:

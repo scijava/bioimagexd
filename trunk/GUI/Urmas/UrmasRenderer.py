@@ -38,13 +38,14 @@ __author__ = "BioImageXD Project"
 __version__ = "$Revision: 1.22 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
-import RenderingInterface
-from UrmasControl import *
+import lib.RenderingInterface
+#import UrmasControl
+import Logging
 import time
-import Dialogs
-import wx
-import messenger
-import Interpolation
+import GUI.Dialogs
+#import wx
+import lib.messenger
+#import Interpolation
 import vtk
 import math
 
@@ -67,7 +68,7 @@ class UrmasRenderer:
 		"""    
 		self.control = control
 		self.splineEditor = None
-		self.renderingInterface = RenderingInterface.getRenderingInterface(1)
+		self.renderingInterface = lib.RenderingInterface.getRenderingInterface(1)
 		self.renderingInterface.setVisualizer(control.visualizer)
 
 		self.oldTimepoint = -1
@@ -85,8 +86,8 @@ class UrmasRenderer:
 		
 		self.currTrack = None
 		self.lastSplinePosition = None
-		messenger.connect(None, "render_time_pos", self.renderPreviewAt)
-		messenger.connect(None, "stop_rendering", self.onStopRendering)
+		lib.messenger.connect(None, "render_time_pos", self.renderPreviewAt)
+		lib.messenger.connect(None, "stop_rendering", self.onStopRendering)
 		self.pausedRendering = 0
 		self.rendering = 0
 		self.pauseFrame = 0
@@ -94,9 +95,9 @@ class UrmasRenderer:
 		self.currentIsPreview = 0
 		self.renderingPreviewFlag = 0
 		
-		messenger.connect(None, "playback_pause", self.onPausePlayback)
-		messenger.connect(None, "playback_play", self.onPlayPlayback)
-		messenger.connect(None, "playback_stop", self.onStopPlayback)
+		lib.messenger.connect(None, "playback_pause", self.onPausePlayback)
+		lib.messenger.connect(None, "playback_play", self.onPlayPlayback)
+		lib.messenger.connect(None, "playback_stop", self.onStopPlayback)
 	   
 	def onStopPlayback(self, obj, evt, *args):
 		"""
@@ -108,7 +109,7 @@ class UrmasRenderer:
 			print "\n\n**** ON STOP PLAYBACK"
 			self.stopFlag = 1
 			self.renderPreviewAt(None, None, 0)
-			messenger.send(None, "set_preview_mode", 0)
+			lib.messenger.send(None, "set_preview_mode", 0)
 			print "\n\nPreview mode ends because preview stopped (btn)"
 	  
 	def onPlayPlayback(self, obj, evt, *args):
@@ -125,7 +126,7 @@ class UrmasRenderer:
 			self.pauseFlag = 0
 			self.doRenderFrames(self.currentIsPreview)
 			#if self.currentIsPreview:
-			#    messenger.send(None,"set_preview_mode",)
+			#    lib.messenger.send(None,"set_preview_mode",)
 		#But if we weren't rendering, then do a rendering preview
 		elif not self.rendering:
 			print "\n\ *** RESTART RENDERING ***\n\n\n"
@@ -156,7 +157,7 @@ class UrmasRenderer:
 		"""        
 		self.stopFlag = 1
 		if self.renderingPreviewFlag:
-			messenger.send(None, "set_preview_mode", 0)
+			lib.messenger.send(None, "set_preview_mode", 0)
 			self.renderingPreviewFlag = 0
 			
 	def startAnimation(self, control):
@@ -172,10 +173,13 @@ class UrmasRenderer:
 		self.renderingInterface.setCurrentTimepoint(0)
 		self.renderingInterface.setTimePoints([0])
 		settings = self.dataUnit.getSettings()
+#        ctf= settings.get("ColorTransferFunction")
+#        self.renderingInterface.doRendering(preview=data,ctf = ctf)
 
 		
 	def render(self, control, preview = 0, **kws):
 		"""
+		Class: Render(control)
 		Created: 04.04.2005, KP
 		Description: Render the timeline
 		"""    
@@ -185,14 +189,14 @@ class UrmasRenderer:
 		self.stopFlag = 0
 		print "\n\n####IS PREVIEW", preview
 		self.currentIsPreview = preview
-		messenger.send(None, "report_progress_only", self)
+		lib.messenger.send(None, "report_progress_only", self)
 		self.control = control
 		self.dataUnit = control.getDataUnit()
 		self.duration = duration = control.getDuration()
 		self.frames = frames = control.getFrames()
 		self.spf = duration / float(frames)
 		if not preview and not self.renderingInterface.isVisualizationSoftwareRunning():
-			Dialogs.showerror(self.control.window, "Cannot render project: visualization software is not running", "Visualizer is not running")
+			GUI.Dialogs.showerror(self.control.window, "Cannot render project: visualization software is not running", "Visualizer is not running")
 			return - 1
 		if kws.has_key("size"):
 			self.renderingInterface.setRenderWindowSize(kws["size"])
@@ -205,11 +209,11 @@ class UrmasRenderer:
 #            print "self.renwin=",self.renwin
 			self.ren = self.renderingInterface.getRenderer()
 			if self.renderingInterface.isVisualizationModuleLoaded() == False:
-				Dialogs.showwarning(self.control.window, "A visualization module needs to be loaded for rendering", "No visualization modules loaded")
+				GUI.Dialogs.showwarning(self.control.window, "A visualization module needs to be loaded for rendering", "No visualization modules loaded")
 				return
 
 			if not self.ren:
-				Dialogs.showwarning(self.control.window, "No renderer in main render window!! This should not be possible!", "Oops!")
+				GUI.Dialogs.showwarning(self.control.window, "No renderer in main render window!! This should not be possible!", "Oops!")
 				return
 #            self.dlg = wx.ProgressDialog("Rendering","Rendering at %.2fs / %.2fs (frame %d / %d)"%(0,0,0,0),maximum = frames, parent = self.control.window)
 #            self.dlg.Show()
@@ -233,6 +237,7 @@ class UrmasRenderer:
 		
 	def doRenderFrames(self, preview):
 		"""
+		Class: doRenderFrames()
 		Created: 31.01.2006, KP
 		Description: Method that only does the rendering.
 					 This is separate from render() to make it
@@ -241,10 +246,10 @@ class UrmasRenderer:
 		status = "Rendering done."
 		start = 0
 		if self.currentIsPreview:
-			messenger.send(None, "set_preview_mode", 1)
+			lib.messenger.send(None, "set_preview_mode", 1)
 		if self.pausedRendering:
 			if self.currentIsPreview:
-				messenger.send(None, "set_preview_mode", 1)
+				lib.messenger.send(None, "set_preview_mode", 1)
 			print "\n\n --- RESTORING PAUSED POS ", self.pauseFrame
 			start = self.pauseFrame
 			self.pausedRendering = 0
@@ -262,24 +267,24 @@ class UrmasRenderer:
 				self.pauseFrame = n
 				self.pausedRendering = 1
 				return
-			messenger.send(None, "set_timeslider_value", (n + 1))
+			lib.messenger.send(None, "set_timeslider_value", (n + 1))
 			self.renderFrame(n, (n + 1) * self.spf, self.spf, preview = preview)            
-			messenger.send(self, "update_progress", (n + 1) / float(self.frames + 1), "Rendering frame %d / %d. Time: %.1fs" % (n, self.frames, (n + 1) * self.spf))        
+			lib.messenger.send(self, "update_progress", (n + 1) / float(self.frames + 1), "Rendering frame %d / %d. Time: %.1fs" % (n, self.frames, (n + 1) * self.spf))        
 		self.rendering = 0
 		self.pausedRendering = 0
 		self.pauseFrame = 0
 		
 		if self.currentIsPreview:
 			print "\n\nPreview mode ends because we're at end"
-			messenger.send(None, "set_preview_mode", 0)
-		messenger.send(None, "report_progress_only", None)
+			lib.messenger.send(None, "set_preview_mode", 0)
+		lib.messenger.send(None, "report_progress_only", None)
 		if not preview:
-			messenger.send(None, "update_progress", 1.0, status)
+			lib.messenger.send(None, "update_progress", 1.0, status)
 		else:
-			messenger.send(None, "update_progress", 1.0, "")
+			lib.messenger.send(None, "update_progress", 1.0, "")
 #            self.dlg.Destroy()
 		
-		messenger.send(None, "rendering_done")
+		lib.messenger.send(None, "rendering_done")
 		
 	def initializeCameraInterpolator(self):
 		"""
@@ -339,7 +344,7 @@ class UrmasRenderer:
 			print "\n\n\n**** SETTING PAUSE FRAME TO ", frame, "spf=", self.spf
 			self.pauseFrame = frame
 		self.renderFrame(frame, timepos, self.spf, preview = 1, use_cam = do_use_cam) 
-		messenger.send(None, "view_camera", self.cam)
+		lib.messenger.send(None, "view_camera", self.cam)
 		 
 	def getTimepointAt(self, time):
 		"""
@@ -479,38 +484,38 @@ class UrmasRenderer:
 			point = (x, y, z)
 		else:
 				
-				# We use this so that the camera point is always defined, 
-				# if nothing else was found for the item
-				if timepos < minT:
-					timepos = minT
-					print "*** Using first interpolated point!"
-					print "point=", point, "lastpos=", self.lastSplinePosition, "firstpoint=", self.firstpoint
-				#print "maxT=",maxT,"timepos=",timepos
-				if minT <= timepos and maxT >= timepos:
-					interpolated = 1
-					Logging.info("Interpolating camera at ", timepos, kw = "animator")
-					self.interpolator.InterpolateCamera(timepos, cam)                    
-					
-					# we check the stored camera positions
-					for i, pos in enumerate(self.camPositions[:-1]):                        
-						t, camPos = pos
-						if timepos >= t:
-							t2, camPos2 = self.camPositions[i + 1]
-							# if the distance between the two consecutive
-							# camera positions is < 1.0 then the first
-							# position is used instead of an interpolated
-							# one since the interpolated position may be
-							# wrong
-							if distance(camPos, camPos2) < 1.0:
-								Logging.info("Using original camera position instead of interpolated", kw = "animator")
-								cam.SetPosition(camPos)
-							break
-					
-					self.ren.ResetCameraClippingRange()
-					
-				else:
-					Logging.info("No camera position, using last position", kw = "animator")
-					point = self.lastpoint
+			# We use this so that the camera point is always defined, 
+			# if nothing else was found for the item
+			if timepos < minT:
+				timepos = minT
+				print "*** Using first interpolated point!"
+				print "point=", point, "lastpos=", self.lastSplinePosition, "firstpoint=", self.firstpoint
+			#print "maxT=",maxT,"timepos=",timepos
+			if minT <= timepos and maxT >= timepos:
+				interpolated = 1
+				Logging.info("Interpolating camera at ", timepos, kw = "animator")
+				self.interpolator.InterpolateCamera(timepos, cam)                    
+				
+				# we check the stored camera positions
+				for i, pos in enumerate(self.camPositions[:-1]):                        
+					t, camPos = pos
+					if timepos >= t:
+						t2, camPos2 = self.camPositions[i + 1]
+						# if the distance between the two consecutive
+						# camera positions is < 1.0 then the first
+						# position is used instead of an interpolated
+						# one since the interpolated position may be
+						# wrong
+						if distance(camPos, camPos2) < 1.0:
+							Logging.info("Using original camera position instead of interpolated", kw = "animator")
+							cam.SetPosition(camPos)
+						break
+				
+				self.ren.ResetCameraClippingRange()
+				
+			else:
+				Logging.info("No camera position, using last position", kw = "animator")
+				point = self.lastpoint
 
 		focal = self.splineEditor.getCameraFocalPointCenter()
 		

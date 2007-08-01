@@ -29,37 +29,27 @@
 __author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.42 $"
 __date__ = "$Date: 2005/01/13 14:52:39 $"
-#import ManipulationFilters
-from lib import ProcessingFilter
-import ImageOperations
-import wx
+
+import lib.ProcessingFilter
 import time
-import csv
-import codecs
 try:
 	import itk
 except:
 	pass
 import vtk
 import types
-
-import Logging
-import MathFilters
 import GUI.GUIBuilder as GUIBuilder
-import messenger
 import scripting as bxd
 
-import  wx.lib.mixins.listctrl  as  listmix
-SEGMENTATION = "Segmentation"
 #ITK="ITK"
-
+SEGMENTATION = "Segmentation"
 MEASUREMENT = "Measurements"
 WATERSHED = "Watershed segmentation"
 REGIONGROWING = "Region growing"
 REGISTRATION = "Registration"
 
 
-class RegistrationFilter(ProcessingFilter.ProcessingFilter):
+class RegistrationFilter(lib.ProcessingFilter.ProcessingFilter):
 	"""
 	Created: 14.03.2007, KP
 	Description: A filter for doing registration
@@ -72,7 +62,7 @@ class RegistrationFilter(ProcessingFilter.ProcessingFilter):
 		Created: 14.03.2007, KP
 		Description: Initialization
 		"""        
-		ProcessingFilter.ProcessingFilter.__init__(self, inputs)
+		lib.ProcessingFilter.ProcessingFilter.__init__(self, inputs)
 		
 		self.descs = {"FixedTimepoint": "Timepoint for fixed image"}
 		self.itkFlag = 1
@@ -136,7 +126,7 @@ class RegistrationFilter(ProcessingFilter.ProcessingFilter):
 		Created: 14.03.2007, KP
 		Description: Execute the filter with given inputs and return the output
 		"""                    
-		if not ProcessingFilter.ProcessingFilter.execute(self, inputs):
+		if not lib.ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
 			
 		units = self.dataUnit.getSourceDataUnits()
@@ -212,6 +202,7 @@ class RegistrationFilter(ProcessingFilter.ProcessingFilter):
 		print "Translation=", tX, tY, tZ
 		print "Iterations = ", self.optimizer.GetCurrentIteration()
 		print "Metric value = ", self.optimizer.GetValue()
+		#TODO: do we want to return data1 or data2 ? - data does not exist 
 		return data
 
 		

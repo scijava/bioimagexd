@@ -36,21 +36,24 @@ __author__ = "BioImageXD Project"
 __version__ = "$Revision: 1.22 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
-import wx
+#import GUI.Urmas
+#import ImageOperations
+#import math 
+#import os.path
+#import random
+#import sys
+#import threading
+#import TimepointSelection
+
+import GUI.Dialogs
+import lib.messenger
 import Logging
-import os.path
-import sys
-import math, random
-import threading
+from GUI.Urmas.TrackItem.SplinePoint import SplinePoint
+from GUI.Urmas.TrackItem.TrackItem import StopItem
+from Track import Track
+from GUI.Urmas.UrmasPalette import UrmasDropTarget
+import wx
 
-from Urmas.TrackItem import *
-from Urmas import UrmasPalette
-import ImageOperations
-import Dialogs
-import TimepointSelection
-
-import messenger
-from Track import *
 class SplineTrack(Track):
 	"""
 	Created: 13.04.2005, KP
@@ -74,7 +77,7 @@ class SplineTrack(Track):
 		
 		self.itemClass = kws.get("item", SplinePoint)
 		self.closed = kws.get("closed", 0)
-		dt = UrmasPalette.UrmasDropTarget(self, "Spline")
+		dt = UrmasDropTarget(self, "Spline")
 		self.SetDropTarget(dt)
 			
 	def setMaintainUpDirection(self, flag):
@@ -126,13 +129,15 @@ class SplineTrack(Track):
 					 something to this track
 		"""     
 		if self.noMoreItems:
-			Dialogs.showerror(self, "Cannot add items to a circle-like camera path", "Cannot add more items")
+			GUI.Dialogs.showerror(self, "Cannot add items to a circle-like camera path", "Cannot add more items")
 			return
 		oldlen = len(self.items)
 		if data == "Circular":
 			pos = 0
 			if len(self.items):
-				Dialogs.showerror(self, "Circular camera path can only be placed on an empty track", "Cannot place camera path")
+				GUI.Dialogs.showerror(self, \
+										"Circular camera path can only be placed on an empty track", \
+										"Cannot place camera path")
 				return
 			bounds = self.splineEditor.getBounds()
 			pts = bounds[0:4]
@@ -145,7 +150,9 @@ class SplineTrack(Track):
 		elif data == "Perpendicular":
 			pos = 0
 			if len(self.items):
-				Dialogs.showerror(self, "Perpendicular camera path can only be placed on an empty track", "Cannot place camera path")
+				GUI.Dialogs.showerror(self, \
+										"Perpendicular camera path can only be placed on an empty track", \
+										"Cannot place camera path")
 				return
 			x, y, z = self.splineEditor.dataDimensions()
 			r = 2 * max(x, y, z)
@@ -169,7 +176,9 @@ class SplineTrack(Track):
 			self.paintTrack()
 			self.Refresh()
 		else:
-			dlg = wx.TextEntryDialog(self, "How many control points should the camera path have:", "Configure Camera path")
+			dlg = wx.TextEntryDialog(self, \
+										"How many control points should the camera path have:", \
+										"Configure Camera path")
 			dlg.SetValue("5")
 			if dlg.ShowModal() == wx.ID_OK:
 				try:
@@ -368,7 +377,7 @@ class SplineTrack(Track):
 		Description: Selects this track
 		""" 
 		Track.setSelected(self, event)
-		messenger.send(None, "set_keyframe_mode", 0)
+		lib.messenger.send(None, "set_keyframe_mode", 0)
 		self.splineEditor.setViewMode(0)
 		if event:
 			self.showSpline()
@@ -397,7 +406,7 @@ class SplineTrack(Track):
 		Created: 18.04.2005, KP
 		Description: Show spline represented by this track
 		""" 
-		messenger.send(None, "set_keyframe_mode", 0)
+		lib.messenger.send(None, "set_keyframe_mode", 0)
 		pts = []
 		for item in self.items:
 			if not isinstance(item, StopItem):

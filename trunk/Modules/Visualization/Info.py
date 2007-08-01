@@ -30,24 +30,42 @@ __author__ = "BioImageXD Project"
 __version__ = "$Revision: 1.9 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
+from GUI.InfoWidget import InfoWidget
+from GUI.TreeWidget import TreeWidget
 
-from GUI import InfoWidget
-from GUI import TreeWidget
+def getName():
+	return "info"
 
-def getName():return "info"
 # Return None as the icon name to indicate we don't wish to appear in the toolbar
-def getIcon(): return None
-def getDesc(): return None
-def getShortDesc(): return "Dataset Info"
-def getToolbarPos(): return - 9999
-def getClass():return InfoMode
-def getConfigPanel(): return None
-def getImmediateRendering(): return False
-def getRenderingDelay(): return 10000
-def showZoomToolbar(): return False
+def getIcon():
+	return None
 
+def getDesc():
+	return None
+
+def getShortDesc():
+	return "Dataset Info"
+
+def getToolbarPos():
+	return - 9999
+
+def getClass():
+	return InfoMode
+
+def getConfigPanel():
+	return None
+
+def getImmediateRendering():
+	return False
+
+def getRenderingDelay():
+	return 10000
+
+def showZoomToolbar():
+	return False
 		
 class InfoMode:
+
 	def __init__(self, parent, visualizer):
 		"""
 		Method: __init__
@@ -83,11 +101,11 @@ class InfoMode:
 		
 		
 		if not self.infowidget:
-			self.infowidget = InfoWidget.InfoWidget(self.parent, size = (512, 512))
+			self.infowidget = InfoWidget(self.parent, size = (512, 512))
 		
 
 		if not self.tree:
-			self.tree = TreeWidget.TreeWidget(self.sidebarWin)
+			self.tree = TreeWidget(self.sidebarWin)
 			#self.tree.SetSize(self.sidebarWin.GetSize())
 			self.infowidget.setTree(self.tree)
 			self.tree.Show()
@@ -142,6 +160,7 @@ class InfoMode:
 		Created: 25.05.2005, KP
 		Description: Set the timepoint to be visualized
 		"""
+		#TODO: makes no sense, 19.7.2007 SS
 		self.infowidget.preview.setTimepoint(tp)
 
 	def saveSnapshot(self, filename):
@@ -150,4 +169,5 @@ class InfoMode:
 		Created: 05.06.2005, KP
 		Description: Save a snapshot of the scene
 		"""      
+		#TODO: makes no sense, 19.7.2007 SS
 		self.infowidget.preview.saveSnapshot(filename)

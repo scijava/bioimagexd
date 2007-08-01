@@ -29,18 +29,20 @@ __author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.28 $"
 __date__ = "$Date: 2005/01/13 14:52:39 $"
 
-import ImageOperations
+#from enthought.tvtk import messenger
+
+import lib.ImageOperations
 import Logging
 import wx
-#from enthought.tvtk import messenger
-import messenger
+import lib.messenger
 
 myEVT_SET_THRESHOLD = wx.NewEventType()
 EVT_SET_THRESHOLD = wx.PyEventBinder(myEVT_SET_THRESHOLD, 1)
 
 class ThresholdEvent(wx.PyCommandEvent):
-	def __init__(self, evtType, eid):
-		wx.PyCommandEvent.__init__(self, evtType, eid)
+
+	def __init__(self, eventType, eid):
+		wx.PyCommandEvent.__init__(self, eventType, eid)
 		self.lowerThreshold = 0
 		self.upperThreshold = 255
 		
@@ -65,16 +67,17 @@ class Histogram(wx.Panel):
 		Description: Initialization
 		"""    
 		self.scale = kws.get("scale", 1)
-		if "scale" in kws:del kws["scale"]
+		if "scale" in kws:
+			del kws["scale"]
 		
 		wx.Panel.__init__(self, parent, -1, **kws)
 		self.parent = parent
 		self.timePoint = 0
 		self.buffer = wx.EmptyBitmap(256, 150)
-		self.bg = None
+		self.backGround = None
 		self.Bind(wx.EVT_PAINT, self.OnPaint)
-		messenger.connect(None, "timepoint_changed", self.onSetTimepoint)
-		messenger.connect(None, "threshold_changed", self.updatePreview)
+		lib.messenger.connect(None, "timepoint_changed", self.onSetTimepoint)
+		lib.messenger.connect(None, "threshold_changed", self.updatePreview)
 		self.Bind(wx.EVT_RIGHT_DOWN, self.onRightClick)
 
 		self.ID_LOGARITHMIC = wx.NewId()
@@ -109,52 +112,54 @@ class Histogram(wx.Panel):
 		self.Bind(wx.EVT_MOTION, self.updateActionEnd)
 		self.Bind(wx.EVT_LEFT_UP, self.setThreshold)
 	   
-	def setReplacementCTF(self, ctf):
+	def setReplacementCTF(self, colorTransferFunction):
 		"""
 		Method: setReplacementCTF
 		Created: 15.04.2006, KP
 		Description: Set a CTF that will replace the original CTF
-		"""            
-		self.replaceCTF = ctf
-		self.ctf = ctf
+		"""			   
+		self.replaceCTF = colorTransferFunction
+		self.colorTransferFunction = colorTransferFunction
 		
-	def setLowerThreshold(self, lth):
+	def setLowerThreshold(self, lowerThreshhold):
 		"""
 		Method: setLowerThreshold
 		Created: 06.06.2006, KP
 		Description: Set the lower threshold showin with this widget
-		"""                    
-		self.lowerThreshold = lth
-		#self.actionstart=(self.lowerThreshold,0)
+		"""					   
+		self.lowerThreshold = lowerThreshhold
+		#self.actionstart = (self.lowerThreshold, 0)
 		#self.setThreshold(None)
 		self.actionstart = None
 		self.updatePreview(renew = 1)
 		self.Refresh()
-	def setUpperThreshold(self, uth):
+
+	def setUpperThreshold(self, upperThreshhold):
 		"""
 		Method: setUpperThreshold
 		Created: 06.06.2006, KP
 		Description: Set the upper threshold showin with this widget
-		"""                    
-		self.upperThreshold = uth
-		#self.actionstart=(self.upperThreshold,0)
+		"""					   
+		self.upperThreshold = upperThreshhold
+		#self.actionstart = (self.upperThreshold, 0)
 		self.actionstart = None
 		#self.setThreshold(None)
 		self.updatePreview(renew = 1)
 		self.Refresh()
+
 	def getLowerThreshold(self):
 		"""
 		Method: getLowerThreshold
 		Created: 12.04.2006, KP
 		Description: Return the lower threshold selected with this widget
-		"""            
+		"""			   
 		return self.lowerThreshold
 		
 	def getUpperThreshold(self):
 		"""
 		Created: 12.04.2006, KP
 		Description: Return the upper threshold selected with this widget
-		"""                 
+		"""					
 		return self.upperThreshold
 		
 	def setThresholdMode(self, flag):
@@ -172,14 +177,18 @@ class Histogram(wx.Panel):
 		Created: 12.07.2005, KP
 		Description: Sets the starting position of rubber band for zooming
 		"""    
-		pos = event.GetPosition()
-		x, y = pos
+		position = event.GetPosition()
+		x, y = position
 		x -= self.xoffset
 		y = 255 - y
-		if x > 255:x = 255
-		if y > 255:y = 255
-		if x < 0:x = 0
-		if y < 0:y = 0
+		if x > 255:
+			x = 255
+		if y > 255:
+			y = 255
+		if x < 0:
+			x = 0
+		if y < 0:
+			y = 0
 		
 		if not self.thresholdMode:
 			get = self.dataUnit.getSettings().get
@@ -188,33 +197,40 @@ class Histogram(wx.Panel):
 				return
 		
 		self.actionstart = (x, y)
-		#upper=get("ColocalizationUpperThreshold")
+		#upper = get("ColocalizationUpperThreshold")
 		
-		ldiff = abs(x - self.lowerThreshold)
-		udiff = abs(x - self.upperThreshold)
-		if ldiff > 30 and udiff > 30:
+		lowerDifference = abs(x - self.lowerThreshold)
+		upperDifference = abs(x - self.upperThreshold)
+		if lowerDifference > 30 and upperDifference > 30:
 			self.mode = "middle"
 			self.middleStart = x
-		else:            
+		else:			 
 			self.mode = "upper"
-			if ldiff < udiff: self.mode = "lower"
-			if x < self.lowerThreshold: self.mode = "lower"
-			if x > self.upperThreshold: self.mode = "upper"
+			if lowerDifference < upperDifference:
+				self.mode = "lower"
+			if x < self.lowerThreshold:
+				self.mode = "lower"
+			if x > self.upperThreshold:
+				self.mode = "upper"
 		self.updatePreview()
 			
 	def updateActionEnd(self, event):
 		"""
 		Created: 12.07.2005, KP
-		Description: Draws the rubber band to current mouse pos       
+		Description: Draws the rubber band to current mouse pos		  
 		"""
 		if event.LeftIsDown():
 			x, y = event.GetPosition()
 			x -= self.xoffset
 			y = 255 - y
-			if x > 255:x = 255
-			if y > 255:y = 255
-			if x < 0:x = 0
-			if y < 0:y = 0            
+			if x > 255:
+				x = 255
+			if y > 255:
+				y = 255
+			if x < 0:
+				x = 0
+			if y < 0:
+				y = 0			  
 			self.actionstart = (x, y)
 			self.updatePreview()
 			
@@ -224,7 +240,8 @@ class Histogram(wx.Panel):
 		Description: Sets the thresholds based on user's selection
 		"""
 		
-		if not self.actionstart:return
+		if not self.actionstart:
+			return
 		x1, y1 = self.actionstart
 		
 		set = self.dataUnit.getSettings().set
@@ -247,13 +264,13 @@ class Histogram(wx.Panel):
 				set("ColocalizationLowerThreshold", x1)
 			self.lowerThreshold = x1
 		elif self.mode == "middle":
-			diff = x1 - self.middleStart
-			if self.lowerThreshold + diff < 0:
-				diff = -self.lowerThreshold
-			if self.upperThreshold + diff > 255:
-				diff = 255 - self.upperThreshold
-			self.lowerThreshold += diff
-			self.upperThreshold += diff
+			difference = x1 - self.middleStart
+			if self.lowerThreshold + difference < 0:
+				difference = - self.lowerThreshold
+			if self.upperThreshold + difference > 255:
+				difference = 255 - self.upperThreshold
+			self.lowerThreshold += difference
+			self.upperThreshold += difference
 			self.middleStart = x1
 			if colocMode:
 				set("ColocalizationUpperThreshold", self.upperThreshold)
@@ -261,16 +278,16 @@ class Histogram(wx.Panel):
 				
 			
 		if self.thresholdMode:
-			messenger.send(self, "threshold_changed", self.lowerThreshold, self.upperThreshold)
+			lib.messenger.send(self, "threshold_changed", self.lowerThreshold, self.upperThreshold)
 			# Also send out wx style event. This is mainly for the benefit of
 			# the manipulation task
-			evt = ThresholdEvent(myEVT_SET_THRESHOLD, self.GetId())
-			evt.setThresholds(self.lowerThreshold, self.upperThreshold)
-			self.GetEventHandler().ProcessEvent(evt)
+			event = ThresholdEvent(myEVT_SET_THRESHOLD, self.GetId())
+			event.setThresholds(self.lowerThreshold, self.upperThreshold)
+			self.GetEventHandler().ProcessEvent(event)
 			
 			
 		if colocMode:
-			messenger.send(None, "threshold_changed") 
+			lib.messenger.send(None, "threshold_changed") 
 		self.actionstart = None
 		
 		 
@@ -280,10 +297,10 @@ class Histogram(wx.Panel):
 		Created: 02.04.2005, KP
 		Description: Method that is called when the right mouse button is
 					 pressed down on this item
-		"""      
+		"""		 
 		self.PopupMenu(self.menu, event.GetPosition())
 
-	def onSetLogarithmic(self, evt):
+	def onSetLogarithmic(self, event):
 		"""
 		Created: 12.07.2005, KP
 		Description: Set the scale to logarithmic
@@ -294,7 +311,7 @@ class Histogram(wx.Panel):
 		self.updatePreview()
 		self.Refresh()
 
-	def onSetIgnoreBorder(self, evt):
+	def onSetIgnoreBorder(self, event):
 		"""
 		Method: onSetLogarithmic
 		Created: 12.07.2005, KP
@@ -305,7 +322,7 @@ class Histogram(wx.Panel):
 		self.renew = 1
 		self.updatePreview()
 		
-	def onSetTimepoint(self, obj, evt, timepoint):
+	def onSetTimepoint(self, obj, event, timepoint):
 		"""
 		Created: 12.07.2005, KP
 		Description: Set the timepoint to be shown
@@ -319,7 +336,7 @@ class Histogram(wx.Panel):
 		Created: 28.04.2005, KP
 		Description: Does the actual blitting of the bitmap
 		Parameters:
-			noupdate  Setting this flag to 1 will force the histogram       
+			noupdate  Setting this flag to 1 will force the histogram		
 					  to never update it's source data
 		"""
 		self.dataUnit = dataUnit
@@ -346,23 +363,28 @@ class Histogram(wx.Panel):
 			if not self.noupdate or not self.data:
 				self.data = self.dataUnit.getTimepoint(self.timePoint)
 				self.data.Update()
-			self.ctf = self.dataUnit.getSettings().get("ColorTransferFunction")
-			if not self.ctf:Logging.info("No ctf!")
+			self.colorTransferFunction = self.dataUnit.getSettings().get("ColorTransferFunction")
+			if not self.colorTransferFunction:
+				Logging.info("No colorTransferFunction!")
 			if self.replaceCTF:
-				self.ctf = self.replaceCTF
-			self.bg = self.parent.GetBackgroundColour()
+				self.colorTransferFunction = self.replaceCTF
+			self.backGround = self.parent.GetBackgroundColour()
 			
-			histogram, self.percent, self.values, xoffset = ImageOperations.histogram(self.data, bg = self.bg, ctf = self.ctf,
-							 logarithmic = self.logarithmic,
-							ignore_border = self.ignoreBorder,
-							lower = lower,
-							upper = upper, maxval = 255 * self.scale)
+			histogram, self.percent, self.values, xoffset = lib.ImageOperations.histogram(self.data, \
+																bg = self.backGround, \
+																colorTransferFunction = self.colorTransferFunction, \
+																logarithmic = self.logarithmic, \
+																ignore_border = self.ignoreBorder, \
+																lower = lower, \
+																upper = upper, \
+																maxval = 255 * self.scale)
 			self.xoffset = xoffset
 			self.histogram = histogram
-			w, h = self.histogram.GetWidth(), self.histogram.GetHeight()
-			self.buffer = wx.EmptyBitmap(w, h)
-			Logging.info("Setting size to", w, h, kw = "imageop")
-			self.SetSize((w, h))
+			width = self.histogram.GetWidth()
+			height = self.histogram.GetHeight()
+			self.buffer = wx.EmptyBitmap(width, height)
+			Logging.info("Setting size to", width, height, kw = "imageop")
+			self.SetSize((width, height))
 			self.parent.Layout()
 			self.renew = 0
 			
@@ -383,10 +405,10 @@ class Histogram(wx.Panel):
 		dc.DrawBitmap(self.histogram, 0, 0, 1)
 		get = self.dataUnit.getSettings().get
 		set = self.dataUnit.getSettings().set
-		ctf = self.dataUnit.getColorTransferFunction()
+		colorTransferFunction = self.dataUnit.getColorTransferFunction()
 		val = [0, 0, 0]
-		r1, r2 = ctf.GetRange()
-		ctf.GetColor(r2, val)
+		r1, r2 = colorTransferFunction.GetRange()
+		colorTransferFunction.GetColor(r2, val)
 		if not self.thresholdMode and get("ColocalizationLowerThreshold") == None:
 			return
 		colocMode = get("ColocalizationLowerThreshold") != None
@@ -408,15 +430,15 @@ class Histogram(wx.Panel):
 					lower1 = x1
 					self.lowerThreshold = x1
 				elif self.mode == "middle":
-					diff = x1 - self.middleStart
-					if self.lowerThreshold + diff < 0:
-						diff = -self.lowerThreshold
-					if self.upperThreshold + diff > 255:
-						diff = 255 - self.upperThreshold
+					difference = x1 - self.middleStart
+					if self.lowerThreshold + difference < 0:
+						difference = - self.lowerThreshold
+					if self.upperThreshold + difference > 255:
+						difference = 255 - self.upperThreshold
 					
 					self.middleStart = x1
-					self.lowerThreshold += diff
-					self.upperThreshold += diff
+					self.lowerThreshold += difference
+					self.upperThreshold += difference
 					lower1 = self.lowerThreshold
 					upper1 = self.upperThreshold
 					if colocMode:
@@ -424,7 +446,7 @@ class Histogram(wx.Panel):
 						set("ColocalizationUpperThreshold", upper1)
 
 				if self.mode == "upper" and upper1 < lower1:
-					self.mode = "lower"                    
+					self.mode = "lower"					 
 					upper1, lower1 = lower1, upper1
 					if colocMode:
 						set("ColocalizationLowerThreshold", lower1)
@@ -439,7 +461,7 @@ class Histogram(wx.Panel):
 						set("ColocalizationLowerThreshold", lower1)
 						set("ColocalizationUpperThreshold", upper1)
 					self.lowerThreshold = lower1
-					self.upperThreshold = upper1                        
+					self.upperThreshold = upper1						  
 				
 		r, g, b = val
 		r *= 255
@@ -449,12 +471,12 @@ class Histogram(wx.Panel):
 		g = int(g)
 		b = int(b)
 	
-		#borders = ImageOperations.getOverlayBorders(upper1-lower1+1,150,(r,g,b),128)
-		borders = ImageOperations.getOverlayBorders(upper1 - lower1 + 1, 150, (r, g, b), 80)
+		#borders = lib.ImageOperations.getOverlayBorders(upper1 - lower1 + 1, 150, (r, g, b), 128)
+		borders = lib.ImageOperations.getOverlayBorders(upper1 - lower1 + 1, 150, (r, g, b), 80)
 		borders = borders.ConvertToBitmap()
 		dc.DrawBitmap(borders, self.xoffset + lower1, 0, 1)
 		
-		overlay = ImageOperations.getOverlay(upper1 - lower1, 150, (r, g, b), 32)
+		overlay = lib.ImageOperations.getOverlay(upper1 - lower1, 150, (r, g, b), 32)
 		overlay = overlay.ConvertToBitmap()
 		dc.DrawBitmap(overlay, self.xoffset + lower1, 0, 1)
 		if self.values:
@@ -462,14 +484,16 @@ class Histogram(wx.Panel):
 			totth = 0
 			for i, val in enumerate(self.values):
 				tot += val
-				if i >= lower1 and i <= upper1:totth += val
+				if i >= lower1 and i <= upper1:
+					totth += val
 			self.percent = totth / float(tot)
 		
 		if self.percent:
 			dc.SetFont(wx.Font(8, wx.SWISS, wx.NORMAL, wx.NORMAL))
-			dc.DrawText("%.2f%% of data selected (range %d-%d)" % (100 * self.percent, self.scale * self.lowerThreshold, self.scale * self.upperThreshold), 10, 182)
-				
-		
+			dc.DrawText("%.2f%% of data selected (range %d-%d)" \
+						% (100 * self.percent, self.scale * self.lowerThreshold, \
+						self.scale * self.upperThreshold), 10, 182)
+
 		dc.EndDrawing()
 		dc = None
 
@@ -480,6 +504,6 @@ class Histogram(wx.Panel):
 		Created: 28.04.2005, KP
 		Description: Does the actual blitting of the bitmap
 		"""
-		dc = wx.BufferedPaintDC(self, self.buffer)#,self.buffer)
+		dc = wx.BufferedPaintDC(self, self.buffer)#, self.buffer)
 		
 

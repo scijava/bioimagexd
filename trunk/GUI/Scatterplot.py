@@ -34,21 +34,14 @@ __author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.22 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
-#from enthought.tvtk import messenger
-import messenger
+import Configuration
+import Dialogs
 import InteractivePanel
-import vtk
-import ImageOperations
+import lib.ImageOperations
+import lib.messenger
 import Logging
-import sys
 import wx
 
-import Dialogs
-import Configuration
-
-import math
-
-	
 class Scatterplot(InteractivePanel.InteractivePanel):
 	"""
 	Created: 25.03.2005, KP
@@ -94,7 +87,7 @@ class Scatterplot(InteractivePanel.InteractivePanel):
 		self.lower2 = 127
 		self.upper2 = 255
 		
-		self.middlestart = [0, 0]    
+		self.middlestart = [0, 0]
 		self.zoomx = 1
 		self.zoomy = 1
 		self.action = 5
@@ -118,14 +111,14 @@ class Scatterplot(InteractivePanel.InteractivePanel):
 		self.ID_LOGARITHMIC = wx.NewId()
 		self.ID_SAVE_AS = wx.NewId()
 		self.menu = wx.Menu()
-		self.SetScrollbars(0, 0, 0, 0)        
-		messenger.connect(None, "threshold_changed", self.updatePreview)
+		self.SetScrollbars(0, 0, 0, 0)
+		lib.messenger.connect(None, "threshold_changed", self.updatePreview)
 		
 
 		item = wx.MenuItem(self.menu, self.ID_LOGARITHMIC, "Logarithmic scale", kind = wx.ITEM_CHECK)
 		self.Bind(wx.EVT_MENU, self.onSetLogarithmic, id = self.ID_LOGARITHMIC)
 		self.menu.AppendItem(item)
-		self.menu.Check(self.ID_LOGARITHMIC, 1)    
+		self.menu.Check(self.ID_LOGARITHMIC, 1)
 		
 		self.menu.AppendSeparator()
 		item = wx.MenuItem(self.menu, self.ID_SAVE_AS, "Save as...")
@@ -140,7 +133,7 @@ class Scatterplot(InteractivePanel.InteractivePanel):
 		self.actionend = None
 		self.buffer = wx.EmptyBitmap(256, 256)
 		
-		messenger.connect(None, "timepoint_changed", self.onUpdateScatterplot)
+		lib.messenger.connect(None, "timepoint_changed", self.onUpdateScatterplot)
 	
 	def onSaveScatterplot(self, event):
 		"""
@@ -153,7 +146,7 @@ class Scatterplot(InteractivePanel.InteractivePanel):
 		"tiff": "TIFF Image (*.tiff)", "bmp": "Bitmap Image (*.bmp)"}
 		#wc="PNG file|*.png|JPEG file|*.jpeg|TIFF file|*.tiff|BMP file|*.bmp"
 	
-		conf = Configuration.getConfiguration()    
+		conf = Configuration.getConfiguration()
 		defaultExt = conf.getConfigItem("ImageFormat", "Output")
 		if defaultExt == "jpg":
 			defaultExt = "jpeg"
@@ -162,30 +155,32 @@ class Scatterplot(InteractivePanel.InteractivePanel):
 		
 		if defaultExt not in wcDict:
 			defaultExt = "png"
-		initFile = "scatterplot.%s" % (defaultExt)            
+		initFile = "scatterplot.%s" % (defaultExt)
 		wc = wcDict[defaultExt] + "|*.%s" % defaultExt
 		del wcDict[defaultExt]
 		
 		for key in wcDict.keys():
 			wc += "|%s|*.%s" % (wcDict[key], key)
 		#print "wc=",wc
-		filename = Dialogs.askSaveAsFileName(self, "Save scatterplot", initFile, wc, "scatterImage")            
+		filename = Dialogs.askSaveAsFileName(self, "Save scatterplot", initFile, wc, "scatterImage")
 			
 		ext = filename.split(".")[-1].lower()
-		if ext == "jpg":ext = "jpeg"
-		if ext == "tif":ext = "tiff"
+		if ext == "jpg":
+			ext = "jpeg"
+		if ext == "tif":
+			ext = "tiff"
 		mime = "image/%s" % ext
 		img = self.scatterBitmap.ConvertToImage()
 		#print "Saving mimefile ",filename,mime
-		img.SaveMimeFile(filename, mime)        
+		img.SaveMimeFile(filename, mime)
 	
 	def onUpdateScatterplot(self, evt, obj, *args):
 		"""
 		Created: 9.09.2005, KP
 		Description: Update the scatterplot when timepoint changes
-		"""        
+		"""
 		self.renew = 1
-#        print "Setting timepoint to ",args[0]
+#		print "Setting timepoint to ",args[0]
 		self.setTimepoint(args[0])
 		self.updatePreview()
 		
@@ -204,7 +199,7 @@ class Scatterplot(InteractivePanel.InteractivePanel):
 		Created: 02.04.2005, KP
 		Description: Method that is called when the right mouse button is
 					 pressed down on this item
-		"""      
+		""" 
 		self.PopupMenu(self.menu, event.GetPosition())
 		#menu.Destroy()
 		
@@ -224,17 +219,21 @@ class Scatterplot(InteractivePanel.InteractivePanel):
 		"""
 		Created: 12.07.2005, KP
 		Description: Sets the starting position of rubber band for zooming
-		"""    
+		"""
 		pos = event.GetPosition()
 		x, y = pos
 		y = self.scatterHeight - y
 		x -= self.xoffset
 		x -= (self.verticalLegend.GetWidth() + 2 * self.emptySpace)
 		
-		if x > 255:x = 255
-		if y > 255:y = 255
-		if x < 0:x = 0
-		if y < 0:y = 0       
+		if x > 255:
+			x = 255
+		if y > 255:
+			y = 255
+		if x < 0:
+			x = 0
+		if y < 0:
+			y = 0
 		
 		self.actionstart = (x, y)
 
@@ -272,20 +271,24 @@ class Scatterplot(InteractivePanel.InteractivePanel):
 	def updateActionEnd(self, event):
 		"""
 		Created: 12.07.2005, KP
-		Description: Draws the rubber band to current mouse pos       
+		Description: Draws the rubber band to current mouse pos
 		"""
 		if event.LeftIsDown():
 			x, y = event.GetPosition()
 			
 			y = self.scatterHeight - y
-#            x -= self.xoffset
+#			x -= self.xoffset
 			x -= self.xoffset
-			x -= (self.verticalLegend.GetWidth() + 2 * self.emptySpace)            
-			if x > 255:x = 255
-			if y > 255:y = 255
-			if x < 0:x = 0
-			if y < 0:y = 0            
-				
+			x -= (self.verticalLegend.GetWidth() + 2 * self.emptySpace)
+			if x > 255:
+				x = 255
+			if y > 255:
+				y = 255
+			if x < 0:
+				x = 0
+			if y < 0:
+				y = 0
+
 			self.actionend = (x, y)
 			
 			x1, y1 = self.actionstart
@@ -316,7 +319,7 @@ class Scatterplot(InteractivePanel.InteractivePanel):
 				greens.set("ColocalizationUpperThreshold", x2)
 				gu = x2
 				if gl > gu:
-					gu, gl = gl, gu                
+					gu, gl = gl, gu
 				#print "Setting upper of green to ",x2
 				#self.lower2=x2
 				self.upper1 = x2
@@ -324,8 +327,8 @@ class Scatterplot(InteractivePanel.InteractivePanel):
 				reds.set("ColocalizationLowerThreshold", y1)
 				rl = y1
 				if rl > ru:
-					#print "\n--->LOWER RED SWITCHING rl=",rl,"ru=",ru                
-					ru, rl = rl, ru                
+					#print "\n--->LOWER RED SWITCHING rl=",rl,"ru=",ru
+					ru, rl = rl, ru
 				#self.upper1=y1
 				self.lower2 = y1
 				#print "Setting lower of red to",y1
@@ -333,7 +336,7 @@ class Scatterplot(InteractivePanel.InteractivePanel):
 				reds.set("ColocalizationUpperThreshold", y2)
 				ru = y2
 				if rl > ru:
-					ru, rl = rl, ru                                
+					ru, rl = rl, ru
 				self.upper2 = y2
 				#print "Setting upper of red to",y2
 				
@@ -342,7 +345,7 @@ class Scatterplot(InteractivePanel.InteractivePanel):
 			self.actionstart = (gu, ru)
 			self.actionend = (gl, rl)
  
-			#messenger.send(None,"threshold_changed",(y1,y2),(x1,x2))
+			#lib.messenger.send(None,"threshold_changed",(y1,y2),(x1,x2))
 			#
 
 			self.updatePreview()
@@ -352,7 +355,7 @@ class Scatterplot(InteractivePanel.InteractivePanel):
 		"""
 		Created: 04.07.2005, KP
 		Description: Sets the data unit that is displayed
-		"""            
+		"""
 		InteractivePanel.InteractivePanel.setDataUnit(self, dataUnit)
 		self.sources = dataUnit.getSourceDataUnits()
 		self.settings = self.sources[0].getSettings()
@@ -363,7 +366,7 @@ class Scatterplot(InteractivePanel.InteractivePanel):
 		"""
 		Created: 02.04.2005, KP
 		Description: Method to set on / off the voxel counting mode of scattergram
-		"""       
+		"""
 		self.countVoxels = event.Checked()
 		self.renew = 1
 		self.updatePreview()
@@ -374,7 +377,7 @@ class Scatterplot(InteractivePanel.InteractivePanel):
 		Created: 02.04.2005, KP
 		Description: Method to set on / off the construction of scattergram from 
 					 the whole volume
-		"""       
+		"""
 		self.wholeVolume = event.Checked()
 		self.renew = 1
 		self.updatePreview()
@@ -405,9 +408,9 @@ class Scatterplot(InteractivePanel.InteractivePanel):
 		gl, gu = x1, x2
 		rl, ru = y1, y2
 		
-		messenger.send(None, "threshold_changed", (gl, gu), (rl, ru))
+		lib.messenger.send(None, "threshold_changed", (gl, gu), (rl, ru))
 		
-		messenger.send(None, "data_changed", 1)
+		lib.messenger.send(None, "data_changed", 1)
 
 		self.renew = 1
 		self.updatePreview()
@@ -421,26 +424,26 @@ class Scatterplot(InteractivePanel.InteractivePanel):
 		"""
 		Created: 11.07.2005, KP
 		Description: Sets the timepoint to be shown
-		"""    
+		"""
 		self.timepoint = tp
 		
 	def setZSlice(self, z):
 		"""
 		Created: 11.07.2005, KP
 		Description: Sets the timepoint to be shown
-		"""    
+		"""
 		self.z = z
 		
 	def setScatterplot(self, plot):
 		"""
 		Created: 11.07.2005, KP
 		Description: Sets the scatterplot as vtkImageData
-		"""    
+		"""
 		self.scatterplot = plot
 		#print "Got coloc=",coloc
 		x0, x1 = self.scatterplot.GetScalarRange()
 		Logging.info("Scalar range of scatterplot=", x0, x1, kw = "processing")
-		#self.ctf=ImageOperations.loadLUT("LUT/rainbow2.lut",None,(x0,x1))
+		#self.ctf=lib.ImageOperations.loadLUT("LUT/rainbow2.lut",None,(x0,x1))
 		#print self.ctf
 		
 	def updatePreview(self, *args):
@@ -454,8 +457,8 @@ class Scatterplot(InteractivePanel.InteractivePanel):
 			#Logging.info("Generating scatterplot of timepoint",self.timepoint)
 			# Red on the vertical and green on the horizontal axis
 			t1 = self.sources[1].getTimepoint(self.timepoint)
-			t2 = self.sources[0].getTimepoint(self.timepoint)            
-			self.scatter, ctf = ImageOperations.scatterPlot(t2, t1, -1, self.countVoxels,
+			t2 = self.sources[0].getTimepoint(self.timepoint)
+			self.scatter, ctf = lib.ImageOperations.scatterPlot(t2, t1, -1, self.countVoxels,
 			self.wholeVolume, dataunits = self.sources, logarithmic = self.logarithmic, timepoint = self.timepoint)
 			self.scatter = self.scatter.Mirror(0)
 			self.scatterHeight = self.scatter.GetHeight()
@@ -492,7 +495,7 @@ class Scatterplot(InteractivePanel.InteractivePanel):
 			return
 
 		lower1 = int(self.sources[0].getSettings().get("ColocalizationLowerThreshold"))
-		lower2 = int(self.sources[1].getSettings().get("ColocalizationLowerThreshold"))           
+		lower2 = int(self.sources[1].getSettings().get("ColocalizationLowerThreshold"))
 		upper1 = int(self.sources[0].getSettings().get("ColocalizationUpperThreshold"))
 		upper2 = int(self.sources[1].getSettings().get("ColocalizationUpperThreshold"))
 	
@@ -523,12 +526,12 @@ class Scatterplot(InteractivePanel.InteractivePanel):
 		self.scatterBitmap = bmp
 		
 		if not self.verticalLegend:
-			verticalLegend = ImageOperations.paintCTFValues(self.sources[1].getColorTransferFunction(), height = 256, width = self.legendWidth, paintScalars = 1)
+			verticalLegend = lib.ImageOperations.paintCTFValues(self.sources[1].getColorTransferFunction(), height = 256, width = self.legendWidth, paintScalars = 1)
 			self.verticalLegend = verticalLegend
 		else:
 			verticalLegend = self.verticalLegend
 		if not self.horizontalLegend:
-			horizontalLegend = ImageOperations.paintCTFValues(self.sources[0].getColorTransferFunction(), width = 256, height = self.legendWidth, paintScalars = 1)
+			horizontalLegend = lib.ImageOperations.paintCTFValues(self.sources[0].getColorTransferFunction(), width = 256, height = self.legendWidth, paintScalars = 1)
 			self.horizontalLegend = horizontalLegend
 		else:
 			horizontalLegend = self.horizontalLegend
@@ -568,16 +571,16 @@ class Scatterplot(InteractivePanel.InteractivePanel):
 		# horizontal line 2
 		#dc.DrawLine(self.xoffset+hzlw+lower1*c,ymax-upper2*c,self.xoffset+hzlw+upper1*c,ymax-upper2*c)
 		
-		borders = ImageOperations.getOverlayBorders(int((upper1 - lower1) * c) + 1, int((upper2 - lower2) * c) + 1, (0, 0, 255), 90, lineWidth = 2)
+		borders = lib.ImageOperations.getOverlayBorders(int((upper1 - lower1) * c) + 1, int((upper2 - lower2) * c) + 1, (0, 0, 255), 90, lineWidth = 2)
 		borders = borders.ConvertToBitmap()
 		
-		overlay = ImageOperations.getOverlay(int((upper1 - lower1) * c), int((upper2 - lower2) * c), (0, 0, 255), 64)
+		overlay = lib.ImageOperations.getOverlay(int((upper1 - lower1) * c), int((upper2 - lower2) * c), (0, 0, 255), 64)
 		overlay = overlay.ConvertToBitmap()
 		dc.DrawBitmap(overlay, self.xoffset + hzlw + lower1 * c, ymax - upper2 * c, 1)
 		dc.DrawBitmap(borders, self.xoffset + hzlw + lower1 * c, ymax - upper2 * c, 1)
 		
 		if not self.scatterLegend:
-			scatterLegend = ImageOperations.paintCTFValues(self.scatterCTF, width = self.legendWidth, height = 256, paintScale = 1)
+			scatterLegend = lib.ImageOperations.paintCTFValues(self.scatterCTF, width = self.legendWidth, height = 256, paintScale = 1)
 			self.scatterLegend = scatterLegend
 		else:
 			scatterLegend = self.scatterLegend

@@ -28,38 +28,56 @@
 __author__ = "BioImageXD Project"
 __version__ = "$Revision: 1.9 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
-import DataUnit
 
 import Logging
-import vtk
-import wx
-import wx.lib.scrolledpanel as scrolled
 from Visualizer.VisualizationMode import VisualizationMode
-
-import Visualizer.VisualizerWindow as VisualizerWindow
-import PreviewFrame
-import Modules
-
+from GUI.PreviewFrame.PreviewFrame import PreviewFrame
 import scripting as bxd
 
-def getName():return "MIP"
-def isDefaultMode(): return 0
-def showInfoWindow(): return 1
-def showFileTree(): return 1
-def showSeparator(): return (0, 0)
-def getToolbarPos(): return 5
-	
-def getIcon(): return "view_rendering.jpg"
-def getShortDesc(): return "Maximum Intensity Projection"
-def getDesc(): return "Create a Maximum Intensity Projection of the dataset"
-def getClass():return SimpleMode
-def getImmediateRendering(): return False
-def getConfigPanel(): return None
-def getRenderingDelay(): return 1500
-def showZoomToolbar(): return True
+def getName():
+	return "MIP"
 
+def isDefaultMode():
+	return 0
+
+def showInfoWindow():
+	return 1
+
+def showFileTree():
+	return 1
+
+def showSeparator():
+	return (0, 0)
+
+def getToolbarPos():
+	return 5
+
+def getIcon():
+	return "view_rendering.jpg"
+
+def getShortDesc():
+	return "Maximum Intensity Projection"
+
+def getDesc():
+	return "Create a Maximum Intensity Projection of the dataset"
+
+def getClass():
+	return SimpleMode
+
+def getImmediateRendering():
+	return False
+
+def getConfigPanel():
+	return None
+
+def getRenderingDelay():
+	return 1500
+
+def showZoomToolbar():
+	return True
 	
 class SimpleMode(VisualizationMode):
+
 	def __init__(self, parent, visualizer):
 		"""
 		Created: 24.05.2005, KP
@@ -71,7 +89,6 @@ class SimpleMode(VisualizationMode):
 		self.iactivePanel = None
 		self.init = 1
 		self.dataUnit = None
-
 		
 	def showSideBar(self):
 		"""
@@ -113,11 +130,9 @@ class SimpleMode(VisualizationMode):
 
 		if not self.iactivePanel:
 			Logging.info("Generating preview", kw = "visualizer")
-			self.iactivePanel = PreviewFrame.PreviewFrame(self.parent)
+			self.iactivePanel = PreviewFrame(self.parent)
 			self.iactivePanel.setPreviewType("MIP")
 		return self.iactivePanel
-			
-		
 		
 	def setDataUnit(self, dataUnit):
 		"""

@@ -30,18 +30,16 @@ __author__ = "BioImageXD Project"
 __version__ = "$Revision: 1.9 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
-import wx    
-
-import ImageOperations
-import vtk
-
-import scripting as bxd
-import math
+from GUI.InteractivePanel import InteractivePanel as InteractivePanel
+import lib.ImageOperations
+import lib.messenger
 import Logging
-import InteractivePanel
-import messenger
+import math
+import optimize
+import scripting
+import wx
 
-class GalleryPanel(InteractivePanel.InteractivePanel):
+class GalleryPanel(InteractivePanel):
 	"""
 	Created: 23.05.2005, KP
 	Description: A panel that can be used to preview volume data several slice at a time
@@ -50,7 +48,7 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
 		"""
 		Created: 24.03.2005, KP
 		Description: Initialization
-		"""    
+		"""
 		self.imagedata = None
 		self.visualizer = visualizer
 		self.bmp = None
@@ -74,7 +72,7 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
 		self.oldBufferDims = None
 		self.oldBufferMaxXY = None
 		#wx.ScrolledWindow.__init__(self,parent,-1,size=size,**kws)
-		InteractivePanel.InteractivePanel.__init__(self, parent, size = size, **kws)
+		InteractivePanel.__init__(self, parent, size = size, **kws)
 		
 		self.size = size
 		self.sizeChanged = 0
@@ -97,7 +95,7 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
 		"""
 		Created: 21.07.2005, KP
 		Description: Configure whether to show z slices or timepoints
-		"""    
+		"""
 		self.slice = slice
 		self.showTimepoints = showtps
 		print "Showing slice ", slice
@@ -109,7 +107,7 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
 		"""
 		Created: 04.07.2005, KP
 		Description: Return the rectangles can be drawn on as four-tuples
-		"""    
+		"""
 		return self.drawableRects
 		
 	def zoomToFit(self):
@@ -144,15 +142,15 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
 		"""
 		Created: 24.05.2005, KP
 		Description: Set the background color
-		"""        
+		"""
 		self.bgcolor = (r, g, b)
 
 	def onSize(self, event):
 		"""
 		Created: 23.05.2005, KP
 		Description: Size event handler
-		"""    
-		InteractivePanel.InteractivePanel.OnSize(self, event)
+		"""
+		InteractivePanel.OnSize(self, event)
 		self.paintSize = self.GetClientSize()
 		#self.gallerySize=event.GetSize()
 		#Logging.info("Gallery size changed to ",self.gallerySize,kw="preview")
@@ -162,12 +160,12 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
 		"""
 		Created: 23.05.2005, KP
 		Description: Sets the dataunit to display
-		"""    
+		"""
 		self.dataUnit = dataunit
 	
 		self.dims = dataunit.getDimensions()
 		self.voxelSize = dataunit.getVoxelSize()
-		InteractivePanel.InteractivePanel.setDataUnit(self, dataunit)
+		InteractivePanel.setDataUnit(self, dataunit)
 		tp = self.timepoint
 		self.timepoint = -1
 		self.setTimepoint(tp)
@@ -182,7 +180,7 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
 		"""
 		Created: 23.05.2005, KP
 		Description: Sets the timepoint to display
-		"""    
+		"""
 		#self.scrollTo=self.getScrolledXY(0,0)
 		#self.resetScroll()
 		if self.timepoint == timepoint and self.slices:
@@ -196,17 +194,20 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
 			return self.setSlice(self.slice)
 		if self.visualizer.getProcessedMode():
 			print "DOING PREVIEW"
-			image = self.dataUnit.doPreview(bxd.WHOLE_DATASET_NO_ALPHA, 1, self.timepoint)
+			image = self.dataUnit.doPreview(scripting.WHOLE_DATASET_NO_ALPHA, 1, self.timepoint)
 			ctf = self.dataUnit.getSourceDataUnits()[0].getColorTransferFunction()
 			Logging.info("Using ", image, "for gallery", kw = "preview")
 		else:
+			print "GETTING TIMEPOINT", timepoint
 			image = self.dataUnit.getTimepoint(timepoint)
 			ctf = self.dataUnit.getColorTransferFunction()
+			print "USING CTF", ctf
 
-		#self.imagedata = ImageOperations.imageDataTo3Component(image,ctf)
+		#self.imagedata = lib.ImageOperations.imageDataTo3Component(image,ctf)
 		self.imagedata = image
 		self.imagedata.SetUpdateExtent(self.imagedata.GetWholeExtent())
 		self.imagedata.Update()
+		print "imagedata=", self.imagedata
 		
 		
 		#x,y,z=self.imagedata.GetDimensions()
@@ -220,20 +221,20 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
 		
 		for i in range(z):
 			#print "Using as update ext",(0,x-1,0,y-1,i,i)
-			image = bxd.mem.optimize(image = self.imagedata, updateExtent = (0, x - 1, 0, y - 1, i, i))
+			image = optimize.optimize(image = self.imagedata, updateExtent = (0, x - 1, 0, y - 1, i, i))
 			#image.Update()
 			
 			#self.imagedata.Update()
-			image = ImageOperations.getSlice(image, i)
+			image = lib.ImageOperations.getSlice(image, i)
 		
 			
-			slice = ImageOperations.imageDataTo3Component(image, ctf)
-			slice = ImageOperations.vtkImageDataToWxImage(slice)
+			slice = lib.ImageOperations.imageDataTo3Component(image, ctf)
+			slice = lib.ImageOperations.vtkImageDataToWxImage(slice)
 
-			messenger.send(None, "update_progress", i / float(z), "Loading slice %d / %d for Gallery view" % (i + 1, z + 1))        
+			lib.messenger.send(None, "update_progress", i / float(z), "Loading slice %d / %d for Gallery view" % (i + 1, z + 1))
 			#print "Adding slice",i
 			self.slices.append(slice)
-		messenger.send(None, "update_progress", 1.0, "All slices loaded.")  
+		lib.messenger.send(None, "update_progress", 1.0, "All slices loaded.")  
 		self.calculateBuffer()
 		if update:
 			self.updatePreview()
@@ -248,14 +249,14 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
 		self.slices = []
 		self.timepoint = -1
 		self.setTimepoint(tp)
-#        self.updatePreview()
-#        self.Refresh()
+#		self.updatePreview()
+#		self.Refresh()
 		
 	def setSlice(self, slice):
 		"""
 		Created: 21.07.2005, KP
 		Description: Sets the slice to show
-		"""    
+		"""
 		self.slice = slice
 		# if we're showing each slice of one timepoint
 		# instead of one slice of each timepoint, call the
@@ -274,31 +275,26 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
 			else:
 				image = self.dataUnit.getTimepoint(tp)
 				x, y, z = self.dataUnit.getDimensions()
-				
-				image = bxd.mem.optimize(image, updateExtent = (0, x - 1, 0, y - 1, self.slice, self.slice))
-
-				image = ImageOperations.getSlice(image, self.slice)
+				image = optimize.optimize(image, updateExtent = (0, x - 1, 0, y - 1, self.slice, self.slice))
+				image = lib.ImageOperations.getSlice(image, self.slice)
 				image.Update()
-				#print "Got slice=",image
+#				print "Got slice =", image
 				ctf = self.dataUnit.getColorTransferFunction()
-			
-			#print "tp=",tp
-			self.imagedata = ImageOperations.imageDataTo3Component(image, ctf)
+#			print "tp =", tp
+			self.imagedata = lib.ImageOperations.imageDataTo3Component(image, ctf)
 			self.imagedata.Update()
-			#print "Got ",self.imagedata
-			slice = ImageOperations.vtkImageDataToWxImage(self.imagedata, self.slice)
+#			print "Got ", self.imagedata
+			slice = lib.ImageOperations.vtkImageDataToWxImage(self.imagedata, self.slice)
 			self.slices.append(slice)
 			
 		self.calculateBuffer()
-		
 		self.updatePreview()
-
 
 	def calculateBuffer(self):
 		"""
 		Created: 23.05.2005, KP
 		Description: Calculate the drawing buffer required
-		"""    
+		"""
 		if not self.imagedata:
 			return
 		
@@ -318,24 +314,26 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
 			Logging.info("Using number of slices (%d) instead of z dim (%d)" % (len(self.slices), z), kw = "preview")
 			n = len(self.slices)
 
-		if self.maxSizeX > maxX:maxX = self.maxSizeX
-		if self.maxSizeY > maxY:maxY = self.maxSizeY
+		if self.maxSizeX > maxX:
+			maxX = self.maxSizeX
+		if self.maxSizeY > maxY:
+			maxY = self.maxSizeY
 		self.oldBufferDims = (x, y, z)
-		self.oldBufferMaxXY = (maxX, maxY)        
+		self.oldBufferMaxXY = (maxX, maxY)
 		
 		if not self.zoomToFitFlag:
 			w, h = self.sliceSize
 			Logging.info("maxX=", maxX, "maxY=", maxY, kw = "preview")
 			xreq = maxX // (w + 6)
-			if not xreq:xreq = 1
-				
+			if not xreq:
+				xreq = 1
 			yreq = math.ceil(n / float(xreq))
 		else:
 			sizes = range(0, 1024, 8)
 			for j in range(len(sizes) - 1, 0, -1):
 				i = sizes[j]
 				nx = maxX // (i + 6)
-				
+
 				if not nx:continue
 				ny = math.ceil(n / float(nx))
 				if ny * i * yfromx < maxY and (nx * ny) > n:
@@ -358,9 +356,8 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
 		
 		self.rows = yreq
 		self.cols = xreq
-		if self.reqSize != (x, y):    
-			
-			self.reqSize = (x, y)            
+		if self.reqSize != (x, y):
+			self.reqSize = (x, y)
 		x2, y2 = self.paintSize
 		flag = 0
 		if x > x2:
@@ -377,7 +374,7 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
 		"""
 		Created: 24.03.2005, KP
 		Description: Sets the scrollbars to their initial values
-		"""    
+		"""
 		self.Scroll(0, 0)
 
 
@@ -387,7 +384,8 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
 		Description: Enable/Disable updates
 		"""
 		self.enabled = flag
-		if flag:self.updatePreview()
+		if flag:
+			self.updatePreview()
 
 	def updatePreview(self):
 		"""
@@ -395,10 +393,10 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
 		Description: Updates the viewed image
 		"""
 		if not self.enabled:
-		   Logging.info("Won't draw gallery cause not enabled", kw = "preview")
-		   return
-		if not self.dataUnit:
+			Logging.info("Won't draw gallery cause not enabled", kw = "preview")
 			return
+		if not self.dataUnit:
+			return			
 		if not self.slices:
 			print "Updating slices"
 			self.setTimepoint(self.timepoint, update = 0)
@@ -434,19 +432,17 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
 			self.calculateBuffer()
 			self.updatePreview()
 			self.sizeChanged = 0
-		InteractivePanel.InteractivePanel.OnPaint(self, event)
-#        dc=wx.BufferedPaintDC(self,self.buffer)#,self.buffer)
+		InteractivePanel.OnPaint(self, event)
+#		dc=wx.BufferedPaintDC(self,self.buffer)#,self.buffer)
 
 	def paintPreview(self):
 		"""
 		Created: 24.03.2005, KP
 		Description: Paints the image to a DC
 		"""
-		#dc = self.dc = wx.BufferedDC(wx.ClientDC(self),self.buffer)
+#		dc = self.dc = wx.BufferedDC(wx.ClientDC(self), self.buffer)
 		dc = wx.MemoryDC()
 		dc.SelectObject(self.buffer)
-		dc.BeginDrawing()
-		
 		dc.BeginDrawing()
 		dc.SetBackground(wx.Brush(wx.Colour(*self.bgcolor)))
 		dc.SetPen(wx.Pen(wx.Colour(*self.bgcolor), 0))
@@ -481,7 +477,6 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
 			if col >= self.cols:
 				col = 0
 				row += 1
-				
 			# Mark the rectangle as drawable
 			x0, x1 = x, x + w
 			y0, y1 = y, y + h
@@ -490,10 +485,8 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
 		y = 9 + (self.rows) * (3 + self.sliceSize[1])
 		self.bmp = self.buffer
 
-		InteractivePanel.InteractivePanel.paintPreview(self)
+		InteractivePanel.paintPreview(self)
 		self.makeBackgroundBuffer(dc)
-		
-
 		dc.EndDrawing()
 		self.dc = None
 		
@@ -501,10 +494,12 @@ class GalleryPanel(InteractivePanel.InteractivePanel):
 		"""
 		Created: 05.06.2005, KP
 		Description: Save a snapshot of the scene
-		"""      
+		"""
 		ext = filename.split(".")[-1].lower()
-		if ext == "jpg":ext = "jpeg"
-		if ext == "tif":ext = "tiff"
+		if ext == "jpg":
+			ext = "jpeg"
+		if ext == "tif":
+			ext = "tiff"
 		mime = "image/%s" % ext
 		img = self.buffer.ConvertToImage()
 		img.SaveMimeFile(filename, mime)

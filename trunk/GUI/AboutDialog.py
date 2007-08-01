@@ -6,8 +6,8 @@
  Created: 22.02.2005, KP
  Description:
 
- A wxPython wx.Dialog window that is used to show an about dialog. The about dialog is specified
- using HTML markup.
+ A wxPython wx.Dialog window that is used to show an about dialog. The about 
+ dialog is specified using HTML markup.
  
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
@@ -30,13 +30,14 @@
 __author__ = "BioImageXD Project"
 __version__ = "$Revision: 1.40 $"
 __date__ = "$Date: 2005/01/13 14:52:39 $"
-import sys
 
-import wx                  # This module uses the new wx namespace
-import wx.html
-import  wx.lib.scrolledpanel as scrolled
+#import wx.lib.scrolledpanel as scrolled 02.07.07 M.B.
+#import sys 02.07.07 M.B.
+
 import MainWindow
 import scripting
+import wx                  # This module uses the new wx namespace
+import wx.html
 
 class AboutDialog(wx.Dialog):
 	def __init__(self, parent):
@@ -50,25 +51,26 @@ class AboutDialog(wx.Dialog):
 		if "gtk2" in wx.PlatformInfo:
 			self.about.SetStandardFonts()
 		col = self.GetBackgroundColour()
-		bgcol = "#%2x%2x%2x" % (col.Red(), col.Green(), col.Blue())
-		dict = {"bgcolor":bgcol, "version":MainWindow.VERSION, "icondir":scripting.get_icon_dir()}
-		self.about.SetPage(aboutText % dict)
-		ir = self.about.GetInternalRepresentation()
+		bgcol = "#%2x%2x%2x"% (col.Red(), col.Green(), col.Blue())
+		dict = {"bgcolor":bgcol, "version":MainWindow.VERSION, 
+		"icondir":scripting.get_icon_dir()}
+		self.about.SetPage(aboutText%dict)
+		#ir = self.about.GetInternalRepresentation()  02.07.07 M.B.
 		
 		#self.about.SetSize( (ir.GetWidth()+25, ir.GetHeight()+25) )
 		self.about.SetSize( (x, y) )
-		self.notebook.AddPage(self.about, "About BioImageXD")
+		self.notebook.AddPage(self.about,"About BioImageXD")
 		
 		#self.gplPanel = scrolled.ScrolledPanel(self.notebook,-1,size=(x,y))
 		#box= wx.BoxSizer(wx.VERTICAL)
-		self.gpl = wx.html.HtmlWindow(self.notebook, -1, size = (420, 400))
+		self.gpl = wx.html.HtmlWindow(self.notebook, -1, size=(420, 400))
 		if "gtk2" in wx.PlatformInfo:
 			self.gpl.SetStandardFonts()
 		#box.Add(self.gpl)
 		#self.gplPanel.SetSizer(box)
 		#self.gplPanel.SetAutoLayout(1)
 		#self.gplPanel.SetupScrolling()
-		bgcol = "#%2x%2x%2x" % (col.Red(), col.Green(), col.Blue())
+		bgcol = "#%2x%2x%2x"% (col.Red(), col.Green(), col.Blue())
 		dict = {"bgcolor":bgcol}
 		self.gpl.SetPage(gplText % dict)
 		self.gpl.SetSize( (x, y) )        
@@ -85,11 +87,11 @@ class AboutDialog(wx.Dialog):
 		#self.licensingPanel.SetAutoLayout(1)
 		#self.licensingPanel.SetupScrolling()
 		col = self.GetBackgroundColour()
-		bgcol = "#%2x%2x%2x" % (col.Red(), col.Green(), col.Blue())
+		bgcol = "#%2x%2x%2x"% (col.Red(), col.Green(), col.Blue())
 		dict = {"bgcolor":bgcol}
-		self.licensing.SetPage(licensingText % dict)
+		self.licensing.SetPage(licensingText%dict)
 		
-		self.licensing.SetSize( (x, y) )        
+		self.licensing.SetSize((x, y) )        
 		self.notebook.AddPage(self.licensing, "Libraries")
 
 
@@ -115,39 +117,39 @@ class AboutDialog(wx.Dialog):
 
 aboutText = u"""
 <html>
-<body bgcolor="%(bgcolor)s">
-<center><h2>BioImageXD %(version)s</h2></center>
-<center><img src="%(icondir)s/logo_medium.jpg"></center><br>
-<p><b>BioImageXD</b> is a program for post-processing and visualizing
-three- and four-dimensional microscopy data.</p>
+<body bgcolor = "%(bgcolor)s">
+<center><h2 > BioImageXD % (version)s</h2></center>
+<center><img src = "%(icondir)s/logo_medium.jpg"></center><br>
+<p><b > BioImageXD</b > is a program for post - processing and visualizing
+three - and four - dimensional microscopy data.</p>
 
-<h2>The BioImageXD Project</h2>
-<p><b>The main development team</b></p><p>
+<h2 > The BioImageXD Project</h2>
+<p><b > The main development team</b></p><p>
 Pasi Kankaanp‰‰<br>
-Kalle Pahajoki<br>
-Varpu Marjom‰ki<br>
-Jyrki Heino<br>
-Daniel White<br>
+Kalle Pahajoki < br>
+Varpu Marjom‰ki < br>
+Jyrki Heino < br>
+Daniel White < br>
 </p>
 <p>
-<b>Former member of the main development team (and the developer of the Zeiss LSM file format reader and the rendering animator):</b>
+<b > Former member of the main development team (and the developer of the Zeiss LSM file format reader and the rendering animator):</b>
 </p><p>
 Heikki Uuksulainen
 </p>
 <p>
-<b>BioImageXD is largely based on the work of the Selli project, which included the following people:</b></p><p>
-Juha Hyyti‰inen<br>
-Jaakko M‰ntymaa<br>
-Kalle Pahajoki<br>
-Jukka Varsaluoma<br>
+<b > BioImageXD is largely based on the work of the Selli project, which included the following people:</b></p><p>
+Juha Hyyti‰inen < br>
+Jaakko M‰ntymaa < br>
+Kalle Pahajoki < br>
+Jukka Varsaluoma < br>
 </p><p>
-<b>The following people, organizations and companies have significantly contributed to the development of BioImageXD:</b></p><p>
-Jorma Virtanen<br>
-Mikko Huhtala<br>
-Pekka Neittaanm‰ki<br>
-Anna-Brita ÷st<br>
+<b > The following people, organizations and companies have significantly contributed to the development of BioImageXD:</b></p><p>
+Jorma Virtanen < br>
+Mikko Huhtala < br>
+Pekka Neittaanm‰ki < br>
+Anna - Brita ÷st < br>
 </p><p>
-ISB - National Graduate School in Informational and Structural Biology<br>
+ISB - National Graduate School in Informational and Structural Biology < br>
 </p>
 </body>
 </html>
@@ -155,10 +157,10 @@ ISB - National Graduate School in Informational and Structural Biology<br>
 
 gplText = u"""
 <html>
-<body bgcolor="%(bgcolor)s">
-<center><h2>BioImageXD License</h2></center>
+<body bgcolor = "%(bgcolor)s">
+<center><h2 > BioImageXD License</h2></center>
 
-<!--<p><b>BioImageXD</b> is licensed under the General Public License.</p>-->
+<!--<p><b > BioImageXD</b > is licensed under the General Public License.</p > -->
 <p>
 BioImageXD will be licensed under the General Public License.
 This version, however, is NOT yet a public release as specified by that license. 
@@ -170,20 +172,20 @@ for scientific work is not recommended, because some features and functions have
 perform properly and correctly.
 </p>
 <hr>
-<p><h2>GNU GENERAL PUBLIC LICENSE</h2>
+<p><h2 > GNU GENERAL PUBLIC LICENSE</h2>
 </p><p>
 Version 2, June 1991</p><p>
 Copyright (C) 1989, 1991 Free Software Foundation, Inc.
-59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+59 Temple Place, Suite 330, Boston, MA  02111 - 1307  USA
  Everyone is permitted to copy and distribute verbatim copies
  of this license document, but changing it is not allowed.
 </p><p>
-<h3>Preamble</h3>
+<h3 > Preamble</h3>
 </p><p>
   The licenses for most software are designed to take away your
 freedom to share and change it.  By contrast, the GNU General Public
 License is intended to guarantee your freedom to share and change free
-software--to make sure the software is free for all its users.  This
+software - -to make sure the software is free for all its users.  This
 General Public License applies to most of the Free Software
 Foundation's software and to any other program whose authors commit to
 using it.  (Some other Free Software Foundation software is covered by
@@ -229,8 +231,8 @@ patent must be licensed for everyone's free use or not licensed at all.
 modification follow.
 </p><p>
 
-<h3>GNU GENERAL PUBLIC LICENSE</h3>
-<h3>TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION</h3>
+<h3 > GNU GENERAL PUBLIC LICENSE</h3>
+<h3 > TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION</h3>
 </p><p>
   0. This License applies to any program or other work which contains
 a notice placed by the copyright holder saying it may be distributed
@@ -238,7 +240,7 @@ under the terms of this General Public License.  The "Program", below,
 refers to any such program or work, and a "work based on the Program"
 means either the Program or any derivative work under copyright law:
 that is to say, a work containing the Program or a portion of it,
-either verbatim or with modifications and/or translated into another
+either verbatim or with modifications and / or translated into another
 language.  (Hereinafter, translation is included without limitation in
 the term "modification".)  Each licensee is addressed as "you".
 </p><p>
@@ -375,7 +377,7 @@ excuse you from the conditions of this License.  If you cannot
 distribute so as to satisfy simultaneously your obligations under this
 License and any other pertinent obligations, then as a consequence you
 may not distribute the Program at all.  For example, if a patent
-license would not permit royalty-free redistribution of the Program by
+license would not permit royalty - free redistribution of the Program by
 all those who receive copies directly or indirectly through you, then
 the only way you could satisfy both it and this License would be to
 refrain entirely from distribution of the Program.
@@ -392,14 +394,14 @@ integrity of the free software distribution system, which is
 implemented by public license practices.  Many people have made
 generous contributions to the wide range of software distributed
 through that system in reliance on consistent application of that
-system; it is up to the author/donor to decide if he or she is willing
+system; it is up to the author / donor to decide if he or she is willing
 to distribute software through any other system and a licensee cannot
 impose that choice.
 </p><p>
 This section is intended to make thoroughly clear what is believed to
 be a consequence of the rest of this License.
 </p><p>
-  8. If the distribution and/or use of the Program is restricted in
+  8. If the distribution and / or use of the Program is restricted in
 certain countries either by patents or by copyrighted interfaces, the
 original copyright holder who places the Program under this License
 may add an explicit geographical distribution limitation excluding
@@ -407,7 +409,7 @@ those countries, so that distribution is permitted only in or among
 countries not thus excluded.  In such case, this License incorporates
 the limitation as if written in the body of this License.
 </p><p>
-  9. The Free Software Foundation may publish revised and/or new versions
+  9. The Free Software Foundation may publish revised and / or new versions
 of the General Public License from time to time.  Such new versions will
 be similar in spirit to the present version, but may differ in detail to
 address new problems or concerns.
@@ -428,11 +430,11 @@ make exceptions for this.  Our decision will be guided by the two goals
 of preserving the free status of all derivatives of our free software and
 of promoting the sharing and reuse of software generally.
 </p><p>
-<h3>NO WARRANTY</h3>
+<h3 > NO WARRANTY</h3>
 </p><p>
   11. BECAUSE THE PROGRAM IS LICENSED FREE OF CHARGE, THERE IS NO WARRANTY
 FOR THE PROGRAM, TO THE EXTENT PERMITTED BY APPLICABLE LAW.  EXCEPT WHEN
-OTHERWISE STATED IN WRITING THE COPYRIGHT HOLDERS AND/OR OTHER PARTIES
+OTHERWISE STATED IN WRITING THE COPYRIGHT HOLDERS AND / OR OTHER PARTIES
 PROVIDE THE PROGRAM "AS IS" WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESSED
 OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
 MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.  THE ENTIRE RISK AS
@@ -441,7 +443,7 @@ PROGRAM PROVE DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING,
 REPAIR OR CORRECTION.
 </p><p>
   12. IN NO EVENT UNLESS REQUIRED BY APPLICABLE LAW OR AGREED TO IN WRITING
-WILL ANY COPYRIGHT HOLDER, OR ANY OTHER PARTY WHO MAY MODIFY AND/OR
+WILL ANY COPYRIGHT HOLDER, OR ANY OTHER PARTY WHO MAY MODIFY AND / OR
 REDISTRIBUTE THE PROGRAM AS PERMITTED ABOVE, BE LIABLE TO YOU FOR DAMAGES,
 INCLUDING ANY GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING
 OUT OF THE USE OR INABILITY TO USE THE PROGRAM (INCLUDING BUT NOT LIMITED
@@ -456,17 +458,17 @@ POSSIBILITY OF SUCH DAMAGES.
 
 licensingText = u"""
 <html>
-<body bgcolor="%(bgcolor)s">
-<center><h2>Licensing of Libraries</h2></center>
+<body bgcolor = "%(bgcolor)s">
+<center><h2 > Licensing of Libraries</h2></center>
 
-<p><b>BioImageXD</b> is a based on many open source programs and libraries. The licenses of these programs are
+<p><b > BioImageXD</b > is a based on many open source programs and libraries. The licenses of these programs are
 presented here. You can also find the full licenses of each program or library at
-at the <i>Licensing</i> directory.</p>
+at the < i > Licensing</i > directory.</p>
 <p>
 <ul>
-<li><a href="#python">Python</a></li>
+<li><a href = "#python">Python</a></li>
 <li><a href="#vtk">The Visualization Toolkit</a></li>
-<li><a href="#itk">Insight Segmentation and Registration Toolkit</a></li>
+<li><a href = "#itk">Insight Segmentation and Registration Toolkit</a></li>
 </ul>
 </p>
 <hr>

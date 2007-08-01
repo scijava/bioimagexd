@@ -30,9 +30,10 @@ __author__ = "BioImageXD Project <http://www.bioimagexd.org>"
 __version__ = "$Revision: 1.21 $"
 __date__ = "$Date: 2005/01/13 14:36:20 $"
 
+#import os.path
+
 import wx
-import os.path
-import messenger
+import lib.messenger
 import MenuManager
 
 class CommandHistory(wx.Frame):
@@ -121,7 +122,7 @@ class UndoListBox(wx.HtmlListBox):
 		self.SetItemCount(0)
 		self.units = []
 		self.selectedCmd = None
-		messenger.connect(None, "execute_command", self.update)
+		lib.messenger.connect(None, "execute_command", self.update)
 		
 	def getCommand(self):
 		"""

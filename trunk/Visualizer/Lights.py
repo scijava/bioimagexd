@@ -30,12 +30,11 @@ from vtk.wx.wxVTKRenderWindowInteractor import wxVTKRenderWindowInteractor
 from vtk.wx.wxVTKRenderWindow import wxVTKRenderWindow
 from math import pi, sin, cos, atan2, sqrt
 import vtk
-import string
+#import string
 import sys
-import Dialogs
-from RangedSlider import *
-
-import  wx.lib.colourselect as  csel
+#import GUI.Dialogs
+from GUI.RangedSlider import RangedSlider
+import wx.lib.colourselect as csel
 
 
 class Light:
@@ -112,7 +111,7 @@ class Light:
 
 	def getColor(self):
 		rgb = self.source.GetColor()
-		r = int(rgb[0] * 255); g = int(rgb[1] * 255); b = int(rgb[2] * 255);
+		r = int(rgb[0] * 255); g = int(rgb[1] * 255); b = int(rgb[2] * 255)
 		return (r, g, b)
 
 	def setColor(self, rgb):
