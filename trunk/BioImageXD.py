@@ -34,107 +34,92 @@ import site
 import sys
 import StringIO
 
-site.addsitedir("/usr/local/lib/python2.4/site-packages/")
-#site.addsitedir("/Library/Frameworks/Python.framework/Versions/2.5/lib/InsightToolkit/WrapITK/Python")
-#site.addsitedir("/Library/Frameworks/Python.framework/Versions/2.5/lib/InsightToolkit/WrapITK/lib")
-
 import os.path
 import os
-sys.path.append(r"C:\BioImageXD\VTK-CVS\Wrapping\Python")
+#TODO: This shouldn't be done in linux
+sys.path.append(r"C:\BioImageXD\VTK-CVS\Wrapping\Python\vtkbxd")
 sys.path.append(r"C:\BioImageXD\VTK\bin")
+
 sys.path.append("./vtkBXD/bin")
-sys.path.append("./vtkBXD/Wrapping/Python")
+sys.path.append("./vtkBXD/Wrapping/Python/vtkbxd")
+# Line to add to your .bashrc to be able to run files through python by themselves
+# export PYTHONPATH=~/bioimage/source:~/bioimage/source/vtkBXD/Wrapping/Python/vtkbxd:~/bioimage/source/vtkBXD/bin
 
-
-import imp
-
-import platform
 import getopt
 
 try:
 	import profile
-except:
+except ImportError:
 	profile = None
 
-if "check" in sys.argv:
-	import pychecker.checker
-	import Logging
-	Logging.HIDE_DEBUG = Logging.KWS
-
-   
+#if "check" in sys.argv:
+#	import pychecker.checker
+#	import Logging
+#	Logging.HIDE_DEBUG = Logging.KWS
 		
 # For MacOS X
 site.addsitedir("InsightToolkit/WrapITK/Python")
 site.addsitedir("InsightToolkit/WrapITK/lib")
-import scripting as bxd
+import scripting
 
-todir = bxd.get_main_dir()
+todir = scripting.get_main_dir()
 if todir:
 	os.chdir(todir)
 # Insert the path for the ITK libraries
+# TODO: Is this really necessary on a correct install of itk?
 if not todir:
 	todir = os.getcwd()
 itklibdir = os.path.join(todir, os.path.join("ITK-pkg", "lib"))
 itkbindir = os.path.join(todir, os.path.join("ITK-pkg", "bin"))
 itkpythondir = os.path.join(todir, os.path.join("ITK-pkg", "Python"))
 
-
 sys.path.insert(0, itklibdir)
 sys.path.insert(0, itkbindir)
 sys.path.insert(0, itkpythondir)
 
-if "py2exe" not in sys.argv:
-	import itk
+#if "py2exe" not in sys.argv:
+#	 import itk
 
-#sys.path.insert(0,reduce(os.path.join,["vtkBXD","Wrapping","Python"]))
-#sys.path.insert(0,reduce(os.path.join,["vtkBXD","bin"]))
-#sys.path.insert(0,"H:\\vtkBXD\\bin")
+#sys.path.insert(0, reduce(os.path.join, ["vtkBXD", "Wrapping", "Python"]))
+#sys.path.insert(0, reduce(os.path.join, ["vtkBXD", "bin"]))
+#sys.path.insert(0, "H:\\vtkBXD\\bin")
+#TODO: Program only runs if you are Kalle Pahajoki?
 sys.path.insert(0, "/Users/kallepahajoki/VTK/bin")
 sys.path.insert(0, "/Users/kallepahajoki/VTK/Wrapping/Python")
-PATH = os.getenv("PATH")
-PATH = PATH + os.path.pathsep + itklibdir + os.path.pathsep + itkbindir + os.path.pathsep + itkpythondir
-os.putenv("PATH", PATH)
-	
-		
-import csv
+path = os.getenv("PATH")
+path = path + os.path.pathsep + itklibdir + os.path.pathsep + itkbindir + os.path.pathsep + itkpythondir
+os.putenv("PATH", path)
 
 import Configuration
 # This will fix the VTK paths using either values from the
 # configuration file, or sensible defaults
 
-conffile = os.path.join(bxd.get_config_dir(), "BioImageXD.ini")
+conffile = os.path.join(scripting.get_config_dir(), "BioImageXD.ini")
 conf = Configuration.Configuration(conffile)
 
-# We need to import VTK here so that it is imported before  python.
+#TODO: Imported before python? Shouldn't that be wx?
+# We need to import VTK here so that it is imported before python.
 # if wxpython gets imported before vtk, the vtkExtTIFFReader will not read the olympus files
 # DO NOT ask me why that is!
-#try:
 import vtkbxd
-#except:
-#    pass
-
 import vtk
 w = vtk.vtkOutputWindow()
 i = w.GetInstance()
 def onWarning(obj, evt, *args):
+	"""
+	Created: Unknown date, KP
+	Seems to be run when a warning happens.
+	"""
 	Logging.backtrace()
 	print "VTK message:\n", evt
+
 w.AddObserver("WarningEvent", onWarning)
 w.AddObserver("ErrorEvent", onWarning)
 import Logging
-import scripting
-
-
 import glob
-
-import lib
-
-import GUI
-from GUI import SplashScreen
-import Visualizer
+import GUI.MainWindow
+import GUI.SplashScreen
 import wx
-
-
 
 class LSMApplication(wx.App):
 	"""
@@ -148,31 +133,20 @@ class LSMApplication(wx.App):
 		Description: Create the application's main window
 		"""
 		self.SetAppName("BioImageXD")
-		iconpath = bxd.get_icon_dir()
+		iconpath = scripting.get_icon_dir()
 		
-		splashfile = os.path.join(iconpath, "splash2.jpg")
-		splash = SplashScreen.SplashScreen(None, duration = 99000, bitmapfile = splashfile)
-		splash.Show()
-		splash.SetMessage("Loading BioImageXD...")
-		self.splash = splash
-		 # Import Psyco if available
-		try:
-			pass
-			#import psyco
-
-			#psyco.log()
-			#psyco.profile()
-			#psyco.full()
-		except ImportError:
-			pass        
+		splashimage = os.path.join(iconpath, "splash2.jpg")
+		self.splash = GUI.SplashScreen.SplashScreen(None, duration = 99000, bitmapfile = splashimage)
+		self.splash.Show()
+		self.splash.SetMessage("Loading BioImageXD...")
 		provider = wx.SimpleHelpProvider()
 		wx.HelpProvider_Set(provider)
 		
-		self.mainwin = GUI.MainWindow.MainWindow(None, -1, self, splash)
-		self.mainwin.config = wx.Config("BioImageXD", style = wx.CONFIG_USE_LOCAL_FILE)        
+		self.mainwin = GUI.MainWindow.MainWindow(None, -1, self, self.splash)
+		self.mainwin.config = wx.Config("BioImageXD", style = wx.CONFIG_USE_LOCAL_FILE)		   
 		
-		bxd.app = self
-		bxd.mainWindow = self.mainwin
+		scripting.app = self
+		scripting.mainWindow = self.mainwin
 		
 		self.mainwin.Show(True)
 		self.SetTopWindow(self.mainwin)
@@ -196,13 +170,18 @@ class LSMApplication(wx.App):
 			self.mainwin.loadFiles(files)
 		
 		if scriptfile:
-			self.splash.SetMessage("Loading script file %s..." % scriptfile)
+			self.splash.SetMessage("Loading script file %s..."%scriptfile)
 			self.mainwin.loadScript(scriptfile)
 		self.MainLoop()
 
 
 def usage():
-	print "Usage: BioImageXD [-h|--help] | [-x script.bxs|--execute=script.bxs] [-i file|--input=file] [-d directory|--directory=directory]"
+	"""
+	Created: Unknown, KP
+	Description: Prints command line usage of program
+	"""
+	print "Usage: BioImageXD [-h|--help] | [-x script.bxs|--execute=script.bxs] [-i file|--input=file]\
+[-d directory|--directory=directory]"
 	print ""
 	print "-x | --execute\tExecute the given script file"
 	print "-i | --input\tLoad the given file as default input"
@@ -217,14 +196,17 @@ def usage():
 
 if __name__ == '__main__':
 	if "py2exe" in sys.argv or "py2app" in sys.argv:
-		from build_app import *
-		build()
+		import build_app
+		build_app.build()
+		#from build_app import *
+		#build()
 	else:
 		try:
-			opts, args = getopt.getopt(sys.argv[1:], 'hx:i:d:tpPl', ["help", "execute=", "input=", "directory=", "tofile", "profile", "interpret", "logfile"])
+			parameterList = ["help", "execute=", "input=", "directory=", "tofile", "profile", "interpret", "logfile"]
+			opts, args = getopt.getopt(sys.argv[1:], 'hx:i:d:tpPl', parameterList)
 		except getopt.GetoptError:
 			usage()
-		
+
 		toFile = 0
 		doProfile = 0
 		doInterpret = 0
@@ -252,60 +234,59 @@ if __name__ == '__main__':
 		dataFiles.extend(args)
 		# If the main application is frozen, then we redirect logging
 		# to  a log file
-		
+		#TODO: Why create a new variable logFile in scripting? Shouldn't it just be logFile
 		captureOutput = StringIO.StringIO()
-		bxd.logFile = captureOutput
-		
-		if toFile or bxd.main_is_frozen():
+		scripting.logFile = captureOutput
+		if toFile or scripting.main_is_frozen():
 			import time
 			if not logfile:
 				logfile = time.strftime("output_%d.%m.%y@%H%M.log")
 				
-				logdir = bxd.get_log_dir()
+				logdir = scripting.get_log_dir()
 				if not os.path.exists(logdir):
 					os.mkdir(logdir)
 				logfile = os.path.join(logdir, logfile)
-			f1 = open(logfile, "w")
-			
+			timestampedLogfile = open(logfile, "w")
 			if logdir:
 				logfile2 = os.path.join(logdir, "latest.log")
-				f2 = open(logfile2, "w")
-				f = Logging.Tee(f1, f2, captureOutput)
-			clean = eval(conf.getConfigItem("CleanExit", "General"))
+				latestLogfile = open(logfile2, "w")
+				logFiles = Logging.Tee(timestampedLogfile, latestLogfile, captureOutput)
+			clean = eval(conf.getConfigItem("CleanExit","General"))
 			if not clean:
-				bxd.uncleanLog = conf.getConfigItem("LastLogFile", "General")
+				scripting.uncleanLog = conf.getConfigItem("LastLogFile","General")
 			else:
-				bxd.uncleanLog = None
+				scripting.uncleanLog = None
 
-			conf.setConfigItem("LastLogFile", "General", logfile)
+			conf.setConfigItem("LastLogFile","General",logfile)
 			import atexit
-			atexit.register(f.flush)
-			sys.stdout = f 
-			sys.stderr = f
-			Logging.outfile = f
+			atexit.register(logFiles.flush)
+			sys.stdout = logFiles 
+			sys.stderr = logFiles
+			Logging.outfile = logFiles
 			Logging.enableFull()
 		else:
-			f = Logging.Tee(sys.stdout, captureOutput)
-			sys.stdout = f
-			sys.stderr = f
-			Logging.outfile = f
-		   
+			logFiles = Logging.Tee(sys.stdout, captureOutput)
+			sys.stdout = logFiles
+			sys.stderr = logFiles
+			Logging.outfile = logFiles
+
 		
 		if doInterpret:
 			import pstats
 			p = pstats.Stats('prof.log')
 			p.sort_stats('time', 'cum').print_stats(.5, 'init')
 			sys.exit(0)
-		
-		conf.setConfigItem("CleanExit", "General", "False")
+
+		conf.setConfigItem("CleanExit","General","False")
 		conf.writeSettings()
-		app = LSMApplication(0)    
+		app = LSMApplication(0)
 		toRemove = []
-		for file in dataFiles:
-			if os.path.isdir(file):
-				toRemove.append(file)
-		for file in toRemove: dataFiles.remove(file)
-		
+		for datafile in dataFiles:
+			if os.path.isdir(datafile):
+				toRemove.append(datafile)
+		for fileToBeRemoved in toRemove:
+			dataFiles.remove(fileToBeRemoved)
+
 		if doProfile and profile:
 			profile.run('app.run(dataFiles, scriptFile)', 'prof.log')
 		else:

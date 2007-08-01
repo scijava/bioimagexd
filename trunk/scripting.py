@@ -30,22 +30,24 @@ __author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.21 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
-import sys, os, os.path
+#import Configuration
+#from optimize import execute_limited
+#import optimize as mem
+#import pickle
+#import vtk
+
+from lib.DataUnit.DataUnitSetting import DataUnitSettings
+import sys
+import os
+import os.path
 import imp
 import platform
 import getpass
-import vtk
-import pickle
-import ConfigParser
 import Logging
-
-import optimize as mem
-
-from optimize import execute_limited
-
-import Configuration
+import ConfigParser
 
 class MyConfigParser(ConfigParser.RawConfigParser):
+
 	def optionxform(self, optionstr):
 		return optionstr
 
@@ -56,10 +58,10 @@ def getCacheKey(paths, names, taskname):
 	Created: 23.10.2006, KP
 	Description: Return a key for caching of settings data based on the task name and the filepaths
 	"""
-	lst = paths[:]
-	lst.append(taskname)
-	lst.extend(names)
-	return tuple(lst)
+	keyList = paths[:]
+	keyList.append(taskname)
+	keyList.extend(names)
+	return tuple(keyList)
 
 def getSettingsFromCache(key):
 	"""
@@ -67,26 +69,21 @@ def getSettingsFromCache(key):
 	Description: Return the settings stored under a given key in the cache
 	"""
 	global settingsCache
-	from lib import DataUnit
 	data = settingsCache.get(tuple(key), None)
 	value = None
 	parser = None
 	if data:
 		value = []
-		for (n, cp) in data:
-		  
+		for (n, configParser) in data:
 			#value=pickle.loads(data)
-			
-			settings = DataUnit.DataUnitSettings(n)            
+			settings = DataUnitSettings(n)
 			settings.set("Type", None)
 			#settings = eval(settingsclass)
-			settings = settings.readFrom(cp)
+			settings = settings.readFrom(configParser)
 			value.append(settings)
-			parser = cp
+			parser = configParser
 	return value, parser
-   
-	
-	
+
 def storeSettingsToCache(key, settingsList):
 	"""
 	Created: 23.10.2006, KP
@@ -97,14 +94,11 @@ def storeSettingsToCache(key, settingsList):
 	if key in settingsCache:
 		del settingsCache[key]
 	value = []
-	for i, setting in enumerate(settingsList):
-		cp = MyConfigParser()
-		setting.writeTo(cp)
-		value.append((setting.n, cp))
-		
-	
+	for setting in settingsList:
+		configParser = MyConfigParser()
+		setting.writeTo(configParser)
+		value.append((setting.n, configParser))
 	settingsCache[key] = value
-	
 
 record = 0
 conf = None
@@ -122,50 +116,70 @@ wantWholeDataset = 0
 inIO = 0
 uncleanLog = None
 
-WHOLE_DATASET           = -1
-WHOLE_DATASET_NO_ALPHA  = -2
+WHOLE_DATASET			= -1
+WHOLE_DATASET_NO_ALPHA	= -2
 COLOR_BEGINNER = (200, 200, 200)
 COLOR_INTERMEDIATE = (202, 202, 226)
 COLOR_EXPERIENCED = (224, 188, 232)
 
 dialogs = {}
 
-def registerDialog(name, dlg):
+def registerDialog(dialogName, dialog):
 	global dialogs
-	dialogs[name] = dlg
-	
-def unregisterDialog(name):
-	del dialogs[name]
+	dialogs[dialogName] = dialog
 
+def unregisterDialog(dialogName):
+	del dialogs[dialogName]
 
 def main_is_frozen():
-   return (hasattr(sys, "frozen") or # new py2exe
-		   hasattr(sys, "importers") # old py2exe
-		   or imp.is_frozen("__main__")) # tools/freeze
-
-
+	"""
+	Created: Unknown, KP
+	Description: Checks if the application is "frozen", ie. packaged with py2exe for windows, py2app for mac or freeze for linux.
+	"""
+	return (hasattr(sys, "frozen") or # new py2exe
+			hasattr(sys, "importers") # old py2exe
+			or imp.is_frozen("__main__")) # tools/freeze
 
 def get_main_dir():
+	"""
+	Created: Unknown, KP
+	Description: Gets the main directory. Varies depending on if the app is packaged or run from source
+	"""
 	if "checker.py" in sys.argv[0]:
 		return "."
 	if main_is_frozen():
 		return os.path.dirname(sys.executable)
 	return os.path.dirname(sys.argv[0])
 	
-   
+def get_windows_appdir():
+	"""
+	Created: 01.08.2007, KP
+	Description: return the base directory where application settings, logs etc. should be stored on windows
+	"""
+	if "AppData" in os.environ:
+		appbase = os.environ["AppData"]
+		if not os.path.exists(appbase) and "UserProfile" in os.environ:
+			appbase = os.environ["UserProfile"]
+		return appbase
+	
+	return os.path.join("C:\\", "Documents and Settings", getpass.getuser(), "Application Data")		
+   	
 def get_log_dir():
-	if platform.system() == "Darwin":
+	"""
+	Created: Unknown, KP
+	Description: Tries to create and return a path to a directory for logging
+	"""
+	if platform.system()=="Darwin":
 		return os.path.expanduser("~/Library/Logs/BioImageXD")
 	elif platform.system() == "Windows":
-		if "AppData" in os.environ:
-			appbase = os.environ["AppData"]
-		else:
-			appbase = os.path.join("C:\\", "Documents and Settings", getpass.getuser(), "Application Data")
+		appbase = get_windows_appdir()
 		appdir = os.path.join(appbase, "BioImageXD")
 		if not os.access(appdir, os.F_OK):
 			try:
 				os.mkdir(appdir)
-			except:
+			# Probably want to except an OSError when making a directory
+			except OSError:
+			#except:
 				pass
 			if not os.access(appdir, os.F_OK):
 				Logging.info("Cannot write to log application data, using current directory", kw = "io")
@@ -195,23 +209,20 @@ def get_preview_dir():
 			os.mkdir(dirpath)
 		return dirpath
 	elif platform.system() == "Windows":
-		if "AppData" in os.environ:
-			appbase = os.environ["AppData"]
-		else:
-			appbase = os.path.join("C:\\", "Documents and Settings", getpass.getuser(), "Application Data")
+		appbase = get_windows_appdir()
 		appdir = os.path.join(appbase, "BioImageXD")
 		if not os.access(appdir, os.F_OK):
 			try:
 				os.mkdir(appdir)
-			except:
+			except OSError:
+			#except:
 				pass
 			if not os.access(appdir, os.F_OK):
-				 Logging.info("Cannot write preview to application data, using current directory", kw = "io")
-				 appdir = "."
-		
+				Logging.info("Cannot write preview to application data, using current directory", kw = "io")
+				appdir = "."
 		if not os.path.exists(appdir):
 			os.mkdir(appdir)
-		appdir = os.path.join(appdir, "Previews")
+		appdir = os.path.join(appdir,"Previews")
 		if not os.path.exists(appdir):
 			os.mkdir(appdir)
 		return appdir
@@ -219,61 +230,76 @@ def get_preview_dir():
 		appdir = os.path.expanduser("~/.BioImageXD")
 		if not os.path.exists(appdir):
 			os.mkdir(appdir)
-		appdir = os.path.join(appdir, "Previews")
+		appdir = os.path.join(appdir,"Previews")
 		if not os.path.exists(appdir):
 			os.mkdir(appdir)
 		return appdir
 	
 def get_config_dir():
+	"""
+	Created: Unknown, KP
+	Description: Returns the path to the config file
+	"""
 	if platform.system() == "Darwin":
 		return os.path.expanduser("~/Library/Preferences")
 	elif platform.system() == "Windows": 
-		if "AppData" in os.environ:
-			appbase = os.environ["AppData"]
-		else:
-			appbase = os.path.join("C:\\", "Documents and Settings", getpass.getuser(), "Application Data")
+		appbase = get_windows_appdir()
 		appdir = os.path.join(appbase, "BioImageXD")
+		# Check if appdir exists
 		if not os.access(appdir, os.F_OK):
 			try:
+			# Else try to create it
 				os.mkdir(appdir)
-			except:
+			except OSError:
+			# except:
+			# Probably except an OSError if we can't make the directory
 				pass
 			if not os.access(appdir, os.F_OK):
 				appdir = "."
 		if not os.path.exists(appdir):
-			os.mkdir(appdir)        
+			os.mkdir(appdir)
 		return appdir
 	else:
 		confdir = os.path.expanduser("~/.BioImageXD")
 	if not os.path.exists(confdir):
 		os.mkdir(confdir)
 	return confdir
-#        return get_main_dir() 
+#		 return get_main_dir() 
 
 def get_help_dir():
+	"""
+	Created: Unknown, KP
+	Description: Returns the path where help files are located
+	"""
 	if platform.system() == "Darwin" and main_is_frozen():
-		dir = os.environ['RESOURCEPATH']
-		path = os.path.join(dir, "Help")
-		return path
+		resourcePath = os.environ['RESOURCEPATH']
+		helpPath = os.path.join(resourcePath, "Help")
+		return helpPath
 	else:
 		return os.path.join(".", "Help")
 		
-	
-		
 def get_icon_dir():
+	"""
+	Created: Unknown, KP
+	Description: Returns the path where icons are located
+	"""
 	if platform.system() == "Darwin" and main_is_frozen():
-		dir = os.environ['RESOURCEPATH']
-		path = os.path.join(dir, "Icons")
-		return path
+		resourcePath = os.environ['RESOURCEPATH']
+		iconPath = os.path.join(resourcePath, "Icons")
+		return iconPath
 	else:
 		return os.path.join(".", "Icons")
 		
 		
 def get_module_dir():
+	"""
+	Created: Unknown, KP
+	Description: Returns the path where modules are located
+	"""
 	if platform.system() == "Darwin" and main_is_frozen():
-		dir = os.environ['RESOURCEPATH']
-		path = os.path.join(dir, "Modules")
-		return path
+		resourcePath = os.environ['RESOURCEPATH']
+		modulePath = os.path.join(resourcePath, "Modules")
+		return modulePath
 	else:
 		return "Modules"
 

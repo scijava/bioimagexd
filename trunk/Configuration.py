@@ -31,15 +31,21 @@ __author__ = "BioImageXD Project"
 __version__ = "$Revision: 1.22 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
-import os.path
-import sys, types
 import ConfigParser
 import Logging
-conf = None
 import platform
+import scripting
+import os.path
+import sys
+import types
 
-import scripting as bxd
+conf = None
+
 def getConfiguration():
+	"""
+	Created: Unknown date, KP
+	Description: Returns the current configuration
+	"""
 	global conf
 	if not conf:
 		conf = Configuration()
@@ -54,7 +60,7 @@ class Configuration:
 		global conf
 		conf = self
 		if not configFile:
-			configFile = os.path.join(bxd.get_config_dir(), "BioImageXD.ini")
+			configFile = os.path.join(scripting.get_config_dir(), "BioImageXD.ini")
 		self.configItems = {}
 		self.installPath = os.getcwd()
 		self.parser = ConfigParser.ConfigParser()
@@ -88,18 +94,18 @@ class Configuration:
 		self.readConfigItem("IntermediateColor", "General")
 		self.readConfigItem("ExperiencedColor", "General")
 		
-		c = self.getConfigItem("BeginnerColor", "General")
-		if c:
-			bxd.COLOR_BEGINNER = eval(c)
-		c = self.getConfigItem("IntermediateColor", "General")
-		if c:
-			bxd.COLOR_INTERMEDIATE =  eval(c)
-		c = self.getConfigItem("ExperiencedColor", "General")
-		if c:
-			bxd.COLOR_EXPERIENCED = eval(c)
+		configItem = self.getConfigItem("BeginnerColor", "General")
+		if configItem:
+			scripting.COLOR_BEGINNER = eval(configItem)
+		configItem = self.getConfigItem("IntermediateColor", "General")
+		if configItem:
+			scripting.COLOR_INTERMEDIATE =  eval(configItem)
+		configItem = self.getConfigItem("ExperiencedColor", "General")
+		if configItem:
+			scripting.COLOR_EXPERIENCED = eval(configItem)
 		
 		
-		self.setConfigItem("RemoveOldVTK", "VTK", 1, 0);
+		self.setConfigItem("RemoveOldVTK", "VTK", 1, 0)
 		self.setConfigItem("VTKPath", "VTK", vtkpath, 0)
 		
 		self.setConfigItem("ImageFormat", "Output", "png", 0)
@@ -119,19 +125,27 @@ class Configuration:
 
 	def writeSettings(self):
 		"""
-		Created: 12.03.2005, KP
-		Description: A method to write out the settings
-		""" 
-		fp = open(self.configFile, "w")
-		self.parser.write(fp)
-		fp.close()
-		
+ 		Created: 12.03.2005, KP
+ 		Description: A method to write out the settings
+ 		""" 	
+		filePointer = open(self.configFile, "w")
+		self.parser.write(filePointer)
+		filePointer.close()
+
 	def insertModuleDirectories(self):
+		"""
+		Created: Unknown, KP
+		Description: A method that adds the programs subdirectories into the system path
+		"""
 		self.insertPath(self.getPath("lib"))
 		self.insertPath(self.getPath("GUI"))
 		self.insertPath(self.getPath("Libraries"))
 		
 	def processPathSettings(self):
+		"""
+		Created: Unknown, KP
+		Description: A method that inserts the correct bin- and wrapping-folders in the system path
+		"""	
 		vtkdir = self.getConfigItem("VTKPath", "VTK")
 		if self.getConfigItem("RemoveOldVTK", "VTK") and os.path.isdir(vtkdir):
 			self.removeWithName(["vtk", "VTK", "vtk_python"])
@@ -142,6 +156,11 @@ class Configuration:
 		
 		
 	def setConfigItem(self, configItem, section, value, write = 1):
+		"""
+		Created: Unknown, KP
+		Description: A method that writes a setting in the confiuration, 
+		creating the section for it if needed 
+		"""
 		self.configItems[configItem] = value
 		if write:
 			if self.parser.has_section(section) == False:
@@ -150,14 +169,23 @@ class Configuration:
 			self.writeSettings()
 
 	def readConfigItem(self, configItem, section):
+		"""
+		Created: Unknown, KP
+		Description: Tries to read a configuration option, returns none if it is not available 
+		"""	
 		try:
 			configItemvalue = self.parser.get(section, configItem)
 			self.configItems[configItem] = configItemvalue
-		except:
+		except (ConfigParser.NoSectionError, ConfigParser.NoOptionError):
 			return None
 		return configItemvalue
 		
 	def getConfigItem(self, configItem, section):
+		"""
+		Created: Unknown, KP
+		Description: Returns configItem from the configItems list if possible
+		otherwise tries to read it from the configuration
+		"""	
 		if not configItem in self.configItems:
 			self.readConfigItem(configItem, section)
 			
@@ -167,36 +195,54 @@ class Configuration:
 		return self.configItems[configItem]
 		
 	def readPathSettings(self):
+		"""
+		Created: Unknown, KP
+		Description: Reads the necessary paths from the configuration file 
+		"""	
 		self.readConfigItem("RemoveOldVTK", "VTK")
 		self.readConfigItem("VTKPath", "VTK")
 		self.readConfigItem("DataPath", "Paths")
 		self.readConfigItem("ImageFormat", "Output")
 		self.readConfigItem("FramePath", "Paths")
 		self.readConfigItem("VideoPath", "Paths")
+		
 	def setCurrentDir(self, path):
+		"""
+		Created: Unknown, KP
+		Description: Sets the current directory
+		"""
 		self.installPath = path
 
 	def getPath(self, path):
+		"""
+		Created: Unknown, KP
+		Description: Returns a valid path based on the parameter  
+		"""	
 		if type(path) == types.StringType:
 			path = [path]
 		return os.path.normpath(os.path.join(self.installPath, reduce(os.path.join, path)))
-	
-	def removeWithName(self, names):
+	@staticmethod 	
+	def removeWithName(names):
+		"""
+		Created: Unknown, KP
+		Description: remove modules with the given names from the system path
+		"""
 		removethese = []
-		for i in sys.path:
-			for name in names:
-				if i.find(name) != -1:
-					removethese.append(i)
-#        Logging.info("Removing following path entries: ",", ".join(removethese),kw="init")
-		for i in removethese:
-			try:
-				sys.path.remove(i)
-			except:
-				Logging.info("Failed to remove ", i, kw = "init")
-
+		for directory in sys.path:
+			for directoryToBeRemoved in names:
+				if directory.find(directoryToBeRemoved) != -1:
+					removethese.append(directory)
+ 		for i in removethese:
+ 			try:
+ 				sys.path.remove(i)
+			except ValueError:
+ 				Logging.info("Failed to remove ", i, kw = "init")
 			
-	def insertPath(self, path, n = 0):
-		sys.path.insert(n, path)
-		
-	def appendPath(self, path):
-		sys.path.append(path)
+	@staticmethod		
+	def insertPath(path, beforeIndex = 0):
+		"""
+		Created: Unknown, KP
+		Description: Insert path in the system path before index n
+		"""
+		sys.path.insert(beforeIndex, path)
+
