@@ -32,14 +32,12 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 STATISTICS_ONLY = 2
 THRESHOLDS_ONLY = 1
-import vtk
+import vtkbxd
 import time
-#from enthought.tvtk import messenger
-import messenger
+import lib.messenger
 import lib.Module
-from lib.Module import *
 
-class Colocalization(Module):
+class Colocalization(lib.Module.Module):
 	"""
 	Created: 03.11.2004, KP
 	Description: Creates a colocalization map
@@ -49,7 +47,7 @@ class Colocalization(Module):
 		Created: 03.11.2004, KP
 		Description: Initialization
 		"""
-		Module.__init__(self, **kws)
+		lib.Module.Module.__init__(self, **kws)
 		self.running = 0
 		self.depth = 8
 		self.reset()
@@ -62,13 +60,13 @@ class Colocalization(Module):
 					 that control the colocalization are changed and the
 					 preview data becomes invalid.
 		"""
-		Module.reset(self)
-		self.colocFilter = vtk.vtkImageColocalizationFilter()
+		lib.Module.Module.reset(self)
+		self.colocFilter = vtkbxd.vtkImageColocalizationFilter()
 		self.colocFilter.AddObserver("ProgressEvent", self.updateProgress)
 
 		#self.colocFilter.GetOutput().ReleaseDataFlagOn()
 		self.colocFilter.AddObserver("ProgressEvent", self.updateProgress)
-		self.colocAutoThreshold = vtk.vtkImageAutoThresholdColocalization()
+		self.colocAutoThreshold = vtkbxd.vtkImageAutoThresholdColocalization()
 		self.colocAutoThreshold.GetOutput().ReleaseDataFlagOn()
 		self.colocAutoThreshold.AddObserver("ProgressEvent", self.updateProgress)
 		self.thresholds = []
@@ -107,8 +105,6 @@ class Colocalization(Module):
 		"""
 
 		Logging.info("Doing ", self.depth, "-bit colocalization", kw = "processing")
-#        self.colocFilter=vtk.vtkImageColocalizationFilter()
-#        self.colocFilter.AddObserver("ProgressEvent",self.updateProgress)
 		self.colocFilter.SetOutputDepth(self.depth)
 
 		maxval = 0
@@ -152,8 +148,10 @@ class Colocalization(Module):
 			
 			t1 = settings.get("Ch1ThresholdMax")
 			t2 = settings.get("Ch2ThresholdMax")
-			if t1 == None:t1 = 0
-			if t2 == None:t2 = 0
+			if t1 == None:
+			    t1 = 0
+			if t2 == None:
+			    t2 = 0
 			Logging.info("Got thresholds", t1, t2, kw = "processing")
 			l = [(t1, maxval), (t2, maxval)]
 			self.settings.set("CalculateThresholds", 0)
@@ -204,6 +202,6 @@ class Colocalization(Module):
 #        data = self.getLimitedOutput(self.colocFilter)        
 #        self.colocFilter.Update()
 		data = self.colocFilter.GetOutput()
-		messenger.send(None, "update_progress", 100, "Done.")
+		lib.messenger.send(None, "update_progress", 100, "Done.")
 		
 		return data

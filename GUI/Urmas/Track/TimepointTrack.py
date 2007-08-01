@@ -36,22 +36,20 @@ __author__ = "BioImageXD Project"
 __version__ = "$Revision: 1.22 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
+#import Dialogs
+#import ImageOperations
+#import Logging
+#import math
+#import messenger
+#import os.path
+#import random
+#import sys
+
+from GUI.Urmas.TrackItem.TrackItem import TrackItem
+from GUI.Urmas.UrmasPalette import UrmasDropTarget
+from GUI.TimepointSelection import TimepointSelection
+from Track import Track
 import wx
-import Logging
-import os.path
-import sys
-import math, random
-
-
-from Urmas.TrackItem import *
-from Urmas import UrmasPalette
-import ImageOperations
-import Dialogs
-import TimepointSelection
-
-import messenger
-
-from Track import *
  
 class TimepointTrack(Track):
 	"""
@@ -68,15 +66,17 @@ class TimepointTrack(Track):
 		self.trackType = "DEFINE_TIMEPOINT"        
 		Track.__init__(self, name, parent, **kws)
 		
-		
 		self.itemClass = kws.get("item", TrackItem)
 
 		self.paintOverlay = 1
 		self.overlayColor = ((255, 255, 255), 25)                
 	
-		dt = UrmasPalette.UrmasDropTarget(self, "Timepoint")
+		dt = UrmasDropTarget(self, "Timepoint")
 		self.SetDropTarget(dt)
 		self.thumbnail = 1
+
+		# added this because was commented out in Track
+		self.sizer = wx.GridBagSizer()
 	
 	def AcceptDrop(self, x, y, data):
 		"""
@@ -86,7 +86,7 @@ class TimepointTrack(Track):
 					 something to this track
 		"""
 		oldlen = len(self.items)
-		timepoints = TimepointSelection.TimepointSelection(self.parent)
+		timepoints = TimepointSelection(self.parent)
 		timepoints.setDataUnit(self.control.getDataUnit())
 		if timepoints.ShowModal() == wx.ID_OK:
 			tps = timepoints.getSelectedTimepoints()

@@ -31,20 +31,14 @@ __author__ = "BioImageXD Project"
 __version__ = "$Revision: 1.9 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
+#import DataUnit
+#import os.path
 
-import os.path
 import wx, wx.html
-
 import Logging
-
-import DataUnit
-
 import ColorTransferEditor
 import Modules
-
-import messenger
-
-
+import lib.messenger
 
 smX = "<font size=\"-1\">x</font>"
 infoString = """<html><body bgcolor=%(bgcolor)s">
@@ -101,9 +95,10 @@ class InfoWidget(wx.Panel):
 		#self.mainsizer.Fit(self)
 		self.mainsizer.SetSizeHints(self)
 	   
-		messenger.connect(None, "tree_selection_changed", self.showInfo) 
+		lib.messenger.connect(None, "tree_selection_changed", self.showInfo) 
 		self.SetHelpText("This window shows you information about the selected dataset.")
 		self.htmlpage.SetHelpText("This window shows you information about the selected dataset.")
+
 	def enable(self, flag):
 		"""
 		Created: 05.06.2005, KP
@@ -147,9 +142,9 @@ class InfoWidget(wx.Panel):
 			
 			if resampledims:
 				odims = dataunit.dataSource.getOriginalDimensions()
-				messenger.send(None, "set_resample_dims", resampledims, odims)
+				lib.messenger.send(None, "set_resample_dims", resampledims, odims)
 			else:
-				messenger.send(None, "set_current_dims", dims)
+				lib.messenger.send(None, "set_current_dims", dims)
 
 			spacing = dataunit.getSpacing()
 			voxelsize = dataunit.getVoxelSize()
@@ -181,68 +176,64 @@ class InfoWidget(wx.Panel):
 			# The 0 tells preview to view source dataunit 0
 			#self.preview.setDataUnit(self.dataUnit,0)
 			tps = dataunit.getNumberOfTimepoints()
-		
-		
-		
-		if not resampledims:
-			voxelX, voxelY, voxelZ = voxelsize
-			ovoxelX, ovoxelY, ovoxelZ = voxelsize
-			xdim, ydim, zdim = dims
-			oxdim, oydim, ozdim = odims
-			
-		else:
-			voxelX, voxelY, voxelZ = rsVoxelsize
-			ovoxelX, ovoxelY, ovoxelZ = voxelsize
-			xdim, ydim, zdim = resampledims
-			oxdim, oydim, ozdim = odims
-		
-		voxelX *= 1000000
-		voxelY *= 1000000
-		voxelZ *= 1000000
-		ovoxelX *= 1000000
-		ovoxelY *= 1000000
-		ovoxelZ *= 1000000
-		
-		spX, spY, spZ = spacing
-			
-		if resampledims:
-			rxdim, rydim, rzdim = resampledims
-		else:
-			rxdim, rydim, rzdim = 0, 0, 0
-		col = self.GetBackgroundColour()
-		intlower = str(intlower)
-		intupper = str(intupper)
-		bgcol = "#%2x%2x%2x" % (col.Red(), col.Green(), col.Blue())
-		dict = {"smX":smX, "xdim":xdim, "ydim":ydim, "zdim":zdim,
-		"voxelX":voxelX, "voxelY":voxelY, "voxelZ":voxelZ,
-		"rxdim":rxdim, "rydim":rydim, "rzdim":rzdim,
-		"rxdimm":rxdim * voxelX, "rydimm":rydim * voxelY, "rzdimm":rzdim * voxelZ,
-		"spX":spX, "spY":spY, "spZ":spZ, "xdimm":xdim * voxelX,
-		"ydimm":ydim * voxelY, "zdimm":zdim * voxelZ, "oydim":oydim, "oxdim":oxdim, "ozdim":ozdim,
-		"oxdimm":oxdim * ovoxelX, "oydimm":oydim * ovoxelY, "ozdimm":ozdim * ovoxelZ, "bgcolor":bgcol,
-		"fe": "</font>", "nf": "<font size=\"normal\">",
-		"tps":tps, "bitdepth":bitdepth, "intlower":intlower, "intupper":intupper,
-		"excitation":excitation, "emission":emission}
-		
-		if resampledims and resampledims != (0, 0, 0):
-			self.htmlpage.SetPage(infoStringResample % dict)
-		else:
-			self.htmlpage.SetPage(infoString % dict)
-	
+
+			if not resampledims:
+				voxelX, voxelY, voxelZ = voxelsize
+				ovoxelX, ovoxelY, ovoxelZ = voxelsize
+				xdim, ydim, zdim = dims
+				oxdim, oydim, ozdim = odims
+			else:
+				voxelX, voxelY, voxelZ = rsVoxelsize
+				ovoxelX, ovoxelY, ovoxelZ = voxelsize
+				xdim, ydim, zdim = resampledims
+				oxdim, oydim, ozdim = odims
+
+			voxelX *= 1000000
+			voxelY *= 1000000
+			voxelZ *= 1000000
+			ovoxelX *= 1000000
+			ovoxelY *= 1000000
+			ovoxelZ *= 1000000
+
+			spX, spY, spZ = spacing
+
+			if resampledims:
+				rxdim, rydim, rzdim = resampledims
+			else:
+				rxdim, rydim, rzdim = 0, 0, 0
+			col = self.GetBackgroundColour()
+			intlower = str(intlower)
+			intupper = str(intupper)
+			bgcol = "#%2x%2x%2x"%(col.Red(),col.Green(),col.Blue())
+			dict={"smX":smX,"xdim":xdim,"ydim":ydim,"zdim":zdim,
+				"voxelX":voxelX,"voxelY":voxelY,"voxelZ":voxelZ,
+				"rxdim":rxdim,"rydim":rydim,"rzdim":rzdim,
+				"rxdimm":rxdim*voxelX,"rydimm":rydim*voxelY,"rzdimm":rzdim*voxelZ,
+				"spX":spX,"spY":spY,"spZ":spZ,"xdimm":xdim*voxelX,
+				"ydimm":ydim*voxelY,"zdimm":zdim*voxelZ,"oydim":oydim,"oxdim":oxdim,"ozdim":ozdim,
+				"oxdimm":oxdim*ovoxelX,"oydimm":oydim*ovoxelY,"ozdimm":ozdim*ovoxelZ,"bgcolor":bgcol,
+				"fe":"</font > ","nf":" < font size=\"normal\">",
+				"tps":tps, "bitdepth":bitdepth, "intlower":intlower, "intupper":intupper,
+				"excitation":excitation, "emission":emission}
+
+			if resampledims and resampledims != (0, 0, 0):
+				self.htmlpage.SetPage(infoStringResample % dict)
+			else:
+				self.htmlpage.SetPage(infoString % dict)
+
 	def createInfoNotebook(self):
 		"""
 		Created: 21.02.2005, KP
 		Description: Creates the fields for showing information about the
-					 dataunit
+		dataunit
 		"""
 		self.infoPanel = wx.Panel(self.infoNotebook, -1)
 		#self.infoPanel=wx.Panel(self,-1)
 		self.infoSizer = wx.GridBagSizer(5, 5)
 
-		
 		#self.commonSettingsPanel=wx.Panel(self.infoNotebook,-1)
 		#self.commonSettingsSizer=wx.GridBagSizer()
-		
+
 		n = 0
 		self.namesizer = wx.BoxSizer(wx.VERTICAL)
 		self.infoSizer.Add(self.namesizer, (n, 0))
@@ -254,25 +245,23 @@ class InfoWidget(wx.Panel):
 
 		#self.commonSettingsPanel.SetSizer(self.commonSettingsSizer)
 		#self.commonSettingsPanel.SetAutoLayout(1)
-
 		#self.infoNotebook.AddPage(self.commonSettingsPanel,"Data Unit")
-		
-		
+
 		self.htmlpage = wx.html.HtmlWindow(self.infoPanel, -1, size = (280, 300))
 		if "gtk2" in wx.PlatformInfo:
 			self.htmlpage.SetStandardFonts()
- 
+
 		self.infoSizer.Add(self.htmlpage, (n, 0), flag = wx.EXPAND | wx.ALL)
 		self.showInfo(None)
 		n += 1
 		self.paletteLbl = wx.StaticText(self.infoPanel, -1, "Channel palette:")
 		self.infoSizer.Add(self.paletteLbl, (n, 0))
 		n += 1
-		
+
 		self.colorBtn = ColorTransferEditor.CTFButton(self.infoPanel)
 		self.infoSizer.Add(self.colorBtn, (n, 0))
 		n += 1
-		
+
 		self.infoPanel.SetSizer(self.infoSizer)
 		self.infoPanel.SetAutoLayout(1)
 		self.infoNotebook.AddPage(self.infoPanel, "Channel info")

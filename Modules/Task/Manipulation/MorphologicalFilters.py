@@ -30,16 +30,16 @@ __author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.42 $"
 __date__ = "$Date: 2005/01/13 14:52:39 $"
 
-from lib import ProcessingFilter
+import lib.ProcessingFilter
 import types
 import scripting as bxd
 import vtk
-MORPHOLOGICAL = "Morphological operations"
 
+MORPHOLOGICAL = "Morphological operations"
 FEATUREDETECTION = "Feature detection"
 FILTERING = "Filtering"
 
-class MorphologicalFilter(ProcessingFilter.ProcessingFilter):
+class MorphologicalFilter(lib.ProcessingFilter.ProcessingFilter):
 	"""
 	Created: 13.04.2006, KP
 	Description: A base class for manipulation filters
@@ -53,7 +53,7 @@ class MorphologicalFilter(ProcessingFilter.ProcessingFilter):
 		Created: 13.04.2006, KP
 		Description: Initialization
 		"""        
-		ProcessingFilter.ProcessingFilter.__init__(self, (1, 1))
+		lib.ProcessingFilter.ProcessingFilter.__init__(self, (1, 1))
 	
 		self.descs = {"KernelX": "X", "KernelY": "Y", "KernelZ": "Z"}
 	
@@ -96,7 +96,7 @@ class MorphologicalFilter(ProcessingFilter.ProcessingFilter):
 		Created: 13.04.2006, KP
 		Description: Execute the filter with given inputs and return the output
 		"""            
-		if not ProcessingFilter.ProcessingFilter.execute(self, inputs):
+		if not lib.ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
 		
 		x, y, z = self.parameters["KernelX"], self.parameters["KernelY"], self.parameters["KernelZ"]
@@ -206,7 +206,7 @@ class SobelFilter(MorphologicalFilter):
 		Created: 13.04.2006, KP
 		Description: Execute the filter with given inputs and return the output
 		"""            
-		if not ProcessingFilter.ProcessingFilter.execute(self, inputs):
+		if not lib.ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None        
 		image = self.getInput(1)
 		self.vtkfilter.SetInput(image)
@@ -243,7 +243,7 @@ class HybridMedianFilter(MorphologicalFilter):
 		Created: 13.04.2006, KP
 		Description: Execute the filter with given inputs and return the output
 		"""            
-		if not ProcessingFilter.ProcessingFilter.execute(self, inputs):
+		if not lib.ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None        
 		image = self.getInput(1)
 		self.vtkfilter.SetInput(image)

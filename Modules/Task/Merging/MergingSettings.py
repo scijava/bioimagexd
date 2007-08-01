@@ -35,9 +35,9 @@ __author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.21 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
-import vtk
-from DataUnit import DataUnitSettings      
+from lib.DataUnit.DataUnitSetting import DataUnitSettings      
 import Logging
+import vtkbxd
 		
 class MergingSettings(DataUnitSettings):
 	"""
@@ -57,7 +57,7 @@ class MergingSettings(DataUnitSettings):
 		self.register("AlphaMode")
 		self.registerCounted("PreviewChannel")
 		
-		tf = vtk.vtkIntensityTransferFunction()
+		tf = vtkbxd.vtkIntensityTransferFunction()
 		self.set("AlphaTransferFunction", tf)
 		self.set("AlphaMode", [0, 0])
 
@@ -69,14 +69,14 @@ class MergingSettings(DataUnitSettings):
 		"""
 		DataUnitSettings.initialize(self, dataunit, channels, timepoints)
 
-		#tf=vtk.vtkIntensityTransferFunction()
+		#tf=vtkbxd.vtkIntensityTransferFunction()
 		#print "\n\n****' SETING RANGE OF ALPHA TF =",maxval
 		#tf.SetRangeMax(maxval)    
 		#self.set("AlphaTransferFunction",tf)
 		
 		
 		for i in range(channels):
-			tf = vtk.vtkIntensityTransferFunction()
+			tf = vtkbxd.vtkIntensityTransferFunction()
 			self.setCounted("IntensityTransferFunction", i, tf, 0)
 		self.set("PreviewChannel", 1)
 			

@@ -29,17 +29,19 @@ __author__ = "BioImageXD Project"
 __version__ = "$Revision: 1.9 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
+from Visualizer.ModuleConfiguration import ModuleConfigurationPanel
+from Visualizer.VisualizationModules import VisualizationModule
+import vtk
 import wx
 
-import vtk
-import ColorTransferEditor
-import Dialogs
+def getClass():
+	return ArbitrarySliceModule
 
-from Visualizer.VisualizationModules import *
+def getConfigPanel():
+	return ArbitrarySliceConfigurationPanel
 
-def getClass():return ArbitrarySliceModule
-def getConfigPanel():return ArbitrarySliceConfigurationPanel
-def getName():return "Arbitrary slices"
+def getName():
+	return "Arbitrary slices"
 
 class ArbitrarySliceModule(VisualizationModule):
 	"""
@@ -73,6 +75,9 @@ class ArbitrarySliceModule(VisualizationModule):
 		self.renderer.AddActor(self.outlineActor)
 		
 		self.ctf = None
+		self.origin = None
+		self.spacing = None
+		self.extent = None
 		
 		
 		#self.updateRendering()
@@ -218,8 +223,9 @@ class ArbitrarySliceModule(VisualizationModule):
 				property.ShadeOn()
 			else:
 				property.ShadeOff()        
-		
+
 class ArbitrarySliceConfigurationPanel(ModuleConfigurationPanel):
+
 	def __init__(self, parent, visualizer, name = "Arbitrary Slices", **kws):
 		"""
 		Method: __init__(parent)
@@ -237,8 +243,6 @@ class ArbitrarySliceConfigurationPanel(ModuleConfigurationPanel):
 		self.addButton = wx.Button(self, -1, "Add plane")
 		self.addButton.Bind(wx.EVT_BUTTON, self.onAddPlane)
 		self.contentSizer.Add(self.addButton, (0, 0), flag = wx.EXPAND | wx.LEFT | wx.RIGHT)
-		
-		
 		
 		self.shadingBtn = wx.CheckBox(self, -1, "Use shading")
 		self.shadingBtn.SetValue(1)

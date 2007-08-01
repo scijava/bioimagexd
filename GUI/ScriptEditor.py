@@ -30,21 +30,22 @@ __author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.21 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
-import wx
-import  wx.lib.editor    as  editor
-import  wx.py   as  py
-import Logging
-import inspect
-import os
-import messenger
-import Dialogs
+#import imp
+#import inspect
+#import Logging
+#import StringIO
+
 import scripting as bxd
-import re
-import types
+import Dialogs
+import wx.lib.editor as editor
+import lib.messenger
 import MenuManager
-import StringIO
-import imp
+import os
+import wx.py as py
+import re
 import tempfile
+import types
+import wx
 
 intro = """Welcome to BioImageXD Script Editor"""
 
@@ -58,24 +59,24 @@ class ScriptEditor(editor.Editor):
 		"""
 		Created: 13.02.2006, KP
 		Description: Initialize the editor component of script editor
-		"""    
-		editor.Editor.__init__(self, parent, -1, style = wx.SUNKEN_BORDER)
-		messenger.connect(None, "record_code", self.onUpdateText)
-	
-	def onUpdateText(self, obj, evt, code, imports):
 		"""
+		editor.Editor.__init__(self, parent, -1, style = wx.SUNKEN_BORDER)
+		lib.messenger.connect(None, "record_code", self.onUpdateText)
+	
+	def onUpdateText(self,obj,evt,code, imports):
+		"""
+		Method: onUpdateText()
 		Created: 13.02.2006, KP
 		Description: Update the gui
-		"""     
+		""" 
 		if bxd.record:
 			self.SetText(bxd.recorder.getText())
-		
 		
 	def setScript(self, lines, imports):
 		"""
 		Created: 13.02.2006, KP
 		Description: Sets the script in the editor to the given list of lines. Also sets the imports required for the current script to work
-		"""        
+		"""
 		self.code = lines
 		self.imports = imports
 		imports = []
@@ -98,7 +99,7 @@ class ScriptEditorFrame(wx.Frame):
 		"""
 		Created: 13.02.2006, KP
 		Description: Initialize the script editor frame
-		"""    
+		"""
 		self.parent = parent
 		wx.Frame.__init__(self, parent, -1, "BioImageXD Script Editor", size = (800, 600))
 		self.splitter = wx.SplitterWindow(self, -1, style = wx.SP_LIVE_UPDATE)
@@ -166,7 +167,6 @@ class ScriptEditorFrame(wx.Frame):
 		"""
 		filename = Dialogs.askSaveAsFileName(self, "Save script file", "script.bxs", self.wc)
 		self.writeScript(filename)
-		
 	def writeScript(self, filename):
 		"""
 		Created: 15.08.2006, KP
@@ -180,10 +180,9 @@ class ScriptEditorFrame(wx.Frame):
 				
 			s = "\n".join(lines)
 			if "def run" not in s:
-				ind = "    "                
+				ind = "    "
 				f.write("def run():\n")
 			for i, line in enumerate(lines):
-				
 				lines[i] = ind + lines[i].rstrip()
 			f.write("\n".join(lines))
 		except:
@@ -219,12 +218,11 @@ class ScriptEditorFrame(wx.Frame):
 			m = r1.match(l)
 			im = None
 			if m:
-			   im = m.group(1) 
+				im = m.group(1) 
 			if not m:
 				m = r2.match(l)
 				if m:
 					im = (m.group(1), m.group(2))
-				
 			if im:
 				imports.append(im)
 				remove.append(line)
@@ -240,7 +238,7 @@ class ScriptEditorFrame(wx.Frame):
 		"""
 		flags = wx.NO_BORDER | wx.TB_HORIZONTAL | wx.TB_TEXT
 		self.CreateToolBar(flags)
-		tb = self.GetToolBar()            
+		tb = self.GetToolBar()
 		tb.SetToolBitmapSize((32, 32))
 		
 		iconpath = bxd.get_icon_dir()
@@ -257,14 +255,14 @@ class ScriptEditorFrame(wx.Frame):
 		tb.DoAddTool(MenuManager.ID_RUN_SCRIPT, "Run", bmp, shortHelp = "Run recorded script") 
 		wx.EVT_TOOL(self, MenuManager.ID_RUN_SCRIPT, self.onRunScript)
 		
-		tb.Realize()        
+		tb.Realize()
 		self.tb = tb
 		
 	def onRunScript(self, evt):
 		"""
 		Created: 13.02.2006, KP
 		Description: Run the recorded script
-		"""         
+		"""
 		x, filename = tempfile.mkstemp(".py", "BioImageXD")
 		
 		self.writeScript(filename)
@@ -280,7 +278,7 @@ class ScriptEditorFrame(wx.Frame):
 		Method: onRecordScript
 		Created: 13.02.2006, KP
 		Description: Enable the recording of scripts
-		"""         
+		"""
 		self.tb.EnableTool(MenuManager.ID_STOP_RECORD, 1)
 		self.tb.EnableTool(MenuManager.ID_RECORD_SCRIPT, 0)
 		self.script.Enable(MenuManager.ID_STOP_RECORD, 1)
@@ -293,9 +291,9 @@ class ScriptEditorFrame(wx.Frame):
 		Method: onStopRecord
 		Created: 13.02.2006, KP
 		Description: Stop recording of scripts
-		"""         
+		"""
 		self.tb.EnableTool(MenuManager.ID_STOP_RECORD, 0)
 		self.tb.EnableTool(MenuManager.ID_RECORD_SCRIPT, 1)
 		self.script.Enable(MenuManager.ID_STOP_RECORD, 0)
-		self.script.Enable(MenuManager.ID_RECORD_SCRIPT, 1)        
+		self.script.Enable(MenuManager.ID_RECORD_SCRIPT, 1)
 		bxd.record = 0

@@ -37,7 +37,7 @@ __version__ = "$Revision: 1.21 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 import vtk
-from DataUnit import DataUnitSettings
+from lib.DataUnit.DataUnitSetting import DataUnitSettings
 		
 class ColocalizationSettings(DataUnitSettings):
 	"""

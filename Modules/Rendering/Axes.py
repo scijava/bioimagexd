@@ -29,15 +29,18 @@ __author__ = "BioImageXD Project"
 __version__ = "$Revision: 1.9 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
-import wx
-
+from Visualizer.VisualizationModules import VisualizationModule
+from Visualizer.ModuleConfiguration import ModuleConfigurationPanel
 import vtk
-from Visualizer.VisualizationModules import *
 
+def getClass():
+	return AxesModule
 
-def getClass():return AxesModule
-def getConfigPanel():return AxesConfigurationPanel
-def getName():return "Axes"
+def getConfigPanel():
+	return AxesConfigurationPanel
+
+def getName():
+	return "Axes"
 
 class AxesModule(VisualizationModule):
 	"""
@@ -138,9 +141,8 @@ class AxesModule(VisualizationModule):
 		"""
 		pass
 		
-
-		
 class AxesConfigurationPanel(ModuleConfigurationPanel):
+
 	def __init__(self, parent, visualizer, name = "Axes", **kws):
 		"""
 		Created: 04.05.2005, KP

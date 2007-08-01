@@ -35,20 +35,25 @@ __author__ = "BioImageXD Project"
 __version__ = "$Revision: 1.22 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
-import  wx.lib.scrolledpanel as scrolled
-import wx
-import wx.lib.masked as masked
-from Track import *
-from TimeScale import *
+#import wx.lib.masked as masked
+#import os.path
+#import operator
+#import PreviewFrame
+#import sys
+#import Track
+#import types
 
-import PreviewFrame
-
-import os.path
-import sys, types
+import GUI.Dialogs
+import GUI.Urmas.UrmasPalette
+from Track.KeyframeTrack import KeyframeTrack
+import lib.messenger    
 import Logging
-import operator
-import messenger    
-		
+import wx.lib.scrolledpanel as scrolled
+from Track.SplineTrack import SplineTrack
+from Track.TimepointTrack import TimepointTrack
+from TimeScale import TimeScale
+import wx
+
 class Timeline(scrolled.ScrolledPanel):
 	"""
 	Created: 04.02.2005, KP
@@ -100,7 +105,7 @@ class Timeline(scrolled.ScrolledPanel):
 		w, h = self.GetSize()
 		w2, h = self.timeScale.GetSize()
 		self.timeScale.SetSize((w, h))
-		dt = UrmasPalette.UrmasDropTarget(self, "Track")
+		dt = GUI.Urmas.UrmasPalette.UrmasDropTarget(self, "Track")
 		self.SetDropTarget(dt)
 		
 		
@@ -111,10 +116,10 @@ class Timeline(scrolled.ScrolledPanel):
 		
 		
 		#self.sizer.Fit(self)
-		messenger.connect(None, "set_timeline_size", self.setupScrolling)
-		messenger.connect(None, "set_duration", self.onSetDuration)
-		messenger.connect(None, "set_frames", self.onSetFrames)
-		messenger.connect(None, "update_timeline", self.onUpdateTimeline)
+		lib.messenger.connect(None, "set_timeline_size", self.setupScrolling)
+		lib.messenger.connect(None, "set_duration", self.onSetDuration)
+		lib.messenger.connect(None, "set_frames", self.onSetFrames)
+		lib.messenger.connect(None, "update_timeline", self.onUpdateTimeline)
 		
 	def onUpdateTimeline(self, obj, evt, *args):
 		"""
@@ -234,7 +239,7 @@ class Timeline(scrolled.ScrolledPanel):
 		""" 
 		i = self.splinepointTracks.index(track)
 		if i < 1:
-			Dialogs.showwarning(self, "First track has no preceeding tracks", "Cannot set beginning of track")
+			GUI.Dialogs.showwarning(self, "First track has no preceeding tracks", "Cannot set beginning of track")
 			return
 		p = self.splinepointTracks[i - 1].items[-1].getPoint()
 		self.splinepointTracks[i].items[0].setPoint(p)
@@ -251,7 +256,7 @@ class Timeline(scrolled.ScrolledPanel):
 		i = self.splinepointTracks.index(track)
 		
 		if i == len(self.splinepointTracks) - 1:
-			Dialogs.showwarning(self, "Last track has no following tracks", "Cannot set end of track")
+			GUI.Dialogs.showwarning(self, "Last track has no following tracks", "Cannot set end of track")
 			return
 		p = self.splinepointTracks[i + 1].items[0].getPoint()
 		self.splinepointTracks[i].items[-1].setPoint(p)
@@ -338,7 +343,8 @@ class Timeline(scrolled.ScrolledPanel):
 			# to be changed
 			self.sizer.Add(self.timepointSizer, (1, 0), flag = wx.EXPAND | wx.ALL)
 			self.haveTp = 1
-		tr = TimepointTrack(label, self, number = 1, timescale = self.timeScale, control = self.control, height = 55)
+		tr = TimepointTrack(label, self, number = 1, timescale = self.timeScale, \
+							control = self.control, height = 55)
 		
 		self.timeScale.setOffset(tr.getLabelWidth())
 		self.splinepointTrackAmnt = len(self.splinepointTracks)
@@ -348,10 +354,12 @@ class Timeline(scrolled.ScrolledPanel):
 #        if self.splinepointTrackAmnt:
 #            self.moveTracks(self.timepointTrackAmnt,self.timepointTrackAmnt+1,self.splinepointTrackAmnt)
 #        if self.keyframeTrackAmnt:
-#            self.moveTracks(self.timepointTrackAmnt+self.splinepointTrackAmnt,self.timepointTrackAmnt+self.splinepointTrackAmnt+1,self.keyframeTrackAmnt)
+#            self.moveTracks(self.timepointTrackAmnt + self.splinepointTrackAmnt, \
+#								self.timepointTrackAmnt + self.splinepointTrackAmnt + 1, \
+#								self.keyframeTrackAmnt)
 #        self.Layout()
-		#print "Adding track to ",self.trackOffset+self.timepointTrackAmnt
-		#self.sizer.Add(tr,(self.trackOffset+self.timepointTrackAmnt,0),flag=wx.EXPAND|wx.ALL)
+#		print "Adding track to ",self.trackOffset+self.timepointTrackAmnt
+#		self.sizer.Add(tr,(self.trackOffset+self.timepointTrackAmnt,0),flag=wx.EXPAND|wx.ALL)
 		self.timepointSizer.Add(tr, (self.timepointTrackAmnt, 0), flag = wx.EXPAND | wx.ALL)
 		tr.setColor((56, 196, 248))
 		if self.dataUnit:
@@ -394,10 +402,13 @@ class Timeline(scrolled.ScrolledPanel):
 		self.splinepointTrackAmnt = len(self.splinepointTracks)
 		self.timepointTrackAmnt = len(self.timepointTracks)
 		self.keyframeTrackAmnt = len(self.keyframeTracks)
-		#if self.keyframeTrackAmnt:
-		#    self.moveTracks(self.timepointTrackAmnt+self.splinepointTrackAmnt,self.timepointTrackAmnt+self.splinepointTrackAmnt+1,self.keyframeTrackAmnt)        
-		
-		#self.sizer.Add(tr,(self.trackOffset+self.timepointTrackAmnt+self.splinepointTrackAmnt,0),flag=wx.EXPAND|wx.ALL)
+#		if self.keyframeTrackAmnt:
+# 		   self.moveTracks(self.timepointTrackAmnt + self.splinepointTrackAmnt, \
+#								self.timepointTrackAmnt + self.splinepointTrackAmnt + 1, \
+#								self.keyframeTrackAmnt)
+#		self.sizer.Add(tr, \
+#						(self.trackOffset + self.timepointTrackAmnt + self.splinepointTrackAmnt, 0), \
+#						flag = wx.EXPAND|wx.ALL)
 		self.splineSizer.Add(tr, (self.splinepointTrackAmnt, 0), flag = wx.EXPAND | wx.ALL)
 		
 		self.FitInside()
@@ -423,18 +434,21 @@ class Timeline(scrolled.ScrolledPanel):
 
 		if label == "":
 			label = "Keyframe %d" % len(self.keyframeTracks)
-		tr = KeyframeTrack(label, self, number = 1, timescale = self.timeScale, control = self.control, height = 55)
+		tr = KeyframeTrack(label, self, number = 1, timescale = self.timeScale, \
+							control = self.control, height = 55)
 		self.timeScale.setOffset(tr.getLabelWidth())
 		self.keyframeTrackAmnt = len(self.keyframeTracks)
 		self.timepointTrackAmnt = len(self.timepointTracks)
 		self.splinepointTrackAmnt = len(self.splinepointTracks)
-		#print "Adding track to ",self.trackOffset+self.timepointTrackAmnt+self.splinepointTrackAmnt
-		#self.sizer.Add(tr,(self.trackOffset+self.timepointTrackAmnt+self.splinepointTrackAmnt+self.keyframeTrackAmnt,0),flag=wx.EXPAND|wx.ALL)
+#		print "Adding track to ", self.trackOffset + self.timepointTrackAmnt + self.splinepointTrackAmnt
+#		self.sizer.Add(tr, \
+#						(self.trackOffset + self.timepointTrackAmnt + self.splinepointTrackAmnt + self.keyframeTrackAmnt, 0), \
+#						flag = wx.EXPAND|wx.ALL)
 		self.keyframeSizer.Add(tr, (self.keyframeTrackAmnt, 0), flag = wx.EXPAND | wx.ALL)
 		
 		self.FitInside()
 		self.Layout()
-		#self.SetupScrolling()
+#		self.SetupScrolling()
 		self.keyframeTracks.append(tr)    
 		self.control.window.updateMenus()
 		
@@ -454,7 +468,6 @@ class Timeline(scrolled.ScrolledPanel):
 		ret = 0
 		for track in tracks:
 			if track != cmptrack and track.trackType == cmptrack.trackType and len(track.items):
-				
 				item = track.items[-1]
 				x, y = item.GetPosition()
 				w, h = item.GetSize()
@@ -462,8 +475,6 @@ class Timeline(scrolled.ScrolledPanel):
 				if ret < curr:
 					ret = curr
 		return ret
-		
-			
 			
 	def setDisabled(self, flag):
 		"""
@@ -553,7 +564,8 @@ class Timeline(scrolled.ScrolledPanel):
 		Description: Method to set the timeline duration
 		"""
 		#print "On set duration",duration
-		if self.self.seconds != duration:
+		#if self.self.seconds != duration:
+		if self.seconds != duration:
 			self.seconds = duration
 			self.configureTimeline(duration, self.frames)
 		
@@ -632,7 +644,8 @@ class Timeline(scrolled.ScrolledPanel):
 		self.timepointTrackAmnt = len(self.timepointTracks)
 		self.splinepointTrackAmnt = len(self.splinepointTracks)
 		self.keyframeTrackAmnt = len(self.keyframeTracks)
-		for key in ["timepointTracks", "splinepointTracks", "splinepointTrackAmnt", "timepointTrackAmnt", "keyframeTracks", "keyframeTrackAmnt"]:
+		for key in ["timepointTracks", "splinepointTracks", "splinepointTrackAmnt", \
+					"timepointTrackAmnt", "keyframeTracks", "keyframeTrackAmnt"]:
 			odict[key] = self.__dict__[key]
 		return odict        
  

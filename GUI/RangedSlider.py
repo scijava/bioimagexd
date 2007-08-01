@@ -33,9 +33,11 @@ __author__ = "BioImageXD Project"
 __version__ = "$Revision: 1.22 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
+#import Logging
+#import time
+
 import wx
-import Logging
-import time
+
 class RangedSlider(wx.Slider):
 	"""
 	Created: 06.03.2005, KP
@@ -157,7 +159,7 @@ class RangedSlider(wx.Slider):
 				currRange = r
 				break
 			else:
-			   currRange = self.ranges[-1]
+				currRange = self.ranges[-1]
 
 		maxi, mini = 3, 2
 		maxi2, mini2 = 1, 0

@@ -30,13 +30,13 @@ __version__ = "$Revision: 1.40 $"
 __date__ = "$Date: 2005/01/13 14:52:39 $"
 
 
-from ConfigParser import *
-from DataSource import *
-import vtk
+#from ConfigParser import *
+from DataSource import DataWriter 
+#import vtk
 import os.path
 
 import Logging
-import DataUnit
+#import DataUnit
 		
 class BXDDataWriter(DataWriter):
 	"""
@@ -46,7 +46,7 @@ class BXDDataWriter(DataWriter):
 
 	def __init__(self, filename):
 		"""
-		Created: 26.03.2005,KP
+		Created: 26.03.2005, KP
 		Description: Constructor
 		"""
 		DataWriter.__init__(self)
@@ -66,7 +66,7 @@ class BXDDataWriter(DataWriter):
 		if not os.path.exists(self.filedir):
 			os.mkdir(self.filedir)
 		elif not os.path.isdir(self.filedir):
-			Logging.error("Not a directory", "The selected path, %s exists and is not directory. Cannot write files" % (self.filedir))
+			Logging.error("Not a directory", "The selected path, %s exists and is not directory. Cannot write files" %(self.filedir))
 		self.filename = os.path.join(self.filedir, bxdfile)
 		
 	
@@ -102,20 +102,21 @@ class BXDDataWriter(DataWriter):
 		"""
    
 		try:
+			print "Trying to open", self.filename, repr(self.filename)
 			fp = open(self.filename, "w")
 		except IOError, ex:
 			Logging.error("Failed to write settings",
-			"BXDDataSource Failed to open .bxd file %s for writing settings (%s)" % (self.filename, str(ex)))
+			"BXDDataSource Failed to open .bxd file %s for writing settings (%s)" %(self.filename, str(ex)))
 			return
 		for writer in self.writers:
 			filename = os.path.basename(writer.getFilename())
-			fp.write("%s\n" % filename)
+			fp.write("%s\n" %filename)
 	   
 		fp.close()
 
 	def addChannelWriter(self, writer):
 		"""
-		Created: 1.12.2004,KP
+		Created: 1.12.2004, KP
 		Description: Add a vtkImageData object to be written to the disk.
 		"""
 		self.writers.append(writer)

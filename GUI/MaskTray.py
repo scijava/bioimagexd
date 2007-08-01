@@ -33,7 +33,7 @@ import wx
 import  wx.lib.scrolledpanel as scrolled
 import  wx.lib.buttons  as  buttons
 
-import ImageOperations
+import lib.ImageOperations
 import vtk
 
 masks = []
@@ -67,8 +67,8 @@ class Mask:
 		Created: 20.06.2006, KP
 		Description: Return a preview bitmap of the mask
 		"""           
-		preview = ImageOperations.getMIP(self.image, self.ctf)
-		preview = ImageOperations.vtkImageDataToWxImage(preview)
+		preview = lib.ImageOperations.getMIP(self.image, self.ctf)
+		preview = lib.ImageOperations.vtkImageDataToWxImage(preview)
 		preview.Rescale(80, 80)
 		preview = preview.ConvertToBitmap()
 		

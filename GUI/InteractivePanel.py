@@ -29,26 +29,24 @@ __author__ = "BioImageXD Project"
 __version__ = "$Revision: 1.9 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
+#import OGLAnnotations
+#import vtk
+
+import scripting as bxd
+import lib.ImageOperations
+import lib.messenger
+import Logging
+import math
+import wx.lib.ogl as ogl
+import platform
 import wx    
 
-import ImageOperations
-import Logging
-import platform
-import wx.lib.ogl as ogl
-import messenger
-
-import vtk
-import math
-import scripting as bxd
 ZOOM_TO_BAND = 1
 MANAGE_ANNOTATION = 2
 ADD_ANNOTATION = 3
 ADD_ROI = 4
 SET_THRESHOLD = 5
 DELETE_ANNOTATION = 6
-
-from OGLAnnotations import *
-
 
 
 class PainterHelper:
@@ -88,7 +86,7 @@ class VisualizeTracksHelper(PainterHelper):
 		"""
 		PainterHelper.__init__(self, parent)
 		self.selectedTracks = []
-		messenger.connect(None, "visualize_tracks", self.onShowTracks)        
+		lib.messenger.connect(None, "visualize_tracks", self.onShowTracks)        
 		
 	def onShowTracks(self, obj, evt, tracks):
 		"""
@@ -128,7 +126,6 @@ class VisualizeTracksHelper(PainterHelper):
 					objectValue, pos = track.getObjectAtTime(i)
 					if objectValue != -1:
 						x1, y1, z1 = pos
-						print "Pos = ", pos
 						
 						x1 *= self.parent.zoomFactor
 						y1 *= self.parent.zoomFactor
@@ -140,8 +137,8 @@ class VisualizeTracksHelper(PainterHelper):
 						self.drawTimepoint(dc, i, x1, y1)                        
 							
 						def angle(x_1, y_1, x_2, y_2):
-							ang = math.atan2(y_2 - y_1, x_2 - x_1) * 180.0 / math.pi;
-							ang = math.atan2(y_2 - y_1, x_2 - x_1) * 180.0 / math.pi;
+							ang = math.atan2(y_2 - y_1, x_2 - x_1) * 180.0 / math.pi
+							ang = math.atan2(y_2 - y_1, x_2 - x_1) * 180.0 / math.pi
 							ang2 = ang
 							#if ang<0:ang=180+ang
 							return ang
@@ -197,7 +194,7 @@ class CenterOfMassHelper(PainterHelper):
 		"""
 		PainterHelper.__init__(self, parent)
 		self.centerOfMass = None
-		messenger.connect(None, "show_centerofmass", self.onShowCenterOfMass)
+		lib.messenger.connect(None, "show_centerofmass", self.onShowCenterOfMass)
 		
 	def onShowCenterOfMass(self, obj, evt, label, centerofmass):
 		"""
@@ -245,7 +242,6 @@ class AnnotationHelper(PainterHelper):
 		Created: 06.10.2006, KP
 		Description: Paint the annotations on a DC
 		"""
-#        print "\nPARENT'S OFFSET = ",self.parent.xoffset,self.parent.yoffset
 		self.parent.diagram.Redraw(dc)
 		
 		
@@ -364,7 +360,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 		#self.Bind(wx.EVT_RIGHT_UP,self.actionEnd)
 		self.Bind(wx.EVT_SIZE, self.OnSize)
 		
-		messenger.connect(None, "update_helpers", self.onUpdateHelpers)
+		lib.messenger.connect(None, "update_helpers", self.onUpdateHelpers)
 		
 	def disableAnnotations(self):
 		"""
@@ -381,7 +377,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 		if not self.subtractROI: return
 		mx, my, mz = self.dataUnit.getDimensions()
 		rois = [self.subtractROI]
-		n, maskImage = ImageOperations.getMaskFromROIs(rois, mx, my, mz)
+		n, maskImage = lib.ImageOperations.getMaskFromROIs(rois, mx, my, mz)
 		
 		tp = bxd.visualizer.getTimepoint()
 		if self.dataUnit.isProcessed():
@@ -570,7 +566,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 		mx, my, mz = self.dataUnit.getDimensions()
 		rois = self.getRegionsOfInterest()
 		names = [roi.getName() for roi in rois]
-		n, maskImage = ImageOperations.getMaskFromROIs(rois, mx, my, mz)
+		n, maskImage = lib.ImageOperations.getMaskFromROIs(rois, mx, my, mz)
 		
 		return maskImage, names
 		
@@ -888,7 +884,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 			
 		self.saveAnnotations()
 		if not noUpdate:
-			messenger.send(None, "update_annotations")
+			lib.messenger.send(None, "update_annotations")
 		return shape
 		
 	def saveAnnotations(self):
@@ -993,7 +989,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 		x2, y2 = self.getScrolledXY(x2, y2)
 
 		w, h = self.size
-		self.setZoomFactor(ImageOperations.getZoomFactor((x2 - x1), (y2 - y1), w, h))
+		self.setZoomFactor(lib.ImageOperations.getZoomFactor((x2 - x1), (y2 - y1), w, h))
 		
 		self.scrollTo = (self.zoomFactor * x1 * self.zoomx, self.zoomFactor * y1 * self.zoomy)
 		

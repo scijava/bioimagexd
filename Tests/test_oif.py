@@ -1,7 +1,8 @@
 #! /usr/bin/env python
 import vtk
+import vtkBXD
 PATH="/media/sda12/Data/Olympus/silicone/su8onsilicone3.oif.files/su8onsilicone3_C001Z%.3d.tif"
-rdr = vtk.vtkExtTIFFReader()
+rdr = vtkBXD.vtkExtTIFFReader()
 rdr.SetDataExtent(0,1023,0,1023,0,42)
 rdr.SetFilePattern(PATH)
 rdr.SetFileNameSliceOffset(1)

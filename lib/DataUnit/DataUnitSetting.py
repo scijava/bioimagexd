@@ -36,12 +36,14 @@ __author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.21 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
+#import zlib
+
 import vtk
-import ImageOperations
+import vtkbxd
+import lib.ImageOperations
 import pickle
 import Logging
-import zlib
-import Modules
+import Modules.DynamicLoader
 import ConfigParser
 
 class DataUnitSettings:
@@ -54,12 +56,12 @@ class DataUnitSettings:
 	# and using the counted keys
 	settings = {}
 	
-	def __init__(self, n = -1, **kws):
+	def __init__(self, dataSetNumber = -1, **keyWords):
 		"""
 		Created: 26.03.2005
 		Description: Constructor
 		Parameters:
-			n   Number of the dataset this is associated to
+			n	Number of the dataset this is associated to
 				Reflects in that set() and get() of counted variables
 				will set only the nth variable
 		"""
@@ -73,16 +75,16 @@ class DataUnitSettings:
 		self.dataunit = None
 		self.channels = 0
 		self.timepoints = 0
-		if kws.has_key("type"):
-			self.setType(kws["type"])
-		self.n = n
+		if keyWords.has_key("type"):
+			self.setType(keyWords["type"])
+		self.dataSetNumber = dataSetNumber
 		self.serialized = {}
 		self.register("SettingsOnly", serialize = 1)
 		self.registerPrivate("ColorTransferFunction", serialize = 1)
 		self.register("PreviewedDataset")
 		self.set("PreviewedDataset", -1)
 		self.register("Annotations", serialize = 1)
-#        self.register("SourceCount")
+#		 self.register("SourceCount")
 		self.registerCounted("Source")
 		self.register("VoxelSize")
 		self.register("Spacing")
@@ -118,7 +120,7 @@ class DataUnitSettings:
 		"""
 		newclass = eval(newtype)
 
-		settings = newclass(self.n)
+		settings = newclass(self.dataSetNumber)
 		settings.initialize(self.dataunit, self.channels, self.timepoints)
 		return settings
 		
@@ -144,7 +146,7 @@ class DataUnitSettings:
 		Created: 26.03.2005
 		Description: Register a name as valid key. 
 		Parameters:
-			serialize   The value will be written out/read through
+			serialize	The value will be written out/read through
 						the serialize/deserialize methods
 		"""    
 		
@@ -155,11 +157,11 @@ class DataUnitSettings:
 	def registerPrivate(self, name, serialize = 0):
 		"""
 		Created: 26.03.2005
-		Description: Register a name as valid key. 
+		Description: Register a name as valid key.
 		Parameters:
-			serialize   The value will be written out/read through
+			serialize	The value will be written out/read through
 						the serialize/deserialize methods
-		"""    
+		"""
 		self.registered[name] = 1
 		self.isPrivate[name] = 1
 		self.serialized[name] = serialize
@@ -169,27 +171,26 @@ class DataUnitSettings:
 		Created: 26.03.2005
 		Description: Register a name as valid key that is counted
 		Parameters:
-			serialize   The value will be written out/read through
+			serialize	The value will be written out/read through
 						the serialize/deserialize methods
-		"""    
+		"""
 		self.registered[name] = 1
 		self.counted[name] = 1
 		self.serialized[name] = serialize
 		self.isPrivate[name] = 0
-	
-		
+
 	def readFrom(self, parser):
 		"""
 		Created: 26.03.2005
 		Description: Attempt to read all registered keys from a parser
-		"""    
+		"""
 		self.parser = parser
 		if not self.get("Type"):
 			self.parser = parser
 			try:
 				type = parser.get("Type", "Type")
 			except ConfigParser.NoOptionError:
-				type = parser.get("Type", "type")            
+				type = parser.get("Type", "type")
 			except ConfigParser.NoSectionError:
 				pass
 			else:
@@ -197,17 +198,17 @@ class DataUnitSettings:
 					settingsclass = self.modules[type][2].getSettingsClass()
 				else:
 					settingsclass = self.__class__
-				Logging.info("Type=%s, settings class=%s" % (type, str(settingsclass)), kw = "processing")
-				#obj=eval(type)(self.n)
-				obj = settingsclass(self.n)
+				Logging.info("Type = %s, settings class = %s" % (type, str(settingsclass)), kw = "processing")
+				#obj = eval(type)(self.dataSetNumber)
+				obj = settingsclass(self.dataSetNumber)
 				obj.setType(type)
-				#print "Returning object of class",settingsclass
-				return obj.readFrom(parser)                
+				#print "Returning object of class", settingsclass
+				return obj.readFrom(parser)				   
 		
 		for key in self.registered.keys():
 			ser = self.serialized[key]
 			#if ser:
-			#    #Logging.info("is %s serialized: %s"%(key,ser),kw="dataunit")
+			#	 #Logging.info("is %s serialized: %s" %(key, ser), keyWord = "dataunit")
 			if key in self.counted:
 				try:
 					n = parser.get("Count", key)
@@ -234,13 +235,13 @@ class DataUnitSettings:
 					
 						if ser:
 							value = self.deserialize(key, value)
-							#Logging.info("Deserialized ",key,"=",value,kw="dataunit")
+							#Logging.info("Deserialized ", key, " = ", value, kw = "dataunit")
 						self.setCounted(key, i, value)
 						self.counted[key] = i
 					except ConfigParser.NoSectionError:
 						Logging.info("Got no keys for section %s" % key, kw = "dataunit")
 			else:
-				#value=parser.get("ColorTransferFunction","ColorTransferFunction")
+				#value = parser.get("ColorTransferFunction", "ColorTransferFunction")
 				try:
 					try:
 						value = parser.get(key, key)
@@ -248,12 +249,12 @@ class DataUnitSettings:
 						value = parser.get(key, key.lower())
 					
 					if ser:
-						#Logging.info("Trying to deserialize ",key,value,kw="dataunit")
+						#Logging.info("Trying to deserialize ", key, value, kw = "dataunit")
 						value = self.deserialize(key, value)
-						#Logging.info("Deserialized ",key,"=",value,kw="dataunit")
+						#Logging.info("Deserialized ", key, " = ", value, kw = "dataunit")
 					self.set(key, value)
 				except ConfigParser.NoSectionError:
-					#Logging.info("Got no keys for section %s"%key,kw="dataunit")
+					#Logging.info("Got no keys for section %s" %key, kw = "dataunit")
 					pass
 		return self
 				
@@ -263,8 +264,9 @@ class DataUnitSettings:
 		Description: Write a key and it's value to parser
 		"""    
 		nkey = "%s[%d]" % (key, n)
-		if not (key in self.settings or nkey in self.settings) and not (key in self.private or nkey in self.private):
-			#Logging.info("neither ",key,"nor",nkey,"in ",self.settings.keys(),kw="dataunit")
+		if not (key in self.settings or nkey in self.settings) \
+			and not (key in self.private or nkey in self.private):
+			#Logging.info("neither ", key, "nor", nkey, "in ", self.settings.keys(), kw = "dataunit")
 			return
 		okey = key
 		if n != -1:
@@ -278,24 +280,23 @@ class DataUnitSettings:
 		if not parser.has_section(okey):
 			parser.add_section(okey)
 		parser.set(okey, key, value)
-		
-				
+ 
 	def writeTo(self, parser):
 		"""
 		Created: 26.03.2005
 		Description: Attempt to write all keys to a parser
 		"""    
-		keys = []
+		#keys = []
 		if not parser.has_section("Settings"):
 			parser.add_section("Settings")
 		for key in self.registered.keys():
 			if key in self.counted:
-				#print "Writing key %s with count %d"%(key,self.counted[key])
+				#print "Writing key %s with count %d" %(key, self.counted[key])
 				for i in range(self.counted[key] + 1):
 					self.writeKey(key, parser, i)
 			else:
-				#print "Writing key ",key
-				self.writeKey(key, parser)                
+				#print "Writing key ", key
+				self.writeKey(key, parser)				  
 			   
 		if len(self.counted.keys()):
 			if not parser.has_section("Count"):
@@ -312,17 +313,17 @@ class DataUnitSettings:
 		if not overwrite and self.settings.has_key(name):
 			print "Will not overwrite %s" % name
 			return
-		if self.n != -1 and name in self.counted:
-			#print "Setting counted %d,%s,%s"%(self.n,name,value)
-			return self.setCounted(name, self.n, value, overwrite)
+		if self.dataSetNumber != -1 and name in self.counted:
+			#print "Setting counted %d, %s, %s" %(self.dataSetNumber, name, value)
+			return self.setCounted(name, self.dataSetNumber, value, overwrite)
 		if name not in self.registered:
 			raise "No key %s registered" % name
 		if self.isPrivate[name]:
-#            print "Setting private %s"%name
+#			 print "Setting private %s" %name
 			self.private[name] = value
 		else:
 			self.settings[name] = value
-		
+
 	def setCounted(self, name, count, value, overwrite = 1):
 		"""
 		Created: 26.03.2005
@@ -335,40 +336,40 @@ class DataUnitSettings:
 			raise "No key %s registered" % name
 		keyval = "%s[%d]" % (name, count)
 		if not overwrite and (keyval in self.settings):
-			#print "Will not overwrite %s"%keyval
+			#print "Will not overwrite %s" %keyval
 			return
 		self.settings[keyval] = value
 		if self.counted[name] < count:
 			self.counted[name] = count
-		
+
 	def get(self, name):
 		"""
 		Created: 26.03.2005
 		Description: Return the value of a key
 		"""
-		#print "is counted=",(name in self.counted)
-		#print "self.n=",self.n
-		if self.n != -1 and name in self.counted:
-			name = "%s[%d]" % (name, self.n)
+		#print "is counted = ", (name in self.counted)
+		#print "self.dataSetNumber = ", self.dataSetNumber
+		if self.dataSetNumber != -1 and name in self.counted:
+			name = "%s[%d]" % (name, self.dataSetNumber)
 		if name in self.private:
 			return self.private[name]
 		if name in self.settings:
 			return self.settings[name]
 		return None
-	
+
 	def getCounted(self, name, count):
 		"""
 		Created: 26.03.2005
 		Description: Return the value of a key
 		"""
-		#print "in self.settings: %s"%self.settings.has_key("%s[%d]"%(name,count))
-		#if self.n != -1:
-		#    return self.get(name)
+		#print "in self.settings: %s" %self.settings.has_key("%s[%d]" %(name, count))
+		#if self.dataSetNumber ! = -1:
+		#	 return self.get(name)
 		key = "%s[%d]" % (name, count)
 		return self.get(key)
-		
-		
-	def serialize(self, name, value):
+
+	@staticmethod
+	def serialize(name, value):
 		"""
 		Created: 27.03.2005
 		Description: Returns the value of a given key in a format
@@ -377,7 +378,7 @@ class DataUnitSettings:
 
 		Logging.info("Serializing name ", name, kw = "dataunit")
 		if "ColorTransferFunction" in name:
-			s = ImageOperations.lutToString(value, luttype = "BioImageXD")
+			s = lib.ImageOperations.lutToString(value, luttype = "BioImageXD")
 			s2 = ""
 			for i in s:
 				s2 += repr(i)
@@ -387,47 +388,47 @@ class DataUnitSettings:
 		if "Annotations" in name:
 			Logging.info("Pickling %d annotations" % len(value), kw = "dataunit")
 			s = pickle.dumps(value, protocol = pickle.HIGHEST_PROTOCOL)
-			#s=zlib.compress(s)
+			#s = zlib.compress(s)
 			return s
-			
+
 		if name not in ["IntensityTransferFunction", "IntensityTransferFunctions", "AlphaTransferFunction"]:
 			return str(value)
-			
-		val = ImageOperations.getAsParameterList(value)
+
+		val = lib.ImageOperations.getAsParameterList(value)
 		return str(val)
-		
-	def deserialize(self, name, value):
+
+	@staticmethod
+	def deserialize(name, value):
 		"""
 		Created: 27.03.2005
 		Description: Returns the value of a given key
 		"""
-		#print "deserialize",name
+		#print "deserialize", name
 		if "ColorTransferFunction" in name:
- #           try:
-			data = eval(value)            
-			ctf = vtk.vtkColorTransferFunction()
+ #			 try:
+			data = eval(value)			  
+			colorTransferFunction = vtk.vtkColorTransferFunction()
 			
-			ImageOperations.loadLUTFromString(data, ctf)
-			#bmp = ImageOperations.paintCTFValues(ctf)
+			lib.ImageOperations.loadLUTFromString(data, colorTransferFunction)
+			#bmp = lib.ImageOperations.paintCTFValues(colorTransferFunction)
 			#img = bmp.ConvertToImage()
-			#img.SaveMimeFile("ctf.png","image/png")
-			#print "Got",ctf
-			return ctf
+			#img.SaveMimeFile("ctf.png", "image/png") #rename ctf.png later? (SS 21.06.07)
+			#print "Got", colorTransferFunction
+			return colorTransferFunction
 		# Annotations is a list of classes that can easily be
 		# pickled / unpickled
 		if "Annotations" in name:
 			Logging.info("deserializing Annotations", kw = "dataunit")
-			#val=zlib.decompress(value)
+			#val = zlib.decompress(value)
 			val = pickle.loads(value)
-			if val:
-				Logging.info("unpickled %d annotations" % len(val), kw = "dataunit")
+			Logging.info("unpickled %d annotations" % len(val), kw = "dataunit")
 			return val
 		if name not in ["IntensityTransferFunction", "IntensityTransferFunctions", "AlphaTransferFunction"]:
 			return eval(value)
-		tf = vtk.vtkIntensityTransferFunction()
+		transferFunction = vtkbxd.vtkIntensityTransferFunction()
 		lst = eval(value)
-		ImageOperations.setFromParameterList(tf, lst)
-		return tf
+		lib.ImageOperations.setFromParameterList(transferFunction, lst)
+		return transferFunction
 		
 	def __str__(self):
 		"""
@@ -444,7 +445,7 @@ class DataUnitSettings:
 		"""
 		self.channels = channels
 		self.timepoints = timepoints
-		self.dataunit = dataunit            
+		self.dataunit = dataunit			
 		
 	def __getstate__(self):
 		ret = {}
@@ -455,11 +456,12 @@ class DataUnitSettings:
 		ret["type"] = self.type
 		ret["channels"] = self.channels
 		ret["timepoints"] = self.timepoints
-		ret["n"] = self.n
+		ret["n"] = self.dataSetNumber
 		ret["serialized"] = self.serialized
 		return ret
+
 	def __setstate__(self, state):
-		print "state=", state
+		print "state = ", state
 		self.counted = state["counted"]
 		self.registered = state["registered"]
 		self.private = state["private"] 
@@ -467,5 +469,5 @@ class DataUnitSettings:
 		self.type = state["type"] 
 		self.channels = state["channels"] 
 		self.timepoints = state["timepoints"] 
-		self.n = state["n"] 
+		self.dataSetNumber = state["n"] 
 		self.serialized  = state["serialized"] 

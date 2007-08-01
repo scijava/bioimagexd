@@ -37,22 +37,23 @@ __author__ = "BioImageXD Project"
 __version__ = "$Revision: 1.22 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
-import wx
-import wx.lib.masked as masked
-from Visualizer import VisualizerWindow
-
-from Track import *
-from Timeline import *
-import PreviewFrame
 #import Animator
-import SplineEditor
+#import CameraView
+#import wx.lib.masked as masked
+#import operator
+#import os.path
+#import PreviewFrame
+#import sys
+#import Track
+#import types
+#from Visualizer import VisualizerWindow
 
-import os.path
-import sys, types
-import operator
-import messenger
-import CameraView
+import SplineEditor
+import lib.messenger
 import RenderingConfigPanel
+from Timeline import Timeline
+import Visualizer.VisualizerWindow
+import wx
 
 class SplitPanel(wx.SplitterWindow):
 	"""
@@ -69,11 +70,15 @@ class TimelinePanel(wx.Panel):
 	Description: Contains the timescale and the different "tracks"
 	"""    
 	def __init__(self, parent, control, size = (750, 300), p = None):
+
 		wx.Panel.__init__(self, parent, -1, style = wx.RAISED_BORDER, size = size)
 		self.parent = parent
 		self.control = control
 		self.sizer = wx.GridBagSizer()        
 		w = size[0]
+
+		# added this because "timeline" is used on lines 202-209
+		self.timeline = Timeline
 
 		self.confSizer = wx.GridBagSizer()
 		
@@ -99,7 +104,7 @@ class TimelinePanel(wx.Panel):
 		
 		self.sizer.Add(sboxsizer, (0, 0), flag = wx.EXPAND | wx.ALL)
 		#f=wx.Frame(self,-1)
-		self.wxrenwin = VisualizerWindow.VisualizerWindow(self, size = (300, 300))
+		self.wxrenwin = Visualizer.VisualizerWindow.VisualizerWindow(self, size = (300, 300))
 		self.wxrenwin.initializeVTK()
 		
 		self.splineEditor = SplineEditor.SplineEditor(self, self.wxrenwin)
@@ -125,9 +130,9 @@ class TimelinePanel(wx.Panel):
 		
 		n = self.timelineConfig.getFrameAmount()
 		
-		messenger.send(None, "set_frames", n)
-		messenger.connect(None, "set_frame_size", self.onSetFrameSize)
-		messenger.connect(None, "set_keyframe_mode", self.onSetKeyframeMode)
+		lib.messenger.send(None, "set_frames", n)
+		lib.messenger.connect(None, "set_frame_size", self.onSetFrameSize)
+		lib.messenger.connect(None, "set_keyframe_mode", self.onSetKeyframeMode)
 
 	def onSetFrameSize(self, obj, evt, size, onlyAspect):
 		"""
@@ -173,9 +178,9 @@ class TimelinePanel(wx.Panel):
 #        n=self.control.getDuration()
 		n = self.timelineConfig.getFrameAmount()
 		
-		messenger.send(None, "set_frames", n)
+		lib.messenger.send(None, "set_frames", n)
 		
-		#Qmessenger.send(None,"set_time_range",1,n*10)
+		#Qlib.messenger.send(None,"set_time_range",1,n*10)
 		#keyframeMode=self.modeBox.GetSelection()
 		#self.control.setViewMode(keyframeMode)
 		

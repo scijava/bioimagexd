@@ -32,27 +32,25 @@ __author__ = "BioImageXD Project <http://www.bioimagexd.org>"
 __version__ = "$Revision: 1.21 $"
 __date__ = "$Date: 2005/01/13 14:36:20 $"
 
-import wx
-import wx.lib.scrolledpanel as scrolled
-
-import os.path
-
-from DataUnit import *
-from Logging import *
-from ProcessingManager import *
-
-import Dialogs
-import sys
-import ImageOperations
-import ColorTransferEditor
-#import ChannelListBox
-import ChannelTray
 import scripting as bxd
+import ChannelTray
+import lib.ImageOperations
+import lib.messenger
+import Logging
+import os.path
+import ProcessingManager
+from wx.lib.scrolledpanel import ScrolledPanel
+import vtk
+import vtkbxd
+import wx
+
 #TOOL_W=56
 #TOOL_H=56
+
 TOOL_W = 50
 TOOL_H = 50
-class TaskPanel(scrolled.ScrolledPanel):
+
+class TaskPanel(ScrolledPanel):
 	"""
 	Created: 23.11.2004, KP
 	Description: A baseclass for a panel for controlling the settings of the 
@@ -65,7 +63,7 @@ class TaskPanel(scrolled.ScrolledPanel):
 		Parameters:
 				root    Is the parent widget of this window
 		"""
-		scrolled.ScrolledPanel.__init__(self, root, -1, size = (200, -1))
+		ScrolledPanel.__init__(self, root, -1, size = (200, -1))
 		#wx.Panel.__init__(self, root, -1,size=(200,-1))
 		self.toolMgr = tb
 		self.itemBitmaps = []
@@ -128,10 +126,10 @@ class TaskPanel(scrolled.ScrolledPanel):
 		
 		self.SetupScrolling()
 		
-		#messenger.connect(None,"itf_update",self.doPreviewCallback)
-		messenger.connect(None, "channel_selected", self.selectItem)
-		messenger.connect(None, "switch_datasets", self.onSwitchDatasets)
-		messenger.connect(None, "update_settings_gui", self.onUpdateGUI)
+		#lib.messenger.connect(None,"itf_update",self.doPreviewCallback)
+		lib.messenger.connect(None, "channel_selected", self.selectItem)
+		lib.messenger.connect(None, "switch_datasets", self.onSwitchDatasets)
+		lib.messenger.connect(None, "update_settings_gui", self.onUpdateGUI)
   
 		
 	def setCacheKey(self, key):
@@ -207,7 +205,7 @@ class TaskPanel(scrolled.ScrolledPanel):
 		"""     
 		try:
 			self.dataUnit.switchSourceDataUnits(args)
-		except GUIError, err:
+		except Logging.GUIError, err:
 			err.show()            
 		self.createItemToolbar()
 		self.doPreviewCallback()
@@ -224,14 +222,10 @@ class TaskPanel(scrolled.ScrolledPanel):
 		bmp2 = wx.EmptyBitmap(60, 60)
 		dc.SelectObject(bmp2)
 		dc.BeginDrawing()
-		
-		
 		val = [0, 0, 0]
 		#dc.SetBrush(wx.TRANSPARENT_BRUSH)
 		if isinstance(color, vtk.vtkColorTransferFunction):
-   
 			color.GetColor(255, val)
-
 			r, g, b = val
 			r *= 255
 			g *= 255
@@ -258,7 +252,7 @@ class TaskPanel(scrolled.ScrolledPanel):
 		sourceUnits = self.dataUnit.getSourceDataUnits()
 		if not force and len(sourceUnits) == 1:
 			return
-		merge = vtk.vtkImageColorMerge()
+		merge = vtkbxd.vtkImageColorMerge()
 		self.itemMips = []
 		for i, dataunit in enumerate(sourceUnits):
 			#color = dataunit.getColor()
@@ -267,7 +261,7 @@ class TaskPanel(scrolled.ScrolledPanel):
 			dc = wx.MemoryDC()
 			
 			print "Getting preview image..."
-			bmp, vtkimg = ImageOperations.vtkImageDataToPreviewBitmap(dataunit, 0, None, TOOL_W, TOOL_H, getvtkImage = 1)
+			bmp, vtkimg = lib.ImageOperations.vtkImageDataToPreviewBitmap(dataunit, 0, None, TOOL_W, TOOL_H, getvtkImage = 1)
 			self.itemMips.append(vtkimg)
 			print "got"
 			
@@ -299,7 +293,7 @@ class TaskPanel(scrolled.ScrolledPanel):
 		Created: 03.11.2004, KP
 		Description: Shows a help for this task panel
 		"""
-		messenger.send(None, "view_help", self.operationName)
+		lib.messenger.send(None, "view_help", self.operationName)
 		
 	def createOptionsFrame(self):
 		"""
@@ -368,7 +362,7 @@ class TaskPanel(scrolled.ScrolledPanel):
 		Description: A method that executes the operation on the selected
 					 dataset
 		"""        
-		mgr = ProcessingManager(self, self.operationName)
+		mgr = ProcessingManager.ProcessingManager(self, self.operationName)
 		bxd.processingManager = mgr
 		mgr.setDataUnit(self.dataUnit)
 		self.grayOut()
@@ -401,7 +395,7 @@ class TaskPanel(scrolled.ScrolledPanel):
 					 that wish to update the preview
 		"""
 		Logging.info("Sending preview update event", kw = "event")
-		messenger.send(None, "data_changed", -1)
+		lib.messenger.send(None, "data_changed", -1)
 
 
 	def saveSettingsCallback(self, event):
@@ -435,7 +429,7 @@ class TaskPanel(scrolled.ScrolledPanel):
 					 It is then used to get the names of all the source data
 					 units and they are added to the menu.
 		"""
-		messenger.send(None, "current_task", self.operationName)
+		lib.messenger.send(None, "current_task", self.operationName)
 				
 		self.dataUnit = dataUnit
 		name = dataUnit.getName()
@@ -445,7 +439,7 @@ class TaskPanel(scrolled.ScrolledPanel):
 			#self.preview.setDataUnit(dataUnit)
 			units = self.dataUnit.getSourceDataUnits()
 			
-		except GUIError, ex:
+		except Logging.GUIError, ex:
 			ex.show()
 		fileNames = []
 		for unit in units:
@@ -455,7 +449,7 @@ class TaskPanel(scrolled.ScrolledPanel):
 				fileNames.append(ds)
 		if self.channelBox:
 			self.channelBox.setDataUnit(dataUnit, toolImage = (TOOL_W, TOOL_H))
-		messenger.send(None, "current_file", ", ".join(fileNames))         
+		lib.messenger.send(None, "current_file", ", ".join(fileNames))         
 		
 		self.selectItem(None, None, 0)
 		# Delay the call, maybe it will make it work on mac

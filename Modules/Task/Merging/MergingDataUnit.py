@@ -27,12 +27,10 @@ __author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.93 $"
 __date__ = "$Date: 2005/01/13 14:09:15 $"
 
-
-import Logging
-
-from DataUnit import CombinedDataUnit
-import MergingSettings
 import scripting as bxd
+from lib.DataUnit.CombinedDataUnit import CombinedDataUnit
+import MergingSettings
+
 class MergingDataUnit(CombinedDataUnit):
 	"""
 	Created: 03.07.2005, KP
@@ -49,7 +47,8 @@ class MergingDataUnit(CombinedDataUnit):
 	
 
 	def getBitDepth(self):
-		if bxd.wantAlphaChannel:return 32
+		if bxd.wantAlphaChannel:
+			return 32
 		return 24
 		
 	def getSingleComponentBitDepth(self):

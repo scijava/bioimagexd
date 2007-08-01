@@ -31,173 +31,171 @@ __version__ = "$Revision: 1.71 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 import wx
-#import lib.messenger as messenger
-import messenger
 
-# We preface all ids with 31 so they won't overlap with ids returned by wx.NewId()    
-ID_OPEN             =31100
-ID_QUIT             =31101
-ID_ABOUT            =31102
-ID_COLOCALIZATION   =31103
-ID_COLORMERGING     =31104
-ID_VSIA             =31105
-ID_ADJUST           =31106
-ID_VIS_ANIMATOR     =31107
-ID_REEDIT           =31108
-ID_TREE             =31109
-ID_IMPORT           =31110
-ID_EXPORT           =31111
-ID_EXPORT_VTIFILES  =31112
-ID_EXPORT_IMAGES    =31113
-ID_IMPORT_VTIFILES  =31114
-ID_IMPORT_IMAGES    =31115
-ID_HELP             =31116
-ID_SETTINGS         =31117
-ID_PREFERENCES      =31118
-ID_RESLICE          =31119
-ID_MAYAVI           =31120
-ID_VIS_SECTIONS     =31121
-ID_VIS_SLICES       =31122
-ID_VIS_3D           =31123
-ID_INFO             =31124
-ID_SHOW_TREE        =31125
-ID_VIS_GALLERY      =31126
-ID_LIGHTS           =31127
-ID_RENDERWIN        =31128
-ID_RELOAD           =31129
+# We preface all ids with 31 so they won't overlap with ids returned by wx.NewId() 
+ID_OPEN					= 31100
+ID_QUIT					= 31101
+ID_ABOUT				= 31102
+ID_COLOCALIZATION		= 31103
+ID_COLORMERGING			= 31104
+ID_VSIA					= 31105
+ID_ADJUST				= 31106
+ID_VIS_ANIMATOR			= 31107
+ID_REEDIT				= 31108
+ID_TREE					= 31109
+ID_IMPORT				= 31110
+ID_EXPORT				= 31111
+ID_EXPORT_VTIFILES		= 31112
+ID_EXPORT_IMAGES		= 31113
+ID_IMPORT_VTIFILES		= 31114
+ID_IMPORT_IMAGES		= 31115
+ID_HELP					= 31116
+ID_SETTINGS				= 31117
+ID_PREFERENCES			= 31118
+ID_RESLICE				= 31119
+ID_MAYAVI				= 31120
+ID_VIS_SECTIONS			= 31121
+ID_VIS_SLICES			= 31122
+ID_VIS_3D				= 31123
+ID_INFO					= 31124
+ID_SHOW_TREE			= 31125
+ID_VIS_GALLERY			= 31126
+ID_LIGHTS				= 31127
+ID_RENDERWIN			= 31128
+ID_RELOAD				= 31129
 
-ID_TREE_WIN         =31130
-ID_VIS_WIN          =31131
-ID_TASK_WIN         =31132
-ID_OPEN_SETTINGS    =31133
-ID_SAVE_SETTINGS    =31134
+ID_TREE_WIN				= 31130
+ID_VIS_WIN				= 31131
+ID_TASK_WIN				= 31132
+ID_OPEN_SETTINGS		= 31133
+ID_SAVE_SETTINGS		= 31134
 
-ID_RESTORE          =31135
-ID_SAVE_SNAPSHOT    =31136
+ID_RESTORE				= 31135
+ID_SAVE_SNAPSHOT		= 31136
 
-ID_CAPTURE          =31137
-ID_ZOOM_OUT         =31138
-ID_ZOOM_IN          =31139
-ID_ZOOM_TO_FIT      =31140
-ID_ZOOM_OBJECT      =31141
-		
-ID_PREFERENCES      =31142
-ID_ADD_SPLINE       =31143
-ID_ADD_TIMEPOINT    =31144
-ID_ADD_TRACK        =31145
-ID_ANIMATE          =31146
-ID_FIT_TRACK        =31147
-ID_MIN_TRACK        =31148
-ID_OPEN_PROJECT     =31149
-ID_RENDER_PROJECT   =31150
-ID_RENDER_PREVIEW   =31151
-ID_SAVE_PROJECT     =31152
-ID_SET_TRACK        =31153
-ID_SPLINE_CLOSED    =31154
-ID_SPLINE_SET_BEGIN = 31155
-ID_SPLINE_SET_END   =31156
-ID_SET_TRACK_TOTAL  =31157
-ID_CLOSE_PROJECT    =31158
-ID_MAINTAIN_UP      =31159
-ID_SET_TRACK_RELATIVE = 31160
-ID_ADD_SCALE        =31161
-ID_DRAG_ANNOTATION  =31162
-ID_ROI_CIRCLE       =31163
-ID_ROI_RECTANGLE    =31164
-ID_ROI_POLYGON      =31165
+ID_CAPTURE				= 31137
+ID_ZOOM_OUT				= 31138
+ID_ZOOM_IN				= 31139
+ID_ZOOM_TO_FIT			= 31140
+ID_ZOOM_OBJECT			= 31141
 
-ID_VIEW_CONFIG      =31166
-ID_VIEW_TASKPANEL   =31167
-ID_VIEW_TOOLBAR     =31168
-ID_VIEW_HISTOGRAM   =31169
-ID_CLOSE_TASKWIN    =31170
+ID_PREFERENCES			= 31142
+ID_ADD_SPLINE			= 31143
+ID_ADD_TIMEPOINT		= 31144
+ID_ADD_TRACK			= 31145
+ID_ANIMATE				= 31146
+ID_FIT_TRACK			= 31147
+ID_MIN_TRACK			= 31148
+ID_OPEN_PROJECT			= 31149
+ID_RENDER_PROJECT		= 31150
+ID_RENDER_PREVIEW		= 31151
+ID_SAVE_PROJECT			= 31152
+ID_SET_TRACK			= 31153
+ID_SPLINE_CLOSED		= 31154
+ID_SPLINE_SET_BEGIN		= 31155
+ID_SPLINE_SET_END		= 31156
+ID_SET_TRACK_TOTAL		= 31157
+ID_CLOSE_PROJECT		= 31158
+ID_MAINTAIN_UP			= 31159
+ID_SET_TRACK_RELATIVE	= 31160
+ID_ADD_SCALE			= 31161
+ID_DRAG_ANNOTATION		= 31162
+ID_ROI_CIRCLE			= 31163
+ID_ROI_RECTANGLE		= 31164
+ID_ROI_POLYGON			= 31165
 
-ID_DELETE_TRACK     =31171
-ID_VIS_SIMPLE       =31172
+ID_VIEW_CONFIG			= 31166
+ID_VIEW_TASKPANEL		= 31167
+ID_VIEW_TOOLBAR			= 31168
+ID_VIEW_HISTOGRAM		= 31169
+ID_CLOSE_TASKWIN		= 31170
 
-ID_SET_VIEW         =31173
-ID_VIEW_TOOL_NAMES  =31174
+ID_DELETE_TRACK			= 31171
+ID_VIS_SIMPLE			= 31172
 
-ID_VIEW_SHELL       =31175
-ID_SHELL_WIN        =31176
-ID_INFO_WIN         =31177
-ID_VIEW_INFO        =31178
-ID_LOAD_SCENE       =31179
-ID_SAVE_SCENE       =31180
-ID_SEPARATOR        =31181
+ID_SET_VIEW				= 31173
+ID_VIEW_TOOL_NAMES		= 31174
 
-ID_TOOL_WIN         =31182
-ID_VISAREA_WIN      =31183
-ID_VISTREE_WIN      =31184
-ID_VISSLIDER_WIN    =31185
-ID_ZSLIDER_WIN      =31186
-ID_HISTOGRAM_WIN    =31187
+ID_VIEW_SHELL			= 31175
+ID_SHELL_WIN			= 31176
+ID_INFO_WIN				= 31177
+ID_VIEW_INFO			= 31178
+ID_LOAD_SCENE			= 31179
+ID_SAVE_SCENE			= 31180
+ID_SEPARATOR			= 31181
 
-ID_DEL_ANNOTATION   =31188
+ID_TOOL_WIN				= 31182
+ID_VISAREA_WIN			= 31183
+ID_VISTREE_WIN			= 31184
+ID_VISSLIDER_WIN		= 31185
+ID_ZSLIDER_WIN			= 31186
+ID_HISTOGRAM_WIN		= 31187
 
-ID_ADD_KEYFRAME     =31189
-ID_RESAMPLE         =31190
-ID_TOOL_WIN2        =31191
-ID_ZOOM_COMBO       =31192
-ORIG_BUTTON         =31193
-CONTEXT_HELP        =31194
+ID_DEL_ANNOTATION		= 31188
 
-PITCH               =31195
-YAW                 =31196
-ROLL                =31197
+ID_ADD_KEYFRAME			= 31189
+ID_RESAMPLE				= 31190
+ID_TOOL_WIN2			= 31191
+ID_ZOOM_COMBO			= 31192
+ORIG_BUTTON				= 31193
+CONTEXT_HELP			= 31194
 
-ID_HIDE_INFO        =31198
-ID_ANIM_ZOOM_COMBO  =31131
-ID_ITEM_SIZES       =31200
-ID_ITEM_ORDER       =31201
-ID_ITEM_ROTATE_CW   =31202
-ID_ITEM_ROTATE_CCW  =31203
-ID_FIT_TRACK_RATIO  =31204
-ID_DELETE_ITEM      =31205
+PITCH					= 31195
+YAW						= 31196
+ROLL					= 31197
+
+ID_HIDE_INFO			= 31198
+ID_ANIM_ZOOM_COMBO		= 31131
+ID_ITEM_SIZES			= 31200
+ID_ITEM_ORDER			= 31201
+ID_ITEM_ROTATE_CW		= 31202
+ID_ITEM_ROTATE_CCW		= 31203
+ID_FIT_TRACK_RATIO		= 31204
+ID_DELETE_ITEM			= 31205
 	
-ID_VIEW_SCRIPTEDIT  =31206
-ID_RECORD_SCRIPT    =31207
-ID_STOP_RECORD      =31208
-ID_RUN_SCRIPT       =31209
+ID_VIEW_SCRIPTEDIT		= 31206
+ID_RECORD_SCRIPT		= 31207
+ID_STOP_RECORD			= 31208
+ID_RUN_SCRIPT			= 31209
 
-ID_UNDO             =31210
-ID_REDO             =31211
-ID_COMMAND_HISTORY  =31212
+ID_UNDO					= 31210
+ID_REDO					= 31211
+ID_COMMAND_HISTORY		= 31212
 
-ID_SAVE_SCRIPT      =31213
-ID_LOAD_SCRIPT      =31214
-ID_CLOSE_SCRIPTEDITOR = 31215
+ID_SAVE_SCRIPT			= 31213
+ID_LOAD_SCRIPT			= 31214
+ID_CLOSE_SCRIPTEDITOR	= 31215
 
-ID_IMMEDIATE_RENDER = 31216
+ID_IMMEDIATE_RENDER		= 31216
 
-ID_MANIPULATE       =31217
-ID_SAVE_DATASET      =31218
+ID_MANIPULATE			= 31217
+ID_SAVE_DATASET			= 31218
 
-ID_VIEW_MASKSEL     =31219
-ID_ROI_TO_MASK      =31220
-ID_RESCALE          =31221
-ID_RESAMPLING       =31222
+ID_VIEW_MASKSEL			= 31219
+ID_ROI_TO_MASK			= 31220
+ID_RESCALE				= 31221
+ID_RESAMPLING			= 31222
 
-ID_ANNOTATION_WIN   =31223
-ID_ANNOTATION_FONT  =31224
-ID_ANNOTATION_TEXT  =31225
+ID_ANNOTATION_WIN		= 31223
+ID_ANNOTATION_FONT		= 31224
+ID_ANNOTATION_TEXT		= 31225
 
-ID_VIEW_TREE        =31226
+ID_VIEW_TREE			= 31226
 
-ID_NO_RENDER        =31227
+ID_NO_RENDER			= 31227
 
-ID_TOOLBAR_HELP     =31228
-ID_CONTEXT_HELP     =31229
+ID_TOOLBAR_HELP			= 31228
+ID_CONTEXT_HELP			= 31229
 
-ID_PERSPECTIVE      =31230
-ID_RESAMPLE_TO_FIT  =31231
+ID_PERSPECTIVE			= 31230
+ID_RESAMPLE_TO_FIT		= 31231
 
-ID_RECORD_EVENTS    =31232
-ID_PLAY_EVENTS      =31233
-ID_STOP_EVENTS      =31234
-ID_REWIND_EVENTS           =31235
+ID_RECORD_EVENTS		= 31232
+ID_PLAY_EVENTS			= 31233
+ID_STOP_EVENTS			= 31234
+ID_REWIND_EVENTS		= 31235
 
-ID_REPORT_BUG       =31236
+ID_REPORT_BUG			= 31236
 
 class MenuManager:
 	"""
@@ -207,6 +205,7 @@ class MenuManager:
 	instance = None
 	mainwin = None
 	mapping = {}
+
 	def __init__(self, mainwin, **kws):
 		"""
 		Method: __init__(parent,id,app)
@@ -216,7 +215,7 @@ class MenuManager:
 		self.text = 1
 		self.separators = {}
 		if kws.has_key("text"):
-		   self.text = kws["text"]
+			self.text = kws["text"]
 		self.mainwin = mainwin
 		# This is the menubar object that holds all the menus
 		self.mapping = {}
@@ -227,25 +226,22 @@ class MenuManager:
 		self.toolIds = []
 		self.tools = {}
 		self.channelIds = []
-		
 		self.commands = []
-		
 		self.showToolNames = 0
 		
 	def getCommands(self):
 		"""
 		Created: 13.02.2006, KP
 		Description: Return the list of commands
-		"""     
+		"""
 		return self.commands
-		
-		
+				
 	def addCommand(self, cmd):
 		"""
 		Method: addCommand
 		Created: 13.02.2006, KP
 		Description: Add a command to the list of executed commands
-		"""    
+		"""
 		if cmd not in self.commands:
 			self.commands.append(cmd)
 		
@@ -254,7 +250,7 @@ class MenuManager:
 		Method: getLastCommand
 		Created: 13.02.2006, KP
 		Description: Return the last executed command
-		"""        
+		"""
 		return self.commands[-1]
 		
 	def setUndoedCommand(self, cmd):
@@ -262,7 +258,7 @@ class MenuManager:
 		Method: setUndoedCommand
 		Created: 13.02.2006, KP
 		Description: Set the last command that was undoed
-		"""        
+		"""
 		self.undoCmd = cmd
 	
 	def getUndoedCommand(self):
@@ -270,7 +266,7 @@ class MenuManager:
 		Method: getUndoedCommand
 		Created: 13.02.2006, KP
 		Description: Return the last undoed command
-		"""        
+		"""
 		return self.undoCmd
 		
 		
@@ -288,13 +284,14 @@ class MenuManager:
 		Created: 19.06.2005, KP
 		Description: Set the menubar
 		"""
-		self.mainToolbar = bar       
+		self.mainToolbar = bar
+
 	def removeSeparator(self, sepid):
 		"""
 		Method: removeSeparator
 		Created: 02.09.2005, KP
 		Description: delete a separator
-		"""    
+		"""
 		menu = self.menus[self.mapping[sepid]]
 		menu.RemoveItem(self.separators[sepid])
 		
@@ -315,7 +312,7 @@ class MenuManager:
 				self.mapping[sepid] = menuname
 		else:
 			menu = self.menus[menuname]
-			# Find the position where the item belongs            
+			# Find the position where the item belongs
 			k = 0
 			for i in range(0, 319):
 				if menu.FindItemByPosition(i).GetId() == before:
@@ -328,7 +325,7 @@ class MenuManager:
 				self.separators[sepid] = item
 				
 				self.menus[menuname].InsertItem(k, item)
-				self.mapping[sepid] = menuname                
+				self.mapping[sepid] = menuname
 
 	def check(self, itemid, flag):
 		"""
@@ -367,13 +364,13 @@ class MenuManager:
 			self.menubar.Append(self.menus[menuname], menutitle)
 		else:
 			menu = self.menus[before]
-			print "Searching for menu ", menu,   menu.GetTitle()
+			print "Searching for menu ", menu, menu.GetTitle()
 			for i in range(0, self.menubar.GetMenuCount()):
 				gmenu = self.menubar.GetMenu(i)
 				if gmenu == menu:
 					pos = i
 					break
-			#pos=self.menubar.FindMenu(menu.GetTitle())
+			#pos= self.menubar.FindMenu(menu.GetTitle())
 			
 			self.menubar.Insert(pos, self.menus[menuname], menutitle)
 		return ret
@@ -393,7 +390,7 @@ class MenuManager:
 		self.visualizer.annotateBar.clearChannelItems()
 		#if not self.itemBar:return
 		#for i in self.toolIds:
-		#    self.itemBar.DeleteTool(i)
+		#	self.itemBar.DeleteTool(i)
 		#self.toolIds=[]
 		#self.itemBar.Realize()
 		
@@ -405,7 +402,7 @@ class MenuManager:
 		"""
 		self.channelIds.append(toolid)
 
-		#self.itemBar=self.visualizer.tb
+		#self.itemBar= self.visualizer.tb
 		#self.visualizer.tb.Bind(wx.EVT_TOOL,func,id=toolid)
 	
 		#self.tools[toolid]=(name,bitmap,func)
@@ -425,7 +422,8 @@ class MenuManager:
 			return
 		self.visualizer.tb.ToggleTool(toolid, flag)
 
-	def addMenuItem(self, menu, menuid, name, hlp = None, callback = None, before = None, check = 0, checked = 1):
+	def addMenuItem(self, menu, menuid, name, hlp = None, callback = None, \
+					before = None, check = 0, checked = 1):
 		"""
 		Method: addMenuItem
 		Created: 29.05.2005, KP
@@ -437,16 +435,20 @@ class MenuManager:
 				hlp = None
 		self.mapping[menuid] = menu
 		menu = self.menus[menu]
-		if check:method = menu.AppendCheckItem
-		else:method = menu.Append
+		if check:
+			method = menu.AppendCheckItem
+		else:
+			method = menu.Append
 		if not before:
 			if not hlp:
 				method(menuid, name)            # Find the position where the item belongs
 			else:
 				method(menuid, name, hlp)
 		else:
-			if check:method = menu.Insert
-			else:method = menu.InsertCheckItem
+			if check:
+				method = menu.Insert
+			else:
+				method = menu.InsertCheckItem
 			# Find the position where the item belongs
 			k = 0
 			for i in range(0, 999):
@@ -464,8 +466,6 @@ class MenuManager:
 		if check and checked:
 			self.check(menuid, 1)
 
-		
-		
 	def disable(self, itemid):
 		"""
 		Created: 29.05.2005, KP
@@ -495,7 +495,6 @@ class MenuManager:
 				self.menubar.Remove(i)
 				break
 		
-			
 	def remove(self, itemid):
 		"""
 		Method: remove(itemid)

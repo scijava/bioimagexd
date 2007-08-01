@@ -30,36 +30,61 @@ __author__ = "BioImageXD Project"
 __version__ = "$Revision: 1.9 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
-import DataUnit
-import Modules
-import PreviewFrame
+from GUI.PreviewFrame.PreviewFrame import PreviewFrame
 import Logging
 from Visualizer.VisualizationMode import VisualizationMode
 
-def getName():return "slices"
-def isDefaultMode(): return 1
-def showInfoWindow(): return 1
-def showFileTree(): return 1
-def showSeparator(): return (0, 0)
+def getName():
+	return "slices"
+		
+def isDefaultMode():
+	return 1
+		
+def showInfoWindow():
+	return 1
+		
+def showFileTree():
+	return 1
+		
+def showSeparator():
+	return (0, 0)
+		
 # We want to be in the far left
-def getToolbarPos(): return - 999
-	
-def getIcon(): return "view_slices.jpg"
-def getShortDesc(): return "Slices view"
-def getDesc(): return "View single optical sections of the dataset"    
-def getClass():return SlicesMode
-def getImmediateRendering(): return True
-def getConfigPanel(): return None
-def getRenderingDelay(): return 1500
-def showZoomToolbar(): return True
+def getToolbarPos():
+	return - 999
+		
+def getIcon():
+	return "view_slices.jpg"
+		
+def getShortDesc():
+	return "Slices view"
+		
+def getDesc():
+	return "View single optical sections of the dataset"
+		
+def getClass():
+	return SlicesMode
+		
+def getImmediateRendering():
+	return True
+		
+def getConfigPanel():
+	return None
+		
+def getRenderingDelay():
+	return 1500
+		
+def showZoomToolbar():
+	return True
 		
 class SlicesMode(VisualizationMode):
+		
 	def __init__(self, parent, visualizer):
 		"""
 		Created: 24.05.2005, KP
 		Description: Initialization
 		"""
-		VisualizationMode.__init__(self, parent, visualizer)        
+		VisualizationMode.__init__(self, parent, visualizer)
 		self.parent = parent
 		self.visualizer = visualizer
 		self.init = 1
@@ -85,7 +110,7 @@ class SlicesMode(VisualizationMode):
 		"""
 		Created: 24.05.2005, KP
 		Description: Update the rendering
-		"""      
+		"""
 		self.iactivePanel.updatePreview(0)
 		
 	def updateRendering(self):
@@ -96,13 +121,13 @@ class SlicesMode(VisualizationMode):
 		Logging.info("Updating rendering", kw = "preview")
 		self.iactivePanel.updatePreview(1)
 		
-	def setBackground(self, r, g, b):
+	def setBackground(self, red, green, blue):
 		"""
 		Created: 24.05.2005, KP
 		Description: Set the background color
-		"""      
+		"""
 		if self.iactivePanel:
-			self.self.iactivePanel.setBackgroundColor((r, g, b))
+			self.iactivePanel.setBackgroundColor((red, green, blue))
 
 	def activate(self, sidebarwin):
 		"""
@@ -111,10 +136,8 @@ class SlicesMode(VisualizationMode):
 		"""
 		if not self.iactivePanel:
 			#Logging.info("Generating preview",kw="visualizer")
-			self.iactivePanel = PreviewFrame.PreviewFrame(self.parent, scrollbars = True)
+			self.iactivePanel = PreviewFrame(self.parent, scrollbars = True)
 		return self.iactivePanel
-			
-		
 		
 	def setDataUnit(self, dataUnit):
 		"""
@@ -127,17 +150,16 @@ class SlicesMode(VisualizationMode):
 		if self.init:
 			self.iactivePanel.setPreviewType("")
 			self.init = 0
-
 		
 		self.iactivePanel.setDataUnit(dataUnit, 0)
 		
-	def setTimepoint(self, tp):
+	def setTimepoint(self, timePoint):
 		"""
 		Created: 25.05.2005, KP
 		Description: Set the timepoint to be visualized
 		"""
-		Logging.info("Setting timepoint to ", tp, kw = "visualizer")
-		self.iactivePanel.setTimepoint(tp)
+		Logging.info("Setting timepoint to ", timePoint, kw = "visualizer")
+		self.iactivePanel.setTimepoint(timePoint)
 		
 	def deactivate(self, newmode = None):
 		"""
@@ -146,15 +168,14 @@ class SlicesMode(VisualizationMode):
 		"""
 		self.iactivePanel.Show(0)
 		self.iactivePanel.onDeactivate()
-#        self.iactivePanel.setDataUnit(None)
+#		self.iactivePanel.setDataUnit(None)
 		self.iactivePanel.Destroy()
 		del self.iactivePanel
-		
 		self.iactivePanel = None
 		
 	def saveSnapshot(self, filename):
 		"""
 		Created: 05.06.2005, KP
 		Description: Save a snapshot of the scene
-		"""      
+		"""
 		self.iactivePanel.saveSnapshot(filename)

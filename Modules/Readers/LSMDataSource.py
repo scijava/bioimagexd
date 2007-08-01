@@ -27,24 +27,24 @@ __author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.37 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
-#from enthought.tvtk import messenger
-import messenger
-from ConfigParser import *
-import DataSource
-import vtk
-import os.path
-
-import scripting
+from lib.DataSource.DataSource import DataSource
+from lib.DataUnit.DataUnit import DataUnit
 import Logging
-import DataUnit
-import time
+import os.path
+import scripting
+import vtk
+import vtkbxd
 
-def getExtensions(): return ["lsm"]
-def getFileType(): return "Zeiss LSM 510 datasets (*.lsm)"
-def getClass(): return LsmDataSource
+def getExtensions(): 
+	return ["lsm"]
 
+def getFileType(): 
+	return "Zeiss LSM 510 datasets (*.lsm)"
 
-class LsmDataSource(DataSource.DataSource):
+def getClass(): 
+	return LsmDataSource
+
+class LsmDataSource(DataSource):
 	"""
 	Created: 18.11.2004, KP
 	Description: Manages 4D data stored in an lsm-file
@@ -54,7 +54,7 @@ class LsmDataSource(DataSource.DataSource):
 		Created: 18.11.2004, KP
 		Description: Constructor
 		"""
-		DataSource.DataSource.__init__(self)
+		DataSource.__init__(self)
 		# Name and path of the lsm-file:
 		self.filename = filename
 		self.timepoint = -1
@@ -75,7 +75,7 @@ class LsmDataSource(DataSource.DataSource):
 		self.origin = None
 		self.voxelsize = None
 		# vtkLSMReader is used to do the actual reading:
-		self.reader = vtk.vtkLSMReader()
+		self.reader = vtkbxd.vtkLSMReader()
 		
 		#self.reader.DebugOn()
 		self.reader.AddObserver("ProgressEvent", self.updateProgress)
@@ -101,14 +101,17 @@ class LsmDataSource(DataSource.DataSource):
 			self.getBitDepth()
 			self.originalDimensions = self.reader.GetDimensions()[0:3]
 			if self.reader.IsCompressed():
-				raise Logging.GUIError("Cannot handle compressed dataset", "The dataset you've selected (%s) is compressed. The LSM reader cannot currently read compressed data." % filename)
+				raise Logging.GUIError("Cannot handle compressed dataset", \
+										"The dataset you've selected (%s) is compressed. \
+										The LSM reader cannot currently read compressed data." \
+										% filename)
 			self.updateProgress(None, None)
 			
 	def updateProgress(self, obj, evt):
 		"""
 		Created: 13.07.2004, KP
 		Description: Sends progress update event
-		"""        
+		"""
 		if not obj:
 			progress = 1.0
 		else:
@@ -116,16 +119,17 @@ class LsmDataSource(DataSource.DataSource):
 		if self.channelNum >= 0:
 			msg = "Reading channel %d of %s" % (self.channelNum + 1, self.shortname)
 			if self.timepoint >= 0:
-				 msg += "(timepoint %d / %d)" % (self.timepoint + 1, self.dimensions[3])
+				msg += "(timepoint %d / %d)" % (self.timepoint + 1, self.dimensions[3])
 		else:
 			msg = "Reading %s..." % self.shortname
 		notinvtk = 0
 		
-		if progress >= 1.0:notinvtk = 1
+		if progress >= 1.0:
+			notinvtk = 1
 		scripting.inIO = (progress < 1.0)
-#        messenger.send(None,"update_progress",progress,msg,notinvtk)
-		#print msg     
-		
+		#messenger.send(None,"update_progress",progress,msg,notinvtk)
+		#print msg
+
 	def getTimeStamp(self, timepoint):
 		"""
 		Created: 02.07.2007, KP
@@ -140,7 +144,8 @@ class LsmDataSource(DataSource.DataSource):
 		v = self.timestamps.GetValue(timepoint)
 		v0 = self.timestamps.GetValue(0)
 		return (v - v0)
-		
+
+
 	def getDataSetCount(self):
 		"""
 		Created: 03.11.2004, JM
@@ -178,10 +183,10 @@ class LsmDataSource(DataSource.DataSource):
 		"""
 		Created: 28.05.2005, KP
 		Description: Return the bit depth of data
-		"""        
-		if not self.scalarRange:            
+		"""
+		if not self.scalarRange:
 			#data=self.getDataSet(0,raw=1)
-			#self.scalarRange=data.GetScalarRange()        
+			#self.scalarRange=data.GetScalarRange()
 			self.scalarRange = (0, 2 ** self.bitdepth - 1)
 		return self.scalarRange
 
@@ -222,7 +227,7 @@ class LsmDataSource(DataSource.DataSource):
 					  raw     A flag indicating that the data is not to be processed in any way
 		"""
 		# No timepoint can be returned, if this LsmDataSource instance does not
-		#  know what channel it is supposed to handle within the lsm-file.
+		# know what channel it is supposed to handle within the lsm-file.
 		if self.channelNum == -1:
 			Logging.error("No channel number specified",
 			"LSM Data Source got a request for dataset from timepoint "
@@ -236,14 +241,14 @@ class LsmDataSource(DataSource.DataSource):
 		self.reader.SetUpdateTimePoint(i)
 		data = self.reader.GetOutput()
 		#if not self.scalarRange:
-		#    self.scalarRange = data.GetScalarRange()
+		#	self.scalarRange = data.GetScalarRange()
 		#self.reader.Update()
 
 		#self.originalScalarRange=data.GetScalarRange()
 		
 		if raw:
 			return data
-		data = self.getResampledData(data, i)            
+		data = self.getResampledData(data, i)
 		if self.explicitScale or (data.GetScalarType() != 3 and not raw):
 			data = self.getIntensityScaledData(data)
 		#data.ReleaseDataFlagOff()
@@ -253,7 +258,7 @@ class LsmDataSource(DataSource.DataSource):
 		"""
 		Created: 21.07.2005
 		Description: Return the file name
-		"""    
+		"""
 		return self.filename
 		
 	def loadFromFile(self, filename):
@@ -278,7 +283,10 @@ class LsmDataSource(DataSource.DataSource):
 		#self.reader.Update()
 		self.reader.UpdateInformation()
 		if self.reader.IsCompressed():
-			raise Logging.GUIError("Cannot handle compressed dataset", "The dataset you've selected (%s) is compressed. The LSM reader cannot currently read compressed data." % filename)        
+			raise Logging.GUIError("Cannot handle compressed dataset", \
+									"The dataset you've selected (%s) is compressed. \
+									The LSM reader cannot currently read compressed data." \
+									% filename)
 		dataunits = []
 		channelNum = self.reader.GetNumberOfChannels()
 		self.timepointAmnt = channelNum
@@ -288,7 +296,7 @@ class LsmDataSource(DataSource.DataSource):
 			#  we can associate with the dataunit
 			datasource = LsmDataSource(filename, i)
 			datasource.setPath(filename)
-			dataunit = DataUnit.DataUnit()
+			dataunit = DataUnit()
 			dataunit.setDataSource(datasource)
 			dataunits.append(dataunit)
 			
@@ -332,7 +340,7 @@ class LsmDataSource(DataSource.DataSource):
 		"""
 		Created: 12.10.2006, KP
 		Description: A method that will reset the CTF from the datasource.
-					 This is useful e.g. when scaling the intensities of the    
+					 This is useful e.g. when scaling the intensities of the
 					 dataset
 		"""
 		self.scalarRange = None

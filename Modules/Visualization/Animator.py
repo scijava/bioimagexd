@@ -30,34 +30,57 @@ __author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.9 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
-
-from Visualizer.VisualizationMode import VisualizationMode
+import GUI.Urmas.UrmasWindow
+import Logging
 from GUI import MenuManager
+from Visualizer.VisualizationMode import VisualizationMode
+import wx
 
-def getName():return "animator"
-def getDesc(): return "Create an animation showing the dataset with the Animator"
-def getShortDesc(): return "Animator"
-def getIcon(): return "task_animator.jpg"
-def isDefaultMode(): return 0
-def showInfoWindow(): return 0
-def showFileTree(): return 0    
-def showSeparator(): return (1, 0)
+def getName():
+	return "animator"
+
+def getDesc():
+	return "Create an animation showing the dataset with the Animator"
+
+def getShortDesc():
+	return "Animator"
+
+def getIcon():
+	return "task_animator.jpg"
+
+def isDefaultMode():
+	return 0
+
+def showInfoWindow():
+	return 0
+
+def showFileTree():
+	return 0    
+
+def showSeparator():
+	return (1, 0)
 	
 # We want to be in the far right
-def getToolbarPos(): return 999
+def getToolbarPos():
+	return 999
 	
-def getClass():return AnimatorMode
-def getConfigPanel(): return None
-def getImmediateRendering(): return False
-def getRenderingDelay(): return 10000
-def showZoomToolbar(): return False
+def getClass():
+	return AnimatorMode
 
+def getConfigPanel():
+	return None
 
-from GUI import Urmas
-import Logging
-import wx
-		
+def getImmediateRendering():
+	return False
+
+def getRenderingDelay():
+	return 10000
+
+def showZoomToolbar():
+	return False
+
 class AnimatorMode(VisualizationMode):
+
 	def __init__(self, parent, visualizer):
 		"""
 		Method: __init__
@@ -85,6 +108,7 @@ class AnimatorMode(VisualizationMode):
 		#return False
 		
 	def closeOnReload(self):
+
 		return True
 		
 	def showSideBar(self):
@@ -106,9 +130,6 @@ class AnimatorMode(VisualizationMode):
 		#wx.CallAfter(self.urmaswin.Layout)
 		#wx.CallAfter(self.visualizer.OnSize)
 		
-		
-
-		
 	def activate(self, sidebarwin):
 		"""
 		Method: activate()
@@ -124,9 +145,13 @@ class AnimatorMode(VisualizationMode):
 		self.visualizer.sliderPanel.Show(0)
 		self.origSliderWinSize = self.visualizer.sliderWin.GetSize()
 		self.visualizer.sliderWin.SetDefaultSize((-1, 64))
+		
 		if not self.urmaswin:
 			# Ugly hack
-			self.urmaswin = Urmas.UrmasWindow(self.parent, self.visualizer.menuManager, self.visualizer.mainwin.taskWin, self.visualizer)
+			self.urmaswin = GUI.Urmas.UrmasWindow.UrmasWindow(self.parent, \
+																self.visualizer.menuManager, \
+																self.visualizer.mainwin.taskWin, \
+																self.visualizer)
 			
 		else:
 			self.urmaswin.enableRendering(1)
@@ -221,14 +246,15 @@ class AnimatorMode(VisualizationMode):
 		Created: 1.09.2005, KP
 		Description: Method called when the user tries to reload the mode
 		"""    
+		
 		pass
+		
 #        self.menuManager.enable(MenuManager.ID_ADJUST)
 #        self.menuManager.enable(MenuManager.ID_RESTORE)
 #        self.menuManager.enable(MenuManager.ID_COLOCALIZATION)
-
-
 		# safeguard
 
 	def __del_(self):
+
 		print "Deleting urmaswin"
 		del self.urmaswin

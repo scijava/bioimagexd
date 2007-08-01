@@ -3,7 +3,8 @@
  Unit: BXDDataSource
  Project: BioImageXD
  Created: 03.11.2004, JM
- Description: A class that reprensets the .bxd files that list the individual .bxc files that belong to a given dataset
+ Description: A class that reprensets the .bxd files that list 
+			the individual .bxc files that belong to a given dataset
 
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
@@ -28,20 +29,19 @@ __author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.37 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
-from DataSource import *
-import messenger
-import DataUnit
-import vtk
-import os.path
-
-import Logging
-import DataUnit
 import BXCDataSource
+from lib.DataSource.DataSource import DataSource
+import os.path
+import Logging
 
-def getExtensions(): return ["bxd"]
-def getFileType(): return "BioImageXD dataset (*.bxd)"
-def getClass(): return BXDDataSource
+def getExtensions(): 
+	return ["bxd"]
 
+def getFileType(): 
+	return "BioImageXD dataset (*.bxd)"
+
+def getClass(): 
+	return BXDDataSource
 
 class BXDDataSource(DataSource):
 	"""

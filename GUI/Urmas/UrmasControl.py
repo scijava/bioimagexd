@@ -40,11 +40,11 @@ __author__ = "BioImageXD Project"
 __version__ = "$Revision: 1.22 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
-import wx
-from Timeline import *
-import TimepointSelection
-import RenderingInterface
-import TrackItem
+#import wx
+#import Timeline
+#import TimepointSelection
+import lib.RenderingInterface
+#import TrackItem
 import Logging
 
 #import pickle
@@ -235,7 +235,7 @@ class UrmasControl:
 		Description: Sets the dataunit used as a source of data
 		"""    
 		self.dataUnit = dataunit
-		self.renderingInterface = RenderingInterface.getRenderingInterface(1)
+		self.renderingInterface = lib.RenderingInterface.getRenderingInterface(1)
 		self.renderingInterface.setDataUnit(dataunit)
 		self.renderingInterface.setVisualizer(self.visualizer)
 		self.timelinePanel.setDataUnit(dataunit)

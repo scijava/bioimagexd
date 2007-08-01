@@ -28,16 +28,16 @@ __version__ = "$Revision: 1.37 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 
-from ConfigParser import *
-import vtk
-import os.path
+#import ConfigParser
+#import os.path
+#import Configuration
+#import Logging
+#import lib.DataUnit
+#import scripting
+#import messenger
 
-import Configuration
-import Logging
-from DataUnit import *
-import scripting
-import messenger
-from DataSource import DataSource
+from lib.DataSource.DataSource import DataSource
+import vtk
 
 class RGBComponentDataSource(DataSource):
 	"""
@@ -91,7 +91,10 @@ class RGBComponentDataSource(DataSource):
 			self.ctf.AddRGBPoint(0, 0, 0, 0)
 			self.ctf.AddRGBPoint(255, *col)
 		return self.ctf
-	def getName(self): return self.source.getName() + "(" + "RGB"[self.component] + ")"      
+
+	def getName(self): 
+		return self.source.getName() + "(" + "RGB"[self.component] + ")"
+
 	def getCacheKey(self, datafilename, chName, purpose):
 		"""
 		Created: 07.11.2006, KP
@@ -110,8 +113,8 @@ class RGBComponentDataSource(DataSource):
 		"""
 		Created: 06.02.2007, KP
 		Description: Returns the DataSet at the specified index
-		Parameters:   i       The index
-		"""        
+		Parameters:   i		  The index
+		"""		   
 		data = self.source.getDataSet(i, raw)
 		print "\n\nExtracting component", self.component
 
@@ -129,10 +132,10 @@ class RGBComponentDataSource(DataSource):
 			data = self.getDataSet(0, raw = 1)
 			
 			self.scalarRange = data.GetScalarRange()
-			#print "Scalar range of data",self.scalarRange
+			#print "Scalar range of data", self.scalarRange
 			scalartype = data.GetScalarType()
-			#print "Scalar type",scalartype,data.GetScalarTypeAsString()
-			#print "Number of scalar components",data.GetNumberOfScalarComponents()
+			#print "Scalar type", scalartype, data.GetScalarTypeAsString()
+			#print "Number of scalar components", data.GetNumberOfScalarComponents()
 		
 			if scalartype == 4:
 				self.bitdepth = 16
@@ -150,5 +153,5 @@ class RGBComponentDataSource(DataSource):
 				self.bitdepth = 16
 			else:
 
-				raise "Bad LSM bit depth, %d,%s" % (scalartype, data.GetScalarTypeAsString())
+				raise "Bad LSM bit depth, %d, %s" % (scalartype, data.GetScalarTypeAsString())
 		return self.bitdepth

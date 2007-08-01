@@ -33,18 +33,17 @@ __author__ = "BioImageXD Project"
 __version__ = "$Revision: 1.22 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
+import lib.messenger
+import types
 import wx
-import messenger
+
 FIELDS = ["ClippingRange", "DirectionOfProjection", "Distance", "EyeAngle",
 "FocalDisk", "FocalPoint", "Orientation", "ParallelProjection",
 "ParallelScale", "Position", "Roll", "ViewAngle", "ViewPlaneNormal", "ViewShear",
 "ViewUp", "WindowCenter"]
 
-import types
-
 class CameraView(wx.StaticText):
 	"""
-	Class: CameraView
 	Created: 12.12.2005, KP
 	Description: A class for viewing a vtkCamera
 	"""    
@@ -57,7 +56,7 @@ class CameraView(wx.StaticText):
 			lst.append("n/a")
 		self.SetLabel(self.str % tuple(lst))
 		
-		messenger.connect(None, "view_camera", self.viewCamera)
+		lib.messenger.connect(None, "view_camera", self.viewCamera)
 	
 	def getAsStr(self, val):
 		if type(val) in [types.ListType, types.TupleType]:

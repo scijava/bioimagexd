@@ -29,17 +29,19 @@ __author__ = "BioImageXD Project"
 __version__ = "$Revision: 1.9 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
-import wx
-
+from Visualizer.VisualizationModules import VisualizationModule
+from Visualizer.ModuleConfiguration import ModuleConfigurationPanel
 import vtk
-import ColorTransferEditor
-import Dialogs
+import vtkbxd
 
-from Visualizer.VisualizationModules import *
+def getClass():
+	return DistanceModule
 
-def getClass():return DistanceModule
-def getConfigPanel():return DistanceConfigurationPanel
-def getName():return "Distance measurement"
+def getConfigPanel():
+	return DistanceConfigurationPanel
+
+def getName():
+	return "Distance measurement"
 
 
 class DistanceModule(VisualizationModule):
@@ -60,17 +62,18 @@ class DistanceModule(VisualizationModule):
 	
 		self.distanceWidget = vtk.vtkDistanceWidget()
 		self.obsTag = self.distanceWidget.AddObserver("EndInteractionEvent", self.onPlacePoint)
-		self.representation = vtk.vtkDistanceRepresentationScaled2D()
+		self.representation = vtkbxd.vtkDistanceRepresentationScaled2D()
 		self.representation.SetScaleX(1.0)
 		self.representation.SetScaleZ(1.0)
 		self.distanceWidget.SetRepresentation(self.representation)
 		self.renderer = self.parent.getRenderer()
 		iactor = self.wxrenwin.GetRenderWindow().GetInteractor()
 		self.distanceWidget.SetInteractor(iactor)
-		#self.updateRendering()
 		self.picker = vtk.vtkCellPicker()
+		self.currentPlane = None
 
 		#self.picker.SetTolerance(0.05)
+		#self.updateRendering()
 	  
 	def onPlacePoint(self, obj, event):
 		"""
@@ -122,11 +125,8 @@ class DistanceModule(VisualizationModule):
 		self.setVTKState(self.currentPlane, state.currentPlane)
 		self.setVTKState(self.renderer, state.renderer)
 		self.setVTKState(self.renderer.GetActiveCamera(), state.camera)
-
 		VisualizationModule.__set_pure_state__(self, state)
 				
-		
-		
 	def setDataUnit(self, dataunit):
 		"""
 		Created: 28.04.2005, KP
@@ -216,9 +216,8 @@ class DistanceModule(VisualizationModule):
 		"""          
 		pass
 
-
-
 class DistanceConfigurationPanel(ModuleConfigurationPanel):
+
 	def __init__(self, parent, visualizer, name = "Distance", **kws):
 		"""
 		Created: 04.05.2005, KP

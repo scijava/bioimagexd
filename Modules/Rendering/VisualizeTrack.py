@@ -29,24 +29,22 @@ __author__ = "BioImageXD Project"
 __version__ = "$Revision: 1.9 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
-import wx
-
-import vtk
-import ColorTransferEditor
-import Dialogs
-
-from GUI import GUIBuilder
-import types
-from Visualizer.VisualizationModules import *
-
 import scripting as bxd
+from GUI import GUIBuilder
+import lib.messenger
+import types
+from Visualizer.VisualizationModules import VisualizationModule
+from Visualizer.ModuleConfiguration import ModuleConfigurationPanel
+import vtk
 
-from lib import Track
+def getClass():
+	return VisualizeTrackModule
 
-def getClass():return VisualizeTrackModule
-def getConfigPanel():return VisualizeTrackConfigurationPanel
-def getName():return "Visualize tracks"
+def getConfigPanel():
+	return VisualizeTrackConfigurationPanel
 
+def getName():
+	return "Visualize tracks"
 
 class VisualizeTrackModule(VisualizationModule):
 	"""
@@ -60,8 +58,9 @@ class VisualizeTrackModule(VisualizationModule):
 		"""     
 		VisualizationModule.__init__(self, parent, visualizer, **kws)   
 
-		self.descs = {"TrackFile": "Select the track file", "AllTracks": "Show all tracks", "Track": "Select the track to visualize", "MinLength": "Minimum length of track",
-				"ShowObject": "Show object using surface rendering"}
+		self.descs = {"TrackFile": "Select the track file", "AllTracks": "Show all tracks", \
+					"Track": "Select the track to visualize", "MinLength": "Minimum length of track", \
+					"ShowObject": "Show object using surface rendering"}
 		
 		self.showTracks = []
 			
@@ -73,8 +72,8 @@ class VisualizeTrackModule(VisualizationModule):
 		self.actors = []
 		self.renderer = self.parent.getRenderer()
 
-#        iactor = self.wxrenwin.GetRenderWindow().GetInteractor()
-		messenger.connect(None, "visualize_tracks", self.onVisualizeTracks)
+        #iactor = self.wxrenwin.GetRenderWindow().GetInteractor()
+		lib.messenger.connect(None, "visualize_tracks", self.onVisualizeTracks)
 		
 	def onVisualizeTracks(self, obj, evt, tracks):
 		"""
@@ -105,11 +104,16 @@ class VisualizeTrackModule(VisualizationModule):
 		Created: 13.04.2006, KP
 		Description: Return the default value of a parameter
 		"""           
-		if parameter == "TrackFile":return "tracks.csv"
-		if parameter == "Track":return 0
-		if parameter == "MinLength":return 3
-		if parameter == "AllTracks":return False
-		if parameter == "ShowObject":return False
+		if parameter == "TrackFile":
+			return "tracks.csv"
+		if parameter == "Track":
+			return 0
+		if parameter == "MinLength":
+			return 3
+		if parameter == "AllTracks":
+			return False
+		if parameter == "ShowObject":
+			return False
 			
 	def getRange(self, parameter):
 		"""
@@ -117,6 +121,7 @@ class VisualizeTrackModule(VisualizationModule):
 		Description: If a parameter has a certain range of valid values, the values can be queried with this function
 		"""     
 		if parameter == "Track":
+			#TODO: self.track does not exist
 			if self.track:
 				minlength = self.parameters["MinLength"]
 				return 0, self.track.getNumberOfTracks(minlength)
@@ -135,10 +140,16 @@ class VisualizeTrackModule(VisualizationModule):
 		Created: 13.04.2006, KP
 		Description: Return the type of the parameter
 		"""    
-		if parameter == "TrackFile":return GUIBuilder.FILENAME
-		if parameter == "Track":return GUIBuilder.SLICE
-		if parameter == "MinLength":return GUIBuilder.SLICE
-		if parameter == "AllTracks":return types.BooleanType
+
+		if parameter == "TrackFile":
+			return GUIBuilder.FILENAME
+		if parameter == "Track":
+			return GUIBuilder.SLICE
+		if parameter == "MinLength":
+			return GUIBuilder.SLICE
+		if parameter == "AllTracks":
+			return types.BooleanType
+
 	def __getstate__(self):
 		"""
 		Created: 02.08.2005, KP
@@ -188,7 +199,8 @@ class VisualizeTrackModule(VisualizationModule):
 				val, (x, y, z) = track.getObjectAtTime(t)
 				if x >= 0 and y >= 0 and z >= 0:
 					currtrack.append((x * xc, y * yc, z * zc))
-				else:break
+				else:
+					break
 			ret.append(currtrack)
 		return ret
 		
@@ -305,9 +317,8 @@ class VisualizeTrackModule(VisualizationModule):
 		"""          
 		pass
 
-
-
 class VisualizeTrackConfigurationPanel(ModuleConfigurationPanel):
+
 	def __init__(self, parent, visualizer, name = "VisualizeTrack", **kws):
 		"""
 		Created: 29.05.2006, KP

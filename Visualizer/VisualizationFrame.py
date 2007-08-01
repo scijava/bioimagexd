@@ -1,4 +1,4 @@
-# -*- coding: iso-8859-1 -*-
+# -- coding: iso-8859-1 -*-
 
 """
  Unit: VisualizationFrame
@@ -11,7 +11,7 @@
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
 
- This program is free software; you can redistribute it and/or modify
+ This program is free software; you can redistribute it and / or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation; either version 2 of the License, or
  (at your option) any later version.
@@ -23,27 +23,27 @@
 
  You should have received a copy of the GNU General Public License
  along with this program; if not, write to the Free Software
- Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111 - 1307  USA
 
 """
 __author__ = "BioImageXD Project"
 __version__ = "$Revision: 1.9 $"
-__date__ = "$Date: 2005/01/13 13:42:03 $"
+__date__ = "$Date: 2005 / 01 / 13 13: 42: 03 $"
 
 import wx
-import time
+#import time
 import platform
-import vtk
-from vtk.wx.wxVTKRenderWindowInteractor import wxVTKRenderWindowInteractor
-import Dialogs
-import  wx.lib.colourselect as  csel
+#import vtk
+#from vtk.wx.wxVTKRenderWindowInteractor import wxVTKRenderWindowInteractor
+import GUI.Dialogs
+import wx.lib.colourselect as csel
 import wx.lib.scrolledpanel as scrolled
-
+import lib.messenger
 from lib.persistence import state_pickler
 
-from VisualizationModules import *
-from ModuleConfiguration import *
-from VisualizerWindow import *
+#import VisualizationModules
+#import ModuleConfiguration
+#import VisualizerWindow
 	
 class RendererConfiguration(wx.MiniFrame):
 	"""
@@ -54,10 +54,10 @@ class RendererConfiguration(wx.MiniFrame):
 		"""
 		Created: 28.04.2005, KP
 		Description: Initialization
-		"""     
+		"""		
 		wx.MiniFrame.__init__(self, parent, -1, "Configure Render Window")
 		self.panel = wx.Panel(self, -1)
-		self.s = wx.BoxSizer(wx.VERTICAL)
+		self.boxSizer = wx.BoxSizer(wx.VERTICAL)
 		
 		self.sizer = wx.GridBagSizer()
 		self.parent = parent
@@ -82,7 +82,7 @@ class RendererConfiguration(wx.MiniFrame):
 		self.sizer.Add(self.contentSizer, (0, 0))
 		
 		self.line = wx.StaticLine(self.panel, -1)
-		self.sizer.Add(self.line, (2, 0), flag = wx.EXPAND | wx.LEFT | wx.RIGHT)
+		self.sizer.Add(self.line, (2, 0), flag = wx.EXPAND|wx.LEFT|wx.RIGHT)
 		self.sizer.Add(self.buttonBox, (3, 0))
 		
 		self.initializeGUI()
@@ -92,26 +92,36 @@ class RendererConfiguration(wx.MiniFrame):
 		self.sizer.Fit(self.panel)
 		self.SetSize(self.panel.GetSize())
 		
-		self.s.Add(self.panel)
-		self.SetSizer(self.s)        
+		self.boxSizer.Add(self.panel)
+		self.SetSizer(self.boxSizer)		 
 		self.SetAutoLayout(1)
-		self.s.Fit(self)
+		self.boxSizer.Fit(self)
+		
+		self.stereoChoice = None
+		self.color = None
+		self.modes = None
+		self.colorLbl = None 
+		self.stereoLbl = None
+		self.stereoMode = None
+		self.colorBtn = None
+		self.sizeLbl = None
+		self.sizeEdit = None
 		
 	def initializeGUI(self):
 		"""
 		Created: 16.05.2005, KPself.mode
 		Description: Build up the configuration GUI
-		"""             
-		self.colorLbl = wx.StaticText(self.panel, -1, "Background color:")
+		"""				
+		self.colorLbl = wx.StaticText(self.panel, -1, "Background color: ")
 		self.colorBtn = csel.ColourSelect(self.panel, -1)
 		self.Bind(csel.EVT_COLOURSELECT, self.onSelectColor, id = self.colorBtn.GetId())
 
-		self.sizeLbl = wx.StaticText(self.panel, -1, "Window size:")
+		self.sizeLbl = wx.StaticText(self.panel, -1, "Window size: ")
 		self.sizeEdit = wx.TextCtrl(self.panel, -1, "512x512")
 
-		self.stereoLbl = wx.StaticText(self.panel, -1, "Stereo rendering:")
+		self.stereoLbl = wx.StaticText(self.panel, -1, "Stereo rendering: ")
 		self.modes = [None, "RedBlue", "CrystalEyes", "Dresden", "Interlaced", "Left", "Right"]
-		stereomodes = ["No stereo", "Red-Blue", "Crystal Eyes", "Dresden", "Interlaced", "Left", "Right"]
+		stereomodes = ["No stereo", "Red - Blue", "Crystal Eyes", "Dresden", "Interlaced", "Left", "Right"]
 		self.stereoChoice = wx.Choice(self.panel, -1, choices = stereomodes)
 		
 		self.stereoChoice.Bind(wx.EVT_CHOICE, self.onSetStereoMode)
@@ -129,11 +139,11 @@ class RendererConfiguration(wx.MiniFrame):
 		"""
 		Created: 16.05.2005, KP
 		Description: Apply the changes
-		"""           
+		"""			  
 		if self.color:
-			r, g, b = self.color
-			print "Setting renderwindow background to ", r, g, b
-			self.visualizer.setBackground(r, g, b)
+			red, green, blue = self.color
+			print "Setting renderwindow background to ", red, green, blue
+			self.visualizer.setBackground(red, green, blue)
 		print "Setting stero mode to", self.stereoMode
 		self.mode.setStereoMode(self.stereoMode)
 		try:
@@ -149,7 +159,7 @@ class RendererConfiguration(wx.MiniFrame):
 		"""
 		Created: 28.04.2005, KP
 		Description: Close this dialog
-		"""     
+		"""		
 		self.Close()
 		
 	def onOk(self, event):
@@ -164,7 +174,7 @@ class RendererConfiguration(wx.MiniFrame):
 		"""
 		Created: 16.05.2005, KP
 		Description: Select the background color for render window
-		"""             
+		"""				
 		color = event.GetValue()
 		self.color = (color.Red(), color.Green(), color.Blue())
 		
@@ -172,7 +182,7 @@ class RendererConfiguration(wx.MiniFrame):
 		"""
 		Created: 16.05.2005, KP
 		Description: Set the stereo mode
-		"""             
+		"""				
 		index = event.GetSelection()
 		mode = self.modes[index]
 	
@@ -190,8 +200,8 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
 		Created: 28.04.2005, KP
 		Description: Initialization
 		"""
-		#wx.Panel.__init__(self,parent,-1,style=wx.RAISED_BORDER)
-		#wx.ScrolledWindow.__init__(self,parent,-1)
+		#wx.Panel.__init__(self, parent, -1, style = wx.RAISED_BORDER)
+		#wx.ScrolledWindow.__init__(self, parent, -1)
 		size = kws.get("size", (200, -1))
 		scrolled.ScrolledPanel.__init__(self, parent, -1, size = size)
 		
@@ -216,8 +226,8 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
 		
 		self.moduleLbl = wx.StaticText(self, -1, "3D rendering modules")
 		
-#        self.moduleBox = wx.StaticBox(self,-1,"Modules for 3D scene")
-#        self.moduleSizer = wx.StaticBoxSizer(self.moduleBox, wx.VERTICAL)
+#		 self.moduleBox = wx.StaticBox(self, -1, "Modules for 3D scene")
+#		 self.moduleSizer = wx.StaticBoxSizer(self.moduleBox, wx.VERTICAL)
 		modules = self.mode.mapping.keys()
 		modules.sort()
 
@@ -244,10 +254,10 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
 		self.moduleLoad.Bind(wx.EVT_BUTTON, self.onLoadModule)
 		
 		self.moduleRemove = wx.Button(self, -1, "Remove")
-		self.moduleRemove.Bind(wx.EVT_BUTTON, self.onRemoveModule)        
+		self.moduleRemove.Bind(wx.EVT_BUTTON, self.onRemoveModule)		 
 		n = 0
-#        self.sizer.Add(self.namePanel,(n,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
-#        n+=1
+#		 self.sizer.Add(self.namePanel, (n, 0), flag = wx.EXPAND|wx.LEFT|wx.RIGHT)
+#		 n += 1
 		self.sizer.Add(self.moduleLbl, (n, 0))
 		n += 1
 		self.sizer.Add(self.moduleChoice, (n, 0))
@@ -265,6 +275,7 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
 		self.SetSizer(self.visSizer)
 		self.SetAutoLayout(1)
 		self.SetupScrolling()
+		self.currentConfLbl = None
 		
 	def onConfigureRenderwindow(self, event):
 		"""
@@ -298,18 +309,19 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
 		self.currentConfLbl = lbl
 		modname = lbl.split("#")[0].strip()
 		panel = self.mode.getConfigurationPanel(modname)
+	
+		# changed w,h to width, height (SS 25.06.07)	
+		#width, height = self.moduleListbox.GetSize()
 		
-		w, h = self.moduleListbox.GetSize()
+#		 if not self.confPanel:
+#			 self.confPanel = wx.StaticBox(self, -1, "Configure %s"%lbl)
+#			 self.confSizer = wx.StaticBoxSizer(self.confPanel, wx.VERTICAL)
+#			 self.confPanel = NamePanel(self, "Configure %s"%lbl, None, size = (200, 25))
+#			 self.sizer.Add(self.confSizer, (5, 0), flag = wx.EXPAND|wx.LEFT|wx.RIGHT)
+#		 self.confPanel.SetLabel("Configure %s"%lbl)
+		#self.confPanel.setColor((0, 0, 0), (180, 255, 180))
 		
-#        if not self.confPanel:
-#            self.confPanel = wx.StaticBox(self,-1,"Configure %s"%lbl)
-#            self.confSizer = wx.StaticBoxSizer(self.confPanel,wx.VERTICAL)
-#            self.confPanel = NamePanel(self,"Configure %s"%lbl,None,size=(200,25))
-#            self.sizer.Add(self.confSizer,(5,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
-#        self.confPanel.SetLabel("Configure %s"%lbl)
-		#self.confPanel.setColor((0,0,0),(180,255,180))
-		
-		self.currentConf = panel(self, self.visualizer, lbl)#,mode=self.mode)
+		self.currentConf = panel(self, self.visualizer, lbl)#, mode = self.mode)
 	 
 		#self.confSizer.Add(self.currentConf)
 		self.sizer.Add(self.currentConf, (5, 0))
@@ -327,7 +339,7 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
 		index = event.GetSelection()
 		lbl = self.moduleListbox.GetString(index)
 		status = self.moduleListbox.IsChecked(index)
-		#print "Setting rendering of %s to %s"%(lbl,status)
+		#print "Setting rendering of %s to %s"%(lbl, status)
 		self.mode.setRenderingStatus(lbl, status)
 
 	def onConfigureLights(self, event):
@@ -335,8 +347,8 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
 		Created: 29.04.2005, KP
 		Description: Configure the lights
 		"""
-		lm = self.mode.lightsManager
-		lm.config()
+		lightmanager = self.mode.lightsManager
+		lightmanager.config()
 
 
 	def onLoadModule(self, event):
@@ -374,7 +386,7 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
 			if self.moduleListbox.GetCount() == 1:
 				self.selected = 0
 		if self.selected == -1:
-			Dialogs.showerror(self, "You have to select a module to be removed", "No module selected")
+			GUI.Dialogs.showerror(self, "You have to select a module to be removed", "No module selected")
 			return
 		lbl = self.moduleListbox.GetString(self.selected)
 		self.mode.removeModule(lbl)
@@ -395,14 +407,14 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
 		Description: Load a scene from file
 		"""    
 		wc = "3D view scene (*.3xd)|*.3xd"
-		filename = Dialogs.askOpenFileName(self, "Open 3D view scene", wc, 0)
-		if filename:        
+		filename = GUI.Dialogs.askOpenFileName(self, "Open 3D view scene", wc, 0)
+		if filename:		
 			state = state_pickler.load_state(open(filename[0], "r"))
-			#state_pickler.set_state(self.mode,state)
+			#state_pickler.set_state(self.mode, state)
 			self.moduleListbox.Clear()
 			self.mode.__set_pure_state__(state)
 			
-			messenger.send(None, "update_module_settings")
+			lib.messenger.send(None, "update_module_settings")
 	
 	def onSaveScene(self, event):
 		"""
@@ -411,11 +423,15 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
 		"""    
 		wc = "3D view scene (*.3xd)|*.3xd"
 		filename = None
-		dlg = wx.FileDialog(self, "Save 3D view scene as...", defaultFile = "scene.3xd", wildcard = wc, style = wx.SAVE)
+		dlg = wx.FileDialog(self, \
+							"Save 3D view scene as...", \
+							defaultFile = "scene.3xd", \
+							wildcard = wc, \
+							style = wx.SAVE)
 		if dlg.ShowModal() == wx.ID_OK:
-			filename = dlg.GetPath()        
+			filename = dlg.GetPath()		  
 		if filename:
-			p = state_pickler.dump(self.mode, open(filename, "w"))        
+			p = state_pickler.dump(self.mode, open(filename, "w"))		  
 		
 class VisualizationFrame(wx.Frame):
 	"""

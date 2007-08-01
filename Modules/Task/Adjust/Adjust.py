@@ -31,12 +31,10 @@ __author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.13 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
-
-import vtk
-import time
 import Logging
-import lib.Module
-from lib.Module import *
+from lib.Module import Module
+import time
+import vtkbxd
 
 class Adjust(Module):
 	"""
@@ -121,7 +119,7 @@ class Adjust(Module):
 			Logging.info("More than one source dataset for data processing, using %dth" % n, kw = "processing")
 			
 		mapdata = self.images[n]
-		mapIntensities = vtk.vtkImageMapToIntensities()
+		mapIntensities = vtkbxd.vtkImageMapToIntensities()
 		#mapIntensities.GetOutput().ReleaseDataFlagOn()
 		mapIntensities.AddObserver("ProgressEvent", self.updateProgress)
 		mapIntensities.SetIntensityTransferFunction(self.intensityTransferFunctions[n])

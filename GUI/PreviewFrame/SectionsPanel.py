@@ -8,7 +8,7 @@
 
  A panel that can display previews of all the optical slices of
  volume data independent of a VTK render window,using the tools provided by wxPython.
-		   
+
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
 
@@ -30,17 +30,15 @@ __author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.9 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
-import wx    
-from wx.lib.statbmp  import GenStaticBitmap as StaticBitmap
-import ImageOperations
-import vtk
-import Logging
 import scripting as bxd
-import InteractivePanel
-import messenger
+from GUI.InteractivePanel import InteractivePanel as InteractivePanel
+import lib.ImageOperations
+import lib.messenger
+import Logging
 import math
+import wx
 
-class SectionsPanel(InteractivePanel.InteractivePanel):
+class SectionsPanel(InteractivePanel):
 	"""
 	Created: 23.05.2005, KP
 	Description: A widget that previews the xy,xz and yz planes of a dataset
@@ -49,7 +47,7 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
 		"""
 		Created: 24.03.2005, KP
 		Description: Initialization
-		"""    
+		"""
 		self.imagedata = None
 		self.fitLater = 0
 		self.visualizer = visualizer
@@ -63,7 +61,7 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
 		self.paintSize = size
 		self.buffer = wx.EmptyBitmap(x, y)
 		#wx.ScrolledWindow.__init__(self,parent,-1,size=size,**kws)
-		InteractivePanel.InteractivePanel.__init__(self, parent, size = size, **kws)
+		InteractivePanel.__init__(self, parent, size = size, **kws)
 		self.size = size
 		self.sizeChanged = 0
 		self.rows = 0
@@ -95,13 +93,13 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
 		self.Bind(wx.EVT_LEFT_DOWN, self.onLeftDown)
 		self.Bind(wx.EVT_MOTION, self.onLeftDown)
 		
-		messenger.connect(None, "zslice_changed", self.onSetZSlice)        
+		lib.messenger.connect(None, "zslice_changed", self.onSetZSlice)
 		
 	def getDrawableRectangles(self):
 		"""
 		Created: 04.07.2005, KP
 		Description: Return the rectangles can be drawn on as four-tuples
-		"""    
+		"""
 		return self.drawableRects
 		
 	def setZoomFactor(self, factor):
@@ -115,11 +113,12 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
 		self.updateAnnotations()
 		self.sizeChanged = 1
 
-				
 		self.xmargin = int(self.xmargin_default * self.zoomFactor)
 		self.ymargin = int(self.ymargin_default * self.zoomFactor)
-		if self.xmargin < 3:self.xmargin = 3
-		if self.ymargin < 3:self.ymargin = 3
+		if self.xmargin < 3:
+			self.xmargin = 3
+		if self.ymargin < 3:
+			self.ymargin = 3
 		x0, y0, x1, y1 = self.GetClientRect()
 		self.xmargin += x0
 		self.ymargin += y0
@@ -133,26 +132,23 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
 		"""
 		Created: 1.08.2005, KP
 		Description: Set the shown zslice
-		"""   
-		Logging.info("Setting viewed slice of orthogonal view", obj, event, arg, kw = "preview")
+		"""
 		# A flag to indicate that we won't react on our own messages
 		if self.noUpdate:
-			Logging.info("Not updating")
 			return
 		nx, ny = self.x, self.y
 		nz = arg
 		self.z = arg
 		self.drawPos = [x * self.zoomFactor for x in (nx, ny, nz)]
 		
-		
 		self.setTimepoint(self.timepoint)
-#        self.updatePreview()        
+		#self.updatePreview()
 		
 	def onLeftDown(self, event):
 		"""
 		Created: 06.06.2005, KP
 		Description: Handler for mouse clicks
-		"""    
+		"""
 		# if left mouse key is not down or the key down is related to
 		# interactive panel events
 		if self.action:
@@ -170,7 +166,7 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
 		
 		x /= float(self.zoomFactor)
 		y /= float(self.zoomFactor)
-				
+
 		dims = self.imagedata.GetDimensions()
 		#Logging.info("x,y=(%d,%d)"%(x,y),"dims=",dims,"margins=",self.xmargin,self.ymargin)
 		#dims=(dims[0],dims[1],dims[2]*self.zoomZ)
@@ -214,22 +210,21 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
 		else:
 			Logging.info("Out of bounds (%d,%d)" % (x, y), kw = "preview")
 			return
-		#nz/=self.zoomFactor
-		#print "showing ",nx,ny,nz
+#		nz /= self.zoomFactor
+#		print "showing ",nx,ny,nz
 		
-#        self.drawPos=[a*self.zoomFactor for a in (self.x,self.y,self.z)]
+#		self.drawPos=[a*self.zoomFactor for a in (self.x,self.y,self.z)]
 	
 		self.drawPos = [math.ceil(a * self.zoomFactor) for a in (nx, ny, nz)]
-#        Logging.info("drawPos=",self.drawPos,"zoomFactor=",self.zoomFactor,"nx=%d, ny=%d, nz=%d"%(nx,ny,nz))
+#		Logging.info("drawPos=",self.drawPos,"zoomFactor=",self.zoomFactor,"nx=%d, ny=%d, nz=%d"%(nx,ny,nz))
 		if self.x != nx or self.y != ny or self.z != nz:
 			self.x, self.y, self.z = int(nx), int(ny), int(nz)
-	
-			#print "Redrawing slices"
 			self.setTimepoint(self.timepoint)
 		else:
 			self.updatePreview()
-
-		
+		self.noUpdate = 1
+		lib.messenger.send(None, "zslice_changed", nz) 
+		self.noUpdate = 0
 		ncomps = self.imagedata.GetNumberOfScalarComponents()
 		if ncomps == 1:
 			scalar = self.imagedata.GetScalarComponentAsDouble(self.x, self.y, self.z, 0)
@@ -254,21 +249,18 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
 		rx, ry, rz = self.x, self.y, self.z
 	
 	
-		messenger.send(None, "get_voxel_at", rx, ry, rz, scalar, rv, gv, bv, r, g, b, alpha, self.ctf)
+		lib.messenger.send(None, "get_voxel_at", rx, ry, rz, scalar, rv, gv, bv, r, g, b, alpha, self.ctf)
 
-		self.noUpdate = 1
-		messenger.send(None, "zslice_changed", nz) 
-		self.noUpdate = 0                
 		
 		event.Skip()
-		
+			
 		
 	def onSize(self, event):
 		"""
 		Created: 23.05.2005, KP
 		Description: Size event handler
-		"""    
-		InteractivePanel.InteractivePanel.OnSize(self, event)
+		"""
+		InteractivePanel.OnSize(self, event)
 		self.size = event.GetSize()
 		Logging.info("Sections panel size changed to ", self.size, kw = "preview")
 		self.sizeChanged = 1
@@ -277,15 +269,15 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
 		"""
 		Created: 24.05.2005, KP
 		Description: Set the background color
-		"""        
-		self.bgcolor = (r, g, b)        
+		"""
+		self.bgcolor = (r, g, b)
 		
 	def setDataUnit(self, dataUnit, selectedItem = -1):
 		"""
 		Created: 23.05.2005, KP
 		Description: Set the dataunit used for preview. 
 		"""
-		self.dataUnit = dataUnit                
+		self.dataUnit = dataUnit
 		
 		self.dims = dataUnit.getDimensions()
 		
@@ -294,17 +286,17 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
 		y /= 2
 		z /= 2
 		z *= self.zoomZ
-		x, y, z = int(x), int(y), int(z) 
 		
 		self.x, self.y, self.z = x, y, z
 		self.drawPos = (x, y, z)
 
 		self.voxelSize = dataUnit.getVoxelSize()
-		InteractivePanel.InteractivePanel.setDataUnit(self, dataUnit)
-#        self.setTimepoint(self.timepoint, update = 0 )
-#        self.calculateBuffer()
-#        self.updatePreview()
-#        self.Refresh()
+		InteractivePanel.setDataUnit(self, dataUnit)
+
+#		self.setTimepoint(self.timepoint)
+#		self.calculateBuffer()
+#		self.updatePreview()
+#		self.Refresh()
 		
 	def setTimepoint(self, tp, update = 1):
 		"""
@@ -318,64 +310,60 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
 		else:
 			image = self.dataUnit.getTimepoint(tp)
 			image.SetUpdateExtent(image.GetWholeExtent())
-
-			#print "timepoint",tp,"is",image
 			self.ctf = self.dataUnit.getColorTransferFunction()
 
 		
 		self.zspacing = image.GetSpacing()[2]
-		#print "Got image data",image
-		self.imagedata = ImageOperations.imageDataTo3Component(image, self.ctf)
+		self.imagedata = lib.ImageOperations.imageDataTo3Component(image, self.ctf)
 		self.imagedata.Update()
 
 		if self.fitLater:
 			self.fitLater = 0
-			self.zoomToFit()        
+			self.zoomToFit()
 			return
+
 		self.dims = self.imagedata.GetDimensions()
-	   # print "Got dimensions=",self.dims    
 		self.slices = []
-		# obtain the slices
-		Logging.info("Orthogonal view, getting slices, pos=%d,%d,%d\n" % (self.x, self.y, self.z), kw = "preview")
+#		obtain the slices
 
 		z = self.z / self.zoomZ
-		#z/=self.zoomFactor
+#		z/=self.zoomFactor
 		if self.zoomFactor != 1:
-			img = ImageOperations.scaleImage(self.imagedata, self.zoomFactor, z)
-			slice = ImageOperations.vtkImageDataToWxImage(img)        
+			img = lib.ImageOperations.scaleImage(self.imagedata, self.zoomFactor, z)
+			slice = lib.ImageOperations.vtkImageDataToWxImage(img)
 			
 		else:
-			slice = ImageOperations.vtkImageDataToWxImage(self.imagedata, z)
+			slice = lib.ImageOperations.vtkImageDataToWxImage(self.imagedata, z)
 			
 		self.slices.append(slice)
 		
-		slice = ImageOperations.getPlane(self.imagedata, "zy", self.x, self.y, z)
-		#slice=ImageOperations.getPlane(self.imagedata,"xz",self.x,self.y,z)
+		slice = lib.ImageOperations.getPlane(self.imagedata, "zy", self.x, self.y, z)
+#		slice=lib.ImageOperations.getPlane(self.imagedata,"xz",self.x,self.y,z)
 		if self.zoomFactor != 1 or self.zspacing != 1:
-			slice = ImageOperations.scaleImage(slice, self.zoomFactor, yfactor = 1, xfactor = self.zspacing)
-		#if self.zoomZ != 1:
-		#    slice=ImageOperaations.scaleImage(slice,xfactor=self.zoomZ)
+			slice = lib.ImageOperations.scaleImage(slice, self.zoomFactor, yfactor = 1, xfactor = self.zspacing)
+#		if self.zoomZ != 1:
+#			slice = ImageOperaations.scaleImage(slice,xfactor=self.zoomZ)
 		
-		slice = ImageOperations.vtkImageDataToWxImage(slice)
+		slice = lib.ImageOperations.vtkImageDataToWxImage(slice)
 		self.slices.append(slice)
-		slice = ImageOperations.getPlane(self.imagedata, "xz", self.x, self.y, z)
-		#slice=ImageOperations.getPlane(self.imagedata,"zy",self.x,self.y,z)
+		slice = lib.ImageOperations.getPlane(self.imagedata, "xz", self.x, self.y, z)
+#		slice = lib.ImageOperations.getPlane(self.imagedata,"zy",self.x,self.y,z)
 		if self.zoomFactor != 1 or self.zoomZ != 1  or self.zspacing != 1:
-			slice = ImageOperations.scaleImage(slice, self.zoomFactor, yfactor = self.zspacing, xfactor = 1)
-		#if self.zoomZ != 1:
-		#    slice=ImageOperaations.scaleImage(slice,yfactor=self.zoomZ)        
-		slice = ImageOperations.vtkImageDataToWxImage(slice)
-		self.slices.append(slice)        
+			slice = lib.ImageOperations.scaleImage(slice, self.zoomFactor, yfactor = self.zspacing, xfactor = 1)
+#		if self.zoomZ != 1:
+#			slice=ImageOperaations.scaleImage(slice,yfactor=self.zoomZ)
+		slice = lib.ImageOperations.vtkImageDataToWxImage(slice)
+		self.slices.append(slice)
 
 		self.calculateBuffer()
 		if update:
 			self.updatePreview()
-	
+
 	def calculateBuffer(self):
 		"""
 		Created: 23.05.2005, KP
 		Description: Calculate the drawing buffer required
-		"""    
+		"""
 		if not self.imagedata:
 			return
 		x, y, z = self.imagedata.GetDimensions()
@@ -392,11 +380,9 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
 		if self.buffer.GetWidth() != x or self.buffer.GetHeight() != y:
 			self.buffer = wx.EmptyBitmap(x, y)
 			Logging.info("Paint size=", self.paintSize, kw = "preview")
-			#print "paintSize=",self.paintSize
-			
+			#print "paintSize=",self.paintSize			
 			self.setScrollbars(x, y)
-		
-		
+
 	def enable(self, flag):
 		"""
 		Created: 02.06.2005, KP
@@ -412,13 +398,12 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
 		Description: Updates the viewed image
 		"""
 		if not self.enabled:
-			Logging.info("Not drawing orthogonal sections, panel not enabled", kw = "preview")
+			Logging.info("Won't draw sections cause not enabled", kw="preview")
 			return
 		if not self.slices:
 			self.setTimepoint(self.timepoint, update = 0)
 		self.paintPreview()
-		self.Refresh()
-#        wx.GetApp().Yield(1)
+		self.Refresh()	
 
 	def OnPaint(self, event):
 		"""
@@ -430,20 +415,16 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
 			self.calculateBuffer()
 			self.updatePreview()
 			self.sizeChanged = 0
-		InteractivePanel.InteractivePanel.OnPaint(self, event)    
-	
+		InteractivePanel.OnPaint(self, event)
 	
 	def paintPreview(self):
 		"""
 		Created: 24.03.2005, KP
 		Description: Paints the image to a DC
 		"""
-#        dc = self.dc = wx.BufferedDC(wx.ClientDC(self),self.buffer)
-		Logging.info("Painting slices", kw = "preview")
+#		dc = self.dc = wx.BufferedDC(wx.ClientDC(self), self.buffer)
 		dc = wx.MemoryDC()
 		dc.SelectObject(self.buffer)
-		dc.BeginDrawing()
-
 		dc.BeginDrawing()
 		dc.SetBackground(wx.Brush(wx.Colour(*self.bgcolor)))
 		dc.SetPen(wx.Pen(wx.Colour(*self.bgcolor), 0))
@@ -466,12 +447,11 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
 
 		pos = [(self.xmargin, self.ymargin), (x + (2 * self.xmargin), self.ymargin), (self.xmargin, y + (2 * self.ymargin))]
 		for i, slice in enumerate(self.slices):
-								  
 
 			w, h = slice.GetWidth(), slice.GetHeight()
-			#print "Widht, height of slice=",w,h
-			#if i==2:
-				#slice=slice.Mirror(1)
+#			print "Widht, height of slice=", w, h
+#			if i == 2:
+#			slice = slice.Mirror(1)
 			bmp = slice.ConvertToBitmap()
 
 			sx, sy = pos[i]
@@ -499,9 +479,8 @@ class SectionsPanel(InteractivePanel.InteractivePanel):
 			
 			
 		self.bmp = self.buffer
-		InteractivePanel.InteractivePanel.paintPreview(self)
-		self.makeBackgroundBuffer(dc)
-			
+		InteractivePanel.paintPreview(self)
+		self.makeBackgroundBuffer(dc)			
 
 		dc.EndDrawing()
 		self.dc = None

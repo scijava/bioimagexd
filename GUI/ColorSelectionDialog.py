@@ -36,8 +36,9 @@ __author__ = "BioImageXD Project"
 __version__ = "$Revision: 1.28 $"
 __date__ = "$Date: 2005/01/13 14:52:39 $"
 
-import wx
+import Logging
 import wx.lib.colourchooser as cc
+import wx
 
 class ColorSelectionDialog(cc.PyColourChooser):
 	"""
@@ -56,10 +57,10 @@ class ColorSelectionDialog(cc.PyColourChooser):
 		colorlst = [color.Red(), color.Green(), color.Blue()]
 		if 255 not in colorlst and max(colorlst) > 0:
 			mval = max(colorlst)
-		Logging.info("Converting ", colorlst, kw = "trivial")
+			Logging.info("Converting ", colorlst, kw = "trivial")
 			coeff = 255.0 / mval
 			ncolor = [int(x * coeff) for x in colorlst]
-		Logging.info("New color ", ncolor, kw = "trivial")
+			Logging.info("New color ", ncolor, kw = "trivial")
 			col = wx.Colour(ncolor[0], ncolor[1], ncolor[2])
 			return self.SetValue(col)
 		else:

@@ -31,30 +31,54 @@ __author__ = "BioImageXD Project"
 __version__ = "$Revision: 1.9 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
-import DataUnit
-
 import scripting as bxd
-import PreviewFrame
+from GUI.PreviewFrame.SectionsPanel import SectionsPanel
 from Visualizer.VisualizationMode import VisualizationMode
 
-def getName():return "sections"
-def isDefaultMode(): return 0    
-def showInfoWindow(): return 1
-def showFileTree(): return 1
-def showSeparator(): return (0, 0)
-def getToolbarPos(): return 3
+def getName():
+	return "sections"
 
+def isDefaultMode():
+	return 0    
 
-def getIcon(): return "view_sections.jpg"
-def getShortDesc(): return "Orthographic view"
-def getDesc(): return "Display three orthographic sections of the dataset"    
-def getClass():return SectionsMode
-def getImmediateRendering(): return False
-def getConfigPanel(): return None
-def getRenderingDelay(): return 500
-def showZoomToolbar(): return True    
+def showInfoWindow():
+	return 1
+
+def showFileTree():
+	return 1
+
+def showSeparator():
+	return (0, 0)
+
+def getToolbarPos():
+	return 3
+
+def getIcon():
+	return "view_sections.jpg"
+
+def getShortDesc():
+	return "Orthographic view"
+
+def getDesc():
+	return "Display three orthographic sections of the dataset"    
+
+def getClass():
+	return SectionsMode
+
+def getImmediateRendering():
+	return False
+
+def getConfigPanel():
+	return None
+
+def getRenderingDelay():
+	return 500
+
+def showZoomToolbar():
+	return True    
 		
 class SectionsMode(VisualizationMode):
+
 	def __init__(self, parent, visualizer):
 		"""
 		Created: 24.05.2005, KP
@@ -97,6 +121,6 @@ class SectionsMode(VisualizationMode):
 
 		if not self.sectionsPanel:
 			x, y = self.visualizer.visWin.GetSize()
-			self.sectionsPanel = PreviewFrame.SectionsPanel(self.parent, self.visualizer, size = (x, y))
+			self.sectionsPanel = SectionsPanel(self.parent, self.visualizer, size = (x, y))
 			self.iactivePanel = self.sectionsPanel
 		return self.sectionsPanel

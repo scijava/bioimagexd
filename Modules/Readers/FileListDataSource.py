@@ -3,12 +3,13 @@
  Unit: FileListDataSource
  Project: BioImageXD
  Created: 29.03.2006, KP
- Description: A datasource for a list of given files as a time series, dependent on the given number of slices in a stack
+ Description: A datasource for a list of given files as a time series,
+				dependent on the given number of slices in a stack
 
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
 
- This program is free software; you can redistribute it and/or modify
+ This program is free software; you can redistribute it and / or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation; either version 2 of the License, or
  (at your option) any later version.
@@ -20,31 +21,27 @@
 
  You should have received a copy of the GNU General Public License
  along with this program; if not, write to the Free Software
- Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111 - 1307  USA
 """
 
-__author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
+__author__ = "BioImageXD Project < http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.37 $"
-__date__ = "$Date: 2005/01/13 13:42:03 $"
+__date__ = "$Date: 2005 / 01 / 13 13:42:03 $"
 
-import ConfigParser
-import struct
-import re
+from lib.DataSource.DataSource import DataSource
 import Image
-import messenger
-
-import codecs
-		
-
+import Logging
 import os.path
-from DataSource import *
-import DataUnit
-import Dialogs
-import glob
+import vtk
 
-def getExtensions(): return []
-def getFileType(): return "filelist"
-def getClass(): return FileListDataSource    
+def getExtensions(): 
+	return []
+
+def getFileType(): 
+	return "filelist"
+
+def getClass(): 
+	return FileListDataSource	 
 	
 
 class FileListDataSource(DataSource):
@@ -59,7 +56,8 @@ class FileListDataSource(DataSource):
 		"""    
 		DataSource.__init__(self)
 		self.name = "Import"
-		self.extMapping = {"tif": "TIFF", "tiff": "TIFF", "png": "PNG", "jpg": "JPEG", "jpeg": "JPEG", "pnm": "PNM", "vti": "XMLImageData", "vtk": "DataSet", "bmp": "BMP"}
+		self.extMapping = {"tif": "TIFF", "tiff": "TIFF", "png": "PNG", "jpg": "JPEG", "jpeg": "JPEG", \
+							"pnm": "PNM", "vti": "XMLImageData", "vtk": "DataSet", "bmp": "BMP"}
 		self.dimMapping = {"bmp":2, "tif":2, "tiff":2, "png":2, "jpg":2, "jpeg":2, "pnm":2, "vti":3, "vtk":3}
 		
 		self.callback = callback
@@ -80,7 +78,8 @@ class FileListDataSource(DataSource):
 		self.readers = []
 		self.slicesPerTimepoint = 1
 		self.is3D = 0
-		
+		#self.filename = None	17.7.07, MB
+	
 	def setColorTransferFunction(self, ctf):
 		"""
 		Created: 04.06.2007, KP
@@ -111,12 +110,13 @@ class FileListDataSource(DataSource):
 		if pattern != -1:
 			self.pattern = pattern
 		if not self.dimensions:
-			
 			self.retrieveImageInfo(filenames[0])
 		self.filenames = filenames
 		self.numberOfImages = len(filenames)
 		if not self.checkImageDimensions(filenames):
-			raise Logging.GUIError("Image dimensions do not match", "Some of the selected files have differing dimensions, and cannot be imported into the same dataset.")        
+			raise Logging.GUIError("Image dimensions do not match", \
+									"Some of the selected files have differing dimensions, \
+									and cannot be imported into the same dataset.")		 
 		self.getReadersFromFilenames()
 				
 		
@@ -132,13 +132,14 @@ class FileListDataSource(DataSource):
 				i = Image.open(file)
 			except IOError, ex:
 				raise Logging.GUIError("Cannot open image file", "Cannot open image file %s" % file)
+
 			self.imageDims[file] = i.size
 			if s and i.size != s:
 				x0, y0 = s
 				x1, y1 = i.size
 				return 0
-			s = i.size        
-			fn = file        
+			s = i.size		  
+			fn = file		 
 		return 1
 		
 	def getReaderByExtension(self, ext, isRGB = 0):
@@ -155,7 +156,7 @@ class FileListDataSource(DataSource):
 		self.rdrstr = "vtk.vtk%sReader()" % mpr
 		rdr = eval(self.rdrstr)
 		if ext == "bmp":
-			rdr.Allow8BitBMPOn()                
+			rdr.Allow8BitBMPOn()				
 		if mpr == "ExtTIFF" and not isRGB:
 			rdr.RawModeOn()
 		
@@ -165,11 +166,11 @@ class FileListDataSource(DataSource):
 		"""
 		Created: 07.05.2007, KP
 		Description: create the reader list from a given set of file names and parameters
-		"""        
+		"""		   
 		self.z = int(self.slicesPerTimepoint)
 
 		assert self.z > 0, "Number of slices per timepoint is greater than 0"
-#        assert self.z <= len(self.filenames),"Number of timepoints %d cannot exceed number of files given %d"%(self.z, len(self.filenames))
+		#assert self.z <= len(self.filenames), "Number of timepoints cannot exceed number of files given"	17.7.07, merging, MB
 
 		for i in self.readers:
 			del i
@@ -177,9 +178,11 @@ class FileListDataSource(DataSource):
 		
 
 		if not self.filenames:
-			raise Logging.GUIError("No files could be found", "For some reason, no files were listed to be imported.")        
+			raise Logging.GUIError("No files could be found", \
+									"For some reason, no files were listed to be imported.")		 
 					
 		files = self.filenames
+		print "Determining readers from ", self.filenames
 		
 		isRGB = 1
 		ext = files[0].split(".")[-1].lower()
@@ -187,10 +190,10 @@ class FileListDataSource(DataSource):
 		if ext in ["tif", "tiff"]:
 			tiffimg = Image.open(files[0])
 			if tiffimg.palette:
-				print files[0], "HAS PALETTE, THEREFORE NOT RGB"
+				print "HAS PALETTE, THEREFORE NOT RGB"
 				isRGB = 0
 			else:
-				print files[0], "NO PALETTE, IS AN RGB IMAGE"
+				print "NO PALETTE, IS AN RGB IMAGE"
 		rdr = self.getReaderByExtension(ext, isRGB)
 				
 		dirn = os.path.dirname(files[0])
@@ -203,17 +206,18 @@ class FileListDataSource(DataSource):
 		
 		if dim == 3:
 			totalFiles = len(files)
-			for i, file in enumerate(files):                       
+			for i, file in enumerate(files):						  
 				# This is not required for VTK dataset readers, so 
 				# we ignore any errors 0
 				Logging.info("Reading ", file, kw = "io")
 				rdr.SetFileName(file)
-				if mpr == "ExtTIFF" and not isRGB:
-					rdr.RawModeOn()
+				#TODO: mpr doesnt exist, commented following two lines (05.07.2007 SS):
+				#if mpr == "ExtTIFF" and not isRGB:
+					#rdr.RawModeOn()
 				self.readers.append(rdr)
 			   
 				#self.callback(i,"Reading dataset %d / %d"%(i+1,totalFiles))
-#                self.writeData(outname,data,i,len(files))
+#				 self.writeData(outname,data,i,len(files))
 		else:
 			totalFiles = len(files) / self.z
 
@@ -235,11 +239,11 @@ class FileListDataSource(DataSource):
 				# using  slicesPerTimepoint slices per timepoint
 				ntps = len(files) / self.slicesPerTimepoint
 				filelst = files[:]
-				dirn 
+				# dirn #TODO: what was this?
 				for tp in range(0, ntps):
 					rdr = self.getReaderByExtension(ext, isRGB)
 					arr = vtk.vtkStringArray()
-					for i in range(0, self.slicesPerTimepoint):                                        
+					for i in range(0, self.slicesPerTimepoint):										   
 						arr.InsertNextValue(filelst[0])
 						filelst = filelst[1:]
 					
@@ -251,7 +255,8 @@ class FileListDataSource(DataSource):
 					self.readers.append(rdr)
 			
 				#print "FOO"
-				#Dialogs.showerror(self,"You are trying to import multiple files but have not defined a proper pattern for the files to be imported","Bad pattern")
+				#Dialogs.showerror(self,"You are trying to import multiple files but have not defined \
+				#					a proper pattern for the files to be imported","Bad pattern")
 				return
 			elif n == 0:
 				# If no pattern % and only one file
@@ -270,7 +275,7 @@ class FileListDataSource(DataSource):
 				j = 0
 				Logging.info("self.z=%d", self.z, kw = "io")
 				start = 0
-				for i in range(0, imgAmnt):                    
+				for i in range(0, imgAmnt):					  
 					file = dirn + os.path.sep + pattern % i
 					if os.path.exists(file):
 						start = i
@@ -331,58 +336,60 @@ class FileListDataSource(DataSource):
 		"""
 		return int(self.numberOfImages / self.slicesPerTimepoint)
 		
-		
-	def getFileName(self):
-		"""
-		Created: 21.07.2005
-		Description: Return the file name
-		"""    
-		return self.filename
+# Commented this out because "filename" seems not to be used anymore
+#		
+#	def getFileName(self):
+#		"""
+#		Created: 21.07.2005
+#		Description: Return the file name
+#		"""    
+#		return self.filename
 		
 	def getDataSet(self, i, raw = 0):
 		"""
 		Created: 12.04.2005, KP
 		Description: Returns the DataSet at the specified index
-		Parameters:   i       The index
+		Parameters:   i		  The index
 		"""
 		data = self.getTimepoint(i)
-#         if self.explicitScale 
-#         if not self.shift:
-#             self.shift=vtk.vtkImageShiftScale()
-#             self.shift.SetOutputScalarTypeToUnsignedChar()
-#         self.shift.SetInput(data)
-#             
-#         x0,x1=data.GetScalarRange()
-#         print "Scalar range=",x0,x1
-#         if not x1:
-#             x1=1
-#         scale=255.0/x1
-#         
-#         if scale:
-#             self.shift.SetScale(scale)
-#         self.shift.Update()
-#         data=self.shift.GetOutput()
-#         data.ReleaseDataFlagOff()
+		data = self.getResampledData(data, i)
+		if not self.shift:
+			self.shift = vtk.vtkImageShiftScale()
+			self.shift.SetOutputScalarTypeToUnsignedChar()
+		self.shift.SetInput(data)
+			
+		x0, x1 = data.GetScalarRange()
+		print "Scalar range=", x0, x1
+		if not x1:
+			x1 = 1
+		scale = 255.0 / x1
+		
+		if scale:
+			self.shift.SetScale(scale)
+		self.shift.Update()
+		data = self.shift.GetOutput()
+		data.ReleaseDataFlagOff()
 		return data
 		
 	def retrieveImageInfo(self, filename):
 		"""
 		Created: 21.04.2005, KP
 		Description: A method that reads information from an image
-		"""        
+		"""		   
 		assert filename, "Filename must be defined"
-		assert os.path.exists(filename), "File that we're retrieving information from (%s) needs to exist, but doesn't." % filename
+		assert os.path.exists(filename), "File that we're retrieving information \
+										from (%s) needs to exist, but doesn't." % filename
 		ext  = filename.split(".")[-1].lower()
-		print "Retrieving image info with ext", ext
+		print "Retrieving image info with ext", ext	#svn-1037, 17.7.07, MB
 		rdr = self.getReaderByExtension(ext)
 		
 		if ext == "bmp":
 			rdr.Allow8BitBMPOn()
 		
-		print "filename=", filename
+		print "filename=", filename		#svn-1037, 17.7.07, MB
 		rdr.SetFileName(filename)
-		rdr.UpdateInformation()
-		print rdr
+		rdr.UpdateInformation()			#svn-1037, 17.7.07, MB
+		print rdr				#svn-1037, 17.7.07, MB
 		rdr.Update()
 		data = rdr.GetOutput()
 		self.x, self.y, z = data.GetDimensions()
@@ -396,12 +403,13 @@ class FileListDataSource(DataSource):
 		"""
 		Created: 16.02.2006, KP
 		Description: Return the nth timepoint
-		"""        
+		"""		   
 		if not self.readers:
 			self.getReadersFromFilenames()
 			
 		if n >= len(self.readers):
-			raise Logging.GUIError("Attempt to read bad timepoint", "Timepoint %d is not defined by the given filenames" % n)
+			raise Logging.GUIError("Attempt to read bad timepoint", \
+									"Timepoint %d is not defined by the given filenames" % n)
 			#print "TRYING TO GET TIMEPOINT",n,"THERE ARE ",len(self.readers),"readers"
 			n = 0
 			
@@ -418,14 +426,35 @@ class FileListDataSource(DataSource):
 
 		if onlyDims:
 			return 
-		return data        
+		return data		   
+	
+
+#svn-1037, 17.7.07, MB
+
 	def getDimensions(self):
 		"""
 		Created: 12.04.2005, KP
-		Description: Returns the (x,y,z) dimensions of the datasets this 
-					 dataunit contains
+		Description: Returns the (x,y,z) dimensions of the datasets this
+		dataunit contains
 		"""
 		return (self.x, self.y, self.z)
+
+
+#Look above, 17.7.07, MB
+
+
+#	def getDimensions(self):
+#		"""
+#		Created: 12.04.2005, KP
+#		Description: Returns the (x, y, z) dimensions of the datasets this 
+#					 dataunit contains
+#		"""
+#		if self.resampleDims:
+#			return self.resampleDims
+#		if not self.dimensions:			   
+#			self.getVoxelSize()
+#			#print "Got dimensions=",self.dimensions				
+#		return self.dimensions
 
 		
 	def getSpacing(self):
@@ -454,13 +483,13 @@ class FileListDataSource(DataSource):
 		"""
 		self.voxelsize = vxs
 		a, b, c = vxs
-		self.spacing = [1, b / a, c / a]        
+		self.spacing = [1, b / a, c / a]		
 			
 			
 	def loadFromFile(self, filename):
 		"""
 		Created: 12.04.2005, KP
-		Description: Loads the specified .oif-file and imports data from it.
+		Description: Loads the specified .oif - file and imports data from it.
 		"""
 		return []
 		

@@ -12,7 +12,7 @@
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
 
- This program is free software; you can redistribute it and/or modify
+ This program is free software; you can redistribute it and / or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation; either version 2 of the License, or
  (at your option) any later version.
@@ -31,19 +31,8 @@ __version__ = "$Revision: 1.9 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 import wx
+import lib.messenger
 
-import vtk
-import messenger
-
-from VisualizationModules  import *
-import ColorTransferEditor
-import Dialogs
-import  wx.lib.scrolledpanel as scrolled
-
-
-
-		   
-		
 class ModuleConfigurationPanel(wx.ScrolledWindow):
 	"""
 	Created: 23.05.2005, KP
@@ -55,7 +44,7 @@ class ModuleConfigurationPanel(wx.ScrolledWindow):
 		Description: Initialization
 		"""
 		#scrolled.ScrolledPanel.__init__(self,parent.parent,-1)
-		if "mode "in kws:
+		if "mode" in kws:
 			self.mode = kws["mode"]
 			del kws["mode"]
 		wx.ScrolledWindow.__init__(self, parent, -1, **kws)
@@ -68,8 +57,6 @@ class ModuleConfigurationPanel(wx.ScrolledWindow):
 		self.applyButton = wx.Button(self, -1, "Apply")
 		
 		self.applyButton.Bind(wx.EVT_BUTTON, self.onApply)
-		
-		
 		self.buttonBox.Add(self.applyButton)
 		
 		self.contentSizer = wx.GridBagSizer()
@@ -110,11 +97,11 @@ class ModuleConfigurationPanel(wx.ScrolledWindow):
 		self.sizer.Add(self.lightBoxSizer, (2, 0))
 		
 		self.line = wx.StaticLine(self, -1)
-		self.sizer.Add(self.line, (3, 0), flag = wx.EXPAND | wx.LEFT | wx.RIGHT)
+		self.sizer.Add(self.line, (3, 0), flag = wx.EXPAND|wx.LEFT|wx.RIGHT)
 		self.sizer.Add(self.buttonBox, (4, 0))
 		
 		self.sizer.Show(self.lightBoxSizer, 0)
-		
+		self.module = None
 		
 		self.initializeGUI()
 		self.findModule()
@@ -123,21 +110,21 @@ class ModuleConfigurationPanel(wx.ScrolledWindow):
 		self.SetAutoLayout(1)
 		self.sizer.Fit(self)
 		
-		
-		messenger.connect(None, "update_module_settings", self.updateModuleSettings)
+		lib.messenger.connect(None, "update_module_settings", self.updateModuleSettings)
 
 	def updateModuleSettings(self, obj, evt, *args):
 		"""
 		Created: 02.08.2005, KP
 		Description: Signal for updating the module settings
-		"""     
+		"""		
 		if self.module:
 			self.setModule(self.module)
+
 	def onMaterial(self, event):
 		"""
 		Created: 23.05.2005, KP
 		Description: Toggle material configuration
-		"""     
+		"""		
 		val = self.toggleBtn.GetValue()
 		
 		self.sizer.Show(self.lightBoxSizer, val)
@@ -150,7 +137,7 @@ class ModuleConfigurationPanel(wx.ScrolledWindow):
 		"""
 		Created: 16.05.2005, KP
 		Description: Apply the changes
-		"""     
+		"""		
 		try:
 			ambient = float(self.ambientEdit.GetValue())
 			diffuse = float(self.diffuseEdit.GetValue())
@@ -160,12 +147,11 @@ class ModuleConfigurationPanel(wx.ScrolledWindow):
 			return
 		self.module.setProperties(ambient, diffuse, specular, specularpwr)
 		
-		
 	def findModule(self):
 		"""
 		Created: 28.04.2005, KP
 		Description: Refresh the modules affected by this configuration
-		"""     
+		"""		
 		modules = self.visualizer.getCurrentMode().getModules()
 		for module in modules:
 			if module.getName() == self.name:
@@ -179,4 +165,3 @@ class ModuleConfigurationPanel(wx.ScrolledWindow):
 		Description: Set the module to be configured
 		"""  
 		self.module = module
-

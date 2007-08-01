@@ -30,30 +30,25 @@ __author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.42 $"
 __date__ = "$Date: 2005/01/13 14:52:39 $"
 
+import scripting as bxd
+import ConfigParser
+import GUI.Dialogs
+import GUI.FilterBasedTaskPanel
+import glob 
+import lib.Command
+import lib.ImageOperations
+import lib.messenger
+
+#import Modules.Task.Manipulation.ManipulationFilters as ManipulationFilters
+import ManipulationFilters
+import os.path
+import GUI.PreviewFrame
+import types
+import GUI.UIElements
+import vtk
 import wx
 
-import os.path
-import Dialogs
-
-from PreviewFrame import *
-from Logging import *
-
-import sys
-import time
-import glob 
-
-#import FilterBasedTaskPanel
-from GUI import FilterBasedTaskPanel
-import UIElements
-import string
-import scripting as bxd
-import types
-import Command
-import ConfigParser
-
-import ManipulationFilters
-
-class ManipulationPanel(FilterBasedTaskPanel.FilterBasedTaskPanel):
+class ManipulationPanel(GUI.FilterBasedTaskPanel.FilterBasedTaskPanel):
 	"""
 	Created: 03.11.2004, KP
 	Description: A window for restoring a single dataunit
@@ -68,7 +63,7 @@ class ManipulationPanel(FilterBasedTaskPanel.FilterBasedTaskPanel):
 		self.timePoint = 0
 		self.operationName = "Process"
 		self.filtersModule = ManipulationFilters
-		FilterBasedTaskPanel.FilterBasedTaskPanel.__init__(self, parent, tb, wantNotebook  = 0)
+		GUI.FilterBasedTaskPanel.FilterBasedTaskPanel.__init__(self, parent, tb, wantNotebook  = 0)
 		# Preview has to be generated here
 		# self.colorChooser=None
 		self.timePoint = 0
@@ -94,7 +89,7 @@ class ManipulationPanel(FilterBasedTaskPanel.FilterBasedTaskPanel):
 		self.mainsizer.Layout()
 		self.mainsizer.Fit(self)
 		
-		messenger.connect(None, "timepoint_changed", self.updateTimepoint)
+		lib.messenger.connect(None, "timepoint_changed", self.updateTimepoint)
 		
 	def updateTimepoint(self, obj, event, timePoint):
 		"""
@@ -134,9 +129,9 @@ class ManipulationPanel(FilterBasedTaskPanel.FilterBasedTaskPanel):
 		Description: Creates a button box containing the buttons Render,
 					 Preview and Close
 		"""
-		FilterBasedTaskPanel.FilterBasedTaskPanel.createButtonBox(self)
+		GUI.FilterBasedTaskPanel.FilterBasedTaskPanel.createButtonBox(self)
 				
-		messenger.connect(None, "process_dataset", self.doProcessingCallback)        
+		lib.messenger.connect(None, "process_dataset", self.doProcessingCallback)        
 
 	def createOptionsFrame(self):
 		"""
@@ -144,7 +139,7 @@ class ManipulationPanel(FilterBasedTaskPanel.FilterBasedTaskPanel):
 		Description: Creates a frame that contains the various widgets
 					 used to control the colocalization settings
 		"""
-		FilterBasedTaskPanel.FilterBasedTaskPanel.createOptionsFrame(self)
+		GUI.FilterBasedTaskPanel.FilterBasedTaskPanel.createOptionsFrame(self)
 		#self.panel=wx.Panel(self.settingsNotebook,-1)
 		self.panel = wx.Panel(self, -1)
 		self.panelsizer = wx.GridBagSizer()
@@ -163,17 +158,25 @@ class ManipulationPanel(FilterBasedTaskPanel.FilterBasedTaskPanel):
 		
 		self.presetBtn = wx.Button(self.panel, -1, u"Presets \u00BB")
 
-		from ManipulationFilters import FILTERING, FEATUREDETECTION, MATH, LOGIC, SEGMENTATION, WATERSHED, REGION_GROWING, MEASUREMENT, TRACKING, REGISTRATION       
-		f = lambda evt, btn = self.addFilteringBtn, cats = (FILTERING, FEATUREDETECTION): self.onShowAddMenu(evt, btn, cats)
+		f = lambda evt, btn = self.addFilteringBtn, \
+					cats = (ManipulationFilters.FILTERING, ManipulationFilters.FEATUREDETECTION): \
+					self.onShowAddMenu(evt, btn, cats)
 		self.addFilteringBtn.Bind(wx.EVT_LEFT_DOWN, f)
 		
-		f = lambda evt, btn = self.addArithmeticsBtn, cats = (MATH, LOGIC): self.onShowAddMenu(evt, btn, cats)
+		f = lambda evt, btn = self.addArithmeticsBtn, \
+					cats = (ManipulationFilters.MATH, ManipulationFilters.LOGIC): \
+					self.onShowAddMenu(evt, btn, cats)
 		self.addArithmeticsBtn.Bind(wx.EVT_LEFT_DOWN, f)
 		
-		f = lambda evt, btn = self.addSegmentationBtn, cats = (SEGMENTATION, REGION_GROWING, WATERSHED, MEASUREMENT, REGISTRATION): self.onShowAddMenu(evt, btn, cats)
+		f = lambda evt, btn = self.addSegmentationBtn, \
+					cats = (ManipulationFilters.SEGMENTATION, ManipulationFilters.REGION_GROWING, \
+							ManipulationFilters.WATERSHED, ManipulationFilters.MEASUREMENT, \
+							ManipulationFilters.REGISTRATION): \
+					self.onShowAddMenu(evt, btn, cats)
 		self.addSegmentationBtn.Bind(wx.EVT_LEFT_DOWN, f)
 		
-		f = lambda evt, btn = self.addTrackingBtn, cats = (TRACKING, ): self.onShowAddMenu(evt, btn, cats)        
+		f = lambda evt, btn = self.addTrackingBtn, cats = (ManipulationFilters.TRACKING, ): \
+					self.onShowAddMenu(evt, btn, cats)        
 		self.addTrackingBtn.Bind(wx.EVT_LEFT_DOWN, f)
 		
 		self.presetBtn.Bind(wx.EVT_LEFT_DOWN, self.onShowPresetsMenu)
@@ -252,11 +255,11 @@ class ManipulationPanel(FilterBasedTaskPanel.FilterBasedTaskPanel):
 		"""
 		index = self.filterListbox.GetSelection()
 		if index == -1:
-			Dialogs.showerror(self, "You have to select a filter to be moved", "No filter selected")
+			GUI.Dialogs.showerror(self, "You have to select a filter to be moved", "No filter selected")
 			return 
 		n = self.filterListbox.GetCount()
 		if index == n - 1:
-			Dialogs.showerror(self, "Cannot move last filter down", "Cannot move filter")
+			GUI.Dialogs.showerror(self, "Cannot move last filter down", "Cannot move filter")
 			return
 			
 		lbl = self.filterListbox.GetString(index)
@@ -275,10 +278,10 @@ class ManipulationPanel(FilterBasedTaskPanel.FilterBasedTaskPanel):
 		"""
 		index = self.filterListbox.GetSelection()
 		if index == -1:
-			Dialogs.showerror(self, "You have to select a filter to be moved", "No filter selected")
+			GUI.Dialogs.showerror(self, "You have to select a filter to be moved", "No filter selected")
 			return        
 		if index == 0:
-			Dialogs.showerror(self, "Cannot move first filter up", "Cannot move filter")
+			GUI.Dialogs.showerror(self, "Cannot move first filter up", "Cannot move filter")
 			return
 			
 		lbl = self.filterListbox.GetString(index)
@@ -297,12 +300,13 @@ class ManipulationPanel(FilterBasedTaskPanel.FilterBasedTaskPanel):
 		"""
 		index = self.filterListbox.GetSelection()
 		if index == -1:
-			Dialogs.showerror(self, "You have to select a filter to be removed", "No filter selected")
+			GUI.Dialogs.showerror(self, "You have to select a filter to be removed", "No filter selected")
 			return 
 		name = self.filters[index].getName()
 		undo_cmd = ""
 		do_cmd = "bxd.mainWindow.tasks['Process'].deleteFilter(index=%d, name='%s')" % (index, name)
-		cmd = Command.Command(Command.GUI_CMD, None, None, do_cmd, undo_cmd, desc = "Remove filter '%s'" % (name))
+		cmd = lib.Command.Command(lib.Command.GUI_CMD, None, None, do_cmd, undo_cmd, \
+									desc = "Remove filter '%s'" % (name))
 		cmd.run()
 			
 
@@ -318,12 +322,15 @@ class ManipulationPanel(FilterBasedTaskPanel.FilterBasedTaskPanel):
 		status = self.filterListbox.IsChecked(index)
 #        print "\nSETTING FILTER",name,"to",status
 		cmd = "Enable"
-		if not status:cmd = "Disable"
-		undo_cmd = "bxd.mainWindow.tasks['Process'].setFilter(%s, index=%d, name='%s')" % (str(status), index, name)
-		do_cmd = "bxd.mainWindow.tasks['Process'].setFilter(%s, index=%d, name='%s')" % (str(status), index, name)
+		if not status:
+			cmd = "Disable"
+		undo_cmd = "bxd.mainWindow.tasks['Process'].setFilter(%s, index=%d, name='%s')" \
+					% (str(status), index, name)
+		do_cmd = "bxd.mainWindow.tasks['Process'].setFilter(%s, index=%d, name='%s')" \
+					% (str(status), index, name)
 		descstr  = "%s filter '%s'" % (cmd, name)
 				
-		cmd = Command.Command(Command.GUI_CMD, None, None, do_cmd,
+		cmd = lib.Command.Command(lib.Command.GUI_CMD, None, None, do_cmd,
 		undo_cmd, None, descstr)
 		cmd.run()
 		
@@ -339,7 +346,8 @@ class ManipulationPanel(FilterBasedTaskPanel.FilterBasedTaskPanel):
 				if i.getName() == name:
 					index = i
 					break
-		if index == -1:return False
+		if index == -1:
+			return False
 		self.filters[index].setEnabled(status)
 		self.setModified(1)
 		
@@ -377,14 +385,10 @@ class ManipulationPanel(FilterBasedTaskPanel.FilterBasedTaskPanel):
 		
 		self.panel.Layout()
 		self.panelsizer.Fit(self.panel)
-		
 
 		self.Layout()
-
 		#self.panelsizer.RecalcSizes()
 		self.FitInside()
-		
-		
 		
 	def loadFilter(self, className):
 		"""
@@ -405,7 +409,8 @@ class ManipulationPanel(FilterBasedTaskPanel.FilterBasedTaskPanel):
 				if i.getName() == name:
 					index = i
 					break
-		if index == -1:return False
+		if index == -1:
+			return False
 			
 		self.filterListbox.Delete(index)
 		self.filters[index].onRemove()
@@ -454,7 +459,8 @@ class ManipulationPanel(FilterBasedTaskPanel.FilterBasedTaskPanel):
 				fileItem = wx.MenuItem(self.presetMenu, fileId, name)
 				do_cmd = "bxd.mainWindow.tasks['Process'].loadPreset('%s')" % file
 			   
-				cmd = Command.Command(Command.GUI_CMD, None, None, do_cmd, "", desc = "Load preset %s" % name)
+				cmd = lib.Command.Command(lib.Command.GUI_CMD, None, None, do_cmd, "", \
+											desc = "Load preset %s" % name)
 				f = lambda evt, c = cmd: c.run()
 				self.Bind(wx.EVT_MENU, f, id = fileId)
 				self.presetMenu.AppendItem(fileItem)
@@ -490,7 +496,8 @@ class ManipulationPanel(FilterBasedTaskPanel.FilterBasedTaskPanel):
 		if dlg.ShowModal() == wx.ID_OK:
 			name = dlg.GetValue()
 			do_cmd = "bxd.mainWindow.tasks['Process'].saveAsPreset('%s')" % name
-			cmd = Command.Command(Command.GUI_CMD, None, None, do_cmd, "", desc = "Save procedure list as preset %s" % name)
+			cmd = lib.Command.Command(lib.Command.GUI_CMD, None, None, do_cmd, "", \
+										desc = "Save procedure list as preset %s" % name)
 			cmd.run()
 			del self.presetMenu
 			self.presetMenu = None
@@ -522,7 +529,8 @@ class ManipulationPanel(FilterBasedTaskPanel.FilterBasedTaskPanel):
 					n = len(self.filters)
 					undo_cmd = "bxd.mainWindow.tasks['Process'].deleteFilter(index=%d, name = '%s')" % (n, name)
 					do_cmd = "bxd.mainWindow.tasks['Process'].loadFilter('%s')" % name
-					cmd = Command.Command(Command.GUI_CMD, None, None, do_cmd, undo_cmd, desc = "Load filter %s" % name)
+					cmd = lib.Command.Command(lib.Command.GUI_CMD, None, None, do_cmd, undo_cmd, \
+												desc = "Load filter %s" % name)
 					
 					f = lambda evt, c = cmd: c.run()
 					self.Bind(wx.EVT_MENU, f, id = menuid)
@@ -597,7 +605,7 @@ class ManipulationPanel(FilterBasedTaskPanel.FilterBasedTaskPanel):
 		Description: A callback for the button "Manipulation Dataset Series"
 		"""
 		self.updateFilterData()
-		FilterBasedTaskPanel.FilterBasedTaskPanel.doOperation(self)
+		GUI.FilterBasedTaskPanel.FilterBasedTaskPanel.doOperation(self)
 
 	def doPreviewCallback(self, event = None, *args):
 		"""
@@ -606,7 +614,7 @@ class ManipulationPanel(FilterBasedTaskPanel.FilterBasedTaskPanel):
 					 that wish to update the preview
 		"""
 		self.updateFilterData()
-		FilterBasedTaskPanel.FilterBasedTaskPanel.doPreviewCallback(self, event)
+		GUI.FilterBasedTaskPanel.FilterBasedTaskPanel.doPreviewCallback(self, event)
 
 	def createItemToolbar(self):
 		"""
@@ -615,7 +623,7 @@ class ManipulationPanel(FilterBasedTaskPanel.FilterBasedTaskPanel):
 		"""      
 		# Pass flag force which indicates that we do want an item toolbar
 		# although we only have one input channel
-		n = FilterBasedTaskPanel.FilterBasedTaskPanel.createItemToolbar(self, force = 1)
+		n = GUI.FilterBasedTaskPanel.FilterBasedTaskPanel.createItemToolbar(self, force = 1)
 		for i, tid in enumerate(self.toolIds):
 			self.dataUnit.setOutputChannel(i, 0)
 			self.toolMgr.toggleTool(tid, 0)
@@ -624,14 +632,14 @@ class ManipulationPanel(FilterBasedTaskPanel.FilterBasedTaskPanel):
 		ctf = vtk.vtkColorTransferFunction()
 		ctf.AddRGBPoint(0, 0, 0, 0)
 		ctf.AddRGBPoint(255, 1, 1, 1)
-		#imagedata=ImageOperations.getMIP(self.dataUnit.getSourceDataUnits()[0].getTimepoint(0),ctf)
+		#imagedata=lib.ImageOperations.getMIP(self.dataUnit.getSourceDataUnits()[0].getTimepoint(0),ctf)
 		imagedata = self.itemMips[0]
 		
 		
 		ctf = vtk.vtkColorTransferFunction()
 		ctf.AddRGBPoint(0, 0, 0, 0)
 		ctf.AddRGBPoint(255, 1, 1, 1)
-		#imagedata=ImageOperations.getMIP(coloc.GetOutput(),ctf)
+		#imagedata=lib.ImageOperations.getMIP(coloc.GetOutput(),ctf)
 		maptocolor = vtk.vtkImageMapToColors()
 		maptocolor.SetInput(imagedata)
 		maptocolor.SetLookupTable(ctf)
@@ -639,7 +647,7 @@ class ManipulationPanel(FilterBasedTaskPanel.FilterBasedTaskPanel):
 		maptocolor.Update()
 		imagedata = maptocolor.GetOutput()
 		
-		bmp = ImageOperations.vtkImageDataToWxImage(imagedata).ConvertToBitmap()
+		bmp = lib.ImageOperations.vtkImageDataToWxImage(imagedata).ConvertToBitmap()
 #        bmp=bmp.Rescale(30,30).ConvertToBitmap()
 		bmp = self.getChannelItemBitmap(bmp, (255, 255, 255))
 		toolid = wx.NewId()
@@ -654,9 +662,9 @@ class ManipulationPanel(FilterBasedTaskPanel.FilterBasedTaskPanel):
 	def setCombinedDataUnit(self, dataUnit):
 		"""
 		Created: 23.11.2004, KP
-		Description: Set the combined dataunit to be processed. Also initialize the output channels to be off by default
+		Description: Set the combined dataunit to be processed. Also initialize the output channels to be off by default.
 		"""
-		FilterBasedTaskPanel.FilterBasedTaskPanel.setCombinedDataUnit(self, dataUnit)
+		GUI.FilterBasedTaskPanel.FilterBasedTaskPanel.setCombinedDataUnit(self, dataUnit)
 		n = 0
 		for i, dataunit in enumerate(dataUnit.getSourceDataUnits()):
 			dataUnit.setOutputChannel(i, 0)

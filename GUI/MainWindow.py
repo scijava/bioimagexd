@@ -32,59 +32,39 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 VERSION = "0.9.0 beta"
 
-
-import os.path, os, types
-import wx
-import types
-import vtk
-import random
-import time
-import platform
-import imp
-import sys
-
-import wx.lib.buttons as buttons
-
-import messenger
-
-from ConfigParser import *
-import TreeWidget
-
-import Logging
-
-import  wx.py as py
-
-import SettingsWindow
-import ImportDialog
-import ExportDialog
-import ScriptEditor
-import BugDialog
-import UndoListBox
-
-import RenderingInterface
-import Configuration
-
-import Visualizer
-
-import InfoWidget
-import MenuManager
-
-import Dialogs
 import AboutDialog
-import RescaleDialog
-import ResampleDialog
-
-#from DataUnit import *
-
-import Command # Module for classes that implement the Command design pattern
-import Modules
-import Urmas # The animator, Unified Rendering / Animator
-import UIElements
-
-import MaskTray
-import DataSource
+import BugDialog
 import scripting as bxd
-
+import Configuration
+import ConfigParser
+import Dialogs
+import ExportDialog
+import imp
+import InfoWidget
+import lib.Command # Module for classes that implement the Command design pattern
+import lib.DataSource.BXDDataWriter
+import lib.messenger
+import Logging
+import MaskTray
+import MenuManager
+import Modules.DynamicLoader
+import os
+import os.path
+import platform
+import wx.py as py
+import random
+import ResampleDialog
+import RescaleDialog
+import ScriptEditor
+import SettingsWindow
+import sys
+import time
+import TreeWidget
+import types
+import UIElements
+import UndoListBox
+from Visualizer.Visualizer import Visualizer
+import wx
 
 class MainWindow(wx.Frame):
 	"""
@@ -96,28 +76,29 @@ class MainWindow(wx.Frame):
 		Created: 03.11.2004, KP
 		Description: Initialization
 		Parameters:
-			parent    
+			parent
 			id
-			app     LSMApplication object
+			app		LSMApplication object
 		"""
 		conf = Configuration.getConfiguration()
 		
-		Command.mainWindow = self
+		lib.Command.mainWindow = self
 		self.splash = splash
-		bxd.recorder = self.recorder = Command.ScriptRecorder()
+		bxd.recorder = self.recorder = lib.Command.ScriptRecorder()
+		
 		size = conf.getConfigItem("WindowSize", "Sizes")
 		if size:
 			size = eval(size)
 		else:
 			size = (1024, 768)
-				
+
 		wx.Frame.__init__(self, parent, -1, "BioImageXD", size = size,
 			style = wx.DEFAULT_FRAME_STYLE | wx.NO_FULL_REPAINT_ON_RESIZE)
 		self.Bind(
 			wx.EVT_SASH_DRAGGED_RANGE, self.onSashDrag,
 			id = MenuManager.ID_TREE_WIN, id2 = MenuManager.ID_INFO_WIN,
 		)
-		self.Bind(wx.EVT_MENU_RANGE, self.OnFileHistory, id = wx.ID_FILE1, id2 = wx.ID_FILE9)    
+		self.Bind(wx.EVT_MENU_RANGE, self.OnFileHistory, id = wx.ID_FILE1, id2 = wx.ID_FILE9)
 		self.Bind(wx.EVT_CLOSE, self.quitApp)
 		self.progressTimeStamp = 0
 		self.progressObject = None
@@ -160,7 +141,6 @@ class MainWindow(wx.Frame):
 		descs = []
 		self.splash.SetMessage("Initializing application...")
 		for modeclass, ign, module in self.readers.values():
-	   
 			exts = module.getExtensions()
 			wcs = ""
 			self.typeToSource[module.getFileType()] = modeclass
@@ -183,7 +163,7 @@ class MainWindow(wx.Frame):
 			self.taskToId[i] = wx.NewId()
 			
 		for i in self.visualizationModes.keys():
-				self.visToId[i] = wx.NewId()
+			self.visToId[i] = wx.NewId()
 		
 		self.splash.SetMessage("Initializing layout...")
 		self.menuManager = MenuManager.MenuManager(self, text = 0)
@@ -212,7 +192,7 @@ class MainWindow(wx.Frame):
 		self.visWin.SetAlignment(wx.LAYOUT_LEFT)
 		self.visWin.SetSashVisible(wx.SASH_RIGHT, False)
 		self.visWin.SetDefaultSize((500, 768))
-		#self.visWin=wx.Panel(self,-1,size=(500,768))
+		#self.visWin = wx.Panel(self, -1, size = (500, 768))
 		
 		# A window for the task panels
 		self.taskWin = wx.SashLayoutWindow(self, MenuManager.ID_TASK_WIN, style = wx.RAISED_BORDER | wx.SW_3D)
@@ -235,16 +215,16 @@ class MainWindow(wx.Frame):
 		self.infoWin.SetAlignment(wx.LAYOUT_RIGHT)
 		self.infoWin.SetSashVisible(wx.SASH_LEFT, True)
 		self.infoWin.SetSashBorder(wx.SASH_LEFT, True)
-		self.infoWin.SetDefaultSize((300, 768))        
+		self.infoWin.SetDefaultSize((300, 768))
 		self.infoWin.origSize = (300, 768)
-		#self.taskWin=wx.Panel(self,-1,size=(0,768))
+		#self.taskWin = wx.Panel(self, -1, size = (0, 768))
 		
 		self.infoWidget = InfoWidget.InfoWidget(self.infoWin)
 		
 		self.shellWin = wx.SashLayoutWindow(self, MenuManager.ID_SHELL_WIN, style = wx.NO_BORDER)
 		self.shellWin.SetOrientation(wx.LAYOUT_HORIZONTAL)
 		self.shellWin.SetAlignment(wx.LAYOUT_BOTTOM)
-		#self.shellWin.SetSashVisible(wx.SASH_TOP,False)
+		#self.shellWin.SetSashVisible(wx.SASH_TOP, False)
 		self.shellWin.origSize = (500, 128)
 		self.shellWin.SetDefaultSize((0, 0))
 		self.shell = None
@@ -256,21 +236,19 @@ class MainWindow(wx.Frame):
 			
 		self.SetIcon(self.icon)
 		
-		messenger.send(None, "update_progress", 0.1, "Loading BioImageXD...")        
-
+		lib.messenger.send(None, "update_progress", 0.1, "Loading BioImageXD...")
 		
 		# Create Menu, ToolBar and Tree
 		self.createStatusBar()
-		messenger.send(None, "update_progress", 0.3, "Creating menus...")        
+		lib.messenger.send(None, "update_progress", 0.3, "Creating menus...")
 		self.splash.SetMessage("Creating menus...")
 		self.createMenu()
-		messenger.send(None, "update_progress", 0.6, "Creating toolbars...")        
+		lib.messenger.send(None, "update_progress", 0.6, "Creating toolbars...")
 		self.splash.SetMessage("Creating tool bar...")
 		self.createToolBar()
- 
 		
 		self.Bind(wx.EVT_SIZE, self.OnSize)
-		messenger.send(None, "update_progress", 0.9, "Pre-loading visualization views...")        
+		lib.messenger.send(None, "update_progress", 0.9, "Pre-loading visualization views...")
 		
 		# Create the file tree
 		self.tree = TreeWidget.TreeWidget(self.treeWin)
@@ -289,19 +267,19 @@ class MainWindow(wx.Frame):
 			pass
 		self.SetSize(size)
 
-		self.Show(True)       
+		self.Show(True)
 		# Start listening for messenger signals
-		messenger.send(None, "update_progress", 1.0, "Done.") 
-		messenger.connect(None, "set_status", self.onSetStatus)
-		messenger.connect(None, "current_task", self.updateTitle)
-		messenger.connect(None, "current_file", self.updateTitle)
-		messenger.connect(None, "tree_selection_changed", self.onTreeSelectionChanged)
-		messenger.connect(None, "get_voxel_at", self.updateVoxelInfo)
-		messenger.connect(None, "load_dataunit", self.onMenuOpen)
-		messenger.connect(None, "view_help", self.onViewHelp)
-		messenger.connect(None, "delete_dataset", self.onDeleteDataset)
-		messenger.connect(None, "execute_command", self.onExecuteCommand)        
-		messenger.connect(None, "show_error", self.onShowError)
+		lib.messenger.send(None, "update_progress", 1.0, "Done.") 
+		lib.messenger.connect(None, "set_status", self.onSetStatus)
+		lib.messenger.connect(None, "current_task", self.updateTitle)
+		lib.messenger.connect(None, "current_file", self.updateTitle)
+		lib.messenger.connect(None, "tree_selection_changed", self.onTreeSelectionChanged)
+		lib.messenger.connect(None, "get_voxel_at", self.updateVoxelInfo)
+		lib.messenger.connect(None, "load_dataunit", self.onMenuOpen)
+		lib.messenger.connect(None, "view_help", self.onViewHelp)
+		lib.messenger.connect(None, "delete_dataset", self.onDeleteDataset)
+		lib.messenger.connect(None, "execute_command", self.onExecuteCommand)
+		lib.messenger.connect(None, "show_error", self.onShowError)
 		wx.CallAfter(self.showTip)
 		filelist = conf.getConfigItem("FileList", "General")
 		if filelist:
@@ -309,25 +287,22 @@ class MainWindow(wx.Frame):
 			restoreFiles = conf.getConfigItem("RestoreFiles", "General")
 			if restoreFiles and type(restoreFiles) == type(""):
 				restoreFiles = eval(restoreFiles)
-			if restoreFiles:    
+			if restoreFiles:
 				self.loadFiles(filelist, noWarn = 1)
-				
-		
+
 		reportCrash = conf.getConfigItem("ReportCrash", "General")
 		if reportCrash and type(reportCrash) == type(""):
 			reportCrash = eval(reportCrash)
 		if reportCrash and bxd.uncleanLog:
 			self.reportCrash()
 		#self.Bind(wx.EVT_WINDOW_DESTROY, self.Cleanup)
-
 		
-		lst = conf.getConfigItem("HistoryList", "General")        
+		lst = conf.getConfigItem("HistoryList", "General")
 		if lst:
 			lst = eval(lst)
 			for item in lst:
 				self.filehistory.AddFileToHistory(item)
 		#self.filehistory.AddFilesToMenu()
-
 
 	def reportCrash(self):
 		"""
@@ -337,14 +312,14 @@ class MainWindow(wx.Frame):
 		dlg = BugDialog.BugDialog(self, crashMode = 1)
 		dlg.crashModeOn(bxd.uncleanLog)
 		conf = Configuration.getConfiguration()
-		
+
 		try:
 			data = open(bxd.uncleanLog).read()
 		except:
 			return
 		dlg.setContent("User actions resulted a crash", data)
 		dlg.ShowModal()
-		
+
 	def Cleanup(self, *args):
 		"""
 		Created: 29.1.2007, KP
@@ -366,8 +341,7 @@ class MainWindow(wx.Frame):
 		path = self.filehistory.GetHistoryFile(fileNum)
 
 		self.loadFiles([path])
-		
-		
+
 	def loadScript(self, filename):
 		"""
 		Created: 17.07.2006, KP
@@ -386,16 +360,16 @@ class MainWindow(wx.Frame):
 		"""
 		Created: 17.07.2006, KP
 		Description: Load the given data files
-		"""         
+		"""
 		for file in files:
 			name = os.path.basename(file)
-			self.createDataUnit(name, file, noWarn = noWarn)            
+			self.createDataUnit(name, file, noWarn = noWarn)
 
 	def onMenuUndo(self, evt):
 		"""
 		Created: 13.02.2006, KP
 		Description: Undo a previous command
-		"""    
+		"""
 		cmd = self.menuManager.getLastCommand()
 		if cmd.canUndo():
 			cmd.undo()
@@ -406,8 +380,8 @@ class MainWindow(wx.Frame):
 		"""
 		Created: 13.02.2006, KP
 		Description: Redo a previously undo'd action
-		"""    
-		cmd = self.menuManager.getUndoedCommand()        
+		"""
+		cmd = self.menuManager.getUndoedCommand()
 		cmd.run()
 		self.menuManager.disable(MenuManager.ID_REDO)
 		self.menuManager.enable(MenuManager.ID_UNDO)
@@ -416,7 +390,7 @@ class MainWindow(wx.Frame):
 		"""
 		Created: 13.02.2006, KP
 		Description: A command was executed
-		"""    
+		"""
 		if not undo:
 			if command.canUndo():
 				undolbl = "Undo: %s...\tCtrl-Z" % command.getDesc()
@@ -431,9 +405,9 @@ class MainWindow(wx.Frame):
 		"""
 		Created: 12.08.2005, KP
 		Description: Remove a dataset from the program
-		"""        
+		"""
 		close = 0
-		Logging.info("onDeleteDataset, visualizer dataset=", self.visualizer.dataUnit, "deleted=", arg)
+		Logging.info("onDeleteDataset, visualizer dataset = ", self.visualizer.dataUnit, "deleted=", arg)
 		if self.visualizer.dataUnit == arg:
 			close = 1
 		if self.visualizer.getProcessedMode():
@@ -454,9 +428,9 @@ class MainWindow(wx.Frame):
 		"""
 		Created: 11.08.2005, KP
 		Description: Switch the datasets used by a task module
-		"""        
+		"""
 		selectedFiles = self.tree.getSelectedDataUnits()
-		messenger.send(None, "switch_datasets", selectedFiles)
+		lib.messenger.send(None, "switch_datasets", selectedFiles)
 		
 	def showTip(self):
 		"""
@@ -465,11 +439,11 @@ class MainWindow(wx.Frame):
 		"""
 		conf = Configuration.getConfiguration()
 		showTip = conf.getConfigItem("ShowTip", "General")
-		#print "showTip=",showTip
+		#print "showTip = ", showTip
 		if showTip:
 			showTip = eval(showTip)
 		tipNumber = int(conf.getConfigItem("TipNumber", "General"))
-		#print "showtip=",showTip,type(showTip)
+		#print "showtip = ", showTip, type(showTip)
 		if showTip:
 			f = open("Help/tips.txt", "r")
 			n = len(f.readlines())
@@ -501,12 +475,13 @@ class MainWindow(wx.Frame):
 			names = [x.getName() for x in dataunits[i]]
 			do_cmd += "\n" + "mainWindow.fileTree.selectChannelsByName(r'%s', %s)" % (i, str(names))
 		undo_cmd = ""
-		cmd = Command.Command(Command.MGMT_CMD, None, None, do_cmd, undo_cmd, desc = "Unselect all in file tree")
-		cmd.run(recordOnly = 1)          
+		cmd = lib.Command.Command(lib.Command.MGMT_CMD, None, None, do_cmd, \
+									undo_cmd, desc = "Unselect all in file tree")
+		cmd.run(recordOnly = 1)
 		
 		tb = self.GetToolBar()
-		if data.dataSource.getResampleDimensions() != None:            
-			tb.EnableTool(MenuManager.ID_RESAMPLING, 1)            
+		if data.dataSource.getResampleDimensions() != None:
+			tb.EnableTool(MenuManager.ID_RESAMPLING, 1)
 		else:
 			tb.EnableTool(MenuManager.ID_RESAMPLING, 0) 
 		# If no task window has been loaded, then we will update the visualizer
@@ -522,8 +497,10 @@ class MainWindow(wx.Frame):
 		Description: A method for updating the title of this window
 		"""
 		
-		if evt == "current_task":self.currentTask = data
-		elif evt == "current_file":self.currentFile = data
+		if evt == "current_task":
+			self.currentTask = data
+		elif evt == "current_file":
+			self.currentFile = data
 		lst = ["BioImageXD", self.currentTask, self.currentFile] 
 		
 		self.SetTitle(lst[0] + " - " + lst[1] + " (" + lst[2] + ")")
@@ -546,9 +523,9 @@ class MainWindow(wx.Frame):
 			#self.tree.SetSize(newsize)
 			self.treeWin.origSize = newsize
 			#self.tree.SetSize(self.treeWin.GetClientSize())
-		#elif eID == MenuManager.ID_VIS_WIN:
-		#    w,h=self.visWin.GetSize()
-		#    self.visWin.SetDefaultSize((event.GetDragRect().width,h))
+#		elif eID == MenuManager.ID_VIS_WIN:
+#		w, h = self.visWin.GetSize()
+#		self.visWin.SetDefaultSize((event.GetDragRect().width, h))
 
 		elif eID == MenuManager.ID_INFO_WIN:
 			w, h = self.infoWin.GetSize()
@@ -557,7 +534,7 @@ class MainWindow(wx.Frame):
 			self.infoWin.origSize = newsize
 		elif eID == MenuManager.ID_TASK_WIN:
 			w, h = self.taskWin.GetSize()
-			#Logging.info("Setting task window size",kw="main")
+			#Logging.info("Setting task window size", kw = "main")
 			newsize = (event.GetDragRect().width, h)
 			self.taskWin.SetDefaultSize(newsize)
 			self.taskWin.origSize = newsize
@@ -587,7 +564,7 @@ class MainWindow(wx.Frame):
 		"""
 		if window == self.currentVisualizationWindow:
 			return
-		if self.currentVisualizationWindow:     
+		if self.currentVisualizationWindow:
 			if self.currentVisualizationWindow != self.visWin:
 				Logging.info("Hiding ", self.currentVisualizationWindow, kw = "main")
 				self.currentVisualizationWindow.Show(0)
@@ -646,9 +623,9 @@ class MainWindow(wx.Frame):
 			if self.visualizer:
 				self.visualizer.in_vtk = 0
 			wx.GetApp().Yield(1)
-		else:            
+		else:
 			if self.visualizer:
-				self.visualizer.in_vtk = 1        
+				self.visualizer.in_vtk = 1
 			wx.SafeYield(None, 1)
 			
 	def updateVoxelInfo(self, obj, event, x, y, z, scalar, rval, gval, bval, r, g, b, a, ctf):
@@ -656,7 +633,7 @@ class MainWindow(wx.Frame):
 		Created: 22.07.2004, KP
 		Description: Update the voxel info in status bar
 		"""
-		#print x,y,z,r,g,b,a
+		#print x, y, z, r, g, b, a
 		z += 1
 		if scalar != 0xdeadbeef:
 			if type(scalar) == types.TupleType:
@@ -683,7 +660,7 @@ class MainWindow(wx.Frame):
 		bg = r, g, b
 		self.colorLbl.setColor(fg, bg)
 		wx.GetApp().Yield(1)
-		#wx.SafeYield()    
+		#wx.SafeYield()
 	def sortModes(self, x, y):
 		return cmp(x[2].getToolbarPos(), y[2].getToolbarPos())
 		
@@ -694,7 +671,7 @@ class MainWindow(wx.Frame):
 		"""
 		iconpath = bxd.get_icon_dir()
 		self.CreateToolBar(wx.NO_BORDER | wx.TB_HORIZONTAL)
-		tb = self.GetToolBar()            
+		tb = self.GetToolBar()
 		tb.SetToolBitmapSize((32, 32))
 		self.taskIds = []
 		self.visIds = []
@@ -704,7 +681,8 @@ class MainWindow(wx.Frame):
 		wx.EVT_TOOL(self, MenuManager.ID_OPEN, self.onMenuOpen)
 
 		bmp = wx.Image(os.path.join(iconpath, "save_snapshot.jpg"), wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
-		tb.DoAddTool(MenuManager.ID_SAVE_DATASET, "Save dataset", bmp, shortHelp = "Write the processed dataset to disk")
+		tb.DoAddTool(MenuManager.ID_SAVE_DATASET, "Save dataset", bmp, \
+						shortHelp = "Write the processed dataset to disk")
 		wx.EVT_TOOL(self, MenuManager.ID_SAVE_DATASET, self.onSaveDataset)
 
 		
@@ -716,10 +694,12 @@ class MainWindow(wx.Frame):
 		wx.EVT_TOOL(self, MenuManager.ID_SAVE_SETTINGS, self.onMenuSaveSettings)
 
 		bmp = wx.Image(os.path.join(iconpath, "camera.gif"), wx.BITMAP_TYPE_GIF).ConvertToBitmap()
-		tb.DoAddTool(MenuManager.ID_SAVE_SNAPSHOT, "Save rendered image", bmp, shortHelp = "Save a snapshot of the rendered scene")
+		tb.DoAddTool(MenuManager.ID_SAVE_SNAPSHOT, "Save rendered image", bmp, \
+						shortHelp = "Save a snapshot of the rendered scene")
 
 		bmp = wx.Image(os.path.join(iconpath, "tree.jpg"), wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
-		tb.DoAddTool(MenuManager.ID_SHOW_TREE, "File manager", bmp, kind = wx.ITEM_CHECK, shortHelp = "Show file management tree")
+		tb.DoAddTool(MenuManager.ID_SHOW_TREE, "File manager", bmp, kind = wx.ITEM_CHECK, \
+						shortHelp = "Show file management tree")
 		wx.EVT_TOOL(self, MenuManager.ID_SHOW_TREE, self.onMenuShowTree)
 		
 		#self.visIds.append(MenuManager.ID_SHOW_TREE)
@@ -756,25 +736,27 @@ class MainWindow(wx.Frame):
 			vid = self.visToId[name] 
 			
 			sepBefore, sepAfter = module.showSeparator()
-			if sepBefore: tb.AddSeparator()
+			if sepBefore:
+				tb.AddSeparator()
 			
 			tb.DoAddTool(vid, module.getShortDesc(), bmp, kind = wx.ITEM_CHECK, shortHelp = module.getDesc())
 			
-			if sepAfter: tb.AddSeparator()
+			if sepAfter:
+				tb.AddSeparator()
 			
 			wx.EVT_TOOL(self, vid, self.onMenuVisualizer)
 			self.visIds.append(vid)
 			if module.isDefaultMode():
 				tb.ToggleTool(vid, 1)
-				
+
 		
-#        tb.AddSeparator()
-		
+#		tb.AddSeparator()
 		bmp = wx.Image(os.path.join(iconpath, "help.gif"), wx.BITMAP_TYPE_GIF).ConvertToBitmap()
-
-		tb.DoAddTool(MenuManager.ID_TOOLBAR_HELP, "Help", bmp, shortHelp = "Get help for current task / visualization")
+		
+		tb.DoAddTool(MenuManager.ID_TOOLBAR_HELP, "Help", bmp, \
+						shortHelp = "Get help for current task / visualization")
 		wx.EVT_TOOL(self, MenuManager.ID_TOOLBAR_HELP, self.onToolbarHelp)
-
+		
 		self.visIds.append(MenuManager.ID_VIS_ANIMATOR)
 		tb.Realize()
 		self.menuManager.setMainToolbar(tb)
@@ -784,28 +766,30 @@ class MainWindow(wx.Frame):
 		Created: 1.11.2006, KP
 		Description: An event handler for the toolbar help button that will launch a help
 					 page that depends on what task or visualization mode the user is currently using
-					 
 		"""
 		if self.currentTaskWindow:
-			messenger.send(None, "view_help", self.currentTaskWindowName)
+			lib.messenger.send(None, "view_help", self.currentTaskWindowName)
 		else:
-			messenger.send(None, "view_help", self.currentVisualizationModeName)
+			lib.messenger.send(None, "view_help", self.currentVisualizationModeName)
 	def onSaveDataset(self, *args):
 		"""
 		Created: 24.05.2006, KP
 		Description: Process the dataset
 		"""
 		if self.currentTaskWindow:
-			do_cmd = "mainWindow.processDataset(modal=0)"
-			cmd = Command.Command(Command.VISUALIZATION_CMD, None, None, do_cmd, "", desc = "Process the dataset with the current task")
+			do_cmd = "mainWindow.processDataset(modal = 0)"
+			cmd = lib.Command.Command(lib.Command.VISUALIZATION_CMD, None, None, do_cmd, "", \
+										desc = "Process the dataset with the current task")
 			cmd.run(recordOnly = 1)
 			self.processDataset()
 		else:
-			filename = Dialogs.askSaveAsFileName(self, "Save dataset as", "output.bxd", "BioImageXD Dataset (*.bxd)|*.bxd")
+			filename = Dialogs.askSaveAsFileName(self, "Save dataset as", "output.bxd", \
+													"BioImageXD Dataset (*.bxd)|*.bxd")
 			filename = filename.replace("\\", "\\\\")
 			
-			do_cmd = "mainWindow.saveSelectedDatasets('%s')" % filename
-			cmd = Command.Command(Command.GUI_CMD, None, None, do_cmd, "", desc = "Save the selected datasets to a BXD file")
+			do_cmd = "mainWindow.saveSelectedDatasets(r'%s')" % filename
+			cmd = lib.Command.Command(lib.Command.GUI_CMD, None, None, do_cmd, "", \
+										desc = "Save the selected datasets to a BXD file")
 			cmd.run()
 			
 	def saveSelectedDatasets(self, filename):
@@ -814,19 +798,21 @@ class MainWindow(wx.Frame):
 		Description: Save the selected datasets into a .bxd file
 		"""
 		selectedUnits = self.tree.getSelectedDataUnits()
-		bxdwriter =  DataSource.BXDDataWriter(filename)
-		print "SELECTED UNITS=", selectedUnits
+		bxdwriter =  lib.DataSource.BXDDataWriter.BXDDataWriter(filename)
+		print "SELECTED UNITS = ", selectedUnits
 		for dataUnit in selectedUnits:
 			chname = dataUnit.getName()
 			chname = chname.replace(" ", "_")
 			filename = dataUnit.getDataSource().getFileName()
 			filebase = os.path.basename(".".join(filename.split(".")[:-1]))
 			bxcfilename = bxdwriter.getBXCFileName("%s_%s" % (filebase, chname))
-			writer = DataSource.BXCDataWriter(bxcfilename)
+			writer = lib.DataSource.BXCDataWriter.BXCDataWriter(bxcfilename)
 			n = dataUnit.getNumberOfTimepoints()
 			for i in range(0, n):
+				print "\n\nADDING TIMEPOINT", i
 				data = dataUnit.getTimepoint(i)
 				writer.addImageData(data)
+			print "--> WRITING DAATA"
 			parser = writer.getParser()
 			
 			dataUnit.getSettings().set("Name", dataUnit.getName())
@@ -846,7 +832,7 @@ class MainWindow(wx.Frame):
 		Description: send the message to use the current task for processing the data
 		"""
 		bxd.modal = modal
-		messenger.send(None, "process_dataset")
+		lib.messenger.send(None, "process_dataset")
 
 	def onContextHelp(self, evt):
 		"""
@@ -883,15 +869,15 @@ class MainWindow(wx.Frame):
 		mgr.disable(MenuManager.ID_REDO)
 	  
 		if platform.system() == "Darwin":
-			keyCombo = "\tCtrl-,"
+			keyCombo = "\tCtrl-, "
 		else:
 			keyCombo = "\tCtrl-P"
 		mgr.addMenuItem("settings", wx.ID_PREFERENCES, "&Preferences..." + keyCombo, self.onMenuPreferences)
 	
-#        mgr.createMenu("import","&Import",place=0)
+#		mgr.createMenu("import", "&Import", place = 0)
 		mgr.createMenu("export", "&Export", place = 0)
 		
-		#mgr.addMenuItem("import",MenuManager.ID_IMPORT_VTIFILES,"&VTK dataset series",self.onMenuImport)
+		#mgr.addMenuItem("import", MenuManager.ID_IMPORT_VTIFILES, "&VTK dataset series", self.onMenuImport)
    
 		mgr.addMenuItem("export", MenuManager.ID_EXPORT_VTIFILES, "&VTK dataset series\tCtrl-E", self.onMenuExport)
 		mgr.addMenuItem("export", MenuManager.ID_EXPORT_IMAGES, "&Stack of images", self.onMenuExport)
@@ -900,16 +886,17 @@ class MainWindow(wx.Frame):
 
 		mgr.addMenuItem("file", MenuManager.ID_OPEN_SETTINGS, "&Load settings", self.onMenuOpenSettings)
 		mgr.addMenuItem("file", MenuManager.ID_SAVE_SETTINGS, "&Save settings", self.onMenuSaveSettings)
-#        mgr.disable(MenuManager.ID_OPEN_SETTINGS)
-#        mgr.disable(MenuManager.ID_SAVE_SETTINGS)
+#		mgr.disable(MenuManager.ID_OPEN_SETTINGS)
+#		mgr.disable(MenuManager.ID_SAVE_SETTINGS)
 		
 		mgr.addSeparator("file")
-#        mgr.addSubMenu("file","import","&Import",MenuManager.ID_IMPORT)
+#		mgr.addSubMenu("file", "import", "&Import", MenuManager.ID_IMPORT)
 		mgr.addMenuItem("file", MenuManager.ID_IMPORT_IMAGES, "&Import image stack\tCtrl-I", self.onMenuImport)
 
 		mgr.addSubMenu("file", "export", "&Export", MenuManager.ID_EXPORT)
 		mgr.addSeparator("file")
-		mgr.addMenuItem("file", MenuManager.ID_CLOSE_TASKWIN, "&Close task panel\tCtrl-W", "Close the task panel", self.onCloseTaskPanel)
+		mgr.addMenuItem("file", MenuManager.ID_CLOSE_TASKWIN, "&Close task panel\tCtrl-W", \
+						"Close the task panel", self.onCloseTaskPanel)
 		mgr.disable(MenuManager.ID_CLOSE_TASKWIN)
 		mgr.addSeparator("file")
 		mgr.addMenuItem("file", wx.ID_EXIT, "&Exit", "Quit BioImageXD", self.quitApp)
@@ -923,13 +910,15 @@ class MainWindow(wx.Frame):
 			name = mod.getName()
 			desc = mod.getDesc()
 			tid = self.taskToId[name]
-			#tb.DoAddTool(tid,name,bmp,kind=wx.ITEM_CHECK,shortHelp=name)
+			#tb.DoAddTool(tid, name, bmp, kind = wx.ITEM_CHECK, shortHelp = name)
 			mgr.addMenuItem("processing", tid, "&" + name, desc, self.onMenuShowTaskWindow)
-			#wx.EVT_TOOL(self,tid,self.onMenuShowTaskWindow)
+			#wx.EVT_TOOL(self, tid, self.onMenuShowTaskWindow)
 			
 		mgr.addSeparator("processing")
-		mgr.addMenuItem("processing", MenuManager.ID_RESAMPLE, "Re&sample dataset...", "Resample data to a different resolution", self.onMenuResampleData)
-		mgr.addMenuItem("processing", MenuManager.ID_RESCALE, "Res&cale dataset...", "Rescale data to 8-bit intensity range", self.onMenuRescaleData)        
+		mgr.addMenuItem("processing", MenuManager.ID_RESAMPLE, "Re&sample dataset...", \
+						"Resample data to a different resolution", self.onMenuResampleData)
+		mgr.addMenuItem("processing", MenuManager.ID_RESCALE, "Res&cale dataset...", \
+						"Rescale data to 8-bit intensity range", self.onMenuRescaleData)
 		
 		modes = self.visualizationModes.values()
 		modes.sort(self.sortModes)
@@ -948,36 +937,51 @@ class MainWindow(wx.Frame):
 		mgr.addSeparator("visualization")
 		mgr.addMenuItem("visualization", MenuManager.ID_LIGHTS, "&Lights...", "Configure lightning")
 		mgr.addMenuItem("visualization", MenuManager.ID_RENDERWIN, "&Render window", "Configure Render Window")
-#        mgr.addMenuItem("visualization",MenuManager.ID_RELOAD,"Re-&Load Modules","Reload the visualization modules")
+#		mgr.addMenuItem("visualization", MenuManager.ID_RELOAD, "Re-&Load Modules", \
+#							"Reload the visualization modules")
 		
 		mgr.addSeparator("visualization")
-		mgr.addMenuItem("visualization", MenuManager.ID_IMMEDIATE_RENDER, "&Immediate updating", "Toggle immediate updating of rendering (when settings that affect the visualization change) on or off.", self.onMenuImmediateRender, check = 1, checked = 1)
-		mgr.addMenuItem("visualization", MenuManager.ID_NO_RENDER, "&No updating", "Toggle rendering on or off.", self.onMenuNoRender, check = 1, checked = 0)        
+		mgr.addMenuItem("visualization", MenuManager.ID_IMMEDIATE_RENDER, "&Immediate updating", \
+						"Toggle immediate updating of rendering \
+							(when settings that affect the visualization change) on or off.", \
+						self.onMenuImmediateRender, check = 1, checked = 1)
+		mgr.addMenuItem("visualization", MenuManager.ID_NO_RENDER, "&No updating", \
+						"Toggle rendering on or off.", self.onMenuNoRender, check = 1, checked = 0)
 		mgr.disable(MenuManager.ID_LIGHTS)
 		mgr.disable(MenuManager.ID_RENDERWIN)
 		#mgr.disable(MenuManager.ID_RELOAD)
 		
 		
-		#wx.EVT_MENU(self,MenuManager.ID_RELOAD,self.onMenuReload)
+		#wx.EVT_MENU(self, MenuManager.ID_RELOAD, self.onMenuReload)
 
-		mgr.addMenuItem("view", MenuManager.ID_VIEW_TREE, "&File tree", "Show or hide the file tree", self.onMenuToggleVisibility, check = 1, checked = 1)
-		mgr.addMenuItem("view", MenuManager.ID_VIEW_CONFIG, "&Configuration panel", "Show or hide the configuration panel", self.onMenuToggleVisibility, check = 1, checked = 1)
-		mgr.addMenuItem("view", MenuManager.ID_VIEW_TASKPANEL, "&Task panel", "Show or hide task panel", self.onMenuToggleVisibility, check = 1, checked = 1)
+		mgr.addMenuItem("view", MenuManager.ID_VIEW_TREE, "&File tree", "Show or hide the file tree", \
+						self.onMenuToggleVisibility, check = 1, checked = 1)
+		mgr.addMenuItem("view", MenuManager.ID_VIEW_CONFIG, "&Configuration panel", \
+						"Show or hide the configuration panel", self.onMenuToggleVisibility, check = 1, checked = 1)
+		mgr.addMenuItem("view", MenuManager.ID_VIEW_TASKPANEL, "&Task panel", \
+						"Show or hide task panel", self.onMenuToggleVisibility, check = 1, checked = 1)
 		mgr.disable(MenuManager.ID_VIEW_TASKPANEL)
 
-		mgr.addMenuItem("view", MenuManager.ID_VIEW_TOOLBAR, "T&oolbar", "Show or hide toolbar", self.onMenuToggleVisibility, check = 1, checked = 1)
-		mgr.addMenuItem("view", MenuManager.ID_VIEW_HISTOGRAM, "&Histograms", "Show or hide channel histograms", self.onMenuToggleVisibility, check = 1, checked = 0)
+		mgr.addMenuItem("view", MenuManager.ID_VIEW_TOOLBAR, "T&oolbar", \
+						"Show or hide toolbar", self.onMenuToggleVisibility, check = 1, checked = 1)
+		mgr.addMenuItem("view", MenuManager.ID_VIEW_HISTOGRAM, "&Histograms", \
+						"Show or hide channel histograms", self.onMenuToggleVisibility, check = 1, checked = 0)
 		
-		mgr.addMenuItem("view", MenuManager.ID_VIEW_INFO, "&Dataset info", "Show or hide information about the dataset", self.onMenuToggleVisibility, check = 1, checked = 1)
-		mgr.addMenuItem("view", MenuManager.ID_VIEW_SHELL, "Python &shell", "Show a python interpreter", self.onMenuToggleVisibility, check = 1, checked = 0)
+		mgr.addMenuItem("view", MenuManager.ID_VIEW_INFO, "&Dataset info", \
+						"Show or hide information about the dataset", self.onMenuToggleVisibility, check = 1, checked = 1)
+		mgr.addMenuItem("view", MenuManager.ID_VIEW_SHELL, "Python &shell", \
+						"Show a python interpreter", self.onMenuToggleVisibility, check = 1, checked = 0)
 		mgr.addSeparator("view")
 
-		mgr.addMenuItem("view", MenuManager.ID_VIEW_SCRIPTEDIT, "Script &editor", "Show the script editor", self.onMenuShowScriptEditor)
+		mgr.addMenuItem("view", MenuManager.ID_VIEW_SCRIPTEDIT, "Script &editor", \
+						"Show the script editor", self.onMenuShowScriptEditor)
 
-		mgr.addMenuItem("view", MenuManager.ID_VIEW_MASKSEL, "&Mask selection", "Show mask selection dialog", self.onMenuToggleVisibility)        
+		mgr.addMenuItem("view", MenuManager.ID_VIEW_MASKSEL, "&Mask selection", \
+						"Show mask selection dialog", self.onMenuToggleVisibility)
 		mgr.addSeparator("view")
 
-		mgr.addMenuItem("view", MenuManager.ID_HIDE_INFO, "&Hide info windows\tAlt-Enter", "Hide all info windows, giving visualizer maximum screen space", self.onMenuHideInfo)
+		mgr.addMenuItem("view", MenuManager.ID_HIDE_INFO, "&Hide info windows\tAlt-Enter", \
+						"Hide all info windows, giving visualizer maximum screen space", self.onMenuHideInfo)
 
 		mgr.disable(MenuManager.ID_VIEW_TOOLBAR)
 		mgr.disable(MenuManager.ID_VIEW_HISTOGRAM)
@@ -986,10 +990,11 @@ class MainWindow(wx.Frame):
 		mgr.addSeparator("help")
 		mgr.addMenuItem("help", MenuManager.ID_REPORT_BUG, "&Report bug", "Send a bug report", self.onMenuBugReport)
 		mgr.addSeparator("help")
-		mgr.addMenuItem("help", MenuManager.ID_CONTEXT_HELP, "&Context help\tF1", "Show help on current task or visualization mode", self.onToolbarHelp)        
-		mgr.addMenuItem("help", wx.ID_HELP, "&Help", "Online Help", self.onMenuHelp)        
+		mgr.addMenuItem("help", MenuManager.ID_CONTEXT_HELP, "&Context help\tF1", \
+						"Show help on current task or visualization mode", self.onToolbarHelp)
+		mgr.addMenuItem("help", wx.ID_HELP, "&Help", "Online Help", self.onMenuHelp)
 	
-#        if platform.system()=="Darwin":
+#        if platform.system() =="Darwin":
 #            wx.App_SetMacHelpMenuTitleName("&Help")
 			
 	def createStatusBar(self):
@@ -1010,8 +1015,8 @@ class MainWindow(wx.Frame):
 
 		self.colorLbl = UIElements.NamePanel(self.statusbar, "", col, size = (rect.width - 4, rect.height - 4))
 		self.colorLbl.SetPosition((rect.x + 2, rect.y + 2))
-		messenger.connect(None, "update_progress", self.updateProgressBar)
-		messenger.connect(None, "report_progress_only", self.onSetProgressObject)
+		lib.messenger.connect(None, "update_progress", self.updateProgressBar)
+		lib.messenger.connect(None, "report_progress_only", self.onSetProgressObject)
 		
 	def onSetProgressObject(self, obj, evt, arg):
 		"""
@@ -1019,9 +1024,9 @@ class MainWindow(wx.Frame):
 		Description: Set the object that is allowed to send progress updates
 		"""
 		if not arg and self.progressObject:
-			messenger.disconnect(self.progressObject, "update_progress")
+			lib.messenger.disconnect(self.progressObject, "update_progress")
 		self.progressObject = arg
-		messenger.connect(self.progressObject, "update_progress", self.updateProgressBar)
+		lib.messenger.connect(self.progressObject, "update_progress", self.updateProgressBar)
 		
 	
 	def onShowCommandHistory(self, evt = None):
@@ -1035,9 +1040,10 @@ class MainWindow(wx.Frame):
 		if evt:
 			if "show_history" not in self.commands:
 				do_cmd = "mainWindow.onShowCommandHistory()"
-				undo_cmd = "mainWindow.commandHistory.Destroy()\nmainWindow.commandHistory=None"
+				undo_cmd = "mainWindow.commandHistory.Destroy()\nmainWindow.commandHistory = None"
 				
-				cmd = Command.Command(Command.MENU_CMD, None, None, do_cmd, undo_cmd, desc = "Show command history")
+				cmd = lib.Command.Command(lib.Command.MENU_CMD, None, None, do_cmd, undo_cmd, \
+											desc = "Show command history")
 				self.commands["show_history"] = cmd
 			self.commands["show_history"].run()
 		else:
@@ -1046,7 +1052,7 @@ class MainWindow(wx.Frame):
 			
 			self.commandHistory.update()
 			self.commandHistory.Show()
-			
+
 	def onMenuBugReport(self, evt):
 		"""
 		Created: 25.06.2007, KP
@@ -1055,12 +1061,12 @@ class MainWindow(wx.Frame):
 		dlg = BugDialog.BugDialog(self)
 		dlg.ShowModal()
 		dlg.Destroy()
-			
+
 	def onMenuImmediateRender(self, evt):
 		"""
 		Created: 14.02.2006, KP
 		Description: Toggle immediate render updates on or off
-		"""                        
+		"""
 		flag = evt.IsChecked()
 		self.visualizer.setImmediateRender(flag)
 
@@ -1068,7 +1074,7 @@ class MainWindow(wx.Frame):
 		"""
 		Created: 14.02.2006, KP
 		Description: Toggle immediate render updates on or off
-		"""                        
+		"""
 		flag = evt.IsChecked()
 		self.visualizer.setNoRendering(flag)
 		
@@ -1076,7 +1082,8 @@ class MainWindow(wx.Frame):
 		"""
 		Created: 13.02.2006, KP
 		Description: Show the script editor
-		"""                
+		"""
+		# the following line equals "if self.scriptEditor"
 		if bxd.record:
 			self.scriptEditor.Show()
 		else:
@@ -1088,7 +1095,7 @@ class MainWindow(wx.Frame):
 		"""
 		Created: 21.09.2005, KP
 		Description: Hide info windows, giving visualizer maximum screen estate
-		"""        
+		"""
 		gts = self.GetToolBar().GetToolState
 		status = not (gts(MenuManager.ID_SHOW_TREE) or self.menuManager.isChecked(MenuManager.ID_VIEW_INFO))
 
@@ -1100,16 +1107,16 @@ class MainWindow(wx.Frame):
 			self.infoWin.SetDefaultSize(self.infoWin.origSize)
 
 		self.onMenuShowTree(status)
-#        self.OnSize(None)
-#        self.visualizer.OnSize(None)        
-		
+#		self.OnSize(None)
+#		self.visualizer.OnSize(None)
+
 	def onMenuResampleData(self, evt):
 		"""
 		Created: 1.09.2005, KP
 		Description: Resize data to be smaller or larger
 		"""
 
-		#selectedFiles=self.tree.getSelectedDataUnits()
+		#selectedFiles = self.tree.getSelectedDataUnits()
 		selectedFiles, items = self.tree.getSelectionContainer()
 		if not selectedFiles:
 			return
@@ -1133,7 +1140,7 @@ class MainWindow(wx.Frame):
 		Description: Rescale data to 8-bit intensity range
 		"""
 
-		#selectedFiles=self.tree.getSelectedDataUnits()
+		#selectedFiles = self.tree.getSelectedDataUnits()
 		selectedFiles, items = self.tree.getSelectionContainer()
 		#print selectedFiles
 		if not selectedFiles:
@@ -1145,7 +1152,7 @@ class MainWindow(wx.Frame):
 		dlg.zoomToFit()
 		dlg.Destroy()
 		
-		if wid == wx.ID_OK:                    
+		if wid == wx.ID_OK:
 			self.tree.markBlue(items, "#")
 			self.infoWidget.updateInfo(None, None, None)
 			mode = self.visualizer.mode
@@ -1153,7 +1160,7 @@ class MainWindow(wx.Frame):
 			self.visualizer.closeVisualizer()
 			self.loadVisualizer(mode, dataunit = unit)
 			self.infoWidget.showInfo(selectedFiles[0])
-#            self.loadVisualizer(None,self.visualizer.mode,reload=1)        
+#			self.loadVisualizer(None, self.visualizer.mode, reload = 1)
 
 
 
@@ -1165,7 +1172,8 @@ class MainWindow(wx.Frame):
 		eid = evt.GetId()
 		flag = evt.IsChecked()
 		cmd = "hide"
-		if flag:cmd = "show"
+		if flag:
+			cmd = "show"
 		if eid == MenuManager.ID_VIEW_CONFIG:
 			obj = "config"
 		elif eid == MenuManager.ID_VIEW_TREE:
@@ -1186,7 +1194,8 @@ class MainWindow(wx.Frame):
 			obj = "histogram"
 		elif eid in [MenuManager.ID_VIEW_INFO, MenuManager.ID_VIEW_TASKPANEL]:
 			win = self.taskWin
-			if eid == MenuManager.ID_VIEW_INFO:win = self.infoWin
+			if eid == MenuManager.ID_VIEW_INFO:
+				win = self.infoWin
 			if cmd == "hide":
 				win.origSize = win.GetSize()
 				win.SetDefaultSize((0, 0))
@@ -1208,7 +1217,7 @@ class MainWindow(wx.Frame):
 			self.visualizer.OnSize(None)
 			return
 
-		messenger.send(None, cmd, obj)
+		lib.messenger.send(None, cmd, obj)
 		
 	def onCloseTaskPanel(self, event):
 		"""
@@ -1217,10 +1226,10 @@ class MainWindow(wx.Frame):
 		"""
 		undo_cmd = ""
 		do_cmd = "mainWindow.closeTaskPanel()"
-		cmd = Command.Command(Command.MGMT_CMD, None, None, do_cmd, undo_cmd, desc = "Close the current task panel")
-		cmd.run()          
+		cmd = lib.Command.Command(lib.Command.MGMT_CMD, None, None, do_cmd, undo_cmd, \
+									desc = "Close the current task panel")
+		cmd.run()
 		
-		   
 	def closeTaskPanel(self):
 		"""
 		Created: 15.08.2006, KP
@@ -1230,24 +1239,24 @@ class MainWindow(wx.Frame):
 			self.currentTaskWindow.cacheSettings()
 		selectedUnits = self.tree.getSelectedDataUnits()
 		self.visualizer.setProcessedMode(0)
-		self.visualizer.setDataUnit(selectedUnits[0])        
+		self.visualizer.setDataUnit(selectedUnits[0])
 		#print selectedUnits[0].getSettings().registered
 		self.menuManager.clearItemsBar()
-		if self.currentTaskWindow:             
+		if self.currentTaskWindow:
 			self.currentTaskWindow.Show(0)
 			self.currentTaskWindow.Destroy()
 			del self.currentTaskWindow
 			self.currentTaskWindow = None
 			self.currentTaskWindowName = ""
 			self.currentTaskWindowType = None
-		self.switchBtn.Enable(0)            
-		self.menuManager.disable(MenuManager.ID_CLOSE_TASKWIN)            
+		self.switchBtn.Enable(0)
+		self.menuManager.disable(MenuManager.ID_CLOSE_TASKWIN)
 		self.taskWin.SetDefaultSize((0, 0))
 		
 		tb = self.GetToolBar()
 		for eid in self.taskIds:
 			tb.ToggleTool(eid, 0)
-		#self.onMenuShowTree(None,1)
+		#self.onMenuShowTree(None, 1)
 		# Set the dataunit used by visualizer to one of the source units
 		
 		self.infoWin.SetDefaultSize(self.infoWin.origSize)
@@ -1261,17 +1270,18 @@ class MainWindow(wx.Frame):
 		"""
 		Created: 16.03.2005, KP
 		Description: Callback function for menu item "Import"
-		"""       
+		"""
 		import_code = """
 importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 		"""
 		if startFile:
-			import_code += "importdlg.setInputFile(r'%s')\n" % startFile
+			import_code += "importdlg.setInputFile('%s')\n" % startFile
 		import_code += "if importdlg.ShowModal() == wx.ID_OK: mainWindow.openFile( importdlg.getDatasetName() )\n"
-		command = Command.Command(Command.MENU_CMD, None, None, import_code, "", imports = ["GUI.ImportDialog"], desc = "Show import dialog")
+		command = lib.Command.Command(lib.Command.MENU_CMD, None, None, import_code, "", \
+										imports = ["GUI.ImportDialog"], desc = "Show import dialog")
 		self.commands["show_import"] = command
 		self.commands["show_import"].run()
-		#self.importdlg=ImportDialog.ImportDialog(self)
+		#self.importdlg = ImportDialog.ImportDialog(self)
 		#self.importdlg.ShowModal()
 		
 		
@@ -1317,8 +1327,8 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 		Description: Callback function for launching the visualizer
 		"""
 		# Hide the infowin and toggle the menu item accordingly
-		#self.infoWin.SetDefaultSize((0,0))
-		#self.menuManager.check(MenuManager.ID_VIEW_INFO,0)
+		#self.infoWin.SetDefaultSize((0, 0))
+		#self.menuManager.check(MenuManager.ID_VIEW_INFO, 0)
 		#wx.LayoutAlgorithm().LayoutWindow(self, self.visWin)
 		eid = evt.GetId()
 		mode = ""
@@ -1335,7 +1345,8 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 			undo_cmd = "mainWindow.loadVisualizerMode('%s')" % (self.currentVisualizationModeName)
 		else:
 			undo_cmd = ""
-		cmd = Command.Command(Command.GUI_CMD, None, None, do_cmd, undo_cmd, desc = "Switch to visualizer mode %s" % mode)
+		cmd = lib.Command.Command(lib.Command.GUI_CMD, None, None, do_cmd, undo_cmd, \
+									desc = "Switch to visualizer mode %s" % mode)
 		cmd.run()
 		
 	def loadVisualizerMode(self, mode):
@@ -1343,14 +1354,14 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 		Created: 14.06.2007, KP
 		Description: Load the visualizer mode with the given name
 		"""
-		#reload=0
+		#reload = 0
 		eid = self.visToId[mode]
 		if self.currentVisualizationModeName == mode:
 			# Why would we want to reload?
-			#reload=1
+			#reload = 1
 			return
 		self.currentVisualizationModeName = mode
-		messenger.send(None, "update_progress", 0.1, "Loading %s view..." % mode)
+		lib.messenger.send(None, "update_progress", 0.1, "Loading %s view..." % mode)
 
 		modeclass, settingclass, module = self.visualizationModes[mode]
 		needUpdate = 0
@@ -1359,7 +1370,7 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 			needUpdate = 1
 		if not module.showInfoWindow():
 			self.infoWin.SetDefaultSize((0, 0))
-			#self.menuManager.check(MenuManager.ID_VIEW_INFO,0)
+			#self.menuManager.check(MenuManager.ID_VIEW_INFO, 0)
 			needUpdate = 1
 		if needUpdate:
 			self.OnSize(None)
@@ -1367,9 +1378,10 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 		# If a visualizer is already running, just switch the mode
 		selectedFiles = self.tree.getSelectedDataUnits()
 		if not len(selectedFiles):
-			Dialogs.showerror(self, "You need to select a dataset to load in the visualizer.", "Please select a dataset")
+			Dialogs.showerror(self, "You need to select a dataset to load in the visualizer.", \
+								"Please select a dataset")
 			return
-		self.setButtonSelection(eid)            
+		self.setButtonSelection(eid)
 		dataunit = selectedFiles[0]
 		if self.visualizer:
 #            if not self.visualizer.dataUnit:
@@ -1386,14 +1398,14 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 						self.loadVisualizer("slices")
 						return
 			self.visualizer.setVisualizationMode(mode)
-			messenger.send(None, "update_progress", 0.3, "Loading %s view..." % mode)
+			lib.messenger.send(None, "update_progress", 0.3, "Loading %s view..." % mode)
 			#self.visualizer.setDataUnit(dataunit)
 			self.showVisualization(self.visPanel)
 			self.visualizer.enable(1)
 			if hasDataunit:
 				Logging.info("Forcing visualizer update since dataunit has been changed", kw = "visualizer")
 				self.visualizer.updateRendering()
-			messenger.send(None, "update_progress", 1.0, "Loading %s view..." % mode)                
+			lib.messenger.send(None, "update_progress", 1.0, "Loading %s view..." % mode)
 			return
 		if len(selectedFiles) > 1:
 			lst = []
@@ -1409,10 +1421,10 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 			Dialogs.showerror(self,
 			"You have not selected a dataset to be loaded to Visualizer.\nPlease "
 			"select a dataset and try again.\n", "No dataset selected")
-			return            
+			return
 			
 		dataunit = selectedFiles[0]
-		messenger.send(None, "update_progress", 0.5, "Loading %s view..." % mode)
+		lib.messenger.send(None, "update_progress", 0.5, "Loading %s view..." % mode)
 		self.loadVisualizer(mode, 0, dataunit = dataunit)
 		
 	def onMenuOpenSettings(self, event):
@@ -1432,7 +1444,8 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 
 				do_cmd = "mainWindow.loadSettings(\"%s\")" % filenames
 			
-				cmd = Command.Command(Command.OPEN_CMD, None, None, do_cmd, "", desc = "Load settings file %s" % filenames)
+				cmd = lib.Command.Command(lib.Command.OPEN_CMD, None, None, do_cmd, "", \
+											desc = "Load settings file %s" % filenames)
 				cmd.run()
 				
 			else:
@@ -1444,13 +1457,13 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 		Description: Load settings from given filename
 		"""
 		dataunit = self.visualizer.getDataUnit()
-		parser = RawConfigParser()
+		parser = ConfigParser.RawConfigParser()
 		parser.optionxform = str
 		parser.read(filenames)
 		dataunit.getSettings().readFrom(parser)
 		dataunit.parser = parser
 		#self.visualizer.setDataUnit(dataunit)
-		messenger.send(None, "update_settings_gui")
+		lib.messenger.send(None, "update_settings_gui")
 
 
 	def onMenuSaveSettings(self, event):
@@ -1462,7 +1475,8 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 			dataunit = self.visualizer.getDataUnit()
 			if dataunit:
 				name = dataunit.getName()
-				filename = Dialogs.askSaveAsFileName(self, "Save settings of %s as" % name, "settings.bxp", "Settings (*.bxd)|*.bxp")
+				filename = Dialogs.askSaveAsFileName(self, "Save settings of %s as" % name, \
+													"settings.bxp", "Settings (*.bxd)|*.bxp")
 		
 				if not filename:
 					Logging.info("Got no name for settings file", kw = "dataunit")
@@ -1494,11 +1508,12 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 			fname = os.path.split(askfile)[-1]
 			self.SetStatusText("Loading " + fname + "...")
 			askfile = askfile.replace("\\", "\\\\")
-			do_cmd = "mainWindow.createDataUnit(\"%s\",\"%s\")" % (fname, askfile)
+			do_cmd = "mainWindow.createDataUnit(\"%s\", \"%s\")" % (fname, askfile)
 			
-			cmd = Command.Command(Command.OPEN_CMD, None, None, do_cmd, "", desc = "Load dataset %s" % fname)
+			cmd = lib.Command.Command(lib.Command.OPEN_CMD, None, None, do_cmd, "", \
+										desc = "Load dataset %s" % fname)
 			cmd.run()
-			#self.createDataUnit(fname,askfile)
+			#self.createDataUnit(fname, askfile)
 		self.SetStatusText("Done.")
 
 	def openFile(self, filepath):
@@ -1530,13 +1545,13 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 		if 0 and ext == 'bxd':
 			# We check that the file is not merely a settings file
 			#try:
-			self.parser = SafeConfigParser()
+			self.parser = ConfigParser.SafeConfigParser()
 			self.parser.read([path])
 			settingsOnly = ""
 			try:
 				# We read the Key SettingsOnly, and check it's value.
 				settingsOnly = self.parser.get("SettingsOnly", "SettingsOnly")
-			except (NoOptionError, NoSectionError):
+			except (ConfigParser.NoOptionError, ConfigParser.NoSectionError):
 				pass
 			if settingsOnly.lower() == "true":
 				# If this file contains only settings, then we report an 
@@ -1563,7 +1578,8 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 		except KeyError:
 #            print self.extToSource.keys()
 			if not noWarn:
-				Dialogs.showerror(self, "Failed to load file %s: Unrecognized extension %s" % (name, ext), "Unrecognized extension")
+				Dialogs.showerror(self, "Failed to load file %s: Unrecognized extension %s" % (name, ext), \
+									"Unrecognized extension")
 			return
 		dataunits = []
 		try:
@@ -1585,27 +1601,29 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 		self.visualizer.enable(0)
 		if type(dataunits[0]) == types.TupleType:
 			for (name, unit) in dataunits:
-				if d.has_key(name):d[name].append(unit)
-				else:d[name] = [unit]
+				if d.has_key(name):
+					d[name].append(unit)
+				else:
+					d[name] = [unit]
 			for key in d.keys():
 				Logging.info("Adding dataunit %s %s %s" % (key, path, ext), kw = "io")
 				self.tree.addToTree(key, path, ext, d[key])
 		else:
 			# If we got data, add corresponding nodes to tree
-			#Logging.info("Adding to tree ",name,path,ext,dataunits,kw="io")
+			#Logging.info("Adding to tree ", name, path, ext, dataunits, kw = "io")
 			conf = Configuration.getConfiguration()
 			needToRescale = conf.getConfigItem("RescaleOnLoading", "Performance")
-			if needToRescale:
+			bitness = max([x.getSingleComponentBitDepth() for x in dataunits])
+			if needToRescale and bitness > 8:
 				needToRescale = eval(needToRescale)
 
 			
-			m = max([x.getSingleComponentBitDepth() for x in dataunits])
-			if needToRescale and m > 8:
+			if needToRescale:
 				dlg = RescaleDialog.RescaleDialog(self)
 				dlg.setDataUnits(dataunits)
 				wid = dlg.ShowModal()
 				dlg.zoomToFit()
-				if wid != wx.ID_OK:                    
+				if wid != wx.ID_OK:
 					del dataunits
 					dlg.Destroy()
 					return
@@ -1633,7 +1651,7 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 		if taskname == self.currentTaskWindowName:
 			Logging.info("Task", taskname, "already showing, will close", kw = "task")
 			tb.ToggleTool(eid, 0)
-			self.onCloseTaskPanel(None)            
+			self.onCloseTaskPanel(None)
 			return
 		
 		do_cmd = 'mainWindow.loadTask("%s")' % (taskname)
@@ -1641,7 +1659,8 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 			undo_cmd = 'mainWindow.loadTask("%s")' % (self.currentTaskWindowName)
 		else:
 			undo_cmd = 'mainWindow.closeTask()'
-		cmd = Command.Command(Command.TASK_CMD, None, None, do_cmd, undo_cmd, desc = "Load task %s" % taskname)
+		cmd = lib.Command.Command(lib.Command.TASK_CMD, None, None, do_cmd, undo_cmd, \
+									desc = "Load task %s" % taskname)
 		cmd.run()
 		
 	def closeTask(self):
@@ -1668,17 +1687,19 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 		selectedFiles = self.tree.getSelectedDataUnits()
 		selectedPaths = self.tree.getSelectedPaths()
 		if filesAtLeast != -1 and len(selectedFiles) < filesAtLeast:
-			Dialogs.showerror(self,
-			"You need to select at least %d source datasets for the task: %s" % (filesAtLeast, action), "Need more source datasets")
+			Dialogs.showerror(self,	\
+								"You need to select at least %d source datasets for the task: %s" \
+									% (filesAtLeast, action), \
+								"Need more source datasets")
 			self.setButtonSelection(-1)
-			return            
+			return
 		elif filesAtMost != -1 and len(selectedFiles) > filesAtMost:
 			Dialogs.showerror(self,
 			"You can select at most %d source datasets for %s" % (filesAtMost, action), "Too many source datasets")
 			self.setButtonSelection(-1)
 			return
 		self.visualizer.enable(0)
-		messenger.send(None, "update_progress", 0.1, "Loading task %s..." % action)
+		lib.messenger.send(None, "update_progress", 0.1, "Loading task %s..." % action)
 		self.onMenuShowTree(None, 0)
 		# Hide the infowin and toggle the menu item accordingly
 		self.infoWin.SetDefaultSize((0, 0))
@@ -1687,7 +1708,7 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 		
 		window = windowtype(self.taskWin, self.menuManager)
 		
-		messenger.send(None, "update_progress", 0.2, "Loading task %s..." % action)
+		lib.messenger.send(None, "update_progress", 0.2, "Loading task %s..." % action)
 		window.Show()
 		
 		self.switchBtn.Enable(1)
@@ -1695,7 +1716,7 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 			self.currentTaskWindow.cacheSettings()
 			self.currentTaskWindow.Show(0)
 			self.currentTaskWindow.Destroy()
-			del self.currentTaskWindow                
+			del self.currentTaskWindow
 		
 		self.currentTaskWindowName = taskname
 		self.currentTaskWindow = window
@@ -1714,18 +1735,18 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 		# Sets name for new dataset series
 		name = "%s (%s)" % (action, ", ".join(names))
 
-		#Logging.info(unittype,name,kw="task")
+		#Logging.info(unittype, name, kw = "task")
 		unit = unittype(name)
 		Logging.info("unit = %s(%s)=%s" % (unittype, name, unit), kw = "task")
 		try:
 			for dataunit in selectedFiles:
 				unit.addSourceDataUnit(dataunit)
-				#Logging.info("ctf of source=",dataunit.getSettings().get("ColorTransferFunction"),kw="ctf")
+				#Logging.info("ctf of source=", dataunit.getSettings().get("ColorTransferFunction"), kw = "ctf")
 		except Logging.GUIError, ex:
 			ex.show()
 			self.closeTask()
 			return
-		messenger.send(None, "update_progress", 0.3, "Loading task %s..." % action)
+		lib.messenger.send(None, "update_progress", 0.3, "Loading task %s..." % action)
 		Logging.info("Moduletype=", moduletype, kw = "dataunit")
 		module = moduletype()
 		unit.setModule(module)
@@ -1737,7 +1758,7 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 		for name, taskid in self.taskToId.items():
 			if name == taskname:
 				self.setButtonSelection(taskid)
-				break        
+				break
 
 #        self.setButtonSelection(event.GetId())
 
@@ -1759,12 +1780,12 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 		
 		self.progressCoeff = 1.0
 		self.progressShift = 0
-		messenger.send(None, "update_progress", 0.9, "Loading task %s..." % action)
+		lib.messenger.send(None, "update_progress", 0.9, "Loading task %s..." % action)
 		wx.LayoutAlgorithm().LayoutWindow(self, self.visWin)
 		self.visWin.Refresh()
 		self.menuManager.enable(MenuManager.ID_CLOSE_TASKWIN)
 		self.menuManager.enable(MenuManager.ID_VIEW_TASKPANEL)
-		messenger.send(None, "update_progress", 1.0, "Loading task %s... done" % action)
+		lib.messenger.send(None, "update_progress", 1.0, "Loading task %s... done" % action)
 					
 		
 	def onMenuShowTree(self, event, show = -1):
@@ -1772,7 +1793,7 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 		Created: 21.07.2005, KP
 		Description: A method that shows the file management tree
 		"""
-		tb = self.GetToolBar()            
+		tb = self.GetToolBar()
 		if show == -1:
 			show = tb.GetToolState(MenuManager.ID_SHOW_TREE)
 		else:
@@ -1795,20 +1816,20 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 		"""
 		Created: 25.05.2005, KP
 		Description: Load a dataunit and a given mode to visualizer
-		"""              
+		"""
 		self.currentVisualizationModeName = mode
 
 		if not self.visualizer:
 			self.visPanel = wx.SashLayoutWindow(self.visWin, -1)
-			self.visualizer = Visualizer.Visualizer(self.visPanel, self.menuManager, self)
+			self.visualizer = Visualizer(self.visPanel, self.menuManager, self)
 			bxd.visualizer = self.visualizer
-			Command.visualizer = self.visualizer
+			lib.Command.visualizer = self.visualizer
 			self.menuManager.setVisualizer(self.visualizer)
 			self.visualizer.setProcessedMode(processed)
 		self.visualizer.enable(0)
-		messenger.send(None, "update_progress", 0.6, "Loading %s view..." % mode)
-		#self.menuManager.menus["visualization"].Enable(MenuManager.ID_RELOAD,1)
-		wx.EVT_TOOL(self, MenuManager.ID_SAVE_SNAPSHOT, self.visualizer.onSnapshot)    
+		lib.messenger.send(None, "update_progress", 0.6, "Loading %s view..." % mode)
+		#self.menuManager.menus["visualization"].Enable(MenuManager.ID_RELOAD, 1)
+		wx.EVT_TOOL(self, MenuManager.ID_SAVE_SNAPSHOT, self.visualizer.onSnapshot)
 			
 
 		if not "init" in kws and dataunit:
@@ -1818,16 +1839,16 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 		
 		self.visualizer.setVisualizationMode(mode, reload = reload)
 		# handle icons
-		messenger.send(None, "update_progress", 0.8, "Loading %s view..." % mode)        
+		lib.messenger.send(None, "update_progress", 0.8, "Loading %s view..." % mode)
 
-		self.showVisualization(self.visPanel)            
+		self.showVisualization(self.visPanel)
 		self.visualizer.enable(1)
 		mgr = self.menuManager
 		mgr.enable(MenuManager.ID_VIEW_TOOLBAR)
 		mgr.enable(MenuManager.ID_VIEW_HISTOGRAM)
 		wx.LayoutAlgorithm().LayoutWindow(self, self.visWin)
 		self.visWin.Refresh()
-		messenger.send(None, "update_progress", 1.0, "Loading %s view... done." % mode)        
+		lib.messenger.send(None, "update_progress", 1.0, "Loading %s view... done." % mode)
 
 	def setButtonSelection(self, eid, all = 0):
 		"""
@@ -1846,7 +1867,7 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 		tb = self.GetToolBar()
 		for i in lst:
 			flag = (i == eid)
-			tb.ToggleTool(i, flag)        
+			tb.ToggleTool(i, flag)
 
 	def onMenuAbout(self, evt):
 		"""
@@ -1883,7 +1904,7 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 		"""
 		Created: 13.04.2006, KP
 		Description: Save window sizes to the settings
-		"""        
+		"""
 		conf = Configuration.getConfiguration()
 
 		size = str(self.GetSize())
@@ -1906,13 +1927,13 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 							   #wx.YES_NO | wx.NO_DEFAULT | wx.CANCEL | wx.ICON_INFORMATION
 							   )
 			answer = dlg.ShowModal()
-			dlg.Destroy()            
+			dlg.Destroy()
 			if answer != wx.ID_OK:
 				return
 			
 		self.saveWindowSizes()
 			
-		self.visualizer.enable(0)        
+		self.visualizer.enable(0)
 		
 		self.visualizer.closeVisualizer()
 		conf = Configuration.getConfiguration()

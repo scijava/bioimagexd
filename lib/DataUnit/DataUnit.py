@@ -28,49 +28,63 @@ __author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.93 $"
 __date__ = "$Date: 2005/01/13 14:09:15 $"
 
+#import vtk
+
 import Logging
-import vtk
-import ImageOperations
+import lib.ImageOperations
 import weakref
 import DataUnitSetting
+
 class DataUnit:
 	"""
 	Created: 03.11.2004, JM
 	Description: A class representing a timeseries of 3D data
 	"""
 
-	def __init__(self, name = ""):
+	def __init__(self, dataUnitName = ""):
 		"""
 		Created: 03.11.2004, JM
 		Description: Constructor
-		Parameters: name    Name for the DataUnit, default to ""
+		Parameters: dataUnitName, Name for the DataUnit, default to ""
 		"""
-		self.name = name
+		self.dataUnitName = dataUnitName
 		self.length = 0
 		self.dataSource = None
+
 		self.color = None
 		self.ctf = None
 		self.randomCTF = None
 		self.cacheKey = None
-		
 		self.settings = DataUnitSetting.DataUnitSettings()
 		self.mip = None
 		self.mipTimepoint = -1
 		self.destroyed = 0
-	def setCacheKey(self, key):
+
+		self.getResampledVoxelSize = None 
+		self.getVoxelSize = None
+		self.getScalarRange = None
+		self.getDimensions = None
+		self.getSpacing = None
+		self.getSingleComponentBitDepth = None
+		self.getNumericalAperture = None
+		self.getBitDepth = None
+		self.getExcitationWavelength = None
+		self.getEmissionWavelength = None
+		
+	def setCacheKey(self,key):
 		"""
 		Created: 23.10.2006, KP
 		Description: Set the key under which this dataunit is stored in the cache
 		"""
 		self.cacheKey = key
-		
+
 	def getCacheKey(self):
 		"""
 		Created: 23.10.2006, KP
 		Description: Get the key under which this dataunit is stored in the cache
 		"""
-		return self.cacheKey        
-		
+		return self.cacheKey
+
 	def destroySelf(self):
 		"""
 		Created: 27.1.2007, KP
@@ -82,6 +96,7 @@ class DataUnit:
 		self.dataSource = None
 		self.settings = None
 		self.destroyed = 1
+
 	def resetSettings(self):
 		"""
 		Created: 23.10.2006, KP
@@ -110,31 +125,31 @@ class DataUnit:
 		"""
 		Created: 12.04.2006, KP
 		Description: Returns the data source of this dataset
-		"""        
+		"""		   
 		return self.dataSource
 		
-	def getMIP(self, tp, color, small = 0, noColor = 0):
+	def getMIP(self, mipTimepoint, color, small = 0, noColor = 0):
 		"""
 		Created: 01.09.2005, KP
 		Description: Returns MIP of the given timepoint
-		"""        
-		if self.mip and self.mipTimepoint == tp:
+		"""		   
+		if self.mip and self.mipTimepoint == mipTimepoint:
 			#Logging.info("Using existing MIP")
 			return self.mip
 		else:
-			#Logging.info("Generating MIP of tp=",tp)
+			#Logging.info("Generating MIP of timepoint = ", mitTimepoint)
 			if not small:
-				imagedata = self.getTimepoint(tp)
+				imagedata = self.getTimepoint(mipTimepoint)
 			else:
 				cached = self.dataSource.getFromCache(self.getFileName(), self.getName(), "MIP")
 				if not cached:
-					imagedata = self.dataSource.getMIPdata(tp)
+					imagedata = self.dataSource.getMIPdata(mipTimepoint)
 					imagedata.Update()
 		
 					if not color and not noColor:
 						color = self.getColorTransferFunction()
 					print "Getting MIP with color", color
-					self.mip = ImageOperations.getMIP(imagedata, color)
+					self.mip = lib.ImageOperations.getMIP(imagedata, color)
 					print "Got mip, storing to cache", self.mip
 				
 					self.dataSource.storeToCache(self.mip, self.getFileName(), self.getName(), "MIP")
@@ -148,7 +163,8 @@ class DataUnit:
 		Created: 14.11.2006, KP
 		Description: Store any image data along with it's timepoint and purpose to the cached
 		"""
-		self.dataSource.storeToCache(imagedata, self.getFileName(), self.getName(), "%s_tp%d" % (purpose, timepoint))
+		self.dataSource.storeToCache(imagedata, self.getFileName(), self.getName(), 
+			"%s_tp%d" % (purpose, timepoint))
 
 	def getFromCache(self, timepoint, purpose):
 		"""
@@ -162,7 +178,7 @@ class DataUnit:
 		"""
 		Created: 12.10.2006, KP
 		Description: A method that will reset the CTF from the datasource.
-					 This is useful e.g. when scaling the intensities of the    
+					 This is useful e.g. when scaling the intensities of the	
 					 dataset
 		"""
 		self.ctf = None
@@ -178,11 +194,11 @@ class DataUnit:
 		
 		if not self.dataSource and not self.ctf:
 			Logging.backtrace()
-			Logging.info("Using no ctf because datasource=", self.dataSource, kw = "ctf")
+			Logging.info("Using no ctf because datasource = ", self.dataSource, kw = "ctf")
 			return None
 		if not self.ctf:
 			self.ctf = self.dataSource.getColorTransferFunction()
-			#Logging.info("Ctf from datasource=",self.ctf,kw="ctf")
+			#Logging.info("Ctf from datasource = ", self.ctf, kw = "ctf")
 		return self.ctf
 	
 	
@@ -208,8 +224,8 @@ class DataUnit:
 			#self.ctf = self.settings.get("ColorTransferFunction")
 			#ctf = self.ctf
 			self.settings.set("ColorTransferFunction", ctf)
-			#if ctf and self.settings.get("Type")=="ColorMergingSettings":
-			#    self.settings.set("MergingColorTransferFunction",ctf)
+			#if ctf and self.settings.get("Type") == "ColorMergingSettings":
+			#	 self.settings.set("MergingColorTransferFunction", ctf)
 				
 
 		if self.dataSource:
@@ -233,59 +249,52 @@ class DataUnit:
 		Created: 03.11.2004, JM
 		Description: Returns the name of this DataUnit
 		"""
-		return self.name
+		return self.dataUnitName
 
-	def setName(self, name):
+	def setName(self, dataUnitName):
 		"""
 		Created: 8.12.2004, JM
 		Description: Sets the name of this dataunit
 		"""
-		self.name = name
+		self.dataUnitName = dataUnitName
 		if self.settings:
-			self.settings.set("Name", name)
+			self.settings.set("Name", dataUnitName)
  
-	def getTimepoint(self, n):
+	def getTimepoint(self, timepoint):
 		"""
 		Created: 17.11.2004, KP
 		Description: Returns the requested time point
 		Parameters:
-				n       The timepoint we need to return
+				n		The timepoint we need to return
 		"""
 		if self.destroyed:
 			print "I have been destroyed!"
 			print "There are ", weakref.getweakrefcount(self), "references to me"
 		if not self.dataSource:
-			print self, self.name
+			print self, self.dataUnitName
 			Logging.error("No datasource specified",
 			"No datasource specified for DataUnit, unable to get timepoint!")
 			return None
-		return self.dataSource.getDataSet(n)
+		return self.dataSource.getDataSet(timepoint)
 		
 
-	def getLength(self):
+	def getNumberOfTimepoints(self):
 		"""
 		Created: 10.11.2004, JM
 		Description: Returns the length of this DataUnit
 		"""
 		return self.length
 
-	def getNumberOfTimepoints(self):
-		"""
-		Created: 20.07.2007, KP
-		Description: return the number of timepoints
-		"""
-		return self.getLength()
-
 	def setDataSource(self, dataSource):
 		"""
 		Created: 09.11.2004, JM
 		Description: Sets a DataSource for this SourceDataUnit
-		Parameters: dataSource  A DataSource to manage actual
+		Parameters: dataSource	A DataSource to manage actual
 								image data located on disk
 		"""
 		# Then load the settings specific to SourceDataUnit:
 		self.dataSource = dataSource
-		self.name = dataSource.getName()
+		self.dataUnitName = dataSource.getName()
 		self.length = dataSource.getDataSetCount()
 		
 		self.getDimensions = dataSource.getDimensions
@@ -299,7 +308,7 @@ class DataUnit:
 		self.getEmissionWavelength = dataSource.getEmissionWavelength
 		self.getExcitationWavelength = dataSource.getExcitationWavelength
 		self.getNumericalAperture = dataSource.getNumericalAperture
-#        Logging.info("Dataunit ",repr(self),"got datasource",repr(self.dataSource),kw="datasource")
+#		 Logging.info("Dataunit ", repr(self), "got datasource", repr(self.dataSource), kw = "datasource")
 		
 		#self.updateSettings()
    

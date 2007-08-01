@@ -30,37 +30,39 @@ __author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.42 $"
 __date__ = "$Date: 2005/01/13 14:52:39 $"
 
-import wx
-import types
-import vtk
-import Command
+import scripting as bxd
+import GUI.GUIBuilder as GUIBuilder
+import lib.ImageOperations
 try:
 	import itk
 except:
 	pass
-import messenger
-import scripting as bxd
-
-import GUI.GUIBuilder as GUIBuilder
-import ImageOperations
-
+import lib.messenger
 from lib import ProcessingFilter
+import types
+import vtk
+import vtkbxd
+import wx
 
-
+# the wildcard imports have to stay for a while: 
+# getFilterlist() searches through these Modules for Filter classes
+from MathFilters import *
+from SegmentationFilters import *
+from MorphologicalFilters import *
+from TrackingFilters import *
+from RegistrationFilters import *
 
 class IntensityMeasurementList(wx.ListCtrl):
 	def __init__(self, parent, log):
-		wx.ListCtrl.__init__(
-			self, parent, -1, 
-			size = (450, 250),
-			style = wx.LC_REPORT | wx.LC_VIRTUAL | wx.LC_HRULES | wx.LC_VRULES,
-			
-			)
+
+		wx.ListCtrl.__init__(self, parent, -1, size = (450, 250), \
+							style = wx.LC_REPORT | wx.LC_VIRTUAL | wx.LC_HRULES | wx.LC_VRULES,)
 
 		self.measurements = []
 		self.InsertColumn(0, "ROI")
 		self.InsertColumn(1, "Voxel #")
 		self.InsertColumn(2, "Sum")
+
 		self.InsertColumn(3, "Min")
 		self.InsertColumn(4, "Max")
 		self.InsertColumn(5, u"Mean\u00B1std.dev.")
@@ -69,7 +71,6 @@ class IntensityMeasurementList(wx.ListCtrl):
 		self.SetColumnWidth(0, 70)
 		self.SetColumnWidth(1, 60)
 		self.SetColumnWidth(2, 60)
-		#self.SetColumnWidth(3, 50)
 		self.SetColumnWidth(3, 50)
 		self.SetColumnWidth(4, 50)
 		self.SetColumnWidth(5, 100)
@@ -114,7 +115,7 @@ class IntensityMeasurementList(wx.ListCtrl):
 		return "%d" % m[col]
 
 	def OnGetItemImage(self, item):
-		 return - 1
+		return - 1
 
 	def OnGetItemAttr(self, item):
 		if item % 2 == 1:
@@ -124,7 +125,7 @@ class IntensityMeasurementList(wx.ListCtrl):
 		else:
 			return None
 
-
+#TODO: fix getFilterList() function so that the wildcard imports can be removed
 def getFilterList():
 	return [ErodeFilter, DilateFilter, RangeFilter, SobelFilter,
 			MedianFilter, AnisotropicDiffusionFilter, SolitaryFilter,
@@ -139,8 +140,8 @@ def getFilterList():
 			ITKLocalMaximumFilter, ITKOtsuThresholdFilter, ITKConfidenceConnectedFilter,
 			MaskFilter, ITKSigmoidFilter, ITKInvertIntensityFilter, ConnectedComponentFilter,
 			MaximumObjectsFilter, TimepointCorrelationFilter,
-			ROIIntensityFilter, CutDataFilter, GaussianSmoothFilter, CreateTracksFilter, ViewTracksFilter, ExtractComponentFilter, RegistrationFilter,
-			AnalyzeTracksFilter]
+			ROIIntensityFilter, CutDataFilter, GaussianSmoothFilter, CreateTracksFilter,
+			ViewTracksFilter, ExtractComponentFilter, RegistrationFilter, AnalyzeTracksFilter]
 			
 MATH = "Image arithmetic"
 SEGMENTATION = "Segmentation"
@@ -265,8 +266,9 @@ class SolitaryFilter(ProcessingFilter.ProcessingFilter):
 		Description: Initialization
 		"""        
 		ProcessingFilter.ProcessingFilter.__init__(self, (1, 1))
-		self.vtkfilter = vtk.vtkImageSolitaryFilter()
-		self.descs = {"HorizontalThreshold": "X:", "VerticalThreshold": "Y:", "ProcessingThreshold": "Processing threshold:"}
+		self.vtkfilter = vtkbxd.vtkImageSolitaryFilter()
+		self.descs = {"HorizontalThreshold": "X:", "VerticalThreshold": "Y:", \
+						"ProcessingThreshold": "Processing threshold:"}
 	
 	def getParameters(self):
 		"""
@@ -385,7 +387,8 @@ class GaussianSmoothFilter(ProcessingFilter.ProcessingFilter):
 		Created: 15.11.2006, KP
 		Description: Return the default value of a parameter
 		"""     
-		if parameter == "Dimensionality":return 3
+		if parameter == "Dimensionality":
+			return 3
 		return 1.5
 		
 	def getRange(self, parameter):
@@ -491,7 +494,7 @@ class ShiftScaleFilter(ProcessingFilter.ProcessingFilter):
 			print "Range of data=", x, y
 			self.vtkfilter.SetOutputScalarTypeToUnsignedChar()
 			if not y:
-				messenger.send(None, "show_error", "Bad scalar range", "Data has scalar range of %d -%d" % (x, y))
+				lib.messenger.send(None, "show_error", "Bad scalar range", "Data has scalar range of %d -%d" % (x, y))
 				return vtk.vtkImageData()
 			scale = 255.0 / y
 			print "Scale=", scale
@@ -565,9 +568,12 @@ class ExtractComponentFilter(ProcessingFilter.ProcessingFilter):
 		Created: 21.01.2007, KP
 		Description: Return the default value of a parameter
 		"""     
-		if parameter == "Component1":return 1
-		if parameter == "Component2":return 2
-		if parameter == "Component3":return 3
+		if parameter == "Component1":
+			return 1
+		if parameter == "Component2":
+			return 2
+		if parameter == "Component3":
+			return 3
 		
 
 	def execute(self, inputs, update = 0, last = 0):
@@ -676,7 +682,7 @@ class TimepointCorrelationFilter(ProcessingFilter.ProcessingFilter):
 			return None
 		tp1 = self.parameters["Timepoint1"]
 		tp2 = self.parameters["Timepoint2"]
-		self.vtkfilter = vtk.vtkImageAutoThresholdColocalization()
+		self.vtkfilter = vtkbxd.vtkImageAutoThresholdColocalization()
 		units = self.dataUnit.getSourceDataUnits()
 		data1 = units[0].getTimepoint(tp1)
 		# We need to prepare a copy of the data since
@@ -702,8 +708,6 @@ class TimepointCorrelationFilter(ProcessingFilter.ProcessingFilter):
 		self.corrLbl2.SetLabel("%.5f" % self.vtkfilter.GetPearsonWholeImage())
 		return self.getInput(1)
 		
-
-
 class ROIIntensityFilter(ProcessingFilter.ProcessingFilter):
 	"""
 	Created: 04.08.2006, KP
@@ -764,7 +768,8 @@ class ROIIntensityFilter(ProcessingFilter.ProcessingFilter):
 		"""     
 		if parameter == "ROI":
 			n = bxd.visualizer.getRegionsOfInterest()
-			if n:return (0, n[0])
+			if n:
+				return (0, n[0])
 			return 0
 		return 0
 		
@@ -775,15 +780,13 @@ class ROIIntensityFilter(ProcessingFilter.ProcessingFilter):
 		"""            
 		if not ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
-			
 		
 		if not self.parameters["AllROIs"]:
 			rois = [self.parameters["ROI"][1]]
-			print "rois=", rois
+			print "rois =", rois
 		else:
 			rois = bxd.visualizer.getRegionsOfInterest()
 		imagedata =  self.getInput(1)
-
 		
 		mx, my, mz = self.dataUnit.getDimensions()
 		values = []
@@ -792,18 +795,19 @@ class ROIIntensityFilter(ProcessingFilter.ProcessingFilter):
 				print "No mask"
 				return imagedata
 			print "Processing mask=", mask
-			n, maskImage = ImageOperations.getMaskFromROIs([mask], mx, my, mz)
+			n, maskImage = lib.ImageOperations.getMaskFromROIs([mask], mx, my, mz)
 
 			itkLabel =  self.convertVTKtoITK(maskImage)
 			itkOrig = self.convertVTKtoITK(imagedata)
 
 			labelStats = itk.LabelStatisticsImageFilter[itkOrig, itkLabel].New()
 			
-			
 			labelStats.SetInput(0, itkOrig)
 			labelStats.SetInput(1, itkLabel)
 			labelStats.Update()
+		
 			n = labelStats.GetCount(255)
+
 			totint = labelStats.GetSum(255)
 			maxval = labelStats.GetMaximum(255)
 			minval = labelStats.GetMinimum(255)
@@ -811,7 +815,6 @@ class ROIIntensityFilter(ProcessingFilter.ProcessingFilter):
 #            variance = labelStats.GetVariance(255)
 			mean = labelStats.GetMean(255)
 			sigma = labelStats.GetSigma(255)
-			
 			values.append((mask.getName(), n, totint, minval, maxval, mean, sigma))
 		if self.reportGUI:
 			self.reportGUI.setMeasurements(values)
@@ -837,8 +840,10 @@ class CutDataFilter(ProcessingFilter.ProcessingFilter):
 		ProcessingFilter.ProcessingFilter.__init__(self, (1, 1))
 		self.reportGUI = None
 		self.measurements = []
-		self.descs = {"UseROI": "Use Region of Interest to define resulting region", "ROI": "Region of Interest Used in Cutting", "StartingSlice": "First Slice in Resulting Stack",
-			"EndingSlice": "Last Slice in Resulting Stack"}
+		self.descs = {"UseROI": "Use Region of Interest to define resulting region", \
+						"ROI": "Region of Interest Used in Cutting", \
+						"StartingSlice": "First Slice in Resulting Stack", \
+						"EndingSlice": "Last Slice in Resulting Stack"}
 	
 	def getParameters(self):
 		"""
@@ -880,7 +885,8 @@ class CutDataFilter(ProcessingFilter.ProcessingFilter):
 			return 0
 		if parameter == "ROI":
 			n = bxd.visualizer.getRegionsOfInterest()
-			if n:return n[0]
+			if n:
+				return n[0]
 			return 0
 		if parameter == "LastSlice":
 			if self.dataUnit:
@@ -912,10 +918,14 @@ class CutDataFilter(ProcessingFilter.ProcessingFilter):
 			roi = self.parameters["ROI"]
 			pts = roi.getCoveredPoints()
 			for (x, y) in pts:
-				if minx > x:minx = x
-				if x > maxx:maxx = x
-				if miny > y:miny = y
-				if y > maxy:maxy = y
+				if minx > x:
+					minx = x
+				if x > maxx:
+					maxx = x
+				if miny > y:
+					miny = y
+				if y > maxy:
+					maxy = y
   
 		minz = self.parameters["FirstSlice"]
 		maxz = self.parameters["LastSlice"]
@@ -1218,7 +1228,8 @@ class ITKSigmoidFilter(ProcessingFilter.ProcessingFilter):
 		"""        
 		ProcessingFilter.ProcessingFilter.__init__(self, inputs)
 		self.itkFlag = 1
-		self.descs = {"Minimum": "Minimum output value", "Maximum": "Maximum Output Value", "Alpha": "Alpha", "Beta": "Beta"}
+		self.descs = {"Minimum": "Minimum output value", "Maximum": "Maximum Output Value", \
+						"Alpha": "Alpha", "Beta": "Beta"}
 		f3 = itk.Image.F3
 		self.itkfilter = itk.SigmoidImageFilter[f3, f3].New()
 		
@@ -1361,8 +1372,3 @@ class ITKLocalMaximumFilter(ProcessingFilter.ProcessingFilter):
 			
 		return data            
 
-from MathFilters import *
-from SegmentationFilters import *
-from MorphologicalFilters import *
-from TrackingFilters import *
-from RegistrationFilters import *

@@ -28,15 +28,14 @@
 __author__ = "BioImageXD Project"
 __version__ = "$Revision: 1.21 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
+
 import wx
 import Logging
 import types
-import messenger
-import time
-import scripting as bxd
-import Command
+import lib.messenger
 import platform
 import Configuration
+
 class TreeWidget(wx.SashLayoutWindow):
 	"""
 	Created: 10.01.2005, KP
@@ -142,7 +141,7 @@ class TreeWidget(wx.SashLayoutWindow):
 			del self.items[unit]
 			parent = self.tree.GetItemParent(item)
 			self.tree.Delete(parent)    
-		messenger.send(None, "delete_dataset", obj)
+		lib.messenger.send(None, "delete_dataset", obj)
 		obj.destroySelf()            
 		del obj        
 	def onCloseDataset(self, event):
@@ -168,7 +167,7 @@ class TreeWidget(wx.SashLayoutWindow):
 					
 				
 			if obj != "1":
-				messenger.send(None, "delete_dataset", obj)
+				lib.messenger.send(None, "delete_dataset", obj)
 				self.tree.Delete(item)
 				del obj
 			else:
@@ -431,7 +430,7 @@ class TreeWidget(wx.SashLayoutWindow):
 				self.tree.SelectItem(added, 1)
 				selected = 1
 				#print "obj=",obj
-				messenger.send(None, "tree_selection_changed", obj)            
+				lib.messenger.send(None, "tree_selection_changed", obj)            
 			
 		self.tree.Expand(self.root)
 		conf = Configuration.getConfiguration()
@@ -470,7 +469,7 @@ class TreeWidget(wx.SashLayoutWindow):
 		if obj == "1":
 			return
 		self.item = item
-		messenger.send(None, "tree_selection_changed", obj)
+		lib.messenger.send(None, "tree_selection_changed", obj)
 		self.markGreen([item])
 		
 		event.Skip()
@@ -540,7 +539,7 @@ class TreeWidget(wx.SashLayoutWindow):
 			if self.lastobj != obj:
 				#print "Last obj=",self.lastobj,"!=",obj
 				Logging.info("Switching to ", obj)
-				messenger.send(None, "tree_selection_changed", obj)        
+				lib.messenger.send(None, "tree_selection_changed", obj)        
 				self.markGreen([item])        
 				self.lastobj = obj
 		self.multiSelect = 0                
@@ -560,7 +559,7 @@ class TreeWidget(wx.SashLayoutWindow):
 		Created: 16.07.2006, KP
 		Description: Return items in the tree by their names
 		"""   
-		return self.selectByName(unit, channels, dontSelect = 1)
+		return self.selectChannelsByName(unit, channels, dontSelect = 1)
 		
 	def selectChannelsByNumber(self, unit, numbers, dontSelect = 0):
 		"""

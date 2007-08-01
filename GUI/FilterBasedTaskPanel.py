@@ -30,23 +30,23 @@ __author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.42 $"
 __date__ = "$Date: 2005/01/13 14:52:39 $"
 
-import wx
+#import wx
 
-import os.path
-import Dialogs
+#import os.path
+#import Dialogs
 
-from PreviewFrame import *
-from Logging import *
+#import GUI.PreviewFrame
+#import Logging
 
-import sys
-import time
+#import sys
+#import time
 
 import TaskPanel
-import UIElements
-import string
-import scripting
+#import UIElements
+#import string
+#import scripting
 import types
-import Command
+#import Command
 
 class FilterBasedTaskPanel(TaskPanel.TaskPanel):
 	"""

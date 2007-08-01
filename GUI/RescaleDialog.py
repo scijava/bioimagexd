@@ -29,17 +29,12 @@
 __author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.21 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
-import sys
-import Logging
-import wx
-import UIElements
-import string
 
-import PreviewFrame
+import wx
+from PreviewFrame.PreviewFrame import PreviewFrame
 import Histogram
 import Modules
-import messenger
-import  wx.lib.fancytext as fancytext
+import lib.messenger
 
 class RescaleDialog(wx.Dialog):
 	"""
@@ -160,7 +155,7 @@ color depth. Use the histograms below to the select how the intensities in your 
 			self.histograms.append(histogram)
 			histogram.setThresholdMode(1)
 			histogram.setDataUnit(dataUnit, noupdate = 1)
-			messenger.connect(histogram, "threshold_changed", self.onSetThreshold)
+			lib.messenger.connect(histogram, "threshold_changed", self.onSetThreshold)
 			x, y, z = dataUnit.getDimensions()
 			self.zslider.SetRange(1, z)
 		
@@ -208,7 +203,7 @@ color depth. Use the histograms below to the select how the intensities in your 
 		"""            
 		box = wx.StaticBox(self, -1, "Preview selected mapping")
 		previewBox = wx.StaticBoxSizer(box, wx.HORIZONTAL)
-		self.preview = PreviewFrame.PreviewFrame(self, previewsize = (256, 256), scrollbars = False)
+		self.preview = PreviewFrame(self, previewsize = (256, 256), scrollbars = False)
 		self.preview.setPreviewType("")
 				
 		previewBox.Add(self.preview)

@@ -35,11 +35,12 @@ __version__ = "$Revision: 1.22 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 import wx
-import messenger
+import lib.messenger
 import os
 import time
 import scripting
-import  wx.lib.buttons  as  buttons
+import wx.lib.buttons as buttons
+import platform
 
 class PlaybackControl(wx.Panel):
 #class PlaybackControl(wx.SashLayoutWindow):
@@ -117,11 +118,11 @@ class PlaybackControl(wx.Panel):
 		self.SetAutoLayout(1)
 		self.sizer.Fit(self)
 		
-		messenger.connect(None, "set_timeslider_value", self.onSetTimeslider)
-		#messenger.connect(None,"set_time_range",self.onSetTimeRange)
-		messenger.connect(None, "set_frames", self.onSetFrames)
-		messenger.connect(None, "timepoint_changed", self.onSetTimepoint)        
-		messenger.connect(None, "set_play_mode", self.onSetPlay)
+		lib.messenger.connect(None, "set_timeslider_value", self.onSetTimeslider)
+		#lib.messenger.connect(None,"set_time_range",self.onSetTimeRange)
+		lib.messenger.connect(None, "set_frames", self.onSetFrames)
+		lib.messenger.connect(None, "timepoint_changed", self.onSetTimepoint)        
+		lib.messenger.connect(None, "set_play_mode", self.onSetPlay)
 		
 		
 	def onSetPlay(self, obj, evt, *args):
@@ -203,7 +204,7 @@ class PlaybackControl(wx.Panel):
 		self.pauseButton.Enable(1)
 		self.playButton.Enable(0)
 		if not no_events:
-			messenger.send(None, "playback_play")
+			lib.messenger.send(None, "playback_play")
 	
 	def onPause(self, evt, no_events = 0):
 		"""
@@ -212,7 +213,7 @@ class PlaybackControl(wx.Panel):
 		"""
 		self.playButton.Enable(1)
 		self.pauseButton.Enable(0)
-		messenger.send(None, "playback_pause")
+		lib.messenger.send(None, "playback_pause")
 			
 			
 	def onSetTimeslider(self, obj, event, tp):

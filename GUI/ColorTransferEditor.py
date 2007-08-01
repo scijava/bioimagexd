@@ -30,26 +30,24 @@ __author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.28 $"
 __date__ = "$Date: 2005/01/13 14:52:39 $"
 
-import wx
-import os.path
-import sys
-import time
-import math
-import Logging
+#import sys
+
 import wx.lib.buttons as buttons
 import wx.lib.colourselect as csel
-import scripting
-
-import messenger
-
-import vtk
-import time
-import ImageOperations
 import Dialogs  
+import lib.ImageOperations
+import Logging
+import scripting
+import lib.messenger
+import math
+import os.path
 try:
 	import psyco
 except:
 	psyco = None
+import time
+import vtk
+import wx
 
 
 class CTFButton(wx.BitmapButton):
@@ -69,7 +67,7 @@ class CTFButton(wx.BitmapButton):
 		self.ctf = vtk.vtkColorTransferFunction()
 		self.ctf.AddRGBPoint(0, 0, 0, 0)
 		self.ctf.AddRGBPoint(255, 1, 1, 1)
-		self.bmp = ImageOperations.paintCTFValues(self.ctf)
+		self.bmp = lib.ImageOperations.paintCTFValues(self.ctf)
 		self.SetBitmapLabel(self.bmp)
 		self.Bind(wx.EVT_BUTTON, self.onModifyCTF)
 		
@@ -89,7 +87,7 @@ class CTFButton(wx.BitmapButton):
 		self.minval, self.maxval = ctf.GetRange()
 		self.minval = int(self.minval)
 		self.maxval = int(self.maxval)
-		self.bmp = ImageOperations.paintCTFValues(self.ctf)
+		self.bmp = lib.ImageOperations.paintCTFValues(self.ctf)
 		self.SetBitmapLabel(self.bmp)
 		
 	def getColorTransferFunction(self):
@@ -115,9 +113,9 @@ class CTFButton(wx.BitmapButton):
 		self.changed = 1
 		sizer.Fit(dlg)
 		dlg.ShowModal()
-		self.bmp = ImageOperations.paintCTFValues(self.ctf)
+		self.bmp = lib.ImageOperations.paintCTFValues(self.ctf)
 		self.SetBitmapLabel(self.bmp)
-		messenger.send(None, "data_changed", 0)
+		lib.messenger.send(None, "data_changed", 0)
 		
 	def getOpacityTransferFunction(self):
 		"""
@@ -403,22 +401,23 @@ class CTFPaintPanel(wx.Panel):
 				self.createLine(ax0, a0, ax, a, '#ffffff')
  
 			if not alphaMode:
-				self.createLine(rx0, r0, rx, r, '#ff0000')
+				self.createLine(rx0,r0,rx,r,'#ff0000')
 				self.createLine(gx0, g0, gx, g, '#00ff00')
-				self.createLine(bx0, b0, bx, b, '#0000ff')
+				self.createLine(bx0,b0,bx,b,'#0000ff')
 			rx0, gx0, bx0 = rx, gx, bx
 			r0, g0, b0 = r, g, b
 			a0 = a
-			if drawAlpha and alpha:
+			#ax0 = ax
+			if alpha:
 				ax0 = ax
 		if abs(rx0 / coeff - maximumValue) > 0.5:
 			self.createLine(rx0, r0, self.maxx, 0, '#ff0000')
-		if abs(gx0 / coeff - maximumValue) > 0.5:
-			self.createLine(gx0, g0, self.maxx, 0, '#00ff00')
+		if abs(gx0/coeff - maximumValue)>0.5:
+			self.createLine(gx0,g0,self.maxx, 0,'#00ff00')
 		if abs(bx0 / coeff - maximumValue) > 0.5:
 			self.createLine(bx0, b0, self.maxx, 0, '#0000ff')
-		if abs(ax0 / coeff - maximumValue) > 0.5:
-			self.createLine(ax0, a0, self.maxx, 0, '#ffffff')            
+		if abs(ax0/coeff - maximumValue)>0.5:
+			self.createLine(ax0,a0,self.maxx, 0,'#ffffff')            
 		self.dc.SelectObject(wx.NullBitmap)
 		self.dc = None
 		
@@ -453,7 +452,7 @@ class CTFValuePanel(wx.Panel):
 		dc.SetBackground(wx.Brush(self.GetBackgroundColour()))
 		dc.Clear()
 		dc.BeginDrawing()
-		bmp = ImageOperations.paintCTFValues(ctf, height = self.lineheight)
+		bmp = lib.ImageOperations.paintCTFValues(ctf, height = self.lineheight)
 		dc.DrawBitmap(bmp, self.xoffset, 0)
 		dc.EndDrawing()
 		dc.SelectObject(wx.NullBitmap)
@@ -661,7 +660,7 @@ class ColorTransferEditor(wx.Panel):
 		filename = Dialogs.askSaveAsFileName(self, "Save lookup table", "palette.bxdlut", wc, "palette")
 	
 		if filename:
-			ImageOperations.saveLUT(self.ctf, filename)
+			lib.ImageOperations.saveLUT(self.ctf, filename)
 
 	def onOpenLut(self, event):
 		"""
@@ -674,7 +673,7 @@ class ColorTransferEditor(wx.Panel):
 			filename = filename[0]
 			Logging.info("Opening palette", filename, kw = "ctf")
 			self.freeMode = 0
-			ImageOperations.loadLUT(filename, self.ctf)
+			lib.ImageOperations.loadLUT(filename, self.ctf)
 			self.setFromColorTransferFunction(self.ctf)
 			self.getPointsFromFree()
 			self.upToDate = 0
@@ -713,7 +712,7 @@ class ColorTransferEditor(wx.Panel):
 		self.upToDate = 0
 		self.updateGraph()
 		self.updateCTFView()
-		messenger.send(None, "data_changed", 0)
+		lib.messenger.send(None, "data_changed", 0)
 		self.colorBtn.SetColour(col)
 		
 		
@@ -873,7 +872,7 @@ class ColorTransferEditor(wx.Panel):
 		"""            
 		if abs(time.time() - self.updateT) > 0.5:
 			self.updateT = time.time()
-			messenger.send(None, "data_changed", 0)
+			lib.messenger.send(None, "data_changed", 0)
 	
 	def onFreeMode(self, event):
 		"""
@@ -1133,6 +1132,8 @@ class ColorTransferEditor(wx.Panel):
 					 determine where to insert control points for the user
 					 to edit
 		"""
+		#print "\n\nGETTING POINTS FROM FREE"	svn-1037, 18.7.07, MB
+		#Logging.backtrace()			svn-1037, 18.7.07, MB
 		xr0, xg0, xb0, xa0 = 0, 0, 0, 0
 		kr, kg, kb, ka = 1, 1, 1, 1
 		yr0, yg0, yb0, ya0 = 0, 0, 0, 0

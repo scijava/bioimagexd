@@ -29,19 +29,19 @@ __author__ = "BioImageXD Project"
 __version__ = "$Revision: 1.9 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
+from Visualizer.VisualizationModules import VisualizationModule
+from Visualizer.ModuleConfiguration import ModuleConfigurationPanel
+import vtk
 import wx
 
-import vtk
-import messenger
-import ColorTransferEditor
+def getClass():
+	return SplineModule
 
-import Logging
-from Visualizer.VisualizationModules import *
+def getConfigPanel():
+	return SplineConfigurationPanel
 
-def getClass():return SplineModule
-def getConfigPanel():return SplineConfigurationPanel
-def getName():return "Camera path"
-
+def getName():
+	return "Camera path"
 
 class SplineModule(VisualizationModule):
 	"""
@@ -68,8 +68,11 @@ class SplineModule(VisualizationModule):
 		self.spline.GetHandleProperty().SetColor(0, 1, 0)
 		self.spline.SetResolution(1000)
 
+		#TODO: endInteraction is in GUI.Urmas.SplineEditor
 		self.spline.AddObserver("EndInteractionEvent", self.endInteraction)
 		self.spline.AddObserver("InteractionEvent", self.endInteraction)
+
+		#TODO: iren is in GUI.Urmas.SplineEditor
 		self.spline.SetInteractor(self.iren)
 		#self.spline.On()
 		
@@ -188,6 +191,7 @@ class SplineModule(VisualizationModule):
 		pass
 		
 class SplineConfigurationPanel(ModuleConfigurationPanel):
+
 	def __init__(self, parent, visualizer, name = "Camera Path", **kws):
 		"""
 		Method: __init__(parent)
@@ -237,10 +241,6 @@ class SplineConfigurationPanel(ModuleConfigurationPanel):
 		self.module.updateData()
 		self.module.updateRendering()
 
-		
-		
-		
-
 """
-foo
+foo 
 """

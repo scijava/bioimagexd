@@ -30,7 +30,7 @@ __author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.21 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
-import vtk
+#import vtk
 from DataUnitSetting import DataUnitSettings
 #import ManipulationFilters
 
@@ -48,7 +48,7 @@ class FilterBasedTaskSettings(DataUnitSettings):
 		DataUnitSettings.__init__(self, n)
 		self.set("Type", "No Type Set")
 		
-		self.registerPrivate("ColorTransferFunction", 1)        
+		self.registerPrivate("ColorTransferFunction", 1)		   
 		self.registerCounted("Source")
 		self.register("FilterList", serialize = 1)
 		self.register("VoxelSize")
@@ -61,20 +61,20 @@ class FilterBasedTaskSettings(DataUnitSettings):
 		
 	def initialize(self, dataunit, channels, timepoints):
 		"""
-		Method: initialize(dataunit,channels, timepoints)
+		Method: initialize(dataunit, channels, timepoints)
 		Created: 27.03.2005
 		Description: Set initial values for settings based on 
 					 number of channels and timepoints
 		"""
 		DataUnitSettings.initialize(self, dataunit, channels, timepoints)
-		if hasattr(dataunit, "getScalarRange"):
-			minval, maxval = dataunit.getScalarRange()
-		else:
-			minval, maxval = dataunit.getSourceDataUnits()[0].getScalarRange()
+		#if hasattr(dataunit, "getScalarRange"):
+		#	minval, maxval = dataunit.getScalarRange()
+		#else:
+		#	minval, maxval = dataunit.getSourceDataUnits()[0].getScalarRange()
 		#ctf = vtk.vtkColorTransferFunction()
-		#ctf.AddRGBPoint(minval,0,0,0)
+		#ctf.AddRGBPoint(minval, 0, 0, 0)
 		#ctf.AddRGBPoint(maxval, 1.0, 1.0, 1.0)
-		#self.set("ColorTransferFunction",ctf)
+		#self.set("ColorTransferFunction", ctf)
 
 		
 	def writeTo(self, parser):
@@ -84,9 +84,9 @@ class FilterBasedTaskSettings(DataUnitSettings):
 		"""    
 		DataUnitSettings.writeTo(self, parser)
 		lst = self.get("FilterList")
-		#print "Filter list to write=",lst
+		#print "Filter list to write = ", lst
 		flist = eval(self.serialize("FilterList", lst))
-		#print "Got serialized=",flist
+		#print "Got serialized = ", flist
 		for i, fname in enumerate(flist):
 			currfilter = lst[i]
 			keys = currfilter.getPlainParameters()
@@ -97,23 +97,23 @@ class FilterBasedTaskSettings(DataUnitSettings):
 
 	def deserialize(self, name, value):
 		"""
-		Created: 05.06.2005
+		Created: 05.06.2005 by KP?
 		Description: Returns the value of a given key
 		"""
 		if name == "FilterList":
-			fnames = eval(value)
-			flist = []
+			filterNames = eval(value)
+			filterList = []
 			filters = self.filterModule.getFilterList()
-			nametof = {}
-			for f in filters:
-				nametof[f.getName()] = f
-			for name in fnames:
+			nameToFilter = {}
+			for filter in filters:
+				nameToFilter[filter.getName()] = filter
+			for name in filterNames:
 				try:
-					fclass = nametof[name]
-					flist.append(fclass)
+					fclass = nameToFilter[name]
+					filterList.append(fclass)
 				except:
 					pass
-			return flist
+			return filterList
 				
 		else:
 			return DataUnitSettings.deserialize(self, name, value)

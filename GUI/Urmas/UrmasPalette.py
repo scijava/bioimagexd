@@ -38,10 +38,10 @@ __version__ = "$Revision: 1.22 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 import wx
-import Dialogs
-import MenuManager
+import GUI.Dialogs
+import GUI.MenuManager
 import os.path
-import messenger
+import lib.messenger
 import scripting
 
 from wx.lib.statbmp  import GenStaticBitmap as StaticBitmap
@@ -181,7 +181,7 @@ class UrmasPalette(wx.Panel):
 		"add_keyframe.gif", self.onToolNewKeyframe, toolTip)     
 		
 		self.zoomLevels = [0.25, 0.3333, 0.5, 0.6667, 0.75, 1.0, 1.25, 1.5, 2.0, 3.0, 4.0, 6.0]
-		self.zoomCombo = wx.ComboBox(self, MenuManager.ID_ANIM_ZOOM_COMBO,
+		self.zoomCombo = wx.ComboBox(self, GUI.MenuManager.ID_ANIM_ZOOM_COMBO,
 						  choices = ["25%", "33.33%", "50%", "66.67%", "75%", "100%", "125%", "150%", "200%", "300%", "400%", "600%"], size = (100, -1), style = wx.CB_DROPDOWN)
 		self.zoomCombo.SetSelection(5)
 		self.zoomCombo.SetHelpText("This controls the zoom level of animator tracks.")        
@@ -205,7 +205,7 @@ class UrmasPalette(wx.Panel):
 		"""        
 		pos = self.zoomCombo.GetSelection()
 		lvl = self.zoomLevels[pos]
-		messenger.send(None, "set_animator_zoom", lvl)
+		lib.messenger.send(None, "set_animator_zoom", lvl)
 		
 		
 	def addDragDropItem(self, newid, icon, dragCallback, toolTip):        
@@ -277,7 +277,7 @@ class UrmasPalette(wx.Panel):
 		Created: 07.08.2005, KP
 		Description: A method that displays instructions if the user clicks on the palette
 		"""
-		Dialogs.showwarning(None, "You need to drag and drop this item on to a track.", "Drag item instead of clicking")
+		GUI.Dialogs.showwarning(None, "You need to drag and drop this item on to a track.", "Drag item instead of clicking")
 		
 	def onToolNewPerpendicular(self, event):
 		"""

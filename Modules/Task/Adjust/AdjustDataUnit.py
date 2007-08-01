@@ -27,11 +27,11 @@ __author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.93 $"
 __date__ = "$Date: 2005/01/13 14:09:15 $"
 
-from lib import Interpolation
-import ImageOperations
+import lib.Interpolation
+import lib.ImageOperations
 import AdjustSettings
 import Logging
-from DataUnit import CombinedDataUnit
+from lib.DataUnit.CombinedDataUnit import CombinedDataUnit
 
 class AdjustDataUnit(CombinedDataUnit):
 	"""
@@ -99,17 +99,17 @@ class AdjustDataUnit(CombinedDataUnit):
 		n = timepoint2 - timepoint1
 		itf1 = self.settings.getCounted("IntensityTransferFunctions", timepoint1)
 		itf2 = self.settings.getCounted("IntensityTransferFunctions", timepoint2)
-		params1 = ImageOperations.getAsParameterList(itf1)
-		params2 = ImageOperations.getAsParameterList(itf2)
+		params1 = lib.ImageOperations.getAsParameterList(itf1)
+		params2 = lib.ImageOperations.getAsParameterList(itf2)
 		# There are n-1 timepoints between the specified timepoints
-		params = Interpolation.interpolate(params1, params2, n - 1)
+		params = lib.Interpolation.interpolate(params1, params2, n - 1)
 		print "params1=", params1
 		print "params2=", params2
 		print "Interpolated %d new paramlists" % len(params)
 		for i in range(n - 1):
 			print "Setting new parameters for timepoint ", timepoint1 + i + 1
 			iTF = self.settings.getCounted("IntensityTransferFunctions", timepoint1 + i + 1)
-			ImageOperations.setFromParameterList(iTF, params[i])
+			lib.ImageOperations.setFromParameterList(iTF, params[i])
 			self.settings.setCounted("IntensityTransferFunctions", timepoint1 + i + 1, iTF)
 	   
 

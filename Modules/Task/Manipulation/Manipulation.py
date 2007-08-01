@@ -29,14 +29,9 @@ __author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.13 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
+import lib.FilterBasedModule
 
-import vtk
-import time
-import Logging
-
-from lib import FilterBasedModule
-
-class Manipulation(FilterBasedModule.FilterBasedModule):
+class Manipulation(lib.FilterBasedModule.FilterBasedModule):
 	"""
 	Created: 04.04.2006, KP
 	Description: Manipulationes a single dataunit in specified ways
@@ -47,4 +42,4 @@ class Manipulation(FilterBasedModule.FilterBasedModule):
 		Created: 25.11.2004, KP
 		Description: Initialization
 		"""
-		FilterBasedModule.FilterBasedModule.__init__(self, **kws)
+		lib.FilterBasedModule.FilterBasedModule.__init__(self, **kws)

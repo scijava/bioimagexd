@@ -27,11 +27,9 @@ __author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.93 $"
 __date__ = "$Date: 2005/01/13 14:09:15 $"
 
-
-import Logging
-
-from DataUnit import CombinedDataUnit
+from lib.DataUnit.CombinedDataUnit import CombinedDataUnit
 import ManipulationSettings
+import vtk
 
 class ManipulationDataUnit(CombinedDataUnit):
 	"""

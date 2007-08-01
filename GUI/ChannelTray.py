@@ -29,15 +29,14 @@ __author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.28 $"
 __date__ = "$Date: 2005/01/13 14:52:39 $"
 
-import wx
-import  wx.lib.scrolledpanel as scrolled
+#import ImageOperations
+#import vtk
+
 import  wx.lib.buttons  as  buttons
-
-import ImageOperations
+import lib.messenger
 import os.path
-import messenger
-import vtk
-
+import  wx.lib.scrolledpanel as scrolled
+import wx
 
 class ChannelTray(wx.Panel):
 	"""
@@ -106,7 +105,7 @@ class ChannelTray(wx.Panel):
 				btn.SetValue(0)
 			else:
 				self.selectedChannel = i
-				messenger.send(None, "channel_selected", self.selectedChannel)
+				lib.messenger.send(None, "channel_selected", self.selectedChannel)
 	def SetSelection(self, n):
 		"""
 		Created: 07.02.2007, KP
@@ -115,7 +114,7 @@ class ChannelTray(wx.Panel):
 		for i, btn in enumerate(self.buttons):
 			btn.SetValue(i == n)
 		self.selectedChannel = n
-		messenger.send(None, "channel_selected", self.selectedChannel)
+		lib.messenger.send(None, "channel_selected", self.selectedChannel)
 		
 	def getPreviewBitmap(self, preview, name, size, color):
 		"""

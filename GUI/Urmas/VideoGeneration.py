@@ -35,18 +35,19 @@ __author__ = "BioImageXD Project"
 __version__ = "$Revision: 1.22 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
-import wx
-import RenderingInterface
-import Visualizer
-import Configuration
-import os, sys
-import Dialogs
-import platform
-import Logging
-import messenger
-import math
+#import Visualizer
 
-import scripting as bxd
+import Configuration
+import GUI.Dialogs
+import lib.messenger
+import lib.RenderingInterface
+import Logging
+import math
+import platform
+import os
+import scripting
+import sys
+import wx
 
 class VideoGeneration(wx.Panel):
 	"""
@@ -83,7 +84,9 @@ class VideoGeneration(wx.Panel):
 							 ["MPEG1", "MPEG2", "WMV1",
 							  "WMV2", "MS MPEG4", "MS MPEG4 v2",
 							  "QuickTime MPEG4", "AVI MPEG4"]]
-		self.outputCodecs = [("mpeg1video", "mpg"), ("mpeg2video", "mpg"), ("wmv1", "wmv"), ("wmv2", "wmv"), ("msmpeg4", "avi"), ("msmpeg4v2", "avi"), ("mpeg4", "mov"), ("mpeg4", "avi")]
+		self.outputCodecs = [("mpeg1video", "mpg"), ("mpeg2video", "mpg"), \
+							("wmv1", "wmv"), ("wmv2", "wmv"), ("msmpeg4", "avi"), \
+							("msmpeg4v2", "avi"), ("mpeg4", "mov"), ("mpeg4", "avi")]
 		self.padding = [1, 1, 0, 0, 0, 0]
 		self.presets = [(0, 0, 0), ((720, 576), (25), 6000), ((720, 480), (29.97), 6000)]
 		self.targets = ["", "pal-dvd", "ntsc-dvd"]
@@ -122,10 +125,10 @@ class VideoGeneration(wx.Panel):
 		Description: Close the video generation window
 		"""        
 		if self.rendering:
-			messenger.send(None, "stop_rendering")
+			lib.messenger.send(None, "stop_rendering")
 			self.abort = 1
 #        self.visualizer.getCurrentMode().lockSliderPanel(0)            
-		messenger.send(None, "video_generation_close")
+		lib.messenger.send(None, "video_generation_close")
 		
 		
 	def onOk(self, event):
@@ -134,8 +137,8 @@ class VideoGeneration(wx.Panel):
 		Description: Render the whole damn thing
 		"""
 		self.okButton.Enable(0)
-		messenger.send(None, "set_play_mode")
-		messenger.connect(None, "playback_stop", self.onCancel)
+		lib.messenger.send(None, "set_play_mode")
+		lib.messenger.connect(None, "playback_stop", self.onCancel)
 		
 		self.abort = 0
 		if self.visualizer.getCurrentModeName() != "3d":
@@ -154,7 +157,7 @@ class VideoGeneration(wx.Panel):
 		conf.setConfigItem("VideoPath", "Paths", file)
 		conf.writeSettings()
 		
-		renderingInterface = RenderingInterface.getRenderingInterface(1)
+		renderingInterface = lib.RenderingInterface.getRenderingInterface(1)
 		renderingInterface.setVisualizer(self.visualizer)
 		# if we produce images, then set the correct file type
 		if self.formatMenu.GetSelection() == 0:
@@ -181,7 +184,7 @@ class VideoGeneration(wx.Panel):
 		Logging.info("Will set render window to ", size, kw = "animator")
 		self.visualizer.setRenderWindowSize((x, y), self.parent)
 		self.rendering = 1
-		messenger.connect(None, "rendering_done", self.cleanUp)
+		lib.messenger.connect(None, "rendering_done", self.cleanUp)
 		flag = self.control.renderProject(0, renderpath = path)
 		
 		self.rendering = 0
@@ -193,7 +196,7 @@ class VideoGeneration(wx.Panel):
 		Created: 30.1.2006, KP
 		Description: Method to clean up after rendering is done
 		""" 
-		renderingInterface = RenderingInterface.getRenderingInterface()        
+		renderingInterface = lib.RenderingInterface.getRenderingInterface()        
 		self.frameList = renderingInterface.getFrameList()
 		# if the rendering wasn't aborted, then restore the animator
 		if not self.abort:
@@ -212,16 +215,16 @@ class VideoGeneration(wx.Panel):
 		self.rendering = 0
 		
 		
-		messenger.send(None, "video_generation_close")
+		lib.messenger.send(None, "video_generation_close")
 #        self.Close()
-		messenger.disconnect(None, "rendering_done")
+		lib.messenger.disconnect(None, "rendering_done")
 
 	def encodeVideo(self, path, file, size):
 		"""
 		Created: 27.04.2005, KP
 		Description: Encode video from the frames produced
 		""" 
-		renderingInterface = RenderingInterface.getRenderingInterface()
+		renderingInterface = lib.RenderingInterface.getRenderingInterface()
 		
 		pattern = renderingInterface.getFilenamePattern()
 		framename = renderingInterface.getFrameName()
@@ -243,7 +246,11 @@ class VideoGeneration(wx.Panel):
 #            #if frameRate<12.5:frameRate=12
 #            #else:frameRate=24
 #            frameRate=25
-#            Dialogs.showmessage(self,"For the code you've selected (%s), the target frame rate must be either 12.5 or 25. %d will be used."%(scodec,frameRate),"Bad framerate")
+#            GUI.Dialogs.showmessage(self, \
+#										"For the code you've selected (%s), \
+#										the target frame rate must be either 12.5 or 25. %d will be used." \
+#										% (scodec,frameRate), \
+#										"Bad framerate")
 
 		x, y = size
 		ffmpegs = {"linux": "bin/ffmpeg", "win32": "bin\\ffmpeg.exe", "darwin": "bin/ffmpeg.osx"}
@@ -263,23 +270,24 @@ class VideoGeneration(wx.Panel):
 				ffmpeg = ffmpegs[i]
 				break
 				
-		bindir = bxd.get_main_dir()
+		bindir = scripting.get_main_dir()
 		ffmpeg = os.path.join(bindir, ffmpeg)
 		if not target:
-			commandLine = "%s -qscale %d -b 8192 -r %.2f -s %dx%d -i \"%s\" -vcodec %s \"%s\"" % (ffmpeg, quality, frameRate, x, y, pattern, vcodec, file)
+			commandLine = "%s -qscale %d -b 8192 -r %.2f -s %dx%d -i \"%s\" -vcodec %s \"%s\"" \
+							% (ffmpeg, quality, frameRate, x, y, pattern, vcodec, file)
 		else:
 			
 			commandLine = "%s -qscale %d -s %dx%d -i \"%s\" -target %s \"%s\"" % (ffmpeg, quality, x, y, pattern, target, file)
 		Logging.info("Command line for ffmpeg=", commandLine, kw = "animator")
 		os.system(commandLine)
 		if os.path.exists(file):
-			Dialogs.showmessage(self, "Encoding was successful!", "Encoding done")
+			GUI.Dialogs.showmessage(self, "Encoding was successful!", "Encoding done")
 			if self.delFramesBox.GetValue():
 				for file in self.frameList:
 					print "Removing", file
 					os.unlink(file)
 		else:
-			Dialogs.showmessage(self, "Encoding failed: File %s does not exist!" % file, "Encoding failed")
+			GUI.Dialogs.showmessage(self, "Encoding failed: File %s does not exist!" % file, "Encoding failed")
 		
 		
 	def onUpdateFormat(self, event):
@@ -394,7 +402,8 @@ class VideoGeneration(wx.Panel):
 		self.frameRate = wx.StaticText(self, -1, "%.2f" % self.fps)
 		
 		self.qualityLbl = wx.StaticText(self, -1, "Encoding quality (1 = worst, 10 = best)")
-		self.qualitySlider = wx.Slider(self, -1, value = 10, minValue = 1, maxValue = 10, style = wx.SL_HORIZONTAL | wx.SL_LABELS | wx.SL_AUTOTICKS, size = (250, -1))
+		self.qualitySlider = wx.Slider(self, -1, value = 10, minValue = 1, maxValue = 10, \
+										style = wx.SL_HORIZONTAL | wx.SL_LABELS | wx.SL_AUTOTICKS, size = (250, -1))
 		
 		self.presetLbl = wx.StaticText(self, -1, "Preset encoding targets:")
 		self.preset = wx.Choice(self, -1, choices = ["Use settings below", "PAL-DVD", "NTSC-DVD"])
@@ -481,7 +490,7 @@ class VideoGeneration(wx.Panel):
 		Description: A callback that is used to select the directory where
 					 the rendered frames are stored
 		"""
-		dirname = Dialogs.askDirectory(self, "Directory for rendered frames", ".")
+		dirname = GUI.Dialogs.askDirectory(self, "Directory for rendered frames", ".")
 		self.rendir.SetValue(dirname)
 		
 	def onSelectOutputFile(self, event = None):
@@ -495,7 +504,7 @@ class VideoGeneration(wx.Panel):
 		codecname = self.outputFormats[sel][codec]
 		ext = self.outputExts[sel][codec]
 		wc = "%s File (*.%s)|*.%s" % (codecname, ext, ext)
-		filename = Dialogs.askSaveAsFileName(self, "Select output filename", "movie.%s" % ext, wc)
+		filename = GUI.Dialogs.askSaveAsFileName(self, "Select output filename", "movie.%s" % ext, wc)
 		if filename:
 			self.videofile.SetValue(filename)
 			

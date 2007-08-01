@@ -1,4 +1,4 @@
-4# -*- coding: iso-8859-1 -*-
+# -*- coding: iso-8859-1 -*-
 """
  Unit: AdjustSettings
  Project: BioImageXD
@@ -35,8 +35,8 @@ __author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.21 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
-from DataUnit import DataUnitSettings
-import vtk
+from lib.DataUnit.DataUnitSetting import DataUnitSettings
+import vtkbxd
 
 class AdjustSettings(DataUnitSettings):
 	"""
@@ -81,7 +81,7 @@ class AdjustSettings(DataUnitSettings):
 
 		for i in range(timepoints):
 			
-			tf = vtk.vtkIntensityTransferFunction()
+			tf = vtkbxd.vtkIntensityTransferFunction()
 			tf.SetRangeMax(maxval)
 			self.setCounted("IntensityTransferFunctions", i, tf, 0)
  

@@ -29,24 +29,30 @@
 """
 __author__ = "Karl Garsha, BioImageXD Project"
 __version__ = "$Revision: 1.21 $"
-__date__ = "$Date: 2005/01/13 13:42:03 $"
-import wx
-import os
-import sys
-import re
-import string
-import vtk
-import math
+__date__ = "$Date: 2005/01/13/ 13:42:03 $"
+
+from lib.DataSource.DataSource import DataSource
+from lib.DataUnit.DataUnit import DataUnit
 try:
 	import Image
 except:
 	Image = None
-from DataSource import *
-import DataUnit
+import Logging
+import math
+import os
+import re
+import string
+import vtk
+import vtkbxd
 
-def getExtensions(): return ["txt"]
-def getFileType(): return "Leica TCS-NT datasets (*.txt)"
-def getClass(): return LeicaDataSource
+def getExtensions(): 
+	return ["txt"]
+
+def getFileType(): 
+	return "Leica TCS-NT datasets (*.txt)"
+
+def getClass(): 
+	return LeicaDataSource
 		
 class LeicaDataSource(DataSource):
 	"""
@@ -80,14 +86,13 @@ class LeicaDataSource(DataSource):
 		managed by this DataSource
 		"""
 		return self.reader.GetNumberOfTimepoints(self.experiment)
+
 	def getFileName(self):
 		"""
 		Created: 21.07.2005
 		Description: Return the file name
 		"""    
 		return self.filename
-		
-
 	
 	def getDataSet(self, i, raw = 0):
 		"""
@@ -123,10 +128,9 @@ class LeicaDataSource(DataSource):
 			a, b, c = self.getVoxelSize()
 			self.spacing = [1, b / a, c / a]
 		return self.spacing
-
 			#data=self.getDataSet(0)
 			#self.spacing=data.GetSpacing()
-		return self.spacing
+		#return self.spacing
 		
 	def getVoxelSize(self):
 		"""
@@ -161,7 +165,9 @@ class LeicaDataSource(DataSource):
 		dataunits = []
 		experiments = self.reader.GetExperiments()
 		print "Experiments=", experiments
+
 		for experiment in experiments:
+
 			if experiment in self.reader.nonExistent:
 				print "Not reading ", experiment
 				continue
@@ -174,12 +180,11 @@ class LeicaDataSource(DataSource):
 				#  we can associate with the dataunit
 				
 				datasource = LeicaDataSource(filename, experiment, i)
-				dataunit = DataUnit.DataUnit()
+				dataunit = DataUnit()
 				dataunit.setDataSource(datasource)
 				dataunits.append((experiment, dataunit))
 			
 		return dataunits
-
 
 	def getName(self):
 		"""
@@ -188,7 +193,6 @@ class LeicaDataSource(DataSource):
 					 operates on
 		"""
 		return "Ch%.2d" % self.channel
-
 		
 	def getColorTransferFunction(self):
 		"""
@@ -211,7 +215,6 @@ class LeicaDataSource(DataSource):
 			ctf.AddRGBPoint(255, r, g, b)
 			self.ctf = ctf
 		return self.ctf        
-
 		
 class LeicaExperiment:
 	def __init__ (self, ExpPathTxt):
@@ -239,13 +242,10 @@ class LeicaExperiment:
 		self.RE_Bit_Depth = re.compile(r'Resolution.+\d+', re.I)
 		self.RE_PixelSize = re.compile(r'Pixel Size in Byte.+\d+', re.I)
 		self.RE_NonWhitespace = re.compile(r'\w+', re.I)
-		
-		
+
 		self.setFileName(ExpPathTxt)
 		self.TP_CH_VolDataList = []
-		
-
-		
+				
 	def setFileName(self, filename):
 		"""
 		Created: 12.04.2005, KP
@@ -316,7 +316,8 @@ class LeicaExperiment:
 		#fn=os.path.join(self.path,filename)
 		#print fn##
 		#f=open(fn)
-		if not Image:return 0, 0, 0
+		if not Image:
+			return 0, 0, 0
 		img = Image.open(fn)
 		if not img.palette:
 			return 255, 255, 255
@@ -396,7 +397,9 @@ class LeicaExperiment:
 		return SeriesNameLine
 		SeriesNameSplit = SeriesNameLine.split()
 		SeriesNameSplit.reverse()
-		SeriesNameTxtString = self.RE_NonWhitespace.search(SeriesNameSplit[0].strip())#this is intended to get the alpha-num. char values and drop the newlines
+
+		#this is intended to get the alpha-num. char values and drop the newlines:
+		SeriesNameTxtString = self.RE_NonWhitespace.search(SeriesNameSplit[0].strip())
 		SeriesName = SeriesNameTxtString.group(0)
 		# should return the series name w/o newline
 		return SeriesName
@@ -662,7 +665,8 @@ class LeicaExperiment:
 			TimePoints = []
 			for a in xrange(Num_T_Points): #starts at 0 and counts up to (but not including) Num_T_Points.
 				n = int(math.log(Num_T_Points))
-				if n == 1:n = 2
+				if n == 1:
+					n = 2
 				TP_pat = "_t%%.%dd" % n
 				#print "TP_Pattern=",TP_pat
 				#raise "foo"
@@ -733,7 +737,7 @@ class LeicaExperiment:
 		for TimePoint in TiffList:
 			ChnlVolDataLst = [] #contains the volumetric datasets for each channel w/in each timepoint
 			for Channel in TimePoint:
-				TIFFReader = vtk.vtkExtTIFFReader()
+				TIFFReader = vtkbxd.vtkExtTIFFReader()
 				if Series_Info['Pixel_Size'] != 3:
 					TIFFReader.RawModeOn()
 					

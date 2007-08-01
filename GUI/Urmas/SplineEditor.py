@@ -35,17 +35,17 @@ __version__ = "$Revision: 0.1 $"
 __date__ = "$Date: 2004/01/20 22:41:28 $"
 
 
-import types, os
-import string
+#import types, os
+#import string
 
 import vtk
-from vtk.util.colors import tomato, banana
+#from vtk.util.colors import tomato, banana
 
-import wx
-import wx.lib.scrolledpanel as scrolled
-import PreviewFrame
+#import wx
+#import wx.lib.scrolledpanel as scrolled
+#import PreviewFrame
 import Logging
-import messenger
+import lib.messenger
 
 
 math = vtk.vtkMath()
@@ -69,9 +69,9 @@ class SplineEditor:
 		self.viewMode = 0
 		self.wxrenwin = renwin
 #        self.initializeVTK()
-		messenger.connect(None, "show_arrow", self.onShowArrow)
-		messenger.connect(None, "set_preview_mode", self.onSetPreviewMode)
-		messenger.connect(None, "show_camera", self.onShowCamera)
+		lib.messenger.connect(None, "show_arrow", self.onShowArrow)
+		lib.messenger.connect(None, "set_preview_mode", self.onSetPreviewMode)
+		lib.messenger.connect(None, "show_camera", self.onShowCamera)
 		self.arrow = None
 		self.arrowVisibility = 0
 		
@@ -482,8 +482,8 @@ class SplineEditor:
 		
 		txt = ("X", "Y", "Z")
 		for t in txt:
-				eval ("self.axes.%sAxisVisibilityOn ()" % t)
-				eval ("self.axes.Get%sAxisActor2D().SetLabelFactor(0.5)" % t)
+			eval ("self.axes.%sAxisVisibilityOn ()" % t)
+			eval ("self.axes.Get%sAxisActor2D().SetLabelFactor(0.5)" % t)
 
 		self.axes.GetProperty ().SetColor ((255, 255, 255))
 		self.axes.SetNumberOfLabels (2)
@@ -706,8 +706,8 @@ class SplineEditor:
 		#print "Orientation=",cam.GetOrientationWXYZ()
 
 		if self.viewMode == 1:
-			messenger.send(None, "set_camera", cam)
-			messenger.send(None, "view_camera", cam)
+			lib.messenger.send(None, "set_camera", cam)
+			lib.messenger.send(None, "view_camera", cam)
 		
 		#print "interactioncallback=",self.interactionCallback
 		if self.interactionCallback:

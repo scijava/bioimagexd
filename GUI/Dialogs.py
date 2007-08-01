@@ -31,9 +31,8 @@ __version__ = "$Revision: 1.22 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 import Configuration
-import wx
 import os.path
-
+import wx
 
 def showmessage(parent, message, title, flags = wx.OK):
 	"""
@@ -58,35 +57,38 @@ def showerror(parent, message, title, flags = wx.OK | wx.ICON_ERROR):
 	"""    
 	showmessage(parent, message, title, flags)
 
-	
-def askcolor(*args, **kws):
-	"""
-	Created: 28.01.2005, KP
-	Description: A method to input a color from user
-	"""    
-	dlg = wx.ColourDialog(None)
-	dlg.GetColourData().SetChooseFull(True)
-	if dlg.ShowModal() == wx.ID_OK:
-		gcolor = dlg.GetColourData()
-	else:
-		return None
-	color = gcolor[0]
-	if 255 not in color:
-		mval = max(color)
-		coeff = 255.0 / mval
-		ncolor = [int(x * coeff) for x in color]
-		dlg = wx.MessageDialog(self,
-			"The color you selected: %d,%d,%d is incorrect."
-			"At least one of the R, G or B components\n"
-			"of the color must be 255. Therefore, "
-			"I have modified the color a bit. "
-			"It is now %d,%d,%d. Have a nice day." % (color[0],
-			color[1], color[2], ncolor[0], ncolor[1], ncolor[2]), "Selected color is incorrect", wx.OK | wx.ICON_WARNING)
-		dlg.ShowModal()
-		dlg.Destroy()
-		gcolor = ncolor
-	return (gcolor, "#%2x%2x%2x" % (gcolor[0], gcolor[1], gcolor[2]))
-
+# this method is unused - commented this out, 20.7.2007 SS
+#	
+#def askcolor(*args, **kws):
+#	"""
+#	Created: 28.01.2005, KP
+#	Description: A method to input a color from user
+#	"""    
+#	dlg = wx.ColourDialog(None)
+#	dlg.GetColourData().SetChooseFull(True)
+#	if dlg.ShowModal() == wx.ID_OK:
+#		gcolor = dlg.GetColourData()
+#	else:
+#		return None
+#	color = gcolor[0]
+#	if 255 not in color:
+#		mval = max(color)
+#		coeff = 255.0 / mval
+#		ncolor = [int(x * coeff) for x in color]
+#		dlg = wx.MessageDialog(self,
+#								"The color you selected: %d, %d, %d is incorrect." \
+#								"At least one of the R, G or B components\n" \
+#								"of the color must be 255. Therefore, " \
+#								"I have modified the color a bit. " \
+#								"It is now %d, %d, %d. Have a nice day." \
+#								% (color[0], color[1], color[2], ncolor[0], ncolor[1], ncolor[2]), \
+#								"Selected color is incorrect", \
+#								wx.OK | wx.ICON_WARNING)
+#		dlg.ShowModal()
+#		dlg.Destroy()
+#		gcolor = ncolor
+#	return (gcolor, "#%2x%2x%2x" % (gcolor[0], gcolor[1], gcolor[2]))
+ 
 
 def askDirectory(parent, title, initialDir = None):
 	"""
@@ -99,11 +101,12 @@ def askDirectory(parent, title, initialDir = None):
 	if not initialDir:
 		if remember:
 			initialDir = conf.getConfigItem("LastPath", "Paths")
-			if not initialDir:initialDir = "."
+			if not initialDir:
+				initialDir = "."
 		else:
 			initialDir = conf.getConfigItem("DataPath", "Paths")
 	dlg = wx.DirDialog(parent, title, initialDir,
-					  style = wx.DD_DEFAULT_STYLE | wx.DD_NEW_DIR_BUTTON)
+					  style = wx.DD_DEFAULT_STYLE|wx.DD_NEW_DIR_BUTTON)
 	if dlg.ShowModal() == wx.ID_OK:
 		filepath = dlg.GetPath()
 		
@@ -112,7 +115,7 @@ def askDirectory(parent, title, initialDir = None):
 	dlg.Destroy()
 	return filepath
 
-def askOpenFileName(parent, title, wc, remember = -1, filetype = None):
+def askOpenFileName(parent, title, wc, remember =- 1, filetype = None):
 	"""
 	Created: 12.03.2005, KP
 	Description: A method to show a open file dialog that supports multiple files
@@ -127,13 +130,14 @@ def askOpenFileName(parent, title, wc, remember = -1, filetype = None):
 	if filetype != None:
 		ftype = filetype
 	if remember:
-		
 		lastpath = conf.getConfigItem("LastPath_%s" % ftype, "Paths")
-		if not lastpath:lastpath = "."
-	dlg = wx.FileDialog(parent, title, lastpath, wildcard = wc, style = wx.OPEN | wx.MULTIPLE)
+		if not lastpath:
+			lastpath = "."
+	dlg = wx.FileDialog(parent, title, lastpath, wildcard = wc, style = wx.OPEN|wx.MULTIPLE)
 	if dlg.ShowModal() == wx.ID_OK:
 		asklist = dlg.GetPaths()
-		if not asklist:return asklist
+		if not asklist:
+			return asklist
 		if remember:
 			filepath = os.path.dirname(asklist[0])
 			conf.setConfigItem("LastPath_%s" % ftype, "Paths", filepath)
@@ -156,12 +160,14 @@ def askSaveAsFileName(parent, title, initFile, wc, ftype = None):
 	if not initialDir:
 		if remember:
 			initialDir = conf.getConfigItem("LastPath_%s" % ftype, "Paths")
-			if not initialDir:initialDir = "."
+			if not initialDir:
+				initialDir = "."
 		else:
 			initialDir = conf.getConfigItem("DataPath", "Paths")
 	
 	filename = ""
-	dlg = wx.FileDialog(parent, title, defaultFile = initFile, defaultDir = initialDir, wildcard = wc, style = wx.SAVE)
+	dlg = wx.FileDialog(parent, title, defaultFile = initFile, \
+						defaultDir = initialDir, wildcard = wc, style = wx.SAVE)
 	filename = None
 	if dlg.ShowModal() == wx.ID_OK:
 		filename = dlg.GetPath()
@@ -174,6 +180,6 @@ def askSaveAsFileName(parent, title, initFile, wc, ftype = None):
 		currExt = filename.split(".")[-1].lower()
 		ext = wc.split(".")[-1]
 		if wc.count("*.") <= 2 and wc.find("*.%s" % currExt) == -1:        
-			filename += ".%s" % ext 
+			filename += ".%s" % ext
 
 	return filename

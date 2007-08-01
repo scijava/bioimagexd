@@ -11,7 +11,7 @@
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
 
- This program is free software; you can redistribute it and/or modify
+ This program is free software; you can redistribute it and / or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation; either version 2 of the License, or
  (at your option) any later version.
@@ -23,12 +23,12 @@
 
  You should have received a copy of the GNU General Public License
  along with this program; if not, write to the Free Software
- Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111 - 1307  USA
 
 """
-__author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
+__author__ = "BioImageXD Project < http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.42 $"
-__date__ = "$Date: 2005/01/13 14:52:39 $"
+__date__ = "$Date: 2005 / 01 / 13 14:52:39 $"
 
 import os, os.path
 import csv
@@ -38,9 +38,9 @@ import codecs
 import copy
 try:
 	import psyco
-except:
+except ImportError:
 	psyco = None
-	pass
+
 class ParticleReader:
 	"""
 	Created: KP
@@ -77,16 +77,16 @@ class ParticleReader:
 	def getCentersOfMass(self):
 		"""
 		Created: 25.11.2006, KP
-		Description: return a list of the object volumes (sorted)
+		Description: return a list of the mass centers of the objects (sorted)
 		"""
 		return self.cogs
 		
 	def getAverageIntensities(self):
 		"""
 		Created: 25.11.2006, KP
-		Description: return a list of the object volumes (sorted)
+		Description: return a list of the avereage intensities of the objects (sorted)
 		"""
-		return self.avgints     
+		return self.avgints		
 		
 	def read(self, statsTimepoint  = 0):
 		"""
@@ -95,7 +95,7 @@ class ParticleReader:
 		"""
 		
 		ret = []
-		#([str(i),str(volumeum),str(volume),str(cog),str(umcog),str(avgint)])        
+		#([str(i),str(volumeum),str(volume),str(cog),str(umcog),str(avgint)])		 
 		skipNext = 0
 		curr = []
 		for line in self.rdr:
@@ -103,12 +103,12 @@ class ParticleReader:
 				skipNext = 0
 				continue
 			if len(line) == 1:
-				tp = int(line[0].split(" ")[1])
-				print "Current timepoint = ", tp
+				timePoint = int(line[0].split(" ")[1])
+				#print "Current timepoint = ", timePoint
 				if curr:
-					ret.append(curr)
+					ret.append(curr) #TODO: the last line is ignored as in TrackReader
 				curr = []
-				self.timepoint = tp
+				self.timepoint = timePoint
 				skipNext = 1
 				continue
 			else:
@@ -116,23 +116,24 @@ class ParticleReader:
 			try:
 				size = int(size)
 				sizemicro = float(sizemicro)
-			except:
+			except ValueError:
 				continue
 			obj = int(obj)
-			cog = map(float, cog[1:-1].split(","))
+			#cog = map(float, cog[1:-1].split(", "))
+			cog = [float(coordinate) for coordinate in cog[1:-1].split(", ")]
 			#cog = eval(cog)
-			umcog = map(float, umcog[1:-1].split(","))
+			umcog = [float(coordinate) for coordinate in umcog[1:-1].split(", ")]
+			#umcog = map(float, umcog[1:-1].split(", "))
 			#umcog = eval(umcog)
-			avgint = float(avgint)            
-			if size >= self.filterObjectSize and obj != 0:
-				p = Particle(umcog, cog, self.timepoint, size, avgint, obj)
-				curr.append(p)
+			avgint = float(avgint)			  
+			if size >= self.filterObjectSize and obj != 0: #TODO: why is obj == 0 not accepted?
+				particle = Particle(umcog, cog, self.timepoint, size, avgint, obj)
+				curr.append(particle)
 			if self.timepoint == statsTimepoint:
 				self.objects.append(obj)
 				self.cogs.append((int(cog[0]), int(cog[1]), int(cog[2])))
 				self.volumes.append((size, sizemicro))
 				self.avgints.append(avgint)
-		
 		if curr: ret.append(curr)
 		return ret
 
@@ -141,11 +142,14 @@ class Particle:
 	Created: KP
 	Description: A class representing a particle. Stores all relevant info and can calculate the distance
 				 between two particles
+	
+	Pre: Valid coordinates
+	Notes: A compare - method could be implemented to make testing straightforward
 	"""
-	def __init__(self, pos = (0, 0, 0), intpos = (0, 0, 0), tp = 0, size = 1, avgint = 20, obj = -1):
+	def __init__(self, pos = (0, 0, 0), intpos = (0, 0, 0), timePoint = 0, size = 1, avgint = 20, obj = -1):
 		self.pos = pos
 		self.intval = obj
-		self.tp = tp
+		self.timePoint = timePoint
 		self.size = size
 		self.averageIntensity = avgint
 		self.inTrack = 0
@@ -162,41 +166,53 @@ class Particle:
 		return self.posInPixels
 		
 	def objectNumber(self):
+		"""
+		Created: Unknown, KP
+		Description: Get intval
+		"""
 		return self.intval
 		
-	def distance(self, p):   
+	def distance(self, particle):	 
 		"""
 		Created: KP
 		Description: Return the distance between this particle and p
+
+	Pre: Valid coordinates
+	Post: A distance, with a max error of ...
 		"""
-		x, y, z = p.pos
-		x2, y2, z2 = self.pos
-		dx = x - x2
-		dy = y - y2
-		dz = z - z2
-		return math.sqrt(dx * dx + dy * dy + dz * dz)
+		particleXPos, particleYPos, particleZPos = particle.pos
+		selfXPos, selfYPos, selfZPos = self.pos
+		distanceX = particleXPos - selfXPos
+		distanceY = particleYPos - selfYPos
+		distanceZ = particleZPos - selfZPos
+		return math.sqrt(distanceX * distanceX + distanceY * distanceY + distanceZ * distanceZ)
 		
-	def copy(self, p):
+	def copy(self, particle):
 		"""
 		Created: KP
 		Description: Copy information over from particle p
-		"""        
-		self.size = p.size
-		self.pos = p.pos
-		self.averageIntensity = p.averageIntensity
-		self.posInPixels = p.posInPixels
-		self.inTrack = p.inTrack
-		self.flag = p.flag
-		self.tp = p.tp
-		self.intval = p.intval
-		self.matchScore = p.matchScore
+
+		Pre: Valid properties in particle p
+		Post: Particle self has valid properties
 		
+		inTrack is used as both a 0 / 1 "boolean" and a true boolean, could this be made clearer?
+		"""
+		self.pos = particle.pos
+		self.averageIntensity = particle.averageIntensity
+		self.posInPixels = particle.posInPixels
+		self.inTrack = particle.inTrack
+		self.flag = particle.flag
+		self.timePoint = particle.timePoint
+		self.intval = particle.intval
+		self.matchScore = particle.matchScore
+
 	def __str__(self):
 		try:
-			x, y, z = self.posInPixels
-			return "<Obj#%d (%d,%d,%d) t=%d, inTrack=%s>" % (self.intval, x, y, z, self.tp, not not self.inTrack)
+			xPosition, yPosition, zPosition = self.posInPixels 
+			return "<Obj#%d (%d,%d,%d) t=%d, inTrack=%s>" %	(self.intval, 
+			xPosition, yPosition, zPosition, self.timePoint, not not self.inTrack)
 		except:
-			raise "Bad pos", self.pos
+			raise "Bad pos", self.pos	# TODO: When does this get raised?
 	def __repr__(self):
 		return self.__str__()
 
@@ -208,16 +224,28 @@ class ParticleTracker:
 				 classes to create tracks of a set of particles
 	"""
 	def __init__(self):
-		self.particles = None    
+
 		self.velocityWeight = 0.25
-		self.intensityWeight = 0.25
 		self.directionWeight = 0.25
 		self.sizeWeight = 0.25
+		self.intensityWeight = 0.25
 		
+		self.distanceChange = None
+		self.sizeChange = None
+		self.intensityChange = None
+		self.angleChange = None
+	
 		self.filterObjectSize = 2  
-		self.reader = None
 		self.minimumTrackLength = 3
+
+		self.maxIntensity = None
+		self.maxSize = None
+		self.maxVelocity = None
+
+		self.reader = None
+		self.particles = None	 
 		self.tracks = []
+
 		if psyco and sys.platform != 'darwin':
 			psyco.bind(self.getStats)
 			psyco.bind(self.angle)
@@ -232,17 +260,19 @@ class ParticleTracker:
 		"""
 		self.minimumTrackLength = minlen
 		
-	def setWeights(self, vw, sw, iw, dw):
+	def setWeights(self, velocityWeight, sizeWeight, intensityWeight, directionWeight):	
+
 		"""
 		Created: 25.11.2006, KP
-		Description: Set the weighting factors for velocity change, size change, intensity change and direction change
+		Description: Set the weighting factors for velocity change, 
+					size change, intensity change and direction change
 		"""
-		self.velocityWeight = vw
-		self.sizeWeight = sw
-		self.intensityWeight = iw
-		self.directionWeight = dw
+		self.velocityWeight = velocityWeight
+		self.sizeWeight = sizeWeight
+		self.intensityWeight = intensityWeight
+		self.directionWeight = directionWeight
 		
-	def getReader(self):
+	def getReader(self):	
 		"""
 		Created: 25.11.2006, KP
 		Description: Return the particle reader
@@ -255,12 +285,12 @@ class ParticleTracker:
 		Description: Read the particles from a given .CSV filename
 		"""
 		self.particles = []
-		n = 999
-		print "Reading from file='", filename, "'"
+		#n = 999
+		print "Reading from file = '", filename, "'"
 		#for i in range(0,n+1):
-		#    file="%s_%d.csv"%(filename,i)            
+		#	 file="%s_%d.csv"%(filename,i)			  
 		if os.path.exists(filename):
-			print "Reading from ", file
+			#print "Reading from ", file
 			self.reader = ParticleReader(filename, filterObjectSize = self.filterObjectSize)
 			self.particles = self.reader.read(statsTimepoint = statsTimepoint)
 				
@@ -269,7 +299,7 @@ class ParticleTracker:
 		Created: 26.11.2006, KP
 		Description: return the particles in given timepoint with given int.values
 		"""
-		print "getParticles", timepoint, objs
+		print "getParticles(", timepoint, ",", objs, ")"
 		pts = self.particles[timepoint]
 		ret = []
 		for i in pts:
@@ -285,30 +315,31 @@ class ParticleTracker:
 		"""
 		return self.tracks
 		
-	def writeTracks(self, filename):
+	def writeTracks(self, filename):			# TODO: Test when tracks != []
 		"""
 		Created: 11.09.2006, KP
 		Description: Write the calculated tracks to a file
 		"""
-		f = codecs.open(filename, "wb", "latin1")
+		fileToOpen = codecs.open(filename, "wb", "latin1")
 			
-		w = csv.writer(f, dialect = "excel", delimiter = ";")
-		w.writerow(["Track #", "Object #", "Timepoint", "X", "Y", "Z"])
+		writer = csv.writer(fileToOpen, dialect = "excel", delimiter = ";")
+		writer.writerow(["Track #", "Object #", "Timepoint", "X", "Y", "Z"])
 		for i, track in enumerate(self.tracks):
-			if len(track) < self.minimumTrackLength:continue
+			if len(track) < self.minimumTrackLength:
+				continue
 			for particle in track:
-				x, y, z = particle.posInPixels
-				w.writerow([str(i), str(particle.intval), str(particle.tp), str(x), str(y), str(z)])        
-		f.close()
-				
-		
+				particleXPos, particleYPos, particleZPos = particle.posInPixels
+				writer.writerow([str(i), str(particle.intval), str(particle.timePoint), \
+				str(particleXPos), str(particleYPos), str(particleZPos)])		
+		fileToOpen.close()
+						
 	def setFilterObjectSize(self, filterSize):
 		"""
 		Created: 11.09.2006, KP
 		Description: Set the minimum size (in pixels) objects must have to be
 					 considered for the tracking
 		"""
-		print "Setting filter object size to ", filterSize
+		print "Setting filter object size to", filterSize
 		self.filterObjectSize = filterSize
 
 	def getStats(self):
@@ -318,7 +349,7 @@ class ParticleTracker:
 					 average distances in each timepoint
 		"""
 		
-		print "Calculating statistsics from particles"
+		print "Calculating statistics for particles"
 		mindists = []
 		maxdists = []
 		avgdists = []
@@ -328,10 +359,14 @@ class ParticleTracker:
 		maxInt = 0
 		for i, pts in enumerate(self.particles):
 			avgdist = 0
-			n = 0
+			numberOfParticles = 0
 			mindist = 999999999
 			maxdist = 0
 			print "There are %d particles in timepoint %d" % (len(pts), i)
+
+			# this loop calculates every particles distance to every
+			# other particle in the same timepoint. it returns the
+			# highest distance between two particles in a timepoint
 			for particle in pts:
 				if particle.averageIntensity > maxInt:
 					maxInt = particle.averageIntensity
@@ -341,18 +376,18 @@ class ParticleTracker:
 					maxSize = particle.size
 				elif particle.size < minSize:
 					minSize = particle.size
-				
+
 				for particle2 in pts:
 					if particle.intval == particle2.intval:
 						continue
-					d = particle2.distance(particle)                    
-					if d < mindist:
-						mindist = d
-					if d > maxdist:
-						maxdist = d
-					avgdist += d
-					n += 1
-			avgdist /= float(n)
+					distance = particle2.distance(particle)					
+					if distance < mindist:
+						mindist = distance
+					if distance > maxdist:
+						maxdist = distance
+					avgdist += distance
+					numberOfParticles += 1
+			avgdist /= float(numberOfParticles)
 			mindists.append(mindist)
 			maxdists.append(maxdist)
 			avgdists.append(avgdist)
@@ -385,7 +420,7 @@ class ParticleTracker:
 		"""
 		self.intensityChange = intChange
 		
-	def setAngleChange(self, angleChange):
+	def setAngleChange(self, angleChange):	
 		"""
 		Created: 11.09.2006, KP
 		Description: Set the parameter that defines maximum change in the angle of the track
@@ -400,14 +435,14 @@ class ParticleTracker:
 		"""
 		Created: 24.09.2006, KP
 		Description: Measure the match score between two particles. Returns 
-					 a 3-tuple (distFactor, sizeFactor, intFactor )if there's a match
-					and none otherwise    
+					 a 3 - tuple (distFactor, sizeFactor, intFactor )if there's a match
+					and none otherwise	  
 		"""
 					 
-		dist = testParticle.distance(oldParticle)
+		distance = testParticle.distance(oldParticle)
 		# If a particle is within search radius and doesn't belong in a
 		# track yet
-		distFactor = float(dist) / self.maxVelocity
+		distFactor = float(distance) / self.maxVelocity
 		failed = 0
 		if distFactor > self.distanceChange:
 			failed = 1
@@ -420,47 +455,55 @@ class ParticleTracker:
 				intFactor =  float(abs(testParticle.averageIntensity - oldParticle.averageIntensity))
 				intFactor /= self.maxIntensity
 				if intFactor > self.intensityChange:
-					failed = 1      
-		if failed: return None, None, None
+					failed = 1		
+		if failed: 
+			return None, None, None
 		return (distFactor, sizeFactor, intFactor)
 				
-	def angle(self, p1, p2):
+	@staticmethod
+	def angle(particle1, particle2):
 		"""
 		Created: 25.09.2006, KP
 		Description: Measure the "angle" between horizontal axis and the line defined
 					 by the two particles
 		"""
-		x1, y1, z1 = p1.posInPixels
-		x2, y2, z2 = p2.posInPixels
-		ang = math.atan2(y2 - y1, x2 - x1) * 180.0 / math.pi;
+		particle1X, particle1Y = particle1.posInPixels[0:2]
+		particle2X, particle2Y = particle2.posInPixels[0:2]
+		ang = math.atan2(particle2Y - particle1Y, particle2X - particle1X) * 180.0 / math.pi
 		ang2 = ang
-		if ang < 0:ang2 = 180 + ang
+		if ang < 0:
+			ang2 = 180 + ang
 		return ang, ang2
 		
-	def toScore(self, distFactor, sizeFactor, intFactor, angleFactor = 1):
+	def toScore(self, distFactor, sizeFactor, intFactor, angleFactor = 1):	
 		"""
 		Created: 25.09.2006, KP
 		Description: Return a score that unifies the different factors into a single score
 		"""
 		#return 0.50*distFactor+0.2*angleFactor+0.15*sizeFactor+0.15*intFactor
-		return self.velocityWeight * distFactor + self.directionWeight * angleFactor + self.sizeWeight * sizeFactor + self.intensityWeight * intFactor
+		return self.velocityWeight * distFactor + \
+				self.sizeWeight * sizeFactor + \
+				self.intensityWeight * intFactor + \
+				self.directionWeight * angleFactor
 	
-	def track(self, fromTimepoint = 0, seedParticles = []):
+	def track(self, fromTimepoint = 0, seedParticles = []):		# TODO: Test for this
 		"""
 		Created: KP
 		Description: Perform the actual tracking using the given particles and tracking
-					 parameters.
+		parameters.
 		"""
 		tracks = []
-		print "seedparticles=", seedParticles
+		print "seedparticles = ", seedParticles
 		trackCount = 0
 		totalTimepoints = len(self.particles)
 		searchOn = False
 		foundOne = False
-		print "Total timepoints=", totalTimepoints
-		minDists, maxDists, avgDists, minSiz, maxSiz, minInt, maxInt = self.getStats()
-		print "minDists=", minDists
-		print "maxDists=", maxDists
+		print "Total timepoints = ", totalTimepoints
+		#minDists, maxDists, avgDists, minSiz, maxSiz, minInt, maxInt = self.getStats()
+		minDists, maxDists, minSiz, maxSiz, minInt, maxInt = self.getStats()[0:2] + self.getStats()[3:]
+	
+		print "minDists = ", minDists
+		print "maxDists = ", maxDists
 		
 		maxDist = max(maxDists)
 		minDist = min(minDists)
@@ -469,43 +512,44 @@ class ParticleTracker:
 		self.maxIntensity = maxInt - minInt
 		
 		print "Maximum change in distance = ", self.maxVelocity
-		print "Maximum change in size=", self.maxSize
+		print "Maximum change in size = ", self.maxSize
 		print "Maximum change in intensity = ", self.maxIntensity
 		
 		
 		
 		if seedParticles:
-			# The seed particles are organized as follows:
-			#[ [t1_p1, t1_p2, t1_p3], [t2_p1,t2_p2, t2_p3], ...]
-			# where t1_p1 = first particle in timepoint 1, 
-			# t1_p2 = second particle in timepoint 1 etc
-			# Therefore, we can determine e.g. how many tracks there are to be calculated
-			# by looking at how many seed particles we are given
+		# The seed particles are organized as follows:
+		#[ [t1_p1, t1_p2, t1_p3], [t2_p1,t2_p2, t2_p3], ...]
+		# where t1_p1 = first particle in timepoint 1,
+		# t1_p2 = second particle in timepoint 1 etc
+		# Therefore, we can determine e.g. how many tracks there are to be calculated
+		# by looking at how many seed particles we are given
+
 			trackCount = len(seedParticles[0])
 			tracks = []
-			for i in range(trackCount):tracks.append([])
-			print "Track count=", trackCount
+			for i in range(trackCount):
+				tracks.append([])
+			print "Track count = ", trackCount
 			
 			particleList = copy.deepcopy(self.particles)
 			toRemove = []
 			
 			# First remove all particles in the seed timepoints
 			# that are not listed as seed points
-			for tp, col in enumerate(seedParticles):
-				fromTimepoint = tp
+			for timePoint, col in enumerate(seedParticles):
+				fromTimepoint = timePoint 
 				toRemove = []
 				objToParticle = {}
-				for i in particleList[tp]:
+				for i in particleList[timePoint]:
 					objval = i.objectNumber()
 					if objval not in col:
 						toRemove.append(i)
 					else:
 						objToParticle[objval] = i
 						
-				# remove the non-seed objects from the timepoint tp
+				# remove the non-seed objects from the timepoint timePoint
 				for i in toRemove:
-					particleList[tp].remove(i)
-					
+					particleList[timePoint].remove(i)
 				for tracknum, objVal in enumerate(col):
 					if objVal not in objToParticle:
 						print "Object", objVal, "not found"
@@ -525,21 +569,22 @@ class ParticleTracker:
 		
 			
 		# Iterate over all timepoints
-		#for tp in range(totalTimepoints): 
+		#for timePoint in range(totalTimepoints): 
 		
 		#print "Tracking from %d particles"%len(particleList[fromTimepoint])
-		print "Seed tracks=", tracks
-		for tp in [fromTimepoint]:
+		print "Seed tracks = ", tracks
+		for timePoint in [fromTimepoint]:
 			# Iterate over all particles in given timepoint
 							
 			
-			for i, particle in enumerate(particleList[tp]):
+			for i, particle in enumerate(particleList[timePoint]):
 				if not seedParticles and particle.inTrack:
 				# If particle is in track, just let the user know
 					#if particle.inTrack:
-					print "\nParticle %d / %d in timepoint %d is already in track %d" % (i, len(particleList[tp]), tp, particle.trackNum)
+					print "\nParticle %d / %d in timepoint %d is already in track %d" % \
+						(i, len(particleList[timePoint]), timePoint, particle.trackNum)
 				else:
-					print "\nTracking particle %d / %d in timepoint %d" % (i, len(particleList[tp]), tp)
+					print "\nTracking particle %d / %d in timepoint %d" % (i, len(particleList[timePoint]), timePoint)
 					
 					# If we have seed particles, then the track has already been constructed to
 					# this point and we can just search for the following particles
@@ -547,7 +592,7 @@ class ParticleTracker:
 					oldParticle = Particle()
 					currCandidate = Particle()
 					# Make a copy of the particle 
-					oldParticle.copy(particle)                    
+					oldParticle.copy(particle)					  
 					if not seedParticles:
 						# Create a new track that starts from this point
 						track = []
@@ -563,18 +608,18 @@ class ParticleTracker:
 								track = ctrack
 						
 						if not track:
-							raise "Didin't find track for see dparticle", particle
+							raise "Did not find track for seed particle", particle
 					searchOn = True
 					# Search the next timepoints for more particles
-					for search_tp in range(tp + 1, totalTimepoints):
+					for search_timePoint in range(timePoint + 1, totalTimepoints):
 						# If no match was found, then this track is over
 						if not searchOn:
 							print "Track ", i, "is over"
 							break
 						foundOne = False
 						currentMatch = Particle()
-						for testParticle in self.particles[search_tp]:
-							#print "Searching for match in timepoint %d"%search_tp
+						for testParticle in self.particles[search_timePoint]:
+							#print "Searching for match in timepoint %d"%search_timePoint
 							# Calculate the factors between the particle that is being tested against
 							# the previous particle  (= oldParticle)
 							distFactor, sizeFactor, intFactor = self.score(testParticle, oldParticle)
@@ -585,21 +630,21 @@ class ParticleTracker:
 							# then calculate the angle and see that it fits in the margin
 							if not failed and len(track) > 1:
 								angle, absang = self.angle(track[-2], track[-1])
-								angle2, absang2  = self.angle(track[-1], testParticle)
+								angle2, absang2	= self.angle(track[-1], testParticle)
 								
 								angdiff = abs(absang - absang2)
 								# If angle*angle2 < 0 then either (but not both) of the angles 
 								# is negative, so the particle being tested is in wrong direction
 								if angle * angle2 < 0:
-									failed = 1                                                            
-								elif  angdiff > self.angleChange:                                    
-									failed = 1                            
-								else:                                                                        
+									failed = 1															
+								elif  angdiff > self.angleChange:									 
+									failed = 1							
+								else:																		 
 									angleFactor = float(angdiff) / self.angleChange
 									
 							
 							#if not failed:
-							#    print "Factors = ",distFactor, sizeFactor, intFactor
+							#	 print "Factors = ",distFactor, sizeFactor, intFactor
 						 
 							# If we got a match between the previous particle (oldParticle)
 							# and the currently tested particle (testParticle) and testParticle
@@ -634,16 +679,16 @@ class ParticleTracker:
 									else:
 										currentMatch.flag = True
 							#elif dist < self.maxVelocity:
-							#    # If the particle is already in a track but could also be in this
-							#    # track, we have a few options
-							#    # 1. Sort out to which track this particle really belongs (but how?)
-							#    # 2. Stop this track
-							#    # 3. Stop this track, and also delete the remainder of the other one
-							#    # 4. Stop this track and flag this particle:
-							#    testParticle.flag = True
+							#	 # If the particle is already in a track but could also be in this
+							#	 # track, we have a few options
+							#	 # 1. Sort out to which track this particle really belongs (but how?)
+							#	 # 2. Stop this track
+							#	 # 3. Stop this track, and also delete the remainder of the other one
+							#	 # 4. Stop this track and flag this particle:
+							#	 testParticle.flag = True
 						if foundOne:
 							sys.stdout.write(".")
-	#                        print "Particle added to track %d"%trackCount
+	#						 print "Particle added to track %d"%trackCount
 							track.append(currentMatch)
 						else:
 							sys.stdout.write("^")

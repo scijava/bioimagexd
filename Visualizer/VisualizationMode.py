@@ -11,7 +11,7 @@
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
 
- This program is free software; you can redistribute it and/or modify
+ This program is free software; you can redistribute it and / or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation; either version 2 of the License, or
  (at your option) any later version.
@@ -23,25 +23,26 @@
 
  You should have received a copy of the GNU General Public License
  along with this program; if not, write to the Free Software
- Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111 - 1307  USA
 """
 __author__ = "BioImageXD Project"
 __version__ = "$Revision: 1.9 $"
-__date__ = "$Date: 2005/01/13 13:42:03 $"
+__date__ = "$Date: 2005 / 01 / 13 13: 42: 03 $"
 
-import wx
+#import wx
 
-import vtk
-import ColorTransferEditor
-from ModuleConfiguration import *
-import Dialogs
-import Logging
-import Modules
-import DataUnit
+#import vtk
+#import ColorTransferEditor
+#import ModuleConfiguration
+#import Dialogs
+#import Logging
+#import Modules
+#import lib.DataUnit.DataUnit
+import lib.DataUnit.DataUnitSetting
 
-import messenger
-import glob
-import os, sys
+#import messenger
+#import glob
+#import os, sys
 
 class VisualizationMode:
 	"""
@@ -168,22 +169,22 @@ class VisualizationMode:
 		"""    
 		return False
   
-	def setBackground(self, r, g, b):
+	def setBackground(self, red, green, blue):
 		"""
 		Created: 24.05.2005, KP
 		Description: Set the background color
-		"""        
-		self.iactivePanel.setBackground(r, g, b)
+		"""		   
+		self.iactivePanel.setBackground(red, green, blue)
 
 	def setDataUnit(self, dataunit):
 		"""
 		Created: 28.04.2005, KP
 		Description: Sets the dataunit this module uses for visualization
-		"""            
+		"""			   
 		self.dataUnit = dataunit
 		if not dataunit.getSettings():
-			settings = DataUnit.DataUnitSettings()
-			dataunit.setSettings(settings)        
+			settings = lib.DataUnit.DataUnitSetting.DataUnitSettings()
+			dataunit.setSettings(settings)		  
 		if self.iactivePanel:
 			self.iactivePanel.setDataUnit(dataunit)
 		
@@ -191,22 +192,22 @@ class VisualizationMode:
 		"""
 		Created: 28.04.2005, KP
 		Description: Returns the dataunit this module uses for visualization
-		"""     
+		"""		
 		return self.dataUnit
 		
-	def setTimepoint(self, tp):
+	def setTimepoint(self, timepoint):
 		"""
 		Created: 25.05.2005, KP
 		Description: Set the timepoint to be visualized
 		"""
-		self.timepoint = tp
-		self.iactivePanel.setTimepoint(tp)
+		self.timepoint = timepoint
+		self.iactivePanel.setTimepoint(timepoint)
 
 	def saveSnapshot(self, filename):
 		"""
 		Created: 05.06.2005, KP
 		Description: Save a snapshot of the scene
-		"""      
+		"""		 
 		self.iactivePanel.saveSnapshot(filename)
 		
 	def deactivate(self, newmode = None):
@@ -214,13 +215,13 @@ class VisualizationMode:
 		Created: 24.05.2005, KP
 		Description: Unset the mode of visualization
 		"""
-		self.iactivePanel.Show(0)        
+		self.iactivePanel.Show(0)		 
 		
 	def Render(self):
 		"""
 		Created: 24.05.2005, KP
 		Description: Update the rendering
-		"""      
+		"""		 
 		self.iactivePanel.Refresh()
 				
 	def relayout(self):
