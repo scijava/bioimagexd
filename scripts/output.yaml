@@ -1,0 +1,295 @@
+## aliases for variables and lineclasses
+## in lines specify the lineclasses and their alias
+## in variables specify the variable name and its alias
+## for variables do not use leading > or & in name
+## in specials the special variables are aliased
+## if, for any case, the alias is not found, the name is used, without > or & or &&
+## if the globals section is missing, it is assumed to be the same as variables
+aliases:
+ lines:
+   doc_method:                   Module function
+   doc_class:                    Class
+   doc_classmethod:              Method
+   doc_staticmethod:             Static method
+   method:                       Module function (no docstring!)
+   class:                        Class (no docstring!)
+   classmethod:                  Method (no docstring!)
+   staticmethod:                 Static method (no docstring!)
+ variables:
+   allclassmethods:              Methods in classes
+   allmethods:                   Methods and functions
+   averagemethod:                Average method length (in code lines)
+   classes:                      Classes
+   codelines:                    Code lines
+   commentedlines:               Commented lines
+   commentspercentage:           Comments per 100 lines of code
+   classmethods:                 Methods in classes
+   docstringables:               Docstringable objects
+   docstringblocks:              Docstring blocks
+   docstringlines:               Lines in docstrings
+   docstringratio:               Docstring ratio
+   docstringrationospecials:     Docstring ratio (no special methods)
+   documentationlines:           Documentation (comments and docstring) lines
+   documentationpercentage:      Documentation per 100 lines of code
+   emptylines:                   Empty lines
+   imports:                      Static import statements
+   longestmethod:                Longest method length (in code lines)
+   longesttoaveragedistance:     Longest method longer than average by (in code lines)
+   methods:                      Module functions
+   methodsperclass:              Average methods per class (in methods)
+   modulecode:                   Module specific code
+   moduledocstring:              Module specific docstring
+   shortestmethod:               Shortest method length (in code lines)
+   specialmethods:               Special methods (like constructors)
+   staticmethods:                Static methods
+ specials:
+   files:                        Files
+   lines:                        Lines
+   bytes:                        Bytes                        
+ 
+## defines the variables to be displayed and their order
+## three sections: variables, globals, specials
+## if globals is missing, it is assumed to be the same as variables
+order: 
+ variables:                      
+                               - codelines
+                               - emptylines
+                               - imports
+                               - classes
+                               - staticmethods
+                               - specialmethods
+                               - allclassmethods
+                               - methodsperclass
+                               - allmethods
+                               - averagemethod
+                               - shortestmethod
+                               - longestmethod
+                               - longesttoaveragedistance
+                               - methods
+                               - modulecode
+                               - moduledocstring
+                               - docstringables
+                               - docstringblocks
+                               - docstringlines
+                               - docstringratio
+                               - docstringrationospecials
+                               - commentedlines
+                               - commentspercentage
+                               - documentationlines
+                               - documentationpercentage
+ globals:                      
+                               - codelines
+                               - emptylines
+                               - imports
+                               - classes
+                               - staticmethods
+                               - specialmethods
+                               - allclassmethods
+                               - methodsperclass
+                               - allmethods
+                               - averagemethod
+                               - longestmethod
+                               - methods
+                               - modulecode
+                               - moduledocstring
+                               - docstringables
+                               - docstringblocks
+                               - docstringlines
+                               - docstringratio
+                               - docstringrationospecials
+                               - commentedlines
+                               - commentspercentage
+                               - documentationlines
+                               - documentationpercentage
+ specials:                       [files, lines, bytes]
+
+## specifies available output formats
+## name is the name of the output format
+## if single is true, the output is one single file
+## if single is false, the output is one file per file parsed with summary file specified
+## iterative variables
+##  $files  $lines  $variables  $globals   $specials
+## non-iterative variables
+##  $cmdparam   - parameter from command line
+##  $now        - current timestamp in YYYY-MM-DD hh:mm:ss
+## noniterative, context-dependent variables
+## in $files
+##  $filename   - name of the file
+##  $nicename   - name of the file with no special characters (replaced with .)
+## in other iteratives
+##  $name       - class of the line (first field)
+##  $param      - parameter of the line (second field, not in $globals and $specials)
+##  $value      - value of the line (third field)
+##  $alias      - alias of the line class, as defined in .aliases (defaults to name)
+formats: 
+ default:
+   single:       true
+   filename:     $cmdparam
+   structure: |
+                 $files
+                  
+                 ===  SUMMARY  ===
+                 $globals
+                 
+                 === Processed ===
+                 $specials
+                 
+                 === Timestamp ===
+                 Generated with $version on $now.
+   file: |
+                 == File: [$filename] ==
+                 =   Structure   =
+                 $lines
+                 =    Summary    =
+                 $variables
+                 ==  End: [$filename] ==
+                 ==-------------------==                                  
+   line: >       $alias: $param, $value lines
+   variable: >   $alias: $param $value
+   global: >     $alias: $value
+   special: >    $alias: $value
+ summary-html:
+   filename:     $cmdparam
+   single:       true
+   structure: |
+                 <html>
+                  <head>
+                   <title>Comet HTML summary</title>
+                   <style type="text/css">
+                    body    { font-family: Tahoma, Verdana, Arial, sans-serif; text-align: center; font-size: small; }
+                    table   { border-collapse: collapse; border: 2px solid black; width: 600px; margin-bottom: 1em; }
+                    caption { font-weight: bold; font-style: italic; color: maroon; font-size: larger; }
+                    td      { border: 1px solid gray; padding-top: 0.25em; padding-bottom: 0.25em; }
+                    td.value {text-align: center; }
+                    td.name  {padding-left: 0.5em; padding-right: 0.5em; width: 75%; }
+                    td.filename {padding-left: 0.5em; padding-right: 0.5em; font-size: smaller; }
+                    div#note {font-size: x-small; color: gray; margin-top: 2em; font-style: italic; }
+                    a        {color: navy; font-weight: bold; text-decoration: none; }
+                    a:hover  {color: black; text-decoration: underline; }
+                    p        {font-weight: bold; font-style: italic; }
+                    p strong {font-size: larger; }
+                   </style>
+                  </head>
+                  <body>
+                   <table><caption>Summary</caption>
+                 $globals
+                   </table>
+                   <table><caption>Overall processed</caption>
+                 $specials
+                   </table>
+                   <table><caption>Processed files</caption>
+                 $names
+                   </table>
+                   <div id="note">Generated with $version on $now.</div>
+                  </body>
+                 </html>
+   name: >       <tr><td class="filename">$filename</td></tr>
+   global: >     <tr class="$name"><td class="name">$alias</td><td class="value">$value</td></tr>
+   special: >    <tr class="$name"><td class="name">$alias</td><td class="value">$value</td></tr>
+ txt:
+   single:       false
+   directory:    $cmdparam
+   summaryfile:  index.txt
+   summary: |
+                 ===   FILES   ===
+                 $names
+                 
+                 ===  SUMMARY  ===
+                 $globals
+                 
+                 === Processed ===
+                 $specials
+                 
+                 === Timestamp ===
+                 Generated with $version on $now.
+   filename:     $nicename.txt
+   file: |
+                 == File: [$filename] ==
+                 =   Structure   =
+                 $lines
+                 =    Summary    =
+                 $variables
+
+                 === Timestamp ===
+                 Generated with $version on $now.
+   line: >       $alias: $param, $value lines
+   variable: >   $alias: $param $value
+   global: >     $alias: $value
+   special: >    $alias: $value
+   name: >       $filename - in: $nicename.txt
+ html:
+   single:       false
+   directory:    $cmdparam
+   summaryfile:  index.html
+   summary: |
+                 <html>
+                  <head>
+                   <title>Comet HTML report</title>
+                   <style type="text/css">
+                    body    { font-family: Tahoma, Verdana, Arial, sans-serif; text-align: center; font-size: small; }
+                    table   { border-collapse: collapse; border: 2px solid black; width: 600px; margin-bottom: 1em; }
+                    caption { font-weight: bold; font-style: italic; color: maroon; font-size: larger; }
+                    td      { border: 1px solid gray; padding-top: 0.25em; padding-bottom: 0.25em; }
+                    td.value {text-align: center; }
+                    td.name  {padding-left: 0.5em; padding-right: 0.5em; width: 75%; }
+                    td.filename {padding-left: 0.5em; padding-right: 0.5em; font-size: smaller; }
+                    div#note {font-size: x-small; color: gray; margin-top: 2em; font-style: italic; }
+                    a        {color: navy; font-weight: bold; text-decoration: none; }
+                    a:hover  {color: black; text-decoration: underline; }
+                    p        {font-weight: bold; font-style: italic; }
+                    p strong {font-size: larger; }
+                   </style>
+                  </head>
+                  <body>
+                   <table><caption>Summary</caption>
+                 $globals
+                   </table>
+                   <table><caption>Overall processed</caption>
+                 $specials
+                   </table>
+                   <table><caption>Processed files</caption>
+                 $names
+                   </table>
+                   <div id="note">Generated with $version on $now.</div>
+                  </body>
+                 </html>
+   name: >       <tr><td class="filename"><a href="$nicename.html">$filename</a></td></tr>
+   global: >     <tr class="$name"><td class="name">$alias</td><td class="value">$value</td></tr>
+   special: >    <tr class="$name"><td class="name">$alias</td><td class="value">$value</td></tr>
+   filename:     $nicename.html
+   file: |
+                 <html>
+                  <head>
+                   <title>$filename - Comet HTML report</title>
+                   <style type="text/css">
+                    body    { font-family: Tahoma, Verdana, Arial, sans-serif; text-align: center; font-size: small; }
+                    table   { border-collapse: collapse; border: 2px solid black; width: 700px; margin-bottom: 1em; }
+                    caption { font-weight: bold; font-style: italic; color: maroon; font-size: larger; }
+                    tr.class, tr.classmethod, tr.method, tr.staticmethod {background: #eebbbb; }
+                    td      { border: 1px solid gray; padding-top: 0.25em; padding-bottom: 0.25em; }
+                    td.value {text-align: center; }
+                    td.caption  {padding-left: 0.5em; padding-right: 0.5em; width: 60%; }
+                    td.param {width: 20%; text-align: center; font-style: italic; }
+                    div#note {font-size: x-small; color: gray; margin-top: 2em; font-style: italic; }
+                    div.goback {font-size: x-small; text-align: right; padding: 1em; font-style: italic; letter-spacing: 2px; }
+                    a        {color: navy; text-decoration: none; }
+                    a:hover  {color: black; text-decoration: underline; }
+                    p        {font-weight: bold; font-style: italic; }
+                    p strong {font-size: larger; }
+                   </style>
+                  </head>
+                  <body>
+                   <div class="goback"><a href="index.html">Back to index</a></div>
+                   <table class="structure"><caption>$filename</caption><tr><th>Object</th><th>Name</th><th>Code lines</th></tr> 
+                 $lines
+                   </table>
+                   <table class="summary"><caption>File summary</caption>
+                 $variables
+                   </table>
+                   <div class="goback"><a href="index.html">Back to index</a></div>
+                   <div id="note">Generated with $version on $now.</div>
+                  </body>
+                 </html>
+   line: >       <tr class="$name"><td class="caption">$alias</td><td class="param"><div>$param</div></td><td class="value">$value</td></tr>
+   variable: >   <tr class="$name"><td class="caption">$alias</td><td class="param"><div>$param</div></td><td class="value">$value</td></tr>
+ 

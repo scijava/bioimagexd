@@ -179,6 +179,7 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         self.SetHelpText("This window displays the selected dataset slice by slice.")
         
         if not self.show["SCROLL"]:
+            print "\n\n**** DISABLING SCROLL BAR"
             self.SetScrollbars(0,0,0,0)
         self.updateAnnotations()
         
@@ -811,18 +812,16 @@ class PreviewFrame(InteractivePanel.InteractivePanel):
         Description: Paints the image to a DC
         """        
         Logging.info("PreviewFrame is enbled=",not not self.enabled,kw="preview")
+
         # Don't paint anything if there's going to be a redraw anyway
-        #if self.fitLater:
-        #    return
         if not self.slice and self.graySize == self.paintSize:
             return
-        #Logging.backtrace()        
         if not clientdc:
             clientdc = wx.ClientDC(self)
-#        dc = self.dc = wx.BufferedDC(clientdc,self.buffer)
         dc = wx.MemoryDC()
         dc.SelectObject(self.buffer)
         dc.BeginDrawing()
+        self.dc = dc
         
         
         dc.SetBackground(wx.Brush(wx.Colour(*self.bgcolor)))

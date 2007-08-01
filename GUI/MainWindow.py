@@ -1599,7 +1599,8 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
                 needToRescale = eval(needToRescale)
 
             
-            if needToRescale:
+            m = max([x.getSingleComponentBitDepth() for x in dataunits])
+            if needToRescale and m>8:
                 dlg = RescaleDialog.RescaleDialog(self)
                 dlg.setDataUnits(dataunits)
                 wid = dlg.ShowModal()
