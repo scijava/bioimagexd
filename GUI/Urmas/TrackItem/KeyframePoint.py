@@ -36,13 +36,7 @@ __author__ = "BioImageXD Project"
 __version__ = "$Revision: 1.22 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
-#import Logging        
-#import messenger
-#import os.path
-#import sys
-#import math
-#import random
-#from Urmas import UrmasControl
+
 
 import lib.ImageOperations
 import GUI.Urmas.UrmasPersist
@@ -156,7 +150,6 @@ class KeyframePoint(TrackItem.TrackItem):
 		Description: A method that first sets the camera of the renderwindow
 					 and then generates the thumbnail
 		"""
-		#messenger.send(None,"show_camera",self.cam)#
 		self.parent.splineEditor.setCamera(self.cam)
 		self.parent.splineEditor.render()
 		self.getThumbnail()

@@ -29,20 +29,8 @@ __author__ = "BioImageXD Project"
 __version__ = "$Revision: 1.9 $"
 __date__ = "$Date: 2005 / 01 / 13 13: 42: 03 $"
 
-#import wx
-
-#import vtk
-#import ColorTransferEditor
-#import ModuleConfiguration
-#import Dialogs
-#import Logging
-#import Modules
-#import lib.DataUnit.DataUnit
 import lib.DataUnit.DataUnitSetting
 
-#import messenger
-#import glob
-#import os, sys
 
 class VisualizationMode:
 	"""

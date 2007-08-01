@@ -136,9 +136,6 @@ def getModules(moduleSubDir, globExtension = "*.py", callback = None, moduleType
 	modulePathList = glob.glob(globPath)
 	modulePathList = _removeIgnoredModules(modulePathList)
 	Logging.info("Modules from path %s are %s" % (globPath, str(modulePathList)), kw = "modules")
-	# Add ModuleDirectory/RequestedModuleDirectory to sys.path
-	#print "Adding", pathForSysPath, "to sys.path"
-	#print "sys.path is now", sys.path
 	sys.path.append(pathForSysPath)
 	global mcache
 	# Return cached result, if it exists
@@ -148,10 +145,8 @@ def getModules(moduleSubDir, globExtension = "*.py", callback = None, moduleType
 	for modulePathWithExtension in modulePathList:
 		moduleName = _createModuleNameToLoad(modulePathWithExtension)
 		try:
-			#print "__import__(%s, globals(), locals(), [])" % moduleName
 			loadedModule = __import__(moduleName, globals(), locals(), [])
 		except ImportError:
-			print "Failed to load module:", moduleName
 			traceback.print_exc()
 			Logging.info("Failed to load module %s" % moduleName, kw = "modules")
 			continue

@@ -804,7 +804,7 @@ def get_histogram(image):
 		values.append(c)
 	return values
 	
-def histogram(imagedata, ctf = None, bg = (200, 200, 200), logarithmic = 1, ignore_border = 0, 
+def histogram(imagedata, colorTransferFunction = None, bg = (200, 200, 200), logarithmic = 1, ignore_border = 0, 
 	lower = 0, upper = 0, percent_only = 0, maxval = 255):
 	"""
 	Created: 11.07.2005, KP
@@ -846,7 +846,7 @@ def histogram(imagedata, ctf = None, bg = (200, 200, 200), logarithmic = 1, igno
 	w += xoffset + 5
 	
 	diff = 0
-	if ctf:
+	if colorTransferFunction:
 		diff = 40
 	if percent:
 		diff += 30
@@ -892,11 +892,10 @@ def histogram(imagedata, ctf = None, bg = (200, 200, 200), logarithmic = 1, igno
 		dc.SetPen(blackpen)
 		dc.DrawLine(xoffset + i, x1 - c, xoffset + i + 1, x1 - c2)
 			
-	if ctf:
-		Logging.info("Painting ctf", kw = "imageop")
+	if colorTransferFunction:
 		for i in range(0, 256):
 			val = [0, 0, 0]
-			ctf.GetColor(i * d, val)
+			colorTransferFunction.GetColor(i * d, val)
 			r, g, b = val
 			r = int(r * 255)
 			b = int(b * 255)

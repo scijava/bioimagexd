@@ -12,7 +12,7 @@ import Module
 import lib.DataUnit
 import vtkbxd
 import vtk
-import messenger
+import lib.messenger
 import Logging
 
 class Progress:
@@ -53,7 +53,7 @@ class TestModuleFunctions(unittest.TestCase):
         self.assertEqual(self.module.getPreview(0), self.ch1rdr.GetOutput())
         
     def testProgressReporting(self):
-        messenger.connect(None, "update_progress", self.updateProgress)
+        lib.messenger.connect(None, "update_progress", self.updateProgress)
     
         self.currProgress = 50
         self.expectedText = "Half-done"
