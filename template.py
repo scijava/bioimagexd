@@ -41,14 +41,10 @@ class Example:
 		Description: Initialization
 		"""
 
-	def method(self, x, y):
+	def method(self, xCoordinate, yCoordinate):
 		"""
 		Created: 00.00.2004, XX
 		Description:
-		Parameters:   x       The x-coordinate
-					  y       The y-coordinate
+		Parameters:   xCoordinate		  The x-coordinate
+					  yCoordinate		  The y-coordinate
 		"""
-
-
-
-
