@@ -753,7 +753,7 @@ class InteractivePanel(ogl.ShapeCanvas):
             if self.annotationsEnabled:
                 self.saveAnnotations()
                 bxd.storeSettingsToCache(self.dataUnit.getFileName()+"_"+self.dataUnit.getName()+"_annotations",[settings])
-                self.dataUnit.getSettings().set("Annotations",None)
+                self.dataUnit.getSettings().set("Annotations",[])
                        
     def getDuplicateDC(self, dc):
         """
@@ -1134,16 +1134,13 @@ class InteractivePanel(ogl.ShapeCanvas):
                 dc.DrawRectangle(x1,y1,d1,d2)
         
         
-        
-        #dc.EndDrawing()
-        #self.dc = None
-        
     def setScrollbars(self,xdim,ydim):
         """
         Created: 24.03.2005, KP
         Description: Configures scroll bar behavior depending on the
                      size of the dataset, which is given as parameters.
         """
+        Logging.info("\n\n*** Setting scrollbars to %d, %d"%(xdim, ydim), kw="preview")
         w,h=self.buffer.GetWidth(),self.buffer.GetHeight()
         
         #if w!=xdim or h!=ydim:

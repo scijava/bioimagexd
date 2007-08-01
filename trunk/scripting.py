@@ -37,6 +37,7 @@ import getpass
 import vtk
 import pickle
 import ConfigParser
+import Logging
 
 import optimize as mem
 
@@ -156,7 +157,10 @@ def get_log_dir():
     if platform.system()=="Darwin":
         return os.path.expanduser("~/Library/Logs/BioImageXD")
     elif platform.system() == "Windows":
-        appbase=os.path.join("C:\\","Documents and Settings",getpass.getuser(),"Application Data")
+        if "AppData" in os.environ:
+            appbase = os.environ["AppData"]
+        else:
+            appbase=os.path.join("C:\\","Documents and Settings",getpass.getuser(),"Application Data")
         appdir=os.path.join(appbase,"BioImageXD")
         if not os.access(appdir,os.F_OK):
             try:
@@ -191,7 +195,10 @@ def get_preview_dir():
             os.mkdir(dirpath)
         return dirpath
     elif platform.system() == "Windows":
-        appbase=os.path.join("C:\\","Documents and Settings",getpass.getuser(),"Application Data")
+        if "AppData" in os.environ:
+            appbase = os.environ["AppData"]
+        else:
+            appbase=os.path.join("C:\\","Documents and Settings",getpass.getuser(),"Application Data")
         appdir=os.path.join(appbase,"BioImageXD")
         if not os.access(appdir,os.F_OK):
             try:
@@ -221,7 +228,10 @@ def get_config_dir():
     if platform.system()=="Darwin":
         return os.path.expanduser("~/Library/Preferences")
     elif platform.system() == "Windows": 
-        appbase=os.path.join("C:\\","Documents and Settings",getpass.getuser(),"Application Data")
+        if "AppData" in os.environ:
+            appbase = os.environ["AppData"]
+        else:
+            appbase=os.path.join("C:\\","Documents and Settings",getpass.getuser(),"Application Data")
         appdir=os.path.join(appbase,"BioImageXD")
         if not os.access(appdir,os.F_OK):
             try:

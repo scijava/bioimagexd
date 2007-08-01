@@ -419,7 +419,8 @@ class DataUnitSettings:
             Logging.info("deserializing Annotations",kw="dataunit")
             #val=zlib.decompress(value)
             val=pickle.loads(value)
-            Logging.info("unpickled %d annotations"%len(val),kw="dataunit")
+            if val:
+                Logging.info("unpickled %d annotations"%len(val),kw="dataunit")
             return val
         if name not in ["IntensityTransferFunction","IntensityTransferFunctions","AlphaTransferFunction"]:
             return eval(value)
