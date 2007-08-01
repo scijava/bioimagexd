@@ -111,6 +111,7 @@ _MIMENAMES = [
 
 for _name in _LOWERNAMES:
     importer = LazyImporter(_name.lower())
+    sys.modules['email'] = sys.modules['lib.email']
     sys.modules['email.' + _name] = importer
     setattr(sys.modules['email'], _name, importer)
 

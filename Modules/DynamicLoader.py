@@ -37,7 +37,7 @@ import Logging
 import scripting
 import os.path
 import sys
-
+import traceback
 mcache = {}
 
 def getRenderingModules(callback = None):
@@ -152,6 +152,7 @@ def getModules(moduleSubDir, globExtension = "*.py", callback = None, moduleType
 			loadedModule = __import__(moduleName, globals(), locals(), [])
 		except ImportError:
 			print "Failed to load module:", moduleName
+			traceback.print_exc()
 			Logging.info("Failed to load module %s" % moduleName, kw = "modules")
 			continue
 		moduleNameInDictionary = None

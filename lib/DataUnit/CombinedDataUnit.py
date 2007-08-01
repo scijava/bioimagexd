@@ -185,8 +185,8 @@ class CombinedDataUnit(DataUnit):
 								files.
 				timepoints		The timepoints that should be processed
 		"""
-        if not self.module:
-        	Logging.error("No module set", "No module was set for the dataunit to do processing with")		
+		if not self.module:
+			Logging.error("No module set", "No module was set for the dataunit to do processing with")		
 		callback = None
 		
 		settings_only = kws.get("settings_only", 0)

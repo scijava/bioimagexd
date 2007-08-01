@@ -27,16 +27,16 @@ __author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision$"
 __date__ = "$Date$"
 
-import DataSource
+from lib.DataSource.DataSource import DataSource
 import Logging
 import DataUnit
 import vtk
-
+import vtkbxd
 def getExtensions(): return ["lif"]
 def getFileType(): return "Leica Image File Format (*.lif)"
 def getClass(): return LIFDataSource
 
-class LIFDataSource(DataSource.DataSource):
+class LIFDataSource(DataSource):
 	"""
 	Created: 19.07.2007, LP
 	Description: Manages 4D data stored in a LIF-file.
@@ -47,7 +47,7 @@ class LIFDataSource(DataSource.DataSource):
 		Created: 19.07.2007, LP
 		Description: Constructor of LIF DataSource
 		"""
-		DataSource.DataSource.__init__(self)
+		DataSource.__init__(self)
 		self.filename = filename
 		# LIF file can contain multiple images with multiple channels.
 		# Define which image and channel is associated to this DataSource
@@ -63,7 +63,7 @@ class LIFDataSource(DataSource.DataSource):
 		self.firstflag = 0
 		
 		# Use vtkLIFReader
-		self.reader = vtk.vtkLIFReader()
+		self.reader = vtkbxd.vtkLIFReader()
 
 		# Open file if defined
 		if self.filename:
