@@ -97,7 +97,7 @@ def storeSettingsToCache(key, settingsList):
 	for setting in settingsList:
 		configParser = MyConfigParser()
 		setting.writeTo(configParser)
-		value.append((setting.n, configParser))
+		value.append((setting.getDatasetNumber(), configParser))
 	settingsCache[key] = value
 
 record = 0

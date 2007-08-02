@@ -337,13 +337,14 @@ class SectionsPanel(InteractivePanel):
 			
 		self.slices.append(slice)
 		
-		slice = lib.ImageOperations.getPlane(self.imagedata, "zy", self.x, self.y, z)
+		slice = lib.ImageOperations.getPlane(self.imagedata, "zy", self.x, self.y, int(z))
 #		slice=lib.ImageOperations.getPlane(self.imagedata,"xz",self.x,self.y,z)
 		if self.zoomFactor != 1 or self.zspacing != 1:
+
 			slice = lib.ImageOperations.scaleImage(slice, self.zoomFactor, yfactor = 1, xfactor = self.zspacing)
 #		if self.zoomZ != 1:
 #			slice = ImageOperaations.scaleImage(slice,xfactor=self.zoomZ)
-		
+		print "Got slice=",slice
 		slice = lib.ImageOperations.vtkImageDataToWxImage(slice)
 		self.slices.append(slice)
 		slice = lib.ImageOperations.getPlane(self.imagedata, "xz", self.x, self.y, z)
@@ -422,7 +423,6 @@ class SectionsPanel(InteractivePanel):
 		Created: 24.03.2005, KP
 		Description: Paints the image to a DC
 		"""
-#		dc = self.dc = wx.BufferedDC(wx.ClientDC(self), self.buffer)
 		dc = wx.MemoryDC()
 		dc.SelectObject(self.buffer)
 		dc.BeginDrawing()

@@ -193,22 +193,17 @@ class GalleryPanel(InteractivePanel):
 		if self.showTimepoints:
 			return self.setSlice(self.slice)
 		if self.visualizer.getProcessedMode():
-			print "DOING PREVIEW"
 			image = self.dataUnit.doPreview(scripting.WHOLE_DATASET_NO_ALPHA, 1, self.timepoint)
 			ctf = self.dataUnit.getSourceDataUnits()[0].getColorTransferFunction()
 			Logging.info("Using ", image, "for gallery", kw = "preview")
 		else:
-			print "GETTING TIMEPOINT", timepoint
 			image = self.dataUnit.getTimepoint(timepoint)
 			ctf = self.dataUnit.getColorTransferFunction()
-			print "USING CTF", ctf
 
 		#self.imagedata = lib.ImageOperations.imageDataTo3Component(image,ctf)
 		self.imagedata = image
 		self.imagedata.SetUpdateExtent(self.imagedata.GetWholeExtent())
 		self.imagedata.Update()
-		print "imagedata=", self.imagedata
-		
 		
 		#x,y,z=self.imagedata.GetDimensions()
 		x, y, z = self.dataUnit.getDimensions()
@@ -440,7 +435,6 @@ class GalleryPanel(InteractivePanel):
 		Created: 24.03.2005, KP
 		Description: Paints the image to a DC
 		"""
-#		dc = self.dc = wx.BufferedDC(wx.ClientDC(self), self.buffer)
 		dc = wx.MemoryDC()
 		dc.SelectObject(self.buffer)
 		dc.BeginDrawing()

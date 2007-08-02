@@ -14,7 +14,7 @@
  Selli-project was used as a starting point for producing this code.
  http://sovellusprojektit.it.jyu.fi/selli/
 
- Copyright (C) 2005  BioImageXD Project
+ Copyright (C) 2005	 BioImageXD Project
  See CREDITS.txt for details
 
  This program is free software; you can redistribute it and/or modify
@@ -50,7 +50,7 @@ class DataUnitSettings:
 	"""
 	Created: 26.03.2005, KP
 	Description: This is a class that holds all settings of a dataunit
-	"""    
+	"""	   
 	# Global settings, shared by all instances
 	# The different source units differentiate by having a number
 	# and using the counted keys
@@ -97,6 +97,13 @@ class DataUnitSettings:
 		self.register("Type")
 		self.register("Name")
 		self.register("BitDepth")
+		
+	def getDatasetNumber(self):
+		"""
+		Created: 02.08.2007, KP
+		Description: return the index of this dataset
+		"""
+		return self.dataSetNumber
 		
 	def resetSettings(self):
 		"""
@@ -148,7 +155,7 @@ class DataUnitSettings:
 		Parameters:
 			serialize	The value will be written out/read through
 						the serialize/deserialize methods
-		"""    
+		"""	   
 		
 		self.registered[name] = 1
 		self.serialized[name] = serialize
@@ -262,7 +269,7 @@ class DataUnitSettings:
 		"""
 		Created: 27.03.2005
 		Description: Write a key and it's value to parser
-		"""    
+		"""	   
 		nkey = "%s[%d]" % (key, n)
 		if not (key in self.settings or nkey in self.settings) \
 			and not (key in self.private or nkey in self.private):
@@ -285,7 +292,7 @@ class DataUnitSettings:
 		"""
 		Created: 26.03.2005
 		Description: Attempt to write all keys to a parser
-		"""    
+		"""	   
 		#keys = []
 		if not parser.has_section("Settings"):
 			parser.add_section("Settings")
@@ -470,4 +477,4 @@ class DataUnitSettings:
 		self.channels = state["channels"] 
 		self.timepoints = state["timepoints"] 
 		self.dataSetNumber = state["n"] 
-		self.serialized  = state["serialized"] 
+		self.serialized	 = state["serialized"] 
