@@ -701,7 +701,7 @@ int vtkLIFReader::RequestInformation(vtkInformation* vtkNotUsed(request),
   info->Set(vtkDataObject::SPACING(),spacing,3);
   info->Set(vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT(),extent,6);
   info->Set(vtkDataObject::ORIGIN(),origin,3);
-  vtkDataObject::SetPointDataActiveScalarInfo(info,VTK_UNSIGNED_SHORT,1);
+  vtkDataObject::SetPointDataActiveScalarInfo(info,VTK_UNSIGNED_CHAR,1);
 
   return 1;
 }
@@ -710,6 +710,22 @@ int vtkLIFReader::RequestUpdateExtent(vtkInformation* vtkNotUsed(request),
                                       vtkInformationVector** vtkNotUsed(inputVector),
                                       vtkInformationVector *outputVector)
 {
+  int uext[6], ext[6];
+    
+  vtkInformation* outInfo = outputVector->GetInformationObject(0);
+  //vtkInformation *inInfo = inputVector[0]->GetInformationObject(0);
+
+  outInfo->Get(vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT(),ext);
+  // Get the requested update extent from the output.
+  outInfo->Get(vtkStreamingDemandDrivenPipeline::UPDATE_EXTENT(), uext);
+  printf("vtkLIFReader Requested update extent = %d, %d, %d, %d, %d, %d\n", uext[0], uext[1], uext[2], uext[3], uext[4], uext[5]);
+  // If they request an update extent that doesn't cover the whole slice
+  // then modify the uextent 
+  if(uext[1] < ext[1] ) uext[1] = ext[1];
+  if(uext[3] < ext[3] ) uext[3] = ext[3];
+  outInfo->Set(vtkStreamingDemandDrivenPipeline::UPDATE_EXTENT(), uext,6);
+  //request->Set(vtkStreamingDemandDrivenPipeline::REQUEST_UPDATE_EXTENT(), uext,6);
+
   return 1;
 }
 
@@ -752,7 +768,7 @@ int vtkLIFReader::RequestData(vtkInformation *request,
 
   cout << "extent: " << extent[4] << "," << extent[5] << endl;
   cout << "Allocated buffer of size: " << bufferSize << endl;
-  buffer = new unsigned char[bufferSize];
+  buffer = new unsigned char[bufferSize+1];
   unsigned char *pos = buffer;
   imageOffset = this->Offsets->GetValue(this->CurrentImage);
   cout << "Image Offset is: " << imageOffset << endl;
@@ -769,14 +785,19 @@ int vtkLIFReader::RequestData(vtkInformation *request,
       pos += slicePixelsSize;
     }
 
+  cout << "Constructing point data array" << endl;
   vtkUnsignedCharArray *pointDataArray;
   pointDataArray = vtkUnsignedCharArray::New();
 
   pointDataArray->SetNumberOfComponents(1);
+  cout << "Number of values=" << bufferSize << endl;
   pointDataArray->SetNumberOfValues(bufferSize);
   pointDataArray->SetArray(buffer,bufferSize,0);
+  cout << pointDataArray << endl;
   imageData->GetPointData()->SetScalars(pointDataArray);
+  cout << "Deleting array..."<<endl;
   pointDataArray->Delete();
+  cout << "RequestData done"<<endl;
 
   return 1;
 }
