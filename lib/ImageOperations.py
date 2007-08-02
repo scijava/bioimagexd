@@ -45,8 +45,6 @@ def paintLogarithmicScale(ctfbmp, ctf, vertical = 1):
 	Created: 04.08.2006
 	Description: Paint a logarithmic scale on a bitmap that represents the given ctf
 	"""
-	# TODO: This function seems incomplete
-	# minval, maxval = ctf.GetRange()
 	maxval = ctf.GetRange()[1]
 	width, height = ctfbmp.GetWidth(), ctfbmp.GetHeight()
 	
@@ -71,16 +69,12 @@ def paintLogarithmicScale(ctfbmp, ctf, vertical = 1):
 	for i in range(3 * int(logMaxVal) + 1, 1, -1):
 		i /= 3.0	
 		xCoordinate = int(math.exp(i) * scale)
-#		 print "\n\n*** PAINTING AT ",i,"=",x1
 		if not vertical:
 			deviceContext.DrawLine(xCoordinate, 0, xCoordinate, 8)
 			
 		else:
 			deviceContext.DrawLine(0, xCoordinate, 4, xCoordinate)
 			deviceContext.DrawLine(width + 6, xCoordinate, width + 10, xCoordinate)
-#	 deviceContext.SetFont(wx.Font(8,wx.SWISS,wx.NORMAL,wx.NORMAL))
-#	 deviceContext.DrawText("%d"%mmin,2,height-10)
-#	 deviceContext.DrawText("%d"%mmax,2,10)
 		
 	deviceContext.EndDrawing()
 	deviceContext.SelectObject(wx.NullBitmap)
@@ -118,7 +112,6 @@ def paintCTFValues(ctf, width = 256, height = 32, paintScale = 0, paintScalars =
 	if vertical: 
 		size = height
 	
-	#minval, maxval = ctf.GetRange()
 	maxval = ctf.GetRange()[1]
 	colorsPerWidth = float(maxval) / size
 	for xCoordinate in range(0, size):
@@ -192,10 +185,11 @@ def scaleImage(data, factor = 1.0, zDimension = -1, interpolation = 1, xfactor =
 	
 	data.SetSpacing(1, 1, 1)
 	xDimension, yDimension, zDimension = data.GetDimensions()
+	print "dims=",xDimension / 2.0, yDimension / 2.0, 0
 	data.SetOrigin(xDimension / 2.0, yDimension / 2.0, 0)
 	transform = vtk.vtkTransform()
 	xExtent0, xExtent1, yExtent0, yExtent1, zExtent0, zExtent1 = data.GetExtent()
-	
+	print "extent=", xExtent0, xExtent1, yExtent0, yExtent1, zExtent0, zExtent1
 	if xfactor or yfactor:
 		xfactor *= factor
 		yfactor *= factor
@@ -311,7 +305,6 @@ def loadLUTFromString(lut, ctf, ctfrange = (0, 256)):
 		ctf		 The CTF to modify
 		ctfrange The range to which construct the CTF
 	"""		   
-	#print "\n\nlen(lut)=",len(lut)
 	if lut[0: 6] == "BXDLUT":
 		
 		return loadBXDLutFromString(lut, ctf)
@@ -329,8 +322,6 @@ def loadLUTFromString(lut, ctf, ctfrange = (0, 256)):
 		greens = lut[k + 1: 2 * k + 2]
 		blues = lut[(2 * k) + 2: 3 * k + 3]
 		
-	#n = len(reds)    
-	#print k,ctfrange
 	step = int(math.ceil(ctfrange[1] / k))
 	if step == 0:
 		return vtk.vtkColorTransferFunction()
@@ -447,7 +438,6 @@ def vtkImageDataToWxImage(data, sliceNumber = -1, startpos = None, endpos = None
 	if sliceNumber >= 0:	
 		#Logging.info("Getting sliceNumber %d"%sliceNumber,kw="imageop")
 		data = getSlice(data, sliceNumber, startpos, endpos)
-	#print "data=",data
 	exporter = vtk.vtkImageExport()
 #	 Logging.info("Setting update extent to ",data.GetWholeExtent(),kw="imageop")
 	data.SetUpdateExtent(data.GetWholeExtent())
@@ -546,7 +536,6 @@ def getColorTransferFunction(color):
 	"""
 	if isinstance(color, vtk.vtkColorTransferFunction):
 		return color
-	#print color
 	ctf = vtk.vtkColorTransferFunction()
 	red, green, blue = (0, 0, 0)
 	ctf.AddRGBPoint(0.0, red, green, blue)
@@ -585,8 +574,6 @@ def vtkImageDataToPreviewBitmap(dataunit, timepoint, color, width = 0, height = 
 			red, green, blue = ctf.GetColor(i)
 			ctf2.AddRGBPoint(i / step, red, green, blue)
 		ctf = ctf2
-	#print "Mapping to color...",ctf
-	
 	maptocolor = vtk.vtkImageMapToColors()
 	maptocolor.SetInputConnection(imagedata.GetProducerPort())
 	maptocolor.SetLookupTable(ctf)
@@ -600,7 +587,6 @@ def vtkImageDataToPreviewBitmap(dataunit, timepoint, color, width = 0, height = 
 	
 	#imagedata.Update()
 	#imagedata=getMIP(imageData,color)
-#	 print "Converting to wxImageData",imagedata
 	image = vtkImageDataToWxImage(imagedata)
 	#image.SaveMimeFile("mippi2.png","image/png")
 	xSize, ySize = image.GetWidth(), image.GetHeight()
@@ -630,7 +616,81 @@ def getPlane(data, plane, xCoordinate, yCoordinate, zCoordinate, applyZScaling =
 	xAxis, yAxis, zAxis = 0, 1, 2
 	print "getPlane", plane, xCoordinate, yCoordinate, zCoordinate
 	permute = vtk.vtkImagePermute()
-	dataWidth, dataHeigth, dataDepth = data.GetDimensions()
+	dataWidth, dataHeight, dataDepth = data.GetDimensions()
+	voi = vtk.vtkExtractVOI()
+	#voi.SetInput(permute.GetOutput())
+	permute.SetInputConnection(data.GetProducerPort())
+	spacing = data.GetSpacing()
+	data.SetSpacing(1,1,1)
+	data.SetOrigin(0,0,0)
+	xscale = 1
+	yscale = 1
+	if plane == "zy":
+		print "Getting plane",xCoordinate, xCoordinate, 0, dataHeight - 1, 0, dataDepth - 1
+		data.SetUpdateExtent(xCoordinate, xCoordinate, 0, dataHeight - 1, 0, dataDepth - 1)
+		permute.SetFilteredAxes(zAxis, yAxis, xAxis)
+#		voi.SetVOI(xCoordinate, xCoordinate, 0, dataHeight - 1, 0, dataDepth - 1)
+		permute.Update()
+		data = permute.GetOutput()		
+		#data.SetOrigin(0,0,0)
+		print "permute gave",data
+		voi.SetInput(data)
+
+		voi.SetVOI(0, dataDepth-1, 0, dataHeight-1, xCoordinate, xCoordinate)
+
+		data.SetUpdateExtent(0, dataDepth-1, 0, dataHeight-1, 0,0)
+		data.SetWholeExtent(0, dataDepth-1, 0, dataHeight-1, 0,0)
+		#data.SetSpacing(1,1,1)
+		xdim = dataDepth
+		ydim = dataHeight
+		
+		if applyZScaling: 
+			xdim *= spacing[2]
+			xscale = spacing[2]
+		
+	elif plane == "xz":
+		data.SetUpdateExtent(0, dataWidth - 1, yCoordinate, yCoordinate, 0, dataDepth - 1)
+		permute.SetFilteredAxes(xAxis, zAxis, yAxis)
+		permute.Update()
+		data = permute.GetOutput()
+		data.SetUpdateExtent(0, dataWidth-1, 0, dataDepth-1, 0,0)
+		data.SetWholeExtent(0, dataWidth-1, 0, dataDepth-1, 0,0)
+		#data.SetOrigin(0,0,0)
+		#data.SetSpacing(1,1,1)
+
+		voi.SetInput(data)
+		#voi.SetVOI(0, dataWidth - 1, yCoordinate, yCoordinate, 0, dataDepth - 1)
+		voi.SetVOI(0, dataWidth - 1, 0, dataDepth - 1, yCoordinate, yCoordinate)
+
+
+		xdim = dataWidth
+		ydim = dataDepth
+		if applyZScaling: 
+			ydim *= spacing[2]
+			yscale = 1
+		
+	#vtkfilter = permute
+	if applyZScaling:
+		permute.Update()
+		print "scaling ", voi.GetOutput()
+		return scaleImage(voi.GetOutput(), interpolation = 2, xfactor = xscale, yfactor = yscale)
+		
+	
+	voi.Update()
+	print "got from voi=",voi.GetOutput()
+#	permute.Update()
+#	return permute.GetOutput()
+	return voi.GetOutput()
+	
+def getPlaneOLD(data, plane, xCoordinate, yCoordinate, zCoordinate, applyZScaling = 0):
+	"""
+	Created: 06.06.2005, KP
+	Description: Get a plane from given the volume
+	"""   
+	xAxis, yAxis, zAxis = 0, 1, 2
+	print "getPlane", plane, xCoordinate, yCoordinate, zCoordinate
+	permute = vtk.vtkImagePermute()
+	dataWidth, dataHeight, dataDepth = data.GetDimensions()
 	voi = vtk.vtkExtractVOI()
 	#voi.SetInput(permute.GetOutput())
 	voi.SetInputConnection(data.GetProducerPort())
@@ -639,11 +699,14 @@ def getPlane(data, plane, xCoordinate, yCoordinate, zCoordinate, applyZScaling =
 	xscale = 1
 	yscale = 1
 	if plane == "zy":
-		data.SetUpdateExtent(xCoordinate, xCoordinate, 0, dataHeigth - 1, 0, dataDepth - 1)
-		voi.SetVOI(xCoordinate, xCoordinate, 0, dataHeigth - 1, 0, dataDepth - 1)
+		print "Getting plane",xCoordinate, xCoordinate, 0, dataHeight - 1, 0, dataDepth - 1
+		data.SetUpdateExtent(xCoordinate, xCoordinate, 0, dataHeight - 1, 0, dataDepth - 1)
+		voi.SetVOI(xCoordinate, xCoordinate, 0, dataHeight - 1, 0, dataDepth - 1)
+		voi.Update()
+		print voi.GetOutput()
 		permute.SetFilteredAxes(zAxis, yAxis, xAxis)
 		xdim = dataDepth
-		ydim = dataHeigth
+		ydim = dataHeight
 		
 		if applyZScaling: 
 			xdim *= spacing[2]
@@ -654,7 +717,7 @@ def getPlane(data, plane, xCoordinate, yCoordinate, zCoordinate, applyZScaling =
 		#voi.SetVOI(0,dataWidth-1,0,dataDepth-1,yCoordinate,yCoordinate)
 		voi.SetVOI(0, dataWidth - 1, yCoordinate, yCoordinate, 0, dataDepth - 1)
 		permute.SetFilteredAxes(xAxis, zAxis, yAxis)
-		xdim = dataWidth		 
+		xdim = dataWidth
 		ydim = dataDepth
 		if applyZScaling: 
 			ydim *= spacing[2]
@@ -665,8 +728,6 @@ def getPlane(data, plane, xCoordinate, yCoordinate, zCoordinate, applyZScaling =
 		permute.Update()
 		return scaleImage(permute.GetOutput(), interpolation = 2, xfactor = xscale, yfactor = yscale)
 		
-	#permute.SetInput(data)
-	#return voi.GetOutput()    
 	permute.Update()
 	return permute.GetOutput()
 	
@@ -1162,7 +1223,7 @@ def getSlice(volume, zslice, startpos = None, endpos = None):
 	"""
 	Created: KP
 	Description: Extract a given slice from a volume
-	"""		   
+	"""
 # VOI is volume of interest
 	voi = vtk.vtkExtractVOI()
 	voi.SetInputConnection(volume.GetProducerPort())

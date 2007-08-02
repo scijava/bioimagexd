@@ -15,7 +15,7 @@
  
  This is the window that contains the Urmas.
  
- Copyright (C) 2005  BioImageXD Project
+ Copyright (C) 2005	 BioImageXD Project
  See CREDITS.txt for details
 
  This program is free software; you can redistribute it and/or modify
@@ -61,12 +61,9 @@ class UrmasWindow(wx.lib.scrolledpanel.ScrolledPanel):
 				 animation modes, and a page for configuring the movie generation.
 	"""
 	def __init__(self, parent, menumanager, taskwin, visualizer):
-		#wx.Frame.__init__(self,parent,-1,"Rendering Manager / Animator",size=(1024,768))
-		#wx.SashLayoutWindow.__init__(self,parent,-1)
 		self.scrolled = 1
+		self.frozen = 0
 		wx.lib.scrolledpanel.ScrolledPanel.__init__(self, parent, -1)
-		#wx.ScrolledWindow.__init__(self,parent,-1)
-		#wx.Panel.__init__(self,parent,-1)
 		self.parent = parent
 		self.taskWin = taskwin
 		self.videoGenerationPanel = None
@@ -86,7 +83,7 @@ class UrmasWindow(wx.lib.scrolledpanel.ScrolledPanel):
 
 		self.splitter = TimelinePanel.SplitPanel(self, -1)
 		w = self.GetSize()[0]
-		self.timeline = Timeline(self.splitter, self.control, size = (768, 50))
+		self.timeline = GUI.Urmas.Timeline.Timeline(self.splitter, self.control, size = (768, 50))
 		self.timelinePanel = TimelinePanel.TimelinePanel(self.splitter, self.control, size = (1024, 500), p = self.parent)
 		self.timelinePanel.timeline = self.timeline
 		#self.splitter.SetMinimumPaneSize(10)
@@ -127,11 +124,13 @@ class UrmasWindow(wx.lib.scrolledpanel.ScrolledPanel):
 	def enable(self, flag):
 		"""
 		Created: 26.04.2006, KP
-		Description: Enable / Disable rendering of this window    
+		Description: Enable / Disable rendering of this window	  
 		"""
-		if flag:
+		if flag and self.frozen:
+			self.frozen = 0
 			self.Thaw()
 		else:
+			self.frozen = 1
 			self.Freeze()
 		
 	def enableRendering(self, flag):
@@ -144,7 +143,7 @@ class UrmasWindow(wx.lib.scrolledpanel.ScrolledPanel):
 		Created: 15.12.2005, KP
 		Description: Updates the render window camera settings
 					 after all initialization is done. For some
-					 reason, it has to be done here to take effect.                    
+					 reason, it has to be done here to take effect.					   
 		"""
 		Logging.info("Setting view of render window", kw = "animator")
 		self.timelinePanel.wxrenwin.setView((1, 1, 1, 0, 0, 1))
@@ -220,7 +219,7 @@ class UrmasWindow(wx.lib.scrolledpanel.ScrolledPanel):
 		
 		mgr.addMenuItem("addtrack", MenuManager.ID_ADD_TIMEPOINT, "Timepoint track", "Add a timepoint track to the timeline", self.onMenuAddTimepointTrack)
 		mgr.addMenuItem("addtrack", MenuManager.ID_ADD_SPLINE, "Camera path track", "Add a camera path track to the timeline", self.onMenuAddSplineTrack)
-		mgr.addMenuItem("addtrack", MenuManager.ID_ADD_KEYFRAME, "Keyframe track", "Add a keyframe track to the timeline", self.onMenuAddKeyframeTrack)        
+		mgr.addMenuItem("addtrack", MenuManager.ID_ADD_KEYFRAME, "Keyframe track", "Add a keyframe track to the timeline", self.onMenuAddKeyframeTrack)		   
 		mgr.addSubMenu("track", "addtrack", "&Add track", MenuManager.ID_ADD_TRACK)
 		#mgr.addSeparator("track")
 		
@@ -228,7 +227,7 @@ class UrmasWindow(wx.lib.scrolledpanel.ScrolledPanel):
 		mgr.addSubMenu("track", "sizetrack", "&Item sizes", MenuManager.ID_ITEM_SIZES)
 		
 		mgr.addMenuItem("sizetrack", MenuManager.ID_FIT_TRACK, "Expand to maximum", "Expand the track to encompass the whole timeline", self.onMaxTrack)
-		mgr.addMenuItem("sizetrack", MenuManager.ID_FIT_TRACK_RATIO, "Expand to track length (keep ratio)", "Expand the track to encompass the whole timeline while retainining the relative sizes of each item.", self.onMaxTrackRatio)        
+		mgr.addMenuItem("sizetrack", MenuManager.ID_FIT_TRACK_RATIO, "Expand to track length (keep ratio)", "Expand the track to encompass the whole timeline while retainining the relative sizes of each item.", self.onMaxTrackRatio)		
 		mgr.addMenuItem("sizetrack", MenuManager.ID_MIN_TRACK, "Shrink to minimum", "Shrink the track to as small as possible", self.onMinTrack)
 		mgr.addMenuItem("sizetrack", MenuManager.ID_SET_TRACK, "Set item size", "Set each item on this track to be of given size", self.onSetTrack)
 		mgr.addMenuItem("sizetrack", MenuManager.ID_SET_TRACK_TOTAL, "Set total length", "Set total length of items on this track", self.onSetTrackTotal)
@@ -245,10 +244,10 @@ class UrmasWindow(wx.lib.scrolledpanel.ScrolledPanel):
 		mgr.addMenuItem("track", MenuManager.ID_DELETE_ITEM, "&Remove item", "Remove the selected track item", self.onMenuRemoveTrackItem)
 		
 		#mgr.addSeparator("rendering")
-#        mgr.addMenuItem("rendering",MenuManager.ID_RENDER_PREVIEW,"Rendering &Preview","Preview rendering",self.onMenuRender)
+#		 mgr.addMenuItem("rendering",MenuManager.ID_RENDER_PREVIEW,"Rendering &Preview","Preview rendering",self.onMenuRender)
 		#mgr.addMenuItem("rendering",MenuManager.ID_RENDER_PROJECT,"&Render project","Render this project",self.onMenuRender)
 	
-		mgr.addSeparator("track")   
+		mgr.addSeparator("track")	
 		mgr.addMenuItem("track", MenuManager.ID_SPLINE_SET_BEGIN, "&Begin at the end of previous path", "Set this camera path to begin where the previous path ends", self.onMenuSetBegin)
 		mgr.addMenuItem("track", MenuManager.ID_SPLINE_SET_END, "&End at the beginning of next path", "Set this camera path to end where the next path starts", self.onMenuSetEnd)
 		mgr.addSeparator("track")
@@ -281,7 +280,7 @@ class UrmasWindow(wx.lib.scrolledpanel.ScrolledPanel):
 			method = self.menuManager.enable
 		elif active:
 			method = self.menuManager.disable
-		if method:   
+		if method:	 
 			method(MenuManager.ID_ITEM_ROTATE_CCW)
 			method(MenuManager.ID_ITEM_ROTATE_CW)
  
@@ -305,7 +304,7 @@ class UrmasWindow(wx.lib.scrolledpanel.ScrolledPanel):
 		if not active:
 			GUI.Dialogs.showwarning(self, "You need to select a track that you wish to perform the operation on.", "No track selected")
 			return
-		active.shiftItems(-1)       
+		active.shiftItems(-1)		
 	
 	def onMenuRender(self, event):
 		"""
@@ -319,29 +318,29 @@ class UrmasWindow(wx.lib.scrolledpanel.ScrolledPanel):
 		self.videoGenerationPanel.Show()
 		self.visualizer.mainwin.OnSize(None)
 		#else:
-		#    lib.messenger.send(None,"set_preview_mode",1)
-		#    self.control.renderProject(1)
-		#    lib.messenger.send(None,"set_preview_mode",0)
-		#    
+		#	 lib.messenger.send(None,"set_preview_mode",1)
+		#	 self.control.renderProject(1)
+		#	 lib.messenger.send(None,"set_preview_mode",0)
+		#	 
 	def onVideoGenerationClose(self, obj, evt, *args):
 		"""
 		Created: 15.12.2005, KP
 		Description: Callback for closing the video generation
 		""" 
 	
-		w, h = self.taskWin.GetSize()       
-		if self.videoGenerationPanel:            
+		w, h = self.taskWin.GetSize()		
+		if self.videoGenerationPanel:			 
 			self.taskWin.SetDefaultSize((0, h))
 			self.visualizer.mainwin.OnSize(None)
 			# destroy the video generation panel if the rendering wasn't aborted
-			# if it was aborted, let the panel destroy itself            
+			# if it was aborted, let the panel destroy itself			 
 			if not (self.videoGenerationPanel.rendering and self.videoGenerationPanel.abort):
 				self.videoGenerationPanel.Destroy()
 				self.videoGenerationPanel = None
 			else:
 				self.videoGenerationPanel.Show(0)
 			if self.visualizer.getCurrentModeName() != "animator":
-				self.visualizer.setVisualizationMode("animator")            
+				self.visualizer.setVisualizationMode("animator")			
 
 		self.visualizer.getCurrentMode().lockSliderPanel(0)
 		self.visualizer.OnSize()
@@ -383,7 +382,7 @@ class UrmasWindow(wx.lib.scrolledpanel.ScrolledPanel):
 		active = self.control.getSelectedTrack()
 		if not active:
 			GUI.Dialogs.showwarning(self, "You need to select a track that you wish to perform the operation on.", "No track selected")
-			return        
+			return		  
 		# Make sure you cant use a value that would make the items expand beyond duration
 		n = active.getNumberOfTimepoints()
 		
@@ -397,7 +396,7 @@ class UrmasWindow(wx.lib.scrolledpanel.ScrolledPanel):
 		if val > w:
 			val = w
 		
-		size = int(val * pps)        
+		size = int(val * pps)		 
 					
 		active.setToSize(size)
 		
@@ -441,7 +440,7 @@ class UrmasWindow(wx.lib.scrolledpanel.ScrolledPanel):
 		active = self.control.getSelectedTrack()
 		if not active:
 			GUI.Dialogs.showwarning(self, "You need to select a track that you wish to perform the operation on.", "No track selected")
-			return                
+			return				  
 
 		d = self.control.getDuration()
 		dlg = wx.TextEntryDialog(self, "Set total duration (seconds) of items in track:", "Set track duration")
@@ -465,7 +464,7 @@ class UrmasWindow(wx.lib.scrolledpanel.ScrolledPanel):
 		active = self.control.getSelectedTrack()
 		if not active:
 			GUI.Dialogs.showwarning(self, "You need to select a track that you wish to perform the operation on.", "No track selected")
-			return        
+			return		  
 		active.expandToMax()
 	
 	def onMaxTrackRatio(self, evt):
@@ -476,7 +475,7 @@ class UrmasWindow(wx.lib.scrolledpanel.ScrolledPanel):
 		active = self.control.getSelectedTrack()
 		if not active:
 			GUI.Dialogs.showwarning(self, "You need to select a track that you wish to perform the operation on.", "No track selected")
-			return        
+			return		  
 		active.expandToMax(keep_ratio = 1)
 		
 	def onMenuSetBegin(self, evt):
@@ -503,7 +502,7 @@ class UrmasWindow(wx.lib.scrolledpanel.ScrolledPanel):
 		active = self.control.getSelectedTrack()
 		if not active:
 			GUI.Dialogs.showwarning(self, "You need to select a track that you wish to perform the operation on.", "No track selected")
-			return        
+			return		  
 		if hasattr(active, "setMaintainUpDirection"):
 			active.setMaintainUpDirection(evt.IsChecked())
 		

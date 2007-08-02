@@ -787,9 +787,6 @@ class PreviewFrame(InteractivePanel):
 		if not self.slice and self.graySize == self.paintSize:
 			return
 		#Logging.backtrace()
-		if not clientdc:
-			clientdc = wx.ClientDC(self)
-#		dc = self.dc = wx.BufferedDC(clientdc,self.buffer)
 		dc = wx.MemoryDC()
 		dc.SelectObject(self.buffer)
 		dc.BeginDrawing()
@@ -841,7 +838,6 @@ class PreviewFrame(InteractivePanel):
 			#self.setScrollbars(w,h)
 
 		#Logging.info("Buffer for drawing=",self.buffer.GetWidth(),self.buffer.GetHeight(),kw="preview")
-		#dc = self.dc = wx.BufferedDC(clientdc,self.buffer)
 		
 		if self.zoomx != 1 or self.zoomy != 1:
 			w, h = bmp.GetWidth(), bmp.GetHeight()
