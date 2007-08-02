@@ -931,10 +931,7 @@ int vtkLSMReader::RequestData(
 
     vtkDebugMacro(<<"Strip byte count="<<readSize);
     this->ReadFile(this->GetFile(),&offset,readSize,(char *)tempBuf,1);
-    /*    for(int m = 0; m < readSize;m++)       {
-      char x=tempBuf[m];
-      tempBuf[m] = ((x<<8) |((x>>8)&0xff));
-      }*/
+
     /*
     if(this->IsCompressed())
       {
@@ -984,24 +981,19 @@ int vtkLSMReader::RequestUpdateExtent (
   vtkInformationVector** inputVector,
   vtkInformationVector* outputVector)
 {
-    //printf("\n\n\n****** REQUEST UPDATE EXTENT FOR LSM READER\n");
   int uext[6], ext[6];
     
   vtkInformation* outInfo = outputVector->GetInformationObject(0);
   //vtkInformation *inInfo = inputVector[0]->GetInformationObject(0);
 
   outInfo->Get(vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT(),ext);
-   //printf("extent request %d,%d,%d,%d,%d,%d\n",PRT_EXT(ext));
   // Get the requested update extent from the output.
   outInfo->Get(vtkStreamingDemandDrivenPipeline::UPDATE_EXTENT(), uext);
   
-  //printf("uextent request %d,%d,%d,%d,%d,%d\n",PRT_EXT(uext));
-
   // If they request an update extent that doesn't cover the whole slice
   // then modify the uextent 
   if(uext[1] < ext[1] ) uext[1] = ext[1];
   if(uext[3] < ext[3] ) uext[3] = ext[3];
-  //printf("vtkLSMReader Setting uextent to %d,%d,%d,%d,%d,%d\n",PRT_EXT(uext));
   outInfo->Set(vtkStreamingDemandDrivenPipeline::UPDATE_EXTENT(), uext,6);
   //request->Set(vtkStreamingDemandDrivenPipeline::REQUEST_UPDATE_EXTENT(), uext,6);
   return 1;    
