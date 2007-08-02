@@ -13,14 +13,16 @@ class TestColoc(unittest.TestCase):
 	
 	def testDimensions(self):
 		reader = vtkbxd.vtkLIFReader()
-		reader.OpenFile(os.path.join(DATA_PATH, "512x_128y_10z_22t_2ch.lif"))
+		reader.SetFileName(os.path.join(DATA_PATH, "512x_128y_10z_22t_2ch.lif"))
+		reader.OpenFile()
 		reader.Update()
 		data = reader.GetOutput()
 		self.assert_(data.GetDimensions() == (512, 128, 10), "Dimensions do not match")
 	
 	def testMIP(self):
 		reader = vtkbxd.vtkLIFReader()
-		reader.OpenFile(os.path.join(DATA_PATH, "512x_128y_10z_22t_2ch.lif"))
+		reader.SetFileName(os.path.join(DATA_PATH, "512x_128y_10z_22t_2ch.lif"))
+		reader.OpenFile()
 		reader.Update()
 		data = reader.GetOutput()
 		mip = vtkbxd.vtkImageSimpleMIP()

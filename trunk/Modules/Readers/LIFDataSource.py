@@ -5,7 +5,7 @@
  Created: 2007/07/19, LP
  Description: Class for managing 4D LIF data located on disk
 
- Copyright (C) 2005  BioImageXD Project
+ Copyright (C) 2005	BioImageXD Project
  See CREDITS.txt for details
 
  This program is free software; you can redistribute it and/or modify
@@ -67,7 +67,8 @@ class LIFDataSource(DataSource):
 
 		# Open file if defined
 		if self.filename:
-			if self.reader.OpenFile(self.filename):
+			self.reader.SetFileName(self.filename)
+			if self.reader.OpenFile():
 				if self.reader.ReadLIFHeader():
 					self.reader.SetCurrentImage(self.imageNum)
 					self.reader.SetCurrentChannel(self.channelNum)
@@ -83,7 +84,7 @@ class LIFDataSource(DataSource):
 	def getDataSetCount(self):
 		"""
 		Created: 24.07.2007, LP
-		Description: Returns count of time points of data set
+		Description: Returns the count of time points of the data set
 		"""
 		if not self.dimensions:
 			self.getDimensions()
@@ -99,8 +100,10 @@ class LIFDataSource(DataSource):
 	def getDataSet(self, i, raw = 0):
 		"""
 		Created 24.07.2007, LP
-		Description:
-		Parameters:
+		Description: Returns the defined timepoint of current image and channel
+		Parameters: i	 The timepoint of data to return
+					raw	 A flag indicating that the data is not to be processed
+						 in any way
 		"""
 		if self.imageNum < 0 or self.channelNum < 0:
 			Logging.error("No image or channel number specified",
@@ -109,7 +112,7 @@ class LIFDataSource(DataSource):
 		
 		if i < 0 or (i > 0 and i >= self.getDataSetCount()):
 			Logging.error("Given time point is out of bounds",
-						  "Time point %d that is out of bounds requested from getDataSet" % i)
+						  "Time point %d that is out of bounds requested from getDataSet"%i)
 			return None
 
 		self.reader.SetCurrentImageAndChannel(self.imageNum, self.channelNum)
@@ -124,7 +127,7 @@ class LIFDataSource(DataSource):
 			return data
 
 #        data = self.getIntensityScaledData(data)
-		return data
+		return data	
 
 	def getName(self):
 		"""
@@ -135,7 +138,9 @@ class LIFDataSource(DataSource):
 			Logging.error("Image or channel number not specified",
 						  "Error in LIFDataSource.py in getName, no image or channel specified.")
 			return ""
-		return "Ch-%d" % self.channelNum
+		name = self.reader.GetCurrentImageName()
+		channelName = "Ch-%d"%self.channelNum
+		return name+": "+channelName
 
 	def getDimensions(self):
 		"""
@@ -144,7 +149,7 @@ class LIFDataSource(DataSource):
 					 dataunit contains
 		"""
 		if not self.dimensions:
-#            self.dimensions = self.reader.GetImageDimensions(self.imageNum)
+#			 self.dimensions = self.reader.GetImageDimensions(self.imageNum)
 			self.reader.SetImageDimensions(self.imageNum)
 			self.dimensions = self.reader.GetDims()
 		return self.dimensions[0:3]
@@ -152,37 +157,43 @@ class LIFDataSource(DataSource):
 	def loadFromFile(self, filename):
 		"""
 		Created: 20.07.2007, LP
-		Description:
+		Description: Loads images from LIF-file and generates own DataSource
+					 for each image in file. Returns list of tuples which
+					 includes image name and DataUnit.
+		Parameters:	 filename: path to file where images should be loaded
 		"""
 		self.filename = filename
 		dataUnits = []
+		self.reader.SetFileName(self.filename)
 
-		if self.reader.OpenFile(filename):
+		if self.reader.OpenFile():
 			if self.reader.ReadLIFHeader():
 				imageCount = self.reader.GetImageCount()
 				for i in range(imageCount):
+					imageName = self.reader.GetImageName(i)
 					imageChannels = self.reader.GetChannelCount(i)
 					for c in range(imageChannels):
-						dataSource = LIFDataSource(filename, i, c)
+						dataSource = LIFDataSource(filename,i,c)
 						dataUnit = DataUnit.DataUnit()
 						dataUnit.setDataSource(dataSource)
-						dataUnits.append(dataUnit)
+#						 dataUnits.append(dataUnit)
+						dataUnits.append((imageName,dataUnit))
 			else:
 				Logging.error("Failed to read the LIF header",
-							  "Error in LIFDataSource.py in loadFromFile, failed to read the LIF header from file: %s" % (self.filename))
+							  "Error in LIFDataSource.py in loadFromFile, failed to read the LIF header from file: %s"%(self.filename))
 		else:
 			Logging.error("Failed to open the LIF file",
-						  "Error in LIFDataSource.py in loadFromFile, failed to open the LIF file: %s" % (self.filename))
+						  "Error in LIFDataSource.py in loadFromFile, failed to open the LIF file: %s"%(self.filename))
 
 		return dataUnits
 
 	def getSpacing(self):
 		"""
 		Created: 20.07.2007, LP
-		Description:
+		Description: Returns normalized spacing between voxels
 		"""
 		if not self.spacing:
-#            x,y,z = self.reader.GetImageVoxelSizes(self.imageNum)
+#			 x,y,z = self.reader.GetImageVoxelSizes(self.imageNum)
 			self.reader.SetImageVoxelSizes(self.imageNum)
 			x, y, z = self.reader.GetVoxelss()
 			self.spacing = [1, y / x, z / x]
@@ -191,10 +202,10 @@ class LIFDataSource(DataSource):
 	def getVoxelSize(self):
 		"""
 		Created: 20.07.2007, LP
-		Description:
+		Description: Returns size of voxel as 3-tuple
 		"""
 		if not self.voxelSize:
-#            self.voxelSize = self.reader.GetImagesVoxelSizes(self.imageNum)
+#			 self.voxelSize = self.reader.GetImagesVoxelSizes(self.imageNum)
 			self.reader.SetImageVoxelSizes(self.imageNum)
 			self.voxelSize = self.reader.GetVoxelss()
 		return self.voxelSize
@@ -206,19 +217,19 @@ class LIFDataSource(DataSource):
 		"""
 		if not self.ctf:
 			ctf = vtk.vtkColorTransferFunction()
-			minval, maxval = self.getScalarRange()
-			LUTName = self.reader.GetImageChannelLUTName(self.imageNum, self.channelNum)
+			minval,maxval = self.getScalarRange()
+			LUTName = self.reader.GetImageChannelLUTName(self.imageNum,self.channelNum)
 			LUTName = LUTName.lower()
-			r, g, b = (0, 0, 0)
+			r,g,b = (0,0,0)
 			if LUTName == "red":
 				r = 1
 			elif LUTName == "green":
 				g = 1
-			elif LUTName == "blue":
+			else:
 				b = 1
 			
-			ctf.AddRGBPoint(minval, 0, 0, 0)
-			ctf.AddRGBPoint(maxval, r, g, b)
+			ctf.AddRGBPoint(minval,0,0,0)
+			ctf.AddRGBPoint(maxval,r,g,b)
 			self.ctf = ctf
 			
 		return self.ctf
@@ -242,6 +253,14 @@ class LIFDataSource(DataSource):
 		Description: Returns pair that contains range of data values
 		"""
 		if not self.scalarRange:
-			self.scalarRange = (0, 2 ** self.bitDepth - 1)
+			bitDepth = self.getBitDepth()
+			self.scalarRange = (0,2**bitDepth-1)
 		return self.scalarRange
+
+	def uniqueID(self):
+		"""
+		Created: 01.08.2007, LP
+		Description: Returns a string identifying the dataset
+		"""
+		return self.getName()
 	

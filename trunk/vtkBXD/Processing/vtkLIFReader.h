@@ -59,7 +59,8 @@ class VTK_BXD_PROCESSING_EXPORT vtkLIFReader: public vtkImageAlgorithm
   //virtual const char* GetClassName();
   //  virtual int isA(const char*);
   virtual void PrintSelf(ostream&, vtkIndent);
-  int OpenFile(const char*);
+  void SetFileName(const char*);
+  int OpenFile();
   void CloseFile();
   int ReadLIFHeader();
 
@@ -91,11 +92,14 @@ class VTK_BXD_PROCESSING_EXPORT vtkLIFReader: public vtkImageAlgorithm
   int GetImageChannelResolution();
   const char* GetImageChannelLUTName(int,int);
   const char* GetImageChannelLUTName();
+  const char* GetImageName(int);
+  const char* GetCurrentImageName();
 
   vtkGetMacro(CurrentImage,int);
   vtkGetMacro(CurrentChannel,int);
   vtkGetVectorMacro(Dims,int,4);
   vtkGetVector3Macro(Voxelss,double);
+  vtkGetStringMacro(FileName);
   //  int IsValidLIFFile();
   //  int GetNumberOfChannels();
   void PrintData(vtkImageData*,int);
@@ -126,6 +130,8 @@ class VTK_BXD_PROCESSING_EXPORT vtkLIFReader: public vtkImageAlgorithm
   int RequestData(vtkInformation* vtkNotUsed(request),
                   vtkInformationVector** vtkNotUsed(inputVector),
                   vtkInformationVector*);
+
+  unsigned int GetTimePointOffset(int, int);
 
 // Protected attributes
   ifstream *File;

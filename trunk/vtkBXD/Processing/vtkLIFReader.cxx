@@ -150,20 +150,22 @@ const char* vtkLIFReader::GetFileExtensions()
   return ".lif .LIF";
 }
 
-int vtkLIFReader::OpenFile(const char* filename)
+int vtkLIFReader::OpenFile()
 {
+  if (!this->FileName)
+	{
+	  vtkErrorMacro(<< "File name isn't specified.");
+	  return 0;
+	}
   this->Clear(); // Remove info of possibly already opened file.
 
-  this->File = new ifstream(filename, ios::in | ios::binary);
+  this->File = new ifstream(this->FileName, ios::in | ios::binary);
   if (!this->File || this->File->fail())
     {
-      vtkErrorMacro(<< "OpenFile: Could not open file " << filename);
+      vtkErrorMacro(<< "OpenFile: Could not open file " << this->FileName);
       return 0;
     }
 
-  this->FileName = new char[strlen(filename)];
-  strcpy(this->FileName, filename);
-  
   // Get size of the file
   this->File->seekg(0,ios::end);
   this->FileSize = this->File->tellg();
@@ -174,6 +176,7 @@ int vtkLIFReader::OpenFile(const char* filename)
   this->Images = new ImageVector;
   this->Offsets = vtkUnsignedIntArray::New();
   this->ImageSizes = vtkUnsignedIntArray::New();
+  this->Modified();
   
   return 1;
 }
@@ -181,6 +184,28 @@ int vtkLIFReader::OpenFile(const char* filename)
 void vtkLIFReader::CloseFile()
 {
   this->Clear();
+}
+
+void vtkLIFReader::SetFileName(const char *fname)
+{
+  if (!fname && !this->FileName)
+	{
+	  return;
+	}
+  if (this->FileName && fname && !strcmp(this->FileName,fname))
+	{
+	  return;
+	}
+
+  this->Clear();
+
+  if (fname)
+	{
+	  this->FileName = new char[strlen(fname)];
+	  strcpy(this->FileName,fname);
+	}
+
+  this->Modified();
 }
 
 int vtkLIFReader::GetImageCount()
@@ -217,6 +242,7 @@ int vtkLIFReader::GetDimensionCount()
 
 int vtkLIFReader::SetCurrentImage(int image)
 {
+  this->Modified();
   if (image >= 0 && image < this->GetImageCount())
     {
       this->CurrentImage = image;
@@ -233,6 +259,7 @@ int vtkLIFReader::SetCurrentImage(int image)
 
 int vtkLIFReader::SetCurrentChannel(int channel)
 {
+  this->Modified();
   if (this->CurrentImage >= 0 && channel >= 0 && 
       channel < this->GetChannelCount(this->CurrentImage))
     {
@@ -255,6 +282,7 @@ void vtkLIFReader::SetCurrentImageAndChannel(int image, int channel)
 
 int vtkLIFReader::SetCurrentTimePoint(int i)
 {
+  this->Modified();
   if (this->CurrentImage >= 0 && i >= 0 && i < this->GetImageDimensions(this->CurrentImage)[3])
     {
       this->CurrentTimePoint = i;
@@ -377,16 +405,20 @@ int vtkLIFReader::SetImageDimensions(int image)
 {
   if (image < 0 || image >= this->Dimensions->size()) return 0;
 
-  Dims[0] = Dims[1] = Dims[2] = Dims[3] = 0;
+  this->Dims[0] = this->Dims[1] = this->Dims[2] = this->Dims[3] = 0;
 
   for (ImageDimensionsTypeBase::const_iterator dimIter = this->Dimensions->at(image)->begin();
        dimIter != this->Dimensions->at(image)->end(); dimIter++)
     {
-      if ((*dimIter)->DimID == DimIDX) Dims[0] = (*dimIter)->NumberOfElements;
-      else if ((*dimIter)->DimID == DimIDY) Dims[1] = (*dimIter)->NumberOfElements;
-      else if ((*dimIter)->DimID == DimIDZ) Dims[2] = (*dimIter)->NumberOfElements;
-      else if ((*dimIter)->DimID == DimIDT) Dims[3] = (*dimIter)->NumberOfElements;
+      if ((*dimIter)->DimID == DimIDX) this->Dims[0] = (*dimIter)->NumberOfElements;
+      else if ((*dimIter)->DimID == DimIDY) this->Dims[1] = (*dimIter)->NumberOfElements;
+      else if ((*dimIter)->DimID == DimIDZ) this->Dims[2] = (*dimIter)->NumberOfElements;
+      else if ((*dimIter)->DimID == DimIDT) this->Dims[3] = (*dimIter)->NumberOfElements;
     }
+
+  // If image has x and y components, then make sure that z component is at
+  // least 1. This way we don't have 3D image with dimensions (x,y,0)
+  if (this->Dims[0] > 0 && this->Dims[1] > 0 && this->Dims[2] <= 0) this->Dims[2] = 1;
 
   return 1;
 }
@@ -405,7 +437,7 @@ int vtkLIFReader::SetImageDimensions()
 
 int vtkLIFReader::GetImageChannelResolution(int image, int channel)
 {
-  if (image < 0 || image > this->Images->size() || channel < 0 || channel > this->Channels->at(image)->size())
+  if (image < 0 || image >= this->GetImageCount() || channel < 0 || channel > this->Channels->at(image)->size())
     {
       vtkErrorMacro(<< "GetImageChannelResolution: image number: " << image << ", or channel number: " << channel << " is out of bounds.");
       return 0;
@@ -420,7 +452,7 @@ int vtkLIFReader::GetImageChannelResolution()
 
 const char* vtkLIFReader::GetImageChannelLUTName(int image, int channel)
 {
-  if (image < 0 || image > this->Images->size() || channel < 0 || channel > this->Channels->at(image)->size())
+  if (image < 0 || image >= this->GetImageCount() || channel < 0 || channel > this->Channels->at(image)->size())
     {
       vtkErrorMacro(<< "GetImageChannelLUTName: image number: " << image << ", or channel number: " << channel << " is out of bounds.");
       return "";
@@ -432,6 +464,29 @@ const char* vtkLIFReader::GetImageChannelLUTName(int image, int channel)
 const char* vtkLIFReader::GetImageChannelLUTName()
 {
   return this->GetImageChannelLUTName(this->CurrentImage,this->CurrentChannel);
+}
+
+unsigned int vtkLIFReader::GetTimePointOffset(int image, int timepoint)
+{
+  if (timepoint < 0) return 0;
+  for (ImageDimensionsTypeBase::const_iterator dimIter = this->Dimensions->at(image)->begin();
+       dimIter != this->Dimensions->at(image)->end(); dimIter++)
+    {
+      if ((*dimIter)->DimID == DimIDT) return (*dimIter)->BytesInc * timepoint;
+    }
+
+  return 0;
+}
+
+const char* vtkLIFReader::GetImageName(int image)
+{
+  if (image < 0 || image >= this->GetImageCount()) return "";
+  return this->Images->at(image);
+}
+
+const char* vtkLIFReader::GetCurrentImageName()
+{
+  return this->GetImageName(this->CurrentImage);
 }
 
 int vtkLIFReader::ReadLIFHeader()
@@ -506,7 +561,7 @@ int vtkLIFReader::ReadLIFHeader()
   }
   
   this->HeaderInfoRead = 1;
-  this->SetCurrentImageAndChannel(0,0);
+  this->SetCurrentImageAndChannel(0,0); // This sets Modified() if succeeds
   return 1;
 }
 
@@ -697,11 +752,15 @@ int vtkLIFReader::RequestInformation(vtkInformation* vtkNotUsed(request),
   int *extent =  new int[6];
   double *origin = new double[3];
   this->CalculateExtentAndSpacingAndOrigin(extent,spacing,origin);
-
+  cout << "New requestInformation" << endl;
   info->Set(vtkDataObject::SPACING(),spacing,3);
   info->Set(vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT(),extent,6);
   info->Set(vtkDataObject::ORIGIN(),origin,3);
   vtkDataObject::SetPointDataActiveScalarInfo(info,VTK_UNSIGNED_CHAR,1);
+
+  delete [] origin;
+  delete [] extent;
+  delete [] spacing;
 
   return 1;
 }
@@ -744,7 +803,7 @@ int vtkLIFReader::RequestData(vtkInformation *request,
       vtkErrorMacro(<< "RequestData: Header info isn't read or CurrentImage or CurrentChannel is less than 0.");
       return 0;
     }
-	
+
   vtkInformation *outInfo = outputVector->GetInformationObject(0);
   vtkImageData *imageData = this->AllocateOutputData(outInfo->Get(vtkDataObject::DATA_OBJECT()));
   imageData->GetPointData()->GetScalars()->SetName("LIF Scalars");
@@ -771,6 +830,7 @@ int vtkLIFReader::RequestData(vtkInformation *request,
   buffer = new unsigned char[bufferSize+1];
   unsigned char *pos = buffer;
   imageOffset = this->Offsets->GetValue(this->CurrentImage);
+  imageOffset += this->GetTimePointOffset(this->CurrentImage,this->CurrentTimePoint);
   cout << "Image Offset is: " << imageOffset << endl;
 
   for (int i = extent[4]; i <= extent[5]; ++i)
@@ -853,6 +913,9 @@ void vtkLIFReader::CalculateExtentAndSpacingAndOrigin(int *extent, double *spaci
       spacing[2] /= spacing[0];
       spacing[0] = 1.0;
     }
+
+  // Make sure that viewing 2D image there is also extent[5] == extent[4]
+  if (extent[1] > 0 && extent[3] > 0 && extent[5] < 0) extent[5] = 0;
 }
 
 char vtkLIFReader::ReadChar(ifstream *ifs)
@@ -882,6 +945,9 @@ unsigned int vtkLIFReader::ReadUnsignedInt(ifstream *ifs)
   return *((unsigned int*)(buffer));
 }
 
+/**********************************************
+ Next two methods are only for testing purposes
+**********************************************/
 void vtkLIFReader::PrintData(vtkImageData *printArray, int i)
 {
   int components = printArray->GetPointData()->GetScalars()->GetNumberOfComponents();
