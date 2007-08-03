@@ -31,7 +31,7 @@ __author__ = "BioImageXD Project"
 __version__ = "$Revision: 1.9 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
-import scripting as bxd
+import scripting
 from GUI.PreviewFrame.SectionsPanel import SectionsPanel
 from Visualizer.VisualizationMode import VisualizationMode
 
@@ -117,7 +117,7 @@ class SectionsMode(VisualizationMode):
 		Created: 24.05.2005, KP
 		Description: Set the mode of visualization
 		"""
-		bxd.wantWholeDataset = 1
+		scripting.wantWholeDataset = 1
 
 		if not self.sectionsPanel:
 			x, y = self.visualizer.visWin.GetSize()

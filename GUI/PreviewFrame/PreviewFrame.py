@@ -30,7 +30,7 @@ __author__ = "BioImageXD Project"
 __version__ = "$Revision: 1.63 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
-import scripting as bxd
+import scripting
 from GUI.InteractivePanel import InteractivePanel as InteractivePanel
 import lib.ImageOperations
 import lib.messenger
@@ -221,8 +221,6 @@ class PreviewFrame(InteractivePanel):
 				self.buffer = wx.EmptyBitmap(x, y)
 				self.setScrollbars(x, y)
 		Logging.info("paintSize=", self.paintSize, kw = "preview")
-#		if bxd.visualizer.zoomToFitFlag:
-#			self.zoomToFit()
 
 	def onSize(self, event):
 		"""
@@ -437,8 +435,7 @@ class PreviewFrame(InteractivePanel):
 		Parameters:
 		renew    Whether the method should recalculate the images
 		"""
-		if bxd.inIO:
-			Logging.info("\n\n\n------> STILL IN IO, WON'T UPDATE PREVIEW")
+		if scripting.inIO:
 			return
 		if self.renewNext:
 			renew = 1
@@ -502,7 +499,7 @@ class PreviewFrame(InteractivePanel):
 			x, y, z = colorImage.GetDimensions()
 			
 			if not usedUpdateExt and not self.mip:
-				bxd.visualizer.zslider.SetRange(1, z)
+				scripting.visualizer.zslider.SetRange(1, z)
 			if x != self.oldx or y != self.oldy:
 				#self.resetScroll()
 				#self.setScrollbars(x,y)
@@ -534,29 +531,18 @@ class PreviewFrame(InteractivePanel):
 		"""
 		data.UpdateInformation()
 		ncomps = data.GetNumberOfScalarComponents()
-		#Logging.info("I was created by: ",self.creator,"I am the ",PreviewFrame.count,"th instance")
-		#Logging.backtrace()
-		#Logging.info("Data has %d components"%ncomps,kw="preview")
 		if ncomps > 3:
-			
-			#Logging.info("\n\n\n*** Previewed data has %d components, extracting"%ncomps,kw="preview")
 			extract = vtk.vtkImageExtractComponents()
 			extract.SetComponents(0, 1, 2)
 			extract.SetInput(data)
 			data = extract.GetOutput()
-			#extract.Update()
-			#data = bxd.execute_limited(extract)
 			
 		if self.mip:
-			#data.SetUpdateExtent(data.GetWholeExtent())
 			mip = vtkbxd.vtkImageSimpleMIP()
 			mip.SetInput(data)
 			
 			data = mip.GetOutput()
-			
-			# THIS WAS COMMENTED TO FIND REASON FOR NOT WORKING
-			#data.SetUpdateExtent(data.GetWholeExtent())
-
+		
 		if ncomps == 1:
 			Logging.info("Mapping trough ctf", kw = "preview")
 			
@@ -566,12 +552,8 @@ class PreviewFrame(InteractivePanel):
 			self.updateColor()
 
 			colorImage = self.mapToColors.GetOutput()
-			#colorImage.SetUpdateExtent(data.GetExtent())
 			
 			outdata  = colorImage
-			#outdata = bxd.execute_limited(self.mapToColors)
-			
-			#outdata.ReleaseDataFlagOff()
 			return outdata
 			
 		else:
@@ -702,7 +684,7 @@ class PreviewFrame(InteractivePanel):
 		x *= f
 		y *= f
 
-		if bxd.resampleToFit:
+		if scripting.resampleToFit:
 			optimize.set_target_size(x, y)
 			f = 1
 		px, py = self.paintSize
@@ -723,7 +705,7 @@ class PreviewFrame(InteractivePanel):
 			self.paintPreview()
 			self.slice = slice
 		self.zoomFactor = f
-		bxd.zoomFactor = f
+		scripting.zoomFactor = f
 		self.updateAnnotations()
 		#self.Scroll(0,0)
 		
@@ -749,7 +731,7 @@ class PreviewFrame(InteractivePanel):
 			Logging.info("Determining zoom factor from (%d,%d) to (%d,%d)" % (x, y, maxX, maxY), kw = "preview")
 			factor = lib.ImageOperations.getZoomFactor(x, y, maxX, maxY)
 			self.setZoomFactor(factor)
-			bxd.zoomFactor = factor
+			scripting.zoomFactor = factor
 		else:
 			Logging.info("Will zoom to fit later", kw = "preview")
 			self.fitLater = 1

@@ -32,7 +32,7 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 import Logging
 from Visualizer.VisualizationMode import VisualizationMode
 from GUI.PreviewFrame.PreviewFrame import PreviewFrame
-import scripting as bxd
+import scripting
 
 def getName():
 	return "MIP"
@@ -126,7 +126,7 @@ class SimpleMode(VisualizationMode):
 		Created: 24.05.2005, KP
 		Description: Set the mode of visualization
 		"""
-		bxd.wantWholeDataset = 1
+		scripting.wantWholeDataset = 1
 
 		if not self.iactivePanel:
 			Logging.info("Generating preview", kw = "visualizer")

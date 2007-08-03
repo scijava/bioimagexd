@@ -578,10 +578,6 @@ def vtkImageDataToPreviewBitmap(dataunit, timepoint, color, width = 0, height = 
 	maptocolor.SetInputConnection(imagedata.GetProducerPort())
 	maptocolor.SetLookupTable(ctf)
 	maptocolor.SetOutputFormatToRGB()
-	#maptocolor.Update()
-	#imagedata=maptocolor.GetOutput()	 
-	#imagedata = bxd.execute_limited(maptocolor)
-	#imagedata = bxd.mem.optimize(vtkFilter = maptocolor)
 	maptocolor.Update()
 	imagedata = maptocolor.GetOutput()
 	
@@ -1105,9 +1101,6 @@ def scatterPlot(imagedata1, imagedata2, z, countVoxels, wholeVolume = 1, logarit
 	shiftscale.SetOutputScalarTypeToUnsignedChar()
 	shiftscale.SetScale(d)
 	shiftscale.SetInputConnection(app.GetOutputPort())
-	#data = shiftscale.GetOutput()
-	#data.Update()
-	#data = bxd.mem.optimize(vtkFilter = shiftscale)
 	
 	acc = vtk.vtkImageAccumulate()
 	
@@ -1276,15 +1269,12 @@ def imageDataTo3Component(image, ctf):
 		maptocolor.SetOutputFormatToRGB()
 		#maptocolor.Update()
 		imagedata = maptocolor.GetOutput()
-		#imagedata=bxd.execute_limited(maptocolor)
 	elif ncomps > 3:
 		Logging.info("Data has %d components, extracting"%ncomps, kw = "imageop")
 		extract = vtk.vtkImageExtractComponents()
 		extract.SetComponents(0, 1, 2)
 		extract.SetInputConnection(image.GetProducerPort())
-		#extract.Update()
 		imagedata = extract.GetOutput()
-		#imagedata=bxd.execute_limited(extract)
 
 	else:
 		imagedata = image

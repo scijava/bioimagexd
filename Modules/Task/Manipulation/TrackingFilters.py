@@ -32,7 +32,7 @@ __date__ = "$Date: 2005/01/13 14:52:39 $"
 
 #import lib.Particle
 
-import scripting as bxd
+import scripting
 import GUI.CSVListView as CSVListView
 import wx.grid as gridlib
 import GUI.GUIBuilder as GUIBuilder
@@ -299,7 +299,7 @@ class TrackTableGrid(gridlib.Grid):
 		"""
 		#print self.selectedCol,self.selectedRow,x,y,z
 		print "onUpdateCell", x, y, z
-		currWin = bxd.visualizer.getCurrentWindow()
+		currWin = scripting.visualizer.getCurrentWindow()
 		if currWin.isMipMode():
 			 
 			image = self.trackFilter.getInputFromChannel(0)
@@ -644,7 +644,7 @@ class CreateTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 		if parameter == "UseROI":
 			return 0
 		if parameter == "ROI":
-			n = bxd.visualizer.getRegionsOfInterest()
+			n = scripting.visualizer.getRegionsOfInterest()
 			if n:
 				return n[0]
 			return 0            

@@ -31,12 +31,9 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 
 import vtk
-#import time
 import Logging
 import lib.Module
-#from lib.Module import *
 
-#import scripting as bxd
 import optimize
 
 class FilterBasedModule(lib.Module.Module):

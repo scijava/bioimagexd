@@ -32,7 +32,7 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 #import OGLAnnotations
 #import vtk
 
-import scripting as bxd
+import scripting
 import lib.ImageOperations
 import lib.messenger
 import Logging
@@ -178,7 +178,7 @@ class VisualizeTracksHelper(PainterHelper):
 		Created: 26.11.2006, KP
 		Description: Draw the text label for given timepoint
 		"""
-		if tp != bxd.visualizer.getTimepoint():
+		if tp != scripting.visualizer.getTimepoint():
 			dc.SetFont(wx.Font(7, wx.SWISS, wx.NORMAL, wx.NORMAL))
 			dc.DrawCircle(x, y, 3)
 		else:
@@ -379,7 +379,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 		rois = [self.subtractROI]
 		n, maskImage = lib.ImageOperations.getMaskFromROIs(rois, mx, my, mz)
 		
-		tp = bxd.visualizer.getTimepoint()
+		tp = scripting.visualizer.getTimepoint()
 		if self.dataUnit.isProcessed():
 			origImage = self.dataUnit.doPreview(z, renew, tp)
 		else:
@@ -748,7 +748,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 			settings = self.dataUnit.getSettings()
 			if self.annotationsEnabled:
 				self.saveAnnotations()
-				bxd.storeSettingsToCache(self.dataUnit.getFileName() + "_" + self.dataUnit.getName() + "_annotations", [settings])
+				scripting.storeSettingsToCache(self.dataUnit.getFileName() + "_" + self.dataUnit.getName() + "_annotations", [settings])
 				self.dataUnit.getSettings().set("Annotations", [])
 					   
 	def getDuplicateDC(self, dc):
@@ -1046,7 +1046,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 			return
 		if not self.dataUnit.getDataSource():       
 			return
-		cachedSettings, cacheParser = bxd.getSettingsFromCache(self.dataUnit.getFileName() + "_" + self.dataUnit.getName() + "_annotations")
+		cachedSettings, cacheParser = scripting.getSettingsFromCache(self.dataUnit.getFileName() + "_" + self.dataUnit.getName() + "_annotations")
 
 		if cachedSettings:
 			self.restoreAnnotations(cachedSettings[0])

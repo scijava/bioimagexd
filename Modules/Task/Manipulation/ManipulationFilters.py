@@ -30,7 +30,7 @@ __author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.42 $"
 __date__ = "$Date: 2005/01/13 14:52:39 $"
 
-import scripting as bxd
+import scripting
 import GUI.GUIBuilder as GUIBuilder
 import lib.ImageOperations
 try:
@@ -767,7 +767,7 @@ class ROIIntensityFilter(ProcessingFilter.ProcessingFilter):
 		Description: Return the default value of a parameter
 		"""     
 		if parameter == "ROI":
-			n = bxd.visualizer.getRegionsOfInterest()
+			n = scripting.visualizer.getRegionsOfInterest()
 			if n:
 				return (0, n[0])
 			return 0
@@ -785,7 +785,7 @@ class ROIIntensityFilter(ProcessingFilter.ProcessingFilter):
 			rois = [self.parameters["ROI"][1]]
 			print "rois =", rois
 		else:
-			rois = bxd.visualizer.getRegionsOfInterest()
+			rois = scripting.visualizer.getRegionsOfInterest()
 		imagedata =  self.getInput(1)
 		
 		mx, my, mz = self.dataUnit.getDimensions()
@@ -884,7 +884,7 @@ class CutDataFilter(ProcessingFilter.ProcessingFilter):
 		if parameter == "UseROI":
 			return 0
 		if parameter == "ROI":
-			n = bxd.visualizer.getRegionsOfInterest()
+			n = scripting.visualizer.getRegionsOfInterest()
 			if n:
 				return n[0]
 			return 0
@@ -990,7 +990,7 @@ class GradientMagnitudeFilter(ProcessingFilter.ProcessingFilter):
 	"""     
 	name = "Gradient magnitude"
 	category = FEATUREDETECTION
-	level = bxd.COLOR_BEGINNER
+	level = scripting.COLOR_BEGINNER
 	def __init__(self, inputs = (1, 1)):
 		"""
 		Created: 13.04.2006, KP
@@ -1049,7 +1049,7 @@ class ITKAnisotropicDiffusionFilter(ProcessingFilter.ProcessingFilter):
 		Created: 9.11.2006, KP
 		Description: Return the level of the given parameter
 		"""
-		return bxd.COLOR_INTERMEDIATE
+		return scripting.COLOR_INTERMEDIATE
 			
 	def getDefaultValue(self, parameter):
 		"""
@@ -1177,7 +1177,7 @@ class ITKCannyEdgeFilter(ProcessingFilter.ProcessingFilter):
 		Created: 1.11.2006, KP
 		Description: Return the level of the given parameter
 		"""
-		return bxd.COLOR_EXPERIENCED
+		return scripting.COLOR_EXPERIENCED
 		
 	def getParameters(self):
 		"""
@@ -1238,7 +1238,7 @@ class ITKSigmoidFilter(ProcessingFilter.ProcessingFilter):
 		Created: 9.11.2006, KP
 		Description: Return the level of the given parameter
 		"""
-		return bxd.COLOR_EXPERIENCED                 
+		return scripting.COLOR_EXPERIENCED                 
 		
 	def getParameters(self):
 		"""

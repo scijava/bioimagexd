@@ -30,7 +30,7 @@ __author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.42 $"
 __date__ = "$Date: 2005/01/13 14:52:39 $"
 
-import scripting as bxd
+import scripting
 import ConfigParser
 import GUI.Dialogs
 import GUI.FilterBasedTaskPanel
@@ -304,7 +304,7 @@ class ManipulationPanel(GUI.FilterBasedTaskPanel.FilterBasedTaskPanel):
 			return 
 		name = self.filters[index].getName()
 		undo_cmd = ""
-		do_cmd = "bxd.mainWindow.tasks['Process'].deleteFilter(index=%d, name='%s')" % (index, name)
+		do_cmd = "scripting.mainWindow.tasks['Process'].deleteFilter(index=%d, name='%s')" % (index, name)
 		cmd = lib.Command.Command(lib.Command.GUI_CMD, None, None, do_cmd, undo_cmd, \
 									desc = "Remove filter '%s'" % (name))
 		cmd.run()
@@ -324,9 +324,9 @@ class ManipulationPanel(GUI.FilterBasedTaskPanel.FilterBasedTaskPanel):
 		cmd = "Enable"
 		if not status:
 			cmd = "Disable"
-		undo_cmd = "bxd.mainWindow.tasks['Process'].setFilter(%s, index=%d, name='%s')" \
+		undo_cmd = "scripting.mainWindow.tasks['Process'].setFilter(%s, index=%d, name='%s')" \
 					% (str(status), index, name)
-		do_cmd = "bxd.mainWindow.tasks['Process'].setFilter(%s, index=%d, name='%s')" \
+		do_cmd = "scripting.mainWindow.tasks['Process'].setFilter(%s, index=%d, name='%s')" \
 					% (str(status), index, name)
 		descstr  = "%s filter '%s'" % (cmd, name)
 				
@@ -457,7 +457,7 @@ class ManipulationPanel(GUI.FilterBasedTaskPanel.FilterBasedTaskPanel):
 				name = ".".join(os.path.basename(file).split(".")[:-1])
 				fileId = wx.NewId()
 				fileItem = wx.MenuItem(self.presetMenu, fileId, name)
-				do_cmd = "bxd.mainWindow.tasks['Process'].loadPreset('%s')" % file
+				do_cmd = "scripting.mainWindow.tasks['Process'].loadPreset('%s')" % file
 			   
 				cmd = lib.Command.Command(lib.Command.GUI_CMD, None, None, do_cmd, "", \
 											desc = "Load preset %s" % name)
@@ -472,7 +472,7 @@ class ManipulationPanel(GUI.FilterBasedTaskPanel.FilterBasedTaskPanel):
 		Created: 03.03.2007, KP
 		Description: load the given preset
 		"""
-		bxd.mainWindow.loadSettings(name)
+		scripting.mainWindow.loadSettings(name)
 		
 	def saveAsPreset(self, name):
 		"""
@@ -495,7 +495,7 @@ class ManipulationPanel(GUI.FilterBasedTaskPanel.FilterBasedTaskPanel):
 
 		if dlg.ShowModal() == wx.ID_OK:
 			name = dlg.GetValue()
-			do_cmd = "bxd.mainWindow.tasks['Process'].saveAsPreset('%s')" % name
+			do_cmd = "scripting.mainWindow.tasks['Process'].saveAsPreset('%s')" % name
 			cmd = lib.Command.Command(lib.Command.GUI_CMD, None, None, do_cmd, "", \
 										desc = "Save procedure list as preset %s" % name)
 			cmd.run()
@@ -527,8 +527,8 @@ class ManipulationPanel(GUI.FilterBasedTaskPanel.FilterBasedTaskPanel):
 					submenu.AppendItem(newitem)
 #                    submenu.Append(menuid,name)
 					n = len(self.filters)
-					undo_cmd = "bxd.mainWindow.tasks['Process'].deleteFilter(index=%d, name = '%s')" % (n, name)
-					do_cmd = "bxd.mainWindow.tasks['Process'].loadFilter('%s')" % name
+					undo_cmd = "scripting.mainWindow.tasks['Process'].deleteFilter(index=%d, name = '%s')" % (n, name)
+					do_cmd = "scripting.mainWindow.tasks['Process'].loadFilter('%s')" % name
 					cmd = lib.Command.Command(lib.Command.GUI_CMD, None, None, do_cmd, undo_cmd, \
 												desc = "Load filter %s" % name)
 					

@@ -33,7 +33,7 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 #import time
 #import types
 
-import scripting as bxd
+import scripting
 import Configuration
 import Logging
 import vtk
@@ -57,7 +57,7 @@ def set_target_size(xDimension, yDimension, zDimension = 0):
 	
 	#print "\n\\nTARGET SIZE FOR RESAMPLE-TO-FIT ",x,y,z
 	global targetSize, conf
-	dataUnit = bxd.visualizer.getDataUnit()
+	dataUnit = scripting.visualizer.getDataUnit()
 	if zDimension == 0:
 		zDimension = dataUnit.getDimensions()[2]
 	targetSize = xDimension, yDimension, zDimension
@@ -86,7 +86,7 @@ def optimize(image = None, vtkFilter = None, updateExtent = None, releaseData = 
 	
 	val, numFilters = optimizePipeline(filterInUse, releaseData = releaseData)
 
-	if updateExtent and not bxd.wantWholeDataset:
+	if updateExtent and not scripting.wantWholeDataset:
 		val.GetOutput().SetUpdateExtent(updateExtent)
 	# COMMENTED TO SEE IF ANY EFFECT ON CRASHES
 	#else:
@@ -133,7 +133,7 @@ def execute_limited(pipeline, updateExtent = None):
 	streamer.SetInputConnection(pipeline.GetOutputPort())
 	retval = streamer.GetOutput()
 	
-	if updateExtent and not bxd.wantWholeDataset:
+	if updateExtent and not scripting.wantWholeDataset:
 		Logging.info("Setting update extent to ", updateExtent, kw = "pipeline")
 		retval.SetUpdateExtent(updateExtent)
 	#else:

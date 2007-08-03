@@ -5,7 +5,7 @@
  Created: 03.11.2004, JM
  Description: Classes for managing combined 4D data.
 							
- Copyright (C) 2005  BioImageXD Project
+ Copyright (C) 2005	 BioImageXD Project
  See CREDITS.txt for details
 
  This program is free software; you can redistribute it and/or modify
@@ -20,7 +20,7 @@
 
  You should have received a copy of the GNU General Public License
  along with this program; if not, write to the Free Software
- Foundatiocan, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ Foundatiocan, Inc., 59 Temple Place, Suite 330, Boston, MA	 02111-1307	 USA
 
 """
 
@@ -37,7 +37,7 @@ import vtk
 import vtkbxd
 import Logging
 import lib.messenger
-import scripting as bxd
+import scripting
 import os.path	
 
 class CombinedDataUnit(DataUnit):
@@ -76,7 +76,7 @@ class CombinedDataUnit(DataUnit):
 		"""
 		Created: 31.05.2005, KP
 		Description: A method for querying whether this dataset is a processed one
-		"""    
+		"""	   
 		return 1
 		
 	def setOutputChannel(self, channel, flag):
@@ -218,7 +218,7 @@ class CombinedDataUnit(DataUnit):
 			for timePoint in timepoints:
 				# First we reset the module, so that we can start the operation
 				# from clean slate
-				bxd.processingTimepoint = timePoint
+				scripting.processingTimepoint = timePoint
 				self.module.reset()
 				# We get the processed timepoint from each of the source data 
 				# units
@@ -240,7 +240,7 @@ class CombinedDataUnit(DataUnit):
 				if not settings_only:
 					self.dataWriter.addImageData(imageData)
 					self.dataWriter.sync()
-		bxd.processingTimepoint = -1
+		scripting.processingTimepoint = -1
 		if settings_only:
 			self.settings.set("SettingsOnly", "True")
 		else:
@@ -255,7 +255,7 @@ class CombinedDataUnit(DataUnit):
 		"""
 		Created: 25.05.2007, KP
 		Description: Set the mask applied to this dataunit
-		"""   
+		"""	  
 		for i in self.sourceunits:
 			i.setMask(mask)
 
@@ -359,12 +359,10 @@ class CombinedDataUnit(DataUnit):
 		if timePoint > self.getNumberOfTimepoints():
 			timepoint = self.getNumberOfTimepoints() - 1
 		
-		self.oldAlphaStatus = bxd.wantAlphaChannel
+		self.oldAlphaStatus = scripting.wantAlphaChannel
 		
-		print "DO PREVIEW"
-		
-		if depth == bxd.WHOLE_DATASET_NO_ALPHA:
-			bxd.wantAlphaChannel = 0
+		if depth == scripting.WHOLE_DATASET_NO_ALPHA:
+			scripting.wantAlphaChannel = 0
 		# If the previously requested preview was a "show original" preview
 		# then we can just restore the preview before that without any
 		# processing
@@ -439,22 +437,16 @@ class CombinedDataUnit(DataUnit):
 				for data, ctf in merged:					   
 					merge.AddInput(data)
 					merge.AddLookupTable(ctf)
-				#print "Update..."
-				#preview = bxd.execute_limited(merge)
 				
 				preview = merge.GetOutput()
-				#merge.Update()
-				#preview = merge.GetOutput()
-			elif len(merged) == 1 and bxd.preferRGB:				  
+			elif len(merged) == 1 and scripting.preferRGB:				  
 				data, ctf = merged[0]
 				maptocolor = vtk.vtkImageMapToColors()
 				maptocolor.SetInput(data)
 				maptocolor.SetLookupTable(ctf)
-				#maptocolor.Update()
 				preview = maptocolor.GetOutput()
-				#preview = bxd.execute_limited(maptocolor)
 				
-		bxd.wantAlphaChannel = self.oldAlphaStatus
+		scripting.wantAlphaChannel = self.oldAlphaStatus
 		if not showOrig and not self.doOrig:
 			self.origPreview = preview
 		elif showOrig:

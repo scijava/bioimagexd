@@ -30,7 +30,7 @@ __version__ = "$Revision: 1.9 $"
 __date__ = "$Date: 2007/01/13 13:42:03 $"
 
 import GUI.GUIBuilder
-import scripting as bxd
+import scripting
 import types
 from Visualizer.VisualizationModules import VisualizationModule
 from Visualizer.ModuleConfiguration import ModuleConfigurationPanel
@@ -91,7 +91,7 @@ class CutBoxModule(VisualizationModule):
 		Description: Return the level of the given parameter
 		"""
 		if parameter in ["ShowControls", "ClippedModule", "AllModules", "InsideOut"]:
-			return bxd.COLOR_BEGINNER
+			return scripting.COLOR_BEGINNER
 
 	def getModulesToClip(self):
 		"""

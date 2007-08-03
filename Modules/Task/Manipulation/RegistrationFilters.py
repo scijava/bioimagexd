@@ -39,7 +39,7 @@ except:
 import vtk
 import types
 import GUI.GUIBuilder as GUIBuilder
-import scripting as bxd
+import scripting
 
 #ITK="ITK"
 SEGMENTATION = "Segmentation"
@@ -56,7 +56,7 @@ class RegistrationFilter(lib.ProcessingFilter.ProcessingFilter):
 	"""     
 	name = "Versor Rigid 3D Registration"
 	category = REGISTRATION
-	level = bxd.COLOR_EXPERIENCED
+	level = scripting.COLOR_EXPERIENCED
 	def __init__(self, inputs = (1, 1)):
 		"""
 		Created: 14.03.2007, KP

@@ -32,7 +32,7 @@ __version__ = "$Revision: 1.18 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 
-import scripting as bxd
+import scripting
 import lib.messenger
 import Logging
 from lib.Module import Module
@@ -121,8 +121,7 @@ class Merging(Module):
 		else: # If the whole volume is requested, then we will also do alpha
 			#Logging.info("Will create alpha channel, because whole volume requested",kw="processing")
 			self.doAlpha = 1
-		if not bxd.wantAlphaChannel:
-			print "Won't create alpha, flag indicates not wanted"
+		if not scripting.wantAlphaChannel:
 			self.doAlpha = 0
 		if self.settings.get("ShowOriginal"):
 			ret = self.doOperation()      

@@ -35,7 +35,7 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 #import Logging
 #import StringIO
 
-import scripting as bxd
+import scripting
 import Dialogs
 import wx.lib.editor as editor
 import lib.messenger
@@ -69,8 +69,8 @@ class ScriptEditor(editor.Editor):
 		Created: 13.02.2006, KP
 		Description: Update the gui
 		""" 
-		if bxd.record:
-			self.SetText(bxd.recorder.getText())
+		if scripting.record:
+			self.SetText(scripting.recorder.getText())
 		
 	def setScript(self, lines, imports):
 		"""
@@ -241,7 +241,7 @@ class ScriptEditorFrame(wx.Frame):
 		tb = self.GetToolBar()
 		tb.SetToolBitmapSize((32, 32))
 		
-		iconpath = bxd.get_icon_dir()
+		iconpath = scripting.get_icon_dir()
 		bmp = wx.Image(os.path.join(iconpath, "record.gif"), wx.BITMAP_TYPE_GIF).ConvertToBitmap()
 		tb.DoAddTool(MenuManager.ID_RECORD_SCRIPT, "Record", bmp, shortHelp = "Record script")
 		wx.EVT_TOOL(self, MenuManager.ID_RECORD_SCRIPT, self.onRecordScript)
@@ -283,7 +283,7 @@ class ScriptEditorFrame(wx.Frame):
 		self.tb.EnableTool(MenuManager.ID_RECORD_SCRIPT, 0)
 		self.script.Enable(MenuManager.ID_STOP_RECORD, 1)
 		self.script.Enable(MenuManager.ID_RECORD_SCRIPT, 0)
-		bxd.record = 1
+		scripting.record = 1
 		self.Show(0)
 	
 	def onStopRecord(self, evt):
@@ -296,4 +296,4 @@ class ScriptEditorFrame(wx.Frame):
 		self.tb.EnableTool(MenuManager.ID_RECORD_SCRIPT, 1)
 		self.script.Enable(MenuManager.ID_STOP_RECORD, 0)
 		self.script.Enable(MenuManager.ID_RECORD_SCRIPT, 1)
-		bxd.record = 0
+		scripting.record = 0

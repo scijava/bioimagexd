@@ -29,7 +29,7 @@ __author__ = "BioImageXD Project"
 __version__ = "$Revision: 1.9 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
-import scripting as bxd
+import scripting
 import GUI.GUIBuilder
 import types
 from Visualizer.VisualizationModules import VisualizationModule
@@ -92,7 +92,7 @@ class WarpScalarModule(VisualizationModule):
 		Description: Return the level of the given parameter
 		"""
 		if parameter in ["FeatureAngle", "Scale"]:
-			return bxd.COLOR_INTERMEDIATE
+			return scripting.COLOR_INTERMEDIATE
 		
 	def getParameters(self):
 		"""

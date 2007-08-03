@@ -29,7 +29,7 @@ __author__ = "BioImageXD Project"
 __version__ = "$Revision: 1.9 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
-import scripting as bxd
+import scripting
 from GUI import GUIBuilder
 import lib.messenger
 import types
@@ -273,7 +273,7 @@ class VisualizeTrackModule(VisualizationModule):
 
 					if i == 0:
 						appendFirst.AddInput(sph.GetOutput())
-					elif i == bxd.visualizer.getTimepoint():
+					elif i == scripting.visualizer.getTimepoint():
 						appendCurrent.AddInput(sph.GetOutput())
 					else:
 						appendSpheres.AddInput(sph.GetOutput())

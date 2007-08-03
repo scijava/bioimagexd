@@ -30,7 +30,7 @@ __author__ = "BioImageXD Project"
 __version__ = "$Revision: 1.9 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
-import scripting as bxd
+import scripting
 import GUI.Dialogs
 import GUI.MenuManager
 import Modules
@@ -163,9 +163,9 @@ class RenderingMode(VisualizationMode):
 		Created: 24.05.2005, KP
 		Description: Set the mode of visualization
 		"""
-		bxd.preferRGB = 0
-		bxd.wantAlphaChannel = 1
-		bxd.wantWholeDataset = 1
+		scripting.preferRGB = 0
+		scripting.wantAlphaChannel = 1
+		scripting.wantWholeDataset = 1
 		self.sidebarWin = sidebarwin
 		# If we're preloading, don't create the render window
 		# since it will mess up the rendering
@@ -177,8 +177,8 @@ class RenderingMode(VisualizationMode):
 			self.renwin = self.wxrenwin.GetRenderWindow()
 			self.wxrenwin.Render()
 			self.iactivePanel = self.wxrenwin
-			bxd.renderWindow = self.renwin
-			bxd.renderer = self.wxrenwin.getRenderer()
+			scripting.renderWindow = self.renwin
+			scripting.renderer = self.wxrenwin.getRenderer()
 			self.getRenderer = self.GetRenderer = self.wxrenwin.getRenderer
 
 		else:

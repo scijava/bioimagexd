@@ -605,3 +605,4 @@ class UrmasWindow(wx.lib.scrolledpanel.ScrolledPanel):
 		#self.timelinePanel.setDataUnit(dataUnit)
 		self.control.setDataUnit(dataUnit)
 		
+	

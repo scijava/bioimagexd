@@ -35,13 +35,11 @@ __author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.21 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
-#import scripting as bxd
-#import wx
-
 import Logging
 import types
 import inspect
 import messenger
+import scripting
 
 MENU_CMD = "Menu command"
 OPEN_CMD = "Load file"

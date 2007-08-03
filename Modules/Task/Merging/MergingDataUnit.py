@@ -5,7 +5,7 @@
  Created: 01.01.2004, KP
  Description: A dataunit class that represents a data unit processed through filters
 
- Copyright (C) 2005  BioImageXD Project
+ Copyright (C) 2005	 BioImageXD Project
  See CREDITS.txt for details
 
  This program is free software; you can redistribute it and/or modify
@@ -27,7 +27,7 @@ __author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.93 $"
 __date__ = "$Date: 2005/01/13 14:09:15 $"
 
-import scripting as bxd
+import scripting
 from lib.DataUnit.CombinedDataUnit import CombinedDataUnit
 import MergingSettings
 
@@ -47,7 +47,11 @@ class MergingDataUnit(CombinedDataUnit):
 	
 
 	def getBitDepth(self):
-		if bxd.wantAlphaChannel:
+		"""
+		Created: KP
+		Description: return the bit depth of theoutput this dataunit produces
+		"""
+		if scripting.wantAlphaChannel:
 			return 32
 		return 24
 		
