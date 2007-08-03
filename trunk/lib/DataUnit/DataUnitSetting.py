@@ -206,11 +206,10 @@ class DataUnitSettings:
 				else:
 					settingsclass = self.__class__
 				Logging.info("Type = %s, settings class = %s" % (type, str(settingsclass)), kw = "processing")
-				#obj = eval(type)(self.dataSetNumber)
 				obj = settingsclass(self.dataSetNumber)
 				obj.setType(type)
 				#print "Returning object of class", settingsclass
-				return obj.readFrom(parser)				   
+				return obj.readFrom(parser)
 		
 		for key in self.registered.keys():
 			ser = self.serialized[key]

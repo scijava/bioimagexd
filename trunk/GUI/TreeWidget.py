@@ -218,9 +218,6 @@ class TreeWidget(wx.SashLayoutWindow):
 			pass
 		self.greenitems = items    
 		for item in items:
-			#if not item.IsOk():raise "Item not ok"
-			#print "Marking ",item,"green"
-			#self.itemColor=self.tree.GetItemTextColour(item)
 			self.tree.SetItemBold(item, 1)
 			
 	def markYellow(self, items):
@@ -412,7 +409,6 @@ class TreeWidget(wx.SashLayoutWindow):
 		self.tree.Expand(item)
 		selected = 0
 		for obj in objs:
-			print "obj=", obj, obj.getName()
 			added = self.tree.AppendItem(item, obj.getName())
 				
 			resampledims = obj.dataSource.getResampleDimensions()
@@ -425,11 +421,9 @@ class TreeWidget(wx.SashLayoutWindow):
 			self.dataUnitItems.append(added)
 			
 			if len(self.items.keys()) == 1 and not selected:
-				#print self.items
 				self.tree.UnselectAll()
 				self.tree.SelectItem(added, 1)
 				selected = 1
-				#print "obj=",obj
 				lib.messenger.send(None, "tree_selection_changed", obj)            
 			
 		self.tree.Expand(self.root)
@@ -483,14 +477,11 @@ class TreeWidget(wx.SashLayoutWindow):
 		    if platform.system() not in ["Darwin", "Linux"]: 
 			    self.tree.UnselectAll()            	
 		item = event.GetItem()
-		#print "item=",item
 		if not item.IsOk():
-			#print "\n\n\nITEM IS NOT OK",item
 			Logging.info("Item %s is not ok" % str(item), kw = "io")
 			return
 				
 		obj = self.tree.GetPyData(item)
-		#print "obj=",obj
 		if obj == "1":
 			self.tree.UnselectItem(item)
 			event.Veto()
@@ -537,21 +528,18 @@ class TreeWidget(wx.SashLayoutWindow):
 		self.item = item
 		if obj and type(obj) != types.StringType:
 			if self.lastobj != obj:
-				#print "Last obj=",self.lastobj,"!=",obj
 				Logging.info("Switching to ", obj)
 				lib.messenger.send(None, "tree_selection_changed", obj)        
 				self.markGreen([item])        
 				self.lastobj = obj
 		self.multiSelect = 0                
-		#event.Skip()
-
+		
 	def unselectAll(self):
 		"""
 		Method: unselectAll
 		Created: 16.07.2006, KP
 		Description: Unselect everything in the tree
 		"""
-		#print "\n\n\nUNSELECTING ALL at unselectAll()"
 		self.tree.UnselectAll()
 		
 	def getChannelsByName(self, unit, channels):
@@ -576,7 +564,6 @@ class TreeWidget(wx.SashLayoutWindow):
 				n += 1
 				if n in numbers:                    
 					ret.append(obj)
-					#print "\n\n\n\nSELECTING ",item,obj
 					if not dontSelect and not self.tree.IsSelected(item):                    
 						self.tree.ToggleItemSelection(item)                    
 		self.programmatic = 0    
@@ -591,12 +578,9 @@ class TreeWidget(wx.SashLayoutWindow):
 		self.programmatic = 1        
 		for item in self.dataUnitItems:
 			obj = self.tree.GetPyData(item)
-			#print "obj=",obj.getName(),"in channels=",(obj.getName() in channels)
 			if obj.getName() in channels and unit == self.dataUnitToPath[obj]:
 				if not dontSelect and not self.tree.IsSelected(item):
 					self.tree.ToggleItemSelection(item)
-				#print "FOUND",obj
 				ret.append(obj)
-		#'"RETURNING",ret
 		self.programmatic = 0        
 		return ret

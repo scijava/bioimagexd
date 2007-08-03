@@ -7,7 +7,7 @@
 
  A widget used to view a histogram
  
- Copyright (C) 2005  BioImageXD Project
+ Copyright (C) 2005	 BioImageXD Project
  See CREDITS.txt for details
 
  This program is free software; you can redistribute it and/or modify
@@ -63,7 +63,7 @@ class Histogram(wx.Panel):
 		Method: __init__(parent)
 		Created: 24.03.2005, KP
 		Description: Initialization
-		"""    
+		"""	   
 		self.scale = kws.get("scale", 1)
 		if "scale" in kws:
 			del kws["scale"]
@@ -115,7 +115,7 @@ class Histogram(wx.Panel):
 		Method: setReplacementCTF
 		Created: 15.04.2006, KP
 		Description: Set a CTF that will replace the original CTF
-		"""			   
+		"""
 		self.replaceCTF = colorTransferFunction
 		self.colorTransferFunction = colorTransferFunction
 		
@@ -124,7 +124,7 @@ class Histogram(wx.Panel):
 		Method: setLowerThreshold
 		Created: 06.06.2006, KP
 		Description: Set the lower threshold showin with this widget
-		"""					   
+		"""
 		self.lowerThreshold = lowerThreshhold
 		#self.actionstart = (self.lowerThreshold, 0)
 		#self.setThreshold(None)
@@ -137,7 +137,7 @@ class Histogram(wx.Panel):
 		Method: setUpperThreshold
 		Created: 06.06.2006, KP
 		Description: Set the upper threshold showin with this widget
-		"""					   
+		"""
 		self.upperThreshold = upperThreshhold
 		#self.actionstart = (self.upperThreshold, 0)
 		self.actionstart = None
@@ -165,7 +165,7 @@ class Histogram(wx.Panel):
 		Created: 12.04.2006, KP
 		Description: Sets the flag indicating that the threshold selectors need to be
 					 activated even if the dataset is not colocalization dataset
-		"""    
+		"""	   
 
 		self.thresholdMode = flag
 		self.actionstart = (self.lowerThreshold, 0)
@@ -174,7 +174,7 @@ class Histogram(wx.Panel):
 		"""
 		Created: 12.07.2005, KP
 		Description: Sets the starting position of rubber band for zooming
-		"""    
+		"""	   
 		position = event.GetPosition()
 		x, y = position
 		x -= self.xoffset
@@ -202,7 +202,7 @@ class Histogram(wx.Panel):
 		if lowerDifference > 30 and upperDifference > 30:
 			self.mode = "middle"
 			self.middleStart = x
-		else:			 
+		else:
 			self.mode = "upper"
 			if lowerDifference < upperDifference:
 				self.mode = "lower"
@@ -332,12 +332,11 @@ class Histogram(wx.Panel):
 	def setDataUnit(self, dataUnit, noupdate = 0):
 		"""
 		Created: 28.04.2005, KP
-		Description: Does the actual blitting of the bitmap
-		Parameters:
-			noupdate  Setting this flag to 1 will force the histogram		
-					  to never update it's source data
+		Description: Set the dataunit from which the histogram is drawn
 		"""
 		self.dataUnit = dataUnit
+##		bd = self.dataUnit.getSingleComponentBitDepth()
+##		self.upperThreshold = (2**bd)-1
 		self.renew = 1
 		self.noupdate = noupdate
 		self.updatePreview()
@@ -352,6 +351,7 @@ class Histogram(wx.Panel):
 		if not self.thresholdMode:
 			lower = get("ColocalizationLowerThreshold")
 			upper = get("ColocalizationUpperThreshold")
+			print "Lower and upper thresholds=", lower,upper
 		else:
 			lower = self.lowerThreshold
 			upper = self.upperThreshold
@@ -373,8 +373,8 @@ class Histogram(wx.Panel):
 																colorTransferFunction = self.colorTransferFunction, \
 																logarithmic = self.logarithmic, \
 																ignore_border = self.ignoreBorder, \
-																lower = lower, \
-																upper = upper, \
+																lower = lower * self.scale, \
+																upper = upper * self.scale, \
 																maxval = 255 * self.scale)
 			self.xoffset = xoffset
 			self.histogram = histogram
@@ -444,7 +444,7 @@ class Histogram(wx.Panel):
 						set("ColocalizationUpperThreshold", upper1)
 
 				if self.mode == "upper" and upper1 < lower1:
-					self.mode = "lower"					 
+					self.mode = "lower"
 					upper1, lower1 = lower1, upper1
 					if colocMode:
 						set("ColocalizationLowerThreshold", lower1)
@@ -459,7 +459,7 @@ class Histogram(wx.Panel):
 						set("ColocalizationLowerThreshold", lower1)
 						set("ColocalizationUpperThreshold", upper1)
 					self.lowerThreshold = lower1
-					self.upperThreshold = upper1						  
+					self.upperThreshold = upper1
 				
 		r, g, b = val
 		r *= 255
@@ -489,8 +489,8 @@ class Histogram(wx.Panel):
 		if self.percent:
 			dc.SetFont(wx.Font(8, wx.SWISS, wx.NORMAL, wx.NORMAL))
 			dc.DrawText("%.2f%% of data selected (range %d-%d)" \
-						% (100 * self.percent, self.scale * self.lowerThreshold, \
-						self.scale * self.upperThreshold), 10, 182)
+						% (100 * self.percent, self.lowerThreshold * self.scale, \
+						self.upperThreshold * self.scale), 10, 182)
 
 		dc.EndDrawing()
 		dc = None

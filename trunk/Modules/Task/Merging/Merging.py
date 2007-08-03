@@ -127,7 +127,6 @@ class Merging(Module):
 			ret = self.doOperation()      
 			self.doAlpha = 1
 			return ret
-		print "Doing alpha=", self.doAlpha
 		if not self.preview:
 			self.preview = self.doOperation()
 		self.doAlpha = 1
@@ -142,7 +141,6 @@ class Merging(Module):
 		datasets = []
 		alphas = []
 		
-		Logging.info("Merging channels...", kw = "processing")
 		processed = []
 		imagelen = len(self.images)
 		if not imagelen:

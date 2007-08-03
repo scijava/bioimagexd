@@ -169,6 +169,7 @@ class PreviewFrame(InteractivePanel):
 		self.SetHelpText("This window displays the selected dataset slice by slice.")
 		
 		if not self.show["SCROLL"]:
+			Logging.info("Disabling scrollbars", kw="preview")
 			self.SetScrollbars(0, 0, 0, 0)
 		self.updateAnnotations()
 		
@@ -714,8 +715,6 @@ class PreviewFrame(InteractivePanel):
 		Created: 25.03.2005, KP
 		Description: Sets the zoom factor so that the image will fit into the screen
 		"""
-		#if self.imagedata:
-		
 		if self.dataUnit:
 			#x,y,z=self.imagedata.GetDimensions()
 			x, y, z = self.dataUnit.getDimensions()
@@ -723,8 +722,6 @@ class PreviewFrame(InteractivePanel):
 			maxY = self.maxSizeY
 			maxX -= 10 # marginal
 			maxY -= 10 #marginal
-			#if self.maxSizeX<maxX:maxX=self.maxSizeX
-			#if self.maxSizeY<maxY:maxY=self.maxSizeY
 			if self.fixedSize:
 				maxX, maxY = self.fixedSize
 			
@@ -744,8 +741,6 @@ class PreviewFrame(InteractivePanel):
 		if not self.bmp:
 			return
 		else:
-			#Logging.info("Updating scroll settings (size %d,%d)"%(self.bmp.GetWidth(),self.bmp.GetHeight()),kw="preview")
-			#self.setScrollbars(self.bmp.GetWidth()*self.zoomx,self.bmp.GetHeight()*self.zoomy)
 			pass
 		if self.scrollTo:
 			x, y = self.scrollTo
@@ -819,8 +814,7 @@ class PreviewFrame(InteractivePanel):
 			#Logging.info("Setting scrollbars (%d,%d) because of zooming"%(w,h),kw="preview")
 			#self.setScrollbars(w,h)
 
-		#Logging.info("Buffer for drawing=",self.buffer.GetWidth(),self.buffer.GetHeight(),kw="preview")
-		
+
 		if self.zoomx != 1 or self.zoomy != 1:
 			w, h = bmp.GetWidth(), bmp.GetHeight()
 			w *= self.zoomx

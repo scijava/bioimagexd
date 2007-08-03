@@ -185,11 +185,9 @@ def scaleImage(data, factor = 1.0, zDimension = -1, interpolation = 1, xfactor =
 	
 	data.SetSpacing(1, 1, 1)
 	xDimension, yDimension, zDimension = data.GetDimensions()
-	print "dims=",xDimension / 2.0, yDimension / 2.0, 0
 	data.SetOrigin(xDimension / 2.0, yDimension / 2.0, 0)
 	transform = vtk.vtkTransform()
 	xExtent0, xExtent1, yExtent0, yExtent1, zExtent0, zExtent1 = data.GetExtent()
-	print "extent=", xExtent0, xExtent1, yExtent0, yExtent1, zExtent0, zExtent1
 	if xfactor or yfactor:
 		xfactor *= factor
 		yfactor *= factor
@@ -229,12 +227,9 @@ def loadNIHLut(data):
 	"""    
 	if not len(data):
 		raise "loadNIHLut got no data"
-	#n=256
 	dataLength = len(data) - 32
-	#n = d
 	infoString = "4s2s2s2s2s8s8si%ds" % dataLength
 	Logging.info("Unpacking ", infoString, "d = ", dataLength, "len(data) = ", len(data))#, kw = "imageop")
-	#header, version, ncolors, start, end, fill1, fill2, filler, lut = struct.unpack(infoString, data)
 	header, dummy, ncolors, start, end, dummy, dummy, dummy, lut = struct.unpack(infoString, data)
 
 	if header != "ICOL":
@@ -284,7 +279,6 @@ def loadBXDLutFromString(lut, ctf):
 			
 	j = 0
 	for i in range(start, end + 1):
-		#print "j=",j,"n=",len(reds),len(greens),len(blues)
 		red = ord(reds[j])
 		green = ord(greens[j])
 		blue = ord(blues[j])
@@ -326,7 +320,6 @@ def loadLUTFromString(lut, ctf, ctfrange = (0, 256)):
 	if step == 0:
 		return vtk.vtkColorTransferFunction()
 	j = 0
-	#Logging.info("Ctf range = ",ctfrange[0]," - ",ctfrange[1],"step=",step)
 	for i in range(int(ctfrange[0]), int(ctfrange[1]), int(step)):
 		red = ord(reds[j])
 		green = ord(greens[j])
@@ -436,10 +429,8 @@ def vtkImageDataToWxImage(data, sliceNumber = -1, startpos = None, endpos = None
 	Description: Converts vtk-ImageData to a WxImage
 	"""
 	if sliceNumber >= 0:	
-		#Logging.info("Getting sliceNumber %d"%sliceNumber,kw="imageop")
 		data = getSlice(data, sliceNumber, startpos, endpos)
 	exporter = vtk.vtkImageExport()
-#	 Logging.info("Setting update extent to ",data.GetWholeExtent(),kw="imageop")
 	data.SetUpdateExtent(data.GetWholeExtent())
 	data.Update()
 	exporter.SetInputConnection(data.GetProducerPort())
@@ -460,13 +451,11 @@ def vtkImageDataToPngString(data, sliceNumber = -1, startpos = None, endpos = No
 				 data in a string
 	"""    
 	if sliceNumber >= 0:
-		#Logging.info("Getting sliceNumber %d"%sliceNumber,kw="imageop")
 		data = getSlice(data, sliceNumber, startpos, endpos)
 		
 	pngwriter = vtk.vtkPNGWriter()
 	pngwriter.WriteToMemoryOn()
 	pngwriter.SetInputConnection(data.GetProducerPort())
-	#pngwriter.Update()
 	pngwriter.Write()
 	result = pngwriter.GetResult()
 	data = ""
@@ -481,13 +470,6 @@ def getMIP(imageData, color):
 				 maximum intensity projection that will be converted to a
 				 wxBitmap
 	"""   
-	#getslice = vtk.vtkExtractVOI()
-	#getslice.SetInput(imageData)
-	#width, height, depth = imageData.GetDimensions()
-	#getslice.SetVOI(0,width-1,0,height-1,depth/2,depth/2)
-	
-	#mip = getslice
-	#minval, maxval = imageData.GetScalarRange()
 	maxval = imageData.GetScalarRange()[1]
 	imageData.SetUpdateExtent(imageData.GetWholeExtent())		 
 
@@ -497,20 +479,12 @@ def getMIP(imageData, color):
 		shiftscale.SetScale(256.0 / maxval)
 		shiftscale.SetOutputScalarTypeToUnsignedChar()	  
 		imageData = shiftscale.GetOutput()
-	#width, height, depth = imageData.GetDimensions()
-	#cast = vtk.vtkImageCast()
-	#cast.SetInput(mip.GetOutput())
-	#cast.SetOutputScalarTypeToUnsignedChar()
 	
 	mip = vtkbxd.vtkImageSimpleMIP()
 	mip.SetInputConnection(imageData.GetProducerPort())
 	
 	if color == None:
 		output = optimize.execute_limited(mip)
-		#mip.Update()
-
-		#output = mip.GetOutput()
-		#output.Update()
 		return output
 
 	if mip.GetOutput().GetNumberOfScalarComponents() == 1:
@@ -520,13 +494,10 @@ def getMIP(imageData, color):
 		maptocolor.SetInputConnection(mip.GetOutputPort())
 		maptocolor.SetLookupTable(ctf)
 		maptocolor.SetOutputFormatToRGB()
-		#maptocolor.Update()
-		#imagedata=maptocolor.GetOutput()
 		imagedata = optimize.execute_limited(maptocolor)
 		
 	else:
 		imagedata = output = optimize.execute_limited(mip)
-	#imagedata.Update()		   
 	return imagedata
 
 def getColorTransferFunction(color):
@@ -548,7 +519,6 @@ def getColorTransferFunction(color):
 	return ctf
 	
 def vtkImageDataToPreviewBitmap(dataunit, timepoint, color, width = 0, height = 0, getvtkImage = 0):
-	#gcolor = (0, 0, 0), 
 	"""
 	Created: KP
 	Description: A function that will take a volume and do a simple
@@ -558,14 +528,12 @@ def vtkImageDataToPreviewBitmap(dataunit, timepoint, color, width = 0, height = 
 	imagedata = dataunit.getMIP(timepoint, None, small = 1, noColor = 1)
 	vtkImg = imagedata
 
-#	 imagedata.Update()
 	if not color:
 		color = dataunit.getColorTransferFunction()
 	
 	ctf = getColorTransferFunction(color)
 	
 	maxval = ctf.GetRange()[1]
-	#imin, imax = imagedata.GetScalarRange()
 	imax = imagedata.GetScalarRange()[1]
 	if maxval > imax:
 		step = float(maxval / imax)
@@ -581,10 +549,7 @@ def vtkImageDataToPreviewBitmap(dataunit, timepoint, color, width = 0, height = 
 	maptocolor.Update()
 	imagedata = maptocolor.GetOutput()
 	
-	#imagedata.Update()
-	#imagedata=getMIP(imageData,color)
 	image = vtkImageDataToWxImage(imagedata)
-	#image.SaveMimeFile("mippi2.png","image/png")
 	xSize, ySize = image.GetWidth(), image.GetHeight()
 	if not width and height:
 		aspect = float(xSize) / ySize
@@ -594,7 +559,6 @@ def vtkImageDataToPreviewBitmap(dataunit, timepoint, color, width = 0, height = 
 		height = aspect * width
 	if not width and not height:
 		width = height = 64
-	#Logging.info("Scaling to %dx%d"%(width,height),kw="imageop")
 	image.Rescale(width, height)
 	
 	bitmap = image.ConvertToBitmap()
@@ -610,11 +574,9 @@ def getPlane(data, plane, xCoordinate, yCoordinate, zCoordinate, applyZScaling =
 	Description: Get a plane from given the volume
 	"""   
 	xAxis, yAxis, zAxis = 0, 1, 2
-	print "getPlane", plane, xCoordinate, yCoordinate, zCoordinate
 	permute = vtk.vtkImagePermute()
 	dataWidth, dataHeight, dataDepth = data.GetDimensions()
 	voi = vtk.vtkExtractVOI()
-	#voi.SetInput(permute.GetOutput())
 	permute.SetInputConnection(data.GetProducerPort())
 	spacing = data.GetSpacing()
 	data.SetSpacing(1,1,1)
@@ -622,14 +584,12 @@ def getPlane(data, plane, xCoordinate, yCoordinate, zCoordinate, applyZScaling =
 	xscale = 1
 	yscale = 1
 	if plane == "zy":
-		print "Getting plane",xCoordinate, xCoordinate, 0, dataHeight - 1, 0, dataDepth - 1
 		data.SetUpdateExtent(xCoordinate, xCoordinate, 0, dataHeight - 1, 0, dataDepth - 1)
 		permute.SetFilteredAxes(zAxis, yAxis, xAxis)
 #		voi.SetVOI(xCoordinate, xCoordinate, 0, dataHeight - 1, 0, dataDepth - 1)
 		permute.Update()
 		data = permute.GetOutput()		
 		#data.SetOrigin(0,0,0)
-		print "permute gave",data
 		voi.SetInput(data)
 
 		voi.SetVOI(0, dataDepth-1, 0, dataHeight-1, xCoordinate, xCoordinate)
@@ -668,14 +628,10 @@ def getPlane(data, plane, xCoordinate, yCoordinate, zCoordinate, applyZScaling =
 	#vtkfilter = permute
 	if applyZScaling:
 		permute.Update()
-		print "scaling ", voi.GetOutput()
 		return scaleImage(voi.GetOutput(), interpolation = 2, xfactor = xscale, yfactor = yscale)
 		
 	
 	voi.Update()
-	print "got from voi=",voi.GetOutput()
-#	permute.Update()
-#	return permute.GetOutput()
 	return voi.GetOutput()
 	
 def getPlaneOLD(data, plane, xCoordinate, yCoordinate, zCoordinate, applyZScaling = 0):
@@ -733,8 +689,6 @@ def watershedPalette(ctfLowerBound, ctfUpperBound):
 	Description: Returns a randomly created CTF.
 	"""
 	ctf = vtk.vtkColorTransferFunction()
-#	 ctf.AddRGBPoint(0,1,1,1)
-#	 ctf.AddRGBPoint(1,0,0,0)
 	ctf.AddRGBPoint(0, 0, 0, 0)
 	ctf.AddRGBPoint(1, 0, 0, 0)
 	
@@ -794,7 +748,6 @@ def getOverlay(width, height, color, alpha):
 	Created: 11.07.2005, KP
 	Description: Create an overlay of given color with given alpha
 	"""		  
-	#print "\n\nGetting overlay",width,height
 	size = width * height * 3
 	formatString = "%ds" % size
 	red, green, blue = color
@@ -872,16 +825,15 @@ def histogram(imagedata, colorTransferFunction = None, bg = (200, 200, 200), log
 	xoffset = 10
 	sumth = 0
 	percent = 0
-	Logging.info("lower = ", lower, "upper = ", upper, kw = "imageop")
 	for i, c in enumerate(values):
 		sum += c
 		if (lower or upper):
 			if i >= lower and i <= upper:
 				sumth += c
 	retvals = values[: ]
+	Logging.info("lower=%d, upper=%d, total sum of %d values"%(lower, upper, len(values)), sum, kw = "imageop")
 	if sumth:
 		percent = (float(sumth) / sum)
-		#Logging.info("percent=",percent,kw="imageop")
 	if ignore_border:
 		ma = max(values[5:])
 		mi = min(values[:-5])
@@ -942,7 +894,6 @@ def histogram(imagedata, colorTransferFunction = None, bg = (200, 200, 200), log
 	d = (len(values) - 1) / 255.0
 	for i in range(0, 255):
 		c = values[int(i * d)]
-		#print "i=",i,"d=",d,"i*d=",i*d,"i*d+d=",int((i*d)+d)
 		c2 = values[int((i * d) + d)]
 		dc.SetPen(graypen)
 		dc.DrawLine(xoffset + i, x1, xoffset + i, x1 - c)
@@ -991,8 +942,6 @@ def getMaskFromPoints(points, mx, my, mz):
 	"""
 	size = mx * my
 	pointStructString = "%dB" % size
-	#pointData=[255*((i % mx,i / my) in points) for i in range(0,mx*my)]
-	#pointData = [255*((x,y) in points) for x in range(0,mx) for y in range(0,my)]
 	pointData = []
 	for y in range(0, my):
 		for x in range(0, mx):
@@ -1001,18 +950,12 @@ def getMaskFromPoints(points, mx, my, mz):
 	
 	importer = vtk.vtkImageImport()
 	importer.CopyImportVoidPointer(packedPointString, mx * my)
-# Why is this done dynamically?
-	format = "UnsignedChar"
-	eval("importer.SetDataScalarTypeTo%s()" % format)
+	importer.SetDataScalarTypeToUnsignedChar()
 	importer.SetNumberOfScalarComponents(1)
 	importer.SetDataExtent(0, mx - 1, 0, my - 1, 0, 0)
 	importer.SetWholeExtent(0, mx - 1, 0, my - 1, 0, 0)
 
 	importer.Update()
-	#writer = vtk.vtkPNGWriter()
-	#writer.SetFileName("foo.png")
-	#writer.SetInput(image)
-	#writer.Write()
 	
 	append = vtk.vtkImageAppend()
 	append.SetAppendAxis(2)
@@ -1020,7 +963,6 @@ def getMaskFromPoints(points, mx, my, mz):
 		append.SetInput(z, importer.GetOutput())
 	append.Update()
 	image2 = append.GetOutput()
-	#print "Image2=",image2
 	return image2
 	
 def equalize(imagedata, ctf):
@@ -1078,24 +1020,13 @@ def scatterPlot(imagedata1, imagedata2, z, countVoxels, wholeVolume = 1, logarit
 	imagedata2.Update()
 	x0, x1 = imagedata1.GetScalarRange()
 	d = 255.0 / x1
-	#shiftscale=vtk.vtkImageShiftScale()
-	#shiftscale.SetOutputScalarTypeToUnsignedChar()
-	#shiftscale.SetScale(d)
-	#shiftscale.SetInput(imagedata1)
-	#imagedata1 = shiftscale.GetOutput()
 
 	x0, x1 = imagedata2.GetScalarRange()
 	d = 255.0 / x1
-	#shiftscale=vtk.vtkImageShiftScale()
-	#shiftscale.SetOutputScalarTypeToUnsignedChar()
-	#shiftscale.SetScale(d)
-	#shiftscale.SetInput(imagedata2)
-	#imagedata2 = shiftscale.GetOutput()
 	
 	app = vtk.vtkImageAppendComponents()
 	app.AddInput(imagedata1)
 	app.AddInput(imagedata2)
-	#app.Update()
 	
 	shiftscale = vtk.vtkImageShiftScale()
 	shiftscale.SetOutputScalarTypeToUnsignedChar()
@@ -1104,9 +1035,6 @@ def scatterPlot(imagedata1, imagedata2, z, countVoxels, wholeVolume = 1, logarit
 	
 	acc = vtk.vtkImageAccumulate()
 	
-	#n = max(imagedata1.GetScalarRange())
-	#n2 = max(max(imagedata2.GetScalarRange()),n)
-	#print "n=",n
 	n = 255
 	acc.SetComponentExtent(0, n, 0, n, 0, 0)
 	acc.SetInputConnection(shiftscale.GetOutputPort())
@@ -1124,15 +1052,12 @@ def scatterPlot(imagedata1, imagedata2, z, countVoxels, wholeVolume = 1, logarit
 		data = logscale.GetOutput()
 		
 	x0, x1 = data.GetScalarRange()
-	#print "Scalar range of logarithmic scatterplot=",x0,x1
 	
 	if countVoxels:
 		x0, x1 = data.GetScalarRange()
 		Logging.info("Scalar range of scatterplot = ", x0, x1, kw = "imageop")
 		ctf = fire(x0, x1)
 		ctf = equalize(data, ctf)
-		#n = scatter.GetNumberOfPairs()
-		#Logging.info("Number of pairs=%d"%n,kw="imageop")
 		maptocolor = vtk.vtkImageMapToColors()
 		maptocolor.SetInputConnection(data.GetProducerPort())
 		maptocolor.SetLookupTable(ctf)
@@ -1142,13 +1067,7 @@ def scatterPlot(imagedata1, imagedata2, z, countVoxels, wholeVolume = 1, logarit
 		ctf.originalRange = originalRange
 	Logging.info("Scatterplot has dimensions: ", data.GetDimensions(), data.GetExtent(), kw = "imageop")						  
 	data.SetWholeExtent(data.GetExtent())
-	#if dataunits:
-	#	 dataunits[0].storeToCache(data,timepoint,"scpt_%s"%dataunits[1])
-	#print "data.GetWholeExtent()=",data.GetWholeExtent()
 	img = vtkImageDataToWxImage(data)
-	#if img.GetWidth()>255:
-	#	 
-	#	 img.Rescale(255,255)
 	return img, ctf
 	
 def getZoomFactor(imageWidth, imageHeight, screenWidth, screenHeight):
@@ -1190,8 +1109,6 @@ def vtkZoomImage(image, zoomInFactor):
 	# If we zoom in, use cubic interpolation
 		reslice.SetInterpolationModeToCubic()
 		reslice.InterpolateOn()
-	#reslice.Update()
-	#return reslice.GetOutput()
 	data = optimize.execute_limited(reslice)
 	data.Update()
 	return data
@@ -1220,15 +1137,12 @@ def getSlice(volume, zslice, startpos = None, endpos = None):
 # VOI is volume of interest
 	voi = vtk.vtkExtractVOI()
 	voi.SetInputConnection(volume.GetProducerPort())
-	#print volume.GetDimensions(), volume.GetExtent()
 	if startpos:
 		startx, starty = startpos
 		endx, endy = endpos
 	else:
 		startx, starty = 0, 0
 		endx, endy = volume.GetDimensions()[0:2]
-#	 Logging.info("VOI of dataset = (%d,%d,%d,%d,%d,%d)"%
-#	(startx,endx-1,starty,endy-1,zslice,zslice),kw="preview")
 	voi.SetVOI(startx, endx - 1, starty, endy - 1, zslice, zslice)
 	voi.Update()
 	data = voi.GetOutput()
@@ -1260,14 +1174,12 @@ def imageDataTo3Component(image, ctf):
 	"""			
 	image.UpdateInformation()
 	ncomps = image.GetNumberOfScalarComponents()
-	#print "ncomps = ", ncomps
 	
 	if ncomps == 1:
 		maptocolor = vtk.vtkImageMapToColors()
 		maptocolor.SetInputConnection(image.GetProducerPort())
 		maptocolor.SetLookupTable(ctf)
 		maptocolor.SetOutputFormatToRGB()
-		#maptocolor.Update()
 		imagedata = maptocolor.GetOutput()
 	elif ncomps > 3:
 		Logging.info("Data has %d components, extracting"%ncomps, kw = "imageop")
@@ -1278,5 +1190,4 @@ def imageDataTo3Component(image, ctf):
 
 	else:
 		imagedata = image
-	#imagedata.Update()
 	return imagedata
