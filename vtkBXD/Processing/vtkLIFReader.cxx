@@ -931,7 +931,7 @@ int vtkLIFReader::ReadInt(ifstream *ifs)
   char buffer[4];
   ifs->read(buffer,4);
  #ifdef VTK_WORDS_BIGENDIAN
-  vtkByteSwap::Swap4LE((unsigned int*)buff);
+ vtkByteSwap::Swap4LE((unsigned int*)buffer);
  #endif
   return *((int*)(buffer));
 }
@@ -941,7 +941,7 @@ unsigned int vtkLIFReader::ReadUnsignedInt(ifstream *ifs)
   char buffer[4];
   ifs->read(buffer,4);
  #ifdef VTK_WORDS_BIGENDIAN
-  vtkByteSwap::Swap4LE((unsigned int*)buff);
+  vtkByteSwap::Swap4LE((unsigned int*)buffer);
  #endif
   return *((unsigned int*)(buffer));
 }
