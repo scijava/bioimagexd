@@ -37,6 +37,7 @@
 #include "vtkStreamingDemandDrivenPipeline.h"
 #include "vtkImageData.h"
 #include "vtkPointData.h"
+#include "vtkByteSwap.h"
 #include "vtkUnsignedCharArray.h"
 #include <vtkstd/vector>
 
