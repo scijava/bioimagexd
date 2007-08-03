@@ -128,13 +128,8 @@ class Module:
 		if not (newxSize or newySize or newzSize):
 			imageData.UpdateInformation()
 			newxSize, newySize, newzSize = imageData.GetDimensions()
-		print "Current image data dimensions=", newxSize, newySize, newzSize
-		print "self.xSize, self.ySize, self.zSize=", self.xSize, self.ySize, self.zSize
-
-
 		if self.xSize and self.ySize and self.zSize:
 			if newxSize != self.xSize or newySize != self.ySize or newzSize != self.zSize:
-				print imageData
 				raise ("ERROR: Dimensions do not match: currently (%d,%d,%d), "
 				"new dimensions (%d,%d,%d)"%(self.xSize, self.ySize, self.zSize, newxSize, newySize, newzSize))
 		else:			 

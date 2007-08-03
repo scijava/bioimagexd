@@ -12,7 +12,7 @@
  
  Modified: 12.03.2005 KP - Created the module
 
- Copyright (C) 2005  BioImageXD Project
+ Copyright (C) 2005	 BioImageXD Project
  See CREDITS.txt for details
 
  This program is free software; you can redistribute it and/or modify
@@ -63,14 +63,14 @@ class AcceptedValidator(wx.PyValidator):
 			if self.above != -1 and ival < self.above:
 				return False
 			if self.below != -1 and ival > self.below:
-				return False    
+				return False	
 			
 
 		for x in val:
 			if x not in self.accept:
 				return False
 
-		return True    
+		return True	   
 		
 	def OnChar(self, event):
 		key = event.KeyCode()
@@ -137,21 +137,15 @@ class MyStaticBox(wx.StaticBox):
 		Created: 05.05.2005, KP
 		Description: Paints the label
 		"""
-		
-		#self.dc = wx.BufferedDC(wx.ClientDC(self),self.buffer)        
 		self.dc = wx.MemoryDC()
 		self.dc.SelectObject(self.buffer)
 			   
 		self.dc.BeginDrawing()
-		#self.SetBackgroundColour(self.parent.GetBackgroundColour())
 		self.dc.SetBackground(wx.Brush(self.parent.GetBackgroundColour()))
 		self.dc.Clear()
 		
-		
-			#self.dc.SetBackground(wx.Brush(self.bg))
 		self.dc.SetBrush(wx.Brush(self.owncol))
 		
-		#self.dc.SetBrush(wx.TRANSPARENT_BRUSH)
 		self.dc.SetPen(wx.Pen((208, 208, 191), 1))
 		
 		w, h = self.buffer.GetWidth(), self.buffer.GetHeight()
@@ -222,7 +216,7 @@ class DimensionInfo(wx.Window):
 		w, h = self.GetSize()
 		self.buffer = wx.EmptyBitmap(w, h, -1)
 		
-		self.paintSelf()    
+		self.paintSelf()	
 		self.Refresh()
 		
 	def SetOwnBackgroundColour(self, col):
@@ -251,12 +245,10 @@ class DimensionInfo(wx.Window):
 		Description: Paints the label
 		"""
 		
-		#self.dc = wx.BufferedDC(wx.ClientDC(self),self.buffer)        
 		self.dc = wx.MemoryDC()
 		self.dc.SelectObject(self.buffer)
 			   
 		self.dc.BeginDrawing()
-		#self.SetBackgroundColour(self.parent.GetBackgroundColour())
 		# We don't clear the background on non-darwin to keep the striped 
 		# default look,but on windows we set it to parents background color
 		# because otherwise it would be black
@@ -264,18 +256,11 @@ class DimensionInfo(wx.Window):
 			self.dc.SetBackground(wx.Brush(self.parent.GetBackgroundColour()))
 			self.dc.Clear()
 		else:
-			pass    
+			pass	
 		
-		
-			#self.dc.SetBackground(wx.Brush(self.bg))
-		#self.dc.SetBrush(wx.Brush(self.owncol))
-		
-		#self.dc.SetBrush(wx.TRANSPARENT_BRUSH)
 		self.dc.SetPen(wx.Pen((208, 208, 191), 1))
 		
 		w, h = self.buffer.GetWidth(), self.buffer.GetHeight()
-		#self.dc.DrawRoundedRectangle(0,7,w,h-4,5)
-			
 		
 		weight = wx.NORMAL
 		self.dc.SetBrush(wx.Brush(self.parent.GetBackgroundColour()))
@@ -297,7 +282,7 @@ class DimensionInfo(wx.Window):
 		self.dc.DrawText(txt, 45, 18)
 		self.dc.EndDrawing()
 		self.dc.SelectObject(wx.NullBitmap)
-		self.dc = None    
+		self.dc = None	  
 
 class NamePanel(wx.Window):
 	"""
@@ -365,7 +350,6 @@ class NamePanel(wx.Window):
 		"""
 		w, h = self.origsize
 		self.size = event.GetSize()
-		#print "sizing %s to "%self.label,self.size
 		w, h2 = self.size
 		self.size = w, h
 		self.buffer = wx.EmptyBitmap(w, h, -1)
@@ -373,8 +357,7 @@ class NamePanel(wx.Window):
 		if self.btn:
 			self.btn.Move((w - 32, self.bh))
 		self.paintLabel()
-		#self.Refresh()
-						 
+		 
 	def setWeight(self, bold):
 		"""
 		Created: 05.05.2005, KP
@@ -422,7 +405,6 @@ class NamePanel(wx.Window):
 		self.dc.SetBackground(wx.Brush(self.parent.GetBackgroundColour()))
 		self.dc.Clear()
 		if self.bg:
-			#self.dc.SetBackground(wx.Brush(self.bg))
 			self.dc.SetBrush(wx.Brush(self.bg))
 			self.dc.SetPen(wx.Pen(self.bg, 1))
 			w, h = self.buffer.GetWidth(), self.buffer.GetHeight()
@@ -463,7 +445,6 @@ def getImageFormatMenu(parent, label = "Image Format: "):
 
 def getSliceSelection(parent):
 	sizer = wx.GridBagSizer()
-	#lbl=wx.StaticText(parent,-1,"Select processed slices:")
 	fromlbl = wx.StaticText(parent, -1, "Slices from ")
 	tolbl = wx.StaticText(parent, -1, " to ")
 	everylbl = wx.StaticText(parent, -1, "Every nth slice:")

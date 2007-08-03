@@ -395,7 +395,6 @@ class CombinedDataUnit(DataUnit):
 			
 			# If the renew flag is true, we need to regenerate the preview
 			if renew:				 
-				print "\n\n\nGENERATING PREVIEW"
 				# We then tell the module to reset itself and
 				# initialize it again
 				self.module.reset()

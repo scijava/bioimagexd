@@ -8,7 +8,7 @@
 
  A panel that can select regions of interest, draw annotations, etc.
 		 
- Copyright (C) 2005  BioImageXD Project
+ Copyright (C) 2005	 BioImageXD Project
  See CREDITS.txt for details
 
  This program is free software; you can redistribute it and/or modify
@@ -29,9 +29,6 @@ __author__ = "BioImageXD Project"
 __version__ = "$Revision: 1.9 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
-#import OGLAnnotations
-#import vtk
-
 import scripting
 import lib.ImageOperations
 import lib.messenger
@@ -39,7 +36,7 @@ import Logging
 import math
 import wx.lib.ogl as ogl
 import platform
-import wx    
+import wx	 
 
 ZOOM_TO_BAND = 1
 MANAGE_ANNOTATION = 2
@@ -56,7 +53,7 @@ class PainterHelper:
 				 in a standard way, that can be used for example to implement different
 				 kinds of highlighting, annotations etc.
 	"""
-	def __init__(self, parent):        
+	def __init__(self, parent):		   
 		self.parent = parent
 		
 		
@@ -64,7 +61,7 @@ class PainterHelper:
 		"""
 		Created: 02.07.2007, KP
 		Description: set the parent
-		"""        
+		"""		   
 		self.parent = parent
 	def paintOnDC(self, dc):
 		"""
@@ -86,7 +83,7 @@ class VisualizeTracksHelper(PainterHelper):
 		"""
 		PainterHelper.__init__(self, parent)
 		self.selectedTracks = []
-		lib.messenger.connect(None, "visualize_tracks", self.onShowTracks)        
+		lib.messenger.connect(None, "visualize_tracks", self.onShowTracks)		  
 		
 	def onShowTracks(self, obj, evt, tracks):
 		"""
@@ -98,7 +95,7 @@ class VisualizeTracksHelper(PainterHelper):
 		self.selectedTracks = tracks
 		
 				
-	def paintOnDC(self, dc):               
+	def paintOnDC(self, dc):			   
 		"""
 		Created: 21.11.2006, KP
 		Description: Paint the selected tracks to the DC
@@ -115,7 +112,7 @@ class VisualizeTracksHelper(PainterHelper):
 					x0 *= self.parent.zoomFactor
 					y0 *= self.parent.zoomFactor
 					x0 += self.parent.xoffset
-					y0 += self.parent.yoffset     
+					y0 += self.parent.yoffset	  
 					x0 += xc
 					y0 += yc
 					mintp += 1
@@ -130,11 +127,11 @@ class VisualizeTracksHelper(PainterHelper):
 						x1 *= self.parent.zoomFactor
 						y1 *= self.parent.zoomFactor
 						x1 += self.parent.xoffset
-						y1 += self.parent.yoffset                
+						y1 += self.parent.yoffset				 
 						
 						x1 += xc
 						y1 += yc
-						self.drawTimepoint(dc, i, x1, y1)                        
+						self.drawTimepoint(dc, i, x1, y1)						 
 							
 						def angle(x_1, y_1, x_2, y_2):
 							ang = math.atan2(y_2 - y_1, x_2 - x_1) * 180.0 / math.pi
@@ -146,7 +143,6 @@ class VisualizeTracksHelper(PainterHelper):
 						if x0 != x1:
 							dc.DrawLine(x0, y0, x1, y1)
 							a1 = angle(x0, y0, x1, y1)
-							#for ang in [45]:
 							if 0:
 								ang = ang * ((2 * math.pi) / 360.0)
 								#l=5*self.parent.zoomFactor
@@ -163,12 +159,12 @@ class VisualizeTracksHelper(PainterHelper):
 								xs = -5
 								ys = 5
 								xs *= self.parent.zoomFactor
-								ys *= self.parent.zoomFactor                                
+								ys *= self.parent.zoomFactor								
 								x2 = math.cos(ang) * xs - math.sin(ang) * ys
 								y2 = math.sin(ang) * xs + math.cos(ang) * ys
 								x2 += x0
 								y2 += y0
-								dc.DrawLine(x0, y0, x2, y2)                                
+								dc.DrawLine(x0, y0, x2, y2)								   
 						
 							
 						x0, y0 = x1, y1
@@ -200,7 +196,7 @@ class CenterOfMassHelper(PainterHelper):
 		"""
 		Created: 04.07.2006, KP
 		Description: Show the given center of mass
-		"""            
+		"""			   
 		self.centerOfMass = (label, centerofmass)
 		
 		
@@ -212,8 +208,6 @@ class CenterOfMassHelper(PainterHelper):
 		if self.centerOfMass:
 			label, (x, y, z) = self.centerOfMass
 			
-			#x=self.xdim - x 
-			#y = self.ydim - y
 			x *= self.parent.zoomFactor
 			y *= self.parent.zoomFactor
 			x += self.parent.xoffset
@@ -221,13 +215,12 @@ class CenterOfMassHelper(PainterHelper):
 			x0, y0, w, h = self.parent.GetClientRect()
 			x += x0
 			y += y0
-			#if int(z) == self.parent.z:
 			dc.SetBrush(wx.TRANSPARENT_BRUSH)
 			dc.SetPen(wx.Pen((255, 255, 255), 2))
 			dc.DrawCircle(x, y, 10)
 			dc.SetTextForeground((255, 255, 255))
 			dc.SetFont(wx.Font(9, wx.SWISS, wx.NORMAL, wx.BOLD))
-			dc.DrawText("%d" % label, x - 5, y - 5)    
+			dc.DrawText("%d" % label, x - 5, y - 5)	   
 	
 class AnnotationHelper(PainterHelper):
 	"""
@@ -249,8 +242,8 @@ class AnnotationHelper(PainterHelper):
 		"""
 		Created: 02.07.2007, KP
 		Description: set the parent
-		"""        
-		self.parent = parent        
+		"""		   
+		self.parent = parent		
 
 class InteractivePanel(ogl.ShapeCanvas):
 	"""
@@ -262,13 +255,13 @@ class InteractivePanel(ogl.ShapeCanvas):
 		"""
 		Created: 24.03.2005, KP
 		Description: Initialization
-		"""    
+		"""	   
 		self.annotationsEnabled = 1
 		self.parent = parent
 		self.is_windows = platform.system() == "Windows"
 		self.is_mac = platform.system() == "Darwin"
 		self.xoffset = 0
-		self.yoffset = 0        
+		self.yoffset = 0		
 		self.maxX = 512
 		self.maxY = 512
 		self.currentSketch = None
@@ -297,7 +290,6 @@ class InteractivePanel(ogl.ShapeCanvas):
 		
 		x, y = size
 		self.buffer = wx.EmptyBitmap(x, y)
-		#wx.ScrolledWindow.__init__(self,parent,-1,size=size)
 		ogl.ShapeCanvas.__init__(self, parent, -1, size = size)
 		
 		self.diagram = ogl.Diagram()
@@ -336,7 +328,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 		self.Bind(wx.EVT_MENU, self.onSetInterpolation, id = self.ID_VARY)
 		self.Bind(wx.EVT_MENU, self.onSetInterpolation, id = self.ID_NONE)
 		self.Bind(wx.EVT_MENU, self.onSetInterpolation, id = self.ID_LINEAR)
-		self.Bind(wx.EVT_MENU, self.onSetInterpolation, id = self.ID_CUBIC)        
+		self.Bind(wx.EVT_MENU, self.onSetInterpolation, id = self.ID_CUBIC)		   
 		
 		self.Bind(wx.EVT_MENU, self.onSubtractBackground, id = self.ID_SUB_BG)
 		
@@ -357,7 +349,6 @@ class InteractivePanel(ogl.ShapeCanvas):
 		self.Bind(wx.EVT_MOTION, self.updateActionEnd)
 		self.Bind(wx.EVT_RIGHT_DOWN, self.onRightDown)
 		self.Bind(wx.EVT_LEFT_UP, self.executeAction)
-		#self.Bind(wx.EVT_RIGHT_UP,self.actionEnd)
 		self.Bind(wx.EVT_SIZE, self.OnSize)
 		
 		lib.messenger.connect(None, "update_helpers", self.onUpdateHelpers)
@@ -386,7 +377,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 			origImage = self.dataUnit.getTimepoint(tp)
 			
 		import itk
-		scalarType = origImage.GetScalarTypeAsString()        
+		scalarType = origImage.GetScalarTypeAsString()		  
 		if scalarType == "unsigned char":
 			ImageType = itk.VTKImageToImageFilter.IUC3
 		elif scalarType == "unsigned short":
@@ -404,15 +395,12 @@ class InteractivePanel(ogl.ShapeCanvas):
 		vtkToItk2.Update()
 		itkLabel = vtkToItk2.GetOutput()
 
-		labelStats = itk.LabelStatisticsImageFilter[itkOrig, itkLabel].New()        
+		labelStats = itk.LabelStatisticsImageFilter[itkOrig, itkLabel].New()		
 		labelStats.SetInput(0, itkOrig)
 		labelStats.SetInput(1, itkLabel)
 		labelStats.Update()
 		
-#        totint = labelStats.GetSum(255)
-		
 		avgint = labelStats.GetMean(255)   
-		print "Average of the region is", avgint
 		ds = self.dataUnit.getDataSource()
 		shift, scale = ds.getIntensityScale()
 		if shift:
@@ -421,16 +409,15 @@ class InteractivePanel(ogl.ShapeCanvas):
 			shift = -int(round(avgint))
 		if not scale:
 			scale = 1
-		print "Setting shift, scale to ", shift, scale
 		ds.setIntensityScale(shift, scale)
-		self.updatePreview(1)       
+		self.updatePreview(1)		
  
 		
 	def onSetInterpolation(self, event):
 		"""
 		Created: 01.08.2005, KP
 		Description: Set the inteprolation method
-		"""      
+		"""		 
 		eID = event.GetId()
 		flags = (1, 0, 0, 0)
 		interpolation = -1
@@ -459,18 +446,16 @@ class InteractivePanel(ogl.ShapeCanvas):
 		Description: Set the offset of this interactive panel. The offset is variable
 					 based on the size of the screen vs. the dataset size.
 		"""
-#        assert x>=0,"Offset cannot be negative"
-#        assert y>=0,"Offset cannot be negative"
+#		 assert x>=0,"Offset cannot be negative"
+#		 assert y>=0,"Offset cannot be negative"
 		shapelist = self.diagram.GetShapeList()
-		print "\n\nSET OFFSET", x, y
-		for shape in shapelist:        
+		for shape in shapelist:
 			if not hasattr(shape, "getOffset"):
 				continue
 			sx, sy = shape.GetX(), shape.GetY()
 			ox, oy = shape.getOffset()
 			xdiff = x - ox
 			ydiff = y - oy
-			print "Moving shape by ", xdiff, ydiff
 			shape._offset = (x, y)
 			#shape.Move(x+xdiff,y+ydiff, display=False)
 			shape.SetX(sx + xdiff)
@@ -501,7 +486,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 		"""
 		Created: 10.10.2006, KP
 		Description: Add a listener to an event
-		"""        
+		"""		   
 		if not self.listeners.has_key(evt):
 			self.listeners [evt] = [func]
 		else:
@@ -513,7 +498,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 		Created: 06.10.2006, KP
 		Description: Add a painter helper that will be used to paint on the DC after everything else
 		"""
-		self.painterHelpers.append(painter)      
+		self.painterHelpers.append(painter)		 
 	  
 	def onUpdateHelpers(self, obj, evt, update):
 		"""
@@ -540,16 +525,15 @@ class InteractivePanel(ogl.ShapeCanvas):
 		
 		for helper in self.painterHelpers:
 			helper.paintOnDC(memdc)
-		memdc.SelectObject(wx.NullBitmap)        
+		memdc.SelectObject(wx.NullBitmap)		 
 		if update:
 			self.Update()
-		#self.OnPaint(None)
-
+		
 			
 	def getRegionsOfInterest(self):
 		"""
 		Created: 04.08.2006
-		Description: Return all the regions of interest draw in this panel    
+		Description: Return all the regions of interest draw in this panel	  
 		"""
 		shapelist = self.diagram.GetShapeList()
 		rois = []
@@ -575,14 +559,13 @@ class InteractivePanel(ogl.ShapeCanvas):
 		"""
 		Created: 07.05.2006, KP
 		Description: Create a polygon
-		"""            
+		"""			   
 		if zoomFactor == -1:
 			zoomFactor = self.zoomFactor
 		shape = MyPolygon(zoomFactor = self.zoomFactor)
-		shape._offset = (self.xoffset, self.yoffset)        
+		shape._offset = (self.xoffset, self.yoffset)		
 		
 		pts = []
-		#shape.SetCentreResize(0)
 		mx, my = shape.polyCenter(points)
 		
 		for x, y in points:
@@ -601,7 +584,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 		"""
 		Created: 11.08.2005, KP
 		Description: The size evet
-		"""            
+		"""			   
 		self.maxSizeX, self.maxSizeY = self.parent.GetClientSize()
 		evt.Skip()
 		
@@ -609,16 +592,15 @@ class InteractivePanel(ogl.ShapeCanvas):
 		"""
 		Created: 04.07.2005, KP
 		Description: Sets the background color
-		"""    
+		"""	   
 		self.bgColor = bg
 		
 	def getDrawableRectangles(self):
 		"""
 		Created: 04.07.2005, KP
 		Description: Return the rectangles can be drawn on as four-tuples
-		"""    
+		"""	   
 		a, b, c, d = self.GetClientRect()
-#        print "Drawable rect = ",a,b,c,d
 		return [(a, c, b, d)]
 		
 	def onLeftDown(self, event):
@@ -678,7 +660,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 		"""
 		Created: 24.03.2005, KP
 		Description: Sets the starting position of rubber band for zooming
-		"""    
+		"""	   
 		event.Skip()
 				   
 				
@@ -690,7 +672,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 			if x >= x0 and x <= x1 and y >= y0 and y <= y1:
 				foundDrawable = 1 
 				break
-		event.Skip()                    
+		event.Skip()					
 		if not foundDrawable:
 			Logging.info("Attempt to draw in non-drawable area: %d,%d" % (x, y), kw = "iactivepanel")
 			# we zero the action so nothing further will be done by updateActionEnd
@@ -700,41 +682,31 @@ class InteractivePanel(ogl.ShapeCanvas):
 			return 1
 			
 		if self.currentSketch:
-			self.currentSketch.AddPoint(pos)            
+			self.currentSketch.AddPoint(pos)			
 		self.actionstart = pos
 		return 1
 		
 	def updateActionEnd(self, event):
 		"""
 		Created: 24.03.2005, KP
-		Description: Draws the rubber band to current mou        
+		Description: Draws the rubber band to current mou		 
 		"""
 		if event.LeftIsDown():
 			self.actionend = event.GetPosition()
 		pos = event.GetPosition()
 		if self.currentSketch:
 			self.actionend = pos
-			
-		   
-			#self.currentSketch.Erase()
 			x0, y0, w, h = self.GetClientRect()
 			
 			self.currentSketch.setTentativePoint((pos))
 			dc = wx.ClientDC(self)
 			self.PrepareDC(dc)
-
-#            dupbuf = self.getDuplicateDC(dc)
 			
 			self.currentSketch.Erase(dc)
 			 
-			self.currentSketch.Draw(dc)            
+			self.currentSketch.Draw(dc)			   
 			
-			#dc.Blit(x0,y0,w,h,dupbuf,0,0)
 			dc.EndDrawing()
-			#del dupbuf
-			#self.repaintHelpers()
-			#self.Refresh()
-			#self.Update()
 		event.Skip()
 
 	def onDeactivate(self):
@@ -761,15 +733,13 @@ class InteractivePanel(ogl.ShapeCanvas):
 		memdc = wx.MemoryDC()
 		memdc.SelectObject(retbuf)
 		memdc.Blit(0, 0, w, h, dc, x0, y0)
-		#memdc.SelectObject(wx.NullBitmap)
-		#return retbuf
 		return memdc
 		
 	def actionEnd(self, event):
 		"""
 		Created: 05.07.2005, KP
 		Description: Unconditionally end the current action
-		"""    
+		"""	   
 		
 		self.action = 0
 		self.annotationClass = None
@@ -783,8 +753,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 		"""
 		Created: 03.07.2005, KP
 		Description: Call the right callback depending on what we're doing
-		"""    
-		#Logging.info("Executing action: ",self.action,kw="iactivepanel")
+		"""	   
 		if self.action == ZOOM_TO_BAND:
 			self.zoomToRubberband(event)
 		elif self.action == ADD_ANNOTATION:
@@ -793,7 +762,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 			self.addNewAnnotation(self.annotationClass, x, y, ex, ey)
 		
 			if self.annotationClass == "POLYGON":
-				self.actionstart = self.actionend   
+				self.actionstart = self.actionend	
 				self.prevPolyEnd = self.actionend
 			else:
 				self.action = None
@@ -803,13 +772,13 @@ class InteractivePanel(ogl.ShapeCanvas):
 				return 1
 		elif self.action == SET_THRESHOLD:
 			self.setThreshold()
-		elif self.action == DELETE_ANNOTATION:            
+		elif self.action == DELETE_ANNOTATION:			  
 			x, y = self.actionstart
 			
 			obj, attach = self.FindShape(x, y)
 			if obj:
 				self.RemoveShape(obj)
-				obj.Delete()            
+				obj.Delete()			
 				self.paintPreview()
 				self.Refresh()
 				
@@ -817,8 +786,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 		self.action = 0
 		self.actionstart = (0, 0)
 		self.actionend = (0, 0)
-		self.annotationClass = None                    
-		#ogl.ShapeCanvas.OnMouseEvent(self,event)
+		self.annotationClass = None					   
 		event.Skip()
 
 
@@ -856,12 +824,12 @@ class InteractivePanel(ogl.ShapeCanvas):
 				shape.SetX( ex + (x - ex) / 2 )
 				shape.SetY( ey + (y - ey) / 2 )
 				if self.actionstart != (0, 0):
-					shape.AddPoint(self.actionstart)                    
+					shape.AddPoint(self.actionstart)					
 				self.currentSketch = shape
 			else:
 				shape = None
-			if self.actionend != (0, 0):                    
-				self.currentSketch.AddPoint(self.actionend)      
+			if self.actionend != (0, 0):					
+				self.currentSketch.AddPoint(self.actionend)		 
 
 		elif annotationClass == "SCALEBAR":
 			dx = abs(x - ex)
@@ -876,10 +844,10 @@ class InteractivePanel(ogl.ShapeCanvas):
 			shape = MyText(dx, dy, zoomFactor = scaleFactor)
 			shape.SetCentreResize(0)  
 			shape.SetX( ex + (x - ex) / 2 )
-			shape.SetY( ey + (y - ey) / 2 )                
+			shape.SetY( ey + (y - ey) / 2 )				   
 		
-		if shape:    
-			shape._offset = (self.xoffset, self.yoffset)        
+		if shape:	 
+			shape._offset = (self.xoffset, self.yoffset)		
 			self.addNewShape(shape, noUpdate = noUpdate)
 			
 		self.saveAnnotations()
@@ -905,7 +873,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 		"""
 		Created: 07.05.2005, KP
 		Description: Add a new shape to the canvas
-		"""        
+		"""		   
 		evthandler = MyEvtHandler(self)
 		evthandler.SetShape(shape)
 		evthandler.SetPreviousHandler(shape.GetEventHandler())
@@ -915,12 +883,12 @@ class InteractivePanel(ogl.ShapeCanvas):
 		shape.SetBrush(wx.TRANSPARENT_BRUSH)
 		shape.SetPen(wx.Pen((0, 255, 0), 1))
 		
-		self.AddShape( shape )                 
+		self.AddShape( shape )				   
 		
 		if not noUpdate:
 			self.diagram.ShowAll(1)
 			self.repaintHelpers()
-			self.Refresh()        
+			self.Refresh()		  
 		
 	def updateAnnotations(self):
 		"""
@@ -951,7 +919,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 		Created: 15.08.2005, KP
 		Description: Delete annotations on the scene
 		"""
-		self.action = DELETE_ANNOTATION        
+		self.action = DELETE_ANNOTATION		   
 		
 	def addAnnotation(self, annClass, **kws):
 		"""
@@ -999,7 +967,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 		"""
 		Created: 1.08.2005, KP
 		Description: Return the zoom factor
-		"""        
+		"""		   
 		return self.zoomFactor
 		
 	def getScrolledXY(self, x, y):
@@ -1012,29 +980,25 @@ class InteractivePanel(ogl.ShapeCanvas):
 		if self.zoomFactor == 1:
 			return tpl
 		else:
-			return [int(float(x) / self.zoomFactor) for x in tpl]      
+			return [int(float(x) / self.zoomFactor) for x in tpl]	   
 		
 	def resetScroll(self):
 		"""
 		Created: 24.03.2005, KP
 		Description: Sets the scrollbars to their initial values
-		"""    
-		self.Scroll(0, 0)            
+		"""	   
+		self.Scroll(0, 0)			 
 		
 	def setDataUnit(self, dataUnit):
 		"""
 		Created: 04.07.2005, KP
 		Description: Sets the data unit that is displayed
-		"""    
-		print "Setting dataunit to",dataUnit
+		"""	   
 		self.dataUnit = dataUnit
 		self.voxelSize = dataUnit.getVoxelSize()
 		x, y, z = self.dataUnit.getDimensions()
 		self.buffer = wx.EmptyBitmap(x, y)
 		self.origX, self.origY = x, y
-		#Logging.info("Got dataunit, voxelSize=",self.voxelSize,kw="iactivepanel")
-#        ann=dataUnit.getSettings().get("Annotations")
-
 		wx.CallAfter(self.readAnnotationsFromCache)
 
 	def readAnnotationsFromCache(self):
@@ -1044,7 +1008,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 		"""
 		if not self.annotationsEnabled:
 			return
-		if not self.dataUnit.getDataSource():       
+		if not self.dataUnit.getDataSource():		
 			return
 		cachedSettings, cacheParser = scripting.getSettingsFromCache(self.dataUnit.getFileName() + "_" + self.dataUnit.getName() + "_annotations")
 
@@ -1058,11 +1022,9 @@ class InteractivePanel(ogl.ShapeCanvas):
 		"""
 		annotations = settings.get("Annotations")
 				
-		print "Got annotations from cache=", annotations
 		for obj in annotations:
 			obj.SetEventHandler(obj)
 			newobj = self.addNewAnnotation(obj.AnnotationType, 0, 0, 10, 10, noUpdate = 1, scaleFactor = 1)
-			print "Restoring from", obj
 			newobj.restoreFrom(obj)
 			newobj._offset = (0, 0)
 		self.setOffset(self.xoffset, self.yoffset)
@@ -1089,7 +1051,6 @@ class InteractivePanel(ogl.ShapeCanvas):
 				self.PrepareDC(dc)
 				dc.BeginDrawing()
 				dc.DrawBitmap(self.buffer, 0, 0, False)
-				#self.diagram.Redraw(dc)                
 
 		if not scrolledWinDC:
 			
@@ -1140,9 +1101,6 @@ class InteractivePanel(ogl.ShapeCanvas):
 		Logging.info("\n\n*** Setting scrollbars to %d, %d" % (xdim, ydim), kw = "preview")
 		w, h = self.buffer.GetWidth(), self.buffer.GetHeight()
 		
-		#if w!=xdim or h!=ydim:
-		#    self.buffer = wx.EmptyBitmap(xdim,ydim)
-
 		maxX = self.maxX
 		maxY = self.maxY
 		if self.maxSizeX > maxX:maxX = self.maxSizeX
@@ -1159,11 +1117,9 @@ class InteractivePanel(ogl.ShapeCanvas):
 		if newy <= self.origY and self.origY <= self.maxSizeY:
 			newy = self.origY
 		s = self.GetClientSize()
-		#if s!=(newx,newy):
 		Logging.info("Setting size of", self, " to ", newx, newy, "virtual size to ", xdim, ydim, kw = "iactivepanel")
 		self.SetClientSize((newx, newy))
 		s = self.GetVirtualSize()
-		#if s!=(xdim,ydim):
 		self.SetVirtualSize((xdim, ydim))
 		xrate, yrate = 0, 0
 		if xdim > newx:

@@ -30,9 +30,6 @@ __author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.21 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
-#import time
-#import types
-
 import scripting
 import Configuration
 import Logging
@@ -55,7 +52,6 @@ def set_target_size(xDimension, yDimension, zDimension = 0):
 	"""
 	assert xDimension > 0 and yDimension > 0 and zDimension > 0,"Target dimensions need to be > 0"
 	
-	#print "\n\\nTARGET SIZE FOR RESAMPLE-TO-FIT ",x,y,z
 	global targetSize, conf
 	dataUnit = scripting.visualizer.getDataUnit()
 	if zDimension == 0:
@@ -63,15 +59,12 @@ def set_target_size(xDimension, yDimension, zDimension = 0):
 	targetSize = xDimension, yDimension, zDimension
 	if not conf:
 		conf = Configuration.getConfiguration()
-		#rx,ry,rz=eval(conf.getConfigItem("ResampleToFitDims","Performance"))
-	
+		
 	if dataUnit.isProcessed():
 		sources = dataUnit.getSourceDataUnits()
 	else:
 		sources = [dataUnit]
 	for dataUnit in sources:
-#		Logging.info("Setting resample to fit dimensions to %d,%d,%d" \
-#						% (xDimension, yDimension, zDimension), kw = "scale")
 		dataUnit.dataSource.setResampleDimensions((xDimension, yDimension, zDimension))
 
 def optimize(image = None, vtkFilter = None, updateExtent = None, releaseData = 0):
@@ -88,14 +81,10 @@ def optimize(image = None, vtkFilter = None, updateExtent = None, releaseData = 
 
 	if updateExtent and not scripting.wantWholeDataset:
 		val.GetOutput().SetUpdateExtent(updateExtent)
-	# COMMENTED TO SEE IF ANY EFFECT ON CRASHES
-	#else:
-	#	 val.GetOutput().SetUpdateExtent(val.GetOutput().GetWholeExtent())
 		
 	if numFilters != 0:
 		img = execute_limited(val, updateExtent = updateExtent) 
 	else:
-		#Logging.info("\n\nNo filters, returning output")
 		img = val.GetOutput()
 
 	return img
@@ -118,7 +107,6 @@ def execute_limited(pipeline, updateExtent = None):
 		
 	if alwaysSplit:
 		Logging.info("Using vtkImageDataStreamer with %d divisions"%numberOfDivisions, kw = "pipeline")
-		#print "\n----> EXECUTING PIPELINE WITH %d DIVISIONS"%numberOfDivisions
 		streamer = vtk.vtkImageDataStreamer()
 		streamer.SetNumberOfStreamDivisions(numberOfDivisions)
 		streamer.GetExtentTranslator().SetSplitModeToZSlab()
@@ -129,18 +117,13 @@ def execute_limited(pipeline, updateExtent = None):
 		streamer.GetExtentTranslator().SetSplitModeToZSlab()
 	
 	executing = 1
-#	 pipeline.DebugOn()
 	streamer.SetInputConnection(pipeline.GetOutputPort())
 	retval = streamer.GetOutput()
 	
 	if updateExtent and not scripting.wantWholeDataset:
 		Logging.info("Setting update extent to ", updateExtent, kw = "pipeline")
 		retval.SetUpdateExtent(updateExtent)
-	#else:
-	#	 retval.SetUpdateExtent(retval.GetWholeExtent())
-	#print "Updating streamer..."
 	streamer.Update()
-	#print "Executed!"
 	executing = 0
 	return retval
 
@@ -169,48 +152,14 @@ def get_memory_limit():
 		memLimit = eval(memLimit)
 	return memLimit
 
-#def optimizeMipMerge(cfilter):
-#	"""
-#	Created: 10.11.2006, KP
-#	Description: Optimize the order of mip and merge
-#	"""    
-#	raise "NEVER CALL ME AGAIN!"
-#	filterStack = []
-#	mergeSources = []
-#	merge = None
-#	while 1:
-#		if isinstance(cfilter, vtkbxd.vtkImageColorMerge):
-#			merge = cfilter
-#			for i in range(0, cfilter.GetNumberOfInputPorts()):
-#				for j in range(0, cfilter.GetNumberOfInputConnections(i)):			 
-#					inp = cfilter.GetInputConnection(i, j).GetProducer()
-#					if inp:
-#						mergeSources.append(inp)
-#		for i in range(0, cfilter.GetNumberOfInputPorts()):
-#			for j in range(0, cfilter.GetNumberOfInputConnections(i)):
-#				inp = cfilter.GetInputConnection(i, j).GetProducer()				 
-#				if inp:				   
-#					filterStack.append(inp)
-#		try:
-#			cfilter = filterStack.pop()			   
-#		except:
-#			break	 
-	
-#	merge.RemoveAllInputs()			   
-#	for i in mergeSources:
-#		mip = vtkbxd.vtkImageSimpleMIP()
-#		mip.SetInput(i.GetOutput())		   
-#		merge.AddInput(mip.GetOutput())
-#	return merge
+
 
 def optimizePipeline(ifilter, numberNotUsed = 0, releaseData = 0):
 	"""
 	Created: 10.11.2006, KP
 	Description: Optimize the pipeline
 	"""
-	#return ifilter
 	stack = []
-	#return ifilter
 	
 	filterStack = []
 	if isinstance(ifilter, vtkbxd.vtkImageSimpleMIP):
@@ -218,7 +167,6 @@ def optimizePipeline(ifilter, numberNotUsed = 0, releaseData = 0):
 	cfilter = ifilter
 	while 1:
 		hasParents = 0
-#		 cfilter.DebugOn()
 		for i in range(0, cfilter.GetNumberOfInputPorts()):
 			for j in range(0, cfilter.GetNumberOfInputConnections(i)):
 				inp = cfilter.GetInputConnection(i, j).GetProducer()
@@ -233,9 +181,6 @@ def optimizePipeline(ifilter, numberNotUsed = 0, releaseData = 0):
 		if hasParents and releaseData:
 			cfilter.GetOutput().ReleaseDataFlagOn() 
 
-	Logging.info("Filter stack now=", stack, kw="pipeline")
 	nfilters = len(stack)
-	#for i in stack:
-	#	 if isinstance(i,vtkbxd.vtkImageColorMerge):
-	#		 return optimizeMipMerge(ifilter),nfilters
+
 	return ifilter, nfilters

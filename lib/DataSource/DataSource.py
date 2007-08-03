@@ -159,7 +159,7 @@ class DataSource:
 		Created: 1.09.2005, KP
 		Description: Set the resample dimensions
 		"""
-		print "Setting resample dimensions to ", dims
+		Logging.info("Setting dimensions of resampled image to ",dims,kw="datasource")
 		#self.resampleDims = map(int, dims)
 		self.resampleDims = [int(dimension) for dimension in dims]
 		lib.messenger.send(None, "set_resample_dims", dims, self.originalDimensions)
@@ -220,13 +220,9 @@ class DataSource:
 		"""
 		if self.limitDims and not self.resampleDims:
 			dims = self.getDimensions()
-			#self.originalDimensions = dims
-			#print dims, self.limitDims
 			if dims[0] * dims[1] > self.limitDims[0] * self.limitDims[1]:
 				x, y = self.toDims
-				#print "Setting resample dims", (x, y, dims[2])
 				self.resampleDims = (int(x), int(y), int(dims[2]))
-		#print "Returning ", self.resampleDims
 		return self.resampleDims
 
 	@staticmethod
@@ -325,15 +321,13 @@ class DataSource:
 			self.shift.SetOutputScalarTypeToUnsignedChar()
 			self.shift.SetClampOverflow(1)
 		
-		#print "\n\nInput to shiftscale = ", data.GetScalarRange()
 		self.shift.SetInputConnection(data.GetProducerPort())
 		# Need to call this or it will remember the whole extent it got from resampling
 		self.shift.UpdateWholeExtent()
 
 		if self.intensityScale:
-			print "Setting scale to ", self.intensityScale
 			self.shift.SetScale(self.intensityScale)
-			
+			currScale = self.intensityScale
 		else:
 			#x0, x1 = data.GetScalarRange()
 			#if x1 == 0:
@@ -342,24 +336,21 @@ class DataSource:
 			#	 scale = 255.0/x1
 			minval, maxval = self.originalScalarRange
 			#print "Calculating intensity scale based on bitdepth = ", self.bitdepth
-			print "\n\nCalculating scale based on original scalar range", maxval
 			scale = 255.0 / maxval
-			print "Setting scale to", scale
 			self.shift.SetScale(scale)
+			currScale = scale
 		
-		print "Setting shift to ", self.intensityShift
 		self.shift.SetShift(self.intensityShift)
 		
+		Logging.info("Intensity shift = %d, scale = %f"%(self.intensityShift, currScale), kw="datasource")
+		
 		return self.shift.GetOutput()
-		#return scripting.execute_limited(self.shift)
 	
 	def getResampledData(self, data, n, tmpDims = None):
 		"""
 		Created: 1.09.2005, KP
 		Description: Return the data resampled to given dimensions
 		"""
-		#print "getResampledData", data
-
 		if not scripting.resamplingDisabled and not (not tmpDims and not self.resampleDims and not self.limitDims):
 			
 			useDims = self.getResampleDimensions()

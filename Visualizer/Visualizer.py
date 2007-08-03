@@ -8,7 +8,7 @@
 
  A visualization framework for the BioImageXD software
 		   
- Copyright (C) 2005  BioImageXD Project
+ Copyright (C) 2005	 BioImageXD Project
  See CREDITS.txt for details
 
  This program is free software; you can redistribute it and / or modify
@@ -23,7 +23,7 @@
 
  You should have received a copy of the GNU General Public License
  along with this program; if not, write to the Free Software
- Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111 - 1307  USA
+ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111 - 1307	 USA
 """
 __author__ = "BioImageXD Project"
 __version__ = "$Revision: 1.9 $"
@@ -246,14 +246,14 @@ class Visualizer:
 		"""
 		Created: 20.06.2006, KP
 		Description: Get all the masks
-		"""   
+		"""	  
 		return self.masks
 
 	def setMask(self, mask):
 		"""
 		Created: 20.06.2006, KP
 		Description: Set the current mask
-		"""   
+		"""	  
 		self.masks.insert(0, mask)
 		self.currentMask = mask
 		self.dataUnit.setMask(mask)
@@ -431,7 +431,7 @@ class Visualizer:
 		"""
 		Created: 18.07.2006, KP
 		Description: Return the number of timepoints
-		"""   
+		"""	  
 		return self.maxTimepoint
 
 	def onNextTimepoint(self, evt):
@@ -458,7 +458,7 @@ class Visualizer:
 		"""
 		Created: 18.07.2006, KP
 		Description: Switch to previous timepoint
-		"""   
+		"""	  
 		if self.timepoint >= 1:
 			self.setTimepoint(self.timepoint - 1)
 			self.blockTpUpdate = 1
@@ -615,7 +615,7 @@ class Visualizer:
 		self.roll.Bind(wx.EVT_SPIN_UP, self.onRollUp)
 		self.roll.Bind(wx.EVT_SPIN_DOWN, self.onRollDown)		 
 		self.elevation.Bind(wx.EVT_SPIN_UP, self.onElevationUp)
-		self.elevation.Bind(wx.EVT_SPIN_DOWN, self.onElevationDown)  
+		self.elevation.Bind(wx.EVT_SPIN_DOWN, self.onElevationDown)	 
 		
 		wx.EVT_TOOL(self.parent, GUI.MenuManager.ID_ZOOM_IN, self.zoomIn)
 		wx.EVT_TOOL(self.parent, GUI.MenuManager.ID_ZOOM_OUT, self.zoomOut)
@@ -645,7 +645,6 @@ class Visualizer:
 		"""
 		if hasattr(self.currentWindow, "getRegionsOfInterest"):
 			return self.currentWindow.getRegionsOfInterest()
-		print "NO regions of interest"
 		return []
 				
 	def onElevationUp(self, evt):
@@ -680,7 +679,7 @@ class Visualizer:
 			
 	def onYawUp(self, evt):
 		if self.mode == "3d":
-			self.currMode.getRenderer().GetActiveCamera().Yaw(self.YawStep)    
+			self.currMode.getRenderer().GetActiveCamera().Yaw(self.YawStep)	   
 			self.currMode.Render()
 	
 	def onYawDown(self, evt):
@@ -770,16 +769,11 @@ class Visualizer:
 		"""
 		
 		pos = self.zoomCombo.GetSelection()
-		#zoomSize = self.zoomCombo.GetString(pos)
 		if dir > 0 and pos >= self.zoomCombo.GetCount():
-			#print "Zoom at max: ", zoomSize
 			return
 		if dir < 0 and pos == 0:
-			#print "Zoom at min: ", zoomSize
 			return
 		pos += dir
-		#zoomSize = self.zoomCombo.GetString(pos)
-		#factor = float(zoomSize[:-1])/100.0
 		factor = self.zoomLevels[pos]
 		self.zoomCombo.SetSelection(pos)
 		
@@ -872,8 +866,7 @@ class Visualizer:
 			self.currSliderPanel.SetSize(self.sliderWin.GetSize())		  
 		if time.time() - self.lastWinSaveTime > 5:
 			self.saveWindowSizes()
-		#print self.zsliderWin.GetSize()
-		#self.zsliderPanel.SetSize(self.zsliderWin.GetSize())	 
+		
 	def restoreWindowSizesFromSettings(self):
 		"""
 		Created: 13.04.2006, KP
@@ -882,7 +875,6 @@ class Visualizer:
 		
 		item = "%s_SidebarSize" % self.mode
 		ssize = self.conf.getConfigItem(item, "Sizes")
-		#print "Restoring size from settings", item, ssize, self.mode
 		if not ssize:
 			return 0
 		ssize = eval(ssize)
@@ -903,7 +895,7 @@ class Visualizer:
 		"""
 		Created: 26.01.2006, KP
 		Description: Set the currently visible timeslider panel
-		"""    
+		"""	   
 		self.currSliderPanel = panel
 		
 	def __del__(self):
@@ -920,7 +912,6 @@ class Visualizer:
 		for key in self.modes.keys():
 			mod, settingclass, module = self.modes[key]
 			module = reload(module)
-			print "Reloaded mode ", module
 			self.modes[key] = (mod, settingclass, module)
 		return
 		# Borrowed from mayavi
@@ -1175,7 +1166,7 @@ class Visualizer:
 		"""
 		Created: 23.07.2006, KP
 		Description: Toggle the time slider on or off
-		"""   
+		"""	  
 		if not flag:
 			self.sliderWin.SetDefaultSize((0, 0))
 		else:
@@ -1204,7 +1195,6 @@ class Visualizer:
 		
 		x, y, z = dataunit.getDimensions()
 		
-		#print "SETTING RANGE", 1, z
 		currz = self.zslider.GetValue()
 		self.zslider.SetRange(1, z)
 
@@ -1292,7 +1282,6 @@ class Visualizer:
 			Logging.info("Disabled, will not update rendering", kw = "visualizer")
 			return
 			
-		#print "\n\n\n\nimmediate render = ", self.immediateRender, "delay = ", delay
 		if not self.immediateRender and delay >= 0:
 			Logging.info("Will not update rendering on other than apply button", kw = "visualizer")
 			return
@@ -1309,8 +1298,6 @@ class Visualizer:
 		if not imm:
 			t = time.time()
 			delay /= 1000.0
-			#Logging.info("diff = ", self.renderingTime - t, "delay = ", delay)
-			#print "self.renderingTime = ", self.renderingTime, "t = ", t
 			if not self.renderingTime:
 				self.renderingTime = t - (delay * 2)
 			diff = t - self.renderingTime
@@ -1364,7 +1351,7 @@ class Visualizer:
 		"""
 		Created: 31.07.2005, KP
 		Description: Set the timepoint to be shown
-		"""    
+		"""	   
 		if not evt:
 			diff = abs(time.time() - self.changing)
 			if diff < 0.01:
@@ -1443,14 +1430,13 @@ class Visualizer:
 			
 		if self.z != newz:
 			self.z = newz
-#			 print "Sending zslice changed event"
 			lib.messenger.send(None, "zslice_changed", newz)		  
 		
 	def onSnapshot(self, event):
 		"""
 		Created: 05.06.2005, KP
 		Description: Save a snapshot of current visualization
-		"""  
+		"""	 
 		if self.currMode and self.dataUnit:
 			wildCardDict = {"png": "Portable Network Graphics Image (*.png)", "jpeg": "JPEG Image (*.jpeg)",
 			"tiff": "TIFF Image (*.tiff)", "bmp": "Bitmap Image (*.bmp)"}
@@ -1483,10 +1469,6 @@ class Visualizer:
 		Created: 14.06.2007, KP
 		Description save a snapshot with the given name
 		"""
-		#dlg=wx.FileDialog(self.parent,,defaultFile=initFile,wildcard=wc,style=wx.SAVE)
-		#filename=None
-		#if dlg.ShowModal()==wx.ID_OK:
-		#	 filename=dlg.GetPath()
 		if filename:
 			self.currMode.saveSnapshot(filename)
 		
@@ -1494,7 +1476,7 @@ class Visualizer:
 		"""
 		Created: 15.08.2005, KP
 		Description: Restores the window sizes that may be changed by setRenderWIndowSize
-		"""  
+		"""	 
 		self.visWin.SetDefaultSize(self.visWin.origSize)
 		self.sidebarWin.SetDefaultSize(self.sidebarWin.origSize)
 		self.sliderWin.SetDefaultSize(self.sliderWin.origSize)
@@ -1505,7 +1487,7 @@ class Visualizer:
 		"""
 		Created: 28.04.2005, KP
 		Description: Set the render window size
-		"""  
+		"""	 
 		x, y = size
 		#self.currentWindow.SetSize((size))
 		
@@ -1568,7 +1550,7 @@ class Visualizer:
 		"""
 		Created: 28.04.2005, KP
 		Description: Set the timepoint to be shown
-		"""  
+		"""	 
 		if self.blockTpUpdate:
 			return
 

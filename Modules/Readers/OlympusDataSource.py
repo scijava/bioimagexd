@@ -491,6 +491,20 @@ class OlympusDataSource(DataSource):
 		self.ctf = None
 		return self.getColorTransferFunction()
 	
+	def getBitDepth(self):
+		"""
+		Created: 03.08.2007, KP
+		Description: return the bit depth of the imagesr eturned by this datasource
+		"""
+		return self.bitdepth
+	
+	def getSingleComponentBitDepth(self):
+		"""
+		Created: 03.08.2007, KP
+		Description: return the bit depth of a single component of the image returned by this datasource
+		"""
+		return self.getBitDepth()
+	
 	def getColorTransferFunction(self):
 		"""
 		Created: 26.04.2005, KP

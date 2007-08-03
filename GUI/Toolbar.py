@@ -8,7 +8,7 @@
 
  A resizing toolbar
 
- Copyright (C) 2006  BioImageXD Project
+ Copyright (C) 2006	 BioImageXD Project
  See CREDITS.txt for details
 
  This program is free software; you can redistribute it and/or modify
@@ -82,14 +82,11 @@ class Toolbar(wx.Panel):
 		Description: Event handler for size events
 		"""
 		size = evt.GetSize()
-		print size
 		if size[0] == 0:
 			return
 		layout = self.getLayout(size[0])
 		if layout != self.oldLayout:
 			self.createRows(layout)
-
-			#print "\n\n\n+++ NOT SAME LAYOUT"
 			self.ReOrderItems(layout, size[0])
 			self.oldLayout = layout
 			
@@ -99,12 +96,10 @@ class Toolbar(wx.Panel):
 				y = 44 * len(layout)
 			else:
 				y = 50 * len(layout)
-			#print "x=",x,"y=",y
 			self.parent.SetDefaultSize((x, y))
 			self.Layout()
 			self.sizer.Fit(self)
 			self.parent.Layout()
-			#self.Realize()
 			
 	def ReOrderItems(self, layout, width):
 		"""
@@ -135,10 +130,8 @@ class Toolbar(wx.Panel):
 		ctrls = []
 		curr = []
 		ms = 0
-		#print "getting layout for width=",width
 		
 		for i, ctrl in enumerate(self.ctrls):
-			#print "ms=",ms,"size=",self.sizes[i],"tgtsize=",tgtsize
 			if ms + self.toolSeparation + self.sizes[i] > width:
 				ctrls.append(curr)
 				curr = []
@@ -150,8 +143,6 @@ class Toolbar(wx.Panel):
 		n = 0
 		for i in ctrls:
 			n += len(i)
-		if n != len(self.ctrls):
-			print "\n\n\n****** Lengths do not match, only ", n, "controls placed, there are", len(self.ctrls)
 		return ctrls
 		
 		
@@ -172,7 +163,6 @@ class Toolbar(wx.Panel):
 				rowsizer = wx.BoxSizer(wx.HORIZONTAL)
 				self.rowsizers.append(rowsizer)
 				self.sizer.Add(rowsizer, (y, 0), flag = wx.EXPAND | wx.LEFT | wx.RIGHT)
-				print "added rowsizer to row", y
 		
 	def Realize(self):
 		"""
@@ -188,7 +178,6 @@ class Toolbar(wx.Panel):
 	
 		self.Layout()
 		self.Refresh()
-		print "Toolbar size now", self.GetSize()
 		
 	def DeleteTool(self, toolid):
 		"""
