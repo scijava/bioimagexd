@@ -30,7 +30,7 @@ __author__ = "BioImageXD Project"
 __version__ = "$Revision: 1.40 $"
 __date__ = "$Date: 2005/01/13 14:52:39 $"
 
-import scripting as bxd
+import scripting
 from lib.DataSource.BXDDataWriter import BXDDataWriter
 from lib.DataSource.BXCDataWriter import BXCDataWriter
 import Configuration
@@ -57,7 +57,7 @@ class ImportDialog(wx.Dialog):
 		Created: 17.03.2005, KP
 		Description: Initialize the dialog
 		"""    
-		bxd.registerDialog("import", self)
+		scripting.registerDialog("import", self)
 		self.dataUnit = DataUnit()
 
 		self.dataSource = parent.typeToSource["filelist"]()
@@ -125,7 +125,7 @@ class ImportDialog(wx.Dialog):
 		self.Close()
 		
 		self.convertFiles(filename)
-		bxd.unregisterDialog("import")
+		scripting.unregisterDialog("import")
 		self.EndModal(wx.ID_OK)
 
 	def convertFiles(self, outname):

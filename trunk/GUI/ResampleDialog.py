@@ -30,7 +30,7 @@ __author__ = "BioImageXD Project"
 __version__ = "$Revision: 1.40 $"
 __date__ = "$Date: 2005/01/13 14:52:39 $"
 
-import scripting as bxd
+import scripting
 import string
 import UIElements
 import wx
@@ -74,7 +74,7 @@ class ResampleDialog(wx.Dialog):
 		for i in self.dataUnits:
 			#print "\nSETTING RESAMPLE DIMS TO ",self.currSize
 			i.dataSource.setResampleDimensions(self.currSize)
-			i.dataSource.getDataSet(bxd.visualizer.getTimepoint()).SetUpdateExtent((0, -1, 0, -1, 0, -1))
+			i.dataSource.getDataSet(scripting.visualizer.getTimepoint()).SetUpdateExtent((0, -1, 0, -1, 0, -1))
 		self.result = 1
 		self.Close()
 		

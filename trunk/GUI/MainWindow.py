@@ -34,7 +34,7 @@ VERSION = "0.9.0 beta"
 
 import AboutDialog
 import BugDialog
-import scripting as bxd
+import scripting
 import Configuration
 import ConfigParser
 import Dialogs
@@ -84,7 +84,7 @@ class MainWindow(wx.Frame):
 		
 		lib.Command.mainWindow = self
 		self.splash = splash
-		bxd.recorder = self.recorder = lib.Command.ScriptRecorder()
+		scripting.recorder = self.recorder = lib.Command.ScriptRecorder()
 		
 		size = conf.getConfigItem("WindowSize", "Sizes")
 		if size:
@@ -231,7 +231,7 @@ class MainWindow(wx.Frame):
 		
 		
 		# Icon for the window
-		ico = reduce(os.path.join, [bxd.get_icon_dir(), "logo.ico"])
+		ico = reduce(os.path.join, [scripting.get_icon_dir(), "logo.ico"])
 		self.icon = wx.Icon(ico, wx.BITMAP_TYPE_ICO)
 			
 		self.SetIcon(self.icon)
@@ -293,7 +293,7 @@ class MainWindow(wx.Frame):
 		reportCrash = conf.getConfigItem("ReportCrash", "General")
 		if reportCrash and type(reportCrash) == type(""):
 			reportCrash = eval(reportCrash)
-		if reportCrash and bxd.uncleanLog:
+		if reportCrash and scripting.uncleanLog:
 			self.reportCrash()
 		#self.Bind(wx.EVT_WINDOW_DESTROY, self.Cleanup)
 		
@@ -310,11 +310,11 @@ class MainWindow(wx.Frame):
 		Description: send a bug report reporting the latest crash
 		"""
 		dlg = BugDialog.BugDialog(self, crashMode = 1)
-		dlg.crashModeOn(bxd.uncleanLog)
+		dlg.crashModeOn(scripting.uncleanLog)
 		conf = Configuration.getConfiguration()
 
 		try:
-			data = open(bxd.uncleanLog).read()
+			data = open(scripting.uncleanLog).read()
 		except:
 			return
 		dlg.setContent("User actions resulted a crash", data)
@@ -351,7 +351,7 @@ class MainWindow(wx.Frame):
 		f = open(filename)
 		module = imp.load_module("script", f, filename, ('.py', 'r', 1))
 		f.close()
-		module.bxd = bxd
+		module.scripting = scripting
 		module.mainWindow = self
 		module.visualizer = self.visualizer
 		module.run()
@@ -665,7 +665,7 @@ class MainWindow(wx.Frame):
 		Created: 03.11.2004, KP
 		Description: Creates a tool bar for the window
 		"""
-		iconpath = bxd.get_icon_dir()
+		iconpath = scripting.get_icon_dir()
 		self.CreateToolBar(wx.NO_BORDER | wx.TB_HORIZONTAL)
 		tb = self.GetToolBar()
 		tb.SetToolBitmapSize((32, 32))
@@ -823,7 +823,7 @@ class MainWindow(wx.Frame):
 		Created: KP
 		Description: send the message to use the current task for processing the data
 		"""
-		bxd.modal = modal
+		scripting.modal = modal
 		lib.messenger.send(None, "process_dataset")
 
 	def onContextHelp(self, evt):
@@ -1076,7 +1076,7 @@ class MainWindow(wx.Frame):
 		Description: Show the script editor
 		"""
 		# the following line equals "if self.scriptEditor"
-		if bxd.record:
+		if scripting.record:
 			self.scriptEditor.Show()
 		else:
 			self.scriptEditor = ScriptEditor.ScriptEditorFrame(self)
@@ -1714,7 +1714,7 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 		
 		names = [i.getName() for i in selectedFiles]
 		
-		cacheKey = bxd.getCacheKey(selectedPaths, names, taskname)
+		cacheKey = scripting.getCacheKey(selectedPaths, names, taskname)
 		
 		self.currentTaskWindow.setCacheKey(cacheKey)
 		# Sets name for new dataset series
@@ -1807,7 +1807,7 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 		if not self.visualizer:
 			self.visPanel = wx.SashLayoutWindow(self.visWin, -1)
 			self.visualizer = Visualizer(self.visPanel, self.menuManager, self)
-			bxd.visualizer = self.visualizer
+			scripting.visualizer = self.visualizer
 			lib.Command.visualizer = self.visualizer
 			self.menuManager.setVisualizer(self.visualizer)
 			self.visualizer.setProcessedMode(processed)
@@ -1870,7 +1870,7 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 		"""
 		if not self.help:
 			self.help = wx.html.HtmlHelpController()
-			helppath = os.path.join(bxd.get_help_dir(), "help.hhp")
+			helppath = os.path.join(scripting.get_help_dir(), "help.hhp")
 			self.help.AddBook(helppath, 1)
 			self.help.SetTitleFormat("BioImageXD - %s")
 		if not args:

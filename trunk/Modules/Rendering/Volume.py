@@ -409,7 +409,6 @@ class VolumeModule(VisualizationModule):
 			input = self.getInput(1)
 		x, y, z = self.dataUnit.getDimensions()
 				
-		#input = bxd.mem.optimize(image = input, updateExtent = (0, x - 1, 0, y - 1, 0, z - 1))
 		input = optimize.optimize(image = input, updateExtent = (0, x - 1, 0, y - 1, 0, z - 1))
 					
 		ncomps = input.GetNumberOfScalarComponents()

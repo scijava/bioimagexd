@@ -44,7 +44,7 @@ except ImportError:
 	print "Could not import ITK, terminating."
 	sys.exit()
 import lib.messenger
-import scripting as bxd
+import scripting
 import GUI.GUIBuilder as GUIBuilder
 
 class ProcessingFilter(GUIBuilder.GUIBuilderBase):
@@ -54,7 +54,7 @@ class ProcessingFilter(GUIBuilder.GUIBuilderBase):
 	"""
 	category = "No category"
 	name = "Generic Filter"
-	level = bxd.COLOR_EXPERIENCED
+	level = scripting.COLOR_EXPERIENCED
 	def __init__(self, numberOfInputs = (1, 1)):
 		"""
 		Created: 13.04.2006, KP
@@ -115,8 +115,8 @@ class ProcessingFilter(GUIBuilder.GUIBuilderBase):
 				func = "getFilter('%s')" % self.name
 			else:
 				func = "getFilter('%s', %d)" % (self.name, filterIndex)
-		n = bxd.mainWindow.currentTaskWindowName
-		method="bxd.mainWindow.tasks['%s'].%s"%(n,func)
+		n = scripting.mainWindow.currentTaskWindowName
+		method="scripting.mainWindow.tasks['%s'].%s"%(n,func)
 		self.recordParameterChange(parameter, value, method)
 
 		#print "\n\nSetting ",parameter,"to",value

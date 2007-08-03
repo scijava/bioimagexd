@@ -33,7 +33,7 @@ import Logging
 import lib.messenger
 import GUI.Urmas.UrmasPersist
 import GUI.GUIBuilder as GUIBuilder
-import scripting as bxd
+import scripting
 
 class VisualizationModule(GUIBuilder.GUIBuilderBase):
 	"""
@@ -161,7 +161,7 @@ class VisualizationModule(GUIBuilder.GUIBuilderBase):
 
 		if self.visualizer.getProcessedMode():
 			Logging.info("Will render processed data instead", kw = "rendering")
-			self.data = self.dataUnit.doPreview(bxd.WHOLE_DATASET, 1, self.timepoint)
+			self.data = self.dataUnit.doPreview(scripting.WHOLE_DATASET, 1, self.timepoint)
 		else:
 			Logging.info("Using timepoint data for tp", value, kw = "rendering")
 			self.data = self.dataUnit.getTimepoint(value)

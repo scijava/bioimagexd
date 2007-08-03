@@ -30,7 +30,7 @@ __author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.9 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
-import scripting as bxd
+import scripting
 from GUI.InteractivePanel import InteractivePanel as InteractivePanel
 import lib.ImageOperations
 import lib.messenger
@@ -305,7 +305,7 @@ class SectionsPanel(InteractivePanel):
 		"""
 		self.timepoint = tp
 		if self.dataUnit.isProcessed():
-			image = self.dataUnit.doPreview(bxd.WHOLE_DATASET_NO_ALPHA, 1, self.timepoint)
+			image = self.dataUnit.doPreview(scripting.WHOLE_DATASET_NO_ALPHA, 1, self.timepoint)
 			self.ctf = self.dataUnit.getColorTransferFunction()
 		else:
 			image = self.dataUnit.getTimepoint(tp)

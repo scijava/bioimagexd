@@ -31,7 +31,7 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 import math
 import os.path
 import Logging
-import scripting as bxd
+import scripting
 
 renderingInterface = None
 
@@ -107,7 +107,7 @@ class RenderingInterface:
 		"""		   
 		self.currentTimePoint = timepoint
 		if self.dataUnit.isProcessed():
-			self.currentData = self.dataUnit.doPreview(bxd.WHOLE_DATASET, 0, timepoint)
+			self.currentData = self.dataUnit.doPreview(scripting.WHOLE_DATASET, 0, timepoint)
 		else:
 			self.currentData = self.dataUnit.getTimepoint(timepoint)
 		self.dimensions = self.currentData.GetDimensions()

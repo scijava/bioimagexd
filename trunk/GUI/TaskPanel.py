@@ -32,7 +32,7 @@ __author__ = "BioImageXD Project <http://www.bioimagexd.org>"
 __version__ = "$Revision: 1.21 $"
 __date__ = "$Date: 2005/01/13 14:36:20 $"
 
-import scripting as bxd
+import scripting
 import ChannelTray
 import lib.ImageOperations
 import lib.messenger
@@ -156,7 +156,7 @@ class TaskPanel(ScrolledPanel):
 		
 		if not cachedSettings:
 			if self.cacheKey:
-				cachedSettings, cacheParser = bxd.getSettingsFromCache(self.cacheKey)
+				cachedSettings, cacheParser = scripting.getSettingsFromCache(self.cacheKey)
 			
 		if not cachedSettings:
 			Logging.info("No settings found in cache", kw = "caching")
@@ -194,7 +194,7 @@ class TaskPanel(ScrolledPanel):
 		#for i,settingx in enumerate(settings[1:]):
 		#    
 		#    tf=settingx.get("IntensityTransferFunction")
-		bxd.storeSettingsToCache(self.dataUnit.getCacheKey(), settings)
+		scripting.storeSettingsToCache(self.dataUnit.getCacheKey(), settings)
 		for i in sources:
 			i.resetSettings()
 		
@@ -363,15 +363,15 @@ class TaskPanel(ScrolledPanel):
 					 dataset
 		"""        
 		mgr = ProcessingManager.ProcessingManager(self, self.operationName)
-		bxd.processingManager = mgr
+		scripting.processingManager = mgr
 		mgr.setDataUnit(self.dataUnit)
 		self.grayOut()
 
-		if bxd.modal:
+		if scripting.modal:
 			mgr.ShowModal()
 			mgr.Destroy()
 		   
-			bxd.processingManager = None            
+			scripting.processingManager = None            
 		else:
 			mgr.Show()
 		self.grayOut(1)            

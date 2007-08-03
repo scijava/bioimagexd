@@ -39,7 +39,7 @@ import time
 #import UIElements
 import lib.messenger
 #import Logging
-import scripting as bxd
+import scripting
 import GUI.Dialogs
 import lib.Command
 
@@ -56,7 +56,7 @@ class ProcessingManager(TimepointSelection.TimepointSelection):
 		TimepointSelection.TimepointSelection.__init__(self, parent)
 		self.progressDialog = None
 		self.operationName = operation
-		bxd.processingManager = self
+		scripting.processingManager = self
 		
 		#self.timepointLbl.SetLabel("Select Time Points to be Processed")
 		self.SetTitle("Processing - %s" % operation)
@@ -121,7 +121,7 @@ class ProcessingManager(TimepointSelection.TimepointSelection):
 
 		filename = GUI.Dialogs.askSaveAsFileName(self, "Save %s dataset as" % self.operationName, "%s.bxd" % name, "BioImageXD Dataset (*.bxd)|*.bxd")
 		filename = filename.replace("\\", "\\\\")
-		do_cmd = "bxd.processingManager.doProcessing('%s')" % filename
+		do_cmd = "scripting.processingManager.doProcessing('%s')" % filename
 		undo_cmd = ""
 		
 		cmd = lib.Command.Command(lib.Command.GUI_CMD, None, None, do_cmd, undo_cmd, desc = "Process the selected timepoints")

@@ -33,7 +33,7 @@ import GUI.GUIBuilder
 import lib.messenger
 import Logging
 import optimize
-import scripting as bxd
+import scripting
 import types
 from Visualizer.VisualizationModules import VisualizationModule
 from Visualizer.ModuleConfiguration import ModuleConfigurationPanel
@@ -95,12 +95,12 @@ class SurfaceModule(VisualizationModule):
 		Description: Return the level of the given parameter
 		"""
 		if parameter in ["FeatureAngle", "Normals"]:
-			return bxd.COLOR_EXPERIENCED
+			return scripting.COLOR_EXPERIENCED
 		if parameter == "PreserveTopology":
-			return bxd.COLOR_INTERMEDIATE
+			return scripting.COLOR_INTERMEDIATE
 		
 		
-		return bxd.COLOR_BEGINNER            
+		return scripting.COLOR_BEGINNER            
 		
 
 	def setScalarRange(self, min, max):

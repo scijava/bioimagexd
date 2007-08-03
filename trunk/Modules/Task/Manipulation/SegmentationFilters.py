@@ -32,7 +32,7 @@ __date__ = "$Date: 2005/01/13 14:52:39 $"
 
 #import labelShape
 
-import scripting as bxd
+import scripting
 import codecs
 import csv
 import GUI.GUIBuilder as GUIBuilder
@@ -260,7 +260,7 @@ class ThresholdFilter(ProcessingFilter.ProcessingFilter):
 	"""     
 	name = "Threshold"
 	category = SEGMENTATION
-	level = bxd.COLOR_BEGINNER
+	level = scripting.COLOR_BEGINNER
 	
 	def __init__(self):
 		"""
@@ -284,10 +284,10 @@ class ThresholdFilter(ProcessingFilter.ProcessingFilter):
 		Description: Return the level of the given parameter
 		"""
 		if parameter in ["ReplaceInValue", "ReplaceOutValue"]:
-			return bxd.COLOR_INTERMEDIATE
+			return scripting.COLOR_INTERMEDIATE
 		
 		
-		return bxd.COLOR_BEGINNER                
+		return scripting.COLOR_BEGINNER                
 	
 	def setParameter(self, parameter, value):
 		"""
@@ -430,7 +430,7 @@ class MaskFilter(ProcessingFilter.ProcessingFilter):
 	"""     
 	name = "Mask"
 	category = SEGMENTATION
-	level = bxd.COLOR_BEGINNER
+	level = scripting.COLOR_BEGINNER
 	def __init__(self, inputs = (2, 2)):
 		"""
 		Created: 13.04.2006, KP
@@ -516,7 +516,7 @@ class ITKWatershedSegmentationFilter(ProcessingFilter.ProcessingFilter):
 		Created: 9.11.2006, KP
 		Description: Return the level of the given parameter
 		"""
-		return bxd.COLOR_INTERMEDIATE
+		return scripting.COLOR_INTERMEDIATE
 		
 			
 	def getDefaultValue(self, parameter):
@@ -579,7 +579,7 @@ class MorphologicalWatershedSegmentationFilter(ProcessingFilter.ProcessingFilter
 	"""     
 	name = "Morphological watershed segmentation"
 	category = WATERSHED
-	level = bxd.COLOR_BEGINNER
+	level = scripting.COLOR_BEGINNER
 	def __init__(self, inputs = (1, 1)):
 		"""
 		Created: 13.04.2006, KP
@@ -606,10 +606,10 @@ class MorphologicalWatershedSegmentationFilter(ProcessingFilter.ProcessingFilter
 		Description: Return the level of the given parameter
 		"""
 		if parameter in ["Leve", "Threshold", "Level"]:
-			return bxd.COLOR_INTERMEDIATE
+			return scripting.COLOR_INTERMEDIATE
 		
 		
-		return bxd.COLOR_BEGINNER                    
+		return scripting.COLOR_BEGINNER                    
 			
 	def getDefaultValue(self, parameter):
 		"""
@@ -747,7 +747,7 @@ class ConnectedComponentFilter(ProcessingFilter.ProcessingFilter):
 		Created: 9.11.2006, KP
 		Description: Return the level of the given parameter
 		"""
-		return bxd.COLOR_INTERMEDIATE
+		return scripting.COLOR_INTERMEDIATE
 			
 	def getDefaultValue(self, parameter):
 		"""
@@ -856,7 +856,7 @@ class MaximumObjectsFilter(ProcessingFilter.ProcessingFilter):
 		Created: 9.11.2006, KP
 		Description: Return the level of the given parameter
 		"""
-		return bxd.COLOR_INTERMEDIATE
+		return scripting.COLOR_INTERMEDIATE
 			
 	def getDefaultValue(self, parameter):
 		"""
@@ -917,7 +917,7 @@ class ITKRelabelImageFilter(ProcessingFilter.ProcessingFilter):
 	"""     
 	name = "Re-label image"
 	category = WATERSHED
-	level = bxd.COLOR_BEGINNER
+	level = scripting.COLOR_BEGINNER
 	def __init__(self, inputs = (1, 1)):
 		"""
 		Created: 13.04.2006, KP
@@ -938,7 +938,7 @@ class ITKRelabelImageFilter(ProcessingFilter.ProcessingFilter):
 		Created: 9.11.2006, KP
 		Description: Return the level of the given parameter
 		"""
-		return bxd.COLOR_INTERMEDIATE
+		return scripting.COLOR_INTERMEDIATE
 
 			
 	def getDefaultValue(self, parameter):
@@ -1067,7 +1067,7 @@ class MeasureVolumeFilter(ProcessingFilter.ProcessingFilter):
 	"""     
 	name = "Analyze objects"
 	category = MEASUREMENT
-	level = bxd.COLOR_BEGINNER
+	level = scripting.COLOR_BEGINNER
 	def __init__(self, inputs = (2, 2)):
 		"""
 		Created: 13.04.2006, KP
@@ -1336,12 +1336,12 @@ class ITKConfidenceConnectedFilter(ProcessingFilter.ProcessingFilter):
 		Description: Return the level of the given parameter
 		"""
 		if parameter in ["Multiplier", "Iterations"]:
-			return bxd.COLOR_EXPERIENCED
+			return scripting.COLOR_EXPERIENCED
 		if parameter == "Neighborhood":
-			return bxd.COLOR_INTERMEDIATE
+			return scripting.COLOR_INTERMEDIATE
 		
 		
-		return bxd.COLOR_BEGINNER            
+		return scripting.COLOR_BEGINNER            
 			
 	def getDefaultValue(self, parameter):
 		"""
@@ -1429,7 +1429,7 @@ class ITKConnectedThresholdFilter(ProcessingFilter.ProcessingFilter):
 	"""     
 	name = "Connected threshold"
 	category = REGIONGROWING
-	level = bxd.COLOR_BEGINNER
+	level = scripting.COLOR_BEGINNER
 	def __init__(self, inputs = (1, 1)):
 		"""
 		Created: 26.05.2006, KP
@@ -1541,10 +1541,10 @@ class ITKNeighborhoodConnectedThresholdFilter(ProcessingFilter.ProcessingFilter)
 		Description: Return the level of the given parameter
 		"""
 		if parameter in ["RadiusX", "RadiusY", "RadiusZ"]:
-			return bxd.COLOR_INTERMEDIATE
+			return scripting.COLOR_INTERMEDIATE
 		
 		
-		return bxd.COLOR_BEGINNER                        
+		return scripting.COLOR_BEGINNER                        
 		
 	def getDefaultValue(self, parameter):
 		"""

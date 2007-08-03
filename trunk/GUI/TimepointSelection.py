@@ -40,7 +40,7 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 #import vtk
 
 import wx.lib.buttons as buttons
-import scripting as bxd
+import scripting
 import lib.Command
 import os.path
 import wx.lib.scrolledpanel as scrolled
@@ -53,7 +53,7 @@ class TimepointSelectionPanel(scrolled.ScrolledPanel):
 				 in a panel. This is a class separete from TimepointSelection
 				 so that this can be also embedded in any other dialog.
 	"""
-	def __init__(self, parent, parentStr = "bxd.processingManager"):
+	def __init__(self, parent, parentStr = "scripting.processingManager"):
 		#wx.Panel.__init__(self,parent,size=(640,480))
 		scrolled.ScrolledPanel.__init__(self, parent, size = (640, 300))
 		self.mainsizer = wx.GridBagSizer(10, 10)
@@ -257,7 +257,7 @@ class TimepointSelection(wx.Dialog):
 		wx.Dialog.__init__(self, parent, -1, name, style = wx.CAPTION | wx.STAY_ON_TOP | wx.CLOSE_BOX | wx.MAXIMIZE_BOX | wx.MINIMIZE_BOX | wx.RESIZE_BORDER, size = (640, 480))
 		self.parent = parent
 		
-		bxd.registerDialog(name, self)
+		scripting.registerDialog(name, self)
 		
 		self.dialogName = name
 		self.Bind(wx.EVT_CLOSE, self.closeWindowCallback)
@@ -265,11 +265,11 @@ class TimepointSelection(wx.Dialog):
 
 		self.rendering = 0
 		self.SetTitle("Timepoint Selection")
-		ico = reduce(os.path.join, [bxd.get_icon_dir(), "logo.ico"])
+		ico = reduce(os.path.join, [scripting.get_icon_dir(), "logo.ico"])
 		self.icon = wx.Icon(ico, wx.BITMAP_TYPE_ICO)
 		self.SetIcon(self.icon)
 
-		self.panel = TimepointSelectionPanel(self, parentStr = "bxd.dialogs['%s']" % self.dialogName)
+		self.panel = TimepointSelectionPanel(self, parentStr = "scripting.dialogs['%s']" % self.dialogName)
 		self.timepointSelection = self.panel
 		
 		self.mainsizer.Add(self.panel, (0, 0), flag = wx.EXPAND | wx.ALL)
@@ -314,7 +314,7 @@ class TimepointSelection(wx.Dialog):
 		Created: 13.04.2005, KP
 		Description: A callback that sets the status of this dialog
 		"""
-		do_cmd = "bxd.dialogs['%s'].process()" % self.dialogName
+		do_cmd = "scripting.dialogs['%s'].process()" % self.dialogName
 		undo_cmd = ""
 		
 		cmd = lib.Command.Command(lib.Command.GUI_CMD, None, None, do_cmd, undo_cmd, desc = "Process the selected timepoints")
@@ -327,7 +327,7 @@ class TimepointSelection(wx.Dialog):
 		Description: Set the status so that the processing will continue and close the window
 		"""   
 		self.status = wx.ID_OK
-		bxd.unregisterDialog(self.dialogName)
+		scripting.unregisterDialog(self.dialogName)
 		self.Close()
 		
 
@@ -337,7 +337,7 @@ class TimepointSelection(wx.Dialog):
 		Description: Set the status so that the processing will cancel and close the window
 		"""
 		self.status = wx.ID_CANCEL
-		bxd.unregisterDialog(self.dialogName)
+		scripting.unregisterDialog(self.dialogName)
 		self.Close()
 
 	def closeWindowCallback(self, event):

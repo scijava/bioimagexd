@@ -30,6 +30,7 @@ __author__ = "BioImageXD Project <http://www.bioimagexd.org>"
 __version__ = "$Revision: 1.40 $"
 __date__ = "$Date: 2005/01/13 14:52:39 $"
 
+import scripting
 from GUI.UIElements import AcceptedValidator 
 import codecs
 import csv
@@ -398,7 +399,7 @@ class ColocalizationPanel(TaskPanel):
 		Created: 11.07.2004, KP
 		Description: Calculate the automatic threshold for colocalization
 		"""
-		do_cmd = """bxd.mainWindow.tasks['Colocalization'].autoThreshold()"""
+		do_cmd = """scripting.mainWindow.tasks['Colocalization'].autoThreshold()"""
 		cmd = lib.Command.Command(lib.Command.GUI_CMD, None, None, do_cmd, "", \
 									desc = "Calculate automatic threshold")
 		cmd.run()
@@ -422,7 +423,7 @@ class ColocalizationPanel(TaskPanel):
 		Description: Use vtkAutoThresholdColocalization to determine thresholds
 					 for colocalization and calculate statistics
 		"""
-		do_cmd = """bxd.mainWindow.tasks['Colocalization'].statistics()"""
+		do_cmd = """scripting.mainWindow.tasks['Colocalization'].statistics()"""
 		cmd = lib.Command.Command(lib.Command.GUI_CMD, None, None, do_cmd, "", \
 									desc = "Calculate colocalization statistics")
 		cmd.run()
@@ -445,7 +446,7 @@ class ColocalizationPanel(TaskPanel):
 				pass
 			if method != 1:
 				iterations = ""
-			do_cmd = "bxd.mainWindow.tasks['Colocalization'].getPValue('%s'%s)" % (smethod, iterations)
+			do_cmd = "scripting.mainWindow.tasks['Colocalization'].getPValue('%s'%s)" % (smethod, iterations)
 			cmd = lib.Command.Command(lib.Command.GUI_CMD, None, None, do_cmd, "", \
 										desc = "Calculate P-Value of colocalization")
 			cmd.run()
@@ -720,7 +721,7 @@ class ColocalizationPanel(TaskPanel):
 													"%s.csv" % name, "CSV File (*.csv)|*.csv")
 		if filename:
 			filename = filename.replace("\\", "\\\\")
-			do_cmd = "bxd.mainWindow.tasks['Colocalization'].exportStatistics('%s')" % filename
+			do_cmd = "scripting.mainWindow.tasks['Colocalization'].exportStatistics('%s')" % filename
 			cmd = lib.Command.Command(lib.Command.GUI_CMD, None, None, do_cmd, "", \
 										desc = "Export colocalization statistics")
 			cmd.run()

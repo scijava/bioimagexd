@@ -5,7 +5,7 @@
  Created: 16.02.2006, KP
  Description: A datasource for reading Olympus OIF files
 
- Copyright (C) 2005  BioImageXD Project
+ Copyright (C) 2005	 BioImageXD Project
  See CREDITS.txt for details
 
  This program is free software; you can redistribute it and/or modify
@@ -45,7 +45,7 @@ def getExtensions():
 	return ["oif"]
 
 def getFileType(): 
-	return "Olympus Image Format datasets (*.oif)"        
+	return "Olympus Image Format datasets (*.oif)"		  
 
 def getClass(): 
 	return OlympusDataSource
@@ -55,28 +55,38 @@ class OlympusDataSource(DataSource):
 	Created: 12.04.2005, KP
 	Description: Olympus OIF files datasource
 	"""
-	def __init__(self, filename = "", channel = -1, basename = "", lutname = "", \
+	def __init__(self, filename = "", channel = -1, \
 					name = "", dimensions = (0, 0, 0), time = 0, voxelsize = (1, 1, 1), \
 					reverse = 0, emission = 0, excitation = 0, bitdepth = 12):
 		"""
 		Created: 12.04.2005, KP
 		Description: Constructor
-		"""    
+		"""	   
 		DataSource.__init__(self)
+		self.channel = channel
+		
 		if not name:
 			name = "Ch%d" % channel
 		self.bitdepth = bitdepth
 		self.name = name
-		self.basename = basename
-		self.lutname = lutname
+
 		self.timepoint = 0
 		self.timepoints = time
 		self.filename = filename
 		self.parser = ConfigParser.RawConfigParser()
+		if filename:
+			filepointer = codecs.open(filename, "r", "utf-16")
+			self.parser.readfp(filepointer)
+			directoryName, self.lutFileName = self.getLUTPath(self.channel)
+			# when lutFileName is e.g. bro28_par3_07-04-18_LUT1.lut, we take the 
+			# bro28_par3_07-04-18 and ignore the LUT1.lut, and use that as the basis of the filenames
+			# for the tiff files
+			self.fileNameBase = "_".join(self.lutFileName.split("_")[:-1])
+			self.path = os.path.join(os.path.dirname(filename), "%s.oif.files"%self.fileNameBase)
+			
 		self.reader = None
 		self.originalScalarRange = (0, 4095)
 		self.scalarRange = 0, 2 ** self.bitdepth - 1
-		self.channel = channel
 		self.dimensions = dimensions
 		self.voxelsize = voxelsize
 		self.spacing = None
@@ -86,8 +96,7 @@ class OlympusDataSource(DataSource):
 		self.shift = None
 		self.noZ = 0
 		self.reverseSlices = reverse
-		if filename:
-			self.path = os.path.dirname(filename)
+
 		if channel >= 0:
 			self.ctf = self.readLUT()
 		self.setPath(filename)
@@ -126,7 +135,7 @@ class OlympusDataSource(DataSource):
 		"""
 		Created: 21.07.2005
 		Description: Return the file name
-		"""    
+		"""	   
 		return self.filename
 	
 	def getDataSet(self, i, raw = 0):
@@ -134,7 +143,7 @@ class OlympusDataSource(DataSource):
 		Created: 12.04.2005, KP
 		Description: Returns the image data for timepoint i
 		"""
-		data = self.getTimepoint(i)        
+		data = self.getTimepoint(i)		   
 		if raw:
 			return data
 		
@@ -154,7 +163,7 @@ class OlympusDataSource(DataSource):
 		"""
 		Created: 12.11.2006, KP
 		Description: Sends progress update event
-		"""        
+		"""		   
 		if not object:
 			progress = 1.0
 		else:
@@ -164,7 +173,7 @@ class OlympusDataSource(DataSource):
 			if not txt:
 				txt = ""
 
-			msg = "Reading channel %d of %s" % (self.channel, self.basename)
+			msg = "Reading channel %d of %s" % (self.channel, self.fileNameBase)
 			if self.timepoint >= 0:
 
 				msg += " (timepoint %d / %d, %s)" % (self.timepoint + 1, self.timepoints + 1, txt)
@@ -182,9 +191,9 @@ class OlympusDataSource(DataSource):
 		"""
 		Created: 16.02.2006, KP
 		Description: Return the timepointIndexth timepoint
-		"""        
+		"""		   
 		self.timepoint = timepointIndex
-		path = os.path.join(self.path, "%s.oif.files" % self.basename)
+		path = self.path[:]
 		if not self.reader:
 			self.reader = vtkbxd.vtkExtTIFFReader()
 			self.reader.AddObserver("ProgressEvent", self.updateProgress)
@@ -196,13 +205,13 @@ class OlympusDataSource(DataSource):
 		
 		zpat = ""
 		tpat = ""
-		cpat = os.path.sep + "%s_C%.3d" % (self.lutname, self.channel)
+		cpat = os.path.sep + "%s_C%.3d" % (self.fileNameBase, self.channel)
 		path += cpat
 		
 		if self.dimensions[2] > 1:
 			zpat = "Z%.3d"
 		if self.timepoints > 0:
-			tpat = "T%.3d"
+			tpat = "T%.3d"%(timepointIndex+1)
 		pat = path + zpat + tpat + ".tif"
 		
 		self.reader.SetFilePattern(pat)
@@ -214,11 +223,7 @@ class OlympusDataSource(DataSource):
 			self.reader.SetFileNameSliceOffset(1)
 
 		self.reader.UpdateInformation()
-#        print "pattern='"+self.reader.GetFilePattern()+"'"
-		#self.reader.Update()
-		#print self.reader
-#        print vtk,self.reader
-#        print "Scalar range for data=",self.reader.GetOutput().GetScalarRange()
+
 		return self.reader.GetOutput()
 		
 	def getDimensions(self):
@@ -240,57 +245,44 @@ class OlympusDataSource(DataSource):
 		Created: 16.02.2006, KP
 		Description: Read the LUT for this dataset
 		"""
-		lutpath = os.path.join(self.path, "%s.oif.files" % self.basename, "%s_LUT%d.lut" \
-								% (self.lutname, self.channel))
-		file = codecs.open(lutpath, "r", "utf-16")
-		#print "Reading lut from %s..."%lutpath
+		lutFile = os.path.join(self.path, self.lutFileName)
+		file = codecs.open(lutFile, "r", "utf-16")
 		while 1:
 			line = file.readline()
 			if "ColorLUTData" in line:
 				break
 		
-		#pos = file.tell()
 		file.close()
-		file = open(lutpath, "rb")
+		file = open(lutFile, "rb")
 		file.seek(-4 * 65536, 2)
 		data = file.read()
-		#print "Got ",len(data),"bytes"
 		
 		format = "i" * 65536
 		values = struct.unpack(format, data)
 		ctf = vtk.vtkColorTransferFunction()
-		#print values
 		vals = [( ((x >> 16) & 0xff), ((x >> 8) & 0xff), (x & 0xff)) for x in values]
 		
-		#def f(x):( (x>>16)&0xff
 		i = 0
-		#red2, green2, blue2 = -1, -1, -1
 		coeff = 16.0
 		
-		#print "CUrrent minval,maxval=",minval,maxval
 		if self.explicitScale == 1:
 			minval, maxval = self.originalScalarRange
-			#shift = self.intensityShift
 			if self.intensityShift:
 				maxval += self.intensityShift
-				#print "Maximum value after being shifted=",maxval
 			scale = self.intensityScale
 			if not scale:
 				scale = 255.0 / maxval
 			maxval *= scale
 			
 			self.scalarRange = (0, maxval)
-			#print "GOT MAXVAL=",0,maxval
 			self.bitdepth = int(math.log(maxval + 1, 2))
-			#print "Set bitdepth to ",self.bitdepth
-			#print "Maximum value after being scaled=",maxval
 			self.explicitScale = 2
 		else:
 			minval, maxval = self.scalarRange
 		coeff = 65536.0 / (maxval + 1)
 		#coeff=int(coeff)
 		#print "coeff=",coeff
-#        print "Largest value=",len(vals)/coeff
+#		 print "Largest value=",len(vals)/coeff
 		red0, green0, blue0 = -1, -1, -1
 		for i in range(0, maxval + 1):
 			red, green, blue = vals[int(i * coeff)]
@@ -340,7 +332,7 @@ class OlympusDataSource(DataSource):
 		"""
 		Created: 16.02.2006, KP
 		Description: Read the number of timepoints, channels and XYZ from the OIF file
-		"""    
+		"""	   
 		timepoints = 0
 		channels = 0
 		xDimension = 0
@@ -351,7 +343,7 @@ class OlympusDataSource(DataSource):
 			key = "AxisCode"
 			data = parser.get(sect, key)
 			# If Axis i is the time axis
-			n = timepoints = int(parser.get(sect, "MaxSize")) #TODO: why n = timepoints = .... ??
+			n = int(parser.get(sect, "MaxSize"))
 			unit = parser.get(sect, "UnitName")
 			unit = unit.replace('"', "")
 			startPosition = parser.get(sect, "StartPosition")
@@ -391,24 +383,24 @@ class OlympusDataSource(DataSource):
 		voxelYDimension /= float(yDimension)
 		if zDimension > 1:
 			voxelZDimension /= float(zDimension - 1)
-		#print "\n\n\n *** SETTING ORIGINAL DIMS TO ",( xDimension, yDimension, zDimension)
 		self.originalDimensions = (xDimension, yDimension, zDimension)
 		return xDimension, yDimension, zDimension, timepoints, channels, \
 				voxelXDimension, voxelYDimension, voxelZDimension
 				
-	def getLUTPath(self, parser):
+	def getLUTPath(self, channel):
 		"""
 		Created: 05.09.2006, KP
-		Description: Read the base name for the LUT file which can also be used
+		Description: Read the path and filename for the LUT file of given channel which can also be used
 					 for the paths of the TIFF files
 		"""
-		path = parser.get("ProfileSaveInfo", "LutFileName0")
-		path = os.path.basename(path)
-		path = path.split("\\")[-1]
-		parts = path.split("_")
-		path = "_".join(parts[:-1])
-		return path
-				
+		path = self.parser.get("ProfileSaveInfo", "LutFileName%d"%(channel-1))
+		lutPath, lutFileName = path.split("\\")
+		if lutFileName[0]=='"':
+			lutFileName = lutFileName[1:]
+		if lutFileName[-1]=='"':
+			lutFileName = lutFileName[:-1]
+		return lutPath, lutFileName
+		
 	def getDyes(self, parser, numberOfChannels):
 		"""
 		Created: 16.02.2006, KP
@@ -432,39 +424,35 @@ class OlympusDataSource(DataSource):
 		"""
 		Created: 12.04.2005, KP
 		Description: Loads the specified .oif-file and imports data from it.
-		Parameters:   filename  The .oif-file to be loaded
+		Parameters:	  filename	The .oif-file to be loaded
 		"""
 		self.filename = filename
 		self.path = os.path.dirname(filename)
-		
-		basefile = os.path.basename(filename)
-		basefile = basefile.replace(".oif", "")
 		
 		try:
 			file = open(filename)
 			file.close()
 		except IOError, ex:
 			Logging.error("Failed to open Olympus OIF File",
-			"Failed to open file %s for reading: %s" % (filename, str(ex)))        
+			"Failed to open file %s for reading: %s" % (filename, str(ex)))		   
 
 		filepointer = codecs.open(filename, "r", "utf-16")
 		self.parser.readfp(filepointer)
 		xDimension, yDimension, zDimension, timepoints, \
 		channels, voxelXDimension, voxelYDimension, voxelZDimension = self.getAllDimensions(self.parser)
 		
+		print "There are ",timepoints,"time points"
 		voxsiz = (voxelXDimension, voxelYDimension, voxelZDimension)
 		names, (excitations, emissions) = self.getDyes(self.parser, channels)
 		
-		self.bitdepth = eval(self.parser.get("Reference Image Parameter", "ValidBitCounts"))
-		lutpath = self.getLUTPath(self.parser)
+		self.bitdepth = int(self.parser.get("Reference Image Parameter", "ValidBitCounts"))
 		
 		dataunits = []
 		for channel in range(1, channels + 1):
-			name = names[channel - 1]    
+			name = names[channel - 1]	 
 			excitation = excitations[channel - 1]
 			emission = emissions[channel - 1]
-			datasource = OlympusDataSource(filename, channel, name = name, basename = basefile,
-										lutname = lutpath,
+			datasource = OlympusDataSource(filename, channel, name = name, 
 										dimensions = (xDimension, yDimension, zDimension), 
 										time = timepoints, voxelsize = voxsiz,
 										reverse = self.reverseSlices,
@@ -497,7 +485,7 @@ class OlympusDataSource(DataSource):
 		"""
 		Created: 12.10.2006, KP
 		Description: A method that will reset the CTF from the datasource.
-					 This is useful e.g. when scaling the intensities of the    
+					 This is useful e.g. when scaling the intensities of the	
 					 dataset
 		"""
 		self.ctf = None
@@ -511,4 +499,4 @@ class OlympusDataSource(DataSource):
 		"""
 		if not self.ctf:
 			self.ctf = self.readLUT()
-		return self.ctf        
+		return self.ctf		   

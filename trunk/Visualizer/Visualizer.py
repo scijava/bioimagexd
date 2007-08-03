@@ -439,8 +439,8 @@ class Visualizer:
 		Created: 26.06.2005, KP
 		Description: Go to next timepoint
 		""" 
-		undo_cmd = "bxd.visualizer.prevTimepoint()"
-		do_cmd = "bxd.visualizer.nextTimepoint()"
+		undo_cmd = "scripting.visualizer.prevTimepoint()"
+		do_cmd = "scripting.visualizer.nextTimepoint()"
 		cmd = lib.Command.Command(lib.Command.GUI_CMD, None, None, do_cmd, undo_cmd, desc = "Switch to next timepoint")
 		cmd.run()
 		
@@ -449,8 +449,8 @@ class Visualizer:
 		Created: 26.06.2005, KP
 		Description: Go to previous timepoint
 		"""
-		undo_cmd = "bxd.visualizer.nextTimepoint()"
-		do_cmd = "bxd.visualizer.prevTimepoint()"
+		undo_cmd = "scripting.visualizer.nextTimepoint()"
+		do_cmd = "scripting.visualizer.prevTimepoint()"
 		cmd = lib.Command.Command(lib.Command.GUI_CMD, None, None, do_cmd, undo_cmd, desc = "Switch to previous timepoint")
 		cmd.run()
 
@@ -1384,8 +1384,8 @@ class Visualizer:
 			lib.messenger.send(None, "timepoint_changed", timepoint)
 			self.blockTpUpdate = 0
 			
-			do_cmd = "bxd.visualizer.setTimepoint(%d)" % timepoint
-			undo_cmd = "bxd.visualizer.setTimepoint(%d)" % self.timepoint
+			do_cmd = "scripting.visualizer.setTimepoint(%d)" % timepoint
+			undo_cmd = "scripting.visualizer.setTimepoint(%d)" % self.timepoint
 			cmd = lib.Command.Command(lib.Command.GUI_CMD, \
 									None, \
 									None, \
@@ -1474,7 +1474,7 @@ class Visualizer:
 													initFile,
 													wildCard,
 													"snapshotImage")
-			do_cmd = "bxd.visualizer.saveSnapshot(r'%s')" % filename
+			do_cmd = "scripting.visualizer.saveSnapshot(r'%s')" % filename
 			cmd = lib.Command.Command(lib.Command.GUI_CMD, None, None, do_cmd, "", desc = "Save a snapshot of the visualizer")
 			cmd.run()
 
