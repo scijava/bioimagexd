@@ -8,7 +8,7 @@
 
  A 3D rendering mode for Visualizer
 		   
- Copyright (C) 2005  BioImageXD Project
+ Copyright (C) 2005	 BioImageXD Project
  See CREDITS.txt for details
 
  This program is free software; you can redistribute it and/or modify
@@ -41,15 +41,31 @@ import Visualizer.VisualizerWindow as VisualizerWindow
 import wx
 
 def getName():
+	"""
+	Created: KP
+	Description:Return the name of this visualization mode
+	"""
 	return "3d"
 
 def isDefaultMode():
+	"""
+	Created: KP
+	Description: Return a boolean indicating whether this mode should be used as the default visualization mode
+	"""
 	return 0
 
 def showInfoWindow():
+	"""
+	Created: KP
+	Description: Return a boolean indicating whether the info window should be kept visible when this mode is loaded
+	"""
 	return 1
 
 def showFileTree():
+	"""
+	Created: KP
+	Description: Return a boolean indicating whether the file tree should be kept visible when this mode is loaded
+	"""
 	return 1
 
 def showSeparator():
@@ -120,7 +136,6 @@ class RenderingMode(VisualizationMode):
 		for key in self.mapping.keys():
 			mod, conf, module = self.mapping[key]
 			module = reload(module)
-			#print "Reloaded visualization module",module
 			self.mapping[key] = (mod, conf, module)
 			
 	def zoomObject(self):
@@ -184,9 +199,6 @@ class RenderingMode(VisualizationMode):
 		else:
 			self.wxrenwin.iren.Enable()
 
-		#self.wxrenwin.Show()
-		print "creating config panel"
-
 		if not self.configPanel:
 			# When we embed the sidebar in a sashlayoutwindow, the size
 			# is set correctly
@@ -194,7 +206,6 @@ class RenderingMode(VisualizationMode):
 			
 			self.configPanel = VisualizationFrame.ConfigurationPanel(self.container, self.visualizer, self)
 
-		print "showing container.."
 		self.container.Show()
 		self.configPanel.Show()
 
@@ -237,10 +248,7 @@ class RenderingMode(VisualizationMode):
 		Description: Set the background color
 		"""
 		ren = self.wxrenwin.getRenderer()
-		r /= 255.0
-		g /= 255.0
-		b /= 255.0
-		ren.SetBackground(r, g, b)
+		ren.SetBackground(r / 255.0, g / 255.0, b / 255.0)
 		
 	def updateRendering(self):
 		"""
@@ -248,12 +256,10 @@ class RenderingMode(VisualizationMode):
 		Description: Update the rendering
 		"""
 		if not self.wxrenwin.enabled:
-			print "Visualizer not enabled, won't render!"
+			Logging.info("Visualizer is disabled, won't render 3D scene", kw="visualizer")
 			return
 		for module in self.modules:
 			module.showTimepoint(self.timepoint)
-			# Don't call updateRendering(), showTimepoint() will take care of it
-			#module.updateRendering()
 		self.wxrenwin.Render()
 		
 	def deactivate(self, newmode = None):
@@ -288,13 +294,11 @@ class RenderingMode(VisualizationMode):
 			# we instruct loadModule not to render the scene, software
 			# we can set the view before rendering
 			module = self.loadModule(self.defaultModule, render = 0)
-			#self.wxrenwin.setView((1,1,1,0,0,1))
 			module.setView((1, 1, 1, 0, 0, 1))
 			module.showTimepoint(self.timepoint)
 			self.configPanel.appendModuleToList(self.defaultModule)
 		for module in self.modules:
 			module.setDataUnit(dataUnit)
-		
 			
 	def getConfigurationPanel(self, name):
 		"""
@@ -316,7 +320,6 @@ class RenderingMode(VisualizationMode):
 			if module.getName() == name:
 				to_be_removed.append(module)
 		for module in to_be_removed:
-			print "Removing module ", module
 			module.disableRendering()
 			self.modules.remove(module)
 			del module
@@ -367,7 +370,7 @@ class RenderingMode(VisualizationMode):
 		"""
 		Created: 28.04.2005, KP
 		Description: Return the modules
-		"""  
+		"""	 
 		return self.modules
 		
 	def setTimepoint(self, tp):
@@ -399,11 +402,9 @@ class RenderingMode(VisualizationMode):
 		self.setTimepoint(state.timepoint)
 		for module in self.modules:
 			self.removeModule(module.getName())
-			print "removing module", module.getName()
 		for module in state.modules:
 			name = module.moduleName
 			label = module.name
-			print "Loading module ", name, "with label", label
 			mod = self.loadModule(name, label)
 			self.configPanel.appendModuleToList(label)
 			mod.__set_pure_state__(module)
@@ -414,4 +415,4 @@ class RenderingMode(VisualizationMode):
 		Description: Zoom the dataset to fit the available screen space
 		"""
 		pass
-			
+		

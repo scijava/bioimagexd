@@ -9,7 +9,7 @@
  A module that contains the base class for various data processing filters used in the Process
  task and other task modules.
 
- Copyright (C) 2005  BioImageXD Project
+ Copyright (C) 2005	 BioImageXD Project
  See CREDITS.txt for details
 
  This program is free software; you can redistribute it and / or modify
@@ -24,7 +24,7 @@
 
  You should have received a copy of the GNU General Public License
  along with this program; if not, write to the Free Software
- Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111 - 1307  USA
+ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111 - 1307	 USA
 
 """
 __author__ = "BioImageXD Project < http://www.bioimagexd.org/>"

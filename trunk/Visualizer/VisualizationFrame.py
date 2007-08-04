@@ -8,7 +8,7 @@
 
  A framework for embedding different visualization modes to BioImageXD
  
- Copyright (C) 2005  BioImageXD Project
+ Copyright (C) 2005	 BioImageXD Project
  See CREDITS.txt for details
 
  This program is free software; you can redistribute it and / or modify
@@ -23,7 +23,7 @@
 
  You should have received a copy of the GNU General Public License
  along with this program; if not, write to the Free Software
- Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111 - 1307  USA
+ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111 - 1307	 USA
 
 """
 __author__ = "BioImageXD Project"
@@ -49,7 +49,7 @@ class RendererConfiguration(wx.MiniFrame):
 	"""
 	Created: 16.05.2005, KP
 	Description: A frame for configuring the renderer
-	"""    
+	"""	   
 	def __init__(self, parent, visualizer):
 		"""
 		Created: 28.04.2005, KP
@@ -142,13 +142,10 @@ class RendererConfiguration(wx.MiniFrame):
 		"""			  
 		if self.color:
 			red, green, blue = self.color
-			print "Setting renderwindow background to ", red, green, blue
 			self.visualizer.setBackground(red, green, blue)
-		print "Setting stero mode to", self.stereoMode
 		self.mode.setStereoMode(self.stereoMode)
 		try:
 			x, y = map(int, self.sizeEdit.GetValue().split("x"))
-			print "Setting render window size to ", x, y
 			self.visualizer.setRenderWindowSize((x, y))
 		except:
 			pass
@@ -310,25 +307,9 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
 		modname = lbl.split("#")[0].strip()
 		panel = self.mode.getConfigurationPanel(modname)
 	
-		# changed w,h to width, height (SS 25.06.07)	
-		#width, height = self.moduleListbox.GetSize()
-		
-#		 if not self.confPanel:
-#			 self.confPanel = wx.StaticBox(self, -1, "Configure %s"%lbl)
-#			 self.confSizer = wx.StaticBoxSizer(self.confPanel, wx.VERTICAL)
-#			 self.confPanel = NamePanel(self, "Configure %s"%lbl, None, size = (200, 25))
-#			 self.sizer.Add(self.confSizer, (5, 0), flag = wx.EXPAND|wx.LEFT|wx.RIGHT)
-#		 self.confPanel.SetLabel("Configure %s"%lbl)
-		#self.confPanel.setColor((0, 0, 0), (180, 255, 180))
-		
 		self.currentConf = panel(self, self.visualizer, lbl)#, mode = self.mode)
 	 
-		#self.confSizer.Add(self.currentConf)
 		self.sizer.Add(self.currentConf, (5, 0))
-		#self.currentConf.Layout()
-		#self.Layout()
-		#self.parent.Layout()
-		
 		self.SetupScrolling()
 				
 	def onCheckItem(self, event):
@@ -339,7 +320,6 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
 		index = event.GetSelection()
 		lbl = self.moduleListbox.GetString(index)
 		status = self.moduleListbox.IsChecked(index)
-		#print "Setting rendering of %s to %s"%(lbl, status)
 		self.mode.setRenderingStatus(lbl, status)
 
 	def onConfigureLights(self, event):
@@ -405,7 +385,7 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
 		"""
 		Created: 02.08.2005, KP
 		Description: Load a scene from file
-		"""    
+		"""	   
 		wc = "3D view scene (*.3xd)|*.3xd"
 		filename = GUI.Dialogs.askOpenFileName(self, "Open 3D view scene", wc, 0)
 		if filename:		
@@ -413,14 +393,13 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
 			#state_pickler.set_state(self.mode, state)
 			self.moduleListbox.Clear()
 			self.mode.__set_pure_state__(state)
-			
 			lib.messenger.send(None, "update_module_settings")
 	
 	def onSaveScene(self, event):
 		"""
 		Created: 02.08.2005, KP
 		Description: Save a scene to file
-		"""    
+		"""	   
 		wc = "3D view scene (*.3xd)|*.3xd"
 		filename = None
 		dlg = wx.FileDialog(self, \
