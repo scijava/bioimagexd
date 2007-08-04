@@ -91,7 +91,7 @@ class FilterBasedModule(lib.Module.Module):
 		Created: 04.04.2006, KP
 		Description: Adds an input for the single dataunit Manipulationing filter
 		"""
-		lib.Module.addInput(self, dataunit, data)
+		lib.Module.Module.addInput(self, dataunit, data)
 		self.settings = dataunit.getSettings()
 
 
@@ -110,7 +110,7 @@ class FilterBasedModule(lib.Module.Module):
 				self.extent = None
 			self.preview = self.doOperation(preview=1)
 			self.extent = None
-		return self.zoomDataset(self.preview)
+	    return self.preview
 
 
 	def doOperation(self, preview=0):	#TODO:test
