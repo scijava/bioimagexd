@@ -48,22 +48,20 @@ ZOOM_TO_FIT = -1
 class PreviewFrame(InteractivePanel):
 	"""
 	Created: 03.11.2004, KP
-	Description: A widget that shows a single optical slice of a volume dataset
+	Description: A visualization mode used to show either a given single slice, or an MIP
+				 of the given datanit
 	"""
 	count = 0
 	def __init__(self, parent, **kws):
 		"""
 		Created: 03.11.2004, KP
-		Description: Initialization
+		Description: Initialize the panel
 		"""
-		#PreviewFrame.count+=1
-		#wx.Panel.__init__(self,parent,-1)
 		xframe = sys._getframe(1)
 		self.graySize = (0, 0)
 		self.bgcolor = (127, 127, 127)
-		self.maxSizeX, self.maxSizeY = 512, 512
-		self.maxX, self.maxY = 512, 512
-		self.origX, self.origY = 512 , 512
+		self.maxClientSizeX, self.maxClientSizeY = 512, 512
+		self.dataWidth, self.dataHeight = 512 , 512
 		self.lastEventSize = None
 		self.paintSize = (512, 512)
 		self.creator = xframe.f_code.co_filename + ": " + str(xframe.f_lineno)
@@ -72,29 +70,21 @@ class PreviewFrame(InteractivePanel):
 		self.finalImage = None
 		self.xdiff, self.ydiff = 0, 0
 		self.oldZoomFactor = 1
-		self.zoomFactor = 1
 		self.selectedItem = -1
-		self.show = {"SCROLL":0}
+		self.show = {}
 		self.rawImages = []
 		self.rawImage = None
-		size = (1024, 1024)
-		self.fixedSize = None
 		
 		self.oldx, self.oldy = 0, 0
-		self.zoomx, self.zoomy = 1, 1
 		Logging.info("kws=", kws, kw = "preview")
-		if kws.has_key("previewsize"):
-			size = kws["previewsize"]
-			self.fixedSize  = size
-			Logging.info("Got previewsize=", size, kw = "preview")
-		if kws.has_key("zoom_factor"):
-			self.zoomFactor = kws["zoom_factor"]
-		if kws.has_key("zoomx"):
-			self.zoomx = kws["zoomx"]
-		if kws.has_key("zoomy"):
-			self.zoomy = kws["zoomy"]
-		if kws.has_key("scrollbars"):
-			self.show["SCROLL"] = kws["scrollbars"]
+		self.fixedSize = kws.get("previewsize", None)
+		size = kws.get("previewsize", (1024, 1024))
+
+		self.zoomFactor = kws.get("zoom_factor", 1)
+		self.zoomx = kws.get("zoomx", 1)
+		self.zoomy = kws.get("zoomy", 1)
+		
+		self.show["SCROLL"] = kws.get("scrollbars", 0)
 		
 		self.dataUnit = None
 		self.rgbMode = 0
@@ -103,12 +93,11 @@ class PreviewFrame(InteractivePanel):
 		
 		# The preview can be no larger than these
 		
-		self.xdim, self.ydim, self.zdim = 0, 0, 0
+		self.dataDimX, self.dataDimY, self.dataDimZ = 0, 0, 0
 		self.running = 0
 
 		self.rgb = (255, 255, 0)
 
-		self.z = 0
 		self.timePoint = 0
 		
 		self.mapToColors = vtk.vtkImageMapToColors()
@@ -117,7 +106,6 @@ class PreviewFrame(InteractivePanel):
 		
 		self.enabled = 1
 
-		self.mip = 0
 		self.previewtype = ""
 		self.tmodules = Modules.DynamicLoader.getTaskModules()
 		self.tmodules[""] = self.tmodules["Process"]
@@ -140,17 +128,16 @@ class PreviewFrame(InteractivePanel):
 		self.buffer = wx.EmptyBitmap(x, y)
 		
 		if kws.has_key("zoomx"):
-			self.zoomx = kws["zoomx"]
 			del kws["zoomx"]
 		if kws.has_key("zoomy"):
-			self.zoomy = kws["zoomy"]
 			del kws["zoomy"]
+			
 		Logging.info("zoom xf=%f, yf=%f" % (self.zoomx, self.zoomy), kw = "preview")
+
 		self.size = size
 		self.slice = None
 		self.z = 0
 		self.zooming = 0
-		self.scrollsize = 32
 		self.singleslice = 0
 		self.scrollTo = None
 		
@@ -161,10 +148,8 @@ class PreviewFrame(InteractivePanel):
 		self.paintPreview()
 		
 		self.addListener(wx.EVT_RIGHT_DOWN, self.onRightClick)
-		#self.Bind(wx.EVT_RIGHT_DOWN,self.onRightClick)
 		
 		self.Bind(wx.EVT_SIZE, self.onSize)
-		#self.Bind(wx.EVT_PAINT,self.OnPaint)
 		self.Bind(wx.EVT_LEFT_DOWN, self.getVoxelValue)
 		self.SetHelpText("This window displays the selected dataset slice by slice.")
 		
@@ -178,50 +163,39 @@ class PreviewFrame(InteractivePanel):
 		Created: 23.11.2006, KP
 		Description: return the flag that indicates whether this window is in mip mode or not
 		"""
-		return self.mip
+		return self.previewType == "MIP"
 		
 	def calculateBuffer(self):
 		"""
 		Created: 23.05.2005, KP
 		Description: Calculate the drawing buffer required
 		"""
-#		if not self.enabled:
-#			return
-		cx, cy = self.parent.GetClientSize()
-		maxX, maxY = cx, cy
-		if self.imagedata:
-			x, y, z = self.imagedata.GetDimensions()
-			if self.maxX > maxX:
-				maxX = self.maxX
-			if self.maxY > maxY:
-				maxY = self.maxY
+		cx, cy = self.GetClientSize()
+		Logging.info("Calculating buffer from client size %d,%d"%(cx, cy), kw="preview")
 
-		if self.maxSizeX > maxX:
-			maxX = self.maxSizeX
-		if self.maxSizeY > maxY:
-			maxY = self.maxSizeY
-		x, y = maxX, maxY
+		# if the client size is larger than the original client size, use that
+		newX = max(self.maxClientSizeX, cx)
+		newY = max(self.maxClientSizeY, cy)
 		
 		if self.fixedSize:
 			x, y = self.fixedSize
-		if self.paintSize != (x, y):
-			self.paintSize = (x, y)
-			#self.setScrollbars(x,y)
-			x2, y2 = self.xdim, self.ydim
-			x2 *= self.zoomFactor
-			y2 *= self.zoomFactor
+			Logging.info("Using fixed size %d,%d"%(x,y), kw="preview")
 			
-			if x2 > x:
-				x = x2
-			if y2 > y:
-				y = y2
-			m = "SLICES"
-			if self.mip:
-				m = "MIP"
-			if self.buffer.GetWidth() != x or self.buffer.GetHeight() != y:
-				self.buffer = wx.EmptyBitmap(x, y)
-				self.setScrollbars(x, y)
-		Logging.info("paintSize=", self.paintSize, kw = "preview")
+		# If the old size is different from the new size
+		if self.paintSize != (newX, newY):
+			# Calculate the width and height of the original image data scaled by the 
+			# current zoom factor, and if that size is larger than the requested
+			# size, then use that 
+			x2, y2 = [a*self.zoomFactor for a in [self.dataDimX, self.dataDimY]]
+			newX = max(newX, x2)
+			newY = max(newY, y2)
+
+			self.paintSize = (newX, newY)
+			
+			if self.buffer.GetWidth() != newX or self.buffer.GetHeight() != newY:
+				Logging.info("Making buffer the size of %d,%d"%(newX, newY), kw="preview")
+				self.buffer = wx.EmptyBitmap(newX, newY)
+				self.setScrollbars(newX, newY)
 
 	def onSize(self, event):
 		"""
@@ -239,7 +213,7 @@ class PreviewFrame(InteractivePanel):
 			self.updatePreview(renew = 0)
 		event.Skip()
 		
-	def setRenewFlag(self, obj, evt):
+	def setRenewFlag(self, *args):
 		"""
 		Created: 12.08.2005, KP
 		Description: Set the flag telling the preview to renew
@@ -249,7 +223,7 @@ class PreviewFrame(InteractivePanel):
 	def setSelectedItem(self, item, update = 1):
 		"""
 		Created: 05.04.2005, KP
-		Description: Set the item selected for configuration
+		Description: Set the channel of the combined dataunit selected for viewing
 		"""
 		Logging.info("Selected item " + str(item), kw = "preview")
 		self.selectedItem = item
@@ -281,12 +255,11 @@ class PreviewFrame(InteractivePanel):
 		event.Skip()
 		if not self.rawImage and not self.rawImages:
 			return
-			
 		if self.rawImages:
 			self.rawImage = self.rawImages[0]
 		elif self.rawImage and not self.rawImages:
 			self.rawImages = [self.rawImage]
-		if self.mip:
+		if self.isMipMode():
 			self.rawImage = self.currentImage
 			self.rawImages = [self.rawImage]
 		x, y = event.GetPosition()
@@ -303,26 +276,21 @@ class PreviewFrame(InteractivePanel):
 		dims = [x, y, z]
 		rx, ry, rz = dims
 
-		if x < 0:
-			x = 0
-		if y < 0:
-			y = 0
-		if x >= self.xdim:
-			x = self.xdim - 1
-		if y >= self.ydim:
-			y = self.ydim - 1
+		# ensure x, y are not below zero
+		x = max(x, 0)
+		y = max(y, 0)
+		if x >= self.dataDimX:
+			x = self.dataDimX - 1
+		if y >= self.dataDimY:
+			y = self.dataDimY - 1
 		Logging.info("Returning x,y,z=(%d,%d,%d)" % (rx, ry, rz), kw = "preview")
 		ncomps = self.rawImage.GetNumberOfScalarComponents()
-#		self.rawImage.SetExtent(self.rawImage.GetWholeExtent())
 		if ncomps == 1:
 			Logging.info("One component in raw image", kw = "preview")
-			rv = -1
-			gv = -1
-			bv = -1
+			rv, gv, bv = -1, -1, -1
 			alpha = -1
 			if len(self.rawImages) < 2:
 				scalar = self.rawImages[0].GetScalarComponentAsDouble(x, y, self.z, 0)
-
 			else:
 				scalar = []
 				for i, img in enumerate(self.rawImages):
@@ -332,13 +300,11 @@ class PreviewFrame(InteractivePanel):
 				scalar = tuple(scalar)
 
 		else:
-			#Logging.info("%d components in raw image"%ncomps,kw="preview")
 			rv = self.rawImage.GetScalarComponentAsDouble(x, y, self.z, 0)
 			gv = self.rawImage.GetScalarComponentAsDouble(x, y, self.z, 1)
 			bv = self.rawImage.GetScalarComponentAsDouble(x, y, self.z, 2)
 			scalar = 0xdeadbeef
 			
-		#Logging.info("# of comps in image: %d"%self.currentImage.GetNumberOfScalarComponents(),kw="preview")
 		r = self.currentImage.GetScalarComponentAsDouble(x, y, self.z, 0)
 		g = self.currentImage.GetScalarComponentAsDouble(x, y, self.z, 1)
 		b = self.currentImage.GetScalarComponentAsDouble(x, y, self.z, 2)
@@ -348,25 +314,22 @@ class PreviewFrame(InteractivePanel):
 
 		lib.messenger.send(None, "get_voxel_at", rx, ry, rz, scalar, rv, gv, bv, r, g, b, alpha, self.currentCt)
 			
-	def setPreviewedSlice(self, obj, event, val = -1):
+	def setPreviewedSlice(self, obj, event, newz = -1):
 		"""
 		Created: 4.11.2004, KP
 		Description: Sets the preview to display the selected z slice
 		"""
-		newz = val
 		if self.z != newz:
 			self.z = newz
-			# was updatePreview(1)
 			self.updatePreview(0)
 
-	def setTimepoint(self, tp):
+	def setTimepoint(self, timePoint):
 		"""
 		Created: 09.12.2004, KP
 		Description: The previewed timepoint is set to the given timepoint
 		Parameters:
-				tp	The timepoint to show
+				timePoint	The timepoint to show
 		"""
-		timePoint = tp
 		if self.timePoint != timePoint:
 			self.timePoint = timePoint
 			self.updatePreview(1)
@@ -397,23 +360,8 @@ class PreviewFrame(InteractivePanel):
 			ex.show()
 			return
 			
-		dims = [x, y, z]
-		self.xdim, self.ydim, self.zdim = x, y, z
-		
-		if x > self.maxX or y > self.maxY:
-			Logging.info("Setting scrollbars to %d,%d" % (x, y), kw = "preview")
-			#self.setScrollbars(x,y)
-			#self.calculateBuffer()
-		
-		if x > self.maxX:
-			x = self.maxX
-		if y > self.maxY:
-			y = self.maxY
-		
-		x *= self.zoomx
-		y *= self.zoomy
-		Logging.info("Setting preview to %d,%d" % (x, y), kw = "preview")
-		#if self.enabled:
+		self.dataDimX, self.dataDimY, self.dataDimZ = x, y, z
+
 		self.paintSize = (0, 0)
 		self.calculateBuffer()
 		
@@ -457,7 +405,7 @@ class PreviewFrame(InteractivePanel):
 				z = self.z
 				# if we're doing a MIP, we need to set z to -1
 				# to indicate we want the whole volume
-				if self.mip:z = -1
+				if self.isMipMode():z = -1
 				self.rawImages = []
 				for source in self.dataUnit.getSourceDataUnits():
 					self.rawImages.append(source.getTimepoint(self.timePoint))  
@@ -483,8 +431,8 @@ class PreviewFrame(InteractivePanel):
 		
 		usedUpdateExt = 0
 		uext = None
-		if self.z != -1 and not self.mip:
-			x, y = self.xdim, self.ydim
+		if self.z != -1 and not self.isMipMode():
+			x, y = self.dataDimX, self.dataDimY
 			usedUpdateExt = 1
 			#colorImage.SetUpdateExtent(0,x-1,0,y-1,self.z,self.z)
 			uext = (0, x - 1, 0, y - 1, self.z, self.z)
@@ -499,7 +447,7 @@ class PreviewFrame(InteractivePanel):
 		if colorImage:
 			x, y, z = colorImage.GetDimensions()
 			
-			if not usedUpdateExt and not self.mip:
+			if not usedUpdateExt and not self.isMipMode():
 				scripting.visualizer.zslider.SetRange(1, z)
 			if x != self.oldx or y != self.oldy:
 				#self.resetScroll()
@@ -538,7 +486,7 @@ class PreviewFrame(InteractivePanel):
 			extract.SetInput(data)
 			data = extract.GetOutput()
 			
-		if self.mip:
+		if self.isMipMode():
 			mip = vtkbxd.vtkImageSimpleMIP()
 			mip.SetInput(data)
 			
@@ -597,19 +545,13 @@ class PreviewFrame(InteractivePanel):
 		if flag:
 			self.calculateBuffer()
 		
-	def setPreviewType(self, event):
+	def setPreviewType(self, newType):
 		"""
 		Created: 03.04.2005, KP
 		Description: Method to set the proper previewtype
 		"""
-		if type(event) == type(""):
-			if event == "MIP":
-				self.previewtype = ""
-				self.mip = 1
-				return
-			else:
-				self.previewtype = event
-				return
+		if type(newType) == type(""):
+			self.previewType = newType
 		
 	def updateColor(self):
 		"""
@@ -673,42 +615,35 @@ class PreviewFrame(InteractivePanel):
 			self.fitLater = 0
 			self.zoomToFit()
 		
-	def setZoomFactor(self, f):
+	def setZoomFactor(self, newFactor):
 		"""
 		Created: 24.03.2005, KP
 		Description: Sets the factor by which the image should be zoomed
 		"""
-		if f > 10:
-			f = 10
-		Logging.info("Setting zoom factor to ", f, kw = "preview")
-		x, y = self.xdim, self.ydim
-		x *= f
-		y *= f
+		if newFactor > 10:
+			newFactor = 10
+		Logging.info("Setting zoom factor to ", newFactor, kw = "preview")
+		x, y = [a*newFactor for a in (self.dataDimX, self.dataDimY)]
 
 		if scripting.resampleToFit:
 			optimize.set_target_size(x, y)
-			f = 1
+			newFactor = 1
 		px, py = self.paintSize
-		if px > x:
-			x = px
-		if py > y:
-			y = py
-		m = "SLICES"
-		if self.mip:
-			m = "MIP"
+		
+		x = max(px, x)
+		y = max(py, y)
 		
 		self.buffer = wx.EmptyBitmap(x, y)
 		self.setScrollbars(x, y)
-		if f < self.zoomFactor:
+		if newFactor < self.zoomFactor:
 			# black the preview
 			slice = self.slice
 			self.slice = None
 			self.paintPreview()
 			self.slice = slice
-		self.zoomFactor = f
-		scripting.zoomFactor = f
+		self.zoomFactor = newFactor
+		scripting.zoomFactor = newFactor
 		self.updateAnnotations()
-		#self.Scroll(0,0)
 		
 	def zoomToFit(self):
 		"""
@@ -718,8 +653,8 @@ class PreviewFrame(InteractivePanel):
 		if self.dataUnit:
 			#x,y,z=self.imagedata.GetDimensions()
 			x, y, z = self.dataUnit.getDimensions()
-			maxX = self.maxSizeX
-			maxY = self.maxSizeY
+			maxX = self.maxClientSizeX
+			maxY = self.maxClientSizeY
 			maxX -= 10 # marginal
 			maxY -= 10 #marginal
 			if self.fixedSize:
@@ -740,15 +675,13 @@ class PreviewFrame(InteractivePanel):
 		"""
 		if not self.bmp:
 			return
-		else:
-			pass
+
 		if self.scrollTo:
 			x, y = self.scrollTo
 			Logging.info("Scrolling to %d,%d" % (x, y), kw = "preview")
-			sx = int(x / self.scrollsize)
-			sy = int(y / self.scrollsize)
-			#sx=x/self.scrollsize
-			#sy=y/self.scrollsize
+			sx = int(x / self.scrollStepSize)
+			sy = int(y / self.scrollStepSize)
+
 			self.Scroll(sx, sy)
 			self.scrollTo = None
 
@@ -759,11 +692,9 @@ class PreviewFrame(InteractivePanel):
 		"""
 		Logging.info("PreviewFrame is enbled=", bool(self.enabled), kw="preview")
 		# Don't paint anything if there's going to be a redraw anyway
-#		if self.fitLater:
-#			return
+
 		if not self.slice and self.graySize == self.paintSize:
 			return
-		#Logging.backtrace()
 		dc = wx.MemoryDC()
 		dc.SelectObject(self.buffer)
 		dc.BeginDrawing()
@@ -771,7 +702,6 @@ class PreviewFrame(InteractivePanel):
 		dc.SetBackground(wx.Brush(wx.Colour(*self.bgcolor)))
 		dc.SetPen(wx.Pen(wx.Colour(*self.bgcolor), 0))
 		dc.SetBrush(wx.Brush(wx.Color(*self.bgcolor)))
-#		x0,y0,w,h = self.GetClientRect()
 		x0, y0 = 0, 0
 		w, h = self.buffer.GetWidth(), self.buffer.GetHeight()
 		
@@ -781,7 +711,6 @@ class PreviewFrame(InteractivePanel):
 			self.graySize = self.paintSize
 			self.makeBackgroundBuffer(dc)
 			dc.EndDrawing()
-			self.dc = None
 			self.repaintHelpers(update = 0)
 			return
 
@@ -811,9 +740,6 @@ class PreviewFrame(InteractivePanel):
 
 				bmp = lib.ImageOperations.vtkImageDataToWxImage(img)
 			w, h = bmp.GetWidth(), bmp.GetHeight()
-			#Logging.info("Setting scrollbars (%d,%d) because of zooming"%(w,h),kw="preview")
-			#self.setScrollbars(w,h)
-
 
 		if self.zoomx != 1 or self.zoomy != 1:
 			w, h = bmp.GetWidth(), bmp.GetHeight()
@@ -842,13 +768,12 @@ class PreviewFrame(InteractivePanel):
 
 		self.bmp = self.buffer
 		
-		InteractivePanel.paintPreview(self)
+		InteractivePanel.paintPreview(self, dc)
 
 		self.makeBackgroundBuffer(dc)
 		
 		dc.EndDrawing()
 		dc.DestroyClippingRegion()
-		self.dc = None
 		self.repaintHelpers()
 
 	def makeBackgroundBuffer(self, dc):
@@ -859,6 +784,8 @@ class PreviewFrame(InteractivePanel):
 		w, h = self.buffer.GetWidth(), self.buffer.GetHeight()
 		self.bgbuffer = wx.EmptyBitmap(w, h)
 		memdc = wx.MemoryDC()
+		print "Selecting object, bufsize=",w,h
 		memdc.SelectObject(self.bgbuffer)
+		print "done"
 		memdc.Blit(0, 0, w, h, dc, 0, 0)
 		memdc.SelectObject(wx.NullBitmap)

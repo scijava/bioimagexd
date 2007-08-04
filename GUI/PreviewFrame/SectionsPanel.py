@@ -60,7 +60,6 @@ class SectionsPanel(InteractivePanel):
 		x, y = size
 		self.paintSize = size
 		self.buffer = wx.EmptyBitmap(x, y)
-		#wx.ScrolledWindow.__init__(self,parent,-1,size=size,**kws)
 		InteractivePanel.__init__(self, parent, size = size, **kws)
 		self.size = size
 		self.sizeChanged = 0
@@ -142,7 +141,6 @@ class SectionsPanel(InteractivePanel):
 		self.drawPos = [x * self.zoomFactor for x in (nx, ny, nz)]
 		
 		self.setTimepoint(self.timepoint)
-		#self.updatePreview()
 		
 	def onLeftDown(self, event):
 		"""
@@ -162,18 +160,13 @@ class SectionsPanel(InteractivePanel):
 		#x,y=self.getScrolledXY(x,y)
 		x -= self.xmargin
 		y -= self.ymargin
-		#Logging.info("x=%d,y=%d"%(x,y))
 		
 		x /= float(self.zoomFactor)
 		y /= float(self.zoomFactor)
 
 		dims = self.imagedata.GetDimensions()
-		#Logging.info("x,y=(%d,%d)"%(x,y),"dims=",dims,"margins=",self.xmargin,self.ymargin)
-		#dims=(dims[0],dims[1],dims[2]*self.zoomZ)
-		#dims=[i*self.zoomFactor for i in dims]
 		
 		# the yz plane
-		#print "x=%d,mx=%d+%d"%(x,dims[0],self.xmargin)
 		# calculate scaled margins, because the click coordinates are scaled as well
 		sxmargin = self.xmargin / self.zoomFactor
 		symargin = self.ymargin / self.zoomFactor
@@ -210,13 +203,7 @@ class SectionsPanel(InteractivePanel):
 		else:
 			Logging.info("Out of bounds (%d,%d)" % (x, y), kw = "preview")
 			return
-#		nz /= self.zoomFactor
-#		print "showing ",nx,ny,nz
-		
-#		self.drawPos=[a*self.zoomFactor for a in (self.x,self.y,self.z)]
-	
 		self.drawPos = [math.ceil(a * self.zoomFactor) for a in (nx, ny, nz)]
-#		Logging.info("drawPos=",self.drawPos,"zoomFactor=",self.zoomFactor,"nx=%d, ny=%d, nz=%d"%(nx,ny,nz))
 		if self.x != nx or self.y != ny or self.z != nz:
 			self.x, self.y, self.z = int(nx), int(ny), int(nz)
 			self.setTimepoint(self.timepoint)
@@ -293,11 +280,6 @@ class SectionsPanel(InteractivePanel):
 		self.voxelSize = dataUnit.getVoxelSize()
 		InteractivePanel.setDataUnit(self, dataUnit)
 
-#		self.setTimepoint(self.timepoint)
-#		self.calculateBuffer()
-#		self.updatePreview()
-#		self.Refresh()
-		
 	def setTimepoint(self, tp, update = 1):
 		"""
 		Created: 23.05.2005, KP
@@ -327,7 +309,6 @@ class SectionsPanel(InteractivePanel):
 #		obtain the slices
 
 		z = self.z / self.zoomZ
-#		z/=self.zoomFactor
 		if self.zoomFactor != 1:
 			img = lib.ImageOperations.scaleImage(self.imagedata, self.zoomFactor, z)
 			slice = lib.ImageOperations.vtkImageDataToWxImage(img)
@@ -342,8 +323,6 @@ class SectionsPanel(InteractivePanel):
 		if self.zoomFactor != 1 or self.zspacing != 1:
 
 			slice = lib.ImageOperations.scaleImage(slice, self.zoomFactor, yfactor = 1, xfactor = self.zspacing)
-#		if self.zoomZ != 1:
-#			slice = ImageOperaations.scaleImage(slice,xfactor=self.zoomZ)
 		print "Got slice=",slice
 		slice = lib.ImageOperations.vtkImageDataToWxImage(slice)
 		self.slices.append(slice)
@@ -438,7 +417,6 @@ class SectionsPanel(InteractivePanel):
 		if not self.slices:
 			print "Haven't got any slices"
 			dc.EndDrawing()
-			self.dc = None
 			return
 		row, col = 0, 0
 
@@ -483,7 +461,6 @@ class SectionsPanel(InteractivePanel):
 		self.makeBackgroundBuffer(dc)			
 
 		dc.EndDrawing()
-		self.dc = None
 		
 	def zoomToFit(self):
 		"""
