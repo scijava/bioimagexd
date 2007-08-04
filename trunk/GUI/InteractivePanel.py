@@ -34,9 +34,12 @@ import lib.ImageOperations
 import lib.messenger
 import Logging
 import math
-import wx.lib.ogl as ogl
+import GUI.ogl
 import platform
-import wx	 
+import wx
+
+import GUI.PainterHelpers
+import GUI.OGLAnnotations
 
 ZOOM_TO_BAND = 1
 MANAGE_ANNOTATION = 2
@@ -46,206 +49,7 @@ SET_THRESHOLD = 5
 DELETE_ANNOTATION = 6
 
 
-class PainterHelper:
-	"""
-	Created: 06.10.2006, KP
-	Description: A base class for adding behaviour to the painting of the previews
-				 in a standard way, that can be used for example to implement different
-				 kinds of highlighting, annotations etc.
-	"""
-	def __init__(self, parent):		   
-		self.parent = parent
-		
-		
-	def setParent(self, parent):
-		"""
-		Created: 02.07.2007, KP
-		Description: set the parent
-		"""		   
-		self.parent = parent
-	def paintOnDC(self, dc):
-		"""
-		Created: 06.10.2006, KP
-		Description: A method that is used to paint whatever this helper wishes to paint
-					 on the DC
-		"""
-		pass
-		
-class VisualizeTracksHelper(PainterHelper):
-	"""
-	Created: 21.11.2006, KP
-	Description: A helper for painting the tracks
-	"""
-	def __init__(self, parent):
-		"""
-		Created: 21.11.2006, KP
-		Description: Initialize the helper
-		"""
-		PainterHelper.__init__(self, parent)
-		self.selectedTracks = []
-		lib.messenger.connect(None, "visualize_tracks", self.onShowTracks)		  
-		
-	def onShowTracks(self, obj, evt, tracks):
-		"""
-		Created: 25.09.2006, KP
-		Description: Show the selected tracks
-		"""
-		if not tracks:
-			return
-		self.selectedTracks = tracks
-		
-				
-	def paintOnDC(self, dc):			   
-		"""
-		Created: 21.11.2006, KP
-		Description: Paint the selected tracks to the DC
-		"""
-		if self.selectedTracks:
-			xc, yc, wc, hc = self.parent.GetClientRect()
-			dc.SetPen(wx.Pen((255, 255, 255), 1))
-			dc.SetBrush(wx.TRANSPARENT_BRUSH)
-			for track in self.selectedTracks:
-				mintp, maxtp = track.getTimeRange() 
-				val = -1
-				while val == -1 and mintp <= maxtp:
-					val, (x0, y0, z0) = track.getObjectAtTime(mintp)
-					x0 *= self.parent.zoomFactor
-					y0 *= self.parent.zoomFactor
-					x0 += self.parent.xoffset
-					y0 += self.parent.yoffset	  
-					x0 += xc
-					y0 += yc
-					mintp += 1
-				dc.SetTextForeground((255, 255, 255))
-				self.drawTimepoint(dc, mintp - 1, x0, y0)
-				
-				for i in range(mintp, maxtp + 1):
-					objectValue, pos = track.getObjectAtTime(i)
-					if objectValue != -1:
-						x1, y1, z1 = pos
-						
-						x1 *= self.parent.zoomFactor
-						y1 *= self.parent.zoomFactor
-						x1 += self.parent.xoffset
-						y1 += self.parent.yoffset				 
-						
-						x1 += xc
-						y1 += yc
-						self.drawTimepoint(dc, i, x1, y1)						 
-							
-						def angle(x_1, y_1, x_2, y_2):
-							ang = math.atan2(y_2 - y_1, x_2 - x_1) * 180.0 / math.pi
-							ang = math.atan2(y_2 - y_1, x_2 - x_1) * 180.0 / math.pi
-							ang2 = ang
-							#if ang<0:ang=180+ang
-							return ang
-							
-						if x0 != x1:
-							dc.DrawLine(x0, y0, x1, y1)
-							a1 = angle(x0, y0, x1, y1)
-							if 0:
-								ang = ang * ((2 * math.pi) / 360.0)
-								#l=5*self.parent.zoomFactor
-								xs = 5
-								ys = 5
-								xs *= self.parent.zoomFactor
-								ys *= self.parent.zoomFactor
-								x2 = math.cos(ang) * xs - math.sin(ang) * ys
-								y2 = math.sin(ang) * xs + math.cos(ang) * ys
-								x2 += x0
-								y2 += y0
-								dc.DrawLine(x0, y0, x2, y2)
-								l = 5 * self.parent.zoomFactor
-								xs = -5
-								ys = 5
-								xs *= self.parent.zoomFactor
-								ys *= self.parent.zoomFactor								
-								x2 = math.cos(ang) * xs - math.sin(ang) * ys
-								y2 = math.sin(ang) * xs + math.cos(ang) * ys
-								x2 += x0
-								y2 += y0
-								dc.DrawLine(x0, y0, x2, y2)								   
-						
-							
-						x0, y0 = x1, y1
-						
-	def drawTimepoint(self, dc, tp, x, y):
-		"""
-		Created: 26.11.2006, KP
-		Description: Draw the text label for given timepoint
-		"""
-		if tp != scripting.visualizer.getTimepoint():
-			dc.SetFont(wx.Font(7, wx.SWISS, wx.NORMAL, wx.NORMAL))
-			dc.DrawCircle(x, y, 3)
-		else:
-			dc.SetFont(wx.Font(9, wx.SWISS, wx.NORMAL, wx.NORMAL))
-			dc.DrawCircle(x, y, 5)
-		dc.DrawText("%d" % (tp), x - 10, y)
-	
-class CenterOfMassHelper(PainterHelper):
-	def __init__(self, parent):
-		"""
-		Created: 21.11.2006, KP
-		Description: Initialize the helper
-		"""
-		PainterHelper.__init__(self, parent)
-		self.centerOfMass = None
-		lib.messenger.connect(None, "show_centerofmass", self.onShowCenterOfMass)
-		
-	def onShowCenterOfMass(self, obj, evt, label, centerofmass):
-		"""
-		Created: 04.07.2006, KP
-		Description: Show the given center of mass
-		"""			   
-		self.centerOfMass = (label, centerofmass)
-		
-		
-	def paintOnDC(self, dc):
-		"""
-		Created: 21.11.2006, KP
-		Description: Paint the contents
-		"""
-		if self.centerOfMass:
-			label, (x, y, z) = self.centerOfMass
-			
-			x *= self.parent.zoomFactor
-			y *= self.parent.zoomFactor
-			x += self.parent.xoffset
-			y += self.parent.yoffset
-			x0, y0, w, h = self.parent.GetClientRect()
-			x += x0
-			y += y0
-			dc.SetBrush(wx.TRANSPARENT_BRUSH)
-			dc.SetPen(wx.Pen((255, 255, 255), 2))
-			dc.DrawCircle(x, y, 10)
-			dc.SetTextForeground((255, 255, 255))
-			dc.SetFont(wx.Font(9, wx.SWISS, wx.NORMAL, wx.BOLD))
-			dc.DrawText("%d" % label, x - 5, y - 5)	   
-	
-class AnnotationHelper(PainterHelper):
-	"""
-	Created: 06.10.2006, KP
-	Description: A class that capsulates the behaviour of drawing the annotations
-	"""
-	def __init__(self, parent):
-		PainterHelper.__init__(self, parent)
-				
-	def paintOnDC(self, dc):
-		"""
-		Created: 06.10.2006, KP
-		Description: Paint the annotations on a DC
-		"""
-		self.parent.diagram.Redraw(dc)
-		
-		
-	def setParent(self, parent):
-		"""
-		Created: 02.07.2007, KP
-		Description: set the parent
-		"""		   
-		self.parent = parent		
-
-class InteractivePanel(ogl.ShapeCanvas):
+class InteractivePanel(GUI.ogl.ShapeCanvas):
 	"""
 	Created: 03.07.2005, KP
 	Description: A panel that can be used to select regions of interest, draw
@@ -255,25 +59,26 @@ class InteractivePanel(ogl.ShapeCanvas):
 		"""
 		Created: 24.03.2005, KP
 		Description: Initialization
-		"""	   
+		"""
+		GUI.ogl.OGLInitialize()
+		
 		self.annotationsEnabled = 1
 		self.parent = parent
 		self.is_windows = platform.system() == "Windows"
 		self.is_mac = platform.system() == "Darwin"
 		self.xoffset = 0
 		self.yoffset = 0		
-		self.maxX = 512
-		self.maxY = 512
 		self.currentSketch = None
-		self.maxSizeX = 512
-		self.maxSizeY = 512
+		self.scrollStepSize = 5
+		
+		self.maxClientSizeX = 512
+		self.maxClientSizeY = 512
 		self.painterHelpers = []
-		self.origX = 512
-		self.origY = 512
+		self.dataWidth = 512
+		self.dataHeight = 512
 		size = kws.get("size", (512, 512))
 		
 		self.dataUnit = None
-		ogl.OGLInitialize()
 		self.listeners = {}
 		
 		self.annotationClass = None
@@ -290,9 +95,9 @@ class InteractivePanel(ogl.ShapeCanvas):
 		
 		x, y = size
 		self.buffer = wx.EmptyBitmap(x, y)
-		ogl.ShapeCanvas.__init__(self, parent, -1, size = size)
+		GUI.ogl.ShapeCanvas.__init__(self, parent, -1, size = size)
 		
-		self.diagram = ogl.Diagram()
+		self.diagram = GUI.ogl.Diagram()
 		self.SetDiagram(self.diagram)
 		self.diagram.SetCanvas(self)
 		
@@ -332,9 +137,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 		
 		self.Bind(wx.EVT_MENU, self.onSubtractBackground, id = self.ID_SUB_BG)
 		
-		self.registerPainter( AnnotationHelper(self) )
-		self.registerPainter( CenterOfMassHelper(self) )
-		self.registerPainter( VisualizeTracksHelper(self) )
+		GUI.PainterHelpers.registerHelpers(self)
 		
 		self.zoomFactor = 1
 		self.addListener(wx.EVT_RIGHT_DOWN, self.onFinishPolygon)
@@ -410,14 +213,14 @@ class InteractivePanel(ogl.ShapeCanvas):
 		if not scale:
 			scale = 1
 		ds.setIntensityScale(shift, scale)
-		self.updatePreview(1)		
+		self.updatePreview(1)
  
 		
 	def onSetInterpolation(self, event):
 		"""
 		Created: 01.08.2005, KP
 		Description: Set the inteprolation method
-		"""		 
+		"""
 		eID = event.GetId()
 		flags = (1, 0, 0, 0)
 		interpolation = -1
@@ -446,8 +249,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 		Description: Set the offset of this interactive panel. The offset is variable
 					 based on the size of the screen vs. the dataset size.
 		"""
-#		 assert x>=0,"Offset cannot be negative"
-#		 assert y>=0,"Offset cannot be negative"
+
 		shapelist = self.diagram.GetShapeList()
 		for shape in shapelist:
 			if not hasattr(shape, "getOffset"):
@@ -562,7 +364,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 		"""			   
 		if zoomFactor == -1:
 			zoomFactor = self.zoomFactor
-		shape = MyPolygon(zoomFactor = self.zoomFactor)
+		shape = GUI.OGLAnnotations.MyPolygon(zoomFactor = self.zoomFactor)
 		shape._offset = (self.xoffset, self.yoffset)		
 		
 		pts = []
@@ -584,8 +386,8 @@ class InteractivePanel(ogl.ShapeCanvas):
 		"""
 		Created: 11.08.2005, KP
 		Description: The size evet
-		"""			   
-		self.maxSizeX, self.maxSizeY = self.parent.GetClientSize()
+		"""
+		self.maxClientSizeX, self.maxClientSizeY = self.GetClientSize()
 		evt.Skip()
 		
 	def setBackgroundColor(self, bg):
@@ -660,11 +462,13 @@ class InteractivePanel(ogl.ShapeCanvas):
 		"""
 		Created: 24.03.2005, KP
 		Description: Sets the starting position of rubber band for zooming
-		"""	   
+		"""
+		print "DRAGGING=",event.Dragging()
 		event.Skip()
-				   
-				
 		pos = event.GetPosition()
+		if event.Dragging() and self.action == ZOOM_TO_BAND:
+			print "XZOOm TO BADN"
+			self.Refresh()
 
 		x, y = pos
 		foundDrawable = 0
@@ -672,17 +476,14 @@ class InteractivePanel(ogl.ShapeCanvas):
 			if x >= x0 and x <= x1 and y >= y0 and y <= y1:
 				foundDrawable = 1 
 				break
-		event.Skip()					
 		if not foundDrawable:
 			Logging.info("Attempt to draw in non-drawable area: %d,%d" % (x, y), kw = "iactivepanel")
 			# we zero the action so nothing further will be done by updateActionEnd
-			
 			self.action = 0
-			
 			return 1
 			
 		if self.currentSketch:
-			self.currentSketch.AddPoint(pos)			
+			self.currentSketch.AddPoint(pos)
 		self.actionstart = pos
 		return 1
 		
@@ -753,7 +554,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 		"""
 		Created: 03.07.2005, KP
 		Description: Call the right callback depending on what we're doing
-		"""	   
+		"""
 		if self.action == ZOOM_TO_BAND:
 			self.zoomToRubberband(event)
 		elif self.action == ADD_ANNOTATION:
@@ -762,7 +563,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 			self.addNewAnnotation(self.annotationClass, x, y, ex, ey)
 		
 			if self.annotationClass == "POLYGON":
-				self.actionstart = self.actionend	
+				self.actionstart = self.actionend
 				self.prevPolyEnd = self.actionend
 			else:
 				self.action = None
@@ -772,13 +573,13 @@ class InteractivePanel(ogl.ShapeCanvas):
 				return 1
 		elif self.action == SET_THRESHOLD:
 			self.setThreshold()
-		elif self.action == DELETE_ANNOTATION:			  
+		elif self.action == DELETE_ANNOTATION:
 			x, y = self.actionstart
 			
 			obj, attach = self.FindShape(x, y)
 			if obj:
 				self.RemoveShape(obj)
-				obj.Delete()			
+				obj.Delete()
 				self.paintPreview()
 				self.Refresh()
 				
@@ -786,9 +587,8 @@ class InteractivePanel(ogl.ShapeCanvas):
 		self.action = 0
 		self.actionstart = (0, 0)
 		self.actionend = (0, 0)
-		self.annotationClass = None					   
+		self.annotationClass = None
 		event.Skip()
-
 
 	def addNewAnnotation(self, annotationClass, x, y, ex, ey, noUpdate = 0, scaleFactor = -1):
 		"""
@@ -801,7 +601,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 			diff = max(abs(x - ex), abs(y - ey))
 			if diff < 2:diff = 2
 			
-			shape = MyCircle(2 * diff, zoomFactor = scaleFactor)
+			shape = GUI.OGLAnnotations.MyCircle(2 * diff, zoomFactor = scaleFactor)
 			shape.SetCentreResize(0)
 			
 			shape.SetX( ex )
@@ -810,16 +610,16 @@ class InteractivePanel(ogl.ShapeCanvas):
 		elif annotationClass == "RECTANGLE":
 			dx = abs(x - ex)
 			dy = abs(y - ey)
-			shape = MyRectangle(dx, dy, zoomFactor = scaleFactor)
+			shape = GUI.OGLAnnotations.MyRectangle(dx, dy, zoomFactor = scaleFactor)
 			shape.SetCentreResize(0)  
 			shape.SetX( ex + (x - ex) / 2 )
 			shape.SetY( ey + (y - ey) / 2 )
 		elif annotationClass == "FINISHED_POLYGON":
-			shape = MyPolygon(zoomFactor = scaleFactor)
+			shape = GUI.OGLAnnotations.MyPolygon(zoomFactor = scaleFactor)
 			
 		elif annotationClass == "POLYGON":
 			if not self.currentSketch:
-				shape = MyPolygonSketch(zoomFactor = scaleFactor)
+				shape = GUI.OGLAnnotations.MyPolygonSketch(zoomFactor = scaleFactor)
 				shape.SetCentreResize(0)
 				shape.SetX( ex + (x - ex) / 2 )
 				shape.SetY( ey + (y - ey) / 2 )
@@ -834,17 +634,17 @@ class InteractivePanel(ogl.ShapeCanvas):
 		elif annotationClass == "SCALEBAR":
 			dx = abs(x - ex)
 			dy = abs(y - ey)
-			shape = MyScalebar(dx, dy, voxelsize = self.voxelSize, zoomFactor = scaleFactor)
+			shape = GUI.OGLAnnotations.MyScalebar(dx, dy, voxelsize = self.voxelSize, zoomFactor = scaleFactor)
 			shape.SetCentreResize(0)  
 			shape.SetX( ex + (x - ex) / 2 )
 			shape.SetY( ey + (y - ey) / 2 )
 		elif annotationClass == "TEXT":
 			dx = abs(x - ex)
 			dy = abs(y - ey)
-			shape = MyText(dx, dy, zoomFactor = scaleFactor)
+			shape = GUI.OGLAnnotations.MyText(dx, dy, zoomFactor = scaleFactor)
 			shape.SetCentreResize(0)  
 			shape.SetX( ex + (x - ex) / 2 )
-			shape.SetY( ey + (y - ey) / 2 )				   
+			shape.SetY( ey + (y - ey) / 2 )
 		
 		if shape:	 
 			shape._offset = (self.xoffset, self.yoffset)		
@@ -862,8 +662,8 @@ class InteractivePanel(ogl.ShapeCanvas):
 		"""
 		annotations = self.diagram.GetShapeList()
 			
-		annotations = filter(lambda x:isinstance(x, OGLAnnotation), annotations)
-		annotations = filter(lambda x:not isinstance(x, MyPolygonSketch), annotations)
+		annotations = filter(lambda x:isinstance(x, GUI.OGLAnnotations.OGLAnnotation), annotations)
+		annotations = filter(lambda x:not isinstance(x, GUI.OGLAnnotations.MyPolygonSketch), annotations)
 		
 		if self.dataUnit:
 			self.dataUnit.getSettings().set("Annotations", annotations)
@@ -874,7 +674,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 		Created: 07.05.2005, KP
 		Description: Add a new shape to the canvas
 		"""		   
-		evthandler = MyEvtHandler(self)
+		evthandler = GUI.OGLAnnotations.MyEvtHandler(self)
 		evthandler.SetShape(shape)
 		evthandler.SetPreviousHandler(shape.GetEventHandler())
 		shape.SetEventHandler(evthandler)
@@ -987,7 +787,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 		Created: 24.03.2005, KP
 		Description: Sets the scrollbars to their initial values
 		"""	   
-		self.Scroll(0, 0)			 
+		self.Scroll(0, 0)
 		
 	def setDataUnit(self, dataUnit):
 		"""
@@ -998,7 +798,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 		self.voxelSize = dataUnit.getVoxelSize()
 		x, y, z = self.dataUnit.getDimensions()
 		self.buffer = wx.EmptyBitmap(x, y)
-		self.origX, self.origY = x, y
+		self.dataWidth, self.dataHeight = x, y
 		wx.CallAfter(self.readAnnotationsFromCache)
 
 	def readAnnotationsFromCache(self):
@@ -1041,16 +841,17 @@ class InteractivePanel(ogl.ShapeCanvas):
 		Description: Does the actual blitting of the bitmap
 		"""
 		scrolledWinDC = 0
-		if self.is_windows:
+		if self.is_windows or self.is_mac:
 			x, y = self.GetViewStart()
 			if x or y:
 				scrolledWinDC = 1
-				Logging.info("Resorting to unbuffered drawing because of scrolling", kw = "iactivepanel")
+				#Logging.info("Resorting to unbuffered drawing because of scrolling", kw = "iactivepanel")
 				dc = wx.PaintDC(self)
 				
 				self.PrepareDC(dc)
 				dc.BeginDrawing()
-				dc.DrawBitmap(self.buffer, 0, 0, False)
+				x,y, w, h = self.GetClientRect()
+				dc.DrawBitmap(self.buffer, x,y, False)
 
 		if not scrolledWinDC:
 			
@@ -1061,20 +862,17 @@ class InteractivePanel(ogl.ShapeCanvas):
 					
 
 
-	def paintPreview(self):
+	def paintPreview(self, dc):
 		"""
 		Created: 24.03.2005, KP
 		Description: Paints the image to a DC
 		"""
-					 
-		dc = self.dc
-		bmp = self.bmp
-		
-		w, h = bmp.GetWidth(), bmp.GetHeight()
-		
-		w *= self.zoomx
-		h *= self.zoomy
 		if self.action == ZOOM_TO_BAND:
+			w, h = self.bmp.GetWidth(), self.bmp.GetHeight()
+			w *= self.zoomx
+			h *= self.zoomy
+		
+			Logging.info("Zooming to band")
 			if self.actionstart and self.actionend:
 				x1, y1 = self.actionstart
 				x2, y2 = self.actionend
@@ -1098,41 +896,33 @@ class InteractivePanel(ogl.ShapeCanvas):
 		Description: Configures scroll bar behavior depending on the
 					 size of the dataset, which is given as parameters.
 		"""
-		Logging.info("\n\n*** Setting scrollbars to %d, %d" % (xdim, ydim), kw = "preview")
-		w, h = self.buffer.GetWidth(), self.buffer.GetHeight()
-		
-		maxX = self.maxX
-		maxY = self.maxY
-		if self.maxSizeX > maxX:maxX = self.maxSizeX
-		if self.maxSizeY > maxY:maxY = self.maxSizeY
-		Logging.info("maxX=", self.maxX, "maxSizeX=", self.maxSizeX, "xdim=", xdim, "origX=", self.origX, kw = "iactivepanel");
-		newy = maxY
-		newx = maxX
-		if xdim < maxX:
-			newx = xdim
-		if ydim < maxY:
-			newy = ydim
-		if newx <= self.origX and self.origX <= self.maxSizeX:
-			newx = self.origX
-		if newy <= self.origY and self.origY <= self.maxSizeY:
-			newy = self.origY
-		s = self.GetClientSize()
-		Logging.info("Setting size of", self, " to ", newx, newy, "virtual size to ", xdim, ydim, kw = "iactivepanel")
-		self.SetClientSize((newx, newy))
-		s = self.GetVirtualSize()
-		self.SetVirtualSize((xdim, ydim))
+		Logging.info("Requested size = %d, %d, client size = %d, %d" % (self.maxClientSizeX, self.maxClientSizeY, xdim, ydim), kw = "iactivepanel")
+
+		newx = min(self.maxClientSizeX, xdim)
+		newy = min(self.maxClientSizeY, ydim)
+
+		if newx <= self.dataWidth and self.dataWidth <= self.maxClientSizeX:
+			newx = self.dataWidth
+		if newy <= self.dataHeight and self.dataHeight <= self.maxClientSizeY:
+			newy = self.dataHeight
+			
 		xrate, yrate = 0, 0
-		if xdim > newx:
-			xrate = self.scrollsize
-		if ydim > newy:
-			yrate = self.scrollsize
-		
+		# if the requested size is larger than client size, then we need scrollbars
+		if xdim > self.maxClientSizeX:
+			xrate = self.scrollStepSize
+		if ydim > self.maxClientSizeY:
+			yrate = self.scrollStepSize
 		self.SetScrollRate(xrate, yrate)
-				
+		
+		Logging.info("Setting size of preview to ", newx, newy, "virtual size to ", xdim, ydim, kw = "iactivepanel")
+		self.SetVirtualSize((xdim, ydim))
+
 	def makeBackgroundBuffer(self, dc):
 		"""
 		Created: 06.10.2006, KP
-		Description: Copy the current buffer to a background buffer
+		Description: Copy the current buffer to a background buffer that is used 
+					 among other things to restore the background after painting
+					 over the image (e.g. annotations)
 		"""
 		w, h = self.buffer.GetWidth(), self.buffer.GetHeight()
 		self.bgbuffer = wx.EmptyBitmap(w, h)

@@ -32,15 +32,14 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 import wx
 import Logging
-import ogl
+import GUI.ogl
 import lib.messenger
 import math
 import lib.ImageOperations
-import wx.lib.ogl
 
 count = {}
 
-class OGLAnnotation(wx.lib.ogl.Shape):
+class OGLAnnotation(GUI.ogl.Shape):
 
 	def unoffset(self, attr, value):
 		"""
@@ -204,12 +203,12 @@ class OGLAnnotation(wx.lib.ogl.Shape):
 					 the sizing behaviour so that the diagonal handles always
 					  maintain aspect ratio
 		"""
-		if pt._type == ogl.CONTROL_POINT_DIAGONAL:
+		if pt._type == GUI.ogl.CONTROL_POINT_DIAGONAL:
 			self.doMaintainAspect = 1
 		else:
 			self.doMaintainAspect = 0
 			
-		ogl.Shape.OnSizingDragLeft(self, pt, draw, x, y, keys, attachment)
+		GUI.ogl.Shape.OnSizingDragLeft(self, pt, draw, x, y, keys, attachment)
 
 	def OnErase(self, dc):
 		"""
@@ -253,21 +252,21 @@ class OGLAnnotation(wx.lib.ogl.Shape):
 			dc.Blit(x1 + x0, y1 + y0, abs(x2 - x1) + 2, abs(y2 - y1) + 2, srcdc, x1 + x0, y1 + y0)
 		srcdc.SelectObject(wx.NullBitmap)
 
-class MyText(OGLAnnotation, ogl.TextShape):
+class MyText(OGLAnnotation, GUI.ogl.TextShape):
 	"""
 	Created: 05.10.2006, KP
 	Description: A text annotation
 	"""
 	AnnotationType = "TEXT"
 	def __init__(self, width, height):
-		ogl.TextShape.__init__(self, width, height)
+		GUI.ogl.TextShape.__init__(self, width, height)
 		self._isROI = 0
 
-class MyScalebar(OGLAnnotation, ogl.RectangleShape):
+class MyScalebar(OGLAnnotation, GUI.ogl.RectangleShape):
 
 	AnnotationType = "SCALEBAR"
 	def __init__(self, w, h, voxelsize = (1e-7, 1e-7, 1e-7), zoomFactor = 1.0):
-		ogl.RectangleShape.__init__(self, w, h)
+		GUI.ogl.RectangleShape.__init__(self, w, h)
 		self.bgColor = (127, 127, 127)
 		self.voxelSize = voxelsize
 		self.createSnapToList()
@@ -475,7 +474,7 @@ class MyScalebar(OGLAnnotation, ogl.RectangleShape):
 			y += (w / 2)
 			dc.DrawRotatedText(text, x1 + 12, y + y1, 90)
 			
-class MyPolygonSketch(OGLAnnotation, ogl.Shape):
+class MyPolygonSketch(OGLAnnotation, GUI.ogl.Shape):
 
 	AnnotationType = "POLYGONSKETCH"
 	def __init__(self, zoomFactor = 1.0):
@@ -483,7 +482,7 @@ class MyPolygonSketch(OGLAnnotation, ogl.Shape):
 		Created: 26.06.2006, KP
 		Description: Initialization
 		"""   
-		ogl.Shape.__init__(self)
+		GUI.ogl.Shape.__init__(self)
 		self.scaleFactor = zoomFactor
 		self._isROI = 1
 		global count
@@ -569,7 +568,7 @@ class MyPolygonSketch(OGLAnnotation, ogl.Shape):
 	def getCoveredPoints(self):
 		return []
 
-class MyRectangle(OGLAnnotation, ogl.RectangleShape):   
+class MyRectangle(OGLAnnotation, GUI.ogl.RectangleShape):   
 
 	AnnotationType = "RECTANGLE"
 	def __init__(self, w, h, zoomFactor = 1.0):
@@ -577,7 +576,7 @@ class MyRectangle(OGLAnnotation, ogl.RectangleShape):
 		Created: 26.06.2006, KP
 		Description: Initialization
 		"""   
-		ogl.RectangleShape.__init__(self, w, h)
+		GUI.ogl.RectangleShape.__init__(self, w, h)
 		self.scaleFactor = zoomFactor
 		self._isROI = 1
 		global count
@@ -640,7 +639,7 @@ class MyRectangle(OGLAnnotation, ogl.RectangleShape):
 				pts[(x, y)] = 1
 		return pts
 
-class MyCircle(OGLAnnotation, ogl.CircleShape):    
+class MyCircle(OGLAnnotation, GUI.ogl.CircleShape):    
 
 	AnnotationType = "CIRCLE"
 	def __init__(self, diam, zoomFactor = 1.0):
@@ -648,7 +647,7 @@ class MyCircle(OGLAnnotation, ogl.CircleShape):
 		Created: 26.06.2006, KP
 		Description: Initialization
 		"""   
-		ogl.CircleShape.__init__(self, diam)
+		GUI.ogl.CircleShape.__init__(self, diam)
 		self.scaleFactor = zoomFactor
 		self._isROI = 1
 		global count
@@ -775,7 +774,7 @@ class MyCircle(OGLAnnotation, ogl.CircleShape):
 		img = bg.ConvertToImage()
 		dc.DestroyClippingRegion()
 
-class MyPolygon(OGLAnnotation, ogl.PolygonShape):    
+class MyPolygon(OGLAnnotation, GUI.ogl.PolygonShape):    
 
 	AnnotationType = "FINISHED_POLYGON"
 	def __init__(self, zoomFactor = 1.0):
@@ -783,7 +782,7 @@ class MyPolygon(OGLAnnotation, ogl.PolygonShape):
 		Created: 26.06.2006, KP
 		Description: Initialization
 		"""   
-		ogl.PolygonShape.__init__(self)
+		GUI.ogl.PolygonShape.__init__(self)
 		self.scaleFactor = zoomFactor
 		self._isROI = 1
 		global count
@@ -801,7 +800,7 @@ class MyPolygon(OGLAnnotation, ogl.PolygonShape):
 		"""
 		self.setName(self.name)
 		self.Recentre(dc)
-		ogl.PolygonShape.OnDraw(self, dc)
+		GUI.ogl.PolygonShape.OnDraw(self, dc)
 
 	def restoreFrom(self, annotation):
 		"""
@@ -971,7 +970,7 @@ class MyPolygon(OGLAnnotation, ogl.PolygonShape):
 		if not hasattr(self, "_canvas"):
 			return
 		for point in self._points:
-			control = MyPolygonControlPoint(self._canvas, self, ogl.CONTROL_POINT_SIZE, point, point[0], point[1])
+			control = MyPolygonControlPoint(self._canvas, self, GUI.ogl.CONTROL_POINT_SIZE, point, point[0], point[1])
 			self._canvas.AddShape(control)
 			self._controlPoints.append(control)
 			
@@ -990,7 +989,7 @@ class MyPolygon(OGLAnnotation, ogl.PolygonShape):
 		self.CalculateBoundingBox()
 		
 		
-		dc.SetLogicalFunction(ogl.OGLRBLF)
+		dc.SetLogicalFunction(GUI.ogl.OGLRBLF)
 
 		dottedPen = wx.Pen(wx.Colour(0, 0, 0), 1, wx.DOT)
 		dc.SetPen(dottedPen)
@@ -1006,7 +1005,7 @@ class MyPolygon(OGLAnnotation, ogl.PolygonShape):
 		dc.DrawBitmap(self.GetCanvas().buffer, x0, y0)
 		self.UpdateOriginalPoints()	
 	 
-class MyPolygonControlPoint(ogl.PolygonControlPoint):
+class MyPolygonControlPoint(GUI.ogl.PolygonControlPoint):
 
 	AnnotationType = "POLYGONCONTROLPOINT"
 	# Implement resizing polygon or moving the vertex
@@ -1024,7 +1023,7 @@ class MyPolygonControlPoint(ogl.PolygonControlPoint):
 		Created: 04.07.2007, KP
 		Description: an event handler for when the polygon is resized
 		"""
-		ogl.PolygonControlPoint.OnSizingDragLeft(self, pt, x, y, keys, attch)
+		GUI.ogl.PolygonControlPoint.OnSizingDragLeft(self, pt, x, y, keys, attch)
 		self._shape.SetPointsFromControl(self)
 		self._shape.updateEraseRect()
 
@@ -1033,7 +1032,7 @@ class MyPolygonControlPoint(ogl.PolygonControlPoint):
 		Created: 04.07.2007, KP
 		Description: an event handler for when the polygon is resized
 		"""
-		ogl.PolygonControlPoint.OnSizingDragLeft(self, pt, x, y, keys, attch)
+		GUI.ogl.PolygonControlPoint.OnSizingDragLeft(self, pt, x, y, keys, attch)
 		self._shape.SetPointsFromControl(self)
 		self._shape.ResetControlPoints()
 		self._shape.updateEraseRect()
@@ -1056,14 +1055,14 @@ class MyPolygonControlPoint(ogl.PolygonControlPoint):
 		self.GetCanvas().repaintHelpers()
 		self.GetCanvas().Refresh()
 
-class MyEvtHandler(ogl.ShapeEvtHandler):
+class MyEvtHandler(GUI.ogl.ShapeEvtHandler):
 	"""
 	Created: KP
 	Description: the event handler for the OGL based annotations
 	"""
 	def __init__(self, parent):
 		self.parent = parent
-		ogl.ShapeEvtHandler.__init__(self)
+		GUI.ogl.ShapeEvtHandler.__init__(self)
 
 	def SetParent(self, parent):
 		"""
@@ -1129,18 +1128,13 @@ class MyEvtHandler(ogl.ShapeEvtHandler):
 		self.parent.Refresh()
 		
 	def OnDragLeft(self, draw, x, y, keys = 0, attachment = 0):
-		ogl.ShapeEvtHandler.OnDragLeft(self, draw, x, y, keys, attachment)
+		GUI.ogl.ShapeEvtHandler.OnDragLeft(self, draw, x, y, keys, attachment)
 	
 		self.parent.repaintHelpers()
-#		self.parent.Refresh()
-#
-#	def OnDragRight(self, draw, x, y, keys = 0, attachment = 0):
-#		print "OnDragRight"
-#		ogl.ShapeEvtHandler.OnDragRight(self, x, y, keys, attachment)
 
 	def OnEndDragLeft(self, x, y, keys = 0, attachment = 0):
 		shape = self.GetShape()
-		ogl.ShapeEvtHandler.OnEndDragLeft(self, x, y, keys, attachment)
+		GUI.ogl.ShapeEvtHandler.OnEndDragLeft(self, x, y, keys, attachment)
 
 		if not shape.Selected():
 			self.OnLeftClick(x, y, keys, attachment)
@@ -1148,13 +1142,13 @@ class MyEvtHandler(ogl.ShapeEvtHandler):
 		self.parent.repaintHelpers()
 		self.parent.Refresh()
 	def OnSizingEndDragLeft(self, pt, x, y, keys, attch):
-		ogl.ShapeEvtHandler.OnSizingEndDragLeft(self, pt, x, y, keys, attch)
+		GUI.ogl.ShapeEvtHandler.OnSizingEndDragLeft(self, pt, x, y, keys, attch)
 		
 		#self.parent.paintPreview()
 		self.parent.repaintHelpers()
 		self.parent.Refresh()
 	def OnMovePost(self, dc, x, y, oldX, oldY, display):
-		ogl.ShapeEvtHandler.OnMovePost(self, dc, x, y, oldX, oldY, display)
+		GUI.ogl.ShapeEvtHandler.OnMovePost(self, dc, x, y, oldX, oldY, display)
 
 #		self.parent.paintPreview()
 #		self.parent.Refresh()

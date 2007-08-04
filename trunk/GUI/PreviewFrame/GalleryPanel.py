@@ -449,9 +449,7 @@ class GalleryPanel(InteractivePanel):
 		if not self.slices:
 			Logging.info("Haven't got any slices", kw = "preview")
 			self.makeBackgroundBuffer(dc)
-
 			dc.EndDrawing()
-			self.dc = None
 			return
 		row, col = 0, 0
 	
@@ -482,7 +480,6 @@ class GalleryPanel(InteractivePanel):
 		InteractivePanel.paintPreview(self)
 		self.makeBackgroundBuffer(dc)
 		dc.EndDrawing()
-		self.dc = None
 		
 	def saveSnapshot(self, filename):
 		"""
