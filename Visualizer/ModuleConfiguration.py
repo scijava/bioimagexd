@@ -101,7 +101,6 @@ class ModuleConfigurationPanel(wx.ScrolledWindow):
 		self.sizer.Add(self.buttonBox, (4, 0))
 		
 		self.sizer.Show(self.lightBoxSizer, 0)
-		self.module = None
 		
 		self.initializeGUI()
 		self.findModule()
@@ -116,7 +115,7 @@ class ModuleConfigurationPanel(wx.ScrolledWindow):
 		"""
 		Created: 02.08.2005, KP
 		Description: Signal for updating the module settings
-		"""		
+		"""
 		if self.module:
 			self.setModule(self.module)
 
@@ -151,12 +150,11 @@ class ModuleConfigurationPanel(wx.ScrolledWindow):
 		"""
 		Created: 28.04.2005, KP
 		Description: Refresh the modules affected by this configuration
-		"""		
+		"""
 		modules = self.visualizer.getCurrentMode().getModules()
 		for module in modules:
 			if module.getName() == self.name:
 				self.setModule(module)
-				print "Configuring module", module
 				return
 
 	def setModule(self, module):

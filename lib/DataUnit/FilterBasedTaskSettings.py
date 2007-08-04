@@ -132,4 +132,4 @@ class FilterBasedTaskSettings(DataUnitSettings):
 				names.append(filter.getName())
 			return str(names)
 		else:
-			return DataUnitSettings.serialize(self, name, value)
+			return DataUnitSettings.serialize( name, value)

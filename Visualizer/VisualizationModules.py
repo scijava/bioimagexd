@@ -47,9 +47,8 @@ class VisualizationModule(GUIBuilder.GUIBuilderBase):
 		"""
 		#self.name = "Module"
 		self.processInputText = "Task output"
-		self.name = kws["label"]
-
 		GUIBuilder.GUIBuilderBase.__init__(self, changeCallback = self.parameterChanged)
+		self.name = kws["label"]
 
 		self.moduleName = kws["moduleName"]
 		self.numberOfInputs = (1, 1)
@@ -87,7 +86,6 @@ class VisualizationModule(GUIBuilder.GUIBuilderBase):
 		if self.initDone:
 			method = "visualizer.getCurrentWindow().getModule('%s')" % self.name
 			self.recordParameterChange(parameter, value, method)
-		#print "\n\nSetting ",parameter,"to",value
 		GUIBuilder.GUIBuilderBase.setParameter(self, parameter, value)
 
 	def parameterChanged(self, module):
@@ -216,7 +214,6 @@ class VisualizationModule(GUIBuilder.GUIBuilderBase):
 		"""
 		self.shading = shading
 		property = self.actor.GetProperty()
-		print property
 		if hasattr(property, "ShadeOn"):
 			property.SetShade(shading)
 		elif hasattr(property, "ShadingOn"):

@@ -8,7 +8,7 @@
 
  A module containing the volume rendering module for the visualization
 		  
- Copyright (C) 2005  BioImageXD Project
+ Copyright (C) 2005	 BioImageXD Project
  See CREDITS.txt for details
 
  This program is free software; you can redistribute it and/or modify
@@ -48,27 +48,43 @@ MIP = 3
 ISOSURFACE = 4
 
 def getClass():
+	"""
+	Created: KP
+	Description: return the rendering module class
+	"""
 	return VolumeModule
 
 def getConfigPanel():
+	"""
+	Created: KP
+	Description: return the class used for configuring this rendering module
+	"""
 	return VolumeConfigurationPanel
 
 def getName():
+	"""
+	Created: KP
+	Description: return the name of this visualization module
+	"""
 	return "Volume rendering"
 
 def getQuickKeyCombo():
+	"""
+	Created: KP
+	Description: return the key shortcut that can be used to load this module
+	"""
 	return "Shift-Ctrl-V"
 
 class VolumeModule(VisualizationModule):
 	"""
 	Created: 28.04.2005, KP
 	Description: A volume Rendering module
-	"""    
+	"""	   
 	def __init__(self, parent, visualizer, **kws):
 		"""
 		Created: 28.04.2005, KP
 		Description: Initialization
-		"""     
+		"""		
 		self.modes = ["Ray casting", "Texture mapping", "3D texture mapping", "Maximum intensity projection"]
 		self.haveVolpro = 0
 		self.mapper = None
@@ -108,14 +124,13 @@ class VolumeModule(VisualizationModule):
 		self.volume.SetProperty(self.volumeProperty)
 
 		
-		VisualizationModule.__init__(self, parent, visualizer, **kws)   
+		VisualizationModule.__init__(self, parent, visualizer, **kws)
 		self.mapper = None
 		#self.name = "Volume Rendering"
 		self.setParameter("Quality", 10)
 		self.parameters["Method"] = RAYCAST
 
 		if self.defaultMode != None:
-			print "Setting default method to ", self.defaultMode
 			self.parameters["Method"] = int(self.defaultMode)
  
 				   
@@ -142,7 +157,7 @@ class VolumeModule(VisualizationModule):
 		"""
 		Created: 13.04.2006, KP
 		Description: Set a value for the parameter
-		"""    
+		"""	   
  
 		VisualizationModule.setParameter(self, parameter, value)
 		if parameter == "Method":
@@ -151,7 +166,6 @@ class VolumeModule(VisualizationModule):
 			conf.writeSettings()
 			self.updateMethod()
 			self.updateOpacityTransferFunction()
-			print "value =", value
 			if value == 1:
 				print "Updating QualityValue label to max planes"
 				lib.messenger.send(self, "update_QualityValue_label", "Maximum number of planes:")
@@ -175,11 +189,11 @@ class VolumeModule(VisualizationModule):
 		"""
 		Created: 12.03.2007, KP
 		Description: Return the list of parameters needed for configuring this GUI
-		"""            
+		"""			   
 		params = [ ["Dataset palette", ("Palette", )],
 		["Rendering method", ("Method", ) ],
 		["Interpolation", ( ("NearestNeighbor", "Linear"), ("cols", 2))],
-		["Rendering quality", ("Quality", "QualityValue")]]       
+		["Rendering quality", ("Quality", "QualityValue")]]		  
 		if self.haveVolpro:
 			params.insert(2, ["", ("UseVolumepro", )])
 		return params
@@ -189,11 +203,11 @@ class VolumeModule(VisualizationModule):
 		"""
 		Created: 12.03.2007, KP
 		Description: If a parameter has a certain range of valid values, the values can be queried with this function
-		"""     
+		"""		
 		if parameter == "Method":
 			return self.modes
 		if parameter == "Quality":
-			return 0, 10        
+			return 0, 10		
 		if parameter == "QualityValue":
 			return self.qualityRange
 		return - 1, -1
@@ -201,7 +215,7 @@ class VolumeModule(VisualizationModule):
 		"""
 		Created: 12.03. 2007, KP
 		Description: Return the type of the parameter
-		"""   
+		"""	  
 		if parameter == "Method":
 			return GUI.GUIBuilder.CHOICE
 		if parameter in ["NearestNeighbor", "Linear"]:
@@ -219,7 +233,7 @@ class VolumeModule(VisualizationModule):
 		"""
 		Created: 12.03.2007, KP
 		Description: Return the default value of a parameter
-		"""           
+		"""			  
 		if parameter == "Method":
 			return self.defaultMode
 		if parameter == "Quality":
@@ -239,7 +253,7 @@ class VolumeModule(VisualizationModule):
 		"""
 		Created: 28.04.2005, KP
 		Description: Sets the dataunit this module uses for visualization
-		"""       
+		"""		  
 		Logging.info("Dataunit for Volume Rendering:", dataunit, kw = "rendering")
 		VisualizationModule.setDataUnit(self, dataunit)
 
@@ -269,14 +283,14 @@ class VolumeModule(VisualizationModule):
 			if method in [TEXTURE_MAPPING]:
 				Logging.info("Setting maximum number of planes to", quality, kw = "rendering")
 				self.mapper.SetMaximumNumberOfPlanes(quality)
-			else:                
+			else:				 
 				if quality <= 0.00001:
 					toq = 0.1
 					GUI.Dialogs.showwarning(None, \
 											"The selected sample distance (%f) is too small, %f will be used." \
 											% (quality, toq), "Too small sample distance")
 					quality = toq
-				Logging.info("Setting sample distance to ", quality, kw = "rendering")                    
+				Logging.info("Setting sample distance to ", quality, kw = "rendering")					  
 				self.mapper.SetSampleDistance(quality)
 		else:
 			quality = self.parameters["Quality"]
@@ -289,7 +303,7 @@ class VolumeModule(VisualizationModule):
 						self.mapper.SetMaximumNumberOfPlanes(self.maxPlanes)
 						lib.messenger.send(self, "set_QualityValue", self.maxPlanes)
 
-			elif quality < 10:               
+			elif quality < 10:				 
 				if method not in [TEXTURE_MAPPING]:
 					self.mapper.SetSampleDistance(15 - quality)
 					lib.messenger.send(self, "set_QualityValue", 15 - quality)
@@ -297,19 +311,19 @@ class VolumeModule(VisualizationModule):
 					quality = 10 - quality
 					self.mapper.SetMaximumNumberOfPlanes(25 - quality)
 					lib.messenger.send(self, "set_QualityValue", 25 - quality)
-			return 0     
+			return 0	 
 			
 		
 	def setInputChannel(self, inputNum, chl):
 		"""
 		Created: 17.04.2006, KP
 		Description: Set the input channel for input #inputNum
-		"""            
+		"""			   
 		VisualizationModule.setInputChannel(self, inputNum, chl)
 		inputDataUnit = self.getInputDataUnit(1)
 		if not inputDataUnit:
 			inputDataUnit = self.dataUnit
-		self.colorTransferFunction =    ctf = inputDataUnit.getColorTransferFunction()
+		self.colorTransferFunction =	ctf = inputDataUnit.getColorTransferFunction()
 		lib.messenger.send(self, "set_Palette_ctf", self.colorTransferFunction)
 			 
 		self.volumeProperty.SetColor(self.colorTransferFunction)
@@ -319,7 +333,7 @@ class VolumeModule(VisualizationModule):
 		"""
 		Created: 28.04.2005, KP
 		Description: Set the interpolation method used
-		"""             
+		"""				
 		
 		if self.parameters["Linear"]:
 			self.volumeProperty.SetInterpolationTypeToLinear() 
@@ -331,7 +345,7 @@ class VolumeModule(VisualizationModule):
 		"""
 		Created: 28.04.2005, KP
 		Description: Set the Rendering method used
-		"""             
+		"""				
 		self.parameters["QualityValue"] = 0
 		if not self.initDone:
 			return
@@ -386,20 +400,20 @@ class VolumeModule(VisualizationModule):
 			Logging.info("Setting blending mode to ", acc, kw = "rendering")
 			eval(cmd)
 			Logging.info("Setting parallel projetion", kw = "rendering")
-			self.renderer.GetActiveCamera().ParallelProjectionOn()            
+			self.renderer.GetActiveCamera().ParallelProjectionOn()			  
 			#self.settingEdit.Enable(0)
 			#self.qualitySlider.Enable(0)
 		else:
-			self.renderer.GetActiveCamera().ParallelProjectionOff()     
+			self.renderer.GetActiveCamera().ParallelProjectionOff()		
 			
-		self.volume.SetMapper(self.mapper)    
+		self.volume.SetMapper(self.mapper)	  
 
 
 	def updateRendering(self, input = None):
 		"""
 		Created: 28.04.2005, KP
 		Description: Update the Rendering of this module
-		"""             
+		"""
 		self.updateMethod()
 		self.updateQuality()
 		self.updateInterpolation()
@@ -420,7 +434,7 @@ class VolumeModule(VisualizationModule):
 		if ncomps > 1:
 			self.volumeProperty.IndependentComponentsOff()
 		else:
-			self.volumeProperty.IndependentComponentsOn()            
+			self.volumeProperty.IndependentComponentsOn()
 			
 		Logging.info("Rendering using, ", self.mapper.__class__, kw = "rendering")
 		
@@ -440,7 +454,7 @@ class VolumeModule(VisualizationModule):
 		"""
 		Created: 30.04.2005, KP
 		Description: Disable the Rendering of this module
-		"""          
+		"""			 
 		self.renderer.RemoveVolume(self.volume)
 		self.wxrenwin.Render()
 		
@@ -448,9 +462,9 @@ class VolumeModule(VisualizationModule):
 		"""
 		Created: 15.05.2005, KP
 		Description: Enable the Rendering of this module
-		"""          
+		"""
 		self.renderer.AddVolume(self.volume)
-		self.wxrenwin.Render()        
+		self.wxrenwin.Render()		  
 		
 class VolumeConfigurationPanel(ModuleConfigurationPanel):
 
@@ -466,7 +480,7 @@ class VolumeConfigurationPanel(ModuleConfigurationPanel):
 		"""
 		Created: 28.04.2005, KP
 		Description: Initialization
-		"""  
+		"""
 		self.shadingBtn = wx.CheckBox(self.lightPanel, -1, "Use shading")
 		self.shadingBtn.SetValue(0)
 		self.shading = 0
@@ -478,8 +492,8 @@ class VolumeConfigurationPanel(ModuleConfigurationPanel):
 		"""
 		Created: 16.05.2005, KP
 		Description: Toggle use of shading
-		"""  
-		self.shading = event.IsChecked()        
+		"""	 
+		self.shading = event.IsChecked()		
 		self.module.setShading(self.shading)
 
 	def getLongDesc(self, parameter):
@@ -496,13 +510,14 @@ class VolumeConfigurationPanel(ModuleConfigurationPanel):
 		"""
 		Created: 28.04.2005, KP
 		Description: Set the module to be configured
-		"""  
+		"""
 		self.module = module
 		ModuleConfigurationPanel.setModule(self, module)
-		unit = module.getDataUnit()        
+		unit = module.getDataUnit()		   
 		if not self.gui:
 			self.gui = GUI.GUIBuilder.GUIBuilder(self, self.module)
 			self.contentSizer.Add(self.gui, (0, 0))
+			
 		module.updateOpacityTransferFunction()
 		
 		if unit.getBitDepth() == 32:
@@ -520,12 +535,7 @@ class VolumeConfigurationPanel(ModuleConfigurationPanel):
 		"""
 		Created: 28.04.2005, KP
 		Description: Apply the changes
-		"""     
+		"""		
 		ModuleConfigurationPanel.onApply(self, event)
-		
-#        otf = self.colorPanel.getOpacityTransferFunction()
-#        self.module.setOpacityTransferFunction(otf,self.method)
-
 		self.module.updateData()
-		# module.updateData() will call updateRendering()
-		#self.module.updateRendering()
+
