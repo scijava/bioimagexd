@@ -115,9 +115,9 @@ class ProcessingFilter(GUIBuilder.GUIBuilderBase):
 				func = "getFilter('%s')" % self.name
 			else:
 				func = "getFilter('%s', %d)" % (self.name, filterIndex)
-		n = scripting.mainWindow.currentTaskWindowName
-		method="scripting.mainWindow.tasks['%s'].%s"%(n,func)
-		self.recordParameterChange(parameter, value, method)
+			n = scripting.mainWindow.currentTaskWindowName
+			method="scripting.mainWindow.tasks['%s'].%s"%(n,func)
+			self.recordParameterChange(parameter, value, method)
 
 		#print "\n\nSetting ",parameter,"to",value
 		GUIBuilder.GUIBuilderBase.setParameter(self, parameter, value)
