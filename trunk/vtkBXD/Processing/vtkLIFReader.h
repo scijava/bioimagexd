@@ -1,7 +1,7 @@
 /*=========================================================================
 
   Program:   BioImageXD
-  Module:    $RCSfile$
+  Module:    vtkLIFReader.h
   Language:  C++
   Date:      $Date$
   Version:   $Revision$
