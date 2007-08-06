@@ -30,8 +30,8 @@ __date__ = "$Date$"
 from lib.DataSource.DataSource import DataSource
 import Logging
 from lib.DataUnit import DataUnit
-import vtk
 import vtkbxd
+import vtk
 def getExtensions(): return ["lif"]
 def getFileType(): return "Leica Image File Format (*.lif)"
 def getClass(): return LIFDataSource
@@ -59,8 +59,6 @@ class LIFDataSource(DataSource):
 		self.voxelSize = None
 		self.dimensions = None
 		self.ctf = None
-
-		self.firstflag = 0
 		
 		# Use vtkLIFReader
 		self.reader = vtkbxd.vtkLIFReader()
@@ -73,12 +71,12 @@ class LIFDataSource(DataSource):
 					self.reader.SetCurrentImage(self.imageNum)
 					self.reader.SetCurrentChannel(self.channelNum)
 				else:
-					Logging.error("Failed to read header of the LIF file correctly",
-								  "Error in LIFDataSource.py in __init__, failed to read the header of the LIF file: %s" % (self.filename))
+					Logging.error("Failed to read the header of the LIF file correctly",
+								  "Error in LIFDataSource.py in __init__, failed to read the header of the LIF file: %s" %(self.filename))
 					return
 			else:
 				Logging.error("Failed to open file",
-							  "Error in LIFDataSource.py in __init__, failed to open file: %s" % (self.filename))
+							  "Error in LIFDataSource.py in __init__, failed to open file: %s" %(self.filename))
 				return
 
 	def getDataSetCount(self):
@@ -119,10 +117,6 @@ class LIFDataSource(DataSource):
 		self.reader.SetCurrentTimePoint(i)
 		data = self.reader.GetOutput()
 
-#        if self.firstflag > 0:
-#            self.reader.PrintData(data,11)
-#        self.firstflag = 1
-		
 		if raw:
 			return data
 
@@ -138,9 +132,7 @@ class LIFDataSource(DataSource):
 			Logging.error("Image or channel number not specified",
 						  "Error in LIFDataSource.py in getName, no image or channel specified.")
 			return ""
-		name = self.reader.GetCurrentImageName()
-		channelName = "Ch-%d"%self.channelNum
-		return name+": "+channelName
+		return "Ch-%d"%(self.channelNum + 1)
 
 	def getDimensions(self):
 		"""
@@ -194,8 +186,7 @@ class LIFDataSource(DataSource):
 		"""
 		if not self.spacing:
 #			 x,y,z = self.reader.GetImageVoxelSizes(self.imageNum)
-			self.reader.SetImageVoxelSizes(self.imageNum)
-			x, y, z = self.reader.GetVoxelss()
+			x, y, z = self.getVoxelSize()
 			self.spacing = [1, y / x, z / x]
 		return self.spacing
 
@@ -234,6 +225,14 @@ class LIFDataSource(DataSource):
 			
 		return self.ctf
 
+	def resetColorTransferFunction(self):
+		"""
+		Created: 03.08.2007, LP
+		Description: Resets the CTF of the data source.
+		"""
+		self.ctf = None
+		return self.getColorTransferFunction()
+
 	def getBitDepth(self):
 		"""
 		Created: 24.07.2007, LP
@@ -262,5 +261,13 @@ class LIFDataSource(DataSource):
 		Created: 01.08.2007, LP
 		Description: Returns a string identifying the dataset
 		"""
-		return self.getName()
-	
+		imageName = self.reader.GetImageName(self.imageNum)
+		return imageName + "|" + self.getName()
+
+	def __str__(self):
+		"""
+		Created: 03.08.2007, LP
+		Description: Returns the basic info of this instance as a string
+		"""
+		return "LIF DataSource (%s, image %d, channel %d)"%(self.filename,self.imageNum,self.channelNum)
+

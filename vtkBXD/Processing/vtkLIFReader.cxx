@@ -1,7 +1,7 @@
 /*=========================================================================
 
   Program:   BioImageXD
-  Module:    $RCSfile$
+  Module:    vtkLIFReader.cxx
   Language:  C++
   Date:      $Date$
   Version:   $Revision$
@@ -26,7 +26,7 @@
 
 =========================================================================*/
 
-// Handles currently only 8 bit data without time series
+// Handles currently only 8 bit data
 
 #include "vtkLIFReader.h"
 #include "vtkXMLDataParser.h"
@@ -344,32 +344,32 @@ int vtkLIFReader::SetImageVoxelSizes(int image)
        dimIter != this->Dimensions->at(image)->end(); dimIter++)
     {
       if ((*dimIter)->DimID == DimIDX)
-	{
-	  if (strcmp((*dimIter)->Unit,"m") == 0 || strcmp((*dimIter)->Unit,"M") == 0 ||
-	      strcmp((*dimIter)->Unit,""))
-	    {
-	      voxelSizes[0] = (*dimIter)->Length / (*dimIter)->NumberOfElements;
-	      this->Voxelss[0] = voxelSizes[0]; // Remove this when pointer can be returned
-	    }
-	}
+		{
+		  if (strcmp((*dimIter)->Unit,"m") == 0 || strcmp((*dimIter)->Unit,"M") == 0 ||
+			  strcmp((*dimIter)->Unit,""))
+			{
+			  voxelSizes[0] = (*dimIter)->Length / (*dimIter)->NumberOfElements;
+			  this->Voxelss[0] = fabs(voxelSizes[0]); // Remove this when pointer can be returned
+			}
+		}
       else if ((*dimIter)->DimID == DimIDY)
-	{
-	  if (strcmp((*dimIter)->Unit,"m") == 0 || strcmp((*dimIter)->Unit,"M") == 0 ||
-	      strcmp((*dimIter)->Unit,""))
-	    {
-	      voxelSizes[1] = (*dimIter)->Length / (*dimIter)->NumberOfElements;
-	      this->Voxelss[1] = voxelSizes[1]; // Remove this when pointer can be returned
-	    }
-	}
+		{
+		  if (strcmp((*dimIter)->Unit,"m") == 0 || strcmp((*dimIter)->Unit,"M") == 0 ||
+			  strcmp((*dimIter)->Unit,""))
+			{
+			  voxelSizes[1] = (*dimIter)->Length / (*dimIter)->NumberOfElements;
+			  this->Voxelss[1] = fabs(voxelSizes[1]); // Remove this when pointer can be returned
+			}
+		}
       else if ((*dimIter)->DimID == DimIDZ)
-	{
-	  if (strcmp((*dimIter)->Unit,"m") == 0 || strcmp((*dimIter)->Unit,"M") == 0 ||
-	      strcmp((*dimIter)->Unit,""))
-	    {
-	      voxelSizes[2] = (*dimIter)->Length / (*dimIter)->NumberOfElements;
-	      this->Voxelss[2] = voxelSizes[2]; // Remove this when pointer can be returned
-	    }
-	}
+		{
+		  if (strcmp((*dimIter)->Unit,"m") == 0 || strcmp((*dimIter)->Unit,"M") == 0 ||
+			  strcmp((*dimIter)->Unit,""))
+			{
+			  voxelSizes[2] = (*dimIter)->Length / (*dimIter)->NumberOfElements;
+			  this->Voxelss[2] = fabs(voxelSizes[2]); // Remove this when pointer can be returned
+			}
+		}
     }
 
   //  return voxelSizes;
@@ -420,6 +420,9 @@ int vtkLIFReader::SetImageDimensions(int image)
   // If image has x and y components, then make sure that z component is at
   // least 1. This way we don't have 3D image with dimensions (x,y,0)
   if (this->Dims[0] > 0 && this->Dims[1] > 0 && this->Dims[2] <= 0) this->Dims[2] = 1;
+  // If image has x and y components, then make sure that t component is at
+  // least 1. This way we don't have 4D image with dimensions (x,y,z,0)
+  if (this->Dims[0] > 0 && this->Dims[1] > 0 && this->Dims[3] <= 0) this->Dims[3] = 1;
 
   return 1;
 }
@@ -739,15 +742,16 @@ int vtkLIFReader::RequestInformation(vtkInformation* vtkNotUsed(request),
                                      vtkInformationVector** vtkNotUsed(inputVector),
                                      vtkInformationVector *outputVector)
 {
-  vtkInformation *info = outputVector->GetInformationObject(0);
   if (!this->HeaderInfoRead)
     {
       if (!this->ReadLIFHeader())
-	{
-	  vtkErrorMacro(<< "RequestInformation: Couldn't read file header.");
-	  return 0;
-	}
+		{
+		  vtkErrorMacro(<< "RequestInformation: Couldn't read file header.");
+		  return 0;
+		}
     }
+
+  vtkInformation *info = outputVector->GetInformationObject(0);
 
   double *spacing = new double[3];
   int *extent =  new int[6];
@@ -828,7 +832,7 @@ int vtkLIFReader::RequestData(vtkInformation *request,
 
   cout << "extent: " << extent[4] << "," << extent[5] << endl;
   cout << "Allocated buffer of size: " << bufferSize << endl;
-  buffer = new unsigned char[bufferSize+1];
+  buffer = new unsigned char[bufferSize];
   unsigned char *pos = buffer;
   imageOffset = this->Offsets->GetValue(this->CurrentImage);
   imageOffset += this->GetTimePointOffset(this->CurrentImage,this->CurrentTimePoint);
