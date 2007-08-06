@@ -438,7 +438,6 @@ int vtkLIFReader::SetImageDimensions()
   return this->SetImageDimensions(this->CurrentImage);
 }
 
-
 int vtkLIFReader::GetImageChannelResolution(int image, int channel)
 {
   if (image < 0 || image >= this->GetImageCount() || channel < 0 || channel > this->Channels->at(image)->size())
@@ -885,7 +884,7 @@ void vtkLIFReader::CalculateExtentAndSpacingAndOrigin(int *extent, double *spaci
 	  if (strcmp((*imgDims)->Unit,"m") == 0 || strcmp((*imgDims)->Unit,"M") == 0 ||
 	      strcmp((*imgDims)->Unit,""))
 	    {
-	      spacing[0] = (*imgDims)->Length / extent[1];
+	      spacing[0] = fabs((*imgDims)->Length / extent[1]);
 	      origin[0] = (*imgDims)->Origin;
 	    }
 	}
@@ -895,7 +894,7 @@ void vtkLIFReader::CalculateExtentAndSpacingAndOrigin(int *extent, double *spaci
 	  if (strcmp((*imgDims)->Unit,"m") == 0 || strcmp((*imgDims)->Unit,"M") == 0 ||
 	      strcmp((*imgDims)->Unit,""))
 	    {
-	      spacing[1] = (*imgDims)->Length / extent[3];
+	      spacing[1] = fabs((*imgDims)->Length / extent[3]);
 	      origin[1] = (*imgDims)->Origin;
 	    }
 	}
@@ -905,7 +904,7 @@ void vtkLIFReader::CalculateExtentAndSpacingAndOrigin(int *extent, double *spaci
 	  if (strcmp((*imgDims)->Unit,"m") == 0 || strcmp((*imgDims)->Unit,"M") == 0 ||
 	      strcmp((*imgDims)->Unit,""))
 	    {
-	      spacing[2] = (*imgDims)->Length / extent[5];
+	      spacing[2] = fabs((*imgDims)->Length / extent[5]);
 	      origin[2] = (*imgDims)->Origin;
 	    }
 	}
