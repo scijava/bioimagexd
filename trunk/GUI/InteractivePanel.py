@@ -133,7 +133,7 @@ class InteractivePanel(GUI.ogl.ShapeCanvas):
 		self.Bind(wx.EVT_MENU, self.onSetInterpolation, id = self.ID_VARY)
 		self.Bind(wx.EVT_MENU, self.onSetInterpolation, id = self.ID_NONE)
 		self.Bind(wx.EVT_MENU, self.onSetInterpolation, id = self.ID_LINEAR)
-		self.Bind(wx.EVT_MENU, self.onSetInterpolation, id = self.ID_CUBIC)		   
+		self.Bind(wx.EVT_MENU, self.onSetInterpolation, id = self.ID_CUBIC)
 		
 		self.Bind(wx.EVT_MENU, self.onSubtractBackground, id = self.ID_SUB_BG)
 		
@@ -361,7 +361,7 @@ class InteractivePanel(GUI.ogl.ShapeCanvas):
 		"""
 		Created: 07.05.2006, KP
 		Description: Create a polygon
-		"""			   
+		"""
 		if zoomFactor == -1:
 			zoomFactor = self.zoomFactor
 		shape = GUI.OGLAnnotations.MyPolygon(zoomFactor = self.zoomFactor)
@@ -380,8 +380,6 @@ class InteractivePanel(GUI.ogl.ShapeCanvas):
 		self.paintPreview()
 		self.Refresh()
 		
-	   
-
 	def OnSize(self, evt):
 		"""
 		Created: 11.08.2005, KP
@@ -463,12 +461,9 @@ class InteractivePanel(GUI.ogl.ShapeCanvas):
 		Created: 24.03.2005, KP
 		Description: Sets the starting position of rubber band for zooming
 		"""
-		print "DRAGGING=",event.Dragging()
 		event.Skip()
 		pos = event.GetPosition()
-		if event.Dragging() and self.action == ZOOM_TO_BAND:
-			print "XZOOm TO BADN"
-			self.Refresh()
+
 
 		x, y = pos
 		foundDrawable = 0
@@ -490,10 +485,13 @@ class InteractivePanel(GUI.ogl.ShapeCanvas):
 	def updateActionEnd(self, event):
 		"""
 		Created: 24.03.2005, KP
-		Description: Draws the rubber band to current mou		 
+		Description: Update the mouse position and the rendering according to user action,
+					 e.g. draw a rubber band when zooming to selected region
 		"""
 		if event.LeftIsDown():
 			self.actionend = event.GetPosition()
+			if self.action == ZOOM_TO_BAND:
+				self.Refresh()
 		pos = event.GetPosition()
 		if self.currentSketch:
 			self.actionend = pos
@@ -505,7 +503,7 @@ class InteractivePanel(GUI.ogl.ShapeCanvas):
 			
 			self.currentSketch.Erase(dc)
 			 
-			self.currentSketch.Draw(dc)			   
+			self.currentSketch.Draw(dc)
 			
 			dc.EndDrawing()
 		event.Skip()

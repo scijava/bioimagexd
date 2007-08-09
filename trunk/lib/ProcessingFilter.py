@@ -38,6 +38,18 @@ import types
 import vtk
 import lib.Command
 import sys
+
+MATH = "Image arithmetic"
+SEGMENTATION = "Segmentation"
+FILTERING = "Filtering"
+ITK = "ITK"
+LOGIC = "Logical operations"
+MEASUREMENT = "Measurements"
+REGION_GROWING = "Region growing"
+FEATUREDETECTION = "Feature detection"
+TRACKING = "Tracking"
+REGISTRATION = "Registration"
+
 try:
 	import itk
 except ImportError:
