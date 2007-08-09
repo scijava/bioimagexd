@@ -295,21 +295,17 @@ class GalleryPanel(InteractivePanel):
 		
 		x, y, z = self.dataUnit.getDimensions()
 		
-		if not self.sizeChanged and (x, y, z) == self.oldBufferDims and self.oldBufferMaxXY == (self.maxSizeX, self.maxSizeY):
+		if not self.sizeChanged and (x, y, z) == self.oldBufferDims and self.oldBufferMaxXY == (self.maxClientSizeX, self.maxClientSizeY):
 			return
 		
 		yfromx = y / float(x)
-		maxX = self.maxX
-		maxY = self.maxY
+		maxX = self.maxClientSizeX
+		maxY = self.maxClientSizeY
 		n = z
 		if len(self.slices) > z:
 			Logging.info("Using number of slices (%d) instead of z dim (%d)" % (len(self.slices), z), kw = "preview")
 			n = len(self.slices)
 
-		if self.maxSizeX > maxX:
-			maxX = self.maxSizeX
-		if self.maxSizeY > maxY:
-			maxY = self.maxSizeY
 		self.oldBufferDims = (x, y, z)
 		self.oldBufferMaxXY = (maxX, maxY)
 		
@@ -337,7 +333,6 @@ class GalleryPanel(InteractivePanel):
 					break
 				else:
 					pass
-					#Logging.info("%dx%d doesn't fit"%(i,i),kw="preview")
 		Logging.info("Need %d x %d grid to show the dataset" % (xreq, yreq), kw = "preview")
 		
 
@@ -473,7 +468,6 @@ class GalleryPanel(InteractivePanel):
 		y = 9 + (self.rows) * (3 + self.sliceSize[1])
 		self.bmp = self.buffer
 
-		InteractivePanel.paintPreview(self)
 		self.makeBackgroundBuffer(dc)
 		dc.EndDrawing()
 		
