@@ -115,6 +115,8 @@ preferRGB = 1
 wantWholeDataset = 0
 inIO = 0
 uncleanLog = None
+logFile = None
+recorder = None
 
 WHOLE_DATASET			= -1
 WHOLE_DATASET_NO_ALPHA	= -2
