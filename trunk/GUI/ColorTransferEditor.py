@@ -300,7 +300,8 @@ class CTFPaintPanel(wx.Panel):
 		d = self.maxx / float(maximumValue)
 		if d < 1:d = 1
 		if not self.background:
-			self.background = self.drawBackground(minval, maxval)
+		    Logging.info("Constructing background from minval = %d, maxval = %d"%(self.minval, self.maxval))
+			self.background = self.drawBackground(self.minval, self.maxval)
 		self.dc.BeginDrawing()
 		self.dc.DrawBitmap(self.background, 0, 0)
 		coeff = float(self.maxx) / maximumValue
@@ -334,6 +335,7 @@ class CTFPaintPanel(wx.Panel):
 		if alpha and drawAlpha:
 			(a, av) = alpha[-1]
 		maxval = max(r, g, b, a)
+		
 		(r, rv), (g, gv), (b, bv) = red[0], green[0], blue[0]
 		a = maximumValue
 		if alpha and drawAlpha:
