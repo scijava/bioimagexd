@@ -293,14 +293,11 @@ class GalleryPanel(InteractivePanel):
 		if not self.imagedata:
 			return
 		
-		#x,y,z=self.imagedata.GetDimensions()
 		x, y, z = self.dataUnit.getDimensions()
 		
 		if not self.sizeChanged and (x, y, z) == self.oldBufferDims and self.oldBufferMaxXY == (self.maxSizeX, self.maxSizeY):
-			#print "No need to re-assess"
 			return
 		
-
 		yfromx = y / float(x)
 		maxX = self.maxX
 		maxY = self.maxY
@@ -332,7 +329,6 @@ class GalleryPanel(InteractivePanel):
 				if not nx:continue
 				ny = math.ceil(n / float(nx))
 				if ny * i * yfromx < maxY and (nx * ny) > n:
-					#Logging.info("Size %dx%d which takes %dx%d squares fits into %dx%d"%(i,i,nx,ny,maxX,maxY),kw="preview")
 					w = i
 					h = i * yfromx
 					self.sliceSize = (w, h)
