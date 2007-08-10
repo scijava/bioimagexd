@@ -106,7 +106,7 @@ class PreviewFrame(InteractivePanel):
 		
 		self.enabled = 1
 
-		self.previewtype = ""
+		self.previewType = ""
 		self.tmodules = Modules.DynamicLoader.getTaskModules()
 		self.tmodules[""] = self.tmodules["Process"]
 		self.modules = {}
