@@ -321,9 +321,7 @@ class SectionsPanel(InteractivePanel):
 		slice = lib.ImageOperations.getPlane(self.imagedata, "zy", self.x, self.y, int(z))
 #		slice=lib.ImageOperations.getPlane(self.imagedata,"xz",self.x,self.y,z)
 		if self.zoomFactor != 1 or self.zspacing != 1:
-
 			slice = lib.ImageOperations.scaleImage(slice, self.zoomFactor, yfactor = 1, xfactor = self.zspacing)
-		print "Got slice=",slice
 		slice = lib.ImageOperations.vtkImageDataToWxImage(slice)
 		self.slices.append(slice)
 		slice = lib.ImageOperations.getPlane(self.imagedata, "xz", self.x, self.y, z)
@@ -352,10 +350,8 @@ class SectionsPanel(InteractivePanel):
 		
 		x += z * self.zoomZ + 2 * self.xmargin
 		y += z * self.zoomZ + 2 * self.ymargin
-		if self.maxSizeX > x:
-			x = self.maxSizeX
-		if self.maxSizeY > y:
-			y = self.maxSizeY
+		x = max(x, self.maxClientSizeX)
+		y = max(y, self.maxClientSizeY)
 		self.paintSize = (x, y)
 		if self.buffer.GetWidth() != x or self.buffer.GetHeight() != y:
 			self.buffer = wx.EmptyBitmap(x, y)
@@ -415,7 +411,7 @@ class SectionsPanel(InteractivePanel):
 		x0, y0 = 0, 0
 		
 		if not self.slices:
-			print "Haven't got any slices"
+			self.makeBackgroundBuffer(dc)	
 			dc.EndDrawing()
 			return
 		row, col = 0, 0
@@ -427,9 +423,7 @@ class SectionsPanel(InteractivePanel):
 		for i, slice in enumerate(self.slices):
 
 			w, h = slice.GetWidth(), slice.GetHeight()
-#			print "Widht, height of slice=", w, h
-#			if i == 2:
-#			slice = slice.Mirror(1)
+
 			bmp = slice.ConvertToBitmap()
 
 			sx, sy = pos[i]
@@ -457,8 +451,9 @@ class SectionsPanel(InteractivePanel):
 			
 			
 		self.bmp = self.buffer
-		InteractivePanel.paintPreview(self)
-		self.makeBackgroundBuffer(dc)			
+		self.makeBackgroundBuffer(dc)
+
+		InteractivePanel.paintPreview(self, dc)
 
 		dc.EndDrawing()
 		
@@ -475,8 +470,8 @@ class SectionsPanel(InteractivePanel):
 		
 		x += z * self.zoomZ + 2 * self.xmargin
 		y += z * self.zoomZ + 2 * self.ymargin
-		f = self.maxSizeX / x
-		f2 = self.maxSizeY / y
+		f = self.maxClientSizeX / x
+		f2 = self.maxClientSizeY / y
 		f = min(f, f2)
 		self.setZoomFactor(f)
 		
