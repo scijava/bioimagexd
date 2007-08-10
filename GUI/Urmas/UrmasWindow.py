@@ -40,8 +40,6 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 import wx
 import GUI.Urmas.Timeline
 import TimelinePanel
-#import UrmasTimepointSelection
-#import RenderingInterface
 import Logging
 import UrmasControl
 import VideoGeneration
@@ -232,7 +230,6 @@ class UrmasWindow(wx.lib.scrolledpanel.ScrolledPanel):
 		mgr.addMenuItem("sizetrack", MenuManager.ID_SET_TRACK, "Set item size", "Set each item on this track to be of given size", self.onSetTrack)
 		mgr.addMenuItem("sizetrack", MenuManager.ID_SET_TRACK_TOTAL, "Set total length", "Set total length of items on this track", self.onSetTrackTotal)
 		mgr.addMenuItem("sizetrack", MenuManager.ID_SET_TRACK_RELATIVE, "Set to physical length", "Set the length of items on this track to be relative to their physical length", self.onSetTrackRelative)
-		#mgr.addMenuItem("",MenuManager.ID_ANIMATE,"&Animated rendering","Select whether to produce animation or still images",self.onMenuAnimate,check=1)
 
 		mgr.createMenu("shuffle", "&Shift items", place = 0)
 		mgr.addSubMenu("track", "shuffle", "Shift items", MenuManager.ID_ITEM_ORDER)
@@ -514,15 +511,6 @@ class UrmasWindow(wx.lib.scrolledpanel.ScrolledPanel):
 		track = self.control.getSelectedTrack()
 		if hasattr(track, "setClosed"):
 			track.setClosed(evt.IsChecked())
-		
-	def onMenuAnimate(self, evt):
-		"""
-		Created: 14.04.2005, KP
-		Description: Callback function for menu item animated rendering
-		"""
-		flag = evt.IsChecked()
-		self.control.setAnimationMode(flag)
-		self.addTrackMenu.Enable(MenuManager.ID_ADD_SPLINE, flag)
 		
 	def onMenuRemoveTrack(self, evt):
 		"""

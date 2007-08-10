@@ -38,16 +38,9 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 import wx
 import Logging
-#import os.path
-#import sys
-#import math, random
-#import threading
 
-#from Urmas.TrackItem import *
-#from GUI.Urmas import UrmasPalette
 import lib.ImageOperations
-#import GUI.Dialogs
-#import GUI.TimepointSelection
+
 import lib.messenger
 
 class Track(wx.Panel):
@@ -58,6 +51,7 @@ class Track(wx.Panel):
 	def __init__(self, name, parent, **kws):
 		wx.Panel.__init__(self, parent, -1, style = wx.SIMPLE_BORDER)
 		self.paintOverlay = 0
+		self.overlayColor = ((255,255,255), 25)
 		self.number = 0
 		self.duration = 0
 		self.frames = 0
@@ -200,9 +194,6 @@ class Track(wx.Panel):
 			self.dc.Blit(self.timePosInPixels - 1, 0, self.timePosInPixelsEnd, self.height, self.mdc, self.timePosInPixels - 1, 0)
 		pps = self.timescale.getPixelsPerSecond() 
 
-		if hasattr(self, "onPaintTrack"):
-			self.onPaintTrack()
-			
 		if self.paintOverlay == 1:
 			self.onPaintOverlay()
 		
@@ -245,13 +236,11 @@ class Track(wx.Panel):
 			pps = self.timescale.getPixelsPerSecond() 
 			w = (end - start) * pps
 			h = self.height
-			#print "Painting overlay at ",self.overlayPos*pps
 			try:
 				color, percentage = self.overlayColor
 				overlay = lib.ImageOperations.getOverlay(int(w), int(h), color, percentage)
 			except Exception, e:
-				print "Failed to create overlay:", e
-				#sys.stdin.readline()
+				pass
 			overlay = overlay.ConvertToBitmap()
 			overlaydc = wx.MemoryDC()
 			overlaydc.SelectObject(overlay)
@@ -406,9 +395,9 @@ class Track(wx.Panel):
 		""" 
 		self.enabled = flag
 		if not flag:
+			col = self.bg
 			self.oldNamePanelColor = col
 			r = g = b = 200
-			#print "Setting background to ",r,g,b
 			self.fg = (128, 128, 128)
 			self.bg = (r, g, b)
 		else:
@@ -422,10 +411,8 @@ class Track(wx.Panel):
 		Description: Method called to indicate that a user is dragging
 					 something to this track
 		""" 
-		#print "OnDragOver(%d,%d,%s)"%(x,y,d)
 		if not self.oldNamePanelColor:
 			col = self.bg
-			#r,g,b=col.Red(),col.Green(),col.Blue()
 			r, g, b = col
 			self.oldNamePanelColor = col
 			r = int(r * 0.8)
@@ -519,11 +506,9 @@ class Track(wx.Panel):
 		Description: Execute dragging of item
 		"""         
 		x, y = event.GetPosition()
-		#print "onDragItem",trackitem.dragMode,x,y
 		
 		if trackitem.dragMode == 2:
 			x -= self.getLabelWidth()
-			#print "Setting empty space to ",x
 			self.setEmptySpace(x)
 			self.paintTrack()
 			self.Refresh()
@@ -541,18 +526,14 @@ class Track(wx.Panel):
 			item = self.items[pos]
 			if diff >= 0:
 				itemdiff = diff
-				#trackitemdiff=-diff
 				trackitemdiff = 0
 			elif diff < 0:
 				itemdiff = diff
-				#trackitemdiff=abs(diff)
 				trackitemdiff = 0
-			#print "diff=",diff,"itemdiff=",itemdiff,"trackdiff=",trackitemdiff
 
 				
 			
 			itemNewWidth = item.width + itemdiff
-			print "item new width=", itemNewWidth, "minItemSize=", minItemSize
 			if itemNewWidth < item.minSize:
 				return
 			if itemNewWidth < minItemSize:
@@ -581,14 +562,11 @@ class Track(wx.Panel):
 				newTrackItemWidth = minItemSize
 				
 			if diff > 0 and not self.itemCanResize(trackitem.width, trackitem.width + diff):
-				print "Would go over the timescale"
 				return
 			trackitem.beginX = x
 			trackitem.setWidth(newTrackItemWidth)
-		#self.updatePositions()
 		self.paintTrack()
 		self.Refresh()
-#        self.updateLayout()
 		
 	def remove(self):
 		"""
@@ -603,7 +581,6 @@ class Track(wx.Panel):
 		Created: 14.04.2005, KP
 		Description: Remove an item from this track
 		"""              
-		print "Removing item ", position
 		item = self.items[position]
 		self.items.remove(item)
 		
@@ -628,13 +605,6 @@ class Track(wx.Panel):
 		Description: A method that tells whether an item can change its size
 					 from the specified size to a new size
 		"""               
-		return 1
-		diff = toWidth - fromWidth
-		w += diff
-		
-		#print "w=",w,"duration=",self.duration,"pps=",self.timescale.getPixelsPerSecond()
-		if w > self.duration * self.timescale.getPixelsPerSecond():
-			return 0
 		return 1
 		
 	def initTrack(self):
@@ -676,9 +646,8 @@ class Track(wx.Panel):
 		w *= self.timescale.getPixelsPerSecond()
 		lastpos = self.items[-1].getPosition()[1]
 		coeff = self.timescale.getDuration() / float(lastpos)
-		#print "coeff=",coeff
 		tot = 0
-		last = 0
+		last = None
 		for i in self.items:
 			if keep_ratio:
 				neww = i.width * coeff
@@ -690,7 +659,6 @@ class Track(wx.Panel):
 	   
 		diff = self.duration * self.timescale.getPixelsPerSecond() - tot
 		if diff > 1:
-			#print "diff=",diff
 			last.setWidth(w + diff)
 		self.updateLayout()
 		
