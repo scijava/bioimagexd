@@ -43,7 +43,8 @@ sys.path.append(r"C:\BioImageXD\VTK\bin")
 sys.path.append("./vtkBXD/bin")
 sys.path.append("./vtkBXD/Wrapping/Python/vtkbxd")
 # Line to add to your .bashrc to be able to run files through python by themselves
-# export PYTHONPATH=~/bioimage/source:~/bioimage/source/vtkBXD/Wrapping/Python/vtkbxd:~/bioimage/source/vtkBXD/bin
+# export PYTHONPATH =
+# ~/bioimage/source:~/bioimage/source/vtkBXD/Wrapping/Python/vtkbxd:~/bioimage/source/vtkBXD/bin
 
 import getopt
 
@@ -101,7 +102,7 @@ conf = Configuration.Configuration(conffile)
 # We need to import VTK here so that it is imported before python.
 # if wxpython gets imported before vtk, the vtkExtTIFFReader will not read the olympus files
 # DO NOT ask me why that is!
-import vtkbxd
+#import vtkbxd
 import vtk
 w = vtk.vtkOutputWindow()
 i = w.GetInstance()
@@ -154,7 +155,7 @@ class LSMApplication(wx.App):
 	
 		return True
 		
-	def MacOpenFile(self, filename):
+	def macOpenFile(self, filename):
 		"""
 		Created: 14.03.2007, KP
 		Description: open a file that was dragged on the app
@@ -251,13 +252,13 @@ if __name__ == '__main__':
 				logfile2 = os.path.join(logdir, "latest.log")
 				latestLogfile = open(logfile2, "w")
 				logFiles = Logging.Tee(timestampedLogfile, latestLogfile, captureOutput)
-			clean = eval(conf.getConfigItem("CleanExit","General"))
+			clean = eval(conf.getConfigItem("CleanExit", "General"))
 			if not clean:
-				scripting.uncleanLog = conf.getConfigItem("LastLogFile","General")
+				scripting.uncleanLog = conf.getConfigItem("LastLogFile", "General")
 			else:
 				scripting.uncleanLog = None
 
-			conf.setConfigItem("LastLogFile","General",logfile)
+			conf.setConfigItem("LastLogFile", "General", logfile)
 			import atexit
 			atexit.register(logFiles.flush)
 			sys.stdout = logFiles 
@@ -277,7 +278,7 @@ if __name__ == '__main__':
 			p.sort_stats('time', 'cum').print_stats(.5, 'init')
 			sys.exit(0)
 
-		conf.setConfigItem("CleanExit","General","False")
+		conf.setConfigItem("CleanExit", "General", "False")
 		conf.writeSettings()
 		app = LSMApplication(0)
 		toRemove = []

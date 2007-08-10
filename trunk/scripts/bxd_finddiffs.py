@@ -1,7 +1,7 @@
 #!/usr/bin/python
 import os
 import os.path
-import commands
+#import commands
 
 def getFileList(directory):
 	directory = os.path.expanduser(directory)
