@@ -33,7 +33,7 @@ import scripting
 import lib.ImageOperations
 import lib.messenger
 import Logging
-import math
+#import math
 import GUI.ogl
 import platform
 import wx

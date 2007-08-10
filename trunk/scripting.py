@@ -78,7 +78,6 @@ def getSettingsFromCache(key):
 			#value=pickle.loads(data)
 			settings = DataUnitSettings(n)
 			settings.set("Type", None)
-			#settings = eval(settingsclass)
 			settings = settings.readFrom(configParser)
 			value.append(settings)
 			parser = configParser
