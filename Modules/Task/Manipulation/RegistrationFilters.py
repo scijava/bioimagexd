@@ -205,4 +205,10 @@ class RegistrationFilter(lib.ProcessingFilter.ProcessingFilter):
 		#TODO: do we want to return data1 or data2 ? - data does not exist 
 		return data
 
-		
+
+def getFilters():
+    """
+    Created: 10.8.2007, SS
+    Description: This function returns all the filter-classes in this module and is used by ManipulationFilters.getFilterList()
+    """
+    return [RegistrationFilter]
