@@ -37,8 +37,8 @@ __date__ = "$Date: 2005/01/13 14:52:39 $"
 #import lib.ssmtplib as ssmtplib
 #import sys
 
-import Dialogs
-import lib.email
+import GUI.Dialogs
+#import lib.email
 from lib.email.mime.multipart import MIMEMultipart
 from lib.email.mime.text import MIMEText
 import scripting
@@ -206,11 +206,11 @@ software will be attached to the report to aid the developers in solving the err
 				actions + ["<br><br>", logprefix] + loglines
         
 		if mail("kalle.pahajoki@gmail.com", self.nameEdit.GetValue(), "<br/>\n".join(lines)):
-			Dialogs.showerror(self, \
+			GUI.Dialogs.showerror(self, \
 							"Failed to send error report. Please contact info@bioimagexd.org directly", \
 							"Failed to send error report")
 		else:
-			Dialogs.showmessage(self, \
+			GUI.Dialogs.showmessage(self, \
 							"The report was sent succesfully!. Thank you for helping to improve BioImageXD!", \
 							"Reporting succesful")
         
