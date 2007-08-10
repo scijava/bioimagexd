@@ -26,21 +26,21 @@ import base64
 import random
 import socket
 import urllib
-import warnings
-from cStringIO import StringIO
+#import warnings
+#from cStringIO import StringIO
 
 from email._parseaddr import quote
 from email._parseaddr import AddressList as _AddressList
-from email._parseaddr import mktime_tz
+#from email._parseaddr import mktime_tz
 
 # We need wormarounds for bugs in these methods in older Pythons (see below)
 from email._parseaddr import parsedate as _parsedate
 from email._parseaddr import parsedate_tz as _parsedate_tz
 
-from quopri import decodestring as _qdecode
+#from quopri import decodestring as _qdecode
 
 # Intrapackage imports
-from email.encoders import _bencode, _qencode
+#from email.encoders import _bencode, _qencode
 
 COMMASPACE = ', '
 EMPTYSTRING = ''

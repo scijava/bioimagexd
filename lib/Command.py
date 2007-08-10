@@ -39,7 +39,7 @@ import Logging
 import types
 import inspect
 import messenger
-import scripting
+#import scripting
 
 MENU_CMD = "Menu command"
 OPEN_CMD = "Load file"
