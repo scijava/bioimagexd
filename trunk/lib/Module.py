@@ -29,13 +29,13 @@ __author__ = "Selli Project <http://sovellusprojektit.it.jyu.fi/selli/>"
 __version__ = "$Revision: 1.19 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
-import vtk
-import ImageOperations
+#import vtk
+#import ImageOperations
 import Logging
 #from enthought.tvtk import messenger
 import messenger
 #import scripting
-import optimize
+#import optimize
 
 class Module:
 	"""

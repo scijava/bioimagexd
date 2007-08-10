@@ -37,7 +37,7 @@ import lib.messenger
 import Logging
 from GUI import TaskPanel
 from GUI import ColorTransferEditor
-import vtk
+#import vtk
 import vtkbxd
 import wx
 
