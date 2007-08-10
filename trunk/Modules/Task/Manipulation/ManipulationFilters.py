@@ -44,13 +44,12 @@ import vtk
 import vtkbxd
 import wx
 
-# the wildcard imports have to stay for a while: 
 # getFilterlist() searches through these Modules for Filter classes
-from MathFilters import *
-from SegmentationFilters import *
-from MorphologicalFilters import *
-from TrackingFilters import *
-from RegistrationFilters import *
+import MathFilters
+import SegmentationFilters
+import MorphologicalFilters
+import TrackingFilters
+import RegistrationFilters
 
 class IntensityMeasurementList(wx.ListCtrl):
 	def __init__(self, parent, log):
@@ -125,24 +124,33 @@ class IntensityMeasurementList(wx.ListCtrl):
 		else:
 			return None
 
-#TODO: fix getFilterList() function so that the wildcard imports can be removed
+def getFilters():
+    """
+    Created: 10.8.2007, SS
+    Description: This function returns all the filter-classes in this module and is used by ManipulationFilters.getFilterList()
+    """
+    return [AnisotropicDiffusionFilter, SolitaryFilter, GaussianSmoothFilter,
+            ShiftScaleFilter, ExtractComponentFilter, TimepointCorrelationFilter,
+            ROIIntensityFilter, CutDataFilter, GradientFilter, GradientMagnitudeFilter,
+            ITKAnisotropicDiffusionFilter, ITKGradientMagnitudeFilter,
+            ITKCannyEdgeFilter, ITKSigmoidFilter, ITKLocalMaximumFilter]
+
+# fixed getFilterList() so that unnecessary wildcard imports could be removed, 10.8.2007 SS
 def getFilterList():
-	return [ErodeFilter, DilateFilter, RangeFilter, SobelFilter,
-			MedianFilter, AnisotropicDiffusionFilter, SolitaryFilter,
-			ShiftScaleFilter, AddFilter, SubtractFilter, MultiplyFilter,
-			DivideFilter, SinFilter, CosFilter, LogFilter, ExpFilter, SQRTFilter,
-			GradientFilter, GradientMagnitudeFilter,
-			AndFilter, OrFilter, XorFilter, NotFilter, NandFilter, NorFilter,
-			ThresholdFilter, VarianceFilter, HybridMedianFilter,
-			ITKAnisotropicDiffusionFilter, ITKGradientMagnitudeFilter, ITKCannyEdgeFilter,
-			ITKWatershedSegmentationFilter, MorphologicalWatershedSegmentationFilter, MeasureVolumeFilter,
-			ITKRelabelImageFilter, ITKConnectedThresholdFilter, ITKNeighborhoodConnectedThresholdFilter,
-			ITKLocalMaximumFilter, ITKOtsuThresholdFilter, ITKConfidenceConnectedFilter,
-			MaskFilter, ITKSigmoidFilter, ITKInvertIntensityFilter, ConnectedComponentFilter,
-			MaximumObjectsFilter, TimepointCorrelationFilter,
-			ROIIntensityFilter, CutDataFilter, GaussianSmoothFilter, CreateTracksFilter,
-			ViewTracksFilter, ExtractComponentFilter, RegistrationFilter, AnalyzeTracksFilter]
-			
+    """
+    Created: KP
+    Modified: 10.8.2007, SS
+    Description: This function returns the filter-classes from all filter-modules
+    """
+    filterlist = getFilters()
+    filterlist += MathFilters.getFilters()
+    filterlist += SegmentationFilters.getFilters()
+    filterlist += MorphologicalFilters.getFilters()
+    filterlist += TrackingFilters.getFilters()
+    filterlist += RegistrationFilters.getFilters()
+    return filterlist
+
+
 MATH = "Image arithmetic"
 SEGMENTATION = "Segmentation"
 FILTERING = "Filtering"

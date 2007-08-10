@@ -253,6 +253,18 @@ class WatershedObjectList(wx.ListCtrl, listmix.ListCtrlSelectionManagerMix):
 			return None
 
 
+def getFilters():
+    """
+    Created: 10.8.2007, SS
+    Description: This function returns all the filter-classes in this module and is used by ManipulationFilters.getFilterList()
+    """
+    return [ThresholdFilter, MaskFilter, ITKWatershedSegmentationFilter,
+            MorphologicalWatershedSegmentationFilter, ConnectedComponentFilter,
+            MaximumObjectsFilter, ITKRelabelImageFilter, ITKInvertIntensityFilter,
+            MeasureVolumeFilter, ITKConfidenceConnectedFilter, ITKConnectedThresholdFilter,
+            ITKNeighborhoodConnectedThresholdFilter, ITKOtsuThresholdFilter]
+
+
 class ThresholdFilter(ProcessingFilter.ProcessingFilter):
 	"""
 	Created: 15.04.2006, KP

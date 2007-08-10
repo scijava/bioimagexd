@@ -417,7 +417,16 @@ class TrackTableGrid(gridlib.Grid):
 		#print "Selected",event.GetRow(),event.GetCol()
 		self.selectedRow = event.GetRow()
 		self.selectedCol = event.GetCol()
-		
+
+
+def getFilters():
+    """
+    Created: 10.8.2007, SS
+    Description: This function returns all the filter-classes in this module and is used by ManipulationFilters.getFilterList()
+    """
+    return [CreateTracksFilter, ViewTracksFilter, AnalyzeTracksFilter]
+
+
 class CreateTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 	"""
 	Created: 13.04.2006, KP

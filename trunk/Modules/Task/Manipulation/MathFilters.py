@@ -83,7 +83,19 @@ class MathFilter(lib.ProcessingFilter.ProcessingFilter):
 		if update:
 			self.vtkfilter.Update()
 		return self.vtkfilter.GetOutput() 
-		
+
+
+def getFilters():
+    """
+    Created: 10.8.2007, SS
+    Description: This function returns all the filter-classes in this module and is used by ManipulationFilters.getFilterList()
+    """
+    return [AndFilter, OrFilter, XorFilter, NotFilter,
+            NorFilter, NandFilter, SubtractFilter, AddFilter,
+            DivideFilter, MultiplyFilter, SinFilter,
+            CosFilter, ExpFilter, LogFilter, SQRTFilter]
+
+
 class LogicFilter(MathFilter):
 	"""
 	Created: 13.04.2006, KP

@@ -41,6 +41,7 @@ import lib.messenger
 
 #import Modules.Task.Manipulation.ManipulationFilters as ManipulationFilters
 import ManipulationFilters
+import SegmentationFilters
 import os.path
 import GUI.PreviewFrame
 import types
@@ -170,7 +171,7 @@ class ManipulationPanel(GUI.FilterBasedTaskPanel.FilterBasedTaskPanel):
 		
 		f = lambda evt, btn = self.addSegmentationBtn, \
 					cats = (ManipulationFilters.SEGMENTATION, ManipulationFilters.REGION_GROWING, \
-							ManipulationFilters.WATERSHED, ManipulationFilters.MEASUREMENT, \
+							SegmentationFilters.WATERSHED, ManipulationFilters.MEASUREMENT, \
 							ManipulationFilters.REGISTRATION): \
 					self.onShowAddMenu(evt, btn, cats)
 		self.addSegmentationBtn.Bind(wx.EVT_LEFT_DOWN, f)
