@@ -141,29 +141,6 @@ class VisualizeTracksHelper(PainterHelper):
 						if x0 != x1:
 							dc.DrawLine(x0, y0, x1, y1)
 							a1 = angle(x0, y0, x1, y1)
-							if 0:
-								ang = ang * ((2 * math.pi) / 360.0)
-								#l=5*self.parent.zoomFactor
-								xs = 5
-								ys = 5
-								xs *= self.parent.zoomFactor
-								ys *= self.parent.zoomFactor
-								x2 = math.cos(ang) * xs - math.sin(ang) * ys
-								y2 = math.sin(ang) * xs + math.cos(ang) * ys
-								x2 += x0
-								y2 += y0
-								dc.DrawLine(x0, y0, x2, y2)
-								l = 5 * self.parent.zoomFactor
-								xs = -5
-								ys = 5
-								xs *= self.parent.zoomFactor
-								ys *= self.parent.zoomFactor								
-								x2 = math.cos(ang) * xs - math.sin(ang) * ys
-								y2 = math.sin(ang) * xs + math.cos(ang) * ys
-								x2 += x0
-								y2 += y0
-								dc.DrawLine(x0, y0, x2, y2)								   
-						
 							
 						x0, y0 = x1, y1
 						
