@@ -27,7 +27,7 @@ inclusion in MayaVi."""
 #from vtkRenderWidget import vtkTkRenderWidget
 import wx
 from vtk.wx.wxVTKRenderWindowInteractor import wxVTKRenderWindowInteractor
-from vtk.wx.wxVTKRenderWindow import wxVTKRenderWindow
+#from vtk.wx.wxVTKRenderWindow import wxVTKRenderWindow
 from math import pi, sin, cos, atan2, sqrt
 import vtk
 #import string
