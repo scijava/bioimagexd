@@ -33,11 +33,11 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 STATISTICS_ONLY = 2
 THRESHOLDS_ONLY = 1
 import vtkbxd
-import time
 import lib.messenger
-import lib.Module
+from lib.Module import Module
+import Logging
 
-class Colocalization(lib.Module.Module):
+class Colocalization(Module):
 	"""
 	Created: 03.11.2004, KP
 	Description: Creates a colocalization map
@@ -47,7 +47,7 @@ class Colocalization(lib.Module.Module):
 		Created: 03.11.2004, KP
 		Description: Initialization
 		"""
-		lib.Module.Module.__init__(self, **kws)
+		Module.__init__(self, **kws)
 		self.running = 0
 		self.depth = 8
 		self.reset()
@@ -60,7 +60,7 @@ class Colocalization(lib.Module.Module):
 					 that control the colocalization are changed and the
 					 preview data becomes invalid.
 		"""
-		lib.Module.Module.reset(self)
+		Module.reset(self)
 		self.colocFilter = vtkbxd.vtkImageColocalizationFilter()
 		self.colocFilter.AddObserver("ProgressEvent", self.updateProgress)
 
@@ -149,9 +149,9 @@ class Colocalization(lib.Module.Module):
 			t1 = settings.get("Ch1ThresholdMax")
 			t2 = settings.get("Ch2ThresholdMax")
 			if t1 == None:
-			    t1 = 0
+				t1 = 0
 			if t2 == None:
-			    t2 = 0
+				t2 = 0
 			Logging.info("Got thresholds", t1, t2, kw = "processing")
 			l = [(t1, maxval), (t2, maxval)]
 			self.settings.set("CalculateThresholds", 0)
