@@ -298,13 +298,8 @@ class CombinedDataUnit(DataUnit):
 		self.currentDimensions = dataUnit.getDimensions()
 		# The DataUnit to be added must have a different name than the
 		# previously added, or the dictionary won't work:
-		#name = dataUnit.getName()
-		#if name in self.byName:
-		#	 raise Logging.GUIError("Datasets have the same name", "Cannot load two datasets with the name %s" %name)
 		
 		count = len(self.sourceunits)
-		#count+ = 1
-		#self.byName[name] = count
 		self.sourceunits.append(dataUnit)
 
 		# Create a settings object of correct type for dataunit

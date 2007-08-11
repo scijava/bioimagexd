@@ -32,6 +32,7 @@ __date__ = "$Date: 2005/01/13 14:52:39 $"
 
 #import labelShape
 
+import traceback
 import scripting
 import codecs
 import csv
@@ -49,7 +50,6 @@ import vtkbxd
 import wx
 import  wx.lib.mixins.listctrl  as  listmix
 
-#ITK="ITK"
 SEGMENTATION = "Segmentation"
 MEASUREMENT = "Measurements"
 WATERSHED = "Watershed segmentation"
@@ -675,6 +675,8 @@ class MorphologicalWatershedSegmentationFilter(ProcessingFilter.ProcessingFilter
 				ul3 = itk.Image.UL3
 				self.itkfilter = itk.MorphologicalWatershedImageFilter[image, ul3].New()
 			except:
+			    Logging.info("Failed to get MorphologicalWatershedImageFilter, trying watershed module")
+			    traceback.print_exc()
 				import watershed
 				self.itkfilter = watershed.MorphologicalWatershedImageFilter[image, ul3].New()
 		
