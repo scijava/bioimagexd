@@ -144,18 +144,13 @@ class FilterBasedModule(lib.Module.Module):
 		for i, currfilter in enumerate(enabledFilters):
 			flag = (i == highestFilterIndex)
 			if i > 0:
-				print enabledFilters[i-1], "->", currfilter
 				currfilter.setPrevFilter(enabledFilters[i-1])
 			else:
-				print "-> ", currfilter
 				currfilter.setPrevFilter(None)
 			if not flag:
 				currfilter.setNextFilter(enabledFilters[i+1])
-				print currfilter, "->", enabledFilters[i+1]
 			else:
 				currfilter.setNextFilter(None)
-				print currfilter, "->|"
-			#data = currfilter.execute(data,update=flag,last=flag)
 			data = currfilter.execute(data, update=0, last=flag)
 			
 			if not flag:
@@ -170,7 +165,6 @@ class FilterBasedModule(lib.Module.Module):
 			
 			if not preview:
 				currfilter.writeOutput(self.controlUnit, self.timepoint)
-			#lasttype = currfilter.getImageType()
 			
 			
 			data = [data]
@@ -180,8 +174,7 @@ class FilterBasedModule(lib.Module.Module):
 	
 		data = data[0]
 		if data.__class__ != vtk.vtkImageData:
-			
-			data = lastfilter.convertITKtoVTK(data)#,imagetype=lasttype)
+			data = lastfilter.convertITKtoVTK(data)
 
 		data.ReleaseDataFlagOff()
 
