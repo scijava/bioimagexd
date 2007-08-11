@@ -36,15 +36,7 @@ import StringIO
 
 import os.path
 import os
-#TODO: This shouldn't be done in linux
-sys.path.append(r"C:\BioImageXD\VTK-CVS\Wrapping\Python\vtkbxd")
-sys.path.append(r"C:\BioImageXD\VTK\bin")
 
-sys.path.append("./vtkBXD/bin")
-sys.path.append("./vtkBXD/Wrapping/Python/vtkbxd")
-# Line to add to your .bashrc to be able to run files through python by themselves
-# export PYTHONPATH =
-# ~/bioimage/source:~/bioimage/source/vtkBXD/Wrapping/Python/vtkbxd:~/bioimage/source/vtkBXD/bin
 
 import getopt
 
@@ -53,14 +45,6 @@ try:
 except ImportError:
 	profile = None
 
-#if "check" in sys.argv:
-#	import pychecker.checker
-#	import Logging
-#	Logging.HIDE_DEBUG = Logging.KWS
-		
-# For MacOS X
-site.addsitedir("InsightToolkit/WrapITK/Python")
-site.addsitedir("InsightToolkit/WrapITK/lib")
 import scripting
 
 todir = scripting.get_main_dir()
@@ -78,15 +62,7 @@ sys.path.insert(0, itklibdir)
 sys.path.insert(0, itkbindir)
 sys.path.insert(0, itkpythondir)
 
-#if "py2exe" not in sys.argv:
-#	 import itk
 
-#sys.path.insert(0, reduce(os.path.join, ["vtkBXD", "Wrapping", "Python"]))
-#sys.path.insert(0, reduce(os.path.join, ["vtkBXD", "bin"]))
-#sys.path.insert(0, "H:\\vtkBXD\\bin")
-#TODO: Program only runs if you are Kalle Pahajoki?
-sys.path.insert(0, "/Users/kallepahajoki/VTK/bin")
-sys.path.insert(0, "/Users/kallepahajoki/VTK/Wrapping/Python")
 path = os.getenv("PATH")
 path = path + os.path.pathsep + itklibdir + os.path.pathsep + itkbindir + os.path.pathsep + itkpythondir
 os.putenv("PATH", path)
@@ -98,8 +74,7 @@ import Configuration
 conffile = os.path.join(scripting.get_config_dir(), "BioImageXD.ini")
 conf = Configuration.Configuration(conffile)
 
-#TODO: Imported before python? Shouldn't that be wx?
-# We need to import VTK here so that it is imported before python.
+# We need to import VTK here so that it is imported before wxpython.
 # if wxpython gets imported before vtk, the vtkExtTIFFReader will not read the olympus files
 # DO NOT ask me why that is!
 #import vtkbxd
