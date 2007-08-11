@@ -39,7 +39,6 @@ import lib.Command
 import lib.ImageOperations
 import lib.messenger
 
-#import Modules.Task.Manipulation.ManipulationFilters as ManipulationFilters
 import ManipulationFilters
 import SegmentationFilters
 import os.path
@@ -229,25 +228,7 @@ class ManipulationPanel(GUI.FilterBasedTaskPanel.FilterBasedTaskPanel):
 		self.settingsSizer.Add(self.panel, (1, 0), flag = wx.EXPAND | wx.ALL)
 		#self.settingsNotebook.AddPage(self.panel,"Procedure list")
    
-   
-
-			
-	def getFilters(self, name):
-		"""
-		Created: 21.07.2006, KP
-		Description: Retrieve the filters with the given name
-		"""   
-				
-		func = lambda f, n = name:f.getName() == n
-		return filter(func, self.filters)
-		
-	def getFilter(self, name, index = 0):
-		"""
-		Created: 21.07.2006, KP
-		Description: Retrieve the filter with the given name, using optionally an index 
-					 if there are more than one filter with the same name
-		"""   
-		return self.getFilters(name)[index]
+  
 		
 	def onMoveFilterDown(self, event):
 		"""

@@ -96,6 +96,7 @@ class MorphologicalFilter(lib.ProcessingFilter.ProcessingFilter):
 		Created: 13.04.2006, KP
 		Description: Execute the filter with given inputs and return the output
 		"""            
+		print "Median filter.execute()"
 		if not lib.ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
 		

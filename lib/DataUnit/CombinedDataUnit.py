@@ -354,7 +354,7 @@ class CombinedDataUnit(DataUnit):
 					timePoint	The timepoint from which to generate the preview
 								Defaults to 0
 		"""
-		
+		Logging.info("Creating preview",kw="dataunit")
 		preview = None
 		if timePoint > self.getNumberOfTimepoints():
 			timepoint = self.getNumberOfTimepoints() - 1
@@ -391,10 +391,10 @@ class CombinedDataUnit(DataUnit):
 		# we return just the normal preview) or the combined result
 		# (n = last chl+1) has	been requested
 		if self.merging or not self.outputChannels or (n in self.outputChannels and self.outputChannels[n]):
-			#Logging.info("outputChls = ", self.outputChannels, "n = ", n)
-			
+
 			# If the renew flag is true, we need to regenerate the preview
-			if renew:				 
+			if renew:
+				Logging.info("Renewing preview", kw="dataunit")
 				# We then tell the module to reset itself and
 				# initialize it again
 				self.module.reset()
@@ -404,25 +404,23 @@ class CombinedDataUnit(DataUnit):
 				images = []
 				
 				for dataunit in self.sourceunits:
-					Logging.info("Adding source image data", kw = "dataunit")
+					Logging.info("Adding source image data from %d dataunits"%len(self.sourceunits), kw = "dataunit")
 					image = dataunit.getTimepoint(timePoint)
 					x, y, z = image.GetDimensions()
 					
 					# If a whole volume is requested, but the data is acquired with an update
 					# extent selecting only a single slice, then reset the update extent
 					if depth < 0 and z <= 1:
-						print "Setting update extent to whole extent"
 						image.SetUpdateExtent(image.GetWholeExtent())
 						image.Update()
 					elif depth >= 0 and not (x or y):
 						# If a dataset has not been updated yet, then set the appropriate
 						# update extent
 						ex0, ex1, ey0, ey1, ez0, ez1 = image.GetWholeExtent()
-						print "Setting update extent to ", ex0, ex1, ey0, ey1, depth, depth
 						image.SetUpdateExtent(ex0, ex1, ey0, ey1, depth, depth)
 						image.Update()
 					self.module.addInput(dataunit, image)
-
+			Logging.info("Getting preview from module %s"%str(self.module), kw="dataunit")
 			preview = self.module.getPreview(depth)
 
 
@@ -431,14 +429,16 @@ class CombinedDataUnit(DataUnit):
 				merged.append((preview, self.getColorTransferFunction()))
 			
 			if len(merged) > 1:
+				Logging.info("Merging the output channels", kw="dataunit")
 				merge = vtkbxd.vtkImageColorMerge()
 				
-				for data, ctf in merged:					   
+				for data, ctf in merged:
 					merge.AddInput(data)
 					merge.AddLookupTable(ctf)
-				
 				preview = merge.GetOutput()
-			elif len(merged) == 1 and scripting.preferRGB:				  
+				
+			elif len(merged) == 1 and scripting.preferRGB:
+				Logging.info("Mapping the output to color",kw="dataunit")
 				data, ctf = merged[0]
 				maptocolor = vtk.vtkImageMapToColors()
 				maptocolor.SetInput(data)
@@ -449,7 +449,7 @@ class CombinedDataUnit(DataUnit):
 		if not showOrig and not self.doOrig:
 			self.origPreview = preview
 		elif showOrig:
-			self.doOrig = 1			 
+			self.doOrig = 1
 		return preview
 			
 		

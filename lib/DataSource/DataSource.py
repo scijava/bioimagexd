@@ -273,8 +273,6 @@ class DataSource:
 		#print "Storing to cache", filepath
 		writer.SetFileName(filepath)
 		writer.Write()
-		print "Wrote ", purpose
-		Logging.backtrace()
 		
 	def getMIPdata(self, n):
 		"""

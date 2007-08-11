@@ -49,10 +49,8 @@ class FilterBasedModule(lib.Module.Module):
 		"""
 		lib.Module.Module.__init__(self, **kws)
 
-		# TODO: remove attributes that already exist in base class!
 		self.cached = None
 		self.cachedTimepoint = -1
-		#self.x,self.y,self.z=0,0,0
 		self.depth = 8
 		self.extent = None
 		self.images = []
@@ -60,7 +58,6 @@ class FilterBasedModule(lib.Module.Module):
 		self.preview = None
 		self.running = 0
 		self.settings = None
-		
 		self.reset()
 		
 	def setModified(self, flag):
@@ -68,6 +65,7 @@ class FilterBasedModule(lib.Module.Module):
 		Created: 14.05.2006
 		Description: Set a flag indicating whether filter parameters have changed
 		"""
+		Logging.info("Setting modified to %s"%str(not not flag), kw="dataunit")
 		self.modified = flag
 
 	def reset(self):
@@ -78,13 +76,10 @@ class FilterBasedModule(lib.Module.Module):
 					 that control the processing are changed and the
 					 preview data becomes invalid.
 		"""
-		#self.images = []
 		lib.Module.Module.reset(self)
-		#self.extent = None
 		del self.cached
-		self.cached = None		  
+		self.cached = None 
 		self.cachedTimepoint = -1
-		#self.n=-1
 
 	def addInput(self, dataunit, data): #TODO: test
 		"""
@@ -95,21 +90,25 @@ class FilterBasedModule(lib.Module.Module):
 		self.settings = dataunit.getSettings()
 
 
-	def getPreview(self, depth):		#TODO: test
+	def getPreview(self, depth):
 		"""
 		Created: 04.04.2006, KP
 		Description: Does a preview calculation for the x-y plane at depth depth
 		"""
 		if self.settings.get("ShowOriginal"):
-			return self.images[0]		 
-		if not self.preview:
+			Logging.info("Returning original data", kw="dataunit")
+			return self.images[0] 
+		if not self.preview or self.modified:
 			dims = self.images[0].GetDimensions()
 			if depth >= 0:
 				self.extent = (0, dims[0]-1, 0, dims[1]-1, depth, depth)
 			else:
 				self.extent = None
+			Logging.info("Creating preview...", kw="dataunit")
 			self.preview = self.doOperation(preview=1)
 			self.extent = None
+		else:
+			Logging.info("Modified = %s so returning old preview"%str(not not self.modified), kw="dataunit")
 		return self.preview
 
 
@@ -117,7 +116,7 @@ class FilterBasedModule(lib.Module.Module):
 		"""
 		Created: 04.04.2006, KP
 		Description: Manipulationes the dataset in specified ways
-		"""		   
+		"""
 		if preview and not self.modified and self.cached and self.timepoint == self.cachedTimepoint:
 			Logging.info("--> Returning cached data, timepoint=%d, cached timepoint=%d" % 
 				(self.timepoint, self.cachedTimepoint), kw = "pipeline")
@@ -126,7 +125,7 @@ class FilterBasedModule(lib.Module.Module):
 			del self.cached
 			self.cached = None
 		filterlist = self.settings.get("FilterList")
-		
+		Logging.info("Creating preview, filters = %s"%str(filterlist), kw="pipeline")
 		if type(filterlist) == type(""):
 			filterlist = []
 		self.settings.set("FilterList", filterlist)
@@ -164,7 +163,7 @@ class FilterBasedModule(lib.Module.Module):
 				if not currfilter.itkFlag and nextfilter.itkFlag:
 					Logging.info("Executing VTK side before switching to ITK", kw="pipeline")
 					data = optimize.optimize(image = data, releaseData = 1)
-					data.Update()				 
+					data.Update()
 				
 			
 			lastfilter = currfilter
@@ -176,18 +175,15 @@ class FilterBasedModule(lib.Module.Module):
 			
 			data = [data]
 			if not data:
-				#print "GOT NO DATA"
 				self.cached = None
-				return None				   
+				return None
 	
-		#print "DATA=",data
 		data = data[0]
 		if data.__class__ != vtk.vtkImageData:
 			
 			data = lastfilter.convertITKtoVTK(data)#,imagetype=lasttype)
 
 		data.ReleaseDataFlagOff()
-		#self.cached = data
-		#self.cachedTimepoint = self.timepoint
+
 		self.modified = 0
 		return data
