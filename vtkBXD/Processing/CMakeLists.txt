@@ -42,10 +42,17 @@ IF (VTK_WRAP_PYTHON AND VTKBXD_WRAP_PYTHON)
 SET_TARGET_PROPERTIES (vtkBXDProcessingPython
   PROPERTIES  INSTALL_NAME_DIR "${CMAKE_INSTALL_PREFIX}/lib"
 )
+# Python extension modules on Windows must have the extension ".pyd"
+# instead of ".dll" as of Python 2.5.  Older python versions do support
+# this suffix.
+IF(WIN32 AND NOT CYGWIN)
+  SET_TARGET_PROPERTIES(vtkBXDProcessingPython PROPERTIES SUFFIX ".pyd")
+ENDIF(WIN32 AND NOT CYGWIN)
 
 SET_TARGET_PROPERTIES (vtkBXDProcessingPythonD
   PROPERTIES  INSTALL_NAME_DIR "${CMAKE_INSTALL_PREFIX}/lib"
 )
+
 
   TARGET_LINK_LIBRARIES(vtkBXDProcessingPythonD vtkBXDProcessing vtkImaging vtkImagingPythonD vtkCommon vtkCommonPythonD vtkIO vtkIOPythonD vtkWidgets vtkWidgetsPythonD vtkFiltering vtkFilteringPythonD)
   TARGET_LINK_LIBRARIES(vtkBXDProcessingPython vtkBXDProcessingPythonD)
