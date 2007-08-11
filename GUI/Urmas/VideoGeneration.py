@@ -324,9 +324,6 @@ class VideoGeneration(wx.Panel):
 		sel = self.formatMenu.GetSelection()
 		if sel == 1:
 			codec = self.outputFormat.GetSelection()
-			#self.needpad=self.padding[codec]
-			#self.padFrames.Enable(self.needpad)
-#            self.onPadFrames(None)
 			
 	def onUpdatePreset(self, event):
 		"""
@@ -374,12 +371,8 @@ class VideoGeneration(wx.Panel):
 		
 		self.totalFramesLabel = wx.StaticText(self, -1, "Frames:")
 		self.durationLabel = wx.StaticText(self, -1, "Duration:")
-		#self.fpsLabel=wx.StaticText(self,-1,"Frames:\t%.2f / s"%self.fps)
-		#self.padfpsLabel=wx.StaticText(self,-1,"Padding:\t%.2f / s"%(24-self.fps))
 
-		#self.totalFrames=wx.TextCtrl(self,-1,"%d"%self.frames,size=(50,-1),style=wx.TE_PROCESS_ENTER)
 		self.totalFrames = wx.StaticText(self, -1, "%d" % self.frames, size = (50, -1))
-		#self.totalFrames.Bind(wx.EVT_TEXT,self.onUpdateFrames)
 		
 		t = self.dur
 		h = t / 3600
@@ -427,8 +420,6 @@ class VideoGeneration(wx.Panel):
 		self.outputsizer.Add(self.frameRateLbl, (n, 0))
 		self.outputsizer.Add(self.frameRate, (n, 1))
 		n += 1
-		#self.outputsizer.Add(self.padFrames,(n,0))
-		#n+=1
 		self.outputsizer.Add(self.durationLabel, (n, 0))
 		self.outputsizer.Add(self.duration, (n, 1))        
 		n += 1
@@ -438,9 +429,6 @@ class VideoGeneration(wx.Panel):
 		self.outputsizer.Add(self.qualityLbl, (n, 0), span = (1, 2))
 		n += 1
 		self.outputsizer.Add(self.qualitySlider, (n, 0), span = (1, 2))
-		#self.outputsizer.Add(self.fpsLabel,(n,0))
-		#n+=1
-		#self.outputsizer.Add(self.padfpsLabel,(n,0))
 		
 		self.mainsizer.Add(self.outputstaticbox, (0, 0))
 	
@@ -507,39 +495,6 @@ class VideoGeneration(wx.Panel):
 		filename = GUI.Dialogs.askSaveAsFileName(self, "Select output filename", "movie.%s" % ext, wc)
 		if filename:
 			self.videofile.SetValue(filename)
-			
 
-	def onUpdateFrames(self, event):
-		"""
-		Created: 26.04.2005, KP
-		Description: Update the frame amount
-		""" 
-		try:
-			val = int(self.totalFrames.GetValue())
-			self.frames = val
-			self.fps = self.frames / float(self.dur)
-			Logging.info("frames per second = ", self.fps, kw = "animator")
-			#self.fpsLabel.SetLabel("Rendered frames:\t%.3f / second"%self.fps)
-			self.frameRate.SetLabel("%.2f" % self.fps)
-			#self.onPadFrames(None)
-		except:
-			return
 		
-	def onPadFrames(self, event):
-		"""
-		Created: 26.04.2005, KP
-		Description: Toggle padding of frames
-		"""     
-		if not self.needpad:
-			self.padfpsLabel.SetLabel("Padding frames: 0 / second")        
-			return
-		
-		#chk=event.IsChecked()
-		chk = self.padFrames.GetValue()
-		if chk:
-			frames = float(self.frameRate.GetValue())
-			pad = frames - self.fps
-			self.padfpsLabel.SetLabel("Padding frames: %.3f / second" % pad)
-		else:
-			self.padfpsLabel.SetLabel("Padding frames: 0 / second")
 

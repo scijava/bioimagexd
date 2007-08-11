@@ -8,7 +8,7 @@
 
  This is a module that contains classes for annotating images using the OGL library
  
- Copyright (C) 2005  BioImageXD Project
+ Copyright (C) 2005	 BioImageXD Project
  See CREDITS.txt for details
 
  This program is free software; you can redistribute it and/or modify
@@ -40,6 +40,17 @@ import lib.ImageOperations
 count = {}
 
 class OGLAnnotation(GUI.ogl.Shape):
+	AnnotationType = ""
+	def __init__(self, canvas = None):
+		"""
+		Created: 10.08.2007, KP
+		Description: initialize the annotation
+		"""
+		GUI.ogl.Shape.__init__(self, canvas)
+		self._offset = (0,0)
+		self._name = ""
+		self.attrList = ["_xpos","_ypos","scaleFactor"]
+		self.eraseRect = None
 
 	def unoffset(self, attr, value):
 		"""
@@ -80,14 +91,10 @@ class OGLAnnotation(GUI.ogl.Shape):
 		Created: 28.05.2007, KP
 		Description: return the offset of the annotation
 		"""
-		if not hasattr(self, "_offset"):
-			return 0, 0
 		return self._offset
 		
 		
 	def OnDrawControlPoints(self, dc):
-#		if not self._drawHandles:	19.7.07, MB
-#			return
 
 		dc.SetBrush(wx.BLACK_BRUSH)
 		dc.SetPen(wx.BLACK_PEN)
@@ -97,8 +104,6 @@ class OGLAnnotation(GUI.ogl.Shape):
 			control.SetBrush(wx.WHITE_BRUSH)
 			control.Draw(dc)
 			
-#    def OnDrawOutline(self, dc,x,y,w,h):
-#        print "Draw outline to ",x,y,"width=",w,"height=",h
 			
 	def getAsMaskImage(self):
 		"""
@@ -114,7 +119,7 @@ class OGLAnnotation(GUI.ogl.Shape):
 			insMap[(x, y)] = 1
 		parent = self.GetCanvas()
 		mx, my, mz = parent.dataUnit.getDimensions()
-		return lib.ImageOperations.getMaskFromPoints(insMap, mx, my, mz)        
+		return lib.ImageOperations.getMaskFromPoints(insMap, mx, my, mz)		
 			
 	def setName(self, name):
 		"""
@@ -157,16 +162,13 @@ class OGLAnnotation(GUI.ogl.Shape):
 					 that it can later be reconstructed based on said dictionary
 		"""
 		ret = {}
-#		for i in self.__dict__.keys():
-#			print self.__dict__[i].__class__
-#			ret[i] = self.__dict__[i]
+
 		if "_xpos" not in self.attrList:
 			self.attrList.append("_xpos")
 			self.attrList.append("_ypos")
 			self.attrList.append("scaleFactor")
 		for attr in self.attrList:
 			self.addAttr(ret, attr)
-#		print "Pickling contains =", ret
 		return {self.AnnotationType: ret}
 
 	def restoreFrom(self, annotation):
@@ -196,7 +198,7 @@ class OGLAnnotation(GUI.ogl.Shape):
 			return 0
 		return self.doMaintainAspect
 			
-	def OnSizingDragLeft(self, pt, draw, x, y, keys = 0, attachment = 0):            
+	def OnSizingDragLeft(self, pt, draw, x, y, keys = 0, attachment = 0):			 
 		"""
 		Created: 06.11.2006, KP
 		Description: A handler for sizing events. This is overriden to manipulate
@@ -226,7 +228,7 @@ class OGLAnnotation(GUI.ogl.Shape):
 		srcdc.SelectObject(bg)
 		x0, y0, w, h = self.GetCanvas().GetClientRect()
 
-		if not hasattr(self, "eraseRect"):
+		if not self.eraseRect:
 			xp, yp = self.GetX(), self.GetY()
 			minX, minY = self.GetBoundingBoxMin()
 			maxX, maxY = self.GetBoundingBoxMax()
@@ -239,7 +241,7 @@ class OGLAnnotation(GUI.ogl.Shape):
 				penWidth = self._pen.GetWidth()
 
 			tox, toy = x0 + topLeftX, y0 + topLeftY
-			tox -=  penWidth
+			tox -=	penWidth
 			toy -= penWidth
 
 			dc.Blit(tox, toy, maxX + 4 + 2 * penWidth, maxY + 4 + 2 * penWidth, srcdc, tox, toy)
@@ -289,7 +291,7 @@ class MyScalebar(OGLAnnotation, GUI.ogl.RectangleShape):
 		"""
 		Created: 21.06.2006, KP
 		Description: Set the scaling factor in use
-		"""   
+		"""	  
 		w, h, x, y = self._width, self._height, self.GetX(), self.GetY()
 
 		x -= self._offset[0]
@@ -305,7 +307,7 @@ class MyScalebar(OGLAnnotation, GUI.ogl.RectangleShape):
 		w *= self.scaleFactor
 		h *= self.scaleFactor
 		x *= self.scaleFactor
-		y *= self.scaleFactor        
+		y *= self.scaleFactor		 
 
 		x += self._offset[0]
 		y += self._offset[1]
@@ -331,7 +333,7 @@ class MyScalebar(OGLAnnotation, GUI.ogl.RectangleShape):
 		"""
 		Created: 04.07.2005, KP
 		Description: Create the list of micrometer lengths to snap to
-		"""   
+		"""	  
 		self.snapToMicro = [0.5, 1.0, 2.0, 5.0, 7.5, 10.0, 12.5, 15.0, 17.5]
 		for i in range(40, 10000, 5):
 			i /= 2.0
@@ -343,7 +345,7 @@ class MyScalebar(OGLAnnotation, GUI.ogl.RectangleShape):
 		"""
 		Created: 04.07.2005, KP
 		Description: Snap the length in pixels to a round number of micrometers
-		"""   
+		"""	  
 		vx = self.voxelSize[0]
 		vx *= 1000000
 	   
@@ -481,7 +483,7 @@ class MyPolygonSketch(OGLAnnotation, GUI.ogl.Shape):
 		"""
 		Created: 26.06.2006, KP
 		Description: Initialization
-		"""   
+		"""	  
 		GUI.ogl.Shape.__init__(self)
 		self.scaleFactor = zoomFactor
 		self._isROI = 1
@@ -562,20 +564,20 @@ class MyPolygonSketch(OGLAnnotation, GUI.ogl.Shape):
 		"""
 		Created: 21.06.2006, KP
 		Description: Set the scaling factor in use
-		"""   
+		"""	  
 		pass
 		
 	def getCoveredPoints(self):
 		return []
 
-class MyRectangle(OGLAnnotation, GUI.ogl.RectangleShape):   
+class MyRectangle(OGLAnnotation, GUI.ogl.RectangleShape):	
 
 	AnnotationType = "RECTANGLE"
 	def __init__(self, w, h, zoomFactor = 1.0):
 		"""
 		Created: 26.06.2006, KP
 		Description: Initialization
-		"""   
+		"""	  
 		GUI.ogl.RectangleShape.__init__(self, w, h)
 		self.scaleFactor = zoomFactor
 		self._isROI = 1
@@ -590,7 +592,7 @@ class MyRectangle(OGLAnnotation, GUI.ogl.RectangleShape):
 		"""
 		Created: 21.06.2006, KP
 		Description: Set the scaling factor in use
-		"""   
+		"""	  
 		w, h, x, y = self._width, self._height, self.GetX(), self.GetY()
 
 		x -= self._offset[0]
@@ -606,7 +608,7 @@ class MyRectangle(OGLAnnotation, GUI.ogl.RectangleShape):
 		w *= self.scaleFactor
 		h *= self.scaleFactor
 		x *= self.scaleFactor
-		y *= self.scaleFactor        
+		y *= self.scaleFactor		 
 
 		x += self._offset[0]
 		y += self._offset[1]
@@ -614,7 +616,7 @@ class MyRectangle(OGLAnnotation, GUI.ogl.RectangleShape):
 		self.SetWidth(w)
 		self.SetHeight(h)
 		self.SetX(x)
-		self.SetY(y)    
+		self.SetY(y)	
 		self.ResetControlPoints()
 
 	def getCoveredPoints(self):
@@ -639,14 +641,14 @@ class MyRectangle(OGLAnnotation, GUI.ogl.RectangleShape):
 				pts[(x, y)] = 1
 		return pts
 
-class MyCircle(OGLAnnotation, GUI.ogl.CircleShape):    
+class MyCircle(OGLAnnotation, GUI.ogl.CircleShape):	   
 
 	AnnotationType = "CIRCLE"
 	def __init__(self, diam, zoomFactor = 1.0):
 		"""
 		Created: 26.06.2006, KP
 		Description: Initialization
-		"""   
+		"""	  
 		GUI.ogl.CircleShape.__init__(self, diam)
 		self.scaleFactor = zoomFactor
 		self._isROI = 1
@@ -661,7 +663,7 @@ class MyCircle(OGLAnnotation, GUI.ogl.CircleShape):
 		"""
 		Created: 21.06.2006, KP
 		Description: Set the scaling factor in use
-		"""   
+		"""	  
 		w, h, x, y = self._width, self._height, self.GetX(), self.GetY()
 
 		x -= self._offset[0]
@@ -677,7 +679,7 @@ class MyCircle(OGLAnnotation, GUI.ogl.CircleShape):
 		w *= self.scaleFactor
 		h *= self.scaleFactor
 		x *= self.scaleFactor
-		y *= self.scaleFactor        
+		y *= self.scaleFactor		 
 
 		x += self._offset[0]
 		y += self._offset[1]
@@ -685,14 +687,14 @@ class MyCircle(OGLAnnotation, GUI.ogl.CircleShape):
 		self.SetWidth(w)
 		self.SetHeight(h)
 		self.SetX(x)
-		self.SetY(y)    
-		self.ResetControlPoints()        
+		self.SetY(y)	
+		self.ResetControlPoints()		 
 
 	def getCoveredPoints(self):
 		cx, cy = self.GetX(), self.GetY()
 		ox, oy = self.GetCanvas().getOffset()
 		cx -= ox
-		cy -= oy        
+		cy -= oy		
 		
 		cx //= self.scaleFactor
 		cy //= self.scaleFactor
@@ -741,8 +743,8 @@ class MyCircle(OGLAnnotation, GUI.ogl.CircleShape):
 			penWidth = self._pen.GetWidth()
 
 		
-#        dc.SetPen(wx.Pen(wx.Colour((255,0,0)),2))
-#        dc.DrawLine(1,1,500,1)
+#		 dc.SetPen(wx.Pen(wx.Colour((255,0,0)),2))
+#		 dc.DrawLine(1,1,500,1)
 		
 		dc.SetPen(self.GetBackgroundPen())
 		dc.SetBrush(self.GetBackgroundBrush())
@@ -769,19 +771,19 @@ class MyCircle(OGLAnnotation, GUI.ogl.CircleShape):
 		memdc.SelectObject(bg)
 		dc.Blit(cx0, cy0, abs(cx1 - cx0), abs(cy1 - cy0), memdc, cx0, cy0)
 		memdc.SelectObject(wx.NullBitmap)
-#        dc.DrawBitmap(bg,0,0)
+#		 dc.DrawBitmap(bg,0,0)
 		   
 		img = bg.ConvertToImage()
 		dc.DestroyClippingRegion()
 
-class MyPolygon(OGLAnnotation, GUI.ogl.PolygonShape):    
+class MyPolygon(OGLAnnotation, GUI.ogl.PolygonShape):	 
 
 	AnnotationType = "FINISHED_POLYGON"
 	def __init__(self, zoomFactor = 1.0):
 		"""
 		Created: 26.06.2006, KP
 		Description: Initialization
-		"""   
+		"""	  
 		GUI.ogl.PolygonShape.__init__(self)
 		self.scaleFactor = zoomFactor
 		self._isROI = 1
@@ -837,7 +839,7 @@ class MyPolygon(OGLAnnotation, GUI.ogl.PolygonShape):
 		"""
 		Created: 16.06.2006, KP
 		Description: Calculte the center of mass of polygon
-		"""          
+		"""			 
 		A = 0
 		for i, pt in enumerate(points[:-1]):
 			
@@ -861,7 +863,7 @@ class MyPolygon(OGLAnnotation, GUI.ogl.PolygonShape):
 		"""
 		Created: 21.06.2006, KP
 		Description: Set the scaling factor in use
-		"""   
+		"""	  
 		pts = []
 		
 		for x, y in self._points:
@@ -925,7 +927,7 @@ class MyPolygon(OGLAnnotation, GUI.ogl.PolygonShape):
 		cx, cy = self.GetX(), self.GetY()
 		ox, oy = self.GetCanvas().getOffset()
 		cx -= ox
-		cy -= oy        
+		cy -= oy		
 		x0 += cx
 		y0 += cy
 		x1 += cx
@@ -1003,7 +1005,7 @@ class MyPolygon(OGLAnnotation, GUI.ogl.PolygonShape):
 			self.GetEventHandler().OnDraw(dc, self.GetX(), self.GetY())
 			
 		dc.DrawBitmap(self.GetCanvas().buffer, x0, y0)
-		self.UpdateOriginalPoints()	
+		self.UpdateOriginalPoints() 
 	 
 class MyPolygonControlPoint(GUI.ogl.PolygonControlPoint):
 
@@ -1090,7 +1092,7 @@ class MyEvtHandler(GUI.ogl.ShapeEvtHandler):
 				shape.setName(value)
 				self.parent.repaintHelpers()
 				self.parent.Refresh()
-			dlg.Destroy()        
+			dlg.Destroy()		 
 
 	def OnLeftClick(self, x, y, keys = 0, attachment = 0):
 		shape = self.GetShape()

@@ -13,7 +13,7 @@
  That means they should never assume a given context, but use absolute values,
  references etc. 
  
- Copyright (C) 2006  BioImageXD Project
+ Copyright (C) 2006	 BioImageXD Project
  See CREDITS.txt for details
 
  This program is free software; you can redistribute it and/or modify
@@ -39,7 +39,9 @@ import Logging
 import types
 import inspect
 import messenger
-#import scripting
+# We need to import scripting, since the Command objects that are executed in this namespace often
+# refer to scripting
+import scripting
 
 MENU_CMD = "Menu command"
 OPEN_CMD = "Load file"
@@ -62,6 +64,9 @@ class ScriptRecorder:
 		self.imports = []
 		messenger.connect(None, "record_code", self.onRecordCode)
 		self.code = []
+		# Just a debug message, but we access scripting so pylint doesn't claim it's unused
+		if scripting.record:
+			Logging.info("Recording is enabled", kw="scripting")
 
 	def getText(self):
 		"""
@@ -121,7 +126,7 @@ class Command:
 		self.imports = imports
 		icode = ""
 		for i in imports:
-			icode = "    import %s\n%s" % (i, icode)
+			icode = "	 import %s\n%s" % (i, icode)
 		if not paramDo and do_code:
 			#exec(do_code,self.globals,self.locals)
 			
@@ -150,14 +155,22 @@ class Command:
 		"""
 		lines = code.split("\n")
 		for i, line in enumerate(lines):
-			lines[i] = "    %s" % line.strip()
+			lines[i] = "	%s" % line.strip()
 		code = "\n".join(lines)
 		return code
 
 	def getDesc(self):
+		"""
+		Created: KP
+		Description: return the description of this command
+		"""
 		return self.desc
 		
 	def isUndoed(self):
+		"""
+		Created: Kp
+		Description: return a flag indicating whether this command has been undoed
+		"""
 		return self._undoed
 	
 	def canUndo(self):
@@ -190,7 +203,6 @@ class Command:
 		Created: 13.02.2006, KP
 		Description: Execute an action that cancels the action of this command
 		"""			
-		print "Running", self.undocmd, "code=", self.undo_code
 		self.undocmd(self)
 		self._undoed = 1
 		messenger.send(None, "execute_command", self, 1)
@@ -202,8 +214,16 @@ class Command:
 		messenger.send(None, "record_code", code, self.imports)		
 
 	def getCategory(self):
+		"""
+		Created: KP
+		Description: return the category this command belongs to
+		"""
 		return self.category
 		
 	def __str__(self):
+		"""
+		Created:KP
+		Description: return a string representation of this object
+		"""
 		return "Command: %s (%s)" % (self.category, self.desc)
 		

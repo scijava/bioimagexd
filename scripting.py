@@ -8,7 +8,7 @@
 
  A module containing various shortcuts for ease of scripting the app
  
- Copyright (C) 2006  BioImageXD Project
+ Copyright (C) 2006	 BioImageXD Project
  See CREDITS.txt for details
 
  This program is free software; you can redistribute it and/or modify
@@ -30,12 +30,6 @@ __author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.21 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
-#import Configuration
-#from optimize import execute_limited
-#import optimize as mem
-#import pickle
-#import vtk
-
 from lib.DataUnit.DataUnitSetting import DataUnitSettings
 import sys
 import os
@@ -47,11 +41,43 @@ import Logging
 import ConfigParser
 
 class MyConfigParser(ConfigParser.RawConfigParser):
-
+	"""
+	Created: KP
+	Description: a config parser that doesn't ignore the case of the options and sections
+	"""
 	def optionxform(self, optionstr):
+		"""
+		Created: KP
+		Description: A method used to transform the option names. Does not transform the names in any way
+		"""
 		return optionstr
 
 settingsCache = {}
+record = 0
+conf = None
+
+app = None
+mainWindow = None
+visualizer = None
+processingManager = None
+resamplingDisabled = 0
+resampleToFit = 0
+processingTimepoint = -1
+wantAlphaChannel = 1
+preferRGB = 1
+wantWholeDataset = 0
+inIO = 0
+uncleanLog = None
+logFile = None
+recorder = None
+
+WHOLE_DATASET			= -1
+WHOLE_DATASET_NO_ALPHA	= -2
+COLOR_BEGINNER = (200, 200, 200)
+COLOR_INTERMEDIATE = (202, 202, 226)
+COLOR_EXPERIENCED = (224, 188, 232)
+
+dialogs = {}
 
 def getCacheKey(paths, names, taskname):
 	"""
@@ -99,37 +125,23 @@ def storeSettingsToCache(key, settingsList):
 		value.append((setting.getDatasetNumber(), configParser))
 	settingsCache[key] = value
 
-record = 0
-conf = None
 
-app = None
-mainWindow = None
-visualizer = None
-processingManager = None
-resamplingDisabled = 0
-resampleToFit = 0
-processingTimepoint = -1
-wantAlphaChannel = 1
-preferRGB = 1
-wantWholeDataset = 0
-inIO = 0
-uncleanLog = None
-logFile = None
-recorder = None
-
-WHOLE_DATASET			= -1
-WHOLE_DATASET_NO_ALPHA	= -2
-COLOR_BEGINNER = (200, 200, 200)
-COLOR_INTERMEDIATE = (202, 202, 226)
-COLOR_EXPERIENCED = (224, 188, 232)
-
-dialogs = {}
 
 def registerDialog(dialogName, dialog):
+	"""
+	Created: KP
+	Description: Register a dialog object with a given name. This can be used when creating
+				 a script requires that a dialog be accesible from various different parts
+				 of the software.
+	"""
 	global dialogs
 	dialogs[dialogName] = dialog
 
 def unregisterDialog(dialogName):
+	"""
+	Created: KP
+	Description: unregister a dialog with a given name. this just removes the reference
+	"""
 	del dialogs[dialogName]
 
 def main_is_frozen():
@@ -164,7 +176,7 @@ def get_windows_appdir():
 		return appbase
 	
 	return os.path.join("C:\\", "Documents and Settings", getpass.getuser(), "Application Data")		
-   	
+	
 def get_log_dir():
 	"""
 	Created: Unknown, KP

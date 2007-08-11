@@ -44,7 +44,6 @@ from lib.persistence import state_pickler
 
 def getVTKState(obj):
 	"""
-	Method: getVTKState()
 	Created: 02.08.2005, KP
 	Description: Get state of vtk object
 	"""     
@@ -64,7 +63,6 @@ def getVTKState(obj):
 	
 def setVTKState(obj, state):
 	"""
-	Method: setVTKState()
 	Created: 02.08.2005, KP
 	Description: Set state of vtk object
 	"""     
@@ -79,13 +77,11 @@ def setVTKState(obj, state):
 
 class UrmasPersist:
 	"""
-	Class: UrmasPersist
 	Created: 11.04.2005, KP
 	Description: A class that persists / depersists an Urmas timeline
 	"""    
 	def __init__(self, control):
 		"""
-		Method: __init__
 		Created: 11.04.2005, KP
 		Description: Initialize
 		"""           
@@ -93,15 +89,13 @@ class UrmasPersist:
 	
 	def persist(self, filename):
 		"""
-		Method: persist(filename)
 		Created: 11.04.2005, KP
 		Description: Write the given control object out to the given file
 		"""    
-		p = state_pickler.dump(self.control, open(filename, "w"))
+		state_pickler.dump(self.control, open(filename, "w"))
 		
 	def depersist(self, filename):
 		"""
-		Method: depersist(filename)
 		Created: 11.04.2005, KP
 		Description: Read the given control object from a given file
 		"""               

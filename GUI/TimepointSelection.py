@@ -62,21 +62,14 @@ class TimepointSelectionPanel(scrolled.ScrolledPanel):
 		self.parentPath = parentStr
 
 		self.timepointButtonSizer = wx.GridBagSizer()
-		#,style=wx.RAISED_BORDER
-		#self.buttonFrame = scrolled.ScrolledPanel(self, -1,size=(640,300))
 		self.buttonFrame = wx.Panel(self, -1, size = (640, 300))
 		self.buttonFrame.SetSizer(self.timepointButtonSizer)
 		self.buttonFrame.SetAutoLayout(True)
-		#self.buttonFrame.SetupScrolling()
-		#self.timepointLbl=wx.StaticText(self,-1,"Select timepoints")
-		
-		#self.mainsizer.Add(self.timepointLbl,(0,0))        
 		
 		self.selectbox = wx.StaticBox(self, -1, "Select Timepoints")
 		self.selectboxsizer = wx.StaticBoxSizer(self.selectbox, wx.VERTICAL)
 		self.selectboxsizer.Add(self.buttonFrame, 1)
 		
-		#self.mainsizer.Add(self.buttonFrame,(1,0),span=(1,2),flag=wx.EXPAND|wx.ALL)
 		self.mainsizer.Add(self.selectboxsizer, (0, 0), flag = wx.EXPAND | wx.ALL)
 		
 		self.buttonList = []
@@ -281,11 +274,6 @@ class TimepointSelection(wx.Dialog):
 		self.SetSizer(self.mainsizer)
 		self.SetAutoLayout(True)
 		self.mainsizer.Fit(self)
-		#self.mainsizer.SetSizeHints(self)
-		
-	def setLabel(self, lbl):
-		#TODO: Commented out in the TimepointSelectionPanel __init__
-		self.panel.timepointLbl.SetLabel(lbl)
 		
 	def createButtonBox(self):
 		"""
