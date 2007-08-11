@@ -8,7 +8,7 @@
 
  A module containing the segmentation filters for the processing task.
 							
- Copyright (C) 2005  BioImageXD Project
+ Copyright (C) 2005	 BioImageXD Project
  See CREDITS.txt for details
 
  This program is free software; you can redistribute it and/or modify
@@ -48,7 +48,7 @@ import types
 import vtk
 import vtkbxd
 import wx
-import  wx.lib.mixins.listctrl  as  listmix
+import	wx.lib.mixins.listctrl	as	listmix
 
 SEGMENTATION = "Segmentation"
 MEASUREMENT = "Measurements"
@@ -173,21 +173,21 @@ class WatershedObjectList(wx.ListCtrl, listmix.ListCtrlSelectionManagerMix):
 		self.Freeze()
 		for i, cog in enumerate(centersofmassList):
 			if self.GetItemCount() < i:
-				self.InsertStringItem(i, "")        
+				self.InsertStringItem(i, "")		
 			self.SetStringItem(i, 3, "(%d,%d,%d)" % (cog))
 		self.Thaw()
 		self.Refresh()
 	def setVolumes(self, volumeList):
 		self.volumeList = volumeList
-#        self.SetItemCount(len(volumeList))
+#		 self.SetItemCount(len(volumeList))
 		self.Freeze()
 		for i, (vol, volum) in enumerate(volumeList):
 			#print "vol=",vol,"volum=",volum
 			if self.GetItemCount() <= i:
 				self.InsertStringItem(i, "")
 			self.SetStringItem(i, 0, "#%d" % i)
-			self.SetStringItem(i, 1, "%d px" % (vol))   
-			self.SetStringItem(i, 2, u"%.3f \u03BCm" % (volum))   
+			self.SetStringItem(i, 1, "%d px" % (vol))	
+			self.SetStringItem(i, 2, u"%.3f \u03BCm" % (volum))	  
 		self.Thaw()
 		self.Refresh()
 		
@@ -195,7 +195,7 @@ class WatershedObjectList(wx.ListCtrl, listmix.ListCtrlSelectionManagerMix):
 		self.avgIntList = avgIntList
 		for i, avgint in enumerate(avgIntList):
 			if self.GetItemCount() < i:
-				self.InsertStringItem(i, "")        
+				self.InsertStringItem(i, "")		
 			self.SetStringItem(i, 4, "%.3f" % (avgint))
 		self.Refresh()
 		
@@ -225,7 +225,7 @@ class WatershedObjectList(wx.ListCtrl, listmix.ListCtrlSelectionManagerMix):
 	def OnItemActivated(self, event):
 		self.currentItem = event.m_itemIndex
 		
-		if len(self.centersOfMassList) >= self.currentItem:            
+		if len(self.centersOfMassList) >= self.currentItem:			   
 			centerofmass = self.centersOfMassList[self.currentItem]
 			x, y, z = centerofmass
 			
@@ -254,22 +254,22 @@ class WatershedObjectList(wx.ListCtrl, listmix.ListCtrlSelectionManagerMix):
 
 
 def getFilters():
-    """
-    Created: 10.8.2007, SS
-    Description: This function returns all the filter-classes in this module and is used by ManipulationFilters.getFilterList()
-    """
-    return [ThresholdFilter, MaskFilter, ITKWatershedSegmentationFilter,
-            MorphologicalWatershedSegmentationFilter, ConnectedComponentFilter,
-            MaximumObjectsFilter, ITKRelabelImageFilter, ITKInvertIntensityFilter,
-            MeasureVolumeFilter, ITKConfidenceConnectedFilter, ITKConnectedThresholdFilter,
-            ITKNeighborhoodConnectedThresholdFilter, ITKOtsuThresholdFilter]
+	"""
+	Created: 10.8.2007, SS
+	Description: This function returns all the filter-classes in this module and is used by ManipulationFilters.getFilterList()
+	"""
+	return [ThresholdFilter, MaskFilter, ITKWatershedSegmentationFilter,
+			MorphologicalWatershedSegmentationFilter, ConnectedComponentFilter,
+			MaximumObjectsFilter, ITKRelabelImageFilter, ITKInvertIntensityFilter,
+			MeasureVolumeFilter, ITKConfidenceConnectedFilter, ITKConnectedThresholdFilter,
+			ITKNeighborhoodConnectedThresholdFilter, ITKOtsuThresholdFilter]
 
 
 class ThresholdFilter(ProcessingFilter.ProcessingFilter):
 	"""
 	Created: 15.04.2006, KP
 	Description: A thresholding filter
-	"""     
+	"""		
 	name = "Threshold"
 	category = SEGMENTATION
 	level = scripting.COLOR_BEGINNER
@@ -278,7 +278,7 @@ class ThresholdFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 13.04.2006, KP
 		Description: Initialization
-		"""        
+		"""		   
 		ProcessingFilter.ProcessingFilter.__init__(self, (1, 1))
 		self.vtkfilter = vtk.vtkImageThreshold()
 		self.origCtf = None
@@ -299,13 +299,13 @@ class ThresholdFilter(ProcessingFilter.ProcessingFilter):
 			return scripting.COLOR_INTERMEDIATE
 		
 		
-		return scripting.COLOR_BEGINNER                
+		return scripting.COLOR_BEGINNER				   
 	
 	def setParameter(self, parameter, value):
 		"""
 		Created: 18.01.2007, KP
 		Description: Set a value for the parameter
-		"""    
+		"""	   
 		
 		oldval = self.parameters.get(parameter, "ThisIsABadValueThatNoOneWillEverUse")
 		ProcessingFilter.ProcessingFilter.setParameter(self, parameter, value)
@@ -316,7 +316,7 @@ class ThresholdFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 15.04.2006, KP
 		Description: Return the list of parameters needed for configuring this GUI
-		"""            
+		"""			   
 		return [["Threshold", (("LowerThreshold", "UpperThreshold"), )],
 				["Replace voxels", (("ReplaceIn", "ReplaceOut"), )],
 				["", ("ReplaceInValue", )],
@@ -328,7 +328,7 @@ class ThresholdFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 15.04.2006, KP
 		Description: Return the description of the parameter
-		"""    
+		"""	   
 		return self.descs[parameter]
 		
 	def getLongDesc(self, parameter):
@@ -343,7 +343,7 @@ class ThresholdFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 15.04.2006, KP
 		Description: Return the type of the parameter
-		"""    
+		"""	   
 		if parameter in ["LowerThreshold", "UpperThreshold"]:
 			return GUIBuilder.THRESHOLD
 		elif parameter in ["ReplaceIn", "ReplaceOut", "Demonstrate"]:
@@ -354,7 +354,7 @@ class ThresholdFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 15.04.2006, KP
 		Description: Return the default value of a parameter
-		"""     
+		"""		
 		if parameter == "LowerThreshold":
 			return 128
 		if parameter == "UpperThreshold":
@@ -372,15 +372,15 @@ class ThresholdFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 26.1.2006, KP
 		Description: Restore palette upon filter removal
-		"""        
-		if self.origCtf:            
-			self.dataUnit.getSettings().set("ColorTransferFunction", self.origCtf)            
+		"""		   
+		if self.origCtf:			
+			self.dataUnit.getSettings().set("ColorTransferFunction", self.origCtf)			  
 			
 	def execute(self, inputs, update = 0, last = 0):
 		"""
 		Created: 15.04.2006, KP
 		Description: Execute the filter with given inputs and return the output
-		"""            
+		"""			   
 		
 		if not ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
@@ -389,7 +389,7 @@ class ThresholdFilter(ProcessingFilter.ProcessingFilter):
 			if self.origCtf:
 				self.dataUnit.getSettings().set("ColorTransferFunction", self.origCtf)
 				if self.gui:
-					self.gui.histograms[0].setReplacementCTF(None)                
+					self.gui.histograms[0].setReplacementCTF(None)				  
 					self.gui.histograms[0].updatePreview(renew = 1)
 			self.vtkfilter.SetInput(image)
 			
@@ -439,7 +439,7 @@ class MaskFilter(ProcessingFilter.ProcessingFilter):
 	"""
 	Created: 13.04.2006, KP
 	Description: A base class for image mathematics filters
-	"""     
+	"""		
 	name = "Mask"
 	category = SEGMENTATION
 	level = scripting.COLOR_BEGINNER
@@ -447,7 +447,7 @@ class MaskFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 13.04.2006, KP
 		Description: Initialization
-		"""        
+		"""		   
 		ProcessingFilter.ProcessingFilter.__init__(self, inputs)
 		self.vtkfilter = vtk.vtkImageMask()
 		
@@ -457,30 +457,30 @@ class MaskFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 13.04.2006, KP
 		Description: Return the description of the parameter
-		"""    
+		"""	   
 		return self.descs[parameter]
 			
 	def getInputName(self, n):
 		"""
 		Created: 17.04.2006, KP
 		Description: Return the name of the input #n
-		"""          
+		"""			 
 		if n == 1:
-			return "Source dataset %d" % n    
+			return "Source dataset %d" % n	  
 		return "Mask dataset"
 		
 	def getDefaultValue(self, parameter):
 		"""
 		Created: 15.04.2006, KP
 		Description: Return the default value of a parameter
-		"""    
+		"""	   
 		return 0
 		
 	def getParameters(self):
 		"""
 		Created: 15.04.2006, KP
 		Description: Return the list of parameters needed for configuring this GUI
-		"""            
+		"""			   
 		return [["", ("OutputValue", )]]
 
 
@@ -488,7 +488,7 @@ class MaskFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 15.04.2006, KP
 		Description: Execute the filter with given inputs and return the output
-		"""                    
+		"""					   
 		if not ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
 		self.vtkfilter.SetInput1(self.getInput(1))
@@ -498,13 +498,13 @@ class MaskFilter(ProcessingFilter.ProcessingFilter):
 		
 		if update:
 			self.vtkfilter.Update()
-		return self.vtkfilter.GetOutput()   
+		return self.vtkfilter.GetOutput()	
 
 class ITKWatershedSegmentationFilter(ProcessingFilter.ProcessingFilter):
 	"""
 	Created: 13.04.2006, KP
 	Description: A filter for doing watershed segmentation
-	"""     
+	"""		
 	name = "Watershed segmentation (old)"
 	category = WATERSHED
 	
@@ -512,7 +512,7 @@ class ITKWatershedSegmentationFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 13.04.2006, KP
 		Description: Initialization
-		"""        
+		"""		   
 		ProcessingFilter.ProcessingFilter.__init__(self, inputs)
 		
 		
@@ -535,7 +535,7 @@ class ITKWatershedSegmentationFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 15.04.2006, KP
 		Description: Return the default value of a parameter
-		"""    
+		"""	   
 		if parameter == "Threshold":
 			return 0.01
 		if parameter == "Level":
@@ -546,7 +546,7 @@ class ITKWatershedSegmentationFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 13.04.2006, KP
 		Description: Return the type of the parameter
-		"""    
+		"""	   
 		return types.FloatType
 		
 		
@@ -554,7 +554,7 @@ class ITKWatershedSegmentationFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 15.04.2006, KP
 		Description: Return the list of parameters needed for configuring this GUI
-		"""            
+		"""			   
 		return [["", ("Threshold", "Level")]]
 
 
@@ -562,7 +562,7 @@ class ITKWatershedSegmentationFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 15.04.2006, KP
 		Description: Execute the filter with given inputs and return the output
-		"""                    
+		"""					   
 		if not ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
 			
@@ -578,17 +578,17 @@ class ITKWatershedSegmentationFilter(ProcessingFilter.ProcessingFilter):
 		if update:
 			self.itkfilter.Update()
 			print "Updating..." 
-		data = self.itkfilter.GetOutput()            
+		data = self.itkfilter.GetOutput()			 
 		print "Returning ", data
 		#if last:
-		#    return self.convertITKtoVTK(data,imagetype="UL3")
+		#	 return self.convertITKtoVTK(data,imagetype="UL3")
 		return data
 
 class MorphologicalWatershedSegmentationFilter(ProcessingFilter.ProcessingFilter):
 	"""
 	Created: 05.07.2006, KP
 	Description: A filter for doing morphological watershed segmentation
-	"""     
+	"""		
 	name = "Morphological watershed segmentation"
 	category = WATERSHED
 	level = scripting.COLOR_BEGINNER
@@ -596,7 +596,7 @@ class MorphologicalWatershedSegmentationFilter(ProcessingFilter.ProcessingFilter
 		"""
 		Created: 13.04.2006, KP
 		Description: Initialization
-		"""        
+		"""		   
 		ProcessingFilter.ProcessingFilter.__init__(self, inputs)
 		
 		
@@ -608,9 +608,9 @@ class MorphologicalWatershedSegmentationFilter(ProcessingFilter.ProcessingFilter
 		self.noPalette = 1
 		self.n = 0
 		self.ignoreObjects = 2
-		self.relabelFilter  = None
+		self.relabelFilter	= None
 		self.itkfilter = None
-		#scripting.loadITK(filters=1)            
+		#scripting.loadITK(filters=1)			 
 
 	def getParameterLevel(self, parameter):
 		"""
@@ -621,13 +621,13 @@ class MorphologicalWatershedSegmentationFilter(ProcessingFilter.ProcessingFilter
 			return scripting.COLOR_INTERMEDIATE
 		
 		
-		return scripting.COLOR_BEGINNER                    
+		return scripting.COLOR_BEGINNER					   
 			
 	def getDefaultValue(self, parameter):
 		"""
 		Created: 15.04.2006, KP
 		Description: Return the default value of a parameter
-		"""    
+		"""	   
 		if parameter == "Level":
 			return 5
 		
@@ -637,7 +637,7 @@ class MorphologicalWatershedSegmentationFilter(ProcessingFilter.ProcessingFilter
 		"""
 		Created: 13.04.2006, KP
 		Description: Return the type of the parameter
-		"""    
+		"""	   
 		if parameter == "MarkWatershedLine":
 			return types.BooleanType
 		return types.IntType
@@ -647,24 +647,24 @@ class MorphologicalWatershedSegmentationFilter(ProcessingFilter.ProcessingFilter
 		"""
 		Created: 15.04.2006, KP
 		Description: Return the list of parameters needed for configuring this GUI
-		"""            
+		"""			   
 		return [["", ("Level", "MarkWatershedLine")], ["Minimum object size (in pixels)", ("Threshold", )]]
 
 	def onRemove(self):
 		"""
 		Created: 26.1.2006, KP
 		Description: Restore palette upon filter removal
-		"""        
-		if self.origCtf:            
+		"""		   
+		if self.origCtf:			
 			print "\n\n\nRESTORING ORIGINAL CTF"
-			self.dataUnit.getSettings().set("ColorTransferFunction", self.origCtf)            
+			self.dataUnit.getSettings().set("ColorTransferFunction", self.origCtf)			  
 			
 	
 	def execute(self, inputs, update = 0, last = 0):
 		"""
 		Created: 15.04.2006, KP
 		Description: Execute the filter with given inputs and return the output
-		"""                    
+		"""					   
 		if not ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
 			
@@ -675,8 +675,8 @@ class MorphologicalWatershedSegmentationFilter(ProcessingFilter.ProcessingFilter
 				ul3 = itk.Image.UL3
 				self.itkfilter = itk.MorphologicalWatershedImageFilter[image, ul3].New()
 			except:
-			    Logging.info("Failed to get MorphologicalWatershedImageFilter, trying watershed module")
-			    traceback.print_exc()
+				Logging.info("Failed to get MorphologicalWatershedImageFilter, trying watershed module")
+				traceback.print_exc()
 				import watershed
 				self.itkfilter = watershed.MorphologicalWatershedImageFilter[image, ul3].New()
 		
@@ -692,7 +692,7 @@ class MorphologicalWatershedSegmentationFilter(ProcessingFilter.ProcessingFilter
 		self.setImageType("UL3")
 		self.itkfilter.Update()
 		print "Morphological watershed took", time.time() - t, "seconds"
-		data = self.itkfilter.GetOutput()            
+		data = self.itkfilter.GetOutput()			 
 		if not self.relabelFilter:
 			
 			self.relabelFilter = itk.RelabelComponentImageFilter[data, data].New()
@@ -705,7 +705,7 @@ class MorphologicalWatershedSegmentationFilter(ProcessingFilter.ProcessingFilter
 				
 			#self.setImageType("UL3")
 	
-		data = self.relabelFilter.GetOutput()            
+		data = self.relabelFilter.GetOutput()			 
 				
 		self.relabelFilter.Update()
 		print "done"
@@ -721,14 +721,14 @@ class MorphologicalWatershedSegmentationFilter(ProcessingFilter.ProcessingFilter
 				ctf.AddRGBPoint(0, 1.0, 1.0, 1.0)
 			if not self.origCtf:
 				self.origCtf = self.dataUnit.getColorTransferFunction()
-			self.dataUnit.getSettings().set("ColorTransferFunction", ctf)    
+			self.dataUnit.getSettings().set("ColorTransferFunction", ctf)	 
 			val = [0, 0, 0]
 			ctf.GetColor(1, val)
 			print "ctf value at 1 =", val, "n colors =", n
 			settings.set("PaletteColors", n)
 		else:
 			if self.segCtf:
-				self.dataUnit.getSettings().set("ColorTransferFunction", self.segCtf)    
+				self.dataUnit.getSettings().set("ColorTransferFunction", self.segCtf)	 
 			
 		#print "Returning ",data
 		return data
@@ -737,7 +737,7 @@ class ConnectedComponentFilter(ProcessingFilter.ProcessingFilter):
 	"""
 	Created: 12.07.2006, KP
 	Description: A filter for labeling all separate objects in an image
-	"""     
+	"""		
 	name = "Connected component labeling"
 	category = SEGMENTATION
 	
@@ -745,16 +745,16 @@ class ConnectedComponentFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 13.04.2006, KP
 		Description: Initialization
-		"""        
+		"""		   
 		ProcessingFilter.ProcessingFilter.__init__(self, inputs)
 		self.ignoreObjects = 1
 		
-		self.descs = {"Threshold": "Remove objects with less voxels than:"}        
+		self.descs = {"Threshold": "Remove objects with less voxels than:"}		   
 		self.itkFlag = 1
 		self.origCtf = None
 		self.relabelFilter = None
 		self.itkfilter = None
-		#scripting.loadITK(filters=1)            
+		#scripting.loadITK(filters=1)			 
 		
 	def getParameterLevel(self, parameter):
 		"""
@@ -767,14 +767,14 @@ class ConnectedComponentFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 15.04.2006, KP
 		Description: Return the default value of a parameter
-		"""    
+		"""	   
 		return 0
 		
 	def getType(self, parameter):
 		"""
 		Created: 13.04.2006, KP
 		Description: Return the type of the parameter
-		"""    
+		"""	   
 		return types.IntType
 		
 		
@@ -782,7 +782,7 @@ class ConnectedComponentFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 15.04.2006, KP
 		Description: Return the list of parameters needed for configuring this GUI
-		"""            
+		"""			   
 		#return [["",("Level",)]]
 		return [["Minimum object size (in pixels)", ("Threshold", )]]
 
@@ -790,23 +790,23 @@ class ConnectedComponentFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 26.1.2006, KP
 		Description: Restore palette upon filter removal
-		"""        
-		if self.origCtf:            
-			self.dataUnit.getSettings().set("ColorTransferFunction", self.origCtf)            
+		"""		   
+		if self.origCtf:			
+			self.dataUnit.getSettings().set("ColorTransferFunction", self.origCtf)			  
 			
 	
 	def execute(self, inputs, update = 0, last = 0):
 		"""
 		Created: 15.04.2006, KP
 		Description: Execute the filter with given inputs and return the output
-		"""                    
+		"""					   
 		if not ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			print "\n\nFailed to execute"
 			return None
 			
 		image = self.getInput(1)
 		image = self.convertVTKtoITK(image)
-		if not self.itkfilter:            
+		if not self.itkfilter:			  
 			self.itkfilter = itk.ConnectedComponentImageFilter[image, itk.Image.UL3].New()
 
 		self.itkfilter.SetInput(image)
@@ -815,7 +815,7 @@ class ConnectedComponentFilter(ProcessingFilter.ProcessingFilter):
 		self.setImageType("UL3")
 		self.itkfilter.Update()
 		#print "Morphological watershed took",time.time()-t,"seconds"
-		data = self.itkfilter.GetOutput()        
+		data = self.itkfilter.GetOutput()		 
 	
 		if not self.relabelFilter:
 			
@@ -827,7 +827,7 @@ class ConnectedComponentFilter(ProcessingFilter.ProcessingFilter):
 				
 			#self.setImageType("UL3")
 	
-		data = self.relabelFilter.GetOutput()            
+		data = self.relabelFilter.GetOutput()			 
 			
 		self.relabelFilter.Update()
 		n = self.relabelFilter.GetNumberOfObjects()
@@ -839,7 +839,7 @@ class ConnectedComponentFilter(ProcessingFilter.ProcessingFilter):
 			ctf = lib.ImageOperations.watershedPalette(0, n)
 			if not self.origCtf:
 				self.origCtf = self.dataUnit.getColorTransferFunction()
-			self.dataUnit.getSettings().set("ColorTransferFunction", ctf)    
+			self.dataUnit.getSettings().set("ColorTransferFunction", ctf)	 
 			settings.set("PaletteColors", n)
 		return data
 
@@ -847,7 +847,7 @@ class MaximumObjectsFilter(ProcessingFilter.ProcessingFilter):
 	"""
 	Created: 12.07.2006, KP
 	Description: A filter for labeling all separate objects in an image
-	"""     
+	"""		
 	name = "Threshold for maximum object number"
 	category = SEGMENTATION
 	
@@ -855,7 +855,7 @@ class MaximumObjectsFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 13.04.2006, KP
 		Description: Initialization
-		"""        
+		"""		   
 		ProcessingFilter.ProcessingFilter.__init__(self, inputs)
 		
 		
@@ -863,7 +863,7 @@ class MaximumObjectsFilter(ProcessingFilter.ProcessingFilter):
 		self.itkFlag = 1
 		
 		self.itkfilter = None
-		#scripting.loadITK(filters=1)            
+		#scripting.loadITK(filters=1)			 
 
 	def getParameterLevel(self, parameter):
 		"""
@@ -876,7 +876,7 @@ class MaximumObjectsFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 15.04.2006, KP
 		Description: Return the default value of a parameter
-		"""    
+		"""	   
 		if parameter == "MinSize":
 			return 15
 		return 0
@@ -885,7 +885,7 @@ class MaximumObjectsFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 13.04.2006, KP
 		Description: Return the type of the parameter
-		"""    
+		"""	   
 		return types.IntType
 		
 		
@@ -893,7 +893,7 @@ class MaximumObjectsFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 15.04.2006, KP
 		Description: Return the list of parameters needed for configuring this GUI
-		"""            
+		"""			   
 		return [["", ("MinSize", )]]
 		
 
@@ -902,13 +902,13 @@ class MaximumObjectsFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 15.04.2006, KP
 		Description: Execute the filter with given inputs and return the output
-		"""                    
+		"""					   
 		if not ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
 			
 		image = self.getInput(1)
 		image = self.convertVTKtoITK(image)
-		if not self.itkfilter:            
+		if not self.itkfilter:			  
 			self.itkfilter = itk.ThresholdMaximumConnectedComponentsImageFilter[image].New()
 
 		self.itkfilter.SetOutsideValue(0)
@@ -919,7 +919,7 @@ class MaximumObjectsFilter(ProcessingFilter.ProcessingFilter):
 		self.setImageType("UL3")
 		self.itkfilter.Update()
 		#print "Morphological watershed took",time.time()-t,"seconds"
-		data = self.itkfilter.GetOutput()            
+		data = self.itkfilter.GetOutput()			 
 		#print "Returning ",data
 		return data
 
@@ -928,7 +928,7 @@ class ITKRelabelImageFilter(ProcessingFilter.ProcessingFilter):
 	"""
 	Created: 13.04.2006, KP
 	Description: Re-label an image produced by watershed segmentation
-	"""     
+	"""		
 	name = "Re-label image"
 	category = WATERSHED
 	level = scripting.COLOR_BEGINNER
@@ -936,7 +936,7 @@ class ITKRelabelImageFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 13.04.2006, KP
 		Description: Initialization
-		"""        
+		"""		   
 		ProcessingFilter.ProcessingFilter.__init__(self, inputs)
 		
 		
@@ -959,14 +959,14 @@ class ITKRelabelImageFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 15.04.2006, KP
 		Description: Return the default value of a parameter
-		"""    
+		"""	   
 		return 0
 		
 	def getType(self, parameter):
 		"""
 		Created: 13.04.2006, KP
 		Description: Return the type of the parameter
-		"""    
+		"""	   
 		return types.IntType
 		
 		
@@ -974,7 +974,7 @@ class ITKRelabelImageFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 15.04.2006, KP
 		Description: Return the list of parameters needed for configuring this GUI
-		"""            
+		"""			   
 		return [["Minimum object size (in pixels)", ("Threshold", )]]
 
 
@@ -982,7 +982,7 @@ class ITKRelabelImageFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 15.04.2006, KP
 		Description: Execute the filter with given inputs and return the output
-		"""                    
+		"""					   
 		if not ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
 			
@@ -998,19 +998,19 @@ class ITKRelabelImageFilter(ProcessingFilter.ProcessingFilter):
 		
 		#self.setImageType("UL3")
 
-		data = self.itkfilter.GetOutput()            
+		data = self.itkfilter.GetOutput()			 
 				
 		self.itkfilter.Update()
 		
 		#if last:
-		#    return self.convertITKtoVTK(data,imagetype="UL3")
+		#	 return self.convertITKtoVTK(data,imagetype="UL3")
 		return data
 
 class ITKInvertIntensityFilter(ProcessingFilter.ProcessingFilter):
 	"""
 	Created: 05.07.2006, KP
 	Description: Invert the intensity of the image
-	"""     
+	"""		
 	name = "Invert intensity"
 	category = WATERSHED
 	
@@ -1018,7 +1018,7 @@ class ITKInvertIntensityFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 13.04.2006, KP
 		Description: Initialization
-		"""        
+		"""		   
 		ProcessingFilter.ProcessingFilter.__init__(self, inputs)
 				
 		self.descs = {}
@@ -1029,7 +1029,7 @@ class ITKInvertIntensityFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 15.04.2006, KP
 		Description: Return the default value of a parameter
-		"""    
+		"""	   
 
 		return 0
 		
@@ -1037,7 +1037,7 @@ class ITKInvertIntensityFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 13.04.2006, KP
 		Description: Return the type of the parameter
-		"""    
+		"""	   
 		return types.IntType
 		
 		
@@ -1045,7 +1045,7 @@ class ITKInvertIntensityFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 15.04.2006, KP
 		Description: Return the list of parameters needed for configuring this GUI
-		"""            
+		"""			   
 		return []
 
 
@@ -1053,7 +1053,7 @@ class ITKInvertIntensityFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 15.04.2006, KP
 		Description: Execute the filter with given inputs and return the output
-		"""                    
+		"""					   
 		if not ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
 			
@@ -1067,7 +1067,7 @@ class ITKInvertIntensityFilter(ProcessingFilter.ProcessingFilter):
 		
 		#self.setImageType("UL3")
 
-		data = self.itkfilter.GetOutput()            
+		data = self.itkfilter.GetOutput()			 
 		
 		
 		self.itkfilter.Update()
@@ -1078,7 +1078,7 @@ class MeasureVolumeFilter(ProcessingFilter.ProcessingFilter):
 	"""
 	Created: 15.05.2006, KP
 	Description: 
-	"""     
+	"""		
 	name = "Analyze objects"
 	category = MEASUREMENT
 	level = scripting.COLOR_BEGINNER
@@ -1086,10 +1086,10 @@ class MeasureVolumeFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 13.04.2006, KP
 		Description: Initialization
-		"""        
+		"""		   
 		ProcessingFilter.ProcessingFilter.__init__(self, inputs)
 		self.itkFlag = 1
-		self.descs = {}      
+		self.descs = {}		 
 		self.values = None
 		self.centersofmass = None
 		self.avgintCalc = None
@@ -1112,7 +1112,7 @@ class MeasureVolumeFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 15.04.2006, KP
 		Description: Return the default value of a parameter
-		"""    
+		"""	   
 		if not self.dataUnit:
 			return "statistics.csv"
 		else:
@@ -1122,7 +1122,7 @@ class MeasureVolumeFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 13.04.2006, KP
 		Description: Return the type of the parameter
-		"""    
+		"""	   
 		return GUIBuilder.FILENAME
 		
 		
@@ -1130,7 +1130,7 @@ class MeasureVolumeFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 15.04.2006, KP
 		Description: Return the list of parameters needed for configuring this GUI
-		"""            
+		"""			   
 		return [["Measurement results",
 		(("StatisticsFile", "Select the file to which the statistics will be writen", "*.csv"), )]]
 		
@@ -1138,7 +1138,7 @@ class MeasureVolumeFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 09.07.2006, KP
 		Description: Optionally write the output of this module during the processing
-		"""   
+		"""	  
 		fileroot = self.parameters["StatisticsFile"].split(".")
 		fileroot = ".".join(fileroot[:-1])
 		dircomp = os.path.dirname(fileroot)
@@ -1167,7 +1167,7 @@ class MeasureVolumeFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 13.04.2006, KP
 		Description: Return the GUI for this filter
-		"""              
+		"""				 
 		gui = ProcessingFilter.ProcessingFilter.getGUI(self, parent, taskPanel)
 		
 		if not self.reportGUI:
@@ -1207,7 +1207,7 @@ class MeasureVolumeFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 15.04.2006, KP
 		Description: Execute the filter with given inputs and return the output
-		"""                    
+		"""					   
 		if not ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
 		image = self.getInput(1)
@@ -1225,7 +1225,7 @@ class MeasureVolumeFilter(ProcessingFilter.ProcessingFilter):
 		self.itkfilter.SetInput(image)
 		self.itkfilter.Update()
 		#self.setImageType("UL3")
-		data = self.itkfilter.GetOutput()            
+		data = self.itkfilter.GetOutput()			 
 				   
 			
 		x, y, z = self.dataUnit.getVoxelSize()
@@ -1241,7 +1241,7 @@ class MeasureVolumeFilter(ProcessingFilter.ProcessingFilter):
 		umcentersofmass = []
 		avgints = []
 		
-		vtkimage = self.convertITKtoVTK(image)                
+		vtkimage = self.convertITKtoVTK(image)				  
 		origInput = self.getInput(2)
 		origInput.Update()
 		
@@ -1271,7 +1271,7 @@ class MeasureVolumeFilter(ProcessingFilter.ProcessingFilter):
 		avgintCalc.Update()
 					
 		#print "done"
-		if self.prevFilter:        
+		if self.prevFilter:		   
 			startIntensity = self.prevFilter.ignoreObjects
 		else:
 			startIntensity = 0
@@ -1293,10 +1293,10 @@ class MeasureVolumeFilter(ProcessingFilter.ProcessingFilter):
 					c2.append(v * voxelSizes[i])
 				centersofmass.append(tuple(c))
 				umcentersofmass.append(tuple(c2))
-				values.append((volume, volume * vol))                
+				values.append((volume, volume * vol))				 
 				avgints.append(avgInt)
-#        print "volumes=",values
-#        print "centers of mass=",centersofmass
+#		 print "volumes=",values
+#		 print "centers of mass=",centersofmass
 		#print "avg. ints=",avgints
 			
 
@@ -1325,7 +1325,7 @@ class ITKConfidenceConnectedFilter(ProcessingFilter.ProcessingFilter):
 	"""
 	Created: 29.05.2006, KP
 	Description: A class for doing confidence connected segmentation
-	"""     
+	"""		
 	name = "Confidence connected threshold"
 	category = REGIONGROWING
 	
@@ -1355,13 +1355,13 @@ class ITKConfidenceConnectedFilter(ProcessingFilter.ProcessingFilter):
 			return scripting.COLOR_INTERMEDIATE
 		
 		
-		return scripting.COLOR_BEGINNER            
+		return scripting.COLOR_BEGINNER			   
 			
 	def getDefaultValue(self, parameter):
 		"""
 		Created: 26.05.2006, KP
 		Description: Return the default value of a parameter
-		"""    
+		"""	   
 		if parameter == "Seed":
 			return []
 		elif parameter == "Multiplier":
@@ -1376,7 +1376,7 @@ class ITKConfidenceConnectedFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 26.05.2006, KP
 		Description: Return the type of the parameter
-		"""    
+		"""	   
 		if parameter == "Seed":
 			return GUIBuilder.PIXELS
 		elif parameter == "Multiplier":
@@ -1391,7 +1391,7 @@ class ITKConfidenceConnectedFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 15.04.2006, KP
 		Description: Return the list of parameters needed for configuring this GUI
-		"""            
+		"""			   
 		return [["Seed", (("Seed", ), )],
 		["Segmentation", ("Neighborhood", "Multiplier", "Iterations")]]
 
@@ -1400,12 +1400,11 @@ class ITKConfidenceConnectedFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 15.04.2006, KP
 		Description: Execute the filter with given inputs and return the output
-		"""                    
+		"""					   
 		if not ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
 			
 		image = self.getInput(1)
-#        print "Using as input",image
 		image = self.convertVTKtoITK(image)
 		self.itkfilter.SetInput(image)
 		
@@ -1415,7 +1414,7 @@ class ITKConfidenceConnectedFilter(ProcessingFilter.ProcessingFilter):
 			pixelidx.SetElement(1, y)
 			pixelidx.SetElement(2, z)
 			print "Using as seed", x, y, z, pixelidx
-			self.itkfilter.AddSeed(pixelidx)    
+			self.itkfilter.AddSeed(pixelidx)	
 			
 		iters = self.parameters["Iterations"]
 		self.itkfilter.SetNumberOfIterations(iters)
@@ -1431,16 +1430,14 @@ class ITKConfidenceConnectedFilter(ProcessingFilter.ProcessingFilter):
 			self.itkfilter.Update()
 			
 		data = self.itkfilter.GetOutput()
-		#if last:
-		#    return self.convertITKtoVTK(data,imagetype="UC3")
-			
-		return data            
+
+		return data			   
 
 class ITKConnectedThresholdFilter(ProcessingFilter.ProcessingFilter):
 	"""
 	Created: 26.05.2006, KP
 	Description: A class for doing confidence connected segmentation
-	"""     
+	"""		
 	name = "Connected threshold"
 	category = REGIONGROWING
 	level = scripting.COLOR_BEGINNER
@@ -1448,8 +1445,8 @@ class ITKConnectedThresholdFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 26.05.2006, KP
 		Description: Initialization
-		"""        
-		ProcessingFilter.ProcessingFilter.__init__(self, inputs)        
+		"""		   
+		ProcessingFilter.ProcessingFilter.__init__(self, inputs)		
 		
 		self.descs = {"Seed": "Seed voxel", "Upper": "Upper threshold", "Lower": "Lower threshold"}
 		self.itkFlag = 1
@@ -1463,7 +1460,7 @@ class ITKConnectedThresholdFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 26.05.2006, KP
 		Description: Return the default value of a parameter
-		"""    
+		"""	   
 		if parameter == "Seed":
 			return []
 		elif parameter == "Upper":
@@ -1475,7 +1472,7 @@ class ITKConnectedThresholdFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 26.05.2006, KP
 		Description: Return the type of the parameter
-		"""    
+		"""	   
 		if parameter in ["Lower", "Upper"]:
 			return GUIBuilder.THRESHOLD
 		return GUIBuilder.PIXELS
@@ -1484,7 +1481,7 @@ class ITKConnectedThresholdFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 15.04.2006, KP
 		Description: Return the list of parameters needed for configuring this GUI
-		"""            
+		"""			   
 		return [["Seed", (("Seed", ), )],
 		["Threshold", (("Lower", "Upper"), )]]
 
@@ -1493,12 +1490,12 @@ class ITKConnectedThresholdFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 15.04.2006, KP
 		Description: Execute the filter with given inputs and return the output
-		"""                    
+		"""					   
 		if not ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
 			
 		image = self.getInput(1)
-#        print "Using as input",image
+#		 print "Using as input",image
 		image = self.convertVTKtoITK(image)
 		self.itkfilter.SetInput(image)
 		self.itkfilter.SetLower(self.parameters["Lower"])
@@ -1510,7 +1507,7 @@ class ITKConnectedThresholdFilter(ProcessingFilter.ProcessingFilter):
 			pixelidx.SetElement(1, y)
 			pixelidx.SetElement(2, z)
 			print "Using as seed", x, y, z, pixelidx
-			self.itkfilter.AddSeed(pixelidx)    
+			self.itkfilter.AddSeed(pixelidx)	
 		print "Threshold=", self.parameters["Lower"], self.parameters["Upper"]
 		
 		
@@ -1520,15 +1517,15 @@ class ITKConnectedThresholdFilter(ProcessingFilter.ProcessingFilter):
 			
 		data = self.itkfilter.GetOutput()
 		#if last:
-		#    return self.convertITKtoVTK(data,imagetype="UC3")
+		#	 return self.convertITKtoVTK(data,imagetype="UC3")
 			
-		return data      
+		return data		 
 		
 class ITKNeighborhoodConnectedThresholdFilter(ProcessingFilter.ProcessingFilter):
 	"""
 	Created: 29.05.2006, KP
 	Description: A class for doing connected threshold segmentation 
-	"""     
+	"""		
 	name = "Neighborhood connected threshold"
 	category = REGIONGROWING
 	
@@ -1536,7 +1533,7 @@ class ITKNeighborhoodConnectedThresholdFilter(ProcessingFilter.ProcessingFilter)
 		"""
 		Created: 29.05.2006, KP
 		Description: Initialization
-		"""        
+		"""		   
 		ProcessingFilter.ProcessingFilter.__init__(self, inputs)
 		self.setImageType("UC3")
 		
@@ -1558,13 +1555,13 @@ class ITKNeighborhoodConnectedThresholdFilter(ProcessingFilter.ProcessingFilter)
 			return scripting.COLOR_INTERMEDIATE
 		
 		
-		return scripting.COLOR_BEGINNER                        
+		return scripting.COLOR_BEGINNER						   
 		
 	def getDefaultValue(self, parameter):
 		"""
 		Created: 29.05.2006, KP
 		Description: Return the default value of a parameter
-		"""    
+		"""	   
 		if parameter == "Seed":
 			return []
 		elif parameter == "Upper":
@@ -1580,7 +1577,7 @@ class ITKNeighborhoodConnectedThresholdFilter(ProcessingFilter.ProcessingFilter)
 		"""
 		Created: 29.05.2006, KP
 		Description: Return the type of the parameter
-		"""    
+		"""	   
 		if parameter in ["Lower", "Upper"]:
 			return GUIBuilder.THRESHOLD
 		elif "Radius" in parameter:
@@ -1591,7 +1588,7 @@ class ITKNeighborhoodConnectedThresholdFilter(ProcessingFilter.ProcessingFilter)
 		"""
 		Created: 29.05.2006, KP
 		Description: Return the list of parameters needed for configuring this GUI
-		"""            
+		"""			   
 		return [["Seed", (("Seed", ), )],
 		["Threshold", (("Lower", "Upper"), )],
 		["Neighborhood", ("RadiusX", "RadiusY", "RadiusZ")]]
@@ -1601,12 +1598,12 @@ class ITKNeighborhoodConnectedThresholdFilter(ProcessingFilter.ProcessingFilter)
 		"""
 		Created: 29.05.2006, KP
 		Description: Execute the filter with given inputs and return the output
-		"""                    
+		"""					   
 		if not ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
 			
 		image = self.getInput(1)
-#        print "Using as input",image
+#		 print "Using as input",image
 		image = self.convertVTKtoITK(image)
 		self.itkfilter.SetInput(image)
 		self.itkfilter.SetLower(self.parameters["Lower"])
@@ -1617,9 +1614,7 @@ class ITKNeighborhoodConnectedThresholdFilter(ProcessingFilter.ProcessingFilter)
 			pixelidx.SetElement(0, x)
 			pixelidx.SetElement(1, y)
 			pixelidx.SetElement(2, z)
-			print "Using as seed", x, y, z, pixelidx
-			self.itkfilter.AddSeed(pixelidx)    
-		print "Threshold=", self.parameters["Lower"], self.parameters["Upper"]
+			self.itkfilter.AddSeed(pixelidx)	
 		
 		rx, ry, rz = self.parameters["RadiusX"], self.parameters["RadiusY"], self.parameters["RadiusZ"]
 		
@@ -1627,24 +1622,22 @@ class ITKNeighborhoodConnectedThresholdFilter(ProcessingFilter.ProcessingFilter)
 		size.SetElement(0, rx)
 		size.SetElement(0, ry)
 		size.SetElement(0, rz)
-		print "size=", size
 		self.itkfilter.SetRadius(size)
-		print "Using a radius of ", rx, ry
 		self.itkfilter.SetReplaceValue(255)
 		if update:
 			self.itkfilter.Update()
 			
 		data = self.itkfilter.GetOutput()
 		#if last:
-		#    return self.convertITKtoVTK(data,imagetype="UC3")
+		#	 return self.convertITKtoVTK(data,imagetype="UC3")
 			
-		return data            
+		return data			   
 
 class ITKOtsuThresholdFilter(ProcessingFilter.ProcessingFilter):
 	"""
 	Created: 26.05.2006, KP
 	Description: A class for thresholding the image using the otsu thresholding
-	"""     
+	"""		
 	name = "Otsu threshold"
 	category = SEGMENTATION
 	
@@ -1652,7 +1645,7 @@ class ITKOtsuThresholdFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 26.05.2006, KP
 		Description: Initialization
-		"""        
+		"""		   
 		ProcessingFilter.ProcessingFilter.__init__(self, inputs)
 		
 		
@@ -1667,14 +1660,14 @@ class ITKOtsuThresholdFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 26.05.2006, KP
 		Description: Return the default value of a parameter
-		"""    
+		"""	   
 		return 0
 		
 	def getType(self, parameter):
 		"""
 		Created: 26.05.2006, KP
 		Description: Return the type of the parameter
-		"""    
+		"""	   
 		if parameter in ["Lower", "Upper"]:
 			return GUIBuilder.THRESHOLD
 				
@@ -1682,7 +1675,7 @@ class ITKOtsuThresholdFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 15.04.2006, KP
 		Description: Return the list of parameters needed for configuring this GUI
-		"""            
+		"""   
 		return [["Threshold", (("Lower", "Upper"), )]]
 
 
@@ -1690,12 +1683,11 @@ class ITKOtsuThresholdFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 15.04.2006, KP
 		Description: Execute the filter with given inputs and return the output
-		"""                    
+		"""					   
 		if not ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
 			
 		image = self.getInput(1)
-#        print "Using as input",image
 		image = self.convertVTKtoITK(image)
 		self.itkfilter.SetInput(image)
 		
@@ -1705,11 +1697,6 @@ class ITKOtsuThresholdFilter(ProcessingFilter.ProcessingFilter):
 		if update:
 			self.itkfilter.Update()
 		
-		#print "OTSU THRESHOLD=",self.itkfilter.GetThreshold()
-			
 		data = self.itkfilter.GetOutput()
-		#if last:
-		#    return self.convertITKtoVTK(data,imagetype="UC3")
-			
-		return data            
+		return data 
 		
