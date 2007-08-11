@@ -65,7 +65,7 @@ class TrackItem:
 		self.buffer = 0
 		self.destroyed = 0
 		self.getting = 0
-		self.thumbnailbmp = 0
+		self.thumbnailbmp = None
 		self.dragMode = 0
 		self.labelheight = 15
 		self.volume = None
@@ -263,14 +263,11 @@ class TrackItem:
 		if not self.thumbnailbmp:
 			if not self.volume:
 				self.volume = self.dataUnit.getTimepoint(self.thumbtimepoint)
-			#self.volume.Update()
 			vx, vy, vz = self.volume.GetDimensions()
 			ctf = self.dataUnit.getSettings().get("ColorTransferFunction")
-			#print self.volume.GetUpdateExtent()
 			self.thumbnailbmp = lib.ImageOperations.vtkImageDataToPreviewBitmap(self.dataUnit, self.thumbtimepoint, ctf, 0, self.height - self.labelheight)
 			
 		iw, ih = self.thumbnailbmp.GetSize()
-		#print "image size=",iw,ih
 		wdiff = (self.width - iw) / 2
 		if wdiff < 0:wdiff = 0
 		self.dc.DrawBitmap(self.thumbnailbmp, wdiff, self.labelheight)

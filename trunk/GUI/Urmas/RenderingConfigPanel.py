@@ -15,7 +15,7 @@
  
  The configuration panel for the rendering is implemented in this module.
  
- Copyright (C) 2005  BioImageXD Project
+ Copyright (C) 2005	 BioImageXD Project
  See CREDITS.txt for details
 
  This program is free software; you can redistribute it and/or modify
@@ -61,7 +61,7 @@ class RenderingConfigPanel:
 	"""
 	Created: 04.02.2005, KP
 	Description: Contains configuration options for the timeline
-	"""    
+	"""	   
 	def __init__(self, parent, control):
 		self.control = control
 		self.parent = parent
@@ -108,11 +108,11 @@ be the same size as the final frame.""")
 		self.resLst = [(0, 0), (320, 240), (512, 512), (640, 480), (720, 576), (800, 600)]
 		self.frameSize = wx.Choice(self.parent, -1,
 		choices = ["Custom", "320 x 240", "512 x 512", "640 x 480", "720x576 (PAL)", "800 x 600"])
-		self.frameSize.SetSelection(1)        
+		self.frameSize.SetSelection(1)		  
 		self.frameSize.Bind(wx.EVT_CHOICE, self.onUpdateFrameSize)
 		self.outputsizer.Add(self.durationLabel, (0, 0))
-		#self.outputsizer.Add(self.duration,(0,1))   
-		self.outputsizer.Add(box, (0, 1))   
+		#self.outputsizer.Add(self.duration,(0,1))	 
+		self.outputsizer.Add(box, (0, 1))	
 		
 		self.outputsizer.Add(self.totalFramesLabel, (1, 0))
 		self.outputsizer.Add(self.totalFrames, (1, 1))
@@ -160,7 +160,7 @@ be the same size as the final frame.""")
 		"""
 		Created: 06.02.2005, KP
 		Description: A callback for when the user changes the frame size
-		"""     
+		"""		
 		sel = evt.GetSelection()
 		flag = (sel == 0)
 		self.custX.Enable(flag)
@@ -170,7 +170,7 @@ be the same size as the final frame.""")
 		"""
 		Created: 15.08.2005, KP
 		Description: Return the number of frames selected
-		"""     
+		"""		
 		try:
 			n = int(self.totalFrames.GetValue())
 			return n
@@ -181,7 +181,7 @@ be the same size as the final frame.""")
 		"""
 		Created: N/A, KP
 		Description: Set the number of frames in the GUI
-		"""        
+		"""		   
 		self.totalFrames.SetValue(str(n))
 		self.useSettings()
 		
@@ -189,7 +189,7 @@ be the same size as the final frame.""")
 		"""
 		Created: N/A, KP
 		Description: Set the duration in the GUI
-		"""            
+		"""			   
 		if type(t) != types.StringType:
 			h = t / 3600
 			m = t / 60
@@ -202,11 +202,13 @@ be the same size as the final frame.""")
 		"""
 		Created: N/A, KP
 		Description: Use the GUI settings
-		"""        
+		"""		   
 		duration = -1
 		frameCount = -1
 		try:
-			duration = self.duration.GetValue()
+			# We get a string, but pylint doesn't know that (it thinks we get a wxDateTime)
+			# so we cast this to str although it is already an str
+			duration = str(self.duration.GetValue())
 			hh, mm, ss = map(int, duration.split(":"))
 			print hh, mm, ss
 			secs = hh * 3600 + mm * 60 + ss
@@ -239,7 +241,7 @@ be the same size as the final frame.""")
 			#y=int(y)
 			keepAspect = self.followAspect.GetValue()
 		except:
-			pass            
+			pass			
 		if x != -1 and y != -1:
 			self.control.setFrameSize(x, y)
 			lib.messenger.send(None, "set_frame_size", (x, y), keepAspect)
@@ -250,11 +252,15 @@ be the same size as the final frame.""")
 		#self.parent.sizer.Fit(self.parent)
 		
 	def getDurationInSeconds(self):
-		#print "getDurationInSeconds()"
+		"""
+		Created: KP
+		Description: return the duration of the movie in seconds
+		"""
+		
 		if not self.updated:
 			return self.secs
 
-		duration = self.duration.GetValue()
+		duration = str(self.duration.GetValue())
 		try:
 			hh, mm, ss = map(int, duration.split(":"))
 			
@@ -266,10 +272,13 @@ be the same size as the final frame.""")
 		return secs
 		
 	def updateFPS(self, event):
+		"""
+		Created: KP
+		Description: update the amount of frames based on the Frames Per Second variable
+		"""
 		if self.in_framecount:
 			return
 		self.in_fps = 1
-		#print "updateFps()"
 		secs = self.getDurationInSeconds()
 		try:
 			fps = float(self.frameRate.GetValue())
@@ -283,6 +292,10 @@ be the same size as the final frame.""")
 		self.in_fps = 0
 		
 	def updateDuration(self, event):
+		"""
+		Created: KP
+		Description: update the amount of frames based on the duration of the movie
+		"""
 		self.updated = 1
 		secs = self.getDurationInSeconds()
 		if secs == 0:
@@ -292,12 +305,15 @@ be the same size as the final frame.""")
 		#self.fpsLabel.SetLabel("%.2f / second"%newfps)
 		
 	def updateFrameCount(self, event):
+		"""
+		Created: KP
+		Description: Update the frame rate based on the duration
+		"""
 		if self.in_fps:
 			return
 		self.in_framecount = 1
 		try:
 			frameCount = int(self.totalFrames.GetValue())
-			print "Got frameCount=", frameCount
 		except:
 			self.in_framecount = 0
 			return
@@ -307,7 +323,6 @@ be the same size as the final frame.""")
 		secs = self.getDurationInSeconds()
 		
 		self.fps = frameCount / float(secs)
-		print "Setting frame rate to ", self.fps
 		self.frameRate.SetValue("%.2f" % self.fps)
 		#self.fpsLabel.SetLabel("%.2f / second"%newfps)
 		self.in_framecount = 0
