@@ -122,6 +122,7 @@ class ProcessingFilter(GUIBuilder.GUIBuilderBase):
 		"""
 		if self.taskPanel:
 			listOfFilters = self.taskPanel.getFilters(self.name)
+			print "Got filters",listOfFilters
 			filterIndex = listOfFilters.index(self)
 			if len(listOfFilters) == 1:
 				func = "getFilter('%s')" % self.name

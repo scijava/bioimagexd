@@ -62,11 +62,16 @@ class GUIBuilderBase:
 	Created: 31.05.2006, KP
 	Description: A base class for modules that intend to use GUI builder
 	""" 
+	name = "GUIBuilderBase"
 	def __init__(self, changeCallback):
 		"""
 		Created: 13.04.2006, KP
 		Description: Initialization
 		"""
+		self.numberOfInputs = None #added this because variable didnt exist on line 150, SS
+		self.descs = {} #added this because variable didnt exist on line 240, SS
+		self.dataUnit = None #added this because variable didnt exist on line 92, SS
+		
 		self.parameters = {}
 		self.inputMapping = {}
 		self.sourceUnits = []
@@ -79,10 +84,6 @@ class GUIBuilderBase:
 			self.setParameter(item, self.getDefaultValue(item))
 		self.initDone = 1
 
-		self.numberOfInputs = None #added this because variable didnt exist on line 150, SS
-		self.descs = {} #added this because variable didnt exist on line 240, SS
-		self.dataUnit = None #added this because variable didnt exist on line 92, SS
-		self.name = None #added this because variable didnt exist on line 263, SS
 		
 	def getInput(self, mapIndex):
 		"""

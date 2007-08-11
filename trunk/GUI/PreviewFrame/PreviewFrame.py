@@ -341,6 +341,7 @@ class PreviewFrame(InteractivePanel):
 					 data unit, the source units of which we can get and read 
 					 as ImageData
 		"""
+		Logging.info("Setting dataunit of PreviewFrame to %s"%str(dataUnit), kw="preview")
 		if not dataUnit:
 			self.dataUnit = None
 			self.z = 0
@@ -368,14 +369,13 @@ class PreviewFrame(InteractivePanel):
 		if selectedItem != -1:
 			self.setSelectedItem(selectedItem, update = 0)
 
-		updated = 0
-		Logging.info("zoomFactor = ", self.zoomFactor, kw = "preview")
 		
 		if self.enabled:
 			self.Layout()
 			self.parent.Layout()
-			if not updated:
-				self.updatePreview(1)
+			self.updatePreview(1)
+		else:
+			Logging.info("PreviewFrame not enabled, won't update on DataUnit setting", kw="preview")
 
 	def updatePreview(self, renew = 1):
 		"""
@@ -660,10 +660,13 @@ class PreviewFrame(InteractivePanel):
 			if self.fixedSize:
 				maxX, maxY = self.fixedSize
 			
-			Logging.info("Determining zoom factor from (%d,%d) to (%d,%d)" % (x, y, maxX, maxY), kw = "preview")
 			factor = lib.ImageOperations.getZoomFactor(x, y, maxX, maxY)
-			self.setZoomFactor(factor)
-			scripting.zoomFactor = factor
+			if abs(factor - self.getZoomFactor()) > 0.01:
+				Logging.info("Zoom factor from (%d,%d) to (%d,%d) is %f" % (x, y, maxX, maxY,factor), kw = "preview")
+				self.setZoomFactor(factor)
+				scripting.zoomFactor = factor
+			else:
+				Logging.info("No need to alter zoom level, already fitted", kw="preview")
 		else:
 			Logging.info("Will zoom to fit later", kw = "preview")
 			self.fitLater = 1
@@ -784,8 +787,6 @@ class PreviewFrame(InteractivePanel):
 		w, h = self.buffer.GetWidth(), self.buffer.GetHeight()
 		self.bgbuffer = wx.EmptyBitmap(w, h)
 		memdc = wx.MemoryDC()
-		print "Selecting object, bufsize=",w,h
 		memdc.SelectObject(self.bgbuffer)
-		print "done"
 		memdc.Blit(0, 0, w, h, dc, 0, 0)
 		memdc.SelectObject(wx.NullBitmap)

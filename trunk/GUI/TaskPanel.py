@@ -10,7 +10,7 @@
  CombinedDataUnit() containing the datasets that the module processes
  Uses the Visualizer for previewing.
 
- Copyright (C) 2005  BioImageXD Project
+ Copyright (C) 2005	 BioImageXD Project
  See CREDITS.txt for details
 
  This program is free software; you can redistribute it and/or modify
@@ -61,7 +61,7 @@ class TaskPanel(ScrolledPanel):
 		Created: 03.11.2004, KP
 		Description: Initialization
 		Parameters:
-				root    Is the parent widget of this window
+				root	Is the parent widget of this window
 		"""
 		ScrolledPanel.__init__(self, root, -1, size = (200, -1))
 		#wx.Panel.__init__(self, root, -1,size=(200,-1))
@@ -144,7 +144,7 @@ class TaskPanel(ScrolledPanel):
 		"""
 		Created: 07.02.2006, KP
 		Description: A callback for updating the GUI when settings have been changed
-		"""         
+		"""			
 		self.updateSettings(1)
 		
 	def restoreFromCache(self, cachedSettings = None):
@@ -192,8 +192,8 @@ class TaskPanel(ScrolledPanel):
 		settings.insert(0, self.dataUnit.getSettings())
 		Logging.info("Storing to cache with key %s" % str(self.dataUnit.getCacheKey()), kw = "caching")
 		#for i,settingx in enumerate(settings[1:]):
-		#    
-		#    tf=settingx.get("IntensityTransferFunction")
+		#	 
+		#	 tf=settingx.get("IntensityTransferFunction")
 		scripting.storeSettingsToCache(self.dataUnit.getCacheKey(), settings)
 		for i in sources:
 			i.resetSettings()
@@ -202,11 +202,11 @@ class TaskPanel(ScrolledPanel):
 		"""
 		Created: 11.08.2005, KP
 		Description: Switch the used source datasets
-		"""     
+		"""		
 		try:
 			self.dataUnit.switchSourceDataUnits(args)
 		except Logging.GUIError, err:
-			err.show()            
+			err.show()			  
 		self.createItemToolbar()
 		self.doPreviewCallback()
 		
@@ -238,13 +238,13 @@ class TaskPanel(ScrolledPanel):
 		dc.DrawBitmap(chbmp, 5, 5)
 		dc.EndDrawing()
 		#dc.SelectObject(wx.EmptyBitmap(0,0))
-		dc.SelectObject(wx.NullBitmap)        
+		dc.SelectObject(wx.NullBitmap)		  
 		return bmp2
 	def createItemToolbar(self, force = 0):
 		"""
 		Created: 31.03.2005, KP
 		Description: Method to create a toolbar for the window that allows use to select processed channel
-		"""      
+		"""		 
 		self.toolMgr.clearItemsBar()
 		n = 0
 
@@ -260,15 +260,10 @@ class TaskPanel(ScrolledPanel):
 			name = dataunit.getName()
 			dc = wx.MemoryDC()
 			
-			print "Getting preview image..."
 			bmp, vtkimg = lib.ImageOperations.vtkImageDataToPreviewBitmap(dataunit, 0, None, TOOL_W, TOOL_H, getvtkImage = 1)
 			self.itemMips.append(vtkimg)
-			print "got"
-			
-			print "Setting preview", i, bmp, bmp.GetWidth(), bmp.GetHeight()
 			if self.channelBox:
 				self.channelBox.setPreview(i, bmp)
-			print "Getting channel item bitmap"
 			bmp2 = self.getChannelItemBitmap(bmp, ctf)
 			toolid = wx.NewId()
 			self.toolIds.append(toolid)
@@ -282,6 +277,10 @@ class TaskPanel(ScrolledPanel):
 		return n
 
 	def createButtonBox(self):
+		"""
+		Created: KP
+		Description: create the buttons on the bottom of the panel
+		"""
 		self.buttonsSizer2 = wx.BoxSizer(wx.HORIZONTAL)
 
 		self.previewButton = wx.Button(self.buttonPanel, -1, "Apply")
@@ -304,7 +303,7 @@ class TaskPanel(ScrolledPanel):
 		#self.namesizer=wx.BoxSizer(wx.VERTICAL)
 		#self.commonSettingsSizer.Add(self.namesizer,(0,0))
 	
-#        self.settingsSizer.Add(self.commonSettingsSizer,(0,0),flag=wx.EXPAND|wx.ALL)
+#		 self.settingsSizer.Add(self.commonSettingsSizer,(0,0),flag=wx.EXPAND|wx.ALL)
 		if self.wantNotebook:
 			self.settingsSizer.Add(self.settingsNotebook, (1, 0), flag = wx.EXPAND | wx.ALL)
 		#self.Layout()
@@ -336,7 +335,7 @@ class TaskPanel(ScrolledPanel):
 					 the menu
 		"""
 		Logging.info("Select item %d" % index, kw = "dataunit")
-		if index == -1:       
+		if index == -1:		  
 			Logging.error("No index given", "No index for selected dataunit given")
 
 		sunit = self.dataUnit.getSourceDataUnits()[index]
@@ -361,7 +360,7 @@ class TaskPanel(ScrolledPanel):
 		Created: 03.2.2005, KP
 		Description: A method that executes the operation on the selected
 					 dataset
-		"""        
+		"""		   
 		mgr = ProcessingManager.ProcessingManager(self, self.operationName)
 		scripting.processingManager = mgr
 		mgr.setDataUnit(self.dataUnit)
@@ -371,17 +370,17 @@ class TaskPanel(ScrolledPanel):
 			mgr.ShowModal()
 			mgr.Destroy()
 		   
-			scripting.processingManager = None            
+			scripting.processingManager = None			  
 		else:
 			mgr.Show()
-		self.grayOut(1)            
+		self.grayOut(1)			   
 
 	def grayOut(self, enable = 0):
 		"""
 		Created: 16.11.2004, KP
 		Description: Grays out the widget while doing colocalization
 		Parameters:
-			enable      If the enable parameter is defined, the effect of the
+			enable		If the enable parameter is defined, the effect of the
 						function is reversed and the widgets are set to normal
 						state
 
@@ -449,7 +448,7 @@ class TaskPanel(ScrolledPanel):
 				fileNames.append(ds)
 		if self.channelBox:
 			self.channelBox.setDataUnit(dataUnit, toolImage = (TOOL_W, TOOL_H))
-		lib.messenger.send(None, "current_file", ", ".join(fileNames))         
+		lib.messenger.send(None, "current_file", ", ".join(fileNames))		   
 		
 		self.selectItem(None, None, 0)
 		# Delay the call, maybe it will make it work on mac
