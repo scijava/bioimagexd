@@ -95,6 +95,7 @@ class FilterBasedTaskSettings(DataUnitSettings):
 					parser.add_section(fname)
 				parser.set(fname, key, currfilter.getParameter(key))
 
+
 	def deserialize(self, name, value):
 		"""
 		Created: 05.06.2005 by KP?
@@ -116,7 +117,7 @@ class FilterBasedTaskSettings(DataUnitSettings):
 			return filterList
 				
 		else:
-			return DataUnitSettings.deserialize(self, name, value)
+			return DataUnitSettings.deserialize(name, value)
 		
 		
 	def serialize(self, name, value):
