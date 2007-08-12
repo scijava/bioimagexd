@@ -39,6 +39,7 @@ import os
 
 
 import getopt
+import platform
 
 try:
 	import profile
@@ -50,22 +51,22 @@ import scripting
 todir = scripting.get_main_dir()
 if todir:
 	os.chdir(todir)
-# Insert the path for the ITK libraries
-# TODO: Is this really necessary on a correct install of itk?
+
+
+
 if not todir:
 	todir = os.getcwd()
-itklibdir = os.path.join(todir, os.path.join("ITK-pkg", "lib"))
-itkbindir = os.path.join(todir, os.path.join("ITK-pkg", "bin"))
-itkpythondir = os.path.join(todir, os.path.join("ITK-pkg", "Python"))
-
-sys.path.insert(0, itklibdir)
-sys.path.insert(0, itkbindir)
-sys.path.insert(0, itkpythondir)
-
-
-path = os.getenv("PATH")
-path = path + os.path.pathsep + itklibdir + os.path.pathsep + itkbindir + os.path.pathsep + itkpythondir
-os.putenv("PATH", path)
+if platform.system()=="Windows":
+	itkpkg = os.path.join(todir, "ITK-pkg")
+	if os.path.exists(itkpkg):
+		itklibdir = os.path.join(itkpkg, "lib")
+		itkpydir = os.path.join(itkpkg, "Python")
+		print "ADDING", itklibdir
+		sys.path.insert(0, itklibdir)
+		sys.path.insert(0,itkpydir)
+		path = os.getenv("PATH")
+		path = path + os.path.pathsep + itklibdir
+		os.putenv("PATH", path)
 
 import Configuration
 # This will fix the VTK paths using either values from the
