@@ -249,7 +249,7 @@ class CombinedDataUnit(DataUnit):
 		self.createDataUnitFile(self.dataWriter)
 		if not settings_only:
 			bxdwriter.write()
-		return bxdwriter.getFilename()
+			return bxdwriter.getFilename()
 
 	def setMask(self, mask):
 		"""

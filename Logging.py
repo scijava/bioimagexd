@@ -40,10 +40,10 @@ outfile = sys.stdout
 
 # If you wish to see messages from a given debug level, mark it as beginning with two
 # hashes (##like this), so that is is immediately obvious, which levels are not hidden
-HIDE_DEBUG=["##visualizer", "main", "init", "animator", "io", "task", "##preview", "scale",
-		"imageop", "modules", "trivial", "ctf", "##dataunit", "event", "processing", 
+HIDE_DEBUG=["visualizer", "main", "init", "animator", "io", "task", "preview", "scale",
+		"imageop", "modules", "trivial", "ctf", "dataunit", "event", "##processing", 
 		"datasource", "iactivepanel", "annotation", "ui", "rendering", "caching", 
-		"##pipeline", "scripting", "lsmreader"]
+		"pipeline", "scripting", "lsmreader"]
 		
 KWS = ["visualizer", "main", "init", "animator", "io", "task", "preview", "scale",
 		"imageop", "modules", "trivial", "ctf", "dataunit", "event", "processing", 

@@ -133,14 +133,12 @@ class FilterBasedModule(lib.Module.Module):
 		if not filterlist:
 			return self.images[0]
 		try:
-			# enabledFilters = filter(lambda x:x.getEnabled(), filterlist)
 			enabledFilters = [filterModule for filterModule in filterlist if filterModule.getEnabled()]	 
 		except AttributeError:
 			enabledFilters = []
 		highestFilterIndex = len(enabledFilters)-1
 		
 		lastfilter = None
-		#lasttype = "UC3"
 		for i, currfilter in enumerate(enabledFilters):
 			flag = (i == highestFilterIndex)
 			if i > 0:
@@ -165,8 +163,6 @@ class FilterBasedModule(lib.Module.Module):
 			
 			if not preview:
 				currfilter.writeOutput(self.controlUnit, self.timepoint)
-			
-			
 			data = [data]
 			if not data:
 				self.cached = None

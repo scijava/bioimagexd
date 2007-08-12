@@ -8,7 +8,7 @@
 
  A module containing the classes for building a GUI for all the manipulation filters
 							
- Copyright (C) 2005  BioImageXD Project
+ Copyright (C) 2005	 BioImageXD Project
  See CREDITS.txt for details
 
  This program is free software; you can redistribute it and/or modify
@@ -29,9 +29,6 @@
 __author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.42 $"
 __date__ = "$Date: 2005/01/13 14:52:39 $"
-
-#import wx.lib.buttons as buttons
-#import UIElements
 
 import scripting
 import ColorTransferEditor
@@ -68,7 +65,7 @@ class GUIBuilderBase:
 		Created: 13.04.2006, KP
 		Description: Initialization
 		"""
-		self.numberOfInputs = None #added this because variable didnt exist on line 150, SS
+		self.numberOfInputs = (1,1) #added this because variable didnt exist on line 150, SS
 		self.descs = {} #added this because variable didnt exist on line 240, SS
 		self.dataUnit = None #added this because variable didnt exist on line 92, SS
 		
@@ -89,19 +86,27 @@ class GUIBuilderBase:
 		"""
 		Created: 17.04.2006, KP
 		Description: Return the input imagedata #n
-		"""				
+		"""
+		# By default, asking for say, input number 1 gives you 
+		# the first (0th actually) input mapping
+		# these can be thought of as being specified in the GUI where you have as many 
+		# selections of input data as the filter defines (with the variable numberOfInputs)
 		if mapIndex not in self.inputMapping:
 			self.inputMapping[mapIndex] = mapIndex - 1
+			
+		# Input mapping 0 means to return the input from the filter stack above
 		if self.inputMapping[mapIndex] == 0 and self.dataUnit.isProcessed():
-			print self.inputs
-			Logging.info("Using input %d from stack as input %d" % (mapIndex - 1, mapIndex), kw = "processing")
+			print "%s Input index=%d, inputs="%(self.name, self.inputIndex),self.inputs
 			try:
 				image = self.inputs[self.inputIndex]
 			except:
 				traceback.print_exc()
 				Logging.info("No input with number %d" %self.inputIndex, self.inputs, kw = "processing")
-			self.inputIndex += 1
+# KP 12.08.2007 what the F*%#% does this mean
+#			self.inputIndex += 1
 		else:
+			# If input from stack is not requested, or the dataunit is not processed, then just return 
+			# the image data from the corresponding channel
 			Logging.info("\nUsing input from channel %d as input %d" % (self.inputMapping[mapIndex] - 1, mapIndex), \
 							kw = "processing")
 			
@@ -112,7 +117,7 @@ class GUIBuilderBase:
 		"""
 		Created: 12.03.2007, KP
 		Description: Return the input dataunit for input #n
-		"""   
+		"""	  
 		if mapIndex not in self.inputMapping:
 			return None
 		if self.inputMapping[mapIndex] == 0 and self.dataUnit.isProcessed():		   
@@ -185,7 +190,7 @@ class GUIBuilderBase:
 		"""
 		Created: 05.06.2006, KP
 		Description: Method to update the GUI for this filter
-		"""			 
+		"""
 		for item in self.getPlainParameters():
 			value = self.getParameter(item)
 			lib.messenger.send(self, "set_%s" % item, value)
@@ -195,14 +200,14 @@ class GUIBuilderBase:
 		"""
 		Created: 31.05.2006, KP
 		Description: Should it be possible to select the channel
-		"""			 
+		"""
 		return 1
 	
 	def getParameters(self):
 		"""
 		Created: 13.04.2006, KP
 		Description: Return the list of parameters needed for configuring this GUI
-		"""  
+		"""	 
 		return []
 	
 	def getPlainParameters(self):
@@ -223,46 +228,42 @@ class GUIBuilderBase:
 		return returnList
 
 
-	def recordParameterChange(self, parameter, value, modpath):	#svn-1037, 18.7.07, MB
+	def recordParameterChange(self, parameter, value, modpath): #svn-1037, 18.7.07, MB
 		#Heres probably some stuff to cleanup
 		"""
 		Created: 14.06.2007, KP
 		Description: record the change of a parameter along with information for how to undo it
 		"""
-
 		oldval = self.parameters.get(parameter, None)
 		if oldval == value:
 			return
-			if self.getType(parameter) == ROISELECTION:
-				i, roi = value
-				setval = "scripting.visualizer.getRegionsOfInterest()[%d]" % i
-				rois = scripting.visualizer.getRegionsOfInterest()
+		if self.getType(parameter) == ROISELECTION:
+			i, roi = value
+			setval = "scripting.visualizer.getRegionsOfInterest()[%d]" % i
+			rois = scripting.visualizer.getRegionsOfInterest()
 			if oldval in rois:
 				n = rois.index(oldval)
 				setoldval = "scripting.visualizer.getRegionsOfInterest()[%d]" % n
 			else:
 				setoldval = ""
-			# First record the proper value
 			value = roi
 		else:
 			if type(value) in [types.StringType, types.UnicodeType]:
-
+	
 				setval = "'%s'" % value
 				setoldval = "'%s'" % oldval
 			else:
-				#print "Not string"
 				setval = str(value)
 				setoldval = str(oldval)
-			#print "setval = ", setval, "oldval = ", oldval
-			n = scripting.mainWindow.currentTaskWindowName
-			do_cmd = "%s.set('%s', %s)" % (modpath, parameter, setval)
-			if oldval and setoldval:
-				undo_cmd = "%s.set('%s', %s)" % (modpath, parameter, setoldval)
-			else:
-				undo_cmd = ""
-			cmd = lib.Command.Command(lib.Command.PARAM_CMD, None, None, do_cmd, undo_cmd, \
-										desc = "Change parameter '%s' of filter '%s'" % (parameter, self.name))
-			cmd.run(recordOnly = 1)
+		n = scripting.mainWindow.currentTaskWindowName
+		do_cmd = "%s.set('%s', %s)" % (modpath, parameter, setval)
+		if oldval and setoldval:
+			undo_cmd = "%s.set('%s', %s)" % (modpath, parameter, setoldval)
+		else:
+			undo_cmd = ""
+		cmd = lib.Command.Command(lib.Command.PARAM_CMD, None, None, do_cmd, undo_cmd, \
+									desc = "Change parameter '%s' of filter '%s'" % (parameter, self.name))
+		cmd.run(recordOnly = 1)
 
 
 		
@@ -270,7 +271,7 @@ class GUIBuilderBase:
 		"""
 		Created: 13.04.2006, KP
 		Description: Set a value for the parameter
-		"""    
+		"""	   
 #		 assert self.checkRange(parameter, value), \
 #								"Value %s of parameter %s doesn't fit within the range %s - %s" %()
 		self.parameters[parameter] = value
@@ -281,7 +282,7 @@ class GUIBuilderBase:
 		"""
 		Created: 29.05.2006, KP
 		Description: Get a value for the parameter
-		"""    
+		"""	   
 		if parameter in self.parameters:
 			return self.parameters[parameter]
 		return None
@@ -290,7 +291,7 @@ class GUIBuilderBase:
 		"""
 		Created: 13.04.2006, KP
 		Description: Return the description of the parameter
-		"""    
+		"""	   
 		try:
 			return self.descs[parameter]
 		except:			   
@@ -300,21 +301,21 @@ class GUIBuilderBase:
 		"""
 		Created: 13.04.2006, KP
 		Description: Return the long description of the parameter
-		"""    
+		"""	   
 		return ""
 		
 	def getType(self, parameter):
 		"""
 		Created: 13.04.2006, KP
 		Description: Return the type of the parameter
-		"""    
+		"""	   
 		return types.IntType
 		
 	def getRange(self, parameter):
 		"""
 		Created: 31.05.2006, KP
 		Description: If a parameter has a certain range of valid values, the values can be queried with this function
-		"""			  
+		"""
 		return -1, -1
 		
 	def getDefaultValue(self, parameter):
@@ -650,7 +651,7 @@ class GUIBuilder(wx.Panel):
 								
 							label = wx.StaticText(background, -1, "(%d, %d, %d)" % (0, 0, 0), size = (80, -1))
 							button = wx.Button(background, -1, "Set seed")
-							def f(listBox):	#"listBox" used to be "l", shouldn't "l" 2 rows below also be changed?!
+							def f(listBox): #"listBox" used to be "l", shouldn't "l" 2 rows below also be changed?!
 								listBox.selectPixel = 1
 							addPixelFunc = lambda event, l = label:f(l)
 							button.Bind(wx.EVT_BUTTON, addPixelFunc)
@@ -796,7 +797,7 @@ class GUIBuilder(wx.Panel):
 		"""
 		Created: 17.04.2006, KP
 		Description: Build a GUI for selecting the source channels
-		"""						
+		"""
 		chmin, chmax = self.currentFilter.getNumberOfInputs()
 		sizer = wx.GridBagSizer()
 		y = 0
@@ -809,16 +810,16 @@ class GUIBuilder(wx.Panel):
 		else:
 			# If we have a non - processed dataunit (i.e. a single channel)
 			# as input, then we only offer that
-			choices = [self.currentFilter.dataUnit.getName()]		  
+			choices = [self.currentFilter.dataUnit.getName()]
 		
-		print "There are ", chmax, "channels"
+		print "%s There are "%self.currentFilter.getName(), chmax, "channels"
 		for i in range(1, chmax + 1):
 			label = wx.StaticText(self, -1, self.currentFilter.getInputName(i))
 			sizer.Add(label, (y, 0))
 			chlChoice = wx.Choice(self, -1, choices = choices)
 			sizer.Add(chlChoice, (y, 1))
 			chlChoice.SetSelection(i - 1)
-			print "Setting input channel", i, "to ", i - 1
+			print "%s Setting input channel"%self.currentFilter.getName(), i, "to ", i - 1
 			self.currentFilter.setInputChannel(i, i - 1)
 			
 			func = lambda event, f = self.currentFilter, n = i: self.onSetInputChannel(f, n, event)
@@ -981,12 +982,12 @@ class GUIBuilder(wx.Panel):
 		#x2 = x
 
 		if not useOld:
-		#	itemsizer.Add(background, (y, x2))  #(19.6.07 SS)
+		#	itemsizer.Add(background, (y, x2))	#(19.6.07 SS)
 			itemsizer.Add(background, (y, x))
 		background.Layout()
 
 		if useOther:
-			self.currentBackgroundSizer  = self.newItemSizer
+			self.currentBackgroundSizer	 = self.newItemSizer
 		return (x, y)
 						
 	def createNumberInput(self, parent, currentFilter, item, itemType, defaultValue, label = ""):
