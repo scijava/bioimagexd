@@ -8,7 +8,7 @@
 
  This is a base class for all tasks that are based on the notion of a list of filters
 
- Copyright (C) 2005  BioImageXD Project
+ Copyright (C) 2005	 BioImageXD Project
  See CREDITS.txt for details
 
  This program is free software; you can redistribute it and/or modify
@@ -81,7 +81,7 @@ class FilterBasedTaskSettings(DataUnitSettings):
 		"""
 		Created: 05.06.2005
 		Description: Attempt to write all keys to a parser
-		"""    
+		"""	   
 		DataUnitSettings.writeTo(self, parser)
 		lst = self.get("FilterList")
 		#print "Filter list to write = ", lst

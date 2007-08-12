@@ -85,7 +85,7 @@ class ProcessingFilter(GUIBuilder.GUIBuilderBase):
 
 		self.ignoreObjects = 0
 		self.inputIndex = 0
-		self.inputs = None
+		self.inputs = []
 		self.nextFilter = None
 		self.prevFilter = None
 		self.itkToVtk = None
@@ -320,13 +320,5 @@ class ProcessingFilter(GUIBuilder.GUIBuilderBase):
 		Created: 13.04.2006, KP
 		Description: Execute the filter with given inputs and return the output
 		"""
-		#inputLength = len(inputs)
 		self.inputs = inputs
 		return 1
-		# TODO: What is this? Can it be removed?
-		# if inputLength < self.numberOfInputs[0] or (
-		# self.numberOfInputs[1] != -1 and inputLength > self.numberOfInputs[1]):
-		#	messenger.send(None, "show_error", "Bad number of inputs to filter", \
-		#		"Filter %s was given a wrong number of inputs" % self.name)
-		#	return 0
-		#return 1

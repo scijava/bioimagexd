@@ -63,11 +63,8 @@ class MathFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 15.04.2006, KP
 		Description: Execute the filter with given inputs and return the output
-		"""                    
-		#TODO: find out what ManipulationFilter.execute() should be: the nearest match is ManipulationFilters.*Filter.execute()
-		if not ManipulationFilter.execute(self, inputs):
-			return None
-		
+		"""                 
+		lib.ProcessingFilter.ProcessingFilter.execute(self, inputs)
 		image = self.getInput(1)
 	   
 		if self.numberOfInputs[0] > 1:

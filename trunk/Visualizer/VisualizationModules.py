@@ -8,7 +8,7 @@
 
  A module containing the various Rendering modules for the visualization
 
- Copyright (C) 2005  BioImageXD Project
+ Copyright (C) 2005	 BioImageXD Project
  See CREDITS.txt for details
 
  This program is free software; you can redistribute it and / or modify
@@ -23,7 +23,7 @@
 
  You should have received a copy of the GNU General Public License
  along with this program; if not, write to the Free Software
- Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111 - 1307  USA
+ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111 - 1307	 USA
 """
 __author__ = "BioImageXD Project"
 __version__ = "$Revision: 1.9 $"
@@ -36,6 +36,8 @@ import GUI.GUIBuilder as GUIBuilder
 import scripting
 
 class VisualizationModule(GUIBuilder.GUIBuilderBase):
+	name = "VisualizationModule"
+
 	"""
 	Created: 28.04.2005, KP
 	Description: A class representing a visualization module
@@ -45,7 +47,6 @@ class VisualizationModule(GUIBuilder.GUIBuilderBase):
 		Created: 28.04.2005, KP
 		Description: Initialization
 		"""
-		#self.name = "Module"
 		self.processInputText = "Task output"
 		GUIBuilder.GUIBuilderBase.__init__(self, changeCallback = self.parameterChanged)
 		self.name = kws["label"]
@@ -63,9 +64,9 @@ class VisualizationModule(GUIBuilder.GUIBuilderBase):
 		self.view = None
 		self.setVTKState = GUI.Urmas.UrmasPersist.setVTKState
 		self.getVTKState = GUI.Urmas.UrmasPersist.getVTKState
-		self.inputs = None
+		self.inputs = []
 		self.dataUnit = None
-		self.inputIndex = None
+		self.inputIndex = 0
 		self.data = None
 		self.vtkObjects = []
 
