@@ -30,8 +30,9 @@ __author__ = "BioImageXD Project"
 __version__ = "$Revision: 1.9 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
-import wx
+import bxdexceptions
 import lib.messenger
+import wx
 
 class ModuleConfigurationPanel(wx.ScrolledWindow):
 	"""
@@ -110,6 +111,9 @@ class ModuleConfigurationPanel(wx.ScrolledWindow):
 		self.sizer.Fit(self)
 		
 		lib.messenger.connect(None, "update_module_settings", self.updateModuleSettings)
+
+	def initializeGUI(self):
+		raise bxdexceptions.AbstractMethodCalled()
 
 	def updateModuleSettings(self, obj, evt, *args):
 		"""
