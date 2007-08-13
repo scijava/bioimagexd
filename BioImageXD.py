@@ -30,7 +30,6 @@ __author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.22 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
-import site
 import sys
 import StringIO
 
@@ -61,7 +60,6 @@ if platform.system()=="Windows":
 	if os.path.exists(itkpkg):
 		itklibdir = os.path.join(itkpkg, "lib")
 		itkpydir = os.path.join(itkpkg, "Python")
-		print "ADDING", itklibdir
 		sys.path.insert(0, itklibdir)
 		sys.path.insert(0,itkpydir)
 		path = os.getenv("PATH")
@@ -85,7 +83,7 @@ i = w.GetInstance()
 def onWarning(obj, evt, *args):
 	"""
 	Created: Unknown date, KP
-	Seems to be run when a warning happens.
+	Description: Show VTK error messages
 	"""
 	Logging.backtrace()
 	print "VTK message:\n", evt

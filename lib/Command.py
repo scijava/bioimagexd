@@ -43,6 +43,7 @@ import messenger
 # refer to scripting
 import scripting
 
+# Some categories for the commands
 MENU_CMD = "Menu command"
 OPEN_CMD = "Load file"
 TASK_CMD = "Load task"
@@ -110,13 +111,21 @@ class Command:
 	"""
 	Created: 13.02.2006, KP
 	Description: A class representing an executable action from menus etc.
+	Parameters:
+		category	A category for the command (, used in. e.g. the command history)
+		paramDo		A callable object to use as the command to execute
+		undo		A callable object to use as an undo command
+		do_code		A string object to use evaluate and use the code for the command to execute
+		undo_code	A string object to use evaluate and use as the code when undoing the command
+		imports		A list of modules that need to be imported for the code to execute correctly
+		desc		A description of the actions carried out by the function
 	""" 
 	def __init__(self, category = None, paramDo = None, undo = None, do_code = "",
 	undo_code = "", imports = None, desc = ""):
 		"""
 		Created: 13.02.2006, KP
 		Description: Initialization 
-		"""		
+		"""
 		self.toDo = paramDo
 		self.undocmd = undo
 		self.desc = desc
@@ -128,8 +137,6 @@ class Command:
 		for i in imports:
 			icode = "	 import %s\n%s" % (i, icode)
 		if not paramDo and do_code:
-			#exec(do_code,self.globals,self.locals)
-			
 			ncode = self.functionize(do_code, imports)
 			
 			code = """def f(x):\n%s%s\n""" % (icode, ncode)
@@ -186,8 +193,10 @@ class Command:
 		Created: 13.02.2006, KP
 		Description: Execute the action associated with this command
 		""" 
+		# If we got a callable object instead of code as string, then we need to 
+		# use inspect to get the source code so we can record it
 		if not self.do_code:
-			code = inspect.getsource(self.undo)
+			code = inspect.getsource(self.toDo)
 		else:
 			code = self.do_code
 		messenger.send(None, "record_code", code, self.imports)
@@ -207,6 +216,8 @@ class Command:
 		self._undoed = 1
 		messenger.send(None, "execute_command", self, 1)
 		
+		# If we got a callable object instead of code as string, then we need to 
+		# use inspect to get the source code so we can record it
 		if not self.undo_code:
 			code = inspect.getsource(self.undo)
 		else:
