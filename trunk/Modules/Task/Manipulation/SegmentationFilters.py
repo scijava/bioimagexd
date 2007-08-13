@@ -8,7 +8,7 @@
 
  A module containing the segmentation filters for the processing task.
 							
- Copyright (C) 2005	 BioImageXD Project
+ Copyright (C) 2005-2007	 BioImageXD Project
  See CREDITS.txt for details
 
  This program is free software; you can redistribute it and/or modify
@@ -1098,7 +1098,6 @@ class MeasureVolumeFilter(ProcessingFilter.ProcessingFilter):
 		self.descs = {"StatisticsFile": "Results file:"}
 		self.reportGUI = None
 		self.itkfilter = None
-		#self.labelShape = None
 		
 	def setDataUnit(self, dataUnit):
 		"""
@@ -1130,7 +1129,7 @@ class MeasureVolumeFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 15.04.2006, KP
 		Description: Return the list of parameters needed for configuring this GUI
-		"""			   
+		"""
 		return [["Measurement results",
 		(("StatisticsFile", "Select the file to which the statistics will be writen", "*.csv"), )]]
 		
@@ -1138,16 +1137,16 @@ class MeasureVolumeFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 09.07.2006, KP
 		Description: Optionally write the output of this module during the processing
-		"""	  
+		"""
 		fileroot = self.parameters["StatisticsFile"].split(".")
 		fileroot = ".".join(fileroot[:-1])
 		dircomp = os.path.dirname(fileroot)
 		if not dircomp:
 			bxddir = dataUnit.getOutputDirectory()
 			fileroot = os.path.join(bxddir, fileroot)
-		#filename = "%s_%d.csv"%(fileroot,timepoint)
 		filename = "%s.csv" % fileroot
 		f = codecs.open(filename, "awb", "latin1")
+		Logging.info("Saving statistics to file %s"%filename, kw="processing")
 		
 		w = csv.writer(f, dialect = "excel", delimiter = ";")
 		
@@ -1211,22 +1210,11 @@ class MeasureVolumeFilter(ProcessingFilter.ProcessingFilter):
 		if not ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
 		image = self.getInput(1)
-		#print "INPUT IMAGE FOR MEASUREMENT=",image
-		#print "converting to ITK, image=",image
 		image = self.convertVTKtoITK(image)
-		#print "image now=",image
-		
-		
-		#if not self.labelShape:
-		#	self.labelShape = labelShape
-
-			#ul3 = itk.Image.UL3
 		self.itkfilter = itk.LabelShapeImageFilter[image].New()
 		self.itkfilter.SetInput(image)
 		self.itkfilter.Update()
-		#self.setImageType("UL3")
-		data = self.itkfilter.GetOutput()			 
-				   
+		data = self.itkfilter.GetOutput()
 			
 		x, y, z = self.dataUnit.getVoxelSize()
 		x *= 1000000
@@ -1241,14 +1229,13 @@ class MeasureVolumeFilter(ProcessingFilter.ProcessingFilter):
 		umcentersofmass = []
 		avgints = []
 		
-		vtkimage = self.convertITKtoVTK(image)				  
+		vtkimage = self.convertITKtoVTK(image)
 		origInput = self.getInput(2)
 		origInput.Update()
 		
 		if self.avgintCalc:
 			del self.avgintCalc
 		self.avgintCalc = avgintCalc = vtkbxd.vtkImageLabelAverage()
-		#avgintCalc.DebugOn()
 
 		# We require unsigned long input data
 		if vtkimage.GetScalarType() != 9:
@@ -1263,8 +1250,6 @@ class MeasureVolumeFilter(ProcessingFilter.ProcessingFilter):
 								of those filters in the procedure list." % (dt))
 			return vtkimage
 		
-		#print "Using as input",origInput
-		#print "And",vtkimage
 		avgintCalc.AddInput(origInput)
 		avgintCalc.AddInput(vtkimage)
 		
@@ -1413,7 +1398,6 @@ class ITKConfidenceConnectedFilter(ProcessingFilter.ProcessingFilter):
 			pixelidx.SetElement(0, x)
 			pixelidx.SetElement(1, y)
 			pixelidx.SetElement(2, z)
-			print "Using as seed", x, y, z, pixelidx
 			self.itkfilter.AddSeed(pixelidx)	
 			
 		iters = self.parameters["Iterations"]
