@@ -135,7 +135,7 @@ class Command:
 		self.imports = imports
 		icode = ""
 		for i in imports:
-			icode = "	 import %s\n%s" % (i, icode)
+			icode = "	import %s\n%s" % (i, icode)
 		if not paramDo and do_code:
 			ncode = self.functionize(do_code, imports)
 			
