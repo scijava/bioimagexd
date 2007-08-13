@@ -22,20 +22,20 @@ __credits__ = """This module was entirely written by Raymond Maple.
 It was later modified by Prabhu Ramachandran and made suitable for
 inclusion in MayaVi."""
 
-
+#import GUI.Dialogs
+#import string
 #import Tkinter
 #from vtkRenderWidget import vtkTkRenderWidget
+#from vtk.wx.wxVTKRenderWindow import wxVTKRenderWindow
+
+import bxdexceptions
+import wx.lib.colourselect as csel
+from math import pi, sin, cos, atan2, sqrt
+from GUI.RangedSlider import RangedSlider
+import sys
+import vtk
 import wx
 from vtk.wx.wxVTKRenderWindowInteractor import wxVTKRenderWindowInteractor
-#from vtk.wx.wxVTKRenderWindow import wxVTKRenderWindow
-from math import pi, sin, cos, atan2, sqrt
-import vtk
-#import string
-import sys
-#import GUI.Dialogs
-from GUI.RangedSlider import RangedSlider
-import wx.lib.colourselect as csel
-
 
 class Light:
 	def __init__(self):
@@ -346,7 +346,11 @@ class ScrollScale(RangedSlider):
 
 	def redraw(self):
 		pass
-		
+
+	def update_event(self):
+		raise bxdexceptions.AbstractMethodCalled()
+
+
 class ElevationTool(ScrollScale):
 	def __init__(self, master, ren, updateCallback):
 		ScrollScale.__init__(self, master, fromValue = 90 , to = -90,

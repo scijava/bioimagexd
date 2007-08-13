@@ -30,10 +30,11 @@ __date__ = "$Date: 2005/01/13 14:09:15 $"
 
 #import vtk
 
-import Logging
-import lib.ImageOperations
-import weakref
+import bxdexceptions
 import DataUnitSetting
+import lib.ImageOperations
+import Logging
+import weakref
 
 class DataUnit:
 	"""
@@ -70,7 +71,15 @@ class DataUnit:
 			self.getBitDepth = None
 			self.getExcitationWavelength = None
 			self.getEmissionWavelength = None
-		
+
+	def getDimensions(self):
+		"""
+		@since: 27.07.2007
+		@author: SG
+		Abstract method for getting the dimensions of this DataUnit
+		"""
+		raise bxdexceptions.AbstractMethodCalled()
+
 	def setCacheKey(self, key):
 		"""
 		Created: 23.10.2006, KP
