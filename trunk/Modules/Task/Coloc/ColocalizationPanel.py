@@ -30,7 +30,6 @@ __author__ = "BioImageXD Project <http://www.bioimagexd.org>"
 __version__ = "$Revision: 1.40 $"
 __date__ = "$Date: 2005/01/13 14:52:39 $"
 
-import scripting
 from GUI.UIElements import AcceptedValidator 
 import codecs
 import csv
@@ -38,7 +37,7 @@ from GUI.ColorTransferEditor import CTFButton
 from lib import ImageOperations
 import lib.Command
 import lib.messenger
-import  wx.lib.mixins.listctrl  as  listmix
+import wx.lib.mixins.listctrl as listmix
 import Logging 
 import GUI.Dialogs
 import GUI.PreviewFrame
