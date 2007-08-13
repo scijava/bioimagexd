@@ -579,8 +579,8 @@ def getPlane(data, plane, xCoordinate, yCoordinate, zCoordinate, applyZScaling =
 	voi = vtk.vtkExtractVOI()
 	permute.SetInputConnection(data.GetProducerPort())
 	spacing = data.GetSpacing()
-	data.SetSpacing(1,1,1)
-	data.SetOrigin(0,0,0)
+	data.SetSpacing(1, 1, 1)
+	data.SetOrigin(0, 0, 0)
 	xscale = 1
 	yscale = 1
 	if plane == "zy":
@@ -589,14 +589,14 @@ def getPlane(data, plane, xCoordinate, yCoordinate, zCoordinate, applyZScaling =
 #		voi.SetVOI(xCoordinate, xCoordinate, 0, dataHeight - 1, 0, dataDepth - 1)
 		permute.Update()
 		data = permute.GetOutput()		
-		#data.SetOrigin(0,0,0)
+		#data.SetOrigin(0, 0, 0)
 		voi.SetInput(data)
 
-		voi.SetVOI(0, dataDepth-1, 0, dataHeight-1, xCoordinate, xCoordinate)
+		voi.SetVOI(0, dataDepth - 1, 0, dataHeight - 1, xCoordinate, xCoordinate)
 
-		data.SetUpdateExtent(0, dataDepth-1, 0, dataHeight-1, 0,0)
-		data.SetWholeExtent(0, dataDepth-1, 0, dataHeight-1, 0,0)
-		#data.SetSpacing(1,1,1)
+		data.SetUpdateExtent(0, dataDepth - 1, 0, dataHeight - 1, 0, 0)
+		data.SetWholeExtent(0, dataDepth - 1, 0, dataHeight - 1, 0, 0)
+		#data.SetSpacing(1, 1, 1)
 		xdim = dataDepth
 		ydim = dataHeight
 		
@@ -609,10 +609,10 @@ def getPlane(data, plane, xCoordinate, yCoordinate, zCoordinate, applyZScaling =
 		permute.SetFilteredAxes(xAxis, zAxis, yAxis)
 		permute.Update()
 		data = permute.GetOutput()
-		data.SetUpdateExtent(0, dataWidth-1, 0, dataDepth-1, 0,0)
-		data.SetWholeExtent(0, dataWidth-1, 0, dataDepth-1, 0,0)
-		#data.SetOrigin(0,0,0)
-		#data.SetSpacing(1,1,1)
+		data.SetUpdateExtent(0, dataWidth - 1, 0, dataDepth - 1, 0, 0)
+		data.SetWholeExtent(0, dataWidth - 1, 0, dataDepth - 1, 0, 0)
+		#data.SetOrigin(0, 0, 0)
+		#data.SetSpacing(1, 1, 1)
 
 		voi.SetInput(data)
 		#voi.SetVOI(0, dataWidth - 1, yCoordinate, yCoordinate, 0, dataDepth - 1)
@@ -651,7 +651,7 @@ def getPlaneOLD(data, plane, xCoordinate, yCoordinate, zCoordinate, applyZScalin
 	xscale = 1
 	yscale = 1
 	if plane == "zy":
-		print "Getting plane",xCoordinate, xCoordinate, 0, dataHeight - 1, 0, dataDepth - 1
+		print "Getting plane", xCoordinate, xCoordinate, 0, dataHeight - 1, 0, dataDepth - 1
 		data.SetUpdateExtent(xCoordinate, xCoordinate, 0, dataHeight - 1, 0, dataDepth - 1)
 		voi.SetVOI(xCoordinate, xCoordinate, 0, dataHeight - 1, 0, dataDepth - 1)
 		voi.Update()
@@ -814,8 +814,8 @@ def get_histogram(image):
 		values.append(c)
 	return values
 	
-def histogram(imagedata, colorTransferFunction = None, bg = (200, 200, 200), logarithmic = 1, ignore_border = 0, 
-	lower = 0, upper = 0, percent_only = 0, maxval = 255):
+def histogram(imagedata, colorTransferFunction = None, bg = (200, 200, 200), logarithmic = 1, \
+				ignore_border = 0, lower = 0, upper = 0, percent_only = 0, maxval = 255):
 	"""
 	Created: 11.07.2005, KP
 	Description: Draw a histogram of a volume
@@ -831,7 +831,8 @@ def histogram(imagedata, colorTransferFunction = None, bg = (200, 200, 200), log
 			if i >= lower and i <= upper:
 				sumth += c
 	retvals = values[: ]
-	Logging.info("lower=%d, upper=%d, total sum of %d values"%(lower, upper, len(values)), sum, kw = "imageop")
+	Logging.info("lower = %d, upper = %d, total sum of %d values" \
+					% (lower, upper, len(values)), sum, kw = "imageop")
 	if sumth:
 		percent = (float(sumth) / sum)
 	if ignore_border:
@@ -844,7 +845,8 @@ def histogram(imagedata, colorTransferFunction = None, bg = (200, 200, 200), log
 			values[i] = mi
 			
 	for i, value in enumerate(values):
-		if value == 0: values[i] = 1
+		if value == 0:
+			values[i] = 1
 	if logarithmic:
 		values = map(math.log, values)
 	m = max(values)
