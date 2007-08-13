@@ -1,6 +1,5 @@
 import unittest
 
-import vtkbxd
 import vtk
 
 import os

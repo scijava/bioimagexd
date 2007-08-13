@@ -10,7 +10,6 @@ sys.path.insert(0, os.path.join(bxddir, "GUI"))
 
 import Module
 import lib.DataUnit
-import vtkbxd
 import vtk
 import lib.messenger
 import Logging

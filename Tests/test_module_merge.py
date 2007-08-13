@@ -10,7 +10,6 @@
 
 import sys
 import os
-import vtkbxd
 import vtk
 # This is currently necessary, but should ideally be eliminated
 #bxddir = os.path.join(os.getcwd(),"..")
