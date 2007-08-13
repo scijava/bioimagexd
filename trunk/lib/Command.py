@@ -140,8 +140,10 @@ class Command:
 			ncode = self.functionize(do_code, imports)
 			
 			code = """def f(x):\n%s%s\n""" % (icode, ncode)
-
-			exec(code)
+			try:
+				exec(code)
+			except IndentationError:
+				print repr(code)
 			self.toDo = f
 		if not undo and undo_code:
 			ncode = self.functionize(undo_code, imports)
