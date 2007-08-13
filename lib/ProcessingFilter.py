@@ -67,6 +67,7 @@ class ProcessingFilter(GUIBuilder.GUIBuilderBase):
 	category = "No category"
 	name = "Generic Filter"
 	level = scripting.COLOR_EXPERIENCED
+
 	def __init__(self, numberOfInputs = (1, 1)):
 		"""
 		Created: 13.04.2006, KP
