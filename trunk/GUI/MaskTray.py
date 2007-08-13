@@ -29,12 +29,12 @@ __author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.28 $"
 __date__ = "$Date: 2005/01/13 14:52:39 $"
 
-import wx
-import  wx.lib.scrolledpanel as scrolled
 import  wx.lib.buttons  as  buttons
-
+import bxdexceptions
 import lib.ImageOperations
+import  wx.lib.scrolledpanel as scrolled
 import vtk
+import wx
 
 masks = []
 
@@ -159,24 +159,28 @@ class MaskTray(wx.MiniFrame):
 		Created: 20.06.2006, KP
 		Description: Add a mask to the tray
 		"""   
-		if not mask and (name and imagedata):
-			m = Mask(name, imagedata.GetDimensions(), imagedata)
-		elif mask:
-			m = mask
-		else:
-			raise "No mask given"
-		self.masks.append(m)
-		
-		bmp = m.getAsBitmap(self.GetBackgroundColour())
-				
-				
-		b = buttons.GenBitmapToggleButton(self.scroll, -1, bmp)
-		self.Bind(wx.EVT_BUTTON, self.onToggleButton, b)
-		self.buttons.append(b)
-	
-		n = len(self.masks)
-		
-		self.scrollSizer.Add(b, (0, n - 1))        
+#		if not mask and (name and imagedata):
+#			m = Mask(name, imagedata.GetDimensions(), imagedata)
+#		elif mask:
+#			m = mask
+#		else:
+#			raise bxdexceptions.MissingParameterException("No mask given")
+#		self.masks.append(m)
+
+		if not mask:
+			raise bxdexceptions.MissingParameterException("No mask given")
+		elif name and imagedata:
+			mask = Mask(name, imagedata.GetDimensions(), imagedata)
+
+		maskBitmap = mask.getAsBitmap(self.GetBackgroundColour())		
+
+		genericToggleButton = buttons.GenBitmapToggleButton(self.scroll, -1, maskBitmap)
+		self.Bind(wx.EVT_BUTTON, self.onToggleButton, genericToggleButton)
+		self.buttons.append(genericToggleButton)
+
+		maskAmount = len(self.masks)
+
+		self.scrollSizer.Add(genericToggleButton, (0, maskAmount - 1))        
 		self.scroll.SetupScrolling()
 		self.Layout()
 		
