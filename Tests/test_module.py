@@ -19,7 +19,7 @@ sys.path.insert(0, bxddir)
 
 sys.path.insert(0, os.path.join(bxddir, "lib"))
 sys.path.insert(0, os.path.join(bxddir, "GUI"))
-import scripting as bxd
+import scripting
 
 import lib
 import Modules
@@ -58,7 +58,7 @@ procUnit.doProcessing("noop.bxd", timepoints=[0])
 # We use a special flag as the first argument, indicating we want the whole image to be processed
 # instead of just one slice (if the first parameter is an integer, it is interpreted as the slice
 # to be processed)
-imageData = procUnit.doPreview(bxd.WHOLE_DATASET, renew = 1)
+imageData = procUnit.doPreview(scripting.WHOLE_DATASET, renew = 1)
 
 simpleMip = vtk.vtkImageSimpleMIP()
 simpleMip.SetInputConnection(imageData.GetProducerPort())

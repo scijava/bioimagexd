@@ -19,14 +19,13 @@ sys.path.insert(0, bxddir)
 
 sys.path.insert(0, os.path.join(bxddir, "lib"))
 sys.path.insert(0, os.path.join(bxddir, "GUI"))
-import scripting as bxd
+import scripting
 
-import lib
 import Modules
 
 tasks = Modules.DynamicLoader.getTaskModules()
 readers = Modules.DynamicLoader.getReaders()
-print "got ",readers
+print "got ", readers
 # The first element of the tuple is the reader class
 # The tuple containst the following elements
 # ( reader class, None, reader module )
@@ -67,7 +66,7 @@ mergedUnit.doProcessing("merge.bxd", timepoints=[0])
 # to be processed)
 # we also indicate that we do not want an alpha channel (so merging produces RGB, instead of RGBA dataset)
 # this can also be achieved by setting bxd.wantAlphaChannel to 0
-imageData = mergedUnit.doPreview(bxd.WHOLE_DATASET_NO_ALPHA, renew = 1)
+imageData = mergedUnit.doPreview(scripting.WHOLE_DATASET_NO_ALPHA, renew = 1)
 
 simpleMip = vtk.vtkImageSimpleMIP()
 simpleMip.SetInputConnection(imageData.GetProducerPort())
