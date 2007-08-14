@@ -52,23 +52,23 @@ class Track:
 		Description: return the distance between objects at tp1 and tp2
 		"""
 		if tp1 not in self.points:
-			return 0
-		if tp2 not in self.points: 
+			return 0 #TODO: why 0? this equals to distance(p1, p1) - 14.8.2007 SS
+		if tp2 not in self.points:
 			return 0
 		pt = self.points[tp1]
 		pt2 = self.points[tp2]
-		dx,dy,dz = pt[0]-pt2[0],pt[1]-pt2[1],pt[2]-pt2[2]
-		return math.sqrt(dx*dx+dy*dy+dz*dz)
+		dx, dy, dz = pt[0] - pt2[0], pt[1] - pt2[1], pt[2] - pt2[2]
+		return math.sqrt(dx * dx + dy * dy + dz * dz)
 
 	def getLength(self):
 		"""
 		Created: 01.07.2007, KP
 		Description: return the length of this track
 		"""
-		if self.length <0:
+		if self.length < 0:
 			self.length = 0
 			for i in range(self.mintp, self.maxtp):
-				self.length += self.distance(i,i+1)
+				self.length += self.distance(i, i + 1)
 		return self.length
 
 	def getSpeed(self):
@@ -93,14 +93,14 @@ class Track:
 		tot = 0
 		n = 0
 		for i in range(self.mintp, self.maxtp):
-			x1,y1 = self.points[i][0:2]
-			x2,y2 = self.points[i+1][0:2]
-			ang=math.atan2(y2 - y1, x2 - x1) * 180.0 / math.pi;
-			ang2=ang
-			if ang<0:
-				ang2=180+ang
-			tot+=ang2
-			n+=1
+			x1, y1 = self.points[i][0:2]
+			x2, y2 = self.points[i + 1][0:2]
+			ang = math.atan2(y2 - y1, x2 - x1) * 180.0 / math.pi;
+			ang2 = ang
+			if ang < 0:
+				ang2 = 180 + ang
+			tot += ang2
+			n += 1
 		return tot / float(n)
 		
 	def addTrackPoint(self, timepoint, objval, position):
@@ -172,7 +172,7 @@ class TrackReader:
 		Description: Method desc
 		"""   
 		tracks = self.getTracks(minLength)
-		print "Tracks with minlength=", minLength, "=", tracks
+		print "Tracks with minlength =", minLength, "=", tracks
 		return tracks[trackNumber]
 		
 	def getMaximumTrackLength(self):
@@ -207,7 +207,7 @@ class TrackReader:
 			Description: Returns whether trackObjects length is greater than minimumLength
 			"""
 			return len(trackObject) > minimumLength
-		print "number of tracks=", len(self.tracks)
+		print "number of tracks =", len(self.tracks)
 		if not self.tracks:
 			return []
 		#return filter(lambda trackObject, minLength: isLongerThan(trackObject, minimumLength), self.tracks)
