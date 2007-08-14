@@ -163,9 +163,9 @@ class TestSample(unittest.TestCase):
 		a directory in the Modules directory. For this test I try to import Task/Adjust and check that
 		the list of modules is the same as the list of python files in that directory.
 		"""
-		class MockScriptingClass:
-			def get_module_dir(self):
-				return unittestPath
+#		class MockScriptingClass:
+#			def get_module_dir(self):
+#				return unittestPath
 		adjustPath = "Task/Adjust"
 		loadedModulesDictionary = Modules.DynamicLoader.getModules(adjustPath)
 		os.chdir(os.path.join(bioimagepath, "source"))
