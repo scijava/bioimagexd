@@ -1,5 +1,6 @@
 # TestCase for lib.Track
 
+import math
 import os.path
 import sys
 import unittest
@@ -13,7 +14,7 @@ class TrackTest(unittest.TestCase):
 	
 	def setUp(self):
 		"""
-		Description: Create a test Track and a test Time range (mintp - maxtp)
+		Description: Create a test Track and other test data
 		"""
 		self.testMintp = 1
 		self.testMaxtp = 5
@@ -21,6 +22,58 @@ class TrackTest(unittest.TestCase):
 		self.testTrack = lib.Track.Track()
 		self.testTrack.mintp = self.testMintp
 		self.testTrack.maxtp = self.testMaxtp
+
+		self.point1 = (0, 0, 0)
+		self.point2 = (3, 3, 3)
+		self.point3 = (5, 5, 5)
+		self.point4 = (7, 7, 7)
+
+	def testDistance(self):
+		"""
+		Created: 14.8.2007, SS
+		Description: Test the method Distance()
+		"""
+		t1 = 1
+		t2 = 2
+		t3 = 3
+		t4 = 4
+		self.testTrack.points[t1] = self.point1
+		self.testTrack.points[t2] = self.point2
+		self.testTrack.points[t3] = self.point3
+
+		errormsg = "this timepoint should not exist, should give result 0"
+
+		# check that we get the result '0' for timepoints that dont exist
+		self.assertEqual(self.testTrack.distance(t1, t4), 0, errormsg)
+		self.assertEqual(self.testTrack.distance(t4, t3), 0, errormsg)
+		self.assertEqual(self.testTrack.distance(t4, t4), 0, errormsg)
+
+		# check that returns correct results for other values
+		self.assertEqual(self.testTrack.distance(t1, t2), math.sqrt(27))
+		self.assertEqual(self.testTrack.distance(t3, t3), 0)
+
+	def testGetLengthSmallValues(self):
+		"""
+		Created: 14.8.2007, SS
+		Description: Test the method getLength() and how it reacts on small values
+		"""
+		# in initialization length should be -1
+		self.assertEqual(self.testTrack.length, -1)
+
+		# after initialization length is -1 and getLength() should return 0
+		# length should change to 0
+		self.assertEqual(self.testTrack.getLength(), 0)
+		self.assertEqual(self.testTrack.length, 0)
+
+		# if length has value 0, getLength() should return 0
+		self.assertEqual(self.testTrack.getLength(), 0)
+
+	def testGetLength(self):
+		"""
+		Created: 14.8.2007, SS
+		Description: Test the method getLength()
+		"""
+		pass
 
 	def testAddTrackPointMintp(self):
 		"""
