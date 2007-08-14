@@ -9,19 +9,18 @@
 # and named after date and time of test execution.
 # Also edited the makefile to automatically show the latest results.
 
+import os
 import os.path
 import sys
 import unittest
-
-runningScriptPath = os.path.abspath(sys.argv[0])
-unittestPath = os.path.dirname(runningScriptPath)
-bioimagepath = os.path.abspath(os.path.join(unittestPath, ".."))
-
 import Modules.DynamicLoader
 import glob
 import scripting
 
-# Modules.DynamicLoader.Logging.enableFull()
+bioimagepath = os.environ["BXDBASE"]
+unittestPath = os.path.join(bioimagepath, "unittest") 
+
+#Modules.DynamicLoader.Logging.enableFull()
 
 class TestSample(unittest.TestCase):
 
@@ -45,8 +44,8 @@ class TestSample(unittest.TestCase):
 				"Distance measurement", "Surface rendering", "Orthogonal slices", 
 				"Visualize tracks", "Volume rendering", "Warp scalar"]
 		resultDictionary = Modules.DynamicLoader.getRenderingModules()
-		self.assertEquals(len(resultDictionary.keys()), len(expectedKeys))
 		self.assertEquals(set(resultDictionary.keys()), set(expectedKeys))
+		self.assertEquals(len(resultDictionary.keys()), len(expectedKeys))
 
 	def testGetVisualizationModes(self):
 		"""
@@ -58,8 +57,8 @@ class TestSample(unittest.TestCase):
 		"""
 		expectedKeys = ["animator", "gallery", "info", "3d", "sections", "MIP", "slices"]
 		resultDictionary = Modules.DynamicLoader.getVisualizationModes()
-		self.assertEquals(len(resultDictionary.keys()), len(expectedKeys))
 		self.assertEquals(set(resultDictionary.keys()), set(expectedKeys))
+		self.assertEquals(len(resultDictionary.keys()), len(expectedKeys))
 
 	def testGetReaders(self):
 		"""
@@ -69,11 +68,11 @@ class TestSample(unittest.TestCase):
 		each of the modules in the corresponding directory. The unit test might break if ignore is changed
 		or if the files in Readers dir changes.
 		"""
-		expectedKeys = ["BioradDataSource", "BXCDataSource", "BXDDataSource", "FileListDataSource", 
+		expectedKeys = ["LIFDataSource", "BioradDataSource", "BXCDataSource", "BXDDataSource", "FileListDataSource", 
 						"InterfileDataSource", "LeicaDataSource", "LSMDataSource", "OlympusDataSource"]
 		resultDictionary = Modules.DynamicLoader.getReaders()
-		self.assertEquals(len(resultDictionary.keys()), len(expectedKeys))
 		self.assertEquals(set(resultDictionary.keys()), set(expectedKeys))
+		self.assertEquals(len(resultDictionary.keys()), len(expectedKeys))
 
 	def testGetTaskModules(self):
 		"""
@@ -85,8 +84,8 @@ class TestSample(unittest.TestCase):
 		"""
 		expectedKeys = ["Adjust", "Colocalization", "Process", "Merging"]
 		resultDictionary = Modules.DynamicLoader.getTaskModules()
-		self.assertEquals(len(resultDictionary.keys()), len(expectedKeys))
 		self.assertEquals(set(resultDictionary.keys()), set(expectedKeys))
+		self.assertEquals(len(resultDictionary.keys()), len(expectedKeys))
 	
 	def testModuleNameCreation(self):
 		"""
@@ -111,7 +110,7 @@ class TestSample(unittest.TestCase):
 			requested module directory
 		"""
 		resultDictionary = Modules.DynamicLoader.getModules("Readers")
-		readerPackageDir = os.path.join(bioimagepath, "source", scripting.get_module_dir(), "Readers")
+		readerPackageDir = os.path.join(bioimagepath, scripting.get_module_dir(), "Readers")
 		pythonFilesInPackageDir = glob.glob(os.path.join(readerPackageDir, "*.py"))
 		pythonBaseFilesWithoutExtension = [os.path.basename(file).replace(".py", "") \
 											for file in pythonFilesInPackageDir]
