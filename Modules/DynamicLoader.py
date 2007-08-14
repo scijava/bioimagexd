@@ -128,9 +128,12 @@ def _createModuleNameToLoad(modulePathWithExtension):
 def getModules(moduleSubDir, globExtension = "*.py", callback = None, moduleType = "Module"):
 	"""
 	Created: 02.07.2005, KP
-	Description: Loads dynamically classes in a directory and returns a dictionary that contains information about
-	them. The return directory will contain entries like:
+	Description: Dynamically loads classes in a directory and returns a dictionary that contains information about
+	them. The returned directory will contain entries like:
 	moddict["BXCDataSource"] -> (moduleClass, settingClass, loadedModule)
+	The method adds a relative path with the dir that contains the modules to load, to sys.path. It then uses
+	__import__ to load them with their basenames. This means that the dynamic loading relies on the current working
+	directory being set to the "main source	dir".
 	"""    
 	globPath, pathForSysPath = _createGlobPathAndSysPath(moduleSubDir, globExtension)
 	modulePathList = glob.glob(globPath)
