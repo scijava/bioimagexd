@@ -117,7 +117,6 @@ class Track:
 		# Set the length to -1 so it will be re-calculated
 		self.length = -1
 
-
 	def getTimeRange(self):
 		"""
 		Created: 23.11.2006, KP
@@ -133,6 +132,7 @@ class Track:
 		if timePoint not in self.points:
 			return - 1, (-1, -1, -1)
 		return self.values[timePoint], self.points[timePoint]
+
 
 class TrackReader:
 	"""
@@ -187,7 +187,6 @@ class TrackReader:
 					self.maxLength = trackLength
 		
 		return self.maxLength
-		
 		
 	def getNumberOfTracks(self, minLength = 3):
 		"""
