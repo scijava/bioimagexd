@@ -410,7 +410,7 @@ class CTFPaintPanel(wx.Panel):
 			r0, g0, b0 = r, g, b
 			a0 = a
 			#ax0 = ax
-			if alpha:
+			if alpha and drawAlpha:
 				ax0 = ax
 		if abs(rx0 / coeff - maximumValue) > 0.5:
 			self.createLine(rx0, r0, self.maxx, 0, '#ff0000')
