@@ -27,6 +27,7 @@ class TrackTest(unittest.TestCase):
 		self.point2 = (3, 3, 3)
 		self.point3 = (5, 5, 5)
 		self.point4 = (7, 7, 7)
+		self.point5 = (2, 2, 2)
 
 	def testDistance(self):
 		"""
@@ -71,7 +72,92 @@ class TrackTest(unittest.TestCase):
 	def testGetLength(self):
 		"""
 		Created: 14.8.2007, SS
-		Description: Test the method getLength()
+		Description: Test the method getLength(), this should return the total length of the track
+		"""
+		t1 = 1
+		t2 = 2
+		t3 = 3
+		t4 = 4
+		t5 = 5
+
+		self.testTrack.mintp = t1
+		self.testTrack.maxtp = t5
+
+		self.testTrack.points[t1] = self.point1
+		self.testTrack.points[t2] = self.point2
+		self.testTrack.points[t3] = self.point3
+		self.testTrack.points[t4] = self.point4
+		self.testTrack.points[t5] = self.point5
+
+		totalLength = math.sqrt(27) + math.sqrt(12) + math.sqrt(12) + math.sqrt(75)
+		self.assertEqual(self.testTrack.getLength(), totalLength)
+
+	def testGetSpeedNone(self):
+		"""
+		Created: 14.8.2007, SS
+		Description: Test the method getSpeed() with a 0 speed value
+		"""
+		# in initialization, getLength() should return 0
+		# maxtp - mintp (5 - 1) should return 4
+		self.assertEqual(self.testTrack.getSpeed(), 0)
+
+	def testGetSpeed(self):
+		"""
+		Created: 14.8.2007, SS
+		Description: Test the method getSpeed()
+		"""
+		# we use the same values as in testGetLength()
+		t1 = 1
+		t2 = 2
+		t3 = 3
+		t4 = 4
+		t5 = 5
+
+		self.testTrack.mintp = t1
+		self.testTrack.maxtp = t5
+
+		self.testTrack.points[t1] = self.point1
+		self.testTrack.points[t2] = self.point2
+		self.testTrack.points[t3] = self.point3
+		self.testTrack.points[t4] = self.point4
+		self.testTrack.points[t5] = self.point5
+
+		totalLength = math.sqrt(27) + math.sqrt(12) + math.sqrt(12) + math.sqrt(75)
+		tpDifference = t5 - t1
+
+		self.assertEqual(self.testTrack.getSpeed(), (totalLength/tpDifference))
+
+	def testGetDirectionalPersistence(self):
+		"""
+		Created: 14.8.2007, SS
+		Description: Test the method getDirectionalPersistence()
+		"""
+		# we use the same values as in testGetLength()
+		t1 = 1
+		t2 = 2
+		t3 = 3
+		t4 = 4
+		t5 = 5
+
+		self.testTrack.mintp = t1
+		self.testTrack.maxtp = t5
+
+		self.testTrack.points[t1] = self.point1
+		self.testTrack.points[t2] = self.point2
+		self.testTrack.points[t3] = self.point3
+		self.testTrack.points[t4] = self.point4
+		self.testTrack.points[t5] = self.point5
+
+		totalLength = math.sqrt(27) + math.sqrt(12) + math.sqrt(12) + math.sqrt(75)
+		totalMovement = math.sqrt(12)
+		expectedDirectionalPersistence = totalMovement / totalLength
+
+		self.assertEqual(self.testTrack.getDirectionalPersistence(), expectedDirectionalPersistence)
+
+	def testGetAverageAngle(self):
+		"""
+		Created: 14.8.2007, SS
+		Description: Test the method getAverageAngle()
 		"""
 		pass
 
