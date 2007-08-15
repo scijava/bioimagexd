@@ -177,8 +177,8 @@ class Particle:
 		Created: KP
 		Description: Return the distance between this particle and p
 
-	Pre: Valid coordinates
-	Post: A distance, with a max error of ...
+		Pre: Valid coordinates
+		Post: A distance, with a max error of ...
 		"""
 		particleXPos, particleYPos, particleZPos = particle.pos
 		selfXPos, selfYPos, selfZPos = self.pos
@@ -209,10 +209,11 @@ class Particle:
 	def __str__(self):
 		try:
 			xPosition, yPosition, zPosition = self.posInPixels 
-			return "<Obj#%d (%d,%d,%d) t=%d, inTrack=%s>" %	(self.intval, 
-			xPosition, yPosition, zPosition, self.timePoint, not not self.inTrack)
+			return "<Obj#%d (%d, %d, %d) t = %d, inTrack = %s>" \
+					% (self.intval, xPosition, yPosition, zPosition, self.timePoint, bool(self.inTrack))
 		except:
 			raise "Bad pos", self.pos	# TODO: When does this get raised?
+
 	def __repr__(self):
 		return self.__str__()
 
@@ -493,17 +494,17 @@ class ParticleTracker:
 		parameters.
 		"""
 		tracks = []
-		print "seedparticles = ", seedParticles
+		print "seedparticles =", seedParticles
 		trackCount = 0
 		totalTimepoints = len(self.particles)
 		searchOn = False
 		foundOne = False
-		print "Total timepoints = ", totalTimepoints
+		print "Total timepoints =", totalTimepoints
 		#minDists, maxDists, avgDists, minSiz, maxSiz, minInt, maxInt = self.getStats()
 		minDists, maxDists, minSiz, maxSiz, minInt, maxInt = self.getStats()[0:2] + self.getStats()[3:]
 	
-		print "minDists = ", minDists
-		print "maxDists = ", maxDists
+		print "minDists =", minDists
+		print "maxDists =", maxDists
 		
 		maxDist = max(maxDists)
 		minDist = min(minDists)
@@ -511,9 +512,9 @@ class ParticleTracker:
 		self.maxSize = maxSiz - minSiz
 		self.maxIntensity = maxInt - minInt
 		
-		print "Maximum change in distance = ", self.maxVelocity
-		print "Maximum change in size = ", self.maxSize
-		print "Maximum change in intensity = ", self.maxIntensity
+		print "Maximum change in distance =", self.maxVelocity
+		print "Maximum change in size =", self.maxSize
+		print "Maximum change in intensity =", self.maxIntensity
 		
 		
 		
@@ -529,7 +530,7 @@ class ParticleTracker:
 			tracks = []
 			for i in range(trackCount):
 				tracks.append([])
-			print "Track count = ", trackCount
+			print "Track count =", trackCount
 			
 			particleList = copy.deepcopy(self.particles)
 			toRemove = []
@@ -572,7 +573,7 @@ class ParticleTracker:
 		#for timePoint in range(totalTimepoints): 
 		
 		#print "Tracking from %d particles"%len(particleList[fromTimepoint])
-		print "Seed tracks = ", tracks
+		print "Seed tracks =", tracks
 		for timePoint in [fromTimepoint]:
 			# Iterate over all particles in given timepoint
 							
@@ -614,7 +615,7 @@ class ParticleTracker:
 					for search_timePoint in range(timePoint + 1, totalTimepoints):
 						# If no match was found, then this track is over
 						if not searchOn:
-							print "Track ", i, "is over"
+							print "Track", i, "is over"
 							break
 						foundOne = False
 						currentMatch = Particle()
@@ -688,11 +689,11 @@ class ParticleTracker:
 							#	 testParticle.flag = True
 						if foundOne:
 							sys.stdout.write(".")
-	#						 print "Particle added to track %d"%trackCount
+	#						 print "Particle added to track %d" % trackCount
 							track.append(currentMatch)
 						else:
 							sys.stdout.write("^")
-							#print "Found no particles that belong to track %d"%trackCount
+							#print "Found no particles that belong to track %d" % trackCount
 							searchOn = False
 						oldParticle.copy(currentMatch)
 					tracks.append(track)

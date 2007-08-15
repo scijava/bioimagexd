@@ -90,18 +90,24 @@ class Track:
 		Created: 01.07.2007, KP
 		Description: return the average of the angle differences
 		"""
-		tot = 0
-		n = 0
+		#TODO: check if this is working correctly
+		totalAngle = 0
+		numberOfAngles = 0
+
 		for i in range(self.mintp, self.maxtp):
+			# we compare point (i) and (i + 1) values of x and y coordinates
 			x1, y1 = self.points[i][0:2]
 			x2, y2 = self.points[i + 1][0:2]
-			ang = math.atan2(y2 - y1, x2 - x1) * 180.0 / math.pi;
-			ang2 = ang
-			if ang < 0:
-				ang2 = 180 + ang
-			tot += ang2
-			n += 1
-		return tot / float(n)
+
+			# we compute the angle between point (i) and (i + 1) in degrees
+			angle = math.atan2(y2 - y1, x2 - x1) * 180.0 / math.pi;
+			angle2 = angle
+			if angle < 0:
+				angle2 = 180 + angle
+			totalAngle += angle2
+			numberOfAngles += 1
+
+		return totalAngle / float(numberOfAngles)
 		
 	def addTrackPoint(self, timepoint, objval, position):
 		"""
@@ -206,12 +212,12 @@ class TrackReader:
 			Description: Returns whether trackObjects length is greater than minimumLength
 			"""
 			return len(trackObject) > minimumLength
+
 		print "number of tracks =", len(self.tracks)
 		if not self.tracks:
 			return []
-		#return filter(lambda trackObject, minLength: isLongerThan(trackObject, minimumLength), self.tracks)
 		return [trackObject for trackObject in self.tracks if isLongerThan(trackObject, minLength)]
-	
+
 	@staticmethod
 	def readTracks(reader):
 		"""
@@ -237,7 +243,7 @@ class TrackReader:
 			zCoordinate = float(zCoordinate)
 			if tracknum != currtrack:
 				if ctrack:
-					#print "Adding track",ctrack
+					#print "Adding track", ctrack
 					tracks.append(ctrack)
 					ctrack = Track()			
 				currtrack = tracknum
