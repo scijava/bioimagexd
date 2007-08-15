@@ -1,7 +1,9 @@
-#import vtkbxd
-#import vtk
-#from vtkbxd import *
-#
-#for key,val in vtkbxd.__dict__.items():
-#	if key not in vtk.__dict__:
-#		vtk.__dict__[key]=vtkbxd.__dict__[key]
+""" This module loads all the classes from the BioImageXD Processing Imaging library into
+its namespace.  This is a required module."""
+
+import os
+
+if os.name == 'posix':
+    from libvtkBXDProcessingPython import *
+else:
+    from vtkBXDProcessingPython import *
