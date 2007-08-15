@@ -22,7 +22,6 @@ class ParticleReaderTest(unittest.TestCase):
 
 		self.filename = os.path.join(unittestPath, "testdata", "particles.csv")
 		self.testReader = lib.Particle.ParticleReader(self.filename)
-#		self.testReader = lib.Particle.ParticleReader("unittest/testdata/particles.csv")
 		self.particleList = self.testReader.read()
 
 	def testRead(self):
@@ -139,7 +138,7 @@ class ParticleTest(unittest.TestCase):
 		
 		p9 = lib.Particle.Particle((800, 800, 50))	
 		distance = self.p1.distance(p9)
-		self.assertAlmostEqual(distance, math.sqrt(800*800+800*800+50*50))
+		self.assertAlmostEqual(distance, math.sqrt(800 * 800 + 800 * 800 + 50 * 50))
 
 	def testDistanceRandom(self):
 		
@@ -161,14 +160,14 @@ class ParticleTest(unittest.TestCase):
 		dx = x1 - x2
 		dy = y1 - y2
 		dz = z1 - z2
-		self.assertEqual(distance1to2, math.sqrt(dx*dx+dy*dy+dz*dz))
+		self.assertEqual(distance1to2, math.sqrt(dx * dx + dy * dy + dz * dz))
 
 	def testStr(self):
 		
 		# Test that the __str__ function returns what is expected of it
 
 		strInfo = self.p1.__str__()
-		self.assertEqual(strInfo, r"<Obj#-2 (3,3,3) t=1, inTrack=False>")
+		self.assertEqual(strInfo, r"<Obj#-2 (3, 3, 3) t = 1, inTrack = False>")
 		reprInfo = self.p1.__repr__()
 		self.assertEqual(strInfo, reprInfo)
 
