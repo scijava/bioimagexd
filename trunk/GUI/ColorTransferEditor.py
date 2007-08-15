@@ -34,7 +34,7 @@ __date__ = "$Date: 2005/01/13 14:52:39 $"
 
 import wx.lib.buttons as buttons
 import wx.lib.colourselect as csel
-import Dialogs	
+import GUI.Dialogs	
 import lib.ImageOperations
 import Logging
 import scripting
@@ -140,7 +140,10 @@ class CTFPaintPanel(wx.Panel):
 		self.maxx = 255
 		self.maxy = 255
 		self.scale = 1
-		
+		# maxval and minval are used in paintFreeMode and dont seem to be initialized anywhere. So lets make them None for now
+		self.maxval = None	
+		self.minval = None
+
 		self.background = None
 		
 		self.xoffset = 16
@@ -300,7 +303,7 @@ class CTFPaintPanel(wx.Panel):
 		d = self.maxx / float(maximumValue)
 		if d < 1:d = 1
 		if not self.background:
-			Logging.info("Constructing background from minval = %d, maxval = %d"%(self.minval, self.maxval))
+			Logging.info("Constructing background from minval = %d, maxval = %d" % (self.minval, self.maxval))
 			self.background = self.drawBackground(self.minval, self.maxval)
 		self.dc.BeginDrawing()
 		self.dc.DrawBitmap(self.background, 0, 0)
@@ -659,7 +662,7 @@ class ColorTransferEditor(wx.Panel):
 		Description: Save a lut file
 		"""	   
 		wc = "BioImageXD lookup table (*.bxdlut)|*.bxdlut|ImageJ Lookup table (*.lut)|*.lut"
-		filename = Dialogs.askSaveAsFileName(self, "Save lookup table", "palette.bxdlut", wc, "palette")
+		filename = GUI.Dialogs.askSaveAsFileName(self, "Save lookup table", "palette.bxdlut", wc, "palette")
 	
 		if filename:
 			lib.ImageOperations.saveLUT(self.ctf, filename)
@@ -670,7 +673,7 @@ class ColorTransferEditor(wx.Panel):
 		Description: Load a lut file
 		"""	  
 		wc = "BioImageXD lookup table (*.bxdlut)|*.bxdlut|ImageJ Lookup table (*.lut)|*.lut" 
-		filename = Dialogs.askOpenFileName(self, "Load lookup table", wc, filetype = "palette")
+		filename = GUI.Dialogs.askOpenFileName(self, "Load lookup table", wc, filetype = "palette")
 		if filename:
 			filename = filename[0]
 			Logging.info("Opening palette", filename, kw = "ctf")
@@ -1126,7 +1129,10 @@ class ColorTransferEditor(wx.Panel):
 				a = otf.GetValue(i)
 				self.alphafunc[i] = int(a * 255)
 		self.updateCTFView()
-		
+	@staticmethod
+	def slope(x0, y0, x1, y1):
+		return float((y1 - y0)) / float((x1 - x0))
+
 	def getPointsFromFree(self):
 		"""
 		Created: 18.04.2005, KP
@@ -1144,10 +1150,6 @@ class ColorTransferEditor(wx.Panel):
 		self.greenpoints = []
 		self.bluepoints = []
 		self.alphapoints = []
-		
-		
-		def slope(x0, y0, x1, y1):
-			return float((y1 - y0)) / float((x1 - x0))
 		
 		# Go through each intensity value
 		for x in range(int(self.maxval + 1)):
@@ -1174,11 +1176,11 @@ class ColorTransferEditor(wx.Panel):
 				if self.alpha:
 					a0 = a
 			if x == 1:
-				kr = slope(0, r0, 1, r)
-				kg = slope(0, g0, 1, g)
-				kb = slope(0, b0, 1, b)
+				kr = ColorTransferEditor.slope(0, r0, 1, r)
+				kg = ColorTransferEditor.slope(0, g0, 1, g)
+				kb = ColorTransferEditor.slope(0, b0, 1, b)
 				if self.alpha:
-					ka = slope(0, a0, 1, a)
+					ka = ColorTransferEditor.slope(0, a0, 1, a)
 				
 			if x in [0, int(self.maxval)]:
 			#if x in range(0,int(self.maxval)):
@@ -1190,20 +1192,20 @@ class ColorTransferEditor(wx.Panel):
 					self.alphapoints.append((x, a))
 			elif x > 1:
 				
-				k = slope(xr0, r0, x, r)
+				k = ColorTransferEditor.slope(xr0, r0, x, r)
 				if abs(k - kr) > self.ptThreshold and x > xr0 + 1 and r != r0:
 					self.redpoints.append((x, r))
 					kr = k
 					xr0 = x
 					r0 = r
-				k = slope(xg0, g0, x, g)	   
+				k = ColorTransferEditor.slope(xg0, g0, x, g)	   
 				
 				if abs(k - kg) > self.ptThreshold and x > xg0 + 1 and g != g0:
 					self.greenpoints.append((x, g))
 					kg = k
 					xg0 = x
 					g0 = g
-				k = slope(xb0, b0, x, b)					
+				k = ColorTransferEditor.slope(xb0, b0, x, b)					
 				if abs(k - kb) > self.ptThreshold and x > xb0 + 1 and  b != b0:
 					self.bluepoints.append((x, b))
 					kb = k
@@ -1211,7 +1213,7 @@ class ColorTransferEditor(wx.Panel):
 					b0 = b
 					
 				if self.alpha:
-					k = slope(xa0, a0, x, a)					
+					k = ColorTransferEditor.slope(xa0, a0, x, a)					
 					if abs(k - ka) > self.ptThreshold and x > xa0 + 1 and a != a0:
 						self.alphapoints.append((x, a))
 						ka = k
