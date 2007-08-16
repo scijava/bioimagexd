@@ -20,7 +20,7 @@ class CommandTest(unittest.TestCase):
 		self.test_Undoed = 1
 
 		# in Command.py functionize() adds following string before codestrings
-		self.functionizeString = "    "
+		self.functionizeString = "	"
 
 	def tearDown(self):
 		pass
