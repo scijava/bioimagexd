@@ -41,7 +41,7 @@ import Modules
 import lib.messenger
 
 smX = "<font size=\"-1\">x</font>"
-infoString = """<html><body bgcolor=%(bgcolor)s">
+infoString = """<html><body bgcolor=%(bgcolor)s>
 <table>
 <tr><td>Dimensions:</td><td>%(xdim)d %(smX)s %(ydim)d %(smX)s %(zdim)d (%(nf)s%(xdimm).2f%(fe)s&mu;m %(smX)s %(nf)s%(ydimm).2f%(fe)s&mu;m %(smX)s %(nf)s%(zdimm).2f%(fe)s&mu;m)</td></tr>
 <tr><td>Time Points:</td><td>%(tps)d</td></tr>
