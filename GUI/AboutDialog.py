@@ -118,7 +118,7 @@ class AboutDialog(wx.Dialog):
 aboutText = u"""
 <html>
 <body bgcolor = "%(bgcolor)s">
-<center><h2 > BioImageXD % (version)s</h2></center>
+<center><h2 > BioImageXD %(version)s</h2></center>
 <center><img src = "%(icondir)s/logo_medium.jpg"></center><br>
 <p><b > BioImageXD</b > is a program for post - processing and visualizing
 three - and four - dimensional microscopy data.</p>
