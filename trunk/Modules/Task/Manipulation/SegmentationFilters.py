@@ -1302,12 +1302,7 @@ class MeasureVolumeFilter(ProcessingFilter.ProcessingFilter):
 		avgintCalc.AddInput(vtkimage)
 		
 		avgintCalc.Update()
-<<<<<<< .mine
-		if self.prevFilter:
-=======
-					
 		if self.prevFilter:		   
->>>>>>> .r1133
 			startIntensity = self.prevFilter.ignoreObjects
 		else:
 			startIntensity = 0
@@ -1331,11 +1326,6 @@ class MeasureVolumeFilter(ProcessingFilter.ProcessingFilter):
 				umcentersofmass.append(tuple(c2))
 				values.append((volume, volume * vol))				 
 				avgints.append(avgInt)
-<<<<<<< .mine
-
-=======
-		
->>>>>>> .r1133
 		self.values = values
 		self.centersofmass = centersofmass
 		self.umcentersofmass = umcentersofmass
