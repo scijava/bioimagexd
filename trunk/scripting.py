@@ -101,7 +101,10 @@ def getSettingsFromCache(key):
 	if data:
 		value = []
 		for (n, configParser) in data:
-			#value=pickle.loads(data)
+			if not configParser.sections(): 
+				continue
+			print "n=",n,"configParser=",configParser
+			print configParser.sections()
 			settings = DataUnitSettings(n)
 			settings.set("Type", None)
 			settings = settings.readFrom(configParser)

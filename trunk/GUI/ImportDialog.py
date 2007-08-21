@@ -239,8 +239,6 @@ class ImportDialog(wx.Dialog):
 		self.choice.Bind(wx.EVT_CHOICE, self.setInputType)
 		
 		self.patternEdit = wx.TextCtrl(self, -1, "", style = wx.TE_PROCESS_ENTER, size = (400, -1))
-		#self.patternEdit.Bind(wx.EVT_TEXT_ENTER,self.loadListOfImages)
-		#self.patternEdit.Bind(wx.EVT_TEXT,self.loadListOfImages)
 		
 		self.patternEdit.Enable(0)
 		
@@ -258,7 +256,6 @@ class ImportDialog(wx.Dialog):
 		self.sourceListbox.Bind(wx.EVT_LISTBOX, self.updateSelection)
 		
 		self.imageSourceboxsizer.Add(self.browsedir, 0, wx.EXPAND)
-		#self.sourcesizer.Add(self.browsedir,(0,0),flag=wx.EXPAND|wx.ALL)
 		self.sourcesizer.Add(self.sourcelbl, 0, wx.EXPAND)
 		self.sourcesizer.Add(self.choice, 0)
 		self.sourcesizer.Add(self.patternBox, 0, wx.EXPAND)
@@ -285,6 +282,7 @@ class ImportDialog(wx.Dialog):
 				
 		self.preview = PreviewFrame(self, previewsize = (384, 384), scrollbars = False)
 		self.preview.setPreviewType("")
+		self.preview.disableAnnotations()
 		
 		previewBox.Add(self.preview)
 		previewBox.Add(self.timeslider, 1, wx.EXPAND)
@@ -607,8 +605,7 @@ enter the information below.""")
 				c = i1.__cmp__(i2)
 				if c != 0:
 					return c
-		return item1.__cmp__(item2)
-		
+		return cmp(item1, item2)
 	
 	def loadListOfImages(self, event = None):
 		"""
@@ -647,9 +644,9 @@ enter the information below.""")
 		try:
 			if not self.dataSource.checkImageDimensions(files):
 				GUI.Dialogs.showmessage(self, \
-										"Images have differing dimensions", \
-										"Some of the selected images have differing dimensions. \
-											Therefore it is not possible to use the \"All files in directory\" selection.")
+										 "Some of the selected images have differing dimensions. \
+											Therefore it is not possible to use the \"All files in directory\" selection.",
+											"Images have differing dimensions",)
 				self.choice.SetSelection(0)
 				return
 		except Logging.GUIError, ex:

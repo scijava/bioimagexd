@@ -106,8 +106,6 @@ class FilterBasedTaskPanel(TaskPanel.TaskPanel):
 		Created: 21.07.2006, KP
 		Description: Retrieve the filters with the given name
 		"""   
-		print "FILTERS NOW=",self.filters
-		print "requesting",name
 		print [x.getName() for x in self.filters]
 		
 		func = lambda f, n = name:f.getName() == n

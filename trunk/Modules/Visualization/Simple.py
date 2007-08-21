@@ -7,7 +7,7 @@
 
  A view for Visualizer that shows a simple preview of the data
 		  
- Copyright (C) 2005  BioImageXD Project
+ Copyright (C) 2005	 BioImageXD Project
  See CREDITS.txt for details
 
  This program is free software; you can redistribute it and/or modify
@@ -83,7 +83,7 @@ class SimpleMode(VisualizationMode):
 		Created: 24.05.2005, KP
 		Description: Initialization
 		"""
-		VisualizationMode.__init__(self, parent, visualizer)        
+		VisualizationMode.__init__(self, parent, visualizer)		
 		self.parent = parent
 		self.visualizer = visualizer
 		self.iactivePanel = None
@@ -102,7 +102,7 @@ class SimpleMode(VisualizationMode):
 		"""
 		Created: 24.05.2005, KP
 		Description: Update the rendering
-		"""      
+		"""		 
 		self.iactivePanel.updatePreview(0)
 		
 	def updateRendering(self):
@@ -117,7 +117,7 @@ class SimpleMode(VisualizationMode):
 		"""
 		Created: 24.05.2005, KP
 		Description: Set the background color
-		"""      
+		"""		 
 		if self.iactivePanel:
 			self.iactivePanel.setBackgroundColor((r, g, b))
 
@@ -144,7 +144,7 @@ class SimpleMode(VisualizationMode):
 			Logging.info("Same dataunit, not changing", kw = "visualizer")
 			return
 		if self.init:
-			self.iactivePanel.setPreviewType("")
+			self.iactivePanel.setPreviewType("MIP")
 			self.init = 0
 			
 		self.iactivePanel.setDataUnit(dataUnit, 0)
@@ -163,7 +163,7 @@ class SimpleMode(VisualizationMode):
 		Description: Unset the mode of visualization
 		"""
 		self.iactivePanel.Show(0)
-		self.iactivePanel.onDeactivate()        
+		self.iactivePanel.onDeactivate()
 		del self.iactivePanel
 		self.iactivePanel = None
 		
@@ -171,7 +171,7 @@ class SimpleMode(VisualizationMode):
 		"""
 		Created: 05.06.2005, KP
 		Description: Save a snapshot of the scene
-		"""      
+		"""		 
 		self.iactivePanel.saveSnapshot(filename)
 		
 		

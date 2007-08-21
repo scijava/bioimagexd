@@ -350,8 +350,8 @@ class SectionsPanel(InteractivePanel):
 		
 		x += z * self.zoomZ + 2 * self.xmargin
 		y += z * self.zoomZ + 2 * self.ymargin
-		x = max(x, self.maxClientSizeX)
-		y = max(y, self.maxClientSizeY)
+		x = int(max(x, self.maxClientSizeX))
+		y = int(max(y, self.maxClientSizeY))
 		self.paintSize = (x, y)
 		if self.buffer.GetWidth() != x or self.buffer.GetHeight() != y:
 			self.buffer = wx.EmptyBitmap(x, y)

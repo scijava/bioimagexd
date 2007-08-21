@@ -70,7 +70,6 @@ class Adjust(Module):
 		self.preview = None
 		self.intensityTransferFunctions = []
 		self.extent = None
-		self.n = -1
 
 	def addInput(self, dataunit, data):
 		"""

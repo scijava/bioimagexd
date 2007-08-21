@@ -135,7 +135,6 @@ class SlicesMode(VisualizationMode):
 		Description: Set the mode of visualization
 		"""
 		if not self.iactivePanel:
-			#Logging.info("Generating preview",kw="visualizer")
 			self.iactivePanel = PreviewFrame(self.parent, scrollbars = True)
 		return self.iactivePanel
 		

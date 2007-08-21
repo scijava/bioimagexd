@@ -285,7 +285,9 @@ class TaskPanel(ScrolledPanel):
 
 		self.previewButton = wx.Button(self.buttonPanel, -1, "Apply")
 		self.previewButton.Bind(wx.EVT_BUTTON, self.doPreviewCallback)
+		self.buttonsSizer2.AddSpacer(5)
 		self.buttonsSizer2.Add(self.previewButton, 1, wx.RIGHT | wx.TOP | wx.ALIGN_CENTER, 10)
+		self.buttonsSizer2.AddSpacer(5)
 
 	def onHelp(self, evt):
 		"""

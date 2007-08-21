@@ -1,5 +1,10 @@
 [Count]
-Source = 1
+Source = 0
+
+[Analyze objects]
+StatisticsFile = Process (Ch2-T1).csv
+*.csv = statistics.csv
+Select the file to which the statistics will be writen = statistics.csv
 
 [NumericalAperture]
 NumericalAperture = 0
@@ -16,7 +21,7 @@ numberOfFiles = 0
 [Settings]
 
 [Source]
-Source[0] = /Users/kallepahajoki/BioImageXD/Data/sample1_series12.lsm|0
+Source[0] = /Users/kallepahajoki/BioImageXD/Data/LSM/sample1_series12.lsm|0
 
 [SettingsOnly]
 SettingsOnly = True
@@ -27,13 +32,8 @@ ExcitationWavelength = 0
 [Spacing]
 Spacing = [1, 1.0, 1.5494562308121174]
 
-[Calculate object statistics]
-StatisticsFile = statistics.csv
-*.csv = statistics.csv
-Select the file to which the statistics will be writen = statistics.csv
-
 [FilterList]
-FilterList = ['Hybrid median 2D', 'Gradient magnitude', 'Morphological watershed segmentation', 'Calculate object statistics']
+FilterList = ['Hybrid median 2D', 'Gradient magnitude', 'Morphological watershed segmentation', 'Analyze objects']
 
 [PreviewedDataset]
 PreviewedDataset = 0

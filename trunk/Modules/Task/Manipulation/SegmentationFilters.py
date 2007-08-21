@@ -1,4 +1,3 @@
-#! /usr/bin/env python
 # -*- coding: iso-8859-1 -*-
 """
  Unit: SegmentationFilters
@@ -30,13 +29,13 @@ __author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.42 $"
 __date__ = "$Date: 2005/01/13 14:52:39 $"
 
-#import labelShape
 
 import traceback
 import scripting
 import codecs
 import csv
 import GUI.GUIBuilder as GUIBuilder
+import GUI.Dialogs
 import itk
 import lib.ImageOperations
 import lib.messenger
@@ -56,8 +55,15 @@ WATERSHED = "Watershed segmentation"
 REGIONGROWING = "Region growing"
 
 class WatershedTotalsList(wx.ListCtrl):
-
+	"""
+	Created: KP
+	Description: a listctrl that shows the averages of the segmented object
+	"""
 	def __init__(self, parent, log):
+		"""
+		Created: KP
+		Description: initialize the list ctrl
+		"""
 		wx.ListCtrl.__init__(
 			self, parent, -1, 
 			size = (350, 60),
@@ -69,7 +75,6 @@ class WatershedTotalsList(wx.ListCtrl):
 		self.InsertColumn(1, u"Avg. Volume (px)")
 		self.InsertColumn(2, u"Avg. Volume (\u03BCm)")
 		self.InsertColumn(3, "Avg. intensity")
-		#self.InsertColumn(2, "")
 		self.SetColumnWidth(0, 50)
 		self.SetColumnWidth(1, 70)
 		self.SetColumnWidth(2, 105)
@@ -86,9 +91,17 @@ class WatershedTotalsList(wx.ListCtrl):
 		self.attr2.SetBackgroundColour("light blue")
 
 	def setStats(self, stats):
+		"""
+		Created: KP
+		Description: set the averages to be shown in the listctrl
+		"""
 		self.stats = stats
 		
 	def getColumnText(self, index, col):
+		"""
+		Created: KP
+		Descrition: return the text for the given row and column
+		"""
 		item = self.GetItem(index, col)
 		return item.GetText()
 
@@ -102,7 +115,7 @@ class WatershedTotalsList(wx.ListCtrl):
 		elif col == 2:
 			return u"%.3f \u03BCm" % self.stats[1]
 		elif col == 1:
-			return "%d px" % self.stats[2]
+			return "%.3f px" % self.stats[2]
 		elif col == 3:
 			return "%.3f" % self.stats[3]
  
@@ -179,7 +192,6 @@ class WatershedObjectList(wx.ListCtrl, listmix.ListCtrlSelectionManagerMix):
 		self.Refresh()
 	def setVolumes(self, volumeList):
 		self.volumeList = volumeList
-#		 self.SetItemCount(len(volumeList))
 		self.Freeze()
 		for i, (vol, volum) in enumerate(volumeList):
 			#print "vol=",vol,"volum=",volum
@@ -192,6 +204,10 @@ class WatershedObjectList(wx.ListCtrl, listmix.ListCtrlSelectionManagerMix):
 		self.Refresh()
 		
 	def setAverageIntensities(self, avgIntList):
+		"""
+		Created: KP
+		Description: Set the list of average intensities that is displayed
+		"""
 		self.avgIntList = avgIntList
 		for i, avgint in enumerate(avgIntList):
 			if self.GetItemCount() < i:
@@ -205,7 +221,6 @@ class WatershedObjectList(wx.ListCtrl, listmix.ListCtrlSelectionManagerMix):
 	def OnItemSelected(self, event):
 		self.currentItem = event.m_itemIndex
 		item = -1
-		#print "Selected=",event.GetText()
 		
 		if self.highlightSelected:
 			self.counter += 1
@@ -239,9 +254,6 @@ class WatershedObjectList(wx.ListCtrl, listmix.ListCtrlSelectionManagerMix):
 
 	
 	def OnGetItemImage(self, item):
-#		if item % 3 == 0:
-#			return self.idx1
-#		else:
 		return - 1
 
 	def OnGetItemAttr(self, item):
@@ -596,10 +608,8 @@ class MorphologicalWatershedSegmentationFilter(ProcessingFilter.ProcessingFilter
 		"""
 		Created: 13.04.2006, KP
 		Description: Initialization
-		"""		   
+		"""   
 		ProcessingFilter.ProcessingFilter.__init__(self, inputs)
-		
-		
 		self.descs = {"Level": "Segmentation Level", "MarkWatershedLine": "Mark the watershed line",
 		"Threshold": "Remove objects with less voxels than:"}
 		self.itkFlag = 1
@@ -610,7 +620,6 @@ class MorphologicalWatershedSegmentationFilter(ProcessingFilter.ProcessingFilter
 		self.ignoreObjects = 2
 		self.relabelFilter	= None
 		self.itkfilter = None
-		#scripting.loadITK(filters=1)			 
 
 	def getParameterLevel(self, parameter):
 		"""
@@ -620,8 +629,7 @@ class MorphologicalWatershedSegmentationFilter(ProcessingFilter.ProcessingFilter
 		if parameter in ["Leve", "Threshold", "Level"]:
 			return scripting.COLOR_INTERMEDIATE
 		
-		
-		return scripting.COLOR_BEGINNER					   
+		return scripting.COLOR_BEGINNER
 			
 	def getDefaultValue(self, parameter):
 		"""
@@ -1145,6 +1153,13 @@ class MeasureVolumeFilter(ProcessingFilter.ProcessingFilter):
 			bxddir = dataUnit.getOutputDirectory()
 			fileroot = os.path.join(bxddir, fileroot)
 		filename = "%s.csv" % fileroot
+		self.writeToFile(filename, dataUnit, timepoint)
+		
+	def writeToFile(self, filename, dataUnit, timepoint):
+		"""
+		Created: 16.08.2007, KP
+		Description: write the objects from a given timepoint to file
+		"""
 		f = codecs.open(filename, "awb", "latin1")
 		Logging.info("Saving statistics to file %s"%filename, kw="processing")
 		
@@ -1166,26 +1181,24 @@ class MeasureVolumeFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 13.04.2006, KP
 		Description: Return the GUI for this filter
-		"""				 
+		"""
 		gui = ProcessingFilter.ProcessingFilter.getGUI(self, parent, taskPanel)
 		
 		if not self.reportGUI:
 			self.reportGUI = WatershedObjectList(self.gui, -1)
 			
 			self.totalGUI = WatershedTotalsList(self.gui, -1)
+			
+			self.exportBtn = wx.Button(self.gui, -1, "Export statistics")
+			self.exportBtn.Bind(wx.EVT_BUTTON, self.onExportStatistics)
 			if self.values:
 				n = len(self.values)
 				avgints = float(MeasureVolumeFilter.averageValue(self.avgIntList))
 				ums = [x[1] for x in self.values]
 				
 				# Remove the objects 0 and 1 because hey will distort the values
-				#ums.pop(0)
-				#ums.pop(0)
 				avgums = float(MeasureVolumeFilter.averageValue(ums))
 				pxs = [x[0] for x in self.values]
-				
-				#pxs.pop(0)
-				#pxs.pop(0)
 				avgpxs = float(MeasureVolumeFilter.averageValue(pxs))
 				
 				self.totalGUI.setStats([n, avgums, avgpxs, avgints])
@@ -1195,18 +1208,53 @@ class MeasureVolumeFilter(ProcessingFilter.ProcessingFilter):
 			sizer = wx.BoxSizer(wx.VERTICAL)
 			sizer.Add(self.reportGUI, 1)
 			sizer.Add(self.totalGUI)
+			sizer.AddSpacer(5)
+			sizer.Add(self.exportBtn)
+			sizer.AddSpacer(5)
 			gui.sizer.Add(sizer, (1, 0), flag = wx.EXPAND | wx.ALL)
 		return gui
 
+
+	def onExportStatistics(self, evt):
+		"""
+		Created: 16.08.2007, KP
+		Description: export the statistics from the objects list
+		"""
+		name = self.dataUnit.getName()
+		filename = GUI.Dialogs.askSaveAsFileName(self.taskPanel, "Save segmentation statistics as", \
+													"%s.csv" % name, "CSV File (*.csv)|*.csv")
+		if filename and self.taskPanel:
+			listOfFilters = self.taskPanel.getFilters(self.name)
+			filterIndex = listOfFilters.index(self)
+			if len(listOfFilters) == 1:
+				func = "getFilter('%s')" % self.name
+			else:
+				func = "getFilter('%s', %d)" % (self.name, filterIndex)
+			n = scripting.mainWindow.currentTaskWindowName
+			method="scripting.mainWindow.tasks['%s'].%s"%(n,func)
+		
+			do_cmd = "%s.exportStatistics('%s')" % ( method, filename )
+			cmd = lib.Command.Command(lib.Command.GUI_CMD, None, None, do_cmd, "", \
+										desc = "Export segmented object statistics")
+			cmd.run()
+
 	@staticmethod
-	def	averageValue(lst):
+	def averageValue(lst):
 		return sum(lst) / len(lst)
+		
+	def exportStatistics(self, filename):
+		"""
+		Created: 16.08.2007, KP
+		Description: write the statistics from the current timepoint to a csv file
+		"""
+		timepoint = scripting.visualizer.getTimepoint()
+		self.writeToFile(filename, self.dataUnit, timepoint)
    
 	def execute(self, inputs, update = 0, last = 0):
 		"""
 		Created: 15.04.2006, KP
 		Description: Execute the filter with given inputs and return the output
-		"""					   
+		"""
 		if not ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
 		image = self.getInput(1)
@@ -1254,8 +1302,12 @@ class MeasureVolumeFilter(ProcessingFilter.ProcessingFilter):
 		avgintCalc.AddInput(vtkimage)
 		
 		avgintCalc.Update()
+<<<<<<< .mine
+		if self.prevFilter:
+=======
 					
 		if self.prevFilter:		   
+>>>>>>> .r1133
 			startIntensity = self.prevFilter.ignoreObjects
 		else:
 			startIntensity = 0
@@ -1279,7 +1331,11 @@ class MeasureVolumeFilter(ProcessingFilter.ProcessingFilter):
 				umcentersofmass.append(tuple(c2))
 				values.append((volume, volume * vol))				 
 				avgints.append(avgInt)
+<<<<<<< .mine
+
+=======
 		
+>>>>>>> .r1133
 		self.values = values
 		self.centersofmass = centersofmass
 		self.umcentersofmass = umcentersofmass

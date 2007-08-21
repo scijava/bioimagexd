@@ -194,13 +194,19 @@ class DataUnitSettings:
 		self.parser = parser
 		if not self.get("Type"):
 			self.parser = parser
+			type = None
 			try:
 				type = parser.get("Type", "Type")
 			except ConfigParser.NoOptionError:
 				type = parser.get("Type", "type")
 			except ConfigParser.NoSectionError:
 				pass
-			else:
+			# if we can determine the settings type, then we instantiate a class corresponding
+			# to that type and read the settings using that classs
+			# this is done so that all the settings will be read correctly
+			# if the type cannot be determined, then just read the settings that we know how
+			if type:
+				Logging.backtrace()
 				if type in self.modules:
 					settingsclass = self.modules[type][2].getSettingsClass()
 				else:
@@ -208,13 +214,10 @@ class DataUnitSettings:
 				Logging.info("Type = %s, settings class = %s" % (type, str(settingsclass)), kw = "processing")
 				obj = settingsclass(self.dataSetNumber)
 				obj.setType(type)
-				#print "Returning object of class", settingsclass
 				return obj.readFrom(parser)
 		
 		for key in self.registered.keys():
 			ser = self.serialized[key]
-			#if ser:
-			#	 #Logging.info("is %s serialized: %s" %(key, ser), keyWord = "dataunit")
 			if key in self.counted:
 				try:
 					n = parser.get("Count", key)
@@ -292,16 +295,13 @@ class DataUnitSettings:
 		Created: 26.03.2005
 		Description: Attempt to write all keys to a parser
 		"""	   
-		#keys = []
 		if not parser.has_section("Settings"):
 			parser.add_section("Settings")
 		for key in self.registered.keys():
 			if key in self.counted:
-				#print "Writing key %s with count %d" %(key, self.counted[key])
 				for i in range(self.counted[key] + 1):
 					self.writeKey(key, parser, i)
 			else:
-				#print "Writing key ", key
 				self.writeKey(key, parser)				  
 			   
 		if len(self.counted.keys()):
@@ -317,15 +317,12 @@ class DataUnitSettings:
 		Description: Sets the value of a key
 		"""
 		if not overwrite and self.settings.has_key(name):
-			print "Will not overwrite %s" % name
 			return
 		if self.dataSetNumber != -1 and name in self.counted:
-			#print "Setting counted %d, %s, %s" %(self.dataSetNumber, name, value)
 			return self.setCounted(name, self.dataSetNumber, value, overwrite)
 		if name not in self.registered:
 			raise "No key %s registered" % name
 		if self.isPrivate[name]:
-#			 print "Setting private %s" %name
 			self.private[name] = value
 		else:
 			self.settings[name] = value
@@ -342,7 +339,6 @@ class DataUnitSettings:
 			raise "No key %s registered" % name
 		keyval = "%s[%d]" % (name, count)
 		if not overwrite and (keyval in self.settings):
-			#print "Will not overwrite %s" %keyval
 			return
 		self.settings[keyval] = value
 		if self.counted[name] < count:
@@ -353,8 +349,6 @@ class DataUnitSettings:
 		Created: 26.03.2005
 		Description: Return the value of a key
 		"""
-		#print "is counted = ", (name in self.counted)
-		#print "self.dataSetNumber = ", self.dataSetNumber
 		if self.dataSetNumber != -1 and name in self.counted:
 			name = "%s[%d]" % (name, self.dataSetNumber)
 		if name in self.private:
@@ -368,9 +362,6 @@ class DataUnitSettings:
 		Created: 26.03.2005
 		Description: Return the value of a key
 		"""
-		#print "in self.settings: %s" %self.settings.has_key("%s[%d]" %(name, count))
-		#if self.dataSetNumber ! = -1:
-		#	 return self.get(name)
 		key = "%s[%d]" % (name, count)
 		return self.get(key)
 
@@ -409,17 +400,12 @@ class DataUnitSettings:
 		Created: 27.03.2005
 		Description: Returns the value of a given key
 		"""
-		#print "deserialize", name
 		if "ColorTransferFunction" in name:
  #			 try:
-			data = eval(value)			  
+			data = eval(value)
 			colorTransferFunction = vtk.vtkColorTransferFunction()
 			
 			lib.ImageOperations.loadLUTFromString(data, colorTransferFunction)
-			#bmp = lib.ImageOperations.paintCTFValues(colorTransferFunction)
-			#img = bmp.ConvertToImage()
-			#img.SaveMimeFile("ctf.png", "image/png") #rename ctf.png later? (SS 21.06.07)
-			#print "Got", colorTransferFunction
 			return colorTransferFunction
 		# Annotations is a list of classes that can easily be
 		# pickled / unpickled
@@ -467,7 +453,6 @@ class DataUnitSettings:
 		return ret
 
 	def __setstate__(self, state):
-		print "state = ", state
 		self.counted = state["counted"]
 		self.registered = state["registered"]
 		self.private = state["private"] 
