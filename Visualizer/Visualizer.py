@@ -203,7 +203,6 @@ class Visualizer:
 		if platform.system() == 'Darwin':
 			window = 44
 		self.zsliderWin.origSize = (window, 768)
-		#self.zText = wx.StaticText(self.zsliderWin, -1, "Z")
 
 		self.sliderbox = None
 		self.zsliderPanel = None
@@ -716,7 +715,6 @@ class Visualizer:
 		"""
 		self.zoomToFitFlag = 0
 		self.currMode.zoomObject()
-		#self.zoomFactor = self.currMode.getZoomFactor()
 
 	def zoomOut(self, evt):
 		"""
@@ -828,7 +826,6 @@ class Visualizer:
 
 			self.sidebarWin.origSize = newsize
 
-		#wx.LayoutAlgorithm().LayoutWindow(self.parent, self.visWin)
 		self.OnSize(None)
 
 	def OnSize(self, event = None):
@@ -841,10 +838,7 @@ class Visualizer:
 		self.zsliderPanel.SetSize((x, y))
 
 		visSize = self.visWin.GetClientSize()
-		# was here
-
 		self.annotateBar.Layout()
-
 		newsize = visSize[0]
 
 		if self.currentWindow:
@@ -871,6 +865,12 @@ class Visualizer:
 			return 0
 		ssize = eval(ssize)
 		self.sidebarWin.SetDefaultSize(ssize)
+
+		if self.dataUnit and self.dataUnit.isProcessed():
+			currentTask = self.mainwin.getCurrentTaskName()
+			ssize = self.conf.getConfigItem("%s_TaskPanelSize"%currentTask, "Sizes")
+			self.mainwin.taskWin.SetDefaultSize(ssize)
+		
 		return 1
 
 	def saveWindowSizes(self):
@@ -879,8 +879,15 @@ class Visualizer:
 		Description: Save window sizes to the settings
 		"""
 		if self.mode:
-			ssize = str(self.sidebarWin.GetSize())
-			self.conf.setConfigItem("%s_SidebarSize" % self.mode, "Sizes", ssize)
+			ssize = self.sidebarWin.GetSize()
+			if 0 not in ssize:
+				ssize = str(ssize)
+				self.conf.setConfigItem("%s_SidebarSize" % self.mode, "Sizes", ssize)
+		if self.dataUnit and self.dataUnit.isProcessed():
+			currentTask = self.mainwin.getCurrentTaskName()
+			ssize = self.mainwin.taskWin.GetSize()
+			if 0 not in ssize:
+				self.conf.setConfigItem("%s_TaskPanelSize"%currentTask, "Sizes", str(ssize))
 
 	def setCurrentSliderPanel(self, panel):
 		"""
@@ -985,7 +992,6 @@ class Visualizer:
 			if self.dataUnit and self.currMode.dataUnit != self.dataUnit:
 				Logging.info("Re - setting dataunit", kw = "visualizer")
 				self.currMode.setDataUnit(self.dataUnit)
-
 				return
 		self.mode = mode
 
@@ -1085,13 +1091,6 @@ class Visualizer:
 		if hasattr(self.currentWindow, "enable"):
 			self.currentWindow.enable(self.enabled)
 		lib.messenger.send(None, "visualizer_mode_loading", modeinst)
-
-#		 if self.zoomToFitFlag:
-#			 self.currMode.zoomToFit()
-#		 else:
-#			 self.currMode.setZoomFactor(self.zoomFactor)
-#		 if not self.zoomToFitFlag and hasattr(self.currMode, "getZoomFactor"):
-#			 self.setComboBoxToFactor(self.currMode.getZoomFactor())
 
 	def showItemToolbar(self, flag):
 		"""
@@ -1381,6 +1380,7 @@ class Visualizer:
 		"""
 		newpos = self.zslider.GetValue() - 1
 		newpos += 10
+		if newpos<0:newpos=0
 		self.zslider.SetValue(newpos)
 
 	def onZPageUp(self, evt):
@@ -1413,6 +1413,13 @@ class Visualizer:
 		if self.z != newz:
 			self.z = newz
 			lib.messenger.send(None, "zslice_changed", newz)
+			
+	def getZSliderValue(self):
+		"""
+		Created: 17.08.2007, KP
+		Description: return the z slider value
+		"""
+		return self.zslider.GetValue()
 
 	def onSnapshot(self, event):
 		"""

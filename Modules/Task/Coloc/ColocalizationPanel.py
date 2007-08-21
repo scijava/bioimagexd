@@ -9,7 +9,7 @@
  colocalization module. Expects to be handed a ColocalizationDataUnit()
  containing the datasets from which the colocalization map is generated.
 
- Copyright (C) 2005  BioImageXD Project
+ Copyright (C) 2005	 BioImageXD Project
  See CREDITS.txt for details
 
  This program is free software; you can redistribute it and/or modify
@@ -60,7 +60,7 @@ class MyListCtrl(wx.ListCtrl, listmix.TextEditMixin):
 
 	def CloseEditor(self, row = 0, col = 0):
 		self.editor.Hide()
-		self.SetFocus()            
+		self.SetFocus()			   
 			
 		
 class ColocalizationPanel(TaskPanel):
@@ -74,11 +74,11 @@ class ColocalizationPanel(TaskPanel):
 		Created: 03.11.2004, KP
 		Description: Initialization
 		Parameters:
-				root    Is the parent widget of this window
+				root	Is the parent widget of this window
 		"""
 		self.scatterPlot = None
 		self.createItemSelection = 1
-		self.timePoint = 0        
+		self.timePoint = 0		  
 		self.beginner = wx.Colour(180, 255, 180)
 		self.intermediate = wx.Colour(255, 255, 180)
 		self.expert = wx.Colour(0, 180, 255)
@@ -115,16 +115,16 @@ class ColocalizationPanel(TaskPanel):
 # volume = number of voxels (Imaris)
 # material = intensity
 				  "PercentageVolumeCh1":(n + 5, 0, ss),
-#                  "PercentageMaterialCh1":(n+5,1,fs,100),
+#				   "PercentageMaterialCh1":(n+5,1,fs,100),
 				  "PercentageVolumeCh2":(n + 6, 0, ss),
-#                  "PercentageMaterialCh2":(n+6,1,fs,100),
+#				   "PercentageMaterialCh2":(n+6,1,fs,100),
 				  "PercentageTotalCh1":(n + 7, 0, fs, 100),
-				  "PercentageTotalCh2":(n + 8, 0, fs, 100),                  
+				  "PercentageTotalCh2":(n + 8, 0, fs, 100),					 
 				  "PearsonWholeImage":(n + 9, 0, fs2),
 				  "PearsonImageAbove":(n + 10, 0, fs2),
 				  "PearsonImageBelow":(n + 11, 0, fs2),
-#                  "M1":(9,0,fs2),
-#                  "M2":(10,0,fs2),
+#				   "M1":(9,0,fs2),
+#				   "M2":(10,0,fs2),
 				  "ThresholdM1":(n + 12, 0, fs2),
 				  "ThresholdM2":(n + 13, 0, fs2),
 				  "SumCh1":(n + 14, 0, ss),
@@ -143,7 +143,7 @@ class ColocalizationPanel(TaskPanel):
 	 
 		sources = []
 		if self.dataUnit:
-			sources = self.dataUnit.getSourceDataUnits()                  
+			sources = self.dataUnit.getSourceDataUnits()				  
 		for item in mapping.keys():
 			val = 0.0
 			val1 = ""
@@ -153,7 +153,7 @@ class ColocalizationPanel(TaskPanel):
 			if item == "Ch1Th":
 				if sources:
 					th1 = sources[0].getSettings().get("ColocalizationLowerThreshold")
-					th2 = sources[0].getSettings().get("ColocalizationUpperThreshold")                
+					th2 = sources[0].getSettings().get("ColocalizationUpperThreshold")				  
 					val = "%d / %d" % (th1, th2)
 					val1 = th1
 					val2 = th2
@@ -200,11 +200,11 @@ class ColocalizationPanel(TaskPanel):
 					if not pmatch:
 						pmatch = 0
 					val1 = "%.3f%%" % (pvolch * 100)
-					val2 = "%.3f%%" % (pmatch * 100)                    
+					val2 = "%.3f%%" % (pmatch * 100)					
 				else:
 					val = "0.000% / 0.000%"
 					val1 = "0.000%"
-					val2 = "0.000%"                    
+					val2 = "0.000%"					   
 			elif item == "SumCh1":
 				if sources:
 					sum = sources[0].getSettings().get(item)
@@ -221,7 +221,7 @@ class ColocalizationPanel(TaskPanel):
 					val = "0 / 0"
 					val1 = 0
 					val2 = 0
-			elif item == "SumCh2":                    
+			elif item == "SumCh2":					  
 				if sources:
 					sum = sources[1].getSettings().get(item)
 					sumth = sources[1].getSettings().get("SumOverThresholdCh2")
@@ -236,7 +236,7 @@ class ColocalizationPanel(TaskPanel):
 					val = "0 / 0"  
 					val1 = 0
 					val2 = 0
-			elif item == "NonZeroCh1":                    
+			elif item == "NonZeroCh1":					  
 				if sources:
 					sum = sources[1].getSettings().get(item)
 					sumth = sources[1].getSettings().get("NonZeroCh2")
@@ -250,8 +250,8 @@ class ColocalizationPanel(TaskPanel):
 				else:
 					val = "0 / 0"  
 					val1 = 0
-					val2 = 0                    
-			elif item == "OverThresholdCh1":                    
+					val2 = 0					
+			elif item == "OverThresholdCh1":					
 				if sources:
 					sum = sources[1].getSettings().get(item)
 					sumth = sources[1].getSettings().get("OverThresholdCh2")
@@ -279,7 +279,7 @@ class ColocalizationPanel(TaskPanel):
 					val1 = ds
 					val2 = dsint
 				else:
-					val = "0.000 / 0.000"              
+					val = "0.000 / 0.000"			   
 					val1 = 0.000
 					val2 = 0.000
 			elif item == "DiffStainVoxelsCh2":
@@ -294,7 +294,7 @@ class ColocalizationPanel(TaskPanel):
 					val1 = ds
 					val2 = dsint
 				else:
-					val = "0.000 / 0.000"                         
+					val = "0.000 / 0.000"						  
 					val1 = 0.000
 					val2 = 0.000
 					
@@ -331,7 +331,7 @@ class ColocalizationPanel(TaskPanel):
 				else:
 					val = "0.000 / 0.000"
 					val1 = 0.0
-					val2 = 0.0                    
+					val2 = 0.0					  
 			elif item == "RRandMean":
 				if sources:
 					randmean = sources[0].getSettings().get(item)
@@ -385,13 +385,13 @@ class ColocalizationPanel(TaskPanel):
 		Description: Use vtkAutoThresholdColocalization to determine thresholds
 					 for colocalization and calculate statistics
 		"""
-		self.dataUnit.getSourceDataUnits()[0].getSettings().set("CalculateThresholds", 1)        
+		self.dataUnit.getSourceDataUnits()[0].getSettings().set("CalculateThresholds", 1)		 
 		self.eventDesc = "Calculating thresholds"
 		
 		self.doPreviewCallback(None)
 		self.dataUnit.getSourceDataUnits()[0].getSettings().set("CalculateThresholds", 0) 
 		
-		lib.messenger.send(None, "threshold_changed")    
+		lib.messenger.send(None, "threshold_changed")	 
 		
 	def getAutoThreshold(self, event = None):
 		"""
@@ -483,7 +483,7 @@ class ColocalizationPanel(TaskPanel):
 								"The given width for point spread function is invalid.")
 			return
 		print "Setting PSF width", int(n)
-		coloctest.SetManualPSFSize(int(n))        
+		coloctest.SetManualPSFSize(int(n))		  
 
 		coloctest.SetNumIterations(iterations)
 		
@@ -523,7 +523,7 @@ class ColocalizationPanel(TaskPanel):
 					 Preview and Close
 		"""
 		TaskPanel.createButtonBox(self)
-		lib.messenger.connect(None, "process_dataset", self.doColocalizationCallback)        
+		lib.messenger.connect(None, "process_dataset", self.doColocalizationCallback)		 
 
 	def createOptionsFrame(self):
 		"""
@@ -532,7 +532,7 @@ class ColocalizationPanel(TaskPanel):
 					 used to control the colocalization settings
 		"""
 		TaskPanel.createOptionsFrame(self)
-#        self.colocalizationPanel=wx.Panel(self.settingsNotebook,-1)
+#		 self.colocalizationPanel=wx.Panel(self.settingsNotebook,-1)
 		self.colocalizationPanel = wx.Panel(self, -1)
 		self.colocalizationSizer = wx.GridBagSizer()
 		n = 0
@@ -611,7 +611,7 @@ class ColocalizationPanel(TaskPanel):
 		box2 = wx.BoxSizer(wx.HORIZONTAL)
 		self.statsButton = wx.Button(self.colocalizationPanel, -1, "Statistics")
 		self.statsButton.Bind(wx.EVT_BUTTON, self.getStatistics)
-		box2.Add(self.statsButton)        
+		box2.Add(self.statsButton)		  
 		self.thresholdButton = wx.Button(self.colocalizationPanel, -1, "Auto-Threshold")
 		self.thresholdButton.Bind(wx.EVT_BUTTON, self.getAutoThreshold)
 		box2.Add(self.thresholdButton) 
@@ -665,7 +665,7 @@ class ColocalizationPanel(TaskPanel):
 		
 		self.settingsSizer.Add(self.colocalizationPanel, (1, 0), flag = wx.EXPAND | wx.ALL)
 		
-#        self.settingsNotebook.AddPage(self.colocalizationPanel,"Colocalization")
+#		 self.settingsNotebook.AddPage(self.colocalizationPanel,"Colocalization")
 	
 	
 	def onUpdatePSF(self, event):
@@ -732,28 +732,21 @@ class ColocalizationPanel(TaskPanel):
 		Description: Replace any unicode characeters with their ascii counterparts
 		"""
 		d = d.replace(u"\u00B1", "+-")
-		#d=d.replace("")
 		return d
 		
 	def exportStatistics(self, filename):
 		"""
 		Created: 18.07.2006, KP
 		Description: Export the colocalization stats
-		"""   
-		name = self.dataUnit.getName()        
+		"""	  
+		name = self.dataUnit.getName()		  
 		sources = self.dataUnit.getSourceDataUnits()
 		names = []
 		names2 = []
-		for i in sources:
-			names.append(i.getName())
-			dsn = i.getFileName()
-			dsn = os.path.basename(dsn)
-			names2.append(dsn)
+		names = [x.getName() for x in sources]
+		names2 = [os.path.basename(x.getFileName()) for x in sources]
 		
-		names3 = []
-		for i in names2:
-			if i not in names3:
-				names3.append(i)
+		names3 = names2[:]
 				
 		namestr = " and ".join(names)
 		leadstr = "From file "
@@ -764,7 +757,6 @@ class ColocalizationPanel(TaskPanel):
 		if not filename:
 			Logging.info("Got no name for coloc statistics", kw = "processing")
 			return
-#        f=open(filename,"wb")
 		f = codecs.open(filename, "wb", "latin-1")
 		
 		w = csv.writer(f, dialect = "excel", delimiter = ";")
@@ -783,7 +775,7 @@ class ColocalizationPanel(TaskPanel):
 				val1 = self.decode(val1)
 				
 			if val2:
-				if type(val2) == types.UnicodeType:   
+				if type(val2) == types.UnicodeType:	  
 					val2 = self.decode(val2)
 				
 				w.writerow([header, val1, val2])
@@ -875,9 +867,9 @@ class ColocalizationPanel(TaskPanel):
 			newlthreshold = int(self.lowerthreshold.GetValue())
 			newuthreshold = int(self.upperthreshold.GetValue())
 			self.settings.set("ColocalizationLowerThreshold", newlthreshold)
-			self.settings.set("ColocalizationUpperThreshold", newuthreshold)            
+			self.settings.set("ColocalizationUpperThreshold", newuthreshold)			
 			if (oldlthreshold != newlthreshold) or (olduthreshold != newuthreshold):
-				lib.messenger.send(None, "threshold_changed")                
+				lib.messenger.send(None, "threshold_changed")				 
 				self.doPreviewCallback()
 				
 
@@ -947,7 +939,7 @@ class ColocalizationPanel(TaskPanel):
 			self.scatterPlot.setTimepoint(self.timePoint)
 			self.scatterPlot.updatePreview()
 		ctf = self.dataUnit.getSettings().get("ColorTransferFunction")
-		self.dataUnit.getSettings().set("ColocalizationColorTransferFunction", ctf)            
+		self.dataUnit.getSettings().set("ColocalizationColorTransferFunction", ctf)			   
 		self.updateListCtrl()
 		
 	def setCombinedDataUnit(self, dataUnit):
@@ -975,7 +967,7 @@ class ColocalizationPanel(TaskPanel):
 		self.lowerthreshold.SetRange(minval, maxval)
 		self.lowerthreshold.SetValue((maxval - minval) / 2)
 		self.upperthreshold.SetRange(minval, maxval)
-		self.upperthreshold.SetValue(maxval)        
+		self.upperthreshold.SetValue(maxval)		
 		self.updateThreshold(None)
 		
 		for i, val in enumerate(self.headervals):
@@ -1009,7 +1001,7 @@ class ColocalizationPanel(TaskPanel):
 			#self.scatterPlot.setZSlice(self.preview.z)
 			self.scatterPlot.setZSlice(0)
 			self.scatterPlot.setTimepoint(self.timePoint)
-			self.scatterPlot.updatePreview()        
+			self.scatterPlot.updatePreview()		
 		
 		self.colocalizationPanel.Layout()
 		
@@ -1017,8 +1009,8 @@ class ColocalizationPanel(TaskPanel):
 		"""
 		Created: 31.03.2005, KP
 		Description: Method to create a toolbar for the window that allows use to select processed channel
-		"""      
-		n = TaskPanel.createItemToolbar(self)        
+		"""		 
+		n = TaskPanel.createItemToolbar(self)		 
 		
 		coloc = vtkbxd.vtkImageColocalizationFilter()
 		coloc.SetOutputDepth(8)
@@ -1049,7 +1041,7 @@ class ColocalizationPanel(TaskPanel):
 		toolid = wx.NewId()
 		#n=n+1
 		name = "Colocalization"
-		self.toolMgr.addChannelItem(name, bmp, toolid, lambda e, x = n, s = self:s.setPreviewedData(e, x))        
+		self.toolMgr.addChannelItem(name, bmp, toolid, lambda e, x = n, s = self:s.setPreviewedData(e, x))		  
 		
 		for i, tid in enumerate(self.toolIds):
 			self.dataUnit.setOutputChannel(i, 0)

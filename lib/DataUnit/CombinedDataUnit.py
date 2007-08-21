@@ -211,7 +211,7 @@ class CombinedDataUnit(DataUnit):
 			bxdwriter.addChannelWriter(self.dataWriter)
 
 		#imageList = []
-		self.n = 1
+		n = 1
 		self.guicallback = callback
 		self.module.setControlDataUnit(self)
 		if not settings_only:
@@ -234,8 +234,8 @@ class CombinedDataUnit(DataUnit):
 				imageData = self.module.doOperation()
 				imageData = optimize.optimize(image = imageData)
 				self.settings.set("Dimensions", str(imageData.GetDimensions()))
-				lib.messenger.send(None, "update_processing_progress", timePoint, self.n, len(timepoints))
-				self.n += 1
+				lib.messenger.send(None, "update_processing_progress", timePoint, n, len(timepoints))
+				n += 1
 				# Write the image data to disk
 				if not settings_only:
 					self.dataWriter.addImageData(imageData)

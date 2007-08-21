@@ -269,8 +269,8 @@ class IntensityTransferEditor(wx.Panel):
 		self.minValueLbl = wx.StaticText(self, wx.NewId(), "Min value:")
 		self.maxValueLbl = wx.StaticText(self, wx.NewId(), "Max value:")
 
-		self.minValue = wx.TextCtrl(self, -1, style = wx.TE_PROCESS_ENTER)
-		self.maxValue = wx.TextCtrl(self, -1, style = wx.TE_PROCESS_ENTER)
+		self.minValue = wx.TextCtrl(self, -1, style = wx.TE_PROCESS_ENTER, size=(70,-1))
+		self.maxValue = wx.TextCtrl(self, -1, style = wx.TE_PROCESS_ENTER, size=(70,-1))
 
 		fieldsizer = wx.GridBagSizer(0, 5)
 
@@ -284,8 +284,8 @@ class IntensityTransferEditor(wx.Panel):
 		self.minthresholdLbl = wx.StaticText(self, wx.NewId(), "Min threshold:")
 		self.maxthresholdLbl = wx.StaticText(self, wx.NewId(), "Max threshold:")
 
-		self.minthreshold = wx.TextCtrl(self, -1, style = wx.TE_PROCESS_ENTER)
-		self.maxthreshold = wx.TextCtrl(self, -1, style = wx.TE_PROCESS_ENTER)
+		self.minthreshold = wx.TextCtrl(self, -1, style = wx.TE_PROCESS_ENTER, size=(70,-1))
+		self.maxthreshold = wx.TextCtrl(self, -1, style = wx.TE_PROCESS_ENTER, size=(70,-1))
 
 		fieldsizer.Add(self.minthresholdLbl, (1, 0))
 		fieldsizer.Add(self.minthreshold, (1, 1))
@@ -301,7 +301,7 @@ class IntensityTransferEditor(wx.Panel):
 		
 		
 		self.ssThresholdLbl = wx.StaticText(self, -1, "Smooth start:")
-		self.ssThreshold = wx.TextCtrl(self, -1, "0", style = wx.TE_PROCESS_ENTER)
+		self.ssThreshold = wx.TextCtrl(self, -1, "0", style = wx.TE_PROCESS_ENTER, size=(70,-1))
 		
 		self.ssgammaEdit = wx.TextCtrl(self, -1, "1.00", size = (70, -1), style = wx.TE_PROCESS_ENTER)
 		self.ssgammaSlider = RangedSlider.RangedSlider(self, -1, 10000, size = (150, -1), style = wx.SL_HORIZONTAL)
@@ -317,7 +317,7 @@ class IntensityTransferEditor(wx.Panel):
 		fieldsizer.Add(self.ssgammaEdit, (2, 3))
 
 		self.seThresholdLbl = wx.StaticText(self, -1, "Smooth end:")
-		self.seThreshold = wx.TextCtrl(self, -1, "255", style = wx.TE_PROCESS_ENTER)
+		self.seThreshold = wx.TextCtrl(self, -1, "255", style = wx.TE_PROCESS_ENTER, size=(70,-1))
 		self.segammaEdit = wx.TextCtrl(self, -1, "1.00", size = (70, -1), style = wx.TE_PROCESS_ENTER)
 		self.segammaSlider = RangedSlider.RangedSlider(self, -1, 10000, size = (150, -1), style = wx.SL_HORIZONTAL)
 		self.segammaSlider.setRange(0, 50, 0.0001, 1.0)
@@ -354,12 +354,9 @@ class IntensityTransferEditor(wx.Panel):
 		self.maxthreshold.Bind(wx.EVT_KILL_FOCUS, self.updateMaximumThreshold)
 		self.maxthreshold.Bind(wx.EVT_TEXT_ENTER, self.updateMaximumThreshold)
 
-		#self.minProcess.Bind(wx.EVT_KILL_FOCUS,self.updateProcessingThreshold)
-		#self.minProcess.Bind(wx.EVT_TEXT_ENTER,self.updateProcessingThreshold)
 		
 		self.setMinimumThreshold(0)
 		self.setMaximumThreshold(255)
-		#self.setProcessingThreshold(0)
 
 		self.setMinimumValue(0)
 		self.setMaximumValue(255)

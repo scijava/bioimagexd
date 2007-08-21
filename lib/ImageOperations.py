@@ -710,7 +710,7 @@ def watershedPalette(ctfLowerBound, ctfUpperBound):
 def fire(ctfLowerBound, ctfUpperBound):
 	"""
 	Created: 
-	Description: 
+	Description: return a color transfer function with colors ranging from red to white
 	"""
 	reds = [
 		  0,   0,   1,  25,  49,  73,  98, 122, 

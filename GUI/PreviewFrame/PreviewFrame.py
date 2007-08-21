@@ -136,7 +136,7 @@ class PreviewFrame(InteractivePanel):
 
 		self.size = size
 		self.slice = None
-		self.z = 0
+		self.z = scripting.visualizer.getZSliderValue()-1
 		self.zooming = 0
 		self.singleslice = 0
 		self.scrollTo = None
@@ -405,7 +405,8 @@ class PreviewFrame(InteractivePanel):
 				z = self.z
 				# if we're doing a MIP, we need to set z to -1
 				# to indicate we want the whole volume
-				if self.isMipMode():z = -1
+				if self.isMipMode():
+					z = -1
 				self.rawImages = []
 				for source in self.dataUnit.getSourceDataUnits():
 					self.rawImages.append(source.getTimepoint(self.timePoint))  
@@ -560,25 +561,15 @@ class PreviewFrame(InteractivePanel):
 					 function
 		"""
 		if self.dataUnit:
-			#ct = self.settings.get("ColorTransferFunction")
 			ct = self.dataUnit.getColorTransferFunction()
 
-			val = [0, 0, 0]
 			if self.selectedItem != -1:
 				ctc = self.settings.getCounted("ColorTransferFunction", self.selectedItem)
-
 				if ctc:
-					ctc.GetColor(255, val)
-					Logging.info("Using ctf of selected item", val, kw = "ctf")
-					
-					Logging.info("Using item %d (counted)" % self.selectedItem, kw = "preview")
 					ct = ctc
 	 
 		self.currentCt = ct
 		
-		#ct.GetColor(255,val)
-		#Logging.info("value of 255=",val,kw="ctf")
-	
 		self.mapToColors.SetLookupTable(self.currentCt)
 		self.mapToColors.SetOutputFormatToRGB()
  
@@ -606,10 +597,8 @@ class PreviewFrame(InteractivePanel):
 		x, y = self.size
 		image.UpdateInformation()   
 		x2, y2, z = image.GetDimensions()
-		if x2 < x:
-			x = x2
-		if y2 < y:
-			y = y2
+		x = min(x, x2)
+		y = min(y, y2)
 		
 		if self.fitLater:
 			self.fitLater = 0
@@ -651,7 +640,6 @@ class PreviewFrame(InteractivePanel):
 		Description: Sets the zoom factor so that the image will fit into the screen
 		"""
 		if self.dataUnit:
-			#x,y,z=self.imagedata.GetDimensions()
 			x, y, z = self.dataUnit.getDimensions()
 			maxX = self.maxClientSizeX
 			maxY = self.maxClientSizeY

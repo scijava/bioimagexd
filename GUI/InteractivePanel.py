@@ -806,8 +806,9 @@ class InteractivePanel(GUI.ogl.ShapeCanvas):
 		"""
 		if not self.annotationsEnabled:
 			return
-		if not self.dataUnit.getDataSource():		
+		if not self.dataUnit.getDataSource():
 			return
+		print "Reading annotations from dataunit",self.dataUnit
 		cachedSettings, cacheParser = scripting.getSettingsFromCache(self.dataUnit.getFileName() + "_" + self.dataUnit.getName() + "_annotations")
 
 		if cachedSettings:

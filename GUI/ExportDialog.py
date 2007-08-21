@@ -31,9 +31,6 @@ __author__ = "BioImageXD Project"
 __version__ = "$Revision: 1.40 $"
 __date__ = "$Date: 2005/01/13 14:52:39 $"
 
-#import glob
-#import sys
-
 import Logging
 import os.path
 import re
@@ -41,6 +38,7 @@ import UIElements
 import vtk
 import wx
 import  wx.lib.filebrowsebutton as filebrowse
+import Configuration
 
 class ExportDialog(wx.Dialog):
 	"""
@@ -54,14 +52,14 @@ class ExportDialog(wx.Dialog):
 		"""    
 		wx.Dialog.__init__(self, parent, -1, 'Export Data')
 		
+		self.conf = Configuration.getConfiguration()       
+
 		self.dataUnit = dataUnit
 		x, y, z = dataUnit.getDimensions()
 		self.x, self.y, self.z = x, y, z
 		self.n = dataUnit.getNumberOfTimepoints()
 		self.imageAmnt = z * self.n
-		self.sizer = wx.GridBagSizer()
-#        self.notebook = wx.Notebook(self,-1)
-#        self.sizer.Add(self.notebook,(0,0),flag=wx.EXPAND|wx.ALL)
+		self.sizer = wx.GridBagSizer(5, 5)
 		if imageMode == 1:
 			self.createImageExport()
 			self.sizer.Add(self.imagePanel, (0, 0), flag = wx.EXPAND | wx.ALL)
@@ -69,10 +67,6 @@ class ExportDialog(wx.Dialog):
 			self.createVTIExport()
 			self.sizer.Add(self.vtkPanel, (0, 0), flag = wx.EXPAND | wx.ALL)
 		self.imageMode = imageMode
-#        self.notebook.AddPage(self.imagePanel,"Stack of Images")
-#        self.notebook.AddPage(self.vtkPanel,"VTK Dataset")
-		#if not imageMode:
-		#    self.notebook.SetSelection(1)
 
 		self.btnsizer = self.CreateButtonSizer(wx.OK | wx.CANCEL)
 		
@@ -120,25 +114,36 @@ class ExportDialog(wx.Dialog):
 		writer.SetFilePrefix(prefix)
 		for t in range(self.n):
 			Logging.info("Writing timepoint %d" % t, kw = "io")
+			# If the numbering uses two separate numbers (one for timepoint, one for slice)
+			# then we modify the pattern to account for the timepoint
 			if n == 2:
 				begin = pattern.rfind("%")
-				
 				beginstr = pattern[:begin - 1]
 				currpattern = beginstr % t + pattern[begin - 1:]
 				Logging.info("beginstr=%s, currpattern=%s" % (beginstr, beginstr % t + pattern[begin - 1:]), kw = "io")
 			else:
+				# otherwise we put an underscore (_) in the name
+				# then later on it will be renamed to the proper name and underscore removed
+				# this is done so that if we write many timepoints, the files can be named
+				# with the correct numbers, because the image writer would otherwise write
+				# every timepoint with slice numbers from 0 to z
 				currpattern = "_" + pattern
 			currpattern += ".%s" % ext
 			currpattern = "%s" + currpattern
 			Logging.info("Setting pattern %s" % currpattern, kw = "io")
 			writer.SetFilePattern(currpattern)
 			data = self.dataUnit.getTimepoint(t)
+			data.SetUpdateExtent(data.GetWholeExtent())
 			data.Update()
+			print data
 			writer.SetInput(data)
 			writer.SetFileDimensionality(2)
 			self.dlg.Update(t * self.z, "Writing image %d / %d" % (t * self.z, self.imageAmnt))
 
 			Logging.info("Writer = ", writer, kw = "io")
+			writer.DebugOn()
+			writer.Update()
+			print writer
 			writer.Write()
 			if n == 1:
 				for z in range(self.z):
@@ -193,9 +198,11 @@ class ExportDialog(wx.Dialog):
 		
 		self.imageSourceboxsizer.SetMinSize((600, 100))
 		
-		
-		self.browsedir = filebrowse.DirBrowseButton(self.imagePanel, -1, labelText = "Image Directory: ", changeCallback = self.updateListOfImages)
-		
+		initialDir = self.conf.getConfigItem("ExportDirectory", "Paths")
+		if not initialDir:
+			initialDir = "."
+		self.browsedir = filebrowse.DirBrowseButton(self.imagePanel, -1, labelText = "Image Directory: ", changeCallback = self.updateListOfImages,\
+				startDirectory = initialDir)
 		self.sourcesizer = wx.BoxSizer(wx.VERTICAL)
 		
 		self.imageSourceboxsizer.Add(self.browsedir, 0, wx.EXPAND)
@@ -218,14 +225,10 @@ class ExportDialog(wx.Dialog):
 		
 
 
-		self.sourceListbox = wx.ListBox(self.imagePanel, -1, size = (400, 100), style = wx.LB_ALWAYS_SB | wx.LB_EXTENDED)
+		self.sourceListbox = wx.ListBox(self.imagePanel, -1, size = (600, 100), style = wx.LB_ALWAYS_SB | wx.LB_EXTENDED)
 		self.listlbl = wx.StaticText(self.imagePanel, -1, "List of Images:")
 		self.sourcesizer.Add(self.listlbl)
 		self.sourcesizer.Add(self.sourceListbox)
-		
-		
-#        self.listlbl=wx.StaticText(self.imagePanel,-1,"Images to be written:")
-#        self.sourcesizer.Add(self.listlbl)
 		
 		self.imageSourceboxsizer.Add(self.sourcesizer, 1, wx.EXPAND)
 		
@@ -385,6 +388,8 @@ class ExportDialog(wx.Dialog):
 				ext = "vti"
 			else:
 				ext = "vtk"
+		self.conf.setConfigItem("ExportDirectory", "Paths", dirname)
+		self.conf.writeSettings()
 		
 		n = pattern.count("%")
 		

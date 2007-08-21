@@ -33,6 +33,7 @@ import Image
 import Logging
 import os.path
 import vtk
+import vtkbxd
 
 def getExtensions(): 
 	return []
@@ -149,11 +150,12 @@ class FileListDataSource(DataSource):
 		"""
 		assert ext in self.extMapping, "Extension not recognized: %s" % ext
 		mpr = self.extMapping[ext]
+		prefix="vtk"
 		# If it's a tiff file, we use our own, extended TIFF reader
 		if self.extMapping[ext] == "TIFF":
 			mpr = "ExtTIFF"
-			
-		self.rdrstr = "vtk.vtk%sReader()" % mpr
+			prefix="vtkbxd"
+		self.rdrstr = "%s.vtk%sReader()" % (prefix, mpr)
 		rdr = eval(self.rdrstr)
 		if ext == "bmp":
 			rdr.Allow8BitBMPOn()				

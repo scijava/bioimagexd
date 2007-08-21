@@ -782,12 +782,13 @@ class MainWindow(wx.Frame):
 		else:
 			filename = Dialogs.askSaveAsFileName(self, "Save dataset as", "output.bxd", \
 													"BioImageXD Dataset (*.bxd)|*.bxd")
-			filename = filename.replace("\\", "\\\\")
-			
-			do_cmd = "mainWindow.saveSelectedDatasets(r'%s')" % filename
-			cmd = lib.Command.Command(lib.Command.GUI_CMD, None, None, do_cmd, "", \
-										desc = "Save the selected datasets to a BXD file")
-			cmd.run()
+			if filename:
+				filename = filename.replace("\\", "\\\\")
+				
+				do_cmd = "mainWindow.saveSelectedDatasets(r'%s')" % filename
+				cmd = lib.Command.Command(lib.Command.GUI_CMD, None, None, do_cmd, "", \
+											desc = "Save the selected datasets to a BXD file")
+				cmd.run()
 			
 	def saveSelectedDatasets(self, filename):
 		"""
@@ -867,23 +868,18 @@ class MainWindow(wx.Frame):
 			keyCombo = "\tCtrl-P"
 		mgr.addMenuItem("settings", wx.ID_PREFERENCES, "&Preferences..." + keyCombo, self.onMenuPreferences)
 	
-#		mgr.createMenu("import", "&Import", place = 0)
 		mgr.createMenu("export", "&Export", place = 0)
 		
-		#mgr.addMenuItem("import", MenuManager.ID_IMPORT_VTIFILES, "&VTK dataset series", self.onMenuImport)
    
 		mgr.addMenuItem("export", MenuManager.ID_EXPORT_VTIFILES, "&VTK dataset series\tCtrl-E", self.onMenuExport)
-		mgr.addMenuItem("export", MenuManager.ID_EXPORT_IMAGES, "&Stack of images", self.onMenuExport)
+		mgr.addMenuItem("export", MenuManager.ID_EXPORT_IMAGES, "&Stack of images\tShift-Ctrl-E", self.onMenuExport)
 
 		mgr.addMenuItem("file", MenuManager.ID_OPEN, "&Open...\tCtrl-O", self.onMenuOpen)
 
 		mgr.addMenuItem("file", MenuManager.ID_OPEN_SETTINGS, "&Load settings", self.onMenuOpenSettings)
 		mgr.addMenuItem("file", MenuManager.ID_SAVE_SETTINGS, "&Save settings", self.onMenuSaveSettings)
-#		mgr.disable(MenuManager.ID_OPEN_SETTINGS)
-#		mgr.disable(MenuManager.ID_SAVE_SETTINGS)
 		
 		mgr.addSeparator("file")
-#		mgr.addSubMenu("file", "import", "&Import", MenuManager.ID_IMPORT)
 		mgr.addMenuItem("file", MenuManager.ID_IMPORT_IMAGES, "&Import image stack\tCtrl-I", self.onMenuImport)
 
 		mgr.addSubMenu("file", "export", "&Export", MenuManager.ID_EXPORT)
@@ -908,9 +904,9 @@ class MainWindow(wx.Frame):
 			#wx.EVT_TOOL(self, tid, self.onMenuShowTaskWindow)
 			
 		mgr.addSeparator("processing")
-		mgr.addMenuItem("processing", MenuManager.ID_RESAMPLE, "Re&sample dataset...", \
+		mgr.addMenuItem("processing", MenuManager.ID_RESAMPLE, "Re&sample dataset...\tCtrl-R", \
 						"Resample data to a different resolution", self.onMenuResampleData)
-		mgr.addMenuItem("processing", MenuManager.ID_RESCALE, "Res&cale dataset...", \
+		mgr.addMenuItem("processing", MenuManager.ID_RESCALE, "Res&cale dataset...\tCtrl-Shift-R", \
 						"Rescale data to 8-bit intensity range", self.onMenuRescaleData)
 		
 		modes = self.visualizationModes.values()
@@ -1221,6 +1217,12 @@ class MainWindow(wx.Frame):
 									desc = "Close the current task panel")
 		cmd.run()
 		
+	def getCurrentTaskName(self):
+		"""
+		Created: 17.08.2007, KP
+		Description: return the name of the current task
+		"""
+		return self.currentTaskWindowName
 	def closeTaskPanel(self):
 		"""
 		Created: 15.08.2006, KP
@@ -1268,7 +1270,7 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 			import_code += "importdlg.setInputFile('%s')\n" % startFile
 		import_code += "if importdlg.ShowModal() == wx.ID_OK: mainWindow.openFile( importdlg.getDatasetName() )\n"
 		command = lib.Command.Command(lib.Command.MENU_CMD, None, None, import_code, "", \
-										imports = ["GUI.ImportDialog"], desc = "Show import dialog")
+										imports = ["GUI.ImportDialog","wx"], desc = "Show import dialog")
 		self.commands["show_import"] = command
 		self.commands["show_import"].run()
 		#self.importdlg = ImportDialog.ImportDialog(self)
@@ -1344,11 +1346,8 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 		Created: 14.06.2007, KP
 		Description: Load the visualizer mode with the given name
 		"""
-		#reload = 0
 		eid = self.visToId[mode]
 		if self.currentVisualizationModeName == mode:
-			# Why would we want to reload?
-			#reload = 1
 			return
 		self.currentVisualizationModeName = mode
 		lib.messenger.send(None, "update_progress", 0.1, "Loading %s view..." % mode)
@@ -1360,7 +1359,6 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 			needUpdate = 1
 		if not module.showInfoWindow():
 			self.infoWin.SetDefaultSize((0, 0))
-			#self.menuManager.check(MenuManager.ID_VIEW_INFO, 0)
 			needUpdate = 1
 		if needUpdate:
 			self.OnSize(None)
@@ -1374,7 +1372,6 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 		self.setButtonSelection(eid)
 		dataunit = selectedFiles[0]
 		if self.visualizer:
-#            if not self.visualizer.dataUnit:
 			hasDataunit = not not self.visualizer.dataUnit
 			if not hasDataunit or (not self.visualizer.getProcessedMode() and (self.visualizer.dataUnit != dataunit)):
 				Logging.info("Setting dataunit for visualizer", kw = "main")
@@ -1382,25 +1379,22 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 			else:
 				if reload:
 					Logging.info("Closing on reload: ", self.visualizer.currMode.closeOnReload())
-					#self.visualizer.currMode.reloadMode()
 					if self.visualizer.currMode.closeOnReload():
 						# close the mode
 						self.loadVisualizer("slices")
 						return
 			self.visualizer.setVisualizationMode(mode)
 			lib.messenger.send(None, "update_progress", 0.3, "Loading %s view..." % mode)
-			#self.visualizer.setDataUnit(dataunit)
 			self.showVisualization(self.visPanel)
 			self.visualizer.enable(1)
 			if hasDataunit:
 				Logging.info("Forcing visualizer update since dataunit has been changed", kw = "visualizer")
 				self.visualizer.updateRendering()
-			lib.messenger.send(None, "update_progress", 1.0, "Loading %s view..." % mode)
+			lib.messenger.send(None, "update_progress", 1.0, "Loading %s view..." % mode, 0)
 			return
 		if len(selectedFiles) > 1:
-			lst = []
-			for i in selectedFiles:
-				lst.append(i.getName())
+			lst = [i.getName() for i in selectedFiles]
+
 			Dialogs.showerror(self,
 			"You have selected the following datasets: %s.\n"
 			"More than one dataset cannot be opened in the Visualizer concurrently.\nPlease "
@@ -1452,9 +1446,7 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 		parser.read(filenames)
 		dataunit.getSettings().readFrom(parser)
 		dataunit.parser = parser
-		#self.visualizer.setDataUnit(dataunit)
 		lib.messenger.send(None, "update_settings_gui")
-
 
 	def onMenuSaveSettings(self, event):
 		"""
