@@ -251,8 +251,10 @@ class MenuManager:
 		Created: 13.02.2006, KP
 		Description: Return the last executed command
 		"""
+		if (len(self.commands) == 0): 		#	There is nothing to undo
+			return False					#   Thus return False
 		return self.commands[-1]
-		
+			
 	def setUndoedCommand(self, cmd):
 		"""
 		Method: setUndoedCommand

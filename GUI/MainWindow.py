@@ -371,10 +371,11 @@ class MainWindow(wx.Frame):
 		Description: Undo a previous command
 		"""
 		cmd = self.menuManager.getLastCommand()
-		if cmd.canUndo():
-			cmd.undo()
-			self.menuManager.setUndoedCommand(cmd)
-			self.menuManager.enable(MenuManager.ID_REDO)
+		if (cmd):		# Undo the previous command if there has been a previous command.
+			if cmd.canUndo():
+				cmd.undo()
+				self.menuManager.setUndoedCommand(cmd)
+				self.menuManager.enable(MenuManager.ID_REDO)
 		
 	def onMenuRedo(self, evt):
 		"""
