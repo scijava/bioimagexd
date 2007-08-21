@@ -1174,21 +1174,19 @@ class MeasureVolumeFilter(ProcessingFilter.ProcessingFilter):
 			
 			self.totalGUI = WatershedTotalsList(self.gui, -1)
 			if self.values:
-				def avg(lst):
-					return sum(lst) / float(len(lst))
 				n = len(self.values)
-				avgints = avg(self.avgIntList)
+				avgints = float(MeasureVolumeFilter.averageValue(self.avgIntList))
 				ums = [x[1] for x in self.values]
 				
 				# Remove the objects 0 and 1 because hey will distort the values
 				#ums.pop(0)
 				#ums.pop(0)
-				avgums = avg(ums)
+				avgums = float(MeasureVolumeFilter.averageValue(ums))
 				pxs = [x[0] for x in self.values]
 				
 				#pxs.pop(0)
 				#pxs.pop(0)
-				avgpxs = avg(pxs)
+				avgpxs = float(MeasureVolumeFilter.averageValue(pxs))
 				
 				self.totalGUI.setStats([n, avgums, avgpxs, avgints])
 				self.reportGUI.setVolumes(self.values)
@@ -1200,7 +1198,9 @@ class MeasureVolumeFilter(ProcessingFilter.ProcessingFilter):
 			gui.sizer.Add(sizer, (1, 0), flag = wx.EXPAND | wx.ALL)
 		return gui
 
-
+	@staticmethod
+	def	averageValue(lst):
+		return sum(lst) / len(lst)
    
 	def execute(self, inputs, update = 0, last = 0):
 		"""
@@ -1255,7 +1255,6 @@ class MeasureVolumeFilter(ProcessingFilter.ProcessingFilter):
 		
 		avgintCalc.Update()
 					
-		#print "done"
 		if self.prevFilter:		   
 			startIntensity = self.prevFilter.ignoreObjects
 		else:
@@ -1280,11 +1279,7 @@ class MeasureVolumeFilter(ProcessingFilter.ProcessingFilter):
 				umcentersofmass.append(tuple(c2))
 				values.append((volume, volume * vol))				 
 				avgints.append(avgInt)
-#		 print "volumes=",values
-#		 print "centers of mass=",centersofmass
-		#print "avg. ints=",avgints
-			
-
+		
 		self.values = values
 		self.centersofmass = centersofmass
 		self.umcentersofmass = umcentersofmass
@@ -1293,14 +1288,12 @@ class MeasureVolumeFilter(ProcessingFilter.ProcessingFilter):
 			self.reportGUI.setVolumes(values)
 			self.reportGUI.setCentersOfMass(centersofmass)
 			self.reportGUI.setAverageIntensities(self.avgIntList)
-			def avg(lst):
-				return sum(lst) / len(lst)
 			n = len(self.values)
-			avgints = avg(self.avgIntList)
+			avgints = MeasureVolumeFilter.averageValue(self.avgIntList)
 			ums = [x[0] for x in values]
-			avgums = avg(ums)
+			avgums = MeasureVolumeFilter.averageValue(ums)
 			pxs = [x[1] for x in values]
-			avgpxs = avg(pxs)
+			avgpxs = MeasureVolumeFilter.averageValue(pxs)
 			
 			self.totalGUI.setStats([n, avgums, avgpxs, avgints])
 			

@@ -39,7 +39,7 @@ import Configuration
 class TreeWidget(wx.SashLayoutWindow):
 	"""
 	Created: 10.01.2005, KP
-	Description: A panel containing thre tree
+	Description: A panel containing the tree
 	"""
 	def __init__(self, parent):
 		"""
