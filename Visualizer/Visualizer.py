@@ -280,14 +280,14 @@ class Visualizer:
 		self.prev.Bind(wx.EVT_BUTTON, self.onPrevTimepoint)
 		self.next.Bind(wx.EVT_BUTTON, self.onNextTimepoint)
 
-		self.timeslider = wx.Slider(self.sliderPanel, value = 1, minValue = 1, maxValue = 1,
+		self.timeslider = wx.Slider(self.sliderPanel, value = 1, minValue = 0, maxValue = 1,
 		style = wx.SL_HORIZONTAL | wx.SL_LABELS)
 		self.timeslider.SetHelpText("Use this slider to select the displayed timepoint.")
 		self.bindTimeslider(self.onUpdateTimepoint)
 
 		self.zsliderPanel = wx.Panel(self.zsliderWin)
 		boxsizer = wx.BoxSizer(wx.VERTICAL)
-		self.zslider = wx.Slider(self.zsliderPanel, value = 1, minValue = 1, maxValue = 1,
+		self.zslider = wx.Slider(self.zsliderPanel, value = 1, minValue = 0, maxValue = 1,
 		style = wx.SL_VERTICAL | wx.SL_LABELS | wx.SL_AUTOTICKS)
 
 		self.upbtn = wx.BitmapButton(self.zsliderPanel, -1, uparrow)
@@ -1174,8 +1174,8 @@ class Visualizer:
 			self.toggleTimeSlider(0)
 		else:
 			self.toggleTimeSlider(1)
+			self.timeslider.SetRange(1, count)
 		currT = self.timeslider.GetValue()
-		self.timeslider.SetRange(1, count)
 		if currT < 1:currT = 1
 		if currT > count:currT = count
 		self.timeslider.SetValue(currT)
