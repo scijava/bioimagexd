@@ -5,7 +5,7 @@
  Created: 03.11.2004, JM
  Description: Classes for managing 4D data located on disk
 
- Copyright (C) 2005  BioImageXD Project
+ Copyright (C) 2005	 BioImageXD Project
  See CREDITS.txt for details
 
  This program is free software; you can redistribute it and/or modify
@@ -222,8 +222,8 @@ class LsmDataSource(DataSource):
 		"""
 		Created: 18.11.2004, KP
 		Description: Returns the timepoint at the specified index
-		Parameters:   i       The timepoint to retrieve
-					  raw     A flag indicating that the data is not to be processed in any way
+		Parameters:	  i		  The timepoint to retrieve
+					  raw	  A flag indicating that the data is not to be processed in any way
 		"""
 		# No timepoint can be returned, if this LsmDataSource instance does not
 		# know what channel it is supposed to handle within the lsm-file.
@@ -233,24 +233,17 @@ class LsmDataSource(DataSource):
 			"%d, but no channel number has been specified" % (i))
 			return None
 	
-		#Logging.backtrace()
 		self.timepoint = i
-		#data=self.reader.GetTimePointOutput(i, self.channelNum)
 		self.reader.SetUpdateChannel(self.channelNum)
 		self.reader.SetUpdateTimePoint(i)
 		data = self.reader.GetOutput()
-		#if not self.scalarRange:
-		#	self.scalarRange = data.GetScalarRange()
-		#self.reader.Update()
 
-		#self.originalScalarRange=data.GetScalarRange()
-		
 		if raw:
 			return data
-		data = self.getResampledData(data, i)
+		if self.resampling:
+			data = self.getResampledData(data, i)
 		if self.explicitScale or (data.GetScalarType() != 3 and not raw):
 			data = self.getIntensityScaledData(data)
-		#data.ReleaseDataFlagOff()
 		return data
 		
 	def getFileName(self):
@@ -265,7 +258,7 @@ class LsmDataSource(DataSource):
 		Created: 18.11.2004, KP
 		Description: Loads all channels from a specified LSM file to DataUnit-
 					 instances and returns them as a list.
-		Parameters:   filename  The .lsm-file to be loaded
+		Parameters:	  filename	The .lsm-file to be loaded
 		"""
 		self.filename = filename
 		self.shortname = os.path.basename(filename)

@@ -1302,7 +1302,7 @@ class MeasureVolumeFilter(ProcessingFilter.ProcessingFilter):
 		avgintCalc.AddInput(vtkimage)
 		
 		avgintCalc.Update()
-		if self.prevFilter:		   
+		if self.prevFilter:
 			startIntensity = self.prevFilter.ignoreObjects
 		else:
 			startIntensity = 0

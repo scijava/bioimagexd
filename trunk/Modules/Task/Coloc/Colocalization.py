@@ -7,7 +7,7 @@
 
  Calculates the colocalization between two channels
  
- Copyright (C) 2005  BioImageXD Project
+ Copyright (C) 2005	 BioImageXD Project
  See CREDITS.txt for details
 
  This program is free software; you can redistribute it and/or modify
@@ -107,11 +107,12 @@ class Colocalization(Module):
 		Logging.info("Doing ", self.depth, "-bit colocalization", kw = "processing")
 		self.colocFilter.SetOutputDepth(self.depth)
 
-		maxval = 0
 		for i in self.images:
-			maxval = max(i.GetScalarRange()[1], maxval)
-		maxval = int(maxval)
-
+			i.Update()
+			print i
+		print [x.GetScalarRange()[1] for x in self.images]
+		maxval = int(max([x.GetScalarRange()[1] for x in self.images]))
+		Logging.info("Maximum value = %d"%maxval, kw="processing") 
 		settings = self.settingsLst[0]
 		calcVal = settings.get("CalculateThresholds")
 		if calcVal:
@@ -127,9 +128,9 @@ class Colocalization(Module):
 				self.colocAutoThreshold.SetLowerThresholdCh1(int(self.thresholds[0][0]))
 				self.colocAutoThreshold.SetLowerThresholdCh2(int(self.thresholds[1][0]))
 
-				print "Setting upper thresholds", self.thresholds[0][1], self.thresholds[1][1]            
+				print "Setting upper thresholds", self.thresholds[0][1], self.thresholds[1][1]			  
 				self.colocAutoThreshold.SetUpperThresholdCh1(int(self.thresholds[0][1]))
-				self.colocAutoThreshold.SetUpperThresholdCh2(int(self.thresholds[1][1]))               
+				self.colocAutoThreshold.SetUpperThresholdCh2(int(self.thresholds[1][1]))			   
 			elif calcVal == THRESHOLDS_ONLY:
 				Logging.info("CALCULATING ONLY THRESHOLD", kw = "processing")
 				Logging.info("Calculated thresholds, using %d as max" % maxval, kw = "processing")
@@ -143,7 +144,7 @@ class Colocalization(Module):
 				self.settings.set("Ch1ThresholdMax", self.colocAutoThreshold.GetCh1ThresholdMax())
 				self.settings.set("Ch2ThresholdMax", self.colocAutoThreshold.GetCh2ThresholdMax())
 				self.settings.set("Slope", self.colocAutoThreshold.GetSlope())
-				self.settings.set("Intercept", self.colocAutoThreshold.GetIntercept())            
+				self.settings.set("Intercept", self.colocAutoThreshold.GetIntercept())			  
 			Logging.info("Done!", kw = "processing")
 			
 			t1 = settings.get("Ch1ThresholdMax")
@@ -180,10 +181,8 @@ class Colocalization(Module):
 					method = "self.colocAutoThreshold.Get%s()" % i
 	
 					val = eval(method)
-	#                if "DiffStain" in i:
-	#                    print i,val
-					settings.set(i, val)            
-			#settings.set("ColocalizationScatterplot",self.colocFilter.GetOutput(1))
+
+					settings.set(i, val)			
 		self.eventDesc = "Calculating colocalization..."
 		outScalar = self.settings.get("OutputScalar")
 		Logging.info("Using ", outScalar, " as output scalar")#,kw="processing")
@@ -193,14 +192,12 @@ class Colocalization(Module):
 			print self.thresholds[i]
 			Logging.info("Using %d as lower and %d as upper threshold" % self.thresholds[i], kw = "processing")
 
-#            print "Adding input %d"%i
 			self.colocFilter.AddInput(self.images[i])
 
 			self.colocFilter.SetColocalizationLowerThreshold(i, int(self.thresholds[i][0]))
 			self.colocFilter.SetColocalizationUpperThreshold(i, int(self.thresholds[i][1]))
 
-#        data = self.getLimitedOutput(self.colocFilter)        
-#        self.colocFilter.Update()
+
 		data = self.colocFilter.GetOutput()
 		lib.messenger.send(None, "update_progress", 100, "Done.")
 		

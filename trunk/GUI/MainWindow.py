@@ -1105,7 +1105,6 @@ class MainWindow(wx.Frame):
 		Description: Resize data to be smaller or larger
 		"""
 
-		#selectedFiles = self.tree.getSelectedDataUnits()
 		selectedFiles, items = self.tree.getSelectionContainer()
 		if not selectedFiles:
 			return
@@ -1128,7 +1127,6 @@ class MainWindow(wx.Frame):
 		Created: 1.09.2005, KP
 		Description: Rescale data to 8-bit intensity range
 		"""
-
 		selectedFiles, items = self.tree.getSelectionContainer()
 		if not selectedFiles:
 			return
@@ -1147,9 +1145,6 @@ class MainWindow(wx.Frame):
 			self.visualizer.closeVisualizer()
 			self.loadVisualizer(mode, dataunit = unit)
 			self.infoWidget.showInfo(selectedFiles[0])
-#			self.loadVisualizer(None, self.visualizer.mode, reload = 1)
-
-
 
 	def onMenuToggleVisibility(self, evt):
 		"""
@@ -1248,7 +1243,6 @@ class MainWindow(wx.Frame):
 		tb = self.GetToolBar()
 		for eid in self.taskIds:
 			tb.ToggleTool(eid, 0)
-		#self.onMenuShowTree(None, 1)
 		# Set the dataunit used by visualizer to one of the source units
 		
 		self.infoWin.SetDefaultSize(self.infoWin.origSize)
