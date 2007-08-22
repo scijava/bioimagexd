@@ -976,7 +976,7 @@ class Visualizer:
 		self.currModeModule = None
 		self.dataUnit = None
 		self.sidebarWin.SetDefaultSize((0, 1024))
-		self.zslider.SetRange(0, 0)
+		self.zslider.SetRange(0, 1)
 		wx.LayoutAlgorithm().LayoutWindow(self.parent, self.visWin)
 		del self.dataUnit
 		self.dataUnit = None
