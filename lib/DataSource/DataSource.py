@@ -88,13 +88,13 @@ class DataSource:
 		"""
 		self.ctf = None
 		self.bitdepth = 0
-		self.resample = None
+		self.resampleFilter = None
 		self.mask = None
-		self.maskImg = None
+		self.maskImageFilter = None
 		self.mipData = None
 		self.resampleDims = None
 		self.singleBitDepth = 8
-		self.resampleTp = -1
+		self.resampledTimepoint = -1
 		self.intensityScale = 0
 		self.intensityShift = 0
 		self.scalarRange = None
@@ -104,10 +104,12 @@ class DataSource:
 		self.originalDimensions = None
 		self.resampleFactors = None
 		self.resampledVoxelSize = None
+		
+		self.resampling = False
 
 		conf = Configuration.getConfiguration()
-		self.limitDims = None
-		self.toDims = None
+		self.autoResampleLimitDimensions = None
+		self.autoResampleTargetDimensions = None
 		self.filePath = ""
 		self.reader = None
 		self.vtkFilters = []
@@ -117,11 +119,19 @@ class DataSource:
 		except:
 			pass
 		if val:
-			self.limitDims = eval(conf.getConfigItem("ResampleDims", "Performance"))
-			self.toDims = eval(conf.getConfigItem("ResampleTo", "Performance"))
-
+			self.autoResampleLimitDimensions = eval(conf.getConfigItem("ResampleDims", "Performance"))
+			self.autoResampleTargetDimensions = eval(conf.getConfigItem("ResampleTo", "Performance"))
+			self.setResampling(True)
+			
 	def getParser(self):
 		return None
+		
+	def setResampling(self, status):
+		"""
+		Created: 22.08.2007, KP
+		Description: enable / disable resampling
+		"""
+		self.resampling = status
 			
 	def destroy(self):
 		"""
@@ -160,7 +170,6 @@ class DataSource:
 		Description: Set the resample dimensions
 		"""
 		Logging.info("Setting dimensions of resampled image to ",dims,kw="datasource")
-		#self.resampleDims = map(int, dims)
 		self.resampleDims = [int(dimension) for dimension in dims]
 		lib.messenger.send(None, "set_resample_dims", dims, self.originalDimensions)
 
@@ -168,35 +177,32 @@ class DataSource:
 		"""
 		Created: 12.04.2006, KP
 		Description: Return the original scalar range for this dataset
-		"""				   
+		"""
 		return self.originalScalarRange
 		
 	def getOriginalDimensions(self):
 		"""
 		Created: 12.04.2006, KP
 		Description: Return the original scalar range for this dataset
-		"""				
+		"""
 		return self.originalDimensions
 		
 	def getResampleFactors(self):
 		"""
 		Created: 07.04.2006, KP
 		Description: Return the factors for the resampling
-		"""		   
+		"""
 		if not self.resampleFactors and self.resampleDims:		  
 			if not self.originalDimensions:
 				rd = self.resampleDims
 				self.resampleDims = None
 				self.resampleDims = rd
-			#print "Original dimensions = ", self.originalDimensions
 			x, y, z = self.originalDimensions
 			rx, ry, rz = self.resampleDims
-			#print "Reasmple dimensions = ", self.resampleDims
 			xf = rx / float(x)
 			yf = ry / float(y)
 			zf = rz / float(z)
 			self.resampleFactors = (xf, yf, zf)
-			#print "Resample factors = ", self.resampleFactors
 		return self.resampleFactors
 		
 	def getResampledVoxelSize(self):
@@ -209,7 +215,6 @@ class DataSource:
 		if not self.resampledVoxelSize:
 			vx, vy, vz = self.getVoxelSize()
 			rx, ry, rz = self.getResampleFactors()		  
-			#print "\n\n****resample factors = ", rx, ry, rz
 			self.resampledVoxelSize = (vx / rx, vy / ry, vz / rz)
 		return self.resampledVoxelSize
 		
@@ -218,10 +223,10 @@ class DataSource:
 		Created: 11.09.2005, KP
 		Description: Get the resample dimensions
 		"""
-		if self.limitDims and not self.resampleDims:
+		if self.autoResampleLimitDimensions and not self.resampleDims:
 			dims = self.getDimensions()
-			if dims[0] * dims[1] > self.limitDims[0] * self.limitDims[1]:
-				x, y = self.toDims
+			if dims[0] * dims[1] > self.autoResampleLimitDimensions[0] * self.autoResampleLimitDimensions[1]:
+				x, y = self.autoResampleTargetDimensions
 				self.resampleDims = (int(x), int(y), int(dims[2]))
 		return self.resampleDims
 
@@ -243,15 +248,11 @@ class DataSource:
 		Description: Retrieve a MIP image from cache
 		"""
 		key = self.getCacheKey(datafilename, chName, purpose)
-		#print "KEY = ", key
 		directory = scripting.get_preview_dir()
-		#print "\n\nPREWVIEW DIR = ", directory
 		filename = "%s.png" % key
 		filepath = os.path.join(directory, filename)
 		if not os.path.exists(filepath):
-			#print "File ", filename, "ch", chName, "not in cache"
 			return None
-		#print "File ", filepath, "ch", chName, "IS in cache"
 		reader = vtk.vtkPNGReader()
 		reader.SetFileName(filepath)
 		reader.Update()
@@ -279,11 +280,11 @@ class DataSource:
 		Created: 05.06.2006, KP
 		Description: Return a small resampled dataset of which a small
 					 MIP can be created.
-		"""				  
+		"""
 		return self.getDataSet(n)
 		if not self.mipData:
 			x, y, z = self.getDimensions()
-			self.mipData = self.getResampledData(self.getDataSet(n, raw = 1), n, tmpDims = (128, 128, z))
+			self.mipData = self.getResampledData(self.getDataSet(n, raw = 1), n, resampleToDimensions = (128, 128, z))
 		return self.mipData
 		
 	def getIntensityScale(self):
@@ -299,7 +300,7 @@ class DataSource:
 		Description: Set the factors for scaling and shifting the intensity of
 					 the data. Used for emphasizing certain range of intensities
 					 in > 8-bit data.
-		"""					   
+		"""
 		self.explicitScale = 1
 		self.intensityScale = scale
 		self.intensityShift = shift
@@ -327,13 +328,7 @@ class DataSource:
 			self.shift.SetScale(self.intensityScale)
 			currScale = self.intensityScale
 		else:
-			#x0, x1 = data.GetScalarRange()
-			#if x1 == 0:
-			#	 scale = 1.0
-			#else:
-			#	 scale = 255.0/x1
 			minval, maxval = self.originalScalarRange
-			#print "Calculating intensity scale based on bitdepth = ", self.bitdepth
 			scale = 255.0 / maxval
 			self.shift.SetScale(scale)
 			currScale = scale
@@ -344,61 +339,53 @@ class DataSource:
 		
 		return self.shift.GetOutput()
 	
-	def getResampledData(self, data, n, tmpDims = None):
+	def getResampledData(self, data, n, resampleToDimensions = None):
 		"""
 		Created: 1.09.2005, KP
 		Description: Return the data resampled to given dimensions
 		"""
-		if not scripting.resamplingDisabled and not (not tmpDims and not self.resampleDims and not self.limitDims):
+		#flag = not (not resampleToDimensions and not self.resampleDims and not self.autoResampleLimitDimensions):
+		if self.resampling and not scripting.resamplingDisabled:
+			currentResamplingDimensions = self.getResampleDimensions()
+			# If we're given dimensions to resample to, then we use those
+			if resampleToDimensions:
+				currentResamplingDimensions = resampleToDimensions
 			
-			useDims = self.getResampleDimensions()
-			if tmpDims:
-				useDims = tmpDims
-			if not useDims:
+			# If the resampling dimensions are not defined (even though resampling is requested)
+			# then don't resample the data
+			if not currentResamplingDimensions:
 				return data
-			if n == self.resampleTp and self.resample and not useDims:
-				data = self.resample.GetOutput()
+				
+			if n == self.resampledTimepoint and self.resampleFilter and not currentResamplingDimensions:
+				data = self.resampleFilter.GetOutput()
 			else:
-				Logging.info("Resampling data to ", self.resampleDims, kw = "dataunit")
-				self.resample = vtk.vtkImageResample()
-				self.resample.SetInputConnection(data.GetProducerPort())
-				# Release the memory used by source data
-				#print "data = ", data
-				
-				#x, y, z = data.GetDimensions()
-				#print "got dims = ", x, y, z
-				#self.originalDimensions = (x, y, z)
-				x, y, z = self.originalDimensions
-				
-				rx, ry, rz = useDims
-				xf = rx / float(x)
-				yf = ry / float(y)
-				zf = rz / float(z)
-				#print "origi dims = ", x, y, z
-				#print "dism to resample to ", rx, ry, rz
-				
-				self.resample.SetAxisMagnificationFactor(0, xf)
-				self.resample.SetAxisMagnificationFactor(1, yf)
-				self.resample.SetAxisMagnificationFactor(2, zf)
-				#self.resample.Update()				   
-				#newdata = scripting.execute_limited(self.resample)
-				#data.ReleaseData()
-				#data = newdata
-				data = self.resample.GetOutput()		   
-		if self.mask:
-			if not self.maskImg:
-				self.maskImg = vtk.vtkImageMask()
-				self.maskImg.SetMaskedOutputValue(0)
-			else:
-				self.maskImg.RemoveAllInputs()
-			self.maskImg.SetImageInput(data)
-			self.maskImg.SetMaskInput(self.mask.getMaskImage())
-			
-			#self.maskImg.Update()
-			#newdata = scripting.execute_limited(self.maskImg)
+				Logging.info("Resampling data to ", self.resampleDims, kw = "datasource")
+				if not self.resampleFilter:
+					self.resampleFilter = vtk.vtkImageResample()
+					x, y, z = self.originalDimensions
+					
+					rx, ry, rz = currentResamplingDimensions
+					xf = rx / float(x)
+					yf = ry / float(y)
+					zf = rz / float(z)
+					self.resampleFilter.SetAxisMagnificationFactor(0, xf)
+					self.resampleFilter.SetAxisMagnificationFactor(1, yf)
+					self.resampleFilter.SetAxisMagnificationFactor(2, zf)
+				else:
+					self.resampleFilter.RemoveAllInputs()
+				self.resampleFilter.SetInputConnection(data.GetProducerPort())
 
-			#data.ReleaseData()
-			data = self.maskImg.GetOutput()
+				data = self.resampleFilter.GetOutput()
+		if self.mask:
+			if not self.maskImageFilter:
+				self.maskImageFilter = vtk.vtkImageMask()
+				self.maskImageFilter.SetMaskedOutputValue(0)
+			else:
+				self.maskImageFilter.RemoveAllInputs()
+			self.maskImageFilter.SetImageInput(data)
+			self.maskImageFilter.SetMaskInput(self.mask.getMaskImage())
+			
+			data = self.maskImageFilter.GetOutput()
 			
 		return data
 
@@ -490,11 +477,8 @@ class DataSource:
 			data = self.getDataSet(0, raw = 1)
 			data.UpdateInformation()
 			self.scalarRange = data.GetScalarRange()
-			#print "Scalar range of data", self.scalarRange
 			scalartype = data.GetScalarType()
-			#print "Scalar type", scalartype, data.GetScalarTypeAsString()
-			#print "Number of scalar components", data.GetNumberOfScalarComponents()
-		
+
 			if scalartype == 4:
 				self.bitdepth = 16
 			elif scalartype == 5:
@@ -510,7 +494,6 @@ class DataSource:
 			elif scalartype == 11:
 				self.bitdepth = 16
 			else:
-
 				raise "Bad LSM bit depth, %d, %s" % (scalartype, data.GetScalarTypeAsString())
 			self.singleBitDepth = self.bitdepth
 			self.bitdepth *= data.GetNumberOfScalarComponents()

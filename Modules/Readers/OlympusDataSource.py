@@ -143,20 +143,17 @@ class OlympusDataSource(DataSource):
 		Created: 12.04.2005, KP
 		Description: Returns the image data for timepoint i
 		"""
-		data = self.getTimepoint(i)		   
+		data = self.getTimepoint(i)
 		if raw:
 			return data
-		
-		#self.originalScalarRange=data.GetScalarRange()
-		#print "Setting original scalar range to ",2**self.getBitDepth()-1
 		
 		if not self.originalScalarRange:
 			self.originalScalarRange = 0, (2 ** self.getBitDepth()) - 1
 		
-		data = self.getResampledData(data, i)
+		if self.resampling:
+			data = self.getResampledData(data, i)
 		data = self.getIntensityScaledData(data)
 		
-		#data.ReleaseDataFlagOff()
 		return data
 		
 	def updateProgress(self, object, event):

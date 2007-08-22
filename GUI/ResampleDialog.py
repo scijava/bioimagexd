@@ -34,6 +34,7 @@ import scripting
 import string
 import UIElements
 import wx
+import Logging
 
 class ResampleDialog(wx.Dialog):
 	"""
@@ -56,13 +57,10 @@ class ResampleDialog(wx.Dialog):
 		self.result = 0
 		self.currSize = (512, 512, 25)
 		self.SetSizer(self.sizer)
-		#self.SetAutoLayout(1)
 		self.blockDimUpdate = 0
 		self.blockFactorUpdate = 0
-		#self.sizer.Fit(self)
 		w, h = self.sizer.GetMinSize()
 		w += 30
-		#h+=50
 		self.SetSize((w, h))
 		self.sizer.SetSizeHints(self)
 		
@@ -72,9 +70,13 @@ class ResampleDialog(wx.Dialog):
 		Description: Executes the procedure
 		"""
 		for i in self.dataUnits:
-			#print "\nSETTING RESAMPLE DIMS TO ",self.currSize
 			i.dataSource.setResampleDimensions(self.currSize)
-			i.dataSource.getDataSet(scripting.visualizer.getTimepoint()).SetUpdateExtent((0, -1, 0, -1, 0, -1))
+			i.dataSource.setResampling(True)
+#			data = i.dataSource.getDataSet(scripting.visualizer.getTimepoint())
+#			x, y, z = self.currSize
+#			Logging.info("Setting update extent to %d,%d,%d, %d, %d, %d"%(0,x-1,0,y-1, 0,z-1))
+#			data.SetUpdateExtent(0, x-1, 0, y-1, 0, z-1)
+#			data.Update()
 		self.result = 1
 		self.Close()
 		
@@ -112,7 +114,6 @@ class ResampleDialog(wx.Dialog):
 		xf = rx / float(x)
 		yf = ry / float(y)
 		zf = rz / float(z)
-		#self.factorsLbl.SetLabel(self.currFactorText%(xf,yf,zf))
 		self.blockFactorUpdate = 1
 		self.factorX.SetValue("%.2f" % xf)
 		self.factorY.SetValue("%.2f" % yf)
@@ -140,7 +141,6 @@ class ResampleDialog(wx.Dialog):
 		x *= fx
 		y *= fy
 		z *= fz
-		#self.factorsLbl.SetLabel(self.currFactorText%(xf,yf,zf))
 		self.blockDimUpdate = 1
 		self.newDimX.SetValue("%d" % x)
 		self.newDimY.SetValue("%d" % y)
@@ -164,10 +164,7 @@ class ResampleDialog(wx.Dialog):
 		
 		sizer = wx.GridBagSizer()
 		
-		
-		#self.currFactorText=u"Scale factors: %.2f x %.2f x %.2f"
-		#self.factorsLbl=wx.StaticText(panel,-1,self.currFactorText%(1,1,1))
-		#sizer.Add(self.factorsLbl,(n,0),flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
+
 		self.factorBox = wx.BoxSizer(wx.HORIZONTAL)
 		self.factorLabel = factorLabel = wx.StaticText(panel, -1, "scale:")
 		#self.factorBox.Add(factorLabel,0,wx.ALIGN_CENTER_VERTICAL)

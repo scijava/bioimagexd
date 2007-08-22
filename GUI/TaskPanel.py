@@ -302,13 +302,10 @@ class TaskPanel(ScrolledPanel):
 		Description: Creates a frame that contains the various widgets
 					 used to control the colocalization settings
 		"""
-		#self.namesizer=wx.BoxSizer(wx.VERTICAL)
-		#self.commonSettingsSizer.Add(self.namesizer,(0,0))
-	
-#		 self.settingsSizer.Add(self.commonSettingsSizer,(0,0),flag=wx.EXPAND|wx.ALL)
+
 		if self.wantNotebook:
 			self.settingsSizer.Add(self.settingsNotebook, (1, 0), flag = wx.EXPAND | wx.ALL)
-		#self.Layout()
+
 
 	def setPreviewedData(self, event, index = -1):
 		"""
@@ -316,8 +313,7 @@ class TaskPanel(ScrolledPanel):
 		Description: A callback function for marking channels to be rendered
 					 in the preview.
 		"""
-		flag0 = 0
-		flag1 = 0
+		flag0, flag1 = 0, 0
 		try:
 			flag0 = event.IsChecked()
 		except:
@@ -343,8 +339,6 @@ class TaskPanel(ScrolledPanel):
 		sunit = self.dataUnit.getSourceDataUnits()[index]
 		self.settings = sunit.getSettings()
 		self.settingsIndex = index
-			
-		#self.preview.setSelectedItem(index)
 		
 		self.updateSettings()
 
@@ -397,7 +391,6 @@ class TaskPanel(ScrolledPanel):
 		"""
 		Logging.info("Sending preview update event", kw = "event")
 		lib.messenger.send(None, "data_changed", -1)
-
 
 	def saveSettingsCallback(self, event):
 		"""
