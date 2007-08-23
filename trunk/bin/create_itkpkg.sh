@@ -15,6 +15,9 @@ do
 	if [ "$TGT" = "ITKCommon.pyd" ]; then
 		TGT="ITKCommon.dll"
 	fi
+	if [ "$TGT" = "SwigRuntimePython.pyd" ]; then
+	  	TGT="SwigRuntimePython.dll"
+	fi
     cp $i lib/$TGT
 
 done

@@ -40,21 +40,15 @@ __author__ = "BioImageXD Project"
 __version__ = "$Revision: 1.22 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
-#import wx
-#import Timeline
-#import TimepointSelection
 import lib.RenderingInterface
-#import TrackItem
 import Logging
 
-#import pickle
 import UrmasPersist
 import UrmasRenderer
 
 
 class UrmasControl:
 	"""
-	Class: UrmasControl
 	Created: 22.02.2005, KP
 	Description: A class that controls Urmas
 	"""
@@ -93,9 +87,7 @@ class UrmasControl:
 		Created: 06.04.2005, KP
 		Description: Writes the whole control datastructures to disk by way of
 					 pickling
-		"""    
-		#f=open(filename,"w")
-		#pickle.dump(self,f)
+		"""
 		p = UrmasPersist.UrmasPersist(self)
 		p.persist(filename)
 	
@@ -106,9 +98,8 @@ class UrmasControl:
 		Description: Set the view mode of spline editor
 		"""    
 		self.viewMode = mode
-	
-	
-		
+
+
 	def resetAnimator(self):
 		"""
 		Created: 24.06.2005, KP
