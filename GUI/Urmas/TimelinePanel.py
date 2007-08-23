@@ -103,7 +103,6 @@ class TimelinePanel(wx.Panel):
 		self.confSizer.Add(self.useButton, (1, 0))
 		
 		self.sizer.Add(sboxsizer, (0, 0), flag = wx.EXPAND | wx.ALL)
-		#f=wx.Frame(self,-1)
 		self.wxrenwin = Visualizer.VisualizerWindow.VisualizerWindow(self, size = (300, 300))
 		self.wxrenwin.initializeVTK()
 		
@@ -161,7 +160,6 @@ class TimelinePanel(wx.Panel):
 		
 	def onSetKeyframeMode(self, obj, evt, arg):
 		"""
-		Method: onSetKeyframeMode
 		Created: 18.08.2005, KP
 		Description: Toggles the keyframe mode on / off
 		"""            
@@ -170,7 +168,6 @@ class TimelinePanel(wx.Panel):
 		
 	def useSettings(self, evt):
 		"""
-		Method: useSettings
 		Created: 16.08.2005, KP
 		Description: Use the configured settings
 		"""    
@@ -209,5 +206,3 @@ class TimelinePanel(wx.Panel):
 		self.timeline.setDataUnit(dataUnit)
 		
 		
-		
-# safeguard
