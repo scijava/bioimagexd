@@ -9,7 +9,7 @@
  A wxPython wxDialog window that is used to control the settings for the
  whole application.
 
- Copyright (C) 2005  BioImageXD Project
+ Copyright (C) 2005	 BioImageXD Project
  See CREDITS.txt for details
 
  This program is free software; you can redistribute it and/or modify
@@ -52,7 +52,6 @@ class GeneralSettings(wx.Panel):
 		askOnQuit = conf.getConfigItem("AskOnQuit", "General")
 		restoreFiles = conf.getConfigItem("RestoreFiles", "General")
 		reportCrash = conf.getConfigItem("ReportCrash", "General")
-		#print "showTip=",showTip
 		if restoreFiles and type(restoreFiles) == type(""):
 			restoreFiles = eval(restoreFiles)
 		if reportCrash and type(reportCrash) == type(""):
@@ -64,7 +63,7 @@ class GeneralSettings(wx.Panel):
 			
 		self.imageBox = wx.StaticBox(self, -1, "Image Format", size = (600, 150))
 		self.imageBoxSizer = wx.StaticBoxSizer(self.imageBox, wx.VERTICAL)
-#        self.imageBoxSizer.SetMinSize(self.imageBox.GetSize())
+#		 self.imageBoxSizer.SetMinSize(self.imageBox.GetSize())
 		
 		self.lbl = wx.StaticText(self, -1, "Default format for Images:")
 		self.choice = wx.Choice(self, -1, choices = ["PNG", "PNM", "BMP", "JPEG", "TIFF"])
@@ -100,9 +99,6 @@ class GeneralSettings(wx.Panel):
 		self.quitBoxSizer.Add(self.askOnQuitCheckbox)
 		
 		self.sizer.Add(self.quitBoxSizer, (1, 0)) 
-#        self.imageBox=wx.StaticBox(self,-1,"Image Format",size=(600,150))
-#        self.imageBoxSizer=wx.StaticBoxSizer(self.imageBox,wx.VERTICAL)
-#        self.imageBoxSizer.SetMinSize(self.imageBox.GetSize())
 		
 		
 		self.SetSizer(self.sizer)
@@ -116,7 +112,6 @@ class GeneralSettings(wx.Panel):
 					 in this window.
 		""" 
 		format = self.choice.GetStringSelection()
-		#print "Setting format to ",format.lower()
 		conf.setConfigItem("ImageFormat", "Output", format.lower())
 		showTip = self.tipCheckbox.GetValue()
 		conf.setConfigItem("ShowTip", "General", str(showTip))
@@ -138,7 +133,6 @@ class PathSettings(wx.Panel):
 	def __init__(self, parent):
 		wx.Panel.__init__(self, parent, -1, size = (640, 480))
 		self.sizer = wx.GridBagSizer(5, 5)
-		#self.SetBackgroundColour(wx.Colour(255,0,0))
 		
 		conf = Configuration.getConfiguration()
 		vtkpath = conf.getConfigItem("VTKPath", "VTK")
@@ -164,7 +158,6 @@ class PathSettings(wx.Panel):
 		self.dataBoxSizer.Add(self.useLastCheckbox)
 		
 		
-		#self.sizer.Add(self.vtkBoxSizer, (0,0),flag=wx.EXPAND|wx.ALL)
 		self.sizer.Add(self.dataBoxSizer, (0, 0), flag = wx.EXPAND | wx.ALL)
 		self.SetAutoLayout(1)
 		self.SetSizer(self.sizer)
@@ -177,16 +170,11 @@ class PathSettings(wx.Panel):
 		Description: A method that writes out the settings that have been modified
 					 in this window.
 		"""
-		#vtkpath=self.vtkbrowse.GetValue()
-		
 		datapath = self.databrowse.GetValue()
 		rememberlast = self.useLastCheckbox.GetValue()
 		
-		#removevtk=self.removeVTKCheckbox.GetValue()
-		#conf.setConfigItem("VTKPath","VTK",vtkpath)
 		conf.setConfigItem("DataPath", "Paths", datapath)
 		
-		#conf.setConfigItem("RemoveOldVTK","VTK",removevtk)
 		conf.setConfigItem("RememberPath", "Paths", rememberlast)
 
 
@@ -198,7 +186,6 @@ class PerformanceSettings(wx.Panel):
 	def __init__(self, parent):
 		wx.Panel.__init__(self, parent, -1, size = (640, 480))
 		self.sizer = wx.GridBagSizer(5, 5)
-		#self.SetBackgroundColour(wx.Colour(255,0,0))
 		
 		conf = Configuration.getConfiguration()
 
@@ -216,8 +203,6 @@ class PerformanceSettings(wx.Panel):
 			val = eval(val)
 		else:
 			val = False
-		#val = not (not doresample)
-		#print "Setting to value=",val
 		self.resampleCheckbox.SetValue(val)
 		try:
 			rx, ry = eval(conf.getConfigItem("ResampleDims", "Performance"))
@@ -357,7 +342,6 @@ class PerformanceSettings(wx.Panel):
 		if noLimit:
 			self.onSelectNoLimits()
 		
-		#print "limit memory=",limitMemory,"alwaysSplit=",alwaysSplit
 		self.memoryBoxSizer.Add(self.splitToThreadsCheckbox)
 		threadgrid = wx.GridBagSizer()
 		threadgrid.Add(nthreadLbl, (0, 0))
@@ -462,7 +446,6 @@ class PerformanceSettings(wx.Panel):
 			conf.setConfigItem("ResampleTo", "Performance", str((rtx, rty)))
 		
 		rescaleOnLoad = self.rescaleCheckbox.GetValue()
-		print "Setting rescale on load to ", rescaleOnLoad
 		conf.setConfigItem("RescaleOnLoading", "Performance", str(rescaleOnLoad))
 		limitMem = self.limitMemoryCheckbox.GetValue()
 		limitTo = self.memoryLimit.GetValue()
@@ -510,7 +493,6 @@ class SettingsWindow(wx.Dialog):
 		self.generalPanel = GeneralSettings(self.listbook)
 		self.pathsPanel = PathSettings(self.listbook)
 		self.performancePanel = PerformanceSettings(self.listbook)
-		#self.moviePanel=MovieSettings(self.listbook)
 		
 		self.listbook.AddPage(self.generalPanel, "General", imageId = 0)
 		self.listbook.AddPage(self.pathsPanel, "Paths", imageId = 1)

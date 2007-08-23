@@ -869,7 +869,10 @@ class Visualizer:
 		if self.dataUnit and self.dataUnit.isProcessed():
 			currentTask = self.mainwin.getCurrentTaskName()
 			ssize = self.conf.getConfigItem("%s_TaskPanelSize"%currentTask, "Sizes")
-			self.mainwin.taskWin.SetDefaultSize(ssize)
+			if ssize:
+				x,y = [int(x) for x in ssize[1:-1].split(",")]
+				
+				self.mainwin.taskWin.SetDefaultSize((x,y))
 		
 		return 1
 
