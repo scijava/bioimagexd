@@ -30,8 +30,6 @@ __author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.28 $"
 __date__ = "$Date: 2005/01/13 14:52:39 $"
 
-#import sys
-
 import wx.lib.buttons as buttons
 import wx.lib.colourselect as csel
 import GUI.Dialogs	
@@ -172,14 +170,11 @@ class CTFPaintPanel(wx.Panel):
 		Created: 16.04.2005, KP
 		Description: Returns x and y of the graph for given coordinates
 		"""
-		print "toGraphCoords", x, y, maxval
 		rx, ry = x - self.xoffset, self.maxy - (y - self.yoffset)
 		
 		
 		xcoeff = maxval / self.maxx
-		#ycoeff = maxval/self.maxy
 		rx *= xcoeff
-		#ry*=ycoeff
 		
 		if rx < 0:rx = 0
 		if ry < 0:ry = 0
@@ -188,8 +183,7 @@ class CTFPaintPanel(wx.Panel):
 		return (rx, ry)
 		
 	def onPaint(self, event):
-		dc = wx.BufferedPaintDC(self, self.buffer)#,self.buffer)
- 
+		dc = wx.BufferedPaintDC(self, self.buffer)
 	def createLine(self, x1, y1, x2, y2, color = "WHITE", brush = None, **kws):
 		"""
 		Created: 30.10.2004, KP
@@ -347,7 +341,6 @@ class CTFPaintPanel(wx.Panel):
 			
 		d = maxval / float(self.maxx)
 		if d < 1:d = 1
-		#self.dc = wx.BufferedDC(wx.ClientDC(self),self.buffer)
 		self.dc = wx.MemoryDC()		   
 		self.dc.SelectObject(self.buffer)
 		self.dc.BeginDrawing()
@@ -371,13 +364,10 @@ class CTFPaintPanel(wx.Panel):
 		
 		n = max(len(red), len(green), len(blue), len(alpha))
 		
-		print "alpha=", alpha
-		
 		for i in range(n):
-#		 for x1 in range(int(minval),int(maxval),int(d)):
 			try:
-				rx, r = red[i]				
-				rx *= coeff				   
+				rx, r = red[i]
+				rx *= coeff   
 				self.createOval(rx, r, 2)
 			except:
 				r, rx = r0, rx0
@@ -444,14 +434,12 @@ class CTFValuePanel(wx.Panel):
 		self.yoffset = 0
 		
 	def onPaint(self, event):
-		dc = wx.BufferedPaintDC(self, self.buffer)#,self.buffer)
-
+		dc = wx.BufferedPaintDC(self, self.buffer)
 	def paintTransferFunction(self, ctf, pointlist = []):
 		"""
 		Created: 30.10.2004, KP
 		Description: Paints the graph of the function specified by the six points
 		"""
-		#self.dc = wx.BufferedDC(wx.ClientDC(self),self.buffer)
 		dc = wx.MemoryDC()
 		dc.SelectObject(self.buffer)
 		dc.SetBackground(wx.Brush(self.GetBackgroundColour()))
@@ -522,7 +510,6 @@ class ColorTransferEditor(wx.Panel):
 			self.alphaBtn = buttons.GenToggleButton(self, -1, "Alpha", size = (32, 32))
 			self.alphaBtn.Bind(wx.EVT_BUTTON, self.onEditAlpha)
 			self.alphaBtn.SetBackgroundColour((255, 255, 255))
-		#self.freeBtn = wx.ToggleButton(self,-1,)
 		iconpath = scripting.get_icon_dir()		   
 		self.freeBtn = buttons.GenBitmapToggleButton(self, -1, None)
 		self.freeBtn.SetBestSize((32, 32))
@@ -577,7 +564,6 @@ class ColorTransferEditor(wx.Panel):
 		self.canvas.Bind(wx.EVT_RIGHT_DOWN, self.onCreatePoint)
 		self.canvas.Bind(wx.EVT_MOTION, self.onDrawFunction)
 		
-#		 self.updateGraph()
 		self.pos = (0, 0)
 		
 		if psyco and 0:
@@ -711,7 +697,6 @@ class ColorTransferEditor(wx.Panel):
 		self.redpoints = [(0, 0), (self.maxval, r)]
 		self.greenpoints = [(0, 0), (self.maxval, g)]
 		self.bluepoints = [(0, 0), (self.maxval, b)]
-		#self.alphapoints=[(0,0),(255,51)]
 		self.points = [self.redpoints, self.greenpoints, self.bluepoints, self.alphapoints]
 		self.freeMode = 0
 		self.upToDate = 0
@@ -756,11 +741,9 @@ class ColorTransferEditor(wx.Panel):
 			Logging.info("points for color %d = " % self.color, self.points[self.color])
 			for pt in self.points[self.color]:
 				d = self.dist((x, y), pt)
-				#print "distance between",(x,y),"and",pt,"=",d
 				if pt[0] == x:hasx = 1
 				if d < self.selectThreshold and d < currd:
 					self.selectedPoint = pt
-					print "Selected point to edit=", pt
 					currd = d
 					self.upToDate = 0
 					break
@@ -791,7 +774,6 @@ class ColorTransferEditor(wx.Panel):
 			n = (x1 - x0)
 			if n:
 				d = abs(y - self.pos[1]) / float(n)
-				#Logging.info("Fixing range %d,%d,d=%f, steps = %d"%(x0,x1,d,n),kw="ctf")
 				if x > self.pos[0] and y < self.pos[1]:d *= -1
 				if x < self.pos[0] and y > self.pos[1]:d *= -1
 			
@@ -802,14 +784,12 @@ class ColorTransferEditor(wx.Panel):
 					
 					val = self.funcs[self.color][i]
 					if val != ny:
-						#print "Setting func at",i,"to",ny
 						self.funcs[self.color][i] = ny
 						update = 1
 		
 		
 		val = self.funcs[self.color][x]
 		if val != y:
-			#print "Setting xfunc at",x,"to",y
 			self.funcs[self.color][x] = y
 			
 			update = 1
@@ -819,16 +799,14 @@ class ColorTransferEditor(wx.Panel):
 			
 		self.pos = (x, y)
 		if not self.upToDate:
-			wx.FutureCall(250	, self.updateCTFFromPoints)				   
-		#	 wx.FutureCall(500,self.updatePreview)		
-	
+			wx.FutureCall(250	, self.updateCTFFromPoints)
+		
 	def modifyPoint(self, oldPoint, newPoint):
 		"""
 		Created: 19.05.2007, KP
 		Description: move the given point to a new position
 		"""
 		removed = 0
-		print "ModCount=", self.modCount
 		if oldPoint in self.points[self.color]:
 			self.modCount -= 1
 			self.points[self.color].remove(oldPoint)
@@ -837,7 +815,6 @@ class ColorTransferEditor(wx.Panel):
 		
 			if x > newPoint[0] and self.points[self.color][i - 1][0] < x:
 				k = i
-				print "Inserting ", newPoint, "at ", k
 				if k == 0:k = 1
 				
 				self.points[self.color].insert(k, newPoint)
@@ -864,7 +841,6 @@ class ColorTransferEditor(wx.Panel):
 	
 	
 				if self.selectedPoint:
-					print "Modifying point", self.selectedPoint, "to", (x, y)
 					self.modifyPoint(self.selectedPoint, (x, y))
 					self.upToDate = 0
 					self.updateGraph()					  
@@ -887,8 +863,7 @@ class ColorTransferEditor(wx.Panel):
 		was = 0
 		if self.freeMode:was = 1
 		if not was and event.GetIsDown():
-			#print "Getting CTF from points for free mode",self.points
-			self.updateCTFFromPoints()						  
+			self.updateCTFFromPoints()
 			self.updateGraph()
 			self.freeMode = 1
 			
@@ -898,8 +873,6 @@ class ColorTransferEditor(wx.Panel):
 		if was:
 			self.updateCTFFromPoints()
 		self.freeMode = event.GetIsDown()
-		#Logging.info("Points before=",self.points,kw="ctf")
-
 		if not self.freeMode and was and self.hasPainted:
 			Logging.info("Analyzing free mode for points", kw = "ctf")
 			
@@ -910,11 +883,8 @@ class ColorTransferEditor(wx.Panel):
 				tot += len(pts)
 			
 			maxpts = self.maxNodes.GetValue()
-			#print "MAXIMUM POINTS=",maxpts
 			if maxpts < tot:
 				self.onSetMaxNodes(None)
-		#Logging.info("Points after=",self.points,kw="ctf")		 
-
 		self.updateGraph()
 				
 	def onEditRed(self, event):
@@ -999,8 +969,7 @@ class ColorTransferEditor(wx.Panel):
 			self.canvas.paintTransferFunction(self.alphaMode, self.selectedPoint, red = self.redpoints, green = self.greenpoints, blue = self.bluepoints, alpha = self.alphapoints, drawAlpha = self.alpha, maximumValue = self.maxval)
 		self.canvas.Refresh()
 		
-		#self.value.Refresh()
-
+		
 	def updateCTFView(self, evt = None):
 		"""
 		Created: 20.10.2006, KP
@@ -1023,8 +992,6 @@ class ColorTransferEditor(wx.Panel):
 		"""
 		self.ctf.RemoveAllPoints()
 		self.otf.RemoveAllPoints()
-		#print "Setting CTF from points"
-		#Logging.backtrace()
 		if self.freeMode:
 			for i in xrange(0, self.maxval):
 				r, g, b = self.redfunc[i], self.greenfunc[i], self.bluefunc[i]
@@ -1040,7 +1007,6 @@ class ColorTransferEditor(wx.Panel):
 			func = []
 			for i in range(int(self.maxval + 1)):
 				func.append([0, 0, 0, 0])
-			#rf = self.expandFunction(self.redfunc)	   
 			self.points = [self.redpoints, self.greenpoints, self.bluepoints, self.alphapoints]			   
 			for col, pointlist in enumerate(self.points):
 				pointlist.sort()
@@ -1056,31 +1022,22 @@ class ColorTransferEditor(wx.Panel):
 						x2 = self.maxval
 						x1 = x1 - 1
 						
-					#print "enumerating between",x1,x2
 					for x in range(int(x1), int(x2 + 1)):
-						
-						#print "len=",len(func),"x=",x,"max=",self.maxval
 						func[x][col] = y1 + (x - x1) * dy
 						
-			ctfmax = 0			  
+			ctfmax = 0
 			for i in xrange(int(self.maxval + 1)):
 				r, g, b, a = func[i]
 				r /= 255.0
 				g /= 255.0
 				b /= 255.0
 				a /= 255.0
-				#print "Setting ctf ",i,"=",r,g,b
 				self.ctf.AddRGBPoint(i, r, g, b)
 				if self.alpha:
-					#print "Setting alpha at",i,"=",a
 					self.otf.AddPoint(i, a)
 				ctfmax = i
 				
-			#if ctfmax<self.maxval:
-			#	 
-			#	 ctf.AddRGBPoint(self.maxval,0,0,0)
-											
-
+			
 	def getColorTransferFunction(self):
 		"""
 		Created: 11.11.2004, JV
@@ -1106,8 +1063,6 @@ class ColorTransferEditor(wx.Panel):
 		self.alphafunc = [0] * (self.maxval + 1)
 		self.funcs = [self.redfunc, self.greenfunc, self.bluefunc, self.alphafunc]
 		
-		#print "len(self.redfunc)=",len(self.redfunc),self.maxval
-		
 		for i in range(self.maxval + 1):
 			val = [0, 0, 0]
 			TF.GetColor(i, val)
@@ -1121,7 +1076,6 @@ class ColorTransferEditor(wx.Panel):
 			g = int(g)
 			b = int(b)
 			
-			#print "greenfunc %d = %d"%(i,g)
 			self.redfunc[i] = r
 			self.greenfunc[i] = g
 			self.bluefunc[i] = b  
@@ -1140,8 +1094,6 @@ class ColorTransferEditor(wx.Panel):
 					 determine where to insert control points for the user
 					 to edit
 		"""
-		#print "\n\nGETTING POINTS FROM FREE"	svn-1037, 18.7.07, MB
-		#Logging.backtrace()			svn-1037, 18.7.07, MB
 		xr0, xg0, xb0, xa0 = 0, 0, 0, 0
 		kr, kg, kb, ka = 1, 1, 1, 1
 		yr0, yg0, yb0, ya0 = 0, 0, 0, 0
@@ -1167,7 +1119,6 @@ class ColorTransferEditor(wx.Panel):
 			r *= self.maxval
 			g *= self.maxval
 			b *= self.maxval
-			#print "value for ",x,"=",r,g,b
 			r = int(r)
 			g = int(g)
 			b = int(b)
@@ -1183,8 +1134,6 @@ class ColorTransferEditor(wx.Panel):
 					ka = ColorTransferEditor.slope(0, a0, 1, a)
 				
 			if x in [0, int(self.maxval)]:
-			#if x in range(0,int(self.maxval)):
-				#print "X=%d in range 0,%d, adding %d,%d,%d"%(x,self.maxval,r,g,b)
 				self.redpoints.append((x, r))
 				self.greenpoints.append((x, g))
 				self.bluepoints.append((x, b))
@@ -1221,7 +1170,6 @@ class ColorTransferEditor(wx.Panel):
 						a0 = a				  
 	   
 
-		#print "greenpoints=",self.greenpoints
 		coeff = 255.0 / self.maxval
 		
 		
@@ -1230,9 +1178,6 @@ class ColorTransferEditor(wx.Panel):
 		self.bluepoints = [(x, coeff * y) for (x, y) in self.bluepoints]
 		self.alphapoints = [(x, coeff * y) for (x, y) in self.alphapoints]
 		self.points = [self.redpoints, self.greenpoints, self.bluepoints, self.alphapoints]
-#		 print "alphapoints=",self.alphapoints
-#		 print "greenpoints=",self.greenpoints
-		#print "Updating graph..."
 		self.updateGraph()
 			
 	def setColorTransferFunction(self, TF):
@@ -1244,7 +1189,6 @@ class ColorTransferEditor(wx.Panel):
 		self.ctf = TF
 		self.minval, self.maxval = TF.GetRange()
 		self.canvas.background = None
-		print "Got ctf=", TF
 		self.getPointsFromFree()
 		self.alphapoints = [(0, 0), (self.maxval, 51)]
 		self.points = [self.redpoints, self.greenpoints, self.bluepoints, self.alphapoints]
@@ -1274,10 +1218,8 @@ class ColorTransferEditor(wx.Panel):
 		Description: Returns the opacity function
 		"""
 		if otf == self.otf:
-			print "Opacity function the same, not modifying"
 			return
 		self.otf = otf
-#		 print "Setting opacity transfer function",otf
 		self.getPointsFromFree()
 		self.updateGraph()		  
 

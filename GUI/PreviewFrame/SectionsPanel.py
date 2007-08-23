@@ -180,15 +180,15 @@ class SectionsPanel(InteractivePanel):
 		if x > dims[0] + (sxmargin) and y > 0 and y < dims[1] and x < dims[0] + sxmargin + dims[2] * self.zspacing:
 			nz = x - dims[0] - sxmargin
 			nz /= self.zspacing
-			ny = y#-self.ymargin
+			ny = y
 			nx = self.x
 		elif x > 0 and x < dims[0] and y > 0 and y < dims[1]:
-			nx = x#+self.xmargin
-			ny = y#+self.ymargin
+			nx = x
+			ny = y
 			nz = self.z
 		# the xz plane
 		elif x > 0 and x < dims[0] and y > dims[1] + symargin and y < dims[1] + symargin + dims[2] * self.zspacing:
-			nx = x#-self.xmargin
+			nx = x
 			nz = y - dims[1] - symargin
 			nz /= self.zspacing
 			ny = self.y
@@ -295,10 +295,10 @@ class SectionsPanel(InteractivePanel):
 			self.ctf = self.dataUnit.getColorTransferFunction()
 
 		
-		self.zspacing = image.GetSpacing()[2]
 		self.imagedata = lib.ImageOperations.imageDataTo3Component(image, self.ctf)
 		self.imagedata.Update()
-
+		self.zspacing = image.GetSpacing()[2]
+		
 		if self.fitLater:
 			self.fitLater = 0
 			self.zoomToFit()
@@ -306,20 +306,19 @@ class SectionsPanel(InteractivePanel):
 
 		self.dims = self.imagedata.GetDimensions()
 		self.slices = []
-#		obtain the slices
 
+#		obtain the slices
 		z = self.z / self.zoomZ
 		if self.zoomFactor != 1:
 			img = lib.ImageOperations.scaleImage(self.imagedata, self.zoomFactor, z)
 			slice = lib.ImageOperations.vtkImageDataToWxImage(img)
-			
 		else:
 			slice = lib.ImageOperations.vtkImageDataToWxImage(self.imagedata, z)
 			
 		self.slices.append(slice)
 		
+		Logging.info("zspacing = %f\n"%self.zspacing, kw="preview")
 		slice = lib.ImageOperations.getPlane(self.imagedata, "zy", self.x, self.y, int(z))
-#		slice=lib.ImageOperations.getPlane(self.imagedata,"xz",self.x,self.y,z)
 		if self.zoomFactor != 1 or self.zspacing != 1:
 			slice = lib.ImageOperations.scaleImage(slice, self.zoomFactor, yfactor = 1, xfactor = self.zspacing)
 		slice = lib.ImageOperations.vtkImageDataToWxImage(slice)
@@ -356,7 +355,6 @@ class SectionsPanel(InteractivePanel):
 		if self.buffer.GetWidth() != x or self.buffer.GetHeight() != y:
 			self.buffer = wx.EmptyBitmap(x, y)
 			Logging.info("Paint size=", self.paintSize, kw = "preview")
-			#print "paintSize=",self.paintSize			
 			self.setScrollbars(x, y)
 
 	def enable(self, flag):
@@ -418,12 +416,9 @@ class SectionsPanel(InteractivePanel):
 
 		x, y, z = [i * self.zoomFactor for i in self.dims]
 		z *= self.zoomZ * self.zspacing
-
 		pos = [(self.xmargin, self.ymargin), (x + (2 * self.xmargin), self.ymargin), (self.xmargin, y + (2 * self.ymargin))]
 		for i, slice in enumerate(self.slices):
-
 			w, h = slice.GetWidth(), slice.GetHeight()
-
 			bmp = slice.ConvertToBitmap()
 
 			sx, sy = pos[i]

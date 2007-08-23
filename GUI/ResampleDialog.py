@@ -199,7 +199,6 @@ class ResampleDialog(wx.Dialog):
 		
 		
 		dimsizer  = wx.BoxSizer(wx.HORIZONTAL)
-		#dimsizer.Add(newDimXLbl,0,wx.ALIGN_CENTER_VERTICAL)
 		dimsizer.Add(self.newDimX, 0, wx.ALIGN_CENTER_VERTICAL)
 		dimsizer.Add(x1, 0, wx.ALIGN_CENTER_VERTICAL)
 		dimsizer.Add(self.newDimY, 0, wx.ALIGN_CENTER_VERTICAL)
@@ -295,7 +294,6 @@ class ResampleDialog(wx.Dialog):
 			if self.halfResampleZ.GetValue():
 				zf = 0.5
 			self.currSize = int(0.5 * x), int(0.5 * y), int(zf * z)
-			print "Resampling in Z = ", zf
 		self.fourthResampleZ.Enable(0)
 		for obj in [self.factorLabel, self.dimLabel, self.newDimX, self.newDimY, self.newDimZ, self.factorX, self.factorY, self.factorZ]:
 			obj.Enable(0)
@@ -314,7 +312,6 @@ class ResampleDialog(wx.Dialog):
 			if self.fourthResampleZ.GetValue():
 				zf = 0.25
 			self.currSize = int(0.25 * x), int(0.25 * y), int(zf * z)   
-			print "Resampling in Z = ", zf
 		for obj in [self.factorLabel, self.dimLabel, self.newDimX, self.newDimY, self.newDimZ, self.factorX, self.factorY, self.factorZ]:
 			obj.Enable(0)
 

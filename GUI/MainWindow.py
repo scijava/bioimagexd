@@ -1218,6 +1218,7 @@ class MainWindow(wx.Frame):
 		Description: return the name of the current task
 		"""
 		return self.currentTaskWindowName
+
 	def closeTaskPanel(self):
 		"""
 		Created: 15.08.2006, KP
@@ -1226,16 +1227,24 @@ class MainWindow(wx.Frame):
 		if self.currentTaskWindow:
 			self.currentTaskWindow.cacheSettings()
 		selectedUnits = self.tree.getSelectedDataUnits()
+		self.visualizer.enable(0)
+		Logging.info("Setting processed mode = 0")
 		self.visualizer.setProcessedMode(0)
-		self.visualizer.setDataUnit(selectedUnits[0])
 		self.menuManager.clearItemsBar()
+		
 		if self.currentTaskWindow:
+			Logging.info("Closing task")
 			self.currentTaskWindow.Show(0)
 			self.currentTaskWindow.Destroy()
 			del self.currentTaskWindow
 			self.currentTaskWindow = None
 			self.currentTaskWindowName = ""
 			self.currentTaskWindowType = None
+
+		Logging.info("Switching dataunit")
+		self.visualizer.setDataUnit(selectedUnits[0])
+		self.visualizer.enable(1)
+		
 		self.switchBtn.Enable(0)
 		self.menuManager.disable(MenuManager.ID_CLOSE_TASKWIN)
 		self.taskWin.SetDefaultSize((0, 0))
