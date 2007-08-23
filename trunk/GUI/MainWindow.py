@@ -1242,7 +1242,9 @@ class MainWindow(wx.Frame):
 			self.currentTaskWindowType = None
 
 		Logging.info("Switching dataunit")
+		print selectedUnits[0]
 		self.visualizer.setDataUnit(selectedUnits[0])
+		print "done"
 		self.visualizer.enable(1)
 		
 		self.switchBtn.Enable(0)
