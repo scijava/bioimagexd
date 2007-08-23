@@ -100,8 +100,6 @@ class Visualizer:
 		self.firstLoad = {}
 		self.in_vtk = 0
 		self.parent = parent
-		#lib.messenger.connect(None, "set_timeslider_value", self.onSetTimeslider)
-		#lib.messenger.connect(None, "set_time_range", self.onSetTimeRange)
 		lib.messenger.connect(None, "timepoint_changed", self.onSetTimepoint)
 
 		lib.messenger.connect(None, "data_changed", self.updateRendering)
@@ -238,7 +236,6 @@ class Visualizer:
 		self.maxWidth = None
 		self.origBtn = None
 
-		#wx.FutureCall(50, self.createToolbar)
 		self.createToolbar()
 
 	def getMasks(self):
@@ -1166,32 +1163,42 @@ class Visualizer:
 		Created: 28.04.2005, KP
 		Description: Sets the dataunit this module uses for visualization
 		"""
-		#Logging.info("visualizer.setDataUnit(%s)" %str(dataunit), kw = "visualizer")
 		self.dataUnit = dataunit
 		count = dataunit.getNumberOfTimepoints()
 
-		Logging.info("Setting range to %d" % count, kw = "visualizer")
 		self.maxTimepoint = count - 1
 		if count == 1:
+			Logging.info("Hiding time slider, because only one timepoint", kw="visualizer")
 			self.toggleTimeSlider(0)
 		else:
+			Logging.info("Setting time range to %d" % count, kw = "visualizer")
 			self.toggleTimeSlider(1)
 			self.timeslider.SetRange(1, count)
-		currT = self.timeslider.GetValue()
+			
+		currT = modT = self.timeslider.GetValue()
 		if currT < 1:currT = 1
 		if currT > count:currT = count
-		self.timeslider.SetValue(currT)
+		
+		if currT != modT and count > 1:
+			Logging.info("Setting time slider value to %d"%currT, kw="visualizer")
+			oldBlock = self.blockTpUpdate
+			self.blockTpUpdate = 1
+			self.timeslider.SetValue(currT)
+			self.blockTpUpdate = oldBlock
+			
 
 		x, y, z = dataunit.getDimensions()
 
 		currz = self.zslider.GetValue()
 		self.zslider.SetRange(1, z)
 
-		if self.timepoint >= count:
+		if self.timepoint > count:
+			Logging.info("Setting timepoint to %d"%count,kw="visualizer")
 			self.setTimepoint(count)
 
+		Logging.info("Setting zslider value",kw="visualizer")
 		if z < currz:
-			self.zslider.SetValue(0 )
+			self.zslider.SetValue(0)
 			self.onChangeZSlice(None)
 		if z <= 1:
 			self.zsliderWin.SetDefaultSize((0, 768))
@@ -1199,6 +1206,7 @@ class Visualizer:
 			self.zsliderWin.SetDefaultSize(self.zsliderWin.origSize)
 		showItems = 0
 
+		print "FOO"
 		if self.processedMode:
 			numberOfDataUnits = len(dataunit.getSourceDataUnits())
 			if numberOfDataUnits > 1:
@@ -1206,17 +1214,25 @@ class Visualizer:
 		self.showItemToolbar(showItems)
 
 		if self.enabled and self.currMode:
+			Logging.info("Setting up current mode", kw="visualizer")
 			self.setupMode()
 		else:
+			Logging.info("Will set up mode later", kw="visualizer")
 			self.setLater = 1
+			
 		if self.histogramIsShowing:
+			Logging.info("Updating histogram",kw="visualizer")
 			self.createHistogram()
-		if self.currMode:
-			if self.zoomToFitFlag:
-				self.currMode.zoomToFit()
-			else:
-				self.currMode.setZoomFactor(self.zoomFactor)
-				scripting.zoomFactor = self.zoomFactor
+
+#		if self.currMode:
+#			Logging.info("Adjusting zoom factor", kw="visualizer")
+#			if self.zoomToFitFlag:
+#				self.currMode.zoomToFit()
+#			else:
+#				self.currMode.setZoomFactor(self.zoomFactor)
+#				scripting.zoomFactor = self.zoomFactor
+
+
 
 		self.OnSize(None)
 
@@ -1226,16 +1242,13 @@ class Visualizer:
 		Description: Setup the current mode
 		"""
 		Logging.info("Setting dataunit to current mode", kw = "visualizer")
-
+		self.currMode.setDataUnit(self.dataUnit)
+		self.currMode.setTimepoint(self.timepoint)
 		if self.zoomToFitFlag:
 			self.currMode.zoomToFit()
 		else:
 			self.currMode.setZoomFactor(self.zoomFactor)
 			scripting.zoomFactor = self.zoomFactor
-
-		self.currMode.setDataUnit(self.dataUnit)
-
-		self.currMode.setTimepoint(self.timepoint)
 
 	def setImmediateRender(self, flag):
 		"""
@@ -1350,7 +1363,7 @@ class Visualizer:
 			wx.FutureCall(50, lambda e = evt: self.onUpdateTimepoint(evt))
 			return
 		timepoint = self.timeslider.GetValue()
-		timepoint -= 1 # slider starts from one
+		timepoint -= 1 
 		if self.timepoint != timepoint:
 			Logging.info("Sending timepoint change event (timepoint = %d)" % timepoint, kw = "visualizer")
 			self.blockTpUpdate = 1
@@ -1366,7 +1379,6 @@ class Visualizer:
 									undo_cmd, \
 									desc = "Switch to timepoint %d" % timepoint)
 			cmd.run()
-#			 self.setTimepoint(timepoint)
 
 	def delayedTimesliderEvent(self, event):
 		"""
