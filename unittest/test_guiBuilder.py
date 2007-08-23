@@ -36,6 +36,9 @@ class GUIBuilderBaseTest(unittest.TestCase):
 
 		self.testGUIBuilderBase.descs = {}
 
+		self.parameter = None
+		self.colorBeginner = (200, 200, 200)
+
 	def testGetInput(self):
 		"""
 		Created: 11.07.2007, SS
@@ -57,6 +60,7 @@ class GUIBuilderBaseTest(unittest.TestCase):
 
 		nts:	difficult to test; bxd.visualizer in GUIBuilder does not exist
 		"""
+		
 #		print self.testGUIBuilderBase.getCurrentTimepoint()
 
 	def testGetInputFromChannel(self):
@@ -94,7 +98,7 @@ class GUIBuilderBaseTest(unittest.TestCase):
 		Created: 11.07.2007, SS
 		Description:
 		"""
-		pass
+		self.assertEqual(self.testGUIBuilderBase.getParameterLevel(self.parameter), self.colorBeginner)
 
 	def testSendUpdateGUI(self):
 		"""
@@ -186,7 +190,6 @@ class GUIBuilder(unittest.TestCase):
 		Created: 11.07.2007, SS
 		Description:
 		"""
-
 #		self.testGUIBuilder = GUI.GUIBuilder.GUIBuilder(parent, myfilter)
 
 	def test(self):
