@@ -51,6 +51,15 @@ def getConfiguration():
 		conf = Configuration()
 	return conf
 
+def getNumberTupleFromString(inString):
+	"""
+	Created: 23.08.07, TW
+	Description: Takes a string of form '(number, number ..., number)' 
+				 and returns a tuple consisting of the numbers.
+	"""
+	withoutBraces = inString[1:-1]
+	return tuple( int(number) for number in withoutBraces.split(","))
+
 class Configuration:
 	"""
 	Created: 23.02.2005, KP
