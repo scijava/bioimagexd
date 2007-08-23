@@ -12,7 +12,7 @@
  This is a timeline based GUI for controlling the rendering of datasets. The GUI allows users
  to specify a path for the camera to follow (using Heikki Uuksulainen's MayaVi animator code)
  and also allows them to produce videos of the rendering using ffmpeg.
- 
+
  The timeline widget and it's configuration is implemented in this module.
  
  Copyright (C) 2005  BioImageXD Project
@@ -81,27 +81,27 @@ class TimelinePanel(wx.Panel):
 		self.timeline = Timeline
 
 		self.confSizer = wx.GridBagSizer()
-		
+
 		self.timelineConfig = RenderingConfigPanel.RenderingConfigPanel(self, control)
 
 		# The timelineConfig is not actually a panel, just an object that contains
 		# the sizer we want to add to the layout. This is done to thin the hierarchy of
 		# panels because MacOS X doesn't like many nested panels. That's why we just
-		# add the sizer 
+		# add the sizer
 		self.confSizer.Add(self.timelineConfig.sizer, (0, 0), flag = wx.EXPAND | wx.ALL)
-		
+
 		#sbox=wx.StaticBox(self,-1,"Animator configuration")
 		#sboxsizer=wx.StaticBoxSizer(sbox,wx.HORIZONTAL)
 		#sboxsizer.Add(self.confSizer)
-		
+
 		sboxsizer = self.confSizer
-	
+
 		self.useButton = wx.Button(self, -1, "Use settings")
 
 		self.useButton.Bind(wx.EVT_BUTTON, self.useSettings)
-		   
+
 		self.confSizer.Add(self.useButton, (1, 0))
-		
+
 		self.sizer.Add(sboxsizer, (0, 0), flag = wx.EXPAND | wx.ALL)
 		self.wxrenwin = Visualizer.VisualizerWindow.VisualizerWindow(self, size = (300, 300))
 		self.wxrenwin.initializeVTK()
@@ -124,7 +124,7 @@ class TimelinePanel(wx.Panel):
 
 		
 		self.Refresh()
-		
+
 		self.splineEditor.initializeVTK()
 		
 		n = self.timelineConfig.getFrameAmount()
@@ -157,7 +157,7 @@ class TimelinePanel(wx.Panel):
 		
 		self.wxrenwin.Render()
 		
-		
+
 	def onSetKeyframeMode(self, obj, evt, arg):
 		"""
 		Created: 18.08.2005, KP
@@ -172,27 +172,11 @@ class TimelinePanel(wx.Panel):
 		Description: Use the configured settings
 		"""    
 		self.timelineConfig.useSettings(evt)
-#        n=self.control.getDuration()
 		n = self.timelineConfig.getFrameAmount()
-		
 		lib.messenger.send(None, "set_frames", n)
-		
-		#Qlib.messenger.send(None,"set_time_range",1,n*10)
-		#keyframeMode=self.modeBox.GetSelection()
-		#self.control.setViewMode(keyframeMode)
-		
-		
 		cam = self.splineEditor.getCamera()
-#       if keyframeMode:
-#           print "Storing position"
-#            self.storedCameraPosition=cam.GetPosition()
-#            self.parent.onShowFrame(None)
-#        else:
-#            if self.storedCameraPosition:
-#                print "Restoring position"
-#                cam.SetPosition(self.storedCameraPosition)
-#        self.splineEditor.render()
-		
+
+
 	def useTimeline(self, flag):
 		print "useTimeline called!"
 		if not flag:
