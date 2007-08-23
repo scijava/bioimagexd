@@ -59,15 +59,9 @@ vtkStandardNewMacro(vtkLIFReader);
 
 vtkLIFReader::vtkLIFReader()
 {
+  this->InitializeAttributes();
   this->SetNumberOfInputPorts(0); // Source
   this->SetNumberOfOutputPorts(1);
-  this->File = NULL;
-  this->FileName = NULL;
-  this->Dimensions = NULL;
-  this->Channels = NULL;
-  this->Images = NULL;
-  this->Offsets = NULL;
-  this->ImageSizes = NULL;
 }
 
 vtkLIFReader::~vtkLIFReader()
@@ -87,62 +81,69 @@ vtkLIFReader::~vtkLIFReader()
 void vtkLIFReader::PrintSelf(ostream& os, vtkIndent indent)
 {
   this->Superclass::PrintSelf(os,indent);
+
   if (this->File)
     {
     os << indent << "Open File: " << this->FileName << endl;
     os << indent << indent << "File Size: " << this->FileSize << endl;
     os << indent << indent << "Images: " << this->GetImageCount() << endl;
+	os << indent << indent << "Lif Version: " << this->LifVersion << endl;
     }
+
+  os << indent << "Current Image: " << this->CurrentImage << endl;
+  os << indent << "Current Channel: " << this->CurrentChannel << endl;
+  os << indent << "Current Time Point: " << this->CurrentTimePoint << endl;
+
   if (this->Channels->size() > 0 && this->Dimensions->size() > 0)
     {
-      VectorChannelTypeBase::const_iterator channelsIter = this->Channels->begin();
-      VectorDimensionTypeBase::const_iterator dimensionsIter = this->Dimensions->begin();
-      VectorImageTypeBase::const_iterator imagesIter = this->Images->begin();
-      vtkIdType offsetId = 0;
+    VectorChannelTypeBase::const_iterator channelsIter = this->Channels->begin();
+	VectorDimensionTypeBase::const_iterator dimensionsIter = this->Dimensions->begin();
+	VectorImageTypeBase::const_iterator imagesIter = this->Images->begin();
+	vtkIdType offsetId = 0;
 		
-      while (channelsIter != this->Channels->end() && dimensionsIter != this->Dimensions->end() && 
-	     imagesIter != this->Images->end())
-	{
+	while (channelsIter != this->Channels->end() && dimensionsIter != this->Dimensions->end() &&
+		   imagesIter != this->Images->end())
+	  {
 	  os << indent << "Image: " << (*imagesIter) << endl;
 	  os << indent << indent << "Offset: " << this->Offsets->GetValue(offsetId) << endl;
 	  os << indent << indent << "Size: " << this->ImageSizes->GetValue(offsetId) << endl;
 	  ImageChannelsTypeBase::const_iterator imgChannels = (*channelsIter)->begin();
 	  while (imgChannels != (*channelsIter)->end())
 	    {
-	      os << indent << indent << "Channel: " << endl;
-	      os << indent << indent << indent << "DataType: " << (*imgChannels)->DataType << endl;
-	      os << indent << indent << indent << "ChannelTag: " << (*imgChannels)->ChannelTag << endl;
-	      os << indent << indent << indent << "Resolution: " << (*imgChannels)->Resolution << endl;
-	      os << indent << indent << indent << "NameOfMeasuredQuantity: " << (*imgChannels)->NameOfMeasuredQuantity << endl;
-	      os << indent << indent << indent << "Min: " << (*imgChannels)->Min << endl;
-	      os << indent << indent << indent << "Max: " << (*imgChannels)->Max << endl;
-	      os << indent << indent << indent << "Unit: " << (*imgChannels)->Unit << endl;
-	      os << indent << indent << indent << "LUTName: " << (*imgChannels)->LUTName << endl;
-	      os << indent << indent << indent << "IsLUTInverted: " << (*imgChannels)->IsLUTInverted << endl;
-	      os << indent << indent << indent << "BytesInc: " << (*imgChannels)->BytesInc << endl;
-	      os << indent << indent << indent << "BitInc: " << (*imgChannels)->BitInc << endl;
-	      imgChannels++;
+	    os << indent << indent << "Channel: " << endl;
+		os << indent << indent << indent << "DataType: " << (*imgChannels)->DataType << endl;
+		os << indent << indent << indent << "ChannelTag: " << (*imgChannels)->ChannelTag << endl;
+		os << indent << indent << indent << "Resolution: " << (*imgChannels)->Resolution << endl;
+		os << indent << indent << indent << "NameOfMeasuredQuantity: " << (*imgChannels)->NameOfMeasuredQuantity << endl;
+		os << indent << indent << indent << "Min: " << (*imgChannels)->Min << endl;
+		os << indent << indent << indent << "Max: " << (*imgChannels)->Max << endl;
+		os << indent << indent << indent << "Unit: " << (*imgChannels)->Unit << endl;
+		os << indent << indent << indent << "LUTName: " << (*imgChannels)->LUTName << endl;
+		os << indent << indent << indent << "IsLUTInverted: " << (*imgChannels)->IsLUTInverted << endl;
+		os << indent << indent << indent << "BytesInc: " << (*imgChannels)->BytesInc << endl;
+		os << indent << indent << indent << "BitInc: " << (*imgChannels)->BitInc << endl;
+		imgChannels++;
 	    }
 	
 	  ImageDimensionsTypeBase::const_iterator imgDims = (*dimensionsIter)->begin();
 	  while (imgDims != (*dimensionsIter)->end())
 	    {
-	      os << indent << indent << "Dimension: " << endl;
-	      os << indent << indent << indent << "DimID: " << (*imgDims)->DimID << endl;
-	      os << indent << indent << indent << "NumberOfElements: " << (*imgDims)->NumberOfElements << endl;
-	      os << indent << indent << indent << "Origin: " << (*imgDims)->Origin << endl;
-	      os << indent << indent << indent << "Length: " << (*imgDims)->Length << endl;
-	      os << indent << indent << indent << "Unit: " << (*imgDims)->Unit << endl;
-	      os << indent << indent << indent << "BytesInc: " << (*imgDims)->BytesInc << endl;
-	      os << indent << indent << indent << "BitInc: " << (*imgDims)->BitInc << endl;
-	      imgDims++;
+	    os << indent << indent << "Dimension: " << endl;
+		os << indent << indent << indent << "DimID: " << (*imgDims)->DimID << endl;
+		os << indent << indent << indent << "NumberOfElements: " << (*imgDims)->NumberOfElements << endl;
+		os << indent << indent << indent << "Origin: " << (*imgDims)->Origin << endl;
+		os << indent << indent << indent << "Length: " << (*imgDims)->Length << endl;
+		os << indent << indent << indent << "Unit: " << (*imgDims)->Unit << endl;
+		os << indent << indent << indent << "BytesInc: " << (*imgDims)->BytesInc << endl;
+		os << indent << indent << indent << "BitInc: " << (*imgDims)->BitInc << endl;
+		imgDims++;
 	    }
 
 	  channelsIter++;
 	  dimensionsIter++;
 	  imagesIter++;
 	  offsetId++;
-	}
+	  }
     }
 }
 
@@ -176,7 +177,7 @@ int vtkLIFReader::OpenFile()
   this->Dimensions = new DimensionVector;
   this->Images = new ImageVector;
   this->Offsets = vtkUnsignedIntArray::New();
-  this->ImageSizes = vtkUnsignedIntArray::New();
+  this->ImageSizes = vtkUnsignedLongLongArray::New();
   this->Modified();
   
   return 1;
@@ -338,6 +339,8 @@ int vtkLIFReader::SetImageVoxelSizes(int image)
 {
   double *voxelSizes = new double[3];
   voxelSizes[0] = voxelSizes[1] = voxelSizes[2] = 0.0;
+  this->Voxelss[0] = this->Voxelss[1] = this->Voxelss[2] = 0.0;
+
   if (image < 0 || image >= this->Dimensions->size()) return 0; //voxelSizes;
 
   for (ImageDimensionsTypeBase::const_iterator dimIter = this->Dimensions->at(image)->begin();
@@ -346,7 +349,7 @@ int vtkLIFReader::SetImageVoxelSizes(int image)
       if ((*dimIter)->DimID == DimIDX)
 		{
 		  if (strcmp((*dimIter)->Unit,"m") == 0 || strcmp((*dimIter)->Unit,"M") == 0 ||
-			  strcmp((*dimIter)->Unit,""))
+			  strcmp((*dimIter)->Unit,"") == 0)
 			{
 			  voxelSizes[0] = (*dimIter)->Length / (*dimIter)->NumberOfElements;
 			  this->Voxelss[0] = fabs(voxelSizes[0]); // Remove this when pointer can be returned
@@ -355,7 +358,7 @@ int vtkLIFReader::SetImageVoxelSizes(int image)
       else if ((*dimIter)->DimID == DimIDY)
 		{
 		  if (strcmp((*dimIter)->Unit,"m") == 0 || strcmp((*dimIter)->Unit,"M") == 0 ||
-			  strcmp((*dimIter)->Unit,""))
+			  strcmp((*dimIter)->Unit,"") == 0)
 			{
 			  voxelSizes[1] = (*dimIter)->Length / (*dimIter)->NumberOfElements;
 			  this->Voxelss[1] = fabs(voxelSizes[1]); // Remove this when pointer can be returned
@@ -364,7 +367,7 @@ int vtkLIFReader::SetImageVoxelSizes(int image)
       else if ((*dimIter)->DimID == DimIDZ)
 		{
 		  if (strcmp((*dimIter)->Unit,"m") == 0 || strcmp((*dimIter)->Unit,"M") == 0 ||
-			  strcmp((*dimIter)->Unit,""))
+			  strcmp((*dimIter)->Unit,"") == 0)
 			{
 			  voxelSizes[2] = (*dimIter)->Length / (*dimIter)->NumberOfElements;
 			  this->Voxelss[2] = fabs(voxelSizes[2]); // Remove this when pointer can be returned
@@ -522,7 +525,7 @@ int vtkLIFReader::ReadLIFHeader()
   // Read and parse xml header
   this->File->read(xmlHeader,xmlChars);
   this->ParseXMLHeader(xmlHeader,xmlChars);
-  
+
   // Find image offsets
   this->Offsets->SetNumberOfValues(this->GetImageCount());
   vtkIdType offsetId = 0;
@@ -536,7 +539,7 @@ int vtkLIFReader::ReadLIFHeader()
       return 0;
     }
   
-    // Don't care about the size of next block
+    // Don't care about the size of the next block
     this->File->seekg(4,ios::cur);
     // Read testcode
     lifChar = this->ReadChar(this->File);
@@ -545,8 +548,17 @@ int vtkLIFReader::ReadLIFHeader()
       return 0;
     }
   
-    // Read size of memory
-    unsigned long memorySize = this->ReadUnsignedInt(this->File);
+    // Read size of memory, this is 4 bytes in version 1 and 8 in version 2
+	unsigned long long memorySize;
+	if (this->LifVersion >= 2)
+	  {
+		memorySize = this->ReadUnsignedLongLong(this->File);
+	  }
+	else
+	  {
+		memorySize = this->ReadUnsignedInt(this->File);
+	  }
+
     // Find next testcode
     while (this->ReadChar(this->File) != TestCode) {}
     unsigned int memDescrSize = this->ReadUnsignedInt(this->File) * 2;
@@ -573,17 +585,21 @@ int vtkLIFReader::ParseXMLHeader(const char *xmlHeader, unsigned long chars)
   vtkXMLDataParser *xmlDataParser = vtkXMLDataParser::New();
   xmlDataParser->InitializeParser();
   xmlDataParser->ParseChunk(xmlHeader,chars);
-  if (!xmlDataParser->CleanupParser()) {
+
+  if (!xmlDataParser->CleanupParser()) 
+	{
     vtkErrorMacro(<< "ParserXMLHeader: Couldn't parse XML.");
     return 0;
-  }
+	}
 
   vtkXMLDataElement *rootElement = xmlDataParser->GetRootElement();
-  if (!rootElement) {
+  if (!rootElement)
+	{
     vtkErrorMacro(<< "ParseXMLHeader: No root element found.");
     return 0;
-  }
+	}
 
+  rootElement->GetScalarAttribute("Version",this->LifVersion);
   return this->ParseInfoHeader(rootElement,1);
 }
 
@@ -591,81 +607,85 @@ int vtkLIFReader::ParseInfoHeader(vtkXMLDataElement *rootElement, int root)
 {
   vtkXMLDataElement *elementElement = rootElement;
   if (root)
-  {
+	{
     elementElement = rootElement->FindNestedElementWithName("Element");
-    if (!elementElement) {
+    if (!elementElement)
+	  {
       vtkErrorMacro(<< "ParseXMLHeader: No element Element found after root element.");
       return 0;
-    }
-  }
+	  }
+	}
 
   vtkXMLDataElement *elementData = elementElement->FindNestedElementWithName("Data");
   vtkXMLDataElement *elementImage = elementData->FindNestedElementWithName("Image");
   vtkXMLDataElement *elementMemory = elementElement->FindNestedElementWithName("Memory");
   vtkXMLDataElement *elementChildren = elementElement->FindNestedElementWithName("Children");
-  
+
   // If Image element found
   if (elementImage) 
-  {
+	{
     this->ReadImage(elementImage);
     // Check that image info is read correctly and then add image name
     if (Channels->size() > Images->size() || Dimensions->size() > Images->size())
       {
-	const char *imageName = elementElement->GetAttribute("Name");
-	Images->push_back(imageName);
+	  const char *imageName = elementElement->GetAttribute("Name");
+	  Images->push_back(imageName);
       }
-  }
+	}
 
   // If Children element found
-  if (elementChildren) {
+  if (elementChildren)
+	{
     int numOfChildElements = elementChildren->GetNumberOfNestedElements();
     vtkXMLDataElement *childIterator;
 
-    for (int i = 0; i < numOfChildElements; ++i) {
+    for (int i = 0; i < numOfChildElements; ++i)
+	  {
       childIterator = elementChildren->GetNestedElement(i);
       this->ParseInfoHeader(childIterator,0);
-    }
-  }
-  
+	  }
+	}
+
   return 1;
 }
 
 void vtkLIFReader::ReadImage(vtkXMLDataElement *elementImage)
 {
   vtkXMLDataElement *elementImageDescription = elementImage->FindNestedElementWithName("ImageDescription");
+
   if (elementImageDescription)
     {
-      vtkXMLDataElement *elementChannels = elementImageDescription->FindNestedElementWithName("Channels");
-      vtkXMLDataElement *elementDimensions = elementImageDescription->FindNestedElementWithName("Dimensions");
-      if (elementChannels && elementDimensions)
-	{
+    vtkXMLDataElement *elementChannels = elementImageDescription->FindNestedElementWithName("Channels");
+    vtkXMLDataElement *elementDimensions = elementImageDescription->FindNestedElementWithName("Dimensions");
+    if (elementChannels && elementDimensions)
+	  {
 	  ImageChannels *ImgChannels = new ImageChannels;
 	  ImageDimensions *ImgDimensions = new ImageDimensions;
 	  vtkXMLDataElement *Iterator;
-			
-          // Get info of channels
+
+	  // Get info of channels
 	  int channelCount = elementChannels->GetNumberOfNestedElements();
 	  for (int i = 0; i < channelCount; ++i)
-	    {
-	      ChannelData *Data = new ChannelData;
-	      Iterator = elementChannels->GetNestedElement(i);
-	      this->LoadChannelInfoToStruct(Iterator,Data);
-	      ImgChannels->push_back(Data);
-	    }
-			
-          // Get info of dimensions
+		{
+		ChannelData *Data = new ChannelData;
+		Iterator = elementChannels->GetNestedElement(i);
+		this->LoadChannelInfoToStruct(Iterator,Data);
+		ImgChannels->push_back(Data);
+		}
+
+	  // Get info of dimensions
 	  int dimensionCount = elementDimensions->GetNumberOfNestedElements();
 	  for (int i = 0; i < dimensionCount; ++i)
-	    {
-	      DimensionData *Data = new DimensionData;
-	      Iterator = elementDimensions->GetNestedElement(i);
-	      this->LoadDimensionInfoToStruct(Iterator,Data);
-	      ImgDimensions->push_back(Data);
-	    }
+		{
+		DimensionData *Data = new DimensionData;
+		Iterator = elementDimensions->GetNestedElement(i);
+		this->LoadDimensionInfoToStruct(Iterator,Data);
+		ImgDimensions->push_back(Data);
+		}
 			
 	  this->Channels->push_back(ImgChannels);
 	  this->Dimensions->push_back(ImgDimensions);
-	}
+	  }
     }
 }
 
@@ -683,7 +703,9 @@ void vtkLIFReader::LoadChannelInfoToStruct(vtkXMLDataElement *Element, ChannelDa
   Data->LUTName = Element->GetAttribute("LUTName");
   if (!Data->LUTName) Data->LUTName = "";
   Element->GetScalarAttribute("IsLUTInverted",Data->IsLUTInverted);
-  Element->GetScalarAttribute("BytesInc",Data->BytesInc);
+  // Bytes Inc is 64 bits in LIF version 2 but GetScalarAttribute only allows
+  // maximum of unsigned long which can be 32 bits.
+  Element->GetScalarAttribute("BytesInc",(unsigned long&)Data->BytesInc);
   Element->GetScalarAttribute("BitInc",Data->BitInc);
 }
 
@@ -695,9 +717,11 @@ void vtkLIFReader::LoadDimensionInfoToStruct(vtkXMLDataElement *Element, Dimensi
   Element->GetScalarAttribute("Length",Data->Length);
   Data->Unit = Element->GetAttribute("Unit");
   if (!Data->Unit) Data->Unit = "";
-  Element->GetScalarAttribute("BytesInc",Data->BytesInc);
+  // Bytes Inc is 64 bits in LIF version 2 but GetScalarAttribute only allows
+  // maximum of unsigned long which can be 32 bits.
+  Element->GetScalarAttribute("BytesInc",(unsigned long&)Data->BytesInc);
   Element->GetScalarAttribute("BitInc",Data->BitInc);
-} 
+}
 
 //int vtkLIFReader::IsValidLIFFile()
 //{
@@ -707,25 +731,11 @@ void vtkLIFReader::LoadDimensionInfoToStruct(vtkXMLDataElement *Element, Dimensi
 //{
 //}
 
-void vtkLIFReader::Clear()
+void vtkLIFReader::InitializeAttributes()
 {
-  if (this->File)
-    {
-    this->File->close();
-    delete this->File;
-    this->File = NULL;
-    delete [] this->FileName;
-    this->FileName = NULL;
-    this->FileSize = 0;
-    }
-
-// These deletes also every item in vectors
-  if (this->Channels) delete this->Channels;
-  if (this->Dimensions) delete this->Dimensions;
-  if (this->Images) delete this->Images;
-  if (this->Offsets) this->Offsets->Delete();
-  if (this->ImageSizes) this->ImageSizes->Delete();
-
+  this->File = NULL;
+  this->FileName = NULL;
+  this->FileSize = 0;
   this->Dimensions = NULL;
   this->Channels = NULL;
   this->Images = NULL;
@@ -735,6 +745,24 @@ void vtkLIFReader::Clear()
   this->CurrentImage = -1;
   this->CurrentChannel = -1;
   this->CurrentTimePoint = -1;
+  this->LifVersion = 0;
+}
+
+void vtkLIFReader::Clear()
+{
+  if (this->File)
+    {
+    this->File->close();
+    delete this->File;
+    delete [] this->FileName;
+    }
+
+// These deletes also every item in vectors
+  if (this->Channels) delete this->Channels;
+  if (this->Dimensions) delete this->Dimensions;
+  if (this->Images) delete this->Images;
+  if (this->Offsets) this->Offsets->Delete();
+  if (this->ImageSizes) this->ImageSizes->Delete();
 }
 
 int vtkLIFReader::RequestInformation(vtkInformation* vtkNotUsed(request),
@@ -947,6 +975,16 @@ unsigned int vtkLIFReader::ReadUnsignedInt(ifstream *ifs)
   vtkByteSwap::Swap4LE((unsigned int*)buffer);
  #endif
   return *((unsigned int*)(buffer));
+}
+
+unsigned long long vtkLIFReader::ReadUnsignedLongLong(ifstream *ifs)
+{
+  char buffer[8];
+  ifs->read(buffer,8);
+#ifdef VTK_WORDS_BIGENDIAN
+  vtkByteSwap::Swap8LE((unsigned long long*)buffer);
+#endif
+  return *((unsigned long long*)(buffer));
 }
 
 /**********************************************

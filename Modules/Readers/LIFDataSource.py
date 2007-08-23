@@ -120,8 +120,10 @@ class LIFDataSource(DataSource):
 		if raw:
 			return data
 
+		data = self.getResampledData(data, i)
+
 #        data = self.getIntensityScaledData(data)
-		return data	
+		return data
 
 	def getName(self):
 		"""

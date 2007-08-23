@@ -33,6 +33,7 @@
 #include "vtkBXDProcessingWin32Header.h"
 #include "vtkXMLDataElement.h"
 #include "vtkUnsignedIntArray.h"
+#include "vtkUnsignedLongLongArray.h"
 
 typedef struct ChannelData;
 typedef struct DimensionData;
@@ -50,6 +51,7 @@ const int DimIDX = 1;
 const int DimIDY = 2;
 const int DimIDZ = 3;
 const int DimIDT = 4;
+const int DimIDR = 6;
 
 class VTK_BXD_PROCESSING_EXPORT vtkLIFReader: public vtkImageAlgorithm
 {
@@ -117,8 +119,10 @@ class VTK_BXD_PROCESSING_EXPORT vtkLIFReader: public vtkImageAlgorithm
   char ReadChar(ifstream*);
   int ReadInt(ifstream*);
   unsigned int ReadUnsignedInt(ifstream*);
+  unsigned long long ReadUnsignedLongLong(ifstream*);
   void LoadChannelInfoToStruct(vtkXMLDataElement*, ChannelData*);
   void LoadDimensionInfoToStruct(vtkXMLDataElement*, DimensionData*);
+  void InitializeAttributes();
   void Clear();
   void CalculateExtentAndSpacingAndOrigin(int*, double*, double*);
 
@@ -145,9 +149,14 @@ class VTK_BXD_PROCESSING_EXPORT vtkLIFReader: public vtkImageAlgorithm
   ChannelVector *Channels;
   ImageVector *Images;
   vtkUnsignedIntArray *Offsets;
-  vtkUnsignedIntArray *ImageSizes;
+  vtkUnsignedLongLongArray *ImageSizes;
   int Dims[4];
   double Voxelss[3];
+  int LifVersion;
+
+ private: // Only define operator= and copy constructor to prevent illegal use
+  void operator=(const vtkLIFReader&);
+  vtkLIFReader(const vtkLIFReader&);
 };
 
 // Struct of channel data
@@ -162,7 +171,7 @@ struct ChannelData
   const char *Unit;
   const char *LUTName;
   int IsLUTInverted; // 0 Normal LUT, 1 Inverted Order
-  int BytesInc; // Distance from the first channel in Bytes
+  unsigned long long BytesInc; // Distance from the first channel in Bytes
   int BitInc;
 };
 
@@ -174,8 +183,8 @@ struct DimensionData
   double Origin; // Physical position of the first element (left pixel side)
   double Length; // Physical length from the first left pixel side to the last left pixel side
   const char *Unit; // Physical unit
-  int BytesInc; // Distance from the first channel in Bytes
+  unsigned long long BytesInc; // Distance from the first channel in Bytes
   int BitInc;
-  };
+};
 
 #endif
