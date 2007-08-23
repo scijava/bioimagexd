@@ -279,15 +279,15 @@ class TaskPanel(ScrolledPanel):
 	def createButtonBox(self):
 		"""
 		Created: KP
-		Description: create the buttons on the bottom of the panel
+		Description: create the buttons on the bottom of the	 panel
 		"""
 		self.buttonsSizer2 = wx.BoxSizer(wx.HORIZONTAL)
 
 		self.previewButton = wx.Button(self.buttonPanel, -1, "Apply")
 		self.previewButton.Bind(wx.EVT_BUTTON, self.doPreviewCallback)
-		self.buttonsSizer2.AddSpacer(5)
+		self.buttonsSizer2.Add(5,5,0)
 		self.buttonsSizer2.Add(self.previewButton, 1, wx.RIGHT | wx.TOP | wx.ALIGN_CENTER, 10)
-		self.buttonsSizer2.AddSpacer(5)
+		self.buttonsSizer2.Add(5,5,0)
 
 	def onHelp(self, evt):
 		"""
