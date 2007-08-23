@@ -272,14 +272,14 @@ class DimensionInfo(wx.Window):
 			font = wx.Font(9, wx.SWISS, wx.NORMAL, weight)
 		self.dc.SetTextForeground((0, 0, 0))
 		self.dc.SetFont(font)
-		txt = "%3d x %3d x %3d" % (self.currX, self.currY, self.currZ)
+		txt = "%d x %d x %d" % (self.currX, self.currY, self.currZ)
 		
 		self.dc.DrawText("Now:", 1, 0)
-		self.dc.DrawText(txt, 45, 0)
+		self.dc.DrawText(txt, 52, 0)
 		self.dc.SetTextForeground((80, 80, 80))
 		self.dc.DrawText("Original:", 1, 18)
-		txt = "%3d x %3d x %3d" % (self.origX, self.origY, self.origZ)
-		self.dc.DrawText(txt, 45, 18)
+		txt = "%d x %d x %d" % (self.origX, self.origY, self.origZ)
+		self.dc.DrawText(txt, 52, 18)
 		self.dc.EndDrawing()
 		self.dc.SelectObject(wx.NullBitmap)
 		self.dc = None	  
