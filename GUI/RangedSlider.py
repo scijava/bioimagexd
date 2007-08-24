@@ -50,7 +50,7 @@ class RangedSlider(wx.Slider):
 		Parameters:
 			numberOfPoints  The number of points the slider will in reality have
 		"""    
-		wx.Slider.__init__(self, parent, id, 0, 0, 0, **kws)
+		wx.Slider.__init__(self, parent, id, 0, 0, 1, **kws)
 		self.ranges = []
 		self.totalValues = numberOfPoints
 		self.SetRange(0, self.totalValues)        
