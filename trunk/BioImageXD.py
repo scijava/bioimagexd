@@ -32,26 +32,30 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 import sys
 import StringIO
-
 import os.path
 import os
-
-
 import getopt
 import platform
+# We need to import VTK here so that it is imported before wxpython.
+# if wxpython gets imported before vtk, the vtkExtTIFFReader will not read the olympus files
+# DO NOT ask me why that is!
+import vtk
+import wx
+import Configuration
+import scripting
+import Logging
+import glob
+import GUI.MainWindow
+import GUI.SplashScreen
 
 try:
 	import profile
 except ImportError:
 	profile = None
 
-import scripting
-
 todir = scripting.get_main_dir()
 if todir:
 	os.chdir(todir)
-
-
 
 if not todir:
 	todir = os.getcwd()
@@ -66,20 +70,15 @@ if platform.system()=="Windows":
 		path = path + os.path.pathsep + itklibdir
 		os.putenv("PATH", path)
 
-import Configuration
 # This will fix the VTK paths using either values from the
 # configuration file, or sensible defaults
 
 conffile = os.path.join(scripting.get_config_dir(), "BioImageXD.ini")
 conf = Configuration.Configuration(conffile)
 
-# We need to import VTK here so that it is imported before wxpython.
-# if wxpython gets imported before vtk, the vtkExtTIFFReader will not read the olympus files
-# DO NOT ask me why that is!
-#import vtkbxd
-import vtk
 w = vtk.vtkOutputWindow()
 i = w.GetInstance()
+
 def onWarning(obj, evt, *args):
 	"""
 	Created: Unknown date, KP
@@ -90,18 +89,12 @@ def onWarning(obj, evt, *args):
 
 w.AddObserver("WarningEvent", onWarning)
 w.AddObserver("ErrorEvent", onWarning)
-import Logging
-import glob
-import GUI.MainWindow
-import GUI.SplashScreen
-import wx
 
 class LSMApplication(wx.App):
 	"""
 	Created: 03.11.2004, KP
 	Description: Encapsulates the wxPython initialization and mainwindow creation
 	"""
-
 	def OnInit(self):
 		"""
 		Created: 10.1.2005, KP
@@ -109,26 +102,24 @@ class LSMApplication(wx.App):
 		"""
 		self.SetAppName("BioImageXD")
 		iconpath = scripting.get_icon_dir()
-		
+
 		splashimage = os.path.join(iconpath, "splash2.jpg")
 		self.splash = GUI.SplashScreen.SplashScreen(None, duration = 99000, bitmapfile = splashimage)
 		self.splash.Show()
 		self.splash.SetMessage("Loading BioImageXD...")
 		provider = wx.SimpleHelpProvider()
 		wx.HelpProvider_Set(provider)
-		
+
 		self.mainwin = GUI.MainWindow.MainWindow(None, -1, self, self.splash)
-		self.mainwin.config = wx.Config("BioImageXD", style = wx.CONFIG_USE_LOCAL_FILE)		   
-		
+		self.mainwin.config = wx.Config("BioImageXD", style = wx.CONFIG_USE_LOCAL_FILE)
 		scripting.app = self
 		scripting.mainWindow = self.mainwin
-		
+
 		self.mainwin.Show(True)
 		self.SetTopWindow(self.mainwin)
-		
-	
+
 		return True
-		
+
 	def macOpenFile(self, filename):
 		"""
 		Created: 14.03.2007, KP
@@ -143,12 +134,11 @@ class LSMApplication(wx.App):
 		"""
 		if files:
 			self.mainwin.loadFiles(files)
-		
+
 		if scriptfile:
 			self.splash.SetMessage("Loading script file %s..."%scriptfile)
 			self.mainwin.loadScript(scriptfile)
 		self.MainLoop()
-
 
 def usage():
 	"""
@@ -165,9 +155,8 @@ def usage():
 	print "-l | --logfile\tLog all messages to given file"
 	print "-p | --profile\tProfile the execution of the program"
 	print "-P | --interpret\tInterpret the results of the profiling"
-	
+
 	sys.exit(2)
-	
 
 if __name__ == '__main__':
 	if "py2exe" in sys.argv or "py2app" in sys.argv:
@@ -216,7 +205,7 @@ if __name__ == '__main__':
 			import time
 			if not logfile:
 				logfile = time.strftime("output_%d.%m.%y@%H%M.log")
-				
+
 				logdir = scripting.get_log_dir()
 				if not os.path.exists(logdir):
 					os.mkdir(logdir)
@@ -235,7 +224,7 @@ if __name__ == '__main__':
 			conf.setConfigItem("LastLogFile", "General", logfile)
 			import atexit
 			atexit.register(logFiles.flush)
-			sys.stdout = logFiles 
+			sys.stdout = logFiles
 			sys.stderr = logFiles
 			Logging.outfile = logFiles
 			Logging.enableFull()
@@ -245,7 +234,6 @@ if __name__ == '__main__':
 			sys.stderr = logFiles
 			Logging.outfile = logFiles
 
-		
 		if doInterpret:
 			import pstats
 			p = pstats.Stats('prof.log')
