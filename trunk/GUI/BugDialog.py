@@ -139,7 +139,7 @@ software will be attached to the report to aid the developers in solving the err
 		self.okButton.SetDefault()
 		btnSizer = wx.BoxSizer(wx.HORIZONTAL)
 		btnSizer.Add(self.okButton, wx.ALIGN_RIGHT|wx.LEFT|wx.RIGHT, border = 10)
-		btnSizer.AddSpacer(10, 10, 0)
+		btnSizer.AddSpacer((10,10))
 		btnSizer.Add(self.cancelButton, wx.ALIGN_RIGHT|wx.LEFT|wx.RIGHT, border = 10)
 		self.sizer.Add(btnSizer, (4, 1), flag = wx.ALIGN_RIGHT)
 
