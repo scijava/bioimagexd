@@ -115,18 +115,10 @@ class UrmasControl:
 					 pickling
 		"""    
 		self.clearGUI()
-#        print "\nAfter clearing myself: ",self,"\n"
-
 		p = UrmasPersist.UrmasPersist(self)
 		p.depersist(filename)
 		self.updateLayouts()
-		#self.window.sizer.Fit(self.window)
-		# Assimilate the loaded object's dict
-#        self.timeline.__dict__.update(ctrl.timeline.__dict__)
-#        del ctrl.timeline
-#        self.__dict__.update(ctrl.__dict__)
-#        print "\nDepersisted ",self,"\n"
-		#self.updateGUI()
+
 		
 	def clearGUI(self):
 		"""
@@ -140,7 +132,6 @@ class UrmasControl:
 		Created: 06.04.2005, KP
 		Description: Update the GUI to match the data structures
 		"""    
-		#print "updateGUI frames=%d duration=%d"%(self.frames,self.duration)
 		self.__set_pure_state__(self)
 		self.updateLayouts()
 		
@@ -230,19 +221,12 @@ class UrmasControl:
 		self.renderingInterface.setDataUnit(dataunit)
 		self.renderingInterface.setVisualizer(self.visualizer)
 		self.timelinePanel.setDataUnit(dataunit)
-		#n=10*self.dataUnit.getNumberOfTimepoints()
-		#self.timelineConfig.setFrames(n)
-		#self.timelineConfig.setDuration(n/2)
-		
-		#self.timeline.addTrack("Timepoint",self.dataUnit.getNumberOfTimepoints())
+
 		self.configureTimeline(self.duration, self.frames)
 		self.updateGUI()
 		self.updateLayouts()
-		#self.animator.animator.initData()
 		data = self.renderingInterface.getCurrentData()
-#        print "updating spline editor with ",data
 		ctf = self.renderingInterface.getColorTransferFunction()
-#        print "ctf=",ctf
 		
 		self.splineEditor.updateData(data, ctf)
 		
@@ -258,8 +242,7 @@ class UrmasControl:
 		"""    
 		if self.timeline:
 			self.timeline.Layout()
-		#if self.timelineConfig:
-		#    self.timelineConfig.Layout()
+
 		if self.timelinePanel:
 			self.timelinePanel.Layout()
 		if self.window:
