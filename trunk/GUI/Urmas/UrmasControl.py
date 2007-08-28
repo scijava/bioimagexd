@@ -79,7 +79,7 @@ class UrmasControl:
 			 self.splineEditor.updateData(data,ctf)
 			 self.splineEditor.initCamera()
 			 self.splineEditor.render()
--			 self.initSplineEditor = True
+			 self.initSplineEditor = True
 
 	def setFrameSize(self, x, y):
 		"""
