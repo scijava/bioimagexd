@@ -106,7 +106,7 @@ class ParticleReader:
 				timePoint = int(line[0].split(" ")[1])
 				#print "Current timepoint = ", timePoint
 				if curr:
-					ret.append(curr) #TODO: the last line is ignored as in TrackReader
+					ret.append(curr)
 				curr = []
 				self.timepoint = timePoint
 				skipNext = 1
@@ -126,7 +126,7 @@ class ParticleReader:
 			#umcog = map(float, umcog[1:-1].split(", "))
 			#umcog = eval(umcog)
 			avgint = float(avgint)			  
-			if size >= self.filterObjectSize and obj != 0: #TODO: why is obj == 0 not accepted?
+			if size >= self.filterObjectSize and obj != 0: 
 				particle = Particle(umcog, cog, self.timepoint, size, avgint, obj)
 				curr.append(particle)
 			if self.timepoint == statsTimepoint:
@@ -134,7 +134,8 @@ class ParticleReader:
 				self.cogs.append((int(cog[0]), int(cog[1]), int(cog[2])))
 				self.volumes.append((size, sizemicro))
 				self.avgints.append(avgint)
-		if curr: ret.append(curr)
+		if curr:
+			ret.append(curr)
 		return ret
 
 class Particle:
