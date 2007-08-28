@@ -136,7 +136,7 @@ class Track:
 		Description: Return the object value and position at timepoint t
 		"""
 		if timePoint not in self.points:
-			return - 1, (-1, -1, -1)
+			return -1, (-1, -1, -1)
 		return self.values[timePoint], self.points[timePoint]
 
 
@@ -187,8 +187,8 @@ class TrackReader:
 		Description: Return the maximum length of a track
 		"""			  
 		if self.maxLength <= 0:
-			for i in self.tracks:
-				trackLength = len(i)
+			for track in self.tracks:
+				trackLength = len(track)
 				if trackLength > self.maxLength:
 					self.maxLength = trackLength
 		
