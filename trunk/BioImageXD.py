@@ -35,6 +35,7 @@ import StringIO
 import os.path
 import os
 import getopt
+import codecs
 import platform
 # We need to import VTK here so that it is imported before wxpython.
 # if wxpython gets imported before vtk, the vtkExtTIFFReader will not read the olympus files
@@ -210,10 +211,10 @@ if __name__ == '__main__':
 				if not os.path.exists(logdir):
 					os.mkdir(logdir)
 				logfile = os.path.join(logdir, logfile)
-			timestampedLogfile = open(logfile, "w")
+			timestampedLogfile = codecs.open(logfile, "w","utf-8")
 			if logdir:
 				logfile2 = os.path.join(logdir, "latest.log")
-				latestLogfile = open(logfile2, "w")
+				latestLogfile = codecs.open(logfile2, "w","utf-8")
 				logFiles = Logging.Tee(timestampedLogfile, latestLogfile, captureOutput)
 			clean = eval(conf.getConfigItem("CleanExit", "General"))
 			if not clean:
@@ -229,7 +230,7 @@ if __name__ == '__main__':
 			Logging.outfile = logFiles
 			Logging.enableFull()
 		else:
-			logFiles = Logging.Tee(sys.stdout, captureOutput)
+			logFiles = Logging.Tee("encode", sys.stdout, captureOutput)
 			sys.stdout = logFiles
 			sys.stderr = logFiles
 			Logging.outfile = logFiles
