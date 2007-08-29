@@ -69,16 +69,12 @@ import wx
 class MainWindow(wx.Frame):
 	"""
 	Created: 03.11.2004, KP
-	Description: The main window for the LSM module
+	Description: The main window of the BioImageXD software
 	"""
 	def __init__(self, parent, id, app, splash):
 		"""
 		Created: 03.11.2004, KP
 		Description: Initialization
-		Parameters:
-			parent
-			id
-			app		LSMApplication object
 		"""
 		conf = Configuration.getConfiguration()
 		
@@ -104,6 +100,8 @@ class MainWindow(wx.Frame):
 		self.progressObject = None
 		self.filehistory = wx.FileHistory()
 		self.commands = {}
+		
+		self.defaultModeName = "slices"
 		
 		self.tasks = {}
 		self.help = None
@@ -192,7 +190,6 @@ class MainWindow(wx.Frame):
 		self.visWin.SetAlignment(wx.LAYOUT_LEFT)
 		self.visWin.SetSashVisible(wx.SASH_RIGHT, False)
 		self.visWin.SetDefaultSize((500, 768))
-		#self.visWin = wx.Panel(self, -1, size = (500, 768))
 		
 		# A window for the task panels
 		self.taskWin = wx.SashLayoutWindow(self, MenuManager.ID_TASK_WIN, style = wx.RAISED_BORDER | wx.SW_3D)
@@ -217,14 +214,12 @@ class MainWindow(wx.Frame):
 		self.infoWin.SetSashBorder(wx.SASH_LEFT, True)
 		self.infoWin.SetDefaultSize((300, 768))
 		self.infoWin.origSize = (300, 768)
-		#self.taskWin = wx.Panel(self, -1, size = (0, 768))
 		
 		self.infoWidget = InfoWidget.InfoWidget(self.infoWin)
 		
 		self.shellWin = wx.SashLayoutWindow(self, MenuManager.ID_SHELL_WIN, style = wx.NO_BORDER)
 		self.shellWin.SetOrientation(wx.LAYOUT_HORIZONTAL)
 		self.shellWin.SetAlignment(wx.LAYOUT_BOTTOM)
-		#self.shellWin.SetSashVisible(wx.SASH_TOP, False)
 		self.shellWin.origSize = (500, 128)
 		self.shellWin.SetDefaultSize((0, 0))
 		self.shell = None
@@ -257,7 +252,7 @@ class MainWindow(wx.Frame):
 		self.fileTree = self.tree
 		
 		self.splash.SetMessage("Loading default visualization mode...")
-		self.loadVisualizer("slices", init = 1)
+		self.loadVisualizer(self.defaultModeName, init = 1)
 		
 		self.onMenuShowTree(None, 1)
 		try:
@@ -620,11 +615,11 @@ class MainWindow(wx.Frame):
 		if allow_gui:
 			if self.visualizer:
 				self.visualizer.in_vtk = 0
-			wx.GetApp().Yield(1)
+			#wx.GetApp().Yield(1)
 		else:
 			if self.visualizer:
 				self.visualizer.in_vtk = 1
-			wx.SafeYield(None, 1)
+			#wx.SafeYield(None, 1)
 			
 	def updateVoxelInfo(self, obj, event, x, y, z, scalar, rval, gval, bval, r, g, b, a, ctf):
 		"""
@@ -729,6 +724,8 @@ class MainWindow(wx.Frame):
 			# return None as their icon name
 			if not iconName:
 				continue
+			if module.isDefaultMode():
+				self.defaultModeName = name
 			bmp = wx.Image(os.path.join(iconpath, iconName)).ConvertToBitmap()
 			vid = self.visToId[name] 
 			
@@ -1096,8 +1093,6 @@ class MainWindow(wx.Frame):
 			self.infoWin.SetDefaultSize(self.infoWin.origSize)
 
 		self.onMenuShowTree(status)
-#		self.OnSize(None)
-#		self.visualizer.OnSize(None)
 
 	def onMenuResampleData(self, evt):
 		"""
@@ -1386,7 +1381,7 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 					Logging.info("Closing on reload: ", self.visualizer.currMode.closeOnReload())
 					if self.visualizer.currMode.closeOnReload():
 						# close the mode
-						self.loadVisualizer("slices")
+						self.loadVisualizer(self.defaultModeName)
 						return
 			self.visualizer.setVisualizationMode(mode)
 			lib.messenger.send(None, "update_progress", 0.3, "Loading %s view..." % mode)
@@ -1743,8 +1738,6 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 				self.setButtonSelection(taskid)
 				break
 
-#        self.setButtonSelection(event.GetId())
-
 		# If visualizer has not been loaded, load it now
 		# This is a high time to have a visualization loaded
 		self.progressCoeff = 0.5
@@ -1752,7 +1745,7 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 		self.visualizer.enable(1)
 		if not self.visualizer:
 			Logging.info("Loading slices view for ", unit, kw = "task")
-			self.loadVisualizer("slices", 1, dataunit = unit)
+			self.loadVisualizer(self.defaultModeName, 1, dataunit = unit)
 			self.setButtonSelection(MenuManager.ID_VIS_SLICES)
 
 		else:

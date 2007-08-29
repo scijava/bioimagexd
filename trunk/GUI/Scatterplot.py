@@ -390,7 +390,6 @@ class Scatterplot(InteractivePanel.InteractivePanel):
 		self.renew = 1
 		self.updatePreview()
 
-		#self.Refresh()
 		self.actionstart = None
 		self.actionend = None
 		self.mode = (0, 0)

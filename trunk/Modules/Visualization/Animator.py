@@ -37,27 +37,59 @@ from Visualizer.VisualizationMode import VisualizationMode
 import wx
 
 def getName():
+	"""
+	Created: KP
+	Description:Return the name of this visualization mode (used to identify mode internally)
+	"""
 	return "animator"
 
 def getDesc():
+	"""
+	Created: KP
+	Description: return a description (used as tooltips etc.) of this visualization mode
+	"""
 	return "Create an animation showing the dataset with the Animator"
 
 def getShortDesc():
+	"""
+	Created: KP
+	Description: return a short description (used as menu items etc.) of this visualization mode
+	"""
 	return "Animator"
 
 def getIcon():
+	"""
+	Created: KP
+	Description: return the icon name for this visualization mode
+	"""
 	return "task_animator.jpg"
 
 def isDefaultMode():
+	"""
+	Created: KP
+	Description: Return a boolean indicating whether this mode should be used as the default visualization mode
+	"""
 	return 0
 
 def showInfoWindow():
+	"""
+	Created: KP
+	Description: Return a boolean indicating whether the info window should be kept visible when this mode is loaded
+	"""
 	return 0
 
 def showFileTree():
+	"""
+	Created: KP
+	Description: Return a boolean indicating whether the file tree should be kept visible when this mode is loaded
+	"""
 	return 0    
 
 def showSeparator():
+	"""
+	Created: KP
+	Description: return two boolean values indicating whether to place toolbar separator before or after this icon
+	"""
 	return (1, 0)
 	
 # We want to be in the far right
@@ -65,18 +97,41 @@ def getToolbarPos():
 	return 999
 	
 def getClass():
+	"""
+	Created: KP
+	Description: return the class that is instantiated as the actual visualization mode
+	"""
 	return AnimatorMode
 
 def getConfigPanel():
+	"""
+	Created: KP
+	Description: return the class that is instantiated as the configuration panel for the mode
+	"""
 	return None
 
 def getImmediateRendering():
+	"""
+	Created: KP
+	Description: Return a boolean indicating whether this mode should in general update it's 
+				 rendering after each and every change to a configuration affecting the rendering
+	"""
+
 	return False
 
 def getRenderingDelay():
+	"""
+	Created: KP
+	Description: return a value in milliseconds that is the minimum delay between two rendering events being sent
+				 to this visualization mode. In general, the smaller the value, the faster the rendering should be
+	"""
 	return 10000
 
 def showZoomToolbar():
+	"""
+	Created: KP
+	Description: return a boolean indicating whether the visualizer toolbars (zoom, annotation) should be visible 
+	"""
 	return False
 
 class AnimatorMode(VisualizationMode):

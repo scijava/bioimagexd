@@ -32,6 +32,7 @@ __version__ = "$Revision: 1.22 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 import ConfigParser
+import codecs
 import Logging
 import platform
 import scripting
@@ -74,11 +75,12 @@ class Configuration:
 		self.installPath = os.getcwd()
 		self.parser = ConfigParser.ConfigParser()
 		cfgfile = self.getPath(configFile)
+		fp = codecs.open(cfgfile, "r","utf-8")
 		self.configFile = cfgfile
-		self.parser.read([cfgfile])    
+		self.parser.readfp(fp, cfgfile)    
 	
 		# Set the initial values
-		#vtkpath=self.getPath(["Libraries","VTK"])
+
 		if platform.system() == "Windows":
 			vtkpath = self.getPath(["C:\\VTK-build"])
 		else:
@@ -137,7 +139,7 @@ class Configuration:
  		Created: 12.03.2005, KP
  		Description: A method to write out the settings
  		""" 	
-		filePointer = open(self.configFile, "w")
+		filePointer = codecs.open(self.configFile, "w","utf-8")
 		self.parser.write(filePointer)
 		filePointer.close()
 

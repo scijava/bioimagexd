@@ -107,9 +107,8 @@ class Colocalization(Module):
 		Logging.info("Doing ", self.depth, "-bit colocalization", kw = "processing")
 		self.colocFilter.SetOutputDepth(self.depth)
 
-		for i in self.images:
-			i.Update()
-			print i
+#		for i in self.images:
+#			i.Update()
 		print [x.GetScalarRange()[1] for x in self.images]
 		maxval = int(max([x.GetScalarRange()[1] for x in self.images]))
 		Logging.info("Maximum value = %d"%maxval, kw="processing") 
@@ -196,9 +195,9 @@ class Colocalization(Module):
 
 			self.colocFilter.SetColocalizationLowerThreshold(i, int(self.thresholds[i][0]))
 			self.colocFilter.SetColocalizationUpperThreshold(i, int(self.thresholds[i][1]))
-
-
+			
 		data = self.colocFilter.GetOutput()
-		lib.messenger.send(None, "update_progress", 100, "Done.")
+		Logging.info("Colocalization done", kw="processing")
+		lib.messenger.send(None, "update_progress", 1.0, "Done.")
 		
 		return data

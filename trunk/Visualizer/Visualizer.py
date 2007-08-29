@@ -86,7 +86,6 @@ class Visualizer:
 		self.tb1 = None
 		self.tb = None
 		self.z = 0
-		self.PitchStep, self.YawStep, self.RollStep, self.ElevationStep = 2, 2, 2, 5
 		self.viewCombo = None
 		self.histogramIsShowing = 0
 		self.blockTpUpdate = 0
@@ -598,14 +597,7 @@ class Visualizer:
 		self.dimInfo = GUI.UIElements.DimensionInfo(self.tb, -1, size = (160, 50))
 		self.tb.AddControl(self.dimInfo)
 
-		self.pitch.Bind(wx.EVT_SPIN_UP, self.onPitchUp)
-		self.pitch.Bind(wx.EVT_SPIN_DOWN, self.onPitchDown)
-		self.yaw.Bind(wx.EVT_SPIN_UP, self.onYawUp)
-		self.yaw.Bind(wx.EVT_SPIN_DOWN, self.onYawDown)
-		self.roll.Bind(wx.EVT_SPIN_UP, self.onRollUp)
-		self.roll.Bind(wx.EVT_SPIN_DOWN, self.onRollDown)
-		self.elevation.Bind(wx.EVT_SPIN_UP, self.onElevationUp)
-		self.elevation.Bind(wx.EVT_SPIN_DOWN, self.onElevationDown)
+
 
 		wx.EVT_TOOL(self.parent, GUI.MenuManager.ID_ZOOM_IN, self.zoomIn)
 		wx.EVT_TOOL(self.parent, GUI.MenuManager.ID_ZOOM_OUT, self.zoomOut)
@@ -636,46 +628,6 @@ class Visualizer:
 		if hasattr(self.currentWindow, "getRegionsOfInterest"):
 			return self.currentWindow.getRegionsOfInterest()
 		return []
-
-	def onElevationUp(self, evt):
-		if self.mode == "3d":
-			self.currMode.getRenderer().GetActiveCamera().Elevation(self.ElevationStep)
-			self.currMode.Render()
-
-	def onElevationDown(self, evt):
-		if self.mode == "3d":
-			self.currMode.getRenderer().GetActiveCamera().Elevation(-self.ElevationStep)
-			self.currMode.Render()
-
-	def onPitchUp(self, evt):
-		if self.mode == "3d":
-			self.currMode.getRenderer().GetActiveCamera().Pitch(self.PitchStep)
-			self.currMode.Render()
-
-	def onPitchDown(self, evt):
-		if self.mode == "3d":
-			self.currMode.getRenderer().GetActiveCamera().Pitch(-self.PitchStep)
-			self.currMode.Render()
-
-	def onRollUp(self, evt):
-		if self.mode == "3d":
-			self.currMode.getRenderer().GetActiveCamera().Roll(self.RollStep)
-			self.currMode.Render()
-
-	def onRollDown(self, evt):
-		if self.mode == "3d":
-			self.currMode.getRenderer().GetActiveCamera().Roll(-self.RollStep)
-			self.currMode.Render()
-
-	def onYawUp(self, evt):
-		if self.mode == "3d":
-			self.currMode.getRenderer().GetActiveCamera().Yaw(self.YawStep)
-			self.currMode.Render()
-
-	def onYawDown(self, evt):
-		if self.mode == "3d":
-			self.currMode.getRenderer().GetActiveCamera().Yaw(-self.YawStep)
-			self.currMode.Render()
 
 	def onShowOriginal(self, evt, flag = 1):
 		"""
@@ -1206,7 +1158,6 @@ class Visualizer:
 			self.zsliderWin.SetDefaultSize(self.zsliderWin.origSize)
 		showItems = 0
 
-		print "FOO"
 		if self.processedMode:
 			numberOfDataUnits = len(dataunit.getSourceDataUnits())
 			if numberOfDataUnits > 1:
@@ -1223,17 +1174,6 @@ class Visualizer:
 		if self.histogramIsShowing:
 			Logging.info("Updating histogram",kw="visualizer")
 			self.createHistogram()
-
-#		if self.currMode:
-#			Logging.info("Adjusting zoom factor", kw="visualizer")
-#			if self.zoomToFitFlag:
-#				self.currMode.zoomToFit()
-#			else:
-#				self.currMode.setZoomFactor(self.zoomFactor)
-#				scripting.zoomFactor = self.zoomFactor
-
-
-
 		self.OnSize(None)
 
 	def setupMode(self):
@@ -1245,11 +1185,13 @@ class Visualizer:
 		self.currMode.setDataUnit(self.dataUnit)
 		self.currMode.setTimepoint(self.timepoint)
 		if self.zoomToFitFlag:
+			Logging.info("Will zoom to fit", kw="visualizer")
 			self.currMode.zoomToFit()
 		else:
 			self.currMode.setZoomFactor(self.zoomFactor)
 			scripting.zoomFactor = self.zoomFactor
-
+		self.currMode.Render()
+		
 	def setImmediateRender(self, flag):
 		"""
 		Created: 14.02.2006, KP
