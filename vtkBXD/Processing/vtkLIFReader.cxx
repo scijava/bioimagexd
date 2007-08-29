@@ -69,15 +69,6 @@ vtkLIFReader::~vtkLIFReader()
   this->Clear();
 }
 
-//const char* vtkLIFReader::GetClassName()
-//{
-//  return "";
-//}
-
-//int vtkLIFReader::isA(const char* )
-//{
-//}
-
 void vtkLIFReader::PrintSelf(ostream& os, vtkIndent indent)
 {
   this->Superclass::PrintSelf(os,indent);
@@ -266,6 +257,8 @@ int vtkLIFReader::SetCurrentChannel(int channel)
       channel < this->GetChannelCount(this->CurrentImage))
     {
       this->CurrentChannel = channel;
+	  this->SetImageDimensions();
+	  this->SetImageVoxelSizes();
       return 1;
     }
 
@@ -285,7 +278,7 @@ void vtkLIFReader::SetCurrentImageAndChannel(int image, int channel)
 int vtkLIFReader::SetCurrentTimePoint(int i)
 {
   this->Modified();
-  if (this->CurrentImage >= 0 && i >= 0 && i < this->GetImageDimensions(this->CurrentImage)[3])
+  if (this->CurrentImage >= 0 && i >= 0 && i < this->GetImageDims()[3])
     {
       this->CurrentTimePoint = i;
       return 1;
@@ -334,111 +327,73 @@ int vtkLIFReader::GetImageSlicePixelCount()
   return this->GetImageSlicePixelCount(this->CurrentImage);
 }
 
-//double* vtkLIFReader::GetImageVoxelSizes(int image)
-int vtkLIFReader::SetImageVoxelSizes(int image)
+int vtkLIFReader::SetImageVoxelSizes()
 {
-  double *voxelSizes = new double[3];
-  voxelSizes[0] = voxelSizes[1] = voxelSizes[2] = 0.0;
-  this->Voxelss[0] = this->Voxelss[1] = this->Voxelss[2] = 0.0;
+  this->Modified();
+  this->ImageVoxels[0] = this->ImageVoxels[1] = this->ImageVoxels[2] = 0.0;
 
-  if (image < 0 || image >= this->Dimensions->size()) return 0; //voxelSizes;
+  if (this->CurrentImage < 0 || this->CurrentImage >= this->Dimensions->size())
+	return 0;
 
-  for (ImageDimensionsTypeBase::const_iterator dimIter = this->Dimensions->at(image)->begin();
-       dimIter != this->Dimensions->at(image)->end(); dimIter++)
+  for (ImageDimensionsTypeBase::const_iterator dimIter = this->Dimensions->at(this->CurrentImage)->begin();
+       dimIter != this->Dimensions->at(this->CurrentImage)->end(); dimIter++)
     {
-      if ((*dimIter)->DimID == DimIDX)
+    if ((*dimIter)->DimID == DimIDX)
+	  {
+	  if (strcmp((*dimIter)->Unit,"m") == 0 || strcmp((*dimIter)->Unit,"M") == 0 ||
+		  strcmp((*dimIter)->Unit,"") == 0)
 		{
-		  if (strcmp((*dimIter)->Unit,"m") == 0 || strcmp((*dimIter)->Unit,"M") == 0 ||
-			  strcmp((*dimIter)->Unit,"") == 0)
-			{
-			  voxelSizes[0] = (*dimIter)->Length / (*dimIter)->NumberOfElements;
-			  this->Voxelss[0] = fabs(voxelSizes[0]); // Remove this when pointer can be returned
-			}
+		  this->ImageVoxels[0] = fabs((*dimIter)->Length / (*dimIter)->NumberOfElements);
 		}
+	  }
       else if ((*dimIter)->DimID == DimIDY)
 		{
-		  if (strcmp((*dimIter)->Unit,"m") == 0 || strcmp((*dimIter)->Unit,"M") == 0 ||
-			  strcmp((*dimIter)->Unit,"") == 0)
-			{
-			  voxelSizes[1] = (*dimIter)->Length / (*dimIter)->NumberOfElements;
-			  this->Voxelss[1] = fabs(voxelSizes[1]); // Remove this when pointer can be returned
-			}
+		if (strcmp((*dimIter)->Unit,"m") == 0 || strcmp((*dimIter)->Unit,"M") == 0 ||
+			strcmp((*dimIter)->Unit,"") == 0)
+		  {
+			this->ImageVoxels[1] = fabs((*dimIter)->Length / (*dimIter)->NumberOfElements);
+		  }
 		}
       else if ((*dimIter)->DimID == DimIDZ)
 		{
-		  if (strcmp((*dimIter)->Unit,"m") == 0 || strcmp((*dimIter)->Unit,"M") == 0 ||
-			  strcmp((*dimIter)->Unit,"") == 0)
-			{
-			  voxelSizes[2] = (*dimIter)->Length / (*dimIter)->NumberOfElements;
-			  this->Voxelss[2] = fabs(voxelSizes[2]); // Remove this when pointer can be returned
-			}
+		if (strcmp((*dimIter)->Unit,"m") == 0 || strcmp((*dimIter)->Unit,"M") == 0 ||
+			strcmp((*dimIter)->Unit,"") == 0)
+		  {
+			this->ImageVoxels[2] = fabs((*dimIter)->Length / (*dimIter)->NumberOfElements);
+		  }
 		}
     }
 
-  //  return voxelSizes;
-  //  return this->GetVoxelss();
   return 1;
 }
 
-//double* vtkLIFReader::GetImageVoxelSizes()
-int vtkLIFReader::SetImageVoxelSizes()
+int vtkLIFReader::SetImageDimensions()
 {
-  return this->SetImageVoxelSizes(this->CurrentImage);
-}
+  this->Modified();
+  if (this->CurrentImage < 0 || this->CurrentImage >= this->Dimensions->size())
+	return 0;
 
-int* vtkLIFReader::GetImageDimensions(int image)
-{
-  static int imgDims[4];
-  imgDims[0] = imgDims[1] = imgDims[2] = imgDims[3] = 0;
-  if (image < 0 || image >= this->Dimensions->size()) return imgDims;
+  this->ImageDims[0] = this->ImageDims[1] = this->ImageDims[2] = this->ImageDims[3] = 0;
 
-  for (ImageDimensionsTypeBase::const_iterator dimIter = this->Dimensions->at(image)->begin();
-       dimIter != this->Dimensions->at(image)->end(); dimIter++)
+  for (ImageDimensionsTypeBase::const_iterator dimIter = this->Dimensions->at(this->CurrentImage)->begin();
+       dimIter != this->Dimensions->at(this->CurrentImage)->end(); dimIter++)
     {
-      if ((*dimIter)->DimID == DimIDX) imgDims[0] = (*dimIter)->NumberOfElements;
-      else if ((*dimIter)->DimID == DimIDY) imgDims[1] = (*dimIter)->NumberOfElements;
-      else if ((*dimIter)->DimID == DimIDZ) imgDims[2] = (*dimIter)->NumberOfElements;
-      else if ((*dimIter)->DimID == DimIDT) imgDims[3] = (*dimIter)->NumberOfElements;
-    }
-
-  return imgDims;
-}
-
-// This method is useless if only previous could work
-int vtkLIFReader::SetImageDimensions(int image)
-{
-  if (image < 0 || image >= this->Dimensions->size()) return 0;
-
-  this->Dims[0] = this->Dims[1] = this->Dims[2] = this->Dims[3] = 0;
-
-  for (ImageDimensionsTypeBase::const_iterator dimIter = this->Dimensions->at(image)->begin();
-       dimIter != this->Dimensions->at(image)->end(); dimIter++)
-    {
-      if ((*dimIter)->DimID == DimIDX) this->Dims[0] = (*dimIter)->NumberOfElements;
-      else if ((*dimIter)->DimID == DimIDY) this->Dims[1] = (*dimIter)->NumberOfElements;
-      else if ((*dimIter)->DimID == DimIDZ) this->Dims[2] = (*dimIter)->NumberOfElements;
-      else if ((*dimIter)->DimID == DimIDT) this->Dims[3] = (*dimIter)->NumberOfElements;
+    if ((*dimIter)->DimID == DimIDX) this->ImageDims[0] = (*dimIter)->NumberOfElements;
+	else if ((*dimIter)->DimID == DimIDY) this->ImageDims[1] = (*dimIter)->NumberOfElements;
+	else if ((*dimIter)->DimID == DimIDZ) this->ImageDims[2] = (*dimIter)->NumberOfElements;
+	else if ((*dimIter)->DimID == DimIDT) this->ImageDims[3] = (*dimIter)->NumberOfElements;
     }
 
   // If image has x and y components, then make sure that z component is at
   // least 1. This way we don't have 3D image with dimensions (x,y,0)
-  if (this->Dims[0] > 0 && this->Dims[1] > 0 && this->Dims[2] <= 0) this->Dims[2] = 1;
+  if (this->ImageDims[0] > 0 && this->ImageDims[1] > 0 && this->ImageDims[2] <= 0)
+	this->ImageDims[2] = 1;
   // If image has x and y components, then make sure that t component is at
   // least 1. This way we don't have 4D image with dimensions (x,y,z,0)
-  if (this->Dims[0] > 0 && this->Dims[1] > 0 && this->Dims[3] <= 0) this->Dims[3] = 1;
+  if (this->ImageDims[0] > 0 && this->ImageDims[1] > 0 && this->ImageDims[3] <= 0)
+	this->ImageDims[3] = 1;
 
   return 1;
-}
-
-int* vtkLIFReader::GetImageDimensions()
-{
-  return this->GetImageDimensions(this->CurrentImage);
-}
-
-// This method is useless if only previous could work
-int vtkLIFReader::SetImageDimensions()
-{
-  return this->SetImageDimensions(this->CurrentImage);
 }
 
 int vtkLIFReader::GetImageChannelResolution(int image, int channel)
@@ -646,6 +601,7 @@ int vtkLIFReader::ParseInfoHeader(vtkXMLDataElement *rootElement, int root)
 	  }
 	}
 
+  this->Modified();
   return 1;
 }
 
@@ -687,6 +643,7 @@ void vtkLIFReader::ReadImage(vtkXMLDataElement *elementImage)
 	  this->Dimensions->push_back(ImgDimensions);
 	  }
     }
+  this->Modified();
 }
 
 void vtkLIFReader::LoadChannelInfoToStruct(vtkXMLDataElement *Element, ChannelData *Data)
@@ -750,6 +707,7 @@ void vtkLIFReader::InitializeAttributes()
 
 void vtkLIFReader::Clear()
 {
+  this->Modified();
   if (this->File)
     {
     this->File->close();
