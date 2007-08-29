@@ -58,8 +58,6 @@ class VTK_BXD_PROCESSING_EXPORT vtkLIFReader: public vtkImageAlgorithm
  public:
   vtkTypeMacro(vtkLIFReader,vtkImageAlgorithm);
   static vtkLIFReader *New();
-  //virtual const char* GetClassName();
-  //  virtual int isA(const char*);
   virtual void PrintSelf(ostream&, vtkIndent);
   void SetFileName(const char*);
   int OpenFile();
@@ -82,14 +80,6 @@ class VTK_BXD_PROCESSING_EXPORT vtkLIFReader: public vtkImageAlgorithm
   unsigned int GetImageVoxelCount();
   int GetImageSlicePixelCount(int);
   int GetImageSlicePixelCount();
-  //  double* GetImageVoxelSizes(int);
-  //  double* GetImageVoxelSizes();
-  int SetImageVoxelSizes(int);
-  int SetImageVoxelSizes();
-  int* GetImageDimensions(int);
-  int* GetImageDimensions();
-  int SetImageDimensions(int);
-  int SetImageDimensions();
   int GetImageChannelResolution(int,int);
   int GetImageChannelResolution();
   const char* GetImageChannelLUTName(int,int);
@@ -99,8 +89,8 @@ class VTK_BXD_PROCESSING_EXPORT vtkLIFReader: public vtkImageAlgorithm
 
   vtkGetMacro(CurrentImage,int);
   vtkGetMacro(CurrentChannel,int);
-  vtkGetVectorMacro(Dims,int,4);
-  vtkGetVector3Macro(Voxelss,double);
+  vtkGetVectorMacro(ImageDims,int,4);
+  vtkGetVector3Macro(ImageVoxels,double);
   vtkGetStringMacro(FileName);
   //  int IsValidLIFFile();
   //  int GetNumberOfChannels();
@@ -125,6 +115,8 @@ class VTK_BXD_PROCESSING_EXPORT vtkLIFReader: public vtkImageAlgorithm
   void InitializeAttributes();
   void Clear();
   void CalculateExtentAndSpacingAndOrigin(int*, double*, double*);
+  int SetImageDimensions();
+  int SetImageVoxelSizes();
 
   // Pipeline methods
   int RequestInformation(vtkInformation* vtkNotUsed(request),
@@ -150,8 +142,8 @@ class VTK_BXD_PROCESSING_EXPORT vtkLIFReader: public vtkImageAlgorithm
   ImageVector *Images;
   vtkUnsignedIntArray *Offsets;
   vtkUnsignedLongLongArray *ImageSizes;
-  int Dims[4];
-  double Voxelss[3];
+  int ImageDims[4];
+  double ImageVoxels[3];
   int LifVersion;
 
  private: // Only define operator= and copy constructor to prevent illegal use

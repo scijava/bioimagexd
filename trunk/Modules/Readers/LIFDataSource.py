@@ -28,10 +28,12 @@ __version__ = "$Revision$"
 __date__ = "$Date$"
 
 from lib.DataSource.DataSource import DataSource
-import Logging
 from lib.DataUnit import DataUnit
+import Logging
+import scripting
 import vtkbxd
 import vtk
+import pdb
 def getExtensions(): return ["lif"]
 def getFileType(): return "Leica Image File Format (*.lif)"
 def getClass(): return LIFDataSource
@@ -49,6 +51,7 @@ class LIFDataSource(DataSource):
 		"""
 		DataSource.__init__(self)
 		self.filename = filename
+		self.setPath(filename);
 		# LIF file can contain multiple images with multiple channels.
 		# Define which image and channel is associated to this DataSource
 		self.imageNum = imageNum
@@ -143,9 +146,7 @@ class LIFDataSource(DataSource):
 					 dataunit contains
 		"""
 		if not self.dimensions:
-#			 self.dimensions = self.reader.GetImageDimensions(self.imageNum)
-			self.reader.SetImageDimensions(self.imageNum)
-			self.dimensions = self.reader.GetDims()
+			 self.dimensions = self.reader.GetImageDims()
 		return self.dimensions[0:3]
 
 	def loadFromFile(self, filename):
@@ -187,7 +188,6 @@ class LIFDataSource(DataSource):
 		Description: Returns normalized spacing between voxels
 		"""
 		if not self.spacing:
-#			 x,y,z = self.reader.GetImageVoxelSizes(self.imageNum)
 			x, y, z = self.getVoxelSize()
 			self.spacing = [1, y / x, z / x]
 		return self.spacing
@@ -198,9 +198,7 @@ class LIFDataSource(DataSource):
 		Description: Returns size of voxel as 3-tuple
 		"""
 		if not self.voxelSize:
-#			 self.voxelSize = self.reader.GetImagesVoxelSizes(self.imageNum)
-			self.reader.SetImageVoxelSizes(self.imageNum)
-			self.voxelSize = self.reader.GetVoxelss()
+			self.voxelSize = self.reader.GetImageVoxels()
 		return self.voxelSize
 
 	def getColorTransferFunction(self):
@@ -218,6 +216,9 @@ class LIFDataSource(DataSource):
 				r = 1
 			elif LUTName == "green":
 				g = 1
+			elif LUTName == "cyan":
+				g = 1
+				b = 1
 			else:
 				b = 1
 			
