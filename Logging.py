@@ -32,6 +32,7 @@ __date__ = "$Date: 2005/01/11 14:36:00 $"
 #import sys
 #import traceback
 
+import codecs
 import os.path
 import sys
 import wx
@@ -58,7 +59,14 @@ class Tee:
 	"""
 	def __init__(self, *optargs):
 		self._files = []
+		self._to_encode = []
+		encodeNext = 0
 		for arg in optargs:
+			if arg == "encode":
+				encodeNext = 1
+				continue
+			if encodeNext:
+				self._to_encode.append(arg)
 			self.addfile(arg)
 
 	def addfile(self, fileToAdd):
@@ -73,6 +81,8 @@ class Tee:
 
 	def write(self, string):
 		for eachfile in self._files:
+			if eachfile in self._to_encode:
+				string = codecs.encode(string, "ascii", "xmlcharrefreplace")
 			eachfile.write(string)
 
 	def writelines(self, lines):
@@ -187,7 +197,7 @@ def info(msg, *args, **kws):
 		argstring = " ".join([str(arg) for arg in args])
 		outfile.write("%s:%d: %s %s\n"%(fileName, lineno, msg, argstring))
 
-#@possibly_ignore
+#@possibly_ignore'
 def backtrace():
 	"""
 	Function: info
