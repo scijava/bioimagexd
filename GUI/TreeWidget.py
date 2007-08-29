@@ -46,16 +46,14 @@ class TreeWidget(wx.SashLayoutWindow):
 		Created: 10.01.2005, KP
 		Description: Initialization
 		"""        
-		#wx.Panel.__init__(self,parent,-1)
 		wx.SashLayoutWindow.__init__(self, parent, -1)
-		#self.sizer=wx.GridBagSizer()
-		#self.Bind(wx.EVT_SIZE,self.onSize)
 		self.treeId = wx.NewId()
 		self.parent = parent
 		self.tree = wx.TreeCtrl(self, self.treeId, style = wx.TR_HAS_BUTTONS | wx.TR_MULTIPLE)
 		self.multiSelect = 0
 		self.programmatic = 0
 		self.lastobj = None
+		self.ignore = 0
 		self.tree.Bind(wx.EVT_TREE_SEL_CHANGED, self.onSelectionChanged, id = self.tree.GetId())    
 		self.tree.Bind(wx.EVT_TREE_SEL_CHANGING, self.onSelectionChanging, id = self.tree.GetId())
 		self.tree.Bind(wx.EVT_TREE_ITEM_ACTIVATED, self.onActivateItem, id = self.tree.GetId())
@@ -102,15 +100,7 @@ class TreeWidget(wx.SashLayoutWindow):
 		self.tree.Bind(wx.EVT_MENU, self.onCloseDataset, id = self.ID_CLOSE_DATAUNIT)
 		self.Bind(wx.EVT_MENU, self.onCloseDataset, id = self.ID_CLOSE_DATAUNIT)
 		self.menu.AppendItem(item)
-		
-		#self.switchPanel=wx.Panel(self,-1,style=wx.RAISED_BORDER)
-#        self.switchBtn=wx.Button(self,-1,"Switch dataset")
-			
-		#self.sizer.Add(self.tree,(0,0),flag=wx.EXPAND|wx.ALL)
-#        self.sizer.Add(self.switchBtn,(1,0),flag=wx.EXPAND|wx.ALL)
-		#self.SetSizer(self.sizer)
-		#self.SetAutoLayout(1)
-		#self.sizer.Fit(self)
+
 			
 	def onRightClick(self, event):
 		"""
@@ -143,21 +133,20 @@ class TreeWidget(wx.SashLayoutWindow):
 			self.tree.Delete(parent)    
 		lib.messenger.send(None, "delete_dataset", obj)
 		obj.destroySelf()            
-		del obj        
+		del obj 
+		
 	def onCloseDataset(self, event):
 		"""
 		Created: 21.07.2005, KP
 		Description: Method to close a dataset
 		"""        
 		for item in self.tree.GetSelections():
-			#item=self.selectedItem
 			obj = self.tree.GetPyData(item)
 				
 			if obj in self.dataUnitToPath:
 				self.closeItem(item, obj)
 			elif obj == "2":
 				citem, cookie = self.tree.GetFirstChild(item)
-				
 				while citem.IsOk():
 					nitem = self.tree.GetNextSibling(citem)
 					cobj = self.tree.GetPyData(citem)
@@ -193,7 +182,6 @@ class TreeWidget(wx.SashLayoutWindow):
 		for i in selections:
 			parent = self.tree.GetItemParent(i)
 			data = self.tree.GetPyData(parent)
- 
 			if data == "2":
 				item, cookie = self.tree.GetFirstChild(parent)
 			else:
@@ -312,8 +300,6 @@ class TreeWidget(wx.SashLayoutWindow):
 			self.tree.Expand(item)            
 			item = self.tree.AppendItem(item, name)
 			self.tree.Expand(item)
-
-#            self.tree.Expand(item)
 			self.tree.SetPyData(item, "2")        
 			self.tree.SetItemImage(item, fldropenidx, which = wx.TreeItemIcon_Expanded)
 		
@@ -373,12 +359,9 @@ class TreeWidget(wx.SashLayoutWindow):
 			item = self.tree.AppendItem(item, name)
 			self.tree.Expand(item)
 
-#            self.tree.Expand(item)
 			self.tree.SetPyData(item, "2")        
 			self.tree.SetItemImage(item, fldropenidx, which = wx.TreeItemIcon_Expanded)
 
-			#item=self.bxdfiles
-			#self.tree.Expand(item)
 		elif objtype == "bxc":
 		
 		
@@ -473,9 +456,12 @@ class TreeWidget(wx.SashLayoutWindow):
 		Created: 25.1.2007, KP
 		Description: An event handler called before the selection changes
 		"""
+		if self.ignore:
+			event.Skip()
+			return
 		if not self.multiSelect and not self.programmatic:
 		    if platform.system() not in ["Darwin", "Linux"]: 
-			    self.tree.UnselectAll()            	
+			    self.tree.UnselectAll()
 		item = event.GetItem()
 		if not item.IsOk():
 			Logging.info("Item %s is not ok" % str(item), kw = "io")
@@ -487,20 +473,23 @@ class TreeWidget(wx.SashLayoutWindow):
 			event.Veto()
 			return
 		elif obj == "2":
+			print "Selceting children"
 			# Select it's children
+			self.ignore = 1
 			self.tree.UnselectItem(item)
 			citem, cookie = self.tree.GetFirstChild(item)
-				
 			while citem.IsOk():
-				self.tree.SelectItem(citem)
+				if not self.tree.IsSelected(citem):
+					self.tree.ToggleItemSelection(citem)
+				print "Selecting item",citem
 				citem = self.tree.GetNextSibling(citem)                                
 			event.Veto()
+			self.ignore = 0
 	def onKeyDown(self, event):
 		"""
 		Created: 25.1.2006, KP
 		Description: Akey event handler
 		"""
-		#keyevent = event.GetKeyEvent()
 		keyevent = event
 		if keyevent.ControlDown() or keyevent.ShiftDown():
 			
@@ -509,16 +498,13 @@ class TreeWidget(wx.SashLayoutWindow):
 			
 			self.multiSelect = 0
 		event.Skip()
+		
 	def onSelectionChanged(self, event = None):
 		"""
 		Created: 10.01.2005, KP
 		Description: A event handler called when user selects and item.
 		"""      
 		item = event.GetItem()
-	
-		
-		#items=self.tree.GetSelections()
-		#item=items[-1]
 		if not item.IsOk():
 			return
 		
@@ -536,7 +522,6 @@ class TreeWidget(wx.SashLayoutWindow):
 		
 	def unselectAll(self):
 		"""
-		Method: unselectAll
 		Created: 16.07.2006, KP
 		Description: Unselect everything in the tree
 		"""

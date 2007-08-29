@@ -538,7 +538,8 @@ def vtkImageDataToPreviewBitmap(dataunit, timepoint, color, width = 0, height = 
 	if maxval > imax:
 		step = float(maxval / imax)
 		ctf2 = vtk.vtkColorTransferFunction()
-		for i in range(0, maxval, int(step)):
+		Logging.info("Creating CTF in range 0, %d with steps %d"%(int(maxval), int(step)))
+		for i in range(0, int(maxval), int(step)):
 			red, green, blue = ctf.GetColor(i)
 			ctf2.AddRGBPoint(i / step, red, green, blue)
 		ctf = ctf2

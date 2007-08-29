@@ -43,7 +43,7 @@ import wx
 def getName():
 	"""
 	Created: KP
-	Description:Return the name of this visualization mode
+	Description:Return the name of this visualization mode (used to identify mode internally)
 	"""
 	return "3d"
 
@@ -69,33 +69,75 @@ def showFileTree():
 	return 1
 
 def showSeparator():
+	"""
+	Created: KP
+	Description: return two boolean values indicating whether to place toolbar separator before or after this icon
+	"""
 	return (0, 0)
 
 def getToolbarPos():
+	"""
+	Created: KP
+	Description: return requested toolbar position for this visualization mode
+	"""
 	return 8
 
 def getIcon():
+	"""
+	Created: KP
+	Description: return the icon name for this visualization mode
+	"""
 	return "view_rendering_3d.jpg"
 
 def getShortDesc():
+	"""
+	Created: KP
+	Description: return a short description (used as menu items etc.) of this visualization mode
+	"""
 	return "3D view"
 
 def getDesc():
+	"""
+	Created: KP
+	Description: return a description (used as tooltips etc.) of this visualization mode
+	"""
 	return "Render the dataset in three dimensions" 
 
 def getClass():
+	"""
+	Created: KP
+	Description: return the class that is instantiated as the actual visualization mode
+	"""
 	return RenderingMode
 
 def getImmediateRendering():
+	"""
+	Created: KP
+	Description: Return a boolean indicating whether this mode should in general update it's 
+				 rendering after each and every change to a configuration affecting the rendering
+	"""
 	return False
 
 def getConfigPanel():
+	"""
+	Created: KP
+	Description: return the class that is instantiated as the configuration panel for the mode
+	"""
 	return None
 
 def getRenderingDelay():
+	"""
+	Created: KP
+	Description: return a value in milliseconds that is the minimum delay between two rendering events being sent
+				 to this visualization mode. In general, the smaller the value, the faster the rendering should be
+	"""
 	return 5000
 
 def showZoomToolbar():
+	"""
+	Created: KP
+	Description: return a boolean indicating whether the visualizer toolbars (zoom, annotation) should be visible 
+	"""
 	return True
 		
 class RenderingMode(VisualizationMode):
@@ -106,6 +148,7 @@ class RenderingMode(VisualizationMode):
 		Description: Initialization
 		"""
 		VisualizationMode.__init__(self, parent, visualizer)
+		self.PitchStep, self.YawStep, self.RollStep, self.ElevationStep = 2, 2, 2, 5
 		self.parent = parent
 		self.menuManager = visualizer.menuManager
 		self.visualizer = visualizer
@@ -226,6 +269,17 @@ class RenderingMode(VisualizationMode):
 						before = GUI.MenuManager.ID_IMPORT_IMAGES)
 		mgr.addSeparator("file", sepid = GUI.MenuManager.ID_SEPARATOR, \
 							before = GUI.MenuManager.ID_IMPORT_IMAGES)
+							
+							
+		self.visualizer.pitch.Bind(wx.EVT_SPIN_UP, self.onPitchUp)
+		self.visualizer.pitch.Bind(wx.EVT_SPIN_DOWN, self.onPitchDown)
+		self.visualizer.yaw.Bind(wx.EVT_SPIN_UP, self.onYawUp)
+		self.visualizer.yaw.Bind(wx.EVT_SPIN_DOWN, self.onYawDown)
+		self.visualizer.roll.Bind(wx.EVT_SPIN_UP, self.onRollUp)
+		self.visualizer.roll.Bind(wx.EVT_SPIN_DOWN, self.onRollDown)
+		self.visualizer.elevation.Bind(wx.EVT_SPIN_UP, self.onElevationUp)
+		self.visualizer.elevation.Bind(wx.EVT_SPIN_DOWN, self.onElevationDown)
+		
 		return self.wxrenwin
 		
 	def saveSnapshot(self, filename):
@@ -242,6 +296,70 @@ class RenderingMode(VisualizationMode):
 		"""
 		self.wxrenwin.Render()
 		
+	def onElevationUp(self, evt):
+		"""
+		Created: KP
+		Description: adjust the elevation of the 3D scene upwards
+		"""
+		self.currMode.getRenderer().GetActiveCamera().Elevation(self.ElevationStep)
+		self.Render()
+
+	def onElevationDown(self, evt):
+		"""
+		Created: KP
+		Description: adjust the elevation of the 3D scene downwards
+		"""
+		self.getRenderer().GetActiveCamera().Elevation(-self.ElevationStep)
+		self.Render()
+
+	def onPitchUp(self, evt):
+		"""
+		Created: KP
+		Description: adjust the pitch of the 3D scene upwards
+		"""	
+		self.getRenderer().GetActiveCamera().Pitch(self.PitchStep)
+		self.Render()
+
+	def onPitchDown(self, evt):
+		"""
+		Created: KP
+		Description: adjust the pitch of the 3D scene downwards
+		"""	
+		self.getRenderer().GetActiveCamera().Pitch(-self.PitchStep)
+		self.Render()
+
+	def onRollUp(self, evt):
+		"""
+		Created: KP
+		Description: adjust the roll of the 3D scene upwards
+		"""
+		self.getRenderer().GetActiveCamera().Roll(self.RollStep)
+		self.Render()
+
+	def onRollDown(self, evt):
+		"""
+		Created: KP
+		Description: adjust the roll of the 3D scene downwards
+		"""	
+		self.getRenderer().GetActiveCamera().Roll(-self.RollStep)
+		self.Render()
+
+	def onYawUp(self, evt):
+		"""
+		Created: KP
+		Description: adjust the yaw of the 3D scene upwards
+		"""	
+		self.getRenderer().GetActiveCamera().Yaw(self.YawStep)
+		self.Render()
+
+	def onYawDown(self, evt):
+		"""
+		Created: KP
+		Description: adjust the yaw of the 3D scene upwards
+		"""	
+		self.getRenderer().GetActiveCamera().Yaw(-self.YawStep)
+		self.Render()
+			
 	def setBackground(self, r, g, b):
 		"""
 		Created: 24.05.2005, KP
@@ -282,6 +400,15 @@ class RenderingMode(VisualizationMode):
 		mgr = self.menuManager
 		mgr.disable(GUI.MenuManager.ID_LIGHTS)
 		mgr.disable(GUI.MenuManager.ID_RENDERWIN)
+		
+		self.visualizer.pitch.Unbind(wx.EVT_SPIN_UP)
+		self.visualizer.pitch.Unbind(wx.EVT_SPIN_DOWN)
+		self.visualizer.yaw.Unbind(wx.EVT_SPIN_UP)
+		self.visualizer.yaw.Unbind(wx.EVT_SPIN_DOWN)
+		self.visualizer.roll.Unbind(wx.EVT_SPIN_UP)
+		self.visualizer.roll.Unbind(wx.EVT_SPIN_DOWN)
+		self.visualizer.elevation.Unbind(wx.EVT_SPIN_UP)
+		self.visualizer.elevation.Unbind(wx.EVT_SPIN_DOWN)
 		
 		
 	def setDataUnit(self, dataUnit):

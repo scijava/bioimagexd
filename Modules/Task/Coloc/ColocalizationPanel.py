@@ -174,7 +174,6 @@ class ColocalizationPanel(TaskPanel):
 				if sources:
 					pvolch = sources[0].getSettings().get(item)
 					pmatch = sources[0].getSettings().get("PercentageMaterialCh1")
-					print "pvolch=", pvolch, type(pvolch)
 					if not pvolch:
 						pvolch = 0
 					if not pmatch:
@@ -739,7 +738,7 @@ class ColocalizationPanel(TaskPanel):
 		Created: 18.07.2006, KP
 		Description: Export the colocalization stats
 		"""	  
-		name = self.dataUnit.getName()		  
+		name = self.dataUnit.getName()
 		sources = self.dataUnit.getSourceDataUnits()
 		names = []
 		names2 = []
@@ -768,14 +767,13 @@ class ColocalizationPanel(TaskPanel):
 		w.writerow(["Timepoint", self.timePoint])
 		w.writerow([time.ctime()])
 		for item in self.headervals:
-			#print item
 			header, val1, val2, col = item
 			header = self.decode(header)
 			if type(val1) == types.UnicodeType:
 				val1 = self.decode(val1)
 				
 			if val2:
-				if type(val2) == types.UnicodeType:	  
+				if type(val2) == types.UnicodeType:
 					val2 = self.decode(val2)
 				
 				w.writerow([header, val1, val2])
@@ -789,7 +787,6 @@ class ColocalizationPanel(TaskPanel):
 		
 	def populateListCtrl(self):
 		"""
-		Method: populateListCtrl
 		Created: 12.07.2005, KP
 		Description: Add information to the list control
 		"""
@@ -828,7 +825,6 @@ class ColocalizationPanel(TaskPanel):
 		
 		self.listctrl.SetColumnWidth(0, 180)
 		self.listctrl.SetColumnWidth(1, 180)
-		#self.listctrl.SetColumnWidth(2,120)
 		for n, item in enumerate(self.headervals):
 			txt, a, b, col = item
 			self.listctrl.InsertStringItem(n, txt)
@@ -869,7 +865,7 @@ class ColocalizationPanel(TaskPanel):
 			self.settings.set("ColocalizationLowerThreshold", newlthreshold)
 			self.settings.set("ColocalizationUpperThreshold", newuthreshold)			
 			if (oldlthreshold != newlthreshold) or (olduthreshold != newuthreshold):
-				lib.messenger.send(None, "threshold_changed")				 
+				lib.messenger.send(None, "threshold_changed")
 				self.doPreviewCallback()
 				
 
@@ -880,6 +876,7 @@ class ColocalizationPanel(TaskPanel):
 					 based on the selected channel, the settings of which are 
 					 stored in the instance variable self.settings
 		"""
+		Logging.info("Updating coloc settings", kw="processing")
 		if self.settings:
 			format = self.settings.get("ColocalizationDepth")
 			scalar = self.settings.get("OutputScalar")
@@ -948,11 +945,8 @@ class ColocalizationPanel(TaskPanel):
 		Description: Set the dataunit used for the colocalization 
 		"""
 		TaskPanel.setCombinedDataUnit(self, dataUnit)
-		#self.scatterPlot.setDataunit(dataUnit)
 		# See if the dataunit has a stored colocalizationctf
 		# then use that.
-
-
 		sources = self.dataUnit.getSourceDataUnits()
 
 		n1 = sources[0].getName()
@@ -976,8 +970,6 @@ class ColocalizationPanel(TaskPanel):
 			s = s.replace("%ch2%", n2)
 			self.headervals[i][0] = s
 			self.listctrl.SetStringItem(i, 0, s)
-
-
 
 		na = sources[1].getNumericalAperture()
 		emission = sources[1].getEmissionWavelength()
@@ -1015,7 +1007,6 @@ class ColocalizationPanel(TaskPanel):
 		coloc = vtkbxd.vtkImageColocalizationFilter()
 		coloc.SetOutputDepth(8)
 		i = 0
-		#for dataunit in self.dataUnit.getSourceDataUnits():
 		for data in self.itemMips:
 			coloc.AddInput(data)
 			coloc.SetColocalizationLowerThreshold(i, 100)
@@ -1025,7 +1016,6 @@ class ColocalizationPanel(TaskPanel):
 		ctf = vtk.vtkColorTransferFunction()
 		ctf.AddRGBPoint(0, 0, 0, 0)
 		ctf.AddRGBPoint(255, 1, 1, 1)
-		#imagedata=ImageOperations.getMIP(coloc.GetOutput(),ctf)
 		maptocolor = vtk.vtkImageMapToColors()
 		maptocolor.SetInput(coloc.GetOutput())
 		maptocolor.SetLookupTable(ctf)
@@ -1035,11 +1025,9 @@ class ColocalizationPanel(TaskPanel):
 		bmp = ImageOperations.vtkImageDataToWxImage(imagedata).ConvertToBitmap()
 		
 		
-		#print "BMP=",bmp.GetWidth(),bmp.GetHeight()
 		
 		bmp = self.getChannelItemBitmap(bmp, (255, 255, 0))
 		toolid = wx.NewId()
-		#n=n+1
 		name = "Colocalization"
 		self.toolMgr.addChannelItem(name, bmp, toolid, lambda e, x = n, s = self:s.setPreviewedData(e, x))		  
 		
