@@ -42,6 +42,27 @@ import types
 
 conf = None
 
+class FlexConfigParser(ConfigParser.ConfigParser):
+	"""
+	Created: 29.08.2007, KP
+	Description: a config parser that doesn't ignore the case of the options and sections, but converts unicode characters to their xml reprsentation
+	"""
+	def set(self, section, option, value):
+		"""
+		Created: 29.08.2007, KP
+		Description: tranform the value
+		"""
+		if type(value) == types.UnicodeType:
+			ConfigParser.ConfigParser.set(self, section, option, codecs.encode(value, "ascii", "xmlcharrefreplace"))
+		else:
+			ConfigParser.ConfigParser.set(self, section, option, value)
+	def optionxform(self, optionstr):
+		"""
+		Created: KP
+		Description: A method used to transform the option names. Does not transform the names in any way
+		"""
+		return optionstr
+
 def getConfiguration():
 	"""
 	Created: Unknown date, KP
@@ -73,7 +94,7 @@ class Configuration:
 			configFile = os.path.join(scripting.get_config_dir(), "BioImageXD.ini")
 		self.configItems = {}
 		self.installPath = os.getcwd()
-		self.parser = ConfigParser.ConfigParser()
+		self.parser = FlexConfigParser()
 		cfgfile = self.getPath(configFile)
 		fp = codecs.open(cfgfile, "r","utf-8")
 		self.configFile = cfgfile
