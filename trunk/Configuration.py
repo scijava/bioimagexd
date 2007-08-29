@@ -10,7 +10,7 @@
  A module that loads / saves a configuration file and gives information
  about the current configuration. Also handles path management.
 
- Copyright (C) 2005  BioImageXD Project
+ Copyright (C) 2005	 BioImageXD Project
  See CREDITS.txt for details
 
  This program is free software; you can redistribute it and/or modify
@@ -56,6 +56,22 @@ class FlexConfigParser(ConfigParser.ConfigParser):
 			ConfigParser.ConfigParser.set(self, section, option, codecs.encode(value, "ascii", "xmlcharrefreplace"))
 		else:
 			ConfigParser.ConfigParser.set(self, section, option, value)
+			
+	def write(self, fp):
+		"""Write an .ini-format representation of the configuration state."""
+		if self._defaults:
+			fp.write("[%s]\n" % DEFAULTSECT)
+			for (key, value) in self._defaults.items():
+				fp.write("%s = %s\n" % (key, unicode(value).replace('\n', '\n\t')))
+			fp.write("\n")
+		for section in self._sections:
+			fp.write("[%s]\n" % section)
+			for (key, value) in self._sections[section].items():
+				if key != "__name__":
+					fp.write("%s = %s\n" %
+							 (key, unicode(value).replace('\n', '\n\t')))
+			fp.write("\n")
+			
 	def optionxform(self, optionstr):
 		"""
 		Created: KP
@@ -98,7 +114,7 @@ class Configuration:
 		cfgfile = self.getPath(configFile)
 		fp = codecs.open(cfgfile, "r","utf-8")
 		self.configFile = cfgfile
-		self.parser.readfp(fp, cfgfile)    
+		self.parser.readfp(fp, cfgfile)	   
 	
 		# Set the initial values
 
@@ -131,7 +147,7 @@ class Configuration:
 			scripting.COLOR_BEGINNER = eval(configItem)
 		configItem = self.getConfigItem("IntermediateColor", "General")
 		if configItem:
-			scripting.COLOR_INTERMEDIATE =  eval(configItem)
+			scripting.COLOR_INTERMEDIATE =	eval(configItem)
 		configItem = self.getConfigItem("ExperiencedColor", "General")
 		if configItem:
 			scripting.COLOR_EXPERIENCED = eval(configItem)
@@ -157,9 +173,9 @@ class Configuration:
 
 	def writeSettings(self):
 		"""
- 		Created: 12.03.2005, KP
- 		Description: A method to write out the settings
- 		""" 	
+		Created: 12.03.2005, KP
+		Description: A method to write out the settings
+		"""		
 		filePointer = codecs.open(self.configFile, "w","utf-8")
 		self.parser.write(filePointer)
 		filePointer.close()
@@ -177,7 +193,7 @@ class Configuration:
 		"""
 		Created: Unknown, KP
 		Description: A method that inserts the correct bin- and wrapping-folders in the system path
-		"""	
+		""" 
 		vtkdir = self.getConfigItem("VTKPath", "VTK")
 		if self.getConfigItem("RemoveOldVTK", "VTK") and os.path.isdir(vtkdir):
 			self.removeWithName(["vtk", "VTK", "vtk_python"])
@@ -204,7 +220,7 @@ class Configuration:
 		"""
 		Created: Unknown, KP
 		Description: Tries to read a configuration option, returns none if it is not available 
-		"""	
+		""" 
 		try:
 			configItemvalue = self.parser.get(section, configItem)
 			self.configItems[configItem] = configItemvalue
@@ -217,7 +233,7 @@ class Configuration:
 		Created: Unknown, KP
 		Description: Returns configItem from the configItems list if possible
 		otherwise tries to read it from the configuration
-		"""	
+		""" 
 		if not configItem in self.configItems:
 			self.readConfigItem(configItem, section)
 			
@@ -230,7 +246,7 @@ class Configuration:
 		"""
 		Created: Unknown, KP
 		Description: Reads the necessary paths from the configuration file 
-		"""	
+		""" 
 		self.readConfigItem("RemoveOldVTK", "VTK")
 		self.readConfigItem("VTKPath", "VTK")
 		self.readConfigItem("DataPath", "Paths")
@@ -249,11 +265,11 @@ class Configuration:
 		"""
 		Created: Unknown, KP
 		Description: Returns a valid path based on the parameter  
-		"""	
+		""" 
 		if type(path) == types.StringType:
 			path = [path]
 		return os.path.normpath(os.path.join(self.installPath, reduce(os.path.join, path)))
-	@staticmethod 	
+	@staticmethod	
 	def removeWithName(names):
 		"""
 		Created: Unknown, KP
@@ -264,11 +280,11 @@ class Configuration:
 			for directoryToBeRemoved in names:
 				if directory.find(directoryToBeRemoved) != -1:
 					removethese.append(directory)
- 		for i in removethese:
- 			try:
- 				sys.path.remove(i)
+		for i in removethese:
+			try:
+				sys.path.remove(i)
 			except ValueError:
- 				Logging.info("Failed to remove ", i, kw = "init")
+				Logging.info("Failed to remove ", i, kw = "init")
 			
 	@staticmethod		
 	def insertPath(path, beforeIndex = 0):
