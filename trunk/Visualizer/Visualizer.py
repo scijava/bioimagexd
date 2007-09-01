@@ -517,18 +517,17 @@ class Visualizer:
 		self.tb.AddControl(self.viewCombo)
 
 		wx.EVT_COMBOBOX(self.parent, GUI.MenuManager.ID_SET_VIEW, self.onSetView)
-		#self.tb.Realize()
 		self.tb.AddSimpleTool(GUI.MenuManager.ID_ZOOM_OUT,
 							wx.Image(os.path.join(icondir, "zoom-out.gif"),
 									wx.BITMAP_TYPE_GIF).ConvertToBitmap(),
 							"Zoom out",
 							"Zoom out on the optical slice")
-		#EVT_TOOL(self, ID_OPEN, self.menuOpen)
 
 
-		self.zoomLevels = [0.125, 0.25, 0.3333, 0.5, 0.6667, 0.75, 1.0, 1.25, 1.5, 2.0, 3.0, 4.0, 6.0, 8.0, -1]
-		choices = ["12.5%", "25%", "33.33%", "50%", "66.67%", "75%", "100%", "125%",
-					"150%", "200%", "300%", "400%", "600%", "800%", "Zoom to fit"]
+		self.zoomLevels = [0.05, 0.1, 0.125, 0.25, 0.3333, 0.5, 0.6667, 0.75, 
+		1.0, 1.25, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 5.0, 6.0, 7.0, 8.0, -1]
+		choices = ["5%", "10%", "12.5%", "25%", "33.33%", "50%", "66.67%", "75%", "100%", "125%",
+					"150%", "200%", "250%", "300%", "350%", "400%", "500%", "600%", "700%", "800%", "Zoom to fit"]
 
 		self.zoomCombo = wx.ComboBox(self.tb,
 									GUI.MenuManager.ID_ZOOM_COMBO,
@@ -536,7 +535,7 @@ class Visualizer:
 									choices = choices,
 									size = (120, -1),
 									style = wx.CB_DROPDOWN)
-		self.zoomCombo.SetSelection(14)
+		self.zoomCombo.SetSelection(len(choices)-1)
 		self.zoomCombo.SetHelpText("This controls the zoom level of visualization views.")
 		self.tb.AddControl(self.zoomCombo)
 
@@ -558,11 +557,7 @@ class Visualizer:
 								"Zoom object", \
 								"Zoom user selected portion of the slice")
 
-#		 self.tb.AddSimpleTool(GUI.MenuManager.ID_DRAG_ANNOTATION, \
-#								wx.Image(os.path.join(icondir, "arrow.gif"), \
-#										wx.BITMAP_TYPE_GIF).ConvertToBitmap(), \
-#								"Manage annotations", \
-#								"Manage annotations on the image")
+
 
 		icon = wx.Image(os.path.join(icondir, "original.gif"), wx.BITMAP_TYPE_GIF).ConvertToBitmap()
 		self.tb.AddSeparator()
@@ -686,17 +681,25 @@ class Visualizer:
 		Description: Sets the zoom according to the combo selection
 		"""
 		return self.zoomComboDirection(0)
-
-	def setComboBoxToFactor(self, factor):
+		
+	def getPositionForFactor(self, factor):
 		"""
-		Created: 01.08.2005, KP
-		Description: Set the value of the combobox to the correct zoom factor
+		Created: 01.09.2007, KP
+		Description: search the correct combobox position for the given zoom factor
 		"""
 		pos = 6
 		for i, zoomFactor in enumerate(self.zoomLevels):
 			if zoomFactor == factor:
 				pos = i
 				break
+		return pos
+				
+	def setComboBoxToFactor(self, factor):
+		"""
+		Created: 01.08.2005, KP
+		Description: Set the value of the combobox to the correct zoom factor
+		"""
+		pos = self.getPositionForFactor(factor)
 		self.zoomCombo.SetSelection(pos)
 		self.currMode.setZoomFactor(self.zoomLevels[pos])
 		self.zoomFactor = self.currMode.getZoomFactor()
@@ -707,8 +710,8 @@ class Visualizer:
 		Created: 21.02.2005, KP
 		Description: Makes the zoom factor larger / smaller based on values in the zoom combobox
 		"""
-
-		pos = self.zoomCombo.GetSelection()
+		#pos = self.zoomCombo.GetSelection()
+		pos = self.getPositionForFactor(self.zoomFactor)
 		if dir > 0 and pos >= self.zoomCombo.GetCount():
 			return
 		if dir < 0 and pos == 0:
@@ -1484,8 +1487,7 @@ class Visualizer:
 				Logging.info("Size of slider win after modification = ", sx, sy)
 
 			self.sliderWin.SetDefaultSize((slx, sly))
-		#self.wxrenwin.SetSize((size))
-		#self.renwin.SetSize((size))
+
 		self.OnSize(None)
 		self.parent.Layout()
 		self.parent.Refresh()
