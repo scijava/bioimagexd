@@ -78,7 +78,9 @@ class InteractivePanel(GUI.ogl.ShapeCanvas):
 		# A variable to indicate the current position of a mouse drag for calculating
 		# how much to scroll or zoom 
 		self.scrollPos = None
-		
+		# a variable to indicate the current position of a mouse drag for calculating
+		# in which direction to change the z slice
+		self.zoomDragPos = None
 		self.maxClientSizeX = 512
 		self.maxClientSizeY = 512
 		self.painterHelpers = []
@@ -163,6 +165,7 @@ class InteractivePanel(GUI.ogl.ShapeCanvas):
 		self.Bind(wx.EVT_SIZE, self.OnSize)
 		self.Bind(wx.EVT_MOUSEWHEEL, self.onMouseWheel)
 		lib.messenger.connect(None, "update_helpers", self.onUpdateHelpers)
+		
 		
 	def disableAnnotations(self):
 		"""
@@ -430,11 +433,13 @@ class InteractivePanel(GUI.ogl.ShapeCanvas):
 		Description: react to a mouse wheel rotation, where three consecutive rotations
 					 in the same direction will trigger a change in zoom level
 		"""
-		print "onMouseWheel",event
 		direction = event.GetWheelRotation() / abs(event.GetWheelRotation())
 		self.wheelCounter += direction
 		if abs(self.wheelCounter) == 3:
-			scripting.visualizer.zoomComboDirection(direction)
+			if self.wheelCounter < 0:
+				scripting.visualizer.onSliceDown()
+			else:
+				scripting.visualizer.onSliceUp()
 			self.wheelCounter = 0
 			
 	def onRightDown(self, event):
@@ -449,7 +454,10 @@ class InteractivePanel(GUI.ogl.ShapeCanvas):
 				if not flag:
 					return
 		event.Skip()
-		self.PopupMenu(self.menu, event.GetPosition())
+		if event.ShiftDown():
+			self.PopupMenu(self.menu, event.GetPosition())
+		else:
+			self.zoomDragPos = event.GetPosition()[1]
 
 	def onFinishPolygon(self, event):
 		"""
@@ -504,10 +512,29 @@ class InteractivePanel(GUI.ogl.ShapeCanvas):
 		Description: Update the mouse position and the rendering according to user action,
 					 e.g. draw a rubber band when zooming to selected region
 		"""
-		if (event.ShiftDown() and event.LeftIsDown()) or event.MiddleIsDown():
+		print "dragging=",event.Dragging(), "right down=",event.RightIsDown()
+		if not event.Dragging():
+			self.scrollPos = None
+			self.zoomDragPos = None
+		if (event.LeftIsDown() or event.MiddleIsDown()) and event.Dragging():
 			if self.scrollPos:
 				self.changeScrollByDifference(self.scrollPos, event.GetPosition())
 			self.scrollPos = event.GetPosition()
+		if event.RightIsDown():
+			yPos = event.GetPosition()[1]
+			print "yPos=",yPos
+			if self.zoomDragPos:
+				dy = yPos - self.zoomDragPos
+				print "dy=",dy
+				f = self.getZoomFactor()
+				if dy > 0:
+					f-=0.1
+				elif dy < 0:
+					f+=0.1
+				scripting.visualizer.setZoomFactor(f)
+				scripting.visualizer.Render()
+			if event.Dragging():
+				self.zoomDragPos = yPos
 			
 		if event.LeftIsDown():
 			self.actionend = event.GetPosition()
