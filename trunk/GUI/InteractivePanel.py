@@ -69,7 +69,7 @@ class InteractivePanel(GUI.ogl.ShapeCanvas):
 		self.xoffset = 0
 		self.yoffset = 0		
 		self.currentSketch = None
-		self.scrollStepSize = 5
+		self.scrollStepSize = 1
 		
 		self.maxClientSizeX = 512
 		self.maxClientSizeY = 512
@@ -489,6 +489,9 @@ class InteractivePanel(GUI.ogl.ShapeCanvas):
 					 e.g. draw a rubber band when zooming to selected region
 		"""
 		if event.LeftIsDown():
+			if event.ShiftDown():
+				self.scrollByDifference(self.actionend, event.GetPosition())
+		
 			self.actionend = event.GetPosition()
 			if self.action == ZOOM_TO_BAND:
 				self.Refresh()
@@ -507,6 +510,25 @@ class InteractivePanel(GUI.ogl.ShapeCanvas):
 			
 			dc.EndDrawing()
 		event.Skip()
+		
+	def scrollByDifference(self, start, end):
+		"""
+		Created: 01.09.2007, KP
+		Description: scroll by the difference of the starting and ending coordinates
+		"""
+		Logging.info("Scrolling by difference of %s and %s"%(str(start),str(end)), kw="preview")
+		x, y = self.CalcUnscrolledPosition(0,0)
+		
+		dx = end[0]-start[0]
+		dy = end[1]-start[1]
+		Logging.info("Currents scroll = %d, %d, adding %d and %d"%(x,y,dx,dy), kw="preview")
+		x+=dx
+		y+=dy
+		sx = int(x / self.scrollStepSize)
+		sy = int(y / self.scrollStepSize)
+		
+		self.Scroll(sx, sy)
+		
 
 	def onDeactivate(self):
 		"""

@@ -473,7 +473,6 @@ class TreeWidget(wx.SashLayoutWindow):
 			event.Veto()
 			return
 		elif obj == "2":
-			print "Selceting children"
 			# Select it's children
 			self.ignore = 1
 			self.tree.UnselectItem(item)
@@ -481,7 +480,6 @@ class TreeWidget(wx.SashLayoutWindow):
 			while citem.IsOk():
 				if not self.tree.IsSelected(citem):
 					self.tree.ToggleItemSelection(citem)
-				print "Selecting item",citem
 				citem = self.tree.GetNextSibling(citem)                                
 			event.Veto()
 			self.ignore = 0
