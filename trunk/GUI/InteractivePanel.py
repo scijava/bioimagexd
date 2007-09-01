@@ -478,10 +478,9 @@ class InteractivePanel(GUI.ogl.ShapeCanvas):
 		Created: 24.03.2005, KP
 		Description: Sets the starting position of rubber band for zooming
 		"""
+		self.SetFocus()
 		event.Skip()
 		pos = event.GetPosition()
-
-
 		x, y = pos
 		foundDrawable = 0
 		for x0, x1, y0, y1 in self.getDrawableRectangles():
