@@ -33,7 +33,6 @@ import scripting
 import lib.ImageOperations
 import lib.messenger
 import Logging
-#import math
 import GUI.ogl
 import platform
 import wx
@@ -61,15 +60,24 @@ class InteractivePanel(GUI.ogl.ShapeCanvas):
 		Description: Initialization
 		"""
 		GUI.ogl.OGLInitialize()
-		
-		self.annotationsEnabled = 1
+		# boolean for indicating whether or not the annotations are enabled on this interactivepanel
+		self.annotationsEnabled = False
 		self.parent = parent
+		# Some variables for quickly determining the platform 
 		self.is_windows = platform.system() == "Windows"
 		self.is_mac = platform.system() == "Darwin"
+		
+		# A counter for wheel rotations so that we can react to a given number of rotations
+		# since a single rotation of wheel produces quite many events
+		self.wheelCounter = 0
 		self.xoffset = 0
 		self.yoffset = 0		
 		self.currentSketch = None
+		# The number of pixels a single scroll unit will scroll
 		self.scrollStepSize = 1
+		# A variable to indicate the current position of a mouse drag for calculating
+		# how much to scroll or zoom 
+		self.scrollPos = None
 		
 		self.maxClientSizeX = 512
 		self.maxClientSizeY = 512
@@ -153,7 +161,7 @@ class InteractivePanel(GUI.ogl.ShapeCanvas):
 		self.Bind(wx.EVT_RIGHT_DOWN, self.onRightDown)
 		self.Bind(wx.EVT_LEFT_UP, self.executeAction)
 		self.Bind(wx.EVT_SIZE, self.OnSize)
-		
+		self.Bind(wx.EVT_MOUSEWHEEL, self.onMouseWheel)
 		lib.messenger.connect(None, "update_helpers", self.onUpdateHelpers)
 		
 	def disableAnnotations(self):
@@ -417,13 +425,25 @@ class InteractivePanel(GUI.ogl.ShapeCanvas):
 		if obj and obj.isROI():
 			self.subtractROI = obj
 			self.PopupMenu(self.subbgMenu, event.GetPosition())
-		
-
+	
+	def onMouseWheel(self, event):
+		"""
+		Created: 01.09.2007, KP
+		Description: react to a mouse wheel rotation, where three consecutive rotations
+					 in the same direction will trigger a change in zoom level
+		"""
+		direction = event.GetWheelRotation() / abs(event.GetWheelRotation())
+		self.wheelCounter += direction
+		if abs(self.wheelCounter) == 3:
+			scripting.visualizer.zoomComboDirection(direction)
+			self.wheelCounter = 0
+			
 	def onRightDown(self, event):
 		"""
 		Created: 10.10.2006, KP
 		Description: An event handler for when the right button is clicked down
 		"""
+
 		if wx.EVT_RIGHT_DOWN in self.listeners:
 			for method in self.listeners[wx.EVT_RIGHT_DOWN]:
 				method(event)
@@ -488,10 +508,12 @@ class InteractivePanel(GUI.ogl.ShapeCanvas):
 		Description: Update the mouse position and the rendering according to user action,
 					 e.g. draw a rubber band when zooming to selected region
 		"""
+		if (event.ShiftDown() and event.LeftIsDown()) or event.MiddleIsDown():
+			self.changeScrollByDifference(self.scrollPos, event.GetPosition())
+			self.scrollPos = event.GetPosition()
+			
 		if event.LeftIsDown():
-			if event.ShiftDown():
-				self.scrollByDifference(self.actionend, event.GetPosition())
-		
+				
 			self.actionend = event.GetPosition()
 			if self.action == ZOOM_TO_BAND:
 				self.Refresh()
@@ -511,7 +533,7 @@ class InteractivePanel(GUI.ogl.ShapeCanvas):
 			dc.EndDrawing()
 		event.Skip()
 		
-	def scrollByDifference(self, start, end):
+	def changeScrollByDifference(self, start, end):
 		"""
 		Created: 01.09.2007, KP
 		Description: scroll by the difference of the starting and ending coordinates
@@ -529,7 +551,6 @@ class InteractivePanel(GUI.ogl.ShapeCanvas):
 		
 		self.Scroll(sx, sy)
 		
-
 	def onDeactivate(self):
 		"""
 		Created: 28.05.2007, KP
