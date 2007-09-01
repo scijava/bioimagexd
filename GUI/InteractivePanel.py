@@ -156,8 +156,8 @@ class InteractivePanel(GUI.ogl.ShapeCanvas):
 		self.Bind(wx.EVT_PAINT, self.OnPaint)
 		
 
-		self.Bind(wx.EVT_LEFT_DOWN, self.markActionStart)
-		self.Bind(wx.EVT_MOTION, self.updateActionEnd)
+		self.Bind(wx.EVT_LEFT_DOWN, self.onLeftDown)
+		self.Bind(wx.EVT_MOTION, self.onMouseMotion)
 		self.Bind(wx.EVT_RIGHT_DOWN, self.onRightDown)
 		self.Bind(wx.EVT_LEFT_UP, self.executeAction)
 		self.Bind(wx.EVT_SIZE, self.OnSize)
@@ -411,8 +411,6 @@ class InteractivePanel(GUI.ogl.ShapeCanvas):
 		a, b, c, d = self.GetClientRect()
 		return [(a, c, b, d)]
 		
-	def onLeftDown(self, event):
-		return self.markActionStart(event)
 
 	def onRightClickROI(self, event):
 		"""
@@ -432,6 +430,7 @@ class InteractivePanel(GUI.ogl.ShapeCanvas):
 		Description: react to a mouse wheel rotation, where three consecutive rotations
 					 in the same direction will trigger a change in zoom level
 		"""
+		print "onMouseWheel",event
 		direction = event.GetWheelRotation() / abs(event.GetWheelRotation())
 		self.wheelCounter += direction
 		if abs(self.wheelCounter) == 3:
@@ -443,7 +442,6 @@ class InteractivePanel(GUI.ogl.ShapeCanvas):
 		Created: 10.10.2006, KP
 		Description: An event handler for when the right button is clicked down
 		"""
-
 		if wx.EVT_RIGHT_DOWN in self.listeners:
 			for method in self.listeners[wx.EVT_RIGHT_DOWN]:
 				method(event)
@@ -475,8 +473,7 @@ class InteractivePanel(GUI.ogl.ShapeCanvas):
 			event.Skip()
 		return 1
 
-
-	def markActionStart(self, event):
+	def onLeftDown(self, event):
 		"""
 		Created: 24.03.2005, KP
 		Description: Sets the starting position of rubber band for zooming
@@ -493,7 +490,7 @@ class InteractivePanel(GUI.ogl.ShapeCanvas):
 				break
 		if not foundDrawable:
 			Logging.info("Attempt to draw in non-drawable area: %d,%d" % (x, y), kw = "iactivepanel")
-			# we zero the action so nothing further will be done by updateActionEnd
+			# we zero the action so nothing further will be done by onMouseMotion
 			self.action = 0
 			return 1
 			
@@ -502,18 +499,18 @@ class InteractivePanel(GUI.ogl.ShapeCanvas):
 		self.actionstart = pos
 		return 1
 		
-	def updateActionEnd(self, event):
+	def onMouseMotion(self, event):
 		"""
 		Created: 24.03.2005, KP
 		Description: Update the mouse position and the rendering according to user action,
 					 e.g. draw a rubber band when zooming to selected region
 		"""
 		if (event.ShiftDown() and event.LeftIsDown()) or event.MiddleIsDown():
-			self.changeScrollByDifference(self.scrollPos, event.GetPosition())
+			if self.scrollPos:
+				self.changeScrollByDifference(self.scrollPos, event.GetPosition())
 			self.scrollPos = event.GetPosition()
 			
 		if event.LeftIsDown():
-				
 			self.actionend = event.GetPosition()
 			if self.action == ZOOM_TO_BAND:
 				self.Refresh()
