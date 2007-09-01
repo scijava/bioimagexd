@@ -83,7 +83,6 @@ class Visualizer:
 		self.zoomFactor = 1.0
 		scripting.zoomFactor = self.zoomFactor
 
-		self.tb1 = None
 		self.tb = None
 		self.z = 0
 		self.viewCombo = None
@@ -312,7 +311,7 @@ class Visualizer:
 		self.sliderPanel.SetAutoLayout(1)
 		self.sliderbox.Fit(self.sliderPanel)
 
-	def onSliceUp(self, evt):
+	def onSliceUp(self, evt = None):
 		"""
 		Created: 15.11.2006, KP
 		Description: Move one slice up
@@ -322,7 +321,7 @@ class Visualizer:
 			self.zslider.SetValue(newZSliderValue)
 			self.onChangeZSlice(None)
 
-	def onSliceDown(self, evt):
+	def onSliceDown(self, evt = None):
 		"""
 		Created: 15.11.2006, KP
 		Description: Move one slice down
@@ -524,10 +523,10 @@ class Visualizer:
 							"Zoom out on the optical slice")
 
 
-		self.zoomLevels = [0.05, 0.1, 0.125, 0.25, 0.3333, 0.5, 0.6667, 0.75, 
-		1.0, 1.25, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 5.0, 6.0, 7.0, 8.0, -1]
-		choices = ["5%", "10%", "12.5%", "25%", "33.33%", "50%", "66.67%", "75%", "100%", "125%",
-					"150%", "200%", "250%", "300%", "350%", "400%", "500%", "600%", "700%", "800%", "Zoom to fit"]
+		self.zoomLevels = [0.1, 0.125, 0.25, 0.3333, 0.5, 0.6667, 0.75, 
+		1.0, 1.25, 1.5, 2.0, 3.0, 4.0,  6.0,  8.0, -1]
+		choices = ["10%", "12.5%", "25%", "33.33%", "50%", "66.67%", "75%", "100%", "125%",
+					"150%", "200%",  "300%", "400%", "600%", "800%", "Zoom to fit"]
 
 		self.zoomCombo = wx.ComboBox(self.tb,
 									GUI.MenuManager.ID_ZOOM_COMBO,
@@ -1194,6 +1193,22 @@ class Visualizer:
 			self.currMode.setZoomFactor(self.zoomFactor)
 			scripting.zoomFactor = self.zoomFactor
 		self.currMode.Render()
+		
+	def setZoomFactor(self, factor):
+		"""
+		Created: 01.09.2007, KP
+		Description: set the zoom factor to given factor
+		"""
+		if self.currMode:
+			if factor < 0.05:
+				factor = 0.05
+			if factor > 10:
+				factor = 10
+			self.zoomFactor = factor
+			self.currMode.setZoomFactor(factor)
+			scripting.zoomFactor = factor
+			self.zoomCombo.SetValue("%.2f%%"%(factor*100))
+			
 		
 	def setImmediateRender(self, flag):
 		"""
