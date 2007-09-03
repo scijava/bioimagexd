@@ -903,7 +903,7 @@ class InteractivePanel(GUI.ogl.ShapeCanvas):
 		Description: Does the actual blitting of the bitmap
 		"""
 		scrolledWinDC = 0
-		if self.is_windows or self.is_mac:
+		if 1 or self.is_windows or self.is_mac:
 			x, y = self.GetViewStart()
 			if x or y:
 				scrolledWinDC = 1
