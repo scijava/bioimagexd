@@ -516,6 +516,7 @@ class PreviewFrame(InteractivePanel):
 		Created: 05.06.2005, KP
 		Description: Save a snapshot of the scene
 		"""
+		print "filename=",repr(filename)
 		ext = filename.split(".")[-1].lower()
 		if ext == "jpg":
 			ext = "jpeg"
@@ -534,7 +535,6 @@ class PreviewFrame(InteractivePanel):
 		memdc.SelectObject(wx.NullBitmap)
 		bltdc.SelectObject(wx.NullBitmap)
 		img = buff.ConvertToImage()
-		
 		img.SaveMimeFile(filename, mime)
 		
 	def enable(self, flag):

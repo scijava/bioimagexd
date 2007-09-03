@@ -709,8 +709,8 @@ class Visualizer:
 		Created: 21.02.2005, KP
 		Description: Makes the zoom factor larger / smaller based on values in the zoom combobox
 		"""
-		#pos = self.zoomCombo.GetSelection()
-		pos = self.getPositionForFactor(self.zoomFactor)
+		pos = self.zoomCombo.GetSelection()
+		#pos = self.getPositionForFactor(self.zoomFactor)
 		if dir > 0 and pos >= self.zoomCombo.GetCount():
 			return
 		if dir < 0 and pos == 0:
