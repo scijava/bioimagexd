@@ -154,13 +154,11 @@ class AnimatorMode(VisualizationMode):
 		
 	def layoutTwice(self):
 		"""
-		Method: layoutTwice()
 		Created: 20.12.2005, KP
 		Description: Method that is queried for whether the mode needs to
 					 be laid out twice
 		"""
 		return True
-		#return False
 		
 	def closeOnReload(self):
 
@@ -168,7 +166,6 @@ class AnimatorMode(VisualizationMode):
 		
 	def showSideBar(self):
 		"""
-		Method: showSideBar()
 		Created: 24.05.2005, KP
 		Description: Method that is queried to determine whether
 					 to show the sidebar
@@ -177,7 +174,6 @@ class AnimatorMode(VisualizationMode):
 		
 	def relayout(self):
 		"""
-		Method: relayout()
 		Created: 07.08.2005, KP
 		Description: Method called when the size of the window changes
 		"""    
@@ -187,7 +183,6 @@ class AnimatorMode(VisualizationMode):
 		
 	def activate(self, sidebarwin):
 		"""
-		Method: activate()
 		Created: 24.05.2005, KP
 		Description: Set the mode of visualization
 		"""
@@ -218,7 +213,6 @@ class AnimatorMode(VisualizationMode):
 		
 	def Render(self):
 		"""
-		Method: Render()
 		Created: 24.05.2005, KP
 		Description: Update the rendering
 		"""      
@@ -226,7 +220,6 @@ class AnimatorMode(VisualizationMode):
 		
 	def setBackground(self, r, g, b):
 		"""
-		Method: setBackground(r,g,b)
 		Created: 24.05.2005, KP
 		Description: Set the background color
 		"""        
@@ -234,7 +227,6 @@ class AnimatorMode(VisualizationMode):
 		
 	def updateRendering(self):
 		"""
-		Method: updateRendering
 		Created: 26.05.2005, KP
 		Description: Update the rendering
 		"""      
@@ -242,7 +234,6 @@ class AnimatorMode(VisualizationMode):
 		
 	def lockSliderPanel(self, flag):
 		"""
-		Method: lockSliderPanel
 		Created: 30.01.2006, KP
 		Description: Set a flag indicating whether the sliderpanel 
 					 should be switched back to normal when switching
@@ -252,7 +243,6 @@ class AnimatorMode(VisualizationMode):
 		
 	def deactivate(self, newmode = None):
 		"""
-		Method: deactivate()
 		Created: 24.05.2005, KP
 		Description: Unset the mode of visualization
 		"""
@@ -273,7 +263,6 @@ class AnimatorMode(VisualizationMode):
 		
 	def setDataUnit(self, dataUnit):
 		"""
-		Method: setDataUnit
 		Created: 25.05.2005, KP
 		Description: Set the dataunit to be visualized
 		"""
@@ -281,7 +270,6 @@ class AnimatorMode(VisualizationMode):
 		
 	def setTimepoint(self, tp):
 		"""
-		Method: setTimepoint
 		Created: 25.05.2005, KP
 		Description: Set the timepoint to be visualized
 		"""
@@ -289,7 +277,6 @@ class AnimatorMode(VisualizationMode):
 
 	def saveSnapshot(self, filename):
 		"""
-		Method: saveSnapshot(filename)
 		Created: 05.06.2005, KP
 		Description: Save a snapshot of the scene
 		"""      
@@ -297,19 +284,11 @@ class AnimatorMode(VisualizationMode):
 		
 	def reloadMode(self):
 		"""
-		Method: reloadMode()
 		Created: 1.09.2005, KP
 		Description: Method called when the user tries to reload the mode
 		"""    
-		
 		pass
-		
-#        self.menuManager.enable(MenuManager.ID_ADJUST)
-#        self.menuManager.enable(MenuManager.ID_RESTORE)
-#        self.menuManager.enable(MenuManager.ID_COLOCALIZATION)
-		# safeguard
 
-	def __del_(self):
-
-		print "Deleting urmaswin"
-		del self.urmaswin
+#	def __del_(self):
+#		print "Deleting urmaswin"
+#		del self.urmaswin
