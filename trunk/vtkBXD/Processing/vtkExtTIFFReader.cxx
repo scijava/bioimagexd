@@ -537,267 +537,61 @@ void vtkExtTIFFReader::ReadImageInternal( void* vtkNotUsed(in), void* outPtr,
     {
         isize /= 2;
         unsigned short* image;
-        int tot=0;
         image = (unsigned short*)outPtr;
             
-    if (InternalImage->PlanarConfig == PLANARCONFIG_CONTIG)
-      {
-          //printf("Contig planes\n");
+        if (InternalImage->PlanarConfig == PLANARCONFIG_CONTIG)
+          {
           image = (unsigned short*)outPtr;
-      for ( row = 0; row < (int)height; row ++ )
-        {
-                //printf("Reading scanline %d\n",row);
-        if (TIFFReadScanline(InternalImage->Image, buf, row, 0) <= 0)
-          {
-        vtkErrorMacro( << "Problem reading the row: " << row <<"of file"<<GetInternalFileName());
-          break;
-          }
-          unsigned short* buf2 = (unsigned short*)buf;
-          //image = reinterpret_cast<unsigned short*>(outPtr) + width * inc * (height - (row + 1));
-//          image = reinterpret_cast<unsigned short*>(outPtr) + row * width * inc;
-
-        //printf("Copying %d doublebytes, spp=%d\n",isize,InternalImage->SamplesPerPixel);
-          
-          for(cc = 0; cc < isize; cc += InternalImage->SamplesPerPixel) {
-                    //image[cc]=((unsigned short*)buf)[cc];
-                *image++ = *buf2++;
-              tot+=1;
-          }
-          /*
-        for (cc = 0; cc < isize;
-             cc += InternalImage->SamplesPerPixel )
-          {
-          inc = this->EvaluateImageAt( image,
-                                       static_cast<unsigned short *>(buf) +
-                                       cc );
-          image += inc;
-          }*/
-          
-        }
-        //printf("Copied %d doublebytes\n",tot);
-          _TIFFfree(buf);
-        return;
-      }
-    else if(InternalImage->PlanarConfig == PLANARCONFIG_SEPARATE)
-      {
-//          printf("Separate planes\n");
-      unsigned long s, nsamples;
-      TIFFGetField(InternalImage->Image, TIFFTAG_SAMPLESPERPIXEL, &nsamples);
-      for (s = 0; s < nsamples; s++)
-        {
-        for ( row = 0; row < (int)height; row ++ )
-          {
-          if (TIFFReadScanline(InternalImage->Image, buf, row, s) <= 0)
+          for ( row = 0; row < (int)height; row ++ )
             {
-            vtkErrorMacro( << "Problem reading the row: " << row );
-            break;
+            if (TIFFReadScanline(InternalImage->Image, buf, row, 0) <= 0)
+              {
+                vtkErrorMacro( << "Problem reading the row: " << row <<"of file"<<GetInternalFileName());
+                break;
+              }
+              unsigned short* buf2 = (unsigned short*)buf;
+              for(cc = 0; cc < isize; cc += InternalImage->SamplesPerPixel) {
+                    *image++ = *buf2++;
+              }
+    
+              
             }
+              _TIFFfree(buf);
+            return;
+          }
+ 
+  }
+  else if(this->GetInternalImage()->BitsPerSample==8) {
+   
+        unsigned char* image;
+        image = (unsigned char*)outPtr;
             
-          
-            inc = 3;
-            image = reinterpret_cast<unsigned short*>(outPtr) + width * inc * (height - (row + 1));
-            //image = reinterpret_cast<unsigned short*>(outPtr) + row * width * inc;
-          for (cc = 0; cc < isize; 
-               cc += InternalImage->SamplesPerPixel )
+        if (InternalImage->PlanarConfig == PLANARCONFIG_CONTIG)
+          {
+          image = (unsigned char*)outPtr;
+          for ( row = 0; row < (int)height; row ++ )
             {
-            inc = this->EvaluateImageAt( image, 
-                                         static_cast<unsigned short *>(buf) +
-                                         cc );      
-            image += inc;
+            if (TIFFReadScanline(InternalImage->Image, buf, row, 0) <= 0)
+              {
+                vtkErrorMacro( << "Problem reading the row: " << row <<"of file"<<GetInternalFileName());
+                break;
+              }
+              unsigned char* buf2 = (unsigned char*)buf;
+              for(cc = 0; cc < isize; cc += InternalImage->SamplesPerPixel) {
+                    *image++ = *buf2++;
+              }
+    
+              
             }
-          }
-        }
-      }
+              _TIFFfree(buf);
+            return;
+          }  
   }
       
-  else if ( !this->GetInternalImage()->CanRead() )
-    {
-    uint32 *tempImage 
-      = static_cast<uint32*>( outPtr );
-    
-    if ( this->InternalExtents[0] != 0 || 
-         this->InternalExtents[1] != width -1 ||
-         this->InternalExtents[2] != 0 || 
-         this->InternalExtents[3] != height-1 )
-      {
-      tempImage = new uint32[ width * height ];
-      }
-    if ( !TIFFReadRGBAImage(this->GetInternalImage()->Image, 
-                            width, height, 
-                            tempImage, 0 ) )
-      {
-      vtkErrorMacro("Problem reading RGB image");
-      if ( tempImage != outPtr )
-        {
-        delete [] tempImage;
-        }
-      
-      return;
-      }
-    int xx, yy;
-    unsigned char *simage = (unsigned char *)tempImage;
-    uint32* ssimage = tempImage;
-    unsigned char *fimage = (unsigned char *)outPtr;
-    for ( yy = 0; yy < height; yy ++ )
-      {
-      for ( xx = 0; xx < width; xx++ )
-        {
-        if ( xx >= this->InternalExtents[0] && 
-             xx <= this->InternalExtents[1] &&
-             yy >= this->InternalExtents[2] && 
-             yy <= this->InternalExtents[3] )
-          {       
-          /*
-          unsigned char red   = *(simage);
-          unsigned char green = *(simage+1);
-          unsigned char blue  = *(simage+2);
-          unsigned char alpha = *(simage+3);
-          */
-          unsigned char red   = static_cast<unsigned char>(TIFFGetR(*ssimage));
-          unsigned char green = static_cast<unsigned char>(TIFFGetG(*ssimage));
-          unsigned char blue  = static_cast<unsigned char>(TIFFGetB(*ssimage));
-          unsigned char alpha = static_cast<unsigned char>(TIFFGetA(*ssimage));
-
-          *(fimage  ) = red;//red;
-          *(fimage+1) = green;//green;
-          *(fimage+2) = blue;//blue;
-          *(fimage+3) = alpha;//alpha;
-          fimage += 4;
-          }
-        simage += 4;
-        ssimage ++;
-        }
-      }
-    
-    if ( tempImage != 0 && tempImage != outPtr )
-      {
-      delete [] tempImage;
-      }
-    return;
-    }
-
-  unsigned int format = this->GetFormat();  
-    
-
-  if ( this->GetInternalImage()->Compression == COMPRESSION_PACKBITS )
-    {
-    height /= this->GetInternalImage()->BitsPerSample;
-    }
-
-  switch ( format )
-    {
-    case vtkExtTIFFReader::GRAYSCALE:
-    case vtkExtTIFFReader::RGB: 
-    case vtkExtTIFFReader::PALETTE_RGB:
-    case vtkExtTIFFReader::PALETTE_GRAYSCALE:      
-      this->ReadGenericImage( outPtr, width, height, size );
-      break;
-    default:
-      return;
-    }
 }
 
-void vtkExtTIFFReader::ReadGenericImage( void *out, 
-                                      unsigned int vtkNotUsed(width), 
-                                      unsigned int height, 
-                                      unsigned int vtkNotUsed(size) )
-{
-  unsigned int isize = TIFFScanlineSize(this->GetInternalImage()->Image);
-  unsigned int cc;
-  int row, inc;
-  int xx=0, yy=0;
-  tdata_t buf = _TIFFmalloc(isize);
-  unsigned char *image = (unsigned char *)out;
 
-  if ( this->GetInternalImage()->PlanarConfig == PLANARCONFIG_CONTIG )
-    {
-    for ( row = height-1; row >= 0; row -- )
-      {
-      if (TIFFReadScanline(this->GetInternalImage()->Image, buf, row, 0) <= 0)
-        {
-        vtkErrorMacro("Problem reading the row: " << row);
-        break;
-        }
-      for (cc = 0; cc < isize; 
-           cc += this->GetInternalImage()->SamplesPerPixel )
-        {
-        if ( xx >= this->InternalExtents[0] && 
-             xx <= this->InternalExtents[1] &&
-             yy >= this->InternalExtents[2] && 
-             yy <= this->InternalExtents[3] )
-          {
-          //unsigned char *c = static_cast<unsigned char *>(buf)+cc;
-          inc = this->EvaluateImageAt( image, 
-                                       static_cast<unsigned char *>(buf) +
-                                       cc );      
-          image += inc;
-          }
-        xx++;
-        }
-      xx=0;
-      yy++;
-      }
-    }
-  else 
-    {
-    vtkErrorMacro("This reader can only do PLANARCONFIG_CONTIG");
-    }
 
-  _TIFFfree(buf); 
-}
-
-int vtkExtTIFFReader::EvaluateImageAt( void* out, void* in )
-{
-  unsigned char *image = (unsigned char *)out;
-  unsigned char *source = (unsigned char *)in;
-  int increment = 0;
-  unsigned short red, green, blue, alpha;
-  switch ( this->GetFormat() )
-    {
-    case vtkExtTIFFReader::GRAYSCALE:
-      if ( this->GetInternalImage()->Photometrics == 
-           PHOTOMETRIC_MINISBLACK )
-        {
-        *image = *source;
-        }
-      else
-        {
-        *image = ~( *source );
-        }
-      increment = 1;
-      break;
-    case vtkExtTIFFReader::PALETTE_GRAYSCALE:
-      this->GetColor(*source, &red, &green, &blue);
-      *image = red;
-      increment = 1;
-      break;
-    case vtkExtTIFFReader::RGB: 
-      red   = *(source);
-      green = *(source+1);
-      blue  = *(source+2);
-      *(image)   = red;
-      *(image+1) = green;
-      *(image+2) = blue;
-      if ( this->GetInternalImage()->SamplesPerPixel == 4 )
-        {
-        alpha = *(source+3);
-        *(image+3) = 255-alpha;       
-        }
-      increment = this->GetInternalImage()->SamplesPerPixel;
-      break;
-    case vtkExtTIFFReader::PALETTE_RGB:
-      this->GetColor(*source, &red, &green, &blue);     
-      *(image)   = static_cast<unsigned char>(red >> 8);
-      *(image+1) = static_cast<unsigned char>(green >> 8);
-      *(image+2) = static_cast<unsigned char>(blue >> 8);
-      increment = 3;
-      break;
-    default:
-      return 0;
-    }
-  
-  return increment;
-}
 
 int vtkExtTIFFReader::CanReadFile(const char* fname)
 {
