@@ -112,10 +112,12 @@ class Configuration:
 		self.installPath = os.getcwd()
 		self.parser = FlexConfigParser()
 		cfgfile = self.getPath(configFile)
-		fp = codecs.open(cfgfile, "r","utf-8")
 		self.configFile = cfgfile
-		self.parser.readfp(fp, cfgfile)	   
-	
+		try:
+			fp = codecs.open(cfgfile, "r","utf-8")
+			self.parser.readfp(fp, cfgfile)	   
+		except IOError:
+			pass
 		# Set the initial values
 
 		if platform.system() == "Windows":
@@ -175,7 +177,7 @@ class Configuration:
 		"""
 		Created: 12.03.2005, KP
 		Description: A method to write out the settings
-		"""		
+		"""
 		filePointer = codecs.open(self.configFile, "w","utf-8")
 		self.parser.write(filePointer)
 		filePointer.close()
