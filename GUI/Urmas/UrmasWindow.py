@@ -73,8 +73,6 @@ class UrmasWindow(wx.lib.scrolledpanel.ScrolledPanel):
 		self.delayed = 0
 		self.control = UrmasControl.UrmasControl(self, visualizer)
 
-		#self.Bind(wx.EVT_CLOSE,self.closeWindowCallback)
-
 		self.sizer = wx.BoxSizer(wx.VERTICAL)
 		self.palette = UrmasPalette.UrmasPalette(self, self.control)
 		self.sizer.Add(self.palette, 0, flag = wx.EXPAND)#,flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
@@ -84,21 +82,15 @@ class UrmasWindow(wx.lib.scrolledpanel.ScrolledPanel):
 		self.timeline = GUI.Urmas.Timeline.Timeline(self.splitter, self.control, size = (768, 50))
 		self.timelinePanel = TimelinePanel.TimelinePanel(self.splitter, self.control, size = (1024, 500), p = self.parent)
 		self.timelinePanel.timeline = self.timeline
-		#self.splitter.SetMinimumPaneSize(10)
 		self.splitter.SplitHorizontally(self.timeline, self.timelinePanel, -300)
-		#self.splitter.SetSashPosition(150)
 		
 		self.control.setTimelinePanel(self.timelinePanel)
 		
-		#self.sizer.Add(self.timelinePanel,1,flag=wx.EXPAND)
 		self.sizer.Add(self.splitter, 1, flag = wx.EXPAND)
 
 		self.control.setAnimationMode(1)
 
-		# get all the events emitted so we can update the GUI in real time
-		#self.visualizer.bindTimeslider(self.onShowFrame,all=1)
 		self.visualizer.sliderPanel.Show(0)
-		#self.visualizer.timeslider.Show(0)
 		n = self.control.getDuration()
 	
 		self.controlpanel = PlaybackControl.PlaybackControl(self.visualizer.sliderWin, n * 10)
@@ -106,9 +98,9 @@ class UrmasWindow(wx.lib.scrolledpanel.ScrolledPanel):
 		s = self.visualizer.sliderWin.GetSize()
 		self.visualizer.setCurrentSliderPanel(self.controlpanel)
 		self.controlpanel.SetSize(s)
-		#lib.messenger.send(None,"set_time_range",1,n*10)
 		
 		lib.messenger.connect(None, "video_generation_close", self.onVideoGenerationClose)
+		
 		self.SetSizer(self.sizer)
 		self.SetAutoLayout(1)
 		if self.scrolled:
@@ -117,7 +109,6 @@ class UrmasWindow(wx.lib.scrolledpanel.ScrolledPanel):
 		self.splitter.UpdateSize()
 		wx.CallAfter(self.updateRenderWindow)
 		
-		#self.Bind(wx.EVT_SIZE,self.OnSize)
 		
 	def enable(self, flag):
 		"""
@@ -127,15 +118,20 @@ class UrmasWindow(wx.lib.scrolledpanel.ScrolledPanel):
 		if flag and self.frozen:
 			self.frozen = 0
 			self.Thaw()
-		else:
+		elif not flag:
 			self.frozen = 1
 			self.Freeze()
 		
 	def enableRendering(self, flag):
+		"""
+		Created: KP
+		Description: Enable or disable the rendering in the preview window
+		"""
 		if flag:
 			self.timelinePanel.splineEditor.iren.Enable()
 		else:
 			self.timelinePanel.splineEditor.iren.Disable()
+			
 	def updateRenderWindow(self, *args):
 		"""
 		Created: 15.12.2005, KP
@@ -152,7 +148,6 @@ class UrmasWindow(wx.lib.scrolledpanel.ScrolledPanel):
 		Description: Sets the frame to be shown
 		"""
 		t = time.time()
-		
 		if t - self.lastFrameTime < 0.2:
 			return
 		self.lastFrameTime = t
@@ -160,8 +155,6 @@ class UrmasWindow(wx.lib.scrolledpanel.ScrolledPanel):
 		
 		spf = self.control.getSecondsPerFrame()
 		tp = int(frame * spf)
-		print "Showing time pos ", tp, "frame=", frame, "seconds per frame=", spf
-		#tp/=10.0
 		lib.messenger.send(None, "show_time_pos", tp)
 		lib.messenger.send(None, "render_time_pos", tp)
 		self.timelinePanel.timeline.Refresh()
