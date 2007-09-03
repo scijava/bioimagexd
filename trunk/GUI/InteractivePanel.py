@@ -512,7 +512,6 @@ class InteractivePanel(GUI.ogl.ShapeCanvas):
 		Description: Update the mouse position and the rendering according to user action,
 					 e.g. draw a rubber band when zooming to selected region
 		"""
-		print "dragging=",event.Dragging(), "right down=",event.RightIsDown()
 		if not event.Dragging():
 			self.scrollPos = None
 			self.zoomDragPos = None
@@ -522,10 +521,8 @@ class InteractivePanel(GUI.ogl.ShapeCanvas):
 			self.scrollPos = event.GetPosition()
 		if event.RightIsDown():
 			yPos = event.GetPosition()[1]
-			print "yPos=",yPos
 			if self.zoomDragPos:
 				dy = yPos - self.zoomDragPos
-				print "dy=",dy
 				f = self.getZoomFactor()
 				if dy > 0:
 					f-=0.1
