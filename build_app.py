@@ -73,6 +73,7 @@ def build():
 	Description: Builds the appropriate command-line options 
 	Docstring: 15.06.2007 twikstro
 	"""
+	print "build()"
 	excludeList = ['PyShell', 'dl', 'dotblas', 'hexdump', 'mx', 'win32com.gen_py',
 	"pywin", "pywin.debugger", "pywin.debugger.dbgcon",
 	"pywin.dialogs", "pywin.dialogs.list",
@@ -162,7 +163,9 @@ def build():
 		os.system(cmd_line)
 		
 	elif platform.system() == "Windows":
-		#import py2exe
+		# importing py2exe causes the windows specific magic to take place
+		import py2exe
+
 
 		# use windows=[{... to not show the console
 		# use console=[{ to show the console

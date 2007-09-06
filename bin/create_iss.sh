@@ -1,4 +1,14 @@
 #! /bin/sh
 /bin/sh bin/build_innosetup.sh > temp.txt
-REPL="`cat temp.txt`"
-cat BioImageXD_template.iss | sed s/__FILES__/$REPL/g > BioImageXD.iss
+
+echo > BioImageXD.iss
+while read -r line
+do
+   if [ "$line" = "__FILES__" ]; then
+    	cat temp.txt >> BioImageXD.iss
+   else
+
+     	echo $line >> BioImageXD.iss
+   fi
+
+done < bin/BioImageXD_template.iss
