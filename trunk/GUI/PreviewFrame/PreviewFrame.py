@@ -183,9 +183,9 @@ class PreviewFrame(InteractivePanel):
 			
 		# If the old size is different from the new size
 		if self.paintSize != (newX, newY):
-			# Calculate the width and height of the original image data scaled by the 
+			# Calculate the width and height of the original image data scaled by the
 			# current zoom factor, and if that size is larger than the requested
-			# size, then use that 
+			# size, then use that
 			x2, y2 = [a*self.zoomFactor for a in [self.dataDimX, self.dataDimY]]
 			newX = max(newX, x2)
 			newY = max(newY, y2)
@@ -194,8 +194,27 @@ class PreviewFrame(InteractivePanel):
 			
 			if self.buffer.GetWidth() != newX or self.buffer.GetHeight() != newY:
 				Logging.info("Making buffer the size of %d,%d"%(newX, newY), kw="preview")
-				self.buffer = wx.EmptyBitmap(newX, newY)
+				self.buffer = self.makeBackground(newX, newY)
 				self.setScrollbars(newX, newY)
+				
+	def makeBackground(self, newX, newY):
+		"""
+		Created: 06.09.2007, KP
+		Description: create a buffer that is gray
+		"""
+		buffer = wx.EmptyBitmap(newX, newY)
+		dc = wx.MemoryDC()
+		dc.SelectObject(buffer)
+		dc.BeginDrawing()
+		
+		dc.SetBackground(wx.Brush(wx.Colour(*self.bgcolor)))
+		dc.SetPen(wx.Pen(wx.Colour(*self.bgcolor), 0))
+		dc.SetBrush(wx.Brush(wx.Color(*self.bgcolor)))
+
+		dc.DrawRectangle(0,0,newX,newY)
+		dc.EndDrawing()
+		dc.SelectObject(wx.NullBitmap)
+		return buffer
 
 	def onSize(self, event):
 		"""
@@ -685,6 +704,7 @@ class PreviewFrame(InteractivePanel):
 		# Don't paint anything if there's going to be a redraw anyway
 
 		if not self.slice and self.graySize == self.paintSize:
+			print "WONT PAINT GRAY"
 			return
 		dc = wx.MemoryDC()
 		dc.SelectObject(self.buffer)
@@ -699,6 +719,7 @@ class PreviewFrame(InteractivePanel):
 		dc.DrawRectangle(x0, y0, self.paintSize[0] + x0, self.paintSize[1] + x0)
 
 		if not self.slice or not self.enabled:
+			print "PAINTED GRAY"
 			self.graySize = self.paintSize
 			self.makeBackgroundBuffer(dc)
 			dc.EndDrawing()
