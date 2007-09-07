@@ -93,7 +93,6 @@ class ColocalizationPanel(TaskPanel):
 		lib.messenger.connect(None, "zslice_changed", self.updateZSlice)
 		lib.messenger.connect(None, "threshold_changed", self.updateSettings)
 		
-		#wx.FutureCall(500,self.getAutoThreshold)
 		
 	def updateListCtrl(self):
 		"""
