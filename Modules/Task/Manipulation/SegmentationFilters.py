@@ -1174,7 +1174,7 @@ class MeasureVolumeFilter(ProcessingFilter.ProcessingFilter):
 			cog = self.centersofmass[i]
 			umcog = self.umcentersofmass[i]
 			avgint = self.avgIntList[i]
-			w.writerow([str(i + 2), str(volumeum), str(volume), str(cog), str(umcog), str(avgint)])
+			w.writerow([str(i + 1), str(volumeum), str(volume), str(cog), str(umcog), str(avgint)])
 		f.close()
 
 	def getGUI(self, parent, taskPanel):
