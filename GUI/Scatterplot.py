@@ -52,7 +52,6 @@ class Scatterplot(InteractivePanel.InteractivePanel):
 		Created: 03.11.2004, KP
 		Description: Initialization
 		"""
-		#wx.Panel.__init__(self,parent,-1,size=size,**kws)
 		self.parent = parent
 		self.size = size
 		self.slice = None
@@ -81,6 +80,7 @@ class Scatterplot(InteractivePanel.InteractivePanel):
 		self.scatterCTF = None
 		self.mode = (1, 2)
 		
+		self.userDrawnThresholds=None
 			
 		self.lower1 = 127
 		self.upper1 = 255
@@ -97,13 +97,12 @@ class Scatterplot(InteractivePanel.InteractivePanel):
 		self.logarithmic = 1
 		self.scatter = None
 		self.scatterplot = None
-		
+		self.scalarMax = 255
 		
 		InteractivePanel.InteractivePanel.__init__(self, parent, size = size, **kws)
 
 		self.action = 5
 		self.Bind(wx.EVT_PAINT, self.OnPaint)
-		#self.Bind(wx.EVT_LEFT_UP,self.setThreshold)
 
 		self.Bind(wx.EVT_RIGHT_DOWN, self.onRightClick)
 		self.ID_COUNTVOXELS = wx.NewId()
@@ -232,6 +231,7 @@ class Scatterplot(InteractivePanel.InteractivePanel):
 		if y < 0:
 			y = 0
 		
+		print "action marked at start=",(x,y)
 		self.actionstart = (x, y)
 
 		l1diff = abs(x - self.lower1)
@@ -271,26 +271,28 @@ class Scatterplot(InteractivePanel.InteractivePanel):
 			x, y = event.GetPosition()
 			
 			y = self.scatterHeight - y
-#			x -= self.xoffset
 			x -= self.xoffset
 			x -= (self.verticalLegend.GetWidth() + 2 * self.emptySpace)
-			if x > 255:
-				x = 255
-			if y > 255:
-				y = 255
-			if x < 0:
-				x = 0
-			if y < 0:
-				y = 0
+			x = min(x, 255)
+			y = min(y, 255)
+			x = max(x, 0)
+			y = max(y, 0)
 
 			self.actionend = (x, y)
-			
 			x1, y1 = self.actionstart
 			x2, y2 = self.actionend
+			
 			if x2 < x1:
 				x1, x2 = x2, x1
 			if y2 < y1:
 				y1, y2 = y2, y1
+				
+			c = self.scalarMax / 255.0
+			x1 = int(c*x1)
+			x2 = int(c*x2)
+			y1 = int(c*y1)
+			y2 = int(c*y2)
+		
 			reds = self.sources[0].getSettings()
 			greens = self.sources[1].getSettings()
 			
@@ -321,8 +323,10 @@ class Scatterplot(InteractivePanel.InteractivePanel):
 				if rl > ru:
 					ru, rl = rl, ru
 				self.upper2 = y2
-			self.actionstart = (gu, ru)
-			self.actionend = (gl, rl)
+			print "actionstart based on thresholds=",(gu,ru)
+			#self.actionstart = (gu, ru)
+			#self.actionend = (gl, rl)
+			self.userDrawnThresholds = (gu, ru), (gl, rl)
 
 			self.updatePreview()
 			
@@ -334,6 +338,8 @@ class Scatterplot(InteractivePanel.InteractivePanel):
 		"""
 		InteractivePanel.InteractivePanel.setDataUnit(self, dataUnit)
 		self.sources = dataUnit.getSourceDataUnits()
+		self.scalarMax = max([sourceUnit.getScalarRange()[1] for sourceUnit in self.sources])
+		
 		self.settings = self.sources[0].getSettings()
 		self.buffer = wx.EmptyBitmap(256, 256)
 		self.updatePreview()
@@ -363,22 +369,8 @@ class Scatterplot(InteractivePanel.InteractivePanel):
 		Created: 24.03.2005, KP
 		Description: Sets the thresholds based on user's selection
 		"""
-		x1, y1 = self.actionstart
-		x2, y2 = self.actionend
-		if x2 < x1:
-			x1, x2 = x2, x1
-		if y2 < y1:
-			y1, y2 = y2, y1
-
-		minval, maxval = self.sources[0].getScalarRange()
-		c = maxval / 255.0
-		x1 = int(x1 * c)
-		x2 = int(x2 * c)
-		y1 = int(y1 * c)
-		y2 = int(y2 * c)
-		
-		reds = self.sources[0].getSettings()
-		greens = self.sources[1].getSettings()
+		# First get the coordinates of the user drawn box
+		(x1, y1),(x2,y2) = self.userDrawnThresholds
 		
 		gl, gu = x1, x2
 		rl, ru = y1, y2
@@ -392,6 +384,7 @@ class Scatterplot(InteractivePanel.InteractivePanel):
 
 		self.actionstart = None
 		self.actionend = None
+		self.userDrawnThresholds = None
 		self.mode = (0, 0)
 		
 	def setTimepoint(self, tp):
@@ -444,16 +437,18 @@ class Scatterplot(InteractivePanel.InteractivePanel):
 		Created: 25.03.2005, KP
 		Description: Does the actual blitting of the bitmap
 		"""
-		dc = wx.BufferedPaintDC(self, self.buffer)#,self.buffer)
+		dc = wx.BufferedPaintDC(self, self.buffer)
 
 	def paintPreview(self):
 		"""
 		Created: 25.03.2005, KP
 		Description: Paints the scattergram
 		"""
-		dc = wx.BufferedDC(wx.ClientDC(self), self.buffer)
+#		dc = wx.BufferedDC(wx.ClientDC(self), self.buffer)
+		dc = wx.MemoryDC()
+		dc.SelectObject(self.buffer)
 		dc.BeginDrawing()
-
+		
 		colour = self.parent.GetBackgroundColour()
 		
 		dc.SetBackground(wx.Brush(colour))
@@ -469,23 +464,33 @@ class Scatterplot(InteractivePanel.InteractivePanel):
 		lower2 = int(self.sources[1].getSettings().get("ColocalizationLowerThreshold"))
 		upper1 = int(self.sources[0].getSettings().get("ColocalizationUpperThreshold"))
 		upper2 = int(self.sources[1].getSettings().get("ColocalizationUpperThreshold"))
-	
-		minval, maxval = self.sources[0].getScalarRange()
-		c = 255.0 / maxval
-		if self.actionstart and self.actionend:
-			x1, y1 = self.actionstart
-			x2, y2 = self.actionend
+		
+		print "lower1=",lower1
+		print "upper1=",upper1
+		print "lower2=",lower2
+		print "upper2=",upper2
+		
+		print "Scalar max = ",self.scalarMax
+		c = 255.0 / self.scalarMax
+		#if self.actionstart and self.actionend:
+		if self.userDrawnThresholds:
+#			x1, y1 = self.actionstart
+#			x2, y2 = self.actionend
+			(x1,y1),(x2,y2) = self.userDrawnThresholds
+#			print "actionstart=",self.actionstart
+#			print "actioennd=",self.actionend
+			print "User drawn threhsolds = ",self.userDrawnThresholds
 			if x2 < x1:
 				x1, x2 = x2, x1
 			if y2 < y1:
 				y1, y2 = y2, y1
 			lower1, upper1 = x1, x2
 			lower2, upper2 = y1, y2
-			lower1 = int(lower1 * (1.0 / c))
-			lower2 = int(lower2 * (1.0 / c))
-			upper1 = int(upper1 * (1.0 / c))
-			upper2 = int(upper2 * (1.0 / c))
-			
+
+			#lower1 = int(lower1 * (1.0 / c))
+			#lower2 = int(lower2 * (1.0 / c))
+			#upper1 = int(upper1 * (1.0 / c))
+			#upper2 = int(upper2 * (1.0 / c))
 			
 
 		bmp = self.scatter.ConvertToBitmap()
@@ -528,6 +533,7 @@ class Scatterplot(InteractivePanel.InteractivePanel):
 		dc.DrawLine(self.xoffset + hzlw, ymax - upper2 * c, self.xoffset + hzlw + 255, ymax - upper2 * c)
 		
 			
+		print "getting overlay borders...", upper1, lower1, (upper1-lower1)*c, upper2, lower2, (upper2-lower2)*c
 		borders = lib.ImageOperations.getOverlayBorders(int((upper1 - lower1) * c) + 1, int((upper2 - lower2) * c) + 1, (0, 0, 255), 90, lineWidth = 2)
 		borders = borders.ConvertToBitmap()
 		
@@ -552,9 +558,7 @@ class Scatterplot(InteractivePanel.InteractivePanel):
 		self.upper1 = upper1 * c
 		self.upper2 = upper2 * c
 		
-		
 		self.dc = dc
-
 		del self.dc
 		dc.EndDrawing()
 		dc = None

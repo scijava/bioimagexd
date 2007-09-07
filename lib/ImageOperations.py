@@ -787,6 +787,7 @@ def getOverlayBorders(width, height, color, alpha, lineWidth = 1):
 	lengthOfStructStr = len(structString)
 	structString = structString[: lengthOfStructStr  - (2 * width)] + chr(alpha) * 2 * width
 	twochar = chr(alpha) + chr(alpha)
+	print "range",0,width*height,width
 	for i in range(0, width * height, width):
 		if i:
 			structString = structString[: i - 2] + 2 * twochar + structString[i + 2: ]
