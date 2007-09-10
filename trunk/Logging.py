@@ -174,13 +174,12 @@ def error(title, msg, xframe = sys._getframe()):
 			title	   Title for the error message
 			msg		   The actual error message
 	"""
-	outfile.write("%s: %s" % (xframe.f_code.co_filename, xframe.f_lineno) + " ERROR: %s\n" % msg)
-	raise GUIError(title, "%s: %s" % (xframe.f_code.co_filename, xframe.f_lineno) + " " + msg)
+	outfile.write(u"%s: %s" % (xframe.f_code.co_filename, xframe.f_lineno) + " ERROR: %s\n" % msg)
+	raise GUIError(title, u"%s: %s" % (xframe.f_code.co_filename, xframe.f_lineno) + " " + msg)
 
 #@possibly_ignore
 def info(msg, *args, **kws):
 	"""
-	Function: info
 	Created: 13.12.2004, KP
 	Description: Prints information
 	Parameters:
@@ -196,12 +195,14 @@ def info(msg, *args, **kws):
 		fileName = os.path.split(xframe.f_code.co_filename)[-1]
 		lineno = xframe.f_lineno
 		argstring = " ".join([str(arg) for arg in args])
-		outfile.write("%s:%d: %s %s\n"%(fileName, lineno, msg, argstring))
+		if type(msg) != type(u""):
+			msg = codecs.encode(unicode(msg,"latin1"), "ascii","xmlcharrefreplace")
+		#argstring = codecs.encode(unicode(msg,"latin1"), "ascii","xmlcharrefreplace")
+		outfile.write(u"%s:%d: %s %s\n"%(fileName, lineno, msg, argstring))
 
-#@possibly_ignore'
+#@possibly_ignore
 def backtrace():
 	"""
-	Function: info
 	Created: 02.07.2005, KP
 	Description: Prints backtrace of callers
 	"""
@@ -209,7 +210,7 @@ def backtrace():
 	xframe = sys._getframe(1)
 	fileInBackTrace = os.path.split(xframe.f_code.co_filename)[-1]
 	lineno = xframe.f_lineno
-	outfile.write("%s:%d: Generating backtrace of calls:\n"%(fileInBackTrace, lineno))
+	outfile.write(u"%s:%d: Generating backtrace of calls:\n"%(fileInBackTrace, lineno))
 	
 	indent = -1
 	oldfile = None
@@ -225,5 +226,5 @@ def backtrace():
 		lineno = frame.f_lineno
 		function = frame.f_code.co_name
 		indentstr = "  "*indent
-		outfile.write("%sFile %s, function %s on line %d\n" % (indentstr, fileInBackTrace, function, lineno))
+		outfile.write(u"%sFile %s, function %s on line %d\n" % (indentstr, fileInBackTrace, function, lineno))
 		i += 1

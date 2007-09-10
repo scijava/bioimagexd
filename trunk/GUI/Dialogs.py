@@ -136,6 +136,7 @@ def askOpenFileName(parent, title, wc, remember =- 1, filetype = None):
 	dlg = wx.FileDialog(parent, title, lastpath, wildcard = wc, style = wx.OPEN|wx.MULTIPLE)
 	if dlg.ShowModal() == wx.ID_OK:
 		asklist = dlg.GetPaths()
+		asklist = map(unicode, asklist)
 		if not asklist:
 			return asklist
 		if remember:

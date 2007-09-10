@@ -37,6 +37,7 @@ import os.path
 import scripting
 import wx
 import wx.lib.intctrl
+import types
 
 class GeneralSettings(wx.Panel):
 	"""
@@ -52,13 +53,13 @@ class GeneralSettings(wx.Panel):
 		askOnQuit = conf.getConfigItem("AskOnQuit", "General")
 		restoreFiles = conf.getConfigItem("RestoreFiles", "General")
 		reportCrash = conf.getConfigItem("ReportCrash", "General")
-		if restoreFiles and type(restoreFiles) == type(""):
+		if restoreFiles and type(restoreFiles) in [types.StringType, types.UnicodeType]:
 			restoreFiles = eval(restoreFiles)
-		if reportCrash and type(reportCrash) == type(""):
+		if reportCrash and type(reportCrash)  in [types.StringType, types.UnicodeType]:
 			reportCrash = eval(reportCrash)
-		if showTips and type(showTips) == type(""):
+		if showTips and type(showTips)  in [types.StringType, types.UnicodeType]:
 			showTips = eval(showTips)
-		if askOnQuit and type(askOnQuit) == type(""):
+		if askOnQuit and type(askOnQuit)  in [types.StringType, types.UnicodeType]:
 			askOnQuit = eval(askOnQuit)
 			
 		self.imageBox = wx.StaticBox(self, -1, "Image Format", size = (600, 150))
@@ -78,6 +79,7 @@ class GeneralSettings(wx.Panel):
 		self.tipBox = wx.StaticBox(self, -1, "Startup options")
 		self.tipBoxSizer = wx.StaticBoxSizer(self.tipBox, wx.VERTICAL)
 		self.tipCheckbox = wx.CheckBox(self, -1, "Show tips at startup")
+		print "showtips=",showTips,type(showTips)
 		self.tipCheckbox.SetValue(showTips)
 		self.tipBoxSizer.Add(self.tipCheckbox)
 		
@@ -152,7 +154,7 @@ class PathSettings(wx.Panel):
 
 		self.dataBoxSizer.Add(self.databrowse, 0, wx.EXPAND)
 		self.useLastCheckbox = wx.CheckBox(self, -1, "Use last opened directory as default directory")
-		if type(remember) == type(""):
+		if type(remember)  in [types.StringType, types.UnicodeType]:
 			remember = eval(remember)
 		self.useLastCheckbox.SetValue(remember)
 		self.dataBoxSizer.Add(self.useLastCheckbox)

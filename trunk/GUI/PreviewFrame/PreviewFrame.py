@@ -542,7 +542,6 @@ class PreviewFrame(InteractivePanel):
 		if ext == "tif":
 			ext = "tiff"
 		mime = "image/%s" % ext
-		#img=self.snapshot.ConvertToImage()
 		w, h = self.snapshotSize
 		x, y = self.snapshotPos
 		buff = wx.EmptyBitmap(w, h)
@@ -719,7 +718,6 @@ class PreviewFrame(InteractivePanel):
 		dc.DrawRectangle(x0, y0, self.paintSize[0] + x0, self.paintSize[1] + x0)
 
 		if not self.slice or not self.enabled:
-			print "PAINTED GRAY"
 			self.graySize = self.paintSize
 			self.makeBackgroundBuffer(dc)
 			dc.EndDrawing()

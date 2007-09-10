@@ -101,7 +101,7 @@ def build():
 	dataFiles.extend(modules)
 
 	if platform.system() == "Darwin":
-		#import py2app
+		import py2app
 		# A custom plist for letting it associate with all files.
 		pList = dict(CFBundleDocumentTypes=[dict(CFBundleTypeExtensions=["lsm"],
 									 CFBundleTypeName="Carl Zeiss LSM file",
