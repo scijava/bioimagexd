@@ -1424,7 +1424,7 @@ class Visualizer:
 													initFile,
 													wildCard,
 													"snapshotImage")
-			do_cmd = "scripting.visualizer.saveSnapshot(r'%s')" % filename
+			do_cmd = "scripting.visualizer.saveSnapshot(ur'%s')" % filename
 			cmd = lib.Command.Command(lib.Command.GUI_CMD, None, None, do_cmd, "", desc = "Save a snapshot of the visualizer")
 			cmd.run()
 

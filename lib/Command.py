@@ -97,14 +97,16 @@ class ScriptRecorder:
 		for i in imports:
 			if type(i) == types.TupleType:
 				m, f = i
-				Logging.outfile.write(">>> from %s import %s\n" % (m, f))
+				Logging.outfile.write(u">>> from %s import %s\n" % (m, f))
 			else:
-				Logging.outfile.write(">>> import %s\n" % i)
+				Logging.outfile.write(u">>> import %s\n" % i)
 
 		lines = code.split("\n")
 		text += lines
 		for line in lines:
-			Logging.outfile.write(">>> %s\n" % line)
+			if type(line) == type(""):
+				line = unicode(line,"latin1")
+			Logging.outfile.write(u">>> %s\n" % line)
 		self.code = text
 
 class Command:

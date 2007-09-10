@@ -273,11 +273,11 @@ class TreeWidget(wx.SashLayoutWindow):
 		"""            
 	
 		item = None
-		isz = (16, 16)
-		il = wx.ImageList(isz[0], isz[1])
-		fldridx     = il.Add(wx.ArtProvider_GetBitmap(wx.ART_FOLDER,      wx.ART_OTHER, isz))
-		fldropenidx = il.Add(wx.ArtProvider_GetBitmap(wx.ART_FILE_OPEN,   wx.ART_OTHER, isz))
-		fileidx     = il.Add(wx.ArtProvider_GetBitmap(wx.ART_REPORT_VIEW, wx.ART_OTHER, isz))
+		imageSize = (16, 16)
+		il = wx.ImageList(imageSize[0], imageSize[1])
+		folderIndex     = il.Add(wx.ArtProvider_GetBitmap(wx.ART_FOLDER,      wx.ART_OTHER, imageSize))
+		folderOpenIndex = il.Add(wx.ArtProvider_GetBitmap(wx.ART_FILE_OPEN,   wx.ART_OTHER, imageSize))
+		fileIndex     = il.Add(wx.ArtProvider_GetBitmap(wx.ART_REPORT_VIEW, wx.ART_OTHER, imageSize))
 
 		for i in range(0, len(objs)):
 			if not path in self.items:
@@ -293,22 +293,22 @@ class TreeWidget(wx.SashLayoutWindow):
 			if not self.lsmfiles:
 				self.lsmfiles = self.tree.AppendItem(self.root, "LSM files")
 				self.tree.SetPyData(self.lsmfiles, "1")
-				self.tree.SetItemImage(self.lsmfiles, fldridx, which = wx.TreeItemIcon_Normal)
-				self.tree.SetItemImage(self.lsmfiles, fldropenidx, which = wx.TreeItemIcon_Expanded)
+				self.tree.SetItemImage(self.lsmfiles, folderIndex, which = wx.TreeItemIcon_Normal)
+				self.tree.SetItemImage(self.lsmfiles, folderOpenIndex, which = wx.TreeItemIcon_Expanded)
 		
 			item = self.lsmfiles
 			self.tree.Expand(item)            
 			item = self.tree.AppendItem(item, name)
 			self.tree.Expand(item)
 			self.tree.SetPyData(item, "2")        
-			self.tree.SetItemImage(item, fldropenidx, which = wx.TreeItemIcon_Expanded)
+			self.tree.SetItemImage(item, folderOpenIndex, which = wx.TreeItemIcon_Expanded)
 		
 		elif objtype == "txt":
 			if not self.leicafiles:
 				self.leicafiles = self.tree.AppendItem(self.root, "Leica files")
 				self.tree.SetPyData(self.leicafiles, "1")
-				self.tree.SetItemImage(self.leicafiles, fldridx, which = wx.TreeItemIcon_Normal)
-				self.tree.SetItemImage(self.leicafiles, fldropenidx, which = wx.TreeItemIcon_Expanded)        
+				self.tree.SetItemImage(self.leicafiles, folderIndex, which = wx.TreeItemIcon_Normal)
+				self.tree.SetItemImage(self.leicafiles, folderOpenIndex, which = wx.TreeItemIcon_Expanded)        
 
 			item = self.leicafiles
 			self.tree.Expand(item)
@@ -316,33 +316,33 @@ class TreeWidget(wx.SashLayoutWindow):
 			self.tree.Expand(item)
 			
 			self.tree.SetPyData(item, "2")
-			self.tree.SetItemImage(item, fldropenidx, which = wx.TreeItemIcon_Expanded)
+			self.tree.SetItemImage(item, folderOpenIndex, which = wx.TreeItemIcon_Expanded)
 		elif objtype == "oif":
 			if not self.oiffiles:
 				self.oiffiles = self.tree.AppendItem(self.root, "Olympus files")
 				self.tree.SetPyData(self.oiffiles, "1")
-				self.tree.SetItemImage(self.oiffiles, fldridx, which = wx.TreeItemIcon_Normal)
-				self.tree.SetItemImage(self.oiffiles, fldropenidx, which = wx.TreeItemIcon_Expanded)
+				self.tree.SetItemImage(self.oiffiles, folderIndex, which = wx.TreeItemIcon_Normal)
+				self.tree.SetItemImage(self.oiffiles, folderOpenIndex, which = wx.TreeItemIcon_Expanded)
 			item = self.oiffiles
 			self.tree.Expand(item)
 			item = self.tree.AppendItem(item, name)
 			self.tree.Expand(item)
 			self.tree.SetPyData(item, "2")
-			self.tree.SetItemImage(item, fldropenidx, which = wx.TreeItemIcon_Expanded)
+			self.tree.SetItemImage(item, folderOpenIndex, which = wx.TreeItemIcon_Expanded)
 		elif objtype == "pic":
 			if not self.bioradfiles:
 				self.bioradfiles = self.tree.AppendItem(self.root, "BioRad files")
 				self.tree.SetPyData(self.bioradfiles, "1")
-				self.tree.SetItemImage(self.bioradfiles, fldridx, which = wx.TreeItemIcon_Normal)
-				self.tree.SetItemImage(self.bioradfiles, fldropenidx, which = wx.TreeItemIcon_Expanded)
+				self.tree.SetItemImage(self.bioradfiles, folderIndex, which = wx.TreeItemIcon_Normal)
+				self.tree.SetItemImage(self.bioradfiles, folderOpenIndex, which = wx.TreeItemIcon_Expanded)
 			item = self.bioradfiles
 			self.tree.Expand(item)
 		elif objtype == "hdr":
 			if not self.interfilefiles:
 				self.interfilefiles = self.tree.AppendItem(self.root, "Interfile files")
 				self.tree.SetPyData(self.interfilefiles, "1")
-				self.tree.SetItemImage(self.interfilefiles, fldridx, which = wx.TreeItemIcon_Normal)
-				self.tree.SetItemImage(self.interfilefiles, fldropenidx, which = wx.TreeItemIcon_Expanded)
+				self.tree.SetItemImage(self.interfilefiles, folderIndex, which = wx.TreeItemIcon_Normal)
+				self.tree.SetItemImage(self.interfilefiles, folderOpenIndex, which = wx.TreeItemIcon_Expanded)
 			item = self.interfilefiles
 			self.tree.Expand(item)
 		elif objtype == "bxd":
@@ -351,8 +351,8 @@ class TreeWidget(wx.SashLayoutWindow):
 			if not self.bxdfiles:
 				self.bxdfiles = self.tree.AppendItem(self.root, "BioImageXD files")
 				self.tree.SetPyData(self.bxdfiles, "1")        
-				self.tree.SetItemImage(self.bxdfiles, fldridx, which = wx.TreeItemIcon_Normal)
-				self.tree.SetItemImage(self.bxdfiles, fldropenidx, which = wx.TreeItemIcon_Expanded)
+				self.tree.SetItemImage(self.bxdfiles, folderIndex, which = wx.TreeItemIcon_Normal)
+				self.tree.SetItemImage(self.bxdfiles, folderOpenIndex, which = wx.TreeItemIcon_Expanded)
 
 			item = self.bxdfiles
 			self.tree.Expand(item)            
@@ -360,7 +360,7 @@ class TreeWidget(wx.SashLayoutWindow):
 			self.tree.Expand(item)
 
 			self.tree.SetPyData(item, "2")        
-			self.tree.SetItemImage(item, fldropenidx, which = wx.TreeItemIcon_Expanded)
+			self.tree.SetItemImage(item, folderOpenIndex, which = wx.TreeItemIcon_Expanded)
 
 		elif objtype == "bxc":
 		
@@ -368,8 +368,8 @@ class TreeWidget(wx.SashLayoutWindow):
 			if not self.bxdfiles:
 				self.bxdfiles = self.tree.AppendItem(self.root, "BioImageXD files")
 				self.tree.SetPyData(self.bxdfiles, "1")        
-				self.tree.SetItemImage(self.bxdfiles, fldridx, which = wx.TreeItemIcon_Normal)
-				self.tree.SetItemImage(self.bxdfiles, fldropenidx, which = wx.TreeItemIcon_Expanded)
+				self.tree.SetItemImage(self.bxdfiles, folderIndex, which = wx.TreeItemIcon_Normal)
+				self.tree.SetItemImage(self.bxdfiles, folderOpenIndex, which = wx.TreeItemIcon_Expanded)
 
 			item = self.bxdfiles
 			self.tree.Expand(item)
@@ -377,8 +377,8 @@ class TreeWidget(wx.SashLayoutWindow):
 			if not self.liffiles:
 				self.liffiles = self.tree.AppendItem(self.root, "LIF files")
 				self.tree.SetPyData(self.liffiles, "1")
-				self.tree.SetItemImage(self.liffiles, fldridx, which = wx.TreeItemIcon_Normal)
-				self.tree.SetItemImage(self.liffiles, fldropenidx, which = wx.TreeItemIcon_Expanded)
+				self.tree.SetItemImage(self.liffiles, folderIndex, which = wx.TreeItemIcon_Normal)
+				self.tree.SetItemImage(self.liffiles, folderOpenIndex, which = wx.TreeItemIcon_Expanded)
 
 			item = self.liffiles
 			self.tree.Expand(item)
@@ -386,7 +386,7 @@ class TreeWidget(wx.SashLayoutWindow):
 			self.tree.Expand(item)
 
 			self.tree.SetPyData(item, "2")
-			self.tree.SetItemImage(item, fldropenidx, which = wx.TreeItemIcon_Expanded)
+			self.tree.SetItemImage(item, folderOpenIndex, which = wx.TreeItemIcon_Expanded)
 
 			
 		self.tree.Expand(item)
@@ -398,8 +398,8 @@ class TreeWidget(wx.SashLayoutWindow):
 			if resampledims and resampledims != (0, 0, 0):
 				self.markRed([added], "*")
 			self.tree.SetPyData(added, obj)        
-			self.tree.SetItemImage(added, fileidx, which = wx.TreeItemIcon_Normal)
-			#self.tree.SetItemImage(added,fldropenidx,which=wx.TreeItemIcon_Expanded)
+			self.tree.SetItemImage(added, fileIndex, which = wx.TreeItemIcon_Normal)
+			#self.tree.SetItemImage(added,folderOpenIndex,which=wx.TreeItemIcon_Expanded)
 			self.tree.EnsureVisible(added)
 			self.dataUnitItems.append(added)
 			
@@ -411,7 +411,8 @@ class TreeWidget(wx.SashLayoutWindow):
 			
 		self.tree.Expand(self.root)
 		conf = Configuration.getConfiguration()
-		conf.setConfigItem("FileList", "General", str(self.items.keys()))
+		lst = self.items.keys()
+		conf.setConfigItem("FileList", "General", lst)
 		conf.writeSettings()
 
 	def getSelectedDataUnits(self):
