@@ -1208,9 +1208,9 @@ class MeasureVolumeFilter(ProcessingFilter.ProcessingFilter):
 			sizer = wx.BoxSizer(wx.VERTICAL)
 			sizer.Add(self.reportGUI, 1)
 			sizer.Add(self.totalGUI)
-			sizer.AddSpacer(5)
+			sizer.AddSpacer((5,5))
 			sizer.Add(self.exportBtn)
-			sizer.AddSpacer(5)
+			sizer.AddSpacer((5,5))
 			gui.sizer.Add(sizer, (1, 0), flag = wx.EXPAND | wx.ALL)
 		return gui
 
