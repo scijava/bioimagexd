@@ -557,7 +557,8 @@ class CreateTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 		Created: 14.08.2006, KP
 		Description: Return the list of parameters needed for configuring this GUI
 		"""            
-		return [["Change between consecutive objects",
+		return [
+		["Change between consecutive objects",
 		("MaxVelocity", "VelocityWeight",
 		"MaxSizeChange", "SizeWeight",
 		"MaxIntensityChange", "IntensityWeight",
@@ -669,7 +670,6 @@ class CreateTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		lib.ProcessingFilter.ProcessingFilter.setDataUnit(self, dataUnit)
 		tracksFile = dataUnit.getSettings().get("StatisticsFile")
-		print "GOT TRACKS FILE=", tracksFile
 		if tracksFile and os.path.exists(tracksFile):
 			print "ReaDING TRACKS FILE"
 			self.parameters["TrackFile"] = tracksFile
@@ -750,7 +750,6 @@ class CreateTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 		Created: 26.11.2006, KP
 		Description: return the intensity values of objects in a given roi
 		"""
-		
 		imagedata = self.getInputFromChannel(0)
 		mx, my, mz = self.dataUnit.getDimensions()
 		n, maskImage = lib.ImageOperations.getMaskFromROIs([roi], mx, my, mz)
@@ -785,7 +784,6 @@ class CreateTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 			self.ctf = None
 			lib.messenger.send(None, "data_changed", 0)
 
-		print "Selected", len(selections), "objects"
 		n = self.trackGrid.getTable().GetNumberRows()
 		n2 = len(selections)
 		if n2 > n:
@@ -793,7 +791,6 @@ class CreateTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 			self.trackGrid.SetTable(self.trackGrid.getTable())
 		
 		currTp = self.trackGrid.getTimepoint()
-		print "timepoint=", currTp
 		particles = self.tracker.getParticles(currTp, selections)
 		for i, obj in enumerate(particles):
 			self.trackGrid.getTable().SetValue(i, currTp, obj.getCenterOfMass())
@@ -811,10 +808,7 @@ class CreateTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 			self.toggleBtn.SetLabel("<< Hide seed objects")
 		self.guisizer.Show(self.reportGUI, val)
 		self.gui.Layout()
-		#self.parent.Layout()
-		#self.parent.FitInside()
-		
-		
+
 	def execute(self, inputs, update = 0, last = 0):
 		"""
 		Created: 14.08.2006, KP
