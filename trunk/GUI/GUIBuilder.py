@@ -54,6 +54,8 @@ NOBR = "NOBR"
 BR = "BR"
 ROISELECTION = "ROISELECTION"
 
+SPECIAL_ELEMENTS = [RADIO_CHOICE, THRESHOLD, CTF, PIXEL, PIXELS, SLICE, FILENAME, CHOICE, ROISELECTION]
+
 class GUIBuilderBase:
 	"""
 	Created: 31.05.2006, KP
@@ -154,48 +156,46 @@ class GUIBuilderBase:
 			currentTimePoint = timepoint
 		if dataUnit:
 			return self.sourceUnits[unitIndex]
-		#print "RETURNING TIMEPOINT %d from SOURCEUNITS %d AS SOURCE" %(tp, unitIndex)
-		#print "SOURCE UNIT IS = ", self.sourceUnits[unitIndex]
+
 		return self.sourceUnits[unitIndex].getTimepoint(currentTimePoint)
 		
 	def getNumberOfInputs(self):
 		"""
 		Created: 17.04.2006, KP
 		Description: Return the number of inputs required for this filter
-		"""				
+		"""
 		return self.numberOfInputs
 		
 	def setInputChannel(self, inputNumber, channel):
 		"""
 		Created: 17.04.2006, KP
 		Description: Set the input channel for input #inputNum
-		"""			   
+		"""
 		self.inputMapping[inputNumber] = channel
 		
 	def getInputName(self, n):
 		"""
 		Created: 17.04.2006, KP
 		Description: Return the name of the input #n
-		"""			 
-		return "Source dataset %d" % n		
+		"""
+		return "Source dataset %d" % n
 
 	def getParameterLevel(self, parameter):
 		"""
 		Created: 1.11.2006, KP
-		Description: Return the level of the given parameter
+		Description: Return the level of the given parameter. This is used to color code the GUI options
 		"""
-		return scripting.COLOR_BEGINNER			 
+		return scripting.COLOR_BEGINNER
 			
 	def sendUpdateGUI(self):
 		"""
 		Created: 05.06.2006, KP
-		Description: Method to update the GUI for this filter
+		Description: Method to update the GUI elements that correspond to the parameters
 		"""
 		for item in self.getPlainParameters():
 			value = self.getParameter(item)
 			lib.messenger.send(self, "set_%s" % item, value)
 
-	
 	def canSelectChannels(self):
 		"""
 		Created: 31.05.2006, KP
@@ -217,9 +217,10 @@ class GUIBuilderBase:
 		"""
 		returnList = []
 		for item in self.getParameters():
-			# If it's a label
+			# If it's a label, then ignore it
 			if type(item) == types.StringType:
 				continue
+			# if it's a list type, then add each parameter in the list to the list of plain parameters
 			elif type(item) == types.ListType:
 				title, items = item
 				if type(items[0]) == types.TupleType:
@@ -227,9 +228,7 @@ class GUIBuilderBase:
 				returnList.extend(items)
 		return returnList
 
-
 	def recordParameterChange(self, parameter, value, modpath): #svn-1037, 18.7.07, MB
-		#Heres probably some stuff to cleanup
 		"""
 		Created: 14.06.2007, KP
 		Description: record the change of a parameter along with information for how to undo it
@@ -265,8 +264,6 @@ class GUIBuilderBase:
 									desc = "Change parameter '%s' of filter '%s'" % (parameter, self.name))
 		cmd.run(recordOnly = 1)
 
-
-		
 	def setParameter(self, parameter, value):
 		"""
 		Created: 13.04.2006, KP
@@ -283,19 +280,14 @@ class GUIBuilderBase:
 		Created: 29.05.2006, KP
 		Description: Get a value for the parameter
 		"""	   
-		if parameter in self.parameters:
-			return self.parameters[parameter]
-		return None
+		return self.parameters.get(parameter, None)
 		
 	def getDesc(self, parameter):
 		"""
 		Created: 13.04.2006, KP
 		Description: Return the description of the parameter
 		"""	   
-		try:
-			return self.descs[parameter]
-		except:			   
-			return ""
+		return self.descs.get(parameter,"")
 		
 	def getLongDesc(self, parameter):
 		"""
@@ -322,15 +314,14 @@ class GUIBuilderBase:
 		"""
 		Created: 13.04.2006, KP
 		Description: Return the default value of a parameter
-		"""			  
+		"""
 		return 0
-
 
 class GUIBuilder(wx.Panel):
 	"""
 	Created: 13.04.2006, KP
 	Description: A GUI builder for the manipulation filters
-	"""		 
+	""" 
 	def __init__(self, parent, myfilter):
 		"""
 		Created: 13.04.2006, KP
@@ -345,7 +336,6 @@ class GUIBuilder(wx.Panel):
 		self.currentBackground = None
 		self.currentBackgroundSizer = None
 		
-		
 		self.buildGUI(myfilter)
 		self.SetSizer(self.sizer)
 		self.SetAutoLayout(1)
@@ -357,6 +347,15 @@ class GUIBuilder(wx.Panel):
 		""" 
 		return (1, 0)
 		
+	def isSpecialElement(self, item, itemType):
+		"""
+		Created: 12.09.2007, KP
+		Description: determine whether the given item is an item that requires special method to create the GUI element for
+		"""
+		if (type(item) == types.TupleType): return True
+		if itemType in SPECIAL_ELEMENTS: return True
+		return False
+
 	def buildGUI(self, currentFilter):
 		"""
 		Created: 13.04.2006, KP
@@ -365,434 +364,474 @@ class GUIBuilder(wx.Panel):
 		self.currentFilter = currentFilter
 		parameters = currentFilter.getParameters()
 		gy = 0
-			
-		# XXX: CHANGED TO MAKE MAC WORK
 		staticBox = wx.StaticBox(self, -1, currentFilter.getName())
 		staticBoxSizer = wx.StaticBoxSizer(staticBox, wx.VERTICAL)
 		staticBox.Lower()
-		
 		
 		self.sizer.Add(staticBoxSizer, (0, 0))
 		sizer = wx.GridBagSizer()
 		staticBoxSizer.Add(sizer)
 		
+		# If necessary, create the channel selection GUI
 		if currentFilter.canSelectChannels():
 			channelSelection = self.buildChannelSelection()
-		
 			sizer.Add(channelSelection, (gy, 0), span = (1, 2))
 		
 			gy += 1
-		nobr = 0
+		keepOnSameRow = 0
 		cx = 0
+		# Loop through all the parameters we need to create GUI elements for
 		for param in parameters:
-
+			# If the parameter is just a header, then create a label to show it
+			if type(param) == types.StringType:
+				label = wx.StaticText(self, -1, param)
+				sizer.Add(label, (gy, 0))		
 			# If it's a list with header name and items
-			if type(param) == types.ListType:
-				staticBoxName, items = param
-				itemsizer = wx.GridBagSizer()
-
-				y = -1
-				useOld = 0
-				skip = 0
+			elif type(param) == types.ListType:
+				self.staticBoxName, items = param
+				self.itemSizer = wx.GridBagSizer()
+				self.currentRow = -1
+				positionOnSameRow = 0
+				skipNextNItems = 0
+				
+				# Loop through all the items on this section
 				for n, item in enumerate(items):
+					print "item=",item,"items=",items
 					if item == NOBR:
-						nobr = 1
+						keepOnSameRow = 1
 						continue
-
-					if skip:
-						skip -= 1
+					if skipNextNItems:
+						skipNextNItems -= 1
 						continue
+						
 					itemName = item
-					isTuple = 0
-					if type(item) == types.TupleType:
+					isTuple = type(item) == types.TupleType
+
+					if isTuple:
 						itemType = currentFilter.getType(item[0])
 						itemName = item[0]
-						isTuple = 1
 					else:
 						itemType = currentFilter.getType(item)
-					#print "item = ", item, "param = ", param
-					#print "itemType = ", itemType, "isTuple = ", isTuple
-					
-					#print "items = ", items
-					
-					if not (isTuple and itemType == types.BooleanType) \
-						and itemType not in [RADIO_CHOICE, SLICE, PIXEL, PIXELS, THRESHOLD, \
-											FILENAME, CHOICE, ROISELECTION, CTF]:
-						#print "NOBR = ", nobr, "processing item", item
-						if not nobr:
-							y += 1
+					print "itemTye = ",itemType
+					print "is special=",self.isSpecialElement(item, itemType)
+					if not self.isSpecialElement(item, itemType):
+						print "item",item,"of type",itemType,"is not special"
+						# The GUI for the parameter is created using the regular createGUIElement method
+						if not keepOnSameRow:
+							self.currentRow += 1
 							cx = 0
 						else:
-							nobr = 0
+							keepOnSameRow = 0
 							cx += 1
-							useOld = 1
-						#print "x = ", cx, "y = ", y
-						oldy = y
-						cx, y = self.processItem(currentFilter, itemsizer, item, x = cx, y = y, useOld = useOld)
+							positionOnSameRow = 1
+						oldRow = self.currentRow
+						cx, self.currentRow = self.createGUIElement(currentFilter, self.itemSizer, item, x = cx, y = self.currentRow, useOld = positionOnSameRow)
+						# If there are more than one item specified on this parameter block, then we check if
+						# the previous item was an element instructing us to not switch to the next row, but
+						# keep adding items to the current row, and if so, act accordingly
 						if n > 0:
-							if items[n - 1] == NOBR and y != oldy:
-								y -= 1
-								
+							if items[n - 1] == NOBR and y != oldRow:
+								self.currentRow -= 1
 							else:
-								useOld = 0
-						#print "ndxt y = ", y
-					else: # Items that are contained in a tuple ask to be grouped
-						  # together
-						if not nobr:
-							y += 1
-						#print "cx = ", cx, "y = ", y
+								positionOnSameRow = 0
+					else: # Items that are contained in a tuple can be "special" items, for which some of the tuple items are
+						  # parameters.
+						if not keepOnSameRow:
+							self.currentRow += 1
 						if itemType == RADIO_CHOICE:
-
-							# Indicate that we need to skip next item
-							skip = 1
-							#print item
-							#print "Creating radio choice"
-							if items[n + 1][0] == "cols":
-								majordim = wx.RA_SPECIFY_COLS
-							else:
-								majordim = wx.RA_SPECIFY_ROWS
-							
-							choices = []
-							itemToDesc = {}
-							funcs = []
-							for i in item:
-								filterDescription = currentFilter.getDesc(i)
-								itemToDesc[i] = filterDescription
-								choices.append(filterDescription)
-								setRadioFunc = lambda obj, event, arg, box, i = i, s = self: s.onSetRadioBox(box, i, arg)
-								funcs.append(("set_%s" % i, setRadioFunc))
-								longDesc = currentFilter.getLongDesc(i)
-								
-
-							
-							box = wx.RadioBox(self, -1, staticBoxName, choices = choices,
-							majorDimension = items[n + 1][1], style = majordim)
-							if longDesc:
-								box.SetToolTip(wx.ToolTip(s))
-
-							for funcname, f in funcs:
-								radioBoxF = lambda obj, event, arg, box = box: f(obj, event, arg, box)
-								lib.messenger.connect(currentFilter, funcname, radioBoxF)
-							box.itemToDesc = itemToDesc
-							onSelectRadioBox = lambda event, its = item, f = currentFilter: self.onSelectRadioBox(event, its, f)
-								
-								
-							box.Bind(wx.EVT_RADIOBOX, onSelectRadioBox)
-							staticBoxName = ""
-							itemsizer.Add(box, (0, 0))
+							# Indicate that we need to skip next item, since radio choice is as follows
+							# ( ("NearestNeighbor", "Linear"), ("cols", 2)),
+							# where the following element specifies parameters for the item
+							skipNextNItems = 1
+							self.currentRow += self.createRadioChoice(n, items, currentFilter)
 						elif itemType == SLICE:
-							text = currentFilter.getDesc(itemName)
-							box = wx.BoxSizer(wx.VERTICAL)
-							if text:
-								label = wx.StaticText(self, -1, text)
-								box.Add(label)
-							
-							defValue = currentFilter.getDefaultValue(itemName)
-							level = currentFilter.getParameterLevel(itemName)
-							minval, maxval = currentFilter.getRange(itemName)
-							#print "Value for ", itemName, " = ", defValue, "range = ", minval, maxval
-							x = 200
-							
-							background = wx.Window(self, -1)
-							slider = wx.Slider(background, -1, value = defValue, minValue = minval, maxValue = maxval,
-							style = wx.SL_HORIZONTAL | wx.SL_LABELS | wx.SL_AUTOTICKS,
-							size = (x, -1))
-							
-							longDesc = currentFilter.getLongDesc(itemName)
-							if longDesc:
-								slider.SetToolTip(wx.ToolTip(s))
-
-							
-							#slider.SetBackgroundColour(level)
-							if level:
-								if text:
-									label.SetBackgroundColour(level)
-								background.SetBackgroundColour(level)
-							onSliderScroll = lambda event, its = item, f = currentFilter: \
-													self.onSetSliderValue(event, its, f)
-							slider.Bind(wx.EVT_SCROLL, onSliderScroll)
-							setSliderFunc = lambda obj, event, arg, slider = slider, i = itemName, s = self: \
-													s.onSetSlice(slider, i, arg)
-								
-
-							lib.messenger.connect(currentFilter, "set_%s" % itemName, setSliderFunc)
-
-							def updateRange(currentFilter, itemName, slider):
-								print currentFilter, itemName, slider
-								minval, maxval = currentFilter.getRange(itemName)
-								slider.SetRange(minval, maxval)
-
-							
-							updateSliderFunc = lambda obj, event, slider = slider, i = itemName, \
-										fi = currentFilter, s = self: updateRange(fi, i, slider)
-							lib.messenger.connect(currentFilter, "update_%s" % itemName, updateSliderFunc)
-							
-							box.Add(background, 1)
-							#print "Adding box to ", y, 0
-							itemsizer.Add(box, (y, 0), flag = wx.EXPAND | wx.HORIZONTAL)
-							y += 1
+							self.currentRow += self.createSliceSelection(n, items, currentFilter)
 						elif itemType == FILENAME:
-							# Indicate that we need to skip next item
-							skip = 2
-						
-							box = wx.BoxSizer(wx.VERTICAL)
-							text = currentFilter.getDesc(itemName)
-							defValue = currentFilter.getDefaultValue(itemName)
-					
-							updateFilenameFunc = lambda event, its = item, f = currentFilter, i = itemName, \
-											s = self: s.onSetFileName(f, i, event)
-
-							browse = FileBrowseButton(self, -1, size = (400, -1),
-							labelText = text, fileMask = items[n][2],
-							dialogTitle = items[n][1],
-							changeCallback = updateFilenameFunc)
-							browse.SetValue(defValue)
-							setFilenameFunc = lambda obj, event, arg, b = browse, i = itemName, s = self: \
-														s.onSetFileNameFromFilter(b, i, arg)
-							lib.messenger.connect(currentFilter, "set_%s" % itemName, setFilenameFunc) 
-														
-							longDesc = currentFilter.getLongDesc(itemName)
-							if longDesc:
-								# changed following so that makes sense, 20.7.2007 SS
-								# filebrowse.SetToolTip(wx.ToolTip(s))
-								browse.SetToolTip(wx.ToolTip(s))
-
-							box.Add(browse, 1)							 
-							itemsizer.Add(box, (y, 0), flag = wx.EXPAND | wx.HORIZONTAL)
-							y += 1
+							skipNextNItems = 2
+							self.currentRow += self.createFileSelection(n, items, currentFilter)
 						elif itemType == CHOICE:
-							box = wx.BoxSizer(wx.VERTICAL)
-							text = currentFilter.getDesc(itemName)
-							defValue = currentFilter.getDefaultValue(itemName)
-							level = currentFilter.getParameterLevel(itemName)
-							
-							
-							if text:
-								label = wx.StaticText(self, -1, text)
-								box.Add(label)
-
-							
-							background = wx.Window(self, -1)
-							choices = currentFilter.getRange(itemName)
-							updateChoiceFunc = lambda event, its = item, f = currentFilter, i = itemName, s = self: \
-														s.onSetChoice(f, i, event)
-							choice = wx.Choice(background, -1, choices = choices)
-							
-							choice.SetSelection(defValue)
-							if level:
-								#choice.SetBackgroundColour(level)
-								if text: 
-									label.SetBackgroundColour(level)
-								background.SetBackgroundColour(level)
-							choice.Bind(wx.EVT_CHOICE, updateChoiceFunc)
-														
-							longDesc = currentFilter.getLongDesc(itemName)
-							if longDesc:
-								choice.SetToolTip(wx.ToolTip(s))
-
-							setChoiceFunc = lambda obj, event, arg, c = choice, i = itemName, s = self: \
-													s.onSetChoiceFromFilter(c, i, arg)
-							lib.messenger.connect(currentFilter, "set_%s" % itemName, setChoiceFunc) 
-							
-							
-							box.Add(background, 1)
-							itemsizer.Add(box, (y, 0), flag = wx.EXPAND | wx.HORIZONTAL)
-							y += 1
-
-						
+							self.currentRow += self.createChoice(n, items, currentFilter)
 						elif itemType == ROISELECTION:
-							box = wx.BoxSizer(wx.VERTICAL)
-							text = currentFilter.getDesc(itemName)
-							val = 0
-							
-							label = wx.StaticText(self, -1, text)
-							box.Add(label)
-							regionsOfInterest = scripting.visualizer.getRegionsOfInterest()
-							choices = [x.getName() for x in regionsOfInterest]
-							
-							def updateROIs(currentFilter, itemName, choice):
-								regionsOfInterest = scripting.visualizer.getRegionsOfInterest()
-								choices = [x.getName() for x in regionsOfInterest]		
-								choice.Clear()							  
-								
-								choice.AppendItems(choices)
-								
-							longDesc = currentFilter.getLongDesc(itemName)
-							if longDesc:
-								choice.SetToolTip(wx.ToolTip(s))
-
-							
-							setRoiFunc = lambda event, its = item, f = currentFilter, i = itemName, \
-											r = regionsOfInterest, s = self: s.onSetROI(r, f, i, event)
-							choice = wx.Choice(self, -1, choices = choices)
-							
-							choice.SetSelection(val)
-							choice.Bind(wx.EVT_CHOICE, setRoiFunc)
-							
-							updateRoiFunc = lambda obj, event, choice = choice, i = itemName, \
-								fi = currentFilter, s = self: updateROIs(fi, i, choice)
-							lib.messenger.connect(currentFilter, "update_%s" % itemName, updateRoiFunc)							   
-							lib.messenger.connect(None, "update_annotations", updateRoiFunc)
-							
-							#f = lambda obj, event, arg, c = choice, i = itemName, s = self: s.onSetROIFromFilter(c, i, arg)
-							#lib.messenger.connect(currentFilter, "set_%s" %itemName, f) 
-							
-							
-							box.Add(choice, 1)
-							itemsizer.Add(box, (y, 0), flag = wx.EXPAND | wx.HORIZONTAL)
-							y += 1
-							
+							self.currentRow += self.createROISelection(n, items, currentFilter)
 						elif itemType == PIXEL:
-							#print "Creating pixel selection"
-							background = wx.Window(self, -1)
-							level = currentFilter.getParameterLevel(itemName)
-							if level:
-								background.SetBackgroundColour(level)
-								
-							label = wx.StaticText(background, -1, "(%d, %d, %d)" % (0, 0, 0), size = (80, -1))
-							button = wx.Button(background, -1, "Set seed")
-							def f(listBox): #"listBox" used to be "l", shouldn't "l" 2 rows below also be changed?!
-								listBox.selectPixel = 1
-							addPixelFunc = lambda event, l = label:f(l)
-							button.Bind(wx.EVT_BUTTON, addPixelFunc)
-							box = wx.BoxSizer(wx.HORIZONTAL)
-							box.Add(label)
-							box.Add(button)
-							background.SetSizer(box)
-							background.SetAutoLayout(1)
-							background.Layout()
-							itemsizer.Add(background, (0, 0))
-							getVoxelFunc = lambda obj, event, rx, ry, rz, scalar, rval, gval, bval, \
-											r, g, b, alpha, currentCt, its = item, \
-											f = currentFilter:self.onSetPixel(obj, event, rx, ry, rz, r, g, b, \
-																				alpha, currentCt, its, f, label)
-							lib.messenger.connect(None, "get_voxel_at", getVoxelFunc)
-
-							onSetPixelFunc = lambda obj, event, arg, label = label, i = itemName, \
-										s = self: s.onSetPixelFromFilter(label, i, arg)
-							lib.messenger.connect(currentFilter, "set_%s" % itemName, onSetPixelFunc)
-
-							
+							self.currentRow += self.createPixelSelection(n, items, currentFilter)
 						elif itemType == PIXELS:
-							#print "Creating multiple pixels selection"
-							pixelsizer = wx.GridBagSizer()
-							background = wx.Window(self, -1)
-							
-							level = currentFilter.getParameterLevel(itemName)
-							if level:
-								background.SetBackgroundColour(level)
-							
-							seedbox = wx.ListBox(background, -1, size = (150, 150))
-							pixelsizer.Add(seedbox, (0, 0), span = (2, 1))
-							
-							addButton = wx.Button(background, -1, "Add seed")
-							def markListBox(listBox):
-								listBox.selectPixel = 1
-							func = lambda event, l = seedbox:markListBox(l)
-							addButton.Bind(wx.EVT_BUTTON, addPixelFunc)
-							pixelsizer.Add(addButton, (0, 1))
-							#print "ITEM = ", item
-							rmButton = wx.Button(background, -1, "Remove")
-							seedbox.itemName = item
-							removeSeedFunc = lambda event, its = item, f = currentFilter:self.removeSeed(seedbox, f)
-							rmButton.Bind(wx.EVT_BUTTON, removeSeedFunc)
-							pixelsizer.Add(rmButton, (1, 1))
-							
-							background.SetSizer(pixelsizer)
-							background.SetAutoLayout(1)
-							background.Layout()
-							
-							#obj, event, x, y, z, scalar, rval, gval, bval, r, g, b, a, colorTransferFunction)
-							getVoxelSeedFunc = lambda obj, event, rx, ry, rz, scalar, rval, gval, bval, \
-												r, g, b, alpha, currentCt, its = item, \
-												f = currentFilter:self.onAddPixel(obj, event, rx, ry, rz, r, g, b, \
-																					alpha, currentCt, its, f, seedbox)
-							lib.messenger.connect(None, "get_voxel_at", getVoxelSeedFunc)
-							itemsizer.Add(background, (0, 0))							   
-							onSetPixelsFunc = lambda obj, event, arg, seedbox = seedbox, i = itemName, \
-									s = self: s.onSetPixelsFromFilter(seedbox, i, arg)
-							lib.messenger.connect(currentFilter, "set_%s" % itemName, onSetPixelsFunc)														
-							
+							self.currentRow += self.createMultiPixelSelection(n, items, currentFilter)
 						elif itemType == THRESHOLD:
-							background = wx.Window(self, -1)
-							level = currentFilter.getParameterLevel(itemName)
-							if level:
-								background.SetBackgroundColour(level)
-							#print "Creating threshold selection"
-							histogram = Histogram.Histogram(background)
-							self.histograms.append(histogram)
-							func = lambda event, its = item, f = currentFilter:self.onSetThreshold(event, its, f)
-							histogram.Bind(Histogram.EVT_SET_THRESHOLD, func)
-							
-							histogram.setThresholdMode(1)
-							dataUnit = self.filter.getDataUnit().getSourceDataUnits()[0]
-							#print "Connecting", item[0], item[1]
-							flo = lambda obj, event, arg, histogram = histogram, i = item[0], s = self: \
-										s.onSetHistogramValues(histogram, i, arg, valuetype = "Lower")
-							lib.messenger.connect(currentFilter, "set_%s" % item[0], flo)
-							fhi = lambda obj, event, arg, histogram = histogram, i = item[1], s = self: \
-										s.onSetHistogramValues(histogram, i, arg, valuetype = "Upper")
-							lib.messenger.connect(currentFilter, "set_%s" % item[1], fhi)
-							
-							histogram.setDataUnit(dataUnit, noupdate = 1)
-							itemsizer.Add(background, (0, 0))
+							self.currentRow += self.createThresholdSelection(n, items, currentFilter)
 						elif itemType == CTF:
-							background = wx.Window(self, -1)
-							backgroundSizer = wx.BoxSizer(wx.VERTICAL)
-							background.SetSizer(backgroundSizer)
-							background.SetAutoLayout(1)
-							level = currentFilter.getParameterLevel(itemName)
- #							 if level:
- #								 background.SetBackgroundColour(level)
-							wantAlpha = items[n][1]
-							text = currentFilter.getDesc(itemName)
-							if text:
-								colorLbl = wx.StaticText(background, -1, text)
-								backgroundSizer.Add(colorLbl)
-	
-							colorPanel = ColorTransferEditor.ColorTransferEditor(background, alpha = wantAlpha)
-							backgroundSizer.Add(colorPanel)
-							itemsizer.Add(background, (0, 0))
-							setColorTransferFunction = lambda obj, event, arg, panel = colorPanel, i = item, \
-																s = self: s.onSetCtf(panel, i, arg)
-						  
-							lib.messenger.connect(currentFilter, "set_%s_colorTransferFunction" % item, setColorTransferFunction)
-							setotf = lambda obj, event, arg, panel = colorPanel, i = item, s = self: s.onSetOtf(panel, i, arg)
-							lib.messenger.connect(currentFilter, "set_%s_otf" % item, setotf)
-							
+							self.currentRow += self.createColorTransferFunctionEditor(n, items, currentFilter)
 						else:
+							print "item=",item
+							# If the item was not a "special" parameter, then we just group the parameters on this tuple
 							groupsizer = wx.GridBagSizer()
 							x = 0
 							for it in item:
-								self.processItem(currentFilter, groupsizer, it, x = x, y = 0)
+								print "Creating gui element",currentFilter,it
+								self.createGUIElement(currentFilter, groupsizer, it, x = x, y = 0)
 								x += 1
 							span = (1, x)
-							itemsizer.Add(groupsizer, (y, 0), span = span)
+							self.itemSizer.Add(groupsizer, (self.currentRow, 0), span = span)
 							# If the name is an empty string, don't create a static box around
 				
-				# the items
-				if staticBoxName:
-					staticBox = wx.StaticBox(self, -1, staticBoxName)
+				# If the parameter requires a static box to show the name of the GUI block, then
+				# create the staticbox
+				if self.staticBoxName:
+					staticBox = wx.StaticBox(self, -1, self.staticBoxName)
 					staticBoxSizer = wx.StaticBoxSizer(staticBox, wx.VERTICAL)
 					staticBox.Lower()
-#					 staticBox = wx.Panel(self, -1, style = wx.SUNKEN_BORDER)
-#					 staticBoxSizer = wx.BoxSizer(wx.VERTICAL)
-#					 staticBox.SetSizer(staticBoxSizer)
-#					 staticBox.SetAutoLayout(1)
-					
 				
 					sizer.Add(staticBoxSizer, (gy, 0), flag = wx.EXPAND)
-					staticBoxSizer.Add(itemsizer)
+					staticBoxSizer.Add(self.itemSizer)
 				else:
-					sizer.Add(itemsizer, (gy, 0), flag = wx.EXPAND)			  
-			# If it's just a header name
-			elif type(param) == types.StringType:
-				label = wx.StaticText(self, -1, param)
-				sizer.Add(label, (gy, 0))
-			gy += 1
+					# otherwise we can just add the created sizer to the main sizer
+					sizer.Add(self.itemSizer, (gy, 0), flag = wx.EXPAND)
 
+			# The next item goes to the next row
+			gy += 1
 			
+	def createColorTransferFunctionEditor(self, n, items, currentFilter):
+		"""
+		Created: 12.09.2007, KP
+		Description: create a GUI element that allows the editing of a color transfer function
+		"""
+		itemName = items[n]
+		background = wx.Window(self, -1)
+		backgroundSizer = wx.BoxSizer(wx.VERTICAL)
+		background.SetSizer(backgroundSizer)
+		background.SetAutoLayout(1)
+		level = currentFilter.getParameterLevel(itemName)
+
+		wantAlpha = items[n][1]
+		text = currentFilter.getDesc(itemName)
+		if text:
+			colorLbl = wx.StaticText(background, -1, text)
+			backgroundSizer.Add(colorLbl)
+
+		colorPanel = ColorTransferEditor.ColorTransferEditor(background, alpha = wantAlpha)
+		backgroundSizer.Add(colorPanel)
+		self.itemSizer.Add(background, (0, 0))
+		setColorTransferFunction = lambda obj, event, arg, panel = colorPanel, i = item, \
+											s = self: s.onSetCtf(panel, i, arg)
+	  
+		lib.messenger.connect(currentFilter, "set_%s_colorTransferFunction" % item, setColorTransferFunction)
+		setotf = lambda obj, event, arg, panel = colorPanel, i = item, s = self: s.onSetOtf(panel, i, arg)
+		lib.messenger.connect(currentFilter, "set_%s_otf" % item, setotf)
+		return 0
+			
+	def createThresholdSelection(self, n, items, currentFilter):
+		"""
+		Created: 12.09.2007, KP
+		Description: create a histogram GUI element that can be used to select a lower and upper threshold
+		"""
+		item = items[n]
+		itemName = item[0]
+		background = wx.Window(self, -1)
+		level = currentFilter.getParameterLevel(itemName)
+		if level:
+			background.SetBackgroundColour(level)
+		histogram = Histogram.Histogram(background)
+		self.histograms.append(histogram)
+		func = lambda event, its = item, f = currentFilter:self.onSetThreshold(event, its, f)
+		histogram.Bind(Histogram.EVT_SET_THRESHOLD, func)
 		
+		histogram.setThresholdMode(1)
+		dataUnit = self.filter.getDataUnit().getSourceDataUnits()[0]
+		flo = lambda obj, event, arg, histogram = histogram, i = item[0], s = self: \
+					s.onSetHistogramValues(histogram, i, arg, valuetype = "Lower")
+		lib.messenger.connect(currentFilter, "set_%s" % item[0], flo)
+		fhi = lambda obj, event, arg, histogram = histogram, i = item[1], s = self: \
+					s.onSetHistogramValues(histogram, i, arg, valuetype = "Upper")
+		lib.messenger.connect(currentFilter, "set_%s" % item[1], fhi)
+		
+		histogram.setDataUnit(dataUnit, noupdate = 1)
+		self.itemSizer.Add(background, (0, 0))
+		return 0
+	
+	def createMultiPixelSelection(self, n, items, currentFilter):
+		"""
+		Created: 12.09.2007, KP
+		Description: create a GUI element that allows the user to select (and remove selection of) multiple pixels
+		"""
+		pixelsizer = wx.GridBagSizer()
+		background = wx.Window(self, -1)
+		itemName = items[n]
+		level = currentFilter.getParameterLevel(itemName)
+		if level:
+			background.SetBackgroundColour(level)
+		
+		seedbox = wx.ListBox(background, -1, size = (150, 150))
+		pixelsizer.Add(seedbox, (0, 0), span = (2, 1))
+		
+		addButton = wx.Button(background, -1, "Add seed")
+		def markListBox(listBox):
+			listBox.selectPixel = 1
+		func = lambda event, l = seedbox:markListBox(l)
+		addButton.Bind(wx.EVT_BUTTON, addPixelFunc)
+		pixelsizer.Add(addButton, (0, 1))
+		rmButton = wx.Button(background, -1, "Remove")
+		seedbox.itemName = item
+		removeSeedFunc = lambda event, its = item, f = currentFilter:self.removeSeed(seedbox, f)
+		rmButton.Bind(wx.EVT_BUTTON, removeSeedFunc)
+		pixelsizer.Add(rmButton, (1, 1))
+		
+		background.SetSizer(pixelsizer)
+		background.SetAutoLayout(1)
+		background.Layout()
+		
+		#obj, event, x, y, z, scalar, rval, gval, bval, r, g, b, a, colorTransferFunction)
+		getVoxelSeedFunc = lambda obj, event, rx, ry, rz, scalar, rval, gval, bval, \
+							r, g, b, alpha, currentCt, its = item, \
+							f = currentFilter:self.onAddPixel(obj, event, rx, ry, rz, r, g, b, \
+																alpha, currentCt, its, f, seedbox)
+		lib.messenger.connect(None, "get_voxel_at", getVoxelSeedFunc)
+		self.itemSizer.Add(background, (0, 0))							   
+		onSetPixelsFunc = lambda obj, event, arg, seedbox = seedbox, i = itemName, \
+				s = self: s.onSetPixelsFromFilter(seedbox, i, arg)
+		lib.messenger.connect(currentFilter, "set_%s" % itemName, onSetPixelsFunc)														
+		return 0
+
+	def createPixelSelection(self, n, items, currentFilter):
+		"""
+		Created: 12.09.2007, KP
+		Description: create a GUI element for selecting a pixel from the preview
+		"""
+		background = wx.Window(self, -1)
+		itemName = items[n]
+		level = currentFilter.getParameterLevel(itemName)
+		if level:
+			background.SetBackgroundColour(level)
+			
+		label = wx.StaticText(background, -1, "(%d, %d, %d)" % (0, 0, 0), size = (80, -1))
+		button = wx.Button(background, -1, "Set seed")
+		def markAsSelected(listBox): 
+			listBox.selectPixel = 1
+		addPixelFunc = lambda event, l = label: markAsSelected(l)
+		
+		button.Bind(wx.EVT_BUTTON, addPixelFunc)
+		box = wx.BoxSizer(wx.HORIZONTAL)
+		box.Add(label)
+		box.Add(button)
+		background.SetSizer(box)
+		background.SetAutoLayout(1)
+		background.Layout()
+		self.itemSizer.Add(background, (0, 0))
+		getVoxelFunc = lambda obj, event, rx, ry, rz, scalar, rval, gval, bval, \
+						r, g, b, alpha, currentCt, its = item, \
+						f = currentFilter:self.onSetPixel(obj, event, rx, ry, rz, r, g, b, \
+															alpha, currentCt, its, f, label)
+		lib.messenger.connect(None, "get_voxel_at", getVoxelFunc)
+
+		onSetPixelFunc = lambda obj, event, arg, label = label, i = itemName, \
+					s = self: s.onSetPixelFromFilter(label, i, arg)
+		lib.messenger.connect(currentFilter, "set_%s" % itemName, onSetPixelFunc)
+		return 0
+
+	def createROISelection(self, n, items, currentFilter):
+		"""
+		Created: 12.09.2007, KP
+		Description: create a dropdown menu to select a ROI
+		"""
+		box = wx.BoxSizer(wx.VERTICAL)
+		itemName = items[n]
+		item = items[n]
+		text = currentFilter.getDesc(itemName)
+		val = 0
+		
+		label = wx.StaticText(self, -1, text)
+		box.Add(label)
+		regionsOfInterest = scripting.visualizer.getRegionsOfInterest()
+		choices = [x.getName() for x in regionsOfInterest]
+		
+		def updateROIs(currentFilter, itemName, choice):
+			regionsOfInterest = scripting.visualizer.getRegionsOfInterest()
+			choices = [x.getName() for x in regionsOfInterest]		
+			choice.Clear()
+			choice.AppendItems(choices)
+			
+		longDesc = currentFilter.getLongDesc(itemName)
+		if longDesc:
+			choice.SetToolTip(wx.ToolTip(s))
+
+		setRoiFunc = lambda event, its = item, f = currentFilter, i = itemName, \
+						r = regionsOfInterest, s = self: s.onSetROI(r, f, i, event)
+		choice = wx.Choice(self, -1, choices = choices)
+		
+		choice.SetSelection(val)
+		choice.Bind(wx.EVT_CHOICE, setRoiFunc)
+		
+		updateRoiFunc = lambda obj, event, choice = choice, i = itemName, \
+			fi = currentFilter, s = self: updateROIs(fi, i, choice)
+		lib.messenger.connect(currentFilter, "update_%s" % itemName, updateRoiFunc) 
+		lib.messenger.connect(None, "update_annotations", updateRoiFunc)
+		
+		box.Add(choice, 1)
+		# was (y, 0)
+		self.itemSizer.Add(box, (self.currentRow, 0), flag = wx.EXPAND | wx.HORIZONTAL)
+		return 1
+
+	def createChoice(self, n, items, currentFilter):
+		"""
+		Created: 12.09.2007, KP
+		Description: create a choice (a dropdown menu) gui element
+		"""
+		itemName = items[n]
+		box = wx.BoxSizer(wx.VERTICAL)
+		text = currentFilter.getDesc(itemName)
+		defValue = currentFilter.getDefaultValue(itemName)
+		level = currentFilter.getParameterLevel(itemName)
+		
+		if text:
+			label = wx.StaticText(self, -1, text)
+			box.Add(label)
+		
+		background = wx.Window(self, -1)
+		choices = currentFilter.getRange(itemName)
+		updateChoiceFunc = lambda event, its = item, f = currentFilter, i = itemName, s = self: \
+									s.onSetChoice(f, i, event)
+		choice = wx.Choice(background, -1, choices = choices)
+		
+		choice.SetSelection(defValue)
+		if level:
+			if text: 
+				label.SetBackgroundColour(level)
+			background.SetBackgroundColour(level)
+		choice.Bind(wx.EVT_CHOICE, updateChoiceFunc)
+
+		longDesc = currentFilter.getLongDesc(itemName)
+		if longDesc:
+			choice.SetToolTip(wx.ToolTip(s))
+
+		setChoiceFunc = lambda obj, event, arg, c = choice, i = itemName, s = self: \
+								s.onSetChoiceFromFilter(c, i, arg)
+		lib.messenger.connect(currentFilter, "set_%s" % itemName, setChoiceFunc) 
+
+		box.Add(background, 1)
+		self.itemSizer.Add(box, (self.currentRow, 0), flag = wx.EXPAND | wx.HORIZONTAL)
+		return 1
+
+	def createRadioChoice(self, n, items, currentFilter):
+		"""
+		Created: 12.09.2007, KP
+		Description: create a radio choice GUI element
+		"""
+		itemName = items[n]
+
+		if items[n + 1][0] == "cols":
+			majordim = wx.RA_SPECIFY_COLS
+		else:
+			majordim = wx.RA_SPECIFY_ROWS
+		
+		item = items[n]
+		choices = []
+		itemToDesc = {}
+		funcs = []
+		for i in item:
+			filterDescription = currentFilter.getDesc(i)
+			itemToDesc[i] = filterDescription
+			choices.append(filterDescription)
+			setRadioFunc = lambda obj, event, arg, box, i = i, s = self: s.onSetRadioBox(box, i, arg)
+			funcs.append(("set_%s" % i, setRadioFunc))
+			longDesc = currentFilter.getLongDesc(i)
+		
+		box = wx.RadioBox(self, -1, self.staticBoxName, choices = choices,
+		majorDimension = items[n + 1][1], style = majordim)
+		if longDesc:
+			box.SetToolTip(wx.ToolTip(s))
+
+		for funcname, f in funcs:
+			radioBoxF = lambda obj, event, arg, box = box: f(obj, event, arg, box)
+			lib.messenger.connect(currentFilter, funcname, radioBoxF)
+		box.itemToDesc = itemToDesc
+		onSelectRadioBox = lambda event, its = item, f = currentFilter: self.onSelectRadioBox(event, its, f)
+			
+		box.Bind(wx.EVT_RADIOBOX, onSelectRadioBox)
+		self.staticBoxName = ""
+		self.itemSizer.Add(box, (0, 0))
+		return 0
+		
+	def createSliceSelection(self, n, items, currentFilter):
+		"""
+		Created: 12.09.2007, KP
+		Description: create a slice selection slider GUI element
+		"""
+		itemName = items[n]
+		item = items[n]
+		
+		text = currentFilter.getDesc(itemName)
+		box = wx.BoxSizer(wx.VERTICAL)
+		if text:
+			label = wx.StaticText(self, -1, text)
+			box.Add(label)
+		
+		defValue = currentFilter.getDefaultValue(itemName)
+		level = currentFilter.getParameterLevel(itemName)
+		minval, maxval = currentFilter.getRange(itemName)
+		x = 200
+		
+		background = wx.Window(self, -1)
+		slider = wx.Slider(background, -1, value = defValue, minValue = minval, maxValue = maxval,
+		style = wx.SL_HORIZONTAL | wx.SL_LABELS | wx.SL_AUTOTICKS, size = (x, -1))
+		
+		longDesc = currentFilter.getLongDesc(itemName)
+		if longDesc:
+			slider.SetToolTip(wx.ToolTip(s))
+		
+		if level:
+			background.SetBackgroundColour(level)
+			if text:
+				label.SetBackgroundColour(level)
+				
+		onSliderScroll = lambda event, its = item, f = currentFilter: \
+								self.onSetSliderValue(event, its, f)
+		slider.Bind(wx.EVT_SCROLL, onSliderScroll)
+		setSliderFunc = lambda obj, event, arg, slider = slider, i = itemName, s = self: \
+								s.onSetSlice(slider, i, arg)
+			
+		lib.messenger.connect(currentFilter, "set_%s" % itemName, setSliderFunc)
+
+		def updateRange(currentFilter, itemName, slider):
+			minval, maxval = currentFilter.getRange(itemName)
+			slider.SetRange(minval, maxval)
+		
+		updateSliderFunc = lambda obj, event, slider = slider, i = itemName, \
+					fi = currentFilter, s = self: updateRange(fi, i, slider)
+		lib.messenger.connect(currentFilter, "update_%s" % itemName, updateSliderFunc)
+		
+		box.Add(background, 1)
+		self.itemSizer.Add(box, (self.currentRow, 0), flag = wx.EXPAND | wx.HORIZONTAL)
+		return 1
+		
+	def createFileSelection(self, n, items, currentFilter):
+		"""
+		Created: 12.09.2007, KP
+		Description: create a file selection GUI element that shows the filename and has a button to select a file
+		"""
+		itemName = items[n][0]
+
+		box = wx.BoxSizer(wx.VERTICAL)
+		text = currentFilter.getDesc(itemName)
+		defValue = currentFilter.getDefaultValue(itemName)
+
+		updateFilenameFunc = lambda event, its = items[n], f = currentFilter, i = itemName, \
+						s = self: s.onSetFileName(f, i, event)
+
+		browse = FileBrowseButton(self, -1, size = (400, -1), labelText = text, 
+		fileMask = items[n][2], dialogTitle = items[n][1], changeCallback = updateFilenameFunc)
+
+		browse.SetValue(defValue)
+		setFilenameFunc = lambda obj, event, arg, b = browse, i = itemName, s = self: \
+									s.onSetFileNameFromFilter(b, i, arg)
+		lib.messenger.connect(currentFilter, "set_%s" % itemName, setFilenameFunc) 
+									
+		longDesc = currentFilter.getLongDesc(itemName)
+		if longDesc:
+			browse.SetToolTip(wx.ToolTip(s))
+
+		box.Add(browse, 1)
+		self.itemSizer.Add(box, (self.currentRow, 0), flag = wx.EXPAND | wx.HORIZONTAL)
+		return 1
+							
 	def buildChannelSelection(self):
 		"""
 		Created: 17.04.2006, KP
@@ -903,11 +942,11 @@ class GUIBuilder(wx.Panel):
 		n = event.GetSelection()
 		self.currentFilter.setInputChannel(inputNum, n)
 		
-	def processItem(self, currentFilter, itemsizer, item, x, y, useOld = 0):
+	def createGUIElement(self, currentFilter, itemSizer, item, x, y, useOld = 0):
 		"""
 		Created: 15.04.2006, KP
 		Description: Build the GUI related to one specific item
-		"""			  
+		"""
 		desc = currentFilter.getDesc(item)
 		if not useOld:
 			background = wx.Window(self, -1)
@@ -966,7 +1005,6 @@ class GUIBuilder(wx.Panel):
 			input  = self.createSpinInput(background, currentFilter, item, itemType, defaultValue, desc)
 		else:
 			raise "Unrecognized input type: %s" % (str(itemType))
-		#input.SetBackgroundColour(level)
 	   
 		txt = currentFilter.getLongDesc(item)
 		if txt:
@@ -977,13 +1015,10 @@ class GUIBuilder(wx.Panel):
 		else:
 			self.newItemSizer.Add(input)
 			backgroundSizer.Add(self.newItemSizer)
-		#backgroundSizer.Fit(background)
-		
-		#x2 = x
+
 
 		if not useOld:
-		#	itemsizer.Add(background, (y, x2))	#(19.6.07 SS)
-			itemsizer.Add(background, (y, x))
+			itemSizer.Add(background, (y, x))
 		background.Layout()
 
 		if useOther:

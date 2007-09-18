@@ -226,9 +226,6 @@ class ManipulationPanel(GUI.FilterBasedTaskPanel.FilterBasedTaskPanel):
 		self.panel.SetAutoLayout(1)
 		
 		self.settingsSizer.Add(self.panel, (1, 0), flag = wx.EXPAND | wx.ALL)
-		#self.settingsNotebook.AddPage(self.panel,"Procedure list")
-   
-  
 		
 	def onMoveFilterDown(self, event):
 		"""

@@ -850,8 +850,8 @@ class CutDataFilter(ProcessingFilter.ProcessingFilter):
 		self.measurements = []
 		self.descs = {"UseROI": "Use Region of Interest to define resulting region", \
 						"ROI": "Region of Interest Used in Cutting", \
-						"StartingSlice": "First Slice in Resulting Stack", \
-						"EndingSlice": "Last Slice in Resulting Stack"}
+						"FirstSlice": "First Slice in Resulting Stack", \
+						"LastSlice": "Last Slice in Resulting Stack"}
 	
 	def getParameters(self):
 		"""
@@ -894,7 +894,7 @@ class CutDataFilter(ProcessingFilter.ProcessingFilter):
 		if parameter == "ROI":
 			n = scripting.visualizer.getRegionsOfInterest()
 			if n:
-				return n[0]
+				return (0, n[0])
 			return 0
 		if parameter == "LastSlice":
 			if self.dataUnit:
@@ -912,9 +912,6 @@ class CutDataFilter(ProcessingFilter.ProcessingFilter):
 		"""            
 		if not ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
-			
-		
-		
 
 		maxx, maxy, maxz = self.dataUnit.getDimensions()
 		minx = 0
@@ -923,7 +920,7 @@ class CutDataFilter(ProcessingFilter.ProcessingFilter):
 		if self.parameters["UseROI"]:
 			minx, maxx = 99999, 0
 			miny, maxy = 99999, 0            
-			roi = self.parameters["ROI"]
+			roi = self.parameters["ROI"][1]
 			pts = roi.getCoveredPoints()
 			for (x, y) in pts:
 				if minx > x:
@@ -943,13 +940,14 @@ class CutDataFilter(ProcessingFilter.ProcessingFilter):
 		print "VOI=", minx, maxx, miny, maxy, minz, maxz
 		voi = vtk.vtkExtractVOI()
 		imagedata =  self.getInput(1)
-	
+		imagedata.SetUpdateExtent(minx,maxx,miny,maxy,minz,maxz)
 		voi.SetInput(imagedata)
 		voi.SetVOI(minx, maxx, miny, maxy, minz, maxz)
-		#voi.Update()
+		voi.Update()
 		data = voi.GetOutput()
 		data.SetWholeExtent(0, (maxx - minx) - 1, 0, (maxy - miny) - 1, 0, (maxz - minz) - 1)
 		data.SetExtent(0, (maxx - minx) - 1, 0, (maxy - miny) - 1, 0, (maxz - minz) - 1)
+		data.SetUpdateExtent(data.GetExtent())
 		return  data
 
 
