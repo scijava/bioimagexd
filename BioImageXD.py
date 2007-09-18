@@ -70,6 +70,11 @@ if platform.system()=="Windows":
 		path = os.getenv("PATH")
 		path = path + os.path.pathsep + itklibdir
 		os.putenv("PATH", path)
+		
+if scripting.main_is_frozen() and platform.system()=="Darwin":
+	import site
+	site.addsitedir(os.environ["RESOURCEPATH"]+"/InsightToolkit/WrapITK/Python")
+	site.addsitedir(os.environ["RESOURCEPATH"]+"/InsightToolkit/WrapITK/lib")
 
 # This will fix the VTK paths using either values from the
 # configuration file, or sensible defaults
