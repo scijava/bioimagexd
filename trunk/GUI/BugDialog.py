@@ -205,7 +205,7 @@ software will be attached to the report to aid the developers in solving the err
 		lines = frommsg + usermsg + ["<strong>The actions of the user:</strong>"] + \
 				actions + ["<br><br>", logprefix] + loglines
         
-		if mail("kalle.pahajoki@gmail.com", self.nameEdit.GetValue(), "<br/>\n".join(lines)):
+		if mail("bioimagexd-bugs@lists.sourceforge.net", self.nameEdit.GetValue(), "<br/>\n".join(lines)):
 			GUI.Dialogs.showerror(self, \
 							"Failed to send error report. Please contact info@bioimagexd.org directly", \
 							"Failed to send error report")
