@@ -109,6 +109,7 @@ class Scatterplot(InteractivePanel.InteractivePanel):
 		self.ID_WHOLEVOLUME = wx.NewId()
 		self.ID_LOGARITHMIC = wx.NewId()
 		self.ID_SAVE_AS = wx.NewId()
+		self.ID_SAVE_WITH_LEGEND = wx.NewId()
 		self.menu = wx.Menu()
 		self.SetScrollbars(0, 0, 0, 0)
 		lib.messenger.connect(None, "threshold_changed", self.updatePreview)
@@ -121,7 +122,10 @@ class Scatterplot(InteractivePanel.InteractivePanel):
 		
 		self.menu.AppendSeparator()
 		item = wx.MenuItem(self.menu, self.ID_SAVE_AS, "Save as...")
+		self.menu.AppendItem(item)
+		item = wx.MenuItem(self.menu, self.ID_SAVE_WITH_LEGEND,"Save with legend...")
 		self.Bind(wx.EVT_MENU, self.onSaveScatterplot, id = self.ID_SAVE_AS)
+		self.Bind(wx.EVT_MENU, self.onSaveScatterplot, id = self.ID_SAVE_WITH_LEGEND)
 		self.menu.AppendItem(item)
 		
 		
@@ -161,14 +165,19 @@ class Scatterplot(InteractivePanel.InteractivePanel):
 		for key in wcDict.keys():
 			wc += "|%s|*.%s" % (wcDict[key], key)
 		filename = Dialogs.askSaveAsFileName(self, "Save scatterplot", initFile, wc, "scatterImage")
-			
+		
+		if not filename:
+			return
 		ext = filename.split(".")[-1].lower()
 		if ext == "jpg":
 			ext = "jpeg"
 		if ext == "tif":
 			ext = "tiff"
 		mime = "image/%s" % ext
-		img = self.scatterBitmap.ConvertToImage()
+		if event.GetId() == self.ID_SAVE_AS:
+			img = self.scatterBitmap.ConvertToImage()
+		else:
+			img = self.scatterLegendBitmap.ConvertToImage()
 		img.SaveMimeFile(filename, mime)
 	
 	def onUpdateScatterplot(self, evt, obj, *args):
@@ -444,7 +453,6 @@ class Scatterplot(InteractivePanel.InteractivePanel):
 		Created: 25.03.2005, KP
 		Description: Paints the scattergram
 		"""
-#		dc = wx.BufferedDC(wx.ClientDC(self), self.buffer)
 		dc = wx.MemoryDC()
 		dc.SelectObject(self.buffer)
 		dc.BeginDrawing()
@@ -465,20 +473,16 @@ class Scatterplot(InteractivePanel.InteractivePanel):
 		upper1 = int(self.sources[0].getSettings().get("ColocalizationUpperThreshold"))
 		upper2 = int(self.sources[1].getSettings().get("ColocalizationUpperThreshold"))
 		
-		print "lower1=",lower1
-		print "upper1=",upper1
-		print "lower2=",lower2
-		print "upper2=",upper2
+		#print "lower1=",lower1
+		#print "upper1=",upper1
+		#print "lower2=",lower2
+		#print "upper2=",upper2
 		
-		print "Scalar max = ",self.scalarMax
+		#print "Scalar max = ",self.scalarMax
 		c = 255.0 / self.scalarMax
-		#if self.actionstart and self.actionend:
 		if self.userDrawnThresholds:
-#			x1, y1 = self.actionstart
-#			x2, y2 = self.actionend
+
 			(x1,y1),(x2,y2) = self.userDrawnThresholds
-#			print "actionstart=",self.actionstart
-#			print "actioennd=",self.actionend
 			print "User drawn threhsolds = ",self.userDrawnThresholds
 			if x2 < x1:
 				x1, x2 = x2, x1
@@ -557,6 +561,8 @@ class Scatterplot(InteractivePanel.InteractivePanel):
 		self.lower2 = lower2 * c
 		self.upper1 = upper1 * c
 		self.upper2 = upper2 * c
+		
+		self.scatterLegendBitmap = self.buffer
 		
 		self.dc = dc
 		del self.dc
