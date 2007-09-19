@@ -119,8 +119,8 @@ void vtkImageSimpleMIPExecute(vtkImageSimpleMIP *self, int id,int NumberOfInputs
 
   maxC = inData[0]->GetNumberOfScalarComponents();
   if(maxC>3) {
+        vtkErrorWithObjectMacro(self, <<"macC = " <<maxC<<" > 3");
         maxC=3;
-        vtkErrorWithObjectMacro(self, <<"macC > 3");
   }
 //  vtkDebugMacro(<<"maxC="<<maxC);
 //  printf("Thread id = %d, maxX=%d, maxY=%d, maxZ=%d\n",id, maxX,maxY,maxZ);
