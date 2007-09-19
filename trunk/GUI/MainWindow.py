@@ -121,7 +121,7 @@ class MainWindow(wx.Frame):
 
 		self.currentTask = ""
 		self.currentFile = ""
-		self.currentVisualizationModeName = ""
+		scripting.currentVisualizationMode = ""
 		self.progressCoeff = 1.0
 		self.progressShift = 0.0
 		self.taskToId = {}
@@ -290,14 +290,12 @@ class MainWindow(wx.Frame):
 			reportCrash = eval(reportCrash)
 		if reportCrash and scripting.uncleanLog:
 			self.reportCrash()
-		#self.Bind(wx.EVT_WINDOW_DESTROY, self.Cleanup)
 		
 		lst = conf.getConfigItem("HistoryList", "General")
 		if lst:
 			lst = eval(lst)
 			for item in lst:
 				self.filehistory.AddFileToHistory(item)
-		#self.filehistory.AddFilesToMenu()
 
 	def reportCrash(self):
 		"""
@@ -366,11 +364,10 @@ class MainWindow(wx.Frame):
 		Description: Undo a previous command
 		"""
 		cmd = self.menuManager.getLastCommand()
-		if (cmd):		# Undo the previous command if there has been a previous command.
-			if cmd.canUndo():
-				cmd.undo()
-				self.menuManager.setUndoedCommand(cmd)
-				self.menuManager.enable(MenuManager.ID_REDO)
+		if cmd and cmd.canUndo():		# Undo the previous command if there has been a previous command.
+			cmd.undo()
+			self.menuManager.setUndoedCommand(cmd)
+			self.menuManager.enable(MenuManager.ID_REDO)
 		
 	def onMenuRedo(self, evt):
 		"""
@@ -418,7 +415,6 @@ class MainWindow(wx.Frame):
 			self.visualizer.closeVisualizer()
 			self.loadVisualizer(mode)
 
-			
 		
 	def onSwitchDataset(self, evt):
 		"""
@@ -443,7 +439,6 @@ class MainWindow(wx.Frame):
 			n = len(f.readlines())
 			f.close()
 			tp = wx.CreateFileTipProvider("Help/tips.txt", random.randrange(n))
-			##tp = MyTP(0)
 			showTip = wx.ShowTip(self, tp)
 			index = tp.GetCurrentTip()
 			conf.setConfigItem("ShowTip", "General", showTip)
@@ -513,12 +508,7 @@ class MainWindow(wx.Frame):
 			w, h = self.treeWin.GetSize()
 			newsize = (event.GetDragRect().width, h)
 			self.treeWin.SetDefaultSize(newsize)
-			#self.tree.SetSize(newsize)
 			self.treeWin.origSize = newsize
-			#self.tree.SetSize(self.treeWin.GetClientSize())
-#		elif eID == MenuManager.ID_VIS_WIN:
-#		w, h = self.visWin.GetSize()
-#		self.visWin.SetDefaultSize((event.GetDragRect().width, h))
 
 		elif eID == MenuManager.ID_INFO_WIN:
 			w, h = self.infoWin.GetSize()
@@ -527,7 +517,6 @@ class MainWindow(wx.Frame):
 			self.infoWin.origSize = newsize
 		elif eID == MenuManager.ID_TASK_WIN:
 			w, h = self.taskWin.GetSize()
-			#Logging.info("Setting task window size", kw = "main")
 			newsize = (event.GetDragRect().width, h)
 			self.taskWin.SetDefaultSize(newsize)
 			self.taskWin.origSize = newsize
@@ -548,7 +537,6 @@ class MainWindow(wx.Frame):
 			rect = self.statusbar.GetFieldRect(1)
 			self.colorLbl.SetPosition((rect.x + 2, rect.y + 2))
 			self.colorLbl.SetSize((rect.width - 4, rect.height - 4))
-		#self.tree.SetSize(self.treeWin.GetClientSize())
 
 	def showVisualization(self, window):
 		"""
@@ -694,7 +682,6 @@ class MainWindow(wx.Frame):
 						shortHelp = "Show file management tree")
 		wx.EVT_TOOL(self, MenuManager.ID_SHOW_TREE, self.onMenuShowTree)
 		
-		#self.visIds.append(MenuManager.ID_SHOW_TREE)
 
 
 		modules = self.taskPanels.values()
@@ -744,7 +731,6 @@ class MainWindow(wx.Frame):
 				tb.ToggleTool(vid, 1)
 
 		
-#		tb.AddSeparator()
 		bmp = wx.Image(os.path.join(iconpath, "help.gif"), wx.BITMAP_TYPE_GIF).ConvertToBitmap()
 		
 		tb.DoAddTool(MenuManager.ID_TOOLBAR_HELP, "Help", bmp, \
@@ -764,7 +750,7 @@ class MainWindow(wx.Frame):
 		if self.currentTaskWindow:
 			lib.messenger.send(None, "view_help", self.currentTaskWindowName)
 		else:
-			lib.messenger.send(None, "view_help", self.currentVisualizationModeName)
+			lib.messenger.send(None, "view_help", scripting.currentVisualizationModeName)
 	def onSaveDataset(self, *args):
 		"""
 		Created: 24.05.2006, KP
@@ -935,10 +921,6 @@ class MainWindow(wx.Frame):
 						"Toggle rendering on or off.", self.onMenuNoRender, check = 1, checked = 0)
 		mgr.disable(MenuManager.ID_LIGHTS)
 		mgr.disable(MenuManager.ID_RENDERWIN)
-		#mgr.disable(MenuManager.ID_RELOAD)
-		
-		
-		#wx.EVT_MENU(self, MenuManager.ID_RELOAD, self.onMenuReload)
 
 		mgr.addMenuItem("view", MenuManager.ID_VIEW_TREE, "&File tree", "Show or hide the file tree", \
 						self.onMenuToggleVisibility, check = 1, checked = 1)
@@ -1069,7 +1051,6 @@ class MainWindow(wx.Frame):
 		Created: 13.02.2006, KP
 		Description: Show the script editor
 		"""
-		# the following line equals "if self.scriptEditor"
 		if scripting.record:
 			self.scriptEditor.Show()
 		else:
@@ -1099,7 +1080,6 @@ class MainWindow(wx.Frame):
 		Created: 1.09.2005, KP
 		Description: Resize data to be smaller or larger
 		"""
-
 		selectedFiles, items = self.tree.getSelectionContainer()
 		if not selectedFiles:
 			return
@@ -1144,7 +1124,7 @@ class MainWindow(wx.Frame):
 	def onMenuToggleVisibility(self, evt):
 		"""
 		Created: 16.03.2005, KP
-		Description: Callback function for menu item "Import"
+		Description: A callback function for toggling the visibility of different UI elements
 		"""
 		eid = evt.GetId()
 		flag = evt.IsChecked()
@@ -1237,9 +1217,7 @@ class MainWindow(wx.Frame):
 			self.currentTaskWindowType = None
 
 		Logging.info("Switching dataunit")
-		print selectedUnits[0]
 		self.visualizer.setDataUnit(selectedUnits[0])
-		print "done"
 		self.visualizer.enable(1)
 		
 		self.switchBtn.Enable(0)
@@ -1306,22 +1284,13 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 		self.settingswindow = SettingsWindow.SettingsWindow(self)
 		self.settingswindow.ShowModal()
 
-	def onMenuReload(self, evt):
-		"""
-		Created: 24.05.2005, KP
-		Description: Callback function for reloading vis modules
-		"""
-		self.visualizer.reloadModules()
-
 	def onMenuVisualizer(self, evt):
 		"""
 		Created: 26.04.2005, KP
 		Description: Callback function for launching the visualizer
 		"""
 		# Hide the infowin and toggle the menu item accordingly
-		#self.infoWin.SetDefaultSize((0, 0))
-		#self.menuManager.check(MenuManager.ID_VIEW_INFO, 0)
-		#wx.LayoutAlgorithm().LayoutWindow(self, self.visWin)
+
 		eid = evt.GetId()
 		mode = ""
 		for name, vid in self.visToId.items():
@@ -1333,8 +1302,8 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 			
 			
 		do_cmd = "mainWindow.loadVisualizerMode('%s')" % (mode)
-		if self.currentVisualizationModeName in self.visToId:
-			undo_cmd = "mainWindow.loadVisualizerMode('%s')" % (self.currentVisualizationModeName)
+		if scripting.currentVisualizationMode in self.visToId:
+			undo_cmd = "mainWindow.loadVisualizerMode('%s')" % (scripting.currentVisualizationMode)
 		else:
 			undo_cmd = ""
 		cmd = lib.Command.Command(lib.Command.GUI_CMD, None, None, do_cmd, undo_cmd, \
@@ -1347,9 +1316,9 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 		Description: Load the visualizer mode with the given name
 		"""
 		eid = self.visToId[mode]
-		if self.currentVisualizationModeName == mode:
+		if scripting.currentVisualizationMode == mode:
 			return
-		self.currentVisualizationModeName = mode
+		scripting.currentVisualizationMode = mode
 		lib.messenger.send(None, "update_progress", 0.1, "Loading %s view..." % mode)
 
 		modeclass, settingclass, module = self.visualizationModes[mode]
@@ -1793,7 +1762,7 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 		Created: 25.05.2005, KP
 		Description: Load a dataunit and a given mode to visualizer
 		"""
-		self.currentVisualizationModeName = mode
+		scripting.currentVisualizationMode = mode
 
 		if not self.visualizer:
 			self.visPanel = wx.SashLayoutWindow(self.visWin, -1)
