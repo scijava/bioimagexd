@@ -48,8 +48,7 @@ ZOOM_TO_FIT = -1
 class PreviewFrame(InteractivePanel):
 	"""
 	Created: 03.11.2004, KP
-	Description: A visualization mode used to show either a given single slice, or an MIP
-				 of the given datanit
+	Description: A visualization mode used to show a single slice of the previewed image
 	"""
 	count = 0
 	def __init__(self, parent, **kws):
@@ -106,7 +105,6 @@ class PreviewFrame(InteractivePanel):
 		
 		self.enabled = 1
 
-		self.previewType = ""
 		self.tmodules = Modules.DynamicLoader.getTaskModules()
 		self.tmodules[""] = self.tmodules["Process"]
 		self.modules = {}
@@ -138,7 +136,6 @@ class PreviewFrame(InteractivePanel):
 		self.slice = None
 		self.z = scripting.visualizer.getZSliderValue()-1
 		self.zooming = 0
-		self.singleslice = 0
 		self.scrollTo = None
 		
 		InteractivePanel.__init__(self, parent, size = size, bgColor = self.bgcolor, **kws)
@@ -157,13 +154,6 @@ class PreviewFrame(InteractivePanel):
 			Logging.info("Disabling scrollbars", kw="preview")
 			self.SetScrollbars(0, 0, 0, 0)
 		self.updateAnnotations()
-		
-	def isMipMode(self):
-		"""
-		Created: 23.11.2006, KP
-		Description: return the flag that indicates whether this window is in mip mode or not
-		"""
-		return self.previewType == "MIP"
 		
 	def calculateBuffer(self):
 		"""
@@ -272,15 +262,14 @@ class PreviewFrame(InteractivePanel):
 		"""
 		self.onLeftDown(event)
 		event.Skip()
+		
 		if not self.rawImage and not self.rawImages:
 			return
 		if self.rawImages:
 			self.rawImage = self.rawImages[0]
 		elif self.rawImage and not self.rawImages:
 			self.rawImages = [self.rawImage]
-		if self.isMipMode():
-			self.rawImage = self.currentImage
-			self.rawImages = [self.rawImage]
+
 		x, y = event.GetPosition()
 		x -= self.xoffset
 		y -= self.yoffset
@@ -422,10 +411,6 @@ class PreviewFrame(InteractivePanel):
 		if self.dataUnit.isProcessed():
 			try:
 				z = self.z
-				# if we're doing a MIP, we need to set z to -1
-				# to indicate we want the whole volume
-				if self.isMipMode():
-					z = -1
 				self.rawImages = []
 				for source in self.dataUnit.getSourceDataUnits():
 					self.rawImages.append(source.getTimepoint(self.timePoint))  
@@ -451,10 +436,9 @@ class PreviewFrame(InteractivePanel):
 		
 		usedUpdateExt = 0
 		uext = None
-		if self.z != -1 and not self.isMipMode():
+		if self.z != -1:
 			x, y = self.dataDimX, self.dataDimY
 			usedUpdateExt = 1
-			#colorImage.SetUpdateExtent(0,x-1,0,y-1,self.z,self.z)
 			uext = (0, x - 1, 0, y - 1, self.z, self.z)
 		
 		t = time.time()
@@ -467,20 +451,16 @@ class PreviewFrame(InteractivePanel):
 		if colorImage:
 			x, y, z = colorImage.GetDimensions()
 			
-			if not usedUpdateExt and not self.isMipMode():
+			if not usedUpdateExt:
+				print "\n\n\n**** pf Setting range to ",1,z
 				scripting.visualizer.zslider.SetRange(1, z)
 			if x != self.oldx or y != self.oldy:
-				#self.resetScroll()
-				#self.setScrollbars(x,y)
 				self.oldx = x
 				self.oldy = y
 			self.setImage(colorImage)
 			self.setZSlice(self.z)
 		
 			z = self.z
-			if self.singleslice:
-				#Logging.info("Single slice, will use z=0",kw="preview")
-				z = 0
 		if not self.imagedata:
 			Logging.info("No imagedata to preview", kw = "preview")
 #			return
@@ -505,28 +485,17 @@ class PreviewFrame(InteractivePanel):
 			extract.SetComponents(0, 1, 2)
 			extract.SetInput(data)
 			data = extract.GetOutput()
-			
-		if self.isMipMode():
-			mip = vtkbxd.vtkImageSimpleMIP()
-			mip.SetInput(data)
-			
-			data = mip.GetOutput()
 		
 		if ncomps == 1:
 			Logging.info("Mapping trough ctf", kw = "preview")
 			
 			self.mapToColors = vtk.vtkImageMapToColors()
-			self.mapToColors.SetInput(data)			
-			
+			self.mapToColors.SetInput(data)
 			self.updateColor()
-
 			colorImage = self.mapToColors.GetOutput()
 			
 			outdata  = colorImage
 			return outdata
-			
-		else:
-			pass
 			
 		return data
 
@@ -563,15 +532,7 @@ class PreviewFrame(InteractivePanel):
 		self.enabled = flag
 		if flag:
 			self.calculateBuffer()
-		
-	def setPreviewType(self, newType):
-		"""
-		Created: 03.04.2005, KP
-		Description: Method to set the proper previewtype
-		"""
-		if type(newType) == type(""):
-			self.previewType = newType
-		
+				
 	def updateColor(self):
 		"""
 		Created: 20.11.2004, KP
@@ -580,23 +541,16 @@ class PreviewFrame(InteractivePanel):
 		"""
 		if self.dataUnit:
 			ct = self.dataUnit.getColorTransferFunction()
-
 			if self.selectedItem != -1:
 				ctc = self.settings.getCounted("ColorTransferFunction", self.selectedItem)
 				if ctc:
 					ct = ctc
-	 
+
 		self.currentCt = ct
 		
 		self.mapToColors.SetLookupTable(self.currentCt)
 		self.mapToColors.SetOutputFormatToRGB()
  
-	def setSingleSliceMode(self, mode):
-		"""
-		Created: 05.04.2005, KP
-		Description: Sets this preview to only show a single slice
-		"""
-		self.singleslice = mode
 
 	def setZSlice(self, z):
 		"""
@@ -703,7 +657,6 @@ class PreviewFrame(InteractivePanel):
 		# Don't paint anything if there's going to be a redraw anyway
 
 		if not self.slice and self.graySize == self.paintSize:
-			print "WONT PAINT GRAY"
 			return
 		dc = wx.MemoryDC()
 		dc.SelectObject(self.buffer)
@@ -758,7 +711,6 @@ class PreviewFrame(InteractivePanel):
 			Logging.info("Scaling to ", w, h, kw = "preview")
 			bmp.Rescale(w, h)
 			self.calculateBuffer()
-			#self.setScrollbars(w,h)
 		
 		bmp = bmp.ConvertToBitmap()
 
@@ -783,7 +735,6 @@ class PreviewFrame(InteractivePanel):
 		self.makeBackgroundBuffer(dc)
 		
 		dc.EndDrawing()
-		dc.DestroyClippingRegion()
 		self.repaintHelpers()
 
 	def makeBackgroundBuffer(self, dc):
