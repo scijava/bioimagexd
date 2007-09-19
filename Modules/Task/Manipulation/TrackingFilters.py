@@ -297,11 +297,9 @@ class TrackTableGrid(gridlib.Grid):
 		Created: 21.11.2006, KP
 		Description: Store a coordinate in the cell
 		"""
-		#print self.selectedCol,self.selectedRow,x,y,z
-		print "onUpdateCell", x, y, z
 		currWin = scripting.visualizer.getCurrentWindow()
-		if currWin.isMipMode():
-			 
+		print scripting.currentVisualizationMode
+		if scripting.currentVisualizationMode == "MIP":
 			image = self.trackFilter.getInputFromChannel(0)
 			image.Update()
 			xdim, ydim, zdim = image.GetDimensions()
@@ -319,9 +317,7 @@ class TrackTableGrid(gridlib.Grid):
 			
 			if len(possibleObjects) == 1:
 				z = possibleObjects[0][1]
-				print "Only one object"
 			else:
-				print len(possibleObjects), "objects"
 				for val, zval in possibleObjects:
 					menuid = wx.NewId()
 					newitem = wx.MenuItem(menu, menuid, "Object #%d at depth %d" % (val, zval))
@@ -333,13 +329,11 @@ class TrackTableGrid(gridlib.Grid):
 					g *= 255
 					b *= 255
 					newitem.SetBackgroundColour(wx.Colour(r, g, b))
-					print "Zval = ", zval, "val=", val
 					f = lambda evt, zval = zval, xval = x, yval = y, s = self:s.onSetCell(x = xval, y = yval, z = zval)
 					currWin.Bind(wx.EVT_MENU, f, id = menuid)
 					menu.AppendItem(newitem)
 					
 				pos = currWin.xoffset + x * currWin.zoomFactor, currWin.yoffset + y * currWin.zoomFactor
-				print "Showing at ", pos
 				currWin.PopupMenu(menu, pos)
 			
 				return
