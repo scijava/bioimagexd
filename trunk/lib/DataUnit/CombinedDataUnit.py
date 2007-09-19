@@ -56,6 +56,8 @@ class CombinedDataUnit(DataUnit):
 		self.sourceunits = []
 		self.doOrig = 0
 		self.merging = 0
+		self.merge = None
+		self.maptocolor = None
 		settingclass = self.getSettingsClass()
 		Logging.info("Settings class = ", settingclass, kw = "dataunit")
 		self.settings = settingclass()
@@ -386,7 +388,6 @@ class CombinedDataUnit(DataUnit):
 		# we return just the normal preview) or the combined result
 		# (n = last chl+1) has	been requested
 		if self.merging or not self.outputChannels or (n in self.outputChannels and self.outputChannels[n]):
-
 			# If the renew flag is true, we need to regenerate the preview
 			if renew:
 				Logging.info("Renewing preview", kw="dataunit")
@@ -425,20 +426,27 @@ class CombinedDataUnit(DataUnit):
 			
 			if len(merged) > 1:
 				Logging.info("Merging the output channels", kw="dataunit")
-				merge = vtkbxd.vtkImageColorMerge()
-				
+				if not self.merge:
+					self.merge = vtkbxd.vtkImageColorMerge()
+				else:
+					self.merge.RemoveAllInputs()
 				for data, ctf in merged:
-					merge.AddInput(data)
-					merge.AddLookupTable(ctf)
-				preview = merge.GetOutput()
+					print "adding input to merge"
+					self.merge.AddInput(data)
+					self.merge.AddLookupTable(ctf)
+				preview = self.merge.GetOutput()
 				
 			elif len(merged) == 1 and scripting.preferRGB:
 				Logging.info("Mapping the output to color",kw="dataunit")
 				data, ctf = merged[0]
-				maptocolor = vtk.vtkImageMapToColors()
-				maptocolor.SetInput(data)
-				maptocolor.SetLookupTable(ctf)
-				preview = maptocolor.GetOutput()
+				if not self.maptocolor:
+					self.maptocolor = vtk.vtkImageMapToColors()
+					self.maptocolor.SetOutputFormatToRGB()
+				else:
+					self.maptocolor.RemoveAllInputs()
+				self.maptocolor.SetInput(data)
+				self.maptocolor.SetLookupTable(ctf)
+				preview = self.maptocolor.GetOutput()
 				
 		scripting.wantAlphaChannel = self.oldAlphaStatus
 		if not showOrig and not self.doOrig:
