@@ -5,7 +5,7 @@
 
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
-
+ 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation; either version 2 of the License, or
@@ -51,8 +51,14 @@ vtkImageColorMerge::~vtkImageColorMerge()
 
 void vtkImageColorMerge::ClearItfs() {
     while(this->ITFCount) {
-        this->IntensityTransferFunctions[--ITFCount] = 0;
+        this->IntensityTransferFunctions[--this->ITFCount] = NULL;
     }
+}
+
+void vtkImageColorMerge::ClearCtfs()
+{
+  while (this->CTFCount)
+	this->ColorTransferFunctions[--this->CTFCount] = NULL;
 }
 
 //----------------------------------------------------------------------------
