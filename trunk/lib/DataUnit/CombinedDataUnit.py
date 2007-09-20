@@ -430,6 +430,7 @@ class CombinedDataUnit(DataUnit):
 					self.merge = vtkbxd.vtkImageColorMerge()
 				else:
 					self.merge.RemoveAllInputs()
+					self.merge.RemoveLookupTables()
 				for data, ctf in merged:
 					print "adding input to merge"
 					self.merge.AddInput(data)

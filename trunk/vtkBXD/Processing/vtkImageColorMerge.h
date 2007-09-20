@@ -53,13 +53,19 @@ public:
   vtkIntensityTransferFunction* GetIntensityTransferFunction(int i) { return IntensityTransferFunctions[i]; }
 
   void AddLookupTable(vtkColorTransferFunction* ctf) { 
-      ColorTransferFunctions[CTFCount++] = ctf; this->Modified(); 
+      ColorTransferFunctions[this->CTFCount++] = ctf;
+	  this->Modified();
   }
   
   void AddIntensityTransferFunction(vtkIntensityTransferFunction* itf) { 
-        IntensityTransferFunctions[ITFCount++] = itf;
+        IntensityTransferFunctions[this->ITFCount++] = itf;
         this->Modified();
   }
+
+  void RemoveLookupTables() {
+	this->ClearCtfs();
+  }
+
   vtkGetMacro(ITFCount,int);
   vtkGetMacro(CTFCount,int);
   
@@ -121,6 +127,7 @@ public:
   void InitOutput(int outExt[6], vtkImageData *outData);
   
   void ClearItfs();
+  void ClearCtfs();
  
 private:
   vtkImageColorMerge(const vtkImageColorMerge&);  // Not implemented.
