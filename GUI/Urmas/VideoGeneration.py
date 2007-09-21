@@ -145,7 +145,10 @@ class VideoGeneration(wx.Panel):
 			self.visualizer.setVisualizationMode("3d")
 		path = self.rendir.GetValue()
 		file = self.videofile.GetValue()
-		
+		dn = os.path.dirname(path)
+		while not os.path.exists(dn):
+			os.mkdir(dn)
+			dn = os.path.dirname(dn)
 		codec = self.outputFormat.GetSelection()    
 		vcodec, ext = self.outputCodecs[codec]
 		file_coms = file.split(".")
@@ -450,9 +453,7 @@ class VideoGeneration(wx.Panel):
 		self.dirBtn.Bind(wx.EVT_BUTTON, self.onSelectDirectory)
 		
 		self.renderingsizer = wx.GridBagSizer(5, 5)
-		#box=wx.StaticBox(self,wx.HORIZONTAL,"Output")
-		#self.renderstaticbox=wx.StaticBoxSizer(box,wx.VERTICAL)
-		#self.renderstaticbox.Add(self.renderingsizer)
+
 		
 		self.renderingsizer.Add(self.rendirLbl, (0, 0), flag = wx.EXPAND | wx.LEFT | wx.RIGHT)
 		self.renderingsizer.Add(self.rendir, (1, 0), flag = wx.EXPAND | wx.LEFT | wx.RIGHT)
@@ -467,10 +468,7 @@ class VideoGeneration(wx.Panel):
 		self.renderingsizer.Add(self.videofileLbl, (3, 0), flag = wx.EXPAND | wx.ALL)
 		self.renderingsizer.Add(self.videofile, (4, 0), flag = wx.EXPAND | wx.ALL)
 		self.renderingsizer.Add(self.videofileBtn, (4, 1), flag = wx.EXPAND | wx.ALL)
-
-		
-		#self.mainsizer.Add(self.renderstaticbox,(1,0))
-		self.mainsizer.Add(self.renderingsizer, (1, 0), flag = wx.EXPAND | wx.ALL)
+			self.mainsizer.Add(self.renderingsizer, (1, 0), flag = wx.EXPAND | wx.ALL)
 
 	def onSelectDirectory(self, event = None):
 		"""
