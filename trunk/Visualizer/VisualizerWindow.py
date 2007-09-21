@@ -30,19 +30,11 @@ __author__ = "BioImageXD Project < http: //www.bioimagexd.org/>"
 __version__ = "$Revision: 1.9 $"
 __date__ = "$Date: 2005 / 01 / 13 13: 42: 03 $"
 
-#import wx
 import time
 import lib.messenger
 import vtk
 from vtk.wx.wxVTKRenderWindowInteractor import wxVTKRenderWindowInteractor
 
-
-#import Dialogs
-#import VisualizationModules
-#import ModuleConfiguration
-
-
-		
 class VisualizerWindow(wxVTKRenderWindowInteractor):
 	"""
 	Created: 3.5.2005, KP
@@ -98,13 +90,8 @@ class VisualizerWindow(wxVTKRenderWindowInteractor):
 		"""
 		self.keyPressEvents = []
 		self.iren = iren = self.GetRenderWindow().GetInteractor()
-		#self.iren.SetInteractorStyle(vtk.vtkInteractorStyleTrackballCamera())
-#		 self.iren.SetInteractorStyle(vtk.vtkInteractorStyleTrackballActor())
-		#self.irenStyle = vtk.vtkInteractorStyleSwitch()
 		self.irenStyle = vtk.vtkInteractorStyleTrackballCamera()
-		#self.irenStyle.SetCurrentStyleToJoystickActor()
 		self.iren.SetInteractorStyle(self.irenStyle)
-		
 		
 		self.iren.AddObserver("KeyPressEvent", self.onKeypress)
 		
@@ -115,12 +102,11 @@ class VisualizerWindow(wxVTKRenderWindowInteractor):
 		self.renderer.AddObserver("EndEvent", self.onRenderEnd)
 	
 	def onKeypress(self, obj, evt):
-		"""		   
+		"""
 		Created: 02.11.2005
 		Description: Catch keypresses from the window and do actions
 		"""    
 		key = obj.GetKeyCode()
-		#print "Key event", key
 		words = {"j": "Joystick", "a": "Actor", "c": "Camera", "t": "Trackball"}
 		mod = 0
 		if key in ["a", "c"]:
@@ -141,7 +127,6 @@ class VisualizerWindow(wxVTKRenderWindowInteractor):
 					self.renderer.RemoveActor(self.textActor)
 		if mod:
 			style = "vtk.vtkInteractorStyle%s%s()" % (self.control, self.controlled)
-			
 			
 			self.irenStyle = eval(style)
 			self.iren.SetInteractorStyle(self.irenStyle)
@@ -165,7 +150,6 @@ class VisualizerWindow(wxVTKRenderWindowInteractor):
 			cam.SetParallelScale(self.origParallelScale)
 			cam.SetViewAngle(self.origViewAngle)
 		self.zoomFactor = factor
-		print "Setting zoom factor to", factor
 		self.renderer.GetActiveCamera().Zoom(factor)
 	
 		self.renderer.Render()
@@ -185,16 +169,14 @@ class VisualizerWindow(wxVTKRenderWindowInteractor):
 		self.origParallelScale = cam.GetParallelScale()
 		self.origViewAngle = cam.GetViewAngle()
 
-		
-
-	def zoomToRubberband(self):		   
+	def zoomToRubberband(self):
 		"""
 		Created: 30.04.2005, KP
 		Description: Zoom to rubberband
 		"""
 		self.rubberband = 1
 		self.oldStyle = self.iren.GetInteractorStyle()
-		self.iren.SetInteractorStyle(vtk.vtkInteractorStyleRubberBandZoom())	
+		self.iren.SetInteractorStyle(vtk.vtkInteractorStyleRubberBandZoom())
 	
 	def onRenderBegin(self, event = None, e2 = None):
 		"""
@@ -221,7 +203,6 @@ class VisualizerWindow(wxVTKRenderWindowInteractor):
 				self.textActor.SetTextProperty(prop)
 				# changing w,h to width,height (SS 25.06.07)
 				width, height = self.renderer.GetSize()
-				#self.textActor.ScaledTextOn()
 				
 				self.textActor.SetDisplayPosition(width - 85, height - 50)
 				self.renderer.AddActor(self.textActor)
@@ -229,7 +210,6 @@ class VisualizerWindow(wxVTKRenderWindowInteractor):
 			if not t:
 				return
 			fps = 1.0 / t
-			#self.timerLog.StartTimer()
 			self.endTime = time.time()
 			renderTime = self.renderer.GetLastRenderTimeInSeconds()
 			txt = "fps %.1f\ntime %.3fs" % (fps, renderTime) 
@@ -241,7 +221,7 @@ class VisualizerWindow(wxVTKRenderWindowInteractor):
 		"""
 		Created: 28.04.2005, KP
 		Description: Save the rendered screen as png
-		"""			   
+		"""
 		self.saveScreen(vtk.vtkPNGWriter(), filename)
 		
 	def save_pnm(self, filename):
@@ -253,7 +233,6 @@ class VisualizerWindow(wxVTKRenderWindowInteractor):
 		
 	def save_bmp(self, filename):
 		"""
-		Method: save_bmp(self, filename)
 		Created: 28.04.2005, KP
 		Description: Save the rendered screen as bmp
 		"""
@@ -297,7 +276,6 @@ class VisualizerWindow(wxVTKRenderWindowInteractor):
 		Created: 28.04.2005, KP
 		Description: Writes the screen to disk
 		"""
-
 		while self.rendering:
 			time.sleep(0.01)
 		writer.SetFileName(filename)
@@ -317,8 +295,5 @@ class VisualizerWindow(wxVTKRenderWindowInteractor):
 				self.renderer = vtk.vtkRenderer()
 				self.GetRenderWindow().AddRenderer(self.renderer)
 			else:
-				print "Using existing rendererer"
 				self.renderer = collection.GetItemAsObject(0)
 		return self.renderer
-
-# safeguard
