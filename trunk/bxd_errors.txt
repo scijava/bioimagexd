@@ -29,12 +29,10 @@
 (29/245) ./GUI/MenuManager.py:
 (30/245) ./GUI/PainterHelpers.py:
 (31/245) ./GUI/ProcessingManager.py:
-E: 72:ProcessingManager.updateOutputFormat: Instance of 'ProcessingManager' has no 'outputFormat' member
-E: 72:ProcessingManager.updateOutputFormat: Instance of 'ProcessingManager' has no 'checkBox' member
+
 
 (32/245) ./GUI/RangedSlider.py:
 (33/245) ./GUI/OGLAnnotations.py:
-E:116:OGLAnnotation.getAsMaskImage: Instance of 'OGLAnnotation' has no 'getCoveredPoints' member
 
 (34/245) ./GUI/Urmas/UrmasWindow.py:
 (35/245) ./GUI/Urmas/Track/Track.py:
