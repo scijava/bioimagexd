@@ -40,17 +40,28 @@ import lib.ImageOperations
 count = {}
 
 class OGLAnnotation(GUI.ogl.Shape):
+	"""
+	Created: KP
+	Description: A base class for all OGL based annotations
+	"""
 	AnnotationType = ""
 	def __init__(self, canvas = None):
 		"""
 		Created: 10.08.2007, KP
 		Description: initialize the annotation
 		"""
+		self.eraseRect = None
 		GUI.ogl.Shape.__init__(self, canvas)
 		self._offset = (0,0)
 		self._name = ""
 		self.attrList = ["_xpos","_ypos","scaleFactor"]
-		self.eraseRect = None
+		
+	def getCoveredPoints(self):
+		"""
+		Created: KP
+		Description: return the points covered by this roi
+		"""
+		return []
 
 	def unoffset(self, attr, value):
 		"""
@@ -103,7 +114,6 @@ class OGLAnnotation(GUI.ogl.Shape):
 			control.SetPen(wx.WHITE_PEN)
 			control.SetBrush(wx.WHITE_BRUSH)
 			control.Draw(dc)
-			
 			
 	def getAsMaskImage(self):
 		"""
@@ -566,9 +576,6 @@ class MyPolygonSketch(OGLAnnotation, GUI.ogl.Shape):
 		Description: Set the scaling factor in use
 		"""	  
 		pass
-		
-	def getCoveredPoints(self):
-		return []
 
 class MyRectangle(OGLAnnotation, GUI.ogl.RectangleShape):	
 
@@ -641,14 +648,15 @@ class MyRectangle(OGLAnnotation, GUI.ogl.RectangleShape):
 				pts[(x, y)] = 1
 		return pts
 
-class MyCircle(OGLAnnotation, GUI.ogl.CircleShape):	   
+class MyCircle(OGLAnnotation, GUI.ogl.CircleShape):
 
 	AnnotationType = "CIRCLE"
 	def __init__(self, diam, zoomFactor = 1.0):
 		"""
 		Created: 26.06.2006, KP
 		Description: Initialization
-		"""	  
+		"""
+		OGLAnnotation.__init__(self)
 		GUI.ogl.CircleShape.__init__(self, diam)
 		self.scaleFactor = zoomFactor
 		self._isROI = 1
