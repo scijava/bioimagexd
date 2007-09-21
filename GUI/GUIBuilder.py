@@ -98,7 +98,7 @@ class GUIBuilderBase:
 			
 		# Input mapping 0 means to return the input from the filter stack above
 		if self.inputMapping[mapIndex] == 0 and self.dataUnit.isProcessed():
-			print "%s Input index=%d, inputs="%(self.name, self.inputIndex),self.inputs
+			#print "%s Input index=%d, inputs="%(self.name, self.inputIndex),self.inputs
 			try:
 				image = self.inputs[self.inputIndex]
 			except:
@@ -396,7 +396,6 @@ class GUIBuilder(wx.Panel):
 				
 				# Loop through all the items on this section
 				for n, item in enumerate(items):
-					print "item=",item,"items=",items
 					if item == NOBR:
 						keepOnSameRow = 1
 						continue
@@ -412,10 +411,7 @@ class GUIBuilder(wx.Panel):
 						itemName = item[0]
 					else:
 						itemType = currentFilter.getType(item)
-					print "itemTye = ",itemType
-					print "is special=",self.isSpecialElement(item, itemType)
 					if not self.isSpecialElement(item, itemType):
-						print "item",item,"of type",itemType,"is not special"
 						# The GUI for the parameter is created using the regular createGUIElement method
 						if not keepOnSameRow:
 							self.currentRow += 1
@@ -462,12 +458,10 @@ class GUIBuilder(wx.Panel):
 						elif itemType == CTF:
 							self.currentRow += self.createColorTransferFunctionEditor(n, items, currentFilter)
 						else:
-							print "item=",item
 							# If the item was not a "special" parameter, then we just group the parameters on this tuple
 							groupsizer = wx.GridBagSizer()
 							x = 0
 							for it in item:
-								print "Creating gui element",currentFilter,it
 								self.createGUIElement(currentFilter, groupsizer, it, x = x, y = 0)
 								x += 1
 							span = (1, x)
@@ -851,14 +845,14 @@ class GUIBuilder(wx.Panel):
 			# as input, then we only offer that
 			choices = [self.currentFilter.dataUnit.getName()]
 		
-		print "%s There are "%self.currentFilter.getName(), chmax, "channels"
+		#print "%s There are "%self.currentFilter.getName(), chmax, "channels"
 		for i in range(1, chmax + 1):
 			label = wx.StaticText(self, -1, self.currentFilter.getInputName(i))
 			sizer.Add(label, (y, 0))
 			chlChoice = wx.Choice(self, -1, choices = choices)
 			sizer.Add(chlChoice, (y, 1))
 			chlChoice.SetSelection(i - 1)
-			print "%s Setting input channel"%self.currentFilter.getName(), i, "to ", i - 1
+			#print "%s Setting input channel"%self.currentFilter.getName(), i, "to ", i - 1
 			self.currentFilter.setInputChannel(i, i - 1)
 			
 			func = lambda event, f = self.currentFilter, n = i: self.onSetInputChannel(f, n, event)
@@ -892,7 +886,6 @@ class GUIBuilder(wx.Panel):
 		Description: Set the file name
 		"""			  
 		filename = event.GetString()
-		#print "Setting parameter", item, "to", filename
 		filter.setParameter(item, filename)
 		
 	def onSetChoiceFromFilter(self, cc, itemName, value):
@@ -908,7 +901,6 @@ class GUIBuilder(wx.Panel):
 		Description: Set the file name
 		"""			  
 		browseButton.SetValue(value)
-		#print "Setting value of filebrowse to", value
 		
 	def onSetRadioBox(self, box, item, value):
 		"""
@@ -1087,7 +1079,6 @@ class GUIBuilder(wx.Panel):
 		Created: 05.06.2006, KP
 		Description: Set the value for the GUI item
 		"""				
-		#print input, item, value
 		input.SetValue(value)
 	
 	def createBooleanInput(self, parent, currentFilter, item, itemType, defaultValue, label = ""):
@@ -1110,16 +1101,13 @@ class GUIBuilder(wx.Panel):
 		Description: Remove a seed from filter
 		"""			
 		item = listbox.itemName
-		#print "item in removeSeed = ", item
 		n = listbox.GetSelection()
 		if n != wx.NOT_FOUND:
 			s = listbox.GetString(n)
 			seedPoint = eval(s)
 			listbox.Delete(n)
 			
-		#print "Getting parameter", item[0]
 		seeds = currFilter.getParameter(item[0])   
-		#print "Removing ", seedPoint, "from ", seeds
 		seeds.remove(seedPoint)
 		currFilter.setParameter(item[0], seeds)
 
@@ -1129,13 +1117,9 @@ class GUIBuilder(wx.Panel):
 		Created: 29.05.2006, KP
 		Description: Add a value to the pixel listbox
 		"""				
-		#print "Set pixel", obj, event, rx, ry, rz, r, g, b, alpha, item, currFilter
-		#print "item = ", item
 		if listbox.selectPixel:
 			seeds = currFilter.getParameter(item[0])
 			seeds.append((rx, ry, rz))
-			#print "Setting parameter", item, "to", seeds			 
-			
 			currFilter.setParameter(item[0], seeds)
 			listbox.Append("(%d, %d, %d)" % (rx, ry, rz))			   
 			listbox.selectPixel = 0
@@ -1147,10 +1131,7 @@ class GUIBuilder(wx.Panel):
 		Created: 26.05.2006, KP
 		Description: Set the value of the pixel label
 		"""				
-		#print "Set pixel", obj, event, rx, ry, rz, r, g, b, alpha, item, currFilter
 		if valueLabel.selectPixel:
-			#print "Settng parameter", item, "to", rx, ry, rz
-			
 			currFilter.setParameter(item[0], (rx, ry, rz))
 			valueLabel.SetLabel("(%d, %d, %d)" % (rx, ry, rz))
 			valueLabel.selectPixel = 0
@@ -1161,7 +1142,6 @@ class GUIBuilder(wx.Panel):
 		Description: Set the value of the pixel label from a variable
 		"""				
 		rx, ry, rz = value
-		#print "Set pixel", obj, event, rx, ry, rz, r, g, b, alpha, item, currFilter
 		label.SetLabel("(%d, %d, %d)" % (rx, ry, rz))
 
 	def onSetPixelsFromFilter(self, listbox, item, value):
@@ -1170,7 +1150,6 @@ class GUIBuilder(wx.Panel):
 		Description: Set the value of the pixel label from a variable
 		"""		
 		listbox.Clear()
-		#print value
 		for rx, ry, rz in value:
 			listbox.Append("(%d, %d, %d)" % (rx, ry, rz))			 
 
