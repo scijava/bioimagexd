@@ -212,8 +212,6 @@ class TrackReader:
 			Description: Returns whether trackObjects length is greater than minimumLength
 			"""
 			return len(trackObject) > minimumLength
-
-		print "number of tracks =", len(self.tracks)
 		if not self.tracks:
 			return []
 		return [trackObject for trackObject in self.tracks if isLongerThan(trackObject, minLength)]
