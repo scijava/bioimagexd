@@ -31,7 +31,7 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 import Logging
 from Visualizer.VisualizationMode import VisualizationMode
-from GUI.PreviewFrame.PreviewFrame import PreviewFrame
+from GUI.PreviewFrame.MIPPreviewFrame import MIPPreviewFrame
 import scripting
 
 def getName():
@@ -141,7 +141,6 @@ class SimpleMode(VisualizationMode):
 		self.parent = parent
 		self.visualizer = visualizer
 		self.iactivePanel = None
-		self.init = 1
 		self.dataUnit = None
 		
 	def showSideBar(self):
@@ -184,8 +183,7 @@ class SimpleMode(VisualizationMode):
 
 		if not self.iactivePanel:
 			Logging.info("Generating preview", kw = "visualizer")
-			self.iactivePanel = PreviewFrame(self.parent)
-			self.iactivePanel.setPreviewType("MIP")
+			self.iactivePanel = MIPPreviewFrame(self.parent)
 		return self.iactivePanel
 		
 	def setDataUnit(self, dataUnit):
@@ -197,10 +195,7 @@ class SimpleMode(VisualizationMode):
 		if dataUnit == self.dataUnit:
 			Logging.info("Same dataunit, not changing", kw = "visualizer")
 			return
-		if self.init:
-			self.iactivePanel.setPreviewType("MIP")
-			self.init = 0
-			
+
 		self.iactivePanel.setDataUnit(dataUnit, 0)
 		
 	def setTimepoint(self, tp):
