@@ -36,9 +36,7 @@ import os.path
 import wx
 import TimepointSelection
 import time
-#import UIElements
 import lib.messenger
-#import Logging
 import scripting
 import GUI.Dialogs
 import lib.Command
@@ -58,20 +56,11 @@ class ProcessingManager(TimepointSelection.TimepointSelection):
 		self.operationName = operation
 		scripting.processingManager = self
 		
-		#self.timepointLbl.SetLabel("Select Time Points to be Processed")
 		self.SetTitle("Processing - %s" % operation)
 		
 		self.Layout()
 		self.mainsizer.Fit(self)
 
-	def updateOutputFormat(self, event):
-		"""
-		Created: 16.03.2005, KP
-		Description: A method to enable/disable the image format drop down menu
-		"""
-		self.outputFormat.menu.Enable(self.checkBox.GetValue())
-	
-		
 	def createButtonBox(self):
 		"""
 		Created: 03.2.2005, KP
@@ -133,11 +122,7 @@ class ProcessingManager(TimepointSelection.TimepointSelection):
 		Description: A method that tells the dataunit to process the selected timepoints
 		"""    
 		self.status = wx.ID_CANCEL
-				
-		#name=self.operationName+" ("
-		#name+=", ".join([x.getName() for x in self.dataUnit.getSourceDataUnits()])
-		#name+=")"
-		
+	
 		name = os.path.basename(filename)
 		name = ".".join(name.split(".")[:-1])
 		self.dataUnit.setName(name)
