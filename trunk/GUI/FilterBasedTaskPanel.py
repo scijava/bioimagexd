@@ -64,12 +64,13 @@ class FilterBasedTaskPanel(TaskPanel.TaskPanel):
 
 		self.filters = []
 		self.currentSelected = -1
-		
 
 		self.filtersByCategory = {}
 		self.filtersByName = {}
 		self.categories = []
-
+		
+		# self.filtersModule is a python module object that contains the function getFilterList
+		# than can be used to retrieve a list of filters
 		for currfilter in self.filtersModule.getFilterList():
 			self.filtersByName[currfilter.getName()] = currfilter
 			self.registerFilter(currfilter.getCategory(), currfilter)

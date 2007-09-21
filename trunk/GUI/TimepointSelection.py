@@ -33,12 +33,6 @@ __author__ = "BioImageXD Project"
 __version__ = "$Revision: 1.21 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
-#import Dialogs
-#import Logging
-#import RenderingInterface
-#import sys
-#import vtk
-
 import wx.lib.buttons as buttons
 import scripting
 import lib.Command
@@ -54,7 +48,6 @@ class TimepointSelectionPanel(scrolled.ScrolledPanel):
 				 so that this can be also embedded in any other dialog.
 	"""
 	def __init__(self, parent, parentStr = "scripting.processingManager"):
-		#wx.Panel.__init__(self,parent,size=(640,480))
 		scrolled.ScrolledPanel.__init__(self, parent, size = (640, 300))
 		self.mainsizer = wx.GridBagSizer(10, 10)
 		self.configFrame = None
@@ -80,12 +73,10 @@ class TimepointSelectionPanel(scrolled.ScrolledPanel):
 		self.SetSizer(self.mainsizer)
 		self.mainsizer.Fit(self)
 		self.SetupScrolling()
-		#self.mainsizer.SetSizeHints(self)
 				
 	def getSelectedTimepoints(self):
 		timepoints = []
 		for i in self.selectedFrames.keys():
-			#print "%d selected: %s"%(i,(self.selectedFrames[i]==1))
 			if self.selectedFrames[i]:
 				timepoints.append(i)
 		return timepoints
@@ -97,7 +88,6 @@ class TimepointSelectionPanel(scrolled.ScrolledPanel):
 		"""
 		self.configFrame = wx.Panel(self)
 		self.selectboxsizer.Add(self.configFrame)
-		#self.mainsizer.Add(self.configFrame,(2,0),span=(1,2),flag=wx.EXPAND|wx.ALL)
 		
 		self.configSizer = wx.GridBagSizer()
 
