@@ -65,7 +65,7 @@ class TimelinePanel(wx.Panel):
 		self.control = control
 		self.sizer = wx.GridBagSizer()        
 		w = size[0]
-
+		self.wxrenwin = None
 		# added this because "timeline" is used on lines 202-209
 		self.timeline = Timeline
 
@@ -90,36 +90,46 @@ class TimelinePanel(wx.Panel):
 		self.useButton.Bind(wx.EVT_BUTTON, self.useSettings)
 
 		self.confSizer.Add(self.useButton, (1, 0))
-
-		self.sizer.Add(sboxsizer, (0, 0), flag = wx.EXPAND | wx.ALL)
 		self.wxrenwin = Visualizer.VisualizerWindow.VisualizerWindow(self, size = (300, 300))
-		self.wxrenwin.initializeVTK()
-		
 		self.splineEditor = SplineEditor.SplineEditor(self, self.wxrenwin)
-		self.control.setSplineEditor(self.splineEditor)        
-
-
-		self.sbox=wx.StaticBox(self,-1,"Rendering preview")
-		self.sboxsizer=wx.StaticBoxSizer(self.sbox,wx.VERTICAL)                
-		self.sboxsizer.Add(self.wxrenwin)
+		self.control.setSplineEditor(self.splineEditor)   
 		
-		self.sizer.Add(self.sboxsizer,(0,1))#,flag=wx.EXPAND|wx.ALL) 
-		#self.sizer.Add(self.wxrenwin, (0, 1))#,flag=wx.EXPAND|wx.ALL) 
-		
+		self.sizer.Add(sboxsizer, (0, 0), flag = wx.EXPAND | wx.ALL)
+		self.sizer.Add(self.wxrenwin, (0,1))
 		self.SetSizer(self.sizer)
 		self.SetAutoLayout(1)
 		self.sizer.Fit(self)
 
 		
 		self.Refresh()
-
+		
+		self.wxrenwin.initializeVTK()
 		self.splineEditor.initializeVTK()
+		self.wxrenwin.Render()
 		
 		n = self.timelineConfig.getFrameAmount()
 		
 		lib.messenger.send(None, "set_frames", n)
 		lib.messenger.connect(None, "set_frame_size", self.onSetFrameSize)
 		lib.messenger.connect(None, "set_keyframe_mode", self.onSetKeyframeMode)
+		
+		#wx.CallAfter(self.initializeVTK)
+
+
+	def initializeVTK(self):
+		"""
+		Created: 12.09.2007, KP
+		Description: initialize the vtk window
+		"""
+
+		
+     
+
+		#self.sboxsizer.Add(self.wxrenwin)
+		#self.sizer.Add(self.sboxsizer,(0,1))
+		#self.Layout()
+		
+		#self.wxrenwin.Raise()
 
 	def onSetFrameSize(self, obj, evt, size, onlyAspect):
 		"""
@@ -127,12 +137,13 @@ class TimelinePanel(wx.Panel):
 		Description: Event to change the size of the rendering preview
 					 based on the size of the actual rendered frames
 		"""
+		if not self.wxrenwin:
+			return
 		x, y = size
 		xtoy = float(x) / y
 		if onlyAspect:
 			y = 300
 			x = xtoy * y
-		
 		
 		self.wxrenwin.SetSize((x, y))
 		self.wxrenwin.SetMinSize((x, y))
@@ -148,7 +159,6 @@ class TimelinePanel(wx.Panel):
 		Description: Toggles the keyframe mode on / off
 		"""            
 		pass
-		#self.modeBox.Enable(arg)
 		
 	def useSettings(self, evt):
 		"""
