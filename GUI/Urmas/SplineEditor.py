@@ -35,15 +35,7 @@ __version__ = "$Revision: 0.1 $"
 __date__ = "$Date: 2004/01/20 22:41:28 $"
 
 
-#import types, os
-#import string
-
 import vtk
-#from vtk.util.colors import tomato, banana
-
-#import wx
-#import wx.lib.scrolledpanel as scrolled
-#import PreviewFrame
 import Logging
 import lib.messenger
 
@@ -68,7 +60,6 @@ class SplineEditor:
 		self.cmds = {}
 		self.viewMode = 0
 		self.wxrenwin = renwin
-#        self.initializeVTK()
 		lib.messenger.connect(None, "show_arrow", self.onShowArrow)
 		lib.messenger.connect(None, "set_preview_mode", self.onSetPreviewMode)
 		lib.messenger.connect(None, "show_camera", self.onShowCamera)
@@ -87,9 +78,7 @@ class SplineEditor:
 		x, y, z = arg
 		print "Showing arrow at ", x, y, z
 		x -= 100
-		#self.arrowTransform.Translate(x-5,y,z)        
 		self.arrowActor.SetVisibility(1)      
-		#self.transformFilter.Update()
 		self.arrowActor.SetPosition(x, y, z)
 		self.arrowMapper.Update()
 		self.render()        
@@ -126,8 +115,6 @@ class SplineEditor:
 
 		self.iren = iren = self.renWin.GetInteractor()
 		self.iren.SetSize(self.renWin.GetSize())
-		#self.iren.SetInteractorStyle(vtk.vtkInteractorStyleTrackballCamera())
-		#self.iren.SetInteractorStyle(vtk.vtkInteractorStyleJoystickCamera())
 
 		self.dataExtensionX = 50
 		self.dataExtensionY = 50
@@ -135,8 +122,6 @@ class SplineEditor:
 
 		self.data = None
 		self.interactionCallback = None
-
-		
 		
 		self.spline = spline = vtk.vtkSplineWidget()
 		self.spline.GetLineProperty().SetColor(1, 0, 0)
@@ -146,19 +131,13 @@ class SplineEditor:
 		self.spline.SetInteractor(self.iren)
 		self.style = self.iren.GetInteractorStyle()
 		
-		#self.iren.EnabledOn()
 		self.spline.AddObserver("EndInteractionEvent", self.endInteraction)
 		self.spline.AddObserver("InteractionEvent", self.endInteraction)
 		self.style.AddObserver("EndInteractionEvent", self.endInteraction)
 		self.style.AddObserver("InteractionEvent", self.endInteraction)        
 		self.iren.AddObserver("EndInteractionEvent", self.endInteraction)
 		self.iren.AddObserver("InteractionEvent", self.endInteraction)                
-		
-		
-	   
-		#self.renWin.SetInteractor(self.iren)
-		
-		
+
 		self.spline.On()
 		
 		self.spline.SetEnabled(1)        
@@ -168,7 +147,6 @@ class SplineEditor:
 		self.outlinemapper = vtk.vtkPolyDataMapper ()
 		self.outlineactor = vtk.vtkActor ()
 		self.axes = vtk.vtkCubeAxesActor2D ()
-		print "Initializing camera"
 		self.initCamera()
 				
 		self.arrow = vtk.vtkArrowSource()
@@ -176,21 +154,17 @@ class SplineEditor:
 		self.arrowTransform = vtk.vtkTransform()
 		self.arrowTransform.RotateX(90.0)
 		self.arrowTransform.Scale(80.0, 200.0, 200.0)
-		#self.arrowTransform.Scale(200.0, 200.0, 200.0)
-		#self.arrowTransform.Scale(10,10,10)
+
 		self.transformFilter = vtk.vtkTransformFilter()
 			
 		self.transformFilter.SetTransform(self.arrowTransform)
 		self.transformFilter.SetInput(self.arrow.GetOutput())
 		self.arrowMapper = vtk.vtkPolyDataMapper()
 		self.arrowMapper.SetInput(self.transformFilter.GetOutput())
-		#self.arrowActor = vtk.vtkFollower()
 		self.arrowActor = vtk.vtkActor()
 		self.arrowActor.GetProperty().SetColor((0, 0, 1))
 		self.arrowActor.SetMapper(self.arrowMapper)
-		#self.arrowActor.SetCamera(self.renderer.GetActiveCamera())
-		
-		# TEMPO
+
 		self.renderer.AddActor(self.arrowActor)    
 		
 		self.arrowActor.SetVisibility(0)
@@ -221,31 +195,22 @@ class SplineEditor:
 		Created: 17.08.2005, KP
 		Description: Stop the event from propagating
 		"""
-		#print obj,evt,args
-		#tag=self.cmds[evt]
-		#print dir(self.style),dir(self.iren)
-		#cmd=self.style.GetCommand(tag)
-		#cmd.SetAbortFlag(1)
 		return False
+		
 	def setClosed(self, flag):
 		"""
 		Created: 14.04.2005, KP
 		Description: Sets the spline closed or open
 		"""
-		if flag:
-			self.spline.ClosedOn()
-		else:
-			self.spline.ClosedOff()
+		self.spline.SetClosed(flag)
 		self.render()
 
 	def getBounds(self):
 		"""
 		Created: 18.04.2005, KP
 		Description: Returns the bounds of the dataset
-		
 		"""
 		xmin, xmax, ymin, ymax, zmin, zmax = self.data.GetBounds()
-		#print xmin,xmax,ymin,ymax,zmin,zmax
 		p1 = (xmin, ymin, zmin)
 		p2 = (xmax, ymin, zmin)
 		p3 = (xmax, ymax, zmin)
@@ -267,15 +232,11 @@ class SplineEditor:
 			Logging.info("Turning spline off", kw = "animator")
 			self.spline.Off()
 			self.spline.SetEnabled(0)
-			#self.setMovement(0)
 		else:
 			Logging.info("Turning spline on", kw = "animator")
 			self.spline.On()
 			self.spline.SetEnabled(1)
-			#self.setMovement(1)
-		#self.iren = iren = self.renWin.GetInteractor()        
-		#self.style=self.iren.GetInteractorStyle()
-		
+
 		self.viewMode = showViewAngle    
 
 	def findControlPoint(self, pt):
@@ -287,8 +248,6 @@ class SplineEditor:
 		pps = self.getControlPoints()
 		return pps[pt]
 		
-
-
 	def setInteractionCallback(self, cb):
 		"""
 		Created: 19.03.2005, KP
@@ -338,12 +297,10 @@ class SplineEditor:
 		p0 = points.GetPoint(pp0)
 		p1 = points.GetPoint(pp1)
 		sd = vtk.vtkMath.Distance2BetweenPoints(p0, p1)
-		#print "Calculating distance from ",pp0,"to",pp1
 		for x in range(pp0 + 1, pp1 + 1):
 			p1 = points.GetPoint(x)
 			d += vtk.vtkMath.Distance2BetweenPoints(p0, p1)
 			p0 = p1
-		#print "Distance",d,", straight distance",sd
 		return d
 		
 	def getCameraPosition(self, n, p0, percentage):
@@ -385,7 +342,6 @@ class SplineEditor:
 				Logging.info("closest=", closest, "pointindex=", pointindex, "d0=", d0, kw = "animator")
 				raise "Didn't get closest!"
 		if n == len(pps) - 1:
-			#print "Using last point"
 			pointindex2 = npts - 1
 		else:
 			cp1 = pps[n + 1]
@@ -402,11 +358,9 @@ class SplineEditor:
 					d0 = d
 			if pointindex2 != closest:
 				if pointindex2 < 0 or abs(closest - pointindex2) < 5:
-					#print "Using closest %d instead of the one we found %d"%(closest,pointindex2)
 					pointindex2 = closest
 				else:
 					raise "Didn't get closest!"                    
-		#print "Pointindex = ",pointindex," to ",pointindex2,"percent=",percentage
 		n = pointindex + (pointindex2 - pointindex) * percentage
 		return (n, points.GetPoint(n))
 					
@@ -420,9 +374,7 @@ class SplineEditor:
 		"""            
 		if self.data:
 			del self.data
-
 		self.data = data
-		#print "Got data=",data
 		
 		self.outline.SetInput(self.data)
 		self.outlinemapper.SetInput (self.outline.GetOutput ())
@@ -472,10 +424,8 @@ class SplineEditor:
 		volumeMapper = self.volumeMapper
 
 		volume = vtk.vtkVolume()
-		print "Adding volume"
 		# temporary
 		self.renderer.AddVolume(volume)
-		print "done"
 		
 		volume.SetMapper(volumeMapper)
 		volume.SetProperty(volumeProperty)
@@ -489,9 +439,7 @@ class SplineEditor:
 		self.axes.SetNumberOfLabels (2)
 		self.axes.SetFontFactor (1.0)
 		self.axes.SetFlyModeToOuterEdges ()
-		#self.axes.SetFlyModeToClosestTriad ()
 		self.axes.SetCornerOffset (0.0)
-		#self.axes.SetInertia(10)
 		self.axes.ScalingOff ()
 		self.axes.SetCamera (self.renderer.GetActiveCamera ())
 
@@ -499,7 +447,6 @@ class SplineEditor:
 		self.axes.SetInput (self.outline.GetOutput ())
 		
 
-		#print "Axes actor inertia: %d"%(self.axes.GetInertia())
 		self.volume = volume
 		self.volumeMapper = volumeMapper
 		self.volumeProperty = volumeProperty
@@ -567,17 +514,10 @@ class SplineEditor:
 		Created: KP, 06.04.2005
 		Description: Sets the handles of the spline widget to the given point list
 		"""
-		#print "Setting spline points to",pointlist
-
 		n = len(pointlist)
 		self.spline.SetNumberOfHandles(n)
 		for i in range(n):
 			self.spline.SetHandlePosition(i, pointlist[i])
-			#self.spline.SetHandleSize(100)
-		#
-		#self.spline.GetHandleProperty().SetColor(0,0,1)
-		#self.spline.SetEnabled(1)
-
 		self.renderer.Render()
 
 	def setSplinePoint(self, pos, point):
@@ -586,7 +526,6 @@ class SplineEditor:
 		Description: Sets the a handle of the spline widget to a given point
 		"""        
 		self.spline.SetHandlePosition(pos, point)
-	
 		
 	def initCamera(self):
 		"""
@@ -599,10 +538,6 @@ class SplineEditor:
 			cam.SetFocalPoint(focal)
 			cam.SetPosition(self.getInitialCameraPosition())
 			cam.ComputeViewPlaneNormal()
-		else:
-			print "No camera in SplineEditor"
-
-
 
 	def getInitialCameraPosition(self):
 		"""
@@ -618,8 +553,7 @@ class SplineEditor:
 		"""
 		Created: Heikki Uuksulainen
 		Description: Returns the center of the current dataset
-		"""        
-	
+		""" 
 		if not self.data:
 			return [0, 0, 0]
 		return self.data.GetCenter()
@@ -700,18 +634,13 @@ class SplineEditor:
 		Description: Method called when user manipulates the spline and then 
 					 lets the mouse button up. Used to call a callback.
 		"""
-		#print "END INTERACTION"
 		cam = self.getCamera()
-			
-		#print "Orientation=",cam.GetOrientationWXYZ()
-
+	
 		if self.viewMode == 1:
 			lib.messenger.send(None, "set_camera", cam)
 			lib.messenger.send(None, "view_camera", cam)
 		
-		#print "interactioncallback=",self.interactionCallback
 		if self.interactionCallback:
-			#print "\n\n*** Calling interactionCallback\n\n"
 			self.interactionCallback()
 
 	def getAsImage(self):
@@ -721,9 +650,7 @@ class SplineEditor:
 		"""
 		filter = vtk.vtkWindowToImageFilter()
 		filter.SetInput(self.renWin)
-#        self.renderer.RemoveActor(self.outlineactor)
 		filter.Update()
-#        self.renderer.AddActor(self.outlineactor)        
 		return filter.GetOutput()
 	
 	def render(self):
@@ -731,9 +658,4 @@ class SplineEditor:
 		Created: Heikki Uuksulainen
 		Description: Render the widget
 		"""
-		#self.renderer.Render()
 		self.wxrenwin.Render()
-	#def onKeypress(self,*args):
-	#    print args
-		
-		

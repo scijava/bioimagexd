@@ -224,15 +224,19 @@ class UrmasControl:
 		self.configureTimeline(self.duration, self.frames)
 		self.updateGUI()
 		self.updateLayouts()
+		
+		self.initializeSplineEditor()
+		
+	def initializeSplineEditor(self):
+		"""
+		Created: 12.09.2007, KP
+		Description: initialize the spline editor
+		"""
 		data = self.renderingInterface.getCurrentData()
 		ctf = self.renderingInterface.getColorTransferFunction()
-		
 		self.splineEditor.updateData(data, ctf)
-		
 		self.splineEditor.initCamera()
-		
 		self.splineEditor.render()
-
 		
 	def updateLayouts(self):
 		"""
