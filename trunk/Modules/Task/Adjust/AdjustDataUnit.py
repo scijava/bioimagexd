@@ -102,7 +102,7 @@ class AdjustDataUnit(CombinedDataUnit):
 		params1 = lib.ImageOperations.getAsParameterList(itf1)
 		params2 = lib.ImageOperations.getAsParameterList(itf2)
 		# There are n-1 timepoints between the specified timepoints
-		params = lib.Interpolation.interpolate(params1, params2, n - 1)
+		params = lib.Interpolation.linearInterpolation(params1, params2, n - 1)
 		print "params1=", params1
 		print "params2=", params2
 		print "Interpolated %d new paramlists" % len(params)
