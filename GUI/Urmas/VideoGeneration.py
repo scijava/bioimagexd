@@ -12,7 +12,7 @@
  This module contains a panel that can be used to control the creation of a movie
  out of a set of rendered images.
  
- Copyright (C) 2005  BioImageXD Project
+ Copyright (C) 2005	 BioImageXD Project
  See CREDITS.txt for details
 
  This program is free software; you can redistribute it and/or modify
@@ -123,11 +123,11 @@ class VideoGeneration(wx.Panel):
 		"""
 		Created: 15.12.2005, KP
 		Description: Close the video generation window
-		"""        
+		"""		   
 		if self.rendering:
 			lib.messenger.send(None, "stop_rendering")
 			self.abort = 1
-#        self.visualizer.getCurrentMode().lockSliderPanel(0)            
+#		 self.visualizer.getCurrentMode().lockSliderPanel(0)			
 		lib.messenger.send(None, "video_generation_close")
 		
 		
@@ -149,7 +149,7 @@ class VideoGeneration(wx.Panel):
 		while not os.path.exists(dn):
 			os.mkdir(dn)
 			dn = os.path.dirname(dn)
-		codec = self.outputFormat.GetSelection()    
+		codec = self.outputFormat.GetSelection()	
 		vcodec, ext = self.outputCodecs[codec]
 		file_coms = file.split(".")
 		file_coms[-1] = ext
@@ -199,7 +199,7 @@ class VideoGeneration(wx.Panel):
 		Created: 30.1.2006, KP
 		Description: Method to clean up after rendering is done
 		""" 
-		renderingInterface = lib.RenderingInterface.getRenderingInterface()        
+		renderingInterface = lib.RenderingInterface.getRenderingInterface()		   
 		self.frameList = renderingInterface.getFrameList()
 		# if the rendering wasn't aborted, then restore the animator
 		if not self.abort:
@@ -219,7 +219,7 @@ class VideoGeneration(wx.Panel):
 		
 		
 		lib.messenger.send(None, "video_generation_close")
-#        self.Close()
+#		 self.Close()
 		lib.messenger.disconnect(None, "rendering_done")
 
 	def encodeVideo(self, path, file, size):
@@ -242,14 +242,14 @@ class VideoGeneration(wx.Panel):
 		#frameRate = int(self.frameRate.GetValue())
 		#frameRate=float(self.frameRate.GetValue())
 		frameRate = self.fps
-		codec = self.outputFormat.GetSelection()    
-		vcodec, ext = self.outputCodecs[codec]        
-#        if self.needpad and frameRate not in [12.5,25]:
-#            scodec=self.outputFormats[1][codec]
-#            #if frameRate<12.5:frameRate=12
-#            #else:frameRate=24
-#            frameRate=25
-#            GUI.Dialogs.showmessage(self, \
+		codec = self.outputFormat.GetSelection()	
+		vcodec, ext = self.outputCodecs[codec]		  
+#		 if self.needpad and frameRate not in [12.5,25]:
+#			 scodec=self.outputFormats[1][codec]
+#			 #if frameRate<12.5:frameRate=12
+#			 #else:frameRate=24
+#			 frameRate=25
+#			 GUI.Dialogs.showmessage(self, \
 #										"For the code you've selected (%s), \
 #										the target frame rate must be either 12.5 or 25. %d will be used." \
 #										% (scodec,frameRate), \
@@ -307,15 +307,15 @@ class VideoGeneration(wx.Panel):
 			self.outputFormatLbl.SetLabel("Image Format:")
 		self.delFramesBox.Enable(sel)
 		self.qualitySlider.Enable(sel)
-		self.videofile.Enable(sel)            
+		self.videofile.Enable(sel)			  
 		
 		self.videofileBtn.Enable(sel)
 		
-		currentSelection = self.outputFormat.GetSelection()        
+		currentSelection = self.outputFormat.GetSelection()		   
 		self.outputFormat.Clear()
 		for i in self.outputFormats[sel]:
 			self.outputFormat.Append(i)
-		self.outputFormat.SetSelection(self.oldSelection)        
+		self.outputFormat.SetSelection(self.oldSelection)		 
 		self.oldSelection = currentSelection
 		
 	
@@ -424,7 +424,7 @@ class VideoGeneration(wx.Panel):
 		self.outputsizer.Add(self.frameRate, (n, 1))
 		n += 1
 		self.outputsizer.Add(self.durationLabel, (n, 0))
-		self.outputsizer.Add(self.duration, (n, 1))        
+		self.outputsizer.Add(self.duration, (n, 1))		   
 		n += 1
 		self.outputsizer.Add(self.totalFramesLabel, (n, 0))
 		self.outputsizer.Add(self.totalFrames, (n, 1))
@@ -468,7 +468,7 @@ class VideoGeneration(wx.Panel):
 		self.renderingsizer.Add(self.videofileLbl, (3, 0), flag = wx.EXPAND | wx.ALL)
 		self.renderingsizer.Add(self.videofile, (4, 0), flag = wx.EXPAND | wx.ALL)
 		self.renderingsizer.Add(self.videofileBtn, (4, 1), flag = wx.EXPAND | wx.ALL)
-			self.mainsizer.Add(self.renderingsizer, (1, 0), flag = wx.EXPAND | wx.ALL)
+		self.mainsizer.Add(self.renderingsizer, (1, 0), flag = wx.EXPAND | wx.ALL)
 
 	def onSelectDirectory(self, event = None):
 		"""
@@ -493,6 +493,3 @@ class VideoGeneration(wx.Panel):
 		filename = GUI.Dialogs.askSaveAsFileName(self, "Select output filename", "movie.%s" % ext, wc)
 		if filename:
 			self.videofile.SetValue(filename)
-
-		
-
