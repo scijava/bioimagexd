@@ -191,12 +191,11 @@ class InteractivePanel(GUI.ogl.ShapeCanvas):
 			origImage = self.dataUnit.getTimepoint(tp)
 			
 		import itk
-		scalarType = origImage.GetScalarTypeAsString()		  
+		scalarType = origImage.GetScalarTypeAsString()
 		if scalarType == "unsigned char":
 			ImageType = itk.VTKImageToImageFilter.IUC3
 		elif scalarType == "unsigned short":
 			ImageType = itk.VTKImageToImageFilter.IUS3
-		
 		
 		vtkToItk = ImageType.New()
 		vtkToItk.SetInput(origImage)
@@ -209,7 +208,7 @@ class InteractivePanel(GUI.ogl.ShapeCanvas):
 		vtkToItk2.Update()
 		itkLabel = vtkToItk2.GetOutput()
 
-		labelStats = itk.LabelStatisticsImageFilter[itkOrig, itkLabel].New()		
+		labelStats = itk.LabelStatisticsImageFilter[itkOrig, itkLabel].New()
 		labelStats.SetInput(0, itkOrig)
 		labelStats.SetInput(1, itkLabel)
 		labelStats.Update()
@@ -351,7 +350,7 @@ class InteractivePanel(GUI.ogl.ShapeCanvas):
 		shapelist = self.diagram.GetShapeList()
 		rois = []
 		for shape in shapelist:
-			if isinstance(shape, OGLAnnotation) and shape.isROI():
+			if isinstance(shape, GUI.OGLAnnotations.OGLAnnotation) and shape.isROI():
 				rois.append(shape)
 		return rois
 		
@@ -734,7 +733,7 @@ class InteractivePanel(GUI.ogl.ShapeCanvas):
 		"""
 		Created: 07.05.2005, KP
 		Description: Add a new shape to the canvas
-		"""		   
+		"""
 		evthandler = GUI.OGLAnnotations.MyEvtHandler(self)
 		evthandler.SetShape(shape)
 		evthandler.SetPreviousHandler(shape.GetEventHandler())
@@ -744,7 +743,7 @@ class InteractivePanel(GUI.ogl.ShapeCanvas):
 		shape.SetBrush(wx.TRANSPARENT_BRUSH)
 		shape.SetPen(wx.Pen((0, 255, 0), 1))
 		
-		self.AddShape( shape )				   
+		self.AddShape( shape )
 		
 		if not noUpdate:
 			self.diagram.ShowAll(1)
@@ -907,7 +906,6 @@ class InteractivePanel(GUI.ogl.ShapeCanvas):
 			x, y = self.GetViewStart()
 			if x or y:
 				scrolledWinDC = 1
-				#Logging.info("Resorting to unbuffered drawing because of scrolling", kw = "iactivepanel")
 				dc = wx.PaintDC(self)
 				
 				self.PrepareDC(dc)
