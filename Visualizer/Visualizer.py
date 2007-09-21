@@ -148,8 +148,7 @@ class Visualizer:
 												style = wx.NO_BORDER)
 		self.annotateBarWin.SetOrientation(wx.LAYOUT_VERTICAL)
 		self.annotateBarWin.SetAlignment(wx.LAYOUT_RIGHT)
-		#self.annotateBarWin.SetSashVisible(wx.SASH_RIGHT, True)
-		#self.annotateBarWin.SetSashBorder(wx.SASH_RIGHT, True)
+
 		self.annotateBarWin.SetDefaultSize((70, 768))
 		self.annotateBarWin.origSize = (70, 768)
 
@@ -159,7 +158,6 @@ class Visualizer:
 												style = wx.NO_BORDER)
 		self.histogramWin.SetOrientation(wx.LAYOUT_HORIZONTAL)
 		self.histogramWin.SetAlignment(wx.LAYOUT_TOP)
-		#self.histogramWin.SetSashVisible(wx.SASH_BOTTOM, False)
 		self.histogramWin.SetDefaultSize((500, 0))
 
 		self.histogramPanel = wx.Panel(self.histogramWin)
@@ -338,7 +336,6 @@ class Visualizer:
 		"""
 		if not all and platform.system() == "Windows":
 			self.timeslider.Unbind(wx.EVT_SCROLL_ENDSCROLL)
-			#self.timeslider.Unbind(wx.EVT_SCROLL_THUMBRELEASE)
 			self.timeslider.Bind(wx.EVT_SCROLL_ENDSCROLL, method)
 		elif not all and platform.system() == "Darwin":
 			self.timeslider.Bind(wx.EVT_SCROLL_THUMBRELEASE, method)
@@ -359,7 +356,6 @@ class Visualizer:
 			obj = self.zsliderWin
 		elif arg == "histogram":
 			obj = self.histogramWin
-			# width and height was previously w, h (SS 21.06.07)
 			width, height = 0, 0
 			for i in self.histograms:
 				width2, height2 = i[0].GetSize()
@@ -568,16 +564,6 @@ class Visualizer:
 
 		self.tb.AddControl(self.origBtn)
 		iconpath = scripting.get_icon_dir()
-#		bmp = wx.Image(os.path.join(iconpath, "perspective.gif")).ConvertToBitmap()
-
-#		self.tb.DoAddTool(GUI.MenuManager.ID_PERSPECTIVE, \
-#							"Perspective rendering", \
-#							bmp, \
-#							kind = wx.ITEM_CHECK, \
-#							shortHelp = "Toggle between parallel and perspective projection")
-
-#		self.tb.ToggleTool(GUI.MenuManager.ID_PERSPECTIVE, 1)
-#		wx.EVT_TOOL(self.tb, GUI.MenuManager.ID_PERSPECTIVE, self.onPerspectiveRendering)
 
 		self.pitch = wx.SpinButton(self.tb, GUI.MenuManager.PITCH, style = wx.SP_VERTICAL, size = (-1, 22))
 		self.tb.AddControl(self.pitch)
@@ -590,8 +576,6 @@ class Visualizer:
 
 		self.dimInfo = GUI.UIElements.DimensionInfo(self.tb, -1, size = (160, 50))
 		self.tb.AddControl(self.dimInfo)
-
-
 
 		wx.EVT_TOOL(self.parent, GUI.MenuManager.ID_ZOOM_IN, self.zoomIn)
 		wx.EVT_TOOL(self.parent, GUI.MenuManager.ID_ZOOM_OUT, self.zoomOut)
@@ -854,30 +838,7 @@ class Visualizer:
 		global visualizerInstance
 		visualizerInstance = None
 
-	def reloadModules(self):
-		"""
-		Created: 24.05.2005, KP
-		Description: Reload all the visualization modules.
-		"""
-		if hasattr(self.currMode, "reloadModules"):
-			self.currMode.reloadModules()
-		for key in self.modes.keys():
-			mod, settingclass, module = self.modes[key]
-			module = reload(module)
-			self.modes[key] = (mod, settingclass, module)
-		return
-		# Borrowed from mayavi
-		my_dir = os.path.dirname (os.path.abspath (__file__))
-		dont_load = list (sys.builtin_module_names)
 
-		for key in sys.modules.keys ():
-			if key not in dont_load:
-				mod = sys.modules[key]
-				if mod and hasattr (mod, '__file__'):
-					path = os.path.abspath (mod.__file__)
-					if os.path.commonprefix ([path, my_dir]) == my_dir:
-						Logging.info("Reloading %s" % key)
-						reload(mod)
 
 	def setProcessedMode(self, mode):
 		"""
@@ -940,7 +901,6 @@ class Visualizer:
 		Created: 23.05.2005, KP
 		Description: Set the mode of visualization
 		"""
-		#oldmode = self.mode
 		if self.mode == mode:
 			Logging.info("Mode %s already selected" % mode, kw = "visualizer")
 			if self.dataUnit and self.currMode.dataUnit != self.dataUnit:
@@ -960,7 +920,6 @@ class Visualizer:
 
 		modeclass, settingclass, module = self.modes[mode]
 		modeinst = self.instances[mode]
-		#new = 0
 		if reload:
 			del self.instances[mode]
 			modeinst = None
@@ -969,7 +928,6 @@ class Visualizer:
 			modeinst = modeclass(self.visWin, self)
 			self.instances[mode] = modeinst
 			self.currMode = modeinst
-			#new = 1
 
 		if not module.showZoomToolbar():
 			self.toolWin.SetDefaultSize((500, 0))
@@ -1004,10 +962,8 @@ class Visualizer:
 
 		if modeinst.showViewAngleCombo():
 			self.viewCombo.Enable(1)
-#			 self.tb.EnableTool(GUI.MenuManager.ID_SET_VIEW, 1)
 		else:
 			self.viewCombo.Enable(0)
-#			 self.tb.EnableTool(GUI.MenuManager.ID_SET_VIEW, 0)
 		if self.zoomToFitFlag:
 			self.currMode.zoomToFit()
 		else:
@@ -1033,7 +989,6 @@ class Visualizer:
 					# use the sidebarWin.origSize
 					self.sidebarWin.SetDefaultSize(self.sidebarWin.origSize)
 		wx.LayoutAlgorithm().LayoutWindow(self.parent, self.visWin)
-		#self.currentWindow.enable(self.enabled)
 
 		self.currentWindow.enable(0)
 		if self.dataUnit and modeinst.dataUnit != self.dataUnit:
@@ -1065,7 +1020,6 @@ class Visualizer:
 		if self.noRender:
 			self.oldEnabled = flag
 			return
-		#Logging.info("\nenable(%s)\n" %(not not flag), kw = "visualizer")
 		self.enabled = flag
 		if self.currentWindow:
 			Logging.info("Setting enabled status of current window to %s" % (not not flag), kw = "visualizer")
@@ -1077,9 +1031,6 @@ class Visualizer:
 			wx.LayoutAlgorithm().LayoutWindow(self.parent, self.visWin)
 			Logging.info("Setting visualizer window to ", self.visWin.GetSize(), kw = "visualizer")
 			self.currentWindow.SetSize(self.visWin.GetClientSize())
-#		 if flag:
-#			wx.LayoutAlgorithm().LayoutWindow(self.parent, self.visWin)
-#			self.currentWindow.SetSize(self.visWin.GetClientSize())
 
 	def setBackground(self, r, g, b):
 		"""
@@ -1130,8 +1081,8 @@ class Visualizer:
 			self.timeslider.SetRange(1, count)
 			
 		currT = modT = self.timeslider.GetValue()
-		if currT < 1:currT = 1
-		if currT > count:currT = count
+		currT = max(1,currT)
+		currT = min(count, currT)
 		
 		if currT != modT and count > 1:
 			Logging.info("Setting time slider value to %d"%currT, kw="visualizer")
@@ -1144,6 +1095,7 @@ class Visualizer:
 		x, y, z = dataunit.getDimensions()
 
 		currz = self.zslider.GetValue()
+		print "\n\n\n--- Setting zslider to range",1,z
 		self.zslider.SetRange(1, z)
 
 		if self.timepoint > count:
@@ -1225,7 +1177,6 @@ class Visualizer:
 		if not flag:
 			self.noRender = flag
 			self.enable(self.oldEnabled)
-
 		else:
 			self.oldEnabled = self.enabled
 			self.enable(0)
@@ -1295,8 +1246,6 @@ class Visualizer:
 		Created: 21.06.2005, KP
 		Description: Update the timepoint according to an event
 		"""
-		#timepoint = event.getValue()
-
 		self.setTimepoint(timepoint)
 
 	def onSetTimeslider(self, obj, event, timepoint):
@@ -1404,7 +1353,6 @@ class Visualizer:
 		if self.currMode and self.dataUnit:
 			wildCardDict = {"png": "Portable Network Graphics Image (*.png)", "jpeg": "JPEG Image (*.jpeg)",
 			"tiff": "TIFF Image (*.tiff)", "bmp": "Bitmap Image (*.bmp)"}
-			#wildCard = "PNG file|*.png|JPEG file|*.jpeg|TIFF file|*.tiff|BMP file|*.bmp"
 
 			defaultExt = self.conf.getConfigItem("ImageFormat", "Output")
 			if defaultExt == "jpg":
@@ -1450,11 +1398,9 @@ class Visualizer:
 	def setRenderWindowSize(self, size, taskwin):
 		"""
 		Created: 28.04.2005, KP
-		Description: Set the render window size
+		Description: Set the render window size by modifying the size of the surrounding panels
 		"""
 		x, y = size
-		#self.currentWindow.SetSize((size))
-
 		currx, curry = self.visWin.GetSize()
 		self.visWin.origSize = (currx, curry)
 		Logging.info("Current window size = ", currx, curry)
