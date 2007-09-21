@@ -153,7 +153,7 @@ class Particle:
 		self.timePoint = timePoint
 		self.size = size
 		self.averageIntensity = avgint
-		self.inTrack = 0
+		self.inTrack = False
 		self.flag = 0
 		self.trackNum = -1
 		self.posInPixels = intpos
@@ -195,8 +195,6 @@ class Particle:
 
 		Pre: Valid properties in particle p
 		Post: Particle self has valid properties
-		
-		inTrack is used as both a 0 / 1 "boolean" and a true boolean, could this be made clearer?
 		"""
 		self.pos = particle.pos
 		self.averageIntensity = particle.averageIntensity
@@ -301,7 +299,6 @@ class ParticleTracker:
 		Created: 26.11.2006, KP
 		Description: return the particles in given timepoint with given int.values
 		"""
-		print "getParticles(", timepoint, ",", objs, ")"
 		pts = self.particles[timepoint]
 		ret = []
 		for i in pts:
@@ -341,7 +338,6 @@ class ParticleTracker:
 		Description: Set the minimum size (in pixels) objects must have to be
 					 considered for the tracking
 		"""
-		print "Setting filter object size to", filterSize
 		self.filterObjectSize = filterSize
 
 	def getStats(self):
@@ -350,8 +346,6 @@ class ParticleTracker:
 		Description: Given a set of particles, calculate their minimum, maximum and
 					 average distances in each timepoint
 		"""
-		
-		print "Calculating statistics for particles"
 		mindists = []
 		maxdists = []
 		avgdists = []
@@ -488,38 +482,11 @@ class ParticleTracker:
 				self.intensityWeight * intFactor + \
 				self.directionWeight * angleFactor
 	
-	def track(self, fromTimepoint = 0, seedParticles = []):		# TODO: Test for this
+	def getParticlesFromSeedpoints(self, fromTimepoint, seedParticles):
 		"""
-		Created: KP
-		Description: Perform the actual tracking using the given particles and tracking
-		parameters.
+		Created: 12.09.2007, KP
+		Description: get the particle list based on the given seed particles
 		"""
-		tracks = []
-		print "seedparticles =", seedParticles
-		trackCount = 0
-		totalTimepoints = len(self.particles)
-		searchOn = False
-		foundOne = False
-		print "Total timepoints =", totalTimepoints
-		#minDists, maxDists, avgDists, minSiz, maxSiz, minInt, maxInt = self.getStats()
-		minDists, maxDists, minSiz, maxSiz, minInt, maxInt = self.getStats()[0:2] + self.getStats()[3:]
-	
-		print "minDists =", minDists
-		print "maxDists =", maxDists
-		
-		maxDist = max(maxDists)
-		minDist = min(minDists)
-		self.maxVelocity = maxDist - minDist
-		self.maxSize = maxSiz - minSiz
-		self.maxIntensity = maxInt - minInt
-		
-		print "Maximum change in distance =", self.maxVelocity
-		print "Maximum change in size =", self.maxSize
-		print "Maximum change in intensity =", self.maxIntensity
-		
-		
-		
-		if seedParticles:
 		# The seed particles are organized as follows:
 		#[ [t1_p1, t1_p2, t1_p3], [t2_p1,t2_p2, t2_p3], ...]
 		# where t1_p1 = first particle in timepoint 1,
@@ -527,175 +494,171 @@ class ParticleTracker:
 		# Therefore, we can determine e.g. how many tracks there are to be calculated
 		# by looking at how many seed particles we are given
 
-			trackCount = len(seedParticles[0])
-			tracks = []
-			for i in range(trackCount):
-				tracks.append([])
-			print "Track count =", trackCount
-			
-			particleList = copy.deepcopy(self.particles)
+		trackCount = len(seedParticles[0])
+		tracks = []
+		for i in range(trackCount):
+			tracks.append([])
+		particleList = copy.deepcopy(self.particles)
+		toRemove = []
+		
+		# First remove all particles in the seed timepoints
+		# that are not listed as seed points
+		for timePoint, col in enumerate(seedParticles):
+			fromTimepoint = timePoint 
 			toRemove = []
-			
-			# First remove all particles in the seed timepoints
-			# that are not listed as seed points
-			for timePoint, col in enumerate(seedParticles):
-				fromTimepoint = timePoint 
-				toRemove = []
-				objToParticle = {}
-				for i in particleList[timePoint]:
-					objval = i.objectNumber()
-					if objval not in col:
-						toRemove.append(i)
-					else:
-						objToParticle[objval] = i
-						
-				# remove the non-seed objects from the timepoint timePoint
-				for i in toRemove:
-					particleList[timePoint].remove(i)
-				for tracknum, objVal in enumerate(col):
-					if objVal not in objToParticle:
-						print "Object", objVal, "not found"
-						if objVal in toRemove:
-							print objVal, "was removed"
-						continue
-					particle = objToParticle[objVal]
-					particle.inTrack = 1
-					particle.trackNum = tracknum
-					print "Adding particle", objVal, "to track", tracknum
-					tracks[tracknum].append(particle)
-						   
+			objToParticle = {}
+			for i in particleList[timePoint]:
+				objval = i.objectNumber()
+				if objval not in col:
+					toRemove.append(i)
+				else:
+					objToParticle[objval] = i
 					
+			# remove the non-seed objects from the timepoint timePoint
+			for i in toRemove:
+				particleList[timePoint].remove(i)
+			for tracknum, objVal in enumerate(col):
+				if objVal not in objToParticle:
+					print "Object", objVal, "not found"
+					if objVal in toRemove:
+						print objVal, "was removed"
+					continue
+				particle = objToParticle[objVal]
+				particle.inTrack = True
+				particle.trackNum = tracknum
+				print "Adding particle", objVal, "to track", tracknum
+				tracks[tracknum].append(particle)
+		return particleList
+		
+	def track(self, fromTimepoint = 0, seedParticles = []):# TODO: Test for this
+		"""
+		Created: KP
+		Description: Perform the actual tracking using the given particles and tracking
+		parameters.
+		"""
+		tracks = []
+		trackCount = 0
+		totalTimepoints = len(self.particles)
+		searchOn = False
+		foundOne = False
+		minDists, maxDists, minSiz, maxSiz, minInt, maxInt = self.getStats()[0:2] + self.getStats()[3:]
+
+		maxDist = max(maxDists)
+		minDist = min(minDists)
+		self.maxVelocity = maxDist - minDist
+		self.maxSize = maxSiz - minSiz
+		self.maxIntensity = maxInt - minInt
+
+		if seedParticles:
+			particleList = self.getParticlesFromSeedpoints(fromTimepoint, seedParticles)
 		else:
 			particleList = self.particles
-			
-		
-			
-		# Iterate over all timepoints
-		#for timePoint in range(totalTimepoints): 
-		
-		#print "Tracking from %d particles"%len(particleList[fromTimepoint])
-		print "Seed tracks =", tracks
-		for timePoint in [fromTimepoint]:
-			# Iterate over all particles in given timepoint
-							
-			
-			for i, particle in enumerate(particleList[timePoint]):
-				if not seedParticles and particle.inTrack:
-				# If particle is in track, just let the user know
-					#if particle.inTrack:
-					print "\nParticle %d / %d in timepoint %d is already in track %d" % \
-						(i, len(particleList[timePoint]), timePoint, particle.trackNum)
-				else:
-					print "\nTracking particle %d / %d in timepoint %d" % (i, len(particleList[timePoint]), timePoint)
-					
-					# If we have seed particles, then the track has already been constructed to
-					# this point and we can just search for the following particles
 
-					oldParticle = Particle()
-					currCandidate = Particle()
-					# Make a copy of the particle 
-					oldParticle.copy(particle)					  
-					if not seedParticles:
-						# Create a new track that starts from this point
-						track = []
-						trackCount += 1
-						particle.inTrack = True
-						particle.trackNum = trackCount
-						track.append(particle)
-						
-					else:
-						track = None
-						for ctrack in tracks:
-							if particle in ctrack:
-								track = ctrack
-						
-						if not track:
-							raise "Did not find track for seed particle", particle
-					searchOn = True
-					# Search the next timepoints for more particles
-					for search_timePoint in range(timePoint + 1, totalTimepoints):
-						# If no match was found, then this track is over
-						if not searchOn:
-							print "Track", i, "is over"
-							break
-						foundOne = False
-						currentMatch = Particle()
-						for testParticle in self.particles[search_timePoint]:
-							#print "Searching for match in timepoint %d"%search_timePoint
-							# Calculate the factors between the particle that is being tested against
-							# the previous particle  (= oldParticle)
-							distFactor, sizeFactor, intFactor = self.score(testParticle, oldParticle)
-							failed = (distFactor == None)    
-							angleFactor = 0
-							# If the particle being tested passed the previous tests
-							# and there is already a particle before the current one,
-							# then calculate the angle and see that it fits in the margin
-							if not failed and len(track) > 1:
-								angle, absang = self.angle(track[-2], track[-1])
-								angle2, absang2	= self.angle(track[-1], testParticle)
-								
-								angdiff = abs(absang - absang2)
-								# If angle*angle2 < 0 then either (but not both) of the angles 
-								# is negative, so the particle being tested is in wrong direction
-								if angle * angle2 < 0:
-									failed = 1															
-								elif  angdiff > self.angleChange:									 
-									failed = 1							
-								else:																		 
-									angleFactor = float(angdiff) / self.angleChange
-									
+		timePoint = fromTimepoint
+		# Iterate over all particles in given timepoint
+		for i, particle in enumerate(particleList[timePoint]):
+			if seedParticles and not particle.inTrack:
+				print "\nTracking particle %d / %d in timepoint %d" % (i, len(particleList[timePoint]), timePoint)
+				# If we have seed particles, then the track has already been constructed to
+				# this point and we can just search for the following particles
+				oldParticle = Particle()
+				currCandidate = Particle()
+				# Make a copy of the particle 
+				oldParticle.copy(particle)
+
+				# if there are no seed particles (and hence, no initial tracks), then create
+				# a new track that begins from this timepoint
+				if not seedParticles:
+					track = []
+					trackCount += 1
+					particle.inTrack = True
+					particle.trackNum = trackCount
+					track.append(particle)
+				else:
+					# if there are seed tracks, then try to find the track that this particle belongs to
+					track = None
+					for ctrack in tracks:
+						if particle in ctrack:
+							track = ctrack
+					
+					if not track:
+						raise "Did not find track for seed particle", particle
+				searchOn = True
+				# Search the next timepoints for more particles
+				for search_timePoint in range(timePoint + 1, totalTimepoints):
+					# If no match was found, then this track is over
+					if not searchOn:
+						print "Track", i, "is over"
+						break
+					foundOne = False
+					currentMatch = Particle()
+					for testParticle in self.particles[search_timePoint]:
+						# Calculate the factors between the particle that is being tested against
+						# the previous particle  (= oldParticle)
+						distFactor, sizeFactor, intFactor = self.score(testParticle, oldParticle)
+						failed = (distFactor == None)    
+						angleFactor = 0
+						# If the particle being tested passed the previous tests
+						# and there is already a particle before the current one,
+						# then calculate the angle and see that it fits in the margin
+						if not failed and len(track) > 1:
+							angle, absang = self.angle(track[-2], track[-1])
+							angle2, absang2	= self.angle(track[-1], testParticle)
 							
-							#if not failed:
-							#	 print "Factors = ",distFactor, sizeFactor, intFactor
-						 
-							# If we got a match between the previous particle (oldParticle)
-							# and the currently tested particle (testParticle) and testParticle
-							# is not in a track
-							if (not failed) and (not testParticle.inTrack):
-								currScore = self.toScore(distFactor, sizeFactor, intFactor, angleFactor)
-								# if there's no other particle that fits the criteria
-								if not foundOne:
-									# Mark the particle being tested as the current candidate
-									currCandidate = testParticle
+							angdiff = abs(absang - absang2)
+							# If angle*angle2 < 0 then either (but not both) of the angles 
+							# is negative, so the particle being tested is in wrong direction
+							if angle * angle2 < 0:
+								failed = 1
+							elif  angdiff > self.angleChange:
+								failed = 1
+							else: 
+								angleFactor = float(angdiff) / self.angleChange
+
+						# If we got a match between the previous particle (oldParticle)
+						# and the currently tested particle (testParticle) and testParticle
+						# is not in a track
+						if (not failed) and (not testParticle.inTrack):
+							currScore = self.toScore(distFactor, sizeFactor, intFactor, angleFactor)
+							# if there's no other particle that fits the criteria
+							if not foundOne:
+								# Mark the particle being tested as the current candidate
+								currCandidate = testParticle
+								testParticle.inTrack = True
+								testParticle.matchScore = currScore
+								testParticle.trackNum = trackCount
+								currentMatch.copy(testParticle)
+								foundOne = True
+								
+							else:
+								# if we've already found one, then use this instead if
+								# this one is closer. In any case, flag the particle
+								testParticle.flag = True
+								# Compare the distance calculated between the particle
+								# that is currently being tested, and the old candidate particle
+								
+								if currScore < currentMatch.matchScore:
 									testParticle.inTrack = True
-									testParticle.matchScore = currScore
 									testParticle.trackNum = trackCount
 									currentMatch.copy(testParticle)
-									foundOne = True
-									
+									currCandidate.inTrack = False
+									currCandidate.trackNum = -1
+									currCandidate = testParticle
 								else:
-									# if we've already found one, then use this instead if
-									# this one is closer. In any case, flag the particle
-									testParticle.flag = True
-									# Compare the distance calculated between the particle
-									# that is currently being tested, and the old candidate particle
-									
-									if currScore < currentMatch.matchScore:
-									#if dist < currentMatch.distance(oldParticle):
-										testParticle.inTrack = True
-										testParticle.trackNum = trackCount
-										currentMatch.copy(testParticle)
-										currCandidate.inTrack = False
-										currCandidate.trackNum = -1
-										currCandidate = testParticle
-									else:
-										currentMatch.flag = True
-							#elif dist < self.maxVelocity:
-							#	 # If the particle is already in a track but could also be in this
-							#	 # track, we have a few options
-							#	 # 1. Sort out to which track this particle really belongs (but how?)
-							#	 # 2. Stop this track
-							#	 # 3. Stop this track, and also delete the remainder of the other one
-							#	 # 4. Stop this track and flag this particle:
-							#	 testParticle.flag = True
-						if foundOne:
-							sys.stdout.write(".")
-	#						 print "Particle added to track %d" % trackCount
-							track.append(currentMatch)
-						else:
-							sys.stdout.write("^")
-							#print "Found no particles that belong to track %d" % trackCount
-							searchOn = False
-						oldParticle.copy(currentMatch)
-					tracks.append(track)
+									currentMatch.flag = True
+						#elif dist < self.maxVelocity:
+						#	 # If the particle is already in a track but could also be in this
+						#	 # track, we have a few options
+						#	 # 1. Sort out to which track this particle really belongs (but how?)
+						#	 # 2. Stop this track
+						#	 # 3. Stop this track, and also delete the remainder of the other one
+						#	 # 4. Stop this track and flag this particle:
+						#	 testParticle.flag = True
+					if foundOne:
+						track.append(currentMatch)
+					else:
+						searchOn = False
+					oldParticle.copy(currentMatch)
+				tracks.append(track)
+				
 		self.tracks = tracks
