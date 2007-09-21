@@ -141,7 +141,6 @@ class SlicesMode(VisualizationMode):
 		VisualizationMode.__init__(self, parent, visualizer)
 		self.parent = parent
 		self.visualizer = visualizer
-		self.init = 1
 		self.dataUnit = None
 
 	def showSliceSlider(self):
@@ -200,9 +199,6 @@ class SlicesMode(VisualizationMode):
 		if dataUnit == self.dataUnit:
 			Logging.info("Same dataunit, not changing", kw = "visualizer")
 			return
-		if self.init:
-			self.iactivePanel.setPreviewType("")
-			self.init = 0
 		
 		self.iactivePanel.setDataUnit(dataUnit, 0)
 		
@@ -221,7 +217,6 @@ class SlicesMode(VisualizationMode):
 		"""
 		self.iactivePanel.Show(0)
 		self.iactivePanel.onDeactivate()
-#		self.iactivePanel.setDataUnit(None)
 		self.iactivePanel.Destroy()
 		del self.iactivePanel
 		self.iactivePanel = None
