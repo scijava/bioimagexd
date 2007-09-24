@@ -50,6 +50,7 @@ import PlaybackControl
 from GUI import MenuManager
 import lib.messenger
 import time
+import scripting
 
 class UrmasWindow(wx.lib.scrolledpanel.ScrolledPanel):
 	"""
@@ -71,11 +72,12 @@ class UrmasWindow(wx.lib.scrolledpanel.ScrolledPanel):
 		self.createMenu(menumanager)
 		self.lastFrameTime = 0
 		self.delayed = 0
+		scripting.animator = self
 		self.control = UrmasControl.UrmasControl(self, visualizer)
 
 		self.sizer = wx.BoxSizer(wx.VERTICAL)
 		self.palette = UrmasPalette.UrmasPalette(self, self.control)
-		self.sizer.Add(self.palette, 0, flag = wx.EXPAND)#,flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
+		self.sizer.Add(self.palette, 0, flag = wx.EXPAND)
 
 		self.splitter = TimelinePanel.SplitPanel(self, -1)
 		w = self.GetSize()[0]
@@ -307,11 +309,7 @@ class UrmasWindow(wx.lib.scrolledpanel.ScrolledPanel):
 		self.videoGenerationPanel.SetSize((300, h))
 		self.videoGenerationPanel.Show()
 		self.visualizer.mainwin.OnSize(None)
-		#else:
-		#	 lib.messenger.send(None,"set_preview_mode",1)
-		#	 self.control.renderProject(1)
-		#	 lib.messenger.send(None,"set_preview_mode",0)
-		#	 
+
 	def onVideoGenerationClose(self, obj, evt, *args):
 		"""
 		Created: 15.12.2005, KP
@@ -330,7 +328,7 @@ class UrmasWindow(wx.lib.scrolledpanel.ScrolledPanel):
 			else:
 				self.videoGenerationPanel.Show(0)
 			if self.visualizer.getCurrentModeName() != "animator":
-				self.visualizer.setVisualizationMode("animator")			
+				self.visualizer.setVisualizationMode("animator")
 
 		self.visualizer.getCurrentMode().lockSliderPanel(0)
 		self.visualizer.OnSize()

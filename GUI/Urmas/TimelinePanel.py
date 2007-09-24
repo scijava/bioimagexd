@@ -45,6 +45,24 @@ from Timeline import Timeline
 import Visualizer.VisualizerWindow
 import wx
 
+class FSplitPanel(wx.Panel):
+	def __init__(self, parent, id):
+		wx.Panel.__init__(self, parent, id)
+		
+		self.sizer = wx.BoxSizer(wx.VERTICAL)
+		self.SetSizer(self.sizer)
+		self.SetAutoLayout(1)
+		
+	def SplitHorizontally(self, *args):
+		self.sizer.Add(args[0])
+		self.sizer.Add(args[1])
+		self.Layout()
+		print "SplitHorizontally",args
+		
+	def UpdateSize(self):
+		print "UpdateSize()"
+
+
 class SplitPanel(wx.SplitterWindow):
 	"""
 	Created: 25.01.2006, KP
@@ -79,10 +97,6 @@ class TimelinePanel(wx.Panel):
 		# add the sizer
 		self.confSizer.Add(self.timelineConfig.sizer, (0, 0), flag = wx.EXPAND | wx.ALL)
 
-		#sbox=wx.StaticBox(self,-1,"Animator configuration")
-		#sboxsizer=wx.StaticBoxSizer(sbox,wx.HORIZONTAL)
-		#sboxsizer.Add(self.confSizer)
-
 		sboxsizer = self.confSizer
 
 		self.useButton = wx.Button(self, -1, "Use settings")
@@ -99,13 +113,11 @@ class TimelinePanel(wx.Panel):
 		self.SetSizer(self.sizer)
 		self.SetAutoLayout(1)
 		self.sizer.Fit(self)
+		
+		self.wxrenwin.Render()
 
-		
-		self.Refresh()
-		
 		self.wxrenwin.initializeVTK()
 		self.splineEditor.initializeVTK()
-		self.wxrenwin.Render()
 		
 		n = self.timelineConfig.getFrameAmount()
 		
@@ -113,23 +125,6 @@ class TimelinePanel(wx.Panel):
 		lib.messenger.connect(None, "set_frame_size", self.onSetFrameSize)
 		lib.messenger.connect(None, "set_keyframe_mode", self.onSetKeyframeMode)
 		
-		#wx.CallAfter(self.initializeVTK)
-
-
-	def initializeVTK(self):
-		"""
-		Created: 12.09.2007, KP
-		Description: initialize the vtk window
-		"""
-
-		
-     
-
-		#self.sboxsizer.Add(self.wxrenwin)
-		#self.sizer.Add(self.sboxsizer,(0,1))
-		#self.Layout()
-		
-		#self.wxrenwin.Raise()
 
 	def onSetFrameSize(self, obj, evt, size, onlyAspect):
 		"""
