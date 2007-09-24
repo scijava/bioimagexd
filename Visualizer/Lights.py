@@ -22,12 +22,6 @@ __credits__ = """This module was entirely written by Raymond Maple.
 It was later modified by Prabhu Ramachandran and made suitable for
 inclusion in MayaVi."""
 
-#import GUI.Dialogs
-#import string
-#import Tkinter
-#from vtkRenderWidget import vtkTkRenderWidget
-#from vtk.wx.wxVTKRenderWindow import wxVTKRenderWindow
-
 import bxdexceptions
 import wx.lib.colourselect as csel
 from math import pi, sin, cos, atan2, sqrt
@@ -479,14 +473,9 @@ class LightTool(wx.Dialog):
 	def __init__(self, master, lights, renwidget ):
 		
 		wx.Dialog.__init__(self, master, -1, "Lights configuration")
-		#wx.Frame.__init__(self,master,-1)
 		self.s = wx.BoxSizer(wx.VERTICAL)
 		
-		#self.panel=wx.Panel(self,-1)
-		#self.s.Add(self.panel,1)
-		self.panel = self
-		
-		
+
 		self.connected = None
 		self.num_lights_on = 0
 		self.lights = lights
@@ -494,13 +483,12 @@ class LightTool(wx.Dialog):
 
 		for l in lights:
 			l.sync()
-			print "Saving light ", l
 			l.save()
 		self.sizer = wx.GridBagSizer()
 		
 		self.ren = vtk.vtkRenderer()
 
-		self.switchbank = wx.Panel(self.panel, -1, style = wx.RAISED_BORDER)
+		self.switchbank = wx.Panel(self, -1, style = wx.RAISED_BORDER)
 		self.switchsizer = wx.GridBagSizer()
 		
 		self.sw = []
@@ -523,10 +511,10 @@ class LightTool(wx.Dialog):
 		self.switchsizer.Fit(self.switchbank)
 
 
-		self.azimuthBar = AzimuthTool(self.panel, self.ren, self.redraw)
-		self.elevationBar = ElevationTool(self.panel, self.ren, self.redraw)
+		self.azimuthBar = AzimuthTool(self, self.ren, self.redraw)
+		self.elevationBar = ElevationTool(self, self.ren, self.redraw)
 		
-		self.f1 = wx.Panel(self.panel, -1)#,style=wx.RAISED_BORDER)
+		self.f1 = wx.Panel(self, -1)#,style=wx.RAISED_BORDER)
 		self.f1sizer = wx.GridBagSizer()
 		
 		l = wx.StaticText(self.f1, -1, "Default lighting:")
@@ -544,7 +532,7 @@ class LightTool(wx.Dialog):
 		self.f1.SetAutoLayout(1)
 		self.f1sizer.Fit(self.f1)
 
-		self.btnPanel = wx.Panel(self.panel, -1)
+		self.btnPanel = wx.Panel(self, -1)
 		self.btnsizer = wx.GridBagSizer()
 		
 		self.resetelaz = wx.Button(self.btnPanel, -1, "Set to headlight")
@@ -563,7 +551,7 @@ class LightTool(wx.Dialog):
 		
 		self.btnsizer.Fit(self.btnPanel)
 
-		self.f2 = wx.Panel(self.panel)
+		self.f2 = wx.Panel(self)
 		self.f2sizer = wx.GridBagSizer()
 		
 		b = wx.Button(self.f2, -1, "OK")
@@ -584,9 +572,9 @@ class LightTool(wx.Dialog):
 		self.f2sizer.Fit(self.f2)
 
 		
-		self.gfxwin = wxVTKRenderWindowInteractor(self.panel, -1, size = wx.Size(220, 200))
+		self.gfxwin = wxVTKRenderWindowInteractor(self, -1, size = wx.Size(220, 200))
 		#self.gfxwin.Initialize()
-		self.gfxwin.Render()
+		#self.gfxwin.Render()
 		#self.gfxwin.Initialize()
 		#self.gfxwin.Start()
 		
@@ -614,6 +602,10 @@ class LightTool(wx.Dialog):
 		#self.protocol("WM_DELETE_WINDOW", self.onCancelBtn)
 		self.Bind(wx.EVT_CLOSE, self.onCancelBtn)
 
+		self.SetSizer(self.sizer)
+		self.SetAutoLayout(1)
+		self.sizer.Fit(self)
+		
 		self.gfxwin.GetRenderWindow().AddRenderer(self.ren)
 
 		cam = self.ren.GetActiveCamera()
@@ -623,7 +615,6 @@ class LightTool(wx.Dialog):
 		cam.SetViewUp(a, b, c)
 		self.ren.ResetCamera()
 		
-		self.gfxwin.Render()
 		self.ren.SetBackground(0.0, 0.0, 0.0)
 		self.picker = vtk.vtkCellPicker()
 		self.picker.SetTolerance(0.0005)
@@ -633,14 +624,9 @@ class LightTool(wx.Dialog):
 
 		self.ren.GetActiveCamera().Zoom(1.6)
 		self.connect('first')
-
-		self.panel.SetSizer(self.sizer)
-		self.panel.SetAutoLayout(1)
-		self.sizer.Fit(self.panel)
 		
-		#self.SetSizer(self.s)
-		#self.s.Fit(self)
-		#self.SetAutoLayout(1)        
+		self.gfxwin.Render()
+ 
 
 	def switchhandler(self, which, state):
 		if state:
