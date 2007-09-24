@@ -38,7 +38,7 @@
 typedef struct ChannelData;
 typedef struct DimensionData;
 
-// Non supported wrapper parser syntax must be surrounded with comments BTX and EXT
+// Non supported wrapper parser syntax must be surrounded with comments BTX and ETX
 //BTX
 class ChannelVector;
 class DimensionVector;
@@ -59,14 +59,32 @@ class VTK_BXD_PROCESSING_EXPORT vtkLIFReader: public vtkImageAlgorithm
   vtkTypeMacro(vtkLIFReader,vtkImageAlgorithm);
   static vtkLIFReader *New();
   virtual void PrintSelf(ostream&, vtkIndent);
+
+  // Description:
+  // Set file name with path to be read
   void SetFileName(const char*);
+
+  // Description:
+  // Use OpenFile to open file after SetFileName
   int OpenFile();
   void CloseFile();
+
+  // Description:
+  // Reads header of LIF file.
+  // This must be done before images can be read
   int ReadLIFHeader();
 
+  // Description:
+  // Sets the current image of the object
   int SetCurrentImage(int);
+
+  // Description:
+  // Sets the current channel of the current image
   int SetCurrentChannel(int);
   void SetCurrentImageAndChannel(int,int);
+
+  // Description:
+  // Sets the current time point
   int SetCurrentTimePoint(int);
 
   const char* GetFileExtensions();
@@ -94,8 +112,6 @@ class VTK_BXD_PROCESSING_EXPORT vtkLIFReader: public vtkImageAlgorithm
   vtkGetStringMacro(FileName);
   //  int IsValidLIFFile();
   //  int GetNumberOfChannels();
-  void PrintData(vtkImageData*,int);
-  void PrintColorData(vtkImageData*,int);
 
  protected:
 
@@ -106,10 +122,6 @@ class VTK_BXD_PROCESSING_EXPORT vtkLIFReader: public vtkImageAlgorithm
   int ParseXMLHeader(const char*, unsigned long);
   int ParseInfoHeader(vtkXMLDataElement*, int root = 1);
   void ReadImage(vtkXMLDataElement*);
-  char ReadChar(ifstream*);
-  int ReadInt(ifstream*);
-  unsigned int ReadUnsignedInt(ifstream*);
-  unsigned long long ReadUnsignedLongLong(ifstream*);
   void LoadChannelInfoToStruct(vtkXMLDataElement*, ChannelData*);
   void LoadDimensionInfoToStruct(vtkXMLDataElement*, DimensionData*);
   void InitializeAttributes();
@@ -117,6 +129,11 @@ class VTK_BXD_PROCESSING_EXPORT vtkLIFReader: public vtkImageAlgorithm
   void CalculateExtentAndSpacingAndOrigin(int*, double*, double*);
   int SetImageDimensions();
   int SetImageVoxelSizes();
+
+  char ReadChar(ifstream*);
+  int ReadInt(ifstream*);
+  unsigned int ReadUnsignedInt(ifstream*);
+  unsigned long long ReadUnsignedLongLong(ifstream*);
 
   // Pipeline methods
   int RequestInformation(vtkInformation* vtkNotUsed(request),

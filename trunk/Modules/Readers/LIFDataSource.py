@@ -147,6 +147,19 @@ class LIFDataSource(DataSource):
 		"""
 		if not self.dimensions:
 			 self.dimensions = self.reader.GetImageDims()
+			 import pdb
+			 pdb.set_trace()
+			 # Make sure that every dimension is at least 1. This prevents
+			 # software from crashing with weird datasets like xt-series.
+			 if self.dimensions[0] <= 0:
+				 self.dimensions = (1,self.dimensions[1],self.dimensions[2],self.dimensions[3])
+			 if self.dimensions[1] <= 0:
+				 self.dimensions = (self.dimensions[0],1,self.dimensions[2],self.dimensions[3])
+			 if self.dimensions[2] <= 0:
+				 self.dimensions = (self.dimensions[0],self.dimensions[1],1,self.dimensions[3])
+			 if self.dimensions[3] <= 0:
+				 self.dimensions = (self.dimensions[0],self.dimensions[1],self.dimensions[2],1)
+
 		return self.dimensions[0:3]
 
 	def loadFromFile(self, filename):
@@ -171,7 +184,6 @@ class LIFDataSource(DataSource):
 						dataSource = LIFDataSource(filename,i,c)
 						dataUnit = DataUnit.DataUnit()
 						dataUnit.setDataSource(dataSource)
-#						 dataUnits.append(dataUnit)
 						dataUnits.append((imageName,dataUnit))
 			else:
 				Logging.error("Failed to read the LIF header",
@@ -216,10 +228,16 @@ class LIFDataSource(DataSource):
 				r = 1
 			elif LUTName == "green":
 				g = 1
+			elif LUTName == "blue":
+				b = 1
 			elif LUTName == "cyan":
 				g = 1
 				b = 1
+			elif LUTName == "yellow":
+				r = 1
+				g = 1
 			else:
+				r = 1
 				b = 1
 			
 			ctf.AddRGBPoint(minval,0,0,0)
