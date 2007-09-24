@@ -32,7 +32,7 @@ import math
 import os.path
 import Logging
 import scripting
-
+import platform
 renderingInterface = None
 
 def getRenderingInterface(mayavi = 0):
@@ -65,7 +65,10 @@ class RenderingInterface:
 		
 		#if not self.imageType:
 		#	 self.imageType = "pnm"
-		self.imageType = "tif"
+		if platform.system() == "Darwin":
+			self.imageType = "png"
+		else:
+			self.imageType = "tif"
 			
 		self.visualizer = None
 		self.frameList = []
