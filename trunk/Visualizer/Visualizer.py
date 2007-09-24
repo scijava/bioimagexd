@@ -1095,7 +1095,6 @@ class Visualizer:
 		x, y, z = dataunit.getDimensions()
 
 		currz = self.zslider.GetValue()
-		print "\n\n\n--- Setting zslider to range",1,z
 		self.zslider.SetRange(1, z)
 
 		if self.timepoint > count:
