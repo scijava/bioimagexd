@@ -451,9 +451,9 @@ class PreviewFrame(InteractivePanel):
 		if colorImage:
 			x, y, z = colorImage.GetDimensions()
 						
-			if not usedUpdateExt:
-				print "\n\n\n**** pf Setting range to ",1,z
-				scripting.visualizer.zslider.SetRange(1, z)
+#			if not usedUpdateExt:
+#				print "\n\n\n**** pf Setting range to ",1,z
+#				scripting.visualizer.zslider.SetRange(1, z)
 			if x != self.oldx or y != self.oldy:
 				self.oldx = x
 				self.oldy = y
