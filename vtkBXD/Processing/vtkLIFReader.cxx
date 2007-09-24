@@ -386,12 +386,14 @@ int vtkLIFReader::SetImageDimensions()
 
   // If image has x and y components, then make sure that z component is at
   // least 1. This way we don't have 3D image with dimensions (x,y,0)
-  if (this->ImageDims[0] > 0 && this->ImageDims[1] > 0 && this->ImageDims[2] <= 0)
-	this->ImageDims[2] = 1;
+  //  if (this->ImageDims[0] > 0 && this->ImageDims[1] > 0 && this->ImageDims[2] <= 0)
+  //	this->ImageDims[2] = 1;
   // If image has x and y components, then make sure that t component is at
   // least 1. This way we don't have 4D image with dimensions (x,y,z,0)
-  if (this->ImageDims[0] > 0 && this->ImageDims[1] > 0 && this->ImageDims[3] <= 0)
-	this->ImageDims[3] = 1;
+  //  if (this->ImageDims[0] > 0 && this->ImageDims[1] > 0 && this->ImageDims[3] <= 0)
+  //	this->ImageDims[3] = 1;
+
+  // Earlier checks are moved from here because those are application specific.
 
   return 1;
 }
@@ -815,13 +817,13 @@ int vtkLIFReader::RequestData(vtkInformation *request,
       bufferSize = slicePixelsSize; // Currently only 8 bit data
     }
 
-  cout << "extent: " << extent[4] << "," << extent[5] << endl;
-  cout << "Allocated buffer of size: " << bufferSize << endl;
+  vtkDebugMacro(<< "extent: " << extent[4] << "," << extent[5]);
+  vtkDebugMacro(<< "Allocated buffer of size: " << bufferSize);
   buffer = new unsigned char[bufferSize];
   unsigned char *pos = buffer;
   imageOffset = this->Offsets->GetValue(this->CurrentImage);
   imageOffset += this->GetTimePointOffset(this->CurrentImage,this->CurrentTimePoint);
-  cout << "Image Offset is: " << imageOffset << endl;
+  vtkDebugMacro(<< "Image Offset is: " << imageOffset);
 
   for (int i = extent[4]; i <= extent[5]; ++i)
     {
@@ -830,24 +832,24 @@ int vtkLIFReader::RequestData(vtkInformation *request,
 
       this->File->seekg(channelOffset,ios::beg);
       this->File->read((char*)pos,slicePixelsSize);
-      cout << "Read " << slicePixelsSize << " bytes of data from " << channelOffset << endl;
+      vtkDebugMacro(<< "Read " << slicePixelsSize << " bytes of data from " << channelOffset);
 
       pos += slicePixelsSize;
     }
 
-  cout << "Constructing point data array" << endl;
+  vtkDebugMacro(<< "Constructing point data array");
   vtkUnsignedCharArray *pointDataArray;
   pointDataArray = vtkUnsignedCharArray::New();
 
   pointDataArray->SetNumberOfComponents(1);
-  cout << "Number of values=" << bufferSize << endl;
+  vtkDebugMacro(<< "Number of values=" << bufferSize);
   pointDataArray->SetNumberOfValues(bufferSize);
   pointDataArray->SetArray(buffer,bufferSize,0);
-  cout << pointDataArray << endl;
+  vtkDebugMacro(<< pointDataArray);
   imageData->GetPointData()->SetScalars(pointDataArray);
-  cout << "Deleting array..."<<endl;
+  vtkDebugMacro(<< "Deleting array...");
   pointDataArray->Delete();
-  cout << "RequestData done"<<endl;
+  vtkDebugMacro(<< "RequestData done");
 
   return 1;
 }
@@ -943,30 +945,4 @@ unsigned long long vtkLIFReader::ReadUnsignedLongLong(ifstream *ifs)
   vtkByteSwap::Swap8LE((unsigned long long*)buffer);
 #endif
   return *((unsigned long long*)(buffer));
-}
-
-/**********************************************
- Next two methods are only for testing purposes
-**********************************************/
-void vtkLIFReader::PrintData(vtkImageData *printArray, int i)
-{
-  int components = printArray->GetPointData()->GetScalars()->GetNumberOfComponents();
-  cout << "Components: " << components << endl;
- 
-  vtkUnsignedCharArray *data = (vtkUnsignedCharArray*)(printArray->GetPointData()->GetScalars());
-  int *value;
-  value = (int*)(data->GetValue(i));
-  cout << "Value " << i << " is " << value << endl;
-}
-
-void vtkLIFReader::PrintColorData(vtkImageData *printArray, int i)
-{
-  int components = printArray->GetPointData()->GetScalars()->GetNumberOfComponents();
-  cout << "Components: " << components << endl;
-
-  cout << "Component " << i << " is (" 
-       << printArray->GetPointData()->GetScalars()->GetComponent(i,0) << ","
-       << printArray->GetPointData()->GetScalars()->GetComponent(i,1) << ","
-       << printArray->GetPointData()->GetScalars()->GetComponent(i,2) << ")"
-       << endl;
 }
