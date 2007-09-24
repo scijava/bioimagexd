@@ -109,7 +109,7 @@ class GUIBuilderBase:
 		else:
 			# If input from stack is not requested, or the dataunit is not processed, then just return 
 			# the image data from the corresponding channel
-			Logging.info("\nUsing input from channel %d as input %d" % (self.inputMapping[mapIndex] - 1, mapIndex), \
+			Logging.info("Using input from channel %d as input %d" % (self.inputMapping[mapIndex] - 1, mapIndex), \
 							kw = "processing")
 			
 			image = self.getInputFromChannel(self.inputMapping[mapIndex] - 1)

@@ -58,6 +58,7 @@ conf = None
 
 app = None
 mainWindow = None
+animator=None
 currentVisualizationMode=""
 visualizer = None
 processingManager = None

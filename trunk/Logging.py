@@ -29,9 +29,6 @@ __author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.6 $"
 __date__ = "$Date: 2005/01/11 14:36:00 $"
 
-#import sys
-#import traceback
-
 import codecs
 import os.path
 import sys
