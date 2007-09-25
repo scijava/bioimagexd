@@ -33,7 +33,7 @@ import Logging
 import scripting
 import vtkbxd
 import vtk
-import pdb
+
 def getExtensions(): return ["lif"]
 def getFileType(): return "Leica Image File Format (*.lif)"
 def getClass(): return LIFDataSource
@@ -147,8 +147,7 @@ class LIFDataSource(DataSource):
 		"""
 		if not self.dimensions:
 			 self.dimensions = self.reader.GetImageDims()
-			 import pdb
-			 pdb.set_trace()
+
 			 # Make sure that every dimension is at least 1. This prevents
 			 # software from crashing with weird datasets like xt-series.
 			 if self.dimensions[0] <= 0:
