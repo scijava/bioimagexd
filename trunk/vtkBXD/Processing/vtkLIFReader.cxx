@@ -858,7 +858,7 @@ void vtkLIFReader::CalculateExtentAndSpacingAndOrigin(int *extent, double *spaci
 {
   extent[0] = extent[2] = extent[4] = 0;
   extent[1] = extent[3] = extent[5] = -1;
-  spacing[0] = spacing[1] = spacing[2] = 0.0;
+  spacing[0] = spacing[1] = spacing[2] = 1.0;
   origin[0] = origin[1] = origin[2] = 0.0;
 
   if (this->CurrentImage < 0) return;
