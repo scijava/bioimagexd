@@ -46,7 +46,7 @@ import vtk
 import vtkbxd
 
 def getExtensions(): 
-	return ["txt"]
+	return ["txt","lei"]
 
 def getFileType(): 
 	return "Leica TCS-NT datasets (*.txt)"
@@ -56,7 +56,6 @@ def getClass():
 		
 class LeicaDataSource(DataSource):
 	"""
-	Class: LeicaDataSource
 	Created: 12.04.2005, KP
 	Description: Leica format datasource
 	"""
@@ -113,7 +112,6 @@ class LeicaDataSource(DataSource):
 			return self.resampleDims
 		if not self.dimensions:
 			self.dimensions = self.reader.GetDimensions(self.experiment)            
-			#print "Got dimensions=",self.dimensions
 		return self.dimensions
 
 	
@@ -128,9 +126,6 @@ class LeicaDataSource(DataSource):
 			a, b, c = self.getVoxelSize()
 			self.spacing = [1, b / a, c / a]
 		return self.spacing
-			#data=self.getDataSet(0)
-			#self.spacing=data.GetSpacing()
-		#return self.spacing
 		
 	def getVoxelSize(self):
 		"""
@@ -140,9 +135,6 @@ class LeicaDataSource(DataSource):
 		"""
 		if not self.voxelsize:
 			self.voxelsize = self.reader.GetVoxelSize(self.experiment)
-
-			
-			#print "Got voxel size=",self.voxelsize
 		return self.voxelsize
 	
 	def loadFromFile(self, filename):
@@ -151,6 +143,15 @@ class LeicaDataSource(DataSource):
 		Description: Loads the specified .txt-file and imports data from it.
 		Parameters:   filename  The .txt-file to be loaded
 		"""
+		exts = filename.split(".")
+		if exts[-1].lower()=="lei":
+			filename = ".".join(exts[:-1])
+			if os.path.exists(filename+".txt"):
+				filename+=".txt"
+			elif os.path.exists(filename+".TXT"):
+				filename+=".TXT"
+			elif os.path.exists(filename+".Txt"):
+				filename+=".Txt"
 		self.filename = filename
 		self.path = os.path.dirname(filename)
 		self.reader.setFileName(filename)
