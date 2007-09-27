@@ -37,6 +37,7 @@ import lib.messenger
 import Logging
 import math
 import wx
+import vtk
 
 class SectionsPanel(InteractivePanel):
 	"""
@@ -52,6 +53,10 @@ class SectionsPanel(InteractivePanel):
 		self.fitLater = 0
 		self.visualizer = visualizer
 		self.noUpdate = 0
+		
+		self.voi = None
+		self.permute = None
+		
 		self.bmp = None
 		self.bgcolor = (127, 127, 127)
 		self.enabled = 1
@@ -279,6 +284,73 @@ class SectionsPanel(InteractivePanel):
 
 		self.voxelSize = dataUnit.getVoxelSize()
 		InteractivePanel.setDataUnit(self, dataUnit)
+		
+	def getPlane(self, data, plane, xCoordinate, yCoordinate, zCoordinate, applyZScaling = 0):
+		"""
+		Created: 06.06.2005, KP
+		Description: Get a plane from given the volume
+		"""   
+		xAxis, yAxis, zAxis = 0, 1, 2
+		dataWidth, dataHeight, dataDepth = data.GetDimensions()
+		if not self.voi:
+			self.voi = vtk.vtkExtractVOI()
+		else:
+			self.voi.RemoveAllInputs()
+		if not self.permute:
+			self.permute = vtk.vtkImagePermute()
+		else:
+			self.permute.RemoveAllInputs()
+			
+		self.permute.SetInputConnection(data.GetProducerPort())
+		
+		spacing = data.GetSpacing()
+		data.SetSpacing(1, 1, 1)
+		data.SetOrigin(0, 0, 0)
+		xscale = 1
+		yscale = 1
+		if plane == "zy":
+			data.SetUpdateExtent(xCoordinate, xCoordinate, 0, dataHeight - 1, 0, dataDepth - 1)
+			self.permute.SetFilteredAxes(zAxis, yAxis, xAxis)
+			self.permute.Update()
+			data = self.permute.GetOutput()
+			self.voi.SetInput(data)
+	
+			self.voi.SetVOI(0, dataDepth - 1, 0, dataHeight - 1, xCoordinate, xCoordinate)
+	
+			data.SetUpdateExtent(0, dataDepth - 1, 0, dataHeight - 1, 0, 0)
+			data.SetWholeExtent(0, dataDepth - 1, 0, dataHeight - 1, 0, 0)
+			xdim = dataDepth
+			ydim = dataHeight
+			
+			if applyZScaling: 
+				xdim *= spacing[2]
+				xscale = spacing[2]
+			
+		elif plane == "xz":
+			data.SetUpdateExtent(0, dataWidth - 1, yCoordinate, yCoordinate, 0, dataDepth - 1)
+			self.permute.SetFilteredAxes(xAxis, zAxis, yAxis)
+			self.permute.Update()
+			data = self.permute.GetOutput()
+			data.SetUpdateExtent(0, dataWidth - 1, 0, dataDepth - 1, 0, 0)
+			data.SetWholeExtent(0, dataWidth - 1, 0, dataDepth - 1, 0, 0)
+	
+			self.voi.SetInput(data)
+			self.voi.SetVOI(0, dataWidth - 1, 0, dataDepth - 1, yCoordinate, yCoordinate)
+	
+	
+			xdim = dataWidth
+			ydim = dataDepth
+			if applyZScaling: 
+				ydim *= spacing[2]
+				yscale = 1
+			
+		if applyZScaling:
+			self.voi.Update()
+			return lib.ImageOperations.scaleImage(self.voi.GetOutput(), interpolation = 2, xfactor = xscale, yfactor = yscale)
+			
+		
+		self.voi.Update()
+		return self.voi.GetOutput()
 
 	def setTimepoint(self, tp, update = 1):
 		"""
@@ -318,17 +390,14 @@ class SectionsPanel(InteractivePanel):
 		self.slices.append(slice)
 		
 		Logging.info("zspacing = %f\n"%self.zspacing, kw="preview")
-		slice = lib.ImageOperations.getPlane(self.imagedata, "zy", self.x, self.y, int(z))
+		slice = self.getPlane(self.imagedata, "zy", self.x, self.y, int(z))
 		if self.zoomFactor != 1 or self.zspacing != 1:
 			slice = lib.ImageOperations.scaleImage(slice, self.zoomFactor, yfactor = 1, xfactor = self.zspacing)
 		slice = lib.ImageOperations.vtkImageDataToWxImage(slice)
 		self.slices.append(slice)
-		slice = lib.ImageOperations.getPlane(self.imagedata, "xz", self.x, self.y, z)
-#		slice = lib.ImageOperations.getPlane(self.imagedata,"zy",self.x,self.y,z)
+		slice = self.getPlane(self.imagedata, "xz", self.x, self.y, z)
 		if self.zoomFactor != 1 or self.zoomZ != 1  or self.zspacing != 1:
 			slice = lib.ImageOperations.scaleImage(slice, self.zoomFactor, yfactor = self.zspacing, xfactor = 1)
-#		if self.zoomZ != 1:
-#			slice=ImageOperaations.scaleImage(slice,yfactor=self.zoomZ)
 		slice = lib.ImageOperations.vtkImageDataToWxImage(slice)
 		self.slices.append(slice)
 

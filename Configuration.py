@@ -173,6 +173,13 @@ class Configuration:
 		self.insertModuleDirectories()
 		self.processPathSettings()
 
+	def getConfigurationFile(self):
+		"""
+		Created: 27.09.2007, KP
+		Description: return the configuration file
+		"""
+		return self.configFile
+
 	def writeSettings(self):
 		"""
 		Created: 12.03.2005, KP
