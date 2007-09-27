@@ -246,7 +246,7 @@ class SectionsPanel(InteractivePanel):
 		
 		event.Skip()
 			
-		
+
 	def onSize(self, event):
 		"""
 		Created: 23.05.2005, KP
@@ -317,8 +317,8 @@ class SectionsPanel(InteractivePanel):
 	
 			self.voi.SetVOI(0, dataDepth - 1, 0, dataHeight - 1, xCoordinate, xCoordinate)
 	
-			data.SetUpdateExtent(0, dataDepth - 1, 0, dataHeight - 1, 0, 0)
-			data.SetWholeExtent(0, dataDepth - 1, 0, dataHeight - 1, 0, 0)
+			#data.SetUpdateExtent(0, dataDepth - 1, 0, dataHeight - 1, 0, 0)
+			#data.SetWholeExtent(0, dataDepth - 1, 0, dataHeight - 1, 0, 0)
 			xdim = dataDepth
 			ydim = dataHeight
 			
@@ -331,12 +331,12 @@ class SectionsPanel(InteractivePanel):
 			self.permute.SetFilteredAxes(xAxis, zAxis, yAxis)
 			self.permute.Update()
 			data = self.permute.GetOutput()
-			data.SetUpdateExtent(0, dataWidth - 1, 0, dataDepth - 1, 0, 0)
-			data.SetWholeExtent(0, dataWidth - 1, 0, dataDepth - 1, 0, 0)
+			#data.SetUpdateExtent(0, dataWidth - 1, 0, dataDepth - 1, 0, 0)
+			#data.SetWholeExtent(0, dataWidth - 1, 0, dataDepth - 1, 0, 0)
 	
 			self.voi.SetInput(data)
 			self.voi.SetVOI(0, dataWidth - 1, 0, dataDepth - 1, yCoordinate, yCoordinate)
-	
+
 	
 			xdim = dataWidth
 			ydim = dataDepth
@@ -344,6 +344,8 @@ class SectionsPanel(InteractivePanel):
 				ydim *= spacing[2]
 				yscale = 1
 			
+		self.voi.Update()
+		print "OUTPUT for plane ",plane,self.voi.GetOutput()
 		if applyZScaling:
 			self.voi.Update()
 			return lib.ImageOperations.scaleImage(self.voi.GetOutput(), interpolation = 2, xfactor = xscale, yfactor = yscale)
