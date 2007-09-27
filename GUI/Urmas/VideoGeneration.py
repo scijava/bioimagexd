@@ -198,6 +198,7 @@ class VideoEncoder:
 		f = open(filename, "r")
 		lines = []
 		for line in f.readlines():
+			
 			txt, comment = line.split(" #")
 			lines.append(txt)
 		videoFile, name, path, quality, codec, size, fps = lines[0:6]
@@ -285,6 +286,7 @@ class VideoGeneration(wx.Panel):
 		
 		self.oldSelection = 0
 		self.rendering = 0
+		self.renderingDone = 0
 		self.oldformat = None
 		self.abort = 0
 		self.parent = parent
@@ -301,8 +303,6 @@ class VideoGeneration(wx.Panel):
 							  "WMV2", "MS MPEG4", "MS MPEG4 v2",
 							  "QuickTime MPEG4", "AVI MPEG4"]]
 
-		self.padding = [1, 1, 0, 0, 0, 0]
-		self.needpad = 0
 		self.mainsizer = wx.GridBagSizer()
 		self.generateGUI()
 
@@ -316,11 +316,13 @@ class VideoGeneration(wx.Panel):
 		self.buttonBox = wx.BoxSizer(wx.HORIZONTAL)
 		self.okButton = wx.Button(self, -1, "Ok")
 		self.cancelButton = wx.Button(self, -1, "Cancel")
+		self.loadButton = wx.Button(self,-1,"Load project")
 		
-		self.okButton.Bind(wx.EVT_BUTTON, self.onOk)
-		self.cancelButton.Bind(wx.EVT_BUTTON, self.onCancel)
+		self.okButton.Bind(wx.EVT_BUTTON, self.onOkButton)
+		self.cancelButton.Bind(wx.EVT_BUTTON, self.onCancelButton)
+		self.loadButton.Bind(wx.EVT_BUTTON, self.onLoadProject)
 		
-		
+		self.buttonBox.Add(self.loadButton)
 		self.buttonBox.Add(self.okButton)
 		self.buttonBox.Add(self.cancelButton)
 		
@@ -330,43 +332,61 @@ class VideoGeneration(wx.Panel):
 		self.SetSizer(self.mainsizer)
 		self.SetAutoLayout(True)
 		self.mainsizer.Fit(self)
-	
-	def onCancel(self, *args):
+		
+	def onLoadProject(self, event):
+		"""
+		Created: 27.09.2007, KP
+		Description: load a project file for re-rendering
+		"""
+		filenames = GUI.Dialogs.askOpenFileName(self, "Open rendering project", "Rendering project (*.bxr)|*.bxr")
+		if filenames:
+			filename = unicode(filenames[0])
+			do_cmd = "scripting.animator.videoGenerationPanel.readProjectFile(ur'%s')" % filename
+			cmd = lib.Command.Command(lib.Command.GUI_CMD, None, None, do_cmd, "", \
+									desc = "Save a rendering project file")
+			cmd.run()
+				
+	def onCancelButton(self, event):
 		"""
 		Created: 15.12.2005, KP
 		Description: Close the video generation window
-		"""		   
+		"""
 		if self.rendering:
 			lib.messenger.send(None, "stop_rendering")
 			self.abort = 1
 		lib.messenger.send(None, "video_generation_close")
 		
 		
-	def onOk(self, event):
+	def onOkButton(self, event):
 		"""
 		Created: 26.04.2005, KP
 		Description: Render the whole damn thing
 		"""
 		self.okButton.Enable(0)
+		path = self.encoder.getPath()
+		file = self.encoder.getVideoFileName()
+
+		# If the rendering has been done already, then only do the encoding
+		if self.renderingDone:
+			self.cleanUp()
+			return
+			
 		lib.messenger.send(None, "set_play_mode")
 		lib.messenger.connect(None, "playback_stop", self.onCancel)
 		self.abort = 0
 		if self.visualizer.getCurrentModeName() != "3d":
 			self.visualizer.setVisualizationMode("3d")
-			
-		path = self.encoder.getPath()
-		file = self.encoder.getVideoFileName()
-		
+	
 		dn = path
 		while not os.path.exists(dn):
 			os.mkdir(dn)
 			dn = os.path.dirname(dn)
-		
+	
 		conf = Configuration.getConfiguration()
 		conf.setConfigItem("FramePath", "Paths", path)
 		conf.setConfigItem("VideoPath", "Paths", file)
 		conf.writeSettings()
-		
+	
 		renderingInterface = lib.RenderingInterface.getRenderingInterface()
 		renderingInterface.setVisualizer(self.visualizer)
 		# if we produce images, then set the correct file type
@@ -398,14 +418,15 @@ class VideoGeneration(wx.Panel):
 		Created: 30.1.2006, KP
 		Description: Method to clean up after rendering is done
 		""" 
-		renderingInterface = lib.RenderingInterface.getRenderingInterface()
-		frameList = renderingInterface.getFrameList()
-		self.encoder.setFrameList(frameList)
-		# if the rendering wasn't aborted, then restore the animator
-		if not self.abort:
-			self.visualizer.restoreWindowSizes()
-			self.parent.SetDefaultSize(self.parent.origSize)
-			self.parent.parent.OnSize(None)
+		if not self.renderingDone:
+			renderingInterface = lib.RenderingInterface.getRenderingInterface()
+			frameList = renderingInterface.getFrameList()
+			self.encoder.setFrameList(frameList)
+			# if the rendering wasn't aborted, then restore the animator
+			if not self.abort:
+				self.visualizer.restoreWindowSizes()
+				self.parent.SetDefaultSize(self.parent.origSize)
+				self.parent.parent.OnSize(None)
 					
 		if self.formatMenu.GetSelection() == 1:
 			Logging.info("Will produce video", kw = "animator")
@@ -415,6 +436,7 @@ class VideoGeneration(wx.Panel):
 		
 		self.abort = 0
 		self.rendering = 0
+		self.renderingDone = 1
 				
 		lib.messenger.send(None, "video_generation_close")
 		lib.messenger.disconnect(None, "rendering_done")
@@ -440,7 +462,7 @@ class VideoGeneration(wx.Panel):
 			filename = GUI.Dialogs.askSaveAsFileName(self, "Save rendering project as", "rendering.bxr", \
 												"BioImageXD Rendering Project (*.bxr)|*.bxr")
 			if filename:
-				do_cmd = "scripting.animator.videoGenerationPanel.saveProjectFile(r'%s')" % filename
+				do_cmd = "scripting.animator.videoGenerationPanel.saveProjectFile(ur'%s')" % filename
 				cmd = lib.Command.Command(lib.Command.GUI_CMD, None, None, do_cmd, "", \
 										desc = "Save a rendering project file")
 				cmd.run()
@@ -451,6 +473,7 @@ class VideoGeneration(wx.Panel):
 		Description: read the relevant settings from a project file
 		"""
 		self.encoder.readIn(filename)
+		self.encodingDone = 1
 		self.updateGUIFromEncoder()
 		
 	def saveProjectFile(self, filename):
