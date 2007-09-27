@@ -383,23 +383,23 @@ class SectionsPanel(InteractivePanel):
 		z = self.z / self.zoomZ
 		if self.zoomFactor != 1:
 			img = lib.ImageOperations.scaleImage(self.imagedata, self.zoomFactor, z)
-			slice = lib.ImageOperations.vtkImageDataToWxImage(img)
+			imgslice = lib.ImageOperations.vtkImageDataToWxImage(img)
 		else:
-			slice = lib.ImageOperations.vtkImageDataToWxImage(self.imagedata, z)
+			imgslice = lib.ImageOperations.vtkImageDataToWxImage(self.imagedata, z)
 			
-		self.slices.append(slice)
+		self.slices.append(imgslice)
 		
 		Logging.info("zspacing = %f\n"%self.zspacing, kw="preview")
-		slice = self.getPlane(self.imagedata, "zy", self.x, self.y, int(z))
+		imgslice = self.getPlane(self.imagedata, "zy", self.x, self.y, int(z))
 		if self.zoomFactor != 1 or self.zspacing != 1:
-			slice = lib.ImageOperations.scaleImage(slice, self.zoomFactor, yfactor = 1, xfactor = self.zspacing)
-		slice = lib.ImageOperations.vtkImageDataToWxImage(slice)
-		self.slices.append(slice)
-		slice = self.getPlane(self.imagedata, "xz", self.x, self.y, z)
+			imgslice = lib.ImageOperations.scaleImage(imgslice, self.zoomFactor, yfactor = 1, xfactor = self.zspacing)
+		imgslice = lib.ImageOperations.vtkImageDataToWxImage(imgslice)
+		self.slices.append(imgslice)
+		imgslice = self.getPlane(self.imagedata, "xz", self.x, self.y, z)
 		if self.zoomFactor != 1 or self.zoomZ != 1  or self.zspacing != 1:
-			slice = lib.ImageOperations.scaleImage(slice, self.zoomFactor, yfactor = self.zspacing, xfactor = 1)
-		slice = lib.ImageOperations.vtkImageDataToWxImage(slice)
-		self.slices.append(slice)
+			imgslice = lib.ImageOperations.scaleImage(imgslice, self.zoomFactor, yfactor = self.zspacing, xfactor = 1)
+		imgslice = lib.ImageOperations.vtkImageDataToWxImage(imgslice)
+		self.slices.append(imgslice)
 
 		self.calculateBuffer()
 		if update:
