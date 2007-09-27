@@ -41,23 +41,49 @@ import GUI.Dialogs
 #import lib.email
 from lib.email.mime.multipart import MIMEMultipart
 from lib.email.mime.text import MIMEText
+from lib.email.mime.base import MIMEBase
 import scripting
 import smtplib
 import wx	# This module uses the new wx namespace
+import Configuration
+import platform
 
+def createSystemReport():
+	"""
+	Created: 27.09.2007, KP
+	Description: create a report of the system
+	"""
+	ret = "System report for machine %s (%s)\n"%(platform.node(),platform.system())
+	ret += "Version: %s\n"%platform.version()
+	ret += "Platform: %s\n"%platform.platform()
+	ret += "Machine type (processor): %s (%s)\n"%(platform.machine(), platform.processor())
+	ret += "Python version: %s\n"%platform.python_version()
+	try:
+		release, versioninfo, machine = platform.mac_ver()
+		ret+="MacOS Version: %s\n"%release
+	except:
+		pass
+	dist, ver, did = platform.dist()
+	if dist:
+		ret+="Unix distribution: %s %s %s\n"%(dist,ver,did)
+	try:
+		ver, csd, ptype = platform.win32_ver()
+		ret+="Win32 version: %s %s %s\n"%(ver,csd,ptype)
+	except:
+		pass
+		
+	return ret
 def mail(to = '', senderName = '', text = ''):
 	"""
 	Created: 25.06.2007, KP
 	Description: send an email message
 	"""
 	sender = 'bioimagexd.bugs@gmail.com'
-#	message = email.Message.Message()
 	message = MIMEMultipart('related')
 	message["To"]      = to
 	message["From"]    = sender
 	message["Subject"] = "BioImageXD Bug report from %s" % senderName
 	message.preamble = 'This is a multi-part message in MIME format.'
-	#message.set_payload(text)
     
 	msgAlternative = MIMEMultipart('alternative')
 	message.attach(msgAlternative)    
@@ -65,6 +91,20 @@ def mail(to = '', senderName = '', text = ''):
 	msgAlternative.attach(msgText)    
 	msgText = MIMEText(text, 'html')
 	msgAlternative.attach(msgText)
+
+	conf = Configuration.getConfiguration()
+	fp = open(conf.getConfigurationFile(),"r")
+	configText = fp.read()
+	fp.close()
+	
+	part = MIMEBase('text','plain')
+	part.set_payload(configText)
+	part.add_header('Content-Disposition','attachment; filename="BioImageXD.ini"')
+	message.attach(part)
+	part = MIMEBase('text','plain')
+	part.set_payload(createSystemReport())
+	part.add_header('Content-Disposition','attachment; filename="system.txt"')
+	message.attach(part)
     
 	try:
 		mailServer = smtplib.SMTP("smtp.gmail.com", 587)
@@ -187,6 +227,8 @@ software will be attached to the report to aid the developers in solving the err
         
 		frommsg = ["<html>", "<strong>From:</strong> " + self.nameEdit.GetValue()] + \
 					["<strong>E-mail:</strong>" + self.emailEdit.GetValue(), ""]
+					
+		
 		usermsg = ["<strong>Description of the problem:</strong>"] + \
 					self.reportMessage.GetValue().split("\n") + [""]
 
@@ -200,7 +242,6 @@ software will be attached to the report to aid the developers in solving the err
 		else:
 			logprefix = "<strong>Log from file %s</strong>" % (self.logFile)
             
-		print "logprefix =", logprefix
         
 		lines = frommsg + usermsg + ["<strong>The actions of the user:</strong>"] + \
 				actions + ["<br><br>", logprefix] + loglines
