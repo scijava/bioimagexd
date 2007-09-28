@@ -51,6 +51,7 @@ class LIFDataSource(DataSource):
 		"""
 		DataSource.__init__(self)
 		self.filename = filename
+		self.imageName = ""
 		self.setPath(filename);
 		# LIF file can contain multiple images with multiple channels.
 		# Define which image and channel is associated to this DataSource
@@ -73,6 +74,7 @@ class LIFDataSource(DataSource):
 				if self.reader.ReadLIFHeader():
 					self.reader.SetCurrentImage(self.imageNum)
 					self.reader.SetCurrentChannel(self.channelNum)
+					self.imageName = self.reader.GetImageName(self.imageNum)
 				else:
 					Logging.error("Failed to read the header of the LIF file correctly",
 								  "Error in LIFDataSource.py in __init__, failed to read the header of the LIF file: %s" %(self.filename))
@@ -94,9 +96,9 @@ class LIFDataSource(DataSource):
 	def getFileName(self):
 		"""
 		Created: 23.07.2007, LP
-		Description: Returns the file name
+		Description: Returns the file name with image name
 		"""
-		return self.filename;
+		return self.filename + "_" + self.imageName;
 
 	def getDataSet(self, i, raw = 0):
 		"""
@@ -281,8 +283,7 @@ class LIFDataSource(DataSource):
 		Created: 01.08.2007, LP
 		Description: Returns a string identifying the dataset
 		"""
-		imageName = self.reader.GetImageName(self.imageNum)
-		return imageName + "|" + self.getName()
+		return self.imageName + "|" + self.getName()
 
 	def __str__(self):
 		"""

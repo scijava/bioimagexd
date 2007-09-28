@@ -784,7 +784,12 @@ class MainWindow(wx.Frame):
 			chname = dataUnit.getName()
 			chname = chname.replace(" ", "_")
 			filename = dataUnit.getDataSource().getFileName()
-			filebase = os.path.basename(".".join(filename.split(".")[:-1]))
+			filenamelist = filename.split(".")
+			filebase = os.path.basename(".".join(filenamelist[:-1]))
+			# Include also image name if exists (ex. LIF files)
+			imagename = "_".join(filenamelist[len(filenamelist)-1].split("_")[1:])
+			if len(imagename) > 0:
+				filebase = filebase + "_" + imagename
 			bxcfilename = bxdwriter.getBXCFileName("%s_%s" % (filebase, chname))
 			writer = lib.DataSource.BXCDataWriter.BXCDataWriter(bxcfilename)
 			n = dataUnit.getNumberOfTimepoints()
