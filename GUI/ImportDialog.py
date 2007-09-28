@@ -281,7 +281,7 @@ class ImportDialog(wx.Dialog):
 		self.timeslider.Bind(wx.EVT_SCROLL, self.onChangeTimepoint)
 				
 		self.preview = PreviewFrame(self, previewsize = (384, 384), scrollbars = False)
-		self.preview.setPreviewType("")
+#		self.preview.setPreviewType("")
 		self.preview.disableAnnotations()
 		
 		previewBox.Add(self.preview)
