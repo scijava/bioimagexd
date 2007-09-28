@@ -198,7 +198,7 @@ color depth. Use the histograms below to the select how the intensities in your 
 		box = wx.StaticBox(self, -1, "Preview selected mapping")
 		previewBox = wx.StaticBoxSizer(box, wx.HORIZONTAL)
 		self.preview = PreviewFrame(self, previewsize = (256, 256), scrollbars = False)
-		self.preview.setPreviewType("")
+#		self.preview.setPreviewType("")
 				
 		previewBox.Add(self.preview)
 		
