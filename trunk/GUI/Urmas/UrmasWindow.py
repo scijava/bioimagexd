@@ -235,9 +235,6 @@ class UrmasWindow(wx.lib.scrolledpanel.ScrolledPanel):
 		mgr.addMenuItem("track", MenuManager.ID_DELETE_TRACK, "&Remove track", "Remove the track from timeline", self.onMenuRemoveTrack)
 		mgr.addMenuItem("track", MenuManager.ID_DELETE_ITEM, "&Remove item", "Remove the selected track item", self.onMenuRemoveTrackItem)
 		
-		#mgr.addSeparator("rendering")
-#		 mgr.addMenuItem("rendering",MenuManager.ID_RENDER_PREVIEW,"Rendering &Preview","Preview rendering",self.onMenuRender)
-		#mgr.addMenuItem("rendering",MenuManager.ID_RENDER_PROJECT,"&Render project","Render this project",self.onMenuRender)
 	
 		mgr.addSeparator("track")	
 		mgr.addMenuItem("track", MenuManager.ID_SPLINE_SET_BEGIN, "&Begin at the end of previous path", "Set this camera path to begin where the previous path ends", self.onMenuSetBegin)
@@ -303,12 +300,14 @@ class UrmasWindow(wx.lib.scrolledpanel.ScrolledPanel):
 		Created: 19.04.2005, KP
 		Description: Render this project
 		"""
-		w, h = self.taskWin.GetSize()
-		self.taskWin.SetDefaultSize((300, h))
-		self.videoGenerationPanel = VideoGeneration.VideoGeneration(self.taskWin, self.control, self.visualizer)
-		self.videoGenerationPanel.SetSize((300, h))
-		self.videoGenerationPanel.Show()
-		self.visualizer.mainwin.OnSize(None)
+		if not self.videoGenerationPanel:
+			w, h = self.taskWin.GetSize()
+			self.taskWin.SetDefaultSize((300, h))
+			self.videoGenerationPanel = VideoGeneration.VideoGeneration(self.taskWin, self.control, self.visualizer)
+			self.videoGenerationPanel.SetSize((300, h))
+			self.videoGenerationPanel.Show()
+			self.visualizer.mainwin.OnSize(None)
+			
 
 	def onVideoGenerationClose(self, obj, evt, *args):
 		"""
@@ -316,7 +315,7 @@ class UrmasWindow(wx.lib.scrolledpanel.ScrolledPanel):
 		Description: Callback for closing the video generation
 		""" 
 	
-		w, h = self.taskWin.GetSize()		
+		w, h = self.taskWin.GetSize()
 		if self.videoGenerationPanel:			 
 			self.taskWin.SetDefaultSize((0, h))
 			self.visualizer.mainwin.OnSize(None)
