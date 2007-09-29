@@ -197,11 +197,12 @@ class VideoEncoder:
 		"""
 		f = open(filename, "r")
 		lines = []
-		for line in f.readlines():
-			
+		inputLines = f.readlines()
+		
+		for line in inputLines[0:8]:
 			txt, comment = line.split(" #")
 			lines.append(txt)
-		videoFile, name, path, quality, codec, size, fps = lines[0:6]
+		videoFile, name, path, quality, preset, codec, size, fps = lines[0:8]
 		quality = int(quality)
 		fps = float(fps)
 		w, h = size.split(",")
@@ -212,8 +213,9 @@ class VideoEncoder:
 		self.quality = quality
 		self.codec = codec
 		self.fps = fps
-		self.frameList = lines[6:]
-
+		self.frameList = inputLines[8:]
+		self.setPreset(int(preset))
+		
 	def getPattern(self):
 		"""
 		Created: 22.09.2007, KP
@@ -259,10 +261,10 @@ class VideoEncoder:
 		width, height = self.getSize()
 		
 		if not target:
-			commandLine = "%s -qscale %d -b 8192 -r %.2f -s %dx%d -i \"%s\" -vcodec %s \"%s\"" \
+			commandLine = "%s -y -qscale %d -b 8192 -r %.2f -s %dx%d -i \"%s\" -vcodec %s \"%s\"" \
 							% (ffmpeg, quality, frameRate, width, height, pattern, vcodec, file)
 		else:
-			commandLine = "%s -qscale %d -s %dx%d -i \"%s\" -target %s \"%s\"" % (ffmpeg, quality, width, height, pattern, target, file)
+			commandLine = "%s -y -qscale %d -s %dx%d -i \"%s\" -target %s \"%s\"" % (ffmpeg, quality, width, height, pattern, target, file)
 		Logging.info("Command line for ffmpeg=", commandLine, kw = "animator")
 		return commandLine
 
@@ -372,7 +374,7 @@ class VideoGeneration(wx.Panel):
 			return
 			
 		lib.messenger.send(None, "set_play_mode")
-		lib.messenger.connect(None, "playback_stop", self.onCancel)
+		lib.messenger.connect(None, "playback_stop", self.onCancelButton)
 		self.abort = 0
 		if self.visualizer.getCurrentModeName() != "3d":
 			self.visualizer.setVisualizationMode("3d")
@@ -665,9 +667,11 @@ class VideoGeneration(wx.Panel):
 		self.fps = self.encoder.getFPS()
 		w,h = self.encoder.getSize()
 		self.frameSize.SetLabel("%d x %d"%(w,h))
-		self.frameRate.SetLabel("%.2f" % fps)
+		self.frameRate.SetLabel("%.2f" % self.fps)
 		preset = self.encoder.getPreset()
 		self.preset.SetSelection(preset)
+		if preset:
+			self.onUpdatePreset()
 		
 	def onSelectDirectory(self, event = None):
 		"""

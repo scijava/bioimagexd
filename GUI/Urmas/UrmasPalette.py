@@ -53,7 +53,6 @@ class UrmasDropTarget(wx.PyDropTarget):
 	"""
 	def __init__(self, tgt, datatype):
 		"""
-		Method: __init__
 		Created: 12.04.2005, KP
 		Description: Initialization
 		"""
@@ -120,11 +119,7 @@ class UrmasPalette(wx.Panel):
 		self.icons = {}
 		self.panels = {}
 		self.sbmps = {}
-		#try:
-		#    import psyco
-		#    psyco.cannotcompile(self.dropItem)
-		#except ImportError:
-		#    pass
+
 		wx.Panel.__init__(self, parent, style = wx.RAISED_BORDER, size = (750, 32))
 		self.sizer = wx.BoxSizer(wx.HORIZONTAL)
 		
