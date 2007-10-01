@@ -90,7 +90,7 @@ class LIFDataSource(DataSource):
 		Description: Returns the count of time points of the data set
 		"""
 		if not self.dimensions:
-			self.getDimensions()
+			self.dimensions = self.internalGetDimensions()
 		return self.dimensions[3]
 
 	def getFileName(self):
@@ -150,6 +150,8 @@ class LIFDataSource(DataSource):
 		dimensions = self.reader.GetImageDims()
 		# Make sure that every dimension is at least 1. This prevents
 		# software from crashing with weird datasets like xt-series.
+		dimensions = list(dimensions)
+		
 		if dimensions[0] <= 0:
 			dimensions[0] = 1
 		if dimensions[1] <= 0:
@@ -159,7 +161,9 @@ class LIFDataSource(DataSource):
 		if dimensions[3] <= 0:
 			dimensions[3] = 1
 
-		return dimensions[0:3]
+		dimensions = tuple(dimensions)
+
+		return dimensions
 
 	def loadFromFile(self, filename):
 		"""
