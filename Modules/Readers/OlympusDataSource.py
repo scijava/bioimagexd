@@ -40,7 +40,8 @@ import os.path
 import struct
 import vtk
 import vtkbxd
-		
+import scripting
+
 def getExtensions(): 
 	return ["oif"]
 
@@ -82,7 +83,7 @@ class OlympusDataSource(DataSource):
 			# bro28_par3_07-04-18 and ignore the LUT1.lut, and use that as the basis of the filenames
 			# for the tiff files
 			self.fileNameBase = "_".join(self.lutFileName.split("_")[:-1])
-			self.path = os.path.join(os.path.dirname(filename), "%s.oif.files"%self.fileNameBase)
+			self.path = os.path.join(os.path.dirname(filename), "%s.files"%os.path.basename(filename))
 			
 		self.reader = None
 		self.originalScalarRange = (0, 4095)
@@ -223,18 +224,11 @@ class OlympusDataSource(DataSource):
 
 		return self.reader.GetOutput()
 		
-	def getDimensions(self):
+	def internalGetDimensions(self):
 		"""
 		Created: 12.04.2005, KP
-		Description: Returns the (x,y,z) dimensions of the datasets this 
-					 dataunit contains
+		Description: get the dimensions for this dataset, used by the getDimensions()
 		"""
-		if self.resampleDims:
-			
-			return self.resampleDims
-		if not self.dimensions:
-			raise "No dimensions given for ", str(self)
-			#print "Got dimensions=",self.dimensions
 		return self.dimensions
 
 	def readLUT(self): 
@@ -243,6 +237,10 @@ class OlympusDataSource(DataSource):
 		Description: Read the LUT for this dataset
 		"""
 		lutFile = os.path.join(self.path, self.lutFileName)
+
+		print "path=",self.path
+		print "lutFile=",lutFile, "exists?",os.path.exists(lutFile)
+
 		file = codecs.open(lutFile, "r", "utf-16")
 		while 1:
 			line = file.readline()

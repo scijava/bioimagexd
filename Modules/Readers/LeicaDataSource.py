@@ -102,18 +102,13 @@ class LeicaDataSource(DataSource):
 		data = self.reader.GetTimepoint(self.experiment, self.channel, i)
 		return self.getResampledData(data, i)
 		
-	def getDimensions(self):
+	def internalGetDimensions(self):
 		"""
 		Created: 12.04.2005, KP
 		Description: Returns the (x,y,z) dimensions of the datasets this 
 					 dataunit contains
 		"""
-		if self.resampleDims:
-			return self.resampleDims
-		if not self.dimensions:
-			self.dimensions = self.reader.GetDimensions(self.experiment)            
-		return self.dimensions
-
+		return self.reader.GetDimensions(self.experiment)
 	
 		
 	def getSpacing(self):

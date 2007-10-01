@@ -36,6 +36,7 @@ from lib.DataUnit.DataUnitSetting import DataUnitSettings
 import lib.messenger
 import os.path
 import Logging
+import scripting
 import vtk
 
 class MyConfigParser(ConfigParser.RawConfigParser):
@@ -140,20 +141,13 @@ class BXCDataSource(DataSource):
 		self.spacing = data.GetSpacing()
 		#self.bitdepth = 8*data.GetNumberOfScalarComponents()
 
-	def getDimensions(self):
+	def internalGetDimensions(self):
 		"""
-		Method: getDimensions()
 		Created: 14.12.2004, KP
 		Description: Returns the (x, y, z) dimensions of the datasets this 
 					 dataunit contains
 		"""
-		if self.resampleDims:
-			return self.resampleDims		
-		if not self.dimensions:
-			#data = self.getDataSet(0)
-			#self.readInfo(data)
-			self.dimensions = eval(self.settings.get("Dimensions"))
-		return self.dimensions
+		return eval(self.settings.get("Dimensions"))
 
 	def updateProgress(self, obj, evt):
 		"""
