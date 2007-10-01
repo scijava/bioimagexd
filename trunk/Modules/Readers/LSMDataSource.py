@@ -189,19 +189,12 @@ class LsmDataSource(DataSource):
 			self.scalarRange = (0, 2 ** self.bitdepth - 1)
 		return self.scalarRange
 
-	def getDimensions(self):
+	def internalGetDimensions(self):
 		"""
 		Created: 14.12.2004, KP
-		Description: Returns the (x,y,z) dimensions of the datasets this 
-					 dataunit contains
+		Description: Return the original dimensions of the dataset
 		"""
-		if self.resampleDims:
-			return self.resampleDims
-		if not self.dimensions or self.dimensions == (0, 0, 0, 0, 0):
-			self.dimensions = self.reader.GetDimensions()
-			#print "Got dimensions from LSM reader=",self.dimensions
-			
-		return self.dimensions[0:3]
+		return self.reader.GetDimensions()
 
 	def getSpacing(self):
 		

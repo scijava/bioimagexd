@@ -5,7 +5,7 @@
  Created: 29.03.2006, KP
  Description: A datasource for reading Biorad .PIC files
 
- Copyright (C) 2005  BioImageXD Project
+ Copyright (C) 2005	 BioImageXD Project
  See CREDITS.txt for details
 
  This program is free software; you can redistribute it and/or modify
@@ -44,18 +44,18 @@ def getFileType():
 	return "BioRad PIC datasets (*.pic)"
 
 def getClass():
-	return BioradDataSource    
+	return BioradDataSource	   
 
 class BioradDataSource(DataSource):
 	"""
 	Created: 12.04.2005, KP
-	Description: Olympus OIF files datasource
+	Description: BioRad .PIC files datasource
 	"""
 	def __init__(self, filename = ""):
 		"""
 		Created: 12.04.2005, KP
 		Description: Constructor
-		"""    
+		"""	   
 		DataSource.__init__(self)
 		self.setPath(filename)
 		dataSetName = os.path.basename(filename)
@@ -81,12 +81,11 @@ class BioradDataSource(DataSource):
 		
 	def getDataSetCount(self):
 		"""
-		Method: getDataSetCount
 		Created: 12.04.2005, KP
 		Description: Returns the number of individual DataSets (=time points)
 		managed by this DataSource
 		"""
-# This seems to rely on the fact that tps is set to -1 in the constructor
+		# This seems to rely on the fact that tps is set to -1 in the constructor
 		if self.tps < 0:
 			#f = self.filename[:]
 			#r = re.compile("(\d+)....$")
@@ -122,7 +121,6 @@ class BioradDataSource(DataSource):
 
 	def getFileName(self):
 		"""
-		Method: getFileName()
 		Created: 21.07.2005
 		Description: Return the file name
 		"""
@@ -130,10 +128,9 @@ class BioradDataSource(DataSource):
 
 	def getDataSet(self, i, raw = 0):
 		"""
-		Method: getDataSet
 		Created: 12.04.2005, KP
 		Description: Returns the DataSet at the specified index
-		Parameters:   i		  The index
+		Parameters:	  i		  The index
 		"""
 		data = self.getTimepoint(i)
 		data = self.getResampledData(data, i)
@@ -157,7 +154,6 @@ class BioradDataSource(DataSource):
 
 	def getTimepoint(self, requestedTimePoint, onlyDims = 0):
 		"""
-		Method: getTimepoint
 		Created: 16.02.2006, KP
 		Description: Return the nth timepoint
 		"""		   
@@ -186,24 +182,18 @@ class BioradDataSource(DataSource):
 		self.itkToVtk.Update()
 		return self.itkToVtk.GetOutput()
 		
-	def getDimensions(self):
+	def internalGetDimensions(self):
 		"""
-		Method: getDimensions()
 		Created: 12.04.2005, KP
 		Description: Returns the (x, y, z) dimensions of the datasets this 
 					 dataunit contains
-		"""
-		if self.resampleDims:
-			return self.resampleDims
-		if not self.dimensions:			   
-			self.getVoxelSize()
-			#print "Got dimensions=", self.dimensions
+		""" 
+		self.getVoxelSize()
 		return self.dimensions
 
 		
 	def getSpacing(self):
 		"""
-		Method: getSpacing()
 		Created: 12.04.2005, KP
 		Description: Returns the spacing of the datasets this 
 					 dataunit contains
@@ -215,7 +205,6 @@ class BioradDataSource(DataSource):
 		
 	def getVoxelSize(self):
 		"""
-		Method: getVoxelSize()
 		Created: 12.04.2005, KP
 		Description: Returns the voxel size of the datasets this 
 					 dataunit contains
@@ -227,10 +216,9 @@ class BioradDataSource(DataSource):
 	@staticmethod
 	def loadFromFile(filename):
 		"""
-		Method: loadFromFile
 		Created: 12.04.2005, KP
 		Description: Loads the specified .oif-file and imports data from it.
-		Parameters:   filename	The .oif-file to be loaded
+		Parameters:	  filename	The .oif-file to be loaded
 		"""
 		dataunit = DataUnit()
 		datasource = BioradDataSource(filename)
@@ -240,7 +228,6 @@ class BioradDataSource(DataSource):
 
 	def getDataSetName(self):
 		"""
-		Method: getDataSetName
 		Created: 18.11.2005, KP
 		Description: Returns the name of the dataset series which this datasource
 					 operates on
@@ -250,7 +237,6 @@ class BioradDataSource(DataSource):
 		
 	def getColorTransferFunction(self):
 		"""
-		Method: getColorTransferFunction()
 		Created: 26.04.2005, KP
 		Description: Returns the ctf of the dataset series which this datasource
 					 operates on

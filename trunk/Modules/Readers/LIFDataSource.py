@@ -141,27 +141,25 @@ class LIFDataSource(DataSource):
 			return ""
 		return "Ch-%d"%(self.channelNum + 1)
 
-	def getDimensions(self):
+	def internalGetDimensions(self):
 		"""
 		Created 20.07.2007, LP
 		Description: Returns the (x,y,z) dimensions of the dataset this
 					 dataunit contains
 		"""
-		if not self.dimensions:
-			 self.dimensions = self.reader.GetImageDims()
+		dimensions = self.reader.GetImageDims()
+		# Make sure that every dimension is at least 1. This prevents
+		# software from crashing with weird datasets like xt-series.
+		if dimensions[0] <= 0:
+			dimensions[0] = 1
+		if dimensions[1] <= 0:
+			dimensions[1] = 1
+		if dimensions[2] <= 0:
+			dimensions[2] = 1
+		if dimensions[3] <= 0:
+			dimensions[3] = 1
 
-			 # Make sure that every dimension is at least 1. This prevents
-			 # software from crashing with weird datasets like xt-series.
-			 if self.dimensions[0] <= 0:
-				 self.dimensions = (1,self.dimensions[1],self.dimensions[2],self.dimensions[3])
-			 if self.dimensions[1] <= 0:
-				 self.dimensions = (self.dimensions[0],1,self.dimensions[2],self.dimensions[3])
-			 if self.dimensions[2] <= 0:
-				 self.dimensions = (self.dimensions[0],self.dimensions[1],1,self.dimensions[3])
-			 if self.dimensions[3] <= 0:
-				 self.dimensions = (self.dimensions[0],self.dimensions[1],self.dimensions[2],1)
-
-		return self.dimensions[0:3]
+		return dimensions[0:3]
 
 	def loadFromFile(self, filename):
 		"""

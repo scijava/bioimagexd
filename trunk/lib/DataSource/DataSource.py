@@ -344,7 +344,6 @@ class DataSource:
 		Created: 1.09.2005, KP
 		Description: Return the data resampled to given dimensions
 		"""
-		#flag = not (not resampleToDimensions and not self.resampleDims and not self.autoResampleLimitDimensions):
 		if self.resampling and not scripting.resamplingDisabled:
 			currentResamplingDimensions = self.getResampleDimensions()
 			# If we're given dimensions to resample to, then we use those
@@ -457,8 +456,12 @@ class DataSource:
 		Description: Returns the (x, y, z) dimensions of the datasets this 
 					 dataunit contains
 		"""
-		raise "Abstract method getDimensions() in DataSource called"
-
+		if self.resampleDims and not scripting.resamplingDisabled:
+			return self.resampleDims
+		if not self.dimensions or sum(self.dimensions)==0:
+			self.dimensions = self.internalGetDimensions()
+		return self.dimensions[0:3]
+		
 	def getScalarRange(self):
 		"""
 		Created: 28.05.2005, KP
