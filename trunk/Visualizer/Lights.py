@@ -30,6 +30,7 @@ import sys
 import vtk
 import wx
 from vtk.wx.wxVTKRenderWindowInteractor import wxVTKRenderWindowInteractor
+import platform
 
 class Light:
 	def __init__(self):
@@ -470,12 +471,18 @@ class ColorTool(csel.ColourSelect):
 
 
 class LightTool(wx.Dialog):
-	def __init__(self, master, lights, renwidget ):
-		
+	def __init__(self, master, lights, renwidget):
 		wx.Dialog.__init__(self, master, -1, "Lights configuration")
-		self.s = wx.BoxSizer(wx.VERTICAL)
-		
+		self.sizer = wx.BoxSizer(wx.VERTICAL)
+		panel = LightsPanel(self, lights, renwidget)
+		self.sizer.Add(panel)
+		self.SetSizer(self.sizer)
+		self.SetAutoLayout(1)
+		self.sizer.Fit(self)
 
+class LightsPanel(wx.Panel):
+	def __init__(self, master, lights, renwidget ):
+		wx.Panel.__init__(self, master,-1)
 		self.connected = None
 		self.num_lights_on = 0
 		self.lights = lights
@@ -573,20 +580,14 @@ class LightTool(wx.Dialog):
 
 		
 		self.gfxwin = wxVTKRenderWindowInteractor(self, -1, size = wx.Size(220, 200))
-		#self.gfxwin.Initialize()
-		#self.gfxwin.Render()
-		#self.gfxwin.Initialize()
-		#self.gfxwin.Start()
+
 		
 		self.sizer.Add(self.gfxwin, (0, 0))
 		self.sizer.Add(self.elevationBar, (0, 1), flag = wx.EXPAND | wx.TOP | wx.BOTTOM)
 		self.sizer.Add(self.azimuthBar, (1, 0), flag = wx.EXPAND | wx.LEFT | wx.RIGHT)
-#        self.sizer.Add(self.resetelaz,(1,1))
 		
 		self.sizer.Add(self.switchbank, (2, 0), flag = wx.EXPAND | wx.LEFT | wx.RIGHT)
-		
-		#self.sizer.Add(self.intscale,(0,2),flag=wx.EXPAND|wx.TOP|wx.BOTTOM)
- #       self.sizer.Add(self.colorbtn,(1,2))
+
 		
 		self.sizer.Add(self.f1, (3, 0), span = (1, 3), flag = wx.EXPAND | wx.LEFT | wx.RIGHT)
 		self.sizer.Add(self.btnPanel, (4, 0), span = (1, 3), flag = wx.EXPAND | wx.LEFT | wx.RIGHT)
@@ -597,14 +598,13 @@ class LightTool(wx.Dialog):
 		self.gfxwin.Bind(wx.EVT_MOTION, lambda e:None)
 
 		self.gfxwin.Bind(wx.EVT_LEFT_UP, lambda e, s = self, w = 'picked':s.connect(w, event = e))
-  
 
-		#self.protocol("WM_DELETE_WINDOW", self.onCancelBtn)
 		self.Bind(wx.EVT_CLOSE, self.onCancelBtn)
 
-		self.SetSizer(self.sizer)
-		self.SetAutoLayout(1)
-		self.sizer.Fit(self)
+		if platform.system()=="Darwin":
+			self.SetSizer(self.sizer)
+			self.SetAutoLayout(1)
+			self.sizer.Fit(self)
 		
 		self.gfxwin.GetRenderWindow().AddRenderer(self.ren)
 
@@ -626,6 +626,10 @@ class LightTool(wx.Dialog):
 		self.connect('first')
 		
 		self.gfxwin.Render()
+		if platform.system()=="Windows":
+			self.SetSizer(self.sizer)
+			self.SetAutoLayout(1)
+			self.sizer.Fit(self)		
  
 
 	def switchhandler(self, which, state):
