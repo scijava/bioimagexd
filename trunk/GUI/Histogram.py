@@ -237,7 +237,6 @@ class Histogram(wx.Panel):
 		Created: 24.03.2005, KP
 		Description: Sets the thresholds based on user's selection
 		"""
-		
 		if not self.actionstart:
 			return
 		x1, y1 = self.actionstart
@@ -348,14 +347,14 @@ class Histogram(wx.Panel):
 		Description: Update the histogram
 		"""
 		get = self.dataUnit.getSettings().get
-		if not self.thresholdMode:
+		if not self.thresholdMode and get("ColocalizationLowerThreshold"):
 			lower = get("ColocalizationLowerThreshold")
 			upper = get("ColocalizationUpperThreshold")
 			print "Lower and upper thresholds=", lower,upper
 		else:
 			lower = self.lowerThreshold
 			upper = self.upperThreshold
-				
+
 		self.renew = kws.get("renew", self.renew)
 		if self.renew:
 			if not self.noupdate or not self.data:
@@ -367,7 +366,6 @@ class Histogram(wx.Panel):
 			if self.replaceCTF:
 				self.colorTransferFunction = self.replaceCTF
 			self.backGround = self.parent.GetBackgroundColour()
-			
 			histogram, self.percent, self.values, xoffset = lib.ImageOperations.histogram(self.data, \
 																bg = self.backGround, \
 																colorTransferFunction = self.colorTransferFunction, \
@@ -397,7 +395,6 @@ class Histogram(wx.Panel):
 		Created: 12.07.2005, KP
 		Description: Paints the scatterplot
 		"""
-		
 		dc = wx.BufferedDC(wx.ClientDC(self), self.buffer)
 		dc.BeginDrawing()
 		dc.DrawBitmap(self.histogram, 0, 0, 1)

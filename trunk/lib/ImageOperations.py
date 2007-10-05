@@ -689,7 +689,11 @@ def get_histogram(image):
 	"""
 	accu = vtk.vtkImageAccumulate()
 	accu.SetInputConnection(image.GetProducerPort())
-	x0, x1 = image.GetScalarRange()
+	#x0, x1 = image.GetScalarRange()
+	#x1 = int(math.floor(x1))
+	x0 = int(math.floor(image.GetScalarTypeMin()))
+	x1 = int(math.floor(image.GetScalarTypeMax()))
+
 	accu.SetComponentExtent(0, x1, 0, 0, 0, 0)
 	accu.Update() 
 	data = accu.GetOutput()
@@ -697,7 +701,7 @@ def get_histogram(image):
 	values = []
 	x0, x1, y0, y1, z0, z1 = data.GetWholeExtent()
 
-	for i in range(0, int(x1) + 1):
+	for i in range(0, x1 + 1):
 		c = data.GetScalarComponentAsDouble(i, 0, 0, 0)
 		values.append(c)
 	return values
@@ -719,6 +723,7 @@ def histogram(imagedata, colorTransferFunction = None, bg = (200, 200, 200), log
 			if i >= lower and i <= upper:
 				sumth += c
 	retvals = values[: ]
+
 	Logging.info("lower = %d, upper = %d, total sum of %d values" \
 					% (lower, upper, len(values)), sum, kw = "imageop")
 	if sumth:
@@ -737,6 +742,7 @@ def histogram(imagedata, colorTransferFunction = None, bg = (200, 200, 200), log
 			values[i] = 1
 	if logarithmic:
 		values = map(math.log, values)
+
 	m = max(values)
 	scale = 150.0 / m
 	values = [x * scale for x in values]
