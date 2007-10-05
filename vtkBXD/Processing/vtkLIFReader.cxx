@@ -857,7 +857,7 @@ int vtkLIFReader::RequestData(vtkInformation *request,
 void vtkLIFReader::CalculateExtentAndSpacingAndOrigin(int *extent, double *spacing, double *origin)
 {
   extent[0] = extent[2] = extent[4] = 0;
-  extent[1] = extent[3] = extent[5] = -1;
+  extent[1] = extent[3] = extent[5] = 0;
   spacing[0] = spacing[1] = spacing[2] = 1.0;
   origin[0] = origin[1] = origin[2] = 0.0;
 
@@ -905,9 +905,6 @@ void vtkLIFReader::CalculateExtentAndSpacingAndOrigin(int *extent, double *spaci
       spacing[2] /= spacing[0];
       spacing[0] = 1.0;
     }
-
-  // Make sure that viewing 2D image there is also extent[5] == extent[4]
-  if (extent[1] > 0 && extent[3] > 0 && extent[5] < 0) extent[5] = 0;
 }
 
 char vtkLIFReader::ReadChar(ifstream *ifs)
