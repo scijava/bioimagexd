@@ -345,7 +345,6 @@ class SectionsPanel(InteractivePanel):
 				yscale = 1
 			
 		self.voi.Update()
-		print "OUTPUT for plane ",plane,self.voi.GetOutput()
 		if applyZScaling:
 			self.voi.Update()
 			return lib.ImageOperations.scaleImage(self.voi.GetOutput(), interpolation = 2, xfactor = xscale, yfactor = yscale)
@@ -455,6 +454,7 @@ class SectionsPanel(InteractivePanel):
 		Created: 28.04.2005, KP
 		Description: Does the actual blitting of the bitmap
 		"""
+		# if the size of the painting area has changed, then re-generate the buffer and repaint
 		if self.sizeChanged:
 			Logging.info("Size changed, calculating buffer", kw = "preview")
 			self.calculateBuffer()
