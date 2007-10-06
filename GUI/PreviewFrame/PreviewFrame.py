@@ -56,6 +56,7 @@ class PreviewFrame(InteractivePanel):
 		Created: 03.11.2004, KP
 		Description: Initialize the panel
 		"""
+		self.zoomToFitFlag = False
 		xframe = sys._getframe(1)
 		self.graySize = (0, 0)
 		self.bgcolor = (127, 127, 127)
@@ -114,6 +115,7 @@ class PreviewFrame(InteractivePanel):
 		self.renewNext = 0
 		lib.messenger.connect(None, "zslice_changed", self.setPreviewedSlice)
 		lib.messenger.connect(None, "renew_preview", self.setRenewFlag)
+		lib.messenger.connect(None, "data_dimensions_changed", self.onUpdateDataDimensions)
 		
 		self.fitLater = 0
 		self.imagedata = None
@@ -155,6 +157,19 @@ class PreviewFrame(InteractivePanel):
 			self.SetScrollbars(0, 0, 0, 0)
 		self.updateAnnotations()
 		
+	def onUpdateDataDimensions(self, *args):
+		"""
+		Created: 01.10.2007, KP
+		Description: update the preview because data dimensions may have changed
+		"""
+		x, y, z = self.dataUnit.getDimensions()
+		self.dataDimX, self.dataDimY, self.dataDimZ = x, y, z
+		if self.zoomToFitFlag:
+			self.zoomToFit()
+		self.calculateBuffer()
+		scripting.visualizer.zslider.SetRange(1, z)
+		self.updatePreview()
+		
 	def calculateBuffer(self):
 		"""
 		Created: 23.05.2005, KP
@@ -164,9 +179,10 @@ class PreviewFrame(InteractivePanel):
 		Logging.info("Calculating buffer from client size %d,%d"%(cx, cy), kw="preview")
 
 		# if the client size is larger than the original client size, use that
-		newX = max(self.maxClientSizeX, cx)
-		newY = max(self.maxClientSizeY, cy)
-		
+		#newX = max(self.maxClientSizeX, cx)
+		#newY = max(self.maxClientSizeY, cy)
+		newX = cx
+		newY = cy
 		if self.fixedSize:
 			x, y = self.fixedSize
 			Logging.info("Using fixed size %d,%d"%(x,y), kw="preview")
@@ -177,8 +193,18 @@ class PreviewFrame(InteractivePanel):
 			# current zoom factor, and if that size is larger than the requested
 			# size, then use that
 			x2, y2 = [a*self.zoomFactor for a in [self.dataDimX, self.dataDimY]]
-			newX = max(newX, x2)
-			newY = max(newY, y2)
+			print "x2,y2=",x2,y2
+			print "newX, newY=",newX, newY
+			if x2<newX:
+				newX = x2
+			if y2 < newX:
+				newY = y2
+			if newX < cx:
+				newX = cx
+			if newY < cy:
+				newY = cy
+#			newX = max(newX, x2)
+#			newY = max(newY, y2)
 
 			self.paintSize = (newX, newY)
 			
@@ -451,9 +477,6 @@ class PreviewFrame(InteractivePanel):
 		if colorImage:
 			x, y, z = colorImage.GetDimensions()
 						
-#			if not usedUpdateExt:
-#				print "\n\n\n**** pf Setting range to ",1,z
-#				scripting.visualizer.zslider.SetRange(1, z)
 			if x != self.oldx or y != self.oldy:
 				self.oldx = x
 				self.oldy = y
@@ -581,19 +604,21 @@ class PreviewFrame(InteractivePanel):
 		Created: 24.03.2005, KP
 		Description: Sets the factor by which the image should be zoomed
 		"""
+		self.zoomToFitFlag = False
 		if newFactor > 10:
 			newFactor = 10
 		Logging.info("Setting zoom factor to ", newFactor, kw = "preview")
 		x, y = [a*newFactor for a in (self.dataDimX, self.dataDimY)]
-
+		print "data dims=",self.dataDimX,self.dataDimY,"factor=",newFactor
 		if scripting.resampleToFit:
 			optimize.set_target_size(x, y)
 			newFactor = 1
+		print "paint size=",self.paintSize
 		px, py = self.paintSize
 		
 		x = max(px, x)
 		y = max(py, y)
-		
+		Logging.info("New dims for buffer=",x,y,kw="preview")
 		self.buffer = wx.EmptyBitmap(x, y)
 		self.setScrollbars(x, y)
 		if newFactor < self.zoomFactor:
@@ -613,6 +638,7 @@ class PreviewFrame(InteractivePanel):
 		"""
 		if self.dataUnit:
 			x, y, z = self.dataUnit.getDimensions()
+			self.dataDimX, self.dataDimY, self.dataDimZ = x, y, z
 			maxX = self.maxClientSizeX
 			maxY = self.maxClientSizeY
 			maxX -= 10 # marginal
@@ -620,16 +646,18 @@ class PreviewFrame(InteractivePanel):
 			if self.fixedSize:
 				maxX, maxY = self.fixedSize
 			
+			print "Dataunit dims=",(x,y,z),"to fit=",maxX,maxY
 			factor = lib.ImageOperations.getZoomFactor(x, y, maxX, maxY)
 			if abs(factor - self.getZoomFactor()) > 0.01:
 				Logging.info("Zoom factor from (%d,%d) to (%d,%d) is %f" % (x, y, maxX, maxY,factor), kw = "preview")
-				self.setZoomFactor(factor)
+				self.setZoomFactor(factor)				
 				scripting.zoomFactor = factor
 			else:
 				Logging.info("No need to alter zoom level, already fitted", kw="preview")
 		else:
 			Logging.info("Will zoom to fit later", kw = "preview")
 			self.fitLater = 1
+		self.zoomToFitFlag = True
 		
 	def updateScrolling(self, event = None):
 		"""
