@@ -32,7 +32,7 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 VERSION = "0.9.0 beta"
 
-import AboutDialog
+import GUI.AboutDialog
 import BugDialog
 import scripting
 import Configuration
@@ -76,6 +76,8 @@ class MainWindow(wx.Frame):
 		Created: 03.11.2004, KP
 		Description: Initialization
 		"""
+		# A flag indicating whether we've loaded files at startup (i.e. they were given on command line or dragged over the icon)
+		self.loadFilesAtStartup = False
 		conf = Configuration.getConfiguration()
 		
 		lib.Command.mainWindow = self
@@ -277,7 +279,9 @@ class MainWindow(wx.Frame):
 		lib.messenger.connect(None, "show_error", self.onShowError)
 		wx.CallAfter(self.showTip)
 		filelist = conf.getConfigItem("FileList", "General")
-		if filelist:
+		# We do not restore files is there were files requested to be loaded at startup
+		# because that might mess with e.g. scripts 
+		if filelist and not self.loadFilesAtStartup:
 			filelist = eval(filelist)
 			restoreFiles = conf.getConfigItem("RestoreFiles", "General")
 			if restoreFiles and type(restoreFiles) == type(""):
@@ -354,6 +358,7 @@ class MainWindow(wx.Frame):
 		Created: 17.07.2006, KP
 		Description: Load the given data files
 		"""
+		self.loadFilesAtStartup = True
 		for file in files:
 			name = os.path.basename(file)
 			self.createDataUnit(name, file, noWarn = noWarn)
@@ -408,13 +413,11 @@ class MainWindow(wx.Frame):
 				self.onCloseTaskPanel(None)
 		if close:
 			mode = self.visualizer.mode
-
 			self.visualizer.closeVisualizer()
 			del self.currentVisualizationWindow
 			self.currentVisualizationWindow = None
 			self.visualizer.closeVisualizer()
 			self.loadVisualizer(mode)
-
 		
 	def onSwitchDataset(self, evt):
 		"""
@@ -912,10 +915,9 @@ class MainWindow(wx.Frame):
 
 
 		mgr.addSeparator("visualization")
-		mgr.addMenuItem("visualization", MenuManager.ID_LIGHTS, "&Lights...", "Configure lightning")
+		mgr.addMenuItem("visualization", MenuManager.ID_LIGHTS, "&Lights...\tCtrl-L", "Configure lightning")
 		mgr.addMenuItem("visualization", MenuManager.ID_RENDERWIN, "&Render window", "Configure Render Window")
-#		mgr.addMenuItem("visualization", MenuManager.ID_RELOAD, "Re-&Load Modules", \
-#							"Reload the visualization modules")
+
 		
 		mgr.addSeparator("visualization")
 		mgr.addMenuItem("visualization", MenuManager.ID_IMMEDIATE_RENDER, "&Immediate updating", \
@@ -1451,13 +1453,24 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 		if not evt2:
 			self.onMenuShowTree(None, 1)
 			asklist = []
-			asklist = Dialogs.askOpenFileName(self, "Open a volume dataset", self.datasetWildcards)
+			wc = self.datasetWildcards + "|Encoding project (*.bxr)|*.bxr"
+
+			asklist = Dialogs.askOpenFileName(self, "Open a volume dataset", wc)
 		else:
 			asklist = args
 		
 		for askfile in asklist:
 			
 			sep = askfile.split(".")[-1]
+			if sep.lower() == "bxr":
+				do_cmd = 'mainWindow.loadEncodingProject(ur"%s")' % (askfile)
+				fname = os.path.split(askfile)[-1]
+
+				cmd = lib.Command.Command(lib.Command.OPEN_CMD, None, None, do_cmd, "", \
+											desc = "Load encoding project %s" % fname)
+				cmd.run()		
+				continue
+			
 			if sep.lower() in ["tif", "tiff", "jpg", "jpeg", "png"]:
 				self.onMenuImport(None, askfile)
 				return
@@ -1469,8 +1482,19 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 			cmd = lib.Command.Command(lib.Command.OPEN_CMD, None, None, do_cmd, "", \
 										desc = "Load dataset %s" % fname)
 			cmd.run()
-			#self.createDataUnit(fname, askfile)
 		self.SetStatusText("Done.")
+		
+	def loadEncodingProject(self, filename):
+		"""
+		Created: 29.09.2007, KP
+		Description: present a GUI for re-encoding an encoding project file
+		"""
+		import GUI.Urmas.VideoGeneration
+
+		dlg = GUI.Urmas.VideoGeneration.VideoGenerationDialog(self, filename)
+		dlg.ShowModal()
+		dlg.Destroy()
+		scripting.videoGeneration = None
 
 	def openFile(self, filepath):
 		"""
@@ -1565,13 +1589,13 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 			# If we got data, add corresponding nodes to tree
 			#Logging.info("Adding to tree ", name, path, ext, dataunits, kw = "io")
 			conf = Configuration.getConfiguration()
-			needToRescale = conf.getConfigItem("RescaleOnLoading", "Performance")
+			wantToRescale = conf.getConfigItem("RescaleOnLoading", "Performance")
 			bitness = max([x.getSingleComponentBitDepth() for x in dataunits])
-			if needToRescale:
-				needToRescale = eval(needToRescale)
+			if wantToRescale:
+				wantToRescale = eval(wantToRescale)
 
 			
-			if needToRescale and bitness > 8:
+			if wantToRescale and bitness > 8:
 				dlg = RescaleDialog.RescaleDialog(self)
 				dlg.setDataUnits(dataunits)
 				wid = dlg.ShowModal()
@@ -1583,6 +1607,7 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 				dlg.Destroy()
 			self.tree.addToTree(name, path, ext, dataunits)
 		self.visualizer.enable(1)
+
 	def onMenuShowTaskWindow(self, event):
 		"""
 		Created: 11.1.2005, KP
@@ -1778,7 +1803,6 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 			self.visualizer.setProcessedMode(processed)
 		self.visualizer.enable(0)
 		lib.messenger.send(None, "update_progress", 0.6, "Loading %s view..." % mode)
-		#self.menuManager.menus["visualization"].Enable(MenuManager.ID_RELOAD, 1)
 		wx.EVT_TOOL(self, MenuManager.ID_SAVE_SNAPSHOT, self.visualizer.onSnapshot)
 			
 
@@ -1806,15 +1830,20 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 		Description: Select only the selected button
 		"""
 		lst = []
+		# If the selection is to be set among all buttons (both task & vis mode) then go thorugh 
+		# the ids of all the buttons
 		if all:
 			lst.extend(self.visIds)
 			lst.extend(self.taskIds)
 		else:
+			# otherwise only go through the ids of the buttons that belong to the same cateogry
+			# (task or vis mode) as the selected id
 			if eid in self.visIds:
 				lst.extend(self.visIds)
 			else:
 				lst.extend(self.taskIds)
 		tb = self.GetToolBar()
+		# loop through the button ids and toggle the selected button on and others off
 		for i in lst:
 			flag = (i == eid)
 			tb.ToggleTool(i, flag)
@@ -1824,7 +1853,7 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 		Created: 03.11.2004, KP
 		Description: Callback function for menu item "About"
 		"""
-		about = AboutDialog.AboutDialog(self)
+		about = GUI.AboutDialog.AboutDialog(self)
 		about.ShowModal()
 		about.Destroy()
 		

@@ -127,21 +127,38 @@ class TreeWidget(wx.SashLayoutWindow):
 		
 		if obj in self.dataUnitToPath:
 			del self.dataUnitToPath[obj]
+		self.removeParents = []
 		if self.items[unit] <= 0:            
 			del self.items[unit]
 			parent = self.tree.GetItemParent(item)
-			self.tree.Delete(parent)    
+			#self.tree.Delete(parent)
+			if parent not in self.removeParents:
+				self.removeParents.append(parent)
+			wx.CallAfter(self.removeEmptyParents)
+				
 		lib.messenger.send(None, "delete_dataset", obj)
-		obj.destroySelf()            
+		obj.destroySelf()   
 		del obj 
+		
+	def removeEmptyParents(self):
+		"""
+		Created: 07.10.2007, KP
+		Description: remove empty parent items from the tree after their children have been removed
+		"""
+		for i in self.removeParents:
+			self.tree.Delete(i)
 		
 	def onCloseDataset(self, event):
 		"""
 		Created: 21.07.2005, KP
 		Description: Method to close a dataset
 		"""        
+		selections = self.tree.GetSelections()
+		if not selections and self.selectedItem:
+			selections = [self.selectedItem]
 		for item in self.tree.GetSelections():
 			obj = self.tree.GetPyData(item)
+			print "OnCloseItem",obj
 				
 			if obj in self.dataUnitToPath:
 				self.closeItem(item, obj)
@@ -303,7 +320,7 @@ class TreeWidget(wx.SashLayoutWindow):
 			self.tree.SetPyData(item, "2")        
 			self.tree.SetItemImage(item, folderOpenIndex, which = wx.TreeItemIcon_Expanded)
 		
-		elif objtype == "txt":
+		elif objtype in ["txt","lei"]:
 			if not self.leicafiles:
 				self.leicafiles = self.tree.AppendItem(self.root, "Leica files")
 				self.tree.SetPyData(self.leicafiles, "1")
