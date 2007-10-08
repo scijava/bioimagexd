@@ -536,8 +536,6 @@ class Scatterplot(InteractivePanel.InteractivePanel):
 		dc.DrawLine(self.xoffset + hzlw + upper1 * c, 0, self.xoffset + hzlw + upper1 * c, 255)
 		dc.DrawLine(self.xoffset + hzlw, ymax - upper2 * c, self.xoffset + hzlw + 255, ymax - upper2 * c)
 		
-			
-		print "getting overlay borders...", upper1, lower1, (upper1-lower1)*c, upper2, lower2, (upper2-lower2)*c
 		borders = lib.ImageOperations.getOverlayBorders(int((upper1 - lower1) * c) + 1, int((upper2 - lower2) * c) + 1, (0, 0, 255), 90, lineWidth = 2)
 		borders = borders.ConvertToBitmap()
 		
