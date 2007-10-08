@@ -73,10 +73,9 @@ class RegistrationFilter(lib.ProcessingFilter.ProcessingFilter):
 		Description: Return the level of the given parameter
 		"""
 		if parameter in ["FixedTimepoint"]:
-			return GUIBuilder.FILTER_INTERMEDIATE
+			return scripting.COLOR_INTERMEDIATE
 		
-		
-		return GUIBuilder.FILTER_BEGINNER                    
+		return scripting.COLOR_BEGINNER                    
 			
 	def getDefaultValue(self, parameter):
 		"""
@@ -150,7 +149,8 @@ class RegistrationFilter(lib.ProcessingFilter.ProcessingFilter):
 		
 		
 		self.transform = itk.VersorRigid3DTransform.D.New()
-		self.optimizer = itk.VersorRigid3DTransformOptimizer.New()
+#		self.optimizer = itk.VersorRigid3DTransformOptimizer.New()
+		self.optimizer = itk.VersorTransformOptimizer.New()
 		self.metric = itk.MeanSquaresImageToImageMetric.IF3IF3.New()
 		self.interpolator = itk.LinearInterpolateImageFunction.IF3D.New()
 		self.registrationMethod = itk.ImageRegistrationMethod.IF3IF3.New()
