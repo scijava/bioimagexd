@@ -135,14 +135,14 @@ class ColocalizationPanel(TaskPanel):
 
 				  "DiffStainPercentageCh1":(n + 20, 0, ss),
 				  "DiffStainPercentageCh2":(n + 21, 0, ss),
-				  "RObserved":(n + 22, 0, fs),
+				  "RObserved":(n + 22, 0, fs2),
 				  "RRandMean":(n + 23, 0, ss),
 				  "NumIterations":(n + 24, 0, ss)
 		}
 	 
 		sources = []
 		if self.dataUnit:
-			sources = self.dataUnit.getSourceDataUnits()				  
+			sources = self.dataUnit.getSourceDataUnits()
 		for item in mapping.keys():
 			val = 0.0
 			val1 = ""
@@ -152,7 +152,7 @@ class ColocalizationPanel(TaskPanel):
 			if item == "Ch1Th":
 				if sources:
 					th1 = sources[0].getSettings().get("ColocalizationLowerThreshold")
-					th2 = sources[0].getSettings().get("ColocalizationUpperThreshold")				  
+					th2 = sources[0].getSettings().get("ColocalizationUpperThreshold")
 					val = "%d / %d" % (th1, th2)
 					val1 = th1
 					val2 = th2
