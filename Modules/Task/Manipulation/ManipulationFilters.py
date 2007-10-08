@@ -1150,15 +1150,10 @@ class ITKGradientMagnitudeFilter(ProcessingFilter.ProcessingFilter):
 
 		self.itkfilter.SetInput(image)
 		
-		#self.setImageType("F3")
 		
 		if update:
 			self.itkfilter.Update()
 		data = self.itkfilter.GetOutput()
-		#if last or self.nextFilter and not self.nextFilter.getITK():            
-		#    print "Converting to VTK"
-		#    data=self.convertITKtoVTK(data,imagetype="F3")
-		#    print "data=",data
 		return data            
 
 class ITKCannyEdgeFilter(ProcessingFilter.ProcessingFilter):
@@ -1207,15 +1202,11 @@ class ITKCannyEdgeFilter(ProcessingFilter.ProcessingFilter):
 
 		self.itkfilter.SetInput(image)
 		
-		#self.setImageType("F3")
-		
+			
 		if update:
 			self.itkfilter.Update()
 		data = self.itkfilter.GetOutput()
-		#if last or self.nextFilter and not self.nextFilter.getITK():            
-		#    print "Converting to VTK"
-		#    data=self.convertITKtoVTK(data,imagetype="F3")
-		#    print "data=",data
+
 		return data            
 
 
@@ -1291,10 +1282,7 @@ class ITKSigmoidFilter(ProcessingFilter.ProcessingFilter):
 		if update:
 			self.itkfilter.Update()
 		data = self.itkfilter.GetOutput()
-		#if last or self.nextFilter and not self.nextFilter.getITK():            
-		#    print "Converting to VTK"
-		#    data=self.convertITKtoVTK(data,imagetype="F3")
-		#    print "data=",data
+
 		return data            
 
 
@@ -1369,12 +1357,10 @@ class ITKLocalMaximumFilter(ProcessingFilter.ProcessingFilter):
 		subst.SetInput1(image)
 		subst.SetInput2(recons.GetOutput())
 		
-		if update:
+		if 1 or update:
 			subst.Update()
 			
 		data = subst.GetOutput()
-#        if last:
-#            return self.convertITKtoVTK(data,imagetype="UC3")
-			
+
 		return data            
 
