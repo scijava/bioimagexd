@@ -47,6 +47,10 @@ ADD_ROI = 4
 SET_THRESHOLD = 5
 DELETE_ANNOTATION = 6
 
+INTERPOLATION_VARY=-1
+INTERPOLATION_NONE=0
+INTERPOLATION_LINEAR=1
+INTERPOLATION_CUBIC=2
 
 class InteractivePanel(GUI.ogl.ShapeCanvas):
 	"""
@@ -84,8 +88,6 @@ class InteractivePanel(GUI.ogl.ShapeCanvas):
 		self.maxClientSizeX = 512
 		self.maxClientSizeY = 512
 		self.painterHelpers = []
-		self.dataWidth = 512
-		self.dataHeight = 512
 		size = kws.get("size", (512, 512))
 		
 		self.dataUnit = None
@@ -121,7 +123,7 @@ class InteractivePanel(GUI.ogl.ShapeCanvas):
 		self.ID_NONE = wx.NewId()
 		self.ID_LINEAR = wx.NewId()
 		self.ID_CUBIC = wx.NewId()
-		self.interpolation = -1
+		self.interpolation = INTERPOLATION_VARY
 		self.renew = 1
 		self.menu = wx.Menu()
 		
@@ -165,6 +167,20 @@ class InteractivePanel(GUI.ogl.ShapeCanvas):
 		self.Bind(wx.EVT_SIZE, self.OnSize)
 		self.Bind(wx.EVT_MOUSEWHEEL, self.onMouseWheel)
 		lib.messenger.connect(None, "update_helpers", self.onUpdateHelpers)
+		
+	def onUpdateDataDimensions(self, *args):
+		"""
+		Created: 01.10.2007, KP
+		Description: update the preview because data dimensions may have changed
+		"""
+		x, y, z = self.dataUnit.getDimensions()
+		self.dataDimX, self.dataDimY, self.dataDimZ = x, y, z
+		if self.zoomToFitFlag:
+			self.zoomToFit()
+		self.calculateBuffer()
+		scripting.visualizer.zslider.SetRange(1, z)
+		self.updatePreview()
+		lib.messenger.connect(None, "data_dimensions_changed", self.onUpdateDataDimensions)
 		
 		
 	def disableAnnotations(self):
@@ -233,16 +249,16 @@ class InteractivePanel(GUI.ogl.ShapeCanvas):
 		"""
 		eID = event.GetId()
 		flags = (1, 0, 0, 0)
-		interpolation = -1
+		interpolation = INTERPOLATION_VARY
 		if eID == self.ID_NONE:
 			flags = (0, 1, 0, 0)
-			interpolation = 0
+			interpolation = INTERPOLATION_NONE
 		elif eID == self.ID_LINEAR:
 			flags = (0, 0, 1, 0)
-			interpolation = 1
+			interpolation = INTERPOLATION_LINEAR
 		elif eID == self.ID_CUBIC:
 			flags = (0, 0, 0, 1)
-			interpolation = 2
+			interpolation = INTERPOLATION_CUBIC
 		
 		self.menu.Check(self.ID_VARY, flags[0])
 		self.menu.Check(self.ID_NONE, flags[1])
@@ -552,17 +568,55 @@ class InteractivePanel(GUI.ogl.ShapeCanvas):
 			dc.EndDrawing()
 		event.Skip()
 		
+		
+	def getInterpolationForSize(self, x, y,  factor):
+		"""
+		Created: 08.10.2007, KP
+		Description: return the proper interpolation for INTERPOLATION_VARY for the given width and height
+		"""
+		pixels = (x * factor) * (y * factor)
+		if pixels <= 1024 * 1024:
+			interpolation = INTERPOLATION_CUBIC
+		elif pixels <= 2048 * 2048:
+			interpolation = INTERPOLATION_LINEAR
+		else:
+			interpolation = INTERPOLATION_NONE
+		return interpolation
+		
+	def zoomImageWithInterpolation(self, image, zoomFactor, interpolation, z):
+		"""
+		Created: 08.10.2007, KP
+		Description: zoom an image with the given zoomFactor using the given interpolation
+		"""
+		if interpolation == INTERPOLATION_VARY:
+			#x, y, z = image.GetDimensions()
+			x,y = self.dataDimX, self.dataDimY
+			print "datadims=",x,y
+			pixels = (x * zoomFactor) * (y * zoomFactor)
+			if pixels <= 1024 * 1024:
+				interpolation = INTERPOLATION_CUBIC
+				Logging.info("Using cubic interpolation",kw="preview")
+			elif pixels <= 2048 * 2048:
+				interpolation = INTERPOLATION_LINEAR
+				Logging.info("Using linear interpolation",kw="preview")
+			else:
+				Logging.info("Using no interpolation", kw = "preview")
+				interpolation = INTERPOLATION_NONE
+				return None
+		img = lib.ImageOperations.scaleImage(image, zoomFactor, z, interpolation)
+		return lib.ImageOperations.vtkImageDataToWxImage(img)
+		
 	def changeScrollByDifference(self, start, end):
 		"""
 		Created: 01.09.2007, KP
 		Description: scroll by the difference of the starting and ending coordinates
 		"""
-		Logging.info("Scrolling by difference of %s and %s"%(str(start),str(end)), kw="preview")
+#		Logging.info("Scrolling by difference of %s and %s"%(str(start),str(end)), kw="preview")
 		x, y = self.CalcUnscrolledPosition(0,0)
 		
 		dx = end[0]-start[0]
 		dy = end[1]-start[1]
-		Logging.info("Currents scroll = %d, %d, adding %d and %d"%(x,y,dx,dy), kw="preview")
+#		Logging.info("Currents scroll = %d, %d, adding %d and %d"%(x,y,dx,dy), kw="preview")
 		x+=dx
 		y+=dy
 		sx = int(x / self.scrollStepSize)
@@ -858,9 +912,10 @@ class InteractivePanel(GUI.ogl.ShapeCanvas):
 		self.voxelSize = dataUnit.getVoxelSize()
 		x, y, z = self.dataUnit.getDimensions()
 		self.buffer = wx.EmptyBitmap(x, y)
-		self.dataWidth, self.dataHeight = x, y
+		self.dataDimX, self.dataDimY, self.dataDimZ = x,y,z
+		
 		wx.CallAfter(self.readAnnotationsFromCache)
-
+		
 	def readAnnotationsFromCache(self):
 		"""
 		Created: 04.07.2007, KP
@@ -961,10 +1016,10 @@ class InteractivePanel(GUI.ogl.ShapeCanvas):
 		newx = min(self.maxClientSizeX, xdim)
 		newy = min(self.maxClientSizeY, ydim)
 
-		if newx <= self.dataWidth and self.dataWidth <= self.maxClientSizeX:
-			newx = self.dataWidth
-		if newy <= self.dataHeight and self.dataHeight <= self.maxClientSizeY:
-			newy = self.dataHeight
+		if newx <= self.dataDimX and self.dataDimX <= self.maxClientSizeX:
+			newx = self.dataDimX
+		if newy <= self.dataDimY and self.dataDimY <= self.maxClientSizeY:
+			newy = self.dataDimY
 			
 		xrate, yrate = 0, 0
 		# if the requested size is larger than client size, then we need scrollbars
