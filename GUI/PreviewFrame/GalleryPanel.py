@@ -84,6 +84,8 @@ class GalleryPanel(InteractivePanel):
 		self.dataUnit = None
 		self.slice = 0
 		
+		self.interpolation = 0
+		
 		self.voxelSize = (0, 0, 0)
 		self.showTimepoints = 0
 		self.timepoint = 0
@@ -181,10 +183,8 @@ class GalleryPanel(InteractivePanel):
 		Created: 23.05.2005, KP
 		Description: Sets the timepoint to display
 		"""
-		#self.scrollTo=self.getScrolledXY(0,0)
-		#self.resetScroll()
+
 		if self.timepoint == timepoint and self.slices:
-			print "TIMEPOINT IS SAME, NOT UPDATING"
 			return
 		self.timepoint = timepoint
 		# if we're showing one slice of each timepointh
@@ -205,29 +205,31 @@ class GalleryPanel(InteractivePanel):
 		self.imagedata.SetUpdateExtent(self.imagedata.GetWholeExtent())
 		self.imagedata.Update()
 		
-		#x,y,z=self.imagedata.GetDimensions()
 		x, y, z = self.dataUnit.getDimensions()
-		#print "dims now=",x,y,z
 		print "Dimensions of image=", x, y, z
-		#x,y,z=self.dataUnit.getDimensions()
 		
 		self.slices = []
-		#print "z=",z
 		
 		for i in range(z):
 			#print "Using as update ext",(0,x-1,0,y-1,i,i)
 			image = optimize.optimize(image = self.imagedata, updateExtent = (0, x - 1, 0, y - 1, i, i))
-			#image.Update()
 			
 			#self.imagedata.Update()
 			image = lib.ImageOperations.getSlice(image, i)
 		
 			
 			slice = lib.ImageOperations.imageDataTo3Component(image, ctf)
-			slice = lib.ImageOperations.vtkImageDataToWxImage(slice)
-
+			slice.Update()
+			w, h = self.sliceSize
+			factor = lib.ImageOperations.getZoomFactor(x, y, w, h)
+			
+			if self.interpolation:
+				slice = self.zoomImageWithInterpolation(slice, factor, self.interpolation, 0)
+			else:
+				slice = lib.ImageOperations.vtkImageDataToWxImage(slice)
+				slice.Rescale(w, h)
+			
 			lib.messenger.send(None, "update_progress", i / float(z), "Loading slice %d / %d for Gallery view" % (i + 1, z + 1))
-			#print "Adding slice",i
 			self.slices.append(slice)
 		lib.messenger.send(None, "update_progress", 1.0, "All slices loaded.")  
 		self.calculateBuffer()
@@ -448,7 +450,7 @@ class GalleryPanel(InteractivePanel):
 		ys += 9
 		for slice in self.slices:
 			w, h = self.sliceSize
-			slice.Rescale(w, h)
+#			slice.Rescale(w, h)
 			bmp = slice.ConvertToBitmap()
 
 			x = xs + col * (3 + self.sliceSize[0])
