@@ -8,7 +8,7 @@
 
  A toolbar for the annotations in visualizer
 
- Copyright (C) 2006  BioImageXD Project
+ Copyright (C) 2006	 BioImageXD Project
  See CREDITS.txt for details
 
  This program is free software; you can redistribute it and/or modify
@@ -33,7 +33,7 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 #import UIElements
 
 import wx.lib.buttons as buttons
-import  wx.lib.colourselect as  csel
+import	wx.lib.colourselect as	csel
 import lib.messenger
 import Logging
 import MaskTray
@@ -41,7 +41,7 @@ import MenuManager
 import os
 import scripting
 import vtk
-import  wx
+import	wx
 
 class AnnotationToolbar(wx.Window):
 	"""
@@ -63,7 +63,7 @@ class AnnotationToolbar(wx.Window):
 		
 		self.numberOfChannels = 0
 		lib.messenger.connect(None, "update_annotations", self.updateAnnotations)
-		self.createAnnotationToolbar()        
+		self.createAnnotationToolbar()		  
 		
 	def onLoadMode(self, obj, evt, vismode):
 		"""
@@ -81,9 +81,9 @@ class AnnotationToolbar(wx.Window):
 		"""
 		Created: 05.10.2006, KP
 		Description: Method to create a toolbar for the annotations
-		"""        
+		"""		   
 		def createBtn(bid, gifname, tooltip, btnclass = buttons.GenBitmapToggleButton):
-			icondir = scripting.get_icon_dir()  
+			icondir = scripting.get_icon_dir()	
 			bmp = wx.Image(os.path.join(icondir, gifname), wx.BITMAP_TYPE_GIF).ConvertToBitmap()
 			
 			btn = btnclass(self, bid, bmp)
@@ -138,19 +138,19 @@ class AnnotationToolbar(wx.Window):
 		self.sizer.Add(self.resamplingBtn, (6, 0))
 		self.sizer.Add(self.resampleToFitBtn, (6, 1))
 		
-#        self.recordBtn = buttons.GenToggleButton(self, MenuManager.ID_RECORD_EVENTS, "Record", size=(64,-1))
-#        self.sizer.Add(self.recordBtn, (7,0), span=(1,2))
+#		 self.recordBtn = buttons.GenToggleButton(self, MenuManager.ID_RECORD_EVENTS, "Record", size=(64,-1))
+#		 self.sizer.Add(self.recordBtn, (7,0), span=(1,2))
 		
-#        self.playBtn = createBtn(MenuManager.ID_PLAY_EVENTS,"player_play.gif", \
+#		 self.playBtn = createBtn(MenuManager.ID_PLAY_EVENTS,"player_play.gif", \
 #									"Play the recorded events", btnclass=buttons.GenBitmapButton)
-#        self.stopBtn = createBtn(MenuManager.ID_PLAY_EVENTS,"player_pause.gif", \
+#		 self.stopBtn = createBtn(MenuManager.ID_PLAY_EVENTS,"player_pause.gif", \
 #									"Stop playing the recorded events", btnclass=buttons.GenBitmapButton)
-#        self.sizer.Add(self.playBtn, (8,0))
-#        self.sizer.Add(self.stopBtn, (8,1))
+#		 self.sizer.Add(self.playBtn, (8,0))
+#		 self.sizer.Add(self.stopBtn, (8,1))
 		
-#        self.playBtn.Bind(wx.EVT_BUTTON, self.onPlayRecording)
-#        self.stopBtn.Bind(wx.EVT_BUTTON, self.onStopPlaying)
-#        self.recordBtn.Bind(wx.EVT_BUTTON, self.onRecord)        
+#		 self.playBtn.Bind(wx.EVT_BUTTON, self.onPlayRecording)
+#		 self.stopBtn.Bind(wx.EVT_BUTTON, self.onStopPlaying)
+#		 self.recordBtn.Bind(wx.EVT_BUTTON, self.onRecord)		  
 		
 #		bmp = wx.Image(os.path.join(iconpath,"resample.gif")).ConvertToBitmap()
 #		tb.DoAddTool(MenuManager.ID_RESAMPLING, "Resampling", bmp, kind = wx.ITEM_CHECK, \
@@ -223,11 +223,11 @@ class AnnotationToolbar(wx.Window):
 		Created: 23.07.2006, KP
 		Description: Toggle the resampling on / off
 		"""
-#        flag=self.resampleBtn.GetValue()
+#		 flag=self.resampleBtn.GetValue()
 		
 		flag = evt.GetIsDown()
 		scripting.resampleToFit = flag
-		self.visualizer.updateRendering()          
+		self.visualizer.updateRendering()		   
 
 
 	def onResampleData(self, evt):
@@ -235,14 +235,14 @@ class AnnotationToolbar(wx.Window):
 		Created: 23.07.2006, KP
 		Description: Toggle the resampling on / off
 		"""
-#        flag=self.resampleBtn.GetValue()
-		
 		flag = evt.GetIsDown()
 		scripting.resamplingDisabled = not flag
-		self.visualizer.updateRendering()              
-#		if self.zoomToFitFlag: # changed this so makes sense, 19.7.2007 SS
-		if self.visualizer.zoomToFitFlag:            
-			self.visualizer.zoomToFit(None)
+		#self.visualizer.updateRendering() 
+		#self.visualizer.setupMode()
+		#if self.visualizer.zoomToFitFlag:
+		#	print "Zooming to fit"
+		#	self.visualizer.zoomToFit(None)
+		lib.messenger.send(None,"data_dimensions_changed")
 		
 	def clearChannelItems(self):
 		"""
@@ -263,10 +263,10 @@ class AnnotationToolbar(wx.Window):
 		Created: 01.06.2005, KP
 		Description: Add a channel item
 		""" 
-		icondir = scripting.get_icon_dir()         
+		icondir = scripting.get_icon_dir()		   
 		btn = buttons.GenBitmapToggleButton(self, toolid, bitmap)
 		w, h = bitmap.GetWidth(), bitmap.GetHeight()
-		#btn.SetBestSize((w,h))            
+		#btn.SetBestSize((w,h))			   
 		btn.SetSize((64, 64))
 		btn.SetToolTipString(name)
 		btn.Bind(wx.EVT_BUTTON, func)
@@ -299,7 +299,6 @@ class AnnotationToolbar(wx.Window):
 			annclass = "TEXT"
 		elif eid == MenuManager.ID_ROI_CIRCLE:
 			annclass = "CIRCLE"
-
 		elif eid == MenuManager.ID_ROI_RECTANGLE:
 			annclass = "RECTANGLE"
 		elif eid == MenuManager.ID_ROI_POLYGON:
@@ -341,4 +340,4 @@ class AnnotationToolbar(wx.Window):
 			name = ",".join(names)
 			dims = self.visualizer.dataUnit.getDimensions()
 			mask = MaskTray.Mask(name, dims, imagedata)
-			self.visualizer.setMask(mask)                
+			self.visualizer.setMask(mask)
