@@ -115,7 +115,6 @@ class PreviewFrame(InteractivePanel):
 		self.renewNext = 0
 		lib.messenger.connect(None, "zslice_changed", self.setPreviewedSlice)
 		lib.messenger.connect(None, "renew_preview", self.setRenewFlag)
-		lib.messenger.connect(None, "data_dimensions_changed", self.onUpdateDataDimensions)
 		
 		self.fitLater = 0
 		self.imagedata = None
@@ -157,18 +156,7 @@ class PreviewFrame(InteractivePanel):
 			self.SetScrollbars(0, 0, 0, 0)
 		self.updateAnnotations()
 		
-	def onUpdateDataDimensions(self, *args):
-		"""
-		Created: 01.10.2007, KP
-		Description: update the preview because data dimensions may have changed
-		"""
-		x, y, z = self.dataUnit.getDimensions()
-		self.dataDimX, self.dataDimY, self.dataDimZ = x, y, z
-		if self.zoomToFitFlag:
-			self.zoomToFit()
-		self.calculateBuffer()
-		scripting.visualizer.zslider.SetRange(1, z)
-		self.updatePreview()
+
 		
 	def calculateBuffer(self):
 		"""
@@ -707,28 +695,15 @@ class PreviewFrame(InteractivePanel):
 
 		bmp = self.slice
 		Logging.info("Zoom factor for painting =", self.zoomFactor, kw = "preview")
+		
 		if self.zoomFactor != 1 or self.zoomFactor != self.oldZoomFactor:
 			self.oldZoomFactor = self.zoomFactor
-			interpolation = self.interpolation
-			if interpolation == -1:
-				x, y, z = self.imagedata.GetDimensions()
-				# if x*y < 512*512, cubic
-				pixels = (x * self.zoomFactor) * (y * self.zoomFactor)
-				if pixels <= 1024 * 1024:
-					Logging.info("Using cubic", kw = "preview")
-					interpolation = 2
-				# if x*y < 1024*1024, linear
-				elif pixels <= 2048 * 2048:
-					Logging.info("Using nearest", kw = "preview")
-					interpolation = 1
-				else:
-					Logging.info("Using no interpolation", kw = "preview")
-					interpolation = 0
-			if interpolation == 0:
-				bmp = lib.ImageOperations.zoomImageByFactor(self.slice, self.zoomFactor)
-			else:
-				img = lib.ImageOperations.scaleImage(self.imagedata, self.zoomFactor, self.z, interpolation)
-
+			
+			if self.interpolation != 0:
+				bmp = self.zoomImageWithInterpolation(self.imagedata, self.zoomFactor, self.interpolation, self.z)
+			if not self.interpolation or not bmp:
+				Logging.info("Using no interpolation",kw="preview")
+				img = lib.ImageOperations.scaleImage(self.imagedata, self.zoomFactor, self.z, self.interpolation)
 				bmp = lib.ImageOperations.vtkImageDataToWxImage(img)
 			w, h = bmp.GetWidth(), bmp.GetHeight()
 

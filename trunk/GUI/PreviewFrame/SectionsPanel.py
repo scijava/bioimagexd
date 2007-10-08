@@ -383,8 +383,11 @@ class SectionsPanel(InteractivePanel):
 #		obtain the slices
 		z = self.z / self.zoomZ
 		if self.zoomFactor != 1:
-			img = lib.ImageOperations.scaleImage(self.imagedata, self.zoomFactor, z)
-			imgslice = lib.ImageOperations.vtkImageDataToWxImage(img)
+			if self.interpolation:
+				imgslice = self.zoomImageWithInterpolation(self.imagedata, self.zoomFactor, self.interpolation, z)
+			else:
+				img = lib.ImageOperations.scaleImage(self.imagedata, self.zoomFactor, z)
+				imgslice = lib.ImageOperations.vtkImageDataToWxImage(img)
 		else:
 			imgslice = lib.ImageOperations.vtkImageDataToWxImage(self.imagedata, z)
 			
@@ -392,13 +395,19 @@ class SectionsPanel(InteractivePanel):
 		
 		Logging.info("zspacing = %f\n"%self.zspacing, kw="preview")
 		imgslice = self.getPlane(self.imagedata, "zy", self.x, self.y, int(z))
+		w, h = imgslice.GetDimensions()[0:2]
+		interpolation = self.interpolation
+		if self.interpolation == -1:
+			interpolation = self.getInterpolationForSize(w, h, self.zoomFactor)
+		if not interpolation: 
+			interpolation = 1
 		if self.zoomFactor != 1 or self.zspacing != 1:
-			imgslice = lib.ImageOperations.scaleImage(imgslice, self.zoomFactor, yfactor = 1, xfactor = self.zspacing)
+			imgslice = lib.ImageOperations.scaleImage(imgslice, self.zoomFactor, interpolation = interpolation, yfactor = 1, xfactor = self.zspacing)
 		imgslice = lib.ImageOperations.vtkImageDataToWxImage(imgslice)
 		self.slices.append(imgslice)
 		imgslice = self.getPlane(self.imagedata, "xz", self.x, self.y, z)
 		if self.zoomFactor != 1 or self.zoomZ != 1  or self.zspacing != 1:
-			imgslice = lib.ImageOperations.scaleImage(imgslice, self.zoomFactor, yfactor = self.zspacing, xfactor = 1)
+			imgslice = lib.ImageOperations.scaleImage(imgslice, self.zoomFactor, interpolation = interpolation, yfactor = self.zspacing, xfactor = 1)
 		imgslice = lib.ImageOperations.vtkImageDataToWxImage(imgslice)
 		self.slices.append(imgslice)
 
