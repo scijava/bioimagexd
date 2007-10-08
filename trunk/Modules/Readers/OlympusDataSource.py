@@ -78,12 +78,18 @@ class OlympusDataSource(DataSource):
 		if filename:
 			filepointer = codecs.open(filename, "r", "utf-16")
 			self.parser.readfp(filepointer)
+			dataName = self.parser.get("File Info","DataName")
+			if dataName[0] == '"':
+				dataName = dataName[1:]
+			if dataName[-1] == '"':
+				dataName = dataName[:-1]
 			directoryName, self.lutFileName = self.getLUTPath(self.channel)
 			# when lutFileName is e.g. bro28_par3_07-04-18_LUT1.lut, we take the 
 			# bro28_par3_07-04-18 and ignore the LUT1.lut, and use that as the basis of the filenames
 			# for the tiff files
 			self.fileNameBase = "_".join(self.lutFileName.split("_")[:-1])
-			self.path = os.path.join(os.path.dirname(filename), "%s.files"%os.path.basename(filename))
+			#self.fileNameBase = dataName
+			self.path = os.path.join(os.path.dirname(filename), "%s.files"%dataName)
 			
 		self.reader = None
 		self.originalScalarRange = (0, 4095)
