@@ -138,12 +138,11 @@ class Module:
 		extent = imageData.GetExtent()
 
 
-		if self.extent:
-			if self.extent != extent:
-				Logging.error("Extents do not match","Extents do not match: %s and %s" % (self.extent, extent))
-				#raise Loggin"ERROR: Extents do not match"
-		else:
-			self.extent = extent
+		#if self.extent:
+		#	if self.extent != extent:
+		#		Logging.error("Extents do not match","Extents do not match: %s and %s" % (self.extent, extent))
+		#else:
+		#	self.extent = extent
 		self.images.append(imageData)
 		self.dataunits.append(dataunit)
 
