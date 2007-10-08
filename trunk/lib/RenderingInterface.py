@@ -65,11 +65,7 @@ class RenderingInterface:
 		
 		#if not self.imageType:
 		#	 self.imageType = "pnm"
-		if platform.system() == "Darwin":
-			self.imageType = "png"
-		else:
-			self.imageType = "tif"
-			
+		self.imageType = "png"
 		self.visualizer = None
 		self.frameList = []
 		
