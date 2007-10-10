@@ -686,12 +686,21 @@ def getOverlayBorders(width, height, color, alpha, lineWidth = 1):
 def get_histogram(image):
 	"""
 	Created: 06.08.2006, KP
-	Description: Return the histogrm of the image as a list of floats
+	Description: Return the histogram of the image as a list of floats
 	"""
 	accu = vtk.vtkImageAccumulate()
 	accu.SetInputConnection(image.GetProducerPort())
 	x0, x1 = image.GetScalarRange()
 	x1 = int(math.floor(x1))
+
+#	x1max = image.GetScalarTypeMax()
+#	x1max = int(math.floor(x1max))
+#	import pdb
+#	pdb.set_trace()
+#	if x1max == 4095:
+#		x1 = 4095
+#	else:
+#		x1 = 255
 
 	accu.SetComponentExtent(0, x1, 0, 0, 0, 0)
 	accu.Update() 
