@@ -619,7 +619,7 @@ def fire(ctfLowerBound, ctfUpperBound):
 	]
 	maxColorIndex = min(len(reds), len(greens), len(blues))
 	div = ctfUpperBound / float(maxColorIndex)
-	
+
 	ctf = vtk.vtkColorTransferFunction()
 	ctf.AddRGBPoint(0, 0, 0, 0)
 	for colorIndex in range(ctfLowerBound, maxColorIndex):
@@ -627,6 +627,7 @@ def fire(ctfLowerBound, ctfUpperBound):
 		green = greens[colorIndex] / 255.0
 		blue = blues[colorIndex] / 255.0
 		ctf.AddRGBPoint(colorIndex * div, red, green, blue)
+
 	return ctf
 
 def getOverlay(width, height, color, alpha):
@@ -689,10 +690,8 @@ def get_histogram(image):
 	"""
 	accu = vtk.vtkImageAccumulate()
 	accu.SetInputConnection(image.GetProducerPort())
-	#x0, x1 = image.GetScalarRange()
-	#x1 = int(math.floor(x1))
-	x0 = int(math.floor(image.GetScalarTypeMin()))
-	x1 = int(math.floor(image.GetScalarTypeMax()))
+	x0, x1 = image.GetScalarRange()
+	x1 = int(math.floor(x1))
 
 	accu.SetComponentExtent(0, x1, 0, 0, 0, 0)
 	accu.Update() 
