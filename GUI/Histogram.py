@@ -361,11 +361,14 @@ class Histogram(wx.Panel):
 				self.data = self.dataUnit.getTimepoint(self.timePoint)
 				self.data.Update()
 			self.colorTransferFunction = self.dataUnit.getSettings().get("ColorTransferFunction")
+
 			if not self.colorTransferFunction:
-				Logging.info("No colorTransferFunction!")
+				self.colorTransferFunction = self.dataUnit.getColorTransferFunction()
+				#Logging.info("No colorTransferFunction!")
 			if self.replaceCTF:
 				self.colorTransferFunction = self.replaceCTF
 			self.backGround = self.parent.GetBackgroundColour()
+
 			histogram, self.percent, self.values, xoffset = lib.ImageOperations.histogram(self.data, \
 																bg = self.backGround, \
 																colorTransferFunction = self.colorTransferFunction, \
@@ -402,8 +405,10 @@ class Histogram(wx.Panel):
 		set = self.dataUnit.getSettings().set
 		colorTransferFunction = self.dataUnit.getColorTransferFunction()
 		val = [0, 0, 0]
+
 		r1, r2 = colorTransferFunction.GetRange()
 		colorTransferFunction.GetColor(r2, val)
+
 		if not self.thresholdMode and get("ColocalizationLowerThreshold") == None:
 			return
 		colocMode = get("ColocalizationLowerThreshold") != None

@@ -683,24 +683,19 @@ def getOverlayBorders(width, height, color, alpha, lineWidth = 1):
 	img.SetAlphaData(structString)
 	return img	  
 	
-def get_histogram(image):
+def get_histogram(image, maxval = 0):
 	"""
 	Created: 06.08.2006, KP
 	Description: Return the histogram of the image as a list of floats
 	"""
 	accu = vtk.vtkImageAccumulate()
 	accu.SetInputConnection(image.GetProducerPort())
-	x0, x1 = image.GetScalarRange()
-	x1 = int(math.floor(x1))
 
-#	x1max = image.GetScalarTypeMax()
-#	x1max = int(math.floor(x1max))
-#	import pdb
-#	pdb.set_trace()
-#	if x1max == 4095:
-#		x1 = 4095
-#	else:
-#		x1 = 255
+	if maxval == 0:
+		x0, x1 = image.GetScalarRange()
+		x1 = int(math.floor(x1))
+	else:
+		x0,x1 = (0,int(math.floor(maxval)))
 
 	accu.SetComponentExtent(0, x1, 0, 0, 0, 0)
 	accu.Update() 
@@ -720,7 +715,7 @@ def histogram(imagedata, colorTransferFunction = None, bg = (200, 200, 200), log
 	Created: 11.07.2005, KP
 	Description: Draw a histogram of a volume
 	"""		  
-	values = get_histogram(imagedata)
+	values = get_histogram(imagedata,maxval)
 	sum = 0
 	xoffset = 10
 	sumth = 0
