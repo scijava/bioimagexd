@@ -1804,14 +1804,12 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 		self.visualizer.enable(0)
 		lib.messenger.send(None, "update_progress", 0.6, "Loading %s view..." % mode)
 		wx.EVT_TOOL(self, MenuManager.ID_SAVE_SNAPSHOT, self.visualizer.onSnapshot)
-			
+		reload = kws.get("reload", 0)
+		self.visualizer.setVisualizationMode(mode, reload = reload)			
 
 		if not "init" in kws and dataunit:
 			self.visualizer.setDataUnit(dataunit)
-		
-		reload = kws.get("reload", 0)
-		
-		self.visualizer.setVisualizationMode(mode, reload = reload)
+
 		# handle icons
 		lib.messenger.send(None, "update_progress", 0.8, "Loading %s view..." % mode)
 
