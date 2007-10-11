@@ -104,12 +104,16 @@ class TimelinePanel(wx.Panel):
 		self.useButton.Bind(wx.EVT_BUTTON, self.useSettings)
 
 		self.confSizer.Add(self.useButton, (1, 0))
+		
+		sbox = wx.StaticBox(self, -1, "Preview")
+		box = wx.StaticBoxSizer(sbox, wx.VERTICAL)
 		self.wxrenwin = Visualizer.VisualizerWindow.VisualizerWindow(self, size = (300, 300))
+		box.Add(self.wxrenwin)
 		self.splineEditor = SplineEditor.SplineEditor(self, self.wxrenwin)
 		self.control.setSplineEditor(self.splineEditor)   
 		
 		self.sizer.Add(sboxsizer, (0, 0), flag = wx.EXPAND | wx.ALL)
-		self.sizer.Add(self.wxrenwin, (0,1))
+		self.sizer.Add(box, (0,1))
 		self.SetSizer(self.sizer)
 		self.SetAutoLayout(1)
 		self.sizer.Fit(self)
@@ -118,12 +122,25 @@ class TimelinePanel(wx.Panel):
 
 		self.wxrenwin.initializeVTK()
 		self.splineEditor.initializeVTK()
+
 		
 		n = self.timelineConfig.getFrameAmount()
 		
 		lib.messenger.send(None, "set_frames", n)
 		lib.messenger.connect(None, "set_frame_size", self.onSetFrameSize)
 		lib.messenger.connect(None, "set_keyframe_mode", self.onSetKeyframeMode)
+		
+		#wx.CallAfter(self.reinitializeRendering)
+		
+	def reinitializeRendering(self):
+		"""
+		Created: 30.09.2007, KP
+		Description: re-initialize the rendering after everything else is done
+		"""
+		#self.wxrenwin.GetRenderWindow().Finalize()
+		#self.wxrenwin.GetRenderWindow().Initialize()
+		self.wxrenwin.GetRenderWindow().WindowRemap()
+		self.Layout()
 		
 
 	def onSetFrameSize(self, obj, evt, size, onlyAspect):

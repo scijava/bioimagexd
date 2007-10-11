@@ -269,7 +269,9 @@ class VisualizerWindow(wxVTKRenderWindowInteractor):
 		Created: 28.04.2005, KP
 		Description: Save the rendered screen as TIFF
 		"""
-		self.saveScreen(vtk.vtkTIFFWriter(), filename)
+		tifwriter = vtk.vtkTIFFWriter()
+		tifwriter.SetCompressionToNoCompression()
+		self.saveScreen(tifwriter, filename)
 		
 	def saveScreen(self, writer, filename):
 		"""

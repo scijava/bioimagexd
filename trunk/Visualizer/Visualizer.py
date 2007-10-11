@@ -884,6 +884,10 @@ class Visualizer:
 		Description: Close the visualizer
 		"""
 		if self.currMode:
+			self.currentWindow.enable(0)
+			self.currMode.setDataUnit(None)
+			self.currentWindow.enable(1)
+			self.Render()
 			self.currentWindow.Show(0)
 			self.currMode.deactivate()
 			del self.currentWindow
@@ -957,9 +961,11 @@ class Visualizer:
 		self.sidebarWin.SetDefaultSize((0, 1024))
 		wx.LayoutAlgorithm().LayoutWindow(self.parent, self.visWin)
 		if not modeinst.showSliceSlider():
+			print "Won't show zslider in ",modeinst
 			if self.zsliderWin.GetSize()[0]:
 				self.zsliderWin.SetDefaultSize((0, 1024))
 		else:
+			print "showing zslider"
 			if self.zsliderWin.GetSize() != self.zsliderWin.origSize:
 				self.zsliderWin.SetDefaultSize(self.zsliderWin.origSize)
 
@@ -1110,7 +1116,7 @@ class Visualizer:
 			self.onChangeZSlice(None)
 		if z <= 1:
 			self.zsliderWin.SetDefaultSize((0, 768))
-		else:
+		elif self.currMode.showSliceSlider():
 			self.zsliderWin.SetDefaultSize(self.zsliderWin.origSize)
 		showItems = 0
 
@@ -1235,69 +1241,6 @@ class Visualizer:
 		if self.enabled:
 			self.currMode.Render()
 
-	def onSetTimeRange(self, obj, event, r1, r2):
-		"""
-		Created: 15.08.2005, KP
-		Description: Set the range that the time slider shows
-		"""
-		self.timeslider.SetRange(r1, r2)
-		self.timeslider.Refresh()
-
-	def onSetTimepoint(self, obj, event, timepoint):
-		"""
-		Created: 21.06.2005, KP
-		Description: Update the timepoint according to an event
-		"""
-		self.setTimepoint(timepoint)
-
-	def onSetTimeslider(self, obj, event, timepoint):
-		"""
-		Created: 21.08.2005, KP
-		Description: Update the timeslider according to an event
-		"""
-		self.timeslider.SetValue(timepoint)
-
-	def onUpdateTimepoint(self, evt = None):
-		"""
-		Created: 31.07.2005, KP
-		Description: Set the timepoint to be shown
-		"""
-		if not evt:
-			diff = abs(time.time() - self.changing)
-			if diff < 0.01:
-				Logging.info("delay too small: ", diff, kw = "visualizer")
-				wx.FutureCall(200, self.onUpdateTimepoint)
-				self.changing = time.time()
-				return
-		if self.in_vtk:
-			Logging.info("In vtk, delaying", kw = "visualizer")
-			wx.FutureCall(50, lambda e = evt: self.onUpdateTimepoint(evt))
-			return
-		timepoint = self.timeslider.GetValue()
-		timepoint -= 1 
-		if self.timepoint != timepoint:
-			Logging.info("Sending timepoint change event (timepoint = %d)" % timepoint, kw = "visualizer")
-			self.blockTpUpdate = 1
-			lib.messenger.send(None, "timepoint_changed", timepoint)
-			self.blockTpUpdate = 0
-
-			do_cmd = "scripting.visualizer.setTimepoint(%d)" % timepoint
-			undo_cmd = "scripting.visualizer.setTimepoint(%d)" % self.timepoint
-			cmd = lib.Command.Command(lib.Command.GUI_CMD, \
-									None, \
-									None, \
-									do_cmd, \
-									undo_cmd, \
-									desc = "Switch to timepoint %d" % timepoint)
-			cmd.run()
-
-	def delayedTimesliderEvent(self, event):
-		"""
-		Created: 28.04.2005, KP
-		Description: Set the timepoint to be shown
-		"""
-		self.changing = time.time()
-		wx.FutureCall(200, lambda e = event, s = self: s.timesliderMethod(e))
 
 	def onZPageDown(self, evt):
 		"""
@@ -1374,9 +1317,10 @@ class Visualizer:
 													initFile,
 													wildCard,
 													"snapshotImage")
-			do_cmd = "scripting.visualizer.saveSnapshot(ur'%s')" % filename
-			cmd = lib.Command.Command(lib.Command.GUI_CMD, None, None, do_cmd, "", desc = "Save a snapshot of the visualizer")
-			cmd.run()
+			if filename:
+				do_cmd = "scripting.visualizer.saveSnapshot(ur'%s')" % filename
+				cmd = lib.Command.Command(lib.Command.GUI_CMD, None, None, do_cmd, "", desc = "Save a snapshot of the visualizer")
+				cmd.run()
 
 	def saveSnapshot(self, filename):
 		"""
@@ -1389,7 +1333,7 @@ class Visualizer:
 	def restoreWindowSizes(self):
 		"""
 		Created: 15.08.2005, KP
-		Description: Restores the window sizes that may be changed by setRenderWIndowSize
+		Description: Restores the window sizes that may be changed by setRenderWindowSize
 		"""
 		self.visWin.SetDefaultSize(self.visWin.origSize)
 		self.sidebarWin.SetDefaultSize(self.sidebarWin.origSize)
@@ -1464,12 +1408,79 @@ class Visualizer:
 		"""
 		if self.blockTpUpdate:
 			return
-
 		Logging.info("setTimepoint(%d)" % timepoint, kw = "visualizer")
+		# The timeslider has values that start from 1 whereas the internal time point values 
+		# start from 0
 		curr = self.timeslider.GetValue()
+		# if the timeslider is not already at the current value, then set it to the given value
 		if curr - 1 != timepoint:
 			self.timeslider.SetValue(timepoint + 1)
 		self.timepoint = timepoint
 		if hasattr(self.currentWindow, "setTimepoint"):
 			self.currentWindow.setTimepoint(self.timepoint)
 		self.currMode.setTimepoint(self.timepoint)
+
+	def onUpdateTimepoint(self, evt = None):
+		"""
+		Created: 31.07.2005, KP
+		Description: An event handler for events caused by the time slider
+		"""
+		# if this call is not from a user caused event, and there has been a request
+		# to change the timepoint 1/100 of a second ago, then wait a bit
+		if not evt:
+			diff = abs(time.time() - self.changing)
+			if diff < 0.01:
+				Logging.info("delay too small: ", diff, kw = "visualizer")
+				wx.FutureCall(200, self.onUpdateTimepoint)
+				self.changing = time.time()
+				return
+		if self.in_vtk:
+			Logging.info("In vtk, delaying", kw = "visualizer")
+			wx.FutureCall(50, lambda e = evt: self.onUpdateTimepoint(evt))
+			return
+		timepoint = self.timeslider.GetValue()-1
+		if self.timepoint != timepoint:
+			Logging.info("Sending timepoint change event (timepoint = %d)" % timepoint, kw = "visualizer")
+			self.blockTpUpdate = 1
+			lib.messenger.send(None, "timepoint_changed", timepoint)
+			self.blockTpUpdate = 0
+
+			do_cmd = "scripting.visualizer.setTimepoint(%d)" % timepoint
+			undo_cmd = "scripting.visualizer.setTimepoint(%d)" % self.timepoint
+			cmd = lib.Command.Command(lib.Command.GUI_CMD, \
+									None, \
+									None, \
+									do_cmd, \
+									undo_cmd, \
+									desc = "Switch to timepoint %d" % timepoint)
+			cmd.run()
+			
+	def onSetTimeRange(self, obj, event, r1, r2):
+		"""
+		Created: 15.08.2005, KP
+		Description: Set the range that the time slider shows
+		"""
+		self.timeslider.SetRange(r1, r2)
+		self.timeslider.Refresh()
+
+	def onSetTimepoint(self, obj, event, timepoint):
+		"""
+		Created: 21.06.2005, KP
+		Description: Update the timepoint according to an event
+		"""
+		self.setTimepoint(timepoint)
+
+	def onSetTimeslider(self, obj, event, timepoint):
+		"""
+		Created: 21.08.2005, KP
+		Description: Update the timeslider according to an event
+		"""
+		self.timeslider.SetValue(timepoint)
+
+	def delayedTimesliderEvent(self, event):
+		"""
+		Created: 28.04.2005, KP
+		Description: Set the timepoint to be shown
+		"""
+		self.changing = time.time()
+		wx.FutureCall(200, lambda e = event, s = self: s.timesliderMethod(e))

@@ -69,6 +69,7 @@ class UrmasWindow(wx.lib.scrolledpanel.ScrolledPanel):
 		self.visualizer = visualizer
 		self.Unbind(wx.EVT_CHILD_FOCUS)
 		self.menuManager = menumanager
+		scripting.mainWindow.Enable(0)
 		self.createMenu(menumanager)
 		self.lastFrameTime = 0
 		self.delayed = 0
@@ -142,6 +143,7 @@ class UrmasWindow(wx.lib.scrolledpanel.ScrolledPanel):
 					 reason, it has to be done here to take effect.					   
 		"""
 		Logging.info("Setting view of render window", kw = "animator")
+		scripting.mainWindow.Enable(1)
 		self.timelinePanel.wxrenwin.setView((1, 1, 1, 0, 0, 1))
 		
 	def onShowFrame(self, evt = None):
@@ -316,8 +318,10 @@ class UrmasWindow(wx.lib.scrolledpanel.ScrolledPanel):
 		""" 
 	
 		w, h = self.taskWin.GetSize()
-		if self.videoGenerationPanel:			 
+		if self.videoGenerationPanel:
 			self.taskWin.SetDefaultSize((0, h))
+			scripting.videoGeneration = None
+			
 			self.visualizer.mainwin.OnSize(None)
 			# destroy the video generation panel if the rendering wasn't aborted
 			# if it was aborted, let the panel destroy itself			 
