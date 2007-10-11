@@ -276,13 +276,13 @@ class PreviewFrame(InteractivePanel):
 		"""
 		self.onLeftDown(event)
 		event.Skip()
-		
+
 		if not self.rawImage and not self.rawImages:
 			return
-		if self.rawImages:
-			self.rawImage = self.rawImages[0]
-		elif self.rawImage and not self.rawImages:
+		if self.rawImage and not self.rawImages:
 			self.rawImages = [self.rawImage]
+		elif self.rawImages and not self.rawImage:
+			self.rawImage = self.rawImages[0]
 
 		x, y = event.GetPosition()
 		x -= self.xoffset
@@ -312,7 +312,7 @@ class PreviewFrame(InteractivePanel):
 			rv, gv, bv = -1, -1, -1
 			alpha = -1
 			if len(self.rawImages) < 2:
-				scalar = self.rawImages[0].GetScalarComponentAsDouble(x, y, self.z, 0)
+				scalar = self.rawImage.GetScalarComponentAsDouble(x, y, self.z, 0)
 			else:
 				scalar = []
 				for i, img in enumerate(self.rawImages):
