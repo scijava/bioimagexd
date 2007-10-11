@@ -48,6 +48,34 @@ import scripting
 import sys
 import wx
 
+class VideoGenerationDialog(wx.Dialog):
+	"""
+	Created: 29.09.2007, KP
+	Description: a dialog for re-encoding a project based on a project file
+	"""
+	def __init__(self, parent, filename):
+		wx.Dialog.__init__(self, parent, -1)
+		self.sizer = wx.GridBagSizer(10,10)
+		
+		self.videoGeneration = VideoGeneration(self, filename = filename)
+		self.sizer.Add(self.videoGeneration,(0,0),flag=wx.EXPAND|wx.ALL)
+		self.SetSizer(self.sizer)
+		self.SetAutoLayout(1)
+		self.sizer.Fit(self)
+		
+		lib.messenger.connect(None, "video_generation_close", self.onClose)
+		
+	def onClose(self, *args):
+		"""
+		Created: 30.09.2007, KP
+		Description: close the dialog
+		"""
+		self.Close()
+		if self.videoGeneration.abort:
+			self.EndModal(wx.ID_CANCEL)
+		else:
+			self.EndModal(wx.ID_OK)
+
 class VideoEncoder:
 	"""
 	Created: 22.09.2007, KP
@@ -68,8 +96,23 @@ class VideoEncoder:
 		self.presets = [(0, 0, 0,""), ((720, 576), (25), 6000, "pal-dvd"), ((720, 480), (29.97), 6000,"ntsc-dvd")]
 		self.bitrate = 0
 		self.target = ""
+		self.format = ""
 		self.preset = 0
-
+		
+	def getFrameAmount(self): 
+		"""
+		Created: 30.09.2007, KP
+		Description: return the number of frames
+		"""
+		return len(self.frameList)
+	
+	def getFormat(self): return self.format
+	def setFormat(self, format):
+		"""
+		Created: 30.09.2007, KP
+		Description: set the format of the filenames
+		"""
+		self.format = format
 	def getPreset(self): return self.preset
 	def setPreset(self, i):
 		"""
@@ -186,6 +229,7 @@ class VideoEncoder:
 		f.write("%s # codec\n"%self.codec)
 		f.write("%d, %d # frame size\n"%self.size)
 		f.write("%f # fps\n"%self.fps)
+		f.write("%s # filename format\n"%self.format)
 		for file in self.frameList:
 			f.write("%s\n"%file)
 		f.close()
@@ -199,10 +243,10 @@ class VideoEncoder:
 		lines = []
 		inputLines = f.readlines()
 		
-		for line in inputLines[0:8]:
+		for line in inputLines[0:9]:
 			txt, comment = line.split(" #")
 			lines.append(txt)
-		videoFile, name, path, quality, preset, codec, size, fps = lines[0:8]
+		videoFile, name, path, quality, preset, codec, size, fps, format = lines[0:9]
 		quality = int(quality)
 		fps = float(fps)
 		w, h = size.split(",")
@@ -213,6 +257,7 @@ class VideoEncoder:
 		self.quality = quality
 		self.codec = codec
 		self.fps = fps
+		self.format = format
 		self.frameList = inputLines[8:]
 		self.setPreset(int(preset))
 		
@@ -221,11 +266,15 @@ class VideoEncoder:
 		Created: 22.09.2007, KP
 		Description: return the filename pattern
 		"""
-		renderingInterface = lib.RenderingInterface.getRenderingInterface()
-		
-		pattern = renderingInterface.getFilenamePattern()
-		framename = renderingInterface.getFrameName()
-		self.setFrameName(framename)
+		if not self.format:
+			renderingInterface = lib.RenderingInterface.getRenderingInterface()
+			pattern = renderingInterface.getFilenamePattern()
+			framename = renderingInterface.getFrameName()
+			self.setFrameName(framename)
+			self.setFormat(pattern)
+		else:
+			framename = self.getFrameName()
+			pattern = self.getFormat()
 		
 		# FFMPEG uses %3d instead of %.3d for files numbered 000 - 999
 		pattern = pattern.replace("%.", "%")
@@ -273,7 +322,7 @@ class VideoGeneration(wx.Panel):
 	Created: 05.05.2005, KP
 	Description: A page for controlling video generation
 	"""
-	def __init__(self, parent, control, visualizer):
+	def __init__(self, parent, control = None, visualizer = None, filename = ""):
 		"""
 		Created: 05.05.2005, KP
 		Description: Initialization
@@ -281,23 +330,35 @@ class VideoGeneration(wx.Panel):
 		wx.Panel.__init__(self, parent, -1)
 		self.encoder = VideoEncoder()
 		self.control = control
+		if filename:
+			self.encoder.readIn(filename)
+			self.renderingDone = 1
+		else:
+			self.renderingDone = 0
+		
+		scripting.videoGeneration = self
+			
 		self.visualizer = visualizer
-		# The slider panel will be unlocked by UrmasWindow, not 
-		# VideoGeneration
-		self.visualizer.getCurrentMode().lockSliderPanel(1)
+		if visualizer:
+			# The slider panel will be unlocked by UrmasWindow, not 
+			# VideoGeneration
+			self.visualizer.getCurrentMode().lockSliderPanel(1)
 		
 		self.oldSelection = 0
 		self.rendering = 0
-		self.renderingDone = 0
 		self.oldformat = None
 		self.abort = 0
 		self.parent = parent
-		size = self.control.getFrameSize()
-		self.encoder.setSize(*size)
-		self.frames = self.control.getFrames()
-		self.fps = self.control.getFrames() / float(self.control.getDuration())
-		self.dur = self.control.getDuration()
-		
+		if self.control:
+			size = self.control.getFrameSize()
+			self.encoder.setSize(*size)
+			self.frames = self.control.getFrames()
+			self.fps = self.control.getFrames() / float(self.control.getDuration())
+			self.durationInSecs = self.control.getDuration()
+		else:
+			self.frames = self.encoder.getFrameAmount()
+			self.fps = self.encoder.getFPS()
+			self.durationInSecs = self.frames / self.fps
 
 		self.outputExts = [["png", "bmp", "jpg", "tif", "pnm"], ["mpg", "mpg", "avi", "wmv", "avi", "avi", "mov"]]
 		self.outputFormats = [["PNG", "BMP", "JPEG", "TIFF", "PNM"],
@@ -318,22 +379,27 @@ class VideoGeneration(wx.Panel):
 		self.buttonBox = wx.BoxSizer(wx.HORIZONTAL)
 		self.okButton = wx.Button(self, -1, "Ok")
 		self.cancelButton = wx.Button(self, -1, "Cancel")
-		self.loadButton = wx.Button(self,-1,"Load project")
-		
+
 		self.okButton.Bind(wx.EVT_BUTTON, self.onOkButton)
 		self.cancelButton.Bind(wx.EVT_BUTTON, self.onCancelButton)
-		self.loadButton.Bind(wx.EVT_BUTTON, self.onLoadProject)
 		
-		self.buttonBox.Add(self.loadButton)
+
+		if not filename:
+			self.loadButton = wx.Button(self,-1,"Load project")
+			self.loadButton.Bind(wx.EVT_BUTTON, self.onLoadProject)	
+			self.buttonBox.Add(self.loadButton)
+		
 		self.buttonBox.Add(self.okButton)
 		self.buttonBox.Add(self.cancelButton)
-		
 
 		self.mainsizer.Add(self.buttonBox, (5, 0), flag = wx.EXPAND | wx.RIGHT | wx.LEFT)
 
 		self.SetSizer(self.mainsizer)
 		self.SetAutoLayout(True)
 		self.mainsizer.Fit(self)
+		
+		if filename:
+			wx.CallAfter(self.updateGUIFromEncoder)
 		
 	def onLoadProject(self, event):
 		"""
@@ -343,7 +409,7 @@ class VideoGeneration(wx.Panel):
 		filenames = GUI.Dialogs.askOpenFileName(self, "Open rendering project", "Rendering project (*.bxr)|*.bxr")
 		if filenames:
 			filename = unicode(filenames[0])
-			do_cmd = "scripting.animator.videoGenerationPanel.readProjectFile(ur'%s')" % filename
+			do_cmd = "scripting.videoGeneration.readProjectFile(ur'%s')" % filename
 			cmd = lib.Command.Command(lib.Command.GUI_CMD, None, None, do_cmd, "", \
 									desc = "Save a rendering project file")
 			cmd.run()
@@ -370,9 +436,11 @@ class VideoGeneration(wx.Panel):
 
 		# If the rendering has been done already, then only do the encoding
 		if self.renderingDone:
+			lib.messenger.connect(None, "rendering_done", self.cleanUp)
 			self.cleanUp()
 			return
 			
+		# Do the rendering
 		lib.messenger.send(None, "set_play_mode")
 		lib.messenger.connect(None, "playback_stop", self.onCancelButton)
 		self.abort = 0
@@ -398,8 +466,8 @@ class VideoGeneration(wx.Panel):
 			Logging.info("Setting output image format to ", imageExt, kw = "animator")
 			renderingInterface.setType(imageExt)
 		
-		Logging.info("Setting duration to ", self.dur, "and frames to", self.frames, kw = "animator")
-		self.control.configureTimeline(self.dur, self.frames)
+		Logging.info("Setting duration to ", self.durationInSecs, "and frames to", self.frames, kw = "animator")
+		self.control.configureTimeline(self.durationInSecs, self.frames)
 
 		Logging.info("Will produce %s, rendered frames go to %s" % (file, path), kw = "animator")
 
@@ -441,6 +509,7 @@ class VideoGeneration(wx.Panel):
 		self.renderingDone = 1
 				
 		lib.messenger.send(None, "video_generation_close")
+		
 		lib.messenger.disconnect(None, "rendering_done")
 
 	def encodeVideo(self):
@@ -464,7 +533,7 @@ class VideoGeneration(wx.Panel):
 			filename = GUI.Dialogs.askSaveAsFileName(self, "Save rendering project as", "rendering.bxr", \
 												"BioImageXD Rendering Project (*.bxr)|*.bxr")
 			if filename:
-				do_cmd = "scripting.animator.videoGenerationPanel.saveProjectFile(ur'%s')" % filename
+				do_cmd = "scripting.videoGeneration.saveProjectFile(ur'%s')" % filename
 				cmd = lib.Command.Command(lib.Command.GUI_CMD, None, None, do_cmd, "", \
 										desc = "Save a rendering project file")
 				cmd.run()
@@ -563,7 +632,7 @@ class VideoGeneration(wx.Panel):
 
 		self.totalFrames = wx.StaticText(self, -1, "%d" % self.frames, size = (50, -1))
 		
-		t = self.dur
+		t = self.durationInSecs
 		h = t / 3600
 		m = t / 60
 		s = t % 60
@@ -671,6 +740,7 @@ class VideoGeneration(wx.Panel):
 		preset = self.encoder.getPreset()
 		self.preset.SetSelection(preset)
 		if preset:
+			print "Updating preset to ",preset
 			self.onUpdatePreset()
 		
 	def onSelectDirectory(self, event = None):
@@ -699,3 +769,4 @@ class VideoGeneration(wx.Panel):
 		if filename:
 			self.videofile.SetValue(filename)
 			self.encoder.setVideoFile(filename)
+			

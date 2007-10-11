@@ -210,8 +210,10 @@ def scaleImage(data, factor = 1.0, zDimension = -1, interpolation = 1, xfactor =
 	reslice.SetResliceTransform(transform)
 	
 	if interpolation == 1:
+#		Logging.info("USING LINEAR INTERPOLATION")
 		reslice.SetInterpolationModeToLinear()
 	else:
+#		Logging.info("USING CUBIC INTERPOLATION")
 		reslice.SetInterpolationModeToCubic()
 	# XXX: modified, try to get errors out
 	
