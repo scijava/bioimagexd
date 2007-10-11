@@ -478,7 +478,7 @@ class Visualizer:
 			ds = unit.getDataSource()
 			minval,maxval = ds.getOriginalScalarRange()
 			scale = maxval / 255.0
-			histogram = GUI.Histogram.Histogram(self.histogramPanel, scale = scale)
+			histogram = GUI.Histogram.Histogram(self.histogramPanel, scale = scale, lowerThreshold = minval, upperThreshold = maxval)
 			dataUnitName = unit.getName()
 			sbox = wx.StaticBox(self.histogramPanel, -1, "Channel %s" % dataUnitName)
 			sboxsizer = wx.StaticBoxSizer(sbox, wx.VERTICAL)
