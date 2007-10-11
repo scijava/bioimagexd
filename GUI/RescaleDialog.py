@@ -98,10 +98,10 @@ color depth. Use the histograms below to the select how the intensities in your 
 		"""
 		Created: 12.04.2006, KP
 		Description: Cancel the procedure
-		"""        
-		for i, dataUnit in enumerate(self.dataUnits):
-			ds = dataUnit.getDataSource()
-			ds.setIntensityScale(0, 0)
+		"""
+		#for i, dataUnit in enumerate(self.dataUnits):
+			#ds = dataUnit.getDataSource()
+			#ds.setIntensityScale(0, 0)
 			#ds.setResampleDimensions(self.resampleDims[i])
 			
 		self.result = 0
@@ -150,7 +150,7 @@ color depth. Use the histograms below to the select how the intensities in your 
 			scale = maxval / 255.0
 			print "Scale for histograms = ",scale
 			#"Using scale",scale
-			histogram = Histogram.Histogram(self, scale = scale)
+			histogram = Histogram.Histogram(self, scale = scale, lowerThreshold = minval, upperThreshold = maxval)
 			self.histogramSizer.Add(histogram)
 			self.histograms.append(histogram)
 			histogram.setThresholdMode(1)
@@ -172,7 +172,7 @@ color depth. Use the histograms below to the select how the intensities in your 
 		"""
 		Created: 12.04.2006, KP
 		Description: An event handler for updating the thresholds based on one of the histograms
-		"""            
+		"""
 		n = self.histograms.index(obj)
 		dataUnit = self.dataUnits[n]
 		minval, maxval = dataUnit.getDataSource().getOriginalScalarRange()
@@ -184,7 +184,8 @@ color depth. Use the histograms below to the select how the intensities in your 
 			upper = upper * (maxval / 255.0)
 			lower = lower * (maxval / 255.0)
 			self.shift = -int(lower)
-			self.scale = 256.0 / ((upper - lower))
+			self.scale = 255.0 / ((upper - lower))
+
 		dataUnit.getDataSource().setIntensityScale(self.shift, self.scale)
 		dataUnit.resetColorTransferFunction()
 		self.preview.updatePreview(1)
