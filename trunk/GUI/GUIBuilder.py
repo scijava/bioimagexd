@@ -490,6 +490,7 @@ class GUIBuilder(wx.Panel):
 		Description: create a GUI element that allows the editing of a color transfer function
 		"""
 		itemName = items[n]
+		item = items[n]
 		background = wx.Window(self, -1)
 		backgroundSizer = wx.BoxSizer(wx.VERTICAL)
 		background.SetSizer(backgroundSizer)
@@ -508,7 +509,8 @@ class GUIBuilder(wx.Panel):
 		setColorTransferFunction = lambda obj, event, arg, panel = colorPanel, i = item, \
 											s = self: s.onSetCtf(panel, i, arg)
 	  
-		lib.messenger.connect(currentFilter, "set_%s_colorTransferFunction" % item, setColorTransferFunction)
+	  	print
+		lib.messenger.connect(currentFilter, "set_%s_ctf" % item, setColorTransferFunction)
 		setotf = lambda obj, event, arg, panel = colorPanel, i = item, s = self: s.onSetOtf(panel, i, arg)
 		lib.messenger.connect(currentFilter, "set_%s_otf" % item, setotf)
 		return 0
@@ -670,6 +672,7 @@ class GUIBuilder(wx.Panel):
 		Description: create a choice (a dropdown menu) gui element
 		"""
 		itemName = items[n]
+		item = items[n]
 		box = wx.BoxSizer(wx.VERTICAL)
 		text = currentFilter.getDesc(itemName)
 		defValue = currentFilter.getDefaultValue(itemName)
@@ -1165,6 +1168,7 @@ class GUIBuilder(wx.Panel):
 		Created: 12.03.2007, KP
 		Description: Set the color transfer function editor colorTransferFunction
 		"""
+		print "onsetctf",colorPanel,item,value
 		colorPanel.setColorTransferFunction(value)
 		
 	def onSetOtf(self, colorPanel, item, value):
