@@ -87,7 +87,7 @@ def build():
 	incl_modules.extend(get_files("Visualizer", asmodule=1))
 	incl_modules.extend(get_files("lib", asmodule=1))
 	incl_modules.extend(["wx.lib.mixins.listctrl"])
-	incl_modules.extend(["wx.grid", "email"])
+	incl_modules.extend(["wx.grid", "email","Image"])
 	print "Included modules=", incl_modules
 	modules = get_files("Modules")
 	iconFiles = os.path.join("Icons","*.*")
@@ -150,18 +150,7 @@ def build():
 			data_files = dataFiles, 
 			options = dict( py2app = py2app_options )
 		)		 
-	elif platform.system() == "Linux":
-		# freeze code
-		freezeFile = "/usr/share/doc/python2.4/examples/Tools/freeze/freeze.py"
-		excl = ""
-		for itemToExclude in excludeList:
-			excl += " -x %s" % itemToExclude
-			
-		mods = " ".join(incl_modules)
-		cmd_line = "python %s -o	linux-build %s BioImageXD.py -m %s" % (freezeFile, excl, mods)
-		print cmd_line
-		os.system(cmd_line)
-		
+
 	elif platform.system() == "Windows":
 		# importing py2exe causes the windows specific magic to take place
 		import py2exe
