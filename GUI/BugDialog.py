@@ -30,12 +30,7 @@ __author__ = "BioImageXD Project"
 __version__ = "$Revision: 1.40 $"
 __date__ = "$Date: 2005/01/13 14:52:39 $"
 
-#import lib.email
-#import lib.email.mime.multipart
-#import MainWindow
-#from lib.email.mime.image import MIMEImage
-#import lib.ssmtplib as ssmtplib
-#import sys
+
 
 import GUI.Dialogs
 #import lib.email
@@ -73,7 +68,7 @@ def createSystemReport():
 		pass
 		
 	return ret
-def mail(to = '', senderName = '', text = ''):
+def mail(to = '', senderName = '', logText = '', text = ''):
 	"""
 	Created: 25.06.2007, KP
 	Description: send an email message
@@ -104,6 +99,11 @@ def mail(to = '', senderName = '', text = ''):
 	part = MIMEBase('text','plain')
 	part.set_payload(createSystemReport())
 	part.add_header('Content-Disposition','attachment; filename="system.txt"')
+	message.attach(part)
+    
+	part = MIMEBase('text','plain')
+	part.set_payload(logText)
+	part.add_header('Content-Disposition','attachment; filename="logfile.txt"')
 	message.attach(part)
     
 	try:
@@ -221,8 +221,9 @@ software will be attached to the report to aid the developers in solving the err
 		"""
 		if not self.logmessages:
 			loglines = scripting.logFile.getvalue().split("\n")
+			self.logmessages = scripting.logFile.getvalue()
 		else:
-			print "Log messages =", self.logmessages
+			#print "Log messages =", self.logmessages
 			loglines = self.logmessages.split("\n")
         
 		frommsg = ["<html>", "<strong>From:</strong> " + self.nameEdit.GetValue()] + \
@@ -238,15 +239,16 @@ software will be attached to the report to aid the developers in solving the err
 			actions = [self.actions]
             
 		if not self.crashMode:
-			logprefix = "<strong>The latest log file:</strong>"
+			logprefix = "<strong>Attached is the log file related to the crash</strong>"
 		else:
-			logprefix = "<strong>Log from file %s</strong>" % (self.logFile)
+			logprefix = "<strong>Attached is a log from file %s</strong>" % (self.logFile)
             
         
 		lines = frommsg + usermsg + ["<strong>The actions of the user:</strong>"] + \
-				actions + ["<br><br>", logprefix] + loglines
+				actions + ["<br><br>", logprefix] 
+		#+ loglines
         
-		if mail("bioimagexd-bugs@lists.sourceforge.net", self.nameEdit.GetValue(), "<br/>\n".join(lines)):
+		if mail("bioimagexd-bugs@lists.sourceforge.net", self.nameEdit.GetValue(), self.logmessages, "<br/>\n".join(lines)):
 			GUI.Dialogs.showerror(self, \
 							"Failed to send error report. Please contact info@bioimagexd.org directly", \
 							"Failed to send error report")
