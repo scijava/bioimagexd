@@ -183,7 +183,7 @@ class GalleryPanel(InteractivePanel):
 		Created: 23.05.2005, KP
 		Description: Sets the timepoint to display
 		"""
-
+		Logging.backtrace()
 		if self.timepoint == timepoint and self.slices:
 			return
 		self.timepoint = timepoint
@@ -195,7 +195,7 @@ class GalleryPanel(InteractivePanel):
 		if self.visualizer.getProcessedMode():
 			image = self.dataUnit.doPreview(scripting.WHOLE_DATASET_NO_ALPHA, 1, self.timepoint)
 			ctf = self.dataUnit.getSourceDataUnits()[0].getColorTransferFunction()
-			Logging.info("Using ", image, "for gallery", kw = "preview")
+#			Logging.info("Using ", image, "for gallery", kw = "preview")
 		else:
 			image = self.dataUnit.getTimepoint(timepoint)
 			ctf = self.dataUnit.getColorTransferFunction()
@@ -206,7 +206,6 @@ class GalleryPanel(InteractivePanel):
 		self.imagedata.Update()
 		
 		x, y, z = self.dataUnit.getDimensions()
-		print "Dimensions of image=", x, y, z
 		
 		self.slices = []
 		
@@ -234,6 +233,7 @@ class GalleryPanel(InteractivePanel):
 		lib.messenger.send(None, "update_progress", 1.0, "All slices loaded.")  
 		self.calculateBuffer()
 		if update:
+			print "Updating preview"
 			self.updatePreview()
 			self.Refresh()
 			
@@ -415,11 +415,10 @@ class GalleryPanel(InteractivePanel):
 		Description: Does the actual blitting of the bitmap
 		"""
 		if self.sizeChanged:
-			
 			#Logging.info("size changed, calculating buffer",kw="preview")
+			self.sizeChanged = 0
 			self.calculateBuffer()
 			self.updatePreview()
-			self.sizeChanged = 0
 		InteractivePanel.OnPaint(self, event)
 #		dc=wx.BufferedPaintDC(self,self.buffer)#,self.buffer)
 
