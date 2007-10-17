@@ -191,11 +191,18 @@ class FileListDataSource(DataSource):
 		
 		if ext in ["tif", "tiff"]:
 			tiffimg = Image.open(files[0])
-			if tiffimg.palette:
-				print "HAS PALETTE, THEREFORE NOT RGB"
-				isRGB = 0
+			if tiffimg.mode == "RGB":
+				print "MODE IS RGB, IS AN RGB IMAGE"
 			else:
-				print "NO PALETTE, IS AN RGB IMAGE"
+				print "MODE ISN'T RGB, THEREFOR NOT RGB"
+				isRGB = 0
+			#if tiffimg.palette:
+				#print "HAS PALETTE, THEREFORE NOT RGB"
+				#isRGB = 0
+			#else:
+				#print "NO PALETTE, IS AN RGB IMAGE"
+				#print Image
+				#print dir(Image)
 		rdr = self.getReaderByExtension(ext, isRGB)
 				
 		dirn = os.path.dirname(files[0])
