@@ -465,10 +465,10 @@ class SectionsPanel(InteractivePanel):
 		"""
 		# if the size of the painting area has changed, then re-generate the buffer and repaint
 		if self.sizeChanged:
+			self.sizeChanged = 0
 			Logging.info("Size changed, calculating buffer", kw = "preview")
 			self.calculateBuffer()
 			self.updatePreview()
-			self.sizeChanged = 0
 		InteractivePanel.OnPaint(self, event)
 	
 	def paintPreview(self):
