@@ -180,7 +180,7 @@ class ImportDialog(wx.Dialog):
 		settings.set("VoxelSize", (x, y, z))
 
 		
-		self.x, self.y, self.x = self.dataSource.GetDimensions()
+		self.x, self.y, self.x = self.dataSource.getDimensions()
 		Logging.info("Writing dimensions as ", self.x, self.y, self.z, kw = "io")
 
 
