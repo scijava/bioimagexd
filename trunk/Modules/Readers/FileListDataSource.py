@@ -362,6 +362,7 @@ class FileListDataSource(DataSource):
 		"""
 		data = self.getTimepoint(i)
 		data = self.getResampledData(data, i)
+		data.Update()
 		if not self.shift:
 			self.shift = vtk.vtkImageShiftScale()
 			self.shift.SetOutputScalarTypeToUnsignedChar()
