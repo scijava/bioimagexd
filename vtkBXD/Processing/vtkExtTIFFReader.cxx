@@ -326,6 +326,7 @@ void vtkExtTIFFReader::ExecuteData(vtkDataObject *output)
 {
     
   //printf("Allocating output data\n");
+  cout << "vtkExtTIFFReader.cxx: ExecuteData" << endl;
   vtkImageData *data = this->AllocateOutputData(output);
   int ext[6];
   int dims[3];
@@ -521,7 +522,7 @@ void vtkExtTIFFReader::ReadImageInternal( void* vtkNotUsed(in), void* outPtr,
       vtkErrorMacro("This reader cannot read old JPEG compression");
       return;
       }
-
+  cout << "vtkExtTIFFReader.cxx: ReadImageInternal" << cout;
     int width  = this->GetInternalImage()->Width;
     int height = this->GetInternalImage()->Height;
     //printf("width=%d, height=%d, size=%d\n",width,height,size);
