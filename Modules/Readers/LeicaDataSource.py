@@ -163,7 +163,6 @@ class LeicaDataSource(DataSource):
 		print "Experiments=", experiments
 
 		for experiment in experiments:
-
 			if experiment in self.reader.nonExistent:
 				print "Not reading ", experiment
 				continue
@@ -197,20 +196,46 @@ class LeicaDataSource(DataSource):
 					 operates on
 		"""
 		bd = self.getBitDepth()
-		print "Bit depth=", bd
 		if bd == 32:
 			return None
 		if not self.ctf:
-			print "Using ctf based on TIFF Color"
-			ctf = vtk.vtkColorTransferFunction()            
-			r, g, b = self.reader.GetColor(self.experiment, self.channel)
-			r /= 255.0
-			g /= 255.0
-			b /= 255.0
-			ctf.AddRGBPoint(0, 0, 0, 0)
-			ctf.AddRGBPoint(255, r, g, b)
-			self.ctf = ctf
+			if not self.reader.isRaw(self.experiment):
+				ctf = vtk.vtkColorTransferFunction()            
+				r, g, b = self.reader.GetColor(self.experiment, self.channel)
+				r /= 255.0
+				g /= 255.0
+				b /= 255.0
+				ctf.AddRGBPoint(0, 0, 0, 0)
+				ctf.AddRGBPoint(255, r, g, b)
+				self.ctf = ctf
+			else:
+				lutColor = self.reader.getLutColor(self.experiment)
+				ctf = self.getColorByName(lutColor)
+				self.ctf = ctf
 		return self.ctf        
+		
+	def getColorByName(self, name):
+		"""
+		Created: 19.10.2007, KP
+		Description: return a ctf based on a color name
+		"""
+		ctf = vtk.vtkColorTransferFunction()
+		ctf.AddRGBPoint(0, 0.0, 0.0, 0.0)
+		if name == "Green":
+			ctf.AddRGBPoint(4095, 0.0, 1.0, 0.0)
+		elif name == "Gray":
+			ctf.AddRGBPoint(4095, 1.0, 1.0, 1.0)
+		elif name == "Red":
+			ctf.AddRGBPoint(4095, 1.0, 0.0, 0.0)
+		elif name == "Blue":
+			ctf.AddRGBPoint(4095, 0.0, 0.0, 1.0)
+		elif name == "Yellow":
+			ctf.AddRGBPoint(4095, 1.0, 1.0, 0.0)
+		elif name == "Magenta":
+			ctf.AddRGBPoint(4095, 1.0, 0.0, 1.0)
+		elif name == "Cyan":
+			ctf.AddRGBPoint(4095, 0.0, 1.0, 1.0)
+		return ctf
 		
 class LeicaExperiment:
 	def __init__ (self, ExpPathTxt):
@@ -239,8 +264,25 @@ class LeicaExperiment:
 		self.RE_PixelSize = re.compile(r'Pixel Size in Byte.+\d+', re.I)
 		self.RE_NonWhitespace = re.compile(r'\w+', re.I)
 
+#		self.RE_TimeStamp = re.compile(r'Stamp_(\d+).*(\d+):
+
+
 		self.setFileName(ExpPathTxt)
 		self.TP_CH_VolDataList = []
+	
+	def getLutColor(self, experiment):
+		"""
+		Created: 19.10.2007, KP
+		Description: return the name of the color that the lut of the given experiment represents
+		"""
+		return self.SeriesDict[experiment]['LutColor']
+	
+	def isRaw(self, experiment):
+		"""
+		Created: 19.10.2007, KP
+		Description: return a boolean indicating whether a given experiment is raw or not
+		"""
+		return self.SeriesDict[experiment]['RawMode']
 				
 	def setFileName(self, filename):
 		"""
@@ -304,14 +346,7 @@ class LeicaExperiment:
 		channels = self.TP_CH_VolDataList[0]
 		rdr = channels[channel]
 		rdr.ComputeInternalFileName(0)
-		#filename = self.SeriesDict[experiment]["TiffList"][0][0][0]
-#        print filename
-
-		#filename=rdr.GetInternalFileName()
 		fn = rdr.GetInternalFileName()
-		#fn=os.path.join(self.path,filename)
-		#print fn##
-		#f=open(fn)
 		if not Image:
 			return 0, 0, 0
 		img = Image.open(fn)
@@ -350,8 +385,6 @@ class LeicaExperiment:
 		y /= 1000000.0
 		z /= 1000000.0
 		return (x, y, z)
-		
-		
 
 	def Sep_Series(self, ExpPathTxt):
 		InfoFile = open(ExpPathTxt)#If the actual file is returned with the open dialog, we can skip this.
@@ -391,15 +424,7 @@ class LeicaExperiment:
 		SeriesNameLine = SeriesNameLine.strip()
 		SeriesNameLine = SeriesNameLine.replace(chr(0), "")
 		return SeriesNameLine
-		SeriesNameSplit = SeriesNameLine.split()
-		SeriesNameSplit.reverse()
-
-		#this is intended to get the alpha-num. char values and drop the newlines:
-		SeriesNameTxtString = self.RE_NonWhitespace.search(SeriesNameSplit[0].strip())
-		SeriesName = SeriesNameTxtString.group(0)
-		# should return the series name w/o newline
-		return SeriesName
-		#It works! Holy toledo-what a pain in butt.
+		
 		
 	def GetNumChan(self, Series_Data):
 		"""
@@ -424,7 +449,6 @@ class LeicaExperiment:
 		if not self.RE_NumSect.search(Series_Data):
 			return 1
 		SeriesDataSplit = self.RE_NumSect.split(Series_Data)
-		
 		
 		NumSect_String = SeriesDataSplit[1]
 		NumSectMatch = self.RE_LogicalSize.search(NumSect_String)
@@ -478,7 +502,6 @@ class LeicaExperiment:
 		Created: 15.04.2005, KP, based on Karl Garsha's code
 		Description: Return the depth from given data
 		""" 
-#        print "Searching from",Series_Data
 		SeriesDepthString = self.RE_Depth.search(Series_Data)
 		SeriesDepthLine = SeriesDepthString.group(0)
 		
@@ -586,18 +609,26 @@ class LeicaExperiment:
 		"""        
 		self.SeriesDict = {}
 		
-		#print "Series_Data_List=",self.Series_Data_List
 		for string in self.Series_Data_List:
 			Series_Data = string
 			Series_Info = {}
  
 			seriesname = self.GetSeriesName(Series_Data)
+			lines = string.split("\n")
+			lutNameLine="Name:	Green"
+			for i,line in enumerate(lines):
+				if "LUT_0" in line:
+					lutNameLine = lines[i+1]
+					break
+			# strip the last two characters, which are \x00 and \r
+			name = lutNameLine.split("\t")[1][:-2]
+			Series_Info['LutColor'] = name
+					
 			SeriesScanMode = self.GetScanMode(Series_Data)
 			Series_Info['Pixel_Size'] = self.GetNumberOfComponents(Series_Data)                
 			
 			
 			Series_Info['Series_Name'] = seriesname
-			#print "\n\nSeries name=",seriesname,"\nScanMode=",SeriesScanMode,"\n"
 			if not SeriesScanMode:
 				if "snapshot" in seriesname.lower():
 					# TODO: This is a snapshot, handle it as such
@@ -654,8 +685,6 @@ class LeicaExperiment:
 			Series_Info = value
 			Series_Name = key
 			Num_T_Points = (Series_Info['Num_T'])
-			print "Creating TIFF list"
-			print "Num_T_Points=", Num_T_Points
 			
 			notFound = 0
 			TimePoints = []
@@ -664,14 +693,13 @@ class LeicaExperiment:
 				if n == 1:
 					n = 2
 				TP_pat = "_t%%.%dd" % n
-				#print "TP_Pattern=",TP_pat
-				#raise "foo"
 				TP_Name = TP_pat % a
 				#TP_Name='_t'+str((a%10000)//1000)+str((a%1000)//100)+str((a%100)//10)+str((a%10)//1)
 				
 				Num_Chan = Series_Info['NumChan']
-				print "Num_Chan=", Num_Chan
 				Channels = []
+				rawMode = 0
+				
 				for b in xrange(Num_Chan):
 					File_List = []
 					if 1 or Num_Chan > 1:
@@ -683,11 +711,6 @@ class LeicaExperiment:
 					for c in xrange(Num_Z_Sec):
 						#if Num_Z_Sec!=1:
 						Z_Name = str('_z' + str((c % 1000) // 100) + str((c % 100) // 10) + str((c % 10) // 1))
-						#Z_Name="_z%.3d"%c
-						#print "ZName=",Z_Name
-						#else:
-						#    print "NO Z since only one section"
-						#    Z_Name=""
 						
 						if Num_T_Points > 1:
 							Slice_Name_With_Z = self.ExpName + '_' + Series_Name + TP_Name + Z_Name + CH_Name + '.tif'
@@ -695,10 +718,23 @@ class LeicaExperiment:
 						else:
 							Slice_Name_With_Z = self.ExpName + '_' + Series_Name + Z_Name + CH_Name + '.tif'
 							Slice_Name_No_Z = self.ExpName + '_' + Series_Name  + CH_Name + '.tif'
-						if os.path.exists(os.path.join(self.path, Slice_Name_With_Z)):
+
+						withZName = os.path.join(self.path, Slice_Name_With_Z)
+						noZName = os.path.join(self.path, Slice_Name_No_Z)
+						
+						withZNameRaw = withZName.replace(".tif",".raw")
+						noZNameRaw = noZName.replace(".tif",".raw")
+						
+						if os.path.exists(withZNameRaw):
+							File_List.append(Slice_Name_With_Z.replace(".tif",".raw"))
+							rawMode = 1
+						if os.path.exists(noZNameRaw):
+							File_List.append(Slice_Name_No_Z.replace(".tif",".raw"))
+							rawMode = 1
+						if os.path.exists(withZName):
 							File_List.append(Slice_Name_With_Z)
 							#print "Using with Z"
-						elif os.path.exists(os.path.join(self.path, Slice_Name_No_Z)):
+						elif os.path.exists(noZName):
 							#print "Using no z"
 							File_List.append(Slice_Name_No_Z)
 						
@@ -709,7 +745,8 @@ class LeicaExperiment:
 			if notFound:
 				self.nonExistent.append(Series_Name)
 			else:
-				Series_Info['TiffList'] = TimePoints            
+				Series_Info['TiffList'] = TimePoints         
+				Series_Info['RawMode'] = rawMode
 				self.SeriesDict[Series_Name] = Series_Info #puts modified Series_Info dictionary back into SeriesDict
 
 	def CreateExpDataStruct(self, ExpPathTxt):
@@ -717,55 +754,85 @@ class LeicaExperiment:
 		self.Extract_Series_Info()
 		self.Create_Tiff_Lists()
 			
-
-	def ReadLeicaVolData(self, Series_Name):
-		#os.chdir(self.ExpPath)#needed for Tkinter file select
-		global TP_CH_VolDataList
-		Series_Info = self.SeriesDict[Series_Name]
-		TiffList = Series_Info['TiffList']
+	def getTIFFReader(self, Series_Info, Channel):
+		"""
+		Created: 19.10.2007, KP
+		Description: create a tiff reader that reads then given channel of the given series
+		"""
 		XYDim = Series_Info['Resolution_X'] - 1
 		NumSect = Series_Info['Number_Sections'] - 1
 		XSpace = Series_Info['Voxel_Width_X']
 		YSpace = Series_Info['Voxel_Height_Y']
 		ZSpace = Series_Info['Voxel_Depth_Z']
+		TIFFReader = vtkbxd.vtkExtTIFFReader()
+		if Series_Info['Pixel_Size'] != 3:
+			TIFFReader.RawModeOn()
+		
+		arr = vtk.vtkStringArray()
+		for i in Channel:
+			arr.InsertNextValue(os.path.join(self.path, i))
+		TIFFReader.SetFileNames(arr)
+		#First read the images for a particular channel
+		# Check to see whether the image name contains either
+		# channels or z slices at all. If not, then we can just you
+		# the filename and skip a whole bunch of processing
+	
+		if Series_Info['Bit_Depth'] == 8:
+			TIFFReader.SetDataScalarTypeToUnsignedChar()
+		else:
+			raise "Only 8-bit data supported"
+		TIFFReader.FileLowerLeftOff()
+		TIFFReader.SetDataExtent(0, XYDim, 0, XYDim, 0, NumSect)
+		TIFFReader.SetDataSpacing(XSpace, YSpace, ZSpace)
+		TIFFReader.Update()
+		return TIFFReader
+		
+	def getRAWReader(self, Series_Info, Channel):
+		"""
+		Created: 19.10.2007, KP
+		Description: create a tiff reader that reads then given channel of the given series
+		"""
+		XYDim = Series_Info['Resolution_X'] - 1
+		NumSect = Series_Info['Number_Sections'] - 1
+		XSpace = Series_Info['Voxel_Width_X']
+		YSpace = Series_Info['Voxel_Height_Y']
+		ZSpace = Series_Info['Voxel_Depth_Z']
+		
+		RAWReader = vtk.vtkImageReader2()
+		arr = vtk.vtkStringArray()
+		for i in Channel:
+			arr.InsertNextValue(os.path.join(self.path, i))
+			print os.path.join(self.path, i)
+		print "setting filenames to ",arr
+		RAWReader.SetFileNames(arr)
+	
+		if Series_Info['Bit_Depth'] == 8:
+			RAWReader.SetDataScalarTypeToUnsignedChar()
+		elif Series_Info['Bit_Depth'] == 12:
+			RAWReader.SetDataScalarTypeToUnsignedShort()
+		RAWReader.FileLowerLeftOff()
+		
+		RAWReader.SetDataExtent(0, XYDim, 0, XYDim, 0, NumSect)
+		RAWReader.SetDataSpacing(XSpace, YSpace, ZSpace)
+		RAWReader.Update()
+		return RAWReader
+
+	def ReadLeicaVolData(self, Series_Name):
+		global TP_CH_VolDataList
+		Series_Info = self.SeriesDict[Series_Name]
+		FileList = Series_Info['TiffList']
+
+		rawMode = Series_Info['RawMode']
 		#print "Reading leica volume",Series_Name
 		self.TP_CH_VolDataList = [] #contains the vol data for each timepoint, each channel
-		for TimePoint in TiffList:
+		for TimePoint in FileList:
 			ChnlVolDataLst = [] #contains the volumetric datasets for each channel w/in each timepoint
 			for Channel in TimePoint:
-				TIFFReader = vtkbxd.vtkExtTIFFReader()
-				if Series_Info['Pixel_Size'] != 3:
-					TIFFReader.RawModeOn()
-					
-				arr = vtk.vtkStringArray()
-				#print "Channels=", Channel
-				for i in Channel:
-					arr.InsertNextValue(os.path.join(self.path, i))
-				TIFFReader.SetFileNames(arr)
-				#First read the images for a particular channel
-				#print "Image list=",Channel
-				#ImageName=Channel[0] #Take the first tif name
-				#print "Image name='%s'"%ImageName
-				# Check to see whether the image name contains either
-				# channels or z slices at all. If not, then we can just you
-				# the filename and skip a whole bunch of processing
-				
-#                print "Bit depth of image=",Series_Info["Bit_Depth"]
-					
-				if Series_Info['Bit_Depth'] == 8:
-					#ImageReader.SetDataScalarTypeToUnsignedChar()
-					TIFFReader.SetDataScalarTypeToUnsignedChar()
+				if not rawMode:
+					imageReader = self.getTIFFReader(Series_Info, Channel)
 				else:
-					raise "Only 8-bit data supported"
-				TIFFReader.FileLowerLeftOff()
-				TIFFReader.SetDataExtent(0, XYDim, 0, XYDim, 0, NumSect)
-				TIFFReader.SetDataSpacing(XSpace, YSpace, ZSpace)
-				
-				TIFFReader.Update()
-				
-				
-				
-				ChnlVolDataLst.append(TIFFReader)#now we have a list with the imported volume data for each channel
+					imageReader = self.getRAWReader(Series_Info, Channel)
+				ChnlVolDataLst.append(imageReader)#now we have a list with the imported volume data for each channel
 #                self.vtkFilters.append(TIFFReader)
 			self.TP_CH_VolDataList.append(ChnlVolDataLst)   
 			
