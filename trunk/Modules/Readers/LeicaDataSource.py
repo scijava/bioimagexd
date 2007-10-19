@@ -222,22 +222,23 @@ class LeicaDataSource(DataSource):
 		"""
 		ctf = vtk.vtkColorTransferFunction()
 		ctf.AddRGBPoint(0, 0.0, 0.0, 0.0)
+		maxval = (2**self.getBitDepth())-1
 		if name == "Green":
-			ctf.AddRGBPoint(4095, 0.0, 1.0, 0.0)
+			ctf.AddRGBPoint(maxval, 0.0, 1.0, 0.0)
 		elif name == "Gray":
-			ctf.AddRGBPoint(4095, 1.0, 1.0, 1.0)
+			ctf.AddRGBPoint(maxval, 1.0, 1.0, 1.0)
 		elif name == "Red":
-			ctf.AddRGBPoint(4095, 1.0, 0.0, 0.0)
+			ctf.AddRGBPoint(maxval, 1.0, 0.0, 0.0)
 		elif name == "Blue":
-			ctf.AddRGBPoint(4095, 0.0, 0.0, 1.0)
+			ctf.AddRGBPoint(maxval, 0.0, 0.0, 1.0)
 		elif name == "Yellow":
-			ctf.AddRGBPoint(4095, 1.0, 1.0, 0.0)
+			ctf.AddRGBPoint(maxval, 1.0, 1.0, 0.0)
 		elif name == "Magenta":
-			ctf.AddRGBPoint(4095, 1.0, 0.0, 1.0)
+			ctf.AddRGBPoint(maxval, 1.0, 0.0, 1.0)
 		elif name == "Cyan":
-			ctf.AddRGBPoint(4095, 0.0, 1.0, 1.0)
+			ctf.AddRGBPoint(maxval, 0.0, 1.0, 1.0)
 		else:
-			ctf.AddRGBPoint(4095, 1.0, 1.0, 1.0)
+			ctf.AddRGBPoint(maxval, 1.0, 1.0, 1.0)
 		return ctf
 		
 class LeicaExperiment:
