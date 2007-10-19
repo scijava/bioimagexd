@@ -166,7 +166,24 @@ class InteractivePanel(GUI.ogl.ShapeCanvas):
 		self.Bind(wx.EVT_LEFT_UP, self.executeAction)
 		self.Bind(wx.EVT_SIZE, self.OnSize)
 		self.Bind(wx.EVT_MOUSEWHEEL, self.onMouseWheel)
+		self.Bind(wx.EVT_KEY_UP, self.onKeyUp)
 		lib.messenger.connect(None, "update_helpers", self.onUpdateHelpers)
+
+
+	def onKeyUp(self,event):
+		"""
+		Created: 19.10.2007, LP
+		Description: An event handler of keyboard key release
+		"""
+		if event.GetKeyCode() == wx.WXK_DELETE:
+			shapeList = self.diagram.GetShapeList()
+			for shape in shapeList:
+				if shape.Selected():
+					self.RemoveShape(shape)
+					shape.Delete()
+					self.paintPreview()
+					self.Refresh()
+
 		
 	def onUpdateDataDimensions(self, *args):
 		"""
@@ -689,7 +706,6 @@ class InteractivePanel(GUI.ogl.ShapeCanvas):
 			self.setThreshold()
 		elif self.action == DELETE_ANNOTATION:
 			x, y = self.actionstart
-			
 			obj, attach = self.FindShape(x, y)
 			if obj:
 				self.RemoveShape(obj)
