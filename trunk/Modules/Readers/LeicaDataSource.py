@@ -210,6 +210,7 @@ class LeicaDataSource(DataSource):
 				self.ctf = ctf
 			else:
 				lutColor = self.reader.getLutColor(self.experiment)
+				print "getting color based on name '",lutColor,"'"
 				ctf = self.getColorByName(lutColor)
 				self.ctf = ctf
 		return self.ctf        
@@ -803,7 +804,6 @@ class LeicaExperiment:
 		for i in Channel:
 			arr.InsertNextValue(os.path.join(self.path, i))
 			print os.path.join(self.path, i)
-		print "setting filenames to ",arr
 		RAWReader.SetFileNames(arr)
 	
 		if Series_Info['Bit_Depth'] == 8:
