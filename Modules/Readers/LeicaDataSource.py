@@ -236,6 +236,8 @@ class LeicaDataSource(DataSource):
 			ctf.AddRGBPoint(4095, 1.0, 0.0, 1.0)
 		elif name == "Cyan":
 			ctf.AddRGBPoint(4095, 0.0, 1.0, 1.0)
+		else:
+			ctf.AddRGBPoint(4095, 1.0, 1.0, 1.0)
 		return ctf
 		
 class LeicaExperiment:
@@ -261,7 +263,7 @@ class LeicaExperiment:
 		self.RE_VoxelWidth = re.compile(r'Voxel-Width.+\d+', re.I)
 		self.RE_VoxelHeight = re.compile(r'Voxel-Height.+\d+', re.I)
 		self.RE_VoxelDepth = re.compile(r'Voxel-Depth.+\d+', re.I)
-		self.RE_Bit_Depth = re.compile(r'Resolution.+\d+', re.I)
+		self.RE_Bit_Depth = re.compile(r'Resolution in Bit.+\d+', re.I)
 		self.RE_PixelSize = re.compile(r'Pixel Size in Byte.+\d+', re.I)
 		self.RE_NonWhitespace = re.compile(r'\w+', re.I)
 
@@ -627,9 +629,9 @@ class LeicaExperiment:
 			Series_Info['LutColor'] = name
 					
 			SeriesScanMode = self.GetScanMode(Series_Data)
+			
 			Series_Info['Pixel_Size'] = self.GetNumberOfComponents(Series_Data)                
-			
-			
+			Series_Info['Bit_Depth'] = self.GetBitDepth(Series_Data)
 			Series_Info['Series_Name'] = seriesname
 			if not SeriesScanMode:
 				if "snapshot" in seriesname.lower():
@@ -672,9 +674,7 @@ class LeicaExperiment:
 				Series_Info['Voxel_Height_Y'] = self.GetVoxelHeight(Series_Data)
 				Series_Info['Voxel_Depth_Z'] = self.GetVoxelDepth(Series_Data)
 
-				Series_Info['Bit_Depth'] = self.GetBitDepth(Series_Data)
 
-				print "Pixel size of dataset=", Series_Info['Pixel_Size']
 				Series_Info['Resolution_X'] = self.GetResolutionX(Series_Data)
 				Series_Info['Resolution_Y'] = self.GetResolutionY(Series_Data)
 				
@@ -779,6 +779,7 @@ class LeicaExperiment:
 		# channels or z slices at all. If not, then we can just you
 		# the filename and skip a whole bunch of processing
 	
+		print "Bit depth=",Series_Info['Bit_Depth']
 		if Series_Info['Bit_Depth'] == 8:
 			TIFFReader.SetDataScalarTypeToUnsignedChar()
 		else:
