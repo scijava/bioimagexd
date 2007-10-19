@@ -175,7 +175,8 @@ class InteractivePanel(GUI.ogl.ShapeCanvas):
 		Created: 19.10.2007, LP
 		Description: An event handler of keyboard key release
 		"""
-		if event.GetKeyCode() == wx.WXK_DELETE:
+		keyCode = event.GetKeyCode()
+		if keyCode == wx.WXK_DELETE or keyCode == wx.WXK_NUMPAD_DELETE:
 			shapeList = self.diagram.GetShapeList()
 			for shape in shapeList:
 				if shape.Selected():
