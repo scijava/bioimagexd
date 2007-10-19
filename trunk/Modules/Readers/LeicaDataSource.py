@@ -622,7 +622,8 @@ class LeicaExperiment:
 					lutNameLine = lines[i+1]
 					break
 			# strip the last two characters, which are \x00 and \r
-			name = lutNameLine.split("\t")[1][:-2]
+			name = lutNameLine.split("\t")[1].strip()
+			name = name.replace("\x00","")
 			Series_Info['LutColor'] = name
 					
 			SeriesScanMode = self.GetScanMode(Series_Data)
