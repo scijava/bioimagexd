@@ -223,8 +223,7 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
 		
 		self.moduleLbl = wx.StaticText(self, -1, "3D rendering modules")
 		
-#		 self.moduleBox = wx.StaticBox(self, -1, "Modules for 3D scene")
-#		 self.moduleSizer = wx.StaticBoxSizer(self.moduleBox, wx.VERTICAL)
+
 		modules = self.mode.mapping.keys()
 		modules.sort()
 
@@ -253,8 +252,7 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
 		self.moduleRemove = wx.Button(self, -1, "Remove")
 		self.moduleRemove.Bind(wx.EVT_BUTTON, self.onRemoveModule)		 
 		n = 0
-#		 self.sizer.Add(self.namePanel, (n, 0), flag = wx.EXPAND|wx.LEFT|wx.RIGHT)
-#		 n += 1
+
 		self.sizer.Add(self.moduleLbl, (n, 0))
 		n += 1
 		self.sizer.Add(self.moduleChoice, (n, 0))
@@ -289,18 +287,22 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
 		Description: Select a module
 		"""
 		self.selected = event.GetSelection()
-		self.showConfiguration(self.selected)
+		lbl = self.moduleListbox.GetStringSelection()
+		do_cmd = 'scripting.visualizer.getCurrentMode().getSidebarWindow().showConfiguration("%s")' % (lbl)
+		cmd = lib.Command.Command(lib.Command.GUI_CMD, None, None, do_cmd, "", \
+									desc = "Show configuration module '%s'"%lbl)		
+		cmd.run()		
+#		self.showConfiguration(self.selected)
 		
-	def showConfiguration(self, n):
+	def showConfiguration(self, label):
 		"""
 		Created: 23.05.2005, KP
 		Description: showConfiguration
 		"""
+		n = self.moduleListbox.FindString(label)
 		if self.currentConf:
 			self.sizer.Detach(self.currentConf)
-			#self.confSizer.Detach(self.currentConf)
 
-			#del self.currentConf
 			self.currentConf.Show(0)
 		lbl = self.moduleListbox.GetString(n)
 		self.currentConfLbl = lbl
@@ -320,7 +322,17 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
 		index = event.GetSelection()
 		lbl = self.moduleListbox.GetString(index)
 		status = self.moduleListbox.IsChecked(index)
-		self.mode.setRenderingStatus(lbl, status)
+		do_cmd = 'scripting.visualizer.getCurrentMode().getSidebarWindow().setRenderingEnabled("%s", %s)' % (lbl, str(not not status))
+		cmd = lib.Command.Command(lib.Command.GUI_CMD, None, None, do_cmd, "", \
+									desc = "Toggle rendering of module '%s'"%lbl)		
+		cmd.run()
+		
+	def setRenderingEnabled(self, label, status):
+		"""
+		Created: 16.10.2007, KP
+		Description: toggle whether a given module is rendered on the scene
+		"""
+		self.mode.setRenderingStatus(label, status)
 
 	def onConfigureLights(self, event):
 		"""
@@ -337,6 +349,17 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
 		Description: Load the selected module
 		"""
 		lbl = self.moduleChoice.GetStringSelection()
+		do_cmd = 'scripting.visualizer.getCurrentMode().getSidebarWindow().loadModule("%s")' % lbl
+		cmd = lib.Command.Command(lib.Command.GUI_CMD, None, None, do_cmd, "", \
+									desc = "Load visualization module '%s'"%lbl)
+		cmd.run()
+
+		
+	def loadModule(self, lbl):
+		"""
+		Created: 16.10.2007, KP
+		Description: load a visualization module with the give name
+		"""		
 		if not lbl in self.count:
 			self.count[lbl] = 0
 		n = self.count[lbl]
@@ -369,8 +392,20 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
 			GUI.Dialogs.showerror(self, "You have to select a module to be removed", "No module selected")
 			return
 		lbl = self.moduleListbox.GetString(self.selected)
+		do_cmd = 'scripting.visualizer.getCurrentMode().getSidebarWindow().removeModule("%s")' % lbl
+		cmd = lib.Command.Command(lib.Command.GUI_CMD, None, None, do_cmd, "", \
+									desc = "Remove visualization module '%s'"%lbl)
+		cmd.run()
+		
+		
+	def removeModule(self, lbl):
+		"""
+		Created: 16.10.2007, KP
+		Description: remove a module with the give name
+		"""
 		self.mode.removeModule(lbl)
-		self.moduleListbox.Delete(self.selected)
+		selected = self.moduleListbox.FindString(lbl)
+		self.moduleListbox.Delete(selected)
 		self.selected = -1
 		
 		if self.currentConf and self.currentConfLbl == lbl:
