@@ -898,7 +898,7 @@ class Visualizer:
 		self.currModeModule = None
 		self.dataUnit = None
 		self.sidebarWin.SetDefaultSize((0, 1024))
-		self.zslider.SetRange(0, 1)
+		self.zslider.SetRange(1, 2)
 		wx.LayoutAlgorithm().LayoutWindow(self.parent, self.visWin)
 		del self.dataUnit
 		self.dataUnit = None
@@ -1288,6 +1288,7 @@ class Visualizer:
 		Created: 17.08.2007, KP
 		Description: return the z slider value
 		"""
+		print "zslider value=",self.zslider.GetValue(),"range=",self.zslider.GetMin(),self.zslider.GetMax()
 		return self.zslider.GetValue()
 
 	def onSnapshot(self, event):

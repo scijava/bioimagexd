@@ -157,7 +157,8 @@ class VisualizationModule(GUIBuilder.GUIBuilderBase):
 		Description: Set the timepoint to be displayed
 		"""
 		self.timepoint = value
-
+		if not self.dataUnit:
+			return
 		if self.visualizer.getProcessedMode():
 			Logging.info("Will render processed data instead", kw = "rendering")
 			self.data = self.dataUnit.doPreview(scripting.WHOLE_DATASET, 1, self.timepoint)
