@@ -177,11 +177,6 @@ class GalleryConfigurationPanel(scrolled.ScrolledPanel):
 		Description: Set the dataunit
 		"""
 		x, y, z = dataUnit.getDimensions()
-#		self.zslider.SetRange(0, z - 1)
-#		w, h2 = self.GetSize()
-#		w2, h = self.zslider.GetSize()
-#		self.zslider.SetSize((w, h))
-#		self.Layout()
 		
 	def onSetViewMode(self, event):
 		"""
@@ -271,7 +266,6 @@ class GalleryMode(VisualizationMode):
 		Created: 25.05.2005, KP
 		Description: Set the dataunit to be visualized
 		"""
-
 		VisualizationMode.setDataUnit(self, dataUnit)
 		if self.configPanel:
 			self.configPanel.setDataUnit(dataUnit)

@@ -196,10 +196,9 @@ class SlicesMode(VisualizationMode):
 		Created: 25.05.2005, KP
 		Description: Set the dataunit to be visualized
 		"""
-		if dataUnit == self.dataUnit:
-			Logging.info("Same dataunit, not changing", kw = "visualizer")
-			return
-		
+#		if dataUnit == self.dataUnit:
+#			Logging.info("Same dataunit, not changing", kw = "visualizer")
+#			return
 		self.iactivePanel.setDataUnit(dataUnit, 0)
 		
 	def setTimepoint(self, timePoint):
