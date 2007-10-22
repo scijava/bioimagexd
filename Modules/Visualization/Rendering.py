@@ -215,6 +215,13 @@ class RenderingMode(VisualizationMode):
 			eval(cmd)
 		else:
 			self.renwin.StereoRenderOff()
+			
+	def getSidebarWindow(self):
+		"""
+		Created: 16.10.2007, KP
+		Description: return the sidebar window
+		"""
+		return self.configPanel
   
 	def activate(self, sidebarwin):
 		"""
@@ -417,6 +424,7 @@ class RenderingMode(VisualizationMode):
 		Description: Set the dataunit to be visualized
 		"""
 		self.dataUnit = dataUnit
+	
 		if not len(self.modules):
 			# we instruct loadModule not to render the scene, software
 			# we can set the view before rendering
@@ -424,8 +432,9 @@ class RenderingMode(VisualizationMode):
 			module.setView((1, 1, 1, 0, 0, 1))
 			module.showTimepoint(self.timepoint)
 			self.configPanel.appendModuleToList(self.defaultModule)
-		for module in self.modules:
-			module.setDataUnit(dataUnit)
+		if dataUnit:
+			for module in self.modules:
+				module.setDataUnit(dataUnit)
 			
 	def getConfigurationPanel(self, name):
 		"""
@@ -469,6 +478,7 @@ class RenderingMode(VisualizationMode):
 		Description: return the module with the given name
 		"""
 		return self.nameToModule.get(name,None)
+		
 
 	def loadModule(self, name, lbl = None, render = 1):
 		"""
