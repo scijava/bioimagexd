@@ -426,7 +426,7 @@ class GUIBuilder(wx.Panel):
 						# the previous item was an element instructing us to not switch to the next row, but
 						# keep adding items to the current row, and if so, act accordingly
 						if n > 0:
-							if items[n - 1] == NOBR and y != oldRow:
+							if items[n - 1] == NOBR and self.currentRow != oldRow:
 								self.currentRow -= 1
 							else:
 								positionOnSameRow = 0
