@@ -36,17 +36,6 @@ __author__ = "BioImageXD Project"
 __version__ = "$Revision: 1.22 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
-#import GUI.Dialogs
-#import ImageOperations
-#import math
-#import os.path
-#import random
-#from SplineTrack import *
-#import sys
-#import threading
-#import TimepointSelection
-#import wx
-
 from GUI.Urmas.UrmasPalette import UrmasDropTarget
 from GUI.Urmas.TrackItem.KeyframePoint import KeyframePoint
 from GUI.Urmas.TrackItem.KeyframePoint import KeyframeEndPoint
