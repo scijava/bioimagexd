@@ -163,7 +163,6 @@ def getModules(moduleSubDir, globExtension = "*.py", callback = None, moduleType
 				moduleNameInDictionary = loadedModule.getShortDesc()
 			except AttributeError:
 				moduleNameInDictionary = moduleName
-		Logging.info("Using" + moduleNameInDictionary + "as name", kw = "modules")
 		if callback:
 			callback("Loading %s %s..." % (moduleType, moduleNameInDictionary))
 		moduleClass = loadedModule.getClass()
