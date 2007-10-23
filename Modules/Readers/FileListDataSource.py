@@ -50,7 +50,7 @@ class FileListDataSource(DataSource):
 	Created: 12.04.2005, KP
 	Description: File list datasource for reading a dataset from a given set of files
 	"""
-	def __init__(self, filenames = [], pattern = "", callback = None):
+	def __init__(self, filenames = [], callback = None):
 		"""
 		Created: 12.04.2005, KP
 		Description: Constructor
@@ -65,7 +65,6 @@ class FileListDataSource(DataSource):
 		self.dimensions = None
 		self.voxelsize = (1, 1, 1)
 		self.spacing = (1, 1, 1)
-		self.pattern = ""
 		self.color = None
 		self.shift = None
 		self.tps = -1
@@ -79,7 +78,6 @@ class FileListDataSource(DataSource):
 		self.readers = []
 		self.slicesPerTimepoint = 1
 		self.is3D = 0
-		#self.filename = None	17.7.07, MB
 	
 	def setColorTransferFunction(self, ctf):
 		"""
@@ -94,22 +92,12 @@ class FileListDataSource(DataSource):
 		Description: Return a flag indicating whether the images are 2D or 3D images
 		"""
 		return self.is3D
-		
-		
-	def setPattern(self, pattern):
-		"""
-		Created: 07.05.2007, KP
-		Description: Set a pattern describing which files to use
-		"""
-		self.pattern = pattern
-		
-	def setFilenames(self, filenames, pattern = -1):
+				
+	def setFilenames(self, filenames):
 		"""
 		Created: 07.05.2007, KP
 		Description: set the filenames that will be read
 		"""
-		if pattern != -1:
-			self.pattern = pattern
 		if not self.dimensions:
 			self.retrieveImageInfo(filenames[0])
 		self.filenames = filenames
@@ -172,7 +160,6 @@ class FileListDataSource(DataSource):
 		self.z = int(self.slicesPerTimepoint)
 
 		assert self.z > 0, "Number of slices per timepoint is greater than 0"
-		#assert self.z <= len(self.filenames), "Number of timepoints cannot exceed number of files given"	17.7.07, merging, MB
 
 		for i in self.readers:
 			del i
@@ -203,9 +190,8 @@ class FileListDataSource(DataSource):
 				#print "NO PALETTE, IS AN RGB IMAGE"
 				#print Image
 				#print dir(Image)
-		rdr = self.getReaderByExtension(ext, isRGB)
 				
-		dirn = os.path.dirname(files[0])
+		dirName = os.path.dirname(files[0])
 		print "THERE ARE ", self.z, "SLICES PER TIMEPOINT"
 		ext = files[0].split(".")[-1].lower()
 
@@ -215,117 +201,57 @@ class FileListDataSource(DataSource):
 		
 		if dim == 3:
 			totalFiles = len(files)
-			for i, file in enumerate(files):						  
-				# This is not required for VTK dataset readers, so 
-				# we ignore any errors 0
-				Logging.info("Reading ", file, kw = "io")
+			for i, file in enumerate(files):
+				rdr = self.getReaderByExtension(ext, isRGB)
 				rdr.SetFileName(file)
-				#TODO: mpr doesnt exist, commented following two lines (05.07.2007 SS):
-				#if mpr == "ExtTIFF" and not isRGB:
-					#rdr.RawModeOn()
 				self.readers.append(rdr)
-			   
-				#self.callback(i,"Reading dataset %d / %d"%(i+1,totalFiles))
-#				 self.writeData(outname,data,i,len(files))
-		else:
-			totalFiles = len(files) / self.z
+			return
+			
+		totalFiles = len(files) / self.z
 
-			pattern = self.pattern
-			n = pattern.count("%")
+		imgAmnt = len(files)
+		if totalFiles == 1:
+			rdr = self.getReaderByExtension(ext, isRGB)
+			arr = vtk.vtkStringArray()
+			for fileName in files:
+				arr.InsertNextValue(os.path.join(dirName, fileName))
+			rdr.SetFileNames(arr)
+			self.readers.append(rdr)
+			return
 			
-			Logging.info("Number of %s=", n, kw = "io")
-			imgAmnt = len(files)
-			# If there's only one timepoint
-			if len(files) == self.z:
+		if imgAmnt > 1:
+			# If the pattern doesn't have %, then we just use
+			# the given filenames and allocate them to timepoints
+			# using  slicesPerTimepoint slices per timepoint
+			ntps = len(files) / self.slicesPerTimepoint
+			filelst = files[:]
+			# dirn #TODO: what was this?
+			for tp in range(0, ntps):
+				rdr = self.getReaderByExtension(ext, isRGB)
 				arr = vtk.vtkStringArray()
-				for i in files:
-					arr.InsertNextValue(os.path.join(dirn, i))
-				rdr.SetFileNames(arr)
-				self.readers.append(rdr)
-			elif n == 0 and imgAmnt > 1:
-				# If the pattern doesn't have %, then we just use
-				# the given filenames and allocate them to timepoints
-				# using  slicesPerTimepoint slices per timepoint
-				ntps = len(files) / self.slicesPerTimepoint
-				filelst = files[:]
-				# dirn #TODO: what was this?
-				for tp in range(0, ntps):
-					rdr = self.getReaderByExtension(ext, isRGB)
-					arr = vtk.vtkStringArray()
-					for i in range(0, self.slicesPerTimepoint):										   
-						arr.InsertNextValue(filelst[0])
-						filelst = filelst[1:]
-					
-					rdr.SetFileNames(arr)
-					rdr.SetDataExtent(0, self.x - 1, 0, self.y - 1, 0, self.z - 1)
-					rdr.SetDataSpacing(self.spacing)
-					rdr.SetDataOrigin(0, 0, 0)
+				for i in range(0, self.slicesPerTimepoint):
+					arr.InsertNextValue(filelst[0])
+					filelst = filelst[1:]
 				
-					self.readers.append(rdr)
-			
-				#print "FOO"
-				#Dialogs.showerror(self,"You are trying to import multiple files but have not defined \
-				#					a proper pattern for the files to be imported","Bad pattern")
-				return
-			elif n == 0:
-				# If no pattern % and only one file
+				rdr.SetFileNames(arr)
 				rdr.SetDataExtent(0, self.x - 1, 0, self.y - 1, 0, self.z - 1)
 				rdr.SetDataSpacing(self.spacing)
 				rdr.SetDataOrigin(0, 0, 0)
-				
-				rdr.SetFileName(files[0])
-				#rdr.Update()
-
-				Logging.info("Reader = ", rdr, kw = "io")
 				self.readers.append(rdr)
-				
-			elif n == 1:
-				# If there is a % in the pattern
-				j = 0
-				Logging.info("self.z=%d", self.z, kw = "io")
-				start = 0
-				for i in range(0, imgAmnt):					  
-					file = dirn + os.path.sep + pattern % i
-					if os.path.exists(file):
-						start = i
-						break
-					
-				for i in range(start, imgAmnt + start, self.z):
-					rdr = self.getReaderByExtension(ext, isRGB)
-					rdr.SetDataExtent(0, self.x - 1, 0, self.y - 1, 0, self.z - 1)
-					rdr.SetDataSpacing(self.spacing)
-					rdr.SetDataOrigin(0, 0, 0)
-					
-					if i:
-						Logging.info("Setting slice offset to ", i, kw = "io")
-						rdr.SetFileNameSliceOffset(i)
-					rdr.SetFilePrefix(dirn + os.path.sep)
-					rdr.SetFilePattern("%s" + pattern)
-				   
-					self.callback(j, "Reading dataset %d / %d" % (j + 1, totalFiles))
-					self.readers.append(rdr)
-					j = j + 1
-			elif n == 2:
-				tps = imgAmnt / self.z
-				for i in range(tps):
-					rdr = self.getReaderByExtension(ext, isRGB)
-					rdr.SetDataExtent(0, self.x - 1, 0, self.y - 1, 0, self.z - 1)
-					rdr.SetDataSpacing(self.spacing)
-					rdr.SetDataOrigin(0, 0, 0)
-					
-					pos = pattern.rfind("%")
-					begin = pattern[:pos - 1]
-					end = pattern[pos - 1:]
-					currpat = begin % i + end
-					Logging.info("Pattern for timepoint %d is " % i, currpat, kw = "io")
-									 
-					rdr.SetFilePrefix(dirn + os.path.sep)
-					rdr.SetFilePattern("%s" + currpat)
-					Logging.info("Reader = ", rdr, kw = "io")
-					# rdr.Update()
-					self.readers.append(rdr)
-					self.callback(i, "Reading dataset %d / %d" % (i + 1, totalFiles))
-				
+
+			return
+		elif imgAmnt == 1:
+			# If only one file
+			rdr.SetDataExtent(0, self.x - 1, 0, self.y - 1, 0, self.z - 1)
+			rdr.SetDataSpacing(self.spacing)
+			rdr.SetDataOrigin(0, 0, 0)
+			
+			rdr.SetFileName(files[0])
+
+			Logging.info("Reader = ", rdr, kw = "io")
+			self.readers.append(rdr)
+			
+
 	def setSlicesPerTimepoint(self, n):
 		"""
 		Created: 07.05.2007, KP
@@ -345,15 +271,6 @@ class FileListDataSource(DataSource):
 		"""
 		return int(self.numberOfImages / self.slicesPerTimepoint)
 		
-# Commented this out because "filename" seems not to be used anymore
-#		
-#	def getFileName(self):
-#		"""
-#		Created: 21.07.2005
-#		Description: Return the file name
-#		"""    
-#		return self.filename
-		
 	def getDataSet(self, i, raw = 0):
 		"""
 		Created: 12.04.2005, KP
@@ -361,6 +278,8 @@ class FileListDataSource(DataSource):
 		Parameters:   i		  The index
 		"""
 		data = self.getTimepoint(i)
+		if raw:
+			return data
 		data = self.getResampledData(data, i)
 		data.Update()
 		if not self.shift:
@@ -369,7 +288,6 @@ class FileListDataSource(DataSource):
 		self.shift.SetInput(data)
 			
 		x0, x1 = data.GetScalarRange()
-		print "Scalar range=", x0, x1
 		if not x1:
 			x1 = 1
 		scale = 255.0 / x1
@@ -390,16 +308,12 @@ class FileListDataSource(DataSource):
 		assert os.path.exists(filename), "File that we're retrieving information \
 										from (%s) needs to exist, but doesn't." % filename
 		ext  = filename.split(".")[-1].lower()
-		print "Retrieving image info with ext", ext	#svn-1037, 17.7.07, MB
 		rdr = self.getReaderByExtension(ext)
 		
 		if ext == "bmp":
 			rdr.Allow8BitBMPOn()
 		
-		print "filename=", filename		#svn-1037, 17.7.07, MB
 		rdr.SetFileName(filename)
-		rdr.UpdateInformation()			#svn-1037, 17.7.07, MB
-		print rdr				#svn-1037, 17.7.07, MB
 		rdr.Update()
 		data = rdr.GetOutput()
 		self.x, self.y, z = data.GetDimensions()
@@ -408,6 +322,7 @@ class FileListDataSource(DataSource):
 			self.slicesPerTimepoint = z
 			self.z = z
 			self.dimensions = (self.x, self.y, self.z)
+			lib.messenger.send(self, "update_dimensions")
 				
 	def getTimepoint(self, n, onlyDims = 0):
 		"""
@@ -420,14 +335,10 @@ class FileListDataSource(DataSource):
 		if n >= len(self.readers):
 			raise Logging.GUIError("Attempt to read bad timepoint", \
 									"Timepoint %d is not defined by the given filenames" % n)
-			#print "TRYING TO GET TIMEPOINT",n,"THERE ARE ",len(self.readers),"readers"
 			n = 0
 			
 		self.reader = self.readers[n]
-		
-	
 		data = self.reader.GetOutput()
-		
 		if not self.voxelsize:
 			size = data.GetSpacing()
 			x, y, z = [size.GetElement(x) for x in range(0, 3)]
@@ -439,8 +350,6 @@ class FileListDataSource(DataSource):
 		return data		   
 	
 
-#svn-1037, 17.7.07, MB
-
 	def getDimensions(self):
 		"""
 		Created: 12.04.2005, KP
@@ -449,24 +358,6 @@ class FileListDataSource(DataSource):
 		"""
 		return (self.x, self.y, self.z)
 
-
-#Look above, 17.7.07, MB
-
-
-#	def getDimensions(self):
-#		"""
-#		Created: 12.04.2005, KP
-#		Description: Returns the (x, y, z) dimensions of the datasets this 
-#					 dataunit contains
-#		"""
-#		if self.resampleDims:
-#			return self.resampleDims
-#		if not self.dimensions:			   
-#			self.getVoxelSize()
-#			#print "Got dimensions=",self.dimensions				
-#		return self.dimensions
-
-		
 	def getSpacing(self):
 		"""
 		Created: 12.04.2005, KP
