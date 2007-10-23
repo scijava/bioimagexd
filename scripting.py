@@ -56,6 +56,8 @@ settingsCache = {}
 record = 0
 conf = None
 
+
+unhandledException=0
 app = None
 mainWindow = None
 animator=None

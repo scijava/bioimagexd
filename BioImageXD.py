@@ -85,6 +85,16 @@ conf = Configuration.Configuration(conffile)
 w = vtk.vtkOutputWindow()
 i = w.GetInstance()
 
+def exceptHook(type, value, traceback):
+	"""
+	Created: 16.10.2007, KP
+	Description: mark an unhandled exception as happened
+	"""
+	scripting.unhandledException = 1
+	sys.__excepthook__(type, value, traceback)
+	
+sys.excepthook = exceptHook
+
 def onWarning(obj, evt, *args):
 	"""
 	Created: Unknown date, KP
