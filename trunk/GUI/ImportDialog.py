@@ -30,6 +30,9 @@ __author__ = "BioImageXD Project"
 __version__ = "$Revision: 1.40 $"
 __date__ = "$Date: 2005/01/13 14:52:39 $"
 
+FILES_FOLLOWING_PATTERN = 0
+ALL_FILES_IN_DIRECTORY  = 1
+
 import scripting
 from lib.DataSource.BXDDataWriter import BXDDataWriter
 from lib.DataSource.BXCDataWriter import BXCDataWriter
@@ -47,6 +50,8 @@ import re
 import vtk
 import wx
 
+import lib.messenger
+
 class ImportDialog(wx.Dialog):
 	"""
 	Created: 16.03.2005, KP
@@ -61,6 +66,8 @@ class ImportDialog(wx.Dialog):
 		self.dataUnit = DataUnit()
 
 		self.dataSource = parent.typeToSource["filelist"]()
+		
+		lib.messenger.connect(self.dataSource, "upate_dimensions", self.updateImageInfo)
 		self.dataUnit.setDataSource(self.dataSource)
 		self.settings = DataUnitSettings()
 		self.settings.set("Type", "NOOP")
@@ -69,13 +76,13 @@ class ImportDialog(wx.Dialog):
 		
 		wx.Dialog.__init__(self, parent, -1, 'Import image stack', style = wx.RESIZE_BORDER | wx.CAPTION)
 		self.inputFile = ""
+		self.importDirectory = ""
 
-#        self.sizer=wx.GridBagSizer()
+		self.numRE = re.compile("[0-9]+")
+
 		self.sizer = wx.BoxSizer(wx.VERTICAL)
 		self.createImageImport()
-		#self.createVTIImport()
 		self.imageInfo = None
-		self.pattern = 0
 		self.resultDataset = None
 		
 		self.btnsizer = self.CreateButtonSizer(wx.OK | wx.CANCEL)
@@ -97,8 +104,10 @@ class ImportDialog(wx.Dialog):
 		Created: 07.05.2007, KP
 		Description: Set a file that is used as an initial input for the import
 		"""        
-		assert os.path.exists(filename), "Filename needs to exist, but no file %s" % filename
-		
+		if not os.path.exists(filename):
+			GUI.Dialogs.showerror(self, "The specified file (%s) does not exist."%os.path.basename(filename), "File does not exist")
+			return
+						
 		self.inputFile = filename
 		self.browsedir.SetValue(filename)
 		
@@ -179,25 +188,19 @@ class ImportDialog(wx.Dialog):
 		Logging.info("Writing voxel size as ", x, y, z, kw = "io")
 		settings.set("VoxelSize", (x, y, z))
 
-		
-		self.x, self.y, self.z = self.dataSource.getDimensions()
-		Logging.info("Writing dimensions as ", self.x, self.y, self.z, kw = "io")
+		self.dimensions = (self.x, self.y, self.x) = self.dataSource.getDimensions()
+		Logging.info("Writing dimensions as ", self.dimensions, kw = "io")
 
-
-		settings.set("Dimensions", (self.x, self.y, self.z))
+		settings.set("Dimensions", self.dimensions)
 		name = self.nameEdit.GetValue()
 		settings.set("Name", name)
-
 		
 		parser = self.writer.getParser()
 		settings.writeTo(parser)
 		i = 0
-		#Logging.info("readers (%d)=" % len(self.readers), self.readers, kw = "io")
-		#for rdr in self.readers:
-		#tot = self.dataSource.getDataSetCount()
 		for i in range(0, self.tot):
-			image = self.dataSource.getDataSet(i)
-			#image.SetExtent(0,self.x-1,0,self.y-1,0,self.z-1)
+			print "Getting dataset",i
+			image = self.dataSource.getDataSet(i, raw = 1)
 			image.SetSpacing(self.spacing)
 			image.SetOrigin(0, 0, 0)
 			self.writer.addImageData(image)
@@ -225,7 +228,7 @@ class ImportDialog(wx.Dialog):
 		
 		mask = "Supported image files|*.jpg;*.png;*.tif;*.tiff;*.jpeg;*.vtk;*.vti;*.bmp"
 		self.browsedir = filebrowse.FileBrowseButton(self, -1, labelText = "Source Directory: ", \
-														changeCallback = self.loadListOfImages,
+														changeCallback = self.setSourceFile,
 		startDirectory = initialDir, initialValue = self.inputFile, fileMask = mask)
 		
 		self.sourcesizer = wx.BoxSizer(wx.VERTICAL)
@@ -243,7 +246,7 @@ class ImportDialog(wx.Dialog):
 		self.patternEdit.Enable(0)
 		
 		self.patternUpdateBtn = wx.Button(self, -1, "Update")
-		self.patternUpdateBtn.Bind(wx.EVT_BUTTON, self.loadListOfImages)
+		self.patternUpdateBtn.Bind(wx.EVT_BUTTON, self.updateListOfImages)
 		
 		self.patternLbl = wx.StaticText(self, -1, "Pattern:")
 		self.patternBox = wx.BoxSizer(wx.HORIZONTAL)
@@ -398,7 +401,6 @@ enter the information below.""")
 		
 		if self.inputFile:
 			self.browsedir.SetValue(self.inputFile)
-#			self.loadListOfFiles()		20.7.07, MB
 			
 	def onUpdatePreview(self, event = None):
 		"""
@@ -415,13 +417,14 @@ enter the information below.""")
 		self.dataSource.setSlicesPerTimepoint(slices)
 		currentZ = self.zslider.GetValue()
 		self.zslider.SetRange(1, slices)
-		self.updateSelection(None, updatePreview = 1)
 		
 		if currentZ < 1:
 			currentZ = 1
 		if currentZ > slices:
 			currentZ = slices
 		self.zslider.SetValue(currentZ)
+		self.updateSelection(None, updatePreview = 1)
+		
 
 	def onChangeZSlice(self, event):
 		"""
@@ -430,8 +433,8 @@ enter the information below.""")
 		"""             
 		assert self.zslider.GetValue() > 0, "Cannot set negative slide"
 		self.preview.setZSlice(self.zslider.GetValue() - 1)
-		#print "Setting preview to ",self.zslider.GetValue()-1
-		self.preview.updatePreview(0)
+		print "Setting slice to ",self.zslider.GetValue()-1
+		self.preview.updatePreview()
 		
 	def onChangeTimepoint(self, event):
 		"""
@@ -440,7 +443,7 @@ enter the information below.""")
 		"""
 		assert self.timeslider.GetValue() > 0, "Cannot set negative timepoint"
 		self.preview.setTimepoint(self.timeslider.GetValue() - 1)
-		self.preview.updatePreview(0)
+		self.preview.updatePreview()
 		
 	def onUpdateVoxelSize(self, filename):
 		"""
@@ -461,34 +464,28 @@ enter the information below.""")
 		Logging.info("Setting spacing to ", self.spacing, kw = "io")
 		sx, sy, sz = self.spacing
 		self.spacingLbl.SetLabel("%.2f x %.2f x %.2f" % (sx, sy, sz))
-
-		
-	def setImagePattern(self, filename):
-		"""
-		Created: 17.03.2005, KP
-		Description: A method called when a file is loaded in the filebrowsebutton
-		"""      
+ 
+ 	def getPatternFromFilename(self, filename):
+ 		"""
+ 		Created: 22.10.2007, KP
+ 		Description: convert a filename into a pattern that matches the filename
+ 		"""
 		r = re.compile("z[0-9]+", re.IGNORECASE)
-		
+		ret = filename
 		if not r.search(filename):
 			r = re.compile("[0-9]+")
 			items = r.findall(filename)
 			n = len(items[-1])
 			s = "%%.%dd" % n
-			print "s=", s, "n=", n
 		else:
 			items = r.findall(filename)
 			n = len(items[-1])
 			firstLetter = items[0][0]                       
 			s = "%s%%.%dd" % (firstLetter, n - 1)       
-			print "s=", s        
 		if items:
 			i = filename.rfind(items[-1])
-
-			#svn-1037 says: filename = filename[:i] + s + filename[i + n:] 
-			filename = filename[:i] + s + filename[i + n:]
-
-		self.patternEdit.SetValue(filename)
+			ret = filename[:i] + s + filename[i + n:]
+		return ret
  
 	def setInputType(self, event):
 		"""
@@ -496,13 +493,14 @@ enter the information below.""")
 		Description: A method called when the input type is changed
 		"""        
 		self.patternEdit.Enable(self.choice.GetSelection() == 0)
-		#self.loadListOfImages()
 	 
 	def updateSelection(self, event, updatePreview = 0):
 		"""
 		Created: 17.03.2005, KP
 		Description: This method is called when user selects items in the listbox
-		"""           
+		"""   
+		# Disable the feature of selecting the files for now
+		return
 		idxs = self.sourceListbox.GetSelections()
 		files = []
 		
@@ -532,14 +530,13 @@ enter the information below.""")
 		Description: set the number of timepoints, and adjust the number of slices per timepoint accordingly
 		"""
 		n = int(float(self.timepointEdit.GetValue()))
-		#assert n > 0, "There need to be at least one timepoint, %s is invalid" % (str(n))
 		currentTime = self.timepointEdit.GetValue()
 		self.timeslider.SetRange(1, n)
 		if currentTime < 1:
 			currentTime = 1
-		if currentTime > 1:
+		if currentTime > n:
 			currentTime = n
-		self.timeslider.SetValue(currentTime)		
+		self.timeslider.SetValue(currentTime)
 
 		totalAmnt = int(self.imageAmountLbl.GetLabel())
 		if n and totalAmnt:
@@ -547,7 +544,7 @@ enter the information below.""")
 			if self.dataSource.is3DImage():
 				x, y, slices = self.dataUnit.getDimensions()
 							
-			self.depthEdit.SetValue("%.2f" % slices)
+			self.depthEdit.SetValue("%d" % slices)
 #            self.dataSource.setSlicesPerTimepoint(slices)
 #            self.zslider.SetRange(1,slices)
 		
@@ -571,7 +568,7 @@ enter the information below.""")
 				tps = float(n) / val
 			else:
 				tps = n
-			self.timepointEdit.SetValue("%.2f" % tps)
+			self.timepointEdit.SetValue("%d" % tps)
 			currentTime = self.timeslider.GetValue()
 			self.timeslider.SetRange(1, tps)
 			if currentTime < 1:
@@ -587,7 +584,7 @@ enter the information below.""")
 		Created: 17.03.2005, KP
 		Description: A method that compares two filenames and sorts them by the number in their filename
 		"""        
-		r = re.compile("[0-9]+")
+		r = self.numRE
 		s = r.findall(item1)
 		s2 = r.findall(item2)
 		if len(s) != len(s2):
@@ -606,147 +603,197 @@ enter the information below.""")
 				if c != 0:
 					return c
 		return cmp(item1, item2)
-	
-	def loadListOfImages(self, event = None):
+		
+	def loadAllFilesBasedOnFile(self, filename):
 		"""
-		Created: 17.03.2005, KP
-		Description: A method that loads a list of images to a listbox based on the selected input type
-		"""       
-		self.sourceListbox.Clear()
-		filename = self.browsedir.GetValue()
-		conf = Configuration.getConfiguration()
-		conf.setConfigItem("ImportDirectory", "Paths", os.path.dirname(filename))
-		conf.writeSettings()
-		if not filename:
-			return
+		Created: 22.10.2007, KP
+		Description: load all files from a directory based on a given filename
+		"""
 		ext = filename.split(".")[-1]
-		if self.pattern != ext:
-			self.pattern = ext
-			f0 = os.path.basename(filename)
-			print "imagepattern=", f0
-			self.setImagePattern(f0)
-			
-		# If the first choice ("All in directory") is selected
-		selection = self.choice.GetSelection()
 		dirn = os.path.dirname(filename)
-		if selection == 0:
-			
-			r = re.compile("[0-9]+")
-			pat = r.sub("[0-9]*", os.path.basename(filename))
-			
-			dirn = os.path.dirname(filename)
-			pat = dirn + os.path.sep + "%s" % (pat)
-		else:
-			pat = dirn + os.path.sep + "*.%s" % ext #"
-		Logging.info("Pattern for all in directory is ", pat, kw = "io")
+		pat = dirn + os.path.sep + "*.%s" % ext
+		fail = 0
 		files = glob.glob(pat)
+		files.sort(self.sortNumerically)
+		
+		print "Checking ",files
+		if not self.dataSource.checkImageDimensions(files):
+			GUI.Dialogs.showmessage(self, \
+									 "Some of the selected images have differing dimensions. \
+										Therefore it is not possible to use the \"All files in directory\" selection.",
+										"Images have differing dimensions",)
+			self.choice.SetSelection(FILES_FOLLOWING_PATTERN)
+			return		
 
+		self.sourceListbox.InsertItems(files, 0)
+		n = len(files)
+		print "Setting number of images to ",n
+		self.setNumberOfImages(n)
 		try:
-			if not self.dataSource.checkImageDimensions(files):
-				GUI.Dialogs.showmessage(self, \
-										 "Some of the selected images have differing dimensions. \
-											Therefore it is not possible to use the \"All files in directory\" selection.",
-											"Images have differing dimensions",)
-				self.choice.SetSelection(0)
-				return
+			self.dataSource.setFilenames(files)
 		except Logging.GUIError, ex:
 			ex.show()
 			self.sourceListbox.Clear()
 			return
+		
+	def matchSingleDigitPattern(self, fileList, pattern, startFrom, endTo):
+		"""
+		Created: 22.10.2007, KP
+		Description: find files following given numbering pattern, having numbers in certain range
+		"""
+		print "trying range", startFrom,"-", endTo, "pattern=", pattern
+		matches = []
+		for i in range(startFrom, endTo):
+			try:
+				filename = pattern % i
+			except:
+				return []
+			for file in fileList:
+				if file.find(filename) != -1:
+					matches.append(file)
+		return matches
+		
+	def matchDoubleDigitPattern(self, fileList, pattern, fileCount):
+		"""
+		Created: 22.10.2007, KP
+		Description: find files following given numbering pattern with two different numbers, from a given amount of files
+		"""
+		matches = []
+		everfound = 0
+		for i in range(fileCount):
+			foundone = 0
+			for j in range(fileCount):
+				try:
+					filename = pattern % (i, j)
+				except:
+					return
+				for file in files:
+					if file.find(filename) != -1:
+						matches.append(file)
+						n += 1
+						foundone = 1
+						everfound = 1
+			if everfound and not foundone:
+				break
+		return matches
+		
+	def setSourceFile(self, event = None):
+		"""
+		Created: 17.03.2005, KP
+		Description: Set the file used to determine which images to import
+		"""       
+		filename = self.browsedir.GetValue()
+
+		if not filename:
+			return
+
+		self.importDirectory = os.path.dirname(filename)
+		self.fileExtension = filename.split(".")[-1]
+		
+		# Store the directory where files were last imported from for later use
+		conf = Configuration.getConfiguration()
+		conf.setConfigItem("ImportDirectory", "Paths", self.importDirectory)
+		conf.writeSettings()
+		
+		
+		pattern = self.getPatternFromFilename(os.path.basename(filename))
+		self.patternEdit.SetValue(pattern)
+		self.updateListOfImages()
+		
+	def updateListOfImages(self, event = None):
+		"""
+		Created: 23.10.2007, KP
+		Description: update the list of images based on the selected method (all files in directory, files following pattern)
+		"""
+		# clear the box with filenames since we're going to repopulate it		
+		self.sourceListbox.Clear()
+		
+		# If the user has selected to load all files in the directory, then 
+		# handle that case
+		if self.choice.GetSelection() == ALL_FILES_IN_DIRECTORY:
+			filename = self.browsedir.GetValue()
+			if filename:
+				self.loadAllFilesBasedOnFile(filename)
+		else:
+			self.loadFilesBasedOnPattern()
+		self.updateImageInfo()
+		self.preview.setDataUnit(self.dataUnit)
+		self.preview.zoomToFit()
+		self.preview.updatePreview()
+	
+	def loadFilesBasedOnPattern(self):
+		"""
+		Created: 23.10.2007, KP
+		Description: update the file list based on a pattern modified by user, or calculated from file name
+		"""
+		pattern = self.patternEdit.GetValue()
+		# First see that we find files using the extension in the pattern
+		ext = pattern.split(".")[-1]
+		if not glob.glob(os.path.join(self.importDirectory, "*.%s"%ext)):
+			# if no files are found using that extension, then use the one taken from the initial file
+			ext = self.fileExtension
 			
+		pat = self.importDirectory + os.path.sep + "*.%s" % ext
+		files = glob.glob(pat)
 		files.sort(self.sortNumerically)
-		r = re.compile("([0-9]+)")
 		
 		try:
+			r = re.compile("[0-9]*")
 			startfrom = min(map(int, r.findall(files[0])))
 		except:
 			startfrom = 0
 		print "Starting from ", startfrom
 		n = 0
-		pat = self.patternEdit.GetValue()
 		filecount = len(files)
-		nformat = pat.count("%")        
+		nformat = pattern.count("%")        
 		# If we're using all files in directory, just add them to the list
 		# Also, if there are no format specifiers (%) in the pattern, then
 		# just give the whole list
-		if selection == 1 or nformat == 0:
+		if nformat == 0:
 			self.sourceListbox.InsertItems(files, 0)
 			n = len(files)
 			pat = ""
 			try:
-				self.dataSource.setFilenames(files, pattern = pat)
+				self.dataSource.setFilenames(files)
 			except Logging.GUIError, ex:
 				ex.show()
 				self.sourceListbox.Clear()
 				return
 		# If there is one specifier, then try to find files that correspond to that
-		#if nformat == 1:
-		if selection == 0 and nformat == 1:
-			filelist = []
-			print "trying range", startfrom, startfrom + filecount + 1, "pattern=", pat
-			for i in range(startfrom, startfrom + filecount + 1):
-				try:
-					filename = pat % i
-				except:
-					return
-				for file in files:
-#                    print "Matching",file,"to",filename
-					if file.find(filename) != -1:
-						self.sourceListbox.Append(file)
-						filelist.append(file)
-						n += 1
-			try:
-				self.dataSource.setFilenames(filelist)
-			except Logging.GUIError, ex:
-				ex.show()
-				self.sourceListbox.Clear()
-				return
-		elif selection == 0:
-			filelist = []
-			everfound = 0
-			for i in range(filecount):
-				foundone = 0
-				for j in range(filecount):
-					try:
-						filename = pat % (i, j)
-					except:
-						return
-					for file in files:
-						if file.find(filename) != -1:
-							self.sourceListbox.Append(file)
-							filelist.append(file)
-							n += 1
-							foundone = 1
-							everfound = 1
-				if everfound and not foundone:
-					break
-			try:
-				self.dataSource.setFilenames(filelist)                                
-			except Logging.GUIError, ex:
-				ex.show()
-				self.sourceListbox.Clear()
-				return
-					
+		if nformat == 1:
+			filelist = self.matchSingleDigitPattern(files, pattern, startfrom,startfrom + filecount + 1)
+		if nformat == 2:
+			filelist = self.matchDoubleDigitPattern(files, pattern, filecount)
+		for file in filelist:
+			self.sourceListbox.Append(file)
+		try:
+			self.dataSource.setFilenames(filelist)                                
+		except Logging.GUIError, ex:
+			ex.show()
+			self.sourceListbox.Clear()
+			return
+		n = len(filelist)
+		print "Setting number of images to ",n
 		self.setNumberOfImages(n)
-		if self.imageInfo != ext:
-			self.retrieveImageInfo()
-			self.imageInfo = ext
-		self.preview.setDataUnit(self.dataUnit)
-		self.preview.zoomToFit()
+		#if self.imageInfo != ext:
+		#	self.retrieveImageInfo()
+		#	self.imageInfo = ext
+
 
 			
-	def retrieveImageInfo(self):
+	def updateImageInfo(self, obj = None, event = ""):
 		"""
 		Created: 21.04.2005, KP
 		Description: A method that reads information from an image
 		"""                
 		print "Getting dimensions..."
-		self.x, self.y, self.z = self.dataSource.getDimensions()
-		print "Got dims", self.x, self.y, self.z
-		self.dimensionLbl.SetLabel("%d x %d" % (self.x, self.y))                
-		self.depthEdit.SetValue("%.2f" % self.z)
+		self.dimensions = (self.x, self.y, self.z) = self.dataSource.getDimensions()
+		print "Got dims", self.dimensions
+		self.dimensionLbl.SetLabel("%d x %d" % self.dimensions[0:2])
+		self.depthEdit.SetValue("%d" % self.dimensions[2])
 		currentZ = self.zslider.GetValue()
-		self.zslider.SetRange(1, self.z) 
+		
+		self.zslider.SetRange(1, self.dimensions[2]) 
 		if currentZ < 1:
 			currentZ = 1
 		if currentZ > self.z:
