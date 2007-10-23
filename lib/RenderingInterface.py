@@ -158,7 +158,8 @@ class RenderingInterface:
 		Description: Set the dataunit from which the rendered datasets are read
 		"""
 		self.dataUnit = dataUnit
-
+		if not dataUnit:
+			return
 		# Calculate how many digits there will be in the rendered output
 		# file names, with a running counter
 		ndigits = 1 + int(math.log(self.dataUnit.getNumberOfTimepoints(), 10))
