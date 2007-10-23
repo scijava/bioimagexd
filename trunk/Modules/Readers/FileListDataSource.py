@@ -278,25 +278,6 @@ class FileListDataSource(DataSource):
 		Parameters:   i		  The index
 		"""
 		data = self.getTimepoint(i)
-		if raw:
-			return data
-		data = self.getResampledData(data, i)
-		data.Update()
-		if not self.shift:
-			self.shift = vtk.vtkImageShiftScale()
-			self.shift.SetOutputScalarTypeToUnsignedChar()
-		self.shift.SetInput(data)
-			
-		x0, x1 = data.GetScalarRange()
-		if not x1:
-			x1 = 1
-		scale = 255.0 / x1
-		
-		if scale:
-			self.shift.SetScale(scale)
-		self.shift.Update()
-		data = self.shift.GetOutput()
-		data.ReleaseDataFlagOff()
 		return data
 		
 	def retrieveImageInfo(self, filename):
