@@ -182,10 +182,9 @@ class BXCDataWriter(DataWriter):
 		Parameters:   imageData  vtkImageData-instance to be written
 					  filename	filename to be used
 		"""
-		print "Writing image data to %s" %filename
+
 		writer = vtk.vtkXMLImageDataWriter()
 		writer.SetFileName(filename)
-		print "Writing ",imageData
 		#imageData.Update()
 		imageData.UpdateInformation()
 		print "Updated imageData"
@@ -193,7 +192,7 @@ class BXCDataWriter(DataWriter):
 		pieces = (x * y * z) / (1024 * 1024)
 		if pieces < 4:pieces = 4
 		print "Using",pieces,"pieces"
-		writer.SetNumberOfPieces(pieces)
+		#writer.SetNumberOfPieces(pieces)
 		writer.SetInput(imageData)
 		def f(obj, evt):
 			if obj and callback:
