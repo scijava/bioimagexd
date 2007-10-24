@@ -68,6 +68,8 @@ class FileListDataSource(DataSource):
 		self.color = None
 		self.shift = None
 		self.tps = -1
+		# Store results of checking dimensions of given filenames in a dictionary
+		self.dimensionCheck = {}
 		if filenames:
 			self.numberOfImages = len(filenames)
 			self.getDataSetCount()
@@ -116,6 +118,14 @@ class FileListDataSource(DataSource):
 		Description: check that each image in the list has the same dimensions
 		"""
 		s = None
+		hashStr = filenames[:]
+		hashStr.sort()
+		hashStr = str(hashStr)
+		# check to see if there's already a result of the check for these filenames in the cache
+		if hashStr in self.dimensionCheck:
+			Logging.info("Using cached result for dimensions check: %s"%(str(self.dimensionCheck[hashStr])))
+			return self.dimensionCheck[hashStr]
+			
 		for file in filenames:
 			try:
 				i = Image.open(file)
@@ -126,9 +136,11 @@ class FileListDataSource(DataSource):
 			if s and i.size != s:
 				x0, y0 = s
 				x1, y1 = i.size
+				self.dimensionCheck[hashStr] = False
 				return 0
 			s = i.size		  
 			fn = file		 
+		self.dimensionCheck[hashStr] = True
 		return 1
 		
 	def getReaderByExtension(self, ext, isRGB = 0):
