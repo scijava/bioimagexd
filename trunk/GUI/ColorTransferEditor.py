@@ -114,6 +114,7 @@ class CTFButton(wx.BitmapButton):
 		self.bmp = lib.ImageOperations.paintCTFValues(self.ctf)
 		self.SetBitmapLabel(self.bmp)
 		lib.messenger.send(None, "data_changed", 0)
+		lib.messenger.send(self, "ctf_modified")
 		
 	def getOpacityTransferFunction(self):
 		"""
