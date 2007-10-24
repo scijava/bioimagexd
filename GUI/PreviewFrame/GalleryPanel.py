@@ -157,6 +157,8 @@ class GalleryPanel(InteractivePanel):
 		#self.gallerySize=event.GetSize()
 		#Logging.info("Gallery size changed to ",self.gallerySize,kw="preview")
 		self.sizeChanged = 1
+		self.calculateBuffer()
+		self.updatePreview()
 
 	def setDataUnit(self, dataunit):
 		"""
@@ -164,7 +166,8 @@ class GalleryPanel(InteractivePanel):
 		Description: Sets the dataunit to display
 		"""
 		self.dataUnit = dataunit
-	
+		if not dataunit:
+			return
 		self.dims = dataunit.getDimensions()
 		self.voxelSize = dataunit.getVoxelSize()
 		InteractivePanel.setDataUnit(self, dataunit)
@@ -175,7 +178,7 @@ class GalleryPanel(InteractivePanel):
 		self.setScrollbars(x, y)
 		self.calculateBuffer()
 		self.updatePreview()
-		#self.imagedata=image
+			#self.imagedata=image
 		
 		
 	def setTimepoint(self, timepoint, update = 1):
@@ -183,7 +186,6 @@ class GalleryPanel(InteractivePanel):
 		Created: 23.05.2005, KP
 		Description: Sets the timepoint to display
 		"""
-		Logging.backtrace()
 		if self.timepoint == timepoint and self.slices:
 			return
 		self.timepoint = timepoint
@@ -263,7 +265,6 @@ class GalleryPanel(InteractivePanel):
 			return self.setTimepoint(self.timepoint)
 		count = self.dataUnit.getNumberOfTimepoints()
 		self.slices = []
-		print "There are ", count, "tps"
 		for tp in range(0, count):
 			if self.dataUnit.isProcessed():
 				image = self.dataUnit.doPreview(self.slice, 1, tp)
@@ -414,11 +415,12 @@ class GalleryPanel(InteractivePanel):
 		Created: 28.04.2005, KP
 		Description: Does the actual blitting of the bitmap
 		"""
-		if self.sizeChanged:
-			#Logging.info("size changed, calculating buffer",kw="preview")
-			self.sizeChanged = 0
-			self.calculateBuffer()
-			self.updatePreview()
+#		if self.sizeChanged:
+#			#Logging.info("size changed, calculating buffer",kw="preview")
+#			self.calculateBuffer()
+#			self.updatePreview()
+#			self.sizeChanged = 0
+
 		InteractivePanel.OnPaint(self, event)
 #		dc=wx.BufferedPaintDC(self,self.buffer)#,self.buffer)
 
