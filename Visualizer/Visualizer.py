@@ -884,10 +884,10 @@ class Visualizer:
 		Description: Close the visualizer
 		"""
 		if self.currMode:
-			self.currentWindow.enable(0)
-			self.currMode.setDataUnit(None)
-			self.currentWindow.enable(1)
-			self.Render()
+#			self.currentWindow.enable(0)
+#			self.currMode.setDataUnit(None)
+#			self.currentWindow.enable(1)
+#			self.Render()
 			self.currentWindow.Show(0)
 			self.currMode.deactivate()
 			del self.currentWindow
@@ -899,6 +899,7 @@ class Visualizer:
 		self.dataUnit = None
 		self.sidebarWin.SetDefaultSize((0, 1024))
 		self.zslider.SetRange(1, 2)
+		self.zslider.SetValue(1)
 		wx.LayoutAlgorithm().LayoutWindow(self.parent, self.visWin)
 		del self.dataUnit
 		self.dataUnit = None
@@ -1103,17 +1104,18 @@ class Visualizer:
 
 		x, y, z = dataunit.getDimensions()
 
-		currz = self.zslider.GetValue()
+		#currz = self.zslider.GetValue()
 		self.zslider.SetRange(1, z)
-
 		if self.timepoint > count:
 			Logging.info("Setting timepoint to %d"%count,kw="visualizer")
 			self.setTimepoint(count)
 
 		Logging.info("Setting zslider value",kw="visualizer")
-		if z < currz:
-			self.zslider.SetValue(0)
+		if z < self.z:
+			self.zslider.SetValue(1)
 			self.onChangeZSlice(None)
+		else:
+			self.zslider.SetValue(self.z+1)
 		if z <= 1:
 			self.zsliderWin.SetDefaultSize((0, 768))
 		elif self.currMode.showSliceSlider():
@@ -1145,6 +1147,7 @@ class Visualizer:
 		"""
 		Logging.info("Setting dataunit to current mode", kw = "visualizer")
 		self.currMode.setDataUnit(self.dataUnit)
+		lib.messenger.send(None, "zslice_changed", self.z)
 		self.currMode.setTimepoint(self.timepoint)
 		if self.zoomToFitFlag:
 			Logging.info("Will zoom to fit", kw="visualizer")
@@ -1288,7 +1291,6 @@ class Visualizer:
 		Created: 17.08.2007, KP
 		Description: return the z slider value
 		"""
-		print "zslider value=",self.zslider.GetValue(),"range=",self.zslider.GetMin(),self.zslider.GetMax()
 		return self.zslider.GetValue()
 
 	def onSnapshot(self, event):
