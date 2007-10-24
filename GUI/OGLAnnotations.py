@@ -271,6 +271,7 @@ class MyText(OGLAnnotation, GUI.ogl.TextShape):
 	"""
 	AnnotationType = "TEXT"
 	def __init__(self, width, height):
+		OGLAnnotation.__init__(self)
 		GUI.ogl.TextShape.__init__(self, width, height)
 		self._isROI = 0
 
@@ -278,6 +279,7 @@ class MyScalebar(OGLAnnotation, GUI.ogl.RectangleShape):
 
 	AnnotationType = "SCALEBAR"
 	def __init__(self, w, h, voxelsize = (1e-7, 1e-7, 1e-7), zoomFactor = 1.0):
+		OGLAnnotation.__init__(self)
 		GUI.ogl.RectangleShape.__init__(self, w, h)
 		self.bgColor = (127, 127, 127)
 		self.voxelSize = voxelsize
@@ -493,8 +495,9 @@ class MyPolygonSketch(OGLAnnotation, GUI.ogl.Shape):
 		"""
 		Created: 26.06.2006, KP
 		Description: Initialization
-		"""	  
+		"""
 		GUI.ogl.Shape.__init__(self)
+		OGLAnnotation.__init__(self)
 		self.scaleFactor = zoomFactor
 		self._isROI = 1
 		global count
@@ -584,7 +587,8 @@ class MyRectangle(OGLAnnotation, GUI.ogl.RectangleShape):
 		"""
 		Created: 26.06.2006, KP
 		Description: Initialization
-		"""	  
+		"""
+		OGLAnnotation.__init__(self)
 		GUI.ogl.RectangleShape.__init__(self, w, h)
 		self.scaleFactor = zoomFactor
 		self._isROI = 1
@@ -791,7 +795,8 @@ class MyPolygon(OGLAnnotation, GUI.ogl.PolygonShape):
 		"""
 		Created: 26.06.2006, KP
 		Description: Initialization
-		"""	  
+		"""
+		OGLAnnotation.__init__(self)
 		GUI.ogl.PolygonShape.__init__(self)
 		self.scaleFactor = zoomFactor
 		self._isROI = 1
