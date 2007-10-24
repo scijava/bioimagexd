@@ -305,8 +305,8 @@ class PreviewFrame(InteractivePanel):
 			y = self.dataDimY - 1
 		Logging.info("Returning x,y,z=(%d,%d,%d)" % (rx, ry, rz), kw = "preview")
 		ncomps = self.rawImage.GetNumberOfScalarComponents()
+		Logging.info("Number of scalar components in image = %d"%ncomps, kw="preview")
 		if ncomps == 1:
-			Logging.info("One component in raw image", kw = "preview")
 			rv, gv, bv = -1, -1, -1
 			alpha = -1
 			if len(self.rawImages) < 2:

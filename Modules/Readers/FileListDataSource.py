@@ -67,6 +67,8 @@ class FileListDataSource(DataSource):
 		self.spacing = (1, 1, 1)
 		self.color = None
 		self.shift = None
+		self.isRGB = 0
+		self.numberOfComponents = 1
 		self.tps = -1
 		# Store results of checking dimensions of given filenames in a dictionary
 		self.dimensionCheck = {}
@@ -80,6 +82,13 @@ class FileListDataSource(DataSource):
 		self.readers = []
 		self.slicesPerTimepoint = 1
 		self.is3D = 0
+		
+	def getNumberOfScalarComponents(self):
+		"""
+		Created: 24.10.2007, KP
+		Description: return the number of scalar components
+		"""
+		return self.numberOfComponents
 	
 	def setColorTransferFunction(self, ctf):
 		"""
@@ -127,19 +136,22 @@ class FileListDataSource(DataSource):
 			return self.dimensionCheck[hashStr]
 			
 		for file in filenames:
-			try:
-				i = Image.open(file)
-			except IOError, ex:
-				raise Logging.GUIError("Cannot open image file", "Cannot open image file %s" % file)
-
-			self.imageDims[file] = i.size
-			if s and i.size != s:
+			if file not in self.imageDims:
+				try:
+					i = Image.open(file)
+				except IOError, ex:
+					raise Logging.GUIError("Cannot open image file", "Cannot open image file %s" % file)
+				fSize = i.size
+				self.imageDims[file] = i.size
+			else:
+				fSize = self.imageDims[file]
+			if s and fSize != s:
 				x0, y0 = s
-				x1, y1 = i.size
+				x1, y1 = fSize
 				self.dimensionCheck[hashStr] = False
 				return 0
-			s = i.size		  
-			fn = file		 
+			s = fSize 
+			fn = file
 		self.dimensionCheck[hashStr] = True
 		return 1
 		
@@ -152,13 +164,13 @@ class FileListDataSource(DataSource):
 		mpr = self.extMapping[ext]
 		prefix="vtk"
 		# If it's a tiff file, we use our own, extended TIFF reader
-		if self.extMapping[ext] == "TIFF":
+		if self.extMapping[ext] == "TIFF" and not isRGB:
 			mpr = "ExtTIFF"
 			prefix="vtkbxd"
 		self.rdrstr = "%s.vtk%sReader()" % (prefix, mpr)
 		rdr = eval(self.rdrstr)
 		if ext == "bmp":
-			rdr.Allow8BitBMPOn()				
+			rdr.Allow8BitBMPOn()
 		if mpr == "ExtTIFF" and not isRGB:
 			rdr.RawModeOn()
 		
@@ -195,13 +207,7 @@ class FileListDataSource(DataSource):
 			else:
 				print "MODE ISN'T RGB, THEREFOR NOT RGB"
 				isRGB = 0
-			#if tiffimg.palette:
-				#print "HAS PALETTE, THEREFORE NOT RGB"
-				#isRGB = 0
-			#else:
-				#print "NO PALETTE, IS AN RGB IMAGE"
-				#print Image
-				#print dir(Image)
+		self.isRGB = isRGB
 				
 		dirName = os.path.dirname(files[0])
 		print "THERE ARE ", self.z, "SLICES PER TIMEPOINT"
@@ -298,6 +304,11 @@ class FileListDataSource(DataSource):
 		Parameters:   i		  The index
 		"""
 		data = self.getTimepoint(i)
+		if self.isRGB and self.numberOfComponents == 4:
+			extract = vtk.vtkImageExtractComponents()
+			extract.SetComponents(0, 1, 2)
+			extract.SetInput(data)
+			data = extract.GetOutput()
 		return data
 		
 	def retrieveImageInfo(self, filename):
@@ -317,6 +328,8 @@ class FileListDataSource(DataSource):
 		rdr.SetFileName(filename)
 		rdr.Update()
 		data = rdr.GetOutput()
+		self.numberOfComponents = data.GetNumberOfScalarComponents()
+		
 		self.x, self.y, z = data.GetDimensions()
 		self.dimensions = (self.x, self.y, self.slicesPerTimepoint)
 		if z > 1:

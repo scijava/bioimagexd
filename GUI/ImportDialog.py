@@ -791,6 +791,8 @@ enter the information below.""")
 		else:
 			self.loadFilesBasedOnPattern()
 		self.updateImageInfo()
+		if self.dataSource.getNumberOfScalarComponents() > 1:
+			self.colorBtn.Enable(0)
 		self.preview.setDataUnit(self.dataUnit)
 		self.preview.zoomToFit()
 		self.preview.updatePreview()
