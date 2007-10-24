@@ -73,7 +73,7 @@ class ImportDialog(wx.Dialog):
 		self.settings.set("Type", "NOOP")
 		self.initialSelection = 1
 		self.ctfInitialized = 0
-		
+		self.imageAmount = 0
 		wx.Dialog.__init__(self, parent, -1, 'Import image stack', style = wx.RESIZE_BORDER | wx.CAPTION)
 		self.inputFile = ""
 		self.importDirectory = ""
@@ -107,7 +107,7 @@ class ImportDialog(wx.Dialog):
 		if not os.path.exists(filename):
 			GUI.Dialogs.showerror(self, "The specified file (%s) does not exist."%os.path.basename(filename), "File does not exist")
 			return
-						
+		self.nameEdit.SetValue(self.getNameFromFilename(filename))
 		self.inputFile = filename
 		self.browsedir.SetValue(filename)
 		self.selectMethodBasedOnFile(filename)
@@ -312,17 +312,17 @@ class ImportDialog(wx.Dialog):
 		
 		self.depthlbl = wx.StaticText(self, -1, "Depth of Stack:")
 		self.depthEdit = wx.TextCtrl(self, -1, "1", style = wx.TE_PROCESS_ENTER)
-#        self.depthEdit.Bind(wx.EVT_TEXT,self.setNumberOfImages)
-		self.depthEdit.Bind(wx.EVT_TEXT_ENTER, self.setNumberOfImages)
-		self.depthEdit.Bind(wx.EVT_KILL_FOCUS, self.setNumberOfImages)
+
+		self.depthEdit.Bind(wx.EVT_TEXT_ENTER, self.onUpdateNumberOfImages)
+		self.depthEdit.Bind(wx.EVT_KILL_FOCUS, self.onUpdateNumberOfImages)
 		
 
 		self.tpLbl = wx.StaticText(self, -1, "Number of Timepoints:")
 		#self.timepointLbl=wx.StaticText(self,-1,"1")
 		self.timepointEdit = wx.TextCtrl(self, -1, "1", style = wx.TE_PROCESS_ENTER)
-		self.timepointEdit.Bind(wx.EVT_TEXT, self.setNumberOfTimepoints)
-		self.timepointEdit.Bind(wx.EVT_TEXT_ENTER, self.setNumberOfTimepoints)
-		self.timepointEdit.Bind(wx.EVT_KILL_FOCUS, self.setNumberOfTimepoints)
+#		self.timepointEdit.Bind(wx.EVT_TEXT, self.onUpdateNumberOfTimepoints)
+		self.timepointEdit.Bind(wx.EVT_TEXT_ENTER, self.onUpdateNumberOfTimepoints)
+		self.timepointEdit.Bind(wx.EVT_KILL_FOCUS, self.onUpdateNumberOfTimepoints)
 
 		
 		self.voxelSizeLbl = wx.StaticText(self, -1, u"Voxel size")
@@ -331,13 +331,16 @@ class ImportDialog(wx.Dialog):
 		#mask = u"#{3}.#{4} \u03BCm x #{3}.#{4}\u03BCm x #{3}.#{4}\u03BCm",
 		#formatcodes="F-_.")
 		box = wx.BoxSizer(wx.HORIZONTAL)
-		self.voxelX = wx.TextCtrl(self, -1, "1.0", size = (50, -1))
-		self.voxelY = wx.TextCtrl(self, -1, "1.0", size = (50, -1))
-		self.voxelZ = wx.TextCtrl(self, -1, "1.0", size = (50, -1))
+		self.voxelX = wx.TextCtrl(self, -1, "1.0", size = (50, -1), style = wx.TE_PROCESS_ENTER)
+		self.voxelY = wx.TextCtrl(self, -1, "1.0", size = (50, -1), style = wx.TE_PROCESS_ENTER)
+		self.voxelZ = wx.TextCtrl(self, -1, "1.0", size = (50, -1), style = wx.TE_PROCESS_ENTER)
 		
-		self.voxelX.Bind(wx.EVT_TEXT, self.onUpdateVoxelSize)
-		self.voxelZ.Bind(wx.EVT_TEXT, self.onUpdateVoxelSize)
-		self.voxelY.Bind(wx.EVT_TEXT, self.onUpdateVoxelSize)
+		self.voxelX.Bind(wx.EVT_TEXT_ENTER, self.onUpdateVoxelSize)
+		self.voxelZ.Bind(wx.EVT_TEXT_ENTER, self.onUpdateVoxelSize)
+		self.voxelY.Bind(wx.EVT_TEXT_ENTER, self.onUpdateVoxelSize)
+		self.voxelX.Bind(wx.EVT_KILL_FOCUS, self.onUpdateVoxelSize)
+		self.voxelZ.Bind(wx.EVT_KILL_FOCUS, self.onUpdateVoxelSize)
+		self.voxelY.Bind(wx.EVT_KILL_FOCUS, self.onUpdateVoxelSize)
 
 		self.lblX = wx.StaticText(self, -1, u"\u03BCm x")
 		self.lblY = wx.StaticText(self, -1, u"\u03BCm x")
@@ -385,7 +388,7 @@ enter the information below.""")
 		n += 1
 		
 		self.colorBtn = GUI.ColorTransferEditor.CTFButton(self)
-		
+		lib.messenger.connect(self.colorBtn, "ctf_modified", self.onUpdateCtf)
 		self.infosizer.Add(self.colorBtn, (n, 0), span = (1, 2))
 		n += 1
 		self.updateBtn = wx.Button(self, -1, "Update preview")
@@ -454,11 +457,23 @@ enter the information below.""")
 		"""                       
 		try:
 			vx = float(self.voxelX.GetValue())
+			vx = self.voxelSize[0]
+			
+		except ValueError:
+			self.voxelX.SetValue("%.2f"%self.voxelSize[0])
+		try:
 			vy = float(self.voxelY.GetValue())
+		except ValueError:
+			self.voxelY.SetValue("%.2f"%self.voxelSize[1])
+			vy = self.voxelSize[1]
+		try:
 			vz = float(self.voxelZ.GetValue())
 		except:
-			GUI.Dialogs.showerror(self, "Bad voxel size", "All voxel sizes were not valid.")
-			return
+			self.voxelZ.SetValue("%.2f"%self.voxelSize[2])
+			vz = self.voxelSize[2]
+		#except:
+		#	GUI.Dialogs.showerror(self, "Bad voxel size", "All voxel sizes were not valid.")
+		#	return
 		Logging.info("Voxel sizes = ", vx, vy, vz, kw = "io")
 		self.voxelSize = (vx, vy, vz)
 		self.spacing = (1.0, vy / vx, vz / vx)
@@ -522,13 +537,23 @@ enter the information below.""")
 	
 		self.setNumberOfImages(n)
 		
-	def setNumberOfTimepoints(self, evt):
+	def onUpdateNumberOfTimepoints(self, evt):
 		"""
 		Created: 07.05.2007, KP
 		Description: set the number of timepoints, and adjust the number of slices per timepoint accordingly
 		"""
-		n = int(float(self.timepointEdit.GetValue()))
-		currentTime = self.timepointEdit.GetValue()
+		timepointStr = self.timepointEdit.GetValue().strip()
+		if not timepointStr:
+			zAmnt = self.dataSource.getSlicesPerTimepoint()
+			n = self.imageAmount / float(zAmnt)
+			self.timepointEdit.SetValue("%d"%n)
+		else:
+			try:
+				n = int(float(timepointStr))
+			except ValueError:
+				return
+		#currentTime = self.timepointEdit.GetValue()
+		currentTime = n
 		self.timeslider.SetRange(1, n)
 		if currentTime < 1:
 			currentTime = 1
@@ -536,28 +561,34 @@ enter the information below.""")
 			currentTime = n
 		self.timeslider.SetValue(currentTime)
 
-		totalAmnt = int(self.imageAmountLbl.GetLabel())
+		totalAmnt = self.imageAmount
 		if n and totalAmnt:
 			slices = float(totalAmnt) / n
 			if self.dataSource.is3DImage():
 				x, y, slices = self.dataUnit.getDimensions()
 							
 			self.depthEdit.SetValue("%d" % slices)
-#            self.dataSource.setSlicesPerTimepoint(slices)
-#            self.zslider.SetRange(1,slices)
-		
+	
+	def onUpdateNumberOfImages(self, evt):
+		"""
+		Created: 24.10.2007, KP
+		Description: update the number of images
+		"""
+		self.setNumberOfImages(self.imageAmount)
 		
 	def setNumberOfImages(self, n = -1):
 		"""
 		Created: 17.03.2005, KP
 		Description: Sets the number of images we're reading
 		"""
-		if type(n) != type(0):
-			n = int(self.imageAmountLbl.GetLabel())
 		Logging.info("n=", n, kw = "io")
 		self.imageAmountLbl.SetLabel("%d" % n)#"
+		self.imageAmount = n
 		
-		val = self.depthEdit.GetValue()
+		val = self.depthEdit.GetValue().strip()
+		if not val:
+			self.depthEdit.SetValue("1")
+			val = 1
 		try:
 			if not self.dataSource.is3DImage():
 				val = int(val)
@@ -714,6 +745,30 @@ enter the information below.""")
 		self.patternEdit.SetValue(pattern)
 		self.updateListOfImages()
 		
+	def getNameFromFilename(self, filename):
+		"""
+		Created: 24.10.2007, KP
+		Description: parse the dataset name from the initial filename
+		"""
+		r = re.compile("_z[0-9]+", re.IGNORECASE)
+		filename = r.sub("",os.path.basename(filename))
+		r = re.compile("_c[0-9]+", re.IGNORECASE)
+		filename = r.sub("",filename)
+		r = re.compile("_z[0-9]+", re.IGNORECASE)
+		filename = r.sub("",filename)
+		r = re.compile("_ch[0-9]+", re.IGNORECASE)
+		filename = r.sub("",filename)
+		r = re.compile("[0-9]+\.")
+		filename = r.sub(".",filename)
+		r = re.compile("[_]+\.")
+		filename = r.sub(".",filename)
+		try:
+			parts = filename.split(".")
+			filename = ".".join(parts[:-1])
+		except:
+			pass
+		return filename
+		
 	def updateListOfImages(self, event = None):
 		"""
 		Created: 23.10.2007, KP
@@ -723,6 +778,7 @@ enter the information below.""")
 		self.sourceListbox.Clear()
 		
 		if self.initialSelection:
+			self.nameEdit.SetValue(self.getNameFromFilename(self.browsedir.GetValue()))
 			self.selectMethodBasedOnFile(self.browsedir.GetValue())
 			self.initialSelection = 0
 			
@@ -842,3 +898,10 @@ enter the information below.""")
 			self.settings.set("ColorTransferFunction", self.ctf)
 			self.ctfInitialized = 1
 			self.dataUnit.setSettings(self.settings)
+
+	def onUpdateCtf(self, obj, event):
+		"""
+		Created: 24.10.2007, KP
+		Description: update the ctf
+		"""
+		self.preview.updatePreview(1)

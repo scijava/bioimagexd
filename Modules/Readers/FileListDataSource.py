@@ -254,6 +254,7 @@ class FileListDataSource(DataSource):
 			return
 		elif imgAmnt == 1:
 			# If only one file
+			rdr = self.getReaderByExtension(ext, isRGB)
 			rdr.SetDataExtent(0, self.x - 1, 0, self.y - 1, 0, self.z - 1)
 			rdr.SetDataSpacing(self.spacing)
 			rdr.SetDataOrigin(0, 0, 0)
@@ -263,6 +264,13 @@ class FileListDataSource(DataSource):
 			Logging.info("Reader = ", rdr, kw = "io")
 			self.readers.append(rdr)
 			
+
+	def getSlicesPerTimepoint(self):
+		"""
+		Created: 24.10.2007, KP
+		Description: return the number of slices per timepoint
+		"""
+		return self.slicesPerTimepoint
 
 	def setSlicesPerTimepoint(self, n):
 		"""
