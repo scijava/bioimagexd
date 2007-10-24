@@ -135,7 +135,7 @@ class PreviewFrame(InteractivePanel):
 
 		self.size = size
 		self.slice = None
-		self.z = scripting.visualizer.getZSliderValue()-1
+		self.z = 0
 		self.zooming = 0
 		self.scrollTo = None
 		
@@ -155,8 +155,6 @@ class PreviewFrame(InteractivePanel):
 			Logging.info("Disabling scrollbars", kw="preview")
 			self.SetScrollbars(0, 0, 0, 0)
 		self.updateAnnotations()
-		
-
 		
 	def calculateBuffer(self):
 		"""
@@ -364,6 +362,10 @@ class PreviewFrame(InteractivePanel):
 					 as ImageData
 		"""
 		Logging.info("Setting dataunit of PreviewFrame to %s"%str(dataUnit), kw="preview")
+		# We can't use the scripting.visualizer.zslider since we might not be operating under visualizer 
+		#		print "Setting self.z to slider value=",scripting.visualizer.getZSliderValue()-1
+		#		self.z = scripting.visualizer.getZSliderValue()-1
+		self.z = 0
 		if not dataUnit:
 			self.dataUnit = None
 			self.z = 0
@@ -407,11 +409,13 @@ class PreviewFrame(InteractivePanel):
 		renew    Whether the method should recalculate the images
 		"""
 		if scripting.inIO:
+			print "In io"
 			return
 		if self.renewNext:
 			renew = 1
 			self.renewNext = 0
 		if not self.dataUnit:
+			print "No dataunit"
 			self.paintPreview()
 			return
 		if not self.enabled:
@@ -474,11 +478,10 @@ class PreviewFrame(InteractivePanel):
 			z = self.z
 		if not self.imagedata:
 			Logging.info("No imagedata to preview", kw = "preview")
-#			return
 			self.slice = None
 		else:
+			print "self.z = ",self.z
 			self.slice = lib.ImageOperations.vtkImageDataToWxImage(self.imagedata, z)
-			
 		self.paintPreview()
 		self.updateScrolling()
 		self.finalImage = colorImage
@@ -669,10 +672,11 @@ class PreviewFrame(InteractivePanel):
 		Created: 24.03.2005, KP
 		Description: Paints the image to a DC
 		"""
-		Logging.info("PreviewFrame is enbled=", bool(self.enabled), kw="preview")
+		Logging.info("PreviewFrame is enabled=", bool(self.enabled), kw="preview")
 		# Don't paint anything if there's going to be a redraw anyway
 
 		if not self.slice and self.graySize == self.paintSize:
+			Logging.info("Nothing to draw, returning", kw="preview")
 			return
 		dc = wx.MemoryDC()
 		dc.SelectObject(self.buffer)
