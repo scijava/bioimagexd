@@ -71,7 +71,7 @@ class ImportDialog(wx.Dialog):
 		self.dataUnit.setDataSource(self.dataSource)
 		self.settings = DataUnitSettings()
 		self.settings.set("Type", "NOOP")
-		
+		self.initialSelection = 1
 		self.ctfInitialized = 0
 		
 		wx.Dialog.__init__(self, parent, -1, 'Import image stack', style = wx.RESIZE_BORDER | wx.CAPTION)
@@ -110,6 +110,8 @@ class ImportDialog(wx.Dialog):
 						
 		self.inputFile = filename
 		self.browsedir.SetValue(filename)
+		self.selectMethodBasedOnFile(filename)
+		self.initialSelection = 0
 		
 	def getDatasetName(self):
 		"""
@@ -238,7 +240,7 @@ class ImportDialog(wx.Dialog):
 								-1, \
 								choices = ["Files following pattern", "All files in same directory"], \
 								size = (200, -1))
-		self.choice.SetSelection(1)
+		self.choice.SetSelection(ALL_FILES_IN_DIRECTORY)
 		self.choice.Bind(wx.EVT_CHOICE, self.setInputType)
 		
 		self.patternEdit = wx.TextCtrl(self, -1, "", style = wx.TE_PROCESS_ENTER, size = (400, -1))
@@ -499,8 +501,6 @@ enter the information below.""")
 		Created: 17.03.2005, KP
 		Description: This method is called when user selects items in the listbox
 		"""   
-		# Disable the feature of selecting the files for now
-		return
 		idxs = self.sourceListbox.GetSelections()
 		files = []
 		
@@ -509,20 +509,18 @@ enter the information below.""")
 			idxs = range(n)
 		for i in idxs:
 			files.append(self.sourceListbox.GetString(i))
-		if updatePreview:
 			try:
 				self.dataSource.setFilenames(files)
 			except Logging.GUIError, ex:
 				ex.show()
-				self.sourceListbox.Clear()
-				self.setNumberOfImages(0)
 				return
-#		if not self.sourceListBox.GetSelections():	20.7.07, MB. Only used here
-#			n = self.sourceListBox.GetCount()
-#		else:
-#			n = len(self.sourceListBox.GetSelections())
-#	
-#		self.setNumberOfImages(n)
+
+		if not idxs:
+			n = self.sourceListBox.GetCount()
+		else:
+			n = len(idxs)
+	
+		self.setNumberOfImages(n)
 		
 	def setNumberOfTimepoints(self, evt):
 		"""
@@ -554,7 +552,6 @@ enter the information below.""")
 		Created: 17.03.2005, KP
 		Description: Sets the number of images we're reading
 		"""
-		Logging.backtrace()
 		if type(n) != type(0):
 			n = int(self.imageAmountLbl.GetLabel())
 		Logging.info("n=", n, kw = "io")
@@ -604,6 +601,24 @@ enter the information below.""")
 					return c
 		return cmp(item1, item2)
 		
+	def getBestMatchingMethod(self, filenames):
+		"""
+		Created: 24.10.2007, KP
+		Description: return the best method for selecting the imported files (all files in dir or using pattern),
+					 based on the filenames given. The selection is done based on the image dimensions and file names
+		"""
+		r = re.compile("[0-9]+")
+		pattern = r.sub("[0-9]+",filenames[0])
+		r = re.compile(pattern)
+		for filename in filenames:
+			if not r.match(filename):
+				print "FILENAME",filename,"DOES NOT MATCH PATTERN",pattern
+				return FILES_FOLLOWING_PATTERN
+		
+		if not self.dataSource.checkImageDimensions(filenames):
+			return FILES_FOLLOWING_PATTERN
+		return ALL_FILES_IN_DIRECTORY
+	
 	def loadAllFilesBasedOnFile(self, filename):
 		"""
 		Created: 22.10.2007, KP
@@ -616,7 +631,6 @@ enter the information below.""")
 		files = glob.glob(pat)
 		files.sort(self.sortNumerically)
 		
-		print "Checking ",files
 		if not self.dataSource.checkImageDimensions(files):
 			GUI.Dialogs.showmessage(self, \
 									 "Some of the selected images have differing dimensions. \
@@ -708,6 +722,10 @@ enter the information below.""")
 		# clear the box with filenames since we're going to repopulate it		
 		self.sourceListbox.Clear()
 		
+		if self.initialSelection:
+			self.selectMethodBasedOnFile(self.browsedir.GetValue())
+			self.initialSelection = 0
+			
 		# If the user has selected to load all files in the directory, then 
 		# handle that case
 		if self.choice.GetSelection() == ALL_FILES_IN_DIRECTORY:
@@ -720,7 +738,20 @@ enter the information below.""")
 		self.preview.setDataUnit(self.dataUnit)
 		self.preview.zoomToFit()
 		self.preview.updatePreview()
-	
+		
+
+	def selectMethodBasedOnFile(self, filename):
+		"""
+		Created: 24.10.2007, KP
+		Description: set the method for selecting files based on a single filename
+		"""
+		print "Selecting method based on file", filename
+		if "." not in filename:return
+		ext = filename.split(".")[-1]
+		files = glob.glob(os.path.join(os.path.dirname(filename),"*.%s"%ext))
+		method = self.getBestMatchingMethod(files)
+		self.choice.SetSelection(method)
+		
 	def loadFilesBasedOnPattern(self):
 		"""
 		Created: 23.10.2007, KP
