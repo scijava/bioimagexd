@@ -170,7 +170,7 @@ class VisualizationMode:
 		Description: Sets the dataunit this module uses for visualization
 		"""			   
 		self.dataUnit = dataunit
-		if not dataunit.getSettings():
+		if dataunit and not dataunit.getSettings():
 			settings = lib.DataUnit.DataUnitSetting.DataUnitSettings()
 			dataunit.setSettings(settings)		  
 		if self.iactivePanel:
