@@ -187,11 +187,9 @@ class BXCDataWriter(DataWriter):
 		writer.SetFileName(filename)
 		#imageData.Update()
 		imageData.UpdateInformation()
-		print "Updated imageData"
 		x, y, z = imageData.GetDimensions()
 		pieces = (x * y * z) / (1024 * 1024)
 		if pieces < 4:pieces = 4
-		print "Using",pieces,"pieces"
 		#writer.SetNumberOfPieces(pieces)
 		writer.SetInput(imageData)
 		def f(obj, evt):

@@ -430,7 +430,7 @@ def vtkImageDataToWxImage(data, sliceNumber = -1, startpos = None, endpos = None
 	Created: Unknown, KP
 	Description: Converts vtk-ImageData to a WxImage
 	"""
-	if sliceNumber >= 0:	
+	if sliceNumber >= 0:
 		data = getSlice(data, sliceNumber, startpos, endpos)
 	exporter = vtk.vtkImageExport()
 	data.SetUpdateExtent(data.GetWholeExtent())
