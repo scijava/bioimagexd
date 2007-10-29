@@ -92,7 +92,6 @@ class InteractivePanel(GUI.ogl.ShapeCanvas):
 		
 		self.dataUnit = None
 		self.listeners = {}
-		
 		self.annotationClass = None
 		
 		self.voxelSize = (1, 1, 1) 
@@ -118,6 +117,7 @@ class InteractivePanel(GUI.ogl.ShapeCanvas):
 		self.lines = []
 		
 		self.subtractROI = None
+		self.rubberbandAllowed = 0
 		
 		self.ID_VARY = wx.NewId()
 		self.ID_NONE = wx.NewId()
@@ -168,6 +168,7 @@ class InteractivePanel(GUI.ogl.ShapeCanvas):
 		self.Bind(wx.EVT_MOUSEWHEEL, self.onMouseWheel)
 		self.Bind(wx.EVT_KEY_UP, self.onKeyUp)
 		lib.messenger.connect(None, "update_helpers", self.onUpdateHelpers)
+
 
 
 	def onKeyUp(self,event):
@@ -537,6 +538,7 @@ class InteractivePanel(GUI.ogl.ShapeCanvas):
 		if self.currentSketch:
 			self.currentSketch.AddPoint(pos)
 		self.actionstart = pos
+		self.rubberbandAllowed = 1
 		return 1
 		
 	def onMouseMotion(self, event):
@@ -549,7 +551,7 @@ class InteractivePanel(GUI.ogl.ShapeCanvas):
 			self.scrollPos = None
 			self.zoomDragPos = None
 		if (event.LeftIsDown() or event.MiddleIsDown()) and event.Dragging():
-			if self.scrollPos:
+			if self.scrollPos and self.action != ZOOM_TO_BAND and self.action != ADD_ANNOTATION and self.action != ADD_ROI:
 				self.changeScrollByDifference(self.scrollPos, event.GetPosition())
 			self.scrollPos = event.GetPosition()
 		if event.RightIsDown():
@@ -568,8 +570,10 @@ class InteractivePanel(GUI.ogl.ShapeCanvas):
 			
 		if event.LeftIsDown():
 			self.actionend = event.GetPosition()
-			if self.action == ZOOM_TO_BAND:
+			if self.action == ZOOM_TO_BAND or self.action == ADD_ANNOTATION or self.action == ADD_ROI:
+				self.paintPreview()
 				self.Refresh()
+				
 		pos = event.GetPosition()
 		if self.currentSketch:
 			self.actionend = pos
@@ -687,9 +691,11 @@ class InteractivePanel(GUI.ogl.ShapeCanvas):
 		Created: 03.07.2005, KP
 		Description: Call the right callback depending on what we're doing
 		"""
+		self.rubberbandAllowed = 0
 		if self.action == ZOOM_TO_BAND:
 			self.zoomToRubberband(event)
 		elif self.action == ADD_ANNOTATION:
+			self.paintPreview()
 			x, y = event.GetPosition()
 			ex, ey = self.actionstart
 			self.addNewAnnotation(self.annotationClass, x, y, ex, ey)
@@ -728,6 +734,12 @@ class InteractivePanel(GUI.ogl.ShapeCanvas):
 		"""
 		if scaleFactor == -1:
 			scaleFactor = self.zoomFactor
+
+		x,y = self.getScrolledXY(x, y)
+		x,y = int(scaleFactor * x), int(scaleFactor * y)
+		ex,ey = self.getScrolledXY(ex, ey)
+		ex,ey = int(scaleFactor * ex), int(scaleFactor * ey)
+
 		if annotationClass == "CIRCLE":
 			diff = max(abs(x - ex), abs(y - ey))
 			if diff < 2:diff = 2
@@ -777,7 +789,7 @@ class InteractivePanel(GUI.ogl.ShapeCanvas):
 			shape.SetX( ex + (x - ex) / 2 )
 			shape.SetY( ey + (y - ey) / 2 )
 		
-		if shape:	 
+		if shape:
 			shape._offset = (self.xoffset, self.yoffset)		
 			self.addNewShape(shape, noUpdate = noUpdate)
 			
@@ -999,28 +1011,29 @@ class InteractivePanel(GUI.ogl.ShapeCanvas):
 		Created: 24.03.2005, KP
 		Description: Paints the image to a DC
 		"""
-		if self.action == ZOOM_TO_BAND:
-			w, h = self.bmp.GetWidth(), self.bmp.GetHeight()
-			w *= self.zoomx
-			h *= self.zoomy
-		
-			Logging.info("Zooming to band")
+		if self.rubberbandAllowed and (self.action == ZOOM_TO_BAND or self.action == ADD_ANNOTATION):
+			xr,yr,wr,hr = self.GetClientRect()
 			if self.actionstart and self.actionend:
 				x1, y1 = self.actionstart
 				x2, y2 = self.actionend
 				x1, x2 = min(x1, x2), max(x1, x2)
 				y1, y2 = min(y1, y2), max(y1, y2)
-				d1, d2 = abs(x2 - x1), abs(y2 - y1)
+				d1, d2 = (x2 - x1, y2 - y1)
 	
 				if self.zoomFactor != 1:
 					f = self.zoomFactor
 					x1, y1 = self.getScrolledXY(x1, y1)
 					x1, y1 = int(f * x1), int(f * y1)
-					
-				dc.SetPen(wx.Pen(wx.Colour(255, 0, 0), 2))
+
+				dc.SetPen(wx.Pen(wx.Colour(255, 255, 255), 1, wx.DOT))
 				dc.SetBrush(wx.TRANSPARENT_BRUSH)
-				dc.DrawRectangle(x1, y1, d1, d2)
-		
+
+				if self.action == ZOOM_TO_BAND or self.annotationClass == "RECTANGLE" or self.annotationClass == "SCALEBAR":
+					dc.DrawRectangle(x1+xr, y1+yr, d1, d2)
+				elif self.annotationClass == "CIRCLE":
+					rad = max(d1,d2)
+					dc.DrawCircle(x1+xr,y1+yr,rad)
+
 		
 	def setScrollbars(self, xdim, ydim):
 		"""
@@ -1062,3 +1075,4 @@ class InteractivePanel(GUI.ogl.ShapeCanvas):
 		memdc.SelectObject(self.bgbuffer)
 		memdc.Blit(0, 0, w, h, dc, 0, 0)
 		memdc.SelectObject(wx.NullBitmap)
+
