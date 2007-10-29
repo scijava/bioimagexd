@@ -733,7 +733,7 @@ class PreviewFrame(InteractivePanel):
 		self.snapshotSize = bw, bh
 
 		self.setOffset(xoff, yoff)
-		dc.DrawBitmap(bmp, xoff + x0, yoff + x0, True)
+		dc.DrawBitmap(bmp, xoff + x0, yoff + y0, True)
 
 		self.bmp = self.buffer
 		
