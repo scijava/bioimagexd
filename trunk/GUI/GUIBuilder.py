@@ -562,12 +562,12 @@ class GUIBuilder(wx.Panel):
 		addButton = wx.Button(background, -1, "Add seed")
 		def markListBox(listBox):
 			listBox.selectPixel = 1
-		func = lambda event, l = seedbox:markListBox(l)
+		addPixelFunc = lambda event, l = seedbox:markListBox(l)
 		addButton.Bind(wx.EVT_BUTTON, addPixelFunc)
 		pixelsizer.Add(addButton, (0, 1))
 		rmButton = wx.Button(background, -1, "Remove")
-		seedbox.itemName = item
-		removeSeedFunc = lambda event, its = item, f = currentFilter:self.removeSeed(seedbox, f)
+		seedbox.itemName = itemName
+		removeSeedFunc = lambda event, its = items, f = currentFilter:self.removeSeed(seedbox, f)
 		rmButton.Bind(wx.EVT_BUTTON, removeSeedFunc)
 		pixelsizer.Add(rmButton, (1, 1))
 		
@@ -577,7 +577,7 @@ class GUIBuilder(wx.Panel):
 		
 		#obj, event, x, y, z, scalar, rval, gval, bval, r, g, b, a, colorTransferFunction)
 		getVoxelSeedFunc = lambda obj, event, rx, ry, rz, scalar, rval, gval, bval, \
-							r, g, b, alpha, currentCt, its = item, \
+							r, g, b, alpha, currentCt, its = items, \
 							f = currentFilter:self.onAddPixel(obj, event, rx, ry, rz, r, g, b, \
 																alpha, currentCt, its, f, seedbox)
 		lib.messenger.connect(None, "get_voxel_at", getVoxelSeedFunc)

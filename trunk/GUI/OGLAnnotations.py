@@ -707,7 +707,7 @@ class MyCircle(OGLAnnotation, GUI.ogl.CircleShape):
 		ox, oy = self.GetCanvas().getOffset()
 		cx -= ox
 		cy -= oy		
-		
+
 		cx //= self.scaleFactor
 		cy //= self.scaleFactor
 		
@@ -731,8 +731,8 @@ class MyCircle(OGLAnnotation, GUI.ogl.CircleShape):
 		pts = {}
 		def d(x, y):
 			return math.sqrt((x[0] - y[0]) ** 2 + ((x[1] - y[1]) ** 2))
-		for x in range(cx - w // 2, cx + w // 2):
-			for y in range(cy - h / 2, cy + h / 2):
+		for x in range(int(cx - w // 2), int(cx + w // 2)):
+			for y in range(int(cy - h // 2), int(cy + h // 2)):
 #				print "d=",(d((x,y),f1)+d((x,y),f2)),"2a=",2*a
 				if (d((x, y), f1) + d((x, y), f2)) < a * 2:
 					pts[(x, y)] = 1
