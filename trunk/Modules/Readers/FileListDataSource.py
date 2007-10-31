@@ -181,9 +181,8 @@ class FileListDataSource(DataSource):
 		Created: 07.05.2007, KP
 		Description: create the reader list from a given set of file names and parameters
 		"""		   
-		self.z = int(self.slicesPerTimepoint)
+#		self.z = int(self.slicesPerTimepoint)
 
-		assert self.z > 0, "Number of slices per timepoint is greater than 0"
 
 		for i in self.readers:
 			del i
@@ -210,7 +209,7 @@ class FileListDataSource(DataSource):
 		self.isRGB = isRGB
 				
 		dirName = os.path.dirname(files[0])
-		print "THERE ARE ", self.z, "SLICES PER TIMEPOINT"
+		print "THERE ARE ", self.slicesPerTimepoint, "SLICES PER TIMEPOINT"
 		ext = files[0].split(".")[-1].lower()
 
 		dim = self.dimMapping[ext]
@@ -225,7 +224,7 @@ class FileListDataSource(DataSource):
 				self.readers.append(rdr)
 			return
 			
-		totalFiles = len(files) / self.z
+		totalFiles = len(files) / self.slicesPerTimepoint
 
 		imgAmnt = len(files)
 		if totalFiles == 1:
@@ -252,7 +251,7 @@ class FileListDataSource(DataSource):
 					filelst = filelst[1:]
 				
 				rdr.SetFileNames(arr)
-				rdr.SetDataExtent(0, self.x - 1, 0, self.y - 1, 0, self.z - 1)
+				rdr.SetDataExtent(0, self.x - 1, 0, self.y - 1, 0, self.slicesPerTimepoint - 1)
 				rdr.SetDataSpacing(self.spacing)
 				rdr.SetDataOrigin(0, 0, 0)
 				self.readers.append(rdr)
@@ -261,7 +260,7 @@ class FileListDataSource(DataSource):
 		elif imgAmnt == 1:
 			# If only one file
 			rdr = self.getReaderByExtension(ext, isRGB)
-			rdr.SetDataExtent(0, self.x - 1, 0, self.y - 1, 0, self.z - 1)
+			rdr.SetDataExtent(0, self.x - 1, 0, self.y - 1, 0, self.slicesPerTimepoint - 1)
 			rdr.SetDataSpacing(self.spacing)
 			rdr.SetDataOrigin(0, 0, 0)
 			
@@ -335,7 +334,7 @@ class FileListDataSource(DataSource):
 		if z > 1:
 			self.slicesPerTimepoint = z
 			self.z = z
-			self.dimensions = (self.x, self.y, self.z)
+			self.dimensions = (self.x, self.y, self.slicesPerTimepoint)
 			lib.messenger.send(self, "update_dimensions")
 				
 	def getTimepoint(self, n, onlyDims = 0):
@@ -370,7 +369,7 @@ class FileListDataSource(DataSource):
 		Description: Returns the (x,y,z) dimensions of the datasets this
 		dataunit contains
 		"""
-		return (self.x, self.y, self.z)
+		return (self.x, self.y, self.slicesPerTimepoint)
 
 	def getSpacing(self):
 		"""
