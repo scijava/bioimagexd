@@ -162,7 +162,7 @@ class ExportDialog(wx.Dialog):
 		pattern = self.vtkpatternEdit.GetValue()
 		n = pattern.count("%")
 		fext = self.vtkmenu.GetString(self.vtkmenu.GetSelection())
-		self.dlg = wx.ProgressDialog("Writing", "Writing dataset %d / %d" % (0, 0), maximum = self.n - 1, parent = self,
+		self.dlg = wx.ProgressDialog("Writing", "Writing dataset %d / %d" % (0, 0), maximum = self.n, parent = self,
 		style = wx.PD_ELAPSED_TIME | wx.PD_REMAINING_TIME)
 		if fext.find("XML") != -1:
 			ext = "vti"
@@ -178,7 +178,8 @@ class ExportDialog(wx.Dialog):
 				file = os.path.join(dirname, pattern % i) + ".%s" % ext
 			except:
 				return
-			self.dlg.Update(i, "Writing dataset %d / %d" % (i, self.n))
+
+			self.dlg.Update(i, "Writing dataset %d / %d" % (i+1, self.n))
 			writer.SetFileName(file)
 			data = self.dataUnit.getTimepoint(i)
 			writer.SetInput(data)
@@ -288,8 +289,10 @@ class ExportDialog(wx.Dialog):
 		
 		self.vtkSourceboxsizer.SetMinSize((600, 100))
 		
-		
-		self.vtkbrowsedir = filebrowse.DirBrowseButton(self.vtkPanel, -1, labelText = "Dataset Directory: ", changeCallback = self.updateListOfDatasets)
+		initialDir = self.conf.getConfigItem("ExportDirectory", "Paths")
+		if not initialDir:
+			initialDir = "."
+		self.vtkbrowsedir = filebrowse.DirBrowseButton(self.vtkPanel, -1, labelText = "Dataset Directory: ", changeCallback = self.updateListOfDatasets, startDirectory = initialDir)
 		
 		self.vtksourcesizer = wx.BoxSizer(wx.VERTICAL)
 		
@@ -388,7 +391,8 @@ class ExportDialog(wx.Dialog):
 				ext = "vti"
 			else:
 				ext = "vtk"
-		self.conf.setConfigItem("ExportDirectory", "Paths", dirname)
+		if dirname:
+			self.conf.setConfigItem("ExportDirectory", "Paths", dirname)
 		self.conf.writeSettings()
 		
 		n = pattern.count("%")
