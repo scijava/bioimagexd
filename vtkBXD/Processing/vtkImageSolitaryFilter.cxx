@@ -60,7 +60,7 @@ int vtkImageSolitaryFilter::RequestUpdateExtent (
 
   outInfo->Get(vtkStreamingDemandDrivenPipeline::UPDATE_EXTENT(), inExt);
   int k;
-    for(int i=0;i<3;i++) {
+  for(int i=0;i<2;i++) {
         k=inExt[2*i];
         if(k > 0) k--;
         inExt[2*i]=k;
@@ -91,6 +91,7 @@ void vtkImageSolitaryFilterExecute(vtkImageSolitaryFilter *self, int id,int Numb
 {    
   int uExtent[6];
   vtkIdType inIncX,inIncY,inIncZ;
+  vtkIdType jumpIncX,jumpIncY,jumpIncZ;
   vtkIdType outIncX,outIncY,outIncZ;
   int maxX,maxY,maxZ;
   int idxX,idxY,idxZ;
@@ -105,7 +106,6 @@ void vtkImageSolitaryFilterExecute(vtkImageSolitaryFilter *self, int id,int Numb
   T scalar,newScalar,cmpScalar;
 
   inData[0]->GetUpdateExtent(uExtent);
-
   inPtr = (T *) inData[0]->GetScalarPointerForExtent(uExtent);
   outPtr = (T *) outData->GetScalarPointerForExtent(uExtent);
     
@@ -114,7 +114,9 @@ void vtkImageSolitaryFilterExecute(vtkImageSolitaryFilter *self, int id,int Numb
     vtkErrorWithObjectMacro(self,"No input is specified.");
       return;
   } 
-  inData[0]->GetIncrements(inIncX, inIncY, inIncZ);
+  inData[0]->GetContinuousIncrements(uExtent, inIncX, inIncY, inIncZ);
+  inData[0]->GetIncrements(jumpIncX, jumpIncY, jumpIncZ);
+  
   outData->GetContinuousIncrements(uExtent,outIncX, outIncY, outIncZ);
   maxX = uExtent[1] - uExtent[0];
   maxY = uExtent[3] - uExtent[2];
@@ -123,55 +125,67 @@ void vtkImageSolitaryFilterExecute(vtkImageSolitaryFilter *self, int id,int Numb
   
   #define GET_AT(x,y,z,ptr) *(ptr+(z)*inIncZ+(y)*inIncY+(x)*inIncX)
   
-  //printf("maxX=%d,maxY=%d,maxZ=%d\n",maxX,maxY,maxZ);
+  
+  
   //printf("Filtering Threshold=%d,Horizontal=%d, Vertical=%d\n",this->FilteringThreshold,this->HorizontalThreshold,this->VerticalThreshold);
   char progressText[200];
-  for(idxZ = 0; idxZ <= maxZ; idxZ++ ) {
+  for(idxZ = uExtent[4]; idxZ <= uExtent[5]; idxZ++ ) {
     if(!id) {
-        sprintf(progressText,"Removing solitary noise voxels (slice %d / %d)",idxX,maxZ);
+        sprintf(progressText,"Removing solitary noise voxels (slice %d / %d)",idxZ-uExtent[4],maxZ);
         self->SetProgressText(progressText);
        self->UpdateProgress(idxZ/float(maxZ));
     }
 
-    for(idxY = 0; idxY <= maxY; idxY++ ) {
-      for(idxX = 0; idxX <= maxX; idxX++ ) {
-          
-        scalar = GET_AT(idxX,idxY,idxZ,inPtr);     
-          
-        if( scalar > FilteringThreshold ) {
-          newScalar=0;
-          // Compare voxel to the left
-          if (HorizontalThreshold && idxX > 0) {
-            cmpScalar=GET_AT(idxX-1,idxY,idxZ,inPtr);
-            if( cmpScalar >= HorizontalThreshold ) {
-                newScalar=scalar;
-            }
-        
-          }
-          // Compare voxel to the right
-          if (HorizontalThreshold && idxX < maxX-1) {
-            cmpScalar=GET_AT(idxX+1,idxY,idxZ,inPtr);
-            if( cmpScalar >= HorizontalThreshold ) newScalar=scalar;
-        
-          }
-          // Compare voxel above
-          if (VerticalThreshold && idxY > 0) {
-            cmpScalar=GET_AT(idxX,idxY-1,idxZ,inPtr);
-            if( cmpScalar >= VerticalThreshold ) newScalar=scalar;
-        
-          }
-          // Compare voxel below
-          if (VerticalThreshold && idxY < maxY-1) {
-            cmpScalar=GET_AT(idxX,idxY+1,idxZ,inPtr);
-            if( cmpScalar >= VerticalThreshold ) newScalar=scalar;
-        
-          }
-          *outPtr=newScalar; 
-        } else *outPtr = scalar;
-        outPtr++;
+    for(idxY = uExtent[2]; idxY <= uExtent[3]; idxY++ )
+    {
+      for(idxX = uExtent[0]; idxX <= uExtent[1]; idxX++ )
+      {
+              
+            //scalar = GET_AT(idxX,idxY,idxZ,inPtr);     
+            scalar = *inPtr;  
+            if( (HorizontalThreshold || VerticalThreshold) && scalar > FilteringThreshold ) {
+                  newScalar=0;
+                  // Compare voxel to the left
+                  if (HorizontalThreshold && idxX > 0) {
+                    //cmpScalar=GET_AT(idxX-1,idxY,idxZ,inPtr);
+                    cmpScalar = *(inPtr-1);
+                    if( cmpScalar >= HorizontalThreshold ) {
+                        newScalar=scalar;
+                    }
+                
+                  }
+                  // Compare voxel to the right
+                  if (HorizontalThreshold && idxX < maxX-1) {
+//                    cmpScalar=GET_AT(idxX+1,idxY,idxZ,inPtr);
+                    cmpScalar = *(inPtr+1);
+                    if( cmpScalar >= HorizontalThreshold ) newScalar=scalar;
+                
+                  }
+                  // Compare voxel above
+                  if (VerticalThreshold && idxY > 0) {
+//                    cmpScalar=GET_AT(idxX,idxY-1,idxZ,inPtr);
+                    cmpScalar = *(inPtr-jumpIncY);
+                    if( cmpScalar >= VerticalThreshold ) newScalar=scalar;
+                
+                  }
+                  // Compare voxel below
+                  if (VerticalThreshold && idxY < maxY-1) {
+//                    cmpScalar=GET_AT(idxX,idxY+1,idxZ,inPtr);
+                    cmpScalar = *(inPtr+jumpIncY);
+                    
+                    if( cmpScalar >= VerticalThreshold ) newScalar=scalar;
+                
+                  }
+                  *outPtr=newScalar; 
+            } else *outPtr = scalar;
+            
+            inPtr++;
+            outPtr++;
       }
+      inPtr += inIncY;
       outPtr += outIncY;
     }  
+    inPtr += inIncZ;
     outPtr += outIncZ;      
   }
   

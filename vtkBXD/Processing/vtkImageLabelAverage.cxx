@@ -153,10 +153,10 @@ void vtkImageLabelAverageExecute(vtkImageLabelAverage *self, int id,int NumberOf
   }
   
   //printf("done\n");
-  for(int i=0;i<n;i++) {
+  for(int i=0;i<=n;i++) {
      avg = avgArray->GetValue(i);
      numberOfValues = numArray -> GetValue(i);
-     //printf("Setting value %d to %f / %d = %f",i,avg,numberOfValues,avg / numberOfValues);
+     printf("Setting value %d to %f / %d = %f",i,avg,numberOfValues,avg / numberOfValues);
      avg /= numberOfValues;     
      avgArray -> SetValue(i,avg);
   }
