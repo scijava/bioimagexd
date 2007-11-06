@@ -129,9 +129,10 @@ class Module:
 			imageData.UpdateInformation()
 			newxSize, newySize, newzSize = imageData.GetDimensions()
 		if self.xSize and self.ySize and self.zSize:
-			if newxSize != self.xSize or newySize != self.ySize or newzSize != self.zSize:
-				raise ("ERROR: Dimensions do not match: currently (%d,%d,%d), "
-				"new dimensions (%d,%d,%d)"%(self.xSize, self.ySize, self.zSize, newxSize, newySize, newzSize))
+			#if newxSize != self.xSize or newySize != self.ySize or newzSize != self.zSize:
+			#	raise ("ERROR: Dimensions do not match: currently (%d,%d,%d), "
+			#	"new dimensions (%d,%d,%d)"%(self.xSize, self.ySize, self.zSize, newxSize, newySize, newzSize))
+			pass
 		else:			 
 			self.xSize, self.ySize, self.zSize = imageData.GetDimensions()
 			#Logging.info("Dataset dimensions =(%d,%d,%d)"%(newxSize,newySize,newzSize),kw="dataunit")

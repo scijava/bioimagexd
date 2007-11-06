@@ -44,7 +44,7 @@ def getFileType():
 	return "BioRad PIC datasets (*.pic)"
 
 def getClass():
-	return BioradDataSource	   
+	return BioradDataSource
 
 class BioradDataSource(DataSource):
 	"""
@@ -69,7 +69,7 @@ class BioradDataSource(DataSource):
 		self.filename = filename
 		self.filepattern = None
 		self.dimensions = None
-		self.voxelsize = (1, 1, 1)
+		self.voxelsize = None
 		self.spacing = None
 		self.itkToVtk = None
 		self.color = None
@@ -79,6 +79,16 @@ class BioradDataSource(DataSource):
 			self.path = os.path.dirname(filename)
 			self.getDataSetCount()
 		
+	def getName(self):
+		"""
+		Created: 05.11.2007, KP
+		Description: return the name of the dataset
+		"""
+		if not self.filename:
+			return ""
+		base = os.path.basename(self.filename).split(".")[:-1]
+		return ".".join(base)
+		
 	def getDataSetCount(self):
 		"""
 		Created: 12.04.2005, KP
@@ -87,36 +97,25 @@ class BioradDataSource(DataSource):
 		"""
 		# This seems to rely on the fact that tps is set to -1 in the constructor
 		if self.tps < 0:
-			#f = self.filename[:]
-			#r = re.compile("(\d+)....$")
-			
-			#m = r.search(f)
-			#d = m.groups(0)
-			#print d
-			#f = f.replace(d[0], "%d")
-			#n = 1
-			#self.filepattern = f
-			#for i in range(1, 99999):
-			#	if os.path.exists(f%i):
-			#		n = i
-			#print "Dataset has", n, "timepoints"
-			#self.tps = n
 			filename = self.filename
 			numberBeforeExtensionRe = re.compile("(\d+)....$")
 			numberBeforeExtensionMatch = numberBeforeExtensionRe.search(filename)
-			numberBeforeExtension = numberBeforeExtensionMatch.group(1)
-			self.filepattern = filename.replace(numberBeforeExtension, "%d")
 			timePoints = 1
-# Try various filenames and see if they exist to determine amount of timepoint
-# this DataSource manages.
-# The filenames don't have zeroes in them? bxd00005.pic for example.
-# Shouldn't we break if a timepoint file doesn't exist.
-# TODO: Are we sure that 99999 is high enough?
-			for i in range(1, 99999):
-				if os.path.exists(self.filepattern % i):
-					timePoints = i
-			print "Dataset has", timePoints, "timepoints"
-			self.tps = timePoints
+			if numberBeforeExtensionMatch:
+				numberBeforeExtension = numberBeforeExtensionMatch.group(1)
+				self.filepattern = filename.replace(numberBeforeExtension, "%d")
+	# Try various filenames and see if they exist to determine amount of timepoint
+	# this DataSource manages.
+	# The filenames don't have zeroes in them? bxd00005.pic for example.
+	# Shouldn't we break if a timepoint file doesn't exist.
+	# TODO: Are we sure that 99999 is high enough?
+				for i in range(1, 99999):
+					if os.path.exists(self.filepattern % i):
+						timePoints = i
+				print "Dataset has", timePoints, "timepoints"
+				self.tps = timePoints
+			else:
+				self.filepattern = None
 		return self.tps
 
 	def getFileName(self):
@@ -156,9 +155,11 @@ class BioradDataSource(DataSource):
 		"""
 		Created: 16.02.2006, KP
 		Description: Return the nth timepoint
-		"""		   
-		print "Switching to dataset ", self.filepattern % (requestedTimePoint + 1)
-		self.reader.SetFileName(self.filepattern % (requestedTimePoint + 1))
+		"""
+		if self.filepattern:
+			self.reader.SetFileName(self.filepattern % (requestedTimePoint + 1))
+		else:
+			self.reader.SetFileName(self.filename)
 		self.reader.Update()
 		
 		if not self.itkToVtk:
@@ -188,6 +189,7 @@ class BioradDataSource(DataSource):
 		Description: Returns the (x, y, z) dimensions of the datasets this 
 					 dataunit contains
 		""" 
+		print "GETTING DIMENSIONS"
 		self.getVoxelSize()
 		return self.dimensions
 

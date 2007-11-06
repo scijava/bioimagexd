@@ -532,6 +532,10 @@ class MainWindow(wx.Frame):
 		self.visWin.Refresh()
 
 	def OnSize(self, event):
+		"""
+		Created: KP
+		Description: the size event handler for main window
+		"""
 		wx.LayoutAlgorithm().LayoutWindow(self, self.visWin)
 		if self.statusbar:
 			rect = self.statusbar.GetFieldRect(2)
@@ -619,6 +623,7 @@ class MainWindow(wx.Frame):
 		"""
 		z += 1
 		if scalar != 0xdeadbeef:
+			print obj,event,x,y,z,scalar, rval, gval, bval, r,g,b,a
 			if type(scalar) == types.TupleType:
 				if len(scalar) > 1:
 					lst = map(str, map(int, scalar))

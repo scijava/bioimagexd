@@ -942,6 +942,7 @@ def scatterPlot(imagedata1, imagedata2, z, countVoxels, wholeVolume = 1, logarit
 	acc.Update()
 	
 	data = acc.GetOutput()
+	origData = data
 	
 	originalRange = data.GetScalarRange()
 	
@@ -969,7 +970,7 @@ def scatterPlot(imagedata1, imagedata2, z, countVoxels, wholeVolume = 1, logarit
 	Logging.info("Scatterplot has dimensions: ", data.GetDimensions(), data.GetExtent(), kw = "imageop")						  
 	data.SetWholeExtent(data.GetExtent())
 	img = vtkImageDataToWxImage(data)
-	return img, ctf
+	return img, ctf, origData
 	
 def getZoomFactor(imageWidth, imageHeight, screenWidth, screenHeight):
 	"""

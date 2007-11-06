@@ -104,7 +104,7 @@ class FilterBasedModule(lib.Module.Module):
 				self.extent = (0, dims[0]-1, 0, dims[1]-1, depth, depth)
 			else:
 				self.extent = None
-			Logging.info("Creating preview...", kw="dataunit")
+			Logging.info("Creating preview with ext %s"%str(self.extent), kw="dataunit")
 			self.preview = self.doOperation(preview=1)
 			self.extent = None
 		else:
@@ -131,6 +131,7 @@ class FilterBasedModule(lib.Module.Module):
 		self.settings.set("FilterList", filterlist)
 		data = self.images
 		if not filterlist:
+			Logging.info("No filters, returning original dat", kw="pipeline")
 			return self.images[0]
 		try:
 			enabledFilters = [filterModule for filterModule in filterlist if filterModule.getEnabled()]	 
@@ -173,6 +174,5 @@ class FilterBasedModule(lib.Module.Module):
 			data = lastfilter.convertITKtoVTK(data)
 
 		data.ReleaseDataFlagOff()
-
 		self.modified = 0
 		return data

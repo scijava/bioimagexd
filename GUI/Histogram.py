@@ -182,6 +182,7 @@ class Histogram(wx.Panel):
 		"""
 		position = event.GetPosition()
 		x, y = position
+		print "pos=",position
 		x -= self.xoffset
 		y = 255 - y
 		if x > 255:
@@ -202,12 +203,15 @@ class Histogram(wx.Panel):
 		self.actionstart = (x, y)
 		#upper = get("ColocalizationUpperThreshold")
 		
-		#lowerDifference = abs(x - self.lowerThreshold)
-		#upperDifference = abs(x - self.upperThreshold)
+		lowerDifference = abs(x - self.lowerThreshold)
+		upperDifference = abs(x - self.upperThreshold)
 		# x is in range 0-255, thresholds can be larger
-		lowerDifference = abs(x - 0)
-		upperDifference = abs(x - 255)
+		print "x=",x
+		#lowerDifference = abs(x - 0)
+		#upperDifference = abs(x - 255)
 
+		print "lowerDiff=",lowerDifference
+		print "upperDiff=",upperDifference
 		if lowerDifference > 30 and upperDifference > 30:
 			self.mode = "middle"
 			self.middleStart = x
@@ -237,7 +241,7 @@ class Histogram(wx.Panel):
 			if x < 0:
 				x = 0
 			if y < 0:
-				y = 0			  
+				y = 0
 			self.actionstart = (x, y)
 			self.updatePreview()
 			
@@ -344,12 +348,12 @@ class Histogram(wx.Panel):
 		Description: Set the dataunit from which the histogram is drawn
 		"""
 		self.dataUnit = dataUnit
-##		bd = self.dataUnit.getSingleComponentBitDepth()
-##		self.upperThreshold = (2**bd)-1
+
 		self.renew = 1
 		self.noupdate = noupdate
 		self.updatePreview()
-		
+		self.scalarMax = dataUnit.getScalarRange()[1]
+		self.scale = self.scalarMax / 255.0
 		
 	def updatePreview(self, *args, **kws):
 		"""

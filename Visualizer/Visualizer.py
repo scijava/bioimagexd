@@ -48,6 +48,7 @@ import scripting
 import GUI.Toolbar
 import GUI.UIElements
 
+import wx.lib.buttons
 visualizerInstance = None
 
 def getVisualizer():
@@ -559,8 +560,8 @@ class Visualizer:
 
 		icon = wx.Image(os.path.join(icondir, "original.gif"), wx.BITMAP_TYPE_GIF).ConvertToBitmap()
 		self.tb.AddSeparator()
-		self.origBtn = wx.BitmapButton(self.tb, GUI.MenuManager.ORIG_BUTTON, icon)
-
+		#self.origBtn = wx.BitmapButton(self.tb, GUI.MenuManager.ORIG_BUTTON, icon)
+		self.origBtn = wx.lib.buttons.GenBitmapButton(self.tb, GUI.MenuManager.ORIG_BUTTON, icon)
 		self.origBtn.SetHelpText("Use this button to show how the unprocessed dataset looks like.")
 		self.origBtn.Bind(wx.EVT_LEFT_DOWN, lambda x: self.onShowOriginal(x, 1))
 		self.origBtn.Bind(wx.EVT_LEFT_UP, lambda x: self.onShowOriginal(x, 0))
@@ -615,7 +616,7 @@ class Visualizer:
 		Created: 27.07.2005, KP
 		Description: Show the original datasets instead of processed ones
 		"""
-
+		print "\n\nSHOW ORIGINAL ",flag
 		if evt == "hide":
 			flag = 0
 		if self.dataUnit:

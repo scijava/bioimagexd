@@ -44,9 +44,6 @@ import vtk
 import vtkbxd
 import wx
 
-#TOOL_W=56
-#TOOL_H=56
-
 TOOL_W = 50
 TOOL_H = 50
 
@@ -202,14 +199,18 @@ class TaskPanel(ScrolledPanel):
 		"""
 		Created: 11.08.2005, KP
 		Description: Switch the used source datasets
-		"""		
+		"""
 		try:
 			self.dataUnit.switchSourceDataUnits(args)
 		except Logging.GUIError, err:
 			err.show()			  
+		if self.channelBox:
+			self.channelBox.clear()
+			self.channelBox.setDataUnit(self.dataUnit, toolImage = (TOOL_W, TOOL_H))
 		self.createItemToolbar()
 		self.doPreviewCallback()
-		
+
+			
 	def getChannelItemBitmap(self, chbmp, color = (255, 255, 255)):
 		"""
 		Created: 7.11.2006, KP
@@ -237,14 +238,14 @@ class TaskPanel(ScrolledPanel):
 		dc.DrawRectangle(0, 0, 60, 60)
 		dc.DrawBitmap(chbmp, 5, 5)
 		dc.EndDrawing()
-		#dc.SelectObject(wx.EmptyBitmap(0,0))
-		dc.SelectObject(wx.NullBitmap)		  
+		dc.SelectObject(wx.NullBitmap)
 		return bmp2
+		
 	def createItemToolbar(self, force = 0):
 		"""
 		Created: 31.03.2005, KP
 		Description: Method to create a toolbar for the window that allows use to select processed channel
-		"""		 
+		"""
 		self.toolMgr.clearItemsBar()
 		n = 0
 
@@ -335,7 +336,6 @@ class TaskPanel(ScrolledPanel):
 		Logging.info("Select item %d" % index, kw = "dataunit")
 		if index == -1:		  
 			Logging.error("No index given", "No index for selected dataunit given")
-
 		sunit = self.dataUnit.getSourceDataUnits()[index]
 		self.settings = sunit.getSettings()
 		self.settingsIndex = index

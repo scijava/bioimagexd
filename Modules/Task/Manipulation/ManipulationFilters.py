@@ -83,8 +83,7 @@ class IntensityMeasurementList(wx.ListCtrl):
 		self.attr2.SetBackgroundColour("light blue")
 		
 		self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.OnItemSelected)
-#        self.Bind(wx.EVT_LIST_ITEM_ACTIVATED, self.OnItemActivated)
-		#self.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.OnItemDeselected)
+
 
 	def setMeasurements(self, measurements):
 		self.measurements = measurements
@@ -729,19 +728,28 @@ class ROIIntensityFilter(ProcessingFilter.ProcessingFilter):
 		Created: 31.07.2006, KP
 		Description: Initialization
 		"""        
-		ProcessingFilter.ProcessingFilter.__init__(self, (1, 1))
+		ProcessingFilter.ProcessingFilter.__init__(self, (1, 2))
 	  
 		self.reportGUI = None
 		self.measurements = []
-		self.descs = {"ROI": "Region of Interest", "AllROIs": "Measure all ROIs"}
+		self.descs = {"ROI": "Region of Interest", "AllROIs": "Measure all ROIs",
+					"SecondInput":"Use second input as ROI"}
 		self.itkFlag = 1
+		
+	def getInputName(self, n):
+		"""
+		Created: 17.04.2006, KP
+		Description: Return the name of the input #n
+		"""			 
+		if n == 2: return "ROI image"
+		return "Source dataset" 
 
 	def getParameters(self):
 		"""
 		Created: 31.07.2006, KP
 		Description: Return the list of parameters needed for configuring this GUI
 		"""            
-		return [["", ("ROI", "AllROIs")]]
+		return [["", ("ROI", "AllROIs","SecondInput")]]
 		
 		
 	def getGUI(self, parent, taskPanel):
@@ -774,6 +782,7 @@ class ROIIntensityFilter(ProcessingFilter.ProcessingFilter):
 		Created: 31.07.2006, KP
 		Description: Return the default value of a parameter
 		"""     
+		if parameter == "SecondInput": return False
 		if parameter == "ROI":
 			n = scripting.visualizer.getRegionsOfInterest()
 			if n:
@@ -789,41 +798,64 @@ class ROIIntensityFilter(ProcessingFilter.ProcessingFilter):
 		if not ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
 		
-		if not self.parameters["AllROIs"]:
-			rois = [self.parameters["ROI"][1]]
-			print "rois =", rois
+		if not self.parameters["SecondInput"]:
+			if not self.parameters["AllROIs"]:
+				rois = [self.parameters["ROI"][1]]
+				print "rois =", rois
+			else:
+				rois = scripting.visualizer.getRegionsOfInterest()
 		else:
-			rois = scripting.visualizer.getRegionsOfInterest()
+			rois = [self.getInput(2)]
+
 		imagedata =  self.getInput(1)
 		
 		mx, my, mz = self.dataUnit.getDimensions()
 		values = []
+
+		itkOrig = self.convertVTKtoITK(imagedata)
+
 		for mask in rois:
 			if not mask:
 				print "No mask"
 				return imagedata
-			print "Processing mask=", mask
-			n, maskImage = lib.ImageOperations.getMaskFromROIs([mask], mx, my, mz)
+			if self.parameters["SecondInput"]:
+				itkLabel = self.convertVTKtoITK(mask)
+				print "itkLabel=",itkLabel
+				print "itkORig=",itkOrig
+				roiName = None
+				if mask.GetScalarType() == 9:
+					a, b = mask.GetScalarRange()
+					statValues = range(int(a), int(b))
+				else:
+					statValues = [255]
+			else:
+				print "Processing mask=", mask
+				n, maskImage = lib.ImageOperations.getMaskFromROIs([mask], mx, my, mz)
 
-			itkLabel =  self.convertVTKtoITK(maskImage)
-			itkOrig = self.convertVTKtoITK(imagedata)
-
+				itkLabel =  self.convertVTKtoITK(maskImage)
+				statValues = [255]
+				roiName = mask.getName()
 			labelStats = itk.LabelStatisticsImageFilter[itkOrig, itkLabel].New()
 			
 			labelStats.SetInput(0, itkOrig)
 			labelStats.SetInput(1, itkLabel)
 			labelStats.Update()
+			for statval in statValues:
 		
-			n = labelStats.GetCount(255)
-
-			totint = labelStats.GetSum(255)
-			maxval = labelStats.GetMaximum(255)
-			minval = labelStats.GetMinimum(255)
-#            median = labelStats.GetMedian(255)
-#            variance = labelStats.GetVariance(255)
-			mean = labelStats.GetMean(255)
-			sigma = labelStats.GetSigma(255)
-			values.append((mask.getName(), n, totint, minval, maxval, mean, sigma))
+				n = labelStats.GetCount(statval)
+	
+				totint = labelStats.GetSum(statval)
+				maxval = labelStats.GetMaximum(statval)
+				minval = labelStats.GetMinimum(statval)
+	#            median = labelStats.GetMedian(255)
+	#            variance = labelStats.GetVariance(255)
+				mean = labelStats.GetMean(statval)
+				sigma = labelStats.GetSigma(statval)
+				if not roiName:
+					name = "%d"%statval
+				else:
+					name = roiName
+				values.append((name, n, totint, minval, maxval, mean, sigma))
 		if self.reportGUI:
 			self.reportGUI.setMeasurements(values)
 			self.reportGUI.Refresh()
