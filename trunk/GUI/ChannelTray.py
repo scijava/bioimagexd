@@ -66,8 +66,6 @@ class ChannelTray(wx.Panel):
 		self.scroll.SetupScrolling()
 		
 		self.sizer.Add(self.scroll, (0, 0), flag = wx.EXPAND | wx.ALL)
-
-   
 		
 	def addChannel(self, name, color, filename, dims, bmp):
 		"""
@@ -81,6 +79,21 @@ class ChannelTray(wx.Panel):
 		n = len(self.units)
 		
 		self.scrollSizer.Add(b, (0, n - 1))        
+		self.scroll.SetupScrolling()
+		self.Layout()
+
+	def clear(self):
+		"""
+		Created: 26.10.2007, KP
+		Description: clear the items bar
+		"""
+		for btn in self.buttons:
+			btn.Show(0)
+			self.scrollSizer.Detach(btn)
+		self.buttons = []
+		self.channels = []
+		self.buttons = []
+		self.previews = []
 		self.scroll.SetupScrolling()
 		self.Layout()
 		
@@ -144,9 +157,8 @@ class ChannelTray(wx.Panel):
 		dc.EndDrawing()
 		dc.SelectObject(wx.NullBitmap)
 		dc = None    
-		return bmp        
-		
-		
+		return bmp
+
 	def setDataUnit(self, dataunit, toolImage = (32, 32)):
 		"""
 		Created: 26.07.2005, KP

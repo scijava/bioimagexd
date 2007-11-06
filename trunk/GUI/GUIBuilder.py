@@ -187,12 +187,15 @@ class GUIBuilderBase:
 		"""
 		return scripting.COLOR_BEGINNER
 			
-	def sendUpdateGUI(self):
+	def sendUpdateGUI(self, parameters = []):
 		"""
 		Created: 05.06.2006, KP
 		Description: Method to update the GUI elements that correspond to the parameters
+					 If a list of parameters is defined, then only those gui entries are updated.
 		"""
-		for item in self.getPlainParameters():
+		if not parameters:
+			parameters = self.getPlainParameters()
+		for item in parameters:
 			value = self.getParameter(item)
 			lib.messenger.send(self, "set_%s" % item, value)
 
@@ -540,10 +543,58 @@ class GUIBuilder(wx.Panel):
 					s.onSetHistogramValues(histogram, i, arg, valuetype = "Upper")
 		lib.messenger.connect(currentFilter, "set_%s" % item[1], fhi)
 		
+		setDataunitFunc = lambda obj, event, dataunit, h = histogram: h.setDataUnit(dataunit)
+		
+		lib.messenger.connect(currentFilter,"set_%s_dataunit"%item[0],setDataunitFunc)
+		lib.messenger.connect(currentFilter,"set_%s_dataunit"%item[1],setDataunitFunc)
+		
 		histogram.setDataUnit(dataUnit, noupdate = 1)
+		
+		
 		self.itemSizer.Add(background, (0, 0))
+		
+		bgsizer = wx.BoxSizer(wx.VERTICAL)
+		background.SetSizer(bgsizer)
+		bgsizer.Add(histogram)
+		
+		
+		cbpane = wx.CollapsiblePane(background, label = "")
+		updatePane = lambda evt, pane = cbpane: self.onUpdatePane(evt, pane)
+		cbpane.Bind(wx.EVT_COLLAPSIBLEPANE_CHANGED, updatePane)
+		pane = cbpane.GetPane()
+		advSizer = wx.GridBagSizer()
+		pane.SetSizer(advSizer)
+		
+		lowerLbl = wx.StaticText(pane, -1,"Lower threshold:")
+		upperLbl = wx.StaticText(pane,-1,"Upper threshold:")
+		
+		lower = self.createNumberInput(pane, currentFilter, item[0], types.IntType, 0, "", self.updateThresholdHistogram)
+		upper = self.createNumberInput(pane, currentFilter, item[1], types.IntType, 255, "", self.updateThresholdHistogram)
+
+
+		advSizer.Add(lowerLbl,(0,0))
+		advSizer.Add(lower,(0,1))
+		advSizer.Add(upperLbl,(1,0))
+		advSizer.Add(upper,(1,1))
+		bgsizer.Add(cbpane)
+		
 		return 0
-	
+		
+
+	def updateThresholdHistogram(self, event, input, parameter, itemType, currentFilter):
+		"""
+		Created: 06.11.2007, KP
+		Description: 
+		"""
+		currentFilter.sendUpdateGUI([parameter])
+		
+	def onUpdatePane(self, evt, pane):
+		"""
+		Created: 28.10.2007, KP
+		Description: update the layout of the given pane
+		"""
+		self.Layout()
+		
 	def createMultiPixelSelection(self, n, items, currentFilter):
 		"""
 		Created: 12.09.2007, KP
@@ -584,7 +635,7 @@ class GUIBuilder(wx.Panel):
 		self.itemSizer.Add(background, (0, 0))							   
 		onSetPixelsFunc = lambda obj, event, arg, seedbox = seedbox, i = itemName, \
 				s = self: s.onSetPixelsFromFilter(seedbox, i, arg)
-		lib.messenger.connect(currentFilter, "set_%s" % itemName, onSetPixelsFunc)														
+		lib.messenger.connect(currentFilter, "set_%s" % itemName, onSetPixelsFunc)
 		return 0
 
 	def createPixelSelection(self, n, items, currentFilter):
@@ -848,7 +899,6 @@ class GUIBuilder(wx.Panel):
 			# as input, then we only offer that
 			choices = [self.currentFilter.dataUnit.getName()]
 		
-		#print "%s There are "%self.currentFilter.getName(), chmax, "channels"
 		for i in range(1, chmax + 1):
 			label = wx.StaticText(self, -1, self.currentFilter.getInputName(i))
 			sizer.Add(label, (y, 0))
@@ -870,7 +920,6 @@ class GUIBuilder(wx.Panel):
 		Description: Set the parameter to the value of the choice widget
 		"""			  
 		value = event.GetSelection()
-		#print "Setting parameter", item, "to", value
 		filter.setParameter(item, value)		
 		
 	def onSetROI(self, regionsOfInterest, filter, item, event):
@@ -1020,19 +1069,17 @@ class GUIBuilder(wx.Panel):
 			self.currentBackgroundSizer	 = self.newItemSizer
 		return (x, y)
 						
-	def createNumberInput(self, parent, currentFilter, item, itemType, defaultValue, label = ""):
+	def createNumberInput(self, parent, currentFilter, item, itemType, defaultValue, label = "", chainFunction = None):
 		"""
 		Created: 15.04.2006, KP
 		Description: Return the input for int type
 		"""		   
-		
 		input = wx.TextCtrl(parent, -1, str(defaultValue))
 		valid = lambda event, f = currentFilter, p = item, t = itemType, \
-							i = input:self.validateAndPassOn(event, i, p, itemType, f)
+							i = input:self.validateAndPassOn(event, i, p, itemType, f, chainFunction)
 		input.Bind(wx.EVT_TEXT, valid)
 		f = lambda obj, event, arg, input = input, it = item, s = self: s.onSetNumber(input, it, arg)
 		lib.messenger.connect(currentFilter, "set_%s" % item, f)
-
 		return input
 		
 	def createSpinInput(self, parent, currentFilter, itemName, itemType, defaultValue, label = ""):
@@ -1160,7 +1207,7 @@ class GUIBuilder(wx.Panel):
 		"""
 		Created: 06.06.2006, KP
 		Description: Set the lower and upper threshold for histogram
-		"""				
+		"""
 		eval("histogram.set%sThreshold(value)" % valuetype)
 
 	def onSetCtf(self, colorPanel, item, value):
@@ -1168,7 +1215,6 @@ class GUIBuilder(wx.Panel):
 		Created: 12.03.2007, KP
 		Description: Set the color transfer function editor colorTransferFunction
 		"""
-		print "onsetctf",colorPanel,item,value
 		colorPanel.setColorTransferFunction(value)
 		
 	def onSetOtf(self, colorPanel, item, value):
@@ -1182,10 +1228,11 @@ class GUIBuilder(wx.Panel):
 		"""
 		Created: 15.04.2006, KP
 		Description: Process an event from a radio box
-		"""		 
+		"""
 		thresholds = event.getThresholds()
 		for i, item in enumerate(items):
-			currentFilter.setParameter(item, thresholds[i])			  
+			currentFilter.setParameter(item, thresholds[i])
+		currentFilter.sendUpdateGUI(items)
 			
 	def onSetSliderValue(self, event, items, currentFilter):
 		"""
@@ -1215,7 +1262,7 @@ class GUIBuilder(wx.Panel):
 			flag = (i == selection)
 			currentFilter.setParameter(item, flag)
 		
-	def validateAndPassOn(self, event, input, parameter, itemType, currentFilter):
+	def validateAndPassOn(self, event, input, parameter, itemType, currentFilter, chain = None):
 		"""
 		Created: 13.04.2006, KP
 		Description: Build the GUI for a given filter
@@ -1231,3 +1278,6 @@ class GUIBuilder(wx.Panel):
 		except:
 			return
 		currentFilter.setParameter(parameter, value)
+		if chain:
+			chain(event, input, parameter, itemType, currentFilter)
+		

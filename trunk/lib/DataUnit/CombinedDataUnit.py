@@ -327,7 +327,8 @@ class CombinedDataUnit(DataUnit):
 			raise Logging.GUIError("Wrong number of dataunits", \
 									"Cannot switch the processed datasets: \
 									you've selected a wrong number of source dataunits.")
-		#oldsources = self.sourceunits
+		chkDims = self.checkDimensions
+		self.checkDimensions = 0
 		self.sourceunits = []
 		#self.byName = {}
 		for i, unit in enumerate(units):
@@ -337,6 +338,7 @@ class CombinedDataUnit(DataUnit):
 			#self.sourceunits.append(unit)
 		for i in self.sourceunits:
 			i.getSettings().set("ColorTransferFunction", i.getColorTransferFunction())
+		self.checkDimensions = chkDims
 
 	def getColorTransferFunction(self):
 		return self.sourceunits[0].getColorTransferFunction()
@@ -364,10 +366,11 @@ class CombinedDataUnit(DataUnit):
 		# then we can just restore the preview before that without any
 		# processing
 		showOrig = self.settings.get("ShowOriginal")
-		if not showOrig and self.doOrig:
-			self.doOrig = 0
-			Logging.info("Returning saved preview", kw = "dataunit")
-			return self.origPreview
+
+#		if not showOrig and self.doOrig:
+#			self.doOrig = 0
+#			Logging.info("Returning saved preview", kw = "dataunit")
+#			return self.origPreview
 			
 		# If the requested output channels have been specified,
 		# then we map those through their corresponding ctf's

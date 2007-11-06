@@ -41,6 +41,7 @@ import lib.ImageOperations
 import lib.messenger
 import Logging
 import wx
+import csv
 
 class Scatterplot(InteractivePanel.InteractivePanel):
 	"""
@@ -110,6 +111,7 @@ class Scatterplot(InteractivePanel.InteractivePanel):
 		self.ID_LOGARITHMIC = wx.NewId()
 		self.ID_SAVE_AS = wx.NewId()
 		self.ID_SAVE_WITH_LEGEND = wx.NewId()
+		self.ID_SAVE_CSV = wx.NewId()
 		self.menu = wx.Menu()
 		self.SetScrollbars(0, 0, 0, 0)
 		lib.messenger.connect(None, "threshold_changed", self.updatePreview)
@@ -126,8 +128,10 @@ class Scatterplot(InteractivePanel.InteractivePanel):
 		item = wx.MenuItem(self.menu, self.ID_SAVE_WITH_LEGEND,"Save with legend...")
 		self.Bind(wx.EVT_MENU, self.onSaveScatterplot, id = self.ID_SAVE_AS)
 		self.Bind(wx.EVT_MENU, self.onSaveScatterplot, id = self.ID_SAVE_WITH_LEGEND)
+		self.Bind(wx.EVT_MENU, self.onSaveCSV, id = self.ID_SAVE_CSV)
 		self.menu.AppendItem(item)
-		
+		item = wx.MenuItem(self.menu, self.ID_SAVE_CSV,"Save as CSV file...")
+		self.menu.AppendItem(item)
 		
 		self.Bind(wx.EVT_LEFT_DOWN, self.markActionStart)
 		self.Bind(wx.EVT_MOTION, self.updateActionEnd)
@@ -137,6 +141,18 @@ class Scatterplot(InteractivePanel.InteractivePanel):
 		self.buffer = wx.EmptyBitmap(256, 256)
 		
 		lib.messenger.connect(None, "timepoint_changed", self.onUpdateScatterplot)
+	
+	def onSaveCSV(self, event):
+		"""
+		Created: 05.11.2007, KP
+		Description: save the scatterplot as csv file
+		"""
+		filename = Dialogs.askSaveAsFileName(self, "Save scatterplot as CSV file", "scatterplot.csv", "Comma Separated Values file|*.csv", "scatterCSV")
+		
+		if not filename:
+			return
+			
+		self.saveAsCSV(filename)
 	
 	def onSaveScatterplot(self, event):
 		"""
@@ -419,6 +435,27 @@ class Scatterplot(InteractivePanel.InteractivePanel):
 		x0, x1 = self.scatterplot.GetScalarRange()
 		Logging.info("Scalar range of scatterplot=", x0, x1, kw = "processing")
 		
+	def saveAsCSV(self, filename):
+		"""
+		Created: 05.11.2007, KP
+		Description: save the scatterplot image as csv file
+		"""
+		f = open(filename, "wb")
+		w = csv.writer(f, dialect = "excel", delimiter = ";")
+		xt,yt,z = self.scatterImage.GetDimensions()
+		data = []
+		line = []
+		for y in range(0,yt):
+			for x in range(0,xt):
+				value = self.scatterImage.GetScalarComponentAsDouble(x,y,0, 0)
+				line.append("%d"%int(value))
+			data.append(line)
+			line=[]
+				
+		for line in data:
+			w.writerow(line)
+		f.close()
+		
 	def updatePreview(self, *args):
 		"""
 		Created: 25.03.2005, KP
@@ -431,7 +468,7 @@ class Scatterplot(InteractivePanel.InteractivePanel):
 			# Red on the vertical and green on the horizontal axis
 			t1 = self.sources[1].getTimepoint(self.timepoint)
 			t2 = self.sources[0].getTimepoint(self.timepoint)
-			self.scatter, ctf = lib.ImageOperations.scatterPlot(t2, t1, -1, self.countVoxels,
+			self.scatter, ctf, self.scatterImage = lib.ImageOperations.scatterPlot(t2, t1, -1, self.countVoxels,
 			self.wholeVolume, dataunits = self.sources, logarithmic = self.logarithmic, timepoint = self.timepoint)
 			self.scatter = self.scatter.Mirror(0)
 			self.scatterHeight = self.scatter.GetHeight()
@@ -473,12 +510,7 @@ class Scatterplot(InteractivePanel.InteractivePanel):
 		upper1 = int(self.sources[0].getSettings().get("ColocalizationUpperThreshold"))
 		upper2 = int(self.sources[1].getSettings().get("ColocalizationUpperThreshold"))
 		
-		#print "lower1=",lower1
-		#print "upper1=",upper1
-		#print "lower2=",lower2
-		#print "upper2=",upper2
-		
-		#print "Scalar max = ",self.scalarMax
+
 		c = 255.0 / self.scalarMax
 		if self.userDrawnThresholds:
 
@@ -490,12 +522,6 @@ class Scatterplot(InteractivePanel.InteractivePanel):
 				y1, y2 = y2, y1
 			lower1, upper1 = x1, x2
 			lower2, upper2 = y1, y2
-
-			#lower1 = int(lower1 * (1.0 / c))
-			#lower2 = int(lower2 * (1.0 / c))
-			#upper1 = int(upper1 * (1.0 / c))
-			#upper2 = int(upper2 * (1.0 / c))
-			
 
 		bmp = self.scatter.ConvertToBitmap()
 		

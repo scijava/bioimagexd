@@ -489,7 +489,7 @@ class PreviewFrame(InteractivePanel):
 		
 	def processOutputData(self, data):
 		"""
-		Created: 03.04.2005, KP
+		Created: 03.04.2005, KP	
 		Description: Process the data before it's send to the preview
 		"""
 		data.UpdateInformation()

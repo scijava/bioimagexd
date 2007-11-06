@@ -862,7 +862,7 @@ class InteractivePanel(GUI.ogl.ShapeCanvas):
 		Created: 15.08.2005, KP
 		Description: Delete annotations on the scene
 		"""
-		self.action = DELETE_ANNOTATION		   
+		self.action = DELETE_ANNOTATION
 		
 	def addAnnotation(self, annClass, **kws):
 		"""

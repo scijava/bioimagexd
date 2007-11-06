@@ -388,6 +388,16 @@ class ThresholdFilter(ProcessingFilter.ProcessingFilter):
 		if self.origCtf:			
 			self.dataUnit.getSettings().set("ColorTransferFunction", self.origCtf)			  
 			
+	def setInputChannel(self, inputNum,n):
+		"""
+		Created: 26.10.2007, KP
+		Description: 
+		"""
+		ProcessingFilter.ProcessingFilter.setInputChannel(self, inputNum, n)
+		dataUnit = self.getInputDataUnit(inputNum)
+#		self.histogram.setDataUnit(dataUnit)
+		lib.messenger.send(self, "set_UpperThreshold_dataunit", dataUnit)
+		
 	def execute(self, inputs, update = 0, last = 0):
 		"""
 		Created: 15.04.2006, KP
@@ -462,6 +472,7 @@ class MaskFilter(ProcessingFilter.ProcessingFilter):
 		"""		   
 		ProcessingFilter.ProcessingFilter.__init__(self, inputs)
 		self.vtkfilter = vtk.vtkImageMask()
+		self.cast = None
 		
 		self.descs = {"OutputValue": "Masked output value"}
 			
@@ -496,6 +507,7 @@ class MaskFilter(ProcessingFilter.ProcessingFilter):
 		return [["", ("OutputValue", )]]
 
 
+
 	def execute(self, inputs, update = 0, last = 0):
 		"""
 		Created: 15.04.2006, KP
@@ -505,12 +517,30 @@ class MaskFilter(ProcessingFilter.ProcessingFilter):
 			return None
 		self.vtkfilter.SetInput1(self.getInput(1))
 		
-		self.vtkfilter.SetInput2(self.getInput(2))
+		maskDataset = self.getInput(2)
+		print "maskDataset=",maskDataset.GetScalarType()
+		# If scalar type is not unsigned char, then cast the data
+		if maskDataset.GetScalarType() != 3:
+			# if the data is unsigned long, check that if there's no 0
+			# intensity, then use 1 as the background intensity
+			if maskDataset.GetScalarType() == 9:
+				histogram = lib.ImageOperations.get_histogram(maskDataset)
+				print "histogram = ",histogram[0:10]
+			if not self.cast:
+				self.cast = vtk.vtkImageCast()
+			print "Casting data"
+			self.cast.RemoveAllInputs()
+			self.cast.SetInput(maskDataset)
+			self.cast.SetOutputScalarType(3)
+			self.cast.SetClampOverflow(1)
+			maskDataset = self.cast.GetOutput()
+		
+		self.vtkfilter.SetInput2(maskDataset)
 		self.vtkfilter.SetMaskedOutputValue(self.parameters["OutputValue"])
 		
 		if update:
 			self.vtkfilter.Update()
-		return self.vtkfilter.GetOutput()	
+		return self.vtkfilter.GetOutput()
 
 class ITKWatershedSegmentationFilter(ProcessingFilter.ProcessingFilter):
 	"""
@@ -1107,6 +1137,14 @@ class MeasureVolumeFilter(ProcessingFilter.ProcessingFilter):
 		self.reportGUI = None
 		self.itkfilter = None
 		
+	def getInputName(self, n):
+		"""
+		Created: 17.04.2006, KP
+		Description: Return the name of the input #n
+		"""			 
+		if n == 1: return "Segmented image"
+		return "Source dataset" 
+		
 	def setDataUnit(self, dataUnit):
 		"""
 		Created: 04.04.2007, KP
@@ -1287,17 +1325,23 @@ class MeasureVolumeFilter(ProcessingFilter.ProcessingFilter):
 
 		# We require unsigned long input data
 		if vtkimage.GetScalarType() != 9:
-			dt = vtkimage.GetScalarTypeAsString()
-			Logging.error("Wrong input type for Object Statistics", \
-							"The calculate object statistics requires an input \
-								dataset of type unsigned long. \n\
-								A dataset of type %s was provided.\n\
-								Typically, you will use Calculate Object Statistics Filter \
-								after a Watershed filter, or Connected Component Labeling filter.\n\
-								This error may be caused by not having either \
-								of those filters in the procedure list." % (dt))
-			return vtkimage
-		
+			#dt = vtkimage.GetScalarTypeAsString()
+			#Logging.error("Wrong input type for Object Statistics", \
+			#				"The calculate object statistics requires an input \
+			#					dataset of type unsigned long. \n\
+			#					A dataset of type %s was provided.\n\
+			#					Typically, you will use Calculate Object Statistics Filter \
+			#					after a Watershed filter, or Connected Component Labeling filter.\n\
+			#					This error may be caused by not having either \
+			#					of those filters in the procedure list." % (dt))
+			#return vtkimage
+			cast = vtk.vtkImageCast()
+			cast.SetInput(vtkimage)
+			cast.SetOutputScalarTypeToUnsignedLong()
+			cast.Update()
+			vtkimage = cast.GetOutput()
+			n = int(vtkimage.GetScalarRange()[1])+1
+			
 		avgintCalc.AddInput(origInput)
 		avgintCalc.AddInput(vtkimage)
 		
@@ -1307,15 +1351,20 @@ class MeasureVolumeFilter(ProcessingFilter.ProcessingFilter):
 		else:
 			startIntensity = 0
 		for i in range(startIntensity, n):
-			volume = self.itkfilter.GetVolume(i)
-			centerOfMass = self.itkfilter.GetCenterOfGravity(i)
-			avgInt = avgintCalc.GetAverage(i)
+		
+
+
 			if not self.itkfilter.HasLabel(i):
 				centersofmass.append((0, 0, 0))
 				values.append((0, 0))
 				avgints.append(0.0)
 				umcentersofmass.append((0, 0, 0))
 			else:
+				volume = self.itkfilter.GetVolume(i)
+				centerOfMass = self.itkfilter.GetCenterOfGravity(i)
+				avgInt = avgintCalc.GetAverage(i)
+				if avgInt:
+					print "Average intensity for ",i,"is",avgInt
 				c = []
 				c2 = []
 				for i in range(0, 3):
@@ -1324,7 +1373,7 @@ class MeasureVolumeFilter(ProcessingFilter.ProcessingFilter):
 					c2.append(v * voxelSizes[i])
 				centersofmass.append(tuple(c))
 				umcentersofmass.append(tuple(c2))
-				values.append((volume, volume * vol))				 
+				values.append((volume, volume * vol))
 				avgints.append(avgInt)
 		self.values = values
 		self.centersofmass = centersofmass
