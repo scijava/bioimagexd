@@ -77,6 +77,7 @@ class Histogram(wx.Panel):
 		
 		wx.Panel.__init__(self, parent, -1, **kws)
 		self.parent = parent
+		self.size = (0,0)
 		self.timePoint = 0
 		self.buffer = wx.EmptyBitmap(256, 150)
 		self.backGround = None
@@ -117,7 +118,6 @@ class Histogram(wx.Panel):
 	   
 	def setReplacementCTF(self, colorTransferFunction):
 		"""
-		Method: setReplacementCTF
 		Created: 15.04.2006, KP
 		Description: Set a CTF that will replace the original CTF
 		"""
@@ -126,33 +126,26 @@ class Histogram(wx.Panel):
 		
 	def setLowerThreshold(self, lowerThreshhold):
 		"""
-		Method: setLowerThreshold
 		Created: 06.06.2006, KP
 		Description: Set the lower threshold showin with this widget
 		"""
 		self.lowerThreshold = lowerThreshhold
-		#self.actionstart = (self.lowerThreshold, 0)
-		#self.setThreshold(None)
 		self.actionstart = None
 		self.updatePreview(renew = 1)
 		self.Refresh()
 
 	def setUpperThreshold(self, upperThreshhold):
 		"""
-		Method: setUpperThreshold
 		Created: 06.06.2006, KP
 		Description: Set the upper threshold showin with this widget
 		"""
 		self.upperThreshold = upperThreshhold
-		#self.actionstart = (self.upperThreshold, 0)
 		self.actionstart = None
-		#self.setThreshold(None)
 		self.updatePreview(renew = 1)
 		self.Refresh()
 
 	def getLowerThreshold(self):
 		"""
-		Method: getLowerThreshold
 		Created: 12.04.2006, KP
 		Description: Return the lower threshold selected with this widget
 		"""			   
@@ -203,15 +196,18 @@ class Histogram(wx.Panel):
 		self.actionstart = (x, y)
 		#upper = get("ColocalizationUpperThreshold")
 		
-		lowerDifference = abs(x - self.lowerThreshold)
-		upperDifference = abs(x - self.upperThreshold)
+		print "lower threshold = ",self.lowerThreshold
+		print "upper threshold=",self.upperThreshold
+		print "scale=",self.scale
+#		lowerDifference = abs(x - self.lowerThreshold)
+#		upperDifference = abs(x - self.upperThreshold)
+		lowerDifference = abs(x - self.lowerThreshold/self.scale)
+		upperDifference = abs(x - self.upperThreshold/self.scale)
 		# x is in range 0-255, thresholds can be larger
-		print "x=",x
-		#lowerDifference = abs(x - 0)
-		#upperDifference = abs(x - 255)
+#		print "x=",x
 
-		print "lowerDiff=",lowerDifference
-		print "upperDiff=",upperDifference
+#		print "lowerDiff=",lowerDifference
+#		print "upperDiff=",upperDifference
 		if lowerDifference > 30 and upperDifference > 30:
 			self.mode = "middle"
 			self.middleStart = x
@@ -228,7 +224,7 @@ class Histogram(wx.Panel):
 	def updateActionEnd(self, event):
 		"""
 		Created: 12.07.2005, KP
-		Description: Draws the rubber band to current mouse pos		  
+		Description: Draws the rubber band to current mouse pos
 		"""
 		if event.LeftIsDown():
 			x, y = event.GetPosition()
@@ -348,11 +344,13 @@ class Histogram(wx.Panel):
 		Description: Set the dataunit from which the histogram is drawn
 		"""
 		self.dataUnit = dataUnit
-
+		
 		self.renew = 1
 		self.noupdate = noupdate
 		self.updatePreview()
 		self.scalarMax = dataUnit.getScalarRange()[1]
+		self.lowerThreshold = self.scalarMax / 2
+		self.upperThreshold = self.scalarMax
 		self.scale = self.scalarMax / 255.0
 		
 	def updatePreview(self, *args, **kws):
@@ -364,7 +362,6 @@ class Histogram(wx.Panel):
 		if not self.thresholdMode and get("ColocalizationLowerThreshold"):
 			lower = get("ColocalizationLowerThreshold")
 			upper = get("ColocalizationUpperThreshold")
-			print "Lower and upper thresholds=", lower,upper
 		else:
 			lower = self.lowerThreshold
 			upper = self.upperThreshold
@@ -396,16 +393,16 @@ class Histogram(wx.Panel):
 			width = self.histogram.GetWidth()
 			height = self.histogram.GetHeight()
 			self.buffer = wx.EmptyBitmap(width, height)
-			Logging.info("Setting size to", width, height, kw = "imageop")
-			self.SetSize((width, height))
-			self.parent.Layout()
-			self.renew = 0
 			
+			if self.size != (width, height):
+				Logging.info("Setting size to", width, height, kw = "imageop")
+				self.SetSize((width, height))
+				self.parent.Layout()
+				self.size = (width,height)
+			self.renew = 0
 		
 		self.paintPreview()
-		
-		# Commented because in windows looks bad and not needed
-		#self.Refresh()
+
 		
 	def paintPreview(self):
 		"""

@@ -78,12 +78,18 @@ class GUIBuilderBase:
 		self.inputIndex = 0
 		self.gui = None
 		self.modCallback = changeCallback
+		self.updateDefaultValues()
+		
+	def updateDefaultValues(self):
+		"""
+		Created: 08.11.2007, KP
+		Description: update the default values
+		"""
 		self.initDone = 0
 		for item in self.getPlainParameters():
+			print "Updating ",item
 			self.setParameter(item, self.getDefaultValue(item))
 		self.initDone = 1
-
-		
 	def getInput(self, mapIndex):
 		"""
 		Created: 17.04.2006, KP
@@ -1074,10 +1080,12 @@ class GUIBuilder(wx.Panel):
 		Created: 15.04.2006, KP
 		Description: Return the input for int type
 		"""		   
-		input = wx.TextCtrl(parent, -1, str(defaultValue))
+		input = wx.TextCtrl(parent, -1, str(defaultValue), style = wx.TE_PROCESS_ENTER)
 		valid = lambda event, f = currentFilter, p = item, t = itemType, \
 							i = input:self.validateAndPassOn(event, i, p, itemType, f, chainFunction)
-		input.Bind(wx.EVT_TEXT, valid)
+		input.Bind(wx.EVT_TEXT_ENTER, valid)
+		input.Bind(wx.EVT_KILL_FOCUS, valid)
+		
 		f = lambda obj, event, arg, input = input, it = item, s = self: s.onSetNumber(input, it, arg)
 		lib.messenger.connect(currentFilter, "set_%s" % item, f)
 		return input
@@ -1227,7 +1235,7 @@ class GUIBuilder(wx.Panel):
 	def onSetThreshold(self, event, items, currentFilter):
 		"""
 		Created: 15.04.2006, KP
-		Description: Process an event from a radio box
+		Description: Process an event from the histogram
 		"""
 		thresholds = event.getThresholds()
 		for i, item in enumerate(items):

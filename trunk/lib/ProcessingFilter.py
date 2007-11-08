@@ -298,7 +298,8 @@ class ProcessingFilter(GUIBuilder.GUIBuilderBase):
 		Description: Set the dataunit that is the input of this filter
 		"""
 		self.dataUnit = dataUnit
-
+		self.updateDefaultValues()
+			
 	def getDataUnit(self):
 		"""
 		Created: 15.04.2006, KP

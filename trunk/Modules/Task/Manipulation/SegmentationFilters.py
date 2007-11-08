@@ -290,12 +290,16 @@ class ThresholdFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 13.04.2006, KP
 		Description: Initialization
-		"""		   
+		"""
+		self.defaultLower = 128
+		self.defaultUpper = 255
 		ProcessingFilter.ProcessingFilter.__init__(self, (1, 1))
 		self.vtkfilter = vtk.vtkImageThreshold()
 		self.vtkfilter.AddObserver("ProgressEvent", self.updateProgress)
 
 		self.origCtf = None
+		
+
 		
 		self.ignoreObjects = 1
 		self.descs = {"ReplaceInValue": "Value for voxels inside thresholds",
@@ -303,7 +307,9 @@ class ThresholdFilter(ProcessingFilter.ProcessingFilter):
 			"ReplaceIn": "Inside thresholds", "ReplaceOut": "Outside thresholds",
 			"LowerThreshold": "Lower Threshold", "UpperThreshold": "Upper threshold",
 			"Demonstrate": "Use lookup table to demonstrate effect"}
-	
+			
+
+			
 	def getParameterLevel(self, parameter):
 		"""
 		Created: 9.11.2006, KP
@@ -313,7 +319,7 @@ class ThresholdFilter(ProcessingFilter.ProcessingFilter):
 			return scripting.COLOR_INTERMEDIATE
 		
 		
-		return scripting.COLOR_BEGINNER				   
+		return scripting.COLOR_BEGINNER
 	
 	def setParameter(self, parameter, value):
 		"""
@@ -370,25 +376,38 @@ class ThresholdFilter(ProcessingFilter.ProcessingFilter):
 		Description: Return the default value of a parameter
 		"""		
 		if parameter == "LowerThreshold":
-			return 128
+			return self.defaultLower
 		if parameter == "UpperThreshold":
-			return 255
+			return self.defaultUpper
 		if parameter == "ReplaceInValue":
-			return 255
+			return self.defaultUpper
 		if parameter == "ReplaceOutValue":
 			return 0
 		if parameter == "Demonstrate":
 			return 0
 		if parameter in ["ReplaceIn", "ReplaceOut"]:
 			return 1
+			
+	def setDataUnit(self,dataUnit):
+		"""
+		Created: 08.11.2007, KP
+		Description: set the dataunit used as input for this filter
+		"""
+		sourceDataUnits = dataUnit.getSourceDataUnits()
+		if sourceDataUnits:
+			self.defaultUpper = sourceDataUnits[0].getScalarRange()[1]
+			self.defaultLower = self.defaultUpper / 2
+		
+		ProcessingFilter.ProcessingFilter.setDataUnit(self, dataUnit)
+		
 
 	def onRemove(self):
 		"""
 		Created: 26.1.2006, KP
 		Description: Restore palette upon filter removal
-		"""		   
-		if self.origCtf:			
-			self.dataUnit.getSettings().set("ColorTransferFunction", self.origCtf)			  
+		"""
+		if self.origCtf:
+			self.dataUnit.getSettings().set("ColorTransferFunction", self.origCtf)
 			
 	def setInputChannel(self, inputNum,n):
 		"""
@@ -397,7 +416,7 @@ class ThresholdFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		ProcessingFilter.ProcessingFilter.setInputChannel(self, inputNum, n)
 		dataUnit = self.getInputDataUnit(inputNum)
-#		self.histogram.setDataUnit(dataUnit)
+		
 		lib.messenger.send(self, "set_UpperThreshold_dataunit", dataUnit)
 		
 	def execute(self, inputs, update = 0, last = 0):
@@ -409,11 +428,15 @@ class ThresholdFilter(ProcessingFilter.ProcessingFilter):
 		if not ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
 		image = self.getInput(1)
+		self.eventDesc="Thresholding image"
+
+			
+			
 		if not self.parameters["Demonstrate"]:
 			if self.origCtf:
 				self.dataUnit.getSettings().set("ColorTransferFunction", self.origCtf)
 				if self.gui:
-					self.gui.histograms[0].setReplacementCTF(None)				  
+					self.gui.histograms[0].setReplacementCTF(None)
 					self.gui.histograms[0].updatePreview(renew = 1)
 			self.vtkfilter.SetInput(image)
 			
@@ -1720,7 +1743,7 @@ class ITKOtsuThresholdFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 15.04.2006, KP
 		Description: Execute the filter with given inputs and return the output
-		"""					   
+		"""
 		if not ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
 			
