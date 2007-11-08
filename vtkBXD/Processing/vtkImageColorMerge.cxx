@@ -191,7 +191,6 @@ void vtkImageColorMergeExecute(vtkImageColorMerge *self, int id,int NumberOfInpu
     
     target = (unsigned long)((maxZ+1)*(maxY+1)/50.0);
     target++;
-//    printf("Processing data... %d,%d,%d\n",maxX,maxY,maxZ   );
     
     
     for(idxZ = 0; idxZ <= maxZ; idxZ++ ) {        
@@ -200,7 +199,7 @@ void vtkImageColorMergeExecute(vtkImageColorMerge *self, int id,int NumberOfInpu
          sprintf(progressText,"Merging channels (slice %d / %d)",idxZ+1,maxZ+1);
          self->SetProgressText(progressText);
 
-        for(idxY = 0; idxY <= maxY; idxY++ ) {
+        for(idxY = 0; !self->AbortExecute &&  idxY <= maxY; idxY++ ) {
             if (!id)
             {
                 if (!(count%target))

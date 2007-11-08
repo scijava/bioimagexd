@@ -481,10 +481,12 @@ template < class T >
     //  printf("Acuiring inpointers\n");
     T* inPtr1 = (T *) inData[0]->GetScalarPointer();
     T* inPtr2 = (T *) inData[1]->GetScalarPointer();
-  
+    if(!id) {
+        self->SetProgressText("Calculating input image statistiscs");
+        self->UpdateProgress(1.0);
+    }
     CalculateStatisticsOfExistingImage<T>(self, inData, width, height, nslices,&ch1Mean, &ch2Mean,&r);
-
-
+    
     
 
     bool ch3found = false;
@@ -523,13 +525,14 @@ template < class T >
     
     ch4 = 0;    
     
-    for (int c = 1; c <= iterations; c++)
+    for (int c = 1; !self->AbortExecute && c <= iterations; c++)
     {
-        if(!id) {
-            self->UpdateProgress(float(c)/iterations);
-        }
-        sprintf(progressText,"Calculating P-Value (iteration %d / %d)",c,iterations);
-        self->SetProgressText(progressText);
+//        sprintf(progressText,"Calculating P-Value (iteration %d / %d)",c,iterations);
+//       self->SetProgressText(progressText);    
+//        if(!id) {
+//            self->UpdateProgress(float(c)/iterations);
+//        }
+
         
         if(c == iterations) {
             // Copy the sample random data
@@ -564,8 +567,10 @@ template < class T >
         for (int s = startSlice; s < nslices; s++)
         {
             progress=float(c)/iterations;
-            progress+=s/float(100*nslices);
+            progress+=0.5*(s/float(100*nslices));
             if(!id) {
+                sprintf(progressText,"Randomizing input channel");
+                self->SetProgressText(progressText);
                 self->UpdateProgress(progress);
             }        
             slicesDone++;
@@ -648,6 +653,12 @@ template < class T >
             
             // If we're using Costes' method, we blur the dataset
             if (Costes) {
+                progress=float(c)/iterations;
+                progress+=0.6*(s/float(100*nslices));
+                if(!id) {
+                    self->SetProgressText("Applying gaussian smoothing to randomized image");
+                    self->UpdateProgress(progress);
+                }                 
                 // first create a buffer to store a copy of the dataset
                 vtkImageData* copybuf = vtkImageData::New();
                 copybuf->SetExtent(outbuf->GetExtent());
@@ -694,6 +705,13 @@ template < class T >
     
         for (int s = startSlice; s < nslices; s++) 
         {
+            progress=float(c)/iterations;
+            progress+=0.8*(s/float(100*nslices));
+            if(!id) {
+                sprintf(progressText,"Calculating random image statistics");
+                self->SetProgressText(progressText);
+                self->UpdateProgress(progress);
+            }                
             s2 = s;
             if (Fay && nslices > 1)
                 s2 -= 1;
