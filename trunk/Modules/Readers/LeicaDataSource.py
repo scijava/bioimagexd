@@ -66,7 +66,9 @@ class LeicaDataSource(DataSource):
 		"""    
 		DataSource.__init__(self)
 		self.filename = filename
-		self.reader = LeicaExperiment(filename)
+		self.reader = LeicaExperiment(filename, progressCallback = self.updateProgress)
+		self.shortname = os.path.basename(filename)
+
 		self.experiment = experiment
 		if experiment:
 			self.originalDimensions = self.reader.GetDimensions(self.experiment)
@@ -77,15 +79,41 @@ class LeicaDataSource(DataSource):
 		self.color = None
 		self.ctf = None
 		self.setPath(filename)
+		self.datasetCount = 1
 		
+	def updateProgress(self, obj, evt):
+		"""
+		Created: 13.07.2004, KP
+		Description: Sends progress update event
+		"""
+		if not obj:
+			progress = 1.0
+		else:
+			progress = obj.GetProgress()
+		if self.experiment:
+			msg = "Reading channel %s of %s" % (self.experiment, self.shortname)
+			if self.timepoint >= 0 and self.getDataSetCount()>1:
+				msg += " (timepoint %d / %d)" % (self.timepoint + 1, self.getDataSetCount())
+		else:
+			msg = "Reading %s..." % self.shortname
+		notinvtk = 0
+		
+		if progress >= 1.0:
+			notinvtk = 1
+		scripting.inIO = (progress < 1.0)
+		if scripting.mainWindow:
+			scripting.mainWindow.updateProgressBar(obj, evt, progress,msg, notinvtk)
+			
 	def getDataSetCount(self):
 		"""
 		Created: 12.04.2005, KP
 		Description: Returns the number of individual DataSets (=time points)
 		managed by this DataSource
 		"""
-		return self.reader.GetNumberOfTimepoints(self.experiment)
-
+		if not self.datasetCount:
+			self.datasetCount = self.reader.GetNumberOfTimepoints(self.experiment)
+		return self.datasetCount
+		
 	def getFileName(self):
 		"""
 		Created: 21.07.2005
@@ -99,6 +127,7 @@ class LeicaDataSource(DataSource):
 		Description: Returns the DataSet at the specified index
 		Parameters:   i       The index
 		"""
+		self.timepoint = i
 		data = self.reader.GetTimepoint(self.experiment, self.channel, i)
 		return self.getResampledData(data, i)
 		
@@ -242,10 +271,11 @@ class LeicaDataSource(DataSource):
 		return ctf
 		
 class LeicaExperiment:
-	def __init__ (self, ExpPathTxt):
+	def __init__ (self, ExpPathTxt, progressCallback = None):
 		self.SeriesDict = {}
 		# Store snapshots in a dict of it's own, so we can give them separately 
 		# if requested
+		self.progressCallback = progressCallback
 		self.SnapshotDict = {}
 		self.nonExistent = []
 		self.path = ""
@@ -768,6 +798,8 @@ class LeicaExperiment:
 		YSpace = Series_Info['Voxel_Height_Y']
 		ZSpace = Series_Info['Voxel_Depth_Z']
 		TIFFReader = vtkbxd.vtkExtTIFFReader()
+		if self.progressCallback:
+			TIFFReader.AddObserver("ProgressEvent", self.progressCallback)
 		if Series_Info['Pixel_Size'] != 3:
 			TIFFReader.RawModeOn()
 		
@@ -803,6 +835,8 @@ class LeicaExperiment:
 		ZSpace = Series_Info['Voxel_Depth_Z']
 		
 		RAWReader = vtk.vtkImageReader2()
+		if self.progressCallback:
+			RAWReader.AddObserver("ProgressEvent", self.progressCallback)
 		arr = vtk.vtkStringArray()
 		for i in Channel:
 			arr.InsertNextValue(os.path.join(self.path, i))

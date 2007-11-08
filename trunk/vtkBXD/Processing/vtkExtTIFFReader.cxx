@@ -308,7 +308,6 @@ void vtkExtTIFFReaderUpdate(vtkExtTIFFReader *self, vtkImageData *data, OT *outP
     {
     self->ComputeInternalFileName(idx2);
     // read in a TIFF file
-    //printf("slice %d",idx2);
     vtkExtTIFFReaderUpdate2(self, outPtr2, outExtent, outIncr, pixSize);
     self->UpdateProgress((idx2 - outExtent[4])/
                          (outExtent[5] - outExtent[4] + 1.0));
