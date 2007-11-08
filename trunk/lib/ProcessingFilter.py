@@ -98,7 +98,24 @@ class ProcessingFilter(GUIBuilder.GUIBuilderBase):
 
 		self.vtkToItk = None
 		self.itkToVtk = None
-		#self.G = "UC3"
+		self.executive = None
+		self.eventDesc = ""
+		
+	def getEventDesc(self):
+		"""
+		Created: 08.11.2007, KP
+		Description: return a string describing the event being currently executed
+		"""
+		if self.eventDesc:
+			return self.eventDesc
+		return "Performing %s"%self.name
+		
+	def setExecutive(self, executive):
+		"""
+		Created: 08.11.2007, KP
+		Description: set the object controlling the execution of this filter
+		"""
+		self.executive = executive
 
 	def onRemove(self):
 		"""
@@ -106,6 +123,14 @@ class ProcessingFilter(GUIBuilder.GUIBuilderBase):
 		Description: Callback for when the filter is removed
 		"""
 		pass
+
+	def updateProgress(self, obj, evt):
+		"""
+		Created: 13.07.2004, KP
+		Description: Sends progress update event
+		"""
+		if self.executive:
+			self.executive.updateProgress(obj, evt)
 
 	def set(self, parameter, value):
 		"""
@@ -147,7 +172,7 @@ class ProcessingFilter(GUIBuilder.GUIBuilderBase):
 		Created: 31.05.2006, KP
 		Description: Notify the task panel that filter has changed
 		"""
-		if self.taskPanel:				# TODO: Is this method used at all? The parameter 'module' is not used.
+		if self.taskPanel:
 			self.taskPanel.filterModified(self)
 
 	def setImageType(self, imageType):
