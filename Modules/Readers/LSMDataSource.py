@@ -77,7 +77,6 @@ class LsmDataSource(DataSource):
 		# vtkLSMReader is used to do the actual reading:
 		self.reader = vtkbxd.vtkLSMReader()
 		
-		#self.reader.DebugOn()
 		self.reader.AddObserver("ProgressEvent", self.updateProgress)
 		# If a filename was specified, the file is loaded
 		if self.filename:
@@ -118,8 +117,8 @@ class LsmDataSource(DataSource):
 			progress = obj.GetProgress()
 		if self.channelNum >= 0:
 			msg = "Reading channel %d of %s" % (self.channelNum + 1, self.shortname)
-			if self.timepoint >= 0:
-				msg += "(timepoint %d / %d)" % (self.timepoint + 1, self.dimensions[3])
+			if self.timepoint >= 0 and self.getDataSetCount()>1:
+				msg += " (timepoint %d / %d)" % (self.timepoint + 1, self.dimensions[3])
 		else:
 			msg = "Reading %s..." % self.shortname
 		notinvtk = 0
@@ -127,7 +126,8 @@ class LsmDataSource(DataSource):
 		if progress >= 1.0:
 			notinvtk = 1
 		scripting.inIO = (progress < 1.0)
-		#lib.messenger.send(None,"update_progress",progress,msg,notinvtk)
+		if scripting.mainWindow:
+			scripting.mainWindow.updateProgressBar(obj, evt, progress,msg, notinvtk)
 
 	def getTimeStamp(self, timepoint):
 		"""
