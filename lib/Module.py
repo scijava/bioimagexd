@@ -29,13 +29,9 @@ __author__ = "Selli Project <http://sovellusprojektit.it.jyu.fi/selli/>"
 __version__ = "$Revision: 1.19 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
-#import vtk
-#import ImageOperations
 import Logging
-#from enthought.tvtk import messenger
 import messenger
-#import scripting
-#import optimize
+import scripting
 
 class Module:
 	"""
@@ -54,13 +50,31 @@ class Module:
 		self.extent = None
 		self.zoomFactor = 1
 		self.settings = None
-		self.scale = None
-		self.shift = None
-		self.timepoint = -1		
+		self.scale = 1
+		self.shift = 0
+		self.timepoint = -1
 
 		self.eventDesc = "Processing data"
 		self.controlUnit = None
-	 
+		import itkConfig
+		itkConfig.ProgressCallback = self.updateITKProgress
+		
+	def getEventDesc(self):
+		"""
+		Created: 08.11.2007, KP
+		Description: Get the event description. More complex modules can overwrite this for
+					 more dynamic descriptions
+		"""
+		return self.eventDesc
+		
+	def updateITKProgress(self, name, itkprogress):
+		"""
+		Created: 08.11.2007, KP
+		Description: update the progress from the itk side
+		"""
+		progress = self.shift + itkprogress * self.scale
+		scripting.mainWindow.updateProgressBar(None, "ProgressEvent", progress, self.getEventDesc(), 0)
+		
 	def setControlDataUnit(self, dataunit):
 		"""
 		Created: 10.07.2006, KP
@@ -77,7 +91,7 @@ class Module:
 	
  
 
-	def updateProgress(self, obj, evt):	#TODO: test
+	def updateProgress(self, obj, evt):
 		"""
 		Created: 13.07.2004, KP
 		Description: Sends progress update event
@@ -88,8 +102,9 @@ class Module:
 		progress = self.shift + obj.GetProgress() * self.scale
 		txt = obj.GetProgressText()
 		if not txt:
-			txt = self.eventDesc
-		messenger.send(None, "update_progress", progress, txt, 0)		 
+			txt = self.getEventDesc()
+		scripting.mainWindow.updateProgressBar(obj, evt, progress, txt, 0)
+		#messenger.send(None, "update_progress", progress, txt, 0)
 		
 	def setTimepoint(self, timePoint):
 		"""

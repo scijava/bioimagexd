@@ -59,6 +59,8 @@ class FilterBasedModule(lib.Module.Module):
 		self.running = 0
 		self.settings = None
 		self.reset()
+		self.currentExecutingFilter = None
+
 		
 	def setModified(self, flag):
 		"""
@@ -68,6 +70,17 @@ class FilterBasedModule(lib.Module.Module):
 		Logging.info("Setting modified to %s"%str(not not flag), kw="dataunit")
 		self.modified = flag
 
+	def getEventDesc(self):
+		"""
+		Created: 08.11.2007, KP
+		Description: Get the event description. More complex modules can overwrite this for
+					 more dynamic descriptions
+		"""
+		if self.currentExecutingFilter:
+			return self.currentExecutingFilter.getEventDesc()
+		else:
+			return self.eventDesc
+			
 	def reset(self):
 		"""
 		Created: 25.11.2004, KP
@@ -111,7 +124,6 @@ class FilterBasedModule(lib.Module.Module):
 			Logging.info("Modified = %s so returning old preview"%str(not not self.modified), kw="dataunit")
 		return self.preview
 
-
 	def doOperation(self, preview=0):	#TODO:test
 		"""
 		Created: 04.04.2006, KP
@@ -140,7 +152,13 @@ class FilterBasedModule(lib.Module.Module):
 		highestFilterIndex = len(enabledFilters)-1
 		
 		lastfilter = None
+		x = 1.0/len(enabledFilters)
 		for i, currfilter in enumerate(enabledFilters):
+			self.currentExecutingFilter = currfilter
+			self.shift = x*i
+			self.scale = x
+			self.eventDesc = "Performing %s"%currfilter.name
+			currfilter.setExecutive(self)
 			flag = (i == highestFilterIndex)
 			if i > 0:
 				currfilter.setPrevFilter(enabledFilters[i-1])
@@ -166,8 +184,11 @@ class FilterBasedModule(lib.Module.Module):
 				currfilter.writeOutput(self.controlUnit, self.timepoint)
 			data = [data]
 			if not data:
+				self.currentExecutingFilter = None
 				self.cached = None
 				return None
+
+		self.currentExecutingFilter = None
 	
 		data = data[0]
 		if data.__class__ != vtk.vtkImageData:
