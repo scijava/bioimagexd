@@ -407,8 +407,8 @@ class ManipulationPanel(GUI.FilterBasedTaskPanel.FilterBasedTaskPanel):
 		Description: Add a filter to the stack
 		"""        
 		addfilter = filterclass()
-		addfilter.setTaskPanel(self)
 		addfilter.setDataUnit(self.dataUnit)
+		addfilter.setTaskPanel(self)
 		name = addfilter.getName()
 		n = self.filterListbox.GetCount()
 		self.filterListbox.InsertItems([name], n)

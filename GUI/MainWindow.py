@@ -590,8 +590,8 @@ class MainWindow(wx.Frame):
 		if self.progressObject and obj != self.progressObject:
 			return
 		t = time.time()
-		if arg not in [1.0, 100] and abs(t - self.progressTimeStamp) < 1:
-			return
+		#if arg not in [1.0, 100] and abs(t - self.progressTimeStamp) < 1:
+		#	return
 
 		self.progressTimeStamp = t
 		if type(arg) == types.FloatType:
@@ -603,21 +603,29 @@ class MainWindow(wx.Frame):
 		self.progress.SetValue(int(arg))
 		if int(arg) >= 100:
 			self.progress.Show(0)
+			wx.CallLater(1000, self.clearProgressBar)
 		else:
 			self.progress.Show()
 		self.progress.Update()
-		print "Progress=",int(arg),"text=",text
 		if text:
 			self.statusbar.SetStatusText(text)
 			self.statusbar.Update()
 		if allow_gui:
 			if self.visualizer:
 				self.visualizer.in_vtk = 0
-			#wx.GetApp().Yield(1)
 		else:
 			if self.visualizer:
 				self.visualizer.in_vtk = 1
-			#wx.SafeYield(None, 1)
+				
+	def clearProgressBar(self,*args):
+		"""
+		Created: 08.11.2007, KP
+		Description: clear the progress bar
+		"""
+		self.statusbar.SetStatusText("")
+		self.statusbar.Update()
+		self.progress.Show(0)
+		self.progress.Update()
 			
 	def updateVoxelInfo(self, obj, event, x, y, z, scalar, rval, gval, bval, r, g, b, a, ctf):
 		"""
