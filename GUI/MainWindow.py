@@ -605,8 +605,11 @@ class MainWindow(wx.Frame):
 			self.progress.Show(0)
 		else:
 			self.progress.Show()
+		self.progress.Update()
+		print "Progress=",int(arg),"text=",text
 		if text:
 			self.statusbar.SetStatusText(text)
+			self.statusbar.Update()
 		if allow_gui:
 			if self.visualizer:
 				self.visualizer.in_vtk = 0
