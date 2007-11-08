@@ -114,7 +114,7 @@ void vtkImageLabelAverageExecute(vtkImageLabelAverage *self, int id,int NumberOf
 
     sprintf(progressText,"Calculating average intensity of objects (slice %d / %d)",idxZ,maxZ);
     self->SetProgressText(progressText);
-    for(idxY = 0; idxY <= maxY; idxY++ ) {
+    for(idxY = 0; !self->AbortExecute &&  idxY <= maxY; idxY++ ) {
         if (!id)
         {
             if (!(count%target))
@@ -156,7 +156,7 @@ void vtkImageLabelAverageExecute(vtkImageLabelAverage *self, int id,int NumberOf
   for(int i=0;i<=n;i++) {
      avg = avgArray->GetValue(i);
      numberOfValues = numArray -> GetValue(i);
-     printf("Setting value %d to %f / %d = %f",i,avg,numberOfValues,avg / numberOfValues);
+     //printf("Setting value %d to %f / %d = %f",i,avg,numberOfValues,avg / numberOfValues);
      avg /= numberOfValues;     
      avgArray -> SetValue(i,avg);
   }

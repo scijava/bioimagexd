@@ -153,7 +153,7 @@ void vtkImageMapToIntensitiesExecute(vtkImageMapToIntensities *self, int id,int 
     sprintf(progressText,"Applying intensity transfer function (slice %d / %d)",idxZ,maxZ);
     self->SetProgressText(progressText);
 
-    for(idxY = 0; idxY <= maxY; idxY++ ) {
+    for(idxY = 0; !self->AbortExecute &&  idxY <= maxY; idxY++ ) {
         if (!id)
         {
             if (!(count%target))
