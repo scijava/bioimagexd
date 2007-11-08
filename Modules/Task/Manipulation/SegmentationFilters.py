@@ -293,6 +293,8 @@ class ThresholdFilter(ProcessingFilter.ProcessingFilter):
 		"""		   
 		ProcessingFilter.ProcessingFilter.__init__(self, (1, 1))
 		self.vtkfilter = vtk.vtkImageThreshold()
+		self.vtkfilter.AddObserver("ProgressEvent", self.updateProgress)
+
 		self.origCtf = None
 		
 		self.ignoreObjects = 1
@@ -546,7 +548,7 @@ class ITKWatershedSegmentationFilter(ProcessingFilter.ProcessingFilter):
 	"""
 	Created: 13.04.2006, KP
 	Description: A filter for doing watershed segmentation
-	"""		
+	"""
 	name = "Watershed segmentation (old)"
 	category = WATERSHED
 	
@@ -554,14 +556,13 @@ class ITKWatershedSegmentationFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 13.04.2006, KP
 		Description: Initialization
-		"""		   
+		"""
 		ProcessingFilter.ProcessingFilter.__init__(self, inputs)
 		
 		
 		self.descs = {"Threshold": "Segmentation Threshold", "Level": "Segmentation Level"}
 		self.itkFlag = 1
 
-		#scripting.loadITK(filters=1)
 		f3 = itk.Image.F3
 		self.itkfilter = itk.WatershedImageFilter[f3].New()
 
@@ -608,10 +609,9 @@ class ITKWatershedSegmentationFilter(ProcessingFilter.ProcessingFilter):
 		if not ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
 			
+		self.eventDesc = "Performing watershed segmentation"
 		image = self.getInput(1)
 		image = self.convertVTKtoITK(image, cast = types.FloatType)
-		print "Feeding to watershed", image
-		print "parameters=", self.parameters["Threshold"], self.parameters["Level"]
 		self.itkfilter.SetInput(image)
 		self.itkfilter.SetThreshold(self.parameters["Threshold"])
 		self.itkfilter.SetLevel(self.parameters["Level"])
@@ -619,18 +619,14 @@ class ITKWatershedSegmentationFilter(ProcessingFilter.ProcessingFilter):
 		self.setImageType("UL3")
 		if update:
 			self.itkfilter.Update()
-			print "Updating..." 
-		data = self.itkfilter.GetOutput()			 
-		print "Returning ", data
-		#if last:
-		#	 return self.convertITKtoVTK(data,imagetype="UL3")
+		data = self.itkfilter.GetOutput()
 		return data
 
 class MorphologicalWatershedSegmentationFilter(ProcessingFilter.ProcessingFilter):
 	"""
 	Created: 05.07.2006, KP
 	Description: A filter for doing morphological watershed segmentation
-	"""		
+	"""
 	name = "Morphological watershed segmentation"
 	category = WATERSHED
 	level = scripting.COLOR_BEGINNER
@@ -693,10 +689,9 @@ class MorphologicalWatershedSegmentationFilter(ProcessingFilter.ProcessingFilter
 		Created: 26.1.2006, KP
 		Description: Restore palette upon filter removal
 		"""		   
-		if self.origCtf:			
+		if self.origCtf:
 			print "\n\n\nRESTORING ORIGINAL CTF"
 			self.dataUnit.getSettings().set("ColorTransferFunction", self.origCtf)			  
-			
 	
 	def execute(self, inputs, update = 0, last = 0):
 		"""
@@ -722,31 +717,29 @@ class MorphologicalWatershedSegmentationFilter(ProcessingFilter.ProcessingFilter
 		self.itkfilter.SetMarkWatershedLine(markWatershedLine)
 
 		t = time.time()
-		#print "Feeding to watershed",image
-		#print "Level=",self.parameters["Level"]
+		self.eventDesc = "Performing morphological watershed segmentation"
 		self.itkfilter.SetInput(image)
 		self.itkfilter.SetLevel(self.parameters["Level"])
 				
 		self.setImageType("UL3")
 		self.itkfilter.Update()
 		print "Morphological watershed took", time.time() - t, "seconds"
-		data = self.itkfilter.GetOutput()			 
+		data = self.itkfilter.GetOutput()
+		self.eventDesc = "Relabeling segmented image"
+		
 		if not self.relabelFilter:
 			
 			self.relabelFilter = itk.RelabelComponentImageFilter[data, data].New()
 
-		print "Relabeling..."
 		self.relabelFilter.SetInput(data)
 		th = self.parameters["Threshold"]
 		if th:
 			self.relabelFilter.SetMinimumObjectSize(th)
-				
-			#self.setImageType("UL3")
+
 	
-		data = self.relabelFilter.GetOutput()			 
+		data = self.relabelFilter.GetOutput()
 				
 		self.relabelFilter.Update()
-		print "done"
 		n = self.relabelFilter.GetNumberOfObjects()
 		print "Got", n, "objects"
 		settings = self.dataUnit.getSettings()
@@ -768,7 +761,6 @@ class MorphologicalWatershedSegmentationFilter(ProcessingFilter.ProcessingFilter
 			if self.segCtf:
 				self.dataUnit.getSettings().set("ColorTransferFunction", self.segCtf)	 
 			
-		#print "Returning ",data
 		return data
 
 class ConnectedComponentFilter(ProcessingFilter.ProcessingFilter):
@@ -792,7 +784,6 @@ class ConnectedComponentFilter(ProcessingFilter.ProcessingFilter):
 		self.origCtf = None
 		self.relabelFilter = None
 		self.itkfilter = None
-		#scripting.loadITK(filters=1)			 
 		
 	def getParameterLevel(self, parameter):
 		"""
@@ -839,14 +830,14 @@ class ConnectedComponentFilter(ProcessingFilter.ProcessingFilter):
 		Description: Execute the filter with given inputs and return the output
 		"""					   
 		if not ProcessingFilter.ProcessingFilter.execute(self, inputs):
-			print "\n\nFailed to execute"
 			return None
 			
 		image = self.getInput(1)
 		image = self.convertVTKtoITK(image)
-		if not self.itkfilter:			  
+		if not self.itkfilter:
 			self.itkfilter = itk.ConnectedComponentImageFilter[image, itk.Image.UL3].New()
-
+		
+		self.eventDesc = "Performing connected component labeling"
 		self.itkfilter.SetInput(image)
 		#self.itkfilter.SetLevel(self.parameters["Level"])
 				
@@ -856,17 +847,15 @@ class ConnectedComponentFilter(ProcessingFilter.ProcessingFilter):
 		data = self.itkfilter.GetOutput()		 
 	
 		if not self.relabelFilter:
-			
 			self.relabelFilter = itk.RelabelComponentImageFilter[data, data].New()
 		self.relabelFilter.SetInput(data)
 		th = self.parameters["Threshold"]
 		if th:
 			self.relabelFilter.SetMinimumObjectSize(th)
-				
-			#self.setImageType("UL3")
 	
-		data = self.relabelFilter.GetOutput()			 
-			
+		data = self.relabelFilter.GetOutput()
+
+		self.eventDesc = "Relabeling segmented image"
 		self.relabelFilter.Update()
 		n = self.relabelFilter.GetNumberOfObjects()
 	
@@ -901,7 +890,6 @@ class MaximumObjectsFilter(ProcessingFilter.ProcessingFilter):
 		self.itkFlag = 1
 		
 		self.itkfilter = None
-		#scripting.loadITK(filters=1)			 
 
 	def getParameterLevel(self, parameter):
 		"""
@@ -931,7 +919,7 @@ class MaximumObjectsFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 15.04.2006, KP
 		Description: Return the list of parameters needed for configuring this GUI
-		"""			   
+		"""
 		return [["", ("MinSize", )]]
 		
 
@@ -940,13 +928,13 @@ class MaximumObjectsFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 15.04.2006, KP
 		Description: Execute the filter with given inputs and return the output
-		"""					   
+		"""
 		if not ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
 			
 		image = self.getInput(1)
 		image = self.convertVTKtoITK(image)
-		if not self.itkfilter:			  
+		if not self.itkfilter:
 			self.itkfilter = itk.ThresholdMaximumConnectedComponentsImageFilter[image].New()
 
 		self.itkfilter.SetOutsideValue(0)
@@ -956,9 +944,7 @@ class MaximumObjectsFilter(ProcessingFilter.ProcessingFilter):
 				
 		self.setImageType("UL3")
 		self.itkfilter.Update()
-		#print "Morphological watershed took",time.time()-t,"seconds"
-		data = self.itkfilter.GetOutput()			 
-		#print "Returning ",data
+		data = self.itkfilter.GetOutput()
 		return data
 
 		
@@ -981,8 +967,6 @@ class ITKRelabelImageFilter(ProcessingFilter.ProcessingFilter):
 		self.descs = {"Threshold": "Remove objects with less voxels than:"}
 		self.itkFlag = 1
 
-		#scripting.loadITK(filters=1)
-		#f3 = itk.Image.UL3
 		self.itkfilter = None
 		
 	def getParameterLevel(self, parameter):
@@ -1020,7 +1004,7 @@ class ITKRelabelImageFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 15.04.2006, KP
 		Description: Execute the filter with given inputs and return the output
-		"""					   
+		"""
 		if not ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
 			
@@ -1033,15 +1017,11 @@ class ITKRelabelImageFilter(ProcessingFilter.ProcessingFilter):
 		th = self.parameters["Threshold"]
 		self.itkfilter.SetMinimumObjectSize(th)
 
-		
-		#self.setImageType("UL3")
 
-		data = self.itkfilter.GetOutput()			 
+		data = self.itkfilter.GetOutput()
 				
 		self.itkfilter.Update()
-		
-		#if last:
-		#	 return self.convertITKtoVTK(data,imagetype="UL3")
+
 		return data
 
 class ITKInvertIntensityFilter(ProcessingFilter.ProcessingFilter):
@@ -1325,16 +1305,6 @@ class MeasureVolumeFilter(ProcessingFilter.ProcessingFilter):
 
 		# We require unsigned long input data
 		if vtkimage.GetScalarType() != 9:
-			#dt = vtkimage.GetScalarTypeAsString()
-			#Logging.error("Wrong input type for Object Statistics", \
-			#				"The calculate object statistics requires an input \
-			#					dataset of type unsigned long. \n\
-			#					A dataset of type %s was provided.\n\
-			#					Typically, you will use Calculate Object Statistics Filter \
-			#					after a Watershed filter, or Connected Component Labeling filter.\n\
-			#					This error may be caused by not having either \
-			#					of those filters in the procedure list." % (dt))
-			#return vtkimage
 			cast = vtk.vtkImageCast()
 			cast.SetInput(vtkimage)
 			cast.SetOutputScalarTypeToUnsignedLong()
@@ -1351,9 +1321,6 @@ class MeasureVolumeFilter(ProcessingFilter.ProcessingFilter):
 		else:
 			startIntensity = 0
 		for i in range(startIntensity, n):
-		
-
-
 			if not self.itkfilter.HasLabel(i):
 				centersofmass.append((0, 0, 0))
 				values.append((0, 0))
@@ -1363,8 +1330,6 @@ class MeasureVolumeFilter(ProcessingFilter.ProcessingFilter):
 				volume = self.itkfilter.GetVolume(i)
 				centerOfMass = self.itkfilter.GetCenterOfGravity(i)
 				avgInt = avgintCalc.GetAverage(i)
-				if avgInt:
-					print "Average intensity for ",i,"is",avgInt
 				c = []
 				c2 = []
 				for i in range(0, 3):
@@ -1385,9 +1350,9 @@ class MeasureVolumeFilter(ProcessingFilter.ProcessingFilter):
 			self.reportGUI.setAverageIntensities(self.avgIntList)
 			n = len(self.values)
 			avgints = MeasureVolumeFilter.averageValue(self.avgIntList)
-			ums = [x[0] for x in values]
+			ums = [x[1] for x in values]
 			avgums = MeasureVolumeFilter.averageValue(ums)
-			pxs = [x[1] for x in values]
+			pxs = [x[0] for x in values]
 			avgpxs = MeasureVolumeFilter.averageValue(pxs)
 			
 			self.totalGUI.setStats([n, avgums, avgpxs, avgints])

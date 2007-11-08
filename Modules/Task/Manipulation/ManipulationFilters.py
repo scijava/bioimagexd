@@ -177,6 +177,9 @@ class AnisotropicDiffusionFilter(ProcessingFilter.ProcessingFilter):
 		"""        
 		ProcessingFilter.ProcessingFilter.__init__(self, (1, 1))
 		self.vtkfilter = vtk.vtkImageAnisotropicDiffusion3D()
+		self.eventDesc = "Performing edge preserving smoothing (anisotropic diffusion)"
+		
+		self.vtkfilter.AddObserver("ProgressEvent", self.updateProgress)
 		self.descs = {"Faces": "Faces", "Corners": "Corners", "Edges": "Edges",
 			"CentralDiff": "Central difference", "Gradient": "Gradient to neighbor",
 				"DiffThreshold": "Diffusion threshold:", "DiffFactor": "Diffusion factor:"}
@@ -274,6 +277,7 @@ class SolitaryFilter(ProcessingFilter.ProcessingFilter):
 		"""        
 		ProcessingFilter.ProcessingFilter.__init__(self, (1, 1))
 		self.vtkfilter = vtkbxd.vtkImageSolitaryFilter()
+		self.vtkfilter.AddObserver("ProgressEvent", self.updateProgress)
 		self.descs = {"HorizontalThreshold": "X:", "VerticalThreshold": "Y:", \
 						"ProcessingThreshold": "Processing threshold:"}
 	
@@ -359,6 +363,8 @@ class GaussianSmoothFilter(ProcessingFilter.ProcessingFilter):
 		"""        
 		ProcessingFilter.ProcessingFilter.__init__(self, (1, 1))
 		self.vtkfilter = vtk.vtkImageGaussianSmooth()
+		self.eventDesc = "Performing gaussian smoothing"
+		self.vtkfilter.AddObserver("ProgressEvent", self.updateProgress)
 		self.descs = {"RadiusX": "Radius factor X:", "RadiusY": "Radius factor Y:", "RadiusZ": "Radius factor Z:",
 			"Dimensionality": "Dimensionality"}
 	
@@ -440,6 +446,8 @@ class ShiftScaleFilter(ProcessingFilter.ProcessingFilter):
 		"""        
 		ProcessingFilter.ProcessingFilter.__init__(self, (1, 1))
 		self.vtkfilter = vtk.vtkImageShiftScale()
+		self.vtkfilter.AddObserver("ProgressEvent", self.updateProgress)
+		self.eventDesc = "Applying a shift and scale to image intensity"
 		self.descs = {"Shift": "Shift:", "Scale": "Scale:", "AutoScale": "Scale to range 0-255"}
 	
 	def getParameters(self):
@@ -532,6 +540,8 @@ class ExtractComponentFilter(ProcessingFilter.ProcessingFilter):
 		"""        
 		ProcessingFilter.ProcessingFilter.__init__(self, (1, 1))
 		self.vtkfilter = vtk.vtkImageExtractComponents()
+		self.vtkfilter.AddObserver("ProgressEvent", self.updateProgress)
+		
 		self.descs = {"Component1": "Component #1", "Component2": "Component #2", "Component3": "Component #3"}
 	
 	def getParameters(self):
@@ -816,12 +826,10 @@ class ROIIntensityFilter(ProcessingFilter.ProcessingFilter):
 
 		for mask in rois:
 			if not mask:
-				print "No mask"
 				return imagedata
 			if self.parameters["SecondInput"]:
 				itkLabel = self.convertVTKtoITK(mask)
-				print "itkLabel=",itkLabel
-				print "itkORig=",itkOrig
+
 				roiName = None
 				if mask.GetScalarType() == 9:
 					a, b = mask.GetScalarRange()
@@ -829,7 +837,6 @@ class ROIIntensityFilter(ProcessingFilter.ProcessingFilter):
 				else:
 					statValues = [255]
 			else:
-				print "Processing mask=", mask
 				n, maskImage = lib.ImageOperations.getMaskFromROIs([mask], mx, my, mz)
 
 				itkLabel =  self.convertVTKtoITK(maskImage)
@@ -880,6 +887,9 @@ class CutDataFilter(ProcessingFilter.ProcessingFilter):
 		ProcessingFilter.ProcessingFilter.__init__(self, (1, 1))
 		self.reportGUI = None
 		self.measurements = []
+		self.vtkfilter = vtk.vtkExtractVOI()
+		self.vtkfilter.AddObserver("ProgressEvent", self.updateProgress)
+		
 		self.descs = {"UseROI": "Use Region of Interest to define resulting region", \
 						"ROI": "Region of Interest Used in Cutting", \
 						"FirstSlice": "First Slice in Resulting Stack", \
@@ -970,13 +980,12 @@ class CutDataFilter(ProcessingFilter.ProcessingFilter):
 		maxz -= 1
 		
 		print "VOI=", minx, maxx, miny, maxy, minz, maxz
-		voi = vtk.vtkExtractVOI()
 		imagedata =  self.getInput(1)
 		imagedata.SetUpdateExtent(minx,maxx,miny,maxy,minz,maxz)
-		voi.SetInput(imagedata)
-		voi.SetVOI(minx, maxx, miny, maxy, minz, maxz)
-		voi.Update()
-		data = voi.GetOutput()
+		self.vtkfilter.SetInput(imagedata)
+		self.vtkfilter.SetVOI(minx, maxx, miny, maxy, minz, maxz)
+		self.vtkfilter.Update()
+		data = self.vtkfilter.GetOutput()
 		data.SetWholeExtent(0, (maxx - minx) - 1, 0, (maxy - miny) - 1, 0, (maxz - minz) - 1)
 		data.SetExtent(0, (maxx - minx) - 1, 0, (maxy - miny) - 1, 0, (maxz - minz) - 1)
 		data.SetUpdateExtent(data.GetExtent())
@@ -999,6 +1008,7 @@ class GradientFilter(ProcessingFilter.ProcessingFilter):
 		ProcessingFilter.ProcessingFilter.__init__(self, inputs)
 		self.vtkfilter = vtk.vtkImageGradient()
 		self.vtkfilter.SetDimensionality(3)
+		self.vtkfilter.AddObserver("ProgressEvent", self.updateProgress)
 	
 	def getParameters(self):
 		"""
@@ -1037,6 +1047,8 @@ class GradientMagnitudeFilter(ProcessingFilter.ProcessingFilter):
 		ProcessingFilter.ProcessingFilter.__init__(self, inputs)
 		self.vtkfilter = vtk.vtkImageGradientMagnitude()
 		self.vtkfilter.SetDimensionality(3)
+		self.vtkfilter.AddObserver("ProgressEvent", self.updateProgress)
+		self.eventDesc = "Performing edge detection (gradient magnitude)"
 	
 	def getParameters(self):
 		"""
@@ -1076,7 +1088,7 @@ class ITKAnisotropicDiffusionFilter(ProcessingFilter.ProcessingFilter):
 		"""        
 		ProcessingFilter.ProcessingFilter.__init__(self, inputs)
 		
-		
+		self.eventDesc = "Performing edge preserving smoothing (gradient anisotropic diffusion)"
 		self.descs = {"TimeStep": "Time step for iterations", "Conductance": "Conductance parameter",
 			"Iterations": "Number of iterations"}
 		self.itkFlag = 1
@@ -1156,6 +1168,7 @@ class ITKGradientMagnitudeFilter(ProcessingFilter.ProcessingFilter):
 		Description: Initialization
 		"""        
 		ProcessingFilter.ProcessingFilter.__init__(self, inputs)
+		self.eventDesc = "Performing edge detection (gradient magnitude)"
 		self.itkFlag = 1
 		self.itkfilter = None
 		
@@ -1200,10 +1213,11 @@ class ITKCannyEdgeFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 13.04.2006, KP
 		Description: Initialization
-		"""        
+		"""
 		ProcessingFilter.ProcessingFilter.__init__(self, inputs)
 		self.itkFlag = 1
 		self.itkfilter = None
+		self.eventDesc = "Performing edge detection (canny edge)"
 		
 	def getParameterLevel(self, parameter):
 		"""

@@ -64,8 +64,6 @@ class Colocalization(Module):
 		self.colocFilter = vtkbxd.vtkImageColocalizationFilter()
 		self.colocFilter.AddObserver("ProgressEvent", self.updateProgress)
 
-		#self.colocFilter.GetOutput().ReleaseDataFlagOn()
-		self.colocFilter.AddObserver("ProgressEvent", self.updateProgress)
 		self.colocAutoThreshold = vtkbxd.vtkImageAutoThresholdColocalization()
 		self.colocAutoThreshold.GetOutput().ReleaseDataFlagOn()
 		self.colocAutoThreshold.AddObserver("ProgressEvent", self.updateProgress)
