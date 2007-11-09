@@ -587,7 +587,6 @@ class MainWindow(wx.Frame):
 		Created: 03.11.2004, KP
 		Description: Updates the progress bar
 		"""
-		print "Progress",text,arg
 		if self.progressObject and obj != self.progressObject:
 			return
 		t = time.time()
