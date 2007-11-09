@@ -144,17 +144,13 @@ class BXCDataWriter(DataWriter):
 			# .du file this datasource has been loaded from
 			self.path = os.path.dirname(self.filename)
 
-		print "filename = ", self.filename, repr(self.filename)
-		print "Self.path = ", self.path, repr(self.path)
 		# Next we determine the name for the .vti file we are writing
 		# We take the name of the .du file this datasource is associated with
 		duFileName = os.path.basename(self.filename)
-		print "dufilename = ", duFileName, repr(duFileName)
 		# and strip the .du from the end
 		i = duFileName.rfind(".")
 		imageDataName = duFileName[:i]
 		fileName = "%s_%d.vti" % (imageDataName, self.counter)
-		print "adding with filename", fileName
 		fileName = fileName.encode("ascii")
 		self.counter += 1
 		# Add the file name to our internal list of datasets
@@ -194,9 +190,11 @@ class BXCDataWriter(DataWriter):
 		def f(obj, evt):
 			if obj and callback:
 				callback(obj.GetProgress())
+			print "Progress=",obj.GetProgress()
 			if scripting.mainWindow:
 				scripting.mainWindow.updateProgressBar(obj, evt, obj.GetProgress(),"Writing %s"%os.path.basename(filename), 0)
 		writer.AddObserver("ProgressEvent", f)
+		Logging.info("Performing the write",kw="pipeline")
 		try:
 			ret = writer.Write()
 			if ret == 0:
