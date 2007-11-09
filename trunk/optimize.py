@@ -80,6 +80,7 @@ def optimize(image = None, vtkFilter = None, updateExtent = None, releaseData = 
 	val, numFilters = optimizePipeline(filterInUse, releaseData = releaseData)
 
 	if updateExtent and not scripting.wantWholeDataset:
+		Logging.info("Using update extent %s"%str(updateExtent),kw="pipeline")
 		val.GetOutput().SetUpdateExtent(updateExtent)
 		
 	if numFilters != 0:
