@@ -124,7 +124,7 @@ class FilterBasedModule(lib.Module.Module):
 			Logging.info("Modified = %s so returning old preview"%str(not not self.modified), kw="dataunit")
 		return self.preview
 
-	def doOperation(self, preview=0):	#TODO:test
+	def doOperation(self, preview=0):
 		"""
 		Created: 04.04.2006, KP
 		Description: Manipulationes the dataset in specified ways
@@ -168,6 +168,7 @@ class FilterBasedModule(lib.Module.Module):
 				currfilter.setNextFilter(enabledFilters[i+1])
 			else:
 				currfilter.setNextFilter(None)
+			Logging.info("Executing %s"%currfilter.name,kw="pipeline")
 			data = currfilter.execute(data, update=0, last=flag)
 			
 			if not flag:
@@ -190,6 +191,7 @@ class FilterBasedModule(lib.Module.Module):
 
 		self.currentExecutingFilter = None
 	
+		Logging.info("Pipeline done",kw="pipeline")
 		data = data[0]
 		if data.__class__ != vtk.vtkImageData:
 			data = lastfilter.convertITKtoVTK(data)

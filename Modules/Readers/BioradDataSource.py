@@ -189,7 +189,6 @@ class BioradDataSource(DataSource):
 		Description: Returns the (x, y, z) dimensions of the datasets this 
 					 dataunit contains
 		""" 
-		print "GETTING DIMENSIONS"
 		self.getVoxelSize()
 		return self.dimensions
 
