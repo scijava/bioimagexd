@@ -189,14 +189,10 @@ class LeicaDataSource(DataSource):
 		self.reader.Read()
 		dataunits = []
 		experiments = self.reader.GetExperiments()
-		print "Experiments=", experiments
 
 		for experiment in experiments:
 			if experiment in self.reader.nonExistent:
-				print "Not reading ", experiment
 				continue
-			else:
-				print "Reading", experiment
 			channelNum = self.reader.GetNumberOfChannels(experiment)
 			#print "There are %d channels in %s"%(channelNum,filename)
 			for i in range(channelNum):
@@ -239,7 +235,6 @@ class LeicaDataSource(DataSource):
 				self.ctf = ctf
 			else:
 				lutColor = self.reader.getLutColor(self.experiment)
-				print "getting color based on name '",lutColor,"'"
 				ctf = self.getColorByName(lutColor)
 				self.ctf = ctf
 		return self.ctf        
@@ -323,7 +318,6 @@ class LeicaExperiment:
 		Created: 12.04.2005, KP
 		Description: Sets the file name to be opened
 		"""
-		print "File name = ", filename
 		self.filename = filename
 		if filename:
 			self.path = os.path.dirname(filename)
@@ -334,7 +328,6 @@ class LeicaExperiment:
 		Created: 12.04.2005, KP
 		Description: Read the given file
 		"""    
-		print "Trying to read ", self.filename
 		self.CreateExpDataStruct(self.filename)
 		
 	def GetExperiments(self):
@@ -543,7 +536,6 @@ class LeicaExperiment:
 		SeriesDepthSplit.reverse()
 		
 		SeriesDepth = float(SeriesDepthSplit[0].strip())
-		print "Returning depth", SeriesDepth
 		return SeriesDepth
 		
 	def GetVoxelWidth(self, Series_Data):
@@ -812,7 +804,6 @@ class LeicaExperiment:
 		# channels or z slices at all. If not, then we can just you
 		# the filename and skip a whole bunch of processing
 	
-		print "Bit depth=",Series_Info['Bit_Depth']
 		if Series_Info['Bit_Depth'] == 8:
 			TIFFReader.SetDataScalarTypeToUnsignedChar()
 		else:
@@ -840,7 +831,6 @@ class LeicaExperiment:
 		arr = vtk.vtkStringArray()
 		for i in Channel:
 			arr.InsertNextValue(os.path.join(self.path, i))
-			print os.path.join(self.path, i)
 		RAWReader.SetFileNames(arr)
 	
 		if Series_Info['Bit_Depth'] == 8:

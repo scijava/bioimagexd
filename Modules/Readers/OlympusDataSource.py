@@ -244,9 +244,6 @@ class OlympusDataSource(DataSource):
 		"""
 		lutFile = os.path.join(self.path, self.lutFileName)
 
-		print "path=",self.path
-		print "lutFile=",lutFile, "exists?",os.path.exists(lutFile)
-
 		file = codecs.open(lutFile, "r", "utf-16")
 		while 1:
 			line = file.readline()
@@ -290,8 +287,6 @@ class OlympusDataSource(DataSource):
 			if i in [0, maxval] or (red != red0 or green != green0 or blue != blue0):
 				ctf.AddRGBPoint(i, red / 255.0, green / 255.0, blue / 255.0)
 				red0, green0, blue0 = red, green, blue
-			if i == maxval:
-				print "-->", i, maxval, "maps to", red, green, blue
 		
 		return ctf
 	
@@ -442,7 +437,6 @@ class OlympusDataSource(DataSource):
 		xDimension, yDimension, zDimension, timepoints, \
 		channels, voxelXDimension, voxelYDimension, voxelZDimension = self.getAllDimensions(self.parser)
 		
-		print "There are ",timepoints,"time points"
 		voxsiz = (voxelXDimension, voxelYDimension, voxelZDimension)
 		names, (excitations, emissions) = self.getDyes(self.parser, channels)
 		
