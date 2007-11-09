@@ -190,7 +190,6 @@ class BXCDataWriter(DataWriter):
 		def f(obj, evt):
 			if obj and callback:
 				callback(obj.GetProgress())
-			print "Progress=",obj.GetProgress()
 			if scripting.mainWindow:
 				scripting.mainWindow.updateProgressBar(obj, evt, obj.GetProgress(),"Writing %s"%os.path.basename(filename), 0)
 		writer.AddObserver("ProgressEvent", f)
