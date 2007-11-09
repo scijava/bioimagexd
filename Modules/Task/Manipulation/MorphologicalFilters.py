@@ -136,7 +136,7 @@ class ErodeFilter(MorphologicalFilter):
 		"""        
 		MorphologicalFilter.__init__(self)
 		self.vtkfilter = vtk.vtkImageContinuousErode3D()
-		
+		self.vtkfilter.AddObserver("ProgressEvent", self.updateProgress)
 		
 class VarianceFilter(MorphologicalFilter):
 	"""
@@ -154,6 +154,7 @@ class VarianceFilter(MorphologicalFilter):
 		"""        
 		MorphologicalFilter.__init__(self)
 		self.vtkfilter = vtk.vtkImageVariance3D()        
+		self.vtkfilter.AddObserver("ProgressEvent", self.updateProgress)
 		
 class DilateFilter(MorphologicalFilter):
 	"""
@@ -171,6 +172,7 @@ class DilateFilter(MorphologicalFilter):
 		"""        
 		MorphologicalFilter.__init__(self)
 		self.vtkfilter = vtk.vtkImageContinuousDilate3D()  
+		self.vtkfilter.AddObserver("ProgressEvent", self.updateProgress)
   
 class RangeFilter(MorphologicalFilter):
 	"""
@@ -187,6 +189,7 @@ class RangeFilter(MorphologicalFilter):
 		"""        
 		MorphologicalFilter.__init__(self)
 		self.vtkfilter = vtk.vtkImageRange3D()     
+		self.vtkfilter.AddObserver("ProgressEvent", self.updateProgress)
 		
 class SobelFilter(MorphologicalFilter):
 	"""
@@ -203,6 +206,7 @@ class SobelFilter(MorphologicalFilter):
 		"""        
 		MorphologicalFilter.__init__(self)
 		self.vtkfilter = vtk.vtkImageSobel3D()          
+		self.vtkfilter.AddObserver("ProgressEvent", self.updateProgress)
 		
 	def getParameters(self):
 		"""
@@ -240,6 +244,8 @@ class HybridMedianFilter(MorphologicalFilter):
 		"""        
 		MorphologicalFilter.__init__(self)
 		self.vtkfilter = vtk.vtkImageHybridMedian2D()        
+		self.vtkfilter.AddObserver("ProgressEvent", self.updateProgress)
+		self.eventDesc = "Performing hybrid median filtering"
 		
 	def getParameters(self):
 		"""
@@ -279,3 +285,4 @@ class MedianFilter(MorphologicalFilter):
 		"""        
 		MorphologicalFilter.__init__(self)
 		self.vtkfilter = vtk.vtkImageMedian3D()        
+		self.vtkfilter.AddObserver("ProgressEvent", self.updateProgress)
