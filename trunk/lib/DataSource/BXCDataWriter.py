@@ -32,12 +32,11 @@ __date__ = "$Date: 2005/01/13 14:52:39 $"
 
 from ConfigParser import RawConfigParser
 from DataSource import DataWriter
-#from DataSource import *
 import vtk
 import os.path
+import scripting
 
 import Logging
-#import DataUnit
 
 class MyConfigParser(RawConfigParser):
 	def optionxform(self, optionstr):
@@ -195,6 +194,8 @@ class BXCDataWriter(DataWriter):
 		def f(obj, evt):
 			if obj and callback:
 				callback(obj.GetProgress())
+			if scripting.mainWindow:
+				scripting.mainWindow.updateProgressBar(obj, evt, obj.GetProgress(),"Writing %s"%os.path.basename(filename), 0)
 		writer.AddObserver("ProgressEvent", f)
 		try:
 			ret = writer.Write()

@@ -459,7 +459,6 @@ class DataSource:
 		if self.resampleDims and not scripting.resamplingDisabled:
 			return self.resampleDims
 		if not self.dimensions or sum(self.dimensions)==0:
-			print "\n\nG****** ETTING DIMENSIONS"
 			self.dimensions = self.internalGetDimensions()
 		return self.dimensions[0:3]
 		
