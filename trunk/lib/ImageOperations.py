@@ -756,13 +756,13 @@ def histogram(imagedata, colorTransferFunction = None, bg = (200, 200, 200), log
 	
 	diff = 0
 	if colorTransferFunction:
-		diff = 40
+		diff = 30
 	if percent:
-		diff += 30
+		diff += 20
 	Logging.info("Creating a %dx%d bitmap for histogram" % (int(w), int(x1) + diff), kw = "imageop")
 		
 	# Add an offset of 15 for the percentage text
-	bmp = wx.EmptyBitmap(int(w), int(x1) + diff + 15)
+	bmp = wx.EmptyBitmap(int(w), int(x1) + diff)
 	dc = wx.MemoryDC()
 	dc.SelectObject(bmp)
 	dc.BeginDrawing()
@@ -771,11 +771,10 @@ def histogram(imagedata, colorTransferFunction = None, bg = (200, 200, 200), log
 	graypen = wx.Pen((100, 100, 100), 1)
 	whitepen = wx.Pen((255, 255, 255), 1)
 	
-	dc.SetBackground(wx.Brush(bg))
-
-	dc.Clear()
+	#dc.SetBackground(wx.Brush(bg))
+	#dc.Clear()
 	dc.SetBrush(wx.Brush(wx.Colour(200, 200, 200)))
-	dc.DrawRectangle(0, 0, w, 150)
+	dc.DrawRectangle(0, 0, w, 151)
 	
 	if not logarithmic:
 		points = range(1, 150, 150 / 8)
