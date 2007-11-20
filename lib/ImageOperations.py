@@ -34,6 +34,7 @@ import vtk
 import vtkbxd
 import wx
 import random
+import platform
 import math
 import struct
 import Logging
@@ -771,8 +772,9 @@ def histogram(imagedata, colorTransferFunction = None, bg = (200, 200, 200), log
 	graypen = wx.Pen((100, 100, 100), 1)
 	whitepen = wx.Pen((255, 255, 255), 1)
 	
-	#dc.SetBackground(wx.Brush(bg))
-	#dc.Clear()
+	if platform.system()!="Darwin":
+		dc.SetBackground(wx.Brush(bg))
+		dc.Clear()
 	dc.SetBrush(wx.Brush(wx.Colour(200, 200, 200)))
 	dc.DrawRectangle(0, 0, w, 151)
 	
