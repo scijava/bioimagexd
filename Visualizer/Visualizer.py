@@ -365,7 +365,7 @@ class Visualizer:
 					height = height2
 			Logging.info("Got ", width, height, "for histogram size", kw = "visualizer")
 			if not height:
-				height = 200
+				height = 220
 			self.sizes["histogram"] = width, height
 		elif arg == "config": obj = self.sidebarWin
 		if evt == "hide":
@@ -463,11 +463,10 @@ class Visualizer:
 		if self.dataUnit != self.histogramDataUnit:
 			self.histogramDataUnit = self.dataUnit
 		for histogram, sbox, sboxsizer in self.histograms:
-
-			self.histogramBox.Detach(sboxsizer)
+			print "Detachikng",sboxsizer
 			sboxsizer.Detach(histogram)
+			self.histogramBox.Detach(sboxsizer)
 			sboxsizer.Destroy()
-			sbox.Destroy()
 			histogram.Destroy()
 		self.histograms = []
 		units = []
@@ -480,6 +479,7 @@ class Visualizer:
 			minval,maxval = ds.getOriginalScalarRange()
 			scale = maxval / 255.0
 			histogram = GUI.Histogram.Histogram(self.histogramPanel, scale = scale, lowerThreshold = minval, upperThreshold = maxval)
+			self.histogramHeight = histogram.GetSize()[1]
 			dataUnitName = unit.getName()
 			sbox = wx.StaticBox(self.histogramPanel, -1, "Channel %s" % dataUnitName)
 			sboxsizer = wx.StaticBoxSizer(sbox, wx.VERTICAL)
@@ -616,7 +616,6 @@ class Visualizer:
 		Created: 27.07.2005, KP
 		Description: Show the original datasets instead of processed ones
 		"""
-		print "\n\nSHOW ORIGINAL ",flag
 		if evt == "hide":
 			flag = 0
 		if self.dataUnit:
