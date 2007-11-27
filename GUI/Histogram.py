@@ -347,11 +347,11 @@ class Histogram(wx.Panel):
 		
 		self.renew = 1
 		self.noupdate = noupdate
-		self.updatePreview()
 		self.scalarMax = dataUnit.getScalarRange()[1]
 		self.lowerThreshold = self.scalarMax / 2
 		self.upperThreshold = self.scalarMax
 		self.scale = self.scalarMax / 255.0
+		self.updatePreview()
 		
 	def updatePreview(self, *args, **kws):
 		"""
