@@ -30,6 +30,7 @@
 #define _itkDynamicThresholdImageFilter_txx
 
 #include "itkDynamicThresholdImageFilter.h"
+#include "itkProgressReporter.h"
 
 namespace itk {
 
@@ -115,6 +116,7 @@ void DynamicThresholdImageFilter<TInputImage,TOutputImage>
   itk::ImageRegionIterator<TOutputImage> outIter(outputImage,outRegion);
 
   // Calculate dynamic threshold per pixel and set pixel values to min or max
+  itk::ProgressReporter progress(this,0,rows*columns,100);
   for (y = 0; y < rows; ++y)
 	{
 	  for (x = 0; x < columns; ++x)
@@ -145,10 +147,12 @@ void DynamicThresholdImageFilter<TInputImage,TOutputImage>
 			}
 
 		  double threshold = sum / nbhSize; // Mean
-		  itkDebugMacro("Threshold for pixel (" << x << "," << y << "): " << threshold << ", " << sum << "/" << nbhSize);
 		  inIter.Get() >= threshold ? outIter.Set(this->m_InsideValue) : outIter.Set(this->m_OutsideValue);
 		  ++inIter;
 		  ++outIter;
+
+		  itkDebugMacro("Threshold for pixel (" << x << "," << y << "): " << threshold << ", " << sum << "/" << nbhSize);
+		  progress.CompletedPixel();
 		}
 	}
 }
@@ -247,7 +251,7 @@ int DynamicThresholdImageFilter<TInputImage,TOutputImage>
 }
 
 template<class TInputImage, class TOutputImage>
-typename DynamicThresholdImageFilter<TInputImage,TOutputImage>::NeighborhoodType
+const typename DynamicThresholdImageFilter<TInputImage,TOutputImage>::NeighborhoodType&
 DynamicThresholdImageFilter<TInputImage,TOutputImage>
 ::GetNeighborhood() const
 {

@@ -64,7 +64,7 @@ public:
   void SetStatisticsType(int);
   int SetNeighborhood(unsigned int, unsigned int);
   int SetRadius(unsigned int, unsigned int);
-  NeighborhoodType GetNeighborhood() const;
+  const NeighborhoodType& GetNeighborhood() const;
 
 protected:
   DynamicThresholdImageFilter();
