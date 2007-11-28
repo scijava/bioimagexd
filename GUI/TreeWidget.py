@@ -135,7 +135,7 @@ class TreeWidget(wx.SashLayoutWindow):
 			if parent not in self.removeParents:
 				self.removeParents.append(parent)
 			wx.CallAfter(self.removeEmptyParents)
-				
+
 		lib.messenger.send(None, "delete_dataset", obj)
 		obj.destroySelf()   
 		del obj 
@@ -145,14 +145,40 @@ class TreeWidget(wx.SashLayoutWindow):
 		Created: 07.10.2007, KP
 		Description: remove empty parent items from the tree after their children have been removed
 		"""
+		removeParents = []
 		for i in self.removeParents:
+			# Remove pointer to item in this class if item is directory of some
+			# kind of file type
+			if i == self.lsmfiles:
+				self.lsmfiles = None
+			elif i == self.leicafiles:
+				self.leicafiles = None
+			elif i == self.bxdfiles:
+				self.bxdfiles = None
+			elif i == self.oiffiles:
+				self.oiffiles = None
+			elif i == self.bioradfiles:
+				self.bioradfiles = None
+			elif i == self.interfilefiles:
+				self.interfilefiles = None
+			elif i == self.liffiles:
+				self.liffiles = None
+
+			parent = self.tree.GetItemParent(i)
 			self.tree.Delete(i)
-		
+			if parent and parent not in removeParents and self.tree.GetChildrenCount(parent) <= 0 and parent != self.tree.GetRootItem():
+				removeParents.append(parent)
+		if removeParents:
+			self.removeParents = removeParents
+			wx.CallAfter(self.removeEmptyParents)
+		else:
+			self.removeParents = []
+					
 	def onCloseDataset(self, event):
 		"""
 		Created: 21.07.2005, KP
 		Description: Method to close a dataset
-		"""        
+		"""
 		selections = self.tree.GetSelections()
 		if not selections and self.selectedItem:
 			selections = [self.selectedItem]
@@ -312,9 +338,8 @@ class TreeWidget(wx.SashLayoutWindow):
 				self.tree.SetPyData(self.lsmfiles, "1")
 				self.tree.SetItemImage(self.lsmfiles, folderIndex, which = wx.TreeItemIcon_Normal)
 				self.tree.SetItemImage(self.lsmfiles, folderOpenIndex, which = wx.TreeItemIcon_Expanded)
-		
 			item = self.lsmfiles
-			self.tree.Expand(item)            
+			self.tree.Expand(item)
 			item = self.tree.AppendItem(item, name)
 			self.tree.Expand(item)
 			self.tree.SetPyData(item, "2")        
@@ -390,6 +415,7 @@ class TreeWidget(wx.SashLayoutWindow):
 
 			item = self.bxdfiles
 			self.tree.Expand(item)
+			
 		elif objtype == "lif":
 			if not self.liffiles:
 				self.liffiles = self.tree.AppendItem(self.root, "LIF files")
@@ -401,7 +427,6 @@ class TreeWidget(wx.SashLayoutWindow):
 			self.tree.Expand(item)
 			item = self.tree.AppendItem(item, name)
 			self.tree.Expand(item)
-
 			self.tree.SetPyData(item, "2")
 			self.tree.SetItemImage(item, folderOpenIndex, which = wx.TreeItemIcon_Expanded)
 
@@ -531,10 +556,10 @@ class TreeWidget(wx.SashLayoutWindow):
 		if obj and type(obj) != types.StringType:
 			if self.lastobj != obj:
 				Logging.info("Switching to ", obj)
-				lib.messenger.send(None, "tree_selection_changed", obj)        
-				self.markGreen([item])        
+				lib.messenger.send(None, "tree_selection_changed", obj)
+				self.markGreen([item])
 				self.lastobj = obj
-		self.multiSelect = 0                
+		self.multiSelect = 0
 		
 	def unselectAll(self):
 		"""

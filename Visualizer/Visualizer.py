@@ -185,6 +185,7 @@ class Visualizer:
 		self.sliderWin.SetSashVisible(wx.SASH_TOP, False)
 		self.sliderWin.SetDefaultSize((500, 64))
 		self.sliderWin.origSize = (500, 64)
+		self.toggleTimeSlider(0)
 
 		self.zsliderWin = wx.SashLayoutWindow(self.parent, \
 												GUI.MenuManager.ID_ZSLIDER_WIN, \
@@ -198,6 +199,7 @@ class Visualizer:
 		if platform.system() == 'Darwin':
 			window = 44
 		self.zsliderWin.origSize = (window, 768)
+		self.toggleZSlider(0)
 
 		self.sliderbox = None
 		self.zsliderPanel = None
@@ -213,7 +215,6 @@ class Visualizer:
 		self.sliderbox = None
 
 		self.createSliders()
-
 		self.currMode = None
 		self.currModeModule = None
 		self.currentWindow = None
@@ -898,8 +899,12 @@ class Visualizer:
 		self.currModeModule = None
 		self.dataUnit = None
 		self.sidebarWin.SetDefaultSize((0, 1024))
-		self.zslider.SetRange(1, 2)
+		self.zslider.SetRange(1,1)
 		self.zslider.SetValue(1)
+		self.toggleZSlider(0)
+		self.timeslider.SetRange(1,1)
+		self.timeslider.SetValue(1)
+		self.toggleTimeSlider(0)
 		wx.LayoutAlgorithm().LayoutWindow(self.parent, self.visWin)
 		del self.dataUnit
 		self.dataUnit = None
@@ -961,10 +966,12 @@ class Visualizer:
 
 		self.sidebarWin.SetDefaultSize((0, 1024))
 		wx.LayoutAlgorithm().LayoutWindow(self.parent, self.visWin)
+
 		if not modeinst.showSliceSlider():
 			print "Won't show zslider in ",modeinst
 			if self.zsliderWin.GetSize()[0]:
-				self.zsliderWin.SetDefaultSize((0, 1024))
+				self.toggleZSlider(0)
+				#self.zsliderWin.SetDefaultSize((0, 1024))
 		else:
 			print "showing zslider"
 			if self.zsliderWin.GetSize() != self.zsliderWin.origSize:
@@ -1073,11 +1080,22 @@ class Visualizer:
 		else:
 			self.sliderWin.SetDefaultSize(self.sliderWin.origSize)
 
+	def toggleZSlider(self, flag):
+		"""
+		Created: 28.11.2007, LP
+		Description: Toggle the z slider on or off
+		"""
+		if not flag:
+			self.zsliderWin.SetDefaultSize((0,0))
+		else:
+			self.sliderWin.SetDefaultSize(self.sliderWin.origSize)
+
 	def setDataUnit(self, dataunit):
 		"""
 		Created: 28.04.2005, KP
 		Description: Sets the dataunit this module uses for visualization
 		"""
+		print "VISUALIZER SETDATAUNIT"
 		self.dataUnit = dataunit
 		count = dataunit.getNumberOfTimepoints()
 
@@ -1117,7 +1135,8 @@ class Visualizer:
 		else:
 			self.zslider.SetValue(self.z+1)
 		if z <= 1:
-			self.zsliderWin.SetDefaultSize((0, 768))
+			self.toggleZSlider(0)
+			#self.zsliderWin.SetDefaultSize((0, 768))
 		elif self.currMode.showSliceSlider():
 			self.zsliderWin.SetDefaultSize(self.zsliderWin.origSize)
 		showItems = 0

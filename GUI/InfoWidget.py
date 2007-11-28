@@ -35,6 +35,7 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 #import os.path
 
 import wx, wx.html
+import vtk
 import Logging
 import ColorTransferEditor
 import Modules
@@ -206,16 +207,15 @@ class InfoWidget(wx.Panel):
 			intupper = str(intupper)
 			bgcol = "#%2x%2x%2x"%(col.Red(),col.Green(),col.Blue())
 			dict={"smX":smX,"xdim":xdim,"ydim":ydim,"zdim":zdim,
-				"voxelX":voxelX,"voxelY":voxelY,"voxelZ":voxelZ,
-				"rxdim":rxdim,"rydim":rydim,"rzdim":rzdim,
-				"rxdimm":rxdim*voxelX,"rydimm":rydim*voxelY,"rzdimm":rzdim*voxelZ,
-				"spX":spX,"spY":spY,"spZ":spZ,"xdimm":xdim*voxelX,
-				"ydimm":ydim*voxelY,"zdimm":zdim*voxelZ,"oydim":oydim,"oxdim":oxdim,"ozdim":ozdim,
-				"oxdimm":oxdim*ovoxelX,"oydimm":oydim*ovoxelY,"ozdimm":ozdim*ovoxelZ,"bgcolor":bgcol,
-				"fe":"</font > ","nf":" < font size=\"normal\">",
-				"tps":tps, "bitdepth":bitdepth, "intlower":intlower, "intupper":intupper,
-				"excitation":excitation, "emission":emission}
-
+				  "voxelX":voxelX,"voxelY":voxelY,"voxelZ":voxelZ,
+				  "rxdim":rxdim,"rydim":rydim,"rzdim":rzdim,
+				  "rxdimm":rxdim*voxelX,"rydimm":rydim*voxelY,"rzdimm":rzdim*voxelZ,
+				  "spX":spX,"spY":spY,"spZ":spZ,"xdimm":xdim*voxelX,
+				  "ydimm":ydim*voxelY,"zdimm":zdim*voxelZ,"oydim":oydim,"oxdim":oxdim,"ozdim":ozdim,
+				  "oxdimm":oxdim*ovoxelX,"oydimm":oydim*ovoxelY,"ozdimm":ozdim*ovoxelZ,"bgcolor":bgcol,
+				  "fe":"</font > ","nf":" < font size=\"normal\">",
+				  "tps":tps, "bitdepth":bitdepth, "intlower":intlower, "intupper":intupper,
+				  "excitation":excitation, "emission":emission}
 			if resampledims and resampledims != (0, 0, 0):
 				self.htmlpage.SetPage(infoStringResample % dict)
 			else:
@@ -267,3 +267,16 @@ class InfoWidget(wx.Panel):
 		self.infoNotebook.AddPage(self.infoPanel, "Channel info")
 		
 		#self.mainsizer.Add(self.infoPanel,(0,1),flag=wx.EXPAND|wx.ALL)        
+
+	def clearInfo(self):
+		"""
+		Created: 28.11.2007, LP
+		Description: Clears the information from the info widget.
+		"""
+		self.htmlpage.SetPage("")
+		self.taskName.SetValue("")
+		ctf = vtk.vtkColorTransferFunction()
+		ctf.AddRGBPoint(0,0,0,0)
+		ctf.AddRGBPoint(255,1,1,1)
+		self.colorBtn.setColorTransferFunction(ctf)
+		

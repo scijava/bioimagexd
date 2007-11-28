@@ -417,6 +417,7 @@ class MainWindow(wx.Frame):
 			del self.currentVisualizationWindow
 			self.currentVisualizationWindow = None
 			self.visualizer.closeVisualizer()
+			self.infoWidget.clearInfo()
 			self.loadVisualizer(mode)
 		
 	def onSwitchDataset(self, evt):
@@ -1820,10 +1821,13 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 		lib.messenger.send(None, "update_progress", 0.6, "Loading %s view..." % mode)
 		wx.EVT_TOOL(self, MenuManager.ID_SAVE_SNAPSHOT, self.visualizer.onSnapshot)
 		reload = kws.get("reload", 0)
-		self.visualizer.setVisualizationMode(mode, reload = reload)			
+		self.visualizer.setVisualizationMode(mode, reload = reload)
 
 		if not "init" in kws and dataunit:
 			self.visualizer.setDataUnit(dataunit)
+		else:
+			self.visualizer.toggleTimeSlider(0)
+			self.visualizer.toggleZSlider(0)
 
 		# handle icons
 		lib.messenger.send(None, "update_progress", 0.8, "Loading %s view..." % mode)
