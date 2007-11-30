@@ -231,8 +231,9 @@ class TreeWidget(wx.SashLayoutWindow):
 				item, cookie = self.tree.GetFirstChild(parent)
 			while item.IsOk():
 				data = self.tree.GetPyData(item)
-				dataunits.append(data)
-				items.append(item)
+				if data not in dataunits:
+					dataunits.append(data)
+					items.append(item)
 				item = self.tree.GetNextSibling(item)
 		
 		return dataunits, items
