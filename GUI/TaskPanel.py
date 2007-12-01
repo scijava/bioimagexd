@@ -128,14 +128,12 @@ class TaskPanel(ScrolledPanel):
 		lib.messenger.connect(None, "switch_datasets", self.onSwitchDatasets)
 		lib.messenger.connect(None, "update_settings_gui", self.onUpdateGUI)
   
-		
 	def setCacheKey(self, key):
 		"""
 		Created: 30.10.2006, KP
 		Description: Set the cached settings for this task, so that they can be restored later on
 		"""
 		self.cacheKey = key
-		
 		
 	def onUpdateGUI(self, *arg):
 		"""
@@ -366,10 +364,10 @@ class TaskPanel(ScrolledPanel):
 			mgr.ShowModal()
 			mgr.Destroy()
 		   
-			scripting.processingManager = None			  
+			scripting.processingManager = None
 		else:
 			mgr.Show()
-		self.grayOut(1)			   
+		self.grayOut(1)
 
 	def grayOut(self, enable = 0):
 		"""

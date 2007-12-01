@@ -442,7 +442,7 @@ class PerformanceSettings(wx.Panel):
 			conf.setConfigItem("ResampleToFitOriginal", "Performance", str(False))
 			conf.setConfigItem("ResampleToFitDims", "Performance", str((tofitx, tofity, tofitz)))
 			
-		conf.setConfigItem("DoResample", "Performance", str(not not forceResample))
+		conf.setConfigItem("DoResample", "Performance", str(bool(forceResample)))
 		if forceResample:
 			conf.setConfigItem("ResampleDims", "Performance", str((rx, ry)))
 			conf.setConfigItem("ResampleTo", "Performance", str((rtx, rty)))
@@ -455,10 +455,10 @@ class PerformanceSettings(wx.Panel):
 		alwaysSplit = self.splitToThreadsCheckbox.GetValue()
 		nthreads = self.numberOfDivisions.GetValue()
 
-		conf.setConfigItem("LimitMemory", "Performance", str(not not limitMem))
+		conf.setConfigItem("LimitMemory", "Performance", str(bool(limitMem)))
 		conf.setConfigItem("LimitTo", "Performance", str(limitTo))
 		conf.setConfigItem("NoLimits", "Performance", str(noLimits))
-		conf.setConfigItem("AlwaysSplit", "Performance", str(not not alwaysSplit))
+		conf.setConfigItem("AlwaysSplit", "Performance", str(bool(alwaysSplit)))
 		conf.setConfigItem("NumberOfDivisions", "Performance", str(nthreads))
 		
 class MovieSettings(wx.Panel):

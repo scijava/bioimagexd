@@ -51,6 +51,8 @@ import MorphologicalFilters
 import TrackingFilters
 import RegistrationFilters
 
+from lib.FilterTypes import *
+
 class IntensityMeasurementList(wx.ListCtrl):
 	def __init__(self, parent, log):
 
@@ -128,7 +130,7 @@ def getFilters():
     Created: 10.8.2007, SS
     Description: This function returns all the filter-classes in this module and is used by ManipulationFilters.getFilterList()
     """
-    return [AnisotropicDiffusionFilter, SolitaryFilter, GaussianSmoothFilter,
+    return [SolitaryFilter, GaussianSmoothFilter,
             ShiftScaleFilter, ExtractComponentFilter, TimepointCorrelationFilter,
             ROIIntensityFilter, CutDataFilter, GradientFilter, GradientMagnitudeFilter,
             ITKAnisotropicDiffusionFilter, ITKGradientMagnitudeFilter,
@@ -150,117 +152,9 @@ def getFilterList():
     return filterlist
 
 
-MATH = "Image arithmetic"
-SEGMENTATION = "Segmentation"
-FILTERING = "Filtering"
-ITK = "ITK"
-LOGIC = "Logical operations"
-MEASUREMENT = "Measurements"
-REGION_GROWING = "Region growing"
-FEATUREDETECTION = "Feature detection"
-TRACKING = "Tracking"
-REGISTRATION = "Registration"
 
-class AnisotropicDiffusionFilter(ProcessingFilter.ProcessingFilter):
-	"""
-	Class: Anisotropic diffusion
-	Created: 13.04.2006, KP
-	Description: An edge preserving smoothing filter
-	"""     
-	name = "Anisotropic diffusion 3D"
-	category = FILTERING
-	
-	def __init__(self):
-		"""
-		Created: 13.04.2006, KP
-		Description: Initialization
-		"""        
-		ProcessingFilter.ProcessingFilter.__init__(self, (1, 1))
-		self.vtkfilter = vtk.vtkImageAnisotropicDiffusion3D()
-		self.eventDesc = "Performing edge preserving smoothing (anisotropic diffusion)"
-		
-		self.vtkfilter.AddObserver("ProgressEvent", self.updateProgress)
-		self.descs = {"Faces": "Faces", "Corners": "Corners", "Edges": "Edges",
-			"CentralDiff": "Central difference", "Gradient": "Gradient to neighbor",
-				"DiffThreshold": "Diffusion threshold:", "DiffFactor": "Diffusion factor:"}
-	
-	def getParameters(self):
-		"""
-		Created: 15.04.2006, KP
-		Description: Return the list of parameters needed for configuring this GUI
-		"""            
-		return [ 
-		"Neighborhood:", ["", ( ("Faces", "Corners", "Edges"), )],
-		"Threshold:", ["Gradient measure", ( ("CentralDiff", "Gradient"), ("cols", 2)) ],
-		["", ("DiffThreshold", "DiffFactor")]
-		]
-		
-	def getDesc(self, parameter):
-		"""
-		Created: 15.04.2006, KP
-		Description: Return the description of the parameter
-		"""    
-		return self.descs[parameter]
-		
-	def getLongDesc(self, parameter):
-		"""
-		Created: 15.04.2006, KP
-		Description: Return a long description of the parameter
-		"""     
-		if parameter == "Faces":
-			return "Toggle whether the 6 voxels adjoined by faces are included in the neighborhood."
-		elif parameter == "Corners":
-			return "Toggle whether the 8 corner connected voxels are included in the neighborhood."
-		elif parameter == "Edges":
-			return "Toggle whether the 12 edge connected voxels are included in the neighborhood."
-		return ""
-		
-	def getType(self, parameter):
-		"""
-		Created: 15.04.2006, KP
-		Description: Return the type of the parameter
-		"""    
-		if parameter in ["Faces", "Edges", "Corners"]:
-			return types.BooleanType
-		elif parameter in ["CentralDiff", "Gradient"]:
-			return GUIBuilder.RADIO_CHOICE
-		return types.FloatType
-		
-	def getDefaultValue(self, parameter):
-		"""
-		Created: 15.04.2006, KP
-		Description: Return the default value of a parameter
-		"""     
-		if parameter in ["Faces", "Edges", "Corners"]:
-			return 1
-		elif parameter == "DiffThreshold":
-			return 5.0
-		elif parameter == "DiffFactor":
-			return 1.0
-		return 2
-		
 
-	def execute(self, inputs, update = 0, last = 0):
-		"""
-		Created: 15.04.2006, KP
-		Description: Execute the filter with given inputs and return the output
-		"""            
-		if not ProcessingFilter.ProcessingFilter.execute(self, inputs):
-			return None
-		
-		image = self.getInput(1)
-		self.vtkfilter.SetInput(image)
-		
-		self.vtkfilter.SetDiffusionThreshold(self.parameters["DiffThreshold"])
-		self.vtkfilter.SetDiffusionFactor(self.parameters["DiffFactor"])
-		self.vtkfilter.SetFaces(self.parameters["Faces"])
-		self.vtkfilter.SetEdges(self.parameters["Edges"])
-		self.vtkfilter.SetCorners(self.parameters["Corners"])
-		self.vtkfilter.SetGradientMagnitudeThreshold(self.parameters["CentralDiff"])
-		
-		if update:
-			self.vtkfilter.Update()
-		return self.vtkfilter.GetOutput()      
+
 
 class SolitaryFilter(ProcessingFilter.ProcessingFilter):
 	"""
@@ -943,7 +837,7 @@ class CutDataFilter(ProcessingFilter.ProcessingFilter):
 				x, y, z = self.dataUnit.getDimensions()
 			else:
 				z = 1
-			return z
+			return z+1
 			
 		return 1
 		
@@ -978,17 +872,17 @@ class CutDataFilter(ProcessingFilter.ProcessingFilter):
 		maxz = self.parameters["LastSlice"]
 		minz -= 1
 		maxz -= 1
-		
+		scripting.wantWholeDataset=1
 		print "VOI=", minx, maxx, miny, maxy, minz, maxz
 		imagedata =  self.getInput(1)
-		imagedata.SetUpdateExtent(minx,maxx,miny,maxy,minz,maxz)
+		#imagedata.SetUpdateExtent(minx,maxx,miny,maxy,minz,maxz)
+		imagedata.SetUpdateExtent(imagedata.GetWholeExtent())
+		imagedata.Update()
 		self.vtkfilter.SetInput(imagedata)
 		self.vtkfilter.SetVOI(minx, maxx, miny, maxy, minz, maxz)
 		self.vtkfilter.Update()
 		data = self.vtkfilter.GetOutput()
-		data.SetWholeExtent(0, (maxx - minx) - 1, 0, (maxy - miny) - 1, 0, (maxz - minz) - 1)
-		data.SetExtent(0, (maxx - minx) - 1, 0, (maxy - miny) - 1, 0, (maxz - minz) - 1)
-		data.SetUpdateExtent(data.GetExtent())
+
 		return  data
 
 

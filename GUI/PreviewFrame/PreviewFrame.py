@@ -179,8 +179,6 @@ class PreviewFrame(InteractivePanel):
 			# current zoom factor, and if that size is larger than the requested
 			# size, then use that
 			x2, y2 = [a*self.zoomFactor for a in [self.dataDimX, self.dataDimY]]
-			print "x2,y2=",x2,y2
-			print "newX, newY=",newX, newY
 			if x2<newX:
 				newX = x2
 			if y2 < newX:
@@ -409,13 +407,11 @@ class PreviewFrame(InteractivePanel):
 		renew    Whether the method should recalculate the images
 		"""
 		if scripting.inIO:
-			print "In io"
 			return
 		if self.renewNext:
 			renew = 1
 			self.renewNext = 0
 		if not self.dataUnit:
-			print "No dataunit"
 			self.paintPreview()
 			return
 		if not self.enabled:
@@ -480,7 +476,6 @@ class PreviewFrame(InteractivePanel):
 			Logging.info("No imagedata to preview", kw = "preview")
 			self.slice = None
 		else:
-			print "self.z = ",self.z
 			self.slice = lib.ImageOperations.vtkImageDataToWxImage(self.imagedata, z)
 		self.paintPreview()
 		self.updateScrolling()
@@ -518,7 +513,6 @@ class PreviewFrame(InteractivePanel):
 		Created: 05.06.2005, KP
 		Description: Save a snapshot of the scene
 		"""
-		print "filename=",repr(filename)
 		ext = filename.split(".")[-1].lower()
 		if ext == "jpg":
 			ext = "jpeg"
@@ -600,11 +594,9 @@ class PreviewFrame(InteractivePanel):
 			newFactor = 10
 		Logging.info("Setting zoom factor to ", newFactor, kw = "preview")
 		x, y = [a*newFactor for a in (self.dataDimX, self.dataDimY)]
-		print "data dims=",self.dataDimX,self.dataDimY,"factor=",newFactor
 		if scripting.resampleToFit:
 			optimize.set_target_size(x, y)
 			newFactor = 1
-		print "paint size=",self.paintSize
 		px, py = self.paintSize
 		
 		x = max(px, x)
@@ -637,7 +629,6 @@ class PreviewFrame(InteractivePanel):
 			if self.fixedSize:
 				maxX, maxY = self.fixedSize
 			
-			print "Dataunit dims=",(x,y,z),"to fit=",maxX,maxY
 			factor = lib.ImageOperations.getZoomFactor(x, y, maxX, maxY)
 			if abs(factor - self.getZoomFactor()) > 0.01:
 				Logging.info("Zoom factor from (%d,%d) to (%d,%d) is %f" % (x, y, maxX, maxY,factor), kw = "preview")

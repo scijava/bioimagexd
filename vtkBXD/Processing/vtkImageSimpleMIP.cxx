@@ -66,7 +66,7 @@ int vtkImageSimpleMIP::RequestInformation (
   ext[5] = 0;
   outInfo->Set(vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT(),ext,6);
   //printf("Setting whole extent of output to %d,%d,%d,%d,%d,%d\n",PRT_EXT(ext));
-  if( numComponents > 3 ) numComponents = 3;
+ // if( numComponents > 3 ) numComponents = 3;
       
   vtkDataObject::SetPointDataActiveScalarInfo(outInfo, scalarType, numComponents);
 //    printf("vtkImageSimpleMIP RequestInformation DONE!\n");
@@ -118,10 +118,10 @@ void vtkImageSimpleMIPExecute(vtkImageSimpleMIP *self, int id,int NumberOfInputs
   maxZ = uExt[5] - uExt[4];
 
   maxC = inData[0]->GetNumberOfScalarComponents();
-  if(maxC>3) {
-        vtkErrorWithObjectMacro(self, <<"macC = " <<maxC<<" > 3");
-        maxC=3;
-  }
+//  if(maxC>3) {
+//        vtkErrorWithObjectMacro(self, <<"macC = " <<maxC<<" > 3");
+//        maxC=3;
+//  }
 //  vtkDebugMacro(<<"maxC="<<maxC);
 //  printf("Thread id = %d, maxX=%d, maxY=%d, maxZ=%d\n",id, maxX,maxY,maxZ);
 

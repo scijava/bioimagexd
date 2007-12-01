@@ -53,6 +53,8 @@ class TimepointSelectionPanel(scrolled.ScrolledPanel):
 		self.configFrame = None
 		
 		self.parentPath = parentStr
+		self.dataUnit = None
+		self.numberOfTimepoints = 1
 
 		self.timepointButtonSizer = wx.GridBagSizer()
 		self.buttonFrame = wx.Panel(self, -1, size = (640, 300))
@@ -145,7 +147,11 @@ class TimepointSelectionPanel(scrolled.ScrolledPanel):
 		"""
 		nrow = 0
 		ncol = 0
-		for i in range(self.dataUnit.getNumberOfTimepoints()):
+		if self.dataUnit:
+			n = self.dataUnit.getNumberOfTimepoints()
+		else:
+			n = self.numberOfTimepoints
+		for i in range(n):
 			if ncol == 30:
 				nrow += 1
 				ncol = 0
@@ -158,6 +164,7 @@ class TimepointSelectionPanel(scrolled.ScrolledPanel):
 			self.timepointButtonSizer.Add(btn, (nrow, ncol))
 			ncol = ncol + 1
 		self.buttonFrame.Layout()
+		self.buttonFrame.Raise()
 		self.timepointButtonSizer.Fit(self.buttonFrame)
 		self.mainsizer.Fit(self)
 
@@ -221,9 +228,15 @@ class TimepointSelectionPanel(scrolled.ScrolledPanel):
 			dataUnit    The data unit we use
 		"""
 		self.dataUnit = dataUnit
+		self.updateButtons()
+		
+	def updateButtons(self):
+		"""
+		Created: 1.12.2007, KP
+		Description: update the buttons
+		"""
 		self.createButtons()
 		self.updateSelection()
-		#data=self.dataUnit.getTimepoint(0)
 		self.mainsizer.Fit(self)
 
 class TimepointSelection(wx.Dialog):
@@ -324,6 +337,14 @@ class TimepointSelection(wx.Dialog):
 		Description: A callback that is used to close this window
 		"""
 		self.EndModal(self.status)
+		
+	def setNumberOfTimepoints(self, n):
+		"""
+		Created: 1.12.2007, KP
+		Description: set the number of timepoint buttons to create
+		"""
+		self.panel.numberOfTimepoints = n
+		self.panel.updateButtons()
 			
 	def setDataUnit(self, dataUnit):
 		"""

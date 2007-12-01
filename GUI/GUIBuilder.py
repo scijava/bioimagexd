@@ -87,14 +87,16 @@ class GUIBuilderBase:
 		"""
 		self.initDone = 0
 		for item in self.getPlainParameters():
-			print "Updating ",item
 			self.setParameter(item, self.getDefaultValue(item))
 		self.initDone = 1
+		
 	def getInput(self, mapIndex):
 		"""
 		Created: 17.04.2006, KP
 		Description: Return the input imagedata #n
 		"""
+		if not self.dataUnit:
+			self.dataUnit = scripting.combinedDataUnit
 		# By default, asking for say, input number 1 gives you 
 		# the first (0th actually) input mapping
 		# these can be thought of as being specified in the GUI where you have as many 

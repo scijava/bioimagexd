@@ -1,5 +1,6 @@
 #! /usr/bin/env python
 import vtk
+import vtkbxd
 import time
 D="/media/sda12/Data/sample2.lsm"
 t=time.time()
@@ -7,29 +8,29 @@ def elapsed():
     global t
     return "(%.2fs elapsed)"%(time.time()-t)
 
-r1=vtk.vtkLSMReader()
+r1=vtkbxd.vtkLSMReader()
 r1.SetFileName(D)
 r1.SetUpdateChannel(0)
 
 d1=r1.GetOutput()
 
 
-itf1=vtk.vtkIntensityTransferFunction()
+itf1=vtkbxd.vtkIntensityTransferFunction()
 itf1.SetBrightness(50.0)
 
-ctf1=vtk.vtkColorTransferFunction()
+ctf1=vtkbxd.vtkColorTransferFunction()
 ctf1.AddRGBPoint(0,0,0,0)
 ctf1.AddRGBPoint(255.0,0,1.0,0)
 
 
 print "Feeding channels to merge ",elapsed()
-merge = vtk.vtkImageColorMerge()
+merge = vtkbxd.vtkImageColorMerge()
 #merge.SetNumberOfThreads(5)
 merge.AddInput(d1)
 merge.AddLookupTable(ctf1)
 merge.AddIntensityTransferFunction(itf1)
 
-itfmap = vtk.vtkImageMapToIntensities()
+itfmap = vtkbxd.vtkImageMapToIntensities()
 itfmap.SetInput(d1)
 itfmap.SetIntensityTransferFunction(itf1)
 
@@ -39,7 +40,7 @@ maptocolor.SetInput(itfmap.GetOutput())
 maptocolor.SetLookupTable(ctf1)
 
 
-mip=vtk.vtkImageSimpleMIP()
+mip=vtkbxd.vtkImageSimpleMIP()
 
 print "Feeding merge to MIP",elapsed()
 mip.SetInput(merge.GetOutput())
@@ -57,7 +58,7 @@ writer.Write()
 print "Wrote PNG ",elapsed()
 
 
-mip2=vtk.vtkImageSimpleMIP()
+mip2=vtkbxds.vtkImageSimpleMIP()
 mip2.SetInput(maptocolor.GetOutput())
 writer2=vtk.vtkPNGWriter()
 writer2.SetFileName("ITFmapped2.png")

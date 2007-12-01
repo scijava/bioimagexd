@@ -38,137 +38,199 @@ import scripting
 import os.path
 import sys
 import traceback
-mcache = {}
+
+PLOADER = None
+def getPluginLoader():
+	global PLOADER
+	if not PLOADER:
+		PLOADER = PluginLoader()
+	return PLOADER
+
+class PluginLoader:
+	def __init__(self):
+		self.mcache = {}
+		# One problem with ignore is that it does not care about the directory of the module.
+		# We can't load ModuleDir1/ModuleName.py and ignore ModuleDir2/ModuleName.py at the same time.
+		self.ignore = ["ScaleBar.py", "Spline.py", "ArbitrarySlicer.py"]
+		
+		self.moduleTypes = {"Filters":"*", "Task":"*"}
+		
+	def getPluginModule(self, variety, name):
+		"""
+		Created: 25.11.2007, KP
+		Description: return a plugin module of a given type with the given name
+		"""
+		return self.getPluginItem(variety, name, 2)
+
+	def getPluginModule(self, variety, name):
+		"""
+		Created: 25.11.2007, KP
+		Description: return a plugin module of a given type with the given name
+		"""
+		return self.getPluginItem(variety, name, 2)
+
+		
+	def getPluginClass(self, variety, name):
+		"""
+		Created: 25.11.2007, KP
+		Description: return a plugin class of a given type with the given name
+		"""
+		return self.getPluginItem(variety, name, 0)
+		
+	def getPluginItem(self, variety, name, entry):
+		"""
+		Created: 26.11.2007, KP
+		Description: return the selected entry from the module table
+		"""
+		if not variety in self.mcache:
+			self.getModules(variety)
+		if name in self.mcache[variety]:
+			return self.mcache[variety][name][entry]
+		else:
+			raise Exception(""+name,"not in",self.mcache[variety].keys())
+			
+	def _removeIgnoredModules(self, moduleNameList):
+		"""
+		Created: 18.06.2007, SG
+		Description: Helper method for removing the modules to ignore from a list of method names
+		"""
+		toRemoveList = []
+		for fileName in moduleNameList:
+			for ignoreName in self.ignore:
+				if ignoreName == os.path.basename(fileName):
+					toRemoveList.append(fileName)
+		for moduleName in toRemoveList:
+			moduleNameList.remove(moduleName)
+		return moduleNameList
+	
+	def _createGlobPathAndSysPath(self, moduleSubDir, globExtension):
+		"""
+		Created: 19.06.2007, SG
+		Description: Creates a path to be used in a glob expression and a path to add to sys.path
+		so that modules that the glob expression will fetch can be imported. Returns these in a tuple:
+		(globPath, pathForSysPath)
+		Ex. ("moduleSubDir = Readers, globExtension = *.py") -> (Modules/Readers/*.py, Modules/Readers)
+		"""
+		# Create list of Module-files to load based on extension
+		modulePath = scripting.get_module_dir()
+		Logging.info("Module dir=%s" % modulePath, kw = "modules")
+		pathForSysPath = os.path.join(modulePath, moduleSubDir)
+		globPath = pathForSysPath
+		if globExtension:
+			globPath = os.path.join(globPath, globExtension)
+		Logging.info("Path to modes: %s" % pathForSysPath, kw = "modules")
+		return globPath, pathForSysPath
+	
+	def _createModuleNameToLoad(self, modulePathWithExtension):
+		"""
+		Created: 19.06.2007, SG
+		Description: Takes a path to a module or a path to a package. If the path ends with .py this extension is removed.
+		The "/" and "\" in the path are changed to ".". However only the last part of the module name is required.
+		Example "Modules/Readers/BioradDataSource.py" -> "BioradDataSource"
+		"""
+		moduleName = modulePathWithExtension
+		if modulePathWithExtension.endswith(".py"):
+			moduleName = modulePathWithExtension[:-3]
+			Logging.info("modulePathWithExtension %s corresponds to %s" %
+					(moduleName, modulePathWithExtension), kw = "modules")
+		moduleName = moduleName.replace("/", ".")
+		moduleName = moduleName.replace("\\", ".")
+		moduleNameParts = moduleName.split(".")
+		moduleName = moduleNameParts[-1]
+		fromPath = ".".join(moduleNameParts[:-1])
+		Logging.info("Importing %s = %s from %s" % (modulePathWithExtension, moduleName, fromPath), kw = "modules")
+		return moduleName
+	
+	def getModules(self, moduleSubDir, globExtension = None, callback = None, moduleType = "Module", classEndsWith = ""):
+		"""
+		Created: 02.07.2005, KP
+		Description: Dynamically loads classes in a directory and returns a dictionary that contains information about
+		them. The returned directory will contain entries like:
+		moddict["BXCDataSource"] -> (moduleClass, settingClass, loadedModule)
+		The method adds a relative path with the dir that contains the modules to load, to sys.path. It then uses
+		__import__ to load them with their basenames. This means that the dynamic loading relies on the current working
+		directory being set to the "main source	dir".
+		"""    
+		if not globExtension:
+			globExtension = self.moduleTypes.get(moduleSubDir,"*.py")
+		globPath, pathForSysPath = self._createGlobPathAndSysPath(moduleSubDir, globExtension)
+		modulePathList = glob.glob(globPath)
+		modulePathList = self._removeIgnoredModules(modulePathList)
+		Logging.info("Modules from path %s are %s" % (globPath, str(modulePathList)), kw = "modules")
+		sys.path.append(pathForSysPath)
+		# Return cached result, if it exists
+		if moduleSubDir in self.mcache:
+			return self.mcache[moduleSubDir]
+		moddict = {}
+		for modulePathWithExtension in modulePathList:
+			moduleName = self._createModuleNameToLoad(modulePathWithExtension)
+			try:
+				loadedModule = __import__(moduleName, globals(), locals(), [])
+			except ImportError:
+				traceback.print_exc()
+				Logging.info("Failed to load module %s" % moduleName, kw = "modules")
+				continue
+			moduleNameInDictionary = None
+			# Try to set the moduleName first from getName, then getShortDesc, finally setting it to mod
+			# if these don't exist
+			try:
+				moduleNameInDictionary = loadedModule.getName()
+			except AttributeError:
+				try:
+					moduleNameInDictionary = loadedModule.getShortDesc()
+				except AttributeError:
+					moduleNameInDictionary = moduleName
+			if callback:
+				callback("Loading %s %s..." % (moduleType, moduleNameInDictionary))
+			if hasattr(loadedModule, "getClass"):
+				moduleClass = loadedModule.getClass()
+			else:
+				moduleClass = loadedModule.__dict__["%s%s"%(moduleName,classEndsWith)]
+				
+			settingClass = None
+			if hasattr(loadedModule, "getConfigPanel"):
+				settingClass = loadedModule.getConfigPanel()
+			moddict[moduleNameInDictionary] = (moduleClass, settingClass, loadedModule)
+		self.mcache[moduleSubDir] = moddict
+		return moddict
 
 def getRenderingModules(callback = None):
 	"""
 	Created: Unknown, KP
 	Description: Helper method for getting the Rendering modules
 	"""
-	return getModules("Rendering", callback = callback, moduleType = "3D rendering module")
+	pl = getPluginLoader()
+	return pl.getModules("Rendering", callback = callback, moduleType = "3D rendering module")
+	
+def getFilterModules(callback = None):
+	"""
+	Created: 19.11.2007, KP
+	Description: Return the filter modules for use in process task and similiar
+	"""
+	pl = getPluginLoader()
+	return pl.getModules("Filters",callback = callback, moduleType = "Image processing filters", classEndsWith = "Filter")
 
 def getVisualizationModes(callback = None):
 	"""
 	Created: Unknown, KP
 	Description: Helper method for getting the Visualization modules
 	"""
-	return getModules("Visualization", callback = callback, moduleType = "")
+	pl = getPluginLoader()	
+	return pl.getModules("Visualization", callback = callback, moduleType = "")
 
 def getReaders(callback = None):
 	"""
 	Created: Unknown, KP
 	Description: Helper method for getting the Reader modules
 	"""
-	return getModules("Readers", callback = callback, moduleType = "Image format reader")
+	pl = getPluginLoader()
+	return pl.getModules("Readers", callback = callback, moduleType = "Image format reader")
 
 def getTaskModules(callback = None):
 	"""
 	Created: Unknown, KP
 	Description: Helper method for getting the Task modules
 	"""
-	return getModules("Task", "*", callback = callback, moduleType = "Task module")
+	pl = getPluginLoader()
+	return pl.getModules("Task", callback = callback, moduleType = "Task module")
 
-# One problem with ignore is that it does not care about the directory of the module.
-# We can't load ModuleDir1/ModuleName.py and ignore ModuleDir2/ModuleName.py at the same time.
-
-ignore = ["ScaleBar.py", "Spline.py", "ArbitrarySlicer.py"]
-
-def _removeIgnoredModules(moduleNameList):
-	"""
-	Created: 18.06.2007, SG
-	Description: Helper method for removing the modules to ignore from a list of method names
-	"""
-	toRemoveList = []
-	for fileName in moduleNameList:
-		for ignoreName in ignore:
-			if ignoreName == os.path.basename(fileName):
-				toRemoveList.append(fileName)
-	for moduleName in toRemoveList:
-		moduleNameList.remove(moduleName)
-	return moduleNameList
-
-def _createGlobPathAndSysPath(moduleSubDir, globExtension):
-	"""
-	Created: 19.06.2007, SG
-	Description: Creates a path to be used in a glob expression and a path to add to sys.path
-	so that modules that the glob expression will fetch can be imported. Returns these in a tuple:
-	(globPath, pathForSysPath)
-	Ex. ("moduleSubDir = Readers, globExtension = *.py") -> (Modules/Readers/*.py, Modules/Readers)
-	"""
-	# Create list of Module-files to load based on extension
-	modulePath = scripting.get_module_dir()
-	Logging.info("Module dir=%s" % modulePath, kw = "modules")
-	pathForSysPath = os.path.join(modulePath, moduleSubDir)
-	globPath = pathForSysPath
-	if globExtension:
-		globPath = os.path.join(globPath, globExtension)
-	Logging.info("Path to modes: %s" % pathForSysPath, kw = "modules")
-	return globPath, pathForSysPath
-
-def _createModuleNameToLoad(modulePathWithExtension):
-	"""
-	Created: 19.06.2007, SG
-	Description: Takes a path to a module or a path to a package. If the path ends with .py this extension is removed.
-	The "/" and "\" in the path are changed to ".". However only the last part of the module name is required.
-	Example "Modules/Readers/BioradDataSource.py" -> "BioradDataSource"
-	"""
-	moduleName = modulePathWithExtension
-	if modulePathWithExtension.endswith(".py"):
-		moduleName = modulePathWithExtension[:-3]
-		Logging.info("modulePathWithExtension %s corresponds to %s" %
-				(moduleName, modulePathWithExtension), kw = "modules")
-	moduleName = moduleName.replace("/", ".")
-	moduleName = moduleName.replace("\\", ".")
-	moduleNameParts = moduleName.split(".")
-	moduleName = moduleNameParts[-1]
-	fromPath = ".".join(moduleNameParts[:-1])
-	Logging.info("Importing %s = %s from %s" % (modulePathWithExtension, moduleName, fromPath), kw = "modules")
-	return moduleName
-
-def getModules(moduleSubDir, globExtension = "*.py", callback = None, moduleType = "Module"):
-	"""
-	Created: 02.07.2005, KP
-	Description: Dynamically loads classes in a directory and returns a dictionary that contains information about
-	them. The returned directory will contain entries like:
-	moddict["BXCDataSource"] -> (moduleClass, settingClass, loadedModule)
-	The method adds a relative path with the dir that contains the modules to load, to sys.path. It then uses
-	__import__ to load them with their basenames. This means that the dynamic loading relies on the current working
-	directory being set to the "main source	dir".
-	"""    
-	globPath, pathForSysPath = _createGlobPathAndSysPath(moduleSubDir, globExtension)
-	modulePathList = glob.glob(globPath)
-	modulePathList = _removeIgnoredModules(modulePathList)
-	Logging.info("Modules from path %s are %s" % (globPath, str(modulePathList)), kw = "modules")
-	sys.path.append(pathForSysPath)
-	global mcache
-	# Return cached result, if it exists
-	if moduleSubDir in mcache:
-		return mcache[moduleSubDir]
-	moddict = {}
-	for modulePathWithExtension in modulePathList:
-		moduleName = _createModuleNameToLoad(modulePathWithExtension)
-		try:
-			loadedModule = __import__(moduleName, globals(), locals(), [])
-		except ImportError:
-			traceback.print_exc()
-			Logging.info("Failed to load module %s" % moduleName, kw = "modules")
-			continue
-		moduleNameInDictionary = None
-		# Try to set the moduleName first from getName, then getShortDesc, finally setting it to mod
-		# if these don't exist
-		try:
-			moduleNameInDictionary = loadedModule.getName()
-		except AttributeError:
-			try:
-				moduleNameInDictionary = loadedModule.getShortDesc()
-			except AttributeError:
-				moduleNameInDictionary = moduleName
-		if callback:
-			callback("Loading %s %s..." % (moduleType, moduleNameInDictionary))
-		moduleClass = loadedModule.getClass()
-		settingClass = None
-		if hasattr(loadedModule, "getConfigPanel"):
-			settingClass = loadedModule.getConfigPanel()
-		moddict[moduleNameInDictionary] = (moduleClass, settingClass, loadedModule)
-	mcache[moduleSubDir] = moddict
-	return moddict

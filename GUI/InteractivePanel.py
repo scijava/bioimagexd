@@ -33,7 +33,7 @@ import scripting
 import lib.ImageOperations
 import lib.messenger
 import Logging
-import GUI.ogl
+import wx.lib.ogl as ogl
 import platform
 import wx
 
@@ -52,7 +52,7 @@ INTERPOLATION_NONE=0
 INTERPOLATION_LINEAR=1
 INTERPOLATION_CUBIC=2
 
-class InteractivePanel(GUI.ogl.ShapeCanvas):
+class InteractivePanel(ogl.ShapeCanvas):
 	"""
 	Created: 03.07.2005, KP
 	Description: A panel that can be used to select regions of interest, draw
@@ -63,7 +63,7 @@ class InteractivePanel(GUI.ogl.ShapeCanvas):
 		Created: 24.03.2005, KP
 		Description: Initialization
 		"""
-		GUI.ogl.OGLInitialize()
+		ogl.OGLInitialize()
 		# boolean for indicating whether or not the annotations are enabled on this interactivepanel
 		self.annotationsEnabled = False
 		self.parent = parent
@@ -106,9 +106,9 @@ class InteractivePanel(GUI.ogl.ShapeCanvas):
 		
 		x, y = size
 		self.buffer = wx.EmptyBitmap(x, y)
-		GUI.ogl.ShapeCanvas.__init__(self, parent, -1, size = size)
+		ogl.ShapeCanvas.__init__(self, parent, -1, size = size)
 		
-		self.diagram = GUI.ogl.Diagram()
+		self.diagram = ogl.Diagram()
 		self.SetDiagram(self.diagram)
 		self.diagram.SetCanvas(self)
 		
@@ -168,6 +168,7 @@ class InteractivePanel(GUI.ogl.ShapeCanvas):
 		self.Bind(wx.EVT_MOUSEWHEEL, self.onMouseWheel)
 		self.Bind(wx.EVT_KEY_UP, self.onKeyUp)
 		lib.messenger.connect(None, "update_helpers", self.onUpdateHelpers)
+		lib.messenger.connect(None, "data_dimensions_changed", self.onUpdateDataDimensions)
 
 
 
@@ -177,6 +178,7 @@ class InteractivePanel(GUI.ogl.ShapeCanvas):
 		Description: An event handler of keyboard key release
 		"""
 		keyCode = event.GetKeyCode()
+		print "KEY CODE=",keyCode
 		if keyCode == wx.WXK_DELETE or keyCode == wx.WXK_NUMPAD_DELETE:
 			shapeList = self.diagram.GetShapeList()
 			for shape in shapeList:
@@ -199,7 +201,6 @@ class InteractivePanel(GUI.ogl.ShapeCanvas):
 		self.calculateBuffer()
 		scripting.visualizer.zslider.SetRange(1, z)
 		self.updatePreview()
-		lib.messenger.connect(None, "data_dimensions_changed", self.onUpdateDataDimensions)
 		
 		
 	def disableAnnotations(self):
@@ -613,7 +614,6 @@ class InteractivePanel(GUI.ogl.ShapeCanvas):
 		if interpolation == INTERPOLATION_VARY:
 			#x, y, z = image.GetDimensions()
 			x,y = self.dataDimX, self.dataDimY
-			print "datadims=",x,y
 			pixels = (x * zoomFactor) * (y * zoomFactor)
 			if pixels <= 1024 * 1024:
 				interpolation = INTERPOLATION_CUBIC

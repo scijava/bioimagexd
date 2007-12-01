@@ -146,8 +146,6 @@ class DataUnitSettings:
 		"""
 		return self.type
 		
-		
-		
 	def register(self, name, serialize = 0):
 		"""
 		Created: 26.03.2005
@@ -156,7 +154,6 @@ class DataUnitSettings:
 			serialize	The value will be written out/read through
 						the serialize/deserialize methods
 		"""	   
-		
 		self.registered[name] = 1
 		self.serialized[name] = serialize
 		self.isPrivate[name] = 0
@@ -302,7 +299,7 @@ class DataUnitSettings:
 				for i in range(self.counted[key] + 1):
 					self.writeKey(key, parser, i)
 			else:
-				self.writeKey(key, parser)				  
+				self.writeKey(key, parser)
 			   
 		if len(self.counted.keys()):
 			if not parser.has_section("Count"):
@@ -372,7 +369,6 @@ class DataUnitSettings:
 		Description: Returns the value of a given key in a format
 					 that can be written to disk.
 		"""
-
 		Logging.info("Serializing name ", name, kw = "dataunit")
 		if "ColorTransferFunction" in name:
 			s = lib.ImageOperations.lutToString(value, luttype = "BioImageXD")

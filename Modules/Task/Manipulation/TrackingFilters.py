@@ -33,6 +33,8 @@ __date__ = "$Date: 2005/01/13 14:52:39 $"
 #import lib.Particle
 
 import scripting
+import Modules.DynamicLoader
+
 import GUI.CSVListView as CSVListView
 import wx.grid as gridlib
 import GUI.GUIBuilder as GUIBuilder
@@ -43,13 +45,11 @@ import lib.ProcessingFilter
 import lib.Track
 import os
 import os.path
-import SegmentationFilters
 import types
 import vtk
 import wx
 
-TRACKING = "Tracking"
-
+from lib.FilterTypes import *
 #---------------------------------------------------------------------------
 
 class TrackTable(gridlib.PyGridTableBase):
@@ -445,6 +445,10 @@ class CreateTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 
 		lib.ProcessingFilter.ProcessingFilter.__init__(self, (1, 1))
 		
+		pluginLoader = Modules.DynamicLoader.getPluginLoader()
+		analyzeObjectsMod = pluginLoader.getPluginModule("Filters", "AnalyzeObjectsFilter")
+		self.watershedStats = analyzeObjectsMod.getUserInterfaceModule()
+		
 		self.descs = {
 			"MaxVelocity": "Max. change in distance (% of max.movement)",
 			"MaxSizeChange": "Max. size change (% of size)",
@@ -680,7 +684,7 @@ class CreateTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 				
 		if not self.trackGrid:
 			self.trackGrid = TrackTableGrid(self.gui, self.dataUnit, self)
-			self.reportGUI = SegmentationFilters.WatershedObjectList(self.gui, -1, (350, 100))
+			self.reportGUI = self.watershedStats.WatershedObjectList(self.gui, -1, (350, 100))
 			sizer = wx.BoxSizer(wx.VERTICAL)
 			sizer.Add(self.trackGrid, 1)
 			

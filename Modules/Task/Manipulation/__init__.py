@@ -1,14 +1,17 @@
-from Manipulation import *
-from ManipulationPanel import *
-from lib.DataUnit.CombinedDataUnit import CombinedDataUnit
-from ManipulationDataUnit import *
+import Manipulation
+import ManipulationPanel
+import ManipulationDataUnit
 import ManipulationSettings
+import ManipulationFilters
+
+def getFilterModule():
+	return ManipulationFilters
 
 def getClass():
-	return Manipulation
+	return Manipulation.Manipulation
 
 def getConfigPanel():
-	return ManipulationPanel
+	return ManipulationPanel.ManipulationPanel
 
 def getName():
 	return "Process"
@@ -26,7 +29,7 @@ def getToolbarPos():
 	return 999
 
 def getDataUnit():
-	return ManipulationDataUnit
+	return ManipulationDataUnit.ManipulationDataUnit
 
 def getSettingsClass():
 	return ManipulationSettings.ManipulationSettings
