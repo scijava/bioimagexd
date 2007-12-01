@@ -67,6 +67,15 @@ class CombinedDataUnit(DataUnit):
 		self.checkDimensions = 1
 		self.currentDimensions = None
 		
+	def removeAllInputs(self):
+		"""
+		Created: 1.12.2007, KP
+		Description: remove all inputs
+		"""
+		self.sourceunits = []
+		self.doOrig = 0
+		self.currentDimensions = None
+		
 	def getOutputDirectory(self):
 		"""
 		Created: 04.04.2007, KP
@@ -144,12 +153,6 @@ class CombinedDataUnit(DataUnit):
 		self.settings = settings
 		self.settings.initialize(self, len(self.sourceunits), self.length)
 		
-#	 def getSourceUnit(self, name):
-#		 """
-#		 Created: 28.03.2005, KP
-#		 Description: Returns a source unit of given name
-#		 """
-#		 return self.sourceunits[self.byName[name]]#
 
 	def setDataSource(self, dataSource):
 		"""

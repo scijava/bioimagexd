@@ -33,6 +33,8 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 VERSION = "0.9.0 beta"
 
 import GUI.AboutDialog
+import BatchProcessor
+
 import BugDialog
 import scripting
 import Configuration
@@ -128,6 +130,9 @@ class MainWindow(wx.Frame):
 		self.progressShift = 0.0
 		self.taskToId = {}
 		self.visToId = {}
+		
+		Modules.DynamicLoader.getFilterModules()
+		
 		self.splash.SetMessage("Loading task modules...")
 		self.taskPanels = Modules.DynamicLoader.getTaskModules(callback = self.splash.SetMessage)
 		self.splash.SetMessage("Loading visualization modes...")
@@ -669,8 +674,9 @@ class MainWindow(wx.Frame):
 		Description: Creates a tool bar for the window
 		"""
 		iconpath = scripting.get_icon_dir()
-		self.CreateToolBar(wx.NO_BORDER | wx.TB_HORIZONTAL)
+		self.CreateToolBar( wx.TB_HORIZONTAL)
 		tb = self.GetToolBar()
+		tb.SetMargins((5,5))
 		tb.SetToolBitmapSize((32, 32))
 		self.taskIds = []
 		self.visIds = []
@@ -770,6 +776,7 @@ class MainWindow(wx.Frame):
 			lib.messenger.send(None, "view_help", self.currentTaskWindowName)
 		else:
 			lib.messenger.send(None, "view_help", scripting.currentVisualizationModeName)
+
 	def onSaveDataset(self, *args):
 		"""
 		Created: 24.05.2006, KP
@@ -916,6 +923,9 @@ class MainWindow(wx.Frame):
 		mgr.addMenuItem("processing", MenuManager.ID_RESCALE, "Res&cale dataset...\tCtrl-Shift-R", \
 						"Rescale data to 8-bit intensity range", self.onMenuRescaleData)
 		
+		
+		mgr.addMenuItem("processing", MenuManager.ID_BATCHPROCESSOR, "&Batch processor\tCtrl-B",
+						"Open batch processing tool",self.onMenuBatchProcessor)
 		modes = self.visualizationModes.values()
 		modes.sort(self.sortModes)
 
@@ -955,7 +965,7 @@ class MainWindow(wx.Frame):
 
 		mgr.addMenuItem("view", MenuManager.ID_VIEW_TOOLBAR, "T&oolbar", \
 						"Show or hide toolbar", self.onMenuToggleVisibility, check = 1, checked = 1)
-		mgr.addMenuItem("view", MenuManager.ID_VIEW_HISTOGRAM, "&Histograms", \
+		mgr.addMenuItem("view", MenuManager.ID_VIEW_HISTOGRAM, "&Histograms\tAlt-Ctrl-H", \
 						"Show or hide channel histograms", self.onMenuToggleVisibility, check = 1, checked = 0)
 		
 		mgr.addMenuItem("view", MenuManager.ID_VIEW_INFO, "&Dataset info", \
@@ -1043,6 +1053,18 @@ class MainWindow(wx.Frame):
 			
 			self.commandHistory.update()
 			self.commandHistory.Show()
+			
+	def onMenuBatchProcessor(self, evt):
+		"""
+		Created: 25.11.2007, KP
+		Description: show the batch processor tool
+		"""
+		self.batchProcessor = BatchProcessor.BatchProcessor(self)
+		scripting.registerDialog("BatchProcessor", self.batchProcessor)
+		selectedFiles = self.tree.getSelectedDataUnits()
+		self.batchProcessor.setInputDataUnits(selectedFiles)
+		self.batchProcessor.Show()
+		
 
 	def onMenuBugReport(self, evt):
 		"""
@@ -1364,7 +1386,7 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 		self.setButtonSelection(eid)
 		dataunit = selectedFiles[0]
 		if self.visualizer:
-			hasDataunit = not not self.visualizer.dataUnit
+			hasDataunit = bool(self.visualizer.dataUnit)
 			if not hasDataunit or (not self.visualizer.getProcessedMode() and (self.visualizer.dataUnit != dataunit)):
 				Logging.info("Setting dataunit for visualizer", kw = "main")
 				self.visualizer.setDataUnit(dataunit)

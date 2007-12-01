@@ -1039,7 +1039,7 @@ class Visualizer:
 			return
 		self.enabled = flag
 		if self.currentWindow:
-			Logging.info("Setting enabled status of current window to %s" % (not not flag), kw = "visualizer")
+			Logging.info("Setting enabled status of current window to %s" % (bool(flag)), kw = "visualizer")
 			self.currentWindow.enable(flag)
 		if self.setLater:
 			self.setupMode()
@@ -1142,9 +1142,12 @@ class Visualizer:
 		showItems = 0
 
 		if self.processedMode:
+			scripting.combinedDataUnit = dataunit
 			numberOfDataUnits = len(dataunit.getSourceDataUnits())
 			if numberOfDataUnits > 1:
 				showItems = 1
+		else:
+			scripting.combinedDataUnit = None
 		self.showItemToolbar(showItems)
 
 		if self.enabled and self.currMode:

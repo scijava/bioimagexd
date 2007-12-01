@@ -380,6 +380,8 @@ class Histogram(wx.Panel):
 				self.colorTransferFunction = self.replaceCTF
 			self.backGround = self.parent.GetBackgroundColour()
 
+			print "upper=",upper,type(upper)
+			print "lower=",lower,type(lower)
 			histogram, self.percent, self.values, xoffset = lib.ImageOperations.histogram(self.data, \
 																bg = self.backGround, \
 																colorTransferFunction = self.colorTransferFunction, \

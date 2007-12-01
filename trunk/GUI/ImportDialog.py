@@ -401,6 +401,8 @@ enter the information below.""")
 		
 		
 		self.imageSizer.Add(self.imageSourceboxsizer, (0, 0), flag = wx.EXPAND | wx.ALL, border = 5, span = (1, 2) )
+		self.imageSizer.AddGrowableRow(0)
+		self.imageSizer.AddGrowableCol(0)
 		self.imageSizer.Add(self.imageInfoSizer, (1, 0), flag = wx.EXPAND | wx.ALL, border = 5)
 		self.imageSizer.Add(self.previewSizer, (1, 1), border = 5)
 		

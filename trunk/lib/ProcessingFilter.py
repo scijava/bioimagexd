@@ -39,17 +39,6 @@ import vtk
 import lib.Command
 import sys
 
-MATH = "Image arithmetic"
-SEGMENTATION = "Segmentation"
-FILTERING = "Filtering"
-ITK = "ITK"
-LOGIC = "Logical operations"
-MEASUREMENT = "Measurements"
-REGION_GROWING = "Region growing"
-FEATUREDETECTION = "Feature detection"
-TRACKING = "Tracking"
-REGISTRATION = "Registration"
-
 try:
 	import itk
 except ImportError:
@@ -83,7 +72,8 @@ class ProcessingFilter(GUIBuilder.GUIBuilderBase):
 		self.noop = 0
 		self.parameters = {}
 		self.gui = None
-
+		self.resultVar = {}
+		self.resultVariables = {}
 		self.ignoreObjects = 0
 		self.inputIndex = 0
 		self.inputs = []
@@ -100,6 +90,36 @@ class ProcessingFilter(GUIBuilder.GUIBuilderBase):
 		self.itkToVtk = None
 		self.executive = None
 		self.eventDesc = ""
+		
+	def getResultVariables(self):
+		"""
+		Created: 20.11.2007, KP
+		Description: return the result variables of this filter
+		"""
+		return self.resultVariables.keys()
+		
+	def setResultVariable(self, variable, value):
+		"""
+		Created: 20.11.2007, KP
+		Description: set a result variable to a value
+		"""
+		if variable not in self.resultVariables:
+			raise Exception("No such result variable '%s'"%(variable))
+		self.resultVar[variable] = value
+		
+	def getResultVariable(self, variable):
+		"""
+		Created: 20.11.2007, KP
+		Description: return a value of a result variable
+		"""
+		return self.resultVar.get(variable, None)
+		
+	def getResultVariableDesc(self, variable):
+		"""
+		Created: 27.11.2007, KP
+		Description: return the description of a result variable
+		"""
+		return self.resultVariables.get(variable,"")
 		
 	def getEventDesc(self):
 		"""
@@ -147,14 +167,14 @@ class ProcessingFilter(GUIBuilder.GUIBuilderBase):
 		Description: Set a value for the parameter
 		"""
 		if self.taskPanel:
-			listOfFilters = self.taskPanel.getFilters(self.name)
+			listOfFilters = self.taskPanel.filterEditor.getFilters(self.name)
 			filterIndex = listOfFilters.index(self)
 			if len(listOfFilters) == 1:
 				func = "getFilter('%s')" % self.name
 			else:
 				func = "getFilter('%s', %d)" % (self.name, filterIndex)
 			n = scripting.mainWindow.currentTaskWindowName
-			method="scripting.mainWindow.tasks['%s'].%s"%(n,func)
+			method="scripting.mainWindow.tasks['%s'].filterEditor.%s"%(n,func)
 			self.recordParameterChange(parameter, value, method)
 
 		#print "\n\nSetting ",parameter,"to",value

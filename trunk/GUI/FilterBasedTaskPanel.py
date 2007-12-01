@@ -30,23 +30,11 @@ __author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.42 $"
 __date__ = "$Date: 2005/01/13 14:52:39 $"
 
-#import wx
-
-#import os.path
-#import Dialogs
-
-#import GUI.PreviewFrame
-#import Logging
-
-#import sys
-#import time
 
 import TaskPanel
-#import UIElements
-#import string
-#import scripting
 import types
-#import Command
+
+import lib.FilterBasedModule
 
 class FilterBasedTaskPanel(TaskPanel.TaskPanel):
 	"""
@@ -60,116 +48,41 @@ class FilterBasedTaskPanel(TaskPanel.TaskPanel):
 		Parameters:
 				root    Is the parent widget of this window
 		"""
+		self.filterEditor = None
 		TaskPanel.TaskPanel.__init__(self, parent, tb, wantNotebook = wantNotebook)
 
-		self.filters = []
+		self.filterList = lib.FilterBasedModule.FilterList(self.filtersModule)
 		self.currentSelected = -1
 
-		self.filtersByCategory = {}
-		self.filtersByName = {}
-		self.categories = []
-		
-		# self.filtersModule is a python module object that contains the function getFilterList
-		# than can be used to retrieve a list of filters
-		for currfilter in self.filtersModule.getFilterList():
-			self.filtersByName[currfilter.getName()] = currfilter
-			self.registerFilter(currfilter.getCategory(), currfilter)
-	  
-		
 	def filterModified(self, filter):
 		"""
 		Created: 14.05.2006, KP
 		Description: A callback for when filter parameters change
 		"""
-		self.setModified(1)
-		
-	def setModified(self, flag):
-		"""
-		Created: 14.05.2006, KP
-		Description: A callback for when filter parameters change
-		"""
-		self.dataUnit.module.setModified(1)
-
-	def registerFilter(self, category, currfilter):
-		"""
-		Created: 14.08.2006, KP
-		Description: Creates a button box containing the buttons Render,
-		"""
-		if category not in self.categories:
-			self.categories.append(category)
-		if not category in self.filtersByCategory:
-			self.filtersByCategory[category] = []
-		self.filtersByCategory[category].append(currfilter)
+		if self.filterEditor:
+			self.filterEditor.setModified(1)
 		  
-
-	def getFilters(self, name):
-		"""
-		Created: 21.07.2006, KP
-		Description: Retrieve the filters with the given name
-		"""   
-		print [x.getName() for x in self.filters]
-		
-		func = lambda f, n = name:f.getName() == n
-		return filter(func, self.filters)
-		
-	def getFilter(self, name, index = 0):
-		"""
-		Created: 21.07.2006, KP
-		Description: Retrieve the filter with the given name, using optionally an index 
-					 if there are more than one filter with the same name
-		"""   
-		return self.getFilters(name)[index]
-		
- 
-	def setFilter(self, status, index = -1, name = ""):
-		"""
-		Created: 21.07.2006, KP
-		Description: Set the status of a given filter by either it's index, or
-					 if index is not given, it's name
-		"""        
-		if index == -1:
-			for i in self.filters:
-				if i.getName() == name:
-					index = i
-					break
-		if index == -1:return False
-		self.filters[index].setEnabled(status)
-		self.setModified(1)
-		
 	def updateSettings(self, force = 0):
 		"""
-		Created: 14.08.2006, KP
+		Created: 03.11.2004, KP
 		Description: A method used to set the GUI widgets to their proper values
 		"""
-		if not force:
-			self.settings.set("FilterList", [])
-			return
 		if self.dataUnit:
 			get = self.settings.get
 			set = self.settings.set
-		flist = self.settings.get("FilterList")
+		self.filterList = self.settings.get("FilterList")
 		
-		if flist and len(flist):
-			
-			if type(flist[0]) == types.ClassType:
-				for i in flist:
-					print "Adding filter of class", i
-					self.addFilter(None, i)
-			for currfilter in self.filters:
-				name = currfilter.getName()
-				#parser = self.dataUnit.getParser()    
-				parser = self.dataUnit.parser
-				
-				if parser:
-					items = parser.items(name)
+		if self.filterList:
+			if self.cacheParser:
+				parser = self.cacheParser
+				cached = 1
+			else:
+				parser = self.settings.parser
 					
-					for item, value in items:            
-						#value=parser.get(name,item)
-						print "Setting", item, "to", value
-						value = eval(value)
-						currfilter.setParameter(item, value)
-					currfilter.sendUpdateGUI()
-					self.parser = None
+			self.filterList.readValuesFrom(parser)
+			self.parser = None
+			self.filterEditor.setFilterList(self.filterList)
+			self.filterEditor.updateFromFilterList()
 				
 	def updateFilterData(self):
 		"""
@@ -177,8 +90,7 @@ class FilterBasedTaskPanel(TaskPanel.TaskPanel):
 		Description: A method used to set the right values in dataset
 					 from filter GUI widgets
 		"""
-		print "Setting filterlist to", self.filters
-		self.settings.set("FilterList", self.filters)
+		self.settings.set("FilterList", self.filterList)
 		
 	def doProcessingCallback(self, *args):
 		"""

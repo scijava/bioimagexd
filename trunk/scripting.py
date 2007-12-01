@@ -57,6 +57,7 @@ record = 0
 conf = None
 
 
+combinedDataUnit = None
 unhandledException=0
 app = None
 mainWindow = None
