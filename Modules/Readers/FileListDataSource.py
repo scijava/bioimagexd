@@ -30,6 +30,7 @@ __date__ = "$Date: 2005 / 01 / 13 13:42:03 $"
 
 from lib.DataSource.DataSource import DataSource
 import Image
+import TiffImagePlugin
 import Logging
 import os.path
 import vtk
