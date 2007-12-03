@@ -26,6 +26,7 @@ __date__ = "$Date: 2005/01/13 14:52:39 $"
 from lib import ProcessingFilter
 import vtk
 import types
+import GUI.GUIBuilder as GUIBuilder
 
 import lib.FilterTypes
 
