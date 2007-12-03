@@ -394,7 +394,6 @@ class FilterEditor(wx.Panel):
 		addfilter = filterclass()
 		print "Setting dataunit of filter",addfilter,"to",self.dataUnit
 		addfilter.setDataUnit(self.dataUnit)
-		
 		if self.taskPanel:
 			addfilter.setTaskPanel(self.taskPanel)
 		name = addfilter.getName()
@@ -451,6 +450,7 @@ class FilterEditor(wx.Panel):
 			values = eval(values)
 		self.filterList.populate(values)
 		self.filterList.readValuesFrom(parser)
+		self.filterList.setDataUnit(self.dataUnit)
 		#self.filterList = filterList
 		self.updateFromFilterList()
 		
