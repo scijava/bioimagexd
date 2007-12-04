@@ -81,6 +81,7 @@ class FilterBasedTaskPanel(TaskPanel.TaskPanel):
 					
 			self.filterList.readValuesFrom(parser)
 			self.parser = None
+			self.filterList.setDataUnit(self.dataUnit)
 			self.filterEditor.setFilterList(self.filterList)
 			self.filterEditor.updateFromFilterList()
 				

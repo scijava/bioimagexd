@@ -456,6 +456,7 @@ class PreviewFrame(InteractivePanel):
 			uext = (0, x - 1, 0, y - 1, self.z, self.z)
 		
 		t = time.time()
+		print "Update extent=",uext
 		colorImage = optimize.optimize(image = colorImage, updateExtent = uext)
 
 		t2 = time.time()

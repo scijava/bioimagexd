@@ -114,6 +114,9 @@ class FilterList:
 		filterList = []
 		nameToFilter = {}
 
+	
+		print "\n\n*****Populating",self.dataUnit
+		print "Filter names=",filterNames
 		for name in filterNames:
 			try:
 				filterclass = self.filtersByName[name]
@@ -168,6 +171,7 @@ class FilterList:
 						newvalue = eval(value)
 					except:
 						newvalue = value
+					print "Setting parameter",item,newvalue
 					currfilter.setParameter(item, newvalue)
 				
 				if parser.has_option(prefix+name, "InputMapping"):

@@ -358,7 +358,16 @@ class BatchAnalysis:
 		self.dataUnit.setModule(module)
 				
 		self.inputDataUnits = fileList
-		for dataUnit in fileList:
+		groupedUnits = self.getDataUnitsByFilename()
+		mostChannels = None
+		chCount = 0
+		for du in groupedUnits:
+			if len(du)>chCount:
+				chCount = len(du)
+				mostChannels = du
+		
+		for dataUnit in mostChannels:
+			print "Adding",dataUnit.getName(),"from file",dataUnit.getFileName()
 			self.dataUnit.addSourceDataUnit(dataUnit)
 		
 		

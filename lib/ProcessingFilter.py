@@ -269,11 +269,8 @@ class ProcessingFilter(GUIBuilder.GUIBuilderBase):
 		"""
 		# For non-ITK images, do nothing
 		if image.__class__ == vtk.vtkImageData:
-#		if not force and self.prevFilter and not self.prevFilter.getITK() and not self.getITK():
 			return image
-		#if not self.itkToVtk:
-		#	 c=eval("itk.Image.%s"%imagetype)
-		#	 self.itkToVtk = itk.ImageToVTKImageFilter[c].New()
+
 		del self.itkToVtk
 		self.itkToVtk = itk.ImageToVTKImageFilter[image].New()
 		# If the next filter is also an ITK filter, then won't

@@ -70,7 +70,7 @@ class GUIBuilderBase:
 		self.numberOfInputs = (1,1) #added this because variable didnt exist on line 150, SS
 		self.descs = {} #added this because variable didnt exist on line 240, SS
 		self.dataUnit = None #added this because variable didnt exist on line 92, SS
-		
+		self.initDone = 0
 		self.parameters = {}
 		self.inputMapping = {}
 		self.sourceUnits = []
@@ -280,8 +280,6 @@ class GUIBuilderBase:
 		Created: 13.04.2006, KP
 		Description: Set a value for the parameter
 		"""	   
-#		 assert self.checkRange(parameter, value), \
-#								"Value %s of parameter %s doesn't fit within the range %s - %s" %()
 		self.parameters[parameter] = value
 		if self.modCallback:
 			self.modCallback(self)
@@ -899,6 +897,7 @@ class GUIBuilder(wx.Panel):
 		choices = [self.currentFilter.processInputText]
 		# If the input is a processed dataunit, i.e. output from a task,
 		# then we offer both the task output and the individual channels
+		print "Current filter=",self.currentFilter
 		if self.currentFilter.dataUnit.isProcessed():
 			for i, dataunit in enumerate(self.currentFilter.dataUnit.getSourceDataUnits()):
 				choices.append(dataunit.getName())
