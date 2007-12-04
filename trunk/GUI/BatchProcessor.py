@@ -77,6 +77,17 @@ class BatchAnalysis:
 		self.channelGrouping = 0
 		self.channelProcessing = 0
 		
+	def renameList(self, name, newName):
+		"""
+		Created: 04.12.2007, KP
+		Description: rename a given procedure list
+		"""
+		lst = self.procedureLists.get(name, None)
+		if lst:
+			self.procedureLists[newName] = lst
+			del self.procedureLists[name]
+			self.selectedList = newName
+		
 	def getFileName(self):
 		"""
 		Created: 1.12.2007, KP
@@ -139,25 +150,16 @@ class BatchAnalysis:
 			f.write("%s\n"%bxcFile)
 		f.close()
 			
-	def execute(self, directory, timepoints):
+	def execute(self, csvfile, directory, timepoints):
 		"""
 		Created: 1.12.2007, KP
 		Description: execute the analysis
 		"""
-		filename = self.filename
-		if not filename:
-			filename = "analysis.bba"
-		# strip away extension
-		parts = filename.split(".")
-		if len(parts) >1:
-			filename = ".".join(parts[:-1])
-		csvfile = os.path.join(directory, filename)+".csv"
-			
 		csvfp = codecs.open(csvfile, "wb", "latin-1")
 		csvwriter = csv.writer(csvfp, dialect = "excel", delimiter = ";")
 		variables = self.getAllSelectedVariables()
 		varHeaders = variables.values()
-		csvwriter.writerow(varHeaders)
+		csvwriter.writerow(["Filename","Channels"]+varHeaders)
 		
 		for procListName in self.procedureLists.keys():
 			procList = self.procedureLists[procListName]
@@ -168,7 +170,6 @@ class BatchAnalysis:
 					self.createBXDFile(directory, procListName, units)
 
 			for dataUnits in self.getGroupedDataUnits():
-				print "processing source units",dataUnits
 				self.dataUnit.removeAllInputs()
 				
 				for du in dataUnits:
@@ -184,10 +185,11 @@ class BatchAnalysis:
 				bxdFile = nameBase+".bxd"
 				filename = os.path.join(directory, bxdFile)
 				filename = self.dataUnit.doProcessing(filename, timepoints = timepoints)
-				self.writeResults(csvwriter, procListName, procList, varHeaders)
+				padding = [", ".join([os.path.basename(x.getFileName()) for x in dataUnits]), ", ".join(x.getName() for x in dataUnits)]
+				self.writeResults(padding, csvwriter, procListName, procList, varHeaders)
 		csvfp.close()
 				
-	def writeResults(self, csvwriter, procListName, procedureList, varHeaders):
+	def writeResults(self, fileNames, csvwriter, procListName, procedureList, varHeaders):
 		"""
 		Created: 1.12.2007, KP
 		Description: write the csv results out
@@ -199,11 +201,7 @@ class BatchAnalysis:
 			if varName in varHeaders:
 				i = varHeaders.index(varName)
 				row[i] = procedureList.getResultVariable(var)
-				print "Value of ",var,"called",varName,"is",row[i]
-			else:
-				print "\n\n*** ",varName,"not in",varHeaders
-		print "Writing",row
-		csvwriter.writerow(row)
+		csvwriter.writerow(fileNames + row)
 		
 		
 	def getDataUnit(self):
@@ -693,6 +691,7 @@ class ProcedurePanel(wx.ScrolledWindow):
 		hdr2SbSizer.Add(self.procedureSizer, 1, wx.EXPAND)
 		self.procedureListBox = ProcedureListCtrl(self,-1, analysis = self.analysis, size=(150,100), style = wx.LC_REPORT | wx.LC_SINGLE_SEL | wx.LC_EDIT_LABELS)
 		self.procedureListBox.Bind(wx.EVT_LIST_ITEM_SELECTED, self.onSelectProcedureList)
+		self.Bind(wx.EVT_LIST_END_LABEL_EDIT, self.onChangeListName)
 		self.procedureSizer.Add(self.procedureListBox, (0,0), flag = wx.EXPAND)
 
 		btnSizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -727,6 +726,16 @@ class ProcedurePanel(wx.ScrolledWindow):
 		self.SetSizer(self.sizer)
 		self.SetAutoLayout(1)
 		
+	def onChangeListName(self, evt):
+		"""
+		Created: 04.12.2007, KP
+		Description: change the name of the current procedure list
+		"""
+		print "Selected list = ",self.analysis.getSelectedProcedureList()
+		print "Renaming to",evt.GetLabel()
+		self.analysis.renameList(self.analysis.getSelectedProcedureList(), evt.GetLabel())
+		
+		
 	def onSelectChannelProcessing(self, evt):
 		"""
 		Created: 1.12.2007, KP
@@ -748,14 +757,14 @@ class ProcedurePanel(wx.ScrolledWindow):
 		Created: 30.11.2007, KP
 		Description: execute the analysis
 		"""
-		if not self.analysis.getFileName():
-			self.onSaveAnalysis()
-			
-		dirname = Dialogs.askDirectory(self, "Select directory for results")
+		filename = Dialogs.askSaveAsFileName(self, "Save batch analysis results as", "analysis.csv", \
+												"Batch Analysis Results (*.csv)|*.csv")
+		if not filename:
+			return
+		dirname = os.path.dirname(filename)
 		n = max([x.getNumberOfTimepoints() for x in self.analysis.getSourceDataUnits()])
 		timepoints = GUI.TimepointSelection.TimepointSelection(self)
 		timepoints.setNumberOfTimepoints(n)
-		print "Number of timepoints=",n
 		if not dirname:
 			return
 		if timepoints.ShowModal() == wx.ID_OK:
@@ -763,7 +772,7 @@ class ProcedurePanel(wx.ScrolledWindow):
 		if not tps:
 			return
 		
-		self.analysis.execute(dirname, tps)
+		self.analysis.execute(filename, dirname, tps)
 		
 	def onPlaceVariables(self, evt):
 		"""
@@ -777,13 +786,10 @@ class ProcedurePanel(wx.ScrolledWindow):
 		Created: 30.11.2007, KP
 		Description: update the GUI from the analysis
 		"""
-		print "Setting filter editor dataunit"
 		self.filterEditor.setDataUnit(self.analysis.getDataUnit())
 		procListNames = self.analysis.getProcedureListNames()
-		print "proc list names=",procListNames
 		self.procedureListBox.DeleteAllItems()
 		for i,name in enumerate(procListNames):
-			print "Adding",procListNames
 			self.procedureListBox.InsertStringItem(i, name)
 			self.procedureListBox.updateSelectedVariables(i, listName = name)
 			
@@ -814,10 +820,8 @@ class ProcedurePanel(wx.ScrolledWindow):
 		Description: An event handler that is called when the user selects an item in the procedure list ListCtrl
 		"""
 		item = evt.GetIndex()
-		print "Selecting item",item
 		item = self.procedureListBox.GetItem(item)
 		label = item.GetText()
-		print "label=",label
 		self.selectProcedureList(label)
 		evt.Skip()
 		
@@ -838,8 +842,9 @@ class ProcedurePanel(wx.ScrolledWindow):
 		Created: 26.11.2007, KP
 		Description: remove a procedure list from the list box
 		"""
-		self.procedureListBox.DeleteItem(self.procedureListBox.GetSelection())
-
+		item = self.procedureListBox.FindItem(0, self.analysis.getSelectedProcedureList())
+		if item != -1:
+			self.procedureListBox.DeleteItem(item)
 
 	def populateListBox(self):
 		"""
@@ -930,8 +935,6 @@ class BatchProcessor(wx.Frame):
 		"""	  
 		scripting.unregisterDialog("BatchProcessor")
 		self.Destroy()
-		
-
 	
 	def onLoadAnalysis(self, evt):
 		"""
