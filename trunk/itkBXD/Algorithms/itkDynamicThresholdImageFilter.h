@@ -32,7 +32,17 @@
 #include "itkImageToImageFilter.h"
 
 namespace itk {
-
+/** \class DynamicThresholdImageFilter
+ * \brief Applies dynamic thresholding to an image
+ *
+ * This filter computes dynamic threshold of a pixel by checking its 
+ * neighborhood. Output image pixel is then given an inside or an outside 
+ * value.
+ *
+ * Dynamic threshold of an pixel can be computed as mean or median of its
+ * neighborhood pixels.
+ *
+ */
 template<class TInputImage, class TOutputImage>
 class ITK_EXPORT DynamicThresholdImageFilter : 
     public ImageToImageFilter<TInputImage, TOutputImage>
@@ -48,6 +58,7 @@ public:
   typedef typename std::pair<unsigned int, unsigned int> NeighborhoodType;
   typedef typename TInputImage::PixelType InputPixelType;
   typedef typename TOutputImage::PixelType OutputPixelType;
+  typedef typename std::vector<InputPixelType> VectorType;
 
   /* Macros */
   itkNewMacro(Self);
@@ -62,6 +73,8 @@ public:
 
   /* Public methods */
   void SetStatisticsType(int);
+  void SetStatisticsTypeMean();
+  void SetStatisticsTypeMedian();
   int SetNeighborhood(unsigned int, unsigned int);
   int SetRadius(unsigned int, unsigned int);
   const NeighborhoodType& GetNeighborhood() const;
@@ -74,7 +87,8 @@ protected:
   void GenerateData();
   void GenerateInputRequestedRegion();
   void AllocateOutputImage();
-  double CalculateColumn(unsigned long, unsigned long, const TInputImage*) const;
+  void GetColumnPixels(unsigned long, unsigned long, const TInputImage*, VectorType&) const;
+  double CalculateColumn(VectorType&) const;
 
 private:
   DynamicThresholdImageFilter(const Self&); // purposely not implemented
