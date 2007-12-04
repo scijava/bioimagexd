@@ -1036,15 +1036,15 @@ def getSlice(volume, zslice, startpos = None, endpos = None):
 	Created: KP
 	Description: Extract a given slice from a volume
 	"""
-# VOI is volume of interest
 	voi = vtk.vtkExtractVOI()
 	voi.SetInputConnection(volume.GetProducerPort())
 	if startpos:
 		startx, starty = startpos
 		endx, endy = endpos
 	else:
-		startx, starty = 0, 0
-		endx, endy = volume.GetDimensions()[0:2]
+		#startx, starty = 0, 0
+		#endx, endy = volume.GetDimensions()[0:2]
+		startx, endx, starty, endy, a,b = volume.GetExtent()
 	voi.SetVOI(startx, endx - 1, starty, endy - 1, zslice, zslice)
 	voi.Update()
 	data = voi.GetOutput()

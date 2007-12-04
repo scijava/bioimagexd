@@ -108,17 +108,17 @@ class ManipulationPanel(GUI.FilterBasedTaskPanel.FilterBasedTaskPanel):
 		"""
 		GUI.FilterBasedTaskPanel.FilterBasedTaskPanel.createOptionsFrame(self)
 		#self.panel=wx.Panel(self.settingsNotebook,-1)
-		self.panel = wx.Panel(self, -1)
-		self.panelsizer = wx.GridBagSizer()
+		#self.panel = wx.Panel(self, -1)
+		#self.panelsizer = wx.GridBagSizer()
 		
-		self.filterEditor = GUI.FilterEditor.FilterEditor(self.panel, ManipulationFilters, taskPanel = self)
+		self.filterEditor = GUI.FilterEditor.FilterEditor(self, ManipulationFilters, taskPanel = self)
 		lib.messenger.connect(self.filterEditor, "updateFilterList", self.updateFilterData)
-		self.panelsizer.Add(self.filterEditor, (0, 0))
+		#self.panelsizer.Add(self.filterEditor, (0, 0))
 
-		self.panel.SetSizer(self.panelsizer)
-		self.panel.SetAutoLayout(1)
+		#self.panel.SetSizer(self.panelsizer)
+		#self.panel.SetAutoLayout(1)
 		
-		self.settingsSizer.Add(self.panel, (1, 0), flag = wx.EXPAND | wx.ALL)
+		self.settingsSizer.Add(self.filterEditor, (1, 0), flag = wx.EXPAND | wx.ALL)
 		
 
 	def doFilterCheckCallback(self, event = None):

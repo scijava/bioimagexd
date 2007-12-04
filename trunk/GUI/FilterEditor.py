@@ -392,7 +392,6 @@ class FilterEditor(wx.Panel):
 		if not filterclass:
 			return
 		addfilter = filterclass()
-		print "Setting dataunit of filter",addfilter,"to",self.dataUnit
 		addfilter.setDataUnit(self.dataUnit)
 		if self.taskPanel:
 			addfilter.setTaskPanel(self.taskPanel)
@@ -437,20 +436,16 @@ class FilterEditor(wx.Panel):
 		Created: 03.03.2007, KP
 		Description: load the given preset
 		"""
-		#scripting.mainWindow.loadSettings(name)
 		parser = ConfigParser.RawConfigParser()
 		parser.optionxform = str
 		parser.read([name])
-		#filterList = lib.FilterBasedModule.FilterList(self.filtersModule)
-		#print "\n\nSetting dataunit of filter list to",self.dataUnit
-		#filterList.setDataUnit(self.dataUnit)
 		self.filterList.clear()
+		self.filterList.setDataUnit(self.dataUnit)
 		values = parser.get("FilterList","FilterList")
 		if type(values)==type(""):
 			values = eval(values)
 		self.filterList.populate(values)
 		self.filterList.readValuesFrom(parser)
-		self.filterList.setDataUnit(self.dataUnit)
 		#self.filterList = filterList
 		self.updateFromFilterList()
 		
@@ -498,10 +493,7 @@ class FilterEditor(wx.Panel):
 		if categories not in self.menus:
 			menu = wx.Menu()
 			for category in categories:
-			#self.filterList.getCategories():
 				submenu = wx.Menu()
-				
-				print "Getting filters in category",category
 				for currfilter in self.filterList.getFiltersInCategory(category):
 					menuid = wx.NewId()
 					name = currfilter.getName()
