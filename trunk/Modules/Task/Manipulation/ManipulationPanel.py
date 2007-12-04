@@ -111,7 +111,7 @@ class ManipulationPanel(GUI.FilterBasedTaskPanel.FilterBasedTaskPanel):
 		self.panel = wx.Panel(self, -1)
 		self.panelsizer = wx.GridBagSizer()
 		
-		self.filterEditor = GUI.FilterEditor.FilterEditor(self, ManipulationFilters, taskPanel = self)
+		self.filterEditor = GUI.FilterEditor.FilterEditor(self.panel, ManipulationFilters, taskPanel = self)
 		lib.messenger.connect(self.filterEditor, "updateFilterList", self.updateFilterData)
 		self.panelsizer.Add(self.filterEditor, (0, 0))
 
