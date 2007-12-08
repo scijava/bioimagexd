@@ -1549,8 +1549,6 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 			name    Name used to identify this dataunit
 			path    Path to the file this dataunit points to
 		"""
-		
-		
 		ext = path.split(".")[-1]
 		self.filehistory.AddFileToHistory(path)
 		dataunit = None

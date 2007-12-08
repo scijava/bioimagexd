@@ -32,7 +32,6 @@ import lib.FilterTypes
 
 class AnisotropicDiffusionFilter(ProcessingFilter.ProcessingFilter):
 	"""
-	Class: Anisotropic diffusion
 	Created: 13.04.2006, KP
 	Description: An edge preserving smoothing filter
 	"""     

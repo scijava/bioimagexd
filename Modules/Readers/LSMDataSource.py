@@ -257,7 +257,6 @@ class LsmDataSource(DataSource):
 		self.shortname = os.path.basename(filename)
 		self.path = os.path.dirname(filename)
 		self.reader.SetFileName(filename)
-		
 		try:
 			f = open(filename)
 			f.close()

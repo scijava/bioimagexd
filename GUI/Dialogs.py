@@ -182,5 +182,5 @@ def askSaveAsFileName(parent, title, initFile, wc, ftype = None):
 		ext = wc.split(".")[-1]
 		if wc.count("*.") <= 2 and wc.find("*.%s" % currExt) == -1:        
 			filename += ".%s" % ext
-
+	
 	return filename

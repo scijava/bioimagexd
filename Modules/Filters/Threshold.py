@@ -30,6 +30,7 @@ import lib.messenger
 import GUI.GUIBuilder
 import vtk
 import types
+import Logging
 
 class ThresholdFilter(lib.ProcessingFilter.ProcessingFilter):
 	"""
@@ -73,8 +74,7 @@ class ThresholdFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 18.01.2007, KP
 		Description: Set a value for the parameter
-		"""	   
-		print "\nSET PARAMETER",parameter,"=",value
+		"""
 		oldval = self.parameters.get(parameter, "ThisIsABadValueThatNoOneWillEverUse")
 		lib.ProcessingFilter.ProcessingFilter.setParameter(self, parameter, value)
 		if self.initDone and self.gui and value != oldval:
@@ -134,7 +134,7 @@ class ThresholdFilter(lib.ProcessingFilter.ProcessingFilter):
 		if parameter == "Demonstrate":
 			return 0
 		if parameter in ["ReplaceIn", "ReplaceOut"]:
-			return 1
+			return True
 			
 	def setDataUnit(self,dataUnit):
 		"""
@@ -163,9 +163,11 @@ class ThresholdFilter(lib.ProcessingFilter.ProcessingFilter):
 		Description: 
 		"""
 		lib.ProcessingFilter.ProcessingFilter.setInputChannel(self, inputNum, n)
-		dataUnit = self.getInputDataUnit(inputNum)
 		
-		lib.messenger.send(self, "set_UpperThreshold_dataunit", dataUnit)
+		if self.dataUnit:
+			dataUnit = self.getInputDataUnit(inputNum)
+			if dataUnit:
+				lib.messenger.send(self, "set_UpperThreshold_dataunit", dataUnit)
 		
 	def execute(self, inputs, update = 0, last = 0):
 		"""

@@ -39,7 +39,10 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.resultVariables = {"NumberOfObjects":		"Number of discrete objects in the image",
 								"ObjAvgSizeInPixels":	"Average object size, in pixels",
 								"ObjAvgSizeInUm":		"Average object size, in micrometers",
-								"ObjAvgIntensity":		"Average intensity of objects"
+								"ObjAvgIntensity":		"Average intensity of objects",
+								"AvgIntOutsideObjs":    "Average intensity of voxels outside the objects",
+								"AvgIntInsideObjs":		"Average intensity of voxels inside the objects",
+								"NonZeroVoxels":		"The number of non-zero voxels"
 								}
 		
 		self.reportGUI = None
@@ -148,13 +151,13 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 				pxs = [x[0] for x in self.values]
 				avgpxs = float(AnalyzeObjectsFilter.averageValue(pxs))
 				
-				self.totalGUI.setStats([n, avgums, avgpxs, avgints])
+				self.totalGUI.setStats([n, avgums, avgpxs, avgints, self.avgIntOutsideObjs])
 				self.reportGUI.setVolumes(self.values)
 				self.reportGUI.setCentersOfMass(self.centersofmass)
 				self.reportGUI.setAverageIntensities(self.avgIntList)
 			sizer = wx.BoxSizer(wx.VERTICAL)
 			sizer.Add(self.reportGUI, 1)
-			sizer.Add(self.totalGUI)
+			sizer.Add(self.totalGUI, 1)
 			sizer.AddSpacer((5,5))
 			sizer.Add(self.exportBtn)
 			sizer.AddSpacer((5,5))
@@ -206,6 +209,8 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 			return None
 		image = self.getInput(1)
 		image = self.convertVTKtoITK(image)
+		print "Input for label shape=",self.getInputDataUnit(1)
+		print "Orig. dataunit = ",self.getInputDataUnit(2)
 		self.itkfilter = itk.LabelShapeImageFilter[image].New()
 		self.itkfilter.SetInput(image)
 		self.itkfilter.Update()
@@ -224,7 +229,7 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 		umcentersofmass = []
 		avgints = []
 		
-		vtkimage = self.convertITKtoVTK(image)
+		vtkimage = self.convertITKtoVTK(image, force = 1)
 		origInput = self.getInput(2)
 		origInput.Update()
 		
@@ -247,8 +252,10 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 		avgintCalc.Update()
 		if self.prevFilter:
 			startIntensity = self.prevFilter.ignoreObjects
+			self.avgintCalc.SetBackgroundLevel(startIntensity)
 		else:
 			startIntensity = 0
+			
 		for i in range(startIntensity, n):
 			if not self.itkfilter.HasLabel(i):
 				centersofmass.append((0, 0, 0))
@@ -280,17 +287,29 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 		avgums = AnalyzeObjectsFilter.averageValue(ums)
 		pxs = [x[0] for x in values]
 		avgpxs = AnalyzeObjectsFilter.averageValue(pxs)
+		
+		avgIntOutsideObjs = self.avgintCalc.GetAverageOutsideLabels()
+		avgIntInsideObjs = self.avgintCalc.GetAverageInsideLabels()
+		nonZeroVoxels = self.avgintCalc.GetNonZeroVoxels()
+		
+		self.avgIntOutsideObjs = avgIntOutsideObjs
 			
 		self.setResultVariable("NumberOfObjects",len(values))
 		self.setResultVariable("ObjAvgSizeInPixels",avgpxs)
 		self.setResultVariable("ObjAvgSizeInUm",avgums)
 		self.setResultVariable("ObjAvgIntensity",avgints)
+		self.setResultVariable("AvgIntOutsideObjs", avgIntOutsideObjs)
+		self.setResultVariable("AvgIntInsideObjs", avgIntInsideObjs)
+		self.setResultVariable("NonZeroVoxels", nonZeroVoxels)
 		
 		if self.reportGUI:
 			self.reportGUI.setVolumes(values)
 			self.reportGUI.setCentersOfMass(centersofmass)
 			self.reportGUI.setAverageIntensities(self.avgIntList)
 
-			self.totalGUI.setStats([n, avgums, avgpxs, avgints])
+			print "avgints=",avgints
+			print "avgIntOutsidebjs=",avgIntOutsideObjs
+			print "avgIntInsideObjs=",avgIntInsideObjs
+			self.totalGUI.setStats([n, avgums, avgpxs, avgints, avgIntOutsideObjs])
 			
-		return self.itkfilter.GetOutput()
+		return self.getInput(1)

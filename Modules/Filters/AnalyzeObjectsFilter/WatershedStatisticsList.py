@@ -21,6 +21,7 @@ __date__ = "$Date: 2005/01/13 14:52:39 $"
 
 import wx
 import wx.lib.mixins.listctrl as listmix
+import lib.messenger
 
 class WatershedTotalsList(wx.ListCtrl):
 	"""
@@ -42,11 +43,13 @@ class WatershedTotalsList(wx.ListCtrl):
 		self.InsertColumn(0, "# of objects")
 		self.InsertColumn(1, u"Avg. Volume (px)")
 		self.InsertColumn(2, u"Avg. Volume (\u03BCm)")
-		self.InsertColumn(3, "Avg. intensity")
+		self.InsertColumn(3, "Avg. intensity (obj)")
+		self.InsertColumn(4, "Avg. intensity (outside objs)")
 		self.SetColumnWidth(0, 50)
 		self.SetColumnWidth(1, 70)
 		self.SetColumnWidth(2, 105)
 		self.SetColumnWidth(3, 105)
+		self.SetColumnWidth(4, 105)
 		self.stats = []
 	
 
@@ -86,6 +89,8 @@ class WatershedTotalsList(wx.ListCtrl):
 			return "%.3f px" % self.stats[2]
 		elif col == 3:
 			return "%.3f" % self.stats[3]
+		elif col == 4:
+			return "%.3f" % self.stats[4]
  
 	def OnGetItemImage(self, item):
 		return -1
@@ -153,7 +158,7 @@ class WatershedObjectList(wx.ListCtrl, listmix.ListCtrlSelectionManagerMix):
 		self.Freeze()
 		for i, cog in enumerate(centersofmassList):
 			if self.GetItemCount() < i:
-				self.InsertStringItem(i, "")		
+				self.InsertStringItem(i, "")
 			self.SetStringItem(i, 3, "(%d,%d,%d)" % (cog))
 		self.Thaw()
 		self.Refresh()

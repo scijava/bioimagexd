@@ -64,6 +64,24 @@ public:
   int SplitExtent(int splitExt[6], 
                                                 int startExt[6], 
                                                 int num, int total);
+  // Description:
+  // Set / Get the total average of non-zero voxels inside and outside
+  // the labels.
+  vtkGetMacro(AverageInsideLabels,double);
+  vtkSetMacro(AverageInsideLabels,double);                                                    
+  vtkGetMacro(AverageOutsideLabels,double);
+  vtkSetMacro(AverageOutsideLabels,double);       
+
+  // Description:
+  // Set the background level (number of objects in the label image to ignore in calculating the
+  // inside and outside totals)
+  vtkGetMacro(BackgroundLevel,int);
+  vtkSetMacro(BackgroundLevel,int);   
+  
+  // Description:
+  // The number of non-zero voxels
+  vtkGetMacro(NonZeroVoxels, unsigned int);
+  vtkSetMacro(NonZeroVoxels, unsigned int);
 protected:
   vtkImageLabelAverage();
   ~vtkImageLabelAverage() {};
@@ -83,7 +101,11 @@ protected:
   
 private:
   vtkDoubleArray* AverageArray;
+  double AverageInsideLabels;
+  double AverageOutsideLabels;
+  int BackgroundLevel;
   int NumberOfItems;
+  unsigned int NonZeroVoxels;
   vtkImageLabelAverage(const vtkImageLabelAverage&);  // Not implemented.
   void operator=(const vtkImageLabelAverage&);  // Not implemented.
 };

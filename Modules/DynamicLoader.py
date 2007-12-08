@@ -157,7 +157,7 @@ class PluginLoader:
 		modulePathList = glob.glob(globPath)
 		modulePathList = self._removeIgnoredModules(modulePathList)
 		Logging.info("Modules from path %s are %s" % (globPath, str(modulePathList)), kw = "modules")
-		sys.path.append(pathForSysPath)
+		sys.path.insert(0, pathForSysPath)
 		# Return cached result, if it exists
 		if moduleSubDir in self.mcache:
 			return self.mcache[moduleSubDir]
@@ -185,6 +185,7 @@ class PluginLoader:
 			if hasattr(loadedModule, "getClass"):
 				moduleClass = loadedModule.getClass()
 			else:
+				print loadedModule.__dict__.keys()
 				moduleClass = loadedModule.__dict__["%s%s"%(moduleName,classEndsWith)]
 				
 			settingClass = None

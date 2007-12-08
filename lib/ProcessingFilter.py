@@ -69,6 +69,7 @@ class ProcessingFilter(GUIBuilder.GUIBuilderBase):
 		GUIBuilder.GUIBuilderBase.__init__(self, changeCallback = self.notifyTaskPanel)
 
 		self.numberOfInputs = numberOfInputs
+
 		self.noop = 0
 		self.parameters = {}
 		self.gui = None
@@ -85,11 +86,22 @@ class ProcessingFilter(GUIBuilder.GUIBuilderBase):
 		self.imageType = "UC3"
 		for item in self.getPlainParameters():
 			self.setParameter(item, self.getDefaultValue(item))
-
+		chmin, chmax = numberOfInputs
+		for i in range(1, chmax+1):
+			self.setInputChannel(i, i-1)
 		self.vtkToItk = None
 		self.itkToVtk = None
 		self.executive = None
 		self.eventDesc = ""
+		self.replacementColorTransferFunction = None
+
+	def getColorTransferFunction(self):
+		"""
+		Created: 08.12.2007, KP
+		Description: return a color transfer function that is modified by this filter, or
+					 None, if the ctf doesn't need to be modified
+		"""
+		return self.replacementColorTransferFunction
 		
 	def getResultVariables(self):
 		"""
@@ -261,7 +273,6 @@ class ProcessingFilter(GUIBuilder.GUIBuilderBase):
 		self.vtkToItk.Update()
 		return self.vtkToItk.GetOutput()
 
-	#def convertITKtoVTK(self, image, cast = None, imagetype = "UC3", force = 0):
 	def convertITKtoVTK(self, image, imagetype = "UC3", force = 0):
 		"""
 		Created: 18.04.2006, KP
@@ -276,7 +287,6 @@ class ProcessingFilter(GUIBuilder.GUIBuilderBase):
 		# If the next filter is also an ITK filter, then won't
 		# convert
 		if not force and self.nextFilter and self.nextFilter.getITK():
-			print "NEXT FILTER IS ITK"
 			return image
 		self.itkToVtk.SetInput(image)
 		self.itkToVtk.Update()
