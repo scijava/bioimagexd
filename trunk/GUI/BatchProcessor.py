@@ -39,6 +39,7 @@ import lib.messenger
 import GUI.MenuManager
 import GUI.TimepointSelection
 
+import re
 import wx
 import wx.grid as gridlib
 import wx.lib.mixins.listctrl as listmix
@@ -76,18 +77,27 @@ class BatchAnalysis:
 		
 		self.channelGrouping = 0
 		self.channelProcessing = 0
+		self.procListGrouping = 0
+		self.filterIndexes = {}
 		
 	def renameList(self, name, newName):
 		"""
 		Created: 04.12.2007, KP
 		Description: rename a given procedure list
 		"""
+		if name == newName:
+			return
 		lst = self.procedureLists.get(name, None)
 		if lst:
 			self.procedureLists[newName] = lst
 			del self.procedureLists[name]
 			self.selectedList = newName
-		
+			selectedVars = self.selectedVariables[name]
+			self.selectedVariables[newName] = selectedVars
+			del self.selectedVariables[name]
+		else:
+			print "\n\n*** COULD NOT RENAME",name,"to",newName
+			print "existing lists=",self.procedureLists.keys()
 	def getFileName(self):
 		"""
 		Created: 1.12.2007, KP
@@ -95,12 +105,27 @@ class BatchAnalysis:
 		"""
 		return self.filename
 		
+	def setProcedureListGrouping(self, value):
+		"""
+		Created: 1.12.2007, KP
+		Description: select whether to group the processed channels by the procedure list or not
+		"""
+		self.procListGrouping = value
+		
 	def setChannelGrouping(self, value):
 		"""
 		Created: 1.12.2007, KP
 		Description: select whether to group channels or not
 		"""
 		self.channelGrouping = value
+		
+	def setChannelGroupingByProcedureList(self, value):
+		"""
+		Created: 07.12.2007, KP
+		Description: Set the grouping of channels of a single file that are
+					 processed by different procedure lists
+		"""
+		self.procListGrouping = value
 		
 	def setChannelProcessing(self, value):
 		"""
@@ -137,7 +162,7 @@ class BatchAnalysis:
 			
 		return perFile.values()
 
-	def createBXDFile(self, directory, procListName, dataUnits):
+	def createSingleGroupedBXDFile(self, directory, procListName, dataUnits):
 		"""
 		Created: 1.12.2007, KP
 		Description: create a bxd file that groups the selected dataunits
@@ -150,43 +175,112 @@ class BatchAnalysis:
 			f.write("%s\n"%bxcFile)
 		f.close()
 			
+			
+	def createProcListGroupedBXDFile(self, directory, writtenOutFilenames):
+		"""
+		Created: 07.12.2007, KP
+		Description: write out a bxd file that groups together all the channels of the source datasets
+		"""
+		origFileToOutput = {}
+		for origFile, outputFile in writtenOutFilenames:
+			lst = origFileToOutput.get(origFile, [])
+			lst.append(outputFile)
+			origFileToOutput[origFile] = lst
+		
+		for origFile in origFileToOutput.keys():
+			print "From file",origFile,"there are",origFileToOutput[origFile]
+			fileparts = os.path.basename(origFile).split(".")
+			bxdFile=".".join(fileparts[:-1])+".bxd"
+			bxdFile = os.path.join(directory, bxdFile)
+			fp = open(bxdFile, "w")
+			print "Writing output to",bxdFile
+			for fileName in origFileToOutput[origFile]:
+				bxcDir = os.path.basename(os.path.dirname(fileName))
+				bxcFile = os.path.basename(fileName)
+				parts = bxcFile.split(".")
+				if parts[-1].lower()=="bxd":
+					bxcFile = ".".join(parts[:-1])+".bxc"
+				
+				fp.write("%s\n"%os.path.join(bxcDir,bxcFile))
+			
 	def execute(self, csvfile, directory, timepoints):
 		"""
 		Created: 1.12.2007, KP
 		Description: execute the analysis
 		"""
+		# Create a CSV file writer
 		csvfp = codecs.open(csvfile, "wb", "latin-1")
 		csvwriter = csv.writer(csvfp, dialect = "excel", delimiter = ";")
+		
+		# Get the selected variables
 		variables = self.getAllSelectedVariables()
-		varHeaders = variables.values()
+		# variables is a dict where keys are the user assigned names of the result variables
+		# and the values are the variables' real names.  We use as headers for the csv file the
+		# user given names
+		varHeaders = variables.keys()
+		# we also write the filename and channels used to produce each of the variables
 		csvwriter.writerow(["Filename","Channels"]+varHeaders)
 		
+		writtenOutDataunits = []
+		# Go through each procedure list
 		for procListName in self.procedureLists.keys():
+			# get the procedure list
 			procList = self.procedureLists[procListName]
 
+			# If each of the channels of an image are processed separately, but they are
+			# grouped to resulting BXD files that have similiar channel structure as the input
+			# files, then we sort the dataunits according to the filenames (getDataUnitsByFilename())
+			# and write out a .bxd file for each filename
 			if self.channelProcessing == PROCESS_SEPARATELY and self.channelGrouping:
 				groupedUnits = self.getDataUnitsByFilename()
 				for units in groupedUnits:
-					self.createBXDFile(directory, procListName, units)
+					self.createSingleGroupedBXDFile(directory, procListName, units)
 
+			# then go through each dataunit and apply the procedure list
 			for dataUnits in self.getGroupedDataUnits():
 				self.dataUnit.removeAllInputs()
 				
+				# The division of what channels should be used as source dataunits is
+				# affected by the channel processing option, and determined in getGroupedDataUnits()
+				# here we just add the selected dataunits as source dataunits
 				for du in dataUnits:
 					self.dataUnit.addSourceDataUnit(du)
 	
-				procList.setDataUnit(self.dataUnit)
+				# We pass a flag directing the procedure list to not re-intialize the filters
+				# since that would reset their settings
+				procList.setDataUnit(self.dataUnit, initializeFilters = 0)
 				self.dataUnit.getSettings().set("FilterList", procList)
+				self.dataUnit.getSettings().set("ColorTransferFunction", self.determineColorTransferFunction(procList, dataUnits))
 				
+				# We create a filename for the output of the procedure list by concatenating
+				# the name of the procedure list and the names of the source dataunits
 				filenames = "_".join([x.getName() for x in dataUnits])
 				nameBase = procListName+"_"+filenames
 
 				self.dataUnit.getSettings().set("Name",nameBase)
 				bxdFile = nameBase+".bxd"
 				filename = os.path.join(directory, bxdFile)
+				
+				# Then we do the actual processing
 				filename = self.dataUnit.doProcessing(filename, timepoints = timepoints)
+				# Store the filename we got as a result along with the filename of the source
+				# dataunit. This is done to make it possible to apply the second grouping action
+				# where the output of the procedure lists are grouped to bxd files based on
+				# their original channel layout. This is done to facilitate, for example,
+				# processing each channel with separate procedure list
+				writtenOutDataunits.append((dataUnits[0].getFileName(), filename))
+		
+				# padding is the filename and channel information
 				padding = [", ".join([os.path.basename(x.getFileName()) for x in dataUnits]), ", ".join(x.getName() for x in dataUnits)]
 				self.writeResults(padding, csvwriter, procListName, procList, varHeaders)
+
+		# If the channels are processed so that all the channels of a file are given as input
+		# to a procedure list, and the results should be grouped  so that the output of the
+		# different procedure lists follow the original channel layout, then create the 
+		# necessary .bxd files (calling createProcListGroupedBXDFile())
+		if self.channelProcessing == PROCESS_TOGETHER and self.procListGrouping:
+			self.createProcListGroupedBXDFile(directory, writtenOutDataunits)
+			
 		csvfp.close()
 				
 	def writeResults(self, fileNames, csvwriter, procListName, procedureList, varHeaders):
@@ -198,9 +292,22 @@ class BatchAnalysis:
 		row=[""]*len(varHeaders)
 		for var in selectedVars.keys():
 			varName = selectedVars[var]
-			if varName in varHeaders:
-				i = varHeaders.index(varName)
-				row[i] = procedureList.getResultVariable(var)
+			if var in varHeaders:
+				i = varHeaders.index(var)
+				
+				reg = re.compile("([0-9]+)$")
+				
+				try:
+					match = reg.search(var)
+					n = int(match.groups(0)[0])
+					print "Found index",n,"form",var
+				except:
+					print "Didn't find idnex"
+					n= 0
+				value = procedureList.getResultVariable(varName, nth = n-1)
+				row[i] = value
+			else:
+				print var,"not found"
 		csvwriter.writerow(fileNames + row)
 		
 		
@@ -210,6 +317,17 @@ class BatchAnalysis:
 		Description: return the dataunit
 		"""
 		return self.dataUnit
+		
+	def determineColorTransferFunction(self, procedureList, dataunits):
+		"""
+		Created: 08.12.2007, KP
+		Description: determine the color transfer function out of the source dataunits
+		"""
+		if len(dataunits)==1:
+			return dataunits[0].getColorTransferFunction()
+		firstFilter = procedureList.getFilters()[0]
+		dataUnit = firstFilter.getInputDataUnit(1)
+		return dataUnit.getColorTransferFunction()
 		
 	def saveAnalysisAs(self, filename):
 		"""
@@ -230,8 +348,9 @@ class BatchAnalysis:
 			parser.add_section(procListName)
 			procList.writeOut(parser, prefix = "%s_"%procListName)
 			
-			for key,value in self.selectedVariables[procListName].items():
-				parser.set(procListName, key, value)
+			if procListName in self.selectedVariables:
+				for key,value in self.selectedVariables[procListName].items():
+					parser.set(procListName, key, value)
 		
 		fp = open(filename,"w")
 		parser.write(fp)
@@ -276,6 +395,7 @@ class BatchAnalysis:
 		Created: 27.11.2007, KP
 		Description: Set the variables that are selected for retrieval from a given procedure list
 		"""
+		print "Setting selected variables to",variables
 		self.selectedVariables[procListName] = variables
 		
 	def getProcedureListNames(self):
@@ -318,6 +438,7 @@ class BatchAnalysis:
 		"""
 		if not name:
 			name = self.selectedList
+		print "procedure lists=",self.procedureLists
 		return self.procedureLists.get(name)
 		
 	def getSelectedProcedureList(self):
@@ -357,6 +478,9 @@ class BatchAnalysis:
 				
 		self.inputDataUnits = fileList
 		groupedUnits = self.getDataUnitsByFilename()
+		print "\n\n---> Grouped units = ",groupedUnits
+		for dataunit in fileList:
+			print dataunit.getName(),"has filename",dataunit.getFileName()
 		mostChannels = None
 		chCount = 0
 		for du in groupedUnits:
@@ -365,7 +489,7 @@ class BatchAnalysis:
 				mostChannels = du
 		
 		for dataUnit in mostChannels:
-			print "Adding",dataUnit.getName(),"from file",dataUnit.getFileName()
+			print "Adding",dataUnit.getName(),"as input"
 			self.dataUnit.addSourceDataUnit(dataUnit)
 		
 		
@@ -460,6 +584,8 @@ class PickVariablesDialog(wx.Dialog):
 		self.sizer.AddGrowableRow(0)
 		self.sizer.AddGrowableCol(0)
 		
+		self.varToIndex = {}
+		
 		btnSizer = self.CreateButtonSizer(wx.OK | wx.CANCEL)
 		if btnSizer:
 			self.sizer.Add(btnSizer, (1,0), flag = wx.EXPAND)
@@ -477,8 +603,8 @@ class PickVariablesDialog(wx.Dialog):
 		for i in range(self.checkListCtrl.GetItemCount()):
 			if self.checkListCtrl.IsChecked(i):
 				varName = self.checkListCtrl.GetItem(i,1).GetText()
-				varAs = self.checkListCtrl.GetItem(i,2).GetText()
-				ret[varName] = varAs
+				varAs = self.checkListCtrl.GetItem(i,3).GetText()
+				ret[varAs] = varName
 		return ret
 			
 	def populateFromAnalysis(self, analysis):
@@ -495,28 +621,45 @@ class PickVariablesDialog(wx.Dialog):
 		variables = []
 		name = analysis.getSelectedProcedureList()
 		descs = {}
+		varCount = {}
 		for f in filters:
-			variables += f.getResultVariables()
-			for v in variables:
+			variables += [[f, f.getResultVariables()]]
+			for v in f.getResultVariables():
 				descs[v] = f.getResultVariableDesc(v)
+				c = varCount.get(v, 0)
+				varCount[v] = c+1
 		
 		alreadySetVariables = analysis.getSelectedVariables(name)
+		counts={}
 		
-		for i, varName in enumerate(variables):
-			self.checkListCtrl.InsertStringItem(i, "")
-			self.checkListCtrl.SetStringItem(i, 1,varName)
-			# Set the name the variable will be known as
-			# if this has not been set before, then it will of the form
-			# ListNameVarName
-
-			if varName in alreadySetVariables:
-				asName = alreadySetVariables.get(varName)
-				self.checkListCtrl.CheckItem(i, True)
-			else:
-				asName = "%s%s"%(name, varName)
-				self.checkListCtrl.CheckItem(i, False)
-			self.checkListCtrl.SetStringItem(i,2,asName)
-			self.checkListCtrl.SetStringItem(i, 3, descs[varName])
+		self.filters = []
+		
+		i = 0
+		for (currFilter, filterVariables) in variables:
+			for varName in filterVariables:
+				self.checkListCtrl.InsertStringItem(i, "")
+				self.checkListCtrl.SetStringItem(i, 1,varName)
+				inChs = ", ".join(currFilter.getSelectedInputChannelNames())
+				self.checkListCtrl.SetStringItem(i, 2, inChs)
+	
+	
+				# Set the name the variable will be known as
+				# if this has not been set before, then it will of the form
+				# ListNameVarName
+				if varName in alreadySetVariables:
+					asName = alreadySetVariables.get(varName)
+					self.checkListCtrl.CheckItem(i, True)
+				else:
+					asName = "%s%s"%(name, varName)
+					if varCount[varName] > 1:
+						varIndex = counts.get(varName, 1)
+						asName="%s%d"%(asName, varIndex)
+						counts[varName] = varIndex+1
+						
+					self.checkListCtrl.CheckItem(i, False)
+				self.checkListCtrl.SetStringItem(i,3,asName)
+				self.checkListCtrl.SetStringItem(i, 4, descs[varName])
+				i+=1
 			
 class CheckListCtrl(wx.ListCtrl,
 				   listmix.ListCtrlAutoWidthMixin,
@@ -536,10 +679,13 @@ class CheckListCtrl(wx.ListCtrl,
 		
 		self.InsertColumn(0, "")
 		self.InsertColumn(1, "Variable")
-		self.InsertColumn(2, "Name")
-		self.InsertColumn(3, "Description")
+		self.InsertColumn(2, "Inputs")
+		self.InsertColumn(3, "Name")
+		self.InsertColumn(4, "Description")
 		self.SetColumnWidth(0, 20)
-		self.SetColumnWidth(2, 200)
+		self.SetColumnWidth(1, 140)
+		self.SetColumnWidth(2, 110)
+		self.SetColumnWidth(3, 190)
 		self.Bind(wx.EVT_LIST_BEGIN_LABEL_EDIT, self.OnBeginEdit)
 		
 	def OnBeginEdit(self, evt):
@@ -547,7 +693,7 @@ class CheckListCtrl(wx.ListCtrl,
 		Created: 26.11.2007, KP
 		Description: event handler called when the user edits a label
 		"""
-		if evt.GetColumn() in [0,1]:
+		if evt.GetColumn() in [0,1,2,4]:
 			evt.Veto()
 		else:
 			evt.Allow()
@@ -586,9 +732,10 @@ class ProcedureListCtrl(wx.ListCtrl,
 	def OpenEditor(self, col,row):
 		if col==1:
 			dlgTitle = "Select retrieved variables from %s"%self.analysis.getSelectedProcedureList()
-			dlg = PickVariablesDialog(self, self.analysis, title = dlgTitle, size = (600,200))
+			dlg = PickVariablesDialog(self, self.analysis, title = dlgTitle, size = (750,500))
 			if dlg.ShowModal() == wx.ID_OK:
 				selectedVariables = dlg.getSelectedVariables()
+				print "selected vars=",selectedVariables
 				self.analysis.setSelectedVariables(self.analysis.getSelectedProcedureList(), selectedVariables)
 				self.updateSelectedVariables(row)
 		else:
@@ -677,9 +824,17 @@ class ProcedurePanel(wx.ScrolledWindow):
 		self.groupChannelsCheckbox.Bind(wx.EVT_CHECKBOX, self.onCheckGroupChannels)
 		tip = wx.ToolTip("If this box is checked, when processing channels of a single file, the output datasets will be grouped under a single BXD file as well.")
 		self.groupChannelsCheckbox.SetToolTip(tip)
-		
+
+		self.groupProcListCheckbox = wx.CheckBox(self, -1, "Group output by procedure list")
+		self.groupProcListCheckbox.Enable(0)
+		self.groupProcListCheckbox.Bind(wx.EVT_CHECKBOX, self.onCheckGroupByProcList)
+		tip = wx.ToolTip("If this box is checked, the output images will be grouped by the procedure list that processes them.")
+		self.groupProcListCheckbox.SetToolTip(tip)
+		checkBoxSizer = wx.BoxSizer(wx.HORIZONTAL)
+		checkBoxSizer.Add(self.groupChannelsCheckbox)
+		checkBoxSizer.Add(self.groupProcListCheckbox)
 		hdr1SbSizer.Add(self.radioBox)
-		hdr1SbSizer.Add(self.groupChannelsCheckbox)
+		hdr1SbSizer.Add(checkBoxSizer)
 		
 		self.populateListBox()
 		self.sizer.AddGrowableCol(0)
@@ -731,8 +886,7 @@ class ProcedurePanel(wx.ScrolledWindow):
 		Created: 04.12.2007, KP
 		Description: change the name of the current procedure list
 		"""
-		print "Selected list = ",self.analysis.getSelectedProcedureList()
-		print "Renaming to",evt.GetLabel()
+
 		self.analysis.renameList(self.analysis.getSelectedProcedureList(), evt.GetLabel())
 		
 		
@@ -743,14 +897,22 @@ class ProcedurePanel(wx.ScrolledWindow):
 		"""
 		selection = self.radioBox.GetSelection()
 		self.groupChannelsCheckbox.Enable(selection == 0)
+		self.groupProcListCheckbox.Enable(selection == 1)
 		self.analysis.setChannelProcessing(selection)
 		
 	def onCheckGroupChannels(self, evt):
 		"""
 		Created: 1.12.2007, KP
-		Description: an event handelr for when the user toggles the channel grouping checkbox
+		Description: an event handler for when the user toggles the channel grouping checkbox
 		"""
 		self.analysis.setChannelGrouping(evt.IsChecked())
+		
+	def onCheckGroupByProcList(self, evt):
+		"""
+		Created: 06.12.2007, KP
+		Description: 
+		"""
+		self.analysis.setChannelGroupingByProcedureList(evt.IsChecked())
 		
 	def onExecuteAnalysis(self, evt):
 		"""
@@ -822,6 +984,7 @@ class ProcedurePanel(wx.ScrolledWindow):
 		item = evt.GetIndex()
 		item = self.procedureListBox.GetItem(item)
 		label = item.GetText()
+		print "\nSwitching to procedure list ",label
 		self.selectProcedureList(label)
 		evt.Skip()
 		
@@ -832,6 +995,8 @@ class ProcedurePanel(wx.ScrolledWindow):
 		"""
 		self.analysis.setSelectedProcedureList(name)
 		procList = self.analysis.getProcedureList(name)
+		print "\n\nSetting procedure list ",procList
+		self.filterEditor.resetGUI()
 		self.filterEditor.setFilterList(procList)
 		self.filterEditor.updateFromFilterList()
 		self.filterEditor.Enable(1)

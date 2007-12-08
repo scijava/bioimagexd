@@ -330,6 +330,17 @@ class FilterEditor(wx.Panel):
 			self.sizer.Detach(self.currentGUI)
 			self.currentGUI.Show(0)
 
+	def resetGUI(self):
+		"""
+		Created: 07.12.2007, KP
+		Description: reset the shown GUI
+		"""
+		self.removeGUI()
+		self.Layout()
+		self.parent.Layout()
+		self.parent.FitInside()
+		self.selected = -1
+		self.currentSelected = -1
 		
 	def onSelectFilter(self, event):
 		"""

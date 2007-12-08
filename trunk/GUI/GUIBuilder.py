@@ -67,9 +67,10 @@ class GUIBuilderBase:
 		Created: 13.04.2006, KP
 		Description: Initialization
 		"""
-		self.numberOfInputs = (1,1) #added this because variable didnt exist on line 150, SS
-		self.descs = {} #added this because variable didnt exist on line 240, SS
-		self.dataUnit = None #added this because variable didnt exist on line 92, SS
+		self.initialization = True
+		self.numberOfInputs = (1,1) 
+		self.descs = {}
+		self.dataUnit = None 
 		self.initDone = 0
 		self.parameters = {}
 		self.inputMapping = {}
@@ -80,15 +81,71 @@ class GUIBuilderBase:
 		self.modCallback = changeCallback
 		self.updateDefaultValues()
 		
+	def setInitialization(self, flag):
+		"""
+		Created: 07.12.2007, KP
+		Description: toggle a flag indicating, whether the filter should be re-initialized
+		"""
+		self.initialization = flag
+			
 	def updateDefaultValues(self):
 		"""
 		Created: 08.11.2007, KP
 		Description: update the default values
 		"""
+		if not self.initialization:
+			return
 		self.initDone = 0
 		for item in self.getPlainParameters():
 			self.setParameter(item, self.getDefaultValue(item))
 		self.initDone = 1
+		
+	def getSelectedInputChannelNames(self):
+		"""
+		Created: 07.12.2007, KP
+		Description: return the names of the selected input channels
+		"""
+		oldText = self.processInputText
+		self.processInputText = "output"
+		inputChannels = self.getInputChannelNames()
+		keys = self.inputMapping.keys()
+		returnNames = []
+		
+		for chIndex in self.inputMapping.values():
+			returnNames.append(inputChannels[chIndex])
+			
+		self.processInputText = oldText
+		return returnNames
+		
+		
+	def getInputChannelNames(self, fromStack = 1):
+		"""
+		Created: 07.12.2007, KP
+		Description: return the names of the input channels
+		"""
+		if fromStack:
+			choices = [self.processInputText]
+		else:
+			choices = []
+		# If the input is a processed dataunit, i.e. output from a task,
+		# then we offer both the task output and the individual channels
+		if self.dataUnit.isProcessed():
+			for i, dataunit in enumerate(self.dataUnit.getSourceDataUnits()):
+				choices.append(dataunit.getName())
+		else:
+			# If we have a non - processed dataunit (i.e. a single channel)
+			# as input, then we only offer that
+			choices = [self.dataUnit.getName()]
+		return choices
+		
+	def getInputChannel(self, mapIndex):
+		"""
+		Created: 07.12.2007, KP
+		Description: return the index of the channel tht corresponds to given input number
+		"""
+		if mapIndex not in self.inputMapping:
+			self.setInputChannel(mapIndex, mapIndex-1)
+		return self.inputMapping[mapIndex]
 		
 	def getInput(self, mapIndex):
 		"""
@@ -102,18 +159,16 @@ class GUIBuilderBase:
 		# these can be thought of as being specified in the GUI where you have as many 
 		# selections of input data as the filter defines (with the variable numberOfInputs)
 		if mapIndex not in self.inputMapping:
-			self.inputMapping[mapIndex] = mapIndex - 1
+			self.setInputChannel(mapIndex, mapIndex-1)
 			
 		# Input mapping 0 means to return the input from the filter stack above
-		if self.inputMapping[mapIndex] == 0 and self.dataUnit.isProcessed():
-			#print "%s Input index=%d, inputs="%(self.name, self.inputIndex),self.inputs
+		
+		if self.inputMapping[mapIndex] == 0 and self.dataUnit and self.dataUnit.isProcessed():
 			try:
 				image = self.inputs[self.inputIndex]
 			except:
 				traceback.print_exc()
 				Logging.info("No input with number %d" %self.inputIndex, self.inputs, kw = "processing")
-# KP 12.08.2007 what the F*%#% does this mean
-#			self.inputIndex += 1
 		else:
 			# If input from stack is not requested, or the dataunit is not processed, then just return 
 			# the image data from the corresponding channel
@@ -130,7 +185,7 @@ class GUIBuilderBase:
 		"""	  
 		if mapIndex not in self.inputMapping:
 			return None
-		if self.inputMapping[mapIndex] == 0 and self.dataUnit.isProcessed():		   
+		if self.inputMapping[mapIndex] == 0 and self.dataUnit and self.dataUnit.isProcessed():
 			return self.dataUnit
 		else:
 			image = self.getInputFromChannel(self.inputMapping[mapIndex] - 1, dataUnit = 1)
@@ -179,6 +234,7 @@ class GUIBuilderBase:
 		Created: 17.04.2006, KP
 		Description: Set the input channel for input #inputNum
 		"""
+
 		self.inputMapping[inputNumber] = channel
 		
 	def getInputName(self, n):
@@ -891,30 +947,20 @@ class GUIBuilder(wx.Panel):
 		Created: 17.04.2006, KP
 		Description: Build a GUI for selecting the source channels
 		"""
-		chmin, chmax = self.currentFilter.getNumberOfInputs()
 		sizer = wx.GridBagSizer()
 		y = 0
-		choices = [self.currentFilter.processInputText]
-		# If the input is a processed dataunit, i.e. output from a task,
-		# then we offer both the task output and the individual channels
-		print "Current filter=",self.currentFilter
-		if self.currentFilter.dataUnit.isProcessed():
-			for i, dataunit in enumerate(self.currentFilter.dataUnit.getSourceDataUnits()):
-				choices.append(dataunit.getName())
-		else:
-			# If we have a non - processed dataunit (i.e. a single channel)
-			# as input, then we only offer that
-			choices = [self.currentFilter.dataUnit.getName()]
+		chmin, chmax = self.currentFilter.getNumberOfInputs()
+
+		choices = self.currentFilter.getInputChannelNames()
 		
 		for i in range(1, chmax + 1):
 			label = wx.StaticText(self, -1, self.currentFilter.getInputName(i))
 			sizer.Add(label, (y, 0))
 			chlChoice = wx.Choice(self, -1, choices = choices)
 			sizer.Add(chlChoice, (y, 1))
-			chlChoice.SetSelection(i - 1)
-			#print "%s Setting input channel"%self.currentFilter.getName(), i, "to ", i - 1
-			self.currentFilter.setInputChannel(i, i - 1)
-			
+			#chlChoice.SetSelection(i - 1)
+			#self.currentFilter.setInputChannel(i, i - 1)
+			chlChoice.SetSelection(self.currentFilter.getInputChannel(i))
 			func = lambda event, f = self.currentFilter, n = i: self.onSetInputChannel(f, n, event)
 			chlChoice.Bind(wx.EVT_CHOICE, func)
 

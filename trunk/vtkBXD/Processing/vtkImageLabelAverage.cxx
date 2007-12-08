@@ -42,7 +42,9 @@ vtkImageLabelAverage::vtkImageLabelAverage()
 {
     NumberOfItems = 0;
     AverageArray = vtkDoubleArray::New();
-    
+    BackgroundLevel = 1;
+    AverageInsideLabels = AverageOutsideLabels = 0;
+    NonZeroVoxels = 0;
 }
 
 
@@ -68,13 +70,18 @@ void vtkImageLabelAverageExecute(vtkImageLabelAverage *self, int id,int NumberOf
   int maxX,maxY,maxZ,maxC;
   int idxX,idxY,idxZ,idxC;
   T *inPtr;
+  unsigned long nonZeroInsideCount = 0, nonZeroOutsideCount = 0;
+  unsigned long nonZeroCount = 0;
+  double insideSum = 0, outsideSum = 0;
   unsigned long *maskPtr;
   int* table;
   unsigned long count = 0;
   unsigned long target;       
   vtkDoubleArray* avgArray = self->GetAverageArray();
   vtkUnsignedLongArray* numArray = vtkUnsignedLongArray::New();
+  
 
+  int bgLevel = self->GetBackgroundLevel();
   T scalar;
   unsigned long maskScalar;
   inPtr = (T*) inData[0]->GetScalarPointerForExtent(outExt);
@@ -132,7 +139,17 @@ void vtkImageLabelAverageExecute(vtkImageLabelAverage *self, int id,int NumberOf
             if(maskScalar > n) {
                 n = maskScalar;
             }
-            
+            if(scalar) {
+                nonZeroCount++;
+                if(maskScalar > bgLevel) {
+                    nonZeroInsideCount++;
+                    insideSum += scalar;
+                } else {
+                    nonZeroOutsideCount++;
+                    outsideSum += scalar;
+                }
+                
+            }
             avg = avgArray->GetValue((unsigned long)maskScalar);
             avg += scalar;
             avgArray->SetValue((unsigned long)maskScalar, avg);
@@ -151,14 +168,21 @@ void vtkImageLabelAverageExecute(vtkImageLabelAverage *self, int id,int NumberOf
     inPtr += inIncZ;
     maskPtr += maskIncZ;
   }
+  if(nonZeroInsideCount) {
+    self->SetAverageInsideLabels(insideSum / nonZeroInsideCount);
+  }
+  if(nonZeroOutsideCount) {
+    self->SetAverageOutsideLabels(outsideSum / nonZeroOutsideCount);
+  }
+  self->SetNonZeroVoxels(nonZeroCount);
   
-  //printf("done\n");
   for(int i=0;i<=n;i++) {
      avg = avgArray->GetValue(i);
      numberOfValues = numArray -> GetValue(i);
-     //printf("Setting value %d to %f / %d = %f",i,avg,numberOfValues,avg / numberOfValues);
-     avg /= numberOfValues;     
-     avgArray -> SetValue(i,avg);
+     if(numberOfValues) {
+       avg /= numberOfValues;     
+       avgArray -> SetValue(i,avg);
+     } else avgArray->SetValue(i, 0);
   }
   
 }

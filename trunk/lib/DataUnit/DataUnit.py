@@ -157,10 +157,8 @@ class DataUnit:
 		
 					if not color and not noColor:
 						color = self.getColorTransferFunction()
-					print "Getting MIP with color", color
 					self.mip = lib.ImageOperations.getMIP(imagedata, color)
-					print "Got mip, storing to cache", self.mip
-				
+					
 					self.dataSource.storeToCache(self.mip, self.getFileName(), self.getName(), "MIP")
 				else:
 					self.mip = cached
@@ -276,11 +274,7 @@ class DataUnit:
 		Parameters:
 				n		The timepoint we need to return
 		"""
-		if self.destroyed:
-			print "I have been destroyed!"
-			print "There are ", weakref.getweakrefcount(self), "references to me"
 		if not self.dataSource:
-			print self, self.dataUnitName
 			Logging.error("No datasource specified",
 			"No datasource specified for DataUnit, unable to get timepoint!")
 			return None
@@ -328,5 +322,3 @@ class DataUnit:
 		Description: Return the path to the file this dataunit represents
 		"""
 		return self.dataSource.getFileName()
-		
-		

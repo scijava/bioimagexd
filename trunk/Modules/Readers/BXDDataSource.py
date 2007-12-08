@@ -87,9 +87,9 @@ class BXDDataSource(DataSource):
 			bxcfile = os.path.join(filepath, line.strip())
 			Logging.info("Reading file %s" % bxcfile, kw = "lsmreader")
 			datasource = BXCDataSource.BXCDataSource()
+			datasource.setBaseFileName(filename)
 			bxcdataunits = datasource.loadFromFile(bxcfile)
-#            dataunit=DataUnit.DataUnit()
-#            dataunit.setDataSource(datasource)
+
 			dataunits.extend(bxcdataunits)
 			
 		return dataunits

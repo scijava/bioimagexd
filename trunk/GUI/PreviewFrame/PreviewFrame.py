@@ -304,6 +304,7 @@ class PreviewFrame(InteractivePanel):
 		Logging.info("Returning x,y,z=(%d,%d,%d)" % (rx, ry, rz), kw = "preview")
 		ncomps = self.rawImage.GetNumberOfScalarComponents()
 		Logging.info("Number of scalar components in image = %d"%ncomps, kw="preview")
+		print "RAW IMAGES=",self.rawImages
 		if ncomps == 1:
 			rv, gv, bv = -1, -1, -1
 			alpha = -1
@@ -313,7 +314,7 @@ class PreviewFrame(InteractivePanel):
 				scalar = []
 				for i, img in enumerate(self.rawImages):
 #					img.SetExtent(img.GetWholeExtent())
-					if self.dataUnit.getOutputChannel(i):
+					if 1 or self.dataUnit.getOutputChannel(i):
 						scalar.append(img.GetScalarComponentAsDouble(x, y, self.z, 0))
 				scalar = tuple(scalar)
 

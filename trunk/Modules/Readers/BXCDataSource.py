@@ -78,6 +78,7 @@ class BXCDataSource(DataSource):
 		self.dataSets = []
 		# filename of the .du-file
 		self.filename = filename
+		self.baseFilename = ""
 		self.setPath(filename)
 		# path to the .du-file and .vti-file(s)
 		self.path = ""
@@ -98,8 +99,18 @@ class BXCDataSource(DataSource):
 		"""
 		Created: 21.07.2005
 		Description: Return the file name
-		"""    
-		return self.filename
+		"""
+		if not self.baseFilename:
+			return self.filename
+		return self.baseFilename
+		
+	def setBaseFileName(self, filename):
+		"""
+		Created: 08.12.2007, KP
+		Description: set the base filename. This interface is mainly for BXD reader to utilize
+		"""
+		self.baseFilename = filename
+		
 	def getParser(self):
 		"""
 		Created: 27.03.2005, KP
@@ -248,6 +259,8 @@ class BXCDataSource(DataSource):
 					 returned in a list with one item for interoperability with
 					 LSM data source
 		"""
+		if not self.baseFilename:
+			self.baseFilename = filename
 		self.shortname = os.path.basename(filename)
 		dataUnitFormat = self.loadBxdFile(filename)
 		Logging.info("format of unit = ", dataUnitFormat, kw = "datasource")

@@ -65,14 +65,17 @@ class FilterList:
 			self.filtersByName[currfilter.getName()] = currfilter
 			self.registerFilter(currfilter.getCategory(), currfilter)
 			
-	def getResultVariable(self, var):
+	def getResultVariable(self, var, nth = 0):
 		"""
 		Created: 1.12.2007, KP
 		Description: return the value of a result variable
 		"""
+		i = 0
 		for f in self.filters:
-			if var in f.getResultVariables():
+			if var in f.getResultVariables() and i==nth:
 				return f.getResultVariable(var)
+			elif var in f.getResultVariables():
+				i+=1
 			
 	def clear(self):
 		"""
@@ -95,7 +98,7 @@ class FilterList:
 		filter.setDataUnit(self.dataUnit)
 		self.setModified(1)
 
-	def setDataUnit(self, dataUnit):
+	def setDataUnit(self, dataUnit, initializeFilters = 1):
 		"""
 		Created: 20.11.2007, KP
 		Description: set the dataunit 
@@ -103,8 +106,10 @@ class FilterList:
 		self.dataUnit = dataUnit
 		self.modified = 1
 		for f in self.filters:
-			print "Setting dataunit of filter",f,"to",dataUnit
+			if not initializeFilters:
+				f.setInitialization(0)
 			f.setDataUnit(dataUnit)
+			f.setInitialization(1)
 			
 	def populate(self, filterNames):
 		"""
@@ -139,11 +144,17 @@ class FilterList:
 		
 		filterNames = self.getFilterNames()
 		parser.set("%sFilterList"%prefix,"FilterList",str(filterNames))
-		
+		counts = {}
 		for i, filterName in enumerate(filterNames):
 			currfilter = self.filters[i]
 			keys = currfilter.getPlainParameters()
 			sectionName = prefix + filterName
+			
+			if filterNames.count(filterName) > 1:
+				filterIndex = counts.get(filterName, 0)
+				sectionName="%s#%d"%(sectionName, filterIndex)
+				counts[filterName] = filterIndex+1
+				
 			if not parser.has_section(sectionName):
 				parser.add_section(sectionName)
 			for key in keys:
@@ -159,24 +170,43 @@ class FilterList:
 		Description: read the values for the parameters of the filters in this filterlist from a parser object
 		"""
 		self.setModified(1)
+		filterNames = [x.getName() for x in self.filters]
+		counts = {}
+		# Loop through each of the filter instances
+		# when we're restoring from presets or BBA file, the instances of the filters have already
+		# been created and we now set the filters' parameters
 		for currfilter in self.filters:
+
 			name = currfilter.getName()
+			sectionName = prefix+name
+			# We calculate the name of the section in which the settings are stored in the file
+			# If there are more than one same filter in the procedure list, then the section name
+			# has an appended index behind the filter name, otherwise it's just the filter name
+			if filterNames.count(name) > 1:
+				filterIndex = counts.get(name, 0)
+				sectionName = "%s#%d"%(sectionName, filterIndex)
+				counts[name] = filterIndex+1
+				
 			if parser:
+				# Get the items in the section. If it's empty, then just continue with the next filter
 				try:
-					items = parser.items(prefix+name)
+					items = parser.items(sectionName)
 				except ConfigParser.NoSectionError:
 					continue
+				# In the item, value pair, item is the name of the parameter and value is it's value
 				for item, value in items:
 					try:
 						newvalue = eval(value)
 					except:
 						newvalue = value
-					print "Setting parameter",item,newvalue
 					currfilter.setParameter(item, newvalue)
 				
-				if parser.has_option(prefix+name, "InputMapping"):
-					inputMapping = parser.get(prefix+name, "InputMapping")
+				# We also restore the input mapping (meaning which dataunit is used as an input to the filter)
+				# if there is one in the file
+				if parser.has_option(sectionName, "InputMapping"):
+					inputMapping = parser.get(sectionName, "InputMapping")
 					currfilter.inputMapping = eval(inputMapping)
+				# Update the GUI values
 				currfilter.sendUpdateGUI()
 				
 	def getCount(self):
