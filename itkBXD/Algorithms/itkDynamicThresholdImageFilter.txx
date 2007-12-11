@@ -84,9 +84,13 @@ void DynamicThresholdImageFilter<TInputImage,TOutputImage>
   const TInputImage* inputImage = this->GetInput();
   this->AllocateOutputImage();
   TOutputImage* outputImage = this->GetOutput();
+  unsigned int imgDim = TInputImage::GetImageDimension();
   const typename TOutputImage::RegionType& region = outputImage->GetRequestedRegion();
-  unsigned long columns = region.GetSize().m_Size[0];
-  unsigned long rows = region.GetSize().m_Size[1];
+  const typename TOutputImage::SizeType& regionSize = region.GetSize();
+  unsigned long columns = regionSize.m_Size[0];
+  unsigned long rows = regionSize.m_Size[1];
+  unsigned long slices;
+  slices = imgDim > 2 ? regionSize.m_Size[2] : 1;
 
   // Create vector for column counters. Use column counter that the whole
   // neighborhood wouldn't have to be calculated every time. Only new column
@@ -112,6 +116,11 @@ void DynamicThresholdImageFilter<TInputImage,TOutputImage>
   typename TInputImage::RegionType::SizeType size;
   size[0] = columns;
   size[1] = rows;
+  if (imgDim > 2)
+	{
+	  indexStart[2] = 0;
+	  size[2] = slices;
+	}
   typename TInputImage::RegionType outRegion;
   outRegion.SetSize(size);
   outRegion.SetIndex(indexStart);
@@ -121,72 +130,76 @@ void DynamicThresholdImageFilter<TInputImage,TOutputImage>
   // Calculate dynamic threshold per pixel and set pixel values to min or max
   long x = 0;
   long y = 0;
-  itk::ProgressReporter progress(this,0,rows*columns,100);
-  for (y = 0; y < rows; ++y)
+  long z = 0;
+  itk::ProgressReporter progress(this,0,rows*columns*slices,100);
+  for (z = 0; z < slices; ++z)
 	{
-	  for (x = 0; x < columns; ++x)
+	  for (y = 0; y < rows; ++y)
 		{
-		  if (x == 0) // New row, re-calculate whole neighborhood
+		  for (x = 0; x < columns; ++x)
 			{
-			  for (unsigned long nIter = 0; nIter <= nIterCols; ++nIter)
+			  if (x == 0) // New row, re-calculate whole neighborhood
 				{
-				  this->GetColumnPixels(nIter,y,inputImage,columnPixels[nIter]);
-				  columnCounters[nIter] = this->CalculateColumn(columnPixels[nIter]);
-				}
-			}
-		  else
-			{
-			  long nextCol = x + nIterCols;
-			  if (nextCol < columns)
-				{
-				  this->GetColumnPixels(nextCol,y,inputImage,columnPixels[nextCol]);
-				  columnCounters[nextCol] = this->CalculateColumn(columnPixels[nextCol]);
-				}
-			}
-
-		  // Calculate pixel threshold value
-		  startCol = x - nIterCols >= 0 ? x - nIterCols : 0;
-		  endCol = x + nIterCols < columns ? x + nIterCols : columns - 1;
-		  startRow = y - nIterRows >= 0 ? y - nIterRows : 0;
-		  endRow = y + nIterRows < rows ? y + nIterRows : rows - 1;
-		  nbhSize = (endCol - startCol + 1) * (endRow - startRow + 1);
-		  double threshold = 0.0;
-
-		  if (this->m_StatisticsType == 0) // Mean
-			{
-			  double sum = 0.0;
-			  while (startCol <= endCol)
-				{
-				  sum += columnCounters[startCol];
-				  startCol++;
-				}
-			  threshold = sum / nbhSize;
-			}
-		  else // Median
-			{
-			  typename VectorType::const_iterator colIter;
-			  medianPixels.clear();
-			  unsigned long medianPos = nbhSize / 2;
-
-			  while (startCol <= endCol)
-				{
-				  for (colIter = columnPixels[startCol].begin(); colIter != columnPixels[startCol].end(); ++colIter)
+				  for (unsigned long nIter = 0; nIter <= nIterCols; ++nIter)
 					{
-					  medianPixels.push_back(*colIter);
+					  this->GetColumnPixels(nIter,y,z,inputImage,columnPixels[nIter]);
+					  columnCounters[nIter] = this->CalculateColumnSum(columnPixels[nIter]);
 					}
-				  startCol++;
 				}
-			  typename std::vector<InputPixelType>::iterator medianIterator = medianPixels.begin() + medianPos;
-			  std::nth_element(medianPixels.begin(),medianIterator,medianPixels.end());
-			  threshold = *medianIterator;
+			  else
+				{
+				  long nextCol = x + nIterCols;
+				  if (nextCol < columns)
+					{
+					  this->GetColumnPixels(nextCol,y,z,inputImage,columnPixels[nextCol]);
+					  columnCounters[nextCol] = this->CalculateColumnSum(columnPixels[nextCol]);
+					}
+				}
+
+			  // Calculate pixel threshold value
+			  startCol = x - nIterCols >= 0 ? x - nIterCols : 0;
+			  endCol = x + nIterCols < columns ? x + nIterCols : columns - 1;
+			  startRow = y - nIterRows >= 0 ? y - nIterRows : 0;
+			  endRow = y + nIterRows < rows ? y + nIterRows : rows - 1;
+			  nbhSize = (endCol - startCol + 1) * (endRow - startRow + 1);
+			  double threshold = 0.0;
+
+			  if (this->m_StatisticsType == 0) // Mean
+				{
+				  double sum = 0.0;
+				  while (startCol <= endCol)
+					{
+					  sum += columnCounters[startCol];
+					  startCol++;
+					}
+				  threshold = sum / nbhSize;
+				}
+			  else // Median
+				{
+				  typename VectorType::const_iterator colIter;
+				  medianPixels.clear();
+				  unsigned long medianPos = nbhSize / 2;
+
+				  while (startCol <= endCol)
+					{
+					  for (colIter = columnPixels[startCol].begin(); colIter != columnPixels[startCol].end(); ++colIter)
+						{
+						  medianPixels.push_back(*colIter);
+						}
+					  startCol++;
+					}
+				  typename std::vector<InputPixelType>::iterator medianIterator = medianPixels.begin() + medianPos;
+				  std::nth_element(medianPixels.begin(),medianIterator,medianPixels.end());
+				  threshold = *medianIterator;
+				}
+
+			  inIter.Get() > threshold ? outIter.Set(this->m_InsideValue) : outIter.Set(this->m_OutsideValue);
+			  ++inIter;
+			  ++outIter;
+
+			  itkDebugMacro("Threshold for pixel (" << x << "," << y << "," << z << "): " << threshold);
+			  progress.CompletedPixel();
 			}
-
-		  inIter.Get() >= threshold ? outIter.Set(this->m_InsideValue) : outIter.Set(this->m_OutsideValue);
-		  ++inIter;
-		  ++outIter;
-
-		  itkDebugMacro("Threshold for pixel (" << x << "," << y << "): " << threshold);
-		  progress.CompletedPixel();
 		}
 	}
 }
@@ -208,7 +221,7 @@ void DynamicThresholdImageFilter<TInputImage,TOutputImage>
 ::AllocateOutputImage()
 {
   const TInputImage* inputImage = this->GetInput();
-  this->GetOutput()->SetRegions(inputImage->GetBufferedRegion());
+  this->GetOutput()->SetRegions(inputImage->GetRequestedRegion());
   this->GetOutput()->SetSpacing(inputImage->GetSpacing());
   this->GetOutput()->SetOrigin(inputImage->GetOrigin());
   this->GetOutput()->Allocate();
@@ -216,15 +229,15 @@ void DynamicThresholdImageFilter<TInputImage,TOutputImage>
 
 template<class TInputImage, class TOutputImage>
 void DynamicThresholdImageFilter<TInputImage,TOutputImage>
-::GetColumnPixels(unsigned long x,unsigned long y,const TInputImage* image,VectorType &column) const
+::GetColumnPixels(unsigned long x,unsigned long y,unsigned long z,const TInputImage* image,VectorType &column) const
 {
-  long largestX = image->GetLargestPossibleRegion().GetSize().m_Size[0];
+  long largestX = image->GetRequestedRegion().GetSize().m_Size[0];
   if (x > largestX) return;
 
   long startY = y - (this->m_Neighborhood.second - 1) / 2;
   startY = startY >= 0 ? startY : 0;
   long endY = y + (this->m_Neighborhood.second - 1) / 2;
-  long largestY = image->GetLargestPossibleRegion().GetSize().m_Size[1];
+  long largestY = image->GetRequestedRegion().GetSize().m_Size[1];
   endY = endY < largestY ? endY : largestY - 1;
 
   // Create image iterator
@@ -234,6 +247,11 @@ void DynamicThresholdImageFilter<TInputImage,TOutputImage>
   typename TInputImage::RegionType::SizeType size;
   size[0] = 1;
   size[1] = endY - startY + 1;
+  if (TInputImage::GetImageDimension() > 2)
+	{
+	  indexStart[2] = z;
+	  size[2] = 1;
+	}
   typename TInputImage::RegionType region;
   region.SetSize(size);
   region.SetIndex(indexStart);
@@ -248,7 +266,7 @@ void DynamicThresholdImageFilter<TInputImage,TOutputImage>
 
 template<class TInputImage, class TOutputImage>
 double DynamicThresholdImageFilter<TInputImage,TOutputImage>
-::CalculateColumn(VectorType &column) const
+::CalculateColumnSum(VectorType &column) const
 {
   double sum = 0.0;
   typename VectorType::const_iterator iter;

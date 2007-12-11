@@ -790,7 +790,7 @@ class GUIBuilder(wx.Panel):
 		text = currentFilter.getDesc(itemName)
 		defValue = currentFilter.getDefaultValue(itemName)
 		level = currentFilter.getParameterLevel(itemName)
-		
+
 		if text:
 			label = wx.StaticText(self, -1, text)
 			box.Add(label)
