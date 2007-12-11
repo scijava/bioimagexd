@@ -130,9 +130,9 @@ class MainWindow(wx.Frame):
 		self.progressShift = 0.0
 		self.taskToId = {}
 		self.visToId = {}
-		
+
+		self.splash.SetMessage("Loading filter modules...")
 		Modules.DynamicLoader.getFilterModules()
-		
 		self.splash.SetMessage("Loading task modules...")
 		self.taskPanels = Modules.DynamicLoader.getTaskModules(callback = self.splash.SetMessage)
 		self.splash.SetMessage("Loading visualization modes...")

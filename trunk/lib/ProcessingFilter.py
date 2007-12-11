@@ -162,7 +162,10 @@ class ProcessingFilter(GUIBuilder.GUIBuilderBase):
 		Description: Sends progress update event
 		"""
 		if self.executive:
-			self.executive.updateProgress(obj, evt)
+			if self.itkFlag:
+				self.executive.updateITKProgress(obj.GetNameOfClass(), obj.GetProgress())
+			else:
+				self.executive.updateProgress(obj, evt)
 
 	def set(self, parameter, value):
 		"""
@@ -291,6 +294,7 @@ class ProcessingFilter(GUIBuilder.GUIBuilderBase):
 		self.itkToVtk.SetInput(image)
 		self.itkToVtk.Update()
 		return self.itkToVtk.GetOutput()
+
 	def setNextFilter(self, nfilter):
 		"""
 		Created: 18.04.2006, KP

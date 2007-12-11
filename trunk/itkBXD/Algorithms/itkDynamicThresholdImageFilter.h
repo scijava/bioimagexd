@@ -87,8 +87,8 @@ protected:
   void GenerateData();
   void GenerateInputRequestedRegion();
   void AllocateOutputImage();
-  void GetColumnPixels(unsigned long, unsigned long, const TInputImage*, VectorType&) const;
-  double CalculateColumn(VectorType&) const;
+  void GetColumnPixels(unsigned long, unsigned long, unsigned long, const TInputImage*, VectorType&) const;
+  double CalculateColumnSum(VectorType&) const;
 
 private:
   DynamicThresholdImageFilter(const Self&); // purposely not implemented

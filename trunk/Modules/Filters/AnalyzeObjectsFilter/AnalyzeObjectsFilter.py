@@ -248,7 +248,7 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 			
 		avgintCalc.AddInput(origInput)
 		avgintCalc.AddInput(vtkimage)
-		
+
 		avgintCalc.Update()
 		if self.prevFilter:
 			startIntensity = self.prevFilter.ignoreObjects
