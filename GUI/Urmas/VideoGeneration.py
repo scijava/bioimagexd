@@ -310,10 +310,10 @@ class VideoEncoder:
 		width, height = self.getSize()
 		
 		if not target:
-			commandLine = "%s -y -qscale %d -b 8192 -r %.2f -s %dx%d -i \"%s\" -vcodec %s \"%s\"" \
+			commandLine = "\"%s\" -y -qscale %d -b 8192 -r %.2f -s %dx%d -i \"%s\" -vcodec %s \"%s\"" \
 							% (ffmpeg, quality, frameRate, width, height, pattern, vcodec, file)
 		else:
-			commandLine = "%s -y -qscale %d -s %dx%d -i \"%s\" -target %s \"%s\"" % (ffmpeg, quality, width, height, pattern, target, file)
+			commandLine = "\"%s\" -y -qscale %d -s %dx%d -i \"%s\" -target %s \"%s\"" % (ffmpeg, quality, width, height, pattern, target, file)
 		Logging.info("Command line for ffmpeg=", commandLine, kw = "animator")
 		return commandLine
 
