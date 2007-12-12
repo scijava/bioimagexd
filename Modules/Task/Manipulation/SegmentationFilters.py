@@ -42,7 +42,6 @@ import wx
 from lib.FilterTypes import *
 
 
-
 def getFilters():
 	"""
 	Created: 10.8.2007, SS
@@ -53,7 +52,6 @@ def getFilters():
 			MaximumObjectsFilter, ITKRelabelImageFilter, ITKInvertIntensityFilter,
 			ITKConfidenceConnectedFilter, ITKConnectedThresholdFilter,
 			ITKNeighborhoodConnectedThresholdFilter, ITKOtsuThresholdFilter]
-
 
 
 class MaskFilter(ProcessingFilter.ProcessingFilter):
@@ -105,8 +103,6 @@ class MaskFilter(ProcessingFilter.ProcessingFilter):
 		"""			   
 		return [["", ("OutputValue", )]]
 
-
-
 	def execute(self, inputs, update = 0, last = 0):
 		"""
 		Created: 15.04.2006, KP
@@ -141,6 +137,7 @@ class MaskFilter(ProcessingFilter.ProcessingFilter):
 			self.vtkfilter.Update()
 		return self.vtkfilter.GetOutput()
 
+
 class ITKWatershedSegmentationFilter(ProcessingFilter.ProcessingFilter):
 	"""
 	Created: 13.04.2006, KP
@@ -170,7 +167,6 @@ class ITKWatershedSegmentationFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		return scripting.COLOR_INTERMEDIATE
 		
-			
 	def getDefaultValue(self, parameter):
 		"""
 		Created: 15.04.2006, KP
@@ -189,14 +185,12 @@ class ITKWatershedSegmentationFilter(ProcessingFilter.ProcessingFilter):
 		"""	   
 		return types.FloatType
 		
-		
 	def getParameters(self):
 		"""
 		Created: 15.04.2006, KP
 		Description: Return the list of parameters needed for configuring this GUI
 		"""			   
 		return [["", ("Threshold", "Level")]]
-
 
 	def execute(self, inputs, update = 0, last = 0):
 		"""
@@ -263,7 +257,6 @@ class ConnectedComponentFilter(ProcessingFilter.ProcessingFilter):
 		"""	   
 		return types.IntType
 		
-		
 	def getParameters(self):
 		"""
 		Created: 15.04.2006, KP
@@ -279,7 +272,6 @@ class ConnectedComponentFilter(ProcessingFilter.ProcessingFilter):
 		"""		   
 		if self.origCtf:			
 			self.dataUnit.getSettings().set("ColorTransferFunction", self.origCtf)			  
-			
 	
 	def execute(self, inputs, update = 0, last = 0):
 		"""
@@ -327,6 +319,7 @@ class ConnectedComponentFilter(ProcessingFilter.ProcessingFilter):
 			settings.set("PaletteColors", n)
 		return data
 
+
 class MaximumObjectsFilter(ProcessingFilter.ProcessingFilter):
 	"""
 	Created: 12.07.2006, KP
@@ -371,7 +364,6 @@ class MaximumObjectsFilter(ProcessingFilter.ProcessingFilter):
 		"""	   
 		return types.IntType
 		
-		
 	def getParameters(self):
 		"""
 		Created: 15.04.2006, KP
@@ -379,8 +371,6 @@ class MaximumObjectsFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		return [["", ("MinSize", )]]
 		
-
-
 	def execute(self, inputs, update = 0, last = 0):
 		"""
 		Created: 15.04.2006, KP
@@ -433,7 +423,6 @@ class ITKRelabelImageFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		return scripting.COLOR_INTERMEDIATE
 
-			
 	def getDefaultValue(self, parameter):
 		"""
 		Created: 15.04.2006, KP
@@ -448,14 +437,12 @@ class ITKRelabelImageFilter(ProcessingFilter.ProcessingFilter):
 		"""	   
 		return types.IntType
 		
-		
 	def getParameters(self):
 		"""
 		Created: 15.04.2006, KP
 		Description: Return the list of parameters needed for configuring this GUI
 		"""			   
 		return [["Minimum object size (in pixels)", ("Threshold", )]]
-
 
 	def execute(self, inputs, update = 0, last = 0):
 		"""
@@ -474,12 +461,12 @@ class ITKRelabelImageFilter(ProcessingFilter.ProcessingFilter):
 		th = self.parameters["Threshold"]
 		self.itkfilter.SetMinimumObjectSize(th)
 
-
 		data = self.itkfilter.GetOutput()
 				
 		self.itkfilter.Update()
 
 		return data
+
 
 class ITKInvertIntensityFilter(ProcessingFilter.ProcessingFilter):
 	"""
@@ -504,8 +491,7 @@ class ITKInvertIntensityFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 15.04.2006, KP
 		Description: Return the default value of a parameter
-		"""	   
-
+		"""
 		return 0
 		
 	def getType(self, parameter):
@@ -515,14 +501,12 @@ class ITKInvertIntensityFilter(ProcessingFilter.ProcessingFilter):
 		"""	   
 		return types.IntType
 		
-		
 	def getParameters(self):
 		"""
 		Created: 15.04.2006, KP
 		Description: Return the list of parameters needed for configuring this GUI
 		"""			   
 		return []
-
 
 	def execute(self, inputs, update = 0, last = 0):
 		"""
@@ -543,8 +527,7 @@ class ITKInvertIntensityFilter(ProcessingFilter.ProcessingFilter):
 		#self.setImageType("UL3")
 
 		data = self.itkfilter.GetOutput()			 
-		
-		
+				
 		self.itkfilter.Update()
 		
 		return data
@@ -583,7 +566,6 @@ class ITKConfidenceConnectedFilter(ProcessingFilter.ProcessingFilter):
 		if parameter == "Neighborhood":
 			return scripting.COLOR_INTERMEDIATE
 		
-		
 		return scripting.COLOR_BEGINNER			   
 			
 	def getDefaultValue(self, parameter):
@@ -600,7 +582,6 @@ class ITKConfidenceConnectedFilter(ProcessingFilter.ProcessingFilter):
 		elif parameter == "Neighborhood":
 			return 2
 			
-		
 	def getType(self, parameter):
 		"""
 		Created: 26.05.2006, KP
@@ -615,7 +596,6 @@ class ITKConfidenceConnectedFilter(ProcessingFilter.ProcessingFilter):
 		elif parameter == "Neighborhood":
 			return types.IntType
 			
-			
 	def getParameters(self):
 		"""
 		Created: 15.04.2006, KP
@@ -623,7 +603,6 @@ class ITKConfidenceConnectedFilter(ProcessingFilter.ProcessingFilter):
 		"""			   
 		return [["Seed", (("Seed", ), )],
 		["Segmentation", ("Neighborhood", "Multiplier", "Iterations")]]
-
 
 	def execute(self, inputs, update = 0, last = 0):
 		"""
@@ -661,6 +640,7 @@ class ITKConfidenceConnectedFilter(ProcessingFilter.ProcessingFilter):
 
 		return data			   
 
+
 class ITKConnectedThresholdFilter(ProcessingFilter.ProcessingFilter):
 	"""
 	Created: 26.05.2006, KP
@@ -683,7 +663,6 @@ class ITKConnectedThresholdFilter(ProcessingFilter.ProcessingFilter):
 		uc3 = itk.Image.UC3
 		self.itkfilter = itk.ConnectedThresholdImageFilter[uc3, uc3].New()
 
-			
 	def getDefaultValue(self, parameter):
 		"""
 		Created: 26.05.2006, KP
@@ -712,7 +691,6 @@ class ITKConnectedThresholdFilter(ProcessingFilter.ProcessingFilter):
 		"""			   
 		return [["Seed", (("Seed", ), )],
 		["Threshold", (("Lower", "Upper"), )]]
-
 
 	def execute(self, inputs, update = 0, last = 0):
 		"""
@@ -748,6 +726,7 @@ class ITKConnectedThresholdFilter(ProcessingFilter.ProcessingFilter):
 		#	 return self.convertITKtoVTK(data,imagetype="UC3")
 			
 		return data		 
+
 		
 class ITKNeighborhoodConnectedThresholdFilter(ProcessingFilter.ProcessingFilter):
 	"""
@@ -782,7 +761,6 @@ class ITKNeighborhoodConnectedThresholdFilter(ProcessingFilter.ProcessingFilter)
 		if parameter in ["RadiusX", "RadiusY", "RadiusZ"]:
 			return scripting.COLOR_INTERMEDIATE
 		
-		
 		return scripting.COLOR_BEGINNER						   
 		
 	def getDefaultValue(self, parameter):
@@ -799,7 +777,6 @@ class ITKNeighborhoodConnectedThresholdFilter(ProcessingFilter.ProcessingFilter)
 		elif parameter in ["RadiusX", "RadiusY"]:
 			return 2
 		return 1
-			
 		
 	def getType(self, parameter):
 		"""
@@ -820,7 +797,6 @@ class ITKNeighborhoodConnectedThresholdFilter(ProcessingFilter.ProcessingFilter)
 		return [["Seed", (("Seed", ), )],
 		["Threshold", (("Lower", "Upper"), )],
 		["Neighborhood", ("RadiusX", "RadiusY", "RadiusZ")]]
-
 
 	def execute(self, inputs, update = 0, last = 0):
 		"""
@@ -861,6 +837,7 @@ class ITKNeighborhoodConnectedThresholdFilter(ProcessingFilter.ProcessingFilter)
 			
 		return data			   
 
+
 class ITKOtsuThresholdFilter(ProcessingFilter.ProcessingFilter):
 	"""
 	Created: 26.05.2006, KP
@@ -876,14 +853,12 @@ class ITKOtsuThresholdFilter(ProcessingFilter.ProcessingFilter):
 		"""		   
 		ProcessingFilter.ProcessingFilter.__init__(self, inputs)
 		
-		
 		self.descs = {"Upper": "Upper threshold", "Lower": "Lower threshold"}
 		self.itkFlag = 1
 		
 		uc3 = itk.Image.UC3
 		self.itkfilter = itk.OtsuThresholdImageFilter[uc3, uc3].New()
 
-			
 	def getDefaultValue(self, parameter):
 		"""
 		Created: 26.05.2006, KP
@@ -905,7 +880,6 @@ class ITKOtsuThresholdFilter(ProcessingFilter.ProcessingFilter):
 		Description: Return the list of parameters needed for configuring this GUI
 		"""   
 		return [["Threshold", (("Lower", "Upper"), )]]
-
 
 	def execute(self, inputs, update = 0, last = 0):
 		"""

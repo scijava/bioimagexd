@@ -86,14 +86,12 @@ class IntensityMeasurementList(wx.ListCtrl):
 		
 		self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.OnItemSelected)
 
-
 	def setMeasurements(self, measurements):
 		self.measurements = measurements
 		
 	def OnItemSelected(self, event):
 		self.currentItem = event.m_itemIndex
 
-		
 	def getColumnText(self, index, col):
 		item = self.GetItem(index, col)
 		return item.GetText()
@@ -152,10 +150,6 @@ def getFilterList():
     return filterlist
 
 
-
-
-
-
 class SolitaryFilter(ProcessingFilter.ProcessingFilter):
 	"""
 	Created: 13.04.2006, KP
@@ -206,7 +200,6 @@ class SolitaryFilter(ProcessingFilter.ProcessingFilter):
 			return Thresholdhelp
 		return ""
 		
-		
 	def getType(self, parameter):
 		"""
 		Created: 15.04.2006, KP
@@ -222,7 +215,6 @@ class SolitaryFilter(ProcessingFilter.ProcessingFilter):
 		"""     
 		return 0
 		
-
 	def execute(self, inputs, update = 0, last = 0):
 		"""
 		Created: 15.04.2006, KP
@@ -241,6 +233,7 @@ class SolitaryFilter(ProcessingFilter.ProcessingFilter):
 		if update:
 			self.vtkfilter.Update()
 		return self.vtkfilter.GetOutput()      
+
 
 class GaussianSmoothFilter(ProcessingFilter.ProcessingFilter):
 	"""
@@ -278,8 +271,6 @@ class GaussianSmoothFilter(ProcessingFilter.ProcessingFilter):
 		"""    
 		return self.descs[parameter]
  
-		
-		
 	def getType(self, parameter):
 		"""
 		Created: 15.11.2006, KP
@@ -324,6 +315,7 @@ class GaussianSmoothFilter(ProcessingFilter.ProcessingFilter):
 		if update:
 			self.vtkfilter.Update()
 		return self.vtkfilter.GetOutput()              
+
 		
 class ShiftScaleFilter(ProcessingFilter.ProcessingFilter):
 	"""
@@ -365,7 +357,6 @@ class ShiftScaleFilter(ProcessingFilter.ProcessingFilter):
 		""" 
 		return ""
 		
-		
 	def getType(self, parameter):
 		"""
 		Created: 15.04.2006, KP
@@ -385,7 +376,6 @@ class ShiftScaleFilter(ProcessingFilter.ProcessingFilter):
 			return 0
 		return 1
 		
-
 	def execute(self, inputs, update = 0, last = 0):
 		"""
 		Created: 15.04.2006, KP
@@ -416,7 +406,6 @@ class ShiftScaleFilter(ProcessingFilter.ProcessingFilter):
 		if update:
 			self.vtkfilter.Update()
 		return self.vtkfilter.GetOutput()    
-		
 		
 		
 class ExtractComponentFilter(ProcessingFilter.ProcessingFilter):
@@ -486,7 +475,6 @@ class ExtractComponentFilter(ProcessingFilter.ProcessingFilter):
 		if parameter == "Component3":
 			return 3
 		
-
 	def execute(self, inputs, update = 0, last = 0):
 		"""
 		Created: 15.04.2006, KP
@@ -513,8 +501,6 @@ class ExtractComponentFilter(ProcessingFilter.ProcessingFilter):
 		if update:
 			self.vtkfilter.Update()
 		return self.vtkfilter.GetOutput()    
-		
-		
 		
 		
 class TimepointCorrelationFilter(ProcessingFilter.ProcessingFilter):
@@ -559,7 +545,6 @@ class TimepointCorrelationFilter(ProcessingFilter.ProcessingFilter):
 			gui.sizer.Add(box, (1, 0), flag = wx.EXPAND | wx.LEFT | wx.RIGHT)
 		return gui
 		
-		
 	def getType(self, parameter):
 		"""
 		Created: 31.07.2006, KP
@@ -575,7 +560,6 @@ class TimepointCorrelationFilter(ProcessingFilter.ProcessingFilter):
 		if parameter == "Timepoint1":
 			return 0
 		return 1
-		
 		
 	def getRange(self, parameter):
 		"""
@@ -614,10 +598,10 @@ class TimepointCorrelationFilter(ProcessingFilter.ProcessingFilter):
 	   
 		#print "Using ",image
 		
-
 		self.vtkfilter.Update()
 		self.corrLbl2.SetLabel("%.5f" % self.vtkfilter.GetPearsonWholeImage())
 		return self.getInput(1)
+
 		
 class ROIIntensityFilter(ProcessingFilter.ProcessingFilter):
 	"""
@@ -655,7 +639,6 @@ class ROIIntensityFilter(ProcessingFilter.ProcessingFilter):
 		"""            
 		return [["", ("ROI", "AllROIs","SecondInput")]]
 		
-		
 	def getGUI(self, parent, taskPanel):
 		"""
 		Created: 31.07.2006, KP
@@ -670,7 +653,6 @@ class ROIIntensityFilter(ProcessingFilter.ProcessingFilter):
 			gui.sizer.Add(self.reportGUI, (1, 0), flag = wx.EXPAND | wx.ALL)
 			
 		return gui
-		
 		
 	def getType(self, parameter):
 		"""
@@ -764,10 +746,6 @@ class ROIIntensityFilter(ProcessingFilter.ProcessingFilter):
 		return imagedata
 
 
-
-
-
-
 class GradientFilter(ProcessingFilter.ProcessingFilter):
 	"""
 	Created: 13.04.2006, KP
@@ -807,6 +785,7 @@ class GradientFilter(ProcessingFilter.ProcessingFilter):
 			self.vtkfilter.Update()
 		return self.vtkfilter.GetOutput()            
 
+
 class GradientMagnitudeFilter(ProcessingFilter.ProcessingFilter):
 	"""
 	Created: 13.04.2006, KP
@@ -815,6 +794,7 @@ class GradientMagnitudeFilter(ProcessingFilter.ProcessingFilter):
 	name = "Gradient magnitude"
 	category = FEATUREDETECTION
 	level = scripting.COLOR_BEGINNER
+
 	def __init__(self, inputs = (1, 1)):
 		"""
 		Created: 13.04.2006, KP
@@ -846,7 +826,6 @@ class GradientMagnitudeFilter(ProcessingFilter.ProcessingFilter):
 		if update:
 			self.vtkfilter.Update()
 		return self.vtkfilter.GetOutput()            
-
 
 		
 class ITKAnisotropicDiffusionFilter(ProcessingFilter.ProcessingFilter):
@@ -899,14 +878,12 @@ class ITKAnisotropicDiffusionFilter(ProcessingFilter.ProcessingFilter):
 			return types.FloatType
 		return types.IntType
 		
-		
 	def getParameters(self):
 		"""
 		Created: 15.04.2006, KP
 		Description: Return the list of parameters needed for configuring this GUI
 		"""            
 		return [["", ("TimeStep", "Conductance", "Iterations")]]
-
 
 	def execute(self, inputs, update = 0, last = 0):
 		"""
@@ -930,6 +907,7 @@ class ITKAnisotropicDiffusionFilter(ProcessingFilter.ProcessingFilter):
 			self.itkfilter.Update()
 		return self.itkfilter.GetOutput()            
 
+
 class ITKGradientMagnitudeFilter(ProcessingFilter.ProcessingFilter):
 	"""
 	Created: 13.04.2006, KP
@@ -947,7 +925,6 @@ class ITKGradientMagnitudeFilter(ProcessingFilter.ProcessingFilter):
 		self.eventDesc = "Performing edge detection (gradient magnitude)"
 		self.itkFlag = 1
 		self.itkfilter = None
-		
 		
 	def getParameters(self):
 		"""
@@ -971,11 +948,11 @@ class ITKGradientMagnitudeFilter(ProcessingFilter.ProcessingFilter):
 
 		self.itkfilter.SetInput(image)
 		
-		
 		if update:
 			self.itkfilter.Update()
 		data = self.itkfilter.GetOutput()
 		return data            
+
 
 class ITKCannyEdgeFilter(ProcessingFilter.ProcessingFilter):
 	"""
@@ -1023,8 +1000,7 @@ class ITKCannyEdgeFilter(ProcessingFilter.ProcessingFilter):
 			self.itkfilter = itk.CannyEdgeDetectionImageFilter[image, image].New()
 
 		self.itkfilter.SetInput(image)
-		
-			
+				
 		if update:
 			self.itkfilter.Update()
 		data = self.itkfilter.GetOutput()
@@ -1066,6 +1042,7 @@ class ITKSigmoidFilter(ProcessingFilter.ProcessingFilter):
 		"""            
 		return [["Data range", ("Minimum", "Maximum")],
 		]        
+
 	def getDefaultValue(self, parameter):
 		"""
 		Created: 15.04.2006, KP
@@ -1085,7 +1062,6 @@ class ITKSigmoidFilter(ProcessingFilter.ProcessingFilter):
 		Description: Return the type of the parameter
 		"""    
 		return types.FloatType
-
 
 	def execute(self, inputs, update = 0, last = 0):
 		"""
@@ -1108,8 +1084,6 @@ class ITKSigmoidFilter(ProcessingFilter.ProcessingFilter):
 		return data            
 
 
-
-
 class ITKLocalMaximumFilter(ProcessingFilter.ProcessingFilter):
 	"""
 	Created: 29.05.2006, KP
@@ -1122,14 +1096,11 @@ class ITKLocalMaximumFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 26.05.2006, KP
 		Description: Initialization
-		"""        
+		"""
 		ProcessingFilter.ProcessingFilter.__init__(self, inputs)
-		
-		
 		self.descs = {"Connectivity": "Use 8 neighbors for connectivity"}
 		self.itkFlag = 1
-		
-			
+				
 	def getDefaultValue(self, parameter):
 		"""
 		Created: 26.05.2006, KP
@@ -1138,6 +1109,7 @@ class ITKLocalMaximumFilter(ProcessingFilter.ProcessingFilter):
 		if parameter == "Connectivity":
 			return 1
 		return 0
+
 	def getType(self, parameter):
 		"""
 		Created: 26.05.2006, KP
@@ -1164,8 +1136,7 @@ class ITKLocalMaximumFilter(ProcessingFilter.ProcessingFilter):
 		image = self.getInput(1)
 #        print "Using as input",image
 		image = self.convertVTKtoITK(image)
-		
-		
+			
 		uc3 = itk.Image.UC3
 		shift = itk.ShiftScaleImageFilter[uc3, uc3].New()
 		recons = itk.ReconstructionByDilationImageFilter[uc3, uc3].New()

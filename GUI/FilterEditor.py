@@ -146,7 +146,7 @@ class FilterEditor(wx.Panel):
 
 		MP = self.filtersModule
 		f = lambda evt, btn = self.addFilteringBtn, \
-					cats = (lib.FilterTypes.FILTERING, lib.FilterTypes.FEATUREDETECTION): \
+					cats = (lib.FilterTypes.FILTERING, lib.FilterTypes.FEATUREDETECTION, lib.FilterTypes.MORPHOLOGICAL): \
 					self.onShowAddMenu(evt, btn, cats)
 		self.addFilteringBtn.Bind(wx.EVT_LEFT_DOWN, f)
 		
