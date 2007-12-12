@@ -116,7 +116,7 @@ def getFilters():
     Created: 10.8.2007, SS
     Description: This function returns all the filter-classes in this module and is used by ManipulationFilters.getFilterList()
     """
-    return [ErodeFilter, VarianceFilter, DilateFilter, RangeFilter,
+    return [DilateFilter, ErodeFilter, VarianceFilter, RangeFilter,
             SobelFilter, HybridMedianFilter, MedianFilter]
 
 
@@ -141,7 +141,7 @@ class ErodeFilter(MorphologicalFilter):
 class VarianceFilter(MorphologicalFilter):
 	"""
 	Created: 13.04.2006, KP
-	Description: An erosion filter
+	Description: Variance filter
 	"""     
 	name = "Variance 3D"
 	category = MORPHOLOGICAL
