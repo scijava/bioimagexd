@@ -39,13 +39,10 @@ __version__ = "$Revision: 1.22 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 import lib.RenderingInterface
-#import UrmasControl
 import Logging
 import time
 import GUI.Dialogs
-#import wx
 import lib.messenger
-#import Interpolation
 import vtk
 import math
 
@@ -179,7 +176,6 @@ class UrmasRenderer:
 		
 	def render(self, control, preview = 0, **kws):
 		"""
-		Class: Render(control)
 		Created: 04.04.2005, KP
 		Description: Render the timeline
 		"""    
@@ -328,7 +324,6 @@ class UrmasRenderer:
 		
 		if self.renderingInterface.visualizer.mode == "3d":
 			self.renwin = self.renderingInterface.getRenderWindow() 
-#            print "self.renwin=",self.renwin
 			self.ren = self.renderingInterface.getRenderer()
 			self.cam = self.ren.GetActiveCamera()
 			do_use_cam = 1

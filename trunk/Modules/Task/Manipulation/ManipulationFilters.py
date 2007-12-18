@@ -8,7 +8,7 @@
 
  A module containing classes representing the filters available in ManipulationPanelC
 							
- Copyright (C) 2005  BioImageXD Project
+ Copyright (C) 2005	 BioImageXD Project
  See CREDITS.txt for details
 
  This program is free software; you can redistribute it and/or modify
@@ -124,37 +124,37 @@ class IntensityMeasurementList(wx.ListCtrl):
 			return None
 
 def getFilters():
-    """
-    Created: 10.8.2007, SS
-    Description: This function returns all the filter-classes in this module and is used by ManipulationFilters.getFilterList()
-    """
-    return [SolitaryFilter, GaussianSmoothFilter,
-            ShiftScaleFilter, ExtractComponentFilter, TimepointCorrelationFilter,
-            ROIIntensityFilter, GradientFilter, GradientMagnitudeFilter,
-            ITKAnisotropicDiffusionFilter, ITKGradientMagnitudeFilter,
-            ITKCannyEdgeFilter, ITKSigmoidFilter, ITKLocalMaximumFilter]
+	"""
+	Created: 10.8.2007, SS
+	Description: This function returns all the filter-classes in this module and is used by ManipulationFilters.getFilterList()
+	"""
+	return [SolitaryFilter, GaussianSmoothFilter,
+			ShiftScaleFilter, TimepointCorrelationFilter,
+			ROIIntensityFilter, GradientFilter, GradientMagnitudeFilter,
+			ITKAnisotropicDiffusionFilter, ITKGradientMagnitudeFilter,
+			ITKCannyEdgeFilter, ITKSigmoidFilter, ITKLocalMaximumFilter]
 
 # fixed getFilterList() so that unnecessary wildcard imports could be removed, 10.8.2007 SS
 def getFilterList():
-    """
-    Created: KP
-    Modified: 10.8.2007, SS
-    Description: This function returns the filter-classes from all filter-modules
-    """
-    filterlist = getFilters()
-    filterlist += MathFilters.getFilters()
-    filterlist += SegmentationFilters.getFilters()
-    filterlist += MorphologicalFilters.getFilters()
-    filterlist += TrackingFilters.getFilters()
-    filterlist += RegistrationFilters.getFilters()
-    return filterlist
+	"""
+	Created: KP
+	Modified: 10.8.2007, SS
+	Description: This function returns the filter-classes from all filter-modules
+	"""
+	filterlist = getFilters()
+	filterlist += MathFilters.getFilters()
+	filterlist += SegmentationFilters.getFilters()
+	filterlist += MorphologicalFilters.getFilters()
+	filterlist += TrackingFilters.getFilters()
+	filterlist += RegistrationFilters.getFilters()
+	return filterlist
 
 
 class SolitaryFilter(ProcessingFilter.ProcessingFilter):
 	"""
 	Created: 13.04.2006, KP
 	Description: A filter for removing solitary noise pixels
-	"""     
+	"""		
 	name = "Solitary filter"
 	category = FILTERING
 	
@@ -162,7 +162,7 @@ class SolitaryFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 13.04.2006, KP
 		Description: Initialization
-		"""        
+		"""		   
 		ProcessingFilter.ProcessingFilter.__init__(self, (1, 1))
 		self.vtkfilter = vtkbxd.vtkImageSolitaryFilter()
 		self.vtkfilter.AddObserver("ProgressEvent", self.updateProgress)
@@ -173,14 +173,14 @@ class SolitaryFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 15.04.2006, KP
 		Description: Return the list of parameters needed for configuring this GUI
-		"""            
+		"""			   
 		return [ "Thresholds:", ["", ("HorizontalThreshold", "VerticalThreshold", "ProcessingThreshold")]]
 		
 	def getDesc(self, parameter):
 		"""
 		Created: 15.04.2006, KP
 		Description: Return the description of the parameter
-		"""    
+		"""	   
 		return self.descs[parameter]
 		
 	def getLongDesc(self, parameter):
@@ -204,7 +204,7 @@ class SolitaryFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 15.04.2006, KP
 		Description: Return the type of the parameter
-		"""    
+		"""	   
 		if parameter in ["HorizontalThreshold", "VerticalThreshold", "ProcessingThreshold"]:
 			return types.IntType
 		
@@ -212,14 +212,14 @@ class SolitaryFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 15.04.2006, KP
 		Description: Return the default value of a parameter
-		"""     
+		"""		
 		return 0
 		
 	def execute(self, inputs, update = 0, last = 0):
 		"""
 		Created: 15.04.2006, KP
 		Description: Execute the filter with given inputs and return the output
-		"""            
+		"""			   
 		if not ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
 		
@@ -232,14 +232,14 @@ class SolitaryFilter(ProcessingFilter.ProcessingFilter):
 		
 		if update:
 			self.vtkfilter.Update()
-		return self.vtkfilter.GetOutput()      
+		return self.vtkfilter.GetOutput()	   
 
 
 class GaussianSmoothFilter(ProcessingFilter.ProcessingFilter):
 	"""
 	Created: 15.11.2006, KP
 	Description: A gaussian smoothing filter
-	"""     
+	"""		
 	name = "Gaussian smooth"
 	category = FILTERING
 	
@@ -247,7 +247,7 @@ class GaussianSmoothFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 15.11.2006, KP
 		Description: Initialization
-		"""        
+		"""		   
 		ProcessingFilter.ProcessingFilter.__init__(self, (1, 1))
 		self.vtkfilter = vtk.vtkImageGaussianSmooth()
 		self.eventDesc = "Performing gaussian smoothing"
@@ -259,7 +259,7 @@ class GaussianSmoothFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 15.11.2006, KP
 		Description: Return the list of parameters needed for configuring this GUI
-		"""            
+		"""			   
 		return [ "Radius factor:", ["", ("RadiusX", "RadiusY", "RadiusZ")],
 		["", ("Dimensionality", )]
 		]
@@ -268,14 +268,14 @@ class GaussianSmoothFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 15.11.2006, KP
 		Description: Return the description of the parameter
-		"""    
+		"""	   
 		return self.descs[parameter]
  
 	def getType(self, parameter):
 		"""
 		Created: 15.11.2006, KP
 		Description: Return the type of the parameter
-		"""    
+		"""	   
 		if parameter in ["RadiusX", "RadiusY", "RadiusZ"]:
 			return types.FloatType
 		return GUIBuilder.SPINCTRL
@@ -284,7 +284,7 @@ class GaussianSmoothFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 15.11.2006, KP
 		Description: Return the default value of a parameter
-		"""     
+		"""		
 		if parameter == "Dimensionality":
 			return 3
 		return 1.5
@@ -300,7 +300,7 @@ class GaussianSmoothFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 15.11.2006, KP
 		Description: Execute the filter with given inputs and return the output
-		"""            
+		"""			   
 		if not ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
 		
@@ -314,14 +314,14 @@ class GaussianSmoothFilter(ProcessingFilter.ProcessingFilter):
 		
 		if update:
 			self.vtkfilter.Update()
-		return self.vtkfilter.GetOutput()              
+		return self.vtkfilter.GetOutput()			   
 
 		
 class ShiftScaleFilter(ProcessingFilter.ProcessingFilter):
 	"""
 	Created: 13.04.2006, KP
 	Description: A filter for shifting the values of dataset by constant and scaling by a constant
-	"""     
+	"""		
 	name = "Shift and Scale"
 	category = MATH
 	
@@ -329,7 +329,7 @@ class ShiftScaleFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 13.04.2006, KP
 		Description: Initialization
-		"""        
+		"""		   
 		ProcessingFilter.ProcessingFilter.__init__(self, (1, 1))
 		self.vtkfilter = vtk.vtkImageShiftScale()
 		self.vtkfilter.AddObserver("ProgressEvent", self.updateProgress)
@@ -340,14 +340,14 @@ class ShiftScaleFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 15.04.2006, KP
 		Description: Return the list of parameters needed for configuring this GUI
-		"""            
+		"""			   
 		return [["", ("Shift", "Scale", "AutoScale")]]
 		
 	def getDesc(self, parameter):
 		"""
 		Created: 15.04.2006, KP
 		Description: Return the description of the parameter
-		"""    
+		"""	   
 		return self.descs[parameter]
 		
 	def getLongDesc(self, parameter):
@@ -361,7 +361,7 @@ class ShiftScaleFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 15.04.2006, KP
 		Description: Return the type of the parameter
-		"""    
+		"""	   
 		if parameter in ["Shift", "Scale"]:
 			return types.FloatType
 		elif parameter == "AutoScale":
@@ -371,7 +371,7 @@ class ShiftScaleFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 15.04.2006, KP
 		Description: Return the default value of a parameter
-		"""     
+		"""		
 		if parameter in ["Shift", "Scale"]:
 			return 0
 		return 1
@@ -380,7 +380,7 @@ class ShiftScaleFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 15.04.2006, KP
 		Description: Execute the filter with given inputs and return the output
-		"""            
+		"""			   
 		if not ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
 		
@@ -405,109 +405,16 @@ class ShiftScaleFilter(ProcessingFilter.ProcessingFilter):
 		
 		if update:
 			self.vtkfilter.Update()
-		return self.vtkfilter.GetOutput()    
+		return self.vtkfilter.GetOutput()	 
 		
 		
-class ExtractComponentFilter(ProcessingFilter.ProcessingFilter):
-	"""
-	Created: 21.01.2007, KP
-	Description: A filter for extracting component or components from a dataset
-	"""     
-	name = "Extract components"
-	category = FILTERING
-	
-	def __init__(self):
-		"""
-		Created: 21.01.2007, KP
-		Description: Initialization
-		"""        
-		ProcessingFilter.ProcessingFilter.__init__(self, (1, 1))
-		self.vtkfilter = vtk.vtkImageExtractComponents()
-		self.vtkfilter.AddObserver("ProgressEvent", self.updateProgress)
-		
-		self.descs = {"Component1": "Component #1", "Component2": "Component #2", "Component3": "Component #3"}
-	
-	def getParameters(self):
-		"""
-		Created: 21.01.2007, KP
-		Description: Return the list of parameters needed for configuring this GUI
-		"""            
-		return [["", ("Component1", "Component2", "Component3")]]
-		
-	def getDesc(self, parameter):
-		"""
-		Created: 21.01.2007, KP
-		Description: Return the description of the parameter
-		"""    
-		return self.descs[parameter]
-		
-	def getLongDesc(self, parameter):
-		"""
-		Created: 21.01.2007, KP
-		Description: Return a long description of the parameter
-		""" 
-		return ""
-		
-	def getRange(self, parameter):
-		"""
-		Created: 21.01.2007, KP
-		Description: return the range of values for given parameter
-		"""
-		return ["No output", "R (component 1)", "G (component 2)", "B (component 3)"]
-		
-	def getType(self, parameter):
-		"""
-		Created: 21.01.2007, KP
-		Description: Return the type of the parameter
-		"""    
-		if parameter in ["Component1", "Component2", "Component3"]:
-			return GUIBuilder.CHOICE
-		
-	def getDefaultValue(self, parameter):
-		"""
-		Created: 21.01.2007, KP
-		Description: Return the default value of a parameter
-		"""     
-		if parameter == "Component1":
-			return 1
-		if parameter == "Component2":
-			return 2
-		if parameter == "Component3":
-			return 3
-		
-	def execute(self, inputs, update = 0, last = 0):
-		"""
-		Created: 15.04.2006, KP
-		Description: Execute the filter with given inputs and return the output
-		"""            
-		if not ProcessingFilter.ProcessingFilter.execute(self, inputs):
-			return None
-		
-		image = self.getInput(1)
-		#print "Using ",image
-		self.vtkfilter.SetInput(image)
-		
-		cmps = []
-		cmps.append(self.parameters["Component1"])
-		cmps.append(self.parameters["Component2"])
-		cmps.append(self.parameters["Component3"])
-		while 0 in cmps:
-			cmps.remove(0)
-		cmps = [x - 1 for x in cmps]
-		t = tuple(cmps)
-		print "Extracting components", t
-		self.vtkfilter.SetComponents(*t)            
-		
-		if update:
-			self.vtkfilter.Update()
-		return self.vtkfilter.GetOutput()    
-		
+
 		
 class TimepointCorrelationFilter(ProcessingFilter.ProcessingFilter):
 	"""
 	Created: 31.07.2006, KP
 	Description: A filter for calculating the correlation between two timepoints
-	"""     
+	"""		
 	name = "Timepoint correlation"
 	category = MEASUREMENT
 	
@@ -515,7 +422,7 @@ class TimepointCorrelationFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 31.07.2006, KP
 		Description: Initialization
-		"""        
+		"""		   
 		ProcessingFilter.ProcessingFilter.__init__(self, (1, 1))
 		
 		self.box = None
@@ -525,14 +432,14 @@ class TimepointCorrelationFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 31.07.2006, KP
 		Description: Return the list of parameters needed for configuring this GUI
-		"""            
+		"""			   
 		return [["", ("Timepoint1", "Timepoint2")]]
 		
 	def getGUI(self, parent, taskPanel):
 		"""
 		Created: 31.07.2006, KP
 		Description: Return the GUI for this filter
-		"""              
+		"""				 
 		gui = ProcessingFilter.ProcessingFilter.getGUI(self, parent, taskPanel)
 		if not self.box:
 			
@@ -549,14 +456,14 @@ class TimepointCorrelationFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 31.07.2006, KP
 		Description: Return the type of the parameter
-		"""    
+		"""	   
 		return GUIBuilder.SLICE
 		
 	def getDefaultValue(self, parameter):
 		"""
 		Created: 31.07.2006, KP
 		Description: Return the default value of a parameter
-		"""     
+		"""		
 		if parameter == "Timepoint1":
 			return 0
 		return 1
@@ -565,14 +472,14 @@ class TimepointCorrelationFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 31.07.2006, KP
 		Description: Return the range for the parameter
-		"""             
+		"""				
 		return (0, self.dataUnit.getNumberOfTimepoints())
 
 	def execute(self, inputs, update = 0, last = 0):
 		"""
 		Created: 31.07.2006, KP
 		Description: Execute the filter with given inputs and return the output
-		"""            
+		"""			   
 		if not ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
 		tp1 = self.parameters["Timepoint1"]
@@ -607,7 +514,7 @@ class ROIIntensityFilter(ProcessingFilter.ProcessingFilter):
 	"""
 	Created: 04.08.2006, KP
 	Description: A filter for calculating the volume, total and average intensity of a ROI
-	"""     
+	"""		
 	name = "Analyze ROIs"
 	category = MEASUREMENT
 	
@@ -615,7 +522,7 @@ class ROIIntensityFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 31.07.2006, KP
 		Description: Initialization
-		"""        
+		"""		   
 		ProcessingFilter.ProcessingFilter.__init__(self, (1, 2))
 	  
 		self.reportGUI = None
@@ -636,14 +543,14 @@ class ROIIntensityFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 31.07.2006, KP
 		Description: Return the list of parameters needed for configuring this GUI
-		"""            
+		"""			   
 		return [["", ("ROI", "AllROIs","SecondInput")]]
 		
 	def getGUI(self, parent, taskPanel):
 		"""
 		Created: 31.07.2006, KP
 		Description: Return the GUI for this filter
-		"""              
+		"""				 
 		gui = ProcessingFilter.ProcessingFilter.getGUI(self, parent, taskPanel)
 		if not self.reportGUI:
 			self.reportGUI = IntensityMeasurementList(self.gui, -1)
@@ -658,7 +565,7 @@ class ROIIntensityFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 31.07.2006, KP
 		Description: Return the type of the parameter
-		"""    
+		"""	   
 		if parameter == "ROI":
 			return GUIBuilder.ROISELECTION
 		return types.BooleanType
@@ -667,7 +574,7 @@ class ROIIntensityFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 31.07.2006, KP
 		Description: Return the default value of a parameter
-		"""     
+		"""		
 		if parameter == "SecondInput": return False
 		if parameter == "ROI":
 			n = scripting.visualizer.getRegionsOfInterest()
@@ -680,7 +587,7 @@ class ROIIntensityFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 31.07.2006, KP
 		Description: Execute the filter with given inputs and return the output
-		"""            
+		"""			   
 		if not ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
 		
@@ -693,7 +600,7 @@ class ROIIntensityFilter(ProcessingFilter.ProcessingFilter):
 		else:
 			rois = [self.getInput(2)]
 
-		imagedata =  self.getInput(1)
+		imagedata =	 self.getInput(1)
 		
 		mx, my, mz = self.dataUnit.getDimensions()
 		values = []
@@ -715,7 +622,7 @@ class ROIIntensityFilter(ProcessingFilter.ProcessingFilter):
 			else:
 				n, maskImage = lib.ImageOperations.getMaskFromROIs([mask], mx, my, mz)
 
-				itkLabel =  self.convertVTKtoITK(maskImage)
+				itkLabel =	self.convertVTKtoITK(maskImage)
 				statValues = [255]
 				roiName = mask.getName()
 			labelStats = itk.LabelStatisticsImageFilter[itkOrig, itkLabel].New()
@@ -730,8 +637,8 @@ class ROIIntensityFilter(ProcessingFilter.ProcessingFilter):
 				totint = labelStats.GetSum(statval)
 				maxval = labelStats.GetMaximum(statval)
 				minval = labelStats.GetMinimum(statval)
-	#            median = labelStats.GetMedian(255)
-	#            variance = labelStats.GetVariance(255)
+	#			 median = labelStats.GetMedian(255)
+	#			 variance = labelStats.GetVariance(255)
 				mean = labelStats.GetMean(statval)
 				sigma = labelStats.GetSigma(statval)
 				if not roiName:
@@ -750,7 +657,7 @@ class GradientFilter(ProcessingFilter.ProcessingFilter):
 	"""
 	Created: 13.04.2006, KP
 	Description: A class for calculating the gradient of the image
-	"""     
+	"""		
 	name = "Gradient"
 	category = MATH
 	
@@ -758,7 +665,7 @@ class GradientFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 13.04.2006, KP
 		Description: Initialization
-		"""        
+		"""		   
 		ProcessingFilter.ProcessingFilter.__init__(self, inputs)
 		self.vtkfilter = vtk.vtkImageGradient()
 		self.vtkfilter.SetDimensionality(3)
@@ -768,14 +675,14 @@ class GradientFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 15.04.2006, KP
 		Description: Return the list of parameters needed for configuring this GUI
-		"""            
+		"""			   
 		return []
 
 	def execute(self, inputs, update = 0, last = 0):
 		"""
 		Created: 15.04.2006, KP
 		Description: Execute the filter with given inputs and return the output
-		"""            
+		"""			   
 		if not ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
 		
@@ -783,14 +690,14 @@ class GradientFilter(ProcessingFilter.ProcessingFilter):
 			
 		if update:
 			self.vtkfilter.Update()
-		return self.vtkfilter.GetOutput()            
+		return self.vtkfilter.GetOutput()			 
 
 
 class GradientMagnitudeFilter(ProcessingFilter.ProcessingFilter):
 	"""
 	Created: 13.04.2006, KP
 	Description: A class for calculating the gradient magnitude of the image
-	"""     
+	"""		
 	name = "Gradient magnitude"
 	category = FEATUREDETECTION
 	level = scripting.COLOR_BEGINNER
@@ -799,7 +706,7 @@ class GradientMagnitudeFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 13.04.2006, KP
 		Description: Initialization
-		"""        
+		"""		   
 		ProcessingFilter.ProcessingFilter.__init__(self, inputs)
 		self.vtkfilter = vtk.vtkImageGradientMagnitude()
 		self.vtkfilter.SetDimensionality(3)
@@ -810,14 +717,14 @@ class GradientMagnitudeFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 15.04.2006, KP
 		Description: Return the list of parameters needed for configuring this GUI
-		"""            
+		"""			   
 		return []
 
 	def execute(self, inputs, update = 0, last = 0):
 		"""
 		Created: 15.04.2006, KP
 		Description: Execute the filter with given inputs and return the output
-		"""            
+		"""			   
 		if not ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
 		
@@ -825,14 +732,14 @@ class GradientMagnitudeFilter(ProcessingFilter.ProcessingFilter):
 			
 		if update:
 			self.vtkfilter.Update()
-		return self.vtkfilter.GetOutput()            
+		return self.vtkfilter.GetOutput()			 
 
 		
 class ITKAnisotropicDiffusionFilter(ProcessingFilter.ProcessingFilter):
 	"""
 	Created: 13.04.2006, KP
 	Description: A class for doing anisotropic diffusion on ITK
-	"""     
+	"""		
 	name = "Gradient anisotropic diffusion (ITK)"
 	category = FILTERING
 	
@@ -840,7 +747,7 @@ class ITKAnisotropicDiffusionFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 13.04.2006, KP
 		Description: Initialization
-		"""        
+		"""		   
 		ProcessingFilter.ProcessingFilter.__init__(self, inputs)
 		
 		self.eventDesc = "Performing edge preserving smoothing (gradient anisotropic diffusion)"
@@ -860,7 +767,7 @@ class ITKAnisotropicDiffusionFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 15.04.2006, KP
 		Description: Return the default value of a parameter
-		"""    
+		"""	   
 		if parameter == "TimeStep":
 			return 0.0630
 		if parameter == "Conductance":
@@ -873,7 +780,7 @@ class ITKAnisotropicDiffusionFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 13.04.2006, KP
 		Description: Return the type of the parameter
-		"""    
+		"""	   
 		if parameter in ["TimeStep", "Conductance"]:
 			return types.FloatType
 		return types.IntType
@@ -882,14 +789,14 @@ class ITKAnisotropicDiffusionFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 15.04.2006, KP
 		Description: Return the list of parameters needed for configuring this GUI
-		"""            
+		"""			   
 		return [["", ("TimeStep", "Conductance", "Iterations")]]
 
 	def execute(self, inputs, update = 0, last = 0):
 		"""
 		Created: 15.04.2006, KP
 		Description: Execute the filter with given inputs and return the output
-		"""                    
+		"""					   
 		if not ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
 			
@@ -905,14 +812,14 @@ class ITKAnisotropicDiffusionFilter(ProcessingFilter.ProcessingFilter):
 		
 		if update:
 			self.itkfilter.Update()
-		return self.itkfilter.GetOutput()            
+		return self.itkfilter.GetOutput()			 
 
 
 class ITKGradientMagnitudeFilter(ProcessingFilter.ProcessingFilter):
 	"""
 	Created: 13.04.2006, KP
 	Description: A class for calculating gradient magnitude on ITK
-	"""     
+	"""		
 	name = "Gradient magnitude (ITK)"
 	category = FEATUREDETECTION
 	
@@ -920,7 +827,7 @@ class ITKGradientMagnitudeFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 13.04.2006, KP
 		Description: Initialization
-		"""        
+		"""		   
 		ProcessingFilter.ProcessingFilter.__init__(self, inputs)
 		self.eventDesc = "Performing edge detection (gradient magnitude)"
 		self.itkFlag = 1
@@ -930,14 +837,14 @@ class ITKGradientMagnitudeFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 15.04.2006, KP
 		Description: Return the list of parameters needed for configuring this GUI
-		"""            
-		return []        
+		"""			   
+		return []		 
 
 	def execute(self, inputs, update = 0, last = 0):
 		"""
 		Created: 15.04.2006, KP
 		Description: Execute the filter with given inputs and return the output
-		"""                    
+		"""					   
 		if not ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
 			
@@ -951,14 +858,14 @@ class ITKGradientMagnitudeFilter(ProcessingFilter.ProcessingFilter):
 		if update:
 			self.itkfilter.Update()
 		data = self.itkfilter.GetOutput()
-		return data            
+		return data			   
 
 
 class ITKCannyEdgeFilter(ProcessingFilter.ProcessingFilter):
 	"""
 	Created: 13.04.2006, KP
 	Description: A class that uses the ITK canny edge detection filter
-	"""     
+	"""		
 	name = "Canny edge detection"
 	category = FEATUREDETECTION
 	
@@ -983,14 +890,14 @@ class ITKCannyEdgeFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 15.04.2006, KP
 		Description: Return the list of parameters needed for configuring this GUI
-		"""            
-		return []        
+		"""			   
+		return []		 
 
 	def execute(self, inputs, update = 0, last = 0):
 		"""
 		Created: 15.04.2006, KP
 		Description: Execute the filter with given inputs and return the output
-		"""                    
+		"""					   
 		if not ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
 			
@@ -1005,14 +912,14 @@ class ITKCannyEdgeFilter(ProcessingFilter.ProcessingFilter):
 			self.itkfilter.Update()
 		data = self.itkfilter.GetOutput()
 
-		return data            
+		return data			   
 
 
 class ITKSigmoidFilter(ProcessingFilter.ProcessingFilter):
 	"""
 	Created: 29.05.2006, KP
 	Description: A class for mapping an image data thru sigmoid image filter
-	"""     
+	"""		
 	name = "Sigmoid filter (ITK)" 
 	category = FILTERING
 	
@@ -1020,7 +927,7 @@ class ITKSigmoidFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 13.04.2006, KP
 		Description: Initialization
-		"""        
+		"""		   
 		ProcessingFilter.ProcessingFilter.__init__(self, inputs)
 		self.itkFlag = 1
 		self.descs = {"Minimum": "Minimum output value", "Maximum": "Maximum Output Value", \
@@ -1033,21 +940,21 @@ class ITKSigmoidFilter(ProcessingFilter.ProcessingFilter):
 		Created: 9.11.2006, KP
 		Description: Return the level of the given parameter
 		"""
-		return scripting.COLOR_EXPERIENCED                 
+		return scripting.COLOR_EXPERIENCED				   
 		
 	def getParameters(self):
 		"""
 		Created: 15.04.2006, KP
 		Description: Return the list of parameters needed for configuring this GUI
-		"""            
+		"""			   
 		return [["Data range", ("Minimum", "Maximum")],
-		]        
+		]		 
 
 	def getDefaultValue(self, parameter):
 		"""
 		Created: 15.04.2006, KP
 		Description: Return the default value of a parameter
-		"""    
+		"""	   
 		if parameter == "Minimum":
 			return 0.0
 		if parameter == "Maximum":
@@ -1060,14 +967,14 @@ class ITKSigmoidFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 13.04.2006, KP
 		Description: Return the type of the parameter
-		"""    
+		"""	   
 		return types.FloatType
 
 	def execute(self, inputs, update = 0, last = 0):
 		"""
 		Created: 15.04.2006, KP
 		Description: Execute the filter with given inputs and return the output
-		"""                    
+		"""					   
 		if not ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
 			
@@ -1081,14 +988,14 @@ class ITKSigmoidFilter(ProcessingFilter.ProcessingFilter):
 			self.itkfilter.Update()
 		data = self.itkfilter.GetOutput()
 
-		return data            
+		return data			   
 
 
 class ITKLocalMaximumFilter(ProcessingFilter.ProcessingFilter):
 	"""
 	Created: 29.05.2006, KP
 	Description: A class for finding the local maxima in an image
-	"""     
+	"""		
 	name = "Find local maxima"
 	category = FEATUREDETECTION
 	
@@ -1105,7 +1012,7 @@ class ITKLocalMaximumFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 26.05.2006, KP
 		Description: Return the default value of a parameter
-		"""   
+		"""	  
 		if parameter == "Connectivity":
 			return 1
 		return 0
@@ -1114,7 +1021,7 @@ class ITKLocalMaximumFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 26.05.2006, KP
 		Description: Return the type of the parameter
-		"""    
+		"""	   
 		if parameter in ["Connectivity"]:
 			return types.BooleanType
 				
@@ -1122,19 +1029,19 @@ class ITKLocalMaximumFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Created: 15.04.2006, KP
 		Description: Return the list of parameters needed for configuring this GUI
-		"""            
+		"""			   
 		return [["", ("Connectivity", )]]
 
 	def execute(self, inputs, update = 0, last = 0):
 		"""
 		Created: 15.04.2006, KP
 		Description: Execute the filter with given inputs and return the output
-		"""                    
+		"""					   
 		if not ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
 			
 		image = self.getInput(1)
-#        print "Using as input",image
+#		 print "Using as input",image
 		image = self.convertVTKtoITK(image)
 			
 		uc3 = itk.Image.UC3
@@ -1155,5 +1062,5 @@ class ITKLocalMaximumFilter(ProcessingFilter.ProcessingFilter):
 			
 		data = subst.GetOutput()
 
-		return data            
+		return data			   
 

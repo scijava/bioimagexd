@@ -57,6 +57,7 @@ record = 0
 conf = None
 
 
+TFLag = 1
 combinedDataUnit = None
 unhandledException=0
 app = None
