@@ -123,15 +123,18 @@ class Scatterplot(InteractivePanel.InteractivePanel):
 		self.menu.Check(self.ID_LOGARITHMIC, 1)
 		
 		self.menu.AppendSeparator()
+		
 		item = wx.MenuItem(self.menu, self.ID_SAVE_AS, "Save as...")
 		self.menu.AppendItem(item)
+		
 		item = wx.MenuItem(self.menu, self.ID_SAVE_WITH_LEGEND,"Save with legend...")
 		self.Bind(wx.EVT_MENU, self.onSaveScatterplot, id = self.ID_SAVE_AS)
 		self.Bind(wx.EVT_MENU, self.onSaveScatterplot, id = self.ID_SAVE_WITH_LEGEND)
-		self.Bind(wx.EVT_MENU, self.onSaveCSV, id = self.ID_SAVE_CSV)
 		self.menu.AppendItem(item)
-		item = wx.MenuItem(self.menu, self.ID_SAVE_CSV,"Save as CSV file...")
-		self.menu.AppendItem(item)
+		if not scripting.TFLag:
+			item = wx.MenuItem(self.menu, self.ID_SAVE_CSV,"Save as CSV file...")
+			self.menu.AppendItem(item)
+			self.Bind(wx.EVT_MENU, self.onSaveCSV, id = self.ID_SAVE_CSV)
 		
 		self.Bind(wx.EVT_LEFT_DOWN, self.markActionStart)
 		self.Bind(wx.EVT_MOTION, self.updateActionEnd)

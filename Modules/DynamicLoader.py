@@ -51,7 +51,7 @@ class PluginLoader:
 		self.mcache = {}
 		# One problem with ignore is that it does not care about the directory of the module.
 		# We can't load ModuleDir1/ModuleName.py and ignore ModuleDir2/ModuleName.py at the same time.
-		self.ignore = ["ScaleBar.py", "Spline.py", "ArbitrarySlicer.py"]
+		self.ignore = ["ScaleBar.py", "Spline.py", "ArbitrarySlicer.py","BioradDataSource.py","ExtractComponent.py"]
 		
 		self.moduleTypes = {"Filters":"*", "Task":"*"}
 		

@@ -51,6 +51,8 @@ import vtk
 import vtkbxd
 import wx #pylint gillar inte detta
 
+import scripting
+
 class MyListCtrl(wx.ListCtrl, listmix.TextEditMixin):
 
 	def __init__(self, parent, ID, pos = wx.DefaultPosition,
@@ -118,7 +120,7 @@ class ColocalizationPanel(TaskPanel):
 				  "PercentageVolumeCh2":(n + 6, 0, ss),
 #				   "PercentageMaterialCh2":(n+6,1,fs,100),
 				  "PercentageTotalCh1":(n + 7, 0, fs, 100),
-				  "PercentageTotalCh2":(n + 8, 0, fs, 100),					 
+				  "PercentageTotalCh2":(n + 8, 0, fs, 100),
 				  "PearsonWholeImage":(n + 9, 0, fs2),
 				  "PearsonImageAbove":(n + 10, 0, fs2),
 				  "PearsonImageBelow":(n + 11, 0, fs2),
@@ -140,6 +142,15 @@ class ColocalizationPanel(TaskPanel):
 				  "NumIterations":(n + 24, 0, ss)
 		}
 	 
+	 	if scripting.TFLag:
+	 		del mapping["DiffStainPercentageCh1"]
+	 		del mapping["DiffStainPercentageCh2"]
+	 		del mapping["DiffStainVoxelsCh1"]
+	 		del mapping["DiffStainVoxelsCh2"]
+	 		del mapping["RObserved"]
+	 		del mapping["RRandMean"]
+	 		del mapping["NumIterations"]
+	 		
 		sources = []
 		if self.dataUnit:
 			sources = self.dataUnit.getSourceDataUnits()
@@ -198,11 +209,11 @@ class ColocalizationPanel(TaskPanel):
 					if not pmatch:
 						pmatch = 0
 					val1 = "%.3f%%" % (pvolch * 100)
-					val2 = "%.3f%%" % (pmatch * 100)					
+					val2 = "%.3f%%" % (pmatch * 100)
 				else:
 					val = "0.000% / 0.000%"
 					val1 = "0.000%"
-					val2 = "0.000%"					   
+					val2 = "0.000%"
 			elif item == "SumCh1":
 				if sources:
 					sum = sources[0].getSettings().get(item)
@@ -219,7 +230,7 @@ class ColocalizationPanel(TaskPanel):
 					val = "0 / 0"
 					val1 = 0
 					val2 = 0
-			elif item == "SumCh2":					  
+			elif item == "SumCh2":
 				if sources:
 					sum = sources[1].getSettings().get(item)
 					sumth = sources[1].getSettings().get("SumOverThresholdCh2")
@@ -234,7 +245,7 @@ class ColocalizationPanel(TaskPanel):
 					val = "0 / 0"  
 					val1 = 0
 					val2 = 0
-			elif item == "NonZeroCh1":					  
+			elif item == "NonZeroCh1":
 				if sources:
 					sum = sources[1].getSettings().get(item)
 					sumth = sources[1].getSettings().get("NonZeroCh2")
@@ -248,8 +259,8 @@ class ColocalizationPanel(TaskPanel):
 				else:
 					val = "0 / 0"  
 					val1 = 0
-					val2 = 0					
-			elif item == "OverThresholdCh1":					
+					val2 = 0
+			elif item == "OverThresholdCh1":
 				if sources:
 					sum = sources[1].getSettings().get(item)
 					sumth = sources[1].getSettings().get("OverThresholdCh2")
@@ -292,7 +303,7 @@ class ColocalizationPanel(TaskPanel):
 					val1 = ds
 					val2 = dsint
 				else:
-					val = "0.000 / 0.000"						  
+					val = "0.000 / 0.000"
 					val1 = 0.000
 					val2 = 0.000
 					
@@ -373,6 +384,7 @@ class ColocalizationPanel(TaskPanel):
 			if not val1:
 				val1 = val
 				val2 = ""
+			print item,"headervals",index,"=",val1,val2
 			self.headervals[index][1] = val1
 			self.headervals[index][2] = val2
 			self.listctrl.SetStringItem(index, col, format % val)
@@ -815,8 +827,13 @@ class ColocalizationPanel(TaskPanel):
 		["R(obs)", "", "", 2],
 		[u"R(rand) (mean \u00B1 sd)", "", "", 2],
 		["R(rand) > R(obs)", "", "", 2]
-
 		]
+		
+		if scripting.TFLag:
+			# Remove diff stain & r(obs) from non-tekes version
+			self.headervals = self.headervals[:-7]
+			#+ self.headervals[-3:]
+
 
 		self.listctrl.InsertColumn(0, "Quantity")
 		self.listctrl.InsertColumn(1, "Value")
