@@ -42,6 +42,7 @@ import lib.messenger
 import Logging
 import wx
 import csv
+import scripting
 
 class Scatterplot(InteractivePanel.InteractivePanel):
 	"""
