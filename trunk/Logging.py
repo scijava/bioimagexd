@@ -172,6 +172,7 @@ def error(title, msg, xframe = sys._getframe()):
 			msg		   The actual error message
 	"""
 	outfile.write(u"%s: %s" % (xframe.f_code.co_filename, xframe.f_lineno) + " ERROR: %s\n" % msg)
+	outfile.flush()
 	raise GUIError(title, u"%s: %s" % (xframe.f_code.co_filename, xframe.f_lineno) + " " + msg)
 
 #@possibly_ignore
@@ -196,6 +197,7 @@ def info(msg, *args, **kws):
 			msg = codecs.encode(unicode(msg,"latin1"), "ascii","xmlcharrefreplace")
 		#argstring = codecs.encode(unicode(msg,"latin1"), "ascii","xmlcharrefreplace")
 		outfile.write(u"%s:%d: %s %s\n"%(fileName, lineno, msg, argstring))
+		outfile.flush()
 
 #@possibly_ignore
 def backtrace():
@@ -208,6 +210,7 @@ def backtrace():
 	fileInBackTrace = os.path.split(xframe.f_code.co_filename)[-1]
 	lineno = xframe.f_lineno
 	outfile.write(u"%s:%d: Generating backtrace of calls:\n"%(fileInBackTrace, lineno))
+	outfile.flush()
 	
 	indent = -1
 	oldfile = None
@@ -224,4 +227,5 @@ def backtrace():
 		function = frame.f_code.co_name
 		indentstr = "  "*indent
 		outfile.write(u"%sFile %s, function %s on line %d\n" % (indentstr, fileInBackTrace, function, lineno))
+		outfile.flush()
 		i += 1
