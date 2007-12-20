@@ -51,7 +51,7 @@ class PluginLoader:
 		self.mcache = {}
 		# One problem with ignore is that it does not care about the directory of the module.
 		# We can't load ModuleDir1/ModuleName.py and ignore ModuleDir2/ModuleName.py at the same time.
-		self.ignore = ["ScaleBar.py", "Spline.py", "ArbitrarySlicer.py","BioradDataSource.py","ExtractComponent.py"]
+		self.ignore = ["Modules/Rendering/ScaleBar.py", "Modules/Rendering/Spline.py", "Modules/Rendering/ArbitrarySlicer.py", "Modules/Task/__init__.py", "Modules/Readers/BioradDataSource.py", "Modules/Filters/ExtractComponent.py"]
 		
 		self.moduleTypes = {"Filters":"*", "Task":"*"}
 		
@@ -97,7 +97,8 @@ class PluginLoader:
 		toRemoveList = []
 		for fileName in moduleNameList:
 			for ignoreName in self.ignore:
-				if ignoreName == os.path.basename(fileName):
+				#if ignoreName == os.path.basename(fileName):
+				if ignoreName == fileName:
 					toRemoveList.append(fileName)
 		for moduleName in toRemoveList:
 			moduleNameList.remove(moduleName)
@@ -194,7 +195,7 @@ class PluginLoader:
 			moddict[moduleNameInDictionary] = (moduleClass, settingClass, loadedModule)
 		self.mcache[moduleSubDir] = moddict
 		return moddict
-
+	
 def getRenderingModules(callback = None):
 	"""
 	Created: Unknown, KP
