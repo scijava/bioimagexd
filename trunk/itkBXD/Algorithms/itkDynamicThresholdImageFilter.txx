@@ -290,6 +290,7 @@ void DynamicThresholdImageFilter<TInputImage,TOutputImage>
 	{
 	  this->m_StatisticsType = itkGetStaticConstMacro(Mean);
 	}
+  this->Modified();
 }
 
 template<class TInputImage, class TOutputImage>

@@ -279,7 +279,7 @@ class ProcessingFilter(GUIBuilder.GUIBuilderBase):
 	def convertITKtoVTK(self, image, imagetype = "UC3", force = 0):
 		"""
 		Created: 18.04.2006, KP
-		Description: Convert the image data to ITK image
+		Description: Convert the ITK image data to VTK image
 		"""
 		# For non-ITK images, do nothing
 		if image.__class__ == vtk.vtkImageData:

@@ -226,7 +226,7 @@ class SobelFilter(MorphologicalFilter):
 		self.vtkfilter.SetInput(image)
 		if update:
 			self.vtkfilter.Update()
-		return self.vtkfilter.GetOutput()         
+		return self.vtkfilter.GetOutput()
 		
 class HybridMedianFilter(MorphologicalFilter):
 	"""
