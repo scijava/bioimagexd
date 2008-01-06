@@ -130,6 +130,7 @@ def usage():
 	print "-s <var>=<val>,<var2>=<val2> | --set-variable\tSet a variable to a value"
 	print "-o <file>   | --output=<file>\tOutput the resulting dataset to the given file"
 	print "-T 0,1,2	   | --timepoints=<timepoints>\tSelect the timepoints to process"
+	print "-c 0,1	   | --channels=0,1\tSelect the channels to use from the input file"
 	sys.exit(2)
 
 if __name__ == '__main__':
@@ -140,8 +141,8 @@ if __name__ == '__main__':
 		#build()
 	else:
 		try:
-			parameterList = ["help", "batch","execute=", "input=", "directory=", "tofile", "profile", "interpret", "logfile","load-filter","set-variable","output=","timepoints="]
-			opts, args = getopt.getopt(sys.argv[1:], 'hbx:i:d:tpPlf:s:o:T:', parameterList)
+			parameterList = ["name=","channels=","help", "batch","execute=", "input=", "directory=", "tofile", "profile", "interpret", "logfile","load-filter","set-variable","output=","timepoints="]
+			opts, args = getopt.getopt(sys.argv[1:], 'n:c:hbx:i:d:tpPlf:s:o:T:', parameterList)
 		except getopt.GetoptError:
 			usage()
 
@@ -150,18 +151,26 @@ if __name__ == '__main__':
 		dataFiles = []
 		app = None
 		outputFile = "output.bxd"
+		currentInputFileName=""
 		filterList = []
 		filterParams = {}
+		selectedChannels = {}
 		timepoints = []
+		outputName = ""
 		for opt, arg in opts:
 			if opt in ["-h", "--help"]:
 				usage()
+			elif opt in ["-n","--name"]:
+				outputName = arg
+			elif opt in ["-c","--channels"]:
+				selectedChannels[currentInputFileName] = arg.split(",")
 			elif opt in ["-x", "--execute"]:
 				scriptFile = arg
 			elif opt in ["-d", "--directory"]:
 				dataFiles = glob.glob(os.path.join(arg, "*"))
 			elif opt in ["-i", "--input"]:
-				dataFiles = [arg]
+				dataFiles.append(arg)
+				currentInputFileName=arg
 			elif opt in ["-t", "--tofile"]:
 				toFile = 1
 			elif opt in ["-p", "--profile"]:
@@ -182,7 +191,6 @@ if __name__ == '__main__':
 				currentFilter = arg
 				filterList.append(arg)
 			elif opt in ["-s","--set-variable"]:
-				print "arg=",arg
 				for stmnt in arg.split(","):
 					key, val = stmnt.split("=")
 					val = eval(val)
@@ -255,4 +263,7 @@ if __name__ == '__main__':
 		if doProfile and profile:
 			profile.run('app.run(dataFiles, scriptFile)', 'prof.log')
 		else:
-			app.run(dataFiles, scriptFile, outputFile = outputFile, timepoints = timepoints)
+			params = {}
+			if outputName:params["name"] = outputName
+			app.run(dataFiles, scriptFile, outputFile = outputFile, timepoints = timepoints,
+				selectedChannels = selectedChannels, **params)

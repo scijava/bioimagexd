@@ -54,28 +54,49 @@ class BXDBatchApplication:
 		self.filterParams = filterParams
 
 				
-	def loadFiles(self, filelist):
+	def loadFiles(self, filelist, selectedChannels = {}):
 		"""
 		Created: 02.01.2008, KP
 		Description: load a list of files
 		"""
 		dataunits = []
 		for filename in filelist:
+			chls = []
+			try:
+				intchls = map(int,chls)
+			except:
+				intchls = []
+
+			if filename in selectedChannels:
+				chls = selectedChannels[filename]
 			name, ext = os.path.splitext(filename)
 			if ext:
 				ext=ext[1:].lower()
 			if ext not in self.extToSource: 
 				continue
 			datasource = self.extToSource[ext]()
-			dataunits += datasource.loadFromFile(filename)
+			newDataunits = datasource.loadFromFile(filename)
+			selectedUnits = []
+			if intchls:
+				for index in intchls and len(newDataunits)<=index:
+					print "Selecting ch",index,newDataunits[index].getName()
+					selectedUnits.append(newDataunits[index])
+			if chls:
+				for unit in newDataunits:
+					if unit.getName() in chls:
+						print "Selecting ch by name",unit.getName(),chls
+						selectedUnits.append(unit)
+					
+			if not selectedUnits: selectedUnits = newDataunits
+			dataunits += selectedUnits
 		return dataunits
 
-	def run(self, files, scriptfile, outputFile = "output.bxd", timepoints = []):
+	def run(self, files, scriptfile, name = "", outputFile = "output.bxd", timepoints = [], selectedChannels = {}):
 		"""
 		Created: 01.01.2008
-		Description: Run the wxPython main loop
+		Description: Run the procedure list
 		"""
-		dataunits = self.loadFiles(files)
+		dataunits = self.loadFiles(files, selectedChannels)
 		for dataunit in dataunits:
 			self.dataUnit.addSourceDataUnit(dataunit)
 		filterList = lib.FilterBasedModule.FilterList()
@@ -92,7 +113,10 @@ class BXDBatchApplication:
 				currentFilter.setParameter(key, val)
 
 		self.dataUnit.getSettings().set("FilterList", filterList)
-
+		if not name:
+			name, ext = os.path.splitext(outputFile)
+			name = os.path.basename(name)
+		self.dataUnit.getSettings().set("Name",name)
 		print "Output file name",outputFile
 		if not timepoints:
 			timepoints = range(0, max([x.getNumberOfTimepoints() for x in dataunits]))
