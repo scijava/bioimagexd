@@ -164,6 +164,8 @@ class PluginLoader:
 			return self.mcache[moduleSubDir]
 		moddict = {}
 		for modulePathWithExtension in modulePathList:
+			if modulePathWithExtension.endswith(".pyc"):
+				continue
 			moduleName = self._createModuleNameToLoad(modulePathWithExtension)
 			try:
 				loadedModule = __import__(moduleName, globals(), locals(), [])
@@ -186,7 +188,6 @@ class PluginLoader:
 			if hasattr(loadedModule, "getClass"):
 				moduleClass = loadedModule.getClass()
 			else:
-				print loadedModule.__dict__.keys()
 				moduleClass = loadedModule.__dict__["%s%s"%(moduleName,classEndsWith)]
 				
 			settingClass = None

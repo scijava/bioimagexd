@@ -1509,7 +1509,7 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 				cmd.run()		
 				continue
 			
-			if sep.lower() in ["tif", "tiff", "jpg", "jpeg", "png"]:
+			if sep.lower() in ["tif", "tiff", "jpg", "jpeg", "png","bmp"]:
 				self.onMenuImport(None, askfile)
 				return
 			fname = os.path.split(askfile)[-1]
@@ -1555,32 +1555,6 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 		if self.tree.hasItem(path):
 			return
 		ext = ext.lower()
-
-
-		# CANNOT READ SETTINGS FROM BXD ANYMORE
-		if 0 and ext == 'bxd':
-			# We check that the file is not merely a settings file
-			#try:
-			self.parser = ConfigParser.SafeConfigParser()
-			self.parser.read([path])
-			settingsOnly = ""
-			try:
-				# We read the Key SettingsOnly, and check it's value.
-				settingsOnly = self.parser.get("SettingsOnly", "SettingsOnly")
-			except (ConfigParser.NoOptionError, ConfigParser.NoSectionError):
-				pass
-			if settingsOnly.lower() == "true":
-				# If this file contains only settings, then we report an 
-				# error and do not load it
-				if not noWarn:
-					Dialogs.showerror(self,
-					"The file you selected, %s, contains only settings "
-					"and cannot be loaded.\n"
-					"Use 'Load settings' from the File menu "
-					"to load it." % name, "Trying to load settings file")
-				return
-			#except:
-			#    pass
 
 		if ext not in self.extToSource.keys():
 			return
