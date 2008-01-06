@@ -119,9 +119,6 @@ class FilterList:
 		filterList = []
 		nameToFilter = {}
 
-	
-		print "\n\n*****Populating",self.dataUnit
-		print "Filter names=",filterNames
 		for name in filterNames:
 			try:
 				filterclass = self.filtersByName[name]
@@ -284,8 +281,8 @@ class FilterList:
 		Description: return the index of the filter corresponding to the given name
 		"""
 		index = -1
-		for i in self.filters:
-			if i.getName() == name:
+		for i, currFilter in enumerate(self.filters):
+			if currFilter.getName() == name:
 				index = i
 				break
 		return index
@@ -346,6 +343,7 @@ class FilterList:
 		"""
 		self.filters[index].setEnabled(status)
 		self.setModified(1)
+		
 		
 class FilterBasedModule(lib.Module.Module):
 	"""

@@ -37,17 +37,16 @@ import os
 import getopt
 import codecs
 import platform
+
 # We need to import VTK here so that it is imported before wxpython.
 # if wxpython gets imported before vtk, the vtkExtTIFFReader will not read the olympus files
 # DO NOT ask me why that is!
 import vtk
-import wx
 import Configuration
 import scripting
 import Logging
 import glob
-import GUI.MainWindow
-import GUI.SplashScreen
+
 
 try:
 	import profile
@@ -106,55 +105,8 @@ def onWarning(obj, evt, *args):
 w.AddObserver("WarningEvent", onWarning)
 w.AddObserver("ErrorEvent", onWarning)
 
-class LSMApplication(wx.App):
-	"""
-	Created: 03.11.2004, KP
-	Description: Encapsulates the wxPython initialization and mainwindow creation
-	"""
-	def OnInit(self):
-		"""
-		Created: 10.1.2005, KP
-		Description: Create the application's main window
-		"""
-		self.SetAppName("BioImageXD")
-		iconpath = scripting.get_icon_dir()
 
-		splashimage = os.path.join(iconpath, "splash2.jpg")
-		self.splash = GUI.SplashScreen.SplashScreen(None, duration = 99000, bitmapfile = splashimage)
-		self.splash.Show()
-		self.splash.SetMessage("Loading BioImageXD...")
-		provider = wx.SimpleHelpProvider()
-		wx.HelpProvider_Set(provider)
 
-		self.mainwin = GUI.MainWindow.MainWindow(None, -1, self, self.splash)
-		self.mainwin.config = wx.Config("BioImageXD", style = wx.CONFIG_USE_LOCAL_FILE)
-		scripting.app = self
-		scripting.mainWindow = self.mainwin
-
-		self.mainwin.Show(True)
-		self.SetTopWindow(self.mainwin)
-
-		return True
-
-	def macOpenFile(self, filename):
-		"""
-		Created: 14.03.2007, KP
-		Description: open a file that was dragged on the app
-		"""
-		self.mainwin.loadFiles([filename])
-
-	def run(self, files, scriptfile):
-		"""
-		Created: 03.11.2004, KP
-		Description: Run the wxPython main loop
-		"""
-		if files:
-			self.mainwin.loadFiles(files)
-
-		if scriptfile:
-			self.splash.SetMessage("Loading script file %s..."%scriptfile)
-			self.mainwin.loadScript(scriptfile)
-		self.MainLoop()
 
 def usage():
 	"""
@@ -165,13 +117,19 @@ def usage():
 [-d directory|--directory=directory]"
 	print ""
 	print "-x | --execute\tExecute the given script file"
+	print "-b | --batch\tExecute the software in batch mode"
 	print "-i | --input\tLoad the given file as default input"
 	print "-d | --directory\tLoad all files from given directory"
 	print "-t | --tofile\tLog all messages to a log file"
 	print "-l | --logfile\tLog all messages to given file"
 	print "-p | --profile\tProfile the execution of the program"
 	print "-P | --interpret\tInterpret the results of the profiling"
-
+	print ""
+	print "Options available in batch mode"
+	print "-f <filter> | --load-filter\tLoad a filter to the procedure stack"
+	print "-s <var>=<val>,<var2>=<val2> | --set-variable\tSet a variable to a value"
+	print "-o <file>   | --output=<file>\tOutput the resulting dataset to the given file"
+	print "-T 0,1,2	   | --timepoints=<timepoints>\tSelect the timepoints to process"
 	sys.exit(2)
 
 if __name__ == '__main__':
@@ -182,18 +140,19 @@ if __name__ == '__main__':
 		#build()
 	else:
 		try:
-			parameterList = ["help", "execute=", "input=", "directory=", "tofile", "profile", "interpret", "logfile"]
-			opts, args = getopt.getopt(sys.argv[1:], 'hx:i:d:tpPl', parameterList)
+			parameterList = ["help", "batch","execute=", "input=", "directory=", "tofile", "profile", "interpret", "logfile","load-filter","set-variable","output=","timepoints="]
+			opts, args = getopt.getopt(sys.argv[1:], 'hbx:i:d:tpPlf:s:o:T:', parameterList)
 		except getopt.GetoptError:
 			usage()
 
-		toFile = 0
-		doProfile = 0
-		doInterpret = 0
-		scriptFile = ""
-		logfile = ""
-		logdir = ""
+		toFile, doProfile, doInterpret, doBatch = False, False, False, False
+		scriptFile, logfile, logdir, currentFilter = "", "", "", ""
 		dataFiles = []
+		app = None
+		outputFile = "output.bxd"
+		filterList = []
+		filterParams = {}
+		timepoints = []
 		for opt, arg in opts:
 			if opt in ["-h", "--help"]:
 				usage()
@@ -211,6 +170,28 @@ if __name__ == '__main__':
 				doInterpret = 1
 			elif opt in ["-l", "--logfile"]:
 				logfile = arg
+			elif opt in ["-b","--batch"]:
+				import BatchApplication
+				app = BatchApplication.BXDBatchApplication()
+				doBatch = True
+			elif opt in ["-o","--output"]:
+				outputFile = arg
+			elif opt in ["-T","--timepoints"]:
+				timepoints = map(int,arg.split(","))
+			elif opt in ["-f","--load-filter"]:
+				currentFilter = arg
+				filterList.append(arg)
+			elif opt in ["-s","--set-variable"]:
+				print "arg=",arg
+				for stmnt in arg.split(","):
+					key, val = stmnt.split("=")
+					val = eval(val)
+					if currentFilter:
+						if currentFilter not in filterParams:
+							filterParams[currentFilter] = {}
+						filterParams[currentFilter][key] = val
+				
+
 		dataFiles.extend(args)
 		# If the main application is frozen, then we redirect logging
 		# to  a log file
@@ -258,8 +239,13 @@ if __name__ == '__main__':
 
 		conf.setConfigItem("CleanExit", "General", "False")
 		conf.writeSettings()
-		app = LSMApplication(0)
+		if not app:
+			import GUIApplication
+			app = GUIApplication.BXDGUIApplication(0)
 		toRemove = []
+		if doBatch:
+			app.setFilters(filterList, filterParams)
+			
 		for datafile in dataFiles:
 			if os.path.isdir(datafile):
 				toRemove.append(datafile)
@@ -269,4 +255,4 @@ if __name__ == '__main__':
 		if doProfile and profile:
 			profile.run('app.run(dataFiles, scriptFile)', 'prof.log')
 		else:
-			app.run(dataFiles, scriptFile)
+			app.run(dataFiles, scriptFile, outputFile = outputFile, timepoints = timepoints)
