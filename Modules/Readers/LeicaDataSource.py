@@ -44,6 +44,7 @@ import re
 import string
 import vtk
 import vtkbxd
+import scripting
 
 def getExtensions(): 
 	return ["txt","lei"]
