@@ -71,7 +71,7 @@ class ExtractSubsetFilter(lib.ProcessingFilter.ProcessingFilter):
 			x, y, z = self.dataUnit.getDimensions()
 		else:
 			z = 0
-		return (1, z + 1)
+		return (1, z)
 		
 		
 	def getType(self, parameter):
@@ -102,7 +102,7 @@ class ExtractSubsetFilter(lib.ProcessingFilter.ProcessingFilter):
 				x, y, z = self.dataUnit.getDimensions()
 			else:
 				z = 1
-			return z+1
+			return z
 			
 		return 1
 		
@@ -137,9 +137,11 @@ class ExtractSubsetFilter(lib.ProcessingFilter.ProcessingFilter):
 		maxz = self.parameters["LastSlice"]
 		minz -= 1
 		maxz -= 1
+		maxx -= 1
+		maxy -= 1
 		scripting.wantWholeDataset=1
 		print "VOI=", minx, maxx, miny, maxy, minz, maxz
-		imagedata =  self.getInput(1)
+		imagedata = self.getInput(1)
 		#imagedata.SetUpdateExtent(minx,maxx,miny,maxy,minz,maxz)
 		imagedata.SetUpdateExtent(imagedata.GetWholeExtent())
 		imagedata.Update()
@@ -147,5 +149,10 @@ class ExtractSubsetFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.vtkfilter.SetVOI(minx, maxx, miny, maxy, minz, maxz)
 		data = self.vtkfilter.GetOutput()
 
-
+		if minz > 0:
+			translate = vtk.vtkImageTranslateExtent()
+			translate.SetTranslation((0,0,-minz))
+			translate.SetInput(data)
+			data = translate.GetOutput()
+		
 		return  data
