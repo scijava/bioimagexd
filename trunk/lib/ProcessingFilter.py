@@ -39,11 +39,6 @@ import vtk
 import lib.Command
 import sys
 
-try:
-	import itk
-except ImportError:
-	print "Could not import ITK, terminating."
-	sys.exit()
 import lib.messenger
 import scripting
 import GUI.GUIBuilder as GUIBuilder
@@ -94,6 +89,7 @@ class ProcessingFilter(GUIBuilder.GUIBuilderBase):
 		self.executive = None
 		self.eventDesc = ""
 		self.replacementColorTransferFunction = None
+		self.itk = 0
 		
 	def resetFilters(self):
 		"""
@@ -244,6 +240,14 @@ class ProcessingFilter(GUIBuilder.GUIBuilderBase):
 		Created: 18.04.2006, KP
 		Description: Convert the image data to ITK image
 		"""
+		if not self.itk:
+			try:
+				import itk
+			except ImportError:
+				print "Could not import ITK, terminating."
+				sys.exit()
+			self.itk = 1
+		
 		if "itkImage" in str(image.__class__):
 			return image
 		if not self.itkFlag:
