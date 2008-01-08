@@ -86,10 +86,19 @@ The directory layout of the source code:
 |                       messenger and persistence come from mayavi 2 codebase
 |
 +-vtkBXD/               The directory containing the VTK project with our own image processing classes
-        |
-        +-CMakeLists.txt    The file defining how the project is built
-        |
-        +-Processing/       The directory containing the actual processing classes
-        |
-        +-Wrapping/         The directory containing the wrapping code
-        
+|       |
+|       +-CMakeLists.txt    The file defining how the project is built
+|       |
+|       +-Processing/       The directory containing the actual processing classes
+|       |
+|       +-Wrapping/         The directory containing the wrapping code
+|        
++-itkBXD/               The directory containing the ITK project with our own image processing classes
+|       |
+|       +-Algorithms/       The directory containing own ITK classes
+|       |
+|       +-Wrapping/         The directory containing the wrapping code
+|       |
+|       +-CMakeLists.txt    The file defining how own ITK classes are built
+|       |
+|       +-IJMacros.txt      Macros for CMakeLists.txt
