@@ -34,8 +34,7 @@ import bxdexceptions
 import DataUnitSetting
 import lib.ImageOperations
 import Logging
-import weakref
-
+import os
 class DataUnit:
 	"""
 	Created: 03.11.2004, JM
@@ -322,3 +321,4 @@ class DataUnit:
 		Description: Return the path to the file this dataunit represents
 		"""
 		return self.dataSource.getFileName()
+		

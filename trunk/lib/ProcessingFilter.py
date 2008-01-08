@@ -94,6 +94,14 @@ class ProcessingFilter(GUIBuilder.GUIBuilderBase):
 		self.executive = None
 		self.eventDesc = ""
 		self.replacementColorTransferFunction = None
+		
+	def resetFilters(self):
+		"""
+		Created: 08.01.2008, KP
+		Description: reset the filter instances
+		"""
+		self.itkfilter = None
+		self.relabelFilter = None
 
 	def getColorTransferFunction(self):
 		"""
@@ -329,6 +337,8 @@ class ProcessingFilter(GUIBuilder.GUIBuilderBase):
 		Description: Set the dataunit that is the input of this filter
 		"""
 		self.dataUnit = dataUnit
+		self.sourceUnits = []
+		self.resetFilters()
 		self.updateDefaultValues()
 			
 	def getDataUnit(self):

@@ -38,8 +38,9 @@ import lib.messenger
 import Logging
 import types
 import wx
-import traceback		#svn-1037, 18.7.07, MB
-import lib.Command		#svn-1037, 18.7.07, MB
+import traceback
+import lib.Command
+import os
 
 RADIO_CHOICE = "RADIO_CHOICE"
 THRESHOLD = "THRESHOLD"
@@ -188,8 +189,8 @@ class GUIBuilderBase:
 		if self.inputMapping[mapIndex] == 0 and self.dataUnit and self.dataUnit.isProcessed():
 			return self.dataUnit
 		else:
-			image = self.getInputFromChannel(self.inputMapping[mapIndex] - 1, dataUnit = 1)
-		return image
+			dataunit = self.getInputFromChannel(self.inputMapping[mapIndex] - 1, dataUnit = 1)
+		return dataunit
 		
 	def getCurrentTimepoint(self):
 		"""
@@ -205,13 +206,15 @@ class GUIBuilderBase:
 		"""
 		Created: 17.04.2006, KP
 		Description: Return an imagedata object that is the current timepoint for channel #n
-		"""				
+		"""
 		if self.dataUnit.isProcessed():
 			if not self.sourceUnits:
 				self.sourceUnits = self.dataUnit.getSourceDataUnits()
 		else:
 			self.sourceUnits = [self.dataUnit]
 				
+		print "\n\n---------"
+		print "Source units of ",self.name,"=",[str(x)+" "+os.path.basename(x.getFileName())+": "+x.getName() for x in self.sourceUnits]
 		currentTimePoint = scripting.visualizer.getTimepoint()
 		if scripting.processingTimepoint != -1:
 			currentTimePoint = scripting.processingTimepoint
