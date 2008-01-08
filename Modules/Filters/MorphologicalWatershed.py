@@ -137,7 +137,6 @@ class MorphologicalWatershedFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.eventDesc = "Relabeling segmented image"
 		
 		if not self.relabelFilter:
-			
 			self.relabelFilter = itk.RelabelComponentImageFilter[data, data].New()
 
 		self.relabelFilter.SetInput(data)
