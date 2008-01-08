@@ -27,7 +27,10 @@ import codecs
 import csv
 import GUI.GUIBuilder as GUIBuilder
 import GUI.Dialogs
-import itk
+try:
+	import itk
+except:
+	pass
 import lib.ImageOperations
 import lib.messenger
 import Logging
