@@ -43,7 +43,6 @@ HIDE_DEBUG=["##visualizer", "main", "init", "animator", "##io", "task", "##previ
 		"datasource", "iactivepanel", "annotation", "ui", "rendering", "caching", 
 		"##pipeline", "scripting", "lsmreader"]
 HIDE_DEBUG=["modules"]
-
 KWS = ["visualizer", "main", "init", "animator", "io", "task", "preview", "scale",
 		"imageop", "modules", "trivial", "ctf", "dataunit", "event", "processing", 
 		"datasource", "iactivepanel", "annotation", "ui", "rendering", "caching", 

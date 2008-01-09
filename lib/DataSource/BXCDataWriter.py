@@ -88,6 +88,12 @@ class BXCDataWriter(DataWriter):
 			self.parser = MyConfigParser()
 		return self.parser
 		
+	def getOutputDimensions(self):
+		"""
+		Created: 09.01.2008, KP
+		Description: return the output dimensions
+		"""
+		return self.outputDims
 
 	def sync(self, n = -1):
 		"""
@@ -183,6 +189,8 @@ class BXCDataWriter(DataWriter):
 		#imageData.Update()
 		imageData.UpdateInformation()
 		x, y, z = imageData.GetDimensions()
+		self.outputDims = (x,y,z)
+		
 		pieces = (x * y * z) / (1024 * 1024)
 		if pieces < 4:pieces = 4
 		#writer.SetNumberOfPieces(pieces)
@@ -196,6 +204,9 @@ class BXCDataWriter(DataWriter):
 		Logging.info("Performing the write",kw="pipeline")
 		try:
 			ret = writer.Write()
+			x, y, z = imageData.GetDimensions()
+			
+			self.outputDims = (x,y,z)
 			if ret == 0:
 				Logging.error("Failed to write image data",
 				"Failed to write vtkImageData object to file %s" % self.filename)

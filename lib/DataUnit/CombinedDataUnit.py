@@ -116,7 +116,9 @@ class CombinedDataUnit(DataUnit):
 
 	def getDimensions(self): 
 		if self.sourceunits:
-			return self.sourceunits[0].getDimensions()
+			dims = self.sourceunits[0].getDimensions()
+			print "CombinedDataUnit Returning",dims
+			return dims
 		
 	def getSpacing(self): 
 		if self.sourceunits:
@@ -240,7 +242,6 @@ class CombinedDataUnit(DataUnit):
 				Logging.info("Executing with optimizations",kw="processing")
 				imageData = optimize.optimize(image = imageData)
 				Logging.info("Processing done",kw="processing")
-				self.settings.set("Dimensions", str(imageData.GetDimensions()))
 				lib.messenger.send(None, "update_processing_progress", timePoint, n, len(timepoints))
 				n += 1
 				# Write the image data to disk
@@ -248,6 +249,9 @@ class CombinedDataUnit(DataUnit):
 					Logging.info("Writing timepoint %d"%timePoint,kw="processing")
 					self.dataWriter.addImageData(imageData)
 					self.dataWriter.sync()
+					dims = self.dataWriter.getOutputDimensions()
+					self.settings.set("Dimensions", str(dims))
+					
 		scripting.processingTimepoint = -1
 		if settings_only:
 			self.settings.set("SettingsOnly", "True")
@@ -282,6 +286,7 @@ class CombinedDataUnit(DataUnit):
 			value = self.sourceunits[i].getDataSource().uniqueId()
 			self.settings.setCounted(key, i, value)
 		
+		print "Writing",self.settings
 		self.settings.writeTo(parser)
 		writer.write()
 
