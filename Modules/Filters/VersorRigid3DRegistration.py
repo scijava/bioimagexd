@@ -67,7 +67,7 @@ class VersorRigid3DRegistrationFilter(RegistrationFilters.RegistrationFilter):
 		"""
 		currentParameter = self.transform.GetParameters()
 		print "M: %f T: %f %f %f V: %f %f %f" %(self.optimizer.GetValue(),currentParameter.GetElement(3),currentParameter.GetElement(4),currentParameter.GetElement(5),currentParameter.GetElement(0),currentParameter.GetElement(1),currentParameter.GetElement(2))
-		RegistrationFilters.REgistrationFilter.updateProgress(self)
+		RegistrationFilters.RegistrationFilter.updateProgress(self)
 
 	def getParameterLevel(self, parameter):
 		"""
