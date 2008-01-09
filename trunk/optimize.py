@@ -104,7 +104,7 @@ def execute_limited(pipeline, updateExtent = None):
 	if noLimits or (not memLimit and not alwaysSplit):
 		streamer = vtk.vtkImageDataStreamer()
 		streamer.SetNumberOfStreamDivisions(1)
-		streamer.GetExtentTranslator().SetSplitModeToZSlab()		
+		streamer.GetExtentTranslator().SetSplitModeToZSlab()
 		
 	if alwaysSplit:
 		Logging.info("Using vtkImageDataStreamer with %d divisions"%numberOfDivisions, kw = "pipeline")

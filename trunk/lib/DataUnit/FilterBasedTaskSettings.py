@@ -40,7 +40,6 @@ class FilterBasedTaskSettings(DataUnitSettings):
 	"""
 	def __init__(self, n = -1):
 		"""
-		Method: __init__
 		Created: 27.03.2005, KP
 		Description: Constructor
 		"""

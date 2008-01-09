@@ -43,7 +43,7 @@ def getFileType():
 	return "filelist"
 
 def getClass(): 
-	return FileListDataSource	 
+	return FileListDataSource
 	
 
 class FileListDataSource(DataSource):
@@ -61,7 +61,7 @@ class FileListDataSource(DataSource):
 		self.extMapping = {"tif": "TIFF", "tiff": "TIFF", "png": "PNG", "jpg": "JPEG", "jpeg": "JPEG", \
 							"pnm": "PNM", "vti": "XMLImageData", "vtk": "DataSet", "bmp": "BMP"}
 		self.dimMapping = {"bmp":2, "tif":2, "tiff":2, "png":2, "jpg":2, "jpeg":2, "pnm":2, "vti":3, "vtk":3}
-		
+		self.ctf = None
 		self.callback = callback
 		self.dimensions = None
 		self.voxelsize = (1, 1, 1)
@@ -83,6 +83,13 @@ class FileListDataSource(DataSource):
 		self.readers = []
 		self.slicesPerTimepoint = 1
 		self.is3D = 0
+		
+	def getFileName(self):
+		"""
+		Created: 09.01.2008, KP
+		Description: return the filename
+		"""
+		return self.filenames[0]
 		
 	def getNumberOfScalarComponents(self):
 		"""
@@ -182,8 +189,6 @@ class FileListDataSource(DataSource):
 		Created: 07.05.2007, KP
 		Description: create the reader list from a given set of file names and parameters
 		"""		   
-#		self.z = int(self.slicesPerTimepoint)
-
 
 		for i in self.readers:
 			del i
@@ -311,6 +316,20 @@ class FileListDataSource(DataSource):
 			data = extract.GetOutput()
 		return data
 		
+	def getDataBitDepth(self, data):
+		scalartype = data.GetScalarType()
+		if scalartype == 4:
+			return 16
+		elif scalartype == 5:
+			return 12
+		elif scalartype == 3:
+			return 8
+		elif scalartype == 7:
+			return 16
+		elif scalartype == 11:
+			return 16
+		return 8
+		
 	def retrieveImageInfo(self, filename):
 		"""
 		Created: 21.04.2005, KP
@@ -330,6 +349,13 @@ class FileListDataSource(DataSource):
 		data = rdr.GetOutput()
 		self.numberOfComponents = data.GetNumberOfScalarComponents()
 		
+		if not self.ctf:
+			bd = self.getDataBitDepth(data)
+			self.ctf = vtk.vtkColorTransferFunction()
+			self.ctf.AddRGBPoint(0, 0, 0, 0)
+			self.ctf.AddRGBPoint((2 ** bd) - 1, 0, 1, 0)
+			
+		
 		self.x, self.y, z = data.GetDimensions()
 		self.dimensions = (self.x, self.y, self.slicesPerTimepoint)
 		if z > 1:
@@ -337,6 +363,7 @@ class FileListDataSource(DataSource):
 			self.z = z
 			self.dimensions = (self.x, self.y, self.slicesPerTimepoint)
 			lib.messenger.send(self, "update_dimensions")
+		self.originalDimensions = self.dimensions
 				
 	def getTimepoint(self, n, onlyDims = 0):
 		"""
@@ -370,6 +397,10 @@ class FileListDataSource(DataSource):
 		Description: Returns the (x,y,z) dimensions of the datasets this
 		dataunit contains
 		"""
+		print "Returning",self.x,self.y,self.slicesPerTimepoint
+		return (self.x, self.y, self.slicesPerTimepoint)
+		
+	def internalGetDimensions(self):
 		return (self.x, self.y, self.slicesPerTimepoint)
 
 	def getSpacing(self):

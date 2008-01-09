@@ -46,14 +46,15 @@ class ManipulationDataUnit(CombinedDataUnit):
 		self.original = None
 		self.initialized = 0
 
-	def setOriginal(self, dataUnit):
+	def setOriginal(self, datasource):
 		"""
 		Created: 14.12.2004, JM, JV
 		Description: Sets the original DataUnit for this ManipulationedSourceDataUnit
 		Parameters: dataUnit  The original unmodified DataUnit
 		"""
-		self.original = dataUnit
-		self.length = dataUnit.length
+		self.original = datasource
+		self.length = datasource.getNumberOfTimepoints()
+		
 
 	def getColorTransferFunction(self):
 		"""
