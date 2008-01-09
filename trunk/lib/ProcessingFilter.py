@@ -298,6 +298,13 @@ class ProcessingFilter(GUIBuilder.GUIBuilderBase):
 			return image
 
 		del self.itkToVtk
+		
+		try:
+			import itk
+		except ImportError:
+			print "Could not import ITK, terminating."
+			sys.exit()
+			
 		self.itkToVtk = itk.ImageToVTKImageFilter[image].New()
 		# If the next filter is also an ITK filter, then won't
 		# convert
