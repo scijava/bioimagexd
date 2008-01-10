@@ -99,6 +99,15 @@ class VideoEncoder:
 		self.format = ""
 		self.preset = 0
 		
+		
+	def getExtensionForCodec(self, codec):
+		"""
+		Created: 10.01.2008, KP
+		Description: return the proper file extension for given codec
+		"""
+		if codec not in self.outputCodecs:return ""
+		return self.outputCodecs[codec][1]
+		
 	def getFrameAmount(self): 
 		"""
 		Created: 30.09.2007, KP
@@ -302,15 +311,14 @@ class VideoEncoder:
 				break
 		bindir = scripting.get_main_dir()
 		ffmpeg = os.path.join(bindir, ffmpeg)
-		
 		# scale the quality into the range understood by ffmpeg
 		quality = 11 - self.quality
-		quality = math.ceil(1 + (3.333333 * (quality - 1)))
+		quality = math.ceil(1 + (3.22222 * (quality - 1)))
 		frameRate = self.fps
 		width, height = self.getSize()
 		
 		if not target:
-			commandLine = "\"%s\" -y -qscale %d -b 8192 -r %.2f -s %dx%d -i \"%s\" -vcodec %s \"%s\"" \
+			commandLine = "\"%s\" -y -qscale %d -r %.2f -s %dx%d -i \"%s\" -vcodec %s \"%s\"" \
 							% (ffmpeg, quality, frameRate, width, height, pattern, vcodec, file)
 		else:
 			commandLine = "\"%s\" -y -qscale %d -s %dx%d -i \"%s\" -target %s \"%s\"" % (ffmpeg, quality, width, height, pattern, target, file)
@@ -431,9 +439,23 @@ class VideoGeneration(wx.Panel):
 		Description: Render the whole damn thing
 		"""
 		self.okButton.Enable(0)
+		self.encoder.setPath(self.rendir.GetValue())
+		self.encoder.setVideoFileName(self.videofile.GetValue())
+		
+		quality = self.qualitySlider.GetValue()
+		self.encoder.setQuality(quality)
 		path = self.encoder.getPath()
 		file = self.encoder.getVideoFileName()
 
+
+		if not os.path.isdir(path):
+			dlg = wx.MessageDialog(self, "Directory '%s' doesn't exist. Create it?"%path, "Directory does not exist.")
+			if dlg.ShowModal() in [wx.ID_CANCEL, wx.ID_NO]:
+				return
+			dn = path
+			while not os.path.exists(dn):
+				os.mkdir(dn)
+				dn = os.path.dirname(dn)
 		# If the rendering has been done already, then only do the encoding
 		if self.renderingDone:
 			lib.messenger.connect(None, "rendering_done", self.cleanUp)
@@ -447,10 +469,7 @@ class VideoGeneration(wx.Panel):
 		if self.visualizer.getCurrentModeName() != "3d":
 			self.visualizer.setVisualizationMode("3d")
 	
-		dn = path
-		while not os.path.exists(dn):
-			os.mkdir(dn)
-			dn = os.path.dirname(dn)
+
 	
 		conf = Configuration.getConfiguration()
 		conf.setConfigItem("FramePath", "Paths", path)
@@ -568,7 +587,7 @@ class VideoGeneration(wx.Panel):
 		self.saveProjectBox.Enable(sel)
 		self.qualitySlider.Enable(sel)
 		self.videofile.Enable(sel)
-		
+
 		self.videofileBtn.Enable(sel)
 		
 		currentSelection = self.outputFormat.GetSelection()
@@ -577,7 +596,8 @@ class VideoGeneration(wx.Panel):
 			self.outputFormat.Append(i)
 		self.outputFormat.SetSelection(self.oldSelection)
 		self.oldSelection = currentSelection
-		
+
+			
 	def onUpdateCodec(self, event):
 		"""
 		Created: 26.04.2005, KP
@@ -587,7 +607,13 @@ class VideoGeneration(wx.Panel):
 		if sel == 1:
 			codec = self.outputFormat.GetStringSelection()
 			self.encoder.setCodec(codec)
-			
+
+			newext = self.encoder.getExtensionForCodec(codec)
+			print "New extension for format",codec,"=",newext
+			filename = self.videofile.GetValue()
+			name, ext = os.path.splitext(filename)
+			filename = "%s.%s"%(name, newext)
+			self.videofile.SetValue(filename)			
 	def onUpdatePreset(self, event = None):
 		"""
 		Created: 07.02.2006, KP
@@ -697,6 +723,7 @@ class VideoGeneration(wx.Panel):
 			video = os.path.join(path, "video.avi")
 		self.rendir = wx.TextCtrl(self, -1, path, size = (150, -1))
 		
+	
 		self.encoder.setPath(path)
 		self.encoder.setVideoFileName(video)
 		
