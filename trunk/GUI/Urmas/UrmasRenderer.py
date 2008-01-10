@@ -45,6 +45,7 @@ import GUI.Dialogs
 import lib.messenger
 import vtk
 import math
+import wx
 
 def distance(p1, p2):
 	xd = p1[0] - p2[0]
@@ -264,8 +265,9 @@ class UrmasRenderer:
 				self.pausedRendering = 1
 				return
 			lib.messenger.send(None, "set_timeslider_value", (n + 1))
-			self.renderFrame(n, (n + 1) * self.spf, self.spf, preview = preview)            
-			lib.messenger.send(self, "update_progress", (n + 1) / float(self.frames + 1), "Rendering frame %d / %d. Time: %.1fs" % (n, self.frames, (n + 1) * self.spf))        
+			self.renderFrame(n, (n + 1) * self.spf, self.spf, preview = preview)
+			lib.messenger.send(self, "update_progress", (n + 1) / float(self.frames + 1), "Rendering frame %d / %d. Time: %.1fs" % (n, self.frames, (n + 1) * self.spf))
+			wx.Yield()
 		self.rendering = 0
 		self.pausedRendering = 0
 		self.pauseFrame = 0
