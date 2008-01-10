@@ -96,12 +96,13 @@ class PluginLoader:
 		"""
 		toRemoveList = []
 		for fileName in moduleNameList:
+
+			fixedFileName = fileName
 			if os.path.sep != '/':
-				fileName = fileName.replace(os.path.sep, '/')
-	
+				fixedFileName = fileName.replace(os.path.sep, '/')
 			for ignoreName in self.ignore:
 				#if ignoreName == os.path.basename(fileName):
-				if ignoreName == fileName:
+				if ignoreName == fixedFileName:
 					toRemoveList.append(fileName)
 		for moduleName in toRemoveList:
 			moduleNameList.remove(moduleName)
