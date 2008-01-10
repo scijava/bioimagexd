@@ -289,9 +289,8 @@ class FilterEditor(wx.Panel):
 		Created: 13.04.2006, KP
 		Description: Event handler called when user toggles filter on or off
 		"""
-		
 		index = event.GetSelection()
-		name = self.filters[index].getName()
+		name = self.filterList.getFilter(index).getName()
 		status = self.filterListbox.IsChecked(index)
 		cmd = "Enable"
 		if not status:
