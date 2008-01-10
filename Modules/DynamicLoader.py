@@ -96,6 +96,7 @@ class PluginLoader:
 		"""
 		toRemoveList = []
 		for fileName in moduleNameList:
+			print "Checking for ignoring",fileName
 			for ignoreName in self.ignore:
 				#if ignoreName == os.path.basename(fileName):
 				if ignoreName == fileName:
