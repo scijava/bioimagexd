@@ -141,10 +141,11 @@ void vtkImageLabelAverageExecute(vtkImageLabelAverage *self, int id,int NumberOf
             }
             if(scalar) {
                 nonZeroCount++;
-                if(maskScalar > bgLevel) {
+                if(maskScalar >= bgLevel) {
                     nonZeroInsideCount++;
                     insideSum += scalar;
                 } else {
+                    //printf("Label = %d, scalar = %f\n", maskScalar,double(scalar));
                     nonZeroOutsideCount++;
                     outsideSum += scalar;
                 }
@@ -172,6 +173,7 @@ void vtkImageLabelAverageExecute(vtkImageLabelAverage *self, int id,int NumberOf
     self->SetAverageInsideLabels(insideSum / nonZeroInsideCount);
   }
   if(nonZeroOutsideCount) {
+    printf("Sum of intensity outside %f, %d voxels\n",outsideSum, nonZeroOutsideCount);
     self->SetAverageOutsideLabels(outsideSum / nonZeroOutsideCount);
   }
   self->SetNonZeroVoxels(nonZeroCount);
