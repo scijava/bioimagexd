@@ -47,6 +47,7 @@ import os
 import scripting
 import sys
 import wx
+import subprocess
 
 class VideoGenerationDialog(wx.Dialog):
 	"""
@@ -213,7 +214,8 @@ class VideoEncoder:
 		file = ".".join(file_coms)
 		
 		cmdLine = self.getCommandLine(vcodec, file)
-		os.system(cmdLine)
+		subprocess.call(cmdLine)
+		#os.system(cmdLine)
 		
 	def deleteFrames(self):
 		"""
@@ -303,6 +305,7 @@ class VideoEncoder:
 		if self.preset != 0:
 			(x, y), fps, br, target = self.presets[self.preset]
 		
+		cmdLine = []
 		ffmpegs = {"linux": "bin/ffmpeg", "win32": "bin\\ffmpeg.exe", "darwin": "bin/ffmpeg.osx"}
 		ffmpeg = "ffmpeg"
 		for i in ffmpegs.keys():
@@ -311,19 +314,41 @@ class VideoEncoder:
 				break
 		bindir = scripting.get_main_dir()
 		ffmpeg = os.path.join(bindir, ffmpeg)
+		
+		cmdLine.append(ffmpeg)
 		# scale the quality into the range understood by ffmpeg
 		quality = 11 - self.quality
 		quality = math.ceil(1 + (3.22222 * (quality - 1)))
 		frameRate = self.fps
 		width, height = self.getSize()
-		
+
 		if not target:
-			commandLine = "\"%s\" -y -qscale %d -r %.2f -s %dx%d -i \"%s\" -vcodec %s \"%s\"" \
-							% (ffmpeg, quality, frameRate, width, height, pattern, vcodec, file)
+			cmdLine.append("-y")
+			cmdLine.append("-qscale")
+			cmdLine.append("%d"%quality)
+			cmdLine.append("-s")
+			cmdLine.append("%dx%d"%(width, height))
+			cmdLine.append("-i")
+			cmdLine.append('%s'%pattern)
+			cmdLine.append('-vcodec')
+			cmdLine.append('%s'%vcodec)
+			cmdLine.append('%s'%file)
+			#commandLine = "\"%s\" -y -qscale %d -r %.2f -s %dx%d -i \"%s\" -vcodec %s \"%s\"" \
+			#				% (ffmpeg, quality, frameRate, width, height, pattern, vcodec, file)
 		else:
-			commandLine = "\"%s\" -y -qscale %d -s %dx%d -i \"%s\" -target %s \"%s\"" % (ffmpeg, quality, width, height, pattern, target, file)
-		Logging.info("Command line for ffmpeg=", commandLine, kw = "animator")
-		return commandLine
+			#commandLine = "\"%s\" -y -qscale %d -s %dx%d -i \"%s\" -target %s \"%s\"" % (ffmpeg, quality, width, height, pattern, target, file)
+			cmdLine.append("-y")
+			cmdLine.append("-qscale")
+			cmdLine.append("%d"%quality)
+			cmdLine.append("-s")
+			cmdLine.append("%dx%d"%(width, height))
+			cmdLine.append("-i")
+			cmdLine.append('%s'%pattern)
+			cmdLine.append('-target')
+			cmdLine.append('%s'%target)
+			cmdLine.append('%s'%file)
+		Logging.info("Command line for ffmpeg="+str(cmdLine), kw = "animator")
+		return cmdLine
 
 class VideoGeneration(wx.Panel):
 	"""
