@@ -213,8 +213,6 @@ class GUIBuilderBase:
 		else:
 			self.sourceUnits = [self.dataUnit]
 				
-		print "\n\n---------"
-		print "Source units of ",self.name,"=",[str(x)+" "+os.path.basename(x.getFileName())+": "+x.getName() for x in self.sourceUnits]
 		currentTimePoint = scripting.visualizer.getTimepoint()
 		if scripting.processingTimepoint != -1:
 			currentTimePoint = scripting.processingTimepoint

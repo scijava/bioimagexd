@@ -573,18 +573,18 @@ def vtkImageDataToPreviewBitmap(dataunit, timepoint, color, width = 0, height = 
 	return bitmap
 	
 	
-def watershedPalette(ctfLowerBound, ctfUpperBound):	
+def watershedPalette(ctfLowerBound, ctfUpperBound, ignoreColors = 2):
 	"""
 	Created: Unknown, KP
 	Description: Returns a randomly created CTF.
 	"""
 	ctf = vtk.vtkColorTransferFunction()
-	ctf.AddRGBPoint(0, 0, 0, 0)
-	ctf.AddRGBPoint(1, 0, 0, 0)
+	for i in range(0, ignoreColors):
+		ctf.AddRGBPoint(i, 0, 0, 0)
 	
-	if ctfLowerBound <= 1: 
-		ctfLowerBound = 2
-	for i in range(int(ctfLowerBound), int(ctfUpperBound)):		
+	if ctfLowerBound < 1: 
+		ctfLowerBound = 1
+	for i in range(int(ctfLowerBound), int(ctfUpperBound)):
 		red = 0
 		green = 0
 		blue = 0    
@@ -592,7 +592,6 @@ def watershedPalette(ctfLowerBound, ctfUpperBound):
 			red = random.random()
 			green = random.random()
 			blue = random.random()
-		
 		ctf.AddRGBPoint(float(i), float(red), float(green), float(blue))
 		
 	return ctf

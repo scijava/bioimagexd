@@ -250,11 +250,16 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 		avgintCalc.AddInput(vtkimage)
 
 		avgintCalc.Update()
-		if self.prevFilter:
-			startIntensity = self.prevFilter.ignoreObjects
-			self.avgintCalc.SetBackgroundLevel(startIntensity)
-		else:
-			startIntensity = 0
+		ignoreLargest = 0
+		currFilter = self
+		while currFilter:
+			if currFilter.ignoreObjects > ignoreLargest:
+				ignoreLargest = currFilter.ignoreObjects
+			currFilter = currFilter.prevFilter
+		
+		startIntensity = ignoreLargest
+		print "Ignoring",startIntensity,"first objects"
+		self.avgintCalc.SetBackgroundLevel(startIntensity)
 			
 		for i in range(startIntensity, n):
 			if not self.itkfilter.HasLabel(i):

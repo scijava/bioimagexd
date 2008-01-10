@@ -221,7 +221,7 @@ class ConnectedComponentFilter(ProcessingFilter.ProcessingFilter):
 	"""
 	Created: 12.07.2006, KP
 	Description: A filter for labeling all separate objects in an image
-	"""		
+	"""
 	name = "Connected component labeling"
 	category = SEGMENTATION
 	
@@ -233,7 +233,7 @@ class ConnectedComponentFilter(ProcessingFilter.ProcessingFilter):
 		ProcessingFilter.ProcessingFilter.__init__(self, inputs)
 		self.ignoreObjects = 1
 		
-		self.descs = {"Threshold": "Remove objects with less voxels than:"}		   
+		self.descs = {"Threshold": "Remove objects with less voxels than:"}
 		self.itkFlag = 1
 		self.origCtf = None
 		self.relabelFilter = None
@@ -274,7 +274,7 @@ class ConnectedComponentFilter(ProcessingFilter.ProcessingFilter):
 		Description: Restore palette upon filter removal
 		"""		   
 		if self.origCtf:			
-			self.dataUnit.getSettings().set("ColorTransferFunction", self.origCtf)			  
+			self.dataUnit.getSettings().set("ColorTransferFunction", self.origCtf)
 	
 	def execute(self, inputs, update = 0, last = 0):
 		"""
@@ -291,12 +291,10 @@ class ConnectedComponentFilter(ProcessingFilter.ProcessingFilter):
 		
 		self.eventDesc = "Performing connected component labeling"
 		self.itkfilter.SetInput(image)
-		#self.itkfilter.SetLevel(self.parameters["Level"])
 				
 		self.setImageType("UL3")
 		self.itkfilter.Update()
-		#print "Morphological watershed took",time.time()-t,"seconds"
-		data = self.itkfilter.GetOutput()		 
+		data = self.itkfilter.GetOutput()
 	
 		if not self.relabelFilter:
 			self.relabelFilter = itk.RelabelComponentImageFilter[data, data].New()
@@ -313,12 +311,11 @@ class ConnectedComponentFilter(ProcessingFilter.ProcessingFilter):
 	
 		settings = self.dataUnit.getSettings()
 		ncolors = settings.get("PaletteColors")
-		print "NColors=", ncolors, "n=", n
 		if not ncolors or ncolors < n:
-			ctf = lib.ImageOperations.watershedPalette(0, n)
+			ctf = lib.ImageOperations.watershedPalette(1, n, ignoreColors = 1)
 			if not self.origCtf:
 				self.origCtf = self.dataUnit.getColorTransferFunction()
-			self.dataUnit.getSettings().set("ColorTransferFunction", ctf)	 
+			self.dataUnit.getSettings().set("ColorTransferFunction", ctf)
 			settings.set("PaletteColors", n)
 		return data
 

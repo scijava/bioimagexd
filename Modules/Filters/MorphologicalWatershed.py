@@ -152,7 +152,7 @@ class MorphologicalWatershedFilter(lib.ProcessingFilter.ProcessingFilter):
 		settings = self.dataUnit.getSettings()
 		ncolors = settings.get("PaletteColors")
 		if self.noPalette or not ncolors or ncolors < n:
-			ctf = lib.ImageOperations.watershedPalette(0, n)
+			ctf = lib.ImageOperations.watershedPalette(2, n)
 			self.noPalette = 0
 			self.segCtf = ctf
 			if markWatershedLine:
