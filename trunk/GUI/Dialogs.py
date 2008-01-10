@@ -57,38 +57,6 @@ def showerror(parent, message, title, flags = wx.OK | wx.ICON_ERROR):
 	"""    
 	showmessage(parent, message, title, flags)
 
-# this method is unused - commented this out, 20.7.2007 SS
-#	
-#def askcolor(*args, **kws):
-#	"""
-#	Created: 28.01.2005, KP
-#	Description: A method to input a color from user
-#	"""    
-#	dlg = wx.ColourDialog(None)
-#	dlg.GetColourData().SetChooseFull(True)
-#	if dlg.ShowModal() == wx.ID_OK:
-#		gcolor = dlg.GetColourData()
-#	else:
-#		return None
-#	color = gcolor[0]
-#	if 255 not in color:
-#		mval = max(color)
-#		coeff = 255.0 / mval
-#		ncolor = [int(x * coeff) for x in color]
-#		dlg = wx.MessageDialog(self,
-#								"The color you selected: %d, %d, %d is incorrect." \
-#								"At least one of the R, G or B components\n" \
-#								"of the color must be 255. Therefore, " \
-#								"I have modified the color a bit. " \
-#								"It is now %d, %d, %d. Have a nice day." \
-#								% (color[0], color[1], color[2], ncolor[0], ncolor[1], ncolor[2]), \
-#								"Selected color is incorrect", \
-#								wx.OK | wx.ICON_WARNING)
-#		dlg.ShowModal()
-#		dlg.Destroy()
-#		gcolor = ncolor
-#	return (gcolor, "#%2x%2x%2x" % (gcolor[0], gcolor[1], gcolor[2]))
- 
 
 def askDirectory(parent, title, initialDir = None):
 	"""
