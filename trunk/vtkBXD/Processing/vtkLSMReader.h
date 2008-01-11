@@ -128,6 +128,8 @@ public:
   virtual int GetSwapBytes() {return this->SwapBytes;}
   vtkBooleanMacro(SwapBytes,int);
 
+  int GetDataTypeForChannel(unsigned int channel);
+
   vtkGetStringMacro(FileName);
   vtkGetVector3Macro(VoxelSizes,double);
   vtkGetVectorMacro(Dimensions,int,5);
@@ -159,6 +161,7 @@ protected:
   int ClearChannelNames();
   int FindChannelNameStart(const char *, int);
   int ReadChannelName(const char *, int, char *);
+  int ReadChannelDataTypes(ifstream*, unsigned long);
   int ReadChannelColorsAndNames(ifstream *,unsigned long);
   int ReadTimeStampInformation(ifstream *,unsigned long);
   int ReadLSMSpecificInfo(ifstream *,unsigned long);
@@ -209,6 +212,7 @@ int RequestData(
   vtkUnsignedShortArray *BitsPerSample;
   unsigned int Compression;
   vtkUnsignedIntArray *StripOffset;
+  vtkUnsignedIntArray *ChannelDataTypes;
   unsigned int SamplesPerPixel;
   vtkUnsignedIntArray *StripByteCount;
   unsigned int LSMSpecificInfoOffset;
@@ -219,11 +223,13 @@ int RequestData(
   unsigned short ScanType;
   int DataScalarType;
   
+  
   double DataSpacing[3];
   int DataExtent[6];
   int NumberOfScalarComponents;
   int DataType;
   unsigned long ChannelInfoOffset;
+  unsigned long ChannelDataTypesOffset;
   vtkIntArray *ChannelColors;
   char **ChannelNames;
   vtkDoubleArray *TimeStampInformation;
