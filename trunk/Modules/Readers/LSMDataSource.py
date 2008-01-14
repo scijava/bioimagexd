@@ -91,7 +91,7 @@ class LsmDataSource(DataSource):
 				"Failed to open file %s for reading: %s" % (filename, str(ex)))
 				return
 				
-			self.reader.SetFileName(self.filename)
+			self.reader.SetFileName(self.ConvertFileName(self.filename))
 			self.reader.SetUpdateChannel(channelNum)
 			#print "Update information..."
 			self.reader.UpdateInformation()
@@ -260,7 +260,7 @@ class LsmDataSource(DataSource):
 		self.shortname = os.path.basename(filename)
 		self.path = os.path.dirname(filename)
 
-		self.reader.SetFileName(filename)
+		self.reader.SetFileName(self.ConvertFileName(filename))
 		print type(filename)
 
 

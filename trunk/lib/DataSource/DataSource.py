@@ -450,6 +450,17 @@ class DataSource:
 		"""
 		raise "Abstract method getName() in DataSource called"
 		
+		
+	def ConvertFileName(self, filename):
+		"""
+		Created: 14.1.2008, KP
+		Description: convert the filename to proper encoding
+		"""
+		system = platform.system()
+		if system == "Darwin": return filename.encode('utf-8')
+		if system == "Windows": return filename.encode('mbcs')
+		return filename.encode('latin-1')
+		
 	def getDimensions(self):
 		"""
 		Created: 14.12.2004, KP
