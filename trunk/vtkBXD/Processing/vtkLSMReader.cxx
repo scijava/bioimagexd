@@ -41,6 +41,151 @@
 #define PRT_EXT(ext) ext[0],ext[1],ext[2],ext[3],ext[4],ext[5]
 #define PRT_EXT2(ext) ext[0]<<","<<ext[1]<<","<<ext[2]<<","<<ext[3]<<","<<ext[4]<<","<<ext[5]
 
+#define LZW_MAXBITS                 12
+#define LZW_SIZTABLE                (1<<LZW_MAXBITS)
+struct LZWState {
+    unsigned char *pbuf, *ebuf;
+    int bbits;
+    unsigned int bbuf;
+
+    int cursize;                ///< The current code size
+    int curmask;
+    int codesize;
+    int clear_code;
+    int end_code;
+    int newcodes;               ///< First available code
+    int top_slot;               ///< Highest code for current size
+    int extra_slot;
+    int slot;                   ///< Last read code
+    int fc, oc;
+    unsigned char *sp;
+    unsigned char stack[LZW_SIZTABLE];
+    unsigned char suffix[LZW_SIZTABLE];
+    unsigned short prefix[LZW_SIZTABLE];
+    int bs;                     ///< current buffer size for GIF
+};
+
+int lzw_decode_init(LZWState *s, int csize, unsigned char *buf, int buf_size, int mode);
+int lzw_decode(LZWState *s, unsigned char *buf, int len);
+
+
+static const unsigned short mask[17] =
+{
+    0x0000, 0x0001, 0x0003, 0x0007,
+    0x000F, 0x001F, 0x003F, 0x007F,
+    0x00FF, 0x01FF, 0x03FF, 0x07FF,
+    0x0FFF, 0x1FFF, 0x3FFF, 0x7FFF, 0xFFFF
+};
+
+/* get one code from stream */
+static int lzw_get_code(struct LZWState * s)
+{
+    int c;
+        while (s->bbits < s->cursize) {
+            s->bbuf = (s->bbuf << 8) | (*s->pbuf++);
+            s->bbits += 8;
+        }
+        c = s->bbuf >> (s->bbits - s->cursize);
+    s->bbits -= s->cursize;
+    return c & s->curmask;
+}
+
+
+int lzw_decode_init(LZWState *p, int csize, unsigned char *buf, int buf_size)
+{
+    struct LZWState *s = (struct LZWState *)p;
+
+    if(csize < 1 || csize > LZW_MAXBITS)
+        return -1;
+    /* read buffer */
+    s->pbuf = buf;
+    s->ebuf = s->pbuf + buf_size;
+    s->bbuf = 0;
+    s->bbits = 0;
+    s->bs = 0;
+
+    /* decoder */
+    s->codesize = csize;
+    s->cursize = s->codesize + 1;
+    s->curmask = mask[s->cursize];
+    s->top_slot = 1 << s->cursize;
+    s->clear_code = 1 << s->codesize;
+    s->end_code = s->clear_code + 1;
+    s->slot = s->newcodes = s->clear_code + 2;
+    s->oc = s->fc = -1;
+    s->sp = s->stack;
+
+    s->extra_slot = 1;
+    return 0;
+}
+
+/**
+ * Decode given number of bytes
+ * NOTE: the algorithm here is inspired from the LZW GIF decoder
+ *  written by Steven A. Bennett in 1987.
+ */
+int lzw_decode(LZWState *p, unsigned char *buf, int len){
+    int l, c, code, oc, fc;
+    unsigned char *sp;
+    struct LZWState *s = (struct LZWState *)p;
+
+    if (s->end_code < 0)
+        return 0;
+
+    l = len;
+    sp = s->sp;
+    oc = s->oc;
+    fc = s->fc;
+
+    for (;;) {
+        while (sp > s->stack) {
+            *buf++ = *(--sp);
+            if ((--l) == 0)
+                goto the_end;
+        }
+        c = lzw_get_code(s);
+        if (c == s->end_code) {
+            break;
+        } else if (c == s->clear_code) {
+            s->cursize = s->codesize + 1;
+            s->curmask = mask[s->cursize];
+            s->slot = s->newcodes;
+            s->top_slot = 1 << s->cursize;
+            fc= oc= -1;
+        } else {
+            code = c;
+            if (code == s->slot && fc>=0) {
+                *sp++ = fc;
+                code = oc;
+            }else if(code >= s->slot)
+                break;
+            while (code >= s->newcodes) {
+                *sp++ = s->suffix[code];
+                code = s->prefix[code];
+            }
+            *sp++ = code;
+            if (s->slot < s->top_slot && oc>=0) {
+                s->suffix[s->slot] = code;
+                s->prefix[s->slot++] = oc;
+            }
+            fc = code;
+            oc = c;
+            if (s->slot >= s->top_slot - s->extra_slot) {
+                if (s->cursize < LZW_MAXBITS) {
+                    s->top_slot <<= 1;
+                    s->curmask = mask[++s->cursize];
+                }
+            }
+        }
+    }
+    s->end_code = -1;
+  the_end:
+    s->sp = sp;
+    s->oc = oc;
+    s->fc = fc;
+    return len - l;
+}
+
 vtkStandardNewMacro(vtkLSMReader);
 
 vtkLSMReader::vtkLSMReader()
@@ -281,8 +426,9 @@ int vtkLSMReader::ClearChannelNames()
     {
     delete [] this->ChannelNames[i];
     }
+    vtkDebugMacro(<<"almost done\n");
   delete [] this->ChannelNames;
-
+ vtkDebugMacro(<<"done");
   return 0;
 }
 
@@ -878,7 +1024,7 @@ unsigned long vtkLSMReader::ReadImageDirectory(ifstream *f,unsigned long offset)
   return this->ReadUnsignedInt(f,&nextOffset);
 }
 
-/*
+
 void vtkLSMReader::DecodeHorizontalDifferencing(unsigned char *buffer, int size)
 {
   for(int i=1;i<size;i++)
@@ -888,7 +1034,32 @@ void vtkLSMReader::DecodeHorizontalDifferencing(unsigned char *buffer, int size)
     }
 //  printf("\n");
 }
-*/
+
+void vtkLSMReader::DecodeLZWCompression(unsigned char* buffer, int size) {
+    LZWState *s = new LZWState;
+    unsigned char *outbuf = new unsigned char[size];
+    unsigned char* bufp = buffer, *outbufp = outbuf;
+    int width = this->Dimensions[0];
+    int lines = size / width;
+    lzw_decode_init(s, 8, buffer, size);
+    
+    for(int line = 0; line < lines; line++) {
+        int decoded = lzw_decode(s, outbufp, width);
+        vtkDebugMacro(<<"Line "<<line<< " decoded" << decoded<<" bytes (horiz.diff: " << ((this->Predictor==2)?"Yes":"No") <<")\n");
+        if(this->Predictor == 2) {
+            this->DecodeHorizontalDifferencing(outbufp,width);
+        }
+        bufp += width;
+        outbufp += width;
+    }
+    for(int i=0;i<size;i++) {
+        buffer[i] = outbuf[i];
+    }
+    delete s;
+    delete outbuf;
+    
+}
+
 int vtkLSMReader::GetDataTypeForChannel(unsigned int channel)
 {
    if(this->DataType != 0) return this->DataType;
@@ -912,19 +1083,12 @@ int vtkLSMReader::RequestData(
 
   
   // get the info object
-  //printf("vtkLSMReader RequestData\n");
   vtkInformation *outInfo = outputVector->GetInformationObject(0);
   //vtkImageData *data = vtkImageData::SafeDownCast(outInfo->Get(vtkDataObject::DATA_OBJECT()));
   vtkImageData *data = this->AllocateOutputData(outInfo->Get(vtkDataObject::DATA_OBJECT()));
-   data->GetPointData()->GetScalars()->SetName("LSM Scalars");
-    
-    //data->SetExtent(outExtent);
-    //data->AllocateScalars();
-  //data->SetUpdateExtent(data->GetWholeExtent());
+  data->GetPointData()->GetScalars()->SetName("LSM Scalars");
 
-    
     data->GetExtent(outExtent);  
-    //printf("Extent for LSM reader=%d,%d,%d,%d,%d,%d\n",PRT_EXT(outExtent));
   if(!this->Identifier)
     {
     vtkDebugMacro(<<"Can not execute data since information has not been executed!");
@@ -960,13 +1124,10 @@ int vtkLSMReader::RequestData(
     vtkDebugMacro(<<"Strip byte count="<<readSize);
     this->ReadFile(this->GetFile(),&offset,readSize,(char *)tempBuf,1);
 
-    /*
     if(this->IsCompressed())
-      {
+    {
       this->DecodeLZWCompression(tempBuf,readSize);
-      //this->DecodeHorizontalDifferencing(tempBuf,readSize);
-      }
-    */
+    }
     tempBuf += readSize;
     }
   end = time (NULL);
@@ -1094,11 +1255,11 @@ int vtkLSMReader::RequestInformation (
   
   vtkDebugMacro(<<"Executing information: first directory has been read.");
 
-  if(this->IsCompressed())
-    {
-      vtkDebugMacro("Can't handle compressed data!");
-      return 0;
-    }
+//  if(this->IsCompressed())
+//    {
+//      vtkDebugMacro("Can't handle compressed data!");
+//      return 0;
+//    }
 
     
   this->CalculateExtentAndSpacing(this->DataExtent,this->DataSpacing);

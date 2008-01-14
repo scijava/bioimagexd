@@ -191,8 +191,8 @@ int RequestData(
   
   //void ExecuteData(vtkDataObject *out);
   void CalculateExtentAndSpacing(int extent[6],double spacing[3]);
-  //  void DecodeHorizontalDifferencing(unsigned char *,int);
-  //  void DecodeLZWCompression(unsigned  char *,int);
+  void DecodeHorizontalDifferencing(unsigned char *,int);
+  void DecodeLZWCompression(unsigned  char *,int);
   //  unsigned char *decode_string(unsigned char *buffer,unsigned int code);
   //  unsigned int input_code(char *input);
 
