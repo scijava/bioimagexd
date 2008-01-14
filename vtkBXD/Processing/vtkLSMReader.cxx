@@ -24,8 +24,8 @@
  along with this program; if not, write to the Free Software
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-
 =========================================================================*/
+
 #include "vtkLSMReader.h"
 #include "vtkObjectFactory.h"
 #include "vtkImageData.h"
@@ -41,6 +41,12 @@
 #define PRT_EXT(ext) ext[0],ext[1],ext[2],ext[3],ext[4],ext[5]
 #define PRT_EXT2(ext) ext[0]<<","<<ext[1]<<","<<ext[2]<<","<<ext[3]<<","<<ext[4]<<","<<ext[5]
 
+/*
+ * LZW decoding
+ * Copyright (c) 2003 Fabrice Bellard
+ * Copyright (c) 2006 Konstantin Shishkov.
+ * Licensed under LGPL, see Licenses/LGPL for full license
+ */
 #define LZW_MAXBITS                 12
 #define LZW_SIZTABLE                (1<<LZW_MAXBITS)
 struct LZWState {
@@ -204,7 +210,10 @@ vtkLSMReader::~vtkLSMReader()
   this->BitsPerSample->Delete();
   this->StripOffset->Delete();
   this->StripByteCount->Delete();
-  this->ChannelDataTypes->Delete();
+  if(this->ChannelDataTypes) {
+      this->ChannelDataTypes->Delete();
+  }
+  
 }
 
 void vtkLSMReader::ClearFileName()
@@ -1045,7 +1054,6 @@ void vtkLSMReader::DecodeLZWCompression(unsigned char* buffer, int size) {
     
     for(int line = 0; line < lines; line++) {
         int decoded = lzw_decode(s, outbufp, width);
-        vtkDebugMacro(<<"Line "<<line<< " decoded" << decoded<<" bytes (horiz.diff: " << ((this->Predictor==2)?"Yes":"No") <<")\n");
         if(this->Predictor == 2) {
             this->DecodeHorizontalDifferencing(outbufp,width);
         }
