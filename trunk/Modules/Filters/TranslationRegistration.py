@@ -71,6 +71,8 @@ class TranslationRegistrationFilter(RegistrationFilters.RegistrationFilter):
 		Description: Initializes and executes the registration process. Does
 		the result translation to input image and returns translated image.
 		"""
+		import pdb
+		pdb.set_trace()
 		if not lib.ProcessingFilter.ProcessingFilter.execute(self,inputs):
 			return None
 
@@ -141,9 +143,9 @@ class TranslationRegistrationFilter(RegistrationFilters.RegistrationFilter):
 		self.resampler.SetOutputSpacing(fixedImage.GetSpacing())
 		self.resampler.SetOutputOrigin(fixedImage.GetOrigin())
 		self.resampler.SetDefaultPixelValue(backgroundValue)
-		dataBeforeCast = self.resampler.GetOutput()
-		dataBeforeCast.Update()
-		
-		data = self.convertITKtoVTK(dataBeforeCast, imagetype = "UC3")
+		data = self.resampler.GetOutput()
+		data.Update()
+
+		data = self.convertITKtoVTK(data, imagetype = "UC3")
 		return data
 
