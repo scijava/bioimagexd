@@ -98,7 +98,7 @@ class LsmDataSource(DataSource):
 			self.originalScalarRange = None
 			self.getBitDepth()
 			self.originalDimensions = self.reader.GetDimensions()[0:3]
-			if self.reader.IsCompressed():
+			if 0 and self.reader.IsCompressed():
 				raise Logging.GUIError("Cannot handle compressed dataset", \
 										"The dataset you've selected (%s) is compressed. \
 										The LSM reader cannot currently read compressed data." \
@@ -265,7 +265,7 @@ class LsmDataSource(DataSource):
 
 		#self.reader.Update()
 		self.reader.UpdateInformation()
-		if self.reader.IsCompressed():
+		if 0 and self.reader.IsCompressed():
 			raise Logging.GUIError("Cannot handle compressed dataset", \
 									"The dataset you've selected (%s) is compressed. \
 									The LSM reader cannot currently read compressed data." \
