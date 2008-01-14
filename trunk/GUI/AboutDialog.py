@@ -469,6 +469,7 @@ at the < i > Licensing</i > directory.</p>
 <li><a href = "#python">Python</a></li>
 <li><a href="#vtk">The Visualization Toolkit</a></li>
 <li><a href = "#itk">Insight Segmentation and Registration Toolkit</a></li>
+<li><a href="#lzw">LZW code from FFMPEG</a></li>
 </ul>
 </p>
 <hr>
@@ -587,6 +588,13 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.<br>
 =========================================================================*/
 </p>
+<p><a name="lzw"><h2>LZW decompression</h2></a></p><p>
+  The LZW decoder utilized in LSM reader is licensend under the LGPL and
+  Copyright (c) 2003 Fabrice Bellard.
+  Copyright (c) 2006 Konstantin Shishkov.
+ 
+  The full LGPL license can be found in the file <i>Licenses/LGPL</i>.
+ 
 </body>
 </html>
 """
