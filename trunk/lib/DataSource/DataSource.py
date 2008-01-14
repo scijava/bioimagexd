@@ -34,6 +34,7 @@ import Logging
 import scripting
 import lib.messenger
 import platform
+import sys
 
 class DataWriter:
 	"""
@@ -454,15 +455,13 @@ class DataSource:
 		raise "Abstract method getName() in DataSource called"
 		
 		
-	def ConvertFileName(self, filename):
+	def convertFileName(self, filename):
 		"""
 		Created: 14.1.2008, KP
 		Description: convert the filename to proper encoding
 		"""
-		print type(filename)
-		if self.system == "Darwin": return filename.encode('utf-8')
 		if self.system == "Windows": return filename.encode('mbcs')
-		return filename.encode('latin-1')
+		return filename.encode(sys.getfilesystemencoding())
 		
 	def getDimensions(self):
 		"""

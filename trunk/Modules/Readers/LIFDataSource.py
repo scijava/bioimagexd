@@ -69,7 +69,7 @@ class LIFDataSource(DataSource):
 
 		# Open file if defined
 		if self.filename:
-			self.reader.SetFileName(self.filename)
+			self.reader.SetFileName(self.convertFileName(self.filename))
 			if self.reader.OpenFile():
 				if self.reader.ReadLIFHeader():
 					self.reader.SetCurrentImage(self.imageNum)
@@ -175,7 +175,7 @@ class LIFDataSource(DataSource):
 		"""
 		self.filename = filename
 		dataUnits = []
-		self.reader.SetFileName(self.filename)
+		self.reader.SetFileName(self.convertFileName(self.filename))
 
 		if self.reader.OpenFile():
 			if self.reader.ReadLIFHeader():
