@@ -98,11 +98,7 @@ class LsmDataSource(DataSource):
 			self.originalScalarRange = None
 			self.getBitDepth()
 			self.originalDimensions = self.reader.GetDimensions()[0:3]
-			if 0 and self.reader.IsCompressed():
-				raise Logging.GUIError("Cannot handle compressed dataset", \
-										"The dataset you've selected (%s) is compressed. \
-										The LSM reader cannot currently read compressed data." \
-										% filename)
+
 			self.updateProgress(None, None)
 			
 	def updateProgress(self, obj, evt):
@@ -252,24 +248,23 @@ class LsmDataSource(DataSource):
 					 instances and returns them as a list.
 		Parameters:	  filename	The .lsm-file to be loaded
 		"""
-		self.filename = filename
-		self.shortname = os.path.basename(filename)
-		self.path = os.path.dirname(filename)
-		self.reader.SetFileName(filename)
 		try:
-			f = open(filename)
+			f = open(filename,"r")
 			f.close()
 		except IOError, ex:
 			Logging.error("Failed to open LSM File",
 			"Failed to open file %s for reading: %s" % (filename, str(ex)))
 
+		self.filename = filename
+		self.shortname = os.path.basename(filename)
+		self.path = os.path.dirname(filename)
+		self.reader.SetFileName(str(filename))
+		print type(filename)
+
+
 		#self.reader.Update()
 		self.reader.UpdateInformation()
-		if 0 and self.reader.IsCompressed():
-			raise Logging.GUIError("Cannot handle compressed dataset", \
-									"The dataset you've selected (%s) is compressed. \
-									The LSM reader cannot currently read compressed data." \
-									% filename)
+
 		dataunits = []
 		channelNum = self.reader.GetNumberOfChannels()
 		self.timepointAmnt = channelNum

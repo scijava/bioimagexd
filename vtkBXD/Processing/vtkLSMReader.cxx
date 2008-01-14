@@ -529,12 +529,12 @@ int vtkLSMReader::ReadChannelDataTypes(ifstream *f,unsigned long start)
     this->ChannelDataTypes = vtkUnsignedIntArray::New();
     this->ChannelDataTypes->SetNumberOfTuples(numOfChls);
     this->ChannelDataTypes->SetNumberOfComponents(1);  
-    for(int i=0; i < numOfChls; i++) {
+    for(unsigned int i=0; i < numOfChls; i++) {
         dataType = this->ReadUnsignedInt(f, &pos);
         this->ChannelDataTypes->SetValue(i, dataType);
         vtkDebugMacro(<<"Channel "<<i<<" has datatype "<<dataType<<"\n");
     }
-    
+    return 0;
 }
 
 int vtkLSMReader::ReadChannelColorsAndNames(ifstream *f,unsigned long start)

@@ -1498,7 +1498,7 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 			asklist = args
 		
 		for askfile in asklist:
-			
+
 			sep = askfile.split(".")[-1]
 			if sep.lower() == "bxr":
 				do_cmd = 'mainWindow.loadEncodingProject(ur"%s")' % (askfile)
@@ -1515,7 +1515,7 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 			fname = os.path.split(askfile)[-1]
 			self.SetStatusText("Loading " + fname + "...")
 			askfile = askfile.replace("\\", "\\\\")
-			do_cmd = "mainWindow.createDataUnit(\"%s\", \"%s\")" % (fname, askfile)
+			do_cmd = "mainWindow.createDataUnit(u'%s', u'%s')" % (fname, askfile)
 			
 			cmd = lib.Command.Command(lib.Command.OPEN_CMD, None, None, do_cmd, "", \
 										desc = "Load dataset %s" % fname)
