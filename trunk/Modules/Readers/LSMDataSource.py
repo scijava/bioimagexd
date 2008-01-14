@@ -34,6 +34,7 @@ import os.path
 import scripting
 import vtk
 import vtkbxd
+import struct
 
 def getExtensions(): 
 	return ["lsm"]
@@ -258,7 +259,8 @@ class LsmDataSource(DataSource):
 		self.filename = filename
 		self.shortname = os.path.basename(filename)
 		self.path = os.path.dirname(filename)
-		self.reader.SetFileName(str(filename))
+
+		self.reader.SetFileName(filename)
 		print type(filename)
 
 
