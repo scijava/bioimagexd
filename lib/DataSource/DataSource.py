@@ -33,6 +33,7 @@ import Configuration
 import Logging
 import scripting
 import lib.messenger
+import platform
 
 class DataWriter:
 	"""
@@ -86,6 +87,8 @@ class DataSource:
 		Created: 17.11.2004, KP
 		Description: Initialization
 		"""
+		self.system = platform.system()
+		
 		self.ctf = None
 		self.bitdepth = 0
 		self.resampleFilter = None
@@ -456,9 +459,9 @@ class DataSource:
 		Created: 14.1.2008, KP
 		Description: convert the filename to proper encoding
 		"""
-		system = platform.system()
-		if system == "Darwin": return filename.encode('utf-8')
-		if system == "Windows": return filename.encode('mbcs')
+		print type(filename)
+		if self.system == "Darwin": return filename.encode('utf-8')
+		if self.system == "Windows": return filename.encode('mbcs')
 		return filename.encode('latin-1')
 		
 	def getDimensions(self):

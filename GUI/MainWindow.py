@@ -1572,7 +1572,7 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 			return
 		dataunits = []
 		try:
-			dataunits = datasource.loadFromFile(path.encode('utf-8'))
+			dataunits = datasource.loadFromFile(path)
 			Logging.info("Loaded from file %s %d dataunits" % (path, len(dataunits)), kw = "io")
 		except Logging.GUIError, ex:
 			if not noWarn:
