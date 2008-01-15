@@ -209,11 +209,11 @@ class VideoEncoder:
 		"""
 		codec = self.getCodec()
 		vcodec, ext = self.outputCodecs[codec]
-		file_coms = self.videoFileName.split(".")
-		file_coms[-1] = ext
-		file = ".".join(file_coms)
+		#file_coms = self.videoFileName.split(".")
+		#file_coms[-1] = ext
+		#file = ".".join(file_coms)
 		
-		cmdLine = self.getCommandLine(vcodec, file)
+		cmdLine = self.getCommandLine(vcodec, self.videoFileName)
 		subprocess.call(cmdLine)
 		#os.system(cmdLine)
 		
@@ -295,7 +295,7 @@ class VideoEncoder:
 		Logging.info("Pattern for files = ", pattern, kw = "animator")
 		return pattern
 
-	def getCommandLine(self, vcodec, file):
+	def getCommandLine(self, vcodec, filename):
 		"""
 		Created: 22.09.2007, KP
 		Description: return the command line for using ffmpeg to render the video
@@ -332,7 +332,7 @@ class VideoEncoder:
 			cmdLine.append('%s'%pattern)
 			cmdLine.append('-vcodec')
 			cmdLine.append('%s'%vcodec)
-			cmdLine.append('%s'%file)
+			cmdLine.append('%s'%filename)
 			#commandLine = "\"%s\" -y -qscale %d -r %.2f -s %dx%d -i \"%s\" -vcodec %s \"%s\"" \
 			#				% (ffmpeg, quality, frameRate, width, height, pattern, vcodec, file)
 		else:
@@ -346,7 +346,7 @@ class VideoEncoder:
 			cmdLine.append('%s'%pattern)
 			cmdLine.append('-target')
 			cmdLine.append('%s'%target)
-			cmdLine.append('%s'%file)
+			cmdLine.append('%s'%filename)
 		Logging.info("Command line for ffmpeg="+str(cmdLine), kw = "animator")
 		return cmdLine
 
@@ -408,7 +408,7 @@ class VideoGeneration(wx.Panel):
 		if platform.system() == "Windows":
 			sel = 5
 		self.outputFormat.SetSelection(sel)
-		
+		self.encoder.setCodec(self.outputFormat.GetStringSelection())
 		self.buttonBox = wx.BoxSizer(wx.HORIZONTAL)
 		self.okButton = wx.Button(self, -1, "Ok")
 		self.cancelButton = wx.Button(self, -1, "Cancel")
@@ -466,7 +466,7 @@ class VideoGeneration(wx.Panel):
 		self.okButton.Enable(0)
 		self.encoder.setPath(self.rendir.GetValue())
 		self.encoder.setVideoFileName(self.videofile.GetValue())
-		
+
 		quality = self.qualitySlider.GetValue()
 		self.encoder.setQuality(quality)
 		path = self.encoder.getPath()
@@ -634,11 +634,12 @@ class VideoGeneration(wx.Panel):
 			self.encoder.setCodec(codec)
 
 			newext = self.encoder.getExtensionForCodec(codec)
-			print "New extension for format",codec,"=",newext
 			filename = self.videofile.GetValue()
 			name, ext = os.path.splitext(filename)
 			filename = "%s.%s"%(name, newext)
-			self.videofile.SetValue(filename)			
+			self.videofile.SetValue(filename)
+			self.encoder.setVideoFileName(filename)
+			
 	def onUpdatePreset(self, event = None):
 		"""
 		Created: 07.02.2006, KP

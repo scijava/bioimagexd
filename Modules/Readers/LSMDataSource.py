@@ -262,7 +262,6 @@ class LsmDataSource(DataSource):
 		self.path = os.path.dirname(filename)
 
 		self.reader.SetFileName(self.convertFileName(filename))
-		print type(filename)
 
 
 		#self.reader.Update()
