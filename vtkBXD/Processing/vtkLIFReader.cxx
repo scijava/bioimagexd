@@ -491,6 +491,13 @@ int vtkLIFReader::ReadLIFHeader()
   {
     // Check LIF test value
     lifCheck = this->ReadInt(this->File);
+
+	// DEBUG
+	long readBlock = this->File->tellg();
+	readBlock -= 4;
+	cout << "ReadLIFHeader: Read MemBlockCode (" << readBlock << "): " << lifCheck << endl;
+	// END DEBUG
+
     if (lifCheck != MemBlockCode) {
       vtkErrorMacro(<< "ReadLIFHeader: File contains wrong MemBlockCode: " << lifCheck);
       return 0;
@@ -744,7 +751,6 @@ int vtkLIFReader::RequestInformation(vtkInformation* vtkNotUsed(request),
   int *extent =  new int[6];
   double *origin = new double[3];
   this->CalculateExtentAndSpacingAndOrigin(extent,spacing,origin);
-  cout << "New requestInformation" << endl;
   info->Set(vtkDataObject::SPACING(),spacing,3);
   info->Set(vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT(),extent,6);
   info->Set(vtkDataObject::ORIGIN(),origin,3);
@@ -942,4 +948,25 @@ unsigned long long vtkLIFReader::ReadUnsignedLongLong(ifstream *ifs)
   vtkByteSwap::Swap8LE((unsigned long long*)buffer);
 #endif
   return *((unsigned long long*)(buffer));
+}
+
+int vtkLIFReader::CopyHeaderInfo(const vtkLIFReader *reader)
+{
+  if (strcmp(this->FileName,reader->FileName))
+  	{
+  	  return 0;
+  	}
+
+  this->Dimensions->resize(reader->Dimensions->size());
+  copy(reader->Dimensions->begin(),reader->Dimensions->end(),this->Dimensions->begin());
+  this->Channels->resize(reader->Channels->size());
+  copy(reader->Channels->begin(),reader->Channels->end(),this->Channels->begin());
+  this->Images->resize(reader->Images->size());
+  copy(reader->Images->begin(),reader->Images->end(),this->Images->begin());
+  this->Offsets->DeepCopy(reader->Offsets);
+  this->ImageSizes->DeepCopy(reader->ImageSizes);
+  this->LifVersion = reader->LifVersion;
+  this->HeaderInfoRead = 1;
+
+  return 1;
 }

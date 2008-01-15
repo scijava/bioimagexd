@@ -44,7 +44,7 @@ class LIFDataSource(DataSource):
 	Description: Manages 4D data stored in a LIF-file.
 	"""
 
-	def __init__(self, filename = "", imageNum = -1, channelNum = -1):
+	def __init__(self, filename = "", imageNum = -1, channelNum = -1, reader = None):
 		"""
 		Created: 19.07.2007, LP
 		Description: Constructor of LIF DataSource
@@ -63,7 +63,7 @@ class LIFDataSource(DataSource):
 		self.voxelSize = None
 		self.dimensions = None
 		self.ctf = None
-		
+
 		# Use vtkLIFReader
 		self.reader = vtkbxd.vtkLIFReader()
 
@@ -71,6 +71,8 @@ class LIFDataSource(DataSource):
 		if self.filename:
 			self.reader.SetFileName(self.convertFileName(self.filename))
 			if self.reader.OpenFile():
+				if reader:
+					self.reader.CopyHeaderInfo(reader)
 				if self.reader.ReadLIFHeader():
 					self.reader.SetCurrentImage(self.imageNum)
 					self.reader.SetCurrentChannel(self.channelNum)
@@ -184,7 +186,7 @@ class LIFDataSource(DataSource):
 					imageName = self.reader.GetImageName(i)
 					imageChannels = self.reader.GetChannelCount(i)
 					for c in range(imageChannels):
-						dataSource = LIFDataSource(filename,i,c)
+						dataSource = LIFDataSource(filename,i,c,self.reader)
 						dataUnit = DataUnit.DataUnit()
 						dataUnit.setDataSource(dataSource)
 						dataUnits.append((imageName,dataUnit))
