@@ -684,6 +684,20 @@ def getOverlayBorders(width, height, color, alpha, lineWidth = 1):
 	img.SetAlphaData(structString)
 	return img	  
 	
+def getImageScalarRange(image):
+	"""
+	Created: 14.01.2008, KP
+	Description: get the minimum and maximum value of an image based on it's datatype
+	"""
+	x0, x1 = image.GetScalarRange()
+
+	scalarType = image.GetScalarTypeAsString()
+	if scalarType == "unsigned char": return 0, 255
+	if scalarType == "unsigned short": 
+		if x1>4095: return (2**16)-1
+		return 0,4095
+	return x0,x1
+	
 def get_histogram(image, maxval = 0):
 	"""
 	Created: 06.08.2006, KP
@@ -693,7 +707,7 @@ def get_histogram(image, maxval = 0):
 	accu.SetInputConnection(image.GetProducerPort())
 
 	if maxval == 0:
-		x0, x1 = image.GetScalarRange()
+		x0, x1 = getImageScalarRange(imge)
 		x1 = int(math.floor(x1))
 	else:
 		x0,x1 = (0,int(math.floor(maxval)))
@@ -812,7 +826,7 @@ def histogram(imagedata, colorTransferFunction = None, bg = (200, 200, 200), log
 			dc.DrawLine(xoffset + i, x1 + 8, xoffset + i, x1 + 30)
 		dc.SetPen(whitepen)
 		dc.SetFont(wx.Font(8, wx.SWISS, wx.NORMAL, wx.NORMAL))
-		dc.DrawText(str(int(maxval)), 230, x1 + 10)
+		dc.DrawText(str(int(maxval)), xoffset+maxval-25, x1 + 10)
 	else:
 		Logging.info("Got no ctf for histogram", kw = "imageop")
 	

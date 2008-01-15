@@ -83,13 +83,22 @@ class OlympusDataSource(DataSource):
 				dataName = dataName[1:]
 			if dataName[-1] == '"':
 				dataName = dataName[:-1]
+			print "DataName='%s'"%dataName
 			directoryName, self.lutFileName = self.getLUTPath(self.channel)
+			newLut = os.path.join(directoryName, self.lutFileName)
+			newLut = os.path.join(os.path.dirname(self.filename), newLut)
+			if not os.path.exists(newLut):
+				self.path = "%s.files"%self.filename
+				print "path = ",self.path
+				print self.lutFileName
+			else:
+				self.path = os.path.join(os.path.dirname(filename), "%s.files"%dataName)
+			
 			# when lutFileName is e.g. bro28_par3_07-04-18_LUT1.lut, we take the 
 			# bro28_par3_07-04-18 and ignore the LUT1.lut, and use that as the basis of the filenames
 			# for the tiff files
 			self.fileNameBase = "_".join(self.lutFileName.split("_")[:-1])
 			#self.fileNameBase = dataName
-			self.path = os.path.join(os.path.dirname(filename), "%s.files"%dataName)
 			
 		self.reader = None
 		self.originalScalarRange = (0, 4095)
@@ -243,7 +252,8 @@ class OlympusDataSource(DataSource):
 		Description: Read the LUT for this dataset
 		"""
 		lutFile = os.path.join(self.path, self.lutFileName)
-
+		print "self.path=",self.path
+		print "Lut file=",lutFile
 		file = codecs.open(lutFile, "r", "utf-16")
 		while 1:
 			line = file.readline()
@@ -391,6 +401,8 @@ class OlympusDataSource(DataSource):
 		"""
 		path = self.parser.get("ProfileSaveInfo", "LutFileName%d"%(channel-1))
 		lutPath, lutFileName = path.split("\\")
+		if lutPath[0]=='"':
+			lutPath = lutPath[1:]
 		if lutFileName[0]=='"':
 			lutFileName = lutFileName[1:]
 		if lutFileName[-1]=='"':

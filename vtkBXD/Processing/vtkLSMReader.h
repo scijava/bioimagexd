@@ -143,7 +143,7 @@ public:
   vtkGetMacro(DataType,int);
   vtkGetObjectMacro(TimeStampInformation,vtkDoubleArray);
   vtkGetObjectMacro(ChannelColors,vtkIntArray);
-
+  unsigned int GetUpdateChannel();
   vtkImageData* GetTimePointOutput(int,int);
 
 protected:
@@ -192,9 +192,12 @@ int RequestData(
   //void ExecuteData(vtkDataObject *out);
   void CalculateExtentAndSpacing(int extent[6],double spacing[3]);
   void DecodeHorizontalDifferencing(unsigned char *,int);
+  void DecodeHorizontalDifferencingUnsignedShort(unsigned short*, int); 
   void DecodeLZWCompression(unsigned  char *,int);
-  //  unsigned char *decode_string(unsigned char *buffer,unsigned int code);
-  //  unsigned int input_code(char *input);
+  void ConstructSliceOffsets();
+  unsigned int GetStripByteCount(unsigned int timepoint, unsigned int slice);
+  unsigned int GetSliceOffset(unsigned int timepoint, unsigned int slice);
+  
 
   int SwapBytes;
 
@@ -222,6 +225,9 @@ int RequestData(
   unsigned short Predictor;
   unsigned short ScanType;
   int DataScalarType;
+  
+  vtkUnsignedIntArray *ImageOffsets;
+  vtkUnsignedIntArray *ReadSizes;
   
   
   double DataSpacing[3];
