@@ -87,6 +87,10 @@ class VTK_BXD_PROCESSING_EXPORT vtkLIFReader: public vtkImageAlgorithm
   // Sets the current time point
   int SetCurrentTimePoint(int);
 
+  // Description:
+  // Copies already read header info from another LIFReader if filename is same
+  int CopyHeaderInfo(const vtkLIFReader*);
+
   const char* GetFileExtensions();
   int GetImageCount();
   long GetFileSize();
