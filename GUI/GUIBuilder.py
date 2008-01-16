@@ -592,7 +592,10 @@ class GUIBuilder(wx.Panel):
 		level = currentFilter.getParameterLevel(itemName)
 		if level:
 			background.SetBackgroundColour(level)
+		
 		histogram = Histogram.Histogram(background)
+		
+		
 		self.histograms.append(histogram)
 		func = lambda event, its = item, f = currentFilter:self.onSetThreshold(event, its, f)
 		histogram.Bind(Histogram.EVT_SET_THRESHOLD, func)
@@ -613,33 +616,24 @@ class GUIBuilder(wx.Panel):
 		
 		histogram.setDataUnit(dataUnit, noupdate = 1)
 		
+		self.itemSizer.Add(background, (0, 0), flag=wx.EXPAND)
 		
-		self.itemSizer.Add(background, (0, 0))
+		bgsizer = wx.GridBagSizer()
+		bgsizer.Add(histogram, (0,0), span=(1,2))
+				
+		lowerLbl = wx.StaticText(background, -1,"Lower threshold:")
+		upperLbl = wx.StaticText(background,-1,"Upper threshold:")
 		
-		bgsizer = wx.BoxSizer(wx.VERTICAL)
+		lower = self.createNumberInput(background, currentFilter, item[0], types.IntType, 0, "", self.updateThresholdHistogram)
+		upper = self.createNumberInput(background, currentFilter, item[1], types.IntType, 255, "", self.updateThresholdHistogram)
+
+		bgsizer.Add(lowerLbl,(1,0))
+		bgsizer.Add(lower,(1,1))
+		bgsizer.Add(upperLbl,(2,0))
+		bgsizer.Add(upper,(2,1))
 		background.SetSizer(bgsizer)
-		bgsizer.Add(histogram)
-		
-		
-		cbpane = wx.CollapsiblePane(background, label = "")
-		updatePane = lambda evt, pane = cbpane: self.onUpdatePane(evt, pane)
-		cbpane.Bind(wx.EVT_COLLAPSIBLEPANE_CHANGED, updatePane)
-		pane = cbpane.GetPane()
-		advSizer = wx.GridBagSizer()
-		pane.SetSizer(advSizer)
-		
-		lowerLbl = wx.StaticText(pane, -1,"Lower threshold:")
-		upperLbl = wx.StaticText(pane,-1,"Upper threshold:")
-		
-		lower = self.createNumberInput(pane, currentFilter, item[0], types.IntType, 0, "", self.updateThresholdHistogram)
-		upper = self.createNumberInput(pane, currentFilter, item[1], types.IntType, 255, "", self.updateThresholdHistogram)
-
-
-		advSizer.Add(lowerLbl,(0,0))
-		advSizer.Add(lower,(0,1))
-		advSizer.Add(upperLbl,(1,0))
-		advSizer.Add(upper,(1,1))
-		bgsizer.Add(cbpane)
+		background.SetAutoLayout(1)
+		background.Layout()
 		
 		return 0
 		
@@ -650,13 +644,7 @@ class GUIBuilder(wx.Panel):
 		Description: 
 		"""
 		currentFilter.sendUpdateGUI([parameter])
-		
-	def onUpdatePane(self, evt, pane):
-		"""
-		Created: 28.10.2007, KP
-		Description: update the layout of the given pane
-		"""
-		self.Layout()
+
 		
 	def createMultiPixelSelection(self, n, items, currentFilter):
 		"""
