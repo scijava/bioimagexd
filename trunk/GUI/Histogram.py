@@ -54,7 +54,6 @@ class ThresholdEvent(wx.PyCommandEvent):
 
 class Histogram(wx.Panel):
 	"""
-	Class: Histogram
 	Created: 11.07.2005, KP
 	Description: A widget that can paint a histogram
 	"""
@@ -74,12 +73,12 @@ class Histogram(wx.Panel):
 			del kws["lowerThreshold"]
 		if "upperThreshold" in kws:
 			del kws["upperThreshold"]
-		
+		kws["size"] = (256, 200)
 		wx.Panel.__init__(self, parent, -1, **kws)
 		self.parent = parent
-		self.size = (0,0)
+		self.size = (256, 200)
 		self.timePoint = 0
-		self.buffer = wx.EmptyBitmap(256, 150)
+		self.buffer = wx.EmptyBitmap(256, 200)
 		self.backGround = None
 		self.Bind(wx.EVT_PAINT, self.OnPaint)
 		lib.messenger.connect(None, "timepoint_changed", self.onSetTimepoint)
@@ -199,15 +198,11 @@ class Histogram(wx.Panel):
 		print "lower threshold = ",self.lowerThreshold
 		print "upper threshold=",self.upperThreshold
 		print "scale=",self.scale
-#		lowerDifference = abs(x - self.lowerThreshold)
-#		upperDifference = abs(x - self.upperThreshold)
+
 		lowerDifference = abs(x - self.lowerThreshold/self.scale)
 		upperDifference = abs(x - self.upperThreshold/self.scale)
 		# x is in range 0-255, thresholds can be larger
-#		print "x=",x
 
-#		print "lowerDiff=",lowerDifference
-#		print "upperDiff=",upperDifference
 		if lowerDifference > 30 and upperDifference > 30:
 			self.mode = "middle"
 			self.middleStart = x
@@ -393,8 +388,8 @@ class Histogram(wx.Panel):
 			self.histogram = histogram
 			width = self.histogram.GetWidth()
 			height = self.histogram.GetHeight()
-			self.buffer = wx.EmptyBitmap(width, height)
-			
+			#self.buffer = wx.EmptyBitmap(width, height)
+			self.buffer = wx.EmptyBitmap(256, 200)
 			if self.size != (width, height):
 				Logging.info("Setting size to", width, height, kw = "imageop")
 				self.SetSize((width, height))
