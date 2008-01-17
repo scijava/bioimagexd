@@ -240,7 +240,6 @@ class ProcessingFilter(GUIBuilder.GUIBuilderBase):
 		Created: 18.04.2006, KP
 		Description: Convert the image data to ITK image
 		"""
-		# if not self.itk: // Won't work, UnboundLocalError
 		try:
 			import itk
 		except ImportError:

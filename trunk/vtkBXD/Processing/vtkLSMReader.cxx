@@ -153,7 +153,6 @@ int lzw_decode(LZWState *p, unsigned char *buf, int len){
         }
         c = lzw_get_code(s);
         if (c == s->end_code) {
-            printf("end code found\n");
             break;
         } else if (c == s->clear_code) {
             s->cursize = s->codesize + 1;
@@ -988,7 +987,6 @@ void vtkLSMReader::ConstructSliceOffsets()
         this->GetOffsetToImage(slice, tp);
         unsigned long offset = this->StripOffset->GetValue(channel);
         unsigned long readSize = this->StripByteCount->GetValue(channel);
-        printf("Offset to tp %d, slice %d image: %d, readSize: %d\n", tp,slice,offset, readSize);
         this->ImageOffsets->SetValue(tp*this->Dimensions[2]+slice, offset);
         this->ReadSizes->SetValue(tp*this->Dimensions[2]+slice, readSize);
     }
@@ -1096,10 +1094,7 @@ void vtkLSMReader::DecodeLZWCompression(unsigned char* buffer, int size) {
     lzw_decode_init(s, 8, bufp, size);
     vtkDebugMacro(<<"Size: "<<size<<", bytes per pixel: "<<bytes<<", lines: "<<lines<<", width: "<<width<<"\n");
     
-    printf("width = %d, size=%d,bytes=%d, lines=%d\n", width, size, bytes, lines);
-    
     int decoded = lzw_decode(s, outbufp, size);
-    printf("Decoded %d bytes (size %d)\n", decoded, size);
     outbufp = outbuf;
     for(int line = 0; line < lines; line++) {
     //      int decoded = lzw_decode(s, outbufp, width*bytes);
@@ -1119,7 +1114,6 @@ void vtkLSMReader::DecodeLZWCompression(unsigned char* buffer, int size) {
         }
         outbufp += width*bytes;
     }
-    printf("Copying over buffer %d bytes\n", size);
     for(int i=0;i < size;i++) {
         buffer[i] = outbuf[i];
     }

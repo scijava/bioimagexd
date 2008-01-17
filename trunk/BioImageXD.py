@@ -30,6 +30,7 @@ __author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.22 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
+		
 import sys
 import StringIO
 import os.path
@@ -52,6 +53,8 @@ try:
 	import profile
 except ImportError:
 	profile = None
+	
+
 
 todir = scripting.get_main_dir()
 if todir:
@@ -74,6 +77,8 @@ if scripting.main_is_frozen() and platform.system()=="Darwin":
 	import site
 	site.addsitedir(os.environ["RESOURCEPATH"]+"/InsightToolkit/WrapITK/Python")
 	site.addsitedir(os.environ["RESOURCEPATH"]+"/InsightToolkit/WrapITK/lib")
+	
+
 
 # This will fix the VTK paths using either values from the
 # configuration file, or sensible defaults
@@ -104,8 +109,6 @@ def onWarning(obj, evt, *args):
 
 w.AddObserver("WarningEvent", onWarning)
 w.AddObserver("ErrorEvent", onWarning)
-
-
 
 
 def usage():
@@ -146,6 +149,7 @@ if __name__ == '__main__':
 		except getopt.GetoptError:
 			usage()
 
+		
 		toFile, doProfile, doInterpret, doBatch = False, False, False, False
 		scriptFile, logfile, logdir, currentFilter = "", "", "", ""
 		dataFiles = []
@@ -157,6 +161,8 @@ if __name__ == '__main__':
 		selectedChannels = {}
 		timepoints = []
 		outputName = ""
+		
+
 		for opt, arg in opts:
 			if opt in ["-h", "--help"]:
 				usage()
@@ -180,8 +186,6 @@ if __name__ == '__main__':
 			elif opt in ["-l", "--logfile"]:
 				logfile = arg
 			elif opt in ["-b","--batch"]:
-				import BatchApplication
-				app = BatchApplication.BXDBatchApplication()
 				doBatch = True
 			elif opt in ["-o","--output"]:
 				outputFile = arg
@@ -199,6 +203,10 @@ if __name__ == '__main__':
 							filterParams[currentFilter] = {}
 						filterParams[currentFilter][key] = val
 				
+		
+		if doBatch:
+			import BatchApplication
+			app = BatchApplication.BXDBatchApplication()
 
 		dataFiles.extend(args)
 		# If the main application is frozen, then we redirect logging
@@ -206,6 +214,8 @@ if __name__ == '__main__':
 		#TODO: Why create a new variable logFile in scripting? Shouldn't it just be logFile
 		captureOutput = StringIO.StringIO()
 		scripting.logFile = captureOutput
+		
+
 		if toFile or scripting.main_is_frozen():
 			import time
 			if not logfile:
@@ -259,6 +269,8 @@ if __name__ == '__main__':
 				toRemove.append(datafile)
 		for fileToBeRemoved in toRemove:
 			dataFiles.remove(fileToBeRemoved)
+			
+
 
 		if doProfile and profile:
 			profile.run('app.run(dataFiles, scriptFile)', 'prof.log')
