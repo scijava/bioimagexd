@@ -29,8 +29,6 @@ __author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.13 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
-
-import vtk
 import Logging
 import lib.Module
 
@@ -38,6 +36,7 @@ import ConfigParser
 
 import Modules.DynamicLoader
 import traceback
+import vtk
 
 import optimize
 
@@ -443,9 +442,7 @@ class FilterBasedModule(lib.Module.Module):
 		filterlist = self.settings.get("FilterList")
 		
 		Logging.info("Creating preview, filters = %s"%str(filterlist), kw="pipeline")
-		#if type(filterlist) == type(""):
-		#	filterlist = []
-		#self.settings.set("FilterList", filterlist)
+
 		data = self.images
 		if not filterlist:
 			Logging.info("No filters, returning original dat", kw="pipeline")
@@ -474,6 +471,7 @@ class FilterBasedModule(lib.Module.Module):
 			else:
 				currfilter.setNextFilter(None)
 			Logging.info("Executing %s"%currfilter.name,kw="pipeline")
+			
 			data = currfilter.execute(data, update=0, last=flag)
 			
 			if not flag:
@@ -502,6 +500,6 @@ class FilterBasedModule(lib.Module.Module):
 			data = lastfilter.convertITKtoVTK(data)
 
 		filterlist.setModified(0)
-		data.ReleaseDataFlagOff()
+		#data.ReleaseDataFlagOff()
 		
 		return data

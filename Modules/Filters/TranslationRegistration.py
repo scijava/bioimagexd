@@ -71,8 +71,8 @@ class TranslationRegistrationFilter(RegistrationFilters.RegistrationFilter):
 		Description: Initializes and executes the registration process. Does
 		the result translation to input image and returns translated image.
 		"""
-		import pdb
-		pdb.set_trace()
+		#import pdb
+		#pdb.set_trace()
 		if not lib.ProcessingFilter.ProcessingFilter.execute(self,inputs):
 			return None
 

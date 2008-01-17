@@ -30,14 +30,18 @@ class BXDBatchApplication:
 		taskMod = pluginLoader.getPluginModule("Task", "Process")
 		unitType = taskMod.getDataUnit()
 		moduleType = pluginLoader.getPluginClass("Task","Process")
+
 		self.dataUnit = unitType()
 		self.readers = Modules.DynamicLoader.getReaders()
+
 		self.extToSource = {}
 		for modeclass, ign, module in self.readers.values():
 			exts = module.getExtensions()
 			for ext in exts:
 				self.extToSource[ext] = modeclass
+
 		module = moduleType()
+		
 		self.dataUnit.setModule(module)
 		
 		self.mainwin = BatchMainWindow()
@@ -90,7 +94,7 @@ class BXDBatchApplication:
 			if not selectedUnits: selectedUnits = newDataunits
 			dataunits += selectedUnits
 		return dataunits
-
+	
 	def run(self, files, scriptfile, name = "", outputFile = "output.bxd", timepoints = [], selectedChannels = {}):
 		"""
 		Created: 01.01.2008
@@ -102,7 +106,6 @@ class BXDBatchApplication:
 		filterList = lib.FilterBasedModule.FilterList()
 		filterList.setDataUnit(self.dataUnit)
 		filterList.populate(self.filterList)
-		
 		for fname in self.filterList:
 			if fname not in self.filterParams:
 				continue

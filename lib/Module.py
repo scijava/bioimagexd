@@ -30,7 +30,6 @@ __version__ = "$Revision: 1.19 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 import Logging
-import messenger
 import scripting
 
 class Module:
@@ -56,8 +55,9 @@ class Module:
 
 		self.eventDesc = "Processing data"
 		self.controlUnit = None
-		import itkConfig
-		itkConfig.ProgressCallback = self.updateITKProgress
+		# If we enable this, then ITK starts eating memory like crazy
+		#import itkConfig
+		#itkConfig.ProgressCallback = self.updateITKProgress
 		
 	def getEventDesc(self):
 		"""
@@ -104,7 +104,6 @@ class Module:
 		if not txt:
 			txt = self.getEventDesc()
 		scripting.mainWindow.updateProgressBar(obj, evt, progress, txt, 0)
-		#messenger.send(None, "update_progress", progress, txt, 0)
 		
 	def setTimepoint(self, timePoint):
 		"""

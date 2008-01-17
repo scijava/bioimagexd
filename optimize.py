@@ -77,16 +77,17 @@ def optimize(image = None, vtkFilter = None, updateExtent = None, releaseData = 
 	else:
 		filterInUse = vtkFilter
 	
-	val, numFilters = optimizePipeline(filterInUse, releaseData = releaseData)
+	#val, numFilters = optimizePipeline(filterInUse, releaseData = releaseData)
 
 	if updateExtent and not scripting.wantWholeDataset:
 		Logging.info("Using update extent %s"%str(updateExtent),kw="pipeline")
 		val.GetOutput().SetUpdateExtent(updateExtent)
-		
-	if numFilters != 0:
-		img = execute_limited(val, updateExtent = updateExtent) 
-	else:
-		img = val.GetOutput()
+	
+	img = execute_limited(filterInUse, updateExtent = updateExtent)
+	#if numFilters != 0:
+	#	img = execute_limited(val, updateExtent = updateExtent) 
+	#else:
+	#	img = val.GetOutput()
 
 	return img
 	
@@ -98,6 +99,11 @@ def execute_limited(pipeline, updateExtent = None):
 	global memLimit, noLimits, alwaysSplit
 	global numberOfDivisions
 	global executing
+	#retval = pipeline.GetOutput()
+	#if updateExtent and not scripting.wantWholeDataset:
+	#	retval.SetUpdateExtent(updateExtent)
+	#pipeline.Update()
+	#return pipeline.GetOutput()
 	
 	if not memLimit:
 		get_memory_limit()
@@ -176,7 +182,7 @@ def optimizePipeline(ifilter, numberNotUsed = 0, releaseData = 0):
 					filterStack.append(inp)
 					hasParents = 1
 		try:
-			cfilter = filterStack.pop()			   
+			cfilter = filterStack.pop()
 		except:
 			break
 		if hasParents and releaseData:
