@@ -128,8 +128,7 @@ def getFilters():
 	Created: 10.8.2007, SS
 	Description: This function returns all the filter-classes in this module and is used by ManipulationFilters.getFilterList()
 	"""
-	return [SolitaryFilter, GaussianSmoothFilter,
-			ShiftScaleFilter, TimepointCorrelationFilter,
+	return [SolitaryFilter, GaussianSmoothFilter, ShiftScaleFilter, 
 			ROIIntensityFilter, GradientFilter, GradientMagnitudeFilter,
 			ITKAnisotropicDiffusionFilter, ITKGradientMagnitudeFilter,
 			ITKCannyEdgeFilter, ITKSigmoidFilter, ITKLocalMaximumFilter]
@@ -407,108 +406,6 @@ class ShiftScaleFilter(ProcessingFilter.ProcessingFilter):
 			self.vtkfilter.Update()
 		return self.vtkfilter.GetOutput()	 
 		
-		
-
-		
-class TimepointCorrelationFilter(ProcessingFilter.ProcessingFilter):
-	"""
-	Created: 31.07.2006, KP
-	Description: A filter for calculating the correlation between two timepoints
-	"""		
-	name = "Timepoint correlation"
-	category = MEASUREMENT
-	
-	def __init__(self):
-		"""
-		Created: 31.07.2006, KP
-		Description: Initialization
-		"""		   
-		ProcessingFilter.ProcessingFilter.__init__(self, (1, 1))
-		
-		self.box = None
-		self.descs = {"Timepoint1": "First timepoint:", "Timepoint2": "Second timepoint:"}
-	
-	def getParameters(self):
-		"""
-		Created: 31.07.2006, KP
-		Description: Return the list of parameters needed for configuring this GUI
-		"""			   
-		return [["", ("Timepoint1", "Timepoint2")]]
-		
-	def getGUI(self, parent, taskPanel):
-		"""
-		Created: 31.07.2006, KP
-		Description: Return the GUI for this filter
-		"""				 
-		gui = ProcessingFilter.ProcessingFilter.getGUI(self, parent, taskPanel)
-		if not self.box:
-			
-			self.corrLbl = wx.StaticText(gui, -1, "Correlation:")
-			self.corrLbl2 = wx.StaticText(gui, -1, "0.0")
-			box = wx.BoxSizer(wx.HORIZONTAL)
-			box.Add(self.corrLbl)
-			box.Add(self.corrLbl2)
-			self.box = box
-			gui.sizer.Add(box, (1, 0), flag = wx.EXPAND | wx.LEFT | wx.RIGHT)
-		return gui
-		
-	def getType(self, parameter):
-		"""
-		Created: 31.07.2006, KP
-		Description: Return the type of the parameter
-		"""	   
-		return GUIBuilder.SLICE
-		
-	def getDefaultValue(self, parameter):
-		"""
-		Created: 31.07.2006, KP
-		Description: Return the default value of a parameter
-		"""		
-		if parameter == "Timepoint1":
-			return 0
-		return 1
-		
-	def getRange(self, parameter):
-		"""
-		Created: 31.07.2006, KP
-		Description: Return the range for the parameter
-		"""				
-		return (0, self.dataUnit.getNumberOfTimepoints())
-
-	def execute(self, inputs, update = 0, last = 0):
-		"""
-		Created: 31.07.2006, KP
-		Description: Execute the filter with given inputs and return the output
-		"""			   
-		if not ProcessingFilter.ProcessingFilter.execute(self, inputs):
-			return None
-		tp1 = self.parameters["Timepoint1"]
-		tp2 = self.parameters["Timepoint2"]
-		self.vtkfilter = vtkbxd.vtkImageAutoThresholdColocalization()
-		units = self.dataUnit.getSourceDataUnits()
-		data1 = units[0].getTimepoint(tp1)
-		# We need to prepare a copy of the data since
-		# when we get the next timepoint, the data we got earlier will reference the
-		# new data
-		tp = vtk.vtkImageData()
-		tp.DeepCopy(data1)
-		data2 = units[0].getTimepoint(tp2)
-		data1 = tp
-		
-		self.vtkfilter.AddInput(data1)
-		self.vtkfilter.AddInput(data2)
-		# Set the thresholds so they won't be calculated
-		self.vtkfilter.SetLowerThresholdCh1(0)
-		self.vtkfilter.SetLowerThresholdCh2(0)
-		self.vtkfilter.SetUpperThresholdCh1(255)
-		self.vtkfilter.SetUpperThresholdCh2(255)
-	   
-		#print "Using ",image
-		
-		self.vtkfilter.Update()
-		self.corrLbl2.SetLabel("%.5f" % self.vtkfilter.GetPearsonWholeImage())
-		return self.getInput(1)
-
 		
 class ROIIntensityFilter(ProcessingFilter.ProcessingFilter):
 	"""
