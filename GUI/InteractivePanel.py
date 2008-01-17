@@ -584,7 +584,8 @@ class InteractivePanel(ogl.ShapeCanvas):
 			dc = wx.ClientDC(self)
 			self.PrepareDC(dc)
 			
-			self.currentSketch.Erase(dc)
+			self.paintPreview()
+			self.Refresh()
 			 
 			self.currentSketch.Draw(dc)
 			
