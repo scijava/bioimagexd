@@ -470,7 +470,8 @@ class MainWindow(wx.Frame):
 		do_cmd = "mainWindow.fileTree.unselectAll()"
 		for i in dataunits.keys():
 			names = [x.getName() for x in dataunits[i]]
-			do_cmd += "\n" + "mainWindow.fileTree.selectChannelsByName(ur'%s', %s)" % (i, str(names))
+			filename = i.replace("'", "\\'")
+			do_cmd += "\n" + "mainWindow.fileTree.selectChannelsByName(ur'%s', %s)" % (filename, str(names))
 		undo_cmd = ""
 		cmd = lib.Command.Command(lib.Command.MGMT_CMD, None, None, do_cmd, \
 									undo_cmd, desc = "Unselect all in file tree")
@@ -1515,6 +1516,7 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 			fname = os.path.split(askfile)[-1]
 			self.SetStatusText("Loading " + fname + "...")
 			askfile = askfile.replace("\\", "\\\\")
+			askfile = askfile.replace("'", "\\'")
 			do_cmd = "mainWindow.createDataUnit(u'%s', u'%s')" % (fname, askfile)
 			
 			cmd = lib.Command.Command(lib.Command.OPEN_CMD, None, None, do_cmd, "", \

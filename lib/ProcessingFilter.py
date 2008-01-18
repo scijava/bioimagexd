@@ -254,7 +254,6 @@ class ProcessingFilter(GUIBuilder.GUIBuilderBase):
 				"A non-ITK filter %s tried to convert data to ITK image data" % self.name)
 			return image
 
-		#if not self.vtkToItk:
 		ImageType = itk.VTKImageToImageFilter.IUC3
 
 		if cast == types.FloatType:
