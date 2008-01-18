@@ -57,6 +57,7 @@ class BatchAnalysis:
 		self.selectedVariables = {}
 
 		self.inputDataUnits = []
+		self.numRE = re.compile("[0-9]+")
 		
 		self.procedureLists = {}
 		self.selectedList = ""
@@ -123,6 +124,31 @@ the name '%s' was found. Existing lists are: %s"""%(name, ", ".join(self.procedu
 			1	All the channels in a single file are passed as input to a procedure list
 		"""
 		self.channelProcessing = value
+		
+	def sortNumerically(self, item1, item2):
+		"""
+		Created: 17.03.2005, KP
+		Description: A method that compares two filenames and sorts them by the number in their filename
+		"""   
+		r = self.numRE
+		s = r.findall(item1)
+		s2 = r.findall(item2)
+		if len(s) != len(s2):
+			return len(s).__cmp__(len(s2))
+		if len(s) == 1:
+			n = int(s[0])
+			n2 = int(s2[0])
+			return n.__cmp__(n2)
+		else:
+			for i in range(len(s)):
+				i1 = int(s[i])
+				i2 = int(s2[i])
+				if len(s[i]) < len(s2[i]):
+					return - 1
+				c = i1.__cmp__(i2)
+				if c != 0:
+					return c
+		return cmp(item1, item2)
 
 	def getGroupedDataUnits(self):
 		"""
@@ -131,6 +157,8 @@ the name '%s' was found. Existing lists are: %s"""%(name, ", ".join(self.procedu
 					 in the GUI
 		"""
 		if self.channelProcessing == PROCESS_SEPARATELY:
+			def s(x,y): return self.sortNumerically(x.getFileName(), y.getFileName())
+			self.inputDataUnits.sort(s)
 			return [[x] for x in self.inputDataUnits]
 		
 		return self.getDataUnitsByFilename()
@@ -142,13 +170,17 @@ the name '%s' was found. Existing lists are: %s"""%(name, ", ".join(self.procedu
 		Description: return the dataunits grouped by the filenames
 		"""
 		perFile = {}
+		filenames = []
 		for dataUnit in self.inputDataUnits:
 			filename = dataUnit.getFileName()
+			filenames.append(filename)
 			if filename not in perFile:
 				perFile[filename] = []
 			perFile[filename].append(dataUnit)
 			
-		return perFile.values()
+		filenames.sort(self.sortNumerically)
+		return [perFile[x] for x in filenames]
+#		return perFile.values()
 
 	def createSingleGroupedBXDFile(self, directory, procListName, dataUnits):
 		"""
@@ -318,6 +350,8 @@ the name '%s' was found. Existing lists are: %s"""%(name, ", ".join(self.procedu
 		Description: determine the color transfer function out of the source dataunits
 		"""
 		if len(dataunits)==1:
+			return dataunits[0].getColorTransferFunction()
+		if len(procedureList.getFilters())==0:
 			return dataunits[0].getColorTransferFunction()
 		firstFilter = procedureList.getFilters()[0]
 		dataUnit = firstFilter.getInputDataUnit(1)
