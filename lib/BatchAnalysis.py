@@ -173,7 +173,8 @@ the name '%s' was found. Existing lists are: %s"""%(name, ", ".join(self.procedu
 		filenames = []
 		for dataUnit in self.inputDataUnits:
 			filename = dataUnit.getFileName()
-			filenames.append(filename)
+			if filename not in filenames:
+				filenames.append(filename)
 			if filename not in perFile:
 				perFile[filename] = []
 			perFile[filename].append(dataUnit)
