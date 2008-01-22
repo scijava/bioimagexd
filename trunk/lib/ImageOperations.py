@@ -694,7 +694,7 @@ def getImageScalarRange(image):
 	scalarType = image.GetScalarTypeAsString()
 	if scalarType == "unsigned char": return 0, 255
 	if scalarType == "unsigned short": 
-		if x1>4095: return (2**16)-1
+		if x1>4095: return 0, (2**16)-1
 		return 0,4095
 	return x0,x1
 	
@@ -707,7 +707,7 @@ def get_histogram(image, maxval = 0):
 	accu.SetInputConnection(image.GetProducerPort())
 
 	if maxval == 0:
-		x0, x1 = getImageScalarRange(imge)
+		x0, x1 = getImageScalarRange(image)
 		x1 = int(math.floor(x1))
 	else:
 		x0,x1 = (0,int(math.floor(maxval)))
