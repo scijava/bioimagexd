@@ -55,7 +55,6 @@ except ImportError:
 	profile = None
 	
 
-
 todir = scripting.get_main_dir()
 if todir:
 	os.chdir(todir)
@@ -132,7 +131,7 @@ def usage():
 	print "-f <filter> | --load-filter\tLoad a filter to the procedure stack"
 	print "-s <var>=<val>,<var2>=<val2> | --set-variable\tSet a variable to a value"
 	print "-o <file>   | --output=<file>\tOutput the resulting dataset to the given file"
-	print "-T 0,1,2	   | --timepoints=<timepoints>\tSelect the timepoints to process"
+	print "-T 0,1,3-5  | --timepoints=<timepoints>\tSelect the timepoints to process"
 	print "-c 0,1	   | --channels=0,1\tSelect the channels to use from the input file"
 	sys.exit(2)
 
@@ -190,7 +189,14 @@ if __name__ == '__main__':
 			elif opt in ["-o","--output"]:
 				outputFile = arg
 			elif opt in ["-T","--timepoints"]:
-				timepoints = map(int,arg.split(","))
+				tplist = arg.split(",")
+				timepoints = []
+				for iter in tplist:
+					if "-" not in iter:
+						timepoints.append(int(iter))
+					else:
+						interval = map(int,iter.split("-"))
+						timepoints.extend(range(interval[0],interval[1]+1))
 			elif opt in ["-f","--load-filter"]:
 				currentFilter = arg
 				filterList.append(arg)
