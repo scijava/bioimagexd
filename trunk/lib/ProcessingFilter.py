@@ -31,19 +31,18 @@ __author__ = "BioImageXD Project < http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.42 $"
 __date__ = "$Date: 2005 / 01 / 13 14:52:39 $"
 
-# import ImageOperations
-# import wx
 
 import types
 import vtk
 import lib.Command
 import sys
-
+import Logging
 import lib.messenger
 import scripting
-import GUI.GUIBuilder as GUIBuilder
 
-class ProcessingFilter(GUIBuilder.GUIBuilderBase):
+import GUI.GUIBuilder
+
+class ProcessingFilter:
 	"""
 	Created: 13.04.2006, KP
 	Description: A base class for manipulation filters
@@ -52,7 +51,7 @@ class ProcessingFilter(GUIBuilder.GUIBuilderBase):
 	name = "Generic Filter"
 	level = scripting.COLOR_EXPERIENCED
 
-	def __init__(self, numberOfInputs = (1, 1)):
+	def __init__(self, numberOfInputs = (1, 1), changeCallback = None):
 		"""
 		Created: 13.04.2006, KP
 		Description: Initialization
@@ -61,9 +60,22 @@ class ProcessingFilter(GUIBuilder.GUIBuilderBase):
 		self.dataUnit = None
 		self.processInputText = "Input from procedure list"
 
-		GUIBuilder.GUIBuilderBase.__init__(self, changeCallback = self.notifyTaskPanel)
-
+		self.initialization = True
 		self.numberOfInputs = numberOfInputs
+		self.descs = {}
+		self.dataUnit = None 
+		self.initDone = 0
+		self.parameters = {}
+		self.inputMapping = {}
+		self.sourceUnits = []
+		self.inputs = []
+		self.inputIndex = 0
+		self.gui = None
+		if not changeCallback:
+			self.modCallback = self.notifyTaskPanel
+		else:
+			self.modCallback = changeCallback
+		self.updateDefaultValues()
 
 		self.noop = 0
 		self.parameters = {}
@@ -99,6 +111,13 @@ class ProcessingFilter(GUIBuilder.GUIBuilderBase):
 		self.itkfilter = None
 		self.relabelFilter = None
 
+	def setInitialization(self, flag):
+		"""
+		Created: 07.12.2007, KP
+		Description: toggle a flag indicating, whether the filter should be re-initialized
+		"""
+		self.initialization = flag
+		
 	def getColorTransferFunction(self):
 		"""
 		Created: 08.12.2007, KP
@@ -176,7 +195,9 @@ class ProcessingFilter(GUIBuilder.GUIBuilderBase):
 		Created: 21.07.2006, KP
 		Description: Set the given parameter to given value
 		"""
-		GUIBuilder.GUIBuilderBase.setParameter(self, parameter, value)
+		self.parameters[parameter] = value
+		if self.modCallback:
+			self.modCallback(self)
 		# Send a message that will update the GUI
 		lib.messenger.send(self, "set_%s" % parameter, value)
 
@@ -195,10 +216,18 @@ class ProcessingFilter(GUIBuilder.GUIBuilderBase):
 			n = scripting.mainWindow.currentTaskWindowName
 			method="scripting.mainWindow.tasks['%s'].filterEditor.%s"%(n,func)
 			self.recordParameterChange(parameter, value, method)
+		self.parameters[parameter] = value
+		if self.modCallback:
+			self.modCallback(self)
+			
+	def getParameter(self, parameter):
+		"""
+		Created: 29.05.2006, KP
+		Description: Get a value for the parameter
+		"""	   
+		return self.parameters.get(parameter, None)
 
-		#print "\n\nSetting ",parameter,"to",value
-		GUIBuilder.GUIBuilderBase.setParameter(self, parameter, value)
-
+			
 	def writeOutput(self, dataUnit, timePoint):
 		"""
 		Created: 09.07.2006, KP
@@ -372,7 +401,7 @@ class ProcessingFilter(GUIBuilder.GUIBuilderBase):
 		"""
 		self.taskPanel = taskPanel
 		if not self.gui:
-			self.gui = GUIBuilder.GUIBuilder(parent, self)
+			self.gui = GUI.GUIBuilder.GUIBuilder(parent, self)
 		return self.gui
 
 	@classmethod
@@ -398,3 +427,282 @@ class ProcessingFilter(GUIBuilder.GUIBuilderBase):
 		"""
 		self.inputs = inputs
 		return 1
+
+	def getSelectedInputChannelNames(self):
+		"""
+		Created: 07.12.2007, KP
+		Description: return the names of the selected input channels
+		"""
+		oldText = self.processInputText
+		self.processInputText = "output"
+		inputChannels = self.getInputChannelNames()
+		keys = self.inputMapping.keys()
+		returnNames = []
+		
+		for chIndex in self.inputMapping.values():
+			returnNames.append(inputChannels[chIndex])
+			
+		self.processInputText = oldText
+		return returnNames
+		
+		
+	def getInputChannelNames(self, fromStack = 1):
+		"""
+		Created: 07.12.2007, KP
+		Description: return the names of the input channels
+		"""
+		if fromStack:
+			choices = [self.processInputText]
+		else:
+			choices = []
+		# If the input is a processed dataunit, i.e. output from a task,
+		# then we offer both the task output and the individual channels
+		if self.dataUnit.isProcessed():
+			for i, dataunit in enumerate(self.dataUnit.getSourceDataUnits()):
+				choices.append(dataunit.getName())
+		else:
+			# If we have a non - processed dataunit (i.e. a single channel)
+			# as input, then we only offer that
+			choices = [self.dataUnit.getName()]
+		return choices
+		
+	def getInputChannel(self, mapIndex):
+		"""
+		Created: 07.12.2007, KP
+		Description: return the index of the channel tht corresponds to given input number
+		"""
+		if mapIndex not in self.inputMapping:
+			self.setInputChannel(mapIndex, mapIndex-1)
+		return self.inputMapping[mapIndex]
+		
+	def getInput(self, mapIndex):
+		"""
+		Created: 17.04.2006, KP
+		Description: Return the input imagedata #n
+		"""
+		if not self.dataUnit:
+			self.dataUnit = scripting.combinedDataUnit
+		# By default, asking for say, input number 1 gives you 
+		# the first (0th actually) input mapping
+		# these can be thought of as being specified in the GUI where you have as many 
+		# selections of input data as the filter defines (with the variable numberOfInputs)
+		if mapIndex not in self.inputMapping:
+			self.setInputChannel(mapIndex, mapIndex-1)
+			
+		# Input mapping 0 means to return the input from the filter stack above
+		
+		if self.inputMapping[mapIndex] == 0 and self.dataUnit and self.dataUnit.isProcessed():
+			try:
+				image = self.inputs[self.inputIndex]
+			except:
+				traceback.print_exc()
+				Logging.info("No input with number %d" %self.inputIndex, self.inputs, kw = "processing")
+		else:
+			# If input from stack is not requested, or the dataunit is not processed, then just return 
+			# the image data from the corresponding channel
+			Logging.info("Using input from channel %d as input %d" % (self.inputMapping[mapIndex] - 1, mapIndex), \
+							kw = "processing")
+			
+			image = self.getInputFromChannel(self.inputMapping[mapIndex] - 1)
+		return image
+		
+	def getInputDataUnit(self, mapIndex):
+		"""
+		Created: 12.03.2007, KP
+		Description: Return the input dataunit for input #n
+		"""	  
+		if mapIndex not in self.inputMapping:
+			return None
+		if self.inputMapping[mapIndex] == 0 and self.dataUnit and self.dataUnit.isProcessed():
+			return self.dataUnit
+		else:
+			dataunit = self.getInputFromChannel(self.inputMapping[mapIndex] - 1, dataUnit = 1)
+		return dataunit
+		
+	def getCurrentTimepoint(self):
+		"""
+		Created: 14.03.2007, KP
+		Description: return the current timepoint 
+		"""
+		timePoint = scripting.visualizer.getTimepoint()
+		if scripting.processingTimepoint != -1:
+			timePoint = scripting.processingTimepoint
+		return timePoint
+		
+	def getInputFromChannel(self, unitIndex, timepoint = -1, dataUnit = 0):
+		"""
+		Created: 17.04.2006, KP
+		Description: Return an imagedata object that is the current timepoint for channel #n
+		"""
+		if self.dataUnit.isProcessed():
+			if not self.sourceUnits:
+				self.sourceUnits = self.dataUnit.getSourceDataUnits()
+		else:
+			self.sourceUnits = [self.dataUnit]
+				
+		currentTimePoint = scripting.visualizer.getTimepoint()
+		if scripting.processingTimepoint != -1:
+			currentTimePoint = scripting.processingTimepoint
+		if timepoint != -1:
+			currentTimePoint = timepoint
+		if dataUnit:
+			return self.sourceUnits[unitIndex]
+
+		return self.sourceUnits[unitIndex].getTimepoint(currentTimePoint)
+		
+	def updateDefaultValues(self):
+		"""
+		Created: 08.11.2007, KP
+		Description: update the default values
+		"""
+		if not self.initialization:
+			return
+		self.initDone = 0
+		for item in self.getPlainParameters():
+			self.setParameter(item, self.getDefaultValue(item))
+		self.initDone = 1
+		
+	def getNumberOfInputs(self):
+		"""
+		Created: 17.04.2006, KP
+		Description: Return the number of inputs required for this filter
+		"""
+		return self.numberOfInputs
+		
+	def setInputChannel(self, inputNumber, channel):
+		"""
+		Created: 17.04.2006, KP
+		Description: Set the input channel for input #inputNum
+		"""
+
+		self.inputMapping[inputNumber] = channel
+		
+	def getInputName(self, n):
+		"""
+		Created: 17.04.2006, KP
+		Description: Return the name of the input #n
+		"""
+		return "Source dataset %d" % n
+		
+	def getParameterLevel(self, parameter):
+		"""
+		Created: 1.11.2006, KP
+		Description: Return the level of the given parameter. This is used to color code the GUI options
+		"""
+		return scripting.COLOR_BEGINNER
+			
+	def sendUpdateGUI(self, parameters = []):
+		"""
+		Created: 05.06.2006, KP
+		Description: Method to update the GUI elements that correspond to the parameters
+					 If a list of parameters is defined, then only those gui entries are updated.
+		"""
+		if not parameters:
+			parameters = self.getPlainParameters()
+		for item in parameters:
+			value = self.getParameter(item)
+			lib.messenger.send(self, "set_%s" % item, value)
+			
+			
+	def canSelectChannels(self):
+		"""
+		Created: 31.05.2006, KP
+		Description: Should it be possible to select the channel
+		"""
+		return 1
+	
+	def getParameters(self):
+		"""
+		Created: 13.04.2006, KP
+		Description: Return the list of parameters needed for configuring this GUI
+		"""	 
+		return []
+	
+	def getPlainParameters(self):
+		"""
+		Created: 15.04.2006, KP
+		Description: Return whether this filter is enabled or not
+		"""
+		returnList = []
+		for item in self.getParameters():
+			# If it's a label, then ignore it
+			if type(item) == types.StringType:
+				continue
+			# if it's a list type, then add each parameter in the list to the list of plain parameters
+			elif type(item) == types.ListType:
+				title, items = item
+				if type(items[0]) == types.TupleType:
+					items = items[0]
+				returnList.extend(items)
+		return returnList
+		
+	def recordParameterChange(self, parameter, value, modpath):
+		"""
+		Created: 14.06.2007, KP
+		Description: record the change of a parameter along with information for how to undo it
+		"""
+		oldval = self.parameters.get(parameter, None)
+		if oldval == value:
+			return
+		if self.getType(parameter) == GUI.GUIBuilder.ROISELECTION:
+			i, roi = value
+			setval = "scripting.visualizer.getRegionsOfInterest()[%d]" % i
+			rois = scripting.visualizer.getRegionsOfInterest()
+			if oldval in rois:
+				n = rois.index(oldval)
+				setoldval = "scripting.visualizer.getRegionsOfInterest()[%d]" % n
+			else:
+				setoldval = ""
+			value = roi
+		else:
+			if type(value) in [types.StringType, types.UnicodeType]:
+	
+				setval = "'%s'" % value
+				setoldval = "'%s'" % oldval
+			else:
+				setval = str(value)
+				setoldval = str(oldval)
+		n = scripting.mainWindow.currentTaskWindowName
+		do_cmd = "%s.set('%s', %s)" % (modpath, parameter, setval)
+		if oldval and setoldval:
+			undo_cmd = "%s.set('%s', %s)" % (modpath, parameter, setoldval)
+		else:
+			undo_cmd = ""
+		cmd = lib.Command.Command(lib.Command.PARAM_CMD, None, None, do_cmd, undo_cmd, \
+									desc = "Change parameter '%s' of filter '%s'" % (parameter, self.name))
+		cmd.run(recordOnly = 1)
+		
+	def getDesc(self, parameter):
+		"""
+		Created: 13.04.2006, KP
+		Description: Return the description of the parameter
+		"""	   
+		return self.descs.get(parameter,"")
+		
+	def getLongDesc(self, parameter):
+		"""
+		Created: 13.04.2006, KP
+		Description: Return the long description of the parameter
+		"""	   
+		return ""
+		
+	def getType(self, parameter):
+		"""
+		Created: 13.04.2006, KP
+		Description: Return the type of the parameter
+		"""	   
+		return types.IntType
+		
+	def getRange(self, parameter):
+		"""
+		Created: 31.05.2006, KP
+		Description: If a parameter has a certain range of valid values, the values can be queried with this function
+		"""
+		return -1, -1
+		
+	def getDefaultValue(self, parameter):
+		"""
+		Created: 13.04.2006, KP
+		Description: Return the default value of a parameter
+		"""
+		return 0

@@ -41,7 +41,7 @@ import wx
 import traceback
 import lib.Command
 import os
-
+import XMLGUIBuilder
 RADIO_CHOICE = "RADIO_CHOICE"
 THRESHOLD = "THRESHOLD"
 CTF = "CTF"
@@ -57,331 +57,11 @@ ROISELECTION = "ROISELECTION"
 
 SPECIAL_ELEMENTS = [RADIO_CHOICE, THRESHOLD, CTF, PIXEL, PIXELS, SLICE, FILENAME, CHOICE, ROISELECTION]
 
-class GUIBuilderBase:
-	"""
-	Created: 31.05.2006, KP
-	Description: A base class for modules that intend to use GUI builder
-	""" 
-	name = "GUIBuilderBase"
-	def __init__(self, changeCallback):
-		"""
-		Created: 13.04.2006, KP
-		Description: Initialization
-		"""
-		self.initialization = True
-		self.numberOfInputs = (1,1) 
-		self.descs = {}
-		self.dataUnit = None 
-		self.initDone = 0
-		self.parameters = {}
-		self.inputMapping = {}
-		self.sourceUnits = []
-		self.inputs = []
-		self.inputIndex = 0
-		self.gui = None
-		self.modCallback = changeCallback
-		self.updateDefaultValues()
-		
-	def setInitialization(self, flag):
-		"""
-		Created: 07.12.2007, KP
-		Description: toggle a flag indicating, whether the filter should be re-initialized
-		"""
-		self.initialization = flag
-			
-	def updateDefaultValues(self):
-		"""
-		Created: 08.11.2007, KP
-		Description: update the default values
-		"""
-		if not self.initialization:
-			return
-		self.initDone = 0
-		for item in self.getPlainParameters():
-			self.setParameter(item, self.getDefaultValue(item))
-		self.initDone = 1
-		
-	def getSelectedInputChannelNames(self):
-		"""
-		Created: 07.12.2007, KP
-		Description: return the names of the selected input channels
-		"""
-		oldText = self.processInputText
-		self.processInputText = "output"
-		inputChannels = self.getInputChannelNames()
-		keys = self.inputMapping.keys()
-		returnNames = []
-		
-		for chIndex in self.inputMapping.values():
-			returnNames.append(inputChannels[chIndex])
-			
-		self.processInputText = oldText
-		return returnNames
-		
-		
-	def getInputChannelNames(self, fromStack = 1):
-		"""
-		Created: 07.12.2007, KP
-		Description: return the names of the input channels
-		"""
-		if fromStack:
-			choices = [self.processInputText]
-		else:
-			choices = []
-		# If the input is a processed dataunit, i.e. output from a task,
-		# then we offer both the task output and the individual channels
-		if self.dataUnit.isProcessed():
-			for i, dataunit in enumerate(self.dataUnit.getSourceDataUnits()):
-				choices.append(dataunit.getName())
-		else:
-			# If we have a non - processed dataunit (i.e. a single channel)
-			# as input, then we only offer that
-			choices = [self.dataUnit.getName()]
-		return choices
-		
-	def getInputChannel(self, mapIndex):
-		"""
-		Created: 07.12.2007, KP
-		Description: return the index of the channel tht corresponds to given input number
-		"""
-		if mapIndex not in self.inputMapping:
-			self.setInputChannel(mapIndex, mapIndex-1)
-		return self.inputMapping[mapIndex]
-		
-	def getInput(self, mapIndex):
-		"""
-		Created: 17.04.2006, KP
-		Description: Return the input imagedata #n
-		"""
-		if not self.dataUnit:
-			self.dataUnit = scripting.combinedDataUnit
-		# By default, asking for say, input number 1 gives you 
-		# the first (0th actually) input mapping
-		# these can be thought of as being specified in the GUI where you have as many 
-		# selections of input data as the filter defines (with the variable numberOfInputs)
-		if mapIndex not in self.inputMapping:
-			self.setInputChannel(mapIndex, mapIndex-1)
-			
-		# Input mapping 0 means to return the input from the filter stack above
-		
-		if self.inputMapping[mapIndex] == 0 and self.dataUnit and self.dataUnit.isProcessed():
-			try:
-				image = self.inputs[self.inputIndex]
-			except:
-				traceback.print_exc()
-				Logging.info("No input with number %d" %self.inputIndex, self.inputs, kw = "processing")
-		else:
-			# If input from stack is not requested, or the dataunit is not processed, then just return 
-			# the image data from the corresponding channel
-			Logging.info("Using input from channel %d as input %d" % (self.inputMapping[mapIndex] - 1, mapIndex), \
-							kw = "processing")
-			
-			image = self.getInputFromChannel(self.inputMapping[mapIndex] - 1)
-		return image
-		
-	def getInputDataUnit(self, mapIndex):
-		"""
-		Created: 12.03.2007, KP
-		Description: Return the input dataunit for input #n
-		"""	  
-		if mapIndex not in self.inputMapping:
-			return None
-		if self.inputMapping[mapIndex] == 0 and self.dataUnit and self.dataUnit.isProcessed():
-			return self.dataUnit
-		else:
-			dataunit = self.getInputFromChannel(self.inputMapping[mapIndex] - 1, dataUnit = 1)
-		return dataunit
-		
-	def getCurrentTimepoint(self):
-		"""
-		Created: 14.03.2007, KP
-		Description: return the current timepoint 
-		"""
-		timePoint = scripting.visualizer.getTimepoint()
-		if scripting.processingTimepoint != -1:
-			timePoint = scripting.processingTimepoint
-		return timePoint
-		
-	def getInputFromChannel(self, unitIndex, timepoint = -1, dataUnit = 0):
-		"""
-		Created: 17.04.2006, KP
-		Description: Return an imagedata object that is the current timepoint for channel #n
-		"""
-		if self.dataUnit.isProcessed():
-			if not self.sourceUnits:
-				self.sourceUnits = self.dataUnit.getSourceDataUnits()
-		else:
-			self.sourceUnits = [self.dataUnit]
-				
-		currentTimePoint = scripting.visualizer.getTimepoint()
-		if scripting.processingTimepoint != -1:
-			currentTimePoint = scripting.processingTimepoint
-		if timepoint != -1:
-			currentTimePoint = timepoint
-		if dataUnit:
-			return self.sourceUnits[unitIndex]
-
-		return self.sourceUnits[unitIndex].getTimepoint(currentTimePoint)
-		
-	def getNumberOfInputs(self):
-		"""
-		Created: 17.04.2006, KP
-		Description: Return the number of inputs required for this filter
-		"""
-		return self.numberOfInputs
-		
-	def setInputChannel(self, inputNumber, channel):
-		"""
-		Created: 17.04.2006, KP
-		Description: Set the input channel for input #inputNum
-		"""
-
-		self.inputMapping[inputNumber] = channel
-		
-	def getInputName(self, n):
-		"""
-		Created: 17.04.2006, KP
-		Description: Return the name of the input #n
-		"""
-		return "Source dataset %d" % n
-
-	def getParameterLevel(self, parameter):
-		"""
-		Created: 1.11.2006, KP
-		Description: Return the level of the given parameter. This is used to color code the GUI options
-		"""
-		return scripting.COLOR_BEGINNER
-			
-	def sendUpdateGUI(self, parameters = []):
-		"""
-		Created: 05.06.2006, KP
-		Description: Method to update the GUI elements that correspond to the parameters
-					 If a list of parameters is defined, then only those gui entries are updated.
-		"""
-		if not parameters:
-			parameters = self.getPlainParameters()
-		for item in parameters:
-			value = self.getParameter(item)
-			lib.messenger.send(self, "set_%s" % item, value)
-
-	def canSelectChannels(self):
-		"""
-		Created: 31.05.2006, KP
-		Description: Should it be possible to select the channel
-		"""
-		return 1
-	
-	def getParameters(self):
-		"""
-		Created: 13.04.2006, KP
-		Description: Return the list of parameters needed for configuring this GUI
-		"""	 
-		return []
-	
-	def getPlainParameters(self):
-		"""
-		Created: 15.04.2006, KP
-		Description: Return whether this filter is enabled or not
-		"""
-		returnList = []
-		for item in self.getParameters():
-			# If it's a label, then ignore it
-			if type(item) == types.StringType:
-				continue
-			# if it's a list type, then add each parameter in the list to the list of plain parameters
-			elif type(item) == types.ListType:
-				title, items = item
-				if type(items[0]) == types.TupleType:
-					items = items[0]
-				returnList.extend(items)
-		return returnList
-
-	def recordParameterChange(self, parameter, value, modpath): #svn-1037, 18.7.07, MB
-		"""
-		Created: 14.06.2007, KP
-		Description: record the change of a parameter along with information for how to undo it
-		"""
-		oldval = self.parameters.get(parameter, None)
-		if oldval == value:
-			return
-		if self.getType(parameter) == ROISELECTION:
-			i, roi = value
-			setval = "scripting.visualizer.getRegionsOfInterest()[%d]" % i
-			rois = scripting.visualizer.getRegionsOfInterest()
-			if oldval in rois:
-				n = rois.index(oldval)
-				setoldval = "scripting.visualizer.getRegionsOfInterest()[%d]" % n
-			else:
-				setoldval = ""
-			value = roi
-		else:
-			if type(value) in [types.StringType, types.UnicodeType]:
-	
-				setval = "'%s'" % value
-				setoldval = "'%s'" % oldval
-			else:
-				setval = str(value)
-				setoldval = str(oldval)
-		n = scripting.mainWindow.currentTaskWindowName
-		do_cmd = "%s.set('%s', %s)" % (modpath, parameter, setval)
-		if oldval and setoldval:
-			undo_cmd = "%s.set('%s', %s)" % (modpath, parameter, setoldval)
-		else:
-			undo_cmd = ""
-		cmd = lib.Command.Command(lib.Command.PARAM_CMD, None, None, do_cmd, undo_cmd, \
-									desc = "Change parameter '%s' of filter '%s'" % (parameter, self.name))
-		cmd.run(recordOnly = 1)
-
-	def setParameter(self, parameter, value):
-		"""
-		Created: 13.04.2006, KP
-		Description: Set a value for the parameter
-		"""	   
-		self.parameters[parameter] = value
-		if self.modCallback:
-			self.modCallback(self)
-#
-	def getParameter(self, parameter):
-		"""
-		Created: 29.05.2006, KP
-		Description: Get a value for the parameter
-		"""	   
-		return self.parameters.get(parameter, None)
-		
-	def getDesc(self, parameter):
-		"""
-		Created: 13.04.2006, KP
-		Description: Return the description of the parameter
-		"""	   
-		return self.descs.get(parameter,"")
-		
-	def getLongDesc(self, parameter):
-		"""
-		Created: 13.04.2006, KP
-		Description: Return the long description of the parameter
-		"""	   
-		return ""
-		
-	def getType(self, parameter):
-		"""
-		Created: 13.04.2006, KP
-		Description: Return the type of the parameter
-		"""	   
-		return types.IntType
-		
-	def getRange(self, parameter):
-		"""
-		Created: 31.05.2006, KP
-		Description: If a parameter has a certain range of valid values, the values can be queried with this function
-		"""
-		return -1, -1
-		
-	def getDefaultValue(self, parameter):
-		"""
-		Created: 13.04.2006, KP
-		Description: Return the default value of a parameter
-		"""
-		return 0
+def getGUIBuilderForFilter(obj):
+	if hasattr(obj, "getParametersAsXML"):
+		return XMLGUIBuilder.XMLGUIBuilder
+	else:
+		return GUIBuilder
 
 class GUIBuilder(wx.Panel):
 	"""
@@ -394,6 +74,8 @@ class GUIBuilder(wx.Panel):
 		Description: Initialization
 		""" 
 		wx.Panel.__init__(self, parent, -1)
+		self.xmlFp = None
+		self.indent = 0
 		self.filter = myfilter
 		self.sizer = wx.GridBagSizer()
 		# store the histograms so that the filters can access them if they need
@@ -406,6 +88,15 @@ class GUIBuilder(wx.Panel):
 		self.SetSizer(self.sizer)
 		self.SetAutoLayout(1)
 		
+	def outputXML(self, string):
+		"""
+		Created: 25.01.2008, KP
+		Description: output XML if the file pointer exists
+		"""
+		if self.xmlFp:
+			ind="    "*self.indent
+			self.xmlFp.write("%s%s\n"%(ind,string))
+			
 	def getSizerPosition(self):
 		"""
 		Created: 07.06.2006, KP
@@ -428,6 +119,10 @@ class GUIBuilder(wx.Panel):
 		Description: Build the GUI for a given filter
 		""" 
 		self.currentFilter = currentFilter
+		if not os.path.exists("XMLDescs"):
+			os.mkdir("XMLDescs")
+		if os.path.exists("XMLDescs"):
+			self.xmlFp = open(os.path.join("XMLDescs",self.currentFilter.getName()+".xml"),"w")
 		parameters = currentFilter.getParameters()
 		gy = 0
 		staticBox = wx.StaticBox(self, -1, currentFilter.getName())
@@ -451,7 +146,9 @@ class GUIBuilder(wx.Panel):
 			# If the parameter is just a header, then create a label to show it
 			if type(param) == types.StringType:
 				label = wx.StaticText(self, -1, param)
-				sizer.Add(label, (gy, 0))		
+				sizer.Add(label, (gy, 0))
+				if eslf.xmlFp:
+					self.outputXML('<Label label="%s" />'%param.replace('"','\\"'))
 			# If it's a list with header name and items
 			elif type(param) == types.ListType:
 				self.staticBoxName, items = param
@@ -459,7 +156,9 @@ class GUIBuilder(wx.Panel):
 				self.currentRow = -1
 				positionOnSameRow = 0
 				skipNextNItems = 0
-				
+				if self.xmlFp:
+					self.outputXML('<StaticBox label="%s">'%self.staticBoxName.replace('"','\\"'))
+					self.indent+=1
 				# Loop through all the items on this section
 				for n, item in enumerate(items):
 					if item == NOBR:
@@ -481,6 +180,7 @@ class GUIBuilder(wx.Panel):
 						# The GUI for the parameter is created using the regular createGUIElement method
 						if not keepOnSameRow:
 							self.currentRow += 1
+							self.outputXML('<br>')
 							cx = 0
 						else:
 							keepOnSameRow = 0
@@ -540,7 +240,8 @@ class GUIBuilder(wx.Panel):
 					staticBox = wx.StaticBox(self, -1, self.staticBoxName)
 					staticBoxSizer = wx.StaticBoxSizer(staticBox, wx.VERTICAL)
 					staticBox.Lower()
-				
+					self.indent-=1
+					self.outputXML('</StaticBox>')
 					sizer.Add(staticBoxSizer, (gy, 0), flag = wx.EXPAND)
 					staticBoxSizer.Add(self.itemSizer)
 				else:
@@ -549,7 +250,9 @@ class GUIBuilder(wx.Panel):
 
 			# The next item goes to the next row
 			gy += 1
-			
+		self.xmlFp.close()
+		self.xmlFp = None
+		
 	def createColorTransferFunctionEditor(self, n, items, currentFilter):
 		"""
 		Created: 12.09.2007, KP
@@ -575,10 +278,11 @@ class GUIBuilder(wx.Panel):
 		setColorTransferFunction = lambda obj, event, arg, panel = colorPanel, i = item, \
 											s = self: s.onSetCtf(panel, i, arg)
 	  
-	  	print
-		lib.messenger.connect(currentFilter, "set_%s_ctf" % item, setColorTransferFunction)
+	  	lib.messenger.connect(currentFilter, "set_%s_ctf" % item, setColorTransferFunction)
 		setotf = lambda obj, event, arg, panel = colorPanel, i = item, s = self: s.onSetOtf(panel, i, arg)
 		lib.messenger.connect(currentFilter, "set_%s_otf" % item, setotf)
+		
+		self.outputXML('<ColorTransferEditor id="%s" level="%s" label="%s" wantAlpha=%s/'%(itemName, level,bool(wantAlpha)));
 		return 0
 			
 	def createThresholdSelection(self, n, items, currentFilter):
@@ -635,6 +339,7 @@ class GUIBuilder(wx.Panel):
 		background.SetAutoLayout(1)
 		background.Layout()
 		
+		self.outputXML('<ThresholdSelection id="%s">'%itemName)
 		return 0
 		
 
@@ -687,6 +392,7 @@ class GUIBuilder(wx.Panel):
 		onSetPixelsFunc = lambda obj, event, arg, seedbox = seedbox, i = itemName, \
 				s = self: s.onSetPixelsFromFilter(seedbox, i, arg)
 		lib.messenger.connect(currentFilter, "set_%s" % itemName, onSetPixelsFunc)
+		self.outputXML('<MultiPixelSeedSelection id="%s/>'%itemName)
 		return 0
 
 	def createPixelSelection(self, n, items, currentFilter):
@@ -723,6 +429,7 @@ class GUIBuilder(wx.Panel):
 		onSetPixelFunc = lambda obj, event, arg, label = label, i = itemName, \
 					s = self: s.onSetPixelFromFilter(label, i, arg)
 		lib.messenger.connect(currentFilter, "set_%s" % itemName, onSetPixelFunc)
+		self.outputXML('<PixelSeedSelection id="%s/>'%itemName)
 		return 0
 
 	def createROISelection(self, n, items, currentFilter):
@@ -766,6 +473,8 @@ class GUIBuilder(wx.Panel):
 		box.Add(choice, 1)
 		# was (y, 0)
 		self.itemSizer.Add(box, (self.currentRow, 0), flag = wx.EXPAND | wx.HORIZONTAL)
+		
+		self.outputXML('<ROISelection id="%s"/>'%itemName)
 		return 1
 
 	def createChoice(self, n, items, currentFilter):
@@ -807,6 +516,11 @@ class GUIBuilder(wx.Panel):
 
 		box.Add(background, 1)
 		self.itemSizer.Add(box, (self.currentRow, 0), flag = wx.EXPAND | wx.HORIZONTAL)
+		self.outputXML('<Choice id="%s" label="%s">/'%(itemName, text.replace('"','\\"')))
+		#self.indent+=1
+		#for item in choices:
+			
+			
 		return 1
 
 	def createRadioChoice(self, n, items, currentFilter):
@@ -847,6 +561,15 @@ class GUIBuilder(wx.Panel):
 		box.Bind(wx.EVT_RADIOBOX, onSelectRadioBox)
 		self.staticBoxName = ""
 		self.itemSizer.Add(box, (0, 0))
+		spec="rows"
+		if majordim == wx.RA_SPECIFY_COLS:
+			spec = "columns"
+		self.outputXML('<RadioChoice id="%s" specify="%s" majorDimension="%s">'%(itemName,spec,items[n+1][1]))
+		self.indent+=1
+		for item in choices:
+			self.outputXML('<RadioChoice name="%s"/>'%item)
+		self.outputXMl('</RadioChoice>')
+		self.indent-=1
 		return 0
 		
 	def createSliceSelection(self, n, items, currentFilter):
@@ -899,6 +622,7 @@ class GUIBuilder(wx.Panel):
 		
 		box.Add(background, 1)
 		self.itemSizer.Add(box, (self.currentRow, 0), flag = wx.EXPAND | wx.HORIZONTAL)
+		self.outputXML('<SliceSelection id="%s" label="%s"/>'%(itemName,text))
 		return 1
 		
 	def createFileSelection(self, n, items, currentFilter):
@@ -929,6 +653,7 @@ class GUIBuilder(wx.Panel):
 
 		box.Add(browse, 1)
 		self.itemSizer.Add(box, (self.currentRow, 0), flag = wx.EXPAND | wx.HORIZONTAL)
+		self.outputXML('<FileSelection id="%s label="%s" fileMask="%s" dialogTitle="%s"/>'%(itemName,text,items[n][2],items[n][1]))
 		return 1
 							
 	def buildChannelSelection(self):
@@ -1085,10 +810,15 @@ class GUIBuilder(wx.Panel):
 		
 		if itemType in [types.IntType, types.FloatType]:
 			input = self.createNumberInput(background, currentFilter, item, itemType, defaultValue, desc)
+			inputtype="Integer"
+			if itemType==types.FloatType:inputtype="Float"
+			self.outputXML('<%sInput id="%s" label="%s"/>'%(inputtype,item,desc))
 		elif itemType == types.BooleanType:
 			input = self.createBooleanInput(background, currentFilter, item, itemType, defaultValue, desc)
+			self.outputXML('<BooleanInput id="%s" label="%s/>'%(item,desc))
 		elif itemType == SPINCTRL:
 			input  = self.createSpinInput(background, currentFilter, item, itemType, defaultValue, desc)
+			self.outputXML('<SpinControl id="%s" label="%s"/>'%(item,desc))
 		else:
 			raise "Unrecognized input type: %s" % (str(itemType))
 	   
