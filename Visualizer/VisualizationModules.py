@@ -32,12 +32,11 @@ __date__ = "$Date: 2005 / 01 / 13 13: 42: 03 $"
 import Logging
 import lib.messenger
 import GUI.Urmas.UrmasPersist
-import GUI.GUIBuilder as GUIBuilder
+import lib.ProcessingFilter
 import scripting
 
-class VisualizationModule(GUIBuilder.GUIBuilderBase):
+class VisualizationModule(lib.ProcessingFilter.ProcessingFilter):
 	name = "VisualizationModule"
-
 	"""
 	Created: 28.04.2005, KP
 	Description: A class representing a visualization module
@@ -48,7 +47,7 @@ class VisualizationModule(GUIBuilder.GUIBuilderBase):
 		Description: Initialization
 		"""
 		self.processInputText = "Task output"
-		GUIBuilder.GUIBuilderBase.__init__(self, changeCallback = self.parameterChanged)
+		lib.ProcessingFilter.ProcessingFilter.__init__(self, changeCallback = self.parameterChanged)
 		self.name = kws["label"]
 
 		self.moduleName = kws["moduleName"]
@@ -75,7 +74,7 @@ class VisualizationModule(GUIBuilder.GUIBuilderBase):
 		Created: 14.06.2007, KP
 		Description: Set the given parameter to given value
 		"""
-		GUIBuilder.GUIBuilderBase.setParameter(self, parameter, value)
+		lib.ProcessingFilter.ProcessingFilter.setParameter(self, parameter, value)
 		# Send a message that will update the GUI
 		lib.messenger.send(self, "set_%s" % parameter, value)
 
@@ -87,7 +86,7 @@ class VisualizationModule(GUIBuilder.GUIBuilderBase):
 		if self.initDone:
 			method = "visualizer.getCurrentWindow().getModule('%s')" % self.name
 			self.recordParameterChange(parameter, value, method)
-		GUIBuilder.GUIBuilderBase.setParameter(self, parameter, value)
+		lib.ProcessingFilter.ProcessingFilter.setParameter(self, parameter, value)
 
 	def parameterChanged(self, module):
 		"""
